@@ -45,6 +45,7 @@ for DIR in $DIRS ; do
   echo -en "\e[31m*                                                *\e[0m"
   echo -e "\r\e[31m*\e[0m\e[1m $DIR \e[0m"
   echo -e "\e[31m**************************************************\e[0m"
+  EXTCNT=0
   TFCOUNT=0
   TCCOUNT=0
   TLCOUNT=0
@@ -70,6 +71,9 @@ for DIR in $DIRS ; do
       (( TLCOUNT = TLCOUNT + LCOUNT ))
       CCOUNT=`grep class \`find $DIR -name *.H\`  | grep "{" | wc -l`
       (( TCCOUNT = TCCOUNT + CCOUNT ))
+    else
+      LCOUNT=0
+      CCOUNT=0
     fi
     echo -e "Lines   : $LCOUNT" 
   done
