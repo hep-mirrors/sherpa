@@ -218,7 +218,7 @@ void PT_Selector::SetRange(std::vector<Flavour> crit,double _min,
 {
   if (crit.size() != 1) {
     msg.Error()<<"Wrong number of arguments in PT_Selector::SetRange : "
-			  <<crit.size()<<endl;
+	       <<crit.size()<<endl;
     return;
   }
 

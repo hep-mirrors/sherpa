@@ -367,10 +367,10 @@ void Process_Group::GroupProcesses() {
   }
 
   for (size_t i=0;i<m_procs.size();i++) {
-    msg.Tracking()<<"Process_Group::GroupProcesses "<<m_procs[i]->Name()<<" : "<<m_procs[i]->Size()<<endl;
+    msg_Tracking()<<"Process_Group::GroupProcesses "<<m_procs[i]->Name()<<" : "<<m_procs[i]->Size()<<endl;
     for (size_t j=0;j<m_procs[i]->Size();j++) 
-      msg.Tracking()<<"    "<<((*m_procs[i])[j])->Name()<<endl;
-    msg.Tracking()<<"--------------------------------------------------"<<endl;
+      msg_Tracking()<<"    "<<((*m_procs[i])[j])->Name()<<endl;
+    msg_Tracking()<<"--------------------------------------------------"<<endl;
   }
 }
 
@@ -534,14 +534,14 @@ void Process_Group::SetTotal(int flag, int depth)  {
   if (m_nin==2 && flag==0) {
     if ( (depth<=0 && msg.LevelIsInfo()) || msg.LevelIsTracking()) {
       for (int i=0;i<depth;++i) msg.Out()<<"  ";
-      msg.Info()<<om::bold<<m_name<<om::reset<<" : "
+      msg_Info()<<om::bold<<m_name<<om::reset<<" : "
 		<<om::blue<<om::bold<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"<<om::reset
 		<<" +/- "<<om::reset<<om::blue<<m_totalerr/m_totalxs*100.<<" %,"<<om::reset
 		<<om::bold<<" exp. eff: "<<om::red<<(100.*m_totalxs/m_max)<<" %."<<om::reset<<endl;    
     }
   }
   if (m_nin==1) {
-    msg.Info()<<"Total width for "<<m_name<<" : "
+    msg_Info()<<"Total width for "<<m_name<<" : "
 	      <<m_totalxs<<" GeV"
 	      <<" +/- "<<m_totalerr/m_totalxs*100.<<"%, max : "<<m_max<<endl;
   }
@@ -603,7 +603,7 @@ int Process_Group::InitAmplitude(Interaction_Model_Base * model,Topology * top,V
 
     switch (m_procs[i]->InitAmplitude(model,top,testmoms,links,errs,totalsize,procs)) {
     case -3 :
-      msg.Tracking()<<"Amplitude is zero for "<<m_procs[i]->Name()<<endl
+      msg_Tracking()<<"Amplitude is zero for "<<m_procs[i]->Name()<<endl
 		     <<"   delete it."<<endl;
       deletethem.push_back(m_procs[i]->Name());
       break;
@@ -611,7 +611,7 @@ int Process_Group::InitAmplitude(Interaction_Model_Base * model,Topology * top,V
       msg.Error()<<"Error in creation of amplitude "<<m_procs[i]->Name()<<endl;
       return -2;
     case -1 : 
-      msg.Tracking()<<"No diagrams or amplitudes for "<<m_procs[i]->Name()<<endl
+      msg_Tracking()<<"No diagrams or amplitudes for "<<m_procs[i]->Name()<<endl
 		    <<"   delete it."<<endl;
       deletethem.push_back(m_procs[i]->Name());
       break;
@@ -706,7 +706,7 @@ bool Process_Group::SetUpIntegrator()
 
 bool Process_Group::CalculateTotalXSec(std::string _resdir)
 {
-  msg.Info()<<"Process_Group::CalculateTotalXSec("<<_resdir<<")"<<endl;
+  msg_Info()<<"Process_Group::CalculateTotalXSec("<<_resdir<<")"<<endl;
   if (m_atoms) {
     bool okay = 1;
     for (size_t i=0;i<m_procs.size();i++) {
@@ -728,7 +728,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	while (from) {
 	  from>>_name>>_totalxs>>_max>>_totalerr>>sum>>sqrsum>>n;
 	  if (_name==m_name) m_totalxs += _totalxs;
-// 	  msg.Tracking()<<"Found result : xs for "<<_name<<" : "
+// 	  msg_Tracking()<<"Found result : xs for "<<_name<<" : "
 // 			<<_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
 // 			<<" +/- "<<_totalerr/_totalxs*100.<<"%, max : "<<_max<<endl;
 	  Process_Base * _proc = NULL;
@@ -758,7 +758,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	}
 	else {
 	  if (okay) {
-	    msg.Tracking()<<"In "<<m_name<<"::CalculateTotalXSec("<<_resdir<<")"<<endl
+	    msg_Tracking()<<"In "<<m_name<<"::CalculateTotalXSec("<<_resdir<<")"<<endl
 			  <<"   Found all xsecs. Continue"<<endl;
 	    SetTotal(2);
 	  }
@@ -792,10 +792,10 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	std::ofstream to;
 	to.open(filename,ios::out);
 	to.precision(12);
-	msg.Info()<<"Store result : xs for "<<m_name<<" : ";
-	if (m_nin==2) msg.Info()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
-	if (m_nin==1) msg.Info()<<m_totalxs<<" GeV";
-	msg.Info()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
+	msg_Info()<<"Store result : xs for "<<m_name<<" : ";
+	if (m_nin==2) msg_Info()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
+	if (m_nin==1) msg_Info()<<m_totalxs<<" GeV";
+	msg_Info()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 		  <<"       max : "<<m_max<<endl;
 	WriteOutXSecs(to);
 	p_pshandler->WriteOut(_resdir+string("/MC_")+m_name);
@@ -817,10 +817,10 @@ void Process_Group::PrepareTerminate()
   std::ofstream to;
   to.open(m_resultfile.c_str(),ios::out);
   to.precision(12);
-  msg.Info()<<"Store result : xs for "<<m_name<<" : ";
-  if (m_nin==2) msg.Info()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
-  if (m_nin==1) msg.Info()<<m_totalxs<<" GeV";
-  msg.Info()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
+  msg_Info()<<"Store result : xs for "<<m_name<<" : ";
+  if (m_nin==2) msg_Info()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
+  if (m_nin==1) msg_Info()<<m_totalxs<<" GeV";
+  msg_Info()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 	    <<"       max : "<<m_max<<endl;
   WriteOutXSecs(to);
   p_pshandler->WriteOut(m_resultpath+string("/MC_")+m_name);
@@ -892,7 +892,7 @@ bool Process_Group::LookUpXSec(double ycut,bool calc,string obs) {
 	  m_totalxs += m_procs[i]->TotalXS();
 	  m_max     += m_procs[i]->Max();
 	}
-	msg.Tracking()<<"Process_Group::LookUpXSec() : "<<std::endl
+	msg_Tracking()<<"Process_Group::LookUpXSec() : "<<std::endl
 		      <<"   Read in cross sections for "<<m_name<<" from file in directory "<<m_resdir<<endl;
 	return 1;
       }
@@ -903,7 +903,7 @@ bool Process_Group::LookUpXSec(double ycut,bool calc,string obs) {
 
 bool Process_Group::PrepareXSecTables()
 {
-  msg.Info()<<"Process_Group::PrepareXSecTables()"<<std::endl;
+  msg_Info()<<"Process_Group::PrepareXSecTables()"<<std::endl;
   if (m_atoms) {
     bool okay = 1;
     for (size_t i=0;i<m_procs.size();i++) {

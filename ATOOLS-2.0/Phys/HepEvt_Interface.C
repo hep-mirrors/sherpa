@@ -697,9 +697,7 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
     if (piter==m_convertH2S.end()) continue;
     part = piter->second.first;
     if (part->Status()==3) signalints.push_back(i);
-    if ((part->Status()==2 || 
-	 (part->Status()==1 && m_hadronized==0)) && 
-	(part->Flav().IsGluon() || part->Flav().IsQuark()) &&
+    if (part->Status()!=3 && (part->Flav().IsGluon() || part->Flav().IsQuark()) &&
 	(p_jmohep[2*i+0]==0 && p_jmohep[2*i+1]==0)) {
       ueints.push_back(i);
     }
@@ -993,7 +991,6 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
      }
     }
   }
-
   return true;
 }
 

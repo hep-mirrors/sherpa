@@ -162,7 +162,7 @@ Knot * Tree::GetRoot() { return p_root; } ;
 
 void Tree::UpdateDaughters(Knot * mo)
 {
-  msg.Debugging()<<"Tree::UpdateDaughters("<<mo->kn_no<<")"<<std::endl;
+  msg_Debugging()<<"Tree::UpdateDaughters("<<mo->kn_no<<")"<<std::endl;
   if (mo->part->Momentum()==Vec4D(0.,0.,0.,0.)) return;
 
   mo->E2 = sqr(mo->part->Momentum()[0]);

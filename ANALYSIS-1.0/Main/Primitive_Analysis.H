@@ -110,6 +110,10 @@ namespace ANALYSIS {
     void SetPartner(Primitive_Analysis * const);
     void SetBlobType(const std::string &);
     int  NumberOfObservables() { return m_observables.size(); }
+    
+    // inline methods
+    inline const std::string &Name() const { return m_name; }
+
   };
 }
 

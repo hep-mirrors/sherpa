@@ -196,14 +196,14 @@ bool Timelike_Kinematics::ShuffleMoms(Knot * mo)
     }
   }
 
-  msg.Debugging()<<"Timelike_Kinematics::ShuffleMoms(["<<mo->kn_no<<"])"<<std::endl;
+  msg_Debugging()<<"Timelike_Kinematics::ShuffleMoms(["<<mo->kn_no<<"])"<<std::endl;
 
   d1->part->SetMomentum( (1.-r1)*p1 + r2*p2 );
   d2->part->SetMomentum( (1.-r2)*p2 + r1*p1 );
   d1->E2   = mo->z*mo->z*mo->E2;
   d2->E2   = (1.-mo->z)*(1.-mo->z)*mo->E2;
-  msg.Debugging()<<" d1 : "<<sqr(d1->part->Momentum()[0])<<" == "<<d1->E2<<std::endl;
-  msg.Debugging()<<" d2 : "<<sqr(d2->part->Momentum()[0])<<" == "<<d2->E2<<std::endl;
+  msg_Debugging()<<" d1 : "<<sqr(d1->part->Momentum()[0])<<" == "<<d1->E2<<std::endl;
+  msg_Debugging()<<" d2 : "<<sqr(d2->part->Momentum()[0])<<" == "<<d2->E2<<std::endl;
 
   // boost daughters if existent
   BoostDaughters(mo);
@@ -361,7 +361,7 @@ bool Timelike_Kinematics::JetVeto(double mo_t, double mo_e2, double mo_z,
  
 bool Timelike_Kinematics::DoKinematics(Knot * mo) 
 {
-  msg.Debugging()<<"Timelike_Kinematics::DoKinematics([<<"<<mo->kn_no<<"])"<<std::endl;
+  msg_Debugging()<<"Timelike_Kinematics::DoKinematics([<<"<<mo->kn_no<<"])"<<std::endl;
   if (!(mo)) return 1;
   if (!(mo->left)) {
     if (mo->part->Info()==' ') {
@@ -514,7 +514,7 @@ bool Timelike_Kinematics::CheckVector(Vec4D vec) {
 void Timelike_Kinematics::BoostDaughters(Vec4D pold, Vec4D pnew, 
 					 const Vec4D & pmom, Knot * mo) {
 
-  msg.Debugging()<<"Timelike_Kinematics::BoostDaughters(...,["<<mo->kn_no<<"]"<<std::endl;
+  msg_Debugging()<<"Timelike_Kinematics::BoostDaughters(...,["<<mo->kn_no<<"]"<<std::endl;
 
   int bigboost=0;
   Vec3D prot = cross(Vec3D(pnew),Vec3D(pold));

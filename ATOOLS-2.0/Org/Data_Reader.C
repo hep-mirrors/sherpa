@@ -111,7 +111,7 @@ Read_Type Data_Reader::M_ReadFromString(std::string parameter,std::string &input
       inputstring=String();
     }
     else {
-      ATOOLS::msg.Tracking()<<"Data_Reader: No input string specified ! No default available !"<<std::endl
+      msg_Tracking()<<"Data_Reader: No input string specified ! No default available !"<<std::endl
 			    <<"   Abort reading."<<std::endl;
       return Default<Read_Type>();
     }
@@ -151,13 +151,13 @@ Read_Type Data_Reader::M_ReadFromFile(std::string parameter,std::string filename
       filename=InputFile();
     }
     else {
-      ATOOLS::msg.Tracking()<<"Data_Reader: No input file specified ! No default available !"<<std::endl
+      msg_Tracking()<<"Data_Reader: No input file specified ! No default available !"<<std::endl
 			    <<"   Abort reading."<<std::endl;
       return value;
     }
   }
   if(!OpenInFile()) {
-    ATOOLS::msg.Out()<<"Data_Reader: Error opening "<<filename<<" !"<<std::endl;
+    msg.Out()<<"Data_Reader: Error opening "<<filename<<" !"<<std::endl;
     return value;
   }
   for (unsigned int i=0;i<FileContent().size();++i) {
@@ -166,7 +166,7 @@ Read_Type Data_Reader::M_ReadFromFile(std::string parameter,std::string filename
   }
   CloseInFile();
   if (value==Default<Read_Type>()) {
-    ATOOLS::msg.Tracking()<<"Data_Reader: Parameter "<<parameter<<" not specified in "<<filename<<" !"<<std::endl;
+    msg_Tracking()<<"Data_Reader: Parameter "<<parameter<<" not specified in "<<filename<<" !"<<std::endl;
   }
   return value;
 }
@@ -191,7 +191,7 @@ Data_Reader::M_VectorFromString(std::string parameter, std::string inputstring,V
       inputstring=String();
     }
     else {
-      ATOOLS::msg.Tracking()<<"Data_Reader: No input string specified ! No default available !"<<std::endl
+      msg_Tracking()<<"Data_Reader: No input string specified ! No default available !"<<std::endl
 			    <<"   Abort reading."<<std::endl;
       return values;
     }
@@ -240,13 +240,13 @@ Data_Reader::M_VectorFromFile(std::string parameter, std::string filename,Vector
       filename=InputFile();
     }
     else {
-      ATOOLS::msg.Tracking()<<"Data_Reader: No input file specified ! No default available !"<<std::endl
+      msg_Tracking()<<"Data_Reader: No input file specified ! No default available !"<<std::endl
 			    <<"   Abort reading."<<std::endl;
       return values;
     }
   }
   if (!OpenInFile()) {
-    ATOOLS::msg.Out()<<"Data_Reader: Error opening "<<filename<<" !"<<std::endl;
+    msg.Out()<<"Data_Reader: Error opening "<<filename<<" !"<<std::endl;
     return values;
   }
   for (unsigned int i=0;i<FileContent().size();++i) {
@@ -263,7 +263,7 @@ Data_Reader::M_VectorFromFile(std::string parameter, std::string filename,Vector
   }
   CloseInFile();
   if (values.size() != 0) return values;
-  ATOOLS::msg.Tracking()<<"Data_Reader: Parameter "<<parameter<<" not specified in "<<filename<<" !"<<std::endl;
+  msg_Tracking()<<"Data_Reader: Parameter "<<parameter<<" not specified in "<<filename<<" !"<<std::endl;
   return values;
 }
 
@@ -281,7 +281,7 @@ Data_Reader::M_MatrixFromString(std::string parameter,std::string inputstring,Ma
       inputstring=String();
     }
     else {
-      ATOOLS::msg.Tracking()<<"Data_Reader: No input string specified ! No default available !"<<std::endl
+      msg_Tracking()<<"Data_Reader: No input string specified ! No default available !"<<std::endl
 			    <<"   Abort reading."<<std::endl;
       return transposedvalues;
     }
@@ -334,13 +334,13 @@ Data_Reader::M_MatrixFromFile(std::string parameter,std::string filename,MatrixT
       filename=InputFile();
     }
     else {
-      ATOOLS::msg.Tracking()<<"Data_Reader: No input file specified ! No default available !"<<std::endl
+      msg_Tracking()<<"Data_Reader: No input file specified ! No default available !"<<std::endl
 			    <<"    Abort reading."<<std::endl;
       return transposedvalues;
     }
   }
   if (!OpenInFile()) {
-    ATOOLS::msg.Out()<<"Data_Reader: Error opening "<<filename<<" !"<<std::endl;
+    msg.Out()<<"Data_Reader: Error opening "<<filename<<" !"<<std::endl;
     return transposedvalues;
   }
   for (unsigned int i=0;i<FileContent().size();++i) {
@@ -369,7 +369,7 @@ Data_Reader::M_MatrixFromFile(std::string parameter,std::string filename,MatrixT
     }
     else return transposedvalues;
   }
-  ATOOLS::msg.Tracking()<<"Data_Reader: Parameter "<<parameter<<" not specified in "<<filename<<" !"<<std::endl;
+  msg_Tracking()<<"Data_Reader: Parameter "<<parameter<<" not specified in "<<filename<<" !"<<std::endl;
   return transposedvalues;
 }
 

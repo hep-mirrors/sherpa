@@ -201,6 +201,7 @@ void Histogram::Scale(double scale) {
 }
 
 void Histogram::Output() {
+  return;
   if (!msg.LevelIsDebugging()) return;
   msg.Out()<<"----------------------------------------"<<std::endl
 	   <<"    "<<m_bins[0][0]<<std::endl

@@ -152,7 +152,7 @@ void Isajet_Fortran_Interface::FillMasses() {
 }
 
 void Isajet_Fortran_Interface::FillDecays() {
-  msg.Info()<<"---------- Set particles widths according to Isasusy ! ---------"<<endl;
+  msg_Info()<<"---------- Set particles widths according to Isasusy ! ---------"<<endl;
   
   Decays(Flavour(kf::Chargino1));
   Decays(Flavour(kf::Chargino2));
@@ -451,7 +451,7 @@ void Isajet_Fortran_Interface::CharginoMasses()
   flav = Flavour(kf::Chargino2);flav.SetMass(dabs(MChi2));
   if (MChi2<0) { flav.SetMassSign(-1); theta2 = 1; }
 
-  msg.Tracking()<<"--------------------------------------------------------------"<<std::endl
+  msg_Tracking()<<"--------------------------------------------------------------"<<std::endl
 		<<"Charginomasses :"<<std::endl
 		<<Flavour(kf::Chargino1).MassSign()<<" * "<<Flavour(kf::Chargino1).Mass()
 		<<", "
@@ -498,7 +498,7 @@ void Isajet_Fortran_Interface::NeutralinoMasses()
   delete[] M;
   delete[] Mix;
 
-  msg.Tracking()<<"--------------------------------------------------------------"<<std::endl
+  msg_Tracking()<<"--------------------------------------------------------------"<<std::endl
 		<<"Neutralinomasses :"<<std::endl
 		<<Flavour(kf::Neutralino1).MassSign()<<" * "<<Flavour(kf::Neutralino1).Mass()
 		<<", "
@@ -538,8 +538,8 @@ void Isajet_Fortran_Interface::sNeutrinoMasses()
     ZNue[i][i] = Complex(1.,0.);
   }    
 
-  msg.Tracking()<<"--------------------------------------------------------------"<<std::endl;
-  msg.Tracking()<<"sNeutrinomasses :"<<std::endl
+  msg_Tracking()<<"--------------------------------------------------------------"<<std::endl;
+  msg_Tracking()<<"sNeutrinomasses :"<<std::endl
 		<<Flavour(kf::sNu1).Mass()<<", "
 		<<Flavour(kf::sNu2).Mass()<<", "
 		<<Flavour(kf::sNu3).Mass()<<std::endl;
@@ -579,7 +579,7 @@ void Isajet_Fortran_Interface::HiggsMasses()
   flav = Flavour(kf::A0);flav.SetMass(mA);
   flav = Flavour(kf::Hmin);flav.SetMass(mHC);
 
-  msg.Tracking()<<"--------------------------------------------------------------"<<std::endl
+  msg_Tracking()<<"--------------------------------------------------------------"<<std::endl
 		<<"Higgs Masses :"<<std::endl
 		<<"m_h0 = "<<Flavour(kf::h0).Mass()<<", m_H0 = "<<Flavour(kf::H0).Mass()
 		<<"m_A0 = "<<Flavour(kf::A0).Mass()<<", m_H- = "<<Flavour(kf::Hmin).Mass()<<std::endl;
@@ -617,13 +617,13 @@ void Isajet_Fortran_Interface::sUpMasses()
   flav = Flavour(kf::sTop1);flav.SetMass(dabs(msups[5]));
   if (msups[5]<0) flav.SetMassSign(-1);
   
-  msg.Tracking()<<"--------------------------------------------------------------"<<std::endl
+  msg_Tracking()<<"--------------------------------------------------------------"<<std::endl
 		<<"sQuark masses :"<<std::endl;
   for (short int i=0;i<5;++i) {
-    msg.Tracking()<<"sUpquarks["<<i<<"] : "<<dabs(msups[i])<<" ,";
-    if (i==2) msg.Tracking()<<endl;
+    msg_Tracking()<<"sUpquarks["<<i<<"] : "<<dabs(msups[i])<<" ,";
+    if (i==2) msg_Tracking()<<endl;
   }
-  msg.Tracking()<<"sUpquarks["<<5<<"] : "<<dabs(msups[5])<<" ,"<<std::endl;
+  msg_Tracking()<<"sUpquarks["<<5<<"] : "<<dabs(msups[5])<<" ,"<<std::endl;
 
 
   CMatrix Zu = CMatrix(6);
@@ -677,13 +677,13 @@ void Isajet_Fortran_Interface::sDownMasses()
   flav = Flavour(kf::sBottom1);flav.SetMass(dabs(msdowns[5]));
   if (msdowns[5]<0) flav.SetMassSign(-1);
   
-  msg.Tracking()<<"--------------------------------------------------------------"<<std::endl
+  msg_Tracking()<<"--------------------------------------------------------------"<<std::endl
 		<<"sQuark masses :"<<std::endl;
   for (short int i=0;i<5;++i) {
-    msg.Tracking()<<"sDownquarks["<<i<<"] : "<<dabs(msdowns[i])<<" ,";
-    if (i==2) msg.Tracking()<<endl;
+    msg_Tracking()<<"sDownquarks["<<i<<"] : "<<dabs(msdowns[i])<<" ,";
+    if (i==2) msg_Tracking()<<endl;
   }
-  msg.Tracking()<<"sDownquarks["<<5<<"] : "<<dabs(msdowns[5])<<" ,"<<std::endl;
+  msg_Tracking()<<"sDownquarks["<<5<<"] : "<<dabs(msdowns[5])<<" ,"<<std::endl;
 
   CMatrix Zd = CMatrix(6);
   for (short int i=0;i<6;i++) {
@@ -735,13 +735,13 @@ void Isajet_Fortran_Interface::sLeptonMasses()
   flav = Flavour(kf::sTau1);flav.SetMass(dabs(msleptons[5]));
   if (msleptons[5]<0) flav.SetMassSign(-1);
   
-  msg.Tracking()<<"--------------------------------------------------------------"<<std::endl
+  msg_Tracking()<<"--------------------------------------------------------------"<<std::endl
 		<<"sLepton Masses :"<<std::endl;
   for (short int i=0;i<5;++i) {
-    msg.Tracking()<<"sLeptons["<<i<<"] : "<<dabs(msleptons[i])<<" ,";
-    if (i==2) msg.Tracking()<<endl;
+    msg_Tracking()<<"sLeptons["<<i<<"] : "<<dabs(msleptons[i])<<" ,";
+    if (i==2) msg_Tracking()<<endl;
   }
-  msg.Tracking()<<"sLeptons["<<5<<"] : "<<dabs(msleptons[5])<<" ,"<<std::endl;
+  msg_Tracking()<<"sLeptons["<<5<<"] : "<<dabs(msleptons[5])<<" ,"<<std::endl;
    
   CMatrix Zl = CMatrix(6);
   for (short int i=0;i<6;i++) {
@@ -792,6 +792,6 @@ void Isajet_Fortran_Interface::GluinoMasses()
   flav = Flavour(kf::Gluino);flav.SetMass(dabs(mGL));
   if (mGL<0) flav.SetMassSign(-1);
   
-  msg.Tracking()<<"--------------------------------------------------------------"<<std::endl
+  msg_Tracking()<<"--------------------------------------------------------------"<<std::endl
 		<<"Gluino mass : "<<dabs(mGL)<<std::endl;
 }

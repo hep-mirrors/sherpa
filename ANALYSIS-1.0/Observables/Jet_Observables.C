@@ -185,7 +185,7 @@ void Jet_Differential_Rates::Evaluate(const Blob_List & blobs,double weight, int
   Blob_Data_Base * ktdrs=(*p_ana)["KtDeltaRs"];
   std::string key="KtJetrates(1)"+m_listname;
   if (ktdrs) {
-    std::vector<double> * drs=ktdrs->Get<std::vector<double> *>();
+//     std::vector<double> * drs=ktdrs->Get<std::vector<double> *>();
     key="KtJetrates(1)"+m_listname;
   }
 

@@ -495,7 +495,7 @@ void Amplitude_Handler::Kicker(int* Switch_Vector,int ngraph,std::string pID)
     for(;from;) {
       from>>i>>sw;
       Switch_Vector[i-1] =sw;
-      if (sw==0) msg.Tracking()<<"Amplitude_Handler::Kicker : Diagram "<<i<<" kicked!"<<endl;
+      if (sw==0) msg_Tracking()<<"Amplitude_Handler::Kicker : Diagram "<<i<<" kicked!"<<endl;
       if (i==ngraph) break;
     }
     return;

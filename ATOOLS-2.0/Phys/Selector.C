@@ -178,28 +178,28 @@ bool Selector_Data::ReadInData(std::string filename) {
 
 void Selector_Data::ControlOutput() {
   if (data.size()<=0) {
-    msg.Tracking()<<"Selector_Data empty."<<endl;
+    msg_Tracking()<<"Selector_Data empty."<<endl;
     return;
   }
-  msg.Debugging()<<"Selector_Data : "<<endl;
+  msg_Debugging()<<"Selector_Data : "<<endl;
   for (size_t i=0;i<data.size();i++) {
     switch (data[i].type) {
-    case 1:  msg.Debugging()<<"Jet_Finder : "; break;
-    case 2:  msg.Debugging()<<"Cone_Finder: "; break;
-    case 11: msg.Debugging()<<"Energies   : "; break;
-    case 12: msg.Debugging()<<"PTs        : "; break;
-    case 13: msg.Debugging()<<"Rapidities : "; break;
-    case 14: msg.Debugging()<<"BeamAngles : "; break;
-    case 15: msg.Debugging()<<"ETs        : "; break;
-    case 16: msg.Debugging()<<"PseudoRaps : "; break;  
-    case 21: msg.Debugging()<<"Masses     : "; break;
-    case 22: msg.Debugging()<<"Angles     : "; break;
-    case 32: msg.Debugging()<<"SummedPT   : "; break;
+    case 1:  msg_Debugging()<<"Jet_Finder : "; break;
+    case 2:  msg_Debugging()<<"Cone_Finder: "; break;
+    case 11: msg_Debugging()<<"Energies   : "; break;
+    case 12: msg_Debugging()<<"PTs        : "; break;
+    case 13: msg_Debugging()<<"Rapidities : "; break;
+    case 14: msg_Debugging()<<"BeamAngles : "; break;
+    case 15: msg_Debugging()<<"ETs        : "; break;
+    case 16: msg_Debugging()<<"PseudoRaps : "; break;  
+    case 21: msg_Debugging()<<"Masses     : "; break;
+    case 22: msg_Debugging()<<"Angles     : "; break;
+    case 32: msg_Debugging()<<"SummedPT   : "; break;
     } 
-    msg.Debugging()<<data[i].min<<" ... "<<data[i].max<<" : ";
-    for (size_t j=0;j<(data[i].flavs).size();j++) msg.Debugging()<<(data[i]).flavs[j]<<" ";
-    if (data[i].type == 14) msg.Debugging()<<" with "<<data[i].help;
-    msg.Debugging()<<endl;
+    msg_Debugging()<<data[i].min<<" ... "<<data[i].max<<" : ";
+    for (size_t j=0;j<(data[i].flavs).size();j++) msg_Debugging()<<(data[i]).flavs[j]<<" ";
+    if (data[i].type == 14) msg_Debugging()<<" with "<<data[i].help;
+    msg_Debugging()<<endl;
   }
 }
 

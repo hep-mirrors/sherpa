@@ -33,7 +33,7 @@ Final_Selector::Final_Selector(const std::string & inlistname,
   m_inlistname(inlistname),m_outlistname(outlistname),m_ownlist(false), m_extract(false),
   m_mode(mode), p_jetalg(NULL)
 {
-  msg.Tracking()<<" init Final_Selector("<<inlistname<<","<<outlistname<<","<<mode<<")"<<std::endl;
+  msg_Tracking()<<" init Final_Selector("<<inlistname<<","<<outlistname<<","<<mode<<")"<<std::endl;
   m_splitt_flag = false;
   switch (mode) {
     case 1: p_jetalg = new Durham_Algorithm(); break;
@@ -46,7 +46,7 @@ Final_Selector::Final_Selector(const std::string & inlistname,
 
 void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data & fs) 
 {
-  msg.Tracking()<<" AddSelector("<<fl<<","<<fs<<")"<<std::endl;
+  msg_Tracking()<<" AddSelector("<<fl<<","<<fs<<")"<<std::endl;
   Final_Data_Map::iterator it = m_fmap.find(fl);
   if (it==m_fmap.end()) {
     m_fmap.insert(std::make_pair(fl,fs));
@@ -65,7 +65,7 @@ void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data &
 void Final_Selector::AddSelector(const Flavour & flav1, const Flavour & flav2, 
 				 const Final_Selector_Data & fs) 
 {
-  msg.Tracking()<<" AddSelector("<<flav1<<","<<flav2<<","<<fs<<")"<<std::endl;
+  msg_Tracking()<<" AddSelector("<<flav1<<","<<flav2<<","<<fs<<")"<<std::endl;
   std::pair<Flavour,Flavour> flavs(flav1,flav2);
   Final_Correlator_Map::iterator it = m_cmap.find(flavs);
   if (it==m_cmap.end()) {
@@ -89,7 +89,7 @@ void Final_Selector::AddSelector(const Flavour & flav1, const Flavour & flav2,
 
 void Final_Selector::AddSelector(const Flavour & fl, int min, int max) 
 {
-  msg.Tracking()<<" AddSelector("<<fl<<", n("<<min<<","<<max<<") )"<<std::endl;
+  msg_Tracking()<<" AddSelector("<<fl<<", n("<<min<<","<<max<<") )"<<std::endl;
   Final_Data_Map::iterator it = m_fmap.find(fl);
   if (it==m_fmap.end()) {
     Final_Selector_Data fs;
@@ -106,7 +106,7 @@ void Final_Selector::AddSelector(const Flavour & fl, int min, int max)
 
 void Final_Selector::AddKeepFlavour(const Flavour & fl) 
 {
-  msg.Tracking()<<" AddKeepFlavour("<<fl<<")"<<std::endl;
+  msg_Tracking()<<" AddKeepFlavour("<<fl<<")"<<std::endl;
   if (fl==Flavour(kf::lepton)) {
     for (int i=0;i<fl.Size();++i) AddKeepFlavour(fl[i]);
   }
@@ -278,6 +278,14 @@ void Final_Selector::Extract(Particle_List * pl)
   }
 }
 
+class Order_PT {
+public:
+  int operator()(const Particle * a, const Particle * b) {
+    if (a->Momentum().PPerp2()>b->Momentum().PPerp2()) return 1;
+    return 0;
+  }
+};
+
 
 void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
   Particle_List * pl_in = p_ana->GetParticleList(m_inlistname);
@@ -349,6 +357,8 @@ void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
       *itp = new Particle(**itp);
     }
   }
+  
+  std::sort(pl_out->begin(),pl_out->end(),Order_PT());
   
   p_ana->AddParticleList(m_outlistname,pl_out);
 }

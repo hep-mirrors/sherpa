@@ -167,10 +167,10 @@ void Combined_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts)
 
 void Combined_Selector::Output()
 {
-  msg.Debugging()<<"========================================="<<std::endl
+  msg_Debugging()<<"========================================="<<std::endl
 			    <<"Efficiency of the Selector : "<<m_name<<std::endl;
   for (size_t i=0; i<m_sels.size(); ++i) m_sels[i]->Output();
-  msg.Debugging()<<"========================================="<<std::endl;
+  msg_Debugging()<<"========================================="<<std::endl;
 }
 
 Selector_Base * Combined_Selector::GetSelector(std::string name)

@@ -141,7 +141,7 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file,bool sher
     pyinit(frame.c_str(),beam[0].c_str(),beam[1].c_str(),win);
   }
   // replacement ends here
-  if (ATOOLS::msg.LevelIsTracking()) ListLundParameters();
+  if (ATOOLS::msg.LevelIsDebugging()) ListLundParameters();
   if (!sherpa) {
     int helpi;
     if (reader->ReadFromFile(helpi,"EXPORT_ALPHAS")) s_exportas=(bool)helpi;
@@ -199,7 +199,7 @@ bool Lund_Interface::ConvertParticles(std::map<int,ATOOLS::Particle*> &converted
 {
   for (int i=0;i<hepevt.nhep;++i) {
     if (ATOOLS::msg.LevelIsTracking()) {
-      ATOOLS::msg.Debugging()<<i<<" "<<hepevt.isthep[i]<<" "<<hepevt.idhep[i]<<" "
+      msg_Debugging()<<i<<" "<<hepevt.isthep[i]<<" "<<hepevt.idhep[i]<<" "
 			     <<hepevt.jmohep[i][0]<<" "
 			     <<hepevt.jdahep[i][0]<<" "<<hepevt.jdahep[i][1]<<" "
 			     <<"("<<hepevt.phep[i][0]<<","<<hepevt.phep[i][1]<<","
@@ -462,7 +462,7 @@ void Lund_Interface::Error(const int error)
 		       <<ATOOLS::rpa.gen.NumberOfDicedEvents()<<"."
 		       <<ATOOLS::om::reset<<std::endl;
     if (ATOOLS::msg.LevelIsDebugging()) {
-      ATOOLS::msg.Tracking()<<*s_bloblist<<std::endl;
+      msg_Tracking()<<*s_bloblist<<std::endl;
       pylist(2);
     }
   }

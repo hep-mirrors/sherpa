@@ -195,7 +195,7 @@ int Random::WriteOutStatus(const char * filename){
     p_outstream = 0;
   }
   if (p_outstream == 0){
-    msg.Tracking()<<"Random::WriteOutStatus : Saving Random Number Generator Status to "<<filename<<endl;
+    msg_Tracking()<<"Random::WriteOutStatus : Saving Random Number Generator Status to "<<filename<<endl;
     long int count=0;
     std::ifstream *myinstream = new std::ifstream(filename,std::ios::in);
     if (myinstream->good()) {
@@ -226,7 +226,7 @@ int Random::WriteOutStatus(const char * filename){
 
 void Random::ReadInStatus(const char * filename, long int index){
   // read in every Statusregister of Random Number generator
-  msg.Info()<<"Random::ReadInStatus from "<<filename<<" index "<<index<<endl;
+  msg_Info()<<"Random::ReadInStatus from "<<filename<<" index "<<index<<endl;
   std::ifstream myinstream(filename);
   long int count;
   if (myinstream.good()) {

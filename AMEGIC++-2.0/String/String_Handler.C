@@ -61,7 +61,7 @@ bool String_Handler::SearchValues(const int _gen_str,string & pID,Basic_Sfuncs* 
     val = Set_Values(vpID,_BS);
   }
   if (val!=0) {
-    msg.Info()<<vpID<<" loaded."<<endl;
+    msg_Info()<<vpID<<" loaded."<<endl;
     val->SetCouplFlav(*sgen->GetCouplList());
     working = 1;
     return 1;
@@ -152,7 +152,7 @@ void String_Handler::Complete(Helicity* hel)
   working = 1;
 
   if (val!=0) return;
-  msg.Info()<<"In String_Handler::Complete : this may take some time...."<<endl;
+  msg_Info()<<"In String_Handler::Complete : this may take some time...."<<endl;
 
   //connect sgenZ to treeZ
   list<sknot*> endpoint;

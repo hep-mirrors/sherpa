@@ -45,33 +45,33 @@ Exception_Handler::s_terminatorobjects=std::vector<Terminator_Object*>();
 
 bool Exception_Handler::ApproveTerminate()
 {
-  if (s_print) msg.Tracking()<<"Exception_Handler::ApproveTerminate(): Asking for termination ..."<<std::endl;
+  if (s_print) msg_Tracking()<<"Exception_Handler::ApproveTerminate(): Asking for termination ..."<<std::endl;
   if (s_testerfunctions.size()==0 && s_testerobjects.size()==0) {
-    if (s_print) msg.Tracking()<<"... approved."<<std::endl;
+    if (s_print) msg_Tracking()<<"... approved."<<std::endl;
     return true;
   }
   if (s_testerfunctions.size()>0) {
     for (size_t i=0;i<s_testerobjects.size();++i) if (s_testerfunctions[i]()) {
-      if (s_print) msg.Tracking()<<"... approved."<<std::endl;
+      if (s_print) msg_Tracking()<<"... approved."<<std::endl;
       return true;
     }
   }
   if (s_testerobjects.size()>0) {
     for (size_t i=0;i<s_testerobjects.size();++i) if (s_testerobjects[i]->ApproveTerminate()) {
-      if (s_print) msg.Tracking()<<"... approved."<<std::endl;
+      if (s_print) msg_Tracking()<<"... approved."<<std::endl;
       return true;
     }
   }
-  if (s_print) msg.Tracking()<<"... refused."<<std::endl;
+  if (s_print) msg_Tracking()<<"... refused."<<std::endl;
   return false;
 }
 
 void Exception_Handler::PrepareTerminate()
 {
-  if (s_print) msg.Tracking()<<"Exception_Handler::PrepareTerminate(): Preparing termination ..."<<std::endl;
+  if (s_print) msg_Tracking()<<"Exception_Handler::PrepareTerminate(): Preparing termination ..."<<std::endl;
   for (size_t i=0;i<s_terminatorobjects.size();++i) s_terminatorobjects[i]->PrepareTerminate(); 
   for (size_t i=0;i<s_terminatorfunctions.size();++i) s_terminatorfunctions[i](); 
-  if (s_print) msg.Tracking()<<"... prepared."<<std::endl;
+  if (s_print) msg_Tracking()<<"... prepared."<<std::endl;
 }
 
 void Exception_Handler::Exit(int exitcode)

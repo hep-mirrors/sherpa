@@ -10,7 +10,7 @@
 namespace ATOOLS {
 
   template <class Argument_Type,class Result_Type>
-  class Data_To_Function: public std::unary_function<Argument_Type,Result_Type> {
+  class Data_To_Function {
   public:
 
     enum MonotonyID { Increasing =  1,
@@ -215,7 +215,7 @@ namespace ATOOLS {
 
     ResultType   DifferentialY(ArgumentType x);
     ArgumentType DifferentialX(ResultType y);
-
+    
     ResultType   Y(ArgumentType x,AcquisitionModeID tempmode = AUnknown);
     ArgumentType X(ResultType y,AcquisitionModeID tempmode = AUnknown);
 

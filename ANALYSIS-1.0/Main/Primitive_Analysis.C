@@ -20,7 +20,7 @@ Primitive_Analysis::Primitive_Analysis(const std::string _name, const int mode) 
   m_mode = mode;
 
   m_name = std::string("Analysis : ") + _name;
-  msg.Tracking()<<" Initializing Primitive_Analysis : "<<m_name<<std::endl;
+  msg_Tracking()<<" Initializing Primitive_Analysis : "<<m_name<<std::endl;
 }
 
 Primitive_Analysis::Primitive_Analysis(const int mode) :
@@ -29,7 +29,7 @@ Primitive_Analysis::Primitive_Analysis(const int mode) :
   m_mode = mode;
 
   m_name = std::string("Analysis : noname");
-  msg.Tracking()<<" Initializing Primitive_Analysis : "<<m_name<<std::endl;
+  msg_Tracking()<<" Initializing Primitive_Analysis : "<<m_name<<std::endl;
 }
 
 Primitive_Analysis::~Primitive_Analysis()

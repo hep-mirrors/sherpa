@@ -44,7 +44,7 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
       std::string grid_path = dataread->GetValue<string>("PDF_GRID_PATH",std::string("MRST99Grid"));
       int         version   = dataread->GetValue<int>("PDF_SET_VERSION",1);
       if (set==std::string("MRST99")) {
-	msg.Tracking()<<"Initialize MRST99 : "<<version<<" from "<<grid_path<<endl;
+	msg_Tracking()<<"Initialize MRST99 : "<<version<<" from "<<grid_path<<endl;
 	pdfbase = new PDF_MRST99(bunch_particle,version,grid_path);
       }
       else if ((set==std::string("cteq6m") ||
@@ -52,8 +52,8 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 	  set==std::string("cteq6l") ||
 	  set==std::string("cteq6l1")) && grid_path==std::string("CTEQ6Grid") ) {
 	  
-	  msg.Tracking()<<"Initialize CTEQ6 : "<<version<<" from "<<grid_path<<endl;
-	  msg.Tracking()<<"Initialize CTEQ6_Fortran_Interface : "<<set<<"/"<<version<<" from "<<grid_path<<endl;
+	  msg_Tracking()<<"Initialize CTEQ6 : "<<version<<" from "<<grid_path<<endl;
+	  msg_Tracking()<<"Initialize CTEQ6_Fortran_Interface : "<<set<<"/"<<version<<" from "<<grid_path<<endl;
 	  pdfbase = new CTEQ6_Fortran_Interface(bunch_particle,set,version,grid_path);
       }
       else if (set==std::string("Alekhin_100") ||
@@ -67,7 +67,7 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 	       set==std::string("cteq6")  ||
 	       set==std::string("cteq6l")  ||
 	       set==std::string("cteq6ll")) {
-	msg.Tracking()<<"Initialize "<<set<<" : "<<version<<" from "<<grid_path<<endl;
+	msg_Tracking()<<"Initialize "<<set<<" : "<<version<<" from "<<grid_path<<endl;
 	pdfbase = new LHAPDF_Fortran_Interface(bunch_particle,set,version,grid_path,m_initlhapdf);
       }
       if (pdfbase!=NULL) {

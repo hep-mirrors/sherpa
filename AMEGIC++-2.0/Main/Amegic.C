@@ -41,7 +41,7 @@ Amegic::Amegic(std::string _path,std::string _file,
 
 double Amegic::OverflowStatistics(Process_Base * proc,int level)
 {
-  if (level==0) msg.Tracking()<<"Amegic::OverflowStatistics for : "<<std::endl;
+  if (level==0) msg_Tracking()<<"Amegic::OverflowStatistics for : "<<std::endl;
   if (proc==NULL) {
     if (p_procs==NULL) return 0.;
     proc=p_procs;
@@ -49,32 +49,32 @@ double Amegic::OverflowStatistics(Process_Base * proc,int level)
   double sum=0.;
   if ((*proc)[0]==proc) {
     sum=proc->Overflow()/proc->Max();
-    for (int i=0;i<level;++i) msg.Tracking()<<"  ";
-    msg.Tracking()<<" "<<proc->Name()<<" "<<sum<<std::endl;
+    for (int i=0;i<level;++i) msg_Tracking()<<"  ";
+    msg_Tracking()<<" "<<proc->Name()<<" "<<sum<<std::endl;
   }
   else {
     for (size_t i=0; i<proc->Size();++i) {
       sum+=OverflowStatistics((*proc)[i],level+1);
     }
-    for (int i=0;i<level;++i) msg.Tracking()<<"  ";
-    msg.Tracking()<<" "<<proc->Name()<<" "<<sum<<std::endl;
+    for (int i=0;i<level;++i) msg_Tracking()<<"  ";
+    msg_Tracking()<<" "<<proc->Name()<<" "<<sum<<std::endl;
   }
   if (level==0 && sum!=0. && !msg.LevelIsTracking()) {
     int save_msg = msg.Level();
     msg.SetLevel(4);
-    msg.Tracking()<<"Amegic::OverflowStatistics for : "<<std::endl;
+    msg_Tracking()<<"Amegic::OverflowStatistics for : "<<std::endl;
     sum=0.;
     if ((*proc)[0]==proc) {
       sum=proc->Overflow()/proc->Max();
-      for (int i=0;i<level;++i) msg.Tracking()<<"  ";
-      msg.Tracking()<<" "<<proc->Name()<<" "<<sum<<std::endl;
+      for (int i=0;i<level;++i) msg_Tracking()<<"  ";
+      msg_Tracking()<<" "<<proc->Name()<<" "<<sum<<std::endl;
     }
     else {
       for (size_t i=0; i<proc->Size();++i) {
 	sum+=OverflowStatistics((*proc)[i],level+1);
       }
-      for (int i=0;i<level;++i) msg.Tracking()<<"  ";
-      msg.Tracking()<<" "<<proc->Name()<<" "<<sum<<std::endl;
+      for (int i=0;i<level;++i) msg_Tracking()<<"  ";
+      msg_Tracking()<<" "<<proc->Name()<<" "<<sum<<std::endl;
     }
     msg.SetLevel(save_msg);
   }
@@ -622,7 +622,7 @@ bool Amegic::UnweightedEvent()
 
 void Amegic::SingleEvents() {
   for (int i=1;i<=rpa.gen.NumberOfEvents();++i) {
-    msg.Events()<<"------------------------------------------------------------"<<endl
+    msg_Events()<<"------------------------------------------------------------"<<endl
 		<<"----------------"<<i<<" th Event --------------------------"<<endl
 		<<"------------------------------------------------------------"<<endl;
     if (p_procs->OneEvent()) {

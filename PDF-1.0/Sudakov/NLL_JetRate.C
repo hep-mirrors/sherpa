@@ -26,7 +26,7 @@ NLL_JetRate::~NLL_JetRate()
 
 void NLL_JetRate::Init() 
 {
-  msg.Debugging()<<" NLL_JetRate::Init "<<std::endl
+  msg_Debugging()<<" NLL_JetRate::Init "<<std::endl
 		 <<" qmin ="<<m_qmin<<std::endl
 		 <<" qmax ="<<m_qmax<<std::endl;
   m_qmin_b=m_qmin;
@@ -92,7 +92,7 @@ void NLL_JetRate::InitIntegral(nll::code id, nll::code int_id, std::string name)
   fun->Init(*this,m_qmin,m_qmax,180);
   integrals[name]=fun;
 
-  msg.Debugging()<<"NLL_JetRate::InitIntegral : "<<std::endl
+  msg_Debugging()<<"NLL_JetRate::InitIntegral : "<<std::endl
 		 <<Integrate(id,m_qmax)<<" vs. "<<(*integrals[name])(m_qmax)
 		 <<" and "<<Integrate(id,sqrt(0.5)*m_qmax)<<" vs. "
 		 <<(*integrals[name])(sqrt(0.5)*m_qmax)<<std::endl;

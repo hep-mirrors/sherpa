@@ -36,8 +36,8 @@ void Splitting_Group::SelectOne() {
 
 
 void Splitting_Group::PrintStat(int mode) {
-  if (mode>0) for(int i=0;i<mode;++i) ATOOLS::msg.Debugging()<<' ';
-  ATOOLS::msg.Debugging()<<"Splitting Group:"<<GetFlA()<<" -> "<<GetFlB()<<" + "<<GetFlC()<<std::endl<<std::endl;
+  if (mode>0) for(int i=0;i<mode;++i) msg_Debugging()<<' ';
+  msg_Debugging()<<"Splitting Group:"<<GetFlA()<<" -> "<<GetFlB()<<" + "<<GetFlC()<<std::endl<<std::endl;
   for (SplFunIter iter(m_group);iter();++iter) {
     iter()->PrintStat(mode+4);
   }

@@ -18,7 +18,7 @@ using namespace PDF;
 Environment::Environment(std::string _path,std::string _file) : 
   m_path(_path), m_file(_file)
 {
-  msg.Tracking()<<"Initialize Initialization_Handler for "<<m_path+m_file<<std::endl;
+  msg_Tracking()<<"Initialize Initialization_Handler for "<<m_path+m_file<<std::endl;
   p_dataread = new Data_Read(m_path+m_file);
   m_modeldat = p_dataread->GetValue("MODEL_DATA_FILE",std::string("Model.dat"));
   m_beamdat  = p_dataread->GetValue("BEAM_DATA_FILE",std::string("Beam.dat"));
@@ -48,7 +48,7 @@ void Environment::InitializeTheEnvironment() {
 
 bool Environment::InitializeTheModel()
 {
-  msg.Debugging()<<"Initialized Model_Initialization for "<<m_path<<m_modeldat<<std::endl;
+  msg_Debugging()<<"Initialized Model_Initialization for "<<m_path<<m_modeldat<<std::endl;
   Data_Read     * dataread     = new Data_Read(m_path+m_modeldat);
   Model_Handler * modelhandler = new MODEL::Model_Handler();
   p_model                      = modelhandler->GetModel(dataread,m_path,m_modeldat);
@@ -67,7 +67,7 @@ bool Environment::InitializeTheModel()
 
 bool Environment::InitializeTheBeams() 
 {
-  msg.Debugging()<<"Initialized Beam_Initialization for "<<m_path<<m_beamdat<<std::endl;
+  msg_Debugging()<<"Initialized Beam_Initialization for "<<m_path<<m_beamdat<<std::endl;
   Data_Read * dataread = new Data_Read(m_path+m_beamdat);
   p_beamspectra        = new Beam_Spectra_Handler(dataread);
   for (short int i=0;i<2;i++) m_beam_particles[i] = p_beamspectra->GetBeam(i)->Beam();
@@ -79,7 +79,7 @@ bool Environment::InitializeTheBeams()
 
 bool Environment::InitializeThePDFs() 
 {
-  msg.Debugging()<<"Initialize ISR_Initialization for "<<m_path<<m_isrdat<<std::endl;
+  msg_Debugging()<<"Initialize ISR_Initialization for "<<m_path<<m_isrdat<<std::endl;
   Data_Read * dataread     = new Data_Read(m_path+m_isrdat);
   p_isrhandler             = NULL;
   PDF_Handler * pdfhandler = new PDF_Handler();
@@ -90,11 +90,11 @@ bool Environment::InitializeThePDFs()
   for (int i=0;i<2;++i) {
     pdfbase = pdfhandler->GetPDFLib(dataread,bunch_particles[i],i);
     if (pdfbase==NULL) {
-      msg.Debugging()<<"No ISR for beam "<<i+1<<" : Initialize Intact for "<<bunch_particles[i]<<std::endl;
+      msg_Debugging()<<"No ISR for beam "<<i+1<<" : Initialize Intact for "<<bunch_particles[i]<<std::endl;
       isrbases[i]          = new Intact(bunch_particles[i]);     
     }
     else {
-      msg.Debugging()<<"ISR for beam "<<i+1<<" : Initialize SF for "<<bunch_particles[i]<<std::endl;
+      msg_Debugging()<<"ISR for beam "<<i+1<<" : Initialize SF for "<<bunch_particles[i]<<std::endl;
       isrbases[i]          = new Structure_Function(pdfbase,bunch_particles[i]);
     }
   }

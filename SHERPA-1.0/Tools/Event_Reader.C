@@ -133,7 +133,7 @@ bool Event_Reader::ReadInEvent(Blob_List * blobs)
 	if (buffer.find("Next file  =")!=std::string::npos) {
 	  pos = buffer.find("Next file  =");
 	  tmp = buffer.substr(pos+12);
-	  msg.Info()<<"End of file. Go to next file |"<<tmp<<"|"<<std::endl;
+	  msg_Info()<<"End of file. Go to next file |"<<tmp<<"|"<<std::endl;
 	  while(tmp.length()>0) {
 	    if (tmp[0]==' ') tmp = tmp.substr(1);
 	    else {

@@ -234,7 +234,7 @@ bool Initial_State_Shower::TestShower(Tree ** trees)
     InitTwoTrees(trees,E2);
     if (!PerformShower(trees,0)) return 0;
   }
-  msg.Events()<<"Initial_State_Shower::TestShower : "
+  msg_Events()<<"Initial_State_Shower::TestShower : "
 	      <<"Terminated loops over events successfully."<<std::endl;
   return 1;
 }

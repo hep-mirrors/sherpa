@@ -5,6 +5,10 @@
 #include "Exception.H"
 #include "Run_Parameter.H"
 
+#ifdef PROFILE__all
+#include "prof.hh"
+#endif
+
 using namespace SHERPA;
 
 int main(int argc,char* argv[]) 
@@ -19,6 +23,9 @@ int main(int argc,char* argv[])
   signal(SIGTERM,ATOOLS::Exception_Handler::SignalHandler);
   signal(SIGXCPU,ATOOLS::Exception_Handler::SignalHandler);
   try {
+#ifdef PROFILE__all    
+    set_prof();
+#endif
     Sherpa Generator;
     Generator.InitializeTheRun(argc,argv);
     int nevt=ATOOLS::rpa.gen.NumberOfEvents();
@@ -30,9 +37,9 @@ int main(int argc,char* argv[])
       Generator.InitializeTheEventHandler();
       for (int i=1;i<=nevt;i++) {
 	if (i%500==0) {
-	  ATOOLS::msg.Info()<<" Event "<<i<<std::endl;      
+	  msg_Info()<<" Event "<<i<<std::endl;      
 	}
-	if (Generator.GenerateOneEvent()) ATOOLS::msg.Events()<<"Sherpa : Passed "<<i<<" events."<<std::endl;
+	if (Generator.GenerateOneEvent()) msg_Events()<<"Sherpa : Passed "<<i<<" events."<<std::endl;
       }
       Generator.SummarizeRun();
     }
@@ -40,6 +47,11 @@ int main(int argc,char* argv[])
 		     <<"Sherpa finished its simulation run with "
 		     <<Generator.NumberOfErrors()<<" errors."<<std::endl
 		     <<"=========================================================================="<<std::endl;
+#ifdef PROFILE__all    
+    std::ofstream *output = new std::ofstream("profile.out",std::ios::out);
+    print_profile(*output);
+    delete output;
+#endif
     return 0;
   }
   catch (ATOOLS::Exception exception) {

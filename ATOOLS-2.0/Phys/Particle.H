@@ -50,7 +50,7 @@ namespace ATOOLS {
     Flavour        Flav() const ;
     const Flavour& RefFlav() const;
     Flow         * GetFlow() const ;
-    int            GetFlow( int ) const ;
+    unsigned int   GetFlow( unsigned int ) const ;
     int            Number() const;
     int            JetNumber() const;
     void   SetMomentum(const Vec4D &);

@@ -7,9 +7,6 @@
 #include "Matrix.H"
 
 namespace ANALYSIS {
-  static bool bigger(const ATOOLS::Vec3D & lhs,const ATOOLS::Vec3D & rhs) {
-    return (lhs.Sqr()>rhs.Sqr()); 
-  };
 
   struct Event_Shape_EE_Data {
     friend std::ostream& operator<<( std::ostream&, const Event_Shape_EE_Data &);

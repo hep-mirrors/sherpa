@@ -73,7 +73,7 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
     unsigned int  mode_dir = 0755;
     mkdir((string("Process/")+m_ptypename).c_str(),mode_dir); 
   }
-  msg.Tracking()<<"Initialized Single_Process : "<<m_name<<"."<<std::endl;
+  msg_Tracking()<<"Initialized Single_Process : "<<m_name<<"."<<std::endl;
 }
 
 
@@ -208,14 +208,14 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_flavours,p_b,model,top,m_orderQCD,m_orderEW,
 				   p_BS,p_shand);
   if (p_ampl->GetGraphNumber()==0) {
-    msg.Tracking()<<"Single_Process::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
+    msg_Tracking()<<"Single_Process::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return -1;
   }
   procs++;
   for (size_t j=0;j<links.size();j++) {
     if (p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler())) {
       if (p_hel->Compare(links[j]->GetHelicity(),m_nin+m_nout)) {
-	msg.Tracking()<<"Single_Process::InitAmplitude : Found compatible process for "<<m_name<<" : "<<links[j]->Name()<<endl;
+	msg_Tracking()<<"Single_Process::InitAmplitude : Found compatible process for "<<m_name<<" : "<<links[j]->Name()<<endl;
 
 	if (!FoundMappingFile(m_libname,m_pslibname)) {
 	  if (IsFile(string("Process/")+m_ptypename+string("/")+links[j]->Name()+string(".map"))) { 
@@ -242,7 +242,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
   case 2 : 
     for (size_t j=0;j<links.size();j++) {
       if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
-	msg.Tracking()<<"Single_Process::InitAmplitude : "<<std::endl
+	msg_Tracking()<<"Single_Process::InitAmplitude : "<<std::endl
 		      <<"   Found an equivalent partner process for "<<m_name<<" : "<<links[j]->Name()<<std::endl
 		      <<"   Map processes."<<std::endl;
 	p_partner = links[j];
@@ -258,7 +258,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
   case 1 :
     for (size_t j=0;j<links.size();j++) {
       if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
-	msg.Tracking()<<"Single_Process::InitAmplitude : "<<std::endl
+	msg_Tracking()<<"Single_Process::InitAmplitude : "<<std::endl
 		      <<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
 	p_partner   = links[j];
 	m_pslibname = links[j]->PSLibName();
@@ -278,7 +278,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
     if (m_gen_str<2) return 1;
     totalsize++;
     if (p_partner!=this) {
-      msg.Tracking()<<"Single_Process::InitAmplitude : "<<std::endl
+      msg_Tracking()<<"Single_Process::InitAmplitude : "<<std::endl
 		    <<"   Strings of process "<<m_name<<" and partner "
 		    <<p_partner->Name()<<" did not fit."<<std::endl
 		    <<"   Have to write new library."<<std::endl;
@@ -308,7 +308,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology * top)
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_flavours,p_b,model,top,m_orderQCD,m_orderEW,
 				   p_BS,p_shand);
   if (p_ampl->GetGraphNumber()==0) {
-    msg.Tracking()<<"Single_Process::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
+    msg_Tracking()<<"Single_Process::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return -1;
   }
   p_ampl->CompleteAmplitudes(m_nin+m_nout,p_flavours,p_b,&m_pol,
@@ -364,7 +364,7 @@ int Single_Process::Tests() {
     p_BS->CalcEtaMu(p_momenta);  
     p_BS->InitGaugeTest(.9);
 
-    msg.Info()<<"Single_Process::Tests for "<<m_name<<std::endl
+    msg_Info()<<"Single_Process::Tests for "<<m_name<<std::endl
 	      <<"   Prepare gauge test and init helicity amplitudes. This may take some time."<<std::endl;
     for (short int i=0;i<p_hel->MaxHel();i++) { 
       if (p_hel->On(i)) {
@@ -417,7 +417,7 @@ int Single_Process::Tests() {
       switchhit++;
     }
   }
-  msg.Tracking()<<"Single_Process::Tests for "<<m_name<<std::endl
+  msg_Tracking()<<"Single_Process::Tests for "<<m_name<<std::endl
 		<<"   Switched off or mapped "<<switchhit<<" helicities."<<std::endl;
 
   M2g    *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_flavours,p_BS));
@@ -437,12 +437,12 @@ int Single_Process::Tests() {
     }
     /*
       else {
-      msg.Debugging()<<"Gauge(1): "<<abs(M2)<<endl
+      msg_Debugging()<<"Gauge(1): "<<abs(M2)<<endl
       <<"Gauge(2): "<<abs(M2g)<<endl;
       if (M2g!=0.)
-      msg.Debugging()<<"Gauge test: "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
+      msg_Debugging()<<"Gauge test: "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
       else
-      msg.Debugging()<<"Gauge test: "<<0.<<"%"<<endl;
+      msg_Debugging()<<"Gauge test: "<<0.<<"%"<<endl;
       }
     */
   }
@@ -560,7 +560,7 @@ int Single_Process::CheckLibraries() {
   if (m_gen_str==0) return 1;
   if (p_shand->IsLibrary()) return 1;
 
-  msg.Info()<<"Single_Process::CheckLibraries : Looking for a suitable library. This may take some time."<<std::endl;
+  msg_Info()<<"Single_Process::CheckLibraries : Looking for a suitable library. This may take some time."<<std::endl;
   char help[20];
   String_Handler * shand1;
   shand1      = new String_Handler(p_shand->Get_Generator());
@@ -651,7 +651,7 @@ void Single_Process::WriteLibrary()
   p_shand->Output(p_hel,m_ptypename+string("/")+m_libname);
   CreateMappingFile();
   m_newlib=true;
-  msg.Info()<<"Single_Process::WriteLibrary : "<<std::endl
+  msg_Info()<<"Single_Process::WriteLibrary : "<<std::endl
 	    <<"   Library for "<<m_name<<" has been written, name is "<<m_libname<<std::endl;
   system("sync");
 }
@@ -757,7 +757,7 @@ bool Single_Process::CreateChannelLibrary()
 					   m_pslibname,p_flavours,this); 
 
   if (newch>0) {
-    msg.Tracking()<<"Single_Process::CreateChannelLibrary() :"<<std::endl
+    msg_Tracking()<<"Single_Process::CreateChannelLibrary() :"<<std::endl
 		  <<"   "<<p_pshandler->NumberOfFSRIntegrators()<<" new channels produced for "
 		  <<m_pslibname<<". After program termination please enter \"makelibs\" and rerun."<<endl;
     return 0;
@@ -817,7 +817,7 @@ void Single_Process::SetTotal(int flag, int depth)  {
     }
   }
   if (m_nin==1) {
-    msg.Info()<<"Total width for "<<m_name<<" : "
+    msg_Info()<<"Total width for "<<m_name<<" : "
 	      <<m_totalxs<<" GeV"
 	      <<" +/- "<<m_totalerr/m_totalxs*100.<<"%, max : "<<m_max<<endl;
   }
@@ -830,7 +830,7 @@ void Single_Process::SetTotal(int flag, int depth)  {
   ------------------------------------------------------------------------------*/
 
 bool Single_Process::CalculateTotalXSec(std::string _resdir) { 
-  msg.Info()<<"In Single_Process::CalculateTotalXSec("<<_resdir<<") for "<<m_name<<endl; 
+  msg_Info()<<"In Single_Process::CalculateTotalXSec("<<_resdir<<") for "<<m_name<<endl; 
   
   string _name;
   double _totalxs,_totalerr,_max,sum,sqrsum;
@@ -850,7 +850,7 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
 	m_totalsum = sum;
 	m_totalsumsqr = sqrsum;
       }
-      msg.Tracking()<<"Found result : xs for "<<m_name<<" : "
+      msg_Tracking()<<"Found result : xs for "<<m_name<<" : "
 		    <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
 		    <<" +/- "<<m_totalerr/m_totalxs*100.<<"%, max : "<<m_max<<endl;
       from.close();
@@ -882,7 +882,7 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
       std::ofstream to;
       to.open(filename,ios::out);
       WriteOutXSecs(to);
-      msg.Info()<<"Store result : xs for "<<m_name<<" : "
+      msg_Info()<<"Store result : xs for "<<m_name<<" : "
 		<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
 		<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 		<<"       max : "<<m_max<<endl;
@@ -903,7 +903,7 @@ void Single_Process::PrepareTerminate()
   std::ofstream to;
   to.open(m_resultfile.c_str(),ios::out);
   WriteOutXSecs(to);
-  msg.Info()<<"Store result : xs for "<<m_name<<" : "
+  msg_Info()<<"Store result : xs for "<<m_name<<" : "
 	    <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
 	    <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 	    <<"       max : "<<m_max<<endl;
@@ -935,7 +935,7 @@ bool Single_Process::LookUpXSec(double ycut,bool calc,string obs) {
     histo->Extrapolate(ycut,res,1);
     m_totalxs = res[0];
     m_max     = res[1];
-    msg.Info()<<m_name<<" : Set total xsec and max at ycut = "<<ycut
+    msg_Info()<<m_name<<" : Set total xsec and max at ycut = "<<ycut
 	      <<" : "<<endl<<"   "<<m_totalxs<<" / "<<m_max<<endl;
     delete histo;
     delete res;
@@ -1213,9 +1213,9 @@ void Single_Process::OptimizeHelicityWeights()
     m_helalphas[i] /= norm;
   }
 
-  msg.Tracking()<<"After Optimize Helicity Weights for "<<m_name<<" after "<<m_throws<<" throws: "<<std::endl; 
+  msg_Tracking()<<"After Optimize Helicity Weights for "<<m_name<<" after "<<m_throws<<" throws: "<<std::endl; 
   for (i=0;i<m_helnumber;i++) {
-    msg.Tracking()<<i<<" th helicity: "<<m_helnumbers[i]<<"("<<p_hel->Multiplicity(m_helnumbers[i])
+    msg_Tracking()<<i<<" th helicity: "<<m_helnumbers[i]<<"("<<p_hel->Multiplicity(m_helnumbers[i])
 		  <<"), alpha = "<<m_helalphas[i]<<std::endl;
   }
 
@@ -1226,7 +1226,7 @@ void Single_Process::OptimizeHelicityWeights()
     variance = m_helresult/m_throws * sqrt(-variance);
   }
 
-  msg.Tracking()<<"S1X: "<<s1x<<", variance : "<<variance<<std::endl
+  msg_Tracking()<<"S1X: "<<s1x<<", variance : "<<variance<<std::endl
 		<<"result,result2,n: "<<m_helresult<<", "
 		<<m_helresult2<<", "<<m_throws<<std::endl
 		<<"-----------------------------------------------"<<endl;

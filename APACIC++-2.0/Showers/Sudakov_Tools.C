@@ -81,7 +81,7 @@ void Sudakov_Tools::Setscalefac(double t0) {
 }
 
 void Sudakov_Tools::Output() {
-  msg.Debugging()<<"Initialise Sudakov-Tools with scheme : "<<scheme<<std::endl
+  msg_Debugging()<<"Initialise Sudakov-Tools with scheme : "<<scheme<<std::endl
 		 <<"beta0      = "<<beta0<<std::endl
 		 <<"lambda2    = "<<lambda2<<std::endl	
 		 <<"alphaS(MZ) = "
@@ -90,5 +90,5 @@ void Sudakov_Tools::Output() {
 		 <<"alphaS(MZ) = "
 		 <<AlphaS(sqr((Flavour(kf::Z)).Mass()))
 		 <<"  (exact)"<<std::endl;
-  msg.Debugging()<<" scalefac="<<scalefac<<std::endl;
+  msg_Debugging()<<" scalefac="<<scalefac<<std::endl;
 }

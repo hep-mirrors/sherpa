@@ -242,17 +242,17 @@ void Amplitude_Manipulator::ForwardLineOrientation(Point* p,int& sign)
   if (p->prev==0) {
     if (b[p->number]==-1) {
       // ----<---O Orientation
-      // ATOOLS::msg.Debugging()<<p->number<<" is vbar"<<endl;
+      // msg_Debugging()<<p->number<<" is vbar"<<endl;
     }
   }
   if (p->left==0) {
     if (b[p->number]==-1) {
       // ----<---O Orientation
-      // ATOOLS::msg.Debugging()<<p->number<<" is u"<<endl;
+      // msg_Debugging()<<p->number<<" is u"<<endl;
     }
     if (b[p->number]==1) {
       // O----<--- Orientation
-      // ATOOLS::msg.Debugging()<<p->number<<" is v"<<endl;
+      // msg_Debugging()<<p->number<<" is v"<<endl;
     }
     return;
   }
@@ -301,11 +301,11 @@ void Amplitude_Manipulator::ForwardLineOrientation(Point* p,int& sign)
 
   if (minus==-1) {
     sign *= -1;
-    //ATOOLS::msg.Debugging()<<"FL Flavour(-1) opposite to spin flow: "<<p->fl<<";"<<p->t<<endl;
+    //msg_Debugging()<<"FL Flavour(-1) opposite to spin flow: "<<p->fl<<";"<<p->t<<endl;
   }
   else {
     if (p->number>99) {
-      //ATOOLS::msg.Debugging()<<"FL Flavour in spin flow: "<<p->fl<<";"<<p->t<<endl;
+      //msg_Debugging()<<"FL Flavour in spin flow: "<<p->fl<<";"<<p->t<<endl;
     }
   }
 
@@ -325,17 +325,17 @@ void Amplitude_Manipulator::BackwardLineOrientation(Point* p,int& sign)
   if (p->left==0) {  
     if (b[p->number]==-1) {
       // ----<---O Orientation
-      // ATOOLS::msg.Debugging()<<p->number<<" is vbar"<<endl;
+      // msg_Debugging()<<p->number<<" is vbar"<<endl;
     }
     if (b[p->number]==1) {
       // O----<--- Orientation
-      // ATOOLS::msg.Debugging()<<p->number<<" is ubar"<<endl;
+      // msg_Debugging()<<p->number<<" is ubar"<<endl;
     }    
   }
   if (p->prev==0) {  
     if (b[p->number]==-1) {
       // ----<---O Orientation
-      // ATOOLS::msg.Debugging()<<p->number<<" is u"<<endl;
+      // msg_Debugging()<<p->number<<" is u"<<endl;
     }
     return;
   }
@@ -384,11 +384,11 @@ void Amplitude_Manipulator::BackwardLineOrientation(Point* p,int& sign)
 
   if (minus==-1) {
     sign *= -1;
-    // ATOOLS::msg.Debugging()<<"BL Flavour(-1) opposite to spin flow: "<<p->fl<<";"<<p->t<<endl;
+    // msg_Debugging()<<"BL Flavour(-1) opposite to spin flow: "<<p->fl<<";"<<p->t<<endl;
   }
   else {
     if (p->number>99) {
-      // ATOOLS::msg.Debugging()<<"BL Flavour in spin flow             : "<<p->fl<<";"<<p->t<<endl;
+      // msg_Debugging()<<"BL Flavour in spin flow             : "<<p->fl<<";"<<p->t<<endl;
     }
   }
 

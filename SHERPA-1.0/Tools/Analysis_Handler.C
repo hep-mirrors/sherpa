@@ -13,6 +13,17 @@
 #include "Event_Shapes_EE.H"
 #include "Shape_Observables_EE.H"
 #include "Statistics_Observable.H"
+#include "MI_Statistics.H"
+
+#ifdef PROFILE__all
+#define PROFILE__Analysis_Handler
+#endif
+#ifdef PROFILE__Analysis_Handler
+#include "prof.hh"
+#else 
+#define PROFILE_HERE
+#define PROFILE_LOCAL(LOCALNAME)
+#endif
 
 //#include <ctype.h>
 
@@ -78,7 +89,7 @@ int Observable_Data::Specify() {
 Analysis_Handler::Analysis_Handler(std::ifstream * readin, std::string _phase, const std::string & prefix) :
   m_phase(_phase), m_outputpath(std::string("./")+_phase), m_prefix(prefix), p_analysis(NULL)
 {  
-  msg.Info()<<"Initialize new Analysis_Handler for "<<_phase<<std::endl;
+  msg_Info()<<"Initialize new Analysis_Handler for "<<_phase<<std::endl;
   std::string phasemode;
   int  mode  = ANALYSIS::fill_all|ANALYSIS::splitt_jetseeds;
   bool split = false;
@@ -141,6 +152,7 @@ void Analysis_Handler::SetOutputPath(const std::string & path)
 
 void Analysis_Handler::DoAnalysis(ATOOLS::Blob_List * const blist, double weight) 
 {
+  PROFILE_HERE;
   p_analysis->DoAnalysis(blist,weight);
 }
 
@@ -358,7 +370,7 @@ void Analysis_Handler::SetUpObservables()
   std::string type;
 
   for (size_t i=0;i<m_obsdata.size();++i) {
-    msg.Tracking()<<"Try to initialize another observable from read in :"<<std::endl;
+    msg_Tracking()<<"Try to initialize another observable from read in :"<<std::endl;
     od   = m_obsdata[i];
     odn  = od->Specify();
     type = od->type;
@@ -454,14 +466,14 @@ void Analysis_Handler::SetUpObservables()
 	    for (std::map<Flavour,std::string>::iterator flit=m_subsamples.begin();
 		 flit!=m_subsamples.end();flit++) {
 	      if (flit->first==flav && flit->second==listname) { 
-		msg.Tracking()<<"List "<<listname<<" already to be projected out."<<std::endl;
+		msg_Tracking()<<"List "<<listname<<" already to be projected out."<<std::endl;
 		found = true; break; 
 	      }
 	    }
 	  }
 
 	  if (!found) {
-	    msg.Tracking()<<"List "<<listname<<" added to be projected out."<<std::endl;
+	    msg_Tracking()<<"List "<<listname<<" added to be projected out."<<std::endl;
 	    Final_Selector * fsel = new Final_Selector("Analysed",listname,(rpa.gen.Beam1()==Flavour(kf::e)));
 	    fsel->AddKeepFlavour(flav);
 	    p_analysis->AddObservable(fsel);
@@ -545,6 +557,7 @@ void Analysis_Handler::SetUpObservables()
     p_analysis->AddObservable(obs);
   }
   p_analysis->AddObservable(new Statistics_Observable("Analysed"));
+  p_analysis->AddObservable(new MI_Statistics("Analysed"));
   SetUpSubSamples();
 } 
 

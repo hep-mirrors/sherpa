@@ -76,7 +76,7 @@ int All_Processes::InitAllProcesses(Interaction_Model_Base * model,Topology * to
   int totalsize = 0;
   int procs     = 0;
   for (size_t i=0;i<m_procs.size();i++) {
-    msg.Tracking()<<"========================================================="<<endl
+    msg_Tracking()<<"========================================================="<<endl
 		  <<"========================================================="<<endl
 		  <<"Process_Group::InitAmplitude for "<<m_procs[i]->Name()<<endl;
     if (moms) { delete [] moms; moms = 0; }
@@ -99,7 +99,7 @@ int All_Processes::InitAllProcesses(Interaction_Model_Base * model,Topology * to
 
   if (okay) {
     for (size_t i=0;i<links.size();i++) {
-      msg.Tracking()<<"========================================================="<<endl
+      msg_Tracking()<<"========================================================="<<endl
 		    <<"========================================================="<<endl
 		    <<"All_Processes::SetUpIntegrator for "<<links[i]->Name()<<endl;
       if (!(links[i]->SetUpIntegrator()))       okay = 0;
@@ -108,7 +108,7 @@ int All_Processes::InitAllProcesses(Interaction_Model_Base * model,Topology * to
   
   if (okay) {
     for (size_t i=0;i<m_procs.size();i++) {
-      msg.Tracking()<<"========================================================="<<endl
+      msg_Tracking()<<"========================================================="<<endl
 		    <<"========================================================="<<endl
 		    <<"Process_Group::SetUpIntegrator for "<<m_procs[i]->Name()<<endl;
       if (m_procs[i]->Partner()==NULL) {      
@@ -117,10 +117,10 @@ int All_Processes::InitAllProcesses(Interaction_Model_Base * model,Topology * to
     }
   }
 
-  msg.Tracking()<<"All_Processes::InitAllProcesses ";
-  if (okay) msg.Tracking()<<" successful."<<endl
+  msg_Tracking()<<"All_Processes::InitAllProcesses ";
+  if (okay) msg_Tracking()<<" successful."<<endl
 			  <<"  "<<procs<<" processes using "<<totalsize<<" libraries."<<endl;
-       else msg.Tracking()<<" failed."<<endl
+       else msg_Tracking()<<" failed."<<endl
 			  <<"  "<<totalsize<<" libraries "<<" for "
 			  <<procs<<" processes created."<<endl;
   return okay;
@@ -138,7 +138,7 @@ bool All_Processes::CalculateTotalXSec(string _resdir)
 {
   bool okay = 1;
   for (size_t i=0;i<m_procs.size();i++) {
-    msg.Info()<<"All_Processes::CalculateTotalXSec for "<<m_procs[i]->Name()<<endl;
+    msg_Info()<<"All_Processes::CalculateTotalXSec for "<<m_procs[i]->Name()<<endl;
     if (!(m_procs[i]->CalculateTotalXSec(_resdir))) okay = 0;
     else m_totalxs += m_procs[i]->TotalXS();
   }

@@ -131,7 +131,7 @@ void All_Decays::BinaryDecays()
   bool                 skippit;
   DMIterator           dmit;
   for (FlSetIter flit=m_particles.begin();flit!=m_particles.end();++flit) {
-    msg.Tracking()<<"Construct decays for "<<(*flit)<<endl;
+    msg_Tracking()<<"Construct decays for "<<(*flit)<<endl;
     skippit = 0;
     dmit    = m_decays.find((*flit));
     if (dmit->first==(*flit) && dmit->second->IsEvaluated()) skippit = true;

@@ -41,6 +41,8 @@ bool Multiple_Interactions::CheckBlobList(const ATOOLS::Blob_List *bloblist)
     }
     else if ((*bit)->Type()==btp::IS_Shower) {
       m_xmax[(*bit)->Beam()]-=2.0*(*bit)->InParticle(0)->Momentum()[0]/m_ecms;
+//       p_mihandler->ISRHandler()->Extract((*bit)->InParticle(0)->Flav(),
+// 					 (*bit)->InParticle(0)->Momentum()[0],(*bit)->Beam());
     }
   }
   if (m_pperpmax==std::numeric_limits<double>::max()) {
@@ -76,9 +78,13 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
     blob->SetId(bloblist->size());
     bloblist->push_back(blob);
     blob->SetStatus(1);
+//     p_mihandler->ISRHandler()->Reset(0);
+//     p_mihandler->ISRHandler()->Reset(1);
     return true;
   }
   delete blob;
+//   p_mihandler->ISRHandler()->Reset(0);
+//   p_mihandler->ISRHandler()->Reset(1);
   return false;
 }
 

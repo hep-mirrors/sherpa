@@ -89,7 +89,7 @@ void Data_Read::ReadIn(std::string filename, bool ignoremissingfile) {
   file.open(filename.c_str());
   if (!file.good()) {
     if (ignoremissingfile) {
-      msg.Tracking()<<" WARNING parameter file "<<filename<<" does not exist ! "<<std::endl;
+      msg_Tracking()<<" WARNING parameter file "<<filename<<" does not exist ! "<<std::endl;
       m_fileexists=false;
     }
     else {

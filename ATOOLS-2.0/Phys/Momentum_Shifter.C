@@ -34,7 +34,7 @@ double Momentum_Shifter::Lambda2(double sp,double sp1,double sp2)
 { 
   double lambda2=(sp-sp1-sp2)*(sp-sp1-sp2)-4.0*sp1*sp2;
   if (!(lambda2>0.)) {
-    ATOOLS::msg.Tracking()<<"Momentum_Shifter::Lambda2("<<sp<<","<<sp1<<","<<sp2<<"): "
+    msg_Tracking()<<"Momentum_Shifter::Lambda2("<<sp<<","<<sp1<<","<<sp2<<"): "
 			  <<"\\Lambda^2(s,s_1,s_2) < 0."<<std::endl;
   }
   return lambda2;
@@ -56,7 +56,7 @@ bool Momentum_Shifter::DetermineDirection()
   if (m_setshift && !m_setdirection) {
     double abs=Vec3D(m_shift).Abs();
     if (abs==0.0) {
-      msg.Tracking()<<"Momentum_Shifter::DetermineDirection(): "
+      msg_Tracking()<<"Momentum_Shifter::DetermineDirection(): "
 		    <<"Shift has vanishing 3-momentum. Abort."<<std::endl;
       return false;
     }
@@ -92,7 +92,7 @@ bool Momentum_Shifter::CalculateSPerp()
     if (!m_setsp[i]) {
       m_sp[i]=(m_pold[i]-m_pperp[i]).Abs2();
       if (m_sp[i]<0.0) {
-	msg.Tracking()<<"Momentum_Shifter::CalculateSPerp(): "
+	msg_Tracking()<<"Momentum_Shifter::CalculateSPerp(): "
 		      <<"s_{\\perp "<<i<<"} < 0. Abort."<<std::endl;
 	return false;
       }
@@ -100,7 +100,7 @@ bool Momentum_Shifter::CalculateSPerp()
   }
   m_sp[0]=(m_pnew[0]-m_pperp[0]).Abs2();
   if (m_sp[0]<0.0) {
-    msg.Tracking()<<"Momentum_Shifter::CalculateSPerp(): "
+    msg_Tracking()<<"Momentum_Shifter::CalculateSPerp(): "
 		  <<"s_\\perp < 0. Abort."<<std::endl;
     return false;
   }
@@ -111,7 +111,7 @@ bool Momentum_Shifter::ConstructMomenta()
 {
   double E1, E2, plong1, plong2, lambda2=Lambda2(m_sp[0],m_sp[1],m_sp[2]);
   if (lambda2<0.) {
-    ATOOLS::msg.Tracking()<<"Momentum_Shifter::ConstructMomenta(..): "
+    msg_Tracking()<<"Momentum_Shifter::ConstructMomenta(..): "
 			  <<"\\Lambda^2("<<m_sp[0]<<","<<m_sp[1]<<","
 			  <<m_sp[2]<<") < 0. Cannot shift momenta."<<std::endl;
     return false;
@@ -148,7 +148,7 @@ bool Momentum_Shifter::Boost(Particle *const particle,const size_t catcher)
 {
   if (m_boosted.find(particle)!=m_boosted.end()) return true;
   if (catcher>=m_maxdepth) {
-    msg.Tracking()<<"Momentum_Shifter::Boost(..): "
+    msg_Tracking()<<"Momentum_Shifter::Boost(..): "
 		  <<"Nesting of event structure is deeper than "<<m_maxdepth
 		  <<" levels.\n   Cannot adjust momenta."<<std::endl;
     return false;
@@ -178,7 +178,7 @@ bool Momentum_Shifter::BoostBack(Particle *const particle,const size_t catcher)
 {
   if (m_boosted.find(particle)!=m_boosted.end()) return true;
   if (catcher>=m_maxdepth) {
-    msg.Tracking()<<"Momentum_Shifter::Boost(..): "
+    msg_Tracking()<<"Momentum_Shifter::Boost(..): "
 		  <<"Nesting of event structure is deeper than "<<m_maxdepth
 		  <<" levels.\n   Cannot adjust momenta."<<std::endl;
     return false;

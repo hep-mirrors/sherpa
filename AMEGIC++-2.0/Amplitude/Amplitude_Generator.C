@@ -1007,7 +1007,7 @@ void Amplitude_Generator::KillHigherOrders(Single_Amplitude * & first)
       f1 = f1->Next;
     }
   }
-  msg.Tracking()<<"Kicked number of diagrams (Amplitude_Generator::KillHigherOrders()) "<<count<<endl;
+  msg_Tracking()<<"Kicked number of diagrams (Amplitude_Generator::KillHigherOrders()) "<<count<<endl;
 }
 
 

@@ -379,37 +379,37 @@ Vertex::Vertex(Interaction_Model_Base * _model)
   int vanz  = 0;
   int vanz4 = 0;
 
-  ATOOLS::msg.Debugging()<<"   Setting vertices..."<<endl;
+  msg_Debugging()<<"   Setting vertices..."<<endl;
   _model->c_FFV(m_v,vanz);
-  ATOOLS::msg.Debugging()<<"   FFV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  msg_Debugging()<<"   FFV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_FFS(m_v,vanz);
-  ATOOLS::msg.Debugging()<<"   FFS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  msg_Debugging()<<"   FFS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_VVV(m_v,vanz);
-  ATOOLS::msg.Debugging()<<"   VVV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  msg_Debugging()<<"   VVV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_SSV(m_v,vanz);
-  ATOOLS::msg.Debugging()<<"   SSV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  msg_Debugging()<<"   SSV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_VVS(m_v,vanz);
-  ATOOLS::msg.Debugging()<<"   VVS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  msg_Debugging()<<"   VVS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_SSS(m_v,vanz);
-  ATOOLS::msg.Debugging()<<"   SSS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  msg_Debugging()<<"   SSS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_VVVV(m_v4,vanz4);
-  ATOOLS::msg.Debugging()<<"   VVVV : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  msg_Debugging()<<"   VVVV : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_SSVV(m_v4,vanz4);
-  ATOOLS::msg.Debugging()<<"   SSVV : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  msg_Debugging()<<"   SSVV : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_SSSS(m_v4,vanz4);
-  ATOOLS::msg.Debugging()<<"   SSSS : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  msg_Debugging()<<"   SSSS : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_FFT(m_v,vanz);
-  ATOOLS::msg.Debugging()<<"   FFT  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  msg_Debugging()<<"   FFT  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_VVT(m_v,vanz);
-  ATOOLS::msg.Debugging()<<"   VVT  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  msg_Debugging()<<"   VVT  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_SST(m_v,vanz);
-  ATOOLS::msg.Debugging()<<"   SST  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  msg_Debugging()<<"   SST  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_VVVT(m_v4,vanz4);
-  ATOOLS::msg.Debugging()<<"   VVVT : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  msg_Debugging()<<"   VVVT : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_FFVT(m_v4,vanz4);
-  ATOOLS::msg.Debugging()<<"   FFVT : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  msg_Debugging()<<"   FFVT : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_SSST(m_v4,vanz4);
-  ATOOLS::msg.Debugging()<<"   SSST : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  msg_Debugging()<<"   SSST : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
 
   m_nvertex  = vanz;
   m_n4vertex = vanz4;
@@ -434,8 +434,8 @@ Vertex::Vertex(Interaction_Model_Base * _model)
       abort();
   }
   
-  ATOOLS::msg.Debugging()<<"... done with it ("<<vanz+vanz4<<")."<<endl;
-  ATOOLS::msg.Tracking()<<"Initialized interaction model of AMEGIC : "<<vanz+vanz4<<" vertices."<<std::endl;
+  msg_Debugging()<<"... done with it ("<<vanz+vanz4<<")."<<endl;
+  msg_Tracking()<<"Initialized interaction model of AMEGIC : "<<vanz+vanz4<<" vertices."<<std::endl;
   m_nvertex  = vanz;
   m_n4vertex = vanz4;
 }

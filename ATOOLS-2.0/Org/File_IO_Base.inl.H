@@ -83,7 +83,7 @@ namespace ATOOLS {
   {	
     if (i>=m_inputpath.size()) return false;
     if (m_inputpath[i]==nullstring) {
-      ATOOLS::msg.Tracking()<<"File_IO_Base::CheckInputPath(): "
+      msg_Tracking()<<"File_IO_Base::CheckInputPath(): "
 			    <<"No input path specified!"<<std::endl;
       return false;
     }
@@ -94,7 +94,7 @@ namespace ATOOLS {
   {	
     if (i>=m_inputfile.size()) return false;
     if (m_inputfile[i]==nullstring) {
-      ATOOLS::msg.Tracking()<<"File_IO_Base::CheckInputFile(): "
+      msg_Tracking()<<"File_IO_Base::CheckInputFile(): "
 			    <<"No input file specified!"<<std::endl;
       return false;
     }
@@ -105,7 +105,7 @@ namespace ATOOLS {
   {	
     if (i>=m_outputpath.size()) return false;
     if (m_outputpath[i]==nullstring) {
-      ATOOLS::msg.Tracking()<<"File_IO_Base::CheckOutputPath(): "
+      msg_Tracking()<<"File_IO_Base::CheckOutputPath(): "
 			    <<"No output path specified!"<<std::endl;
       return false;
     }
@@ -116,7 +116,7 @@ namespace ATOOLS {
   {	
     if (i>=m_outputpath.size()) return false;
     if (m_outputfile[i]==nullstring) {
-      ATOOLS::msg.Tracking()<<"File_IO_Base::CheckOutputFile(): "
+      msg_Tracking()<<"File_IO_Base::CheckOutputFile(): "
 			    <<"No output file specified!"<<std::endl;
       return false;
     }

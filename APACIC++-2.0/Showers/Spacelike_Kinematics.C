@@ -122,7 +122,7 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
 bool Spacelike_Kinematics::DoKinematics(Tree ** trees,Knot * active, Knot * partner,int leg, int first, bool test) 
 {
   if (!active->prev) {
-    msg.Tracking()<<"Error Spacelike_Kinematics::DoKinematics : "
+    msg_Tracking()<<"Error Spacelike_Kinematics::DoKinematics : "
 	          <<"     No mother for active knot, no kinematics to be constructed"<<endl;
     return 0;
   }

@@ -244,7 +244,7 @@ Flavour        Particle::Flav() const                   { return m_fl; }
 const Flavour& Particle::RefFlav() const                { return m_fl; }
 void           Particle::SetFlav(const Flavour& fl)     { m_fl   = fl; }
 Flow         * Particle::GetFlow() const                { return p_flow; }
-int            Particle::GetFlow(const int index) const {
+unsigned int   Particle::GetFlow(const unsigned int index) const {
   return p_flow->Code(index);
 }
 void           Particle::SetFlow(Flow * _flow)          { p_flow = _flow; }

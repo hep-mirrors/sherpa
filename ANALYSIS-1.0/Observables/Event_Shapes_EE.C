@@ -5,6 +5,10 @@ using namespace ANALYSIS;
 using namespace ATOOLS;
 using namespace std;
 
+static bool bigger(const ATOOLS::Vec3D & lhs,const ATOOLS::Vec3D & rhs) {
+  return (lhs.Sqr()>rhs.Sqr()); 
+}
+
 Event_Shape_EE_Data::Event_Shape_EE_Data(double thru,double m1,double m2,double oblate,
 					 ATOOLS::Vec3D ta,ATOOLS::Vec3D m1a,ATOOLS::Vec3D m2a) 
 {

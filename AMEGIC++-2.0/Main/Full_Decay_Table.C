@@ -99,16 +99,16 @@ bool Full_Decay_Table::InitAllDecays(Interaction_Model_Base * _model,Topology * 
 
   bool okay = 1;
   for (size_t i=0;i<m_decaymodes.size();i++) {
-    msg.Tracking()<<"============================================================"<<endl;
+    msg_Tracking()<<"============================================================"<<endl;
     if (moms) { delete [] moms; moms = NULL; }
     links.clear();
     okay = okay && m_decaymodes[i]->InitAmplitude(_model,_top,moms,links,errs,totalsize,procs);
     for (size_t j=0;j<links.size();j++) {
-      msg.Tracking()<<"Set up integrator of "<<j<<" : "<<links[j]->Name()<<endl;
+      msg_Tracking()<<"Set up integrator of "<<j<<" : "<<links[j]->Name()<<endl;
       if (!(links[j]->SetUpIntegrator())) okay = 0;
     }
     if (okay) {
-      msg.Tracking()<<"Set Selector of "<<i<<" : "<<(*m_decaymodes[i])[0]->Name()<<endl;
+      msg_Tracking()<<"Set Selector of "<<i<<" : "<<(*m_decaymodes[i])[0]->Name()<<endl;
       m_decaymodes[i]->SetSelector((*m_decaymodes[i])[0]->Selector());
       okay = okay && m_decaymodes[i]->SetUpIntegrator();
     }
@@ -177,7 +177,7 @@ void Full_Decay_Table::CalculateWidths()
 {
   if (m_isevaluated) return;
   for (size_t i=0;i<m_decaymodes.size();i++) {
-    msg.Tracking()<<"Full_Decay_Table::CalculateWidths for "
+    msg_Tracking()<<"Full_Decay_Table::CalculateWidths for "
 		  <<m_decaymodes[i]->Size()<<" decay(s)."<<endl;
     m_decaymodes[i]->CalculateTotalXSec(string(""));
   }

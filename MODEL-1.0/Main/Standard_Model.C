@@ -12,7 +12,7 @@ using namespace ATOOLS;
 Standard_Model::Standard_Model(std::string _dir,std::string _file) :
   Model_Base(_dir,_file)
 {
-  msg.Info()<<"Initialize the Standard Model from "<<m_dir<<" / "<<m_file<<std::endl;
+  msg_Info()<<"Initialize the Standard Model from "<<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("SM");
   p_numbers   = new ScalarNumbersMap();
   p_constants = new ScalarConstantsMap();

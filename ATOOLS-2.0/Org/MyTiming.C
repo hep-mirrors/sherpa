@@ -51,12 +51,12 @@ void MyTiming::PrintTime()
     //    double clk_tck=double(CLK_TCK);  // does not work properly!
     double clk_tck=100.;
     double secs=clocks/clk_tck;
-    msg.Info()<<"Time: "<<secs<<" s (clocks="<<clocks<<")\n";
+    msg_Info()<<"Time: "<<secs<<" s (clocks="<<clocks<<")\n";
     double utime=(currenttms.tms_utime-starttms.tms_utime)/clk_tck;
     double stime=(currenttms.tms_stime-starttms.tms_stime)/clk_tck;
     double cutime=(currenttms.tms_cutime-starttms.tms_cutime)/clk_tck;
     double cstime=(currenttms.tms_cstime-starttms.tms_cstime)/clk_tck;
-    msg.Info()<<" (User: "<<utime<<" s ,System: "<<stime<<" s ,Children User: "
+    msg_Info()<<" (User: "<<utime<<" s ,System: "<<stime<<" s ,Children User: "
 	      <<cutime<<" s ,Children System: "<<cstime<<")\n";
 //     msg.Out()<<" CLK_TCK="<<CLK_TCK<<endl;
 //     msg.Out()<<" CLK/s="<<CLOCKS_PER_SEC<<endl;

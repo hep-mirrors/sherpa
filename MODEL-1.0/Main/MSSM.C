@@ -10,7 +10,7 @@ using namespace ATOOLS;
 MSSM::MSSM(std::string _dir,std::string _file) :
   Model_Base(_dir,_file)
 {
-  msg.Info()<<"Initialize the MSSM from "<<m_dir<<" / "<<m_file<<std::endl;
+  msg_Info()<<"Initialize the MSSM from "<<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("MSSM");
 
   Model_Base * SM = new Standard_Model(m_dir,m_file);
