@@ -70,6 +70,7 @@ void Integration_Info::ReleaseKey(Info_Key &key)
 
 std::ostream &PHASIC::operator<<(std::ostream &str,const Double_Container &doubles)
 {
+  if (doubles.size()==0) return str<<"{<no entries>}";
   std::ios_base::fmtflags flags=str.flags();
   str.precision(6);
   str<<"{";
@@ -84,6 +85,7 @@ std::ostream &PHASIC::operator<<(std::ostream &str,const Double_Container &doubl
  
 std::ostream &PHASIC::operator<<(std::ostream &str,const Vector_Container &vectors)
 {
+  if (vectors.size()==0) return str<<"{<no entries>}";
   std::ios_base::fmtflags flags=str.flags();
   str.precision(6);
   str<<"{";
@@ -107,7 +109,7 @@ std::ostream &PHASIC::operator<<(std::ostream &str,const Integration_Info &info)
 {
   str<<"Integration_Info("<<&info<<") {\n";
   for (size_t i=0;i<info.m_doubles.size();++i) {
-    str<<"  (*this)["<<i<<"] = "<<info.m_doubles[i]<<" => "
+    str<<"  (*this)["<<i<<"] = "<<info.m_doubles[i]<<" "<<info.m_vectors[i]<<" => "
        <<info.m_weights[i]<<" => ("<<info.m_status[i]<<")\n";
   }
   str<<"}";
