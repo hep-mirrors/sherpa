@@ -176,18 +176,21 @@ void Full_Decay_Table::CalculateWidths()
 {
   if (m_isevaluated) return;
   for (int i=0;i<m_decaymodes.size();i++) {
-    msg.Tracking()<<"Full_Decay_Table::CalculateWidths for "<<m_decaymodes[i]->Size()<<" decay(s)."<<endl;
+    msg.Tracking()<<"Full_Decay_Table::CalculateWidths for "
+		  <<m_decaymodes[i]->Size()<<" decay(s)."<<endl;
     m_decaymodes[i]->CalculateTotalXSec(string(""));
   }
-  if (m_overwrite) {
-    for (int i=0;i<m_channels.size();i++) {
-      m_channels[i]->SetWidth();
-      m_width += m_channels[i]->Width();
-    }
+  for (int i=0;i<m_channels.size();i++) {
+    m_channels[i]->SetWidth();
+    m_width += m_channels[i]->Width();
   }
-  m_isevaluated = 1;
   Output();
   if (m_overwrite) m_flin.SetWidth(m_width);
+  else {
+    for (int i=0;i<m_channels.size();i++) 
+      m_channels[i]->SetWidth(m_channels[i]->Width()/m_width*m_flin.Width());
+  }
+  m_isevaluated = 1;
 }
 
 Decay_Channel * Full_Decay_Table::GetChannel(int _ch) 
