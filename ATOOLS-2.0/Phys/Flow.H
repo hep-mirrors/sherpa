@@ -15,7 +15,7 @@ namespace APHYTOOLS {
     static long qcd_counter;
   public:
     Flow(Parton * _owner=NULL);
-    virtual ~Flow();
+    ~Flow();
     const Parton *     Owner() const;
     int                Code(int _index=1);
     void               SetCode(int code_index=1,int code=-1);
