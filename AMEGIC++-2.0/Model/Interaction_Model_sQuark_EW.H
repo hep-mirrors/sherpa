@@ -7,8 +7,8 @@
 namespace AMEGIC {  
   //check the summing Convention !!!!
   class Interaction_Model_sQuark_EW : public Interaction_Model_Base {
-    Kabbala g1,g2,vev,v1,v2,sintW,costW,PL,PR,mu,conj_mu;
-    Kabbala M_I,root2,invroot2,K_zero,num_2,num_3,num_4;
+    Kabbala g1,g2,g3,vev,v1,v2,sintW,costW,PL,PR,mu,conj_mu;
+    Kabbala M_I,root2,invroot2,K_zero,num_1,num_2,num_3,num_4,num_6;
     
     Kabbala K_Z_H(short int i,short int j);
     Kabbala K_Z_R(short int i,short int j);
@@ -21,9 +21,14 @@ namespace AMEGIC {
     
     Kabbala K_Z_U(short int i,short int j);
     Kabbala K_Z_D(short int i,short int j);
+    Kabbala K_A_H(short int i,short int j);
+    Kabbala K_A_R(short int i,short int j);
+    Kabbala K_A_P(short int i,short int j);
     Kabbala K_w_S(short int i,short int j);
     Kabbala K_u_S(short int i,short int j);
     Kabbala K_e_S(short int i,short int j);
+    Kabbala K_u(short int i);
+    Kabbala K_d(short int i);
     Kabbala K_d_S(short int i,short int j);
     Kabbala K_yuk(ATOOLS::Flavour fl);           
     Kabbala K_yuk_sign(ATOOLS::Flavour fl);          
@@ -40,7 +45,7 @@ namespace AMEGIC {
     void c_VVS(Single_Vertex *,int &)  {}
     void c_SSS(Single_Vertex *,int &);
     void c_SSVV(Single_Vertex *,int &);
-    void c_SSSS(Single_Vertex *,int &) {}
+    void c_SSSS(Single_Vertex *,int &);
 
     void c_FFT(Single_Vertex  *,int&)  {}
     void c_VVT(Single_Vertex  *,int&)  {} 

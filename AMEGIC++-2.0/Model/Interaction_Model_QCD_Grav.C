@@ -16,8 +16,8 @@ Interaction_Model_QCD_Grav::Interaction_Model_QCD_Grav(MODEL::Model_Base * _mode
   PL    = Kabbala(string("P_L"),1.);
   PR    = Kabbala(string("P_R"),1.);
   M_I   = Kabbala(string("i"),Complex(0.,1.)); 
-  kap   = Kabbala(string("kappa"),p_model->ScalarConstant(string("kappa")));
-  om    = Kabbala(string("omega"),p_model->ScalarConstant(string("omega")));
+  kap   = Kabbala(string("kappa"),ScalarConstant(string("kappa")));
+  om    = Kabbala(string("omega"),ScalarConstant(string("omega")));
   num2  = Kabbala(string("2"),2.);
   num15 = Kabbala(string("1.5"),1.5);
 }

@@ -6,16 +6,18 @@
 #include "Interaction_Model_sLepton_EW.H"
 #include "Interaction_Model_sQCD.H"
 #include "Interaction_Model_sQuark_EW.H"
+#include "Interaction_Model_sLepton_sQuark.H"
 #include "Interaction_Model_Base.H"
 #include "Kabbala.H"
 
 namespace AMEGIC {  
   class Interaction_Model_MSSM : public Interaction_Model_Base {
-    Interaction_Model_THDM       * p_mothdm;
-    Interaction_Model_Inos       * p_moinos;
-    Interaction_Model_sLepton_EW * p_moslepton;
-    Interaction_Model_sQCD       * p_mosqcd;
-    Interaction_Model_sQuark_EW  * p_mosquark;
+    Interaction_Model_THDM           * p_mothdm;
+    Interaction_Model_Inos           * p_moinos;
+    Interaction_Model_sLepton_EW     * p_moslepton;
+    Interaction_Model_sQCD           * p_mosqcd;
+    Interaction_Model_sQuark_EW      * p_mosquark;
+    Interaction_Model_sLepton_sQuark * p_moslesqu;
 
   public:
     Interaction_Model_MSSM(MODEL::Model_Base *,std::string,std::string);

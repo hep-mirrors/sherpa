@@ -17,15 +17,15 @@ Interaction_Model_EW_Grav::Interaction_Model_EW_Grav(MODEL::Model_Base * _model,
   g1    = Kabbala(string("g_1"),
 		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),Ecms2)));
   g2    = Kabbala(string("g_1/\\sin\\theta_W"), 
-		  g1.Value()/sqrt(p_model->ScalarConstant(std::string("sin2_thetaW"))));
+		  g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
   sintW = Kabbala(std::string("\\sin\\theta_W"),
-		  sqrt(p_model->ScalarConstant(std::string("sin2_thetaW"))));
+		  sqrt(ScalarConstant(std::string("sin2_thetaW"))));
   costW = Kabbala(std::string("\\cos\\theta_W"),
-		  sqrt(1.-p_model->ScalarConstant(std::string("sin2_thetaW"))));
-  vev   = Kabbala(string("v_{EW}"),p_model->ScalarConstant(std::string("vev")));
+		  sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
+  vev   = Kabbala(string("v_{EW}"),ScalarConstant(std::string("vev")));
 
-  kap   = Kabbala(string("kappa"),p_model->ScalarConstant(string("kappa")));
-  om    = Kabbala(string("omega"),p_model->ScalarConstant(string("omega")));
+  kap   = Kabbala(string("kappa"),ScalarConstant(string("kappa")));
+  om    = Kabbala(string("omega"),ScalarConstant(string("omega")));
   
   PL    = Kabbala(string("P_L"),1.);
   PR    = Kabbala(string("P_R"),1.);
@@ -762,7 +762,7 @@ Kabbala Interaction_Model_EW_Grav::K_CKM(short int i,short int j)
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("V_{")+string(hi)+string(hj)+string("}"),
-		 p_model->ComplexMatrixElement(std::string("CKM"),i,j));
+		 ComplexMatrixElement(std::string("CKM"),i,j));
 } 
   
 Kabbala Interaction_Model_EW_Grav::conj_K_CKM(short int i,short int j)       
@@ -771,6 +771,6 @@ Kabbala Interaction_Model_EW_Grav::conj_K_CKM(short int i,short int j)
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("V^\\ti_{")+string(hi)+string(hj)+string("}"),
-		 conj(p_model->ComplexMatrixElement(std::string("CKM"),i,j)));
+		 conj(ComplexMatrixElement(std::string("CKM"),i,j)));
 } 
  

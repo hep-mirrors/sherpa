@@ -108,12 +108,6 @@ int Vertex::CheckExistence(Single_Vertex& probe)
 	  m_v4[i].in[1]==probe.in[1] &&
 	  m_v4[i].in[2]==probe.in[2] &&
 	  m_v4[i].in[3]==probe.in[3] ) return 0;
-
-      /*&&
-	  (m_v4->Color)->String() == (probe.Color)->String()) {
-	if (!((m_v4->Color)->Next && (probe.Color)->Next)) return 0;
-	if (((m_v4->Color)->Next)->String() == ((probe.Color)->Next)->String()) return 0;
-	}*/
     }
   }
   //3 leg vertices
@@ -123,10 +117,12 @@ int Vertex::CheckExistence(Single_Vertex& probe)
       if (m_v[i].in[0]==probe.in[0] &&
 	  m_v[i].in[1]==probe.in[1] &&
 	  m_v[i].in[2]==probe.in[2]) return 0;
+      /*      
       // 0 -> 2 1
       if (m_v[i].in[0]==probe.in[0] &&
 	  m_v[i].in[1]==probe.in[2] &&
 	  m_v[i].in[2]==probe.in[1]) return 0;
+      */
     }
   }
   return 1;
@@ -135,10 +131,24 @@ int Vertex::CheckExistence(Single_Vertex& probe)
 int Vertex::FermionRule(Single_Vertex& probe)
 {
   // fermionic: particles left, anti-particles right
-  if (probe.in[1].IsFermion() && !probe.in[1].IsAnti() && !probe.in[1].Majorana()) return 0;
-  if (probe.in[2].IsFermion() &&  probe.in[2].IsAnti() && !probe.in[2].Majorana()) return 0;
+  int hit = 1;
+  if (probe.in[1].IsFermion() && !probe.in[1].IsAnti() && !probe.in[1].Majorana()) hit = 0;
+  if (probe.in[2].IsFermion() &&  probe.in[2].IsAnti() && !probe.in[2].Majorana()) hit = 0;
+  
 
-  return 1;
+  //check this again
+  if (hit==0) {
+    if (probe.in[1].IsFermion() && probe.in[2].IsFermion() &&
+	!probe.in[1].Majorana() && !probe.in[2].Majorana()) {
+      if (probe.in[1].IsAnti() && probe.in[2].IsAnti()) {
+	if (probe.in[1].IsChargino()) hit=1;
+      }
+      if (!probe.in[1].IsAnti() && !probe.in[2].IsAnti()) { 
+      if (probe.in[2].IsChargino()) hit=1;
+      }
+    }
+  }
+  return hit;
 }
 
 int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1, int i2, int i3)
@@ -365,7 +375,7 @@ Vertex::Vertex(Interaction_Model_Base * _model)
   ATOOLS::msg.Debugging()<<"In Vertex::Vertex()."<<endl;
 
   m_nvertex  = 10000;
-  m_n4vertex = 10000;
+  m_n4vertex = 30000;
   m_v  = new Single_Vertex[m_nvertex];
   m_v4 = new Single_Vertex[m_n4vertex];
   int vanz  = 0;
@@ -413,7 +423,7 @@ Vertex::Vertex(Interaction_Model_Base * _model)
   //Kill_Off(); to be written....
   //TexOutput();
   m_nvertex = 10000;
-  m_n4vertex = 10000;
+  m_n4vertex = 30000;
   
   //should be improved and made dynamical
 
@@ -653,7 +663,6 @@ void Vertex::TexOutput()
 }
 
 void Vertex::AddVertex(Single_Vertex* addv){
-  ATOOLS::msg.Out()<<" called AddVertex "<<endl;
   Single_Vertex * oldv=m_v;
   m_v = new Single_Vertex[m_nvertex+1];
   for (int i=0;i<m_nvertex;++i) {

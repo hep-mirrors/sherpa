@@ -17,16 +17,16 @@ Interaction_Model_EW::Interaction_Model_EW(MODEL::Model_Base * _model,
   g1    = Kabbala(string("g_1"),
 		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),Ecms2)));
   g2    = Kabbala(string("g_1/\\sin\\theta_W"), 
-		  g1.Value()/sqrt(p_model->ScalarConstant(std::string("sin2_thetaW"))));
+		  g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
   sintW = Kabbala(std::string("\\sin\\theta_W"),
-		  sqrt(p_model->ScalarConstant(std::string("sin2_thetaW"))));
+		  sqrt(ScalarConstant(std::string("sin2_thetaW"))));
   costW = Kabbala(std::string("\\cos\\theta_W"),
-		  sqrt(1.-p_model->ScalarConstant(std::string("sin2_thetaW"))));
+		  sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
   PL    = Kabbala(string("P_L"),1.);
   PR    = Kabbala(string("P_R"),1.);
   M_I   = Kabbala(string("i"),Complex(0.,1.));
   root2 = Kabbala(string("\\sqrt{2}"),sqrt(2.));
-  vev   = Kabbala(string("v_{EW}"),p_model->ScalarConstant(std::string("vev")));
+  vev   = Kabbala(string("v_{EW}"),ScalarConstant(std::string("vev")));
 }
 
 void Interaction_Model_EW::c_FFV(Single_Vertex * vertex,int & vanz)
@@ -175,16 +175,19 @@ void Interaction_Model_EW::c_FFV(Single_Vertex * vertex,int & vanz)
 
 void Interaction_Model_EW::c_VVV(Single_Vertex* vertex,int& vanz)
 {
-  Flavour flav(kf::W);
+  Flavour flW(kf::W);
+  Flavour flZ(kf::Z);
+  Flavour flP(kf::photon);
   Kabbala kcpl0,kcpl1,kcpl0_1,kcpl1_1,charge;
-  charge = Kabbala(string("Q_{")+flav.TexName()+string("}"),flav.Charge());
 
-  if (!flav.IsOn()) return;
+  charge = Kabbala(string("Q_{")+flW.TexName()+string("}"),flW.Charge());
+
+  if (flW.IsOn() && flP.IsOn()) {
 
   // photon WW
-  vertex[vanz].in[0] = flav;
+  vertex[vanz].in[0] = flW;
   vertex[vanz].in[1] = Flavour(kf::photon);
-  vertex[vanz].in[2] = flav;
+  vertex[vanz].in[2] = flW;
 
   kcpl0 = M_I*g1*charge;
   kcpl1 = kcpl0;
@@ -203,11 +206,13 @@ void Interaction_Model_EW::c_VVV(Single_Vertex* vertex,int& vanz)
 
   vertex[vanz].on      = 1;
   vanz++;
-
+}
+  if (flZ.IsOn()) {
+ 
   // ZWW
-  vertex[vanz].in[0] = flav;
+  vertex[vanz].in[0] = flW;
   vertex[vanz].in[1] = Flavour(kf::Z);
-  vertex[vanz].in[2] = flav;
+  vertex[vanz].in[2] = flW;
 
   kcpl0 = M_I*g2*charge*costW;
   kcpl1 = kcpl0;
@@ -226,6 +231,7 @@ void Interaction_Model_EW::c_VVV(Single_Vertex* vertex,int& vanz)
 
   vertex[vanz].on      = 1;
   vanz++;
+  }
 }
 
 
@@ -596,7 +602,7 @@ Kabbala Interaction_Model_EW::K_CKM(short int i,short int j)
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("V_{")+string(hi)+string(hj)+string("}"),
-		 p_model->ComplexMatrixElement(std::string("CKM"),i,j));
+		 ComplexMatrixElement(std::string("CKM"),i,j));
 } 
   
 Kabbala Interaction_Model_EW::conj_K_CKM(short int i,short int j)       
@@ -605,7 +611,7 @@ Kabbala Interaction_Model_EW::conj_K_CKM(short int i,short int j)
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("V^\\ti_{")+string(hi)+string(hj)+string("}"),
-		 conj(p_model->ComplexMatrixElement(std::string("CKM"),i,j)));
+		 conj(ComplexMatrixElement(std::string("CKM"),i,j)));
 } 
  
 

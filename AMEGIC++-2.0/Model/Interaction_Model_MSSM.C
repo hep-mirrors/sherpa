@@ -17,6 +17,7 @@ Interaction_Model_MSSM::Interaction_Model_MSSM(MODEL::Model_Base * _model,
   p_moslepton = new Interaction_Model_sLepton_EW(p_model,_cplscheme,_yukscheme); 
   p_mosqcd    = new Interaction_Model_sQCD(p_model,_cplscheme,_yukscheme); 
   p_mosquark  = new Interaction_Model_sQuark_EW(p_model,_cplscheme,_yukscheme); 
+  p_moslesqu  = new Interaction_Model_sLepton_sQuark(p_model,_cplscheme,_yukscheme); 
 
   msg.Debugging()<<"Initialized Interaction_Model_MSSM."<<endl;
 }
@@ -100,6 +101,7 @@ void Interaction_Model_MSSM::c_SSSS(Single_Vertex* vertex,int& vanz)
   p_moslepton->c_SSSS(vertex,vanz);
   p_mosqcd->c_SSSS(vertex,vanz);
   p_mosquark->c_SSSS(vertex,vanz);
+  p_moslesqu->c_SSSS(vertex,vanz);
 }
 
 Interaction_Model_MSSM::~Interaction_Model_MSSM()

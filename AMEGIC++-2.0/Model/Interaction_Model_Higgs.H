@@ -17,6 +17,7 @@ namespace AMEGIC {
     Kabbala K_A_M(short int i,short int j);    
     Kabbala K_A_H(short int i,short int j);        
     Kabbala K_A_P(short int i,short int j);    
+    Kabbala K_A_R(short int i,short int j);    
     Kabbala K_B_R(short int i);
   public:
     Interaction_Model_Higgs(MODEL::Model_Base *,std::string,std::string);
@@ -28,7 +29,7 @@ namespace AMEGIC {
     void c_SSS(Single_Vertex *,int &);
     void c_VVVV(Single_Vertex *,int &) {}
     void c_SSVV(Single_Vertex *,int &);
-    void c_SSSS(Single_Vertex *,int &) {}
+    void c_SSSS(Single_Vertex *,int &);
   
     void c_FFT(Single_Vertex  *,int&)  {}
     void c_VVT(Single_Vertex  *,int&)  {} 

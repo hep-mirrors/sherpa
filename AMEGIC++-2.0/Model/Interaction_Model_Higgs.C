@@ -17,22 +17,22 @@ Interaction_Model_Higgs::Interaction_Model_Higgs(MODEL::Model_Base * _model,
   g1     = Kabbala(string("g_1"),
 		   sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),Ecms2)));
   g2     = Kabbala(string("g_1/\\sin\\theta_W"), 
-		   g1.Value()/sqrt(p_model->ScalarConstant(std::string("sin2_thetaW"))));
+		   g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
   sintW  = Kabbala(std::string("\\sin\\theta_W"),
-		   sqrt(p_model->ScalarConstant(std::string("sin2_thetaW"))));
+		   sqrt(ScalarConstant(std::string("sin2_thetaW"))));
   costW  = Kabbala(std::string("\\cos\\theta_W"),
-		   sqrt(1.-p_model->ScalarConstant(std::string("sin2_thetaW"))));
+		   sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
   PL     = Kabbala(string("P_L"),1.);
   PR     = Kabbala(string("P_R"),1.);
   M_I    = Kabbala(string("i"),Complex(0.,1.));
-  vev    = Kabbala(string("v_{EW}"),p_model->ScalarConstant(std::string("vev")));
+  vev    = Kabbala(string("v_{EW}"),ScalarConstant(std::string("vev")));
   v1     = Kabbala(string("v_1"),
-		   p_model->ScalarConstant(std::string("vev")) *
-		   sqrt(1./(1.+sqr(p_model->ScalarConstant(std::string("tan(beta)"))))));
+		   ScalarConstant(std::string("vev")) *
+		   sqrt(1./(1.+sqr(ScalarConstant(std::string("tan(beta)"))))));
   v2     = Kabbala(string("v_2"),
-		   p_model->ScalarConstant(std::string("vev")) *
-		   p_model->ScalarConstant(std::string("tan(beta)")) *
-		   sqrt(1./(1.+sqr(p_model->ScalarConstant(std::string("tan(beta)"))))));
+		   ScalarConstant(std::string("vev")) *
+		   ScalarConstant(std::string("tan(beta)")) *
+		   sqrt(1./(1.+sqr(ScalarConstant(std::string("tan(beta)"))))));
   root2  = Kabbala(string("\\sqrt{2}"),sqrt(2.));
   K_zero = Kabbala(string("zero"),0.);
   num_2  = Kabbala(string("2"),2.);    	
@@ -420,17 +420,10 @@ void Interaction_Model_Higgs::c_SSS(Single_Vertex* vertex,int& vanz)
 	      vertex[vanz].in[1] = flav2;      
 	      vertex[vanz].in[2] = flav3;
 	      
-	      Kabbala C1 = K_Z_R(0,0)*K_Z_R(0,j-31)*K_Z_R(0,k-31);
-	      Kabbala C2 = K_Z_R(1,0)*K_Z_R(1,j-31)*K_Z_R(1,k-31);
-	      Kabbala C3 = K_Z_R(0,0)*K_Z_R(0,j-31)*K_Z_R(1,k-31);
-	      Kabbala C4 = K_Z_R(0,0)*K_Z_R(1,j-31)*K_Z_R(0,k-31);
-	      Kabbala C5 = K_Z_R(1,0)*K_Z_R(0,j-31)*K_Z_R(0,k-31);
-	      Kabbala C6 = K_Z_R(1,0)*K_Z_R(1,j-31)*K_Z_R(0,k-31);
-	      Kabbala C7 = K_Z_R(1,0)*K_Z_R(0,j-31)*K_Z_R(1,k-31);
-	      Kabbala C8 = K_Z_R(0,0)*K_Z_R(1,j-31)*K_Z_R(1,k-31);
-	      
-	      kcpl0 = -M_I*g2*g2/(costW*costW*num_4)*
-		(v1*(C1*num_3-C6-C7-C8)+v2*(C2*num_3-C3-C4-C5));
+	      kcpl0 = -M_I*g2*g2/(costW*costW*num_4)*(K_A_R(0,j-31)*K_B_R(k-31) +
+						      K_A_R(j-31,k-31)*K_B_R(0) +
+						      K_A_R(k-31,0)*K_B_R(j-31));
+ 
 	      kcpl1 = kcpl0;
 
 	      vertex[vanz].cpl[0]  = kcpl0.Value();
@@ -453,26 +446,16 @@ void Interaction_Model_Higgs::c_SSS(Single_Vertex* vertex,int& vanz)
 	} 
       }
     }
+    //H0 -> H0 + H0
     
-  
-  //H0 -> H0 + H0
-
     if(flH0.IsOn()) { 
       vertex[vanz].in[0] = flH0;
       vertex[vanz].in[1] = flH0;      
       vertex[vanz].in[2] = flH0;
       
-      Kabbala C1 = K_Z_R(0,1)*K_Z_R(0,1)*K_Z_R(0,1);
-      Kabbala C2 = K_Z_R(1,1)*K_Z_R(1,1)*K_Z_R(1,1);
-      Kabbala C3 = K_Z_R(1,1)*K_Z_R(0,1)*K_Z_R(0,1);
-      Kabbala C4 = K_Z_R(0,1)*K_Z_R(1,1)*K_Z_R(1,1);
-      
-      //noch einmal checken !!
-
-      kcpl0 = -M_I*g2*g2/(costW*costW*num_4)*
-	((C1-C4)*v1*num_3+(C2-C3)*v2*num_3);
+      kcpl0 = -M_I*g2*g2/(costW*costW*num_4)*(num_3*K_A_R(1,1)*K_B_R(1));
       kcpl1 = kcpl0;
-
+      
       vertex[vanz].cpl[0]  = kcpl0.Value();
       vertex[vanz].cpl[1]  = kcpl1.Value();
       vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();	  	    		
@@ -602,8 +585,8 @@ void Interaction_Model_Higgs::c_SSV(Single_Vertex* vertex,int& vanz)
     vertex[vanz].in[0] = flHmin;
     vertex[vanz].in[1] = flPhoton;
     vertex[vanz].in[2] = flHmin;
-   
-    kcpl0 = -M_I*g1;
+    
+    kcpl0 = M_I*g1;
     kcpl1 = kcpl0;
 
     vertex[vanz].cpl[0]  = kcpl0.Value();
@@ -663,8 +646,6 @@ void Interaction_Model_Higgs::c_SSV(Single_Vertex* vertex,int& vanz)
       vertex[vanz].in[1] = flW;    
       vertex[vanz].in[2] = flA0;
 
-      //sollte so stimmen !
-
       kcpl0 = -g2/num_2;
       kcpl1 = kcpl0;
 
@@ -685,6 +666,197 @@ void Interaction_Model_Higgs::c_SSV(Single_Vertex* vertex,int& vanz)
       //checked FK & RK
     }
   } 
+}
+
+void Interaction_Model_Higgs::c_SSSS(Single_Vertex* vertex,int& vanz) 
+{
+  Flavour flHmin(kf::Hmin);    
+  Flavour flA0(kf::A0);
+  
+  Kabbala kcpl0,kcpl1;
+
+  // A0 - A0 - A0 - A0
+  if (flA0.IsOn()) {
+ 	
+    vertex[vanz].in[0] = flA0;
+    vertex[vanz].in[1] = flA0;
+    vertex[vanz].in[2] = flA0;
+    vertex[vanz].in[3] = flA0;
+    
+    vertex[vanz].nleg     = 4;
+    
+    kcpl0 = -M_I*g2*g2/(num_4*costW*costW)*num_3*K_A_H(0,0)*K_A_H(0,0);
+    kcpl1 = kcpl0;
+    
+    vertex[vanz].cpl[0]  = kcpl0.Value();
+    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+    
+    vertex[vanz].ncf   = 1;
+    vertex[vanz].Color = new Color_Function(cf::None);     
+    
+    vertex[vanz].nlf     = 1;
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+    
+    vertex[vanz].on      = 1;
+    vanz++;
+  }
+  // H- - H- - H+ - H-
+  if (flHmin.IsOn()) {
+ 	
+    vertex[vanz].in[0] = flHmin;
+    vertex[vanz].in[1] = flHmin;
+    vertex[vanz].in[2] = flHmin.Bar();
+    vertex[vanz].in[3] = flHmin;
+    
+    vertex[vanz].nleg     = 4;
+    
+    kcpl0 = -M_I*g2*g2/(num_4*costW*costW)*num_2*K_A_H(0,0)*K_A_H(0,0);
+    kcpl1 = kcpl0;
+    
+    vertex[vanz].cpl[0]  = kcpl0.Value();
+    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+    
+    vertex[vanz].ncf   = 1;
+    vertex[vanz].Color = new Color_Function(cf::None);     
+    
+    vertex[vanz].nlf     = 1;
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+    
+    vertex[vanz].on      = 1;
+    vanz++;
+  }
+  // A0 - H- - H+ - A0
+  if (flA0.IsOn() && flHmin.IsOn()) {
+    vertex[vanz].in[0] = flA0;
+    vertex[vanz].in[1] = flHmin;
+    vertex[vanz].in[2] = flHmin.Bar();
+    vertex[vanz].in[3] = flA0;
+    
+    vertex[vanz].nleg     = 4;
+    
+    kcpl0 = -M_I*g2*g2/(num_4*costW*costW)*K_A_H(0,0)*K_A_H(0,0);
+    kcpl1 = kcpl0;
+    
+    vertex[vanz].cpl[0]  = kcpl0.Value();
+    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+    
+    vertex[vanz].ncf   = 1;
+    vertex[vanz].Color = new Color_Function(cf::None);     
+    
+    vertex[vanz].nlf     = 1;
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+    
+    vertex[vanz].on      = 1;
+    vanz++;
+  }
+
+  for (int i=31;i<33;i++) {
+    Flavour flav1 = Flavour(kf::code(i));
+    for (int j=i;j<33;j++) {
+      Flavour flav2 = Flavour(kf::code(j));
+      if (flav1.IsOn() && flav2.IsOn()) {
+	// h0/H0 - H- - H+ - h0/H0
+	if (flHmin.IsOn()) {
+	  
+	  vertex[vanz].in[0] = flav1;
+	  vertex[vanz].in[1] = flHmin;
+	  vertex[vanz].in[2] = flHmin.Bar();
+	  vertex[vanz].in[3] = flav2;
+	  
+	  vertex[vanz].nleg     = 4;
+	  
+	  kcpl0 = -M_I*g2*g2/num_4*(K_A_R(i-31,j-31)*K_A_H(0,0)/costW*costW +
+				    num_2*K_A_P(i-31,0)*K_A_P(j-31,0));
+	  
+	  kcpl1 = kcpl0;
+	  
+	  vertex[vanz].cpl[0]  = kcpl0.Value();
+	  vertex[vanz].cpl[1]  = kcpl1.Value();
+	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+	  
+	  vertex[vanz].ncf   = 1;
+	  vertex[vanz].Color = new Color_Function(cf::None);     
+	  
+	  vertex[vanz].nlf     = 1;
+	  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+	  
+	  vertex[vanz].on      = 1;
+	  vanz++;
+	}
+	// A0 - h0/H0 - h0/H0 - A0
+	if (flA0.IsOn()) {
+	  
+	  vertex[vanz].in[0] = flA0;
+	  vertex[vanz].in[1] = flav1;
+	  vertex[vanz].in[2] = flav2;
+	  vertex[vanz].in[3] = flA0;
+	  
+	  vertex[vanz].nleg     = 4;
+	  
+	  kcpl0 = -M_I*g2*g2/(num_4*costW*costW)*K_A_R(i-31,j-31)*K_A_H(0,0);
+	  
+	  kcpl1 = kcpl0;
+	  
+	  vertex[vanz].cpl[0]  = kcpl0.Value();
+	  vertex[vanz].cpl[1]  = kcpl1.Value();
+	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+	  
+	  vertex[vanz].ncf   = 1;
+	  vertex[vanz].Color = new Color_Function(cf::None);     
+	  
+	  vertex[vanz].nlf     = 1;
+	  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+	  
+	  vertex[vanz].on      = 1;
+	  vanz++;
+	}
+	// h0/H0 - h0/H0 - h0/H0 - h0/H0 
+	for (int k=j;k<33;k++) {
+	  Flavour flav3 = Flavour(kf::code(k));
+	  for (int l=k;l<33;l++) {
+	    Flavour flav4 = Flavour(kf::code(l));
+	    if (flav3.IsOn() && flav4.IsOn()) {
+	      
+	      vertex[vanz].in[0] = flav1;
+	      vertex[vanz].in[1] = flav2;
+	      vertex[vanz].in[2] = flav3;
+	      vertex[vanz].in[3] = flav4;
+	      
+	      vertex[vanz].nleg     = 4;
+	      
+	      kcpl0 = -M_I*g2*g2/(num_4*costW*costW)*(K_A_R(i-31,j-31)*K_A_R(k-31,l-31)+
+						      K_A_R(i-31,k-31)*K_A_R(j-31,l-31)+
+						      K_A_R(i-31,l-31)*K_A_R(j-31,k-31));
+	      
+	      kcpl1 = kcpl0;
+	  
+	      vertex[vanz].cpl[0]  = kcpl0.Value();
+	      vertex[vanz].cpl[1]  = kcpl1.Value();
+	      vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+	      vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+	      
+	      vertex[vanz].ncf   = 1;
+	      vertex[vanz].Color = new Color_Function(cf::None);     
+	      
+	      vertex[vanz].nlf     = 1;
+	      vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+	      
+	      vertex[vanz].on      = 1;
+	      vanz++;
+	    }     
+	  }      
+	}
+      }
+    }
+  }
 }
 
 void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz) 
@@ -798,58 +970,58 @@ void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz)
       if(flav.IsOn()) {
 	if(flZ.IsOn()) {
 
- 	vertex[vanz].in[0] = flW.Bar();
-	vertex[vanz].in[1] = flHmin.Bar();
-	vertex[vanz].in[2] = flav;
-	vertex[vanz].in[3] = flZ;
-  
-	vertex[vanz].nleg     = 4;
-
-	kcpl0 = M_I*g1*g1/(num_2*costW)*K_A_M(i-31,0);
-	kcpl1 = kcpl0;
-    
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
-	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
-  
-	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function(cf::None);     
-	
-	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
-	vertex[vanz].Lorentz->SetParticleArg(0,3);     
-	
-	vertex[vanz].on      = 1;
-	vanz++;
+	  vertex[vanz].in[0] = flW.Bar();
+	  vertex[vanz].in[1] = flHmin.Bar();
+	  vertex[vanz].in[2] = flav;
+	  vertex[vanz].in[3] = flZ;
+	  
+	  vertex[vanz].nleg     = 4;
+	  
+	  kcpl0 = M_I*g1*g1/(num_2*costW)*K_A_M(i-31,0);
+	  kcpl1 = kcpl0;
+	  
+	  vertex[vanz].cpl[0]  = kcpl0.Value();
+	  vertex[vanz].cpl[1]  = kcpl1.Value();
+	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+	  
+	  vertex[vanz].ncf   = 1;
+	  vertex[vanz].Color = new Color_Function(cf::None);     
+	  
+	  vertex[vanz].nlf     = 1;
+	  vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
+	  vertex[vanz].Lorentz->SetParticleArg(0,3);     
+	  
+	  vertex[vanz].on      = 1;
+	  vanz++;
 	}
-
+	
 	if(flPhoton.IsOn()) {
 
- 	vertex[vanz].in[0] = flW.Bar();
-	vertex[vanz].in[1] = flHmin.Bar();
-	vertex[vanz].in[2] = flav;
-	vertex[vanz].in[3] = flPhoton;
+	  vertex[vanz].in[0] = flW.Bar();
+	  vertex[vanz].in[1] = flHmin.Bar();
+	  vertex[vanz].in[2] = flav;
+	  vertex[vanz].in[3] = flPhoton;
   
-	vertex[vanz].nleg     = 4;
-
-	kcpl0 = -M_I*g1*g1/(num_2*sintW)*K_A_M(i-31,0);
-	kcpl1 = kcpl0;
-    
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
-	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
-  
-	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function(cf::None);     
-	
-	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
-	vertex[vanz].Lorentz->SetParticleArg(0,3);     
-	
-	vertex[vanz].on      = 1;
-	vanz++;
+	  vertex[vanz].nleg     = 4;
+	  
+	  kcpl0 = -M_I*g1*g1/(num_2*sintW)*K_A_M(i-31,0);
+	  kcpl1 = kcpl0;
+	  
+	  vertex[vanz].cpl[0]  = kcpl0.Value();
+	  vertex[vanz].cpl[1]  = kcpl1.Value();
+	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+	  
+	  vertex[vanz].ncf   = 1;
+	  vertex[vanz].Color = new Color_Function(cf::None);     
+	  
+	  vertex[vanz].nlf     = 1;
+	  vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
+	  vertex[vanz].Lorentz->SetParticleArg(0,3);     
+	  
+	  vertex[vanz].on      = 1;
+	  vanz++;
 	}
       }
     }
@@ -916,7 +1088,7 @@ void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz)
     if (flZ.IsOn()) {
       
       Kabbala cot2TW = Kabbala(string("cot2\\theta_W"),
-			       (costW.Value()*costW.Value()-sintW.Value()*sintW.Value())/(2.*sintW.Value()*sintW.Value()));
+			       (costW.Value()*costW.Value()-sintW.Value()*sintW.Value())/(2.*sintW.Value()*costW.Value()));
       
       vertex[vanz].in[0] = flZ;
       vertex[vanz].in[1] = flHmin;
@@ -924,7 +1096,7 @@ void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz)
       vertex[vanz].in[3] = flZ;
       
       vertex[vanz].nleg     = 4;
-      
+
       kcpl0 = M_I*g1*g1*num_2*cot2TW*cot2TW;
       kcpl1 = kcpl0;
       
@@ -944,6 +1116,7 @@ void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz)
       vanz++;
       
       if(flPhoton.IsOn()) {
+
 	vertex[vanz].in[0] = flZ;
 	vertex[vanz].in[1] = flHmin;
 	vertex[vanz].in[2] = flHmin.Bar();
@@ -968,15 +1141,14 @@ void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz)
 	
 	vertex[vanz].on      = 1;
 	vanz++;
-	
       }
     }
     if(flPhoton.IsOn()) {
-      vertex[vanz].in[0] = flPhoton;
-      vertex[vanz].in[1] = flHmin;
-      vertex[vanz].in[2] = flHmin.Bar();
-      vertex[vanz].in[3] = flPhoton;
-      
+       vertex[vanz].in[0] = flPhoton;
+       vertex[vanz].in[1] = flHmin;
+       vertex[vanz].in[2] = flHmin.Bar();
+       vertex[vanz].in[3] = flPhoton;
+       
       vertex[vanz].nleg     = 4;
       
       kcpl0 = M_I*g1*g1*num_2;
@@ -1007,7 +1179,7 @@ Kabbala Interaction_Model_Higgs::K_CKM(short int i,short int j)
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("V_{")+string(hi)+string(hj)+string("}"),
-		 p_model->ComplexMatrixElement(std::string("CKM"),i,j));
+		 ComplexMatrixElement(std::string("CKM"),i,j));
 } 
   
 Kabbala Interaction_Model_Higgs::conj_K_CKM(short int i,short int j)       
@@ -1016,10 +1188,10 @@ Kabbala Interaction_Model_Higgs::conj_K_CKM(short int i,short int j)
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("V^\\ti_{")+string(hi)+string(hj)+string("}"),
-		 conj(p_model->ComplexMatrixElement(std::string("CKM"),i,j)));
+		 conj(ComplexMatrixElement(std::string("CKM"),i,j)));
 } 
  
-inline Kabbala Interaction_Model_Higgs::K_yuk(Flavour fl) {
+Kabbala Interaction_Model_Higgs::K_yuk(Flavour fl) {
   return Kabbala(string("M_{"+fl.TexName()+"}"),fl.Yuk());
 }
 
@@ -1029,61 +1201,72 @@ Kabbala Interaction_Model_Higgs::K_yuk_sign(Flavour fl) {
   return Kabbala(string(hi),fl.MassSign());
 }
 
-inline Kabbala Interaction_Model_Higgs::K_Z_H(short int i,short int j) {   
+Kabbala Interaction_Model_Higgs::K_Z_H(short int i,short int j) {   
   char hi[2],hj[2];
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("Z^{")+string(hi)+string(hj)+string("}_H"),
-		 p_model->ComplexMatrixElement(std::string("Z_H"),i,j));
+		 ComplexMatrixElement(std::string("Z_H"),i,j));
 }     
 
-inline Kabbala Interaction_Model_Higgs::K_Z_R(short int i,short int j) {   
+Kabbala Interaction_Model_Higgs::K_Z_R(short int i,short int j) {   
   char hi[2],hj[2];
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("Z^{")+string(hi)+string(hj)+string("}_R"),
-		 p_model->ComplexMatrixElement(std::string("Z_R"),i,j));
+		 ComplexMatrixElement(std::string("Z_R"),i,j));
 }  
 
-inline Kabbala Interaction_Model_Higgs::K_A_M(short int i,short int j) {
+Kabbala Interaction_Model_Higgs::K_A_M(short int i,short int j) {
   char hi[2],hj[2];
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("A^{")+string(hi)+string(hj)+string("}_M"),
-		 p_model->ComplexMatrixElement(std::string("Z_R"),0,i) *
-		 p_model->ComplexMatrixElement(std::string("Z_H"),0,j) -
-		 p_model->ComplexMatrixElement(std::string("Z_R"),1,i) *
-		 p_model->ComplexMatrixElement(std::string("Z_H"),1,j));
+		 ComplexMatrixElement(std::string("Z_R"),0,i) *
+		 ComplexMatrixElement(std::string("Z_H"),0,j) -
+		 ComplexMatrixElement(std::string("Z_R"),1,i) *
+		 ComplexMatrixElement(std::string("Z_H"),1,j));
 }  
 
-inline Kabbala Interaction_Model_Higgs::K_A_H(short int i,short int j) {
+Kabbala Interaction_Model_Higgs::K_A_H(short int i,short int j) {
   char hi[2],hj[2];
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("A^{")+string(hi)+string(hj)+string("}_H"),
-		 p_model->ComplexMatrixElement(std::string("Z_H"),0,i) *
-		 p_model->ComplexMatrixElement(std::string("Z_H"),0,j) -
-		 p_model->ComplexMatrixElement(std::string("Z_H"),1,i) *
-		 p_model->ComplexMatrixElement(std::string("Z_H"),1,j));
+		 ComplexMatrixElement(std::string("Z_H"),0,i) *
+		 ComplexMatrixElement(std::string("Z_H"),0,j) -
+		 ComplexMatrixElement(std::string("Z_H"),1,i) *
+		 ComplexMatrixElement(std::string("Z_H"),1,j));
 }  
 
-inline Kabbala Interaction_Model_Higgs::K_A_P(short int i,short int j) {
+Kabbala Interaction_Model_Higgs::K_A_P(short int i,short int j) {
   char hi[2],hj[2];
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("A^{")+string(hi)+string(hj)+string("}_P"),
-		 p_model->ComplexMatrixElement(std::string("Z_R"),0,i) *
-		 p_model->ComplexMatrixElement(std::string("Z_H"),1,j) +
-		 p_model->ComplexMatrixElement(std::string("Z_R"),1,i) *
-		 p_model->ComplexMatrixElement(std::string("Z_H"),0,j));
+		 ComplexMatrixElement(std::string("Z_R"),0,i) *
+		 ComplexMatrixElement(std::string("Z_H"),1,j) +
+		 ComplexMatrixElement(std::string("Z_R"),1,i) *
+		 ComplexMatrixElement(std::string("Z_H"),0,j));
 }  
 
-inline Kabbala Interaction_Model_Higgs::K_B_R(short int i) {   
+Kabbala Interaction_Model_Higgs::K_A_R(short int i,short int j) {
+  char hi[2],hj[2];
+  sprintf(hi,"%i",i);
+  sprintf(hj,"%i",j);
+  return Kabbala(string("A^{")+string(hi)+string(hj)+string("}_R"),
+		 ComplexMatrixElement(std::string("Z_R"),0,i) *
+		 ComplexMatrixElement(std::string("Z_R"),0,j) -
+		 ComplexMatrixElement(std::string("Z_R"),1,i) *
+		 ComplexMatrixElement(std::string("Z_R"),1,j));
+}  
+
+Kabbala Interaction_Model_Higgs::K_B_R(short int i) {   
   char hi[2];
   sprintf(hi,"%i",i);
   return Kabbala(string("B^{")+string(hi)+string("}_R"),
-		 v1.Value() * p_model->ComplexMatrixElement(std::string("Z_R"),0,i) -
-		 v2.Value() * p_model->ComplexMatrixElement(std::string("Z_R"),1,i) );
+		 v1.Value() * ComplexMatrixElement(std::string("Z_R"),0,i) -
+		 v2.Value() * ComplexMatrixElement(std::string("Z_R"),1,i) );
 }  
 
 

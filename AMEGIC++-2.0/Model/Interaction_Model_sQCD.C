@@ -140,43 +140,15 @@ void Interaction_Model_sQCD::c_SSV(Single_Vertex* vertex,int& vanz)
 
   Flavour flgl = Flavour(kf::gluon); 
   if (flgl.IsOn()) {    
-    //uptypes 
     kcpl0 = g3*M_I;
     kcpl1 = kcpl0;
-    for (short int i=51;i<57;i++) {
+    for (short int i=51;i<67;i++) {
+      if (i==57) i=61;
       Flavour flav = Flavour(kf::code(i));
       if (flav.IsOn()) { 
 	vertex[vanz].in[0] = flav;
 	vertex[vanz].in[1] = flgl;
 	vertex[vanz].in[2] = flav;	
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
-	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
-	
-	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function(cf::T);     
-	vertex[vanz].Color->SetParticleArg(1,0,2);     
-	vertex[vanz].Color->SetStringArg('1','0','2');     
-	
-	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function(lf::SSV);
-	vertex[vanz].Lorentz->SetParticleArg(0,2,1);     
-	
-	vertex[vanz].on      = 1;
-	vanz++;
-      } 
-    }
-    //downtypes 
-    kcpl0 = -g3*M_I;
-    kcpl1 = kcpl0;
-    for (short int i=61;i<67;i++) {
-      Flavour flav = Flavour(kf::code(i));
-      if (flav.IsOn()) { 
-	vertex[vanz].in[0] = flav;
-	vertex[vanz].in[1] = flgl;
-	vertex[vanz].in[2] = flav;
-	
 	vertex[vanz].cpl[0]  = kcpl0.Value();
 	vertex[vanz].cpl[1]  = kcpl1.Value();
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
@@ -247,44 +219,6 @@ void Interaction_Model_sQCD::c_SSVV(Single_Vertex* vertex,int& vanz)
       } 
     }
   }
- 
-  //sQuark - Gluon - Photon - sQuark
-  if (flgl.IsOn() && flph.IsOn()) {    
-    for (short int i=51;i<67;i++) {
-      if (i==57) i=61;
-      Flavour flav = Flavour(kf::code(i));
-      if (flav.IsOn()) {
-	vertex[vanz].in[0] = flgl;
-	vertex[vanz].in[1] = flav.Bar();
-	vertex[vanz].in[2] = flav;
-	vertex[vanz].in[3] = flph;
-	
-	vertex[vanz].nleg     = 4;
-	
-	Kabbala charge = Kabbala(string("Q_{"+flav.TexName()+"}"),flav.Charge());
-	
-	kcpl0 = M_I*num_2*charge*g1*g3;
-	kcpl1 = kcpl0;
-	
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
-	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
-	
-	vertex[vanz].ncf     = 1;
-	vertex[vanz].Color   = new Color_Function(cf::T); 
-	vertex[vanz].Color->SetParticleArg(0,1,2);     
-	vertex[vanz].Color->SetStringArg('0','1','2');     
-	
-	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);     
-	vertex[vanz].Lorentz->SetParticleArg(0,3);     
-	
-	vertex[vanz].on      = 1;
-	vanz++;
-      } 
-    }
-  }
 }
 
 Kabbala Interaction_Model_sQCD::K_Z_D(short int i,short int j)       
@@ -293,7 +227,7 @@ Kabbala Interaction_Model_sQCD::K_Z_D(short int i,short int j)
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("Z^{")+string(hi)+string(hj)+string("}_D"),
-		 p_model->ComplexMatrixElement(std::string("Z_d"),i,j));
+		 ComplexMatrixElement(std::string("Z_d"),i,j));
 }  
 
 Kabbala Interaction_Model_sQCD::K_Z_U(short int i,short int j)       
@@ -302,6 +236,6 @@ Kabbala Interaction_Model_sQCD::K_Z_U(short int i,short int j)
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("Z^{")+string(hi)+string(hj)+string("}_U"),
-		 p_model->ComplexMatrixElement(std::string("Z_u"),i,j));
+		 ComplexMatrixElement(std::string("Z_u"),i,j));
 }  
 

@@ -13,6 +13,7 @@ namespace AMEGIC {
     Kabbala K_Z_H(short int i,short int j);
     Kabbala K_Z_R(short int i,short int j);
     Kabbala K_A_H(short int i,short int j);
+    Kabbala K_A_R(short int i,short int j);
     Kabbala K_B_R(short int i);
     Kabbala K_Z_PL(short int i,short int j);
     Kabbala K_Z_N(short int i,short int j); 
@@ -23,6 +24,7 @@ namespace AMEGIC {
     Kabbala K_Z_L(short int i,short int j);
     Kabbala K_k_S(short int i,short int j);
     Kabbala K_l_S(short int i,short int j);
+    Kabbala K_l(short int i);
     Kabbala K_yuk(ATOOLS::Flavour fl);           
     Kabbala K_yuk_sign(ATOOLS::Flavour fl);          
     int gen_sLep(ATOOLS::Flavour fl);

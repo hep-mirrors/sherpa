@@ -14,13 +14,13 @@ Interaction_Model_Inos::Interaction_Model_Inos(MODEL::Model_Base * _model,
   double Ecms2 = sqr(rpa.gen.Ecms());
 
   g1     = Kabbala(string("g_1"),
-		   sqrt(4.*M_PI*p_model->ScalarFunction(std::string("alpha_QED"),Ecms2)));
+		   sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),Ecms2)));
   g2     = Kabbala(string("g_1/\\sin\\theta_W"), 
-		   g1.Value()/sqrt(p_model->ScalarConstant(std::string("sin2_thetaW"))));
+		   g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
   sintW  = Kabbala(std::string("\\sin\\theta_W"),
-		   sqrt(p_model->ScalarConstant(std::string("sin2_thetaW"))));
+		   sqrt(ScalarConstant(std::string("sin2_thetaW"))));
   costW  = Kabbala(std::string("\\cos\\theta_W"),
-		   sqrt(1.-p_model->ScalarConstant(std::string("sin2_thetaW"))));
+		   sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
   PL     = Kabbala(string("P_L"),1.);
   PR     = Kabbala(string("P_R"),1.);
   M_I    = Kabbala(string("i"),Complex(0.,1.));
@@ -75,7 +75,7 @@ void Interaction_Model_Inos::c_FFS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].in[1] = flav3;
 	  vertex[vanz].in[2] = flav1;
 
-	  kcpl0 = -g2/root2*
+	  kcpl0 = g2/root2*
 	    (K_Z_H(0,0)*K_Z_PL(0,i-41)*K_Z_MI(1,j-41)+
 	     K_Z_H(1,0)*K_Z_PL(1,i-41)*K_Z_MI(0,j-41));
 	    
@@ -136,7 +136,7 @@ void Interaction_Model_Inos::c_FFS(Single_Vertex* vertex,int& vanz)
 	  
 	  vertex[vanz].on     = 1;
 	  vanz++;
-	  //checked FK & RK & SS (new -kcpl0)
+	  //checked FK & RK & SS 
 	}
 	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn() && (k == 33)) {
 	  vertex[vanz].in[0] = flav1;
@@ -169,12 +169,12 @@ void Interaction_Model_Inos::c_FFS(Single_Vertex* vertex,int& vanz)
 	  
 	  vertex[vanz].on      = 1;
 	  vanz++;
-	  //checked SS (new -kclp0)
+	  //checked SS 
 	}
       }
     }
   }
-  // Chargino - Higgs - Neutralino
+  // Neutralino - Higgs - Chargino
   Flavour flHm = Flavour(kf::Hmin);
   if (flHm.IsOn()) {
     for (short int i=41;i<43;i++) {
@@ -182,20 +182,20 @@ void Interaction_Model_Inos::c_FFS(Single_Vertex* vertex,int& vanz)
       for (short int j=43;j<47;j++) {
 	Flavour flav2 = Flavour(kf::code(j));
 	if (flav1.IsOn() && flav2.IsOn()) {
-	  vertex[vanz].in[0] = flav1;
+	  vertex[vanz].in[0] = flav2;
 	  vertex[vanz].in[1] = flHm;
-	  vertex[vanz].in[2] = flav2;
+	  vertex[vanz].in[2] = flav1;
 	  
-	  kcpl0 = K_yuk_sign(flav1)*M_I*g2/costW*
-	    K_Z_H(0,0)*(K_Z_MI(1,i-41)/root2*
-			(K_Z_N(0,j-43)*sintW+K_Z_N(1,j-43)*
-			 costW)-K_Z_MI(0,i-41)*K_Z_N(2,j-43)*costW);
-	 	  
-	  kcpl1 = K_yuk_sign(flav2)*M_I*g2/costW*
+	  kcpl0 = -K_yuk_sign(flav2)*M_I*g2/costW*
 	    K_Z_H(1,0)*(K_Z_PL(1,i-41)/root2*
 			(K_Z_N(0,j-43)*sintW+K_Z_N(1,j-43)*costW)+
 			K_Z_PL(0,i-41)*K_Z_N(3,j-43)*costW);
-	 	  
+	  
+	  kcpl1 = K_yuk_sign(flav1)*M_I*g2/costW*
+	    K_Z_H(0,0)*(K_Z_MI(1,i-41)/root2*
+			(K_Z_N(0,j-43)*sintW+K_Z_N(1,j-43)*costW)-
+			K_Z_MI(0,i-41)*K_Z_N(2,j-43)*costW);
+	  
 	  vertex[vanz].cpl[0] = kcpl0.Value(); 
 	  vertex[vanz].cpl[1] = kcpl1.Value();
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
@@ -232,14 +232,7 @@ void Interaction_Model_Inos::c_FFV(Single_Vertex* vertex,int& vanz)
 	   vertex[vanz].in[1] = flph;
 	   vertex[vanz].in[2] = flav2;
 	   
-	   ATOOLS::msg.Out()<<"Chargino Masses : "<<flav1<<" "<<flav1.Mass()<<endl;
-
-
-	   Kabbala charge1 = Kabbala(string("Q_{")+flav1.TexName()+string("}"),
-				     flav1.Charge());
-	   
-	   //fixed with Chargino pair production !!!
-	   kcpl0 = -M_I*g1*charge1;
+	   kcpl0 = -M_I*g1;
 	   kcpl1 = kcpl0;
 	   
 	   vertex[vanz].cpl[0]  = kcpl0.Value();
@@ -256,11 +249,9 @@ void Interaction_Model_Inos::c_FFV(Single_Vertex* vertex,int& vanz)
 	   
 	   vertex[vanz].on      = 1;
 	   vanz++;
-	   //checked RK + SS (tested by chargino pair production)
 	 }
 	 if (flZ.IsOn()) {	
-	   Kabbala charge1 = Kabbala(string("Q_{")+flav1.TexName()+string("}"),
-				     flav1.Charge());
+
 	   Kabbala helper = Kabbala(string("zero"),0.);
 	   
 	   if (flav1 == flav2) helper = Kabbala(string("cos2\\theta_W"),
@@ -270,14 +261,12 @@ void Interaction_Model_Inos::c_FFV(Single_Vertex* vertex,int& vanz)
 	   vertex[vanz].in[1] = flZ;
 	   vertex[vanz].in[2] = flav2;	  
 	   
-	   //fixed with Chargino pair production !!!
-	   
-	   kcpl0 = -M_I/(costW*num_2)*
-	     g2*charge1*(K_Z_PL(0,j-41)*K_Z_PL(0,i-41) + helper);
-	   
-	   kcpl1 = -M_I/(costW*num_2)*g2*charge1*
+	   kcpl0 = -M_I/(costW*num_2)*g2*
 	     (K_Z_MI(0,j-41)*K_Z_MI(0,i-41) + helper);
-	   
+
+	   kcpl1 = -M_I/(costW*num_2)*
+	     g2*(K_Z_PL(0,j-41)*K_Z_PL(0,i-41) + helper);
+	   	   
 	   vertex[vanz].cpl[0] = kcpl0.Value();
 	   vertex[vanz].cpl[1] = kcpl1.Value(); 
 	   vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
@@ -292,8 +281,7 @@ void Interaction_Model_Inos::c_FFV(Single_Vertex* vertex,int& vanz)
 	   
 	   vertex[vanz].on     = 1;
 	   vanz++;
-	   //checked RK + SS 
-	 }      
+	 }     
        } 
      }
    }
@@ -306,17 +294,14 @@ void Interaction_Model_Inos::c_FFV(Single_Vertex* vertex,int& vanz)
        if (flav1.IsOn() && flav2.IsOn()) {
 	 vertex[vanz].in[0] = flav1;
 	 vertex[vanz].in[1] = Flavour(kf::W);
-	 vertex[vanz].in[2] = flav2.Bar();
-	 
-	 Kabbala charge2 = Kabbala(string("Q_{")+flav2.TexName()+string("}"),
-				   flav2.Charge());
-	 
+	 vertex[vanz].in[2] = flav2;
+
 	 kcpl0 = M_I*g2*(K_Z_N(1,i-43)*K_Z_MI(0,j-41)+
 			 K_Z_N(2,i-43)*K_Z_MI(1,j-41)/root2);
 	 
 	 kcpl1 = M_I*g2*(K_Z_N(1,i-43)*K_Z_PL(0,j-41)-
 			 K_Z_N(3,i-43)*K_Z_PL(1,j-41)/root2);
-	 
+
 	 vertex[vanz].cpl[0] = kcpl0.Value();
 	 vertex[vanz].cpl[1] = kcpl1.Value(); 
 	 vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
@@ -341,7 +326,7 @@ void Interaction_Model_Inos::c_FFV(Single_Vertex* vertex,int& vanz)
      Flavour flav1 = Flavour(kf::code(j));
      for (short int i=j;i<47;i++) {
        Flavour flav2 = Flavour(kf::code(i));
-       if (flav1.IsOn() && flav2.IsOn()) {
+       if (flav1.IsOn() && flav2.IsOn() && flZ.IsOn()) {
 	 
 	 vertex[vanz].in[0] = flav1;
 	 vertex[vanz].in[1] = Flavour(kf::Z);	
@@ -382,7 +367,7 @@ Kabbala Interaction_Model_Inos::K_CKM(short int i,short int j)
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("V_{")+string(hi)+string(hj)+string("}"),
-		 p_model->ComplexMatrixElement(string("CKM"),i,j));
+		 ComplexMatrixElement(string("CKM"),i,j));
 } 
   
 Kabbala Interaction_Model_Inos::conj_K_CKM(short int i,short int j)       
@@ -391,7 +376,7 @@ Kabbala Interaction_Model_Inos::conj_K_CKM(short int i,short int j)
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("V^\\ti_{")+string(hi)+string(hj)+string("}"),
-		 conj(p_model->ComplexMatrixElement(string("CKM"),i,j)));
+		 conj(ComplexMatrixElement(string("CKM"),i,j)));
 } 
  
 
@@ -410,7 +395,7 @@ Kabbala Interaction_Model_Inos::K_Z_H(short int i,short int j) {
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("Z^{")+string(hi)+string(hj)+string("}_H"),
-		 p_model->ComplexMatrixElement(string("Z_H"),i,j));
+		 ComplexMatrixElement(string("Z_H"),i,j));
 }     
 
 Kabbala Interaction_Model_Inos::K_Z_R(short int i,short int j) {   
@@ -418,7 +403,7 @@ Kabbala Interaction_Model_Inos::K_Z_R(short int i,short int j) {
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("Z^{")+string(hi)+string(hj)+string("}_R"),
-		 p_model->ComplexMatrixElement(string("Z_R"),i,j));
+		 ComplexMatrixElement(string("Z_R"),i,j));
 }  
 
 Kabbala Interaction_Model_Inos::K_Z_PL(short int i,short int j)       
@@ -428,7 +413,7 @@ Kabbala Interaction_Model_Inos::K_Z_PL(short int i,short int j)
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("Z^\\p_{")+string(hi)+string(hj)+string("}"),
-		 p_model->ComplexMatrixElement(string("Z^+"),i,j));
+		 ComplexMatrixElement(string("Z^+"),i,j));
 }  
 
 Kabbala Interaction_Model_Inos::K_Z_MI(short int i,short int j)       
@@ -437,7 +422,7 @@ Kabbala Interaction_Model_Inos::K_Z_MI(short int i,short int j)
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("Z^\\m_{")+string(hi)+string(hj)+string("}"),
-		 p_model->ComplexMatrixElement(string("Z^-"),i,j));
+		 ComplexMatrixElement(string("Z^-"),i,j));
 }  
 
 Kabbala Interaction_Model_Inos::K_Z_N(short int i,short int j)       
@@ -446,7 +431,7 @@ Kabbala Interaction_Model_Inos::K_Z_N(short int i,short int j)
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("Z^{")+string(hi)+string(hj)+string("}_N"),
-		 p_model->ComplexMatrixElement(string("Z^N"),i,j));
+		 ComplexMatrixElement(string("Z^N"),i,j));
 }  
 //we use transposed convention !!! 
 
@@ -459,7 +444,7 @@ Kabbala Interaction_Model_Inos::K_Z_N_com(short int i,short int j)
   Complex exp_i = Complex(1.,0.);
   
   return Kabbala(string("Z^{")+string(hi)+string(hj)+string("}_N"),
-		 exp_i*p_model->ComplexMatrixElement(string("Z^N"),i,j));
+		 exp_i*ComplexMatrixElement(string("Z^N"),i,j));
 }  
 
 Kabbala Interaction_Model_Inos::K_Z_N_com_conj(short int i,short int j)       
@@ -470,7 +455,7 @@ Kabbala Interaction_Model_Inos::K_Z_N_com_conj(short int i,short int j)
   Complex exp_i = Complex(1.,0.);
   
   return Kabbala(string("Z^{")+string(hi)+string(hj)+string("}_N"),
-		 exp_i*p_model->ComplexMatrixElement(string("Z^N"),i,j));
+		 exp_i*ComplexMatrixElement(string("Z^N"),i,j));
 }  
 
 
