@@ -28,9 +28,9 @@ namespace AMEGIC {
     BEAM::Beam_Spectra_Handler * p_beamspectra;
     APHYTOOLS::Flavour           m_beam_particles[2];
 
+    PDF::ISR_Handler           * p_isrhandler;
     APHYTOOLS::Flavour           m_bunch_particles[2];
     double                       m_bunch_splimits[2];
-    ISR::ISR_Handler           * p_isrhandler;
 
   private :
     bool InitializeTheModel();
@@ -44,7 +44,7 @@ namespace AMEGIC {
 
     MODEL::Model_Base          * GetModel()              { return p_model; }
     BEAM::Beam_Spectra_Handler * GetBeamSpectraHandler() { return p_beamspectra; }
-    ISR::ISR_Handler           * GetISRHandler()         { return p_isrhandler; }
+    PDF::ISR_Handler           * GetISRHandler()         { return p_isrhandler; }
 
     std::string                  GetMEFile()             { return m_medat; }
   };
