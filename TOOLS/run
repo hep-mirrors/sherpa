@@ -83,12 +83,12 @@ if [ "$QUEUE" = "TRUE" ] ; then
 fi
 echo "cd $BINPATH" >> $FILE
 echo -en "./Sherpa PATH=$RUNPATH " >> $FILE
-echo -en "\\ \n         RUNDATA=$RUNFILE " >> $FILE 
-if [ ! "$RESULTS" = "" ] ; then echo -en "\\ \n         RESULTS=$RESULTS " >> $FILE ; fi
-if [ ! "$ANALYSIS" = "" ] ; then echo -en "\\ \n         ANALYSIS_OUTPUT=$ANALYSIS " >> $FILE ; fi
-if [ ! "$EVENTS" = "" ] ; then echo -en "\\ \n         EVENTS=$EVENTS " >> $FILE ; fi
-if [ ! "$PYTHIA" = "" ] ; then echo -en "\\ \n         PYTHIA=$PYTHIA " >> $FILE ; fi
-echo -e "\\ \n         >> $LOGFILE.log 2>&1 \n" >> $FILE
+echo -en "RUNDATA=$RUNFILE " >> $FILE 
+if [ ! "$RESULTS" = "" ] ; then echo -en "RESULTS=$RESULTS " >> $FILE ; fi
+if [ ! "$ANALYSIS" = "" ] ; then echo -en "ANALYSIS_OUTPUT=$ANALYSIS " >> $FILE ; fi
+if [ ! "$EVENTS" = "" ] ; then echo -en "EVENTS=$EVENTS " >> $FILE ; fi
+if [ ! "$PYTHIA" = "" ] ; then echo -en "PYTHIA=$PYTHIA " >> $FILE ; fi
+echo -e ">> $LOGFILE.log 2>&1 \n" >> $FILE
 
 if [ "$QUEUE" = "TRUE" ] ; then
   echo qsub $FILE  
