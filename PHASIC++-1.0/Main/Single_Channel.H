@@ -33,8 +33,8 @@ namespace PHASIC {
     // constructor
     Single_Channel();
     Single_Channel(Single_Channel *);
-    Single_Channel(int,int,ATOOLS::Flavour *);
-    Single_Channel(int,int,ATOOLS::Flavour *,ATOOLS::Integration_Info * const) {};
+    Single_Channel(int,int,const ATOOLS::Flavour *);
+    Single_Channel(int,int,const ATOOLS::Flavour *,ATOOLS::Integration_Info * const) {};
 
     // destructor
     virtual ~Single_Channel();

@@ -10,7 +10,7 @@ Single_Channel::Single_Channel():
   ms(NULL),
   rans(NULL) {}
 
-Single_Channel::Single_Channel(int _nin,int _nout,Flavour * fl) 
+Single_Channel::Single_Channel(int _nin,int _nout,const Flavour * fl) 
 { 
   nin  = _nin; nout = _nout;
   ms   = new double[nin+nout+1];

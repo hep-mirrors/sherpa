@@ -12,10 +12,12 @@ namespace PHASIC {
     short int itmax;
     double accu;
   public:
-    Rambo(int,int,ATOOLS::Flavour *);
+    Rambo(int,int,const ATOOLS::Flavour *);
     ~Rambo();
     void GenerateWeight(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);  
     void GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);
+    void GenerateWeight(ATOOLS::Vec4D * p) { GenerateWeight(p,NULL); }  
+    void GeneratePoint(ATOOLS::Vec4D * p)  { GeneratePoint(p,NULL); }
     void GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *,double *);
     void MassiveWeight(ATOOLS::Vec4D *,double);
     void MassivePoint(ATOOLS::Vec4D *,double);

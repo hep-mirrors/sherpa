@@ -15,8 +15,10 @@ using namespace std;
 #include <mpi++.h>
 #endif
 
-Multi_Channel::Multi_Channel(string _name) : fl(NULL), s1(NULL), s2(NULL), m_readin(false), m_fixalpha(false)
+Multi_Channel::Multi_Channel(string _name) : 
+  fl(NULL), s1(NULL), s2(NULL), m_readin(false), m_fixalpha(false)
 {
+  cout<<"Multi_Channel::Multi_Channel : "<<_name<<endl;
   string help;
   int    pos;
   for (;;) {
@@ -395,6 +397,11 @@ void Multi_Channel::GenerateWeight(int n,Vec4D* p)
 void Multi_Channel::GenerateWeight(Vec4D * p)
 {
   m_weight = 0.;
+  if (channels.size()==1) {
+    channels[0]->GenerateWeight(p);
+    if (channels[0]->Weight()!=0) m_weight = channels[0]->Weight();
+    return;
+  }
   for (size_t i=0; i<channels.size(); ++i) {
     if (channels[i]->Alpha() > 0.) {
       channels[i]->GenerateWeight(p);
@@ -418,10 +425,15 @@ void Multi_Channel::GeneratePoint(int n,Vec4D * p,double * rn)
 
 void Multi_Channel::GeneratePoint(Vec4D * p)
 {
+  if (channels.size()==1) {
+    channels[0]->GeneratePoint(p);
+    return;
+  }
   for(size_t i=0;i<channels.size();i++) channels[i]->SetWeight(0.);
   double rn  = ran.Get();
   double sum = 0;
   for (size_t i=0;i<channels.size();i++) {
+    cout<<"   "<<sum<<" "<<channels[i]->Alpha()<<endl;
     sum += channels[i]->Alpha();
     if (sum>rn) {
       channels[i]->GeneratePoint(p);

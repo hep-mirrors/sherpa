@@ -6,7 +6,7 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 
-Rambo::Rambo(int _nin,int _nout,Flavour * fl)// : nin(_nin), nout(_nout)
+Rambo::Rambo(int _nin,int _nout,const Flavour * fl)// : nin(_nin), nout(_nout)
 {
   nin=_nin;nout=_nout;
   xm2 = new double[nin+nout+1];

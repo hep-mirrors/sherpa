@@ -32,7 +32,7 @@ namespace PHASIC {
   class Regulator_Base;
   class Phase_Space_Handler;
 
-  class Integrable_Base: public ATOOLS::Terminator_Object {
+  class Integrable_Base : public ATOOLS::Terminator_Object {
   protected:
 
     std::string m_name, m_resultpath, m_resultfile, m_histofile;

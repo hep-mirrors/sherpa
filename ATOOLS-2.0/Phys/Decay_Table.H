@@ -9,6 +9,7 @@ namespace ATOOLS {
   class Decay_Channel {
   protected :
     std::string m_processname;
+    std::string m_metype, m_psfile;
     double      m_width, m_minmass;
     Flavour     m_flin;
     FlavourSet  m_flouts;
@@ -19,9 +20,13 @@ namespace ATOOLS {
     void AddDecayProduct(const Flavour &);
     void SetWidth(const double &);
     void Output() const;
-    void SetProcessName(const std::string &);
+    void SetProcessName(const std::string=std::string(""));
+    void SetMEType(const std::string=std::string(""));
+    void SetPSFile(const std::string=std::string(""));
 
     std::string ProcessName() const;
+    std::string METype() const;
+    std::string PSFile() const;
     double      Width() const;
     Flavour     GetDecaying() const;
     int         NumberOfDecayProducts() const;
@@ -34,10 +39,13 @@ namespace ATOOLS {
     m_flouts.insert(_flout); 
     m_minmass += _flout.Mass();
   }
-  inline void        Decay_Channel::SetWidth(const double & _width)           { m_width = _width; }
+  inline void        Decay_Channel::SetWidth(const double & _width)           { m_width  = _width; }
   inline double      Decay_Channel::Width() const                             { return m_width;   }
-  inline void        Decay_Channel::SetProcessName(const std::string & _name) { m_processname = _name; }
   inline std::string Decay_Channel::ProcessName() const                       { return m_processname; }
+  inline void        Decay_Channel::SetMEType(const std::string _metype)      { m_metype = _metype; }
+  inline void        Decay_Channel::SetPSFile(const std::string _psfile)      { m_psfile = _psfile; }
+  inline std::string Decay_Channel::METype() const                            { return m_metype; }
+  inline std::string Decay_Channel::PSFile() const                            { return m_psfile; }
   inline Flavour     Decay_Channel::GetDecaying() const                       { return m_flin;    }
   inline int         Decay_Channel::NumberOfDecayProducts() const             { return m_flouts.size();  }
   inline double      Decay_Channel::MinimalMass() const                       { return m_minmass; }

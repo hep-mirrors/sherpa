@@ -6,18 +6,35 @@ using namespace ATOOLS;
 using namespace std;
 
 Decay_Channel::Decay_Channel(const Flavour & _flin) :
-  m_width(0.), m_minmass(0.), m_flin(_flin) { }
+  m_width(0.), m_minmass(0.), m_flin(_flin), 
+  m_metype(string("")), m_psfile(string("")) { }
 
 Decay_Channel::Decay_Channel(const Decay_Channel & _dec) :
   m_processname(_dec.m_processname),
+  m_metype(_dec.m_metype), m_psfile(_dec.m_psfile),
   m_width(_dec.m_width), m_minmass(_dec.m_minmass), 
   m_flin(_dec.m_flin), m_flouts(_dec.m_flouts) { }
+
+void Decay_Channel::SetProcessName(const std::string _name) 
+{ 
+  if (_name!=string("")) {
+    m_processname = _name;
+    return;
+  }
+  m_processname = m_flin.Name()+string("->");
+  for (FlSetConstIter fl=m_flouts.begin();fl!=m_flouts.end();++fl) 
+    m_processname += fl->Name()+string("_");
+  m_processname = m_processname.substr(0,m_processname.size()-1);
+}
 
 void Decay_Channel::Output() const
 {
   msg.Out()<<m_flin<<" -> ";
   for (FlSetConstIter fl=m_flouts.begin();fl!=m_flouts.end();++fl) msg.Out()<<(*fl)<<" ";
-  msg.Out()<<" : "<<m_width<<" GeV."<<endl;
+  msg.Out()<<" : "<<m_width<<" GeV";
+  if (m_metype!=string("")) msg.Out()<<", ME : "<<m_metype;
+  if (m_psfile!=string("")) msg.Out()<<", PS : "<<m_psfile;
+  msg.Out()<<"."<<endl;
 }
 
 
