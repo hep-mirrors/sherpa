@@ -27,15 +27,9 @@ for I in $* ; do
 done
 
 if [ "$NOUPDATE" = "TRUE" ] ; then 
-  if ! cvs -n update $OPTIONS > $LOGFILE ; then 
-    echo "update: error: cvs -n update failed"
-    exit 1
-  fi
+  cvs -n update $OPTIONS > $LOGFILE
 else 
-  if ! cvs update $OPTIONS > $LOGFILE ; then
-    echo "update: error: cvs update failed"
-    exit 1
-  fi
+  cvs update $OPTIONS > $LOGFILE 
 fi
 
 CHANGES=
