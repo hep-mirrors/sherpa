@@ -29,7 +29,7 @@ extern "C" {
 
 Initialization_Handler::Initialization_Handler(string _path,string _file) : 
   m_path(_path), m_file(_file),
-  p_model(NULL), p_beamspectra(NULL), p_isrhandler(NULL),
+  p_model(NULL), p_beamspectra(NULL), 
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
   p_fragmentation(NULL), p_hadrondecays(NULL),  p_mihandler(NULL)
 {
@@ -38,7 +38,8 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
   p_dataread         = new Data_Read(m_path+m_file);
   m_modeldat         = p_dataread->GetValue<string>("MODEL_DATA_FILE",string("Model.dat"));
   m_beamdat          = p_dataread->GetValue<string>("BEAM_DATA_FILE",string("Beam.dat"));
-  m_isrdat           = p_dataread->GetValue<string>("ISR_DATA_FILE",string("ISR.dat"));
+  m_isrdat[0]        = p_dataread->GetValue<string>("ISR_DATA_FILE",string("ISR.dat"));
+  m_isrdat[1]        = p_dataread->GetValue<string>("MI_ISR_DATA_FILE",string("MIISR.dat"));
   m_medat            = p_dataread->GetValue<string>("ME_DATA_FILE",string("ME.dat"));
   m_midat            = p_dataread->GetValue<string>("MI_DATA_FILE",string("MI.dat"));
   m_decaydat         = p_dataread->GetValue<string>("DECAY_DATA_FILE",string("Decays.dat"));
@@ -51,7 +52,7 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
 
 
 Initialization_Handler::Initialization_Handler(int argc,char * argv[]) : 
-  p_model(NULL), p_beamspectra(NULL), p_isrhandler(NULL),
+  p_model(NULL), p_beamspectra(NULL), 
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
   p_fragmentation(NULL), p_hadrondecays(NULL), p_mihandler(NULL)
 {
@@ -70,7 +71,8 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   p_dataread         = new Data_Read(m_path+m_file);
   m_modeldat         = p_dataread->GetValue<string>("MODEL_DATA_FILE",string("Model.dat"));
   m_beamdat          = p_dataread->GetValue<string>("BEAM_DATA_FILE",string("Beam.dat"));
-  m_isrdat           = p_dataread->GetValue<string>("ISR_DATA_FILE",string("ISR.dat"));
+  m_isrdat[0]        = p_dataread->GetValue<string>("ISR_DATA_FILE",string("ISR.dat"));
+  m_isrdat[1]        = p_dataread->GetValue<string>("MI_ISR_DATA_FILE",string("MIISR.dat"));
   m_medat            = p_dataread->GetValue<string>("ME_DATA_FILE",string("ME.dat"));
   m_midat            = p_dataread->GetValue<string>("MI_DATA_FILE",string("MI.dat"));
   m_decaydat         = p_dataread->GetValue<string>("DECAY_DATA_FILE",string("Decays.dat"));
@@ -95,12 +97,16 @@ Initialization_Handler::~Initialization_Handler()
   if (p_showerhandler) { delete p_showerhandler; p_showerhandler = NULL; }
   if (p_harddecays)    { delete p_harddecays;    p_harddecays    = NULL; }
   if (p_mihandler)     { delete p_mihandler;     p_mihandler     = NULL; }
-  if (p_isrhandler)    { delete p_isrhandler;    p_isrhandler    = NULL; }
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
   if (p_model)         { delete p_model;         p_model         = NULL; }
+  if (p_dataread)      { delete p_dataread;      p_dataread      = NULL; }
   while (m_mehandlers.size()>0) {
     delete m_mehandlers.begin()->second;
     m_mehandlers.erase(m_mehandlers.begin());
+  }
+  while (m_isrhandlers.size()>0) {
+    delete m_isrhandlers.begin()->second;
+    m_isrhandlers.erase(m_isrhandlers.begin());
   }
   PHASIC::Phase_Space_Handler::DeleteInfo();
 }
@@ -131,9 +137,10 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   okay = okay && InitializeThePDFs();
 
   ATOOLS::Integration_Info *info=PHASIC::Phase_Space_Handler::GetInfo();
-  p_isrhandler->AssignKeys(info);
-
-  PHASIC::Phase_Space_Handler::GetInfo();
+  m_isrhandlers[isr::hard_process]->AssignKeys(info);
+  if (m_isrhandlers.find(isr::hard_subprocess)!=m_isrhandlers.end()) {
+    m_isrhandlers[isr::hard_subprocess]->AssignKeys(info);
+  }
 
   if (!CheckBeamISRConsistency()) return 0.;
   
@@ -165,9 +172,9 @@ bool Initialization_Handler::CheckBeamISRConsistency()
   double smax=sqr(rpa.gen.Ecms());
   smin = Max(smin,p_beamspectra->SprimeMin());
   smax = Min(smax,p_beamspectra->SprimeMax());
-  if (p_isrhandler->On()) {
-    smin = Max(smin,p_isrhandler->SprimeMin());
-    smax = Min(smax,p_isrhandler->SprimeMax());
+  if (m_isrhandlers[isr::hard_process]->On()) {
+    smin = Max(smin,m_isrhandlers[isr::hard_process]->SprimeMin());
+    smax = Min(smax,m_isrhandlers[isr::hard_process]->SprimeMax());
   }
   if (p_beamspectra->On()) {
     p_beamspectra->SetSprimeMin(smin);
@@ -178,20 +185,25 @@ bool Initialization_Handler::CheckBeamISRConsistency()
     // if ISR & beam -> apply mcut on ISR only
     // if beam only  -> apply mcut on Beam
     smax = Min(smax,mcut2);
-    if (p_isrhandler->On()) {
-      p_isrhandler->SetFixedSprimeMax(smax);
-      p_isrhandler->SetFixedSprimeMin(smin);
-    } 
-    else if (p_beamspectra->On()) {
-      p_beamspectra->SetSprimeMax(smax);
+    for (size_t i=1;i<3;++i) {
+      isr::id id=(isr::id)i;
+      if (m_isrhandlers[id]->On()) {
+	m_isrhandlers[id]->SetFixedSprimeMax(smax);
+	m_isrhandlers[id]->SetFixedSprimeMin(smin);
+      } 
+      else if (p_beamspectra->On()) {
+	p_beamspectra->SetSprimeMax(smax);
+      }
     }
   }
 
   if (!(p_beamspectra->CheckConsistency(m_bunch_particles))) {
     msg.Error()<<"Error in Initialization of the Sherpa framework : "<<endl
 	       <<"    Detected a mismatch of flavours from beams to bunches : "<<endl
-	       <<"    "<<p_beamspectra->GetBeam(0)<<" -> "<<p_isrhandler->Flav(0)<<" and "
-	       <<p_beamspectra->GetBeam(1)<<" -> "<<p_isrhandler->Flav(1)<<endl;
+	       <<"    "<<p_beamspectra->GetBeam(0)<<" -> "
+	       <<m_isrhandlers[isr::hard_process]->Flav(0)<<" and "
+	       <<p_beamspectra->GetBeam(1)<<" -> "
+	       <<m_isrhandlers[isr::hard_process]->Flav(1)<<endl;
     return 0;
   }
 
@@ -252,10 +264,8 @@ bool Initialization_Handler::InitializeTheBeams()
     */
   }
   Data_Read * dataread = new Data_Read(m_path+m_beamdat);
-  // - add commandline parameter - !!
   p_beamspectra        = new Beam_Spectra_Handler(dataread);
   msg.Events()<<"Initialized the beams "<<p_beamspectra->Type()<<endl;
-
   delete dataread;  
   return 1;
 }
@@ -263,35 +273,34 @@ bool Initialization_Handler::InitializeTheBeams()
 
 bool Initialization_Handler::InitializeThePDFs()
 {
-  if (p_isrhandler)  { delete p_isrhandler; p_isrhandler = NULL; }
-  Data_Read * dataread     = new Data_Read(m_path+m_isrdat);
-  // - add commandline parameter - !!
-  PDF_Handler * pdfhandler = new PDF_Handler();
-  PDF_Base *  pdfbase;
-  ISR_Base ** isrbases     = new ISR_Base*[2];
-  double  m_bunch_splimits[2];
-
-  for (int i=0;i<2;++i) {
-    pdfbase = pdfhandler->GetPDFLib(dataread,m_bunch_particles[i],i);
-    if (pdfbase==NULL) isrbases[i] = new Intact(m_bunch_particles[i]);     
-    else isrbases[i] = new Structure_Function(pdfbase,m_bunch_particles[i]);
-    ATOOLS::rpa.gen.SetBunch(m_bunch_particles[i],i);
-  }
-  m_bunch_splimits[0] = dataread->GetValue<double>("ISR_SMIN",0.);
-  m_bunch_splimits[1] = dataread->GetValue<double>("ISR_SMAX",1.);
-  double kplimits[2];
-  kplimits[0] = dataread->GetValue<double>("ISR_KPMIN",m_bunch_splimits[0]);
-  kplimits[1] = dataread->GetValue<double>("ISR_KPMAX",m_bunch_splimits[1]);
-  p_isrhandler = new ISR_Handler(isrbases,m_bunch_splimits,kplimits);
-
-  delete pdfhandler;
-  delete dataread;
-
-  if (!(p_beamspectra->CheckConsistency(m_bunch_particles))) {
-    msg.Error()<<"Error in Environment::InitializeThePDFs()"<<endl
-	       <<"   Inconsistent ISR & Beam:"<<endl
-	       <<"   Abort program."<<endl;
-    abort();
+  for (size_t i=0;i<2;++i) {
+    isr::id id=(isr::id)(i+1);
+    if (m_isrhandlers.find(id)!=m_isrhandlers.end()) delete m_isrhandlers[id]; 
+    Data_Read * dataread = new Data_Read(m_path+m_isrdat[i]);
+    PDF_Handler * pdfhandler = new PDF_Handler();
+    PDF_Base * pdfbase;
+    ISR_Base ** isrbases = new ISR_Base*[2];
+    double m_bunch_splimits[2];
+    for (int j=0;j<2;++j) {
+      pdfbase = pdfhandler->GetPDFLib(dataread,m_bunch_particles[j],j);
+      if (pdfbase==NULL) isrbases[j] = new Intact(m_bunch_particles[j]);     
+      else isrbases[j] = new Structure_Function(pdfbase,m_bunch_particles[j]);
+      ATOOLS::rpa.gen.SetBunch(m_bunch_particles[j],j);
+    }
+    m_bunch_splimits[0] = dataread->GetValue<double>("ISR_SMIN",0.);
+    m_bunch_splimits[1] = dataread->GetValue<double>("ISR_SMAX",1.);
+    double kplimits[2];
+    kplimits[0] = dataread->GetValue<double>("ISR_KPMIN",m_bunch_splimits[0]);
+    kplimits[1] = dataread->GetValue<double>("ISR_KPMAX",m_bunch_splimits[1]);
+    m_isrhandlers[id] = new ISR_Handler(isrbases,m_bunch_splimits,kplimits);
+    delete pdfhandler;
+    delete dataread;
+    if (!(p_beamspectra->CheckConsistency(m_bunch_particles))) {
+      msg.Error()<<"Error in Environment::InitializeThePDFs()"<<endl
+		 <<"   Inconsistent ISR & Beam:"<<endl
+		 <<"   Abort program."<<endl;
+      abort();
+    }
   }
   return 1;
 }
@@ -313,11 +322,13 @@ bool Initialization_Handler::InitializeTheMatrixElements()
 {
   Matrix_Element_Handler * me = NULL;
   if (p_harddecays) {
-    me = new Matrix_Element_Handler(m_path,m_medat,p_model,p_beamspectra,p_isrhandler,
+    me = new Matrix_Element_Handler(m_path,m_medat,p_model,p_beamspectra,
+				    m_isrhandlers[isr::hard_process],
 				    p_harddecays->GetMEHandler());
   }
   else {
-    me = new Matrix_Element_Handler(m_path,m_medat,p_model,p_beamspectra,p_isrhandler,NULL);
+    me = new Matrix_Element_Handler(m_path,m_medat,p_model,p_beamspectra,
+				    m_isrhandlers[isr::hard_process],NULL);
   }
   m_mehandlers.insert(std::make_pair(std::string("SignalMEs"),me)); 
   ATOOLS::msg.Tracking()<<"Initialized the Hard_Decay_Handler. Its ME_Handler is : "
@@ -336,10 +347,16 @@ Matrix_Element_Handler * Initialization_Handler::GetMatrixElementHandler(std::st
 
 bool Initialization_Handler::InitializeTheUnderlyingEvents()
 {
-  p_mihandler = new MI_Handler(m_path,m_midat,p_model,p_beamspectra,p_isrhandler);
+  p_mihandler = new MI_Handler(m_path,m_midat,p_model,p_beamspectra,
+			       m_isrhandlers[isr::hard_subprocess]);
   Matrix_Element_Handler *mehandler;
   if ((mehandler=p_mihandler->HardMEHandler())!=NULL) {
     m_mehandlers.insert(std::make_pair(std::string("MIMEs"),mehandler)); 
+  }
+  else {
+    ISR_Handler_Map::iterator iit=m_isrhandlers.find(isr::hard_subprocess);
+    delete iit->second;
+    m_isrhandlers.erase(iit);
   }
   return true;
 }
@@ -348,7 +365,8 @@ bool Initialization_Handler::InitializeTheShowers()
 {
   if (p_showerhandler) { delete p_showerhandler; p_showerhandler = NULL; }
   int maxjets     = GetMatrixElementHandler(std::string("SignalMEs"))->MaxJets();
-  p_showerhandler = new Shower_Handler(m_path,m_showerdat,p_model,p_isrhandler,maxjets);
+  p_showerhandler = new Shower_Handler(m_path,m_showerdat,p_model,
+				       m_isrhandlers[isr::hard_process],maxjets);
   return 1;
 }
 
@@ -363,7 +381,8 @@ bool Initialization_Handler::InitializeTheBeamRemnants()
     }
   }
   p_beamremnants = new Beam_Remnant_Handler(m_path,m_beamremnantdat,
-					    p_isrhandler,p_beamspectra,scale);
+					    m_isrhandlers[isr::hard_process],
+					    p_beamspectra,scale);
   return 1;
 }
 
@@ -408,7 +427,6 @@ bool Initialization_Handler::InitializeTheAnalyses()
     if (from->eof()) break;
     getline(*from,buffer);
     buffer += std::string(" ");
-    std::cout<<buffer<<std::endl;
     if (buffer[0] != '%' && buffer.length()>0) {
       if (buffer.find("ANALYSIS_PHASE =")!=std::string::npos) {
 	pos    = buffer.find("ANALYSIS_PHASE =");

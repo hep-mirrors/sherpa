@@ -20,10 +20,24 @@
 #include <iostream> 
 
 namespace SHERPA {
+
+  struct isr {
+
+    enum id {
+      none            =  0,
+      hard_process    =  1,
+      hard_subprocess =  2,
+      unknown         = 99
+    };
+
+  };// end of struct isr
+
+  typedef std::map<isr::id,PDF::ISR_Handler*> ISR_Handler_Map;
+
   class Initialization_Handler {
   private :
     std::string m_path,m_file,m_evtfile;
-    std::string m_modeldat, m_beamdat, m_isrdat, m_medat, m_midat, m_decaydat, m_showerdat;
+    std::string m_modeldat, m_beamdat, m_isrdat[2], m_medat, m_midat, m_decaydat, m_showerdat;
     std::string m_beamremnantdat, m_fragmentationdat, m_hadrondecaysdat, m_analysisdat;
 
     double              m_bunch_splimits[2];
@@ -40,7 +54,7 @@ namespace SHERPA {
 
     MODEL::Model_Base          * p_model;
     BEAM::Beam_Spectra_Handler * p_beamspectra;
-    PDF::ISR_Handler           * p_isrhandler;
+    ISR_Handler_Map              m_isrhandlers;
     MEHandlersMap                m_mehandlers;
     AnalysesMap                  m_analyses;
     Hard_Decay_Handler         * p_harddecays;
@@ -84,11 +98,12 @@ namespace SHERPA {
 
     Matrix_Element_Handler      * GetMatrixElementHandler(std::string);
     Sample_Analysis             * GetSampleAnalysis(std::string);
+    inline PDF::ISR_Handler     * GetISRHandler(const isr::id id) { return m_isrhandlers[id]; }
 
     MEHandlersMap               * GetMatrixElementHandlers() { return &m_mehandlers;     }
     AnalysesMap                 * GetSampleAnalyses()        { return &m_analyses;       }
     MODEL::Model_Base           * GetModel()                 { return p_model;           }
-    PDF::ISR_Handler            * GetISRHandler()            { return p_isrhandler;      }
+    ISR_Handler_Map             * GetISRHandlers()           { return &m_isrhandlers;    }
     BEAM::Beam_Spectra_Handler  * GetBeamSpectraHandler()    { return p_beamspectra;     }
     Hard_Decay_Handler          * GetHardDecayHandler()      { return p_harddecays;      }
     Shower_Handler              * GetShowerHandler()         { return p_showerhandler;   }
