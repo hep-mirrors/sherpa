@@ -45,7 +45,7 @@ namespace SHERPA {
     SHERPA::Matrix_Element_Handler *HardMEHandler();
     SHERPA::Matrix_Element_Handler *SoftMEHandler();
 
-    PDF::ISR_Handler       *ISRHandler();
+    PDF::ISR_Handler *ISRHandler();
 
     // member functions
     void Reset();
