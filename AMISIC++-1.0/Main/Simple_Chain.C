@@ -43,7 +43,8 @@ Simple_Chain::Simple_Chain():
   m_nflavour(3),
   m_scalescheme(2),
   m_kfactorscheme(1),
-  m_external(false) 
+  m_maxtrials(100),
+  m_external(false)
 {
   SetInputFile("MI.dat");
   SetInputFile("XS.dat",1);
@@ -75,6 +76,7 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *_p_model,
   m_nflavour(3),
   m_scalescheme(2),
   m_kfactorscheme(1),
+  m_maxtrials(100),
   m_external(true)
 {
   SetInputFile("MI.dat");
@@ -770,18 +772,31 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 #ifdef DEBUG__Simple_Chain
     // std::cout<<"Simple_Chain::FillBlob(..): Generating one event."<<std::endl;
 #endif
-    if ((*p_processes)[m_selected]->OneEvent(-1.,1)) {
+    size_t trials=0;
+    bool test=false;
+    while (!test && trials<m_maxtrials) {
+      ++trials;
+      if (!(*p_processes)[m_selected]->OneEvent(-1.,1)) {
+	ATOOLS::msg.Error()<<"Simple_Chain::FillBlob(): "
+			   <<"Could not select any process! Retry."<<std::endl;
+	return false;
+      }
 #ifdef DEBUG__Simple_Chain
       // std::cout<<"   Completed one event."<<std::endl;
 #endif
       p_xs=dynamic_cast<EXTRAXS::XS_Base*>((*p_processes)[m_selected]->Selected());
       ATOOLS::Vec4D ptot;
+      double x[2];
+      test=true;
       for (size_t j=0;j<p_xs->NIn();++j) {
 	ptot+=p_xs->Momenta()[j];
-	m_last[j+2]-=2.0*p_xs->Momenta()[j][0]/ATOOLS::rpa.gen.Ecms();
-	if (m_last[j+2]<=0.0) return true;
+	x[j]=2.0*p_xs->Momenta()[j][0]/ATOOLS::rpa.gen.Ecms();
+	if (m_last[j+2]<=x[j]) test=false;
       }
+      if (test==false) continue;
       m_last[1]-=sqrt(ptot.Abs2());
+      m_last[2]-=x[0];
+      m_last[3]-=x[1];
       if (m_last[1]<=0.0) return true;
       p_xs->SetColours(p_xs->Momenta());
       ATOOLS::Particle *particle;
@@ -804,9 +819,8 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
       m_filledblob=true;
       return true;
     }
-    ATOOLS::msg.Error()<<"Simple_Chain::FillBlob(): "
-		       <<"Could not select any process! Retry."<<std::endl;
-    return false;
+    ATOOLS::msg.Tracking()<<"Simple_Chain::FillBlob(..): "
+			  <<"Cannot create momentum configuration."<<std::endl;
   }
   return false;
 }
@@ -873,6 +887,7 @@ bool Simple_Chain::DiceOrderingParameter()
     ATOOLS::msg.Tracking()<<"Simple_Chain::DiceOrderingParameter(): "
 			  <<"Ordering parameter exceeded allowed range."<<std::endl
 			  <<"   Cannot proceed in blob creation."<<std::endl;
+    m_stophard=true;
     return false;
   }
   m_last[0]=(*p_total)[(*p_total)(m_last[0])-log(ATOOLS::ran.Get())]; 

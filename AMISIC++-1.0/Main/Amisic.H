@@ -55,14 +55,15 @@ namespace AMISIC {
     bool Initialize();
     void Reset();
 
-    void SameHardProcess(ATOOLS::Blob *blob);
-    void SameSoftProcess(ATOOLS::Blob *blob);
-
     bool GenerateHardProcess(ATOOLS::Blob *blob);
     bool GenerateHardEvent(ATOOLS::Blob_List *blobs);
+    void SameHardProcess(ATOOLS::Blob *blob);
+    void SameHardEvent(ATOOLS::Blob_List *blobs);
     
     bool GenerateSoftProcess(ATOOLS::Blob *blob);
     bool GenerateSoftEvent(ATOOLS::Blob_List *blobs);
+    void SameSoftProcess(ATOOLS::Blob *blob);
+    void SameSoftEvent(ATOOLS::Blob_List *blobs);
     
     bool GenerateEvent(ATOOLS::Blob_List *blobs);
 

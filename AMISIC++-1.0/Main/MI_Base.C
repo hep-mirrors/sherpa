@@ -140,6 +140,7 @@ bool MI_Base::CreateBlob(ATOOLS::Blob *blob)
     particle->SetFlow(1,p_blob->InParticle(i)->GetFlow(1));
     particle->SetFlow(2,p_blob->InParticle(i)->GetFlow(2));
     particle->SetStatus(1);
+    particle->SetInfo('G');
     blob->AddToInParticles(particle);
   }
   for (unsigned int i=0;i<(unsigned int)p_blob->NOutP();++i) {
@@ -149,6 +150,7 @@ bool MI_Base::CreateBlob(ATOOLS::Blob *blob)
     particle->SetFlow(1,p_blob->OutParticle(i)->GetFlow(1));
     particle->SetFlow(2,p_blob->OutParticle(i)->GetFlow(2));
     particle->SetStatus(1);
+    particle->SetInfo('H');
     blob->AddToOutParticles(particle);
   }
   return _m_dicedprocess;
