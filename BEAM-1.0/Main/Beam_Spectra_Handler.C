@@ -312,9 +312,9 @@ double Beam_Spectra_Handler::Weight(int * pol_types, double *dofs)
 	double pol=p_BeamBase[i]->Polarisation();
 	double dof=dofs[i];
 	if (hel*pol>0.) 
-	  weight*=(1.+pol*(dof-1.))/dof;
+	  weight*=(1.+dabs(pol)*(dof-1.))/dof;
 	else
-	  weight*=(1.-pol)/dof;
+	  weight*=(1.-dabs(pol))/dof;
 
 	//assuming 2 degrees of freedom
 	//	weight*=dabs(hel+pol)/2.;
