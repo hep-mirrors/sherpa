@@ -16,7 +16,8 @@ Signal_Processes::Signal_Processes(Matrix_Element_Handler * _mehandler) :
 
 Signal_Processes::~Signal_Processes()
 {
-  if (p_mehandler) { delete p_mehandler; p_mehandler = NULL; }
+  //  if (p_mehandler) { delete p_mehandler; p_mehandler = NULL; }
+  //  Matrix Element Handler will be deleted in Initialization Handler
 }
 
 

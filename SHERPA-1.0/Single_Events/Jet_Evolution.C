@@ -53,12 +53,14 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 	int stat = p_interface->DefineInitialConditions(myblob);
 	weight  *= p_interface->GetWeight();
 	if (stat) {
+	  p_interface->FillBlobs(_bloblist);
 	  shower = p_showerhandler->PerformShowers(p_showerhandler->MaxJetNumber()!=p_mehandler->Nout());
 	  if (shower==1) {
 	    p_showerhandler->FillBlobs(_bloblist);
 	    (*blit)->SetStatus(0);
 	    if (!(p_showerhandler->ISROn())) {
 	      for (int i=0;i<2;i++) {
+		// new ISR Blob
 		myblob = new Blob();
 		myblob->SetType(string("IS Shower (none)"));
 		myblob->SetBeam(i);
