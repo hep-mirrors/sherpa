@@ -200,7 +200,7 @@ Decay_Channel * Hard_Decay_Handler::SpecifyHardDecay(ATOOLS::Particle * _part,do
 	if (!flav.IsStable()) unstable = true;
 	particle->SetFlav(flav);
 	particle->SetProductionBlob(blob);
-	particle->SetNumber(int(particle));
+	particle->SetNumber((long int)particle);
 	blob->AddToOutParticles(particle);
       }
       double decmass;

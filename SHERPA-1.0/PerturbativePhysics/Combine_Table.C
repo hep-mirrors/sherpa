@@ -38,18 +38,19 @@ Combine_Data::~Combine_Data()
 std::ostream& SHERPA::operator<< (std::ostream & s ,Combine_Data & cd) 
 {
     s<<" "<<cd.i<<"&"<<cd.j<<"   "<<cd.pt2ij<<"    "<<cd.strong<<"    "<<std::flush;
-    for (int k=0; k<cd.graphs.size(); ++k)
+    for (size_t k=0; k<cd.graphs.size(); ++k)
     s<<cd.graphs[k]<<","<<std::flush;
     s<<"     ";
     if (cd.down)
     s<<" "<<cd.down->no<<std::endl;
     else 
     s<<" #"<<std::endl;
+    return s;
 }
 
 Combine_Table::Combine_Table(Jet_Finder * _jf,Vec4D * _moms, Combine_Table * _up,
 			     int isrmode, int isrshoweron):
-  jf(_jf),moms(_moms),legs(0),gwin(0),up(_up),m_isr1on(isrmode&1),m_isr2on(isrmode&2),m_isrshoweron(isrshoweron)
+  up(_up),legs(0),gwin(0),m_isr1on(isrmode&1),m_isr2on(isrmode&2),m_isrshoweron(isrshoweron),jf(_jf),moms(_moms)
 {
   no=all++;
 }
@@ -328,7 +329,7 @@ Combine_Table * Combine_Table::CalcJet(int nl,double _x1,double _x2, ATOOLS::Vec
     if (nl>=4) {
       if (!cwin->down) {
 	Leg ** alegs = new Leg*[cwin->graphs.size()];
-	for (int k=0;k<cwin->graphs.size();++k) {
+	for (size_t k=0;k<cwin->graphs.size();++k) {
 	  alegs[k]   = CombineLegs(legs[cwin->graphs[k]],cwin->i,cwin->j,nl);
 	}
 	Vec4D * amoms;
