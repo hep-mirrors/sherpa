@@ -11,7 +11,7 @@ CLHEPSYS="/usr/local/CLHEP"
 COMPILECOMMAND="TOOLS/makeinstall --clean-run -t --clean"
 DIR="BENCHMARK"
 FILE="Benchmark.dat"
-SHERPAPATH="SHERPA-1.0/Run/"
+SHERPAPATH="SHERPA-1.0/Run"
 MEHANDLEREXIT=201
 
 SetStatus() {
