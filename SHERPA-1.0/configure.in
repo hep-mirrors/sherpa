@@ -93,7 +93,8 @@ AC_CONFIG_COMMANDS_POST([touch PerturbativePhysics/Shower_Handler.H &&
 			 touch Tools/HepMC_Interface.H &&
 			 touch HerwigTools/Herwig_Wrapper.H &&
 			 touch Run/Main.C && 
-		         touch Single_Events/MC_Interface.C])
+		         touch Single_Events/MC_Interface.C &&
+			 touch SoftPhysics/Hadron_Decay_Handler.H])
 
 dnl Checks for programs.
 AC_PROG_INSTALL
