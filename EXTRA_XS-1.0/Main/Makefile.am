@@ -18,16 +18,12 @@ endif
 lib_LTLIBRARIES = libExtraXS.la
 libExtraXS_la_SOURCES =	\
 			XS_Base.C \
-			Regulator_Base.C \
-			Regulator.C \
 			Single_XS.C \
 			XS_Group.C \
 			Simple_XS.C \
 			XS_Selector.C
 noinst_HEADERS        =	\
 			XS_Base.H \
-			Regulator_Base.H \
-			Regulator.H \
 			Single_XS.H \
 			XS_Group.H \
 			Simple_XS.H \
