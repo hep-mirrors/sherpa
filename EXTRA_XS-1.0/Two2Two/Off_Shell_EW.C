@@ -61,9 +61,6 @@ Off_Shell_qqb_llb::Off_Shell_qqb_llb(const size_t nin,const size_t nout,
 
 double Off_Shell_qqb_llb::operator()(double s,double t,double u) 
 {
-//   return 2.*M_PI/3.*ATOOLS::sqr(4.*M_PI*alpha*kappa)*s*
-//     (af*af+vf*vf)*(ae*ae+ve*ve)*MZ2*GZ2/(ATOOLS::sqr(s-MZ2)+MZ2*GZ2)*0.0363; 
-
   chi2  = ATOOLS::sqr(kappa * s)/(ATOOLS::sqr(s-MZ2) + GZ2*MZ2);
   term1 = (1+ATOOLS::sqr(1.+2.*t/s)) * ((ae*ae+ve*ve) * (af*af+vf*vf) * chi2);
   term2 = (1.+2.*t/s) * (8. * ae*ve*af*vf * chi2);
@@ -97,7 +94,7 @@ Single_XS *Single_XS::GetProcess<Off_Shell_q1q2b_lnulb>(const size_t nin,const s
       (!up[0] && up[1] && !up[2] && up[3] && anti[0]==anti[2])){ 
     if (up[0]==false) std::swap(ints[0],ints[1]);
     if (std::abs(ATOOLS::rpa.gen.ComplexMatrixElement("CKM",ints[0]/2-1,ints[1]/2))!=0.) {
-      return new Off_Shell_q1q2b_q3q4b(nin,nout,flavours); 
+      return new Off_Shell_q1q2b_lnulb(nin,nout,flavours); 
     }
   }
   return NULL;
@@ -127,9 +124,6 @@ double Off_Shell_q1q2b_lnulb::operator()(double s,double t,double u)
 {
   double sc=p_momenta[0]*p_momenta[2];
   if (m_swaped) sc=p_momenta[1]*p_momenta[2];
-//   // naive version: take branching ratio for W -> e nu_e
-//   return ATOOLS::sqr(M_PI*m_aqed/m_sin2tw)*M_PI/3.*m_ckm2[0]*m_ckm2[1]*
-//     ATOOLS::sqr(m_mw2)/(ATOOLS::sqr(s-m_mw2)+m_mw2*m_ww2)*0.1072; 
   return ATOOLS::sqr(M_PI*m_aqed/m_sin2tw)*16./3.*m_ckm2[0]*m_ckm2[1]*
     ATOOLS::sqr(sc)/(ATOOLS::sqr(s-m_mw2)+m_mw2*m_ww2); 
 }
