@@ -46,16 +46,8 @@ Single_XS *XS_Selector::GetXS(const size_t nin,const size_t nout,
     }
     return NULL;
   }
-  if (flavours[2].IsFermion() && flavours[3]==flavours[2].Bar() &&
-      flavours[0].IsPhoton()  && flavours[1]==flavours[0]) { 
-    return new XS_pp_ffbar(nin,nout,flavours); 
-  }
-  if ((flavours[2].IsLepton() && flavours[3]==flavours[2].Bar() && flavours[0].IsQuark() && 
-       flavours[1]==flavours[0].Bar()) ||   
-      (flavours[0].IsLepton() && flavours[1]==flavours[0].Bar() && flavours[2].IsQuark() && 
-       flavours[3]==flavours[2].Bar())) { 
-    return new XS_ee_ffbar(nin,nout,flavours); 
-  }
+  if ((xs=Single_XS::GetProcess<XS_pp_ffbar>(nin,nout,flavours))!=NULL) return xs;
+  if ((xs=Single_XS::GetProcess<XS_ee_ffbar>(nin,nout,flavours))!=NULL) return xs;
   if ((xs=Single_XS::GetProcess<XS_gg_gg>(nin,nout,flavours))!=NULL) return xs;
   if ((xs=Single_XS::GetProcess<XS_q1g_q1g>(nin,nout,flavours))!=NULL) return xs;
   if ((xs=Single_XS::GetProcess<XS_gg_q1qbar1>(nin,nout,flavours))!=NULL) return xs;

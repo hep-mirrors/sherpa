@@ -14,6 +14,17 @@ using namespace ATOOLS;
    by the factor 4 Pi for each alpha
 */
 
+template <> 
+Single_XS *Single_XS::GetProcess<XS_pp_ffbar>(const size_t nin,const size_t nout,
+					      const ATOOLS::Flavour *flavours)
+{
+  if (flavours[2].IsFermion() && flavours[3]==flavours[2].Bar() &&
+      flavours[0].IsPhoton()  && flavours[1]==flavours[0]) { 
+    return new XS_pp_ffbar(nin,nout,flavours); 
+  }
+  return NULL;
+}
+
 XS_pp_ffbar::XS_pp_ffbar(const size_t nin,const size_t nout,
 			 const ATOOLS::Flavour *fl) :
   Single_XS(nin,nout,fl)  

@@ -62,6 +62,19 @@ bool XS_qg_qp::SetColours(double s,double t,double u) {
 
 //======================================================================
 
+template <> 
+Single_XS *Single_XS::GetProcess<XS_ee_ffbar>(const size_t nin,const size_t nout,
+					      const ATOOLS::Flavour *flavours)
+{
+  if ((flavours[2].IsLepton() && flavours[3]==flavours[2].Bar() && flavours[0].IsQuark() && 
+       flavours[1]==flavours[0].Bar()) ||   
+      (flavours[0].IsLepton() && flavours[1]==flavours[0].Bar() && flavours[2].IsQuark() && 
+       flavours[3]==flavours[2].Bar())) { 
+    return new XS_ee_ffbar(nin,nout,flavours); 
+  }
+  return NULL;
+}
+
 XS_ee_ffbar::XS_ee_ffbar(const size_t nin,const size_t nout,const ATOOLS::Flavour *fl) 
   : Single_XS(nin,nout,fl) 
 {
