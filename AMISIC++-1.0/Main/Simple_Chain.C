@@ -887,27 +887,22 @@ bool Simple_Chain::DiceProcess()
 			   <<std::endl<<"   Cannot create any process."<<std::endl;
 	return false;
       }
-      double sprimemin=(*p_processes)[m_selected]->ISR()->SprimeMin();
-      double sprimemax=(*p_processes)[m_selected]->ISR()->SprimeMax();
-      (*p_processes)[m_selected]->ISR()->SetSprimeMax(m_last[1]*m_last[1]);
+      PDF::ISR_Handler *isr=(*p_processes)[m_selected]->ISR();
+      double sprimemin=isr->SprimeMin(), sprimemax=isr->SprimeMax();
+      isr->SetSprimeMax(m_last[1]*m_last[1]);
+      isr->SetSprimeMin(4.0*m_last[0]*m_last[0]);
+      // think about setting y_{min} and y_{max} to \pm\ln{\frac{\sqrt{s'}}{2*p_\perp}}
       (*p_processes)[m_selected]->SetMax((*m_maximum[m_selected])(m_last[0]),1);
-      do { } while (!FillBlob(p_blob));
-      (*p_processes)[m_selected]->ISR()->SetSprimeMax(sprimemax);
-      (*p_processes)[m_selected]->ISR()->SetSprimeMin(sprimemin);
+      FillBlob(p_blob);
+      isr->SetSprimeMax(sprimemax);
+      isr->SetSprimeMin(sprimemin);
       m_dicedprocess=true;
       return m_filledblob;
     }
   }
-  ATOOLS::msg.Error()<<"Simple_Chain::DiceProcess(): "
-		     <<"Could not select any process. "<<std::endl
-		     <<"   Returning most likely instead."<<std::endl;
-  if (sorter.XDataSize()!=0) {
-    m_selected=sorter.XYData(0).second;
-    (*p_processes)[m_selected]->SetMax((*m_maximum[m_selected])(m_last[0]*0.1),1);
-    m_dicedprocess=true;
-    return FillBlob(p_blob);
-  }
-  m_dicedprocess=false;
+  ATOOLS::msg.Error()<<"Simple_Chain::DiceProcess(): Internal error!"<<std::endl
+		     <<"   Could not select any process. Abort."<<std::endl;
+  exit(121);
   return false;
 }
 

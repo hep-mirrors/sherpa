@@ -48,36 +48,19 @@ void Jet_PT::SortJetPT(std::vector<ATOOLS::Vec4D> &jetmomenta)
       }
     }
   }
-//   std::cout<<"new"<<std::endl;
-//   for (unsigned int i=0;i<jetmomenta.size();++i) {
-//     std::cout<<jetmomenta[i]<<std::endl;
-//   }
 }
 
 void Jet_PT::Evaluate(const ATOOLS::Particle_List &particles,double weight) 
 {
   std::vector<ATOOLS::Vec4D> jetmomenta;
-  if (m_mode>0) {
-//     p_jetfinder->ConstructJets(&particles,(*p_jets),(*p_ys));
-//     jetmomenta=p_jetfinder->JetMomenta();
-  }
-  else {
-    jetmomenta.resize(particles.size());
-    for (unsigned int i=0;i<particles.size();++i) jetmomenta[i]=particles[i]->Momentum();
-  }
+  jetmomenta.resize(particles.size());
+  for (unsigned int i=0;i<particles.size();++i) jetmomenta[i]=particles[i]->Momentum();
   SortJetPT(jetmomenta);
-//   int jets =0;
-//   for (unsigned int i=0;i<particles.size();i+=2) {
-//     ATOOLS::Vec4D &p=jetmomenta[i];
-//     if (sqrt(p[1]*p[1]+p[2]*p[2])>m_ptcut) ++jets;
-//   }
-//   if (jets<2) return;
   for (unsigned int i=0;i<ATOOLS::Min(p_histogram->size(),jetmomenta.size());i+=2) {
     ATOOLS::Vec4D &p=jetmomenta[i];
     if (sqrt(p[1]*p[1]+p[2]*p[2])>m_ptcut) {
       histo->Insert(sqrt(p[1]*p[1]+p[2]*p[2]),weight);
       (*p_histogram)[i/2]->Insert(sqrt(p[1]*p[1]+p[2]*p[2]),weight);
-//       std::cout<<"inserted "<<p<<std::endl;
     }
   }
 }

@@ -25,33 +25,12 @@ Jet_Multiplicity::~Jet_Multiplicity()
 
 void Jet_Multiplicity::Evaluate(const ATOOLS::Particle_List &particles,double weight) 
 {
-//   int jets =0;
-//   for (unsigned int i=0;i<particles.size();i+=2) {
-//     ATOOLS::Vec4D p=particles[i]->Momentum();
-//     if (sqrt(p[1]*p[1]+p[2]*p[2])>m_ptcut) ++jets;
-//   }
-//   if (jets<2) return;
-  if (m_mode>0) {
-//     p_jetfinder->ConstructJets(&particles,(*p_jets),(*p_ys));
-    for (unsigned int i=0;i<p_ys->size();++i) {
-      if ((*p_ys)[i]>=m_ycut) {
-	histo->Insert((*p_jets)[i],weight);
-	return;
-      }
-    }
+  unsigned int jets=0;
+  for (unsigned int i=0;i<particles.size();++i) {
+    ATOOLS::Vec4D p=particles[i]->Momentum();
+    if (sqrt(p[1]*p[1]+p[2]*p[2])>m_ptcut) ++jets;
   }
-  else {
-    unsigned int jets=0;
-    for (unsigned int i=0;i<particles.size();++i) {
-      ATOOLS::Vec4D p=particles[i]->Momentum();
-      if (sqrt(p[1]*p[1]+p[2]*p[2])>m_ptcut) ++jets;
-    }
-//     std::cout<<" found "<<jets<<std::endl;
-//     if (jets==5) {
-//       for (unsigned int i=0;i<particles.size();std::cout<<particles[i++]<<std::endl); 
-//     }
-    histo->Insert(jets/2.0,weight);
-  }
+  histo->Insert(jets/2.0,weight);
 }
 
 void Jet_Multiplicity::Evaluate(const ATOOLS::Blob_List &blobs,double weight) 
