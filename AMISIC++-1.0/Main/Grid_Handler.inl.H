@@ -1,5 +1,5 @@
-#ifndef Grid_Handler_IC
-#define Grid_Handler_IC
+#ifndef Grid_Handler_inl_H
+#define Grid_Handler_inl_H
 
 #include "Grid_Handler.H"
 

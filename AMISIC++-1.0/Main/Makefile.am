@@ -15,6 +15,7 @@ if SHERPA_SUPPORT
 SHERPAINCS    =	-I$(SHERPASYS)/SHERPA-1.0/PerturbativePhysics
 USING__Sherpa = TRUE
 endif
+
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
@@ -27,24 +28,24 @@ libAmisic_la_SOURCES  = \
 			Amisic.C 
 noinst_HEADERS        = \
 			Grid_Handler.H \
-			Grid_Handler.IC \
+			Grid_Handler.inl.H \
 			Grid_Handler.C \
 			Grid_Creator_Base.H \
-			Grid_Creator_Base.IC \
+			Grid_Creator_Base.inl.H \
 		       	Grid_Creator_Base.C \
 			Grid_Creator.H \
-			Grid_Creator.IC \
+			Grid_Creator.inl.H \
 		       	Grid_Creator.C \
 			Fixed_Variable_Channel.H \
-			Fixed_Variable_Channel.IC \
+			Fixed_Variable_Channel.inl.H \
 			Fixed_Variable_Channel.C \
 			MI_Base.H \
-			MI_Base.IC \
+			MI_Base.inl.H \
 			Environment.H \
 			Simple_Chain.H \
-			Simple_Chain.IC \
+			Simple_Chain.inl.H \
 			Amisic.H \
-			Amisic.IC 
+			Amisic.inl.H 
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(AMISICFLAGS)
 INCLUDES      =	$(SHERPAINCS) $(EXTRAXSINCS) $(PHASICINCS) $(PDFINCS) \

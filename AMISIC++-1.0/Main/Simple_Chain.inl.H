@@ -1,5 +1,5 @@
-#ifndef Simple_Chain_IC
-#define Simple_Chain_IC
+#ifndef Simple_Chain_inl_H
+#define Simple_Chain_inl_H
 
 #include "Simple_Chain.H"
 

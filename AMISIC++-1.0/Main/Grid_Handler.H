@@ -72,7 +72,7 @@ namespace AMISIC {
 
 } // end of namespace AMISIC
 
-#include "Grid_Handler.IC"
+#include "Grid_Handler.inl.H"
 #include "Grid_Handler.C"
 
 #endif

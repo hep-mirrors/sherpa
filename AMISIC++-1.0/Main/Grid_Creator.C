@@ -7,7 +7,7 @@ namespace AMISIC {
 
   template <class Argument_Type,class Result_Type>
   Grid_Creator<Argument_Type,Result_Type>::Grid_Creator(GridHandlerVector _p_gridhandler,
-							EXTRAXS::SimpleXSecs *_p_processes):
+							EXTRAXS::Simple_XS *_p_processes):
     GridCreatorBaseType(),
     p_gridhandler(_p_gridhandler),
     p_processes(_p_processes),
@@ -86,9 +86,9 @@ namespace AMISIC {
     p_processes->SelectorData()->SetData(m_criterion,m_initialdata.flavs,m_initialdata.help,lower,upper);
     p_processes->ResetSelector(p_processes->SelectorData());
     p_processes->SetMax(0.0,1);
-    p_processes->CalculateTotalXSec();
+    p_processes->CalculateTotalXSec("");
     p_processes->SetMax(0.0,0);
-    newxs=(GridResultType)p_processes->Total()/(upper-lower);
+    newxs=(GridResultType)p_processes->TotalXS()/(upper-lower);
     newmax=(GridResultType)p_processes->Max();
     if (((GridResultType)dabs((*p_yaxis)(newxs)-(*p_yaxis)(m_lastxs))>GridDeltaYMin())||(force)) {
       if (!newpoint) {

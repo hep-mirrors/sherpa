@@ -1,5 +1,5 @@
-#ifndef Grid_Creator_IC
-#define Grid_Creator_IC
+#ifndef Grid_Creator_inl_H
+#define Grid_Creator_inl_H
 
 namespace AMISIC {
 

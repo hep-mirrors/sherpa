@@ -2,7 +2,7 @@
 #define Grid_Creator_H
 
 #include "Grid_Handler.H"
-#include "SimpleXSecs.H"
+#include "Simple_XS.H"
 #include "Environment.H"
 #include "Blob_List.H"
 #include "Fixed_Variable_Channel.H"
@@ -27,8 +27,8 @@ namespace AMISIC {
     
   private:
     
-    GridHandlerVector     p_gridhandler;
-    EXTRAXS::SimpleXSecs *p_processes;
+    GridHandlerVector   p_gridhandler;
+    EXTRAXS::Simple_XS *p_processes;
 
     int  m_criterion;
     bool m_storemax;
@@ -39,14 +39,14 @@ namespace AMISIC {
     GridResultType m_lastxs, m_lastmax;
     
     ATOOLS::Axis<GridArgumentType> *p_xaxis;
-    ATOOLS::Axis<GridResultType> *p_yaxis;
+    ATOOLS::Axis<GridResultType>   *p_yaxis;
     
     std::string m_xsextension, m_maxextension;
     
   public:
     
     // constructor
-    Grid_Creator(GridHandlerVector _p_gridhandler,EXTRAXS::SimpleXSecs *_p_processes);
+    Grid_Creator(GridHandlerVector _p_gridhandler,EXTRAXS::Simple_XS *_p_processes);
 
     // destructor
     ~Grid_Creator();
@@ -81,7 +81,7 @@ namespace AMISIC {
 
 } // end of namespace AMISIC
 
-#include "Grid_Creator.IC"
+#include "Grid_Creator.inl.H"
 #include "Grid_Creator.C"
 
 #endif

@@ -1,12 +1,14 @@
 #include "Simple_Chain.H"
 
+#include "Single_XS.H"
+#include "XS_Selector.H"
+#include "Channel_Elements.H"
 #include "Particle.H"
 #include "Random.H"
-#include "Channel_Elements.H"
-#include "Lund_Wrapper.H"
 #ifdef USING__SHERPA
 #include "Matrix_Element_Handler.H"
 #endif
+#include <sys/stat.h>
 
 #ifdef PROFILE__Simple_Chain
 #include "prof.hh"
@@ -15,6 +17,7 @@
 #ifdef DEBUG__Simple_Chain
 const std::string differentialfile=std::string("differential.dat");
 const std::string integralfile=std::string("integral.dat");
+const std::string normalizedfile=std::string("normalized.dat");
 #endif
 
 using namespace AMISIC;
@@ -442,7 +445,7 @@ bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename,
     p_beam=p_environment->BeamSpectraHandler();
     p_isr=p_environment->ISRHandler();
   }
-  p_processes = new EXTRAXS::SimpleXSecs(InputPath(),InputFile(1),p_model);
+  p_processes = new EXTRAXS::Simple_XS(InputPath(),InputFile(1),p_model);
   if (p_processes->Size()>0) {
     ATOOLS::msg.Tracking()<<"Simple_Chain::CreateGrid(..): "
 			  <<"Found an initialized process group."<<std::endl
@@ -459,9 +462,10 @@ bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename,
 				       p_processes->ScaleScheme(),p_processes->KFactorScheme(),
 				       p_processes->ScaleFactor(),false);
   for (Blob_Iterator bit=bloblist.begin();bit!=bloblist.end();++bit) {
-    for (int i=0;i<group->Nin();++i) flavour[i]=(*bit)->InParticle(i)->Flav();
-    for (int j=0;j<group->Nout();++j) flavour[group->Nin()+j]=(*bit)->OutParticle(j)->Flav();
-    EXTRAXS::Single_XS *newxs = group->XSSelector()->GetXS(group->Nin(),group->Nout(),flavour);
+    for (size_t i=0;i<group->NIn();++i) flavour[i]=(*bit)->InParticle(i)->Flav();
+    for (size_t j=0;j<group->NOut();++j) flavour[group->NIn()+j]=(*bit)->OutParticle(j)->Flav();
+    EXTRAXS::Single_XS *newxs = group->XSSelector()->GetXS(group->NIn(),group->NOut(),
+							   flavour,p_isr->KMROn());
     if (newxs==NULL) {
       ATOOLS::msg.Error()<<"Simple_Chain::CreateGrid(..): "
 			 <<"Did not find any process! Abort calculation."<<std::endl;
@@ -528,7 +532,7 @@ bool Simple_Chain::InitializeBlobList()
   }
   SetStart(sqrt(p_isr->SprimeMax()),1);
   SetStop(sqrt(p_isr->SprimeMin()),1);
-  p_processes = new EXTRAXS::SimpleXSecs(InputPath(),InputFile(1),p_model);
+  p_processes = new EXTRAXS::Simple_XS(InputPath(),InputFile(1),p_model);
   if (p_processes->Size()>0) {
     ATOOLS::msg.Tracking()<<"Simple_Chain::InitializeBlobList(): "
 			  <<"Found an initialized process group."<<std::endl
@@ -547,9 +551,10 @@ bool Simple_Chain::InitializeBlobList()
 					p_processes->ScaleScheme(),p_processes->KFactorScheme(),
 					p_processes->ScaleFactor(),false);
     for (Blob_Iterator bit=m_blobs[i].begin();bit!=m_blobs[i].end();++bit) {
-      for (int j=0;j<group[i]->Nin();++j) flavour[j]=(*bit)->InParticle(j)->Flav();
-      for (int j=0;j<group[i]->Nout();++j) flavour[group[i]->Nin()+j]=(*bit)->OutParticle(j)->Flav();
-      EXTRAXS::Single_XS *newxs = group[i]->XSSelector()->GetXS(group[i]->Nin(),group[i]->Nout(),flavour);
+      for (size_t j=0;j<group[i]->NIn();++j) flavour[j]=(*bit)->InParticle(j)->Flav();
+      for (size_t j=0;j<group[i]->NOut();++j) flavour[group[i]->NIn()+j]=(*bit)->OutParticle(j)->Flav();
+      EXTRAXS::Single_XS *newxs = group[i]->XSSelector()->GetXS(group[i]->NIn(),group[i]->NOut(),
+								flavour,p_isr->KMROn());
       if (newxs==NULL) {
 	ATOOLS::msg.Error()<<"Simple_Chain::InitializeBlobList(): "
 			   <<"Did not find any process! Abort."<<std::endl;
@@ -574,16 +579,17 @@ bool Simple_Chain::InitializeBlobList()
     group[i]->SetKFactorScheme(m_kfactorscheme);
     p_processes->PushBack(group[i]);
   }
-  if (ATOOLS::msg.Level()>2) {
-    p_processes->CalculateTotalXSec();
-    double total=p_processes->Total();
+//   if (ATOOLS::msg.Level()>2) {
+  if (false) {
+    p_processes->CalculateTotalXSec("");
+    double total=p_processes->TotalXS();
     ATOOLS::msg.Tracking()<<"Simple_Chain::InitializeBlobList(): \\sigma_{hard} = "
 			  <<total*ATOOLS::rpa.Picobarn()<<" pb vs."
 			  <<m_sigmahard*ATOOLS::rpa.Picobarn()<<" pb. "<<std::endl
 			  <<"   Relative error : "
 			  <<ATOOLS::dabs((total-m_sigmahard)/(total+m_sigmahard))*100.0
 			  <<"%."<<std::endl;
-    if ((m_sigmahard-total)/(m_sigmahard+total)>5.0e-2) exit(120);
+    if ((m_sigmahard-total)/(m_sigmahard+total)>5.0e-2) exit(211);
   }
   p_fsrinterface = new FSRChannel(2,2,flavour,p_total->XAxis()->Variable());
   p_fsrinterface->SetAlpha(1.0);
@@ -678,8 +684,16 @@ bool Simple_Chain::CalculateTotal()
 #ifdef DEBUG__Simple_Chain
   comments.clear();
   comments.push_back("   Integrated XS    "); 
-  gridhandler = new GridHandlerType(p_total);
+  GridFunctionType *total = differential->IntegralY(0.0,0.0,"Id","Id",false);
+  gridhandler = new GridHandlerType(total);
   gridcreator->SetOutputFile(integralfile);
+  gridcreator->WriteSingleGrid(gridhandler,comments);
+  delete gridhandler;
+  delete total;
+  comments.clear();
+  comments.push_back("   Normalized XS    "); 
+  gridhandler = new GridHandlerType(p_total);
+  gridcreator->SetOutputFile(normalizedfile);
   gridcreator->WriteSingleGrid(gridhandler,comments);
   delete gridcreator;
   delete gridhandler;
@@ -765,7 +779,7 @@ bool Simple_Chain::Initialize()
 	ATOOLS::msg.Error()<<"Simple_Chain::Initialize(): "
 			   <<"Grid creation failed for "<<OutputPath()+m_filename[i]<<std::endl
 			   <<"   Run cannot continue."<<std::endl;
-	exit(120);
+	exit(211);
       }
     }
   }
@@ -773,7 +787,7 @@ bool Simple_Chain::Initialize()
     ATOOLS::msg.Error()<<"Simple_Chain::Initialize(): "
 		       <<"Determination of \\sigma_{tot} failed. "<<std::endl
 		       <<"   Run cannot continue."<<std::endl;
-    exit(120);
+    exit(211);
   }
   SetStart(p_total->XMax(),0);
   SetStop(ATOOLS::Max(p_total->XMin(),stop),0);
@@ -781,7 +795,7 @@ bool Simple_Chain::Initialize()
     ATOOLS::msg.Error()<<"Simple_Chain::Initialize(): "
 		       <<"Cannot initialize selected processes. "<<std::endl
 		       <<"   Run cannot continue."<<std::endl;
-    exit(120);
+    exit(211);
   }  
   return true;
 }
@@ -811,9 +825,9 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 #ifdef DEBUG__Simple_Chain
 //       std::cout<<"   Completed one event."<<std::endl;
 #endif
-      p_xs=(*p_processes)[m_selected]->Selected();
+      p_xs=dynamic_cast<EXTRAXS::XS_Base*>((*p_processes)[m_selected]->Selected());
       ATOOLS::Vec4D ptot;
-      for (int j=0;j<p_xs->Nin();++j) {
+      for (size_t j=0;j<p_xs->NIn();++j) {
 	ptot+=p_xs->Momenta()[j];
 	m_last[j+2]-=2.0*p_xs->Momenta()[j][0]/ATOOLS::rpa.gen.Ecms();
 	if (m_last[j+2]<=0.0) return true;
@@ -822,19 +836,19 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
       if (m_last[1]<=0.0) return true;
       p_xs->SetColours(p_xs->Momenta());
       ATOOLS::Particle *particle;
-      for (int j=0;j<p_xs->Nin();++j) {
-	particle = new ATOOLS::Particle(0,p_xs->Flavs()[j]);
+      for (size_t j=0;j<p_xs->NIn();++j) {
+	particle = new ATOOLS::Particle(0,p_xs->Flavours()[j]);
 	particle->SetMomentum(p_xs->Momenta()[j]);
  	particle->SetFlow(1,p_xs->Colours()[j][0]);
  	particle->SetFlow(2,p_xs->Colours()[j][1]);
 	particle->SetStatus(1);
 	blob->AddToInParticles(particle);
       }
-      for (int j=0;j<p_xs->Nout();++j) {
-	particle = new ATOOLS::Particle(0,p_xs->Flavs()[p_xs->Nin()+j]);
-	particle->SetMomentum(p_xs->Momenta()[p_xs->Nin()+j]);
- 	particle->SetFlow(1,p_xs->Colours()[p_xs->Nin()+j][0]);
- 	particle->SetFlow(2,p_xs->Colours()[p_xs->Nin()+j][1]);
+      for (size_t j=0;j<p_xs->NOut();++j) {
+	particle = new ATOOLS::Particle(0,p_xs->Flavours()[p_xs->NIn()+j]);
+	particle->SetMomentum(p_xs->Momenta()[p_xs->NIn()+j]);
+ 	particle->SetFlow(1,p_xs->Colours()[p_xs->NIn()+j][0]);
+ 	particle->SetFlow(2,p_xs->Colours()[p_xs->NIn()+j][1]);
 	particle->SetStatus(1);
 	blob->AddToOutParticles(particle);
       }
@@ -902,7 +916,7 @@ bool Simple_Chain::DiceProcess()
   }
   ATOOLS::msg.Error()<<"Simple_Chain::DiceProcess(): Internal error!"<<std::endl
 		     <<"   Could not select any process. Abort."<<std::endl;
-  exit(121);
+  exit(211);
   return false;
 }
 

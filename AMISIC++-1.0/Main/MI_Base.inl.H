@@ -1,5 +1,5 @@
-#ifndef MI_Base_IC
-#define MI_Base_IC
+#ifndef MI_Base_inl_H
+#define MI_Base_inl_H
 
 #include "MI_Base.H"
 

@@ -122,6 +122,6 @@ namespace AMISIC {
 
 } // end of namespace AMISIC
 
-#include "MI_Base.IC"
+#include "MI_Base.inl.H"
 
 #endif

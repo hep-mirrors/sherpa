@@ -125,7 +125,7 @@ namespace AMISIC {
 
 } // end of namespace AMISIC
 
-#include "Grid_Creator_Base.IC"
+#include "Grid_Creator_Base.inl.H"
 #include "Grid_Creator_Base.C"
 
 #endif

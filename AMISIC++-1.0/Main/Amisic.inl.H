@@ -1,5 +1,5 @@
-#ifndef Amisic_IC
-#define Amisic_IC
+#ifndef Amisic_inl_H
+#define Amisic_inl_H
 
 #include "Amisic.H"
 

@@ -33,8 +33,8 @@ namespace AMISIC {
     std::string m_environmentfile, m_xsfile;
     std::string m_xsextension, m_maxextension;
 
-    EXTRAXS::SimpleXSecs *p_processes;
-    FSRChannel           *p_fsrinterface;
+    EXTRAXS::Simple_XS *p_processes;
+    FSRChannel         *p_fsrinterface;
 
     AMEGIC::Environment        *p_environment;
     MODEL::Model_Base          *p_model;
@@ -90,6 +90,6 @@ namespace AMISIC {
 
 } // end of namespace AMISIC
 
-#include "Simple_Chain.IC"
+#include "Simple_Chain.inl.H"
 
 #endif

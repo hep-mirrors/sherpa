@@ -1,5 +1,5 @@
-#ifndef Grid_Creator_Base_IC
-#define Grid_Creator_Base_IC
+#ifndef Grid_Creator_Base_inl_H
+#define Grid_Creator_Base_inl_H
 
 #include "Grid_Creator_Base.H"
 

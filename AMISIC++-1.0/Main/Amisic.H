@@ -76,6 +76,6 @@ namespace AMISIC {
 
 } // end of namespace AMISIC
 
-#include "Amisic.IC"
+#include "Amisic.inl.H"
 
 #endif
