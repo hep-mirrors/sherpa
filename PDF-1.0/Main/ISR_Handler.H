@@ -23,7 +23,7 @@ namespace PDF {
 
     int m_mode, m_kmrmode, m_kperpscheme; 
 
-    double m_mass2[2], m_exponent[2], m_x[2], m_mu2[2];
+    double m_ebeam[2], m_mass2[2], m_exponent[2], m_x[2], m_mu2[2];
     double m_splimits[3],m_ylimits[2], m_kplimits[3], m_zlimits[2];
     double m_fixed_smin, m_fixed_smax, m_weight, m_flux;
 
@@ -115,6 +115,9 @@ namespace PDF {
     inline double Flux() const { return m_flux; }
 
     inline const ATOOLS::Vec4D *KMRMomenta() const { return p_kmrlast; }
+
+    inline void SetBeamEnergy(const double ebeam,const size_t i)
+    { if (i<2) m_ebeam[i]=ebeam; }
 
   };// end of class ISR_Handler
   

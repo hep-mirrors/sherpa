@@ -346,6 +346,8 @@ bool Initialization_Handler::InitializeThePDFs()
     kplimits[0] = dataread->GetValue<double>("ISR_KPMIN",m_bunch_splimits[0]);
     kplimits[1] = dataread->GetValue<double>("ISR_KPMAX",m_bunch_splimits[1]);
     m_isrhandlers[id] = new ISR_Handler(isrbases,m_bunch_splimits,kplimits);
+    m_isrhandlers[id]->SetBeamEnergy(p_beamspectra->GetBeam(0)->Energy(),0);
+    m_isrhandlers[id]->SetBeamEnergy(p_beamspectra->GetBeam(1)->Energy(),1);
     msg_Info()<<"Initialized the ISR["<<id<<"] : "<<m_isrhandlers[id]->Type()<<endl;
     delete pdfhandler;
     delete dataread;

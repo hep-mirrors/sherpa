@@ -272,8 +272,8 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
   m_cmsboost=Poincare(Vec4D(cosh(m_ykey[2]),0.,0.,sinh(m_ykey[2])));
   m_cmsboost.BoostBack(p_cms[0]);
   m_cmsboost.BoostBack(p_cms[1]);
-  m_x[0]=2.*p_cms[0][0]/Q;
-  m_x[1]=2.*p_cms[1][0]/Q;
+  m_x[0]=p_cms[0].PPlus()/(2.0*m_ebeam[0]);
+  m_x[1]=p_cms[1].PMinus()/(2.0*m_ebeam[1]);
   m_flux=.25;
   m_flux/=sqrt(sqr(p[0]*p[1])-p[0].Abs2()*p[1].Abs2());
   if (!m_kmrmode) {
