@@ -41,8 +41,9 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
 	       _scalescheme,_kfactorscheme,_scalefactor,_scale,_pl,_nex,_ex_fl),
   p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this)
 {
-  m_newlib=false;
-  m_save_max=0.;
+  m_newlib   = false;
+  m_libnumb  = 0;
+  m_save_max = 0.;
   GenerateNames(m_nin,p_flin,p_plin,m_nout,p_flout,p_plout,m_name,m_ptypename,m_libname);
   m_pslibname = m_libname;
 
@@ -529,21 +530,20 @@ int Single_Process::CheckLibraries() {
   String_Handler * shand1;
   shand1      = new String_Handler(p_shand->Get_Generator());
   
-  int number  = 0;
+  m_libnumb  = 0;
   string proc = string("Process/")+m_ptypename+string("/V");
   string testname;
   double M2s, helvalue;
 
   for (;;) {
-    ++number;
-    sprintf(help,"%i",number);
+    sprintf(help,"%i",m_libnumb);
     testname  = CreateLibName()+string("_")+string(help);
     if (shand1->SearchValues(m_gen_str,testname,p_BS)) {
 
       shand1->Calculate();
       
       M2s = 0.;
-      ATOOLS::msg.Debugging()<<"Check "<<number<<" :";ATOOLS::msg.Debugging().flush();
+      ATOOLS::msg.Debugging()<<"Check "<<m_libnumb<<" :";ATOOLS::msg.Debugging().flush();
       for (short int i=0;i<p_hel->MaxHel();i++) {
 	helvalue = p_ampl->Differential(shand1,i) * p_hel->PolarizationFactor(i) *
 	  p_hel->Multiplicity(i);
@@ -567,6 +567,7 @@ int Single_Process::CheckLibraries() {
       }
     } 
     else break;
+    ++m_libnumb;
   }
   if (shand1) { delete shand1; shand1 = 0; }
   return 0;
@@ -612,13 +613,12 @@ void Single_Process::WriteLibrary()
 {
   if (m_gen_str<2) return;
   char help[20];
-  int number  = 0;
   string testname;
   for (;;) {
-    sprintf(help,"%i",number);
+    sprintf(help,"%i",m_libnumb);
     testname    = CreateLibName()+string("_")+string(help);
     if (!(IsFile(string("Process/")+m_ptypename+string("/")+testname+string("/V.H")))) break;
-    ++number;
+    ++m_libnumb;
   }
   m_libname = testname;
   if (p_partner==this) m_pslibname = m_libname;

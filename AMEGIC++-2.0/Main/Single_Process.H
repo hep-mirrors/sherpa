@@ -17,6 +17,7 @@ namespace AMEGIC {
     double                  m_save_max;
     bool                    m_newlib;
     double                  m_iresult;
+    int                     m_libnumb;
 
     Helicity              * p_hel;
     Basic_Sfuncs          * p_BS;
