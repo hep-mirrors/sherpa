@@ -389,13 +389,13 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
   if (flag>=0) sf<<"  double tmass"<<count<<" = Flavour(kf::code("<<hi<<")).Mass();"<<endl;
 
   string pout0sum;
-  for (short int i=0;i<pout0.size();i++) pout0sum += pout0[i];
+  for (size_t i=0;i<pout0.size();i++) pout0sum += pout0[i];
   string pout1sum;
-  for (short int i=0;i<pout1.size();i++) pout1sum += pout1[i];
+  for (size_t i=0;i<pout1.size();i++) pout1sum += pout1[i];
   string pin0sum = string("0_");
-  for (short int i=1;i<pin0.size();i++) pin0sum += pin0[i]; 
+  for (size_t i=1;i<pin0.size();i++) pin0sum += pin0[i]; 
   string pin1sum = string("1_");
-  for (short int i=1;i<pin1.size();i++) pin1sum += pin1[i];
+  for (size_t i=1;i<pin1.size();i++) pin1sum += pin1[i];
 
   if (flag>=0) {
     //mins
@@ -454,7 +454,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
       break;
     default:
       string s;
-      for (short int i=0;i<pout0sum.length()-1;i++)
+      for (size_t i=0;i<pout0sum.length()-1;i++)
 	s += string("p[")+pout0sum[i]+string("]+");
       s += string("p[")+pout0sum[pout0sum.length()-1]+string("]");
     
@@ -502,7 +502,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
       break;
     default:
       string s;
-      for (short int i=0;i<pout1sum.length()-1;i++)
+      for (size_t i=0;i<pout1sum.length()-1;i++)
 	s += string("p[")+pout1sum[i]+string("]+");
       s += string("p[")+pout1sum[pout1sum.length()-1]+string("]");
       
@@ -565,9 +565,9 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
       if (pout1.size()==1) {
 	pin1.push_back(pout1[0]);
 	string pin1sum = string("1_");
-	for (short int i=1;i<pin1.size();i++) pin1sum += pin1[i];
+	for (size_t i=1;i<pin1.size();i++) pin1sum += pin1[i];
 	string s = string("p[1]");
-	for (short int i=1;i<pin1.size();i++) {
+	for (size_t i=1;i<pin1.size();i++) {
 	  if (pin1[i].length()==1) s += string("-p[")+pin1[i]+string("]");
 	                      else s += string("-p")+Order(pin1[i]);
 	}
@@ -588,7 +588,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
       }
 
       pout1.clear();
-      for (short int i=1;i<pout0.size();i++) pout1.push_back(pout0[i]);
+      for (size_t i=1;i<pout0.size();i++) pout1.push_back(pout0[i]);
       string help = pout0[0];
       pout0.clear();
       pout0.push_back(help);    
@@ -600,12 +600,12 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
 	if (pout0.size()==1) {
 	  pin0.push_back(pout0[0]);
 	  string pin0sum = string("0_");
-	  for (short int i=1;i<pin0.size();i++) pin0sum += pin0[i];
+	  for (size_t i=1;i<pin0.size();i++) pin0sum += pin0[i];
 
 	  //sf<<"  Vec4D p"<<Order(pin0sum)<<" = p[0]";
 
 	  string s = string("p[0]");
-	  for (short int i=1;i<pin0.size();i++) {
+	  for (size_t i=1;i<pin0.size();i++) {
 	    if (pin0[i].length()==1) s+=string("-p[")+pin0[i]+string("]");
 	                        else s+=string("-p")+Order(pin0[i]);
 	  }
@@ -619,7 +619,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
 	}
 
 	pout0.clear();
-	for (short int i=0;i<pout1.size()-1;i++) pout0.push_back(pout1[i]);
+	for (int i=0;i<(int)pout1.size()-1;i++) pout0.push_back(pout1[i]);
 	string help = pout1[pout1.size()-1];
 	pout1.clear();
 	pout1.push_back(help); 
@@ -731,7 +731,7 @@ void Channel_Generator::GenerateMasses(int flag,Point** _plist,int pcount,
       break;
     default:
       string s(""); 
-      for (short int i=0;i<lm[hit].length()-1;i++) s += string("p[")+lm[hit][i]+string("]+");
+      for (int i=0;i<(int)lm[hit].length()-1;i++) s += string("p[")+lm[hit][i]+string("]+");
       s += string("p[")+lm[hit][lm[hit].length()-1]+string("]");
      
       AddToVariables(flag,lm[hit],s,1,sf);
@@ -780,12 +780,12 @@ void Channel_Generator::SetProps(Point* p,Point** props,Point** propt, int& coun
 void Channel_Generator::CalcTSmin(int flag,vector<string>& p,ofstream& sf)
 {
   string help;
-  for (short int i=0;i<p.size();i++) {
+  for (size_t i=0;i<p.size();i++) {
     if (p[i].length()==1) help += p[i];
   }
 
   string psum;
-  for (short int i=0;i<p.size();i++) psum += p[i];
+  for (size_t i=0;i<p.size();i++) psum += p[i];
 
 
   string s;
@@ -801,7 +801,7 @@ void Channel_Generator::CalcTSmin(int flag,vector<string>& p,ofstream& sf)
   else s = string("sqr(");
 
 
-  for (short int i=0;i<p.size();i++) {
+  for (size_t i=0;i<p.size();i++) {
     if (p[i].length()>1) s += string("+sqrt(s") + Order(p[i]) + string(")");
   }
   s += string(")");
@@ -922,8 +922,8 @@ string Channel_Generator::Order(string s)
   }
   if (s[0]>='9' || s[0]<='0') return s;
 
-  for (short i=0;i<s.length();i++) 
-    for (short j=i+1;j<s.length();j++) {
+  for (size_t i=0;i<s.length();i++) 
+    for (size_t j=i+1;j<s.length();j++) {
       if (s[i]>s[j]) {
 	char help = s[i];
 	s[i] = s[j];
