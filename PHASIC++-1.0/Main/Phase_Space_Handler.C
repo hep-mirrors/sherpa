@@ -795,31 +795,49 @@ bool Phase_Space_Handler::MakeISRChannels()
   return CreateISRChannels();
 }
 
+void Phase_Space_Handler::MakeZChannels(const int type)
+{
+  Channel_Info ci;
+  ci.type=type;
+  ci.parameters.push_back(.0625);
+  ci.parameters.push_back(.99);
+  m_zparams.push_back(ci);
+  ci.parameters[0]=.125;
+  m_zparams.push_back(ci);
+  ci.parameters[0]=.25;
+  m_zparams.push_back(ci);
+  ci.parameters[0]=.5;
+  m_zparams.push_back(ci);
+  ci.parameters[0]=.75;
+  m_zparams.push_back(ci);
+  ci.parameters[0]=.875;
+  m_zparams.push_back(ci);
+  ci.parameters.clear();
+}
+
 bool Phase_Space_Handler::MakeKMRChannels()
 {
   if (m_zparams.size()>0) return CreateKMRChannels();
   Channel_Info ci;
   if (!p_flavours[0].IsLepton() && !p_flavours[1].IsLepton()) {
     // z channels
-    if (p_flavours[0].IsQuark() && p_flavours[1].IsQuark()) ci.type=1;
-    else if (p_flavours[0].IsQuark() && p_flavours[1].IsGluon()) ci.type=2;
-    else if (p_flavours[0].IsGluon() && p_flavours[1].IsQuark()) ci.type=3;
-    else if (p_flavours[0].IsGluon() && p_flavours[1].IsGluon()) ci.type=4;
-    else ci.type=0;
-    ci.parameters.push_back(.0625);
-    ci.parameters.push_back(.99);
-    m_zparams.push_back(ci);
-    ci.parameters[0]=.125;
-    m_zparams.push_back(ci);
-    ci.parameters[0]=.25;
-    m_zparams.push_back(ci);
-    ci.parameters[0]=.5;
-    m_zparams.push_back(ci);
-    ci.parameters[0]=.75;
-    m_zparams.push_back(ci);
-    ci.parameters[0]=.875;
-    m_zparams.push_back(ci);
-    ci.parameters.clear();
+    if (p_flavours[0].IsQuark() && p_flavours[1].IsQuark()) {
+      MakeZChannels(1);
+    }
+    else if (p_flavours[0].IsQuark() && p_flavours[1].IsGluon()) {
+      MakeZChannels(1);
+      MakeZChannels(2);
+    }
+    else if (p_flavours[0].IsGluon() && p_flavours[1].IsQuark()) {
+      MakeZChannels(1);
+      MakeZChannels(3);
+    }
+    else if (p_flavours[0].IsGluon() && p_flavours[1].IsGluon()) {
+      //MakeZChannels(1);
+      MakeZChannels(2);
+      MakeZChannels(3);
+      MakeZChannels(4);
+    }
     // k_\perp channels
     ci.type=0;
     ci.parameters.push_back(1.001);

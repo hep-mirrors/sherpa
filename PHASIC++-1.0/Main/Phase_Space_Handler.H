@@ -64,6 +64,8 @@ namespace PHASIC {
     bool Check4Momentum(const ATOOLS::Vec4D *p);
     bool Compare(const ATOOLS::Vec4D *p1,const ATOOLS::Vec4D *p2);
 
+    void MakeZChannels(const int type);
+
     bool MakeBeamChannels();
     bool MakeISRChannels();
     bool MakeKMRChannels();
