@@ -185,6 +185,7 @@ void Flavour::FromCtq(int code) {
 
 int Flavour::HepEvt() {
   if (IsLepton() || IsQuark() || IsHadron()) return (anti)? -Kfcode():Kfcode();
+  if (IsDiQuark())                           return (anti)? -Kfcode():Kfcode();
   if (IsGluon())                             return 21;
   if (IsPhoton())                            return 22;
   if (kfc==kf::Z)                            return 23;
