@@ -325,8 +325,10 @@ void Vertex::ColorExchange(Color_Function* colfunc,int new0,int new1,int new2,in
   }
   colfunc->SetStringArg(strarg[0],strarg[1],strarg[2]);
   colfunc->SetParticleArg(partarg[0],partarg[1],partarg[2]);
-  colfunc->Next()->SetStringArg(strargn[0],strargn[1],strargn[2]);
-  colfunc->Next()->SetParticleArg(partargn[0],partargn[1],partargn[2]);
+  if (colfunc->Next()) {
+    colfunc->Next()->SetStringArg(strargn[0],strargn[1],strargn[2]);
+    colfunc->Next()->SetParticleArg(partargn[0],partargn[1],partargn[2]);
+  }
 }
 
 
