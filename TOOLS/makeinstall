@@ -164,6 +164,7 @@ else
         fi
       fi
       INFORM="TRUE"
+      CONFIGURE="TRUE"
       if [ ! "$RELEASE" = "TRUE" ] ; then
         echo "======================================"
         echo " extracting $I"
