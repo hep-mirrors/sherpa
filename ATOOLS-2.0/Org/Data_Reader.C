@@ -229,8 +229,13 @@ Data_Reader::M_VectorFromString(std::string parameter, std::string inputstring,V
     std::cout<<std::endl;
 #endif
     bool stop=false;
-    for (unsigned int j=0;j<Separator().size();++j) if (value==Separator()[j]) stop=true;
-    if (stop) break;
+    for (unsigned int j=0;j<Separator().size();++j) {
+      size_t pos=value.find(Separator()[j]);
+      if (pos!=std::string::npos) {
+	value=value.substr(0,pos);
+	stop=true;
+      }
+    }
     values.push_back(M_ReadFromString<Read_Type>(nullstring,value));
     if (tempvtype==VVertical) break;
     inputstring=inputstring.substr(inputstring.find(value)+value.length());
@@ -243,6 +248,7 @@ Data_Reader::M_VectorFromString(std::string parameter, std::string inputstring,V
       }
     }
     value=M_ReadFromString<std::string>(nullstring,inputstring);
+    if (stop) break;
   }
 #ifdef DEBUG__Data_Reader
   std::cout<<"   returned values are [ ";
