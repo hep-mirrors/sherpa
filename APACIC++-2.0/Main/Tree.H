@@ -100,6 +100,7 @@ namespace APACIC {
   //----------------------------------------------------------------------- 
 
   inline void Tree::ResetKnots() {
+    if (!s_knots) return;
     for (Knot_Iterator kit=s_knots->begin(); kit!=s_knots->end(); ++kit) {
       delete (*kit); 
     }
