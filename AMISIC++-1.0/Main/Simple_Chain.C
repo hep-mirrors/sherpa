@@ -37,8 +37,9 @@ Simple_Chain::Simple_Chain():
   p_total(NULL), p_differential(NULL), m_norm(1.0), m_enhance(1.0), 
   m_xsextension("_xs.dat"), m_maxextension("_max.dat"), m_mcextension("_mc"), 
   p_processes(NULL), p_fsrinterface(NULL), p_environment(NULL), p_model(NULL),
-  p_beam(NULL), p_isr(NULL), p_profile(NULL), m_nflavour(5), m_maxtrials(1), 
-  m_scalescheme(2), m_kfactorscheme(1), m_external(false), m_regulate(false)
+  p_beam(NULL), p_isr(NULL), p_profile(NULL), m_nflavour(5), m_maxtrials(100), 
+  m_scalescheme(2), m_kfactorscheme(1), m_ecms(ATOOLS::rpa.gen.Ecms()),
+  m_external(false), m_regulate(false)
 {
   SetInputFile("MI.dat");
   SetInputFile("XS.dat",1);
@@ -59,8 +60,9 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *const model,
   m_xsfile("XS.dat"), m_xsextension("_xs.dat"), m_maxextension("_max.dat"),
   m_mcextension("_mc"), p_processes(NULL), p_fsrinterface(NULL), 
   p_environment(NULL), p_model(model), p_beam(beam), p_isr(isr), 
-  p_profile(NULL), m_nflavour(5), m_maxtrials(1), m_scalescheme(2), 
-  m_kfactorscheme(1), m_external(true), m_regulate(false)
+  p_profile(NULL), m_nflavour(5), m_maxtrials(100), m_scalescheme(2), 
+  m_kfactorscheme(1), m_ecms(ATOOLS::rpa.gen.Ecms()),
+  m_external(true), m_regulate(false)
 {
   SetInputFile("MI.dat");
   SetInputFile("XS.dat",1);
@@ -156,17 +158,32 @@ bool Simple_Chain::AddProcess(EXTRAXS::XS_Group *const group,
 	  help[3]=flavs[3][l];
 	  OrderFlavours(help);
 	  for (size_t i=0;i<4;++i) {
-	    if (m_mapmap.find(help[i].Kfcode())!=m_mapmap.end()) 
-	      mapped[i]=ATOOLS::Flavour(m_mapmap[help[i].Kfcode()]);
-	    else mapped[i]=ATOOLS::Flavour(help[i].Kfcode());
+	    if (m_mapmap.find(help[i].Kfcode())!=m_mapmap.end()) {
+	      ATOOLS::kf::code code=m_mapmap[help[i].Kfcode()];
+	      if (m_mapmap.find(code)!=m_mapmap.end() && 
+		  m_mapmap[code]==help[i].Kfcode())
+		mapped[i]=ATOOLS::Flavour(help[i].Kfcode());
+	      else mapped[i]=ATOOLS::Flavour(m_mapmap[help[i].Kfcode()]);
+	    }
+	    else {
+	      mapped[i]=ATOOLS::Flavour(help[i].Kfcode());
+	    }
 	    if (help[i].IsAnti()) mapped[i]=mapped[i].Bar();
+	    for (size_t j=0;j<i;++j) {
+	      if (mapped[i].Kfcode()==mapped[j].Kfcode() &&
+		  help[i].Kfcode()!=help[j].Kfcode()) {
+		if (m_mapmap.find(mapped[i].Kfcode())!=m_mapmap.end()) 
+		  mapped[i]=ATOOLS::Flavour(m_mapmap[mapped[i].Kfcode()]);
+		else mapped[i]=ATOOLS::Flavour(help[i].Kfcode());
+		if (help[i].IsAnti()) mapped[i]=mapped[i].Bar();
+	      }
+	    }
 	  }
 	  EXTRAXS::XS_Base *newxs = group->XSSelector()->GetXS(2,2,help);
 	  if (newxs==NULL) continue;
 	  EXTRAXS::XS_Base *testxs=NULL;
 	  EXTRAXS::XS_Selector::FindInGroup(group,testxs,2,2,mapped);
 	  if (testxs==NULL) {
-	    group->Add(newxs);
 	    if (m_regulate) newxs->AssignRegulator(m_regulator,m_regulation);
 	    newxs->SetScaleScheme(m_scalescheme);
 	    newxs->SetKFactorScheme(m_kfactorscheme);
@@ -222,12 +239,17 @@ bool Simple_Chain::ReadInData()
   GeneratePathName();
   std::vector<std::vector<int> > helpivv;
   if (reader->MatrixFromFile(helpivv,"MAP_FLAVOUR")) {
-    msg_Tracking()<<"Simple_Chain::ReadInData(): Mapping flavours {\n";
     for (size_t i=0;i<helpivv.size();++i) {
       if (helpivv[i].size()<2) continue;
       m_mapmap[ATOOLS::kf::code(helpivv[i][0])]=
 	ATOOLS::kf::code(helpivv[i][1]);
-      msg_Tracking()<<"   "<<helpivv[i][0]<<" -> "<<helpivv[i][1]<<"\n";
+      m_mapmap[ATOOLS::kf::code(helpivv[i][1])]=
+	ATOOLS::kf::code(helpivv[i][0]);
+    }
+    msg_Tracking()<<"Simple_Chain::ReadInData(): Mapping flavours {\n";
+    for (Map_Map::iterator mit=m_mapmap.begin();
+	 mit!=m_mapmap.end();++mit) {
+      msg_Tracking()<<"   "<<mit->first<<" -> "<<mit->second<<"\n";
     }
     msg_Tracking()<<"}"<<std::endl;
   }
@@ -356,14 +378,22 @@ bool Simple_Chain::CheckConsistency(EXTRAXS::XS_Group *const group,
   group->SelectorData()->AddData(criterion,initialdata.flavs,
 				 initialdata.help,(double)min,(double)max);
   group->ResetSelector(group->SelectorData());
+  int level=ATOOLS::msg.Level();
+  ATOOLS::msg.SetLevel(0);
+  double error=group->PSHandler(false)->Error();
+  group->PSHandler(false)->SetError(m_error);
   group->CalculateTotalXSec("");
+  group->PSHandler(false)->SetError(error);
+  ATOOLS::msg.SetLevel(level);
   double total=group->TotalXS();
-  msg_Tracking()<<"Simple_Chain::CheckConsistency(): \\sigma_{hard} = "
-		<<total*ATOOLS::rpa.Picobarn()<<" pb vs. "
-		<<integral*ATOOLS::rpa.Picobarn()<<" pb. "<<std::endl
-		<<"   Relative error : "
+  msg_Tracking()<<"Simple_Chain::CheckConsistency(): {\n"
+		<<"   \\sigma_{hard xs}   = "
+		<<total*ATOOLS::rpa.Picobarn()<<" pb\n"
+		<<"   \\sigma_{hard grid} = "
+		<<integral*ATOOLS::rpa.Picobarn()<<" pb\n"
+		<<"   relative error     = "
 		<<ATOOLS::dabs((total-integral)/(total))*100.0
-		<<"%."<<std::endl;
+		<<" %\n}"<<std::endl;
   if (ATOOLS::dabs((total-integral)/total)>2.*m_error) {
     throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
 			    "Grid integral and \\sigma_{tot} do not coincide.",
@@ -428,10 +458,14 @@ bool Simple_Chain::CalculateTotal()
 				      second->XAxis()->Scaling()->Name());
   p_differential->YAxis()->SetScaling(m_differential.begin()->
 				      second->YAxis()->Scaling()->Name());
-  Grid_Function_Map::iterator diffit;
   std::set<double> *xvalue = new std::set<double>();
-  for (diffit=m_differential.begin();
-       diffit!=m_differential.end();++diffit) {
+  for (Process_Map::iterator pit=m_processmap.begin();
+       pit!=m_processmap.end();++pit) {
+    Grid_Function_Map::iterator diffit;
+    for (diffit=m_differential.begin();
+	 diffit!=m_differential.end();++diffit) {
+      if (m_processmap[diffit->first]==pit->second) break;
+    }
     for (unsigned int i=0;i<diffit->second->XDataSize();++i) {
       double x=diffit->second->XYData(i).first;
       if (xvalue->find(x)==xvalue->end()) xvalue->insert(x);
@@ -440,8 +474,13 @@ bool Simple_Chain::CalculateTotal()
   for (std::set<double>::iterator xit=xvalue->begin();
        xit!=xvalue->end();++xit) {
     double y=0.0;
-    for (diffit=m_differential.begin();
-	 diffit!=m_differential.end();++diffit) {
+    for (Process_Map::iterator pit=m_processmap.begin();
+	 pit!=m_processmap.end();++pit) {
+      Grid_Function_Map::iterator diffit;
+      for (diffit=m_differential.begin();
+	   diffit!=m_differential.end();++diffit) {
+	if (m_processmap[diffit->first]==pit->second) break;
+      }
       y+=diffit->second->Y(*xit,diffit->second->Interpolation);
     }
     p_differential->AddPoint(*xit,y);
@@ -451,7 +490,7 @@ bool Simple_Chain::CalculateTotal()
   std::vector<std::string> comments(1,"  Differential XS   "); 
   Grid_Handler_Type *gridhandler = new Grid_Handler_Type(p_differential);
   gridhandler->SetStreamName(OutputPath()+differentialfile);
-  gridhandler->WriteOutGrid(ATOOLS::Type::TFStream,comments);
+  gridhandler->WriteOut(ATOOLS::Type::TFStream,"",comments);
   delete gridhandler;
 #endif
   SetStart(p_differential->XMax(),0);
@@ -473,6 +512,25 @@ bool Simple_Chain::CalculateTotal()
 		       <<(m_norm*ATOOLS::rpa.Picobarn()/1.e9)
 		       <<" mb !"<<ATOOLS::om::reset<<std::endl;
   }
+  if (m_check) {
+    Semihard_QCD *group;
+    group = new Semihard_QCD(p_beam,p_isr,p_processes->SelectorData(),
+			     p_processes->ScaleScheme(),
+			     p_processes->KFactorScheme(),
+			     p_processes->ScaleFactor());
+    group->XSSelector()->SetOffShell(p_isr->KMROn());
+    for (Process_Map::iterator pit=m_processmap.begin();
+	 pit!=m_processmap.end();++pit) {
+      group->Add(pit->second);
+    }
+    CheckConsistency(group,p_total,m_stop[0],m_start[0],
+		     p_total->Y(m_stop[0]));
+    for (Process_Map::iterator pit=m_processmap.begin();
+	 pit!=m_processmap.end();++pit) {
+      group->Remove(pit->second);
+    }
+    delete group;
+  }
   p_total->ScaleY(1.0/m_norm);
 #ifdef DEBUG__Simple_Chain
   comments.back()="   Integrated XS    "; 
@@ -480,13 +538,13 @@ bool Simple_Chain::CalculateTotal()
     p_differential->IntegralY(m_stop[0],m_start[0],"Id","Id",false);
   gridhandler = new Grid_Handler_Type(total);
   gridhandler->SetStreamName(OutputPath()+integralfile);
-  gridhandler->WriteOutGrid(ATOOLS::Type::TFStream,comments);
+  gridhandler->WriteOut(ATOOLS::Type::TFStream,"",comments);
   delete gridhandler;
   delete total;
   comments.back()="   Normalized XS    "; 
   gridhandler = new Grid_Handler_Type(p_total);
   gridhandler->SetStreamName(OutputPath()+normalizedfile);
-  gridhandler->WriteOutGrid(ATOOLS::Type::TFStream,comments);
+  gridhandler->WriteOut(ATOOLS::Type::TFStream,"",comments);
   delete gridhandler;
 #endif
   return true;
@@ -515,6 +573,7 @@ bool Simple_Chain::Initialize()
   SetInputFile(xsfile,1);
   double stop;
   if (!reader->ReadFromFile(stop,"EVENT_X_MIN")) stop=Stop(0);
+  if (!reader->ReadFromFile(m_check,"CHECK_CONSISTENCY")) m_check=0;
   SetStop(stop,0);
   std::string function;
   if (reader->ReadFromFile(function,"PROFILE_FUNCTION")) {
@@ -551,51 +610,42 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 {
   PROFILE_HERE;
   m_filledblob=false;
-  if (p_processes==NULL) {
-    ATOOLS::msg.Error()<<"Simple_Chain::FillBlob(..): "
-		       <<"Processes are not initialized! Abort."<<std::endl;
-    return false;
-  }
-  if (blob==NULL) {
-    ATOOLS::msg.Error()<<"Simple_Chain::FillBlob(..): "
-		       <<"Blob is not initialized! Abort."<<std::endl;
-    return false;
+  if (p_processes==NULL || blob==NULL) {
+    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
+			    "Multiple interactions are not initialized",
+			    "Simple_Chain","FillBlob"));
   }
   blob->DeleteOwnedParticles();
   if (m_processmap.find(m_selected)!=m_processmap.end()) {
-#ifdef DEBUG__Simple_Chain
-    // std::cout<<"Simple_Chain::FillBlob(..): Generating one event."<<std::endl;
-#endif
     EXTRAXS::XS_Base *selected=m_processmap[m_selected];
-    selected->SelectOne();
+    (*p_processes)[0]->SetSelected(selected);
     double weight=1.;
     size_t trials=1;
     if (!m_weighted) {
-      if (!(selected->OneEvent(-1.,1))) {
-	ATOOLS::msg.Error()<<"Simple_Chain::FillBlob(): "
-			   <<"Could not select any process! "
-			   <<"Retry."<<std::endl;
-	return false;
+      size_t trials=0;
+      double max=(*m_maxima[m_selected])(m_last[0]);
+      p_fsrinterface->SetTrigger(false);
+      while (++trials<m_maxtrials) {
+	ATOOLS::Blob_Data_Base *data=selected->SameWeightedEvent();
+	weight=data->Get<PHASIC::Weight_Info>().weight/selected->Max();
+	trials=data->Get<PHASIC::Weight_Info>().ntrial;
+	if (p_fsrinterface->Trigger() && weight>max*ATOOLS::ran.Get()) break;
       }
     }
     else {
-      ATOOLS::Blob_Data_Base *data=selected->SameWeightedEvent();
-      weight=data->Get<PHASIC::Weight_Info>().weight/selected->Max();
-      trials=data->Get<PHASIC::Weight_Info>().ntrial;
+      throw(ATOOLS::Exception(ATOOLS::ex::not_implemented,
+			      "Weighted events not available",
+			      "Simple_Chain","FillBlob"));
     }
     (*p_blob)["MI_Weight"]->Set(weight);
     (*p_blob)["MI_Trials"]->Set(trials);
-#ifdef DEBUG__Simple_Chain
-    // std::cout<<"   Completed one event."<<std::endl;
-#endif
-    p_xs=static_cast<EXTRAXS::XS_Base*>(selected->Selected());
     double x[2], xrem[2];
     bool test=true;
-    for (size_t j=0;j<p_xs->NIn();++j) {
-      x[j]=2.0*p_xs->Momenta()[j][0]/m_ecms;
+    for (size_t j=0;j<selected->NIn();++j) {
+      x[j]=2.0*selected->Momenta()[j][0]/m_ecms;
       if (s_remnanthandlers[j]!=NULL) {
 	xrem[j]=2.0*s_remnanthandlers[j]->
-	  MinimalEnergy(p_xs->Flavours()[j])/m_ecms;
+	  MinimalEnergy(selected->Flavours()[j])/m_ecms;
 	if (m_last[j+2]-x[j]<xrem[j]) {
 	  test=false;
 	  msg_Tracking()<<"Simple_Chain::FillBlob(..): Remnant_Info ["
@@ -603,7 +653,7 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 			<<"x_{rem min} = "<<xrem[j]
 			<<" vs. x_{old} = "<<m_last[j+2]
 			<<" -> x_{new} = "<<m_last[j+2]-x[j]-xrem[j]<<" from "
-			<<p_xs->Flavours()[j]<<" => ("<<test<<")"<<std::endl;
+			<<selected->Flavours()[j]<<" => ("<<test<<")"<<std::endl;
 	}
       }
       else {
@@ -618,21 +668,22 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
     }
     m_last[2]-=x[0]+xrem[0];
     m_last[3]-=x[1]+xrem[1];
-    p_xs->SetColours(p_xs->Momenta());
+    selected->SetColours(selected->Momenta());
     ATOOLS::Particle *particle;
-    for (size_t j=0;j<p_xs->NIn();++j) {
-      particle = new ATOOLS::Particle(0,p_xs->Flavours()[j]);
-      particle->SetMomentum(p_xs->Momenta()[j]);
-      particle->SetFlow(1,p_xs->Colours()[j][0]);
-      particle->SetFlow(2,p_xs->Colours()[j][1]);
+    for (size_t j=0;j<selected->NIn();++j) {
+      particle = new ATOOLS::Particle(0,selected->Flavours()[j]);
+      particle->SetMomentum(selected->Momenta()[j]);
+      particle->SetFlow(1,selected->Colours()[j][0]);
+      particle->SetFlow(2,selected->Colours()[j][1]);
       particle->SetStatus(1);
       blob->AddToInParticles(particle);
     }
-    for (size_t j=0;j<p_xs->NOut();++j) {
-      particle = new ATOOLS::Particle(0,p_xs->Flavours()[p_xs->NIn()+j]);
-      particle->SetMomentum(p_xs->Momenta()[p_xs->NIn()+j]);
-      particle->SetFlow(1,p_xs->Colours()[p_xs->NIn()+j][0]);
-      particle->SetFlow(2,p_xs->Colours()[p_xs->NIn()+j][1]);
+    for (size_t j=0;j<selected->NOut();++j) {
+      particle = new ATOOLS::Particle(0,selected->Flavours()
+				      [selected->NIn()+j]);
+      particle->SetMomentum(selected->Momenta()[selected->NIn()+j]);
+      particle->SetFlow(1,selected->Colours()[selected->NIn()+j][0]);
+      particle->SetFlow(2,selected->Colours()[selected->NIn()+j][1]);
       particle->SetStatus(1);
       blob->AddToOutParticles(particle);
     }
@@ -659,14 +710,6 @@ bool Simple_Chain::DiceProcess()
     return true;
   }
   p_fsrinterface->SetValue(m_last[0]);
-  int criterion=ATOOLS::Variable::
-    TypeToSelectorID(m_differential[0]->XAxis()->Variable().Type());
-  ATOOLS::Mom_Data initialdata=
-    p_processes->SelectorData()->RemoveData(criterion);
-  p_processes->SelectorData()->
-    AddData(criterion,initialdata.flavs,initialdata.help,
-	    m_last[0],initialdata.max);
-  p_processes->ResetSelector(p_processes->SelectorData());
   Sort_Map sorter;
   Sort_Map::key_type norm=0.0, cur=0.0;
   for (Grid_Function_Map::iterator git=m_differential.begin();
@@ -682,12 +725,11 @@ bool Simple_Chain::DiceProcess()
     for (;sit!=sorter.upper_bound(sit->first);++sit) {
       if ((cur+=sit->first/norm)>rannr) {
 	m_selected=sit->second;
-	p_processes->SetSelected(m_processmap[m_selected]);
 	double xrem[2];
 	for (short unsigned int k=0;k<2;++k) {
 	  if (s_remnanthandlers[k]!=NULL) {
 	    xrem[k]=2.0*s_remnanthandlers[k]->
-	      MinimalEnergy(p_processes->Selected()->Flavours()[k])/m_ecms;
+	      MinimalEnergy(m_processmap[m_selected]->Flavours()[k])/m_ecms;
 	  }
 	  else xrem[k]=0.0;
 	  if (m_last[3-k]<xmin+xrem[k]) {
@@ -703,7 +745,6 @@ bool Simple_Chain::DiceProcess()
 	isr->SetSprimeMax(ATOOLS::sqr(m_ecms*(m_last[2]+m_last[3])));
 	isr->SetYMin(0.5*log((xmin+xrem[0])/m_last[3]));
 	isr->SetYMax(0.5*log(m_last[2]/(xmin+xrem[1])));
-	SetMaximum(m_processmap[m_selected]);
 	FillBlob(p_blob);
 	isr->SetYMin(ymin);
 	isr->SetYMax(ymax);
@@ -766,18 +807,6 @@ bool Simple_Chain::DiceOrderingParameter()
   m_dicedparameter=true;
   s_stophard=false;
   return true;
-}
-
-void Simple_Chain::SetMaximum(EXTRAXS::XS_Base *process) 
-{
-  process->SetTotalXS(0.);
-  if ((*process)[0]==process) 
-    process->SetMax((*m_maxima[process->Name()])(m_last[0]),true);
-  else {
-    for (size_t i=0;i<process->Size();++i) SetMaximum((*process)[i]);
-    process->SetMax(0.,false);
-    process->SetTotalXS(1.);
-  }
 }
 
 void Simple_Chain::Reset()

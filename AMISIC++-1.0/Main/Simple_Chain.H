@@ -79,8 +79,6 @@ namespace AMISIC {
 			  const double min,const double max,
 			  const double integral);
 
-    void SetMaximum(EXTRAXS::XS_Base *process); 
-
     bool FillBlob(ATOOLS::Blob *blob);
 
     void PrepareTerminate();
