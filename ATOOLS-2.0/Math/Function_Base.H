@@ -1,12 +1,21 @@
 #ifndef Function_Base_H
 #define Function_Base_H
 
+#include<string>
+
 namespace AMATOOLS {
   class Function_Base {
+  protected :
+    double      m_defval;
+    std::string m_type;
   public:
-    virtual void   SetParameters(double *) { };
-    virtual double GetValue(double xx) {return (*this)(xx);}   
-    virtual double operator() (double)=0;
+    virtual void        SetDefault(double _def)    { m_defval = _def; }
+    virtual void        SetType(std::string _type) { m_type   = _type; }
+    virtual void        SetParameters(double *)    { }
+    virtual double      GetValue(double xx)        { return (*this)(xx); }   
+    virtual double      operator()(double)         { return m_defval; }
+    virtual double      operator()()               { return m_defval; }
+    virtual std::string Type()                     { return m_type; }
   };
 
 // --------------------------------------------------

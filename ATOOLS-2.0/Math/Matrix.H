@@ -5,13 +5,14 @@
 // (4x4) Matrix class...
 
 #include "Vector.H"
+#include "MyComplex.H"
 
 namespace AMATOOLS {
 
   template<int _rank>
   class Matrix {
   protected:
-    double** m;
+    double ** p_m;
     void NumRecipesNotation();
     void AmegicNotation();
     void Jacobi(double d[], Matrix<_rank>&, int *);  
@@ -21,17 +22,32 @@ namespace AMATOOLS {
     Matrix(const Matrix<_rank>&);
     ~Matrix();
     Matrix<_rank>& operator=(const Matrix<_rank>&);
-    //Vec4D operator*(const Vec4D&); 
-    Matrix<_rank> operator*(const double);
-    Matrix<_rank> operator*(const Matrix<_rank>&);
-    double* operator[](int i) {return m[i];}
-    const double* operator[](int i) const {return m[i];}
+    Matrix<_rank>  operator*(const double);
+    Matrix<_rank>  operator*(const Matrix<_rank>&);
+    double       * operator[](int i) { return p_m[i]; }
+    const double * operator[](int i) const { return p_m[i]; }
     void MatrixOut() const;  
     const int Rank() const {return _rank;}
-    void Diagonalize(double*,Matrix<_rank>&);
-    void DiagonalizeSort(double*,Matrix<_rank>&);
+    void Diagonalize(double *,Matrix<_rank>&);
+    void DiagonalizeSort(double *,Matrix<_rank>&);
     Matrix<_rank> Dagger();
+    //Vec4D operator*(const Vec4D&); 
   };
+
+  class CMatrix {
+  protected:
+    Complex ** p_m;
+    int        m_rank;
+  public:
+    CMatrix() { m_rank = 0; p_m = NULL; }
+    CMatrix(int);
+    CMatrix(const CMatrix&);
+    ~CMatrix();
+    int             Rank()                  { return m_rank; }
+    Complex       * operator[](int i)       { return p_m[i]; }
+    const Complex * operator[](int i) const { return p_m[i]; }
+  };
+
 
   //Global functions.
 
@@ -156,13 +172,13 @@ namespace AMATOOLS {
   */
 
   /*!
-    \fn double* Matrix::operator[](int i) {return m[i];}
-    \brief provides write access matrix via m[i][j]
+    \fn double* Matrix::operator[](int i) {return p_m[i];}
+    \brief provides write access matrix via p_m[i][j]
   */
 
   /*!
-    \fn const double* Matrix::operator[](int i) const {return m[i];}
-    \brief provides read only acces to a constant matrix via m[i][j]
+    \fn const double* Matrix::operator[](int i) const {return p_m[i];}
+    \brief provides read only acces to a constant matrix via p_m[i][j]
   */
 
   /*!

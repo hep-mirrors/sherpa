@@ -10,41 +10,41 @@ using namespace std;
 template<int _rank>
 Matrix<_rank>::Matrix() 
 {
-  m = new double*[_rank];
+  p_m = new double*[_rank];
   for(short int i=0; i<_rank; i++) {
-    m[i] = new double[_rank];
+    p_m[i] = new double[_rank];
     for(short int j=0; j<_rank; j++) 
-      m[i][j]=0.0;
+      p_m[i][j]=0.0;
   }
 }
 
 template<int _rank>
 Matrix<_rank>::Matrix(const double ma[_rank][_rank]) 
 {
-  m = new double*[_rank];
+  p_m = new double*[_rank];
   for(short int i=0; i<_rank; i++) {
-    m[i] = new double[_rank];
+    p_m[i] = new double[_rank];
     for(short int j=0; j<_rank; j++) 
-      m[i][j]=ma[i][j];
+      p_m[i][j]=ma[i][j];
   }
 }
 
 template<int _rank>
 Matrix<_rank>::Matrix(const Matrix<_rank>& in) 
 {
-  m = new double*[_rank];
+  p_m = new double*[_rank];
   for(short int i=0; i<_rank; i++) {
-    m[i] = new double[_rank];
+    p_m[i] = new double[_rank];
     for(short int j=0; j<_rank; j++) 
-      m[i][j]=in[i][j];
+      p_m[i][j]=in[i][j];
   }
 }
 
 template<int _rank>
 Matrix<_rank>::~Matrix() 
 {
-  for(short int i=0; i<_rank; i++) delete[] m[i];
-  delete[] m;
+  for(short int i=0; i<_rank; i++) delete[] p_m[i];
+  delete[] p_m;
 }
 
 template<int _rank>
@@ -52,7 +52,7 @@ Matrix<_rank>& Matrix<_rank>::operator=(const Matrix<_rank>& in)
 {
   for(short int i=0; i<_rank; i++) {
     for(short int j=0; j<_rank; j++) 
-      m[i][j]=in[i][j];
+      p_m[i][j]=in[i][j];
   }
   return *this;
 } 
@@ -63,7 +63,7 @@ Matrix<_rank> Matrix<_rank>::operator*(const double scal)
   Matrix<_rank> out;
   for(short int i=0; i<_rank; i++) {
     for(short int j=0; j<_rank; j++) {
-      out[i][j]=scal*m[i][j];
+      out[i][j]=scal*p_m[i][j];
     }
   }
   return out;
@@ -77,7 +77,7 @@ Matrix<_rank> Matrix<_rank>::operator*(const Matrix<_rank>& in)
   for(short int i=0; i<_rank; i++) {
     for(short int j=0; j<_rank; j++) {
       out[i][j] = 0.;
-      for(short int k=0; k<_rank; k++) out[i][j] += m[i][k]*in[k][j];
+      for(short int k=0; k<_rank; k++) out[i][j] += p_m[i][k]*in[k][j];
     }
   }
   return out;
@@ -94,7 +94,7 @@ void Matrix<_rank>::MatrixOut() const
   
   for(short int i=0; i<_rank; i++) {
     for(short int j=0; j<_rank; j++) {
-      if(temp<m[i][j]) temp=m[i][j];
+      if(temp<p_m[i][j]) temp=p_m[i][j];
     }
   }
   do { temp/=10.0; range+=1; } 
@@ -111,15 +111,15 @@ void Matrix<_rank>::MatrixOut() const
   for(short int i=0; i<_rank; i++) {
     for(short int j=0; j<_rank; j++) {
       prcsn=-1;
-      temp=m[i][j]-int(m[i][j]);
+      temp=p_m[i][j]-int(p_m[i][j]);
       temp=fabs(temp)/10.0;
       do {temp*=10; temp+=1.0e-14; temp=temp-int(temp); prcsn+=1;} 
       while((temp>1.0e-10) && prcsn<9);
       msg.Out()<<std::setw(range+prcsn+3)<<std::setprecision(prcsn);
-      if(-1.0e-11<m[i][j] && m[i][j]<1.0e-11) msg.Out()<<double(0.0);
-      else msg.Out()<<m[i][j];
+      if(-1.0e-11<p_m[i][j] && p_m[i][j]<1.0e-11) msg.Out()<<double(0.0);
+      else msg.Out()<<p_m[i][j];
       for(short int k=0; k<(9-prcsn); k++) msg.Out()<<" ";
-      //msg.Out()<<std::setw(range+21)<<std::setprecision(18)<<m[i][j];
+      //msg.Out()<<std::setw(range+21)<<std::setprecision(18)<<p_m[i][j];
     }
     msg.Out()<<endl;
   }
@@ -139,14 +139,14 @@ void Matrix<_rank>::MatrixOut() const
 template<int _rank>
 void Matrix<_rank>::NumRecipesNotation() 
 {
-  for (short int i=0;i<_rank;i++) m[i]--;
-  m--;
+  for (short int i=0;i<_rank;i++) p_m[i]--;
+  p_m--;
 }
 
 template<int _rank>
 void Matrix<_rank>::AmegicNotation() {
-  m++;
-  for (short int i=0;i<_rank;i++) m[i]++;
+  p_m++;
+  for (short int i=0;i<_rank;i++) p_m[i]++;
 }
 
 template<int _rank>
@@ -154,17 +154,17 @@ void Matrix<_rank>::Diagonalize(double* evalues,Matrix<_rank>& evectors)
 {
   double trace = 0.;
   int hit = 0;
-  for (short int i=0;i<_rank;i++) trace += m[i][i];
+  for (short int i=0;i<_rank;i++) trace += p_m[i][i];
   for (short int i=0;i<_rank;i++) {
     for (short int j=0;j<_rank;j++) {
-      if (!IsZero(m[i][j]/trace)) {
+      if (!IsZero(p_m[i][j]/trace)) {
 	hit = 1;break;
       }
     }
   }
   if (hit==0) {
     for (short int i=0;i<_rank;i++) {
-      evalues[i] = m[i][i];
+      evalues[i] = p_m[i][i];
       for (short int j=0;j<_rank;j++) evectors[i][j] = 0.;
       evectors[i][i] = 1.;
     }
@@ -184,7 +184,7 @@ void Matrix<_rank>::Diagonalize(double* evalues,Matrix<_rank>& evectors)
   AmegicNotation();
   evectors.AmegicNotation();
   for (short int i=0;i<_rank;i++)
-    for (short int j=0;j<_rank;j++) m[i][j] = Save[i][j];
+    for (short int j=0;j<_rank;j++) p_m[i][j] = Save[i][j];
 }
 
 template<int _rank>
@@ -243,7 +243,7 @@ void Matrix<_rank>::Jacobi(double d[], Matrix<_rank>& v, int *nrot)
     v[ip][ip]=1.0;
   }
   for (ip=1;ip<=_rank;ip++) {
-    b[ip]=d[ip]=m[ip][ip];
+    b[ip]=d[ip]=p_m[ip][ip];
     z[ip]=0.0;
   }
   *nrot=0;
@@ -251,7 +251,7 @@ void Matrix<_rank>::Jacobi(double d[], Matrix<_rank>& v, int *nrot)
     sm=0.0;
     for (ip=1;ip<=_rank-1;ip++) {
       for (iq=ip+1;iq<=_rank;iq++)
-	sm += fabs(m[ip][iq]);
+	sm += fabs(p_m[ip][iq]);
     }
     if (sm == 0.0) {
       delete[] z;
@@ -264,36 +264,36 @@ void Matrix<_rank>::Jacobi(double d[], Matrix<_rank>& v, int *nrot)
       tresh=0.0;
     for (ip=1;ip<=_rank-1;ip++) {
       for (iq=ip+1;iq<=_rank;iq++) {
-	g=100.0*fabs(m[ip][iq]);
+	g=100.0*fabs(p_m[ip][iq]);
 	if (i > 4 && (double)(fabs(d[ip])+g) == (double)fabs(d[ip])
 	    && (double)(fabs(d[iq])+g) == (double)fabs(d[iq]))
-	  m[ip][iq]=0.0;
-	else if (fabs(m[ip][iq]) > tresh) {
+	  p_m[ip][iq]=0.0;
+	else if (fabs(p_m[ip][iq]) > tresh) {
 	  h=d[iq]-d[ip];
 	  if ((double)(fabs(h)+g) == (double)fabs(h))
-	    t=(m[ip][iq])/h;
+	    t=(p_m[ip][iq])/h;
 	  else {
-	    theta=0.5*h/(m[ip][iq]);
+	    theta=0.5*h/(p_m[ip][iq]);
 	    t=1.0/(fabs(theta)+sqrt(1.0+theta*theta));
 	    if (theta < 0.0) t = -t;
 	  }
 	  c=1.0/sqrt(1+t*t);
 	  s=t*c;
 	  tau=s/(1.0+c);
-	  h=t*m[ip][iq];
+	  h=t*p_m[ip][iq];
 	  z[ip] -= h;
 	  z[iq] += h;
 	  d[ip] -= h;
 	  d[iq] += h;
-	  m[ip][iq]=0.0;
+	  p_m[ip][iq]=0.0;
 	  for (j=1;j<=ip-1;j++) {
-	    ROTATE(m,j,ip,j,iq)
+	    ROTATE(p_m,j,ip,j,iq)
 	      }
 	  for (j=ip+1;j<=iq-1;j++) {
-	    ROTATE(m,ip,j,j,iq)
+	    ROTATE(p_m,ip,j,j,iq)
 	      }
 	  for (j=iq+1;j<=_rank;j++) {
-	    ROTATE(m,ip,j,iq,j)
+	    ROTATE(p_m,ip,j,iq,j)
 	      }
 	  for (j=1;j<=_rank;j++) {
 	    ROTATE(v,j,ip,j,iq)
@@ -320,10 +320,37 @@ Matrix<_rank> Matrix<_rank>::Dagger()
   Matrix<_rank> Dag;
   for (short int i=0;i<_rank;i++) 
     for (short int j=0;j<_rank;j++) 
-      Dag[i][j] = m[j][i];
+      Dag[i][j] = p_m[j][i];
     
   return Dag; 
 }
+
+
+
+
+CMatrix::CMatrix(int _rank) : m_rank(_rank) {
+  p_m = new Complex*[m_rank];
+  for (int i=0;i<m_rank;++i) p_m[i] = new Complex[m_rank];
+  for (int i=0;i<m_rank;++i) {
+    for (int j=i;j<m_rank;++j) p_m[i][j] = p_m[j][i] = Complex(0.,0.);
+  }
+}
+
+CMatrix::CMatrix(const CMatrix& _in) {
+  m_rank = _in.m_rank;
+  p_m = new Complex*[m_rank];
+  for (int i=0;i<m_rank;++i) p_m[i] = new Complex[m_rank];
+  for (int i=0;i<m_rank;++i) {
+    for (int j=0;j<m_rank;++j) p_m[i][j] = _in.p_m[i][j];
+  }
+}
+
+CMatrix::~CMatrix() {
+  for(short int i=0; i<m_rank; i++) delete[] p_m[i];
+  delete[] p_m;
+}
+
+
 
 //=============================
 //  Explicite instantiations.
