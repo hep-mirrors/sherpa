@@ -17,7 +17,6 @@ using namespace SHERPA;
 
 MI_Handler::MI_Handler(std::string path,std::string file,MODEL::Model_Base *model,
 		       BEAM::Beam_Spectra_Handler *beam,PDF::ISR_Handler *isr):
-  ATOOLS::Object("MI_Handler"),
   p_amisic(NULL),
   p_beam(beam),
   p_isr(isr),
@@ -53,11 +52,8 @@ MI_Handler::~MI_Handler()
 Matrix_Element_Handler *MI_Handler::HardMEHandler()
 {
   switch (m_type) {
-  case Amisic:
-    return p_amisic->HardMEHandler();
-    break;
-  default:
-    break;
+  case Amisic: return p_amisic->HardMEHandler();
+  default    : break;
   }
   return NULL;
 }
@@ -65,11 +61,8 @@ Matrix_Element_Handler *MI_Handler::HardMEHandler()
 Matrix_Element_Handler *MI_Handler::SoftMEHandler()
 {
   switch (m_type) {
-  case Amisic:
-    return p_amisic->SoftMEHandler();
-    break;
-  default:
-    break;
+  case Amisic: return p_amisic->SoftMEHandler();
+  default    : break;
   }
   return NULL;
 }
@@ -78,11 +71,8 @@ bool MI_Handler::GenerateHardProcess(ATOOLS::Blob *blob)
 {
   PROFILE_HERE;
   switch (m_type) {
-  case Amisic:
-    return p_amisic->GenerateHardProcess(blob);
-    break;
-  default:
-    break;
+  case Amisic: return p_amisic->GenerateHardProcess(blob);
+  default    : break;
   }
   return false;
 }
@@ -91,81 +81,28 @@ bool MI_Handler::GenerateSoftProcess(ATOOLS::Blob *blob)
 {
   PROFILE_HERE;
   switch (m_type) {
-  case Amisic:
-    return p_amisic->GenerateSoftProcess(blob);
-    break;
-  default:
-    break;
+  case Amisic: return p_amisic->GenerateSoftProcess(blob);
+  default    : break;
   }
   return false;
 }
 
-void MI_Handler::SameHardProcess(ATOOLS::Blob *blob)
+bool MI_Handler::GenerateEvent(ATOOLS::Blob_List *bloblist)
 {
   switch (m_type) {
-  case Amisic:
-    p_amisic->SameHardProcess(blob);
-    break;
-  default:
-    break;
-  }
-}
-
-void MI_Handler::SameSoftProcess(ATOOLS::Blob *blob)
-{
-  switch (m_type) {
-  case Amisic:
-    p_amisic->SameSoftProcess(blob);
-    break;
-  default:
-    break;
-  }
-}
-
-bool MI_Handler::GenerateHardEvent(ATOOLS::Blob_List *bloblist)
-{
-  switch (m_type) {
-  case Amisic:
-    return p_amisic->GenerateHardEvent(bloblist);
-    break;
-  default:
-    break;
+  case Amisic: break; // p_amisic->GenerateEvent(bloblist);
+  default    : break;
   }
   return false;
 }
 
-bool MI_Handler::GenerateSoftEvent(ATOOLS::Blob_List *bloblist)
+bool MI_Handler::VetoHardProcess(ATOOLS::Blob *blob)
 {
   switch (m_type) {
-  case Amisic:
-    return p_amisic->GenerateSoftEvent(bloblist);
-    break;
-  default:
-    break;
+  case Amisic: return p_amisic->VetoHardProcess(blob);
+  default    : break;
   }
   return false;
-}
-
-void MI_Handler::SameHardEvent(ATOOLS::Blob_List *bloblist)
-{
-  switch (m_type) {
-  case Amisic:
-    p_amisic->SameHardEvent(bloblist);
-    break;
-  default:
-    break;
-  }
-}
-
-void MI_Handler::SameSoftEvent(ATOOLS::Blob_List *bloblist)
-{
-  switch (m_type) {
-  case Amisic:
-    p_amisic->SameSoftEvent(bloblist);
-    break;
-  default:
-    break;
-  }
 }
 
 void MI_Handler::SetScaleMin(double scalemin,unsigned int i)
@@ -173,7 +110,7 @@ void MI_Handler::SetScaleMin(double scalemin,unsigned int i)
   switch (m_type) {
   case Amisic:
     p_amisic->HardBase()->SetStop(scalemin,i);
-    // p_amisic->SoftBase()->SetStop(scalemin,i);
+    p_amisic->SoftBase()->SetStart(scalemin,i);
     break;
   default:
     break;
@@ -194,11 +131,8 @@ void MI_Handler::SetScaleMax(double scalemax,unsigned int i)
 double MI_Handler::ScaleMin(unsigned int i)
 {
   switch (m_type) {
-  case Amisic:
-    return p_amisic->HardBase()->Stop(i);
-    break;
-  default:
-    break;
+  case Amisic: return p_amisic->HardBase()->Stop(i);
+  default    : break;
   }
   return 0.;
 }
@@ -206,11 +140,8 @@ double MI_Handler::ScaleMin(unsigned int i)
 double MI_Handler::ScaleMax(unsigned int i)
 {
   switch (m_type) {
-  case Amisic:
-    return p_amisic->HardBase()->Start(i);
-    break;
-  default:
-    break;
+  case Amisic: return p_amisic->HardBase()->Start(i);
+  default    : break;
   }
   return 0.;
 }
@@ -218,22 +149,16 @@ double MI_Handler::ScaleMax(unsigned int i)
 void MI_Handler::Reset()
 {
   switch (m_type) {
-  case Amisic:
-    p_amisic->Reset();
-    break;
-  default:
-    break;
+  case Amisic: p_amisic->Reset();
+  default    : break;
   }
 }
 
 void MI_Handler::CleanUp()
 {
   switch (m_type) {
-  case Amisic:
-    p_amisic->CleanUp();
-    break;
-  default:
-    break;
+  case Amisic: p_amisic->CleanUp();
+  default    : break;
   }
 }
 
@@ -260,11 +185,8 @@ std::string MI_Handler::Name()
 unsigned int MI_Handler::NIn()
 {
   switch (m_type) {
-  case Amisic:
-    return p_amisic->HardXS()->NIn();
-    break;
-  default:
-    break;
+  case Amisic: return p_amisic->HardXS()->NIn();
+  default    : break;
   }
   return 0;
 }
@@ -272,11 +194,8 @@ unsigned int MI_Handler::NIn()
 unsigned int MI_Handler::NOut()
 {
   switch (m_type) {
-  case Amisic:
-    return 2;
-    break;
-  default:
-    break;
+  case Amisic: return p_amisic->HardXS()->NOut();
+  default    : break;
   }
   return 0;
 }

@@ -3,7 +3,6 @@
 
 #include "Run_Parameter.H"
 #include "Blob_List.H"
-#include "Object.H"
 
 namespace BEAM   { class Beam_Spectra_Handler; }
 namespace PDF    { class ISR_Handler;          }
@@ -14,7 +13,7 @@ namespace SHERPA {
 
   class Matrix_Element_Handler;
 
-  class MI_Handler: public ATOOLS::Object {
+  class MI_Handler {
   public:
     
     enum TypeID { None    =  0,
@@ -66,15 +65,9 @@ namespace SHERPA {
 
     bool GenerateHardProcess(ATOOLS::Blob *blob);
     bool GenerateSoftProcess(ATOOLS::Blob *blob);
+    bool GenerateEvent(ATOOLS::Blob_List *bloblist);
 
-    void SameHardProcess(ATOOLS::Blob *blob);
-    void SameSoftProcess(ATOOLS::Blob *blob);
-
-    bool GenerateHardEvent(ATOOLS::Blob_List *bloblist);
-    bool GenerateSoftEvent(ATOOLS::Blob_List *bloblist);
-
-    void SameHardEvent(ATOOLS::Blob_List *bloblist);
-    void SameSoftEvent(ATOOLS::Blob_List *bloblist);
+    bool VetoHardProcess(ATOOLS::Blob *blob);
 
   }; // end of class MI_Handler
 

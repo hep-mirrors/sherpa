@@ -801,7 +801,6 @@ bool Simple_Chain::VetoProcess(ATOOLS::Blob *blob)
     for (size_t i=0;i<(size_t)blob->NInP();++i) 
       ptmax=ATOOLS::Min(ptmax,blob->InParticle(i)->Momentum().PPerp());
   }
-//   bool veto=(1.0-(*p_total)(ptmax))>ATOOLS::ran.Get();
   bool veto=ptmax<m_stop[0];
   return s_stophard=veto;
 }
