@@ -88,6 +88,9 @@ namespace AMISIC {
 			  const double min,const double max,
 			  const double integral);
 
+    void SetISRRange();
+    void ResetISRRange();
+
     bool FillBlob(ATOOLS::Blob *blob);
 
     void PrepareTerminate();

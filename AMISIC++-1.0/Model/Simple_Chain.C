@@ -36,7 +36,7 @@ const std::string integralfile=std::string("integral.dat");
 const std::string normalizedfile=std::string("normalized.dat");
 #endif
 
-static ATOOLS::Info_Key m_spkey, m_ykey;
+static ATOOLS::Info_Key m_spkey, m_ykey, m_isrspkey, m_isrykey;
 static double s_maxoverflow=10.0;
 static double s_epsilon=1.0e-3;
 
@@ -59,6 +59,8 @@ Simple_Chain::Simple_Chain():
   p_remnants[1]=p_remnants[0]=NULL;
   m_spkey.Assign("s' isr",4,0,PHASIC::Phase_Space_Handler::GetInfo());
   m_ykey.Assign("y isr",3,0,PHASIC::Phase_Space_Handler::GetInfo());
+  m_isrspkey.Assign("s' isr mi",3,0,PHASIC::Phase_Space_Handler::GetInfo());
+  m_isrykey.Assign("y isr mi",2,0,PHASIC::Phase_Space_Handler::GetInfo());
 }
 
 Simple_Chain::Simple_Chain(MODEL::Model_Base *const model,
@@ -80,7 +82,7 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *const model,
   SetOutputFile("SC.log");
   m_start[4]=m_start[0]=m_ecms/2;
   m_stop[4]=m_stop[0]=0.0;
-  m_start[3]=m_start[2]=1.0;
+  m_start[3]=m_start[2]=m_ecms/2;
   m_stop[3]=m_stop[2]=0.0;
   p_remnants[0]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_0");
   p_remnants[1]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_1");
@@ -90,6 +92,8 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *const model,
   }
   m_spkey.Assign("s' isr",4,0,PHASIC::Phase_Space_Handler::GetInfo());
   m_ykey.Assign("y isr",3,0,PHASIC::Phase_Space_Handler::GetInfo());
+  m_isrspkey.Assign("s' isr mi",3,0,PHASIC::Phase_Space_Handler::GetInfo());
+  m_isrykey.Assign("y isr mi",2,0,PHASIC::Phase_Space_Handler::GetInfo());
 }
 
 Simple_Chain::~Simple_Chain()
@@ -571,7 +575,7 @@ bool Simple_Chain::Initialize()
     SetInputFile(file,1);
     m_ecms=ATOOLS::rpa.gen.Ecms();
     m_start[4]=m_start[0]=m_ecms/2;
-    m_start[3]=m_start[2]=1.0;
+    m_start[3]=m_start[2]=m_ecms/2;
     m_stop[4]=m_stop[0]=0.0;
     m_stop[3]=m_stop[2]=0.0;
   }
@@ -626,6 +630,26 @@ bool Simple_Chain::Initialize()
   return true;
 }
 
+void Simple_Chain::SetISRRange()
+{
+  m_isrspkey[0]=p_isr->SprimeMin();
+  m_isrspkey[1]=p_isr->SprimeMax();
+  m_isrykey[0]=p_isr->YMin();
+  m_isrykey[1]=p_isr->YMax();
+  p_isr->SetSprimeMin(4.0*m_last[0]*m_last[0]);
+  p_isr->SetSprimeMax(4.0*m_last[2]*m_last[3]);
+  p_isr->SetYMin(log(m_last[0]/m_last[3]));
+  p_isr->SetYMax(log(m_last[2]/m_last[0]));
+}
+
+void Simple_Chain::ResetISRRange()
+{
+  p_isr->SetYMin(m_isrykey[0]);
+  p_isr->SetYMax(m_isrykey[1]);
+  p_isr->SetSprimeMax(m_isrspkey[0]);
+  p_isr->SetSprimeMin(m_isrspkey[1]);
+}
+
 bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 {
   PROFILE_HERE;
@@ -676,9 +700,12 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 		  msg_Debugging()<<"hit "<<m_selected<<" "<<m_last[0]<<" "
 				 <<value<<" "<<cur->BinExtra(m_last[0])
 				 <<" "<<m_spkey[3]<<" "<<m_ykey[2]<<"\n";
+		  SetISRRange();
+		  p_isr->SetLimits();
 		  selected->WeightedEvent(PHASIC::psm::no_lim_isr|
 					  PHASIC::psm::no_dice_isr|
 					  (PHASIC::psm::code)m_pi);
+		  ResetISRRange();
 		  cur->AddBinExtra(m_last[0],1.0,3);
 		}
 		else {
@@ -756,8 +783,7 @@ bool Simple_Chain::DiceProcess()
     m_dicedprocess=false;
     return true;
   }
-  double xmin=2.0*m_last[0]/m_ecms;
-  if (m_last[2]+m_last[3]<2.0*xmin) {
+  if (m_last[2]*m_last[3]<=m_last[0]*m_last[0]) {
     m_dicedprocess=false;
     return true;
   }
@@ -777,18 +803,9 @@ bool Simple_Chain::DiceProcess()
     for (;sit!=sorter.upper_bound(sit->first);++sit) {
       if ((cur+=sit->first/norm)>rannr) {
 	m_selected=sit->second;
-	PDF::ISR_Handler *isr=m_processmap[m_selected]->ISR();
-	double sprimemin=isr->SprimeMin(), sprimemax=isr->SprimeMax();
-	double ymin=isr->YMin(), ymax=isr->YMax();
-	isr->SetSprimeMin(4.0*m_last[0]*m_last[0]);
-	isr->SetSprimeMax(ATOOLS::sqr(m_ecms*(m_last[2]+m_last[3])/2.0));
-	isr->SetYMin(log(xmin/m_last[3]));
-	isr->SetYMax(log(m_last[2]/xmin));
+	SetISRRange();
 	FillBlob(p_blob);
-	isr->SetYMin(ymin);
-	isr->SetYMax(ymax);
-	isr->SetSprimeMax(sprimemax);
-	isr->SetSprimeMin(sprimemin);
+	ResetISRRange();
 	m_dicedprocess=true;
 	return m_filledblob;
       }
