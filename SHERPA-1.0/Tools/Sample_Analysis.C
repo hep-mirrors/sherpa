@@ -180,22 +180,27 @@ Analysis_Phase::Analysis_Phase(Sample_Analysis * ana, int mode) :
 
 bool  Analysis_Phase::Treat(APHYTOOLS::Blob_List * bl) 
 {
-  if (m_status) return 0;
-
-  m_status = 1;
 
   //  cout<<" in  Analysis_Phase::Treat "<<bl->size()<<" ("<<m_mode<<")"<<endl;
 
   switch (m_mode) {
   case 1:
-    p_analysis->AfterME(bl);
+    if (bl->size()==1 && bl->back()->Status()==1) {
+      p_analysis->AfterME(bl);
+      m_status = 1;
+    }
     break;
   case 2:
-    if (bl->size()>1)
+    if (m_status) return 0;
+    if (bl->size()>1) {
       p_analysis->AfterPartonShower(bl);
+      m_status = 1;
+    }
     break;
   case 3:
+    if (m_status) return 0;
     p_analysis->AfterHadronization(bl);
+    m_status = 1;
     break;
   default:
     msg.Out()<<" Unknow Analysis_Phase "<<m_mode<<endl;
