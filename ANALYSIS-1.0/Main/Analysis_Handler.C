@@ -76,7 +76,7 @@ void Analysis_Handler::ShowSyntax(const size_t i)
 		   <<"   LEVEL      [ME]|[MI]|[Shower]|[Hadron]\n\n"
 		   <<"   PATH_PIECE path\n\n";
   Getter_Function::PrintGetterInfo(ATOOLS::msg.Out(),10);
-  ATOOLS::msg.Out()<<"\n   } END_ANALYSIS\n"
+  ATOOLS::msg.Out()<<"\n   } END_ANALYSIS\n\n"
 		   <<"}"<<std::endl;
 }
 
