@@ -23,8 +23,38 @@ Cluster_Partons::Cluster_Partons(Matrix_Element_Handler * me, APHYTOOLS::Jet_Fin
   //      p_lastproc  = 0;
   p_combi = 0;
   p_sud   = new NLL_Sudakov(p_jf->Smax(),p_jf->Smin());
-};
+  
+  /* 0 no sudakow weights, 1 alphas only, 2 full sudakov weight  (but for highest jet number) */
+  /* cf. also begin of Cluster_Partons::CalculateWeight() */
+  m_sud_mode = 1;  
 
+  p_events   = new long[maxjetnumber];
+  p_weight_sum     = new double[maxjetnumber];
+  p_weight_sum_sqr = new double[maxjetnumber]; 
+  for (int i=0;i<maxjetnumber;++i) {
+    p_events[i]=0;
+    p_weight_sum[i]=p_weight_sum_sqr[i]=0.;
+  }
+}
+
+Cluster_Partons::~Cluster_Partons()
+{
+  if (p_combi) delete p_combi;
+  if (p_sud)  delete p_sud;
+  
+  msg.Out()<<" Statistics Sudakov Rejection "<<endl;
+  for (int i=0;i<m_maxjetnumber;++i) {
+    if (p_events[i]==0) continue;
+    double w_mean  = p_weight_sum[i]/p_events[i];
+    double w_delta = 1./p_events[i] * sqrt(p_weight_sum[i] - 
+					   (sqr(p_weight_sum[i])-p_weight_sum_sqr[i])/(p_events[i]-1.));
+    msg.Out()<<(i+1)<<" : weight="<<w_mean<<" +- "<<w_delta<<endl;
+  }
+
+  if (p_events) delete [] p_events;
+  if (p_weight_sum) delete [] p_weight_sum;
+  if (p_weight_sum_sqr) delete [] p_weight_sum_sqr;
+}
 
 bool Cluster_Partons::ClusterConfiguration(Blob * _blob) {
   msg.Debugging()<<"In Cluster_Partons::ClusterConfiguration("<<p_me->ProcessName()<<")"<<std::endl;
@@ -116,7 +146,8 @@ bool Cluster_Partons::FillLegs(Leg * alegs, Point * root, int & l, int maxl) {
   }
 }
 
-void Cluster_Partons::CalculateWeight(double hard,double jet) {
+void Cluster_Partons::CalculateWeight(double hard,double jet) 
+{
   msg.Tracking()<<"In Cluster_Partons::CalculateWeight("<<hard<<","<<jet<<")"<<std::endl;
   double facycut=rpa.test.FactorYcut();
   double facnlly=rpa.test.FactorNLLQ();
@@ -133,13 +164,19 @@ void Cluster_Partons::CalculateWeight(double hard,double jet) {
     ct_test=ct_test->Up();
     ++njet;
   }
+
+
 //   msg.Out()<<" njets="<<njet<<std::endl;
 //   msg.Out()<<" nlegs="<<nlegs<<std::endl;
-//   if (njet==maxjetnumber) {
-//     msg.Out()<<" reduced weight!!! "<<std::endl;
-//   }
-
-
+/*
+   if (njet==m_maxjetnumber) {
+     m_sud_mode=1;
+     msg.Events()<<" reduced weight!!! "<<std::endl;
+   }
+   else {
+     m_sud_mode=2;
+   }
+*/
   m_weight      = 1.;
 
   int si = 0;
@@ -154,7 +191,7 @@ void Cluster_Partons::CalculateWeight(double hard,double jet) {
   for (int l=0; l<nlegs; ++l) {
     if (p_ct->GetLeg(l)->fl.Strong()) {// Quark sudakov for each strong interacting particle
       /* *AS*
-      if (njet==maxjetnumber) {
+      if (njet==m_maxjetnumber) {
 	msg.Tracking()<<"Multiply weight by (out hard)  "<<1./p_sud->DeltaQ(qmax,qmin)
 		       <<"   "<<qmax<<" --> "<<qmin<<std::endl;
 	m_weight /= p_sud->DeltaQ(qmax,qmin);
@@ -164,7 +201,7 @@ void Cluster_Partons::CalculateWeight(double hard,double jet) {
     }    
   }
   // weight with correct alphas at hard scale (if needed).
-  if (strong>2) {
+  if (strong>2 && m_sud_mode%10>0) {
     msg.Tracking()<<"Multiply weight by (as hard)"<<pow(as_hard/as_jet,strong-2)<<std::endl;
     m_weight *= pow(as_hard/as_jet,strong-2);
   }
@@ -187,19 +224,19 @@ void Cluster_Partons::CalculateWeight(double hard,double jet) {
     // ... determine winner: i,j, and yij
     double ptij = p_ct->GetWinner(i,j);
 
-    if (ct_down->GetLeg(i)->fl.IsGluon()) {  // Gluon sudakov
+    if (m_sud_mode%10>1 && ct_down->GetLeg(i)->fl.IsGluon()) {  // Gluon sudakov
       double w_in_g =  p_sud->DeltaG(last_q[i],qmin)/p_sud->DeltaG(facnlly*ptij,qmin);
       m_weight *= w_in_g;
       msg.Tracking()<<"Multiply weight by (in G)  "<<w_in_g
 		    <<"  "<<last_q[i]<<" -> "<<ptij<<"  ("<<qmin<<")"<<std::endl;
     }
-    if (ct_down->GetLeg(i)->fl.IsQuark()) {  // Quark sudakov
+    if (m_sud_mode%10>1 && ct_down->GetLeg(i)->fl.IsQuark()) {  // Quark sudakov
       double w_in_q = p_sud->DeltaQ(last_q[i],qmin)/p_sud->DeltaQ(facnlly*ptij,qmin);
       m_weight *= w_in_q;
       msg.Tracking()<<"Multiply weight by (in Q)  "<<w_in_q
 		    <<"  "<<last_q[i]<<" -> "<<ptij<<"  ("<<qmin<<")"<<std::endl;
     }
-    if (ct_down->GetLeg(i)->fl.Strong()) {   // alphaS factor
+    if (m_sud_mode%10>0 && ct_down->GetLeg(i)->fl.Strong()) {   // alphaS factor
       double w_in_as = (*as)(facycut*ptij*ptij)/as_jet;
       m_weight *= w_in_as;
       msg.Tracking()<<"Multiply weight by (as in)  "<<w_in_as<<std::endl;
@@ -218,7 +255,7 @@ void Cluster_Partons::CalculateWeight(double hard,double jet) {
 
 
   // go over all remaining legs
-  if (njet!=m_maxjetnumber) {
+  if ((m_sud_mode%10>1 && njet!=m_maxjetnumber) || m_sud_mode>10) {
 
     for (int l=0; l<nlegs; ++l) {
       if (p_ct->GetLeg(l)->fl.IsGluon()) { // Gluon sudakov
@@ -238,6 +275,10 @@ void Cluster_Partons::CalculateWeight(double hard,double jet) {
   msg.Tracking()<<" sudakov weight="<<m_weight<<std::endl;
 
   p_ct = ct_tmp;
+
+  p_events[njet-1]+=1;  // count events
+  p_weight_sum[njet-1]+=m_weight;
+  p_weight_sum_sqr[njet-1]+=sqr(m_weight);
 }
 
 

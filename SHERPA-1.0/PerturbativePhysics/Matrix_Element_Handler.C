@@ -16,7 +16,7 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
 					       MODEL::Model_Base * _model,
 					       BEAM::Beam_Spectra_Handler * _beam,
 					       PDF::ISR_Handler * _isr) :
-  p_amegic(NULL), p_simplexs(NULL), m_dir(_dir), m_file(_file), m_mode(0)
+  p_amegic(NULL), p_simplexs(NULL), m_dir(_dir), m_file(_file), m_mode(0), m_weight(1.)
 {
   p_dataread = new Data_Read(m_dir+m_file);
   m_signalgenerator  = p_dataread->GetValue<string>("ME_SIGNAL_GENERATOR",std::string("Amegic"));
@@ -25,6 +25,8 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
 
   if (p_dataread->GetValue<string>("EVENT_GENERATION_MODE",std::string("Unweighted"))==string("Unweighted"))
     m_eventmode=1;
+  else
+    m_eventmode=0;
 
   msg.Debugging()<<"Run Matrix_Element_Handler in mode :"<<m_mode
 		 <<" and event generation mode : "<<m_eventmode<<endl;
@@ -71,6 +73,7 @@ bool Matrix_Element_Handler::CalculateTotalXSecs()
     m_readin = p_dataread->GetValue<string>("RESULT DIRECTORY",string(""));
     cout<<" fac "<<rpa.test.FactorYcut()<<endl;
     cout<<" ycut "<<(rpa.integ.Ycut()*sqr(rpa.gen.Ecms()))<<endl;
+    cout<<" seting scale in Amegic : "<<rpa.test.FactorYcut()*rpa.integ.Ycut()*sqr(rpa.gen.Ecms())<<endl;
     p_amegic->Processes()->SetScale(rpa.test.FactorYcut()*rpa.integ.Ycut()*sqr(rpa.gen.Ecms()));
     if (p_amegic->CalculateTotalXSec(m_readin)) {
       RescaleJetrates();
@@ -108,14 +111,24 @@ bool Matrix_Element_Handler::LookUpXSec(double,bool,std::string) {};
 bool Matrix_Element_Handler::GenerateOneEvent() 
 {
   if (m_eventmode) return UnweightedEvent();
-  return WeightedEvent();
+  m_weight=WeightedEvent();
+  m_weight*=rpa.Picobarn();
+  return (m_weight>0.);
 }
 
 bool Matrix_Element_Handler::GenerateSameEvent() 
 {
-  switch (m_mode) {
-  case 1: return p_amegic->SameEvent();
-  case 2: return p_simplexs->SameEvent();
+  if (m_eventmode) {
+    switch (m_mode) {
+    case 1: return p_amegic->SameEvent();
+    case 2: return p_simplexs->OneEvent();
+    }
+  }
+  else {
+    switch (m_mode) {
+    case 1: return p_amegic->SameWeightedEvent();
+    case 2: return p_simplexs->WeightedEvent();
+    }
   }
 }
 
@@ -130,7 +143,14 @@ bool Matrix_Element_Handler::UnweightedEvent()
 
 
 
-bool Matrix_Element_Handler::WeightedEvent() {};
+double Matrix_Element_Handler::WeightedEvent() 
+{
+  switch (m_mode) {
+  case 1: return p_amegic->WeightedEvent();
+  case 2: return p_simplexs->WeightedEvent();
+  }
+  return 0;
+}
 
 int Matrix_Element_Handler::MaxJets() {
   switch (m_mode) {
@@ -210,5 +230,10 @@ EXTRAXS::XS_Base * Matrix_Element_Handler::GetXS()
   msg.Error()<<"Error in Matrix_Element_Handler::GetXS()."<<endl
 	     <<"   Run in mode for "<<m_signalgenerator<<", abort."<<endl;
   abort();
+}
+
+double  Matrix_Element_Handler::Weight() 
+{
+  return m_weight;
 }
 

@@ -27,6 +27,7 @@ namespace SHERPA {
     std::string                   m_readin;
     bool                          m_eventmode;
     int                           m_mode;
+    double                        m_weight;
 
     AORGTOOLS::Data_Read        * p_dataread;
     AMEGIC::Amegic              * p_amegic;
@@ -39,7 +40,7 @@ namespace SHERPA {
     int InitializeAmegic(MODEL::Model_Base *,
 			 BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
     bool UnweightedEvent();
-    bool WeightedEvent();
+    double WeightedEvent();
   public :
     Matrix_Element_Handler(std::string,std::string,MODEL::Model_Base *,
 			   BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
@@ -65,6 +66,7 @@ namespace SHERPA {
     int                  NumberOfDiagrams();
     AMEGIC::Point      * GetDiagram(int);
     EXTRAXS::XS_Base   * GetXS();
+    double               Weight();
   };
 }
 #endif

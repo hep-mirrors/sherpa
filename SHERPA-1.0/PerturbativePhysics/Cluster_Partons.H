@@ -34,6 +34,12 @@ namespace SHERPA {
     double  m_scale;
     int     m_colors[4][2];
 
+    int     m_sud_mode;
+    // some statistics:
+    long    * p_events;
+    double  * p_weight_sum;
+    double  * p_weight_sum_sqr;
+
     bool            FillLegs(Leg *, AMEGIC::Point *, int &, int);
     APACIC::Knot  * Point2Knot(APACIC::Tree *,const Leg &,const AMATOOLS::Vec4D &,char);
     AMATOOLS::Vec4D Momentum(APACIC::Knot *, int &);
@@ -45,6 +51,7 @@ namespace SHERPA {
 
   public :
     Cluster_Partons(Matrix_Element_Handler * me, APHYTOOLS::Jet_Finder * jf, int maxjetnumber) ;
+    ~Cluster_Partons();
     bool ClusterConfiguration(APHYTOOLS::Blob *);
     void CalculateWeight(double,double);
     void FillTrees(APACIC::Tree **,APACIC::Tree *,EXTRAXS::XS_Base *);

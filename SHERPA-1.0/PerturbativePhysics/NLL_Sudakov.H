@@ -114,15 +114,11 @@ namespace SHERPA {
 
     // general function, depending on specified type.
     double operator()(double);
+
+    // consitency checks
+    void CheckSudakovs();
   };
 
-
-  class Branching_Probability : public AMATOOLS::Function_Base {
-    double tmin;
-  public:
-    Branching_Probability();
-    double operator()(double) {};
-  };
 
 }
 #endif

@@ -18,6 +18,11 @@ using namespace std;
 
 using namespace EXTRAXS;
 
+// static -- can be used for consitency plots
+namespace  SHERPA {
+  double amegic_apacic_interface_last_hard_scale=0.;
+}
+
 Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
 						 Shower_Handler * shower) :
   Perturbative_Interface(me,shower)
@@ -57,14 +62,12 @@ Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
 
 Amegic_Apacic_Interface::~Amegic_Apacic_Interface() 
 {
-  msg.Tracking()<<"in  Amegic_Apacic_Interface::~Amegic_Apacic_Interface()"<<endl;
   if (p_two2two) { delete p_two2two; p_two2two = NULL; }
   if (p_jf)      { delete p_jf; p_jf = NULL; }
   if (p_cluster) { delete p_cluster; p_cluster = NULL; }
   // note :
   //  p_shower and p_me are deleted in Jet_Evolution
   //  p_fl an p_moms are deleted in Perturbative_Interface
-  msg.Tracking()<<"out  Amegic_Apacic_Interface::~Amegic_Apacic_Interface()"<<endl;
 
 }
 
@@ -110,11 +113,25 @@ bool Amegic_Apacic_Interface::DefineInitialConditions(APHYTOOLS::Blob * blob)
   double scale;
   if (p_xs) scale=p_xs->Scale();
   else scale=p_cluster->Scale();
+  // save hard scale to be used in plots!
+  amegic_apacic_interface_last_hard_scale=scale;
+
   p_cluster->CalculateWeight(scale,m_jetscale);
 
   m_weight=p_cluster->Weight();
-  if (m_weight>ran.Get()) {
-    p_cluster->FillTrees(p_shower->GetIniTrees(),p_shower->GetFinTree(),p_xs);
+  if (p_me->Weight()==1.) {
+    if (m_weight>ran.Get()) {
+      if (p_shower->GetIniTrees() || p_shower->GetFinTree())
+	p_cluster->FillTrees(p_shower->GetIniTrees(),p_shower->GetFinTree(),p_xs);
+
+      m_weight=1.;
+      return 1;
+    }
+    m_weight=1.;
+  }
+  else {
+    if (p_shower->GetIniTrees() || p_shower->GetFinTree())
+      p_cluster->FillTrees(p_shower->GetIniTrees(),p_shower->GetFinTree(),p_xs);
     return 1;
   }
   msg.Tracking()<<" Reject event due to sudakov weight "<<std::endl;

@@ -1,6 +1,8 @@
 #include "NLL_Sudakov.H"
 #include "Message.H"
 #include "MathTools.H"
+#include "Run_Parameter.H"
+#include <iomanip>
 #include <stdio.h>  // sprintf
 
 using namespace SHERPA;
@@ -33,12 +35,14 @@ NLL_Sudakov::NLL_Sudakov(double _tmax,double _tmin) :
   // with     
   if (nlo) K  =  CA*(67./18.-M_PI*M_PI/6.)-10./9.*TR*Nf;
 
-  msg.Debugging()<<"Init the NLL_Sudakov :"<<std::endl
+  msg.Tracking()<<"Init the NLL_Sudakov :"<<std::endl
 		 <<"  Nf = "<<Nf<<", TR = "<<TR<<", CA = "<<CA<<", CF = "<<CF<<std::endl
 		 <<"  lambda = "<<sqrt(lambda2)<<"   --->  "<<std::endl
 		 <<"  alphaS test: as(mue  ="<<sqrt(mu2)<<") = "<<asmu<<std::endl
 		 <<"               as(qmin = "<<qmin<<") = "<<AlphaS(qmin*qmin)<<std::endl
 		 <<"               as(qmax = "<<qmax<<") = "<<AlphaS(qmax*qmax)<<std::endl;
+
+  if (rpa.gen.Events()) CheckSudakovs();
 };
 
 
@@ -454,7 +458,45 @@ double NLL_Sudakov::operator()(double x) {
 
 
 
+void NLL_Sudakov::CheckSudakovs()
+{
+  double Q  = 91.2;
+  double q0 = 0.1*Q;
+  R4(q0,Q);
+  cout<<"============================================================"<<endl;
+  cout<<"   Selftest in NLL_Sudakov"<<endl;
+  cout<<"------------------------------------------------------------"<<endl;
+  cout<<"     q0     Q   sudq(q0,Q) sudg(q0,Q)    R2       R3       "<<endl;
+  for (int i=0; i<13;++i) {
+    q0=Q*exp(-i/3.*log(10.));
+    cout.precision(4);
+    cout<<" "<<setw(6)<<q0<<" "<<setw(6)<<Q;
+    cout.precision(6);
+    cout<<" "<<setw(10)<<DeltaQ(Q,q0)
+	<<" "<<setw(11)<<DeltaG(Q,q0)
+	<<" "<<setw(10)<<R2(q0,Q)
+	<<" "<<setw(19)<<R3(q0,Q)
+      //	<<" "<<setw(8)<<R4(q0,Q)
+	<<endl;
+  }
+  cout<<"------------------------------------------------------------"<<endl;
+  Q  = 2000.;
+  q0 = 6.32455532;
+  for (int i=0; i<13;++i) {
+    Q=q0*exp(i/6.*log(10.));
+    cout.precision(4);
+    cout<<" "<<setw(6)<<q0<<" "<<setw(6)<<Q;
+    cout.precision(6);
+    cout<<" "<<setw(10)<<DeltaQ(Q,q0)
+	<<" "<<setw(11)<<DeltaG(Q,q0)
+// 	<<" "<<setw(10)<<R2(q0,Q)
+// 	<<" "<<setw(19)<<R3(q0,Q)
+      //	<<" "<<setw(8)<<R4(q0,Q)
+	<<endl;
+  }
 
+  cout<<"============================================================"<<endl;
+}
 
 
 
