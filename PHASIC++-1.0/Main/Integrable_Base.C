@@ -6,3 +6,7 @@ Integrable_Base::Integrable_Base(): m_overflow(0.)
 {
 }
 
+void Integrable_Base::SetHelicitySampling(bool)
+{
+}
+
