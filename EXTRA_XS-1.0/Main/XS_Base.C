@@ -42,7 +42,7 @@ XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavo
 
 XS_Base::~XS_Base() 
 {
- if (p_colours!=NULL) { 
+  if (p_colours!=NULL) { 
     for (size_t i=0;i<m_nin+m_nout;++i) delete p_colours[i];
     delete [] p_colours;
   }
@@ -50,6 +50,7 @@ XS_Base::~XS_Base()
 
 void XS_Base::Init(const ATOOLS::Flavour *flavours)
 {
+  if (m_nin+m_nout==0) return;
   p_flavours = new ATOOLS::Flavour[m_nin+m_nout];
   if (flavours!=NULL) {
     for (size_t i=0;i<m_nin+m_nout;++i) p_flavours[i]=flavours[i];
@@ -304,4 +305,9 @@ void XS_Base::AssignRegulator(const std::string &regulator,
     delete p_regulator;
     p_regulator=function;
   }
+}
+
+void XS_Base::Print()
+{
+  ATOOLS::msg.Out()<<m_name<<"  ->  "<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb\n";
 }

@@ -59,6 +59,8 @@ namespace EXTRAXS {
     void SelectOne();
     void DeSelect();
 
+    virtual void Print();
+
     ATOOLS::Blob_Data_Base *SameWeightedEvent();
 
     virtual void Reset();
