@@ -118,7 +118,7 @@ echo -e ">> \$RUNPATH\$LOGFILE 2>&1 \n\n" >> $FILE
 
 chmod 777 $FILE
 if [ "$SUBMIT" = "TRUE" ] ; then
-  qsub $FILE -l host=ptpp86 
+  qsub $FILE  
 else
   ( nohup $FILE > /dev/null & ) 
 fi
