@@ -210,6 +210,7 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
     m_resultpath=resultpath;
     m_resultfile=filename;
     ATOOLS::Exception_Handler::AddTerminatorObject(this);
+    p_pshandler->InitIncoming();
     m_totalxs=p_pshandler->Integrate()/ATOOLS::rpa.Picobarn(); 
     if ((m_totalxs-m_totalsum)>1.e-10*(m_totalxs+m_totalsum)) {
       ATOOLS::msg.Error()<<"Result of PS-Integrator and internal summation do not coincide!"<<std::endl
