@@ -10,45 +10,59 @@ using namespace MODEL;
 using namespace ATOOLS;
 
 
-Sudakov_Tools::Sudakov_Tools(MODEL::Model_Base * _model) {
-  scalefac = 1.;
-  p_as     = _model->GetScalarFunction(std::string("alpha_S"));
-  p_aqed   = _model->GetScalarFunction(std::string("alpha_QED"));
+Sudakov_Tools::Sudakov_Tools(MODEL::Model_Base * model) {
+  m_scalefac = 1.;
+  p_as     = model->GetScalarFunction(std::string("alpha_S"));
+  p_aqed   = model->GetScalarFunction(std::string("alpha_QED"));
+  m_renormalization_scale_factor = rpa.gen.RenormalizationScaleFactor();
+  //  std::cout<<"Sudakov_Tools::Sudakov_Tools("<<m_renormalization_scale_factor<<std::endl;
   FixLambda2(sqr((Flavour(kf::Z)).Mass()));
-  if (msg.LevelIsDebugging()) Output();
+  //  if (msg.LevelIsDebugging()) 
+  Output();
 }
 
-Sudakov_Tools::Sudakov_Tools(int _scheme,MODEL::Model_Base * _model,double tmin, double tmax) {
-  p_as   = _model->GetScalarFunction(std::string("alpha_S"));
-  p_aqed = _model->GetScalarFunction(std::string("alpha_QED"));
-  scheme = _scheme;
-  if (scheme>0) {
-    alphaQEDmax = (*p_aqed)(tmax);    
-    if (.25*tmin<static_cast<Running_AlphaS*>(p_as)->CutQ2()) {
+Sudakov_Tools::Sudakov_Tools(int _m_scheme,MODEL::Model_Base * model,double tmin, double tmax) {
+  p_as   = model->GetScalarFunction(std::string("alpha_S"));
+  p_aqed = model->GetScalarFunction(std::string("alpha_QED"));
+  m_renormalization_scale_factor = rpa.gen.RenormalizationScaleFactor();
+  m_scheme = _m_scheme;
+
+  //  tmin*=m_renormalization_scale_factor;
+  //  tmax*=m_renormalization_scale_factor;
+
+  if (m_scheme>0) {
+    m_alphaQEDmax = (*p_aqed)(tmax*m_renormalization_scale_factor);    
+    if (.25*tmin*m_renormalization_scale_factor<static_cast<Running_AlphaS*>(p_as)->CutQ2()) {
       double cutq2 = static_cast<Running_AlphaS*>(p_as)->CutQ2();
-      alphaSmax   = AlphaS(cutq2); 
+      m_alphaSmax   = AlphaS(cutq2); 
     }
     else {
-      //    alphaSmax   = AlphaS(tmin);
-      alphaSmax   = AlphaS(0.25*tmin);      
+      //    m_alphaSmax   = AlphaS(tmin);
+      m_alphaSmax   = AlphaS(0.25*tmin);      
     }
     FixLambda2(sqr((Flavour(kf::Z)).Mass())); 
     Setscalefac(tmin);   
   }
   else {
-    alphaQEDmax     = 1./128.;     
-    alphaSmax       = 0.2;         
-    beta0 = lambda2 = 0.;          
-    scalefac        = 1.;          
+    m_alphaQEDmax       = 1./128.;     
+    m_alphaSmax         = 0.2;         
+    m_beta0 = m_lambda2 = 0.;          
+    m_scalefac          = 1.;          
   }
+  //  std::cout<<"Sudakov_Tools::Sudakov_Tools("<<m_renormalization_scale_factor<<std::endl;
+  //if (msg.LevelIsDebugging()) 
+  Output();
 }
 
 double Sudakov_Tools::CrudeAlphaS(double t){
+  t*=m_renormalization_scale_factor;
   if (t<0.) t = -t;
-  return scalefac/(beta0*log(t/lambda2));
+  return m_scalefac/(m_beta0*log(t/m_lambda2));
 };
 
 double Sudakov_Tools::AlphaS(double t){
+  //  std::cout<<"Sudakov_Tools::AlphaS("<<t<<")*"<<m_renormalization_scale_factor<<"\n";
+  t*=m_renormalization_scale_factor;
   if (t<0.) t = -t;
 
   return (*p_as)(t);
@@ -71,30 +85,31 @@ double Sudakov_Tools::AlphaS(double t){
 }
 
 double Sudakov_Tools::Alpha(double t){
+  t*=m_renormalization_scale_factor;
   if (t<0.) t = -t;
   return (*p_aqed)(t);
 }
 
 void Sudakov_Tools::FixLambda2(double t) { 
-  beta0   = as->Beta0(t)/M_PI;  
-  lambda2 = t*exp(-1./(beta0*AlphaS(t)));
+  m_beta0   = as->Beta0(t)/M_PI;  
+  m_lambda2 = t*exp(-1./(m_beta0*AlphaS(t)));
 }
 
 void Sudakov_Tools::Setscalefac(double t0) {
   if (t0<0.) t0=-t0;
-  scalefac = 1.; 
-  scalefac = AlphaS(t0)/CrudeAlphaS(t0);
+  m_scalefac = 1.; 
+  m_scalefac = AlphaS(t0)/CrudeAlphaS(t0);
 }
 
 void Sudakov_Tools::Output() {
-  msg_Debugging()<<"Initialise Sudakov-Tools with scheme : "<<scheme<<std::endl
-		 <<"beta0      = "<<beta0<<std::endl
-		 <<"lambda2    = "<<lambda2<<std::endl	
+  msg.Out()<<"Initialise Sudakov-Tools with scheme : "<<m_scheme<<std::endl
+		 <<"beta0      = "<<m_beta0<<std::endl
+		 <<"lambda2    = "<<m_lambda2<<std::endl	
 		 <<"alphaS(MZ) = "
 		 <<CrudeAlphaS(sqr((Flavour(kf::Z)).Mass()))
 		 <<"  (estimated)"<<std::endl
 		 <<"alphaS(MZ) = "
 		 <<AlphaS(sqr((Flavour(kf::Z)).Mass()))
 		 <<"  (exact)"<<std::endl;
-  msg_Debugging()<<" scalefac="<<scalefac<<std::endl;
+  msg.Out()<<" scalefac="<<m_scalefac<<std::endl;
 }

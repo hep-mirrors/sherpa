@@ -21,8 +21,8 @@ Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * pdf,Sudakov_Tools * tools,Spacel
   Backward_Splitting_Group(0,0), p_tools(tools), p_kin(kin), m_pt2min(dabs(pt2min)), 
   m_last_veto(0)
 {
-  p_pdf             = pdf->GetBasicPDF(); 
-  p_pdfa            = p_pdf->GetBasicPDF()->GetCopy();
+  p_pdf             = pdf->GetBasicPDF()->GetCopy(); 
+  p_pdfa            = pdf->GetBasicPDF()->GetCopy();
   m_ordering_scheme = dataread->GetValue<int>("IS_ORDERING",0);  /* Switch for ordering due to coherence:  
                                                                      0 = none, 1 = pt^2, 2 = pt^2/E^2     */
   m_cpl_scheme      = dataread->GetValue<int>("IS_COUPLINGS",3); /*  (0=fix, 1=pt^2, 2=t/4)              */ 
@@ -294,5 +294,6 @@ double Spacelike_Sudakov::CrudeInt(double _zmin, double _zmax)
 
 void Spacelike_Sudakov::SetFactorisationScale(const double scale)
 {
+  //  std::cout<<"Spacelike_Sudakov::SetFactorisationScale("<<scale<<")"<<std::endl;
   m_facscale=scale;
 }

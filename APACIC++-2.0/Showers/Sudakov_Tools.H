@@ -10,10 +10,12 @@ namespace APACIC {
   class Sudakov_Tools {
   private :
     ATOOLS::Function_Base * p_as, * p_aqed;
-    int    scheme;
-    double lambda2, beta0, scalefac;
-    double alphaSmax;
-    double alphaQEDmax;
+    int    m_scheme;
+    double m_lambda2, m_beta0, m_scalefac;
+    double m_alphaSmax;
+    double m_alphaQEDmax;
+
+    double m_renormalization_scale_factor;
   private :
     //! Determines lambda_QCD in LO from alphaS
     void FixLambda2(double);
@@ -41,10 +43,14 @@ namespace APACIC {
     //! Exact alpha_QED
     double  Alpha(double);
 
-    const double GetLambda2() const { return lambda2; }
-    const double GetBnorm()   const { return 2.*M_PI*beta0/scalefac; }
-    const double GetASmax()   const { return alphaSmax; }
-    const double GetAQEDmax() const { return alphaQEDmax; }
+    const double GetLambda2() const { return m_lambda2; }
+    const double GetBnorm()   const { return 2.*M_PI*m_beta0/m_scalefac; }
+    const double GetASmax()   const { return m_alphaSmax; }
+    const double GetAQEDmax() const { return m_alphaQEDmax; }
+
+    double RenormalizationScaleFactor() const { return m_renormalization_scale_factor; }
+    void SetRenormalizationScaleFactor(double r) { m_renormalization_scale_factor = r; }
+
   };
 
 
