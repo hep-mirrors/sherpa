@@ -11,6 +11,7 @@
 #include "Model_Base.H"
 #include "XS_Selector.H"
 #include "Regulator_Base.H"
+#include "Remnant_Base.H"
 
 using namespace EXTRAXS;
 using namespace MODEL;
@@ -27,6 +28,12 @@ Simple_XS::Simple_XS(const std::string &path,const std::string &file,
 {
   m_atoms=1;
   p_dataread = new Data_Read(m_path+m_file);
+  p_remnants[0]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_0");
+  p_remnants[1]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_1");
+  if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
+    ATOOLS::msg.Error()<<"Simple_XS::Simple_XS(..): "
+		       <<"No beam remnant handler found."<<std::endl;
+  }
 }
 
 Simple_XS::~Simple_XS() 
@@ -37,28 +44,34 @@ Simple_XS::~Simple_XS()
 
 void Simple_XS::OrderFlavours(ATOOLS::Flavour *flavours)
 {
-  if ((int)flavours[0].Kfcode()>(int)flavours[1].Kfcode()) std::swap<ATOOLS::Flavour>(flavours[0],flavours[1]);
-  if ((int)flavours[2].Kfcode()>(int)flavours[3].Kfcode()) std::swap<ATOOLS::Flavour>(flavours[2],flavours[3]);
+  if ((int)flavours[0].Kfcode()>(int)flavours[1].Kfcode()) 
+    std::swap<ATOOLS::Flavour>(flavours[0],flavours[1]);
+  if ((int)flavours[2].Kfcode()>(int)flavours[3].Kfcode()) 
+    std::swap<ATOOLS::Flavour>(flavours[2],flavours[3]);
   if (flavours[0].IsAnti()) std::swap<ATOOLS::Flavour>(flavours[0],flavours[1]);
   if (flavours[2].IsAnti()) std::swap<ATOOLS::Flavour>(flavours[2],flavours[3]);
 }
 
 bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandler,
-				    PDF::ISR_Handler *const isrhandler,const bool construct) 
+				    PDF::ISR_Handler *const isrhandler,
+				    const bool construct) 
 {
   p_beamhandler=beamhandler; 
   p_isrhandler=isrhandler;
-  std::string processfile=p_dataread->GetValue<std::string>("PROCESS_FILE",
-							    std::string("Processes.dat"));
-  std::string selectorfile=p_dataread->GetValue<std::string>("SELECTOR_FILE",
-							       std::string("Selector.dat"));
+  std::string processfile=
+    p_dataread->GetValue<std::string>("PROCESS_FILE",
+				      std::string("Processes.dat"));
+  std::string selectorfile=
+    p_dataread->GetValue<std::string>("SELECTOR_FILE",
+				      std::string("Selector.dat"));
   p_selectordata = new Selector_Data(m_path+selectorfile);
   m_scalescheme=p_dataread->GetValue<int>("SCALE_SCHEME",0);
   m_kfactorscheme=p_dataread->GetValue<int>("KFACTOR_SCHEME",0);
   m_scalefactor=p_dataread->GetValue<double>("SCALE_FACTOR",1.);
   int regulate=p_dataread->GetValue<int>("REGULATE_XS",0);
   if (regulate>0) {
-    m_regulator=p_dataread->GetValue<std::string>("XS_REGULATOR",std::string("Massive_Propagator"));
+    m_regulator=p_dataread->GetValue<std::string>
+      ("XS_REGULATOR",std::string("Massive_Propagator"));
     double param=p_dataread->GetValue<double>("XS_REGULATION",0.71);
     m_regulation.push_back(param);
   }
@@ -66,7 +79,8 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   ifstream from((m_path+processfile).c_str());
   if (!from) {
     throw(ATOOLS::Exception(ATOOLS::ex::critical_error,std::string("Cannot open file '")+
-			    m_path+processfile+std::string("'"),"Simple_XS","InitializeProcesses"));
+			    m_path+processfile+std::string("'"),
+			    "Simple_XS","InitializeProcesses"));
   }
   char buffer[100];
   size_t position;
@@ -107,7 +121,8 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 		buf      = string(buffer);
 		position = buf.find(string("End process"));
 		if (!from) {
-		  msg.Error()<<"Error in Simple_XS::InitializeProcesses("<<m_path+processfile<<")."<<endl
+		  msg.Error()<<"Error in Simple_XS::InitializeProcesses("
+			     <<m_path+processfile<<")."<<endl
 			     <<"   End of file reached without 'End process'-tag."<<endl
 			     <<"   Continue and hope for the best."<<endl;
 		  position     = 0;
@@ -124,7 +139,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	    if (summass<rpa.gen.Ecms()) {
 	      Flavour help[4];
 	      std::set<std::string> setup;
-	      XS_Group *group=FindGroup(nIS,nFS,flavs,m_scalescheme,m_kfactorscheme,m_scalefactor);
+	      // XS_Group *group=FindGroup(nIS,nFS,flavs);
 	      for (size_t i=0;i<(size_t)flavs[0].Size();++i) {
 		for (size_t j=0;j<(size_t)flavs[1].Size();++j) {
 		  for (size_t k=0;k<(size_t)flavs[2].Size();++k) {
@@ -139,18 +154,18 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 		      std::string name;
 		      converter>>name;
 		      if (setup.find(name)==setup.end()) {
-			group->XSSelector()->SetOffShell(p_isrhandler->KMROn());
-			XS_Base *newxs = group->XSSelector()->GetXS(nIS,nFS,help);			
+			XS_Group *pdfgroup = FindPDFGroup(nIS,nFS,help,this);
+			XS_Base *newxs = pdfgroup->XSSelector()->GetXS(nIS,nFS,help);
 			if (newxs!=NULL && m_regulator.length()>0) 
 			  newxs->AssignRegulator(m_regulator,m_regulation);
-			group->Add(newxs);
+			pdfgroup->Add(newxs);
 			setup.insert(name);
 		      }
 		    }
 		  }
 		}
 	      }
-	      p_selected=group;
+	      p_selected=m_xsecs.back();
 	    }
 	    delete [] flavs;
 	  }
@@ -160,32 +175,57 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   }
   ResetSelector(p_selectordata);
   if (m_xsecs.size()>0) return true;
-  msg.Error()<<"Simple_XS::InitializeProcesses("<<beamhandler<<","<<isrhandler<<"):"<<std::endl
+  msg.Error()<<"Simple_XS::InitializeProcesses("<<beamhandler<<","<<isrhandler<<"): "
 	     <<"   Did not find any process in '"<<m_path+processfile<<"' !"<<std::endl;
   return false;
 }
 
-XS_Group *Simple_XS::FindGroup(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
-			       const int scalescheme,const int kfactorscheme, 
-			       const double scalefactor)
+XS_Group *Simple_XS::FindGroup(const size_t nin,const size_t nout,
+			       const ATOOLS::Flavour *flavours)
 {
-  ATOOLS::Flavour *dummy = new ATOOLS::Flavour[nin+nout];
-  for (size_t i=0;i<nin+nout;++i) dummy[i]=flavours[i];
   for (size_t i=0;i<m_xsecs.size();++i) {
     if (nin==m_xsecs[i]->NIn() && nout==m_xsecs[i]->NOut()) {
       const ATOOLS::Flavour *test=m_xsecs[i]->Flavours();
       bool hit=true;
-      for (size_t j=0; j<nin+nout;++j) if (test[j]!=dummy[j]) hit=false;
-      if (hit) {
-	delete [] dummy;
-	return dynamic_cast<XS_Group*>(m_xsecs[i]);
-      }
+      for (size_t j=0; j<nin+nout;++j) if (test[j]!=flavours[j]) hit=false;
+      if (hit) return dynamic_cast<XS_Group*>(m_xsecs[i]);
     }
   }
-  XS_Group *newgroup = new XS_Group(nin,nout,dummy,scalescheme,kfactorscheme,scalefactor,
-				    p_beamhandler,p_isrhandler,p_selectordata);
+  XS_Group *newgroup = 
+    new XS_Group(nin,nout,flavours,m_scalescheme,m_kfactorscheme,m_scalefactor,
+		 p_beamhandler,p_isrhandler,p_selectordata);
+  newgroup->XSSelector()->SetOffShell(p_isrhandler->KMROn());
   m_xsecs.push_back(newgroup);
-  delete [] dummy;
+  return newgroup;
+}
+
+XS_Group *Simple_XS::FindPDFGroup(const size_t nin,const size_t nout,
+				  const ATOOLS::Flavour *flavours,
+				  XS_Group *const container)
+{
+  if (p_remnants[0]==NULL || p_remnants[1]==NULL) return container;
+  for (size_t i=0;i<container->Size();++i) {
+    if (nin==2 && nout==(*container)[i]->NOut()) {
+      ATOOLS::Flavour ref[2], test[2];
+      for (size_t j=0;j<2;++j) {
+	ref[j]=p_remnants[j]->ConstituentType((*container)[i]->Flavours()[j]);
+	test[j]=p_remnants[j]->ConstituentType(flavours[j]);
+      }
+      if (ref[0]==test[0] && ref[1]==test[1])
+	return dynamic_cast<XS_Group*>((*container)[i]);
+    }
+  }
+  ATOOLS::Flavour *copy = new ATOOLS::Flavour[nin+nout];
+  for (short unsigned int i=0;i<nin;++i) 
+    copy[i]=p_remnants[i]->ConstituentType(flavours[i]);
+  for (short unsigned int i=nin;i<nin+nout;++i) copy[i]=ATOOLS::kf::jet;
+  XS_Group *newgroup = 
+    new XS_Group(nin,nout,copy,m_scalescheme,m_kfactorscheme,m_scalefactor,
+		 p_beamhandler,p_isrhandler,p_selectordata);
+  newgroup->XSSelector()->SetOffShell(p_isrhandler->KMROn());
+  container->Add(newgroup);
+  container->SetAtoms(1);
+  delete [] copy;
   return newgroup;
 }
 
@@ -273,10 +313,11 @@ void  Simple_XS::SelectOne() {
 	return;
       }
     }
-    if (disc>0.) { 
-      msg.Error()<<"Error in Process_Group::SelectOne() : "<<"Total xsec = "<<m_totalxs<<std::endl;
-      return;
-    }
+    msg.Error()<<"Process_Group::SelectOne(): "
+	       <<"Total xsec = "<<m_totalxs<<std::endl;
+    p_selected = m_xsecs[0];
+    p_selected->DeSelect();
+    return;
   }
 }
 

@@ -3,8 +3,9 @@
 
 #include "XS_Group.H"
 
-namespace ATOOLS { class Data_Read;  }
-namespace MODEL  { class Model_Base; }
+namespace ATOOLS { class Data_Read;    }
+namespace MODEL  { class Model_Base;   }
+namespace SHERPA { class Remnant_Base; }
 
 namespace EXTRAXS {
 
@@ -20,13 +21,13 @@ namespace EXTRAXS {
     std::string         m_regulator;
     std::vector<double> m_regulation;
 
+    SHERPA::Remnant_Base *p_remnants[2];
+
     int  ExtractFlavours(ATOOLS::Flavour *&flavours,std::string buffer);
     void OrderFlavours(ATOOLS::Flavour *flavours);
 
-    XS_Group *FindGroup(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
-			const int scalescheme,const int kfactorscheme, 
-			const double scalefactor);
-    
+    XS_Group *FindGroup(const size_t nin,const size_t nout,
+			const ATOOLS::Flavour *flavours);
   public :
 
     // constructor
@@ -64,6 +65,10 @@ namespace EXTRAXS {
 
     void ResetSelector(ATOOLS::Selector_Data *const selectordata);
 
+    XS_Group *FindPDFGroup(const size_t nin,const size_t nout,
+			   const ATOOLS::Flavour *flavours,
+			   XS_Group *const container);
+    
   }; // end of class Simple_XS
 
 } // end of namespace EXTRAXS
