@@ -370,8 +370,8 @@ void Timelike_Sudakov::CheckSplittings()
     Splitting_Function * sf = iter();
     sf->PrintStat();
     // calculation
-    for (int i=1; i<data.size();++i) {
-      for (int j=0;j<data[0].values.size();++j) {
+    for (size_t i=1; i<data.size();++i) {
+      for (size_t j=0;j<data[0].values.size();++j) {
 	double z=data[0].values[j];
 	int masses= data[i].masses;
 	double ta = data[i].ta;
