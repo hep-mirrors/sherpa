@@ -1,26 +1,9 @@
-#include "Integration_Info.H"
+#include "Info_Key.H"
 
 #include "Message.H"
 
 using namespace PHASIC;
-
-Info_Key::Info_Key():
-  p_info(NULL),
-  m_valuekey(0),
-  m_weightkey(0) {}
-
-void Info_Key::Assign(const std::string name,const size_t doubles,
-		      const size_t vectors,Integration_Info *info)
-{
-  p_info=info;
-  m_name=name;
-  p_info->AssignKey(*this,doubles,vectors); 
-}
-
-Info_Key::~Info_Key()
-{
-  p_info->ReleaseKey(*this);
-}
+using namespace ATOOLS;
 
 Integration_Info::Integration_Info() 
 {
@@ -60,14 +43,11 @@ void Integration_Info::AssignKey(Info_Key &key,const size_t doubles,const size_t
     keys.push_back(&key);
     m_weights[key.m_valuekey].push_back(0.);
   }
-#ifdef USING__COLOR
-  ATOOLS::msg.Tracking()<<"\e[1mkey mapping: \e[0m(\e[31m"<<key.m_valuekey
-			<<"\e[0m,\e[31m"<<key.m_weightkey<<"\e[0m) <=> (\"\e[32m"
-			<<key.m_name<<"\e[0m\",\"\e[34m"<<key.m_info<<"\e[0m\")\n";
-#else
-  ATOOLS::msg.Tracking()<<"key mapping: ("<<key.m_valuekey<<","<<key.m_weightkey<<") <=> (\""
-			<<key.m_name<<"\",\""<<key.m_info<<"\")\n";
-#endif
+  ATOOLS::msg.Tracking()<<om::bold<<"key mapping: "<<om::reset<<"("
+			<<om::red<<key.m_valuekey<<om::reset<<","
+			<<om::red<<key.m_weightkey<<om::reset<<") <=> (\""
+			<<om::green<<key.m_name<<om::reset<<"\",\""
+			<<om::blue<<key.m_info<<om::reset<<"\")\n";
 }
 
 void Integration_Info::ReleaseKey(Info_Key &key)
@@ -81,6 +61,7 @@ std::ostream &PHASIC::operator<<(std::ostream &str,const Double_Container &doubl
   str.precision(6);
   str<<"{";
   for (size_t i=0;i<doubles.size();++i) {
+    // str.width(13); 
     str<<doubles[i]<<",";
   }
   str<<"\b}";
@@ -102,20 +83,11 @@ std::ostream &PHASIC::operator<<(std::ostream &str,const Vector_Container &vecto
   return str;
 }
 
-std::ostream &PHASIC::operator<<(std::ostream &str,const Info_Key &key)
-{
-  str<<"(\""<<key.m_name<<"\",\""<<key.m_info<<"\") -> "
-     <<key.p_info->m_doubles[key.m_valuekey]<<" "
-     <<key.p_info->m_vectors[key.m_valuekey]<<" => ("
-     <<key.p_info->m_weights[key.m_valuekey][key.m_weightkey]<<")";
-  return str;
-}
-
 std::ostream &PHASIC::operator<<(std::ostream &str,const Integration_Info &info)
 {
   str<<"Integration_Info("<<&info<<") {\n";
   for (size_t i=0;i<info.m_doubles.size();++i) {
-    str<<"  Key["<<i<<"] -> "<<info.m_doubles[i]<<" "<<info.m_vectors[i]<<" => "
+    str<<"  (*this)["<<i<<"] = "<<info.m_doubles[i]<<" "<<info.m_vectors[i]<<" => "
        <<info.m_weights[i]<<" => ("<<info.m_status[i]<<")\n";
   }
   str<<"}";
