@@ -420,7 +420,6 @@ int Single_Process::Tests() {
       msg.Out()<<"WARNING: Library cross check not satisfied: "
 	       <<M2<<" vs. "<<M2g<<"  difference:"<<abs(M2/M2g-1.)*100.<<"%"<<endl;
       return 0;
-      msg.Out()<<"         assuming numerical reasons, continuing "<<endl;
     } 
     else {
       msg.Debugging()<<"Mapping file(1) : "<<abs(M2)<<endl
@@ -477,8 +476,7 @@ int Single_Process::Tests() {
       if (!ATOOLS::IsEqual(M2g,M2S)) {
 	msg.Out()<<"WARNING: String test not satisfied: "
 		 <<M2g<<" vs. "<<M2S<<"  difference:"<<abs(M2g/M2S-1.)*100.<<"%"<<endl;
-	if (!ATOOLS::IsZero(M2g)) return 0;
-	msg.Out()<<"         assuming numerical reasons, continuing "<<endl;
+	return 0;
       }
       else {
 	if (M2S!=0.)
