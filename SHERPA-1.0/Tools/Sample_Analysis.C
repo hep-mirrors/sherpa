@@ -62,7 +62,9 @@ int Observable_Data::Specify() {
   if (type==std::string("Mass") || type==std::string("PT2") ||
       type==std::string("Eta2") || type==std::string("SPT2"))           return 2;
   if (type==std::string("JetPT") || type==std::string("JetEta") || 
-      type==std::string("JetE") || type==std::string("JetDR"))          return 10;
+      type==std::string("JetE") || type==std::string("DiffJet") || 
+      type==std::string("JetDR") || type==std::string("JetDEta") || 
+      type==std::string("JetDPhi")) return 10;
   if (type==std::string("Thrust") || type==std::string("Major") || 
       type==std::string("Minor") || type==std::string("Oblateness") || 
       type==std::string("PT_in_T") || type==std::string("PT_out_T"))    return 20;
@@ -156,7 +158,7 @@ void Analysis_Handler::ReadInFinalSelectors(std::ifstream * readin,
 					    Final_Selector *& fsel)
 {  
   std::string buffer, arg;
-  unsigned int pos;
+  size_t pos;
   int    kfc;
   double number;
   std::vector<int>    kfcs; 
@@ -285,7 +287,7 @@ void Analysis_Handler::ReadInFinalSelectors(std::ifstream * readin,
 void Analysis_Handler::ReadInObservables(std::ifstream * readin)
 {
   std::string buffer, arg;
-  unsigned int pos;
+  size_t pos;
   int    kfc;
   double number;
   Observable_Data * obs;
@@ -345,9 +347,7 @@ void Analysis_Handler::SetUpObservables()
   Observable_Data * od;
   int               odn,linlog;
   Flavour           flav,flav2;
-  std::string type, listname;
-  Final_Selector *  fsel;
-  bool              found;
+  std::string type;
 
   for (size_t i=0;i<m_obsdata.size();++i) {
     msg.Tracking()<<"Try to initialize another observable from read in :"<<std::endl;
@@ -419,56 +419,82 @@ void Analysis_Handler::SetUpObservables()
 	break; 
       }
     case 10:
-      if (!(od->ints.size()==5 && od->numbers.size()==2 && od->keywords.size()==1)) {
-	msg.Error()<<"Potential Error in Analysis_Handler::SetUpSubObservables()"<<std::endl
-		   <<"   One particle observable with "
-		   <<od->ints.size()<<" "<<od->numbers.size()<<" "<<od->keywords.size()
-		   <<". Continue and hope for the best."<<std::endl;
-      }
-      flav   = Flavour(kf::code(abs(od->ints[0])));
-      if (od->ints[0]<0) flav = flav.Bar();
-      if (flav==Flavour(kf::jet)) listname = std::string("Analysed");
-      linlog = 0;
-      if (od->keywords[0]==std::string("Log")) linlog = 10;
-      //type,  xmin,xmax,nbins,mode,minn,maxn,listname 
-      //linlog,n0,  n1,  i1,   i2,  i3,  i4
+      {
+	if (!(od->ints.size()==5 && od->numbers.size()==2 && od->keywords.size()==1)) {
+	  msg.Error()<<"Potential Error in Analysis_Handler::SetUpSubObservables()"<<std::endl
+		     <<"   One particle observable with "
+		     <<od->ints.size()<<" "<<od->numbers.size()<<" "<<od->keywords.size()
+		     <<". Continue and hope for the best."<<std::endl;
+	}
+	
+	flav   = Flavour(kf::code(abs(od->ints[0])));
+	if (od->ints[0]<0) flav = flav.Bar();
+	
+	std::string listname = std::string("Analysed");
+	linlog = 0;
+	if (od->keywords[0]==std::string("Log")) linlog = 10;
 
-      found = false;
-      if (m_subsamples.size()>0) {
-	for (std::map<Flavour,std::string>::iterator flit=m_subsamples.begin();
-	     flit!=m_subsamples.end();flit++) {
-	  if (flit->first==flav && flit->second==listname) { 
-	    msg.Tracking()<<"List "<<listname<<" already to be projected out."<<std::endl;
-	    found = true; break; 
+	if (type!="DiffJet") {
+	  // jet observables have get a "particle list" containing only "jets"
+	  if (flav==Flavour(kf::jet)) listname = std::string("AnalysedJets");
+	  else listname = std::string("Analysed")+flav.Name();
+	  //type,  xmin,xmax,nbins,mode,minn,maxn,listname 
+	  //linlog,n0,  n1,  i1,   i2,  i3,  i4
+
+	  bool	found = false;
+	  if (m_subsamples.size()>0) {
+	    for (std::map<Flavour,std::string>::iterator flit=m_subsamples.begin();
+		 flit!=m_subsamples.end();flit++) {
+	      if (flit->first==flav && flit->second==listname) { 
+		msg.Tracking()<<"List "<<listname<<" already to be projected out."<<std::endl;
+		found = true; break; 
+	      }
+	    }
+	  }
+
+	  if (!found) {
+	    msg.Tracking()<<"List "<<listname<<" added to be projected out."<<std::endl;
+	    Final_Selector * fsel = new Final_Selector("Analysed",listname,(rpa.gen.Beam1()==Flavour(kf::e)));
+	    fsel->AddKeepFlavour(flav);
+	    p_analysis->AddObservable(fsel);
+	    m_subsamples.insert(std::make_pair(flav,listname));
 	  }
 	}
-      }
-      if (!found) {
-	msg.Tracking()<<"List "<<listname<<" added to be projected out."<<std::endl;
-	fsel = new Final_Selector("Analysed",listname,(rpa.gen.Beam1()==Flavour(kf::e)));
-	fsel->AddKeepFlavour(flav);
-	p_analysis->AddObservable(fsel);
-	m_subsamples.insert(std::make_pair(flav,listname));
-      }
-      if (type==std::string("JetPT"))  { 
-	obs = new Jet_PT_Distribution(linlog,od->numbers[0],od->numbers[1],
-				      od->ints[1],od->ints[2],od->ints[3],od->ints[4],listname);
-	break; 
-      }
-      if (type==std::string("JetEta"))  { 
-	obs = new Jet_Eta_Distribution(linlog,od->numbers[0],od->numbers[1],
+	if (type==std::string("JetPT"))  { 
+	  obs = new Jet_PT_Distribution(linlog,od->numbers[0],od->numbers[1],
+					od->ints[1],od->ints[2],od->ints[3],od->ints[4],listname);
+	  break; 
+	}
+	if (type==std::string("JetEta"))  { 
+	  obs = new Jet_Eta_Distribution(linlog,od->numbers[0],od->numbers[1],
+					 od->ints[1],od->ints[2],od->ints[3],od->ints[4],listname); 
+	  break; 
+	}
+	if (type==std::string("JetE"))  { 
+	  obs = new Jet_E_Distribution(linlog,od->numbers[0],od->numbers[1],
 				       od->ints[1],od->ints[2],od->ints[3],od->ints[4],listname); 
-	break; 
-      }
-      if (type==std::string("JetE"))  { 
-	obs = new Jet_E_Distribution(linlog,od->numbers[0],od->numbers[1],
-				       od->ints[1],od->ints[2],od->ints[3],od->ints[4],listname); 
-	break; 
-      }
-      if (type==std::string("JetDR"))  { 
-	obs = new Jet_Differential_Rates(linlog,od->numbers[0],od->numbers[1],
-				       od->ints[1],od->ints[2],od->ints[3],od->ints[4],listname); 
-	break; 
+	  break; 
+	}
+	if (type==std::string("DiffJet"))  { 
+	  obs = new Jet_Differential_Rates(linlog,od->numbers[0],od->numbers[1],
+					   od->ints[1],od->ints[2],od->ints[3],od->ints[4],listname); 
+	  break; 
+	}
+	if (type==std::string("JetDR"))  {
+	  obs = new Jet_DeltaR_Distribution(linlog,od->numbers[0],od->numbers[1],
+					   od->ints[1],od->ints[2],od->ints[3],od->ints[4],listname); 
+	  break; 
+	}
+	if (type==std::string("JetDEta"))  {
+	  obs = new Jet_DeltaEta_Distribution(linlog,od->numbers[0],od->numbers[1],
+					   od->ints[1],od->ints[2],od->ints[3],od->ints[4],listname); 
+	  break; 
+	}
+	if (type==std::string("JetDPhi"))  {
+	  obs = new Jet_DeltaPhi_Distribution(linlog,od->numbers[0],od->numbers[1],
+					   od->ints[1],od->ints[2],od->ints[3],od->ints[4],listname); 
+	  break; 
+	}
       }
     case 20:
       if (!(od->ints.size()==1 && od->numbers.size()==2 && od->keywords.size()==1)) {
