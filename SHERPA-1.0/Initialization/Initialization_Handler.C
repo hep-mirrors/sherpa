@@ -160,9 +160,9 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   if (rpa.gen.NumberOfEvents()>0) {
     okay = okay && InitializeTheShowers();
     okay = okay && InitializeTheFragmentation();
-    okay = okay && InitializeTheUnderlyingEvents();
     okay = okay && InitializeTheHadronDecays();
     okay = okay && InitializeTheBeamRemnants();
+    okay = okay && InitializeTheUnderlyingEvents();
     okay = okay && InitializeTheAnalyses();
   }
   return okay;
@@ -404,10 +404,6 @@ bool Initialization_Handler::InitializeTheBeamRemnants()
   p_beamremnants = new Beam_Remnant_Handler(m_path,m_beamremnantdat,
 					    m_isrhandlers[isr::hard_process],
 					    p_beamspectra,scale);
-  for (size_t i=0;i<2;++i) {
-    AMISIC::MI_Base::SetRemnantHandler(p_beamremnants->BeamParticle(i),i);
-    p_beamremnants->BeamParticle(i)->SetMIHandler(p_mihandler);
-  }
   msg_Info()<<"Initialized the Beam_Remnant_Handler."<<endl;
   return 1;
 }

@@ -100,7 +100,7 @@ namespace PHASIC {
     
     double Integrate();
     double Differential();
-    double Differential(Integrable_Base *const process);
+    double Differential(Integrable_Base *const process,const int mode=0);
 
     bool OneEvent(const double mass=-1.,const int mode=0);
     bool SameEvent();

@@ -66,7 +66,7 @@ void QCD_Remnant_Base::AssignRemnants()
 Color_Dipole *QCD_Remnant_Base::FindClosest(const Color_Dipole *dipole,
 					    const qri::type type)
 {
-  Color_Dipole *closest=NULL;
+  Color_Dipole *closest=p_start;
   const ATOOLS::Vec4D &ref=dipole->End(type)->Momentum();
   double min=std::numeric_limits<double>::max();
   for (Dipole_Vector::iterator dit=m_attached.begin();
@@ -97,7 +97,6 @@ public:
 
 bool QCD_Remnant_Base::Connect(const bool sorted) 
 {
-  PROFILE_HERE;
   m_attached.clear();
   m_attached.push_back(p_start);
   std::stable_sort(m_connected.begin(),m_connected.end(),Compare_PT());
@@ -117,6 +116,7 @@ bool QCD_Remnant_Base::Connect(const bool sorted)
 
 bool QCD_Remnant_Base::ConnectRemnants() 
 {
+  PROFILE_HERE;
   if (Connect(true)) return true;
   ATOOLS::msg.Error()<<"QCD_Remnant_Base::ConnectRemnants(): "
 		     <<"No solution in event ["
@@ -127,6 +127,7 @@ bool QCD_Remnant_Base::ConnectRemnants()
 
 void QCD_Remnant_Base::FillRemnants()
 {
+  PROFILE_HERE;
   for (Dipole_Vector::iterator rit=m_connected.begin();
        rit!=m_connected.end();++rit) {
     (*rit)->SetColors();
@@ -141,3 +142,4 @@ void QCD_Remnant_Base::FillRemnants()
     p_beamblob->AddToOutParticles(*pit);
   }
 }
+

@@ -57,9 +57,9 @@ bool Single_XS::OneEvent()
   return p_activepshandler->OneEvent(); 
 }
 
-ATOOLS::Blob_Data_Base *Single_XS::WeightedEvent() 
+ATOOLS::Blob_Data_Base *Single_XS::WeightedEvent(const int mode) 
 { 
-  return p_activepshandler->WeightedEvent(); 
+  return p_activepshandler->WeightedEvent(mode); 
 }
 
 void Single_XS::SetTotal() 

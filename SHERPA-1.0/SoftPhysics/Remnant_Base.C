@@ -4,6 +4,7 @@
 #include "Exception.H"
 #include "Momentum_Shifter.H"
 #include "MI_Handler.H"
+#include "Scaling.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Remnant_Base
@@ -29,10 +30,10 @@ std::ostream &SHERPA::operator<<(std::ostream &ostr,const rtp::code code)
 }
 
 Remnant_Base::Remnant_Base(const rtp::code type,const unsigned int beam):
+  Object(std::string("Remnant_Base_")+ATOOLS::ToString(beam)),
   m_type(type),
   m_beam(beam),
-  p_partner(NULL),
-  p_mihandler(NULL) {}
+  p_partner(NULL) {}
 
 Remnant_Base::~Remnant_Base() {}
 
@@ -93,8 +94,6 @@ bool Remnant_Base::AdjustKinematics()
       ATOOLS::msg.Error()<<"Remnant_Base::AdjustKinematics(): "
 			 <<"Parton ("<<p_last[i]<<") has non-positive energy "
 			 <<p_last[i]->Momentum()<<std::endl;
-      UnDo();
-      p_partner->UnDo();
       return false;
     }
   }
@@ -166,7 +165,7 @@ bool Remnant_Base::AcquireMass(const ATOOLS::Particle *left,
   m_deltae=(E-sqrt(E*E+(1.0-C*C)*D*(D-2.0*P[3])))/(1.0-C*C);
   if (ATOOLS::Sign(P[3]-m_deltap)!=ATOOLS::Sign(P[3])) m_deltap*=-1.0;
   if (!(m_deltae>0.0) || P[0]<m_deltae) return false;
-  if (p_mihandler!=NULL) if (m_deltae>p_mihandler->ScaleMin(0)) return false;
+  // if (p_mihandler!=NULL) if (m_deltae>p_mihandler->ScaleMin(0)) return false;
   m_deltap=m_deltae*C+D;
   return true;
 }

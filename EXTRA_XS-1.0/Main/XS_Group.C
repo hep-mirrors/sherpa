@@ -334,13 +334,13 @@ bool XS_Group::OneEvent()
   return p_activepshandler->OneEvent();
 }
 
-ATOOLS::Blob_Data_Base *XS_Group::WeightedEvent() 
+ATOOLS::Blob_Data_Base *XS_Group::WeightedEvent(const int mode) 
 {
   if (m_atoms) {
     SelectOne();
-    return p_selected->WeightedEvent();
+    return p_selected->WeightedEvent(mode);
   }
-  return p_activepshandler->WeightedEvent();
+  return p_activepshandler->WeightedEvent(mode);
 }
 
 void XS_Group::AddPoint(const double value) 

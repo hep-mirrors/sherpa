@@ -28,7 +28,8 @@
 #ifdef PROFILE__Phase_Space_Handler
 #include "prof.hh"
 #else
-#define PROFILE_HERE ;
+#define PROFILE_HERE 
+#define PROFILE_LOCAL(LOCALNAME)
 #endif
 
 using namespace PHASIC;
@@ -198,7 +199,8 @@ double Phase_Space_Handler::Differential()
   return Differential(p_process);
 }
 
-double Phase_Space_Handler::Differential(Integrable_Base *const process) 
+double Phase_Space_Handler::Differential(Integrable_Base *const process,
+					 const int mode) 
 { 
   PROFILE_HERE;
   p_info->ResetAll();
@@ -207,13 +209,15 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process)
     if (p_beamhandler->On()>0) { 
       p_beamhandler->SetSprimeMin(m_smin);
       p_beamhandler->SetLimits();
-      p_beamchannels->GeneratePoint(m_beamspkey,m_beamykey,p_beamhandler->On()); 
+      p_beamchannels->GeneratePoint(m_beamspkey,m_beamykey,
+				    p_beamhandler->On()); 
       if (!p_beamhandler->MakeBeams(p_lab)) return 0.;
-      p_isrhandler->SetSprimeMax(m_beamspkey[3]*
-				 p_isrhandler->Upper1()*p_isrhandler->Upper2());
+      if (mode<2) p_isrhandler->SetSprimeMax(m_beamspkey[3]*
+					     p_isrhandler->Upper1()*
+					     p_isrhandler->Upper2());
       p_isrhandler->SetPole(m_beamspkey[3]);
     }
-    p_isrhandler->SetSprimeMin(m_smin);
+    if (mode<2) p_isrhandler->SetSprimeMin(m_smin);
     p_isrhandler->SetLimits();
     if (p_isrhandler->On()>0) { 
       p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
@@ -415,6 +419,7 @@ bool Phase_Space_Handler::OneEvent(const double mass,const int mode)
 
 ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
 {
+  PROFILE_HERE;
   if (!m_initialized) InitIncoming();
   
   double value;
@@ -430,7 +435,7 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
       }
     }
     p_process->Selected()->RestoreInOrder();
-    value = Differential(p_process->Selected());
+    value = Differential(p_process->Selected(),mode);
     if (value > 0.) {
       m_sumtrials+=i;
       ++m_events;

@@ -349,11 +349,3 @@ double Hadron_Remnant::MinimalEnergy(const ATOOLS::Flavour &flavour)
   return 0.;
 }
 
-void Hadron_Remnant::UnDo() 
-{
-  for (size_t i=0;i<m_last;++i) {
-    p_beamblob->DeleteOutParticle(m_companions[m_companions.size()-i-1]);
-  }
-  m_companions.resize(m_companions.size()-m_last);
-  QCD_Remnant_Base::UnDo();
-}

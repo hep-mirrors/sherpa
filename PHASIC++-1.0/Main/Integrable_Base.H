@@ -118,7 +118,7 @@ namespace PHASIC {
     virtual bool SameEvent();
     virtual void OptimizeResult();
 
-    virtual ATOOLS::Blob_Data_Base *WeightedEvent();
+    virtual ATOOLS::Blob_Data_Base *WeightedEvent(const int mode=0);
     virtual ATOOLS::Blob_Data_Base *SameWeightedEvent();
 
     virtual void SetPSHandler(Phase_Space_Handler *const pshandler);

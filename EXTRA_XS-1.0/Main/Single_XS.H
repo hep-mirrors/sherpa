@@ -31,15 +31,15 @@ namespace EXTRAXS {
     double Differential(const double s,const double t,const double u);
     double operator()(const double s,const double t,const double u);
     void   AddPoint(const double xs);
-    void           ResetMax(int);
-    void           OptimizeResult();
+    void   ResetMax(int);
+    void   OptimizeResult();
 
     bool CalculateTotalXSec(const std::string &resultpath);
     void WriteOutXSecs(std::ofstream &outfile);
 
     bool OneEvent();
 
-    ATOOLS::Blob_Data_Base *WeightedEvent();
+    ATOOLS::Blob_Data_Base *WeightedEvent(const int mode=0);
 
     template <class Process_Type>
     static Single_XS *GetProcess(const size_t nin,const size_t nout,

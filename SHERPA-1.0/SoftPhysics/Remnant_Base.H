@@ -1,14 +1,12 @@
 #ifndef Remnant_Base_H
 #define Remnant_Base_H
 
-#include "Remnant_Info.H"
 #include "Particle_List.H"
 #include "Blob.H"
+#include "Object.H"
 #include <vector>
 
 namespace SHERPA {
-
-  class MI_Handler;
 
   struct rtp {
     
@@ -27,7 +25,7 @@ namespace SHERPA {
 
   std::ostream &operator<<(std::ostream &ostr,const rtp::code code);
 
-  class Remnant_Base: public ATOOLS::Remnant_Info {
+  class Remnant_Base: public ATOOLS::Object {
   protected:
     
     rtp::code    m_type;
@@ -37,8 +35,6 @@ namespace SHERPA {
 
     ATOOLS::Particle *p_last[2];
     Remnant_Base     *p_partner;
-
-    MI_Handler *p_mihandler;
 
     ATOOLS::Blob  *p_beamblob;
     ATOOLS::Vec4D  m_pbeam;
@@ -76,15 +72,12 @@ namespace SHERPA {
 
     // inline functions 
     inline void SetPartner(SHERPA::Remnant_Base *partner)   { p_partner=partner;     }
-    inline void SetMIHandler(SHERPA::MI_Handler *mihandler) { p_mihandler=mihandler; }
 
     inline ATOOLS::Particle *Last()     { m_active=false; return p_last[0]; }
     inline ATOOLS::Blob     *BeamBlob() { return p_beamblob;                }
 
     inline rtp::code    Type() const { return m_type; }
     inline unsigned int Beam() const { return m_beam; }
-
-    inline MI_Handler *const MIHandler() { return p_mihandler; }
 
     inline unsigned int Errors() const { return m_errors; }
 

@@ -72,7 +72,7 @@ namespace EXTRAXS {
 
     bool OneEvent();
 
-    ATOOLS::Blob_Data_Base *WeightedEvent();
+    ATOOLS::Blob_Data_Base *WeightedEvent(const int mode=0);
 
     void SetPSHandler(PHASIC::Phase_Space_Handler *const pshandler); 
     void ResetSelector(ATOOLS::Selector_Data *const selectordata);

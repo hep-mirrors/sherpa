@@ -33,8 +33,6 @@ namespace SHERPA {
     
     bool FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *particlelist);
 
-    void UnDo();
-
   };// end of class Remnant_Base
 
 }// end of namespace SHERPA

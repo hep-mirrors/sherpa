@@ -108,7 +108,7 @@ bool Integrable_Base::SameEvent()
   return false;
 } 
 
-ATOOLS::Blob_Data_Base *Integrable_Base::WeightedEvent() 
+ATOOLS::Blob_Data_Base *Integrable_Base::WeightedEvent(const int mode) 
 {
   ATOOLS::msg.Error()<<"Integrable_Base::WeightedEvent(): Virtual function called !"<<std::endl;
   return NULL;
