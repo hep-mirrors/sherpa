@@ -781,9 +781,9 @@ bool Simple_Chain::DiceProcess()
 	double sprimemin=isr->SprimeMin(), sprimemax=isr->SprimeMax();
 	double ymin=isr->YMin(), ymax=isr->YMax();
 	isr->SetSprimeMin(4.0*m_last[0]*m_last[0]);
-	isr->SetSprimeMax(ATOOLS::sqr(m_ecms*(m_last[2]+m_last[3])));
-	isr->SetYMin(0.5*log(xmin/m_last[3]));
-	isr->SetYMax(0.5*log(m_last[2]/xmin));
+	isr->SetSprimeMax(ATOOLS::sqr(m_ecms*(m_last[2]+m_last[3])/2.0));
+	isr->SetYMin(log(xmin/m_last[3]));
+	isr->SetYMax(log(m_last[2]/xmin));
 	FillBlob(p_blob);
 	isr->SetYMin(ymin);
 	isr->SetYMax(ymax);
