@@ -38,6 +38,7 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
       m_one=true;
       if ((*bit)->Status()==2) {
 	myblob=*bit;
+	Clean(myblob);
 	m_xmax[1]=m_xmax[0]=1.0;
 	for (Blob_Iterator xit=bloblist->begin();xit!=bloblist->end();++xit) {
 	  if ((*xit)->Type()==btp::IS_Shower) {
@@ -65,6 +66,7 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
       }
       else if ((*bit)->Status()==-1) {
 	myblob=(*bit);
+	Clean(myblob);
 	p_mihandler->SameHardProcess(myblob); 
 	CompleteBlob(myblob);
 	myblob->SetStatus(1);
@@ -152,4 +154,25 @@ void Multiple_Interactions::CompleteBlob(ATOOLS::Blob *blob)
   }
 }
 
-void Multiple_Interactions::Finish(const std::string &) {}
+void Multiple_Interactions::Clean(ATOOLS::Blob *const blob,const bool forward)
+{ 
+  for (size_t i=0;!forward && i<(size_t)blob->NInP();++i) {
+    ATOOLS::Particle *cur=blob->InParticle(i);
+    if (cur->ProductionBlob()!=NULL) Clean(cur->ProductionBlob(),false);
+  } 
+  for (size_t i=0;forward && i<(size_t)blob->NOutP();++i) {
+    ATOOLS::Particle *cur=blob->OutParticle(i);
+    if (cur->DecayBlob()!=NULL) Clean(cur->DecayBlob(),true);
+  } 
+}
+
+void Multiple_Interactions::Clean(ATOOLS::Blob *const blob)
+{ 
+  Clean(blob,false);
+  Clean(blob,true);
+  blob->DeleteOwnedParticles();
+}
+
+void Multiple_Interactions::Finish(const std::string &) 
+{
+}

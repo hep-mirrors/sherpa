@@ -16,6 +16,8 @@ namespace SHERPA {
     MI_Handler *p_mihandler;
 
     void CompleteBlob(ATOOLS::Blob *);
+    void Clean(ATOOLS::Blob *const blob,const bool forward);
+    void Clean(ATOOLS::Blob *const blob);
 
   public :
 
@@ -29,6 +31,7 @@ namespace SHERPA {
     bool Treat(ATOOLS::Blob_List *, double &);
     void CleanUp();
     void Finish(const std::string &);
+
   }; // end of class Multiple_Interactions
 
 } // end of namespace SHERPA
