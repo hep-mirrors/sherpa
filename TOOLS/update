@@ -1,35 +1,66 @@
 #!/bin/bash
 
-cvs $1 update > updated.log 
-echo -e "\e[1m=\e[34m C-Files\e[0m\e[1m ========================================\e[0m" > updated_C.log
-cat updated.log | grep "U " | grep "\.C" >> updated_C.log 
-cat updated.log | grep "P " | grep "\.C" >> updated_C.log 
-echo -e "\e[1m- Conflicts --------------------------------------\e[0m" >> updated_C.log 
-cat updated.log | grep "C " | grep "\.C" >> updated_C.log 
-echo -e "\e[1m- Changes ----------------------------------------\e[0m" >> updated_C.log 
-cat updated.log | grep "M " | grep "\.C" >> updated_C.log 
-echo -e "\e[1m- Changes ----------------------------------------\e[0m" >> updated_C.log 
-cat updated.log | grep "erging " | grep "\.C" >> updated_C.log 
-echo -e "\e[1m=\e[32m H-Files\e[0m\e[1m ========================================\e[0m" > updated_H.log 
-cat updated.log | grep "U " | grep "\.H" >> updated_H.log 
-cat updated.log | grep "P " | grep "\.H" >> updated_H.log 
-echo -e "\e[1m- Conflicts --------------------------------------\e[0m" >> updated_H.log 
-cat updated.log | grep "C " | grep "\.H" >> updated_H.log 
-echo -e "\e[1m- Changes ----------------------------------------\e[0m" >> updated_H.log 
-cat updated.log | grep "M " | grep "\.H" >> updated_H.log 
-echo -e "\e[1m- Changes ----------------------------------------\e[0m" >> updated_H.log 
-cat updated.log | grep "erging " | grep "\.H" >> updated_H.log 
-echo -e "\n\e[1m=\e[31m Makefiles\e[0m\e[1m ======================================\e[0m" > updated_am.log 
-cat updated.log | grep "U " | grep "\.am" >> updated_am.log 
-cat updated.log | grep "P " | grep "\.am" >> updated_am.log 
-echo -e "\e[1m- Conflicts --------------------------------------\e[0m" >> updated_am.log 
-cat updated.log | grep "C " | grep "\.am" >> updated_am.log 
-echo -e "\e[1m- Changes ----------------------------------------\e[0m" >> updated_am.log 
-cat updated.log | grep "M " | grep "\.am" >> updated_am.log 
-echo -e "\e[1m- Changes ----------------------------------------\e[0m" >> updated_am.log 
-cat updated.log | grep "erging " | grep "\.am" >> updated_am.log 
-cat updated_am.log
-cat updated_H.log
-cat updated_C.log
+NOUPDATE="TRUE"
+
+OPTIONS=
+LOGFILE="updated"
+for I in $* ; do
+  if [ "$I" = "-n" ]; then NOUPDATE=TRUE 
+  elif [ "$I" = "-f" ]; then NOUPDATE=
+  elif [ "$I" = "-l" ]; then DLOGFILE=TRUE && CLOGFILE=TRUE
+  elif [ "$I" = "-h" ]; then echo && \
+    echo "makeinstall version 1.0" && echo && \
+    echo "options: -n             run 'cvs -n update <options>'" && \
+    echo "         -f             run 'cvs update <options>'" && \
+    echo "         -h             display this help and exit" && echo && \
+    exit 0
+  elif [ "$DLOGFILE" = "TRUE" ]; then DLOGFILE="" && LOGFILE=$I
+  else OPTIONS=$OPTIONS" "$I
+  fi
+done
+
+if [ "$NOUPDATE" = "TRUE" ] ; then 
+  cvs -n update $OPTIONS > $LOGFILE.log 
+else 
+  cvs update $OPTIONS > $LOGFILE.log
+fi
+
+echo -e "\e[1m=\e[34m C-Files\e[0m\e[1m ========================================\e[0m" > $LOGFILE"_C.log"
+cat $LOGFILE.log | grep "U " | grep "\.C" >> $LOGFILE"_C.log" 
+cat $LOGFILE.log | grep "P " | grep "\.C" >> $LOGFILE"_C.log" 
+echo -e "\e[1m- Conflicts --------------------------------------\e[0m" >> $LOGFILE"_C.log" 
+cat $LOGFILE.log | grep "C " | grep "\.C" >> $LOGFILE"_C.log" 
+echo -e "\e[1m- Changes ----------------------------------------\e[0m" >> $LOGFILE"_C.log" 
+cat $LOGFILE.log | grep "M " | grep "\.C" >> $LOGFILE"_C.log" 
+echo -e "\e[1m- Changes ----------------------------------------\e[0m" >> $LOGFILE"_C.log" 
+cat $LOGFILE.log | grep "erging " | grep "\.C" >> $LOGFILE"_C.log" 
+echo -e "\e[1m=\e[32m H-Files\e[0m\e[1m ========================================\e[0m" > $LOGFILE"_H.log" 
+cat $LOGFILE.log | grep "U " | grep "\.H" >> $LOGFILE"_H.log" 
+cat $LOGFILE.log | grep "P " | grep "\.H" >> $LOGFILE"_H.log" 
+echo -e "\e[1m- Conflicts --------------------------------------\e[0m" >> $LOGFILE"_H.log" 
+cat $LOGFILE.log | grep "C " | grep "\.H" >> $LOGFILE"_H.log" 
+echo -e "\e[1m- Changes ----------------------------------------\e[0m" >> $LOGFILE"_H.log" 
+cat $LOGFILE.log | grep "M " | grep "\.H" >> $LOGFILE"_H.log" 
+echo -e "\e[1m- Changes ----------------------------------------\e[0m" >> $LOGFILE"_H.log" 
+cat $LOGFILE.log | grep "erging " | grep "\.H" >> $LOGFILE"_H.log" 
+echo -e "\n\e[1m=\e[31m Makefiles\e[0m\e[1m ======================================\e[0m" > $LOGFILE"_am.log" 
+cat $LOGFILE.log | grep "U " | grep "\.am" >> $LOGFILE"_am.log" 
+cat $LOGFILE.log | grep "P " | grep "\.am" >> $LOGFILE"_am.log" 
+echo -e "\e[1m- Conflicts --------------------------------------\e[0m" >> $LOGFILE"_am.log" 
+cat $LOGFILE.log | grep "C " | grep "\.am" >> $LOGFILE"_am.log" 
+echo -e "\e[1m- Changes ----------------------------------------\e[0m" >> $LOGFILE"_am.log" 
+cat $LOGFILE.log | grep "M " | grep "\.am" >> $LOGFILE"_am.log" 
+echo -e "\e[1m- Changes ----------------------------------------\e[0m" >> $LOGFILE"_am.log" 
+cat $LOGFILE.log | grep "erging " | grep "\.am" >> $LOGFILE"_am.log" 
+cat $LOGFILE"_am.log"
+cat $LOGFILE"_H.log"
+cat $LOGFILE"_C.log"
 echo -e "\e[1m==================================================\e[0m\n"
-#rm updated_C.log updated_H.log updated_am.log updated.log
+
+rm $LOGFILE"_C.log" $LOGFILE"_H.log" $LOGFILE"_am.log"
+if [ ! "$CLOGFILE" = "TRUE" ] ; then
+  rm $LOGFILE.log
+fi
+
+# mode:shell-script
+# sh-indentation:2
