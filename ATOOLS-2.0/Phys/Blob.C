@@ -31,10 +31,14 @@ std::ostream& ATOOLS::operator<<(std::ostream& ostr, const btp::code btpc) {
 
 std::ostream &ATOOLS::operator<<(std::ostream &str,const std::vector<double> &info)
 {
-  str<<"std::vector<double>: this = "<<&info<<" {\n";
-  for (size_t i=0;i<info.size();++i) str<<"   (*this)["<<i<<"] = "<<info[i]<<"\n";
-  str<<"}";
-  return str;
+//   str<<"std::vector<double>: this = "<<&info<<" {\n";
+//   for (size_t i=0;i<info.size();++i) str<<"   (*this)["<<i<<"] = "<<info[i]<<"\n";
+//   return str<<"}";
+  str<<"(";
+  if (info.size()>0) str<<info[0];
+  else str<<"<no entry>";
+  for (size_t i=1;i<info.size();++i) str<<","<<info[i];
+  return str<<")";
 }
 
 namespace ATOOLS {
