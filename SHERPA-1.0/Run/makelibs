@@ -1,0 +1,25 @@
+#!/bin/bash
+# 
+# To successfully employ this script, make sure that your bash is in
+# the bin - directory or adjust accordingly.
+#
+
+DIRS=`find Process -name P?_?`
+
+for I in $DIRS
+do
+  echo .
+  echo ======================
+  echo $I;
+  echo ======================
+  cd $I 
+  libtoolize --force
+  aclocal
+  automake -a
+  autoconf
+  ./configure
+#  make clean
+  make install CXXFLAGS="-O2" 
+  cd ../..
+done
+

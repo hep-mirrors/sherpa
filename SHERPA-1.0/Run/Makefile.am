@@ -36,7 +36,7 @@ Sherpa_LDADD =  \
 	 @libdir@/libToolsMath.la \
 	 @libdir@/libToolsOrg.la \
 	 ${HEPMC_shared_object} \
-	 -lg2c -lm 
+	 -lg2c -lm -ldl
 #	 -L$(rootlibdir) -lCore -lCint -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lGui -ldl
 Sherpa_LDFLAGS =  -rdynamic
 INCLUDES = -I../../SHERPA-1.0/Main \
