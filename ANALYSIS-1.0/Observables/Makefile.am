@@ -13,6 +13,7 @@ endif
 lib_LTLIBRARIES           = libObservables.la
 libObservables_la_SOURCES = \
 			    Statistics_Observable.C \
+			    MI_Statistics.C \
 			    One_Particle_Observables.C \
 			    Two_Particle_Observables.C \
 			    Four_Particle_Observables.C \
@@ -21,6 +22,7 @@ libObservables_la_SOURCES = \
 			    Shape_Observables_EE.C 
 noinst_HEADERS            = \
 			    Statistics_Observable.H \
+			    MI_Statistics.H \
 			    One_Particle_Observables.H \
 			    Two_Particle_Observables.H \
 			    Four_Particle_Observables.H \
