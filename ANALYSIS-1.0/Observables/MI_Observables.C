@@ -340,7 +340,7 @@ void Transverse_Region_Selector::Evaluate(const ATOOLS::Particle_List &particlel
   m_leadingjet=(*jetlist)[0]->Momentum();
   for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
        pit!=particlelist.end();++pit) {
-    double phi=(*pit)->Momentum().Theta(m_leadingjet);
+    double phi=(*pit)->Momentum().DPhi(m_leadingjet);
     if (phi>m_xmin && phi<m_xmax) outlist->push_back(new ATOOLS::Particle(**pit));
   }
 }
@@ -458,14 +458,14 @@ void Multiplicity_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
   histo.Initialize(m_xmin,m_xmax,m_nbins);
   for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
        pit!=particlelist.end();++pit) {
-    double phi=(*pit)->Momentum().Theta(leadingjet);
+    double phi=(*pit)->Momentum().DPhi(leadingjet);
     if (perp*(ATOOLS::Vec3D)(*pit)->Momentum()<0.0) phi*=-1.0;
     phi+=1.5*M_PI;
-    while (phi>2.0*M_PI) phi-=2.0*M_PI;
+    while (phi>=2.0*M_PI) phi-=2.0*M_PI;
     while (phi<0.0) phi+=2.0*M_PI;
-    histo.Add(phi,weight);
+    histo.Add(phi/M_PI*180.,weight);
   }
-  for (size_t i=1;i<=(size_t)p_histo->Nbin();++i) {
+  for (size_t i=1;i<=(size_t)p_histo->Nbin()-1;++i) {
     m_histogram.Add(histo.BinXMean(i),histo.BinContent(i),ncount);
   }
 }
