@@ -353,9 +353,10 @@ void Final_Selector::Select2(Particle_List * pl,Final_Correlator_Map::iterator i
     for (Particle_List::iterator pit2=pl->begin();pit2!=pl->end();++pit2) {
       if (flav1.Includes((*pit)->Flav()) && flav2.Includes((*pit2)->Flav()) && pit!=pit2) {
 	hit = DeltaRSelect((*pit)->Momentum(),(*pit2)->Momentum(),it->second.r_min);
-	break;
+	if (hit) break;
       }
     }
+    if (hit) break;
   } 
   if (hit) {
     for (Particle_List::iterator pit=pl->begin();pit!=pl->end();) {
