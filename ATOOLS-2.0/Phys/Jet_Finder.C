@@ -17,7 +17,6 @@ void Jet_Finder::Init(const AMATOOLS::Vec4D * p)
   if (m_nin==2) {
     switch (m_type) {
     case 4 : 
-      // msg.Tracking()<<"Jet_Finder::Init : process-type hadron-hadron."<<std::endl;
       return;
     case 3 : {
       msg.Error()<<"Jet_Finder::Init : process-type "<<m_type
@@ -30,7 +29,6 @@ void Jet_Finder::Init(const AMATOOLS::Vec4D * p)
       return;
     }  
     case 1 : {
-      // msg.Tracking()<<"Jet_Finder::Init : process-type lepton-lepton."<<std::endl;
       m_sprime   = (p[0]+p[1]).Abs2();
       m_cms_boost = Poincare(p[0]+p[1]);
       return;
@@ -55,9 +53,6 @@ double * Jet_Finder::ActualValue() {
 Jet_Finder::Jet_Finder(double _ycut,int _type=1) : 
   p_value(NULL), p_frame(NULL), m_ycut(_ycut), m_type(_type) , m_jet_alg(1)
 {
-  AORGTOOLS::msg.Debugging()<<"Initialize the Jet_Finder : "<<std::endl
-			    <<"   Jetalg = "<<m_jet_alg<<", type = "<<m_type
-			    <<", ycut = "<<m_ycut<<std::endl;
   rpa.gen.SetYcut(_ycut);
 
   m_name    = std::string("Jetfinder");
@@ -82,7 +77,6 @@ bool Jet_Finder::ConstructJets(const APHYTOOLS::Parton_List * parts,
     flavsin[i] = (*parts)[i]->Flav();
   }
   if ( (flavsin[0].Strong()) || (flavsin[1].Strong()) || (m_type != 1) ) {
-    //    msg.Out()<<"WARNING: Jet_Finder::ConstructJets : This is not completely tested yet! "<<std::endl;
     if (m_type==1) m_type=4;  // assume hadron hadron
   }
 
@@ -192,9 +186,6 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
 Jet_Finder::Jet_Finder(int _n,Flavour * _fl,double _ycut,int _jetalg,int _type) : 
   p_value(NULL),p_frame(NULL),m_ycut(_ycut), m_jet_alg(_jetalg), m_type(_type) 
 {
-  AORGTOOLS::msg.Debugging()<<"Initialize the <"<<_n<<"> Jet_Finder : "<<std::endl
-			    <<"   Jetalg = "<<m_jet_alg<<", type = "<<m_type
-			    <<", ycut = "<<m_ycut<<std::endl;
   rpa.gen.SetYcut(_ycut);
 
   m_name = std::string("Jetfinder");
@@ -237,13 +228,7 @@ bool Jet_Finder::Trigger(const AMATOOLS::Vec4D * p)
 
   Init(moms);
 
-  //msg.Out()<<"In Jet_Finder::Trigger. Before boosting :"<<std::endl;
-  //for (int i=0;i<m_nin+m_nout;i++) msg.Out()<<"   "<<i<<" th mom : "<<p[i]<<std::endl;
-
   BoostInFrame(moms);
-
-  //msg.Out()<<"In Jet_Finder::Trigger. Before loop :"<<std::endl;
-  //for (int i=0;i<m_nin+m_nout;i++) msg.Out()<<"   "<<i<<" th mom : "<<moms[i]<<std::endl;
 
   int    j,k;
   bool   trigger = 1;
@@ -263,8 +248,6 @@ bool Jet_Finder::Trigger(const AMATOOLS::Vec4D * p)
   }
   BoostBack(moms);
 
-  //msg.Out()<<"In Jet_Finder::Trigger. After loop :"<<std::endl;
-  //for (int i=0;i<m_nin+m_nout;i++) msg.Out()<<"   "<<i<<" th mom : "<<moms[i]<<std::endl;
   delete [] moms;
 
   p_value[0] = ymin;
@@ -282,7 +265,6 @@ double Jet_Finder::PTij(AMATOOLS::Vec4D p1,AMATOOLS::Vec4D p2)
     }
     else 
       pt12_2        = 2.*Min(pt1_2,pt2_2) * (Coshyp(DEta12(p1,p2)) - DPhi12(p1,p2));
-    //    cout<<" ptij = "<<pt12_2<<endl;
   }
   else {
     pt12_2        = 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2));
@@ -338,13 +320,6 @@ bool Jet_Finder::TwoJets(double & E2,double & z,double & costheta,bool mode)
     msg.Debugging()<<"JETFINDER METHOD STILL NOT IMPLEMENTED !!!!"<<std::endl;
   }
   else {
-    /*
-    std::cout<<" ycut="<<m_ycut<<std::endl;
-    std::cout<<" sprime="<<m_sprime<<std::endl;
-    std::cout<<" z     ="<<z<<std::endl;
-    std::cout<<" E2    ="<<E2<<std::endl;
-    std::cout<<" costheta    ="<<costheta<<std::endl;
-    */
     pt12_2 = 2.*E2*sqr(Min(z,1.- z))*(1.-costheta);
     if (pt12_2 < m_sprime * m_ycut) return 0;
   }
@@ -353,11 +328,8 @@ bool Jet_Finder::TwoJets(double & E2,double & z,double & costheta,bool mode)
 
 void Jet_Finder::BuildCuts(Cut_Data * cuts) 
 {
-  msg.Debugging()<<"In Jet_Finder::BuildCuts"<<std::endl;
-  // Loop over final state particles.
   for (int i=m_nin; i<m_nin+m_nout; ++i) {
     cuts->energymin[i] = m_fl[i].Mass();
-    // strong interacting particles first.
     if (m_fl[i].Strong()) {                
       /* 
 	 minimal energies : 

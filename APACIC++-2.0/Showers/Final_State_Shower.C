@@ -17,7 +17,6 @@ using namespace AMATOOLS;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 using std::endl;
-using std::cout;
 
 //-----------------------------------------------------------------------
 //--------------------------- Constructors ------------------------------
@@ -42,22 +41,16 @@ Final_State_Shower::~Final_State_Shower()
 
 int Final_State_Shower::PerformShower(Tree * tree,bool jetveto) 
 {
-  /*
-    msg.Debugging()<<"----------------------------------------------------------"<<std::endl
-    <<"Final_State_Shower::PerformShower "<<std::endl;
-  */
   p_kin->SetJetVeto(jetveto);
 
   m_ini_partons.clear();
   int stat=InitializeJets(tree,tree->GetRoot());
 
   if (stat) {
-    //msg.Tracking()<<" Now DoKinematics "<<std::endl;
     if (!p_kin->DoKinematics(tree->GetRoot())) {
       msg.Error()<<"Error in Final_State_Shower : "<<std::endl
 		 <<"Final_State_Shower::PerformShower : "
 		 <<"Kinematics did not work out."<<std::endl;
-      //std::cout<<tree<<std::endl;
 
       return 0;
     }
@@ -73,29 +66,14 @@ int Final_State_Shower::PerformShower(Tree * tree,bool jetveto)
 
 void Final_State_Shower::FirstTimelikeFromSpacelike(Tree * tree,Knot* mo,bool jetveto,double sprime,double z)
 {
-  //  msg.Debugging()<<"-----------------------------------------"<<std::endl
-  //	 <<"Final_State_Shower::FirstTimelikeFromSpacelike for Knot "
-  //	 <<mo->kn_no<<":"<<std::endl
-  //	 <<"    Knot has E2/t : "<<mo->E2<<"/"<<mo->t<<std::endl;
   p_kin->SetJetVeto(jetveto);
 
-  // *AS* no fs interf.
-//   Reset(mo);
-//   return;
-
-
-  msg.Tracking()<<" in Final_State_Shower::FirstTimelikeFromSpacelike for Knot ("<<mo->kn_no<<")"<<endl;
   Knot * gr = mo ->prev;
   Knot * si = gr ->right;
-  msg.Tracking()<<"("<<si->kn_no<<")  : "<<si->part->Momentum()<<endl;
   if (mo->thcrit!=M_PI) {
     double th1c   = sqrt( dabs(si->t)/((1.- si->z)*si->E2));
-    //    cout<<" setting thcrit from "<<mo->thcrit<<" to "<<th1c<<endl;
     mo->thcrit=th1c;
   }
-
-  //  mo->thcrit=M_PI;   // *AS* HACK!!!!
-
 
   if (mo->left && mo->right) {
     EstablishRelations(mo,mo->left,mo->right);
@@ -116,11 +94,8 @@ void Final_State_Shower::FirstTimelikeFromSpacelike(Tree * tree,Knot* mo,bool je
     Flavour flavs[2];
     for (;;) {
       if (p_sud->Dice(mo)) {
-	// update E2
-	//msg.Debugging()<<" old (E2,t) = "<<mo->E2<<","<<mo->t<<std::endl;
 	double test_e4  =((1./z-1.)*sprime - mo->t)/(2.*sqrt(sprime));
 	mo->E2=sqr(test_e4);
-	//msg.Debugging()<<" new (E2,t) = "<<mo->E2<<","<<mo->t<<std::endl;
 
 	// init daughters
 	flavs[0]  = p_sud->GetFlB();
@@ -128,7 +103,6 @@ void Final_State_Shower::FirstTimelikeFromSpacelike(Tree * tree,Knot* mo,bool je
 	InitDaughters(tree,mo,flavs,1);
 	if (EvolveJet(tree,mo)) return;
       }
-      //msg.Debugging()<<"     no branch found ! Sud->Dice yielded a zero result."<<std::endl; 
     
       Reset(mo);
       return;
@@ -148,9 +122,6 @@ bool Final_State_Shower::SetAllColours(Knot * mo) {
 
 bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
 {
-  msg.Debugging()<<"Test :"<<mo->part->Flav()<<"/"<<mo->part->GetFlow()<<endl
-		 <<"      "<<mo->part->Number()<<" "<<mo->part->Momentum()<<endl;
-  msg.Debugging()<<"      "<<mo->part->GetFlow(1)<<"/"<<mo->part->GetFlow(2)<<endl;
   if (!mo) {
     msg.Error()<<"ERROR in Final_State_Shower::SetColours()"<<std::endl
 	       <<"    void mother knot."<<std::endl;
@@ -205,43 +176,27 @@ bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
   Knot * d1 = mo->left;
   Knot * d2 = mo->right;
 
-  if (all_colors_known) {
-    msg.Tracking()<<"in Final_State_Shower::SetColours()"<<std::endl
-		  <<"    all colors known for "<<mo->part->Flav()<<" -> "
-		  <<d1->part->Flav()<<" + "<<d2->part->Flav()<<std::endl;
-    
-    return ( SetColours(d1,kin) && SetColours(d2,kin) );
-  }
-  else msg.Tracking()<<"Some colours unknown ..."<<endl;
+  if (all_colors_known) return ( SetColours(d1,kin) && SetColours(d2,kin) );
 
   Knot * partner, * nopart;
   if (mo->part->Flav().Strong()) {
     if (mo->part->Flav().IsQuark()) {
-      msg.Tracking()<<"Mother is quark : "<<mo->part->Flav()<<endl;
       partner = d1; nopart = d2;
       if (d2->part->Flav().IsQuark()) {
 	partner = d2;
 	nopart  = d1;
       }
-      msg.Tracking()<<"Daughter/partner : "<<partner->part->Flav()<<" "<<nopart->part->Flav()<<endl;
       if ((partner->part->Flav().IsQuark()) && (partner->part->Flav().IsAnti()) && 
 	  (nopart->part->Flav().IsGluon())) {
 	partner->part->SetFlow(2,-1);
 	nopart->part->SetFlow(1,partner->part->GetFlow(2));
 	nopart->part->SetFlow(2,mo->part->GetFlow(2));
-	msg.Tracking()<<"Daughter/partner : "
-	    <<partner->part->GetFlow(1)<<" "<<partner->part->GetFlow(2)<<"  : "
-	    <<nopart->part->GetFlow(1)<<" "<<nopart->part->GetFlow(2)<<endl;
       } 
       if ((partner->part->Flav().IsQuark()) && (!partner->part->Flav().IsAnti()) && 
 	  (nopart->part->Flav().IsGluon())) {
-	msg.Tracking()<<"try to set colours ..."<<endl;
 	partner->part->SetFlow(1,-1);
-	msg.Tracking()<<"try to set colours ... 1 "<<mo->part->GetFlow(1)<<endl;
 	nopart->part->SetFlow(1,mo->part->GetFlow(1));
-	msg.Tracking()<<"try to set colours ... 2 "<<endl;
 	nopart->part->SetFlow(2,partner->part->GetFlow(1));
-	msg.Tracking()<<"try to set colours ... 3 "<<endl;
       } 
       if ( (partner->part->Flav().IsQuark()) && (!(nopart->part->Flav().Strong())) ) {
 	partner->part->SetFlow(1,mo->part->GetFlow(1));
@@ -249,8 +204,6 @@ bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
       }
     } 
     else if (mo->part->Flav().IsGluon()) {
-      msg.Tracking()<<"Mother is gluon : "<<mo->part->Flav()<<endl;
-      msg.Debugging()<<"g->gg :"<<mo->part->GetFlow(1)<<"/"<<mo->part->GetFlow(2)<<endl;
       if (mo->prev) {
 	if ( (d1->part->Flav().IsQuark()) && (d2->part->Flav().IsQuark())) {
 	  if (d1->part->Flav().IsAnti()) {
@@ -263,7 +216,6 @@ bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
 	  }
 	}
 	else if ( (d1->part->Flav().IsGluon()) && (d2->part->Flav().IsGluon())) {
-	  msg.Debugging()<<"g->gg :"<<mo->part->GetFlow(1)<<"/"<<mo->part->GetFlow(2)<<endl;
 	  Knot * au = mo->prev->left;
 	  if (au == mo) au = mo->prev->right;
 
@@ -281,8 +233,6 @@ bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
 	    }
 	  }
 	  else {  // ie. single gluon (from hard event - connected to initial states)
-	    // dice since we do not know better here
-	    // we have to work on that !!!!
 	    if (ran.Get()<0.5) {
 	      partner=d1;
 	      nopart=d2;
@@ -308,7 +258,6 @@ bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
     }
   }
   else {
-      msg.Tracking()<<"Mother is colour neutral : "<<mo->part->Flav()<<endl;
     // colour neutral mother
     if ((d1->part->Flav().Strong()) && (d2->part->Flav().Strong())) {      
       if ( (d1->part->Flav().IsQuark()) && (d2->part->Flav().IsQuark())) {
@@ -329,7 +278,6 @@ bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
 	d2->part->SetFlow(1,d1->part->GetFlow(2));
       }
       else {
-
 	msg.Error()<<"ERROR in Final_State_Shower::SetColours()"<<std::endl
 		   <<"    case not covered : colourless "<<mo->part->Flav()<<" -> "
 		   <<d1->part->Flav()<<" + "<<d2->part->Flav()<<std::endl;
@@ -337,10 +285,6 @@ bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
       }
     }
   }
-  msg.Events()<<"SetColours : "
-	      <<mo->part->Flav()<<" ("<<mo->part->GetFlow(1)<<" "<<mo->part->GetFlow(2)<<")"
-	      <<d1->part->Flav()<<" ("<<d1->part->GetFlow(1)<<" "<<d1->part->GetFlow(2)<<")"
-	      <<d2->part->Flav()<<" ("<<d2->part->GetFlow(1)<<" "<<d2->part->GetFlow(2)<<")"<<std::endl;
 
   return ( SetColours(d1,kin) && SetColours(d2,kin) );
 }
@@ -348,80 +292,70 @@ bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
 
 void Final_State_Shower::EstablishRelations(Knot * mo, Knot * d1,Knot * d2) {
   if (!d1 || !d2 || !mo) {
-    cout<<" WARNING:Final_State_Shower::EstablishRelations() called with"<<endl;
-    if (mo) cout<<"mo :"<<mo<<endl; else cout<<"mo : 0x0"<<endl;
-    if (d1) cout<<"d1 :"<<d1<<endl; else cout<<"d1 : 0x0"<<endl;
-    if (d2) cout<<"d2 :"<<d2<<endl; else cout<<"d2 : 0x0"<<endl;
+    msg.Error()<<" WARNING:Final_State_Shower::EstablishRelations() called with"<<endl;
+    if (mo) msg.Error()<<"mo :"<<mo<<endl; else msg.Error()<<"mo : 0x0"<<endl;
+    if (d1) msg.Error()<<"d1 :"<<d1<<endl; else msg.Error()<<"d1 : 0x0"<<endl;
+    if (d2) msg.Error()<<"d2 :"<<d2<<endl; else msg.Error()<<"d2 : 0x0"<<endl;
     return;
   }
-    // set color conections (if not jet known)
-    APACIC::Final_State_Shower::SetColours(mo,0);
-
-    Vec3D vec1 = Vec3D(d1->part->Momentum());
-    Vec3D vec2 = Vec3D(d2->part->Momentum());
-    //    double th_old  = acos(vec1*vec2/(vec1.Abs()*vec2.Abs()));
-    double t_mo = mo->part->Momentum().Abs2();
-    double E_mo= mo->part->Momentum()[0];
-
-    // using shower variables
-    //    double th  = 
-    //    cout<<" th_old "<<th_old<<std::endl;
-    double th  = sqrt( t_mo/(mo->z*(1.- mo->z)))/E_mo;
-    //    cout<<" fs th in establish="<<th<<std::endl;
-
-    // thcrit : approximation (for small t):
-    if (mo->part->Flav().Strong()) {
-      if ((d1->part->Flav().Strong()) && (d2->part->Flav().Strong())) {
-	if ((d1->E2) > (d2->E2)) {
-	  d1->t      = mo->t;
-	  d1->thcrit = mo->thcrit;
-	  d2->t      = t_mo;
-	  d2->thcrit = th;
-	}
-	else {
-	  d1->t      = t_mo;
-	  d1->thcrit = th;
-	  d2->t      = mo->t;
-	  d2->thcrit = mo->thcrit;
-	}
-      }
-      else if (!(d1->part->Flav().Strong()) && (d2->part->Flav().Strong())) {
-	d1->t      = t_mo;
-	d1->thcrit = M_PI;
-	d2->t      = mo->t;
-	d2->thcrit = mo->thcrit;
-      }
-      else if ((d1->part->Flav().Strong()) && !(d2->part->Flav().Strong())) {
+  // set color conections (if not jet known)
+  APACIC::Final_State_Shower::SetColours(mo,0);
+  
+  Vec3D vec1 = Vec3D(d1->part->Momentum());
+  Vec3D vec2 = Vec3D(d2->part->Momentum());
+  double t_mo = mo->part->Momentum().Abs2();
+  double E_mo= mo->part->Momentum()[0];
+  
+  double th  = sqrt( t_mo/(mo->z*(1.- mo->z)))/E_mo;
+  if (mo->part->Flav().Strong()) {
+    if ((d1->part->Flav().Strong()) && (d2->part->Flav().Strong())) {
+      if ((d1->E2) > (d2->E2)) {
 	d1->t      = mo->t;
 	d1->thcrit = mo->thcrit;
-	d2->t      = t_mo;
-	d2->thcrit = M_PI;
-      }
-    }
-    else {
-      if ((d1->part->Flav().Strong()) && (d2->part->Flav().Strong())) {
-	d1->t      = t_mo;
-	d1->thcrit = th;
 	d2->t      = t_mo;
 	d2->thcrit = th;
       }
       else {
 	d1->t      = t_mo;
-	d1->thcrit = M_PI;
-	d2->t      = t_mo;
-	d2->thcrit = M_PI;
+	d1->thcrit = th;
+	d2->t      = mo->t;
+	d2->thcrit = mo->thcrit;
       }
     }
-    mo->t = t_mo;
-
+    else if (!(d1->part->Flav().Strong()) && (d2->part->Flav().Strong())) {
+      d1->t      = t_mo;
+      d1->thcrit = M_PI;
+      d2->t      = mo->t;
+      d2->thcrit = mo->thcrit;
+    }
+    else if ((d1->part->Flav().Strong()) && !(d2->part->Flav().Strong())) {
+      d1->t      = mo->t;
+      d1->thcrit = mo->thcrit;
+      d2->t      = t_mo;
+      d2->thcrit = M_PI;
+    }
+  }
+  else {
+    if ((d1->part->Flav().Strong()) && (d2->part->Flav().Strong())) {
+      d1->t      = t_mo;
+      d1->thcrit = th;
+      d2->t      = t_mo;
+      d2->thcrit = th;
+    }
+    else {
+      d1->t      = t_mo;
+      d1->thcrit = M_PI;
+      d2->t      = t_mo;
+      d2->thcrit = M_PI;
+    }
+  }
+  mo->t = t_mo; 
 }
 
 
 void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Parton_List * pl) 
 {
   if (!kn) return;
-  //msg.Debugging()<<"----------------------------------------------------------"<<std::endl
-  //	 <<"Final_State_Shower::ExtractPartons for Knot "<<kn->kn_no<<std::endl;
   int number;
   if (kn->part->Info()=='H') {
     /* 
@@ -506,38 +440,19 @@ bool Final_State_Shower::TestShower(Tree * tree)
 {
   bool do_ana=1;
   
-  //----------------------------------------
-  if (do_ana) {
-    // Initialise Histos
-  }
   Primitive_Analysis ana;
-  //  ana.AddObservable(new Shower_Observables(11,1.e-6,1.,180,0));
-  
-  //  Jetrates * sobs =new Jetrates(11,1.e-6,1.,60,0);
   Jetrates * sobs =new Jetrates(11,1.e-6,1.,180,0);
   ana.AddObservable(sobs);
   ana.AddObservable(new Multiplicity(00,-0.5,50.5,51,0));
-  //----------------------------------------
   
   int number;
   double E2 = sqr(rpa.gen.Ecms());
   double E  =rpa.gen.Ecms()*0.5;
-  
-  
-  
-  
-  //  Ran.ReadInStatus("RandomA.dat",20);
-  //  Ran.ReadInStatus("RandomB.dat",23);
-  //  Ran.ReadInStatus("RandomC.dat",31); // nan Daughters
-  //  Ran.ReadInStatus("RandomD.dat",35); // nan 
-  //  Ran.ReadInStatus("RandomE.dat",339); // ycut!
   for (int i=1;i<=rpa.gen.NumberOfEvents();i++) {
     if (i%2500==0) {
       msg.Out()<<" "<<i<<" th event "<<std::endl;
-      //      msg.Out()<<" ran"<<Ran.WriteOutStatus("RandomE.dat")<<std::endl;
     }
     
-    //msg.Events()<<"++++++++++++++++++++++++++++"<<i<<" th event +++++++++++++++++++++++++"<<std::endl;
     tree->Reset();
     InitTwojetTree(tree,E2);
     if (!PerformShower(tree,0)) return 0;     // *AS*   (tree,0) = no jetveto! (default)
@@ -548,33 +463,17 @@ bool Final_State_Shower::TestShower(Tree * tree)
       pl.push_back(new Parton(0,Flavour(kf::e),Vec4D(E,0,0,E)));
       pl.push_back(new Parton(1,Flavour(kf::e).Bar(),Vec4D(E,0,0,-E)));
       ExtractPartons(tree->GetRoot(),&pl);
-      for (int k=0; k<pl.size(); ++k) {
-	//msg.Events()<<pl[k];
-      }
-      // Cluster
       ana.DoAnalysis(pl,1.);
-      
-      
+            
       for (int i=0; i<pl.size();++i) {
 	delete pl[i];
       }
       pl.clear();
-      
-      /*
-	if (sobs->ymax>0.2) {
-	std::cout<<" ymax="<<sobs->ymax<<std::endl;
-	std::cout<<" Tree:"<<tree<<std::endl;
-	abort();
-	}
-      */
     }
     
     
   }
-  //ana.FinishAnalysis("testout_shower_GE125a",0);
   ana.FinishAnalysis("apa_GX_125",0);
-  //msg.Events()<<"Final_State_Shower::TestShower : "
-  //      <<"Terminated loops over events successfully."<<std::endl;
   return 1;
 }
 
@@ -605,16 +504,8 @@ int Final_State_Shower::InitializeJets(Tree * tree,Knot * mo,int init_rel)
 
   bool decay1 = (d1->stat>0), decay2 = (d2->stat>0);
 
-  // first==2  means "pythia kinematics"
   int first=1;
- //  
-  if (mo==tree->GetRoot() && decay1 && decay2) first=2;  // two jet event
-
-  /*
-    msg.Tracking()<<"Final_State_Shower::InitializeJets : Try to evolve daughters :"<<std::endl
-    <<"    "<<d1->kn_no<<" "<<d1->part->Flav()<<" "<<decay1<<" "<<d1->t<<" / "
-    <<d2->kn_no<<" "<<d2->part->Flav()<<" "<<decay2<<" "<<d2->t<<std::endl;
-  */
+  if (mo==tree->GetRoot() && decay1 && decay2) first=2; 
   if ((decay1) || (decay2)) {
     bool accept = SmearDaughters(mo);
     for (;;) {
@@ -622,7 +513,7 @@ int Final_State_Shower::InitializeJets(Tree * tree,Knot * mo,int init_rel)
 	accept = 1;
 	if (decay1) accept = EvolveJet(tree,d1) && accept;
 	if (decay2) accept = EvolveJet(tree,d2) && accept;
-	if (accept) break; //return 1;
+	if (accept) break; 
 	else {
 	  mo->z  = z_tmp;
 	  d1->E2 = mo->z*mo->z*mo->E2;
@@ -637,13 +528,10 @@ int Final_State_Shower::InitializeJets(Tree * tree,Knot * mo,int init_rel)
 
   int ok=1; int ej=0;
   if (!decay1) {
-    if (init_rel) EstablishRelations(d1,d1->left,d1->right);
-
     if (init_rel) {
-      cout<<" rel set : "<<endl;
+      EstablishRelations(d1,d1->left,d1->right);
       OutputTree(tree);
-    }
-    //    cout<<" calling InitializeJets("<<d1->kn_no<<")"<<endl;
+    } 
     int ok1=InitializeJets(tree,d1);
     if (ok1==3) ej=3;
     ok = ok && ok1;
@@ -660,10 +548,8 @@ int Final_State_Shower::InitializeJets(Tree * tree,Knot * mo,int init_rel)
     }
   }
   if (!decay2) {
-    if (init_rel) EstablishRelations(d2,d2->left,d2->right);
-
     if (init_rel) {
-      cout<<" rel set : "<<endl;
+      EstablishRelations(d2,d2->left,d2->right);
       OutputTree(tree);
     }
     int ok2=InitializeJets(tree,d2);
@@ -689,7 +575,7 @@ int Final_State_Shower::InitializeJets(Tree * tree,Knot * mo,int init_rel)
 }
 
 bool  Final_State_Shower::ExtraJetCheck(Knot * mo, Knot * d1, Knot * d2) {
-  return p_kin->ExtraJetCheck(0,d1,d2); // *AS* test E2 dependence
+  return p_kin->ExtraJetCheck(0,d1,d2); 
 }
 
 bool  Final_State_Shower::ExtraJetCheck() const {
@@ -751,16 +637,6 @@ bool Final_State_Shower::SmearDaughters(Knot * mo) {
     if (!(d2->part->Flav().IsStable()) && (d2->stat))
       t2 = mass22 + mass2*width2 * tan(ran.Get()*yrange2 + ymin2);
     if ( t1+t2+sqrt(2.*t1*t2) < (mo->t)) {
-      msg.Debugging()<<"Final_State_Shower::SmearDaughters :"<<std::endl
-		     <<"    Shifted t of "<<d1->part->Flav()
-		     <<" from "<<d1->tout<<" to "<<t1<<std::endl
-		     <<"    Shifted t of "<<d2->part->Flav()
-		     <<" from "<<d2->tout<<" to "<<t2<<std::endl
-		     <<"    Mother :"<<mo->t<<std::endl
-		     <<"    Knot 1 :"<<mass1<<", "<<width1
-		     <<" -> "<<yrange1<<", "<<ymin1<<std::endl
-		     <<"    Knot 2 :"<<mass2<<", "<<width2
-		     <<" -> "<<yrange2<<", "<<ymin2<<std::endl;
       d1->tout = t1;
       d2->tout = t2;
       return 1;
@@ -782,16 +658,14 @@ void Final_State_Shower::InitTwojetTree(Tree * tree,double scale) {
   mo->costh   = -1.; 
   mo->thcrit  = start_th;
   mo->phi     = 2.*M_PI*ran.Get();
-  mo->stat    = 1;  // *AS* ? 0
+  mo->stat    = 1;  
 
   //  The daughters are defined and distributed according to
   //  1+cos^2 theta w.r.t. the z-axis.
 
   Flavour mo_flavs[2];
   for(;;) {
-    mo_flavs[0] = Flavour(kf::code(1+int(ran.Get()*4.)));   // *AS* default *5.
-    //    mo_flavs[0] = Flavour(kf::b);
-    //    mo_flavs[0] = Flavour(kf::d);
+    mo_flavs[0] = Flavour(kf::code(1+int(ran.Get()*4.)));   
     if (4.*sqr(mo_flavs[0].PSMass()) < scale) break;
   }
   mo_flavs[1] = mo_flavs[0].Bar();
@@ -842,29 +716,18 @@ void Final_State_Shower::InitTwojetTree(Tree * tree,double scale) {
 bool Final_State_Shower::EvolveJet(Tree * tree,Knot* mo)
 {
   if (!mo->stat) {
-    // it is not possible to dice this knot further down
-    // delete already known daughters, and set mother on its "t_out"
     ResetDaughters(mo);
-    // Q: When is it neccessary to reset daughters?
     return 1;
   }
 
-  // save old status
   double z_tmp = mo->z;
-  /*
-    msg.Debugging()<<"Final_State_Shower::EvolveJet for ("<<mo->kn_no<<"), "
-    <<"      "<<mo->t<<", "<<mo->E2<<", "<<mo->z<<std::endl
-    <<"      "<<mo->left->kn_no<<" "<<mo->left->part->Flav()<<" / "
-    <<mo->right->kn_no<<" "<<mo->right->part->Flav()<<std::endl;
-  */
-  // start evolution
   bool accept1 ,accept2;
   for (;;) {
     if (FillBranch(tree,mo,0)) {
       // select one/two daughter systems and try to evolve them 
       accept1 = EvolveJet(tree,mo->left);
       accept2 = EvolveJet(tree,mo->right);
-      if (accept1 && accept2) return 1; // successful
+      if (accept1 && accept2) return 1; 
       else {
 	// reset to original (massless) kinematics
 	mo->z         = z_tmp;
@@ -881,12 +744,12 @@ bool Final_State_Shower::EvolveJet(Tree * tree,Knot* mo)
       if (enable2ndchance) {
 	mo->left  = 0;  
 	mo->right = 0;
-	mo->stat  = 3;  // means, it needs to be diced again
+	mo->stat  = 3;  
       }
       else {
 	Reset(mo);
       }
-      return 0; // fail
+      return 0; 
     }
   }
 }
@@ -895,7 +758,7 @@ bool Final_State_Shower::FillBranch(Tree * tree,Knot* mo,int first)
 {
   Knot * d1 = mo->left;
   Knot * d2 = mo->right;
-  if (!(first) && (mo->t <= mo->tout) ) return 0; // failed
+  if (!(first) && (mo->t <= mo->tout) ) return 0; 
 
 
   Flavour d1_flavs[2];
@@ -914,7 +777,7 @@ bool Final_State_Shower::FillBranch(Tree * tree,Knot* mo,int first)
       if (p_sud->Dice(d1,g)) { // determine t,z, and flavours
 	d1_flavs[0]  = p_sud->GetFlB();
 	d1_flavs[1]  = p_sud->GetFlC();
-	d1->stat=1;   // *AS*
+	d1->stat=1;
 	diced1=1;
       }   
       else Reset(d1);
@@ -924,7 +787,7 @@ bool Final_State_Shower::FillBranch(Tree * tree,Knot* mo,int first)
       if (p_sud->Dice(d2,g)) { // determine t,z, and flavours
 	d2_flavs[0]  = p_sud->GetFlB();
 	d2_flavs[1]  = p_sud->GetFlC();
-	d2->stat=1;   // *AS*
+	d2->stat=1;
 	diced2=1;
       }    
       else Reset(d2);
@@ -934,7 +797,7 @@ bool Final_State_Shower::FillBranch(Tree * tree,Knot* mo,int first)
     if (first==2) 
       p_kin->CheckZRange(mo);
 
-    if ((d1->stat != 3) && (d2->stat != 3)) { // *AS*
+    if ((d1->stat != 3) && (d2->stat != 3)) {
       if (p_kin->Shuffle(mo,first)) { 
 	if (d1->stat) {
 	  InitDaughters(tree,d1,d1_flavs,diced1); 
@@ -944,7 +807,7 @@ bool Final_State_Shower::FillBranch(Tree * tree,Knot* mo,int first)
 	  InitDaughters(tree,d2,d2_flavs,diced2); 
 	  diced2=0;
 	}
-	return 1;  // successful
+	return 1; 
       }
     }
     // exit if both daughters can not be diced down further
@@ -978,8 +841,6 @@ bool Final_State_Shower::ChooseDaughter(Knot * mo)
 void Final_State_Shower::InitDaughters(Tree * tree,Knot * mo,Flavour * mo_flavs, bool diced) 
 { 
   if (!mo->left) {
-    // Initialize new knots, provide them with flavours and link them
-    //    cout<<"new knots..."<<diced<<endl;
     mo->left        = tree->NewKnot();
     mo->right       = tree->NewKnot();
   }
@@ -1005,7 +866,6 @@ void Final_State_Shower::InitDaughters(Tree * tree,Knot * mo,Flavour * mo_flavs,
   // Reset kinematics
   mo->left->t          = mo->t; 
   mo->thcrit           = sqrt( mo->t/(mo->z*(1.- mo->z)*mo->E2) );
-  //  cout<<" fs th in daughters="<<mo->thcrit<<std::endl;
   double th            = M_PI;
 
   if ((mo->left->part->Flav().Strong()) && (mo->right->part->Flav().Strong())) th = mo->thcrit;
@@ -1059,8 +919,6 @@ void Final_State_Shower::OutputTree(Tree * tree)
     msg.Out()<<"final Tree:"<<std::endl<<tree<<std::endl
 	     <<"Total 4 Mom = "<<GetMomentum(tree->GetRoot(),number);
     msg.Out()<<" for "<<number<<" FS particles."<<std::endl;
-    // Note: we NEED two "msg.Out()" since otherwise "number" is print
-    //       before it is calculated!!
   }
 }
 
@@ -1070,10 +928,10 @@ Vec4D  Final_State_Shower::GetMomentum(Knot * mo, int & number) {
     Vec4D p     = GetMomentum(mo->left,number) + GetMomentum(mo->right,number);
     Vec4D ptest = mo->left->part->Momentum() + mo->right->part->Momentum();
     if (!(ptest==mo->part->Momentum())) 
-      msg.Tracking()<<" momentum conservation violation in Knot :"<<mo->kn_no<<std::endl
-		    <<"          is: "<<ptest<<"  "<<p.Abs2()<<std::endl
-		    <<"   should be:"<<mo->part->Momentum()
-		    <<"  "<<mo->part->Momentum().Abs2()<<std::endl;
+      msg.Events()<<" momentum conservation violation in Knot :"<<mo->kn_no<<std::endl
+		  <<"          is: "<<ptest<<"  "<<p.Abs2()<<std::endl
+		  <<"   should be:"<<mo->part->Momentum()
+		  <<"  "<<mo->part->Momentum().Abs2()<<std::endl;
     return p;
   }
   number++;

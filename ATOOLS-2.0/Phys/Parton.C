@@ -2,43 +2,36 @@
 #include "Blob.H"
 #include "Random.H"
 #include "Run_Parameter.H"
+#include <iomanip.h>
 
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 using namespace AMATOOLS;
 
 std::ostream& APHYTOOLS::operator<<(std::ostream& str,Parton* part) {
+  str<<std::setprecision(4)<<std::setiosflags(ios::left);
   switch (part->Status()) {
   case 0 : // null entry
     return str<<"--- empty entry ---"<<std::endl;
   case 1 : // active (final state) particle
-    str<<part->Info();
-    str.width(8);
-    str<<part->Flav();
-    str<<' ';
-    str<<part->Number();
-    str<<' ';
-    if (part->ProductionBlob()) str<<" produced in "<<part->ProductionBlob()->Id()<<std::endl<<" ";
-    if (part->DecayBlob())      str<<" decayed in "<<part->DecayBlob()->Id()<<std::endl<<" ";
-    break;
   case 2 : // decayed or fragmented
-    str<<part->Info();
-    str<<'!';
-    str.width(7);
-    str<<part->Flav();
-    str<<'!';
-    str<<part->Number();
-    str<<' ';
-    if (part->ProductionBlob()) str<<" produced in "<<part->ProductionBlob()->Id()<<std::endl<<" ";
-    if (part->DecayBlob())      str<<" decayed in "<<part->DecayBlob()->Id()<<std::endl<<" ";
+    str<<"  "<<std::setw(3)<<part->Info()<<std::setw(1)<<" "
+       <<std::setw(22)<<part->Flav()<<std::setw(1)<<" "
+       <<std::setw(10)<<part->Number()<<std::setw(1)<<" (";
+    if (part->ProductionBlob()) str<<std::setw(5)<<part->ProductionBlob()->Id();
+                           else str<<"     ";
+    if (part->DecayBlob()) str<<" -> "<<std::setw(5)<<part->DecayBlob()->Id();
+                      else str<<" ->      ";
+    str<<std::setw(1)<<") ";
     break;
   case 3 : // documentation line
     return str<<"============================================================"<<std::endl;
   default : // user defined or reserved
     return str<<"--- unrecognized status:"<<part->Status()<<" ---"<<std::endl;
   }
-  str<<"      "<<part->Momentum()<<" "<<part->Momentum().Abs2()
-     <<" colours : ("<<part->GetFlow(1)<<","<<part->GetFlow(2)<<")"<<std::endl;
+  str<<setiosflags(ios::scientific)
+     <<" ["<<part->Momentum()<<", "<<part->Momentum().Abs2()<<"]"
+     <<" ("<<part->GetFlow(1)<<","<<part->GetFlow(2)<<")";
   return str;
 }
 

@@ -170,36 +170,16 @@ Kabbala String_Generator::Get_CZnumber(Complex value,string str)
 
   st2.Cluster(newz.sk,0);
   st2.DeleteMinus(newz.sk);
-  //cout<<"Vor Delete: "<<st2.Tree2String(newz.sk,0)<<endl;
 
   st2.Delete(newz.sk,string("Z[0]"));
 
   if (newz.sk->op==0) {
     if (newz.sk->Str()==string("0")) return zxl[0].value;
   }
-  /*
-  list<sknot*> endpoint;
-  stree.GetEnd(newz.sk,endpoint);
-  for (list<sknot*>::iterator it=endpoint.begin();it!=endpoint.end();++it)
-    (*it)->value = Get_Kabbala((*it)->Str());
-
-  Complex vorher = stree.Evaluate(newz.sk);
-  stree.Simplify(newz.sk);
-  Complex nachher = stree.Evaluate(newz.sk);
-
-  if (!AMATOOLS::IsEqual(vorher,nachher)) {
-    cout<<"Error in String_Generator::Get_CZnumber(): "<<vorher<<";"<<nachher<<endl;
-    //correcting
-    newz.sk = st2.String2Tree(str);
-    st2.Delete(newz.sk,string("Z[0]"));
-  }
-  */ 
   string newstr = st2.Tree2String(newz.sk,0);
   if ( newstr.find(string("+"))==-1 &&
        newstr.find(string("-"))==-1 &&
        newstr.find(string("*"))==-1 ) return Kabbala(newstr,value);
-
-  //cout<<"Taken: "<<newstr<<endl;
 
   newz.sk = stree.String2Tree(newstr);
   newz.value = Number(zxl.size(),value);
@@ -374,7 +354,6 @@ Kabbala String_Generator::Get_Scplxnumber(const int a1,const int a2,Complex valu
       if ((zxl[i].arg[1]==a1) && (zxl[i].arg[0]==a2)) return zxl[i].value;
     }
   }
-  //AORGTOOLS::msg.Error()<<"*****Get_Scplxnumber: "<<a1<<","<<a2<<";"<<value<<endl;  //new Zfunc S
   ZXlist newz;
 
   newz.zlist  = 9;
@@ -399,9 +378,6 @@ void String_Generator::Calculate(Values* val)
 
   for (long int i=1;i<zxl.size();i++) {
     if (zxl[i].on) {
-      //cout<<"Calc Number "<<i<<";type = "<<zxl[i].zlist<<endl;
-      //cout<<"    "<<zxl[i].value.String()<<" = "<<zxl[i].value.Value()<<" "<<endl;
-      
       int* arg = zxl[i].arg;
       switch (zxl[i].zlist) {
       case 0: zxl[i].value = 

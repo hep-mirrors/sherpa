@@ -159,14 +159,6 @@ void Amegic::ReadInProcessfile(string file)
 	  nIS    = ExtractFlavours(IS,plIS,ini);
 	  nFS    = ExtractFlavours(FS,plFS,fin);
 	  njets  = 0;
-	  /*
-	  for (int i=0;i<nFS;i++) { if (FS[i].Strong()) njets++; } 
-	  if (njets>m_maxjet) {
-	    for (int i=0;i<nFS;i++) msg.Out()<<FS[i]<<" ";
-	    msg.Out()<<" -> "<<njets<<endl;
-	    m_maxjet = njets;
-	  }
-	  */
 	  if (nFS>m_maxjet) m_maxjet = nFS;
 	  if ((nIS< 1) || (nIS > 2)) {
 	    msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
@@ -205,7 +197,6 @@ void Amegic::ReadInProcessfile(string file)
 	    nex            = 0;
 	    do {
 	      from.getline(buffer,100);
-	      cout<<"Check : "<<buffer<<endl;
 	      if (buffer[0] != '\%' && strlen(buffer)>0) {
 		buf      = string(buffer);
 		position = buf.find(string("Excluded particles :"));
@@ -228,7 +219,6 @@ void Amegic::ReadInProcessfile(string file)
 		  Shorten(buf);
 		  str<<buf;
 		  str>>order_strong;
-		  cout<<"Found Order strong : "<<order_strong<<endl;
 		}
 
 		position       = buf.find(string("Selector file :"));
@@ -272,15 +262,15 @@ void Amegic::ReadInProcessfile(string file)
 	      }
 	    }
 	    while (position==-1);
-	    msg.Tracking()<<"Read in process :";
-	    for (short int i=0;i<nIS;i++) msg.Tracking()<<" "<<IS[i].Name();
-	    msg.Tracking()<<" -> ";
-	    for (short int i=0;i<nFS;i++) msg.Tracking()<<FS[i].Name()<<" ";
-	    msg.Tracking()<<" EW("<<order_ew<<"), QCD("<<order_strong<<")"<<endl;
+	    msg.Debugging()<<"Read in process :";
+	    for (short int i=0;i<nIS;i++) msg.Debugging()<<" "<<IS[i].Name();
+	    msg.Debugging()<<" -> ";
+	    for (short int i=0;i<nFS;i++) msg.Debugging()<<FS[i].Name()<<" ";
+	    msg.Debugging()<<" EW("<<order_ew<<"), QCD("<<order_strong<<")"<<endl;
 	    if (nex>0) {
-	      msg.Tracking()<<" Excluded particles : ";
-	      for (short int i=0;i<nex;i++) msg.Tracking()<<excluded[i].Name()<<" ";
-	      msg.Tracking()<<endl;
+	      msg.Debugging()<<" Excluded particles : ";
+	      for (short int i=0;i<nex;i++) msg.Debugging()<<excluded[i].Name()<<" ";
+	      msg.Debugging()<<endl;
 	    }
 
 	    if (nIS+nFS>m_nmax) m_nmax = nIS+nFS;
@@ -348,7 +338,6 @@ int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf)
 	    MyStrStream astream;
 	    astream<<ha;
 	    astream>>angle[count];
-	    msg.Debugging()<<"*****Extract_Flavours:angle:"<<pn<<";"<<ha<<";"<<angle[count]<<endl;
 	  }
 	  else {
 	    pp[count]=pn[pn.length()-1];
@@ -369,10 +358,6 @@ int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf)
     }
   }
 
-  msg.Debugging()<<"Count in ExtractFlavours : "<<count<<" : ";
-  for (i=0;i<count;i++) msg.Debugging()<<ii[i]<<" ";
-  msg.Debugging()<<endl;
-  
   fl = new Flavour[count];
   pl = new Pol_Info[count];
   
@@ -424,11 +409,6 @@ int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf)
       pl[i].type[4]=mt::p_t5;pl[i].factor[4]=1.;
     }
   
-    msg.Debugging()<<"*****Extract_Flavours:Pol:  "
-		   <<pl[i].num<<" "<<pl[i].type[0]<<" "<<pl[i].type[1]<<" "
-		   <<pl[i].factor[0]<<" "<<pl[i].factor[1]<<endl
-		   <<"*****Extract_Flavours:Poltype:"<<pc[i]<<pl[i].p_type<<endl;
-    
 #else
     pl[i] = Pol_Info(fl[i]); 
 #endif
@@ -506,7 +486,6 @@ void Amegic::FifoOutput(double wt)
       }
       fifo<<std::setw(16)<<p_procs->Selected()->Momenta()[j][0]<<endl;
     }
-    msg.Debugging()<<"                      -> "<<endl;
     for (int j = nin;j<nin+nout; j++) {
       fifo<<" "<<std::setw(3)<<int(p_procs->Selected()->Flavs()[j])<<" ";
       for (int k=1;k<4;++k)
@@ -525,23 +504,7 @@ bool Amegic::SameEvent()
 
 bool Amegic::UnweightedEvent()
 {
-  if (p_procs->OneEvent()) {
-    msg.Debugging()<<"OneEvent for "<<p_procs->Name()<<" successful !"<<endl
-		   <<"    Selected "<<p_procs->Selected()->Name()<<" as subprocess."<<endl
-		   <<"    Found "<<p_procs->Selected()->NumberOfDiagrams()
-		   <<" Feynman diagrams."<<endl;
-    for (int j = 0;j<p_procs->Selected()->Nin(); j++) {
-      msg.Debugging()<<p_procs->Selected()->Flavs()[j]<<" : "
-		     <<p_procs->Selected()->Momenta()[j]<<endl;
-    }
-    msg.Debugging()<<"                      -> "<<endl;
-    for (int j = 0;j<p_procs->Selected()->Nout(); j++) {
-      msg.Debugging()<<p_procs->Selected()->Flavs()[j+p_procs->Selected()->Nin()]<<" : "
-		     <<p_procs->Selected()->Momenta()[j+p_procs->Selected()->Nin()]<<endl;
-    }
-    msg.Debugging()<<endl;
-    return 1;
-  }
+  if (p_procs->OneEvent()) return 1;
   return 0;
 }
 
@@ -561,22 +524,6 @@ void Amegic::SingleEvents() {
 	  (*p_fifo)<<" conti"<<endl;
 	}
       }
-      if (rpa.gen.Debugging()) {
-	msg.Debugging()<<"OneEvent for "<<p_procs->Name()<<" successful !"<<endl
-		       <<"    Selected "<<p_procs->Selected()->Name()<<" as subprocess."<<endl
-		       <<"    Found "<<p_procs->Selected()->NumberOfDiagrams()
-		       <<" Feynman diagrams."<<endl;
-	for (int j = 0;j<p_procs->Selected()->Nin(); j++) {
-	  msg.Debugging()<<p_procs->Selected()->Flavs()[j]<<" : "
-			 <<p_procs->Selected()->Momenta()[j]<<endl;
-	}
-	msg.Debugging()<<"                      -> "<<endl;
-	for (int j = 0;j<p_procs->Selected()->Nout(); j++) {
-	  msg.Debugging()<<p_procs->Selected()->Flavs()[j+p_procs->Selected()->Nin()]<<" : "
-			 <<p_procs->Selected()->Momenta()[j+p_procs->Selected()->Nin()]<<endl;
-	}
-	msg.Debugging()<<endl;
-      }
     }
   }
 }
@@ -590,24 +537,6 @@ double  Amegic::SameWeightedEvent()
 double Amegic::WeightedEvent()
 {
   double weight=p_procs->WeightedEvent();
-  if (weight>0.) {
-    if (rpa.gen.Debugging()) {
-      msg.Debugging()<<"OneEvent for "<<p_procs->Name()<<" successful !"<<endl
-		     <<"    Selected "<<p_procs->Selected()->Name()<<" as subprocess."<<endl
-		     <<"    Found "<<p_procs->Selected()->NumberOfDiagrams()
-		     <<" Feynman diagrams."<<endl;
-      for (int j = 0;j<p_procs->Selected()->Nin(); j++) {
-	msg.Debugging()<<p_procs->Selected()->Flavs()[j]<<" : "
-		       <<p_procs->Selected()->Momenta()[j]<<endl;
-      }
-      msg.Debugging()<<"                      -> "<<endl;
-      for (int j = 0;j<p_procs->Selected()->Nout(); j++) {
-	msg.Debugging()<<p_procs->Selected()->Flavs()[j+p_procs->Selected()->Nin()]<<" : "
-		       <<p_procs->Selected()->Momenta()[j+p_procs->Selected()->Nin()]<<endl;
-      }
-      msg.Debugging()<<endl;
-    }
-    return weight;
-  }
+  if (weight>0.) return weight;
   return 0.;
 }

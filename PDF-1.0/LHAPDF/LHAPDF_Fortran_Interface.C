@@ -22,19 +22,14 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const APHYTOOLS::Flavour _bun
 {
   m_bunch = _bunch; 
   if (m_bunch==Flavour(kf::p_plus).Bar()) m_anti=-1;
-  msg.Tracking()<<"Try to initialize PDF set according to the Les Houches Accord."<<std::endl
-		<<"  Set = "<<m_set<<" v "<<m_member<<" for "<<m_bunch<<" "<<"/"<<m_anti<<":"<<initlhapdf<<std::endl;
-  
   if (!initlhapdf) {
     initlhapdf = 1;
-    msg.Tracking()<<"Init fortran piece."<<std::endl;
     std::string full = m_path+std::string("/")+m_set+std::string(".LHpdf");
     const char * help;
     help = full.c_str();
     lhapdfinitset_(help);
     lhapdfinit_(m_member);
   }
-  else msg.Tracking()<<"Fortran piece already initialized."<<std::endl;
 
   for (int i=1;i<6;i++) {
     m_partons.push_back(Flavour(kf::code(i)));

@@ -52,7 +52,7 @@ void Event_Handler::PrintGenericEventStructure()
 {
   if (!p_phases->empty()) {
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-      msg.Debugging()<<(*pit)->Type()<<" : "<<(*pit)->Name()<<std::endl;
+      msg.Events()<<(*pit)->Type()<<" : "<<(*pit)->Name()<<std::endl;
     }
   }
 }
@@ -66,14 +66,10 @@ bool Event_Handler::GenerateEvent()
 
   bool flag = 1;
   double weight=1.;
-  msg.Debugging()<<"#################################################################"<<std::endl
-		 <<"#################################################################"<<std::endl;
   while (flag) {
     flag = 0;
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       if ((*pit)->Type()==std::string("Perturbative")) {
-	msg.Debugging()<<"#############"<<std::endl
-		       <<"   Try "<<(*pit)->Name()<<" : "<<m_blobs.size()<<std::endl;
 	if ((*pit)->Treat(&m_blobs,weight)) flag = 1;
       }
     }
@@ -84,15 +80,12 @@ bool Event_Handler::GenerateEvent()
     flag = 0;
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       if ((*pit)->Type()==std::string("Hadronization")) {
-	msg.Debugging()<<"#############"
-		       <<"   Try "<<(*pit)->Name()<<" : "<<m_blobs.size()<<std::endl;
 	if ((*pit)->Treat(&m_blobs,weight)) flag = 1;
       }
     }
   }
 
-  if (rpa.gen.Events())
-    PrintBlobs();
+  if (rpa.gen.Events()) PrintBlobs();
   return 1;
 }
 
@@ -101,7 +94,6 @@ void Event_Handler::CleanUpEvent()
   if (!p_phases->empty()) {
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       (*pit)->CleanUp();
-      msg.Debugging()<<"Cleaned up in "<<(*pit)->Type()<<" : "<<(*pit)->Name()<<std::endl;
     }
   }
   if (!m_blobs.empty()) {

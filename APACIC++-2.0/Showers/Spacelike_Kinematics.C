@@ -14,15 +14,15 @@ Spacelike_Kinematics::Spacelike_Kinematics(double pt2minFS, Data_Read * const da
   double ycut   = AORGTOOLS::rpa.gen.Ycut();
   m_type = 1;
   if (rpa.gen.Beam1().IsLepton() && rpa.gen.Beam2().IsLepton()) {
-    msg.Out()<<" Jet_Finder in Timelike_Kinematics set up  to deal with lepton-lepton collisions "<<endl;
+    msg.Debugging()<<" Jet_Finder in Spacelike_Kinematics set up  to deal with lepton-lepton collisions "<<endl;
     m_type = 1;
   }
   else if ((!rpa.gen.Beam1().IsLepton() && !rpa.gen.Beam2().IsLepton())) {
-    msg.Out()<<" Jet_Finder in Timelike_Kinematics set up  to deal with hadron-hadron collisions "<<endl;
+    msg.Debugging()<<" Jet_Finder in Spacelike_Kinematics set up  to deal with hadron-hadron collisions "<<endl;
     m_type = 4;
   }
   else {
-    cout<<"ERROR: ME_PS_Interface - DIS is not yet implemented in the Jetfinder "<<endl;
+    msg.Error()<<"Error in Spacelike_Kinematics DIS is not yet implemented in the Jetfinder "<<endl;
     m_type = 4;
   }
   jf            = new APHYTOOLS::Jet_Finder(ycut,m_type);
@@ -45,14 +45,6 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
 
   Vec4D o1 = k1->part->Momentum();
   Vec4D o2 = k2->part->Momentum();
-
-  msg.Tracking() <<"Spacelike_Kinematics::InitKinematics : A "<<endl
-   <<"   Vec1 : "<<o1<<" : "<<o1.Abs2()<<" / "<<k1->t<<endl
-   <<"   Vec2 : "<<o2<<" : "<<o2.Abs2()<<" / "<<k2->t<<endl
-   <<"   S    : "<<(o1+o2).Abs2()<<endl;
-
-
-  //  rot           = Poincare(Vec4D::ZVEC,o1);
   Vec4D cms     = o1 + o2;
   
 
@@ -81,10 +73,10 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
 	msg.Out()<<" ERROR in  Spacelike_Kinematics::InitKinematics "<<endl;
       }
       trees[0]->BoRo(boost);
-      if (rpa.gen.Tracking() || error) {
-	msg.Out() <<"Spacelike_Kinematics::InitKinematics : B "<<endl
-		  <<"   Vec1 : "<<o1<<" : "<<o1.Abs2()<<" / "<<k1->t<<endl
-		  <<"   Boo1 : "<<b1<<" : "<<b1.Abs2()<<endl;
+      if (error) {
+	msg.Error() <<"Spacelike_Kinematics::InitKinematics : B "<<endl
+		    <<"   Vec1 : "<<o1<<" : "<<o1.Abs2()<<" / "<<k1->t<<endl
+		    <<"   Boo1 : "<<b1<<" : "<<b1.Abs2()<<endl;
       }
     }
 
@@ -101,12 +93,12 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
       trees[0]->BoRo(boost);
       if (!(o2==v2)) {
 	error=1;
-	msg.Out()<<" ERROR in Spacelike_Kinematics::InitKinematics "<<endl;
+	msg.Error()<<" ERROR in Spacelike_Kinematics::InitKinematics "<<endl;
       }
-      if (rpa.gen.Tracking() || error) {
-	msg.Out() <<"Spacelike_Kinematics::InitKinematics : B "<<endl
-		       <<"   Vec2 : "<<o2<<" : "<<o2.Abs2()<<" / "<<k2->t<<endl
-		       <<"   Boo2 : "<<b2<<" : "<<b2.Abs2()<<endl;
+      if (error) {
+	msg.Error() <<"Spacelike_Kinematics::InitKinematics : B "<<endl
+		    <<"   Vec2 : "<<o2<<" : "<<o2.Abs2()<<" / "<<k2->t<<endl
+		    <<"   Boo2 : "<<b2<<" : "<<b2.Abs2()<<endl;
       }
     }
   }
@@ -114,20 +106,16 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
   k1->part->SetMomentum(v1);
   k2->part->SetMomentum(v2);  
 
-  if (rpa.gen.Tracking() || error) {
-    msg.Out() <<"Spacelike_Kinematics::InitKinematics : C"<<endl
-	      <<"   Vec1 : "<<v1<<" : "<<v1.Abs2()<<" / "<<k1->t<<endl
-	      <<"   Vec2 : "<<v2<<" : "<<v2.Abs2()<<" / "<<k2->t<<endl
-	      <<"   S    : "<<(v1+v2).Abs2()<<" / "<<sprime<<endl;
+  if (error) {
+    msg.Error() <<"Spacelike_Kinematics::InitKinematics : C"<<endl
+		<<"   Vec1 : "<<v1<<" : "<<v1.Abs2()<<" / "<<k1->t<<endl
+		<<"   Vec2 : "<<v2<<" : "<<v2.Abs2()<<" / "<<k2->t<<endl
+		<<"   S    : "<<(v1+v2).Abs2()<<" / "<<sprime<<endl;
   }
 }
 
 bool Spacelike_Kinematics::DoKinematics(Tree ** trees,Knot * active, Knot * partner,int leg, int first) 
 {
-  if (leg==0) msg.Tracking()<<" Spacelike_Kinematics::DoKinematics( I ";
-  else msg.Tracking()<<" Spacelike_Kinematics::DoKinematics( II ";
-  msg.Tracking()<<",("<<active->kn_no<<"), <"<<partner->kn_no<<"> );"<<endl;
-
   if (!active->prev) {
     msg.Tracking()<<"Error Spacelike_Kinematics::DoKinematics : "
 	          <<"     No mother for active knot, no kinematics to be constructed"<<endl;
@@ -136,22 +124,10 @@ bool Spacelike_Kinematics::DoKinematics(Tree ** trees,Knot * active, Knot * part
 
   Vec4D o1 = active->part->Momentum();
   Vec4D o2 = partner->part->Momentum();
-
-  msg.Tracking() <<"Spacelike_Kinematics::DoKinematics : A "<<endl
-   <<"   Vec1 : "<<o1<<" : "<<o1.Abs2()<<" / "<<active->t<<endl
-   <<"   Vec2 : "<<o2<<" : "<<o2.Abs2()<<" / "<<partner->t<<endl
-   <<"   S    : "<<(o1+o2).Abs2()<<endl;
-
-
   BoostInCMS(trees,active, partner);
 
   o1 = active->part->Momentum();
   o2 = partner->part->Momentum();
-
-  msg.Tracking() <<"Spacelike_Kinematics::DoKinematics : B "<<endl
-   <<"   Vec1 : "<<o1<<" : "<<o1.Abs2()<<" / "<<active->t<<endl
-   <<"   Vec2 : "<<o2<<" : "<<o2.Abs2()<<" / "<<partner->t<<endl
-   <<"   S    : "<<(o1+o2).Abs2()<<endl;
 
   Vec4D cms      = active->part->Momentum()+partner->part->Momentum();
   double sprime  = cms.Abs2();
@@ -166,7 +142,6 @@ bool Spacelike_Kinematics::DoKinematics(Tree ** trees,Knot * active, Knot * part
   double maxt_d2 = CalculateMaxT(active,partner);
 
   if (maxt_d2 < sister->t) {
-    msg.Debugging()<<" if max_d2 < sister->t "<<maxt_d2<<" sister "<<sister->t<<endl;
     return 0;
   }
   
@@ -179,13 +154,6 @@ bool Spacelike_Kinematics::DoKinematics(Tree ** trees,Knot * active, Knot * part
  
 
   double test_f4  =((1./active->z-1.)*sprime - sister->t)/(2.*sqrt(sprime));
-  msg.Debugging()<<" (spr,z,t4) : "<<sprime<<","<<active->z<<","<<sister->t<<endl;
-  msg.Debugging()<<"  e4^2  =="<<sqr(test_f4)<<endl;
-
-  msg.Debugging()<<"Spacelike_Kinematics::DoKinematics :"<<endl
-		 <<"   CMS, s' = "<<cms<<", "<<sprime<<endl
-		 <<"   timelike daughter's t : "<<maxt_d2<<"  >?>  "<<sister->t<<endl;
-
   double cph=cos(active->phi), sph=sin(active->phi);
   
   Vec4D v_mo(E_mo,sph*pt_mo,cph*pt_mo,pz_mo);
@@ -207,18 +175,15 @@ bool Spacelike_Kinematics::DoKinematics(Tree ** trees,Knot * active, Knot * part
 	       <<"  Test s' "<<sprime/active->z<<" =?= "
 	       <<(v_mo+partner->part->Momentum()).Abs2()<<endl;
     msg.Error()<<" (spr,z,t4) : " <<sprime<<","<<active->z<<","<<sister->t<<endl;
-    // *AS*    return 0;
   }
   
   mother->part->SetMomentum(v_mo);
   sister->part->SetMomentum(v_si);
   sister->E2 = sqr(v_si[0]);
   if (ResetEnergies(sister)) {
-    msg.Debugging()<<" calling finalstate kinematics "<<endl;
     kink->DoKinematics(sister);
   }
   else {
-    msg.Debugging()<<" reset energies failed "<<endl;
     return 0;
   }
   return 1;
@@ -234,10 +199,6 @@ bool Spacelike_Kinematics::CheckVector(Vec4D vec)
 double Spacelike_Kinematics::BoostInCMS(Tree ** trees,Knot * active, Knot * partner) 
 {
   Vec4D cms = active->part->Momentum()+partner->part->Momentum();
-
-  msg.Debugging()<<"BoostInCMS ... "<<cms<<endl
-		 <<"    "<<active->part->Momentum()<<endl
-		 <<"  + "<<partner->part->Momentum()<<endl;
 
   boost     = Poincare(cms);
   trees[0]->BoRo(boost);
@@ -275,9 +236,7 @@ Vec4D Spacelike_Kinematics::BoostInLab(Tree ** trees)
 }
 
 bool Spacelike_Kinematics::ResetEnergies(Knot * in) {
-  msg.Debugging()<<"Spacelike_Kinematics::ResetEnergies(Knot "<<in->kn_no<<" )"<<endl;
   if (in->E2 < in->t) return 0;
-  msg.Debugging()<<"    Passed timelike condition : "<<in->E2<<" > "<<in->t<<endl;
 
   if (in->left) {
     in->left->E2  = in->z*in->z*in->E2;
@@ -291,23 +250,11 @@ bool Spacelike_Kinematics::ResetEnergies(Knot * in) {
 bool Spacelike_Kinematics::JetCheck(Knot * active)
 {
   Knot * sister=active;
-  cout<<" JetCheck ("<<active->kn_no<<")"<<endl;
-  cout<<active->part->Momentum()<<endl;
   if (sister->prev) {
-    cout<<" JetCheck2 "<<endl;
     sister=sister->prev;
     if (sister->left) {
-      cout<<" JetCheck3 "<<endl;
-
       sister=sister->left;
-      if (jf->TwoJets(sister->part->Momentum())) {
-	cout<<" JetCheck VETO"<<endl;
-  
-	msg.Tracking()<<" Spacelike_Kinematics::JetCheck   JETVETO"<<std::endl;
-	return 1;
-      } 
-      cout<<" JetCheck no veto"<<endl;
-
+      if (jf->TwoJets(sister->part->Momentum())) return 1;
     }
   }
   return 0;
@@ -315,24 +262,13 @@ bool Spacelike_Kinematics::JetCheck(Knot * active)
 
 bool Spacelike_Kinematics::JetVeto(const Vec4D & v)
 {
-  if (jf->TwoJets(v)) {
-    msg.Tracking()<<" Spacelike_Kinematics::JetVeto VETO"<<endl;
-    return 1;
-  }
+  if (jf->TwoJets(v)) return 1;
   return 0;
-
 }
 
 bool Spacelike_Kinematics::KinCheck(Knot * active,bool jetveto)
 {
   if (!jetveto) return 0;
-  /*
-    moved to veto
-    if (jf->TwoJets(active->part->Momentum())) {
-      msg.Tracking()<<" Spacelike_Kinematics::KinCheck   JETVETO"<<std::endl;
-      return 1;
-    }
-  */
   return 0;
 }
 
@@ -342,8 +278,6 @@ double Spacelike_Kinematics::CalculateMaxT(Knot * active,Knot * partner) {
 	       <<"   CalculateMaxT : No knots."<<endl;
     return 0.;
   }
-  msg.Debugging()<<" in Spacelike_Kinematics::CalculateMaxT( k1: ("<<active->kn_no<<"), k2: ("
-      <<partner->kn_no<<"), k3: ("<<active->prev->kn_no<<") )"<<endl;
   double t1   = active->t; 
   double t2   = partner->t;
   double t3   = active->prev->t;
@@ -352,7 +286,6 @@ double Spacelike_Kinematics::CalculateMaxT(Knot * active,Knot * partner) {
   double s3   = s/active->z - t2 - t3;
   double l1   = s1*s1-4.*t2*t1;
   double l3   = s3*s3-4.*t2*t3;
-  msg.Debugging()<<"(t1,t2,t3), (s1,s3) : ("<<t1<<","<<t2<<","<<t3<<"), ("<<s1<<","<<s3<<")"<<endl;
   if ((l1<0.) || (l3<0.)) return -1.;
 
   double np1  = sqrt(l1);

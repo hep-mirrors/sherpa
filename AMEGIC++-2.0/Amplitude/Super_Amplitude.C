@@ -65,13 +65,6 @@ void Super_Amplitude::Init(string _str)
 	}
       }
     }
-    //Print all Pairs
-    /*
-    for (int i=0;i<pairlist.size();i++) 
-      cout<<"Change "<<pairlist[i].pold<<" --> "<<pairlist[i].pnew<<endl;
-    cout<<"================================"<<endl;
-    */
-    //cout<<"Old is: "<<old<<"/"<<
 
     int i=0;
     for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit,++i) {
@@ -90,16 +83,9 @@ void Super_Amplitude::Init(string _str)
   for (vector<Amplitude_Base*>::iterator g=graphs.begin();g!=graphs.end();++g) {  
     if (rpa.gen.Tracking()) {
       Zfunc_List* gzlist = (*g)->GetZlist(); 
-      cout<<(*g)->GetSign()<<flush;
-      for (Zfunc_Iterator gzit=gzlist->begin();gzit!=gzlist->end();++gzit) {
-	msg.Out()<<" "<<(*gzit)->m_str<<flush;
-      }
-      msg.Out()<<endl;
     }
     if (sign!=(*g)->GetSign()) {
-      msg.Debugging()<<" Different Signs in the sub amplitudes!"<<endl;
       hit = 1;
-      // *AS*      break;
     }
   }
   if (hit) SetZfuncSign(); 
@@ -176,15 +162,11 @@ void Super_Amplitude::SetZfuncSign()
       }
     }
     if (ok) {
-      // found permutation
-      msg.Debugging()<<"Found a suitable permutation!!"<<endl;
-      //      cout<<"  Global Sign = "<<global_sign<<endl;
       int i =0;
       for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit,++i) {
 	for (int j=0;j<(*zit)->GetSize();++j) {
 	    if ((*zit)->GetOp()=='+') { 
 	      (*zit)->SetSign(j,zsignlists[i][j]);
-	      //cout<<"   "<<(*(*zit))[j]->m_str<<" has sign "<<zsignlists[i][j]<<endl;
 	  }
 	}
       }
@@ -204,30 +186,21 @@ void Super_Amplitude::ReduceZfuncs(string str)
   String_Tree st;
   sknot* shelp = st.String2Tree(str);
   
-  //cout<<"String: "<<st.Tree2String(shelp,0)<<endl;
-
   list<sknot*> factorlist;
   st.Factors(shelp,factorlist);
 
-  //cout<<"Factorlist-Size: "<<factorlist.size()<<endl;
-
   for (list<sknot*>::iterator fit=factorlist.begin();fit!=factorlist.end();++fit) {
-    //cout<<"   New factor: "<<st.Tree2String(*fit,0)<<endl;
-
     list<sknot*> zfunclist;
     st.Addends(*fit,zfunclist);
-    //new Superfunc
     Zfunc_Group* superfunc;
     
     int first = 1;
    
     for (list<sknot*>::iterator sit=zfunclist.begin();sit!=zfunclist.end();++sit) {
-      //cout<<"   New Zfunc: "<<st.Tree2String(*sit,0)<<endl; 
       int hit = 0;
       for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) {
 	if ((*zit)->m_str==st.Tree2String(*sit,0)) {
 	  hit = 1;
-	  //cout<<"New Hit for "<<(*zit)->m_str<<endl;
 	  if (first) {
 	    first = 0;
 	    superfunc = new Zfunc_Group(*(*zit));
@@ -274,7 +247,7 @@ int Super_Amplitude::FindNewNumber(int number)
  
 void Super_Amplitude::PrintGraph() 
 {  
-
+  if (!rpa.gen.Tracking()) return;
   msg.Out()<<"--------"<<amplnumber+1<<". Amplitude----------"<<endl;
   Single_Amplitude_Base::PrintGraph();
 

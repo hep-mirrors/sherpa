@@ -1,6 +1,7 @@
 #include "Zfunc.H"
 #include "Pfunc.H"
 #include "Zfunc_Calc.H"
+#include "Run_Parameter.H"
 #include "Message.H"
 
 using namespace AMEGIC;
@@ -104,41 +105,42 @@ void Zfunc::ClearCalcList()
 
 void Zfunc::Print() 
 {
-  msg.Tracking()<<"Z(["<<m_type<<"],";
-  msg.Tracking()<<"[";
-  for (int i=0;i<m_narg-1;i++) msg.Tracking()<<p_arguments[i]<<";";
+  if (!AORGTOOLS::rpa.gen.Tracking()) return;
+  msg.Out()<<"Z(["<<m_type<<"],";
+  msg.Out()<<"[";
+  for (int i=0;i<m_narg-1;i++) msg.Out()<<p_arguments[i]<<";";
   
-  if (m_narg>0) msg.Tracking()<<p_arguments[m_narg-1];
-  msg.Tracking()<<"][";
-  msg.Tracking().precision(2);
+  if (m_narg>0) msg.Out()<<p_arguments[m_narg-1];
+  msg.Out()<<"][";
+  msg.Out().precision(2);
   for (int i=0;i<m_ncoupl-1;i++) {
     if ( !AMATOOLS::IsZero(real(p_couplings[i])) &&
 	    AMATOOLS::IsZero(imag(p_couplings[i])) )
-      msg.Tracking()<<real(p_couplings[i])<<";";
+      msg.Out()<<real(p_couplings[i])<<";";
     if (  AMATOOLS::IsZero(real(p_couplings[i])) &&
 	  !AMATOOLS::IsZero(imag(p_couplings[i])) )
-      msg.Tracking()<<imag(p_couplings[i])<<" I;";
+      msg.Out()<<imag(p_couplings[i])<<" I;";
     if ( !AMATOOLS::IsZero(real(p_couplings[i])) &&
 	 !AMATOOLS::IsZero(imag(p_couplings[i])) )
-      msg.Tracking()<<real(p_couplings[i])<<"+"<<imag(p_couplings[i])<<" I;";
+      msg.Out()<<real(p_couplings[i])<<"+"<<imag(p_couplings[i])<<" I;";
     if (  AMATOOLS::IsZero(real(p_couplings[i])) &&
 	  AMATOOLS::IsZero(imag(p_couplings[i])) )
-      msg.Tracking()<<"0;";
+      msg.Out()<<"0;";
   }
   if ( !AMATOOLS::IsZero(real(p_couplings[m_ncoupl-1])) &&
        AMATOOLS::IsZero(imag(p_couplings[m_ncoupl-1])) )
-      msg.Tracking()<<real(p_couplings[m_ncoupl-1])<<"])";
+      msg.Out()<<real(p_couplings[m_ncoupl-1])<<"])";
   if (  AMATOOLS::IsZero(real(p_couplings[m_ncoupl-1])) &&
 	!AMATOOLS::IsZero(imag(p_couplings[m_ncoupl-1])) )
-    msg.Tracking()<<imag(p_couplings[m_ncoupl-1])<<" I])";
+    msg.Out()<<imag(p_couplings[m_ncoupl-1])<<" I])";
   if ( !AMATOOLS::IsZero(real(p_couplings[m_ncoupl-1])) &&
        !AMATOOLS::IsZero(imag(p_couplings[m_ncoupl-1])) )
-    msg.Tracking()<<real(p_couplings[m_ncoupl-1])<<"+"<<imag(p_couplings[m_ncoupl-1])<<" I])";
+    msg.Out()<<real(p_couplings[m_ncoupl-1])<<"+"<<imag(p_couplings[m_ncoupl-1])<<" I])";
   if (  AMATOOLS::IsZero(real(p_couplings[m_ncoupl-1])) &&
 	AMATOOLS::IsZero(imag(p_couplings[m_ncoupl-1])) )
-	msg.Tracking()<<"0])";
-  msg.Tracking()<<endl;
-  msg.Tracking().precision(6);
+	msg.Out()<<"0])";
+  msg.Out()<<endl;
+  msg.Out().precision(6);
 }
 
 
@@ -300,35 +302,36 @@ void Zfunc_Group::ClearCalcList()
 
 void Zfunc_Group::Print() 
 {
-  msg.Tracking()<<"SZ(["<<m_type<<"],";
-  msg.Tracking()<<"[";
-  for (int i=0;i<m_narg-1;i++) msg.Tracking()<<p_arguments[i]<<";";
+  if (!rpa.gen.Tracking()) return;
+  msg.Out()<<"SZ(["<<m_type<<"],";
+  msg.Out()<<"[";
+  for (int i=0;i<m_narg-1;i++) msg.Out()<<p_arguments[i]<<";";
   
-  if (m_narg>0) msg.Tracking()<<p_arguments[m_narg-1];
-  msg.Tracking()<<"])";
-  msg.Tracking()<<endl;
+  if (m_narg>0) msg.Out()<<p_arguments[m_narg-1];
+  msg.Out()<<"])";
+  msg.Out()<<endl;
 
   if (m_op=='+'){  
     for (int i=0;i<m_zlist.size();i++) {
       if (m_zsigns[i]==-1) {
-	msg.Tracking()<<"   - "<<m_zlist[i]->p_propagators[0].numb<<" * ";m_zlist[i]->Print();
+	msg.Out()<<"   - "<<m_zlist[i]->p_propagators[0].numb<<" * ";m_zlist[i]->Print();
       }
       else {
 	if (m_zlist[i]->p_propagators!=NULL) {
-	  msg.Tracking()<<"   + "<<m_zlist[i]->p_propagators[0].numb<<" * ";
+	  msg.Out()<<"   + "<<m_zlist[i]->p_propagators[0].numb<<" * ";
 	  m_zlist[i]->Print();
 	}
 	else {
-	  msg.Tracking()<<" ??? "<<" * ";m_zlist[i]->Print();
+	  msg.Out()<<" ??? "<<" * ";m_zlist[i]->Print();
 	}
       }
     }
   }
   if (m_op=='*'){
     for (int i=0;i<m_zlist.size();i++) {
-      if (i>0) msg.Tracking()<<"  *";else msg.Tracking()<<" ->";
+      if (i>0) msg.Out()<<"  *";else msg.Out()<<" ->";
       m_zlist[i]->Print();
     }
-    msg.Tracking()<<"Sum over "<<m_sumindex<<endl;
+    msg.Out()<<"Sum over "<<m_sumindex<<endl;
   }  
 }

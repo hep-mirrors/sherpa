@@ -44,8 +44,8 @@ int Beam_Remnant_Handler::Constituents(Flavour _had,Flavour *& _flavs) {
     if (_had.IsAnti()) {
       for(int i=0;i<3;i++) _flavs[i]=_flavs[i].Bar();
     }
-    msg.Events()<<"Beam_Remnant_Handler::Constituents for "<<_had<<" is baryon :"
-		<<hadint<<std::endl<<"   "<<_flavs[0]<<", "<<_flavs[1]<<", "<<_flavs[2]<<std::endl;
+    msg.Tracking()<<"Beam_Remnant_Handler::Constituents for "<<_had<<" is baryon :"
+		  <<hadint<<std::endl<<"   "<<_flavs[0]<<", "<<_flavs[1]<<", "<<_flavs[2]<<std::endl;
     return 3;
   }
   if ((hadint > 10) && (hadint < 100)) {
@@ -55,8 +55,8 @@ int Beam_Remnant_Handler::Constituents(Flavour _had,Flavour *& _flavs) {
     if (_had.IsAnti()) {
       for(int i=0;i<2;i++) _flavs[i]=_flavs[i].Bar();
     }
-    msg.Events()<<"Beam_Remnant_Handler::Constituents for "<<_had<<" is meson :"
-		<<hadint<<std::endl<<"   "<<_flavs[0]<<", "<<_flavs[1]<<std::endl;
+    msg.Tracking()<<"Beam_Remnant_Handler::Constituents for "<<_had<<" is meson :"
+		  <<hadint<<std::endl<<"   "<<_flavs[0]<<", "<<_flavs[1]<<std::endl;
     return 2;
   }
   
@@ -65,23 +65,15 @@ int Beam_Remnant_Handler::Constituents(Flavour _had,Flavour *& _flavs) {
   abort();
 }      
 
-Beam_Remnant_Handler::~Beam_Remnant_Handler() {
-  msg.Tracking()<<"+++++++++++++++++++++++++++++++++++++++++++++++"<<std::endl
-		<<"In Beam_Remnant_Handler::~Beam_Remnant_Handler :"<<std::endl;
-  
+Beam_Remnant_Handler::~Beam_Remnant_Handler() {  
   if (p_constituents) {
     for (int i=0;i<2;i++) {
       if (p_constituents[i]) delete [] p_constituents[i];
     }
     delete [] p_constituents; p_constituents = NULL;
   }
-  msg.Tracking()<<"   Deleted constituents."<<std::endl;
   
   if (p_numberofconstituents) delete [] p_numberofconstituents;
-  msg.Tracking()<<"   Deleted n_const."<<std::endl;
-  
-  msg.Tracking()<<"Out Beam_Remnant_Handler::~Beam_Remnant_Handler :"<<std::endl
-		<<"+++++++++++++++++++++++++++++++++++++++++++++++"<<std::endl;
 }
 
 
@@ -158,8 +150,6 @@ bool Beam_Remnant_Handler::FillHadron(Blob * blob,int _beam,Parton_List * pl)
 	       <<"   This case is not implemented yet ! Abort."<<std::endl;
     abort();
   }
-  msg.Tracking()<<"Beam_Remnant_Handler::FillHadron : "
-		<<blob->InParton(0)->Flav()<<" -> "<<blob->OutParton(0)->Flav()<<std::endl;
 
   Vec4D vec1,vec2;
   Flavour fl,difl;
@@ -186,9 +176,6 @@ bool Beam_Remnant_Handler::FillHadron(Blob * blob,int _beam,Parton_List * pl)
   int number;
   for (int i=0;i<3;i++) {
     if (part->Flav() == p_constituents[blob->Beam()][i]) {
-      msg.Tracking()<<"   Parton is one of the p_constituents "
-		    <<blob->InParton(0)->Flav()<<std::endl;
-
       pos = 0;
       for (int j=0;j<3;j++) {
 	if (i!=j) {
@@ -248,9 +235,6 @@ bool Beam_Remnant_Handler::FillHadron(Blob * blob,int _beam,Parton_List * pl)
     }
     else difl = Flavour(kf::code(di[0]*1100+3));
     if (p_constituents[blob->Beam()][0].IsAnti()) difl = difl.Bar();
-
-    msg.Tracking()<<"   Parton is a gluon."<<std::endl<<"   Split "
-		  <<blob->InParton(0)->Flav()<<" into "<<fl<<" and "<<difl<<std::endl;
     
     vec1 = GetX_Lund(fl,difl,vec[0]) * vec;
     vec2 = vec + (-1.)*vec1;
@@ -323,10 +307,6 @@ bool Beam_Remnant_Handler::FillHadron(Blob * blob,int _beam,Parton_List * pl)
     else difl = Flavour(kf::code(di[0]*1100+3));
     if (p_constituents[blob->Beam()][0].IsAnti()) difl = difl.Bar();
 
-    msg.Tracking()<<"   Parton is a quark."<<std::endl
-		  <<"   Split "<<blob->InParton(0)->Flav()
-		  <<" into "<<fl<<" and "<<difl<<std::endl;
-    
     vec1 = GetX_Lund(fl,difl,vec[0]) * vec;
     vec2 = GetX_Lund((part->Flav()).Bar(),difl,vec[0]) * vec;
 

@@ -19,8 +19,7 @@ SimplePoleUniform::SimplePoleUniform(double _sprimeexp, double _deltay1, double 
   sprintf(help,"%i",int(100.*sprimeexp));
   name     = std::string("SimplePoleUniform"+std::string(help));
   ms = rans = 0;
-  msg.Out()<<"Init Simple_Pole : "<<sprimeexp<<" / "<<deltay[0]<<" / "<<deltay[1]<<endl;
-};
+}
 
 
 void SimplePoleUniform::GeneratePoint(double & sprime,double & y,int mode,double * rans)
@@ -49,8 +48,7 @@ SimplePoleCentral::SimplePoleCentral(double _sprimeexp, double _deltay1, double 
   sprintf(help,"%i",int(100.*sprimeexp));
   name     = std::string("SimplePoleCentral"+std::string(help));
   ms = rans = 0;
-  msg.Out()<<"Init Simple_Pole : "<<sprimeexp<<" / "<<deltay[0]<<" / "<<deltay[1]<<endl;
-};
+}
 
 
 void SimplePoleCentral::GeneratePoint(double & sprime,double & y,int mode,double * rans)
@@ -67,12 +65,6 @@ void SimplePoleCentral::GenerateWeight(double sprime,double y,int mode)
   weight *= 1./sprimerange[2];
   weight *= CE.WeightYCentral(sprime/sprimerange[2], yrange, deltay, mode, y);
   if (weight<0.) msg.Error()<<"Negative weight in "<<name<<"::GenerateWeight."<<endl;
-  /*
-    if (weight<0.) {
-    msg.Error()<<"Negative weight in "<<name<<"::GenerateWeight.";
-    msg.Error()<<"with  sprime , y = "<<sprime<<" , "<<y<<endl;
-    }
-  */
 } 
 
 
@@ -86,7 +78,7 @@ SimplePoleForward::SimplePoleForward(double _sprimeexp,double _yexp,double _delt
   sprintf(help,"%i",int(100.*sprimeexp));
   name     = std::string("SimplePoleForward"+std::string(help));
   ms = rans = 0;
-};
+}
 
 
 void SimplePoleForward::GeneratePoint(double & sprime,double & y,int mode,double * rans)
@@ -103,12 +95,6 @@ void SimplePoleForward::GenerateWeight(double sprime,double y,int mode)
   weight *= 1./sprimerange[2];
   weight *= CE.WeightYForward(sprime/sprimerange[2], yrange, deltay, yexp, mode, y);
   if (weight<0.) msg.Error()<<"Negative weight in "<<name<<"::GenerateWeight."<<endl;
-  /*
-    if (weight<0.) {
-    msg.Error()<<"Negative weight in "<<name<<"::GenerateWeight.";
-    msg.Error()<<"with  sprime , y = "<<sprime<<" , "<<y<<endl;
-    }
-  */
 } 
 
 SimplePoleBackward::SimplePoleBackward(double _sprimeexp,double _yexp,double _deltay1, double _deltay2) :
@@ -120,7 +106,7 @@ SimplePoleBackward::SimplePoleBackward(double _sprimeexp,double _yexp,double _de
   sprintf(help,"%i",int(100.*sprimeexp)); 
   name     = std::string("SimplePoleBackward"+std::string(help));
   ms = rans = 0;
-};
+}
 
 void SimplePoleBackward::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
@@ -136,12 +122,6 @@ void SimplePoleBackward::GenerateWeight(double sprime,double y,int mode)
   weight *= 1./sprimerange[2];
   weight *= CE.WeightYBackward(sprime/sprimerange[2], yrange, deltay, yexp, mode, y);
   if (weight<0.) msg.Error()<<"Negative weight in "<<name<<"::GenerateWeight."<<endl;
-  /*
-    if (weight<0.) {
-    msg.Error()<<"Negative weight in "<<name<<"::GenerateWeight.";
-    msg.Error()<<"with  sprime , y = "<<sprime<<" , "<<y<<endl;
-    }
-  */
 }
 
 ResonanceUniform::ResonanceUniform(double _mass,double _width,double _deltay1, double _deltay2) :
@@ -178,7 +158,7 @@ ResonanceCentral::ResonanceCentral(double _mass,double _width,double _deltay1, d
   deltay[1] = _deltay2;
   name     = std::string("ResonanceCentral");
   ms = rans = 0;
-};
+}
 
 
 void ResonanceCentral::GeneratePoint(double & sprime,double & y,int mode,double * rans)
@@ -195,12 +175,6 @@ void ResonanceCentral::GenerateWeight(double sprime,double y,int mode)
   weight *= 1./sprimerange[2];
   weight *= CE.WeightYCentral(sprime/sprimerange[2], yrange, deltay, mode, y);
   if (weight<0.) msg.Error()<<"Negative weight in "<<name<<"::GenerateWeight."<<endl;
-  /*
-    if (weight<0.) {
-    msg.Error()<<"Negative weight in "<<name<<"::GenerateWeight.";
-    msg.Error()<<"with  sprime , y = "<<sprime<<" , "<<y<<endl;
-    }
-  */
 } 
 
 
@@ -212,7 +186,7 @@ ResonanceForward::ResonanceForward(double _mass,double _width,double _yexp,doubl
   deltay[1] = _deltay2;
   name     = std::string("ResonanceForward");
   ms = rans = 0;
-};
+}
 
 
 void ResonanceForward::GeneratePoint(double & sprime,double & y,int mode,double * rans)
@@ -229,12 +203,6 @@ void ResonanceForward::GenerateWeight(double sprime,double y,int mode)
   weight *= 1./sprimerange[2];
   weight *= CE.WeightYForward(sprime/sprimerange[2], yrange, deltay, yexp, mode, y);
   if (weight<0.) msg.Error()<<"Negative weight in "<<name<<"::GenerateWeight."<<endl;
-  /*
-    if (weight<0.) {
-    msg.Error()<<"Negative weight in "<<name<<"::GenerateWeight.";
-    msg.Error()<<"with  sprime , y = "<<sprime<<" , "<<y<<endl;
-    }
-  */
 } 
 
 ResonanceBackward::ResonanceBackward(double _mass,double _width,double _yexp,double _deltay1, double _deltay2) :
@@ -261,12 +229,6 @@ void ResonanceBackward::GenerateWeight(double sprime,double y,int mode)
   weight *= 1./sprimerange[2];
   weight *= CE.WeightYBackward(sprime/sprimerange[2], yrange, deltay, yexp, mode, y);
   if (weight<0.) msg.Error()<<"Negative weight in "<<name<<"::GenerateWeight."<<endl;
-  /*
-    if (weight<0.) {
-    msg.Error()<<"Negative weight in "<<name<<"::GenerateWeight." ;
-    }
-    msg.Error()<<"****  sprime , y = "<<sprime<<" , "<<y<<endl;
-  */
 } 
 
 
@@ -277,7 +239,7 @@ ThresholdUniform::ThresholdUniform(double _mass,double _deltay1, double _deltay2
   deltay[1] = _deltay2;
   name     = std::string("ThresholdUniform");
   ms = rans = 0;
-};
+}
 
 
 void ThresholdUniform::GeneratePoint(double & sprime,double & y,int mode,double * rans)
@@ -302,10 +264,9 @@ ThresholdCentral::ThresholdCentral(double _mass,double _deltay1, double _deltay2
 {
   deltay[0] = _deltay1;
   deltay[1] = _deltay2;
-  cout<<"Initialize new Threshold : "<<mass<<" : "<<deltay[0]<<"/"<<deltay[1]<<endl;
   name     = std::string("ThresholdCentral");
   ms = rans = 0;
-};
+}
 
 
 void ThresholdCentral::GeneratePoint(double & sprime,double & y,int mode,double * rans)
@@ -333,7 +294,7 @@ ThresholdForward::ThresholdForward(double _mass,double _yexp,double _deltay1, do
   deltay[1] = _deltay2;
   name     = std::string("ThresholdForward");
   ms = rans = 0;
-};
+}
 
 
 void ThresholdForward::GeneratePoint(double & sprime,double & y,int mode,double * rans)
@@ -359,7 +320,7 @@ ThresholdBackward::ThresholdBackward(double _mass,double _yexp,double _deltay1, 
   deltay[1] = _deltay2;
   name     = std::string("ThresholdBackward");
   ms = rans = 0;
-};
+}
 
 
 void ThresholdBackward::GeneratePoint(double & sprime,double & y,int mode,double * rans)
@@ -410,7 +371,6 @@ void LLCentral::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 
 void LLCentral::GenerateWeight(double sprime,double y,int mode)
 {
-  //AORGTOOLS::msg.Out()<<"Cen : "<<endl;GetRange(); 
   weight  = 0.;
   if ((sprime<sprimerange[0]) || (sprime>sprimerange[1])) return;
   double pole = sprimerange[2];
@@ -432,7 +392,6 @@ void LLForward::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 
 void LLForward::GenerateWeight(double sprime,double y,int mode)
 {
-  //AORGTOOLS::msg.Out()<<"FW  : "<<endl;GetRange(); 
   weight  = 0.;
   if ((sprime<sprimerange[0]) || (sprime>sprimerange[1])) return;
   double pole = sprimerange[2];
@@ -454,7 +413,6 @@ void LLBackward::GeneratePoint(double & sprime,double & y,int mode,double * rans
 
 void LLBackward::GenerateWeight(double sprime,double y,int mode)
 {
-  //AORGTOOLS::msg.Out()<<"BW  : "<<endl;GetRange(); 
   weight  = 0.;
   if ((sprime<sprimerange[0]) || (sprime>sprimerange[1])) return;
   double pole = sprimerange[2];
@@ -470,23 +428,6 @@ void LLBackward::GenerateWeight(double sprime,double y,int mode)
 
 void LBSComptonPeakUniform::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
-  /*! former routine
-    ! doesn't work since the pole is far off the region of integration
-    offset      = (-1.+pole)*sprimerange[2];
-    double help = CE.LLPropMomenta(1.,sprimerange[2],
-    sprimerange[0]+offset,sprimerange[1]+offset,ran[0]);
-    if (help<sprimerange[0]) help += (sprimerange[1]-sprimerange[0]);
-    sprime      = help;
-  */
-  /*! new version
-    // tested; ok, but doesn't comply with beam handler
-    // will be all right, if 'sprimerange[2]' is chosen to be the end of the spectrum 
-    // and 'pole' denotes the coordinate of the compton peak relative to current 'sprimerange[2]'
-    double help   = CE.LLPropMomenta(1., sprimerange[2]*1.000001, sprimerange[0], sprimerange[2], rans[0]);
-    double shift  = sprimerange[2] * (1. - pole);
-    if (help<shift) sprime = (sprimerange[2] - shift) + help
-    else sprime = help - shift;
-  */
   double help   = sprimerange[2] * pole; 
   sprime        = CE.LLPropMomenta(sexp, sprimerange[2], sprimerange[0], help, rans[0]);
   y = CE.DiceYUniform(sprime/sprimerange[2], yrange, deltay, mode, rans[1]);
@@ -496,23 +437,6 @@ void LBSComptonPeakUniform::GenerateWeight(double sprime,double y,int mode)
 {
   weight  = 0.;
   if ((sprime<sprimerange[0]) || (sprime>sprimerange[1])) return;
-  /*! former routine
-    offset      = (-1.+pole)*sprimerange[2];
-    double help = sprime;
-    if (help>sprimerange[1]+offset) help -= (sprimerange[1]-sprimerange[0]);
-    weight  = 1./CE.LLPropWeight(1.,sprimerange[2],
-    sprimerange[0]+offset,sprimerange[1]+offset,help);
-  */
-  /*! new version
-    // tested; ok, but doesn't comply with beam handler
-    // will be all right, if 'sprimerange[2]' is chosen to be the end of the spectrum 
-    // and 'pole' denotes the coordinate of the compton peak relative to current 'sprimerange[2]'
-    double help   = sprime;
-    double shift  = sprimerange[2] * pole;
-    if (sprime>shift) help -= shift
-    else help += sprimerange[2]-shift;
-    weight = 1./CE.LLPropWeight(1., sprimerange[2]*1.000001, sprimerange[0], sprimerange[2], help);
-  */
   double help = sprimerange[2] * pole;
   weight  = 1./CE.LLPropWeight(sexp,sprimerange[2], sprimerange[0], help ,sprime);
   weight *= 1./help;
@@ -530,11 +454,7 @@ void LBSComptonPeakCentral::GeneratePoint(double & sprime,double & y,int mode,do
 void LBSComptonPeakCentral::GenerateWeight(double sprime,double y,int mode)
 {
   weight  = 0.;
-  if ((sprime<sprimerange[0]) || (sprime>sprimerange[1])) {
-    //AORGTOOLS::msg.Out()<<" Cen : sprime, y0, y : "<<sprime/sprimerange[2]<<" , "<<sprimerange[1]/sprimerange[2]<<","
-    //			<<0.5*log(sprime/sprimerange[2])<<" , "<<y<<" -> "<<weight<<endl;
-    return;
-  }
+  if ((sprime<sprimerange[0]) || (sprime>sprimerange[1])) return;
   double help = sprimerange[2] * pole;
   weight  = 1./CE.LLPropWeight(sexp,sprimerange[2], sprimerange[0], help ,sprime);
   weight *= 1./help;

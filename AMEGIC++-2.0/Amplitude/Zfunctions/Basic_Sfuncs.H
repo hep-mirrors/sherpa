@@ -60,7 +60,6 @@ namespace AMEGIC {
 	  arg = new int[argnum];
 	  for (short int i=0;i<argnum;i++) arg[i] = m.arg[i];
 	}
-	else std::cout<<"Number of arguments is zero in Momfunc operator=()"<<std::endl;
 	mom     = m.mom;
 	mom_img = m.mom_img;
 	mass    = m.mass;

@@ -82,12 +82,6 @@ void Amplitude_Group::BuildGlobalString(int* _b,int _n,
   // sort family table acording to znumber, permnumber, and topnumber,
   sort(family_table.begin(), family_table.end(),Compare_Graph_Families());
 
-  // family output
-  msg.Debugging()<<"families="<<family_table.size()<<endl;
-  for (Graph_Families::iterator git=family_table.begin(); git!=family_table.end();++git) {
-    msg.Debugging()<<" "<<(*git)->znumber<<" "<<(*git)->topnumber<<" "<<(*git)->permnumber<<" - "
-	<<(*git)->graphs.size()<<endl;
-  } 
 
   // count zn
   int zncount=0, last_zn=0;
@@ -97,7 +91,6 @@ void Amplitude_Group::BuildGlobalString(int* _b,int _n,
       ++zncount;
     }
   }
-  msg.Debugging()<<" zncount="<<zncount<<endl;
 
   //using the Kabbala value of the Zfunc
   String_Tree st;
@@ -144,8 +137,6 @@ void Amplitude_Group::BuildGlobalString(int* _b,int _n,
 	}
       }
     }
-
-    msg.Tracking()<<"  nsuper="<<nsuper<<"  ("<<nampl<<")  families="<<family_table.size()<<endl;
 
     // if only one family cluster finished
     if (family_table.size()==zncount) break;
@@ -215,15 +206,12 @@ void Amplitude_Group::BuildGlobalString(int* _b,int _n,
       globalstr+=string("+") + family_table[i]->banner;
   }
 
-  //std::cout<<"global after: "<<globalstr<<endl;
   sknot* sh = st.String2Tree(globalstr);
   st.Addends(sh,addend_list);
-  //std::cout<<" nsuper="<<addend_list.size()<<endl;
 
   for (list<sknot*>::iterator it=addend_list.begin();it!=addend_list.end();++it) {
     string newaddend = st.Tree2String(*it,0); 
     st.Expand(*it);
-    //msg.Tracking()<<"Expanded  : "<<st.Tree2String(*it,0)<<endl;
     
     list<sknot*> superlist;
     st.Addends(*it,superlist);
@@ -232,8 +220,6 @@ void Amplitude_Group::BuildGlobalString(int* _b,int _n,
       Super_Amplitude* sg = new Super_Amplitude(_b,_n,_BS,_fl,_shand);
 
       for (list<sknot*>::iterator sit=superlist.begin();sit!=superlist.end();++sit) {
-	//msg.Tracking()<<"   Single Amplitude: "<<st.Tree2String(*sit,0)<<endl;
-
 	list<sknot*> zfunclist;
 	st.Factors(*sit,zfunclist);
 	

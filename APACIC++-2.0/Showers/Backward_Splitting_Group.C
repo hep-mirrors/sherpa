@@ -4,7 +4,6 @@ using namespace APACIC;
 
 Backward_Splitting_Group::Backward_Splitting_Group(Splitting_Function * spl, PDF::PDF_Base * _pdf): 
   p_pdf(_pdf),Splitting_Group(spl) {
-  //    pdf = new PDF::PDF_MRST();  // initialising proton;
 }
 
 double Backward_Splitting_Group::CrudeInt(double _zmin, double _zmax) {
@@ -21,14 +20,6 @@ double Backward_Splitting_Group::CrudeInt(double _zmin, double _zmax) {
 	p_pdf->GetXPDF(iter()->GetFlA()) /
 	p_pdf->GetXPDF(iter()->GetFlB());
     }
-    
-//     std::cout<<"In CrudeInt("<<_zmin<<","<<_zmax<<") : "<<iter()->GetFlA()<<" ->"<<iter()->GetFlB()<<std::endl
-// 	     <<"   "<<iter()->CrudeInt(_zmin,_zmax)<<" * "  
-// 	     <<p_pdf->GetXPDF(iter()->GetFlA())<<" / "
-// 	     <<p_pdf->GetXPDF(iter()->GetFlB())<<" for "
-// 	     <<iter()->GetFlA()<<" "<<iter()->GetFlB()<<std::endl;
-    
-    
   }
   return m_lastint;
 }        

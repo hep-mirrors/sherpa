@@ -15,11 +15,9 @@ Model_Base * Model_Handler::GetModel(Data_Read * _dataread,std::string _path,std
   
   Model_Base * modelbase;
   if (model==std::string("MSSM")) {
-    msg.Debugging()<<"Initialize MSSM through "<<_path<<_file<<std::endl;
     modelbase = new MSSM(_path,_file);
   }
   if (model==std::string("ADD")) {
-    msg.Debugging()<<"Initialize ADD through "<<_path<<_file<<std::endl;
     modelbase = new ADD(_path,_file);
   }
   if (model!=std::string("SM")) { 
@@ -27,7 +25,6 @@ Model_Base * Model_Handler::GetModel(Data_Read * _dataread,std::string _path,std
 	       <<"   Tried to initialize model : "<<model<<std::endl
 	       <<"   Option not available. Initialize Standard Model instead."<<std::endl;
   }
-  msg.Debugging()<<"Initialize SM through "<<_path<<_file<<std::endl;
   modelbase = new Standard_Model(_path,_file);
   rpa.gen.SetModel(modelbase);
   return modelbase;

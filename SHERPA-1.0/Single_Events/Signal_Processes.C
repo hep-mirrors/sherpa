@@ -36,11 +36,8 @@ bool Signal_Processes::Treat(Blob_List * _bloblist, double & weight)
   
   while (found) {
     found = 0;
-    msg.Debugging()<<"Check once more : "<<_bloblist->size()<<" "<<found<<endl;
     for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
-      msg.Debugging()<<(*blit)->Status()<<endl;
       if (((*blit)->Type()==string("Signal Process : ")) && ((*blit)->Status()==0)) {
-	msg.Debugging()<<"Catch "<<(*blit)->Type()<<" / "<<(*blit)->Status()<<endl;
 	myblob = (*blit);
 	found  = 1;
 	if (p_mehandler->GenerateOneEvent()) {
@@ -50,7 +47,6 @@ bool Signal_Processes::Treat(Blob_List * _bloblist, double & weight)
 	}
       }
       else if (((*blit)->Type()==string("Signal Process : ")) && ((*blit)->Status()==-1)) {
-	msg.Debugging()<<"Catch "<<(*blit)->Type()<<" / "<<(*blit)->Status()<<endl;
 	myblob = (*blit);
 	found  = 1;
 	if (p_mehandler->GenerateSameEvent()) {
@@ -58,9 +54,6 @@ bool Signal_Processes::Treat(Blob_List * _bloblist, double & weight)
 	  weight=p_mehandler->Weight();
 	  hit = 1;
 	}
-      }
-      else {
-	msg.Debugging()<<"Pass "<<(*blit)->Type()<<" / "<<(*blit)->Status()<<endl;
       }
     }
   }
@@ -85,8 +78,6 @@ void Signal_Processes::FillBlob(Blob * _blob)
 
   Parton * parton;
   for (int i=0;i<p_mehandler->Nin();i++) {
-    msg.Debugging()<<"Fill in parton in blob :"<<i<<","
-		   <<p_mehandler->Flavs()[i]<<","<<p_mehandler->Momenta()[i]<<endl;
     parton = new Parton(i,p_mehandler->Flavs()[i],p_mehandler->Momenta()[i]);
     parton->SetNumber(int(parton));
     parton->SetDecayBlob(_blob);

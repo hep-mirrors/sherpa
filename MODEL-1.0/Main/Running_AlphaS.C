@@ -24,7 +24,6 @@ Running_AlphaS::Running_AlphaS(const double _as_MZ,const double _m2_MZ) :
   m_as_MZ(_as_MZ), m_m2_MZ(_m2_MZ) 
 {
   m_type  = std::string("Running Coupling");
-  msg.Tracking()<<"Initialising Running_AlphaS for "<<m_as_MZ<<" at "<<sqrt(m_m2_MZ)<<endl;
   p_thresh  = NULL;
 
   m_CF    = 4./3.;        
@@ -106,20 +105,6 @@ Running_AlphaS::Running_AlphaS(const double _as_MZ,const double _m2_MZ) :
       }
     }
   }
-
-  if (rpa.gen.Debugging()) {
-    msg.Out()<<" Init (3) "<<endl;
-    for (int i=0; i<=m_nth; ++i) {
-      msg.Out()<<"  s_low ="<<p_thresh[i].low_scale
-	       <<"  as_low="<<p_thresh[i].as_low
-	       <<"  nf="<<p_thresh[i].nf<<endl;
-      msg.Out()<<"  s_high ="<<p_thresh[i].high_scale
-	       <<"  as_high="<<p_thresh[i].as_high
-	       <<"  lambda2="<<p_thresh[i].lambda2<<endl;
-    }
-    msg.Out()<<endl;
-  }
-  msg.Tracking()<<" Initialisation of Alpha_S completed."<<endl;
 }
 
 
@@ -363,21 +348,6 @@ void Running_AlphaS::SelfTest() {
   double mult=::exp(log(smax/smin)/double(np-2));
 
   ff_as.reset(np);
-
-  // fill data
-  msg.Tracking()<<endl;
-  msg.Tracking()<<"============================================================"<<endl;
-  msg.Tracking()<<" check selfconsistence at thresholds:"<<endl;
-  for (int j=0;j<=m_nth;++j) {
-    msg.Tracking()<<" scale="<<thresh[j].low_scale;
-    msg.Tracking()<<"   ist="<<AlphaSLam(thresh[j].low_scale,j);
-    msg.Tracking()<<"   soll="<<thresh[j].as_low<<endl;
-    msg.Tracking()<<" scale="<<thresh[j].high_scale;
-    msg.Tracking()<<"   ist="<<AlphaSLam(thresh[j].high_scale,j);
-    msg.Tracking()<<"   soll="<<thresh[j].as_high<<endl;
-  }
-
-  msg.Tracking()<<" create data file .... "<<endl;
   double as0=operator()(0.);
   ff_as.insert(0.,as0);
   double s= smin;
@@ -386,11 +356,8 @@ void Running_AlphaS::SelfTest() {
     double as =operator()(s);
     double rs =sqrt(s);
     ff_as.insert(rs,as);
-    //    msg.Tracking()<<" rs="<<rs<<"  as="<<as<<endl;
     s*=mult;
   }
-
-  // write file
   ff_as.output(sqrt(smin),sqrt(smax),"alpha_s.test.dat");
   */
 }

@@ -46,7 +46,7 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 	  set==std::string("cteq6l1")) && grid_path==std::string("CTEQ6Grid") ) {
 	  
 	  msg.Tracking()<<"Initialize CTEQ6 : "<<version<<" from "<<grid_path<<endl;
-	  cout<<"Try to build CTEQ6_Fortran_Interface object"<<endl;
+	  msg.Tracking()<<"Initialize CTEQ6_Fortran_Interface : "<<set<<"/"<<version<<" from "<<grid_path<<endl;
 	  return new CTEQ6_Fortran_Interface(bunch_particle,set,version,grid_path);
       }
       else if (set==std::string("Alekhin_100") ||

@@ -1,5 +1,5 @@
 #include "Splitting_Function.H"
-//#include "Sudakov_Tools.H"
+#include "Message.H"
 
 using namespace APACIC;
 
@@ -22,8 +22,7 @@ double Splitting_Function::GetLastInt()
 }
 
 void Splitting_Function::Add(Splitting_Function *) {
-  std::cerr<<" Error in Spliting_Function: something nasty is going on"<<std::endl;
-  std::cout<<" Error in Spliting_Function: something nasty is going on"<<std::endl;
+  AORGTOOLS::msg.Error()<<" Error in Spliting_Function: something nasty is going on"<<std::endl;
 }
 
 void Splitting_Function::SelectOne() {}
@@ -44,7 +43,7 @@ APHYTOOLS::Flavour & Splitting_Function::GetFlC()
 }
 
 void Splitting_Function::PrintStat(int mode) {
-  if (mode>0) for(int i=0;i<mode;++i) std::cout<<' ';
-  std::cout<<"Splitting Function: "
-	   <<GetFlA()<<" -> "<<GetFlB()<<" + "<<GetFlC()<<std::endl;
+  if (mode>0) for(int i=0;i<mode;++i) AORGTOOLS::msg.Debugging()<<' ';
+  AORGTOOLS::msg.Debugging()<<"Splitting Function: "
+			    <<GetFlA()<<" -> "<<GetFlB()<<" + "<<GetFlC()<<std::endl;
 }

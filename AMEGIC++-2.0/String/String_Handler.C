@@ -11,22 +11,6 @@ using namespace std;
 String_Handler::String_Handler(const int &_gen_str,const string& _path,Basic_Sfuncs* _BS) 
   : gen_str(_gen_str), path(_path)
 {
-  
-  //testing
-  /*
-  String_Tree st;
-  sknot* shelp = st.String2Tree("A*(B+C)-A*A*(D+E)");
-
-  st.DeleteMinus(shelp);
-  cout<<"Vor Cluster: "<<st.Tree2String(shelp,0)<<endl;
-  st.Cluster(shelp,0);
-  st.DeleteMinus(shelp);
-  st.Delete(shelp,string("Z[0]"));
-  cout<<"Nachher: "<<st.Tree2String(shelp,0)<<endl;
-  abort();
-  */
-
-
   working = 0;
   sk      = 0;
   val     = 0;
@@ -54,7 +38,7 @@ String_Handler::String_Handler(const int &_gen_str,const string& _path,Basic_Sfu
     }
     if (gen_str==2) val = Set_Values(pID,_BS);
     if (val!=0) {
-      msg.Tracking()<<pID<<" loaded."<<endl; 
+      msg.Debugging()<<pID<<" loaded."<<endl; 
       val->SetCouplFlav();
       working = 1;
     }
@@ -184,7 +168,7 @@ void String_Handler::Complete(Helicity* hel)
   working = 1;
 
   if (val!=0) return;
-  msg.Tracking()<<"Completing the strings, this may take some time...."<<endl;
+  msg.Debugging()<<"Completing the strings, this may take some time...."<<endl;
 
   //connect sgenZ to treeZ
   list<sknot*> endpoint;
@@ -192,24 +176,12 @@ void String_Handler::Complete(Helicity* hel)
   for (long int i=1;i<sgen->ZX_Max_Number();i++) sgen->SetOff(i);
 
   for (short int j=0;j<maxhel;j++) {
-    //    cout<<"Helicity: "<<j<<"; Knotsize = "<<stree.SknotListSize()<<endl;
     for (short int i=0;i<maxgraph;i++) {
       if (stringsk[i][j].length()>0 && hel->On(j)) {
 	if (hel->On(j)) sk[i][j] = MakeSknotAFill(stringsk[i][j]);
 	           else sk[i][j] = 0;
 	//delete stringsk
 	stringsk[i][j] = string("");
-	/*
-	//Simplify
-	string spre = stree.Tree2String(sk[i][j],0);
-	stree.Simplify(sk[i][j]);
-	string safter = stree.Tree2String(sk[i][j],0);
-	if (spre!=safter) {
-	  //changed endpoints
-	  endpoint.clear();
-	  stree.GetEnd(sk[i][j],endpoint);
-	}
-	*/
       }
     }
   }
@@ -220,9 +192,6 @@ void String_Handler::Complete(Helicity* hel)
     countall++;
     if (sgen->Get_ZXl(i)->on) counton++;
   }
-
-  msg.Tracking()<<counton<<"/"<<countall<<" direct Z-Functions."<<endl;
-
 
   for (long int i=sgen->ZX_Max_Number()-1;i>0;i--) {
     if (sgen->Get_ZXl(i)->zlist==6 && sgen->Get_ZXl(i)->on) {
@@ -255,8 +224,6 @@ void String_Handler::Complete(Helicity* hel)
     if (sgen->Get_ZXl(i)->on) counton++;
   }
 
-  msg.Tracking()<<counton<<"/"<<countall<<" direct+indirect Z-Functions."<<endl;
-
   Z_Kill();  
 }
 
@@ -271,7 +238,6 @@ Complex String_Handler::Zvalue(int igraph,int ihel)
 {
   if (val!=0) return val->Evaluate(igraph,ihel);
   if (sk[igraph][ihel]==0) return Complex(0.,0.);
-  //msg.Out()<<igraph<<";"<<ihel<<" : "<<stree.Tree2String(sk[igraph][ihel],0)<<endl;
   return stree.Evaluate(sk[igraph][ihel]); 
 }
 
@@ -284,7 +250,6 @@ void String_Handler::Output(Helicity* hel)
 {
 #ifdef Kabbala_on  
   if (gen_str<2 || val!=0) return;
-  msg.Debugging()<<"String_Handler::Output() : "<<path<<endl;
   String_Output so(path,maxgraph,maxhel);
   so.Output(sk,&stree,sgen,hel);
 #endif
@@ -294,7 +259,6 @@ void String_Handler::Output(Helicity* hel, string path)
 {
 #ifdef Kabbala_on  
   if (gen_str<2 || val!=0) return;
-  msg.Debugging()<<"String_Handler::Output() : "<<path<<endl;
   String_Output so(path,maxgraph,maxhel);
   so.Output(sk,&stree,sgen,hel);
 #endif
@@ -304,7 +268,7 @@ void String_Handler::Z_Kill()
 {
 #ifdef Kabbala_on
   int count = 0;
-  msg.Tracking()<<"Number of Z functions: "<<sgen->ZX_Max_Number()<<endl;
+  msg.Debugging()<<"Number of Z functions: "<<sgen->ZX_Max_Number()<<endl;
   string str;
   for (long int i=1;i<sgen->ZX_Max_Number();i++) {
     if (sgen->Get_ZXl(i)->on==0) {
@@ -324,7 +288,7 @@ void String_Handler::Z_Kill()
     }
   }
   
-  msg.Tracking()<<count<<"/"<<sgen->ZX_Max_Number()<<" Z functions have been deleted."<<endl;
+  msg.Debugging()<<count<<"/"<<sgen->ZX_Max_Number()<<" Z functions have been deleted."<<endl;
 #endif
 }
 

@@ -19,17 +19,14 @@ using namespace std;
 
 void All_Processes::Add(Process_Base * _proc)
 {
-  msg.Tracking()<<"Add process "<<_proc->Name()<<" to All_Processes."<<endl;
   m_procs.push_back(_proc);
 }
 
 void  All_Processes::SelectOne() {
-  //  msg.Out()<<"AllProcesses::SelectOne : totalxs, max = "<<m_totalxs<<", "<<m_max<<endl;
   DeSelect();
   if (m_totalxs==0) p_selected = m_procs[int(ran.Get()*m_procs.size())];
   else {
     double disc = m_totalxs * ran.Get(); 
-    //    cout<<" disc="<<disc<<endl;
     for (int i=0;i<m_procs.size();i++) {
       disc -= m_procs[i]->Total();
       if (disc<0.) {
@@ -37,12 +34,9 @@ void  All_Processes::SelectOne() {
 	p_selected->DeSelect();
 	return;
       }
-      //    cout<<" disc="<<disc<<endl;
     }
-    //    msg.Out()<<" p_selected="<<p_selected->Name()<<std::endl;
     if (disc>0.) { 
-      msg.Error()<<"Error in Process_Group::SelectOne() : ";
-      msg.Error()<<"Total xsec = "<<m_totalxs<<std::endl;
+      msg.Error()<<"Error in Process_Group::SelectOne() : "<<"Total xsec = "<<m_totalxs<<std::endl;
       return;
     }
   }
@@ -71,9 +65,9 @@ int All_Processes::InitAllProcesses(Interaction_Model_Base * model,Topology * to
 {
   bool okay = 1;
   for (int i=0;i<m_procs.size();i++) {
-    msg.Tracking()<<"========================================================="<<endl;
-    msg.Tracking()<<"========================================================="<<endl;
-    msg.Tracking()<<"Process_Group::InitAmplitude for "<<m_procs[i]->Name()<<endl;
+    msg.Debugging()<<"========================================================="<<endl
+		   <<"========================================================="<<endl
+		   <<"Process_Group::InitAmplitude for "<<m_procs[i]->Name()<<endl;
     if (moms) { delete [] moms; moms = 0; }
     if (!(m_procs[i]->InitAmplitude(model,top,moms,results,links))) okay = 0;
   }
@@ -85,18 +79,17 @@ int All_Processes::InitAllProcesses(Interaction_Model_Base * model,Topology * to
     return -1;
   }
 
-  msg.Tracking()<<"Set up "<<results.size()<<" integrators : "<<endl;
   for (int i=0;i<results.size();i++) {
-    msg.Tracking()<<"========================================================="<<endl;
-    msg.Tracking()<<"========================================================="<<endl;
-    msg.Tracking()<<"All_Processes::SetUpIntegrator for "<<links[i]->Name()<<endl;
+    msg.Debugging()<<"========================================================="<<endl
+		   <<"========================================================="<<endl
+		   <<"All_Processes::SetUpIntegrator for "<<links[i]->Name()<<endl;
     if (!(links[i]->SetUpIntegrator()))       okay = 0;
   }
   if (okay) {
     for (int i=0;i<m_procs.size();i++) {
-      msg.Tracking()<<"========================================================="<<endl;
-      msg.Tracking()<<"========================================================="<<endl;
-      msg.Tracking()<<"Process_Group::SetUpIntegrator for "<<m_procs[i]->Name()<<endl;
+      msg.Debugging()<<"========================================================="<<endl
+		     <<"========================================================="<<endl
+		     <<"Process_Group::SetUpIntegrator for "<<m_procs[i]->Name()<<endl;
       moms = 0;
       if (m_procs[i]->Partner()==NULL) {      
 	if (!(m_procs[i]->SetUpIntegrator())) okay = 0;
@@ -129,7 +122,6 @@ bool All_Processes::CalculateTotalXSec(string _resdir)
 
 bool All_Processes::OneEvent() {
   SelectOne();
-  msg.Debugging()<<"Selected Process_Group : "<<p_selected->Name()<<endl;
   return p_selected->OneEvent();
 }
 

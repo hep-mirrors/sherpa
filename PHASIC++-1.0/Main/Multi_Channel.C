@@ -31,7 +31,6 @@ Multi_Channel::~Multi_Channel()
   DropAllChannels();
   if (s1) { delete[] s1; s1 = 0; }
   if (s2) { delete[] s2; s2 = 0; }
-  msg.Debugging()<<"Deleted "<<name<<endl;
 }
 
 void Multi_Channel::Add(Single_Channel * Ch) { 
@@ -41,8 +40,8 @@ void Multi_Channel::Add(Single_Channel * Ch) {
 
 Single_Channel * Multi_Channel::Channel(int i) { 
   if ((i<0) || (i>=channels.size())) {
-    msg.Error()<<"Multi_Channel::Channel("<<i<<") out of bounds :";
-    msg.Error()<<" 0 < "<<i<<" < "<<channels.size()<<endl;
+    msg.Error()<<"Multi_Channel::Channel("<<i<<") out of bounds :"
+	       <<" 0 < "<<i<<" < "<<channels.size()<<endl;
     return 0;
   }
   return channels[i]; 
@@ -51,8 +50,8 @@ Single_Channel * Multi_Channel::Channel(int i) {
 void Multi_Channel::DropChannel(int i) 
 {
   if ((i<0) || (i>channels.size())) {
-    msg.Error()<<"Multi_Channel::DropChannel("<<i<<") out of bounds :";
-    msg.Error()<<" 0 < "<<i<<" < "<<channels.size()<<endl;
+    msg.Error()<<"Multi_Channel::DropChannel("<<i<<") out of bounds :"
+	       <<" 0 < "<<i<<" < "<<channels.size()<<endl;
     return;
   }
   if (channels[i]) delete channels[i];
@@ -71,7 +70,6 @@ void Multi_Channel::DropAllChannels()
 
 void Multi_Channel::Reset() 
 {
-  msg.Debugging()<<"Resetting Multi_Channel : "<<this<<endl;
   if (s1==0) s1 =  new double[channels.size()];
   if (s2==0) s2 =  new double[channels.size()];
 
@@ -81,8 +79,8 @@ void Multi_Channel::Reset()
   m_result     = 0.;
   m_result2    = 0.;
 
-  msg.Tracking()<<"Channels for "<<name<<endl;
-  msg.Tracking()<<"----------------- "<<n_points<<" --------------------"<<endl;
+  msg.Tracking()<<"Channels for "<<name<<endl
+		<<"----------------- "<<n_points<<" --------------------"<<endl;
   for(short int i=0;i<channels.size();i++) {
     channels[i]->Reset(1./channels.size());
     msg.Tracking()<<" "<<i<<" : "<<channels[i]->Name()<<"  : "<<channels[i]->Alpha()<<endl;
@@ -100,8 +98,6 @@ void Multi_Channel::MPIOptimize(double error)
 #ifdef _USE_MPI_
   int rank = MPI::COMM_WORLD.Get_rank();
   int size = MPI::COMM_WORLD.Get_size();
-  
-  cout<<"Process "<<rank<<" in MPIOptimize()."<<endl;
 
   double * messageblock = new double[1+3*channels.size()];
   double * alp = new double[channels.size()];
@@ -111,7 +107,6 @@ void Multi_Channel::MPIOptimize(double error)
     while (count<size-1) {
       MPI::COMM_WORLD.Recv(messageblock, 1+3*channels.size(), MPI::DOUBLE, MPI::ANY_SOURCE, 9);
       count++;
-      cout<<" received Channel-Data from Knot "<<messageblock[0]<<endl;
       for (short int i=0;i<channels.size();i++) {
 	channels[i]->SetRes1(channels[i]->Res1() + messageblock[1+channels.size()+i]);
 	channels[i]->SetRes2(channels[i]->Res2() + messageblock[1+2*channels.size()+i]);
@@ -119,7 +114,6 @@ void Multi_Channel::MPIOptimize(double error)
 	channels[i]->SetN(channels[i]->N() + int(messageblock[1+i]));
       }
     }
-    cout<<"Master: "<<channels[0]->N()<<" data accumulated."<<endl; 
     Optimize(error);
     //broadcast alphai
     for (short int i=0;i<channels.size();i++) alp[i] = channels[i]->Alpha();
@@ -134,7 +128,6 @@ void Multi_Channel::MPIOptimize(double error)
     MPI::COMM_WORLD.Send(messageblock, 1+3*channels.size(), MPI::DOUBLE, 0, 9);   
     //Waiting for new alpha's
     MPI::COMM_WORLD.Recv(alp, channels.size(), MPI::DOUBLE, 0, 9);
-    msg.Out()<<"Slave "<<rank<<" received new alpha."<<endl;
 
     for (short int i=0;i<channels.size();i++) {
       channels[i]->SetAlpha(alp[i]);
@@ -145,7 +138,6 @@ void Multi_Channel::MPIOptimize(double error)
   delete[] alp;
   delete[] messageblock;
 #else
-  cout<<"MPIOptimize called in non-MPI session!!!"<<endl;
 #endif
 
 }
@@ -168,9 +160,7 @@ void Multi_Channel::Optimize(double error)
   for (i=0;i<channels.size();i++) {
     if (dabs(aptot-sqrt(s1[i]))>s1x) s1x = dabs(aptot-sqrt(s1[i]));
     channels[i]->SetAlpha(channels[i]->Alpha() * sqrt(s1[i])/aptot);
-    //maximum number of events equal 10^8 assumed
     if (channels[i]->Alpha() < 1.e-8 ) channels[i]->SetAlpha(0.);
-    //    if (channels[i]->Alpha() < sqr(error)/channels.size()) channels[i]->SetAlpha(0.);
   }
   double norm = 0;
   for (i=0;i<channels.size();i++) norm += channels[i]->Alpha();
@@ -181,19 +171,19 @@ void Multi_Channel::Optimize(double error)
     for (i=0;i<channels.size();i++) channels[i]->SetAlphaSave(channels[i]->Alpha());
   }  
   for(i=0;i<channels.size();i++) channels[i]->ResetOpt();
-  msg.Tracking()<<"New weights for : "<<name<<endl;
-  msg.Tracking()<<"----------------- "<<n_points<<" ----------------"<<endl;
+  msg.Tracking()<<"New weights for : "<<name<<endl
+		<<"----------------- "<<n_points<<" ----------------"<<endl;
   for (i=0;i<channels.size();i++) {
     if (channels[i]->Alpha() > 0) {
-      msg.Tracking()<<i<<" channel "<<channels[i]->Name()<<", "<<channels[i]->N()<<" : ";
-      msg.Tracking()<<channels[i]->Alpha()<<" -> "<<channels[i]->AlphaSave()<<endl;
+      msg.Tracking()<<i<<" channel "<<channels[i]->Name()<<", "<<channels[i]->N()<<" : "
+		    <<channels[i]->Alpha()<<" -> "<<channels[i]->AlphaSave()<<endl;
     }
   }
-  msg.Tracking()<<"S1X: "<<s1x<<" -> "<<s1xmin<<endl;
-  msg.Tracking()<<"Variance : "<<Variance()<<endl;
-  msg.Tracking()<<"result,result2,n,n_contrib : "<<m_result<<", ";
-  msg.Tracking()<<m_result2<<", "<<n_points<<", "<<n_contrib<<endl;
-  msg.Tracking()<<"-----------------------------------------------"<<endl;
+  msg.Tracking()<<"S1X: "<<s1x<<" -> "<<s1xmin<<endl
+		<<"Variance : "<<Variance()<<endl
+		<<"result,result2,n,n_contrib : "<<m_result<<", "
+		<<m_result2<<", "<<n_points<<", "<<n_contrib<<endl
+		<<"-----------------------------------------------"<<endl;
 }
 
 void Multi_Channel::EndOptimize(double error)
@@ -205,7 +195,6 @@ void Multi_Channel::EndOptimize(double error)
   for (i=0;i<channels.size();i++) {
     channels[i]->SetAlpha(channels[i]->AlphaSave());
     if (channels[i]->Alpha() < 1.e-8 ) channels[i]->SetAlpha(0.);
-    //    if (channels[i]->Alpha() < error/channels.size()) channels[i]->SetAlpha(0.);
   }
   double norm = 0;
   for (i=0;i<channels.size();i++) norm += channels[i]->Alpha();
@@ -214,23 +203,21 @@ void Multi_Channel::EndOptimize(double error)
   msg.Tracking()<<"Best weights:-------------------------------"<<endl;
   for (i=0;i<channels.size();i++) {
     if (channels[i]->Alpha() > 0) {
-      msg.Tracking()<<i<<" channel "<<channels[i]->Name()<<", "<<channels[i]->N();
-      msg.Tracking()<<" : "<<channels[i]->Alpha()<<endl;
+      msg.Tracking()<<i<<" channel "<<channels[i]->Name()<<", "<<channels[i]->N()
+		    <<" : "<<channels[i]->Alpha()<<endl;
     }
   }
-  msg.Tracking()<<"S1X: "<<s1xmin<<endl;
-  msg.Tracking()<<"Variance : "<<Variance()<<endl;
-  msg.Tracking()<<"result,result2,n,n_contrib : "<<m_result<<", ";
-  msg.Tracking()<<m_result2<<", "<<n_points<<", "<<n_contrib<<endl;
-  msg.Tracking()<<"-------------------------------------------"<<endl;
+  msg.Tracking()<<"S1X: "<<s1xmin<<endl
+		<<"Variance : "<<Variance()<<endl
+		<<"result,result2,n,n_contrib : "<<m_result<<", "
+		<<m_result2<<", "<<n_points<<", "<<n_contrib<<endl
+		<<"-------------------------------------------"<<endl;
 
 #else
 
-//bcast them to all
+  //bcast them to all
   int rank = MPI::COMM_WORLD.Get_rank();
   int size = MPI::COMM_WORLD.Get_size();
-  
-  cout<<"Process "<<rank<<" in End_Optimize()."<<endl;
 
   double* alp = new double[channels.size()];
   //tag 9 for communication
@@ -244,9 +231,9 @@ void Multi_Channel::EndOptimize(double error)
     msg.Tracking()<<"Best weights:-------------------------------"<<endl;
     for (i=0;i<channels.size();i++)
       if (channels[i]->Alpha() > 0) {
-	msg.Tracking()<<i<<" channel "<<channels[i]->Name()<<" :"<<channels[i]->Alpha()<<endl;
-	msg.Tracking()<<"S1X: "<<s1xmin<<endl;
-	msg.Tracking()<<"-------------------------------------------"<<endl;
+	msg.Tracking()<<i<<" channel "<<channels[i]->Name()<<" :"<<channels[i]->Alpha()<<endl
+		      <<"S1X: "<<s1xmin<<endl
+		      <<"-------------------------------------------"<<endl;
       }
     //broadcast alphai
     for (short int i=0;i<channels.size();i++) alp[i] = channels[i]->Alpha();    
@@ -255,7 +242,6 @@ void Multi_Channel::EndOptimize(double error)
   else {
     //Waiting for new alpha's
     MPI::COMM_WORLD.Recv(alp, channels.size(), MPI::DOUBLE, 0, 9);
-    cout<<"Slave "<<rank<<" received new alpha."<<endl;
     for (short int i=0;i<channels.size();i++) channels[i]->SetAlpha(alp[i]);
   }
   delete[] alp;
@@ -264,7 +250,6 @@ void Multi_Channel::EndOptimize(double error)
 
 void Multi_Channel::AddPoint(double value)
 {
-  // msg.Debugging()<<"In Multi_Channel::AddPoint("<<value<<")"<<endl;
   if (!AMATOOLS::IsZero(value)) n_contrib++;
 
   n_points++;
@@ -277,8 +262,6 @@ void Multi_Channel::AddPoint(double value)
       if (channels[i]->Weight()!=0) 
 	var = sqr(value)*m_weight/channels[i]->Weight();
       else var = 0.;
-
-      //Reciprocal weights compared to Berends et al.
       channels[i]->SetRes1(channels[i]->Res1() + var);
       channels[i]->SetRes2(channels[i]->Res2() + sqr(var));
       channels[i]->SetRes3(sqr(channels[i]->Res1())-channels[i]->Res2());
@@ -293,9 +276,9 @@ double Multi_Channel::Variance() {
   disc = m_result2/(n_points*(n_points-1)) - AMATOOLS::sqr(m_result/n_points)/(n_points-1);
   if (disc>0.) return sqrt(disc);
   
-  AORGTOOLS::msg.Error()<<"Variance yielded a NaN !"<<endl;
-  AORGTOOLS::msg.Error()<<"   res,res2 = "<<m_result<<", "<<m_result2;
-  AORGTOOLS::msg.Error()<<" after "<<n_points<<" points."<<endl; 
+  AORGTOOLS::msg.Error()<<"Variance yielded a NaN !"<<endl
+			<<"   res,res2 = "<<m_result<<", "<<m_result2
+			<<" after "<<n_points<<" points."<<endl; 
   
   return sqrt(-disc);
 };
@@ -351,7 +334,6 @@ void Multi_Channel::GeneratePoint(Vec4D * p,Cut_Data * cuts)
     }
     sum += channels[i]->Alpha();
     if (sum>rn) {
-      //       cout<<"Channel number "<<i<<"  rn="<<rn<<" sum="<<sum<<endl;
       channels[i]->GeneratePoint(p,cuts);
       break;
     }

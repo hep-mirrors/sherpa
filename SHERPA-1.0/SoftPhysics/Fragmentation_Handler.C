@@ -23,8 +23,8 @@ Fragmentation_Handler::Fragmentation_Handler(std::string _dir,std::string _file)
     m_lund_a     = dr.GetValue<double>("LUND_A",0.4);
     m_lund_b     = dr.GetValue<double>("LUND_B",0.85);
     m_lund_sigma = dr.GetValue<double>("LUND_SIGMA",0.36);
-    msg.Out()<<"Initialize Lund Fragmentation : "<<std::endl
-	     <<"  LUND_A = "<<m_lund_a<<", LUND_B = "<<m_lund_b<<", LUND_SIGMA = "<<m_lund_sigma<<std::endl;
+    msg.Events()<<"Initialize Lund Fragmentation : "<<std::endl
+		<<"  LUND_A = "<<m_lund_a<<", LUND_B = "<<m_lund_b<<", LUND_SIGMA = "<<m_lund_sigma<<std::endl;
     p_lund       = new Lund_Fortran_Interface(m_lund_a,m_lund_b,m_lund_sigma);
     m_mode       = 1;
     return;
@@ -36,13 +36,8 @@ Fragmentation_Handler::Fragmentation_Handler(std::string _dir,std::string _file)
 }
    
 Fragmentation_Handler::~Fragmentation_Handler() {
-  msg.Tracking()<<"+++++++++++++++++++++++++++++++++++++++++++++++"<<std::endl;
-  msg.Tracking()<<"In Fragmentation_Handler::~Fragmentation_Handler :"<<std::endl;
   if (p_lund)      delete p_lund;
-  
-  msg.Tracking()<<"Out Fragmentation_Handler::~Fragmentation_Handler :"<<std::endl;
-  msg.Tracking()<<"+++++++++++++++++++++++++++++++++++++++++++++++"<<std::endl;
-}; 
+}
 
 
 
@@ -53,7 +48,6 @@ bool Fragmentation_Handler::PerformFragmentation(APHYTOOLS::Blob_List * bl,
   if (!ExtractSinglets(bl,pl)) return 0;
   bool okay = 1;
   for (Blob_Iterator biter=bl->begin();biter!=bl->end();++biter) {
-    msg.Debugging()<<"Take "<<(*biter)->Type()<<" "<<(*biter)->Status()<<std::endl;
     if ( ((*biter)->Type()==std::string("Fragmentation")) && 
 	 ((*biter)->Status()==1) ) {
       (*biter)->BoostInCMS();
@@ -67,7 +61,6 @@ bool Fragmentation_Handler::PerformFragmentation(APHYTOOLS::Blob_List * bl,
 
 bool Fragmentation_Handler::ExtractSinglets(Blob_List * _bloblist,Parton_List * pl) 
 {
-  msg.Debugging()<<"Fragmentation_Handler::ExtractSinglets :"<<std::endl<<std::endl;
   Blob       * newb = NULL;
   Parton     * part;
   bool use_one_blob = 1;
@@ -84,7 +77,6 @@ bool Fragmentation_Handler::ExtractSinglets(Blob_List * _bloblist,Parton_List * 
 	  if ( (part->Info()=='F' || part->Info()=='H') && part->Status()==1) {
 	    if (( (part->Flav().IsQuark()    && !part->Flav().IsAnti() ) ||
 		  (part->Flav().IsDiQuark()) && part->Flav().IsAnti()       ) && part->GetFlow(1)>0 ) {
-	      msg.Debugging()<<"   Start new singlet chain for parton : "<<part<<std::endl;
 	      if (use_one_blob==0 || newb==0) {
 		newb = new Blob();
 		newb->SetId(_bloblist->size());
@@ -124,14 +116,12 @@ bool Fragmentation_Handler::ExtractSinglets(Blob_List * _bloblist,Parton_List * 
     }
     if (!active) (*blit)->SetStatus(0);
   }
-  msg.Debugging()<<"Out Extract Singlets "<<foundatall<<std::endl;
   return foundatall;
 }
 
 
 bool Fragmentation_Handler::FindConnected(Blob_List * _bloblist,
 					  Parton * compare,Blob * blob) {
-  msg.Debugging()<<"Fragmentation_Handler::FindConnected :"<<std::endl;
   Parton * part;
   for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
     if ((*blit)->Status()==1) {
@@ -141,17 +131,14 @@ bool Fragmentation_Handler::FindConnected(Blob_List * _bloblist,
 	if ( part->Info()!='F' && part->Info() != 'H') continue;
 	if (part->Status()!=1) continue; 
 	if (part->GetFlow(2)==compare->GetFlow(1)) {
-	  msg.Debugging()<<"Colour match for "<<compare->GetFlow(1)<<std::endl;
 	  part->SetStatus(2);
 	  part->SetDecayBlob(blob);
 	  blob->AddToInPartons(part);
 	  if (part->GetFlow(1)==0) {
 	    if ( part->Flav().IsQuark() && part->Flav().IsAnti()) {
-	      msg.Debugging()<<"Closed singlet list with an antiquark."<<std::endl;
 	      return 1;
 	    }
 	    if ( part->Flav().IsDiQuark() && (!part->Flav().IsAnti()) ) {
-	      msg.Debugging()<<"Closed singlet list with a diquark."<<std::endl;
 	      return 1;
 	    }
 	  }

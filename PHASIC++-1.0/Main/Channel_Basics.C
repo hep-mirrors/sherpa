@@ -89,8 +89,8 @@ double Channel_Basics::SqLam(double s,double s1, double s2)
 {
   double arg1 = sqr(s-s1-s2)-4.*s1*s2;
   if (arg1>0.) return sqrt(arg1)/s;
-  AORGTOOLS::msg.Error()<<"Channel_Basics::SqLam argument "<<arg1<<" <0 in Channel_Basics::sqlam()"<<endl;
-  AORGTOOLS::msg.Error()<<"s;s1;s2: "<<s<<";"<<s1<<";"<<s2<<endl;
+  AORGTOOLS::msg.Error()<<"Channel_Basics::SqLam argument "<<arg1<<" <0 in Channel_Basics::sqlam()"<<endl
+			<<"s;s1;s2: "<<s<<";"<<s1<<";"<<s2<<endl;
   return 0.;
 }
 

@@ -213,21 +213,18 @@ int Basic_Sfuncs::BuildTensorPolarisations(int momindex)
   Mom->arg[1] = momindex;
   Mom->type=mt::p_m;  
   Mom->mass=Momlist[momindex].mass;
-  msg.Debugging()<<"*****BuildTensorPolarisations: -("<<Mom->type<<") "<<momcount<<" M:"<<Mom->mass<<endl;
   momcount++;
   Momlist.push_back(*Mom);
 
   //Polarisation +1
   Mom->arg[0] = momcount;
   Mom->type=mt::p_p;
-  msg.Debugging()<<"*****BuildTensorPolarisations: + ("<<Mom->type<<") "<<momcount<<endl;
   momcount++;
   Momlist.push_back(*Mom);
 
   //Polarisation longitudinal
   Mom->arg[0] = momcount;
   Mom->type=mt::p_l;
-  msg.Debugging()<<"*****BuildTensorPolarisations: l "<<momcount<<endl;
   momcount++;
   Momlist.push_back(*Mom);
   return momcount;
@@ -257,7 +254,6 @@ int Basic_Sfuncs::BuildPolarisations(int momindex,char type,double angle)
   default:Mom->type=mt::p_m;
   }
   Mom->mass=Momlist[momindex].mass;
-  msg.Debugging()<<"*****BuildPolarisations: -("<<Mom->type<<") "<<momcount<<" M:"<<Mom->mass<<endl;
   momcount++;
   Momlist.push_back(*Mom);
 
@@ -271,7 +267,6 @@ int Basic_Sfuncs::BuildPolarisations(int momindex,char type,double angle)
   default:Mom->type=mt::p_p;
   }
   Mom->mass=Momlist[momindex].mass;
-  msg.Debugging()<<"*****BuildPolarisations: + ("<<Mom->type<<") "<<momcount<<endl;
   momcount++;
   Momlist.push_back(*Mom);
   if(AMATOOLS::IsZero(Momlist[momindex].mass))  return momcount;
@@ -280,7 +275,6 @@ int Basic_Sfuncs::BuildPolarisations(int momindex,char type,double angle)
   Mom->arg[0] = momcount;
   Mom->type=mt::p_l;
   Mom->mass=Momlist[momindex].mass;
-  msg.Debugging()<<"*****BuildPolarisations: l "<<momcount<<endl;
   momcount++;
   Momlist.push_back(*Mom);
   return momcount;
@@ -309,14 +303,12 @@ double Mass = fl.Mass();
     //Polarisation -1
     Mom->arg[0] = momcount;
     Mom->type=mt::p_lh;
-    msg.Debugging()<<"*****BuildPolarisations: -("<<Mom->type<<") "<<momcount<<endl;
     momcount++;
     Momlist.push_back(*Mom);
 
     //Polarisation +1
     Mom->arg[0] = momcount;
     Mom->type=mt::p_lp;
-    msg.Debugging()<<"*****BuildPolarisations: +("<<Mom->type<<") "<<momcount<<endl;
     momcount++;
     Momlist.push_back(*Mom);
     if(momindex<nvec&&AMATOOLS::IsZero(Mass))  return momcount;
@@ -324,7 +316,6 @@ double Mass = fl.Mass();
     //Polarisation longitudinal
     Mom->arg[0] = momcount;
     Mom->type=mt::p_l;
-    msg.Debugging()<<"*****BuildPolarisations: l "<<momcount<<endl;
     momcount++;
     Momlist.push_back(*Mom);
     }
@@ -333,7 +324,6 @@ double Mass = fl.Mass();
     if (GetPolNumber(momindex,mt::p_si,0,1)==-1 && rpa.gen.CutScheme()!=1 ) {
       Mom->arg[0] = momcount;
       Mom->type=mt::p_si;
-      msg.Debugging()<<"*****BuildPolarisations: zero mass s "<<momcount<<endl;
       momcount++;
       Momlist.push_back(*Mom);
     }
@@ -343,7 +333,6 @@ double Mass = fl.Mass();
     //Polarisation scalar
     Mom->arg[0] = momcount;
     Mom->type=mt::p_s;
-    msg.Debugging()<<"*****BuildPolarisations: s "<<momcount<<" mass:"<<Mass<<endl;
     momcount++;
     Momlist.push_back(*Mom);
   }
@@ -390,7 +379,6 @@ void Basic_Sfuncs::CalcMomlist()
        }
       Momlist[j+1].mom = Momlist[j].mom;
       Momlist[j+1].mom_img = (-1.)*Momlist[j].mom_img;
-      //msg.Out()<<"MOM("<<j<<"): "<<Momlist[j].mom<<Momlist[j].mom_img<<std::endl;
       j++;
       break;
 
@@ -461,7 +449,6 @@ void Basic_Sfuncs::CalcMomlist()
       Momlist[j].mom =    real(help)*mom;
       Momlist[j].mom_img= imag(help)*mom;
     } 
-    //msg.Out()<<"MOM("<<j<<"): "<<Momlist[j].mom<<Momlist[j].mom_img<<std::endl;
    
   }
 }
@@ -491,7 +478,6 @@ void Basic_Sfuncs::InitGaugeTest(double theta)
 	Vec4D(c0*c+s0*s*cf,s0*c+s*c0*cf,s*c0*sf,c0*c-s*s0*cf);
       Momlist[j].mom_img=1./sqrt(1.-mom[1]/ps*::sin(theta)-mom[3]/ps*::cos(theta))*
 	Vec4D(s0*s*sf,s*c0*sf,s0*c-s*c0*cf,-s*s0*sf);
-      //msg.Out()<<"MOM("<<j<<"): "<<Momlist[j].mom<<Momlist[j].mom_img<<std::endl;
 
       Momlist[j+1].mom = Momlist[j].mom;
       Momlist[j+1].mom_img = (-1.)*Momlist[j].mom_img;
@@ -558,7 +544,6 @@ int Basic_Sfuncs::CalcEtaMu(Vec4D* _p)
       else _eta[i] = sqrt(Complex(2.*(m->mom[0]-(m->mom[1]+m->mom[3])*SQRT_05),
 				  2.*(m->mom_img[0]-(m->mom_img[1]+m->mom_img[3])*SQRT_05)));
     }
-    //msg.Out()<<"Etas: "<<i<<" "<<_eta[i]<<std::endl;
     if(AMATOOLS::IsZero(_eta[i]))etachk=0;
     if (i<nmom) {
       _mu[i]  =Momlist[i].mass/_eta[i];
@@ -716,7 +701,6 @@ void Basic_Sfuncs::StartPrecalc()
 	if (_S0[i][j]==Complex(0.,0.) && _S1[i][j]==Complex(0.,0.)) calc_st[i][j]=0;
 	else if(i>j) ++cnt;
       }
-  msg.Debugging()<<"Basic_Sfuncs::StartPrecalc(): "<<cnt<<" Sfuncs"<<std::endl;
 }
 
 bool Basic_Sfuncs::IsMomSum(int x,int y,int z)

@@ -28,7 +28,7 @@ Running_AlphaQED::Running_AlphaQED(const double _alpha0,const double _MZ2,const 
   m_type = std::string("Running Coupling");
 
   if (m_alpha0!=1./137.03599976) { // Thomson limit (basis for running coupling)
-    msg.Error()<<" WARNING: using value for alpha_QED(0)="<<m_alpha0<<std::endl;
+    msg.Events()<<" WARNING: using value for alpha_QED(0)="<<m_alpha0<<" different from Thomson limit."<<std::endl;
   } 
 
   m_split_scale = sqr(m_split_scale);
@@ -36,22 +36,9 @@ Running_AlphaQED::Running_AlphaQED(const double _alpha0,const double _MZ2,const 
   m_alpha_MZ    = Aqed(m_MZ2);
   m_defval      = Aqed(m_MZ2);
 
-  // default mode =0 and E_splitt=0
-  // if splitted:
-  // (a) E_splitt < 0  => always use alpha_eff
-  // (b) E_splitt about 1 GeV
-  //                   => use alpha0 for small scales (E_splitt ==0 => alpha0 for Q^2=0 only)
-  //                   => use alpah_eff for large scales
-  // (d) E_splitt >> E_cms
-  //                   => always use alpha0
-
-
-  // status
-  if (rpa.gen.Tracking()) {
-    msg.Out()<<" alpha_QED(0)    = 1./"<<1./m_alpha0<<std::endl;
-    msg.Out()<<" alpha_QED(MZ)   = 1./"<<1./m_alpha_MZ<<std::endl;
-    msg.Out()<<" alpha_QED_fixed = 1./"<<1./m_defval<<std::endl;
-  }
+  msg.Tracking()<<" alpha_QED(0)    = 1./"<<1./m_alpha0<<std::endl
+		<<" alpha_QED(MZ)   = 1./"<<1./m_alpha_MZ<<std::endl
+		<<" alpha_QED_fixed = 1./"<<1./m_defval<<std::endl;
 }
 
 

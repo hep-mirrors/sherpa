@@ -21,9 +21,6 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const APHYTOOLS::Flavour _bunch
 
     m_bunch = _bunch;
     if (m_bunch==Flavour(kf::p_plus).Bar()) m_anti=-1;
-    msg.Tracking()<<"Try to initialize cteq6 PDF set."<<std::endl
-		  <<"  Set = "<<m_set<<" v "<<m_member<<" for "<<m_bunch<<std::endl;
-
     int iset = 0;
     
     if (m_set==std::string("cteq6m"))  iset = 1;
@@ -34,7 +31,7 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const APHYTOOLS::Flavour _bunch
     char buffer[1024];
     char * err = getcwd(buffer,1024);
     if (err==NULL) {
-      std::cout<<" something wrong in CTEQ6_Fortran_Interface.C "<<std::endl;
+      msg.Error()<<"Error in CTEQ6_Fortran_Interface.C "<<std::endl;
     }
     int stat=chdir(m_path.c_str());
     ctq6initset_(iset);
@@ -42,7 +39,8 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const APHYTOOLS::Flavour _bunch
       chdir(buffer);
     }
     else {
-      std::cout<<" path "<<m_path<<" not found "<<std::endl;
+      msg.Error()<<"Error in CTEQ6_Fortran_Interface.C "<<std::endl
+		 <<"   path "<<m_path<<" not found "<<std::endl;
     }
 
     for (int i=1;i<6;i++) {
@@ -74,9 +72,6 @@ double CTEQ6_Fortran_Interface::AlphaSPDF(double scale2)
   if (m_set==std::string("cteq6l"))  asmz = 0.118;
   if (m_set==std::string("cteq6l1")) asmz = 0.130;
 
-
-  //
-  cout<<" WARNING: call Running method! "<<endl;
   return asmz;
 }
 
@@ -85,29 +80,22 @@ void CTEQ6_Fortran_Interface::Output() {}
 
 void CTEQ6_Fortran_Interface::Calculate(const double _x, const double _Q2) 
 {
+  double x = _x, Q = sqrt(_Q2);
   
-    //std::cout<<"In Calculate "<<_x<<" "<<_Q2<<std::endl;
-
-    double x = _x, Q = sqrt(_Q2);
-
-    //std::cout<<"In Calculate "<<x<<" "<<Q<<std::endl;
-       
-    int j;
-    for (int i=0;i<11;i++) {
-	j       = 5-i;
-	m_f[i]  = ctq6evolve_(j,x,Q)*x;
-	//std::cout<<"m_f["<<i<<"] = "<<m_f[i]<<std::endl;
-    }
+  int j;
+  for (int i=0;i<11;i++) {
+    j       = 5-i;
+    m_f[i]  = ctq6evolve_(j,x,Q)*x;
+  }
 }
 
-double CTEQ6_Fortran_Interface::GetXPDF(const APHYTOOLS::Flavour & infl) {
-
-    if (infl == Flavour(kf::gluon)) return m_f[5];
-    if (infl.Kfcode()==2)   return m_f[5-m_anti*int(infl)/2];     // +/- 1
-    if (infl.Kfcode()==1)   return m_f[5-m_anti*int(infl)*2];     // +/- 2
-    if (infl.Kfcode()==4)   return m_f[5-m_anti*int(infl)/4*3];   // +/- 3
-    if (infl.Kfcode()==3)   return m_f[5-m_anti*int(infl)/3*4];   // +/- 4
-    if (infl.Kfcode()==5)   return m_f[5-m_anti*int(infl)];       // +/- 5
-  
+double CTEQ6_Fortran_Interface::GetXPDF(const APHYTOOLS::Flavour & infl) 
+{
+  if (infl == Flavour(kf::gluon)) return m_f[5];
+  if (infl.Kfcode()==2)   return m_f[5-m_anti*int(infl)/2];     // +/- 1
+  if (infl.Kfcode()==1)   return m_f[5-m_anti*int(infl)*2];     // +/- 2
+  if (infl.Kfcode()==4)   return m_f[5-m_anti*int(infl)/4*3];   // +/- 3
+  if (infl.Kfcode()==3)   return m_f[5-m_anti*int(infl)/3*4];   // +/- 4
+  if (infl.Kfcode()==5)   return m_f[5-m_anti*int(infl)];       // +/- 5
 }
 

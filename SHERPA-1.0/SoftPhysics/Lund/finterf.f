@@ -7,7 +7,7 @@ C P Y T H I A     6.137
 
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N) 
-c *as* new common blocks:
+
       COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
       COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
       COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
@@ -18,20 +18,6 @@ c *as* new common blocks:
       COMMON/PYINT1/MINT(400),VINT(400)
       COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
       COMMON/PYINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
-c *as* old common blocks:
-c      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-c      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-c      COMMON/PYDAT3/MDCY(500,3),MDME(4000,2),BRAT(4000),KFDP(4000,5)
-c      COMMON/PYDAT4/CHAF(500,2)
-c      CHARACTER CHAF*16
-c      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-c      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-c      COMMON/PYINT1/MINT(400),VINT(400)
-c      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-c      COMMON/PYINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
-
-CC     SAVE /PYDAT1/,/PYDAT2/,/PYDAT3/,/PYDAT4/,/PYSUBS/,/PYPARS/,
-CC     &/PYINT1/,/PYINT2/,/PYINT5/
 
 C...Main parameters of run: c.m. energy and number of events.
       NEV=100
@@ -45,17 +31,9 @@ C      MSUB(25) = 1
 
 C...Only allow Z0 decay to quarks (i.e. no leptonic final states).
       DO 100 IDC=MDCY(23,2),MDCY(23,2)+MDCY(23,3)-1
-         print *,'channel',IDC,KFDP(IDC,1)
         IF(IABS(KFDP(IDC,1)).GE.2) MDME(IDC,1)=MIN(0,MDME(IDC,1))
-        print *,' switch',MDME(IDC,1)
-c *as*        IF(IABS(KFDP(IDC,1)).GE.6) MDME(IDC,1)=MIN(0,MDME(IDC,1))
   100 CONTINUE
 C...Only allow W+,W- decay to quarks (i.e. no leptonic final states).
-c *as*      DO 200 IDC=MDCY(24,2),MDCY(24,2)+MDCY(24,3)-1
-c *as*        IF(IABS(KFDP(IDC,1)).GE.6) MDME(IDC,1)=MIN(0,MDME(IDC,1))
-c *as*  200 CONTINUE   
-C...Initialize.
-C...Matrixelement       *as* comment 2 lines!
       MSTP(48)=1
       MSTJ(101)=5
 C...Parton-Shower
@@ -82,64 +60,12 @@ c no isr
 
 
 
-c *as* Hadronisation parameter
-c      print *,' parj(41) =',parj(41)
       PARJ(41) = DA
-c      print *,' parj(41) =',parj(41)
-
-c      print *,' parj(42) =',parj(42)
       PARJ(42) = DB
-c      print *,' parj(42) =',parj(42)
-
-c      print *,' parj(21) =',parj(21)
       PARJ(21) = DS
-c      print *,' parj(21) =',parj(21)
 
       ECMS = ECM
 
-c *as*      MSTU(22) = 100000
-
-C>>>ME
-C      MSTP(71) = 0
-C...ISR off
-C      MSTJ(107) = 0
-
-C      MSTJ(101) = -2
-C      MSTP(48) = 1
-
-
-C...DELPHI
-C      PARJ(122) = 0.163
-C      PARJ(129) = 0.0025
-C      PARJ(41)  = 0.903
-C      PARJ(42)  = 0.58
-C      PARJ(21)  = 0.477
-C     PARJ(2)   = 0.277
-C      PARJ(1)   = 0.087
-C      PARJ(25)  = 0.65
-C      PARJ(26)  = 0.23  
-C      MSTJ(11) = 3 
-C      MSTJ(12) = 3
-C...test
-C      MSTJ(101)= -1
-C      MSTJ(111)= 1
-
-C      MSTJ(46) = 3
-
-C      print *,"Init"
-C      MSTP(111) = 0
-C      MSTP(71)  = 0
-C     ISR
-C...Electron carry's the whole energy
-
-C ISR TEST
-
-C NO ISR
-C      MSTP(11) = 0
-C      MSTP(61)  = 0
-C ISR
-c *as*      MSTP(11)  = IISR
-c *as*      MSTP(61)  = IISR
 
       CALL PYINIT('CMS','e+','e-',ECM)
 
@@ -211,13 +137,7 @@ cc      CALL PYLIST(1)
 c no photon radiation
       MSTJ(41)  = 1;  
 
-c     do a pythia event      
       call pyevnt
-
-c     do a print out
-      if (iev.le.10) call pylist(1)
-
-c     convert pylist to HEPEVT
       call pyhepc(1)	
 
       return
@@ -263,7 +183,6 @@ C...HEPEVT commonblock.
             DO J=1,3
               XJET(NK,J+1)=VHEP(J,I)
            ENDDO
-           PRINT *,VHEP(4,I),' ',VHEP(4,2),' ',VHEP(4,3),' ',VHEP(4,4)
         ENDIF
       ENDDO
 

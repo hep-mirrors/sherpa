@@ -32,25 +32,20 @@ RamboKK::RamboKK(int _nin,int _nout,Flavour * fl)// : nin(_nin), nout(_nout)
   Z_N  = Z[nout];
   delete[] Z;
 
-
-  std::cout<<"Constructor RamboKK(1)"<<std::endl;
-
   kkp=-1;mpss=1.;
   for (int i=nin;i<nin+nout;i++) {
     if(fl[i].IsKK()){
       if(AMATOOLS::IsZero(ms[i])){
-	msg.Out()<<"Please initialize with nonzero particle mass ("<<fl[i]<<") !"<<std::endl;
+	msg.Error()<<"Error in RamboKK: "<<endl
+		   <<"   Please initialize with nonzero particle mass ("<<fl[i]<<") !"<<std::endl;
 	abort();
       }
       kkp=i;
       
       ed  = rpa.gen.ScalarNumber(std::string("ED"));
-      std::cout<<"ED "<<ed<<std::endl;
       r2  = sqr(rpa.gen.ScalarConstant(std::string("Radius")));
       double gn  = rpa.gen.ScalarConstant(std::string("G_Newton"));
       double m_s = rpa.gen.ScalarConstant(std::string("M_s"));
-      std::cout.precision(20);
-      std::cout<<"r2 "<<r2<<std::endl;       
       double mm=rpa.gen.Ecms();
       for(int j=nin;j<nin+nout;j++)
 	if(j!=i) mm -= sqrt(ms[j]);
@@ -60,8 +55,6 @@ RamboKK::RamboKK(int _nin,int _nout,Flavour * fl)// : nin(_nin), nout(_nout)
       break;
     }
   }
-  std::cout<<"Constructor RamboKK(2)"<<std::endl;
-
 }
 
 RamboKK::~RamboKK() 
@@ -75,12 +68,9 @@ RamboKK::~RamboKK()
 
 void RamboKK::Set_KKmass()
 {
-
   if (kkp==-1) return;
-  
-
-
-  double *nv = new double[ed];
+ 
+  double * nv = new double[ed];
   double ms2;
   do{
     ms2=0;

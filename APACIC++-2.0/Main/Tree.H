@@ -99,8 +99,6 @@ namespace APACIC {
 
   inline void Tree::Reset() {
     ResetKnots();    
-    if (AORGTOOLS::rpa.gen.Debugging()) 
-      std::cout<<"Passed resetting the tree."<<std::endl;
   }
 
   inline void Tree::ResetKnots() {

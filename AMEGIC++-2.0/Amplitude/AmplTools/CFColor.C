@@ -69,23 +69,13 @@ CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
 	    map[m]=map[iabs(id[m])];
 	  }
 	}
-
-	msg.Debugging()<<"File "<<name<<" read."<<endl;   
 	return; 
       }
-      else {
-	msg.Tracking()<<"File "<<name<<" has to be recreated!"<<endl;   
-
-      }
- 
     }
     else {
       test.close(); 
-    
-      msg.Tracking()<<"File "<<name<<" not found."<<endl;   
     }
   }
-
   Color_Function* cm1;
   Color_Function* cm2;
 
@@ -124,9 +114,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
 
   }
   else {
-    //changing props
-    msg.Debugging()<<"Finding diagrams with same color structure..."<<endl;
-    
     int prop;
   
     m1 = first;
@@ -238,17 +225,10 @@ CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
       n1++;
       m1 = m1->Next;
     } 
-    msg.Tracking()<<endl;
-    msg.Tracking()<<ncount<<" different color structures left"<<endl;
+    msg.Debugging()<<ncount<<" different color structures left"<<endl;
 
     map = new int[mcount];
     int cc=0;
-    msg.Debugging()<<" id=";
-    for (int m=0; m<mcount; ++m) {
-      msg.Debugging()<<id[m]<<" ";
-    }
-    msg.Debugging()<<endl;
-    msg.Debugging()<<" map=";
     for (int m=0; m<mcount; ++m) {
       if (id[m]==mcount) {
 	map[m]=cc;
@@ -257,12 +237,8 @@ CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
       else {
 	map[m]=map[iabs(id[m])];
       }
-      
-      msg.Debugging()<<map[m]<<" ";
     }
-    msg.Debugging()<<endl;
-
-    msg.Tracking()<<cc<<" different color structures left (cc)"<<endl;
+    msg.Debugging()<<cc<<" different color structures left (cc)"<<endl;
 
     // generate "reduced matrix"
     CFC = new Complex*[ncount];
@@ -297,15 +273,12 @@ CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
 	    st.Expand(m);
 	    st.Linear(m);
 	    ReplaceD(m);
-	    //AORGTOOLS::msg.Out()<<"After D's"<<endl;
 	    CFC[map[c1]][map[c2]] = st.eval(m);
 	    CFC[map[c2]][map[c1]] = conj(CFC[map[c1]][map[c2]]);
-	    msg.Tracking()<<"+";AORGTOOLS::msg.Out().flush();
 	  }
 	  m2 = m2->Next;
 	  c2++;
 	}
-	msg.Tracking()<<endl;
       }
       m1 = m1->Next;
       c1++;
@@ -334,12 +307,11 @@ CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
 	}
       }
       if (hit) {
-	cout<<"Color Matrix could  be further simplified ("<<j<<" ->"<<j<<" with "<<factor<<endl;
 	idid[j] =idid[i];
       }
     }
   }
-  if (ncount!=idcc) msg.Events()<<"Color Matrix could  be further simplified to "<<idcc<<" structure(s)"<<endl;
+  if (ncount!=idcc) msg.Debugging()<<"Color Matrix could  be further simplified to "<<idcc<<" structure(s)"<<endl;
 
   delete [] idid;
 
@@ -356,7 +328,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
 void CFColor::Output(string & dirname) {
   char name[100];
   sprintf(name,"%s.col",(string("Process/")+dirname).c_str());
-  msg.Tracking()<<" Writing Color Information to : "<<name<<endl;
+  msg.Debugging()<<" Writing Color Information to : "<<name<<endl;
   IO_Handler ioh;
   ioh.SetFileName(name);
 
@@ -366,22 +338,6 @@ void CFColor::Output(string & dirname) {
 
   ioh.ArrayOutput("",id,mcount);
   ioh.MatrixOutput("",CFC,ncount,ncount);
-
-
-  /*
-    ofstream to;
-    //  to.open(name,ios::out,436);
-    to.open(name,ios::out);
-    to.precision(15);
-  
-    for(short int i=0;i<mcount;i++) {
-    for (short int j=0;j<mcount;j++) {
-    to<<i<<"     "<<j<<"     "<<CFC[i][j]<<endl;
-    }
-    }
-    msg.Debugging()<<"File "<<name<<" saved."<<endl;  
-  */
-
 }
 
 int CFColor::CompareArg(int a,int b, int c,Color_Function* cm1,Color_Function* cm2)

@@ -29,21 +29,17 @@ NLL_Sudakov::NLL_Sudakov(double _tmax,double _tmin) :
   beta1  = (17.*CA*CA- 3.*CF*Nf-5.*CA*Nf)/3.;
   FixLambda2();
   nlo    = 0;
-  K      = 0;             // LO
-  // NLO:  
+  K      = 0;
   nlo    = 0;
-  // with     
   if (nlo) K  =  CA*(67./18.-M_PI*M_PI/6.)-10./9.*TR*Nf;
 
-  msg.Tracking()<<"Init the NLL_Sudakov :"<<std::endl
+  msg.Debugging()<<"Init the NLL_Sudakov :"<<std::endl
 		 <<"  Nf = "<<Nf<<", TR = "<<TR<<", CA = "<<CA<<", CF = "<<CF<<std::endl
 		 <<"  lambda = "<<sqrt(lambda2)<<"   --->  "<<std::endl
 		 <<"  alphaS test: as(mue  ="<<sqrt(mu2)<<") = "<<asmu<<std::endl
 		 <<"               as(qmin = "<<qmin<<") = "<<AlphaS(qmin*qmin)<<std::endl
 		 <<"               as(qmax = "<<qmax<<") = "<<AlphaS(qmax*qmax)<<std::endl;
-
-  //  if (rpa.gen.Events()) CheckSudakovs();
-};
+}
 
 
 void NLL_Sudakov::FixLambda2() 
@@ -87,19 +83,6 @@ double NLL_Sudakov::GammaF(double q) {
 double NLL_Sudakov::DeltaQ(double Q,double q) 
 { 
   if ((Q-q)/q<1.e-8) return 1.;
-  /*
-    if (inte==NLL::use_table) {
-    if (q != qmin) {
-    msg.Error()<<" ERROR: wrong q!!!!"<<std::endl;
-    // WARNING:  Fast_Func has to be extended to deal with two variables!!!!
-    //           in case qmin changes!!! This is indeed the case, see e+e- with
-    //           ISR. Therefore I commented this out.
-    msg.Error()<<" q=    " <<q<<std::endl;
-    msg.Error()<<" qmin= " <<qmin<<std::endl;
-    } 
-    return exp(-log_delta_q(Q));
-    }
-  */
   double dq = exp(-IntGammaQ(q,Q));
   if (dq<=1.) return dq;
   return 1.;
@@ -108,19 +91,6 @@ double NLL_Sudakov::DeltaQ(double Q,double q)
 double NLL_Sudakov::DeltaG(double Q,double q) 
 { 
   if ((Q-q)/q<1.e-8) return 1.;
-  /*
-    if (inte==NLL::use_table) {
-    if (q != qmin) {
-    msg.Error()<<" ERROR: wrong q!!!!"<<std::endl;
-    // WARNING:  Fast_Func has to be extended to deal with two variables!!!!
-    //           in case qmin changes!!! This is indeed the case, see e+e- with
-    //           ISR. Therefore I commented this out.
-    msg.Error()<<" q=    " <<q<<std::endl;
-    msg.Error()<<" qmin= " <<qmin<<std::endl;
-    } 
-    return exp(-log_delta_g(Q));
-    }
-  */
   double dg= exp(-IntGammaG(q,Q)-IntGammaF(q,Q));
   if (dg<=1.) return  dg;
   return 1.;
@@ -137,11 +107,11 @@ double NLL_Sudakov::IntGammaQ(double Q0, double Q) {
   switch (inte) {
   case NLL::use_table : 
     if (Q0!=qmin) {
-      msg.Error()<<" ERROR: wrong q!!!!"<<std::endl;
       // WARNING:  Fast_Func has to be extended to deal with two variables!!!!
       //           in case qmin changes!!!
-      msg.Error()<<" q0=   " <<Q0<<std::endl;
-      msg.Error()<<" qmin= " <<qmin<<std::endl;
+      msg.Error()<<"Error in  NLL_Sudakov::IntGammaQ : wrong q"<<std::endl
+		 <<" q0=   " <<Q0<<std::endl
+		 <<" qmin= " <<qmin<<std::endl;
     } 
     return log_delta_q(Q);
     // Integrate NLL branching (using nummeric gauss integration);
@@ -178,12 +148,11 @@ double NLL_Sudakov::IntGammaQ(double Q0, double Q) {
 	    (1.+ balpi*(log(sqr(Q)/mu2) - 3./2.))*log((1+eta1)/(1+eta0)));
       } 
       else {
-	msg.Error()<<"ERROR in NLL_Sudakov::IntGammaQ."<<std::endl
+	msg.Error()<<"Error in NLL_Sudakov::IntGammaQ."<<std::endl
 		   <<"    Analytic version for higher orders not implemented yet."<<std::endl;
 	return 0.;
       }
     }
-    // Integrate NLL branching (using analytic NLO formula with alphaS);
   case NLL::alphas_repl :
     {
       double balpi = beta0*asmu/(4.*M_PI) ;
@@ -195,7 +164,7 @@ double NLL_Sudakov::IntGammaQ(double Q0, double Q) {
     }
   }
 
-  msg.Error()<<" ERROR wrong type specified in NLL_Sudakov::IntGammaF  "<<std::endl;
+  msg.Error()<<" Error in NLL_Sudakov::IntGammaQ.wrong type specified in NLL_Sudakov::IntGammaF  "<<std::endl;
   return 0.;
 }
 
@@ -235,7 +204,7 @@ double NLL_Sudakov::IntGammaG(double Q0, double Q) {
 	    (1.+ balpi*(log(sqr(Q)/mu2) - 11./6.))*log((1+eta1)/(1+eta0)));
       }
       else {
-	msg.Error()<<"ERROR in NLL_Sudakov::IntGammaQ."<<std::endl
+	msg.Error()<<"Error in NLL_Sudakov::IntGammaQ."<<std::endl
 		   <<"    Analytic version for higher orders not implemented yet."<<std::endl;
 	return 0.;
       }
@@ -252,7 +221,7 @@ double NLL_Sudakov::IntGammaG(double Q0, double Q) {
     }
   }
 
-  msg.Error()<<" ERROR wrong type specified in NLL_Sudakov::IntGammaF  "<<std::endl;
+  msg.Error()<<" Error wrong type specified in NLL_Sudakov::IntGammaF  "<<std::endl;
   return 0.;
 }
 
@@ -460,24 +429,24 @@ double NLL_Sudakov::operator()(double x) {
 
 void NLL_Sudakov::CheckSudakovs()
 {
+  if (!rpa.gen.Debugging()) return;
   double Q  = 91.2;
   double q0 = 0.1*Q;
   R4(q0,Q);
-  std::cout<<"============================================================"<<std::endl;
-  std::cout<<"   Selftest in NLL_Sudakov"<<std::endl;
-  std::cout<<"------------------------------------------------------------"<<std::endl;
-  std::cout<<"     q0     Q   sudq(q0,Q) sudg(q0,Q)    R2       R3       "<<std::endl;
+  std::cout<<"============================================================"<<std::endl
+	   <<"   Selftest in NLL_Sudakov"<<std::endl
+	   <<"------------------------------------------------------------"<<std::endl
+	   <<"     q0     Q   sudq(q0,Q) sudg(q0,Q)    R2       R3       "<<std::endl;
   for (int i=0; i<13;++i) {
     q0=Q*exp(-i/3.*log(10.));
     std::cout.precision(4);
     std::cout<<" "<<setw(6)<<q0<<" "<<setw(6)<<Q;
     std::cout.precision(6);
     std::cout<<" "<<setw(10)<<DeltaQ(Q,q0)
-	<<" "<<setw(11)<<DeltaG(Q,q0)
-	<<" "<<setw(10)<<R2(q0,Q)
-	<<" "<<setw(19)<<R3(q0,Q)
-      //	<<" "<<setw(8)<<R4(q0,Q)
-	<<std::endl;
+	     <<" "<<setw(11)<<DeltaG(Q,q0)
+	     <<" "<<setw(10)<<R2(q0,Q)
+	     <<" "<<setw(19)<<R3(q0,Q)
+	     <<std::endl;
   }
   std::cout<<"------------------------------------------------------------"<<std::endl;
   Q  = 2000.;
@@ -489,9 +458,6 @@ void NLL_Sudakov::CheckSudakovs()
     std::cout.precision(6);
     std::cout<<" "<<setw(10)<<DeltaQ(Q,q0)
 	<<" "<<setw(11)<<DeltaG(Q,q0)
-// 	<<" "<<setw(10)<<R2(q0,Q)
-// 	<<" "<<setw(19)<<R3(q0,Q)
-      //	<<" "<<setw(8)<<R4(q0,Q)
 	<<std::endl;
   }
 
@@ -544,8 +510,6 @@ double NLL_Sudakov::P_g_LLA(double q,double z)
 Kabbala NLL_Sudakov::DeltaQ(int j, double Q, double q)
 {
   double value = DeltaQ(Q,q);
-  msg.Tracking()<<" called NLL_Sudakov::DeltaQ("<<j<<", "<<Q<<", "<<q<<")"<<std::endl;
-  msg.Tracking()<<"            result ="<<value<<std::endl<<std::endl;
 
   char help[10];
   sprintf(help,"Dq[%i]",j);
@@ -555,8 +519,6 @@ Kabbala NLL_Sudakov::DeltaQ(int j, double Q, double q)
 Kabbala NLL_Sudakov::DeltaG(int j, double Q, double q)
 {
   double value = DeltaG(Q,q);
-  msg.Tracking()<<" called NLL_Sudakov::DeltaG("<<j<<", "<<Q<<", "<<q<<")"<<std::endl;
-  msg.Tracking()<<"            result ="<<value<<std::endl<<std::endl;
 
   char help[10];
   sprintf(help,"Dg[%i]",j);

@@ -23,7 +23,6 @@ Run_Parameter::Run_Parameter()
 void Run_Parameter::Init(std::string _path,int argc,char* argv[])
 {
   path        = _path;
-  // read in parameters
   Data_Read dr(path+std::string("/Run.dat"));
   gen.m_output             = dr.GetValue<int>("OUTPUT",0);
   gen.m_analysis           = dr.GetValue<int>("ANALYSIS",0);

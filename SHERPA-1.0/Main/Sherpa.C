@@ -25,7 +25,6 @@ Sherpa::~Sherpa()
 }
 
 bool Sherpa::InitializeTheRun(std::string _path) { 
-  cout<<"Initialization path = "<<_path<<endl;
   m_path = _path;
   p_inithandler  = new Initialization_Handler(m_path);
   if (p_inithandler->InitializeTheFramework()) {
@@ -49,8 +48,8 @@ bool Sherpa::InitializeTheEventHandler() {
   p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandler(),
 						  p_inithandler->GetShowerHandler()));
   p_eventhandler->AddEventPhase(new Analysis_Phase(p_analysis,2));
-  //  p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetBeamRemnantHandler(),
-  //						  p_inithandler->GetFragmentationHandler()));
+  p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetBeamRemnantHandler(),
+  						  p_inithandler->GetFragmentationHandler()));
   return 1;
 }
 

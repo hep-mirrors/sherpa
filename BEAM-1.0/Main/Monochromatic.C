@@ -10,9 +10,7 @@ using namespace std;
 Monochromatic::Monochromatic(const Flavour _beam,const double _energy,
 			     const double _polarization,const int _dir) :
   Beam_Base(string("Monochromatic"),_beam,_energy,_polarization,_dir)
-{
-  msg.Tracking()<<"Initialised Monochromatic for beam "<<m_beam<<endl;
-}
+{ }
 
 
 Beam_Base * Monochromatic::Copy() 

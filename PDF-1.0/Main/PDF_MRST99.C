@@ -13,15 +13,14 @@ PDF_MRST99::PDF_MRST99(const APHYTOOLS::Flavour _bunch,
   m_set(_set), m_path(_path)//, p_proton(NULL)
 {
   if ((m_set<1)||(m_set>12)) {
-    std::cout <<"Error in PDF_MRST99::PDF_MRST99 : Wrong set : "<<m_set<<std::endl
-	      <<"    will continue with set 1."<<std::endl;
+    msg.Error()<<"Error in PDF_MRST99::PDF_MRST99 : Wrong set : "<<m_set<<std::endl
+	       <<"    will continue with set 1."<<std::endl;
     m_set  = 1;
   }
   m_bunch  = _bunch;
   m_anti   = 1;
   if (m_bunch==Flavour(kf::p_plus).Bar()) m_anti = -1;
 
-  msg.Tracking()<<"Initialise MRST99/"<<m_set<<" from "<<m_path<<endl;
   if (p_proton==NULL) p_proton = new c_mrst(m_path);
 
   for (int i=1;i<6;i++) {

@@ -122,7 +122,6 @@ void Process_Group::ConstructProcesses(APHYTOOLS::Selector_Data * _seldata) {
 
   msg.Debugging()<<"Construct processes : "
 		 <<p_flin[0].Size()<<" "<<p_flin[1].Size()<<" "<<p_flout[0].Size()<<" "<<p_flout[1].Size()<<endl;
-  for (int i=0;i<p_flin[0].Size();i++) msg.Debugging()<<i<<" : "<<p_flin[0][i]<<endl;
 
   string _name,_stan,_oli;
   bool flag = 1;
@@ -223,7 +222,6 @@ void Process_Group::GroupProcesses() {
   }
   if (massok) {
     SetISRThreshold(AMATOOLS::Max(sum_massin,sum_massout));
-    msg.Debugging()<<"All processes in "<<m_name<<" have equal masses, ISR threshold set."<<endl;
   }
   else {
     msg.Error()<<"Error in Process_Group : "<<m_name<<endl
@@ -235,8 +233,6 @@ void Process_Group::GroupProcesses() {
 
   std::vector<Process_Base *> singleprocs = m_procs;
   while (m_procs.size()>0) m_procs.pop_back();
-  msg.Debugging()<<"Emptied process list             : "<<m_procs.size()<<endl
-		 <<"Created list of Single_Processes : "<<singleprocs.size()<<endl;
   
   Process_Base  * sproc;
   Process_Group * group;
@@ -360,7 +356,6 @@ void Process_Group::Add(Process_Base * _proc)
 	       <<"  Now    : ("<<_proc->Nin()<<" -> "<<_proc->Nout()<<" )"<<endl;
     return;
   }
-  msg.Tracking()<<"Add process "<<_proc->Name()<<" to group "<<m_name<<" ! "<<endl; 
   m_procs.push_back(_proc);
 }
 
@@ -378,8 +373,6 @@ bool Process_Group::Find(string _name,Process_Base *& _proc)
 
 void Process_Group::WriteOutXSecs(std::ofstream & _to)
 {
-  msg.Debugging()<<"Write out xsec for "<<m_name<<endl;
-  _to<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<endl;
   for (int i=0;i<m_procs.size();i++) m_procs[i]->WriteOutXSecs(_to);
 }
 
@@ -397,42 +390,36 @@ void Process_Group::SelectOne()
 	disc -= m_procs[i]->Total();
 	if (disc<0.) {
 	  p_selected = m_procs[i];
-	  //msg.Tracking()<<"Selected Process(_Group) : "<<p_selected->Name()<<endl;	
 	  p_selected->SelectOne();
 	  return;
 	}
       }
       if (disc>0.) { 
-	msg.Error()<<"Error in Process_Group::SelectOne() : ";
-	msg.Error()<<"Total xsec, max = "<<m_totalxs<<", "<<m_max<<endl;
+	msg.Error()<<"Error in Process_Group::SelectOne() : "
+		   <<"Total xsec, max = "<<m_totalxs<<", "<<m_max<<endl;
 	return;
       }
     }
     else {
-      // ======= temorary check ======
       double m=0.;
       for (int i=0;i<m_procs.size();i++) {
 	m+= m_procs[i]->Max();
       }
       if (!AMATOOLS::IsEqual(m,m_max)) {
-	msg.Out()<<"Shifted maximum in Group "<<Name()<<" : "
-		 <<m_max<<" -> "<<m<<endl;
 	SetMax(0.);
       }
-      // =======
       disc = m_max * ran.Get();
       for (int i=0;i<m_procs.size();i++) {
 	disc -= m_procs[i]->Max();
 	if (disc<0.) {
 	  p_selected = m_procs[i];
-	  //msg.Tracking()<<"Selected Process(_Group) : "<<p_selected->Name()<<endl;	
 	  p_selected->SelectOne();
 	  return;
 	}
       }
       if (disc>0.) { 
-	msg.Error()<<"Error in Process_Group::SelectOne() : ";
-	msg.Error()<<"Total xsec, max = "<<m_totalxs<<", "<<m_max<<endl;
+	msg.Error()<<"Error in Process_Group::SelectOne() : "
+		   <<"Total xsec, max = "<<m_totalxs<<", "<<m_max<<endl;
 	return;
       }
     }
@@ -507,9 +494,8 @@ void Process_Group::SetTotalXS(int tables)  {
     SetMax(0.);
   }
   msg.Events()<<"-----------------------------------------------------------------------"<<endl
-   <<"Total XS for "<<m_name<<"("<<m_procs.size()<<") : "<<m_totalxs*rpa.Picobarn()<<" pb"
-   <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl;
-  //   msg.Events()<<"      max = "<<m_max<<endl;
+	      <<"Total XS for "<<m_name<<"("<<m_procs.size()<<") : "<<m_totalxs*rpa.Picobarn()<<" pb"
+	      <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl;
 }
 
 void Process_Group::SetMax(double max) {
@@ -527,10 +513,10 @@ void Process_Group::SetMax(double max) {
   }
   if (m_totalxs!=0.) {
     if (!AMATOOLS::IsEqual(sum,m_totalxs)) {
-      msg.Out().precision(12);
-      msg.Out()<<" WARNING: group "<<Name()<<": xs and sum of daughters does not agree ! "<<endl;
-      msg.Out()<<" sum="<<sum<<"  total:"<<m_totalxs
-	       <<"  ("<<((sum-m_totalxs)/m_totalxs)<<")"<<endl;
+      msg.Events().precision(12);
+      msg.Events()<<" WARNING: group "<<Name()<<": xs and sum of daughters does not agree ! "<<endl
+		  <<" sum="<<sum<<"  total:"<<m_totalxs
+		  <<"  ("<<((sum-m_totalxs)/m_totalxs)<<")"<<endl;
     }
     m_totalxs=sum;
   }
@@ -558,9 +544,9 @@ int Process_Group::InitAmplitude(Interaction_Model_Base * model,Topology * top,V
   int okay = 1;
   vector <string> deletethem;
   for (int i=0;i<m_procs.size();i++) {
-    msg.Tracking()<<"========================================================="<<endl
-		  <<"========================================================="<<endl
-		  <<"Process_Group::InitAmplitude for "<<m_procs[i]->Name()<<endl;
+    msg.Debugging()<<"========================================================="<<endl
+		   <<"========================================================="<<endl
+		   <<"Process_Group::InitAmplitude for "<<m_procs[i]->Name()<<endl;
     if (m_atoms) { delete [] testmoms; testmoms = 0; }
     switch (m_procs[i]->InitAmplitude(model,top,testmoms,results,links)) {
     case -2 : 
@@ -568,8 +554,8 @@ int Process_Group::InitAmplitude(Interaction_Model_Base * model,Topology * top,V
       deletethem.push_back(m_procs[i]->Name());
       break;
     case -1 : 
-      msg.Events()<<"No diagrams or amplitudes for "<<m_procs[i]->Name()<<endl
-		  <<"   delete it."<<endl;
+      msg.Debugging()<<"No diagrams or amplitudes for "<<m_procs[i]->Name()<<endl
+		     <<"   delete it."<<endl;
       deletethem.push_back(m_procs[i]->Name());
       break;
     case 0 :
@@ -598,9 +584,9 @@ int Process_Group::InitAmplitude(Interaction_Model_Base * model,Topology * top,V
     }
   }
 
-  msg.Tracking()<<"Process_Group::Initialize Amplitude for "<<m_name;
-  if (okay) msg.Tracking()<<" successful."<<endl;
-       else msg.Tracking()<<" failed."<<endl;
+  msg.Debugging()<<"Process_Group::Initialize Amplitude for "<<m_name;
+  if (okay) msg.Debugging()<<" successful."<<endl;
+       else msg.Debugging()<<" failed."<<endl;
   return okay;
 }
 
@@ -623,8 +609,6 @@ bool Process_Group::SetUpIntegrator()
     if ( (p_fl[0].Mass() != p_isr->Flav(0).Mass()) ||
 	 (p_fl[1].Mass() != p_isr->Flav(1).Mass()) ) p_isr->SetPartonMasses(p_fl);
   }
-  msg.Debugging()<<"Setting up integrator for group : "<<m_name<<endl
-		 <<" ISR :"<<p_isr->SprimeMin()<<" ... "<<p_isr->SprimeMax()<<endl;
   p_ps  = new Phase_Space_Handler(this,p_isr,p_beam);
   AddChannels(this,p_ps->FSRIntegrator(),p_ps->BeamParameters(),p_ps->ISRParameters());
   if (!p_ps->CreateIntegrators()) return 0;
@@ -657,7 +641,6 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
   if (m_atoms) {
     bool okay = 1;
     for (int i=0;i<m_procs.size();i++) {
-      msg.Tracking()<<"Process_Group::CalculateTotalXSec for "<<m_procs[i]->Name()<<endl;
       if (!(m_procs[i]->CalculateTotalXSec(_resdir))) okay = 0;
     }
     return okay;
@@ -680,14 +663,10 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 		      <<"       max : "<<_max<<endl;
 	  Process_Base * _proc = NULL;
 	  if (Find(_name,_proc)) {
-	    msg.Events()<<"Set... "<<_totalxs<<","<<_max<<endl;
 	    _proc->SetTotal(_totalxs);
 	    _proc->SetMax(_max);
-	    msg.Events()<<"... done"<<endl;
 	  }
 	  else {
-	    msg.Debugging()<<"########################################"<<endl
-			   <<"  Did not find "<<_name<<" in group."<<endl;
 	    okay = 0;
 	  }
 	}
@@ -698,8 +677,8 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	if (p_ps->FSRIntegrator() != 0)  p_ps->FSRIntegrator()->Print();
 	if (m_totalxs>0.) {
 	  if (okay) {
-	    msg.Events()<<"In "<<m_name<<"::CalculateTotalXSec("<<_resdir<<")"<<endl
-			<<"   Found all xsecs. Continue"<<endl;
+	    msg.Debugging()<<"In "<<m_name<<"::CalculateTotalXSec("<<_resdir<<")"<<endl
+			   <<"   Found all xsecs. Continue"<<endl;
 	    SetTotalXS(2);
 	    return 1;
 	  }
@@ -718,9 +697,6 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
     }
     p_sel->BuildCuts(p_cuts);
     m_tables  = 0;
-    msg.Debugging()<<"In Process_Group::CalculateTotalXSec : "<<p_beam->On()<<":"<<p_isr->On()<<endl
-		   <<"   "<<p_isr->SprimeMin()<<" ... "<<p_isr->SprimeMax()<<" ... "<<p_isr->Pole()<<endl;
-    
     
     m_totalxs = p_ps->Integrate()/AORGTOOLS::rpa.Picobarn(); 
     if (!(AMATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
@@ -757,7 +733,7 @@ void  Process_Group::RescaleXSec(double fac) {
 }
 
 bool Process_Group::LookUpXSec(double ycut,bool calc,string obs) {
-  msg.Events()<<"Process_Group::LookUpXSec() for "<<m_name<<" in "<<m_resdir<<endl;
+  msg.Tracking()<<"Process_Group::LookUpXSec() for "<<m_name<<" in "<<m_resdir<<endl;
   bool okay = 1;
   if (m_atoms) {
     for (int i=0;i<m_procs.size();i++) {
@@ -775,9 +751,6 @@ bool Process_Group::LookUpXSec(double ycut,bool calc,string obs) {
 	m_totalxs += m_procs[i]->Total();
 	m_max     += m_procs[i]->Max();
       }
-      msg.Events()<<m_name<<" : Set total xsec and max at ycut = "<<ycut
-		  <<" : "<<endl<<"   "<<m_totalxs<<" / "<<m_max<<endl;
-
       p_ps->ReadIn(m_resdir+string("/MC_")+m_name);
       if (p_ps->BeamIntegrator() != 0) p_ps->BeamIntegrator()->Print();
       if (p_ps->ISRIntegrator() != 0)  p_ps->ISRIntegrator()->Print();
@@ -796,8 +769,6 @@ bool Process_Group::LookUpXSec(double ycut,bool calc,string obs) {
 	  m_totalxs += m_procs[i]->Total();
 	  m_max     += m_procs[i]->Max();
 	}
-	msg.Out()<<m_name<<" : Set total xsec and max at ycut = "<<ycut
-		    <<" : "<<endl<<"   "<<m_totalxs<<" / "<<m_max<<endl;
 	return 1;
       }
     }
@@ -807,12 +778,9 @@ bool Process_Group::LookUpXSec(double ycut,bool calc,string obs) {
 
 bool Process_Group::PrepareXSecTables()
 {
-  msg.Tracking()<<"Process_Group::PrepareXSecTables()"<<endl;
-
   if (m_atoms) {
     bool okay = 1;
     for (int i=0;i<m_procs.size();i++) {
-      msg.Tracking()<<"Process_Group::PrepareXSecTables() for "<<m_procs[i]->Name()<<endl;
       if (!(m_procs[i]->PrepareXSecTables())) okay = 0;
     }
     return okay;
@@ -962,37 +930,37 @@ double Process_Group::SameWeightedEvent() {
 
 void Process_Group::PrintDifferential()
 {
-  if (!(rpa.gen.Tracking())) return;
+  if (!(rpa.gen.Debugging())) return;
   m_last = 0;
-  msg.Out()<<"--------------------------------------------------------"<<endl;
-  msg.Out()<<"--------------------------------------------------------"<<endl;
-  msg.Out()<<"--------------------------------------------------------"<<endl;
+  msg.Out()<<"--------------------------------------------------------"<<endl
+	   <<"--------------------------------------------------------"<<endl
+	   <<"--------------------------------------------------------"<<endl;
   for (int i=0;i<m_procs.size();i++) {
     msg.Out()<<"====================================================="<<endl;
     m_procs[i]->PrintDifferential();
     m_last += m_procs[i]->Last();
     msg.Out()<<"====================================================="<<endl;
   }
-  msg.Out()<<"--------------------------------------------------------"<<endl;
-  msg.Out()<<" Total : "<<m_last<<endl;
-  msg.Out()<<"--------------------------------------------------------"<<endl;
-  msg.Out()<<"--------------------------------------------------------"<<endl;
-  msg.Out()<<"--------------------------------------------------------"<<endl;
+  msg.Out()<<"--------------------------------------------------------"<<endl
+	   <<" Total : "<<m_last<<endl
+	   <<"--------------------------------------------------------"<<endl
+	   <<"--------------------------------------------------------"<<endl
+	   <<"--------------------------------------------------------"<<endl;
 }
 
 void Process_Group::ControlOutput(Vec4D * p)
 { 
-  msg.Out()<<"***************************************************************************"<<endl;
-  msg.Out()<<"***************************************************************************"<<endl;
+  msg.Out()<<"***************************************************************************"<<endl
+	   <<"***************************************************************************"<<endl;
   double s   = (p[0]+p[1]).Abs2();
   double t   = (p[0]-p[2]).Abs2();
   double u   = (p[0]-p[3]).Abs2();
   m_scale    = AMATOOLS::sqr(AORGTOOLS::rpa.gen.Ecms());
   double a_s = as->AlphaS(m_scale);
-  msg.Out()<<"-------- Process_Group : "<<m_name<<" : DSigma -------------------"<<endl;
-  msg.Out()<<"         scale = "<<m_scale<<" = "<<2.*s*t*u/(s*s+u*u+t*t)<<endl;
-  msg.Out()<<"         s,t,u = "<<s<<", "<<t<<", "<<u<<" : "<<sqrt(4.*M_PI*a_s)<<endl;
-  msg.Out()<<"-----------------------------------------------------------------------"<<endl;
+  msg.Out()<<"-------- Process_Group : "<<m_name<<" : DSigma -------------------"<<endl
+	   <<"         scale = "<<m_scale<<" = "<<2.*s*t*u/(s*s+u*u+t*t)<<endl
+	   <<"         s,t,u = "<<s<<", "<<t<<", "<<u<<" : "<<sqrt(4.*M_PI*a_s)<<endl
+	   <<"-----------------------------------------------------------------------"<<endl;
   double g4  = sqr(4.*M_PI*a_s);
   if (m_name == string("gg -> gg"))
     msg.Out()<<"gg   -> gg   : "

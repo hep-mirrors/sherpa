@@ -3,6 +3,7 @@
 
 #include "String_Handler.H"
 #include "Amplitude_Base.H"
+#include "Run_Parameter.H"
 #include "Message.H"
 
 #include <map>
@@ -44,6 +45,7 @@ namespace AMEGIC {
     }
 
     void    PrintGraph() {
+      if (!AORGTOOLS::rpa.gen.Tracking()) return;
       AORGTOOLS::msg.Tracking()<<"Group: "<<groupname<<std::endl;
       for (int i=0;i<graphs.size();i++) graphs[i]->PrintGraph();
     }

@@ -39,15 +39,14 @@ Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
   m_ycut    = rpa.gen.Ycut();
 
   if (rpa.gen.Beam1().IsLepton() && rpa.gen.Beam2().IsLepton()) {
-    msg.Out()<<" Jet_Finder in Amegic_Apacic_Interface set up  to deal with lepton-lepton collisions "<<endl;
+    msg.Debugging()<<" Jet_Finder in Amegic_Apacic_Interface set up  to deal with lepton-lepton collisions "<<endl;
     m_type = 1;
   }
   else if ((!rpa.gen.Beam1().IsLepton() && !rpa.gen.Beam2().IsLepton())) {
-    msg.Out()<<" Jet_Finder in Amegic_Apacic_Interface set up  to deal with hadron-hadron collisions "<<endl;
+    msg.Debugging()<<" Jet_Finder in Amegic_Apacic_Interface set up  to deal with hadron-hadron collisions "<<endl;
     m_type = 4;
   }
   else {
-    cout<<"ERROR: ME_PS_Interface - DIS is not yet implemented in the Jetfinder "<<endl;
     m_type = 4;
   }
 
@@ -71,14 +70,11 @@ Amegic_Apacic_Interface::~Amegic_Apacic_Interface()
 bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
 {
   if (!(p_cluster->ClusterConfiguration(blob))) {
-    msg.Debugging()<<"Clustering failed !"<<std::endl;
     return 0; // Failure!
   }
   for (int i=0;i<4;i++) {
     p_fl[i]   = p_cluster->Flav(i); 
     p_moms[i] = p_cluster->Momentum(i);
-    msg.Tracking()<<" Hard Process : "<<endl;
-    msg.Tracking()<<"  "<<p_fl[i]<<" "<<p_moms[i]<<std::endl;
   }
   return 1;  // OK!
 }
@@ -95,7 +91,6 @@ bool Amegic_Apacic_Interface::DefineInitialConditions(APHYTOOLS::Blob * blob)
   }
 
   if (!p_xs) {
-    msg.Tracking()<<" no xs found "<<endl;
     p_cluster->SetColours(p_moms,p_fl);
   }
   else {
@@ -131,6 +126,5 @@ bool Amegic_Apacic_Interface::DefineInitialConditions(APHYTOOLS::Blob * blob)
       p_cluster->FillTrees(p_shower->GetIniTrees(),p_shower->GetFinTree(),p_xs);
     return 1;
   }
-  msg.Tracking()<<" Reject event due to sudakov weight "<<std::endl;
   return 0;
 }

@@ -53,10 +53,8 @@ kf::code Kf_To_Int::FromString(std::string st)
 {
   for(int i=0;i<anz;i++) {
     if (std::string(particles[i].n)==st) return kf_tab[i];
-    //    if (st==std::string("e+"))           return (kf::e); // is covered externally
   }
 
-  //  std::cerr<<"ERROR in Kf_To_Int::FromString("<<st<<"): Particle type unknown !"<<std::endl;
   return kf::none;
 }
 
@@ -333,10 +331,33 @@ std::ostream& APHYTOOLS::operator<<(std::ostream& os, const Flavour& f)
     if (f==Flavour(kf::tau).Bar())    return os<<"tau+";
     if (f==Flavour(kf::W).Bar())      return os<<"W+";
 
-    if (f==Flavour(kf::p_plus).Bar()) return os<<"P-";
+    if (f==Flavour(kf::p_plus).Bar())  return os<<"P-";
     if (f==Flavour(kf::pi_plus).Bar()) return os<<"pi-";
-    if (f==Flavour(kf::K_plus).Bar()) return os<<"K-";
-    os<<"anti-";
+    if (f==Flavour(kf::K_plus).Bar())  return os<<"K-";
+    
+    bool found = 1;
+    string tmp = string(f.Name());
+    int pos = tmp.find("+");
+    if (pos>-1) {
+      while (found) {
+	pos = tmp.find("+");
+	if (pos>-1) tmp.replace(pos,pos,string("-"));
+	       else found = 0;
+      }
+      return os<<tmp.c_str();
+    }
+
+    pos = tmp.find("-");
+    if (pos>-1) {
+      while (found) {
+	pos = tmp.find("-");
+	if (pos>-1) tmp.replace(pos,pos,string("+"));
+	       else found = 0;
+      }
+      return os<<tmp.c_str();
+    }
+
+    return os<<(string("anti-")+string(f.Name())).c_str();
   }
   return os<<f.Name();
 }
@@ -456,8 +477,6 @@ void APHYTOOLS::ParticleInit(std::string path)
       particles[idx].Add(addit.Bar());
     }
   }
-
-  std::cout<<"End of Particle_Init. Initialised the kf_table. "<<std::endl;
 }
 
 // Unique Identifier of Particle.dat

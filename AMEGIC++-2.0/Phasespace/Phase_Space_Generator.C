@@ -22,7 +22,6 @@ Phase_Space_Generator::Phase_Space_Generator(int _nin,int _nout) : nin(_nin), no
 bool Phase_Space_Generator::Construct(Multi_Channel * Ch,string _pathID,string _pID,
 				      APHYTOOLS::Flavour* fl,Process_Base * proc)
 { 
-  msg.Debugging()<<"In Phase_Space_Generator::Construct : Check for names and channels."<<endl;
   //  pathID = _pathID;
   pathID = _pathID + string("/") + _pID;
   pID    = string("P")+_pID;
@@ -64,7 +63,6 @@ bool Phase_Space_Generator::Construct(Multi_Channel * Ch,string _pathID,string _
 	AddToMakefile(makefilename,pathID,string("P"));	
 	AddToMakefile(makefilename,pathID,filename);	
 	AddToSetChannel();
-	msg.Debugging()<<"In PSG : Try to add "<<cg->Name()<<" to the MC."<<endl;
 	Ch->Add(cg);
       }
       newchannels = 1;
@@ -115,7 +113,7 @@ bool Phase_Space_Generator::MakeHeader(string &headername,char* name,int rannum)
 	<<"#endif"<<endl;
 
   header.close();
-  msg.Tracking()<<headername.c_str()<<" saved."<<endl;
+  msg.Debugging()<<headername.c_str()<<" saved."<<endl;
   return 1;
 }
 
@@ -174,7 +172,7 @@ bool Phase_Space_Generator::MakeCfile(string &cfilename,char* name,
        <<"}"<<endl<<endl;
   
   cfile.close();
-  msg.Tracking()<<cfilename.c_str()<<" saved."<<endl;
+  msg.Debugging()<<cfilename.c_str()<<" saved."<<endl;
   return 1;
 }
 
@@ -402,9 +400,6 @@ bool Phase_Space_Generator::CheckForOldChannels(int n,APHYTOOLS::Flavour * fl,Mu
   hit += AddToCfile (cfilename,procname,Ch->Number(),0); 
   
   if (hit==2) {
-    //search libraries
-    AORGTOOLS::msg.Tracking()<<"Add Channel "<<pID+string("--")+procname
-			     <<" to Multichannel "<<Ch->Name()<<endl;
     Single_Channel * sc = SetChannel(nin,nout,fl,Ch->Number(),pID);
     if (sc==0) {
       AORGTOOLS::msg.Error()<<"Phase_Space_Generator:"
@@ -413,7 +408,6 @@ bool Phase_Space_Generator::CheckForOldChannels(int n,APHYTOOLS::Flavour * fl,Mu
       return 0;
     }
     else {
-      AORGTOOLS::msg.Debugging()<<"Set Name = "<<pID+string("--")+string(procname)<<endl;
       sc->SetName(pID+string("--")+string(procname));
       Ch->Add(sc);
     }
@@ -484,62 +478,4 @@ void Phase_Space_Generator::Copy(string sfrom,string sto)
 }
 
 
-
-/*
-void Phase_Space_Generator::AddToMakefile(string Makefile,string fileID)
-{
-  if (IsFile(Makefile)==0) {
-    msg.Error()<<Makefile.c_str()<<" is not available !"<<endl;
-    return;
-  }
-
-  ifstream from;
-  //search name  
-  from.open(Makefile.c_str());
-  if (Search(from,string(fileID)+string(".C"))) return;
-  from.close();
-
-  ofstream to;  
-
-  ifstream from2;
-  from2.open(Makefile.c_str()); 
-  to.open((Makefile+string(".tmp")).c_str());
-
-  char buffer[buffersize];
-
-  for(;from2;) {
-    from2.getline(buffer,buffersize);
-    if (string(buffer).find(string("libProcess_la_SOURCES"))==0) {
-      if (string(buffer).find(string("\\"))==-1) {
-	//no backslash
-	to<<buffer<<"\\"<<endl;
-	to<<"\t"<<(fileID+string(".C")).c_str()<<endl; 
-      }
-      else {
-	to<<buffer<<endl;
-	to<<"\t"<<(fileID+string(".C")).c_str()<<" \\"<<endl; 
-      }
-    }
-    else {
-      if (string(buffer).find(string("libProcess_la_OBJECTS"))==0) {
-	if (string(buffer).find(string("\\"))==-1) {
-	  //no backslash
-	  to<<buffer<<"\\"<<endl;
-	  to<<"\t"<<(fileID+string(".lo")).c_str()<<endl; 
-	}
-	else {
-	  to<<buffer<<endl;
-	  to<<"\t"<<(fileID+string(".lo"))<<" \\"<<endl; 
-	}
-      }
-      else to<<buffer<<endl;
-    }
-  }
-  from2.close();
-  to.close();
-
-  //copy back
-  Copy(Makefile+string(".tmp"),Makefile);
-}
-*/
 

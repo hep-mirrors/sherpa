@@ -44,14 +44,6 @@ void Zfunc_Generator::BuildZlist(Virtual_String_Generator* _sgen,Basic_Sfuncs* _
     zcalc.push_back(new SSGS_Calc(_sgen,_BS));
     zcalc.push_back(new FFVGS_Calc(_sgen,_BS));  
   }
-  /*
-  AORGTOOLS::msg.Out()<<"Available Zfunctions:"<<endl;
-
-  for (short int i=0;i<zcalc.size();i++) {
-    AORGTOOLS::msg.Out()<<"Type: "<<zcalc[i]->type<<"; Ncoupl: "<<zcalc[i]->ncoupl<<"; Narg: "<<zcalc[i]->m_narg<<"; ";
-    LFPrint(zcalc[i]->lorentzlist);
-  }
-  */
 }
 
 void Zfunc_Generator::LorentzConvert(Point* p)
@@ -134,39 +126,35 @@ void Zfunc_Generator::Convert(Point* p)
       pb = p;
     }
     if(!LFDetermine_Zfunc(Zh,p,pf,pb)){
-      msg.Out()<<"Unknown lorentz sequence found! Cutting...";
       Point* ph=pb->right;
-      msg.Out()<<"right "<<ph->fl<<ph->left<<ph->right<<endl;
       if (!( ph->fl.IsFermion() || ph->fl.IsScalar() || 
 	     (ph->fl.IsVector() && ph->number<99) || ph->m==1)&&ph->left)
 	if(!(ph->left->fl.IsFermion())){
-	  ph->m=1;msg.Out()<<"right"<<endl;      
+	  ph->m=1;
 	  Convert(p); 
 	  return;
 	}
       ph=pb->left;
-      msg.Out()<<"left "<<ph->fl<<endl;
       if (!( ph->fl.IsFermion() || ph->fl.IsScalar() || 
 	     (ph->fl.IsVector() && ph->number<99) || ph->m==1)&&ph->left)
 	if(!(ph->left->fl.IsFermion())){
-	  ph->m=1;msg.Out()<<"left"<<endl;
+	  ph->m=1;
 	  Convert(p); 
 	  return;
 	}
       if(pb->middle){
 	ph=pb->middle;
-	msg.Out()<<"middle "<<ph->fl<<endl;
 	if (!( ph->fl.IsFermion() || ph->fl.IsScalar() || 
 	       (ph->fl.IsVector() && ph->number<99) || ph->m==1)&&ph->left)
 	  if(!(ph->left->fl.IsFermion())){
-	    ph->m=1;msg.Out()<<"middle"<<endl;
+	    ph->m=1;
 	    Convert(p); 
 	    return;
 	  }
       }
       if(pf!=0 && ((p->Lorentz)->type==lf::FFVT || 
                    (p->Lorentz)->type==lf::FFVGS  ) ){
-	pb->m=1;msg.Out()<<"myself"<<endl;
+	pb->m=1;
 	Convert(p);
 	return;
       }
@@ -217,6 +205,7 @@ void Zfunc_Generator::Lorentz_Sequence(Point* pb,vector<Lorentz_Function> &lflis
 
 void Zfunc_Generator::LFPrint(const vector<Lorentz_Function> &lflist)
 {
+  if (!rpa.gen.Tracking()) return;
   AORGTOOLS::msg.Out()<<"LorentzList: "<<endl;
   for (short int i=0;i<lflist.size();i++)
     AORGTOOLS::msg.Out()<<lflist[i].String(1)<<endl;
@@ -225,6 +214,7 @@ void Zfunc_Generator::LFPrint(const vector<Lorentz_Function> &lflist)
 
 void Zfunc_Generator::LFPrint(const vector<Lorentz_Function*> &lflist)
 {
+  if (!rpa.gen.Tracking()) return;
   AORGTOOLS::msg.Out()<<"LorentzList: "<<endl;
   for (short int i=0;i<lflist.size();i++)
     AORGTOOLS::msg.Out()<<lflist[i]->String(1)<<endl;
@@ -525,7 +515,7 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,Po
   case zl::FFVGS:
     if(pf==0){
       Set_Out(Zh,0,pb,p);
-      Zh->Print();cout<<pb->fl<<endl;
+      Zh->Print();
       if(pb->fl.IsVector()){Set_In(Zh,1,p,0,pb);break;}
       if(pb->left->fl.IsVector()){Set_Out(Zh,1,pb->left,p);break;}
       if(pb->right->fl.IsVector()){Set_Out(Zh,1,pb->right,p);break;}
@@ -822,7 +812,6 @@ void Zfunc_Generator::Set_Tensor(Zfunc* Zh,Point* p)
     else if(pb->middle)if(pb->middle->fl.IsTensor())pt=pb->middle;
   }else pb=p;
   if(!(pt->fl.IsTensor()))return;
-  cout<<pt->number<<endl;
   Zh->p_propagators[Zh->m_nprop-1].numb      = pt->number;
   Zh->p_propagators[Zh->m_nprop-1].kfcode    = (pt->fl).Kfcode();
   Zh->p_propagators[Zh->m_nprop-1].direction = Direction::Outgoing;
@@ -842,7 +831,6 @@ void Zfunc_Generator::Set_Tensor(Zfunc* Zh,Point* p)
 void Zfunc_Generator::Set_FermionProp(Zfunc* Zh,Point* p,Point* pf)
 {
   if(Zh->m_nprop!=3)return;
-  //cout<<"Fermions:"<<p->fl<<p->fl.IsAnti()<<p->left->fl.IsAnti()<<p->right->fl.IsAnti()<<endl;
   if(pf){
     int i1=1,i2=2;
     if((p->fl).IsAnti()){i1=2;i2=1;}

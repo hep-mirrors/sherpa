@@ -16,6 +16,7 @@ using namespace std;
 
 void Single_Amplitude_Base::PrintGraph() 
 {
+  if (!rpa.gen.Tracking()) return;
   for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) 
     (*zit)->Print(); 
 
@@ -56,8 +57,6 @@ int Single_Amplitude_Base::FillArgs(Zfunc* z, int* args, vector<int>* iz, vector
     }
     if(hit){
       if((*iargs)[2*j+1]>100){
-	//cout<<"Tensor: "<<(*iargs)[2*j+1]<<":"<<j<<","<<i<<endl;
-	//z->Print();
 	k= j;           //spin2 tensor dummies have to be replaced
       }
       args[2*i+1] = (*iargs)[2*j+1];
@@ -279,7 +278,6 @@ Kabbala Single_Amplitude_Base::SingleZvalue(Zfunc* z,vector<int>* iz, vector<int
 void Single_Amplitude_Base::SetLoopVar(vector<int>& iz,vector<vector<int> >& iargs)
 {
   for (short int i=0;i<iz.size();i++) if(iz[i]>99){
-    //cout<<"New Prop: "<<iz[i]<<endl;
     if (iz[i]<199) {
 #ifdef Cut_Fermion_Prop
       Pfunc* p;
@@ -402,13 +400,6 @@ void Single_Amplitude_Base::GroupZfuncs()
       if (p->arg[0]>99) iz.push_back(p->arg[0]);
     }
   }
-  //cout<<"Zvalue_new: iz"<<endl;
-  
-  /*cout<<"Number of propagators: "<<iz.size()<<endl;
-  for(int i=0;i<iz.size();i++) cout<<iz[i]<<" ";
-   cout<<endl;
-  */
-  
   if (iz.empty()) return;
   vector<int> dummy;
   vector<vector<int> > iargs;iargs.reserve(2*iz.size());iargs.resize(2*iz.size(),dummy);

@@ -79,8 +79,7 @@ int Polarisation::Massive_Vectors(int N,Flavour* fl)
   for(short int i=0;i<N;i++) {
     if (fl[i].IsVector() && !AMATOOLS::IsZero(fl[i].Mass())) {
       nmass+=2;
-      AORGTOOLS::msg.Debugging()<<"Mass_Norm changed for : "<<fl[i]<<endl;
-      Mass_Norm *= 3./2./sqr(fl[i].Mass());//4 Pi for Phasespace
+      Mass_Norm *= 3./2./sqr(fl[i].Mass());
     }
   } 
   return nmass-nmass_old;

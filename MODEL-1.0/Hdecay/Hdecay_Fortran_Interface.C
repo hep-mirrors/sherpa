@@ -111,15 +111,6 @@ void Hdecay_Fortran_Interface::CalculateEffectiveCouplings(std::string _mode) {
       for (int j=0;j<decayproducts[i]->Nout();j++) 
 	msg.Debugging()<<decayproducts[i]->Flout(j)<<" ";
       msg.Debugging()<<": "<<brff[i]<<" * "<<hwidth<<" GeV."<<std::endl;
-
-      /*
-	if (flav1.PSMass()<hmass/2. && p_model->Yukawa(i)>0.) {
-	yukawa = sqrt(ferm_pref*brff[i]/(1.*sqrt(pow(1.-4.*sqr(flav1.PSMass()/hmass),3.))));
-	if (flav1.IsQuark()) yukawa /= 3.;
-	msg.Debugging()<<"Maybe set effective coupling for h -> "<<flav1<<" : "
-		       <<yukawa<<" for mass = "<<flav1.PSMass()<<std::endl;
-		       }
-      */
     }
   }
   

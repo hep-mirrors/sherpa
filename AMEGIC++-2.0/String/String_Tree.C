@@ -1,8 +1,10 @@
 #include "String_Tree.H"
+#include "Message.H"
 #include "Vector.H"
 #include "prof.hh"
 
 using namespace AMEGIC;
+using namespace AORGTOOLS;
 using namespace std;
 
 string sknot::emptystring = string("");
@@ -177,7 +179,6 @@ Complex String_Tree::eval(sknot* m)
     if (m->Str()==string("1/3")) return Complex(1./3.,0.);
     if (m->Str()==string("0.5")) return Complex(1./2.,0.);
     if (m->Str()==string("0.33")) return Complex(1./3.,0.);
-    cout<<"Unknown string: "<<m->Str()<<endl;
     return 0.;
   }
 }
@@ -292,7 +293,7 @@ string String_Tree::Tree2String(sknot* m,sknot* g)
   }
 
   if (m->left!=0 || m->right!=0) {
-    cout<<"Error in Tree2String: "<<m->Str()<<endl;
+    msg.Error()<<"Error in Tree2String: "<<m->Str()<<endl;
     abort();
   }
 
@@ -352,7 +353,6 @@ void String_Tree::CollectLeafs(sknot* leaf,vector<sknot*>& sklist,int full)
   if (full) {
     for (int i=0;i<sklist.size();i++) {
       sklist[i]->SetString(Tree2String(sklist[i],0));
-      //cout<<"Setting: "<<Tree2String(sklist[i],0)<<endl;
     }
   }
 
@@ -397,16 +397,6 @@ int String_Tree::CountFactorNumber(sknot* leaf1,vector<sknot*>*& list1,
 
   CollectLeafs(leaf1,*list1,full);
   CollectLeafs(leaf2,*list2,full);
-  
-  /*  
-  cout<<"In CountFactor: "<<endl;
-  cout<<"List1: "<<endl;
-  for (short int i=0;i<list1->size();i++) 
-    cout<<i<<" : "<<Tree2String((*list1)[i],0)<<endl;
-  cout<<"List2: "<<endl;
-  for (short int i=0;i<list2->size();i++) 
-    cout<<i<<" : "<<Tree2String((*list2)[i],0)<<endl;
-  */
   
   int count = 0;
   int i,j;
@@ -461,7 +451,6 @@ void String_Tree::Cluster(sknot* m,sknot* g,int full)
   }
 
   int hit;
-  //cout<<"New Mother!!!!!"<<endl;
   do {
     hit = 0;
     if ((m->op=='+' || m->op=='-') && sw) {
@@ -525,35 +514,18 @@ void String_Tree::Cluster(sknot* m,sknot* g,int full)
 
       hit = winner;
       if (winner>0) {
-	//cout<<"New Winner: "<<endl;
-	//Complex val1 = Evaluate(m);
-	//cout<<"Old Tree: "<<Tree2String(m,0)<<endl;
-
-	//match them...
-	/*
-	cout<<"The winner is: "<<endl;
-	cout<<"List1: "<<endl;
-	for (short int i=0;i<winnerlist1->size();i++) 
-	  cout<<i<<" : "<<Tree2String((*winnerlist1)[i],0)<<endl;
-	cout<<"List2: "<<endl;
-	for (short int i=0;i<winnerlist2->size();i++) 
-	  cout<<i<<" : "<<Tree2String((*winnerlist2)[i],0)<<endl;
-	*/
 	sknot* leaf1,*leaf2;
 	leaf1 = winknot1->left;
 	if (winknot2->op=='+' || winknot2->op=='-') leaf2 = winknot2->left;
 	                                       else leaf2 = winknot2;
 
 	if (winknot1->right!=leaf2) {
-	  //cout<<"Normal Case: "<<endl;  
 	}
 	else {
-	  //cout<<"Endpoint Case: "<<endl;	  
 	  leaf2 = winknot1;
 	}
 	//remove first leaf from list
 	if (winknot1->op=='-') {
-	  //cout<<"Minuscase"<<endl;
 	  sknot *sk = newsk();
 	  sk->op    = 0;
 	  sk->SetString(string("0"));
@@ -607,22 +579,11 @@ void String_Tree::Cluster(sknot* m,sknot* g,int full)
 	  else spm->right = (*winnerlist1)[winnerlist1->size()-1];	      
 	}
 	else {
-	  cout<<"Equal Lists!!!!"<<endl;
 	  abort();
 	}
 	
 	delete winnerlist1;
 	delete winnerlist2;
-
-	//cout<<"New Tree: "<<Tree2String(m,0)<<endl;
-
-	/*
-	Complex val2 = Evaluate(m);
-	cout<<"Val1: "<<val1<<endl;
-	cout<<"Val2: "<<val2<<endl;
-	cout<<"In Cluster Vorher/Nachher: "<<val1/val2-1.<<endl;
-	if (!AMATOOLS::IsZero(abs(val1/val2-1.))) abort();
-	*/
       }    
     }
   }
@@ -840,7 +801,6 @@ void String_Tree::Single_Delete(sknot* &m,sknot* g,const string& delstr)
   if (hit==0) {
     if (m->right->op==0) {
       if (m->right->Str()==delstr) {
-	//cout<<"Right-Zero"<<endl;
 	if (m->op=='*') m = m->right;
 	else {
 	  if (m->op=='e') {
@@ -897,9 +857,7 @@ void String_Tree::ExpandToDepth(sknot* m,int depth,list<sknot*>& addlist)
     for (list<sknot*>::iterator it=addlist.begin();it!=addlist.end();) {
       char oldop = '+';
       int  currdepth = 0;
-      //cout<<"String: "<<Tree2String(*it,0)<<endl;
       DetermineDepth(*it,oldop,currdepth);
-      //cout<<"CurrentDepth: "<<currdepth<<endl;
       if (currdepth>depth) {
 	int dummy=0;
 	Single_Expand(*it,dummy);
@@ -910,13 +868,6 @@ void String_Tree::ExpandToDepth(sknot* m,int depth,list<sknot*>& addlist)
     }
   }
   while (hit>0);
-
-  /*  
-  msg.Out()<<"Final List: "<<std::endl;
-  for (list<sknot*>::iterator it=addlist.begin();it!=addlist.end();++it) {
-    msg.Out()<<"Add: "<<Tree2String(*it,0)<<std::endl;
-  }
-  */
 }
 
 
@@ -1065,13 +1016,6 @@ void String_Tree::SetLeafAndSign(sknot* m,vector<sknot*>&pmleafs,vector<int>&pms
       count++;
     }
     else SetLeafAndSign(m->right,pmleafs,pmsigns,count);
-    /*
-    if (m->right->op!='+' && m->right->op!='-') {
-      m->right = pmleafs[count];
-      count++;
-    }
-    else SetLeafAndSign(m->right,pmleafs,pmsigns,count);
-    */
   }
 }
 
@@ -1154,11 +1098,9 @@ void String_Tree::OrderPM(sknot* m,sknot* g)
 	  }
 	}
       
-      //cout<<"Before Kick: "<<pmleafs.size()<<":"<<Tree2String(m,0)<<endl;
       DeleteEquals(pmleafs,pmsigns);
 
       if (pmleafs.empty()) {
-	//cout<<"Total Killover in OrderPM!!"<<endl;
 	m->op = 0;
 	m->left = 0;
 	m->right = 0;
@@ -1167,7 +1109,6 @@ void String_Tree::OrderPM(sknot* m,sknot* g)
       else {
 	sknot* startknot = m;
 	if (pmsigns[0]==-1) {
-	  cout<<"Total minus list!!"<<endl; 
 	  //complete minus list
 	  sknot *sk = newsk();
 	  sk->op    = 0;
@@ -1195,7 +1136,6 @@ void String_Tree::OrderPM(sknot* m,sknot* g)
 	  SetLeafAndSign(startknot,pmleafs,pmsigns,count);
 	}
       }
-      //cout<<"After  Kick: "<<pmleafs.size()<<":"<<Tree2String(m,0)<<endl;
     }
   }
 

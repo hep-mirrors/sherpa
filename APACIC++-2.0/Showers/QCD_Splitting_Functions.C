@@ -22,7 +22,6 @@ q_qg::q_qg(APHYTOOLS::Flavour quarkflavour,Sudakov_Tools * _tools) :
   m_flavs[1] = quarkflavour; 
   m_flavs[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon);
   m_alpha    = p_tools->GetASmax();
-  cout<<" q_qg: alpha ="<<m_alpha<<endl;
 }
 
 double q_qg::operator()(double z) {return s_CF*(1.+z*z)/(1.-z);};             
@@ -65,8 +64,6 @@ g_gg::g_gg(Sudakov_Tools * _tools) : p_tools(_tools)
   m_flavs[1] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon); 
   m_flavs[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon); 
   m_alpha    = p_tools->GetASmax();
-  cout<<" q_gg: alpha ="<<m_alpha<<endl;
-
 }
 
 double g_gg::operator()(double z) 

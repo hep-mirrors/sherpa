@@ -19,13 +19,6 @@ void Prop_Generator::Convert(Point* p)
     Ph->haspol = p->m; 
 
     Ph->fl = p->fl;
-    /*
-    //Initial Fermionline
-    if (p->t==1) {
-      AORGTOOLS::msg.Out()<<"Flavour gedreht"<<endl;
-      Ph->fl = (Ph->fl).Bar();
-    }
-    */
     if (p->middle) Ph->argnum = 4;
               else Ph->argnum = 3; 
 

@@ -35,7 +35,6 @@ S1Channel::S1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   if (res!=Flavour(kf::none)) {
     mass = res.Mass(); width = res.Width(); type = 1;
   }
-  msg.Debugging()<<"Initialize S1Channel for "<<smin<<" to "<<smax<<endl;
 }
 
 void S1Channel::GeneratePoint(AMATOOLS::Vec4D * p,double * _ran=0) {
@@ -75,7 +74,6 @@ T1Channel::T1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   if (res!=Flavour(kf::none)) {
     mass = res.Mass(); width = res.Width(); type = 1;
   }
-  msg.Debugging()<<"Initialize T1Channel for "<<smin<<" to "<<smax<<endl;
 }
 
 void T1Channel::GeneratePoint(AMATOOLS::Vec4D * p,double * _ran =0) {
@@ -116,7 +114,6 @@ U1Channel::U1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   if (res!=Flavour(kf::none)) {
     mass = res.Mass(); width = res.Width(); type = 1;
   }
-  msg.Debugging()<<"Initialize U1Channel for "<<smin<<" to "<<smax<<endl;
 }
 
 void U1Channel::GeneratePoint(AMATOOLS::Vec4D * p,double * _ran =0) {
@@ -156,7 +153,6 @@ Decay2Channel::Decay2Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   if (res!=Flavour(kf::none)) {
     mass = res.Mass(); width = res.Width(); type = 1;
   }
-  msg.Debugging()<<"Initialize Decay2Channel for "<<smin<<" to "<<smax<<endl;
 }
 
 void Decay2Channel::GeneratePoint(AMATOOLS::Vec4D * p,double * _ran=0) {

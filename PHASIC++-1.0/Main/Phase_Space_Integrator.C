@@ -17,7 +17,6 @@ using namespace std;
 
 Phase_Space_Integrator::Phase_Space_Integrator() {
   nmax      = 1000000;
-  // nmax      = 100;
 }
 
 
@@ -73,16 +72,6 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
   long int  n;
   int       endopt = 1;
   double    value;
-
-  /*
-  int nran= Ran.WriteOutStatus("Random_C.dat");
-  msg.Out()<< " Written: "<< nran <<endl;
-
-  Ran.ReadInStatus("Random_A.dat",0);
-  */
-
-  msg.Out().precision(10);
-  msg.Out()<<"Starting Integration of Cross sections"<<endl;
 
   ran.SetSeed(-100*rank);
   
@@ -289,8 +278,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
       if ( AMATOOLS::IsZero((psh->FSRIntegrator())->Result()) ) break;
       error = (psh->FSRIntegrator())->Variance()/(psh->FSRIntegrator())->Result() * 
 	(psh->FSRIntegrator())->N();
-      msg.Tracking()<<(psh->FSRIntegrator())->Result()/(psh->FSRIntegrator())->N() * 
-	rpa.Picobarn()<<" pb"
+      msg.Tracking()<<(psh->FSRIntegrator())->Result()/(psh->FSRIntegrator())->N() * rpa.Picobarn()<<" pb"
 		    <<" +- ("<<(psh->FSRIntegrator())->Variance()*rpa.Picobarn()
 		    <<" pb = "<<error*100<<"% )."<<endl;
       if (error<maxerror) break;

@@ -1,5 +1,6 @@
 #include "Splitting_Group.H"
 #include "Random.H"
+#include "Message.H"
 
 using namespace APACIC;
 
@@ -29,17 +30,14 @@ void Splitting_Group::SelectOne() {
   double rr = m_lastint*AMATOOLS::ran.Get();
   int i;
   for (i=0;p_partsums[i]<rr;++i) {  
-//     cout<<m_lastint<<" : "<<p_partsums[i]<<" : "<<rr<<endl; 
-//     cout<<m_group[i]->GetFlA()<<" -> "<<m_group[i]->GetFlB()<<" + "<<m_group[i]->GetFlC()<<endl;
-  };
-//   cout<<" i = "<<i<<endl;
-  p_selected=m_group[i];
+  }
+  p_selected = m_group[i];
 }
 
 
 void Splitting_Group::PrintStat(int mode) {
-  if (mode>0) for(int i=0;i<mode;++i) std::cout<<' ';
-  std::cout<<"Splitting Group:"<<GetFlA()<<" -> "<<GetFlB()<<" + "<<GetFlC()<<std::endl<<std::endl;
+  if (mode>0) for(int i=0;i<mode;++i) AORGTOOLS::msg.Debugging()<<' ';
+  AORGTOOLS::msg.Debugging()<<"Splitting Group:"<<GetFlA()<<" -> "<<GetFlB()<<" + "<<GetFlC()<<std::endl<<std::endl;
   for (SplFunIter iter(m_group);iter();++iter) {
     iter()->PrintStat(mode+4);
   }

@@ -47,8 +47,8 @@ void All_Decays::FindUnstableParticles()
       }
     }
   }
-  msg.Debugging()<<"Final list :"<<endl;
-  for (DecayingParticleIterator dit=m_particles.begin();dit!=m_particles.end();++dit) msg.Debugging()<<(*dit)<<endl;
+  //msg.Debugging()<<"Final list :"<<endl;
+  //for (DecayingParticleIterator dit=m_particles.begin();dit!=m_particles.end();++dit) msg.Debugging()<<(*dit)<<endl;
 }
 
 
@@ -71,7 +71,6 @@ void All_Decays::BinaryDecays()
   DecayList  decaylist;
   for (DecayingParticleIterator dit=m_particles.begin();dit!=m_particles.end();++dit) {
     flav[0]    = (*dit);
-    msg.Debugging()<<"BinaryDecays for "<<flav[0]<<endl;
     vertexlist = m_vertextable[flav[0]];
     if (vertexlist.size()==0) {
       msg.Error()<<"Error in Decay_Handler::BinaryDecays()."<<endl
@@ -82,7 +81,6 @@ void All_Decays::BinaryDecays()
       flav[1] = vertexlist[i]->in[1];
       flav[2] = vertexlist[i]->in[2];
       if (flav[0].PSMass()>flav[1].PSMass()+flav[2].PSMass()) {
-	msg.Debugging()<<"Check for "<<flav[0]<<" -> "<<flav[1]<<" "<<flav[2]<<endl;
 	decaylist.push_back(new Single_Process(1,2,flav));
       }
     }

@@ -2,7 +2,7 @@
 #include "Parton.H"
 #include "Poincare.H"
 #include "Message.H"
-
+#include <iomanip.h>
 
 using namespace APHYTOOLS;
 using namespace AMATOOLS;
@@ -10,52 +10,43 @@ using namespace AORGTOOLS;
 
 namespace APHYTOOLS {
   std::ostream& operator<<( std::ostream& ostr, const Blob & bl) {
-    ostr<<"Blob ( "<<bl.Id()<<", "<<bl.Type()<<" ), ";
+    ostr<<std::setw(4)<<std::setprecision(4);
+    ostr<<"Blob ( "<<bl.Id()<<", "<<bl.Type()<<", ";
     if (bl.Beam() != -1) {
       ostr<<" from Beam "<<bl.Beam()<<", ";
     }
-    ostr<<std::endl<<" #in = "<<bl.NInP()<<", #out = "<<bl.NOutP()<<std::endl
-	<<" at "<<bl.Position()<<std::endl<<" with "<<bl.CMS()<<std::endl;
-    //    if (bl.NInP() > 0) {
-      ostr<<"Incoming partons :"<<std::endl;
-      for (Parton_Queue::const_iterator part = bl.m_inpartons.begin();
-	   part != bl.m_inpartons.end(); ++part) {
-	ostr<<*part<<std::endl;
-      }
-      //    }
-    //    if (bl.NOutP() > 0) {
-      ostr<<"Outgoing partons :"<<std::endl;
-      for (Parton_Queue::const_iterator part = bl.m_outpartons.begin();
-	   part != bl.m_outpartons.end(); ++part) {
-	ostr<<*part<<std::endl;
-      }
-      //    }
+    ostr<<bl.NInP()<<" -> "<<bl.NOutP()<<" @ "<<bl.Position()<<std::endl;
+    ostr<<"Incoming partons :"<<std::endl;
+    for (Parton_Queue::const_iterator part = bl.m_inpartons.begin();
+	 part != bl.m_inpartons.end(); ++part) {
+      ostr<<*part;
+    }
+    ostr<<"Outgoing partons :"<<std::endl;
+    for (Parton_Queue::const_iterator part = bl.m_outpartons.begin();
+	 part != bl.m_outpartons.end(); ++part) {
+      ostr<<*part;
+    }
     return ostr;
   }
 
 
   std::ostream& operator<<( std::ostream& ostr,const  Blob * bl) {
-    ostr<<"Blob ( "<<bl->Id()<<", "<<bl->Type()<<" ), ";
+    ostr<<std::setw(4)<<std::setprecision(4);
+    ostr<<"Blob ( "<<bl->Id()<<", "<<bl->Type()<<", ";
     if (bl->Beam() != -1) {
       ostr<<" from Beam "<<bl->Beam()<<", ";
     }
-    ostr<<std::endl<<" #in = "<<bl->NInP()<<", #out = "<<bl->NOutP()<<std::endl
-	<<" at "<<bl->Position()<<std::endl
-	<<" with "<<bl->CMS()<<std::endl;
-    //    if (bl->NInP() > 0) {
+    ostr<<bl->NInP()<<" -> "<<bl->NOutP()<<" @ "<<bl->Position()<<std::endl;
     ostr<<"Incoming partons :"<<std::endl;
     for (Parton_Queue::const_iterator part = bl->m_inpartons.begin();
 	 part != bl->m_inpartons.end(); ++part) {
       ostr<<*part<<std::endl;
     }
-    //    }
-    //    if (bl->NOutP() > 0) {
     ostr<<"Outgoing partons :"<<std::endl;
     for (Parton_Queue::const_iterator part = bl->m_outpartons.begin();
 	 part != bl->m_outpartons.end(); ++part) {
       ostr<<*part<<std::endl;
     }
-    //    }
     return ostr;
   }
 }
@@ -150,9 +141,9 @@ void Blob::DeleteInParton(Parton * _part) {
 	  _part = _part->ProductionBlob()->RemoveOutParton(_part);
 	}
 	delete _part;
+	_part = NULL;
       }
-      else msg.Out()<<"WARNING: parton not owned by the Blob ask to delete it"<<std::endl;
-      _part = NULL;
+      else msg.Out()<<"WARNING: parton not owned by the Blob asked to delete it"<<std::endl;
       return ;
     }
   }
@@ -169,10 +160,9 @@ void Blob::DeleteOutParton(Parton * _part) {
 	  _part = _part->DecayBlob()->RemoveInParton(_part);
 	}
 	delete _part;
+	_part = NULL;
       }
       else msg.Out()<<"WARNING: parton not owned by the Blob ask to delete it"<<std::endl;
-      
-      _part = NULL;
       return ;
     }
   }

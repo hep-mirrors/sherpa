@@ -42,9 +42,8 @@ String_Output::String_Output(const string &_path,int _maxgraph,int _maxhel)
 
   path=string("Process/")+path;
 
-  msg.Debugging()<<"String_Output::String_Output("<<pathID<<"/"<<pID<<")"<<endl;
-  msg.Debugging()<<"                       path= "<<path<<endl;
-
+  msg.Debugging()<<"String_Output::String_Output("<<pathID<<"/"<<pID<<")"<<endl
+		 <<"                       path= "<<path<<endl;
 }
 
 void String_Output::Output(sknot*** sk,String_Tree* stree,
@@ -54,7 +53,6 @@ void String_Output::Output(sknot*** sk,String_Tree* stree,
     
   string headername = path+string("/V.H");
   if (slib.IsFile(headername)==1){
-    msg.Debugging()<<"String_Output::Output   Header exists : "<<headername<<endl;
     return;
   }
 
@@ -80,12 +78,6 @@ void String_Output::Output(sknot*** sk,String_Tree* stree,
   header.close();
   msg.Tracking()<<headername.c_str()<<" saved."<<endl;
   Add_To_Set_Values();
-  /*
-  AORGTOOLS::msg.Out()<<"New Libraries produced ! Please enter \"make install\" and rerun !"<<endl;
-  ofstream file("profile.out");
-  print_profile( file );
-  abort();
-  */
 }
 
 void String_Output::Cform(ofstream& header,int maxlines,int tolerance,
@@ -200,8 +192,6 @@ void String_Output::Cform(ofstream& header,int maxlines,int tolerance,
       cfile<<"using namespace std;"<<endl<<endl;  
     }
   }
-
-  msg.Tracking()<<cfilename<<"_"<<fnumber<<".C saved."<<endl;
   cfile.close();
 }
 
@@ -438,7 +428,6 @@ void String_Output::Zform(ofstream& header,int &maxlines,int &tolerance,
   }
   zf<<"}"<<endl;
   zf.close();
-  msg.Tracking()<<Zname<<"_"<<divnum<<".C saved."<<endl;
 }
 
 void String_Output::Make_Header(ofstream &header)

@@ -34,7 +34,6 @@ Topology::~Topology()
 
 void Topology::Build_All(int N)
 {
-  msg.Tracking()<<"Building Topology..."<<endl;
   top = new Single_Topology[N];
   top[0].number  = 1;
   top[0].depth   = 1;

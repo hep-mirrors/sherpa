@@ -95,11 +95,7 @@ bool SimpleXSecs::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,
   delete [] flavs;
   from.close();
 
-  if (m_xsecs.size()>0) {
-    msg.Debugging()<<"In SimpleXSecs::InitializeProcesses: Initialized : "<<endl;
-    for (int i=0;i<m_xsecs.size();i++) msg.Debugging()<<"   - "<<m_xsecs[i]->Name()<<endl;
-    return 1;
-  }
+  if (m_xsecs.size()>0) return 1;
   msg.Error()<<"Error in SimpleXSecs::InitializeProcesses."<<endl
 	     <<"   Did not find any process in "<<m_path+xsfile<<endl;
   return 0;
@@ -112,8 +108,8 @@ bool SimpleXSecs::CalculateTotalXSec()
     okay = okay && m_xsecs[i]->CalculateTotalXSec();
     m_totalxs += m_xsecs[i]->Total();
   }
-  msg.Debugging()<<"In SimpleXSecs::CalculateTotalXSec() = "
-		 <<m_totalxs*AORGTOOLS::rpa.Picobarn()<<" pb."<<endl;
+  msg.Events()<<"In SimpleXSecs::CalculateTotalXSec() = "
+	      <<m_totalxs*AORGTOOLS::rpa.Picobarn()<<" pb."<<endl;
   return okay;
 }
 
@@ -131,8 +127,7 @@ void  SimpleXSecs::SelectOne() {
       }
     }
     if (disc>0.) { 
-      msg.Error()<<"Error in Process_Group::SelectOne() : ";
-      msg.Error()<<"Total xsec = "<<m_totalxs<<std::endl;
+      msg.Error()<<"Error in Process_Group::SelectOne() : "<<"Total xsec = "<<m_totalxs<<std::endl;
       return;
     }
   }
@@ -141,21 +136,7 @@ void  SimpleXSecs::SelectOne() {
 bool SimpleXSecs::UnweightedEvent(int mode)
 {
   SelectOne();
-  if (p_selected->OneEvent()) {
-    msg.Debugging()<<"OneEvent for "<<p_selected->Name()<<" successful !"<<endl
-		   <<"    Selected "<<p_selected->Selected()->Name()<<" as subprocess."<<endl;
-    for (int j = 0;j<p_selected->Selected()->Nin(); j++) {
-      msg.Debugging()<<p_selected->Selected()->Flavs()[j]<<" : "
-		     <<p_selected->Selected()->Momenta()[j]<<endl;
-    }
-    msg.Debugging()<<"                      -> "<<endl;
-    for (int j = 0;j<p_selected->Selected()->Nout(); j++) {
-      msg.Debugging()<<p_selected->Selected()->Flavs()[j+p_selected->Selected()->Nin()]<<" : "
-		     <<p_selected->Selected()->Momenta()[j+p_selected->Selected()->Nin()]<<endl;
-    }
-    msg.Debugging()<<endl;
-    return 1;
-  }
+  if (p_selected->OneEvent()) return 1;
   return 0;
 }
 
@@ -163,29 +144,9 @@ double SimpleXSecs::WeightedEvent(int mode)
 {
   SelectOne();
   double weight=p_selected->OneEvent();
-  if (weight>0.) {
-    msg.Debugging()<<"OneEvent for "<<p_selected->Name()<<" successful !"<<endl
-		   <<"    Selected "<<p_selected->Selected()->Name()<<" as subprocess."<<endl;
-    for (int j = 0;j<p_selected->Selected()->Nin(); j++) {
-      msg.Debugging()<<p_selected->Selected()->Flavs()[j]<<" : "
-		     <<p_selected->Selected()->Momenta()[j]<<endl;
-    }
-    msg.Debugging()<<"                      -> "<<endl;
-    for (int j = 0;j<p_selected->Selected()->Nout(); j++) {
-      msg.Debugging()<<p_selected->Selected()->Flavs()[j+p_selected->Selected()->Nin()]<<" : "
-		     <<p_selected->Selected()->Momenta()[j+p_selected->Selected()->Nin()]<<endl;
-    }
-    msg.Debugging()<<endl;
-    return weight;
-  }
+  if (weight>0.) return weight;
   return 0.;
 }
-
-
-
-
-
-
 
 bool SimpleXSecs::PrepareXSecTables() {}
 bool SimpleXSecs::LookUpXSec(double,bool,std::string) {}

@@ -131,6 +131,8 @@ namespace APHYTOOLS {
     M - internal in ME, 
     I - initial particle, F - final particle, 
     i - particle from ISR, f - particle from FSR, decayed
+    D - particle from hadron decays,
+    P - primary hadrons
     \endverbatim
   */ 
   

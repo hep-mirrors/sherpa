@@ -239,7 +239,6 @@ namespace PHASIC {
       deltay[0] = _deltay1;
       deltay[1] = _deltay2;
       ms = rans = 0;
-      AORGTOOLS::msg.Tracking()<<"Initialize LBSComptonPeakUniform("<<pole<<")"<<std::endl;
     }; 
 
     void GenerateWeight(double,double,int); 
@@ -258,7 +257,6 @@ namespace PHASIC {
       deltay[0] = _deltay1;
       deltay[1] = _deltay2;
       ms = rans = 0;
-      AORGTOOLS::msg.Tracking()<<"Initialize LBSComptonPeakCentral("<<pole<<")"<<std::endl;
     }; 
 
     void GenerateWeight(double,double,int); 
@@ -278,7 +276,6 @@ namespace PHASIC {
       deltay[1] = _deltay2;
       yexp     = _yexp;
       ms = rans = 0;
-      AORGTOOLS::msg.Tracking()<<"Initialize LBSComptonPeakForward("<<pole<<")"<<std::endl;
     }; 
 
     void GenerateWeight(double,double,int); 
@@ -298,7 +295,6 @@ namespace PHASIC {
       deltay[1] = _deltay2;
       yexp     = _yexp;
       ms = rans = 0;
-      AORGTOOLS::msg.Tracking()<<"Initialize LBSComptonPeakBackward("<<pole<<")"<<std::endl;
     }; 
 
     void GenerateWeight(double,double,int); 

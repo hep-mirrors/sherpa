@@ -72,7 +72,7 @@ void XS_Group::Add(XS_Base * _xsec)
       return;
     }
   }  
-  AORGTOOLS::msg.Tracking()<<"Add xs "<<_xsec->Name()<<" to group "<<m_name<<" ! "<<endl; 
+  AORGTOOLS::msg.Debugging()<<"Add xs "<<_xsec->Name()<<" to group "<<m_name<<" ! "<<endl; 
   m_xsecs.push_back(_xsec);
 }
 
@@ -89,14 +89,13 @@ void XS_Group::SelectOne()
 	disc -= m_xsecs[i]->Total();
 	if (disc<0.) {
 	  p_selected = m_xsecs[i];
-	  //msg.Tracking()<<"Selected Process(_Group) : "<<p_selected->Name()<<endl;	
 	  p_selected->SelectOne();
 	  return;
 	}
       }
       if (disc>0.) { 
-	msg.Error()<<"Error in Process_Group::SelectOne() : ";
-	msg.Error()<<"Total xsec, max = "<<m_totalxs<<", "<<m_max<<endl;
+	msg.Error()<<"Error in Process_Group::SelectOne() : "
+		   <<"Total xsec, max = "<<m_totalxs<<", "<<m_max<<endl;
 	return;
       }
     }
@@ -106,14 +105,13 @@ void XS_Group::SelectOne()
 	disc -= m_xsecs[i]->Max();
 	if (disc<0.) {
 	  p_selected = m_xsecs[i];
-	  //msg.Tracking()<<"Selected Process(_Group) : "<<p_selected->Name()<<endl;	
 	  p_selected->SelectOne();
 	  return;
 	}
       }
       if (disc>0.) { 
-	msg.Error()<<"Error in Process_Group::SelectOne() : ";
-	msg.Error()<<"Total xsec, max = "<<m_totalxs<<", "<<m_max<<endl;
+	msg.Error()<<"Error in Process_Group::SelectOne() : "
+		   <<"Total xsec, max = "<<m_totalxs<<", "<<m_max<<endl;
 	return;
       }
     }
@@ -141,8 +139,6 @@ void XS_Group::SetISR(PDF::ISR_Handler * _isr) {
 
 bool XS_Group::CalculateTotalXSec()
 {
-  msg.Tracking()<<"X_Group::CalculateTotalXSec() "<<m_nin<<" / "<<p_isr<<endl;
-
   if (p_isr) {
     if (m_nin==2) {
       if ( (p_fl[0].Mass() != p_isr->Flav(0).Mass()) ||

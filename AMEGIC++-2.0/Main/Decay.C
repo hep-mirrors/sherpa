@@ -41,6 +41,7 @@ int Decay_Handler::CheckVertex(Flavour flin,Flavour flout1,Flavour flout2)
 
 void Decay_Handler::Print()
 {
+  if (!rpa.gen.debugging()) return;
   DecayTable* dt = dtfirst;
   msg.Out()<<"Decay Table: "<<endl;
   while (dt) {
@@ -267,12 +268,6 @@ void Decay_Handler::RecCalc(Topology* top,DecayTable* dt,int sw_2)
     int sw = 1;
     if (dtit->More==0) {
       Single_Process* pro;
-      //pro = new Single_Process(1,dtit->fn-1,dtit->fl,0,1);
-      //pro->InitDecay(top);
-      /*
-	if (!pro->InitAmplitude(top,moms,results,links)) 
- 	msg.Error()<<"Error in InitAmplitude !"<<endl;
-      */      
       pro->SetUpIntegrator();
       if (!pro->CalculateTotalXSec()) msg.Debugging()<<"pro->CalculateTotalXSec left with zero "<<endl; 
 	dtit->width = (pro->FSRIntegrator())->Result()/(pro->FSRIntegrator())->N();
@@ -297,20 +292,20 @@ void Decay_Handler::RecCalc(Topology* top,DecayTable* dt,int sw_2)
       }
       dtit->width = 0;
       if (sw==1) {
-	msg.Out()<<"-----------------------------------------"<<endl;
+	msg.Debugging()<<"-----------------------------------------"<<endl;
 	RecCalc(top,dtit->More,sw_2);
 	DecayTable* dtm = dtit->More;
 	while (dtm) {
 	  dtit->width += dtm->width;
 	  dtm = dtm->Next;
 	}
-	msg.Out()<<"----------------SUM----------------------"<<endl;
+	msg.Debugging()<<"----------------SUM----------------------"<<endl;
       }
     }
-    msg.Out()<<dtit->fl[0]<<" ---> "<<dtit->fl[1];
-    for (short int i=2;i<dtit->fn;i++) msg.Out()<<";"<<dtit->fl[i];
-    if (sw==1) msg.Out()<<",  Width: "<<dtit->width<<endl;
-          else msg.Out()<<",  Kicked ! "<<endl;
+    msg.Debugging()<<dtit->fl[0]<<" ---> "<<dtit->fl[1];
+    for (short int i=2;i<dtit->fn;i++) msg.Debugging()<<";"<<dtit->fl[i];
+    if (sw==1) msg.Debugging()<<",  Width: "<<dtit->width<<endl;
+          else msg.Debugging()<<",  Kicked ! "<<endl;
     dtit=dtit->Next;
   }
 }
@@ -368,8 +363,8 @@ void Decay_Handler::Calculate(Topology* top)
       dtit->width += dtm->width;
       dtm = dtm->Next;
     }
-    msg.Out()<<"-------------------------------------------------------------------"<<endl;
-    msg.Out()<<dtit->fl[0]<<" ---> All,  Width: "<<dtit->width<<endl;
+    msg.Debugging()<<"-------------------------------------------------------------------"<<endl;
+    msg.Debugging()<<dtit->fl[0]<<" ---> All,  Width: "<<dtit->width<<endl;
     //if (IsZero((dtit->fl[0]).width())) 
     (dtit->fl[0]).SetWidth(dtit->width);
     dtit=dtit->Next;

@@ -48,15 +48,11 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
     found = 0;
     for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
       pos = (*blit)->Type().find(string("Signal Process :"));
-      msg.Debugging()<<"Found blob to deal with "<<(*blit)->Type()<<" "<<pos<<" "<<(*blit)->Status()
-		     <<"  ("<<_bloblist->size()<<")"<<endl; 
       if ((*blit)->Status()==1 && pos>-1) {
-	msg.Debugging()<<"Found blob to deal with "<<(*blit)<<" -> "<<_bloblist->size()<<endl<<(*blit)<<endl; 
 	myblob = (*blit);
 	int stat = p_interface->DefineInitialConditions(myblob);
 	weight  *= p_interface->GetWeight();
 	if (stat) {
-	  //	  cout<<" jetmax = "<<p_showerhandler->MaxJetNumber()<<"  nout="<<p_mehandler->Nout()<<endl;
 	  shower = p_showerhandler->PerformShowers(p_showerhandler->MaxJetNumber()!=p_mehandler->Nout());
 	  if (shower==1) {
 	    p_showerhandler->FillBlobs(_bloblist);
@@ -98,13 +94,11 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 	    }
 	  }
 	  else if (shower==3) {
-	    msg.Tracking()<<" ASK for SAME EVENT "<<endl;
 	    myblob->SetType(string("Signal Process : "));
 	    myblob->SetStatus(-1);
 	    p_showerhandler->CleanUp();
 	  }
 	  else {
-	    msg.Out()<<" ASK for NEW EVENT (error)"<<endl;
 	    myblob->SetType(string("Signal Process : "));
 	    myblob->SetStatus(0);
 	    p_showerhandler->CleanUp();
@@ -112,8 +106,6 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 	  found = hit = 1;
 	}
 	else {
-	  // probably sudakov rejection
-	  msg.Tracking()<<" ASK for NEW EVENT (sudakov) "<<endl;
 	  myblob->SetType(string("Signal Process : "));
 	  myblob->SetStatus(0);
 	  p_showerhandler->CleanUp();

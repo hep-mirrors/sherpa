@@ -68,8 +68,7 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
   int  mode_dir = 448;
   mkdir((string("Process/")+m_ptypename).c_str(),mode_dir); 
   
-  msg.Tracking()<<"Initialized Single_Process : "<<m_name<<", "<<m_nvec<<", 1/norm = "<<1./m_Norm<<endl
-		<<"String handling : "<<m_gen_str<<endl;;
+  msg.Tracking()<<"Initialized Single_Process : "<<m_name<<", "<<m_nvec<<", 1/norm = "<<1./m_Norm<<endl;
 }
 
 
@@ -107,8 +106,6 @@ void Single_Process::PolarizationNorm() {
   m_pol.Attach(m_nin+m_nout,p_fl);
   m_Norm *= m_pol.Massive_Norm();
 
-  msg.Debugging()<<"In Single_Process::PolarizationNorm for "<<m_name<<" : "<<is_massless_pol<<" "
-		 <<m_nin<<" -> "<<m_nout<<" ("<<m_nvec<<")"<<endl;
 #endif
 }
 
@@ -159,11 +156,8 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
 				  vector<double> & results,vector<Single_Process *> & links)
 {
   if (_testmoms==0) {
-    msg.Debugging()<<"Init moms : "<<_testmoms<<" : "<<m_nin+m_nout<<endl;
     _testmoms = new Vec4D[m_nvec];
     p_ps->TestPoint(_testmoms);
-    for (int i=0;i<m_nin+m_nout;i++)
-      msg.Debugging()<<i<<" th mom : "<<_testmoms[i]<<" ("<<_testmoms[i].Abs2()<<")"<<endl;
   }
   if (p_moms) { delete [] p_moms; }
   p_moms = new Vec4D[m_nvec]; 
@@ -177,7 +171,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_fl,p_b,&m_pol,model,top,m_orderQCD,m_orderEW,
 				   p_BS,p_shand,m_ptypename+string("/")+m_name);
   if (p_ampl->GetGraphNumber()==0) {
-    msg.Error()<<"Single_Process::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
+    msg.Tracking()<<"Single_Process::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return -1;
   }
   m_pol.Add_Extern_Polarisations(p_BS,p_fl,p_hel);
@@ -221,8 +215,6 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology * top)
   if (p_moms) { delete [] p_moms; }
   p_moms   = new Vec4D[m_nvec]; 
   p_ps->TestPoint(p_moms);
-  for (int i=0;i<m_nin+m_nout;i++)
-    msg.Debugging()<<i<<" th mom : "<<p_moms[i]<<" ("<<p_moms[i].Abs2()<<")"<<endl;
 
   p_hel    = new Helicity(m_nin,m_nout,p_fl,p_pl);
   p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvec,p_fl,p_b);  
@@ -230,7 +222,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology * top)
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_fl,p_b,&m_pol,model,top,m_orderQCD,m_orderEW,
 				   p_BS,p_shand,m_ptypename+string("/")+m_name);
   if (p_ampl->GetGraphNumber()==0) {
-    msg.Error()<<"Single_Process::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
+    msg.Tracking()<<"Single_Process::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return -1;
   }
   m_pol.Add_Extern_Polarisations(p_BS,p_fl,p_hel);
@@ -358,23 +350,6 @@ int Single_Process::Tests(double & result) {
       msg.Debugging()<<"Switch off zero helicity "<<i<<" : "
 		     <</*p_ampl->Differential(i,(*p_hel)[i])<<"/"<<*/M_doub[i]/M2g<<endl;
     }
-    /*
-      //may cause problems due to numerics
-    if (p_hel->On(i)) {
-      for (short int j=i+1;j<p_hel->Max_Hel();j++) {
-	if (p_hel->On(j)) {
-	  if (AMATOOLS::IsEqual(M_doub[i]/M2g,M_doub[j]/M2g)) {
-	    msg.Debugging()<<"Switch off helicity "<<j<<" -> "<<i<<" : "
-		   	   <<p_ampl->Differential(i,(*p_hel)[i])<<"/"
-			  <<M_doub[i]/M2g<<" -> "<<M_doub[j]/M2g<<endl;
-			  
-	    p_hel->switch_off(j);
-	    p_hel->SetPartner(i,j);
-	    p_hel->Inc_Mult(i);
-	  }
-	}
-      }
-    }*/
   }
   M2g    *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS));
   result  = M2g;
@@ -384,9 +359,9 @@ int Single_Process::Tests(double & result) {
   p_BS->StartPrecalc();
 
   if (gauge_test) {
-    msg.Tracking()<<"Gauge(1): "<<abs(M2)<<endl
-		  <<"Gauge(2): "<<abs(M2g)<<endl
-		  <<"Gauge test: "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
+    msg.Debugging()<<"Gauge(1): "<<abs(M2)<<endl
+		   <<"Gauge(2): "<<abs(M2g)<<endl
+		   <<"Gauge test: "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
     if (!AMATOOLS::IsZero(abs(M2/M2g-1.))) {
       msg.Tracking()<<"Gauge test not satisfied: "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
     }
@@ -445,19 +420,14 @@ int Single_Process::Tests(double & result) {
       }
       return 1;
     }
-    msg.Tracking()<<"no strings created."<<endl;
     return 1;
   }
-  msg.Tracking()<<"string_test switched off !"<<endl;
   return 0;
 }
 
 int Single_Process::InitLibrary(double result) {
   if (m_gen_str==0) return 1;
-  if (p_shand->IsLibrary()) {
-    msg.Tracking()<<"No library needs to be initialized. Already done."<<endl;
-    return 1;
-  }
+  if (p_shand->IsLibrary()) return 1;
 
   char help[20];
   sprintf(help,"%i",p_ampl->GetGraphNumber());
@@ -474,8 +444,6 @@ int Single_Process::InitLibrary(double result) {
   sprintf(help,"%i",antis);
   m_libname += string("_");
   m_libname += string(help);
-  msg.Debugging()<<"In Init library for "<<m_name<<endl;
-
 
   String_Handler * shand1;
   shand1      = new String_Handler(p_shand->Get_Generator());
@@ -604,36 +572,30 @@ void Single_Process::CreateMappingFile() {
   char outname[100];
   sprintf(outname,"%s.map",(string("Process/")+m_ptypename+string("/")+m_name).c_str());
   if (IsFile(outname)) {
-    msg.Debugging()<<"Mapping file already exists. Check identity."<<endl;
     ifstream from;
     from.open(outname);
     string tempname;
     from>>tempname;
     if (tempname != m_libname) {
-      msg.Error()<<"Files do not coincide. Maybe changed input data ?"<<endl;
+      msg.Error()<<"In Single_Process::CreateMappingFile() : Files do not coincide. Maybe changed input data ?"<<endl;
       abort();
     }
     else return;
   }
-  msg.Debugging()<<" Write Mapping Information to : "<<outname<<endl;
 
   std::ofstream to;
   to.open(outname,ios::out);
   to<<m_libname<<endl;
   to.close();
-  msg.Debugging()<<"File "<<outname<<" saved."<<endl;  
-
 }
 
 bool Single_Process::FoundMappingFile(std::string & tempname) {
   char outname[100];
   sprintf(outname,"%s.map",(string("Process/")+m_ptypename+string("/")+m_name).c_str());
   if (IsFile(outname)) {
-    msg.Debugging()<<"Mapping file already exists. Check identity."<<endl;
     ifstream from;
     from.open(outname);
     from>>tempname;
-    msg.Tracking()<<"Found "<<tempname<<endl;
     return 1;
   }
   return 0;
@@ -656,7 +618,6 @@ void Single_Process::InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Ba
 
 
 bool Single_Process::SetUpIntegrator() {  
-  msg.Debugging()<<"In  Single_Process::SetUpIntegrator(),  partner = "<<p_partner<<endl;
   p_sel->BuildCuts(p_cuts);
   if (m_nin==2) {
     if ( (p_fl[0].Mass() != p_isr->Flav(0).Mass()) ||
@@ -671,10 +632,8 @@ bool Single_Process::SetUpIntegrator() {
 
 bool Single_Process::CreateChannelLibrary()
 {
-  msg.Tracking()<<"Creating Multichannel for phasespace integration for "<<m_name<<endl;
   p_psgen     = new Phase_Space_Generator(m_nin,m_nout);
   bool newch  = 0;
-  msg.Tracking()<<"Try to Construct("<<p_ps<<"->"<<p_ps->FSRIntegrator()<<","<<m_ptypename<<","<<m_libname<<")"<<endl;
   if (m_nin>1)  newch = p_psgen->Construct(p_ps->FSRIntegrator(),m_ptypename,m_libname,p_fl,this); 
 
   if (newch) {
@@ -683,11 +642,6 @@ bool Single_Process::CreateChannelLibrary()
     return 0;
   }
   else {
-    msg.Tracking()<<"No new Channels produced for "<<m_libname<<" ! "<<endl
-		  <<" added the following channels to the fs multi-channel : "<<endl;
-    for (short int i=0;i<p_ps->NumberOfFSRIntegrators();i++)
-      msg.Tracking()<<"     "<<(p_ps->FSRIntegrator()->Channel(i))->Name()<<endl;
-    msg.Debugging()<<"Program continues."<<endl;
     return 1;
   }
 }
@@ -702,10 +656,8 @@ void Single_Process::Empty() {
   if (p_cuts)        { delete p_cuts; p_cuts = 0; }
   if (p_ps)          { delete p_ps; p_ps = 0; } 
   if (p_partner != this) {
-    msg.Debugging()<<"Emptied "<<m_name<<" completely"<<endl;
     return;
   }
-  msg.Debugging()<<"Emptied "<<m_name<<" partially"<<endl; 
 }
 
 void Single_Process::SetTotalXS(int _tables)  { 
@@ -797,7 +749,6 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
 
 void Single_Process::WriteOutXSecs(std::ofstream & _to)    
 { 
-  msg.Debugging()<<"Write out xsec for "<<m_name<<endl;
   _to<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<endl; 
 }
 

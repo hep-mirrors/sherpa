@@ -21,7 +21,6 @@ Single_Channel::Single_Channel(int _nin,int _nout,Flavour * fl)
 
 Single_Channel::Single_Channel(Single_Channel * old)
 {
-  msg.Debugging()<<"New copy for Single_Channel : "<<old->name<<endl;
   nin    = old->nin;
   nout   = old->nout;
   rannum = old->rannum;
@@ -56,14 +55,12 @@ void Single_Channel::AddPoint(double Value) {
 void Single_Channel::GeneratePoint(Vec4D* p,Cut_Data * cuts)
 {
   for (short int i=1;i<rannum;i++) rans[i] = ran.Get();
-  //  cout<<"rannum="<<rannum<<endl;
   GeneratePoint(p,cuts,rans);
 }
 
 
 void Single_Channel::GeneratePoint(Vec4D * p)
 {
-  msg.Debugging()<<"In Single_Channel::GeneratePoint(Vec4d) "<<name<<endl;
   for (short int i=1;i<rannum;i++) rans[i] = ran.Get();
   GeneratePoint(p,rans);
 }

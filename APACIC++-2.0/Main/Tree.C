@@ -42,7 +42,6 @@ Tree::Tree(Tree * tree) {
 }
 
 Tree::~Tree() {
-  std::cout<<" deleting "<<this<<std::endl;
   Reset();
   Knot * help;
   help = p_save_root;
@@ -83,7 +82,6 @@ Knot * Tree::NewKnot(APHYTOOLS::Flavour fl, AMATOOLS::Vec4D p, double t, double 
   newk->prev      = 0;
   if (!p_root) {
     p_root = newk;
-    // msg.Debugging()<<"Knot::NewKnot : "<<newk<<" serves as new root."<<endl;
   }
   return newk;
 };
@@ -106,7 +104,6 @@ Knot * Tree::NewKnot(Knot * ink) {
   newk->prev      = 0;
   if (!p_root) {
     p_root = newk;
-    // msg.Debugging()<<"Knot::NewKnot : "<<newk<<" serves as new root."<<endl;
   }
   newk->part      = new Parton(ink->part);
   return newk;
@@ -178,9 +175,6 @@ void Tree::Restore(Knot * in) {
 
 void Tree::ResetDaughters(Knot * in) {
   if (!(in)) return;
-  //msg.Debugging()<<"Tree::ResetDaughters."<<endl
-  //		 <<"   Delete daughters of/and "<<in<<" "<<in->kn_no<<endl;
-
   
   if (in->left)  ResetDaughters(in->left);
   in->left=0;
@@ -196,34 +190,6 @@ void Tree::ResetDaughters(Knot * in) {
   }
 }
 
-/*  obsolete new version see below
-void Tree::Restore() {
-  for (Knot_Iterator kit=p_knots->begin(); kit!=p_knots->end(); ++kit) {
-    if ( ( (*kit)->part->Info() != 'G') && ( (*kit)->part->Info() != 'H') ) {
-      //msg.Debugging()<<"Tree::Restore : Delete knot "<<(*kit)->kn_no
-      //	     <<"  "<<(*kit)->part->Flav()<<"  "<<(*kit)->part->Info()<<endl;
-      delete (*kit);
-      p_knots->erase(kit);
-    }
-    else {
-      //msg.Debugging()<<"Tree::Restore : Kept knot "<<(*kit)->kn_no
-      //	     <<"  "<<(*kit)->part->Flav()<<"  "<<(*kit)->part->Info()<<endl;
-      if ((*kit)->prev) {
-	if (((*kit)->prev->part->Info() != 'G') && 
-	    ((*kit)->prev->part->Info() != 'H')) (*kit)->prev  = 0;
-      }
-      if ((*kit)->left) {
-	if (((*kit)->left->part->Info() != 'G') && 
-	    ((*kit)->left->part->Info() != 'H')) (*kit)->left  = 0;
-      }
-      if ((*kit)->right) {
-	if (((*kit)->right->part->Info() != 'G') && 
-	    ((*kit)->right->part->Info() != 'H')) (*kit)->right = 0;
-      }
-    }
-  }
-}
-*/
 
 Knot * Tree::GetInitiator() {
   Knot * help;
@@ -244,40 +210,31 @@ void Tree::BoRo(AMATOOLS::Poincare & lorenz)
 {
   Knot * mo= GetRoot();
   if (mo)  while (mo->prev) mo = mo->prev;
-  // msg.Debugging()<<"changing Knot "<<mo->kn_no<<" from "<<mo->part->Momentum()<<endl;
   mo->part->SetMomentum(lorenz*mo->part->Momentum());
-  // msg.Debugging()<<"                to "<<mo->part->Momentum()<<endl;
   BoRoDaughters(lorenz,mo);
 }
 
 void Tree::BoRoDaughters(AMATOOLS::Poincare & lorenz, Knot * mo) 
 {
   if (mo->left) {
-    // msg.Debugging()<<"changing Knot "<<mo->left->kn_no<<" from "<<mo->left->part->Momentum()<<endl;
     mo->left->part->SetMomentum(lorenz*mo->left->part->Momentum());
-    // msg.Debugging()<<"                to "<<mo->left->part->Momentum()<<endl;
     BoRoDaughters(lorenz,mo->left);
   }
   if (mo->right) {
-    // msg.Debugging()<<"changing Knot "<<mo->right->kn_no<<" from "<<mo->right->part->Momentum()<<endl;
     mo->right->part->SetMomentum(lorenz*mo->right->part->Momentum());
-    // msg.Debugging()<<"                to "<<mo->right->part->Momentum()<<endl;
     BoRoDaughters(lorenz,mo->right);      
   }
 }
 
 void Tree::BoRo(AMATOOLS::Poincare & lorenz, Knot * mo) 
 {
-  // msg.Debugging()<<"changing Knot "<<mo->kn_no<<" from "<<mo->part->Momentum()<<endl;
   mo->part->SetMomentum(lorenz*mo->part->Momentum());
-  // msg.Debugging()<<"                to "<<mo->part->Momentum()<<endl;
   BoRoDaughters(lorenz,mo);
 }
 
 Knot * Tree::CopyKnot(Knot * a, Knot * prev) 
 {
   if (!a) return 0;
-  //cout<<" copy: "<<*a<<endl;
   Knot * nk = new Knot(a);
   nk->prev  = prev;
   nk->left  = CopyKnot(a->left,nk);
@@ -288,12 +245,8 @@ Knot * Tree::CopyKnot(Knot * a, Knot * prev)
 void Tree::CopyBackKnot(Knot * a, Knot * b) 
 {
   if (!b) return;
-  //cout<<"a copy back "<<*a<<" from "<<*b;
 
   if (!a || a==b) {
-    std::cout<<" ERROR: Tree::CopyBackKnot : no knot to copy to! "<<endl;
-    std::cout<<" from "<<*b<<endl;
-    std::cout<<"in"<<endl;
     Knot * b = p_save_root;
     if (b) {
       while (b->prev) {
@@ -301,8 +254,6 @@ void Tree::CopyBackKnot(Knot * a, Knot * b)
       }
     }
     StreamTree(std::cout,b);
-    std::cout<<"to"<<endl;
-    std::cout<<this<<endl;
     abort();
   }
 
@@ -311,18 +262,13 @@ void Tree::CopyBackKnot(Knot * a, Knot * b)
   else a->left=0;
   if (b->right) CopyBackKnot(a->right,b->right);
   else a->right=0;
-  if (!(b->prev))
-    a->prev=0;
-  //std::cout<<" to "<<*a<<endl;
-
+  if (!(b->prev)) a->prev=0;
 }
 
 void Tree::DeleteKnot(Knot * b) {
   if (!b) return;
   DeleteKnot(b->left);
   DeleteKnot(b->right);
-
-  //std::cout<<" delete"<< *b<<endl;
   delete b;
 }
 
@@ -334,9 +280,6 @@ void Tree::Store()
   DeleteKnot(help);  
 
   p_save_root = CopyKnot(GetInitiator(),0);
-  //std::cout<<" Stored:"<<endl;
-  //  StreamTree(std::cout,p_save_root);
-  
 
   while (p_save_root->right) p_save_root = p_save_root->right;
 }
@@ -348,14 +291,8 @@ void Tree::Restore()
   if (b) {
     while (b->prev) {
       b = b->prev;
-      if (!a) {
-	std::cout<<"ERROR in Tree::Restore() line 354"<<endl;
-      }
       a = a->prev;
     }
-  }
-  if (!a) {
-    std::cout<<"ERROR in Tree::Restore() line 360"<<endl;
   }
   CopyBackKnot(a,b);
 }

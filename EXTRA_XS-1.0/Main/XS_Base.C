@@ -77,7 +77,6 @@ void XS_Base::Init(Flavour * _fl)
   for (int i=m_nin;i<m_nout;i++) massout += p_fl[i].Mass();
   if (massin>massout) m_thres = AMATOOLS::sqr(massin);
                  else m_thres = AMATOOLS::sqr(massout);
-  msg.Debugging()<<"Initialised XS_Base : "<<m_nin<<" -> "<<m_nout<<" : "<<m_name<<endl;
 }
 
 void XS_Base::GenerateName() {

@@ -365,13 +365,6 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
 	sstr<<pout1[0];
 	int i;
 	sstr>>i;
-	/*
-	  fl not filled!!! // deactivated!!!! *AS*
-	  if (fl[i].IsVector() && AMATOOLS::IsZero(fl[i].Mass())) {
-	  cout<<"New Extra Channel should be created!!!"<<endl;
-	  newchannel = 1; 
-	  }
-	*/
       }
 
 

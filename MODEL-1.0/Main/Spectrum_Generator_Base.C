@@ -8,9 +8,7 @@ using namespace AMATOOLS;
 
 DecayChannel::DecayChannel(const Flavour _flin) : 
   m_flin(_flin), m_width(0.) 
-{
-  msg.Debugging()<<"Initialize new decay channel for "<<m_flin<<std::endl;
-}
+{ }
 
 void DecayChannel::AddDecayProduct(const Flavour _flout) {
   m_flouts.push_back(_flout);

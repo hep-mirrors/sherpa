@@ -60,11 +60,11 @@ Laser_Backscattering::Laser_Backscattering(const APHYTOOLS::Flavour _beam,
   m_total2 = m_totalC * 0.5540019 * (1.-exp(-37.38912 * m_xi * m_xi));
   m_totalE = m_totalC * (0.7257064 + 1.517959e-3 * m_energy);
 
-  msg.Tracking()<<"Initialised Laser-Backscattering ("<<m_mode<<") : "<<endl
-		<<" xe,xmax = "<<m_xe<<", "<<m_xmax
-		<<" for energyL,mass ="<<m_energyL<<", "<<APHYTOOLS::Flavour(kf::e).PSMass()<<endl
-		<<" with xi = "<<m_xi<<", norms   = "<<m_totalC<<"  /  "<<m_total2<<endl
-		<<" with polarization = "<<m_polarization<<", polarizationL = "<<m_polarizationL<<endl;
+  msg.Debugging()<<"Initialised Laser-Backscattering ("<<m_mode<<") : "<<endl
+		 <<" xe,xmax = "<<m_xe<<", "<<m_xmax
+		 <<" for energyL,mass ="<<m_energyL<<", "<<APHYTOOLS::Flavour(kf::e).PSMass()<<endl
+		 <<" with xi = "<<m_xi<<", norms   = "<<m_totalC<<"  /  "<<m_total2<<endl
+		 <<" with polarization = "<<m_polarization<<", polarizationL = "<<m_polarizationL<<endl;
 }
 
 

@@ -39,26 +39,14 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
 
 Initialization_Handler::~Initialization_Handler()
 {
-  msg.Debugging()<<" in Initialization_Handler::~Initialization_Handler()"<<endl;
-  // deleting all in reverse order:
-
-  msg.Debugging()<<" deleting p_hadrondecays"<<endl;
-  if (p_hadrondecays)  { delete p_hadrondecays; p_hadrondecays = NULL; }
-  msg.Debugging()<<" deleting p_fragmentation"<<endl;
+  if (p_hadrondecays)  { delete p_hadrondecays;  p_hadrondecays  = NULL; }
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
-  msg.Debugging()<<" deleting p_beamremnants"<<endl;
-  if (p_beamremnants)  { delete p_beamremnants; p_beamremnants = NULL; }
-  msg.Debugging()<<" deleting p_showerhandler"<<endl;
+  if (p_beamremnants)  { delete p_beamremnants;  p_beamremnants  = NULL; }
   if (p_showerhandler) { delete p_showerhandler; p_showerhandler = NULL; }
-  msg.Debugging()<<" deleting p_mehandler"<<endl;
   if (p_mehandler)     { delete p_mehandler;     p_mehandler     = NULL; }
-  msg.Debugging()<<" deleting p_isrhandler"<<endl;
   if (p_isrhandler)    { delete p_isrhandler;    p_isrhandler    = NULL; }
-  msg.Debugging()<<" deleting p_beamspectra"<<endl;
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
-  msg.Debugging()<<" deleting p_model"<<endl;
   if (p_model)         { delete p_model;         p_model         = NULL; }
-  msg.Debugging()<<" out Initialization_Handler::~Initialization_Handler()"<<endl;
 }
 
 
@@ -130,14 +118,8 @@ bool Initialization_Handler::InitializeThePDFs()
 
   for (int i=0;i<2;++i) {
     pdfbase = pdfhandler->GetPDFLib(dataread,m_bunch_particles[i],i);
-    if (pdfbase==NULL) {
-      msg.Debugging()<<"No ISR for beam "<<i+1<<" : Initialize Intact for "<<m_bunch_particles[i]<<endl;
-      isrbases[i]          = new Intact(m_bunch_particles[i]);     
-    }
-    else {
-      msg.Debugging()<<"ISR for beam "<<i+1<<" : Initialize SF for "<<m_bunch_particles[i]<<endl;
-      isrbases[i]          = new Structure_Function(pdfbase,m_bunch_particles[i]);
-    }
+    if (pdfbase==NULL) isrbases[i] = new Intact(m_bunch_particles[i]);     
+                  else isrbases[i] = new Structure_Function(pdfbase,m_bunch_particles[i]);
   }
   m_bunch_splimits[0]      = dataread->GetValue<double>("ISR_SMIN",0.);
   m_bunch_splimits[1]      = dataread->GetValue<double>("ISR_SMAX",1.);

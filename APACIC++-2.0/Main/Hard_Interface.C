@@ -20,7 +20,6 @@ Hard_Interface::Hard_Interface(ISR_Handler * _isr,MODEL::Model_Base * _model,int
   m_isron(_isron), m_fsron(_fsron), m_showers(_isron||_fsron),
   p_fintree(NULL), p_finshower(NULL), p_initrees(NULL), p_inishower(NULL)
 {
-  msg.Debugging()<<"Passed isr : "<<_isr<<std::endl;
   if (m_fsron) {
     p_fintree   = new Tree();
     p_finshower = new Final_State_Shower(_model,_dataread);
@@ -41,19 +40,14 @@ Hard_Interface::~Hard_Interface()
   }  
   if (p_inishower)   { delete p_inishower; p_inishower = 0; }
   if (p_finshower)   { delete p_finshower; p_finshower = 0; }
-
-  msg.Tracking()<<"Out Hard_Interface::~Hard_Interface :"<<std::endl;
-  msg.Tracking()<<"+++++++++++++++++++++++++++++++++++++++++++++++"<<std::endl;
 }
 
 void Hard_Interface::PrepareTrees() {
-  msg.Tracking()<<"In Hard_Interface::PrepareTrees : Reset trees."<<std::endl; 
   if (m_fsron) p_fintree->Reset(); 
   if (m_isron) for (int i=0;i<2;i++) p_initrees[i]->Reset();
 }
 
 int Hard_Interface::PerformShowers(bool ini,bool fin,bool jetveto) {
-  //  msg.Out()<<"In Hard_Interface::PerformShowers("<<ini<<","<<fin<<","<<jetveto<<")."<<endl;
   if (!m_showers) return 1;
   if (m_fsron) {
     Poincare cms(p_fintree->GetRoot()->part->Momentum());
@@ -68,9 +62,9 @@ int Hard_Interface::PerformShowers(bool ini,bool fin,bool jetveto) {
 
     p_finshower->SetAllColours(p_fintree->GetRoot());
 
-    msg.Tracking()<<"Final State Shower successful !"<<std::endl;
-    if (!m_isron) msg.Tracking()<<"Has to be boosted into lab frame (done by is shower part)!"<<std::endl;
-    if (rpa.gen.Tracking()) p_finshower->OutputTree(p_fintree);
+    msg.Debugging()<<"Final State Shower successful !"<<std::endl;
+    if (!m_isron) msg.Debugging()<<"Has to be boosted into lab frame (done by is shower part)!"<<std::endl;
+    if (rpa.gen.Debugging()) p_finshower->OutputTree(p_fintree);
   }
 
   if (m_isron) {
@@ -101,10 +95,10 @@ int Hard_Interface::PerformShowers(bool ini,bool fin,bool jetveto) {
     // check ME if still njet ME!
     if (!p_finshower->ExtraJetCheck()) return 3;
 
-    msg.Tracking()<<"Initial State Shower successful !"<<std::endl;
+    msg.Debugging()<<"Initial State Shower successful !"<<std::endl;
   }
 
-  if (rpa.gen.Tracking()) {
+  if (rpa.gen.Debugging()) {
     if (m_fsron) 
       p_finshower->OutputTree(p_fintree);
     if (m_isron) {

@@ -11,9 +11,9 @@
 %
 %
 %
-Process : 2 -2 -> 21 21 21
-Order electroweak : 0
-Order strong : 3
+Process : 11 -11 -> 93 93
+Order electroweak : 99
+Order strong : 99
 End process
 %
 %11 -11 -> 93 93 93 93 93

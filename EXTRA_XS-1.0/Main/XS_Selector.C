@@ -13,24 +13,12 @@ using namespace AORGTOOLS;
 
 Single_XS * XS_Selector::GetXS(int nin,int nout,Flavour * fl)
 { 
-  if (rpa.gen.Tracking()) {
-    cout<<"looking for: ";
-    for (int i=0; i<nin; ++i) cout<<fl[i]<<' ';
-    cout<<"-> ";
-    for (int i=0; i<nout; ++i) cout<<fl[i+nin]<<' ';
-    cout<<endl;
-  }
-
   Single_XS * xs = 0;
   if (nin !=2 && nout !=2) {
-    if (AORGTOOLS::rpa.gen.Error()) {
-      cout<<"Such a XS is not available as FastFunc!"<<endl;
-      cout<<"nin, nout = "<<nin<<", "<<nout<<endl;
-    }
+    AORGTOOLS::msg.Error()<<"Such a XS is not available as FastFunc!"<<endl
+			  <<"nin, nout = "<<nin<<", "<<nout<<endl;
     return xs;
   }
-
-
 
   if (fl[2].IsFermion() && fl[3]==fl[2].Bar() &&
       fl[0].IsPhoton()  && fl[1]==fl[0])    { return new XS_pp_ffbar(nin,nout,fl); }

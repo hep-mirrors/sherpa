@@ -39,34 +39,34 @@ namespace PHASIC {
     void ResetOpt();
     virtual void GeneratePoint(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *);
     virtual void GeneratePoint(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *,double *) {
-      AORGTOOLS::msg.Error()<<"Virtual Method : ";
-      AORGTOOLS::msg.Error()<<"Single_Channel::GeneratePoint(Vec4D,Cut_Data,double)."<<std::endl; 
+      AORGTOOLS::msg.Error()<<"Virtual Method : "
+			    <<"Single_Channel::GeneratePoint(Vec4D,Cut_Data,double)."<<std::endl; 
     }
     virtual void GenerateWeight(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *) {
-      AORGTOOLS::msg.Error()<<"Virtual Method : ";
-      AORGTOOLS::msg.Error()<<"Single_Channel::GenerateWeight(Vec4D,Cut_Data)"<<std::endl; 
+      AORGTOOLS::msg.Error()<<"Virtual Method : "
+			    <<"Single_Channel::GenerateWeight(Vec4D,Cut_Data)"<<std::endl; 
     }
 
     virtual void GeneratePoint(AMATOOLS::Vec4D *);
     virtual void GeneratePoint(AMATOOLS::Vec4D *,double *) { 
-      AORGTOOLS::msg.Error()<<"Virtual Method : ";
-      AORGTOOLS::msg.Error()<<"Single_Channel::GeneratePoint(Vec4D,double)."<<std::endl; 
+      AORGTOOLS::msg.Error()<<"Virtual Method : "
+			    <<"Single_Channel::GeneratePoint(Vec4D,double)."<<std::endl; 
     }
     virtual void GenerateWeight(AMATOOLS::Vec4D *) {
-      AORGTOOLS::msg.Error()<<"Virtual Method : ";
-      AORGTOOLS::msg.Error()<<"Single_Channel::GenerateWeight(Vec4D)"<<std::endl; 
+      AORGTOOLS::msg.Error()<<"Virtual Method : "
+			    <<"Single_Channel::GenerateWeight(Vec4D)"<<std::endl; 
     }
     virtual void GeneratePoint(double &,double &,int,double *) {
       AORGTOOLS::msg.Error()<<"Virtual Method : "
 			    <<"Single_Channel::GeneratePoint(double,double,double)"<<std::endl; 
     }
     virtual void GeneratePoint(double &,double &,int) {
-      AORGTOOLS::msg.Error()<<"Virtual Method : ";
-      AORGTOOLS::msg.Error()<<"Single_Channel::GeneratePoint(double,double)"<<std::endl; 
+      AORGTOOLS::msg.Error()<<"Virtual Method : "
+			    <<"Single_Channel::GeneratePoint(double,double)"<<std::endl; 
     }
     virtual void GenerateWeight(double,double,int) {
-      AORGTOOLS::msg.Error()<<"Virtual Method : ";
-      AORGTOOLS::msg.Error()<<"Single_Channel::GenerateWeight(double,double)"<<std::endl; 
+      AORGTOOLS::msg.Error()<<"Virtual Method : "
+			    <<"Single_Channel::GenerateWeight(double,double)"<<std::endl; 
     }
     /*!
       Some more service methods.
@@ -80,8 +80,8 @@ namespace PHASIC {
     };
 
     virtual void GetRange() {
-      AORGTOOLS::msg.Out()<<"  sprime : "<<sprimerange[0]<<" "<<sprimerange[1]<<" / "<<sprimerange[2]<<" / "
-			  <<"  y : "<<yrange[0]<<" ... "<<yrange[1]<<std::endl;
+      AORGTOOLS::msg.Debugging()<<"  sprime : "<<sprimerange[0]<<" "<<sprimerange[1]<<" / "<<sprimerange[2]<<" / "
+				<<"  y : "<<yrange[0]<<" ... "<<yrange[1]<<std::endl;
     }
 
     virtual void ISRInfo(int &,double &,double &) {

@@ -68,8 +68,6 @@ Process_Base::Process_Base(int _nin,int _nout,APHYTOOLS::Flavour * _fl,
   p_ps = 0;
   p_sel = 0;
   
-  AORGTOOLS::msg.Debugging()<<"In Process_Base: "<<_pl<<endl;
-
   for (short int i=0;i<m_nin;i++) {
     p_flin[i]  = _fl[i];
     if (_pl!=0) p_plin[i] = _pl[i];
@@ -406,7 +404,6 @@ bool Process_Base::CheckExternalFlavours(int _nin,Flavour * _in,
 
 bool Process_Base::IsFile(string filename)
 {
-  AORGTOOLS::msg.Debugging()<<"Check for "<<filename<<endl;
   ifstream from;
   bool     hit = 0;
   from.open(filename.c_str());
@@ -429,16 +426,12 @@ void Process_Base::AddChannels(Process_Base * _proc,Multi_Channel * _fsr,
   bool         addit;
   Channel_Info ci;
 
-  AORGTOOLS::msg.Debugging()<<"In AddChannels("<<_proc->Name()<<", "<<_proc->Size()<<")"<<endl;
   for (int i=0;i<_proc->Size();i++) {
-    AORGTOOLS::msg.Debugging()<<"Add channels for "<<(*_proc)[i]->Name()<<endl;
     if ((*_proc)[i]->Partner()==NULL) AddChannels((*_proc)[i],_fsr,_beamparams,_isrparams);
     else {
       if ((*_proc)[i]->Partner()==(*_proc)[i]) {
 	Single_Channel * sc;
 	int next; string chname;
-	AORGTOOLS::msg.Debugging()<<"Phase_Space_Handler::Add "<<(*_proc)[i]->NumberOfFSRIntegrators()
-				  <<" Channels of "<<(*_proc)[i]->Name()<<endl;
 	for (int j=0;j<(*_proc)[i]->NumberOfFSRIntegrators();j++) { 
 	  chname = ((*_proc)[i]->FSRIntegrator(j))->Name();
 	  if ( (chname!=string("Rambo")) && (chname!=string("Sarge")) ) { 
@@ -453,9 +446,6 @@ void Process_Base::AddChannels(Process_Base * _proc,Multi_Channel * _fsr,
 
 	if ((*_proc)[i]->Beam()) {
 	  if ((*_proc)[i]->Beam()->On()>0) {
-	    AORGTOOLS::msg.Debugging()<<"Phase_Space_Handler::Add "
-				      <<(*_proc)[i]->NumberOfBeamIntegrators()<<" "
-				      <<"Beam-Channels of "<<(*_proc)[i]->Name()<<endl;
 	    for (int j=0;j<(*_proc)[i]->NumberOfBeamIntegrators()/3;j++) {
 	      (*_proc)[i]->BeamChannels(j,ci);
 	      addit = 1;
@@ -468,14 +458,9 @@ void Process_Base::AddChannels(Process_Base * _proc,Multi_Channel * _fsr,
 	}
 	if ((*_proc)[i]->ISR()) {
 	  if ((*_proc)[i]->ISR()->On()>0) {
-	    AORGTOOLS::msg.Debugging()<<"Phase_Space_Handler::Add "
-				      <<(*_proc)[i]->NumberOfISRIntegrators()<<" "
-				      <<"ISRChannels of "<<(*_proc)[i]->Name()<<endl;
 	    for (int j=0;j<(*_proc)[i]->NumberOfISRIntegrators()/3;j++) {
 	      (*_proc)[i]->ISRChannels(j,ci);
 	      addit = 1;
-	      AORGTOOLS::msg.Debugging()<<j<<" th channel for "<<(*_proc)[i]->Name()<<" : "
-					<<" check for "<<ci.type<<" in "<<_isrparams.size()<<endl; 
 	      for (int k=0;k<_isrparams.size();k++) {
 		if (_isrparams[k]==ci) { addit = 0; break; }
 	      }
@@ -484,13 +469,8 @@ void Process_Base::AddChannels(Process_Base * _proc,Multi_Channel * _fsr,
 	  }
 	}
       }
-      else {
-	AORGTOOLS::msg.Debugging()<<"Omit channels of "<<m_name<<", "
-				  <<" partner = "<<(*_proc)[i]->Partner()->Name()<<endl;
-      }
     }
   }
-  AORGTOOLS::msg.Debugging()<<"Leave AddChannels for "<<m_name<<endl;
 }
 
 
@@ -556,8 +536,6 @@ void Process_Base::SetISRThreshold(double _isrthreshold){ m_isrthreshold  = _isr
   ------------------------------------------------------------------------------*/
 
 void Process_Base::RescaleXSec(double fac) {
-  AORGTOOLS::msg.Out()<<" in RescaleXSec of "<<m_name<<endl
-		      <<"  "<<m_rfactor<<" "<<m_totalxs<<" "<<m_max<<" "<<endl;
   m_rfactor  *= fac;
   m_totalxs  *= fac;
   m_totalsum *= fac;

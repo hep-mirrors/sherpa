@@ -8,12 +8,10 @@ using namespace AMATOOLS;
 using namespace std;
 
 
-Selector_Base::~Selector_Base() {
-  // if (sel_log) delete sel_log;
-}
+Selector_Base::~Selector_Base() { }
 
 void Selector_Base::Output() { 
-  if (!(AORGTOOLS::rpa.gen.Tracking())) return;
+  if (!(AORGTOOLS::rpa.gen.Debugging())) return;
   if(m_sel_log) {
     m_sel_log->Output();
     AORGTOOLS::msg.Out()<<m_name<<"  total number of rejections: "<<m_sel_log->Rejections()<<std::endl;

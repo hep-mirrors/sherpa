@@ -9,7 +9,6 @@ using namespace AORGTOOLS;
 
 int Combine_Table::all=0;
 
-using std::cout;
 using std::endl;
 
 // ============================================================
@@ -54,7 +53,6 @@ Combine_Table::Combine_Table(Jet_Finder * _jf,Vec4D * _moms, Combine_Table * _up
 			     int isron, int isrshoweron):
   jf(_jf),moms(_moms),legs(0),gwin(0),up(_up),m_isron(isron),m_isrshoweron(isrshoweron)
 {
-  msg.Debugging()<<"creating new Combine_Table::Combine_Table() "<<std::endl;
   no=all++;
 }
 
@@ -71,14 +69,12 @@ inline bool Combine_Table::Combinable(const Leg & a , const Leg & b, int & stron
   if (a->prev == &b)   {
     if (&a==b->left) strong=b->right->fl.Strong();
     else if (&a==b->right) strong=b->left->fl.Strong();
-    else cout<<" something went wrong in Combine_Table::Combinable "<<endl;
     return 1;
   }
   // 3.) check if "b" is daughter of "a"
   if (b->prev == &a)  {
     if (&b==a->left) strong=a->right->fl.Strong();
     else if (&b==a->right) strong=a->left->fl.Strong();
-    else cout<<" something went wrong in Combine_Table::Combinable "<<endl;
     return 1;
   }
 
@@ -123,7 +119,6 @@ Leg Combine_Table::CombinedLeg(Leg * legs, int i, int j)
   else      icharge = a->fl.IntCharge() + b->fl.IntCharge();
 
   if (icharge!=mo->fl.IntCharge()) {
-    //    std::cout<<" changing "<<mo->fl<<" to "<<Flavour(mo->fl).Bar()<<", "<<std::endl;
     mo.SetAnti(-1);
   }    
   
@@ -156,17 +151,11 @@ void Combine_Table::CombineMoms(Vec4D* _moms , int i, int j, int maxl)
   }
   for (int l=j+1; l<=maxl; ++l) 
     moms[l-1]=_moms[l];
-  if (rpa.gen.Debugging()) {
-    for (int l=0; l<maxl;++l) 
-      msg.Out()<<" moms["<<l<<"]="<<moms[l]<<std::endl;
-  }
 }
 
 void Combine_Table::CombineMoms(Vec4D * _moms ,int i,int j,int maxl,Vec4D *& omoms) 
 {
   omoms = new Vec4D[maxl];
-  msg.Debugging()<<"CombineMoms(i="<<i<<",  j="<<j<<",  maxl="<<maxl<<",  omoms="<<omoms<<")"<<std::endl;
-  
   // assume i < j
   for (int l=0; l<j; ++l) {
     if (l==i) {
@@ -177,11 +166,6 @@ void Combine_Table::CombineMoms(Vec4D * _moms ,int i,int j,int maxl,Vec4D *& omo
   }
   for (int l=j+1; l<=maxl; ++l) 
     omoms[l-1]=_moms[l];
-
-  if (rpa.gen.Debugging()) {
-    for (int l=0; l<maxl;++l) 
-      msg.Out()<<" omoms["<<l<<"]="<<omoms[l]<<std::endl;
-  }
 }
 
 void Combine_Table::FillTable(Leg **_legs,int _nlegs, int _nampl)
@@ -240,15 +224,10 @@ Combine_Table * Combine_Table::CalcJet(int nl, AMATOOLS::Vec4D * _moms)
 
   Combine_Table * ct=0;
   CD_List & cl=combinations;
-  msg.Tracking()<<"in Combine_Table::CalcJet "<<std::endl;
   if (cl.size()==0) {
-    //!!! why not change the momenta to actual value!!!
-
     if (up==0) {
-      //      initialize x1 and x2
       double Ebeam1 = 0.5*rpa.gen.Ecms();
       double Ebeam2 = 0.5*rpa.gen.Ecms();
-      //     only correct for massless momenta :
       x1=moms[0][0]/Ebeam1; 
       x2=moms[1][0]/Ebeam2;
     }
@@ -297,7 +276,6 @@ Combine_Table * Combine_Table::CalcJet(int nl, AMATOOLS::Vec4D * _moms)
 	// check if is combination has right direction:
 	double d = moms[cit->i][3] * moms[cit->j][3];
 	if (d<0. ) {
-	  msg.Tracking()<<cit->i<<","<<cit->j<<" a increase ptij "<<pt2ij<<" to "<<pt2ij*1.001<<endl;
 	  pt2ij*=1.001;
 	  cit->pt2ij = pt2ij;
 	} 
@@ -305,18 +283,16 @@ Combine_Table * Combine_Table::CalcJet(int nl, AMATOOLS::Vec4D * _moms)
 	// check if combined momenta is physical even in LAB frame
 	double e = save_moms[cit->i][0] - save_moms[cit->j][0];
 	if (e<0. ) {
-	  msg.Tracking()<<cit->i<<","<<cit->j<<" b increase ptij "<<pt2ij<<" to "<<pt2min<<endl;
 	  cit->pt2ij = pt2ij = pt2min;
 	}
 	else {
-	// check if combined momenta are physical in thier CMS frame
+	// check if combined momenta are physical in their CMS frame
 	Vec4D s1 = save_moms[cit->i] - save_moms[cit->j];
 	Vec4D s2 = save_moms[1-cit->i];
 	Poincare test(s1+s2);
 	test.Boost(s1);
 	test.Boost(s2);
 	if (s1[0]<0. || s2[0]<0.) {
-	  msg.Tracking()<<cit->i<<","<<cit->j<<" c increase ptij "<<pt2ij<<" to "<<pt2min<<endl;
 	  cit->pt2ij = pt2ij = pt2min;
 	}
 	}
@@ -343,11 +319,8 @@ Combine_Table * Combine_Table::CalcJet(int nl, AMATOOLS::Vec4D * _moms)
     } 
     
     if (ewcit!=cl.end() && prefer_ew_clustering && cwin!=ewcit ) { // 
-      //      msg.Tracking()<<" prefered "<<(*ewcit)<<" over "<<(*cwin);
       cwin=ewcit;
     }
-
-    msg.Tracking()<<" Winner:"<<(*cwin)<<std::endl;
 
     // check if boosted  (restore saved moms)
     if (did_boost) {
@@ -389,7 +362,6 @@ Combine_Table * Combine_Table::CalcJet(int nl, AMATOOLS::Vec4D * _moms)
 	cwin->down->x1=x1;
 	cwin->down->x2=x2;
       }
-//       cout<<" new x1,x2 = "<<cwin->down->x1<<","<<cwin->down->x2<<endl;
 
       ct   = cwin->down->CalcJet(nl);
       gwin = cwin->down->gwin;
@@ -401,7 +373,6 @@ Combine_Table * Combine_Table::CalcJet(int nl, AMATOOLS::Vec4D * _moms)
       abort();
     }
   }
-  msg.Tracking()<<"out Combine_Table::CalcJet  gwin="<<gwin<<"   table no.:"<<ct->no<<std::endl;
   return ct;
 }
 
@@ -462,9 +433,7 @@ std::ostream& SHERPA::operator<< (std::ostream& s ,Combine_Table * ct)
 double Combine_Table::Sprime() 
 {
   if (!moms) {
-    cout<<" ERROR: Combine_Table::Sprime() "<<endl;
     return 0;
   }
   return (moms[0]+moms[1]).Abs2();
-
 }

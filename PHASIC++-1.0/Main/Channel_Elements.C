@@ -63,15 +63,8 @@ double Channel_Elements::Anisotropic2Weight(double ctexp,
   double ct     = (pabs*p1[0]-p[0]*p1h[0])/pmass/p1mass;
   if ((ct<ctmin) || (ct>ctmax)) return 0.;
 
-  //old
   double wt = 1./(M_PI*Channel_Basics::SqLam(s,s1,s2)/4.*
                     pow(a+ct,ctexp)*Channel_Basics::PeakedWeight(a,ctexp,ctmin,ctmax,1));
-  //new
-  //double wt = 1/(M_PI*Channel_Basics::sqlam(s,s1,s2)/4.*pow(a-ct,ctexp)*Channel_Basics::hj(a,ctexp,ctmin,ctmax));
-  //frank
-  //double wt = 1./(M_PI*Channel_Basics::SqLam(s,s1,s2)/4.*
-  //		  pow(a-ct,ctexp)*Channel_Basics::PeakedWeight(a,ctexp,ctmin,ctmax,-1));
-
   if (!(wt>0) && !(wt<0)) 
     AORGTOOLS::msg.Error()<<"Anisotropic2Weight produces a nan!"<<endl;
 
@@ -84,25 +77,15 @@ void Channel_Elements::Anisotropic2Momenta(Vec4D p,double s1,double s2,
 					   Vec4D& p1,Vec4D& p2,
 					   double ran1,double ran2)
 {
-  double s       = p.Abs2();
-  double pabs    = sqrt(dabs(s));
+  double s        = p.Abs2();
+  double pabs     = sqrt(dabs(s));
   Vec4D p1h;
-  p1h[0]         = (s+s1-s2)/pabs/2.;
-  double p1mass  = pabs*Channel_Basics::SqLam(s,s1,s2)/2.;
-  double pmass   = sqrt(dabs(p[0]*p[0]-s)); 
-  double a       = p[0]*p1h[0]/pmass/p1mass;
+  p1h[0]          = (s+s1-s2)/pabs/2.;
+  double p1mass   = pabs*Channel_Basics::SqLam(s,s1,s2)/2.;
+  double pmass    = sqrt(dabs(p[0]*p[0]-s)); 
+  double a        = p[0]*p1h[0]/pmass/p1mass;
   if ((1.>=a) && (a>=0.)) a = 1.0000000001;
-  //old
-  double   ct    = Channel_Basics::PeakedDist(a,ctexp,ctmin,ctmax,1,ran1);
-  //new
-  //double a_minus_ct = Channel_Basics::tj(a,ctexp,ctmin,ctmax,1,ran1);
-  //double ct         = a-a_minus_ct;
-  // Frank
-  //  double ct       = Channel_Basics::PeakedDist(a,ctexp,ctmin,ctmax,-1,ran1);
-  //
-
-  //cout<<"Anisotropic2Momenta : "<<a<<": "<<ctmin<<" < "<<ct<<" < "<<ctmax<<endl;
-
+  double   ct     = Channel_Basics::PeakedDist(a,ctexp,ctmin,ctmax,1,ran1);
   double st       = sqrt(1.-sqr(ct));
   double phi      = 2.*M_PI*ran2;
   p1h             = Vec4D(p1h[0],p1mass*Vec3D(st*::sin(phi),st*cos(phi),ct));	
@@ -116,13 +99,13 @@ void Channel_Elements::Anisotropic2Momenta(Vec4D p,double s1,double s2,
 
   p2 = p+(-1.)*p1;  
 
-  if ((dabs(p1.Abs2()-s1)>1.e-5)) {  // explicit not relative!
-    AORGTOOLS::msg.Error()<<"Channel_Elements::Anisotropic2Momenta : Strong deviation in masses : ";
-    AORGTOOLS::msg.Error()<<"s1,p1: "<<s1<<";"<<p1.Abs2()<<" : "<<dabs(s1-p1.Abs2())<<endl;
+  if ((dabs(p1.Abs2()-s1)>1.e-5)) {  // explicitly not relative!
+    AORGTOOLS::msg.Error()<<"Channel_Elements::Anisotropic2Momenta : Strong deviation in masses : "
+			  <<"s1,p1: "<<s1<<";"<<p1.Abs2()<<" : "<<dabs(s1-p1.Abs2())<<endl;
   }
-  if ((dabs(p2.Abs2()-s2)>1.e-5)) {  // explicit not relative!
-    AORGTOOLS::msg.Error()<<"Channel_Elements::Anisotropic2Momenta : Strong deviation in masses : ";
-    AORGTOOLS::msg.Error()<<"s2,p2: "<<s2<<";"<<p2.Abs2()<<" : "<<dabs(s2-p2.Abs2())<<endl;
+  if ((dabs(p2.Abs2()-s2)>1.e-5)) {  // explicitly not relative!
+    AORGTOOLS::msg.Error()<<"Channel_Elements::Anisotropic2Momenta : Strong deviation in masses : "
+			  <<"s2,p2: "<<s2<<";"<<p2.Abs2()<<" : "<<dabs(s2-p2.Abs2())<<endl;
   }
 }
 
@@ -188,9 +171,9 @@ double Channel_Elements::MasslessPropWeight(double sexp,
 
   double wt = 1./(pow(s,sexp)*Channel_Basics::PeakedWeight(0.,sexp,smin,smax,1));
   if (!(wt>0) && !(wt<0) && wt!=0) { 
-    AORGTOOLS::msg.Error()<<"MasslessPropWeight produces a nan: "<<wt<<endl;
-    AORGTOOLS::msg.Debugging()<<"   smin,s,smax = "<<smin<<" < "<<s<<" < "<<smax;
-    AORGTOOLS::msg.Debugging()<<"   sexp = "<<sexp<<endl;
+    AORGTOOLS::msg.Error()<<"MasslessPropWeight produces a nan: "<<wt<<endl
+			  <<"   smin,s,smax = "<<smin<<" < "<<s<<" < "<<smax
+			  <<"   sexp = "<<sexp<<endl;
   }
   return wt;
 }
@@ -214,8 +197,8 @@ double Channel_Elements::ThresholdWeight(double mass,double smin,double smax,dou
 
   if (!(wt>0) && !(wt<0) && wt!=0 ) {
     AORGTOOLS::msg.Error()<<" In ThresholdWeight : "<<smin<<" < "<<s<<" < "
-			  <<smax<<" ^ "<<2.<<", "<<mass*mass<<" wt = "<<wt<<endl;
-    AORGTOOLS::msg.Error()<<"ThresholdWeight produces a nan: "<<wt<<endl;
+			  <<smax<<" ^ "<<2.<<", "<<mass*mass<<" wt = "<<wt<<endl
+			  <<"ThresholdWeight produces a nan: "<<wt<<endl;
   }
   return wt;
 }
@@ -237,8 +220,8 @@ double Channel_Elements::LLPropWeight(double sexp,double pole,
 
   if (!(wt>0) && !(wt<0) && wt!=0 ) {
     AORGTOOLS::msg.Error()<<" In LL_Weight : "<<smin<<" < "<<s<<" < "
-			  <<smax<<" ^ "<<sexp<<", "<<pole<<" wt = "<<wt<<endl;
-    AORGTOOLS::msg.Error()<<"LLPropWeight produces a nan: "<<wt<<endl;
+			  <<smax<<" ^ "<<sexp<<", "<<pole<<" wt = "<<wt<<endl
+			  <<"LLPropWeight produces a nan: "<<wt<<endl;
   }
   return wt;
 }
@@ -357,23 +340,6 @@ int Channel_Elements::TChannelMomenta(Vec4D p1in,Vec4D p2in,Vec4D &p1out,Vec4D &
 				      double ctexp,double ctmax,double ctmin,
 				      double aminct,int aminctflag,double ran1,double ran2)
 {
-  /*
-  cout.precision(10);
-  cout<<"   in T_Channel_Momenta "<<endl;
-  cout<<" p1 = "<<p1in<<endl;
-  cout<<" p2 = "<<p2in<<endl;
-  cout<<" s1 = "<<s1out<<endl;
-  cout<<" s2 = "<<s2out<<endl;
-  cout<<" t  = "<<t_mass<<endl;
-  cout<<" e  = "<<ctexp<<endl;
-  cout<<" min= "<<ctmin<<endl;
-  cout<<" max= "<<ctmax<<endl;
-  cout<<" amc= "<<aminct<<endl;
-  cout<<" r1 = "<<ran1<<endl;
-  cout<<" r2 = "<<ran2<<endl;
-  //  cout.precision(6);
-  */
-
   /* Note : ct's maximal range : between ctmin = 0 and ctmax = 2 */
 
   double t_mass2   = t_mass*t_mass;
@@ -421,9 +387,8 @@ int Channel_Elements::TChannelMomenta(Vec4D p1in,Vec4D p2in,Vec4D &p1out,Vec4D &
   p2out = pin+(-1.)*p1out;
 
   if (dabs(s1out-p1out.Abs2())>1.e-5) {
-    //  if ((dabs(p1out.Abs2()/s1out-1.)>1.e-5) && (!AMATOOLS::IsZero(s1out))) {
-    AORGTOOLS::msg.Error()<<"Channel_Elements::TChannelMomenta : Strong deviation in masses : ";
-    AORGTOOLS::msg.Error()<<"s1,p1: "<<s1out<<";"<<p1out.Abs2()<<" : "<<dabs(s1out-p1out.Abs2())<<endl;
+    AORGTOOLS::msg.Error()<<"Channel_Elements::TChannelMomenta : Strong deviation in masses : "
+			  <<"s1,p1: "<<s1out<<";"<<p1out.Abs2()<<" : "<<dabs(s1out-p1out.Abs2())<<endl;
   }
   s1out = Max(0.,p1out.Abs2());
   s2out = Max(0.,p2out.Abs2());

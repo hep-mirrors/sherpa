@@ -146,8 +146,8 @@ void Combined_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts)
 
 void Combined_Selector::Output()
 {
-  AORGTOOLS::msg.Tracking()<<"========================================="<<std::endl
-			   <<"Efficiency of the Selector : "<<m_name<<std::endl;
+  AORGTOOLS::msg.Debugging()<<"========================================="<<std::endl
+			    <<"Efficiency of the Selector : "<<m_name<<std::endl;
   for (short int i=0; i<m_sels.size(); ++i) m_sels[i]->Output();
-  AORGTOOLS::msg.Tracking()<<"========================================="<<std::endl;
+  AORGTOOLS::msg.Debugging()<<"========================================="<<std::endl;
 }

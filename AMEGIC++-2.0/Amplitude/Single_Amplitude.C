@@ -26,9 +26,9 @@ Single_Amplitude::Single_Amplitude(Point* _p,int _topnum, int _permnum,int* _b,i
   if (first) {
     first = 0;
 #ifdef Cut_Fermion_Prop
-    msg.Out()<<"Cutting Fermions according to the outer particle version."<<endl;
+    msg.Debugging()<<"Cutting Fermions according to the outer particle version."<<endl;
 #else
-    msg.Out()<<"Cutting Fermions according to the Propagator version."<<endl;
+    msg.Debugging()<<"Cutting Fermions according to the Propagator version."<<endl;
 #endif
   }
   

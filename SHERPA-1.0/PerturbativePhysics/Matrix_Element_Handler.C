@@ -98,7 +98,6 @@ bool Matrix_Element_Handler::RescaleJetrates()
   for (int i=0; i<procs->Size();++i) {
     double xstot = (*procs)[i]->Total()*rpa.Picobarn();
     double njet  = (*procs)[i]->Nout();
-    cout<<" "<<njet<<" : "<<xstot<<endl;
   }
 }
 

@@ -177,16 +177,10 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
          else if (i3<99) probe.in[3] = orig.in[i3-1];
   }
     
-  cout<<probe.in[0]<<" "<<probe.in[1]<<" "<<probe.in[2]<<endl;
-
-
   if (CheckExistence(probe)==0) return 0;
   if (probe.nleg==3) {
     if (FermionRule(probe)==0) return 0;}
   
-  cout<<"past : "<<probe.in[0]<<" "<<probe.in[1]<<" "<<probe.in[2]<<endl;
-
-  // h.c. ????
   int hc = 0;
 
   for (short int i=0;i<orig.nleg;i++) {
@@ -345,8 +339,6 @@ Vertex::Vertex(Interaction_Model_Base * _model)
      use (roughly) notation and Vertices of J. Rosiek, PRD41 (1990) 3464
      pull out common factor -i of all Vertices
   */ 
-  AORGTOOLS::msg.Debugging()<<"In Vertex::Vertex()."<<endl;
-
   m_nvertex  = 10000;
   m_n4vertex = 10000;
   m_v  = new Single_Vertex[m_nvertex];
@@ -409,8 +401,8 @@ Vertex::Vertex(Interaction_Model_Base * _model)
       abort();
   }
   
-  AORGTOOLS::msg.Debugging()<<"... done with it ("<<vanz<<")."<<endl;
-  AORGTOOLS::msg.Debugging()<<"... done with the 4 legs ("<<vanz4<<")."<<endl;
+  AORGTOOLS::msg.Debugging()<<"... done with it ("<<vanz<<")."<<endl
+			    <<"... done with the 4 legs ("<<vanz4<<")."<<endl;
   m_nvertex  = vanz;
   m_n4vertex = vanz4;
 }

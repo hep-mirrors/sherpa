@@ -562,7 +562,7 @@ namespace APHYTOOLS {
     inline void SetWidth(double width) const {
       particles[Index()].w = width; 
     }
-    inline char* Name() const {
+    inline char * Name() const {
       return particles[Index()].n; 
     }
     inline bool IsFermion() const {

@@ -56,9 +56,9 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Polarisation* pol,
   msg.Debugging()<<ngraph<<" Graph(s) found"<<endl;  
 
   if (ngraph==0) {
-    msg.Error()<<"No Graph found for ";
-    for (short int i=0;i<N;i++) msg.Error()<<fl[i]<<";";
-    msg.Error()<<endl;
+    msg.Tracking()<<"No Graph found for ";
+    for (short int i=0;i<N;i++) msg.Tracking()<<fl[i]<<";";
+    msg.Tracking()<<endl;
     return;
   }
   //Colors
@@ -214,7 +214,6 @@ void Amplitude_Handler::OptimizeProps(int N,Single_Amplitude* f1)
   Pfunc_List* pl = f1->GetPlist();
   for(Pfunc_Iterator pit=pl->begin();pit!=pl->end();++pit){
     if((*pit)->argnum > (N/2)+1){
-      //cout<<"OptimizeProps: ";out_pfunc(*(*pit));
       int nargnum=N+2-(*pit)->argnum;
       int* arg= new int[nargnum];
       int cnt=1,hit;
@@ -232,7 +231,6 @@ void Amplitude_Handler::OptimizeProps(int N,Single_Amplitude* f1)
       (*pit)->arg=new int[nargnum];
       for(int j=0;j<(*pit)->argnum;j++)(*pit)->arg[j]=arg[j];
       delete[] arg;
-      //cout<<"after: ";out_pfunc(*(*pit));
       if((*pit)->fl.IsFermion()){
 	f1->SetSign(-(f1->GetSign()));
 	(*pit)->fl=(*pit)->fl.Bar();
@@ -286,37 +284,23 @@ void Amplitude_Handler::PreCluster(Single_Amplitude* firstgraph)
 	   ( (zh[0]->m_type==zl::Y || zh[0]->m_type==zl::Z) && 
 	     (zh[0]->m_type==zl::Y || zh[0]->m_type==zl::Z)    ) ) {
 
-	  // cout<<"Precluster : Amplitude "<<cnt<<endl;
-	  //zh[0]->Print();
-	  //zh[1]->Print();
 	  Zfunc *zh0,*zh1;
 	  
 	  zh0=zh[0];zh1=zh[1];   //unique order of zfunctions
 	  if(zh[0]->m_narg>zh[1]->m_narg){zh0=zh[1];zh1=zh[0];}
 	  if(zh[0]->m_narg==zh[1]->m_narg){
-	    //cout<<zh[0]->m_narg<<" "<<zh[1]->m_narg<<endl;
 	    for(int j=0;j<zh[0]->m_narg;j++){
 	      if(PropProject(f1,zh[0]->p_arguments[j])<PropProject(f1,zh[1]->p_arguments[j]))break;
 	      if(PropProject(f1,zh[0]->p_arguments[j])>PropProject(f1,zh[1]->p_arguments[j])){zh0=zh[1];zh1=zh[0];break;}
 	    }
 	  }
-	  //cout<<"before erase"<<endl;
-	  /*for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();++zit)
-	    cout<<(*zit)<<endl;
-	    cout<<"erase: "<<zh0<<" "<<zh1<<endl;*/
 	  for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();){
-	    //cout<<(*zit)<<endl;
 	    if((*zit)==zh0 || (*zit)==zh1){ zit=zlist->erase(zit);}
 	    else zit++;
 	  }
 	  Zfunc_Group *sf=new Zfunc_Group(*zh0,*zh1,propselect[i],pl);
 	  zlist->push_back(sf);
 	  sf->Print();
-	  /*cout<<endl;
-	  zlist=f1->GetZlist();
-	  for (list<Zfunc*>::iterator zit=zlist->begin();zit!=zlist->end();++zit)
-	  cout<<(*zit)<<endl;*/
-	  
 	}
       }
     }
@@ -379,7 +363,6 @@ void Amplitude_Handler::CheckEqual(Single_Amplitude* firstgraph)
     }
     f1 = f1->Next;g1++;
   }
-  msg.Debugging()<<"Equal Zfuncs: "<<count<<"/"<<zcount<<endl;
 }
 
 void Amplitude_Handler::CheckEqualInGroup()
@@ -437,7 +420,6 @@ void Amplitude_Handler::CheckEqualInGroup()
       }
     }
   }
-  msg.Tracking()<<"Equal Zfuncs: "<<count<<"/"<<zcount<<endl;
 }
 
 
@@ -469,16 +451,16 @@ void Amplitude_Handler::Kicker(int* Switch_Vector,int ngraph,std::string pID)
     for(;from;) {
       from>>i>>sw;
       Switch_Vector[i-1] =sw;
-      if (sw==0) msg.Tracking()<<"Diagram "<<i<<" kicked!"<<endl;
+      if (sw==0) msg.Debugging()<<"Diagram "<<i<<" kicked!"<<endl;
       if (i==ngraph) break;
     }
-    msg.Tracking()<<"File "<<name<<" read."<<endl;  
+    msg.Debugging()<<"File "<<name<<" read."<<endl;  
     return;
   }
 
   test.close();
 
-  msg.Tracking()<<"File "<<name<<" not found."<<endl;  
+  msg.Debugging()<<"File "<<name<<" not found."<<endl;  
 
   for(short int i=0;i<ngraph;i++) Switch_Vector[i] = 1;
   
@@ -488,7 +470,7 @@ void Amplitude_Handler::Kicker(int* Switch_Vector,int ngraph,std::string pID)
 
   for(short int i=0;i<ngraph;i++) to<<i+1<<"     "<<Switch_Vector[i]<<endl;
   
-  msg.Tracking()<<"File "<<name<<" saved."<<endl;  
+  msg.Debugging()<<"File "<<name<<" saved."<<endl;  
 }
 
 Point* Amplitude_Handler::GetPointlist(int n)

@@ -49,7 +49,6 @@ Single_XS::Single_XS(int _nin,int _nout,Flavour * _fl) :
 
 bool Single_XS::CalculateTotalXSec() { 
   if (p_ps) {
-    msg.Events()<<"In Single_X::CalculateTotalXSec() for "<<m_name<<endl; 
     m_totalxs = p_ps->Integrate()/AORGTOOLS::rpa.Picobarn();
     if (!(AMATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
       msg.Error()<<"Result of PS-Integrator and internal summation to not coincide!"<<endl
@@ -72,11 +71,9 @@ void Single_XS::SetTotalXS() {
 			 <<m_totalxs*AORGTOOLS::rpa.Picobarn()<<" pb"
 			 <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 			 <<"       max : "<<m_max<<endl;
-  if (m_totalerr<0. && m_totalerr>0.) msg.Debugging()<<" Error : "<<m_totalsum<<" / "<<m_totalsumsqr<<endl;
 }
 
 void Single_XS::AddPoint(const double value) {
-  //msg.Debugging()<<"In Single_Process::AddPoint("<<value<<")"<<m_name<<endl;  
   m_n++;
   m_totalsum             += value;
   m_totalsumsqr          += value*value;
@@ -90,8 +87,6 @@ double Single_XS::Differential(double s,double t,double u)
   if ((p_isr) && m_nin==2) m_lastlumi = p_isr->Weight(p_fl);
                      else  m_lastlumi = 1.;
 
-  //msg.Debugging()<<"XS Diff1 : "<<m_lastdxs<<" @ "<<m_lastlumi<<" "<<p_isr<<" "<<m_nin<<" for "<<m_name<<endl;
-
   return m_last = m_lastdxs * m_lastlumi;
 }
 
@@ -101,7 +96,6 @@ double Single_XS::Differential2() {
   if ((p_isr) && m_nin==2) {
     if ((p_fl[0]==p_fl[1]) || (p_isr->On()==0) ) return 0.;
     double tmp = m_lastdxs * p_isr->Weight2(p_fl); 
-    //msg.Debugging()<<"XS Diff2 : "<<m_lastdxs<<" @ "<<p_isr->Weight2(p_fl)<<" "<<p_isr<<" "<<m_nin<<" for "<<m_name<<endl;
     m_last    += tmp;
     return tmp;
   }
