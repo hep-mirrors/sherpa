@@ -12,6 +12,7 @@ template <>
 Single_XS *Single_XS::GetProcess<XS_q1q2b_q3q4b>(const size_t nin,const size_t nout,
 							const ATOOLS::Flavour *flavours)
 {
+  if (!flavours[0].IsQuark() || !flavours[1].IsQuark()) return NULL;
   bool up[4], anti[4];
   for (short int i=0;i<4;++i) {
     if (flavours[i].IsUptype()) up[i]=true;
@@ -46,7 +47,7 @@ XS_q1q2b_q3q4b::XS_q1q2b_q3q4b(const size_t nin,const size_t nout,
   m_sin2tw=ATOOLS::rpa.gen.ScalarConstant(std::string("sin2_thetaW"));
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   p_colours[0][flavours[0].IsAnti()]=p_colours[1][1-flavours[0].IsAnti()]=ATOOLS::Flow::Counter();
-  p_colours[0][flavours[2].IsAnti()]=p_colours[1][1-flavours[2].IsAnti()]=ATOOLS::Flow::Counter();
+  p_colours[2][flavours[2].IsAnti()]=p_colours[3][1-flavours[2].IsAnti()]=ATOOLS::Flow::Counter();
   m_resonances.push_back(ATOOLS::Flavour(ATOOLS::kf::W));
 }
 
