@@ -197,7 +197,7 @@ bool Process_Base::CheckExternalFlavours(int _nin,Flavour * _in,
   if (sin  != sout) return 0;    // spin/fermion number violation
   if (bin  != bout) return 0;    // baryon number violation
   //  if (lin  != lout) return 0;    // lepton number violation
-  if (qin  != qout) return 0;    // strong charge violation
+  //if (qin  != qout) return 0;    // strong charge violation
   if (qfin != qfout) return 0;   // quark family violation
   //  if (lfin != lfout) return 0;   // lepton family violation
   return 1;
