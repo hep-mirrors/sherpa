@@ -18,94 +18,94 @@ std::string Function::Evaluate(const std::vector<std::string> &args) const
 
 Operator::~Operator() {}
 
-DEFINE_BINARY_OPERATOR(Binary_Plus,"+",1)
+DEFINE_BINARY_OPERATOR(Binary_Plus,"+",12)
 {
   double arg0=ToType<double>(args[0]);
   double arg1=ToType<double>(args[1]);
   return ToString(arg0+arg1);
 }
 
-DEFINE_BINARY_OPERATOR(Binary_Minus,"-",1)
+DEFINE_BINARY_OPERATOR(Binary_Minus,"-",12)
 {
   double arg0=ToType<double>(args[0]);
   double arg1=ToType<double>(args[1]);
   return ToString(arg0-arg1);
 }
 
-DEFINE_BINARY_OPERATOR(Binary_Times,"*",2)
+DEFINE_BINARY_OPERATOR(Binary_Times,"*",13)
 {
   double arg0=ToType<double>(args[0]);
   double arg1=ToType<double>(args[1]);
   return ToString(arg0*arg1);
 }
 
-DEFINE_BINARY_OPERATOR(Binary_Divide,"/",2)
+DEFINE_BINARY_OPERATOR(Binary_Divide,"/",13)
 {
   double arg0=ToType<double>(args[0]);
   double arg1=ToType<double>(args[1]);
   return ToString(arg0/arg1);
 }
 
-DEFINE_BINARY_OPERATOR(Binary_Modulus,"%",2)
+DEFINE_BINARY_OPERATOR(Binary_Modulus,"%",13)
 {
   long int arg0=ToType<long int>(args[0]);
   long int arg1=ToType<long int>(args[1]);
   return ToString(arg0%arg1);
 }
 
-DEFINE_BINARY_OPERATOR(Binary_Shift_Left,"<<",2)
+DEFINE_BINARY_OPERATOR(Binary_Shift_Left,"<<",11)
 {
   long int arg0=ToType<long int>(args[0]);
   long int arg1=ToType<long int>(args[1]);
   return ToString(arg0<<arg1);
 }
 
-DEFINE_BINARY_OPERATOR(Binary_Shift_Right,">>",2)
+DEFINE_BINARY_OPERATOR(Binary_Shift_Right,">>",11)
 {
   long int arg0=ToType<long int>(args[0]);
   long int arg1=ToType<long int>(args[1]);
   return ToString(arg0>>arg1);
 }
 
-DEFINE_BINARY_OPERATOR(Binary_Equal,"==",3)
+DEFINE_BINARY_OPERATOR(Binary_Equal,"==",9)
 {
   return args[0]==args[1]?"1":"0";
 }
 
-DEFINE_BINARY_OPERATOR(Binary_Not_Equal,"!=",3)
+DEFINE_BINARY_OPERATOR(Binary_Not_Equal,"!=",9)
 {
   return args[0]!=args[1]?"1":"0";
 }
 
-DEFINE_BINARY_OPERATOR(Binary_Less,"<",3)
+DEFINE_BINARY_OPERATOR(Binary_Less,"<",10)
 {
   double arg0=ToType<double>(args[0]);
   double arg1=ToType<double>(args[1]);
   return arg0<arg1?"1":"0";
 }
 
-DEFINE_BINARY_OPERATOR(Binary_Greater,">",3)
+DEFINE_BINARY_OPERATOR(Binary_Greater,">",10)
 {
   double arg0=ToType<double>(args[0]);
   double arg1=ToType<double>(args[1]);
   return arg0>arg1?"1":"0";
 }
 
-DEFINE_BINARY_OPERATOR(Binary_Less_Equal,"<=",3)
+DEFINE_BINARY_OPERATOR(Binary_Less_Equal,"<=",10)
 {
   double arg0=ToType<double>(args[0]);
   double arg1=ToType<double>(args[1]);
   return arg0<=arg1?"1":"0";
 }
 
-DEFINE_BINARY_OPERATOR(Binary_Greater_Equal,">=",3)
+DEFINE_BINARY_OPERATOR(Binary_Greater_Equal,">=",10)
 {
   double arg0=ToType<double>(args[0]);
   double arg1=ToType<double>(args[1]);
   return arg0>=arg1?"1":"0";
 }
 
-DEFINE_UNARY_OPERATOR(Unary_Not,"!",4)
+DEFINE_UNARY_OPERATOR(Unary_Not,"!",14)
 {
   double arg0=ToType<int>(args[0]);
   return ToString(!arg0);
@@ -272,6 +272,17 @@ size_t FindBinaryMinus(const std::string &expr,const bool fwd,
   return pos;  
 }
 
+size_t FindUnaryNot(const std::string &expr,const bool fwd,
+		    size_t cpos=std::string::npos)
+{
+  if (cpos==std::string::npos && fwd) cpos=0;
+  size_t pos(fwd?expr.find("!",cpos):expr.rfind("!",cpos));
+  if (pos==std::string::npos || pos+1>=expr.length()) 
+    return std::string::npos;
+  if (expr[pos+1]=='=') return FindUnaryNot(expr,fwd,fwd?pos+1:pos-1);
+  return pos;  
+}
+
 DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
 {
   if (expr.find("(")!=std::string::npos ||
@@ -281,7 +292,8 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
   for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
 	 oit=p_interpreter->Operators().rbegin();
        oit!=p_interpreter->Operators().rend();++oit) {
-    if (oit->second->Tag()=="-") pos=FindBinaryMinus(expr,false);
+    if (oit->second->Tag()=="!") pos=FindUnaryNot(expr,false);
+    else if (oit->second->Tag()=="-") pos=FindBinaryMinus(expr,false);
     else pos=expr.find(oit->second->Tag());
     if (pos!=std::string::npos) {
       if (oit->second->Binary() && pos!=0) {
@@ -303,6 +315,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
        oit!=p_interpreter->Operators().rend();++oit) {
     size_t tlfpos=std::string::npos;
     if (oit->second->Tag()=="-") tlfpos=FindBinaryMinus(lstr,false);
+    else if (oit->second->Tag()=="-") pos=FindBinaryMinus(expr,false);
     else tlfpos=lstr.rfind(oit->second->Tag());
     if (tlfpos!=std::string::npos) 
       lfpos=Max(lfpos,tlfpos+oit->second->Tag().length());
@@ -339,8 +352,10 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
   size_t pos=std::string::npos;
   for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
 	 oit=p_interpreter->Operators().rbegin();
-       oit!=p_interpreter->Operators().rend();++oit) 
-    if ((pos=expr.rfind(oit->second->Tag()))!=std::string::npos)
+       oit!=p_interpreter->Operators().rend();++oit) {
+    if (oit->second->Tag()=="!") pos=FindUnaryNot(expr,false);
+    else pos=expr.rfind(oit->second->Tag());
+    if (pos!=std::string::npos)
       if (!oit->second->Binary()) {
 	op=oit->second;
 	break;
@@ -348,6 +363,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
       else {
 	return expr;
       }
+  }
   if (op==NULL) return expr;
   std::string lrstr=expr.substr(0,pos);
   std::string rrstr, rstr=expr.substr(pos+op->Tag().length()), mrstr=rstr;
@@ -423,6 +439,7 @@ Algebra_Interpreter::~Algebra_Interpreter()
 
 std::string Algebra_Interpreter::Interprete(const std::string &expr)
 {
+  msg_Tracking()<<"Algebra_Interpreter::Interprete("<<expr<<")\n";
   std::string res=expr;
   KillBlanks(res);
   res=p_replacer->ReplaceTags(res);
