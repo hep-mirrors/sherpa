@@ -19,6 +19,8 @@ endif
 
 lib_LTLIBRARIES       =	libPhasespace.la
 libPhasespace_la_SOURCES      =	\
+				Regulator_Base.C \
+				Regulator.C \
 				Integrable_Base.C \
 			   	Channel_Basics.C \
 				Channel_Elements.C \
@@ -42,6 +44,8 @@ libPhasespace_la_SOURCES      =	\
 				Phase_Space_Handler.C \
 				Phase_Space_Integrator.C 
 noinst_HEADERS        =	\
+			Regulator_Base.H \
+			Regulator.H \
 		 	Channel_Basics.H \
 			Channel_Elements.H \
 			Single_Channel.H \
