@@ -12,6 +12,7 @@
 #include "LDL_KPerp.H"
 #include "FSR_Channel.H"
 #include "ISR_Vegas.H"
+#include "Foam_Interface.H"
 #include "Running_AlphaS.H"
 
 #include "Run_Parameter.H"
@@ -19,6 +20,7 @@
 #include "Message.H"  
 #include "Random.H"
 #include "Shell_Tools.H"
+#include "MyStrStream.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Phase_Space_Handler
@@ -28,6 +30,14 @@
 #else
 #define PROFILE_HERE 
 #define PROFILE_LOCAL(LOCALNAME)
+#endif
+
+#ifdef ROOT_SUPPORT
+#define ANALYSE__Phase_Space_Handler
+#endif
+#ifdef ANALYSE__Phase_Space_Handler
+#include "My_Root.H"
+#include "TH2D.h"
 #endif
 
 using namespace PHASIC;
@@ -40,13 +50,14 @@ Integration_Info *PHASIC::Phase_Space_Handler::p_info=NULL;
 
 Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
 					 ISR_Handler *ih,Beam_Spectra_Handler *bh): 
-  m_name(proc->Name()), p_process(proc), p_integrator(NULL), p_cuts(NULL),
+  m_name(proc->Name()), p_process(proc), p_active(proc), p_integrator(NULL), p_cuts(NULL),
   p_beamhandler(bh), p_isrhandler(ih), p_fsrchannels(NULL), p_zchannels(NULL), p_kpchannels(NULL), 
   p_isrchannels(NULL), p_beamchannels(NULL), p_flavours(NULL), p_cms(NULL), p_lab(NULL), 
   m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(0), m_initialized(0),
   m_maxtrials(1000000), m_sumtrials(0), m_events(0), m_E(ATOOLS::rpa.gen.Ecms()), m_s(m_E*m_E), 
   m_weight(1.)
 {
+  p_activefoam=NULL;
   Data_Read dr(rpa.GetPath()+string("/Integration.dat"));
   m_error    = dr.GetValue<double>("ERROR",0.01);
   m_inttype  = dr.GetValue<int>("INTEGRATOR",3);
@@ -72,6 +83,7 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
       }
     }
   }
+  m_use_foam=dr.GetValue<int>("FOAM",1);
   if (m_nin==2) {
     m_isrspkey.Assign("s' isr",4,0,p_info);
     m_isrykey.Assign("y isr",3,0,p_info);
@@ -92,6 +104,10 @@ Phase_Space_Handler::~Phase_Space_Handler()
   if (p_isrchannels)  { delete p_isrchannels;  p_isrchannels = 0;   }
   if (p_beamchannels) { delete p_beamchannels; p_beamchannels  = 0; }
   if (p_cuts)         { delete p_cuts;         p_cuts = 0;          }
+  while (m_foams.size()>0) {
+    delete m_foams.back();
+    m_foams.pop_back();
+  }
   delete [] p_cms;
   delete [] p_lab;
   delete [] p_flavours;
@@ -201,6 +217,10 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
 					 const int mode) 
 { 
   PROFILE_HERE;
+  if (mode>=0 && p_activefoam!=NULL) {
+    p_active=process;
+    return p_activefoam->MCEvent();
+  }
   p_info->ResetAll();
   if (m_nin>1) {
     p_isrhandler->Reset();
@@ -218,12 +238,20 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
     if (mode<2) p_isrhandler->SetSprimeMin(m_smin);
     p_isrhandler->SetLimits();
     if (p_isrhandler->On()>0) { 
-      p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
+      if (mode>=0) 
+	p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
+      else p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey, 
+					p_isrhandler->On(),p_activefoam);
       if (p_isrhandler->KMROn()) {
 	p_kpchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn());
 	p_zchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn());
       }
     }
+#ifdef ANALYSE__Phase_Space_Handler
+    TH2D* spyps=((TH2D*)(*MYROOT::myroot)["Sprime_Y_PS"]);
+    if (spyps!=NULL) spyps->
+      Fill(log(m_isrspkey[3]/m_isrspkey[2])/log(10.),m_isrykey[2],1.0);
+#endif
     if (!p_isrhandler->MakeISR(p_lab,m_nvec,
 			       p_process->Selected()->Flavours(),m_nin+m_nout)) {
       if (p_beamchannels) p_beamchannels->NoDice();    
@@ -238,7 +266,8 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
       process->Selector()->UpdateCuts(m_isrspkey[3],m_beamykey[2]+m_isrykey[2],p_cuts);
     }
   }
-  p_fsrchannels->GeneratePoint(p_lab,p_cuts);
+  if (mode>=0) p_fsrchannels->GeneratePoint(p_lab,p_cuts);
+  else p_fsrchannels->GeneratePoint(p_lab,p_cuts,p_activefoam);
   if (!Check4Momentum(p_lab)) {
     msg.Out()<<"WARNING in Phase_Space_Handler::Differential : Check4Momentum(p) failed"<<endl;
     for (int i=0;i<m_nin+m_nout;++i) msg_Events()<<i<<":"<<p_lab[i]
@@ -265,7 +294,8 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
       }
       if (p_isrhandler->On()>0) {
 	p_isrhandler->CalculateWeight(Q2);
- 	p_isrchannels->GenerateWeight(p_isrhandler->On());
+ 	if (mode>=0) p_isrchannels->GenerateWeight(p_isrhandler->On());
+	else p_isrchannels->GenerateWeight(p_isrhandler->On(),p_activefoam);
  	m_result_1 *= p_isrchannels->Weight();
 	if (p_isrhandler->KMROn()) {
 	  p_zchannels->GenerateWeight(p_isrhandler->KMROn());
@@ -281,12 +311,13 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
       }
       KFactor *= process->KFactor(Q2);
     }
-    p_fsrchannels->GenerateWeight(p_cms,p_cuts);
+    if (mode>=0) p_fsrchannels->GenerateWeight(p_cms,p_cuts);
+    else p_fsrchannels->GenerateWeight(p_cms,p_cuts,p_activefoam);
     m_psweight = m_result_1 *= KFactor * p_fsrchannels->Weight();
     if (m_nin>1) {
       if (p_isrhandler->On()==3) m_result_2 = m_result_1;
       if (p_isrhandler->KMROn()==0) m_result_1 *= process->Differential(p_cms);
-                               else m_result_1 *= process->Differential(p_lab);
+      else m_result_1 *= process->Differential(p_lab);
     }
     else m_result_1 *= process->Differential(p_lab);
   }
@@ -299,6 +330,12 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
   if (m_nin>1 && (p_isrhandler->On()>0 || p_beamhandler->On()>0)) {
     m_psweight*=m_flux=p_isrhandler->Flux();
   }
+#ifdef ANALYSE__Phase_Space_Handler
+  TH2D* spyme=((TH2D*)(*MYROOT::myroot)["Sprime_Y_ME"]);
+  if (spyme!=NULL) spyme->
+    Fill(log(m_isrspkey[3]/m_isrspkey[2])/log(10.),m_isrykey[2],
+	 m_flux*(m_result_1+m_result_2));
+#endif
   return m_flux*(m_result_1+m_result_2);
 }
 
@@ -472,6 +509,7 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p)
 
 void Phase_Space_Handler::WriteOut(const std::string &pID) 
 {
+  if (m_use_foam) return;
   msg_Tracking()<<"Write out channels into directory : "<<pID<<endl;
   int  mode_dir = 448;
   ATOOLS::MakeDir(pID.c_str(),mode_dir); 
@@ -486,6 +524,11 @@ void Phase_Space_Handler::WriteOut(const std::string &pID)
 
 bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude) 
 {
+  if (m_use_foam) {
+    msg_Info()<<"Phase_Space_Handler::ReadIn(..): "
+	      <<"Read in not supported for Foam yet.\n";
+    return false;
+  }
   msg_Info()<<"Read in channels from directory : "<<pID<<endl;
   bool okay = 1;
   if (p_beamchannels!=NULL && !(exclude&1)) okay = okay && p_beamchannels->ReadIn(pID+string("/MC_Beam"));
@@ -887,14 +930,20 @@ bool Phase_Space_Handler::MakeISRChannels()
     m_isrparams.push_back(ci);
     ci.parameters.clear();
     if (thmax==0.) {
+      double yexp=.2;
       ci.type = 0;
-      (ci.parameters).push_back(0.99);
-      (ci.parameters).push_back(0.5);
+      (ci.parameters).push_back(.99);
+      (ci.parameters).push_back(yexp);
+      m_isrparams.push_back(ci);
+      ci.parameters.clear();
+      ci.type = 0;
+      (ci.parameters).push_back(1.5);
+      (ci.parameters).push_back(yexp);
       m_isrparams.push_back(ci);
       ci.parameters.clear();
       ci.type = 0;
       (ci.parameters).push_back(2.);
-      (ci.parameters).push_back(0.5);
+      (ci.parameters).push_back(yexp);
       m_isrparams.push_back(ci);
       ci.parameters.clear();
     }
@@ -1051,14 +1100,34 @@ bool Phase_Space_Handler::CreateISRChannels()
     switch (m_isrparams[i].type) {
     case 0:
       if (isr==3) {
-	channel = new Simple_Pole_Uniform_V(m_isrparams[i].parameters[0]," isr",p_info);
+#ifdef PDF_Channels
+	// these channels are slower than the usual isr channels
+	// however they perform better for hadron pdf's due to 
+	// a more realistic x1 / x2 - mapping
+ 	channel = 
+	  new Simple_Pole_PDF_Uniform_V(m_isrparams[i].parameters[0]," isr",p_info);
+ 	p_isrchannels->Add(channel);
+	channel = 
+	  new Simple_Pole_PDF_Forward_V(m_isrparams[i].parameters[0],
+					m_isrparams[i].parameters[1]," isr",p_info);
 	p_isrchannels->Add(channel);
-	channel = new Simple_Pole_Forward_V(m_isrparams[i].parameters[0],
-					    m_isrparams[i].parameters[1]," isr",p_info);
+	channel = 
+	  new Simple_Pole_PDF_Backward_V(m_isrparams[i].parameters[0],
+					 m_isrparams[i].parameters[1]," isr",p_info);
 	p_isrchannels->Add(channel);
-	channel = new Simple_Pole_Backward_V(m_isrparams[i].parameters[0],
-					     m_isrparams[i].parameters[1]," isr",p_info);
+#else
+ 	channel = 
+	  new Simple_Pole_Uniform_V(m_isrparams[i].parameters[0]," isr",p_info);
+ 	p_isrchannels->Add(channel);
+	channel = 
+	  new Simple_Pole_Forward_V(m_isrparams[i].parameters[0],
+				    m_isrparams[i].parameters[1]," isr",p_info);
 	p_isrchannels->Add(channel);
+	channel = 
+	  new Simple_Pole_Backward_V(m_isrparams[i].parameters[0],
+				     m_isrparams[i].parameters[1]," isr",p_info);
+	p_isrchannels->Add(channel);
+#endif
       }
       else {
 	channel = new Simple_Pole_Central_V(m_isrparams[i].parameters[0]," isr",p_info,isr);
@@ -1195,6 +1264,23 @@ void Phase_Space_Handler::DeleteInfo()
 {
   delete p_info;
   p_info=NULL;
+}
+
+bool Phase_Space_Handler::
+CreateFoamChannel(const std::vector<Single_Channel *> &channels)
+{
+  if (!m_use_foam || channels.size()<1) return false;
+  std::string key(p_process->Name()+"_"+channels[0]->ChID());
+  size_t dim=channels[0]->Dimension();
+  for (size_t i=1;i<channels.size();++i) {
+    key+="_"+channels[i]->ChID();
+    dim+=channels[i]->Dimension();
+  }
+  msg_Info()<<"Phase_Space_Handler::CreateFoamChannel(..): "
+	    <<"Creating "<<dim<<"-dimensional foam \n";
+  msg_Info()<<"   '"<<key<<"'\n";
+  m_foams.push_back(new Foam_Interface(this,key,dim));
+  return true;
 }
 
 template Weight_Info ATOOLS::Blob_Data_Base::Get<Weight_Info>();

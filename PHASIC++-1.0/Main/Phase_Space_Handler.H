@@ -24,13 +24,14 @@ namespace PHASIC {
   };// end of struct Weight_Info
 
   class Phase_Space_Integrator;
+  class Foam_Interface;
 
   class Phase_Space_Handler {
   private: 
 
     std::string m_name;
 
-    Integrable_Base        *p_process;
+    Integrable_Base        *p_process, *p_active;
     Phase_Space_Integrator *p_integrator;  
     ATOOLS::Cut_Data       *p_cuts;  
 
@@ -51,13 +52,17 @@ namespace PHASIC {
     ATOOLS::Flavour *p_flavours;
     ATOOLS::Vec4D   *p_cms, *p_lab;
 
-    int  m_nin, m_nout, m_nvec, m_inttype, m_fin_opt;
+    int  m_nin, m_nout, m_nvec, m_inttype, m_fin_opt, m_use_foam;
     bool m_initialized;
 
     long int m_trials, m_maxtrials, m_sumtrials, m_events;
 
     double m_E, m_m[2], m_m2[2], m_s, m_smin, m_psweight;
     double m_result_1, m_result_2, m_flux, m_weight, m_error; 
+    
+    std::vector<Foam_Interface*> m_foams;
+    
+    Foam_Interface* p_activefoam;
 
     bool MakeIncoming(ATOOLS::Vec4D *const p,const double mass=-1.);
 
@@ -114,6 +119,8 @@ namespace PHASIC {
     void ISRChannels(const int i,Channel_Info &ci) const; 
     void BeamChannels(const int i,Channel_Info &ci) const;
 
+    bool CreateFoamChannel(const std::vector<Single_Channel *> &channels);
+
     static ATOOLS::Integration_Info *const GetInfo();
 
     static void DeleteInfo();
@@ -160,6 +167,7 @@ namespace PHASIC {
     inline channelinfos &KPParameters()   { return m_kpparams;   } 
 
     inline Integrable_Base *const Process() const { return p_process; }
+    inline Integrable_Base *const Active() const  { return p_active;  }
 
     inline double PSWeight() const { return m_psweight; }
 
@@ -167,6 +175,15 @@ namespace PHASIC {
     { m_error=error; }
     inline void SetMaxTrials(const long int maxtrials)
     { m_maxtrials=maxtrials; }
+
+    inline Phase_Space_Integrator *const Integrator() const 
+    { return p_integrator; }
+
+    inline const std::vector<Foam_Interface*> &Foams() const
+    { return m_foams; }
+
+    inline void SetActive(Foam_Interface *const foam) 
+    { p_activefoam=foam; }
 
   };// end of class Phase_Space_Handler
 
