@@ -106,6 +106,7 @@ bool Combine_Table::Combinable(const Leg & a , const Leg & b,
     vinfo.cpl = a->prev->cpl;
     vinfo.color = a->prev->Color;
     vinfo.mode  = 1;
+    //    std::cout<<"fls="<<vinfo.fl<<","<<a->fl<<","<<b->fl<<"\n";
     return 1;
   }
 
@@ -113,8 +114,8 @@ bool Combine_Table::Combinable(const Leg & a , const Leg & b,
   if (a->prev == &b)   {
     if (&a==b->left) {
       vinfo.fl  = b->right->fl;
-      vinfo.cpl = b->right->cpl;
-      vinfo.color = b->right->Color;
+      vinfo.cpl = b->cpl;
+      vinfo.color = b->Color;
       vinfo.mode  = 2;
     }
     else if (&a==b->right) {
@@ -123,6 +124,7 @@ bool Combine_Table::Combinable(const Leg & a , const Leg & b,
       vinfo.color = b->left->Color;
       vinfo.mode  = 3;
     }
+    //    std::cout<<"fls="<<vinfo.fl<<","<<a->fl<<","<<b->fl<<"\n";
     return 1;
   }
 
@@ -130,16 +132,17 @@ bool Combine_Table::Combinable(const Leg & a , const Leg & b,
   if (b->prev == &a)  {
     if (&b==a->left) {
       vinfo.fl  = a->right->fl;
-      vinfo.cpl = a->right->cpl;
-      vinfo.color = a->right->Color;
+      vinfo.cpl = a->cpl;
+      vinfo.color = a->Color;
       vinfo.mode  = 4;
     }
     else if (&b==a->right) {
       vinfo.fl  = a->left->fl;
-      vinfo.cpl = a->left->cpl;
-      vinfo.color = a->left->Color;
+      vinfo.cpl = a->cpl;
+      vinfo.color = a->Color;
       vinfo.mode  = 5;
     }
+    //    std::cout<<"fls="<<vinfo.fl<<","<<a->fl<<","<<b->fl<<"\n";
     return 1;
   }
   // else legs not combinable
@@ -271,16 +274,20 @@ void Combine_Table::FillTable(Leg **_legs,int _nlegs, int _nampl)
 double Combine_Table::ColorFactor(int i, int j, AMEGIC::Color_Function * const color, 
 				  unsigned int mode)
 {
-  if (mode!=1 || i<2) {
+  if (!((mode==1) || (mode==4 && i<2))) {
     msg.Out()<<" Combine_Table::ColorFactor("<<i<<","<<j<<") "
 	     <<mode<<"-mode not covered yet\n";
-    return 1.;
+    msg.Out()<<color->String()<<std::endl;
+    //    return 1.;
   }
 
   // assume combinable type 1.) and final state clustering !!!
   if (color->Type()==cf::None)
     return 1.;
-  if (color->Type()==cf::F) return 3;
+  if (color->Type()==cf::F) {
+    if (i<2) return 2.*3.;
+    return 3.;
+  }
   if (color->Type()==cf::D) {
     if (color->StringArg(0)=='0' || color->StringArg(1)=='0')
       return 1.;
@@ -316,6 +323,7 @@ void Combine_Table::AddPossibility(int i, int j, int ngraph, const Vertex_Info &
       }
       else {
 	double cfac = ColorFactor(i,j,vinfo.color,vinfo.mode);
+	//	std::cout<<vinfo.color->String()<<"="<<cfac<<std::endl;
 	Combine_Data cd(0.,ngraph);
 	cd.strong   = vinfo.fl.Strong();
 	cd.coupling = cfac*(norm(vinfo.cpl[0])+norm(vinfo.cpl[1]));
@@ -325,11 +333,12 @@ void Combine_Table::AddPossibility(int i, int j, int ngraph, const Vertex_Info &
   }
   else {
     // add new "i&j" combination 
-    double cfac = ColorFactor(i,j,vinfo.color,vinfo.mode);
+    //    std::cout<<vinfo.color->String()<<"="<<cfac<<std::endl;
     Combine_Data cd(0.,ngraph);
     cd.strong=vinfo.fl.Strong();
     m_combinations[Combine_Key(i,j)]=cd;
     if (m_mode==1) {
+      double cfac = ColorFactor(i,j,vinfo.color,vinfo.mode);
       cd.coupling = cfac*(norm(vinfo.cpl[0])+norm(vinfo.cpl[1]));
       m_combinations[Combine_Key(i,j,vinfo.fl)]=cd;
     }
@@ -543,7 +552,7 @@ CD_Iterator  Combine_Table::CalcPropagator(CD_Iterator & cit)
       return father;
     }
     else {
-      std::cout<<" hallo wo bist du: "<<cit->first<<std::endl;
+      msg.Out()<<"WARNING: in Combine_Table: "<<cit->first<<std::endl;
     }
   }
   return cit;
