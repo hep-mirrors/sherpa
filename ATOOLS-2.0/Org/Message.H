@@ -10,18 +10,27 @@ namespace ATOOLS {
   struct om {
 
     enum code {
-      none    =    0,
-      reset   =    1,
-      bold    =    2,
-      blink   =    4,
-      backgnd =    8,
-      red     =   16,
-      green   =   32,
-      blue    =   64,
-      brown   =  128,
-      violet  =  256,
-      lblue   =  512,
-      grey    = 1024  };
+      none     =      0,
+      reset    =      1,
+      bold     =      2,
+      blink    =      4,
+      underln  =      8,
+      blackbg  =     16,
+      red      =     32,
+      green    =     64,
+      blue     =    128,
+      brown    =    256,
+      violet   =    512,
+      lblue    =   1024,
+      grey     =   2048,  
+      redbg    =   4096,
+      greenbg  =   8192,
+      bluebg   =  16384,
+      brownbg  =  32768,
+      violetbg =  65536,
+      lbluebg  = 131072,
+      greybg   = 262144  
+    };
 
   };// end of struct om
 

@@ -12,22 +12,31 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const om::code modifier)
   if (!msg.Modifiable()) return str;
   switch (modifier) {
 #ifdef USING__COLOUR
-  case om::reset:   return str<<"\e[0m";
-  case om::bold:    return str<<"\e[1m";
-  case om::blink:   return str<<"\e[5m";
-  case om::backgnd: return str<<"\e[6m";
-  case om::red:     return str<<"\e[31m";
-  case om::green:   return str<<"\e[32m";
-  case om::brown:   return str<<"\e[33m";
-  case om::blue:    return str<<"\e[34m";
-  case om::violet:  return str<<"\e[35m";
-  case om::lblue:   return str<<"\e[36m";
-  case om::grey:    return str<<"\e[37m";
-  case om::none:    return str;
+  case om::reset:    return str<<"\e[0m";
+  case om::bold:     return str<<"\e[1m";
+  case om::underln:  return str<<"\e[4m";
+  case om::blink:    return str<<"\e[5m";
+  case om::blackbg:  return str<<"\e[7m";
+  case om::red:      return str<<"\e[31m";
+  case om::green:    return str<<"\e[32m";
+  case om::brown:    return str<<"\e[33m";
+  case om::blue:     return str<<"\e[34m";
+  case om::violet:   return str<<"\e[35m";
+  case om::lblue:    return str<<"\e[36m";
+  case om::grey:     return str<<"\e[37m";
+  case om::redbg:    return str<<"\e[31m";
+  case om::greenbg:  return str<<"\e[32m";
+  case om::brownbg:  return str<<"\e[33m";
+  case om::bluebg:   return str<<"\e[34m";
+  case om::violetbg: return str<<"\e[35m";
+  case om::lbluebg:  return str<<"\e[36m";
+  case om::greybg:   return str<<"\e[37m";
+  case om::none:     return str;
 #else
   default: return str;
 #endif
   }
+  return str;
 }
  
 Message::Message() 
