@@ -57,6 +57,8 @@ AC_ARG_ENABLE(modelinclude,
   fi ])
 AM_CONDITIONAL(MODEL_INCLUDE, test "$modelinclude" = "true" )
 
+AC_CONFIG_COMMANDS_POST([touch Org/My_Root.C])
+
 dnl Checks for programs.
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
