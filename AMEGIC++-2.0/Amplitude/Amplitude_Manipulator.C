@@ -473,7 +473,7 @@ void Amplitude_Manipulator::SetFermionNumberFlow(Point* pb,Point* pe)
   if (pb->fl.Majorana() && pe->fl.Majorana()) fermflag = 2;
   
   if (majoflag) {
-    ATOOLS::msg.Debugging()<<"Fermion Flow(Majo): "<<pb->number<<" <-> "<<pe->number<<endl;
+    //ATOOLS::msg.Debugging()<<"Fermion Flow(Majo): "<<pb->number<<" <-> "<<pe->number<<endl;
     if (!pb->fl.IsAnti() && b[pb->number]==-1) majoflag=1;
     if (pb->fl.IsAnti()  && b[pb->number]==-1) majoflag=-1;
     if (!pb->fl.IsAnti() && b[pb->number]==1)  majoflag=-1;
@@ -491,21 +491,19 @@ void Amplitude_Manipulator::SetFermionNumberFlow(Point* pb,Point* pe)
     else SetBackwardFNFlow(pe,majoflag,0);
   }
   if (fermflag) {
-    ATOOLS::msg.Debugging()<<"Majorana Flow: "<<pb->number<<" -> "<<pe->number<<endl;
+    //ATOOLS::msg.Debugging()<<"Majorana Flow: "<<pb->number<<" -> "<<pe->number<<endl;
     if (pb->prev==0) SetForwardFNFlow(pb,0,fermflag);
     else SetBackwardFNFlow(pb,0,fermflag);
   }
   if (!fermflag && !majoflag) {   
-    ATOOLS::msg.Debugging()<<"Fermion Flow: "<<pb->number<<" -> "<<pe->number<<endl;
+    //ATOOLS::msg.Debugging()<<"Fermion Flow: "<<pb->number<<" -> "<<pe->number<<endl;
     if (pb->prev==0) SetForwardFNFlow(pb,0,0);
     else SetBackwardFNFlow(pb,0,0);
   }
 }
 
 void Amplitude_Manipulator::SetForwardFNFlow(Point* p,int majoflag,int fermflag)
-{
-  //if (p->left==0) return;
-  
+{ 
   //nothing......
   //p->m = 1;
   
@@ -577,8 +575,6 @@ void Amplitude_Manipulator::SetMajoFlowForward(Point* p,int fermflag)
 }
 void Amplitude_Manipulator::SetBackwardFNFlow(Point* p,int majoflag,int fermflag)
 {  
-  //if (p->prev==0) return;  
-  
   if (p->fl.Majorana() && majoflag) return;
   if (majoflag==-1) p->m = 1;
   else p->m = -1;
