@@ -185,6 +185,11 @@ namespace ATOOLS {
     m_string = _m_string; 
   }
 
+  inline void Read_Write_Base::SetOccurrence(const size_t _m_occurrence)
+  { 
+    m_occurrence = _m_occurrence; 
+  }
+
   inline void Read_Write_Base::SetVectorType(const VectorTypeID _m_vectortype)
   { 
     m_vectortype=_m_vectortype; 
@@ -228,6 +233,11 @@ namespace ATOOLS {
   inline const std::string Read_Write_Base::String() const           
   { 
     return m_string; 
+  }
+  
+  inline size_t Read_Write_Base::Occurrence() const           
+  { 
+    return m_occurrence; 
   }
   
   inline const Read_Write_Base::VectorTypeID Read_Write_Base::VectorType() const       

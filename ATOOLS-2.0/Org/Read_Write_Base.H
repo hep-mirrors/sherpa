@@ -39,6 +39,8 @@ namespace ATOOLS {
 
     bool m_ignorecase, m_ignoreblanks;
 
+    size_t m_occurrence;
+
     void Init();
 
   protected:
@@ -110,6 +112,7 @@ namespace ATOOLS {
     inline void SetString(const std::string _m_string);
 
     inline void SetOpenMode(const OpenModeID _m_openmode);
+    inline void SetOccurrence(const size_t _m_occurrence);
 
     inline void SetVectorType(const VectorTypeID _m_vectortype);
     inline void SetMatrixType(const MatrixTypeID _m_matrixtype);
@@ -143,6 +146,8 @@ namespace ATOOLS {
     inline const std::vector<std::string> &FileEnd() const;
 
     inline const std::string String() const;
+
+    inline size_t Occurrence() const;
 
     inline const VectorTypeID VectorType() const;
     inline const MatrixTypeID MatrixType() const;

@@ -39,6 +39,7 @@ void Read_Write_Base::Init()
   m_addcommandline=true;
   m_ignorecase=false;
   m_ignoreblanks=false;
+  m_occurrence=0;
 }
 
 size_t Read_Write_Base::Find(std::string input,std::string parameter,size_t &length) const
@@ -122,19 +123,21 @@ bool Read_Write_Base::OpenInFile(const unsigned int i)
 	if (checkbegin) {
 	  for (size_t length=0,j=0;j<m_filebegin.size();++j) {
 	    if (Find(lastline,m_filebegin[j],length)!=std::string::npos) {
-	      if (filebegin==0) {
+	      if (filebegin==m_occurrence) {
 		lastline=lastline.substr(Find(lastline,m_filebegin[j],length)+length);
 	      }
 	      ++filebegin;
 	      break;
 	    }
 	  }
-	  if (filebegin==0) lastline=ATOOLS::nullstring;
-	  if (checkend && filebegin>0) {
+	  if (filebegin<=m_occurrence) {
+	    lastline=ATOOLS::nullstring;
+	  }
+	  else if (checkend) {
 	    for (size_t length=0,j=0;j<m_fileend.size();++j) {
 	      if (Find(lastline,m_fileend[j],length)!=std::string::npos) {
 		--filebegin;
-		if (filebegin==0) {
+		if (filebegin==m_occurrence) {
 		  lastline=lastline.substr(0,Find(lastline,m_fileend[j],length));
 		}
 		break;
