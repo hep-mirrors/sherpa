@@ -14,6 +14,7 @@ endif
 
 lib_LTLIBRARIES       =	libPhasespace.la
 libPhasespace_la_SOURCES      =	\
+				Info_Key.C \
 				Integration_Info.C \
 			   	Channel_Basics.C \
 				Channel_Elements.C \
@@ -34,9 +35,10 @@ libPhasespace_la_SOURCES      =	\
 #				LBS_Compton_Peak.C \
 #			   	LL_KPerp.C \
 noinst_HEADERS        =	\
-		 	Integrable_Base.H \
+			Info_Key.H \
+			Info_Key.inl.H \
 			Integration_Info.H \
-			Integration_Info.IC \
+			Integration_Info.inl.H \
 		 	Channel_Basics.H \
 			Channel_Elements.H \
 			Single_Channel.H \
@@ -47,6 +49,7 @@ noinst_HEADERS        =	\
 			RamboKK.H \
 			Sarge.H \
 			Multi_Channel.H \
+		 	Integrable_Base.H \
 			Phase_Space_Handler.H \
 			Phase_Space_Integrator.H 
 #		 	Simple_Pole.H \
