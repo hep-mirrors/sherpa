@@ -24,7 +24,7 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler * _isr,
     if (p_fin) pt2fin = p_fin->PT2Min();  
     m_t0              = _dataread->GetValue<double>("IS PT2MIN",4.);
     m_t0 = dabs(m_t0);
-    m_jetveto_scheme  = _dataread->GetValue<int>("IS JETVETOSCHEME",1);
+    m_jetveto_scheme  = _dataread->GetValue<int>("IS JETVETOSCHEME",2);
 
     p_tools           = new Sudakov_Tools(1,_model,m_t0,(rpa.gen.Ecms())*(rpa.gen.Ecms()));
     p_kin             = new Spacelike_Kinematics(pt2fin, _dataread);
