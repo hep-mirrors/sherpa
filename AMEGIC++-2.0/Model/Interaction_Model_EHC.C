@@ -14,10 +14,11 @@ Interaction_Model_EHC::Interaction_Model_EHC(MODEL::Model_Base * _model,
   Interaction_Model_Base(_model,_cplscheme,_yukscheme)
 { 
   double Ecms2 = sqr(rpa.gen.Ecms());
+  double hmass2 = sqr(Flavour(kf::h).Mass());
 
   geff  = Kabbala(std::string("I_S"),ScalarConstant(std::string("HIGGS_GG_EFF")));
   ghgg  = Kabbala(std::string("ghgg"),ScalarConstant(std::string("Higgs_gg_fac"))*
-		  ScalarFunction(std::string("alpha_S"),Ecms2)/(2.*M_PI)/ScalarConstant(std::string("vev")));
+		  ScalarFunction(std::string("alpha_S"),hmass2)/(2.*M_PI)/ScalarConstant(std::string("vev")));
   g1    = Kabbala(string("g_1"),
 		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),Ecms2)));
   g2    = Kabbala(string("g_1/\\sin\\theta_W"), 
