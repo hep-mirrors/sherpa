@@ -26,7 +26,7 @@ namespace ATOOLS {
     // constructors
     inline Smart_Pointer(Type *const type): 
       p_this(type), p_owner(this), p_copy(NULL) {}
-    inline Smart_Pointer(const Smart_Pointer &pointer): 
+    inline Smart_Pointer(Smart_Pointer &pointer): 
       p_this(-pointer), p_owner(&pointer), p_copy(NULL) { pointer.p_copy=this; }
 
     // destructor
