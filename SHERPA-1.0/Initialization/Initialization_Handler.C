@@ -1,5 +1,6 @@
 #include "Initialization_Handler.H"
 
+#include "IO_Handler.H"
 #include "Model_Handler.H"
 #include "Structure_Function.H"
 #include "Intact.H"
@@ -83,6 +84,10 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   m_fragmentationdat = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_hadrondecaysdat  = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
+
+  CheckFlagConsitency();
+
+  rpa.Init(m_path,m_file);
 }
 
 
@@ -123,7 +128,6 @@ Initialization_Handler::~Initialization_Handler()
 bool Initialization_Handler::InitializeTheFramework(int nr)
 {
   if (nr<=0) {
-    rpa.Init(m_path,m_file);
     ATOOLS::ParticleInit(m_path); 
   }
 
@@ -318,7 +322,7 @@ bool Initialization_Handler::InitializeTheHardDecays()
   if (p_harddecays)    { delete p_harddecays;    p_harddecays    = NULL; }
   p_harddecays = new Hard_Decay_Handler(m_path,m_decaydat,m_medat,p_model);
   if (p_harddecays->GetMEHandler()!=NULL) {
-    ATOOLS::msg.Info()<<"Initialized the Hard_Decay_Handler. Its ME_Handler is : "
+    msg.Info()<<"Initialized the Hard_Decay_Handler. Its ME_Handler is : "
 		      <<p_harddecays->GetMEHandler()->Name()<<"/"
 		      <<p_harddecays->GetMEHandler()<<std::endl;
     m_mehandlers.insert(std::make_pair(std::string("HardDecays"),p_harddecays->GetMEHandler()));
@@ -339,14 +343,14 @@ bool Initialization_Handler::InitializeTheMatrixElements()
 				    m_isrhandlers[isr::hard_process],NULL);
   }
   m_mehandlers.insert(std::make_pair(std::string("SignalMEs"),me)); 
-  ATOOLS::msg.Info()<<"Initialized the Matrix_Element_Handler for the hard processes :"<<me->Name()<<endl;
+  msg.Info()<<"Initialized the Matrix_Element_Handler for the hard processes :"<<me->Name()<<endl;
   return 1;
 }
 
 Matrix_Element_Handler * Initialization_Handler::GetMatrixElementHandler(std::string _key) { 
   MEHandlerIter pos = m_mehandlers.find(_key);
   if (pos!=m_mehandlers.end()) return pos->second;
-  ATOOLS::msg.Error()<<"Error in Initialization_Handler::GetMatrixElementHandler("<<_key<<") :"
+  msg.Error()<<"Error in Initialization_Handler::GetMatrixElementHandler("<<_key<<") :"
 		     <<"   Key not found. Return Null pointer."<<endl;
   return NULL;
 }
@@ -357,11 +361,11 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
   p_mihandler = new MI_Handler(m_path,m_midat,p_model,p_beamspectra,
 			       m_isrhandlers[isr::hard_subprocess]);
   if (p_mihandler->Type()!=0)
-    ATOOLS::msg.Info()<<"Initialized the Multiple_Interactions_Handler (MI_Handler)."<<endl;
-  Matrix_Element_Handler *mehandler;
-  if ((mehandler=p_mihandler->HardMEHandler())!=NULL) {
+    msg.Info()<<"Initialized the Multiple_Interactions_Handler (MI_Handler)."<<endl;
+  Matrix_Element_Handler *mehandler = p_mihandler->HardMEHandler();
+  if (mehandler!=NULL) {
     m_mehandlers.insert(std::make_pair(std::string("MIMEs"),mehandler)); 
-    ATOOLS::msg.Info()<<"Added the Matrix_Element_Handler for the u.e. :"<<mehandler->Name()<<endl;
+    msg.Info()<<"Added the Matrix_Element_Handler for the u.e. :"<<mehandler->Name()<<endl;
   }
   else {
     ISR_Handler_Map::iterator iit=m_isrhandlers.find(isr::hard_subprocess);
@@ -377,7 +381,7 @@ bool Initialization_Handler::InitializeTheShowers()
   int maxjets     = GetMatrixElementHandler(std::string("SignalMEs"))->MaxJets();
   p_showerhandler = new Shower_Handler(m_path,m_showerdat,p_model,
 				       m_isrhandlers[isr::hard_process],maxjets);
-  ATOOLS::msg.Info()<<"Initialized the Shower_Handler."<<endl;
+  msg.Info()<<"Initialized the Shower_Handler."<<endl;
   return 1;
 }
 
@@ -398,7 +402,7 @@ bool Initialization_Handler::InitializeTheBeamRemnants()
     AMISIC::MI_Base::SetRemnantHandler(p_beamremnants->BeamParticle(i),i);
     p_beamremnants->BeamParticle(i)->SetMIHandler(p_mihandler);
   }
-  ATOOLS::msg.Info()<<"Initialized the Beam_Remnant_Handler."<<endl;
+  msg.Info()<<"Initialized the Beam_Remnant_Handler."<<endl;
   return 1;
 }
 
@@ -406,7 +410,7 @@ bool Initialization_Handler::InitializeTheFragmentation()
 {
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
   p_fragmentation = new Fragmentation_Handler(m_path,m_fragmentationdat);
-  ATOOLS::msg.Info()<<"Initialized the Fragmentation_Handler."<<endl;
+  msg.Info()<<"Initialized the Fragmentation_Handler."<<endl;
   return 1;
 }
 
@@ -434,7 +438,7 @@ bool Initialization_Handler::InitializeTheAnalyses()
   }
   std::string buffer, phase;
   Analysis_Handler * sa = NULL;
-  unsigned int pos;
+  size_t pos;
   bool add;
   for (;;) {
     if (from->eof()) break;
@@ -448,7 +452,8 @@ bool Initialization_Handler::InitializeTheAnalyses()
 	  if (buffer[0]==' ') buffer = buffer.substr(1);
 	  else {
 	    pos = buffer.find(string(" "));
-	    if (pos>0) phase = buffer.substr(0,pos);
+	    if (pos!=std::string::npos) phase = buffer.substr(0,pos);
+	    else phase=buffer;
 	    break;
 	  }
 	}
@@ -465,7 +470,7 @@ bool Initialization_Handler::InitializeTheAnalyses()
 	    name=phase+std::string("_")+ATOOLS::ToString(++i);
 	  } while (m_analyses.find(name)!=m_analyses.end());
 	  m_analyses.insert(std::make_pair(name,sa)); 
-	  ATOOLS::msg.Info()<<"Initialized Analysis_Handler "<<name<<std::endl;
+	  msg.Info()<<"Initialized Analysis_Handler "<<name<<std::endl;
 	}
       }
     }
@@ -498,15 +503,15 @@ bool Initialization_Handler::CalculateTheHardProcesses()
   int ok = me->CalculateTotalXSecs(scalechoice);
   if (ok && m_scan_istep!=-1) {
     AMEGIC::Process_Base * procs= me->GetAmegic()->Processes();
-    ATOOLS::msg.Out()<<ParameterValue()<<" ";
+    msg.Out()<<ParameterValue()<<" ";
     for (size_t i=0; i<procs->Size();++i) {
       double xstot = (*procs)[i]->TotalXS()*rpa.Picobarn();
-      ATOOLS::msg.Out()<<xstot<<" ";
+      msg.Out()<<xstot<<" ";
     }
     for (size_t i=0; i<procs->Size();++i) {
-      ATOOLS::msg.Out()<<"###"<<(*procs)[i]->Name();
+      msg.Out()<<"###"<<(*procs)[i]->Name();
     }
-    ATOOLS::msg.Out()<<endl;
+    msg.Out()<<endl;
   }
   if (ok) 
     msg.Out()<<"Calculating the hard cross sections has been successful.                  "<<std::endl
@@ -521,7 +526,7 @@ void Initialization_Handler::SetParameter(int nr) {
   if (nr<0) return;
 
   if (nr!=m_scan_istep) 
-    ATOOLS::msg.Out()<<"WARNING: internal and external scan counter do not coincide "<<nr<<" vs. "<<m_scan_istep<<endl;
+    msg.Out()<<"WARNING: internal and external scan counter do not coincide "<<nr<<" vs. "<<m_scan_istep<<endl;
 
   double value=m_scan_value=m_scan_begin+(m_scan_end-m_scan_begin)*double(m_scan_istep)/double(m_scan_nsteps);
 
@@ -530,6 +535,7 @@ void Initialization_Handler::SetParameter(int nr) {
   if (m_scan_variable==string("ECMS")) {
     s<<value/2.;
     s>>sval;
+    msg.Out()<<" Setting Ecms/2 to : "<<sval<<endl;
     Data_Read::SetCommandLine("BEAM_ENERGY_1",sval);
     Data_Read::SetCommandLine("BEAM_ENERGY_2",sval);
   }
@@ -540,8 +546,8 @@ void Initialization_Handler::SetParameter(int nr) {
     // make sure UpdateParameters() is called
   }   
   else {
-    ATOOLS::msg.Out()<<" Unknown Variable "<< m_scan_variable<<" in scan modus "<<endl;
-    ATOOLS::msg.Out()<<"  setting "<<m_scan_variable<<" = "<<value<<endl;
+    msg.Out()<<" Unknown Variable "<< m_scan_variable<<" in scan modus "<<endl;
+    msg.Out()<<"  setting "<<m_scan_variable<<" = "<<value<<endl;
     s<<value; 
     s>>sval;
     m_options[m_scan_variable]=sval;    
@@ -585,11 +591,11 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 
     if (special_options.find(par)!=special_options.end()) 
       mode = special_options[par];
-    ATOOLS::msg.Info()<<i<<" : "<<argv[i]<<" ->"<<mode<<endl;
 
     // variables in dat files
     if (equal!=-1 && mode==1) {
-      ATOOLS::msg.Info()<<equal<<":"<<key<<" = "<<value<<" ("<<par<<")"<<endl;
+      // perhaps check varible name first
+
       Data_Read::SetCommandLine(key,value);
     }
     
@@ -608,22 +614,20 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 	s<<value;
 	double ecms;
 	s>>ecms;
-	ATOOLS::msg.Out()<<" Setting Ecms to : "<<ecms<<endl;
 	s<<ecms/2.;
 	s>>value;
-	ATOOLS::msg.Out()<<" Setting Ecms/2 to : "<<value<<endl;
 	Data_Read::SetCommandLine("BEAM_ENERGY_1",value);
 	Data_Read::SetCommandLine("BEAM_ENERGY_2",value);
 	break;
       case 9000:
 	m_mode       = 9000;
 	m_evtfile    = value;
-	ATOOLS::msg.Out()<<" Sherpa will produce Pythia events according to "<<value<<endl;
+	msg.Out()<<" Sherpa will produce Pythia events according to "<<value<<endl;
 	break;
       case 9999:
 	m_mode       = 9999;
 	m_evtfile    = value;
-	ATOOLS::msg.Out()<<" Sherpa will read in events from : "<<value<<endl;
+	msg.Out()<<" Sherpa will read in events from : "<<value<<endl;
 	break;
       case 100:
 	m_options[key] = value;
@@ -635,30 +639,32 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       case 12:
 	{
 	  // should call a version roution
-	  ATOOLS::msg.Out()<<" Sherpa Version 1.0.3"<<endl;
-	  ATOOLS::msg.Out()<<"   employing: "<<endl;
-	  ATOOLS::msg.Out()<<"    * AMEGIC++ Version 2.0.3 "<<endl;
-	  ATOOLS::msg.Out()<<"    * APACIC++ Version 2.0.3 "<<endl;
+	  msg.Out()<<" Sherpa Version 1.0.4"<<endl;
+	  msg.Out()<<"   employing: "<<endl;
+	  msg.Out()<<"    * AMEGIC++ Version 2.0.4 "<<endl;
+	  msg.Out()<<"    * APACIC++ Version 2.0.4 "<<endl;
 
 	  string pyver("6.214");
-	  ATOOLS::msg.Out()<<"    * Pythia Version "<<pyver<<endl;
+	  msg.Out()<<"    * Pythia Version "<<pyver<<endl;
 	  Char_Array40 cid=visaje_();
-	  ATOOLS::msg.Out()<<"    * IsaJet Version "<<cid.s<<endl;
+	  msg.Out()<<"    * IsaJet Version "<<cid.s<<endl;
 	}
 	exit(0);
       case 13:
-	ATOOLS::msg.Out()<<" Help: "<<endl;
-	ATOOLS::msg.Out()<<" Sherpa [options] [<variable>=<value>] "<<endl;
-	ATOOLS::msg.Out()<<endl;
-	ATOOLS::msg.Out()<<" Possible options: "<<endl;
-	ATOOLS::msg.Out()<<"  -V,--version   prints the Version number"<<endl;
-	ATOOLS::msg.Out()<<"  -?,--help      prints this help message"<<endl;
-	ATOOLS::msg.Out()<<"  -xsout <filename> "<<endl;
-	ATOOLS::msg.Out()<<"                 sets a file where calculated cross sections should be printed to"<<endl;
-	ATOOLS::msg.Out()<<"  -eventout <filename> "<<endl;
-	ATOOLS::msg.Out()<<"                 sets a file where events should be printed to"<<endl;	
-	ATOOLS::msg.Out()<<"  -scan <variable> <startvalue> <stopvalue> <number of steps>"<<endl;
-	ATOOLS::msg.Out()<<"                 performs a parameter scan"<<endl;
+	msg.Out()<<" Help: "<<endl;
+	msg.Out()<<" Sherpa [options] [<variable>=<value>] "<<endl;
+	msg.Out()<<endl;
+	msg.Out()<<" Possible options: "<<endl;
+	msg.Out()<<"  -V,--version   prints the Version number"<<endl;
+	msg.Out()<<"  -?,--help      prints this help message"<<endl;
+// 	msg.Out()<<"  -xsout <filename> "<<endl;
+// 	msg.Out()<<"                 sets a file where calculated cross sections should be printed to"<<endl;
+// 	msg.Out()<<"  -eventout <filename> "<<endl;
+// 	msg.Out()<<"                 sets a file where events should be printed to"<<endl;	
+	msg.Out()<<"  -scan <variable> <startvalue> <stopvalue> <number of steps>"<<endl;
+	msg.Out()<<"                 performs a parameter scan"<<endl<<endl;
+	msg.Out()<<"        <variable> ... in addition to all parameters in configuration files"<<endl
+		 <<"                       PATH, RUNDATA, ECMS, MASS(<kfcode>) can be used"<<endl;
 	exit(0);
       case 14: 
 	// scan
@@ -674,13 +680,13 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 	  s<<argv[++i];
 	  s>>m_scan_nsteps;
 	  m_scan_istep=0;
-	  ATOOLS::msg.Out()<<" scanning "<<m_scan_variable
+	  msg.Out()<<" scanning "<<m_scan_variable
 	      <<" from "<<m_scan_begin<<" to "<<m_scan_end
 	      <<" in "<<m_scan_nsteps<<" steps"<<endl;
 	}
 	else {
-	  ATOOLS::msg.Out()<<"ERROR: missing scan parameter -scan"<<endl;
-	  ATOOLS::msg.Out()<<"       try Sherpa -? for more information "<<endl;
+	  msg.Error()<<"ERROR:  missing scan parameter -scan"<<endl;
+	  msg.Error()<<"       try Sherpa -? for more information "<<endl;
 	  exit(1);
 	}
 	break;
@@ -696,36 +702,66 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
   return m_mode;
 }
 
+
+void Initialization_Handler::CheckFlagConsitency()
+{
+  Data_Read dr(m_path+m_medat);
+  int  sudweight = dr.GetValue<int>("SUDAKOV_WEIGHT",0);
+
+  // if SUDAKOV_WEIGHT=On
+  if (sudweight>0) {
+    //  Run.dat
+    long nevt = p_dataread->GetValue<long>("EVENTS",0);
+    if (nevt<=0) {
+      Data_Read::SetCommandLine("EVENTS","1");
+    }
+
+    //  ME.dat 
+    Data_Read::SetCommandLine("SCALE_SCHEME","65");
+    Data_Read::SetCommandLine("KFACTOR_SCHEME","65");
+    Data_Read::SetCommandLine("COUPLING_SCHEME","Running_alpha_S");
+
+    //  Shower.dat
+    Data_Read::SetCommandLine("FSR_SHOWER","1");
+    Data_Read::SetCommandLine("FS_LOSEJETVETO","1");
+  }
+
+
+  // check if all MI.dat / Decays.dat
+  
+
+}
+
 int Initialization_Handler::UpdateParameters() 
 {
   for (Parameter_Iterator it = m_options.begin(); it!=m_options.end() ; ++it) {
     MyStrStream s;
     string key=it->first;
     string value=it->second;
-    ATOOLS::msg.Out()<<" "<<key<<" = "<<value<<endl;
+    msg.Info()<<" "<<key<<" = "<<value<<endl;
     int a=key.find("(")+1;
     int b=key.find(")")-a;
-    ATOOLS::msg.Out()<<"Flavour "<<key.substr(a,b);
+    msg.Tracking()<<"Flavour "<<key.substr(a,b);
     s<<key.substr(a,b);
     int kfc;
     s>>kfc;
     Flavour fl((kf::code)kfc);
-    ATOOLS::msg.Out()<<" : "<<fl<<endl;
+    msg.Tracking()<<" : "<<fl<<endl;
     if (key.find("MASS")!=string::npos) {
       double mass=fl.Mass();
-      ATOOLS::msg.Out()<<" old mass = "<<mass<<endl;
+      msg.Tracking()<<" old mass = "<<mass<<endl;
       s<<value;
       s>>mass;
-      ATOOLS::msg.Out()<<" new mass = "<<mass<<endl;
+      msg.Tracking()<<" new mass = "<<mass<<endl;
       fl.SetMass(mass);
     }
     if (key.find(string("WIDTH"))!=string::npos) {
-      ATOOLS::msg.Out()<<"key:"<<key<<endl;
+      msg.Tracking()<<"key:"<<key<<endl;
       double width=fl.Width();
-      ATOOLS::msg.Out()<<" old width = "<<width<<endl;
+      msg.Tracking()<<" old width = "<<width<<endl;
       s<<value;
       s>>width;
-      ATOOLS::msg.Out()<<" new width = "<<width<<endl;
+      msg.Tracking()<<" new width = "<<width<<endl;
       fl.SetWidth(width);
     }
   }

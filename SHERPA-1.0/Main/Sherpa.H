@@ -1,13 +1,13 @@
 #ifndef Sherpa_h
 #define Sherpa_h
 
-
-#include "Initialization_Handler.H"
-#include "Event_Handler.H"
-#include "Output_Handler.H"
-#include "Sample_Analysis.H"
+#include <string>
 
 namespace SHERPA {
+  class Initialization_Handler;
+  class Event_Handler;
+  class IO_Handler;
+
   class Sherpa {
   private:
     std::string   m_path;
@@ -16,7 +16,6 @@ namespace SHERPA {
     Initialization_Handler * p_inithandler;
     Event_Handler          * p_eventhandler;
     IO_Handler             * p_iohandler;
-    Analysis_Handler       * p_analysis;
 
     void DrawLogo();  
   public:

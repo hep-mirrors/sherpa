@@ -1,5 +1,9 @@
 #include "Sherpa.H"
+#include "Initialization_Handler.H"
+#include "Event_Handler.H"
 #include "Analysis_Phase.H"
+#include "Analysis_Handler.H"
+#include "IO_Handler.H"
 #include "EvtReadin_Phase.H"
 #include "Signal_Processes.H"
 #include "Hard_Decays.H"
@@ -39,7 +43,7 @@ extern "C" {
 }
 
 Sherpa::Sherpa() :
-  p_inithandler(NULL), p_eventhandler(NULL), p_iohandler(NULL), p_analysis(NULL)  
+  p_inithandler(NULL), p_eventhandler(NULL), p_iohandler(NULL)
 {
   PROFILE_HERE;
   m_errors = 0;
@@ -49,7 +53,6 @@ Sherpa::Sherpa() :
 Sherpa::~Sherpa() 
 {
   PROFILE_HERE;
-  if (p_analysis)     { delete p_analysis;     p_analysis     = NULL; }
   if (p_eventhandler) { delete p_eventhandler; p_eventhandler = NULL; }
   if (p_inithandler)  { delete p_inithandler;  p_inithandler  = NULL; }
 }
@@ -57,9 +60,10 @@ Sherpa::~Sherpa()
 bool Sherpa::InitializeTheRun(int argc,char * argv[]) 
 { 
   PROFILE_HERE;
-  DrawLogo();
   m_path = std::string("./");
   p_inithandler  = new Initialization_Handler(argc, argv);
+  DrawLogo();
+
   int mode = p_inithandler->Mode();  
   if (mode==14) {
     return PerformScan();

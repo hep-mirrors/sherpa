@@ -11,8 +11,7 @@
 #include "Fragmentation_Handler.H"
 #include "Hadron_Decay_Handler.H"
 #include "MI_Handler.H"
-#include "Output_Handler.H"
-#include "Sample_Analysis.H"
+#include "Analysis_Handler.H"
 #include "Data_Read.H"
 
 #include <map>
@@ -33,6 +32,8 @@ namespace SHERPA {
   };// end of struct isr
 
   typedef std::map<isr::id,PDF::ISR_Handler*> ISR_Handler_Map;
+
+  class IO_Handler;
 
   class Initialization_Handler {
   private :
@@ -81,6 +82,7 @@ namespace SHERPA {
     bool InitializeTheAnalyses();
 
     int  ExtractCommandLineParameters(int argc,char * argv[]);
+    void CheckFlagConsitency();
     bool CheckBeamISRConsistency();
     void SetParameter(int nr);
 
