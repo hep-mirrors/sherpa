@@ -17,6 +17,7 @@ endif
 lib_LTLIBRARIES = libToolsOrg.la
 libToolsOrg_la_SOURCES        = \
 				Object.C \
+				Getter_Function.C \
 				Exception.C \
 				Exception_Handler.C \
 				File_IO_Base.C \
@@ -38,6 +39,7 @@ libToolsOrg_la_SOURCES        = \
 				My_Root.C
 noinst_HEADERS        =	\
 			Object.H \
+			Getter_Function.H \
 			Exception.H \
 			Exception_Handler.H \
 			Exception_Handler.inl.H \
@@ -69,7 +71,7 @@ noinst_HEADERS        =	\
 			Debugger.inl.H \
 			Node.H \
 			Node.C \
-			My_Root.H
+			My_Root.H 
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(ATOOLSFLAGS) $(ROOTFLAGS)
 INCLUDES      = $(MODELINCS) $(ATOOLSINCS) $(ROOTINCS)
