@@ -125,7 +125,6 @@ bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
       p_blob_psme_FS->AddToInParticles(blob->OutParticle(i));
       if (dec) blob->OutParticle(i)->SetDecayBlob(dec);
     }
-    p_blob_psme_FS->AddData("MI_Scale",new ATOOLS::Blob_Data<double>(m_scale));
   }
 
   return 1;  // OK!
@@ -181,6 +180,8 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
     m_scale=asscale;
     p_cluster->FixJetvetoPt2(m_scale);
     //    std::cout<<"  scale="<<    m_scale<<std::endl;
+
+    p_blob_psme_FS->AddData("MI_Scale",new ATOOLS::Blob_Data<double>(m_scale));
 
     m_weight = p_cluster->Weight();
     if (p_mehandler->Weight()==1. && p_mehandler->UseSudakovWeight()) {
