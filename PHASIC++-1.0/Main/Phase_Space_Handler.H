@@ -111,7 +111,7 @@ namespace PHASIC {
 
     //constructor
     Phase_Space_Handler(Integrable_Base *,PDF::ISR_Handler *,
-			BEAM::Beam_Spectra_Handler *);
+			BEAM::Beam_Spectra_Handler *, double error=-1.);
 
     //destructor
     ~Phase_Space_Handler();

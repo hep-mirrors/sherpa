@@ -39,9 +39,9 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
 			       ISR_Handler * _isr,Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			       int _gen_str,int _orderQCD, int _orderEW,
 			       int _kfactorscheme, int _scalescheme,double _scale,
-			       Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi, double ycut) :
+			       Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi, double ycut,double error) :
   Process_Base(_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
-	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,ycut),
+	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,ycut,error),
   m_sfactor(1.), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this), 
   m_helsample(false), m_inithelsample(false), m_throws(0), m_helresult(0.), m_helresult2(0.)
 {
@@ -74,7 +74,7 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
   for (size_t i=0;i<m_nout;i++) sum_massout += p_flout[i].Mass();
   m_threshold = ATOOLS::Max(sum_massin,sum_massout);
 
-  p_pshandler = new Phase_Space_Handler(this,p_isrhandler,p_beamhandler);
+  p_pshandler = new Phase_Space_Handler(this,p_isrhandler,p_beamhandler,m_maxerror);
   p_pshandler->SetUsePI(m_usepi);
 
   // making directory

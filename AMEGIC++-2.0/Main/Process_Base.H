@@ -37,7 +37,7 @@ namespace AMEGIC {
     bool    m_atoms, m_analyse, m_tables;
     double  m_enhancefac, m_maxfac, m_maxeps;
     int     m_orderQCD, m_orderEW;
-    double  m_ycut;
+    double  m_ycut,m_maxerror;
 
     Phase_Space_Generator          * p_psgen;
     
@@ -68,7 +68,7 @@ namespace AMEGIC {
 		 int gen_str, int orderQCD, int orderEW,
 		 int scalescheme,int kfactorscheme,double scale,
 		 Pol_Info * pl = 0,
-		 int nex = 0,ATOOLS::Flavour * ex_fl = 0,double ycut=-1.);
+		 int nex = 0,ATOOLS::Flavour * ex_fl = 0,double ycut=-1., double error=-1.);
     virtual ~Process_Base();
 
     virtual int    InitAmplitude(Interaction_Model_Base *,AMEGIC::Topology *,

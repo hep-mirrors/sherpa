@@ -40,9 +40,9 @@ Process_Group::Process_Group(int _nin,int _nout,Flavour *& _fl,
 			     PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			     int _gen_str,int _orderQCD, int _orderEW,
 			     int _kfactorscheme,int _scalescheme,double _scale,
-			     Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi,double ycut) :
+			     Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi,double ycut, double error) :
   Process_Base(_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
-	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,ycut),
+	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,ycut,error),
   m_resetted(false), m_weventmode(0)
 {
   p_selected  = NULL;
@@ -162,7 +162,7 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
     else take=0;
     if (take) {
       Add(new Single_Process(m_nin,m_nout,_fl,p_isrhandler,p_beamhandler,_seldata,m_gen_str,m_orderQCD,m_orderEW,
-			     m_kfactorscheme,m_scalescheme,m_scale[stp::as],_pl,m_nex,p_ex_fl,m_usepi,m_ycut));
+			     m_kfactorscheme,m_scalescheme,m_scale[stp::as],_pl,m_nex,p_ex_fl,m_usepi,m_ycut,m_maxerror));
     }
     if (overflow || take==0) {
       for (size_t i=0; i<m_nin+m_nout; ++i) plindex[i]=' ';
@@ -787,7 +787,7 @@ bool Process_Group::SetUpIntegrator()
     if ( (p_flavours[0].Mass() != p_isrhandler->Flav(0).Mass()) ||
 	 (p_flavours[1].Mass() != p_isrhandler->Flav(1).Mass()) ) p_isrhandler->SetPartonMasses(p_flavours);
   }
-  p_pshandler  = new Phase_Space_Handler(this,p_isrhandler,p_beamhandler);
+  p_pshandler  = new Phase_Space_Handler(this,p_isrhandler,p_beamhandler,m_maxerror);
   p_pshandler->SetUsePI(m_usepi);
 
   //  if (m_nin==2 ) 

@@ -147,7 +147,7 @@ using namespace PDF;
 Integration_Info *PHASIC::Phase_Space_Handler::p_info=NULL;
 
 Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
-					 ISR_Handler *ih,Beam_Spectra_Handler *bh): 
+					 ISR_Handler *ih,Beam_Spectra_Handler *bh, double error): 
   m_name(proc->Name()), p_process(proc), p_active(proc), p_integrator(NULL), p_cuts(NULL),
   p_beamhandler(bh), p_isrhandler(ih), p_fsrchannels(NULL), p_zchannels(NULL), p_kpchannels(NULL), 
   p_isrchannels(NULL), p_beamchannels(NULL), p_flavours(NULL), p_cms(NULL), p_lab(NULL), 
@@ -161,6 +161,10 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
   m_inttype  = dr.GetValue<int>("INTEGRATOR",3);
   m_fin_opt  = dr.GetValue<Switch::code>("FINISH_OPTIMIZATION");
   if (m_fin_opt==NotDefined<Switch::code>()) m_fin_opt=Switch::Off;
+  if (error>0.) {
+    m_error   = error;
+    m_fin_opt = Switch::Off;
+  }
   p_flavours = new Flavour[m_nin+m_nout];
   for (int i=0;i<m_nin+m_nout;i++) p_flavours[i] = proc->Flavours()[i];
   p_channellibnames = new std::list<std::string>;
