@@ -54,7 +54,7 @@ void Run_Parameter::Init(std::string _path,int argc,char* argv[])
   int iarg=0;
   while ((argc-iarg)>=3) {
     if (argv[iarg][0]=='-' && argv[iarg][1]=='p') {
-      dr.SetValue(string(argv[iarg+1]),string(argv[iarg+2]));
+      dr.SetValue(std::string(argv[iarg+1]),std::string(argv[iarg+2]));
       iarg+=3;
     }
     else ++iarg;
@@ -73,7 +73,7 @@ void Run_Parameter::Init(std::string _path,int argc,char* argv[])
   if (consts.alpha_s_fix==NotDefined<double>())
     consts.alpha_s_fix     = dr.GetValue<double>("alpha_S_fixed");
   if (consts.alpha_s_fix==NotDefined<double>()) {
-    msg.Out()<<" WARNING using alpha_S(MZ) for alpha_S_fixed "<<endl;
+    msg.Out()<<" WARNING using alpha_S(MZ) for alpha_S_fixed "<<std::endl;
     consts.alpha_s_fix     = dr.GetValue<double>("alpha_S(MZ)"); 
   }
 
@@ -116,7 +116,7 @@ void Run_Parameter::Init(std::string _path,int argc,char* argv[])
 
   gen.rpa_id = dr.GenerateKey();
   //  dr.WriteOut("current_flags.log");
-  //  dr.WriteOut(string("save/rpa/")+gen.rpa_id+string(".dat"));
+  //  dr.WriteOut(std::string("save/rpa/")+gen.rpa_id+std::string(".dat"));
 
   if(gen.Masses()==Switch::Off) APHYTOOLS::SetMassless();
 }

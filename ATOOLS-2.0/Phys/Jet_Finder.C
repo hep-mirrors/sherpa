@@ -300,7 +300,7 @@ bool Jet_Finder::TwoJets(const AMATOOLS::Vec4D & p1)
     if (sqr(p1[1]) + sqr(p1[2])  < m_s * m_ycut) return 0;
   }
   else {
-    msg.Out()<<"Jet_Finder::TwoJets(Vec4D &) "<<endl;
+    msg.Out()<<"Jet_Finder::TwoJets(Vec4D &) "<<std::endl;
     msg.Out()<<"    JETFINDER METHOD STILL NOT IMPLEMENTED for mode "<<m_type<<std::endl;
   }
   return 1;

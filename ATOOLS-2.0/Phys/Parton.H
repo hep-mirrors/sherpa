@@ -28,7 +28,9 @@ namespace APHYTOOLS {
     double            m_dec_time;      
   public:
     Parton();
-    Parton(Parton * );
+    Parton(const Parton * );
+    Parton(const Parton & );
+    Parton& operator=(const Parton &);
     Parton(int,Flavour=Flavour(kf::none),AMATOOLS::Vec4D=AMATOOLS::Vec4D(0.,0.,0.,0.));
     ~Parton();
     friend std::ostream& operator<<(std::ostream &,Parton*);

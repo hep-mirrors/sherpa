@@ -58,7 +58,7 @@ Parton::Parton() {
   p_flow      = new Flow(this);
 }
 
-Parton::Parton(Parton * in)  {
+Parton::Parton(const Parton * in)  {
   m_number    = in->m_number;
   m_info      = in->m_info;
   m_status    = in->Status();
@@ -71,6 +71,33 @@ Parton::Parton(Parton * in)  {
   p_flow->SetCode(1,in->GetFlow(1));
   p_flow->SetCode(2,in->GetFlow(2));
 }
+
+Parton::Parton(const Parton & in)  
+{
+  p_flow=0;
+  *this = in;
+}
+
+Parton& Parton::operator=(const Parton & in)
+{
+  if (this!=&in) {
+    m_number    = in.m_number;
+    m_info      = in.m_info;
+    m_status    = in.Status();
+    m_fl        = in.m_fl;
+    m_momentum  = in.m_momentum;
+    m_dec_time  = in.m_dec_time;
+    p_startblob = in.p_startblob;
+    p_endblob   = in.p_endblob;
+    if (p_flow) delete p_flow;
+    p_flow      = new Flow(this);
+    p_flow->SetCode(1,in.GetFlow(1));
+    p_flow->SetCode(2,in.GetFlow(2));
+
+  }
+  return *this;
+}
+
 
 Parton::Parton(int number,Flavour fl,Vec4D p)  {
   m_number    = number;
@@ -190,9 +217,3 @@ Parton * MPI2Parton(const MPI_Parton & mpi_p ) {
   if (mpi_p.m_flow[1]) p->SetFlow(2,mpi_p.m_flow[1]);
   return p;
 }
-
-
-
-
-
-

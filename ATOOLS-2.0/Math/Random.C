@@ -182,7 +182,7 @@ int Random::WriteOutStatus(const char * filename){
     msg.Events()<<" Saving Random Number Generator Status to "<<filename<<endl;
     long int count=0;
     std::ifstream myinstream(filename);
-    if (!myinstream.bad()) {
+    if (myinstream.good()) {
       char * buffer[600];
       while (!myinstream.eof()) {
 	myinstream>>count;
@@ -210,7 +210,7 @@ void Random::ReadInStatus(const char * filename, long int index){
   msg.Events()<<"reading file "<<filename<<" index "<<index<<endl;
   std::ifstream myinstream(filename);
   long int count;
-  if (!myinstream.bad()) {
+  if (myinstream.good()) {
     (myinstream)>>count;
     char buffer[600];
     while ((count!=index)&&(!myinstream.eof())) {
