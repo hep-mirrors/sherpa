@@ -21,6 +21,7 @@ SendMail() {
   if [ "$CVS_ERROR" = "TRUE" ] ; then SetStatus "CVS error " ; fi
   if [ "$COMPILE_ERROR" = "TRUE" ] ; then SetStatus "Compile error " ; fi
   if [ "$SETUP_ERROR" = "TRUE" ] ; then SetStatus "Setup error " ; fi
+  if [ "$BENCHMARK_ERROR" = "TRUE" ] ; then SetStatus "Benchmark error " ; fi
 #  nail -s "$STATUS" $MAILADDRESS < $LOGFILE
   echo $STATUS
   echo $MAILADDRESS
@@ -118,26 +119,35 @@ for I in $LIST ; do
     RUNPATH=$PWD
     cd ../$SHERPAPATH
     makeclean >> $RUNPATH"/../"$LOGFILE 2>&1
-    Sherpa PATH=$RUNPATH ANALYSIS_OUTPUT=$RUNPATH >> $RUNPATH"/../"$LOGFILE 2>&1
+    Sherpa PATH=$RUNPATH ANALYSIS_OUTPUT=$RUNPATH \
+	   RESULT_DIRECTORY=$RUNPATH"/Results/" >> $RUNPATH"/../"$LOGFILE 2>&1
     while (( $? == $MEHANDLEREXIT )) ; do
       makelibs >> $RUNPATH"/../"$LOGFILE 2>&1
-      Sherpa PATH=$RUNPATH ANALYSIS_OUTPUT=$RUNPATH >> $RUNPATH"/../"$LOGFILE 2>&1
+      Sherpa PATH=$RUNPATH ANALYSIS_OUTPUT=$RUNPATH \
+             RESULT_DIRECTORY=$RUNPATH"/Results/" >> $RUNPATH"/../"$LOGFILE 2>&1
     done 
     cd $RUNPATH
+    COUNTER=0
     for I in $BENCHMARK ; do
-      COUNTER=0
-      for J in $I ; do
-        if (( $COUNTER == 0 )) ; then NEW=$J 
-	elif (( $COUNTER == 1 )) ; then OLD=$J
-	else echo -n
+      (( ++COUNTER ))
+      if (( $COUNTER%2 == 0 )) ; then 
+        NEW=$I 
+	diff -cb $NEW $OLD >> "../"$LOGFILE 2>&1
+	if (( $? == $DIFFTRUE )) ; then
+	  BENCHMARK_ERROR=TRUE
 	fi
-      done
-      echo -e "benchmark: diffing '$NEW' vs. '$OLD'"
+      elif (( $COUNTER%2 == 1 )) ; then 
+        OLD=$I
+      else 
+        echo -n
+      fi
     done
     cd ..
     echo -e "\n} benchmarking finished \n" >> $LOGFILE
   fi
 done
 
-SetStatus "Benchmarking succeeded "
+if [ "BENCHMARK_ERROR" = "" ] ; then
+  SetStatus "Benchmarking succeeded "
+fi
 SendMail 0
