@@ -4,7 +4,7 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-EXTRA_DIST    = $(CVSINCLUDE)
+EXTRA_DIST    = $(CVSINCLUDE) config.doxygen
 SUBDIRS       =	\
 		Tools \
 		Model \

@@ -82,6 +82,41 @@ namespace AMISIC {
 
   };// end of class Double_Gaussian_Profile
 
+  //////////////////
+  // Doxygen part //
+  //////////////////
+
+  /*!
+    \file Profile_Function.H
+    \brief Declares the classes Flat_Profile, Exponential_Profile,
+    Gaussian_Profile and Double_Gaussian_Profile    
+  */
+
+  /*!
+    \class Flat_Profile
+    \brief Represents a flat matter distribution of the hadron 
+    in impact parameter space
+  */
+
+  /*!
+    \class Exponential_Profile
+    \brief Represents an exponential matter distribution of the hadron 
+    in impact parameter space
+  */
+
+  /*!
+    \class Gaussian_Profile
+    \brief Represents a gaussian matter distribution of the hadron 
+    in impact parameter space
+  */
+
+  /*!
+    \class Double_Gaussian_Profile
+    \brief Represents a double gaussian matter distribution of the hadron 
+    in impact parameter space. The core size and the matter fraction of the 
+    core are adjustable.
+  */
+
 }// end of namespace AMISIC
 
 #endif

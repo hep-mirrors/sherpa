@@ -118,6 +118,83 @@ namespace AMISIC {
     { return InverseMajorIntegral(I); }
 
   };// end of class Profile_Function_Base
+  
+  //////////////////
+  // Doxygen part //
+  //////////////////
+
+  /*!
+    \file Profile_Function_Base.H
+    \brief Declares the class Profile_Function_Base
+  */
+
+  /*!
+    \class Profile_Function_Base
+    \brief Employed to simulate hadron profiles in impact parameter space
+
+    The class Profile_Function_Base is the base class for all hadron 
+    profiles to be used in the simulation of underlying events.
+    It employs the classes Differential_Overlap and Interaction_Probability
+    to determine the mean overlap of two colliding hadrons, which in the 
+    Sherpa framework is given by
+    \f[
+    \left<\tilde{O}\right>\,=\;\frac{\displaystyle\int{\rm d}^2 {\bf b}\,
+    \tilde{O}(b)}
+    {\displaystyle\int{\rm d}^2 {\bf b}\,P_{\rm int}(b)}\,=\;\frac{1}{f_c}\,
+    \frac{\displaystyle\int{\rm d}^2 {\bf b}\,
+    \tilde{O}(b)\,P_{\rm int}(b)}
+    {\displaystyle\int{\rm d}^2 {\bf b}\,P_{\rm int}(b)}\;.
+    \f]
+    The mean multiplicity of underlying events then follows from
+    \f[ 
+    \left<\tilde{n}(b)\right>\,=\;f(b)\left<k\,\tilde{O}\right>
+    \quad\quad\quad {\rm where}\quad\quad\quad
+    f(b)\,=\;\frac{\tilde{O}(b)}{\left<\tilde{O}\right>}
+    \f]
+  */
+
+  /*!
+    \fn bool CalculateOMean (const double ratio)
+    \brief Calculates the mean overlap \f$\left<\tilde{O}\right>\f$
+  */
+
+  /*!
+    \fn inline double Profile_Function_Base::OMean() const
+    \brief Returns the mean Overlap \f$\left<\tilde{O}\right>\f$
+  */
+
+  /*!
+    \fn inline double Profile_Function_Base::operator()(const double b) const
+    \brief Returns the overlap \f$\tilde{O}(b)\f$
+  */
+
+  /*!
+    \class Differential_Overlap
+    \brief Employed to determine the differential overlap between 
+    two colliding hadrons in impact parameter space 
+
+    The class Differential_Overlap is employed to calculate the 
+    differential overlap of two hadron profiles in impact parameter 
+    space, which is given by
+    \f[ 
+    \tilde{O}(b)\,=\;\int{\rm d}^3{\bf x}\,{\rm d} t\,
+    \rho_{1\rm b}\left(x-{\textstyle\frac{1}{2}}\,b,y,z-vt\right)\,
+    \rho_{2\rm b}\left(x+{\textstyle\frac{1}{2}}\,b,y,z+vt\right)\;.
+    \f]    
+  */
+
+  /*!
+    \class Interaction_Probability
+    \brief Employed to determine interaction probabilities.
+
+    The class Interaction_Probability is employed to determine the 
+    probability for an interaction between two colliding hadrons with
+    the differential overlap \f$\tilde{O}(b)\f$ in impact parameter space, 
+    which according to Poissonian statistics is given by
+    \f[ 
+    P_{\rm int}(b)\,=\;1-\exp\left\{\,-\left<\tilde{n}(b)\right>\,\right\}\;.
+    \f]    
+  */
 
 }// end of namespace AMISIC
 
