@@ -44,7 +44,7 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
   while (found) {
     found = 0;
     for (Blob_Iterator blit=bloblist->begin();blit!=bloblist->end();++blit) {
-      if ((*blit)->Type()==btp::Signal_Process && (*blit)->Status()==-1) {
+      if ((*blit)->Type()==btp::Signal_Process && (*blit)->Status()==2) {
 	myblob = (*blit);
 	found  = 1;
 	msg.Tracking()<<" calling GenerateOneEvent() "<<endl;
