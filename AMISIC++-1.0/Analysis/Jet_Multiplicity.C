@@ -41,10 +41,10 @@ void Jet_Multiplicity::Evaluate(const ATOOLS::Particle_List &particles,double we
       if (sqrt(p[1]*p[1]+p[2]*p[2])>m_ptcut) ++jets;
     }
 //     std::cout<<" found "<<jets<<std::endl;
-    if (jets==5) {
-      for (unsigned int i=0;i<particles.size();std::cout<<particles[i++]<<std::endl); 
-    }
-    histo->Insert(jets,weight);
+//     if (jets==5) {
+//       for (unsigned int i=0;i<particles.size();std::cout<<particles[i++]<<std::endl); 
+//     }
+    histo->Insert(jets/2.0,weight);
   }
 }
 

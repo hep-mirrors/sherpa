@@ -3,10 +3,13 @@
 #include "Particle.H"
 #include "Random.H"
 #include "Channel_Elements.H"
+#include "Lund_Wrapper.H"
+
+#include "prof.hh"
 
 #ifdef DEBUG__Simple_Chain
-const std::string integralfile=std::string("integral.dat");
 const std::string differentialfile=std::string("differential.dat");
+const std::string integralfile=std::string("integral.dat");
 #endif
 
 using namespace AMISIC;
@@ -14,6 +17,7 @@ using namespace AMISIC;
 Simple_Chain::Simple_Chain():
   MI_Base("Simple Chain",MI_Base::HardEvent,4),
   m_differential(std::vector<GridFunctionType*>(0)),
+  m_norm((GridResultType)1.0),
   p_total(NULL),
   m_environmentfile(std::string("Run.dat")),
   m_xsfile(std::string("XS.dat")),
@@ -41,6 +45,7 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *_p_model,
 			   BEAM::Beam_Spectra_Handler *_p_beam,PDF::ISR_Handler *_p_isr):
   MI_Base("Simple Chain",MI_Base::HardEvent,4),
   m_differential(std::vector<GridFunctionType*>(0)),
+  m_norm((GridResultType)1.0),
   p_total(NULL),
   m_environmentfile(std::string("Run.dat")),
   m_xsfile(std::string("XS.dat")),
@@ -541,9 +546,11 @@ bool Simple_Chain::InitializeBlobList()
     group[i]->SetKFactorScheme(m_kfactorscheme);
     p_processes->PushBack(group[i]);
   }
-  p_processes->CalculateTotalXSec();
-  m_sigmand=p_processes->Total();
-  p_total->ScaleY(1.0/m_sigmand);
+#ifdef DEBUG__Simple_Chain
+//   p_processes->CalculateTotalXSec();
+//   std::cout<<"Simple_Chain::InitializeBlobList(): \\sigma_{nd calc} = "
+// 	   <<p_processes->Total()*ATOOLS::rpa.Picobarn()<<" pb."<<std::endl;
+#endif
   p_fsrinterface = new FSRChannel(2,2,flavour,p_total->XAxis()->Variable());
   p_fsrinterface->SetAlpha(1.0);
   p_fsrinterface->SetAlphaSave(1.0);
@@ -560,23 +567,28 @@ bool Simple_Chain::CalculateTotal()
 {
   if (m_differential.size()==0) return false;
   GridFunctionType *differential;
-  GridResultType total;
   differential = new GridHandlerType::GridFunctionType();
   differential->SetMonotony(differential->None);
   differential->XAxis()->SetVariable(m_differential[0]->XAxis()->Variable());
   differential->YAxis()->SetVariable(m_differential[0]->YAxis()->Variable());
   differential->XAxis()->SetScaling(m_differential[0]->XAxis()->Scaling()->Name());
   differential->YAxis()->SetScaling(m_differential[0]->YAxis()->Scaling()->Name());
-  std::vector<GridFunctionType*>::iterator diffit=m_differential.begin();
-  for (unsigned int i=0;i<(*diffit)->XDataSize();++i) {
-    differential->AddPoint((*diffit)->XYData(i).first,(*diffit)->XYData(i).second);
-  }
-  for (++diffit;diffit!=m_differential.end();++diffit) {
+  std::vector<GridFunctionType*>::iterator diffit;
+  std::set<GridArgumentType> *xvalue = new std::set<GridArgumentType>();
+  for (diffit=m_differential.begin();diffit!=m_differential.end();++diffit) {
     for (unsigned int i=0;i<(*diffit)->XDataSize();++i) {
       GridArgumentType x=(*diffit)->XYData(i).first;
-      differential->ReplaceXPoint(x,differential->Y(x,differential->Interpolation)+(*diffit)->XYData(i).second);
+      if (xvalue->find(x)==xvalue->end()) xvalue->insert(x);
     }
   }
+  for (std::set<GridArgumentType>::iterator xit=xvalue->begin();xit!=xvalue->end();++xit) {
+    GridResultType y=(GridResultType)0.0;
+    for (diffit=m_differential.begin();diffit!=m_differential.end();++diffit) {
+      y+=(*diffit)->Y(*xit,(*diffit)->Interpolation);
+    }
+    differential->AddPoint(*xit,y);
+  }
+  delete xvalue;
 #ifdef DEBUG__Simple_Chain
   std::vector<std::string> comments;
   comments.push_back("  Differential XS   "); 
@@ -585,22 +597,14 @@ bool Simple_Chain::CalculateTotal()
   gridcreator->SetOutputPath(m_outputpath);
   gridcreator->SetOutputFile(differentialfile);
   gridcreator->WriteSingleGrid(gridhandler,comments);
-  delete gridcreator;
   delete gridhandler;
 #endif
-  p_total = differential->IntegralY();
-  total=p_total->YData(p_total->YDataSize()-1);
-  p_total->SetMonotony(p_total->None);
-  for (unsigned int i=0;i<p_total->XDataSize();++i) {
-    p_total->ReplaceXPoint(p_total->XYData(i).first,total-p_total->XYData(i).second);
-  }
-  p_total->SetMonotony(p_total->MUnknown);
+  p_total = differential->IntegralY(0.0,0.0,ATOOLS::nullstring,ATOOLS::nullstring,false);
+  p_total->ScaleY(1.0/m_norm);
 #ifdef DEBUG__Simple_Chain
   comments.clear();
   comments.push_back("   Integrated XS    "); 
   gridhandler = new GridHandlerType(p_total);
-  gridcreator = new GridCreatorBaseType();
-  gridcreator->SetOutputPath(m_outputpath);
   gridcreator->SetOutputFile(integralfile);
   gridcreator->WriteSingleGrid(gridhandler,comments);
   delete gridcreator;
@@ -615,6 +619,7 @@ bool Simple_Chain::Initialize()
   if (!CheckInputPath()) return false;
   if (!CheckInputFile()) return false;
   CleanUp();
+  SetNorm(pyint7.sigt[5][0][0]);
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
   if (!m_external) {
     std::string initfile;
@@ -699,6 +704,8 @@ bool Simple_Chain::Initialize()
 
 bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 {
+  PROFILE_HERE;
+  m_filledblob=false;
   if (p_processes==NULL) {
     ATOOLS::msg.Error()<<"Simple_Chain::FillBlob(..): "
 		       <<"Processes are not initialized! Abort."<<std::endl;
@@ -712,21 +719,21 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
   blob->DeleteOwnedParticles();
   if (m_selected<(unsigned int)p_processes->Size()) {
 #ifdef DEBUG__Simple_Chain
-    std::cout<<"Simple_Chain::FillBlob(..): Generating one event."<<std::endl;
+//     std::cout<<"Simple_Chain::FillBlob(..): Generating one event."<<std::endl;
 #endif
     if ((*p_processes)[m_selected]->OneEvent()) {
 #ifdef DEBUG__Simple_Chain
-      std::cout<<"   Completed one event."<<std::endl;
+//       std::cout<<"   Completed one event."<<std::endl;
 #endif
       p_xs=(*p_processes)[m_selected]->Selected();
       ATOOLS::Vec4D ptot;
       for (int j=0;j<p_xs->Nin();++j) {
 	ptot+=p_xs->Momenta()[j];
 	m_last[j+2]-=2.0*p_xs->Momenta()[j][0]/ATOOLS::rpa.gen.Ecms();
-	if (m_last[j+2]<=0.0) return false;
+	if (m_last[j+2]<=0.0) return true;
       }
       m_last[1]-=sqrt(ptot.Abs2());
-      if (m_last[1]<=0.0) return false;
+      if (m_last[1]<=0.0) return true;
       p_xs->SetColours(p_xs->Momenta());
       ATOOLS::Particle *particle;
       for (int j=0;j<p_xs->Nin();++j) {
@@ -745,10 +752,11 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 	particle->SetStatus(1);
 	blob->AddToOutParticles(particle);
       }
+      m_filledblob=true;
       return true;
     }
     ATOOLS::msg.Error()<<"Simple_Chain::FillBlob(): "
-		       <<"Could not select any process! Abort."<<std::endl;
+		       <<"Could not select any process! Retry."<<std::endl;
     return false;
   }
   ATOOLS::msg.Error()<<"Simple_Chain::FillBlob(): "
@@ -759,6 +767,7 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 
 bool Simple_Chain::DiceProcess()
 {
+  PROFILE_HERE;
   if (m_differential.size()==0) return false;
   if (m_dicedparameter) m_dicedparameter=false;
   else {
@@ -785,23 +794,24 @@ bool Simple_Chain::DiceProcess()
     if ((cur+=sorter.XData(i)/norm)>rannr) {
       m_selected=sorter.XYData(i).second;
       if (m_last[1]<(*p_processes)[m_selected]->ISR()->SprimeMin()) {
-	ATOOLS::msg.Tracking()<<"Simple_Chain::DiceProcess(): s' out of bounds."<<std::endl
-			      <<"   Cannot create any process. Abort."<<std::endl;
+	ATOOLS::msg.Error()<<"Simple_Chain::DiceProcess(): s' out of bounds."<<std::endl
+			   <<"   Cannot create any process. Abort."<<std::endl;
 	return false;
       }
-      double sprimemax=(*p_processes)[m_selected]->ISR()->SprimeMax();
-      // (*p_processes)[m_selected]->SetMax((*m_maximum[m_selected])(m_last[0]*0.2),1);
-      (*p_processes)[m_selected]->SetMax((*m_maximum[m_selected])(m_last[0]),1);
+      double sprimemax=(*p_processes)[m_selected]->ISR()->SprimeMax(), pref=0.1;
       (*p_processes)[m_selected]->ISR()->SetSprimeMax(m_last[1]*m_last[1]);
-      m_dicedprocess=true;
-      bool result=FillBlob(p_blob);
+      do {
+	pref*=2.0;
+	(*p_processes)[m_selected]->SetMax((*m_maximum[m_selected])(pref*m_last[0]),1);
+      } while (!FillBlob(p_blob));
       (*p_processes)[m_selected]->ISR()->SetSprimeMax(sprimemax);
-      return result;
+      m_dicedprocess=true;
+      return m_filledblob;
     }
   }
-  ATOOLS::msg.Tracking()<<"Simple_Chain::DiceProcess(): "
-			<<"Could not select any process. "<<std::endl
-			<<"   Returning most likely instead."<<std::endl;
+  ATOOLS::msg.Error()<<"Simple_Chain::DiceProcess(): "
+		     <<"Could not select any process. "<<std::endl
+		     <<"   Returning most likely instead."<<std::endl;
   if (sorter.XDataSize()!=0) {
     m_selected=sorter.XYData(0).second;
     (*p_processes)[m_selected]->SetMax((*m_maximum[m_selected])(m_last[0]*0.1),1);
@@ -814,6 +824,7 @@ bool Simple_Chain::DiceProcess()
 
 bool Simple_Chain::DiceOrderingParameter()
 { 
+  PROFILE_HERE;
   if (m_last[0]<=m_stop[0]) {
     ATOOLS::msg.Error()<<"Simple_Chain::DiceOrderingParameter(): "
 		       <<"Ordering parameter exceeded allowed range."<<std::endl

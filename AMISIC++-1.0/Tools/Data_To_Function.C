@@ -376,12 +376,12 @@ namespace ATOOLS {
 #ifdef DEBUG__Data_To_Function
     std::cout<<"Data_To_Function::DeleteXPoint("<<_x<<") :"<<std::endl;
     std::cout<<"   before deletion: p_xdata = [ "; 
-    for(XYVectorIterator xyit=p_xydata->begin();xyit!=p_xydata->end();std::cout<<(xyit++)->first<<" ");
+    for (XYVectorIterator xyit=p_xydata->begin();xyit!=p_xydata->end();std::cout<<(xyit++)->first<<" ");
     std::cout<<"]"<<std::endl;
 #endif
     _x=(*p_xaxis)(_x);
     for (XYVectorIterator xyit=p_xydata->begin();xyit!=p_xydata->end();++xyit) 
-      if (ATOOLS::IsZero(xyit->first-_x)) { 
+      if (ATOOLS::IsEqual(xyit->first,_x)) { 
 #ifdef DEBUG__Data_To_Function
 	std::cout<<"   deleted point "<<xyit->first<<std::endl;
 #endif
@@ -412,12 +412,12 @@ namespace ATOOLS {
 #ifdef DEBUG__Data_To_Function
     std::cout<<"Data_To_Function::DeleteYPoint("<<_y<<") :"<<std::endl;
     std::cout<<"   before deletion: p_ydata = [ "; 
-    for(YXVectorIterator yxit=p_yxdata->begin();yxit!=p_yxdata->end();std::cout<<(yxit++)->first<<" ");
+    for (YXVectorIterator yxit=p_yxdata->begin();yxit!=p_yxdata->end();std::cout<<(yxit++)->first<<" ");
     std::cout<<"]"<<std::endl;
 #endif
     _y=(*p_yaxis)(_y);
     for (YXVectorIterator yxit=p_yxdata->begin();yxit!=p_yxdata->end();++yxit) 
-      if (ATOOLS::IsZero(yxit->first-_y)) { 
+      if (ATOOLS::IsEqual(yxit->first,_y)) { 
 #ifdef DEBUG__Data_To_Function
 	std::cout<<"   deleted point "<<_y<<std::endl;
 #endif
@@ -439,6 +439,60 @@ namespace ATOOLS {
     std::cout<<"   did not delete any point"<<std::endl; 
 #endif
     return false;
+  }
+
+  template <class Argument_Type,class Result_Type>
+  void Data_To_Function<Argument_Type,Result_Type>::
+  RescaleX(const std::string scalename)
+  { 
+#ifdef DEBUG__Data_To_Function
+    std::cout<<"Data_To_Function::RescaleX("<<scalename<<") :"<<std::endl;
+    std::cout<<"   before rescaling: p_xdata = [ "; 
+    for (XYVectorIterator xyit=p_xydata->begin();xyit!=p_xydata->end();std::cout<<(xyit++)->first<<" ");
+    std::cout<<"]"<<std::endl;
+#endif
+    Axis<ArgumentType> *xaxis = new Axis<ArgumentType>();
+    xaxis->SetScaling(p_xaxis->Scaling()->Name());
+    xaxis->SetScalingMode(p_xaxis->ScalingMode());
+    p_xaxis->SetScaling(scalename);
+    for (XYVectorIterator xyit=p_xydata->begin();xyit!=p_xydata->end();++xyit) {
+      xyit->first=(*p_xaxis)((*xaxis)[xyit->first]);
+    }
+    for (YXVectorIterator yxit=p_yxdata->begin();yxit!=p_yxdata->end();++yxit) {
+      yxit->second=(*p_xaxis)((*xaxis)[yxit->second]);
+    }
+#ifdef DEBUG__Data_To_Function
+    std::cout<<"   after rescaling : p_xdata = [ "; 
+    for(XYVectorIterator xyit=p_xydata->begin();xyit!=p_xydata->end();std::cout<<(xyit++)->first<<" ");
+    std::cout<<"]"<<std::endl;
+#endif
+  }
+
+  template <class Argument_Type,class Result_Type>
+  void Data_To_Function<Argument_Type,Result_Type>::
+  RescaleY(const std::string scalename)
+  { 
+#ifdef DEBUG__Data_To_Function
+    std::cout<<"Data_To_Function::RescaleY("<<scalename<<") :"<<std::endl;
+    std::cout<<"   before rescaling: p_ydata = [ "; 
+    for (YXVectorIterator yxit=p_yxdata->begin();yxit!=p_yxdata->end();std::cout<<(yxit++)->first<<" ");
+    std::cout<<"]"<<std::endl;
+#endif
+    Axis<ResultType> *yaxis = new Axis<ResultType>();
+    yaxis->SetScaling(p_yaxis->Scaling()->Name());
+    yaxis->SetScalingMode(p_yaxis->ScalingMode());
+    p_yaxis->SetScaling(scalename);
+    for (YXVectorIterator yxit=p_yxdata->begin();yxit!=p_yxdata->end();++yxit) {
+      yxit->first=(*p_yaxis)((*yaxis)[yxit->first]);
+    }
+    for (XYVectorIterator xyit=p_xydata->begin();xyit!=p_xydata->end();++xyit) {
+      xyit->second=(*p_yaxis)((*yaxis)[xyit->second]);
+    }
+#ifdef DEBUG__Data_To_Function
+    std::cout<<"   after rescaling : p_ydata = [ "; 
+    for(YXVectorIterator yxit=p_yxdata->begin();yxit!=p_yxdata->end();std::cout<<(yxit++)->first<<" ");
+    std::cout<<"]"<<std::endl;
+#endif
   }
 
   template <class Argument_Type,class Result_Type>
@@ -609,7 +663,7 @@ namespace ATOOLS {
 
   template <class Argument_Type,class Result_Type>
   Data_To_Function<Argument_Type,Result_Type> *Data_To_Function<Argument_Type,Result_Type>::
-  IntegralY(ArgumentType xmin,ArgumentType xmax)
+  IntegralY(ArgumentType xmin,ArgumentType xmax,std::string xscaling,std::string yscaling,bool forward)
   { 
     DataToFunctionType *integrated = NULL;
     ResultType integral=(ResultType)0.0;
@@ -622,8 +676,10 @@ namespace ATOOLS {
     integrated->XAxis()->SetVariable(ATOOLS::Variable(p_xaxis->Variable().Name()));
     integrated->YAxis()->SetVariable(ATOOLS::Variable(std::string("\\int d")+p_xaxis->Variable().Name()
 						      +std::string(" ")+p_yaxis->Variable().Name()));
-    integrated->XAxis()->SetScaling(p_xaxis->Scaling()->Name());
-    integrated->YAxis()->SetScaling(p_yaxis->Scaling()->Name());
+    if (xscaling==nullstring) xscaling=p_xaxis->Scaling()->Name();
+    if (yscaling==nullstring) yscaling=p_yaxis->Scaling()->Name();
+    integrated->XAxis()->SetScaling(xscaling);
+    integrated->YAxis()->SetScaling(yscaling);
 #ifdef DEBUG__Data_To_Function
     std::cout<<"Data_To_Function::IntegralY("<<xmin<<","<<xmax<<"): starting integration"<<std::endl;
 #endif
@@ -637,33 +693,58 @@ namespace ATOOLS {
     ClosestX(xmax,stop,dummy);
     yright=LinearY(xmax,stop,dummy);
     if (xmax>=dummy) stop=dummy;
-    integrated->AddPoint((*p_xaxis)[xmin],integral);
-    integral+=((*p_yaxis)[(*p_xydata)[start].second]+(*p_yaxis)[yleft])*
-      ((*p_xaxis)[(*p_xydata)[start].first]-(*p_xaxis)[xmin])/(ResultType)2.0;
+    if (forward) {
+      integrated->AddPoint((*p_xaxis)[xmin],integral);
+      integral+=((*p_yaxis)[(*p_xydata)[start].second]+(*p_yaxis)[yleft])*
+	((*p_xaxis)[(*p_xydata)[start].first]-(*p_xaxis)[xmin])/(ResultType)2.0;
 #ifdef DEBUG__Data_To_Function
-    std::cout<<"   integral value for first step is ["<<integral<<"]"<<std::endl;
+      std::cout<<"   integral value for first step is ["<<integral<<"]"<<std::endl;
 #endif
-    for (unsigned int i=start;i<stop;++i) {
-      integrated->AddPoint((*p_xaxis)[(*p_xydata)[i].first],integral);
-      integral+=((*p_yaxis)[(*p_xydata)[i+1].second]+(*p_yaxis)[(*p_xydata)[i].second])*
-	((*p_xaxis)[(*p_xydata)[i+1].first]-(*p_xaxis)[(*p_xydata)[i].first])/(ResultType)2.0;
+      for (unsigned int i=start;i<stop;++i) {
+	integrated->AddPoint((*p_xaxis)[(*p_xydata)[i].first],integral);
+	integral+=((*p_yaxis)[(*p_xydata)[i+1].second]+(*p_yaxis)[(*p_xydata)[i].second])*
+	  ((*p_xaxis)[(*p_xydata)[i+1].first]-(*p_xaxis)[(*p_xydata)[i].first])/(ResultType)2.0;
 #ifdef DEBUG__Data_To_Function
-      std::cout<<"   integral value for step "<<i<<" is ["<<integral<<"]"<<std::endl;
+	std::cout<<"   integral value for step "<<i<<" is ["<<integral<<"]"<<std::endl;
+#endif
+      }
+      integrated->AddPoint((*p_xaxis)[(*p_xydata)[stop].first],integral);
+      integral+=((*p_yaxis)[yright]+(*p_yaxis)[(*p_xydata)[stop].second])*
+	((*p_xaxis)[xmax]-(*p_xaxis)[(*p_xydata)[stop].first])/(ResultType)2.0;
+      integrated->AddPoint((*p_xaxis)[xmax],integral);
+#ifdef DEBUG__Data_To_Function
+      std::cout<<"   integral value for last step is ["<<integral<<"]"<<std::endl;
 #endif
     }
-    integrated->AddPoint((*p_xaxis)[(*p_xydata)[stop].first],integral);
-    integral+=((*p_yaxis)[yright]+(*p_yaxis)[(*p_xydata)[stop].second])*
-      ((*p_xaxis)[xmax]-(*p_xaxis)[(*p_xydata)[stop].first])/(ResultType)2.0;
-    integrated->AddPoint((*p_xaxis)[xmax],integral);
+    else {
+      integrated->AddPoint((*p_xaxis)[xmax],integral);
+      integral+=((*p_yaxis)[(*p_xydata)[stop].second]+(*p_yaxis)[yright])*
+	((*p_xaxis)[xmax]-(*p_xaxis)[(*p_xydata)[stop].first])/(ResultType)2.0;
 #ifdef DEBUG__Data_To_Function
-    std::cout<<"   integral value for last step is ["<<integral<<"]"<<std::endl;
+      std::cout<<"   integral value for first step is ["<<integral<<"]"<<std::endl;
 #endif
+      for (unsigned int i=stop;i>start;--i) {
+	integrated->AddPoint((*p_xaxis)[(*p_xydata)[i-1].first],integral);
+	integral+=((*p_yaxis)[(*p_xydata)[i].second]+(*p_yaxis)[(*p_xydata)[i-1].second])*
+	  ((*p_xaxis)[(*p_xydata)[i].first]-(*p_xaxis)[(*p_xydata)[i-1].first])/(ResultType)2.0;
+#ifdef DEBUG__Data_To_Function
+	std::cout<<"   integral value for step "<<i<<" is ["<<integral<<"]"<<std::endl;
+#endif
+      }
+      integrated->AddPoint((*p_xaxis)[(*p_xydata)[start].first],integral);
+      integral+=((*p_yaxis)[yleft]+(*p_yaxis)[(*p_xydata)[start].second])*
+	((*p_xaxis)[(*p_xydata)[start].first]-(*p_xaxis)[xmin])/(ResultType)2.0;
+      integrated->AddPoint((*p_xaxis)[xmin],integral);
+#ifdef DEBUG__Data_To_Function
+      std::cout<<"   integral value for last step is ["<<integral<<"]"<<std::endl;
+#endif
+    }
     return integrated;
   }
 
   template <class Argument_Type,class Result_Type>
   Data_To_Function<Argument_Type,Result_Type> *Data_To_Function<Argument_Type,Result_Type>::
-  IntegralX(ResultType ymin,ResultType ymax)
+  IntegralX(ResultType ymin,ResultType ymax,std::string yscaling,std::string xscaling,bool forward)
   { 
     DataToFunctionType *integrated = NULL;
     ArgumentType integral=(ArgumentType)0.0;
@@ -676,8 +757,10 @@ namespace ATOOLS {
     integrated->XAxis()->SetVariable(ATOOLS::Variable(std::string("\\int d")+p_yaxis->Variable().Name()
 						      +std::string(" ")+p_xaxis->Variable().Name()));
     integrated->YAxis()->SetVariable(ATOOLS::Variable(p_yaxis->Variable().Name()));
-    integrated->XAxis()->SetScaling(p_xaxis->Scaling()->Name());
-    integrated->YAxis()->SetScaling(p_yaxis->Scaling()->Name());
+    if (yscaling==nullstring) yscaling=p_yaxis->Scaling()->Name();
+    if (xscaling==nullstring) xscaling=p_xaxis->Scaling()->Name();
+    integrated->YAxis()->SetScaling(yscaling);
+    integrated->XAxis()->SetScaling(xscaling);
 #ifdef DEBUG__Data_To_Function
     std::cout<<"Data_To_Function::IntegralX("<<ymin<<","<<ymax<<"): starting integration"<<std::endl;
 #endif
@@ -691,28 +774,52 @@ namespace ATOOLS {
     ClosestY(ymax,stop,dummy);
     xright=LinearX(ymax,stop,dummy);
     if (ymax>=dummy) stop=dummy;
-    integrated->AddPoint((*p_yaxis)[ymin],integral);
-    integral+=((*p_xaxis)[(*p_yxdata)[start].second]+(*p_xaxis)[xleft])*
-      ((*p_yaxis)[(*p_yxdata)[start].first]-(*p_yaxis)[ymin])/(ArgumentType)2.0;
+    if (forward) {
+      integrated->AddPoint((*p_yaxis)[ymin],integral);
+      integral+=((*p_xaxis)[(*p_yxdata)[start].second]+(*p_xaxis)[xleft])*
+	((*p_yaxis)[(*p_yxdata)[start].first]-(*p_yaxis)[ymin])/(ArgumentType)2.0;
 #ifdef DEBUG__Data_To_Function
-    std::cout<<"   integral value for first step is ["<<integral<<"]"<<std::endl;
+      std::cout<<"   integral value for first step is ["<<integral<<"]"<<std::endl;
 #endif
-    for (unsigned int i=start;i<stop;++i) {
-      integrated->AddPoint((*p_yaxis)[(*p_yxdata)[i].first],integral);
-      integral+=((*p_xaxis)[(*p_yxdata)[i+1].second]+(*p_xaxis)[(*p_yxdata)[i].second])*
-	((*p_yaxis)[(*p_yxdata)[i+1].first]-(*p_yaxis)[(*p_yxdata)[i].first])/(ArgumentType)2.0;
-      integrated->AddXPoint(integral);
+      for (unsigned int i=start;i<stop;++i) {
+	integrated->AddPoint((*p_yaxis)[(*p_yxdata)[i].first],integral);
+	integral+=((*p_xaxis)[(*p_yxdata)[i+1].second]+(*p_xaxis)[(*p_yxdata)[i].second])*
+	  ((*p_yaxis)[(*p_yxdata)[i+1].first]-(*p_yaxis)[(*p_yxdata)[i].first])/(ArgumentType)2.0;
 #ifdef DEBUG__Data_To_Function
-      std::cout<<"   integral value for step "<<i<<" is ["<<integral<<"]"<<std::endl;
+	std::cout<<"   integral value for step "<<i<<" is ["<<integral<<"]"<<std::endl;
+#endif
+      }
+      integrated->AddPoint(integral,(*p_yaxis)[(*p_yxdata)[stop].first]);
+      integral+=((*p_xaxis)[xright]+(*p_xaxis)[(*p_yxdata)[stop].second])*
+	((*p_yaxis)[ymax]-(*p_yaxis)[(*p_yxdata)[stop].first])/(ArgumentType)2.0;
+      integrated->AddPoint(integral,(*p_yaxis)[ymax]);
+#ifdef DEBUG__Data_To_Function
+      std::cout<<"   integral value for last step is ["<<integral<<"]"<<std::endl;
 #endif
     }
-    integrated->AddPoint(integral,(*p_yaxis)[(*p_yxdata)[stop].first]);
-    integral+=((*p_xaxis)[xright]+(*p_xaxis)[(*p_yxdata)[stop].second])*
-      ((*p_yaxis)[ymax]-(*p_yaxis)[(*p_yxdata)[stop].first])/(ArgumentType)2.0;
-    integrated->AddPoint(integral,(*p_yaxis)[ymax]);
+    else {
+      integrated->AddPoint((*p_yaxis)[ymax],integral);
+      integral+=((*p_xaxis)[(*p_yxdata)[stop].second]+(*p_xaxis)[xright])*
+	((*p_yaxis)[ymax]-(*p_yaxis)[(*p_yxdata)[stop].first])/(ArgumentType)2.0;
 #ifdef DEBUG__Data_To_Function
-    std::cout<<"   integral value for last step is ["<<integral<<"]"<<std::endl;
+      std::cout<<"   integral value for first step is ["<<integral<<"]"<<std::endl;
 #endif
+      for (unsigned int i=stop;i>start;--i) {
+	integrated->AddPoint((*p_yaxis)[(*p_yxdata)[i-1].first],integral);
+	integral+=((*p_xaxis)[(*p_yxdata)[i].second]+(*p_xaxis)[(*p_yxdata)[i-1].second])*
+	  ((*p_yaxis)[(*p_yxdata)[i].first]-(*p_yaxis)[(*p_yxdata)[i-1].first])/(ArgumentType)2.0;
+#ifdef DEBUG__Data_To_Function
+	std::cout<<"   integral value for step "<<i<<" is ["<<integral<<"]"<<std::endl;
+#endif
+      }
+      integrated->AddPoint(integral,(*p_yaxis)[(*p_yxdata)[start].first]);
+      integral+=((*p_xaxis)[xleft]+(*p_xaxis)[(*p_yxdata)[start].second])*
+	((*p_yaxis)[(*p_yxdata)[start].first]-(*p_yaxis)[ymin])/(ArgumentType)2.0;
+      integrated->AddPoint(integral,(*p_yaxis)[ymin]);
+#ifdef DEBUG__Data_To_Function
+      std::cout<<"   integral value for last step is ["<<integral<<"]"<<std::endl;
+#endif
+    }
     return integrated;
   }
 
@@ -736,7 +843,7 @@ namespace ATOOLS {
   
   template <class Argument_Type,class Result_Type>
   Data_To_Function<Argument_Type,Result_Type> *Data_To_Function<Argument_Type,Result_Type>::
-  DerivativeY(ArgumentType xmin,ArgumentType xmax)
+  DerivativeY(ArgumentType xmin,ArgumentType xmax,std::string xscaling,std::string yscaling)
   { 
     DataToFunctionType *derivated = NULL;
     ResultType differential;
@@ -750,8 +857,10 @@ namespace ATOOLS {
     derivated->YAxis()->SetVariable(
       ATOOLS::Variable(std::string("\\frac {\\partial ")+p_yaxis->Variable().Name()
 		       +std::string("}{\\partial ")+p_xaxis->Variable().Name()+std::string("}")));
-    derivated->XAxis()->SetScaling(p_xaxis->Scaling()->Name());
-    derivated->YAxis()->SetScaling(p_yaxis->Scaling()->Name());
+    if (xscaling==nullstring) xscaling=p_xaxis->Scaling()->Name();
+    if (yscaling==nullstring) yscaling=p_yaxis->Scaling()->Name();
+    derivated->XAxis()->SetScaling(xscaling);
+    derivated->YAxis()->SetScaling(yscaling);
 #ifdef DEBUG__Data_To_Function
     std::cout<<"Data_To_Function::DerivativeY("<<xmin<<","<<xmax<<"): "<<std::endl;
 #endif
@@ -804,7 +913,7 @@ namespace ATOOLS {
 
   template <class Argument_Type,class Result_Type>
   Data_To_Function<Argument_Type,Result_Type> *Data_To_Function<Argument_Type,Result_Type>::
-  DerivativeX(ResultType ymin,ResultType ymax)
+  DerivativeX(ResultType ymin,ResultType ymax,std::string yscaling,std::string xscaling)
   { 
     DataToFunctionType *derivated = NULL;
     ArgumentType differential;
@@ -818,8 +927,10 @@ namespace ATOOLS {
     derivated->XAxis()->SetVariable(
       ATOOLS::Variable(std::string("\\frac {\\partial ")+p_xaxis->Variable().Name()
 		       +std::string("}{\\partial ")+p_yaxis->Variable().Name()+std::string("}")));
-    derivated->XAxis()->SetScaling(p_xaxis->Scaling()->Name());
-    derivated->YAxis()->SetScaling(p_yaxis->Scaling()->Name());
+    if (yscaling==nullstring) yscaling=p_yaxis->Scaling()->Name();
+    if (xscaling==nullstring) xscaling=p_xaxis->Scaling()->Name();
+    derivated->YAxis()->SetScaling(yscaling);
+    derivated->XAxis()->SetScaling(xscaling);
 #ifdef DEBUG__Data_To_Function
     std::cout<<"Data_To_Function::DerivativeY("<<ymin<<","<<ymax<<"): "<<std::endl;
 #endif

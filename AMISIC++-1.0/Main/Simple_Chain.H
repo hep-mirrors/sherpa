@@ -26,6 +26,7 @@ namespace AMISIC {
     std::vector<std::string>        m_filename, m_processname;
     std::vector<bool>               m_create;
     std::vector<GridFunctionType*>  m_differential, m_maximum;
+    GridResultType                  m_norm;
     GridFunctionType               *p_total;
 
     std::string m_environmentfile, m_xsfile;
@@ -38,8 +39,6 @@ namespace AMISIC {
     MODEL::Model_Base          *p_model;
     BEAM::Beam_Spectra_Handler *p_beam;
     PDF::ISR_Handler           *p_isr;
-
-    double m_sigmand;
 
     int m_scalescheme, m_kfactorscheme;
 
@@ -73,9 +72,11 @@ namespace AMISIC {
 
     // setter
     void SetEnvironmentFile(std::string _m_environmentfile);
+    void SetNorm(GridResultType _m_norm);
 
     // getter
-    std::string EnvironmentFile();
+    std::string    EnvironmentFile();
+    GridResultType Norm();
 
     // member functions
     bool Initialize();

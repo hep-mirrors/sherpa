@@ -17,6 +17,7 @@ CXXFLAGS      =	-pedantic -Wall -Winline
 INCLUDES      =	\
 		-I../Tools \
 		-I../Other \
+		-I../../SHERPA-1.0/LundTools \
 		-I$(EXTRAXSINC)/Two2Two \
 		-I$(EXTRAXSINC)/Main \
 		-I$(PHASICINC)/Main \

@@ -12,6 +12,7 @@ namespace AMISIC {
   Grid_Creator_Arguments<Argument_Type,Result_Type>::Grid_Creator_Arguments():
     m_useymax(false),
     m_useymin(false),
+    m_optimize(true),
     m_relativexmin(false),
     m_relativedeltaxmin(false),
     m_relativeymin(false),
@@ -117,7 +118,8 @@ namespace AMISIC {
       m_useymin=true;
     }
     if (!reader->ReadFromFile(m_griddeltaymax,"D_Y_MAX")) {
-      m_griddeltaymax=(GridYMax()-GridYMin())/(GridResultType)2.0;
+      if (m_useymax&&m_useymin) m_griddeltaymax=(GridYMax()-GridYMin())/(GridResultType)2.0;
+      else m_optimize=false;
     }
     if (reader->VectorFromFile(temp,"D_Y_MIN",ATOOLS::noinputtag,reader->VHorizontal)) { 
       reader->ReadFromString(m_griddeltaymin,ATOOLS::nullstring,temp[0]);
@@ -213,6 +215,7 @@ namespace AMISIC {
   template <class Argument_Type,class Result_Type>
   bool Grid_Creator_Base<Argument_Type,Result_Type>::OptimizeSingleGrid(GridHandlerType *grid)
   {
+    if (!m_optimize) return true;
     if ((GridYMin()>GridYMax())||(GridDeltaYMax()<=(GridArgumentType)0.0)) {
       ATOOLS::msg.Error()<<"Grid_Creator_Base::CreateOptimizedGrid(): "
 			 <<"Grid result boundaries improperly specified! "<<std::endl

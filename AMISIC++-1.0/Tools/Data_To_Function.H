@@ -166,6 +166,9 @@ namespace ATOOLS {
     bool ReplaceXPoint(ArgumentType x,ResultType y);
     bool ReplaceYPoint(ArgumentType x,ResultType y);
 
+    void RescaleY(const std::string scalename);
+    void RescaleX(const std::string scalename);
+
     void Clear();
 
     ResultType   YData(unsigned int i);
@@ -189,14 +192,24 @@ namespace ATOOLS {
     void NormalizeY(ArgumentType xmin=0.0,ArgumentType xmax=0.0,ResultType norm=1.0);
     void NormalizeX(ResultType ymin=0.0,ResultType ymax=0.0,ArgumentType norm=1.0);
 
-    DataToFunctionType *IntegralY(ArgumentType xmin=0.0,ArgumentType xmax=0.0);
-    DataToFunctionType *IntegralX(ResultType ymin=0.0,ResultType ymax=0.0);
+    DataToFunctionType *IntegralY(ArgumentType xmin=0.0,ArgumentType xmax=0.0,
+				  std::string xscaling=nullstring,
+				  std::string yscaling=nullstring,
+				  bool forward=true);
+    DataToFunctionType *IntegralX(ResultType ymin=0.0,ResultType ymax=0.0,
+  				  std::string yscaling=nullstring,
+				  std::string xscaling=nullstring,
+				  bool forward=true);
 
     ResultType   IntegrateY(ArgumentType xmin=0.0,ArgumentType xmax=0.0);
     ArgumentType IntegrateX(ResultType ymin=0.0,ResultType ymax=0.0);
 
-    DataToFunctionType *DerivativeY(ArgumentType xmin=0.0,ArgumentType xmax=0.0);
-    DataToFunctionType *DerivativeX(ResultType ymin=0.0,ResultType ymax=0.0);
+    DataToFunctionType *DerivativeY(ArgumentType xmin=0.0,ArgumentType xmax=0.0,
+				    std::string xscaling=nullstring,
+				    std::string yscaling=nullstring);
+    DataToFunctionType *DerivativeX(ResultType ymin=0.0,ResultType ymax=0.0,
+				    std::string xscaling=nullstring,
+				    std::string yscaling=nullstring);
 
     ResultType   DifferentialY(ArgumentType x);
     ArgumentType DifferentialX(ResultType y);

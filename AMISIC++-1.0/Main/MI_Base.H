@@ -35,7 +35,7 @@ namespace AMISIC {
     double       *m_start, *m_stop, *m_last;
     unsigned int  n_parameter;
 
-    bool m_dicedparameter, m_dicedprocess;
+    bool m_dicedparameter, m_dicedprocess, m_filledblob;
 
     ATOOLS::Blob *p_blob;
 

@@ -11,6 +11,12 @@ namespace AMISIC {
   inline std::string Simple_Chain::EnvironmentFile()
   { return m_environmentfile; }
 
+  inline void Simple_Chain::SetNorm(GridResultType _m_norm)
+  { m_norm=_m_norm; }
+
+  inline Simple_Chain::GridResultType Simple_Chain::Norm()
+  { return m_norm; }
+
 } // end of namespace AMISIC
 
 #endif

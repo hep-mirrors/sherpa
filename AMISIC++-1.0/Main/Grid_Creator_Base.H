@@ -26,7 +26,7 @@ namespace AMISIC {
     std::string m_gridxvariable, m_gridxscaling;
     std::string m_gridyvariable, m_gridyscaling;
     
-    bool m_useymax, m_useymin;
+    bool m_useymax, m_useymin, m_optimize;
     
     bool m_relativexmin, m_relativedeltaxmin;
     bool m_relativeymin, m_relativedeltaymin;
