@@ -159,6 +159,7 @@ bool Initialization_Handler::InitializeTheShowers()
 {
   p_showerhandler = new Shower_Handler(m_path,m_showerdat,p_model,
 				       p_isrhandler,p_mehandler->MaxJets());
+  
   return 1;
 }
 
@@ -185,5 +186,9 @@ bool Initialization_Handler::InitializeTheHadronDecays()
 
 bool Initialization_Handler::CalculateTheHardProcesses()
 {
-  return p_mehandler->CalculateTotalXSecs();
+  int scalechoice = 0;
+  if (p_showerhandler->ISROn()) scalechoice += 1;
+  if (p_showerhandler->FSROn()) scalechoice += 2;
+
+  return p_mehandler->CalculateTotalXSecs(scalechoice);
 }
