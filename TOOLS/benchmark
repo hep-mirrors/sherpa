@@ -149,14 +149,13 @@ for I in $LIST ; do
     echo "benchmark: setup directory '$I' is missing" >> $OUTPUTFILE
     SETUP_ERROR=TRUE
   else
-    echo -e "benchmark: benchmarking in '$I' ... " >> $LOGFILE
+    echo -en "benchmark: benchmarking in '$I' ... " >> $LOGFILE
     echo -e "benchmark: benchmarking in '$I' {\n" >> $OUTPUTFILE
     cd $DIR/$I
     BENCHMARK=""
     if [ -f $FILE ] ; then
       GetFiles < $FILE
     else
-      echo -e "benchmark: no benchmarking points specified in '$PWD'" >> $LOGFILE
       echo -e "benchmark: no benchmarking points specified in '$PWD'" >> $OUTPUTFILE
       SETUP_ERROR=TRUE
     fi
@@ -188,7 +187,11 @@ for I in $LIST ; do
       fi
     done
     cd $MAINPATH
-    echo -e "... finished" >> $LOGFILE
+    if [ "$BENCHMARK_ERROR" != "TRUE" ] ; then
+      echo -e "finished" >> $LOGFILE
+    else 
+      echo -e "failed" >> $LOGFILE
+    fi
     echo -e "\n} benchmarking finished \n" >> $OUTPUTFILE
   fi
 done
