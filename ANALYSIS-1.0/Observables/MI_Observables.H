@@ -113,6 +113,8 @@ namespace ANALYSIS {
 
     std::string m_jetlist;
 
+    AMISIC::Amisic_Histogram<double> m_histogram;
+    
   public:
 
     Multiplicity_vs_PT(const int type,
@@ -124,6 +126,8 @@ namespace ANALYSIS {
 		  double weight=1.,int ncount=1);
     
     Primitive_Observable_Base *Copy() const;
+
+    void EndEvaluation(double scale);
 
   };// end of class Multiplicity_vs_PT
 

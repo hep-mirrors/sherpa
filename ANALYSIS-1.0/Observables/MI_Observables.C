@@ -3,7 +3,7 @@
 using namespace ANALYSIS;
 
 #include "MyStrStream.H"
-#include "Durham_Algorithm.H"
+#include "Kt_Algorithm.H"
 
 template <class Class>
 Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
@@ -187,7 +187,7 @@ Primitive_Observable_Base *Forward_Backward_Eta_Correlation::Copy() const
 
 void Forward_Backward_Eta_Correlation::EndEvaluation(double scale) 
 {
-  for (size_t i=1;i<=(size_t)p_histo->Nbin();++i) {
+  for (size_t i=0;i<(size_t)m_nbins+2;++i) {
     double nfwm=m_etafw.BinContent(i)/m_etafw.BinEntries(i);
     p_histo->Bin((int)i)[0]=
       (m_etafwbw.BinContent(i)/m_etafwbw.BinEntries(i)-nfwm*nfwm)/
@@ -195,6 +195,26 @@ void Forward_Backward_Eta_Correlation::EndEvaluation(double scale)
   }
   p_histo->Output();
 }
+
+#ifdef SORT
+#define SORT_LIST(LISTNAME,PREDICATE)					\
+  std::sort(LISTNAME->begin(),LISTNAME->end(),ATOOLS::PREDICATE())	
+#else
+#define SORT_LIST(LISTNAME,PREDICATE)
+#endif
+
+#define TRANSFER_DATA(SCALE)						\
+  for (size_t i=0;i<(size_t)m_nbins+2;++i)				\
+    m_histogram.Add(histo.BinXMean(i),histo.BinEntries(i)!=0?		\
+		    histo.BinContent(i)/histo.BinEntries(i)*SCALE:0)
+
+
+#define FINISH_HISTOGRAM					\
+  for (size_t i=0;i<(size_t)m_nbins+2;++i) {		\
+    p_histo->Bin((int)i)[0]=m_histogram.BinEntries(i)!=0?	\
+      m_histogram.BinContent(i)/m_histogram.BinEntries(i):0;	\
+  }								\
+  p_histo->Output()
 
 DEFINE_OBSERVABLE_GETTER(Multiplicity_vs_JetPT,
 			 Multiplicity_vs_JetPT_Getter,"NvsJetPT");
@@ -216,8 +236,7 @@ void Multiplicity_vs_JetPT::Evaluate(const ATOOLS::Particle_List &particlelist,
 {
   ATOOLS::Particle_List *jetlist=p_ana->GetParticleList(m_jetlist);
   if (jetlist->size()==0) return;
-  std::sort(jetlist->begin(),jetlist->end(),ATOOLS::Order_PT());
-  m_histogram.Add((*jetlist)[0]->Momentum().PPerp(),weight*particlelist.size(),ncount);
+  m_histogram.Add((*jetlist)[0]->Momentum().PPerp(),weight*particlelist.size());
 }
     
 Primitive_Observable_Base *Multiplicity_vs_JetPT::Copy() const
@@ -227,12 +246,7 @@ Primitive_Observable_Base *Multiplicity_vs_JetPT::Copy() const
 
 void Multiplicity_vs_JetPT::EndEvaluation(double scale)
 {
-  // m_histogram.Scale((m_histogram.XMax()-m_histogram.XMin())/m_histogram.Norm());
-  for (size_t i=1;i<=(size_t)p_histo->Nbin();++i) {
-    p_histo->Bin((int)i)[0]=m_histogram.BinEntries(i)!=0?
-      m_histogram.BinContent(i)/m_histogram.BinEntries(i):0;
-  }
-  p_histo->Output();
+  FINISH_HISTOGRAM;
 }
 
 DEFINE_OBSERVABLE_GETTER(Scalar_PT_Sum_vs_JetPT,
@@ -256,11 +270,10 @@ void Scalar_PT_Sum_vs_JetPT::Evaluate(const ATOOLS::Particle_List &particlelist,
 {
   ATOOLS::Particle_List *jetlist=p_ana->GetParticleList(m_jetlist);
   if (jetlist->size()==0) return;
-  std::sort(jetlist->begin(),jetlist->end(),ATOOLS::Order_PT());
+  SORT_LIST(jetlist,Order_PT);
   double pt=0.0;
-  for (size_t i=0;i<particlelist.size();++i) 
-    pt+=particlelist[i]->Momentum().PPerp();
-  m_histogram.Add((*jetlist)[0]->Momentum().PPerp(),weight*pt,ncount);
+  for (size_t i=0;i<particlelist.size();++i) pt+=particlelist[i]->Momentum().PPerp();
+  m_histogram.Add((*jetlist)[0]->Momentum().PPerp(),weight*pt);
 }
     
 Primitive_Observable_Base *Scalar_PT_Sum_vs_JetPT::Copy() const
@@ -270,12 +283,7 @@ Primitive_Observable_Base *Scalar_PT_Sum_vs_JetPT::Copy() const
 
 void Scalar_PT_Sum_vs_JetPT::EndEvaluation(double scale)
 {
-  // m_histogram.Scale((m_histogram.XMax()-m_histogram.XMin())/m_histogram.Norm());
-  for (size_t i=1;i<=(size_t)p_histo->Nbin();++i) {
-    p_histo->Bin((int)i)[0]=m_histogram.BinEntries(i)!=0?
-      m_histogram.BinContent(i)/m_histogram.BinEntries(i):0;
-  }
-  p_histo->Output();
+  FINISH_HISTOGRAM;
 }
 
 DEFINE_OBSERVABLE_GETTER(Scalar_PT_Sum_vs_JetET,
@@ -299,11 +307,10 @@ void Scalar_PT_Sum_vs_JetET::Evaluate(const ATOOLS::Particle_List &particlelist,
 {
   ATOOLS::Particle_List *jetlist=p_ana->GetParticleList(m_jetlist);
   if (jetlist->size()==0) return;
-  std::sort(jetlist->begin(),jetlist->end(),ATOOLS::Order_PT());
+  SORT_LIST(jetlist,Order_ET);
   double pt=0.0;
-  for (size_t i=0;i<particlelist.size();++i) 
-    pt+=particlelist[i]->Momentum().PPerp();
-  m_histogram.Add((*jetlist)[0]->Momentum().EPerp(),weight*pt,ncount);
+  for (size_t i=0;i<particlelist.size();++i) pt+=particlelist[i]->Momentum().PPerp();
+  m_histogram.Add((*jetlist)[0]->Momentum().EPerp(),weight*pt);
 }
     
 Primitive_Observable_Base *Scalar_PT_Sum_vs_JetET::Copy() const
@@ -313,12 +320,7 @@ Primitive_Observable_Base *Scalar_PT_Sum_vs_JetET::Copy() const
 
 void Scalar_PT_Sum_vs_JetET::EndEvaluation(double scale)
 {
-  // m_histogram.Scale((m_histogram.XMax()-m_histogram.XMin())/m_histogram.Norm());
-  for (size_t i=1;i<=(size_t)p_histo->Nbin();++i) {
-    p_histo->Bin((int)i)[0]=m_histogram.BinEntries(i)!=0?
-      m_histogram.BinContent(i)/m_histogram.BinEntries(i):0;
-  }
-  p_histo->Output();
+  FINISH_HISTOGRAM;
 }
 
 DEFINE_OBSERVABLE_GETTER(Multiplicity_vs_PT,
@@ -333,23 +335,33 @@ Multiplicity_vs_PT::Multiplicity_vs_PT(const int type,
 {
   m_listname=listname;
   m_name="N"+m_listname+"_vs_PT_"+m_jetlist+".dat";
+  m_histogram.Initialize(m_xmin,m_xmax,m_nbins);
 }
     
 void Multiplicity_vs_PT::Evaluate(const ATOOLS::Particle_List &particlelist,
-				     double weight,int ncount)
+				  double weight,int ncount)
 {
   ATOOLS::Particle_List *jetlist=p_ana->GetParticleList(m_jetlist);
   if (jetlist->size()==0) return;
-  // ATOOLS::Vec4D leadingjet=(*jetlist->begin())->Momentum();
+  SORT_LIST(jetlist,Order_PT);
+  AMISIC::Amisic_Histogram<double> histo;
+  histo.Initialize(m_xmin,m_xmax,m_nbins);
   for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
        pit!=particlelist.end();++pit) {
-    p_histo->Insert((*pit)->Momentum().PPerp(),weight,ncount);
+    histo.Add((*pit)->Momentum().PPerp(),weight);
   }
+  TRANSFER_DATA(1.0);
 }
     
 Primitive_Observable_Base *Multiplicity_vs_PT::Copy() const
 {
   return new Multiplicity_vs_PT(m_type,m_xmin,m_xmax,m_nbins,m_jetlist,m_listname);
+}
+
+void Multiplicity_vs_PT::EndEvaluation(double scale)
+{
+  m_histogram.Scale(m_nbins/(m_xmax-m_xmin));			
+  FINISH_HISTOGRAM;
 }
 
 DEFINE_OFFSET_OBSERVABLE_GETTER(Multiplicity_vs_DPhi,
@@ -376,30 +388,19 @@ void Multiplicity_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
 {
   ATOOLS::Particle_List *jetlist=p_ana->GetParticleList(m_jetlist);
   if (jetlist->size()==0) return;
+  SORT_LIST(jetlist,Order_PT);
   ATOOLS::Vec4D leadingjet=(*jetlist)[0]->Momentum();
-//   ATOOLS::Vec3D perp=ATOOLS::cross(leadingjet,ATOOLS::Vec3D::ZVEC);
-//   if (jetlist->size()>1) {
-//     ATOOLS::Vec3D test=ATOOLS::cross(leadingjet,(*jetlist)[1]->Momentum());
-//     test=ATOOLS::cross(test,leadingjet);
-//     if (test.Abs()>0.0) perp=test;
-//   }
-//   else if (perp.Abs()==0.0) {
-//     perp=ATOOLS::cross(leadingjet,ATOOLS::Vec3D::XVEC);
-//   }
   AMISIC::Amisic_Histogram<double> histo;
   histo.Initialize(m_xmin,m_xmax,m_nbins);
   for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
        pit!=particlelist.end();++pit) {
     double phi=(*pit)->Momentum().DPhi(leadingjet)/M_PI*180.0;
     if (!(phi>0.0) && !(phi<=0.0)) continue;
-//     if (perp*(ATOOLS::Vec3D)(*pit)->Momentum()<0.0) phi*=-1.0;
     histo.Add(phi+m_offset-((int)(phi+m_offset)/360)*360.0,weight);
     phi*=-1.0;
     histo.Add(phi+m_offset-((int)(phi+m_offset)/360)*360.0,weight);
   }
-  for (size_t i=1;i<=(size_t)p_histo->Nbin()-1;++i) {
-    m_histogram.Add(histo.BinXMean(i),histo.BinContent(i),ncount);
-  }
+  TRANSFER_DATA(1.0);
 }
     
 Primitive_Observable_Base *Multiplicity_vs_DPhi::Copy() const
@@ -410,11 +411,8 @@ Primitive_Observable_Base *Multiplicity_vs_DPhi::Copy() const
 
 void Multiplicity_vs_DPhi::EndEvaluation(double scale)
 {
-  for (size_t i=1;i<=(size_t)p_histo->Nbin();++i) {
-    p_histo->Bin((int)i)[0]=m_histogram.BinEntries(i)!=0?
-      m_histogram.BinContent(i)/m_histogram.BinEntries(i):0;
-  }
-  p_histo->Output();
+  m_histogram.Scale(m_nbins/(m_xmax-m_xmin));
+  FINISH_HISTOGRAM;
 }
 
 DEFINE_OFFSET_OBSERVABLE_GETTER(Scalar_PT_Sum_vs_DPhi,
@@ -439,16 +437,8 @@ void Scalar_PT_Sum_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
 {
   ATOOLS::Particle_List *jetlist=p_ana->GetParticleList(m_jetlist);
   if (jetlist->size()==0) return;
+  SORT_LIST(jetlist,Order_PT);
   ATOOLS::Vec4D leadingjet=(*jetlist)[0]->Momentum();
-//   ATOOLS::Vec3D perp=ATOOLS::cross(leadingjet,ATOOLS::Vec3D::ZVEC);
-//   if (jetlist->size()>1) {
-//     ATOOLS::Vec3D test=ATOOLS::cross(leadingjet,(*jetlist)[1]->Momentum());
-//     test=ATOOLS::cross(test,leadingjet);
-//     if (test.Abs()>0.0) perp=test;
-//   }
-//   else if (perp.Abs()==0.0) {
-//     perp=ATOOLS::cross(leadingjet,ATOOLS::Vec3D::XVEC);
-//   }
   AMISIC::Amisic_Histogram<double> histo;
   histo.Initialize(m_xmin,m_xmax,m_nbins);
   for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
@@ -456,14 +446,11 @@ void Scalar_PT_Sum_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
     double pt=(*pit)->Momentum().PPerp();
     double phi=(*pit)->Momentum().DPhi(leadingjet)/M_PI*180.0;
     if (!(phi>0.0) && !(phi<=0.0)) continue;
-//     if (perp*(ATOOLS::Vec3D)(*pit)->Momentum()<0.0) phi*=-1.0;
     histo.Add(phi+m_offset-((int)(phi+m_offset)/360)*360.0,weight*pt);
     phi*=-1.0;
     histo.Add(phi+m_offset-((int)(phi+m_offset)/360)*360.0,weight*pt);
   }
-  for (size_t i=1;i<=(size_t)p_histo->Nbin()-1;++i) {
-    m_histogram.Add(histo.BinXMean(i),histo.BinContent(i),ncount);
-  }
+  TRANSFER_DATA(1.0);
 }
     
 Primitive_Observable_Base *Scalar_PT_Sum_vs_DPhi::Copy() const
@@ -474,11 +461,8 @@ Primitive_Observable_Base *Scalar_PT_Sum_vs_DPhi::Copy() const
 
 void Scalar_PT_Sum_vs_DPhi::EndEvaluation(double scale)
 {
-  for (size_t i=1;i<=(size_t)p_histo->Nbin();++i) {
-    p_histo->Bin((int)i)[0]=m_histogram.BinEntries(i)!=0?
-      m_histogram.BinContent(i)/m_histogram.BinEntries(i):0;
-  }
-  p_histo->Output();
+  m_histogram.Scale(m_nbins/(m_xmax-m_xmin));
+  FINISH_HISTOGRAM;
 }
 
 DEFINE_OFFSET_OBSERVABLE_GETTER(Scalar_ET_Sum_vs_DPhi,
@@ -503,16 +487,8 @@ void Scalar_ET_Sum_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
 {
   ATOOLS::Particle_List *jetlist=p_ana->GetParticleList(m_jetlist);
   if (jetlist->size()==0) return;
+  SORT_LIST(jetlist,Order_PT);
   ATOOLS::Vec4D leadingjet=(*jetlist)[0]->Momentum();
-//   ATOOLS::Vec3D perp=ATOOLS::cross(leadingjet,ATOOLS::Vec3D::ZVEC);
-//   if (jetlist->size()>1) {
-//     ATOOLS::Vec3D test=ATOOLS::cross(leadingjet,(*jetlist)[1]->Momentum());
-//     test=ATOOLS::cross(test,leadingjet);
-//     if (test.Abs()>0.0) perp=test;
-//   }
-//   else if (perp.Abs()==0.0) {
-//     perp=ATOOLS::cross(leadingjet,ATOOLS::Vec3D::XVEC);
-//   }
   AMISIC::Amisic_Histogram<double> histo;
   histo.Initialize(m_xmin,m_xmax,m_nbins);
   for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
@@ -520,14 +496,11 @@ void Scalar_ET_Sum_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
     double pt=(*pit)->Momentum().PPerp();
     double phi=(*pit)->Momentum().DPhi(leadingjet)/M_PI*180.0;
     if (!(phi>0.0) && !(phi<=0.0)) continue;
-//     if (perp*(ATOOLS::Vec3D)(*pit)->Momentum()<0.0) phi*=-1.0;
     histo.Add(phi+m_offset-((int)(phi+m_offset)/360)*360.0,weight*pt);
     phi*=-1.0;
     histo.Add(phi+m_offset-((int)(phi+m_offset)/360)*360.0,weight*pt);
   }
-  for (size_t i=1;i<=(size_t)p_histo->Nbin()-1;++i) {
-    m_histogram.Add(histo.BinXMean(i),histo.BinContent(i),ncount);
-  }
+  TRANSFER_DATA(1.0);
 }
     
 Primitive_Observable_Base *Scalar_ET_Sum_vs_DPhi::Copy() const
@@ -538,11 +511,8 @@ Primitive_Observable_Base *Scalar_ET_Sum_vs_DPhi::Copy() const
 
 void Scalar_ET_Sum_vs_DPhi::EndEvaluation(double scale)
 {
-  for (size_t i=1;i<=(size_t)p_histo->Nbin();++i) {
-    p_histo->Bin((int)i)[0]=m_histogram.BinEntries(i)!=0?
-      m_histogram.BinContent(i)/m_histogram.BinEntries(i):0;
-  }
-  p_histo->Output();
+  m_histogram.Scale(m_nbins/(m_xmax-m_xmin));
+  FINISH_HISTOGRAM;
 }
 
 
@@ -568,6 +538,7 @@ void Multiplicity_vs_DEta::Evaluate(const ATOOLS::Particle_List &particlelist,
 {
   ATOOLS::Particle_List *jetlist=p_ana->GetParticleList(m_jetlist);
   if (jetlist->size()==0) return;
+  SORT_LIST(jetlist,Order_PT);
   ATOOLS::Vec4D leadingjet=(*jetlist)[0]->Momentum();
   AMISIC::Amisic_Histogram<double> histo;
   histo.Initialize(m_xmin,m_xmax,m_nbins);
@@ -575,9 +546,7 @@ void Multiplicity_vs_DEta::Evaluate(const ATOOLS::Particle_List &particlelist,
        pit!=particlelist.end();++pit) {
     histo.Add((*pit)->Momentum().DEta(leadingjet)-m_offset,weight);
   }
-  for (size_t i=1;i<=(size_t)p_histo->Nbin()-1;++i) {
-    m_histogram.Add(histo.BinXMean(i),histo.BinContent(i),ncount);
-  }
+  TRANSFER_DATA(1.0);
 }
     
 Primitive_Observable_Base *Multiplicity_vs_DEta::Copy() const
@@ -588,11 +557,8 @@ Primitive_Observable_Base *Multiplicity_vs_DEta::Copy() const
 
 void Multiplicity_vs_DEta::EndEvaluation(double scale)
 {
-  for (size_t i=1;i<=(size_t)p_histo->Nbin();++i) {
-    p_histo->Bin((int)i)[0]=m_histogram.BinEntries(i)!=0?
-      m_histogram.BinContent(i)/m_histogram.BinEntries(i):0;
-  }
-  p_histo->Output();
+  m_histogram.Scale(m_nbins/(m_xmax-m_xmin));
+  FINISH_HISTOGRAM;
 }
 
 DEFINE_OFFSET_OBSERVABLE_GETTER(Scalar_PT_Sum_vs_DEta,
@@ -617,6 +583,7 @@ void Scalar_PT_Sum_vs_DEta::Evaluate(const ATOOLS::Particle_List &particlelist,
 {
   ATOOLS::Particle_List *jetlist=p_ana->GetParticleList(m_jetlist);
   if (jetlist->size()==0) return;
+  SORT_LIST(jetlist,Order_PT);
   ATOOLS::Vec4D leadingjet=(*jetlist)[0]->Momentum();
   AMISIC::Amisic_Histogram<double> histo;
   histo.Initialize(m_xmin,m_xmax,m_nbins);
@@ -625,9 +592,7 @@ void Scalar_PT_Sum_vs_DEta::Evaluate(const ATOOLS::Particle_List &particlelist,
     histo.Add((*pit)->Momentum().DEta(leadingjet)-m_offset,
 	      weight*(*pit)->Momentum().PPerp());
   }
-  for (size_t i=1;i<=(size_t)p_histo->Nbin()-1;++i) {
-    m_histogram.Add(histo.BinXMean(i),histo.BinContent(i),ncount);
-  }
+  TRANSFER_DATA(1.0);
 }
     
 Primitive_Observable_Base *Scalar_PT_Sum_vs_DEta::Copy() const
@@ -638,11 +603,8 @@ Primitive_Observable_Base *Scalar_PT_Sum_vs_DEta::Copy() const
 
 void Scalar_PT_Sum_vs_DEta::EndEvaluation(double scale)
 {
-  for (size_t i=1;i<=(size_t)p_histo->Nbin();++i) {
-    p_histo->Bin((int)i)[0]=m_histogram.BinEntries(i)!=0?
-      m_histogram.BinContent(i)/m_histogram.BinEntries(i):0;
-  }
-  p_histo->Output();
+  m_histogram.Scale(m_nbins/(m_xmax-m_xmin));
+  FINISH_HISTOGRAM;
 }
 
 DEFINE_OFFSET_OBSERVABLE_GETTER(Scalar_ET_Sum_vs_DEta,
@@ -667,6 +629,7 @@ void Scalar_ET_Sum_vs_DEta::Evaluate(const ATOOLS::Particle_List &particlelist,
 {
   ATOOLS::Particle_List *jetlist=p_ana->GetParticleList(m_jetlist);
   if (jetlist->size()==0) return;
+  SORT_LIST(jetlist,Order_PT);
   ATOOLS::Vec4D leadingjet=(*jetlist)[0]->Momentum();
   AMISIC::Amisic_Histogram<double> histo;
   histo.Initialize(m_xmin,m_xmax,m_nbins);
@@ -675,9 +638,7 @@ void Scalar_ET_Sum_vs_DEta::Evaluate(const ATOOLS::Particle_List &particlelist,
     histo.Add((*pit)->Momentum().DEta(leadingjet)-m_offset,
 	      weight*(*pit)->Momentum().EPerp());
   }
-  for (size_t i=1;i<=(size_t)p_histo->Nbin()-1;++i) {
-    m_histogram.Add(histo.BinXMean(i),histo.BinContent(i),ncount);
-  }
+  TRANSFER_DATA(1.0);
 }
     
 Primitive_Observable_Base *Scalar_ET_Sum_vs_DEta::Copy() const
@@ -688,10 +649,7 @@ Primitive_Observable_Base *Scalar_ET_Sum_vs_DEta::Copy() const
 
 void Scalar_ET_Sum_vs_DEta::EndEvaluation(double scale)
 {
-  for (size_t i=1;i<=(size_t)p_histo->Nbin();++i) {
-    p_histo->Bin((int)i)[0]=m_histogram.BinEntries(i)!=0?
-      m_histogram.BinContent(i)/m_histogram.BinEntries(i):0;
-  }
-  p_histo->Output();
+  m_histogram.Scale(m_nbins/(m_xmax-m_xmin));
+  FINISH_HISTOGRAM;
 }
 
