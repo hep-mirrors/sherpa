@@ -49,13 +49,12 @@ namespace SHERPA {
 
     void                    ReadInDecays();
     void                    EvaluateWidths(std::string,MODEL::Model_Base *);
-    void                    SetWidths(bool);
+    void                    SetWidths();
     ATOOLS::Decay_Channel * SpecifyHardDecay(ATOOLS::Particle *,double &);  
   public :
     Hard_Decay_Handler(std::string,std::string,std::string,MODEL::Model_Base *);
     ~Hard_Decay_Handler();
 
-    bool   InitializeAllHardDecays(std::string,MODEL::Model_Base *);
     double DefineSecondaryDecays(ATOOLS::Blob *,bool = true);
     bool   PerformDecay(ATOOLS::Blob *);
 
