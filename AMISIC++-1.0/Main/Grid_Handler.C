@@ -120,7 +120,7 @@ namespace AMISIC {
     reader->SetComment("!");
     reader->SetIgnore(":");
     std::vector<std::vector<GridArgumentType> > _m_xydata;
-    reader->ArrayFromFile(_m_xydata,m_datatag);
+    reader->MatrixFromFile(_m_xydata,m_datatag);
     if (_m_xydata.size()<2) return false;
     std::vector<GridArgumentType> _m_xdata = _m_xydata[0];
     std::vector<GridResultType> _m_ydata = std::vector<GridResultType>(_m_xydata[1].size());

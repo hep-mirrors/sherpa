@@ -25,10 +25,10 @@ namespace ATOOLS {
     M_VectorFromString(std::string parameter,std::string inputstring,VectorTypeID tempvtype);
     template <class Read_Type >
     std::vector< std::vector<Read_Type> > 
-    M_ArrayFromFile(std::string parameter,std::string filename,MatrixTypeID tempmtype);
+    M_MatrixFromFile(std::string parameter,std::string filename,MatrixTypeID tempmtype);
     template <class Read_Type >
     std::vector< std::vector<Read_Type> >
-    M_ArrayFromString(std::string parameter,std::string inputstring,MatrixTypeID tempmtype);
+    M_MatrixFromString(std::string parameter,std::string inputstring,MatrixTypeID tempmtype);
 
   public:
 
@@ -72,26 +72,26 @@ namespace ATOOLS {
     bool VectorFromString(std::vector<std::string>& values,std::string parameter=nullstring,
 			  std::string inputstring=noinputtag,VectorTypeID tempvtype=VUnknown);
 
-    bool ArrayFromFile(std::vector<std::vector<int> >& values,std::string parameter=nullstring,
+    bool MatrixFromFile(std::vector<std::vector<int> >& values,std::string parameter=nullstring,
 		       std::string filename=noinputtag,MatrixTypeID tempmtype=MUnknown);
-    bool ArrayFromFile(std::vector<std::vector<long int> >& values,std::string parameter=nullstring,
+    bool MatrixFromFile(std::vector<std::vector<long int> >& values,std::string parameter=nullstring,
 		       std::string filename=noinputtag,MatrixTypeID tempmtype=MUnknown);
-    bool ArrayFromFile(std::vector<std::vector<float> >& values,std::string parameter=nullstring,
+    bool MatrixFromFile(std::vector<std::vector<float> >& values,std::string parameter=nullstring,
 		       std::string filename=noinputtag,MatrixTypeID tempmtype=MUnknown);
-    bool ArrayFromFile(std::vector<std::vector<double> >& values,std::string parameter=nullstring,
+    bool MatrixFromFile(std::vector<std::vector<double> >& values,std::string parameter=nullstring,
 		       std::string filename=noinputtag,MatrixTypeID tempmtype=MUnknown);
-    bool ArrayFromFile(std::vector<std::vector<std::string> >& values,std::string parameter=nullstring,
+    bool MatrixFromFile(std::vector<std::vector<std::string> >& values,std::string parameter=nullstring,
 		       std::string filename=noinputtag,MatrixTypeID tempmtype=MUnknown);
 
-    bool ArrayFromString(std::vector<std::vector<int> >& values,std::string parameter=nullstring,
+    bool MatrixFromString(std::vector<std::vector<int> >& values,std::string parameter=nullstring,
 			 std::string inputstring=noinputtag,MatrixTypeID tempmtype=MUnknown);
-    bool ArrayFromString(std::vector<std::vector<long int> >& values,std::string parameter=nullstring,
+    bool MatrixFromString(std::vector<std::vector<long int> >& values,std::string parameter=nullstring,
 			 std::string inputstring=noinputtag,MatrixTypeID tempmtype=MUnknown);
-    bool ArrayFromString(std::vector<std::vector<float> >& values,std::string parameter=nullstring,
+    bool MatrixFromString(std::vector<std::vector<float> >& values,std::string parameter=nullstring,
 			 std::string inputstring=noinputtag,MatrixTypeID tempmtype=MUnknown);
-    bool ArrayFromString(std::vector<std::vector<double> >& values,std::string parameter=nullstring,
+    bool MatrixFromString(std::vector<std::vector<double> >& values,std::string parameter=nullstring,
 			 std::string inputstring=noinputtag,MatrixTypeID tempmtype=MUnknown);
-    bool ArrayFromString(std::vector<std::vector<std::string> >& values,std::string parameter=nullstring,
+    bool MatrixFromString(std::vector<std::vector<std::string> >& values,std::string parameter=nullstring,
 			 std::string inputstring=noinputtag,MatrixTypeID tempmtype=MUnknown);
 
   }; // end of class Data_Reader
@@ -180,11 +180,11 @@ namespace ATOOLS {
   */
 
   /*!
-    \fn Data_Reader::ArrayFromFile(std::string = nullstring, std::string = noinputtag, 
+    \fn Data_Reader::MatrixFromFile(std::string = nullstring, std::string = noinputtag, 
 				  std::vector<std::string> = std::vector<std::string>(0));
     \brief Reads a std::vector<std::vector<Read_Type>> from a file
 
-    ArrayFromFile reads a std::vector<std::vector<Read_Type>> from a file.
+    MatrixFromFile reads a std::vector<std::vector<Read_Type>> from a file.
     The input file is specified as an absolute or relative path in the first argument.
     The second argument specifies a pattern that is used to tag the input values.
     Different arrays of values have to be seperated by a seperator ( the default for this is ';' )
@@ -194,11 +194,11 @@ namespace ATOOLS {
   */
 
   /*!
-    \fn Data_Reader::ArrayFromString(std::string = nullstring, std::string = noinputtag, 
+    \fn Data_Reader::MatrixFromString(std::string = nullstring, std::string = noinputtag, 
 				    std::vector<std::string> = std::vector<std::string>(0));
     \brief Reads a std::vector<std::vector<Read_Type>> from a string
 
-    ArrayFromString reads a std::vector<std::vector<Read_Type>> from a string
+    MatrixFromString reads a std::vector<std::vector<Read_Type>> from a string
     The input string is specified in the first argument.
     The second argument specifies a pattern that is used to tag the input values.
     Different arrays of values have to be seperated by a seperator ( the default for this is ';' )

@@ -293,12 +293,13 @@ bool Simple_Chain::ReadInData()
   comments.push_back("IN");
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
   reader->SetFileName(m_inputpath+m_inputfile);
+  reader->SetMatrixType(reader->MTransposed);
   reader->AddIgnore(comments);
   std::string outputpath;
   reader->ReadFromFile(outputpath,"GRID DIRECTORY");
   m_outputpath+=outputpath;
   std::vector<std::vector<std::string> > temp;
-  reader->ArrayFromFile(temp,"CREATE GRID",ATOOLS::noinputtag,reader->MTransposed);
+  reader->MatrixFromFile(temp,"CREATE GRID");
   for (unsigned int i=0;i<temp.size();++i) {
     if (temp[i].size()>3) {
       if ((temp[i][0]==std::string("all"))&&
