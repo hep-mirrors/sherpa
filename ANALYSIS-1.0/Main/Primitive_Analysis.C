@@ -125,10 +125,36 @@ void Primitive_Analysis::CallSubAnalysis(const Blob_List * const bl, double valu
     return;
   }
 
+  Blob_Data_Base * extra_info=operator[]("OrderEWeak");
+
   std::string key;
   int mode;
+  if (extra_info && m_mode&ANALYSIS::splitt_extra) {
+    mode=m_mode^ANALYSIS::splitt_extra;
+    if (m_mode&ANALYSIS::splitt_jetseeds)
+      mode=m_mode^ANALYSIS::splitt_jetseeds;
+    mode=mode|ANALYSIS::output_this;
+
+    double dkey=extra_info->Get<double>();
+    key="extra_"+ATOOLS::ToString(dkey);
+
+    GetSubAnalysis(key,mode);
+
+    for (Analysis_List::iterator it=m_subanalyses.begin();it!=m_subanalyses.end();++it) {
+      if (it->first.find("extra_")!=std::string::npos) {
+	if (it->first==key) {
+	  it->second->DoAnalysis(bl,value);
+	}
+	else {
+	  it->second->DoAnalysis(bl,0.);
+	}
+      }
+    }
+  }
   if (m_mode&ANALYSIS::splitt_jetseeds) {
     mode=m_mode^ANALYSIS::splitt_jetseeds;
+    if (mode&ANALYSIS::splitt_extra)
+      mode=m_mode^ANALYSIS::splitt_extra;
     mode=mode|ANALYSIS::output_this;
     /*
     MyStrStream str;
@@ -199,9 +225,19 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
   Init();
   double weight=(*p_partner)["ME_Weight"]->Get<double>();
   int    ncount=(*p_partner)["ME_NumberOfTrials"]->Get<int>();
-  if (!IsEqual(value,weight)) 
-    msg.Out()<<"WARNING in Primitive_Analysis::DoAnalysis :"<<std::endl
-	     <<"   Weight in Primitive_Analysis ambiguous! ("<<value<<","<<weight<<")"<<std::endl;
+  if (!IsEqual(value,weight)) {
+    if (p_partner==this) {
+      msg.Out()<<"WARNING in Primitive_Analysis::DoAnalysis :"<<std::endl
+	       <<"   Weight in Primitive_Analysis ambiguous! ("<<value<<","<<weight<<")"<<std::endl;
+    }
+    else if (value==0.) {
+      weight=0.;
+    }
+    else {
+      msg.Out()<<"WARNING something is wrong in Primitive_Analysis::DoAnalysis :"<<std::endl
+	       <<"   Weight in Primitive_Analysis ambiguous! ("<<value<<","<<weight<<")"<<std::endl;
+    }
+  }
   double weight_one=weight;
   int    ncount_one=ncount;
   Blob_Data_Base * info = (*p_partner)["ME_Weight_One"];
@@ -209,6 +245,7 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
     weight_one = info->Get<double>();
     ncount_one = (*p_partner)["ME_NumberOfTrials_One"]->Get<int>();
   }
+  if (weight==0.) weight_one=0.;
   m_stats.sum_weight     += weight;
   m_stats.nevt           += ncount;
   m_stats.sum_weight_one += weight_one;
@@ -234,7 +271,7 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
 
 
   if (m_mode&ANALYSIS::splitt_all) CallSubAnalysis(bl,value);
-  if (msg.LevelIsTracking()) PrintStatus();
+  if (p_partner==this && msg.LevelIsTracking()) PrintStatus();
 
   ClearAllData();
 }
@@ -259,9 +296,9 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,long ntotal, 
       
 	for (Analysis_List::iterator it=m_subanalyses.begin();
 	     it!=m_subanalyses.end();++it) {
-	  Primitive_Observable_Base * ob = it->second->GetObservable(key);
-	  if (ob) {
-	    (*m_observables[i])+=(*ob);
+	  if (it->first.find("extra_")==std::string::npos) {
+	    Primitive_Observable_Base * ob = it->second->GetObservable(key);
+	    if (ob)   (*m_observables[i])+=(*ob);
 	  }
 	}
       }
@@ -270,7 +307,7 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,long ntotal, 
 	  m_observables[i]->EndEvaluation(double(m_nevt)/double(ntotal)*xs);
 	}
 	else {
-	  if (m_stats.nevt_one>0) {
+	  if (m_stats.nevt_one>0 && m_stats.sum_weight!=0.) {
 	    double xshist=m_stats.sum_weight/double(m_stats.nevt);
 	    double xsreal=m_stats.sum_weight_one/double(m_stats.nevt_one);
 	    m_observables[i]->EndEvaluation(xsreal/xshist);
