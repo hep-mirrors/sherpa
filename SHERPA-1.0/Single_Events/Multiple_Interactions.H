@@ -7,6 +7,7 @@
 namespace SHERPA {
 
   class Remnant_Base;
+  class Matrix_Element_Handler;
 
   class Multiple_Interactions: public Event_Phase_Handler {
   private:
@@ -16,6 +17,8 @@ namespace SHERPA {
 
     MI_Handler   *p_mihandler;
     Remnant_Base *p_remnants[2];
+
+    Matrix_Element_Handler *p_mehandler;
 
     ATOOLS::Blob_List *p_bloblist;
 

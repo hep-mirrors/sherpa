@@ -7,6 +7,7 @@
 #include "Jet_Finder.H"
 #include "Kt_Algorithm.H"
 #include "Run_Parameter.H"
+#include "Matrix_Element_Handler.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Multiple_Interactions
@@ -33,6 +34,9 @@ Multiple_Interactions::Multiple_Interactions(MI_Handler *mihandler):
   if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
     THROW(fatal_error,"No beam remnant handler found.");
   }
+  p_mehandler=GET_OBJECT(Matrix_Element_Handler,"ME_Handler");
+  if (p_mehandler==NULL) 
+    THROW(fatal_error,"No matrix element handler found.");
 }
 
 Multiple_Interactions::~Multiple_Interactions() 
@@ -75,6 +79,7 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
 		    <<*(*iit)->InParticle(0)<<std::endl;
       p_bloblist->DeleteConnected(*iit);
       if (bloblist->empty()) {
+	p_mehandler->SaveNumberOfTrials();
 	Blob *blob = new Blob();
 	blob->SetType(btp::Signal_Process);
 	blob->SetStatus(-1);
