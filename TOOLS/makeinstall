@@ -79,6 +79,25 @@ if [ "$SCRIPT" = "TRUE" ] ; then
   fi
   exit 0
 fi
+if [ "`gcc -dumpversion`" = "2.96" ] ; then 
+  echo -e "\n\e[31m********************************************************\e[0m"
+  echo -e "\e[31m*\e[0m\e[1m                     Severe Error                     \e[0m\e[31m*\e[0m"
+  echo -e "\e[31m********************************************************\e[0m"
+  echo -e "\e[31m*                                                      *\e[0m"
+  echo -e "\e[31m*\e[0m\e[1m   The Sherpa package will not compile on gcc 2.96.   \e[0m\e[31m*\e[0m"
+  echo -e "\e[31m*                                                      *\e[0m"
+  echo -e "\e[31m*\e[0m gcc 2.96 causes different problems with STL headers. \e[31m*\e[0m"
+  echo -e "\e[31m*\e[0m Please note that if you insist on using this version \e[31m*\e[0m"
+  echo -e "\e[31m*\e[0m           we will not provide any support.           \e[31m*\e[0m"
+  echo -e "\e[31m*                                                      \e[31m*\e[0m"
+  echo -e "\e[31m*\e[31m              We recommend you to employ              \e[31m*\e[0m"
+  echo -e "\e[31m*\e[31m        gcc 2.95 or any of the 3.x.x versions         \e[31m*\e[0m"
+  echo -e "\e[31m*                                                      \e[31m*\e[0m"
+  echo -e "\e[31m*\e[0m\e[1m              Aborting the installation               \e[0m\e[31m*\e[0m"
+  echo -e "\e[31m*                                                      *\e[0m"
+  echo -e "\e[31m********************************************************\e[0m\n"
+  exit 1;
+fi
 
 if [ "$EXTRACT" = "TRUE" ] ; then
   if [ "$RELEASE" = "TRUE" ] ; then
