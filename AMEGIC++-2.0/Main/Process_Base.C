@@ -31,7 +31,7 @@ Process_Base::Process_Base():
   m_gen_str(3),p_b(0),p_flin(0),p_flout(0),
   p_pl(0),p_plin(0),p_plout(0), 
   m_enhancefac(1.), m_maxfac(1.), p_psgen(0),
-  m_print_graphs(false)
+  m_print_graphs(false), m_ycut(-1.)
 {
   m_atoms=1;
   m_analyse=m_tables=0;
@@ -54,14 +54,14 @@ Process_Base::Process_Base(int _nin,int _nout,ATOOLS::Flavour * _fl,
 			   int _gen_str, int _orderQCD, int _orderEW,
 			   int _scalescheme,int _kfactorscheme,double _scale,
 			   Pol_Info * _pl,
-			   int _nex,ATOOLS::Flavour * _ex_fl) :
+			   int _nex,ATOOLS::Flavour * _ex_fl,double ycut) :
   Integrable_Base(_nin,_nout,_fl,_scalescheme,_kfactorscheme,_beam,_isr),
   m_gen_str(_gen_str),m_nex(_nex),
   p_ex_fl(_ex_fl),
   m_atoms(0), m_analyse(0), m_tables(0), 
   m_enhancefac(1.), m_maxfac(1.),
   m_orderQCD(_orderQCD), m_orderEW(_orderEW),
-  p_psgen(0), m_print_graphs(false)
+  p_psgen(0), m_print_graphs(false), m_ycut(ycut)
 {
   m_scale[stp::as]=m_scale[stp::fac]=_scale;
 

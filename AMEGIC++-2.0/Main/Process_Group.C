@@ -39,9 +39,9 @@ Process_Group::Process_Group(int _nin,int _nout,Flavour *& _fl,
 			     PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			     int _gen_str,int _orderQCD, int _orderEW,
 			     int _kfactorscheme,int _scalescheme,double _scale,
-			     Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi) :
+			     Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi,double ycut) :
   Process_Base(_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
-	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl)
+	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,ycut)
 {
   p_selected  = NULL;
 
@@ -71,7 +71,7 @@ Process_Group::Process_Group(int _nin,int _nout,Flavour *& _fl,
   ConstructProcesses(_seldata);
   GroupProcesses();
 
-  if (_seldata) p_selector = new Combined_Selector(m_nin,m_nout,p_flavours,_seldata);
+  if (_seldata) p_selector = new Combined_Selector(m_nin,m_nout,p_flavours,_seldata,ycut);
   else {
     if (m_nout>2) 
       msg.Out()<<"WARNING in Process_Group "<<m_name<<endl
@@ -158,7 +158,7 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
     if (take) {
       if (CheckExternalFlavours(m_nin,_fl,m_nout,_fl+m_nin)) {
 	Add(new Single_Process(m_nin,m_nout,_fl,p_isrhandler,p_beamhandler,_seldata,m_gen_str,m_orderQCD,m_orderEW,
-			       m_kfactorscheme,m_scalescheme,m_scale[stp::as],_pl,m_nex,p_ex_fl,m_usepi));
+			       m_kfactorscheme,m_scalescheme,m_scale[stp::as],_pl,m_nex,p_ex_fl,m_usepi,m_ycut));
       }
       else {
 	take=0;

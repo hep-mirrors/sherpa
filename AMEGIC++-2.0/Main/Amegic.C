@@ -206,7 +206,7 @@ void Amegic::ReadInProcessfile(string file)
   Pol_Info  * plIS,* plFS, * pldummy,  * plavs;
   int         order_ew,order_strong,scale_scheme,kfactor_scheme; 
   double      fixed_scale;
-  double      enhance_factor=1.,maxreduction_factor=1.,maxredepsilon=0.;
+  double      enhance_factor=1.,maxreduction_factor=1.,maxredepsilon=0.,ycut=-1.;
   bool        print_graphs=false;
   string      selectorfile;
   for(;from;) {
@@ -255,6 +255,7 @@ void Amegic::ReadInProcessfile(string file)
 	  }
 	  else {
 	    order_ew = order_strong = -1;
+	    ycut           = -1.;
 	    selectorfile   = string("");
 	    scale_scheme   = _scale_scheme;
 	    kfactor_scheme = _kfactor_scheme;
@@ -351,6 +352,16 @@ void Amegic::ReadInProcessfile(string file)
 		  str>>maxredepsilon;
 		}
 
+		position       = buf.find(string("YCUT :"));
+		if (position > -1) {
+		  MyStrStream str;      
+		  buf          = buf.substr(buf.find(":",position)+1);
+		  Shorten(buf);
+		  str<<buf;
+		  str>>ycut;
+		  std::cout<<"AMEGIC: found ycut "<<ycut<<std::endl;
+		}
+
 		position       = buf.find(string("Print_Graphs"));
 		if (position > -1) {
 		  print_graphs=true;
@@ -405,14 +416,15 @@ void Amegic::ReadInProcessfile(string file)
 
 	    if (summass<rpa.gen.Ecms()) {
 	      Process_Base * proc=NULL;
+	      std::cout<<"new process: "<<ycut<<std::endl;
 	      if (single) proc = new Single_Process(nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
 						     order_strong,order_ew,
 						     -kfactor_scheme,-scale_scheme,fixed_scale,
-						    plavs,nex,excluded,usepi);
+						    plavs,nex,excluded,usepi,ycut);
 	      else proc = new Process_Group(nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
 					    order_strong,order_ew,
 					    -kfactor_scheme,-scale_scheme,fixed_scale,
-					    plavs,nex,excluded,usepi);
+					    plavs,nex,excluded,usepi,ycut);
 	      proc->SetEnhance(enhance_factor,maxreduction_factor,maxredepsilon);
 	      if (print_graphs) proc->SetPrintGraphs();
 	      p_procs->Add(proc);

@@ -39,9 +39,9 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
 			       ISR_Handler * _isr,Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			       int _gen_str,int _orderQCD, int _orderEW,
 			       int _kfactorscheme, int _scalescheme,double _scale,
-			       Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi) :
+			       Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi, double ycut) :
   Process_Base(_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
-	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl),
+	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,ycut),
   m_sfactor(1.), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this), 
   m_helsample(false), m_inithelsample(false), m_throws(0), m_helresult(0.), m_helresult2(0.)
 {
@@ -61,7 +61,7 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
   m_pslibname = m_libname;
 
   PolarizationNorm();
-  if (_seldata) p_selector = new Combined_Selector(m_nin,m_nout,p_flavours,_seldata);
+  if (_seldata) p_selector = new Combined_Selector(m_nin,m_nout,p_flavours,_seldata,ycut);
   else {
     if (m_nout>2)
       msg.Out()<<"WARNING in Single_Process "<<m_name<<endl
