@@ -91,14 +91,12 @@ bool Beam_Spectra_Handler::InitializeLaserBackscattering(Data_Read * dataread,in
 	       <<"   This option is not available. Result will be to terminate program."<<endl;
     return 0;
   }      
-  bool okay;
   double Laser_energy       = dataread->GetValue<double>("E_LASER_"+number);
   double Laser_polarization = dataread->GetValue<double>("P_LASER_"+number);
   int mode                  = dataread->GetValue<int>("LASER_MODE");
   int angles                = dataread->GetValue<Switch::code>("LASER_ANGLES");
   int nonlin                = dataread->GetValue<Switch::code>("LASER_NONLINEARITY");
 
-  if (num==1) beam_energy  = -beam_energy; 
   p_BeamBase[num]          = new Laser_Backscattering(beam_particle,beam_energy,beam_polarization,
 						      Laser_energy,Laser_polarization,
 						      mode,angles,nonlin,1-2*num);
@@ -109,7 +107,6 @@ bool Beam_Spectra_Handler::InitializeMonochromatic(Data_Read * dataread,int num)
   char help[20];
   sprintf(help,"%i",num+1);
   std::string number = string(help); 
-  bool okay;
   int     flav              = dataread->GetValue<int>("BEAM_"+number);  
   Flavour beam_particle     = Flavour(kf::code(abs(flav)));
   if (flav<0) beam_particle = beam_particle.Bar();
@@ -158,7 +155,6 @@ bool Beam_Spectra_Handler::InitKinematics(Data_Read * dataread) {
 		 <<p_BeamBase[0]->Flav()<<" / "<<p_BeamBase[1]->Flav();
   if (m_asymmetric) msg.Debugging()<<" for asymmetric situation"<<endl;
                else msg.Debugging()<<" for symmetric situation"<<endl;
-
   return 1;
 }
 
