@@ -24,13 +24,13 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const om::code modifier)
   case om::violet:   return str<<"\e[35m";
   case om::lblue:    return str<<"\e[36m";
   case om::grey:     return str<<"\e[37m";
-  case om::redbg:    return str<<"\e[31m";
-  case om::greenbg:  return str<<"\e[32m";
-  case om::brownbg:  return str<<"\e[33m";
-  case om::bluebg:   return str<<"\e[34m";
-  case om::violetbg: return str<<"\e[35m";
-  case om::lbluebg:  return str<<"\e[36m";
-  case om::greybg:   return str<<"\e[37m";
+  case om::redbg:    return str<<"\e[41m";
+  case om::greenbg:  return str<<"\e[42m";
+  case om::brownbg:  return str<<"\e[43m";
+  case om::bluebg:   return str<<"\e[44m";
+  case om::violetbg: return str<<"\e[45m";
+  case om::lbluebg:  return str<<"\e[46m";
+  case om::greybg:   return str<<"\e[47m";
   case om::none:     return str;
 #else
   default: return str;
