@@ -27,6 +27,7 @@ namespace APACIC {
 
     int             m_cpl_scheme;
     int             m_ordering_scheme;
+    int             m_last_veto;
     // mother
     double m_E2;
     double m_x, m_z, m_t, m_phi,m_pt2;

@@ -82,7 +82,8 @@ void Final_State_Shower::FirstTimelikeFromSpacelike(Tree * tree,Knot* mo,bool je
   p_kin->SetJetVeto(jetveto);
 
   // *AS* no fs interf.
-  //  Reset(mo);
+  Reset(mo);
+  return;
 
   Flavour flavs[2];
   for (;;) {

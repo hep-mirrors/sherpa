@@ -41,8 +41,8 @@ bool Spacelike_Kinematics::DoKinematics(Tree ** trees,Knot * active, Knot * part
   msg.Debugging()<<",("<<active->kn_no<<"), <"<<partner->kn_no<<"> );"<<endl;
 
   if (!active->prev) {
-    msg.Error()<<"Error Spacelike_Kinematics::DoKinematics : "
-	       <<"     No mother for active knot, no kinematics to be constructed"<<endl;
+    msg.Debugging()<<"Error Spacelike_Kinematics::DoKinematics : "
+		   <<"     No mother for active knot, no kinematics to be constructed"<<endl;
     return 0;
   }
 
@@ -60,7 +60,10 @@ bool Spacelike_Kinematics::DoKinematics(Tree ** trees,Knot * active, Knot * part
   double np3     = sqrt(s3*s3-4.*(partner->t)*(mother->t));
   double maxt_d2 = CalculateMaxT(active,partner);
 
-  if (maxt_d2 < sister->t) return 0;
+  if (maxt_d2 < sister->t) {
+    msg.Debugging()<<" if max_d2 < sister->t "<<maxt_d2<<" sister "<<sister->t<<endl;
+    return 0;
+  }
   
   double E_mo      = 1./(2.*sqrt(sprime)) *
     (sprime/active->z - partner->t + active->t - sister->t);
@@ -105,8 +108,14 @@ bool Spacelike_Kinematics::DoKinematics(Tree ** trees,Knot * active, Knot * part
   mother->part->SetMomentum(v_mo);
   sister->part->SetMomentum(v_si);
   sister->E2 = sqr(v_si[0]);
-  if (ResetEnergies(sister)) kink->DoKinematics(sister);
-                        else return 0;
+  if (ResetEnergies(sister)) {
+    msg.Debugging()<<" calling finalstate kinematics "<<endl;
+    kink->DoKinematics(sister);
+  }
+  else {
+    msg.Debugging()<<" reset energies failed "<<endl;
+    return 0;
+  }
   return 1;
 }
 
@@ -207,7 +216,9 @@ double Spacelike_Kinematics::CalculateMaxT(Knot * active,Knot * partner) {
 	       <<"   CalculateMaxT : No knots."<<endl;
     return 0.;
   }
-  double t1   = active->t;
+  msg.Debugging()<<" in Spacelike_Kinematics::CalculateMaxT( k1: ("<<active->kn_no<<"), k2: ("
+      <<partner->kn_no<<"), k3: ("<<active->prev->kn_no<<") )"<<endl;
+  double t1   = active->t; 
   double t2   = partner->t;
   double t3   = active->prev->t;
   double s    = (active->part->Momentum() + partner->part->Momentum()).Abs2();
@@ -215,6 +226,7 @@ double Spacelike_Kinematics::CalculateMaxT(Knot * active,Knot * partner) {
   double s3   = s/active->z - t2 - t3;
   double l1   = s1*s1-4.*t2*t1;
   double l3   = s3*s3-4.*t2*t3;
+  msg.Debugging()<<"(t1,t2,t3), (s1,s3) : ("<<t1<<","<<t2<<","<<t3<<"), ("<<s1<<","<<s3<<")"<<endl;
   if ((l1<0.) || (l3<0.)) return -1.;
 
   double np1  = sqrt(l1);

@@ -324,7 +324,6 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
   int mismatch = 0;
   bool accepted; 
   m_sprime      = (k1->part->Momentum()+k2->part->Momentum()).Abs2();
-  msg.Debugging()<<" spr (A) = "<<m_sprime<<endl;
 
 
   msg.Debugging()<<"Initial_State_Shower::InitializeSystem with s' = "<<m_sprime<<std::endl
@@ -411,12 +410,13 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
       return 0;
     }
     msg.Debugging()<<"---------------------------------------"<<std::endl
-		   <<"Initial_State_Shower::InitializeSystem failed. "
+		   <<"Initial_State_Shower::InitializeSystem failed "
 		   <<mismatch<<" trials."<<std::endl
 		   <<"---------------------------------------"<<std::endl;
-
-    trees[0]->Restore(k1);
-    trees[1]->Restore(k2);
+    //    trees[0]->Restore(k1);
+    trees[0]->Restore(trees[0]->GetInitiator(),k1);
+    //    trees[1]->Restore(k2);
+    trees[1]->Restore(trees[1]->GetInitiator(),k2);
     k1->Copy(k1save);
     k2->Copy(k2save);
   }
@@ -436,7 +436,7 @@ bool Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
 		 <<k2->kn_no<<"("<<k2->stat<<") with "<<k2->t<<std::endl;
   if (!(k1->stat) && !(k2->stat)) return 1;
 
-  if ((k1->t) < (k2->t)) {
+  if ((k1->t) < (k2->t)) {  // make shure winner is still on (stat>0) !!! 
     k1->stat           = 0;
     k1->E2             = sqr(k1->part->Momentum()[0]);
     k1->prev->E2       = k1->E2/sqr(k1->z);
@@ -446,6 +446,15 @@ bool Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
 
     msg.Debugging()<<"       e2 = "<<k1->prev->left->E2<<endl;
     if (!FillBranch(trees,k1->prev,k2,0)) return 0;
+    double maxt = p_kin->CalculateMaxT(k1,k2);
+    if (maxt<k1->prev->left->tout) {
+      msg.Debugging()<<"Initial_State_Shower::FillBranch : for "<<k1->kn_no<<std::endl
+		     <<"    No timelike branch possible here : "
+		     <<maxt<<" < "<<k1->prev->left->tout<<std::endl;
+    }
+    else {
+      k1->prev->left->t = maxt;
+    }
     msg.Debugging()<<"    - calling FirstTimelikeFromSpacelike  a"<<endl;
     double sprime_a = (k1->part->Momentum()+k2->part->Momentum()).Abs2();
     msg.Debugging()<<"      (spr,z,t4) : ("<<m_sprime*k1->z<<"-"<<sprime_a<<","<<k1->z<<","<<k1->prev->left->t<<")"<<endl;
@@ -484,6 +493,15 @@ bool Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
 
     msg.Debugging()<<"       e2 = "<<k2->prev->left->E2<<endl;
     if (!FillBranch(trees,k2->prev,k1,1)) return 0;
+    double maxt = p_kin->CalculateMaxT(k2,k1);
+    if (maxt<k2->prev->left->tout) {
+      msg.Debugging()<<"Initial_State_Shower::FillBranch : for "<<k2->kn_no<<std::endl
+		     <<"    No timelike branch possible here : "
+		     <<maxt<<" < "<<k2->prev->left->tout<<std::endl;
+    }
+    else {
+      k2->prev->left->t = maxt;
+    }
     msg.Debugging()<<"    - calling FirstTimelikeFromSpacelike  b"<<endl;
     double sprime_b = (k1->part->Momentum()+k2->part->Momentum()).Abs2();
     msg.Debugging()<<"      (spr,z,t4) : ("<<m_sprime*k2->z<<"-"<<sprime_b<<","<<k2->z<<","<<k2->prev->left->t<<")"<<endl;
@@ -521,6 +539,7 @@ bool Initial_State_Shower::FillBranch(Tree ** trees,Knot * active,Knot * partner
   Flavour flavs[2];
   if (p_suds[leg]->Dice(active,m_sprime)) {
 
+    // *AS* ? jetveto hier ? !!!
     if (p_kin->KinCheck(active,m_jetveto)) return 0;
 
     flavs[0] = p_suds[leg]->GetFlA();
@@ -528,20 +547,25 @@ bool Initial_State_Shower::FillBranch(Tree ** trees,Knot * active,Knot * partner
 
     FillMotherAndSister(trees[leg],active,flavs);
 
-    msg.Debugging()<<"  e2 = "<<active->prev->left->E2<<endl;
-    double maxt = p_kin->CalculateMaxT(active,partner);
+    /* 
+       // *AS* we need to know t2 and t3
+       msg.Debugging()<<"  e2 = "<<active->prev->left->E2<<endl;
+       double maxt = p_kin->CalculateMaxT(active,partner);
 
-    if (maxt<active->prev->left->tout) {
-      msg.Debugging()<<"Initial_State_Shower::FillBranch : for "<<active->kn_no<<std::endl
-		     <<"    No timelike branch possible here : "
-		     <<maxt<<" < "<<active->prev->left->tout<<std::endl;
-      trees[leg]->Restore(active);
-      return 0;
-    }
-    else {
-      active->prev->left->t = maxt;
-      return 1;
-    }
+       if (maxt<active->prev->left->tout) {
+         msg.Debugging()<<"Initial_State_Shower::FillBranch : for "<<active->kn_no<<std::endl
+                        <<"    No timelike branch possible here : "
+                        <<maxt<<" < "<<active->prev->left->tout<<std::endl;
+       //      trees[leg]->Restore(active);
+       trees[leg]->Restore(trees[leg]->GetInitiator(),active);
+       return 0;
+       }
+       else {
+         active->prev->left->t = maxt;
+         return 1;
+       }
+    */
+    return 1;
   }
   active->stat   = 0;
   active->t      = active->tout;
@@ -587,8 +611,8 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,Flavour * k_
   sister->E2     = 0.;
   //  sister->E2     = sqr(1./k->z -1.) * k->E2;
   
-  msg.Debugging()<<"      mother : ("<<mother->kn_no<<") E2="<<mother->E2<<endl;
-  msg.Debugging()<<"      sister : ("<<sister->kn_no<<") E2="<<sister->E2<<endl;
+//   msg.Debugging()<<"      mother : ("<<mother->kn_no<<") E2="<<mother->E2<<endl;
+//   msg.Debugging()<<"      sister : ("<<sister->kn_no<<") E2="<<sister->E2<<endl;
 
   if (k->part->Info() != 'G') k->part->SetInfo('i');
   k->part->SetStatus(2);

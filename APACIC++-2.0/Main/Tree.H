@@ -61,6 +61,8 @@ namespace APACIC {
     void Restore();
     void Restore(Knot *);
     void ResetDaughters(Knot *);
+    //! Removes the tree from a to b
+    void Restore(Knot *, Knot *);
     //-----------------------------------------------------------------------
     //--------------------------- Specific knots ----------------------------
     //----------------------------------------------------------------------- 

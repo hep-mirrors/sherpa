@@ -5,7 +5,7 @@ libShowers_la_SOURCES = Final_State_Shower.C Timelike_Sudakov.C \
 			Sudakov_Tools.C \
 		        QED_Splitting_Functions.C \
                         QCD_Splitting_Functions.C \
-                        Splitting_Function.C Splitting_Group.C
+                        Splitting_Function.C Splitting_Group.C Backward_Splitting_Group.C
 INCLUDES = -I../Main \
 	   -I../Hard_Processes \
 	   -I../Hard_Processes/Process_Library \

@@ -43,8 +43,11 @@ Sudakov_Tools::Sudakov_Tools(int _scheme,double tmin, double tmax) {
     double q2_max=sqr(91.2);
     double q2_min=sqr(.912);
     int    n =10;
+    double q2 = tmin;
+    if (tmin<0.) q2 = -tmin;
+    cout<<" "<<q2<<" \t"<<CrudeAlphaS(q2)<<" \t"<<AlphaS(q2)<<" \t"<<(*as)(q2)<<endl;
     for (int i=0;i<=n;++i) {
-      double q2=q2_min*pow((q2_max/q2_min),double(i)/double(n));
+      q2=q2_min*pow((q2_max/q2_min),double(i)/double(n));
       cout<<" "<<q2<<" \t"<<CrudeAlphaS(q2)<<" \t"<<AlphaS(q2)<<" \t"<<(*as)(q2)<<endl;
     }
     //    exit(0);
@@ -59,7 +62,7 @@ double Sudakov_Tools::CrudeAlphaS(double t){
 double Sudakov_Tools::AlphaS(double t){
   if (t<0.) t = -t;
 
-  // exact (LO) alphaS
+  // exact (LO) alphaS    (default !!!) disable for pythia alphaS
   return (*as)(t);
 
   const double b   =0.6100939485; // 1/(12 Pi) * (33 - 2*5)
@@ -120,8 +123,11 @@ void Sudakov_Tools::FixLambda2(double t) {
 };
 
 void Sudakov_Tools::Setscalefac(double t0) {
+  cout<<" t0="<<t0<<endl;
   if (t0<0.) t0=-t0;
-  m_scalefac = 1.; // will be used in CrudeAlphaS ...
+  cout<<" t0="<<t0<<endl;
+  m_scalefac = 1.; // will be used in CrudeAlphaS,
+                   // i.e. has to be defined before calling CrudeAlphaS (next line)
   m_scalefac = AlphaS(t0)/CrudeAlphaS(t0);
 };
 

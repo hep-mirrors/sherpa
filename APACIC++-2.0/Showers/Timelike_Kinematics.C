@@ -398,6 +398,8 @@ bool Timelike_Kinematics::KinCheck(int first,Knot * mo)
 	pt2 = 0.25*Min((1.-mo->z)/mo->z,mo->z/(1.-mo->z))*mo->t;
       double pt2th    = sqrt(pt2/mo->E2)/(mo->z*(1.- mo->z));
       double crudeth  = sqrt( mo->t/(mo->z*(1.- mo->z)*mo->E2) );
+      //      double cosex= (2.* mo->E2 *(mo->z*(1.- mo->z)) + tb + tc - mo->t)/
+      //    (2.* sqrt((mo->E2*(mo->z*mo->z)-tb)*(mo->E2*((1.-mo->z)*(1.-mo->z))-tc)));
       
       double coscrude = cos(crudeth);
       msg.Tracking()<<" cos cru = "<<coscrude<<"    ("<<crudeth<<","<<mo->z<<")"<<endl;
@@ -488,6 +490,9 @@ bool Timelike_Kinematics::ExtraJetCheck(Knot * mo, Knot * d1, Knot * d2) {
     pt2 = 0.25*Min((1.-z)/z,z/(1.-z))*t;
   double pt2th  = sqrt(pt2/E2)/(z*(1.- z));
   double crudeth  = sqrt( t/(z*(1.- z)*E2) );
+
+  //  double cosex= (2.* E2 *(z*(1.- z)) + tb + tc - t)/
+  //  (2. *  sqrt( ( E2 *(z*z) - tb) * (E2 *((1.- z)*(1.- z)) - tc)));
   
   double coscrude=cos(crudeth);
   coscrude=cos(pt2th);  // *AS* *FK* new choise !!!
@@ -517,7 +522,11 @@ bool Timelike_Kinematics::JetVeto(double mo_t, double mo_e2, double mo_z,
 
     double pt2th    = sqrt(pt2/mo_e2)/(mo_z*(1.- mo_z));
     double crudeth  = sqrt( mo_t/(mo_z*(1.- mo_z)*mo_e2) );
-    
+
+    //double cosex= (2.* mo_e2 *(mo_z*(1.- mo_z)) + tb + tc - mo_t)/
+    //(2. * sqrt( ( mo_e2 *(mo_z*mo_z) - tb) * (mo_e2 *((1.- mo_z)*(1.- mo_z)) - tc)));
+
+   
     double coscrude = cos(crudeth);
 //     cout<<" cos cru = "<<coscrude<<"    ("<<crudeth<<","<<mo_z<<")"<<endl;
 //     cout<<" cos cru = "<<coscrude<<"    ("<<pt2th<<","<<mo_z<<")"<<endl;

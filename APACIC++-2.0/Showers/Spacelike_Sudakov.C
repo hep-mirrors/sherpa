@@ -15,9 +15,9 @@ using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 
 Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * _pdf,Sudakov_Tools * _tools) : 
-  p_tools(_tools), Backward_Splitting_Group(0,0) 
+  m_last_veto(0), p_tools(_tools), Backward_Splitting_Group(0,0) 
 {
-  p_pdf    = _pdf;
+  p_pdf    = _pdf; 
   p_pdfa   = p_pdf->GetCopy();
 
   m_cpl_scheme      = 1;  /*  (0=fix, 1=pt^2 2=t/4)                             */   
@@ -82,6 +82,7 @@ Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * _pdf,Sudakov_Tools * _tools) :
 
 
 bool Spacelike_Sudakov::Dice(Knot * mo,double sprime) {
+  m_last_veto = 0;
   m_inflav = mo->part->Flav(); 
   m_t      = mo->t;
   m_x      = mo->x;
@@ -105,18 +106,23 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime) {
   }
   
   // regulator of parton splitting functions
-  if (m_inflav.Strong()) m_xe   = 2.*m_emin*sprime/sqr(2.*rpa.gen.Ecms());
+  /*
+  if (m_inflav.Strong()) m_xe = 2.*m_emin*sprime/sqr(2.*rpa.gen.Ecms());
   else                 m_xe   = 0.0001;
   m_zmin = m_x/(1.-m_xe);
   m_zmax = m_x/(m_x+m_xe);
   msg.Debugging()<<"Spacelike_Sudakov::Dice : zrange "<<m_zmin<<" < "<<m_zmax<<std::endl;
-  // *AS*
-  /*
-    xe   = 2.*emin*sqrt(sprime)/sqr(rpa.gen.Ecms());  
-    zmin = x/(1.-xe);
-    zmax = x/(x+xe);
-    msg.Out()<<"Spacelike_Sudakov::Dice : zrange "<<zmin<<" < "<<zmax<<std::endl;
-  */
+  */  // *AS*
+  
+  m_emin        = 2.;
+  m_xe   = 2.*m_emin*sqrt(sprime)/sqr(rpa.gen.Ecms());  
+  m_zmin = m_x/(1.-m_xe);
+  m_zmax = m_x/(m_x+m_xe);
+  msg.Debugging()<<"Spacelike_Sudakov::Dice : zrange "<<m_zmin<<" < "<<m_zmax<<std::endl;
+  if (m_x >= (1 - 2.*m_xe)) {
+    msg.Debugging()<<"x to big no zrange left "<<endl;
+    // same as below
+  }
 
   if (m_zmin>m_zmax) {
     msg.Debugging()<<"Spacelike_Sudakov::Dice : mother can't branch (zmax<zmin) : "
@@ -140,7 +146,7 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime) {
     ProduceT();
     if (m_t>m_t0) {
       msg.Debugging()<<"Spacelike_Sudakov::No Branch for ("<<mo->kn_no<<"), "<<m_inflav
-		     <<", "<<m_t<<", set on t="<<m_t0<<std::endl;
+		     <<", "<<m_t<<", set on t="<<mo->tout<<std::endl;
       mo->t    = mo->tout;
       mo->stat = 0;
       return 0;      // no further branching
@@ -156,7 +162,11 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime) {
       mo->t      = m_t;
       mo->phi    = m_phi;
       return 1;
-    }    
+    }
+    else {
+      msg.Debugging()<<" Branch Vetoed "<<m_last_veto<<endl;
+      msg.Debugging()<<m_t<<", z="<<m_z<<", "<<m_inflav<<" for "<<m_lastint<<std::endl;
+    }
   }
   msg.Debugging()<<"Spacelike_Sudakov::Banged out of Dice !"<<std::endl;
   mo->t    = mo->tout;
@@ -165,22 +175,35 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime) {
 }
 
 void Spacelike_Sudakov::ProduceT() {
-  if (m_lastint <rpa.gen.Accu()) m_t = m_t0;
-  m_t *= exp( 2.*M_PI*log(ran.Get()) / m_lastint );
+  if (m_lastint <0.) m_t = +1.;            // m_t = m_t0;
+  else m_t *= exp( 2.*M_PI*log(ran.Get()) / m_lastint );
   return;
 }
 
 bool Spacelike_Sudakov::Veto(Knot * mo) 
 {  
-  
+  m_last_veto=0;
+
   // "lower" cutoff reached / still spacelike
-  if ((1.-m_z)*m_t>m_t0)   return 1;
+  if ((1.-m_z)*m_t>m_t0) {
+    m_last_veto=1;
+    return 1;
+  }
   // 1. masses, z-range and splitting function
-  if (MassVeto())    return 1;
+  if (MassVeto()) {
+    m_last_veto=2;
+    return 1;
+  }
   // 2. alphaS
-  if (CplVeto())  return 1;
+  if (CplVeto()) {
+    m_last_veto=3;
+    return 1;
+  }
   // 3. angular ordering
-  if (PTVeto(mo)) return 1;
+  if (PTVeto(mo)) {
+    m_last_veto=4;
+    return 1;
+  }
   // passed vetos
   return 0;
 }

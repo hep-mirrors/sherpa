@@ -128,14 +128,34 @@ Knot * Tree::NewKnot()
 //--------------------------- Resetting the tree ------------------------
 //----------------------------------------------------------------------- 
 
+void Tree::Restore(Knot * start, Knot * stop) {
+  if (start==stop) return;
+  if (start==0) return;
+
+  if (start->left) start->left->prev=0;
+  if (start->right) start->right->prev=0;
+  Restore(start->left,stop);
+  Restore(start->right,stop);
+  for (Knot_Iterator kit=knots->begin(); kit!=knots->end(); ++kit) {
+    if ((*kit) == start) {
+      delete (*kit);
+      knots->erase(kit);
+      return;
+    }
+  }
+}
 
 void Tree::Restore(Knot * in) {
-  //msg.Debugging()<<"Tree::Restore."<<endl
-  //		 <<"   Delete all predecessors of "<<in<<" "<<in->kn_no<<endl;
 
   if (!(in->prev)) return;
-  if (in->prev->left != in)  ResetDaughters(in->prev->left);
-  if (in->prev->right != in) ResetDaughters(in->prev->right);
+  if (in->prev->left != in)  {
+    ResetDaughters(in->prev->left);
+    in->prev->left=0;
+  }
+  if (in->prev->right != in) {
+    ResetDaughters(in->prev->right);
+    in->prev->right=0;
+  }
   Restore(in->prev);
   for (Knot_Iterator kit=knots->begin(); kit!=knots->end(); ++kit) {
     if ((*kit) == in->prev) {
@@ -150,9 +170,13 @@ void Tree::ResetDaughters(Knot * in) {
   if (!(in)) return;
   //msg.Debugging()<<"Tree::ResetDaughters."<<endl
   //		 <<"   Delete daughters of/and "<<in<<" "<<in->kn_no<<endl;
+
   
   if (in->left)  ResetDaughters(in->left);
+  in->left=0;
   if (in->right) ResetDaughters(in->right);
+  in->right=0;
+
   for (Knot_Iterator kit=knots->begin(); kit!=knots->end(); ++kit) {
     if ((*kit) == in) {
       delete (in);
