@@ -196,8 +196,9 @@ void Primitive_Channel::CreateRoot(const std::vector<double> &min,
 }
 
 Primitive_Integrator::Primitive_Integrator():
-  m_nopt(10000), m_nmax(1000000), m_nmaxopt(250000), m_error(0.01),
-  m_scale (1.0), m_sum(0.0), m_sum2(0.0), m_max(0.0), m_np(0.0), 
+  m_nopt(10000), m_nmax(1000000), m_nmaxopt(250000), 
+  m_nfirst(100000), m_error(0.01), m_scale (1.0), 
+  m_sum(0.0), m_sum2(0.0), m_max(0.0), m_np(0.0), 
   m_lastdim(0), m_mode(0), m_vname("I") {}
 
 Primitive_Integrator::~Primitive_Integrator()
@@ -239,7 +240,7 @@ double Primitive_Integrator::Integrate(const Primitive_Integrand *function)
   m_opt.resize(16*m_point.size());
   for (size_t i=0;i<16*m_point.size();++i) m_opt[i]=0.0;
   while (((long unsigned int)m_np)<Min(m_nmaxopt,m_nmax) && error>m_error) {
-    for (long unsigned int n=0;n<m_nopt;++n) Point();
+    for (long unsigned int n=0;n<(error==1.0?m_nfirst:m_nopt);++n) Point();
     Update();
     error=dabs(Sigma()/Mean());
     msg_Info()<<om::bold<<m_vname<<om::reset<<" = "<<om::blue<<Mean()*m_scale
@@ -396,7 +397,7 @@ bool Primitive_Integrator::WriteOut(const std::string &filename) const
   }
   bool result=true;
   file->precision(14);
-  (*file)<<m_nopt<<" "<<m_nmax<<" "<<m_nmaxopt<<"\n";
+  (*file)<<m_nopt<<" "<<m_nmax<<" "<<m_nmaxopt<<" "<<m_nfirst<<"\n";
   (*file)<<m_error<<" "<<m_scale<<"\n";
   (*file)<<m_sum<<" "<<m_sum2<<" "<<m_max<<" "<<m_np<<"\n";
   (*file)<<m_rmin.size()<<" ";
@@ -433,7 +434,7 @@ bool Primitive_Integrator::ReadIn(const std::string &filename)
   }
   std::string dummy;
   file->precision(14);
-  (*file)>>m_nopt>>m_nmax>>m_nmaxopt;
+  (*file)>>m_nopt>>m_nmax>>m_nmaxopt>>m_nfirst;
   (*file)>>m_error>>m_scale;
   (*file)>>m_sum>>m_sum2>>m_max>>m_np;
   if (file->eof()) {

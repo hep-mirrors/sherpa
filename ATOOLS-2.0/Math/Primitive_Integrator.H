@@ -98,7 +98,7 @@ namespace ATOOLS {
 
   private:
 
-    long unsigned int m_nopt, m_nmax, m_nmaxopt;
+    long unsigned int m_nopt, m_nmax, m_nmaxopt, m_nfirst;
 
     double m_error, m_scale;
     double m_sum, m_sum2, m_max, m_np;
@@ -154,6 +154,8 @@ namespace ATOOLS {
     inline void SetNMax(const long unsigned int &nmax) { m_nmax=nmax; }
     inline void SetNMaxOpt(const long unsigned int &nmaxopt) 
     { m_nmaxopt=nmaxopt; }
+    inline void SetNFirst(const long unsigned int &nfirst) 
+    { m_nfirst=nfirst; }
 
     inline void SetError(const double &error) { m_error=error; }
     inline void SetScale(const double &scale) { m_scale=scale; }
