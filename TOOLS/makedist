@@ -43,7 +43,7 @@ do
       autoconf
     fi
     if test "$NOCVS" = "TRUE" ; then
-      ./configure --disable-cvs
+      ./configure --disable-cvsinclude
     else 
       ./configure 
     fi
@@ -53,7 +53,7 @@ do
     if ! make dist ; then 
       echo "makedist: error: cannot create distribution of $I"
       if test "$I" = "SHERPA-1.0" ; then
-        echo "                 possibly try the '-c' option"
+        echo "                 try the '-c' option or get help with '-h'"
       fi 
       exit 1
     fi
