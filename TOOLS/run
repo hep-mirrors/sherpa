@@ -91,7 +91,7 @@ if [ ! "$PYTHIA" = "" ] ; then echo -en "PYTHIA=$PYTHIA " >> $FILE ; fi
 echo -e ">> $LOGFILE.log 2>&1 \n" >> $FILE
 
 if [ "$QUEUE" = "TRUE" ] ; then
-  echo qsub $FILE  
+  qsub $FILE  
 else
   chmod 777 $FILE
   ( nohup $FILE > /dev/null & ) 
