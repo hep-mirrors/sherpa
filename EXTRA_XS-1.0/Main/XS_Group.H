@@ -38,6 +38,7 @@ namespace EXTRAXS {
     // destructor
     ~XS_Group();
 
+    // member functions
     void Add(XS_Base *const xsec);
     bool Remove(XS_Base *const xsec);
     bool Delete(XS_Base *const xsec);
@@ -76,6 +77,8 @@ namespace EXTRAXS {
 
     void SetPSHandler(PHASIC::Phase_Space_Handler *const pshandler); 
     void ResetSelector(ATOOLS::Selector_Data *const selectordata);
+
+    void Print();
 
     // inline functions 
     inline void PushBack(XS_Base *const xsec) { m_xsecs.push_back(xsec); }

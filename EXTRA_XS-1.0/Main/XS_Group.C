@@ -79,6 +79,7 @@ void XS_Group::Add(XS_Base *const xsec)
     }
   }  
   m_xsecs.push_back(xsec);
+  if (!m_atoms) xsec->SetParent(this);
   for (size_t i=0;i<xsec->Resonances().size();++i) {
     bool present=false;
     for (size_t j=0;j<m_resonances.size();++j) {
@@ -99,6 +100,7 @@ bool XS_Group::Remove(XS_Base *const xsec)
        xsit!=m_xsecs.end();++xsit) {
     if (*xsit==xsec) {
       m_xsecs.erase(xsit);
+      xsec->SetParent(xsec);
       return true;
     }
   }
@@ -121,8 +123,8 @@ bool XS_Group::Delete(XS_Base *const xsec)
 void XS_Group::Clear() 
 {
   while (m_xsecs.size()>0) {
-    delete *m_xsecs.begin();
-    m_xsecs.erase(m_xsecs.begin());
+    delete m_xsecs.back();
+    m_xsecs.pop_back();
   }
 }
 
@@ -513,3 +515,12 @@ void XS_Group::ResetSelector(ATOOLS::Selector_Data *const selectordata)
   XS_Base::ResetSelector(selectordata);
 }
 
+void XS_Group::Print()
+{
+  ATOOLS::msg.Out()<<(m_name!=""?m_name:"<no name>")<<" {\n";
+  {
+    msg_Indent();
+    for (size_t i=0;i<m_xsecs.size();++i) m_xsecs[i]->Print();
+  }
+  ATOOLS::msg.Out()<<"} "<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb\n";
+}
