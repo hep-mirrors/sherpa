@@ -28,20 +28,22 @@ double PDF_Base::Cut(const std::string &type)
 
 void PDF_Base::Extract(const ATOOLS::Flavour flavour,const double x) 
 { 
-  m_rescale-=x;
-  m_extracted.push_back(std::pair<ATOOLS::Flavour,double>(flavour,x));
-  for (std::vector<PDF_Base*>::iterator cit=m_copies.begin();
-       cit!=m_copies.end();++cit) {
+  PDF_Base *pdf=GetBasicPDF();
+  pdf->m_rescale-=x;
+  pdf->m_extracted.push_back(std::pair<ATOOLS::Flavour,double>(flavour,x));
+  for (std::vector<PDF_Base*>::iterator cit=pdf->m_copies.begin();
+       cit!=pdf->m_copies.end();++cit) {
     (*cit)->Extract(flavour,x);
   }
 }
 
 void PDF_Base::Reset()
 { 
-  m_rescale=1.;
-  m_extracted.clear();
-  for (std::vector<PDF_Base*>::iterator cit=m_copies.begin();
-       cit!=m_copies.end();++cit) {
+  PDF_Base *pdf=GetBasicPDF();
+  pdf->m_rescale=1.;
+  pdf->m_extracted.clear();
+  for (std::vector<PDF_Base*>::iterator cit=pdf->m_copies.begin();
+       cit!=pdf->m_copies.end();++cit) {
     (*cit)->Reset();
   }
 }
