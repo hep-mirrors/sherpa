@@ -42,9 +42,8 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
 			       Pol_Info * _pl,int _nex,Flavour * _ex_fl) :
   Process_Base(_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
 	       _scalescheme,_kfactorscheme,_scalefactor,_scale,_pl,_nex,_ex_fl),
-  p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this), 
-  m_helsample(false), m_inithelsample(false), m_throws(0), m_helresult(0.), m_helresult2(0.),
-  m_sfactor(1.)
+  m_sfactor(1.), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this), 
+  m_helsample(false), m_inithelsample(false), m_throws(0), m_helresult(0.), m_helresult2(0.)
 {
   string newpath=rpa.gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath.c_str(),448);
@@ -587,7 +586,6 @@ int Single_Process::CheckLibraries() {
   if (p_shand->IsLibrary()) return 1;
 
   msg_Info()<<"Single_Process::CheckLibraries : Looking for a suitable library. This may take some time."<<std::endl;
-  std::string help;
   String_Handler * shand1;
   shand1      = new String_Handler(p_shand->Get_Generator());
   
@@ -597,8 +595,7 @@ int Single_Process::CheckLibraries() {
   double M2s, helvalue;
 
   for (;;) {
-    help=ATOOLS::ToString(m_libnumb);
-    testname  = CreateLibName()+string("_")+help;
+    testname  = CreateLibName()+string("_")+ToString(m_libnumb);
     if (shand1->SearchValues(m_gen_str,testname,p_BS)) {
 
       shand1->Calculate();
@@ -661,12 +658,10 @@ int Single_Process::CheckStrings(Single_Process* tproc)
 void Single_Process::WriteLibrary() 
 {
   if (m_gen_str<2) return;
-  std::string help;
   string testname;
   string newpath=rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/");
   for (;;) {
-    help=ToString(m_libnumb);
-    testname    = CreateLibName()+string("_")+help;
+    testname    = CreateLibName()+string("_")+ToString(m_libnumb);
     if (!(IsFile(newpath+m_ptypename+string("/")+testname+string("/V.H")))) break;
     ++m_libnumb;
   }
