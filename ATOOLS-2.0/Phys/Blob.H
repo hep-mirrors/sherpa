@@ -59,6 +59,7 @@ namespace ATOOLS {
   class Blob {
     friend std::ostream& operator<<( std::ostream&, const Blob &);
   private:
+    static long unsigned int s_currentnumber;
     Vec4D                   m_position;
     int                     m_id;
     double                  m_weight;
@@ -100,7 +101,9 @@ namespace ATOOLS {
     void        SetCMS(Vec4D _cms)                { m_cms_vec  = _cms; }
     void        SetCMS();
     void        SetId(const int _id=0);
-    static void Reset()                           { s_totalnumber = 0; }
+    static void ResetCounter() { s_totalnumber = 0; }
+    static int  Counter()      { return s_totalnumber; }
+    inline static void Reset() { s_currentnumber = 0; }
     void        SetStatus(int _status)            { m_status   = _status; }
     void        SetType(btp::code _type)          { m_type     = _type; }
     void        SetTypeSpec(std::string _type)    { m_typespec = _type; }

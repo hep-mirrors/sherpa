@@ -39,7 +39,9 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const std::vector<double> &in
 
 namespace ATOOLS {
   int Blob::s_totalnumber=0;
+  long unsigned int Blob::s_currentnumber=0;
 }
+
 
 namespace ATOOLS {
 
@@ -77,12 +79,14 @@ namespace ATOOLS {
 
 Blob::Blob(const Vec4D _pos, const int _id) : 
   m_position(_pos), m_id(_id), m_weight(1.), m_status(0), m_beam(-1), m_hasboost(false), 
-  m_type(btp::Unspecified), m_typespec(std::string("none")) {}
+  m_type(btp::Unspecified), m_typespec(std::string("none")) 
+{ ++s_totalnumber; }
 
 Blob::~Blob() {
   DeleteOwnedParticles();
   // delete data container
   ClearAllData();  
+  --s_totalnumber;
 }
 
 void Blob::AddToInParticles(Particle * Newp) {
@@ -286,7 +290,7 @@ void Blob::SetVecs() {
 
 void  Blob::SetId(const int _id) { 
   if (_id<0) m_id = -_id;
-        else m_id = ++s_totalnumber; 
+        else m_id = ++s_currentnumber; 
 }
 
 void  Blob::AddData(const std::string name, Blob_Data_Base * data) 
