@@ -133,7 +133,6 @@ namespace PHASIC {
     inline Integrable_Base *const Process() const { return p_process; }
 
     inline void   SetError(const double error) { m_error=error;  }
-    inline double Error() const                { return m_error; }
 
     void ISRChannels(const int i,Channel_Info &ci) const; 
     void BeamChannels(const int i,Channel_Info &ci) const;
