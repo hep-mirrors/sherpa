@@ -57,10 +57,10 @@ for I in $* ; do
   fi
 done
 if [ "$RUNPATH" = "" ]; then RUNPATH="./" ; fi
-if [ "$RUNFILE" = "" ]; then RUNFILE="Run.dat" ; fi
+#if [ "$RUNFILE" = "" ]; then RUNFILE="Run.dat" ; fi
 if [ "$BINPATH" = "" ]; then BINPATH="./" ; fi
-if [ "$RESULTS" = "" ]; then RESULTS="results/" ; fi
-if [ "$ANALYSIS" = "" ]; then ANALYSIS="analysis/" ; fi
+#if [ "$RESULTS" = "" ]; then RESULTS="results/" ; fi
+#if [ "$ANALYSIS" = "" ]; then ANALYSIS="analysis/" ; fi
 if [ "$BASENAME" = "" ]; then BASENAME="job" ; fi
 
 FILE=$BASENAME"_"$TIME
@@ -83,7 +83,7 @@ if [ "$QUEUE" = "TRUE" ] ; then
 fi
 echo "cd $BINPATH" >> $FILE
 echo -en "./Sherpa PATH=$RUNPATH " >> $FILE
-echo -en "RUNDATA=$RUNFILE " >> $FILE 
+if [ ! "$RUNFILE" = "" ] ; then echo -en "RUNDATA=$RUNFILE " >> $FILE ; fi
 if [ ! "$RESULTS" = "" ] ; then echo -en "RESULTS=$RESULTS " >> $FILE ; fi
 if [ ! "$ANALYSIS" = "" ] ; then echo -en "ANALYSIS_OUTPUT=$ANALYSIS " >> $FILE ; fi
 if [ ! "$EVENTS" = "" ] ; then echo -en "EVENTS=$EVENTS " >> $FILE ; fi
