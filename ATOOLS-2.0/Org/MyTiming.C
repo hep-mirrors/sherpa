@@ -48,14 +48,18 @@ void MyTiming::PrintTime()
   else {
     if (status==1) SetCurrent();
     double clocks=currentclock-startclock;
-    double secs=clocks/double(CLK_TCK);
+    //    double clk_tck=double(CLK_TCK);  // does not work properly!
+    double clk_tck=100.;
+    double secs=clocks/clk_tck;
     msg.Out()<<"Time: "<<secs<<" s   (clocks="<<clocks<<")\n";
-    double utime=(currenttms.tms_utime-starttms.tms_utime)/double(CLK_TCK);
-    double stime=(currenttms.tms_stime-starttms.tms_stime)/double(CLK_TCK);
-    double cutime=(currenttms.tms_cutime-starttms.tms_cutime)/double(CLK_TCK);
-    double cstime=(currenttms.tms_cstime-starttms.tms_cstime)/double(CLK_TCK);
+    double utime=(currenttms.tms_utime-starttms.tms_utime)/clk_tck;
+    double stime=(currenttms.tms_stime-starttms.tms_stime)/clk_tck;
+    double cutime=(currenttms.tms_cutime-starttms.tms_cutime)/clk_tck;
+    double cstime=(currenttms.tms_cstime-starttms.tms_cstime)/clk_tck;
     msg.Out()<<" (User: "<<utime<<" s ,System: "<<stime<<" s ,Children User: "
 	<<cutime<<" s ,Children System: "<<cstime<<")\n";
+//     msg.Out()<<" CLK_TCK="<<CLK_TCK<<endl;
+//     msg.Out()<<" CLK/s="<<CLOCKS_PER_SEC<<endl;
   }
 }
 

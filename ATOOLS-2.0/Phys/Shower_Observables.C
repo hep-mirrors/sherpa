@@ -228,7 +228,7 @@ void Shower_Observables::Output(std::string pname) {
 //----------------------------------------------------------------------
 
 Jetrates::Jetrates(int _type,double _xmin,double _xmax,int _nbins,
-				     Selector_Base * _sel)
+		   Selector_Base * _sel)
 {
   partner = 0;
   type = _type; xmin = _xmin; xmax = _xmax; nbins = _nbins; sel = _sel;
@@ -545,7 +545,7 @@ void ME_Rate::Output(std::string pname) {
 
 
 PT_Distribution::PT_Distribution(int _type,double _xmin,double _xmax,int _nbins,
-			 int _maxn, Flavour _fl)
+				 int _maxn, Flavour _fl)
 {
   checkfl=_fl;
   type = _type; xmin = _xmin; xmax = _xmax; nbins = _nbins; maxn = _maxn;

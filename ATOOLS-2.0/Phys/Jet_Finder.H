@@ -11,6 +11,8 @@ namespace ATOOLS {
     int    m_type,m_jet_alg;
     double * p_value;
     double m_ene, m_s, m_sprime; //, m_smin, m_smax;
+
+    double m_shower_pt2;
     /*
       The vectors related to the frame
     */
@@ -56,6 +58,8 @@ namespace ATOOLS {
     double * ActualValue();
 
 
+    double ShowerPt2() const { return m_shower_pt2; }
+    void SetShowerPt2(const double pt2) { m_shower_pt2=pt2; }
     double Smin() { return m_smin; }
     double Smax() { return m_smax; }
   };

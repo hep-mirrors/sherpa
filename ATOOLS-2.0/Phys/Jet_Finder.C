@@ -60,6 +60,7 @@ Jet_Finder::Jet_Finder(double _ycut,int _type=1) :
   m_smin    = m_ycut * m_s;
   m_smax    = m_s;
 
+  m_shower_pt2 = m_ycut * m_s;
   p_value   = new double[1];
 
   m_sel_log = new Selector_Log(m_name);
@@ -290,7 +291,7 @@ double Jet_Finder::PTij2(Vec4D p1,Vec4D p2)
 bool Jet_Finder::TwoJets(const Vec4D & p1) 
 {
   if (m_type>=2) {
-    if (sqr(p1[1]) + sqr(p1[2])  < m_s * m_ycut) return 0;
+    if (sqr(p1[1]) + sqr(p1[2])  < m_shower_pt2 ) return 0;
   }
   else {
     msg.Out()<<"Jet_Finder::TwoJets(Vec4D &) "<<std::endl;
@@ -310,14 +311,14 @@ bool Jet_Finder::TwoJets(const Vec4D & _p1,const Vec4D & _p2)
   if (m_type>=2) {
     double pt1_2  = sqr(p1[1]) + sqr(p1[2]); 
     double pt2_2  = sqr(p2[1]) + sqr(p2[2]); 
-    if (pt1_2  < m_s * m_ycut) return 0;
-    if (pt2_2  < m_s * m_ycut) return 0;
+    if (pt1_2  < m_shower_pt2 ) return 0;
+    if (pt2_2  < m_shower_pt2 ) return 0;
     double pt12_2 = 2.*Min(pt1_2,pt2_2) * (Coshyp(DEta12(p1,p2)) - CosDPhi12(p1,p2));
-    if (pt12_2 < m_s * m_ycut) return 0;
+    if (pt12_2 < m_shower_pt2 ) return 0;
   }
   else {
     double pt12_2 = 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2));
-    if (pt12_2 < m_sprime * m_ycut) return 0;
+    if (pt12_2 < m_shower_pt2 ) return 0;
   }
 
   BoostBack(p1);
@@ -335,7 +336,7 @@ bool Jet_Finder::TwoJets(double & E2,double & z,double & costheta,bool mode)
   }
   else {
     pt12_2 = 2.*E2*sqr(Min(z,1.- z))*(1.-costheta);
-    if (pt12_2 < m_sprime * m_ycut) return 0;
+    if (pt12_2 < m_shower_pt2 ) return 0;
   }
   return 1;
 }
