@@ -245,7 +245,7 @@ void Process_Group::GroupProcesses() {
     if (!massok) break;
     for (int j=0;j<m_procs[i]->Nout();j++) {
       if (!(ATOOLS::IsEqual(massout[j],(m_procs[i]->Flavs()[j+m_procs[i]->Nin()]).Mass()))) {
-	msg.Error()<<"Error in Incoming masses ; "<<massout[j]<<" vs. "<<(m_procs[i]->Flavs()[j+m_procs[i]->Nin()]).Mass()
+	msg.Error()<<"Error in outgoing masses ; "<<massout[j]<<" vs. "<<(m_procs[i]->Flavs()[j+m_procs[i]->Nin()]).Mass()
 		   <<"for "<<p_flout[j]<<" "<<m_procs[i]->Flavs()[j+m_procs[i]->Nin()]<<endl;
 	massok = 0; break;
       }
