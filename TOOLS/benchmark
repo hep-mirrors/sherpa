@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MAILADDRESS="hoeche@theory.phy.tu-dresden.de"
+MAILADDRESS="sherpa@theory.phy.tu-dresden.de"
 LOGFILE="sherpa_benchmarking"
 STATUS="Benchmarking report: "
 DATE=`date +'%y-%m-%d'`
