@@ -34,7 +34,7 @@ namespace ATOOLS {
       //std::string         m_runtime;
       long int            m_nevents;
       long int            m_seed;
-      double              m_ecms, m_ycut;
+      double              m_ecms, m_ycut, m_delta_r;
       double              m_accu;
       Flavour  m_beam1, m_beam2, p_bunch[2];
       std::string         m_rpa_id, m_flavour_id;
@@ -51,11 +51,13 @@ namespace ATOOLS {
       inline long   RandomSeed()                          { return m_seed;    }
       inline int    Analysis()                            { return m_analysis; }
       inline int    CutScheme()                           { return m_cutscheme; }
-      inline void   SetNumberOfEvents(long N)             { m_nevents   = N; }
+      inline void   SetNumberOfEvents(long N)             { m_nevents    = N; }
       inline double Ecms()                                { return m_ecms; }
-      inline void   SetEcms(double _ecms)                 { m_ecms      = _ecms;}
+      inline void   SetEcms(double _ecms)                 { m_ecms    = _ecms;}
       inline double Ycut()                                { return m_ycut; }
-      inline void   SetYcut(double _ycut)                 { m_ycut      = _ycut;}
+      inline void   SetYcut(double _ycut)                 { m_ycut    = _ycut;}
+      inline double DeltaR()                              { return m_delta_r; }
+      inline void   SetDeltaR(double dr)                  { m_delta_r   = dr;}
       inline const  Flavour Beam1()           { return m_beam1; }
       inline const  Flavour Beam2()           { return m_beam2; }
       inline void   SetBeam1(const Flavour b) { m_beam1  = b;   }

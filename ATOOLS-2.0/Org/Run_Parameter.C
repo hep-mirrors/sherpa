@@ -16,6 +16,7 @@ Run_Parameter::Run_Parameter()
   gen.m_nevents   = 0;
   gen.m_cutscheme = 0;
   gen.m_ecms      = gen.m_ycut       = gen.m_accu        = 0.;
+  gen.m_delta_r   = 1.;
   gen.m_beam1     = gen.m_beam2      = Flavour(kf::none);
   gen.m_rpa_id    = gen.m_flavour_id = std::string("");
 #ifndef USING__ATOOLS_only
@@ -57,6 +58,8 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   delete reader;
   std::cout<<"Welcome to Sherpa, "<<gen.m_username<<std::endl;
   system("if test -f sherpa_user_test; then rm sherpa_user_test; fi");
+  std::cout<<"After user_test system"<<std::endl;
+
   m_path        = path;
   Data_Read dr(m_path+file);
   gen.m_output             = dr.GetValue<int>("OUTPUT",0);

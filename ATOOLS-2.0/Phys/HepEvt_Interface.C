@@ -429,8 +429,6 @@ void HepEvt_Interface::EstablishRelations(Particle * const _mother,
 ------------------------------------------------------------------------------------*/
 
 bool HepEvt_Interface::HepEvt2Sherpa(Blob_List * const blobs) {
-  //  std::cout<<"HepEvts : "<<p_jmohep<<" "<<p_jdahep<<" "<<p_phep<<" "<<p_vhep<<" "
-  //	   <<p_isthep<<" "<<p_idhep<<std::endl;
   bool okay;
   if (p_instream) ReadHepEvt(blobs);
   else { for (int i=0;i<m_nhep;++i) HepEvt2Particle(i); }
@@ -517,18 +515,6 @@ void HepEvt_Interface::HepEvt2Particle(const int pos)
   newpart->SetStatus(p_isthep[pos]);
   m_convertH2S.insert(std::make_pair(pos,newpart));
   m_delete.insert(std::make_pair(pos,true));
-  /*
-    if (pos<30 && p_jmohep[2*pos]==0 && p_jmohep[2*pos+1]==0) {
-    std::cout<<pos+1<<" "<<p_isthep[pos]<<" "<<p_idhep[pos]<<" "
-    <<p_jmohep[2*pos]<<" "<<p_jmohep[2*pos+1]<<" "
-    <<p_jdahep[2*pos]<<" "<<p_jdahep[2*pos+1]<<" "
-    <<"("<<p_phep[5*pos]<<","<<p_phep[5*pos+1]<<","
-    <<p_phep[5*pos+2]<<","<<p_phep[5*pos+3]<<") "<<std::endl
-    //		     <<"("<<p_vhep[4*pos+0]<<","<<p_vhep[4*pos+1]<<","
-    //		     <<p_vhep[4*pos+2]<<","<<p_vhep[4*pos+3]<<")"<<std::endl
-    <<" -> "<<newpart<<std::endl;
-    }
-  */
 }
 
 bool HepEvt_Interface::ConstructBlobsFromHerwig(ATOOLS::Blob_List * const blobs)
@@ -561,8 +547,11 @@ bool HepEvt_Interface::ConstructBlobsFromHerwig(ATOOLS::Blob_List * const blobs)
   blobs->push_back(fsr2);   fsr2->SetId(blobs->size());
   blobs->push_back(cf);     cf->SetId(blobs->size());
 
+  Int_Particle_Map::iterator piter;
   for (int i=0;i<m_nhep;i++) {
-    part = m_convertH2S[i];
+    piter = m_convertH2S.find(i);
+    if (piter==m_convertH2S.end()) continue;
+    part = piter->second;
     if (part->Status()!=2 && part->Status()!=1) part->SetStatus(3);
     switch (p_isthep[i]) {
     case 101:
@@ -638,7 +627,9 @@ bool HepEvt_Interface::ConstructBlobsFromHerwig(ATOOLS::Blob_List * const blobs)
     case 198:
     case 199:
     case 200:
-      mother = m_convertH2S[p_jmohep[2*i]-1];
+      piter = m_convertH2S.find(p_jmohep[2*i]-1);
+      if (piter==m_convertH2S.end()) continue;
+      mother = piter->second;
       blob   = mother->DecayBlob();
       if (blob) {
 	mother->SetStatus(2);
@@ -658,7 +649,9 @@ bool HepEvt_Interface::ConstructBlobsFromHerwig(ATOOLS::Blob_List * const blobs)
       else part->SetStatus(1);
       break;
     case 1:
-      mother = m_convertH2S[p_jmohep[2*i]-1];
+      piter = m_convertH2S.find(p_jmohep[2*i]-1);
+      if (piter==m_convertH2S.end()) continue;
+      mother = piter->second;
       blob   = mother->DecayBlob();
       if (blob) {
 	mother->SetStatus(2);
