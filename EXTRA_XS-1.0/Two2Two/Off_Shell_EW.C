@@ -3,6 +3,7 @@
 #include "Run_Parameter.H"
 #include "Running_AlphaQED.H"
 #include "Running_AlphaS.H"
+#include "Poincare.H"
 #include "Flow.H"
 
 using namespace EXTRAXS;
@@ -57,13 +58,23 @@ Off_Shell_qqb_llb::Off_Shell_qqb_llb(const size_t nin,const size_t nout,
   m_resonances.push_back(ATOOLS::Flavour(ATOOLS::kf::Z));
   m_nvector=m_nvector+2;
   CreateMomenta(m_nvector);
+  p_addflavours = new ATOOLS::Flavour[2];
+  p_addflavours[0]=ATOOLS::kf::gluon;
+  p_addflavours[1]=ATOOLS::kf::gluon;
+  p_addmomenta = new ATOOLS::Vec4D[2];
+  m_naddout=2;
 }
 
 double Off_Shell_qqb_llb::operator()(double s,double t,double u) 
 {
+  ATOOLS::Poincare boost(p_momenta[0]+p_momenta[1]);
+  ATOOLS::Vec4D p2(p_momenta[2]), p0(p_momenta[0]);
+  boost.Boost(p2);
+  boost.Boost(p0);
+  double costh = p2.CosTheta(p0);
   chi2  = ATOOLS::sqr(kappa * s)/(ATOOLS::sqr(s-MZ2) + GZ2*MZ2);
-  term1 = (1+ATOOLS::sqr(1.+2.*t/s)) * ((ae*ae+ve*ve) * (af*af+vf*vf) * chi2);
-  term2 = (1.+2.*t/s) * (8. * ae*ve*af*vf * chi2);
+  term1 = (1+ATOOLS::sqr(costh)) * ((ae*ae+ve*ve) * (af*af+vf*vf) * chi2);
+  term2 = (costh) * (8. * ae*ve*af*vf * chi2);
   return ATOOLS::sqr(4.*M_PI*alpha) * colfac * (term1+term2); 
 }
 
@@ -118,6 +129,11 @@ Off_Shell_q1q2b_lnulb::Off_Shell_q1q2b_lnulb(const size_t nin,const size_t nout,
   m_resonances.push_back(ATOOLS::Flavour(ATOOLS::kf::W));
   m_nvector=m_nvector+2;
   CreateMomenta(m_nvector);
+  p_addflavours = new ATOOLS::Flavour[2];
+  p_addflavours[0]=ATOOLS::kf::gluon;
+  p_addflavours[1]=ATOOLS::kf::gluon;
+  p_addmomenta = new ATOOLS::Vec4D[2];
+  m_naddout=2;
 }
 
 double Off_Shell_q1q2b_lnulb::operator()(double s,double t,double u) 
