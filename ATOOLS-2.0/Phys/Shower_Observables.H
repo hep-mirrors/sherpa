@@ -9,6 +9,7 @@ namespace APHYTOOLS {
 
   class Jetrates;
   class Multiplicity;
+  class PT_Distribution;
 
   struct Event_Obi {
     double              sum;
@@ -16,6 +17,8 @@ namespace APHYTOOLS {
     int                 jet_ini;
     Jetrates          * jetrates;
     Multiplicity      * multi;
+    PT_Distribution   * wz_pt;
+    PT_Distribution   * jet_pt;
   };
 
   class Shower_Observables : public  Primitive_Observable_Base {
@@ -139,6 +142,24 @@ namespace APHYTOOLS {
 
   };
 
+
+  class PT_Distribution : public Primitive_Observable_Base {  
+    std::vector<AMATOOLS::Histogram*> histos;
+    Flavour checkfl;
+    int maxn;
+  public:
+    PT_Distribution(int _type,double _xmin,double _xmax,int _nbins,
+		    int _maxn, Flavour _fl);
+    PT_Distribution(PT_Distribution * _partner, std::string _prefix);
+
+
+    void Evaluate(const APHYTOOLS::Parton_List &,double);
+    void Evaluate(const APHYTOOLS::Blob_List & blobs,double value);
+
+    void EndEvaluation();
+    void EndEvaluation(double);
+    virtual void Output(std::string pname);
+  };
 
 }
 

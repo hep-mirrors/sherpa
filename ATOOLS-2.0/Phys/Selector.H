@@ -95,7 +95,7 @@ namespace APHYTOOLS {
   inline void Selector_Log::Output() { 
     AORGTOOLS::msg.Out()<<"  Selector "<<m_name<<" rejection quota  : "
 			<<double(rejected)/double(rejected+passed)
-			<<"  ("<<rejected<<" / "<<passed<<")"<<std::endl;
+			<<"  ("<<rejected<<" / "<<passed+rejected<<")"<<std::endl;
   }
 }
 

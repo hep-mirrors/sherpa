@@ -53,10 +53,10 @@ kf::code Kf_To_Int::FromString(std::string st)
 {
   for(int i=0;i<anz;i++) {
     if (std::string(particles[i].n)==st) return kf_tab[i];
-    if (st==std::string("e+"))           return (kf::e);
+    //    if (st==std::string("e+"))           return (kf::e); // is covered externally
   }
 
-  std::cerr<<"ERROR in Kf_To_Int::FromString("<<st<<"): Particle type unknown !"<<std::endl;
+  //  std::cerr<<"ERROR in Kf_To_Int::FromString("<<st<<"): Particle type unknown !"<<std::endl;
   return kf::none;
 }
 

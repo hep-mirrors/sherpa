@@ -189,7 +189,7 @@ void Histogram::Output(std::string name) {
   }
   ofile.close();
 
-  msg.Out()<<"written file "<<name<<std::endl;
+  msg.Tracking()<<"written file "<<name<<std::endl;
 }
 
 
