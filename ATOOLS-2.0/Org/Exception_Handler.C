@@ -6,12 +6,19 @@
 #include <unistd.h>
 #include <execinfo.h>
 
+#define USING_Stack_Trace
+#ifndef __USE_GNU
+#ifdef __GNUC__
 #define __USE_GNU
+#else 
+#undef USING_Stack_Trace
+#endif
+#endif
 
+#ifdef USING_Stack_Trace
 #include <dlfcn.h>
-
 #define MAX_BACKTRACE_DEPTH 128
-
+#endif
 
 using namespace ATOOLS;
 
@@ -193,6 +200,7 @@ void Exception_Handler::SignalHandler(int signal)
 void Exception_Handler::GenerateStackTrace(std::ostream &ostr,const bool endline,
 					   const std::string &comment)
 {
+#ifdef USING_Stack_Trace
   ostr<<comment<<om::bold<<"Exception_Handler::GenerateStackTrace(..): "
       <<om::reset<<om::blue<<"Generating stack trace "<<om::reset
       <<"(adapted from ROOT version 3.10) "<<om::bold<<"{"<<om::reset<<std::endl;
@@ -215,4 +223,5 @@ void Exception_Handler::GenerateStackTrace(std::ostream &ostr,const bool endline
   }
   ostr<<comment<<om::bold<<"}"<<om::reset;
   if (endline) ostr<<std::endl;
+#endif
 }
