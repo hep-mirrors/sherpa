@@ -245,23 +245,19 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
 	break;
       } 
     }
-    if (p_partner==this) {
-      links.push_back(this);
-      totalsize++;
-    }
+    if (p_partner==this) links.push_back(this);
+    
     if (CheckLibraries()) return 1;
     for (int j=0;j<links.size();j++) {
-      if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
-	if (links[j]->NewLibs()) {
-	  if (CheckStrings(links[j])) return 1;
-	}
-      }
+      //if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
+      if (links[j]->NewLibs()) {
+	if (CheckStrings(links[j])) return 1;	
+      }      
     }
-    if (p_partner!=this) {
-      links.push_back(this);
-      totalsize++;
-    }
+    if (p_partner!=this) links.push_back(this);
+    
     if (m_gen_str<2) return 1;
+    totalsize++;
     WriteLibrary();
     if (p_partner==this && Result()>0.) SetUpIntegrator();
     return 0;
@@ -559,6 +555,7 @@ int Single_Process::CheckLibraries() {
       if (ATOOLS::IsEqual(M2s,Result())) {
 	msg.Tracking()<<"Found a suitable Library."<<endl;
 	m_libname = testname;
+	m_pslibname = testname;
 	if (shand1) { delete shand1; shand1 = 0; }
 	//Clean p_shand!!!!
 	Minimize();
@@ -575,6 +572,8 @@ int Single_Process::CheckLibraries() {
 
 int Single_Process::CheckStrings(Single_Process* tproc)
 {
+  if (tproc->LibName().find(CreateLibName())!=0) return 0;
+
   String_Handler * shand1;
   shand1 = new String_Handler(p_shand->Get_Generator(),
 			      (tproc->GetStringHandler())->GetSKnots());
@@ -602,6 +601,7 @@ int Single_Process::CheckStrings(Single_Process* tproc)
   if (ATOOLS::IsEqual(M2s,Result())) {
     msg.Tracking()<<"Found a suitable string."<<endl;
     m_libname = tproc->LibName();
+    m_pslibname = tproc->PSLibName();
     Minimize();
     CreateMappingFile();
     return 1;
