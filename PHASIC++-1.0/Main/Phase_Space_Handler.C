@@ -486,6 +486,7 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
       m_trials=i;
       return new Blob_Data<Weight_Info>(Weight_Info(m_weight,m_trials));
     }
+    if (mode==2) return NULL;
   }
   msg.Out()<<"WARNING in Phase_Space_Handler::WeightedEvent() : "
 	   <<" too many trials for "<<p_process->Selected()->Name()<<endl;
