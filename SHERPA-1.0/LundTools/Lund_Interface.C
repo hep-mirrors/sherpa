@@ -59,6 +59,7 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file):
     pydat1.mstj[100]=5;
   }
   win=ATOOLS::rpa.gen.Ecms();
+  s_maxerrors=ATOOLS::rpa.gen.NumberOfEvents();
   std::vector<std::vector<double> > help;
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
   reader->SetMatrixType(reader->MTransposed);
@@ -389,5 +390,6 @@ void Lund_Interface::Error(const int error)
   else {
     ATOOLS::msg.Error()<<"Lund_Interface::Error("<<error<<") "<<ATOOLS::om::red
 		       <<"Pythia calls PYERRM("<<error<<")."<<ATOOLS::om::reset<<std::endl;
+    if (ATOOLS::msg.LevelIsErrors()) pylist(2);
   }
 }
