@@ -1,8 +1,6 @@
 #ifndef Integrable_Base_H
 #define Integrable_Base_H
 
-#include "Beam_Spectra_Handler.H"
-#include "ISR_Handler.H"
 #include "Selector.H"
 #include "Cut_Data.H"
 #include "Flavour.H"
@@ -13,6 +11,8 @@
 #include <string>
 
 namespace ATOOLS { class Blob_Data_Base; }
+namespace BEAM   { class Beam_Spectra_Handler; }
+namespace PDF    { class ISR_Handler; }
 
 namespace PHASIC {
 
@@ -51,6 +51,10 @@ namespace PHASIC {
 
     double   m_last, m_lastlumi, m_lastdxs, m_max;
     double   m_totalxs, m_totalsum, m_totalsumsqr, m_totalerr;
+    double   m_ssum, m_ssumsqr,m_smax,m_ssigma2;
+    std::vector<double> m_vsmax;
+    std::vector<long unsigned int> m_vsn;
+    long unsigned int m_sn;
 
     bool m_swaped;
 
@@ -64,6 +68,9 @@ namespace PHASIC {
     ATOOLS::Cut_Data            *p_cuts;
 
     bool m_ownselector;
+  protected:
+    double         TotalResult();
+    double         TotalVar();
 
   public:
 
@@ -99,8 +106,10 @@ namespace PHASIC {
     virtual void SetScale(const double scale);
     virtual void SetMax(const double max, int depth=0);
     virtual void SetMax();  
+    virtual void ResetMax(int);  
     virtual bool OneEvent();
     virtual bool SameEvent();
+    virtual void OptimizeResult();
 
     virtual ATOOLS::Blob_Data_Base *WeightedEvent();
     virtual ATOOLS::Blob_Data_Base *SameWeightedEvent();
@@ -121,6 +130,11 @@ namespace PHASIC {
     inline void SetSum(const double sum)           { m_totalsum=sum;       }
     inline void SetSumSqr(const double sumsqr)     { m_totalsumsqr=sumsqr; }
     inline void SetPoints(const long int points)   { m_n=points;           }
+    inline void SetSSum(const double sum)           { m_ssum=sum;       }
+    inline void SetSSumSqr(const double sumsqr)     { m_ssumsqr=sumsqr; }
+    inline void SetSigmaSum(const double sigma2)    { m_ssigma2=sigma2; }
+    inline void SetSPoints(const long int points)   { m_sn=points;           }
+
     inline void SetOverflow(const double overflow) { m_overflow=overflow;  }
 
     inline void SetScale(const double scale,const stp::id type) { m_scale[type]=scale; }

@@ -15,7 +15,7 @@ namespace PHASIC {
 
   public:
 
-    double Calculate(Phase_Space_Handler*,double); 
+    double Calculate(Phase_Space_Handler*,double,int); 
     double CalculateDecay(Phase_Space_Handler*,double,double); 
 
     //! Simple access methods.

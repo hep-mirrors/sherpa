@@ -109,6 +109,20 @@ double Channel_Basics::PeakedDist(double a,double cn,double cxm,double cxp,int k
   return res;
 }
 
+double Channel_Basics::PeakedGrid(double a,double cn,double cxm,double cxp,double res,int k,double &ran)
+{
+  double ce  = 1.-cn;
+  if (!IsZero(ce)) {
+    double amin = pow(a+k*cxm,ce);
+    ran = (pow(a+k*res,ce)-amin)/(pow(a+k*cxp,ce)-amin);
+  }
+  else {
+    double amin = a+k*cxm;
+    ran = log((a+k*res)/amin)/log((a+k*cxp)/amin);
+  }
+  return res;
+}
+
 double Channel_Basics::PeakedWeight(double a,double cn,
 				    double cxm,double cxp,int k)
 {
@@ -116,6 +130,26 @@ double Channel_Basics::PeakedWeight(double a,double cn,
   double wt;
   if (!IsZero(ce)) wt = (pow(a+k*cxp,ce)-pow(a+k*cxm,ce))/(k*ce);
               else wt = log((a+k*cxp)/(a+k*cxm))/k;
+  return wt;
+}
+
+double Channel_Basics::PeakedWeight(double a,double cn,
+				    double cxm,double cxp,double res,int k,double &ran)
+{
+  double ce = 1.-cn;
+  double wt;
+  if (!IsZero(ce)) {
+    double amin = pow(a+k*cxm,ce);
+    wt = pow(a+k*cxp,ce)-amin;
+    ran = (pow(a+k*res,ce)-amin)/wt;
+    wt /= k*ce;
+  }
+  else {
+    double amin = a+k*cxm;
+    wt = log((a+k*cxp)/amin);
+    ran = log((a+k*res)/amin)/wt;
+    wt /= k;
+  }
   return wt;
 }
 

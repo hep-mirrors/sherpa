@@ -1,10 +1,11 @@
 #ifndef Multi_Channel_h
 #define Multi_Channel_h
 
-#include "Single_Channel.H"
-#include <vector>
+#include "Info_Key.H"
 
 namespace PHASIC {
+
+  class Single_Channel;
 
   struct Channel_Info {
     int                  type;
@@ -28,12 +29,15 @@ namespace PHASIC {
     int                           nin, nout;
     ATOOLS::Flavour             * fl;
     std::string                   name;
-    long int                      n_points,n_contrib;
+    long int                      n_points,n_contrib,n_spoints;
+    double    m_sresult,m_sresult2,m_ssigma2;
     double    m_weight,m_result,m_result2;
     double                        rans[2];
     double                        s1xmin, * s1, * s2;
     std::vector<Single_Channel *> channels;
     bool m_readin;
+    int m_lastdice,m_optcnt;
+    double m_pol;
   public:
     Multi_Channel(std::string);
     ~Multi_Channel();
@@ -74,7 +78,7 @@ namespace PHASIC {
     void    GenerateWeight(int mode);
 
     void    ISRInfo(int,int &,double &,double &);
-    int     CountResonances(int,ATOOLS::Flavour*&);
+    //int     CountResonances(int,ATOOLS::Flavour*&);
 
     inline  Single_Channel *operator[](size_t i) { return channels[i]; }
 
@@ -91,10 +95,10 @@ namespace PHASIC {
     inline int                  Nout()      { return nout; }
     inline ATOOLS::Flavour     *Flavs()     { return fl; }
     inline double               Weight()    { return m_weight; }
-    inline double               Result()    { return m_result; }
+    double               Result();   
     inline std::string          Name()      { return name; }
     std::string                 ChID(int);
-
+    Single_Channel*             LastChannel() { if (m_lastdice>=0) return Channel(m_lastdice); return 0;}
   };
 
 

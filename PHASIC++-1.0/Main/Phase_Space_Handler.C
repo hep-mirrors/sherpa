@@ -7,15 +7,16 @@
 #include "Rambo.H"
 #include "RamboKK.H"
 #include "Sarge.H"
-#include "Simple_Pole.H"
-#include "Resonance.H"
-#include "Leading_Log.H"
-#include "Threshold.H"
-#include "LBS_Compton_Peak.H"
+// #include "Simple_Pole.H"
+// #include "Resonance.H"
+// #include "Leading_Log.H"
+// #include "Threshold.H"
+// #include "LBS_Compton_Peak.H"
 #include "Leading_Log_Z.H"
 #include "LL_KPerp.H"
 #include "LDL_KPerp.H"
 #include "FSR_Channel.H"
+#include "ISR_Vegas.H"
 #include "Running_AlphaS.H"
 
 #include "Run_Parameter.H"
@@ -55,8 +56,11 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
   Data_Read dr(rpa.GetPath()+string("/Integration.dat"));
   m_error    = dr.GetValue<double>("ERROR",0.01);
   m_inttype  = dr.GetValue<int>("INTEGRATOR",3);
+  m_fin_opt  = dr.GetValue<Switch::code>("FINISH_OPTIMIZATION");
+  if (m_fin_opt==NotDefined<Switch::code>()) m_fin_opt=Switch::Off;
   p_flavours = new Flavour[m_nin+m_nout];
   for (int i=0;i<m_nin+m_nout;i++) p_flavours[i] = proc->Flavours()[i];
+  p_channellibnames = new list<string>;
   p_fsrchannels = new Multi_Channel(string("fsr_")+proc->Name());
   m_m[0] = p_flavours[0].Mass(); m_m2[0] = m_m[0]*m_m[0];
   if (m_nin==2) {
@@ -98,6 +102,7 @@ Phase_Space_Handler::~Phase_Space_Handler()
   delete [] p_lab;
   delete [] p_flavours;
   delete p_integrator;
+  delete p_channellibnames;
 }
 
 void Phase_Space_Handler::InitCuts() 
@@ -163,7 +168,7 @@ double Phase_Space_Handler::Integrate()
   }
   msg_Debugging()<<"  FSR    : "<<p_fsrchannels->Name()<<" ("<<p_fsrchannels<<") "
 		 <<"  ("<<p_fsrchannels->Number()<<","<<p_fsrchannels->N()<<")"<<endl;
-  if (m_nin==2) return p_integrator->Calculate(this,m_error);
+  if (m_nin==2) return p_integrator->Calculate(this,m_error,m_fin_opt);
   if (m_nin==1) return p_integrator->CalculateDecay(this,sqrt(p_lab[0].Abs2()),m_error);
   return 0.;
 }
@@ -495,6 +500,26 @@ void Phase_Space_Handler::Rotate(Vec4D *const p)
   for (int i=0;i<m_nin+m_nout;i++) p[i] = Vec4D(p[i][0],(-1.)*Vec3D(p[i]));
 }
 
+bool Phase_Space_Handler::LoadChannelLibraries() 
+{
+  if (p_channellibnames->size()==0) return 1;
+  InitCuts();
+  for (list<string>::iterator it=p_channellibnames->begin();it!=p_channellibnames->end();++it) {
+    Single_Channel * sc = SetChannel(m_nin,m_nout,p_flavours,(*it),GetInfo());
+    if (sc==0) {
+      ATOOLS::msg.Error()<<"Phase_Space_Handler:"
+			 <<"Channels are not compiled and linked yet."<<endl
+			 <<"Type 'make install' and run again."<<endl;
+      return 0;
+    }
+    else {
+      sc->SetName((*it));
+      p_fsrchannels->Add(sc);
+    }
+  }
+  return 1;
+}
+
 bool Phase_Space_Handler::CreateIntegrators()
 {
   /*if (p_cuts == 0) {
@@ -503,6 +528,7 @@ bool Phase_Space_Handler::CreateIntegrators()
     if (proc->Selector()) (proc->Selector())->BuildCuts(p_cuts);
     } */
   if (m_nin==1) m_inttype = 0;
+  if(!LoadChannelLibraries()) return 0;
   if (m_nin==2) {
     if (p_beamhandler && p_beamhandler->On()>0) {
       if (!(MakeBeamChannels())) {
@@ -526,7 +552,7 @@ bool Phase_Space_Handler::CreateIntegrators()
     }
   }
   if (m_nin==2) { 
-    if (m_inttype < 3 || m_inttype == 5 && (p_fsrchannels!=0)) p_fsrchannels->DropAllChannels();
+    if (m_inttype < 3 || m_inttype == 7 && (p_fsrchannels!=0)) p_fsrchannels->DropAllChannels();
   }
   switch (m_inttype) {
   case 0: 
@@ -545,10 +571,10 @@ bool Phase_Space_Handler::CreateIntegrators()
     p_fsrchannels->Add(new Rambo(m_nin,m_nout,p_flavours));
     DropRedundantChannels();
     break;
-  case 4: 
+  case 4:case 5:case 6: 
     DropRedundantChannels();
     break;
-  case 5:
+  case 7:
     p_fsrchannels->Add(new RamboKK(m_nin,m_nout,p_flavours));
     break;    
   default:
@@ -739,6 +765,7 @@ bool Phase_Space_Handler::MakeBeamChannels()
   }
   int    type;
   double mass,width;
+  double thmin=0.,thmax=0.;
   for (int i=0;i<p_fsrchannels->Number();i++) {
     type=0; 
     mass=width=0.;
@@ -746,15 +773,35 @@ bool Phase_Space_Handler::MakeBeamChannels()
     if (type==0 || type==3 ||
 	(type==1 && (ATOOLS::IsZero(mass) || ATOOLS::IsZero(width))) ||
 	(type==2 && ATOOLS::IsZero(mass))) continue;
+    if (type==2) {
+      if (thmax==0.) { thmax=mass; thmin=mass; }
+      thmin = ATOOLS::Min(thmin,mass);
+      thmax = ATOOLS::Max(thmax,mass);
+      continue;
+    }
     ci.type = type;
     (ci.parameters).push_back(mass);
-    (ci.parameters).push_back(width);
+    if (type==1) (ci.parameters).push_back(width);
+    if (type==2) (ci.parameters).push_back(1.5);
     if ((p_flavours[0].IsLepton()) || (p_flavours[1].IsLepton())) (ci.parameters).push_back(1.);
     else (ci.parameters).push_back(.5);
     bool add=true;
     for (size_t j=0;j<m_beamparams.size();j++) if (m_beamparams[j]==ci) add=false;
     if (add) m_beamparams.push_back(ci);
     ci.parameters.clear();
+  }
+  if (thmax>0.) {
+    ci.type = 2;
+    (ci.parameters).push_back(thmax);
+    (ci.parameters).push_back(1.5);
+    if ((p_flavours[0].IsLepton()) || (p_flavours[1].IsLepton())) (ci.parameters).push_back(1.);
+    else (ci.parameters).push_back(.5);
+    m_beamparams.push_back(ci);
+    if (thmin<thmax) {
+      (ci.parameters)[0]=thmin;
+      m_beamparams.push_back(ci);
+      ci.parameters.clear();
+    }
   }
   return CreateBeamChannels();
 }
@@ -763,18 +810,59 @@ bool Phase_Space_Handler::MakeISRChannels()
 {
   if (m_isrparams.size()>0) return CreateISRChannels();
   Channel_Info ci;
+  int    type;
+  double mass,width;
+  double thmin=0.,thmax=0.;
+  for (int i=0;i<p_fsrchannels->Number();i++) {
+    type=0; 
+    mass=width=0.;
+    p_fsrchannels->ISRInfo(i,type,mass,width);
+    if (type==0 || type==3 ||
+	(type==1 && (ATOOLS::IsZero(mass) || ATOOLS::IsZero(width))) ||
+	(type==2 && ATOOLS::IsZero(mass))) continue;
+    if (type==2) {
+      if (thmax==0.) { thmax=mass; thmin=mass; }
+      thmin = ATOOLS::Min(thmin,mass);
+      thmax = ATOOLS::Max(thmax,mass);
+      continue;
+    }
+    ci.type = type;
+    (ci.parameters).push_back(mass);
+    if (type==1) (ci.parameters).push_back(width);
+    if (type==2) (ci.parameters).push_back(2.);
+    if ((p_flavours[0].IsLepton()) || (p_flavours[1].IsLepton())) (ci.parameters).push_back(1.);
+    else (ci.parameters).push_back(.5);
+    bool add=true;
+    for (size_t j=0;j<m_isrparams.size();j++) if (m_isrparams[j]==ci) add=false; 
+    if (add) m_isrparams.push_back(ci);
+    ci.parameters.clear();
+  }
+  if (thmax>0.) {
+    ci.type = 2;
+    (ci.parameters).push_back(thmax);
+    (ci.parameters).push_back(2.);
+    if ((p_flavours[0].IsLepton()) || (p_flavours[1].IsLepton())) (ci.parameters).push_back(1.);
+    else (ci.parameters).push_back(.5);
+    m_isrparams.push_back(ci);
+    if (thmin<thmax) {
+      (ci.parameters)[0]=thmin;
+      m_isrparams.push_back(ci);
+    }
+    ci.parameters.clear();
+  }
+  
   if ((p_flavours[0].IsLepton()) || (p_flavours[1].IsLepton())) {
     // leptons : 1/s'^2 and 1/(s-s')^beta, sharp FW-BW peak
-    ci.type = 0;
-    (ci.parameters).push_back(.5);
-    (ci.parameters).push_back(1.);
-    m_isrparams.push_back(ci);
-    ci.parameters.clear();
-    ci.type = 0;
-    (ci.parameters).push_back(2.);
-    (ci.parameters).push_back(1.);
-    m_isrparams.push_back(ci);
-    ci.parameters.clear();
+//     ci.type = 0;
+//     (ci.parameters).push_back(.5);
+//     (ci.parameters).push_back(1.);
+//     m_isrparams.push_back(ci);
+//     ci.parameters.clear();
+//     ci.type = 0;
+//     (ci.parameters).push_back(2.);
+//     (ci.parameters).push_back(1.);
+//     m_isrparams.push_back(ci);
+//     ci.parameters.clear();
     ci.type = 3;
     (ci.parameters).push_back(p_isrhandler->Exponent(1));
     (ci.parameters).push_back(1.00000001);
@@ -789,35 +877,18 @@ bool Phase_Space_Handler::MakeISRChannels()
     (ci.parameters).push_back(0.5);
     m_isrparams.push_back(ci);
     ci.parameters.clear();
-    ci.type = 0;
-    (ci.parameters).push_back(0.99);
-    (ci.parameters).push_back(0.5);
-    m_isrparams.push_back(ci);
-    ci.parameters.clear();
-    ci.type = 0;
-    (ci.parameters).push_back(2.);
-    (ci.parameters).push_back(0.5);
-    m_isrparams.push_back(ci);
-    ci.parameters.clear();
-  }
-  int    type;
-  double mass,width;
-  for (int i=0;i<p_fsrchannels->Number();i++) {
-    type=0; 
-    mass=width=0.;
-    p_fsrchannels->ISRInfo(i,type,mass,width);
-    if (type==0 || type==3 ||
-	(type==1 && (ATOOLS::IsZero(mass) || ATOOLS::IsZero(width))) ||
-	(type==2 && ATOOLS::IsZero(mass))) continue;
-    ci.type = type;
-    (ci.parameters).push_back(mass);
-    (ci.parameters).push_back(width);
-    if ((p_flavours[0].IsLepton()) || (p_flavours[1].IsLepton())) (ci.parameters).push_back(1.);
-    else (ci.parameters).push_back(.5);
-    bool add=true;
-    for (size_t j=0;j<m_isrparams.size();j++) if (m_isrparams[j]==ci) add=false; 
-    if (add) m_isrparams.push_back(ci);
-    ci.parameters.clear();
+    if (thmax==0.) {
+      ci.type = 0;
+      (ci.parameters).push_back(0.99);
+      (ci.parameters).push_back(0.5);
+      m_isrparams.push_back(ci);
+      ci.parameters.clear();
+      ci.type = 0;
+      (ci.parameters).push_back(2.);
+      (ci.parameters).push_back(0.5);
+      m_isrparams.push_back(ci);
+      ci.parameters.clear();
+    }
   }
   return CreateISRChannels();
 }
@@ -890,60 +961,70 @@ bool Phase_Space_Handler::MakeKMRChannels()
 bool Phase_Space_Handler::CreateBeamChannels()
 {
   if (m_beamparams.size() < 1) return 0;
+  int beam = p_beamhandler->On();
   Single_Channel * channel;   
   for (size_t i=0;i<m_beamparams.size();i++) {
     switch (m_beamparams[i].type) {
     case 0:
-      // channel = new Simple_Pole_Uniform(m_beamparams[i].parameters[0],"",p_info);
-      // p_beamchannels->Add(channel);
-      channel = new Simple_Pole_Central(m_beamparams[i].parameters[0]," beam",p_info);
-      p_beamchannels->Add(channel);
-      channel = new Simple_Pole_Forward(m_beamparams[i].parameters[0],
-					m_beamparams[i].parameters[1]," beam",p_info);
-      p_beamchannels->Add(channel);
-      channel = new Simple_Pole_Backward(m_beamparams[i].parameters[0],
-					 m_beamparams[i].parameters[1]," beam",p_info);
-      p_beamchannels->Add(channel);
+      channel = new Simple_Pole_Central_V(m_beamparams[i].parameters[0]," beam",p_info,beam);
+      p_beamchannels->Add(channel); 	
+      if (beam==3) {
+	channel = new Simple_Pole_Forward_V(m_beamparams[i].parameters[0],
+					    m_beamparams[i].parameters[1]," beam",p_info);
+	p_beamchannels->Add(channel);
+	channel = new Simple_Pole_Backward_V(m_beamparams[i].parameters[0],
+					     m_beamparams[i].parameters[1]," beam",p_info);
+	p_beamchannels->Add(channel);
+      }
       break;
     case 1:
-      channel = new Resonance_Uniform(m_beamparams[i].parameters[0],
-				      m_beamparams[i].parameters[1]," beam",p_info);
+      channel = new Resonance_Central_V(m_beamparams[i].parameters[0],
+					m_beamparams[i].parameters[1]," beam",p_info,beam);
       p_beamchannels->Add(channel);
-      channel = new Resonance_Central(m_beamparams[i].parameters[0],
-				      m_beamparams[i].parameters[1]," beam",p_info);
-      p_beamchannels->Add(channel);
-      channel = new Resonance_Forward(m_beamparams[i].parameters[0],
-				      m_beamparams[i].parameters[1],
-				      m_beamparams[i].parameters[2]," beam",p_info);
-      p_beamchannels->Add(channel);
-      channel = new Resonance_Backward(m_beamparams[i].parameters[0],
-				       m_beamparams[i].parameters[1],
-				       m_beamparams[i].parameters[2]," beam",p_info);
-      p_beamchannels->Add(channel);
+      if (beam==3) {
+	channel = new Resonance_Uniform_V(m_beamparams[i].parameters[0],
+					  m_beamparams[i].parameters[1]," beam",p_info);
+	p_beamchannels->Add(channel);
+	channel = new Resonance_Forward_V(m_beamparams[i].parameters[0],
+					  m_beamparams[i].parameters[1],
+					  m_beamparams[i].parameters[2]," beam",p_info);
+	p_beamchannels->Add(channel);
+	channel = new Resonance_Backward_V(m_beamparams[i].parameters[0],
+					   m_beamparams[i].parameters[1],
+					   m_beamparams[i].parameters[2]," beam",p_info);
+	p_beamchannels->Add(channel);
+      }
       break;
     case 2:
-      channel = new Threshold_Central(m_beamparams[i].parameters[0]," beam",p_info);
+      channel = new Threshold_Central_V(m_beamparams[i].parameters[0],
+					m_beamparams[i].parameters[1]," beam",p_info,beam);
       p_beamchannels->Add(channel);
-      channel = new Threshold_Forward(m_beamparams[i].parameters[0],
-				      m_beamparams[i].parameters[2]," beam",p_info);
-      p_beamchannels->Add(channel);
-      channel = new Threshold_Backward(m_beamparams[i].parameters[0],
-				       m_beamparams[i].parameters[2]," beam",p_info);
-      p_beamchannels->Add(channel);
+      if (beam==3) {
+	channel = new Threshold_Forward_V(m_beamparams[i].parameters[0],
+					  m_beamparams[i].parameters[1],
+					  m_beamparams[i].parameters[2]," beam",p_info);
+	p_beamchannels->Add(channel);
+	channel = new Threshold_Backward_V(m_beamparams[i].parameters[0],
+					   m_beamparams[i].parameters[1],
+					   m_beamparams[i].parameters[2]," beam",p_info);
+	p_beamchannels->Add(channel);
+      }
       break;
     case 3:
       if ((p_flavours[0].IsPhoton()) || (p_flavours[1].IsPhoton())) {
-	channel = new LBS_Compton_Peak_Central(m_beamparams[i].parameters[1],
-					       m_beamparams[i].parameters[0]," beam",p_info);
+	channel = new LBS_Compton_Peak_Central_V(m_beamparams[i].parameters[1],
+						 m_beamparams[i].parameters[0]," beam",p_info,beam);
 	p_beamchannels->Add(channel);
-	channel = new LBS_Compton_Peak_Forward(m_beamparams[i].parameters[1],
-					       m_beamparams[i].parameters[0],
-					       m_beamparams[i].parameters[2]," beam",p_info);
-	p_beamchannels->Add(channel);
-	channel = new LBS_Compton_Peak_Backward(m_beamparams[i].parameters[1],
-						m_beamparams[i].parameters[0],
-						m_beamparams[i].parameters[2]," beam",p_info);
-	p_beamchannels->Add(channel);
+	if (beam==3) {
+	  channel = new LBS_Compton_Peak_Forward_V(m_beamparams[i].parameters[1],
+						   m_beamparams[i].parameters[0],
+						   m_beamparams[i].parameters[2]," beam",p_info);
+	  p_beamchannels->Add(channel);
+	  channel = new LBS_Compton_Peak_Backward_V(m_beamparams[i].parameters[1],
+						    m_beamparams[i].parameters[0],
+						    m_beamparams[i].parameters[2]," beam",p_info);
+	  p_beamchannels->Add(channel);
+	}
       }
       break;
     }
@@ -954,55 +1035,75 @@ bool Phase_Space_Handler::CreateBeamChannels()
 bool Phase_Space_Handler::CreateISRChannels()
 {
   if (m_isrparams.size() < 1) return 0;
+  int isr = p_isrhandler->On();
   Single_Channel * channel;   
   int length = m_isrparams.size();
   for (int i=0;i<length;i++) {
     switch (m_isrparams[i].type) {
     case 0:
-      channel = new Simple_Pole_Uniform(m_isrparams[i].parameters[0]," isr",p_info);
-      p_isrchannels->Add(channel);
-      channel = new Simple_Pole_Forward(m_isrparams[i].parameters[0],
-					m_isrparams[i].parameters[1]," isr",p_info);
-      p_isrchannels->Add(channel);
-      channel = new Simple_Pole_Backward(m_isrparams[i].parameters[0],
-					 m_isrparams[i].parameters[1]," isr",p_info);
-      p_isrchannels->Add(channel);
+      if (isr==3) {
+	channel = new Simple_Pole_Uniform_V(m_isrparams[i].parameters[0]," isr",p_info);
+	p_isrchannels->Add(channel);
+	channel = new Simple_Pole_Forward_V(m_isrparams[i].parameters[0],
+					    m_isrparams[i].parameters[1]," isr",p_info);
+	p_isrchannels->Add(channel);
+	channel = new Simple_Pole_Backward_V(m_isrparams[i].parameters[0],
+					     m_isrparams[i].parameters[1]," isr",p_info);
+	p_isrchannels->Add(channel);
+      }
+      else {
+	channel = new Simple_Pole_Central_V(m_isrparams[i].parameters[0]," isr",p_info,isr);
+	p_isrchannels->Add(channel);
+      }
       break;
     case 1:
-      channel = new Resonance_Uniform(m_isrparams[i].parameters[0],
-				      m_isrparams[i].parameters[1]," isr",p_info);
-      p_isrchannels->Add(channel);
-      channel = new Resonance_Forward(m_isrparams[i].parameters[0],
-				      m_isrparams[i].parameters[1],
-				      m_isrparams[i].parameters[2]," isr",p_info);
-      p_isrchannels->Add(channel);
-      channel = new Resonance_Backward(m_isrparams[i].parameters[0],
-				       m_isrparams[i].parameters[1],
-				       m_isrparams[i].parameters[2]," isr",p_info);
-      p_isrchannels->Add(channel);
+      if (isr==3) {
+	channel = new Resonance_Uniform_V(m_isrparams[i].parameters[0],
+					  m_isrparams[i].parameters[1]," isr",p_info);
+	p_isrchannels->Add(channel);
+	channel = new Resonance_Forward_V(m_isrparams[i].parameters[0],
+					  m_isrparams[i].parameters[1],
+					  m_isrparams[i].parameters[2]," isr",p_info);
+	p_isrchannels->Add(channel);
+	channel = new Resonance_Backward_V(m_isrparams[i].parameters[0],
+					   m_isrparams[i].parameters[1],
+					   m_isrparams[i].parameters[2]," isr",p_info);
+	p_isrchannels->Add(channel);
+      }
+      else {
+	channel = new Resonance_Central_V(m_isrparams[i].parameters[0],
+					  m_isrparams[i].parameters[1]," isr",p_info,isr);
+      }
       break;
     case 2:
-      channel = new Threshold_Central(m_isrparams[i].parameters[0]," isr",p_info);
+      channel = new Threshold_Central_V(m_isrparams[i].parameters[0],
+					m_isrparams[i].parameters[1]," isr",p_info,isr);
       p_isrchannels->Add(channel);
-      channel = new Threshold_Forward(m_isrparams[i].parameters[0],
-				      m_isrparams[i].parameters[2]," isr",p_info);
-      p_isrchannels->Add(channel);
-      channel = new Threshold_Backward(m_isrparams[i].parameters[0],
-				       m_isrparams[i].parameters[2]," isr",p_info);
-      p_isrchannels->Add(channel);
+      if (isr==3) {
+	channel = new Threshold_Forward_V(m_isrparams[i].parameters[0],
+					  m_isrparams[i].parameters[1],
+					  m_isrparams[i].parameters[2]," isr",p_info);
+	p_isrchannels->Add(channel);
+	channel = new Threshold_Backward_V(m_isrparams[i].parameters[0],
+					   m_isrparams[i].parameters[1],
+					   m_isrparams[i].parameters[2]," isr",p_info);
+	p_isrchannels->Add(channel);
+      }
       break;
     case 3:
-      channel = new Leading_Log_Central(m_isrparams[i].parameters[0],
-					m_isrparams[i].parameters[1]," isr",p_info);
+      channel = new Leading_Log_Central_V(m_isrparams[i].parameters[0],
+					  m_isrparams[i].parameters[1]," isr",p_info,isr);
       p_isrchannels->Add(channel);
-      channel = new Leading_Log_Forward(m_isrparams[i].parameters[0],
-					m_isrparams[i].parameters[1],
-					m_isrparams[i].parameters[2]," isr",p_info);
-      p_isrchannels->Add(channel);
-      channel = new Leading_Log_Backward(m_isrparams[i].parameters[0],
-					 m_isrparams[i].parameters[1],
-					 m_isrparams[i].parameters[2]," isr",p_info);
-      p_isrchannels->Add(channel);
+      if (isr==3) {
+	channel = new Leading_Log_Forward_V(m_isrparams[i].parameters[0],
+					    m_isrparams[i].parameters[1],
+					    m_isrparams[i].parameters[2]," isr",p_info);
+	p_isrchannels->Add(channel);
+	channel = new Leading_Log_Backward_V(m_isrparams[i].parameters[0],
+					     m_isrparams[i].parameters[1],
+					     m_isrparams[i].parameters[2]," isr",p_info);
+	p_isrchannels->Add(channel);
+      }
       break;
     }
   }

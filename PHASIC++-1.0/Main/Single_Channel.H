@@ -34,13 +34,16 @@ namespace PHASIC {
     Single_Channel();
     Single_Channel(Single_Channel *);
     Single_Channel(int,int,ATOOLS::Flavour *);
+    Single_Channel(int,int,ATOOLS::Flavour *,ATOOLS::Integration_Info * const) {};
 
     // destructor
     virtual ~Single_Channel();
 
-    void AddPoint(double);
+    virtual void AddPoint(double);
     void Reset(double value);
     void ResetOpt();
+
+    virtual void Reset() {}
 
     virtual void GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *,double *);
     virtual void GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);
@@ -66,7 +69,6 @@ namespace PHASIC {
     virtual void SetRange(double * _sprimerange,double * _yrange);
     virtual void GetRange(); 
     virtual void ISRInfo(int &,double &,double &); 
-    virtual int  CountResonances(ATOOLS::Flavour*&); 
     virtual int  ChNumber(); 
     virtual void SetChNumber(int);
 
@@ -97,6 +99,10 @@ namespace PHASIC {
     virtual void SetAlpha(double alpha);    
     virtual void SetAlphaSave(double alpha);
 
+    virtual void Optimize() {}
+    virtual void EndOptimize() {}
+    virtual void WriteOut(std::string) {}
+    virtual void ReadIn(std::string) {}
   };// end of class Single_Channel
 
   /*! 

@@ -13,6 +13,8 @@ namespace PHASIC {
     static double SqLam(double,double,double);
     static double PeakedDist(double,double,double,double,int,double);
     static double PeakedWeight(double,double,double,double,int);
+    static double PeakedWeight(double,double,double,double,double,int,double&);
+    static double PeakedGrid(double a,double cn,double cxm,double cxp,double res,int k,double &ran);
     static double Tj1(double,double,double,double);
     static double Hj1(double,double,double);
     static double PseudoAngleCut(double,double,double,double); 

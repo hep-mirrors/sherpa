@@ -1,4 +1,6 @@
 #include "Integrable_Base.H"
+#include "Beam_Spectra_Handler.H"
+#include "ISR_Handler.H"
 
 #include "Phase_Space_Handler.H"
 #include "Message.H"
@@ -16,6 +18,7 @@ Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,const ATOOLS
   m_xinfo(std::vector<double>(4)),
   m_n(0), m_last(0.), m_lastlumi(0.), m_lastdxs(0.), m_max(0.),
   m_totalxs(0.),m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), 
+  m_ssum(0.), m_ssumsqr(0.),m_smax(0.),m_ssigma2(0.), m_sn(0), 
   m_swaped(false), p_selected(this), p_beamhandler(beamhandler), p_isrhandler(isrhandler), 
   p_pshandler(NULL), p_activepshandler(NULL), p_selector(NULL), p_cuts(NULL),
   m_ownselector(true) {}
@@ -31,6 +34,26 @@ Integrable_Base *const Integrable_Base::Selected()
 { 
   if (p_selected!=this) return p_selected->Selected(); 
   return this; 
+}
+
+double Integrable_Base::TotalResult()
+{ 
+  if (m_ssigma2>0. && m_sn<1000) return m_totalsum/m_ssigma2; 
+  if (m_sn<1000) return m_ssum/m_sn;
+  double ssigma2 = (m_ssumsqr/m_sn - ATOOLS::sqr(m_ssum/m_sn))/(m_sn-1);
+  return (m_totalsum+m_ssum/ssigma2/m_sn)/(m_ssigma2+1./ssigma2);
+}
+
+double Integrable_Base::TotalVar() 
+{
+  if (m_nin==1 && m_nout==2) return 0.;
+  if (m_ssigma2==0.) return 1.;
+  if (m_sn<1000) return sqrt(1./m_ssigma2); 
+
+  double disc = (m_ssumsqr/m_sn - ATOOLS::sqr(m_ssum/m_sn))/(m_sn-1);
+  if (disc>0.) return sqrt(1./(m_ssigma2+1./disc));
+  
+  return sqrt(1./m_ssigma2);
 }
 
 void Integrable_Base::SetMomenta(const ATOOLS::Vec4D *momenta) 
@@ -56,6 +79,11 @@ void Integrable_Base::SetMax(const double max, int depth)
 void Integrable_Base::SetMax() 
 {
   ATOOLS::msg.Error()<<"Integrable_Base::SetMax(): Virtual function called !"<<std::endl;
+} 
+
+void Integrable_Base::ResetMax(int) 
+{
+  ATOOLS::msg.Error()<<"Integrable_Base::ResetMax(): Virtual function called !"<<std::endl;
 } 
 
 bool Integrable_Base::OneEvent() 
@@ -97,3 +125,7 @@ void Integrable_Base::SetPSHandler(Phase_Space_Handler *const pshandler)
   p_activepshandler=pshandler;
 } 
 
+void Integrable_Base::OptimizeResult()
+{
+  ATOOLS::msg.Error()<<"Integrable_Base::OptimizeResult(): Virtual function called !"<<std::endl;
+} 

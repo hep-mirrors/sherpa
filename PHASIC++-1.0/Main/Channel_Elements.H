@@ -11,12 +11,17 @@ namespace PHASIC {
   private:
     
     Channel_Basics CB;
-    
+    void QcdAntenna(ATOOLS::Vec4D* &,int,double, double);
+    void BasicAntenna(ATOOLS::Vec4D,ATOOLS::Vec4D,ATOOLS::Vec4D &, double*, double);
+    void PermP(int,int* &);
+    void Polytope(int,double* &);
   public:
 
     double Isotropic2Weight(const ATOOLS::Vec4D&,const ATOOLS::Vec4D&);
+    double Isotropic2Weight(ATOOLS::Vec4D&,ATOOLS::Vec4D&,double&,double&);
     void Isotropic2Momenta(ATOOLS::Vec4D,double,double,
 			   ATOOLS::Vec4D&,ATOOLS::Vec4D&,double,double);
+    void Isotropic2Grid(ATOOLS::Vec4D&,ATOOLS::Vec4D&,double&,double&);
 
     double Anisotropic2Weight(double,double,double,
 			      const ATOOLS::Vec4D&,const ATOOLS::Vec4D&);
@@ -26,45 +31,82 @@ namespace PHASIC {
     double TChannelWeight(const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,
 			  const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,
 			  double,double,double,double,double,int);
+    double TChannelWeight(const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,
+			  const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,
+			  double,double,double,double,double,int,double&,double&);
     int TChannelMomenta(ATOOLS::Vec4D,ATOOLS::Vec4D,ATOOLS::Vec4D&,ATOOLS::Vec4D&,
 			double,double,double,double,double,double,double,int,double,double);
+    void TChannelGrid(const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,
+		      const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,  
+		      double,double,double,double,double&,double&);
     double BremsstrahlungWeight(double,double,double,
 				const ATOOLS::Vec4D&,const ATOOLS::Vec4D&);
     void BremsstrahlungMomenta(ATOOLS::Vec4D&,const double,const double,const double,
 			       const double,const double,const double,
 			       ATOOLS::Vec4D &, ATOOLS::Vec4D &,const double,const double);
 
-    double MasslessPropWeight(double,double,double,const double&);
+    double MasslessPropWeight(double,double,double,double);
+    double MasslessPropWeight(double,double,double,double,double&);
     double MasslessPropMomenta(double,double,double,double);
+    void MasslessPropGrid(double,double,double,double,double&);
 
     double MassivePropWeight(double,double,int,double,double,double);
+    double MassivePropWeight(double,double,int,double,double,double,double&);
     double MassivePropMomenta(double,double,int,double,double,double);
+    void MassivePropGrid(double,double,double,double,double,double&);
 
-    double LLPropWeight(double,double,double,double,const double&);
+    double QCDAPWeight(ATOOLS::Vec4D*,int,double);
+    void QCDAPMomenta(ATOOLS::Vec4D*,ATOOLS::Vec4D,int,double);
+
+    double LLPropWeight(double,double,double,double,double);
+    double LLPropWeight(double,double,double,double,double,double&);
     double LLPropMomenta(double,double,double,double,double);
+    void LLPropGrid(double,double,double,double,double,double&);
 
     double ThresholdMomenta(double,double,double,double);
     double ThresholdWeight(double,double,double,double);
+    double ThresholdMomenta(double,double,double,double,double);
+    double ThresholdWeight(double,double,double,double,double);
+    double ThresholdWeight(double,double,double,double,double,double&);
+    void ThresholdGrid(double sexp,double mass,double smin,double smax,double s,double &ran);
     double DiceYUniform(const double tau,const ATOOLS::Double_Container &xinfo,
 			ATOOLS::Double_Container &yinfo,const double ran,const int mode) const;
     double WeightYUniform(const double tau,const ATOOLS::Double_Container &xinfo,
 			  ATOOLS::Double_Container &yinfo,const int mode) const;
+    double WeightYUniform(const double tau,const ATOOLS::Double_Container &xinfo,
+			  ATOOLS::Double_Container &yinfo,double&,const int mode) const;
+    void   YUniformGrid(const double tau,const ATOOLS::Double_Container &xinfo,
+			ATOOLS::Double_Container &yinfo,double& ran,const int mode);
     double DiceYCentral(const double tau,const ATOOLS::Double_Container &xinfo,
 			ATOOLS::Double_Container &yinfo,const double ran,const int mode) const;
     double WeightYCentral(const double tau,const ATOOLS::Double_Container &xinfo,
 			  ATOOLS::Double_Container &yinfo,const int mode) const;
+    double WeightYCentral(const double tau,const ATOOLS::Double_Container &xinfo,
+			  ATOOLS::Double_Container &yinfo,double&,const int mode) const;
+    void YCentralGrid(const double tau,const ATOOLS::Double_Container &xinfo,
+		      ATOOLS::Double_Container &yinfo,double &ran,const int mode);
     double DiceYForward(const double yexponent,const double tau,
 			const ATOOLS::Double_Container &xinfo,
 			ATOOLS::Double_Container &yinfo,const double ran,const int mode) const;
     double WeightYForward(const double yexponent,const double tau,
 			  const ATOOLS::Double_Container &xinfo,
 			  ATOOLS::Double_Container &yinfo,const int mode) const;
+    double WeightYForward(const double yexponent,const double tau,
+			  const ATOOLS::Double_Container &xinfo,
+			  ATOOLS::Double_Container &yinfo,double&,const int mode) const;
+    void YForwardGrid(const double yexponent,const double tau,const ATOOLS::Double_Container &xinfo,
+		      ATOOLS::Double_Container &yinfo,double &ran,const int mode);
     double DiceYBackward(const double yexponent,const double tau,
 			 const ATOOLS::Double_Container &xinfo,
 			 ATOOLS::Double_Container &yinfo,const double ran,const int mode) const;
     double WeightYBackward(const double yexponent,const double tau,
 			   const ATOOLS::Double_Container &xinfo,
 			   ATOOLS::Double_Container &yinfo,const int mode) const;
+    double WeightYBackward(const double yexponent,const double tau,
+			   const ATOOLS::Double_Container &xinfo,
+			   ATOOLS::Double_Container &yinfo,double&,const int mode) const;
+    void YBackwardGrid(const double yexponent,const double tau,const ATOOLS::Double_Container &xinfo,
+		       ATOOLS::Double_Container &yinfo,double &ran,const int mode);
 
   };// end of class Channel_Elements
 

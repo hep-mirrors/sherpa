@@ -30,6 +30,7 @@ libPhasespace_la_SOURCES      =	\
 				Rambo.C \
 				RamboKK.C \
 				Sarge.C \
+				Vegas.C ISR_Vegas.C \
 				Channel_Interface.C \
 			   	Multi_Channel.C \
 				Phase_Space_Handler.C \
@@ -51,6 +52,7 @@ noinst_HEADERS        =	\
 			Rambo.H \
 			RamboKK.H \
 			Sarge.H \
+			Vegas.H ISR_Vegas.H \
 			Multi_Channel.H \
 		 	Integrable_Base.H \
 			Phase_Space_Handler.H \

@@ -16,7 +16,7 @@ using namespace std;
 
 long int Phase_Space_Integrator::nmax=10000000;                  
 
-double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerror) 
+double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerror, int fin_opt) 
 {
   msg_Info()<<"Starting the calculation. Lean back and enjoy ... ."<<endl; 
   if (maxerror >= 1.) nmax = 1;
@@ -45,34 +45,36 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
 		<<psh->ISRIntegrator()<<" / "<<psh->FSRIntegrator()
 		<<" / "<<psh->KMRZIntegrator()<<" / "<<psh->KMRKPIntegrator()<<endl;
   
-  if ((psh->BeamIntegrator())) {
-    (psh->BeamIntegrator())->Reset();
-    numberofchannels *= psh->NumberOfBeamIntegrators();
-    msg_Tracking()<<"   Found "<<psh->NumberOfBeamIntegrators()<<" Beam Integrators."<<endl;
-  }
-  if ((psh->ISRIntegrator())) {
-    (psh->ISRIntegrator())->Reset();
-    numberofchannels *= psh->NumberOfISRIntegrators();
-    msg_Tracking()<<"   Found "<<psh->NumberOfISRIntegrators()<<" ISR Integrators."<<endl;
-  }
+   if ((psh->BeamIntegrator())) {
+     (psh->BeamIntegrator())->Reset();
+     numberofchannels = psh->NumberOfBeamIntegrators();
+     msg.Tracking()<<"   Found "<<psh->NumberOfBeamIntegrators()<<" Beam Integrators."<<endl;
+   }
+   if ((psh->ISRIntegrator())) {
+     (psh->ISRIntegrator())->Reset();
+     numberofchannels += psh->NumberOfISRIntegrators();
+     msg.Tracking()<<"   Found "<<psh->NumberOfISRIntegrators()<<" ISR Integrators."<<endl;
+   }
 
   if ((psh->KMRZIntegrator())) {
     (psh->KMRZIntegrator())->Reset();
-    numberofchannels *= psh->NumberOfKMRZIntegrators();
-    msg_Tracking()<<"   Found "<<psh->NumberOfKMRZIntegrators()<<" KMR z Integrators."<<endl;
+    numberofchannels += psh->NumberOfKMRZIntegrators();
+    msg.Tracking()<<"   Found "<<psh->NumberOfKMRZIntegrators()<<" KMR z Integrators."<<endl;
   }
   if ((psh->KMRKPIntegrator())) {
     (psh->KMRKPIntegrator())->Reset();
-    numberofchannels *= psh->NumberOfKMRKPIntegrators();
-    msg_Tracking()<<"   Found "<<psh->NumberOfKMRKPIntegrators()<<" KMR k_\\perp Integrators."<<endl;
+    numberofchannels += psh->NumberOfKMRKPIntegrators();
+    msg.Tracking()<<"   Found "<<psh->NumberOfKMRKPIntegrators()<<" KMR k_\\perp Integrators."<<endl;
   }
 
 
-  (psh->FSRIntegrator())->Reset();
-  numberofchannels *= psh->NumberOfFSRIntegrators();
-  msg_Tracking()<<"   Found "<<psh->NumberOfFSRIntegrators()<<" FSR integrators."<<endl;
 
-  iter      = Max(1+10*int(numberofchannels),20000);
+  (psh->FSRIntegrator())->Reset();
+  numberofchannels += psh->NumberOfFSRIntegrators();
+  msg.Tracking()<<"   Found "<<psh->NumberOfFSRIntegrators()<<" FSR integrators."<<endl;
+
+  iter      = Max(1+100*int(numberofchannels),10000);
+  if (iter>50000) iter=Max(20*int(numberofchannels),50000);
   nopt      = 25; 
 
   maxopt    = iter*nopt;
@@ -80,7 +82,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
   long int  n;
   int       endopt = 1;
   double    value;
-
+  int nlo=0;
   ran.SetSeed(-100*rank);
   
 #ifdef _USE_MPI_
@@ -271,18 +273,24 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
       if (over) break;
     }
 #endif
-
-    if ((n%iter)==0 || n==maxopt) {
+    int ncontrib = psh->FSRIntegrator()->ValidN();
+    if ( ncontrib!=nlo && ((ncontrib%iter)==0 || ncontrib==maxopt)) {
+      nlo=ncontrib;
 #ifndef _USE_MPI_ // non MPI mode
-      msg_Tracking()<<" n="<<n<<"  iter="<<iter<<"  maxopt="<<maxopt<<endl;
-      if ((n<=maxopt) && (endopt<2)) {
+      msg_Tracking()<<" n="<<ncontrib<<"  iter="<<iter<<"  maxopt="<<maxopt<<endl;
+      if ((ncontrib<=maxopt) && (endopt<2)) {
 	if ((psh->BeamIntegrator())) (psh->BeamIntegrator())->Optimize(maxerror);
 	if ((psh->ISRIntegrator()))  (psh->ISRIntegrator())->Optimize(maxerror);
 	if ((psh->KMRZIntegrator()))  (psh->KMRZIntegrator())->Optimize(maxerror);
 	if ((psh->KMRKPIntegrator()))  (psh->KMRKPIntegrator())->Optimize(maxerror);
 	(psh->FSRIntegrator())->Optimize(maxerror);
+	(psh->Process())->ResetMax(2);
+	(psh->Process())->OptimizeResult();
       }
-      if ((n==maxopt) && (endopt<2)) {
+      else {
+	(psh->Process())->ResetMax(0);
+      }
+      if ((ncontrib==maxopt) && (endopt<2)) {
 	if ((psh->BeamIntegrator())) (psh->BeamIntegrator())->EndOptimize(maxerror);
 	if ((psh->ISRIntegrator()))  (psh->ISRIntegrator())->EndOptimize(maxerror);
 	if ((psh->KMRZIntegrator()))  (psh->KMRZIntegrator())->EndOptimize(maxerror);
@@ -291,6 +299,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
 	iter   *= 2;
 	maxopt += 4*iter;
 	endopt++;
+	(psh->Process())->ResetMax(1);
       }
 
       if (!((psh->FSRIntegrator())->Result()>0.) && !((psh->FSRIntegrator())->Result()<0.)
@@ -306,7 +315,9 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
 		<<" pb"<<om::reset<<" +- ( "<<om::red
 		<<(psh->FSRIntegrator())->Variance()*rpa.Picobarn()
 		<<" pb = "<<error*100<<" %"<<om::reset<<" )."<<endl;
-      if (error<maxerror) break;
+      bool allowbreak = true;
+      if (fin_opt==1 && (endopt<2||ncontrib<maxopt)) allowbreak = false;
+      if (error<maxerror && allowbreak) break;
 #endif
 
     }

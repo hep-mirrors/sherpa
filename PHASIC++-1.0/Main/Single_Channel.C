@@ -16,9 +16,9 @@ Single_Channel::Single_Channel(int _nin,int _nout,Flavour * fl)
   ms   = new double[nin+nout+1];
   for (short int i=0;i<nin+nout;i++) ms[i] = ATOOLS::sqr(fl[i].Mass());
 
-  if (nin == 1) rannum = 2 + 3*(nout-2);
-  if (nin == 2) rannum = 1 + 2 + 3*(nout-2);
-  rans  = new double[rannum];
+//   if (nin == 1) rannum = 2 + 3*(nout-2);
+//   if (nin == 2) rannum = 1 + 2 + 3*(nout-2);
+//   rans  = new double[rannum];
 }
 
 Single_Channel::Single_Channel(Single_Channel * old)
@@ -53,7 +53,8 @@ void Single_Channel::ResetOpt() {
 };
 
 void Single_Channel::AddPoint(double Value) {
-  if (!ATOOLS::IsZero(Value)) n_contrib++;
+  //if (!ATOOLS::IsZero(Value)) n_contrib++;
+  if (Value>0.) n_contrib++;
   n_points++;
   result  += Value;
   result2 += Value*Value;
@@ -62,14 +63,14 @@ void Single_Channel::AddPoint(double Value) {
 
 void Single_Channel::GeneratePoint(Vec4D* p,Cut_Data * cuts)
 {
-  for (short int i=1;i<rannum;i++) rans[i] = ran.Get();
+  for (short int i=0;i<rannum;i++) rans[i] = ran.Get();
   GeneratePoint(p,cuts,rans);
 }
 
 
 void Single_Channel::GeneratePoint(Vec4D * p)
 {
-  for (short int i=1;i<rannum;i++) rans[i] = ran.Get();
+  for (short int i=0;i<rannum;i++) rans[i] = ran.Get();
   GeneratePoint(p,rans);
 }
 
@@ -166,11 +167,6 @@ void Single_Channel::ISRInfo(int &,double &,double &)
   ATOOLS::msg.Error()<<"Method : Single_Channel::ISRInfo()"<<std::endl;
 }
 
-int Single_Channel::CountResonances(ATOOLS::Flavour*&) 
-{ 
-  ATOOLS::msg.Error()<<"Method : Single_Channel::CountResonances()"<<std::endl; 
-  return 0;
-}
 
 int Single_Channel::ChNumber() 
 {

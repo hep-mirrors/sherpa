@@ -1,3 +1,4 @@
+#include "Single_Channel.H"
 #include "Multi_Channel.H"
 #include "Random.H"
 
@@ -21,7 +22,10 @@ Multi_Channel::Multi_Channel(string _name) : fl(NULL), s1(NULL), s2(NULL), m_rea
     _name  = help.substr(0,pos) + help.substr(pos+1); 
   }
   name     = _name;
-  n_points = n_contrib = 0;
+  n_points = n_spoints = n_contrib = 0;
+  m_lastdice = -1;
+  m_optcnt = 0;
+  m_pol = 250.;
 }
 
 Multi_Channel::~Multi_Channel() 
@@ -71,9 +75,13 @@ void Multi_Channel::Reset()
   if (!m_readin) {
     s1xmin     = 1.e32;
     n_points   = 0;  
+    n_spoints   = 0;  
     n_contrib  = 0;
     m_result     = 0.;
     m_result2    = 0.;
+    m_sresult     = 0.;
+    m_sresult2    = 0.;
+    m_ssigma2     = 0.;  
   }
   msg_Tracking()<<"Channels for "<<name<<endl
 		<<"----------------- "<<n_points<<" --------------------"<<endl;
@@ -88,6 +96,7 @@ void Multi_Channel::Reset()
 void Multi_Channel::ResetOpt() 
 {
   n_points = 0;
+  n_spoints = 0;
 }        
 
 void Multi_Channel::MPIOptimize(double error)
@@ -142,7 +151,15 @@ void Multi_Channel::MPIOptimize(double error)
 
 void Multi_Channel::Optimize(double error)
 {
-  msg_Tracking()<<"Optimize Multi_Channel : "<<name<<endl; 
+  msg.Tracking()<<"Optimize Multi_Channel : "<<name<<endl; 
+
+  double ssigma2 = (m_sresult2/n_spoints - ATOOLS::sqr(m_sresult/n_spoints))/(n_spoints-1);
+  m_ssigma2  += 1./ssigma2; 
+  m_result   += m_sresult/ssigma2/n_spoints;
+  m_result2  += m_sresult2/ssigma2/n_spoints;
+  m_sresult  = 0.;
+  m_sresult2 = 0.;
+  n_spoints  = 0;
 
   double aptot = 0.;
   size_t i;
@@ -155,9 +172,11 @@ void Multi_Channel::Optimize(double error)
   
   double s1x = 0.;  
   for (i=0;i<channels.size();i++) {
-    if (dabs(aptot-sqrt(s1[i]))>s1x) s1x = dabs(aptot-sqrt(s1[i]));
-    channels[i]->SetAlpha(channels[i]->Alpha() * sqrt(s1[i])/aptot);
-    if (channels[i]->Alpha() < Min(1.e-4,1.e-3/(double)channels.size()) ) channels[i]->SetAlpha(0.);
+    if (channels[i]->Alpha()>0.) {
+      if (dabs(aptot-sqrt(s1[i]))>s1x) s1x = dabs(aptot-sqrt(s1[i]));
+      channels[i]->SetAlpha(channels[i]->Alpha() * sqrt(s1[i])/aptot);
+      if (channels[i]->Alpha() < Min(1.e-4,1.e-3/(double)channels.size()) ) channels[i]->SetAlpha(0.);
+    }
   }
   double norm = 0;
   for (i=0;i<channels.size();i++) norm += channels[i]->Alpha();
@@ -167,6 +186,12 @@ void Multi_Channel::Optimize(double error)
     s1xmin = s1x;
     for (i=0;i<channels.size();i++) channels[i]->SetAlphaSave(channels[i]->Alpha());
   }  
+
+   if((m_optcnt>4 || channels.size()==1)&& m_optcnt<20)    
+     for (i=0;i<channels.size();i++) if (channels[i]->Alpha()>0.01) channels[i]->Optimize();
+   if (m_optcnt==20)
+     for (i=0;i<channels.size();i++) if (channels[i]->Alpha()>0.) channels[i]->EndOptimize();
+
   for(i=0;i<channels.size();i++) channels[i]->ResetOpt();
   msg_Tracking()<<"New weights for : "<<name<<endl
 		<<"----------------- "<<n_points<<" ----------------"<<endl;
@@ -181,6 +206,7 @@ void Multi_Channel::Optimize(double error)
 		<<"result,result2,n,n_contrib : "<<m_result<<", "
 		<<m_result2<<", "<<n_points<<", "<<n_contrib<<endl
 		<<"-----------------------------------------------"<<endl;
+  m_optcnt++;
 }
 
 void Multi_Channel::EndOptimize(double error)
@@ -196,6 +222,7 @@ void Multi_Channel::EndOptimize(double error)
   double norm = 0;
   for (i=0;i<channels.size();i++) norm += channels[i]->Alpha();
   for (i=0;i<channels.size();i++) channels[i]->SetAlpha(channels[i]->Alpha() / norm);
+  for (i=0;i<channels.size();i++) if (channels[i]->Alpha()>0.) channels[i]->EndOptimize();
 
   msg_Tracking()<<"Best weights:-------------------------------"<<endl;
   for (i=0;i<channels.size();i++) {
@@ -250,8 +277,9 @@ void Multi_Channel::AddPoint(double value)
   //if (!ATOOLS::IsZero(value)) n_contrib++;
   if (value>0.) n_contrib++;
   n_points++;
-  m_result  += value;
-  m_result2 += value*value;
+  n_spoints++;
+  m_sresult  += value;
+  m_sresult2 += value*value;
   //if (!ATOOLS::IsZero(value/m_result*(double)n_points)) n_contrib++;
   double var;
   for (size_t i=0;i<channels.size();i++) {
@@ -265,18 +293,32 @@ void Multi_Channel::AddPoint(double value)
     }
     channels[i]->IncrementN();
   }
+  Channel(m_lastdice)->AddPoint(value);
+}
+
+double Multi_Channel::Result()
+{ 
+  if (m_ssigma2>0. && n_spoints<1000) return double(n_points-n_spoints)*m_result/m_ssigma2; 
+  if (n_spoints<1000) return m_sresult;
+  double ssigma2 = (m_sresult2/n_spoints - ATOOLS::sqr(m_sresult/n_spoints))/(n_spoints-1);
+  return double(n_points)*(m_result+m_sresult/ssigma2/n_spoints)/(m_ssigma2+1./ssigma2);
 }
 
 double Multi_Channel::Variance() {
   if (nin==1 && nout==2) return 0.;
-  if (m_result2==0. && m_result==0.) {
-    if (n_points>20000) return 0.;
-    else return 1.;
-  }
-  double disc = (n_points*m_result2)/((n_points-1)*ATOOLS::sqr(m_result)) - 1./(n_points-1);
-  if (disc>0.) return m_result/n_points * sqrt(disc);
-  disc = m_result2/(n_points*(n_points-1)) - ATOOLS::sqr(m_result/n_points)/(n_points-1);
-  if (disc>0.) return sqrt(disc);
+  if (m_ssigma2==0.) return 1.;
+  if (n_spoints<1000) return sqrt(1./m_ssigma2); 
+
+  double disc = (m_sresult2/n_spoints - ATOOLS::sqr(m_sresult/n_spoints))/(n_spoints-1);
+  if (disc>0.) return sqrt(1./(m_ssigma2+1./disc));
+//   if (m_result2==0. && m_result==0.) {
+//     if (n_points>20000) return 0.;
+//     else return 1.;
+//   }
+//   double disc = (n_points*m_result2)/((n_points-1)*ATOOLS::sqr(m_result)) - 1./(n_points-1);
+//   if (disc>0.) return m_result/n_points * sqrt(disc);
+//   disc = m_result2/(n_points*(n_points-1)) - ATOOLS::sqr(m_result/n_points)/(n_points-1);
+//   if (disc>0.) return sqrt(disc);
   
   ATOOLS::msg.Error()<<"Variance yielded a NaN !"<<endl
 			<<"   res,res2 = "<<m_result<<", "<<m_result2
@@ -330,6 +372,7 @@ void Multi_Channel::GeneratePoint(Vec4D * p,Cut_Data * cuts)
   for(size_t i=0;i<channels.size();i++) channels[i]->SetWeight(0.);
   if(channels.size()==1) {
     channels[0]->GeneratePoint(p,cuts);
+    m_lastdice = 0;
     return;
   }  
   double rn  = ran.Get();
@@ -343,6 +386,7 @@ void Multi_Channel::GeneratePoint(Vec4D * p,Cut_Data * cuts)
     sum += channels[i]->Alpha();
     if (sum>rn) {
       channels[i]->GeneratePoint(p,cuts);
+      m_lastdice = i;
       break;
     }
   }  
@@ -392,6 +436,7 @@ void Multi_Channel::GeneratePoint(Vec4D * p)
     sum += channels[i]->Alpha();
     if (sum>rn) {
       channels[i]->GeneratePoint(p);
+      m_lastdice = i;
       break;
     }
   }  
@@ -432,6 +477,7 @@ void Multi_Channel::GeneratePoint(double & sprime,double & y,int mode) {
     if (sum>disc) {
       for (int i=0;i<2;i++) rans[i] = ran.Get();
       channels[n]->GeneratePoint(sprime,y,mode,rans);
+      m_lastdice = n;
       return;
     }
   }  
@@ -452,6 +498,7 @@ void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode)
     if (sum>disc) {
       for (size_t i=0;i<2;++i) rans[i]=ran.Get();
       channels[n]->GeneratePoint(spkey,ykey,rans,mode);
+      m_lastdice = n;
       return;
     }
   }  
@@ -480,11 +527,6 @@ void Multi_Channel::GenerateWeight(int mode=0)
   if (m_weight!=0) m_weight=1./m_weight;
 }
 
-int Multi_Channel::CountResonances(int i,Flavour*& fl_res) 
-{
-  return channels[i]->CountResonances(fl_res); 
-}
-
 void Multi_Channel::ISRInfo(int i,int & type,double & mass,double & width) 
 {
   channels[i]->ISRInfo(type,mass,width);
@@ -501,19 +543,22 @@ void Multi_Channel::Print() {
   ATOOLS::msg.Out()<<"----------------------------------------------"<<endl;
 }                 
 
+
 void Multi_Channel::WriteOut(std::string pID) 
 {
   ofstream ofile;
   ofile.open(pID.c_str());
-  ofile<<channels.size()<<" "<<name<<" "<<n_points<<" "<<n_contrib<<" "
-       <<m_result<<" "<<m_result2<<" "<<s1xmin<<endl;
   ofile.precision(12);
+  ofile<<channels.size()<<" "<<name<<" "<<n_points<<" "<<n_contrib<<" "
+       <<m_result<<" "<<m_result2<<" "<<s1xmin<<" "
+       <<m_sresult<<" "<<m_sresult2<<" "<<m_ssigma2<<" "<<n_spoints<<" "<<m_optcnt<<endl;
   for (size_t i=0;i<channels.size();i++) 
     ofile<<channels[i]->Name()<<" "<<channels[i]->N()<<" "
 	 <<channels[i]->Alpha()<<" "<<channels[i]->AlphaSave()<<" "
 	 <<channels[i]->Weight()<<" "<<channels[i]->Res1()<<" "
 	 <<channels[i]->Res2()<<" "<<channels[i]->Res3()<<std::endl;
   ofile.close();
+  for (size_t i=0;i<channels.size();i++) channels[i]->WriteOut(pID);
 }
 
 bool Multi_Channel::ReadIn(std::string pID) {
@@ -533,7 +578,7 @@ bool Multi_Channel::ReadIn(std::string pID) {
     return 0;
   }
   m_readin=true;
-  ifile>>n_points>>n_contrib>>m_result>>m_result2>>s1xmin;
+  ifile>>n_points>>n_contrib>>m_result>>m_result2>>s1xmin>>m_sresult>>m_sresult2>>m_ssigma2>>n_spoints>>m_optcnt;
 
   double sum=0;
   for (size_t i=0;i<channels.size();i++) {
@@ -554,6 +599,7 @@ bool Multi_Channel::ReadIn(std::string pID) {
     channels[i]->SetRes3(res3);
   }
   ifile.close();
+  for (size_t i=0;i<channels.size();i++) channels[i]->ReadIn(pID);
   return 1;
 }
 
