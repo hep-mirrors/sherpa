@@ -26,9 +26,9 @@ C...Commonblocks.
       SAVE /PYJETS/,/PYDAT1/,/PYDAT2/,/PYSUBS/,/PYPARS/,/PYINT1/,
      &/PYINT2/,/PYINT3/,/PYINT5/,/PYINT7/
 C...Local arrays and saved variables.
-      DIMENSION NMUL(20),SIGM(20),KSTR(500,2),VINTSV(80)
+      DIMENSION NMUL(20),SIGM(20),KSTR(500,2),VINTSV(80),IXT2S(20)
       SAVE XT2,XT2FAC,XC2,XTS,IRBIN,RBIN,NMUL,SIGM
- 
+
 C...Initialization of multiple interaction treatment.
       IF(MMUL.EQ.1) THEN
         IF(MSTP(122).GE.1) WRITE(MSTU(11),5000) MSTP(82)
@@ -42,6 +42,7 @@ C...Initialization of multiple interaction treatment.
 C...Loop over phase space points: xT2 choice in 20 bins.
   100   SIGSUM=0D0
         DO 120 IXT2=1,20
+          IXT2S(IXT2)=1
           NMUL(IXT2)=MSTP(83)
           SIGM(IXT2)=0D0
           DO 110 ITRY=1,MSTP(83)
@@ -49,7 +50,7 @@ C...Loop over phase space points: xT2 choice in 20 bins.
             XT2=VINT(149)*(1D0+VINT(149))/(VINT(149)+RSCA)-VINT(149)
             XT2=MAX(0.01D0*VINT(149),XT2)
             VINT(25)=XT2
- 
+
 C...Choose tau and y*. Calculate cos(theta-hat).
             IF(PYR(0).LE.COEF(ISUB,1)) THEN
               TAUT=(2D0*(1D0+SQRT(1D0-XT2))/XT2-1D0)**PYR(0)
@@ -69,12 +70,27 @@ C...Choose tau and y*. Calculate cos(theta-hat).
 C...Calculate differential cross-section.
             VINT(71)=0.5D0*VINT(1)*SQRT(XT2)
             CALL PYSIGH(NCHN,SIGS)
-            SIGM(IXT2)=SIGM(IXT2)+SIGS
+            IF (MFUDGE(4).EQ.1) THEN
+               IF (VINT(71).GE.PARP(82)) THEN
+                  SIGM(IXT2)=SIGM(IXT2)+SIGS
+               ELSE 
+                  IXT2S(IXT2)=0
+               ENDIF
+            ELSE
+               SIGM(IXT2)=SIGM(IXT2)+SIGS
+            ENDIF
   110     CONTINUE
           SIGSUM=SIGSUM+SIGM(IXT2)
   120   CONTINUE
         SIGSUM=SIGSUM/(20D0*MSTP(83))
- 
+        IF (MFUDGE(4).EQ.1) THEN
+          ICNT=0
+          DO 121 IXT2=1,20
+            ICNT=ICNT+IXT2S(IXT2)
+  121     CONTINUE
+          SIGSUM=SIGSUM*20D0/ICNT
+        ENDIF
+        
 C...Reject result if sigma(parton-parton) is smaller than hadronic one.
         IF(SIGSUM.LT.1.1D0*SIGT(0,0,5)) THEN
           IF(MSTP(122).GE.1) WRITE(MSTU(11),5100)
@@ -103,7 +119,7 @@ C...Start iteration to find k factor.
         ELSE
           XK=XI+(YKE-YI)*(XF-XI)/(YF-YI)
         ENDIF
- 
+
 C...Evaluate overlap integrals.
         IF(MSTP(82).EQ.2) THEN
           SP=0.5D0*PARU(1)*(1D0-EXP(-XK))
@@ -142,11 +158,16 @@ C...Continue iteration until convergence.
           IF(IIT.EQ.0) IIT=1
         ENDIF
         IF(ABS(YK-YKE).GE.1D-5*YKE) GOTO 130
- 
+
 C...Store some results for subsequent use.
         VINT(145)=SIGSUM
         VINT(146)=SOP/SO
         VINT(147)=SOP/SP
+        WRITE(*,*) '<\\tilde{O}>  = ',PARU(2)*VINT(147),' -> ',
+     &       PARU(2)*VINT(147)/VINT(146)
+        WRITE(*,*) 'k            = ',XK
+        WRITE(*,*) 'f_c          = ',VINT(146)
+        IF (MFUDGE(4).EQ.1) STOP
  
 C...Initialize iteration in xT2 for hardest interaction.
       ELSEIF(MMUL.EQ.2) THEN
@@ -334,11 +355,16 @@ C...Set up starting values for iteration in xT2.
      &    XT2=(4D0*VINT(48)+2D0*VINT(63)+2D0*VINT(64))/VINT(2)
           IF(ISET(ISUBSV).GE.3.AND.ISET(ISUBSV).LE.5) XT2=VINT(26)
         ENDIF
+        IF(MFUDGE(2).EQ.1) XT2=4D0*VINT(48)/VINT(2)
         IF(MSTP(82).LE.1) THEN
           SIGRAT=XSEC(ISUB,1)/MAX(1D-10,VINT(315)*VINT(316)*SIGT(0,0,5))
           IF(MFUDGE(1).EQ.1) THEN
              FUDGE=(XSEC(11,1)+XSEC(12,1)+XSEC(13,1)+XSEC(28,1)+
      &            XSEC(53,1)+XSEC(68,1))/XSEC(ISUB,1)
+             SIGRAT=SIGRAT*FUDGE
+          ENDIF
+          IF(MFUDGE(3).EQ.1) THEN
+             FUDGE=XSEC(68,1)/XSEC(ISUB,1)
              SIGRAT=SIGRAT*FUDGE
           ENDIF
           IF(MINT(141).NE.0.OR.MINT(142).NE.0) SIGRAT=SIGRAT*
@@ -352,7 +378,6 @@ C...Set up starting values for iteration in xT2.
         VINT(64)=0D0
         VINT(143)=1D0-VINT(141)
         VINT(144)=1D0-VINT(142)
- 
 C...Iterate downwards in xT2.
   200   IF(MSTP(82).LE.1) THEN
           XT2=XT2FAC*XT2/(XT2FAC-XT2*LOG(PYR(0)))
@@ -387,10 +412,14 @@ C...Check that x not used up. Accept or reject kinematical variables.
         X2M=SQRT(TAU)*EXP(-VINT(22))
         IF(VINT(143)-X1M.LT.0.01D0.OR.VINT(144)-X2M.LT.0.01D0) GOTO 200
         VINT(71)=0.5D0*VINT(1)*SQRT(XT2)
+        IF(MFUDGE(3).EQ.1) ISUB=68
         CALL PYSIGH(NCHN,SIGS)
         IF(MINT(141).NE.0.OR.MINT(142).NE.0) SIGS=SIGS*VINT(320)
-        IF(SIGS.LT.XSEC(ISUB,1)*PYR(0)) GOTO 200
- 
+        IF(SIGS.LT.XSEC(ISUB,1)*PYR(0)) THEN
+           IF(MFUDGE(3).EQ.1) ISUB=96
+           GOTO 200
+        ENDIF
+        IF(MFUDGE(3).EQ.1) ISUB=96
 C...Reset K, P and V vectors. Select some variables.
         DO 220 I=N+1,N+2
           DO 210 J=1,5
