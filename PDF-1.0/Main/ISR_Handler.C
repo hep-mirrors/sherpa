@@ -304,17 +304,13 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n)
   m_kmrrot.RotateBack(p[0]);
   m_kmrrot.RotateBack(p[1]);
   xi*=xi;
-  m_mu2[0]=m_x[0]*m_x[0]*m_splimits[2]/xi;
-  m_mu2[1]=m_x[1]*m_x[1]*m_splimits[2]*xi;
 #ifndef NO_ANALYSIS__ISR_Handler
   m_info_cms[iic::E_1]=p[0][0];
   m_info_cms[iic::t_1]=p[0].Abs2();
   m_info_cms[iic::Em_1]=p[0][0]/p[0].Mass();		
-  m_info_cms[iic::mu_1]=m_mu2[0];
   m_info_cms[iic::E_2]=p[1][0];
   m_info_cms[iic::t_2]=p[1].Abs2();
   m_info_cms[iic::Em_2]=p[1][0]/p[0].Mass();		
-  m_info_cms[iic::mu_2]=m_mu2[1];
 #endif
   m_weight=(m_x[1]-b1*b2/m_x[0])*(b2/m_x[1]/(m_x[0]-b2)-1./(m_x[1]-b1));
   m_weight+=(m_x[0]-b2*b1/m_x[1])*(b1/m_x[0]/(m_x[1]-b1)-1./(m_x[0]-b2));
@@ -338,6 +334,8 @@ void ISR_Handler::AssignKeys(ATOOLS::Integration_Info *const info)
   m_zkey[1].Assign("z_2",3,0,info);
   m_kpkey[0].Assign("k_perp_1",4,0,info);
   m_kpkey[1].Assign("k_perp_2",4,0,info);
+  m_mu2key[0].Assign("mu2_1",1,0,info);
+  m_mu2key[1].Assign("mu2_2",1,0,info);
 }
 
 void ISR_Handler::Reset() 
@@ -363,7 +361,17 @@ void ISR_Handler::SetLimits()
 
 bool ISR_Handler::CalculateWeight(const double scale) 
 {
-  if (!m_kmrmode) m_mu2[0]=m_mu2[1]=scale;
+  if (!m_kmrmode) {
+    m_mu2[0]=m_mu2[1]=scale;
+  }
+  else {
+    m_mu2[0]=m_mu2key[0][0];
+    m_mu2[1]=m_mu2key[1][0];
+#ifndef NO_ANALYSIS__ISR_Handler
+    m_info_cms[iic::mu_1]=m_mu2[0];
+    m_info_cms[iic::mu_2]=m_mu2[1];
+#endif
+  }
   switch (m_mode) {
   case 3 :
     if (p_isrbase[0]->CalculateWeight(m_x[0],m_zkey[0][2],m_kpkey[0][3],m_mu2[0]) && 
@@ -385,7 +393,13 @@ bool ISR_Handler::CalculateWeight2(const double scale)
     throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"Called for one ISR only.",
 			    "ISR_Handler","CalculateWeight2"));
   }
-  if (!m_kmrmode) m_mu2[0]=m_mu2[1]=scale;
+  if (!m_kmrmode) {
+    m_mu2[0]=m_mu2[1]=scale;
+  }
+  else {
+    m_mu2[0]=m_mu2key[0][0];
+    m_mu2[1]=m_mu2key[1][0];
+  }
   if (p_isrbase[0]->CalculateWeight(m_x[1],m_zkey[1][2],m_kpkey[1][3],m_mu2[1]) && 
       p_isrbase[1]->CalculateWeight(m_x[0],m_zkey[0][2],m_kpkey[0][3],m_mu2[0])) { 
     return 1;
