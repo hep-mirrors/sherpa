@@ -27,7 +27,24 @@ namespace AMEGIC {
       return *this;
     }
     Kabbala& operator+=(const Kabbala& k) {
+      double a = abs(rishbon);
+      double b = abs(k.Value());
+      double max = ATOOLS::Max(a,b);
+      if (ATOOLS::IsZero(b/max)) {
+	return *this;
+      }
+      if (ATOOLS::IsZero(a/max)) {
+	rishbon = k.Value();
+	shem = k.String();
+	return *this;
+      }
       rishbon += k.Value();
+      if (ATOOLS::IsZero(abs(rishbon)/max)) {
+	shem = std::string("0");
+	rishbon = Complex(0.,0.);
+	return *this;
+      }
+
       if (shem!=std::string("")) shem += std::string("+");
       shem    += k.String();
       
@@ -35,7 +52,23 @@ namespace AMEGIC {
     }
     
     Kabbala& operator-=(const Kabbala& k) {
+      double a = abs(rishbon);
+      double b = abs(k.Value());
+      double max = ATOOLS::Max(a,b);
+      if (ATOOLS::IsZero(b/max)) {
+	return *this;
+      }
+      if (ATOOLS::IsZero(a/max)) {
+	rishbon = -k.Value();
+	shem = std::string("-(")+k.String()+std::string(")");
+	return *this;
+      }
       rishbon -= k.Value();
+      if (ATOOLS::IsZero(abs(rishbon)/max)) {
+	shem = std::string("0");
+	rishbon = Complex(0.,0.);
+	return *this;
+      }
       shem    += std::string("-(");
       shem    += k.String();
       shem    += std::string(")");
