@@ -26,7 +26,7 @@ bool ATOOLS::Particle::operator==(Particle part)
 }
 
 std::ostream& ATOOLS::operator<<(std::ostream& str, const Particle &part) {
-  int io=std::cout.precision(4);
+  int io=str.precision(4);
   switch (part.Status()) {
   case 0 : // null entry
     return str<<"--- empty entry ---"<<std::endl;
@@ -51,7 +51,7 @@ std::ostream& ATOOLS::operator<<(std::ostream& str, const Particle &part) {
        <<std::setw(10)<<part.Number()<<std::endl
        <<"============================================================"
        <<std::resetiosflags(std::ios::scientific)<<std::resetiosflags(std::ios::left);
-    std::cout.precision(io);
+    str.precision(io);
     return str;		  
   default : // user defined or reserved
     return str<<"--- unrecognized status:"<<part.Status()<<" ---"<<std::endl;
@@ -62,7 +62,7 @@ std::ostream& ATOOLS::operator<<(std::ostream& str, const Particle &part) {
 	  <<std::setw(11)<<p[2]<<','<<std::setw(11)<<p[3]<<"),"<<std::setw(11)<<p.Abs2()<<"]"
      <<" ("<<std::setw(3)<<part.GetFlow(1)<<","<<std::setw(3)<<part.GetFlow(2)<<")"
      <<std::resetiosflags(std::ios::scientific)<<std::resetiosflags(std::ios::left);
-  std::cout.precision(io);
+  str.precision(io);
   return str;
 }
 
