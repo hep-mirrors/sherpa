@@ -62,8 +62,8 @@ if [ "$BINPATH" = "" ]; then BINPATH="./" ; fi
 #if [ "$RESULTS" = "" ]; then RESULTS="results/" ; fi
 #if [ "$ANALYSIS" = "" ]; then ANALYSIS="analysis/" ; fi
 if [ "$BASENAME" = "" ]; then BASENAME="job" ; fi
-if [ ! "$RESULTS" = "" ]; then RESULTS=$RUNPATH"/"$RESULTS ; fi
-if [ ! "$ANALYSIS" = "" ]; then ANALYSIS=$RUNPATH"/"$ANALYSIS ; fi
+if [ ! "$RESULTS" = "" ]; then RESULTS=$RUNPATH$RESULTS ; fi
+if [ ! "$ANALYSIS" = "" ]; then ANALYSIS=$RUNPATH$ANALYSIS ; fi
 
 FILE=$BASENAME"_"$TIME
 LOGPATH=$PWD
