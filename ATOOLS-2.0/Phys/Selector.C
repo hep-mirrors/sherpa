@@ -28,7 +28,7 @@ void Selector_Base::Output() {
 
 
 Selector_Data::Selector_Data(std::string path) {
-  if (!ReadInData(path+string("/Selector.dat"))) {
+  if (!ReadInData(path)) {
     AORGTOOLS::msg.Error()<<"Error in Selector_Data::Selector_Data("<<path<<")."<<endl
 			  <<"Cannot initialise any selector. Abort."<<endl;
     abort();

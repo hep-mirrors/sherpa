@@ -52,7 +52,8 @@ int Kf_To_Int::ToInt(kf::code kfc)
 kf::code Kf_To_Int::FromString(std::string st)
 {
   for(int i=0;i<anz;i++) {
-    if(std::string(particles[i].n)==st) return kf_tab[i];
+    if (std::string(particles[i].n)==st) return kf_tab[i];
+    if (st==std::string("e+"))           return (kf::e);
   }
 
   std::cerr<<"ERROR in Kf_To_Int::FromString("<<st<<"): Particle type unknown !"<<std::endl;
