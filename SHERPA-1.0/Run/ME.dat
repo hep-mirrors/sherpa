@@ -1,0 +1,18 @@
+!-------------------------------------------------------
+!-- ME generators --------------------------------------
+!-------------------------------------------------------
+RESULT DIRECTORY      = Results
+ME_SIGNAL_GENERATOR   = Internal
+EVENT_GENERATION_MODE = Unweighted
+SIGNAL_MODEL          = SM
+COUPLING SCHEME       = Running     ! Fixed   (default value) or 
+                                    ! Running (s for ME generators, pt for 2->2)
+COUPLING SCALE FACTOR = 1.          ! Additional prefactor for ME's scale.
+YUKAWA MASSES         = Running     ! Fixed   (polemass) or 
+                                    ! Running (higgs mass)
+YUKAWA MASSES FACTOR  = 1.          ! Additional prefactor for yukawas
+WIDTH SCHEME          = Complex     ! Fixed or complex width for internal propagators
+                                    ! of unstable particles.
+SCALE SCHEME          = 1           ! 1=pt2, default=shat
+KFACTOR SCHEME        = 1           ! 1=as(pt2)/as(ecms)^nstrong,default=1
+SCALE FACTOR          = 1.
