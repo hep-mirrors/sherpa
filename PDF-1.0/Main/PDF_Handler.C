@@ -85,7 +85,7 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 					     mu0*mu0,(kps::type)kpscheme);
 	}
  	if (cont==Switch::On) {
-	  int pcscheme=dataread->GetValue("CONTINUATION_SCHEME",(int)0);
+	  int pcscheme=dataread->GetValue("CONTINUATION",(int)1);
 	  return new Continued_PDF(pdfbase,(pcs::type)pcscheme);
 	}
 	return pdfbase;
