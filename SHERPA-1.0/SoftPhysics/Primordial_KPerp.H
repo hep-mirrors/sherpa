@@ -27,7 +27,6 @@ namespace SHERPA {
 		       bool forward,unsigned int catcher);
     bool BoostConnected(ATOOLS::Blob*,unsigned int catcher);
 
-    bool CheckBoost(ATOOLS::Particle *particle,unsigned int beam);
     void FillKPerp(ATOOLS::Particle *particle,unsigned int beam);
 
   public:

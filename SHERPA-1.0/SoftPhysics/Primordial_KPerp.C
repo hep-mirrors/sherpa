@@ -6,6 +6,17 @@
 #include "Vector.H"
 #include "Message.H"
 
+//#define ANALYSE__Primordial_KPerp
+
+#ifdef ANALYSE__Primordial_KPerp
+#ifndef ROOT_SUPPORT
+#undef ANALYSE__Primordial_KPerp
+#else
+#include "My_Root.H"
+#include "TH1D.h"
+#endif
+#endif
+
 using namespace SHERPA;
 using namespace ATOOLS;
 
@@ -35,6 +46,8 @@ Primordial_KPerp::~Primordial_KPerp()
 
 bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
 {
+  if (blob1==NULL || blob2==NULL) 
+    THROW(critical_error,"Called with NULL pointer.");
   double kpm1=m_kperpmean[0], kpm2=m_kperpmean[1];
   double kps1=m_kperpsigma[0], kps2=m_kperpsigma[1];
   size_t m_maxtrials=1000;
@@ -71,7 +84,8 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
 	      r12=ran1*ran1+ran2*ran2;
 	    } while (r12>1.0);
 	    if (i<blob[j]->NOutP()-1) { 
-	      (*p_kperp[j])[i]=Vec3D(kperp[j]*(ran1*ran1-ran2*ran2)/r12,kperp[j]*2.0*ran1*ran2/r12,0.0);
+	      (*p_kperp[j])[i]=Vec3D(kperp[j]*(ran1*ran1-ran2*ran2)/
+				     r12,kperp[j]*2.0*ran1*ran2/r12,0.0);
 	      sum[j]=sum[j]-(*p_kperp[j])[i];
 	      if (minimum[j]>dabs(kperp[j])) {
 		minimum[j]=dabs(kperp[j]); 
@@ -84,9 +98,11 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
 	// test whether last k_\perp is reasonable
 	success=true;
 	if (m_kperpsigma[0]!=0.0) 
-	  success=success&&(exp(-0.5*sqr((m_kperpmean[0]-sum[0].Abs())/m_kperpsigma[0]))<ran.Get());
+	  success=success&&(exp(-0.5*sqr((m_kperpmean[0]-sum[0].Abs())/
+					 m_kperpsigma[0]))<ran.Get());
 	if (m_kperpsigma[1]!=0.0) 
-	  success=success&&(exp(-0.5*sqr((m_kperpmean[1]-sum[1].Abs())/m_kperpsigma[1]))<ran.Get());
+	  success=success&&(exp(-0.5*sqr((m_kperpmean[1]-sum[1].Abs())/
+					 m_kperpsigma[1]))<ran.Get());
       } while (!success);
       success=true;
       // sort k_\perp values
@@ -98,7 +114,9 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
 	  double cur=dabs(blob[i]->OutParticle(j)->Momentum()[3]);
 	  for (int k=j;k<blob[i]->NOutP();++k) {
 	    if (cur>(*p_kperp[i])[k].Abs()) {
-	      copy=(*p_kperp[i])[j]; (*p_kperp[i])[j]=(*p_kperp[i])[k]; (*p_kperp[i])[k]=copy;
+	      copy=(*p_kperp[i])[j]; 
+	      (*p_kperp[i])[j]=(*p_kperp[i])[k]; 
+	      (*p_kperp[i])[k]=copy;
 	      break;
 	    }
 	    else {
@@ -125,14 +143,16 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
 	  p_filled->insert(cur2);
 	}
 	else {
-	  if ((*p_kperp[0])[i].Abs()>ATOOLS::dabs(cur1->Momentum()[3])) success=false;
+	  if ((*p_kperp[0])[i].Abs()>
+	      ATOOLS::dabs(cur1->Momentum()[3])) success=false;
 	}
 	p_filled->insert(cur1);
       }
       for (int i=0;i<blob[1]->NOutP();++i) {
 	ATOOLS::Particle *cur=blob[1]->OutParticle(i);
 	if (p_filled->find(cur)==p_filled->end()) {
-	  if ((*p_kperp[1])[tested++].Abs()>ATOOLS::dabs(cur->Momentum()[3])) success=false;
+	  if ((*p_kperp[1])[tested++].Abs()>
+	      ATOOLS::dabs(cur->Momentum()[3])) success=false;
 	}
       }      
       if ((++trials)==m_maxtrials) {
@@ -162,7 +182,7 @@ bool Primordial_KPerp::BoostConnected(ATOOLS::Blob *blob,unsigned int catcher)
 { 
   if (++catcher>100) {
     msg.Error()<<"ERROR in Primordial_KPerp::BoostConnected(..): "
-	       <<"   Blob nesting is too deep, cannot boost connected parton."<<std::endl;
+	       <<"   Blob nesting is too deep."<<std::endl;
     return false;
   }
   if ((blob==NULL)||(p_boosted->find(blob)!=p_boosted->end())) return true;
@@ -184,7 +204,7 @@ bool Primordial_KPerp::FindConnected(ATOOLS::Particle *particle,ATOOLS::Particle
 {
   if (++catcher>100) {
     msg.Error()<<"ERROR in Primordial_KPerp::FindConnected(..): "
-	       <<"   Blob nesting is too deep, cannot boost connected parton."<<std::endl;
+	       <<"   Blob nesting is too deep."<<std::endl;
     return false;
   }
   if (!forward) {
@@ -248,7 +268,7 @@ void Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
   sp2=old2.Abs2()+sqr(kp2.Abs());
   sp=oldcms.Abs2()+sqr((kp1+kp2).Abs());
   Enew=sqrt(sp/(1.0-sqr(oldcms[3]/oldcms[0])));
-  pznew=sqrt(Enew*Enew-sp);
+  pznew=sqrt(sp*sqr(oldcms[3]/oldcms[0])/(1.0-sqr(oldcms[3]/oldcms[0])));
   double yto=(oldcms[0]+oldcms[3])/(oldcms[0]-oldcms[3]);
   double spo=oldcms.Abs2();
   for (double sign=1.0;sign>=-1.0;sign-=2.0) {
@@ -259,13 +279,27 @@ void Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
     double spn1=sqr(E1+E2)-sqr(pz1+pz2)-sqr((kp1+kp2).Abs());
     double spn2=sqr(E1+E2)-sqr(-pz1+pz2)-sqr((kp1+kp2).Abs());
     if (ATOOLS::dabs(spn1-spo)>ATOOLS::dabs(spn2-spo)) pz1*=-1.0;
+    spn1=sqr(E1+E2)-sqr(pz1+pz2)-sqr((kp1+kp2).Abs());
+    spn2=sqr(E1+E2)-sqr(-pz1+pz2)-sqr((kp1+kp2).Abs());
     double ytn=(E1+E2+pz1+pz2)/(E1+E2-pz1-pz2);
     if (ATOOLS::dabs(ytn-yto)>ATOOLS::dabs(1./ytn-yto)) { pz1*=-1.0; pz2*=-1.0; }
+    ytn=(E1+E2+pz1+pz2)/(E1+E2-pz1-pz2);
     if (dabs(pz1)>dabs(pz2)) { if (Sign(pz1)==Sign(old1[3])) break; }
     else { if (Sign(pz2)==Sign(old2[3])) break; }
   }
   mom1=Vec4D(E1,kp1[1],kp1[2],pz1);
   mom2=Vec4D(E2,kp2[1],kp2[2],pz2);
+#ifdef ANALYSE__Primordial_KPerp
+  static TH1D *pkp[2]={NULL,NULL};
+  if (pkp[0]==NULL) {
+    pkp[0] = new TH1D("kperp_1","kperp_1",100,0.0,10.0);
+    pkp[1] = new TH1D("kperp_2","kperp_2",100,0.0,10.0);
+    MYROOT::myroot->AddObject(pkp[0],"kperp_1");
+    MYROOT::myroot->AddObject(pkp[1],"kperp_2");
+  }
+  pkp[0]->Fill(mom1.PPerp());
+  pkp[1]->Fill(mom2.PPerp());
+#endif
   m_newcms=Poincare(mom1+mom2);
   cur1->SetMomentum(mom1); 
   cur2->SetMomentum(mom2);
@@ -290,68 +324,10 @@ void Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
   return;
 }
 
-bool Primordial_KPerp::CheckBoost(ATOOLS::Particle *cur1,unsigned int beam) 
-{
-  if (m_kperpmean[0]==0.0 && m_kperpmean[1]==0.0) return true;
-  if (p_filled->find(cur1)!=p_filled->end()) return true;
-  ++m_current[beam];
-  Vec3D kp1;
-  Vec4D mom1, old1=cur1->Momentum();
-  kp1=(*p_kperp[beam])[m_current[beam]]+Vec3D(old1[1],old1[2],0.0);
-  Particle *cur2;
-  if (!FindConnected(cur1,cur2,true,0)) {
-    p_filled->insert(cur1);
-    return true;
-  }
-  ++m_current[1-beam];
-  Vec4D mom2, old2=cur2->Momentum(), oldcms=old1+old2;
-  Vec3D kp2=(*p_kperp[1-beam])[m_current[1-beam]]+Vec3D(old2[1],old2[2],0.0);
-  m_oldcms=Poincare(oldcms);
-  double sp, sp1, sp2, Enew, pznew, E1, E2, pz1, pz2;
-  sp1=old1.Abs2()+sqr(kp1.Abs());
-  sp2=old2.Abs2()+sqr(kp2.Abs());
-  sp=oldcms.Abs2()+sqr((kp1+kp2).Abs());
-  Enew=sqrt(sp/(1.0-sqr(oldcms[3]/oldcms[0])));
-  pznew=sqrt(Enew*Enew-sp);
-  double yto=(oldcms[0]+oldcms[3])/(oldcms[0]-oldcms[3]);
-  double spo=oldcms.Abs2();
-  for (double sign=1.0;sign>=-1.0;sign-=2.0) {
-    E1=0.5/sp*((sp+sp1-sp2)*Enew+sign*sqrt(Lambda2(sp,sp1,sp2))*pznew);
-    E2=Enew-E1;
-    pz1=Sign(old1[3])*sqrt(E1*E1-sp1);
-    pz2=Sign(old2[3])*sqrt(E2*E2-sp2);
-    double spn1=sqr(E1+E2)-sqr(pz1+pz2)-sqr((kp1+kp2).Abs());
-    double spn2=sqr(E1+E2)-sqr(-pz1+pz2)-sqr((kp1+kp2).Abs());
-    if (ATOOLS::dabs(spn1-spo)>ATOOLS::dabs(spn2-spo)) pz1*=-1.0;
-    double ytn=(E1+E2+pz1+pz2)/(E1+E2-pz1-pz2);
-    if (ATOOLS::dabs(ytn-yto)>ATOOLS::dabs(1./ytn-yto)) { pz1*=-1.0; pz2*=-1.0; }
-    if (dabs(pz1)>dabs(pz2)) { if (Sign(pz1)==Sign(old1[3])) break; }
-    else { if (Sign(pz2)==Sign(old2[3])) break; }
-  }
-  mom1=Vec4D(E1,kp1[1],kp1[2],pz1);
-  mom2=Vec4D(E2,kp2[1],kp2[2],pz2);
-  m_newcms=Poincare(mom1+mom2);
-  m_newcms.Boost(mom1); 
-  m_newcms.Boost(mom2);
-  if (mom2[3]>0.0) m_rotate=Poincare(Vec4D::ZVEC,mom2);
-  else m_rotate=Poincare(Vec4D::ZVEC,mom1);
-  if (!(m_newcms.CheckBoost() && 
-	m_oldcms.CheckBoost() && 
-	m_rotate.CheckRotation())) return false;
-  return true;
-}
-
 void Primordial_KPerp::FillKPerp(ATOOLS::Blob *blob)
 {
   unsigned int beam=blob->Beam();
-  if (blob->Beam()==0) {
-    for (int i=0;i<blob->NOutP();++i) 
-      if (!CheckBoost(blob->OutParticle(i),beam)) {
-	m_current[1]=m_current[0]=-1;
-	p_filled->clear();
-	m_fill=0;
-	return;
-      }
+  if (beam==0) {
     m_current[1]=m_current[0]=-1;
     p_filled->clear();
   }
