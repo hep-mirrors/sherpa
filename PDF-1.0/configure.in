@@ -39,6 +39,9 @@ AC_CHECK_FUNCS(mkdir)
 
 AC_OUTPUT(Main/Makefile \
 	  LHAPDF/Makefile \
+	  MRST/Makefile \
+	  CTEQ/Makefile \
+	  GRV/Makefile \
 	  Sudakov/Makefile \
 	  KMR/Makefile \
 	  Makefile )

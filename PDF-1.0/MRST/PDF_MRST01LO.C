@@ -1,0 +1,105 @@
+#include "PDF_MRST01LO.H"
+
+#include "Message.H"
+#include "Scaling.H"
+
+using namespace PDF;
+using namespace ATOOLS;
+
+extern "C" {
+  void mrstlo_(double *x,double *q,int *mode,
+	       double *upv,double *dnv,double *usea,
+	       double *dsea,double *str,double *chm,
+	       double *bot,double *glu);
+}
+
+void mrstlo(double x,double q,int mode,
+	    double &upv,double &dnv,double &usea,
+	    double &dsea,double &str,double &chm,
+	    double &bot,double &glu)
+{
+  mrstlo_(&x,&q,&mode,&upv,&dnv,&usea,&dsea,&str,&chm,&bot,&glu);
+}
+
+extern struct {
+  char mfile[128];
+} input_;
+#define input input_
+
+inline void MakeFortranString(char *output,std::string input,unsigned int length)
+{
+  for (unsigned int i=0;i<length;++i) output[i]=(char)32;
+  for (size_t j=0;j<input.length();++j) output[j]=(char)input[j];
+}
+
+PDF_MRST01LO::PDF_MRST01LO(const ATOOLS::Flavour bunch,const std::string path):
+  m_path(path),
+  m_anti(1),
+  m_mode(1)
+{
+  m_type=std::string("MRST01LO");
+  m_bunch=bunch;
+  if (m_bunch==Flavour(kf::p_plus).Bar()) m_anti=-1;
+  for (int i=1;i<6;i++) {
+    m_partons.push_back(Flavour(kf::code(i)));
+    m_partons.push_back(Flavour(kf::code(i)).Bar());
+  }
+  m_partons.push_back(Flavour(kf::gluon));
+  m_partons.push_back(Flavour(kf::jet));
+  m_partons.push_back(Flavour(kf::quark));
+  m_partons.push_back(Flavour(kf::quark).Bar());
+  m_xmin=1.e-12;
+  m_xmax=1.;
+  m_q2min=.5;
+  m_q2max=1.e12;
+  MakeFortranString(input.mfile,m_path+std::string("/lo2002.dat"),128);
+}
+
+
+PDF_Base *PDF_MRST01LO::GetCopy() 
+{
+  PDF_Base *copy = new PDF_MRST01LO(m_bunch,m_path);
+  m_copies.push_back(copy);
+  return copy;
+}
+
+void PDF_MRST01LO::Output() 
+{
+}
+
+void PDF_MRST01LO::Calculate(double x,double z,double kp2,double Q2) 
+{
+  m_overscaled=false;
+  if (x/m_rescale>m_xmax) {
+    m_overscaled=true;
+    return;
+  }
+  mrstlo(x/m_rescale,Q2,m_mode,p_xpdfv[1],p_xpdfv[0],p_xpdf[1],
+	 p_xpdf[0],p_xpdf[2],p_xpdf[3],p_xpdf[4],p_xpdf[5]);
+}
+
+
+double PDF_MRST01LO::GetXPDF(const ATOOLS::Flavour infl) 
+{
+  if (m_overscaled) return 0.;
+  int kfc=m_anti*int(infl);
+  switch (kfc) {
+  case  ATOOLS::kf::d : return m_rescale*(p_xpdfv[0]+p_xpdf[0]);
+  case -ATOOLS::kf::d : return m_rescale*p_xpdf[0]; 
+  case  ATOOLS::kf::u : return m_rescale*(p_xpdfv[1]+p_xpdf[1]);
+  case -ATOOLS::kf::u : return m_rescale*p_xpdf[1]; 
+  case  ATOOLS::kf::s :
+  case -ATOOLS::kf::s : return m_rescale*p_xpdf[2];
+  case  ATOOLS::kf::c : 
+  case -ATOOLS::kf::c : return m_rescale*p_xpdf[3];
+  case  ATOOLS::kf::b : 
+  case -ATOOLS::kf::b : return m_rescale*p_xpdfv[4];
+  case  ATOOLS::kf::gluon : 
+  case -ATOOLS::kf::gluon :return m_rescale*p_xpdf[5]; 
+  default: return 0.;
+  }
+}
+
+void PDF_MRST01LO::AssignKeys(ATOOLS::Integration_Info *const info)
+{
+}

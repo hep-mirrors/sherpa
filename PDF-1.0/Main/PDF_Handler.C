@@ -1,6 +1,7 @@
 #include "PDF_Handler.H"
 #include "PDF_Electron.H"
 #include "PDF_MRST99.H"
+#include "PDF_MRST01LO.H"
 #include "GRVph_Fortran_Interface.H"
 #include "LHAPDF_Fortran_Interface.H"
 #include "CTEQ6_Fortran_Interface.H"
@@ -46,6 +47,10 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
       if (set==std::string("MRST99")) {
 	msg_Tracking()<<"Initialize MRST99 : "<<version<<" from "<<grid_path<<endl;
 	pdfbase = new PDF_MRST99(bunch_particle,version,grid_path);
+      }
+      else if (set==std::string("MRST01LO")) {
+	msg_Tracking()<<"Initialize MRST01LO from "<<grid_path<<endl;
+	pdfbase = new PDF_MRST01LO(bunch_particle,grid_path);
       }
       else if ((set==std::string("cteq6m") ||
 	  set==std::string("cteq6d") ||

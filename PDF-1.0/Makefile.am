@@ -3,6 +3,6 @@ MAKE = make
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
-SUBDIRS       =	Main LHAPDF Sudakov KMR
+SUBDIRS       =	Main LHAPDF MRST CTEQ GRV Sudakov KMR
 EXTRA_DIST    = $(CVSINCLUDE)
 
