@@ -11,7 +11,8 @@ using namespace ATOOLS;
 
 Grid::Grid(const size_t dim,const size_t points):
   m_dim(dim),
-  m_points(points)
+  m_points(points),
+  m_order(3)
 {
   p_root = new Node<double>(0.0,true);
   Allocate(p_root,1);
@@ -153,7 +154,7 @@ double Grid::Interpolate(const std::vector<double> &xgrid,
 
 void Grid::Interpolate(const std::vector<double> &x,const size_t i,
 		       Node<double> *const node,std::vector<double> &y,
-		       const size_t j)
+		       const size_t j) const
 {
   // This is NR::polin from "Numerical Recipes in C++" ISBN 0 521 75033 4
 #ifdef DEBUG__Grid
@@ -163,10 +164,16 @@ void Grid::Interpolate(const std::vector<double> &x,const size_t i,
   if (node->operator->()==NULL) y[j]=(*node)[0];
   else {
     msg_Indent();
-    std::vector<double> yt((*node)().size());
-    for (size_t k=0;k<(*node)().size();++k) 
-      Interpolate(x,i+1,(*node)()[k],yt,k);
-    y[j]=Interpolate(*node,yt,x[i]);
+    size_t l,r;
+    Find(x[i],node,l,r);
+    l=Max(l-m_order/2,(size_t)0);
+    l=Min(l,(*node)().size()-2);
+    std::vector<double> yt(Min((*node)().size()-l,m_order)), xt(yt.size());
+    for (size_t k=0;k<yt.size();++k) {
+      Interpolate(x,i+1,(*node)()[l+k],yt,k);
+      xt[k]=(*node)[l+k];
+    }
+    y[j]=Interpolate(xt,yt,x[i]);
   }
 }
 
@@ -180,11 +187,16 @@ double Grid::Interpolate(const std::vector<double> &x) const
     msg_Indent();
 #endif
     Grid *grid=(Grid*)this;
-    std::vector<double> yt((*p_root)().size());
-    for (size_t k=0;k<(*p_root)().size();++k) {
-      grid->Interpolate(x,1,(*grid->p_root)()[k],yt,k);
+    size_t l, r;
+    Find(x[0],p_root,l,r);
+    l=Max(l-m_order/2,(size_t)0);
+    l=Min(l,(*p_root)().size()-2);
+    std::vector<double> yt(Min((*p_root)().size()-l,m_order)), xt(yt.size());
+    for (size_t k=0;k<yt.size();++k) {
+      Interpolate(x,1,(*grid->p_root)()[l+k],yt,k);
+      xt[k]=(*grid->p_root)[l+k];
     }
-    cur=Interpolate(*p_root,yt,x[0]);
+    cur=Interpolate(xt,yt,x[0]);
 #ifdef DEBUG__Grid
     msg_Debugging()<<"return "<<cur<<"\n";
   }
@@ -212,7 +224,7 @@ bool Grid::WriteOut(Node<double> *current,const size_t node)
 {
   bool result=true;
   for (size_t i=0;i<current->size();++i) {
-    (*p_file)<<(node!=m_dim?std::string(node,' '):"")<<(*current)[i]<<" ";
+    (*p_file)<<(node!=m_dim?std::string(node,' '):" \t")<<(*current)[i]<<" ";
     if (node<m_dim-1) (*p_file)<<std::endl;
     if (current->operator->()!=NULL) 
       if (!WriteOut((*current)()[i],node+1)) result=false;
@@ -261,6 +273,7 @@ bool Grid::ReadIn(Node<double> *current,const size_t node)
     std::string dummy;
     (*p_file)>>dummy;
     (*current)[i]=ATOOLS::ToType<double>(dummy);
+    if (dummy=="nan") (*current)[i]=0.0;
     if (ATOOLS::msg.LevelIsDebugging()) {
       msg_Debugging()<<std::string(node,' ')<<(*current)[i]<<" ";
       if (node!=m_dim-1) msg_Debugging()<<std::endl;
@@ -274,5 +287,35 @@ bool Grid::ReadIn(Node<double> *current,const size_t node)
     }
   }
   return true;
+}
+
+double Grid::Data(const std::vector<double> &x) const
+{
+  return Data(x,p_root,0);
+}
+
+double Grid::Data(const std::vector<double> &x,
+		  ATOOLS::Node<double> *const node,const size_t i) const
+{
+  if (node->operator->()==NULL) return (*node)[0];
+  size_t l, r;
+  l=Find(x[i],node,l,r);
+  return Data(x,(*node)()[l],i+1);
+}
+
+size_t Grid::Find(const double &x,ATOOLS::Node<double> *const node,
+		  size_t &l,size_t &r) const
+{
+  l=0, r=node->size()-1;
+  size_t j=(l+r)/2;
+  double xj=(*node)[j];
+  while (r-l>1) {
+    if (x<xj) r=j;
+    else l=j;
+    j=(l+r)/2;
+    xj=(*node)[j];
+  }
+  return dabs(x-(*node)[l])<
+    dabs(x-(*node)[Min(r,node->size()-1)])?l:r;
 }
 
