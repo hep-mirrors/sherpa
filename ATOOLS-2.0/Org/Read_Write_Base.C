@@ -183,11 +183,10 @@ bool Read_Write_Base::OpenInFile(const unsigned int i)
       } while (*m_infile[i]);
     }
   }
-  bool sucess=m_filecontent.size()>0;
+  bool success=m_filecontent.size()>0;
   if (m_addcommandline) AddFileContent(CommandLine());
-  //  std::cout<<" filecontent.size()="<<m_filecontent.size()<<std::endl;
-  return sucess;
-  //  return !m_infile[i]->bad();
+  if (!success) m_infilemode[i]=File_IO_Base::Error;
+  return success;
 }
 
 bool Read_Write_Base::OpenOutFile(const unsigned int i)
@@ -211,8 +210,6 @@ bool Read_Write_Base::OpenOutFile(const unsigned int i)
 void Read_Write_Base::CloseInFile(const unsigned int i,const bool force)
 { 
   if (m_infile[i]==NULL) return;
-//   std::cout<<"calling Read_Write_Base::CloseInFile("<<i<<","<<force<<"): "
-// 	   <<"Closing file '"<<m_inputpath[i]+m_inputfile[i]<<"'."<<m_infilemode[i]<<std::endl;
   if ((m_infilemode[i]==Permanent)&&(!force)) return;
 #ifdef DEBUG__Read_Write_Base
   std::cout<<"Read_Write_Base::CloseInFile("<<i<<","<<force<<"): "

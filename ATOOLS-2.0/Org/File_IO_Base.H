@@ -14,6 +14,7 @@ namespace ATOOLS {
 
     enum OpenModeID { Temporary =  1,
 		      Permanent =  2,
+		      Error     =  3,
 		      Unknown   = 99 };
     
   protected:

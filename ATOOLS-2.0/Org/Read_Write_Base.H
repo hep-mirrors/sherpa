@@ -53,12 +53,6 @@ namespace ATOOLS {
 
     bool m_allownans, m_addcommandline;
 
-    bool OpenInFile(const unsigned int i=0);
-    bool OpenOutFile(const unsigned int i=0);
-
-    void CloseInFile(const unsigned int i=0,const bool force=false);
-    void CloseOutFile(const unsigned int i=0,const bool force=false);
-
     template <class ReadWrite_Type >
     ReadWrite_Type NotDefined();
     template <class ReadWrite_Type >
@@ -79,6 +73,13 @@ namespace ATOOLS {
 
     // destructor
     ~Read_Write_Base();
+
+    // member functions
+    bool OpenInFile(const unsigned int i=0);
+    bool OpenOutFile(const unsigned int i=0);
+
+    void CloseInFile(const unsigned int i=0,const bool force=false);
+    void CloseOutFile(const unsigned int i=0,const bool force=false);
 
     // setters
     inline void SetSeparator(const std::string _m_separator);
