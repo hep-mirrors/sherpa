@@ -75,6 +75,10 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
 	  (*bit)->Type()==ATOOLS::btp::Signal_Process) {
 	for (int i=0;i<(*bit)->NOutP();++i) 
 	  m_ptmax=ATOOLS::Min(m_ptmax,(*bit)->OutParticle(i)->Momentum().PPerp());
+	if (VetoHardProcess(*bit)) {
+	  m_ptmax=0.0;
+	  break;
+	}
 	for (int i=0;i<(*bit)->NInP();++i) {
 	  p_mihandler->ISRHandler()->
 	    Extract((*bit)->InParticle(i)->Flav(),
