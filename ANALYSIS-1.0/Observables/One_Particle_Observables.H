@@ -43,6 +43,15 @@ namespace ANALYSIS {
     One_Particle_E(const ATOOLS::Flavour &,int,double,double,int,const std::string & =std::string("E:"));
     Primitive_Observable_Base * Copy() const;
   };
+
+  class One_Particle_EVis : public One_Particle_Observable_Base {  
+    void Evaluate(const ATOOLS::Vec4D &,double=1., int=1); 
+  public:
+    One_Particle_EVis(const ATOOLS::Flavour &,int,double,double,int,const std::string & =std::string("EVis:"));
+    Primitive_Observable_Base * Copy() const;
+    void Evaluate(int,const ATOOLS::Vec4D *,const ATOOLS::Flavour *,double=1.,int ncount=1);
+    void Evaluate(const ATOOLS::Particle_List &,double=1.,int ncount=1);
+  };
 }
 
 #endif

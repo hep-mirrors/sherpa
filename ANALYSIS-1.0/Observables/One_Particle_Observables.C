@@ -131,3 +131,38 @@ Primitive_Observable_Base * One_Particle_E::Copy() const
 {
   return new One_Particle_E(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_name);
 }
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+One_Particle_EVis::One_Particle_EVis(const Flavour & _flav,
+			       int _type,double _xmin,double _xmax,int _nbins,
+			       const std::string & _name) :
+  One_Particle_Observable_Base(_flav,_type,_xmin,_xmax,_nbins,"EVis") { }
+
+
+void One_Particle_EVis::Evaluate(const Vec4D & mom,double weight, int ncount) 
+{ } 
+
+void One_Particle_EVis::Evaluate(int nout,const ATOOLS::Vec4D * moms,const ATOOLS::Flavour * flavs,
+					    double weight, int ncount) 
+{
+  ATOOLS::Vec4D momsum = Vec4D(0.,0.,0.,0.);
+  for (int i=0;i<nout;i++) {
+    momsum += moms[i];
+  }
+  p_histo->Insert(momsum.Abs(),weight,ncount); 
+}
+
+
+void One_Particle_EVis::Evaluate(const Particle_List & plist,double weight,int ncount )
+{
+  ATOOLS::Vec4D momsum = Vec4D(0.,0.,0.,0.);
+  for (Particle_Const_Iterator plit=plist.begin();plit!=plist.end();++plit) {
+    momsum += (*plit)->Momentum();
+  }
+  p_histo->Insert(momsum.Abs(),weight,ncount); 
+}
+Primitive_Observable_Base * One_Particle_EVis::Copy() const
+{
+  return new One_Particle_EVis(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_name);
+}

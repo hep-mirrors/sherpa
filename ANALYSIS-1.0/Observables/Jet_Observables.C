@@ -12,7 +12,7 @@ Jet_Observable_Base::Jet_Observable_Base(unsigned int type,double xmin,double xm
 {
   m_listname=lname;
   m_name  = std::string("jet_");
-  if (lname!="FinalState") m_name=lname+std::string("_")+m_name;
+  if (lname!="Analysed") m_name=lname+std::string("_")+m_name;
   if (m_minn!=0) {
     MyStrStream str;
     str<<m_name<<m_minn<<"_"<<m_mode<<"_";
@@ -21,7 +21,7 @@ Jet_Observable_Base::Jet_Observable_Base(unsigned int type,double xmin,double xm
 
   p_histo =  0;
   for (unsigned int i=0;i<m_maxn+1;++i)
-    m_histos.push_back(new Histogram(00,m_xmin,m_xmax,m_nbins));
+    m_histos.push_back(new Histogram(type,m_xmin,m_xmax,m_nbins));
 }
 
 void Jet_Observable_Base::Evaluate(const Particle_List & pl,double weight, int ncount)
@@ -56,6 +56,7 @@ void Jet_Observable_Base::Evaluate(const Particle_List & pl,double weight, int n
 void Jet_Observable_Base::Evaluate(const Blob_List & blobs,double value, int ncount)
 {
   Particle_List * pl=p_ana->GetParticleList(m_listname);
+  //std::cout<<"Evaluate for "<<m_listname<<" : "<<pl->size()<<" from "<<p_ana<<std::endl;
   Evaluate(*pl,value, ncount);
 }
 
@@ -152,6 +153,26 @@ Primitive_Observable_Base * Jet_PT_Distribution::Copy() const
   return new Jet_PT_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
 }
 
+
+Jet_E_Distribution::Jet_E_Distribution(unsigned int type,double xmin,double xmax,int nbins,
+					 unsigned int mode,unsigned int minn,unsigned int maxn, 
+					 const std::string & lname) :
+  Jet_Observable_Base(type,xmin,xmax,nbins,mode,minn,maxn,lname) 
+{
+  m_name+="E_";
+}
+
+
+double Jet_E_Distribution::Calc(const Particle * p)
+{
+  Vec4D mom=p->Momentum();
+  return mom[0];
+}
+
+Primitive_Observable_Base * Jet_E_Distribution::Copy() const 
+{
+  return new Jet_E_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+}
 
 
 Jet_Differential_Rates::Jet_Differential_Rates(unsigned int type,double xmin,double xmax,int nbins,

@@ -58,6 +58,16 @@ namespace ANALYSIS {
     Primitive_Observable_Base * Copy() const ;
   };
 
+  class Jet_E_Distribution : public Jet_Observable_Base {
+
+  public:
+    Jet_E_Distribution(unsigned int type,double xmin,double xmax,int nbins,
+			unsigned int mode,unsigned int minn,unsigned int maxn, 
+			const std::string & =std::string("Jets"));
+    double Calc(const ATOOLS::Particle *);
+    Primitive_Observable_Base * Copy() const ;
+  };
+
   class Jet_Differential_Rates : public Jet_Observable_Base {
   public:
     Jet_Differential_Rates(unsigned int type,double xmin,double xmax,int nbins,
