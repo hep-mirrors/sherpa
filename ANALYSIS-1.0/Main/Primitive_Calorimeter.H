@@ -36,15 +36,6 @@ namespace ANALYSIS {
   };
 
 
-  inline void Primitive_Calorimeter::Reset()
-  {
-    for (int i=0; i<m_nx; ++i) {
-      for (int j=0; j<m_ny; ++j) {
-	p_cells[i][j]=0.;
-      }
-    }
-  };
-
   inline void Primitive_Calorimeter::GetDimensions(int & neta,int & nphi,
 						   double & mineta, double & maxeta) { 
     neta     = m_nx;       nphi     = m_ny;

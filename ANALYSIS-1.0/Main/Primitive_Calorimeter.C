@@ -144,3 +144,13 @@ void Primitive_Calorimeter::Print(std::ostream & s)
     }
   }
 }
+
+void Primitive_Calorimeter::Reset()
+{
+  for (int i=0; i<m_nx; ++i) {
+    for (int j=0; j<m_ny; ++j) {
+      p_cells[i][j]=0.;
+    }
+  }
+}
+
