@@ -210,7 +210,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
       results.push_back(result);
       links.push_back(this);
     }
-    Minimalize();
+    Minimize();
     return 1;
   case 1 :
     for (int j=0;j<results.size();j++) {
@@ -509,7 +509,7 @@ int Single_Process::CheckLibraries(double result) {
 	m_libname = testname;
 	if (shand1) { delete shand1; shand1 = 0; }
 	//Clean p_shand!!!!
-	Minimalize();
+	Minimize();
 	CreateMappingFile();
 	return 1;
       }
@@ -548,7 +548,7 @@ int Single_Process::CheckStrings(double result,Single_Process* tproc)
     msg.Tracking()<<"Found a suitable string."<<endl;
     m_libname = tproc->LibName();
     //delete p_shand; p_shand=0;
-    Minimalize();
+    Minimize();
     CreateMappingFile();
     return 1;
   }
@@ -686,7 +686,7 @@ bool Single_Process::CreateChannelLibrary()
   Process management
   
   ------------------------------------------------------------------------------*/
-void Single_Process::Minimalize()
+void Single_Process::Minimize()
 {
   if (p_partner==this) return;
   if (p_hel)      {delete p_hel; p_hel=0;}

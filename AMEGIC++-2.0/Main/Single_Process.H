@@ -96,7 +96,7 @@ namespace AMEGIC {
     void             Empty();
     void             SetPartner(Single_Process * _p)    { p_partner = _p;       }
     Process_Base   * Partner()                          { return p_partner;     }
-    void             Minimalize();
+    void             Minimize();
 
     /*------------------------------------------------------------------------------
 
