@@ -19,9 +19,13 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string _path,std::string _file,std::
   m_path(_path), m_file(_file), p_amegic(NULL), m_amegicflag(0)
 {
   ReadInDecays();
-  EvaluateWidths(_pfile,_model);
 
-  SetWidths(0);
+  if (m_decaytables.size()>0) {
+
+    EvaluateWidths(_pfile,_model);
+
+    SetWidths(0);
+  }
 }
 
 Hard_Decay_Handler::~Hard_Decay_Handler() { }
