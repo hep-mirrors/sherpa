@@ -30,7 +30,7 @@ namespace APACIC {
     int             m_cpl_scheme;
     int             m_pdf_scheme;
     int             m_ordering_scheme;
-    int             m_jetveto_scheme, m_miveto_scheme;
+    int             m_jetveto_scheme;
     int             m_last_veto;
     double          m_qjet, m_facscale;
     double          m_pdf_fac;
@@ -69,8 +69,6 @@ namespace APACIC {
 
     void SetJetvetoPt2(const double pt2);
     void SetFactorisationScale(const double scale);
-    inline void SetMIVetoScheme(const int scheme) { m_miveto_scheme=scheme; }
-    inline int MIVetoScheme() const { return m_miveto_scheme; }
   };
 
   /*!
