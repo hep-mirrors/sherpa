@@ -81,19 +81,24 @@ Single_XS *Single_XS::GetProcess<Off_Shell_q1q2b_lnulb>(const size_t nin,const s
 							const ATOOLS::Flavour *flavours)
 {
   if (!flavours[0].IsQuark() || !flavours[2].IsLepton()) return NULL;
+  int ints[4];
   bool up[4], anti[4];
   for (short int i=0;i<4;++i) {
     if (flavours[i].IsUptype()) up[i]=true;
     else if (!flavours[i].IsDowntype()) return NULL;
     else up[i]=false;
     anti[i]=flavours[i].IsAnti();
+    ints[i]=flavours[i].Kfcode();
   }
   if (anti[0]==anti[1] || anti[2]==anti[3]) return NULL;
   if ((up[0] && !up[1] && up[2] && !up[3] && anti[0]==anti[2]) ||
       (!up[0] && up[1] && up[2] && !up[3] && anti[1]==anti[2]) ||
       (up[0] && !up[1] && !up[2] && up[3] && anti[1]==anti[2]) ||
       (!up[0] && up[1] && !up[2] && up[3] && anti[0]==anti[2])){ 
-    return new Off_Shell_q1q2b_q3q4b(nin,nout,flavours); 
+    if (up[0]==false) std::swap(ints[0],ints[1]);
+    if (std::abs(ATOOLS::rpa.gen.ComplexMatrixElement("CKM",ints[0]/2-1,ints[1]/2))!=0.) {
+      return new Off_Shell_q1q2b_q3q4b(nin,nout,flavours); 
+    }
   }
   return NULL;
 }
@@ -102,10 +107,9 @@ Off_Shell_q1q2b_lnulb::Off_Shell_q1q2b_lnulb(const size_t nin,const size_t nout,
 					     const ATOOLS::Flavour *flavours):
   Single_XS(nin,nout,flavours) 
 {
-  int ints[4];
-  for (short int i=0;i<4;++i) ints[i]=ATOOLS::kf_table.ToInt(flavours[i].Kfcode());
+  int ints[2];
+  for (short int i=0;i<2;++i) ints[i]=ATOOLS::kf_table.ToInt(flavours[i].Kfcode());
   if (flavours[0].IsDowntype()) std::swap(ints[0],ints[1]);
-  if (flavours[2].IsDowntype()) std::swap(ints[2],ints[3]);
   m_ckm2[0]=std::abs(ATOOLS::rpa.gen.ComplexMatrixElement("CKM",ints[0]/2-1,ints[1]/2));
   m_ckm2[1]=1.;
   m_mw2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Mass());
@@ -123,6 +127,9 @@ double Off_Shell_q1q2b_lnulb::operator()(double s,double t,double u)
 {
   double sc=p_momenta[0]*p_momenta[2];
   if (m_swaped) sc=p_momenta[1]*p_momenta[2];
+//   // naive version: take branching ratio for W -> e nu_e
+//   return ATOOLS::sqr(M_PI*m_aqed/m_sin2tw)*M_PI/3.*m_ckm2[0]*m_ckm2[1]*
+//     ATOOLS::sqr(m_mw2)/(ATOOLS::sqr(s-m_mw2)+m_mw2*m_ww2)*0.1072; 
   return ATOOLS::sqr(M_PI*m_aqed/m_sin2tw)*16./3.*m_ckm2[0]*m_ckm2[1]*
     ATOOLS::sqr(sc)/(ATOOLS::sqr(s-m_mw2)+m_mw2*m_ww2); 
 }
