@@ -159,7 +159,7 @@ void Amplitude_Generator::Print_P(Point* p)
   }
 }
 
-int Amplitude_Generator::Match_Vertex(Single_Vertex* v,Flavour* flav,Complex* cpl)
+int Amplitude_Generator::MatchVertex(Single_Vertex* v,Flavour* flav,Complex* cpl)
 {
   if (flav[0] == v->in[0]) {
     short int hit = 1;
@@ -175,7 +175,7 @@ int Amplitude_Generator::Match_Vertex(Single_Vertex* v,Flavour* flav,Complex* cp
   return 0;
 }
 
-int Amplitude_Generator::Check_End(Point* p,Flavour infl) 
+int Amplitude_Generator::CheckEnd(Point* p,Flavour infl) 
 {
   if (p==0) return 1;
   if (p->left==0) return 1;
@@ -225,7 +225,7 @@ int Amplitude_Generator::Check_End(Point* p,Flavour infl)
     Vertex_List & vl= v_table[flav[0]];
 
     for (j=0;j<vl.size();j++) {
-      if (Match_Vertex(vl[j],flav,cpl)) {
+      if (MatchVertex(vl[j],flav,cpl)) {
 	for (k=0;k<4;k++) p->cpl[k] = cpl[k];
 	p->v = vl[j];
 	*(p->Color)   = *(vl[j]->Color);
@@ -239,7 +239,7 @@ int Amplitude_Generator::Check_End(Point* p,Flavour infl)
   return 0;
 }
 
-void Amplitude_Generator::Set_Props(Point* pl,int dep,Single_Amplitude* &first,int* perm,int topcount, int permcount)
+void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,int* perm,int topcount, int permcount)
 {
   int ap = 0;
   int lanz = 1;
@@ -287,12 +287,17 @@ void Amplitude_Generator::Set_Props(Point* pl,int dep,Single_Amplitude* &first,i
 	  if (p->left->fl.IsFermion()) {
 	    if (p->b*p->left->b == 1)  flav[1] = flav[1].Bar();
 	  }
+	  else if (p->left->b   == -1) flav[1] = flav[1].Bar();
 	}
+	if (p->left->fl==Flavour(kf::none)) p->left->b = p->b;
+	
 	if (p->right->fl != Flavour(kf::none)) {
 	  if (p->right->fl.IsFermion()) {
 	    if (p->b*p->right->b == 1)  flav[2] = flav[2].Bar();
-	  }
 	}
+	else if (p->right->b  == -1) flav[2] = flav[2].Bar();  
+	}
+	if (p->right->fl==Flavour(kf::none)) p->right->b = p->b;
       }
       else {
 	if (flav[0].IsBoson()) {
@@ -327,14 +332,14 @@ void Amplitude_Generator::Set_Props(Point* pl,int dep,Single_Amplitude* &first,i
 	flav[1]=s_flav[1];
 	flav[2]=s_flav[2];
 
-	if (Match_Vertex(vl[i],flav,cpl)) {
+	if (MatchVertex(vl[i],flav,cpl)) {
 	  if (flav[0].Majorana()) {    
 	    if (flav[1].IsFermion() && p->left->b==0)  p->left->b  = p->b;
 	    if (flav[2].IsFermion() && p->right->b==0) p->right->b = p->b;
 	  }
-	  sw1 = Check_End(p->left,flav[1]);	    
+	  sw1 = CheckEnd(p->left,flav[1]);	    
 	  if (sw1) {
-	    sw1 = Check_End(p->right,flav[2]);
+	    sw1 = CheckEnd(p->right,flav[2]);
 	  }
 	}
 	if (sw1) {
@@ -392,7 +397,6 @@ void Amplitude_Generator::CreateSingleAmplitudes(Single_Amplitude * & first) {
   n = first;
   if (n) while (n->Next) n = n->Next;
   Single_Amplitude* gra;
-
   
   for (int i=0;i<prea_table.size();i++) {
     int sw1 = 1;
@@ -770,40 +774,38 @@ void Amplitude_Generator::Unite(Point* p,Point* pdel)
   } 
 }
 
-int Amplitude_Generator::CompareColors(Color_Function* c1,vector<int> blindlist1,
-				       Color_Function* c2,vector<int> blindlist2)
+int Amplitude_Generator::CompareColors(Point* p1,Point* p2)
 {
-  if (c1->Type()!=c2->Type()) return 0;
-  if (blindlist1.size()==0){
-    if (c1->String()==c2->String()) return 1;
-    else return 0;
+  Color_Function * c1 = p1->Color;
+  Color_Function * c2 = p2->Color;
+
+  if (c1->Next()==0 && c2->Next()==0) return 1;
+  if ((c1->Next()!=0 && c2->Next()==0) || (c1->Next()==0 && c2->Next()!=0)) return 0; 
+
+  if (c1->Type()==cf::F) {
+    if (c1->Next()->Type()==cf::F) {
+      if (c1->String()==c2->String() && c1->Next()->String()==c2->Next()->String()) return 1;
+      else return 0;
+    }
+    else msg.Out()<<"ERROR in Amplitude_Generator::CompareColors, Color structure not supported !!! "<<endl;
   }
-   
-  int l1[3],l2[3];
+  int l1[3],l2[3],l1n[3],l2n[3];
   for (int i=0;i<3;i++){
     l1[i]=c1->ParticleArg(i);
     l2[i]=c2->ParticleArg(i);
+    l1n[i]=c1->Next()->ParticleArg(i);
+    l2n[i]=c2->Next()->ParticleArg(i);
   }
-  for (int i=0;i<blindlist1.size();i++){
-    for (int j=0;j<3;j++)
-      {
-	if (l1[j]>=blindlist1[i]) l1[j]--;
-	if (l2[j]>=blindlist2[i]) l2[j]--;
-      }
+  if (c1->Next()->Type()!=cf::T)
+    msg.Out()<<"ERROR in Amplitude_Generator::CompareColors !!! "<<std::endl; 
+  
+  if (l1[0]!=l2[0] && l1n[0]!=l2n[0]) {
+    if (l1[1]==l2[1] && l1[2]==l2[2] && l1n[1]==l2n[1] && l1n[2]==l2n[2]) return 0;
   }
-  if (c1->Type()!=cf::D && c1->Type()!=cf::G) {
-    for (int i=0;i<3;i++) {
-      if (l1[i]!=l2[i]) return 0;
-    }
-  }
-  else {
-    if ((l1[0]!=l2[0] && l1[1]!=l2[1]) &&
-	(l1[0]!=l2[1] && l1[1]!=l2[0])) return 0; 
-  }
-  return 1;  
+  return 1;
 }
 
-int Amplitude_Generator::Single_Compare(Point* p1, Point* p2)
+int Amplitude_Generator::SingleCompare(Point* p1,Point* p2)
 {
   //zero check
   if (p1==0) {
@@ -813,7 +815,6 @@ int Amplitude_Generator::Single_Compare(Point* p1, Point* p2)
   else {
     if (p2==0) return 0;
   }
-  
   //Flavour equal....
   if (p1->fl!=p2->fl) return 0;
 
@@ -828,81 +829,37 @@ int Amplitude_Generator::Single_Compare(Point* p1, Point* p2)
 
   //Check extended Color_Functions
   if (p1->Color->Type()!=p2->Color->Type()) return 0;
-
-  std::vector<int> blindlist1;
-  std::vector<int> blindlist2;
   
-  if(!(p1->fl.Strong())) blindlist1.push_back(0);
-  if(!(p1->left->fl.Strong())) blindlist1.push_back(1);
-  if(!(p1->right->fl.Strong())) blindlist1.push_back(2);
-  if (p1->middle) if(!(p1->middle->fl.Strong())) blindlist1.push_back(3);
+  if (!CompareColors(p1,p2)) return 0;
   
-  if(!(p2->fl.Strong())) blindlist2.push_back(0);
-  if(!(p2->left->fl.Strong())) blindlist2.push_back(1);
-  if(!(p2->right->fl.Strong())) blindlist2.push_back(2);
-  if (p2->middle) if(!(p2->middle->fl.Strong())) blindlist2.push_back(3);
-  if(blindlist1.size()!=blindlist2.size()) return 0;
-
-  if (CompareColors(p1->Color,blindlist1,p2->Color,blindlist2)) {
-    if (p1->Color->Next() && p2->Color->Next()) {
-      Color_Function* ctmp1 = p1->Color;
-      Color_Function* ctmp2 = p2->Color;
-      while(ctmp1->Next()) {
-	if(!CompareColors(ctmp1->Next(),blindlist1,ctmp2->Next(),blindlist2)) return 0;
-	ctmp1 = ctmp1->Next();
-	ctmp2 = ctmp2->Next();
-      }
-    }
-    else {
-      if (p1->Color->Next()!=0 || p2->Color->Next()!=0) return 0;
-    }
-  }
-  else return 0;
-
-  /*  if (p1->Color->String()==p2->Color->String()) {
-  if (p1->Color->Next && p2->Color->Next) {
-      Color_Function* ctmp1 = p1->Color;
-      Color_Function* ctmp2 = p2->Color;
-      while(ctmp1->Next) {
-	if((ctmp1->Next)->String()!=(ctmp2->Next)->String()) return 0;
-	ctmp1 = ctmp1->Next;
-	ctmp2 = ctmp2->Next;
-      }
-    }
-    else {
-      if (p1->Color->Next!=0 || p2->Color->Next!=0) return 0;
-    }
-  }
-  else return 0;
-  */
   // return 1 if equal and 0 if different
   
-  if (Single_Compare(p1->middle,p2->middle)) {
-    int sw1 = Single_Compare(p1->left,p2->left);
-    if (sw1) sw1 = Single_Compare(p1->right,p2->right);
+  if (SingleCompare(p1->middle,p2->middle)) {
+    int sw1 = SingleCompare(p1->left,p2->left);
+    if (sw1) sw1 = SingleCompare(p1->right,p2->right);
     if (sw1==0) {
-      sw1 = Single_Compare(p1->left,p2->right);
-      if (sw1) sw1 = Single_Compare(p1->right,p2->left);
+      sw1 = SingleCompare(p1->left,p2->right);
+      if (sw1) sw1 = SingleCompare(p1->right,p2->left);
     }
     return sw1;
   }
 
-  if (Single_Compare(p1->middle,p2->left)) {
-    int sw1 = Single_Compare(p1->left,p2->middle);
-    if (sw1) sw1 = Single_Compare(p1->right,p2->right);
+  if (SingleCompare(p1->middle,p2->left)) {
+    int sw1 = SingleCompare(p1->left,p2->middle);
+    if (sw1) sw1 = SingleCompare(p1->right,p2->right);
     if (sw1==0) {
-      sw1 = Single_Compare(p1->left,p2->right);
-      if (sw1) sw1 = Single_Compare(p1->right,p2->middle);
+      sw1 = SingleCompare(p1->left,p2->right);
+      if (sw1) sw1 = SingleCompare(p1->right,p2->middle);
     }
     return sw1;
   }
 
-  if (Single_Compare(p1->middle,p2->right)) {
-    int sw1 = Single_Compare(p1->right,p2->middle);
-    if (sw1) sw1 = Single_Compare(p1->left,p2->left);
+  if (SingleCompare(p1->middle,p2->right)) {
+    int sw1 = SingleCompare(p1->right,p2->middle);
+    if (sw1) sw1 = SingleCompare(p1->left,p2->left);
     if (sw1==0) {
-      sw1 = Single_Compare(p1->right,p2->left);
-      if (sw1) sw1 = Single_Compare(p1->left,p2->middle);
+      sw1 = SingleCompare(p1->right,p2->left);
+      if (sw1) sw1 = SingleCompare(p1->left,p2->middle);
     }
     return sw1;
   }
@@ -960,14 +917,14 @@ int Amplitude_Generator::FindQEDOrder(Point * p,int & countQED)
   
   //triple and quartic Vector-Boson interactions
   if (hit) {
-    if (p->left   && (p->left->fl.IsVector() || p->left->fl.IsScalar()) && !(p->left->fl.IsGluon()))     countQED -= 1;
+    if (p->left   && (p->left->fl.IsVector() || p->left->fl.IsScalar()) && !(p->left->fl.IsGluon()))      countQED -= 1;
     if (p->right  && (p->right->fl.IsVector() || p->right->fl.IsScalar()) && !(p->right->fl.IsGluon()))   countQED -= 1;
-    if (p->middle && (p->middle->fl.IsVector() || p->middle->fl.IsScalar())&& !(p->middle->fl.IsGluon())) countQED -= 1;
+    //if (p->middle && (p->middle->fl.IsVector() || p->middle->fl.IsScalar())&& !(p->middle->fl.IsGluon())) countQED -= 1;
   }
   
   FindQEDOrder(p->left,countQED);
   FindQEDOrder(p->right,countQED);
-  if (p->middle) FindQEDOrder(p->middle,countQED);
+  //if (p->middle) FindQEDOrder(p->middle,countQED);
   return countQED;
 }
 
@@ -992,12 +949,12 @@ int Amplitude_Generator::FindQCDOrder(Point * p,int & countQCD)
   if (hit) {
     if (p->left   && p->left->fl.IsGluon())   countQCD -= 1;
     if (p->right  && p->right->fl.IsGluon())  countQCD -= 1;
-    if (p->middle && p->middle->fl.IsGluon()) countQCD -= 1;
+    //if (p->middle && p->middle->fl.IsGluon()) countQCD -= 1;
   }
   
   FindQCDOrder(p->left,countQCD);
   FindQCDOrder(p->right,countQCD);
-  if (p->middle) FindQCDOrder(p->middle,countQCD);
+  //if (p->middle) FindQCDOrder(p->middle,countQCD);
   return countQCD;
 }
 
@@ -1133,7 +1090,7 @@ void Amplitude_Generator::Compare(Single_Amplitude* &first)
     while (f2) {
       p2 = f2->GetPointlist();
       ++ncomps;
-      int sw1 = Single_Compare(p1,p2);
+      int sw1 = SingleCompare(p1,p2);
       if (sw1==1) {
 	if (f2->on) ++noffs;
 	f2->on = 0;
@@ -1603,8 +1560,8 @@ Single_Amplitude* Amplitude_Generator::Matching()
 	single_top->p[j][0].number = *perm;
 	single_top->p[j][0].fl     = fl[*perm];
 	single_top->p[j][0].b      = b[*perm];
-	
-	Set_Props(single_top->p[j],2*N-3,first_amp,perm,j,count);
+
+	SetProps(single_top->p[j],2*N-3,first_amp,perm,j,count);
 	
 	//Print_P(&single_top->p[j][0]);
       }
@@ -1634,8 +1591,10 @@ Single_Amplitude* Amplitude_Generator::Matching()
   DistributePreAmplitudes();
 #endif
   CreateSingleAmplitudes(first_amp);
-  CheckFor4Vertices(first_amp);
+  
   if (nEW != 99 || nQCD != 99) KillHigherOrders(first_amp);
+  
+  CheckFor4Vertices(first_amp);
   Compare(first_amp);
 
 #ifdef _USE_MPI_

@@ -81,17 +81,17 @@ namespace AMEGIC {
     void Set_End(Point*,int* &,int&);
     void Next_P(Point*,Point* &);
     void Print_P(Point*);
-    int  Match_Vertex(Single_Vertex*,ATOOLS::Flavour*,Complex*);
-    int  Check_End(Point*,ATOOLS::Flavour);  
-    void Set_Props(Point*,int,Single_Amplitude* &,int*, int, int);
+    int  MatchVertex(Single_Vertex*,ATOOLS::Flavour*,Complex*);
+    int  CheckEnd(Point*,ATOOLS::Flavour);  
+    void SetProps(Point*,int,Single_Amplitude* &,int*, int, int);
     int  Kill_Off(Single_Amplitude* &);
-    int  Single_Compare(Point*,Point*);
+    int  SingleCompare(Point*,Point*);
     int  FindQEDOrder(Point*,int&);
     int  FindQCDOrder(Point*,int&);
     void KillHigherOrders(Single_Amplitude* &);
     void Compare(Single_Amplitude* &);
     void Unite(Point*,Point*);
-    int  CompareColors(Color_Function*,std::vector<int>,Color_Function*,std::vector<int>);
+    int  CompareColors(Point*,Point*);
 
     void CreateSingleAmplitudes(Single_Amplitude* &);
     void CheckFor4Vertices(Single_Amplitude* &);

@@ -73,7 +73,7 @@ void Zfunc_Generator::MarkCut(Point* p,int notcut,bool fromfermion)
   if (p->fl.IsVector() && p->number>99){
     p->m = 1;
     notcut++;
-    if(fromfermion&&p->left->fl.IsFermion()){
+    if(fromfermion && p->left->fl.IsFermion()){
       p->m=0;
       }
     if(ATOOLS::IsZero(p->fl.Mass())){
@@ -530,7 +530,6 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,Po
     Zh->p_couplings[icoupl] = pb->cpl[0];icoupl++;
   default:
     Zh->p_couplings[icoupl] = pb->cpl[1];icoupl++;
-
     SetArgs(Zh,lfnumb,canumb,pb->left,p,icoupl);
     SetArgs(Zh,lfnumb,canumb,pb->right,p,icoupl);
     SetArgs(Zh,lfnumb,canumb,pb->middle,p,icoupl);
@@ -658,6 +657,7 @@ void Zfunc_Generator::SetScalarArgs(Zfunc* Zh,int &scnt,Point* pb)
       abort();
     }
     scnt++;
+    return;
   }
   if (pb->number<99 || pb->m==1) {}
   else {

@@ -25,8 +25,11 @@ namespace AMEGIC {
     void BackwardLineOrientation(Point*,int&);
     
     void SetFermionNumberFlow(Point*,Point*);
-    void SetForwardFNFlow(Point*,int);
-    void SetBackwardFNFlow(Point*,int);
+    void SetForwardFNFlow(Point*,int,int);
+    void SetBackwardFNFlow(Point*,int,int);
+    
+    void SetMajoFlowForward(Point*,int);
+    void SetMajoFlowBackward(Point*,int);
     
   public:
     Amplitude_Manipulator(int _no,ATOOLS::Flavour* _fl,int* _b): N(_no), fl(_fl), b(_b) {}
