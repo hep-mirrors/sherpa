@@ -96,6 +96,7 @@ namespace PHASIC {
     inline double               Weight()    { return m_weight; }
     inline double               Result()    { return m_result; }
     inline std::string          Name()      { return name; }
+    std::string                 ChID(int);
   };
 
 

@@ -158,7 +158,7 @@ void Multi_Channel::Optimize(double error)
   for (i=0;i<channels.size();i++) {
     if (dabs(aptot-sqrt(s1[i]))>s1x) s1x = dabs(aptot-sqrt(s1[i]));
     channels[i]->SetAlpha(channels[i]->Alpha() * sqrt(s1[i])/aptot);
-    if (channels[i]->Alpha() < 1.e-8 ) channels[i]->SetAlpha(0.);
+    if (channels[i]->Alpha() < 1.e-3/(double)channels.size() ) channels[i]->SetAlpha(0.);
   }
   double norm = 0;
   for (i=0;i<channels.size();i++) norm += channels[i]->Alpha();
@@ -192,7 +192,7 @@ void Multi_Channel::EndOptimize(double error)
 
   for (i=0;i<channels.size();i++) {
     channels[i]->SetAlpha(channels[i]->AlphaSave());
-    if (channels[i]->Alpha() < 1.e-8 ) channels[i]->SetAlpha(0.);
+    if (channels[i]->Alpha() < 1.e-2/(double)channels.size()) channels[i]->SetAlpha(0.);
   }
   double norm = 0;
   for (i=0;i<channels.size();i++) norm += channels[i]->Alpha();
@@ -553,3 +553,7 @@ void Multi_Channel::GenerateWeight(int mode=0)
   if (m_weight!=0) m_weight=1./m_weight;
 }
 
+std::string Multi_Channel::ChID(int n)
+{
+  return channels[n]->ChID();
+}

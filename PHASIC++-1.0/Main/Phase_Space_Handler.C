@@ -35,7 +35,7 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base * _proc,
   maxtrials(100000), sumtrials(0), events(0),    
   E(ATOOLS::rpa.gen.Ecms()), s(E*E), sprime(s), m_weight(1.), 
   p(NULL), psi(NULL), m_initialized(0),
-  p_info(new Integration_Info())
+  p_info(new Integration_Info()), p_cuts(NULL)
 {
   Data_Read dr(rpa.GetPath()+string("/Integration.dat"));
   
@@ -74,6 +74,7 @@ Phase_Space_Handler::~Phase_Space_Handler()
   if (isrchannels)  { delete isrchannels;  isrchannels  = 0; }
   if (fsrchannels)  { delete fsrchannels;  fsrchannels  = 0; }
   if (beamchannels) { delete beamchannels; beamchannels = 0; }
+  if (p_cuts)       { delete p_cuts;       p_cuts       = 0; }
   delete p_info;
 }
 
@@ -110,17 +111,17 @@ bool Phase_Space_Handler::InitIncoming(double _mass)
     msg.SetPrecision(12);
     if (bh) {
       if (bh->On()>0) {
-	bh->SetSprimeMin(ATOOLS::Max(sqr(proc->ISRThreshold()),proc->Selector()->Smin()));
+	bh->SetSprimeMin(ATOOLS::Max(sqr(proc->ISRThreshold()),p_cuts->Smin()));
 	beamchannels->SetRange(bh->SprimeRange(),bh->YRange());
 	beamchannels->GetRange();
       }
     }
     if (ih) {
       if (ih->On()>0) {
-	ih->SetSprimeMin(ATOOLS::Max(sqr(proc->ISRThreshold()),proc->Selector()->Smin()));
+	ih->SetSprimeMin(ATOOLS::Max(sqr(proc->ISRThreshold()),p_cuts->Smin()));
 	msg.Out()<<"In Phase_Space_Handler::Integrate : "<<bh->On()<<":"<<ih->On()<<endl
-		       <<"   "<<ih->SprimeMin()<<" ... "<<ih->SprimeMax()<<" ... "<<ih->Pole()<<endl
-		       <<"  for Threshold = "<<proc->ISRThreshold()<<"  "<<proc->Name()<<endl;
+		 <<"   "<<ih->SprimeMin()<<" ... "<<ih->SprimeMax()<<" ... "<<ih->Pole()<<endl
+		 <<"  for Threshold = "<<proc->ISRThreshold()<<"  "<<proc->Name()<<endl;
 	isrchannels->SetRange(ih->SprimeRange(),ih->YRange());
 	isrchannels->GetRange();
       }
@@ -135,6 +136,11 @@ bool Phase_Space_Handler::InitIncoming(double _mass)
 double Phase_Space_Handler::Integrate() 
 {
   psi        = new Phase_Space_Integrator();
+  if (p_cuts == 0) {
+    p_cuts = new Cut_Data();
+    p_cuts->Init(nin+nout,psflavs);
+    if (proc->Selector()) (proc->Selector())->BuildCuts(p_cuts);
+  } 
 
   if (!InitIncoming()) return 0;
   if (rpa.gen.ModelName()==std::string("ADD") && ih->On()==0 && bh->On()==0) {
@@ -214,10 +220,10 @@ double Phase_Space_Handler::Differential(Integrable_Base * process) {
     }
     
     if ( (bh && bh->On()>0) || (ih && ih->On()>0) ) {
-      proc->UpdateCuts(sprime,y);
+      (proc->Selector())->UpdateCuts(sprime,y,p_cuts);
     }
   }
-  fsrchannels->GeneratePoint(p,proc->Cuts());
+  fsrchannels->GeneratePoint(p,p_cuts);
 
   if (!Check4Momentum(p)) {
     msg.Events()<<"Phase_Space_Handler Check4Momentum(p) failed"<<endl;
@@ -258,7 +264,7 @@ double Phase_Space_Handler::Differential(Integrable_Base * process) {
       }
       KFactor *= process->KFactor(Q2);
     }
-    fsrchannels->GenerateWeight(p,proc->Cuts());
+    fsrchannels->GenerateWeight(p,p_cuts);
     result1 *= KFactor * fsrchannels->Weight();
     if (ih && ih->On()==3) result2 = result1;
 
@@ -437,7 +443,7 @@ void Phase_Space_Handler::TestPoint(Vec4D * _p)
   sprime                  = sqr(ATOOLS::rpa.gen.Ecms());
   Single_Channel * TestCh = new Rambo(nin,nout,psflavs);
   MakeIncoming(_p);
-  TestCh->GeneratePoint(_p,proc->Cuts());
+  TestCh->GeneratePoint(_p,p_cuts);
   delete TestCh;
 }
 
@@ -484,7 +490,14 @@ void Phase_Space_Handler::Rotate(Vec4D * _p)
 
 
 bool Phase_Space_Handler::CreateIntegrators()
-{
+{  
+  /*if (p_cuts == 0) {
+    p_cuts = new Cut_Data();
+    p_cuts->Init(nin+nout,psflavs);
+    if (proc->Selector()) (proc->Selector())->BuildCuts(p_cuts);
+    } */
+
+
   if (nin==1) int_type = 0;
   if (nin==2) {
     if (bh && bh->On()>0) {
@@ -553,7 +566,9 @@ void Phase_Space_Handler::DropRedundantChannels()
 		 <<"    Start with "<<number<<" added channel(s)."<<endl;
 
   if (number<2) return;
-  Vec4D** perm_vec = new Vec4D*[number]; 
+  int    * marker = new int[number];  
+  for (short int i=0;i<number;i++) marker[i] = 0;
+ /* Vec4D** perm_vec = new Vec4D*[number]; 
   
   for (short int i=0;i<number;i++) perm_vec[i] = new Vec4D[nin+nout+1];
   
@@ -562,27 +577,30 @@ void Phase_Space_Handler::DropRedundantChannels()
   double * rans = new double[rannum];
   for (short int i=0;i<rannum;i++) rans[i] = ran.Get();  
   // Init markers for deletion and results to compare.
-  int    * marker = new int[number];  
   double * res    = new double[number];
   for (short int i=0;i<number;i++) { marker[i] = 0;res[i] = 0.; }
   
   for (short int i=0;i<number;i++) {
     perm_vec[i][0] = Vec4D(rpa.gen.Ecms()/2.,0.,0.,rpa.gen.Ecms()/2.);
     perm_vec[i][1] = Vec4D(rpa.gen.Ecms()/2.,0.,0.,-rpa.gen.Ecms()/2.); 
-    fsrchannels->GeneratePoint(i,perm_vec[i],proc->Cuts(),rans);
-    fsrchannels->GenerateWeight(i,perm_vec[i],proc->Cuts());
+    fsrchannels->GeneratePoint(i,perm_vec[i],p_cuts,rans);
+    fsrchannels->GenerateWeight(i,perm_vec[i],p_cuts);
     res[i] = fsrchannels->Weight();
-    if (res[i]==0.) marker[i] = 1;
+    if (res[i]==0.) {
+      marker[i] = 1;
+      msg.Debugging()<<"  "<<(fsrchannels->Channel(i))->Name()<<" has zero weight"<<endl;
+    }
   }
-  delete[] rans;
-
+  delete[] rans;*/
+  
   // kick identicals & permutations
   for (short int i=0;i<number;i++) {
     if (marker[i]==0) {
       for (short int j=i+1;j<number;j++) {
 	if (marker[j]==0) {
-	  if ( (Compare(perm_vec[i],perm_vec[j])) && 
-	       (ATOOLS::IsEqual(res[i],res[j])) ) {
+	  //if ( (Compare(perm_vec[i],perm_vec[j])) && 
+	  //   (ATOOLS::IsEqual(res[i],res[j])) ) {
+	  if (fsrchannels->ChID(i)==fsrchannels->ChID(j)) {
 	    msg.Debugging()<<"  "<<(fsrchannels->Channel(i))->Name()
 			   <<" and "<<(fsrchannels->Channel(j))->Name()
 			   <<" are identical."<<endl;
@@ -632,14 +650,15 @@ void Phase_Space_Handler::DropRedundantChannels()
       fsrchannels->DropChannel(i-count);
       count++;
     }
+
   }
   msg.Debugging()<<"    "<<count<<" channel(s) were deleted."<<endl;
   
   
-  delete [] res;
+  //delete [] res;
   delete [] marker; 
-  for (short int i=0;i<number;i++) delete [] perm_vec[i];
-  delete [] perm_vec; 
+  //for (short int i=0;i<number;i++) delete [] perm_vec[i];
+  //delete [] perm_vec; 
 }
 
 

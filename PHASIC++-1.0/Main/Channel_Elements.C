@@ -310,26 +310,21 @@ double Channel_Elements::TChannelWeight(const Vec4D& p1in,const Vec4D& p2in,
   p1outh[0]        = (s+s1out-s2out)/2./sabs;
   double p1inmass  = sabs*Channel_Basics::SqLam(s,s1in,s2in)/2.; 
   double p1outmass = sabs*Channel_Basics::SqLam(s,s1out,s2out)/2.; 
-  double a         = 1.;
-  double aminct0   = aminct; 
-  double ctmax_tmp = ctmax;
-  if (aminctflag==1) {
-    if (ATOOLS::IsZero(ctmax)) {
-      if ( (sqr(p1outh[0])-s1in<0.) ) return 0.;
-      ctmax_tmp = Channel_Basics::PseudoAngleCut(s1in,p1inh[0],s1out,p1outh[0]);
-      if (ctmin < ctmax_tmp) return 0.;
-    }
-  }
-  else {
-    a= (t_mass2-s1in-s1out+2.*p1outh[0]*p1inh[0])/(2.*p1inmass*p1outmass);
-    if ( (1.>=a) && (a>=0.)) a = 1.;
-    double ct = (p1inh[0]*p1outh[0]-p1in*p1out)/(p1inmass*p1outmass);
-    aminct0   = a-ct;
-  }
-  if  ((aminct0 > ctmin+a-1.) || (aminct0 < ctmax_tmp+a-1.)) return 0.; 
-
-  double wt = 2.*sabs/(-pow(aminct0,ctexp)*
-			Channel_Basics::Hj1(ctexp,ctmin+a-1.,ctmax_tmp+a-1.)*p1outmass*M_PI);
+  double a = (t_mass2-s1in-s1out+2.*p1outh[0]*p1inh[0])/(2.*p1inmass*p1outmass);
+  if ( (1.>=a) && (a>=0.)) a = 1.;
+  double ct = (p1inh[0]*p1outh[0]-p1in*p1out)/(p1inmass*p1outmass);
+  
+  if  ((ct < ctmin) || (ct > ctmax)) {
+    ATOOLS::msg.Error()<<"TChannelWeight: bad momenta!!!! "<<ctmin<<" - "<<ctmax<<" ("<<ct<<")"<<endl;
+    ATOOLS::msg.Error()<<"1: "<<p1in<<endl;
+    ATOOLS::msg.Error()<<"2: "<<p2in<<endl;
+    ATOOLS::msg.Error()<<"3: "<<p1out<<endl;
+    ATOOLS::msg.Error()<<"4: "<<p2out<<endl;
+    return 0.;
+  } 
+  aminct = a-ct;
+  double wt = 2.*sabs/(-pow(aminct,ctexp)*
+			Channel_Basics::Hj1(ctexp,a-ctmin,a-ctmax)*p1outmass*M_PI);
 
   if (!(wt>0) && !(wt<0)) 
     ATOOLS::msg.Error()<<"TChannelWeight produces a nan!"<<endl;
@@ -342,7 +337,7 @@ int Channel_Elements::TChannelMomenta(Vec4D p1in,Vec4D p2in,Vec4D &p1out,Vec4D &
 				      double ctexp,double ctmax,double ctmin,
 				      double aminct,int aminctflag,double ran1,double ran2)
 {
-  /* Note : ct's maximal range : between ctmin = 0 and ctmax = 2 */
+  // Note : ct's maximal range : between ctmin = -1 and ctmax = 1 
 
   double t_mass2   = t_mass*t_mass;
   Vec4D pin        = p1in+p2in;
@@ -357,20 +352,10 @@ int Channel_Elements::TChannelMomenta(Vec4D p1in,Vec4D p2in,Vec4D &p1out,Vec4D &
   p1outh[0]        = (s+s1out-s2out)/2./sabs;
   double p1outmass = sabs*Channel_Basics::SqLam(s,s1out,s2out)/2.; 
   
-  double a         = 1.;
-  double ctmax_tmp = ctmax;
-  if (aminctflag==1) {
-    if (ATOOLS::IsZero(ctmax)) {
-      if ( (sqr(p1outh[0])-s1in<0.) ) return 0;
-      ctmax_tmp = Channel_Basics::PseudoAngleCut(s1in,p1inh[0],s1out,p1outh[0]);
-      if (ctmin < ctmax_tmp) return 0;
-    }
-  }
-  else {
-    a = (t_mass2-s1in-s1out+2.*p1outh[0]*p1inh[0])/(2.*p1inmass*p1outmass);
-    if ( (1.>=a) && (a>=0.)) a = 1.;
-  }
-  aminct = Channel_Basics::Tj1(ctexp,ctmin+a-1.,ctmax_tmp+a-1.,ran1);                   
+  double a = (t_mass2-s1in-s1out+2.*p1outh[0]*p1inh[0])/(2.*p1inmass*p1outmass);
+  if ( (1.>=a) && (a>=0.)) a = 1.;
+
+  aminct = Channel_Basics::Tj1(ctexp,a-ctmin,a-ctmax,ran1);                   
   double ct = a - aminct;
   double st;
   if (aminctflag==1) st = sqrt(aminct*(1.+ct)); 
@@ -395,6 +380,7 @@ int Channel_Elements::TChannelMomenta(Vec4D p1in,Vec4D p2in,Vec4D &p1out,Vec4D &
   s1out = Max(0.,p1out.Abs2());
   s2out = Max(0.,p2out.Abs2());
 }
+
 
 // new
 double Channel_Elements::DiceYUniform(const double tau,const Double_Container &xinfo,

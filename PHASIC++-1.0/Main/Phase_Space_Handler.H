@@ -1,6 +1,7 @@
 #ifndef Phase_Space_Handler_h
 #define Phase_Space_Handler_h
 
+#include "Cut_Data.H"
 #include "Integrable_Base.H"
 #include "Multi_Channel.H"
 
@@ -32,7 +33,7 @@ namespace PHASIC {
     channelinfos                 beam_params;
     channelinfos                 isr_params;
     int                          nin,nout,nvec;
-    ATOOLS::Flavour         * psflavs;
+    ATOOLS::Flavour            * psflavs;
     std::string                  name;
     int                          int_type;
     double                       error;
@@ -47,6 +48,7 @@ namespace PHASIC {
     bool  m_initialized;
     Integration_Info           * p_info;
     Info_Key                     m_spkey, m_ykey, m_xkey;
+    ATOOLS::Cut_Data           * p_cuts;
 
     void TestIntegration(double);
     bool MakeIncoming(ATOOLS::Vec4D *,double _mass=-1.);

@@ -2,7 +2,6 @@
 #define Integrable_Base_H
 
 #include "Flavour.H"
-#include "Cut_Data.H"
 #include "Selector.H"
 #include "Vector.H"
 
@@ -14,7 +13,6 @@ namespace PHASIC {
     double m_overflow;
 
   public:
-
     // constructor
     Integrable_Base();
 
@@ -35,11 +33,8 @@ namespace PHASIC {
     virtual double ISRThreshold()         = 0;
     virtual double Max()                  = 0;
 
-    virtual ATOOLS::Cut_Data      *Cuts()     = 0;
     virtual ATOOLS::Selector_Base *Selector() = 0;
     virtual Integrable_Base       *Selected() = 0;
-
-    virtual void UpdateCuts(double,double) = 0;
 
     virtual void SwapInOrder()    = 0;
     virtual void RestoreInOrder() = 0;

@@ -41,66 +41,25 @@ namespace PHASIC {
     
     virtual bool CalculateLimits(Info_Key &spkey,Info_Key &ykey);
     virtual void GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);
-    virtual void GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *,double *) {
-      ATOOLS::msg.Error()<<"Virtual Method : "
-			    <<"Single_Channel::GeneratePoint(Vec4D,Cut_Data,double)."<<std::endl; 
-    }
-    virtual void GenerateWeight(ATOOLS::Vec4D *,ATOOLS::Cut_Data *) {
-      ATOOLS::msg.Error()<<"Virtual Method : "
-			    <<"Single_Channel::GenerateWeight(Vec4D,Cut_Data)"<<std::endl; 
-    }
-
+    virtual void GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *,double *); 
+    virtual void GenerateWeight(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);
     virtual void GeneratePoint(ATOOLS::Vec4D *);
-    virtual void GeneratePoint(ATOOLS::Vec4D *,double *) { 
-      ATOOLS::msg.Error()<<"Virtual Method : "
-			    <<"Single_Channel::GeneratePoint(Vec4D,double)."<<std::endl; 
-    }
-    virtual void GenerateWeight(ATOOLS::Vec4D *) {
-      ATOOLS::msg.Error()<<"Virtual Method : "
-			    <<"Single_Channel::GenerateWeight(Vec4D)"<<std::endl; 
-    }
-    virtual void GeneratePoint(double &,double &,int,double *) {
-      ATOOLS::msg.Error()<<"Virtual Method : "
-			    <<"Single_Channel::GeneratePoint(double,double,double)"<<std::endl; 
-    }
-    virtual void GeneratePoint(double &,double &,int) {
-      ATOOLS::msg.Error()<<"Virtual Method : "
-			    <<"Single_Channel::GeneratePoint(double,double)"<<std::endl; 
-    }
-    virtual void GenerateWeight(double,double,int) {
-      ATOOLS::msg.Error()<<"Virtual Method : "
-			    <<"Single_Channel::GenerateWeight(double,double)"<<std::endl; 
-    }
+    virtual void GeneratePoint(ATOOLS::Vec4D *,double *);
+    virtual void GenerateWeight(ATOOLS::Vec4D *);
+    virtual void GeneratePoint(double &,double &,int,double *);
+    virtual void GeneratePoint(double &,double &,int);
+    virtual void GenerateWeight(double,double,int);
     /*!
       Some more service methods.
     */
-    virtual void SetRange(double * _sprimerange,double * _yrange) {
-      for (int i=0;i<2;i++) {
-	sprimerange[i] = _sprimerange[i];
-	yrange[i]      = _yrange[i];
-      }
-      sprimerange[2] =  _sprimerange[2];
-    };
+    virtual void SetRange(double * _sprimerange,double * _yrange);
 
-    virtual void GetRange() {
-      ATOOLS::msg.Debugging()<<"  sprime : "<<sprimerange[0]<<" "<<sprimerange[1]<<" / "<<sprimerange[2]<<" / "
-				<<"  y : "<<yrange[0]<<" ... "<<yrange[1]<<std::endl;
-    }
-
-    virtual void ISRInfo(int &,double &,double &) {
-      ATOOLS::msg.Error()<<"Virtual Method : Single_Channel::ISRInfo()"<<std::endl;
-    }
-    virtual int CountResonances(ATOOLS::Flavour*&) { 
-      ATOOLS::msg.Error()<<"Virtual Method : Single_Channel::CountResonances()"<<std::endl; 
-      return 0;
-    }
-    virtual int ChNumber() {
-      ATOOLS::msg.Error()<<"Virtual Method : Single_Channel::ChNumber()"<<std::endl;
-      return 0;
-    }
-    virtual void SetChNumber(int) {
-      ATOOLS::msg.Error()<<"Virtual Method : Single_Channel::SetChNumber()"<<std::endl;
-    }
+    virtual void GetRange();
+    virtual void ISRInfo(int &,double &,double &);
+    virtual int CountResonances(ATOOLS::Flavour*&);
+    virtual int ChNumber();
+    virtual void SetChNumber(int);
+    virtual std::string ChID();
 
     virtual int                  N()         { return n_points; }
     virtual int                  ValidN()    { return n_contrib; }

@@ -93,3 +93,89 @@ bool Single_Channel::CalculateLimits(Info_Key &spkey,Info_Key &ykey)
                    <<"Virtual method called!"<<std::endl;
   return false;
 }
+
+
+void Single_Channel::GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *,double *) 
+{
+  ATOOLS::msg.Error()<<"Virtual Method : "
+		     <<"Single_Channel::GeneratePoint(Vec4D,Cut_Data,double)."<<std::endl; 
+}
+
+void Single_Channel::GenerateWeight(ATOOLS::Vec4D *,ATOOLS::Cut_Data *) 
+{
+  ATOOLS::msg.Error()<<"Virtual Method : "
+		     <<"Single_Channel::GenerateWeight(Vec4D,Cut_Data)"<<std::endl; 
+}
+
+void Single_Channel::GeneratePoint(ATOOLS::Vec4D *,double *) 
+{ 
+  ATOOLS::msg.Error()<<"Virtual Method : "
+		     <<"Single_Channel::GeneratePoint(Vec4D,double)."<<std::endl; 
+}
+
+void Single_Channel::GenerateWeight(ATOOLS::Vec4D *) 
+{
+  ATOOLS::msg.Error()<<"Virtual Method : "
+		     <<"Single_Channel::GenerateWeight(Vec4D)"<<std::endl; 
+}
+
+void Single_Channel::GeneratePoint(double &,double &,int,double *) 
+{
+  ATOOLS::msg.Error()<<"Virtual Method : "
+		     <<"Single_Channel::GeneratePoint(double,double,double)"<<std::endl; 
+}
+
+void Single_Channel::GeneratePoint(double &,double &,int) 
+{
+  ATOOLS::msg.Error()<<"Virtual Method : "
+		     <<"Single_Channel::GeneratePoint(double,double)"<<std::endl; 
+}
+
+void Single_Channel::GenerateWeight(double,double,int) 
+{
+  ATOOLS::msg.Error()<<"Virtual Method : "
+		     <<"Single_Channel::GenerateWeight(double,double)"<<std::endl; 
+}
+
+void Single_Channel::SetRange(double * _sprimerange,double * _yrange) 
+{
+  for (int i=0;i<2;i++) {
+    sprimerange[i] = _sprimerange[i];
+    yrange[i]      = _yrange[i];
+  }
+  sprimerange[2] =  _sprimerange[2];
+}
+
+void Single_Channel::GetRange() 
+{
+  ATOOLS::msg.Debugging()<<"  sprime : "<<sprimerange[0]<<" "<<sprimerange[1]<<" / "<<sprimerange[2]<<" / "
+			 <<"  y : "<<yrange[0]<<" ... "<<yrange[1]<<std::endl;
+}
+
+void Single_Channel::ISRInfo(int &,double &,double &) 
+{
+  ATOOLS::msg.Error()<<"Virtual Method : Single_Channel::ISRInfo()"<<std::endl;
+}
+
+int Single_Channel::CountResonances(ATOOLS::Flavour*&) 
+{ 
+  ATOOLS::msg.Error()<<"Virtual Method : Single_Channel::CountResonances()"<<std::endl; 
+  return 0;
+}
+
+int Single_Channel::ChNumber() 
+{
+  ATOOLS::msg.Error()<<"Virtual Method : Single_Channel::ChNumber()"<<std::endl;
+  return 0;
+}
+
+void Single_Channel::SetChNumber(int) 
+{
+  ATOOLS::msg.Error()<<"Virtual Method : Single_Channel::SetChNumber()"<<std::endl;
+}
+
+std::string Single_Channel::ChID() 
+{ 
+  ATOOLS::msg.Error()<<"Virtual Method : Single_Channel::ChID()"<<std::endl;
+  return std::string(""); 
+}
