@@ -60,8 +60,8 @@ for I in $* ; do
     exit 1 
   fi
 done
+if [ "$BINPATH" = "" ]; then BINPATH="." ; fi
 if [ "$RUNPATH" = "" ]; then RUNPATH="./" ; fi
-if [ "$BINPATH" = "" ]; then BINPATH="./" ; fi
 if [ "$RESULTS" = "" ]; then RESULTS="./" ; fi
 if [ "$ANALYSIS" = "" ]; then ANALYSIS="./" ; fi
 if [ "$BASENAME" = "" ]; then BASENAME="job" ; fi
