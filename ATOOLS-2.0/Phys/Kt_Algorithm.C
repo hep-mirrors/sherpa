@@ -152,8 +152,12 @@ double Kt_Algorithm::Ktmin(Vec4D * p, bool * bf, int n)
       if (di<dmin) { dmin=di; ii=i; jj=i;}
       for (int j=0;j<i;++j) {
 	double dj  = p_ktij[j][j]; 
+#ifdef USING__rmin
 	double rij = p_ktij[i][j] = R2(p[i],p[j]);
  	double dij = Min(di,dj)* rij /m_r2min;
+#else 
+	double dij = p_ktij[i][j] = Min(di,dj)*R2(p[i],p[j]) /m_r2min;
+#endif
 	if (dij<dmin) {dmin=dij; ii=i; jj=j;}
 #ifdef USING__rmin
 	if (rij<rmin) rmin=rij;
@@ -190,11 +194,20 @@ double Kt_Algorithm::Ktmin(Vec4D * p, bool * bf, int n)
     // update matrix (only what is necessary)
     int jjx=p_imap[jj];
     p_ktij[jjx][jjx] = Kt2(p[jjx]);
+#ifdef USING__rmin
     for (int j=0;j<jj;++j)   p_ktij[jjx][p_imap[j]] = R2(p[jjx],p[p_imap[j]]);
     for (int i=jj+1;i<n;++i) p_ktij[p_imap[i]][jjx] = R2(p[p_imap[i]],p[jjx]);
+#else
+    for (int j=0;j<jj;++j)   p_ktij[jjx][p_imap[j]] = 
+			       Min(p_ktij[jjx][jjx],p_ktij[p_imap[j]][p_imap[j]])
+			       *R2(p[jjx],p[p_imap[j]])/m_r2min;
+    for (int i=jj+1;i<n;++i) p_ktij[p_imap[i]][jjx] = 
+			       Min(p_ktij[jjx][jjx],p_ktij[p_imap[i]][p_imap[i]])
+			       *R2(p[p_imap[i]],p[jjx])/m_r2min;
+#endif
     }
     // redetermine rmin and dmin
-    ii=0, jj=0;
+    ii=jj=0;
     {
       PROFILE_LOCAL(" second loop ");
 
@@ -209,8 +222,12 @@ double Kt_Algorithm::Ktmin(Vec4D * p, bool * bf, int n)
       for (int j=0;j<i;++j) {
 	int jx=p_imap[j];
 	double dj  = p_ktij[jx][jx];
+#ifdef USING__rmin
 	double rij = p_ktij[ix][jx];
 	double dij = Min(di,dj)* rij/m_r2min;
+#else
+	double dij = p_ktij[ix][jx];
+#endif
 	if (dij<dmin) { dmin=dij; ii=i; jj=j;}
 #ifdef USING__rmin
 	if (rij<rmin) rmin=rij;
