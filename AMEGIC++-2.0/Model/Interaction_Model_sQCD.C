@@ -15,7 +15,7 @@ Interaction_Model_sQCD::Interaction_Model_sQCD(MODEL::Model_Base * _model,
 { 
   double Ecms2 = sqr(rpa.gen.Ecms());
   g3    = Kabbala(string("g_3"),
-		  sqrt(4.*M_PI*p_model->ScalarFunction(std::string("alpha_S"),Ecms2)));
+		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_S"),Ecms2)));
   PL    = Kabbala(string("P_L"),1.);
   PR    = Kabbala(string("P_R"),1.);
   M_I   = Kabbala(string("i"),Complex(0.,1.)); 

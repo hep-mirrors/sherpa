@@ -17,7 +17,7 @@ Interaction_Model_EW::Interaction_Model_EW(MODEL::Model_Base * _model,
   double Ecms2 = sqr(rpa.gen.Ecms());
 
   g1    = Kabbala(string("g_1"),
-		  sqrt(4.*M_PI*p_model->ScalarFunction(std::string("alpha_QED"),Ecms2)));
+		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),Ecms2)));
   g2    = Kabbala(string("g_1/\\sin\\theta_W"), 
 		  g1.Value()/sqrt(p_model->ScalarConstant(std::string("sin2_thetaW"))));
   sintW = Kabbala(std::string("\\sin\\theta_W"),
