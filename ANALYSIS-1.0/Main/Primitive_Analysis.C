@@ -114,7 +114,7 @@ void Primitive_Analysis::CallSubAnalysis(const Blob_List * const bl, double valu
   for (Blob_List::const_iterator bit=bl->begin();bit!=bl->end();++bit) {
     if ((*bit)->Type()==btp::Signal_Process) {
       nout  = (*bit)->NOutP();      
-      name  = (*bit)->TypeSpec();// orig: (*bit)->Type();
+      name  = (*bit)->TypeSpec();    //orig: (*bit)->Type();
       break;
     }
   }
@@ -135,6 +135,8 @@ void Primitive_Analysis::CallSubAnalysis(const Blob_List * const bl, double valu
     str>>key;
     */
     switch (nout) {
+    case 0 :
+    case 1 : key="j1"; break;
     case 2 : key="j2"; break;
     case 3 : key="j3"; break;
     case 4 : key="j4"; break;
@@ -149,7 +151,7 @@ void Primitive_Analysis::CallSubAnalysis(const Blob_List * const bl, double valu
     mode=m_mode^ANALYSIS::splitt_process;
 //     if (m_mode&ANALYSIS::output_process) mode=mode|ANALYSIS::output_this;
 //     else 
-      if (m_mode&ANALYSIS::output_this) mode=mode^ANALYSIS::output_this;
+    if (m_mode&ANALYSIS::output_this) mode=mode^ANALYSIS::output_this;
       key=name;
   }
   
@@ -174,7 +176,7 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
   ClearAllData();
   p_blobs = bl;
 
-  if (value!=1.) m_mode=m_mode|ANALYSIS::weighted;
+  if (value!=1.) m_mode=m_mode|ANALYSIS::weighted;////////////////////////////////////////////////
   if (p_partner==this) {
     m_mode=m_mode|ANALYSIS::fill_helper;
     m_mode=m_mode|ANALYSIS::output_this;
@@ -228,8 +230,8 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
   }
 
 
-  if (m_mode&ANALYSIS::splitt_all)   CallSubAnalysis(bl,value);
-  PrintStatus();
+  if (m_mode&ANALYSIS::splitt_all) CallSubAnalysis(bl,value);
+  if (msg.LevelIsTracking()) PrintStatus();
 
   ClearAllData();
 }
@@ -482,7 +484,6 @@ void Primitive_Analysis::ClearAllData()
 
 void Primitive_Analysis::PrintStatus() 
 {
-  if (!msg.LevelIsTracking()) return; 
 
   msg.Out()<<"Particle_Lists:"<<std::endl;
   for (PL_Container::iterator it=m_pls.begin();

@@ -123,7 +123,8 @@ bool Analysis_Handler::ReadIn()
     reader.RereadInFile();
     if (!reader.VectorFromFile(helpsv,"LEVEL")) break;
     bool split=false, trigger=false;
-    int mode=ANALYSIS::fill_all|ANALYSIS::splitt_jetseeds;
+    //int mode=ANALYSIS::fill_all|ANALYSIS::splitt_jetseeds;
+    int mode=ANALYSIS::fill_all|ANALYSIS::splitt_jetseeds|ANALYSIS::splitt_process;
     for (size_t j=0;j<helpsv.size();++j) {
       if (split) mode=mode|ANALYSIS::splitt_phase;
       else split=true;
