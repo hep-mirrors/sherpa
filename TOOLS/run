@@ -79,9 +79,15 @@ FILE=$BASENAME"_"$TIME".sh"
 cp -r $RUNPATH $SETUPPATH
 echo "" > $FILE
 if [ "$SUBMIT" = "TRUE" ] ; then 
-  echo "#$ -j y" >> $FILE
-  echo "#$ -o $SETUPPATH" >> $FILE
-  echo "#$ -N $FILE.$BATCH" >> $FILE
+  if [ "$BATCH" = "SGE" ] ; then
+    echo "#$ -j y" >> $FILE
+    echo "#$ -o $SETUPPATH" >> $FILE
+    echo "#$ -N $FILE.$BATCH" >> $FILE
+  else
+    echo "#"$BATCH" -oe" >> $FILE
+    echo "#"$BATCH" -o $FILE.$BATCH" >> $FILE
+    echo "#"$BATCH" -m ae" >> $FILE
+  fi
   echo "" >> $FILE
   echo "RUNPATH=$SETUPPATH" >> $FILE
   echo "LOGFILE=\$SETUPPATH\"$LOGFILE\"" >> $FILE
