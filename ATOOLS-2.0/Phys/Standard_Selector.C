@@ -631,21 +631,44 @@ Summed_PT_Selector::Summed_PT_Selector(int _nin,int _nout, Flavour * _fl) {
   m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
   
   double E = rpa.gen.Ecms();
-  ptmin    = 0.; ptmax    = E;
+  ptmin = new double*[m_n];
+  ptmax = new double*[m_n];
+
+  for (int i=0;i<m_n;i++) { 
+    ptmin[i] = new double[m_n]; 
+    ptmax[i] = new double[m_n];
+  }
+
+  for (int i=m_nin;i<m_n;i++) {
+    for (int j=i+1;j<m_n;j++) {
+      ptmin[i][j] = ptmin[j][i] = 0.; 
+      ptmax[i][j] = ptmax[j][i] = E; 
+    }
+  }
   m_sel_log = new Selector_Log(m_name);
 }
 
-Summed_PT_Selector::~Summed_PT_Selector() { }
+Summed_PT_Selector::~Summed_PT_Selector() {  
+  for (int i=0;i<m_n;i++) {
+    delete [] ptmin[i];
+    delete [] ptmax[i];
+  }
+  delete [] ptmin;
+  delete [] ptmax;
+  delete m_sel_log;
+ }
 
 
 bool Summed_PT_Selector::Trigger(const Vec4D * mom) 
 {
-  Vec4D pt;
+  double ptij;
   for (int i=m_nin;i<m_n;i++) {
-    pt = pt+mom[i].Perp();  
+    for (int j=i+1;j<m_n;j++) {
+      ptij = (mom[i]+mom[j]).PPerp();
+      if (m_sel_log->Hit( ((ptij < ptmin[i][j]) || 
+			   (ptij > ptmax[i][j])) )) return 0;
+    }
   }
-  double pp=pt.PPerp();
-  if (m_sel_log->Hit( ((pp<ptmin) || (pp>ptmax)) )) return 0;
   return 1;
 }
 
@@ -653,11 +676,6 @@ double * Summed_PT_Selector::ActualValue() { return NULL; }
 
 void Summed_PT_Selector::BuildCuts(Cut_Data * cuts) 
 {
-  for (int i=0;i<m_n-1;i++) {
-    for (int j=i+1;j<m_n;j++) {
-      cuts->scut[i][j] = cuts->scut[j][i] = Max(cuts->scut[i][j],sqr(ptmin));
-    }
-  }
 }
 
 void Summed_PT_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) { }
@@ -670,8 +688,16 @@ void Summed_PT_Selector::SetRange(std::vector<Flavour> _crit,double _min,
 			  <<_crit.size()<<endl;
     return;
   }
-  ptmin = _min; 
-  ptmax = _max;
+  for (int i=m_nin;i<m_n-1;i++) {
+    for (int j=m_nin+1;j<m_n;j++) {
+      if ( ((_crit[0].Includes(m_fl[i])) && (_crit[1].Includes(m_fl[j])) ) || 
+	   ((_crit[0].Includes(m_fl[j])) && (_crit[1].Includes(m_fl[i])) ) ) {
+	ptmin[i][j] = ptmin[j][i] = _min; 
+	ptmax[i][j] = ptmax[j][i] = _max;
+	if (sqr(ptmin[i][j])>m_smin) m_smin = Max(sqr(ptmin[i][j]),m_smin);
+      }
+    }
+  }
 }
 
 
