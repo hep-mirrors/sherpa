@@ -120,3 +120,58 @@ Primitive_Observable_Base & ISR_Statistics::operator+=(const Primitive_Observabl
   return *this;
 }
 
+#ifdef ROOT_SUPPORT
+#include "My_Root.H"
+#include "TH2D.h"
+
+DECLARE_GETTER(Sprime_Y_Distribution_Getter,"SprimeY",
+	       Primitive_Observable_Base,String_Matrix);
+
+Primitive_Observable_Base *const 
+Sprime_Y_Distribution_Getter::operator()(const String_Matrix &parameters) const
+{
+  std::string listname="Analysed";
+  if (parameters.size()>0 && parameters[0].size()>0) listname=parameters[0][0];
+  return new Sprime_Y_Distribution(0.0,1.0,200,-10.0,10.0,200);
+}
+
+void Sprime_Y_Distribution_Getter::PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"[list]"; 
+}
+
+Sprime_Y_Distribution::
+Sprime_Y_Distribution(const double spmin,const double spmax,const size_t spbins,
+		      const double ymin,const double ymax,const size_t ybins):
+  m_ymin(ymin),
+  m_ymax(ymax),
+  m_ybins(ybins)
+{ 
+  m_xmin=spmin;
+  m_xmax=spmax;
+  m_nbins=spbins;
+  (*MYROOT::myroot)(new TH2D(ATOOLS::ToString((long int)this).c_str(),"Sprime_Y",
+			     m_nbins,m_xmin,m_xmax,m_ybins,m_ymin,m_ymax),"Sprime_Y");
+}
+
+void Sprime_Y_Distribution::Evaluate(const Blob_List &  blobs,double weight,int ncount)
+{
+  for (Blob_List::const_iterator bit=blobs.begin();bit!=blobs.end();++bit) {
+    if ((*bit)->Type()==btp::Signal_Process) {
+      Blob_Data_Base *info=(*(*bit))["ISR_Info_lab"];
+      if (info) {
+	std::vector<double> isrinfo=info->Get<std::vector<double> >();
+	double tau=isrinfo[PDF::iic::E_1]*isrinfo[PDF::iic::E_2];
+	double y=0.5*log(isrinfo[PDF::iic::E_1]/isrinfo[PDF::iic::E_2]);
+	((TH2D*)(*MYROOT::myroot)["Sprime_Y"])->Fill(tau,y,weight);
+      }
+    }
+  }
+} 
+
+Primitive_Observable_Base * Sprime_Y_Distribution::Copy() const 
+{
+  return new Sprime_Y_Distribution(m_xmin,m_xmax,m_nbins,m_ymin,m_ymax,m_ybins);
+}
+#endif
+

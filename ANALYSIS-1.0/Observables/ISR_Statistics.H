@@ -24,8 +24,27 @@ namespace ANALYSIS {
 
     Primitive_Observable_Base & operator+=(const Primitive_Observable_Base &);
 
-  };
+  };// end of class ISR_Statistics
 
-}
+#ifdef ROOT_SUPPORT
+  class Sprime_Y_Distribution : public Primitive_Observable_Base {  
+  private:
+
+    double m_ymin, m_ymax;
+    size_t m_ybins;
+
+  public:
+
+    Sprime_Y_Distribution(const double spmin,const double spmax,const size_t spbins,
+			  const double ymin,const double ymax,const size_t ybins);
+
+    void Evaluate(const ATOOLS::Blob_List & blobs,double weight=1.,int ncount=1);
+
+    Primitive_Observable_Base * Copy() const;
+
+  };// end of class Sprime_Y_Distribution
+#endif
+
+}// end of namespace ANALYSIS
 
 #endif
