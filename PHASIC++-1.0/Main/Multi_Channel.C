@@ -472,10 +472,14 @@ void Multi_Channel::WriteOut(std::string pID) {
   ofstream ofile;
   ofile.open(pID.c_str());
 
-  ofile<<channels.size()<<" "<<name<<" "<<n_points<<" "<<n_contrib<<" "<<m_result<<" "<<m_result2<<endl;
+  ofile<<channels.size()<<" "<<name<<" "<<n_points<<" "<<n_contrib<<" "
+       <<m_result<<" "<<m_result2<<" "<<s1xmin<<endl;
   ofile.precision(12);
   for (int i=0;i<channels.size();i++) 
-    ofile<<channels[i]->Name()<<" "<<channels[i]->Alpha()<<endl;
+    ofile<<channels[i]->Name()<<" "<<channels[i]->N()<<" "
+	 <<channels[i]->Alpha()<<" "<<channels[i]->AlphaSave()<<" "
+	 <<channels[i]->Weight()<<" "<<channels[i]->Res1()<<" "
+	 <<channels[i]->Res2()<<" "<<channels[i]->Res3()<<std::endl;
   ofile.close();
 }
 
@@ -483,37 +487,39 @@ bool Multi_Channel::ReadIn(std::string pID) {
   ifstream ifile;
   ifile.open(pID.c_str());
   if (ifile.bad()) return false;
-  int         _size;
-  std::string _name;
-  double      _alpha;
-  ifile>>_size>>_name;
-  if (( _size != channels.size()) || ( _name != name) ) {
+  int         size;
+  std::string name;
+  long int    points, contrib;
+  double      alpha, alphasave, weight, res1, res2, res3;
+  ifile>>size>>name;
+  if (( size != channels.size()) || ( name != name) ) {
     msg.Error()<<"Error in Multi_Channel::ReadIn("<<pID<<")"<<endl 
 	       <<"  Multi_Channel file did not coincide with actual Multi_Channel: "<<endl
-	       <<"  "<<_size<<" vs. "<<channels.size()<<" and "
-	       <<"  "<<_name<<" vs. "<<name<<endl;
+	       <<"  "<<size<<" vs. "<<channels.size()<<" and "
+	       <<"  "<<name<<" vs. "<<name<<endl;
     return 0;
   }
   m_readin=true;
-  ifile>>n_points>>n_contrib>>m_result>>m_result2;
+  ifile>>n_points>>n_contrib>>m_result>>m_result2>>s1xmin;
 
   double sum=0;
   for (int i=0;i<channels.size();i++) {
-    ifile>>_name>>_alpha;
-    sum+= _alpha;
-    if (_name != channels[i]->Name()) {
+    ifile>>name>>points>>alpha>>alphasave>>weight>>res1>>res2>>res3;
+    sum+= alpha;
+    if (name != channels[i]->Name()) {
       msg.Error()<<"Error in Multi_Channel::ReadIn("<<pID<<")"<<endl 
 		 <<"  name of Single_Channel not consistent ("<<i<<")"<<endl
-		 <<"  "<<_name<<" vs. "<<channels[i]->Name()<<endl;
+		 <<"  "<<name<<" vs. "<<channels[i]->Name()<<endl;
       return 0;
     }
-    channels[i]->SetAlpha(_alpha);
+    channels[i]->SetN(points);
+    channels[i]->SetAlpha(alpha);
+    channels[i]->SetAlphaSave(alphasave);
+    channels[i]->SetWeight(weight);
+    channels[i]->SetRes1(res1);
+    channels[i]->SetRes2(res2);
+    channels[i]->SetRes3(res3);
   }
-  for (int i=0;i<channels.size();i++) {
-    double a=channels[i]->Alpha();
-    channels[i]->SetAlpha(a/sum);
-  }
-
   ifile.close();
   return 1;
 }

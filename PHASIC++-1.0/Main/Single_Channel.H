@@ -80,6 +80,7 @@ namespace PHASIC {
     virtual void SetRes2(double _r)          { res2       = _r; }
     virtual void SetRes3(double _r)          { res3       = _r; }
     virtual void SetN(long int _n)           { n_points   = _n; }
+    virtual void SetValidN(long int _n)      { n_contrib  = _n; }
     virtual void SetName(std::string _name)  { name       = _name; }
     virtual void SetWeight(double _weight)   { weight     = _weight; }
     virtual void SetAlpha(double _alpha)     { alpha      = _alpha; }
