@@ -115,7 +115,7 @@ bool Hadron_Remnant::DiceKinematics()
     p_pdfbase->Reset();
     for(unsigned int i=0;i<m_extracted.size();++i) {
       p_pdfbase->Extract(m_extracted[i]->Flav(),
-			 2.*m_extracted[i]->Momentum()[0]/m_ecms);
+			 m_extracted[i]->Momentum()[0]/m_ebeam);
     }
     for (unsigned int i=0;i<m_companions.size();++i) {
       if (!m_companions[i]->Flav().IsDiQuark()) {
@@ -132,12 +132,7 @@ bool Hadron_Remnant::DiceKinematics()
       }
     }
     xmap[p_last[0]]=xtot;
-    if (trials>m_maxtrials) {
-      msg_Tracking()<<"Hadron_Remnant::DiceKinematics(): "
-		    <<"Too many trials to find appropriate x values.\n"
-		    <<"   Using naive distribution instead."<<std::endl;
-      m_xscheme=0;
-    }
+    if (trials>m_maxtrials) m_xscheme=0;
   } while (xtot<m_deltax && m_xscheme!=0 &&
 	   xmap[p_last[0]]*m_pbeam[0]<=p_last[0]->Flav().PSMass());
   p_pdfbase->Reset();
@@ -188,7 +183,7 @@ bool Hadron_Remnant::DiceKinematics()
 
 bool Hadron_Remnant::ValenceQuark(ATOOLS::Particle *const quark) 
 {
-  double x=2.0*quark->Momentum()[0]/m_ecms;
+  double x=quark->Momentum()[0]/m_ebeam;
   p_pdfbase->Calculate(x,0.,0.,m_scale);
   double val=p_pdfbase->GetXPDF(quark->Flav());
   return val>(p_pdfbase->GetXPDF(quark->Flav().Bar())+val)*ATOOLS::ran.Get();
@@ -227,8 +222,6 @@ bool Hadron_Remnant::DecomposeHadron()
 	  p_start = new Color_Dipole(*pit,&m_companions);  
 	  p_start->Begin(ANTI((*pit)->Flav().IsAnti()))->
 	    SetFlav(Opposite((*pit)->Flav()));
-// 	  std::cout<<"val "<<ATOOLS::om::red<<*p_start
-// 		   <<ATOOLS::om::reset<<std::endl;
 	  return true;
 	}
       }
@@ -240,8 +233,6 @@ bool Hadron_Remnant::DecomposeHadron()
   p_start = new Color_Dipole(part,&m_companions);  
   p_start->Begin(ANTI(flav.IsAnti()))->SetFlav(Opposite(flav));
   m_companions.push_back(part);
-//   std::cout<<"sea "<<ATOOLS::om::red<<*p_start
-// 	   <<ATOOLS::om::reset<<std::endl;
   return true;
 }
 

@@ -22,7 +22,7 @@ namespace SHERPA {
 
     PDF::PDF_Base *p_pdfbase;
 
-    double       m_deltax, m_scale, m_ecms;
+    double       m_deltax, m_scale;
     unsigned int m_xscheme, m_maxtrials, m_set;
     size_t       m_initial, m_constrained;
 
