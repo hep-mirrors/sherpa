@@ -2,10 +2,6 @@
 #include "MyStrStream.H"
 #include "Run_Parameter.H"
 #include "Message.H"
-
-#define ANALYSE__ISR_Statistics
-#define ANALYSE__Shower_Statistics
-
 #include "Final_Selector.H"
 #include "Primitive_Calorimeter.H"
 #include "Primitive_Observable.H"
@@ -14,8 +10,26 @@
 #include "One_Particle_Observables.H"
 #include "Two_Particle_Observables.H"
 #include "Four_Particle_Observables.H"
+#include "Statistics_Observable.H"
+#include "MI_Statistics.H"
+// #define ANALYSE__ISR_Statistics
+// #define ANALYSE__Shower_Statistics
+#ifdef ANALYSE__ISR_Statistics
+#include "ISR_Statistics.H"
+#endif
+#ifdef ANALYSE__Shower_Statistics
+#include "Shower_Statistics.H"
+#endif
 
-//#include <ctype.h>
+#ifdef PROFILE__all
+#define PROFILE__Analysis_Handler
+#endif
+#ifdef PROFILE__Analysis_Handler
+#include "prof.hh"
+#else 
+#define PROFILE_HERE
+#define PROFILE_LOCAL(LOCALNAME)
+#endif
 
 using namespace SHERPA;
 using namespace ANALYSIS;
@@ -159,6 +173,11 @@ void Analysis_Handler::DoAnalysis(ATOOLS::Blob_List * const blist, double weight
   if (p_detector) p_detector->Fill(blist);
   p_analysis->DoAnalysis(blist,weight);
   if (p_detector) p_detector->Reset();
+}
+
+void Analysis_Handler::PrepareTerminate()
+{
+  Finish();
 }
 
 void Analysis_Handler::Finish() 
@@ -666,6 +685,14 @@ void Analysis_Handler::SetUpObservables()
     }
     p_analysis->AddObservable(obs);
   }
+  p_analysis->AddObservable(new Statistics_Observable("Analysed"));
+  p_analysis->AddObservable(new MI_Statistics("Analysed"));
+#ifdef ANALYSE__ISR_Statistics
+  p_analysis->AddObservable(new ISR_Statistics("Analysed"));
+#endif
+#ifdef ANALYSE__Shower_Statistics
+  p_analysis->AddObservable(new Shower_Statistics("Analysed"));
+#endif
   //SetUpSubSamples();
 } 
 
@@ -791,10 +818,4 @@ void Analysis_Handler::SetUpSubSamples()
   
 
 } 
-
-void Analysis_Handler::PrepareTerminate()
-{
-  Finish();
-}
-
 
