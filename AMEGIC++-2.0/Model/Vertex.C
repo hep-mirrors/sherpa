@@ -12,6 +12,8 @@
 
 using namespace AMEGIC;
 using namespace ATOOLS;
+using namespace ATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 
@@ -106,33 +108,6 @@ int Vertex::CheckExistence(Single_Vertex& probe)
 	  m_v4[i].in[1]==probe.in[1] &&
 	  m_v4[i].in[2]==probe.in[2] &&
 	  m_v4[i].in[3]==probe.in[3]) return 0;
-      /*
-      // 0 -> 1 3 2
-      if (m_v4[i].in[0]==probe.in[0] &&
-	  m_v4[i].in[1]==probe.in[1] &&
-	  m_v4[i].in[2]==probe.in[3] &&
-	  m_v4[i].in[3]==probe.in[2]) return 0;
-      // 0 -> 2 1 3
-      if (m_v4[i].in[0]==probe.in[0] &&
-	  m_v4[i].in[1]==probe.in[2] &&
-	  m_v4[i].in[2]==probe.in[1] &&
-	  m_v4[i].in[3]==probe.in[3]) return 0;
-      // 0 -> 2 3 1
-      if (m_v4[i].in[0]==probe.in[0] &&
-	  m_v4[i].in[1]==probe.in[2] &&
-	  m_v4[i].in[2]==probe.in[3] &&
-	  m_v4[i].in[3]==probe.in[1]) return 0;
-      // 0 -> 3 1 2
-      if (m_v4[i].in[0]==probe.in[0] &&
-	  m_v4[i].in[1]==probe.in[3] &&
-	  m_v4[i].in[2]==probe.in[1] &&
-	  m_v4[i].in[3]==probe.in[2]) return 0;
-      // 0 -> 3 2 1
-      if (m_v4[i].in[0]==probe.in[0] &&
-	  m_v4[i].in[1]==probe.in[3] &&
-	  m_v4[i].in[2]==probe.in[2] &&
-	  m_v4[i].in[3]==probe.in[1]) return 0;
-      */
     }
   }
   //3 leg vertices
@@ -222,7 +197,7 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
 	if (probehc) break;
       }
     }
-    //if (probehc) {
+    if (probehc) {
       int conjugate = 1;
 
       for (short int i=0;i<orig.nleg;i++) {
@@ -233,15 +208,9 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
       if (orig.Lorentz->type==lf::SSV ||
 	  orig.Lorentz->type==lf::Gauge3) conjugate *= -1;
       
-/*
       if (conjugate==-1) {
 	for (short int i=0;i<4;i++) probe.cpl[i] = -probe.cpl[i];
       }
-*/
-
-      ///!!!
-      for (short int i=0;i<4;i++) probe.cpl[i] = -probe.cpl[i];
-
 
       Conjugate(probe.Color);
 
@@ -250,8 +219,8 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
 	Complex help = probe.cpl[0];
 	probe.cpl[0] = probe.cpl[1];
 	probe.cpl[1] = help;
-	 }
-      //  }
+      }
+    }
   }
   //Color and Lorentz structure changes....
   int newIndex[4];
@@ -337,6 +306,8 @@ Vertex::Vertex(Interaction_Model_Base * _model)
      use (roughly) notation and Vertices of J. Rosiek, PRD41 (1990) 3464
      pull out common factor -i of all Vertices
   */ 
+  ATOOLS::msg.Debugging()<<"In Vertex::Vertex()."<<endl;
+
   m_nvertex  = 10000;
   m_n4vertex = 10000;
   m_v  = new Single_Vertex[m_nvertex];
@@ -400,7 +371,7 @@ Vertex::Vertex(Interaction_Model_Base * _model)
   }
   
   ATOOLS::msg.Debugging()<<"... done with it ("<<vanz<<")."<<endl
-			    <<"... done with the 4 legs ("<<vanz4<<")."<<endl;
+                          <<"... done with the 4 legs ("<<vanz4<<")."<<endl;
   m_nvertex  = vanz;
   m_n4vertex = vanz4;
 }
