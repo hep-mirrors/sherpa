@@ -1,7 +1,6 @@
 #include "LL_KPerp.H"
 
 #include "Channel_Elements.H"
-#include "Random.H"
 
 #include <stdio.h>
 
@@ -20,14 +19,6 @@ LL_KPerp::LL_KPerp(double _m_beta,const std::string cinfo,
   m_kp2key.Assign("k_perp_2",3,0,info);
 }
 
-void LL_KPerp::GeneratePoint(Info_Key &spkey,Info_Key &ykey,const int mode)
-{
-  double rans[2];
-  rans[0]=ATOOLS::ran.Get();
-  rans[1]=ATOOLS::ran.Get();
-  GeneratePoint(spkey,ykey,rans,mode);
-}
-
 void LL_KPerp::GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,const int mode)
 {
   CalculateLimits(spkey,ykey);
@@ -38,19 +29,21 @@ void LL_KPerp::GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,c
 void LL_KPerp::GenerateWeight(const int mode)
 {
   if (m_kp1key[2]>=m_kp1key[0] && m_kp1key[2]<=m_kp1key[1]) {
-    m_kp1key<<1./CE.MasslessPropWeight(m_beta,m_kp1key[0],m_kp1key[1],m_kp1key[2]);
+    if (m_kp1key.Weight()==UNDEFINED_WEIGHT) {
+      m_kp1key<<1./CE.MasslessPropWeight(m_beta,m_kp1key[0],m_kp1key[1],m_kp1key[2]);
+    }
   }
   if (m_kp2key[2]>=m_kp2key[0] && m_kp2key[2]<=m_kp2key[1]) {
-    m_kp2key<<1./CE.MasslessPropWeight(m_beta,m_kp2key[0],m_kp2key[1],m_kp2key[2]);
+    if (m_kp2key.Weight()==UNDEFINED_WEIGHT) {
+      m_kp2key<<1./CE.MasslessPropWeight(m_beta,m_kp2key[0],m_kp2key[1],m_kp2key[2]);
+    }
   }
   weight=m_kp1key.Weight()*m_kp2key.Weight();
 }
 
 void LL_KPerp::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
 {
-  m_kp1key[0]=ATOOLS::Accu();
-  m_kp2key[0]=ATOOLS::Accu();
-  m_kp1key[1]=.25*spkey[3]*exp(ykey[2]*2.);
-  m_kp2key[1]=.25*spkey[3]*exp(-ykey[2]*2.);
+  m_kp1key[1]=spkey[3];
+  m_kp2key[1]=spkey[3];
 }
 
