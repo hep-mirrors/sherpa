@@ -93,9 +93,22 @@ void XS_Group::Add(XS_Base *const xsec)
   if (!m_atoms) xsec->SetPSHandler(p_activepshandler);
 }
 
+bool XS_Group::Remove(XS_Base *const xsec) 
+{
+  for (std::vector<XS_Base*>::iterator xsit=m_xsecs.begin();
+       xsit!=m_xsecs.end();++xsit) {
+    if (*xsit==xsec) {
+      m_xsecs.erase(xsit);
+      return true;
+    }
+  }
+  return false;
+}
+
 bool XS_Group::Delete(XS_Base *const xsec) 
 {
-  for (std::vector<XS_Base*>::iterator xsit=m_xsecs.begin();xsit!=m_xsecs.end();++xsit) {
+  for (std::vector<XS_Base*>::iterator xsit=m_xsecs.begin();
+       xsit!=m_xsecs.end();++xsit) {
     if (*xsit==xsec) {
       delete *xsit;
       m_xsecs.erase(xsit);

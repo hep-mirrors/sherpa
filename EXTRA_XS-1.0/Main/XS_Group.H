@@ -39,6 +39,7 @@ namespace EXTRAXS {
     ~XS_Group();
 
     void Add(XS_Base *const xsec);
+    bool Remove(XS_Base *const xsec);
     bool Delete(XS_Base *const xsec);
     void Clear();
 
