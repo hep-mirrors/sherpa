@@ -52,11 +52,12 @@ bool Fragmentation_Handler::PerformFragmentation(ATOOLS::Blob_List *bloblist,
       }
     }
   }
+  m_used.clear();
   for (std::set<ATOOLS::Particle*>::iterator sit=startpoints.begin();
        sit!=startpoints.end();++sit) {
     ATOOLS::Particle *cur=*sit, *comp;  
     p_blob->AddToInParticles(cur);
-    m_used.clear();
+    m_used.insert(cur);
     do {
       bool found=false;
       for (ATOOLS::Blob_Iterator bit=bloblist->begin();bit!=bloblist->end();++bit) {
