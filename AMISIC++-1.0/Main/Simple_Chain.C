@@ -383,6 +383,7 @@ bool Simple_Chain::SetUpInterface()
   p_fsrinterface->SetAlphaSave(1.0);
   for (size_t i=0;i<p_processes->Size();++i) {
     Semihard_QCD *group = dynamic_cast<Semihard_QCD*>((*p_processes)[i]);
+    group->InitIntegrators();
     if (!group->PSHandler(false)->ReadIn(OutputPath()+m_mcextension+
 					 "/MC_"+group->Name(),16|32))
       group->CalculateTotalXSec(OutputPath()+m_mcextension);
