@@ -75,7 +75,6 @@ namespace SHERPA {
 
     bool InitializeTheFramework(int =-1);
     bool CalculateTheHardProcesses();
-    bool InitializeAllHardDecays();
 
     const std::string Path() const { return m_path; }
     const std::string File() const { return m_file; }
