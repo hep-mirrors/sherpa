@@ -6,17 +6,33 @@
 
 #include <algorithm>
 
+
+bool PartonIsInList(const APHYTOOLS::Parton * const p,  const APHYTOOLS::Parton_List & pl) 
+{
+  bool hit=0;
+  for (int j=0;j<pl.size();++j) {
+    if (p==pl[j]) {
+      hit=1;
+      break;
+    }
+  }
+  return hit;
+}
+
 using namespace AMATOOLS;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 using namespace std;
+
+
+
 
 void Shower_Observables::InitObservables() {
   all_obs.flav     = Flavour(kf::none);
   all_obs.jet_ini  = 0;
   all_obs.jetrates = new Jetrates(11,1.e-6,1.,180,0);
   all_obs.multi    = new Multiplicity(00,-0.5,50.5,51,0);
-  all_obs.wz_pt    = new PT_Distribution(00,0.,250.,125,1,Flavour(kf::W));
+  all_obs.wz_pt    = new PT_Distribution(00,0.,250.,125,1,Flavour(kf::photon));
   all_obs.jet_pt   = new PT_Distribution(00,0.,250.,125,6,Flavour(kf::jet));
   all_obs.sum      =0.;
 }
@@ -48,7 +64,8 @@ void Shower_Observables::Evaluate(const APHYTOOLS::Blob_List & blobs ,double val
       njet_ini=(*blit)->NOutP();
       lfl =(*blit)->OutParton(0)->Flav();
       for (int i=0;i<(*blit)->NInP();++i) {
-	pl.push_back((*blit)->InParton(i));
+	Parton * p =(*blit)->InParton(i);
+	if (!PartonIsInList(p,pl)) pl.push_back(p);
       }
     }
   }
@@ -57,9 +74,11 @@ void Shower_Observables::Evaluate(const APHYTOOLS::Blob_List & blobs ,double val
   for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
     for (int i=0;i<(*blit)->NOutP();++i) {
       Parton * p = (*blit)->OutParton(i);
-      if ((p->Info()=='F') || 
-	  (p->Info()=='H' && (*blit)->Type()[0]!='S'))
+
+      if (!PartonIsInList(p,pl) && ((p->Info()=='F') || 
+	  (p->Info()=='H' && p->Status()!=2 )))
 	pl.push_back(p);
+	//	  (p->Info()=='H' && (*blit)->Type()[0]!='S'))
     }
   }
 
@@ -400,7 +419,8 @@ void  Multiplicity::Evaluate(const APHYTOOLS::Blob_List & blobs,double value) {
   for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
     if ((*blit)->Type()[0]=='S') {
       for (int i=0;i<(*blit)->NInP();++i) {
-	pl.push_back((*blit)->InParton(i));
+	Parton * p = (*blit)->InParton(i);
+	if (!PartonIsInList(p,pl)) pl.push_back(p);
       }
     }
   }
@@ -409,8 +429,8 @@ void  Multiplicity::Evaluate(const APHYTOOLS::Blob_List & blobs,double value) {
   for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
     for (int i=0;i<(*blit)->NOutP();++i) {
       Parton * p = (*blit)->OutParton(i);
-      if ((p->Info()=='F') ||
-	  ((*blit)->Type()[0]!='S' &&  p->Info()=='H'))
+      if (!PartonIsInList(p,pl) && ((p->Info()=='F') ||
+				   ((*blit)->Type()[0]!='S' &&  p->Info()=='H')))
 	pl.push_back(p);
     }
   }
@@ -539,7 +559,7 @@ void PT_Distribution::Evaluate(const APHYTOOLS::Parton_List & pl,double weight) 
   if (checkfl==Flavour(kf::Z) || checkfl==Flavour(kf::W) || checkfl==Flavour(kf::W).Bar()) {
     AMATOOLS::Vec4D mom;
     int count=0;
-    //    cout<<" --- Partons : "<<endl;
+//     cout<<" --- Partons : "<<endl;
     for (int i=2;i<pl.size();i++) {
       //      msg.Out()<<i<<" : "<<pl[i]->Flav()<<endl;
       if (pl[i]->Flav().IsLepton()) {
@@ -553,7 +573,7 @@ void PT_Distribution::Evaluate(const APHYTOOLS::Parton_List & pl,double weight) 
       //      cout<<" 2 leptons ("<<checkfl<<") found pt="<<pt<<endl;
     }
     else {
-      cout<<"WARNING looking for 2 leptons ("<<checkfl<<") found "<<count<<endl;
+      //      cout<<"WARNING looking for 2 leptons ("<<checkfl<<") found "<<count<<endl;
     }
     return;
   }
@@ -570,9 +590,9 @@ void PT_Distribution::Evaluate(const APHYTOOLS::Parton_List & pl,double weight) 
 
   std::sort(pts.begin(),pts.end());
 
-  //  cout<<" pt of "<<checkfl<<endl;
+//   cout<<" pt of "<<checkfl<<endl;
   for (int i=1;i<=pts.size();++i) {
-    //    cout<<"  "<<i<<" : "<<pts[pts.size()-i]<<endl;
+//     cout<<"  "<<i<<" : "<<pts[pts.size()-i]<<" w="<<weight<<endl;
     histos[0]->Insert(pts[pts.size()-i],weight);
     if (i<histos.size()) histos[i]->Insert(pts[pts.size()-i],weight);
   }
@@ -585,7 +605,8 @@ void  PT_Distribution::Evaluate(const APHYTOOLS::Blob_List & blobs,double value)
     //    msg.Out()<<(*blit)<<endl;
     if ((*blit)->Type()[0]=='S') {
       for (int i=0;i<(*blit)->NInP();++i) {
-	pl.push_back((*blit)->InParton(i));
+	Parton * p = (*blit)->InParton(i);
+	if (!PartonIsInList(p,pl)) pl.push_back(p);
       }
     }
   }
@@ -594,9 +615,13 @@ void  PT_Distribution::Evaluate(const APHYTOOLS::Blob_List & blobs,double value)
   for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
     for (int i=0;i<(*blit)->NOutP();++i) {
       Parton * p = (*blit)->OutParton(i);
-      if ((p->Info()=='F') || 
-	  ((*blit)->Type()[0]!='S' &&  p->Info()=='H'))
-	pl.push_back(p);
+//       cout<<" check "<<p<<endl;
+      if ((p->Info()=='F') ||  
+	  (p->Info()=='H' && p->Status()!=2 )){
+// 	cout<<" added"<<endl;
+	if (!PartonIsInList(p,pl)) pl.push_back(p);
+      }
+	//	  ((*blit)->Type()[0]!='S' &&  p->Info()=='H'))
     }
   }
   Evaluate(pl,value);
