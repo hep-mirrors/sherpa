@@ -26,4 +26,26 @@ typedef std::strstream MyStrStream;
 typedef std::stringstream MyStrStream;
 #endif
 
+namespace ATOOLS {
+  
+  template <class Value_Type>
+  std::string ToString(const Value_Type value) {
+    MyStrStream converter;
+    std::string converted;
+    converter<<value;
+    converter>>converted;
+    return converted;
+  }
+
+  template <class Value_Type>
+  Value_Type ToType(const std::string &value) {
+    MyStrStream converter;
+    Value_Type converted;
+    converter<<value;
+    converter>>converted;
+    return converted;
+  }
+
+}// end of namespace ATOOLS;
+
 #endif
