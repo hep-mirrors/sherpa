@@ -262,15 +262,17 @@ bool Beam_Remnant_Handler::FillBeamBlobs(ATOOLS::Blob_List *bloblist,
       }
     }
     success=true;
-    if (treat[0]) success=success&&p_beampart[0]->FillBlob(p_beamblob[0],particlelist);
-    if (treat[1]) success=success&&p_beampart[1]->FillBlob(p_beamblob[1],particlelist);
-    if ((p_beampart[0]->Type()==rtp::hadron)||
-	(p_beampart[1]->Type()==rtp::hadron)) {
+    for (short unsigned int i=0;i<2;++i) {
+      if (treat[i]) if (!p_beampart[i]->
+			FillBlob(p_beamblob[i],particlelist)) success=false;
+    }
+    if (p_beampart[0]->Type()==rtp::hadron || 
+	p_beampart[1]->Type()==rtp::hadron) {
       p_kperp->CreateKPerp(p_beamblob[0],p_beamblob[1]);
-      for (size_t i=0;i<2;++i) p_kperp->FillKPerp(p_beamblob[i]);
+      for (short unsigned int i=0;i<2;++i) p_kperp->FillKPerp(p_beamblob[i]);
     }
     bool empty=false;
-    for (size_t i=0;i<2;++i) {
+    for (short unsigned int i=0;i<2;++i) {
       if (!(success=success&&p_beampart[i]->AdjustKinematics())) {
 	for (short unsigned int i=0; i<2;++i) p_beampart[i]->UnDo();
 	if (!RemoveLast()) empty=true;
