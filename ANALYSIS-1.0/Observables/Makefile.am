@@ -19,7 +19,8 @@ libObservables_la_SOURCES = \
 			    Four_Particle_Observables.C \
 			    Jet_Observables.C \
 			    Event_Shapes_EE.C \
-			    Shape_Observables_EE.C 
+			    Shape_Observables_EE.C \
+			    Scaled_Observables.C
 noinst_HEADERS            = \
 			    Statistics_Observable.H \
 			    MI_Statistics.H \
@@ -28,8 +29,8 @@ noinst_HEADERS            = \
 			    Four_Particle_Observables.H \
 			    Jet_Observables.H \
 			    Event_Shapes_EE.H \
-			    Shape_Observables_EE.H
-
+			    Shape_Observables_EE.H \
+			    Scaled_Observables.H
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(ANALYSISFLAGS)
 INCLUDES      =	$(ANALYSISINCS) $(ATOOLSINCS)

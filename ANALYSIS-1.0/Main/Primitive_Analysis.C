@@ -1,7 +1,7 @@
 #include "Primitive_Analysis.H"
 #include "Primitive_Observable_Base.H"
+#include "Particle_Selector.H"
 #include "Message.H"
-#include "List_Algorithms.H"
 #include "MyStrStream.H"
 
 #ifdef PROFILE__Analysis_Phase
@@ -364,10 +364,6 @@ void Primitive_Analysis::CreateChargedParticleList()
   copy_if(pl_fs->begin(),pl_fs->end(),
 	  back_inserter(*pl),Is_Charged());
 
-  for (Particle_List::iterator it=pl->begin(); it!=pl->end();++it) {
-    (*it)= new Particle(**it);
-  }
-  
   m_pls["ChargedParticle"]=pl;
 }
 
@@ -378,10 +374,30 @@ Particle_List * Primitive_Analysis::GetParticleList(const std::string & key)
   if (cit!=m_pls.end()) return cit->second;
 
   if (key=="FinalState") CreateFinalStateParticleList();
-  else if (key=="ChargedParticle") CreateChargedParticleList();
+  //  else if (key=="ChargedParticle") CreateChargedParticleList();
 
   cit=m_pls.find(key);
   if (cit!=m_pls.end()) return cit->second;
+
+  Particle_Selector * ps=0;
+  std::string testname=std::string("ParticleSelector_")+key;
+  for(size_t i=0;i<m_observables.size();++i) {
+    if (m_observables[i]->Name()==testname) {
+      std::cout<<" WARNING"<<testname<<" already present "<<std::endl;
+      ps = static_cast<Particle_Selector*>(m_observables[i]);
+      break;
+    } 
+  }
+
+  if (ps==0) {
+    ps = new Particle_Selector("FinalState",key);
+    AddObservable(ps);
+  }
+
+  ps->CreateParticleList();
+  cit=m_pls.find(key);
+  if (cit!=m_pls.end()) return cit->second;
+  std::cout<<" ERROR  "<<key<<" not found"<<std::endl;
 
   return 0;
 }
