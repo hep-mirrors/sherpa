@@ -24,7 +24,7 @@ for I in $* ; do
     echo "update version 1.0" && echo && \
     echo "options: -n             run 'cvs -n update <options>'" && \
     echo "         -f             run 'cvs update <options>'" && \
-    echo "         -s             show statistics'" && \
+    echo "         -s             show statistics" && \
     echo "         -l <logfile>   create logfile <logfile>" && \
     echo "         -h             display this help and exit" && \
     echo "         <any other>    passed directly to 'cvs update'" && echo && \
