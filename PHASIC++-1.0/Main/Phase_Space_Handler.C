@@ -650,8 +650,8 @@ double Phase_Space_Handler::Differential(Process_Base * process)
       // boost from LAB in CMS missing !!!
           
     ih->CalculateWeight2(Q2);
-    msg.Debugging()<<"Before Differential B moms:"<<endl;
-    for (int i=0;i<nin+nout;i++) msg.Debugging()<<" "<<i<<" : "<<p[i]<<" ("<<p[i].Abs2()<<")"<<endl;
+//    msg.Debugging()<<"Before Differential B moms:"<<endl;
+//    for (int i=0;i<nin+nout;i++) msg.Debugging()<<" "<<i<<" : "<<p[i]<<" ("<<p[i].Abs2()<<")"<<endl;
     
     if (result2 > 0.) result2 *= process->Differential2();
     else              result2  = 0.;
