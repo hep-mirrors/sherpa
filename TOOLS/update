@@ -68,49 +68,49 @@ for EXTENSION in $EXTENSIONS ; do
   cat $LOGFILE | grep "U " | grep $EXTENSION
   cat $LOGFILE | grep "P " | grep $EXTENSION
   cat $LOGFILE | grep "C " | grep $EXTENSION > $TEMPFILE
+  if (( $? == 0 )) ; then
+    echo -e "\e[1m- Conflicts --------------------------------------\e[0m" 
+    cat $TEMPFILE
+  fi
   COUNT=`cat $LOGFILE | grep "U " | grep $EXTENSION | wc -l`
   (( TUCOUNT = TUCOUNT + COUNT )); COUNT=0
   COUNT=`cat $LOGFILE | grep "P " | grep $EXTENSION | wc -l`
   (( TUCOUNT = TUCOUNT + COUNT )); COUNT=0
   COUNT=`cat $LOGFILE | grep "C " | grep $EXTENSION | wc -l`
   (( TCCOUNT = TCCOUNT + COUNT )); COUNT=0
-  if (( $? == 0 )) ; then
-    echo -e "\e[1m- Conflicts --------------------------------------\e[0m" 
-    cat $TEMPFILE
-  fi
   cat $LOGFILE | grep "M " | grep $EXTENSION > $TEMPFILE
-  COUNT=`cat $LOGFILE | grep "M " | grep $EXTENSION | wc -l`
-  (( TMCOUNT = TMCOUNT + COUNT )); COUNT=0
   if (( $? == 0 )) ; then
     echo -e "\e[1m- Changes ----------------------------------------\e[0m" 
     cat $TEMPFILE
   fi
-  cat $LOGFILE | grep "erging " | grep $EXTENSION > $TEMPFILE
-  COUNT=`cat $LOGFILE | grep "erging " | grep $EXTENSION | wc -l`
+  COUNT=`cat $LOGFILE | grep "M " | grep $EXTENSION | wc -l`
   (( TMCOUNT = TMCOUNT + COUNT )); COUNT=0
+  cat $LOGFILE | grep "erging " | grep $EXTENSION > $TEMPFILE
   if (( $? == 0 )) ; then
     echo -e "\e[1m- Merged -----------------------------------------\e[0m" 
     cat $TEMPFILE
   fi
+  COUNT=`cat $LOGFILE | grep "erging " | grep $EXTENSION | wc -l`
+  (( TMCOUNT = TMCOUNT + COUNT )); COUNT=0
   cat $LOGFILE | grep "? " | grep $EXTENSION > $TEMPFILE
   TEST1=$?
   cat $LOGFILE | grep "A " | grep $EXTENSION >> $TEMPFILE
   TEST2=$?
-  COUNT=`cat $LOGFILE | grep "? " | grep $EXTENSION | wc -l`
-  (( TNCOUNT = TNCOUNT + COUNT )); COUNT=0
-  COUNT=`cat $LOGFILE | grep "A " | grep $EXTENSION | wc -l`
-  (( TACOUNT = TACOUNT + COUNT )); COUNT=0
   if (( $TEST1 == 0 )) || (( $TEST2 == 0 )) ; then
     echo -e "\e[1m- New files --------------------------------------\e[0m" 
     cat $TEMPFILE
   fi
+  COUNT=`cat $LOGFILE | grep "? " | grep $EXTENSION | wc -l`
+  (( TNCOUNT = TNCOUNT + COUNT )); COUNT=0
+  COUNT=`cat $LOGFILE | grep "A " | grep $EXTENSION | wc -l`
+  (( TACOUNT = TACOUNT + COUNT )); COUNT=0
   cat $LOGFILE | grep "R " | grep $EXTENSION > $TEMPFILE
-  COUNT=`cat $LOGFILE | grep "R " | grep $EXTENSION | wc -l`
-  (( TRCOUNT = TRCOUNT + COUNT )); COUNT=0
   if (( $? == 0 )) ; then
     echo -e "\e[1m- Removed files ----------------------------------\e[0m" 
     cat $TEMPFILE
   fi
+  COUNT=`cat $LOGFILE | grep "R " | grep $EXTENSION | wc -l`
+  (( TRCOUNT = TRCOUNT + COUNT )); COUNT=0
 done
 if [ "$STATISTICS" = "TRUE" ] ; then
   echo -e "\e[1m==================================================\e[0m"
