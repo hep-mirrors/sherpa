@@ -49,10 +49,15 @@ Analysis_Handler::FindArguments(const String_Matrix &strings,
       if (opos!=std::string::npos) {
 	++open;
 	if (open==1) {
-	  result.back()[k]=result.back()[k].substr(opos+1);
+	  if (opos+1<result.back()[k].size()) 
+	    result.back()[k]=result.back()[k].substr(opos+1);
+	  else 
+	    result.back()[k]="";
 	  if (result.back()[k].length()==0) {
 	    --k;
-	    result.back().resize(result.back().size()-1);
+	    result.back().pop_back();
+	    if (result.back().size()==0) result.pop_back();
+	    // result.back().resize(result.back().size()-1);
 	    continue;
 	  }
 	}
@@ -138,11 +143,26 @@ bool Analysis_Handler::ReadIn()
       if (!reader.ReadFromFile(outpath,"PATH_PIECE")) outpath="";
       m_analyses.back()->SetOutputPath(outpath);
       reader.MatrixFromFile(helpsvv,"");
+      // !? why is there 4 times the comandline parameter in "helpsvv" ?
+      //      std::cout<<"TOTAL size "<<helpsvv.size()<<std::endl;
       for (size_t k=0;k<helpsvv.size();++k) {
+	if (helpsvv[k].size()>0) {
+	  //	  std::cout<<k<<" #"<<helpsvv[k][0]<<"#"<<std::endl;
+	  if (helpsvv[k][0]=="{" || helpsvv[k][0]=="}") continue;
+	}
 	String_Matrix mat=FindArguments(helpsvv,k,1);
+	/*
+	for (size_t m=0; m<mat.size();++m) {
+	  for (size_t n=0; n<mat[m].size();++n) {
+	    std::cout<<"#"<<mat[m][n]<<"#";
+	  }
+	  std::cout<<std::endl;
+	}
+	*/
 	ANALYSIS::Primitive_Observable_Base *observable = 
 	  Getter_Function::GetObject(helpsvv[k][0],mat);
 	if (observable!=NULL) {
+	  k+=mat.size()-1;
 	  m_analyses.back()->AddObservable(observable);
 	  if (helpsvv[k][0]=="Trigger") trigger=true;
 	  if (ATOOLS::msg.LevelIsTracking()) {
