@@ -7,7 +7,7 @@ namespace ATOOLS { class Blob_Data_Base; }
 
 namespace EXTRAXS {
 
-  class Single_XS : public XS_Base {
+  class Single_XS: public XS_Base {
   public:
 
     // constructors
@@ -36,6 +36,10 @@ namespace EXTRAXS {
     bool OneEvent();
 
     ATOOLS::Blob_Data_Base *WeightedEvent();
+
+    template <class Process_Type>
+    static Single_XS *GetProcess(const size_t nin,const size_t nout,
+				 const ATOOLS::Flavour *flavours);
 
   };// end of class Single_XS
 

@@ -33,6 +33,14 @@ Simple_XS::~Simple_XS()
   delete p_dataread; 
 }
 
+void Simple_XS::OrderFlavours(ATOOLS::Flavour *flavours)
+{
+  if ((int)flavours[0].Kfcode()>(int)flavours[1].Kfcode()) std::swap<ATOOLS::Flavour>(flavours[0],flavours[1]);
+  if ((int)flavours[2].Kfcode()>(int)flavours[3].Kfcode()) std::swap<ATOOLS::Flavour>(flavours[2],flavours[3]);
+  if (flavours[0].IsAnti()) std::swap<ATOOLS::Flavour>(flavours[0],flavours[1]);
+  if (flavours[2].IsAnti()) std::swap<ATOOLS::Flavour>(flavours[2],flavours[3]);
+}
+
 bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandler,
 				    PDF::ISR_Handler *const isrhandler,const bool construct) 
 {
@@ -113,16 +121,25 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	    for (int i=0;i<nFS;i++) summass += flavs[i+nIS].Mass();
 	    if (summass<rpa.gen.Ecms()) {
 	      Flavour help[4];
+	      std::set<std::string> setup;
 	      XS_Group *group=FindGroup(nIS,nFS,flavs,m_scalescheme,m_kfactorscheme,m_scalefactor);
 	      for (size_t i=0;i<(size_t)flavs[0].Size();++i) {
-		help[0]=flavs[0][i];
 		for (size_t j=0;j<(size_t)flavs[1].Size();++j) {
-		  help[1]=flavs[1][j];
 		  for (size_t k=0;k<(size_t)flavs[2].Size();++k) {
-		    help[2]=flavs[2][k];
 		    for (size_t l=0;l<(size_t)flavs[3].Size();++l) {
+		      help[0]=flavs[0][i];
+		      help[1]=flavs[1][j];
+		      help[2]=flavs[2][k];
 		      help[3]=flavs[3][l];
-		      group->Add(group->XSSelector()->GetXS(nIS,nFS,help,p_isrhandler->KMROn()));
+		      OrderFlavours(help);
+		      MyStrStream converter;
+		      for (size_t m=0;m<4;++m) converter<<help[m];
+		      std::string name;
+		      converter>>name;
+		      if (setup.find(name)==setup.end()) {
+			group->Add(group->XSSelector()->GetXS(nIS,nFS,help,p_isrhandler->KMROn()));
+			setup.insert(name);
+		      }
 		    }
 		  }
 		}

@@ -25,7 +25,8 @@ namespace EXTRAXS {
 
     ATOOLS::Selector_Data *p_selectordata;
 
-    int ExtractFlavours(ATOOLS::Flavour *&flavours,std::string buffer);
+    int  ExtractFlavours(ATOOLS::Flavour *&flavours,std::string buffer);
+    void OrderFlavours(ATOOLS::Flavour *flavours);
 
     XS_Group *FindGroup(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
 			const int scalescheme,const int kfactorscheme, 

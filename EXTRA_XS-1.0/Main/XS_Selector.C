@@ -18,6 +18,7 @@ XS_Selector::XS_Selector(XS_Base *const owner):
 Single_XS *XS_Selector::GetXS(const size_t nin,const size_t nout,
 			      const ATOOLS::Flavour *flavours,const bool offshell)
 { 
+  Single_XS *xs;
   if (offshell) {
     if ((flavours[2].IsLepton() && flavours[3]==flavours[2].Bar() && 
 	 flavours[0].IsQuark() && flavours[1]==flavours[0].Bar()) ||
@@ -55,41 +56,14 @@ Single_XS *XS_Selector::GetXS(const size_t nin,const size_t nout,
        flavours[3]==flavours[2].Bar())) { 
     return new XS_ee_ffbar(nin,nout,flavours); 
   }
-  if (((flavours[0].IsQuark() && flavours[1].IsGluon()) ||
-       (flavours[1].IsQuark() && flavours[0].IsGluon()) )   &&
-      (((flavours[2] == flavours[0]) && (flavours[3]==flavours[1])) ||
-       ((flavours[3] == flavours[0]) && (flavours[2]==flavours[1])) ) )  { 
-    return new XS_q1g_q1g(nin,nout,flavours); 
-  }
-  if (flavours[0].IsGluon() && flavours[1].IsGluon()) {
-    if (flavours[2].IsQuark() && (flavours[3]==flavours[2].Bar())) { 
-      return new XS_gg_q1qbar1(nin,nout,flavours); 
-    }
-    if (flavours[2].IsGluon() && flavours[3].IsGluon()) { 
-      return new XS_gg_gg(nin,nout,flavours); 
-    }
-  }
-  if (flavours[0].IsQuark() && (flavours[1]==flavours[0].Bar())) {
-    if (flavours[2].IsGluon() && flavours[3].IsGluon()) { 
-      return new XS_q1qbar1_gg(nin,nout,flavours); 
-    }
-    if ( ((flavours[2]==flavours[0]) && (flavours[3]==flavours[1])) ||
-      ((flavours[2]==flavours[1]) && (flavours[2]==flavours[1])) ) { 
-      return new XS_q1qbar1_q1qbar1(nin,nout,flavours); 
-    }
-    if (flavours[2].IsQuark() && (flavours[3]==flavours[2].Bar())) { 
-      return new XS_q1qbar1_q2qbar2(nin,nout,flavours); 
-    }
-  }
-  if ( flavours[0].IsQuark() && (flavours[1]==flavours[0]) &&
-	(flavours[2]==flavours[0]) && (flavours[3]==flavours[0]) ) { 
-    return new XS_q1q1_q1q1(nin,nout,flavours); 
-  }
-  if ( flavours[0].IsQuark() && flavours[1].IsQuark() &&
-       ( ((flavours[2]==flavours[0]) && (flavours[3]==flavours[1])) ||
-	 ((flavours[3]==flavours[0]) && (flavours[2]==flavours[1]))) ) { 
-    return new XS_q1q2_q1q2(nin,nout,flavours); 
-  }
+  if ((xs=Single_XS::GetProcess<XS_gg_gg>(nin,nout,flavours))!=NULL) return xs;
+  if ((xs=Single_XS::GetProcess<XS_q1g_q1g>(nin,nout,flavours))!=NULL) return xs;
+  if ((xs=Single_XS::GetProcess<XS_gg_q1qbar1>(nin,nout,flavours))!=NULL) return xs;
+  if ((xs=Single_XS::GetProcess<XS_q1qbar1_gg>(nin,nout,flavours))!=NULL) return xs;
+  if ((xs=Single_XS::GetProcess<XS_q1qbar1_q1qbar1>(nin,nout,flavours))!=NULL) return xs;
+  if ((xs=Single_XS::GetProcess<XS_q1qbar1_q2qbar2>(nin,nout,flavours))!=NULL) return xs;
+  if ((xs=Single_XS::GetProcess<XS_q1q1_q1q1>(nin,nout,flavours))!=NULL) return xs;
+  if ((xs=Single_XS::GetProcess<XS_q1q2_q1q2>(nin,nout,flavours))!=NULL) return xs;
   return NULL;
 }
 
