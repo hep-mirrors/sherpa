@@ -127,6 +127,8 @@ namespace ATOOLS {
     inline const double Y() const; 
     inline const double Eta() const; 
 
+    inline Vec4D Perp() const;
+
     Vec4D& operator+= (const Vec4D& v);
     Vec4D& operator-= (const Vec4D& v);
     Vec4D& operator*= (const double scal);
@@ -487,6 +489,11 @@ namespace ATOOLS {
     return acos(CosTheta(ref));
   }
   
+  inline Vec4D Vec4D::Perp() const 
+  { 
+    return Vec4D(0.,m_x[1],m_x[2],0.);
+  }
+
   // output streams:
   std::ostream& operator<<(std::ostream& s, const Vec4D& vec);
   std::ostream& operator<<(std::ostream& s, const Vec3D& vec);
