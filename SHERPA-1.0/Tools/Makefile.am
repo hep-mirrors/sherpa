@@ -24,7 +24,6 @@ libSherpaTools_la_SOURCES     =	\
 				Kinematics.C \
 				Output_Handler.C \
 			    	HepMC_Interface.C \
-				HepEvt_Interface.C \
 			    	Sample_Analysis.C \
 			    	Analysis_Phase.C \
 			    	EvtReadin_Phase.C \
@@ -34,7 +33,6 @@ noinst_HEADERS        =	\
 			Kinematics.H \
 			Output_Handler.H \
 		 	HepMC_Interface.H \
-			HepEvt_Interface.H \
 			Sample_Analysis.H \
 			Analysis_Phase.H \
 			EvtReadin_Phase.H \

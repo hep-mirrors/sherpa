@@ -23,12 +23,17 @@ using namespace ATOOLS;
 using namespace std;
 
 Analysis_Phase::Analysis_Phase() :
-  Event_Phase_Handler(std::string("Analysis")), p_analysis(NULL) { }
+  Event_Phase_Handler(std::string("Analysis")), p_analysis(NULL) 
+{ 
+  m_type = eph::Analysis;
+}
 
-Analysis_Phase::Analysis_Phase(Sample_Analysis * ana,const std::string  & btype) :
-  Event_Phase_Handler(std::string("Analysis_")+btype), p_analysis(ana) 
+Analysis_Phase::Analysis_Phase(Sample_Analysis * ana,const std::string  & iter) :
+  Event_Phase_Handler(std::string("Analysis:")+ana->Phase()), 
+  p_analysis(ana) 
 {
-  m_type   = ana->Type();
+  if (iter!=std::string("")) m_name += std::string("_")+iter;
+  m_type = eph::Analysis;
 }
 
 bool Analysis_Phase::Treat(ATOOLS::Blob_List * blist, double & weight) 

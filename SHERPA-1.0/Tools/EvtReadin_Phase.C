@@ -9,13 +9,13 @@ using namespace std;
 EvtReadin_Phase::EvtReadin_Phase(Output_Handler * _iohandler) :
   p_iohandler(_iohandler), p_evtreader(NULL), m_path(".")
 {
-  m_type = std::string("Read-in");
+  m_type = eph::Read_In;
 }    
 
 EvtReadin_Phase::EvtReadin_Phase(Event_Reader * _evtreader) :
   p_iohandler(NULL), p_evtreader(_evtreader), m_path(_evtreader->GetPath())
 {
-  m_type = std::string("Read-in");
+  m_type = eph::Read_In;
 }    
 
 bool EvtReadin_Phase::Treat(ATOOLS::Blob_List * _bloblist, double & weight) 

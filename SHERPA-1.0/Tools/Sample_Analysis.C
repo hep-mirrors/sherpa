@@ -64,7 +64,6 @@ int Observable_Data::Specify() {
 Sample_Analysis::Sample_Analysis(std::ifstream * readin, std::string _phase, const std::string & prefix) :
   m_phase(_phase), m_outputpath(std::string("./")+_phase), m_prefix(prefix), p_analysis(NULL)
 {  
-  m_type = std::string("Perturbative");
   std::cout<<"Initialize new Sample_Analysis for "<<_phase<<std::endl;
   std::string phasemode;
   int  mode  = ANALYSIS::fill_all|ANALYSIS::splitt_jetseeds;
@@ -90,7 +89,6 @@ Sample_Analysis::Sample_Analysis(std::ifstream * readin, std::string _phase, con
 	if (split) mode = mode|ANALYSIS::splitt_phase;
 	else split = true;
 	_phase = _phase.substr(7);
-	m_type = std::string("Hadronization");
       }
     }
   }
@@ -351,7 +349,7 @@ void Sample_Analysis::SetUpObservables()
 	break; 
       }
       if (type==std::string("SPT2")) { 
-	obs = new Two_Particle_Scalar_PT(flav,flav2,linlog,od->numbers[0],od->numbers[1],od->ints[2]); 
+	//	obs = new Two_Particle_Scalar_PT(flav,flav2,linlog,od->numbers[0],od->numbers[1],od->ints[2]); 
 	break; 
       }
       if (type==std::string("Eta2"))  { 

@@ -21,7 +21,7 @@ namespace SHERPA {
   };
 
   class Sample_Analysis  {
-    std::string  m_phase, m_type, m_outputpath;
+    std::string  m_phase, m_outputpath;
     std::string  m_prefix;
 
     ANALYSIS::Primitive_Analysis             * p_analysis;
@@ -42,8 +42,7 @@ namespace SHERPA {
 
     void SetOutputPath(const std::string &);
     std::string Phase() { return m_phase; }
-    std::string Type()  { return m_type; }
-    bool On()    { return (p_analysis->NumberOfObservables()>0); }
+    bool On()           { return (p_analysis->NumberOfObservables()>0); }
   };   
 
   typedef std::map<std::string,Sample_Analysis *> AnalysesMap;

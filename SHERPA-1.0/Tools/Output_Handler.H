@@ -27,18 +27,19 @@ namespace SHERPA {
 
   class Output_Handler {
   private :
-
+    bool            m_on;
     int             m_io;
     iotype::code    m_outtype, m_intype;
 
 #ifdef _USE_HEPMC_
-    HepMC_Interface  * p_hepmc;
-    HepMC::GenEvent  * p_event;
+    HepMC_Interface          * p_hepmc;
+    HepMC::GenEvent          * p_event;
 #endif
-    HepEvt_Interface * p_hepevt;
-    std::string     m_path, m_filename;
-    std::ofstream   m_outstream;
-    std::ifstream * p_instream;
+    ATOOLS::HepEvt_Interface * p_hepevt;
+    std::ofstream              m_outstream;
+    std::ifstream            * p_instream;
+    std::string                m_path, m_filename, m_file;
+    long int                   m_filesize, m_evtnumber, m_evtcount;
 
     void SherpaOutput(ATOOLS::Blob_List *const blobs,const double=1.);
     bool SherpaInput(ATOOLS::Blob_List *const blobs);
@@ -47,7 +48,8 @@ namespace SHERPA {
     // constructors
     Output_Handler();
     Output_Handler(const std::vector<std::string> &outfiles,
-		   const std::vector<std::string> &infiles);
+		   const std::vector<std::string> &infiles,
+		   const std::string=std::string("."));
 
     // destructor
     ~Output_Handler();
@@ -61,7 +63,6 @@ namespace SHERPA {
     
     // inline functions
     inline bool OutputOn() const { return m_io&1; }
-
   };
 
   /*!
