@@ -9,6 +9,7 @@ AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_CXX
 AC_PROG_CC
+AC_PROG_F77
 AM_PROG_LIBTOOL
 
 dnl Checks for header files.
@@ -22,7 +23,7 @@ dnl Checks for library functions.
 AC_CHECK_FUNCS(mkdir)
 
 
-AC_OUTPUT(		Main/Makefile \
-			Include/Makefile \
-			Makefile )
+AC_OUTPUT(Main/Makefile \
+	  LHAPDF/Makefile \
+	  Makefile )
 
