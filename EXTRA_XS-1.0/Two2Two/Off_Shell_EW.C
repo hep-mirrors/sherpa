@@ -61,8 +61,8 @@ Off_Shell_qqb_llb::Off_Shell_qqb_llb(const size_t nin,const size_t nout,
 
 double Off_Shell_qqb_llb::operator()(double s,double t,double u) 
 {
-  return 2.*M_PI/3.*ATOOLS::sqr(4.*M_PI*alpha*kappa)*s*
-    (af*af+vf*vf)*(ae*ae+ve*ve)*MZ2*GZ2/(ATOOLS::sqr(s-MZ2)+MZ2*GZ2)*0.0363; 
+//   return 2.*M_PI/3.*ATOOLS::sqr(4.*M_PI*alpha*kappa)*s*
+//     (af*af+vf*vf)*(ae*ae+ve*ve)*MZ2*GZ2/(ATOOLS::sqr(s-MZ2)+MZ2*GZ2)*0.0363; 
 
   chi2  = ATOOLS::sqr(kappa * s)/(ATOOLS::sqr(s-MZ2) + GZ2*MZ2);
   term1 = (1+ATOOLS::sqr(1.+2.*t/s)) * ((ae*ae+ve*ve) * (af*af+vf*vf) * chi2);
