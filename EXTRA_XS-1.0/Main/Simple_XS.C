@@ -224,9 +224,7 @@ int Simple_XS::ExtractFlavours(ATOOLS::Flavour *&flavours,std::string buffer)
 
 bool Simple_XS::CalculateTotalXSec(const std::string &resultpath) 
 {
-  m_n=0;
-  m_last=m_lastlumi=m_lastdxs=0.0;
-  m_totalxs=m_totalsum=m_totalsumsqr=m_totalerr=0.0;
+  Reset();
   bool okay = 1;
   for (size_t i=0;i<m_xsecs.size();++i) {
     okay = okay && m_xsecs[i]->CalculateTotalXSec(resultpath);

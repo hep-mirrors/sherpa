@@ -199,13 +199,13 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
 	if (p_pshandler->KMRZIntegrator() != 0) p_pshandler->KMRZIntegrator()->Print();
 	if (p_pshandler->KMRKPIntegrator() != 0) p_pshandler->KMRKPIntegrator()->Print();
 	if (p_pshandler->FSRIntegrator() != 0) p_pshandler->FSRIntegrator()->Print();
-	p_pshandler->InitIncoming();
       }
     }
     if (m_foundown) SetTotal();
     m_resultpath=resultpath;
     m_resultfile=filename;
     ATOOLS::Exception_Handler::AddTerminatorObject(this);
+    p_pshandler->InitIncoming();
     m_totalxs=p_pshandler->Integrate()/ATOOLS::rpa.Picobarn(); 
     if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
       ATOOLS::msg.Error()<<"Result of PS-Integrator and internal summation do not coincide!"<<std::endl
@@ -259,18 +259,21 @@ void XS_Group::SetTotal()
   m_totalerr=sqrt((m_n*m_totalsumsqr-ATOOLS::sqr(m_totalsum))/(m_n-1))/m_n;
   if (p_selector) p_selector->Output();
   m_max=0.;
-  ATOOLS::msg.Events()<<om::bold<<"--------------------------------------------------"<<om::reset<<std::endl;
+  ATOOLS::msg.Events()<<ATOOLS::om::bold<<"--------------------------------------------------"
+		      <<ATOOLS::om::reset<<std::endl;
   for (size_t i=0;i<m_xsecs.size();++i) {
     m_xsecs[i]->SetTotal();
     m_max+=m_xsecs[i]->Max();
   }
-  ATOOLS::msg.Events()<<om::bold<<"--------------------------------------------------"<<om::reset<<std::endl;
+  ATOOLS::msg.Events()<<ATOOLS::om::bold<<"--------------------------------------------------"
+		      <<ATOOLS::om::reset<<std::endl;
   ATOOLS::msg.Events()<<"Total XS for "<<ATOOLS::om::bold<<m_name<<" : "
 		      <<ATOOLS::om::blue<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
 		      <<ATOOLS::om::reset<<" +/- ( "<<ATOOLS::om::red<<m_totalerr<<" pb = "
 		      <<m_totalerr/m_totalxs*100.<<" %"<<ATOOLS::om::reset<<" )"<<std::endl
 		      <<"      max = "<<m_max<<std::endl;
-  ATOOLS::msg.Events()<<om::bold<<"--------------------------------------------------"<<om::reset<<std::endl;
+  ATOOLS::msg.Events()<<ATOOLS::om::bold<<"--------------------------------------------------"
+		      <<ATOOLS::om::reset<<std::endl;
 }
 
 bool XS_Group::OneEvent() 
