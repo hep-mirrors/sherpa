@@ -124,7 +124,28 @@ Flavour Flavour::operator[](int idx) const  {
   if (!(particles[ Index() ].group)) return (*this);
   if (anti) return particles[ Index() ][idx].Bar();
   return particles[ Index() ][idx];
-} 
+}
+
+
+
+//NEW for ADICIC!
+Flavour::Flavour(kf::code _kfc, bool _anti) {
+  kfc=_kfc;
+  anti=0;
+  if (_kfc==kf::photon)   return;
+  if (_kfc==kf::Z)        return;
+  if (_kfc==kf::gluon)    return;
+  if (_kfc==kf::h)        return;
+  if (_kfc==kf::h0)       return;
+  if (_kfc==kf::H0)       return;
+  if (_kfc==kf::A0)       return;
+  if (_kfc==kf::graviton) return;
+  if (_kfc==kf::gscalar)  return;
+  if (_kfc==kf::none)     return;
+  if (Majorana())         return;
+  anti=_anti;
+}
+//***************
 
 
 
@@ -770,4 +791,5 @@ int Flavour::WriteOut() {
 
 
 }
+
 

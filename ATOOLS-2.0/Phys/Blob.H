@@ -127,9 +127,9 @@ namespace ATOOLS {
  
     double              const Weight()   const { return m_weight; }
     std::vector<double> WeightContainer()      { return m_weightcontainer; } 
-    Vec4D       CheckMomentumConservation();
-    Vec4D       const Position()         const { return m_position; }
-    Vec4D       const CMS()              const { return m_cms_vec; }
+    Vec4D        CheckMomentumConservation();
+    const Vec4D& Position()              const { return m_position; }
+    const Vec4D& CMS()                   const { return m_cms_vec; }
     btp::code   const Type()             const { return m_type; }
     std::string const TypeSpec()         const { return m_typespec; }
   };
@@ -204,7 +204,6 @@ namespace ATOOLS {
 
 #endif
   
-
 
 
 

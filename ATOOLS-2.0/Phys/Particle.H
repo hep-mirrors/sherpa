@@ -29,29 +29,30 @@ namespace ATOOLS {
     Particle(const Particle * );
     Particle(const Particle & );
     Particle& operator=(const Particle &);
-    Particle(int,Flavour=Flavour(kf::none),Vec4D=Vec4D(0.,0.,0.,0.));
+    Particle(int, Flavour=Flavour(kf::none), Vec4D=Vec4D(0.,0.,0.,0.));
     ~Particle();
-    friend std::ostream& operator<<(std::ostream &,Particle*);
+    friend std::ostream& operator<<(std::ostream &, const Particle*);
 
-    void      Copy(Particle * );
-    double    ProperTime();
-    double    LifeTime();
-    Vec3D     Distance(double = -1.);
-    Vec4D     Momentum() const;
-    double    E();
-    double    FinalMass();
-    int       Status() const;
-    char      Info() const;
-    Vec4D     XProd();
-    Blob    * ProductionBlob();
-    Vec4D     XDec();
-    Blob    * DecayBlob();
-    double    Time() const ;
-    Flavour   Flav() const ;
-    Flow    * GetFlow() const ;
-    int       GetFlow( int ) const ;
-    int       Number() const;
-    int       JetNumber() const;
+    void           Copy(Particle * );
+    double         ProperTime();
+    double         LifeTime();
+    Vec3D          Distance(double = -1.);
+    const Vec4D&   Momentum() const;
+    double         E() const;
+    double         FinalMass() const;
+    int            Status() const;
+    char           Info() const;
+    const Vec4D&   XProd() const;
+    Blob         * ProductionBlob() const;
+    const Vec4D&   XDec() const;
+    Blob         * DecayBlob() const;
+    double         Time() const ;
+    Flavour        Flav() const ;
+    const Flavour& RefFlav() const;
+    Flow         * GetFlow() const ;
+    int            GetFlow( int ) const ;
+    int            Number() const;
+    int            JetNumber() const;
     void   SetMomentum(const Vec4D &);
     void   SetFinalMass(const double _lower,const double _upper=-1.);
     void   SetStatus( int status = 0 );
@@ -254,9 +255,3 @@ namespace ATOOLS {
   */ 
 }
 #endif
-
-
-
-
-
-

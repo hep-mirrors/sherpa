@@ -14,14 +14,14 @@
 
 namespace ATOOLS {
 
-  /////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////
 
   const long int MAX_PARTICLES=50000;
 
   void ParticleInit(std::string);
   void SetMassless();
 
-  /////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////
 
   class kf {
   public:
@@ -403,7 +403,7 @@ namespace ATOOLS {
     int IsInitialised() { return is_initialised;}
   };
 
-  /////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -458,18 +458,22 @@ namespace ATOOLS {
   extern Part_Info particles[MAX_PARTICLES];
   extern Kf_To_Int kf_table;
 
-  /////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////
 
 
   class Flavour {
   protected:
     kf::code kfc;
-    int    anti;
+    int      anti;
     inline int Index() const { return kf_table.ToInt(kfc); } 
     //    friend bool operator==(const Flavour&, const Flavour&);
   public:
     Flavour()                          { kfc=kf::none; anti=0;}
+    //NEW for ADICIC!
+    Flavour(const Flavour& fin) : kfc(fin.kfc), anti(fin.anti) {}
+    //***************
     Flavour(kf::code kfc_) : kfc(kfc_) { anti=0; }
+    Flavour(kf::code, bool);    //NEW for ADICIC!
     Flavour(int kfint);
     const Flavour Bar() const;
     kf::code Kfcode()     const { return kfc; }
@@ -818,3 +822,7 @@ namespace ATOOLS {
 
 
 #endif  // Flavour.H
+
+
+
+

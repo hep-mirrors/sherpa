@@ -24,20 +24,10 @@ bool ATOOLS::Particle::operator==(Particle part)
   return false;
 }
 
-std::ostream& ATOOLS::operator<<(std::ostream& str,Particle* part) {
-#ifdef __GNUC__
-#if __GNUC__ > 2
-  std::ios_base::fmtflags flags=str.flags();
-#else
-  std::ios::fmtflags flags=str.flags();
-#endif
-#else
-  std::ios::fmtflags flags=str.flags();
-#endif
+std::ostream& ATOOLS::operator<<(std::ostream& str, const Particle* part) {
   str<<std::setprecision(4)<<std::setiosflags(std::ios::left);
   switch (part->Status()) {
   case 0 : // null entry
-    str.setf(flags);
     return str<<"--- empty entry ---"<<std::endl;
   case 1 : // active (final state) particle
   case 2 : // decayed or fragmented
@@ -51,20 +41,19 @@ std::ostream& ATOOLS::operator<<(std::ostream& str,Particle* part) {
     str<<std::setw(1)<<") ";
     break;
   case 3 : // documentation line
-    str.setf(flags);
     return     str<<"============================================================"<<std::endl
 		  <<"  "<<std::setw(3)<<part->Info()<<"  "<<std::setw(3)<<part->Status()<<std::setw(1)<<" "
 		  <<std::setw(22)<<part->Flav()<<std::setw(1)<<" "
 		  <<std::setw(10)<<part->Number()<<std::endl
 		  <<"============================================================"<<std::endl;
   default : // user defined or reserved
-    str.setf(flags);
     return str<<"--- unrecognized status:"<<part->Status()<<" ---"<<std::endl;
   }
   str<<std::setiosflags(std::ios::scientific)
      <<" ["<<part->Momentum()<<", "<<part->Momentum().Abs2()<<"]"
-     <<" ("<<part->GetFlow(1)<<","<<part->GetFlow(2)<<")";
-  str.setf(flags);
+     <<" ("<<part->GetFlow(1)<<","<<part->GetFlow(2)<<")"
+     <<std::resetiosflags(std::ios::scientific)
+     <<std::resetiosflags(std::ios::left);
   return str;
 }
 
@@ -152,6 +141,7 @@ Particle::Particle(int number,Flavour fl,Vec4D p)  {
   p_flow      = new Flow(this);
 }
 
+
 void Particle::Copy(Particle * in)  {
   m_number    = in->m_number;
   m_info      = in->m_info;
@@ -226,39 +216,42 @@ void   Particle::SetDecayBlob(Blob * _blob)
 }
 
 // Numbers etc.
-int    Particle::Number()   const                 { return m_number; }
-void   Particle::SetNumber(const int n)           { m_number    = n; }
-int    Particle::JetNumber()   const              { return m_jetnumber; }
-void   Particle::SetJetNumber(const int n)        { m_jetnumber = n; }
+int  Particle::Number() const                   { return m_number; }
+void Particle::SetNumber(const int n)           { m_number    = n; }
+int  Particle::JetNumber() const                { return m_jetnumber; }
+void Particle::SetJetNumber(const int n)        { m_jetnumber = n; }
 
   // Status etc.
-int    Particle::Status() const                   { return m_status; }
-void   Particle::SetStatus( int status )          { m_status = status; }
-char   Particle::Info() const                     { return m_info;}
-void   Particle::SetInfo(char info)               { m_info = info; }
+int  Particle::Status() const                   { return m_status; }
+void Particle::SetStatus( int status )          { m_status = status; }
+char Particle::Info() const                     { return m_info;}
+void Particle::SetInfo(char info)               { m_info = info; }
 
   // Momentum, energy, and lifetime
-Vec4D  Particle::Momentum() const                 { return m_momentum; }
-double Particle::E()                              { return m_momentum[0];}
-double Particle::FinalMass()                      { return m_finalmass; }
-void   Particle::SetMomentum(const Vec4D & vec4 ) { m_momentum = vec4; } 
-double Particle::Time() const                     { return m_dec_time; }
-void   Particle::SetTime(const int t)             { m_dec_time = t; }
-void   Particle::SetTime()                        { m_dec_time = LifeTime(); }
+const Vec4D& Particle::Momentum() const              { return m_momentum; }
+double       Particle::E() const                     { return m_momentum[0];}
+double       Particle::FinalMass() const             { return m_finalmass; }
+void         Particle::SetMomentum(const Vec4D& vc4) { m_momentum = vc4; }
+double       Particle::Time() const                  { return m_dec_time; }
+void         Particle::SetTime(const int t)          { m_dec_time = t; }
+void         Particle::SetTime()                     { m_dec_time = LifeTime(); }
 
 // Production and decay vertices
-Vec4D  Particle::XProd()                          { return p_startblob->Position(); }
-Blob * Particle::ProductionBlob()                 { return p_startblob; }
-Vec4D  Particle::XDec()                           { return p_endblob->Position(); }
-Blob * Particle::DecayBlob()                      { return p_endblob; }
+const Vec4D& Particle::XProd() const          {return p_startblob->Position();}
+Blob *       Particle::ProductionBlob() const {return p_startblob;}
+const Vec4D& Particle::XDec() const           {return p_endblob->Position();}
+Blob *       Particle::DecayBlob() const      {return p_endblob;}
 
 // Flavour and flow
-Flavour   Particle::Flav() const                     { return m_fl; }
-void      Particle::SetFlav(const Flavour & fl)      { m_fl   = fl; }
-Flow    * Particle::GetFlow() const                  { return p_flow; }
-int       Particle::GetFlow(const int index) const   { return p_flow->Code(index); }
-void      Particle::SetFlow(Flow * _flow)            { p_flow = _flow; }
-void      Particle::SetFlow(const int index, const int code) {
+Flavour        Particle::Flav() const                   { return m_fl; }
+const Flavour& Particle::RefFlav() const                { return m_fl; }
+void           Particle::SetFlav(const Flavour& fl)     { m_fl   = fl; }
+Flow         * Particle::GetFlow() const                { return p_flow; }
+int            Particle::GetFlow(const int index) const {
+  return p_flow->Code(index);
+}
+void           Particle::SetFlow(Flow * _flow)          { p_flow = _flow; }
+void           Particle::SetFlow(const int index, const int code) {
   if ((!m_fl.IsDiQuark()) && (!m_fl.Strong())) return;
   p_flow->SetCode(index,code);
 }
@@ -304,3 +297,20 @@ Particle * MPI2Particle(const MPI_Particle & mpi_p ) {
   if (mpi_p.m_flow[1]) p->SetFlow(2,mpi_p.m_flow[1]);
   return p;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
