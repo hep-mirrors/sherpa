@@ -6,10 +6,6 @@
 
 #include "IO_Handler.H"
 
-
-#include "MyTiming.H"
-
-
 using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace std;
@@ -104,9 +100,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 
   }
   else {
-    MyTiming watch;
-    watch.Start();
-    
     int prop;
   
     m1 = first;
@@ -212,9 +205,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
       m1 = m1->Next;
     } 
     msg.Debugging()<<ncount<<" different color structures left"<<endl;
-
-    watch.PrintTime();
-
     map = new int[mcount];
     int cc=0;
     for (int m=0; m<mcount; ++m) {
@@ -231,8 +221,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
     // generate "reduced matrix"
     CFC = new Complex*[ncount];
     for (short int j=0;j<ncount;j++) CFC[j] = new Complex[ncount];
-    
-    string Cstr;
+    Complex cffactor;
     
     m1 = first;
     c1 = 0;
@@ -243,67 +232,123 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 	while (m2) {
 	  if (m2->on) {
 	    st.Reset();
-	    char c = 'M';
+	    char c = 'O';
 	    sknot* s1 = st.String2Tree(m1->CFColstring);
 	    sknot* s2 = st.String2Tree(m2->CFColstringC);
+	   
+	    list<sknot*>  f1_list;
+	    list<sknot*>  f2_list;
+	    st.Factors(s1,f1_list);
+	    st.Factors(s2,f2_list);
+	    vector<string>  fstring_list;
+	    string help;
+	    int hit=0;
 	    
-	    ReplaceF(s1,c);
-	    ReplaceF(s2,c);
-	    sknot* m = st.newsk();
-	    m->op = '*';
-	    m->right = s1;
-	    m->left  = s2;
+	    //test for pure F products 
+	    for (list<sknot*>::iterator itf=f1_list.begin();itf!=f1_list.end();++itf) {
+	      help = (*itf)->Str();
+	      if (help[0]=='F') fstring_list.push_back(help);
+	      else hit = 1;
+	    }
+	    if (hit==0) {
+	      for (list<sknot*>::iterator itf=f2_list.begin();itf!=f2_list.end();++itf) {
+		help = (*itf)->Str();
+		if (help[0]=='F') fstring_list.push_back(help);
+		else hit = 1;
+	      } 
+	    }
+	    if (hit) fstring_list.clear();
+	    hit = 0;
+		    
+	    f1_list.clear();
+	    f2_list.clear();
 	    
-	    ReplaceF(m,c);	    
-	    st.Expand(m);
-	    st.Linear(m);
-
+	    string fchain;
+	    Complex valuef;
 	    
-	    list<sknot*>   addend_list;
-	    st.Addends(m,addend_list);
-	    
-	    for (list<sknot*>::iterator it=addend_list.begin();it!=addend_list.end();++it) {
-	      string newaddend = st.Tree2String(*it,0); 
-	      ReplaceG(*it);
-	      ReplaceD(*it);
-
-	      list<sknot*>    factor_list;
-	      st.Factors(*it,factor_list);
-	      
-	      vector<string>  string_list;
-	      string help;
-	      Complex total  = Complex(1.,0.);
-	      Complex factor = Complex(1.,0.);;
-
-	      int foundd = 0;
-	      
-	      //extract string 
-	      for (list<sknot*>::iterator it2=factor_list.begin();it2!=factor_list.end();++it2) {
-		help = (*it2)->Str();
-		if (help[0]=='D') foundd=1;
-		if (help[0]=='T') string_list.push_back(help);
-		else {
-		  factor = st.eval(*it2);
-		  total *= factor;
-		  Kabbala* newone = new Kabbala(help,factor);
-		  (*it2)->value = newone;
-		  (*it2)->op = 0;
-		}
+	    if (fstring_list.size()>0) {
+	      fchain = MapFChain(fstring_list); 
+	      //lookup string key in map 
+	      TF_Iterator fit = f_table.find(fchain);
+	      if (fit!=f_table.end()) {
+		valuef = f_table[fchain];
+		hit = 1;
 	      }
+	    }
+	    //evaluate the color structure 
+	    if (hit==0) {
 	      
-	      Complex value;
+	      ReplaceF(s1,c);
+	      ReplaceF(s2,c);
+	     
+	      sknot* m = st.newsk();
+	      m->op = '*';
+	      m->right = s1;
+	      m->left  = s2;
+	          
+	      ReplaceF(m,c);	    
+	      st.Expand(m);
+	      st.Linear(m);
 	      
-	      //can not deal with deltas right now
-	      if (foundd && string_list.size()>0) string_list.clear();
+	      list<sknot*> addend_list;
+	      st.Addends(m,addend_list);
 	      
-	      if (string_list.size()>0) {
-		newaddend = BuildChain(string_list);
-		string_list.clear();
-		factor_list.clear();
+	      for (list<sknot*>::iterator it=addend_list.begin();it!=addend_list.end();++it) {
+		string newaddend = st.Tree2String(*it,0); 
+		ReplaceG(*it);
+		ReplaceD(*it);
 		
-		//lookup string key in map 
-		TT_Iterator tit = t_table.find(newaddend);
-		if (tit!=t_table.end()) value = total*t_table[newaddend];
+		list<sknot*>    factor_list;
+		st.Factors(*it,factor_list);
+		
+		vector<string>  string_list;
+		string help;
+		Complex total  = Complex(1.,0.);
+		Complex factor = Complex(1.,0.);;
+		
+		int foundd = 0;
+	      
+		//extract string 
+		for (list<sknot*>::iterator it2=factor_list.begin();it2!=factor_list.end();++it2) {
+		  help = (*it2)->Str();
+		  if (help[0]=='D') foundd=1;
+		  if (help[0]=='T') string_list.push_back(help);
+		  else {
+		    factor = st.eval(*it2);
+		    total *= factor;
+		    Kabbala* newone = new Kabbala(help,factor);
+		    (*it2)->value = newone;
+		    (*it2)->op = 0;
+		  }
+		}
+		factor_list.clear(); 
+		//can not deal with deltas right now
+		if (foundd && string_list.size()>0) string_list.clear();
+		
+		Complex value;
+		
+		if (string_list.size()>0) {
+		  newaddend = BuildTChain(string_list);
+		  		  
+		  string_list.clear();
+		  factor_list.clear();
+		  
+		  //lookup string key in map 
+		  TF_Iterator tit = t_table.find(newaddend);
+		  if (tit!=t_table.end()) value = total*t_table[newaddend];
+		    else {
+		    st.Sort(*it);
+		    ReplaceT(*it);
+		    st.Expand(*it);
+		    st.Linear(*it);
+		    ReplaceD(*it);
+		    value = st.eval(*it);
+		    t_table.insert(std::make_pair(newaddend,value/total));
+		  }
+		  Kabbala* newone = new Kabbala(newaddend,value);
+		  (*it)->value = newone;
+		  (*it)->op = 0;
+		}
 		else {
 		  st.Sort(*it);
 		  ReplaceT(*it);
@@ -311,33 +356,26 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 		  st.Linear(*it);
 		  ReplaceD(*it);
 		  value = st.eval(*it);
-		  t_table.insert(std::make_pair(newaddend,value/total));
+		  Kabbala* newone = new Kabbala(newaddend,value);
+		  (*it)->value = newone;
+		  (*it)->op = 0;
 		}
-		Kabbala* newone = new Kabbala(newaddend,value);
-		(*it)->value = newone;
-		(*it)->op = 0;
 	      }
-	      else {
-		st.Sort(*it);
-		ReplaceT(*it);
-		st.Expand(*it);
-		st.Linear(*it);
-		ReplaceD(*it);
-		value = st.eval(*it);
-		Kabbala* newone = new Kabbala(newaddend,value);
-		(*it)->value = newone;
-		(*it)->op = 0;
+	      cffactor = st.Evaluate(m);
+	      if (abs(cffactor)<rpa.gen.Accu()) cffactor = Complex(0.,0.);
+	      if (fstring_list.size()>0) {
+		f_table.insert(std::make_pair(fchain,cffactor));
 	      }
 	    }
-	    Complex factor = st.Evaluate(m);
-	    if (abs(factor)<rpa.gen.Accu()) factor = Complex(0.,0.);
-	    
-	    CFC[map[c1]][map[c2]] = factor;
+	    else cffactor = valuef;
+
+	    CFC[map[c1]][map[c2]] = cffactor;
 	    CFC[map[c2]][map[c1]] = conj(CFC[map[c1]][map[c2]]);
-	    msg.Debugging()<<"+";msg.Out().flush();
+	    //msg.Debugging()<<"+";msg.Out().flush();
 	    
 	    //clean up the string tree ...
 	    st.CleanValues();
+	    fstring_list.clear();	      
 	  }
 	  m2 = m2->Next;
 	  c2++;
@@ -347,7 +385,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
       m1 = m1->Next;
       c1++;
     }
-    watch.PrintTime();
   }
   
   if (pID!=noname && pID[0]!='N') Output(pID);
@@ -399,7 +436,7 @@ CFColor::~CFColor()
   if (map) delete map;
 }
 
-string CFColor::BuildChain(vector<string>  string_list) 
+string CFColor::BuildTChain(vector<string>  string_list) 
 {
   string    key;
   Char_Map  translator;  
@@ -435,6 +472,23 @@ string CFColor::BuildChain(vector<string>  string_list)
       }
     }
     if (string_list.size()==0) break; 
+  }
+  return key;
+}
+
+string CFColor::MapFChain(vector<string> fstring_list) 
+{
+  string    key;
+  Char_Map  translator;  
+  char tmp,ca = 'A';
+  std::vector<string> tmp_list;
+  
+  for (int i=0;i<fstring_list.size();i++) {
+    for (int j=2;j<8;j+=2) {
+      tmp = fstring_list[i][j];
+      if (translator.insert(std::make_pair(tmp,ca)).second) ca++;
+      key+=translator[tmp];
+    }
   }
   return key;
 }
@@ -780,13 +834,24 @@ void CFColor::Single_ReplaceF(sknot* m,int& hit,char& c)
       C[0] = s->Str()[6];
       char ii[2],jj[2],kk[2];
       ii[1] = jj[1] = kk[1] = 0;
-      if (c==']' || c=='[') c++;
-      ii[0] = c;c++;
-      if (c==']' || c=='[') c++;
-      jj[0] = c;c++;
-      if (c==']' || c=='[') c++;
-      kk[0] = c;c++;
-
+      if (c=='~') c='!';
+      if (c==']' || c=='[' || c=='+' || c=='-') c++;
+      if (c=='*') c+=2;
+      ii[0] = c;
+      if (c=='~') c='!';
+      c++;
+      if (c=='~') c='!';
+      if (c==']' || c=='[' || c=='+' || c=='-') c++;
+      if (c=='*') c+=2;
+      jj[0] = c;
+      if (c=='~') c='!';
+      c++;
+      if (c=='~') c='!';
+      if (c==']' || c=='[' || c=='+' || c=='-') c++;
+      if (c=='*') c+=2;
+      kk[0] = c;
+      if (c=='~') c='!';
+      c++;
       s->op = '*';
       string ss;
       ss = string("2*i");
@@ -814,6 +879,8 @@ void CFColor::Single_ReplaceF(sknot* m,int& hit,char& c)
 
 void CFColor::Single_ReplaceFT(sknot* m,int& hit,char& c)
 {
+  if (c=='~') c='!';
+  
   // change fabc Ta -> T's
   if (m==0) return;
   if (hit>0) return;
@@ -824,13 +891,13 @@ void CFColor::Single_ReplaceFT(sknot* m,int& hit,char& c)
       if (m->right->Str()[0]=='T') {
 	//search F
 	s1 = m->right;
-	char c = m->right->Str()[2];
+	char cT = m->right->Str()[2];
 	sknot* akt = m;
 	do {
 	  if (m->left->op=='*' || m->left->op==0) {
 	    if (m->right->Str()[0]=='F') {
 	      for (short int i=2;i<7;i+=2)
-		if (m->right->Str()[i]==c) hit = i/2;
+		if (m->right->Str()[i]==cT) hit = i/2;
 	      if (hit>0) s2 = m->right;
 	    }
 	  }
@@ -838,7 +905,7 @@ void CFColor::Single_ReplaceFT(sknot* m,int& hit,char& c)
 	    if (m->left->op==0) {
 	      if (m->left->Str()[0]=='F') {
 		for (short int i=2;i<7;i+=2)
-		  if (m->left->Str()[i]==c) hit = i/2;
+		  if (m->left->Str()[i]==cT) hit = i/2;
 		if (hit>0) s2 = m->left;
 	      }
 	    }
@@ -853,19 +920,19 @@ void CFColor::Single_ReplaceFT(sknot* m,int& hit,char& c)
 	  s2 = m->right;
 	  //search F
 	  for (short int i=2;i<7;i+=2) {
-	    char c = m->right->Str()[i];
+	    char cT = m->right->Str()[i];
 	    sknot* akt = m;
 	    do {
 	      if (m->left->op=='*' || m->left->op==0) {
 		if (m->right->Str()[0]=='T') {
-		  if (m->right->Str()[2]==c) hit = i/2;
+		  if (m->right->Str()[2]==cT) hit = i/2;
 		  if (hit>0) s1 = m->right;
 		}
 	      }
 	      if (hit==0) {
 		if (m->left->op==0) {
 		  if (m->left->Str()[0]=='T') {
-		    if (m->left->Str()[2]==c) hit = i/2;
+		    if (m->left->Str()[2]==cT) hit = i/2;
 		    if (hit>0) s1 = m->left;
 		  }
 		}
@@ -901,8 +968,11 @@ void CFColor::Single_ReplaceFT(sknot* m,int& hit,char& c)
 	char t1[2];
 	char t2[2];
 	char cc[2];
-	if (c==']' || c=='[') c++;
-	cc[0] = c;cc[1] = 0;
+	if (c=='~') c='!';
+	if (c==']' || c=='[' || c=='+' || c=='-') c++;
+	if (c=='*') c+=2;
+	cc[0] = c;
+	cc[1] = 0;
 	t1[1] = 0;t2[1] = 0;
 	t1[0] = s1->Str()[4];t2[0] = s1->Str()[6];
 	
@@ -928,17 +998,3 @@ void CFColor::Single_ReplaceFT(sknot* m,int& hit,char& c)
   Single_ReplaceFT(m->left,hit,c);
   Single_ReplaceFT(m->right,hit,c);  
 } 
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -7,13 +7,12 @@
 
 namespace AMEGIC {
 
-  //!the container for the T products
-  typedef std::map<std::string, Complex> Tprod_Table;
-  typedef Tprod_Table::iterator          TT_Iterator;
-  //!the container for the T products
-  typedef std::map<char, char>           Char_Map;
-  typedef Char_Map::iterator             CM_Iterator;
- 
+  //!the container for the T and F products
+  typedef std::map<std::string, Complex>  TFprod_Table;
+  typedef TFprod_Table::iterator          TF_Iterator;
+  //!the map of indices
+  typedef std::map<char, char>            Char_Map;
+  
   class CFColor {
     static std::string noname;
     
@@ -35,9 +34,10 @@ namespace AMEGIC {
     int  Compare(Color_Function*,Color_Function*);
     int  CompareArg(int,int,int,Color_Function*,Color_Function*);
     
-    std::string BuildChain(std::vector<std::string>);
-    Tprod_Table t_table;
-  
+    std::string BuildTChain(std::vector<std::string>);
+    std::string MapFChain(std::vector<std::string>);
+    TFprod_Table t_table;
+    TFprod_Table f_table;
   public:
     /*!
       The constructor of the colour class that basically organizes the
