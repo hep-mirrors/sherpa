@@ -6,6 +6,8 @@
 #include "ISR_Base.H"
 #include "Info_Key.H"
 
+namespace ATOOLS { class Blob_Data_Base; }
+
 namespace PDF {
 
   class ISR_Handler {
@@ -27,6 +29,8 @@ namespace PDF {
     ATOOLS::Poincare m_cmsboost, m_kmrboost, m_kmrrot;
     ATOOLS::Vec4D    m_fixvecs[2], m_kp[2], p_cms[2];
 
+    std::vector<double> m_info_lab, m_info_cms;
+    
     void Init(const double *splimits,const double *kplimits);
     const ATOOLS::Flavour  DiQuark(const ATOOLS::Flavour &,const ATOOLS::Flavour &);
     bool CheckRemnantKinematics(const ATOOLS::Flavour &,double,int);
@@ -68,6 +72,8 @@ namespace PDF {
     void Extract(const ATOOLS::Flavour flavour,const double energy,
 		 const size_t i) const; 
     void Reset(const size_t i) const; 
+
+    ATOOLS::Blob_Data_Base *const Info(const int frame) const;
 
     // inline functions 
     inline void SetPole(const double pole)      { m_splimits[2] = pole; }

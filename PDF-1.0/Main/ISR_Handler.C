@@ -6,9 +6,17 @@
 #include "Info_Key.H"
 #include "Exception.H"
 #include "Random.H"
+#include "ISR_Info.H"
+#include "Blob.H"
 #include <stdio.h>
 
-// #include "Gauss_Integrator.H"
+#ifdef TEST__ISR_Handler
+#include "Gauss_Integrator.H"
+#endif
+
+#ifdef NO_ANALYSIS__all
+#define NO_ANALYSIS__ISR_Handler
+#endif
 
 #ifdef PROFILE__All
 #include "prof.hh"
@@ -24,21 +32,23 @@ using namespace ATOOLS;
 using namespace PDF;
 using namespace std;
 
-// class TestPDF: public Function_Base {
-// public:
-//   ATOOLS::Flavour m_fl;
-//   PDF_Base *p_pdf;
-//   double m_x, m_z, m_kt2, m_mu2;
-//   TestPDF(): m_fl(ATOOLS::kf::u) {};
-//   double operator()(double z) {
-//     p_pdf->Calculate(m_x,z,m_kt2,m_mu2);
-//     return p_pdf->GetXPDF(m_fl);
-//   };
-//   double operator()() {
-//     p_pdf->Calculate(m_x,m_z,m_kt2,m_mu2);
-//     return p_pdf->GetXPDF(m_fl);
-//   };
-// };
+#ifdef TEST__ISR_Handler
+class TestPDF: public Function_Base {
+public:
+  ATOOLS::Flavour m_fl;
+  PDF_Base *p_pdf;
+  double m_x, m_z, m_kt2, m_mu2;
+  TestPDF(): m_fl(ATOOLS::kf::u) {};
+  double operator()(double z) {
+    p_pdf->Calculate(m_x,z,m_kt2,m_mu2);
+    return p_pdf->GetXPDF(m_fl);
+  };
+  double operator()() {
+    p_pdf->Calculate(m_x,m_z,m_kt2,m_mu2);
+    return p_pdf->GetXPDF(m_fl);
+  };
+};
+#endif
 
 double Lambda2(double sp,double sp1,double sp2) 
 { 
@@ -48,7 +58,9 @@ double Lambda2(double sp,double sp1,double sp2)
 ISR_Handler::ISR_Handler(ISR_Base **isrbase,const double *splimits,const double *kplimits):
   p_isrbase(isrbase),
   p_info(new ATOOLS::Integration_Info()),
-  m_weight(1.)
+  m_weight(1.),
+  m_info_lab(8),
+  m_info_cms(8)
 {
   m_mode=0;
   m_kmrmode=0;
@@ -63,41 +75,35 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase,const double *splimits,const double 
   m_mass2[1]=sqr(p_isrbase[1]->Flavour().Mass());
   m_x[1]=m_x[0]=1.; 
   Init(splimits,kplimits);
-
-//   TestPDF testpdf;
-//   testpdf.p_pdf=p_isrbase[0]->PDF();
-//   testpdf.m_mu2=8100.;
-
-//   Gauss_Integrator gauss(&testpdf);
-
-//   std::ofstream *out = new std::ofstream("pdftest");
-
-//   for (double test=-1.;test<=4.;test+=0.1) {
-
-//     testpdf.m_z=0.8;
-//     testpdf.m_kt2=exp(test);
-//     testpdf.m_x=0.1;
-//     *out<<exp(test)<<" "<<exp(test)*gauss.Integrate(testpdf.m_x,1.,1.e-3);
-//     testpdf.m_x=0.01;
-//     *out<<" "<<exp(test)*gauss.Integrate(testpdf.m_x,1.,1.e-3);
-//     testpdf.m_x=0.001;
-//     *out<<" "<<exp(test)*gauss.Integrate(testpdf.m_x,1.,1.e-3);
-//     testpdf.m_x=0.0001;
-//     *out<<" "<<exp(test)*gauss.Integrate(testpdf.m_x,1.,1.e-3);
-
-//     testpdf.m_x=0.1;
-//     *out<<exp(test)<<" "<<exp(test)*testpdf();
-//     testpdf.m_x=0.01;
-//     *out<<" "<<exp(test)*testpdf();
-//     testpdf.m_x=0.001;
-//     *out<<" "<<exp(test)*testpdf();
-//     testpdf.m_x=0.0001;
-//     *out<<" "<<exp(test)*testpdf()<<std::endl;
-
-//   }
-//   delete out;
-//   throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,"finished integration"));
-
+#ifdef TEST__ISR_Handler
+  TestPDF testpdf;
+  testpdf.p_pdf=p_isrbase[0]->PDF();
+  testpdf.m_mu2=8100.;
+  Gauss_Integrator gauss(&testpdf);
+  std::ofstream *out = new std::ofstream("pdftest");
+  for (double test=-1.;test<=4.;test+=0.1) {
+    testpdf.m_z=0.8;
+    testpdf.m_kt2=exp(test);
+    testpdf.m_x=0.1;
+    *out<<exp(test)<<" "<<exp(test)*gauss.Integrate(testpdf.m_x,1.,1.e-3);
+    testpdf.m_x=0.01;
+    *out<<" "<<exp(test)*gauss.Integrate(testpdf.m_x,1.,1.e-3);
+    testpdf.m_x=0.001;
+    *out<<" "<<exp(test)*gauss.Integrate(testpdf.m_x,1.,1.e-3);
+    testpdf.m_x=0.0001;
+    *out<<" "<<exp(test)*gauss.Integrate(testpdf.m_x,1.,1.e-3);
+    testpdf.m_x=0.1;
+    *out<<exp(test)<<" "<<exp(test)*testpdf();
+    testpdf.m_x=0.01;
+    *out<<" "<<exp(test)*testpdf();
+    testpdf.m_x=0.001;
+    *out<<" "<<exp(test)*testpdf();
+    testpdf.m_x=0.0001;
+    *out<<" "<<exp(test)*testpdf()<<std::endl;
+  }
+  delete out;
+  throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,"finished integration"));
+#endif
 }
 
 ISR_Handler::~ISR_Handler() 
@@ -263,10 +269,6 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n)
   for (size_t i=0;i<2;++i) {
     phi+=2.0*M_PI*ran.Get();
     double cp=cos(phi), kp=0.0;
-    //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-    // uncomment for correct z treatment
-    // if (p_isrbase[i]->Collinear(m_kpkey[i][3])) m_zkey[i][2]=0.;
-    //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
     kp=sqrt(m_kpkey[i][3]); 
     m_kp[i]=Vec4D(0.0,cp*kp,sqrt(1.-cp*cp)*kp,0.0);
   }
@@ -281,10 +283,19 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n)
   m_x[1]=(D2*m_x[0]+C1-C2)/D1;
   double b1=C1/m_x[0], b2=C2/m_x[1];
   if (m_x[0]>1 || m_x[1]>1) return false;
-  if ((!p_isrbase[0]->Collinear(m_kpkey[0][3]) && (m_x[0]>m_zkey[0][2] || b1>m_x[0])) || 
-      (!p_isrbase[1]->Collinear(m_kpkey[1][3]) && (m_x[1]>m_zkey[1][2] || b2>m_x[1]))) return false;
+  if (m_x[0]>m_zkey[0][2] || m_x[1]>m_zkey[1][2]) return false;
   p[0]=Vec4D((m_x[0]-b1)*Q/2.,m_kp[0][1],m_kp[0][2],(m_x[0]+b1)*Q/2.);
   p[1]=Vec4D((m_x[1]-b2)*Q/2.,m_kp[1][1],m_kp[1][2],-(m_x[1]+b2)*Q/2.);
+#ifndef NO_ANALYSIS__ISR_Handler
+  m_info_lab[iic::E_1]=p[0][0];
+  m_info_lab[iic::t_1]=p[0].Abs2();
+  m_info_lab[iic::Em_1]=p[0][0]/p[0].Mass();		
+  m_info_lab[iic::z_1]=m_zkey[0][2];
+  m_info_lab[iic::E_2]=p[1][0];
+  m_info_lab[iic::t_2]=p[1].Abs2();
+  m_info_lab[iic::Em_2]=p[1][0]/p[0].Mass();		
+  m_info_lab[iic::z_2]=m_zkey[1][2];
+#endif
   m_kmrboost=Poincare(p[0]+p[1]);
   m_kmrboost.Boost(p[0]);
   m_kmrboost.Boost(p[1]);
@@ -295,6 +306,16 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n)
   xi*=xi;
   m_mu2[0]=m_x[0]*m_x[0]*m_splimits[2]/xi;
   m_mu2[1]=m_x[1]*m_x[1]*m_splimits[2]*xi;
+#ifndef NO_ANALYSIS__ISR_Handler
+  m_info_cms[iic::E_1]=p[0][0];
+  m_info_cms[iic::t_1]=p[0].Abs2();
+  m_info_cms[iic::Em_1]=p[0][0]/p[0].Mass();		
+  m_info_cms[iic::mu_1]=m_mu2[0];
+  m_info_cms[iic::E_2]=p[1][0];
+  m_info_cms[iic::t_2]=p[1].Abs2();
+  m_info_cms[iic::Em_2]=p[1][0]/p[0].Mass();		
+  m_info_cms[iic::mu_2]=m_mu2[1];
+#endif
   m_weight=(m_x[1]-b1*b2/m_x[0])*(b2/m_x[1]/(m_x[0]-b2)-1./(m_x[1]-b1));
   m_weight+=(m_x[0]-b2*b1/m_x[1])*(b1/m_x[0]/(m_x[1]-b1)-1./(m_x[0]-b2));
   m_weight=.5*dabs(m_weight);
@@ -483,5 +504,11 @@ void ISR_Handler::Extract(const ATOOLS::Flavour flavour,const double energy,
 void ISR_Handler::Reset(const size_t i) const 
 { 
   if (p_isrbase[i]->PDF()!=NULL) p_isrbase[i]->Reset(); 
+}
+
+ATOOLS::Blob_Data_Base *const ISR_Handler::Info(const int frame) const
+{
+  if (frame==0) return new ATOOLS::Blob_Data<std::vector<double> >(m_info_cms);
+  return new ATOOLS::Blob_Data<std::vector<double> >(m_info_lab);
 }
 

@@ -4,9 +4,15 @@
 #include "Tree.H"
 
 #include "ISR_Handler.H"
+#include "ISR_Info.H"
+#include "Blob.H"
 
 #include "Run_Parameter.H"
 #include "Random.H"
+
+#ifdef NO_ANALYSIS__all
+#define NO_ANALYSIS__Apacic
+#endif
 
 using namespace APACIC;
 using namespace PDF;
@@ -16,7 +22,8 @@ using namespace ATOOLS;
 Apacic::Apacic(ISR_Handler * _isr,MODEL::Model_Base * _model,int _maxjetnumber,
 	       bool _isron,bool _fsron,Data_Read * _dataread):
   m_isron(_isron), m_fsron(_fsron), m_showers(_isron||_fsron),
-  p_inishower(NULL), p_finshower(NULL), p_initrees(NULL), p_fintree(NULL)
+  p_inishower(NULL), p_finshower(NULL), p_initrees(NULL), p_fintree(NULL),
+  m_info_cms(8), m_info_lab(8)
 {
   if (m_fsron) {
     p_fintree   = new Tree();
@@ -120,6 +127,33 @@ int Apacic::PerformShowers(bool ini,bool fin,int jetveto,double x1,double x2) {
     rot.RotateBack(mom1);
     rot.RotateBack(mom2);
 
+#ifndef NO_ANALYSIS__Apacic
+    mom1=p_initrees[0]->GetRoot()->part->Momentum();
+    mom2=p_initrees[1]->GetRoot()->part->Momentum();
+    
+    m_info_lab[iic::E_1]=mom1[0];
+    m_info_lab[iic::t_1]=mom1.Abs2();
+    m_info_lab[iic::Em_1]=mom1[0]/mom1.Mass();
+    m_info_lab[iic::E_2]=mom2[0];
+    m_info_lab[iic::t_2]=mom2.Abs2();
+    m_info_lab[iic::Em_2]=mom2[0]/mom2.Mass();
+    m_info_lab[iic::z_1]=p_initrees[0]->GetRoot()->z;
+    m_info_lab[iic::z_2]=p_initrees[1]->GetRoot()->z;
+
+    Poincare test(mom1+mom2);
+    test.Boost(mom1);
+    test.Boost(mom2);
+
+    m_info_cms[iic::E_1]=mom1[0];
+    m_info_cms[iic::t_1]=mom1.Abs2();
+    m_info_cms[iic::Em_1]=mom1[0]/mom1.Mass();
+    m_info_cms[iic::E_2]=mom2[0];
+    m_info_cms[iic::t_2]=mom2.Abs2();
+    m_info_cms[iic::Em_2]=mom2[0]/mom2.Mass();
+    m_info_lab[iic::mu_1]=p_initrees[0]->GetRoot()->t;
+    m_info_lab[iic::mu_2]=p_initrees[1]->GetRoot()->t;
+#endif
+
     // rotate and boost fs in beam-system "if (fin)"
     if (fin) {
       p_fintree->BoRo(rot);
@@ -155,6 +189,18 @@ bool Apacic::ExtractPartons(bool ini,bool fin,Blob_List * bl,Particle_List * pl)
       p_inishower->ExtractPartons(p_initrees[i]->GetInitiator(),i,0,bl,pl);
     }
   }
+  for (Blob_List::iterator bit=bl->begin();bit!=bl->end();++bit) {
+    if ((*bit)->Type()==btp::Signal_Process) {
+      (*bit)->AddData("Shower_Info_cms",new Blob_Data<std::vector<double> >(m_info_cms));
+      (*bit)->AddData("Shower_Info_lab",new Blob_Data<std::vector<double> >(m_info_lab));
+      break;
+    }
+  }
   return 1;
 }
 
+ATOOLS::Blob_Data_Base *const Apacic::Info(const int frame) const
+{
+  if (frame==0) return new ATOOLS::Blob_Data<std::vector<double> >(m_info_cms);
+  return new ATOOLS::Blob_Data<std::vector<double> >(m_info_lab);
+}

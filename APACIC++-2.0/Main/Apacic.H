@@ -2,16 +2,12 @@
 #define Apacic_H
 
 #include "Model_Base.H"
-
 #include "Particle_List.H"
 #include "Blob_List.H"
-
 #include "Data_Read.H"
 
-
-namespace PDF {
-  class ISR_Handler;
-}
+namespace ATOOLS { class Blob_Data_Base; }
+namespace PDF    { class ISR_Handler;    }
 
 namespace APACIC {
 
@@ -26,6 +22,7 @@ namespace APACIC {
     Final_State_Shower   * p_finshower;
     Tree                ** p_initrees;
     Tree                 * p_fintree;
+    std::vector<double>    m_info_cms, m_info_lab;
   public :
     Apacic(PDF::ISR_Handler *,MODEL::Model_Base *,int,bool,bool,ATOOLS::Data_Read *); 
     ~Apacic(); 
@@ -40,6 +37,9 @@ namespace APACIC {
 
     Final_State_Shower   * FinShower();
     Initial_State_Shower * IniShower();
+
+    ATOOLS::Blob_Data_Base *const Info(const int frame) const;
+
 
   };
 
