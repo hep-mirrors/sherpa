@@ -80,8 +80,12 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
 	}
 	for (size_t j=0;j<2;++j) (*p_kperp[j])[blob[j]->NOutP()-1]=sum[j];
 	// test whether last k_\perp is reasonable
-      } while ((exp(-0.5*sqr((m_kperpmean[0]-sum[0].Abs())/m_kperpsigma[0]))<ran.Get())||
-	       (exp(-0.5*sqr((m_kperpmean[1]-sum[1].Abs())/m_kperpsigma[1]))<ran.Get()));
+	success=true;
+	if (m_kperpsigma[0]!=0.0) 
+	  success=success&&(exp(-0.5*sqr((m_kperpmean[0]-sum[0].Abs())/m_kperpsigma[0]))<ran.Get());
+	if (m_kperpsigma[1]!=0.0) 
+	  success=success&&(exp(-0.5*sqr((m_kperpmean[1]-sum[1].Abs())/m_kperpsigma[1]))<ran.Get());
+      } while (!success);
       success=true;
       // sort k_\perp values
       for (size_t i=0;i<2;++i) {
@@ -101,7 +105,7 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
 	  }
 	}
       }
-      // test whether Energy and momentum of hard scatterings can be preserved
+      // test whether Energy and momentum of hard scattering can be preserved
       for (int i=0;i<blob[0]->NOutP();++i) {
       	ATOOLS::Particle *cur2, *cur1=blob[0]->OutParticle(i);
 	if (FindConnected(cur1,cur2,true,0)) {
@@ -123,6 +127,7 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
 	trials=0;
       }
       // accept or reject
+      if ((m_kperpmean[0]==0.0)&&(m_kperpmean[1]==0.0)) success=true;
     } while (!success);
   }
   m_current[1]=m_current[0]=-1;
