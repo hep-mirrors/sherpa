@@ -120,16 +120,11 @@ bool Jet_Finder::ConstructJetSystem(Vec4D * momsin,Flavour * flavsin,std::vector
     lastys.pop_back();
   }
   // Cluster vectors.
-  //cout<<"  cluster "<<j<<" with "<<k<<" { ";
   if (j<0) {
-    //cout<<momsin[j+2]<<","<<momsout[k]<<" } to ";
     momsin[j+2] += momsout[k];
-    //cout<<momsin[j+2]<<endl;
   }
   else {
-    //cout<<momsout[j]<<","<<momsout[k]<<" } to ";
     momsout[j] += momsout[k];
-    //cout<<momsout[j]<<endl;
   }
   for (int i=k;i<momsout.size()-1;i++) momsout[i] = momsout[i+1];
   momsout.pop_back();
@@ -306,8 +301,11 @@ bool Jet_Finder::TwoJets(const AMATOOLS::Vec4D & p1)
   return 1;
 }
 
-bool Jet_Finder::TwoJets(AMATOOLS::Vec4D & p1,AMATOOLS::Vec4D & p2)
+bool Jet_Finder::TwoJets(const AMATOOLS::Vec4D & _p1,const AMATOOLS::Vec4D & _p2)
 {
+  Vec4D p1=_p1;
+  Vec4D p2=_p2;
+
   BoostInFrame(p1);
   BoostInFrame(p2);
 

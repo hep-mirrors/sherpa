@@ -48,7 +48,7 @@ namespace APHYTOOLS {
 
     bool   Trigger(const AMATOOLS::Vec4D *);
     bool   TwoJets(const AMATOOLS::Vec4D &);
-    bool   TwoJets(AMATOOLS::Vec4D &,AMATOOLS::Vec4D &);
+    bool   TwoJets(const AMATOOLS::Vec4D &, const AMATOOLS::Vec4D &);
     bool   TwoJets(double &,double &,double &,bool);
     double PTij(AMATOOLS::Vec4D,AMATOOLS::Vec4D);
     double Yij(AMATOOLS::Vec4D,AMATOOLS::Vec4D);
