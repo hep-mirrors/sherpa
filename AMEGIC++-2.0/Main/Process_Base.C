@@ -253,9 +253,9 @@ public:
 class Order_Mass {
 public:
   int operator()(const S_Data & a, const S_Data & b) {
-    //    if "a < b" return 1  else 0;
-    if (a.fl.Mass() < b.fl.Mass()) return 1;
-    return 0;
+    //    if "a < b" return 0  else 1;
+    if (a.fl.Mass() < b.fl.Mass()) return 0;
+    return 1;
   }
 };
 
@@ -303,13 +303,11 @@ void Process_Base::Reshuffle(int n, Flavour* flav, Pol_Info* plav)
   for (int i=0;i<n;++i) sd.push_back(S_Data(i,flav[i],plav[i]));
 
   std::stable_sort(sd.begin(),sd.end(),Order_Kfc());
-  std::stable_sort(sd.begin(),sd.end(),Order_Mass());
-  std::stable_sort(sd.begin(),sd.end(),Order_FVST());
   std::stable_sort(sd.begin(),sd.end(),Order_Anti());
+  std::stable_sort(sd.begin(),sd.end(),Order_FVST());
+  std::stable_sort(sd.begin(),sd.end(),Order_Mass());
   std::stable_sort(sd.begin(),sd.end(),Order_Coupling());
-
-
-
+  
   for (int i=0;i<n;++i) {
     flav[i]=sd[i].fl;
     plav[i]=sd[i].pl;
@@ -401,7 +399,7 @@ bool Process_Base::CheckExternalFlavours(int _nin,Flavour * _in,
   if (bin  != bout) return 0;    // baryon number violation
   //if (lin  != lout) return 0;    // lepton number violation
   //if (qin  != qout) return 0;    // strong charge violation
-  if (qfin != qfout) return 0;   // quark family violation
+  //if (qfin != qfout) return 0;   // quark family violation
   //if (lfin != lfout) return 0;   // lepton family violation
   return 1;
 }

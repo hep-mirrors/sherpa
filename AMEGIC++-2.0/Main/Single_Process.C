@@ -469,6 +469,11 @@ int Single_Process::InitLibrary(double result) {
   sprintf(help,"%i",p_shand->NumberOfZfuncs());
   m_libname += string("_");
   m_libname += string(help);
+  int  antis = 0;
+  for (int i=0;i<m_nin;i++) { if (p_flin[i].IsAnti()) antis++; }
+  sprintf(help,"%i",antis);
+  m_libname += string("_");
+  m_libname += string(help);
   msg.Debugging()<<"In Init library for "<<m_name<<endl;
 
 

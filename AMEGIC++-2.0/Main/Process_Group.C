@@ -207,14 +207,14 @@ void Process_Group::GroupProcesses() {
     for (int j=0;j<m_procs[i]->Nin();j++) {
       if (!(AMATOOLS::IsEqual(massin[j],(m_procs[i]->Flavs()[j]).Mass()))) {
 	msg.Error()<<"Error in Incoming masses ; "<<massin[j]<<" vs. "<<(m_procs[i]->Flavs()[j]).Mass()
-		   <<"for "<<p_flin[j]<<" "<<m_procs[i]->Flavs()[j]<<endl;
+		   <<" for "<<p_flin[j]<<" "<<m_procs[i]->Flavs()[j]<<endl;
 	massok = 0; break;
-      }
+	}
     }
     if (!massok) break;
     for (int j=0;j<m_procs[i]->Nout();j++) {
       if (!(AMATOOLS::IsEqual(massout[j],(m_procs[i]->Flavs()[j+m_procs[i]->Nin()]).Mass()))) {
-	msg.Error()<<"Error in Incoming masses ; "<<massin[j]<<" vs. "<<(m_procs[i]->Flavs()[j+m_procs[i]->Nin()]).Mass()
+	msg.Error()<<"Error in Incoming masses ; "<<massout[j]<<" vs. "<<(m_procs[i]->Flavs()[j+m_procs[i]->Nin()]).Mass()
 		   <<"for "<<p_flout[j]<<" "<<m_procs[i]->Flavs()[j+m_procs[i]->Nin()]<<endl;
 	massok = 0; break;
       }
