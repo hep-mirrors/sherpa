@@ -43,7 +43,6 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist)
   while (found) {
     found = 0;
     for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
-      cout<<"Still in loop "<<(*blit)->Id()<<endl;
       pos = (*blit)->Type().find(string("Signal Process :"));
       msg.Debugging()<<"Found blob to deal with "<<(*blit)->Type()<<" "<<pos<<" "<<(*blit)->Status()
 		     <<"  ("<<_bloblist->size()<<")"<<endl; 
@@ -104,10 +103,9 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist)
 	  p_showerhandler->CleanUp();
 	}
       }
-      cout<<"Else for found blob and status/pos are good ..."<<endl;
     }
   }
-  cout<<"Return "<<hit<<endl;
+  //  cout<<"Return "<<hit<<endl;
   return hit;
 }
 

@@ -62,7 +62,7 @@ namespace APHYTOOLS {
 
 Blob::~Blob() {
   DeleteOwnedPartons();
-  std::cout<<"Deleted all partons in blob : "<<m_id<<std::endl;
+  msg.Debugging()<<"Deleted all partons in blob : "<<m_id<<std::endl;
 }
 
 void Blob::AddToInPartons(Parton * Newp) {
@@ -175,17 +175,17 @@ void Blob::DeleteOutParton(Parton * _part) {
 
 void Blob::DeleteOwnedPartons() {
   if (m_inpartons.empty() && m_outpartons.empty()) return;
-  std::cout<<"In DeleteOwnedPartons() for blob no. : "<<m_id<<" with "
+  msg.Debugging()<<"In DeleteOwnedPartons() for blob no. : "<<m_id<<" with "
       <<m_inpartons.size()<<" -> "<<m_outpartons.size()<<std::endl;
   for (int i=m_inpartons.size()-1;i>=0;i--)  {
-    std::cout<<"Try to delete inparton : "<<i<<"/"<<m_inpartons.size()-1<<std::endl;
+    //    msg.Debugging()<<"Try to delete inparton : "<<i<<"/"<<m_inpartons.size()-1<<std::endl;
     DeleteInParton(m_inpartons[i]);
-    std::cout<<"Succeeded."<<std::endl;
+    //    msg.Debugging()<<"Succeeded."<<std::endl;
   }
   for (int i=m_outpartons.size()-1;i>=0;i--) {
-    std::cout<<"Try to delete outparton : "<<i<<"/"<<m_outpartons.size()-1<<std::endl;
+    //    msg.Debugging()<<"Try to delete outparton : "<<i<<"/"<<m_outpartons.size()-1<<std::endl;
     DeleteOutParton(m_outpartons[i]);
-    std::cout<<"Succeeded."<<std::endl;
+    //    msg.Debugging()<<"Succeeded."<<std::endl;
   }
   m_inpartons.clear();
   m_outpartons.clear();
