@@ -19,6 +19,7 @@ RUNFILE=""
 BINPATH=""
 RESULTS=""
 ANALYSIS=""
+OPTIONS=""
 BASENAME=""
 PYTHIA=""
 for I in $* ; do
@@ -28,6 +29,7 @@ for I in $* ; do
   elif [ "$I" = "-r" ]; then DRESULTS=TRUE 
   elif [ "$I" = "-a" ]; then DANALYSIS=TRUE 
   elif [ "$I" = "-e" ]; then DEVENTS=TRUE 
+  elif [ "$I" = "-o" ]; then DOPTIONS=TRUE 
   elif [ "$I" = "-n" ]; then DBASENAME=TRUE 
   elif [ "$I" = "-q" ]; then QUEUE=TRUE 
   elif [ "$I" = "-P" ]; then DPYTHIA=TRUE 
@@ -49,6 +51,7 @@ for I in $* ; do
   elif [ "$DBINPATH" = "TRUE" ]; then DBINPATH="" && BINPATH=$I
   elif [ "$DRESULTS" = "TRUE" ]; then DRESULTS="" && RESULTS=$I
   elif [ "$DANALYSIS" = "TRUE" ]; then DANALYSIS="" && ANALYSIS=$I
+  elif [ "$DOPTIONS" = "TRUE" ]; then DOPTIONS="" && OPTONS=$OPTIONS" "$I
   elif [ "$DBASENAME" = "TRUE" ]; then DBASENAME="" && BASENAME=$I
   elif [ "$DEVENTS" = "TRUE" ]; then DEVENTS="" && EVENTS=$I
   elif [ "$DPYTHIA" = "TRUE" ]; then DPYTHIA="" && PYTHIA=$I
@@ -104,6 +107,7 @@ if [ ! "$RESULTS" = "" ] ; then echo -en "RESULTS=\$RUNPATH\"$RESULTS\" " >> $FI
 if [ ! "$ANALYSIS" = "" ] ; then echo -en "ANALYSIS_OUTPUT=\$RUNPATH\"$ANALYSIS\" " >> $FILE ; fi
 if [ ! "$EVENTS" = "" ] ; then echo -en "EVENTS=$EVENTS " >> $FILE ; fi
 if [ ! "$PYTHIA" = "" ] ; then echo -en "PYTHIA=$PYTHIA " >> $FILE ; fi
+if [ ! "$OPTIONS" = "" ] ; then echo -en "$OPTIONS " >> $FILE ; fi
 echo -e ">> \$RUNPATH\$LOGFILE 2>&1 \n\n" >> $FILE
 
 chmod 777 $FILE
