@@ -46,7 +46,7 @@ Laser_Backscattering::Laser_Backscattering(const ATOOLS::Flavour _beam,
   m_xmax   = m_xe/(1.+m_xe);
   m_xmax2  = 2.*m_xe/(1.+2.*m_xe);
 
-  if (m_mode==0) m_upper = m_xmax;
+  if (m_mode==1) m_upper = m_xmax;
             else m_upper = m_xmax2;
   m_peak   = m_xmax;
 
@@ -110,6 +110,7 @@ bool Laser_Backscattering::CalculateWeight(double _x,double _scale)
     return 0;
   }
 
+  
   m_polar = 0.;
   double spec;
   switch (m_mode) {
@@ -123,10 +124,12 @@ bool Laser_Backscattering::CalculateWeight(double _x,double _scale)
     spec = Rescattering(_x,m_polarization,m_polarizationL,m_polar);  
     break;
   default:
-    spec = Compton(_x,m_polarization,m_polarizationL,m_polar) + 
-           TwoPhotons(_x,m_polarization,m_polarizationL,m_polar) + 
-           Rescattering(_x,m_polarization,m_polarizationL,m_polar);  
-    break;
+    {
+      spec = Compton(_x,m_polarization,m_polarizationL,m_polar) + 
+             TwoPhotons(_x,m_polarization,m_polarizationL,m_polar) + 
+	     Rescattering(_x,m_polarization,m_polarizationL,m_polar);  
+      break;
+    }
   }
   m_polar  = m_polar/spec;
   m_weight = spec;
@@ -150,9 +153,7 @@ ATOOLS::Vec4D Laser_Backscattering::OutMomentum() {
 
 double Laser_Backscattering::Compton(double x,double pole,double poll,double & deg)
 {
-  if ((x<0.) || (x>m_xmax) || (m_totalC < 0.) ) {
-      return 0.;
-  }
+  if ((x<0.) || (x>m_xmax) || (m_totalC < 0.) ) return 0.;
 
   double value  = SimpleCompton(x,m_xe,pole*poll);
 
