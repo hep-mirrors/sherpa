@@ -54,6 +54,8 @@ Blob::Blob(const Vec4D _pos, const int _id) :
 
 Blob::~Blob() {
   DeleteOwnedParticles();
+  // delete data container
+  ClearAllData();  
 }
 
 void Blob::AddToInParticles(Particle * Newp) {
@@ -233,4 +235,58 @@ void Blob::BoostInLab() {
 
 }
 
+void  Blob::AddData(const std::string name, Blob_Data_Base * data) 
+{
+  Data_Container::iterator it=m_datacontainer.find(name);
+  if (it==m_datacontainer.end()) {
+    m_datacontainer[name]=data;
+  }
+  else {
+    delete it->second;
+    it->second=data;
+  }
+}
+
+void Blob::ClearAllData() 
+{
+  for (Data_Container::iterator it=m_datacontainer.begin();
+       it!=m_datacontainer.end(); ++it) delete it->second;
+  m_datacontainer.clear();
+}
+
+
+//=====================================================================
+
+template <class Type>
+Type Blob_Data_Base::Get() 
+{
+  return ((Blob_Data<Type>*)this)->Get();
+}
+
+Blob_Data_Base::~Blob_Data_Base()
+{
+}
+
+template <class Type>
+Blob_Data<Type>::~Blob_Data() 
+{
+}
+
+template <class Type>
+std::ostream & Blob_Data<Type>::operator<<(std::ostream & s)
+{
+  s<<m_data;
+  return s;
+}
+
+
+template int Blob_Data_Base::Get<int>();
+template long Blob_Data_Base::Get<long>();
+template double Blob_Data_Base::Get<double>();
+template std::string Blob_Data_Base::Get<std::string>();
+
+template class Blob_Data<int>;
+template class Blob_Data<long>;
+template class Blob_Data<double>;
+template class Blob_Data<std::string>;
 

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <iterator> 
 #include <iostream> 
 
@@ -12,8 +13,25 @@
 
 namespace ATOOLS {
   class Particle; 
+  class Blob_Data_Base {
+  public:
+    template <class Type> Type Get();
+    virtual ~Blob_Data_Base();
+    virtual std::ostream & operator<<(std::ostream &) =0;
+  };
+
+  template <class Type> class Blob_Data : public Blob_Data_Base {
+    Type m_data;
+  public:
+    Blob_Data(const Type & d) : m_data(d) {}
+    Type Get() { return m_data; }
+    void Set(const Type & d) { m_data=d; }
+    std::ostream & operator<<(std::ostream &);
+    ~Blob_Data();
+  };
 
   typedef std::vector<Particle *> Particle_Queue;
+  typedef std::map<std::string,Blob_Data_Base*> Data_Container;
 
   class Blob {
     friend std::ostream& operator<<( std::ostream&, const Blob &);
@@ -25,6 +43,7 @@ namespace ATOOLS {
     int                 m_status,m_beam;
     std::string         m_type;
     std::vector<double> m_weightcontainer;
+    Data_Container      m_datacontainer;
     Particle_Queue        m_inparticles, m_outparticles;
     Vec4D     m_cms_vec;
     Poincare  m_cms_boost;
@@ -66,6 +85,14 @@ namespace ATOOLS {
       m_weightcontainer.push_back(_weight);
       m_weight *= _weight;
     }
+    Blob_Data_Base * operator[](const std::string name) 
+    {
+      Data_Container::const_iterator cit=m_datacontainer.find(name);
+      if (cit==m_datacontainer.end()) return 0;
+      return cit->second;
+    } 
+    void     AddData(const std::string name, Blob_Data_Base * data); 
+    void     ClearAllData();
 
     int      Id()                        const { return m_id; }
     int      Status()                    const { return m_status; }
