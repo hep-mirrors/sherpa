@@ -44,6 +44,7 @@ Process_Base::Process_Base():
   m_scale[stp::fac]=sqr(rpa.gen.Ecms());
   m_scalefactor=1.;
   m_threshold=0.;
+  m_updatescales=false;
 }
 
 
@@ -92,6 +93,12 @@ Process_Base::Process_Base(int _nin,int _nout,ATOOLS::Flavour * _fl,
   if (m_scale[stp::as]<0.) {
     m_scale[stp::as]=m_scale[stp::fac]=sqr(rpa.gen.Ecms());
   }
+
+  m_updatescales=false;
+  if (m_scalescheme<0 || m_kfactorscheme<0) m_updatescales = true;
+  
+  if (m_scalescheme<0)   m_scalescheme   = -m_scalescheme;
+  if (m_kfactorscheme<0) m_kfactorscheme = -m_kfactorscheme;
 }
 
 
@@ -518,6 +525,8 @@ void Process_Base::SetMax(const double max, int depth)
 void Process_Base::SetMaxJetNumber(int max)             { m_maxjetnumber  = max;    } 
 void Process_Base::SetScales(double q2_fac, double q2_ren)
 { 
+  //  std::cout<<"Process_Base::SetScales("<<q2_fac<<","<<q2_ren<<") : "<<Name()<<std::endl;
+
   m_scale[stp::fac] = q2_fac;  
   m_scale[stp::as]  = q2_ren;
 } 
@@ -609,7 +618,6 @@ double Process_Base::CalculateScale(const ATOOLS::Vec4D * _p) {
     }
     break;
   case 65:
-  //    pt2 = m_scale[stp::as];
     pt2 = m_scale[stp::fac];
 
     // if highest number of jets
@@ -627,6 +635,7 @@ double Process_Base::CalculateScale(const ATOOLS::Vec4D * _p) {
 	}
       }
     }
+    //    std::cout<<" pt2="<<pt2<<std::endl;
     break;
   case 21 :
     if (m_nin+m_nout==4) {
@@ -660,6 +669,9 @@ double Process_Base::KFactor(double _scale) {
       return m_rfactor;
   case 65:
     m_scale[stp::fac]=_scale;
+//     cout<<Name()<<" : "<<std::endl;
+//       cout<<"as:  Q_F^2 = "<<m_scale[stp::fac]<<endl;
+//       cout<<"as:  Q_R^2 = "<<m_scale[stp::as]<<endl;
     if (m_nstrong>2) {
       return m_rfactor*pow(as->AlphaS(m_scale[stp::as])/
 			   as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),m_nstrong-2);
@@ -686,6 +698,7 @@ void Process_Base::SetEnhance(double enhancefac, double maxfac)
 
 void Process_Base::SetScale(const double scale)         
 { 
+  //  std::cout<<"Process_Base::SetScale("<<scale<<")"<<std::endl;
   m_scale[stp::as]=m_scale[stp::fac]=scale; 
 }
 

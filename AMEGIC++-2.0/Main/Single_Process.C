@@ -84,6 +84,16 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
     mkdir((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename).c_str(),mode_dir); 
   }
   msg_Tracking()<<"Initialized Single_Process : "<<m_name<<"."<<std::endl;
+
+  if (m_scalescheme==65 && m_updatescales) {
+    double dr   = rpa.gen.DeltaR();
+    double ycut = rpa.gen.Ycut();
+    std::cout<<" ycut="<<ycut<<std::endl;
+    m_scale[stp::fac] = ycut*sqr(rpa.gen.Ecms());
+    ycut=Min(ycut,ycut*sqr(dr));
+    m_scale[stp::as] = ycut*sqr(rpa.gen.Ecms());
+    SetScales(m_scale[stp::fac],m_scale[stp::as]);
+  }
 }
 
 

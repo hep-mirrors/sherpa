@@ -405,11 +405,11 @@ void Amegic::ReadInProcessfile(string file)
 	      Process_Base * proc=NULL;
 	      if (single) proc = new Single_Process(nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
 						     order_strong,order_ew,
-						     kfactor_scheme,scale_scheme,scale_factor,fixed_scale,
+						     -kfactor_scheme,-scale_scheme,scale_factor,fixed_scale,
 						     plavs,nex,excluded);
 	      else proc = new Process_Group(nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
 					    order_strong,order_ew,
-					    kfactor_scheme,scale_scheme,scale_factor,fixed_scale,
+					    -kfactor_scheme,-scale_scheme,scale_factor,fixed_scale,
 					    plavs,nex,excluded);
 	      proc->SetEnhance(enhance_factor,maxreduction_factor);
 	      if (print_graphs) proc->SetPrintGraphs();

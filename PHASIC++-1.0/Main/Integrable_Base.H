@@ -42,6 +42,7 @@ namespace PHASIC {
 
     int    m_scalescheme, m_kfactorscheme;
     double m_scalefactor, m_threshold, m_overflow;
+    bool   m_updatescales;
 
     std::map<stp::id,double> m_scale;
 

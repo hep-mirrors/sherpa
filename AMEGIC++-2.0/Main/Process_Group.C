@@ -77,7 +77,7 @@ Process_Group::Process_Group(int _nin,int _nout,Flavour *& _fl,
   }
   SetSelector(p_selector);
 
-  if (m_scalescheme==65) {
+  if (m_scalescheme==65 && m_updatescales) {
     double dr   = rpa.gen.DeltaR();
     double ycut = rpa.gen.Ycut();
     m_scale[stp::fac] = ycut*sqr(rpa.gen.Ecms());
