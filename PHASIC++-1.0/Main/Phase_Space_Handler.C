@@ -222,7 +222,8 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process)
 	p_zchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn());
       }
     }
-    if (!p_isrhandler->MakeISR(p_lab,m_nvec)) {
+    if (!p_isrhandler->MakeISR(p_lab,m_nvec,
+			       p_process->Selected()->Flavours(),m_nin+m_nout)) {
       if (p_beamchannels) p_beamchannels->NoDice();    
       if (p_isrchannels)  p_isrchannels->NoDice();    
       if (p_zchannels)  p_zchannels->NoDice();    
@@ -356,9 +357,8 @@ bool Phase_Space_Handler::OneEvent(const double mass,const int mode)
       m_beamykey[2]  = xinfo[1];
       m_isrspkey[3]  = xinfo[2];
       m_isrykey[2]   = xinfo[3];
-      p_isrhandler->MakeISR(p_lab,m_nvec);
-      for (int i=0;i<m_nvec;++i)  p_lab[i]=p_process->Selected()->Momenta()[i];
-
+      p_isrhandler->MakeISR(p_lab,m_nvec,p_process->Selected()->Flavours(),m_nin+m_nout);
+      for (int i=0;i<m_nvec;++i) p_lab[i]=p_process->Selected()->Momenta()[i];
       if (value > max) {
 	p_process->Selected()->SetOverflow(value-max);
 	value=max;

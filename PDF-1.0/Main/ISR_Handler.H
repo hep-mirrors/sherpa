@@ -49,7 +49,8 @@ namespace PDF {
     bool CheckConsistency(ATOOLS::Flavour *partons);
     void SetPartonMasses(ATOOLS::Flavour *fl); 
 
-    bool MakeISR(ATOOLS::Vec4D *const p,const size_t n);
+    bool MakeISR(ATOOLS::Vec4D *const p,const size_t n,
+		 const ATOOLS::Flavour *flavs,const size_t nflavs);
 
     bool CalculateWeight(const double scale);
     bool CalculateWeight2(const double scale);
@@ -57,8 +58,8 @@ namespace PDF {
     double Weight(const ATOOLS::Flavour *const flavour);
     double Weight2(const ATOOLS::Flavour *const flavour);
 
-    void BoostInCMS(ATOOLS::Vec4D *p,const size_t n);
-    void BoostInLab(ATOOLS::Vec4D *p,const size_t n);
+    bool BoostInCMS(ATOOLS::Vec4D *p,const size_t n);
+    bool BoostInLab(ATOOLS::Vec4D *p,const size_t n);
 
     void SetSprimeMin(const double spmin);
     void SetSprimeMax(const double spmax);
