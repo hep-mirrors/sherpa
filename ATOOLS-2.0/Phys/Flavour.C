@@ -422,44 +422,40 @@ void APHYTOOLS::ParticleInit(std::string path)
   kf_table.Init(); 
 
 
+  Flavour addit;
   Flavour test = Flavour(kf::jet);
   int idx      = kf_table.ToInt(test.Kfcode());
   particles[idx].SetGroup();
-  particles[idx].Add(Flavour(kf::d));
-  particles[idx].Add(Flavour(kf::u));
-  //particles[idx].Add(Flavour(kf::s));
-  //particles[idx].Add(Flavour(kf::c));
-  //particles[idx].Add(Flavour(kf::b));
-  particles[idx].Add(Flavour(kf::d).Bar());
-  particles[idx].Add(Flavour(kf::u).Bar());
-  // particles[idx].Add(Flavour(kf::s).Bar());
-  //particles[idx].Add(Flavour(kf::c).Bar());
-  //particles[idx].Add(Flavour(kf::b).Bar());
+  for (int i=1;i<7;i++) {
+    addit = Flavour(kf::code(i));
+    if (addit.Mass()==0.) {
+      particles[idx].Add(addit);
+      particles[idx].Add(addit.Bar());
+    }
+  }
   particles[idx].Add(Flavour(kf::gluon));
 
   test = Flavour(kf::quark);
   idx      = kf_table.ToInt(test.Kfcode());
   particles[idx].SetGroup();
-  particles[idx].Add(Flavour(kf::d));
-  particles[idx].Add(Flavour(kf::u));
-  particles[idx].Add(Flavour(kf::s));
-  particles[idx].Add(Flavour(kf::c));
-  particles[idx].Add(Flavour(kf::b));
-  particles[idx].Add(Flavour(kf::d).Bar());
-  particles[idx].Add(Flavour(kf::u).Bar());
-  particles[idx].Add(Flavour(kf::s).Bar());
-  particles[idx].Add(Flavour(kf::c).Bar());
-  particles[idx].Add(Flavour(kf::b).Bar());
+  for (int i=1;i<7;i++) {
+    addit = Flavour(kf::code(i));
+    if (addit.Mass()==0.) {
+      particles[idx].Add(addit);
+      particles[idx].Add(addit.Bar());
+    }
+  }
 
   test = Flavour(kf::lepton);
   idx      = kf_table.ToInt(test.Kfcode());
   particles[idx].SetGroup();
-  particles[idx].Add(Flavour(kf::e));
-  particles[idx].Add(Flavour(kf::mu));
-  particles[idx].Add(Flavour(kf::tau));
-  particles[idx].Add(Flavour(kf::e).Bar());
-  particles[idx].Add(Flavour(kf::mu).Bar());
-  particles[idx].Add(Flavour(kf::tau).Bar());
+  for (int i=11;i<17;i+=2) {
+    addit = Flavour(kf::code(i));
+    if (addit.Mass()==0.) {
+      particles[idx].Add(addit);
+      particles[idx].Add(addit.Bar());
+    }
+  }
 
   std::cout<<"End of Particle_Init. Initialised the kf_table. "<<std::endl;
 }
