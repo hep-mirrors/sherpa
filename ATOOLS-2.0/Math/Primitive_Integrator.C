@@ -54,7 +54,7 @@ Primitive_Channel(const std::vector<Primitive_Channel*> &all,
     m_next[j]=prev->m_next[j];
   }
   m_this[i]=(m_next[i]->m_this[i]+m_this[i])/2.0;
-  m_next[i]=(Primitive_Channel*)prev->m_next[i];
+  m_next[i]=prev->m_next[i];
   prev->m_next[i]=this;
   prev->SetWeight();
   SetWeight();
@@ -98,10 +98,8 @@ void Primitive_Channel::CreateRoot(const std::vector<double> &min,
 				   const std::vector<double> &max,
 				   std::vector<Primitive_Channel*> &channels)
 {
-  if (min.size()!=max.size())
-    THROW(fatal_error,"Inconsistent dimensions.");
-  if (!channels.empty())
-    THROW(fatal_error,"Initialized channels found.");
+  if (min.size()!=max.size()) THROW(fatal_error,"Inconsistent dimensions.");
+  if (!channels.empty()) THROW(fatal_error,"Initialized channels found.");
   Primitive_Channel *root = new Primitive_Channel();
   channels.push_back(root);
   root->m_this=min;
@@ -120,10 +118,21 @@ void Primitive_Channel::CreateRoot(const std::vector<double> &min,
 
 Primitive_Integrator::Primitive_Integrator():
   m_nopt(1000), m_nmax(1000000), m_nmaxopt(250000), m_error(0.01),
-  m_sum(0.0), m_sum2(0.0), m_np(0.0), m_lastdim(0), m_mode(0) {}
+  m_sum(0.0), m_sum2(0.0), m_np(0.0), m_lastdim(0), m_mode(0),
+  m_vname("I") {}
 
 Primitive_Integrator::~Primitive_Integrator()
 {
+  while (!m_channels.empty()) {
+    delete m_channels.back();
+    m_channels.pop_back();
+  }
+}
+
+void Primitive_Integrator::SetDimension(const size_t dim)
+{
+  m_min.resize(dim,0.0);
+  m_max.resize(dim,1.0);
 }
 
 double Primitive_Integrator::Integrate(const Primitive_Integrand *function)
@@ -145,9 +154,10 @@ double Primitive_Integrator::Integrate(const Primitive_Integrand *function)
     for (long unsigned int n=0;n<m_nopt;++n) Point();
     Update();
     error=dabs(Sigma()/Mean());
-    msg_Info()<<om::blue<<Mean()<<om::reset<<" +- ( "
-	      <<error*Mean()<<" = "<<om::red<<error*100.0<<" %"
-	      <<om::reset<<" ) @ "<<m_np<<std::endl;
+    msg_Info()<<om::bold<<m_vname<<om::reset<<" = "<<om::blue<<Mean()
+	      <<" "<<m_uname<<om::reset<<" +- ( "<<error*Mean()
+	      <<" "<<m_uname<<" = "<<om::red<<error*100.0<<" %"
+	      <<om::reset<<" ), n = "<<m_np<<std::endl;
     Split();
   }
   double alpha=1.0/(m_channels.size()-m_point.size());
@@ -157,9 +167,10 @@ double Primitive_Integrator::Integrate(const Primitive_Integrand *function)
     for (long unsigned int n=0;n<m_nopt;++n) Point();
     Update();
     error=dabs(Sigma()/Mean());
-    msg_Info()<<om::blue<<Mean()<<om::reset<<" +- ( "
-	      <<error*Mean()<<" = "<<om::red<<error*100.0<<" %"
-	      <<om::reset<<" ) @ "<<m_np<<std::endl;
+    msg_Info()<<om::bold<<m_vname<<om::reset<<" = "<<om::blue<<Mean()
+	      <<" "<<m_uname<<om::reset<<" +- ( "<<error*Mean()
+	      <<" "<<m_uname<<" = "<<om::red<<error*100.0<<" %"
+	      <<om::reset<<" ), n = "<<m_np<<std::endl;
   }
   return m_sum/m_np;
 }

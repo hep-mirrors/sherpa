@@ -90,6 +90,8 @@ namespace ATOOLS {
 
     size_t m_lastdim, m_mode;
 
+    std::string m_vname, m_uname;
+
     void Point();
     void Split();
     void Update();
@@ -103,6 +105,8 @@ namespace ATOOLS {
     ~Primitive_Integrator();
 
     // member functions
+    void SetDimension(const size_t dim);
+
     double Integrate(const Primitive_Integrand *function);
 
     // inline functions
@@ -116,6 +120,9 @@ namespace ATOOLS {
 
     inline void SetError(const double &error) { m_error=error; }
     inline void SetMode(const size_t mode)    { m_mode=mode;   }
+
+    inline void SetVariableName(const std::string &vname) { m_vname=vname; }
+    inline void SetUnitName(const std::string &uname)     { m_uname=uname; } 
 
     inline double Mean() const   { return m_sum/m_np; }
     inline double Variance() const    
