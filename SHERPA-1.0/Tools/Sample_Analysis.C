@@ -121,6 +121,7 @@ Analysis_Handler::Analysis_Handler(std::ifstream * readin, std::string _phase, c
     msg.Out()<<"Initialized new Analysis_Handler for "<<m_phase<<","<<mode<<std::endl;
     fsel->Output();
   }
+  ATOOLS::Exception_Handler::AddTerminatorObject(this);
 }
 
 Analysis_Handler::~Analysis_Handler() 
@@ -139,6 +140,11 @@ void Analysis_Handler::SetOutputPath(const std::string & path)
 void Analysis_Handler::DoAnalysis(ATOOLS::Blob_List * const blist, double weight) 
 {
   p_analysis->DoAnalysis(blist,weight);
+}
+
+void Analysis_Handler::PrepareTerminate()
+{
+  Finish();
 }
 
 void Analysis_Handler::Finish() 

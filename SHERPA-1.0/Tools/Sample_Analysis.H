@@ -1,6 +1,7 @@
 #ifndef Analysis_Handler_H
 #define Analysis_Handler_H
 
+#include "Exception.H"
 #include "Primitive_Analysis.H"
 #include "Final_Selector.H"
 #include "Particle_List.H"
@@ -20,7 +21,7 @@ namespace SHERPA {
     void Output();
   };
 
-  class Analysis_Handler  {
+  class Analysis_Handler: public ATOOLS::Terminator_Object  {
     std::string  m_phase, m_outputpath;
     std::string  m_prefix;
 
@@ -35,6 +36,7 @@ namespace SHERPA {
     void SetUpObservables();
     // This is the place to add specific observables ....
     void SetUpSubSamples();
+    void PrepareTerminate();
   public:
     Analysis_Handler(std::ifstream *,std::string=std::string("Hadrons"),const std::string& =std::string(""));
     ~Analysis_Handler();
