@@ -437,10 +437,10 @@ bool Initialization_Handler::InitializeTheAnalyses()
 			    "Initialization_Handler","InitializeTheAnalyses"));
   }
   helpi=p_dataread->GetValue<int>("ANALYSIS",0);
-  if (!helpi) return true;
   std::string outpath=p_dataread->GetValue<std::string>("ANALYSIS_OUTPUT","./");
   if (outpath==NotDefined<std::string>()) outpath="";
   p_analysis = new ANALYSIS::Analysis_Handler();
+  if (!helpi) return true;
   p_analysis->SetInputPath(m_path);
   p_analysis->SetInputFile(m_analysisdat);
   p_analysis->SetOutputPath(outpath);
