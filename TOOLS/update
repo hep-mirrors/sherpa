@@ -1,8 +1,12 @@
 #!/bin/bash
 
-cvs -n update | grep "M " | grep "\.C" | tee updated_C.log 1>/dev/null 2>&1
-cvs -n update | grep "M " | grep "\.H" | tee updated_H.log 1>/dev/null 2>&1
-cvs -n update | grep "M " | grep "\.am" | tee updated_am.log 1>/dev/null 2>&1
+cvs $1 update | tee updated.log 1>/dev/null 2>&1
+cat updated.log | grep "M " | grep "\.C" > tee updated_C.log 
+cat updated.log | grep "C " | grep "\.C" >> tee updated_C.log 
+cat updated.log | grep "M " | grep "\.H" > tee updated_H.log 
+cat updated.log | grep "C " | grep "\.H" >> tee updated_H.log 
+cat updated.log | grep "M " | grep "\.am" > tee updated_am.log 
+cat updated.log | grep "C " | grep "\.am" >> tee updated_am.log 
 echo -e "\n\e[1m=\e[0m\e[34m C-Files\e[0m\e[1m ========================================\e[0m"
 cat updated_C.log
 echo -e "\e[1m=\e[0m\e[32m H-Files\e[0m\e[1m ========================================\e[0m"
