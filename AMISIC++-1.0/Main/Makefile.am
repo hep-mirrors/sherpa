@@ -28,6 +28,7 @@ libAmisic_la_SOURCES  = \
 		       	Grid_Creator.C \
 			Profile_Function_Base.C \
 			Profile_Function.C \
+			Semihard_QCD.C \
 			Simple_Chain.C \
 			Amisic.C 
 noinst_HEADERS        = \
@@ -42,6 +43,7 @@ noinst_HEADERS        = \
 			Environment.H \
 			Profile_Function_Base.H \
 			Profile_Function.H \
+			Semihard_QCD.H \
 			Simple_Chain.H \
 			Amisic.H 
 EXTRA_DIST    = $(CVSINCLUDE)
