@@ -145,6 +145,7 @@ fi
 
 MAINPATH=$PWD
 for I in $LIST ; do
+  CURRENT_BENCHMARK_ERROR=""
   if [ ! -d $DIR/$I ] ; then
     echo "benchmark: setup directory '$I' is missing" >> $LOGFILE
     echo "benchmark: setup directory '$I' is missing" >> $OUTPUTFILE
@@ -183,6 +184,7 @@ for I in $LIST ; do
 	diff -cb $NEW $OLD >> $MAINPATH/$OUTPUTFILE 2>&1
 	if (( $? != 0 )) ; then
 	  BENCHMARK_ERROR=TRUE
+	  CURRENT_BENCHMARK_ERROR=TRUE
 	fi
       elif (( $COUNTER%2 == 1 )) ; then 
         OLD=$I
@@ -191,7 +193,7 @@ for I in $LIST ; do
       fi
     done
     cd $MAINPATH
-    if [ "$BENCHMARK_ERROR" != "TRUE" ] ; then
+    if [ "$CURRENT_BENCHMARK_ERROR" != "TRUE" ] ; then
       echo -e "finished" >> $LOGFILE
     else 
       echo -e "failed" >> $LOGFILE
@@ -201,3 +203,6 @@ for I in $LIST ; do
 done
 
 SendMail 4
+
+# mode:shell-script
+# sh-indentation:2
