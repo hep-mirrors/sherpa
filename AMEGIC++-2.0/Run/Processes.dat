@@ -2,9 +2,9 @@
 !-- Processes to calculate -----------------------------
 !-------------------------------------------------------
 %
-% photon electron -> selectron neutralino
+% photon electron -> electron mu anti-mu
 %
-Process : 22 11 -> 71 43
+Process : 22 11 -> 11 13 -13
 End process
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
