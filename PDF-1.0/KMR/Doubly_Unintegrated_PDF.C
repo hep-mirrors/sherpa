@@ -101,7 +101,8 @@ Doubly_Unintegrated_PDF::~Doubly_Unintegrated_PDF()
   MYROOT::myfile->Write();
   delete MYROOT::myroot;
 
-  throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,"finished histogram","DUPDF","DUPDF"));
+  throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,
+                          "finished histogram","DUPDF","DUPDF"));
   *//////////////////////////////////////////////////
   while (m_branching.size()>0) {
     delete (*m_branching.begin()).second;
@@ -149,6 +150,7 @@ double Doubly_Unintegrated_PDF::SmoothIntegrated(ATOOLS::Flavour flavour)
 
 bool Doubly_Unintegrated_PDF::Unintegrate(ATOOLS::Flavour flavour)
 {
+  std::cout<<"new "<<flavour<<" "<<m_kperp2<<std::endl;
   PROFILE_HERE;
   m_unintegrated=m_integrated=0.;
   if (m_kperp2<m_mu02) {
@@ -160,41 +162,23 @@ bool Doubly_Unintegrated_PDF::Unintegrate(ATOOLS::Flavour flavour)
     }
     return false;     
   }
-  LL_Branching::SF_Set::iterator sfit=LLB.AllSplittings().begin();
-  if (flavour.IsGluon()) {
-    for (;sfit!=LLB.AllSplittings().end();++sfit) {
-      if ((*sfit)->GetFlB()==flavour) {
-	if ((*sfit)->GetFlA().IsGluon()) {
-	  if (m_z*(1.+sqrt(m_kperp2/m_mu2))<1.) {
-	    m_unintegrated+=2.*(*(*sfit))(m_z)*p_pdf->GetXPDF((*sfit)->GetFlA());
-	  }
-	}
-	else {
-	  m_unintegrated+=(*(*sfit))(m_z)*p_pdf->GetXPDF((*sfit)->GetFlA());
-	} 
-      }
+  LL_Branching::SF_Set::iterator sfit=LL_Branching::AllSplittings().begin();
+  for (;sfit!=LL_Branching::AllSplittings().end();++sfit) {
+    if ((*sfit)->GetFlB()==flavour) {
+      if (((flavour.IsGluon() && (*sfit)->GetFlA().IsGluon()) ||
+	   (flavour.IsQuark() && (*sfit)->GetFlA().IsQuark()))&& 
+	  m_z*(1.+sqrt(m_kperp2/m_mu2))>1.) continue;
+      std::cout<<" split "<<(*sfit)->GetFlA()<<"->"<<(*sfit)->GetFlB()<<(*sfit)->GetFlC()<<" "
+	       <<(*(*sfit))(m_z)<<" "<<p_pdf->GetXPDF((*sfit)->GetFlA())<<std::endl;
+      m_unintegrated+=(*(*sfit))(m_z)*p_pdf->GetXPDF((*sfit)->GetFlA());
+      if (flavour.IsGluon() && (*sfit)->GetFlA().IsGluon())
+	m_unintegrated+=(*(*sfit))(m_z)*p_pdf->GetXPDF((*sfit)->GetFlA());
     }
-  }
-  else if (flavour.IsQuark()) {
-    for (;sfit!=LLB.AllSplittings().end();++sfit) {
-      if ((*sfit)->GetFlB()==flavour) {
-	if ((*sfit)->GetFlA().IsQuark()) {
-	  if (m_z*(1.+sqrt(m_kperp2/m_mu2))<1.) {
-	    m_unintegrated+=(*(*sfit))(m_z)*p_pdf->GetXPDF((*sfit)->GetFlA());
-	  }
-	}
-	else {
-	  m_unintegrated+=(*(*sfit))(m_z)*p_pdf->GetXPDF((*sfit)->GetFlA());
-	} 
-      }
-    }
-  }
-  else {
-    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,"Called with nonsense flavour.",
-			    "Doubly_Unintegrated_PDF","Unintegrate"));
   }
   m_unintegrated*=(*p_alphas)(m_kperp2)/(2.0*M_PI);
   m_unintegrated*=p_sudakov->Delta(flavour)(sqrt(m_mu2),sqrt(m_kperp2));
+  std::cout<<flavour<<" sud / pdf : "<<p_sudakov->Delta(flavour)(sqrt(m_mu2),sqrt(m_kperp2))
+	   <<" / "<<m_unintegrated<<std::endl;
   m_unintegrated/=m_kperp2;
   return true;
 }

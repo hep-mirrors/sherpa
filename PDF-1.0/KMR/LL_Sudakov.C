@@ -41,22 +41,16 @@ void LL_Sudakov::AssignKeys(ATOOLS::Integration_Info *const info)
 void LL_Sudakov::Initialize()
 {
   int smode=Sudakov::numeric;
-  // add quark sudakovs
   LL_Single_Sudakov *ssud=NULL;
   for (int k=1;k<=Nf;++k) {
-    ATOOLS::Flavour fl=ATOOLS::Flavour(ATOOLS::kf::code(k));
+    ATOOLS::Flavour fl=ATOOLS::Flavour((ATOOLS::kf::code)k);
     ssud = new LL_Single_Sudakov(new PDF::LL_Branching(fl,p_alphas),smode);
-    //     ssud->SetOutPath(m_outpath);
-    //     ssud->Initialize(m_q2min,m_q2max);
     m_sud_map[fl]=ssud;
     m_sud_map[fl.Bar()]=ssud;
     m_all_suds.push_back(ssud);
   }
-  // add gluon sudakov 
   ssud = new LL_Single_Sudakov(new PDF::LL_Branching(ATOOLS::Flavour(ATOOLS::kf::gluon),
 						     p_alphas),smode);
-  //   ssud->SetOutPath(m_outpath);
-  //   ssud->Initialize(m_q2min,m_q2max);
   m_all_suds.push_back(ssud);
   m_sud_map[ATOOLS::Flavour(ATOOLS::kf::gluon)]=ssud;
 }
