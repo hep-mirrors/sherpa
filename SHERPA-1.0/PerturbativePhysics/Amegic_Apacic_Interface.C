@@ -14,7 +14,6 @@ using namespace APACIC;
 using namespace ATOOLS;
 using namespace MODEL;
 
-
 using namespace EXTRAXS;
 
 Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
@@ -170,7 +169,7 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
     p_cluster->FixJetvetoPt2(m_scale);
     p_blob_psme_FS->AddData("d#soft_scale",new ATOOLS::Blob_Data<double>(sqrt(asscale)));
 
-    p_blob_psme_FS->AddData("MI_Scale",new ATOOLS::Blob_Data<double>(m_scale));
+    p_blob_psme_FS->AddData("Core_Process",new ATOOLS::Blob_Data<XS_Base*>(p_xs));
     p_blob_psme_FS->AddData("OrderStrong",new ATOOLS::Blob_Data<double>(double(p_cluster->OrderStrong())));
     p_blob_psme_FS->AddData("OrderEWeak",new ATOOLS::Blob_Data<double>(double(p_cluster->OrderEWeak())));
 

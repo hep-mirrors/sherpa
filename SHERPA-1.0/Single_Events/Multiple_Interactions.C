@@ -16,7 +16,16 @@
 #define PROFILE_HERE 
 #endif
 
+#ifdef ROOT_SUPPORT
+#define ANALYSE__Multiple_Interactions
+#include "My_Root.H"
+#include "TH2D.h"
+#endif
+
 using namespace SHERPA;
+using namespace AMISIC;
+using namespace EXTRAXS;
+using namespace ATOOLS;
 
 Multiple_Interactions::Multiple_Interactions(MI_Handler *mihandler):
   p_mihandler(mihandler)
@@ -39,68 +48,53 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
 {
   p_bloblist=bloblist;
   if (!p_bloblist->FourMomentumConservation()) {
-    ATOOLS::msg.Error()<<"Multiple_Interactions::CheckBlobList(..): Retry event "
-		       <<ATOOLS::rpa.gen.NumberOfDicedEvents()<<std::endl;
+    msg.Error()<<"Multiple_Interactions::CheckBlobList(..): "
+	       <<"Retry event "<<rpa.gen.NumberOfDicedEvents()<<std::endl;
     p_bloblist->Clear();
   }
   for (size_t i=0;i<2;++i) {
     m_emax[i]=p_remnants[i]->BeamEnergy();
     p_remnants[i]->QuickClear();
   }
-  for (ATOOLS::Blob_List::const_iterator bit=bloblist->begin();
+  for (Blob_List::const_iterator bit=bloblist->begin();
        bit!=bloblist->end();++bit) {
-    if ((*bit)->Type()==ATOOLS::btp::Hard_Collision) m_diced=true;
-    if ((*bit)->Type()==ATOOLS::btp::Hard_Collision ||
-	(*bit)->Type()==ATOOLS::btp::Signal_Process) 
+    if ((*bit)->Type()==btp::Hard_Collision ||
+	(*bit)->Type()==btp::Signal_Process) 
       if ((*bit)->Status()!=0) return false;
   }
+  Blob *signal=bloblist->FindFirst(btp::Signal_Process);
+//     if (!m_diced && VetoHardProcess(signal)) {
+//       m_ptmax=0.0;
+//       return true;
+//     }
   switch (p_mihandler->ScaleScheme()) {
   case 1: {
-    ATOOLS::Blob_List signal;
+    Blob_List shower=bloblist->
+      FindConnected(m_diced?bloblist->FindFirst(btp::Hard_Collision):
+		    signal);
+    int njets=2;
     if (!m_diced) {
-      signal=bloblist->
-	FindConnected(bloblist->FindFirst(ATOOLS::btp::Signal_Process));
+      Blob_Data_Base *xsinfo=
+	(*bloblist->FindFirst(btp::ME_PS_Interface_FS))["Core_Process"];
+      if (xsinfo==NULL) THROW(critical_error,"No merging information.");
+      XS_Base *xs=xsinfo->Get<XS_Base*>();
+      if (xs!=NULL) if (xs->NStrong()<4) njets=1;
     }
-    else {
-      signal=bloblist->
-	FindConnected(bloblist->FindLast(ATOOLS::btp::Hard_Collision));
-    }
-    ATOOLS::Particle_List jets=signal.ExtractLooseParticles(1);
-    ATOOLS::Jet_Finder finder(p_mihandler->YCut(),4);
-    finder.ConstructJets(&jets,2,true);
+    Particle_List jets=shower.ExtractLooseParticles(1);
+    Jet_Finder finder(p_mihandler->YCut(),4);
+    finder.ConstructJets(&jets,njets,true);
     double ptmax=0.0;
-    for (ATOOLS::Particle_List::const_iterator pit=jets.begin();pit!=jets.end();++pit)
-      ptmax=ATOOLS::Max(ptmax,(*pit)->Momentum().PPerp());
+    for (Particle_List::const_iterator pit=jets.begin();
+	 pit!=jets.end();++pit)
+      ptmax=Max(ptmax,(*pit)->Momentum().PPerp());
     jets.Clear();
-    m_ptmax=ATOOLS::Min(m_ptmax,ptmax);
+    m_ptmax=Min(m_ptmax,ptmax);
     break;
   }
-  default: 
-    for (ATOOLS::Blob_List::reverse_iterator bit=bloblist->rbegin();
-	 bit!=bloblist->rend();++bit) {
-      if ((*bit)->Type()==ATOOLS::btp::ME_PS_Interface_FS) {
-	if (!m_diced) {
-	  ATOOLS::Blob_Data_Base *info=(*(*bit))["MI_Scale"];
-	  if (info==NULL) {
-	    ATOOLS::msg.Error()<<"Multiple_Interactions::CheckBlobList(..): "
-			       <<"No scale information in merging blob. "
-			       <<"Taking P_\\perp."<<std::endl;
-	    for (int i=0;i<(*bit)->NInP();++i) 
-	      m_ptmax=ATOOLS::Min(m_ptmax,(*bit)->InParticle(i)->Momentum().PPerp());
-	  }
-	  else {
-	    m_ptmax=sqrt(ATOOLS::Min(m_ptmax,info->Get<double>()));
-	  }
-	  if (VetoHardProcess(*bit)) {
-	    m_ptmax=0.0;
-	    break;
-	  }
-	}
-      }
-    }
+  default: THROW(not_implemented,"Wrong mi scale scheme.");
   }
-  ATOOLS::Blob_List isr=bloblist->Find(ATOOLS::btp::IS_Shower);
-  for (ATOOLS::Blob_List::const_iterator iit=isr.begin();iit!=isr.end();++iit) {
+  Blob_List isr=bloblist->Find(btp::IS_Shower);
+  for (Blob_List::const_iterator iit=isr.begin();iit!=isr.end();++iit) {
     m_emax[(*iit)->Beam()]-=(*iit)->InParticle(0)->Momentum()[0];
     p_mihandler->ISRHandler()->
       Extract((*iit)->InParticle(0)->Flav(),
@@ -111,8 +105,8 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
 		    <<*(*iit)->InParticle(0)<<std::endl;
       p_bloblist->DeleteConnected(*iit);
       if (bloblist->empty()) {
-	ATOOLS::Blob *blob = new ATOOLS::Blob();
-	blob->SetType(ATOOLS::btp::Signal_Process);
+	Blob *blob = new Blob();
+	blob->SetType(btp::Signal_Process);
 	blob->SetStatus(-1);
 	blob->SetId();
 	blob->SetStatus(2);
@@ -121,26 +115,25 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
       return true;
     } 
   }
-  if (m_ptmax==std::numeric_limits<double>::max()) {
-    for (ATOOLS::Blob_List::const_iterator bit=bloblist->begin();
-	 bit!=bloblist->end();++bit) {
-      if ((*bit)->Type()==ATOOLS::btp::Hard_Collision || 
-	  (*bit)->Type()==ATOOLS::btp::Signal_Process) {
-	for (int i=0;i<(*bit)->NOutP();++i) 
-	  m_ptmax=ATOOLS::Min(m_ptmax,(*bit)->OutParticle(i)->Momentum().PPerp());
-	if (VetoHardProcess(*bit)) {
-	  m_ptmax=0.0;
-	  break;
-	}
-	for (int i=0;i<(*bit)->NInP();++i) {
-	  p_mihandler->ISRHandler()->
-	    Extract((*bit)->InParticle(i)->Flav(),
-		    (*bit)->InParticle(i)->Momentum()[0],i);
-	  p_remnants[i]->Extract((*bit)->InParticle(i));
-	}
-      }
+#ifdef ANALYSE__Multiple_Interactions
+  if (!m_diced) {
+    static TH2D *ept=NULL;
+    if (ept==NULL) {
+      ept = new TH2D("erem_pt","erem_pt",100,0.0,rpa.gen.Ecms(),
+		     100,0.0,rpa.gen.Ecms());
+      MYROOT::myroot->AddObject(ept,"erem_pt");
     }
+    ept->Fill(2.0*m_ptmax,m_emax[0]+m_emax[1],
+	      (*signal)["ME_Weight"]->Get<double>());
+    static TH1D *mu0=NULL;
+    if (mu0==NULL) {
+      mu0 = new TH1D("mu_mi","mu_mi",200,0.0,log10(rpa.gen.Ecms()/2.0));
+      MYROOT::myroot->AddObject(mu0,"mu_mi");
+    }
+    mu0->Fill(log10(m_ptmax),
+	      (*signal)["ME_Weight"]->Get<double>());
   }
+#endif
   return m_ptmax!=std::numeric_limits<double>::max();
 }
 
@@ -148,19 +141,20 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
 {
   PROFILE_HERE;
   if (p_mihandler->Type()==MI_Handler::None ||
-      AMISIC::MI_Base::StopGeneration()) return false;
+      MI_Base::StopGeneration()) return false;
   if (bloblist->empty()) {
-    ATOOLS::msg.Error()<<"Multiple_Interactions::Treat(): "
+    msg.Error()<<"Multiple_Interactions::Treat(): "
 		       <<"Incoming blob list is empty!"<<std::endl;
     return false;
   }
   if (!CheckBlobList(bloblist)) return false;
+  m_diced=true;
   p_mihandler->SetScaleMax(m_ptmax,0);
   p_mihandler->SetScaleMin(p_mihandler->ScaleMin(0),0);
   p_mihandler->SetScaleMax(m_emax[0],2);
   p_mihandler->SetScaleMax(m_emax[1],3);
-  ATOOLS::Blob *blob = new ATOOLS::Blob();
-  blob->AddData("MI_Scale",new ATOOLS::Blob_Data<double>(m_ptmax));
+  Blob *blob = new Blob();
+  blob->AddData("MI_Scale",new Blob_Data<double>(m_ptmax));
   p_mihandler->Reset();
   bool success=false;
   if (!m_vetoed && m_ptmax>p_mihandler->ScaleMin(0)) {
@@ -169,11 +163,11 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
   else if (m_vetoed) {
     success=p_mihandler->GenerateSoftProcess(blob);
     // dummy settings for unweighted analysis
-    blob->SetType(ATOOLS::btp::Signal_Process);
+    blob->SetType(btp::Signal_Process);
     blob->SetTypeSpec("Soft UE");
     blob->SetStatus(5);
-    blob->AddData("ME_Weight",new ATOOLS::Blob_Data<double>(1.0));
-    blob->AddData("ME_NumberOfTrials",new ATOOLS::Blob_Data<int>(1));
+    blob->AddData("ME_Weight",new Blob_Data<double>(1.0));
+    blob->AddData("ME_NumberOfTrials",new Blob_Data<int>(1));
   }
   if (success) {
     blob->SetId(bloblist->size());

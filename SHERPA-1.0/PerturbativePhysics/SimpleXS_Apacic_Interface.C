@@ -6,16 +6,32 @@
 #include "Exception.H"
 
 using namespace SHERPA;
+using namespace EXTRAXS;
 using namespace ATOOLS;
+
+namespace ATOOLS {
+
+  std::ostream &operator<<(std::ostream &str,const XS_Base *&xs)
+  {
+    return str<<"("<<xs<<")";
+  }
+
+}
+
+template XS_Base *Blob_Data_Base::Get<XS_Base*>();
+
+template <> Blob_Data<XS_Base*>::~Blob_Data() {}
+
+template class Blob_Data<XS_Base*>;
 
 SimpleXS_Apacic_Interface::SimpleXS_Apacic_Interface(Matrix_Element_Handler *mehandler,
 						     Shower_Handler *showerhandler):
   Perturbative_Interface(mehandler,showerhandler),
   p_tools(new Interface_Tools(showerhandler->GetIniTrees(),
 			      showerhandler->GetFinTree())),
-  p_twototwo(new EXTRAXS::XS_Group(2,2,"Interface Processes")),
-  p_momenta(new ATOOLS::Vec4D[4]), 
-  p_flavours(new ATOOLS::Flavour[4]), 
+  p_twototwo(new XS_Group(2,2,"Interface Processes")),
+  p_momenta(new Vec4D[4]), 
+  p_flavours(new Flavour[4]), 
   p_psme_is(NULL),
   p_psme_fs(NULL) 
 {
@@ -34,7 +50,7 @@ int SimpleXS_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob *blob)
 {
   if (blob==NULL) return false;
   if ((blob->NInP()!=2) || (blob->NOutP()!=2)) {
-    ATOOLS::msg.Error()<<*blob;
+    msg.Error()<<*blob;
     THROW(fatal_error,"Cannot handle blobs with more than 4 legs.");
   }
   for (size_t i=0;i<(size_t)blob->NInP();++i) {
@@ -82,8 +98,8 @@ bool SimpleXS_Apacic_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
 {
   if (p_hard==NULL) return false;
   if (p_shower->ISROn()) {
-    p_psme_is = new ATOOLS::Blob();
-    p_psme_is->SetType(ATOOLS::btp::ME_PS_Interface_IS);
+    p_psme_is = new Blob();
+    p_psme_is->SetType(btp::ME_PS_Interface_IS);
     p_psme_is->SetTypeSpec("Sherpa");
     p_psme_is->SetStatus(1);
     p_psme_is->SetId();
@@ -93,15 +109,19 @@ bool SimpleXS_Apacic_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
     blobs->push_back(p_psme_is);
   }
   if (p_shower->FSROn()) {
-    p_psme_fs = new ATOOLS::Blob();
-    p_psme_fs->SetType(ATOOLS::btp::ME_PS_Interface_FS);
+    p_psme_fs = new Blob();
+    p_psme_fs->SetType(btp::ME_PS_Interface_FS);
     p_psme_fs->SetTypeSpec("Sherpa");
     p_psme_fs->SetStatus(1);
     p_psme_fs->SetId();
     for (int i=0;i<p_hard->NOutP();++i) {
       p_psme_fs->AddToInParticles(p_hard->OutParticle(i));
     }
-    p_psme_fs->AddData("MI_Scale",new ATOOLS::Blob_Data<double>(m_scale));
+    p_psme_fs->AddData("Core_Process",new Blob_Data<XS_Base*>(p_xs));
+    p_psme_fs->AddData("OrderStrong",new 
+		       Blob_Data<double>((double)p_xs->OrderStrong()));
+    p_psme_fs->AddData("OrderEWeak",new
+		       Blob_Data<double>((double)p_xs->OrderEW()));
     blobs->push_back(p_psme_fs);
   }
   return true;
