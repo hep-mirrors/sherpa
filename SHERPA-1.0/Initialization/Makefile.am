@@ -1,35 +1,33 @@
-lib_LTLIBRARIES = libSherpaInitialization.la
-libSherpaInitialization_la_SOURCES = Initialization_Handler.C 
-INCLUDES = -I../../SHERPA-1.0/Tools \
-           -I../../SHERPA-1.0/PerturbativePhysics \
-           -I../../SHERPA-1.0/SoftPhysics \
-           -I../../SHERPA-1.0/SoftPhysics/Lund \
-           -I../../AMEGIC++-2.0/Main \
-           -I../../AMEGIC++-2.0/Amplitude \
-           -I../../AMEGIC++-2.0/Phasespace \
-           -I../../AMEGIC++-2.0/Amplitude/AmplTools \
-           -I../../AMEGIC++-2.0/Amplitude/Zfunctions \
-           -I../../AMEGIC++-2.0/Phasespace \
-           -I../../AMEGIC++-2.0/String \
-           -I../../AMEGIC++-2.0/Model \
-	   -I../../AMISIC++-1.0/Main \
-	   -I../../AMISIC++-1.0/Other \
-	   -I../../AMISIC++-1.0/Tools \
-           -I../../PHASIC++-1.0/Main \
-           -I../../APACIC++-2.0/Hard_Interface \
-           -I../../APACIC++-2.0/Main \
-	   -I../../APACIC++-2.0/Showers \
-           -I../../MODEL-1.0/Main \
-           -I../../BEAM-1.0/Main \
-           -I../../PDF-1.0/LHAPDF \
-           -I../../PDF-1.0/Main \
-           -I../../PDF-1.0/ISR \
-           -I../../EXTRA_XS-1.0/Main \
-           -I../../EXTRA_XS-1.0/Two2Two \
-           -I../../ATOOLS-2.0/Phys \
-           -I../../ATOOLS-2.0/Math \
-           -I../../ATOOLS-2.0/Org 
-noinst_HEADERS = Initialization_Handler.H 
+SHERPASYS     =	../..
+
+SHERPAFLAGS   =	-pedantic -Wall -Winline
+
+ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
+EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
+AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
+APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
+SHERPAINCS    =	-I../PerturbativePhysics -I../SoftPhysics \
+		-I../SoftPhysics/Lund  -I../Tools 
+ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
+PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main
+BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
+PHASICINCS    =	-I$(SHERPASYS)/PHASIC++-1.0/Main
+MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
+EXTRAXSINCS   =	-I$(EXTRAXSDIR)/Two2Two -I$(EXTRAXSDIR)/Main
+AMISICINCS    =	-I$(SHERPASYS)/AMISIC++-1.0/Main
+AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
+		-I$(AMEGICDIR)/Amplitude/AmplTools -I$(AMEGICDIR)/Amplitude \
+		-I$(AMEGICDIR)/Phasespace -I$(AMEGICDIR)/Model \
+		-I$(AMEGICDIR)/String 
+APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
+
+lib_LTLIBRARIES       =	libSherpaInitialization.la
+libSherpaInitialization_la_SOURCES    =	Initialization_Handler.C 
+noinst_HEADERS        =	Initialization_Handler.H 
+AM_CXXFLAGS   =	$(SHERPAFLAGS)
+INCLUDES      = $(SHERPAINCS) $(APACICINCS) $(AMEGICINCS) $(AMISICINCS) \
+		$(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) $(PDFINCS) \
+		$(BEAMINCS) $(ATOOLSINCS)
 
 
 
