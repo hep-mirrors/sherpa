@@ -303,6 +303,9 @@ bool Simple_Chain::CreateGrid()
   PROFILE_HERE;
   bool vegas=PHASIC::Vegas::OnExternal();
   PHASIC::Vegas::SetOnExternal(m_vegas);
+  double min=ATOOLS::Min(m_stop[0],m_stop[4]);
+  p_isr->SetFixedSprimeMin(4.0*min*min);
+  p_isr->SetFixedSprimeMax(4.0*m_start[0]*m_start[0]);
   p_processes = new EXTRAXS::Simple_XS(InputPath(),InputFile(1),p_model);
   if (p_processes->Size()>0) p_processes->Clear();
   p_processes->InitializeProcesses(p_beam,p_isr,false);  
@@ -344,10 +347,8 @@ bool Simple_Chain::CreateGrid()
     PHASIC::Vegas::SetOnExternal(vegas);
     return false;
   }
-  p_isr->SetSprimeMin(4.0*m_stop[0]*m_stop[0]);
-  p_isr->SetSprimeMax(4.0*m_start[0]*m_start[0]);
   p_gridcreator = new Grid_Creator(&m_differentials,p_processes);
-  p_gridcreator->SetGridXMin(ATOOLS::Min(m_stop[0],m_stop[4]));
+  p_gridcreator->SetGridXMin(min);
   p_gridcreator->SetGridXMax(m_ecms/2.0);
   p_gridcreator->ReadInArguments(InputFile(),InputPath());
   p_gridcreator->SetXSExtension(m_xsextension);
@@ -565,9 +566,9 @@ bool Simple_Chain::CalculateTotal()
   ATOOLS::msg.Tracking()<<"Simple_Chain::CalculateTotal(): Pythia mode {"
 			<<"\n   \\sigma_{tot} = "
 			<<(m_sigmahard*ATOOLS::rpa.Picobarn()/1.e9)
-			<<" mb\n   \\sigma_{cut} = "
+			<<" mb @ p_\\perp = "<<m_stop[4]<<" GeV\n   \\sigma_{cut} = "
 			<<((*p_total)(m_stop[0])*ATOOLS::rpa.Picobarn()/1.e9)
-			<<" mb\n}"<<std::endl;
+			<<" mb p_\\perp = "<<m_stop[0]<<" GeV\n}"<<std::endl;
   p_total->ScaleY(1.0/m_norm);
   return true;
 }
@@ -610,7 +611,8 @@ bool Simple_Chain::Initialize()
     stop*=pow(m_ecms/scale,exponent);
   }
   SetStop(stop,0);
-  SetStop(stop,4);
+  SetStop(stop,4); 
+  if (m_regulate) SetStop(ATOOLS::rpa.gen.Accu()*stop,4);
   if (!reader->ReadFromFile(m_check,"CHECK_CONSISTENCY")) m_check=0;
   if (!reader->ReadFromFile(m_vegas,"VEGAS_MI")) m_vegas=0;
   std::string function;
