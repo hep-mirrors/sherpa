@@ -24,23 +24,23 @@ Primitive_Observable_Base::Primitive_Observable_Base() :
   m_type(0), m_nbins(0), m_xmin(0.), m_xmax(0.),
   m_name(std::string("noname")), m_listname(std::string("Analysed")),
   p_histo(NULL), m_nout(0), p_flavs(NULL), p_moms(NULL), 
-  m_splitt_flag(true) ,p_ana(NULL), p_sel(NULL) 
+  m_splitt_flag(true) ,p_ana(NULL), p_sel(NULL), m_copied(false)
 { 
   m_blobdisc = false;
 }
 
 Primitive_Observable_Base::Primitive_Observable_Base(int type,double xmin,double xmax,int nbins,
 						     Selector_Base * sel) :
-  m_type(type), m_nbins(nbins), m_xmin(xmin), m_xmax(xmax), 
-  m_listname(std::string("Analysed")), m_splitt_flag(true), p_ana(NULL), p_sel(sel)
+  m_type(type), m_nbins(nbins), m_xmin(xmin), m_xmax(xmax),
+  m_listname(std::string("Analysed")), m_splitt_flag(true), p_ana(NULL), p_sel(sel), m_copied(false)
 { 
   p_histo = new Histogram(m_type,m_xmin,m_xmax,m_nbins);
 }
 
 
 Primitive_Observable_Base::Primitive_Observable_Base(const Primitive_Observable_Base & old) :
-  m_type(old.m_type), m_nbins(old.m_nbins), m_xmin(old.m_xmin), m_xmax(old.m_xmax), 
-  m_name(old.m_name), m_listname(old.m_listname), p_sel(old.p_sel)
+  m_type(old.m_type), m_nbins(old.m_nbins), m_xmin(old.m_xmin), m_xmax(old.m_xmax),
+  m_name(old.m_name), m_listname(old.m_listname), p_sel(old.p_sel), m_copied(false)
 { 
   msg.Out()<<"LEGACY WARNING:  copy constructor Primitive_Observable_Base::Primitive_Observable_Base called"<<std::endl
 	   <<"                 use Copy() method instead!"<<std::endl;

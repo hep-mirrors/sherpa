@@ -55,6 +55,7 @@ namespace ANALYSIS {
 
     Primitive_Analysis    * p_ana;
     ATOOLS::Selector_Base * p_sel;
+    mutable bool m_copied;
 
   public:
 
