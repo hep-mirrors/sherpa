@@ -48,7 +48,6 @@ Sherpa::~Sherpa()
 {
   PROFILE_HERE;
   if (p_analysis)     { delete p_analysis;     p_analysis     = NULL; }
-  if (p_output)       { delete p_output;       p_output       = NULL; }
   if (p_eventhandler) { delete p_eventhandler; p_eventhandler = NULL; }
   if (p_inithandler)  { delete p_inithandler;  p_inithandler  = NULL; }
 }
