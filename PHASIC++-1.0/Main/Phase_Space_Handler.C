@@ -223,12 +223,12 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
   PROFILE_HERE;
   if (!(mode&psm::pi_call) && p_pi!=NULL) {
     p_active=process;
-    p_pi->GeneratePoint();
+    p_pi->GeneratePoint(mode);
     return p_pi->GenerateWeight();
   }
   p_info->ResetAll();
   if (m_nin>1) {
-    p_isrhandler->Reset();
+    if (!(mode&psm::no_lim_isr)) p_isrhandler->Reset();
     if (p_beamhandler->On()>0) { 
       p_beamhandler->SetSprimeMin(m_smin);
       p_beamhandler->SetLimits();
@@ -590,6 +590,8 @@ bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude)
     piinfo>>key>>dim;
     p_pi = new PI_Interface(this,key,dim);
     p_pi->SetMode((psm::code)m_use_pi);
+    msg_Tracking()<<"Phase_Space_Handler::ReadIn("<<pID
+		  <<"/PI/): Read in PI."<<std::endl;
     p_pi->ReadIn(pID+"/PI/");
   }
   if (rpa.gen.RandomSeed()==1234 && !(exclude&32)) {

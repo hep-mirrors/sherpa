@@ -29,14 +29,16 @@ bool PI_Interface::Initialize()
   p_integrator->SetNOpt(m_nopt);
   p_integrator->SetNMax(m_nmax);
   p_integrator->SetNCells(m_ncells);
+  m_cmode=m_mode;
   m_initialize=true;
   m_integral=p_integrator->Integrate(this);
   m_initialize=false;
   return true;
 }
 
-void PI_Interface::GeneratePoint()
+void PI_Interface::GeneratePoint(const psm::code &mode)
 {
+  m_cmode=m_mode|mode;
   p_integrator->Point(m_point);
 }
 
@@ -50,7 +52,7 @@ double PI_Interface::operator()(const std::vector<double> &x) const
   PI_Interface *cur=(PI_Interface*)this;
   cur->m_point=x;
   double value=p_pshandler->
-    Differential(p_pshandler->Active(),m_mode|psm::pi_call);
+    Differential(p_pshandler->Active(),m_cmode|psm::pi_call);
   return value;
 }
 

@@ -15,7 +15,7 @@ namespace PHASIC {
 
     std::string m_key;
     bool        m_initialize;
-    psm::code   m_mode;
+    psm::code   m_mode, m_cmode;
 
     std::vector<double> m_point;
     double              m_integral;
@@ -34,7 +34,7 @@ namespace PHASIC {
     // member functions
     bool Initialize();
 
-    void   GeneratePoint();
+    void   GeneratePoint(const psm::code &mode=psm::normal_call);
     double GenerateWeight();
 
     double operator()(const std::vector<double> &x) const;

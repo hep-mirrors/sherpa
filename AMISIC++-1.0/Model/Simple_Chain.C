@@ -355,7 +355,9 @@ bool Simple_Chain::SetUpInterface()
   for (size_t i=0;i<p_processes->Size();++i) {
     Semihard_QCD *group = dynamic_cast<Semihard_QCD*>((*p_processes)[i]);
     group->InitIntegrators();
-    if (m_pi==0) group->CreateISRChannels();
+    group->CreateISRChannels();
+    if (m_pi!=0) group->PSHandler()->ReadIn(OutputPath()+"MC/MC_"+
+					    group->Name(),16|32);
     group->SetFSRInterface(p_fsrinterface);
     group->SetFSRMode(2);
     group->CreateFSRChannels();
@@ -643,7 +645,8 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
       p_fsrinterface->SetTrigger(false);
       while (++pstrials<m_maxtrials) {
 	ATOOLS::Blob_Data_Base *data=selected->
-	  WeightedEvent(PHASIC::psm::no_lim_isr);
+	  WeightedEvent(PHASIC::psm::no_lim_isr|
+			(PHASIC::psm::code)m_pi);
 	if (data!=NULL) {
 	  weight=data->Get<PHASIC::Weight_Info>().weight;
 	  trials=data->Get<PHASIC::Weight_Info>().ntrial;
@@ -674,7 +677,8 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 				 <<value<<" "<<cur->BinExtra(m_last[0])
 				 <<" "<<m_spkey[3]<<" "<<m_ykey[2]<<"\n";
 		  selected->WeightedEvent(PHASIC::psm::no_lim_isr|
-					  PHASIC::psm::no_dice_isr);
+					  PHASIC::psm::no_dice_isr|
+					  (PHASIC::psm::code)m_pi);
 		  cur->AddBinExtra(m_last[0],1.0,3);
 		}
 		else {
