@@ -1,5 +1,5 @@
-ANALYSIS_PHASE = ME+Showers+Hadrons    ! Available: ME, Showers, Hadrons, added by "+", no spaces.
-OUTPUT = Output
+ANALYSIS_PHASE = Showers    ! Available: ME, Showers, Hadrons, added by "+", no spaces.
+OUTPUT = Analysis
 OBSERVABLES
 PT     11     0.   200. 100   Lin
 PT     -12    0.   200. 100   Lin

@@ -93,6 +93,10 @@ namespace ATOOLS {
     Particle * RemoveInParticle(Particle *,bool = true);
     Particle * RemoveOutParticle(int,bool = true);
     Particle * RemoveOutParticle(Particle *,bool = true);
+    void     RemoveInParticles(const int = 1);
+    void     RemoveOutParticles(const int = 1);
+    void     DeleteInParticles(const int = -1);
+    void     DeleteOutParticles(const int = -1);
     void     DeleteInParticle(Particle *);
     void     DeleteOutParticle(Particle *);
     void     RemoveOwnedParticles(const bool = true);

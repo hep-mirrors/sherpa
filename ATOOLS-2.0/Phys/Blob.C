@@ -162,6 +162,75 @@ Particle * Blob::RemoveOutParticle(int _pos,bool setit) {
   return NULL;
 }
 
+void Blob::RemoveInParticles(const int all) 
+{
+  for (Particle_Vector::iterator part=m_inparticles.begin();
+       part!=m_inparticles.end();) {
+    if ((all==-1&&(*part)->ProductionBlob()==NULL) ||
+	all==0 ||
+	(all==1&&(*part)->ProductionBlob()!=NULL)) {
+      (*part)->SetDecayBlob(NULL);
+      part=m_inparticles.erase(part);
+    }
+    else {
+      ++part;
+    }
+  }
+}
+
+void Blob::RemoveOutParticles(const int all) 
+{
+  for (Particle_Vector::iterator part=m_outparticles.begin();
+       part!=m_outparticles.end();) {
+    if ((all==-1&&(*part)->DecayBlob()==NULL) ||
+	all==0 ||
+	(all==1&&(*part)->DecayBlob()!=NULL)) {
+      (*part)->SetProductionBlob(NULL);
+      part=m_outparticles.erase(part);
+    }
+    else {
+      ++part;
+    }
+  }
+}
+
+void Blob::DeleteInParticles(const int all) 
+{
+  for (Particle_Vector::iterator part=m_inparticles.begin();
+       part!=m_inparticles.end();) {
+    if ((all==-1&&(*part)->ProductionBlob()==NULL) ||
+	all==0 ||
+	(all==1&&(*part)->ProductionBlob()!=NULL)) {
+      if ((*part)->ProductionBlob()!=NULL) 
+	(*part)->ProductionBlob()->RemoveOutParticle(*part);
+      (*part)->SetDecayBlob(NULL);
+      delete *part;
+      part=m_inparticles.erase(part);
+    }
+    else {
+      ++part;
+    }
+  }
+}
+
+void Blob::DeleteOutParticles(const int all) 
+{
+  for (Particle_Vector::iterator part=m_outparticles.begin();
+       part!=m_outparticles.end();) {
+    if ((all==-1&&(*part)->DecayBlob()==NULL) ||
+	all==0 ||
+	(all==1&&(*part)->DecayBlob()!=NULL)) {
+      if ((*part)->DecayBlob()!=NULL) 
+	(*part)->DecayBlob()->RemoveInParticle(*part);
+      (*part)->SetProductionBlob(NULL);
+      delete *part;
+      part=m_outparticles.erase(part);
+    }
+    else {
+      ++part;
+    }
+  }
+}
 
 Particle * Blob::RemoveInParticle(Particle * _part,bool setit) {
   if (!_part) return 0;
@@ -210,14 +279,14 @@ void Blob::DeleteInParticle(Particle * _part) {
 
 void Blob::RemoveOwnedParticles(const bool del)
 {
-  for (int i=0;i<m_inparticles.size();++i) {
+  for (size_t i=0;i<m_inparticles.size();++i) {
     if (m_inparticles[i]->ProductionBlob()==NULL) {
       if (del) delete m_inparticles[i];
     }
     else m_inparticles[i]->SetDecayBlob(NULL);
   }
   m_inparticles.clear();
-  for (int i=0;i<m_outparticles.size();++i) {
+  for (size_t i=0;i<m_outparticles.size();++i) {
     if (m_outparticles[i]->DecayBlob()==NULL) {
       if (del) delete m_outparticles[i];
     }
