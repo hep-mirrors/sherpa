@@ -204,7 +204,7 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
 	p_pshandler->InitIncoming();
       }
     }
-    SetTotal();
+    if (m_foundown) SetTotal();
     m_resultpath=resultpath;
     m_resultfile=filename;
     ATOOLS::Exception_Handler::AddTerminatorObject(this);
