@@ -13,7 +13,6 @@ using namespace HepPDT;
 HepMC_Interface::HepMC_Interface():
   p_event(NULL)
 {
-  std::cout<<__PRETTY_FUNCTION__<<std::endl;
   InitTheMap();
 }
 

@@ -43,7 +43,6 @@ IO_Handler::IO_Handler(const std::vector<std::string> & outfiles,
   m_evtnumber(0), 
   m_evtcount(0)
 {
-  std::cout<<__PRETTY_FUNCTION__<<std::endl;
   for (size_t i=0;i<infiles.size();++i) {
     m_intype=m_intype|(iotype::code)(pow(2,i)*(infiles[i]!=std::string("")));
   }
