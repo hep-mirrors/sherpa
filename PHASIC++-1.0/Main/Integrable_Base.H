@@ -31,6 +31,7 @@ namespace PHASIC {
     virtual void                       DeSelect()                      = 0;
     virtual void                       SelectOne()                     = 0;
     virtual void                       SetMax(double)                  = 0;
+    virtual int                        Size()                          = 0;
     virtual void                       SetMomenta(ATOOLS::Vec4D *)     = 0;
     virtual Integrable_Base          * Selected()                      = 0;
     virtual void                       SetHelicitySampling(bool) {}
