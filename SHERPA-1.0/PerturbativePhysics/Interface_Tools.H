@@ -33,6 +33,11 @@ namespace SHERPA {
   };
 
   /*!
+    \file 
+    \brief Contains the class SHERPA::Interface_Tools
+  */
+
+  /*!
     \class Interface_Tools
     \brief To interface simple $2\to 24 processes with the parton shower.
 

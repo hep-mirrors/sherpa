@@ -112,6 +112,7 @@ bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
 
 int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
 {
+  //  PROFILE_LOCAL("Amegic_Apacic_Interface::DefineInitialConditions");
   int nin  = blob->NInP();
   int nout = blob->NOutP();
 
@@ -128,20 +129,6 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
     if (!p_xs) p_cluster->SetColours(p_moms,p_fl);
     else { if (!(p_xs->SetColours(p_moms))) return 0; }
 
-//     if (p_xs) {
-//       cout<<" found "<<p_xs->Name()<<endl;
-//       for (size_t i = 0; i<4; ++i) cout<<p_xs->Flavs()[i]<<" ";
-//       cout<<endl;
-//       for (int i=0;i<4;i++) {
-// 	cout<<"( ";
-// 	for (int j=0;j<2;j++) {
-// 	  cout<<p_xs->Colours()[i][j]<<" ";
-// 	}
-// 	cout<<"), ";
-//       }
-//       cout<<endl;
-
-//     }
     
     if (m_type==1) { // e+ e-
       double sprime = (p_mehandler->Momenta()[0]+p_mehandler->Momenta()[1]).Abs2();
@@ -229,10 +216,12 @@ void Amegic_Apacic_Interface::CleanBlobs(ATOOLS::Blob_List * bl)
 
 int Amegic_Apacic_Interface::PerformShowers()
 {
+  // PROFILE_LOCAL("Amegic_Apacic_Interface::PerformShowers");
   int jetveto=-1;
   if (p_mehandler->UseSudakovWeight()) {
-    jetveto=0;
-    if (p_shower->MaxJetNumber()!=p_mehandler->NOut()) jetveto=1;
+    double pt2 = p_cluster->JetvetoPt2();
+    p_shower->SetJetvetoPt2(pt2);
+    jetveto=1;
   }
   return m_lastshowerveto=p_shower->PerformShowers(jetveto,
 		p_mehandler->GetISR_Handler()->X1(),p_mehandler->GetISR_Handler()->X2());

@@ -101,12 +101,12 @@ namespace SHERPA {
 
     bool  Combinable(const Leg &, const Leg &, int & strong) const ;
     Leg * CombineLegs(Leg *, int, int, int );
+    Leg   CombinedLeg(Leg *, int, int);
 
     void CombineMoms(ATOOLS::Vec4D *, int, int, int);
     void CombineMoms(ATOOLS::Vec4D *, int, int, int, ATOOLS::Vec4D * &);
 
     void AddPossibility(int, int, int, int);
-    Leg  CombinedLeg(Leg *, int, int);
     double Sprime();
   public:
     Combine_Table(ATOOLS::Jet_Finder *, ATOOLS::Vec4D *, Combine_Table *, int, int);

@@ -121,10 +121,10 @@ Cluster_Partons::~Cluster_Partons()
   if (p_weight_sum_sqr) delete [] p_weight_sum_sqr;
 }
 
-bool Cluster_Partons::ClusterConfiguration(Blob * _blob,double _x1,double _x2) {
+bool Cluster_Partons::ClusterConfiguration(Blob * blob,double x1,double x2) {
 //   std::cout<<" cluster configuration "<<std::endl;
 //   std::cout<<*_blob<<std::endl;
-  p_blob          = _blob;
+  p_blob          = blob;
   int nin         = p_me->NIn();
   int nout        = p_me->NOut();
   int nampl       = p_me->NumberOfDiagrams();
@@ -155,8 +155,6 @@ bool Cluster_Partons::ClusterConfiguration(Blob * _blob,double _x1,double _x2) {
       }
     }
   }  
-//   std::cout<<" done "<<endl;
-
 
   p_ct = 0;
   // if no combination table exist, create it
@@ -178,7 +176,7 @@ bool Cluster_Partons::ClusterConfiguration(Blob * _blob,double _x1,double _x2) {
 
     p_combi = new Combine_Table(p_jf,amoms,0,m_isrmode,m_isrshoweron);
     p_combi->FillTable(legs,nlegs,nampl);   
-    p_ct = p_combi->CalcJet(nlegs,_x1,_x2); 
+    p_ct = p_combi->CalcJet(nlegs,x1,x2); 
   }
   else {
     // use the existing combination table and determine best combination sheme
@@ -190,7 +188,7 @@ bool Cluster_Partons::ClusterConfiguration(Blob * _blob,double _x1,double _x2) {
       amoms[0]=amoms[1];
       amoms[1]=help;
     }
-    p_ct = p_combi->CalcJet(nlegs,_x1,_x2,amoms);
+    p_ct = p_combi->CalcJet(nlegs,x1,x2,amoms);
     delete [] amoms;
   }
 
@@ -223,16 +221,12 @@ bool Cluster_Partons::FillLegs(Leg * alegs, Point * root, int & l, int maxl) {
 void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double jetscale) 
 {
   msg.Tracking()<<" CalculateWeight("<<hardscale<<","<<asscale<<","<<jetscale<<")"<<endl;
-  double facycut = 1.; // FK **** rpa.test.FactorYcut();
-  double facnlly = 1.; // FK **** rpa.test.FactorNLLQ();
-
-  double qmin = facnlly*sqrt(jetscale);
-  double qmax = facnlly*sqrt(hardscale);
+  double qmin = sqrt(jetscale);
+  double qmax = sqrt(hardscale);
 
   int nlegs   = p_ct->NLegs();
+
   // count jets
-
-
   int njet=nlegs-2;
   Combine_Table * ct_test = p_ct;
   while (ct_test->Up()) {
@@ -240,25 +234,21 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
     ++njet;
   }
 
-//   std::cout<<ct_test<<std::endl;
+  //   std::cout<<ct_test<<std::endl;
   msg.Tracking()<<"njet :"<<njet<<endl;
-
 
   m_weight      = 1.;
 
   int si = 0;
   std::vector<double> last_q(nlegs,qmax);
   std::vector<int>    last_i(nlegs,si);
-  double as_jet  = (*as)(facycut*jetscale);
-  double as_hard = (*as)(facycut*asscale);
-
-
+  double as_jet  = (*as)(jetscale);
+  double as_hard = (*as)(asscale);
 
   if (jetscale<1.e-6 || asscale<1.e-6) {
     as_jet  = 1.;
     as_hard = 1.;
   }
-
 
   // one might be tempted to remove (for e+e- -> Jets) universal 2 Quark sudakov to increase the effectivity!
   int strong=0;
@@ -268,30 +258,25 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
     }    
   }
 
-
-
   // weight with correct alphas at hard scale (if needed).
   if (strong>2 && m_sud_mode%10>0) {
     m_weight *= pow(as_hard/as_jet,strong-2);
     msg.Tracking()<<" whardas - as("<<sqrt(asscale)<<")/as("<<sqrt(jetscale)<<")^"<<strong-2<<" = "<<as_hard/as_jet<<std::endl;
+    if (asscale<m_jetvetopt2) m_jetvetopt2=asscale;
   }
-
 
   int count_startscale=-10;
   // make sure leg between hardscale and asscale is only taken into account twice
   if (hardscale!=asscale && strong==3) {
-    if (njet!=m_maxjetnumber) {
-      // find gluon and reduce scale to asscale
-      for (int l=0; l<nlegs; ++l) {
-	if (p_ct->GetLeg(l)->fl.IsGluon()) {
-	  last_q[l]=facnlly*sqrt(asscale);
-	  break;
-	}
-      }
-    }
-    else {
-      count_startscale=0;
-    }
+    count_startscale=0;
+  }
+
+  // determine lowest scale
+  m_jetvetopt2=jetscale;
+  if (njet==m_maxjetnumber) {
+    m_jetvetopt2=asscale;
+    FixJetvetoPt2();
+    qmin=sqrt(m_jetvetopt2);
   }
 
 
@@ -304,56 +289,48 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
     p_ct=p_ct->Up();
     ++si;
     ++nlegs;
+
     // make space in vector:
     last_q.push_back(qmax);
     last_i.push_back(si);
 
-    int i,j;
     // ... determine winner: i,j, and yij
+    int i,j;
     double ptij = p_ct->GetWinner(i,j);
 
-    if (m_sud_mode%10>1 && ct_down->GetLeg(i)->fl.IsGluon()) {  // Gluon sudakov
-      double w_in_g =  p_sud->Delta(ct_down->GetLeg(i)->fl)(last_q[i],qmin)/
-	                   p_sud->Delta(ct_down->GetLeg(i)->fl)(facnlly*ptij,qmin);
-      msg.Tracking()<<" wgin - DeltaG("<<last_q[i]<<")/DeltaG("<<ptij<<") = "<<w_in_g<<std::endl;
-      m_weight *= w_in_g;
+    if (m_sud_mode%10>1 && ct_down->GetLeg(i)->fl.Strong()) {  // sudakov form factor
+      double w_in =  p_sud->Delta(ct_down->GetLeg(i)->fl)(last_q[i],qmin)/
+	                   p_sud->Delta(ct_down->GetLeg(i)->fl)(ptij,qmin);
+      msg.Tracking()<<" win -"<<ct_down->GetLeg(i)->fl
+	       <<"- Delta("<<last_q[i]<<")/Delta("<<ptij<<") = "<<w_in<<std::endl;
+      m_weight *= w_in;
+      ++count_startscale;
     }
-    if (m_sud_mode%10>1 && ct_down->GetLeg(i)->fl.IsQuark()) {  // Quark sudakov
-      double w_in_q = p_sud->Delta(ct_down->GetLeg(i)->fl)(last_q[i],qmin)/
-	                       p_sud->Delta(ct_down->GetLeg(i)->fl)(facnlly*ptij,qmin);
-      msg.Tracking()<<" wqin - DeltaQ("<<last_q[i]<<")/DeltaQ("<<ptij<<") = "<<w_in_q<<std::endl;
-      m_weight *= w_in_q;
-    }
+
     if (m_sud_mode%10>0 && ct_down->GetLeg(i)->fl.Strong()  // alphaS factor
 	&& p_ct->GetLeg(i)->fl.Strong() && p_ct->GetLeg(j)->fl.Strong()) {  
-      double a = (*p_runas)(facycut*ptij*ptij);
+      double a = (*p_runas)(ptij*ptij);
       double w_in_as = a/as_jet;
-      if (m_kfac!=0.) {
-	w_in_as *= 1. + a/(2. * M_PI)*m_kfac;
-      }
-      msg.Tracking()<<" winas - as("<<ptij<<")/as("<<qmin<<") = "<<w_in_as<<std::endl;
+      if (m_kfac!=0.) 	w_in_as *= 1. + a/(2. * M_PI)*m_kfac;
+      msg.Tracking()<<" winas - as("<<ptij<<")/as("<<sqrt(jetscale)<<") = "<<w_in_as<<std::endl;
       m_weight *= w_in_as;
     }
 
     // store old q values
     last_i[i] = si;
-    last_q[i] = facnlly*ptij;
-    for (int l=j+1; l<nlegs; ++l ) {
+    last_q[i] = ptij;
+    for (int l=nlegs-1;l>j;--l) {
       last_i[l] = last_i[l-1];
       last_q[l] = last_q[l-1];
-    }
+    } 
     last_i[j] = si;
     last_q[j] = ptij;
 
     // check that not too many hardscales are present!
-    if (ct_down->GetLeg(i)->fl.Strong()) {
-      ++count_startscale;
-    }
     if (count_startscale==2) {
       for (int l=j+1; l<nlegs; ++l ) {
 	if (last_q[l]==qmax) {
-// 	  std::cout<<" manip: "<<l<<std::endl;
-	  last_q[l]=facnlly*sqrt(asscale);
+	  last_q[l]=sqrt(asscale);
 	}
       }      
     }
@@ -361,21 +338,29 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
 
 
   // go over all remaining legs
-  if ((m_sud_mode%10>1 && njet!=m_maxjetnumber) || m_sud_mode>10) {
-
+  if (m_sud_mode%10>1) {
     for (int l=0; l<nlegs; ++l) {
-      if (p_ct->GetLeg(l)->fl.IsGluon()) { // Gluon sudakov
-	double w_out_g = p_sud->Delta(p_ct->GetLeg(l)->fl)(last_q[l],qmin);
-	m_weight *= w_out_g;
-	msg.Tracking()<<" wgout - DeltaG("<<last_q[l]<<") = "<<w_out_g<<std::endl;
-      }
-      if (p_ct->GetLeg(l)->fl.IsQuark()) {// Quark sudakov
-	double w_out_q = p_sud->Delta(p_ct->GetLeg(l)->fl)(last_q[l],qmin);
-	m_weight *= w_out_q;
-	msg.Tracking()<<" wqout - DeltaQ("<<last_q[l]<<") = "<<w_out_q<<std::endl;
+      if (p_ct->GetLeg(l)->fl.Strong() && last_q[l]>qmin) {//  sudakov form factor
+	double w_out = p_sud->Delta(p_ct->GetLeg(l)->fl)(last_q[l],qmin);
+	msg.Tracking()<<" wout "<<p_ct->GetLeg(l)->fl<<"-Delta("<<last_q[l]<<","<<qmin<<") = "<<w_out<<std::endl;
+	m_weight *= w_out;
       }    
+
+      // check that not too many hardscales are present!
+      if (p_ct->GetLeg(l)->fl.Strong()) {
+	++count_startscale;
+      }
+      if (count_startscale==2) {
+	for (int k=l+1; k<nlegs; ++k ) {
+	  if (last_q[k]==qmax) {
+	    last_q[k]=sqrt(asscale);
+	  }
+	}      
+      }
     }
   }
+
+  msg.Tracking()<<" jetvetopt2= "<<m_jetvetopt2<<std::endl;
   msg.Tracking()<<" sudakov weight="<<m_weight<<std::endl;
 
   p_ct = ct_tmp;
@@ -500,7 +485,7 @@ int Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
     msg.Tracking()<<"q1^2 = "<<m_asscale<<endl;
 
     // --- test only ---
-    /*
+
     Vec4D q[4];
     for (int i=0;i<4;++i) {
       q[i]=p[i];
@@ -508,16 +493,16 @@ int Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
     Poincare cms(q[0]+q[1]);
     for (int i=0;i<4;++i) {
       cms.Boost(q[i]);
-      msg.Tracking()<<i<<" : "<<q[i]<<endl;
+      //      msg.Out()<<i<<" : "<<q[i]<<endl;
     }
     Poincare rot(q[0],Vec4D::ZVEC);
     for (int i=0;i<4;++i) {
       rot.Rotate(q[i]);
-      msg.Tracking()<<i<<" : "<<q[i]<<endl;
+      //      msg.Out()<<i<<" : "<<q[i]<<" ("<<q[i].Abs2()<<")"<<endl;
     }
     m_asscale = 0.5*(sqr(q[2][1])+sqr(q[2][2])+sqr(q[3][1])+sqr(q[3][2]));
     msg.Tracking()<<"q1^2 = "<<m_asscale<<endl;
-    */
+
     // --- end test
 
     m_scale = m_asscale + p[2].Abs2()+p[3].Abs2();
@@ -670,6 +655,27 @@ void Cluster_Partons::FillDecayTree(Tree * fin_tree)
 }
 
 
+void Cluster_Partons::FixJetvetoPt2() 
+{
+  Combine_Table * ct_tmp = p_ct;
+
+  // anti-cluster and ...
+  while (p_ct->Up()) {
+    Combine_Table * ct_down = p_ct;
+    p_ct=p_ct->Up();
+    int i,j;
+    double ptij = p_ct->GetWinner(i,j);
+    if (m_sud_mode%10>0 && ct_down->GetLeg(i)->fl.Strong()  
+	&& p_ct->GetLeg(i)->fl.Strong() && p_ct->GetLeg(j)->fl.Strong()) {  
+      if (sqr(ptij)<m_jetvetopt2) m_jetvetopt2=sqr(ptij);
+    }
+  }
+
+  p_ct = ct_tmp;
+
+}
+
+
 void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
 {
 //   std::cout<<"FillTrees"<<endl;
@@ -749,7 +755,7 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
     if (xs) scale = xs->Scale();          // *AS* perhaps additional factor but 
     mo->t      = scale;                   // s for drell-yan and e+e- seems fine
     //    std::cout<<" hard scale : "<<scale<<endl;
-    mo->t      = mo->part->Momentum().Abs2();
+    mo->t      = mo->part->Momentum().Abs2();  // ????? *FK* 
   }
 
   EstablishRelations(mo,knots[0],knots[1],0);
@@ -854,7 +860,6 @@ Knot * Cluster_Partons::Point2Knot(Tree * tree, const Leg & po,
   Flavour_Map::const_iterator cit=m_flmap.find(flav);
   if (cit!=m_flmap.end()) flav=cit->second;
 
-
   if (po.ExtraAnti() == -1) flav = flav.Bar();
 
   Knot * k   = tree->NewKnot();
@@ -865,28 +870,27 @@ Knot * Cluster_Partons::Point2Knot(Tree * tree, const Leg & po,
 	 (p_blob->InParticle(i)->Momentum() == mom) ) { 
       *(k->part)   = p_blob->InParticle(i);
       found = 1;
+      break;
     }
   }
-  for (int i=0;i<p_blob->NOutP();i++) {
-    if ( (p_blob->OutParticle(i)->Flav() == flav) &&
-	 (p_blob->OutParticle(i)->Momentum() == mom) ) {
-      if (found) {
-	msg.Error()<<"Blob with in- and outgoing particle identical !!!"<<std::endl
-		   <<p_blob<<std::endl;
+  if (!found) {
+    for (int i=0;i<p_blob->NOutP();i++) {
+      if ( (p_blob->OutParticle(i)->Flav() == flav) &&
+	   (p_blob->OutParticle(i)->Momentum() == mom) ) {
+	*(k->part)   = p_blob->OutParticle(i);
+	found = 1;
+	break;
       }
-      *(k->part)   = p_blob->OutParticle(i);
-      found = 1;
     }
   }
   if (!found) *(k->part)   = Particle(0,flav,mom);
 
   // preliminary parton status!!!
-  double scale = sqr(mom[0]);
   k->part->SetInfo(info);
   k->part->SetStatus(1);  //final
   k->tout      = sqr(flav.PSMass());
   if (flav.IsKK()) k->tout=mom.Abs2();
-  k->E2        = scale;
+  k->E2        = sqr(mom[0]);
   k->costh     = 0; 
   k->stat      = 3;
   k->thcrit    = M_PI;
@@ -950,11 +954,13 @@ void Cluster_Partons::EstablishRelations(Knot * mo, Knot * d1,Knot * d2,int mode
     if (1) {
       mo->t = t0;
       d1->t = t1;
+      d1->tmax = t1;
       d2->t = -t1;
     }
     else {
       mo->t = t1;
       d1->t = t1;
+      d1->tmax = t1;
       d2->t = -t0;
     }
     double x1,x2;
