@@ -5,6 +5,7 @@
 #include "Photon_Remnant.H"
 #include "No_Remnant.H"
 #include "Data_Reader.H"
+#include "Run_Parameter.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Beam_Remnant_Handler
@@ -228,7 +229,13 @@ FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
     for (short unsigned int i=0;i<2;++i) p_kperp->FillKPerp(p_beamblob[i]);
   }
   for (short unsigned int i=0;i<2;++i) p_beampart[i]->AdjustKinematics();
-  SumMomenta(bloblist->front());
+  if (!SumMomenta(bloblist->front())) {
+    msg_Info()<<ATOOLS::rpa.gen.NumberOfDicedEvents()<<" "<<*bloblist<<std::endl;
+    while (bloblist->size()>0) {
+      delete bloblist->back();
+      bloblist->pop_back();
+    }
+  }
   return okay;
 }
 
