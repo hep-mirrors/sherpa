@@ -283,7 +283,7 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n)
   double b1=C1/m_x[0], b2=C2/m_x[1];
   if (m_zkey[0][2]>1. || m_zkey[1][2]>1.) return false;
   if (m_x[0]>m_zkey[0][2] || m_x[1]>m_zkey[1][2]) return false;
-  if (b1>m_x[0] || b2>m_x[1]) return false;
+  if (b1>m_x[1] || b2>m_x[0]) return false;
   p[0]=Vec4D((m_x[0]-b1)*Q/2.,m_kp[0][1],m_kp[0][2],(m_x[0]+b1)*Q/2.);
   p[1]=Vec4D((m_x[1]-b2)*Q/2.,m_kp[1][1],m_kp[1][2],-(m_x[1]+b2)*Q/2.);
 #ifndef NO_ANALYSIS__ISR_Handler
