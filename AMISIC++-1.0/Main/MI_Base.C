@@ -20,6 +20,7 @@ MI_Base::s_remnanthandlers=std::vector<ATOOLS::Remnant_Info*>(2,(ATOOLS::Remnant
 
 bool MI_Base::s_stophard=true;
 bool MI_Base::s_stopsoft=true;
+bool MI_Base::s_cleaned=true;
 
 MI_Base::MI_Base(std::string _m_name,TypeID _m_type,unsigned int _m_nparameter,
 		 unsigned int infiles,unsigned int outfiles):
