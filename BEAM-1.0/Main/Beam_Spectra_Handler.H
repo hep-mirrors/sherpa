@@ -14,7 +14,7 @@ namespace BEAM {
     ATOOLS::Poincare      m_LABBoost;
 
     bool                  m_asymmetric;
-    int                   m_mode; 
+    int                   m_mode, m_polarisation; 
     double                m_mass12, m_mass22, m_x1, m_x2;
     double                m_exponent[2];
     double                m_splimits[3],m_ylimits[2];
@@ -35,6 +35,7 @@ namespace BEAM {
     bool   MakeBeams(ATOOLS::Vec4D *,double,double);
     bool   CalculateWeight(double);
     double Weight(ATOOLS::Flavour * flin = NULL);
+    double Weight(int * pol_types, double * dofs);
 
     void   BoostInCMS(ATOOLS::Vec4D *,int);
     void   BoostInLab(ATOOLS::Vec4D *,int);
@@ -58,6 +59,7 @@ namespace BEAM {
 					           p_BeamBase[1]->Peak(); }
     double          Exponent(const int i) { return m_exponent[i]; }
     int             On()                  { return m_mode; }
+    int             Polarisation()        { return m_polarisation; }
     Beam_Base *     GetBeam(const int i)  { return p_BeamBase[i]; }
   };
 

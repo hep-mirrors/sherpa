@@ -50,7 +50,7 @@ void Polarisation::Add_Extern_Polarisations(Basic_Sfuncs* BS,Flavour* fl,Helicit
 {
 #ifdef Explicit_Pols
   for(short int i=0;i<BS->GetNmomenta();i++){
-    if(fl[i].IsVector())BS->BuildPolarisations(i,hel->p_type[i],hel->angle[i]);
+    if(fl[i].IsVector())BS->BuildPolarisations(i,hel->PolTypes()[i],hel->PolAngles()[i]);
     if(fl[i].IsTensor())BS->BuildTensorPolarisations(i);
   } 
 #endif

@@ -68,20 +68,32 @@ namespace AMEGIC {
     
   class Pol_Info{
   public:
-    Pol_Info();
-    Pol_Info(const ATOOLS::Flavour &);
-    Pol_Info(const Pol_Info &);
-    Pol_Info& operator=(const Pol_Info &);
-   ~Pol_Info();
     //Polarisation type: 'c'=circular 'l'=linear 'h'=helicity 't'=tensor
-    char p_type;
+    char pol_type;
     //direction for linear polarisation
     double angle;
     int      num;
     int    * type;
     double * factor;
     void Init(int);
+    friend std::ostream & operator<<(std::ostream &, Pol_Info &);
+  public:
+    Pol_Info();
+    Pol_Info(const ATOOLS::Flavour &);
+    Pol_Info(const Pol_Info &);
+    Pol_Info& operator=(const Pol_Info &);
+   ~Pol_Info();
+
+    void SetPol(char);
+    char GetPol();
+    char GetPolarisationType() { return pol_type; }
+    int  DoFNumber() { return num; }
+    int    Polarisation(const int i) { return type[i]; }
+    double Degree(const int i)       { return factor[i]; }
   };
+
+  std::ostream & operator<<(std::ostream &, Pol_Info &);
+
   /*!
     \class Pol_Info
     \brief Container for everything about the polarization state of external particles.
@@ -91,7 +103,7 @@ namespace AMEGIC {
     in AMEGIC::Helicity.
   */
   /*!
-    \var char Pol_Info::p_type
+    \var char Pol_Info::pol_type
     Type of the polarization state.
     Possible values:
     - c for circular (vector boson)

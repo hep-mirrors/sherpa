@@ -299,6 +299,13 @@ void Amegic::ReadInProcessfile(string file)
 	    for (int i=0;i<nIS+nFS;i++) {
 	      if (flavs[i].Size()>1) { single = 0; break; }
 	    } 
+
+	    // for beam
+	    int bsh_pol=p_beam->Polarisation();
+	    int beam_is_poled[2]={bsh_pol&1,bsh_pol&2};
+	    for (int i=0;i<nIS;++i) {
+	      if (plavs[i].DoFNumber()>1 && beam_is_poled[i]) { single = 0; break; }
+	    } 
 	    
 	    double summass = 0.;
 	    for (int i=0;i<nFS;i++)
@@ -393,16 +400,16 @@ int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf)
   pl = new Pol_Info[count];
   
   for (i=0;i<count;i++) {
-    fl[i] = Flavour(kf::code(int(abs(double(ii[i])))));
+    fl[i] = Flavour(kf::code(iabs(ii[i])));
     if (ii[i]<0) fl[i] = fl[i].Bar();
+    pl[i]=Pol_Info(fl[i]);
 
 #ifdef Explicit_Pols
     int t1=mt::p_m, t2=mt::p_p;
     if(pc[i]=='l') { t1=mt::p_l0; t2=mt::p_l1; }
-    pl[i].p_type = pc[i];
-    pl[i].angle  = angle[i];
+    if (pc[i]!=' ') pl[i].pol_type = pc[i];
+    pl[i].angle    = angle[i];
  
-    int dof      = 1;
     int type;
     switch(pp[i]){
       case '-' : type = t1;     break;
@@ -410,34 +417,20 @@ int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf)
       case '0' : type = mt::p_l;break;
       default  : type = t1;
     }
-    if(fl[i].IsFermion()) dof=2;
-    if(fl[i].IsVector() &&  ATOOLS::IsZero(fl[i].Mass())) dof=2;
-    if(fl[i].IsVector() && !ATOOLS::IsZero(fl[i].Mass())) dof=3;
-    if(fl[i].IsTensor()) dof=5;
- 
-    if (ATOOLS::IsZero(pd[i]-1.)) pl[i].Init(1);
-                               else pl[i].Init(dof);
-
     if(!fl[i].IsTensor()){
       int tf[3] = {t1,t2,mt::p_l};
-      if(pl[i].num==1) {
+      if (ATOOLS::IsZero(pd[i]-1.)) {
 	pl[i].type[0]=type;
-	pl[i].factor[0]=dof;
+	pl[i].factor[0]=pl[i].num;
+	pl[i].num=1;
       }
       else{
 	for (int j=0;j<pl[i].num;j++){
 	  pl[i].type[j]=tf[j];
-	  if(pl[i].type[j]==type)  pl[i].factor[j] = 1.+pd[i]*(dof-1.);
+	  if(pl[i].type[j]==type)  pl[i].factor[j] = 1.+pd[i]*(pl[i].num-1.);
 	                     else  pl[i].factor[j] = 1.-pd[i];
 	}
       }
-    }
-    else {
-      pl[i].type[0]=mt::p_t1;pl[i].factor[0]=1.;
-      pl[i].type[1]=mt::p_t2;pl[i].factor[1]=1.;
-      pl[i].type[2]=mt::p_t3;pl[i].factor[2]=1.;
-      pl[i].type[3]=mt::p_t4;pl[i].factor[3]=1.;
-      pl[i].type[4]=mt::p_t5;pl[i].factor[4]=1.;
     }
   
 #else

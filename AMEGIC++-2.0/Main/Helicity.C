@@ -16,56 +16,62 @@ Helicity::Helicity(int Nin,int Nout,Flavour* fl,Pol_Info* pl)
   int * pnum = new int[N];
 
 
-  p_type = new char[N+1];
-  angle  = new double[N];
+  p_pol_types = new char[N+1];
+  p_angles    = new double[N];
   for(i=0;i<N;i++){
-    p_type[i] = pl[i].p_type;
-    angle[i]  = pl[i].angle;
+    p_pol_types[i] = pl[i].pol_type;
+    p_angles[i]    = pl[i].angle;
+    // mark polarised particles
+    if ((pl[i].pol_type=='h' || pl[i].pol_type=='c') &&
+	(pl[i].num==1)) {
+      if (pl[i].type[0]==mt::p_p) p_pol_types[i] = '+';
+      if (pl[i].type[0]==mt::p_m) p_pol_types[i] = '-';
+    }
   }
-  p_type[N] = 0;
+  p_pol_types[N] = 0;  // end of char-string
 
-  nsign = 1;
-  for(i=0;i<N;i++) nsign *= pl[i].num;
+  m_nsign = 1;
+  for(i=0;i<N;i++) m_nsign *= pl[i].num;
 
   //list for calculation of physical fermion helicities
-  fnsign       = 1;
-  fermion_hels = 0;
-  Slist = new signlist[nsign];
-  for (i=0;i<nsign;i++){
-      Slist[i].s         = new int[N];
-      Slist[i].on        = 1;
-      Slist[i].Mult      = 1;
-      Slist[i].polfactor = 1.;
-      Slist[i].partner   = -1;
+  m_fnsign       = 1;
+  m_fermion_hels = 0;
+  p_slist = new Sign_List[m_nsign];
+  for (i=0;i<m_nsign;i++) {
+      p_slist[i].s         = new int[N];
+      p_slist[i].on        = 1;
+      p_slist[i].multi     = 1;
+      p_slist[i].polfactor = 1.;
+      p_slist[i].partner   = -1;
       for (j=0;j<N;j++){
 	int div = 1;
 	for (k=0;k<j;k++) div *= pl[k].num;
 	int l = (i/div)%pl[j].num;
-	Slist[i].s[j] = pl[j].type[l];
-	if(j<Nin)Slist[i].polfactor *= pl[j].factor[l];
+	p_slist[i].s[j] = pl[j].type[l];
+	if(j<Nin)p_slist[i].polfactor *= pl[j].factor[l];
 	Tensor_Struc ts;
-	Slist[i].polfactor*=ts.GetTfactor(pl[j].type[l]);          //extra factor for spin2 polarisation tensor 
+	p_slist[i].polfactor*=ts.GetTfactor(pl[j].type[l]);          //extra factor for spin2 polarisation tensor 
       } 
   }
 
-  if(fermion_hels){
-    FSlist = new signlist[fnsign];
-    for (i=0;i<fnsign;i++){
-      FSlist[i].s         = new int[N];
-      FSlist[i].on        = 1;
-      FSlist[i].Mult      = 1;
-      FSlist[i].polfactor = 1.;
+  if (m_fermion_hels) {
+    p_fslist = new Sign_List[m_fnsign];
+    for (i=0;i<m_fnsign;i++){
+      p_fslist[i].s         = new int[N];
+      p_fslist[i].on        = 1;
+      p_fslist[i].multi     = 1;
+      p_fslist[i].polfactor = 1.;
       for (j=0;j<N;j++){
 	int div = 1;
 	for (k=0;k<j;k++)div *= pnum[k];
 	int l = (i/div)%pnum[j];
-	if (fl[j].IsFermion()&&l>0) FSlist[i].s[j] = mt::p_m;
-	                       else FSlist[i].s[j] = pl[j].type[l];
+	if (fl[j].IsFermion()&&l>0) p_fslist[i].s[j] = mt::p_m;
+	                       else p_fslist[i].s[j] = pl[j].type[l];
 	
       }
     }
   }
-  else FSlist=Slist;
+  else p_fslist=p_slist;
 
   delete [] pnum;
 }
@@ -73,7 +79,13 @@ Helicity::Helicity(int Nin,int Nout,Flavour* fl,Pol_Info* pl)
 
 
 
-
+Helicity::~Helicity() 
+{
+  if (p_slist!=p_fslist) {
+    if (p_fslist) delete [] p_fslist;
+  }
+  if (p_slist) delete [] p_fslist;
+}
 
 
 

@@ -10,15 +10,15 @@ namespace BEAM {
   protected:
     std::string        m_type;
     ATOOLS::Flavour    m_beam,m_bunch;
-    double             m_energy,m_polarization;
+    double             m_energy,m_polarisation;
     ATOOLS::Vec4D      m_lab,m_vecout;
     int                m_dir;
     double             m_x,m_Q2,m_weight;
   public:
     Beam_Base(std::string _type,const ATOOLS::Flavour _beam,
-	      const double _energy,const double _polarization,const int _dir) :
+	      const double _energy,const double _polarisation,const int _dir) :
       m_type(_type), m_beam(_beam), m_bunch(m_beam),
-      m_energy(_energy),m_polarization(_polarization),
+      m_energy(_energy),m_polarisation(_polarisation),
       m_dir(_dir),m_x(1.),m_Q2(0.),m_weight(1.)
     {
       double disc      =  1.-ATOOLS::sqr(m_beam.PSMass()/m_energy);
@@ -43,10 +43,11 @@ namespace BEAM {
     virtual ATOOLS::Vec4D      OutMomentum()  { return m_vecout; }
     virtual ATOOLS::Vec4D      InMomentum()   { return m_lab; }
     virtual double             Energy()       { return m_energy; }
-    virtual double             Polarization() { return m_polarization; }
+    virtual double             Polarisation() { return m_polarisation; }
     virtual double             Weight(ATOOLS::Flavour fl = ATOOLS::Flavour(ATOOLS::kf::none)) 
                                               { return m_weight; }
     virtual bool               On()           { return 0; }
+    virtual bool               PolarisationOn() { return (m_polarisation!=0.); }
     virtual std::string        Type()         { return m_type; }
     virtual double             Exponent()     { return 0.; }
     virtual double             Xmax()         { return 1.; }
@@ -85,7 +86,7 @@ namespace BEAM {
     Energy of the incoming beam particle.
   */
   /*!
-    \var double Beam_Base::m_polarization
+    \var double Beam_Base::m_polarisation
     The polarization degree of the incoming particle. It should
     range between -1 and 1 and it should - preferably - be a helicity.
   */

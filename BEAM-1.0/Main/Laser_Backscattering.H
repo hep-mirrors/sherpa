@@ -5,7 +5,7 @@
 
 namespace BEAM {  
   class Laser_Backscattering : public Beam_Base {
-    double m_energyL,m_polarizationL;
+    double m_energyL,m_polarisationL;
     int    m_mode;
     bool   m_angles,m_pol;
     double m_Ebounds[2];
@@ -25,19 +25,19 @@ namespace BEAM {
     double TwoPhotons(double,double,double,double &);
     double Rescattering(double,double,double,double &);
     double SimpleCompton(double,double,double);
-    double Polarization(double,double,double,double);
+    double Polarisation(double,double,double,double);
   public:
     Laser_Backscattering(const ATOOLS::Flavour,const double,const double,
 			 const double,const double,const int,const int,const int,const int);
     ~Laser_Backscattering();
 
     Beam_Base     * Copy();
-    void            PrintSpectra(std::string);
+    void            PrintSpectra(std::string,int=0);
     bool            CalculateWeight(double,double);
     double          Weight(ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none));
     ATOOLS::Vec4D   OutMomentum();
 
-    double          PolarisationDegree() { return m_polar; }
+    double          Polarisation()       { return m_polar; }
     void            SetMode(int _mode)   { m_mode = _mode; }
     void            SetPol(bool on)      { m_pol  = on; }
     bool            On()                 { return 1;  }
@@ -46,6 +46,7 @@ namespace BEAM {
     double          Exponent()           { return 0.5; }
     double          Xmax()               { return m_upper; }
     double          Peak()               { return m_peak; }
+    bool            PolarisationOn() ;
   };
 
 
@@ -100,7 +101,7 @@ namespace BEAM {
     The energy of the laser-photons, \f$\omega_L\f$.
   */
   /*!
-    \var double Laser_Backscattering::m_polarizationL
+    \var double Laser_Backscattering::m_polarisationL
     The polarization degree of the laser-photons, \f$\lambda_L\f$.
   */
   /*!

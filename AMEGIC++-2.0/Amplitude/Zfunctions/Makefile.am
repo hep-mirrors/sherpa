@@ -18,3 +18,4 @@ INCLUDES = -I../../Amplitude \
 	   -I../../../ATOOLS-2.0/Math \
 	   -I../../../ATOOLS-2.0/Org 
 noinst_HEADERS = Basic_Func.H  Basic_Sfuncs.H Basic_Func.icc Zfunc_Calc.H Calculator.H
+CXXFLAGS=-g

@@ -114,7 +114,7 @@ string * Process_Base::GenerateNames(int _nin, Flavour * _flin, Pol_Info * _plin
 				     string & _name,string & _ptype, string & _lib)
 {
   Reshuffle(_nin, _flin, _plin);
-  
+
   if (_flin[0].IsAnti() && !_flin[1].IsAnti()) {
     Flavour flhelp  = _flin[0];
     _flin[0] = _flin[1];
@@ -153,11 +153,12 @@ string * Process_Base::GenerateNames(int _nin, Flavour * _flin, Pol_Info * _plin
       if (_flin[i].IsAnti()) _name += string("b"); 
     }
     // polinfo for fully polarised incommings
-    if (_plin[i].p_type=='c' && _plin[i].num==1) {
+    if (_plin[i].pol_type=='c' && _plin[i].num==1) {
       if (_plin[i].type[0]==-1) _name += string("m");
       if (_plin[i].type[0]==+1) _name += string("p");
+      if (_plin[i].type[0]==0)  _name += string("z");
     }
-    else if (_plin[i].p_type=='h' && _plin[i].num==1) {
+    else if (_plin[i].pol_type=='h' && _plin[i].num==1) {
       if (_plin[i].type[0]==-1) _name += string("m");
       if (_plin[i].type[0]==+1) _name += string("p");
     }
@@ -181,7 +182,16 @@ string * Process_Base::GenerateNames(int _nin, Flavour * _flin, Pol_Info * _plin
     else {
       if (_flout[i].IsAnti()) _name += string("b"); 
     }
-    // perhaps polinfo for in
+    // polinfo for fully polarised outgoings
+    if (_plout[i].pol_type=='c' && _plout[i].num==1) {
+      if (_plout[i].type[0]==-1) _name += string("m");
+      if (_plout[i].type[0]==+1) _name += string("p");
+      if (_plout[i].type[0]==0)  _name += string("z");
+    }
+    else if (_plout[i].pol_type=='h' && _plout[i].num==1) {
+      if (_plout[i].type[0]==-1) _name += string("m");
+      if (_plout[i].type[0]==+1) _name += string("p");
+    }
 
 
     _name += string("_");
@@ -242,11 +252,23 @@ public:
   }
 };
 
+class Order_SVFT {
+public:
+  int operator()(const S_Data & a, const S_Data & b) {
+    //    if "a < b" return 1  else 0;
+    if (a.fl.IsScalar() && !b.fl.IsScalar()) return 1;
+    if (a.fl.IsVector() && !b.fl.IsScalar() && !b.fl.IsVector()) return 1;
+    if (a.fl.IsFermion() && !b.fl.IsFermion() && 
+	 !b.fl.IsScalar() && !b.fl.IsVector()) return 1;
+    return 0;
+  }
+};
+
 class Order_Mass {
 public:
   int operator()(const S_Data & a, const S_Data & b) {
     //    if "a < b" return 0  else 1;
-    if (a.fl.Mass() < b.fl.Mass()) return 0;
+    if (a.fl.Mass() <= b.fl.Mass()) return 0;
     return 1;
   }
 };
@@ -285,6 +307,12 @@ public:
   }
 };
 
+//
+// Note: all order operator have to return 0 if 
+//       two elements are equal!
+//       Otherwise the order will change even for
+//       equal elements.
+//
 
 void Process_Base::Reshuffle(int n, Flavour* flav, Pol_Info* plav)
 {
@@ -294,7 +322,7 @@ void Process_Base::Reshuffle(int n, Flavour* flav, Pol_Info* plav)
 
   std::stable_sort(sd.begin(),sd.end(),Order_Kfc());
   std::stable_sort(sd.begin(),sd.end(),Order_Anti());
-  std::stable_sort(sd.begin(),sd.end(),Order_FVST());
+  std::stable_sort(sd.begin(),sd.end(),Order_SVFT());
   std::stable_sort(sd.begin(),sd.end(),Order_Mass());
   std::stable_sort(sd.begin(),sd.end(),Order_Coupling());
   

@@ -6,35 +6,41 @@
 namespace AMEGIC {
 
   class Pol_Info;
+
   //! A list of signs, i.e. helicities.(ready)
-  struct signlist {
+  struct Sign_List {
     //! The list og signs
     int *s;
     //! Switching certain combinations on/off.
     int on;
     //! The multiplicity of the helicity combination, used when reducing the list to independent helicities. 
-    int    Mult;
+    int    multi;
     double polfactor;
     int    partner;
+
+    Sign_List(): s(NULL),on(1),multi(1),polfactor(1.),partner(-1) {}
+    ~Sign_List() {
+      if (s) delete [] s;
+    }
   };
   
   //! Determines all helicity combinations. (ready)
   class Helicity {
     //! The list of helicity combinations.
-    signlist* Slist;    
+    Sign_List* p_slist;    
     //! The number of helicities
-    int nsign;
+    int m_nsign;
     //! List of helicity combinations, neccessary to calculate physical fermion helicities
-    signlist* FSlist;
-    int fnsign;
+    Sign_List* p_fslist;
+    int m_fnsign;
 
-    int fermion_hels;
+    int m_fermion_hels;
 
-  public:
-    //! type of polarisation: 'c'=circular, 'l'=linear, 'h'=helicity state
-    char *p_type;
+    //! type of polarisation: 'c'=circular, 'l'=linear, 'h'=helicity state and '+'/'-'  for polarised particles
+    char   * p_pol_types;
     //! angle for linear polarisation
-    double *angle;
+    double * p_angles;
+  public:
     //! The constructor determines all helicity combinations
     /*!
       The helicity combinations are determined using a loop over loop technique.
@@ -45,25 +51,30 @@ namespace AMEGIC {
     */
     Helicity(int,int,ATOOLS::Flavour*,Pol_Info*);
     //! Returns the maximum number of helicities.
-    int Max_Hel() {return nsign;}
+    int MaxHel() {return m_nsign;}
     //! Returns the maximum number of helicities for calculation of physical fermion helicities.
-    int Max_FHel() {return fnsign;}
+    int MaxFHel() {return m_fnsign;}
     //! Returns a certain helicity combination.
-    int* operator[] (int i) {return FSlist[i].s;}
+    int* operator[] (int i) {return p_fslist[i].s;}
     //! Switches a certain helicity combination off.
-    void switch_off(int i) {Slist[i].on = 0;}
-    void SetPartner(int i,int j) {Slist[j].partner = i;}
-    inline const int&  Partner(const int i) const {return Slist[i].partner;}
+    void SwitchOff(int i) {p_slist[i].on = 0;}
+    void SetPartner(int i,int j) {p_slist[j].partner = i;}
+    inline const int&  Partner(const int i) const {return p_slist[i].partner;}
     //! Returns the status of a certain helicity combination.
-    int  On(int i) {return Slist[i].on;}
+    int  On(int i) {return p_slist[i].on;}
     //! Increases the multiplicity of a combination by one.
-    void Inc_Mult(int i) {(Slist[i].Mult)++;}  
+    void IncreaseMultitplicity(int i) {(p_slist[i].multi)++;}  
     //! Returns the multiplicity of a certain helicity combination.
-    int  Multiplicity(int i) {return Slist[i].Mult;}  
+    int  Multiplicity(int i) {return p_slist[i].multi;}  
     //! Polarization factors
-    double PolarizationFactor(int i) {return Slist[i].polfactor;}  
+    double PolarizationFactor(int i) {return p_slist[i].polfactor;}  
     //! Returns true when physical fermion helicities should be calculated
-    int iscalcferm() {return fermion_hels;}
+    int IsCalcFerm() {return m_fermion_hels;}
+
+    char   * PolTypes()  { return p_pol_types; }
+    double * PolAngles() { return p_angles; }
+
+    ~Helicity();
   };
 }
 #endif

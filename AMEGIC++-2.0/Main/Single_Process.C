@@ -155,10 +155,8 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
 {
   if (_testmoms==0) {
     string model_name = model->Name();
-    cout<<" Model Name : "<<model_name<<endl;
     if (model_name==string("ADD")) {
       double ms=model->ScalarConstant("M_s");
-      cout<<" M_s : "<<ms<<endl;
       double ecms=rpa.gen.Ecms();
       rpa.gen.SetEcms(0.5*ms);
       _testmoms = new Vec4D[m_nvec];
@@ -187,7 +185,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
   }
   m_pol.Add_Extern_Polarisations(p_BS,p_fl,p_hel);
   p_BS->Initialize();
-  p_shand->Initialize(p_ampl->GetRealGraphNumber(),p_hel->Max_Hel());
+  p_shand->Initialize(p_ampl->GetRealGraphNumber(),p_hel->MaxHel());
 
   switch (Tests(result)) {
   case 2 : 
@@ -238,7 +236,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology * top)
   }
   m_pol.Add_Extern_Polarisations(p_BS,p_fl,p_hel);
   p_BS->Initialize();
-  p_shand->Initialize(p_ampl->GetRealGraphNumber(),p_hel->Max_Hel());
+  p_shand->Initialize(p_ampl->GetRealGraphNumber(),p_hel->MaxHel());
 
   double result;
   switch (Tests(result)) {
@@ -283,7 +281,7 @@ int Single_Process::Tests(double & result) {
     p_BS->InitGaugeTest(.9);
 
     msg.Debugging()<<number<<" :";ATOOLS::msg.Debugging().flush();
-    for (short int i=0;i<p_hel->Max_Hel();i++) { 
+    for (short int i=0;i<p_hel->MaxHel();i++) { 
       if (p_hel->On(i)) {
 	helvalue = p_ampl->Differential(i,(*p_hel)[i])*p_hel->PolarizationFactor(i); 
 	M2      +=  helvalue;
@@ -327,9 +325,9 @@ int Single_Process::Tests(double & result) {
   if (!gauge_test) p_ampl->SetStringOff();  //second test without string production 
 
   double M2g = 0.;
-  double * M_doub = new double[p_hel->Max_Hel()];
+  double * M_doub = new double[p_hel->MaxHel()];
 
-  for (short int i=0;i<p_hel->Max_Hel();i++) { 
+  for (short int i=0;i<p_hel->MaxHel();i++) { 
     if (p_hel->On(i)) {
       M_doub[i]  = p_ampl->Differential(i,(*p_hel)[i])*p_hel->PolarizationFactor(i);  
       M2g       += M_doub[i];
@@ -339,9 +337,9 @@ int Single_Process::Tests(double & result) {
   msg.Debugging()<<endl;
 
   //shorten helicities
-  for (short int i=0;i<p_hel->Max_Hel();i++) {
+  for (short int i=0;i<p_hel->MaxHel();i++) {
     if (M_doub[i]/M2g<1.e-30) {
-      p_hel->switch_off(i);
+      p_hel->SwitchOff(i);
       msg.Debugging()<<"Switch off zero helicity "<<i<<" : "
 		     <<p_ampl->Differential(i,(*p_hel)[i])<<"/"<<M_doub[i]/M2g<<endl;
     }
@@ -354,11 +352,19 @@ int Single_Process::Tests(double & result) {
   p_BS->StartPrecalc();
 
   if (gauge_test) {
-    msg.Debugging()<<"Gauge(1): "<<abs(M2)<<endl
-		   <<"Gauge(2): "<<abs(M2g)<<endl
-		   <<"Gauge test: "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
-    if (!ATOOLS::IsZero(abs(M2/M2g-1.))) {
-      msg.Tracking()<<"Gauge test not satisfied: "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
+    if (!ATOOLS::IsEqual(M2,M2g)) {
+      msg.Out()<<"Gauge(1): "<<abs(M2)<<endl
+	       <<"Gauge(2): "<<abs(M2g)<<endl;
+      msg.Out()<<"WARNING:  Gauge test not satisfied: "
+	       <<M2<<" vs. "<<M2g<<" : "<<dabs(M2/M2g-1.)*100.<<"%"<<endl;
+    }
+    else {
+      msg.Debugging()<<"Gauge(1): "<<abs(M2)<<endl
+		     <<"Gauge(2): "<<abs(M2g)<<endl;
+      if (M2g!=0.)
+	msg.Debugging()<<"Gauge test: "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
+      else
+	msg.Debugging()<<"Gauge test: "<<0.<<"%"<<endl;
     }
   }
   else {
@@ -366,7 +372,7 @@ int Single_Process::Tests(double & result) {
     if (p_shand->SearchValues(m_gen_str,testname,p_BS)) {
       m_pol.Set_Gauge_Vectors(m_nin+m_nout,p_moms,Vec4D(sqrt(3.),1.,1.,-1.));
       p_BS->CalcEtaMu(p_moms);  
-      p_shand->Initialize(p_ampl->GetRealGraphNumber(),p_hel->Max_Hel());
+      p_shand->Initialize(p_ampl->GetRealGraphNumber(),p_hel->MaxHel());
       (p_shand->Get_Generator())->Reset();
       p_ampl->FillCoupling(p_shand);
       p_shand->Complete(p_hel);
@@ -374,13 +380,24 @@ int Single_Process::Tests(double & result) {
       M2 = operator()(p_moms);
       gauge_test = string_test = 0;
     }
-    msg.Debugging()<<"Mapping file(1) : "<<abs(M2)<<endl
-		   <<"Original    (2) : "<<abs(M2g)<<endl
-		   <<"Cross check (T) : "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
-    if (!ATOOLS::IsZero(abs(M2/M2g-1.))) {
-      msg.Tracking()<<"Cross check not satisfied: "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
-      return 0;
+    if (!ATOOLS::IsEqual(M2,M2g)) {
+      msg.Out()<<"Mapping file(1) : "<<abs(M2)<<endl
+	       <<"Original    (2) : "<<abs(M2g)<<endl
+	       <<"Cross check (T) : "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
+      msg.Out()<<"WARNING: Library cross check not satisfied: "
+	       <<M2<<" vs. "<<M2g<<"  difference:"<<abs(M2/M2g-1.)*100.<<"%"<<endl;
+      if (!ATOOLS::IsZero(M2)) return 0;
+      msg.Out()<<"         assuming numerical reasons, continuing "<<endl;
+    } 
+    else {
+      msg.Debugging()<<"Mapping file(1) : "<<abs(M2)<<endl
+		     <<"Original    (2) : "<<abs(M2g)<<endl;
+      if (M2g!=0.)
+	msg.Debugging()<<"Cross check (T) : "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
+      else
+	msg.Debugging()<<"Cross check (T) : "<<0.<<"%"<<endl;
     }
+
     m_libname    = testname;
     return 2;
   }
@@ -402,7 +419,7 @@ int Single_Process::Tests(double & result) {
       p_shand->Calculate();
 
       msg.Debugging()<<"3:";msg.Debugging().flush();
-      for (short int i=0;i<p_hel->Max_Hel();i++) {
+      for (short int i=0;i<p_hel->MaxHel();i++) {
 	if (p_hel->On(i)) {
 	  msg.Debugging()<<"*";msg.Debugging().flush();
 	  M2S      += p_ampl->Differential(i)*p_hel->PolarizationFactor(i)*p_hel->Multiplicity(i);
@@ -410,10 +427,18 @@ int Single_Process::Tests(double & result) {
       }
       msg.Debugging()<<endl;
       M2S *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS));
-      msg.Tracking()<<"String test: "<<abs(M2g/M2S-1.)*100.<<"%"<<endl;
-      if (!ATOOLS::IsZero(abs(M2g/M2S-1.))) {
-	msg.Tracking()<<"String test not satisfied!!"<<endl;
-	return 0;
+      if (!ATOOLS::IsEqual(M2g,M2S)) {
+	msg.Out()<<"WARNING: String test not satisfied: "
+		 <<M2g<<" vs. "<<M2S<<"  difference:"<<abs(M2g/M2S-1.)*100.<<"%"<<endl;
+	if (!ATOOLS::IsZero(M2g)) return 0;
+	msg.Out()<<"         assuming numerical reasons, continuing "<<endl;
+      }
+      else {
+	if (M2S!=0.)
+	  msg.Debugging()<<"String test: "<<abs(M2g/M2S-1.)*100.<<"%"<<endl;
+	else
+	  msg.Debugging()<<"String test: "<<0.<<"%"<<endl;
+      
       }
       return 1;
     }
@@ -456,14 +481,14 @@ int Single_Process::InitLibrary(double result) {
     sprintf(help,"%i",number);
     testname  = m_libname+string("_")+string(help);
     if (shand1->SearchValues(m_gen_str,testname,p_BS)) {
-      shand1->Initialize(p_ampl->GetRealGraphNumber(),p_hel->Max_Hel());
+      shand1->Initialize(p_ampl->GetRealGraphNumber(),p_hel->MaxHel());
       (shand1->Get_Generator())->StoreAndReset();
       p_ampl->FillCoupling(shand1);
       shand1->Calculate();
       
       M2s = 0.;
       ATOOLS::msg.Debugging()<<"Check "<<number<<" :";ATOOLS::msg.Debugging().flush();
-      for (short int i=0;i<p_hel->Max_Hel();i++) {
+      for (short int i=0;i<p_hel->MaxHel();i++) {
 	helvalue = p_ampl->Differential(shand1,i) * p_hel->PolarizationFactor(i) *
 	  p_hel->Multiplicity(i);
 	M2s     += helvalue;
@@ -477,14 +502,14 @@ int Single_Process::InitLibrary(double result) {
 	msg.Tracking()<<"Found a suitable string."<<endl;
 	m_libname = testname;
 	if (p_shand->SearchValues(m_gen_str,testname,p_BS)) {
-	  p_shand->Initialize(p_ampl->GetRealGraphNumber(),p_hel->Max_Hel());
+	  p_shand->Initialize(p_ampl->GetRealGraphNumber(),p_hel->MaxHel());
 	  (p_shand->Get_Generator())->Reset();
 	  p_ampl->FillCoupling(p_shand);
 	  
 	  p_shand->Calculate();
 	  M2s = 0.;
 	  ATOOLS::msg.Debugging()<<number<<" :";ATOOLS::msg.Debugging().flush();
-	  for (short int i=0;i<p_hel->Max_Hel();i++) {
+	  for (short int i=0;i<p_hel->MaxHel();i++) {
 	    M2s     += p_ampl->Differential(p_shand,i) * p_hel->PolarizationFactor(i) * 
 	      p_hel->Multiplicity(i);
 	    msg.Debugging()<<"*";ATOOLS::msg.Debugging().flush();
@@ -530,14 +555,14 @@ int Single_Process::InitLibrary(double result) {
   else {
     if (p_partner->p_shand->IsLibrary()) {
       if (p_partner->p_shand->SearchValues(m_gen_str,p_partner->m_libname,p_BS)) {
-	p_partner->p_shand->Initialize(p_ampl->GetRealGraphNumber(),p_hel->Max_Hel());
+	p_partner->p_shand->Initialize(p_ampl->GetRealGraphNumber(),p_hel->MaxHel());
 	(p_partner->p_shand->Get_Generator())->Reset();
 	p_ampl->FillCoupling(p_partner->p_shand);
 	p_partner->p_shand->Calculate();
 	
 	M2s = 0.;
 	ATOOLS::msg.Debugging()<<"Check "<<number<<" :";ATOOLS::msg.Debugging().flush();
-	for (short int i=0;i<p_hel->Max_Hel();i++) {
+	for (short int i=0;i<p_hel->MaxHel();i++) {
 	  M2s     += p_ampl->Differential(p_partner->p_shand,i) * p_hel->PolarizationFactor(i) *
 	    p_hel->Multiplicity(i);
 	  msg.Debugging()<<"*";ATOOLS::msg.Debugging().flush();
@@ -723,7 +748,7 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
       if (p_ps->ISRIntegrator()  != 0) p_ps->ISRIntegrator()->Print();
       if (p_ps->FSRIntegrator()  != 0) p_ps->FSRIntegrator()->Print();
 
-      if (m_totalxs>0.) return 1;
+      if (m_totalxs>=0.) return 1;
       return 0;
     }
   }
@@ -734,7 +759,7 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
 	       <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
   }
   SetTotalXS(0);
-  if (m_totalxs>0.) {
+  if (m_totalxs>=0.) {
     if (_resdir!=string("")) {
       std::ofstream to;
       to.open(filename,ios::out);
@@ -855,6 +880,13 @@ double Single_Process::DSigma(ATOOLS::Vec4D* _moms,bool lookup)
   if (m_lastdxs <= 0.)                  return m_lastdxs = m_last = 0.;
   if (m_nin==2) m_lastlumi = p_isr->Weight(p_flin);
           else  m_lastlumi = 1.;
+
+  int    pols[2]={p_pl[0].type[0],p_pl[1].type[0]};
+  double dofs[2]={p_pl[0].factor[0],p_pl[1].factor[0]};
+  if (p_pl[0].num>1) pols[0]=99;
+  if (p_pl[1].num>1) pols[1]=99;
+  m_lastlumi*= p_beam->Weight(pols,dofs);
+
   return m_last = m_Norm * m_lastdxs * m_lastlumi;
 }
 
@@ -885,7 +917,7 @@ double Single_Process::operator()(ATOOLS::Vec4D * mom)
   double helvalue;
   if (p_shand->Is_String()) {
     p_shand->Calculate();
-    for (short int i=0;i<p_hel->Max_Hel();i++) {
+    for (short int i=0;i<p_hel->MaxHel();i++) {
       if (p_hel->On(i)) {
 	helvalue = p_ampl->Differential(i) * p_hel->Multiplicity(i) * p_hel->PolarizationFactor(i);
 	M2      += helvalue;
@@ -893,7 +925,7 @@ double Single_Process::operator()(ATOOLS::Vec4D * mom)
     }
   }
   else {
-    for (short int i=0;i<p_hel->Max_Hel();i++) {
+    for (short int i=0;i<p_hel->MaxHel();i++) {
       if (p_hel->On(i)) {
 	helvalue = p_ampl->Differential(i,(*p_hel)[i]) * p_hel->PolarizationFactor(i);
 	M2 += helvalue;

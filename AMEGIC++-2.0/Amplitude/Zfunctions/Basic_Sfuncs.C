@@ -232,45 +232,54 @@ int Basic_Sfuncs::BuildPolarisations(int momindex,char type,double angle)
     msg.Error()<<"*****BuildPolarisations: Not an external momentum!"<<endl;
     return 0;
   }
-  Momfunc* Mom;
-  Mom = new Momfunc;
+  Momfunc mom_func;
 
   //Polarisation -1
-  Mom->argnum = 2;
-  Mom->arg    = new int[Mom->argnum];
-  Mom->arg[0] = momcount;
-  Mom->arg[1] = momindex;
+  mom_func.argnum = 3;
+  mom_func.arg    = new int[mom_func.argnum];
+  mom_func.arg[0] = momcount;
+  mom_func.arg[1] = momindex;
+  mom_func.arg[2] = 0;
   switch(type){
   case 'l':
-    Mom->type=mt::p_l0;
-    Mom->angle=angle/180*M_PI;
+    mom_func.type=mt::p_l0;
+    mom_func.angle=angle/180*M_PI;
     break;
-  default:Mom->type=mt::p_m;
+  case '+':
+    mom_func.arg[2] = +1;
+    mom_func.type=mt::p_m;
+    break;
+  case '-':
+    mom_func.arg[2] = -1;
+    mom_func.type=mt::p_m;
+    break;
+  default:
+    mom_func.type=mt::p_m;
   }
-  Mom->mass=Momlist[momindex].mass;
+  mom_func.mass=Momlist[momindex].mass;
   momcount++;
-  Momlist.push_back(*Mom);
+  Momlist.push_back(mom_func);
 
   //Polarisation +1
-  Mom->arg[0] = momcount;
+  mom_func.arg[0] = momcount;
   switch(type){
   case 'l':
-    Mom->type=mt::p_l1;
-    Mom->angle=angle/180.*M_PI;
+    mom_func.type=mt::p_l1;
+    mom_func.angle=angle/180.*M_PI;
     break;
-  default:Mom->type=mt::p_p;
+  default:mom_func.type=mt::p_p;
   }
-  Mom->mass=Momlist[momindex].mass;
+  mom_func.mass=Momlist[momindex].mass;
   momcount++;
-  Momlist.push_back(*Mom);
+  Momlist.push_back(mom_func);
   if(ATOOLS::IsZero(Momlist[momindex].mass))  return momcount;
 
   //Polarisation longitudinal
-  Mom->arg[0] = momcount;
-  Mom->type=mt::p_l;
-  Mom->mass=Momlist[momindex].mass;
+  mom_func.arg[0] = momcount;
+  mom_func.type=mt::p_l;
+  mom_func.mass=Momlist[momindex].mass;
   momcount++;
-  Momlist.push_back(*Mom);
+  Momlist.push_back(mom_func);
   return momcount;
 }
 
@@ -453,26 +462,31 @@ void Basic_Sfuncs::InitGaugeTest(double theta)
   Vec4D mom;
   for(short int j=0;j<Momlist.size();j++){
     if(Momlist[j].type==mt::p_m&&ATOOLS::IsZero(Momlist[j].mass)){
-      mom=Momlist[Momlist[j].arg[1]].mom;
-      ps=sqrt(sqr(mom[1])+sqr(mom[2])+sqr(mom[3]));
-      pt=sqrt(sqr(mom[1])+sqr(mom[2]));
-      s=sqrt(.5*(1-mom[3]/ps));
-      c=sqrt(.5*(1+mom[3]/ps));
-      s0=::sin(theta*0.5);
-      c0=::cos(theta*0.5);
-      if(!ATOOLS::IsZero(pt)){
-	sf=mom[2]/pt;
-	cf=mom[1]/pt;
+      if (Momlist[j].arg[2]==+1 || Momlist[j].arg[2]==-1) {
+	// do nothing
+      } 
+      else {
+	mom=Momlist[Momlist[j].arg[1]].mom;
+	ps=sqrt(sqr(mom[1])+sqr(mom[2])+sqr(mom[3]));
+	pt=sqrt(sqr(mom[1])+sqr(mom[2]));
+	s=sqrt(.5*(1-mom[3]/ps));
+	c=sqrt(.5*(1+mom[3]/ps));
+	s0=::sin(theta*0.5);
+	c0=::cos(theta*0.5);
+	if(!ATOOLS::IsZero(pt)){
+	  sf=mom[2]/pt;
+	  cf=mom[1]/pt;
+	}
+	else {sf=0.;cf=1.;}
+
+	Momlist[j].mom=1./sqrt(1.-mom[1]/ps*::sin(theta)-mom[3]/ps*::cos(theta))*
+	  Vec4D(c0*c+s0*s*cf,s0*c+s*c0*cf,s*c0*sf,c0*c-s*s0*cf);
+	Momlist[j].mom_img=1./sqrt(1.-mom[1]/ps*::sin(theta)-mom[3]/ps*::cos(theta))*
+	  Vec4D(s0*s*sf,s*c0*sf,s0*c-s*c0*cf,-s*s0*sf);
+
+	Momlist[j+1].mom = Momlist[j].mom;
+	Momlist[j+1].mom_img = (-1.)*Momlist[j].mom_img;
       }
-      else {sf=0.;cf=1.;}
-
-      Momlist[j].mom=1./sqrt(1.-mom[1]/ps*::sin(theta)-mom[3]/ps*::cos(theta))*
-	Vec4D(c0*c+s0*s*cf,s0*c+s*c0*cf,s*c0*sf,c0*c-s*s0*cf);
-      Momlist[j].mom_img=1./sqrt(1.-mom[1]/ps*::sin(theta)-mom[3]/ps*::cos(theta))*
-	Vec4D(s0*s*sf,s*c0*sf,s0*c-s*c0*cf,-s*s0*sf);
-
-      Momlist[j+1].mom = Momlist[j].mom;
-      Momlist[j+1].mom_img = (-1.)*Momlist[j].mom_img;
     }    
     if(ATOOLS::IsZero(Momlist[j].mass))if(Momlist[j].type==mt::p_m||Momlist[j].type==mt::p_p){
       m=&Momlist[j];

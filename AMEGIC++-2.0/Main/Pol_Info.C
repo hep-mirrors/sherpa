@@ -4,10 +4,20 @@
 
 using namespace AMEGIC;
 
+std::ostream & AMEGIC::operator<<(std::ostream & s, Pol_Info & pi) 
+{
+  s<<" Pol_Info : "<<pi.pol_type<<endl;
+  double angle;
+  for (int i=0;i<pi.num;++i) {
+    s<<pi.type[i]<<":"<<pi.factor[i]<<endl;
+  }
+  return s;
+}
+
 Pol_Info::Pol_Info(const Pol_Info & p) 
 {
   num=p.num;
-  p_type=p.p_type;
+  pol_type=p.pol_type;
   angle=p.angle;
   type=new int[num];
   factor=new double[num];
@@ -21,7 +31,7 @@ Pol_Info& Pol_Info::operator=(const Pol_Info& p)
 {
   if (this!=&p) {
     num    = p.num;
-    p_type = p.p_type;
+    pol_type = p.pol_type;
     angle  = p.angle;
     if(type)   delete[] type;
     if(factor) delete[] factor;
@@ -34,12 +44,13 @@ Pol_Info& Pol_Info::operator=(const Pol_Info& p)
   }
   return *this;
 }
-Pol_Info::Pol_Info() { num=0; type=0; factor=0; p_type=' '; angle=0.;}
+Pol_Info::Pol_Info() { num=0; type=0; factor=0; pol_type=' '; angle=0.;}
 Pol_Info::Pol_Info(const ATOOLS::Flavour& fl)
 {
   int dof = 1;
-  if(fl.IsFermion())                                 { dof = 2;p_type='h';};
-  if(fl.IsVector() &&  ATOOLS::IsZero(fl.Mass()))  { dof = 2;p_type='c';}
+  pol_type='s';
+  if(fl.IsFermion())                                 { dof = 2;pol_type='h';};
+  if(fl.IsVector() &&  ATOOLS::IsZero(fl.Mass()))  { dof = 2;pol_type='c';}
   if(fl.IsVector() && !ATOOLS::IsZero(fl.Mass()))  {
 
 #ifdef Explicit_Pols
@@ -47,13 +58,24 @@ Pol_Info::Pol_Info(const ATOOLS::Flavour& fl)
 #else
     dof=1;
 #endif
-    p_type='c';
+    pol_type='c';
   }
-  Init((int)dof);
-  int tf[3]  = {mt::p_m, mt::p_p, mt::p_l };
-  for(int j=0;j<dof;j++){
-    type[j]   = tf[j];
-    factor[j] = 1.;
+  if(fl.IsTensor()) dof=5;
+  Init(dof);
+
+  if(!fl.IsTensor()) {
+    int tf[3]  = {mt::p_m, mt::p_p, mt::p_l };
+    for(int j=0;j<dof;j++){
+      type[j]   = tf[j];
+      factor[j] = 1.;
+    }
+  } 
+  else {
+    type[0]=mt::p_t1;factor[0]=1.;
+    type[1]=mt::p_t2;factor[1]=1.;
+    type[2]=mt::p_t3;factor[2]=1.;
+    type[3]=mt::p_t4;factor[3]=1.;
+    type[4]=mt::p_t5;factor[4]=1.;
   }
 }
 
@@ -61,7 +83,49 @@ Pol_Info::~Pol_Info(){if(type) delete[] type;if(factor)delete[] factor;}
 
 void Pol_Info::Init(int i){num=i;type=new int[num];factor=new double[num];}
 
+void Pol_Info::SetPol(char pol) 
+{
+  // fixes polarisation to + - or 0 of an unpolarised state:
+  mt::momtype t1=mt::p_m, t2=mt::p_p;
+  if (pol=='l') { 
+    t1=mt::p_l0; 
+    t2=mt::p_l1; 
+  }
+  mt::momtype t;
+  switch (pol) {
+    case '-': t = t1;     break;
+    case '+': t = t2;     break;
+    case '0': t = mt::p_l;break;
+    default : t = t1;
+  }
+  int dof=num;
+  if (!type) Init(1);
+  type[0]=t;
+  factor[0]=dof;
+  num=1;
+}
 
+char Pol_Info::GetPol() {
+  if (num==1) {
+    if (pol_type=='s' || pol_type==' ') return 's';
+    switch (type[0]) {
+    case mt::p_m: return '-';
+    case mt::p_p: return '+';
+    case mt::p_l: return '0';
+    case mt::p_l0: return 'x';
+    case mt::p_l1: return 'y';
+
+    case mt::p_t1: return 'a';
+    case mt::p_t2: return 'b';
+    case mt::p_t3: return 'c';
+    case mt::p_t4: return 'd';
+    case mt::p_t5: return 'e';
+    default:
+      return ' ';
+    }
+  }
+  return ' ';
+}
 
 void Tensor_Struc::GetPolCombos(int num, std::vector<std::vector<int> >* pol, std::vector<int>* sign)
 {

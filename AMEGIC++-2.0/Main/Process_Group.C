@@ -57,9 +57,6 @@ Process_Group::Process_Group(int _nin,int _nout,Flavour *& _fl,
   string stan,oli;
   GenerateNames(m_nin,p_flin,p_plin,m_nout,p_flout,p_plout,m_name,stan,oli);
 
-  ConstructProcesses(_seldata);
-  GroupProcesses();
-
   p_fl   = new Flavour[m_nvec];
   p_pl   = new Pol_Info[m_nvec];
   p_b    = new int[m_nvec];
@@ -77,6 +74,9 @@ Process_Group::Process_Group(int _nin,int _nout,Flavour *& _fl,
     p_fl[i] = Flavour(kf::pol); 
     p_b[i]  = 1; 
   }
+
+  ConstructProcesses(_seldata);
+  GroupProcesses();
 
   InitCuts();
   if (_seldata) p_sel = new Combined_Selector(m_nin,m_nout,p_fl,_seldata);
@@ -107,82 +107,115 @@ Process_Group::~Process_Group()
   ----------------------------------------------------------------------------------*/
 
 void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
-  int * flindex;
-  flindex = new int[m_nin+m_nout];
-  for (int i=0;i<m_nin+m_nout;i++) flindex[i] = 0;
-  Flavour  * _flin, * _flout, * _fl;
-  Pol_Info * _plin, *_plout,  * _pl;
-  _flin   = new Flavour[m_nin];
-  _plin   = new Pol_Info[m_nin];
-  _flout  = new Flavour[m_nout];
-  _plout  = new Pol_Info[m_nout];
-  _fl     = new Flavour[m_nin+m_nout];
-  _pl     = new Pol_Info[m_nin+m_nout];
+  int bsh_pol=p_beam->Polarisation();
+  int beam_is_poled[2]={bsh_pol&1,bsh_pol&2};
+  // ====
 
-  msg.Debugging()<<"Construct processes : "
-		 <<p_flin[0].Size()<<" "<<p_flin[1].Size()<<" "<<p_flout[0].Size()<<" "<<p_flout[1].Size()<<endl;
+  int  * flindex = new int[m_nin+m_nout];
+  for (int i=0;i<m_nin+m_nout;i++) flindex[i] = 0;
+  char * plindex = new char[m_nin+m_nout];
+  for (int i=0;i<m_nin+m_nout;i++) plindex[i] = ' ';
+  Flavour  * _fl  = new Flavour[m_nin+m_nout];
+  Pol_Info  * _pl = new Pol_Info[m_nin+m_nout];
 
   string _name,_stan,_oli;
   bool flag = 1;
-  bool take,overflow;
+  bool take;
+  int overflow;
   for (;;) {
     if (!flag) break;
-    for (int i=0;i<m_nin;i++) {
-      if (p_flin[i].Size() != 1) _flin[i] = p_flin[i][flindex[i]]; 
-                            else _flin[i] = p_flin[i];
-      _plin[i]                            = p_plin[i];
+    for (int i=0;i<m_nin+m_nout;++i) {
+      if (p_fl[i].Size() != 1) {
+	_fl[i] = p_fl[i][flindex[i]]; 
+	_pl[i] = Pol_Info(_fl[i]);
+	if (_pl[i].pol_type==p_pl[i].pol_type) {
+	  _pl[i] = p_pl[i];
+	}
+	else {
+	  if (p_pl[i].GetPol()!=' ' && p_pl[i].GetPol()!='s') {
+	    msg.Out()<<" WARNING: wrong polarisation state in Particle.dat !!!!"<<endl;
+	    msg.Out()<<"          Polarisation ignored. "<<endl;
+	  }
+	}
+      }
+      else {
+	_fl[i] = p_fl[i];
+	_pl[i] = p_pl[i];
+      }
     }
-    for (int i=0;i<m_nout;i++) {
-      if (p_flout[i].Size() != 1) _flout[i] = p_flout[i][flindex[m_nin+i]]; 
-                             else _flout[i] = p_flout[i];
-      _plout[i]                             = p_plout[i];
+    overflow = SetPolarisations(plindex,_pl,beam_is_poled);
+    for (int i=0;i<m_nin+m_nout;++i) {
+      if (plindex[i]!=' ') _pl[i].SetPol(plindex[i]);
     }
-    GenerateNames(m_nin,_flin,_plin,m_nout,_flout,_plout,_name,_stan,_oli);
+    GenerateNames(m_nin,_fl,_pl,m_nout,_fl+m_nin,_pl+m_nin,_name,_stan,_oli);
     take = 1;
     for (int k=0;k<m_procs.size();k++) {
       if (_name == m_procs[k]->Name()) { take = 0; break; }
     }
     if (take) {
-      if (CheckExternalFlavours(m_nin,_flin,m_nout,_flout)) {
-	for (int i=0;i<m_nin;i++)  { _fl[i]       = _flin[i];  _pl[i]       = _plin[i];  }
-	for (int i=0;i<m_nout;i++) { _fl[i+m_nin] = _flout[i]; _pl[i+m_nin] = _plout[i]; } 
+      if (CheckExternalFlavours(m_nin,_fl,m_nout,_fl+m_nin)) {
 	Add(new Single_Process(m_nin,m_nout,_fl,p_isr,p_beam,_seldata,m_gen_str,m_orderQCD,m_orderEW,
-			       m_kfactorscheme,m_scalescheme,m_scalefactor,m_scale,p_pl,m_nex,p_ex_fl));
-      }
-    }
-    overflow = 0;
-    for (int i=1;i<m_nout+1;i++) {
-      if (p_flout[m_nout-i].Size()-1>flindex[m_nin+m_nout-i]) {
-	flindex[m_nin+m_nout-i] = flindex[m_nin+m_nout-i]+1; 
-	break;
+			       m_kfactorscheme,m_scalescheme,m_scalefactor,m_scale,_pl,m_nex,p_ex_fl));
       }
       else {
-	if (i==m_nout) overflow = 1;
-	flindex[m_nin+m_nout-i]   = 0;
+	take=0;
       }
     }
-    if (overflow) {
-      overflow = 0;
-      for (int i=1;i<m_nin+1;i++) {
-	if (p_flin[m_nin-i].Size()-1>flindex[m_nin-i]) {
-	  flindex[m_nin-i] = flindex[m_nin-i]+1; 
+    if (overflow || take==0) {
+      for (int i=0; i<m_nin+m_nout; ++i) plindex[i]=' ';
+      for (int i=m_nin+m_nout-1;i>=0;--i) {
+	if (p_fl[i].Size()-1>flindex[i]) {
+	  ++flindex[i];
 	  break;
 	}
 	else {
-	  if (i==m_nin) flag = 0;
-	  flindex[m_nin-i]   = 0;
+	  if (i==0) flag = 0;
+	  flindex[i] = 0;
 	}
       }
     }
   }
   delete [] _fl;
-  delete [] _flin;
-  delete [] _flout;
   delete [] _pl;
-  delete [] _plin;
-  delete [] _plout;
 }
 
+int Process_Group::SetPolarisations(char * plindex, Pol_Info * pl, int * beam_is_poled) 
+{
+  for (int i=m_nin;i<m_nin+m_nout;++i) {
+    if (pl[i].DoFNumber()==1) {
+      plindex[i]=pl[i].GetPol();
+    }
+  }
+
+  for (int i=0;i<m_nin;++i) {
+    if (!beam_is_poled[i])   plindex[i]=pl[i].GetPol();
+  }
+
+  for (int i=0;i<m_nin;++i) {
+    int over=0;
+    if ( beam_is_poled[i]) {
+      switch (plindex[i]) {
+      case ' ': plindex[i]='+'; break;
+      case '+': plindex[i]='-'; break;
+      case '-': plindex[i]='0'; break;
+      case '0': plindex[i]='+';
+	over=1;
+      } 
+      if (pl[i].DoFNumber()==2 && plindex[i]=='0') {
+	plindex[i]='+';
+	over=1;
+      }
+    }
+    else 
+      over=1;
+
+    if (!over) {
+      if (beam_is_poled[1] && plindex[1]==' ') plindex[1]='+';
+      return 0;
+    }
+  }
+  return 1;
+}
 
 void Process_Group::GroupProcesses() {
   // First : Check for identical masses.
@@ -343,8 +376,10 @@ void Process_Group::Add(Process_Base * _proc)
     m_nvec    = _proc->Nvec();
     m_nstrong = _proc->NStrong();
     m_neweak  = _proc->NEWeak();
-    p_fl = new Flavour[m_nin+m_nout];
-    for (int i=0;i<m_nin+m_nout;i++) p_fl[i] = (_proc->Flavs())[i];
+    if (p_fl==NULL) {
+      p_fl = new Flavour[m_nin+m_nout];
+      for (int i=0;i<m_nin+m_nout;i++) p_fl[i] = (_proc->Flavs())[i];
+    }
   }
   else {
     if (_proc->Nvec() > m_nvec) m_nvec = _proc->Nvec();
