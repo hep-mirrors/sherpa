@@ -1,6 +1,7 @@
 #include "Read_Write_Base.H"
 
 #include "MyStrStream.H"
+#include "MathTools.H"
 //#define DEBUG__Read_Write_Base
 #ifdef DEBUG__Read_Write_Base
 #include <iostream>
@@ -140,7 +141,9 @@ std::string &Read_Write_Base::Interprete(std::string &lastline)
     if (!m_ifresults.empty() && 
 	!m_ifresults.back()) lastline="";
   }
-  size_t pos=lastline.find("if");
+  size_t pos=Min(lastline.find("if "),lastline.find("if("));
+  if (pos>0 && 
+      lastline[pos-1]!=32 && lastline[pos-1]!=9) pos=std::string::npos;
   if (pos!=std::string::npos) {
     size_t opos=pos, cpos=lastline.find(")");
     for (;opos<lastline.length();++opos) 
