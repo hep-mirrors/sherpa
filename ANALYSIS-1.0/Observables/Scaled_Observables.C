@@ -11,8 +11,8 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
     if (parameters[0].size()<4) return NULL;
-    std::string list=parameters[0].size()>5?parameters[0][5]:"Analysed";
-    double ref=parameters[0].size()>4?ATOOLS::ToType<double>(parameters[0][4]):
+    std::string list=parameters[0].size()>4?parameters[0][4]:"Analysed";
+    double ref=parameters[0].size()>5?ATOOLS::ToType<double>(parameters[0][5]):
       ATOOLS::rpa.gen.Ecms();
     return new Class(10*(int)(parameters[0][3]=="Log"),
 		     ATOOLS::ToType<double>(parameters[0][0]),
@@ -42,7 +42,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_PRINT_METHOD(NAME)					\
   void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
-  { str<<"min max bins Lin|Log [list]"; }
+  { str<<"min max bins Lin|Log [list [ref]]"; }
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
@@ -57,7 +57,7 @@ Scaled_Observable_Base::Scaled_Observable_Base(int type,double xmin,double xmax,
 					       double ecms) :
   Primitive_Observable_Base(type,xmin,xmax,nbins,NULL), m_ecms(ecms)
 {
-  m_name=listname+name+".dat";
+  m_name=listname+"_"+name+".dat";
 
   if (listname!=std::string("")) m_listname = listname;
   m_blobtype = std::string("");
