@@ -347,6 +347,7 @@ void Sample_Analysis::SetUpObservables()
 
 void Sample_Analysis::SetUpSubSamples()
 {
+  // This is the place to add specific observables ....
   Final_Selector * fsel;
 
   // jet sample

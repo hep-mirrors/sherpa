@@ -25,9 +25,10 @@ namespace SHERPA {
     std::vector<Observable_Data *> m_obsdata;
 
     void ReadInFinalSelectors(std::ifstream *,ANALYSIS::Final_Selector *);
-    void SetUpSubSamples();
     void ReadInObservables(std::ifstream *);
     void SetUpObservables();
+    // This is the place to add specific observables ....
+    void SetUpSubSamples();
   public:
     Sample_Analysis(std::ifstream *,std::string=std::string("Hadrons"));
     ~Sample_Analysis();
