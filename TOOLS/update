@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cvs $1 update > updated.log 
-echo -e "\n\e[1m=\e[34m C-Files\e[0m\e[1m ========================================\e[0m" > updated_C.log 
+echo -e "\e[1m=\e[34m C-Files\e[0m\e[1m ========================================\e[0m" > updated_C.log
 cat updated.log | grep "U " | grep "\.C" >> updated_C.log 
 cat updated.log | grep "P " | grep "\.C" >> updated_C.log 
 echo -e "\e[1m- Conflicts --------------------------------------\e[0m" >> updated_C.log 
@@ -15,7 +15,7 @@ echo -e "\e[1m- Conflicts --------------------------------------\e[0m" >> update
 cat updated.log | grep "C " | grep "\.H" >> updated_H.log 
 echo -e "\e[1m- Changes ----------------------------------------\e[0m" >> updated_H.log 
 cat updated.log | grep "M " | grep "\.H" >> updated_H.log 
-echo -e "\e[1m=\e[31m Makefiles\e[0m\e[1m ======================================\e[0m" > updated_am.log 
+echo -e "\n\e[1m=\e[31m Makefiles\e[0m\e[1m ======================================\e[0m" > updated_am.log 
 cat updated.log | grep "U " | grep "\.am" >> updated_am.log 
 cat updated.log | grep "P " | grep "\.am" >> updated_am.log 
 echo -e "\e[1m- Conflicts --------------------------------------\e[0m" >> updated_am.log 
