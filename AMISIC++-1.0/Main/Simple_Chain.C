@@ -169,7 +169,6 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
       m_blobs[m_blobs.size()-1].push_back(newblob);
     }
     m_filename.push_back("gg_to_gg__grid");
-    m_processname.push_back("g g -> g g");
     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes::gggg) break;
   case EXTRAXS::QCD_Processes::qqbgg:
@@ -183,7 +182,6 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
       }
     }
     m_filename.push_back("qqb_to_gg__grid");
-    m_processname.push_back("q qb -> g g");
     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes::qqbgg) break;
   case EXTRAXS::QCD_Processes::ggqqb:
@@ -197,7 +195,6 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
       }
     }
     m_filename.push_back("gg_to_qqb__grid");
-    m_processname.push_back("g g -> q qb");
     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes::ggqqb) break;
   case EXTRAXS::QCD_Processes::qgqg:
@@ -214,7 +211,6 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
       }
     }
     m_filename.push_back("qg_to_qg__grid");
-    m_processname.push_back("q g -> q g");
     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes::qgqg) break;
   case EXTRAXS::QCD_Processes::q1q2q1q2:
@@ -251,12 +247,10 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
     }
     if (mode==EXTRAXS::QCD_Processes::q1q2bq1q2b) {
       m_filename.push_back("q1q2b_to_q1q2b__grid");
-      m_processname.push_back("q1 q2b -> q1 q2b");
       m_create.push_back(false);
       break;
     }
     m_filename.push_back("q1q2_to_q1q2__grid");
-    m_processname.push_back("q1 q2 -> q1 q2");
     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes::q1q2q1q2) break;
   case EXTRAXS::QCD_Processes::q1q1q1q1:
@@ -272,7 +266,6 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
       }
     }
     m_filename.push_back("q1q1_to_q1q1__grid");
-    m_processname.push_back("q1 q1 -> q1 q1");
     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes::q1q1q1q1) break;
   case EXTRAXS::QCD_Processes::q1q1bq1q1b:
@@ -285,7 +278,6 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
       }
     }
     m_filename.push_back("q1q1b_to_q1q1b__grid");
-    m_processname.push_back("q1 q1b -> q1 q1b");
     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes::q1q1bq1q1b) break;
   case EXTRAXS::QCD_Processes::q1q1bq2q2b:
@@ -302,7 +294,6 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
       }
     }
     m_filename.push_back("q1q1b_to_q2q2b__grid");
-    m_processname.push_back("q1 q1b -> q2 q2b");
     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes::q1q1bq2q2b) break;
     break;
@@ -363,29 +354,19 @@ bool Simple_Chain::ReadInData()
 	if ((newblob=GetBlob(flavour))!=NULL) {
 	  m_blobs.push_back(ATOOLS::Blob_List(0));
 	  m_blobs[m_blobs.size()-1].push_back(newblob);
-	  std::string filename=std::string(), processname=std::string();
+	  std::string filename=std::string();
 	  for (int j=0;j<2;++j) {
-	    if (flavour[j].IsAnti()) {
-	      filename+=std::string("-");
-	      processname+=std::string("-");
-	    }
+	    if (flavour[j].IsAnti()) filename+=std::string("-");
 	    filename+=ATOOLS::ToString((int)flavour[j].Kfcode())+std::string("_");
-	    processname+=ATOOLS::ToString((int)flavour[j].Kfcode())+std::string(" ");
 	  }
 	  filename+=std::string("to_");
-	  processname+=std::string("-> ");
 	  for (int j=2;j<4;++j) {
-	    if (flavour[j].IsAnti()) {
-	      filename+=std::string("-");
-	      processname+=std::string("-");
-	    }
+	    if (flavour[j].IsAnti()) filename+=std::string("-");
 	    filename+=ATOOLS::ToString((int)flavour[j].Kfcode())+std::string("_");
-	    processname+=ATOOLS::ToString((int)flavour[j].Kfcode())+std::string(" ");
 	  }
 	  filename+=std::string("_grid");
 	  if (temp[i].size()>4) m_filename.push_back(temp[i][4]);
 	  else m_filename.push_back(filename);
-	  m_processname.push_back(processname);
 	  m_create.push_back(false);
 	}
       }
@@ -433,7 +414,7 @@ bool Simple_Chain::ReadInData()
   return (bool)m_blobs.size();
 }
 
-bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename,std::string& processname)
+bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename)
 {
 #ifdef PROFILE__Simple_Chain
   PROFILE_HERE;
@@ -459,8 +440,8 @@ bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename,
   flavour[0]=flavour[1]=flavour[2]=flavour[3]=ATOOLS::kf::jet;
   EXTRAXS::QCD_Processes *group;
   group = new EXTRAXS::QCD_Processes(p_isr,p_beam,flavour,p_processes->SelectorData(),
-				       p_processes->ScaleScheme(),p_processes->KFactorScheme(),
-				       p_processes->ScaleFactor(),false);
+				     p_processes->ScaleScheme(),p_processes->KFactorScheme(),
+				     p_processes->ScaleFactor(),false);
   for (Blob_Iterator bit=bloblist.begin();bit!=bloblist.end();++bit) {
     for (size_t i=0;i<group->NIn();++i) flavour[i]=(*bit)->InParticle(i)->Flav();
     for (size_t j=0;j<group->NOut();++j) flavour[group->NIn()+j]=(*bit)->OutParticle(j)->Flav();
@@ -484,11 +465,13 @@ bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename,
     newxs->SetKFactorScheme(m_kfactorscheme);
     group->Add(newxs);
   }
-  group->SetName(processname);
   group->SetScaleScheme(m_scalescheme);
   group->SetKFactorScheme(m_kfactorscheme);
   p_processes->PushBack(group);
   m_comments.clear();
+  std::string processname=filename.substr(0,filename.length()-4);
+  size_t pos=0;
+  while ((pos=processname.find("_"))!=std::string::npos) processname[pos]=' ';
   m_comments.push_back(std::string("processes : ")+processname);
   GridHandlerVector gridhandler=GridHandlerVector(2);
   for (unsigned int i=0;i<gridhandler.size();++i) gridhandler[i] = new GridHandlerType();
@@ -577,7 +560,6 @@ bool Simple_Chain::InitializeBlobList()
       newxs->SetKFactorScheme(m_kfactorscheme);
       group[i]->Add(newxs);
     }
-    group[i]->SetName(m_processname[i]);
     group[i]->SetScaleScheme(m_scalescheme);
     group[i]->SetKFactorScheme(m_kfactorscheme);
     p_processes->PushBack(group[i]);
@@ -762,7 +744,7 @@ bool Simple_Chain::Initialize()
       m_create[i]=true;
     }
     if (m_create[i]) {
-      if (!CreateGrid(m_blobs[i],m_filename[i],m_processname[i])) {
+      if (!CreateGrid(m_blobs[i],m_filename[i])) {
 	ATOOLS::msg.Error()<<"Simple_Chain::Initialize(): "
 			   <<"Grid creation for "<<m_filename[i]<<" failed! "<<std::endl
 			   <<"   Abort initialization."<<std::endl;

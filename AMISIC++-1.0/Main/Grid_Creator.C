@@ -85,6 +85,7 @@ namespace AMISIC {
     upper=ATOOLS::Min((*p_xaxis)[(*p_xaxis)(boundary[1])*(GridArgumentType)(1.0/4.0)
 				 +(*p_xaxis)(boundary[2])*(GridArgumentType)(3.0/4.0)],(*p_xaxis)[GridXMax()]);
     if (lower==upper) return 0;
+    p_processes->Reset();
     p_processes->SelectorData()->SetData(m_criterion,m_initialdata.flavs,m_initialdata.help,lower,upper);
     p_processes->ResetSelector(p_processes->SelectorData());
     p_processes->SetMax(0.0,1);

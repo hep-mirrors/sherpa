@@ -24,7 +24,7 @@ namespace AMISIC {
   private:
 
     std::vector<ATOOLS::Blob_List>  m_blobs;
-    std::vector<std::string>        m_filename, m_processname, m_comments;
+    std::vector<std::string>        m_filename, m_comments;
     std::vector<bool>               m_create;
     std::vector<GridFunctionType*>  m_differential, m_maximum;
     GridResultType                  m_norm;
@@ -54,8 +54,7 @@ namespace AMISIC {
     void FillMode(EXTRAXS::QCD_Processes::Mode mode);
 
     bool ReadInData();
-    bool CreateGrid(ATOOLS::Blob_List& bloblist,
-		    std::string& filename,std::string& processname);
+    bool CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename);
     bool CalculateTotal();
     void CalculateSigmaND();
     bool InitializeBlobList();
