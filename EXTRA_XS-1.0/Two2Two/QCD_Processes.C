@@ -165,7 +165,11 @@ void QCD_Processes::InitIntegrators()
     if (p_pshandler->KMRKPIntegrator()!=NULL) p_pshandler->KMRKPIntegrator()->DropAllChannels();
   }
   p_pshandler->CreateIntegrators();
-  if (p_isrhandler->On()) p_pshandler->ISRIntegrator()->Reset();
+  p_pshandler->ISRIntegrator()->Reset();
+  if (p_isrhandler->KMROn()) {
+    p_pshandler->KMRZIntegrator()->Reset();
+    p_pshandler->KMRKPIntegrator()->Reset();
+  }
   p_pshandler->FSRIntegrator()->Reset();
 }
       
