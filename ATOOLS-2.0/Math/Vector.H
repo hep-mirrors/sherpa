@@ -99,13 +99,17 @@ namespace ATOOLS {
     inline const double operator[] (int i) const;
     inline const double Abs2() const; 
     inline const double Abs() const; 
-    inline const double Y() const; 
+    inline const double P() const; 
+
     inline const double PPerp2() const; 
     inline const double PPerp() const; 
     inline const double EPerp2() const;
     inline const double EPerp() const; 
     inline const double PPlus() const; 
     inline const double PMinus() const; 
+
+    inline const double Y() const; 
+    inline const double Eta() const; 
 
     Vec4D& operator+= (const Vec4D& v);
     Vec4D& operator-= (const Vec4D& v);
@@ -353,11 +357,12 @@ namespace ATOOLS {
     return sqrt(Abs2()); 
   }
 
-  inline const double Vec4D::Y() const 
+  inline const double Vec4D::P() const 
   { 
-    return 0.5*log((m_x[0]+m_x[3])/(m_x[0]-m_x[3])); 
+    return sqrt(m_x[1]*m_x[1]+m_x[2]*m_x[2]+m_x[3]*m_x[3]); 
   }
-  
+
+
   inline const double Vec4D::PPerp2() const 
   { 
     return m_x[1]*m_x[1]+m_x[2]*m_x[2]; 
@@ -376,6 +381,23 @@ namespace ATOOLS {
   inline const double Vec4D::EPerp() const 
   { 
     return sqrt(EPerp2()); 
+  }
+
+  inline const double Vec4D::Y() const 
+  { 
+    return 0.5*log((m_x[0]+m_x[3])/(m_x[0]-m_x[3])); 
+  }
+  
+  inline const double Vec4D::Eta() const 
+  {
+    double pt2=PPerp2();
+    double pp =P();
+    double pz =dabs(m_x[3]);
+    double sn =Sign(m_x[3]);
+    if (pt2<1.e-10*pp*pp) {
+      return sn*20.;
+    }
+    return sn*0.5*log(sqr(pp+pz)/pt2);
   }
 
   inline const double Vec4D::PPlus() const 

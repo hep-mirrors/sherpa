@@ -1,5 +1,6 @@
 #include "Histogram.H"
 #include "Message.H"
+#include "MyStrStream.H"
 #include "Run_Parameter.H"
 #include <stdio.h>
 
@@ -40,7 +41,7 @@ Histogram::Histogram(int _type,double _lower,double _upper,int _nbin) :
   }
 }
 
-Histogram::Histogram(Histogram * histo) {
+Histogram::Histogram(const Histogram * histo) {
   m_lower   = histo->m_lower;
   m_upper   = histo->m_upper;
   m_logbase = histo->m_logbase;
@@ -61,46 +62,53 @@ Histogram::Histogram(Histogram * histo) {
 }
 
 
-Histogram::Histogram(std::string _pID) {
-  char pID[100];
-  sprintf(pID,"%s",_pID.c_str());
+Histogram::Histogram(const std::string & pID) {
+  std::ifstream ifile(pID.c_str());
 
-  std::ifstream ifile(pID);
+  std::string dummy;
+  getline(ifile,dummy);
+  
+  if (dummy!="") { 
+    MyStrStream str;
+    str<<dummy;
+    str>>m_type>>m_nbin>>m_lower>>m_upper;
 
-  int    _type, _nbins;
-  double _lower, _upper;
-  ifile>>_type>>_nbins>>_lower>>_upper;
+    m_logarithmic = int(m_type/10);
+    m_depth       = m_type-m_logarithmic*10+1;
 
-  m_type = _type; m_nbin = _nbins; m_lower = _lower; m_upper = _upper;
-
-  m_logarithmic = int(m_type/10);
-  m_depth       = m_type-m_logarithmic*10+1;
-
-  m_logbase = 1;
-  switch(m_logarithmic) {
+    m_logbase = 1;
+    switch(m_logarithmic) {
     case 1: 
       m_logbase = log(10.);
       break;
     default: break;
-  }
-  m_binsize     = (m_upper-m_lower)/(double(m_nbin-2));
+    }
+    m_binsize     = (m_upper-m_lower)/(double(m_nbin-2));
+    
+    if (m_binsize<=0.) {
+      msg.Error()<<"Error in Histogram : "
+		 <<"Tried to initialize a histogram with m_binsize <= 0 !"
+		 <<std::endl;
+      m_active = 0;
+      return;
+    }
+    
+    m_active = 1;
+    m_bins   = new double * [m_nbin];
+    
+    for (int i=0;i<m_nbin;i++) m_bins[i]   = new double[m_depth];
+    
+    for (int j=0;j<m_depth;j++) str>>m_bins[0][j];
+    for (int j=0;j<m_depth;j++) str>>m_bins[m_nbin-1][j];
 
-  if (m_binsize<=0.) {
-    msg.Error()<<"Error in Histogram : "
-	       <<"Tried to initialize a histogram with m_binsize <= 0 !"
-	       <<std::endl;
+    str>>m_fills;
+  }
+  else {
+    msg.Error()<<"Error in Histogram : reading file :"<<pID<<std::endl;
     m_active = 0;
-    return;
+    return;    
   }
 
-  //  m_nbin += 2;
-  m_active = 1;
-  m_bins   = new double * [m_nbin];
-
-  for (int i=0;i<m_nbin;i++) m_bins[i]   = new double[m_depth];
-
-  for (int j=0;j<m_depth;j++) ifile>>m_bins[0][j];
-  for (int j=0;j<m_depth;j++) ifile>>m_bins[m_nbin-1][j];
 
   double value;
   for (int i=0;i<m_nbin-1;i++) {
@@ -142,7 +150,6 @@ void Histogram::Scale(double scale) {
     m_bins[i][0]*= scale;
     total += m_bins[i][0]; 
   }
-  m_fills = int(double(m_fills)/scale);
 }
 
 void Histogram::Output() {
@@ -165,14 +172,14 @@ void Histogram::Output() {
 }
 
 
-void Histogram::Output(std::string name) {
+void Histogram::Output(const std::string name) {
   std::ofstream ofile;
   ofile.open(name.c_str());
 
   ofile<<m_type<<" "<<m_nbin<<" "<<m_lower<<" "<<m_upper<<" ";
   for (int j=0;j<m_depth;j++) ofile<<m_bins[0][j]<<"  ";
   for (int j=0;j<m_depth;j++) ofile<<m_bins[m_nbin-1][j]<<"  ";
-  ofile<<std::endl;
+  ofile<<m_fills<<std::endl;
   for (int i=0;i<m_nbin-1;i++) {
     ofile<<m_lower+i*m_binsize<<"  ";
     for (int j=0;j<m_depth;j++) ofile<<m_bins[i+1][j]<<"  ";
@@ -208,15 +215,17 @@ void Histogram::Insert(double coordinate) {
   }
 }
 
-void Histogram::Insert(double coordinate,double value) {
+void Histogram::Insert(double coordinate,double value,int ncount) {
   if (!m_active) {
     msg.Error()<<"Error in Histogram : Tried to access a "
 			  <<"histogram with binsize <= 0 !"<<std::endl;
     return;
   }
+  m_fills+=ncount;
+  if (value==0.) return;
+
   if (m_logarithmic>0) coordinate = log(coordinate)/m_logbase;
 
-  m_fills++;
 
   if (coordinate<m_lower) { 
     m_bins[0][0] += value;
@@ -395,4 +404,28 @@ void Histogram::Extrapolate(double coordinate,double * res,int mode) {
       }
     }
   }
+}
+
+double Histogram::Integral() const 
+{
+  double total=0.;
+  for (int i=0;i<m_nbin;i++) { 
+    total += m_bins[i][0]; 
+  }
+  return total*m_binsize;
+}
+
+Histogram & Histogram::operator+=(const Histogram & histo)
+{
+  if (histo.m_nbin!=m_nbin) {
+    msg.Error()<<"Error in Histogram : can not add histograms with different number of bins"<<std::endl;
+    return *this;
+  }
+
+  for (int i=0;i<m_nbin;i++) { 
+    m_bins[i][0]+= histo.m_bins[i][0]; 
+  }
+  
+  m_fills+=histo.m_fills;
+  return *this;
 }

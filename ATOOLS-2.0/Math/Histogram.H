@@ -18,16 +18,16 @@ namespace ATOOLS {
     int        m_logarithmic;
   public :
     Histogram(int type,double xmin, double xmax, int nbins);
-    Histogram(Histogram *);
-    Histogram(std::string);
+    Histogram(const Histogram *);
+    Histogram(const std::string &);
     ~Histogram();
     void Reset();
     void Insert(double x);
-    void Insert(double x, double weight);
+    void Insert(double x, double weight, int =1);
     void InsertRange(double start, double end, double value);
     void Scale(double factor);
     void Output();
-    void Output(std::string);
+    void Output(const std::string);
     void Finalize();
     double * Bin(int i);
     double * Bin(double x);
@@ -39,6 +39,10 @@ namespace ATOOLS {
     double Xmin() const { return m_lower; }
     double Xmax() const { return m_upper; }
     double Value(int i) const { return m_bins[i][0]; }
+    double Fills() const { return m_fills; }
+    double Integral() const;
+
+    Histogram & operator+=(const Histogram & histo);
   };
 
 
