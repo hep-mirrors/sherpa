@@ -266,7 +266,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
 	if ((psh->BeamIntegrator())) (psh->BeamIntegrator())->EndOptimize(maxerror);
 	if ((psh->ISRIntegrator()))  (psh->ISRIntegrator())->EndOptimize(maxerror);
 	(psh->FSRIntegrator())->EndOptimize(maxerror);
-	iter   *= Min(int(1./maxerror),(psh->FSRIntegrator())->Number()); // !!! very large?
+	iter   *= 2;
 	maxopt += 4*iter;
 	endopt++;
       }

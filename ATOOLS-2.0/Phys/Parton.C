@@ -15,7 +15,7 @@ std::ostream& APHYTOOLS::operator<<(std::ostream& str,Parton* part) {
     return str<<"--- empty entry ---"<<std::endl;
   case 1 : // active (final state) particle
   case 2 : // decayed or fragmented
-    str<<"  "<<std::setw(3)<<part->Info()<<std::setw(1)<<" "
+    str<<"  "<<std::setw(3)<<part->Info()<<"  "<<std::setw(3)<<part->Status()<<std::setw(1)<<" "
        <<std::setw(22)<<part->Flav()<<std::setw(1)<<" "
        <<std::setw(10)<<part->Number()<<std::setw(1)<<" (";
     if (part->ProductionBlob()) str<<std::setw(5)<<part->ProductionBlob()->Id();
@@ -185,7 +185,7 @@ Flow    * Parton::GetFlow() const                  { return p_flow; }
 int       Parton::GetFlow(const int index) const   { return p_flow->Code(index); }
 void      Parton::SetFlow(Flow * _flow)            { p_flow    = _flow; }
 void      Parton::SetFlow(const int index, const int code) {
-  if (!m_fl.Strong()) return;
+  if ((!m_fl.IsDiQuark()) && (!m_fl.Strong())) return;
   p_flow->SetCode(index,code);
 }
 

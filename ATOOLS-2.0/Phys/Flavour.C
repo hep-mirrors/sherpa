@@ -199,9 +199,9 @@ int Flavour::HepEvt() {
   case kf::t      : code=6;break;
   case kf::gluon  : code=21;break;
   case kf::photon : code=22;break;
-  default         : code=0;
+  default         : code=kfc;
   }
-  if(anti) code= -code;
+  if (anti) code= -code;
   return code;
 }
 

@@ -100,21 +100,25 @@ bool Fragmentation_Handler::ExtractSinglets(Blob_List * _bloblist,Parton_List * 
       }
     }
     for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
-      if ((*blit)->Type()==std::string("Fragmentation")) continue;
-      active = 0;
-      for (int i=0;i<(*blit)->NOutP();i++) {
-	if ((*blit)->OutParton(i)->Status()==1) { active = 1; break; }
+      if (!((*blit)->Type()==std::string("Fragmentation"))) {
+	active = 0;
+	for (int i=0;i<(*blit)->NOutP();i++) {
+	  if ((*blit)->OutParton(i)->Status()==1) { 
+	    active = 1; break; }
+	}
+	if (!active) (*blit)->SetStatus(0);
       }
-      if (!active) (*blit)->SetStatus(0);
     }
   }
   for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
-    if ((*blit)->Type()==std::string("Fragmentation")) continue;
-    active = 0;
-    for (int i=0;i<(*blit)->NOutP();i++) {
-      if ((*blit)->OutParton(i)->Status()==1) { active = 1; break; }
+    if (!((*blit)->Type()==std::string("Fragmentation"))) {
+      active = 0;
+      for (int i=0;i<(*blit)->NOutP();i++) {
+	if ((*blit)->OutParton(i)->Status()==1) { 
+	  active = 1; break; }
+      }
+      if (!active) (*blit)->SetStatus(0);
     }
-    if (!active) (*blit)->SetStatus(0);
   }
   return foundatall;
 }
@@ -128,7 +132,7 @@ bool Fragmentation_Handler::FindConnected(Blob_List * _bloblist,
       for (int i=0;i<(*blit)->NOutP();i++) {
 	part = (*blit)->OutParton(i);
 	if (part==compare) continue;
-	if ( part->Info()!='F' && part->Info() != 'H') continue;
+	if (part->Info()!='F' && part->Info() != 'H') continue;
 	if (part->Status()!=1) continue; 
 	if (part->GetFlow(2)==compare->GetFlow(1)) {
 	  part->SetStatus(2);

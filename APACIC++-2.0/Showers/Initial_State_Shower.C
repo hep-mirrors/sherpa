@@ -115,6 +115,7 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,int beam,Blob * jet,
     int pos = (*blit)->Type().find(string("ME PS Interface (Sherpa)"));
     if (pos>-1) {
       bl_meps=(*blit);
+      bl_meps->SetStatus(0);
       break;
     }
   }
@@ -136,6 +137,7 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,int beam,Blob * jet,
     jet->SetStatus(1);
     p = new Parton(kn->part);
     p->SetDecayBlob(jet);
+    p->SetStatus(2);
     jet->AddToInPartons(p);
     jet->SetId(bl->size());
     jet->SetType(std::string("IS Shower (APACIC++2.0)"));
@@ -151,14 +153,15 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,int beam,Blob * jet,
 	else    number = int(kn->part);
 	kn->part->SetNumber(number);
       }
-      p=  new Parton(kn->part);
+      p = new Parton(kn->part);
+      p->SetStatus(2);
       jet->AddToOutPartons(p);
       p->SetProductionBlob(jet);
       if (bl_meps) {
 	p->SetDecayBlob(bl_meps);
 	bl_meps->AddToInPartons(p);
       }
-      jet->SetStatus(0);
+      jet->SetStatus(1);
       return;
     }
   }
@@ -171,6 +174,7 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,int beam,Blob * jet,
     jet = new Blob();
     jet->SetStatus(1);
     p = new Parton(kn->part);
+    p->SetStatus(2);
     jet->AddToInPartons(p);
     p -> SetDecayBlob(jet);
     if (bl_meps) {
@@ -214,12 +218,15 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,int beam,Blob * jet,
 	  p -> SetDecayBlob(bl_meps);
 	  bl_meps->AddToInPartons(p);
 	}
-	else 
-	  p -> SetDecayBlob(NULL);
+	else p -> SetDecayBlob(NULL);
       }
       p->SetProductionBlob(jet);
-      p->SetStatus(1);
+      if (p->Info() == 'G') p->SetStatus(2);
+                       else p->SetStatus(1);
       jet->AddToOutPartons(p);
+    }
+    else {
+      kn->part->SetStatus(2);
     }
   }
   ExtractPartons(kn->left,beam,jet,bl,pl); 

@@ -440,7 +440,7 @@ bool Phase_Space_Handler::CreateIntegrators()
 
   switch (int_type) {
   case 0: 
-    if (nout==2) fsrchannels->Add(new Decay2Channel(nin,nout,psflavs));
+    if (nin==1 && nout==2) fsrchannels->Add(new Decay2Channel(nin,nout,psflavs));
             else fsrchannels->Add(new Rambo(nin,nout,psflavs));
     break;
   case 1: 

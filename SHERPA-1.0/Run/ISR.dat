@@ -1,13 +1,13 @@
 !-------------------------------------------------------
 !-- ISR parameters ------------------------------------
 !-------------------------------------------------------
-BUNCH_1         = 11                   ! possible beam particles:  P+, P-, e+, e-
-ISR_1           = Off                  ! On/Off
+BUNCH_1         = 2212                 ! possible beam particles:  P+, P-, e+, e-
+ISR_1           = On                   ! On/Off
 ! 
-BUNCH_2         = -11                  ! possible beam particles:  P+, P-, e+, e- 
-ISR_2           = Off                  ! On/Off
+BUNCH_2         = 2212                 ! possible beam particles:  P+, P-, e+, e- 
+ISR_2           = On                   ! On/Off
 !
-ISR_SMIN        = 0.0001               ! Minimal fraction of nominal s for parton after ISR
+ISR_SMIN        = 0.0000000000001      ! Minimal fraction of nominal s for parton after ISR
 ISR_SMAX        = 1.0                  ! Maximal fraction of nominal s for parton after ISR
 !
 ISR_E_ORDER     = 1                    ! Perturbative order of electron structure function

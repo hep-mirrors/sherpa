@@ -94,8 +94,8 @@ double CTEQ6_Fortran_Interface::GetXPDF(const APHYTOOLS::Flavour & infl)
   if (infl == Flavour(kf::gluon)) return m_f[5];
   if (infl.Kfcode()==2)   return m_f[5-m_anti*int(infl)/2];     // +/- 1
   if (infl.Kfcode()==1)   return m_f[5-m_anti*int(infl)*2];     // +/- 2
-  if (infl.Kfcode()==4)   return m_f[5-m_anti*int(infl)/4*3];   // +/- 3
-  if (infl.Kfcode()==3)   return m_f[5-m_anti*int(infl)/3*4];   // +/- 4
+  if (infl.Kfcode()==3)   return m_f[5-m_anti*int(infl)];   // +/- 3
+  if (infl.Kfcode()==4)   return m_f[5-m_anti*int(infl)];   // +/- 4
   if (infl.Kfcode()==5)   return m_f[5-m_anti*int(infl)];       // +/- 5
 }
 

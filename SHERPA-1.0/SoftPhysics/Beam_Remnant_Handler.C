@@ -105,10 +105,10 @@ bool Beam_Remnant_Handler::FillBunchBlobs(Blob_List * _bloblist,Parton_List * _p
 	else {
 	  blob->AddToInPartons(new Parton(-1,p_beam->GetBeam(i)->Flav(),p_beam->GetBeam(i)->Momentum()));
 	  blob->InParton(0)->SetDecayBlob(blob);
+	  blob->InParton(0)->SetStatus(2);
 	  (*biter)->InParton(0)->SetProductionBlob(blob);
 	}
 	_bloblist->insert(_bloblist->begin(),blob);
-	(*biter)->SetStatus(0);
 	flag = 1;
       }
     }
@@ -122,10 +122,13 @@ bool Beam_Remnant_Handler::FillBeamBlobs(Blob_List * _bloblist,Parton_List * _pa
   Blob_Iterator endblob = _bloblist->end(); 
   Blob * blob;
   bool okay = 0;
+  int pos;
   for (int i=0;i<2;i++) {
     bool flag=1;
     for (Blob_Iterator biter = _bloblist->begin();biter != endblob;++biter) {
-      if ((*biter)->Beam()==i && (*biter)->Status()==1 && (p_numberofconstituents[i]>0)) {
+      pos = (*biter)->Type().find(string("IS"));
+      if ((*biter)->Beam()==i && (*biter)->Status()==1 && 
+	  (p_numberofconstituents[i]>0) && pos>-1 ) {
 	if (flag) {
 	  blob = new APHYTOOLS::Blob();
 	  blob->SetId(_bloblist->size());
@@ -133,9 +136,9 @@ bool Beam_Remnant_Handler::FillBeamBlobs(Blob_List * _bloblist,Parton_List * _pa
 	  blob->SetBeam(i);
 	  blob->SetStatus(1);
 	  blob->AddToInPartons(new Parton(-1,p_isr->Flav(i),p_beam->GetBeam(i)->OutMomentum()));
+	  blob->InParton(0)->SetStatus(2);
 	  _bloblist->insert(_bloblist->begin(),blob);
 	  flag = 0;
-	  (*biter)->SetStatus(0);
 	  okay = 1;
 	}
 	blob->AddToOutPartons((*biter)->InParton(0));

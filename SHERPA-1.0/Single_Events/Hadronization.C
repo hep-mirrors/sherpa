@@ -5,8 +5,6 @@ using namespace APHYTOOLS;
 using namespace AMATOOLS;
 using namespace AORGTOOLS;
 using namespace std;
-    Beam_Remnant_Handler  * p_beamremnanthandler;
-    Fragmentation_Handler * p_fragmentationhandler;
 
 Hadronization::Hadronization(Beam_Remnant_Handler * _beamremnant,Fragmentation_Handler * _fragmentation) :
   p_beamremnanthandler(_beamremnant), p_fragmentationhandler(_fragmentation)
@@ -30,7 +28,6 @@ bool Hadronization::Treat(APHYTOOLS::Blob_List * _bloblist, double &) {
 	       <<"   Continue and hope for the best."<<endl;
     return 0;
   }
-  msg.Debugging()<<"In Hadronization::Treat."<<endl;
   p_beamremnanthandler->FillBeamBlobs(_bloblist);
   p_beamremnanthandler->FillBunchBlobs(_bloblist);
   p_fragmentationhandler->PerformFragmentation(_bloblist);
