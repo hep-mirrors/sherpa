@@ -1,6 +1,7 @@
 #include "Lund_Interface.H"
 
 #include "Lund_Wrapper.H"
+#include "ISR_Handler.H"
 #include "Data_Reader.H"
 #include "Particle.H"
 #include "Run_Parameter.H"
@@ -16,7 +17,8 @@ using namespace SHERPA;
 size_t Lund_Interface::s_errors=0;
 size_t Lund_Interface::s_maxerrors=0;
 
-ATOOLS::Blob_List *Lund_Interface::s_bloblist; 
+ATOOLS::Blob_List *Lund_Interface::s_bloblist=NULL; 
+PDF::ISR_Handler *Lund_Interface::s_isrhandler=NULL; 
 
 Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file):
   m_path(_m_path),m_file(_m_file),
@@ -75,8 +77,8 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file):
   reader->AddIgnore("(");
   reader->AddIgnore(")");
   reader->AddIgnore(",");
-  bool sherpa=true;
-  if (ATOOLS::rpa.gen.Ecms()==0.) {
+  bool sherpa=_m_file==std::string("");
+  if (!sherpa) {
     sherpa=false;
     if (!reader->ReadFromFile(frame,"FRAME")) frame=std::string("CMS");
     if (!reader->ReadFromFile(beam[0],"BEAM")) beam[0]=std::string("P+");

@@ -6,6 +6,8 @@
 #endif
 #include "Lund_Interface.H"
 
+using namespace SHERPA;
+
 extern "C" {
   void pyhepc_(int*);
   void pyinit_(const char*,const char*,const char*,double*,int,int,int);
@@ -19,6 +21,9 @@ extern "C" {
   double pyalps_(double*);
 #ifndef NO_EXPORT__AlphaS
   double shalps_(double*);
+#endif
+#ifndef NO_EXPORT__PDF
+  void shpdpr_(double*,double*,double*);
 #endif
   void sherrm_(int*);
 }
@@ -62,6 +67,26 @@ double pyalps(double q2) {
 #ifndef NO_EXPORT__AlphaS
 double shalps_(double *q2) {
   return (*MODEL::as)(*q2);
+}
+#endif
+
+#ifndef NO_EXPORT__PDF
+void shpdpr_(double *x,double *q2,double *xppr) {
+  for (int i=0;i<=10;++i) {
+    Lund_Interface::ISRHandler()->PDF(0)->Calculate(*x,0.,0.,*q2);
+    if (i!=3 && i!=4) {
+//       std::cout<<"xpdf["<<i<<"]("<<*x<<","<<*q2<<"): "<<xppr[i+1]<<" vs. "
+// 	       <<Lund_Interface::ISRHandler()->PDF(0)->GetXPDF(ATOOLS::Flavour((ATOOLS::kf::code)(i-5)))
+// 	       <<std::endl;     
+      xppr[i+1]=Lund_Interface::ISRHandler()->PDF(0)->GetXPDF(ATOOLS::Flavour((ATOOLS::kf::code)(i-5)));
+    }
+    else {
+//       std::cout<<"xpdf["<<i<<"->"<<(2-i)<<"]("<<*x<<","<<*q2<<"): "<<xppr[i+1]<<" vs. "
+// 	       <<Lund_Interface::ISRHandler()->PDF(0)->GetXPDF(ATOOLS::Flavour((ATOOLS::kf::code)(2-i)))
+// 	       <<std::endl;     
+      xppr[i+1]=Lund_Interface::ISRHandler()->PDF(0)->GetXPDF(ATOOLS::Flavour((ATOOLS::kf::code)(2-i)));
+    }
+  }
 }
 #endif
 

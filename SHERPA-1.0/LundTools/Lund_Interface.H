@@ -4,6 +4,7 @@
 #include "HepEvt_Interface.H"
 #include "Particle_List.H"
 #include "Blob_List.H"
+#include "ISR_Handler.H"
 #include <map>
 
 namespace SHERPA {
@@ -16,6 +17,7 @@ namespace SHERPA {
     std::string m_path, m_file, m_outfile;
 
     ATOOLS::HepEvt_Interface *p_hepevt;
+    static PDF::ISR_Handler  *s_isrhandler;
 
     long int m_events, m_curfile, m_evtsperfile;
     bool     m_compress, m_writeout;
@@ -55,6 +57,11 @@ namespace SHERPA {
     static void Error(const int error);
 
     bool OneEvent(ATOOLS::Blob_List *const bloblist,double &weight);
+
+    // inline functions
+    inline static void SetISRHandler(PDF::ISR_Handler *const handler) { s_isrhandler=handler; }
+
+    inline static PDF::ISR_Handler *ISRHandler() { return s_isrhandler; }
 
   };// end of class Lund_Interface
 
