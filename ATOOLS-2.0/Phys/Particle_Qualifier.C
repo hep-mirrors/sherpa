@@ -193,6 +193,8 @@ DEFINE_QUALIFIER_GETTER(Is_Neutral_Xi,Is_Neutral_Xi_Getter,
 			"113","neutral xi");
 DEFINE_QUALIFIER_GETTER(Is_Neutral_Xi,Is_Neutral_Xi_Getter_,
 			"NeutralXi","neutral xi");
+DEFINE_QUALIFIER_GETTER(Is_Not_Lepton,Is_Not_Lepton_Getter_,
+			"NotLepton","not lepton");
 
 bool Or_Particle_Qualifier::operator() (const Particle * p) const {
   return ((*p_qual_a)(p) || (*p_qual_b)(p));

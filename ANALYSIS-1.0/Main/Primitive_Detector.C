@@ -21,7 +21,6 @@ void Primitive_Detector_Getter::PrintInfo(std::ostream &str,const size_t width) 
      <<std::setw(width+7)<<" "<<"InList  list\n"
      <<std::setw(width+7)<<" "<<"OutList list\n"
      <<std::setw(width+7)<<" "<<"HadCal  etamin etamax etacells phicells\n"
-     <<std::setw(width+7)<<" "<<"CalCone etmin etamin etamax deltar [bjets]\n"
      <<std::setw(width+4)<<" "<<"}";
 }
 
@@ -41,7 +40,8 @@ Primitive_Detector_Getter::operator()(const String_Matrix &parameters) const
       detector->Add(new Primitive_Calorimeter(ATOOLS::ToType<double>(cur[1]),
 					      ATOOLS::ToType<double>(cur[2]),
 					      ATOOLS::ToType<int>(cur[3]),
-					      ATOOLS::ToType<int>(cur[4])));
+					      ATOOLS::ToType<int>(cur[4]),
+					      cur.size()>5?cur[5]:"NotLepton"));
     }
     else if (cur[0]=="CalCone" && cur.size()>4) {
       msg.Out()<<"WARNING CalCone   no longer supported by Primitive Detector ! "<<std::endl;
@@ -124,6 +124,7 @@ void Primitive_Detector::Evaluate(const ATOOLS::Blob_List &bloblist,
   }
   Fill(inparticles);
   Particle_List *outparticles = new Particle_List();
+  Extract(outparticles);
   p_ana->AddParticleList(m_outlistname,outparticles);
 }
 
@@ -164,6 +165,14 @@ void Primitive_Detector::Fill(const ATOOLS::Particle_List * pl)
   for (String_DetectorElement_Iter sdeiter=m_elements.begin();
        sdeiter!=m_elements.end();++sdeiter) {
     if (sdeiter->second!=NULL) sdeiter->second->Fill(pl);
+  }
+}
+
+void Primitive_Detector::Extract(ATOOLS::Particle_List * pl) 
+{
+  for (String_DetectorElement_Iter sdeiter=m_elements.begin();
+       sdeiter!=m_elements.end();++sdeiter) {
+    if (sdeiter->second!=NULL) sdeiter->second->Extract(pl);
   }
 }
 

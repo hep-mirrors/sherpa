@@ -6,20 +6,25 @@
 #include "Vector.H"
 #include "Message.H"
 
+namespace ATOOLS { class Particle_Qualifier_Base; }
+
 namespace ANALYSIS {
   class Primitive_Calorimeter : public Primitive_Detector_Element {
   private:
     double m_mineta, m_maxeta, m_delta_eta, m_delta_phi;
     double *  p_costheta, *  p_sintheta, *  p_cosphi, *  p_sinphi;
+    ATOOLS::Particle_Qualifier_Base *p_qualifier;
 
     void   SmearEnergy(const ATOOLS::Flavour &, double &);
     void   Reset();
   public:
     Primitive_Calorimeter(int,int,std::string) { abort(); }
     Primitive_Calorimeter(const double mineta=-2.5,const double maxeta=2.5,
-			  const int neta=50, const int nphi=40);
+			  const int neta=50, const int nphi=40,
+			  const std::string qualifier="NotLepton");
     ~Primitive_Calorimeter();
     void Fill(const ATOOLS::Particle_List *);
+    void Extract(ATOOLS::Particle_List *);
     void Print(std::ostream & =std::cout);
 
     double PseudoRapidityNAzimuthalAngle(const ATOOLS::Vec4D & p, double & phi);

@@ -1,15 +1,19 @@
 #include "Primitive_Calorimeter.H"
 #include "Particle_List.H"
+#include "Particle_Qualifier.H"
 #include "MathTools.H"
 
 using namespace ANALYSIS;
 using namespace ATOOLS;
 
 Primitive_Calorimeter::Primitive_Calorimeter(const double mineta,const double maxeta,
-					     const int neta,const int nphi) :
+					     const int neta,const int nphi,
+					     const std::string qualifier) :
   Primitive_Detector_Element(neta,nphi,std::string("Hadronic Calorimeter")),
-  m_mineta(mineta), m_maxeta(maxeta) 
+  m_mineta(mineta), m_maxeta(maxeta),
+  p_qualifier(NULL)
 {
+  p_qualifier = ATOOLS::Particle_Qualifier_Getter::GetObject(qualifier,qualifier);
   m_delta_eta     = (m_maxeta-m_mineta)/double(m_nx);
   m_delta_phi     = 2.*M_PI/double(m_ny);
 
@@ -76,6 +80,7 @@ void Primitive_Calorimeter::Fill(const Particle_List * pl)
   Vec4D  mom=Vec4D(0.,0.,0.,0.);
   int ii,jj;
   for (Particle_List::const_iterator it=pl->begin(); it!=pl->end();++it) {
+    if (p_qualifier!=NULL && !(*p_qualifier)(*it)) continue;
     if (!((*it)->Flav().IsLepton())) {
       double phi = 0;
       double y   = PseudoRapidityNAzimuthalAngle((*it)->Momentum(),phi);
@@ -91,6 +96,20 @@ void Primitive_Calorimeter::Fill(const Particle_List * pl)
       }
     }
   }  
+}
+
+void Primitive_Calorimeter::Extract(Particle_List * pl)
+{
+  for (int i=0;i<m_nx;++i) {
+    for (int j=0;j<m_ny;++j) {
+      if (p_cells[i][j]!=0.0) {
+	Vec4D mom(1.0,p_sintheta[i]*p_cosphi[j],p_sintheta[i]*p_sinphi[j],p_costheta[i]);
+	mom*=p_cells[i][j];
+	Particle *track = new Particle(1,kf::jet,mom);
+	pl->push_back(track);
+      }
+    }
+  }
 }
 
 Primitive_Detector_Element * Primitive_Calorimeter::Copy() const 

@@ -15,6 +15,7 @@ namespace ANALYSIS {
     Primitive_Detector_Element(int neta,int nphi,std::string name);
     virtual ~Primitive_Detector_Element();
     virtual void Fill(const ATOOLS::Particle_List *) = 0;
+    virtual void Extract(ATOOLS::Particle_List *) = 0;
     virtual void Reset()                             = 0;
     virtual Primitive_Detector_Element * Copy() const = 0;
     double       Cell(const int i,const int j);
@@ -51,6 +52,7 @@ namespace ANALYSIS {
     void Add(Primitive_Detector_Element *);
     void Fill(const ATOOLS::Blob_List *);
     void Fill(const ATOOLS::Particle_List *);
+    void Extract(ATOOLS::Particle_List *);
     Primitive_Detector_Element * GetElement(std::string name);
 
     std::string Name() const;
