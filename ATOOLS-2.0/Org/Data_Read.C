@@ -28,6 +28,13 @@ Type  Data_Read::GetValue(std::string name, Type default_value) {
   Type dummy = GetValue<Type>(name);
   if (dummy!=NotDefined<Type>()) { return dummy; }
   msg.Events()<<"Could not find any allowed value for "<<name<<". Return "<<default_value<<"."<<endl;
+  // setting value for possible next call
+  MyStrStream str;      
+  std::string default_value_str;
+  str<<default_value;
+  str>>default_value_str;
+
+  parameters[name]=default_value_str;
   return default_value;
 }
 
@@ -49,7 +56,9 @@ Type  Data_Read::GetValue(std::string name) {
   return invar;
 }
 
-Data_Read::Data_Read(std::string filename) { ReadIn(filename); }
+Data_Read::Data_Read(std::string filename) { 
+  ReadIn(filename); 
+}
 
 
 void Data_Read::FillIn(char * dummy) {
@@ -74,7 +83,8 @@ void Data_Read::FillIn(char * dummy) {
 void Data_Read::ReadIn(std::string filename) {
   std::ifstream file;
   file.open(filename.c_str());
-  if (file.bad()) {
+  if (!file.good()) {
+    msg.Error()<< " ERROR: opening " << filename <<endl;
     msg.Error()<< " ERROR: opening " << filename <<endl;
     exit (-1);
   }
