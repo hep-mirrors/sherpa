@@ -109,7 +109,8 @@ bool Event_Reader::FillBlobs(Blob_List * blobs)
   }
   msg.Error()<<"Error in Event_Reader::FillBlobs."<<std::endl
 	     <<"   Phasemode = "<<m_phasemode<<" is not specified so far."<<std::endl
-	     <<"   Don't know what to do with file : "<<m_file<<", will abort the run."<<std::endl;
+	     <<"   Don't know what to do with file : "<<m_file<<", will abort the run."
+	     <<std::endl;
   abort();
   return false;
 }
@@ -203,8 +204,10 @@ bool Event_Reader::ReadInEvent(Blob_List * blobs)
     }
   }
   msg.Error()<<"Error in Event_Reader::ReadInEvent."<<std::endl
-	     <<"   Input/Event mode = "<<m_inputmode<<" / "<<m_eventmode<<" is not specified so far."<<std::endl
-	     <<"   Don't know what to do with file : "<<m_file<<", will abort the run."<<std::endl;
+	     <<"   Input/Event mode = "<<m_inputmode<<" / "<<m_eventmode
+	     <<" is not specified so far."<<std::endl
+	     <<"   Don't know what to do with file : "<<m_file
+	     <<", will abort the run."<<std::endl;
   abort();
   return false;
 }
@@ -300,7 +303,7 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
 	      MyStrStream str;
 	      str<<tmp;
 	      str>>kfc;
-	      FSc.push_back(kfc);
+	      if (kfc!=0) FSc.push_back(kfc);
 	      FS  = FS.substr(pos);
 	    }
 	  }
