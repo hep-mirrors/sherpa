@@ -23,7 +23,7 @@ Model_Base * Model_Handler::GetModel(Data_Read * _dataread,std::string _path,std
     rpa.gen.SetModel(modelbase);
     return modelbase;
   }
-  if (model!=std::string("SM") || modelbase==0) { 
+  if (model!=std::string("SM") && modelbase==0) { 
       msg.Error()<<"Error in Model_Handler::GetModel :"<<std::endl
 	       <<"   Tried to initialize model : "<<model<<std::endl
 	       <<"   Option not available. Initialize Standard Model instead."<<std::endl;
