@@ -144,7 +144,7 @@ double Primitive_Integrator::Integrate(const Primitive_Integrand *function)
   while (((long unsigned int)m_np)<Min(m_nmaxopt,m_nmax) && error>m_error) {
     for (long unsigned int n=0;n<m_nopt;++n) Point();
     Update();
-    error=Sigma()/Mean();
+    error=dabs(Sigma()/Mean());
     msg_Info()<<om::blue<<Mean()<<om::reset<<" +- ( "
 	      <<error*Mean()<<" = "<<om::red<<error*100.0<<" %"
 	      <<om::reset<<" ) @ "<<m_np<<std::endl;
@@ -156,7 +156,7 @@ double Primitive_Integrator::Integrate(const Primitive_Integrand *function)
   while (((long unsigned int)m_np)<m_nmax && error>m_error) {
     for (long unsigned int n=0;n<m_nopt;++n) Point();
     Update();
-    error=Sigma()/Mean();
+    error=dabs(Sigma()/Mean());
     msg_Info()<<om::blue<<Mean()<<om::reset<<" +- ( "
 	      <<error*Mean()<<" = "<<om::red<<error*100.0<<" %"
 	      <<om::reset<<" ) @ "<<m_np<<std::endl;
