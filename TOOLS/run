@@ -65,28 +65,34 @@ if [ "$BASENAME" = "" ]; then BASENAME="job" ; fi
 
 FILE=$BASENAME"_"$TIME
 
-echo "echo \"\" > $FILE.log" > $FILE
-echo "echo \"HOSTNAME    = \$HOSTNAME\" >> $FILE.log" >> $FILE
-echo "echo \"HOME        = \$HOME\" >> $FILE.log" >> $FILE
-echo "echo \"USER        = \$USER\" >> $FILE.log" >> $FILE
-echo "echo \"\" >> $FILE.log" >> $FILE
-echo "echo \"QUEUE       = \$QUEUE\" >> $FILE.log" >> $FILE
-echo "echo \"SGE_TASK_ID = \$SGE_TASK_ID\" >> $FILE.log" >> $FILE
-echo "echo \"JOB_ID      = \$JOB_ID\" >> $FILE.log" >> $FILE
-echo "echo \"JOB_NAME    = \$JOB_NAME\" >> $FILE.log" >> $FILE
-echo "echo \"TMPDIR      = \$TMPDIR\" >> $FILE.log" >> $FILE
-echo "echo \"\" >> $FILE.log" >> $FILE
+echo "" > $FILE
+if [ "$QUEUE" = "TRUE" ] ; then 
+  echo "echo \"\" > $FILE.log" >> $FILE
+  echo "echo \"HOSTNAME    = \$HOSTNAME\" >> $FILE.log" >> $FILE
+  echo "echo \"HOME        = \$HOME\" >> $FILE.log" >> $FILE
+  echo "echo \"USER        = \$USER\" >> $FILE.log" >> $FILE
+  echo "echo \"\" >> $FILE.log" >> $FILE
+  echo "echo \"QUEUE       = \$QUEUE\" >> $FILE.log" >> $FILE
+  echo "echo \"SGE_TASK_ID = \$SGE_TASK_ID\" >> $FILE.log" >> $FILE
+  echo "echo \"JOB_ID      = \$JOB_ID\" >> $FILE.log" >> $FILE
+  echo "echo \"JOB_NAME    = \$JOB_NAME\" >> $FILE.log" >> $FILE
+  echo "echo \"TMPDIR      = \$TMPDIR\" >> $FILE.log" >> $FILE
+  echo "echo \"\" >> $FILE.log" >> $FILE
+  echo "" >> $FILE
+fi
 echo "cd $BINPATH" >> $FILE
 echo -en "./Sherpa PATH=$RUNPATH " >> $FILE
 echo -en "\\ \n         RUNDATA=$RUNFILE " >> $FILE 
+if [ ! "$RESULTS" = "" ] ; then echo -en "\\ \n         RESULTS=$RESULTS " >> $FILE ; fi
+if [ ! "$ANALYSIS" = "" ] ; then echo -en "\\ \n         ANALYSIS_OUTPUT=$ANALYSIS " >> $FILE ; fi
 if [ ! "$EVENTS" = "" ] ; then echo -en "\\ \n         EVENTS=$EVENTS " >> $FILE ; fi
 if [ ! "$PYTHIA" = "" ] ; then echo -en "\\ \n         PYTHIA=$PYTHIA " >> $FILE ; fi
 echo -e "\n" >> $FILE
 
 if [ "$QUEUE" = "TRUE" ] ; then
-  echo qsub $COMMAND  
+  echo qsub $FILE  
 else
-  $COMMAND
+  $FILE
 fi
 
 #$ -j y
