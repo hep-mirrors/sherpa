@@ -342,6 +342,12 @@ namespace ATOOLS {
     return nullstring; 
   } 
 
+  inline bool Read_Write_Base::RereadInFile(const unsigned int i) 
+  { 
+    CloseInFile(i,true); 
+    return OpenInFile(i); 
+  }
+
 } // end of namespace ATOOLS
 
 #endif

@@ -144,7 +144,7 @@ namespace ATOOLS {
     inline const bool AddCommandLine() const;
 
     // inline functions
-    inline bool RereadInFile(const unsigned int i=0) { CloseInFile(i,true); return OpenInFile(i); }
+    inline bool RereadInFile(const unsigned int i=0);
 
   };// end of class Read_Write_Base
 
