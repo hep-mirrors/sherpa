@@ -64,7 +64,8 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   std::string selectorfile=
     p_dataread->GetValue<std::string>("SELECTOR_FILE",
 				      std::string("Selector.dat"));
-  p_selectordata = new Selector_Data(m_path+selectorfile);
+  if (construct) p_selectordata = new Selector_Data(m_path+selectorfile);
+  else p_selectordata = new Selector_Data();
   m_scalescheme=p_dataread->GetValue<int>("SCALE_SCHEME",0);
   m_kfactorscheme=p_dataread->GetValue<int>("KFACTOR_SCHEME",0);
   m_scalefactor=p_dataread->GetValue<double>("SCALE_FACTOR",1.);
