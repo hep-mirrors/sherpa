@@ -266,13 +266,10 @@ double Primitive_Integrator::Integrate(const Primitive_Integrand *function)
 	      <<m_channels.size()-m_point.size()<<" cells"<<std::endl;
     Split();
   }
+  for (long unsigned int n=0;n<m_nopt;++n) Point();
   m_opt.clear();
   double alpha=1.0/(m_channels.size()-m_point.size());
-  for (size_t i=0;i<m_channels.size();++i) {
-    m_channels[i]->SetAlpha(alpha);
-    m_channels[i]->SaveAlpha();
-    m_channels[i]->Reset();
-  }
+  for (size_t i=0;i<m_channels.size();++i) m_channels[i]->SetAlpha(alpha);
   while (((long unsigned int)m_np)<m_nmax && error>m_error) {
     for (long unsigned int n=0;n<m_nopt;++n) Point();
     if (!Update()) continue;
