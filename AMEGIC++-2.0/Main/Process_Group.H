@@ -20,7 +20,7 @@ namespace AMEGIC {
     Process_Group(int,int,ATOOLS::Flavour *&,
 		  PDF::ISR_Handler * =NULL,BEAM::Beam_Spectra_Handler * =NULL,
 		  ATOOLS::Selector_Data * =NULL,
-		  int=0,int=99,int=99,int=0,int=0,double=1.,
+		  int=0,int=99,int=99,int=0,int=0,double=1.,double=-1.,
 		  Pol_Info* _pl=0,int _nex=0,ATOOLS::Flavour * _ex_fl=0);
     Process_Group();
     ~Process_Group();

@@ -37,7 +37,8 @@ Process_Base::Process_Base():
   m_totalxs=m_totalerr=m_totalsum=m_totalsumsqr=m_max=0.;
   m_last=m_lastdxs=0.;
   m_lastlumi=1.;
-  m_scale=0.;
+  m_scale=sqr(rpa.gen.Ecms());
+  m_scalefactor=1.;
   m_isrthreshold=0.;
 }
 
@@ -46,14 +47,14 @@ Process_Base::Process_Base():
 Process_Base::Process_Base(int _nin,int _nout,ATOOLS::Flavour * _fl,
 			   PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
 			   int _gen_str, int _orderQCD, int _orderEW,
-			   int _scalescheme,int _kfactorscheme,double _scalefactor,
+			   int _scalescheme,int _kfactorscheme,double _scalefactor,double _scale,
 			   Pol_Info * _pl,
 			   int _nex,ATOOLS::Flavour * _ex_fl) :
   m_nin(_nin), m_nout(_nout), m_nvec(_nin+_nout), m_nex(_nex),m_gen_str(_gen_str),
   m_orderQCD(_orderQCD), m_orderEW(_orderEW),m_nstrong(0),m_neweak(0),
   p_isr(_isr), p_beam(_beam), p_cuts(NULL), p_analysis(NULL),
   p_selected(this), p_ex_fl(_ex_fl),p_moms(NULL), 
-  m_scalescheme(_scalescheme), m_kfactorscheme(_kfactorscheme), m_scalefactor(_scalefactor),
+  m_scalescheme(_scalescheme), m_kfactorscheme(_kfactorscheme), m_scalefactor(_scalefactor),m_scale(_scale),
   m_n(0), m_totalxs(0.), m_totalerr(0.), m_totalsum(0.), m_totalsumsqr(0.), m_rfactor(1.),
   m_last(0.), m_lastdxs(0.), m_max(0.), m_lastlumi(1.),
   m_atoms(0), m_analyse(0), m_tables(0), m_swaped(0)
@@ -82,6 +83,8 @@ Process_Base::Process_Base(int _nin,int _nout,ATOOLS::Flavour * _fl,
     if (p_flout[i].Strong())       m_nstrong++;
     if (p_flout[i].IntCharge()!=0) m_neweak++;
   }
+
+  if (m_scale<0.) m_scale=sqr(rpa.gen.Ecms());
 }
 
 
@@ -231,19 +234,10 @@ class Order_FVST {
 public:
   int operator()(const S_Data & a, const S_Data & b) {
     //    if "a < b" return 1  else 0;
-    //  sort FVST
     if (a.fl.IsFermion() && !b.fl.IsFermion()) return 1;
     if (a.fl.IsVector() && !b.fl.IsFermion() && !b.fl.IsVector()) return 1;
     if (a.fl.IsScalar() && !b.fl.IsScalar() && 
 	 !b.fl.IsFermion() && !b.fl.IsVector()) return 1;
-    /*
-    //  sort SVFT lead to problems: with jj -> W- j !!!
-    if (a.fl.IsScalar() && !b.fl.IsScalar()) return 1;
-    if (a.fl.IsVector() && !b.fl.IsScalar() && !b.fl.IsVector()) return 1;
-    if (a.fl.IsFermion() && !b.fl.IsFermion() && 
-	 !b.fl.IsScalar() && !b.fl.IsVector()) return 1;
-    // redundant    if (!a.fl.IsTensor() && b.fl.Tensor()) return 1;
-    */
     return 0;
   }
 };
@@ -291,8 +285,6 @@ public:
   }
 };
 
-//    std::stable_sort(prea_table.begin(),prea_table.end(),Compare_Pre_Amplitudes());
-
 
 void Process_Base::Reshuffle(int n, Flavour* flav, Pol_Info* plav)
 {
@@ -311,39 +303,6 @@ void Process_Base::Reshuffle(int n, Flavour* flav, Pol_Info* plav)
     flav[i]=sd[i].fl;
     plav[i]=sd[i].pl;
   }
-  
-// old method
-/*
-  Flavour flhelp;
-  Pol_Info plhelp;
-  bool hit,shuffle;
-
-  for (;;) {
-    hit = 0;
-    for (short int i=0;i<n-1;i++) {
-      for (short int j=i+1;j<n;j++) {
-	shuffle = 0;
-        if ( (flav[i].IsVector()) && !(flav[j].IsVector()))      shuffle = 1;
-	else if ( (flav[i].Kfcode()) > (flav[j].Kfcode()) ) {
-	  if (!( !(flav[i].IsVector()) && (flav[j].IsVector()))) shuffle = 1;
-	}
-	else if ( (flav[i].IsAnti()) && !(flav[j].IsAnti()) &&
-		  (flav[i].Kfcode()  == flav[j].Kfcode()) )      shuffle = 1;
-	
-	if (shuffle) {
-	  flhelp  = flav[j];
-          flav[j] = flav[i];
-          flav[i] = flhelp;
-	  plhelp  = plav[j];
-	  plav[j] = plav[i];
-	  plav[i] = plhelp;
-          hit = 1;
-        }
-      }
-    }
-    if (!hit) break;
-  }          
-*/
 }
 
 bool Process_Base::CheckExternalFlavours(int _nin,Flavour * _in,
@@ -559,16 +518,23 @@ double Process_Base::Scale(ATOOLS::Vec4D * _p) {
 
   //new
   switch (m_scalescheme) {
-  case 1  :
+  case 1 :   
+    pt2 = m_scale;
+    break;
+  case 2  :
     if (m_nin+m_nout==4) {
       double t = (_p[0]-_p[2]).Abs2()-(ATOOLS::sqr(p_fl[2].PSMass())+ATOOLS::sqr(p_fl[3].PSMass()))/2.;
       double u = (_p[0]-_p[3]).Abs2()-(ATOOLS::sqr(p_fl[2].PSMass())+ATOOLS::sqr(p_fl[3].PSMass()))/2.;
       pt2 = 4.*s*t*u/(s*s+t*t+u*u);
-      return pt2;
     }
-    pt2 = s;
-  break;
-  case 2  :
+    else {
+      pt2 = 0.;
+      for (int i=m_nin;i<m_nin+m_nout;i++) {
+	pt2 += ATOOLS::sqr(_p[i][1])+ATOOLS::sqr(_p[i][2]);
+      }
+    }
+    break;
+  case 3  :
     pt2 = s;
     double pt2i;
     for (int i=m_nin;i<m_nin+m_nout;i++) {
@@ -576,38 +542,13 @@ double Process_Base::Scale(ATOOLS::Vec4D * _p) {
       if (pt2i<pt2) pt2 = pt2i;
     }
     break;
-  case 3 :   // swaped with 7 (to match ME.dat)
-    pt2 = m_scale;
-    break;
-  case 4  :
-    pt2 = ATOOLS::sqr(175.);
-    break;
-  case 5  :
-    pt2 = ATOOLS::sqr(10.);
-    break;
-  case 6  :
-    pt2 = ATOOLS::sqr(91.188);
-    break;
-  case 7  :
-    pt2 = 0.;
-    for (int i=m_nin;i<m_nin+m_nout;i++) {
-      pt2 += ATOOLS::sqr(_p[i][1])+ATOOLS::sqr(_p[i][2]);
-    }
-    break;
-  case  8 :
-    pt2 = ATOOLS::sqr(3.162);
-    break;
-  case 42 :
-    pt2 = m_scale;
-    break;
   case 63 :
     if (m_nout!=m_maxjetnumber) {
-     pt2 = m_scale;
+      pt2 = m_scale;
     }
     else {
       pt2 = ATOOLS::sqr(_p[m_nin][1])+ATOOLS::sqr(_p[m_nin][2]);
       for (int i=m_nin+1;i<m_nin+m_nout;++i) {
-	// better would be probably min yij*s with yij given by the covariant E scheme clustering algorithm
 	if (p_fl[i].Strong())
 	  pt2 =  ATOOLS::Min(pt2,ATOOLS::sqr(_p[i][1])+ATOOLS::sqr(_p[i][2]));
       }
@@ -616,29 +557,20 @@ double Process_Base::Scale(ATOOLS::Vec4D * _p) {
   case 64 :
     pt2 = ATOOLS::sqr(_p[m_nin][1])+ATOOLS::sqr(_p[m_nin][2]);
     for (int i=m_nin+1;i<m_nin+m_nout;++i) {
-      // better would be min yij*s with yij given by the covariant E scheme clustering algorithm
       pt2 =  ATOOLS::Min(pt2,ATOOLS::sqr(_p[i][1])+ATOOLS::sqr(_p[i][2]));
     }
     break;
   default :
     pt2 = s;
   }
-  return pt2;
+  return m_scalefactor * pt2;
 }
 
 double Process_Base::KFactor(double _scale) {
   switch (m_kfactorscheme) {
-  case 2  :
-    if (m_nstrong>2) {
-      double f= m_rfactor*pow(as->AlphaS(m_scale * m_scalefactor)/
-			 as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),m_nstrong-2);
-      return f;
-    } 
-    else 
-      return m_rfactor;
   case 1  :
     if (m_nstrong>2) {
-      return m_rfactor*pow(as->AlphaS(_scale * m_scalefactor)/
+      return m_rfactor*pow(as->AlphaS(_scale)/
 			   as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),m_nstrong-2);
     } 
     else 

@@ -122,6 +122,7 @@ void Amegic::ReadInProcessfile(string file)
   int    _scale_scheme   = p_dataread->GetValue<int>("SCALE SCHEME",0);
   int    _kfactor_scheme = p_dataread->GetValue<int>("KFACTOR SCHEME",0);
   double _scale_factor   = p_dataread->GetValue<double>("SCALE FACTOR",1.);
+  double _scale          = p_dataread->GetValue<double>("FIXED SCALE",sqr(rpa.gen.Ecms()));
 
 
   ifstream from((m_path+file).c_str());
@@ -139,7 +140,7 @@ void Amegic::ReadInProcessfile(string file)
   Flavour   * IS,  * FS,   * excluded, * flavs;
   Pol_Info  * plIS,* plFS, * pldummy,  * plavs;
   int         order_ew,order_strong,scale_scheme,kfactor_scheme; 
-  double      scale_factor;
+  double      scale_factor,fixed_scale;
   string      selectorfile;
   MyStrStream str;      
   for(;from;) {
@@ -191,6 +192,7 @@ void Amegic::ReadInProcessfile(string file)
 	    scale_scheme   = _scale_scheme;
 	    scale_factor   = _scale_factor;
 	    kfactor_scheme = _kfactor_scheme;
+	    fixed_scale    = _scale;
 	    order_ew       = 99;
 	    order_strong   = 99;
 	    nex            = 0;
@@ -245,10 +247,18 @@ void Amegic::ReadInProcessfile(string file)
 
 		position       = buf.find(string("KFactor scheme :"));
 		if (position > -1) {
-		  buf          = buf.substr(position+17);
+		  buf          = buf.substr(position+16);
 		  Shorten(buf);
 		  str<<buf;
 		  str>>kfactor_scheme;
+		}
+
+		position       = buf.find(string("Fixed scale :"));
+		if (position > -1) {
+		  buf          = buf.substr(position+13);
+		  Shorten(buf);
+		  str<<buf;
+		  str>>fixed_scale;
 		}
 
 		position       = buf.find(string("End process"));
@@ -284,11 +294,11 @@ void Amegic::ReadInProcessfile(string file)
 
 	    if (single) p_procs->Add(new Single_Process(nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
 							order_strong,order_ew,
-							kfactor_scheme,scale_scheme,scale_factor,
+							kfactor_scheme,scale_scheme,scale_factor,fixed_scale,
 							plavs,nex,excluded));
  	    else p_procs->Add(new Process_Group(nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
 						order_strong,order_ew,
-						kfactor_scheme,scale_scheme,scale_factor,
+						kfactor_scheme,scale_scheme,scale_factor,fixed_scale,
 						plavs,nex,excluded));
 	    delete [] flavs;
 	    delete [] plavs;

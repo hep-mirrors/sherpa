@@ -85,7 +85,7 @@ namespace AMEGIC {
     Process_Base();
     Process_Base(int,int,ATOOLS::Flavour *,
 		 PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,
-		 int,int,int,int,int,double,Pol_Info * _pl = 0,
+		 int,int,int,int,int,double,double,Pol_Info * _pl = 0,
 		 int _nex = 0,ATOOLS::Flavour * _ex_fl = 0);
     virtual ~Process_Base();
 

@@ -36,10 +36,10 @@ int fak(int N)
 Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
 			       ISR_Handler * _isr,Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			       int _gen_str,int _orderQCD, int _orderEW,
-			       int _kfactorscheme, int _scalescheme,double _scalefactor,
+			       int _kfactorscheme, int _scalescheme,double _scalefactor,double _scale,
 			       Pol_Info * _pl,int _nex,Flavour * _ex_fl) :
   Process_Base(_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
-	       _scalescheme,_kfactorscheme,_scalefactor,_pl,_nex,_ex_fl),
+	       _scalescheme,_kfactorscheme,_scalefactor,_scale,_pl,_nex,_ex_fl),
   p_partner(this)
 {
   m_save_max=0.;

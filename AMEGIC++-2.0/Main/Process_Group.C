@@ -28,7 +28,7 @@ using namespace std;
   ----------------------------------------------------------------------------------*/
 
 Process_Group::Process_Group() :
-  Process_Base(0,0,NULL,NULL,NULL,0,0,0,0,0,0.)
+  Process_Base(0,0,NULL,NULL,NULL,0,0,0,0,0,1.,-1.)
 { 
   m_name  = "Empty_Group"; 
   p_fl    = 0;
@@ -47,10 +47,10 @@ Process_Group::Process_Group() :
 Process_Group::Process_Group(int _nin,int _nout,Flavour *& _fl,
 			     PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			     int _gen_str,int _orderQCD, int _orderEW,
-			     int _kfactorscheme,int _scalescheme,double _scalefactor,
+			     int _kfactorscheme,int _scalescheme,double _scalefactor,double _scale,
 			     Pol_Info * _pl,int _nex,Flavour * _ex_fl) :
   Process_Base(_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
-	       _scalescheme,_kfactorscheme,_scalefactor,_pl,_nex,_ex_fl)
+	       _scalescheme,_kfactorscheme,_scalefactor,_scale,_pl,_nex,_ex_fl)
 {
   p_selected  = NULL;
 
@@ -146,7 +146,7 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
 	for (int i=0;i<m_nin;i++)  { _fl[i]       = _flin[i];  _pl[i]       = _plin[i];  }
 	for (int i=0;i<m_nout;i++) { _fl[i+m_nin] = _flout[i]; _pl[i+m_nin] = _plout[i]; } 
 	Add(new Single_Process(m_nin,m_nout,_fl,p_isr,p_beam,_seldata,m_gen_str,m_orderQCD,m_orderEW,
-			       m_kfactorscheme,m_scalescheme,m_scalefactor,p_pl,m_nex,p_ex_fl));
+			       m_kfactorscheme,m_scalescheme,m_scalefactor,m_scale,p_pl,m_nex,p_ex_fl));
       }
     }
     overflow = 0;
