@@ -208,6 +208,15 @@ void Amisic_Histogram<ArgumentType>::Scale(const Argument_Type scale)
 }
 
 template <class ArgumentType>
+void Amisic_Histogram<ArgumentType>::
+ScaleExtra(const Argument_Type scale,const size_t dim)
+{
+  if (dim>=m_extradim) return;
+  for (size_t i=0;i<m_data[hci::y_value].size();++i) 
+    m_data[hci::size+dim][i]*=scale;
+}
+
+template <class ArgumentType>
 bool Amisic_Histogram<ArgumentType>::ReadIn(const std::string &filename,
 					    const std::string &datatag)
 {

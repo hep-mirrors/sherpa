@@ -83,6 +83,7 @@ namespace AMISIC {
     Argument_Type Norm() const;
 
     void Scale(const Argument_Type scale);
+    void ScaleExtra(const Argument_Type scale,const size_t dim=0);
 
     void Finish(); 
     void Clear();
