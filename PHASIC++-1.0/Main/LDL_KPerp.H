@@ -8,7 +8,8 @@ namespace PHASIC {
   class LDL_KPerp: public Single_Channel {
   private:
     
-    double m_lambda2, m_rancut[2];
+    double m_lambda2, m_rancut[2], m_integral[2], m_firstintegral[2];
+    bool   m_calculated;
 
     ATOOLS::Info_Key m_kp1key, m_kp2key;
 
@@ -22,6 +23,7 @@ namespace PHASIC {
     void GenerateWeight(const int mode); 
 
     void CalculateLimits(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey); 
+    void CalculateLimits(); 
 
   };// end of class LDL_Kperp
 

@@ -24,8 +24,6 @@ namespace PHASIC {
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
 
-    void CalculateLimits(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey);
-
   };// end of class Threshold_Uniform
 
   class Threshold_Forward: public Single_Channel {
@@ -46,8 +44,6 @@ namespace PHASIC {
     void GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
-
-    void CalculateLimits(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey);
 
   };// end of class Threshold_Forward
 
@@ -70,8 +66,6 @@ namespace PHASIC {
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
 
-    void CalculateLimits(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey);
-
   };// end of class Threshold_Backward
 
   class Threshold_Central: public Single_Channel {
@@ -92,8 +86,6 @@ namespace PHASIC {
     void GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
-
-    void CalculateLimits(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey);
 
   };// end of class Threshold_Central
 

@@ -23,7 +23,6 @@ namespace PHASIC {
 
   typedef std::vector<PHASIC::Channel_Info> channelinfos;
 
-
   class Multi_Channel {
   protected :
     int                           nin, nout;
@@ -73,18 +72,15 @@ namespace PHASIC {
 
     void    GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,int mode);
     void    GenerateWeight(int mode);
- 
+
     void    ISRInfo(int,int &,double &,double &);
     int     CountResonances(int,ATOOLS::Flavour*&);
 
+    inline  Single_Channel *operator[](size_t i) { return channels[i]; }
+
     void    Print();
-    void    SetRange(double * sprimerange,double * yrange) {
-      for (unsigned int i=0;i<channels.size();i++) channels[i]->SetRange(sprimerange,yrange);
-    }
-    void    GetRange() {
-      ATOOLS::msg.Debugging()<<"Multi_Channel::GetRange() : "<<name<<std::endl;
-      for (unsigned int i=0;i<channels.size();i++) channels[i]->GetRange();
-    }
+    void    SetRange(double * sprimerange,double * yrange); 
+    void    GetRange(); 
     void    WriteOut(std::string);
     bool    ReadIn(std::string);
 
@@ -93,7 +89,7 @@ namespace PHASIC {
     inline int                  ValidN()    { return n_contrib; }
     inline int                  Nin()       { return nin; }
     inline int                  Nout()      { return nout; }
-    inline ATOOLS::Flavour * Flavs()     { return fl; }
+    inline ATOOLS::Flavour     *Flavs()     { return fl; }
     inline double               Weight()    { return m_weight; }
     inline double               Result()    { return m_result; }
     inline std::string          Name()      { return name; }

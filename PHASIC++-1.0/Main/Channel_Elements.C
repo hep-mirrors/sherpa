@@ -4,10 +4,6 @@
 #include "Poincare.H"
 #include "Random.H"
 
-/* Two body decays .... */
-
-
-
 using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
@@ -167,7 +163,6 @@ void Channel_Elements::BremsstrahlungMomenta(Vec4D& p,const double p1mass,
   p1 = p+(-1.)*q;  
 }
 
-
 /* Propagators and other 1-dimensional Distributions */
 
 double Channel_Elements::MasslessPropWeight(double sexp,
@@ -253,16 +248,10 @@ double Channel_Elements::MassivePropWeight(double mass,double width,int lim,
   if (lim==0) return mw/(M_PI*((s-mass2)*(s-mass2)+mw*mw));
   else {
     if ((s<smin) || (s>smax) || smin==smax) return 0.;
-    double range  = smax-smin;
     double upper  = (smax-mass2)/mw;
     double lower  = (smin-mass2)/mw;
-    double yrange = atan(range/(mw*(1.+lower*upper)));
-    if (lower*upper<-1.) {
-      if (upper>0) yrange = yrange + M_PI;
-      if (upper<0) yrange = yrange - M_PI;
-    }     
-
-    double wt = mw/(yrange*((s-mass2)*(s-mass2)+mw*mw));
+    double wt=mw/((s-mass2)*(s-mass2)+mw*mw);
+    wt/=atan(upper)-atan(lower);
 
     if (!(wt>0) && !(wt<0) && wt!=0) {
       ATOOLS::msg.Error()<<"MassivePropWeight produces a nan!"<<endl;
@@ -281,16 +270,10 @@ double Channel_Elements::MassivePropMomenta(double mass,double width,int lim,
     s = mass2+mw*tan(M_PI*(ran-0.5));
   }
   else {
-    double range  = smax-smin;
-    double upper  = (smax-mass2)/mw;
-    double lower  = (smin-mass2)/mw;
-    double ymin   = atan(lower);
-    double yrange = atan(range/(mw*(1.+lower*upper)));
-    if (lower*upper<-1.) {
-      if (upper>0) yrange = yrange + M_PI;
-      if (upper<0) yrange = yrange - M_PI;
-    }     
-    s = mass2+mw*tan(ran*yrange + ymin);
+    double ymax=atan((smin-mass2)/mw);
+    double ymin=atan((smax-mass2)/mw);
+    s = mass2+mw*tan(ymin + ran*(ymax-ymin));
+//     std::cout<<" smin/max "<<smin<<" "<<smax<<" "<<mass<<" "<<width<<" "<<ran<<" => "<<s<<std::endl;
   }
   if (!(s>0) && !(s<0) && s!=0) 
     ATOOLS::msg.Error()<<"MasslessPropMomenta produced a nan !"<<endl;
@@ -390,11 +373,21 @@ int Channel_Elements::TChannelMomenta(Vec4D p1in,Vec4D p2in,Vec4D &p1out,Vec4D &
   return 0;
 }
 
+// treated from here
 
-// new
-double Channel_Elements::DiceYUniform(const double tau,const ATOOLS::Double_Container &xinfo,
-				      ATOOLS::Double_Container &yinfo,const double ran,const int mode) const
+double Channel_Elements::DiceYUniform(const double tau,const Double_Container &xinfo,
+				      Double_Container &yinfo,const double ran,const int mode) const
 {
+  /*!
+    The boundaries for y are 
+    \begin{align}
+    \frac{1}{2}\log\frac{x_{1, min}^2}{\tau} \le y \le \frac{1}{2}\frac{x_{1, max}^2}{\tau}
+    \frac{1}{2}\log\frac{\tau}{x_{2, max}^2} \le y \le \frac{1}{2}\frac{\tau}{x_{2, min}^2}
+    \end{align}
+    where $x_{1/2, max}$ stem from the corresponding Base or the hard process respectively and
+    x_{1, min} = xinfo[0] x_{1, max} = xinfo[1]
+    x_{2, min} = xinfo[2] x_{2, max} = xinfo[3]
+  */
   double logtau=0.5*log(tau);
   if (mode==1) return logtau;
   if (mode==2) return -logtau;
@@ -406,33 +399,18 @@ double Channel_Elements::DiceYUniform(const double tau,const ATOOLS::Double_Cont
   if (ATOOLS::IsZero(y)) y=0.;
   if (y<ymin || y>ymax){
     ATOOLS::msg.Error()<<"Channel_Elements::DiceYUniform("<<tau<<","<<xinfo<<","
-                     <<yinfo<<"): "<<" Y out of bounds "<<std::endl<<"   ymin, ymax vs. y : "
-                     <<ymin<<" "<<ymax<<" vs. "<<y<<endl;
+		       <<yinfo<<"): "<<" Y out of bounds ! "<<std::endl<<"   ymin, ymax vs. y : "
+		       <<ymin<<" "<<ymax<<" vs. "<<y<<endl;
   }
   return y;
 }
 
-// old
-double Channel_Elements::DiceYUniform(double tau, double * yrange, double * deltay, 
-				      int fixed, double ran)
+double Channel_Elements::WeightYUniform(const double tau,const Double_Container &xinfo,
+					Double_Container &yinfo,const int mode) const
 {
-  double y0   = 0.5 * log(tau);
-  if (fixed==1) return y0;
-  if (fixed==2) return -y0;
-  double ymax = ATOOLS::Min(yrange[1],-y0+deltay[0]);
-  double ymin = ATOOLS::Max(yrange[0],y0-deltay[1]);
-  double y    = ymin+(ymax-ymin)*ran;
-  if (ATOOLS::IsZero(y)) y = 0.;
-  if ((y<y0) || (y>-y0)){
-    ATOOLS::msg.Error()<<"y out of bounds in DiceYUniform : "<<ymin<<" < "<<y<<" < "<<ymax<<endl;
-  }
-  return y;
-}
-
-// new 
-double Channel_Elements::WeightYUniform(const double tau,const ATOOLS::Double_Container &xinfo,
-                                      ATOOLS::Double_Container &yinfo,const int mode) const
-{
+  /*
+    See DiceYUniform for details
+  */
   if (mode!=3) return 1.;
   double logtau=0.5*log(tau);
   double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
@@ -442,100 +420,105 @@ double Channel_Elements::WeightYUniform(const double tau,const ATOOLS::Double_Co
   return (ymax-ymin);
 }
 
-
-// old
-double Channel_Elements::WeightYUniform(double tau, double * yrange, 
-					double * deltay, int fixed,double y)
+double Channel_Elements::DiceYCentral(const double tau,const Double_Container &xinfo,
+				      Double_Container &yinfo,const double ran,const int mode) const
 {
-  if (fixed<3) return 1.;
-  double y0   = 0.5 * log(tau);
-  double ymax = ATOOLS::Min(yrange[1],-y0+deltay[0]);
-  double ymin = ATOOLS::Max(yrange[0],y0-deltay[1]);
-  if ((y<yrange[0]) || (y>yrange[1])) {
-    ATOOLS::msg.Error()<<"y out of trivial bounds in CE.WeightYUniform : "
-			  <<yrange[0]<<" < "<<y<<" < "<<yrange[1]<<endl;
-  }
-  return (ymax-ymin);
-}
-
-double Channel_Elements::DiceYCentral(double tau, double * yrange, double * deltay, 
-				      int fixed, double ran)
-{
-  double y0   = 0.5 * log(tau);
-  if (fixed==1) return y0;
-  if (fixed==2) return -y0;
-  double ymax = ATOOLS::Min(yrange[1],-y0+deltay[0]);
-  double ymin = ATOOLS::Max(yrange[0],y0-deltay[1]);
-  double y    = log(tan(ran*atan(exp(ymax))+(1.-ran)*atan(exp(ymin))));
-  if (ATOOLS::IsZero(y)) y = 0.;
-  if ((y<y0) || (y>-y0)){
-    ATOOLS::msg.Error()<<"y out of bounds in DiceYCentral : "<<ymin<<" < "<<y<<" < "<<ymax<<endl;
+  double logtau=0.5*log(tau);
+  if (mode==1) return logtau;
+  if (mode==2) return -logtau;
+  double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
+  double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
+  ymin=ATOOLS::Max(yinfo[0],ymin);
+  ymax=ATOOLS::Min(yinfo[1],ymax);
+  double y=log(tan(ran*atan(exp(ymax))+(1.-ran)*atan(exp(ymin))));
+  if (ATOOLS::IsZero(y)) y=0.;
+  if (y<ymin || y>ymax){
+    ATOOLS::msg.Error()<<"Channel_Elements::DiceYCentral("<<tau<<","<<xinfo<<","
+		       <<yinfo<<"): "<<" Y out of bounds ! "<<std::endl<<"   ymin, ymax vs. y : "
+		       <<ymin<<" "<<ymax<<" vs. "<<y<<endl;
   }
   return y;
 }
 
-double Channel_Elements::WeightYCentral(double tau, double * yrange, 
-					double * deltay, int fixed,double y)
+double Channel_Elements::WeightYCentral(const double tau,const Double_Container &xinfo,
+					Double_Container &yinfo,const int mode) const
 {
-  if (fixed<3) return 1.;
-  double y0   = 0.5 * log(tau);
-  double ymax = ATOOLS::Min(yrange[1],-y0+deltay[0]);
-  double ymin = ATOOLS::Max(yrange[0],y0-deltay[1]);
-  if ((y<yrange[0]) || (y>yrange[1])) {
-    ATOOLS::msg.Error()<<"y out of trivial bounds in CE.WeightYCentral : "
-			  <<yrange[0]<<" < "<<y<<" < "<<yrange[1]<<endl;
-  }
-  return (atan(exp(ymax))-atan(exp(ymin)))*2.*cosh(y);
+  if (mode!=3) return 1.;
+  double logtau=0.5*log(tau);
+  double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
+  double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
+  ymin=ATOOLS::Max(yinfo[0],ymin);
+  ymax=ATOOLS::Min(yinfo[1],ymax);
+  return (atan(exp(ymax))-atan(exp(ymin)))*2.*cosh(yinfo[2]);
 }
 
-double Channel_Elements::DiceYForward(double tau, double * yrange, double * deltay, double yexp, 
-				      int fixed, double ran)
+double Channel_Elements::DiceYForward(const double yexponent,const double tau,
+				      const Double_Container &xinfo,Double_Container &yinfo, 
+				      const double ran,const int mode) const
 {
-  double y0   = 0.5 * log(tau);
-  if (fixed==1) return y0;
-  if (fixed==2) return -y0;
-  double ymax = ATOOLS::Min(yrange[1],-y0+deltay[0]);
-  double ymin = ATOOLS::Max(yrange[0],y0-deltay[1]);
-  double y    = Channel_Basics::PeakedDist(ymax-deltay[0],yexp,ymin,ymax,-1,ran);
-  if (ATOOLS::IsZero(y)) y = 0.;
-  if ((y<y0) || (y>-y0)){ 
-    ATOOLS::msg.Error()<<"y out of bounds in DiceYForward : "<<ymin<<" < "<<y<<" < "<<ymax<<endl;
-  }
-  return y;
-}
-
-double Channel_Elements::WeightYForward(double tau, double * yrange, double * deltay, 
-					double yexp, int fixed, double y)
-{
-  if (fixed<3) return 1;
-  double y0   = 0.5 * log(tau);
-  double ymax = ATOOLS::Min(yrange[1],-y0+deltay[0]);
-  double ymin = ATOOLS::Max(yrange[0],y0-deltay[1]);
-  return Channel_Basics::PeakedWeight(ymax-deltay[0],yexp,ymin,ymax,-1) * pow(ymax-deltay[0]-y,yexp);
-}
-
-double Channel_Elements::DiceYBackward(double tau, double * yrange, double * deltay, 
-				       double yexp, int fixed, double ran)
-{
-  double y0   = 0.5 * log(tau);
-  if (fixed==1) return y0;
-  if (fixed==2) return -y0;
-  double ymax = ATOOLS::Min(yrange[1],-y0+deltay[0]);
-  double ymin = ATOOLS::Max(yrange[0],y0-deltay[1]);
-  double y= -Channel_Basics::PeakedDist(-ymin-deltay[1],yexp,-ymax,-ymin,-1,ran);
-  if ((y<y0) || (y>-y0)){ 
-    ATOOLS::msg.Error()<<"y out of bounds in DiceYBackward : "<<ymin<<" < "<<y<<" < "<<ymax<<endl;
+  double logtau=0.5*log(tau);
+  if (mode==1) return logtau;
+  if (mode==2) return -logtau;
+  double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
+  double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
+  ymin=ATOOLS::Max(yinfo[0],ymin);
+  ymax=ATOOLS::Min(yinfo[1],ymax);
+  double y=Channel_Basics::PeakedDist(ymax-xinfo[3],yexponent,ymin,ymax,-1,ran);
+  if (ATOOLS::IsZero(y)) y=0.;
+  if (y<ymin || y>ymax){ 
+    ATOOLS::msg.Error()<<"Channel_Elements::DiceYForward("<<tau<<","<<xinfo<<","
+		       <<yinfo<<"): "<<" Y out of bounds ! "<<std::endl<<"   ymin, ymax vs. y : "
+		       <<ymin<<" "<<ymax<<" vs. "<<y<<endl;
   }
   return y;
 }
 
-double Channel_Elements::WeightYBackward(double tau, double * yrange, double * deltay, 
-					 double yexp, int fixed, double y)
+double Channel_Elements::WeightYForward(const double yexponent,const double tau,
+					const Double_Container &xinfo,
+					Double_Container &yinfo,const int mode) const
 {
-  if (fixed<3) return 1;
-  double y0   = 0.5 * log(tau);
-  double ymax = ATOOLS::Min(yrange[1],-y0+deltay[0]);
-  double ymin = ATOOLS::Max(yrange[0],y0-deltay[1]);
-  return Channel_Basics::PeakedWeight(-ymin-deltay[1],yexp,-ymax,-ymin,-1) * pow(-ymin-deltay[1]+y,yexp);
+  if (mode!=3) return 1.;
+  double logtau=0.5*log(tau);
+  double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
+  double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
+  ymin=ATOOLS::Max(yinfo[0],ymin);
+  ymax=ATOOLS::Min(yinfo[1],ymax);
+  return Channel_Basics::PeakedWeight(ymax-xinfo[3],yexponent,ymin,ymax,-1)* 
+    pow(ymax-xinfo[3]-yinfo[2],yexponent);
+}
+
+double Channel_Elements::DiceYBackward(const double yexponent,const double tau,
+				       const Double_Container &xinfo,Double_Container &yinfo, 
+				       const double ran,const int mode) const
+{
+  double logtau=0.5*log(tau);
+  if (mode==1) return logtau;
+  if (mode==2) return -logtau;
+  double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
+  double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
+  ymin=ATOOLS::Max(yinfo[0],ymin);
+  ymax=ATOOLS::Min(yinfo[1],ymax);
+  double y=-Channel_Basics::PeakedDist(-ymin-xinfo[1],yexponent,-ymax,-ymin,-1,ran);
+  if (ATOOLS::IsZero(y)) y=0.;
+  if (y<ymin || y>ymax){ 
+    ATOOLS::msg.Error()<<"Channel_Elements::DiceYBackward("<<tau<<","<<xinfo<<","
+		       <<yinfo<<"): "<<" Y out of bounds ! "<<std::endl<<"   ymin, ymax vs. y : "
+		       <<ymin<<" "<<ymax<<" vs. "<<y<<endl;
+  }
+  return y;
+}
+
+double Channel_Elements::WeightYBackward(const double yexponent,const double tau,
+					 const Double_Container &xinfo,
+					 Double_Container &yinfo,const int mode) const
+{
+  if (mode!=3) return 1.;
+  double logtau=0.5*log(tau);
+  double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
+  double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
+  ymin=ATOOLS::Max(yinfo[0],ymin);
+  ymax=ATOOLS::Min(yinfo[1],ymax);
+  return Channel_Basics::PeakedWeight(-ymin-xinfo[1],yexponent,-ymax,-ymin,-1)* 
+    pow(-ymin-xinfo[1]+yinfo[2],yexponent);
 }
 

@@ -26,7 +26,7 @@ S1Channel::S1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   s      = smax  = pt2max = sqr(ATOOLS::rpa.gen.Ecms());
   pt2min = 0.;
   E      = 0.5 * sqrt(s);
-  name   = "S-Channel 1";
+  name   = "S-Channel";
 
   mass   = width = 0.; 
   type   = 0;
@@ -47,9 +47,10 @@ void S1Channel::ISRInfo(int & _type,double & _mass,double & _width) {
   _type = type; _mass = mass; _width = width;
 }
 
-
-
-
+std::string S1Channel::ChID() 
+{
+  return std::string("S-Channel");
+}
 
 T1Channel::T1Channel(int _nin,int _nout,Flavour * fl,Flavour res) 
 {  
@@ -66,7 +67,7 @@ T1Channel::T1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   s      = smax  = pt2max = sqr(ATOOLS::rpa.gen.Ecms());
   pt2min = 0.;
   E      = 0.5 * sqrt(s);
-  name   = "T-Channel 1";
+  name   = "T-Channel";
   mass   = width = 0.; 
   type   = 0;
   if (res!=Flavour(kf::none)) {
@@ -76,20 +77,21 @@ T1Channel::T1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
 
 void T1Channel::GeneratePoint(ATOOLS::Vec4D * p,double * _ran =0) {
   CE.TChannelMomenta(p[0],p[1],p[2],p[3],ms[2],ms[3],0.,
-		     0.5,0.,2.,1.,0,_ran[1],_ran[2]);
+		     0.5,1.,-1.,1.,0,_ran[1],_ran[2]);
 }
 
 void T1Channel::GenerateWeight(ATOOLS::Vec4D * p) {
-  weight = 1. / ( CE.TChannelWeight(p[0],p[1],p[2],p[3],0.,0.5,0.,2.,1.,0) * pow(2.*M_PI,2*3.-4.) );
+  weight = 1. / ( CE.TChannelWeight(p[0],p[1],p[2],p[3],0.,0.5,1.,-1.,1.,0) * pow(2.*M_PI,2*3.-4.) );
 }
 
 void T1Channel::ISRInfo(int & _type,double & _mass,double & _width) {
   _type = 0; _mass = mass; _width = width;
 }
 
-
-
-
+std::string T1Channel::ChID() 
+{
+  return std::string("T-Channel");
+}
 
 U1Channel::U1Channel(int _nin,int _nout,Flavour * fl,Flavour res) 
 {  
@@ -106,7 +108,7 @@ U1Channel::U1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   s      = smax  = pt2max = sqr(ATOOLS::rpa.gen.Ecms());
   pt2min = 0.;
   E      = 0.5 * sqrt(s);
-  name   = "U-Channel 1";
+  name   = "U-Channel";
   mass   = width = 0.; 
   type   = 0;
   if (res!=Flavour(kf::none)) {
@@ -116,19 +118,21 @@ U1Channel::U1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
 
 void U1Channel::GeneratePoint(ATOOLS::Vec4D * p,double * _ran =0) {
   CE.TChannelMomenta(p[0],p[1],p[3],p[2],ms[3],ms[2],0.,
-		     0.5,0.,2.,1.,0,_ran[1],_ran[2]);
+		     0.5,1.,-1.,1.,0,_ran[1],_ran[2]);
 }
 
 void U1Channel::GenerateWeight(ATOOLS::Vec4D * p) {
-  weight = 1. / ( CE.TChannelWeight(p[0],p[1],p[3],p[2],0.,0.5,0.,2.,1.,0) * pow(2.*M_PI,2*3.-4.) );
+  weight = 1. / ( CE.TChannelWeight(p[0],p[1],p[3],p[2],0.,0.5,1.,-1.,1.,0) * pow(2.*M_PI,2*3.-4.) );
 }
 
 void U1Channel::ISRInfo(int & _type,double & _mass,double & _width) {
   _type = 0; _mass = mass; _width = width;
 }
 
-
-
+std::string U1Channel::ChID() 
+{
+  return std::string("U-Channel");
+}
 
 Decay2Channel::Decay2Channel(int _nin,int _nout,Flavour * fl,Flavour res) 
 {  
@@ -145,7 +149,7 @@ Decay2Channel::Decay2Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   s      = smax  = pt2max = sqr(ATOOLS::rpa.gen.Ecms());
   pt2min = 0.;
   E      = 0.5 * sqrt(s);
-  name   = "Decay2-Channel 1";
+  name   = "Decay2-Channel";
   mass   = width = 0.; 
   type   = 0;
   if (res!=Flavour(kf::none)) {

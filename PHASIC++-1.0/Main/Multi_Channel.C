@@ -32,12 +32,12 @@ Multi_Channel::~Multi_Channel()
 }
 
 void Multi_Channel::Add(Single_Channel * Ch) { 
-  ATOOLS::msg.Debugging()<<"Add "<<Ch->Name()<<" to the multi-channel."<<endl;
+  ATOOLS::msg.Debugging()<<"Add "<<Ch->Name()<<" to Multi_Channel "<<name<<endl;
   channels.push_back(Ch); 
 }
 
 Single_Channel * Multi_Channel::Channel(int i) { 
-  if ((i<0) || (i>=channels.size())) {
+  if ((i<0) || (i>=(int)channels.size())) {
     msg.Error()<<"Multi_Channel::Channel("<<i<<") out of bounds :"
 	       <<" 0 < "<<i<<" < "<<channels.size()<<endl;
     return 0;
@@ -47,19 +47,19 @@ Single_Channel * Multi_Channel::Channel(int i) {
 
 void Multi_Channel::DropChannel(int i) 
 {
-  if ((i<0) || (i>channels.size())) {
+  if ((i<0) || (i>(int)channels.size())) {
     msg.Error()<<"Multi_Channel::DropChannel("<<i<<") out of bounds :"
 	       <<" 0 < "<<i<<" < "<<channels.size()<<endl;
     return;
   }
   if (channels[i]) delete channels[i];
-  for (short int j=i;j<channels.size()-1;j++) channels[j] = channels[j+1];
+  for (size_t j=i;j<channels.size()-1;j++) channels[j] = channels[j+1];
   channels.pop_back();
 }
 
 void Multi_Channel::DropAllChannels()
 {
-  for(int i=channels.size();i>0;i--) {
+  for(size_t i=channels.size();i>0;i--) {
     if (channels[i-1]) delete channels[i-1];
   }
   channels.clear();
@@ -79,7 +79,7 @@ void Multi_Channel::Reset()
   }
   msg.Tracking()<<"Channels for "<<name<<endl
 		<<"----------------- "<<n_points<<" --------------------"<<endl;
-  for(short int i=0;i<channels.size();i++) {
+  for(size_t i=0;i<channels.size();i++) {
     if (!m_readin) channels[i]->Reset(1./channels.size());
     msg.Tracking()<<" "<<i<<" : "<<channels[i]->Name()<<"  : "<<channels[i]->Alpha()<<endl;
   }
@@ -147,7 +147,7 @@ void Multi_Channel::Optimize(double error)
   msg.Tracking()<<"Optimize Multi_Channel : "<<name<<endl; 
 
   double aptot = 0.;
-  short int i;
+  size_t i;
   for (i=0;i<channels.size();i++) {
     s1[i]  = channels[i]->Res1()/channels[i]->N();
     s2[i]  = sqrt(channels[i]->Res2()-
@@ -187,7 +187,7 @@ void Multi_Channel::Optimize(double error)
 
 void Multi_Channel::EndOptimize(double error)
 {
-  short int i;
+  size_t i;
 
 #ifndef _USE_MPI_
 
@@ -256,7 +256,7 @@ void Multi_Channel::AddPoint(double value)
   m_result2 += value*value;
   //if (!ATOOLS::IsZero(value/m_result*(double)n_points)) n_contrib++;
   double var;
-  for (short int i=0;i<channels.size();i++) {
+  for (size_t i=0;i<channels.size();i++) {
     if (value!=0.) {
       if (channels[i]->Weight()!=0) 
 	var = sqr(value)*m_weight/channels[i]->Weight();
@@ -293,7 +293,7 @@ void Multi_Channel::GenerateWeight(int n,Vec4D* p,Cut_Data * cuts)
   if (channels[n]->Alpha() > 0.) {
     channels[n]->GenerateWeight(p,cuts);
     if (channels[n]->Weight()==0.) m_weight = 0.; 
-                              else m_weight = 1./channels[n]->Weight();
+    else m_weight = 1./channels[n]->Weight();
   }
   else m_weight = 0.;
 }
@@ -308,12 +308,13 @@ void Multi_Channel::GenerateWeight(Vec4D * p,Cut_Data * cuts)
     return;
   }
   m_weight = 0.;
-  for (short int i=0; i<channels.size(); ++i) {
+  for (size_t i=0; i<channels.size(); ++i) {
     if (channels[i]->Alpha() > 0.) {
       channels[i]->GenerateWeight(p,cuts);
       if (!(channels[i]->Weight()>0) && 
 	  !(channels[i]->Weight()<0) && (channels[i]->Weight()!=0)) {
-	msg.Error()<<"Channel "<<i<<" produces a nan!"<<endl;
+	msg.Error()<<"Multi_Channel::GenerateWeight(..): ("<<this
+		   <<"): Channel "<<i<<" ("<<channels[i]<<") produces a nan!"<<endl;
       }
       if (channels[i]->Weight()!=0) 
 	m_weight += channels[i]->Alpha()/channels[i]->Weight();
@@ -330,17 +331,14 @@ void Multi_Channel::GeneratePoint(int n,Vec4D * p,Cut_Data * cuts,double * ran)
 
 void Multi_Channel::GeneratePoint(Vec4D * p,Cut_Data * cuts)
 {
-  //  cout<<" Multi_Channel::GeneratePoint "<<endl;
-  //  cout<<*cuts<<endl;
-
-  for(short int i=0;i<channels.size();i++) channels[i]->SetWeight(0.);
+  for(size_t i=0;i<channels.size();i++) channels[i]->SetWeight(0.);
   if(channels.size()==1) {
     channels[0]->GeneratePoint(p,cuts);
     return;
   }  
   double rn  = ran.Get();
   double sum = 0;
-  for (short int i=0;;++i) {
+  for (size_t i=0;;++i) {
     if (i==channels.size()) {
       rn  = ran.Get();
       i   = 0;
@@ -369,12 +367,13 @@ void Multi_Channel::GenerateWeight(int n,Vec4D* p)
 void Multi_Channel::GenerateWeight(Vec4D * p)
 {
   m_weight = 0.;
-  for (short int i=0; i<channels.size(); ++i) {
+  for (size_t i=0; i<channels.size(); ++i) {
     if (channels[i]->Alpha() > 0.) {
       channels[i]->GenerateWeight(p);
       if (!(channels[i]->Weight()>0) && 
 	  !(channels[i]->Weight()<0) && (channels[i]->Weight()!=0)) {
-	msg.Error()<<"Channel "<<i<<" produces a nan!"<<endl;
+	msg.Error()<<"Multi_Channel::GenerateWeight(..): ("<<this
+		   <<"): Channel "<<i<<" ("<<channels[i]<<") produces a nan!"<<endl;
       }
       if (channels[i]->Weight()!=0) 
 	m_weight += channels[i]->Alpha()/channels[i]->Weight();
@@ -391,10 +390,10 @@ void Multi_Channel::GeneratePoint(int n,Vec4D * p,double * rn)
 
 void Multi_Channel::GeneratePoint(Vec4D * p)
 {
-  for(short int i=0;i<channels.size();i++) channels[i]->SetWeight(0.);
+  for(size_t i=0;i<channels.size();i++) channels[i]->SetWeight(0.);
   double rn  = ran.Get();
   double sum = 0;
-  for (short int i=0;i<channels.size();i++) {
+  for (size_t i=0;i<channels.size();i++) {
     sum += channels[i]->Alpha();
     if (sum>rn) {
       channels[i]->GeneratePoint(p);
@@ -405,12 +404,13 @@ void Multi_Channel::GeneratePoint(Vec4D * p)
 
 void Multi_Channel::GenerateWeight(double sprime,double y,int mode) {
   m_weight = 0.;
-  for (short int i=0; i<channels.size(); ++i) {
+  for (size_t i=0; i<channels.size(); ++i) {
     if (channels[i]->Alpha() > 0.) {
       channels[i]->GenerateWeight(sprime,y,mode);
       if (!(channels[i]->Weight()>0) && 
 	  !(channels[i]->Weight()<0) && (channels[i]->Weight()!=0)) {
-	ATOOLS::msg.Error()<<"Channel "<<i<<" produces a nan!"<<endl;
+	msg.Error()<<"Multi_Channel::GenerateWeight(..): ("<<this
+		   <<"): Channel "<<i<<" ("<<channels[i]<<") produces a nan!"<<endl;
       }
       if (channels[i]->Weight()!=0.) 
 	m_weight += channels[i]->Alpha()/channels[i]->Weight();
@@ -429,10 +429,10 @@ void Multi_Channel::GenerateWeight(int n,double sprime,double y,int mode) {
 }
 
 void Multi_Channel::GeneratePoint(double & sprime,double & y,int mode) {
-  for(short int i=0;i<channels.size();i++) channels[i]->SetWeight(0.);
+  for(size_t i=0;i<channels.size();i++) channels[i]->SetWeight(0.);
   double disc = ran.Get();
   double sum  = 0;
-  for (short int n=0;n<channels.size();n++) {
+  for (size_t n=0;n<channels.size();n++) {
     sum += channels[n]->Alpha();
     if (sum>disc) {
       for (int i=0;i<2;i++) rans[i] = ran.Get();
@@ -447,6 +447,48 @@ void Multi_Channel::GeneratePoint(int n,double & sprime,double & y,int mode) {
   channels[n]->GeneratePoint(sprime,y,mode,rans);
 }
 
+void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode) 
+{
+//   std::cout<<"in MC: "<<name<<std::endl;
+  for(size_t i=0;i<channels.size();++i) channels[i]->SetWeight(0.);
+  double disc=ran.Get();
+  double sum=0.;
+  for (size_t n=0;n<channels.size();++n) {
+    sum+=channels[n]->Alpha();
+    if (sum>disc) {
+      for (size_t i=0;i<2;++i) { 
+	rans[i]=ran.Get();
+// 	std::cout<<"MC rans : "<<i<<" "<<rans[i]<<std::endl;
+      }
+//       std::cout<<"winner : "<<channels[n]->Name()<<std::endl;
+      channels[n]->GeneratePoint(spkey,ykey,rans,mode);
+      return;
+    }
+  }  
+}
+
+void Multi_Channel::GenerateWeight(int mode=0)
+{
+  if (channels.size()==1) {
+    channels[0]->GenerateWeight(mode);
+    if (channels[0]->Weight()!=0) m_weight = channels[0]->Weight();
+    return;
+  }
+  m_weight = 0.;
+  for (size_t i=0;i<channels.size();++i) {
+    if (channels[i]->Alpha()>0.) {
+      channels[i]->GenerateWeight(mode);
+      if (!(channels[i]->Weight()>0)&&
+	  !(channels[i]->Weight()<0)&&(channels[i]->Weight()!=0)) {
+	msg.Error()<<"Multi_Channel::GenerateWeight(..): ("<<this
+		   <<"): Channel "<<i<<" ("<<channels[i]<<") produces a nan!"<<endl;
+      }
+      if (channels[i]->Weight()!=0) 
+	m_weight += channels[i]->Alpha()/channels[i]->Weight();
+    }
+  }
+  if (m_weight!=0) m_weight=1./m_weight;
+}
 
 int Multi_Channel::CountResonances(int i,Flavour*& fl_res) 
 {
@@ -463,19 +505,19 @@ void Multi_Channel::ISRInfo(int i,int & type,double & mass,double & width)
 void Multi_Channel::Print() {
   ATOOLS::msg.Out()<<"----------------------------------------------"<<endl
 		      <<"Multi_Channel with "<<channels.size()<<" channels."<<endl;
-  for (int i=0;i<channels.size();i++) 
+  for (size_t i=0;i<channels.size();i++) 
     ATOOLS::msg.Out()<<"  "<<channels[i]->Name()<<" : "<<channels[i]->Alpha()<<endl;
   ATOOLS::msg.Out()<<"----------------------------------------------"<<endl;
 }                 
 
-void Multi_Channel::WriteOut(std::string pID) {
+void Multi_Channel::WriteOut(std::string pID) 
+{
   ofstream ofile;
   ofile.open(pID.c_str());
-
   ofile<<channels.size()<<" "<<name<<" "<<n_points<<" "<<n_contrib<<" "
        <<m_result<<" "<<m_result2<<" "<<s1xmin<<endl;
   ofile.precision(12);
-  for (int i=0;i<channels.size();i++) 
+  for (size_t i=0;i<channels.size();i++) 
     ofile<<channels[i]->Name()<<" "<<channels[i]->N()<<" "
 	 <<channels[i]->Alpha()<<" "<<channels[i]->AlphaSave()<<" "
 	 <<channels[i]->Weight()<<" "<<channels[i]->Res1()<<" "
@@ -487,9 +529,9 @@ bool Multi_Channel::ReadIn(std::string pID) {
   ifstream ifile;
   ifile.open(pID.c_str());
   if (ifile.bad()) return false;
-  int         size;
+  size_t      size;
   std::string name;
-  long int    points, contrib;
+  long int    points;
   double      alpha, alphasave, weight, res1, res2, res3;
   ifile>>size>>name;
   if (( size != channels.size()) || ( name != name) ) {
@@ -503,7 +545,7 @@ bool Multi_Channel::ReadIn(std::string pID) {
   ifile>>n_points>>n_contrib>>m_result>>m_result2>>s1xmin;
 
   double sum=0;
-  for (int i=0;i<channels.size();i++) {
+  for (size_t i=0;i<channels.size();i++) {
     ifile>>name>>points>>alpha>>alphasave>>weight>>res1>>res2>>res3;
     sum+= alpha;
     if (name != channels[i]->Name()) {
@@ -524,45 +566,18 @@ bool Multi_Channel::ReadIn(std::string pID) {
   return 1;
 }
 
-void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode) 
-{
-  for(size_t i=0;i<channels.size();++i) channels[i]->SetWeight(0.);
-  double disc=ran.Get();
-  double sum=0.;
-  for (size_t n=0;n<channels.size();++n) {
-    sum+=channels[n]->Alpha();
-    if (sum>disc) {
-      for (size_t i=0;i<2;++i) rans[i]=ran.Get();
-      channels[n]->GeneratePoint(spkey,ykey,rans,mode);
-      return;
-    }
-  }  
-}
-
-void Multi_Channel::GenerateWeight(int mode=0)
-{
-  if (channels.size()==1) {
-    channels[0]->GenerateWeight(mode);
-    if (channels[0]->Weight()!=0) m_weight = channels[0]->Weight();
-    return;
-  }
-  m_weight = 0.;
-  for (size_t i=0;i<channels.size();++i) {
-    if (channels[i]->Alpha()>0.) {
-      channels[i]->GenerateWeight(mode);
-      if (!(channels[i]->Weight()>0)&&
-        !(channels[i]->Weight()<0)&&(channels[i]->Weight()!=0)) {
-      msg.Error()<<"Multi_Channel::GenerateWeight(..): ("<<this
-                 <<"): Channel "<<i<<" ("<<channels[i]<<") produces a nan!"<<endl;
-      }
-      if (channels[i]->Weight()!=0) 
-      m_weight += channels[i]->Alpha()/channels[i]->Weight();
-    }
-  }
-  if (m_weight!=0) m_weight=1./m_weight;
-}
-
 std::string Multi_Channel::ChID(int n)
 {
   return channels[n]->ChID();
+}
+
+void Multi_Channel::SetRange(double *_sprimerange,double *_yrange) 
+{
+  for (size_t i=0;i<channels.size();++i) channels[i]->SetRange(_sprimerange,_yrange);
+}
+
+void Multi_Channel::GetRange() 
+{
+  ATOOLS::msg.Debugging()<<"Multi_Channel::GetRange() : "<<name<<std::endl;
+  for (unsigned int i=0;i<channels.size();i++) channels[i]->GetRange();
 }

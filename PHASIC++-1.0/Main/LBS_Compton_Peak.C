@@ -29,7 +29,6 @@ LBS_Compton_Peak_Uniform::LBS_Compton_Peak_Uniform(const double exponent,const d
 void LBS_Compton_Peak_Uniform::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
 					     const double *rans,const int mode) 
 {
-  CalculateLimits(spkey,ykey);
   double help=CE.LLPropMomenta(m_exponent,m_spkey[2],m_spkey[0],m_spkey[1],rans[0]);
   if (m_spkey[0]<m_spkey[2]*m_pole && m_spkey[2]*m_pole<m_spkey[1]) {
     m_spkey[3]=help-m_spkey[1]+m_spkey[2]*m_pole;
@@ -38,7 +37,7 @@ void LBS_Compton_Peak_Uniform::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Inf
   else {
     m_spkey[3]=help;
   }
-  m_ykey[2]+=CE.DiceYUniform(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
+  m_ykey[2]=CE.DiceYUniform(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
 }
 
 void LBS_Compton_Peak_Uniform::GenerateWeight(const int mode) 
@@ -60,12 +59,6 @@ void LBS_Compton_Peak_Uniform::GenerateWeight(const int mode)
     }
   }
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
-}
-
-void LBS_Compton_Peak_Uniform::CalculateLimits(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey) 
-{
-  for (size_t i=0;i<3;++i) m_spkey[i]=spkey[i];
-  if (!m_zchannel) m_spkey[1]=spkey[3];
 }
 
 LBS_Compton_Peak_Forward::LBS_Compton_Peak_Forward(const double exponent,const double pole,
@@ -93,7 +86,6 @@ LBS_Compton_Peak_Forward::LBS_Compton_Peak_Forward(const double exponent,const d
 void LBS_Compton_Peak_Forward::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
 					     const double *rans,const int mode) 
 {
-  CalculateLimits(spkey,ykey);
   double help=CE.LLPropMomenta(m_exponent,m_spkey[2],m_spkey[0],m_spkey[1],rans[0]);
   if (m_spkey[0]<m_spkey[2]*m_pole && m_spkey[2]*m_pole<m_spkey[1]) {
     m_spkey[3]=help-m_spkey[1]+m_spkey[2]*m_pole;
@@ -102,7 +94,7 @@ void LBS_Compton_Peak_Forward::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Inf
   else {
     m_spkey[3]=help;
   }
-  m_ykey[2]+=CE.DiceYForward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
+  m_ykey[2]=CE.DiceYForward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
 			     m_ykey.Doubles(),rans[1],mode);
 }
 
@@ -127,12 +119,6 @@ void LBS_Compton_Peak_Forward::GenerateWeight(int mode)
   }
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 } 
-
-void LBS_Compton_Peak_Forward::CalculateLimits(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey) 
-{
-  for (size_t i=0;i<3;++i) m_spkey[i]=spkey[i];
-  if (!m_zchannel) m_spkey[1]=spkey[3];
-}
 
 LBS_Compton_Peak_Backward::LBS_Compton_Peak_Backward(const double exponent,const double pole,
 						     const double yexponent,
@@ -159,7 +145,6 @@ LBS_Compton_Peak_Backward::LBS_Compton_Peak_Backward(const double exponent,const
 void LBS_Compton_Peak_Backward::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
 					      const double *rans,int mode)
 {
-  CalculateLimits(spkey,ykey);
   double help=CE.LLPropMomenta(m_exponent,m_spkey[2],m_spkey[0],m_spkey[1],rans[0]);
   if (m_spkey[0]<m_spkey[2]*m_pole && m_spkey[2]*m_pole<m_spkey[1]) {
     m_spkey[3]=help-m_spkey[1]+m_spkey[2]*m_pole;
@@ -168,7 +153,7 @@ void LBS_Compton_Peak_Backward::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::In
   else {
     m_spkey[3]=help;
   }
-  m_ykey[2]+=CE.DiceYBackward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
+  m_ykey[2]=CE.DiceYBackward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
 			      m_ykey.Doubles(),rans[1],mode);
 }
 
@@ -194,12 +179,6 @@ void LBS_Compton_Peak_Backward::GenerateWeight(int mode)
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 } 
 
-void LBS_Compton_Peak_Backward::CalculateLimits(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey) 
-{
-  for (size_t i=0;i<3;++i) m_spkey[i]=spkey[i];
-  if (!m_zchannel) m_spkey[1]=spkey[3];
-}
-
 LBS_Compton_Peak_Central::LBS_Compton_Peak_Central(const double exponent,const double pole,
 						   const std::string cinfo,ATOOLS::Integration_Info *info): 
   m_exponent(exponent),
@@ -222,7 +201,6 @@ LBS_Compton_Peak_Central::LBS_Compton_Peak_Central(const double exponent,const d
 void LBS_Compton_Peak_Central::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
 					     const double *rans,int mode)
 {
-  CalculateLimits(spkey,ykey);
   double help=CE.LLPropMomenta(m_exponent,m_spkey[2],m_spkey[0],m_spkey[1],rans[0]);
   if (m_spkey[0]<m_spkey[2]*m_pole && m_spkey[2]*m_pole<m_spkey[1]) {
     m_spkey[3]=help-m_spkey[1]+m_spkey[2]*m_pole;
@@ -231,7 +209,7 @@ void LBS_Compton_Peak_Central::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Inf
   else {
     m_spkey[3]=help;
   }
-  m_ykey[2]+=CE.DiceYCentral(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
+  m_ykey[2]=CE.DiceYCentral(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
 }
 
 void LBS_Compton_Peak_Central::GenerateWeight(int mode)
@@ -253,11 +231,5 @@ void LBS_Compton_Peak_Central::GenerateWeight(int mode)
     }
   }
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
-}
-
-void LBS_Compton_Peak_Central::CalculateLimits(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey) 
-{
-  for (size_t i=0;i<3;++i) m_spkey[i]=spkey[i];
-  if (!m_zchannel) m_spkey[1]=spkey[3];
 }
 

@@ -94,8 +94,7 @@ double Channel_Basics::SqLam(double s,double s1, double s2)
   return 0.;
 }
 
-double Channel_Basics::PeakedDist(double a,double cn,
-				  double cxm,double cxp,int k,double ran)
+double Channel_Basics::PeakedDist(double a,double cn,double cxm,double cxp,int k,double ran)
 {
   double ce  = 1.-cn;
   double res = 0.;

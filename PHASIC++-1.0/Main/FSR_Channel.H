@@ -27,6 +27,7 @@ namespace PHASIC {
     void ISRInfo(int &,double &,double &);
     int  ChNumber()                 { return chnumber;      }
     void SetChNumber(int _chnumber) { chnumber = _chnumber; }
+    std::string ChID();
   };
 
 
@@ -53,6 +54,7 @@ namespace PHASIC {
     void ISRInfo(int &,double &,double &);
     int  ChNumber()                 { return chnumber;      }
     void SetChNumber(int _chnumber) { chnumber = _chnumber; }
+    std::string ChID();
   };
 
 
@@ -80,6 +82,7 @@ namespace PHASIC {
     void ISRInfo(int &,double &,double &);
     int  ChNumber()                 { return chnumber;      }
     void SetChNumber(int _chnumber) { chnumber = _chnumber; }
+    std::string ChID();
   };
 
 
