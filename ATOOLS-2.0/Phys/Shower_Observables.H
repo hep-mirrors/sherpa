@@ -93,6 +93,7 @@ namespace APHYTOOLS {
     Multiplicity::Multiplicity(Multiplicity * _partner, std::string _prefix);
 
     void Evaluate(const APHYTOOLS::Parton_List & pl,double);
+    void Evaluate(const APHYTOOLS::Blob_List &,double);
 
     void Evaluate(AMATOOLS::Vec4D *,APHYTOOLS::Flavour *,double);
   };

@@ -81,8 +81,8 @@ bool Jet_Finder::ConstructJets(const APHYTOOLS::Parton_List * parts,
     flavsin[i] = (*parts)[i]->Flav();
   }
   if ( (flavsin[0].Strong()) || (flavsin[1].Strong()) || (m_type != 1) ) {
-    msg.Error()<<"Jet_Finder::ConstructJets : This is not implemented yet !!!!!"<<std::endl;
-    abort();
+    //    msg.Out()<<"WARNING: Jet_Finder::ConstructJets : This is not completely tested yet! "<<std::endl;
+    if (m_type==1) m_type=4;  // assume hadron hadron
   }
 
   for (int i=2;i<parts->size();i++) {
@@ -120,7 +120,17 @@ bool Jet_Finder::ConstructJetSystem(Vec4D * momsin,Flavour * flavsin,std::vector
     lastys.pop_back();
   }
   // Cluster vectors.
-  momsout[j] += momsout[k];
+  //cout<<"  cluster "<<j<<" with "<<k<<" { ";
+  if (j<0) {
+    //cout<<momsin[j+2]<<","<<momsout[k]<<" } to ";
+    momsin[j+2] += momsout[k];
+    //cout<<momsin[j+2]<<endl;
+  }
+  else {
+    //cout<<momsout[j]<<","<<momsout[k]<<" } to ";
+    momsout[j] += momsout[k];
+    //cout<<momsout[j]<<endl;
+  }
   for (int i=k;i<momsout.size()-1;i++) momsout[i] = momsout[i+1];
   momsout.pop_back();
 
@@ -131,16 +141,16 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
 			   int & j1,int & k1)
 {
   double ymin = 2.;
-  j1=-1; k1=-1;
+  j1=-3; k1=-3;
   double pt2jk,pt2j,pt2k,pt2min;
   for (int j=0;j<momsout.size();j++) {
     if (m_type>=3) {
       pt2j = (sqr(momsout[j][1]) + sqr(momsout[j][2]));
       if (pt2j < ymin*m_s) {
 	ymin = pt2j/m_s;
-	j1   = j;
-	if (momsout[j][3]*momsin[0][3] > 0.) k1 = 0;
-	                                else k1 = 1;
+	k1   = j;
+	if (momsout[j][3]*momsin[0][3] > 0.) j1 = -2;
+	                                else j1 = -1;
       } 
       for (int k=j+1;k<momsout.size();k++) {
 	pt2k  = (sqr(momsout[k][1]) + sqr(momsout[k][2]));
@@ -163,7 +173,7 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
     }
   }
 
-  if (j1==-1) {
+  if (j1==-3) {
     std::cout<<" problem: "<<ymin<<std::endl;
     for (int k=0; k<momsout.size();++k)
       std::cout<<k<<" "<<momsout[k]<<std::endl;

@@ -1,8 +1,10 @@
 #include "Shower_Observables.H"
 #include "MyStrStream.H"
 #include "MathTools.H"
+#include "Run_Parameter.H"
 
 using namespace APHYTOOLS;
+using namespace AORGTOOLS;
 using namespace std;
 
 void Shower_Observables::InitObservables() {
@@ -41,6 +43,8 @@ void Shower_Observables::Evaluate(const APHYTOOLS::Blob_List & blobs ,double val
   }
 
   // looging for Final State Shower blob
+  /*
+    // old scheme:
   for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
     if ((*blit)->Type()[0]=='F') {
       for (int i=0;i<(*blit)->NOutP();++i) {
@@ -48,6 +52,15 @@ void Shower_Observables::Evaluate(const APHYTOOLS::Blob_List & blobs ,double val
       }
     }
   }
+  */
+  for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
+    for (int i=0;i<(*blit)->NOutP();++i) {
+      Parton * p = (*blit)->OutParton(i);
+      if (p->Info()=='F')
+	pl.push_back(p);
+    }
+  }
+
 
   //  fill histograms (for all events)
   all_obs.jetrates->Evaluate(pl,value);
@@ -186,6 +199,13 @@ Jetrates::Jetrates(int _type,double _xmin,double _xmax,int _nbins,
   histo = 0;
   jfind = new APHYTOOLS::Jet_Finder(2.,1);
 
+  int had=0;
+  if (rpa.gen.Beam1()==Flavour(kf::p_plus) || rpa.gen.Beam1()==Flavour(kf::p_plus).Bar()) {
+    had=1;
+    xmin=0.01*xmin;
+    xmax=0.01*xmax;
+  }
+
   jets.push_back(6);
   histos.push_back(new AMATOOLS::Histogram(11,xmin,xmax,nbins));
   rates.push_back(new AMATOOLS::Histogram(11,xmin,xmax,nbins));
@@ -201,7 +221,14 @@ Jetrates::Jetrates(int _type,double _xmin,double _xmax,int _nbins,
   jets.push_back(2);
   histos.push_back(new AMATOOLS::Histogram(11,xmin,xmax,nbins));
   rates.push_back(new AMATOOLS::Histogram(11,xmin,xmax,nbins));
-
+  if (had) {
+    jets.push_back(1);
+    histos.push_back(new AMATOOLS::Histogram(11,xmin,xmax,nbins));
+    rates.push_back(new AMATOOLS::Histogram(11,xmin,xmax,nbins));
+    jets.push_back(0);
+    histos.push_back(new AMATOOLS::Histogram(11,xmin,xmax,nbins));
+    rates.push_back(new AMATOOLS::Histogram(11,xmin,xmax,nbins));
+  }
   ymax=-1;
   ymin=2;
 };
@@ -312,12 +339,41 @@ Multiplicity::Multiplicity(Multiplicity * _partner, std::string _prefix)
 
 
 void Multiplicity::Evaluate(const APHYTOOLS::Parton_List & pl,double value) {
+  //  cout<<" multi = "<<pl.size()<<endl;
   histo->Insert(pl.size()-2,value);
 }
 
 void  Multiplicity::Evaluate(AMATOOLS::Vec4D *,APHYTOOLS::Flavour *,double value) {
   //  histo->Insert(nout, value);  
 }
+
+void  Multiplicity::Evaluate(const APHYTOOLS::Blob_List & blobs,double value) {
+  Parton_List pl;
+  for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
+    if ((*blit)->Type()[0]=='H') {
+      for (int i=0;i<(*blit)->NInP();++i) {
+	pl.push_back((*blit)->InParton(i));
+      }
+    }
+  }
+
+  // looging for Final State Shower blob
+  for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
+    for (int i=0;i<(*blit)->NOutP();++i) {
+      Parton * p = (*blit)->OutParton(i);
+      if (p->Info()=='F')
+	pl.push_back(p);
+    }
+  }
+  Evaluate(pl,value);
+
+}
+
+
+
+
+
+
 
 void ME_Rate::Evaluate(const APHYTOOLS::Blob_List & blobs,double value) {
   for (Blob_Const_Iterator bit=blobs.begin();bit!=blobs.end();++bit) {
