@@ -86,14 +86,25 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist)
 	    }
 	  }
 	  else if (shower==3) {
-	    (*blit)->SetType(string("Signal Process : "));
-	    (*blit)->SetStatus(-1);
+	    msg.Tracking()<<" ASK for SAME EVENT "<<endl;
+	    myblob->SetType(string("Signal Process : "));
+	    myblob->SetStatus(-1);
+	    p_showerhandler->CleanUp();
+	  }
+	  else {
+	    msg.Tracking()<<" ASK for NEW EVENT (error)"<<endl;
+	    myblob->SetType(string("Signal Process : "));
+	    myblob->SetStatus(0);
+	    p_showerhandler->CleanUp();
 	  }
 	  found = hit = 1;
 	}
 	else {
 	  // probably sudakov rejection
-	  
+	  msg.Tracking()<<" ASK for NEW EVENT (sudakov) "<<endl;
+	  myblob->SetType(string("Signal Process : "));
+	  myblob->SetStatus(0);
+	  p_showerhandler->CleanUp();
 	}
       }
     }

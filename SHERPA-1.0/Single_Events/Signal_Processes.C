@@ -80,6 +80,9 @@ void Signal_Processes::FillBlob(Blob * _blob)
   _blob->SetCMS(cms);
   _blob->SetBeam(-1);
 
+  // make shure that blob is empty
+  _blob->DeleteOwnedPartons();
+
   Parton * parton;
   for (int i=0;i<p_mehandler->Nin();i++) {
     parton = new Parton(0,p_mehandler->Flavs()[i],p_mehandler->Momenta()[i]);
