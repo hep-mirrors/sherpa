@@ -78,18 +78,28 @@ namespace AMISIC {
     Argument_Type BinXMin(const size_t i); 
     Argument_Type BinXMax(const size_t i); 
 
+    Argument_Type BinXMean(const size_t i); 
+    Argument_Type BinError(const size_t i);
+
     Argument_Type BinContent(const size_t i);
     Argument_Type BinSumSqr(const size_t i);
     Argument_Type BinMax(const size_t i);
     Argument_Type BinEntries(const size_t i);
 
-    Argument_Type BinXMean(const size_t i); 
-    Argument_Type BinError(const size_t i);
-
     Argument_Type BinContent(const Argument_Type x);
     Argument_Type BinSumSqr(const Argument_Type x);
     Argument_Type BinMax(const Argument_Type x);
     Argument_Type BinEntries(const Argument_Type x);
+
+    void SetBinContent(const size_t i,const Argument_Type content);
+    void SetBinSumSqr(const size_t i,const Argument_Type sumsqr);
+    void SetBinMax(const size_t i,const Argument_Type max);
+    void SetBinEntries(const size_t i,const Argument_Type entries);
+
+    void SetBinContent(const Argument_Type x,const Argument_Type content);
+    void SetBinSumSqr(const Argument_Type x,const Argument_Type sumsqr);
+    void SetBinMax(const Argument_Type x,const Argument_Type max);
+    void SetBinEntries(const Argument_Type x,const Argument_Type entries);
 
     // inline functions
     inline Argument_Type XMin() const { return m_xmin; }
