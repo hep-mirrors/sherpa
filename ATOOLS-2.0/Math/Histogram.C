@@ -2,9 +2,23 @@
 #include "Message.H"
 #include "MyStrStream.H"
 #include "MathTools.H"
+#include "Data_Reader.H"
 #include <stdio.h>
 
 using namespace ATOOLS;
+
+template <class Type>
+Type Get(const std::string & in) 
+{
+  if (in!="nan") {
+    Type value;
+    MyStrStream str;
+    str<<in;
+    str>>value;
+    return value;
+  }
+  return (Type)0;
+}
 
 Histogram::Histogram(int _type,double _lower,double _upper,int _nbin) :
   m_type(_type), m_nbin(_nbin), m_lower(_lower), m_upper(_upper), m_bins(0), m_fills(0)
@@ -69,9 +83,22 @@ Histogram::Histogram(const std::string & pID) {
   getline(ifile,dummy);
   
   if (dummy!="") { 
+    Data_Reader dr;
+    std::vector<std::string> conf;
+    dr.VectorFromString(conf,"",dummy,dr.VHorizontal);
+    int k=0;
+
+    if (k>=conf.size()) {
+      msg.Error()<<"Error in Histogram : reading file :"<<pID<<std::endl;
+      m_active = 0;
+      return;
+    }
+
     MyStrStream str;
+    //    std::cout<<dummy<<std::endl;
     str<<dummy;
     str>>m_type>>m_nbin>>m_lower>>m_upper;
+    k=4;
 
     m_logarithmic = int(m_type/10);
     m_depth       = m_type-m_logarithmic*10+1;
@@ -98,10 +125,21 @@ Histogram::Histogram(const std::string & pID) {
     
     for (int i=0;i<m_nbin;i++) m_bins[i]   = new double[m_depth];
     
-    for (int j=0;j<m_depth;j++) str>>m_bins[0][j];
-    for (int j=0;j<m_depth;j++) str>>m_bins[m_nbin-1][j];
+    for (int j=0;j<m_depth;j++) m_bins[0][j] = Get<double>(conf[k++]);
+    if (k>=conf.size()) {
+      msg.Error()<<"Error in Histogram : reading file :"<<pID<<std::endl;
+      m_active = 0;
+      return;
+    }
 
-    str>>m_fills;
+    for (int j=0;j<m_depth;j++) m_bins[m_nbin-1][j] = Get<double>(conf[k++]);
+    if (k>=conf.size()) {
+      msg.Error()<<"Error in Histogram : reading file :"<<pID<<std::endl;
+      m_active = 0;
+      return;
+    }
+
+    m_fills = Get<long int>(conf[k++]);
   }
   else {
     msg.Error()<<"Error in Histogram : reading file :"<<pID<<std::endl;
@@ -111,9 +149,16 @@ Histogram::Histogram(const std::string & pID) {
 
 
   double value;
+  std::vector<std::string> data;
+  MyStrStream str;
+  Data_Reader dr;
   for (int i=0;i<m_nbin-1;i++) {
-    ifile>>value;
-    for (int j=0;j<m_depth;j++) ifile>>m_bins[i+1][j];
+    getline(ifile,dummy);
+    data.clear();
+    dr.VectorFromString(data,"",dummy,dr.VHorizontal);
+
+    //    ifile>>value;
+    for (int j=0;j<m_depth;j++) m_bins[i+1][j] = Get<double>(data[j+1]);
   }
   ifile.close();
 }
@@ -426,6 +471,75 @@ double Histogram::Integral() const
   }
   return total*m_binsize;
 }
+
+double Histogram::Ymax() const
+{
+  double ymax=m_bins[1][0];
+  for (int i=1;i<m_nbin-1;i++) { 
+    if (ymax<m_bins[i][0]) ymax=m_bins[i][0];
+  }
+  return ymax;
+}
+
+double Histogram::Ymin() const
+{
+  double ymin=1.e+65;
+  for (int i=1;i<m_nbin-1;i++) { 
+    if (ymin>m_bins[i][0] && m_bins[i][0]!=0) ymin=m_bins[i][0];
+  }
+  return ymin;
+}
+
+double Histogram::LogCoeff() const
+{
+  double ymax=m_bins[1][0];
+  double ymin=1.e+65;
+  double meany,meany2,meanly,meanly2;
+  meany=meany2=meanly=meanly2=0.;
+
+  int nl = 0;
+  for (int i=1;i<m_nbin-1;i++) { 
+    if (ymax<m_bins[i][0]) ymax=m_bins[i][0];
+    if (ymin>m_bins[i][0] && m_bins[i][0]!=0.) ymin=m_bins[i][0];
+    double y=m_bins[i][0];
+    if (y!=0.) {
+      meany   += y;
+      meany2  += y*y;
+      meanly  += log(y);
+      meanly2 += sqr(log(y));
+      ++nl;
+    }
+  }
+  double rl = 0.;
+  double rn = 0.;
+  if (ymax!=0. && ymin!=0. && nl!=0) {
+    double lymax=log(ymax);
+    double lymin=log(ymin);
+    meanly  = meanly/nl;
+    meanly2 = meanly2/nl;
+    double sigl2=meanly2-sqr(meanly);
+    double ly0=0.5*(lymax+lymin);
+    if (sigl2!=0.) rl=sigl2/sqr(ly0-meanly);
+    //    std::cout<<" rl="<<rl<<std::endl;
+  }
+  if (nl!=0) {
+    meany   = meany/nl;
+    meany2  = meany2/nl;
+    double sig2=meany2-sqr(meany);
+    double y0=0.5*(ymax+ymin);
+    if (sig2!=0) rn=sig2/sqr(y0-meany);
+    //    std::cout<<" rn="<<rn<<std::endl;
+  }
+  double r;
+  if (rl==0. && rn==0.) r=1.;
+  else if (rl==0.)      r=0.;
+  else if (rn==0.)      r=20.;
+  else r=rl/rn;
+  //  std::cout<<" r="<<r<<std::endl;
+  return r;
+}
+
+
 
 Histogram & Histogram::operator+=(const Histogram & histo)
 {

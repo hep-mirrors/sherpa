@@ -40,7 +40,12 @@ namespace ATOOLS {
     double Xmax() const { return m_upper; }
     double Value(int i) const { return m_bins[i][0]; }
     double Fills() const { return m_fills; }
+
     double Integral() const;
+    double Ymax() const;
+    double Ymin() const;
+    double LogCoeff() const;
+
 
     Histogram & operator+=(const Histogram & histo);
   };
