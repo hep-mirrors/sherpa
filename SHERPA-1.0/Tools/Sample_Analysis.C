@@ -258,11 +258,11 @@ void Analysis_Handler::ReadInFinalSelectors(std::ifstream * readin,
 	  fd.pt_min  =   0.;
 	  fd.eta_min = -20.;
 	  fd.eta_max = +20.;
-	  if (numbers.size()>=0) fd.pt_min  = numbers[0];
-	  if (numbers.size()>=1) fd.eta_min = numbers[1];
-	  if (numbers.size()>=2) fd.eta_max = numbers[2];
-	  if (numbers.size()>=3 && kfcs[0]==93) fd.r_min = numbers[3];
-	  if (numbers.size()>=4 && kfcs[0]==93) fd.bf = (bool)numbers[4];
+	  if (numbers.size()>0) fd.pt_min  = numbers[0];
+	  if (numbers.size()>1) fd.eta_min = numbers[1];
+	  if (numbers.size()>2) fd.eta_max = numbers[2];
+	  if (numbers.size()>3 && kfcs[0]==93) fd.r_min = numbers[3];
+	  if (numbers.size()>4 && kfcs[0]==93) fd.bf = (bool)numbers[4];
 	  fsel->AddSelector(flav,fd);
 	}
 	else if (kfcs.size()==2 && numbers.size()>=1) {
@@ -271,7 +271,7 @@ void Analysis_Handler::ReadInFinalSelectors(std::ifstream * readin,
 	  flav2      = Flavour(kf::code(abs(kfcs[1])));
 	  if (kfcs[0]<0) flav2 = flav2.Bar();
 	  fd.r_min  =   0.;
-	  if (numbers.size()>=0) fd.r_min  = numbers[0];
+	  if (numbers.size()>0) fd.r_min  = numbers[0];
 	  fsel->AddSelector(flav,flav2,fd);
 	}
 	else if (kfcs.size()==3  && numbers.size()==0) {
