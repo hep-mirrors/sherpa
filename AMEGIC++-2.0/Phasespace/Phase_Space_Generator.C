@@ -289,7 +289,7 @@ int Phase_Space_Generator::AddToCfile(string &cfilename,char* name,int chnumber,
 
 void Phase_Space_Generator::AddToMakefileAM(string makefilename,string pathID,string fileID)
 {
-  cout<<"Phase_Space_Generator::AddToMakefileAM("<<makefilename<<","<<pathID<<","<<fileID<<")"<<endl;
+  ATOOLS::msg.Tracking()<<"Phase_Space_Generator::AddToMakefileAM("<<makefilename<<","<<pathID<<","<<fileID<<")"<<endl;
 
   unsigned int hit=pathID.find("/");
   string base=pathID.substr(0,hit);

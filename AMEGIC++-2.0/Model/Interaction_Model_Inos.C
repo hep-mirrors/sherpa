@@ -232,7 +232,7 @@ void Interaction_Model_Inos::c_FFV(Single_Vertex* vertex,int& vanz)
 	   vertex[vanz].in[1] = flph;
 	   vertex[vanz].in[2] = flav2;
 	   
-	   cout<<"Chargino Masses : "<<flav1<<" "<<flav1.Mass()<<endl;
+	   ATOOLS::msg.Out()<<"Chargino Masses : "<<flav1<<" "<<flav1.Mass()<<endl;
 
 
 	   Kabbala charge1 = Kabbala(string("Q_{")+flav1.TexName()+string("}"),

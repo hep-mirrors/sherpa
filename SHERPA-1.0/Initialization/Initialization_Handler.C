@@ -147,6 +147,7 @@ bool Initialization_Handler::CheckBeamISRConsistency()
     smax = Min(smax,mcut2);
     if (p_isrhandler->On()) {
       p_isrhandler->SetFixedSprimeMax(smax);
+      p_isrhandler->SetFixedSprimeMin(smin);
     } 
     else if (p_beamspectra->On()) {
       p_beamspectra->SetSprimeMax(smax);
@@ -197,7 +198,7 @@ bool Initialization_Handler::InitializeTheBeams()
       // - add commandline parameter - !!
       p_beamspectra        = new Beam_Spectra_Handler(dataread);
       delete p_beamspectra; p_beamspectra = NULL; 
-      cout<<" Press Enter "<<endl;
+      ATOOLS::msg.Out()<<" Press Enter "<<endl;
       char key = cin.get();
     }
     */
@@ -324,8 +325,10 @@ bool Initialization_Handler::InitializeTheFragmentation()
 bool Initialization_Handler::InitializeTheHadronDecays() 
 {
   if (p_hadrondecays)  { delete p_hadrondecays;  p_hadrondecays  = NULL; }
+//   p_hadrondecays  = new Hadron_Decay_Handler(m_path,m_hadrondecaysdat,
+//  					     p_fragmentation->GetLundInterface());
   p_hadrondecays  = new Hadron_Decay_Handler(m_path,m_hadrondecaysdat,
-					     p_fragmentation->GetLundFortranInterface());
+ 					     p_fragmentation->GetLundFortranInterface());
   return 1;
 }
 
@@ -340,15 +343,15 @@ bool Initialization_Handler::CalculateTheHardProcesses()
   int ok = me->CalculateTotalXSecs(scalechoice);
   if (ok && m_scan_istep!=-1) {
     AMEGIC::Process_Base * procs= me->GetAmegic()->Processes();
-    cout<<ParameterValue()<<" ";
+    ATOOLS::msg.Out()<<ParameterValue()<<" ";
     for (int i=0; i<procs->Size();++i) {
       double xstot = (*procs)[i]->Total()*rpa.Picobarn();
-      cout<<xstot<<" ";
+      ATOOLS::msg.Out()<<xstot<<" ";
     }
     for (int i=0; i<procs->Size();++i) {
-      cout<<"###"<<(*procs)[i]->Name();
+      ATOOLS::msg.Out()<<"###"<<(*procs)[i]->Name();
     }
-    cout<<endl;
+    ATOOLS::msg.Out()<<endl;
   }
   return ok;
 }
@@ -363,7 +366,7 @@ void Initialization_Handler::SetParameter(int nr) {
   if (nr<0) return;
 
   if (nr!=m_scan_istep) 
-    cout<<"WARNING: internal and external scan counter do not coincide "<<nr<<" vs. "<<m_scan_istep<<endl;
+    ATOOLS::msg.Out()<<"WARNING: internal and external scan counter do not coincide "<<nr<<" vs. "<<m_scan_istep<<endl;
 
   double value=m_scan_value=m_scan_begin+(m_scan_end-m_scan_begin)*double(m_scan_istep)/double(m_scan_nsteps);
 
@@ -372,7 +375,7 @@ void Initialization_Handler::SetParameter(int nr) {
   if (m_scan_variable==string("ECMS")) {
     s<<value/2.;
     s>>sval;
-    cout<<" Setting Ecms/2 to : "<<sval<<endl;
+    ATOOLS::msg.Out()<<" Setting Ecms/2 to : "<<sval<<endl;
     Data_Read::SetCommandLine("BEAM_ENERGY_1",sval);
     Data_Read::SetCommandLine("BEAM_ENERGY_2",sval);
   }
@@ -383,8 +386,8 @@ void Initialization_Handler::SetParameter(int nr) {
     // make sure UpdateParameters() is called
   }   
   else {
-    cout<<" Unknown Variable "<< m_scan_variable<<" in scan modus "<<endl;
-    cout<<"  setting "<<m_scan_variable<<" = "<<value<<endl;
+    ATOOLS::msg.Out()<<" Unknown Variable "<< m_scan_variable<<" in scan modus "<<endl;
+    ATOOLS::msg.Out()<<"  setting "<<m_scan_variable<<" = "<<value<<endl;
     s<<value; 
     s>>sval;
     m_options[m_scan_variable]=sval;    
@@ -424,11 +427,11 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 
     if (special_options.find(par)!=special_options.end()) 
       mode = special_options[par];
-    cout<<i<<" : "<<argv[i]<<" ->"<<mode<<endl;
+    ATOOLS::msg.Out()<<i<<" : "<<argv[i]<<" ->"<<mode<<endl;
 
     // variables in dat files
     if (equal!=-1 && mode==1) {
-      cout<<equal<<":"<<key<<" = "<<value<<" ("<<par<<")"<<endl;
+      ATOOLS::msg.Out()<<equal<<":"<<key<<" = "<<value<<" ("<<par<<")"<<endl;
       Data_Read::SetCommandLine(key,value);
     }
     
@@ -447,10 +450,10 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 	s<<value;
 	double ecms;
 	s>>ecms;
-	cout<<" Setting Ecms to : "<<ecms<<endl;
+	ATOOLS::msg.Out()<<" Setting Ecms to : "<<ecms<<endl;
 	s<<ecms/2.;
 	s>>value;
-	cout<<" Setting Ecms/2 to : "<<value<<endl;
+	ATOOLS::msg.Out()<<" Setting Ecms/2 to : "<<value<<endl;
 	Data_Read::SetCommandLine("BEAM_ENERGY_1",value);
 	Data_Read::SetCommandLine("BEAM_ENERGY_2",value);
 	break;
@@ -464,30 +467,30 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       case 12:
 	{
 	  // should call a version roution
-	  cout<<" Sherpa Version 1.0.2"<<endl;
-	  cout<<"   employing: "<<endl;
-	  cout<<"    * AMEGIC++ Version 2.0.2 "<<endl;
-	  cout<<"    * APACIC++ Version 2.0.2 "<<endl;
+	  ATOOLS::msg.Out()<<" Sherpa Version 1.0.2"<<endl;
+	  ATOOLS::msg.Out()<<"   employing: "<<endl;
+	  ATOOLS::msg.Out()<<"    * AMEGIC++ Version 2.0.2 "<<endl;
+	  ATOOLS::msg.Out()<<"    * APACIC++ Version 2.0.2 "<<endl;
 
 	  string pyver("6.214");
-	  cout<<"    * Pythia Version "<<pyver<<endl;
+	  ATOOLS::msg.Out()<<"    * Pythia Version "<<pyver<<endl;
 	  Char_Array40 cid=visaje_();
-	  cout<<"    * IsaJet Version "<<cid.s<<endl;
+	  ATOOLS::msg.Out()<<"    * IsaJet Version "<<cid.s<<endl;
 	}
 	exit(0);
       case 13:
-	cout<<" Help: "<<endl;
-	cout<<" Sherpa [options] [<variable>=<value>] "<<endl;
-	cout<<endl;
-	cout<<" Possible options: "<<endl;
-	cout<<"  -V,--version   prints the Version number"<<endl;
-	cout<<"  -?,--help      prints this help message"<<endl;
-	cout<<"  -xsout <filename> "<<endl;
-	cout<<"                 sets a file where calculated cross sections should be printed to"<<endl;
-	cout<<"  -eventout <filename> "<<endl;
-	cout<<"                 sets a file where events should be printed to"<<endl;	
-	cout<<"  -scan <variable> <startvalue> <stopvalue> <number of steps>"<<endl;
-	cout<<"                 performs a parameter scan"<<endl;
+	ATOOLS::msg.Out()<<" Help: "<<endl;
+	ATOOLS::msg.Out()<<" Sherpa [options] [<variable>=<value>] "<<endl;
+	ATOOLS::msg.Out()<<endl;
+	ATOOLS::msg.Out()<<" Possible options: "<<endl;
+	ATOOLS::msg.Out()<<"  -V,--version   prints the Version number"<<endl;
+	ATOOLS::msg.Out()<<"  -?,--help      prints this help message"<<endl;
+	ATOOLS::msg.Out()<<"  -xsout <filename> "<<endl;
+	ATOOLS::msg.Out()<<"                 sets a file where calculated cross sections should be printed to"<<endl;
+	ATOOLS::msg.Out()<<"  -eventout <filename> "<<endl;
+	ATOOLS::msg.Out()<<"                 sets a file where events should be printed to"<<endl;	
+	ATOOLS::msg.Out()<<"  -scan <variable> <startvalue> <stopvalue> <number of steps>"<<endl;
+	ATOOLS::msg.Out()<<"                 performs a parameter scan"<<endl;
 	exit(0);
       case 14: 
 	// scan
@@ -503,13 +506,13 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 	  s<<argv[++i];
 	  s>>m_scan_nsteps;
 	  m_scan_istep=0;
-	  cout<<" scanning "<<m_scan_variable
+	  ATOOLS::msg.Out()<<" scanning "<<m_scan_variable
 	      <<" from "<<m_scan_begin<<" to "<<m_scan_end
 	      <<" in "<<m_scan_nsteps<<" steps"<<endl;
 	}
 	else {
-	  cout<<"ERROR: missing scan parameter -scan"<<endl;
-	  cout<<"       try Sherpa -? for more information "<<endl;
+	  ATOOLS::msg.Out()<<"ERROR: missing scan parameter -scan"<<endl;
+	  ATOOLS::msg.Out()<<"       try Sherpa -? for more information "<<endl;
 	  exit(1);
 	}
 	break;
@@ -531,30 +534,30 @@ int Initialization_Handler::UpdateParameters()
     MyStrStream s;
     string key=it->first;
     string value=it->second;
-    cout<<" "<<key<<" = "<<value<<endl;
+    ATOOLS::msg.Out()<<" "<<key<<" = "<<value<<endl;
     int a=key.find("(")+1;
     int b=key.find(")")-a;
-    cout<<"Flavour "<<key.substr(a,b);
+    ATOOLS::msg.Out()<<"Flavour "<<key.substr(a,b);
     s<<key.substr(a,b);
     int kfc;
     s>>kfc;
     Flavour fl((kf::code)kfc);
-    cout<<" : "<<fl<<endl;
+    ATOOLS::msg.Out()<<" : "<<fl<<endl;
     if (key.find("MASS")!=string::npos) {
       double mass=fl.Mass();
-      cout<<" old mass = "<<mass<<endl;
+      ATOOLS::msg.Out()<<" old mass = "<<mass<<endl;
       s<<value;
       s>>mass;
-      cout<<" new mass = "<<mass<<endl;
+      ATOOLS::msg.Out()<<" new mass = "<<mass<<endl;
       fl.SetMass(mass);
     }
     if (key.find(string("WIDTH"))!=string::npos) {
-      cout<<"key:"<<key<<endl;
+      ATOOLS::msg.Out()<<"key:"<<key<<endl;
       double width=fl.Width();
-      cout<<" old width = "<<width<<endl;
+      ATOOLS::msg.Out()<<" old width = "<<width<<endl;
       s<<value;
       s>>width;
-      cout<<" new width = "<<width<<endl;
+      ATOOLS::msg.Out()<<" new width = "<<width<<endl;
       fl.SetWidth(width);
     }
   }

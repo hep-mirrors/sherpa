@@ -653,7 +653,7 @@ void Vertex::TexOutput()
 }
 
 void Vertex::AddVertex(Single_Vertex* addv){
-  cout<<" called AddVertex "<<endl;
+  ATOOLS::msg.Out()<<" called AddVertex "<<endl;
   Single_Vertex * oldv=m_v;
   m_v = new Single_Vertex[m_nvertex+1];
   for (int i=0;i<m_nvertex;++i) {
