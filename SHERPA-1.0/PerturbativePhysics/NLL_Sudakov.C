@@ -1,7 +1,7 @@
 #include "NLL_Sudakov.H"
 #include "Message.H"
 #include "MathTools.H"
-#include <stdio.h>
+#include <stdio.h>  // sprintf
 
 using namespace SHERPA;
 using namespace AMEGIC;

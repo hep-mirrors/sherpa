@@ -22,7 +22,7 @@ namespace SHERPA {
       m_ini(_shower->ISROn()), m_fin(_shower->FSROn()), m_maxjetnumber(_me->MaxJets()), m_weight(1.),
       p_fl(NULL), p_moms(NULL) {}
 
-    ~Perturbative_Interface() 
+    virtual ~Perturbative_Interface() 
     {
       if (p_fl)   { delete p_fl;   p_fl   = NULL; }
       if (p_moms) { delete p_moms; p_moms = NULL; }

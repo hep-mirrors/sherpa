@@ -32,13 +32,15 @@ Combine_Data::Combine_Data(const Combine_Data & cd):
 {
 }
 
-Combine_Data::~Combine_Data() {
+Combine_Data::~Combine_Data() 
+{
   if (down!=0) delete down;
   down=0;
 }
 
-std::ostream& SHERPA::operator<< (std::ostream & s ,Combine_Data & cd) {
-    s<<" "<<cd.i<<"&"<<cd.j<<"   "<<cd.pt2ij<<"    "<<std::flush;
+std::ostream& SHERPA::operator<< (std::ostream & s ,Combine_Data & cd) 
+{
+    s<<" "<<cd.i<<"&"<<cd.j<<"   "<<cd.pt2ij<<"    "<<cd.strong<<"    "<<std::flush;
     for (int k=0; k<cd.graphs.size(); ++k)
     s<<cd.graphs[k]<<","<<std::flush;
     s<<"     ";
@@ -55,15 +57,29 @@ Combine_Table::Combine_Table(Jet_Finder * _jf,Vec4D * _moms, Combine_Table * _up
   no=all++;
 }
 
-inline bool Combine_Table::Combinable(const Leg & a , const Leg & b) const {
+inline bool Combine_Table::Combinable(const Leg & a , const Leg & b, int & strong) const 
+{
+  strong = 0;
   // 1.) check if both points have common mother
-  if ((a->prev == b->prev) && (a->prev != 0))   return 1;
+  if ((a->prev == b->prev) && (a->prev != 0)) {
+    strong=a->prev->fl.Strong();
+    return 1;
+  }
 
   // 2.) check if "a" is daughter of "b"
-  if (a->prev == &b)                            return 1;
-
+  if (a->prev == &b)   {
+    if (&a==b->left) strong=b->right->fl.Strong();
+    else if (&a==b->right) strong=b->left->fl.Strong();
+    else cout<<" something went wrong in Combine_Table::Combinable "<<endl;
+    return 1;
+  }
   // 3.) check if "b" is daughter of "a"
-  if (b->prev == &a)                            return 1;
+  if (b->prev == &a)  {
+    if (&b==a->left) strong=a->right->fl.Strong();
+    else if (&b==a->right) strong=a->left->fl.Strong();
+    else cout<<" something went wrong in Combine_Table::Combinable "<<endl;
+    return 1;
+  }
 
   // else legs not combinable
   return 0;
@@ -113,7 +129,8 @@ Leg Combine_Table::CombinedLeg(Leg * legs, int i, int j)
   return mo;
 }
   
-Leg * Combine_Table::CombineLegs(Leg *legs, int i, int j, int _nlegs) {
+Leg * Combine_Table::CombineLegs(Leg *legs, int i, int j, int _nlegs) 
+{
   Leg * alegs = new Leg[_nlegs];
   // assume i < j 
 
@@ -126,10 +143,9 @@ Leg * Combine_Table::CombineLegs(Leg *legs, int i, int j, int _nlegs) {
 }
 
 
-void Combine_Table::CombineMoms(Vec4D* _moms , int i, int j, int maxl) {
-  
-  msg.Debugging()<<"CombineMoms(i="<<i<<",  j="<<j<<",  maxl="<<maxl<<")"<<std::endl;
-  // assume i < j
+void Combine_Table::CombineMoms(Vec4D* _moms , int i, int j, int maxl) 
+{
+    // assume i < j
   for (int l=0; l<j; ++l) {
     if (l==i) { 
       if (i<2) moms[i] = _moms[i] - _moms[j];      
@@ -145,7 +161,8 @@ void Combine_Table::CombineMoms(Vec4D* _moms , int i, int j, int maxl) {
   }
 }
 
-void Combine_Table::CombineMoms(Vec4D * _moms ,int i,int j,int maxl,Vec4D *& omoms) {
+void Combine_Table::CombineMoms(Vec4D * _moms ,int i,int j,int maxl,Vec4D *& omoms) 
+{
   omoms = new Vec4D[maxl];
   msg.Debugging()<<"CombineMoms(i="<<i<<",  j="<<j<<",  maxl="<<maxl<<",  omoms="<<omoms<<")"<<std::endl;
   
@@ -181,8 +198,9 @@ void Combine_Table::FillTable(Leg **_legs,int _nlegs, int _nampl)
 	if (j==1) j=2;
 	// check if leg i is combinable with leg j in any graph
 	for (int k=0;k<nampl;++k) {
-	  if (Combinable(legs[k][i],legs[k][j])) {  
-	    AddPossibility(i,j,k); // insert graph k with combination i&j in table
+	  int strong = 0;
+	  if (Combinable(legs[k][i],legs[k][j],strong)) {  
+	    AddPossibility(i,j,k,strong); // insert graph k with combination i&j in table
 	  } 
 	}	 
       }
@@ -191,23 +209,32 @@ void Combine_Table::FillTable(Leg **_legs,int _nlegs, int _nampl)
 }
 
 
-void Combine_Table::AddPossibility(int i, int j, int ngraph) {
+void Combine_Table::AddPossibility(int i, int j, int ngraph, int strong) 
+{
   if (combinations.size()==0) {
     // add new "i&j" combination to empty table
     combinations.push_back(Combine_Data(i,j,0.,ngraph));
+    combinations.back().strong=strong;
   }
   else if ((combinations.back().i==i)&&(combinations.back().j==j)) {
     // add graph only ("i&j" row exists already)
     combinations.back().graphs.push_back(ngraph);
+    if (strong) combinations.back().strong=strong; 
+    //    we should probably only change to strong status if 
+    //    strong graph is also to be used in shower initialization !!!
   } 
   else {
     // add new "i&j" combination 
     combinations.push_back(Combine_Data(i,j,0.,ngraph));
+    combinations.back().strong=strong;
   }
 }
 
 
-Combine_Table * Combine_Table::CalcJet(int nl, AMATOOLS::Vec4D * _moms) {
+Combine_Table * Combine_Table::CalcJet(int nl, AMATOOLS::Vec4D * _moms) 
+{
+  int prefer_ew_clustering = 1;
+
   Combine_Table * ct=0;
   CD_List & cl=combinations;
   msg.Tracking()<<"in Combine_Table::CalcJet "<<std::endl;
@@ -218,12 +245,9 @@ Combine_Table * Combine_Table::CalcJet(int nl, AMATOOLS::Vec4D * _moms) {
       //      initialize x1 and x2
       double Ebeam1 = 0.5*rpa.gen.Ecms();
       double Ebeam2 = 0.5*rpa.gen.Ecms();
-      //     only correct for massless momenta !!!
+      //     only correct for massless momenta :
       x1=moms[0][0]/Ebeam1; 
       x2=moms[1][0]/Ebeam2;
-//       cout<<" left  "<<moms[0]<<"  x1 ="<<x1<<endl;
-//       cout<<" right "<<moms[1]<<"  x2 ="<<x2<<endl;
-//       cout<<(moms[0]+moms[1]).Abs2()<<"/"<<x1*x2*sqr(rpa.gen.Ecms())<<endl;
     }
 
     return this;
@@ -238,12 +262,9 @@ Combine_Table * Combine_Table::CalcJet(int nl, AMATOOLS::Vec4D * _moms) {
       //      initialize x1 and x2
       double Ebeam1 = 0.5*rpa.gen.Ecms();
       double Ebeam2 = 0.5*rpa.gen.Ecms();
-      //      for massless momenta !!!
+      //      for massless momenta :
       x1=moms[0][0]/Ebeam1; 
       x2=moms[1][0]/Ebeam2;
-//       cout<<" left  "<<moms[0]<<"  x1 ="<<x1<<endl;
-//       cout<<" right "<<moms[1]<<"  x2 ="<<x2<<endl;
-//       cout<<(moms[0]+moms[1]).Abs2()<<"/"<<x1*x2*sqr(rpa.gen.Ecms())<<endl;
     }
 
     // boost in CMS frame and rotate to z-axis (store old moms)
@@ -255,33 +276,22 @@ Combine_Table * Combine_Table::CalcJet(int nl, AMATOOLS::Vec4D * _moms) {
     bool did_boost=0;
     // boost needed?
     if (!(Vec3D(moms[0])==Vec3D(-1.*moms[1]))) {
-
-//       cout<<"for boost "<<endl;
-//       for (int i=0;i<nl;++i) cout<<" "<<i<<" : "<<moms[i]<<endl;
-
       cms   = Poincare(moms[0]+moms[1]);
       for (int i=0;i<nl;++i) cms.Boost(moms[i]);
-
-//       cout<<"nach boost "<<endl;
-//       for (int i=0;i<nl;++i) cout<<" "<<i<<" : "<<moms[i]<<endl;
-
       zaxis = Poincare(moms[0],Vec4D::ZVEC);
       for (int i=0;i<nl;++i) zaxis.Rotate(moms[i]);
-
-//       cout<<"nach rotate "<<endl;
-//       for (int i=0;i<nl;++i) cout<<" "<<i<<" : "<<moms[i]<<endl;
-//       cout<<endl;
-
       did_boost=1;
     }
 
     // calculate pt2ij and determine "best" combination
-    double pt2max = sqr(rpa.gen.Ecms());
-    double pt2min = pt2max;
+    double pt2max   = sqr(rpa.gen.Ecms());
+    double pt2min   = pt2max;
+    double ewpt2min = pt2max;
+    CD_Iterator ewcit=cl.end();
     for (CD_Iterator cit=cl.begin(); cit!=cl.end(); ++cit) {
       double pt2ij = cit->pt2ij = jf->PTij(moms[cit->i], moms[cit->j]);
       if (cit->i < 2  && pt2ij < pt2min ) {
-	// check if is combination has right direction!!!!
+	// check if is combination has right direction:
 	double d = moms[cit->i][3] * moms[cit->j][3];
 	if (d<0. ) {
 	  msg.Tracking()<<cit->i<<","<<cit->j<<" a increase ptij "<<pt2ij<<" to "<<pt2ij*1.001<<endl;
@@ -310,18 +320,30 @@ Combine_Table * Combine_Table::CalcJet(int nl, AMATOOLS::Vec4D * _moms) {
       }
 
       if (pt2ij>pt2max && pt2min==pt2max) {
-	pt2max=pt2min;
+	//	pt2max=pt2min;
+	pt2min=pt2ij;
 	cwin = cit;
       }
-	
+      if (cit->strong==0 && pt2ij>pt2max && ewpt2min==pt2max) {
+	ewpt2min=pt2ij;
+	ewcit=cit;
+      }
 
       if (pt2ij<pt2min) {
 	pt2min = pt2ij;
 	cwin = cit;
       }
+      if (cit->strong==0 && pt2ij<ewpt2min) {
+	pt2min = pt2ij;
+	ewcit=cit;
+      }
     } 
     
-    msg.Tracking()<<this<<endl;
+    if (ewcit!=cl.end() && prefer_ew_clustering && cwin!=ewcit ) { // 
+      //      msg.Tracking()<<" prefered "<<(*ewcit)<<" over "<<(*cwin);
+      cwin=ewcit;
+    }
+
     msg.Tracking()<<" Winner:"<<(*cwin)<<std::endl;
 
     // check if boosted  (restore saved moms)
@@ -389,7 +411,8 @@ Combine_Table::~Combine_Table()
   delete [] legs;
 }
 
-std::ostream& SHERPA::operator<< (std::ostream& s ,Combine_Table * ct) {
+std::ostream& SHERPA::operator<< (std::ostream& s ,Combine_Table * ct) 
+{
   if (ct) {
     s<<std::endl<<" Combine_Table "<<ct->no<<" (up=";
     if (ct->up) s<<ct->up->no<<")"<<std::endl; else s<<"#)"<<std::endl;
@@ -433,16 +456,12 @@ std::ostream& SHERPA::operator<< (std::ostream& s ,Combine_Table * ct) {
   return s;
 }
 
-double Combine_Table::Sprime() {
+double Combine_Table::Sprime() 
+{
   if (!moms) {
     cout<<" ERROR: Combine_Table::Sprime() "<<endl;
     return 0;
   }
-
-//   cout<<" left  "<<moms[0]<<endl;
-//   cout<<" right "<<moms[1]<<endl;
-//   cout<<(moms[0]+moms[1]).Abs2()<<endl;
-
   return (moms[0]+moms[1]).Abs2();
 
 }

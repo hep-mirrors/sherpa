@@ -59,6 +59,7 @@ namespace SHERPA {
   class Combine_Data {
     int                i,j;       // combine leg "i" and "j"
     double             pt2ij;
+    int                strong;    // there is a strong graph for this
     std::vector<int>   graphs;    // all graphs where this combination is possible
     Combine_Table    * down;      // new Combine table with n-1 legs (i and j combined)
   public:
@@ -100,13 +101,13 @@ namespace SHERPA {
 
     double x1,x2;
 
-    bool  Combinable(const Leg &, const Leg &) const ;
+    bool  Combinable(const Leg &, const Leg &, int & strong) const ;
     Leg * CombineLegs(Leg *, int, int, int );
 
     void CombineMoms(AMATOOLS::Vec4D *, int, int, int);
     void CombineMoms(AMATOOLS::Vec4D *, int, int, int, AMATOOLS::Vec4D * &);
 
-    void AddPossibility(int, int, int);
+    void AddPossibility(int, int, int, int);
     Leg  CombinedLeg(Leg *, int, int);
     double Sprime();
   public:
@@ -137,7 +138,7 @@ namespace SHERPA {
     Combine_Table      * Up()             { return up; }
     //@}
 
-    //! only friends can access internal data
+    // only friends can access internal data
     friend std::ostream & operator<< (std::ostream&,Combine_Table *);
     friend std::ostream & operator<< (std::ostream& s ,Combine_Data& cd);
   };
@@ -184,7 +185,8 @@ namespace SHERPA {
   \class APACIC::Combine_Table
 
   it stores: 
-    * a table with (e.g. 6) combinations: (i and j are leg numbers)
+    - a table with (e.g. 6) combinations: (i and j are leg numbers)
+      \verbatim
        i&j   y_ij         graphs         pointer to next table
        -------------------------------------------------------
        0&2   0.0810366    2,3,4,5,8      #
@@ -193,16 +195,19 @@ namespace SHERPA {
        1&4   0.293399     4,5            #
        2&4   0.111385     0,1            #
        3&4   0.215127     2,3            #
-    * a list of corresponding momenta
+      \endverbatim
+    - a list of corresponding momenta
+      \verbatim
        0    (45.5942,0,0,45.5942)
        1    (27.4694,-8.00725,4.40136,-29.941)
        2    (21.7338,-13.9122,15.4912,6.23155)
        3    (21.9827,18.2065,7.01464,-10.127)
        4    (29.347,-12.3016,-18.1044,19.5487)
-    * a matrix of all dangling legs (one row for each graph)
-    * a link to a jet_measure calculator (Jet_Finder)
-    * a reference to the winner combination and graph number
-    * a link "up" to the table with one combination less performed
+      \endverbatim
+    - a matrix of all dangling legs (one row for each graph)
+    - a link to a jet_measure calculator (Jet_Finder)
+    - a reference to the winner combination and graph number
+    - a link "up" to the table with one combination less performed
 
 */
 

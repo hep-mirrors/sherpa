@@ -14,7 +14,10 @@ SimpleXS_Apacic_Interface::SimpleXS_Apacic_Interface(Matrix_Element_Handler * _m
   p_tools = new Interface_Tools(p_shower->GetIniTrees(),p_shower->GetFinTree());
 }
 
-SimpleXS_Apacic_Interface::~SimpleXS_Apacic_Interface() {}
+SimpleXS_Apacic_Interface::~SimpleXS_Apacic_Interface() 
+{
+  if (p_tools) delete p_tools;
+}
 
 bool SimpleXS_Apacic_Interface::DefineInitialConditions(APHYTOOLS::Blob * blob) 
 {

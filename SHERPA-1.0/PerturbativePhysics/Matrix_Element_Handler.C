@@ -111,7 +111,13 @@ bool Matrix_Element_Handler::GenerateOneEvent()
   return WeightedEvent();
 }
 
-bool Matrix_Element_Handler::GenerateSameEvent() {}
+bool Matrix_Element_Handler::GenerateSameEvent() 
+{
+  switch (m_mode) {
+  case 1: return p_amegic->SameEvent();
+  case 2: return p_simplexs->SameEvent();
+  }
+}
 
 bool Matrix_Element_Handler::UnweightedEvent() 
 {

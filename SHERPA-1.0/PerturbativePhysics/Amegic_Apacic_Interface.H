@@ -1,30 +1,22 @@
-#ifndef Amegic_Apacic_Interface_h
-#define Amegic_Apacic_Interface_h
+#ifndef Amegic_Apacic_Interface_H
+#define Amegic_Apacic_Interface_H
 
 #include "Perturbative_Interface.H"
 
-//#include "Hard_Interface.H"
 #include "Cluster_Partons.H"
 
-#include "XS_Selector.H" 
 #include "XS_Group.H" 
 #include "XS_Base.H" 
 
-#include "Parton_List.H"
-#include "Blob_List.H"
 #include "Blob.H"
-
-#include "XS_Selector.H" 
-#include "XS_Group.H" 
-#include "XS_Base.H" 
 
 #include "Jet_Finder.H"
-#include "Blob.H"
 
 
 namespace SHERPA {
   class Amegic_Apacic_Interface : public Perturbative_Interface {
   private :
+    double m_type;
     double m_ycut,m_jetscale;
 
     APHYTOOLS::Jet_Finder * p_jf;
@@ -36,9 +28,6 @@ namespace SHERPA {
     */
     EXTRAXS::XS_Base      * p_xs; 
     EXTRAXS::XS_Group     * p_two2two;
-    EXTRAXS::XS_Selector  * p_xsselector;
-
-    APHYTOOLS::Blob       * p_blob;
 
     bool ClusterConfiguration(APHYTOOLS::Blob * blob);
   public :
@@ -46,6 +35,40 @@ namespace SHERPA {
     ~Amegic_Apacic_Interface(); 
     bool   DefineInitialConditions(APHYTOOLS::Blob *);
   };
+
+  /*!
+    \file 
+    \brief Contains the class SHERPA::Amegic_Apacic_Interface
+  */
+
+  /*!
+    \class Amegic_Apacic_Interface
+    \brief Interface of ME and PS, where MEs are supplied by AMEGIC++ and
+           PS is perform via APACIC++
+  */
+
+  /*!
+    \fn  Amegic_Apacic_Interface(Matrix_Element_Handler *,Shower_Handler *);
+    \brief Constructor 
+  */
+
+  /*!
+    \fn ~Amegic_Apacic_Interface(); 
+    \brief Destructor
+  */
+
+  /*!
+    \fn bool Amegic_Apacic_Interface::ClusterConfiguration(APHYTOOLS::Blob * blob);
+    \brief Wrapper around the class Cluster_Partons, using a jet algoritm to 
+           obtain a shower history.
+  */
+
+  /*!
+    \fn bool Amegic_Apacic_Interface::DefineInitialConditions(APHYTOOLS::Blob *);
+    \brief Calculates Sudakov weights and -- if accepted -- initializes
+           the partonshower and returns 1, or -- if rejected -- returns 0.
+  */
+
 }
 #endif
 
