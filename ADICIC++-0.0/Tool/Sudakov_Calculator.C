@@ -242,7 +242,7 @@ void Sudakov_Calculator::Which() const {    //Virtual.
 
 
 
-Sudakov_Base::~Sudakov_Base() {
+Sudakov_Base::~Sudakov_Base() {    //Virtual.
   --s_count;
 #ifdef TEMP_OUTPUT
   std::cout<<"~Sudakov_Base"<<std::endl;//////////////////////////
@@ -253,7 +253,7 @@ Sudakov_Base::~Sudakov_Base() {
 
 
 
-void Sudakov_Base::Which() const {
+void Sudakov_Base::Which() const {    //Virtual.
   cout<<"Incomplete Sudakov object!"<<endl;
 }
 

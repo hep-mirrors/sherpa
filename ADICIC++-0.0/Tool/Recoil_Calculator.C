@@ -15,13 +15,6 @@ using namespace std;
 using namespace ATOOLS;
 using namespace ADICIC;
 
-  Recoil_Calculator::~Recoil_Calculator() {
-    --s_count;
-#ifdef RECOIL_CALCULATOR_OUTPUT
-    std::cout<<"  ~Recoil_Calculator\n";
-#endif
-  }
-
 
 
 
@@ -48,7 +41,7 @@ const Vec4D& Recoil_Calculator::ZAxis=Recoil_Calculator::s_zaxis;
 
 
 
-Recoil_Calculator::~Recoil_Calculator() {
+Recoil_Calculator::~Recoil_Calculator() {    //Virtual.
   --s_count;
 #ifdef RECOIL_CALCULATOR_OUTPUT
   cout<<"  ~Recoil_Calculator\n";
