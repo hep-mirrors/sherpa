@@ -1,6 +1,7 @@
 #!/bin/bash
 
 NOUPDATE="TRUE"
+NOSTATS=
 TEMPFILE="#update#"
 
 EXTENSIONS="\.C \.cpp \.cc \.f"
@@ -16,16 +17,18 @@ COLOURS="4 4 4 4 2 2 2 1 1 6 6 6 6"
 OPTIONS=
 LOGFILE="#updated-source#"
 for I in $* ; do
-  if [ "$I" = "-n" ]; then NOUPDATE=TRUE 
-  elif [ "$I" = "-f" ]; then NOUPDATE=
-  elif [ "$I" = "-s" ]; then STATISTICS=TRUE
+  if [ "$I" = "-f" ]; then NOUPDATE=
+  elif [ "$I" = "-s" ]; then NOSTATS=
   elif [ "$I" = "-l" ]; then DLOGFILE=TRUE && CLOGFILE=TRUE
+  elif [ "$I" = "--no-update" ]; then NOUPDATE=TRUE
+  elif [ "$I" = "--no-stats" ]; then NOSTATS=TRUE
   elif [ "$I" = "-h" ]; then echo && \
     echo "update version 1.0" && echo && \
-    echo "options: -n             run 'cvs -n update <options>'" && \
-    echo "         -f             run 'cvs update <options>'" && \
+    echo "options: -f             run 'cvs update <options>'" && \
     echo "         -s             show statistics" && \
     echo "         -l <logfile>   create logfile <logfile>" && \
+    echo "         --no-update    run 'cvs -n update <options>'" && \
+    echo "         --no-stats     do not show statistics" && \
     echo "         -h             display this help and exit" && \
     echo "         <any other>    passed directly to 'cvs update'" && echo && \
     exit 0
@@ -112,14 +115,14 @@ for EXTENSION in $EXTENSIONS ; do
   COUNT=`cat $LOGFILE | grep "R " | grep $EXTENSION | wc -l`
   (( TRCOUNT = TRCOUNT + COUNT )); COUNT=0
 done
-if [ "$STATISTICS" = "TRUE" ] ; then
+if [ ! "$NOSTATS" = "TRUE" ] ; then
   echo -e "\e[1m==================================================\e[0m"
-  echo "Updated   : $TUCOUNT"
-  echo "Modified  : $TMCOUNT"
-  echo "Conflicts : $TCCOUNT"
-  echo "New       : $TNCOUNT"
-  echo "Added     : $TACOUNT"
-  echo "Removed   : $TRCOUNT"
+  if (( $TUCOUNT != 0 )) ; then echo "Updated   : $TUCOUNT" ; fi
+  if (( $TMCOUNT != 0 )) ; then echo "Modified  : $TMCOUNT" ; fi
+  if (( $TCCOUNT != 0 )) ; then echo "Conflicts : $TCCOUNT" ; fi
+  if (( $TNCOUNT != 0 )) ; then echo "New       : $TNCOUNT" ; fi
+  if (( $TACOUNT != 0 )) ; then echo "Added     : $TACOUNT" ; fi
+  if (( $TRCOUNT != 0 )) ; then echo "Removed   : $TRCOUNT" ; fi
 fi
 echo -e "\e[1m==================================================\e[0m"
 if [ ! "$CHANGES" = "TRUE" ] ; then
