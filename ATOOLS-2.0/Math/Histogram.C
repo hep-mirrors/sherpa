@@ -211,10 +211,8 @@ void Histogram::Reset() {
 }
 
 void Histogram::Scale(double scale) {
-  double total = 0;
   for (int i=0;i<m_nbin;i++) { 
     m_bins[i][0]*= scale;
-    total += m_bins[i][0]; 
   }
 }
 
@@ -240,7 +238,6 @@ void Histogram::Output() {
 
 void Histogram::Output(const std::string name) 
 {
-  Finalize();
   msg.LogFile()<<"! Histogram::Output(..): "
 	       <<"Writing ("<<this<<") to '"<<name<<"'"<<std::endl;
   std::ofstream ofile;
@@ -256,7 +253,6 @@ void Histogram::Output(const std::string name)
     ofile<<std::endl;
   }
   ofile.close();
-  Restore();
 }
 
 
