@@ -22,6 +22,7 @@ void Jet_Algorithm_Base::SortE(Particle_List * jets)
     std::sort(jets->begin(), jets->end(),Order_E());
   }
 }
+
 void Jet_Algorithm_Base::SortPT(Particle_List * jets)
 {
   if (jets) {

@@ -9,8 +9,11 @@ namespace ATOOLS {
   class Order_PT {
   public:
     int operator()(ATOOLS::Particle * a, ATOOLS::Particle * b) {
-      if (a->Momentum()[1]*a->Momentum()[1]+a->Momentum()[2]*a->Momentum()[2] >
-	  b->Momentum()[1]*b->Momentum()[1]+b->Momentum()[2]*b->Momentum()[2]) return 1;
+      if (a->Momentum().PPerp2() > b->Momentum().PPerp2()) return 1;
+      return 0;
+    }
+    int operator()(ATOOLS::Vec4D & a, ATOOLS::Vec4D & b) {
+      if (a.PPerp2() > b.PPerp2()) return 1;
       return 0;
     }
   };
