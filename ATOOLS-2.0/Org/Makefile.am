@@ -12,6 +12,7 @@ endif
 lib_LTLIBRARIES = libToolsOrg.la
 libToolsOrg_la_SOURCES        = \
 				Exception.C \
+				Exception_Handler.C \
 				File_IO_Base.C \
 				Read_Write_Base.C \
 				Data_Reader.C \
@@ -28,6 +29,8 @@ libToolsOrg_la_SOURCES        = \
 				Integration_Info.C 
 noinst_HEADERS        =	\
 			Exception.H \
+			Exception_Handler.H \
+			Exception_Handler.inl.H \
 			File_IO_Base.H \
 			File_IO_Base.inl.H \
 			Read_Write_Base.H \
