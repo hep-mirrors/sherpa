@@ -17,7 +17,8 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
   m_dir(_dir), m_file(_file), p_amegic(NULL), p_simplexs(NULL), p_isr(_isr), m_mode(0), m_weight(1.)
 {
   p_dataread = new Data_Read(m_dir+m_file);
-  m_signalgenerator  = p_dataread->GetValue<string>("ME_SIGNAL_GENERATOR",std::string("Amegic"));
+  m_signalgenerator = p_dataread->GetValue<string>("ME_SIGNAL_GENERATOR",std::string("Amegic"));
+  m_sudakovon       = p_dataread->GetValue<int>("SUDAKOV WEIGHT",0);
   if (m_signalgenerator==string("Amegic"))   m_mode = InitializeAmegic(_model,_beam,_isr);
   if (m_signalgenerator==string("Internal")) m_mode = InitializeSimpleXS(_model,_beam,_isr);
 

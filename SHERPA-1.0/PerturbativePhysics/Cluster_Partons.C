@@ -401,11 +401,9 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
   for (int i=0;i<4;i++) {
     for (int j=0;j<2;j++) {
       if (xs) {
-	cout<<" xscols["<<i<<"]["<<j<<"]"<<xs->Colours()[i][j]<<endl;
 	knots[i]->part->SetFlow(j+1,xs->Colours()[i][j]); 
       }
       else {
-	cout<<" clcols["<<i<<"]["<<j<<"]"<<m_colors[i][j]<<endl;
 	knots[i]->part->SetFlow(j+1,m_colors[i][j]);
       }	
     }

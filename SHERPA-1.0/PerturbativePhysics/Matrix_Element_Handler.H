@@ -31,6 +31,7 @@ namespace SHERPA {
 
     std::string            m_name,m_signalgenerator,m_readin;
     bool                   m_eventmode;
+    int                    m_sudakovon;
 
     ATOOLS::Data_Read    * p_dataread;
 
@@ -70,6 +71,7 @@ namespace SHERPA {
     double               Weight();
 
     PDF::ISR_Handler   * GetISR_Handler() { return p_isr; }
+    int                  UseSudakovWeight() { return m_sudakovon; }
   };
 
   /*!
@@ -284,6 +286,17 @@ namespace SHERPA {
     \fn double Matrix_Element_Handler::Weight()
     The weight of the last weighted event.
   */    
+
+  /*!
+    \fn   PDF::ISR_Handler   * Matrix_Element_Handler::GetISR_Handler()
+    This method allows access to the ISR_Handler and the information stored there, e.g.
+    which leg encountered ISR, what is the frame of the beams etc.
+  */
+  /*!
+    \fn   int Matrix_Element_Handler::UseSudakovWeight()
+    Returns whether to use sudakov weights in single event generation (usually read from ME.dat)
+  */
+
 }
 #endif
 

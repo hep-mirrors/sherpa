@@ -138,7 +138,7 @@ bool Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
   p_cluster->CalculateWeight(scale,m_jetscale);
 
   m_weight=p_cluster->Weight();
-  if (p_me->Weight()==1.) {
+  if (p_me->Weight()==1. && p_me->UseSudakovWeight()) {
     if (m_weight>ran.Get()) {
       p_cluster->FillTrees(p_shower->GetIniTrees(),p_shower->GetFinTree(),p_xs);
 
