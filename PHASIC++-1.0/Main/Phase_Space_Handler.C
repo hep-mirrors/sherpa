@@ -141,14 +141,8 @@ bool Phase_Space_Handler::InitIncoming(const double _mass)
   } 
   if (m_nin>1) {
     InitCuts();
-    if (p_beamhandler->On()>0) {
-      p_beamhandler->SetSprimeMin(ATOOLS::Max(sqr(p_process->ISRThreshold()),p_cuts->Smin()));
-      p_beamchannels->SetRange(p_beamhandler->SprimeRange(),p_beamhandler->YRange());
-      p_beamchannels->GetRange();
-    }
+    m_smin=ATOOLS::Max(sqr(p_process->ISRThreshold()),p_cuts->Smin());
     if (p_isrhandler->On()>0) {
-      p_isrhandler->SetSprimeMin(ATOOLS::Max(ATOOLS::sqr(p_process->ISRThreshold()),
-					     p_cuts->Smin()));
       msg.Debugging()<<"In Phase_Space_Handler::Integrate : "<<p_beamhandler->On()<<":"
 		     <<p_isrhandler->On()<<endl
 		     <<"   "<<p_isrhandler->SprimeMin()<<" ... "<<p_isrhandler->SprimeMax()
@@ -222,6 +216,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process)
   p_isrhandler->Reset();
   if (m_nin>1) {
     if (p_beamhandler->On()>0) { 
+      p_beamhandler->SetSprimeMin(m_smin);
       p_beamhandler->SetLimits();
       p_beamchannels->GeneratePoint(m_beamspkey,m_beamykey,p_beamhandler->On()); 
       if (!p_beamhandler->MakeBeams(p_lab)) return 0.;
@@ -229,6 +224,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process)
 				 p_isrhandler->Upper1()*p_isrhandler->Upper2());
       p_isrhandler->SetPole(m_beamspkey[3]);
     }
+    p_isrhandler->SetSprimeMin(m_smin);
     p_isrhandler->SetLimits();
     if (p_isrhandler->On()>0) { 
       p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
