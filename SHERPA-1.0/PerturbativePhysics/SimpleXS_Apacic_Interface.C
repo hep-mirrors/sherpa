@@ -94,7 +94,7 @@ bool   SimpleXS_Apacic_Interface::FillBlobs(Blob_List *blobs)
 
 int SimpleXS_Apacic_Interface::PerformShowers()
 {
-  return p_shower->PerformShowers(false,p_mehandler->GetISR_Handler()->X1(),
+  return p_shower->PerformShowers(-1,p_mehandler->GetISR_Handler()->X1(),
 				  p_mehandler->GetISR_Handler()->X2());
 }
 
