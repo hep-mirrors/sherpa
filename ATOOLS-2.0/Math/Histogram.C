@@ -123,17 +123,7 @@ Histogram::~Histogram() {
 
 
 void Histogram::Finalize() {
-  double total = 0;
-  if (m_logarithmic) {
-    for (int i=0;i<m_nbin;++i) {
-      total+=(pow(m_logbase,m_lower+(i+1)/(double)m_nbin*(m_upper-m_lower))-
-	      pow(m_logbase,m_lower+i/(double)m_nbin*(m_upper-m_lower)))*m_bins[i][0];
-    }
-  }
-  else {
-    for (int i=0;i<m_nbin;++i) total+=m_bins[i][0];
-  }
-  for (int i=0;i<m_nbin;++i) m_bins[i][0]/=total;
+  for (int i=0;i<m_nbin;++i) m_bins[i][0]/=m_fills*m_binsize;
 }
 
 void Histogram::Reset() {
