@@ -103,11 +103,16 @@ namespace ATOOLS {
     virtual bool operator() (const Particle *) const = 0;
   };
 
+
   class Is_Photon : public Particle_Qualifier_Base {
   public:
     bool operator()(const Particle *) const;
   };
   class Is_Gluon : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+  class Is_Parton : public Particle_Qualifier_Base {
   public:
     bool operator()(const Particle *) const;
   };
@@ -149,6 +154,13 @@ namespace ATOOLS {
     bool operator()(const Particle *) const;
   };
 
+  class Is_There : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+
+
+
 
 
   inline bool Is_Photon::operator() (const Particle * p) const {
@@ -158,6 +170,11 @@ namespace ATOOLS {
 
   inline bool Is_Gluon::operator() (const Particle * p)  const {
     if ( p && p->Flav().IsGluon() ) return 1;
+    return 0;
+  };
+
+  inline bool Is_Parton::operator() (const Particle * p)  const {
+    if ( p && ( p->Flav().IsGluon() || p->Flav().IsQuark() ) ) return 1;
     return 0;
   };
 
@@ -187,20 +204,33 @@ namespace ATOOLS {
     if ( p && (p->Status() == 1) ) return 1;
     return 0;
   };
+
+
+
   inline bool Is_Neutral::operator() (const Particle * p)  const{
     if ( p && p->Flav().IntCharge()==0) return 1;
     return 0;
   };
+
   inline bool Is_Charged_Pion::operator() (const Particle * p) const {
     if ( p && p->Flav().Kfcode()==211) return 1;
     return 0;
   };
+
   inline bool Is_Charged_Kaon::operator() (const Particle * p) const {
     if ( p && p->Flav().Kfcode()==321) return 1;
     return 0;
   };
+
   inline bool Is_Proton_Antiproton::operator() (const Particle * p) const {
     if ( p && p->Flav().Kfcode()==2212) return 1;
+    return 0;
+  };
+
+
+
+  inline bool Is_There::operator() (const Particle * p) const {
+    if ( p ) return 1;
     return 0;
   };
 
