@@ -252,8 +252,8 @@ void Herwig_Interface::Error(const int error)
 {
   ++s_errors;
   if (s_errors>s_maxerrors) {
-    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,std::string("Herwig calls HWWARN(")+
-			    ATOOLS::ToString(error)+std::string(")"),"Herwig_Interface","Error"));
+    THROW(critical_error,"Herwig calls HWWARN("+
+	  ATOOLS::ToString(error)+")");
   }
   else {
     ATOOLS::msg.Error()<<"Herwig_Interface::Error("<<error<<") "<<ATOOLS::om::red

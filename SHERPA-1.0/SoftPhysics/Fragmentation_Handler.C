@@ -29,8 +29,7 @@ Fragmentation_Handler::Fragmentation_Handler(std::string _dir,std::string _file)
   else if (m_fragmentationmodel==std::string("Off")) {
     return;
   }
-  throw(ATOOLS::Exception(ATOOLS::ex::critical_error,"Fragmentation model not implemented.",
-			  "Fragmentation_Handler","Fragmentation_Handler"));
+  THROW(critical_error,"Fragmentation model not implemented.");
 }
    
 Fragmentation_Handler::~Fragmentation_Handler() 

@@ -31,8 +31,7 @@ int SimpleXS_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob *blob)
   if (blob==NULL) return false;
   if ((blob->NInP()!=2) || (blob->NOutP()!=2)) {
     ATOOLS::msg.Error()<<*blob;
-    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"Cannot handle blobs with more than 4 legs.",
-			    "SimpleXS_Apacic_Interface","DefineInitialConditions"));
+    THROW(fatal_error,"Cannot handle blobs with more than 4 legs.");
   }
   for (size_t i=0;i<(size_t)blob->NInP();++i) {
     p_flavours[i]=blob->InParticle(i)->Flav();

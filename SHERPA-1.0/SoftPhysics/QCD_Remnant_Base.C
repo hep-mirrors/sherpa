@@ -24,9 +24,7 @@ QCD_Remnant_Base::QCD_Remnant_Base(PDF::ISR_Handler *isrhandler,
 {
   m_scale=4.0;
   if (isrhandler==NULL) {
-    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
-			    "QCD remnant needs ISR Handler.",
-			    "QCD_Remnant_Base","QCD_Remnant_Base"));
+    THROW(fatal_error,"QCD remnant needs ISR Handler.");
   }
   p_pdfbase=isrhandler->PDF(m_beam)->GetBasicPDF();
   m_dupdf=isrhandler->KMROn()>0;

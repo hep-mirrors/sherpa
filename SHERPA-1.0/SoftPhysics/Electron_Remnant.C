@@ -9,9 +9,7 @@ Electron_Remnant::Electron_Remnant(PDF::ISR_Handler *isrhandler,
   Remnant_Base(rtp::electron,_m_beam)
 {
   if (isrhandler==NULL) {
-    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
-			    "Cannot proceed without ISR and Beam Handler.",
-			    "Electron_Remnant","Electron_Remnant"));
+    THROW(fatal_error,"Cannot proceed without ISR and Beam Handler.");
   }
   p_pdfbase=isrhandler->PDF(m_beam);
 }
@@ -20,9 +18,7 @@ bool Electron_Remnant::FillBlob(ATOOLS::Blob *beamblob,
 				ATOOLS::Particle_List *particlelist)
 {
   if (p_partner==NULL) {
-    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,
-			    "Partner Remnant not set.",
-			    "Electron_Remnant","FillBlob"));
+    THROW(critical_error,"Partner Remnant not set.");
   }
   p_beamblob=beamblob;
   m_pbeam=beamblob->InParticle(0)->Momentum();

@@ -11,9 +11,7 @@ bool Photon_Remnant::FillBlob(ATOOLS::Blob *beamblob,
 			      ATOOLS::Particle_List *particlelist)
 {
   if (p_partner==NULL) {
-    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,
-			    "Partner Remnant not set.",
-			    "Photon_Remnant","FillBlob"));
+    THROW(critical_error,"Partner Remnant not set.");
   }
   for (size_t j=0;j<m_extracted.size();++j) {
     beamblob->AddToOutParticles(m_extracted[j]);

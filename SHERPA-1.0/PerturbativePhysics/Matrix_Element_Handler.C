@@ -85,9 +85,8 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
   if (_me) p_amegic = _me->GetAmegic(); 
   m_mode      = InitializeAmegic(_model,NULL,NULL);
   if (m_mode>0) return;
-  throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,std::string("Failed to initialize ")
-			  +m_signalgenerator+std::string(" for hard interactions."),
-			  "Matrix_Element_Handler","Matrix_Element_Handler"));
+  THROW(normal_exit,"Failed to initialize "+m_signalgenerator
+	+" for hard interactions.");
 }
 
 Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _file,
@@ -118,9 +117,8 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
   p_moms  = new Vec4D[MaxJets()+2];
   if (m_apply_hhmf) SetupHHMF();
   if (m_mode>0) return;
-  throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,std::string("Failed to initialize ")
-			  +m_signalgenerator+std::string(" for hard interactions."),
-			  "Matrix_Element_Handler","Matrix_Element_Handler"));
+  THROW(normal_exit,"Failed to initialize "+m_signalgenerator
+	+" for hard interactions.");
 }
 
 Matrix_Element_Handler::~Matrix_Element_Handler()

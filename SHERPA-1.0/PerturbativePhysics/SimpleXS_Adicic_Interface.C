@@ -22,8 +22,7 @@ int SimpleXS_Adicic_Interface::DefineInitialConditions(Blob * blob)
 {
   if (blob==NULL) return false;
   if ((blob->NInP()!=2) || (blob->NOutP()!=2)) {
-    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"Cannot handle blobs with more than 4 legs.",
-			    "SimpleXS_Adicic_Interface","DefineInitialConditions"));
+    THROW(fatal_error,"Cannot handle blobs with more than 4 legs.");
   }
   return InitColours(blob);
 }

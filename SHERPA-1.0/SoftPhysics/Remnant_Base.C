@@ -4,7 +4,7 @@
 #include "Exception.H"
 #include "Momentum_Shifter.H"
 #include "MI_Handler.H"
-#include "Scaling.H"
+#include "MyStrStream.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Remnant_Base
@@ -18,6 +18,8 @@
 using namespace SHERPA;
 
 std::set<ATOOLS::Particle*> SHERPA::Remnant_Base::s_last[2];
+
+INSTANTIATE_OBJECT(Remnant_Base);
 
 std::ostream &SHERPA::operator<<(std::ostream &ostr,const rtp::code code)
 {
@@ -65,15 +67,11 @@ bool Remnant_Base::AdjustKinematics()
   PROFILE_HERE;
   if (!m_active) return true;
   if (p_partner==NULL) {
-    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,
-			    "No partner remnant found.",
-			    "Remnant_Base","AdjustKinematics"));
+    THROW(critical_error,"No partner remnant found.");
   }
   p_last[1]=p_partner->Last();
   if ((p_last[0]==NULL)||(p_last[1]==NULL)) {
-    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,
-			    "Not enough remnants to ensure four momentum conservation.",
-			    "Remnant_Base","AdjustKinematics"));
+    THROW(critical_error,"Not enough remnants to ensure four momentum conservation.");
   }
   m_erem=ATOOLS::rpa.gen.Ecms();
   m_pzrem=0.0;

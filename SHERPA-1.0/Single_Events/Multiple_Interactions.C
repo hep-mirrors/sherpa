@@ -25,8 +25,7 @@ Multiple_Interactions::Multiple_Interactions(MI_Handler *mihandler):
   p_remnants[0]=GET_OBJECT(Remnant_Base,"Remnant_Base_0");
   p_remnants[1]=GET_OBJECT(Remnant_Base,"Remnant_Base_1");
   if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
-    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"No beam remnant handler found.",
-			    "Multiple_Interactions","Multiple_Interactions"));
+    THROW(fatal_error,"No beam remnant handler found.");
   }
 }
 

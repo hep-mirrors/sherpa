@@ -21,9 +21,7 @@ Hadron_Remnant::Hadron_Remnant(PDF::ISR_Handler *isrhandler,
   QCD_Remnant_Base(isrhandler,beam,rtp::hadron)
 {
   if (isrhandler==NULL) {
-    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
-			    "Hadron remnant needs ISR Handler.",
-			    "Hadron_Remnant","Hadron_Remnant"));
+    THROW(fatal_error,"Hadron remnant needs ISR Handler.");
   }
   GetConstituents(isrhandler->Flav(m_beam));
   double mz=ATOOLS::Flavour(ATOOLS::kf::Z).Mass();
@@ -64,9 +62,7 @@ GetConstituents(const ATOOLS::Flavour flav)
 		  <<m_constit[0]<<","<<m_constit[1]<<"]."<<std::endl;
     return m_constit;
   }
-  throw(ATOOLS::Exception(ATOOLS::ex::critical_error,
-			  "Cannot determine constituents.",
-			  "Hadron_Remnant","GetConstituents"));
+  THROW(critical_error,"Cannot determine constituents.");
   return m_constit;
 }
 

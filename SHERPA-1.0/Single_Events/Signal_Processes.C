@@ -25,9 +25,7 @@ Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler,
   p_remnants[0]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_0");
   p_remnants[1]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_1");
   if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
-    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,
-			    "No beam remnant handler found.",
-			    "Signal_Processes","Signal_Processes"));
+    THROW(critical_error,"No beam remnant handler found.");
   }
 }
 

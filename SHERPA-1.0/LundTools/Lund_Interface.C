@@ -9,7 +9,7 @@
 #include "Message.H"
 #include "Exception.H"
 #include "Running_AlphaS.H"
-#include "Scaling.H"
+#include "MyStrStream.H"
 #include <list>
 
 using namespace SHERPA;
@@ -473,8 +473,6 @@ bool Lund_Interface::StringFragmentation(ATOOLS::Blob *blob,ATOOLS::Blob_List *b
   pyhepc(1);
   pydat1.mstu[70-1]=2;
   pydat1.mstu[72-1]=hepevt.nhep;
-  int dummy=2;
-  //pylist(dummy);
   if (ATOOLS::msg.LevelIsDebugging()) {
     ATOOLS::msg.Out()<<std::endl<<std::endl;
   }
@@ -588,8 +586,8 @@ void Lund_Interface::Error(const int error)
 {
   ++s_errors;
   if (s_errors>s_maxerrors) {
-    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,std::string("Pythia calls PYERRM(")+
-			    ATOOLS::ToString(error)+std::string(")"),"Lund_Interface","Error"));
+    THROW(critical_error,"Pythia calls PYERRM("+
+	  ATOOLS::ToString(error)+")");
   }
   else {
     ATOOLS::msg.Error()<<"Lund_Interface::Error("<<error<<") "<<ATOOLS::om::red

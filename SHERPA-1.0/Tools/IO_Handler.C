@@ -244,9 +244,7 @@ bool IO_Handler::InputFromFormat(ATOOLS::Blob_List *const blobs)
   case iotype::Sherpa: return SherpaInput(blobs); 
 #ifdef CLHEP_SUPPORT
   case iotype::HepMC: 
-    throw(ATOOLS::Exception(ATOOLS::ex::not_implemented,
-			    "Reading input from HepMC is not yet possible.",
-			    "IO_Handler","InputFromFormat"));
+    THROW(not_implemented,"Reading input from HepMC is not yet possible.");
 #endif
   case iotype::HepEvt: return p_hepevt->HepEvt2Sherpa(blobs); 
   default:
