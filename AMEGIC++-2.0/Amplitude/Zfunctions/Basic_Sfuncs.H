@@ -125,6 +125,7 @@ namespace AMEGIC {
     double Norm(int,int);//N
 
     inline int  GetNmomenta() { return nmom; }
+    inline int  MomlistSize() { return Momlist.size(); }
     inline int  Sign(int i)   { return b[ATOOLS::iabs(i)]; }
     inline ATOOLS::Flavour GetFlavour(int i)   { return fl[ATOOLS::iabs(i)]; }
     inline ATOOLS::Vec4D  Momentum(int i)     { return Momlist[i].mom; }
