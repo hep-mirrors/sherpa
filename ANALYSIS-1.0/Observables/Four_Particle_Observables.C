@@ -24,9 +24,9 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
   }
   else if (parameters.size()<8) return NULL;
   double min=0.0, max=1.0;
-  size_t bins=100, scale=0;
+  size_t bins=100;
   std::vector<ATOOLS::Flavour> f(4);
-  std::string list="Analysed";
+  std::string list="Analysed", scale="Lin";
   for (size_t i=0;i<parameters.size();++i) {
     if (parameters[i].size()<2) continue;
     for (short unsigned int j=0;j<4;++j) {
@@ -39,10 +39,10 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
     if (parameters[i][0]=="MIN") min=ATOOLS::ToType<double>(parameters[i][1]);
     else if (parameters[i][0]=="MAX") max=ATOOLS::ToType<double>(parameters[i][1]);
     else if (parameters[i][0]=="BINS") bins=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="SCALE") scale=ATOOLS::ToType<int>(parameters[i][1]);
+    else if (parameters[i][0]=="SCALE") scale=parameters[i][1];
     else if (parameters[i][0]=="LIST") list=parameters[i][1];
   }
-  return new Class(f,scale,min,max,bins,list);
+  return new Class(f,(scale=="Log")*10,min,max,bins,list);
 }									
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\

@@ -1,6 +1,8 @@
 #ifndef HT_H
 #define HT_H
 
+#include "Primitive_Observable_Base.H"
+
 namespace ANALYSIS {
 
   class HT: public Primitive_Observable_Base {  
