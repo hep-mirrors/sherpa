@@ -11,7 +11,7 @@ namespace SHERPA {
   class Multiple_Interactions: public Event_Phase_Handler {
   private:
 
-    double m_ecms, m_pperpmax, m_ecmsmax, m_xmax[2];
+    double m_ecms, m_ptmax, m_lastptmax, m_ecmsmax, m_xmax[2];
 
     MI_Handler   *p_mihandler;
     Remnant_Base *p_remnants[2];
@@ -20,7 +20,7 @@ namespace SHERPA {
 
     std::set<ATOOLS::Blob*> m_deleted;
 
-    bool m_vetoed;
+    bool m_vetoed, m_diced;
 
     bool CheckBlobList(ATOOLS::Blob_List *const bloblist);
     bool VetoHardProcess(ATOOLS::Blob *const blob);
