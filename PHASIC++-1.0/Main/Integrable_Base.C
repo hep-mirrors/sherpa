@@ -299,6 +299,11 @@ double Integrable_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
       if (pt2i<pt2) pt2 = pt2i;
     }
     break;
+  case 4  :
+    pt2=1.0;
+    for (size_t i=m_nin;i<m_nin+m_nout;i++) pt2*=momenta[i].PPerp2();
+    pt2=pow(pt2,1.0/m_nout);
+    break;
   case 21 :
     if (m_nin+m_nout==4) {
       double t = (momenta[0]-momenta[2]).Abs2();
@@ -407,11 +412,32 @@ double Integrable_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
   }
   case 103: {// g*g*->gg scheme
     const ATOOLS::Vec4D *p=momenta;
-    m_scale[PHASIC::stp::kp21]=p[2].PPerp2();
-    m_scale[PHASIC::stp::kp22]=p[3].PPerp2();
+    ATOOLS::Vec4D p2=p[2], p3=p[3];
+    if (p2.PMinus()/p2.PPlus()>p3.PMinus()/p3.PPlus())
+      std::swap<ATOOLS::Vec4D>(p2,p3);
+    double S2=p[4]*p[5];
+    double a1=p[5]*p[0]/S2;
+    double b2=p[4]*p[1]/S2;
+    m_scale[stp::kp21]=a1*a1*2.*S2*p2.PMinus()/p2.PPlus();
+    m_scale[stp::kp22]=b2*b2*2.*S2*p3.PPlus()/p3.PMinus();
     // qcd scale
-    pt2=m_scale[PHASIC::stp::as]=
-      ATOOLS::sqr((p[2].PPerp()+p[3].PPerp())/2.0);
+    pt2=m_scale[stp::as]=
+      ATOOLS::sqr(sqrt(m_scale[stp::kp21])+sqrt(m_scale[stp::kp22]))/4.0;
+    break;
+  }
+  case 104: {// g*g*->gg scheme
+    const ATOOLS::Vec4D *p=momenta;
+    ATOOLS::Vec4D p2=p[2], p3=p[3];
+    if (p2.PMinus()/p2.PPlus()>p3.PMinus()/p3.PPlus())
+      std::swap<ATOOLS::Vec4D>(p2,p3);
+    double S2=p[4]*p[5];
+    double a1=p[5]*p[0]/S2;
+    double b2=p[4]*p[1]/S2;
+    m_scale[stp::kp21]=a1*a1*2.*S2*p2.PMinus()/p2.PPlus();
+    m_scale[stp::kp22]=b2*b2*2.*S2*p3.PPlus()/p3.PMinus();
+    // qcd scale
+    pt2=m_scale[stp::as]=
+      sqrt(m_scale[stp::kp21]*m_scale[stp::kp22]);
     break;
   }
   default :
