@@ -9,7 +9,7 @@ Object::String_Object_Map Object::s_objects;
 Object::Object()
 {
   s_objects.insert(std::pair<const std::string,
-		   Object *const>(ATOOLS::ToString(this),this));
+		   Object *const>(ToString(this),this));
 }
 
 Object::Object(const Object &reference)
@@ -20,29 +20,25 @@ Object::Object(const Object &reference)
   }
   size_t i=0;
   for (;i<std::string::npos;++i) {
-    if (s_objects.find(oit->first+std::string(" ")+
-		       ATOOLS::ToString(i))!=s_objects.end()) break;
+    if (s_objects.find(oit->first+" "+ToString(i))!=s_objects.end()) break;
   }
   s_objects.insert(std::pair<const std::string,
-		   Object *const>(oit->first+std::string(" ")+
-				  ATOOLS::ToString(i),this));
+		   Object *const>(oit->first+" "+ToString(i),this));
 }
 
 Object::Object(const std::string name)
 {
   if (s_objects.find(name)==s_objects.end()) {
     s_objects.insert(std::pair<const std::string,
-		     Object *const>(ATOOLS::ToString(this),this));
+		     Object *const>(name,this));
     return;
   }
   size_t i=0;
   for (;i<std::string::npos;++i) {
-    if (s_objects.find(name+std::string(" ")+
-		       ATOOLS::ToString(i))!=s_objects.end()) break;
+    if (s_objects.find(name+" "+ToString(i))!=s_objects.end()) break;
   }
   s_objects.insert(std::pair<const std::string,
-		   Object *const>(name+std::string(" ")+
-				  ATOOLS::ToString(i),this));
+		   Object *const>(name+" "+ToString(i),this));
 }
 
 Object::~Object()
