@@ -1,86 +1,72 @@
-#ifndef Axis_C
-#define Axis_C
-
 #include "Axis.H"
+
 #include "Data_Reader.H"
 
-namespace ATOOLS {
+using namespace ATOOLS;
 
-  template <class Value_Type>
-  Axis<Value_Type>::Axis():
-    m_variable(ATOOLS::Variable()),
-    m_scalingmode(Reference),
-    p_scaling(new ATOOLS::Id_Scaling<ValueType>()) {}
+template <class ValueType>
+Axis<ValueType>::Axis():
+  m_scalingmode(Reference),
+  p_variable(Variable_Getter::GetObject("","")),
+  p_scaling(Scaling_Getter::GetObject("","")) {}
 
-  template <class Value_Type>
-  Axis<Value_Type>::~Axis()
-  { delete p_scaling; }
-	      
-  template <class Value_Type>
-  Value_Type Axis<Value_Type>::DisplayedValue(ValueType realvalue,ScalingModeID tempsmode)
-  {
-    if (tempsmode==Unknown) tempsmode=m_scalingmode;
-    switch (tempsmode) {
-    case Reference:
-      return (*p_scaling)(realvalue);
-      break;
+template <class ValueType>
+Axis<ValueType>::Axis(const Axis &ref):
+  m_scalingmode(ref.m_scalingmode),
+  p_variable(Variable_Getter::GetObject(ref.p_variable->Name(),
+					ref.p_variable->Name())),
+  p_scaling(Scaling_Getter::GetObject(ref.p_scaling->Name(),
+				      ref.p_scaling->Name())) {}
+
+template <class ValueType>
+Axis<ValueType>::~Axis() {}
+
+template <class ValueType>
+ValueType Axis<ValueType>::DisplayedValue(const Value_Type &realvalue,
+					  ScalingModeID tempsmode)
+{
+  if (tempsmode==Unknown) tempsmode=m_scalingmode;
+  switch (tempsmode) {
+  case Reference:
+    return (*p_scaling)(realvalue);
+    break;
+  case Unknown:
+  case Identical:
+    return realvalue;
+    break;
+  }
+  return (Value_Type)0.0;
+}
+
+template <class ValueType>
+ValueType Axis<ValueType>::RealValue(const Value_Type &displayedvalue,
+				     ScalingModeID tempsmode)
+{
+  if (tempsmode==Unknown) tempsmode=m_scalingmode;
+  switch (tempsmode) {
+  case Reference:
+    return (*p_scaling)[displayedvalue];
+    break;
     case Unknown:
-    case Identical:
-      return realvalue;
-      break;
-    }
-    return (ValueType)0.0;
+  case Identical:
+    return displayedvalue;
+    break;
   }
-  
-  template <class Value_Type>
-  Value_Type Axis<Value_Type>::RealValue(ValueType displayedvalue,ScalingModeID tempsmode)
-  {
-    if (tempsmode==Unknown) tempsmode=m_scalingmode;
-    switch (tempsmode) {
-    case Reference:
-      return (*p_scaling)[displayedvalue];
-      break;
-    case Unknown:
-    case Identical:
-      return displayedvalue;
-      break;
-    }
-    return (ValueType)0.0;
-  }
+  return (Value_Type)0.0;
+}
 
-  template <class Value_Type>
-  void Axis<Value_Type>::SetScaling(std::string scalename)
-  {
-    ValueType argx;
-    ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader();
-    reader->SetString(scalename);
-    if (scalename==std::string("Id")) {
-      SetScaling(new ATOOLS::Id_Scaling<ValueType>()); 
-    }
-    if (scalename==std::string("Log")) {
-      SetScaling(new ATOOLS::Log_Scaling<ValueType>()); 
-    }
-    else if (scalename==std::string("Exp")) {
-      SetScaling(new ATOOLS::Exp_Scaling<ValueType>()); 
-    }
-    else if (scalename==std::string("Sqr")) {
-      SetScaling(new ATOOLS::Sqr_Scaling<ValueType>()); 
-    }
-    else if (scalename==std::string("Sqrt")) {
-      SetScaling(new ATOOLS::Sqrt_Scaling<ValueType>()); 
-    }
-    else if (reader->ReadFromString(argx,"Log_B_")) { 
-      SetScaling(new ATOOLS::Log_B_Scaling<ValueType>(argx)); 
-    }
-    else if (reader->ReadFromString(argx,"B_To_X_")) { 
-      SetScaling(new ATOOLS::B_To_X_Scaling<ValueType>(argx)); 
-    }
-    else if (reader->ReadFromString(argx,"X_To_P_")) { 
-      SetScaling(new ATOOLS::X_To_P_Scaling<ValueType>(argx)); 
-    }
-    delete reader;
-  }
+template <class ValueType>
+void Axis<ValueType>::SetScaling(const std::string &scalename)
+{
+  p_scaling=Scaling_Getter::GetObject(scalename,scalename);
+  if (p_scaling==NULL) p_scaling=Scaling_Getter::GetObject("","");
+}
 
-} // end of namespace ATOOLS
+template <class ValueType>
+void Axis<ValueType>::SetVariable(const std::string &variablename)
+{
+  p_variable=Variable_Getter::GetObject(variablename,variablename);
+  if (p_variable==NULL) p_variable=Variable_Getter::GetObject("","");
+}
 
-#endif
+template class Axis<double>;

@@ -1,87 +1,54 @@
 #ifndef Variable_H
 #define Variable_H
 
+#include "Getter_Function.H"
 #include <string>
 
 namespace ATOOLS {
 
-  class Variable {
+  class Vec3D;
+  class Vec4D;
+
+  template <class ValueType>
+  class Variable_Base {
   public:
-    
-    enum TypeID { fourvec_r = 100,
-		  r_t       = 110,
-		  r_x       = 111,
-		  r_y       = 112,
-		  r_z       = 113,
-		  vec_r     = 120,
-		  r_perp    = 130,
-		  r_abs     = 140,
-		  r_abs_sqr = 150,
-		  fourvec_p = 200,
-		  p_t       = 210,
-		  p_x       = 211,
-		  p_y       = 212,
-		  p_z       = 213,
-		  vec_p     = 220,
-		  p_perp    = 230,
-		  p_abs     = 240,
-		  p_abs_sqr = 250,
-		  E         = 300,
-		  E_z       = 313,
-		  vec_E     = 320,
-		  E_perp    = 330,
-		  m         = 400,
-		  m_perp    = 430,
-		  s         = 500,
-		  s_prime   = 510,
-		  s_i       = 520,
-		  s_ij      = 530,
-		  y         = 600,
-		  eta       = 610,
-		  angle     = 700,
-		  theta     = 710,
-		  theta_i   = 711,
-		  theta_ij  = 712,
-		  phi       = 720,
-		  phi_ij    = 722,
-		  Unknown   = 999 };
 
-  private:
-    
-    TypeID m_type;
+    typedef ValueType Value_Type;
 
+  protected:
+    
     std::string m_name;
 
+    int m_selectorid;
+
   public:
 
-    //constructors
-    Variable();
-    Variable(const TypeID _m_type);
-    Variable(const unsigned int _m_type);
-    Variable(const std::string _m_type);
+    // constructors
+    Variable_Base(const std::string &name);
 
-    // setters
-    void SetType(const TypeID _m_type);
-    void SetName(const std::string _m_name);
-
-    // getters
-    const TypeID      Type() const;
-    const std::string Name() const;
+    // destructor
+    virtual ~Variable_Base();
 
     // member functions
-    unsigned int TypeToInt(const TypeID type);
-    std::string  TypeToString(const TypeID type);
+    virtual Value_Type Value(const Vec3D *vectors);
+    virtual Value_Type Value(const Vec4D *vectors);
 
-    TypeID IntToType(const unsigned int type);
-    TypeID StringToType(const std::string type);
+    static void ShowVariables(const int mode=1);
 
-    static int    TypeToSelectorID(const TypeID type);
-    static TypeID SelectorIDToType(const int selectorid);
+    // inline functions
+    inline const std::string &Name() const { return m_name; }
+
+    inline int SelectorID() const { return m_selectorid; }
+
+    inline Value_Type operator()(const Vec3D *vectors) 
+    { return Value(vectors); }
+    inline Value_Type operator()(const Vec4D *vectors) 
+    { return Value(vectors); }
 
   };
 
-} // end of namespace ATOOLS
+  typedef Getter_Function<Variable_Base<double>,std::string> Variable_Getter;
 
-// #include "Variable.IC"
+} // end of namespace ATOOLS
 
 #endif

@@ -1,137 +1,39 @@
 #ifndef Scaling_H
 #define Scaling_H
 
+#include "Getter_Function.H"
 #include <vector>
-#include "MyStrStream.H"
-#include <functional>
 
 namespace ATOOLS {
 
-  template <class Value_Type>
-  class Scaling_Base: public std::unary_function<Value_Type,Value_Type> {
+  template <class ValueType>
+  class Scaling_Base {
   public:
 
-    typedef Value_Type ValueType;
+    typedef ValueType Value_Type;
+
+  protected:
+
+    std::string m_name;
 
   public:
 
-    // getter
-    virtual const std::string Name() const;
+    // destructor
+    virtual ~Scaling_Base();
 
     // member functions
-    virtual Value_Type operator()(Value_Type x);
-    virtual Value_Type operator[](Value_Type y);
+    virtual Value_Type operator()(const Value_Type &x);
+    virtual Value_Type operator[](const Value_Type &y);
 
-  };
+    static void ShowScalings(const int mode=1);
+
+    // inline functions
+    inline const std::string Name() const { return m_name; }
+
+  };// end of class Scaling_Base
   
-  template <class Value_Type>
-  class Id_Scaling: public Scaling_Base<Value_Type> {
-  public:
+  typedef Getter_Function<Scaling_Base<double>,std::string> Scaling_Getter;
 
-    const std::string Name() const;
-
-    Value_Type operator()(Value_Type x);
-    Value_Type operator[](Value_Type y);
-    
-  };  
-
-  template <class Value_Type>
-  class Log_Scaling: public Scaling_Base<Value_Type> {
-  public:
-
-    const std::string Name() const;
-
-    Value_Type operator()(Value_Type x);
-    Value_Type operator[](Value_Type y);
-    
-  };  
-
-  template <class Value_Type>
-  class Exp_Scaling: public Scaling_Base<Value_Type> {
-  public:
-
-    const std::string Name() const;
-
-    Value_Type operator()(Value_Type x);
-    Value_Type operator[](Value_Type y);
-    
-  };  
-
-  template <class Value_Type>
-  class Sqr_Scaling: public Scaling_Base<Value_Type> {
-  public:
-
-    const std::string Name() const;
-
-    Value_Type operator()(Value_Type x);
-    Value_Type operator[](Value_Type y);
-    
-  };  
-
-  template <class Value_Type>
-  class Sqrt_Scaling: public Scaling_Base<Value_Type> {
-  public:
-
-    const std::string Name() const;
-
-    Value_Type operator()(Value_Type x);
-    Value_Type operator[](Value_Type y);
-    
-  };  
-
-  template <class Value_Type>
-  class Log_B_Scaling: public Scaling_Base<Value_Type> {
-  private:
-    
-    Value_Type b, logb;
-
-  public:
-
-    Log_B_Scaling(Value_Type _b);
-
-    const std::string Name() const;
-
-    Value_Type operator()(Value_Type x);
-    Value_Type operator[](Value_Type y);
-    
-  };  
-
-  template <class Value_Type>
-  class B_To_X_Scaling: public Scaling_Base<Value_Type> {
-  private:
-    
-    Value_Type b;
-
-  public:
-
-    B_To_X_Scaling(Value_Type _b);
-
-    const std::string Name() const;
-
-    Value_Type operator()(Value_Type x);
-    Value_Type operator[](Value_Type y);
-    
-  };  
-
-  template <class Value_Type>
-  class X_To_P_Scaling: public Scaling_Base<Value_Type> {
-  private:
-    
-    Value_Type p;
-
-  public:
-
-    X_To_P_Scaling(Value_Type _p);
-
-    const std::string Name() const;
-
-    Value_Type operator()(Value_Type x);
-    Value_Type operator[](Value_Type y);
-    
-  };  
-
-} // end of namespace ATOOLS
-
-#include "Scaling.C"
+}// end of namespace ATOOLS
 
 #endif
