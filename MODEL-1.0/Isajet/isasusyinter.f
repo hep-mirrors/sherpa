@@ -168,13 +168,12 @@ C
         STOP99
       ENDIF
 C
-
       LOUT     = 1
       NSTEP    = 1000
       XNRIN(2) = 1.E20
-
+      
 C     OPEN(1,FILE=FNAME,STATUS='NEW',FORM='FORMATTED')
-
+      
       IMODEL   = IIMODEL
 
       IF (IMODEL.EQ.4) THEN
