@@ -19,7 +19,9 @@ using namespace std;
 Simple_XS::Simple_XS(const std::string &path,const std::string &file,
 			 MODEL::Model_Base *const model):
   XS_Group(0,0,NULL),
-  m_path(path), m_file(file) 
+  m_path(path), 
+  m_file(file),
+  m_maxjet(2)
 {
   m_atoms=1;
   p_dataread = new Data_Read(m_path+m_file);
