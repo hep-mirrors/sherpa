@@ -48,6 +48,8 @@ MI_Base::MI_Base(std::string _m_name,TypeID _m_type,unsigned int _m_nparameter,
   m_stop = new double[m_nparameter];
   m_last = new double[m_nparameter];
   p_blob = new ATOOLS::Blob();
+  p_blob->AddData("MI_Weight",new ATOOLS::Blob_Data<double>(1.0));
+  p_blob->AddData("MI_Trials",new ATOOLS::Blob_Data<size_t>(1));
   s_bases[m_name]=this;
 }
 

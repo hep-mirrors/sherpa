@@ -825,12 +825,10 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
     return false;
   }
   blob->DeleteOwnedParticles();
-  blob->ClearAllData();
   if (m_selected<(unsigned int)p_processes->Size()) {
 #ifdef DEBUG__Simple_Chain
     // std::cout<<"Simple_Chain::FillBlob(..): Generating one event."<<std::endl;
 #endif
-    dynamic_cast<EXTRAXS::XS_Group*>((*p_processes)[m_selected])->SetAtoms(true);
     (*p_processes)[m_selected]->SelectOne();
     double weight=1.;
     size_t trials=1;
@@ -846,8 +844,8 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
       weight=data->Get<PHASIC::Weight_Info>().weight/(*p_processes)[m_selected]->Max();
       trials=data->Get<PHASIC::Weight_Info>().ntrial;
     }
-    p_blob->AddData("MI_Weight",new ATOOLS::Blob_Data<double>(weight));
-    p_blob->AddData("MI_Trials",new ATOOLS::Blob_Data<size_t>(trials));
+    (*p_blob)["MI_Weight"]->Set(weight);
+    (*p_blob)["MI_Trials"]->Set(trials);
 #ifdef DEBUG__Simple_Chain
     // std::cout<<"   Completed one event."<<std::endl;
 #endif
