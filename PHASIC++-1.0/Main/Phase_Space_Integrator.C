@@ -357,14 +357,17 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
 
       if (ncontrib/iter0==5) iter=iter1;
       bool allowbreak = true;
+      if (p_psh->UsePI()>0 && p_psh->PI()==NULL) {
+	if (ncontrib/iter0==5) {
+	  p_psh->CreatePI();
+	  if (p_psh->PI()==NULL) THROW(fatal_error,"Cannot initialize PI.");
+	  p_psh->PI()->Initialize();
+	}
+	allowbreak=false;
+      }
       if (fin_opt==1 && (endopt<2||ncontrib<maxopt)) allowbreak = false;
       if (p_psh->PI()!=NULL && ncontrib/iter<10) allowbreak = false;
       if (error<maxerror && allowbreak) break;
-      if (ncontrib/iter0==5 && p_psh->UsePI()>0 && p_psh->PI()==NULL) {
-	p_psh->CreatePI();
-	if (p_psh->PI()==NULL) THROW(fatal_error,"Cannot initialize PI.");
-	p_psh->PI()->Initialize();
-      }
 #endif
 
     }
