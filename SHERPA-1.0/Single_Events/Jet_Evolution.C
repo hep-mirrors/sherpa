@@ -17,8 +17,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Jet_Evolution::Jet_Evolution(MEHandlersMap *_mehandlers,Shower_Handler *_showerhandler) :
-  p_showerhandler(_showerhandler),
-  m_initializedhardest(-1)
+  p_showerhandler(_showerhandler)
 {
   m_name      = std::string("Jet_Evolution:")+p_showerhandler->ShowerGenerator();
   m_type      = eph::Perturbative;
@@ -75,14 +74,6 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 		     <<"   Abort the run."<<endl;
 	  abort();
 	}	
-	if (m_initializedhardest==-1) {
-	  m_initializedhardest = piIter->second->DefineInitialConditions(blob);
-	  piIter->second->FillBlobs(_bloblist);
-	  return true;
-	}
-	else {
-	  DefineInitialConditions(blob,_bloblist);
-	}
 	found   = AttachShowers(blob,_bloblist,piIter->second);
 	weight *= piIter->second->Weight();
       }  
@@ -119,21 +110,10 @@ int Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
 				  Perturbative_Interface * interface) 
 {
   bool decayblob   = (_blob->NInP()==1);
-  int shower, stat = m_initializedhardest;
-  if (_blob->Type()!=ATOOLS::btp::Signal_Process) {
-    stat = interface->DefineInitialConditions(_blob);
-  }
-  if (stat==3) {
-    _blob->SetStatus(-1);
-    p_showerhandler->CleanUp();
-    return 1;
-  }
+  int shower, stat = interface->DefineInitialConditions(_blob);
   if (stat==1) {
-    if (m_initializedhardest==-1) {
-      interface->FillBlobs(_bloblist);
-      DefineInitialConditions(_blob,_bloblist);
-    }
-    else m_initializedhardest=-1;
+    interface->FillBlobs(_bloblist);
+    //DefineInitialConditions(_blob,_bloblist);
     if (!decayblob) shower = interface->PerformShowers();
                else shower = interface->PerformDecayShowers();  
     if (shower==1) {

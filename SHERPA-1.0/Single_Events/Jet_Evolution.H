@@ -15,8 +15,6 @@ namespace SHERPA {
     Shower_Handler         * p_showerhandler;
     PertInterfaceMap         m_interfaces;
 
-    int m_initializedhardest;
-
     int AttachShowers(ATOOLS::Blob *,ATOOLS::Blob_List *,Perturbative_Interface *);
     
     void ResetInterfaces();
