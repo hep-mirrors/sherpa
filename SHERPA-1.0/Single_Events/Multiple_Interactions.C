@@ -41,8 +41,6 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
 	if (p_mihandler->GenerateHardProcess(myblob)) {
 	  CompleteBlob(myblob);
 	  myblob->SetStatus(1);
-	  // weight=p_mihandler->Weight();
-	  weight=1.0;
 	  ATOOLS::Blob *blob = new ATOOLS::Blob();
 	  blob->SetType(btp::Hard_Collision);
 	  blob->SetStatus(2);
@@ -62,8 +60,6 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
 	p_mihandler->SameHardProcess(myblob); 
 	CompleteBlob(myblob);
 	myblob->SetStatus(1);
-	// weight=p_mihandler->Weight();
-	weight=1.0;
 	hit=true;
 	break;
       }
