@@ -335,7 +335,7 @@ bool Off_Shell_gg_gg::Trigger(const ATOOLS::Vec4D *const momenta)
     }
     p_selector->SetNOut(m_nvector-m_nin);
     p_selector->SetNTot(m_nvector);
-    result=p_selector->Trigger(temp);
+    result=PHASIC::Integrable_Base::Trigger(temp);
     p_selector->SetNTot(m_nin+m_nout);
     p_selector->SetNOut(m_nout);
   }
