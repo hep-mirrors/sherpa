@@ -5,7 +5,6 @@
   \brief Declares the class Amisic_Histogram
 */
 
-
 #include "Axis.H"
 
 namespace AMISIC {
@@ -51,6 +50,8 @@ namespace AMISIC {
     Argument_Matrix  m_data;
     Axis_Type       *p_xaxis, *p_yaxis;
 
+    mutable Argument_Vector *p_integral;
+
     bool m_finished;
 
     std::string m_name;
@@ -75,6 +76,9 @@ namespace AMISIC {
 		    const Argument_Type xmax=0.0,
 		    const size_t nbins=0);
 
+    bool Import(const Argument_Matrix &ref,const bool overflow=false);
+    bool Export(Argument_Matrix &ref,const bool overflow=false);
+
     size_t Add(Argument_Type value,
 	       const Argument_Type weight,const size_t trials=1);
     size_t Set(Argument_Type value,
@@ -92,7 +96,13 @@ namespace AMISIC {
     bool WriteOut(const std::string &filename,const std::string &m_datatag,
 		  const std::vector<std::string> &comments);
 
+    Amisic_Histogram *const GetIntegral(const bool reverse=false) const;
+    Amisic_Histogram *const GetDerivative() const;
+
     const Argument_Type operator()(const Argument_Type x) const;
+    const Argument_Type operator[](const Argument_Type x) const;
+
+    const Argument_Type DiceX() const;
 
     Argument_Type BinXMin(const size_t i); 
     Argument_Type BinXMax(const size_t i); 

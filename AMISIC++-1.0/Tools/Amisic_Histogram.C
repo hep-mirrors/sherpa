@@ -6,6 +6,7 @@
 #include "Data_Reader.H"
 #include "Message.H"
 #include "MyStrStream.H"
+#include "Random.H"
 
 using namespace AMISIC;
   
@@ -47,11 +48,13 @@ Amisic_Histogram<ArgumentType>::Amisic_Histogram(const size_t extradim):
   m_data(Argument_Matrix(hci::size+m_extradim)),
   p_xaxis(new Axis_Type()),
   p_yaxis(new Axis_Type()),
+  p_integral(NULL),
   m_finished(false) {}
 
 template <class ArgumentType>
 Amisic_Histogram<ArgumentType>::~Amisic_Histogram() 
 {
+  if (p_integral!=NULL) delete p_integral;
   delete p_yaxis;
   delete p_xaxis;
 }
@@ -73,7 +76,7 @@ bool Amisic_Histogram<ArgumentType>::Initialize(const Argument_Type xmin,
 						const Argument_Type xmax,
 						const size_t nbins)
 {
-  if (nbins<1 || nbins>10000) return false;
+  if (nbins<2 || nbins>10000) return false;
   m_nbins=nbins;
   if (xmin!=xmax) {
     m_xmin=xmin;
@@ -87,8 +90,62 @@ bool Amisic_Histogram<ArgumentType>::Initialize(const Argument_Type xmin,
     m_data[hci::x_value][i]=(*p_xaxis)[(*p_xaxis)(m_xmin)+(int(i)-1)*delta];
     m_data[hci::maximum][i]=-std::numeric_limits<Argument_Type>::max();
   }
-  m_data[hci::x_value][0]=-std::numeric_limits<Argument_Type>::max();
-  m_data[hci::x_value].back()=std::numeric_limits<Argument_Type>::max();
+  return true;
+}
+
+template <class ArgumentType>
+bool Amisic_Histogram<ArgumentType>::Import(const Argument_Matrix &ref,
+					     const bool overflow)
+{
+  if (ref.size()<2 || ref[0].size()<2 || ref[0].size() > 10000) return false;
+  if (overflow) {
+    m_nbins=ref[0].size()-2;
+    m_xmin=ref[0][1];
+    m_xmax=ref[0].back();
+  }
+  else {
+    m_nbins=ref[0].size();
+    m_xmin=ref[0][0];
+    m_xmax=2.0*ref[0].back()-ref[0][m_nbins-2];
+  }
+  bool noverflow=!overflow;
+  for (size_t j=0;j<m_data.size();++j) m_data[j].resize(m_nbins+2);
+  for (size_t i=0;i<m_data[hci::x_value].size();++i) {
+    for (size_t j=0;j<m_data.size();++j) m_data[j][i]=0.0;
+    m_data[hci::maximum][i]=-std::numeric_limits<Argument_Type>::max();
+    if (overflow^(i>0 && i<=ref[0].size())) {
+      m_data[hci::x_value][i]=ref[0][i-noverflow];
+      m_data[hci::y_value][i]=(*p_yaxis)(ref[1][i-noverflow]);
+      if (ref.size()>2) 
+	m_data[hci::y_square][i]=(*p_yaxis)(ref[2][i-noverflow]);
+      if (ref.size()>3) 
+	m_data[hci::maximum][i]=(*p_yaxis)(ref[3][i-noverflow]);
+      if (ref.size()>4) m_data[hci::entries][i]=ref[4][i-noverflow];
+    }
+  }
+  if (noverflow) {
+    m_data[hci::x_value][0]=
+      2.0*m_data[hci::x_value][1]-m_data[hci::x_value][2];
+    m_data[hci::x_value].back()=
+      2.0*m_data[hci::x_value][m_nbins]-m_data[hci::x_value][m_nbins-1];
+  }
+  return true;
+}
+
+template <class ArgumentType>
+bool Amisic_Histogram<ArgumentType>::Export(Argument_Matrix &ref,
+					     const bool overflow)
+{
+  if (ref.size()<2) return false;
+  bool noverflow=!overflow;
+  for (size_t j=0;j<ref.size();++j) ref[j].resize(m_nbins+2*overflow);
+  for (size_t i=0;i<ref[0].size();++i) {
+    ref[0][i]=m_data[hci::x_value][i+noverflow];
+    ref[1][i]=(*p_yaxis)[m_data[hci::y_value][i+noverflow]];
+    if (ref.size()>2) ref[2][i]=(*p_yaxis)[m_data[hci::y_square][i+noverflow]];
+    if (ref.size()>3) ref[3][i]=(*p_yaxis)[m_data[hci::maximum][i+noverflow]];
+    if (ref.size()>4) ref[4][i]=m_data[hci::entries][i+noverflow];
+  }
   return true;
 }
 
@@ -153,8 +210,7 @@ size_t Amisic_Histogram<ArgumentType>::Set(Argument_Type value,
   return i;
 }
   
-template <class ArgumentType>
-const ArgumentType 
+template <class ArgumentType> const ArgumentType 
 Amisic_Histogram<ArgumentType>::operator()(const Argument_Type x) const
 {
   size_t l=FindX(x);
@@ -167,12 +223,71 @@ Amisic_Histogram<ArgumentType>::operator()(const Argument_Type x) const
   return (*p_yaxis)[yl+ta*((*p_xaxis)(x)-xl)];
 }
 
+template <class ArgumentType> const ArgumentType 
+Amisic_Histogram<ArgumentType>::operator[](const Argument_Type y) const
+{
+  size_t l=0, r=m_data[hci::x_value].size()-1, i=(l+r)/2;
+  bool inc=(*p_yaxis)[m_data[hci::y_value][l]]<
+    (*p_yaxis)[m_data[hci::y_value][i]];
+  double yi=m_data[hci::y_value][i], yc=(*p_yaxis)(y);
+  while (r-l>1) {
+    if (inc)
+      if (yc<yi) r=i;
+      else l=i;
+    else 
+      if (yc>yi) r=i;
+      else l=i;
+    i=(l+r)/2;
+    yi=m_data[hci::y_value][i];
+  }
+  if (l==0) ++l;
+  else if (l+1==m_data[hci::x_value].size()-1) --l;
+  double yl=m_data[hci::y_value][l];
+  double ta=m_data[hci::y_value][l+1]-yl;
+  double xl=(*p_xaxis)(m_data[hci::x_value][l]);
+  ta/=(*p_xaxis)(m_data[hci::x_value][l+1])-xl;
+  return (*p_xaxis)[xl+(yc-yl)/ta];
+}
+
+template <class ArgumentType>
+const ArgumentType Amisic_Histogram<ArgumentType>::DiceX() const
+{
+  if (p_integral==NULL) {
+    p_integral = new Argument_Vector(m_nbins,0.0);
+    double sum=0.0;
+    for (size_t i=0;i<m_data[hci::x_value].size();++i) {
+      double width=i<(m_data[hci::x_value].size()-1)?
+	m_data[hci::x_value][i+1]-m_data[hci::x_value][i]:
+	m_data[hci::x_value][i]-m_data[hci::x_value][i-1];
+      (*p_integral)[i]=sum+=(*p_yaxis)[m_data[hci::y_value][i]]*width;
+    }    
+  }
+  double y=ATOOLS::ran.Get()*(*p_integral)[m_data[hci::x_value].size()-1];
+  size_t l=0, r=m_data[hci::x_value].size()-1, i=(l+r)/2;
+  double yi=(*p_integral)[i];
+  while (r-l>1) {
+    if (y<yi) r=i;
+    else l=i;
+    i=(l+r)/2;
+    yi=(*p_integral)[i];
+  }
+  if (l==0) ++l;
+  else if (l+1==m_data[hci::x_value].size()-1) --l;
+  double yl=(*p_integral)[l];
+  double ta=(*p_integral)[l+1]-yl;
+  double xl=(*p_xaxis)(m_data[hci::x_value][l]);
+  ta/=(*p_xaxis)(m_data[hci::x_value][l+1])-xl;
+  return (*p_xaxis)[xl+(y-yl)/ta];
+}
+
 template <class ArgumentType>
 void Amisic_Histogram<ArgumentType>::Finish()
 {
   if (m_finished) return;
   for (size_t i=0;i<m_data[hci::x_value].size();++i) {
-    double binwidth=m_data[hci::x_value][i+1]-m_data[hci::x_value][i];
+    double binwidth=i<(m_data[hci::x_value].size()-1)?
+      m_data[hci::x_value][i+1]-m_data[hci::x_value][i]:
+      m_data[hci::x_value][i]-m_data[hci::x_value][i-1];
     m_data[hci::y_value][i]=(*p_yaxis)[m_data[hci::y_value][i]];
     m_data[hci::y_square][i]=(*p_yaxis)[m_data[hci::y_square][i]];
     m_data[hci::maximum][i]=(*p_yaxis)[m_data[hci::maximum][i]];
@@ -190,11 +305,64 @@ template <class ArgumentType>
 ArgumentType Amisic_Histogram<ArgumentType>::Norm() const
 {
   Argument_Type integral=0.0;
-  for (size_t i=1;i<m_data[hci::x_value].size()-1;++i) {
-    double width=m_data[hci::x_value][i+1]-m_data[hci::x_value][i];
+  for (size_t i=0;i<m_data[hci::x_value].size();++i) {
+    double width=i<(m_data[hci::x_value].size()-1)?
+      m_data[hci::x_value][i+1]-m_data[hci::x_value][i]:
+      m_data[hci::x_value][i]-m_data[hci::x_value][i-1];
     integral+=(*p_yaxis)[m_data[hci::y_value][i]]*width;
   }    
   return integral;
+}
+
+template <class ArgumentType> Amisic_Histogram<ArgumentType> *const
+Amisic_Histogram<ArgumentType>::GetIntegral(const bool reverse) const
+{
+  Amisic_Histogram<ArgumentType> *const integral = 
+    new Amisic_Histogram<ArgumentType>();
+  integral->p_xaxis->SetVariable(p_xaxis->Variable()->Name());
+  integral->p_xaxis->SetScaling(p_xaxis->Scaling()->Name());
+  integral->p_yaxis->SetVariable(p_yaxis->Variable()->Name());
+  integral->p_yaxis->SetScaling(p_yaxis->Scaling()->Name());
+  integral->Initialize(m_xmin,m_xmax,m_nbins);
+  double sum=0.0;
+  if (!reverse)
+    for (size_t i=0;i<m_data[hci::x_value].size();++i) {
+      double width=i<(m_data[hci::x_value].size()-1)?
+	m_data[hci::x_value][i+1]-m_data[hci::x_value][i]:
+	m_data[hci::x_value][i]-m_data[hci::x_value][i-1];
+      double mean=m_data[hci::x_value][i]+width/2.0;
+      integral->Set(mean,sum+=(*p_yaxis)[m_data[hci::y_value][i]]*width);
+    }    
+  else
+    for (size_t i=m_data[hci::x_value].size();i>0;--i) {
+      double width=i<m_data[hci::x_value].size()?
+	m_data[hci::x_value][i]-m_data[hci::x_value][i-1]:
+	m_data[hci::x_value][i-1]-m_data[hci::x_value][i-2];
+      double mean=m_data[hci::x_value][i-1]+width/2.0;
+      integral->Set(mean,sum+=(*p_yaxis)[m_data[hci::y_value][i-1]]*width);
+    }    
+  integral->SetFinished(true);
+  return integral;
+}
+
+template <class ArgumentType> Amisic_Histogram<ArgumentType> *const
+Amisic_Histogram<ArgumentType>::GetDerivative() const
+{
+  Amisic_Histogram<ArgumentType> *const derivative = 
+    new Amisic_Histogram<ArgumentType>();
+  derivative->p_xaxis->SetVariable(p_xaxis->Variable()->Name());
+  derivative->p_xaxis->SetScaling(p_xaxis->Scaling()->Name());
+  derivative->p_yaxis->SetVariable(p_yaxis->Variable()->Name());
+  derivative->p_yaxis->SetScaling(p_yaxis->Scaling()->Name());
+  derivative->Initialize(m_xmin,m_xmax,m_nbins);
+  for (size_t i=1;i<m_data[hci::x_value].size()-1;++i) {
+    double width=m_data[hci::x_value][i]-m_data[hci::x_value][i-1];
+    double mean=m_data[hci::x_value][i]+width/2.0;
+    derivative->Set(mean,((*p_yaxis)[m_data[hci::y_value][i]]-
+			  (*p_yaxis)[m_data[hci::y_value][i-1]])/width);
+  }    
+  derivative->SetFinished(true);
+  return derivative;
 }
 
 template <class ArgumentType>
@@ -202,8 +370,14 @@ void Amisic_Histogram<ArgumentType>::Scale(const Argument_Type scale)
 {
   for (size_t i=0;i<m_data[hci::y_value].size();++i) {
     m_data[hci::y_value][i]=(*p_yaxis)[m_data[hci::y_value][i]];
+    m_data[hci::y_square][i]=(*p_yaxis)[m_data[hci::y_square][i]];
+    m_data[hci::maximum][i]=(*p_yaxis)[m_data[hci::maximum][i]];
     m_data[hci::y_value][i]*=scale;
+    m_data[hci::y_square][i]*=scale;
+    m_data[hci::maximum][i]*=scale;
     m_data[hci::y_value][i]=(*p_yaxis)(m_data[hci::y_value][i]);
+    m_data[hci::y_square][i]=(*p_yaxis)(m_data[hci::y_square][i]);
+    m_data[hci::maximum][i]=(*p_yaxis)(m_data[hci::maximum][i]);
   }    
 }
 
