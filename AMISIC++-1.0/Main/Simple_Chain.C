@@ -700,7 +700,7 @@ void Simple_Chain::CalculateSigmaND()
   double xsel=0.0511*xstot*xstot/(4*(b+pow(s,eps))-4.2);
   double xssd=0.0336*X*sqrt(X)*JAX;
   double xsdd=0.0084*X*JXX;
-  SetNorm(xstot-xsel-xssd-xsdd);
+  SetNorm(xstot-xsel-2.0*xssd-xsdd);
 }
 
 bool Simple_Chain::CalculateTotal()
