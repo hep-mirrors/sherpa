@@ -192,7 +192,7 @@ double Phase_Space_Handler::Differential(Integrable_Base * process) {
 
   if (!Check4Momentum(p)) {
     msg.Events()<<"Phase_Space_Handler Check4Momentum(p) failed"<<endl;
-    for (int i=0;i<nin+nout;++i) msg.Events()<<i<<":"<<p[i]<<endl;
+    for (int i=0;i<nin+nout;++i) msg.Events()<<i<<":"<<p[i]<<" ("<<p[i].Abs2()<<")"<<endl;
     return 0.;
   }
 
