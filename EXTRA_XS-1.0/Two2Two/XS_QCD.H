@@ -24,7 +24,6 @@ namespace EXTRAXS {
 
   };
 
-  template <sgq::code mode>
   class XS_q1q2_q1q2 : public Single_XS {
   private:
 
@@ -48,7 +47,6 @@ namespace EXTRAXS {
 
   };
 
-  template <sgq::code mode>
   class XS_q1qbar1_q2qbar2 : public Single_XS {
   private:
 
@@ -66,7 +64,6 @@ namespace EXTRAXS {
 
   };
 
-  template <sgq::code mode>
   class XS_q1q1_q1q1 : public Single_XS {
   private:
 
@@ -84,7 +81,6 @@ namespace EXTRAXS {
 
   };
 
-  template <sgq::code mode>
   class XS_q1qbar1_q1qbar1 : public Single_XS {
   private:
 
