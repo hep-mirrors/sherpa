@@ -10,7 +10,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
     if (parameters[0].size()<4) return NULL;
-    std::string list=parameters[0].size()>4?parameters[0][4]:"Analysed";
+    std::string list=parameters[0].size()>4?parameters[0][4]:"EEShapes";
     return new Class(10*(int)(parameters[0][3]=="Log"),
 		     ATOOLS::ToType<double>(parameters[0][0]),
 		     ATOOLS::ToType<double>(parameters[0][1]),

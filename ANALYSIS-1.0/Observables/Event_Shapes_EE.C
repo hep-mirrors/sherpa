@@ -1,7 +1,59 @@
 #include "Event_Shapes_EE.H"
-#include "Primitive_Analysis.H"
 
 using namespace ANALYSIS;
+
+#include "MyStrStream.H"
+#include "Run_Parameter.H"
+#include <iomanip>
+
+DECLARE_GETTER(Event_Shapes_EE_Getter,"EEShapes",
+	       Primitive_Observable_Base,String_Matrix);
+
+void Event_Shapes_EE_Getter::PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"{\n"
+     <<std::setw(width+7)<<" "<<"InList  list\n"
+     <<std::setw(width+7)<<" "<<"OutList list\n"
+     <<std::setw(width+7)<<" "<<"Qual    qualifier\n"
+     <<std::setw(width+4)<<" "<<"}";
+}
+
+Primitive_Observable_Base *const 
+Event_Shapes_EE_Getter::operator()(const String_Matrix &parameters) const
+{
+  std::string inlist="FinalState", outlist="EEShapes";
+  ATOOLS::Particle_Qualifier_Base *qualifier=NULL;
+  for (size_t i=0;i<parameters.size();++i) {
+    const std::vector<std::string> &cur=parameters[i];
+    if (cur[0]=="InList" && cur.size()>1) inlist=cur[1];
+    else if (cur[0]=="OutList" && cur.size()>1) outlist=cur[1];
+    else if (cur[0]=="Qual" && cur.size()>1) {
+      int code=ATOOLS::ToType<int>(cur[1]);
+      if (ATOOLS::rpa.gen.Beam1().IsLepton() && 
+	  ATOOLS::rpa.gen.Beam2().IsLepton()) {
+	switch (code) {
+	case  0: qualifier=new ATOOLS::Is_There(); break; 
+	case  1: qualifier=new ATOOLS::Is_Charged_Hadron(); break;
+	case  2: qualifier=new ATOOLS::Is_Neutral_Hadron(); break;
+	case  3: qualifier=new ATOOLS::Is_Hadron(); break;
+	case  4: qualifier=new ATOOLS::Is_Charged(); break;
+	case  5: qualifier=new ATOOLS::Is_Charged_Pion(); break;
+	case  6: qualifier=new ATOOLS::Is_Charged_Kaon(); break;
+	case  7: qualifier=new ATOOLS::Is_Proton_Antiproton(); break;
+	case  9: qualifier=new ATOOLS::Is_Parton(); break;
+	case 42: qualifier=new ATOOLS::Is_Not_Lepton(); break;
+	case 43: qualifier=new ATOOLS::Is_Not_Neutrino(); break;
+	default: qualifier=new ATOOLS::Is_Charged();
+	}
+      }
+    }
+  }
+  if (!qualifier) qualifier=new ATOOLS::Is_Not_Lepton(); 
+  return new Event_Shapes_EE(inlist,outlist,qualifier);
+}
+
+#include "Primitive_Analysis.H"
+
 using namespace ATOOLS;
 using namespace std;
 
