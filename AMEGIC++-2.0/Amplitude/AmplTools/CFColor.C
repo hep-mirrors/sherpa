@@ -229,6 +229,13 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 	while (m2) {
 	  if (m2->on) {
 	    st.Reset();
+	    CharNum_Map indices;
+	    indices.insert(std::make_pair('~',1)); 
+	    indices.insert(std::make_pair(']',1)); 
+	    indices.insert(std::make_pair('[',1)); 
+	    indices.insert(std::make_pair('+',1)); 
+	    indices.insert(std::make_pair('-',1)); 
+	    indices.insert(std::make_pair('*',1)); 
 	    char c = 'O';
 	    sknot* s1 = st.String2Tree(m1->CFColstring);
 	    sknot* s2 = st.String2Tree(m2->CFColstringC);
@@ -241,7 +248,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 	    string help;
 	    int hit=0;
 	    
-	    //test for pure F products 
+	    //look for pure F products 
 	    for (list<sknot*>::iterator itf=f1_list.begin();itf!=f1_list.end();++itf) {
 	      help = (*itf)->Str();
 	      if (help[0]=='F') fstring_list.push_back(help);
@@ -274,15 +281,18 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 	    }
 	    //evaluate the color structure 
 	    if (hit==0) {
-	      ReplaceF(s1,c);
-	      ReplaceF(s2,c);
-	     
+	      //fill list of used indices
+	      ExtractIndices(s1,indices);
+	      ExtractIndices(s2,indices);
+	      ReplaceF(s1,indices,c);
+	      ReplaceF(s2,indices,c);
+
 	      sknot* m = st.newsk();
 	      m->op = '*';
 	      m->right = s1;
 	      m->left  = s2;
-	          
-	      ReplaceF(m,c);	    
+	      
+	      ReplaceF(m,indices,c);	    
 	      st.Expand(m);
 	      st.Linear(m);
 	      
@@ -325,13 +335,14 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 		
 		if (string_list.size()>0) {
 		  newaddend = BuildTChain(string_list);
+		  
 		  string_list.clear();
 		  factor_list.clear();
 		  
 		  //lookup string key in map 
 		  TF_Iterator tit = t_table.find(newaddend);
 		  if (tit!=t_table.end()) value = total*t_table[newaddend];
-		    else {
+		  else {
 		    st.Sort(*it);
 		    ReplaceT(*it);
 		    st.Expand(*it);
@@ -408,7 +419,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 
   delete [] idid;
 
-
   //make m's on again
   m1 = first;
   while (m1) {   
@@ -432,15 +442,20 @@ string CFColor::BuildTChain(vector<string>  string_list)
 {
   string    key;
   Char_Map  translator;  
+  CharNum_Map  counter;  
   char tmp,ca = 'A';
-  std::vector<string> tmp_list;
+  vector<string> tmp_list;
   
   //generate the traces  
   for(;;) {
     if (tmp_list.size()==0) {
     tmp = string_list[0][2];
     tmp_list.push_back(string_list[0]);
-    if (translator.insert(std::make_pair(tmp,ca)).second) ca++;
+    if (translator.insert(std::make_pair(tmp,ca)).second) {
+      counter.insert(std::make_pair(translator[tmp],0));
+      ca++;
+    }
+    counter[tmp]+=1;
     key+=translator[tmp];
     vector<string>::iterator it = string_list.begin();
     string_list.erase(it);
@@ -449,7 +464,11 @@ string CFColor::BuildTChain(vector<string>  string_list)
       if (tmp_list[tmp_list.size()-1][6]==string_list[i][4]) { 
 	tmp_list.push_back(string_list[i]);
 	tmp = string_list[i][2];
-	if (translator.insert(std::make_pair(tmp,ca)).second) ca++;
+	if (translator.insert(std::make_pair(tmp,ca)).second) {
+	  counter.insert(std::make_pair(translator[tmp],0));
+	  ca++;
+	}
+	counter[tmp]+=1;
 	key+=translator[tmp];
 	vector<string>::iterator it = string_list.begin();
 	string_list.erase(it+=i);
@@ -473,12 +492,12 @@ string CFColor::MapFChain(vector<string> fstring_list)
   string    key;
   Char_Map  translator;  
   char tmp,ca = 'A';
-  std::vector<string> tmp_list;
+  vector<string> tmp_list;
   
   for (size_t i=0;i<fstring_list.size();i++) {
     for (int j=2;j<8;j+=2) {
       tmp = fstring_list[i][j];
-      if (translator.insert(std::make_pair(tmp,ca)).second) ca++;
+      if (translator.insert(make_pair(tmp,ca)).second) ca++;
       key+=translator[tmp];
     }
   }
@@ -595,7 +614,6 @@ void CFColor::ReplaceT(sknot* m)
       }
     }
   }
-
   ReplaceT(m->left);
   ReplaceT(m->right);
 }
@@ -637,8 +655,8 @@ void CFColor::ReplaceD(sknot* m, sknot* start)
     }
   }
   if (m->op=='*') {
-  ReplaceD(m->left,start);
-  ReplaceD(m->right,start);
+    ReplaceD(m->left,start);
+    ReplaceD(m->right,start);
   }
   else {
     ReplaceD(m->left,m->left);
@@ -841,38 +859,34 @@ void CFColor::ReplaceG(sknot* m,sknot* m0)
 	    m = akt;
 	    s2->SetString(string("1"));
 	  }
-
-
-
 	}
       }
     }
   }
-
   ReplaceG(m->left,m0);
   ReplaceG(m->right,m0);
 }
 
-void CFColor::ReplaceF(sknot* m,char& c)
+void CFColor::ReplaceF(sknot* m,CharNum_Map& indices,char& c)
 {
   int hit;
   do {
     do {
       st.Expand(m);st.Linear(m);
       hit = 0;
-      Single_ReplaceFT(m,hit,c);
+      SingleReplaceFT(m,hit,indices,c);
     }
     while (hit>0);
     //any single F ?
     hit = st.Tree2String(m,0).find("F");
     if (hit==-1) break;
     hit = 0;
-    Single_ReplaceF(m,hit,c);	   
+    SingleReplaceF(m,hit,indices,c);	   
   }
   while (hit>0);
 }
 
-void CFColor::Single_ReplaceF(sknot* m,int& hit,char& c)
+void CFColor::SingleReplaceF(sknot* m,int& hit,CharNum_Map& indices, char& c)
 {
   //replace fabc -> T's
   if (m==0) return;
@@ -894,23 +908,11 @@ void CFColor::Single_ReplaceF(sknot* m,int& hit,char& c)
       C[0] = s->Str()[6];
       char ii[2],jj[2],kk[2];
       ii[1] = jj[1] = kk[1] = 0;
-      if (c=='~') c='!';
-      if (c==']' || c=='[' || c=='+' || c=='-') c++;
-      if (c=='*') c+=2;
-      ii[0] = c;
-      if (c=='~') c='!';
+      ii[0] = DeliverIndex(indices,c);
       c++;
-      if (c=='~') c='!';
-      if (c==']' || c=='[' || c=='+' || c=='-') c++;
-      if (c=='*') c+=2;
-      jj[0] = c;
-      if (c=='~') c='!';
+      jj[0] = DeliverIndex(indices,c);
       c++;
-      if (c=='~') c='!';
-      if (c==']' || c=='[' || c=='+' || c=='-') c++;
-      if (c=='*') c+=2;
-      kk[0] = c;
-      if (c=='~') c='!';
+      kk[0] = DeliverIndex(indices,c);
       c++;
       s->op = '*';
       string ss;
@@ -933,14 +935,45 @@ void CFColor::Single_ReplaceF(sknot* m,int& hit,char& c)
       s->right = st.String2Tree(ss);
     }
   }
-  Single_ReplaceF(m->left,hit,c);
-  Single_ReplaceF(m->right,hit,c);  
+  SingleReplaceF(m->left,hit,indices,c);
+  SingleReplaceF(m->right,hit,indices,c);  
 } 
 
-void CFColor::Single_ReplaceFT(sknot* m,int& hit,char& c)
+void CFColor::ExtractIndices(sknot* m,CharNum_Map& indices)
 {
-  if (c=='~') c='!';
-  
+  list<sknot*> addends;
+  st.Addends(m,addends);
+  for (list<sknot*>::iterator ita=addends.begin();ita!=addends.end();++ita) {
+    //loop over factors and extract
+    string argument;
+    list<sknot*> factors;
+    st.Factors(*ita,factors);
+    for (list<sknot*>::iterator itf=factors.begin();itf!=factors.end();++itf) {
+      //fill arguments in map
+      argument = (*itf)->Str();
+      if (argument[0]=='T' || argument[0]=='F') {
+	indices.insert(std::make_pair(argument[2],1)); 
+	indices.insert(std::make_pair(argument[4],1));
+	indices.insert(std::make_pair(argument[6],1));
+      }
+      if (argument[0]=='D' || argument[0]=='G') {
+	indices.insert(std::make_pair(argument[2],1));
+	indices.insert(std::make_pair(argument[4],1));
+      }
+    }
+  }
+}
+
+char CFColor::DeliverIndex(CharNum_Map& indices,char& c) 
+{
+  for(;;) {
+    if (indices.insert(std::make_pair(c,1)).second) return c;
+    else c++;
+  }
+}
+
+void CFColor::SingleReplaceFT(sknot* m,int& hit,CharNum_Map& indices,char& c)
+{
   // change fabc Ta -> T's
   if (m==0) return;
   if (hit>0) return;
@@ -1028,10 +1061,8 @@ void CFColor::Single_ReplaceFT(sknot* m,int& hit,char& c)
 	char t1[2];
 	char t2[2];
 	char cc[2];
-	if (c=='~') c='!';
-	if (c==']' || c=='[' || c=='+' || c=='-') c++;
-	if (c=='*') c+=2;
-	cc[0] = c;
+	cc[0] = DeliverIndex(indices,c);
+	c++;
 	cc[1] = 0;
 	t1[1] = 0;t2[1] = 0;
 	t1[0] = s1->Str()[4];t2[0] = s1->Str()[6];
@@ -1051,10 +1082,9 @@ void CFColor::Single_ReplaceFT(sknot* m,int& hit,char& c)
 	s += string(f1) + string(",") + string(cc) + 
 	  string(",") + string(t2) + string("]");
 	s2->left = st.String2Tree(s);
-	c++;
       }
     }
   }
-  Single_ReplaceFT(m->left,hit,c);
-  Single_ReplaceFT(m->right,hit,c);  
+  SingleReplaceFT(m->left,hit,indices,c);
+  SingleReplaceFT(m->right,hit,indices,c);  
 } 

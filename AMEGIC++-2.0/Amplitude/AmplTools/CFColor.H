@@ -12,6 +12,7 @@ namespace AMEGIC {
   typedef TFprod_Table::iterator          TF_Iterator;
   //!the map of indices
   typedef std::map<char, char>            Char_Map;
+  typedef std::map<char, int>             CharNum_Map;
   
   class CFColor {
     static std::string noname;
@@ -26,16 +27,18 @@ namespace AMEGIC {
     void ReplaceT(sknot*);
     void ReplaceD(sknot*,sknot*);
     void ReplaceG(sknot* m,sknot* m0=0);
-    void ReplaceF(sknot*,char&);
+    void ReplaceF(sknot*,CharNum_Map&,char&);
 
 
     int  SingleReplaceD(sknot *,sknot *,char, char);
-    void Single_ReplaceF(sknot*,int&,char&);
-    void Single_ReplaceFT(sknot*,int&,char&);
+    void SingleReplaceF(sknot*,int&,CharNum_Map&,char&);
+    void SingleReplaceFT(sknot*,int&,CharNum_Map&,char&);
 
     int  Compare(Color_Function*,Color_Function*);
     int  CompareArg(int,int,int,Color_Function*,Color_Function*);
     
+    void ExtractIndices(sknot*,CharNum_Map&);
+    char DeliverIndex(CharNum_Map&,char&);
     std::string BuildTChain(std::vector<std::string>);
     std::string MapFChain(std::vector<std::string>);
     TFprod_Table t_table;
