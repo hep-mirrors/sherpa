@@ -198,7 +198,8 @@ void Event_Handler::CleanUpEvent()
 	       <<" particles / blobs undeleted !"<<std::endl
 	       <<"   Continue and hope for the best."<<std::endl;
   }
-  m_lastparticlecounter=Particle::Counter();
+  if (ATOOLS::rpa.gen.NumberOfDicedEvents()>1)
+    m_lastparticlecounter=Particle::Counter();
   Blob::Reset();
   Particle::Reset();
   Flow::ResetCounter();
