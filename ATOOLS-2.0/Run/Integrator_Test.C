@@ -1,5 +1,4 @@
 #include "Primitive_Integrator.H"
-#include "Run_Parameter.H"
 #include "Exception.H"
 #include "My_Root.H"
 #ifdef ROOT_SUPPORT
@@ -71,7 +70,7 @@ public:
 
 class Camel: public Primitive_Integrand {
 public:
-  double operator()(const std::vector<double> &point) const 
+  double operator()(const std::vector<double> &point)
   {
     const double dx1=0.25, dy1=0.25, w1=1./0.004;
     const double dx2=0.75, dy2=0.75, w2=1./0.004;
@@ -93,7 +92,7 @@ public:
 
 class Line: public Primitive_Integrand {
 public:
-  double operator()(const std::vector<double> &point) const 
+  double operator()(const std::vector<double> &point)
   {
     const double w1=1./0.004, mm=0.01;
     double weight=exp(-w1*sqr(point[1]+point[0]-1.0));
@@ -113,13 +112,13 @@ public:
 
 class Circle: public Primitive_Integrand {
 public:
-  double operator()(const std::vector<double> &point) const 
+  double operator()(const std::vector<double> &point)
   {
-    const double dx1=0.6, dy1=0.6, rr=0.25, w1=1./0.004, ee=3.0;
-    double weight=pow(point[0],ee)*
+    const double dx1=0.4, dy1=0.6, rr=0.25, w1=1./0.004, ee=3.0;
+    double weight=pow(point[1],ee)*
       exp(-w1*dabs(sqr(point[1]-dy1)+
 		   sqr(point[0]-dx1)-sqr(rr)));
-    weight+=pow(1.0-point[0],ee)*
+    weight+=pow(1.0-point[1],ee)*
       exp(-w1*dabs(sqr(point[1]-1.0+dy1)+
 		   sqr(point[0]-1.0+dx1)-sqr(rr)));
 #ifdef ROOT_SUPPORT
@@ -136,7 +135,7 @@ public:
 
 class Fatal: public Primitive_Integrand {
 public:
-  double operator()(const std::vector<double> &point) const 
+  double operator()(const std::vector<double> &point)
   {
     const double cx=0.5, cy=0.5, mm=0.01;
     double weight=1.0;
@@ -158,7 +157,7 @@ public:
 
 class Chess: public Primitive_Integrand {
 public:
-  double operator()(const std::vector<double> &point) const 
+  double operator()(const std::vector<double> &point)
   {
     const double mm=0.01;
     double weight=1.0;
@@ -204,14 +203,13 @@ int main(int argc,char **argv)
   try {
     msg.Init(2,"");
     msg.SetModifiable(true);
-    rpa.gen.SetTimeOut(1000);
     PRINT_INFO("Initialize integrator");
     Primitive_Integrator integrator;
     integrator.SetShuffleMode(1);
     integrator.SetDimension(2);
-    integrator.SetNCells(1000);
+    integrator.SetNCells(4000);
     integrator.SetNOpt(1000);
-    integrator.SetNMax(1000000);
+    integrator.SetNMax(4000000);
     integrator.SetError(5.0e-4);
     // set default mode for
     // variance optimization
