@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/06
+//Version: 2 ADICIC++-0.0/2004/10/28
 
 //Implementation of Recoil_Calculator.H.
 
@@ -42,6 +42,19 @@ const Vec4D Recoil_Calculator::s_zaxis=Vec4D(1.0,0.0,0.0,1.0);
 
 const int&   Recoil_Calculator::InStore=Recoil_Calculator::s_count;
 const Vec4D& Recoil_Calculator::ZAxis=Recoil_Calculator::s_zaxis;
+
+
+//=============================================================================
+
+
+
+Recoil_Calculator::~Recoil_Calculator() {
+  --s_count;
+#ifdef RECOIL_CALCULATOR_OUTPUT
+  cout<<"  ~Recoil_Calculator\n";
+#endif
+}
+
 
 
 //=============================================================================

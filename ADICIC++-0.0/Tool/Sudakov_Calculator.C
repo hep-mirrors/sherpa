@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/26
+//Version: 2 ADICIC++-0.0/2004/10/28
 
 //Implementation of Sudakov_Calculator.H.
 
@@ -160,6 +160,17 @@ const int& Sudakov_Base::InStore=Sudakov_Base::s_count;
 
 
 
+Sudakov_Calculator::~Sudakov_Calculator() {    //Virtual.
+  --s_count;
+#ifdef TEMP_OUTPUT
+  cout<<"~Sudakov_Calculator"<<endl;///////////////////////////////////////////
+#endif
+}
+
+
+
+
+
 void Sudakov_Calculator::ShowParameters() {    //Static.
   cout<<endl;
   cout<<"==========================================="<<endl;
@@ -215,6 +226,35 @@ const bool Sudakov_Calculator::Init(MODEL::Model_Base* pmod) {    //Static.
   GetAlphaSCorr=&RunAlphaSCorr;
   GetNf=&RunNf;
   return true;
+}
+
+
+
+
+
+void Sudakov_Calculator::Which() const {    //Virtual.
+  cout<<"Incomplete Sudakov_Group object!"<<endl;
+}
+
+
+
+//=============================================================================
+
+
+
+Sudakov_Base::~Sudakov_Base() {
+  --s_count;
+#ifdef TEMP_OUTPUT
+  std::cout<<"~Sudakov_Base"<<std::endl;//////////////////////////
+#endif
+}
+
+
+
+
+
+void Sudakov_Base::Which() const {
+  cout<<"Incomplete Sudakov object!"<<endl;
 }
 
 
