@@ -18,6 +18,7 @@ RUNPATH=""
 BINPATH=""
 RESULTS=""
 ANALYSIS=""
+LIBPATH="#"
 SOPTIONS=""
 BASENAME=""
 BATCH="PBS"
@@ -30,6 +31,7 @@ for I in $* ; do
   elif [ "$I" = "-a" ]; then DANALYSIS=TRUE 
   elif [ "$I" = "-e" ]; then DEVENTS=TRUE 
   elif [ "$I" = "-n" ]; then DBASENAME=TRUE 
+  elif [ "$I" = "-l" ]; then DLIBPATH=TRUE 
   elif [ "$I" = "-o" ]; then DSOPTIONS=TRUE 
   elif [ "$I" = "-B" ]; then DBATCH=TRUE 
   elif [ "$I" = "-O" ]; then DBOPTIONS=TRUE 
@@ -45,6 +47,7 @@ for I in $* ; do
     echo "         -a <analysis>  write analysis output to path <path>/<analysis>" && \
     echo "         -e <events>    generate <events> events" && \
     echo "         -n <name>      set basic filename to <name>" && \
+    echo "         -l <libpath>   define library path <libpath>" && \
     echo "         -o <option>    define commandline option <option>" && \
     echo "         -B <system>    select batch system <system>" && \
     echo "         -O <option>    define batch system option <option>" && \
@@ -60,6 +63,7 @@ for I in $* ; do
   elif [ "$DANALYSIS" = "TRUE" ]; then DANALYSIS="" && ANALYSIS=$I
   elif [ "$DEVENTS" = "TRUE" ]; then DEVENTS="" && EVENTS=$I
   elif [ "$DBASENAME" = "TRUE" ]; then DBASENAME="" && BASENAME=$I
+  elif [ "$DLIBPATH" = "TRUE" ]; then DLIBPATH="" && LIBPATH=$I
   elif [ "$DSOPTIONS" = "TRUE" ]; then DSOPTIONS="" && SOPTIONS=$SOPTIONS" "$I
   elif [ "$DBATCH" = "TRUE" ]; then DBATCH="" && BATCH=$I
   elif [ "$DBOPTIONS" = "TRUE" ]; then DBOPTIONS="" && BOPTIONS=$BOPTIONS" "$I
@@ -89,6 +93,11 @@ if ! test -d $RUNPATH ; then
   echo "run: abort"
   exit 2
 fi
+if ! test -d /$LIBPATH ; then 
+  if ! test -d /$RUNPATH ; then LIBPATH=$PWD"/"$RUNPATH
+  else LIBPATH=$RUNPATH
+  fi
+fi
 if [ ! "$BATCH" = "PBS" ] && [ ! "$BATCH" = "SGE" ] ; then 
   echo "run: error: invalid batch system: '$BATCH'"
   echo "run: supported batch systems are: 'PBS' / 'SGE'"
@@ -105,7 +114,11 @@ SETUPPATH=$SETUPPATH"_"$COUNTER
 LOGFILE="run.log"
 FILE=$BASENAME"_"$COUNTER".sh"
 
-cp -r $RUNPATH $SETUPPATH
+mkdir $SETUPPATH
+if test -d /$LIBPATH"/Process" ; then 
+  ln -s $LIBPATH"/Process" $SETUPPATH"/Process"
+fi
+cp -ru $RUNPATH/* $SETUPPATH >> /dev/null 2>&1
 echo "" > $FILE
 if [ "$SUBMIT" = "TRUE" ] ; then 
   if [ "$BATCH" = "SGE" ] ; then
