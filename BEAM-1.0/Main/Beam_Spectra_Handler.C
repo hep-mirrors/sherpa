@@ -240,7 +240,7 @@ bool Beam_Spectra_Handler::MakeBeams(Vec4D * p,double sprime,double y)
     return 1;
   }
   else {
-    if ( (sprime<m_splimits[0]) || (sprime>m_splimits[1]) ) {
+    if ( (sprime<m_splimits[0]) || (sprime>m_splimits[1]) || m_splimits[0]==m_splimits[1] ) {
       return 0;
     }
 
@@ -344,5 +344,10 @@ void  Beam_Spectra_Handler::BoostInLab(Vec4D* p,int n) {
   for (int i=0; i<n; ++i) m_CMSBoost.BoostBack(p[i]);
 }
 
-void   Beam_Spectra_Handler::SetSprimeMin(double _spl)      { m_splimits[0]  = Max(m_splimits[0],_spl); }
+void   Beam_Spectra_Handler::SetSprimeMin(double _spl)      
+{ 
+  m_splimits[0]  = Max(m_splimits[0],_spl);
+  if (m_splimits[0]>m_splimits[1])  m_splimits[0]=m_splimits[1];
+}
+
 void   Beam_Spectra_Handler::SetSprimeMax(double _spl)      { m_splimits[1]  = Min(m_splimits[1],_spl); }
