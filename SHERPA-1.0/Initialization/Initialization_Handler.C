@@ -418,8 +418,7 @@ bool Initialization_Handler::InitializeTheAnalyses()
 	       <<"   Analysis is switched off - continue run."<<std::endl;
     return 1;
   } 
-  Data_Read dr(m_path+"/Run.dat");
-  std::string prefix=dr.GetValue<std::string>("ANALYSIS_OUTPUT");
+  std::string prefix=p_dataread->GetValue<std::string>("ANALYSIS_OUTPUT");
   if (prefix==NotDefined<std::string>()) prefix="";
 
 
@@ -592,7 +591,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 	m_path=value;
 	break;
       case 102:
-	  m_file=value;
+	m_file=value;
 	break;
       case 103:
 	s<<value;
