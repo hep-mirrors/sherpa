@@ -32,6 +32,7 @@ void Amplitude_Manipulator::FixSign(Single_Amplitude* first_amp)
   Point* p;
 
   while (f) { 
+    std::cout<<"================================================="<<std::endl;
     p = f->GetPointlist();
     p[0].prev = 0;
     SetPrev(p);
@@ -62,9 +63,11 @@ void Amplitude_Manipulator::GetPerm(int* perm,Single_Amplitude* f,int& sign)
       Point* pb;
       Point* pe;
       GetFermionLine(pnext,pb,pe);
+      std::cout<<" Initial Fermion Line : "<<pb->fl<<"("<<pb->number<<") -> "<<pe->fl<<"("<<pe->number<<")"<<std::endl; 
       perm[pnumb]   = pb->number;
       perm[pnumb+1] = pe->number;
       SetFermionNumberFlow(pb,pe);
+      std::cout<<" Past Flow Fermion Line : "<<pb->fl<<"("<<pb->number<<") -> "<<pe->fl<<"("<<pe->number<<")"<<std::endl; 
       sign *= SetPropOrientation(pb,pe);
       f->AddSpinorDirection(pb->number,pe->number);
       pnumb+=2;
@@ -237,6 +240,8 @@ int Amplitude_Manipulator::SetPropOrientation(Point* pb,Point* pe)
 void Amplitude_Manipulator::ForwardLineOrientation(Point* p,int& sign)
 {
 
+  std::cout<<"In ForwardLineOrientation "<<p->fl<<"("<<p->number<<") "<<p->m<<std::endl; 
+
   if (p->prev==0) {
     if (b[p->number]==-1) {
       // ----<---O Orientation
@@ -291,12 +296,10 @@ void Amplitude_Manipulator::ForwardLineOrientation(Point* p,int& sign)
     if (p->right->fl.Majorana())  majo++;
 
     if (vect==1 && ferm==2 && majo!=2) {
-      /*
       Complex h = p->cpl[0];
       p->cpl[0] = -p->cpl[1];
       p->cpl[1] = -h;
-      */
-      }    
+    }    
   }
 
   if (minus==-1) {
@@ -321,6 +324,8 @@ void Amplitude_Manipulator::ForwardLineOrientation(Point* p,int& sign)
 
 void Amplitude_Manipulator::BackwardLineOrientation(Point* p,int& sign)
 {  
+  std::cout<<"In BackwardLineOrientation "<<p->fl<<"("<<p->number<<") "<<p->m<<std::endl; 
+
   if (p->left==0) {  
     if (b[p->number]==-1) {
       // ----<---O Orientation
@@ -375,6 +380,7 @@ void Amplitude_Manipulator::BackwardLineOrientation(Point* p,int& sign)
     if ((p->prev)->right->fl.Majorana())  majo++;
 
     if (vect==1 && ferm==2 && majo!=2) {
+      std::cout<<"Change coupling backward !!! "<<std::endl;
       Complex h         = (p->prev)->cpl[0];
       (p->prev)->cpl[0] = -(p->prev)->cpl[1];
       (p->prev)->cpl[1] = -h;
@@ -410,8 +416,12 @@ void Amplitude_Manipulator::BackwardLineOrientation(Point* p,int& sign)
 
 void Amplitude_Manipulator::SetFermionNumberFlow(Point* pb,Point* pe)
 {
+  
+  std::cout<<" Set Fermion Number Flow : "<<pb->fl<<"("<<pb->number<<" "<<b[pb->number]<<") -> "<<pe->fl<<"("<<pe->number<<" "<<b[pe->number]<<")"<<std::endl;   
+  
   int okay = 0;
   if (okay==0 && (b[pb->number]==-1 || (b[pe->number]==-1))) {
+    std::cout<<"Hit !!!! "<<std::endl;
     //Initial Line
     //special cases
     if (b[pb->number]==-1 && b[pe->number]==1 &&
@@ -423,10 +433,13 @@ void Amplitude_Manipulator::SetFermionNumberFlow(Point* pb,Point* pe)
     if (b[pb->number]==-1 && b[pe->number]==-1 &&
 	pe->fl.Majorana() && !pb->fl.IsAnti() && okay==0) okay = 1;    
     //normal cases
+    std::cout<<"Okay is : "<<okay<<std::endl;
     if (b[pb->number]==-1 && pb->fl.IsAnti()  && okay==0) okay = 2;
     if (b[pe->number]==-1 && !pe->fl.IsAnti() && okay==0) okay = 2;
   }
   
+  std::cout<<"Okay is : "<<okay<<std::endl;
+    
   if (okay==0 && b[pb->number]==1 && b[pe->number]==1) {
     if (!pb->fl.IsAnti())            okay = 2;
     if (pe->fl.IsAnti() && okay==0)  okay = 2;
@@ -434,6 +447,8 @@ void Amplitude_Manipulator::SetFermionNumberFlow(Point* pb,Point* pe)
 
   if (pb->fl.Majorana() && pe->fl.Majorana()) okay = 0; 
  
+  std::cout<<"Okay is : "<<okay<<std::endl;
+  
   if (okay==2) {
     Point* h = pb;
     pb       = pe;
@@ -476,7 +491,7 @@ void Amplitude_Manipulator::SetFermionNumberFlow(Point* pb,Point* pe)
   if (pb->fl.Majorana() && pe->fl.Majorana()) fermflag = 2;
   
   if (majoflag) {
-    //ATOOLS::msg.Debugging()<<"Fermion Flow(Majo): "<<pb->number<<" <-> "<<pe->number<<endl;
+    ATOOLS::msg.Debugging()<<"Fermion Flow(Majo): "<<pb->number<<" <-> "<<pe->number<<endl;
     if (!pb->fl.IsAnti() && b[pb->number]==-1) majoflag=1;
     if (pb->fl.IsAnti()  && b[pb->number]==-1) majoflag=-1;
     if (!pb->fl.IsAnti() && b[pb->number]==1)  majoflag=-1;
@@ -494,12 +509,12 @@ void Amplitude_Manipulator::SetFermionNumberFlow(Point* pb,Point* pe)
     else SetBackwardFNFlow(pe,majoflag,0);
   }
   if (fermflag) {
-    //ATOOLS::msg.Debugging()<<"Majorana Flow: "<<pb->number<<" -> "<<pe->number<<endl;
+    ATOOLS::msg.Debugging()<<"Majorana Flow: "<<pb->number<<" -> "<<pe->number<<endl;
     if (pb->prev==0) SetForwardFNFlow(pb,0,fermflag);
     else SetBackwardFNFlow(pb,0,fermflag);
   }
   if (!fermflag && !majoflag) {   
-    //ATOOLS::msg.Debugging()<<"Fermion Flow: "<<pb->number<<" -> "<<pe->number<<endl;
+    ATOOLS::msg.Debugging()<<"Fermion Flow: "<<pb->number<<" -> "<<pe->number<<endl;
     if (pb->prev==0) SetForwardFNFlow(pb,0,0);
     else SetBackwardFNFlow(pb,0,0);
   }
@@ -581,7 +596,7 @@ void Amplitude_Manipulator::SetMajoFlowForward(Point* p,int fermflag)
 void Amplitude_Manipulator::SetBackwardFNFlow(Point* p,int majoflag,int fermflag)
 {  
   //if (p->prev==0) return;  
-
+  
   if (p->fl.Majorana() && majoflag) return;
   if (majoflag==-1) p->m = 1;
   else p->m = -1;
