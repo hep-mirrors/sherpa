@@ -77,9 +77,12 @@ void Shower_Observables::Evaluate(const APHYTOOLS::Blob_List & blobs ,double val
     for (int i=0;i<(*blit)->NOutP();++i) {
       Parton * p = (*blit)->OutParton(i);
 
-      if (!PartonIsInList(p,pl) && ((p->Info()=='F') || 
-	  (p->Info()=='H' && p->Status()!=2 )))
+      if (!PartonIsInList(p,pl) && (*blit)->Type()[0]!='S' && 
+	  ((p->Info()=='F') || (p->Info()=='H' && p->Status()!=2 ))) {
+
+	//	cout<<p<<endl;
 	pl.push_back(p);
+      }
 	//	  (p->Info()=='H' && (*blit)->Type()[0]!='S'))
     }
   }
@@ -259,7 +262,7 @@ Jetrates::Jetrates(int _type,double _xmin,double _xmax,int _nbins,
   type = _type; xmin = _xmin; xmax = _xmax; nbins = _nbins; sel = _sel;
   name  = std::string("jetrate");
   histo = 0;
-  jfind = new APHYTOOLS::Jet_Finder(2.,1);
+  jfind = new APHYTOOLS::Jet_Finder(rpa.gen.Ycut(),1);
 
   int had=0;
   if (rpa.gen.Beam1()==Flavour(kf::p_plus) || rpa.gen.Beam1()==Flavour(kf::p_plus).Bar()) {
@@ -431,8 +434,8 @@ void  Multiplicity::Evaluate(const APHYTOOLS::Blob_List & blobs,double value) {
   for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
     for (int i=0;i<(*blit)->NOutP();++i) {
       Parton * p = (*blit)->OutParton(i);
-      if (!PartonIsInList(p,pl) && ((p->Info()=='F') ||
-				   ((*blit)->Type()[0]!='S' &&  p->Info()=='H')))
+      if (!PartonIsInList(p,pl) && (*blit)->Type()[0]!='S' && 
+	  ((p->Info()=='F') || ((*blit)->Type()[0]!='S' &&  p->Info()=='H')))
 	pl.push_back(p);
     }
   }
@@ -626,7 +629,7 @@ void  PT_Distribution::Evaluate(const APHYTOOLS::Blob_List & blobs,double value)
       Parton * p = (*blit)->OutParton(i);
 //       cout<<" check "<<p<<endl;
       if ((p->Info()=='F') ||  
-	  (p->Info()=='H' && p->Status()!=2 )){
+	  (p->Info()=='H' && p->Status()!=2 ) && (*blit)->Type()[0]!='S' ){
 // 	cout<<" added"<<endl;
 	if (!PartonIsInList(p,pl)) pl.push_back(p);
       }
