@@ -149,7 +149,6 @@ void Process_Base::Reshuffle(int n, Flavour* flav, Pol_Info* plav)
 		  (flav[i].Kfcode()  == flav[j].Kfcode()) )  shuffle = 1;
 	
 	if (shuffle) {
-          //cout<<"------------------    shuffle    ------------------------ "<<endl;
 	  flhelp  = flav[j];
           flav[j] = flav[i];
           flav[i] = flhelp;
@@ -166,11 +165,6 @@ void Process_Base::Reshuffle(int n, Flavour* flav, Pol_Info* plav)
 
 bool Process_Base::CheckExternalFlavours(int _nin,Flavour * _in,
 					 int _nout,Flavour * _out) {
-
-  for (short int i=0;i<_nin;i++) cout<<_in[i]<<" ";
-  cout<<endl;
-  for (short int j=0;j<_nout;j++) cout<<_out[j]<<" ";
-  cout<<endl;
 
   // first : sum over all invariants and compare
   int    cin  = 0, cout  = 0;
