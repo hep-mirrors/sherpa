@@ -53,47 +53,17 @@ namespace ATOOLS {
     ostr<<"Incoming particles :"<<std::endl;
     for (Particle_Vector::const_iterator part = bl.m_inparticles.begin();
 	 part != bl.m_inparticles.end(); ++part) {
-      ostr<<*part<<std::endl;
+      ostr<<**part<<std::endl;
     }
     ostr<<"Outgoing particles :"<<std::endl;
     for (Particle_Vector::const_iterator part = bl.m_outparticles.begin();
 	 part != bl.m_outparticles.end(); ++part) {
-      ostr<<*part<<std::endl;
+      ostr<<**part<<std::endl;
     }
     ostr.setf(flags);
     return ostr;
   }
 
-
-  std::ostream& operator<<( std::ostream& ostr,const  Blob * bl) {
-#ifdef __GNUC__
-#if __GNUC__ > 2
-  std::ios_base::fmtflags flags=ostr.flags();
-#else
-  std::ios::fmtflags flags=ostr.flags();
-#endif
-#else
-  std::ios::fmtflags flags=ostr.flags();
-#endif
-    ostr<<std::setw(4)<<std::setprecision(4);
-    ostr<<"Blob ["<<bl->Status()<<"]( "<<bl->Id()<<", "<<bl->Type()<<", ";
-    if (bl->Beam() != -1) {
-      ostr<<" from Beam "<<bl->Beam()<<", ";
-    }
-    ostr<<bl->NInP()<<" -> "<<bl->NOutP()<<" @ "<<bl->Position()<<std::endl;
-    ostr<<"Incoming particles :"<<std::endl;
-    for (Particle_Vector::const_iterator part = bl->m_inparticles.begin();
-	 part != bl->m_inparticles.end(); ++part) {
-      ostr<<*part<<std::endl;
-    }
-    ostr<<"Outgoing particles :"<<std::endl;
-    for (Particle_Vector::const_iterator part = bl->m_outparticles.begin();
-	 part != bl->m_outparticles.end(); ++part) {
-      ostr<<*part<<std::endl;
-    }
-    ostr.setf(flags);
-    return ostr;
-  }
 }
 
 Blob::Blob(const Vec4D _pos, const int _id) : 

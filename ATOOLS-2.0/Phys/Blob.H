@@ -55,7 +55,6 @@ namespace ATOOLS {
 
   class Blob {
     friend std::ostream& operator<<( std::ostream&, const Blob &);
-    friend std::ostream& operator<<( std::ostream&, const Blob *);
   private:
     Vec4D                   m_position;
     int                     m_id;
