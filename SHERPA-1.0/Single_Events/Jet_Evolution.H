@@ -4,7 +4,6 @@
 #include "Event_Phase_Handler.H"
 #include "Matrix_Element_Handler.H"
 #include "Hard_Decay_Handler.H"
-#include "MI_Handler.H"
 #include "Shower_Handler.H"
 #include "Perturbative_Interface.H"
 
@@ -14,7 +13,7 @@ namespace SHERPA {
   private :
 
     Matrix_Element_Handler * p_mehandler;
-    MI_Handler             * p_mihandler;
+    //    MI_Handler             * p_mihandler;
     Shower_Handler         * p_showerhandler;
     PertInterfaceMap         m_interfaces;
 

@@ -15,8 +15,8 @@ Multiple_Interactions::Multiple_Interactions(MI_Handler *_p_mihandler):
   m_one(true),
   p_mihandler(_p_mihandler)
 {
-  m_name=std::string("Multiple_Interactions : ")+p_mihandler->Name();
-  m_type=std::string("Perturbative");
+  m_name = std::string("Multiple_Interactions:")+p_mihandler->Name();
+  m_type = eph::Perturbative;
 }
 
 Multiple_Interactions::~Multiple_Interactions() {}

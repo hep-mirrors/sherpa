@@ -15,8 +15,8 @@ using namespace std;
 Hard_Decays::Hard_Decays(Hard_Decay_Handler * _dechandler) :
   p_dechandler(_dechandler)
 {
-  m_name      = string("Hard_Decays : ")+p_dechandler->Name();
-  m_type      = string("Perturbative");
+  m_name      = std::string("Hard_Decays:")+p_dechandler->Name();
+  m_type      = eph::Perturbative;
 }
 
 Hard_Decays::~Hard_Decays() 

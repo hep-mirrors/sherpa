@@ -2,11 +2,25 @@
 
 using namespace SHERPA;
 
+std::ostream& SHERPA::operator<<(std::ostream& ostr, const eph::code ephc) {
+  switch (ephc) {
+  case eph::Unspecified:        return ostr<<"Unspecified       ";
+  case eph::Perturbative:       return ostr<<"Perturbative      ";
+  case eph::Hadronization:      return ostr<<"Hadronization     ";
+  case eph::Analysis:           return ostr<<"Analysis          ";
+  case eph::Pert_Analysis:      return ostr<<"Pert_Analysis     ";
+  case eph::Hadr_Analysis:      return ostr<<"Hadr_Analysis     ";
+  case eph::Read_In:            return ostr<<"Read_In           ";
+  case eph::External_MC:        return ostr<<"External_MC       ";
+  default:                      return ostr<<"Unknown           ";
+  }
+}
+
 Event_Phase_Handler::Event_Phase_Handler() :
-  m_type(std::string("Unspecified")), m_name(std::string("No Name")) { }
+  m_type(eph::Unspecified), m_name(std::string("No Name")) { }
 
 Event_Phase_Handler::Event_Phase_Handler(std::string _name) :
-  m_type(std::string("Unspecified")), m_name(_name) { }
+  m_type(eph::Unspecified), m_name(_name) { }
 
 
 Event_Phase_Handler::~Event_Phase_Handler() { }

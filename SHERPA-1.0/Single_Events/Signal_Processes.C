@@ -15,8 +15,8 @@ Signal_Processes::Signal_Processes(Matrix_Element_Handler * _mehandler,
 				   Hard_Decay_Handler * _hdhandler) :
   p_mehandler(_mehandler), p_hdhandler(_hdhandler)
 {
-  m_name      = string("Signal_Processes : ")+p_mehandler->Name();
-  m_type      = string("Perturbative");
+  m_name      = string("Signal_Processes:")+p_mehandler->Name();
+  m_type      = eph::Perturbative;
 }
 
 Signal_Processes::~Signal_Processes()

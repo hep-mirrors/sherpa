@@ -30,7 +30,7 @@ Event_Handler::~Event_Handler()
 
 void Event_Handler::AddEventPhase(Event_Phase_Handler * phase) 
 {
-  std::string type = phase->Type();
+  eph::code type   = phase->Type();
   std::string name = phase->Name();
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) { 
     if ((type==(*pit)->Type()) && (name==(*pit)->Name())) {
@@ -71,11 +71,15 @@ void Event_Handler::EmptyEventPhases()
 
 void Event_Handler::PrintGenericEventStructure() 
 {
+  msg.Events()<<"----------------------------------------------------------"<<std::endl
+	      <<"-- SHERPA generates events with the following structure --"<<std::endl
+	      <<"----------------------------------------------------------"<<std::endl;
   if (!p_phases->empty()) {
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       msg.Events()<<(*pit)->Type()<<" : "<<(*pit)->Name()<<std::endl;
     }
   }
+  msg.Events()<<"---------------------------------------------------------"<<std::endl;
 }
 
 bool Event_Handler::GenerateEvent(int mode) 
@@ -86,76 +90,75 @@ bool Event_Handler::GenerateEvent(int mode)
 
   bool flag     = 1;
   double weight = 1.;
-  if (mode>0) {
-    if (mode==9999) {
-      while (flag) {
-	flag = 0;
-	for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-	  if ((*pit)->Type()==std::string("Read-in") &&
-	      (*pit)->Name()!=std::string("Analysis") ) {
-	    bool result=(*pit)->Treat(&m_blobs,weight);
-	    if (result) flag = 1;
-	  }
+  Blob * hardblob;
+  switch (mode) {
+  case 0:
+    hardblob = new Blob();
+    hardblob->SetType(btp::Signal_Process);
+    hardblob->SetStatus(-1);
+    hardblob->SetId(0);
+    hardblob->SetStatus(2);
+    m_blobs.push_back(hardblob);
+    while (flag) {
+      flag = 0;
+      for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
+	if ((*pit)->Type()==eph::Perturbative) {
+	  bool result=(*pit)->Treat(&m_blobs,weight);
+	  ATOOLS::msg.Tracking()<<ATOOLS::om::blue<<"Event_Handler::GenerateEvent("<<mode<<"): "<<ATOOLS::om::reset
+				<<"Event phase "<<ATOOLS::om::bold<<(*pit)->Name()<<ATOOLS::om::reset
+				<<" yields "<<ATOOLS::om::bold<<result<<ATOOLS::om::reset<<std::endl;
+	  if (result) flag = 1;
 	}
       }
-      
+    }
+    flag=1;
+    while (flag) {
+      flag = 0;
       for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-	if ((*pit)->Type()==std::string("Perturbative") &&
-	    (*pit)->Name()==std::string("Analysis") ) (*pit)->Treat(&m_blobs,weight);
+	if ((*pit)->Type()==eph::Hadronization) {
+	  if ((*pit)->Treat(&m_blobs,weight)) flag = 1;
+	}
       }
+    }
+    for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
+      if ((*pit)->Type()==eph::Analysis) (*pit)->Treat(&m_blobs,weight);
+    }
+    //PrintBlobs();
+    return 1;
+  case 9000:
+    while (flag) {
+      flag = 0;
       for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-	if ((*pit)->Type()==std::string("Hadronization") &&
-	    (*pit)->Name()==std::string("Analysis") ) (*pit)->Treat(&m_blobs,weight);
+	if ((*pit)->Type()==eph::External_MC) {
+	  bool result=(*pit)->Treat(&m_blobs,weight);
+	  if (result) flag = 1;
+	}
       }
-      
-      return 1;
     }
-  } 
-
-
-  Blob * hardblob = new Blob();
-  hardblob->SetType(btp::Signal_Process);
-  hardblob->SetStatus(-1);
-  hardblob->SetId(0);
-  hardblob->SetStatus(2);
-  m_blobs.push_back(hardblob);
-  while (flag) {
-    flag = 0;
+    
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-      if ((*pit)->Type()==std::string("Perturbative") &&
-	  (*pit)->Name()!=std::string("Analysis") ) {
-	bool result=(*pit)->Treat(&m_blobs,weight);
-	ATOOLS::msg.Tracking()<<ATOOLS::om::blue<<"Event_Handler::GenerateEvent("<<mode<<"): "<<ATOOLS::om::reset
-			      <<"Event phase "<<ATOOLS::om::bold<<(*pit)->Name()<<ATOOLS::om::reset
-			      <<" yields "<<ATOOLS::om::bold<<result<<ATOOLS::om::reset<<std::endl;
- 	if (result) flag = 1;
-      }
+      if ((*pit)->Type()==eph::Analysis) (*pit)->Treat(&m_blobs,weight);
     }
-  }
 
-  for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-    if ((*pit)->Type()==std::string("Perturbative") &&
-	(*pit)->Name()==std::string("Analysis") ) (*pit)->Treat(&m_blobs,weight);
-  }
-
-  flag=1;
-  while (flag) {
-    flag = 0;
+    return 1;
+  case 9999:
+    while (flag) {
+      flag = 0;
+      for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
+	if ((*pit)->Type()==eph::Read_In) {
+	  bool result=(*pit)->Treat(&m_blobs,weight);
+	  if (result) flag = 1;
+	}
+      }
+    }      
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-      if ((*pit)->Type()==std::string("Hadronization") &&
-	  (*pit)->Name()!=std::string("Analysis") ) {
-	if ((*pit)->Treat(&m_blobs,weight)) flag = 1;
-      }
+      if ((*pit)->Type()==eph::Analysis) (*pit)->Treat(&m_blobs,weight);
     }
+    return 1;
   }
+  return 0;
+} 
 
-  for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-    if ((*pit)->Type()==std::string("Hadronization") &&
-	(*pit)->Name()==std::string("Analysis") ) (*pit)->Treat(&m_blobs,weight);
-  }
-  PrintBlobs();
-  return 1;
-}
 
 void Event_Handler::CleanUpEvent() 
 {

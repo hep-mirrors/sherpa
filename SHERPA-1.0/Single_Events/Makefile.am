@@ -7,6 +7,7 @@ ANALYSISDIR   =	$(SHERPASYS)/ANALYSIS-1.0
 EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
 AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
 APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
+PYTHIADIR     =	$(SHERPASYS)/PYTHIA-1.0
 SHERPAINCS    =	-I../PerturbativePhysics -I../SoftPhysics \
 		-I../SoftPhysics/Lund -I../LundTools -I../Tools 
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
@@ -17,12 +18,12 @@ BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
 PHASICINCS    =	-I$(SHERPASYS)/PHASIC++-1.0/Main
 MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
 EXTRAXSINCS   =	-I$(EXTRAXSDIR)/Two2Two -I$(EXTRAXSDIR)/Main
-AMISICINCS    =	-I$(SHERPASYS)/AMISIC++-1.0/Main
 AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
 		-I$(AMEGICDIR)/Amplitude/AmplTools -I$(AMEGICDIR)/Amplitude \
 		-I$(AMEGICDIR)/Phasespace -I$(AMEGICDIR)/Model \
 		-I$(AMEGICDIR)/String 
 APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
+PYTHIAINCS    = -I$(PYTHIADIR)/Main -I$(PYTHIADIR)/Tools
 
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS
@@ -33,23 +34,23 @@ libSherpaSingleEvents_la_SOURCES      =	\
 					Event_Handler.C \
 					Event_Phase_Handler.C \
 				   	Signal_Processes.C \
-					Multiple_Interactions.C \
 					Jet_Evolution.C \
 					Hard_Decays.C \
-					Hadronization.C
+					Hadronization.C \
+					MC_Interface.C
 noinst_HEADERS        =	\
 			Event_Handler.H \
 			Event_Phase_Handler.H \
 		 	Signal_Processes.H \
-			Multiple_Interactions.H \
 			Jet_Evolution.H \
 			Hard_Decays.H \
-		 	Hadronization.H
+		 	Hadronization.H \
+			MC_Interface.H
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(SHERPAFLAGS)
-INCLUDES      = $(SHERPAINCS) $(APACICINCS) $(AMEGICINCS) $(AMISICINCS) \
+INCLUDES      = $(SHERPAINCS) $(APACICINCS) $(AMEGICINCS) \
 		$(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) $(PDFINCS) \
-		$(BEAMINCS) $(ATOOLSINCS) $(ANALYSISINCS)
+		$(BEAMINCS) $(ATOOLSINCS) $(ANALYSISINCS) $(PYTHIAINCS)
 
 
 

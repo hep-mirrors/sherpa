@@ -5,9 +5,24 @@
 #include "Blob.H"
 
 namespace SHERPA {
+  struct eph {
+    enum code {
+      Unspecified         =    0,
+      Perturbative        =    1,
+      Hadronization       =    2,
+      Analysis            =   10,
+      Pert_Analysis       =   11,
+      Hadr_Analysis       =   12,
+      Read_In             =   90,
+      External_MC         =   99
+    };
+  };// end of struct eph
+  std::ostream& operator<<(std::ostream&,const eph::code);
+
   class Event_Phase_Handler {
   protected :
-    std::string m_type,m_name;
+    eph::code   m_type;
+    std::string m_name;
   public :
     Event_Phase_Handler();
     Event_Phase_Handler(std::string);
@@ -16,13 +31,13 @@ namespace SHERPA {
     virtual void  CleanUp() = 0;
     virtual void  Finish(const std::string &) = 0;
 
-    const std::string & Type() const;
+    const eph::code & Type() const;
     const std::string & Name() const;
-    void  SetType(const std::string &);
+    void  SetType(const eph::code &);
     void  SetName(const std::string &);
   };
 
-  inline const std::string & Event_Phase_Handler::Type() const {
+  inline const eph::code & Event_Phase_Handler::Type() const {
     return m_type;
   }
 
@@ -30,7 +45,7 @@ namespace SHERPA {
     return m_name;
   }
 
-  inline void Event_Phase_Handler::SetType(const std::string & type) {
+  inline void Event_Phase_Handler::SetType(const eph::code & type) {
     m_type = type;
   }
 

@@ -17,8 +17,8 @@ using namespace std;
 Jet_Evolution::Jet_Evolution(MEHandlersMap *_mehandlers,Shower_Handler *_showerhandler) :
   p_showerhandler(_showerhandler)
 {
-  m_name      = string("Jet_Evolution : ")+p_showerhandler->ShowerGenerator();
-  m_type      = string("Perturbative");
+  m_name      = std::string("Jet_Evolution:")+p_showerhandler->ShowerGenerator();
+  m_type      = eph::Perturbative;
 
   Perturbative_Interface * interface;
   MEHandlerIter            meIter;
