@@ -161,7 +161,7 @@ double Phase_Space_Handler::Differential(Integrable_Base * process) {
     beamchannels->GeneratePoint(sprimeB,yB,bh->On()); 
     if (!(bh->MakeBeams(p,sprimeB,yB))) return 0.;
     if (ih && ih->On()>0) {
-      ih->SetSprimeMax(sprimeB*sqrt(ih->Upper1()*ih->Upper2()));
+      ih->SetSprimeMax(sprimeB*ih->Upper1()*ih->Upper2());
       ih->SetPole(sprimeB);
       isrchannels->SetRange(ih->SprimeRange(),ih->YRange());
     }
