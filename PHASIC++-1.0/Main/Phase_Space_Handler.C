@@ -141,27 +141,22 @@ bool Phase_Space_Handler::InitIncoming(const double _mass)
   } 
   if (m_nin>1) {
     InitCuts();
-    if (p_beamhandler) {
-      if (p_beamhandler->On()>0) {
-	p_beamhandler->SetSprimeMin(ATOOLS::Max(sqr(p_process->ISRThreshold()),
-						p_cuts->Smin()));
-	p_beamchannels->SetRange(p_beamhandler->SprimeRange(),p_beamhandler->YRange());
-	p_beamchannels->GetRange();
-      }
+    if (p_beamhandler->On()>0) {
+      p_beamhandler->SetSprimeMin(ATOOLS::Max(sqr(p_process->ISRThreshold()),p_cuts->Smin()));
+      p_beamchannels->SetRange(p_beamhandler->SprimeRange(),p_beamhandler->YRange());
+      p_beamchannels->GetRange();
     }
-    if (p_isrhandler) {
-      if (p_isrhandler->On()>0) {
- 	p_isrhandler->SetSprimeMin(ATOOLS::Max(ATOOLS::sqr(p_process->ISRThreshold()),
-					       p_cuts->Smin()));
-	msg.Debugging()<<"In Phase_Space_Handler::Integrate : "<<p_beamhandler->On()<<":"
-		       <<p_isrhandler->On()<<endl
-		       <<"   "<<p_isrhandler->SprimeMin()<<" ... "<<p_isrhandler->SprimeMax()
-		       <<" ... "<<p_isrhandler->Pole()<<endl
-		       <<"  for Threshold = "<<p_process->ISRThreshold()<<"  "
-		       <<p_process->Name()<<endl;
-	p_isrchannels->SetRange(p_isrhandler->SprimeRange(),p_isrhandler->YRange());
-	p_isrchannels->GetRange();
-      }
+    if (p_isrhandler->On()>0) {
+      p_isrhandler->SetSprimeMin(ATOOLS::Max(ATOOLS::sqr(p_process->ISRThreshold()),
+					     p_cuts->Smin()));
+      msg.Debugging()<<"In Phase_Space_Handler::Integrate : "<<p_beamhandler->On()<<":"
+		     <<p_isrhandler->On()<<endl
+		     <<"   "<<p_isrhandler->SprimeMin()<<" ... "<<p_isrhandler->SprimeMax()
+		     <<" ... "<<p_isrhandler->Pole()<<endl
+		     <<"  for Threshold = "<<p_process->ISRThreshold()<<"  "
+		     <<p_process->Name()<<endl;
+      p_isrchannels->SetRange(p_isrhandler->SprimeRange(),p_isrhandler->YRange());
+      p_isrchannels->GetRange();
     }
     msg.SetPrecision(6);
   }
@@ -873,7 +868,8 @@ bool Phase_Space_Handler::MakeKMRChannels()
       MakeZChannels(1);
       MakeZChannels(3);
     }
-    else if (p_flavours[0].IsGluon() && p_flavours[1].IsGluon()) {
+    else if ((p_flavours[0].IsGluon() && p_flavours[1].IsGluon()) ||
+	     (p_flavours[0].Strong() && p_flavours[1].Strong())) {
       //MakeZChannels(1);
       MakeZChannels(2);
       MakeZChannels(3);

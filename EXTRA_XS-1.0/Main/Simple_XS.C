@@ -34,11 +34,11 @@ Simple_XS::~Simple_XS()
 }
 
 bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandler,
-				    PDF::ISR_Handler *const isrhandler) 
+				    PDF::ISR_Handler *const isrhandler,const bool construct) 
 {
   p_beamhandler=beamhandler; 
   p_isrhandler=isrhandler;
-  std::string processfile=p_dataread->GetValue<std::string>("PROCESSFILE",
+  std::string processfile=p_dataread->GetValue<std::string>("PROCESS_FILE",
 							    std::string("Processes.dat"));
   std::string selectorfile=p_dataread->GetValue<std::string>("SELECTOR_FILE",
 							       std::string("Selector.dat"));
@@ -46,6 +46,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   int scalescheme=p_dataread->GetValue<int>("SCALE_SCHEME",0);
   int kfactorscheme=p_dataread->GetValue<int>("KFACTOR_SCHEME",0);
   double scalefactor=p_dataread->GetValue<double>("SCALE_FACTOR",1.);
+  if (!construct) return true;
   ifstream from((m_path+processfile).c_str());
   if (!from) {
     msg.Error()<<"Error in Simple_XS::InitializeProcesses : "<<endl
