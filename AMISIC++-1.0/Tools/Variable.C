@@ -5,11 +5,11 @@ using namespace ATOOLS;
 Variable::Variable()
 { SetType(Unknown); }
 
-Variable::Variable(Type _m_type)
+Variable::Variable(TypeID _m_type)
 { SetType(_m_type); }
 
 Variable::Variable(unsigned int _m_type)
-{ SetType((Type)_m_type); }
+{ SetType((TypeID)_m_type); }
 
 Variable::Variable(std::string _m_type)
 { 
@@ -17,7 +17,7 @@ Variable::Variable(std::string _m_type)
   if (_m_type!=std::string("")) SetName(_m_type);
 }
 
-std::string Variable::TypeToString(Type type)
+std::string Variable::TypeToString(TypeID type)
 { 
   switch (type) {
   case fourvec_r : return std::string("r_\\mu");
@@ -61,7 +61,7 @@ std::string Variable::TypeToString(Type type)
   return std::string("");
 }
 
-Variable::Type Variable::StringToType(std::string type)
+Variable::TypeID Variable::StringToType(std::string type)
 { 
   if (type=="r_\\mu")       return fourvec_r;
   if (type=="r_t")          return r_t;
@@ -103,7 +103,7 @@ Variable::Type Variable::StringToType(std::string type)
   return Unknown;
 }
 
-int Variable::TypeToSelectorID(Type type)
+int Variable::TypeToSelectorID(TypeID type)
 { 
   switch (type) {
   case p_perp    : return 12;
@@ -119,7 +119,7 @@ int Variable::TypeToSelectorID(Type type)
   return -1;
 }
 
-Variable::Type Variable::SelectorIDToType(int selectorid)
+Variable::TypeID Variable::SelectorIDToType(int selectorid)
 { 
   switch (selectorid) {
   case 12: return p_perp;

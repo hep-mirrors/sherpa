@@ -1,8 +1,12 @@
 #include "Amisic.H"
 
-#include "Environment.H"
 #include "Particle.H"
 #include "Random.H"
+#include "Channel_Elements.H"
+
+#ifdef DEBUG__Amisic
+const std::string integralfile=std::string("integral.dat");
+#endif
 
 using namespace AMISIC;
 
@@ -23,7 +27,7 @@ template <class Argument_Type,class Result_Type>
 bool Amisic::Grid_Creator<Argument_Type,Result_Type>::InitializeCalculation()
 {
   p_xaxis=p_gridhandler->Grid()->XAxis();
-  m_criterion=p_xaxis->Variable().TypeToSelectorID(p_xaxis->Variable().GetType());
+  m_criterion=ATOOLS::Variable::TypeToSelectorID(p_xaxis->Variable().Type());
   m_initialdata=p_processes->SelectorData()->RemoveData(m_criterion);
   return true;
 }
@@ -51,22 +55,29 @@ Result_Type Amisic::Grid_Creator<Argument_Type,Result_Type>::CalculateSingleValu
 
 Amisic::Amisic():
   m_differential(std::vector<GridFunctionType*>(0)),
-  p_total(new GridFunctionType()),
-  m_cutoff((GridArgumentType)1.6),
+  p_total(NULL),
+  m_start((GridArgumentType)0.0),
+  m_stop((GridArgumentType)1.6),
   m_inputdirectory(std::string("./")),
   m_inputfile(std::string("MI.dat")),
   m_environmentfile(std::string("Run.dat")),
-  m_xsfile(std::string("dummyxs.dat")),
-  m_outputdirectory(std::string("./Grid")) {}
+  m_xsfile(std::string("XS.dat")),
+  m_outputdirectory(std::string("./Grid")),
+  p_environment(NULL),
+  p_processes(NULL),
+  p_fsrinterface(NULL) {}
 
 Amisic::~Amisic()
 {
-  ClearVector();
-  if (p_total!=NULL) delete p_total;
+  CleanUp();
 }
 
-void Amisic::ClearVector() 
+void Amisic::CleanUp() 
 {
+  if (p_fsrinterface!=NULL) delete p_fsrinterface;
+  if (p_processes!=NULL) delete p_processes;
+  if (p_environment!=NULL) delete p_environment;
+  if (p_total!=NULL) delete p_total;
   while (m_blobs.size()>0) {
     while (m_blobs.begin()->size()>0) {
       delete *m_blobs.begin()->begin();
@@ -86,22 +97,14 @@ bool Amisic::HaveBlob(ATOOLS::Blob *blob)
 {
   for (std::vector<Blob_List>::iterator blit=m_blobs.begin();blit!=m_blobs.end();++blit) {
     for (Blob_Iterator bit=blit->begin();bit!=blit->end();++bit) {
-      if (((*(*bit)->InParticle(0)==*blob->InParticle(0))&&
-	   (*(*bit)->InParticle(1)==*blob->InParticle(1))&&
-	   (*(*bit)->OutParticle(0)==*blob->OutParticle(0))&&
-	   (*(*bit)->OutParticle(1)==*blob->OutParticle(1)))||
-	  ((*(*bit)->InParticle(1)==*blob->InParticle(0))&&
-	   (*(*bit)->InParticle(0)==*blob->InParticle(1))&&
-	   (*(*bit)->OutParticle(0)==*blob->OutParticle(0))&&
-	   (*(*bit)->OutParticle(1)==*blob->OutParticle(1)))||
-	  ((*(*bit)->InParticle(1)==*blob->InParticle(0))&&
-	   (*(*bit)->InParticle(0)==*blob->InParticle(1))&&
-	   (*(*bit)->OutParticle(1)==*blob->OutParticle(0))&&
-	   (*(*bit)->OutParticle(0)==*blob->OutParticle(1)))||
-	  ((*(*bit)->InParticle(0)==*blob->InParticle(0))&&
-	   (*(*bit)->InParticle(1)==*blob->InParticle(1))&&
-	   (*(*bit)->OutParticle(1)==*blob->OutParticle(0))&&
-	   (*(*bit)->OutParticle(0)==*blob->OutParticle(1)))) {
+      if (((*(*bit)->InParticle(0)==*blob->InParticle(0))&&(*(*bit)->InParticle(1)==*blob->InParticle(1))&&
+	   (*(*bit)->OutParticle(0)==*blob->OutParticle(0))&&(*(*bit)->OutParticle(1)==*blob->OutParticle(1)))||
+	  ((*(*bit)->InParticle(1)==*blob->InParticle(0))&&(*(*bit)->InParticle(0)==*blob->InParticle(1))&&
+	   (*(*bit)->OutParticle(0)==*blob->OutParticle(0))&&(*(*bit)->OutParticle(1)==*blob->OutParticle(1)))||
+	  ((*(*bit)->InParticle(1)==*blob->InParticle(0))&&(*(*bit)->InParticle(0)==*blob->InParticle(1))&&
+	   (*(*bit)->OutParticle(1)==*blob->OutParticle(0))&&(*(*bit)->OutParticle(0)==*blob->OutParticle(1)))||
+	  ((*(*bit)->InParticle(0)==*blob->InParticle(0))&&(*(*bit)->InParticle(1)==*blob->InParticle(1))&&
+	   (*(*bit)->OutParticle(1)==*blob->OutParticle(0))&&(*(*bit)->OutParticle(0)==*blob->OutParticle(1)))) {
 	return true;
       }
     }
@@ -109,7 +112,7 @@ bool Amisic::HaveBlob(ATOOLS::Blob *blob)
   return false;
 }
 
-ATOOLS::Blob *Amisic::CreateBlob(ATOOLS::Flavour flavour[4])
+ATOOLS::Blob *Amisic::GetBlob(ATOOLS::Flavour flavour[4])
 {
   ATOOLS::Blob *newblob = new ATOOLS::Blob();
   for (unsigned int j=0;j<2;++j) newblob->AddToInParticles(new ATOOLS::Particle(j,flavour[j]));
@@ -133,8 +136,8 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes::Mode mode)
   case EXTRAXS::QCD_Processes::All:
   case EXTRAXS::QCD_Processes::gggg:
     m_blobs.push_back(ATOOLS::Blob_List(0));
-    temp[3]=temp[2]=temp[1]=temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)21);
-    if ((newblob=CreateBlob(temp))!=NULL) {
+    for (i=0;i<4;++i) temp[i]=ATOOLS::Flavour((ATOOLS::kf::code)21);
+    if ((newblob=GetBlob(temp))!=NULL) {
       m_blobs[m_blobs.size()-1].push_back(newblob);
     }
     m_filename.push_back("gg_to_gg__grid.dat");
@@ -147,7 +150,7 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes::Mode mode)
     for (i=1;i<=nflavour;++i) {
       temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)i);
       temp[1]=ATOOLS::Flavour((ATOOLS::kf::code)i).Bar();
-      if ((newblob=CreateBlob(temp))!=NULL) {
+      if ((newblob=GetBlob(temp))!=NULL) {
 	m_blobs[m_blobs.size()-1].push_back(newblob);
       }
     }
@@ -161,7 +164,7 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes::Mode mode)
     for (i=1;i<=nflavour;++i) {
       temp[2]=ATOOLS::Flavour((ATOOLS::kf::code)i);
       temp[3]=ATOOLS::Flavour((ATOOLS::kf::code)i).Bar();
-      if ((newblob=CreateBlob(temp))!=NULL) {
+      if ((newblob=GetBlob(temp))!=NULL) {
 	m_blobs[m_blobs.size()-1].push_back(newblob);
       }
     }
@@ -174,11 +177,11 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes::Mode mode)
     temp[2]=temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)21);
     for (i=1;i<=nflavour;++i) {
       temp[3]=temp[1]=ATOOLS::Flavour((ATOOLS::kf::code)i);
-      if ((newblob=CreateBlob(temp))!=NULL) {
+      if ((newblob=GetBlob(temp))!=NULL) {
 	m_blobs[m_blobs.size()-1].push_back(newblob);
       }
       temp[3]=temp[1]=ATOOLS::Flavour((ATOOLS::kf::code)i).Bar();
-      if ((newblob=CreateBlob(temp))!=NULL) {
+      if ((newblob=GetBlob(temp))!=NULL) {
 	m_blobs[m_blobs.size()-1].push_back(newblob);
       }
     }
@@ -192,12 +195,12 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes::Mode mode)
       for (j=i+1;j<=nflavour;++j) {
 	temp[2]=temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)i);
 	temp[3]=temp[1]=ATOOLS::Flavour((ATOOLS::kf::code)j);
-	if ((newblob=CreateBlob(temp))!=NULL) {
+	if ((newblob=GetBlob(temp))!=NULL) {
 	  m_blobs[m_blobs.size()-1].push_back(newblob);
 	}
 	temp[2]=temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)i).Bar();
 	temp[3]=temp[1]=ATOOLS::Flavour((ATOOLS::kf::code)j).Bar();
-	if ((newblob=CreateBlob(temp))!=NULL) {
+	if ((newblob=GetBlob(temp))!=NULL) {
 	  m_blobs[m_blobs.size()-1].push_back(newblob);
 	}
       }
@@ -206,11 +209,11 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes::Mode mode)
     if (mode==EXTRAXS::QCD_Processes::q1q1q1q1) m_blobs.push_back(ATOOLS::Blob_List(0));
     for (i=1;i<=nflavour;++i) {
       temp[3]=temp[2]=temp[1]=temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)i);
-      if ((newblob=CreateBlob(temp))!=NULL) {
+      if ((newblob=GetBlob(temp))!=NULL) {
 	m_blobs[m_blobs.size()-1].push_back(newblob);
       }
       temp[3]=temp[2]=temp[1]=temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)i).Bar();
-      if ((newblob=CreateBlob(temp))!=NULL) {
+      if ((newblob=GetBlob(temp))!=NULL) {
 	m_blobs[m_blobs.size()-1].push_back(newblob);
       }
     }
@@ -230,12 +233,12 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes::Mode mode)
       for (j=i+1;j<=nflavour;++j) {
 	temp[2]=temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)i);
 	temp[3]=temp[1]=ATOOLS::Flavour((ATOOLS::kf::code)j).Bar();
-	if ((newblob=CreateBlob(temp))!=NULL) {
+	if ((newblob=GetBlob(temp))!=NULL) {
 	  m_blobs[m_blobs.size()-1].push_back(newblob);
 	}
 	temp[2]=temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)i).Bar();
 	temp[3]=temp[1]=ATOOLS::Flavour((ATOOLS::kf::code)j);
-	if ((newblob=CreateBlob(temp))!=NULL) {
+	if ((newblob=GetBlob(temp))!=NULL) {
 	  m_blobs[m_blobs.size()-1].push_back(newblob);
 	}
       }
@@ -249,7 +252,7 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes::Mode mode)
     for (i=1;i<=nflavour;++i) {
       temp[2]=temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)i);
       temp[3]=temp[1]=ATOOLS::Flavour((ATOOLS::kf::code)i).Bar();
-      if ((newblob=CreateBlob(temp))!=NULL) {
+      if ((newblob=GetBlob(temp))!=NULL) {
 	m_blobs[m_blobs.size()-1].push_back(newblob);
       }
     }
@@ -265,7 +268,7 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes::Mode mode)
 	temp[1]=ATOOLS::Flavour((ATOOLS::kf::code)i).Bar();
 	temp[2]=ATOOLS::Flavour((ATOOLS::kf::code)j);
 	temp[3]=ATOOLS::Flavour((ATOOLS::kf::code)j).Bar();
-	if ((newblob=CreateBlob(temp))!=NULL) {
+	if ((newblob=GetBlob(temp))!=NULL) {
 	  m_blobs[m_blobs.size()-1].push_back(newblob);
 	}
       }
@@ -319,7 +322,7 @@ bool Amisic::ReadInData()
 	}
 	if (!success) continue;
 	ATOOLS::Blob *newblob;
-	if ((newblob=CreateBlob(flavour))!=NULL) {
+	if ((newblob=GetBlob(flavour))!=NULL) {
 	  m_blobs.push_back(ATOOLS::Blob_List(0));
 	  m_blobs[m_blobs.size()-1].push_back(newblob);
 	  std::string filename=std::string(), processname=std::string();
@@ -394,23 +397,22 @@ bool Amisic::ReadInData()
 
 bool Amisic::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename,std::string& processname)
 {
-  AMEGIC::Environment *environment = new AMEGIC::Environment(m_inputdirectory,m_environmentfile);
-  environment->InitializeTheEnvironment();
-  EXTRAXS::SimpleXSecs *processes = new EXTRAXS::SimpleXSecs(m_inputdirectory,m_xsfile,
-							     environment->Model());
-  processes->InitializeProcesses(environment->BeamSpectraHandler(),environment->ISRHandler());  
-  if (processes->Size()>0) {
+  p_environment = new AMEGIC::Environment(m_inputdirectory,m_environmentfile);
+  p_environment->InitializeTheEnvironment();
+  p_processes = new EXTRAXS::SimpleXSecs(m_inputdirectory,m_xsfile,p_environment->Model());
+  if (p_processes->Size()>0) {
     ATOOLS::msg.Tracking()<<"Amisic::CreateGrid(..): "
 			  <<"Found an initialized process group."<<std::endl
 			  <<"   Empty group and start with QCD_Processes."<<std::endl;
-    processes->Clear();
+    p_processes->Clear();
   }
+  p_processes->InitializeProcesses(p_environment->BeamSpectraHandler(),p_environment->ISRHandler());  
   ATOOLS::Flavour flavour[4];
   flavour[0]=flavour[1]=flavour[2]=flavour[3]=ATOOLS::kf::jet;
   EXTRAXS::QCD_Processes *group;
-  group = new EXTRAXS::QCD_Processes(environment->ISRHandler(),environment->BeamSpectraHandler(),
-				     flavour,processes->SelectorData(),processes->ScaleScheme(),
-				     processes->KFactorScheme(),processes->ScaleFactor(),false);
+  group = new EXTRAXS::QCD_Processes(p_environment->ISRHandler(),p_environment->BeamSpectraHandler(),
+				     flavour,p_processes->SelectorData(),p_processes->ScaleScheme(),
+				     p_processes->KFactorScheme(),p_processes->ScaleFactor(),false);
   for (Blob_Iterator bit=bloblist.begin();bit!=bloblist.end();++bit) {
     for (int i=0;i<group->Nin();++i) flavour[i]=(*bit)->InParticle(i)->Flav();
     for (int j=0;j<group->Nout();++j) flavour[group->Nin()+j]=(*bit)->OutParticle(j)->Flav();
@@ -418,18 +420,20 @@ bool Amisic::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename,std::s
     if (newxs==NULL) {
       ATOOLS::msg.Error()<<"Amisic::CreateGrid(..): "
 			 <<"Did not find any process! Abort calculation."<<std::endl;
-      delete processes;
-      delete environment;
+      delete p_processes;
+      p_processes=NULL;
+      delete p_environment;
+      p_environment=NULL;
       return false;
     }
     group->Add(newxs);
   }
   group->SetName(processname);
-  processes->PushBack(group);
+  p_processes->PushBack(group);
   std::vector<std::string> comments;
   comments.push_back(std::string("processes : ")+processname);
   GridHandlerType *gridhandler = new GridHandlerType();
-  GridCreatorType *gridcreator = new GridCreatorType(gridhandler,processes);
+  GridCreatorType *gridcreator = new GridCreatorType(gridhandler,p_processes);
   gridcreator->ReadInArguments(m_inputdirectory+m_inputfile);
   if (mkdir(m_outputdirectory.c_str(),448)==0) {
     ATOOLS::msg.Out()<<"Amisic::CreateGrid(..): "
@@ -439,16 +443,71 @@ bool Amisic::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename,std::s
   gridcreator->WriteOutGrid(m_outputdirectory+filename,comments);
   delete gridcreator;
   delete gridhandler;
-  delete processes;
-  delete environment;
+  delete p_processes;
+  p_processes=NULL;
+  delete p_environment;
+  p_environment=NULL;
+  return true;
+}
+
+bool Amisic::InitializeBlobList()
+{  
+  p_environment = new AMEGIC::Environment(m_inputdirectory,m_environmentfile);
+  p_environment->InitializeTheEnvironment();
+  p_processes = new EXTRAXS::SimpleXSecs(m_inputdirectory,m_xsfile,p_environment->Model());
+  if (p_processes->Size()>0) {
+    ATOOLS::msg.Tracking()<<"Amisic::InitializeBlobList(): "
+			  <<"Found an initialized process group."<<std::endl
+			  <<"   Empty group and start with QCD_Processes."<<std::endl;
+    p_processes->Clear();
+  }
+  p_processes->InitializeProcesses(p_environment->BeamSpectraHandler(),p_environment->ISRHandler());  
+  std::vector<EXTRAXS::QCD_Processes*> group=std::vector<EXTRAXS::QCD_Processes*>(m_blobs.size());
+  ATOOLS::Flavour flavour[4];
+  ATOOLS::Flow::ResetCounter();
+  for (unsigned int i=0;i<m_blobs.size();++i) {
+    flavour[0]=flavour[1]=flavour[2]=flavour[3]=ATOOLS::kf::jet;
+    group[i]=new EXTRAXS::QCD_Processes(p_environment->ISRHandler(),p_environment->BeamSpectraHandler(),
+					flavour,p_processes->SelectorData(),p_processes->ScaleScheme(),
+					p_processes->KFactorScheme(),p_processes->ScaleFactor(),false);
+    for (Blob_Iterator bit=m_blobs[i].begin();bit!=m_blobs[i].end();++bit) {
+      for (int j=0;j<group[i]->Nin();++j) flavour[j]=(*bit)->InParticle(j)->Flav();
+      for (int j=0;j<group[i]->Nout();++j) flavour[group[i]->Nin()+j]=(*bit)->OutParticle(j)->Flav();
+      EXTRAXS::Single_XS *newxs = group[i]->XSSelector()->GetXS(group[i]->Nin(),group[i]->Nout(),flavour);
+      if (newxs==NULL) {
+	ATOOLS::msg.Error()<<"Amisic::InitializeBlobList(): "
+			   <<"Did not find any process! Abort."<<std::endl;
+	delete group[i];
+ 	delete p_processes;
+ 	p_processes=NULL;
+	delete p_environment;
+	p_environment=NULL;
+	return false;
+      }
+      group[i]->Add(newxs);
+    }
+    group[i]->SetName(m_processname[i]);
+    p_processes->PushBack(group[i]);
+  }
+  p_processes->CalculateTotalXSec();
+  p_fsrinterface = new FSRChannel(2,2,flavour,p_total->XAxis()->Variable());
+  p_fsrinterface->SetAlpha(1.0);
+  p_fsrinterface->SetAlphaSave(1.0);
+  for (unsigned int i=0;i<m_blobs.size();++i) {
+    group[i]->SetFSRInterface(p_fsrinterface);
+    group[i]->SetFSRMode(2);
+    group[i]->CreateFSRChannels();
+  }
   return true;
 }
 
 bool Amisic::CalculateTotal()
 {
   if (m_differential.size()==0) return false;
-  GridHandlerType::GridFunctionType *differential, *integrated;
+  GridFunctionType *differential;
+  GridResultType total;
   differential = new GridHandlerType::GridFunctionType();
+  differential->SetMonotony(differential->None);
   differential->XAxis()->SetVariable(m_differential[0]->XAxis()->Variable());
   differential->YAxis()->SetVariable(m_differential[0]->YAxis()->Variable());
   differential->XAxis()->SetScaling(m_differential[0]->XAxis()->Scaling()->Name());
@@ -463,36 +522,41 @@ bool Amisic::CalculateTotal()
       differential->ReplaceXPoint(x,differential->Y(x,differential->Interpolation)+(*diffit)->XYData(i).second);
     }
   }
-  p_total->XAxis()->SetScaling(m_differential[0]->XAxis()->Scaling()->Name());
-  p_total->YAxis()->SetScaling(m_differential[0]->YAxis()->Scaling()->Name());
-  integrated = differential->IntegralY();
-  GridResultType total=integrated->YData(integrated->YDataSize()-1);
-  for (unsigned int i=0;i<integrated->XDataSize();++i) {
-    GridArgumentType x=integrated->XYData(i).first;
-    integrated->ReplaceXPoint(x,total-integrated->XYData(i).second);
+  p_total = differential->IntegralY();
+  total=p_total->YData(p_total->YDataSize()-1);
+  p_total->SetMonotony(p_total->None);
+  for (unsigned int i=0;i<p_total->XDataSize();++i) {
+    p_total->ReplaceXPoint(p_total->XYData(i).first,total-p_total->XYData(i).second);
   }
-  p_total->Import(*integrated);
+  p_total->SetMonotony(p_total->MUnknown);
+  p_total->Monotony();
   p_total->MoveY(-p_total->YMin());
   p_total->ScaleY((GridArgumentType)1.0/p_total->YMax());
-//   EXTRAXS::SimpleXSecs *help1;
-//   GridHandlerType *help2 = new GridHandlerType(p_total);
-//   GridCreatorType *help3 = new GridCreatorType(help2,help1);
-//   help3->WriteOutGrid("test");
-//   delete help3;
-//   delete help2;
-  delete integrated;
+#ifdef DEBUG__Amisic
+  EXTRAXS::SimpleXSecs *processes;
+  GridHandlerType *gridhandler = new GridHandlerType(p_total);
+  GridCreatorType *gridcreator = new GridCreatorType(gridhandler,processes);
+  gridcreator->WriteOutGrid(integralfile);
+  delete gridcreator;
+  delete gridhandler;
+#endif
   delete differential;
   return true;
 }
 
 bool Amisic::Initialize(std::string tempidir,std::string tempifile,bool creategrid)
 {
+  CleanUp();
   if (tempidir!=ATOOLS::nullstring) SetInputDirectory(tempidir);
   if (tempifile!=ATOOLS::nullstring) SetInputFile(tempifile);
-  ClearVector();
+  CleanUp();
   ATOOLS::ParticleInit(m_inputdirectory);
   ATOOLS::rpa.Init(m_inputdirectory);
   if (!ReadInData()) return false;
+  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
+  reader->SetFileName(m_inputdirectory+m_environmentfile);
+  if (!reader->ReadFromFile(m_xsfile,"XS_FILE")) m_xsfile=std::string("XS.dat");
+  delete reader;
   ATOOLS::Data_Writer *writer = new ATOOLS::Data_Writer("=",";","!");
   writer->SetFileName(m_inputdirectory+m_xsfile);
   writer->SetBlank(32);
@@ -512,13 +576,7 @@ bool Amisic::Initialize(std::string tempidir,std::string tempifile,bool creategr
       m_create[i]=true;
     }
     else {
-      newgridhandler->Grid()->XAxis()->SetScalingMode(newgridhandler->Grid()->XAxis()->Identical);
-      newgridhandler->Grid()->YAxis()->SetScalingMode(newgridhandler->Grid()->YAxis()->Identical);
       m_differential.push_back(new GridFunctionType(*newgridhandler->Grid()));
-      m_differential[m_differential.size()-1]->XAxis()->SetScaling
-	(newgridhandler->Grid()->XAxis()->Scaling()->Name());
-      m_differential[m_differential.size()-1]->YAxis()->SetScaling
-	(newgridhandler->Grid()->YAxis()->Scaling()->Name());
       delete newgridhandler;
     }
     if (m_create[i]) {
@@ -527,7 +585,7 @@ bool Amisic::Initialize(std::string tempidir,std::string tempifile,bool creategr
 	  ATOOLS::msg.Error()<<"Amisic::Initialize("<<tempidir<<","<<tempifile<<"): Grid creation for "
 			     <<m_outputdirectory+m_filename[i]<<" failed! "<<std::endl
 			     <<"   Abort initialization."<<std::endl;
-	  ClearVector();
+	  CleanUp();
 	  delete newgridhandler;
 	  return false;
 	}
@@ -535,24 +593,19 @@ bool Amisic::Initialize(std::string tempidir,std::string tempifile,bool creategr
 	  ATOOLS::msg.Error()<<"Amisic::Initialize("<<tempidir<<","<<tempifile<<"): Grid creation for "
 			     <<m_outputdirectory+m_filename[i]<<" failed! "<<std::endl
 			     <<"   Abort initialization."<<std::endl;
-	  ClearVector();
+	  CleanUp();
 	  delete newgridhandler;
 	  return false;
 	}
 	else {
-	  newgridhandler->Grid()->XAxis()->SetScalingMode(newgridhandler->Grid()->XAxis()->Identical);
-	  newgridhandler->Grid()->YAxis()->SetScalingMode(newgridhandler->Grid()->YAxis()->Identical);
 	  m_differential.push_back(new GridFunctionType(*newgridhandler->Grid()));
-	  m_differential[m_differential.size()-1]->XAxis()->SetScaling
-	    (newgridhandler->Grid()->XAxis()->Scaling()->Name());
-	  m_differential[m_differential.size()-1]->YAxis()->SetScaling
-	    (newgridhandler->Grid()->YAxis()->Scaling()->Name());
 	  delete newgridhandler;
 	}
       }
       else {
 	ATOOLS::msg.Error()<<"Amisic::Initialize("<<tempidir<<","<<tempifile<<"): "
-			   <<"Grid files are missing! Run cannot continue."<<std::endl;
+			   <<"Grid files are missing!"<<std::endl
+			   <<"   Run cannot continue."<<std::endl;
 	delete newgridhandler;
 	abort();
       }
@@ -561,30 +614,55 @@ bool Amisic::Initialize(std::string tempidir,std::string tempifile,bool creategr
   if (!CalculateTotal()) {
     ATOOLS::msg.Error()<<"Amisic::Initialize("<<tempidir<<","<<tempifile<<"): "
 		       <<"Determination of \\sigma_{tot} failed. "<<std::endl
-		       <<" Run cannot continue."<<std::endl;
-	abort();
+		       <<"   Run cannot continue."<<std::endl;
+    abort();
   }
-//   for (unsigned int i=0;i<10;++i) {
-//     std::cout<<" new try "<<std::endl;
-//     ATOOLS::Blob_List *blobs=CreateProcesses();
-//     for (ATOOLS::Blob_Iterator bit=blobs->begin();bit!=blobs->end();std::cout<<*bit++<<std::endl);
-//     delete blobs;
-//   }
+  if (!InitializeBlobList()) {
+    ATOOLS::msg.Error()<<"Amisic::Initialize("<<tempidir<<","<<tempifile<<"): "
+		       <<"Cannot initialize selected processes. "<<std::endl
+		       <<"   Run cannot continue."<<std::endl;
+    abort();
+  }  
   return true;
 }
 
-ATOOLS::Blob *Amisic::SelectBlob(ATOOLS::Blob_List bloblist,double ran)
+ATOOLS::Blob *Amisic::CreateBlob(unsigned int i,double ran)
 {
-  for (unsigned int i=0;i<bloblist.size();++i) 
-    if ((float)(i+1)>ran*(float)bloblist.size()) return bloblist[i];
-  ATOOLS::msg.Error()<<"Amisic::SelectBlob("<<&bloblist<<","<<ran<<"): "
-		     <<"Could not select any process! Abort."<<std::endl;
-  return NULL;
+  ATOOLS::Blob *blob=NULL;
+  if (p_processes==NULL) {
+    ATOOLS::msg.Error()<<"Amisic::CreateBlob("<<i<<","<<ran<<"): "
+		       <<"Processes not initialized! Abort."<<std::endl;
+    return blob;
+  }
+  if (i<(unsigned int)p_processes->Size()) {
+    if ((*p_processes)[i]->OneEvent()) {
+      EXTRAXS::XS_Base *selected=(*p_processes)[i]->Selected();
+      blob = new ATOOLS::Blob();
+      for (int j=0;j<selected->Nin();++j) {
+	blob->AddToInParticles(new ATOOLS::Particle(selected->Flavs()[j]));
+	blob->InParticle(j)->SetMomentum(selected->Momenta()[j]);
+      }
+      for (int j=0;j<selected->Nout();++j) {
+	blob->AddToOutParticles(new ATOOLS::Particle(selected->Flavs()[selected->Nin()+j]));
+	blob->OutParticle(j)->SetMomentum(selected->Momenta()[selected->Nin()+j]);
+      }
+      return blob;
+    }
+  }
+  if (blob==NULL) ATOOLS::msg.Error()<<"Amisic::SelectBlob("<<i<<","<<ran<<"): "
+				     <<"Could not select any process! Abort."<<std::endl;
+  return blob;
 }
 
 ATOOLS::Blob *Amisic::DiceProcess(GridArgumentType parameter,double ran[2])
 {
   if (m_differential.size()==0) return NULL;
+  p_fsrinterface->SetValue(parameter);
+  int criterion=ATOOLS::Variable::TypeToSelectorID(m_differential[0]->XAxis()->Variable().Type());
+  ATOOLS::Mom_Data m_initialdata=p_processes->SelectorData()->RemoveData(criterion);
+  p_processes->SelectorData()->SetData(criterion,m_initialdata.flavs,m_initialdata.help,
+				       parameter,m_initialdata.max);
+  p_processes->ResetSelector(p_processes->SelectorData());
   Data_To_Function<GridResultType,unsigned int> sorter;
   GridResultType cur, norm=(GridResultType)0.0;
   for (unsigned int i=0;i<m_differential.size();++i) {
@@ -593,13 +671,15 @@ ATOOLS::Blob *Amisic::DiceProcess(GridArgumentType parameter,double ran[2])
     norm+=cur;
   }
   cur=(GridResultType)0.0;
-  for (unsigned int i=sorter.XDataSize()-1;i>=0;--i) {
+  for (int i=sorter.XDataSize()-1;i>=0;--i) {
     if ((cur+=sorter.XData(i)/norm)>ran[0]) {
-      return SelectBlob(m_blobs[sorter.XYData(i).second],ran[1]);
+      return CreateBlob(sorter.XYData(i).second,ran[1]);
     }
   }
-  ATOOLS::msg.Error()<<"Amisic::DiceProcess("<<parameter<<","<<ran[0]<<","<<ran[1]<<"): "
-		     <<"Could not select any process! Abort."<<std::endl;
+  ATOOLS::msg.Tracking()<<"Amisic::DiceProcess("<<parameter<<","<<ran[0]<<","<<ran[1]<<"): "
+			<<"Could not select any process. "<<std::endl
+			<<"   Returning most likely instead."<<std::endl;
+  if (sorter.XDataSize()!=0) return CreateBlob(sorter.XYData(0).second,ran[1]);
   return NULL;
 }
 
@@ -612,11 +692,12 @@ ATOOLS::Blob_List *Amisic::CreateProcesses()
 {
   ATOOLS::Blob_List *blobs = new ATOOLS::Blob_List();
   double rans[3];
-  GridArgumentType last=p_total->XMax();
+  GridArgumentType last=m_start;
+  if (last<=m_stop) last=p_total->XMax();
   ATOOLS::Blob *blob;
   do {
     for (unsigned int i=0;i<3;++i) do { rans[i]=ATOOLS::ran.Get(); } while (rans[i]==0.0);  
     if ((blob=DiceProcess(DiceParameter(last,rans[2]),rans))!=NULL) blobs->push_back(blob);
-  } while (last>m_cutoff);
+  } while (last>m_stop);
   return blobs;
 }

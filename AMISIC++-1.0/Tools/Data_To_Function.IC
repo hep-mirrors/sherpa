@@ -9,6 +9,16 @@ namespace ATOOLS {
 
   template <class Argument_Type,class Result_Type>
   inline void Data_To_Function<Argument_Type,Result_Type>::
+  SetMonotony(MonotonyID _m_monotony)
+  { if (m_monotony==MUnknown) m_monotony = _m_monotony; }
+
+  template <class Argument_Type,class Result_Type>
+  inline typename Data_To_Function<Argument_Type,Result_Type>::MonotonyID
+  Data_To_Function<Argument_Type,Result_Type>::Monotony()
+  { return m_monotony; }
+
+  template <class Argument_Type,class Result_Type>
+  inline void Data_To_Function<Argument_Type,Result_Type>::
   SetAcquisitionMode(AcquisitionModeID _m_acquisitionmode)
   { m_acquisitionmode = _m_acquisitionmode; }
 
@@ -28,14 +38,25 @@ namespace ATOOLS {
   { return m_interpolationmode; }
 
   template <class Argument_Type,class Result_Type>
-  inline void Data_To_Function<Argument_Type,Result_Type>::Sort()
-  { SortX(); SortY(); }
+  inline bool Data_To_Function<Argument_Type,Result_Type>::Sort()
+  { 
+    bool sortx=SortX();
+    bool sorty=SortY(); 
+    return sortx&&sorty; 
+  }
 
   template <class Argument_Type,class Result_Type>
   inline void Data_To_Function<Argument_Type,Result_Type>::Resize(unsigned int newsize)
   {
     p_xydata->resize(newsize); 
     p_yxdata->resize(newsize); 
+  }
+
+  template <class Argument_Type,class Result_Type>
+  inline void Data_To_Function<Argument_Type,Result_Type>::Clear()
+  {
+    p_xydata->clear();
+    p_yxdata->clear();
   }
 
   template <class Argument_Type,class Result_Type>
@@ -49,8 +70,7 @@ namespace ATOOLS {
     }
     p_xydata->push_back(XYPair(_x,_y)); 
     p_yxdata->push_back(YXPair(_y,_x));
-    Sort();
-    return true;
+    return Sort();
   }
 
   template <class Argument_Type,class Result_Type>
@@ -204,12 +224,20 @@ namespace ATOOLS {
   template <class Argument_Type,class Result_Type>
   inline bool Data_To_Function<Argument_Type,Result_Type>::
   ReplaceXPoint(ArgumentType x,ResultType y)
-  { bool success=DeleteXPoint(x); AddPoint(x,y); return success; }
+  { 
+    bool deletepoint=DeleteXPoint(x);
+    bool addpoint=AddPoint(x,y); 
+    return deletepoint&&addpoint; 
+  }
 
   template <class Argument_Type,class Result_Type>
   inline bool Data_To_Function<Argument_Type,Result_Type>::
   ReplaceYPoint(ArgumentType x,ResultType y)
-  { bool success=DeleteYPoint(y); AddPoint(x,y); return success; }
+  { 
+    bool deletepoint=DeleteYPoint(y);
+    bool addpoint=AddPoint(x,y);
+    return deletepoint&&addpoint;
+  }
 
   template <class Argument_Type,class Result_Type>
   inline ATOOLS::Axis<Argument_Type> *Data_To_Function<Argument_Type,Result_Type>::XAxis()

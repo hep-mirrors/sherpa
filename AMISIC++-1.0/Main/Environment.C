@@ -17,7 +17,6 @@ using namespace PDF;
 Environment::Environment(std::string _path,std::string _file) : 
   m_path(_path), m_file(_file)
 {
-  std::cout<<"Initialize Initialization_Handler for "<<m_path+m_file<<std::endl;
   p_dataread = new Data_Read(m_path+m_file);
   m_modeldat = p_dataread->GetValue("MODEL_DATA_FILE",std::string("Model.dat"));
   m_beamdat  = p_dataread->GetValue("BEAM_DATA_FILE",std::string("Beam.dat"));
@@ -47,7 +46,6 @@ void Environment::InitializeTheEnvironment() {
 
 bool Environment::InitializeTheModel()
 {
-  msg.Debugging()<<"Initialized Model_Initialization for "<<m_path<<m_modeldat<<std::endl;
   Data_Read     * dataread     = new Data_Read(m_path+m_modeldat);
   Model_Handler * modelhandler = new MODEL::Model_Handler();
   p_model                      = modelhandler->GetModel(dataread,m_path,m_modeldat);

@@ -1,7 +1,7 @@
 !-------------------------------------------------------
 !-- Phase space setup ----------------------------------
 !-------------------------------------------------------
-ERROR =  4.0e-2   ! Error by calculating matrix-elements              
+ERROR =  2.5e-2   ! Error by calculating matrix-elements              
 !
 INTEGRATOR = 4   ! Phasespace : Rambo=0, Rambo+Sarge=1,
                  !              Rambo + Sarge=3,

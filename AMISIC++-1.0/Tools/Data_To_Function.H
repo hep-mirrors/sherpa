@@ -13,6 +13,11 @@ namespace ATOOLS {
   class Data_To_Function: public std::unary_function<Argument_Type,Result_Type> {
   public:
 
+    enum MonotonyID { Increasing =  1,
+		      Decreasing =  2,
+		      None       =  3,
+		      MUnknown    = 99 };
+
     enum AcquisitionModeID { // Analytic      =  1,
                              Data          =  2,
 			     Interpolation =  3,
@@ -77,6 +82,8 @@ namespace ATOOLS {
     XYVector *p_xydata;
     YXVector *p_yxdata;
 
+    MonotonyID m_monotony;
+
     AcquisitionModeID   m_acquisitionmode;
     InterpolationModeID m_interpolationmode;
 
@@ -84,9 +91,9 @@ namespace ATOOLS {
 
     void Resize(unsigned int newsize);
 
-    void Sort();
-    void SortX();
-    void SortY();
+    bool Sort();
+    bool SortX();
+    bool SortY();
 
     unsigned int ClosestX(Argument_Type x,unsigned int &left,unsigned int &right);
     unsigned int ClosestY(Result_Type y,unsigned int &left,unsigned int &right);
@@ -109,7 +116,7 @@ namespace ATOOLS {
 
     // constructors
     Data_To_Function();
-    Data_To_Function(Data_To_Function<ArgumentType,ResultType> &reference);
+    Data_To_Function(DataToFunctionType &reference,bool adoptscaling=true);
     Data_To_Function(XYMap *_m_xydata);
     Data_To_Function(ArgumentVector *_m_xdata,ResultVector *_m_ydata);
 
@@ -117,10 +124,12 @@ namespace ATOOLS {
     ~Data_To_Function();
 
     // setters
+    void SetMonotony(MonotonyID _m_monotony);
     void SetAcquisitionMode(AcquisitionModeID _m_acquisitionmode);
     void SetInterpolationMode(InterpolationModeID _m_interpolationmode);
 
     // getters
+    MonotonyID          Monotony();
     AcquisitionModeID   AcquisitionMode();
     InterpolationModeID InterpolationMode();
 
@@ -144,9 +153,9 @@ namespace ATOOLS {
     ATOOLS::Axis<ResultType>   *YAxis();
 
     // member functions
-    void Import(Data_To_Function<ArgumentType,ResultType> &reference);
-    void Import(XYMap *_p_xydata,bool normal=true);
-    void Import(ArgumentVector *_p_xdata,ResultVector *_p_ydata,bool normal=true);
+    bool Import(DataToFunctionType &reference,bool adoptscaling=true);
+    bool Import(XYMap *_p_xydata,bool normal=true);
+    bool Import(ArgumentVector *_p_xdata,ResultVector *_p_ydata,bool normal=true);
 
     void Export(XYMap *_p_xydata,bool normal=true);
     void Export(ArgumentVector *_p_xdata,ResultVector *_p_ydata,bool normal=true);
@@ -156,6 +165,8 @@ namespace ATOOLS {
     bool DeleteYPoint(ResultType y);
     bool ReplaceXPoint(ArgumentType x,ResultType y);
     bool ReplaceYPoint(ArgumentType x,ResultType y);
+
+    void Clear();
 
     ResultType   YData(unsigned int i);
     ArgumentType XData(unsigned int i);
@@ -183,6 +194,12 @@ namespace ATOOLS {
 
     ResultType   IntegrateY(ArgumentType xmin,ArgumentType xmax);
     ArgumentType IntegrateX(ResultType ymin,ResultType ymax);
+
+    DataToFunctionType *DerivativeY(ArgumentType xmin=0.0,ArgumentType xmax=0.0);
+    DataToFunctionType *DerivativeX(ResultType ymin=0.0,ResultType ymax=0.0);
+
+    ResultType   DifferentialY(ArgumentType x);
+    ArgumentType DifferentialX(ResultType y);
 
     ResultType   Y(ArgumentType x,AcquisitionModeID tempmode = AUnknown);
     ArgumentType X(ResultType y,AcquisitionModeID tempmode = AUnknown);

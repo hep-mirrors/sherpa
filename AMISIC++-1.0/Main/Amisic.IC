@@ -29,11 +29,17 @@ namespace AMISIC {
   inline std::string Amisic::OutputDirectory()
   { return m_outputdirectory; }
 
-  inline void Amisic::SetCutoff(GridArgumentType _m_cutoff)
-  { m_cutoff=_m_cutoff; }
+  inline void Amisic::SetStart(GridArgumentType _m_start)
+  { m_start=_m_start; }
 
-  inline Amisic::GridArgumentType Amisic::Cutoff()
-  { return m_cutoff; }
+  inline Amisic::GridArgumentType Amisic::Start()
+  { return m_start; }
+
+  inline void Amisic::SetStop(GridArgumentType _m_stop)
+  { m_stop=_m_stop; }
+
+  inline Amisic::GridArgumentType Amisic::Stop()
+  { return m_stop; }
 
 } // end of namespace AMISIC
 

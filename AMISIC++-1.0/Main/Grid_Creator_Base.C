@@ -206,8 +206,8 @@ namespace AMISIC {
 	  oldvalue=newvalue;
 	}
 	else {
-	  ATOOLS::msg.Error()<<"Grid_Creator_Base::CreateInitialGrid(): Tried to add a value twice! "
-			     <<"Ignored last value."<<std::endl
+	  ATOOLS::msg.Error()<<"Grid_Creator_Base::CreateInitialGrid(): Could not add last point! "
+			     <<"Ignored it instead."<<std::endl
 			     <<"   Please do either reduce the grid point distance "<<std::endl
 			     <<"   or select higher precision for the integration step."<<std::endl;
 	}
@@ -247,8 +247,8 @@ namespace AMISIC {
 			 <<"   Currently \\Delta y_{max} = "<<deltaymax
 			 <<" vs. \\Delta y_{limit} = "<<GridDeltaYMax()<<std::endl;
 	if (!grid->AddPoint(middle,CalculateSingleValue(left,right))) {
-	  ATOOLS::msg.Error()<<"Grid_Creator_Base::CreateOptimizedGrid(): Tried to add a value twice! "
-			     <<"Ignored last value."<<std::endl
+	  ATOOLS::msg.Error()<<"Grid_Creator_Base::CreateOptimizedGrid(): Could not add last point! "
+			     <<"Ignored it instead."<<std::endl
 			     <<"   Please do either reduce the grid point distance "<<std::endl
 			     <<"   or choose higher precision for the integration step."<<std::endl;
 	  if (++errorcounter>grid->XDataSize()/10) {

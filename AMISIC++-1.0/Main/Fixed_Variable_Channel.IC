@@ -1,0 +1,26 @@
+#ifndef Fixed_Variable_Channel_IC
+#define Fixed_Variable_Channel_IC
+
+#include "Fixed_Variable_Channel.H"
+
+namespace PHASIC {
+
+  template <class Value_Type>
+  inline void Fixed_Variable_Channel<Value_Type>::SetVariable(ATOOLS::Variable _m_variable)
+  { m_variable=_m_variable; }
+
+  template <class Value_Type>
+  inline ATOOLS::Variable Fixed_Variable_Channel<Value_Type>::Variable()
+  { return m_variable; }
+
+  template <class Value_Type>
+  inline void Fixed_Variable_Channel<Value_Type>::SetValue(ValueType _m_value)
+  { m_value=_m_value; }
+
+  template <class Value_Type>
+  inline Value_Type Fixed_Variable_Channel<Value_Type>::Value()
+  { return m_value; }
+
+} // end of namespace PHASIC
+
+#endif

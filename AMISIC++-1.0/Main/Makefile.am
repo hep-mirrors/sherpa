@@ -30,6 +30,9 @@ noinst_HEADERS        = \
 			Grid_Creator_Base.H \
 			Grid_Creator_Base.IC \
 		       	Grid_Creator_Base.C \
+			Fixed_Variable_Channel.H \
+			Fixed_Variable_Channel.IC \
+			Fixed_Variable_Channel.C \
 			Environment.H \
 			Amisic.H \
 			Amisic.IC 

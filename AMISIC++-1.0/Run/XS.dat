@@ -1,3 +1,5 @@
-%All QED ee->qq
-%All QCD 2->2
-Init QCD 2->2
+! ========================
+!      Dummy XS File      
+! ========================
+  
+  Init QCD 2->2

@@ -4,8 +4,10 @@
 #include "Grid_Handler.H"
 
 #include "SimpleXSecs.H"
+#include "Environment.H"
 #include "QCD_Processes.H"
 #include "Blob_List.H"
+#include "Fixed_Variable_Channel.H"
 
 namespace AMISIC {
   
@@ -41,44 +43,49 @@ namespace AMISIC {
 					  GridArgumentType nextright);
       
     }; // end of class Amisic::Grid_Creator
-    
+
     typedef double GridArgumentType;
     typedef double GridResultType;
 
     typedef Grid_Handler<GridArgumentType,GridResultType> GridHandlerType;
-    typedef Grid_Creator_Base<GridArgumentType,GridResultType> GridCreatorBaseType;
     typedef Grid_Creator<GridArgumentType,GridResultType> GridCreatorType;
+    typedef Grid_Creator_Base<GridArgumentType,GridResultType> GridCreatorBaseType;
     typedef Data_To_Function<GridArgumentType,GridResultType> GridFunctionType;
+    
+    typedef PHASIC::Fixed_Variable_Channel<GridArgumentType> FSRChannel;
 
   private:
 
-    std::vector<ATOOLS::Blob_List> m_blobs;
-    std::vector<std::string>       m_filename, m_processname;
-    std::vector<bool>              m_create;
-    std::vector<GridFunctionType*> m_differential;
+    std::vector<ATOOLS::Blob_List>  m_blobs;
+    std::vector<std::string>        m_filename, m_processname;
+    std::vector<bool>               m_create;
+    std::vector<GridFunctionType*>  m_differential;
+    GridFunctionType               *p_total;
 
-    GridFunctionType *p_total;
-
-    GridArgumentType m_cutoff;
+    GridArgumentType m_start, m_stop;
     
     std::string m_inputdirectory, m_inputfile, m_environmentfile, m_xsfile;
     std::string m_outputdirectory;
 
-    ATOOLS::Blob *CreateBlob(ATOOLS::Flavour flavour[4]);
+    AMEGIC::Environment  *p_environment;
+    EXTRAXS::SimpleXSecs *p_processes;
+    FSRChannel           *p_fsrinterface;
 
-    void ClearVector();
-    bool HaveBlob(ATOOLS::Blob *blob);
+    ATOOLS::Blob *GetBlob(ATOOLS::Flavour flavour[4]);
+
+    void CleanUp();
     void FillMode(EXTRAXS::QCD_Processes::Mode mode);
+    bool HaveBlob(ATOOLS::Blob *blob);
 
     bool ReadInData();
     bool CreateGrid(ATOOLS::Blob_List& bloblist,
 		    std::string& filename,std::string& processname);
     bool CalculateTotal();
+    bool InitializeBlobList();
 
-    ATOOLS::Blob *SelectBlob(ATOOLS::Blob_List bloblist,double ran);
-
-    GridArgumentType  DiceParameter(GridArgumentType &last,double ran);
+    ATOOLS::Blob     *CreateBlob(unsigned int bloblist,double ran);
     ATOOLS::Blob     *DiceProcess(GridArgumentType parameter,double ran[2]);
+    GridArgumentType  DiceParameter(GridArgumentType &last,double ran);
 
   public:
 
@@ -89,7 +96,8 @@ namespace AMISIC {
     ~Amisic();
 
     // setters 
-    void SetCutoff(GridArgumentType _m_cutoff);
+    void SetStart(GridArgumentType _m_start);
+    void SetStop(GridArgumentType _m_stop);
 
     void SetInputFile(std::string _m_inputfile);
     void SetEnvironmentFile(std::string _m_environmentfile);
@@ -97,7 +105,8 @@ namespace AMISIC {
     void SetOutputDirectory(std::string _m_outputdirectory);
 
     // getters
-    GridArgumentType Cutoff();
+    GridArgumentType Start();
+    GridArgumentType Stop();
 
     std::string InputFile();
     std::string EnvironmentFile();
