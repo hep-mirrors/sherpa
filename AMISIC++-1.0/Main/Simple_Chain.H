@@ -23,12 +23,14 @@ namespace AMISIC {
 
   private:
 
-    std::vector<ATOOLS::Blob_List>  m_blobs;
-    std::vector<std::string>        m_filename, m_comments;
-    std::vector<bool>               m_create;
-    std::vector<GridFunctionType*>  m_differential, m_maximum;
-    GridResultType                  m_norm;
-    GridFunctionType               *p_total;
+    std::vector<ATOOLS::Blob_List> m_blobs;
+    std::vector<std::string>       m_filename, m_comments;
+
+    std::vector<GridFunctionType*>          m_differential;
+    std::map<std::string,GridFunctionType*> m_maxima;
+
+    GridResultType    m_norm;
+    GridFunctionType *p_total;
 
     GridCreatorType *p_gridcreator;
 
@@ -53,6 +55,7 @@ namespace AMISIC {
     void CleanUp();
     bool HaveBlob(ATOOLS::Blob *blob);
     void FillMode(EXTRAXS::QCD_Processes::Mode mode);
+    void SetMaximum(EXTRAXS::XS_Base *process); 
 
     bool ReadInData();
     bool CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename);

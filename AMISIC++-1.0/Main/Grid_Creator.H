@@ -27,8 +27,8 @@ namespace AMISIC {
     
   private:
     
-    GridHandlerVector   p_gridhandler;
-    EXTRAXS::Simple_XS *p_processes;
+    GridHandlerVector  p_gridhandler;
+    EXTRAXS::XS_Group *p_processes;
 
     int  m_criterion;
     bool m_storemax;
@@ -36,7 +36,7 @@ namespace AMISIC {
     long int m_maxpoints[2];
     
     ATOOLS::Mom_Data m_initialdata;
-    GridResultType m_lastxs, m_lastmax;
+    GridResultType m_lastxs;//, m_lastmax;
     
     ATOOLS::Axis<GridArgumentType> *p_xaxis;
     ATOOLS::Axis<GridResultType>   *p_yaxis;
@@ -46,7 +46,7 @@ namespace AMISIC {
   public:
     
     // constructor
-    Grid_Creator(GridHandlerVector _p_gridhandler,EXTRAXS::Simple_XS *_p_processes);
+    Grid_Creator(GridHandlerVector _p_gridhandler,EXTRAXS::XS_Group *_p_processes);
 
     // destructor
     ~Grid_Creator();

@@ -43,7 +43,7 @@ Simple_Chain::Simple_Chain():
   m_nflavour(3),
   m_scalescheme(2),
   m_kfactorscheme(1),
-  m_maxtrials(100),
+  m_maxtrials(1),
   m_external(false)
 {
   SetInputFile("MI.dat");
@@ -117,7 +117,6 @@ void Simple_Chain::CleanUp()
     m_blobs.erase(m_blobs.begin());
   }
   m_filename.clear();
-  m_create.clear();
   while (m_differential.size()>0) {
     delete *m_differential.begin();
     m_differential.erase(m_differential.begin());
@@ -172,7 +171,7 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
       m_blobs[m_blobs.size()-1].push_back(newblob);
     }
     m_filename.push_back("gg_to_gg__grid");
-    m_create.push_back(false);
+//     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes::gggg) break;
   case EXTRAXS::QCD_Processes::qqbgg:
     m_blobs.push_back(ATOOLS::Blob_List(0));
@@ -185,7 +184,7 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
       }
     }
     m_filename.push_back("qqb_to_gg__grid");
-    m_create.push_back(false);
+//     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes::qqbgg) break;
   case EXTRAXS::QCD_Processes::ggqqb:
     m_blobs.push_back(ATOOLS::Blob_List(0));
@@ -198,7 +197,7 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
       }
     }
     m_filename.push_back("gg_to_qqb__grid");
-    m_create.push_back(false);
+//     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes::ggqqb) break;
   case EXTRAXS::QCD_Processes::qgqg:
     m_blobs.push_back(ATOOLS::Blob_List(0));
@@ -214,7 +213,7 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
       }
     }
     m_filename.push_back("qg_to_qg__grid");
-    m_create.push_back(false);
+//     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes::qgqg) break;
   case EXTRAXS::QCD_Processes::q1q2q1q2:
     m_blobs.push_back(ATOOLS::Blob_List(0));
@@ -250,11 +249,11 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
     }
     if (mode==EXTRAXS::QCD_Processes::q1q2bq1q2b) {
       m_filename.push_back("q1q2b_to_q1q2b__grid");
-      m_create.push_back(false);
+//       m_create.push_back(false);
       break;
     }
     m_filename.push_back("q1q2_to_q1q2__grid");
-    m_create.push_back(false);
+//     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes::q1q2q1q2) break;
   case EXTRAXS::QCD_Processes::q1q1q1q1:
     m_blobs.push_back(ATOOLS::Blob_List(0));
@@ -269,7 +268,7 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
       }
     }
     m_filename.push_back("q1q1_to_q1q1__grid");
-    m_create.push_back(false);
+//     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes::q1q1q1q1) break;
   case EXTRAXS::QCD_Processes::q1q1bq1q1b:
     m_blobs.push_back(ATOOLS::Blob_List(0));
@@ -281,7 +280,7 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
       }
     }
     m_filename.push_back("q1q1b_to_q1q1b__grid");
-    m_create.push_back(false);
+//     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes::q1q1bq1q1b) break;
   case EXTRAXS::QCD_Processes::q1q1bq2q2b:
     m_blobs.push_back(ATOOLS::Blob_List(0));
@@ -297,7 +296,7 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
       }
     }
     m_filename.push_back("q1q1b_to_q2q2b__grid");
-    m_create.push_back(false);
+//     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes::q1q1bq2q2b) break;
     break;
   case EXTRAXS::QCD_Processes::Unknown:
@@ -329,7 +328,7 @@ bool Simple_Chain::ReadInData()
   outputpath=std::string("MI-Grid__")+help[0]+std::string("_")+help[1]+
     std::string("__")+ATOOLS::ToString(ATOOLS::rpa.gen.Ecms())+std::string("_GeV__")+
     p_isr->PDF(0)->Type()+std::string("_")+p_isr->PDF(1)->Type()+std::string("__as_")+
-    ATOOLS::ToString(dynamic_cast<MODEL::Running_AlphaS*>
+    ATOOLS::ToString(static_cast<MODEL::Running_AlphaS*>
 		     (p_model->GetScalarFunction("alpha_S"))->Order())+std::string("/");
   SetOutputPath(OutputPath()+outputpath);
   std::vector<std::string> comments;
@@ -379,7 +378,7 @@ bool Simple_Chain::ReadInData()
 	  filename+=std::string("_grid");
 	  if (temp[i].size()>4) m_filename.push_back(temp[i][4]);
 	  else m_filename.push_back(filename);
-	  m_create.push_back(false);
+// 	  m_create.push_back(false);
 	}
       }
     }
@@ -484,32 +483,46 @@ bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename)
   size_t pos=0;
   while ((pos=processname.find("_"))!=std::string::npos) processname[pos]=' ';
   m_comments.push_back(std::string("processes : ")+processname);
-  GridHandlerVector gridhandler=GridHandlerVector(2);
+  GridHandlerVector gridhandler=GridHandlerVector(1+group->Size());
   for (unsigned int i=0;i<gridhandler.size();++i) gridhandler[i] = new GridHandlerType();
-  gridhandler[0]->ReadIn(ATOOLS::Type::TFStream,OutputPath()+filename+m_xsextension);
-  gridhandler[1]->ReadIn(ATOOLS::Type::TFStream,OutputPath()+filename+m_maxextension);
-  p_gridcreator = new GridCreatorType(gridhandler,p_processes);
-  p_gridcreator->ReadInArguments(InputFile(),InputPath());
-  if (mkdir(OutputPath().c_str(),448)==0) {
-    ATOOLS::msg.Out()<<"Simple_Chain::CreateGrid(..): "
-		     <<"Created output directory "<<OutputPath()<<"."<<std::endl;
+  bool read=true;
+  gridhandler[0]->Grid()->SetMonotony(GridFunctionType::None);
+  read=read&&gridhandler[0]->ReadIn(ATOOLS::Type::TFStream,OutputPath()+filename+m_xsextension);
+  for (unsigned int i=1;i<gridhandler.size();++i) {
+    gridhandler[i]->Grid()->SetMonotony(GridFunctionType::None);
+    read=read&&gridhandler[i]->ReadIn(ATOOLS::Type::TFStream,
+				      OutputPath()+(*group)[i-1]->Name()+m_maxextension);
   }
-  if (mkdir((OutputPath()+filename+m_mcextension+std::string("/")).c_str(),448)==0) {
-    ATOOLS::msg.Out()<<"Simple_Chain::CreateGrid(..): Created output directory "
-		     <<OutputPath()+filename+m_mcextension+std::string("/")<<"."<<std::endl;
+  if (!read) for (unsigned int i=0;i<gridhandler.size();++i) {
+    gridhandler[i]->Grid()->Clear();
+    p_gridcreator = new GridCreatorType(gridhandler,group);
+    p_gridcreator->ReadInArguments(InputFile(),InputPath());
+    if (mkdir(OutputPath().c_str(),448)==0) {
+      ATOOLS::msg.Out()<<"Simple_Chain::CreateGrid(..): "
+		       <<"Created output directory "<<OutputPath()<<"."<<std::endl;
+    }
+    if (mkdir((OutputPath()+filename+m_mcextension+std::string("/")).c_str(),448)==0) {
+      ATOOLS::msg.Out()<<"Simple_Chain::CreateGrid(..): Created output directory "
+		       <<OutputPath()+filename+m_mcextension+std::string("/")<<"."<<std::endl;
+    }
+    p_gridcreator->SetXSExtension(m_xsextension);
+    p_gridcreator->SetMaxExtension(m_maxextension);
+    p_gridcreator->SetMCExtension(m_mcextension);
+    p_gridcreator->SetOutputPath(OutputPath());
+    p_gridcreator->SetOutputFile(filename);
+    ATOOLS::Exception_Handler::AddTerminatorObject(this);
+    p_gridcreator->CreateGrid();
+    p_gridcreator->WriteOutGrid(m_comments);
+    ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+    delete p_gridcreator;
   }
-  p_gridcreator->SetXSExtension(m_xsextension);
-  p_gridcreator->SetMaxExtension(m_maxextension);
-  p_gridcreator->SetMCExtension(m_mcextension);
-  p_gridcreator->SetOutputPath(OutputPath());
-  p_gridcreator->SetOutputFile(filename);
-  ATOOLS::Exception_Handler::AddTerminatorObject(this);
-  p_gridcreator->CreateGrid();
-  p_gridcreator->WriteOutGrid(m_comments);
-  ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
   m_comments.clear();
-  delete p_gridcreator;
-  for (unsigned int i=0;i<gridhandler.size();++i) delete gridhandler[i];
+  m_differential.push_back(new GridFunctionType(*gridhandler[0]->Grid()));
+  delete gridhandler[0];
+  for (unsigned int i=1;i<gridhandler.size();++i) {
+    m_maxima[(*group)[i-1]->Name()] = new GridFunctionType(*gridhandler[i]->Grid());
+    delete gridhandler[i];
+  }
   delete p_processes;
   p_processes=NULL;
   if (!m_external) {
@@ -716,25 +729,8 @@ bool Simple_Chain::Initialize()
   if (!reader->ReadFromFile(stop,"EVENT_X_MIN")) stop=Stop(0);
   delete reader;
   for (unsigned int i=0;i<m_blobs.size();++i) {
-    GridHandlerType *xsgridhandler = new GridHandlerType();
-    GridHandlerType *maxgridhandler = new GridHandlerType();
     if (!CreateGrid(m_blobs[i],m_filename[i])) {
-      ATOOLS::msg.Error()<<"Simple_Chain::Initialize(): "
-			 <<"Grid creation for "<<m_filename[i]<<" failed! "<<std::endl
-			 <<"   Abort initialization."<<std::endl;
       CleanUp();
-      delete xsgridhandler;
-      delete maxgridhandler;
-      return false;
-    }
-    if (xsgridhandler->ReadIn(ATOOLS::Type::TFStream,OutputPath()+m_filename[i]+m_xsextension)&&
-	maxgridhandler->ReadIn(ATOOLS::Type::TFStream,OutputPath()+m_filename[i]+m_maxextension)) {
-      m_differential.push_back(new GridFunctionType(*xsgridhandler->Grid()));
-      m_maximum.push_back(new GridFunctionType(*maxgridhandler->Grid()));
-      delete xsgridhandler;
-      delete maxgridhandler;
-    }
-    else {
       throw(ATOOLS::Exception(ATOOLS::ex::critical_error,
 			      std::string("Grid creation failed for ")+OutputPath()+m_filename[i],
 			      "Simple_Chain","Initialize"));
@@ -776,6 +772,8 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
     bool test=false;
     while (!test && trials<m_maxtrials) {
       ++trials;
+      dynamic_cast<EXTRAXS::XS_Group*>((*p_processes)[m_selected])->SetAtoms(true);
+      (*p_processes)[m_selected]->SelectOne();
       if (!(*p_processes)[m_selected]->OneEvent(-1.,1)) {
 	ATOOLS::msg.Error()<<"Simple_Chain::FillBlob(): "
 			   <<"Could not select any process! Retry."<<std::endl;
@@ -784,7 +782,7 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 #ifdef DEBUG__Simple_Chain
       // std::cout<<"   Completed one event."<<std::endl;
 #endif
-      p_xs=dynamic_cast<EXTRAXS::XS_Base*>((*p_processes)[m_selected]->Selected());
+      p_xs=static_cast<EXTRAXS::XS_Base*>((*p_processes)[m_selected]->Selected());
       ATOOLS::Vec4D ptot;
       double x[2];
       test=true;
@@ -853,9 +851,7 @@ bool Simple_Chain::DiceProcess()
   for (int i=sorter.XDataSize()-1;i>=0;--i) {
     if ((cur+=sorter.XData(i)/norm)>rannr) {
       m_selected=sorter.XYData(i).second;
-#ifdef USING__Sherpa
       p_processes->SetSelected((*p_processes)[m_selected]);
-#endif
       if (m_last[1]<(*p_processes)[m_selected]->ISR()->SprimeMin()) {
 	ATOOLS::msg.Error()<<"Simple_Chain::DiceProcess(): s' out of bounds: "
 			   <<m_last[1]<<" vs. "<<(*p_processes)[m_selected]->ISR()->SprimeMin()
@@ -866,8 +862,7 @@ bool Simple_Chain::DiceProcess()
       double sprimemin=isr->SprimeMin(), sprimemax=isr->SprimeMax();
       isr->SetSprimeMax(m_last[1]*m_last[1]);
       isr->SetSprimeMin(4.0*m_last[0]*m_last[0]);
-      // think about setting y_{min} and y_{max} to \pm\ln{\frac{\sqrt{s'}}{2*p_\perp}} (massless)
-      (*p_processes)[m_selected]->SetMax((*m_maximum[m_selected])(m_last[0]),1);
+      SetMaximum((*p_processes)[m_selected]);
       FillBlob(p_blob);
       isr->SetSprimeMax(sprimemax);
       isr->SetSprimeMin(sprimemin);
@@ -899,6 +894,18 @@ bool Simple_Chain::DiceOrderingParameter()
   m_dicedparameter=true;
   m_stophard=false;
   return true;
+}
+
+void Simple_Chain::SetMaximum(EXTRAXS::XS_Base *process) 
+{
+  process->SetTotalXS(0.);
+  if ((*process)[0]==NULL) process->SetMax((*m_maxima[process->Name()])(m_last[0]),true);
+  else {
+    EXTRAXS::XS_Group *node=dynamic_cast<EXTRAXS::XS_Group*>(process);
+    for (size_t i=0;i<node->Size();++i) SetMaximum((*node)[i]);
+    node->SetMax(0.,false);
+    node->SetTotalXS(1.);
+  }
 }
 
 void Simple_Chain::Reset()
