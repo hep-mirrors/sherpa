@@ -514,7 +514,7 @@ void ATOOLS::ParticleInit(std::string path)
 			   strong, spin, Majorana, Take, stable, massive, "isrphoton",1);
       //dummy for 4gluon-higgs vertex
       if (kfc==21)
-	*(pi++)=Part_Info( kf::code(85), mass, width, charge, icharge, 
+	*(pi++)=Part_Info( kf::shgluon, mass, width, charge, icharge, 
 			   strong, spin, Majorana, Take, stable, massive, "shgluon",1);
       kfcold = kfc;
     }
