@@ -52,6 +52,13 @@ namespace AMISIC {
   }
   
   template <class Argument_Type,class Result_Type>
+  const bool Grid_Creator_Arguments<Argument_Type,Result_Type>::
+  Initialized() const
+  { 
+    return m_initialized; 
+  }
+  
+  template <class Argument_Type,class Result_Type>
   const Result_Type Grid_Creator_Arguments<Argument_Type,Result_Type>::
   GridDeltaYMax() const
   { return m_griddeltaymax; }

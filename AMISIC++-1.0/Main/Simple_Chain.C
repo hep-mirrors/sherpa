@@ -1114,5 +1114,5 @@ void Simple_Chain::Update(const MI_Base *mibase)
 
 void Simple_Chain::PrepareTerminate() 
 {
-  p_gridcreator->WriteOutGrid(m_comments);
+  if (p_gridcreator->Initialized()) p_gridcreator->WriteOutGrid(m_comments);
 }

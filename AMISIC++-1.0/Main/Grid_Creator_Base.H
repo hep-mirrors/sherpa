@@ -26,7 +26,7 @@ namespace AMISIC {
     std::string m_gridxvariable, m_gridxscaling;
     std::string m_gridyvariable, m_gridyscaling;
     
-    bool m_useymax, m_useymin, m_optimize;
+    bool m_useymax, m_useymin, m_optimize, m_initialized;
     
     bool m_relativexmin, m_relativedeltaxmin;
     bool m_relativeymin, m_relativedeltaymin;
@@ -58,6 +58,8 @@ namespace AMISIC {
     const GridResultType   GridDeltaYMin() const;
     const GridResultType   GridDeltaYMax() const;
     
+    const bool Initialized() const;
+
   }; // end of class Arguments
 
   template <class Argument_Type,class Result_Type>

@@ -13,6 +13,7 @@ namespace AMISIC {
     m_useymax(false),
     m_useymin(false),
     m_optimize(true),
+    m_initialized(false),
     m_relativexmin(false),
     m_relativedeltaxmin(false),
     m_relativeymin(false),
@@ -145,7 +146,10 @@ namespace AMISIC {
     bool success=true;
     int formerlevel=ATOOLS::msg.Level();
     ATOOLS::msg.SetLevel(m_outputlevel);
-    if (!CreateInitialGrid()) {
+    if (CreateInitialGrid()) {
+      m_initialized=true;
+    }
+    else {
       ATOOLS::msg.Error()<<"Grid_Creator_Base::CreateGrid(..): "
 			 <<"Initial grid creation failed! Abort."<<std::endl;
       return false;
