@@ -3,6 +3,7 @@
 using namespace ANALYSIS;
 
 #include "MyStrStream.H"
+#include "Durham_Algorithm.H"
 
 template <class Class>
 Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
@@ -375,6 +376,7 @@ void Multiplicity_vs_JetPT::Evaluate(const ATOOLS::Particle_List &particlelist,
 {
   ATOOLS::Particle_List *jetlist=p_ana->GetParticleList(m_jetlist);
   if (jetlist->size()==0) return;
+  std::sort(jetlist->begin(),jetlist->end(),ATOOLS::Order_PT());
   m_histogram.Add((*jetlist)[0]->Momentum().PPerp(),weight*particlelist.size(),ncount);
 }
     
