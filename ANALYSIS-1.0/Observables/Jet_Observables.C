@@ -59,12 +59,12 @@ using namespace ATOOLS;
 
 Jet_Observable_Base::Jet_Observable_Base(unsigned int type,double xmin,double xmax,int nbins,
 					 unsigned int mode,unsigned int minn,unsigned int maxn, 
-					 const std::string & lname) :
+					 const std::string & listname) :
   Primitive_Observable_Base(type,xmin,xmax,nbins,NULL), m_mode(mode), m_minn(minn), m_maxn(maxn)
 {
-  m_listname=lname;
+  m_listname=listname;
   m_name  = std::string("jet_");
-  if (lname!="Analysed") m_name=lname+std::string("_")+m_name;
+  if (listname!="Analysed") m_name=listname+std::string("_")+m_name;
   if (m_minn!=0) {
     MyStrStream str;
     str<<m_name<<m_mode<<"_"<<m_minn<<"_";
@@ -260,7 +260,7 @@ void Two_Jet_Observable_Base::Reset()
 
 void Two_Jet_Observable_Base::SetPTRange(const unsigned int jetno,const double minpt,const double maxpt)
 {
-  if (!(jetno>=(int)m_minn&&jetno<=(int)m_maxn)) {
+  if (!(jetno>=m_minn && jetno<=m_maxn)) {
     msg.Error()<<"Potential Error in Two_Jet_Observable_Base::SetMinPT("<<jetno<<")"<<std::endl
 	       <<"   Out of bounds : "<<m_minn<<" ... "<<m_maxn<<", will continue."<<std::endl;
     return;
@@ -280,8 +280,8 @@ DEFINE_OBSERVABLE_GETTER(Jet_Eta_Distribution,Jet_Eta_Distribution_Getter,"JetEt
 
 Jet_Eta_Distribution::Jet_Eta_Distribution(unsigned int type,double xmin,double xmax,int nbins,
 					   unsigned int mode,unsigned int minn,unsigned int maxn, 
-					   const std::string & lname) :
-  Jet_Observable_Base(type,xmin,xmax,nbins,mode,minn,maxn,lname) 
+					   const std::string & listname) :
+  Jet_Observable_Base(type,xmin,xmax,nbins,mode,minn,maxn,listname) 
 {
   m_name+="eta_";
 }
@@ -310,8 +310,8 @@ DEFINE_OBSERVABLE_GETTER(Jet_PT_Distribution,Jet_PT_Distribution_Getter,"JetPT")
 
 Jet_PT_Distribution::Jet_PT_Distribution(unsigned int type,double xmin,double xmax,int nbins,
 					 unsigned int mode,unsigned int minn,unsigned int maxn, 
-					 const std::string & lname) :
-  Jet_Observable_Base(type,xmin,xmax,nbins,mode,minn,maxn,lname) 
+					 const std::string & listname) :
+  Jet_Observable_Base(type,xmin,xmax,nbins,mode,minn,maxn,listname) 
 {
   m_name+="pt_";
 }
@@ -332,8 +332,8 @@ DEFINE_OBSERVABLE_GETTER(Jet_E_Distribution,Jet_E_Distribution_Getter,"JetE");
 
 Jet_E_Distribution::Jet_E_Distribution(unsigned int type,double xmin,double xmax,int nbins,
 					 unsigned int mode,unsigned int minn,unsigned int maxn, 
-					 const std::string & lname) :
-  Jet_Observable_Base(type,xmin,xmax,nbins,mode,minn,maxn,lname) 
+					 const std::string & listname) :
+  Jet_Observable_Base(type,xmin,xmax,nbins,mode,minn,maxn,listname) 
 {
   m_name+="E_";
 }
@@ -355,8 +355,8 @@ DEFINE_OBSERVABLE_GETTER(Jet_Differential_Rates,
 
 Jet_Differential_Rates::Jet_Differential_Rates(unsigned int type,double xmin,double xmax,int nbins,
 					       unsigned int mode,unsigned int minn,unsigned int maxn, 
-					       const std::string & lname) :
-  Jet_Observable_Base(type,xmin,xmax,nbins,mode,minn,maxn,lname) 
+					       const std::string & listname) :
+  Jet_Observable_Base(type,xmin,xmax,nbins,mode,minn,maxn,listname) 
 {
   m_name="KtJetrates(1)"+m_name;
 }
@@ -368,6 +368,11 @@ void Jet_Differential_Rates::Evaluate(const Blob_List & blobs,double weight, int
   std::string key="KtJetrates(1)"+m_listname;
   if (ktdrs) {
 //     std::vector<double> * drs=ktdrs->Get<std::vector<double> *>();
+    /*
+    MyStrStream str;
+    str<<"KtJetrates("<<(*drs)[0]<<")"<<m_listname;
+    str>>key;
+    */
     key="KtJetrates(1)"+m_listname;
   }
 

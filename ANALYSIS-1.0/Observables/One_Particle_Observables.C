@@ -1,4 +1,5 @@
 #include "One_Particle_Observables.H"
+#include "MyStrStream.H"
 
 using namespace ANALYSIS;
 
@@ -57,13 +58,17 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 using namespace ATOOLS;
 using namespace std;
 
-One_Particle_Observable_Base::One_Particle_Observable_Base(const Flavour & _flav,
-							   int _type,double _xmin,double _xmax,int _nbins,
-							   const std::string & _name) :
-  Primitive_Observable_Base(_type,_xmin,_xmax,_nbins,NULL), 
-  m_flav(_flav)
+One_Particle_Observable_Base::One_Particle_Observable_Base(const Flavour & flav,
+							   int type,double xmin,double xmax,int nbins,
+							   const std::string & listname, const std::string & name) :
+  Primitive_Observable_Base(type,xmin,xmax,nbins,NULL), 
+  m_flav(flav)
 {
-  m_name     = _name + m_flav.Name()+std::string(".dat");
+  MyStrStream str;
+  str<<name<<m_flav<<".dat";
+  str>>m_name;
+
+  if (listname!=std::string("")) m_listname = listname;
   m_blobtype = std::string("");
   m_blobdisc = false;
 }
@@ -99,10 +104,10 @@ void One_Particle_Observable_Base::Evaluate(const Particle_List & plist,double w
 
 DEFINE_OBSERVABLE_GETTER(One_Particle_ET,One_Particle_ET_Getter,"ET");
 
-One_Particle_ET::One_Particle_ET(const Flavour & _flav,
-				 int _type,double _xmin,double _xmax,int _nbins,
-				 const std::string & _name) :
-  One_Particle_Observable_Base(_flav,_type,_xmin,_xmax,_nbins,"ET") { }
+One_Particle_ET::One_Particle_ET(const Flavour & flav,
+				 int type,double xmin,double xmax,int nbins,
+				 const std::string & listname) :
+  One_Particle_Observable_Base(flav,type,xmin,xmax,nbins,listname,"ET") { }
 
 
 void One_Particle_ET::Evaluate(const Vec4D & mom,double weight,int ncount) 
@@ -116,17 +121,17 @@ void One_Particle_ET::Evaluate(const Vec4D & mom,double weight,int ncount)
 
 Primitive_Observable_Base * One_Particle_ET::Copy() const
 {
-  return new One_Particle_ET(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_name);
+  return new One_Particle_ET(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 DEFINE_OBSERVABLE_GETTER(One_Particle_PT,One_Particle_PT_Getter,"PT");
 
-One_Particle_PT::One_Particle_PT(const Flavour & _flav,
-				 int _type,double _xmin,double _xmax,int _nbins,
-				 const std::string & _name) :
-  One_Particle_Observable_Base(_flav,_type,_xmin,_xmax,_nbins,"PT") { }
+One_Particle_PT::One_Particle_PT(const Flavour & flav,
+				 int type,double xmin,double xmax,int nbins,
+				 const std::string & listname) :
+  One_Particle_Observable_Base(flav,type,xmin,xmax,nbins,listname,"PT") { }
 
 
 void One_Particle_PT::Evaluate(const Vec4D & mom,double weight, int ncount) 
@@ -137,17 +142,17 @@ void One_Particle_PT::Evaluate(const Vec4D & mom,double weight, int ncount)
 
 Primitive_Observable_Base * One_Particle_PT::Copy() const 
 {
-  return new One_Particle_PT(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_name);
+  return new One_Particle_PT(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 DEFINE_OBSERVABLE_GETTER(One_Particle_Eta,One_Particle_Eta_Getter,"Eta");
 
-One_Particle_Eta::One_Particle_Eta(const Flavour & _flav,
-				   int _type,double _xmin,double _xmax,int _nbins,
-				   const std::string & _name) :
-  One_Particle_Observable_Base(_flav,_type,_xmin,_xmax,_nbins,"Eta") { }
+One_Particle_Eta::One_Particle_Eta(const Flavour & flav,
+				   int type,double xmin,double xmax,int nbins,
+				   const std::string & listname) :
+  One_Particle_Observable_Base(flav,type,xmin,xmax,nbins,listname,"Eta") { }
 
 
 void One_Particle_Eta::Evaluate(const Vec4D & mom,double weight, int ncount) 
@@ -165,17 +170,17 @@ void One_Particle_Eta::Evaluate(const Vec4D & mom,double weight, int ncount)
 
 Primitive_Observable_Base * One_Particle_Eta::Copy() const
 {
-  return new One_Particle_Eta(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_name);
+  return new One_Particle_Eta(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 DEFINE_OBSERVABLE_GETTER(One_Particle_E,One_Particle_E_Getter,"E");
 
-One_Particle_E::One_Particle_E(const Flavour & _flav,
-			       int _type,double _xmin,double _xmax,int _nbins,
-			       const std::string & _name) :
-  One_Particle_Observable_Base(_flav,_type,_xmin,_xmax,_nbins,"E") { }
+One_Particle_E::One_Particle_E(const Flavour & flav,
+			       int type,double xmin,double xmax,int nbins,
+			       const std::string & listname) :
+  One_Particle_Observable_Base(flav,type,xmin,xmax,nbins,listname,"E") { }
 
 
 void One_Particle_E::Evaluate(const Vec4D & mom,double weight, int ncount) 
@@ -186,17 +191,17 @@ void One_Particle_E::Evaluate(const Vec4D & mom,double weight, int ncount)
 
 Primitive_Observable_Base * One_Particle_E::Copy() const
 {
-  return new One_Particle_E(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_name);
+  return new One_Particle_E(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 DEFINE_OBSERVABLE_GETTER(One_Particle_EVis,One_Particle_EVis_Getter,"EVis");
 
-One_Particle_EVis::One_Particle_EVis(const Flavour & _flav,
-			       int _type,double _xmin,double _xmax,int _nbins,
-			       const std::string & _name) :
-  One_Particle_Observable_Base(_flav,_type,_xmin,_xmax,_nbins,"EVis") { }
+One_Particle_EVis::One_Particle_EVis(const Flavour & flav,
+			       int type,double xmin,double xmax,int nbins,
+			       const std::string & listname) :
+  One_Particle_Observable_Base(flav,type,xmin,xmax,nbins,listname,"EVis") { }
 
 
 void One_Particle_EVis::Evaluate(const Vec4D & mom,double weight, int ncount) 
@@ -223,5 +228,5 @@ void One_Particle_EVis::Evaluate(const Particle_List & plist,double weight,int n
 }
 Primitive_Observable_Base * One_Particle_EVis::Copy() const
 {
-  return new One_Particle_EVis(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_name);
+  return new One_Particle_EVis(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }

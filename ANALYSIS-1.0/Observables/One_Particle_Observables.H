@@ -7,50 +7,70 @@ namespace ANALYSIS {
   class One_Particle_Observable_Base : public Primitive_Observable_Base {  
   protected:
     ATOOLS::Flavour m_flav;
-    void virtual Evaluate(const ATOOLS::Vec4D &,double=1.,int=1) = 0; 
-    void virtual Evaluate(double,double=1.,int=1); 
+    void virtual Evaluate(const ATOOLS::Vec4D & mom, double weight, int ncount) = 0; 
+    void virtual Evaluate(double value, double weight, int ncount); 
   public:
-    One_Particle_Observable_Base(const ATOOLS::Flavour &,int,double,double,int,
-				 const std::string & =std::string(""));
-    void virtual Evaluate(int,const ATOOLS::Vec4D *,const ATOOLS::Flavour *,double=1.,int ncount=1);
-    void virtual Evaluate(const ATOOLS::Particle_List &,double=1.,int ncount=1);
+    One_Particle_Observable_Base(const ATOOLS::Flavour & flav,
+				 int type, double xmin, double xmax, int nbins, 
+				 const std::string & listname,
+				 const std::string & name);
+    void virtual Evaluate(int nout, const ATOOLS::Vec4D * moms,
+			  const ATOOLS::Flavour * flavs,
+			  double weight, int ncount);
+    void virtual Evaluate(const ATOOLS::Particle_List & plist, 
+			  double weight, int ncount);
   };
 
   class One_Particle_ET : public One_Particle_Observable_Base {  
-    void Evaluate(const ATOOLS::Vec4D &,double=1.,int=1); 
+    void Evaluate(const ATOOLS::Vec4D & mom, double weight, int ncount); 
   public:
-    One_Particle_ET(const ATOOLS::Flavour &,int,double,double,int,const std::string & =std::string("E_T:"));
+    One_Particle_ET(const ATOOLS::Flavour & flav,
+		    int type,double xmin,double xmax,int nbins,
+		    const std::string & listname=std::string(""));
     Primitive_Observable_Base * Copy() const;
   };
 
   class One_Particle_PT : public One_Particle_Observable_Base {  
-    void Evaluate(const ATOOLS::Vec4D &,double=1., int=1); 
+    void Evaluate(const ATOOLS::Vec4D & mom, double weight, int ncount); 
   public:
-    One_Particle_PT(const ATOOLS::Flavour &,int,double,double,int,const std::string & =std::string("p_T:"));
+    One_Particle_PT(const ATOOLS::Flavour & flav,
+		    int type,double xmin,double xmax,int nbins,
+		    const std::string & listname=std::string(""));
     Primitive_Observable_Base * Copy() const;
   };
 
   class One_Particle_Eta : public One_Particle_Observable_Base {  
-    void Evaluate(const ATOOLS::Vec4D &,double=1.,int=1); 
+    void Evaluate(const ATOOLS::Vec4D & mom, double weight, int ncount); 
   public:
-    One_Particle_Eta(const ATOOLS::Flavour &,int,double,double,int,const std::string & =std::string("eta:"));
+    One_Particle_Eta(const ATOOLS::Flavour & flav,
+		     int type,double xmin,double xmax,int nbins,
+		     const std::string & listname=std::string(""));
     Primitive_Observable_Base * Copy() const;
   };
 
   class One_Particle_E : public One_Particle_Observable_Base {  
-    void Evaluate(const ATOOLS::Vec4D &,double=1., int=1); 
+    void Evaluate(const ATOOLS::Vec4D & mom, double weight, int ncount); 
   public:
-    One_Particle_E(const ATOOLS::Flavour &,int,double,double,int,const std::string & =std::string("E:"));
+    One_Particle_E(const ATOOLS::Flavour & flav,
+		   int type,double xmin,double xmax,int nbins,
+		   const std::string & listname=std::string(""));
     Primitive_Observable_Base * Copy() const;
   };
 
+// ---------------------------------------------------------------------------
+
   class One_Particle_EVis : public One_Particle_Observable_Base {  
-    void Evaluate(const ATOOLS::Vec4D &,double=1., int=1); 
+    void Evaluate(const ATOOLS::Vec4D & mom, double weight, int ncount); 
   public:
-    One_Particle_EVis(const ATOOLS::Flavour &,int,double,double,int,const std::string & =std::string("EVis:"));
+    One_Particle_EVis(const ATOOLS::Flavour & flav,
+		      int type,double xmin,double xmax,int nbins,
+		      const std::string & listname=std::string(""));
     Primitive_Observable_Base * Copy() const;
-    void Evaluate(int,const ATOOLS::Vec4D *,const ATOOLS::Flavour *,double=1.,int ncount=1);
-    void Evaluate(const ATOOLS::Particle_List &,double=1.,int ncount=1);
+    void Evaluate(int nout, const ATOOLS::Vec4D * moms,
+		  const ATOOLS::Flavour * flavs,
+		  double weight, int ncount);
+    void Evaluate(const ATOOLS::Particle_List & plist, 
+		  double weight, int ncount);
   };
 }
 

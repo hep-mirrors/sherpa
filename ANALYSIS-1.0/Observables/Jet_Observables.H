@@ -22,18 +22,18 @@ namespace ANALYSIS {
 
     Jet_Observable_Base(unsigned int type,double xmin,double xmax,int nbins,
 			unsigned int mode, unsigned int minn, unsigned int maxn, 
-			const std::string & =std::string("Jets"));
+			const std::string & listname=std::string("Jets"));
 
-    void Evaluate(const ATOOLS::Particle_List &,double, int);
-    void Evaluate(const ATOOLS::Blob_List & blobs,double value, int);
+    void Evaluate(const ATOOLS::Particle_List & pl,double weight, int ncount);
+    void Evaluate(const ATOOLS::Blob_List & blobs,double weight, int ncount);
 
-    void EndEvaluation(double);
+    void EndEvaluation(double scale);
     virtual void Output(const std::string & pname);
 
-    Primitive_Observable_Base & operator+=(const Primitive_Observable_Base &);
+    Primitive_Observable_Base & operator+=(const Primitive_Observable_Base & ob);
     void Reset();
 
-    virtual double Calc(const ATOOLS::Particle *) =0;
+    virtual double Calc(const ATOOLS::Particle * p) =0;
   };
 
   class Two_Jet_Observable_Base : public Primitive_Observable_Base {
@@ -67,7 +67,7 @@ namespace ANALYSIS {
 			 unsigned int mode,unsigned int minn,unsigned int maxn, 
 			 const std::string & =std::string("Jets"));
 
-    double Calc(const ATOOLS::Particle *);
+    double Calc(const ATOOLS::Particle * p);
     Primitive_Observable_Base * Copy() const ;
   };
 
@@ -77,7 +77,7 @@ namespace ANALYSIS {
     Jet_PT_Distribution(unsigned int type,double xmin,double xmax,int nbins,
 			unsigned int mode,unsigned int minn,unsigned int maxn, 
 			const std::string & =std::string("Jets"));
-    double Calc(const ATOOLS::Particle *);
+    double Calc(const ATOOLS::Particle * p);
     Primitive_Observable_Base * Copy() const ;
   };
 
@@ -87,7 +87,7 @@ namespace ANALYSIS {
     Jet_E_Distribution(unsigned int type,double xmin,double xmax,int nbins,
 			unsigned int mode,unsigned int minn,unsigned int maxn, 
 			const std::string & =std::string("Jets"));
-    double Calc(const ATOOLS::Particle *);
+    double Calc(const ATOOLS::Particle * p);
     Primitive_Observable_Base * Copy() const ;
   };
 
@@ -96,8 +96,8 @@ namespace ANALYSIS {
     Jet_Differential_Rates(unsigned int type,double xmin,double xmax,int nbins,
 			   unsigned int mode, unsigned int minn,unsigned int maxn, 
 			   const std::string & =std::string("FinalState"));
-    double Calc(const ATOOLS::Particle *);
-    void Evaluate(const ATOOLS::Blob_List & blobs,double value, int);
+    double Calc(const ATOOLS::Particle * p);
+    void Evaluate(const ATOOLS::Blob_List & blobs,double weight, int ncount);
 
     Primitive_Observable_Base * Copy() const ;
   };
@@ -114,7 +114,8 @@ namespace ANALYSIS {
 			    const std::string & =std::string("Jets"));
 
     Primitive_Observable_Base * Copy() const;
-    double Calc(const ATOOLS::Particle *,const ATOOLS::Particle *,const int,const int);
+    double Calc(const ATOOLS::Particle * p1,const ATOOLS::Particle * p2,
+		const int jet1,const int jet2);
   };
 
   class Jet_DeltaEta_Distribution : public Two_Jet_Observable_Base {
@@ -125,7 +126,8 @@ namespace ANALYSIS {
 			      const std::string & =std::string("Jets"));
     
     Primitive_Observable_Base * Copy() const;
-    double Calc(const ATOOLS::Particle *,const ATOOLS::Particle *,const int,const int);
+    double Calc(const ATOOLS::Particle * p1,const ATOOLS::Particle * p2,
+		const int jet1,const int jet2);
   };
 
   class Jet_DeltaPhi_Distribution : public Two_Jet_Observable_Base {
@@ -136,7 +138,8 @@ namespace ANALYSIS {
 			      const std::string & =std::string("Jets"));
     
     Primitive_Observable_Base * Copy() const;
-    double Calc(const ATOOLS::Particle *,const ATOOLS::Particle *,const int,const int);
+    double Calc(const ATOOLS::Particle * p1,const ATOOLS::Particle * p2,
+		const int jet1,const int jet2);
   };
 }
 #endif

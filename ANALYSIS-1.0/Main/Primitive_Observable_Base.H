@@ -41,9 +41,9 @@ namespace ANALYSIS {
 
     // constructors
     Primitive_Observable_Base();
-    Primitive_Observable_Base(int _type,double _xmin,double _xmax,int _nbins,
-			      ATOOLS::Selector_Base * _sel);
-    Primitive_Observable_Base(Primitive_Observable_Base *);
+    Primitive_Observable_Base(int type,double xmin,double xmax,int nbins,
+			      ATOOLS::Selector_Base * sel=NULL);
+    Primitive_Observable_Base(const Primitive_Observable_Base & old);
 
     // destructor
     virtual ~Primitive_Observable_Base();
@@ -51,34 +51,46 @@ namespace ANALYSIS {
     // member functions
     virtual Primitive_Observable_Base *Copy() const = 0;
 
-    virtual void Evaluate(int,const ATOOLS::Vec4D *,const ATOOLS::Flavour *,double=1.);
-    virtual void Evaluate(const ATOOLS::Particle_List &,double=1.,int=1);
-    virtual void Evaluate(const ATOOLS::Blob_List &,double=1.,int=1);
+    virtual void Evaluate(int nout, const ATOOLS::Vec4D * moms,
+			  const ATOOLS::Flavour * flavs,
+			  double weight, int ncount);
+    virtual void Evaluate(const ATOOLS::Particle_List & plist, 
+			  double weight, int ncount);
+    virtual void Evaluate(const ATOOLS::Blob_List & blobs, double value, int ncount);
 
     virtual void EndEvaluation(double scale=1.);
     virtual void Reset();
     virtual void Output(const std::string & pname);
 
-    virtual void SetBlobType(const std::string & =std::string(""));
-    virtual void SetAnalysis(Primitive_Analysis*);
+    virtual void SetBlobType(const std::string & btype=std::string(""));
+    virtual void SetAnalysis(Primitive_Analysis  * ana);
 
-    virtual Primitive_Observable_Base &operator+=(const Primitive_Observable_Base &);
+    virtual Primitive_Observable_Base & operator+=(const Primitive_Observable_Base & ob);
 
-    inline int    Type()  const { return m_type;  }
-    inline int    Nbins() const { return m_nbins; }
-    inline double Xmin()  const { return m_xmin;  }
-    inline double Xmax()  const { return m_xmax;  }
-
-    inline const std::string &Name() const       { return m_name;        }
-    inline bool               Splittable() const { return m_splitt_flag; }
-
-    inline ATOOLS::Histogram *const     Histo() const { return p_histo; }
-    inline ATOOLS::Selector_Base *const Sel()   const { return p_sel;   }
-
-    inline void SetName(const std::string &name) { m_name=name; }
+    int                     Type()  const;
+    int                     Nbins() const;
+    double                  Xmin()  const;
+    double                  Xmax()  const;
+    std::string             Name()  const;
+    void SetName(const std::string &);
+    ATOOLS::Histogram     * Histo() const;
+    ATOOLS::Selector_Base * Sel()   const;
+    bool                    Splittable() const;
 
   };// end of class Primitive_Observable_Base
 
+  // --- inline functions ---
+  inline int                     Primitive_Observable_Base::Type()       const { return m_type; }
+  inline int                     Primitive_Observable_Base::Nbins()      const { return m_nbins; }
+  inline double                  Primitive_Observable_Base::Xmin()       const { return m_xmin; }
+  inline double                  Primitive_Observable_Base::Xmax()       const { return m_xmax; }
+  inline std::string             Primitive_Observable_Base::Name()       const { return m_name; }
+
+  inline void Primitive_Observable_Base::SetName(const std::string & name ) { m_name=name; }
+
+  inline ATOOLS::Histogram     * Primitive_Observable_Base::Histo()      const { return p_histo; }
+  inline ATOOLS::Selector_Base * Primitive_Observable_Base::Sel()        const { return p_sel; }
+  inline bool                    Primitive_Observable_Base::Splittable() const { return m_splitt_flag; }
 }// end of namespace ANALYSIS
 
 #endif

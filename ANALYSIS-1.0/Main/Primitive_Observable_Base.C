@@ -21,21 +21,25 @@ Primitive_Observable_Base::Primitive_Observable_Base() :
   m_blobdisc = false;
 }
 
-Primitive_Observable_Base::Primitive_Observable_Base(int _type,double _xmin,double _xmax,int _nbins,
-						     Selector_Base * _sel) :
-  m_type(_type), m_nbins(_nbins), m_xmin(_xmin), m_xmax(_xmax), 
-  m_listname(std::string("Analysed")), m_splitt_flag(true), p_ana(NULL), p_sel(_sel)
+Primitive_Observable_Base::Primitive_Observable_Base(int type,double xmin,double xmax,int nbins,
+						     Selector_Base * sel) :
+  m_type(type), m_nbins(nbins), m_xmin(xmin), m_xmax(xmax), 
+  m_listname(std::string("Analysed")), m_splitt_flag(true), p_ana(NULL), p_sel(sel)
 { 
   p_histo = new Histogram(m_type,m_xmin,m_xmax,m_nbins);
 }
 
 
-Primitive_Observable_Base::Primitive_Observable_Base(Primitive_Observable_Base * old) :
-  m_type(old->m_type), m_nbins(old->m_nbins), m_xmin(old->m_xmin), m_xmax(old->m_xmax), 
-  m_name(old->m_name), m_listname(old->m_listname), p_sel(old->p_sel)
+Primitive_Observable_Base::Primitive_Observable_Base(const Primitive_Observable_Base & old) :
+  m_type(old.m_type), m_nbins(old.m_nbins), m_xmin(old.m_xmin), m_xmax(old.m_xmax), 
+  m_name(old.m_name), m_listname(old.m_listname), p_sel(old.p_sel)
 { 
-  msg.Out()<<"LEGACY WARNING  Primitive_Observable_Base::Primitive_Observable_Base."<<std::endl;
-  p_histo = new Histogram(old->p_histo);
+  msg.Out()<<"LEGACY WARNING:  copy constructor Primitive_Observable_Base::Primitive_Observable_Base called"<<std::endl
+	   <<"                 use Copy() method instead!"<<std::endl;
+  if (old.p_histo) {
+    p_histo = new Histogram(old.p_histo);
+  }
+  p_histo=NULL;
 }
 
 
@@ -44,16 +48,16 @@ Primitive_Observable_Base::~Primitive_Observable_Base()
   if (p_histo!=0) { delete p_histo; p_histo = 0; }
 }
 
-void Primitive_Observable_Base::SetBlobType(const std::string & _btype) 
+void Primitive_Observable_Base::SetBlobType(const std::string & btype) 
 { 
-  m_blobtype = _btype;
+  m_blobtype = btype;
   m_blobdisc = false;
-  if (_btype!=std::string("")) m_blobdisc = true;
+  if (btype!=std::string("")) m_blobdisc = true;
 }
 
-void Primitive_Observable_Base::Evaluate(int,const Vec4D *,const Flavour *,double) 
+void Primitive_Observable_Base::Evaluate(int,const Vec4D *,const Flavour *,double, int) 
 {
-  msg.Error()<<"Error in Primitive_Observable_Base::Evaluate (vecs) "<<m_name<<std::endl;
+  msg.Error()<<"ERROR virtual function Primitive_Observable_Base::Evaluate (vecs) called "<<m_name<<std::endl;
 }
 
 void Primitive_Observable_Base::Evaluate(const Particle_List & pl,double weight,int ncount) 
@@ -61,26 +65,23 @@ void Primitive_Observable_Base::Evaluate(const Particle_List & pl,double weight,
   if (ncount>1) {
     msg.Out()<<"WARNING: "<<Name()
 	     <<"::Evaluate(const Particle_List & pl,const double weight,"<<ncount<<") "<<std::endl;
-    Evaluate(pl,weight);
-    for (int i=2;i<=ncount;++i) {
-      Evaluate(pl,0.);
-    }
+    Evaluate(pl,weight,ncount);
     return;
   }
-  msg.Error()<<"Error in Primitive_Observable_Base::Evaluate (pl) "<<m_name<<std::endl;
+  msg.Error()<<"ERROR virutal function Primitive_Observable_Base::Evaluate (pl) called "<<m_name<<std::endl;
 }
 
-void Primitive_Observable_Base::Evaluate(const Blob_List & blobs,double value, int ncount)
+void Primitive_Observable_Base::Evaluate(const Blob_List & blobs, double value, int ncount)
 {
   Particle_List * pl=p_ana->GetParticleList(m_listname);
   Evaluate(*pl,value, ncount);
 }
 
 
-void Primitive_Observable_Base::EndEvaluation(double _scale) {
+void Primitive_Observable_Base::EndEvaluation(double scale) {
   if (p_histo) {
     p_histo->Finalize();
-    if (_scale!=1.) p_histo->Scale(_scale);
+    if (scale!=1.) p_histo->Scale(scale);
     p_histo->Output();
   }
 }
@@ -91,11 +92,11 @@ void Primitive_Observable_Base::SetFlavInfo(int _nout,const Vec4D * _moms,const 
 }
 */
 
-void Primitive_Observable_Base::Output(const std::string & _pname) {
+void Primitive_Observable_Base::Output(const std::string & pname) {
   if (p_histo) {
     int  mode_dir = 448;
-    ATOOLS::MakeDir((_pname).c_str(),mode_dir); 
-    p_histo->Output((_pname+std::string("/")+m_name).c_str());
+    ATOOLS::MakeDir((pname).c_str(),mode_dir); 
+    p_histo->Output((pname+std::string("/")+m_name).c_str());
   }
 }
 
