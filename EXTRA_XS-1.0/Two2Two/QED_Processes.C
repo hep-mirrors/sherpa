@@ -21,7 +21,8 @@ QED_Processes::QED_Processes(PDF::ISR_Handler *const isr,BEAM::Beam_Spectra_Hand
   for (int ifl=1;ifl<6;++ifl) {
     p_flavours[2] = ATOOLS::Flavour(kf::code(ifl));
     p_flavours[3] = ATOOLS::Flavour(kf::code(ifl)).Bar();
-    Add(p_xsselector->GetXS(m_nin,m_nout,p_flavours,p_isrhandler->KMROn()));
+    p_xsselector->SetOffShell(p_isrhandler->KMROn());
+    Add(p_xsselector->GetXS(m_nin,m_nout,p_flavours));
   }
   p_flavours[2] = Flavour(kf::jet);
   p_flavours[3] = Flavour(kf::jet);

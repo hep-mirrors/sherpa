@@ -32,13 +32,14 @@ QCD_Processes::QCD_Processes(PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler 
 void QCD_Processes::FillMode(Mode mode) 
 {
   XS_Group *group;
+  p_xsselector->SetOffShell(p_isrhandler->KMROn());
   switch (mode) {
   case All:
   case gggg:
     group = new XS_Group(2,2,p_flavours);
     group->SetName(std::string(" gg -> gg"));
     p_flavours[0] = p_flavours[1] = p_flavours[2] = p_flavours[3] = ATOOLS::Flavour(ATOOLS::kf::gluon);
-    group->Add(p_xsselector->GetXS(2,2,p_flavours,p_isrhandler->KMROn()));
+    group->Add(p_xsselector->GetXS(2,2,p_flavours));
     Add(group);
     if (mode==gggg) break;
   case qqbgg:
@@ -48,7 +49,7 @@ void QCD_Processes::FillMode(Mode mode)
     for (int i=1;i<6;i++) {
       p_flavours[0] = ATOOLS::Flavour(ATOOLS::kf::code(i));
       p_flavours[1] = p_flavours[0].Bar();
-      group->Add(p_xsselector->GetXS(2,2,p_flavours,p_isrhandler->KMROn()));
+      group->Add(p_xsselector->GetXS(2,2,p_flavours));
     }
     Add(group);
     if (mode==qqbgg) break;
@@ -59,7 +60,7 @@ void QCD_Processes::FillMode(Mode mode)
     for (int i=1;i<6;i++) {
       p_flavours[2] = ATOOLS::Flavour(ATOOLS::kf::code(i));
       p_flavours[3] = p_flavours[2].Bar();
-      group->Add(p_xsselector->GetXS(2,2,p_flavours,p_isrhandler->KMROn()));
+      group->Add(p_xsselector->GetXS(2,2,p_flavours));
     }
     Add(group);
     if (mode==ggqqb) break;
@@ -69,7 +70,7 @@ void QCD_Processes::FillMode(Mode mode)
     p_flavours[0] = p_flavours[2] = Flavour(kf::gluon);
     for (int i=1;i<6;i++) {
       p_flavours[1] = p_flavours[3] = ATOOLS::Flavour(ATOOLS::kf::code(i));
-      group->Add(p_xsselector->GetXS(2,2,p_flavours,p_isrhandler->KMROn()));
+      group->Add(p_xsselector->GetXS(2,2,p_flavours));
     }
     Add(group);
     if (mode==qgqg) break;
@@ -80,7 +81,7 @@ void QCD_Processes::FillMode(Mode mode)
       p_flavours[0] = p_flavours[2] = ATOOLS::Flavour(ATOOLS::kf::code(i));
       for (int j=i+1;j<6;j++) {
 	p_flavours[1] = p_flavours[3] = ATOOLS::Flavour(ATOOLS::kf::code(j));
-	group->Add(p_xsselector->GetXS(2,2,p_flavours,p_isrhandler->KMROn()));
+	group->Add(p_xsselector->GetXS(2,2,p_flavours));
       }
     }
   case q1q2bq1q2b:
@@ -90,7 +91,7 @@ void QCD_Processes::FillMode(Mode mode)
       p_flavours[0] = p_flavours[2] = ATOOLS::Flavour(ATOOLS::kf::code(i));
       for (int j=i+1;j<6;j++) {
 	p_flavours[1] = p_flavours[3] = ATOOLS::Flavour(ATOOLS::kf::code(j)).Bar();
-	group->Add(p_xsselector->GetXS(2,2,p_flavours,p_isrhandler->KMROn()));
+	group->Add(p_xsselector->GetXS(2,2,p_flavours));
       }
     }
     Add(group);
@@ -101,7 +102,7 @@ void QCD_Processes::FillMode(Mode mode)
     group->SetName(std::string(" q1q1 -> q1q1 "));
     for (int i=1;i<6;i++) {
       p_flavours[0] = p_flavours[1] = p_flavours[2] = p_flavours[3] = ATOOLS::Flavour(ATOOLS::kf::code(i));
-      group->Add(p_xsselector->GetXS(2,2,p_flavours,p_isrhandler->KMROn()));
+      group->Add(p_xsselector->GetXS(2,2,p_flavours));
     }
     Add(group);
     if (mode==q1q1q1q1) break;
@@ -111,7 +112,7 @@ void QCD_Processes::FillMode(Mode mode)
     for (int i=1;i<6;i++) {
       p_flavours[0] = p_flavours[2] = ATOOLS::Flavour(ATOOLS::kf::code(i));
       p_flavours[1] = p_flavours[3] = p_flavours[0].Bar();
-      group->Add(p_xsselector->GetXS(2,2,p_flavours,p_isrhandler->KMROn()));
+      group->Add(p_xsselector->GetXS(2,2,p_flavours));
     }
     Add(group);
     if (mode==q1q1bq1q1b) break;
@@ -124,7 +125,7 @@ void QCD_Processes::FillMode(Mode mode)
       for (int j=i+1;j<6;j++) {
 	p_flavours[2] = ATOOLS::Flavour(ATOOLS::kf::code(j)).Bar();
 	p_flavours[3] = p_flavours[2].Bar();
-	group->Add(p_xsselector->GetXS(2,2,p_flavours,p_isrhandler->KMROn()));
+	group->Add(p_xsselector->GetXS(2,2,p_flavours));
       }
     }
     Add(group);
