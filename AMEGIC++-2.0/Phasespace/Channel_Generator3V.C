@@ -145,7 +145,7 @@ int Channel_Generator3V::MakeChannel(int& echflag,int n,string& path,string& pID
 
   //add Channel
   char name[22];
-  sprintf(name,"C%i",n);
+  sprintf(name,"C%i_%i",nout,n);
 
   string filename = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path+string("/")+
                     string(name)+string(".C");

@@ -74,7 +74,7 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
   fsrpath += string(hlp);
   if (cnt>=maxchannels) {
     sprintf(hlp,"_%i",cnt/maxchannels);
-    fsrpath = fsrpath0+string(hlp);
+    fsrpath = fsrpath+string(hlp);
   }
   string fsrp = path+string("/")+fsrpath;
 
@@ -99,7 +99,8 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
 	if (!RSearch(mapname,chID)) {
 	  bool hit;
 	  do {
-	    sprintf(procname,"C%i",cnt);
+	    if (nin==2) sprintf(procname,"C%i_%i",nout,cnt);
+	    else sprintf(procname,"CD%i_%i",nout,cnt);
 	    string help = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+fsrp+string(procname);
 	    hit = IsFile(help);
 	    if (hit) cnt++;

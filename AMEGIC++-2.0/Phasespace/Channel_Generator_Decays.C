@@ -33,7 +33,7 @@ int Channel_Generator_Decays::MakeChannel(int& echflag,int n,string& path,string
 
   //add Channel
   char name[22];
-  sprintf(name,"C%i",n);
+  sprintf(name,"CD%i_%i",nout,n);
 
   if (echflag!=0) sprintf(name,"%s%c",name,'a'+extrachannelflag-1);
   

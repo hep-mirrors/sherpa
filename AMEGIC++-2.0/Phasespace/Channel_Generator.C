@@ -34,7 +34,7 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
 
   //add Channel
   char name[22];
-  sprintf(name,"C%i",n);
+  sprintf(name,"C%i_%i",nout,n);
 
   if (echflag!=0) sprintf(name,"%s%c",name,'a'+extrachannelflag-1);
   
