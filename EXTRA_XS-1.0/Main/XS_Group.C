@@ -142,8 +142,6 @@ void XS_Group::SelectOne()
 void XS_Group::WriteOutXSecs(std::ofstream &outfile)
 {
   outfile.precision(12);
-//   outfile<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<" "
-// 	 <<m_totalsum<<" "<<m_totalsumsqr<<" "<<m_n<<std::endl;
   outfile<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<" "
 	 <<m_totalsum<<" "<<m_totalsumsqr<<" "<<m_n<<" "
 	 <<m_ssum<<" "<<m_ssumsqr<<" "<<m_ssigma2<<" "<<m_sn<<std::endl; 
