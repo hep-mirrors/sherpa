@@ -85,6 +85,12 @@ namespace AMEGIC {
     }
     
     Kabbala& operator*=(const Kabbala& k) {
+      if (rishbon==Complex(0.,0.)) return *this;
+      if (k.Value()==Complex(0.,0.)) {
+	shem = std::string("0");
+	rishbon = Complex(0.,0.);
+	return *this;
+      }
       rishbon *= k.Value();
       std::string save = shem;
       shem  = std::string("(") + save + std::string(")*(");
