@@ -2,16 +2,21 @@
 #define Data_Reader_H
 
 #include "Read_Write_Base.H"
+#include <map>
 
 namespace ATOOLS {
 
   class Data_Reader: public Read_Write_Base {
   private:
 
+    std::map<std::string,std::string> m_tags;
+
     void KillComments(std::string& buffer);
 
     std::string KillBlanks(std::string& buffer);
     std::string HighlightSeperator(std::string& buffer);
+
+    std::string ReplaceTags(std::string tag);
 
   protected:
 
@@ -61,6 +66,17 @@ namespace ATOOLS {
     template <class Read_Type >
     bool MatrixFromString(std::vector<std::vector<Read_Type> >& values,std::string parameter=nullstring,
 			  std::string inputstring=noinputtag,MatrixTypeID tempmtype=MUnknown);
+
+    // inline functions
+    inline const std::string &Tag(const std::string &tag) const;
+
+    inline const std::map<std::string,std::string> &Tags() const;
+
+    inline void SetTag(const std::string &tag,const std::string &value);
+    inline void SetTags(const std::map<std::string,std::string> &tags);
+
+    inline void AddTag(const std::string &tag,const std::string &value);
+    inline void AddTags(const std::map<std::string,std::string> &tags);
 
   }; // end of class Data_Reader
 
@@ -155,5 +171,7 @@ namespace ATOOLS {
   */
 
 } // end of namespace ATOOLS
+
+#include "Data_Reader.inl.H"
 
 #endif

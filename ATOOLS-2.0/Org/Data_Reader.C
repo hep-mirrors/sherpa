@@ -98,6 +98,31 @@ std::string Data_Reader::HighlightSeperator(std::string& buffer)
   return buffer;
 }
 
+std::string Data_Reader::ReplaceTags(std::string tag)
+{ 
+  const std::string oldtag=tag;
+#ifdef DEBUG__Data_Reader
+  std::cout<<"Data_Reader::ReplaceTags("<<tag<<"): "<<std::endl;
+#endif
+  bool success=false;
+  for (std::map<std::string,std::string>::const_iterator tit=m_tags.begin();
+       tit!=m_tags.end();++tit) {
+    size_t pos=tag.find(tit->first);
+    if (pos!=std::string::npos) {
+#ifdef DEBUG__Data_Reader
+      std::cout<<"   '"<<tit->first<<"' => '"<<tag;
+#endif
+      tag.replace(pos,tit->first.length(),tit->second);
+#ifdef DEBUG__Data_Reader
+      std::cout<<"' -> '"<<tag<<"'"<<std::endl;
+#endif
+      success=true;
+    }
+  }
+  if (success && tag!=oldtag) return ReplaceTags(tag);
+  return tag;
+}
+
 template <class Read_Type>
 Read_Type Data_Reader::M_ReadFromString(std::string parameter,std::string &inputstring)
 {
@@ -124,11 +149,10 @@ Read_Type Data_Reader::M_ReadFromString(std::string parameter,std::string &input
   if(((pos=inputstring.find(parameter))!=std::string::npos)&&
      ((inputstring=inputstring.substr(pos+parameter.length())).length()>0)) {
     MyStrStream converter;
-    converter<<HighlightSeperator(inputstring);
+    converter<<ReplaceTags(HighlightSeperator(inputstring));
     converter>>value;
 #ifdef DEBUG__Data_Reader
-    Type typeinfo;
-    std::cout<<"   returning '"<<value<<"'"<<" ( type = "<<typeinfo.GetType(value)<<" )"<<std::endl;
+    std::cout<<"   returning '"<<value<<"'"<<" ( type = "<<Type::GetType(value)<<" )"<<std::endl;
 #endif
     return value;
   }
@@ -182,6 +206,7 @@ Data_Reader::M_VectorFromString(std::string parameter, std::string inputstring,V
   Read_Type readtype;
   Type::ID type = typeinfo.GetType(readtype);
   std::vector<Read_Type> values;
+  inputstring = ReplaceTags(inputstring);
   size_t pos;
 #ifdef DEBUG__Data_Reader
   std::cout<<"Data_Reader::M_VectorFromString("<<parameter<<","<<inputstring<<","<<tempvtype<<")"<<std::endl;

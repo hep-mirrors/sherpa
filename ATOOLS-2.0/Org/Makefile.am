@@ -38,6 +38,7 @@ noinst_HEADERS        =	\
 			Read_Write_Base.H \
 			Read_Write_Base.inl.H \
 			Data_Reader.H \
+			Data_Reader.inl.H \
 			Data_Writer.H \
 			Data_Read.H \
 			My_Limits.H \
