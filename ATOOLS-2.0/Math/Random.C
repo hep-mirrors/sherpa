@@ -172,7 +172,7 @@ int Random::WriteOutStatus(const char * filename){
   // write out every Statusregister of Random Number generator
 
   //  sprintf(m_outname,"%s%i.dat",filename,m_written); 
-  if ((m_outstream!=0) && (strcmp(filename,m_outname)!=0)) {
+  if ((m_outstream!=0) && (std::strcmp(filename,m_outname)!=0)) {
     m_outstream->close();
     m_outstream = 0;
   }
@@ -194,7 +194,7 @@ int Random::WriteOutStatus(const char * filename){
 #else
     m_outstream = new std::fstream(filename,std::ios_base::app);
 #endif
-    strcpy(m_outname,filename);
+    std::strcpy(m_outname,filename);
     m_written=count;
   } 
   (*m_outstream)<<m_written<<"\t"<<m_id<<"\t"<<m_inext<<"\t"<<m_inextp<<"\t";

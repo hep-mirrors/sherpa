@@ -35,13 +35,15 @@ void HepMC_Interface::InitTheMap()
       if (!p_particledatatable->insert(pdata)) msg.Error()<<"Error in HepMC_Interface::InitTheMap()."<<endl
 							  <<"   Did not succeed to fill in "<<flav.Name()<<endl
 							  <<"   Continue and hope for the best."<<endl;
-      flav     = flav.Bar();
-      pdata    = new ParticleData(flav.Name(),-flav.Kfcode(),
-				  flav.Charge(),flav.PSMass(),lifetime,flav.Spin());
-      m_flavour2particle[flav] = pdata;
-      if (!p_particledatatable->insert(pdata)) msg.Error()<<"Error in HepMC_Interface::InitTheMap()."<<endl
-							  <<"   Did not succeed to fill in "<<flav.Name()<<endl
-							  <<"   Continue and hope for the best."<<endl;
+      if (flav.Bar()!=flav) {
+	flav     = flav.Bar();
+	pdata    = new ParticleData(flav.Name(),-flav.Kfcode(),
+				    flav.Charge(),flav.PSMass(),lifetime,flav.Spin());
+	m_flavour2particle[flav] = pdata;
+	if (!p_particledatatable->insert(pdata)) msg.Error()<<"Error in HepMC_Interface::InitTheMap()."<<endl
+							    <<"   Did not succeed to fill in "<<flav.Name()<<endl
+							    <<"   Continue and hope for the best."<<endl;
+      }
     }
   }
   msg.Debugging()<<"#######################################################"<<endl;
@@ -50,8 +52,15 @@ void HepMC_Interface::InitTheMap()
 #endif
 }
 
+void HepMC_Interface::ResetTheLinks()
+{
+  m_blob2vertex.clear();
+  m_particle2particle.clear();
+}
+
 bool HepMC_Interface::Sherpa2HepMC(Blob_List * _blobs,GenEvent *& _event)
 {
+  ResetTheLinks();
 #ifdef _USE_HEPMC_
   if (_blobs->empty()) {
     msg.Error()<<"Error in HepMC_Interface::Sherpa2HepMC(Blob_List)."<<endl
@@ -64,10 +73,12 @@ bool HepMC_Interface::Sherpa2HepMC(Blob_List * _blobs,GenEvent *& _event)
   GenVertex * vertex;
   string type;
   for (Blob_Iterator blit=_blobs->begin();blit!=_blobs->end();++blit) {
-    Sherpa2HepMC(*(blit),vertex);
-    _event->add_vertex(vertex);
-    type = (*blit)->Type();
-    if (type.find(string("Signal Process"))>-1) _event->set_signal_process_vertex(vertex);
+    vertex = NULL;
+    if (Sherpa2HepMC(*(blit),vertex)) {
+      _event->add_vertex(vertex);
+      type = (*blit)->Type();
+      if (type.find(string("Signal Process"))>-1) _event->set_signal_process_vertex(vertex);
+    }
   }
 #endif
 }
@@ -75,6 +86,10 @@ bool HepMC_Interface::Sherpa2HepMC(Blob_List * _blobs,GenEvent *& _event)
 bool HepMC_Interface::Sherpa2HepMC(Blob * _blob,GenVertex *& _vertex) 
 {
 #ifdef _USE_HEPMC_
+  if (_blob->NInP()==1 && _blob->NOutP()==1) {
+    if (_blob->InParticle(0)->Number()==_blob->OutParticle(0)->Number()) return 0;
+  }
+
   int count = m_blob2vertex.count(_blob->Id());
   if (count>0) {
     _vertex = m_blob2vertex[_blob->Id()];
@@ -82,29 +97,53 @@ bool HepMC_Interface::Sherpa2HepMC(Blob * _blob,GenVertex *& _vertex)
   else {
     Vec4D pos = _blob->Position();
     HepLorentzVector position(pos[1],pos[2],pos[3],pos[0]);
-    _vertex = new GenVertex(position,_blob->Id());
+    _vertex = new GenVertex(position,-_blob->Id()-1);
     _vertex->weights().push_back(1.);
   }
 
-  bool okay = 1;
+  bool take, okay = 1;
   GenParticle * _particle;
+  Particle *    _SHparticle;
+
   for (int i=0;i<_blob->NInP();i++) {
-    if (Sherpa2HepMC(_blob->InParticle(i),_particle)) {
-      _vertex->add_particle_in(_particle);
+    _SHparticle = _blob->InParticle(i);
+    take        = 1;
+    for (int j=0;j<_blob->NOutP();j++) {
+      if (_SHparticle->Number()==_blob->OutParticle(j)->Number()) take = 0;
     }
-    else okay = 0;
+    if (take) {
+      if (Sherpa2HepMC(_SHparticle,_particle)) {
+	_vertex->add_particle_in(_particle);
+      }
+      else okay = 0;
+    }
   }
   for (int i=0;i<_blob->NOutP();i++) {
-    if (Sherpa2HepMC(_blob->OutParticle(i),_particle)) {
-      _vertex->add_particle_out(_particle);
+    _SHparticle = _blob->OutParticle(i);
+    take        = 1;
+    for (int j=0;j<_blob->NInP();j++) {
+      if (_SHparticle->Number()==_blob->InParticle(j)->Number()) take = 0;
     }
-    else okay = 0;
+    if (take) {
+      if (Sherpa2HepMC(_blob->OutParticle(i),_particle)) {
+	_vertex->add_particle_out(_particle);
+      }
+      else okay = 0;
+    }
   }
-  m_blob2vertex.insert(std::make_pair(_blob->Id(),_vertex));
+
+  if (_vertex->particles_in_size()>0 || _vertex->particles_out_size()>0)
+    m_blob2vertex.insert(std::make_pair(_blob->Id(),_vertex));
+  else {
+    delete _vertex;
+    return 0;
+  }
+
   if (!okay) {
     msg.Error()<<"Error in HepMC_Interface::Sherpa2HepMC(Blob,Vertex)."<<endl
 	       <<"   Continue event generation with new event."<<endl;
   }
+
   return okay;
 #else
   return 1;
@@ -120,7 +159,7 @@ bool HepMC_Interface::Sherpa2HepMC(Particle * _SHparticle,GenParticle *& _partic
     return 1;
   }
 
-  Vec4D mom  = _particle->Momentum();
+  Vec4D mom  = _SHparticle->Momentum();
   HepLorentzVector momentum(mom[1],mom[2],mom[3],mom[0]);
   int pdg_id = m_flavour2particle[_SHparticle->Flav()]->pdg_id();
   _particle  = new GenParticle(momentum,pdg_id,_SHparticle->Status());
@@ -129,6 +168,7 @@ bool HepMC_Interface::Sherpa2HepMC(Particle * _SHparticle,GenParticle *& _partic
     if (_SHparticle->GetFlow(i)>0) _particle->set_flow(i,_SHparticle->GetFlow(i));
   }
   m_particle2particle.insert(std::make_pair(_SHparticle->Number(),_particle));
+
 #endif
   return 1;
 }

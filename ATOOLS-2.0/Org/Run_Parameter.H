@@ -52,6 +52,8 @@ namespace ATOOLS {
       inline void SetModel(MODEL::Model_Base * _mo)       { p_model     = _mo; }
       inline void SetModelType(Model_Type::code _code)    { m_modelcode = _code; }
       inline Model_Type::code Model()                     { return m_modelcode; }
+
+      inline std::string ModelName()                      { return p_model->Name(); } 
       inline int ScalarNumber(const std::string _name)                { return p_model->ScalarNumber(_name); }
       inline double ScalarConstant(const std::string _name)           { return p_model->ScalarConstant(_name); }
       inline double ScalarFunction(const std::string _name,double _t) { return p_model->ScalarFunction(_name,_t); }

@@ -19,7 +19,7 @@ namespace HDECAY {
     ~Hdecay_Fortran_Interface() {};
     void Run(std::string);
     void FillMasses() {}
-    void FillDecays() {}
+    void FillDecays();
   };
 
   /*!

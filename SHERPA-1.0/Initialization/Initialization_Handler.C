@@ -57,6 +57,8 @@ bool Initialization_Handler::InitializeTheFramework()
   okay      = okay && InitializeTheBeams();
   okay      = okay && InitializeThePDFs();
 
+  /*  A warning has to come here for ADD !!!!!! */
+
   if (!(p_beamspectra->CheckConsistency(m_bunch_particles))) {
     msg.Error()<<"Error in Initialization of the Sherpa framework : "<<endl
 	       <<"    Detected a mismatch of flavours from beams to bunches : "<<endl

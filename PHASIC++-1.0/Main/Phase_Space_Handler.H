@@ -44,7 +44,7 @@ namespace PHASIC {
     bool MakeISRChannels();
     bool CreateBeamChannels();
     bool CreateISRChannels();
-    bool InitIncomming();
+    bool InitIncoming();
   public:
     Phase_Space_Handler(Integrable_Base *,PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *);
     ~Phase_Space_Handler();

@@ -2,37 +2,21 @@
 #define Spectrum_Generator_Base_h
 
 #include "Model_Base.H"
+#include "Decay_Table.H"
 #include "MathTools.H"
 #include "Data_Read.H"
+#include <set>
 
 namespace MODEL {
-  class DecayChannel {
-  private :
-    ATOOLS::Flavour              m_flin;
-    std::vector<ATOOLS::Flavour> m_flouts;
-    double                          m_width;
-  public :
-    DecayChannel(const ATOOLS::Flavour);
-    void AddDecayProduct(const ATOOLS::Flavour);
-    void SetDecayWidth(const double);
-    void Output();
-    int                Nout();
-    ATOOLS::Flavour Flin();
-    ATOOLS::Flavour Flout(const int i);
-    double             DecayWidth();
-  };
-
-
   class Spectrum_Generator_Base {
   protected:
     ATOOLS::Data_Read * p_dataread;
-    Model_Base           * p_model;
+    Model_Base        * p_model;
 
-    std::vector<double>             widths;
-    std::vector<double>             masses;
-    std::vector<ATOOLS::Flavour> particles;
-
-    std::vector<DecayChannel *>     decayproducts;
+    std::vector<double>          m_masses;
+    std::vector<double>          m_widths;
+    std::vector<ATOOLS::Flavour> m_particles;
+    std::vector<Decay_Table *>    m_decays;
   public:
     Spectrum_Generator_Base(ATOOLS::Data_Read *,Model_Base *);
     virtual ~Spectrum_Generator_Base();
@@ -63,24 +47,24 @@ namespace MODEL {
     This might become important, if moer information is needed.
   */
   /*!
-    std::vector<double> Spectrum_Generator_Base::widths
+    std::vector<double> Spectrum_Generator_Base::m_widths
     A vector containing all widths that have been calculated, this works only in conjunction 
     with the particle vector.
   */
   /*!
-    std::vector<double> Spectrum_Generator_Base::masses
+    std::vector<double> Spectrum_Generator_Base::m_masses
     A vector containing all masses that have been calculated, this works only in conjunction 
     with the particle vector.
   */
   /*!
-    std::vector<ATOOLS::Flavour> Spectrum_Generator_Base::particles
+    std::vector<ATOOLS::Flavour> Spectrum_Generator_Base::m_particles
     A vector containing all particles that have been dealt with.
   */
   /*!
-    std::vector<DecayChannel *> Spectrum_Generator_Base::decayproducts
-    A vector with all information about caluclated decays. Presumably, more work has to here.
+    std::vector<Decay_Table *> Spectrum_Generator_Base::m_decays
+    A vector with all information about caluclated decays.
     \todo Work on the decays, they have to be filled into the vector of decayproducts,
-          couplnigs have to be extracted, branching ratios transmitted to the rest of the code.
+          couplings have to be extracted, branching ratios transmitted to the rest of the code.
   */
   /*!
     Spectrum_Generator_Base::Spectrum_Generator_Base(ATOOLS::Data_Read *,Model_Base *)
@@ -89,7 +73,7 @@ namespace MODEL {
   */
   /*!
     Spectrum_Generator_Base::Spectrum_Generator_Base::~Spectrum_Generator_Base()
-    In the destructor, the list of DecayChannels and its components is deleted
+    In the destructor, the list of Decay_Channels and its components is deleted
   */
   /*!
     virtual void Spectrum_Generator_Base::Run(std::string)

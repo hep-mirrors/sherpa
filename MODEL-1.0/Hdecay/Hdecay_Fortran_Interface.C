@@ -72,47 +72,51 @@ void Hdecay_Fortran_Interface::Run(std::string _mode) {
   delete [] couplings;
 }
 
-void Hdecay_Fortran_Interface::CalculateEffectiveCouplings(std::string _mode) {
+void Hdecay_Fortran_Interface::CalculateEffectiveCouplings(std::string _mode) {}
+
+void Hdecay_Fortran_Interface::FillDecays() {
   double * brff = new double[9];
   double * brVV = new double[5];
   double hwidth;
   hdecaysm_(brff,brVV,hwidth);
 
   Flavour  higgs = Flavour(kf::h);
-  widths.push_back(hwidth);
-  masses.push_back(higgs.Mass());
-  particles.push_back(higgs);
+  Decay_Table * dt = new Decay_Table(higgs);
+  m_widths.push_back(hwidth);
+  m_masses.push_back(higgs.Mass());
+  m_particles.push_back(higgs);
+  m_decays.push_back(dt);
 
-  double   vev       = p_model->ScalarConstant(std::string("vev"));
-  /*
-    double   yukawa;
-    double   ferm_pref = 8.*M_PI*sqr(vev)*hwidth/hmass;
-  */
-
-  DecayChannel * decay;
+  Decay_Channel * decay;
   for (int i=1;i<7;++i) {
-    decay = new DecayChannel(higgs);
+    decay = new Decay_Channel(higgs);
     decay->AddDecayProduct(Flavour(kf::code(i)));
     decay->AddDecayProduct(Flavour(kf::code(i)).Bar());
-    decayproducts.push_back(decay);
+    decay->SetWidth(brff[i-1]*hwidth);
+    dt->AddDecayChannel(decay);
   }
   for (int i=11;i<16;i+=2) {
-    decay = new DecayChannel(higgs);
+    decay = new Decay_Channel(higgs);
     decay->AddDecayProduct(Flavour(kf::code(i)));
     decay->AddDecayProduct(Flavour(kf::code(i)).Bar());
-    decayproducts.push_back(decay);
+    decay->SetWidth(brff[6+(i-11)/2]*hwidth);
+    dt->AddDecayChannel(decay);
   }
-
-  if (_mode==std::string("SM")) {
-    for (int i=0;i<9;i++) {
-      decayproducts[i]->SetDecayWidth(brff[i]*hwidth);
-      msg.Debugging()<<"Decay width for "<<decayproducts[i]->Flin()<<" -> ";
-      for (int j=0;j<decayproducts[i]->Nout();j++) 
-	msg.Debugging()<<decayproducts[i]->Flout(j)<<" ";
-      msg.Debugging()<<": "<<brff[i]<<" * "<<hwidth<<" GeV."<<std::endl;
-    }
+  for (int i=21;i<25;i++) {
+    decay = new Decay_Channel(higgs);
+    decay->AddDecayProduct(Flavour(kf::code(i)));
+    decay->AddDecayProduct(Flavour(kf::code(i)).Bar());
+    decay->SetWidth(brVV[i-21]*hwidth);
+    dt->AddDecayChannel(decay);
   }
+  decay = new Decay_Channel(higgs);
+  decay->AddDecayProduct(Flavour(kf::photon));
+  decay->AddDecayProduct(Flavour(kf::Z));
+  decay->SetWidth(brVV[4]*hwidth);
+  dt->AddDecayChannel(decay);
   
+  for (int i=0;i<m_decays.size();i++) m_decays[i]->Output();
+
   delete [] brff;
   delete [] brVV;
 }

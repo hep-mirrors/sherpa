@@ -197,6 +197,7 @@ void Isajet_Fortran_Interface::FillDecays() {
   Decays(Flavour(kf::sBottomR));
     
   msg.Tracking()<<"----------------------------------------------------------------"<<endl;
+  abort();
 }
 
 int Isajet_Fortran_Interface::FlavourToIsaID(Flavour flav) {
@@ -396,8 +397,7 @@ Flavour Isajet_Fortran_Interface::IsaIDToFlavour(int isaID) {
 }
 
 
-void Isajet_Fortran_Interface::Decays(Flavour flav) {
-  
+void Isajet_Fortran_Interface::Decays(Flavour flav) {  
   int   mother,ndecays, * daughters, * ndaughters;
   float totalwidth, * partialwidths;
   daughters     = new int[300];
@@ -405,30 +405,32 @@ void Isajet_Fortran_Interface::Decays(Flavour flav) {
   partialwidths = new float[100];
  
   mother = FlavourToIsaID(flav);
-
   /*
     Take care for decays of chargino1/2 and Hmin
     there the convention of Sherpa and Isasusy is opposite
     concerning the charge of the particles,
     same holds true for W-boson
-  */
-    
+  */    
   filldecays_(mother,totalwidth,ndecays,daughters,ndaughters,partialwidths);
-  /*
-  cout<<"Test this : "<<mother<<" ("<<IsaIDToFlavour(mother)<<") "<<totalwidth<<" "<<endl;
+
+  Decay_Table * dt = new Decay_Table(flav);
+  m_widths.push_back(totalwidth);
+  m_masses.push_back(flav.Mass());
+  m_particles.push_back(flav);
+  m_decays.push_back(dt);
+  Decay_Channel * decay;
+
   for (int i=0;i<ndecays;i++) {
-    cout<<daughters[3*i]<<" "<<daughters[3*i+1]<<" "<<daughters[3*i+2]<<" "<<partialwidths[i]<<endl;
-    cout<<IsaIDToFlavour(daughters[3*i])<<" "<<IsaIDToFlavour(daughters[3*i+1])<<" ";
-    if (daughters[3*i+2]!=0) cout<<IsaIDToFlavour(daughters[3*i+2]);
-    cout<<" "<<partialwidths[i]<<endl;
+    decay = new Decay_Channel(flav);
+    for (int j=0;j<3;j++) {
+      if (daughters[3*i+j]!=0) decay->AddDecayProduct(IsaIDToFlavour(daughters[3*i+j]));
+    }
+    decay->SetWidth(partialwidths[i]);
+    dt->AddDecayChannel(decay);
   }
-  */
-  //cout<<flav<<"  Width(before) = "<<flav.Width()<<endl;
-  
+  dt->Output();  
   flav.SetWidth(totalwidth);
   //flav.Bar().SetWidth(totalwidth);
-  
-  msg.Tracking()<<"Set "<<flav<<"  width to "<<flav.Width()<<" GeV."<<endl;
 
   delete [] daughters;
   delete [] ndaughters;
@@ -620,7 +622,10 @@ void Isajet_Fortran_Interface::sUpMasses()
   
   msg.Tracking()<<"--------------------------------------------------------------"<<std::endl
 		<<"sQuark masses :"<<std::endl;
-  for (short int i=0;i<5;++i) msg.Tracking()<<"sUpquarks["<<i<<"] : "<<dabs(msups[i])<<" ,";
+  for (short int i=0;i<5;++i) {
+    msg.Tracking()<<"sUpquarks["<<i<<"] : "<<dabs(msups[i])<<" ,";
+    if (i==2) msg.Tracking()<<endl;
+  }
   msg.Tracking()<<"sUpquarks["<<5<<"] : "<<dabs(msups[5])<<" ,"<<std::endl;
 
 
@@ -677,7 +682,10 @@ void Isajet_Fortran_Interface::sDownMasses()
   
   msg.Tracking()<<"--------------------------------------------------------------"<<std::endl
 		<<"sQuark masses :"<<std::endl;
-  for (short int i=0;i<5;++i) msg.Tracking()<<"sDownquarks["<<i<<"] : "<<dabs(msdowns[i])<<" ,";
+  for (short int i=0;i<5;++i) {
+    msg.Tracking()<<"sDownquarks["<<i<<"] : "<<dabs(msdowns[i])<<" ,";
+    if (i==2) msg.Tracking()<<endl;
+  }
   msg.Tracking()<<"sDownquarks["<<5<<"] : "<<dabs(msdowns[5])<<" ,"<<std::endl;
 
   CMatrix Zd = CMatrix(6);
@@ -733,7 +741,10 @@ void Isajet_Fortran_Interface::sLeptonMasses()
   
   msg.Tracking()<<"--------------------------------------------------------------"<<std::endl
 		<<"sLepton Masses :"<<std::endl;
-  for (short int i=0;i<5;++i) msg.Tracking()<<"sLeptons["<<i<<"] : "<<dabs(msleptons[i])<<" ,";
+  for (short int i=0;i<5;++i) {
+    msg.Tracking()<<"sLeptons["<<i<<"] : "<<dabs(msleptons[i])<<" ,";
+    if (i==2) msg.Tracking()<<endl;
+  }
   msg.Tracking()<<"sLeptons["<<5<<"] : "<<dabs(msleptons[5])<<" ,"<<std::endl;
    
   CMatrix Zl = CMatrix(6);

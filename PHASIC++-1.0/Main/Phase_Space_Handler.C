@@ -70,7 +70,7 @@ Phase_Space_Handler::~Phase_Space_Handler()
 
    ---------------------------------------------------------------------- */
 
-bool Phase_Space_Handler::InitIncomming() 
+bool Phase_Space_Handler::InitIncoming() 
 {
   msg.Debugging()<<"Phase_Space_Handler::Integrate with : "<<endl;
   if (beamchannels) 
@@ -120,6 +120,16 @@ double Phase_Space_Handler::Integrate()
   psi        = new Phase_Space_Integrator();
 
   if (!InitIncomming()) return 0;
+  if (rpa.gen.ModelName()==std::string("ADD") && ih->On()==0 && bh->On()==0) {
+    if (rpa.gen.Ecms()>rpa.gen.ScalarConstant(std::string("M_cut"))) {
+      msg.Error()<<"Warning in Phase_Space_Handler::Integrate() :"<<endl
+		 <<"   Use of model ADD at a c.m. energy of "<<rpa.gen.Ecms()<<" GeV,"<<endl
+		 <<"   but internal string/cut-off scale of model is "
+		 <<rpa.gen.ScalarConstant(std::string("M_cut"))<<" GeV."<<endl
+		 <<"   Return 0 pb as cross section for process "<<proc->Name()<<endl;
+      return 0.;
+    }
+  }
 
   if (nin==2) return psi->Calculate(this,error);
   if (nin==1) return psi->CalculateDecay(this,sqrt(p[0].Abs2()),error);

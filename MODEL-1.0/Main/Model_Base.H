@@ -12,19 +12,17 @@
 namespace MODEL { class Spectrum_Generator_Base; }
 
 namespace MODEL {
-  typedef std::map<std::string,int>                       ScalarNumbersMap; 
-  typedef std::map<std::string,double>                    ScalarConstantsMap; 
+  typedef std::map<std::string,int>                     ScalarNumbersMap; 
+  typedef std::map<std::string,double>                  ScalarConstantsMap; 
   typedef std::map<std::string,ATOOLS::Function_Base *> ScalarFunctionsMap; 
   typedef std::map<std::string,ATOOLS::CMatrix>         ComplexMatricesMap; 
-
 
   class Model_Base {
   protected:
     std::string               m_dir,m_file;
     std::string               m_name;
 
-    ATOOLS::Data_Read    * p_dataread;
-
+    ATOOLS::Data_Read       * p_dataread;
     ScalarNumbersMap        * p_numbers;
     ScalarConstantsMap      * p_constants;
     ScalarFunctionsMap      * p_functions;

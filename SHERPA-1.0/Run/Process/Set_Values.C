@@ -1,3 +1,4 @@
+#include "P2_3/2_3_8_7_101_0_1/V.H"
 #include "String_Handler.H"
 
 using namespace AMEGIC;
@@ -5,8 +6,12 @@ using namespace std;
 
 Values* String_Handler::Set_Values(std::string& pID,Basic_Sfuncs* BS)
 {
+#ifdef V2_3_8_7_101_0_1_on
+  if (pID==string("V2_3_8_7_101_0_1")) return (new V2_3_8_7_101_0_1(BS));
+#endif
   return 0;
 }
+
 
 
 

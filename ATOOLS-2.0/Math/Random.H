@@ -39,7 +39,7 @@ namespace ATOOLS {
       // for status recovery
       m_written=0;    
       m_outstream=0;
-      strcpy(m_outname,"");
+      std::strcpy(m_outname,"");
     }
     
     inline double Theta() {

@@ -86,6 +86,7 @@ bool Beam_Remnant_Handler::FillBunchBlobs(Blob_List * _bloblist,Particle_List * 
   Blob * blob;
   bool flag = 0;
   int  pos,pos1,pos2,number;
+  Particle * p;
   for (int i=0;i<2;i++) {
     for (Blob_Iterator biter = _bloblist->begin();biter != endblob;++biter) {
       pos1 = (*biter)->Type().find(string("Beam Remnant"));
@@ -101,20 +102,27 @@ bool Beam_Remnant_Handler::FillBunchBlobs(Blob_List * _bloblist,Particle_List * 
 	(*biter)->InParticle(0)->SetProductionBlob(blob);
 	if ((*biter)->InParticle(0)->Flav()==p_beam->GetBeam(i)->Beam() &&
 	    IsEqual((*biter)->InParticle(0)->E(),p_beam->GetBeam(i)->InMomentum()[0])) {
-	  Particle * p = new Particle((*biter)->InParticle(0));
+	  p = new Particle((*biter)->InParticle(0));
+	  if (_particlelist) number = _particlelist->size();
+	                else number = int(p);
+	  p->SetNumber(number);
 	  p->SetDecayBlob(blob);
 	  p->SetProductionBlob(NULL);
 	  blob->AddToInParticles(p);
 	}
 	else {
-	  blob->AddToInParticles(new Particle(-1,p_beam->GetBeam(i)->Beam(),p_beam->GetBeam(i)->InMomentum()));
-	  blob->InParticle(0)->SetDecayBlob(blob);
-	  blob->InParticle(0)->SetStatus(2);
+	  p = new Particle(-1,p_beam->GetBeam(i)->Beam(),p_beam->GetBeam(i)->InMomentum());
+	  if (_particlelist) number = _particlelist->size();
+	                else number = int(p);
+	  p->SetNumber(number);	  
+	  p->SetDecayBlob(blob);
+	  p->SetStatus(2);
+	  blob->AddToInParticles(p);
 	  (*biter)->InParticle(0)->SetProductionBlob(blob);
 	  Particle * p = new Particle(-1,p_beam->GetBeam(i)->Remnant(),
-				  p_beam->GetBeam(i)->InMomentum()+(-1.)*(*biter)->InParticle(0)->Momentum());
+				      p_beam->GetBeam(i)->InMomentum()+(-1.)*(*biter)->InParticle(0)->Momentum());
 	  if (_particlelist) number = _particlelist->size();
-	  else number = int(p);
+	                else number = int(p);
 	  p->SetNumber(number);
 	  p->SetDecayBlob(NULL);
 	  p->SetProductionBlob(blob);

@@ -6,6 +6,7 @@
 #include "Particle.H"
 #include "Flavour.H"
 
+#define _USE_HEPMC_
 #ifdef _USE_HEPMC_
 #include "HepMC/GenEvent.h"
 #include "HepMC/GenVertex.h"
@@ -41,6 +42,7 @@ namespace SHERPA {
     Particle2Particle          m_particle2particle;
 
     void InitTheMap();
+    void ResetTheLinks();
     bool Sherpa2HepMC(ATOOLS::Blob *,HepMC::GenVertex *&);
     bool Sherpa2HepMC(ATOOLS::Particle *,HepMC::GenParticle *&);
   public :
