@@ -177,7 +177,7 @@ int c_mrst99function::initialise(int mode,string path)
   
   std::cout<<"Initialise MRST99 from "<<path<<"  ("<<path.length()<<")"<<endl;
 
-  char filename[20];
+  char filename[200];
   sprintf(filename,(path+string("/cor%02d.dat")).c_str(),mode);
 
   std::cout<<"Initialise MRST99 from "<<path<<"  ("<<path.length()<<")  -> "<<filename<<endl;
