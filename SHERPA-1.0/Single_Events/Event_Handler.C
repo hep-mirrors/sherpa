@@ -201,8 +201,9 @@ void Event_Handler::CleanUpEvent()
 	       <<"   Continue and hope for the best."<<std::endl;
   }
   if (ATOOLS::rpa.gen.NumberOfDicedEvents()>1) {
-    m_lastparticlecounter=Particle::Counter();
-    m_lastblobcounter=Blob::Counter();
+    m_lastparticlecounter=ATOOLS::Max(m_lastparticlecounter,
+				      (long int)Particle::Counter());
+    m_lastblobcounter=ATOOLS::Max(m_lastblobcounter,(long int)Blob::Counter());
   }
   Blob::Reset();
   Particle::Reset();
