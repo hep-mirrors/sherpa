@@ -400,7 +400,7 @@ double Integrable_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
   case 65:
     {
     double ycut = ATOOLS::rpa.gen.Ycut();
-    m_scale[stp::fac] = ycut*ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
+    m_scale[stp::fac] = ATOOLS::rpa.gen.FactorizationScaleFactor()*ycut*ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
 //     std::cout<<"CalculateScale: "<<m_scale[stp::fac]<<std::endl;
     pt2 = m_scale[stp::fac];
 
