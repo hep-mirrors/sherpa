@@ -143,7 +143,7 @@ bool Read_Write_Base::OpenInFile(const unsigned int i)
 		    m_occurrence==std::string::npos) --filebegin;
 		if (filebegin==0) {
 		  lastline=lastline.substr(0,Find(lastline,m_fileend[j],length));
-		  ++m_occurrence;
+		  ++occurrence;
 		}
 		break;
 	      }
