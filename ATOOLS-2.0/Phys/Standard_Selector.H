@@ -64,6 +64,18 @@ namespace APHYTOOLS {
     double * ActualValue();
   };
 
+  class PseudoRapidity_Selector : public Selector_Base {
+    double * etamin, * etamax, * value;
+  public:
+    PseudoRapidity_Selector(int,int,Flavour *);
+    ~PseudoRapidity_Selector();
+    void     SetRange(std::vector<APHYTOOLS::Flavour>,double,double);
+    bool     Trigger(const AMATOOLS::Vec4D * );
+    void     BuildCuts(Cut_Data *);
+    void     UpdateCuts(double,double,Cut_Data *);
+    double * ActualValue();
+  };
+
   class Angle_Selector : public Selector_Base {
     double ** cosmin, ** cosmax, * value;
   public:

@@ -336,10 +336,82 @@ void Rapidity_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _mi
     if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i])) ) {
       pl      = sqrt(E*E-sqr(m_fl[i].Mass())); 
       y       = log((E+pl)/(E-pl));
-      ymin[i] = _min; //AMATOOLS::Max(_min,-y);
-      ymax[i] = _max; //AMATOOLS::Min(_max,y);
+      ymin[i] = AMATOOLS::Max(_min,-y);
+      ymax[i] = AMATOOLS::Min(_max,y);
       AORGTOOLS::msg.Debugging()<<"Set y-Range for "<<m_fl[i]<<" : "
 				<<ymin[i]<<" ... "<<ymax[i]<<endl;
+    }
+  }
+}
+
+/*--------------------------------------------------------------------
+
+  PseudoRapidity Selector
+
+  --------------------------------------------------------------------*/
+
+
+PseudoRapidity_Selector::PseudoRapidity_Selector(int _nin,int _nout, Flavour * _fl) {
+
+  m_name = std::string("PseudoRapidity_Selector"); 
+  m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
+  m_fl   = _fl;
+  m_smin = 0.;
+  m_smax = AORGTOOLS::rpa.gen.Ecms()*AORGTOOLS::rpa.gen.Ecms();
+ 
+  etamin  = new double[m_n];
+  etamax  = new double[m_n];
+  value = new double[m_n];
+  for (int i=0;i<m_nout;i++) {
+      etamax[i] = 100.;
+      etamin[i] = -etamax[i];
+  }
+  m_sel_log = new Selector_Log(m_name);
+}
+
+PseudoRapidity_Selector::~PseudoRapidity_Selector() {
+  //  delete [] m_sel_log;
+  delete [] etamin;
+  delete [] etamax;
+  delete [] value;
+}
+
+
+bool PseudoRapidity_Selector::Trigger(const Vec4D * mom) 
+{
+  double etai,theta;
+  
+  for (int i=m_nin;i<m_n;i++) {
+    theta = acos(Vec3D(mom[i])*Vec3D(mom[0])/(Vec3D(mom[i]).Abs()*Vec3D(mom[0]).Abs())); 
+    etai  = value[i] = -log(tan(theta/2.));
+    if (m_sel_log->Hit( ((etai<etamin[i]) || (etai>etamax[i])) )) return 0;
+  }
+  return 1;
+}
+
+double * PseudoRapidity_Selector::ActualValue() { return value; }
+
+void PseudoRapidity_Selector::BuildCuts(Cut_Data * cuts) {}
+
+void PseudoRapidity_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
+ 
+
+
+void PseudoRapidity_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min, 
+			       double _max=0.5*AORGTOOLS::rpa.gen.Ecms())
+{
+  if (crit.size() != 1) {
+    AORGTOOLS::msg.Error()<<"Wrong number of arguments in PseudoRapidity_Selector::SetRange : "
+			  <<crit.size()<<endl;
+    return;
+  }
+  
+  for (int i=m_nin;i<m_n;i++) {
+    if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i])) ) {
+    etamin[i] = _min;
+    etamax[i] = _max;
+    AORGTOOLS::msg.Debugging()<<"Set eta-Range for "<<m_fl[i]<<" : "
+			      <<etamin[i]<<" ... "<<etamax[i]<<endl;
     }
   }
 }

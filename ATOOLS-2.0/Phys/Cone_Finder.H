@@ -15,7 +15,7 @@ namespace APHYTOOLS {
     double DEta12(AMATOOLS::Vec4D &,AMATOOLS::Vec4D &);
     double DPhi12(AMATOOLS::Vec4D &,AMATOOLS::Vec4D &);
   public:
-    Cone_Finder(int,double);
+    Cone_Finder(int,Flavour*,double);
     
     void   Init(const AMATOOLS::Vec4D *);
     bool   Trigger(const AMATOOLS::Vec4D *);

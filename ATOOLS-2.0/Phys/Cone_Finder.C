@@ -17,7 +17,7 @@ double * Cone_Finder::ActualValue() {
   return m_value; 
 }
 
-Cone_Finder::Cone_Finder(int _n,double _rcone) : 
+Cone_Finder::Cone_Finder(int _n,Flavour * _fl,double _rcone) : 
   m_rcone(_rcone)
 {
   AORGTOOLS::msg.Debugging()<<"Initialize the Cone_Finder : "<<std::endl
@@ -28,6 +28,8 @@ Cone_Finder::Cone_Finder(int _n,double _rcone) :
   m_n       = _n;
   m_nin     = 2; 
   m_nout    = m_n-2; 
+
+  m_fl   = _fl;
   
   m_value   = new double[1];
   
@@ -46,7 +48,11 @@ double Cone_Finder::Rmin(AMATOOLS::Vec4D * p)
       r2jk = sqr(DEta12(p[j],p[k])) + sqr(DPhi12(p[j],p[k]));
       //msg.Out()<<"deta "<<deta<<" dphi "<<dphi<<endl;
       //msg.Out()<<"p1 "<<p[j]<<" p[2] "<<p[k]<<" -> r2jk = "<<r2jk<<endl;
-      if (r2jk<r2min) {
+      //if (r2jk<r2min) {
+      if (r2jk<r2min && 
+	  m_fl[j].Mass()<3. && m_fl[k].Mass()<3. &&
+	  !(m_fl[j].IsLepton() && m_fl[j].IntCharge()==0) &&
+	  !(m_fl[k].IsLepton() && m_fl[k].IntCharge()==0))   {
 	r2min = r2jk;
       }
     }

@@ -49,37 +49,51 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
 	  if (instrong==2) jettype = 4;
 	}
 	sel = new Jet_Finder(_nin+_nout,_fl,rmin,1,jettype);
+	activetypes.push_back(type);
 	break;
       case 2 :
-	sel = new Cone_Finder(_nin+_nout,rmin);
+	sel = new Cone_Finder(_nin+_nout,_fl,rmin);
+	activetypes.push_back(type);
 	break;
       case 11 :
 	sel = new Energy_Selector(_nin,_nout,_fl);
 	sel->SetRange(critflavs,rmin,rmax);
+	activetypes.push_back(type);	
 	break;
       case 12 :
 	sel = new PT_Selector(_nin,_nout,_fl);
 	sel->SetRange(critflavs,rmin,rmax);
+	activetypes.push_back(type);
 	break;
       case 13 :
 	sel = new Rapidity_Selector(_nin,_nout,_fl);
 	sel->SetRange(critflavs,rmin,rmax);
+	activetypes.push_back(type);
 	break;
       case 14 : 
 	sel = new Angle_Selector(_nin,_nout,_fl);
 	sel->SetRange(critflavs,help,rmin,rmax);
+	activetypes.push_back(type);
 	break;
       case 15 : 
 	sel = new ET_Selector(_nin,_nout,_fl);
  	sel->SetRange(critflavs,rmin,rmax);
+	activetypes.push_back(type);
+	break;
+      case 16 :
+	sel = new PseudoRapidity_Selector(_nin,_nout,_fl);
+	sel->SetRange(critflavs,rmin,rmax);
+	activetypes.push_back(type);
 	break;
       case 21 : 
 	sel = new Mass_Selector(_nin,_nout,_fl);
 	sel->SetRange(critflavs,rmin,rmax);
+	activetypes.push_back(type);
 	break;
       case 22 : 
 	sel = new Angle_Selector(_nin,_nout,_fl);
 	sel->SetRange(critflavs,rmin,rmax);
+	activetypes.push_back(type);	
 	break;
       default :
 	sel = NULL;

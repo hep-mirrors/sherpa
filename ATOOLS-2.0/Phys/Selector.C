@@ -113,6 +113,14 @@ bool Selector_Data::ReadInData(std::string filename) {
       (dat.flavs).push_back(flav);
       data.push_back(dat);
     }
+    if (keyword == string("PseudoRapidity")) {
+      dat.type = 16;
+      from>>crit1>>dat.min>>dat.max;
+      flav = Flavour(kf::code(abs(crit1)));
+      if (crit1<0) flav = flav.Bar();
+      (dat.flavs).push_back(flav);
+      data.push_back(dat);
+    }
     if (keyword == string("Mass")) {
       dat.type = 21;
       from>>crit1>>crit2>>dat.min>>dat.max;
@@ -163,6 +171,7 @@ void Selector_Data::ControlOutput() {
     case 13: AORGTOOLS::msg.Debugging()<<"Rapidities : "; break;
     case 14: AORGTOOLS::msg.Debugging()<<"BeamAngles : "; break;
     case 15: AORGTOOLS::msg.Debugging()<<"ETs        : "; break;
+    case 16: AORGTOOLS::msg.Debugging()<<"PseudoRaps : "; break;  
     case 21: AORGTOOLS::msg.Debugging()<<"Masses     : "; break;
     case 22: AORGTOOLS::msg.Debugging()<<"Angles     : "; break;
     case 32: AORGTOOLS::msg.Debugging()<<"SummedPT   : "; break;
