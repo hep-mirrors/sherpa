@@ -1,6 +1,8 @@
 #ifndef Sudakov_Tools_H
 #define Sudakov_Tools_H
 
+#include "Model_Base.H"
+#include "Function_Base.H"
 #include "MathTools.H"
 
 
@@ -11,7 +13,9 @@ namespace APACIC {
     class, there're methods for (running) coupling constants.
   */
   class Sudakov_Tools {
-    int scheme;
+  private :
+    AMATOOLS::Function_Base * p_as, * p_aqed;
+    int    scheme;
     double lambda2, beta0, scalefac;
     double alphaSmax;
     double alphaQEDmax;
@@ -26,13 +30,13 @@ namespace APACIC {
     /*!
       Standard Constructor, initializes the running alpha_s
     */
-    Sudakov_Tools();
+    Sudakov_Tools(MODEL::Model_Base *);
     /*!
       Constructor specifying the scheme for alpha_s (fixed or running)
       and the boundaries for the splittings. Gives maximum values of 
       alpha_s at upper and lwoer boundaries.
     */
-    Sudakov_Tools(int,double,double);
+    Sudakov_Tools(int,MODEL::Model_Base *,double,double);
     ~Sudakov_Tools() {};
 
     //! Estimate AlphaS from lambda

@@ -21,11 +21,11 @@ using namespace AORGTOOLS;
 //--------------------------- Constructors ------------------------------
 //----------------------------------------------------------------------- 
 
-Final_State_Shower::Final_State_Shower(Data_Read * _dataread) 
+Final_State_Shower::Final_State_Shower(MODEL::Model_Base * _model,Data_Read * _dataread) 
 {
   m_pt2min = _dataread->GetValue<double>("FS PT2MIN",1.);
   p_kin    = new Timelike_Kinematics(m_pt2min);
-  p_sud    = new Timelike_Sudakov(p_kin,m_pt2min,_dataread);
+  p_sud    = new Timelike_Sudakov(p_kin,m_pt2min,_model,_dataread);
 }
 
 Final_State_Shower::~Final_State_Shower() 
@@ -149,7 +149,8 @@ bool Final_State_Shower::SetAllColours(Knot * mo) {
 
 bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
 {
-  msg.Debugging()<<"Test :"<<mo->part->GetFlow(1)<<"/"<<mo->part->GetFlow(2)<<endl;
+  msg.Debugging()<<"Test :"<<mo->part->Flav()<<"/"<<mo->part->GetFlow()<<endl;
+  msg.Debugging()<<"      "<<mo->part->GetFlow(1)<<"/"<<mo->part->GetFlow(2)<<endl;
   if (!mo) {
     msg.Error()<<"ERROR in Final_State_Shower::SetColours()"<<std::endl
 	       <<"    void mother knot."<<std::endl;
@@ -168,6 +169,7 @@ bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
     return 1;
   }
 
+  cout<<"Both daughters exist."<<endl;
   //  check if already enough colours
   Knot * test=0;
   
@@ -212,25 +214,36 @@ bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
     return ( SetColours(d1,kin) && SetColours(d2,kin) );
   }
 
+  else cout<<"Some colours unknown ..."<<endl;
+
   Knot * partner, * nopart;
   if (mo->part->Flav().Strong()) {
     if (mo->part->Flav().IsQuark()) {
+      cout<<"Mother is quark : "<<mo->part->Flav()<<endl;
       partner = d1; nopart = d2;
       if (d2->part->Flav().IsQuark()) {
 	partner = d2;
 	nopart  = d1;
       }
+      cout<<"Daughter/partner : "<<partner->part->Flav()<<" "<<nopart->part->Flav()<<endl;
       if ((partner->part->Flav().IsQuark()) && (partner->part->Flav().IsAnti()) && 
 	  (nopart->part->Flav().IsGluon())) {
 	partner->part->SetFlow(2,-1);
 	nopart->part->SetFlow(1,partner->part->GetFlow(2));
 	nopart->part->SetFlow(2,mo->part->GetFlow(2));
+	cout<<"Daughter/partner : "
+	    <<partner->part->GetFlow(1)<<" "<<partner->part->GetFlow(2)<<"  : "
+	    <<nopart->part->GetFlow(1)<<" "<<nopart->part->GetFlow(2)<<endl;
       } 
       if ((partner->part->Flav().IsQuark()) && (!partner->part->Flav().IsAnti()) && 
 	  (nopart->part->Flav().IsGluon())) {
+	cout<<"try to set colours ..."<<endl;
 	partner->part->SetFlow(1,-1);
+	cout<<"try to set colours ... 1 "<<mo->part->GetFlow(1)<<endl;
 	nopart->part->SetFlow(1,mo->part->GetFlow(1));
+	cout<<"try to set colours ... 2 "<<endl;
 	nopart->part->SetFlow(2,partner->part->GetFlow(1));
+	cout<<"try to set colours ... 3 "<<endl;
       } 
       if ( (partner->part->Flav().IsQuark()) && (!(nopart->part->Flav().Strong())) ) {
 	partner->part->SetFlow(1,mo->part->GetFlow(1));
@@ -238,6 +251,7 @@ bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
       }
     } 
     else if (mo->part->Flav().IsGluon()) {
+      cout<<"Mother is gluon : "<<mo->part->Flav()<<endl;
       msg.Debugging()<<"g->gg :"<<mo->part->GetFlow(1)<<"/"<<mo->part->GetFlow(2)<<endl;
       if (mo->prev) {
 	if ( (d1->part->Flav().IsQuark()) && (d2->part->Flav().IsQuark())) {
@@ -296,6 +310,7 @@ bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
     }
   }
   else {
+      cout<<"Mother is colour neutral : "<<mo->part->Flav()<<endl;
     // colour neutral mother
     if ((d1->part->Flav().Strong()) && (d2->part->Flav().Strong())) {      
       if ( (d1->part->Flav().IsQuark()) && (d2->part->Flav().IsQuark())) {
@@ -403,7 +418,7 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
   //msg.Debugging()<<"----------------------------------------------------------"<<std::endl
   //	 <<"Final_State_Shower::ExtractPartons for Knot "<<kn->kn_no<<std::endl;
   int number;
-  if (kn->part->Info() == 'H') {
+  if (kn->part->Info()=='H') {
     /* 
        New jet : kn = hard parton from ME info = 'HF'
                  and kn outgoing
@@ -863,13 +878,6 @@ bool Final_State_Shower::FillBranch(Tree * tree,Knot* mo,int first)
 {
   Knot * d1 = mo->left;
   Knot * d2 = mo->right;
-  /*
-    msg.Debugging()<<"Final_State_Shower::FillBranch for ("<<mo->kn_no<<"), "
-    <<"      "<<mo->t<<", "<<mo->E2<<", "<<mo->z<<std::endl
-    <<"      ("<<d1->kn_no<<") "<<d1->part->Flav()<<" st"<<d1->stat<<" /  ("
-    <<d2->kn_no<<") "<<d2->part->Flav()<<" st"<<d2->stat<<std::endl
-    <<"Check this : "<<(!(first))<<" "<<(mo->t<=mo->tout)<<endl;
-  */
   if (!(first) && (mo->t <= mo->tout) ) return 0; // failed
 
 
@@ -884,12 +892,6 @@ bool Final_State_Shower::FillBranch(Tree * tree,Knot* mo,int first)
     // select one daugther to dice down
     do12 = ChooseDaughter(mo);
     if (first==2) g = mo;
-    /*
-      msg.Debugging()<<"Chosen daughter : "<<do12<<endl
-      <<" D1 :"<<d1->stat<<" : "<<d1->t<<" : "<<d1->E2<<endl
-      <<" D2 :"<<d2->stat<<" : "<<d2->t<<" : "<<d2->E2<<endl;
-    */
-    //    g=mo;
     if (!do12) {
       ResetDaughters(d1);  // if grand children already determined, delete them
       if (p_sud->Dice(d1,g)) { // determine t,z, and flavours
@@ -916,37 +918,18 @@ bool Final_State_Shower::FillBranch(Tree * tree,Knot* mo,int first)
       p_kin->CheckZRange(mo);
 
     if ((d1->stat != 3) && (d2->stat != 3)) { // *AS*
-      if (p_kin->Shuffle(mo,first)) { // check (and adjust) kinematics 
-	//  (usually both children have to be diced atleast once)
-	// if sucessfull set all grand children as determined above and exit
+      if (p_kin->Shuffle(mo,first)) { 
 	if (d1->stat) {
-	  //  msg.Debugging()<<"InitDaughters for "<<d1->kn_no<<" "<<d1->part<<std::endl;
-      	  if (d1->left) { 
-	    //msg.Debugging()<<"InitDaughters for "<<d1->kn_no<<" "
-	    //	<<std::endl<<d1->left->part<<std::endl<<d1->right->part<<std::endl;
-	  }
 	  InitDaughters(tree,d1,d1_flavs,diced1); 
 	  diced1=0;
 	}
 	if (d2->stat) {
-	  //msg.Debugging()<<"InitDaughters for "<<d2->kn_no<<" "<<d2->part<<std::endl;
-	  if (d2->left) { 
-	    //msg.Debugging()<<"InitDaughters for "<<d2->kn_no<<" "
-	    //	<<std::endl<<d2->left->part<<std::endl<<d2->right->part<<std::endl;
-	  }
 	  InitDaughters(tree,d2,d2_flavs,diced2); 
 	  diced2=0;
 	}
-	return 1;  // successfull
-      }
-      else {
-// 	msg.Debugging()<<"Shuffle for "<<mo->kn_no<<" failed."<<std::endl;
+	return 1;  // successful
       }
     }
-//     msg.Debugging()<<"Final_State_Shower::FillBranch"<<std::endl
-// 		   <<"      Daughters did not fit, "<<d1->t<<"("<<d1->tout<<")"
-// 		   <<" / "<<d2->t<<"("<<d2->tout<<")"<<std::endl;
- 
     // exit if both daughters can not be diced down further
     if (!(d1->stat) && !(d2->stat)) return 0; 
   }
@@ -979,8 +962,8 @@ void Final_State_Shower::InitDaughters(Tree * tree,Knot * mo,Flavour * mo_flavs,
 { 
   if (!mo->left) {
     // Initialize new knots, provide them with flavours and link them
+    cout<<"new knots..."<<diced<<endl;
     mo->left        = tree->NewKnot();
-
     mo->right       = tree->NewKnot();
   }
   if (diced) {
@@ -988,23 +971,22 @@ void Final_State_Shower::InitDaughters(Tree * tree,Knot * mo,Flavour * mo_flavs,
     mo->left->part->SetFlav(mo_flavs[0]);
     mo->left->part->SetInfo('F');
     mo->left->part->SetStatus(1);
-    mo->left->tout    = sqr(mo_flavs[0].PSMass());
-    mo->left->stat    = 3;  
+    mo->left->tout  = sqr(mo_flavs[0].PSMass());
+    mo->left->stat  = 3;  
 
     mo->right->prev = mo;
     mo->right->part->SetFlav(mo_flavs[1]);
     mo->right->part->SetInfo('F');
     mo->right->part->SetStatus(1);
-    mo->right->tout   = sqr(mo_flavs[1].PSMass());
-    mo->right->stat   = 3;  
+    mo->right->tout = sqr(mo_flavs[1].PSMass());
+    mo->right->stat = 3;  
 
     if (mo->part->Info() != 'H') mo->part->SetInfo('f');
     mo->part->SetStatus(2);
   }
 
   // Reset kinematics
-  mo->left->t       = mo->t; 
-
+  mo->left->t          = mo->t; 
   mo->thcrit           = sqrt( mo->t/(mo->z*(1.- mo->z)*mo->E2) );
   double th            = M_PI;
 

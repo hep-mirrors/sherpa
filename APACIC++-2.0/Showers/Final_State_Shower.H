@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Data_Read.H"
+#include "Model_Base.H"
 #include "Vector.H"
 #include "Blob.H"
 #include "Blob_List.H"
@@ -25,7 +26,7 @@ namespace APACIC {
     Timelike_Kinematics    * p_kin;
     std::vector<Knot*> m_ini_partons;
   public:
-    Final_State_Shower(AORGTOOLS::Data_Read *);
+    Final_State_Shower(MODEL::Model_Base *,AORGTOOLS::Data_Read *);
     ~Final_State_Shower();
 
     int PerformShower(Tree *,bool);
@@ -42,7 +43,8 @@ namespace APACIC {
     bool TestShower(Tree *) ;
     AMATOOLS::Vec4D GetMomentum(Knot * mo, int & number);
     void OutputTree(Tree *);
-    double PT2Min() { return m_pt2min; }
+    double                PT2Min()        { return m_pt2min; }
+    Timelike_Kinematics * GetKinematics() { return p_kin; }
   private:
     int InitializeJets(Tree *,Knot *,int =0);
     bool SmearDaughters(Knot * mo);

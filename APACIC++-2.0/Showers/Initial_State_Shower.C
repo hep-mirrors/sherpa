@@ -14,8 +14,9 @@ using namespace std;
 //--------------------------- Constructors ------------------------------
 //----------------------------------------------------------------------- 
 
-Initial_State_Shower::Initial_State_Shower(ISR::ISR_Handler * _isr, 
+Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler * _isr, 
 					   Final_State_Shower * _fin,
+					   MODEL::Model_Base * _model,
 					   Data_Read * _dataread) : 
   p_fin(_fin), m_fsron(0) 
 {
@@ -24,7 +25,7 @@ Initial_State_Shower::Initial_State_Shower(ISR::ISR_Handler * _isr,
     double pt2fin     = 0.;
     if (p_fin) pt2fin = p_fin->PT2Min();  
     m_t0              = _dataread->GetValue<double>("IS PT2MIN",4.);
-    p_tools           = new Sudakov_Tools(1,m_t0,(rpa.gen.Ecms())*(rpa.gen.Ecms()));
+    p_tools           = new Sudakov_Tools(1,_model,m_t0,(rpa.gen.Ecms())*(rpa.gen.Ecms()));
     p_kin             = new Spacelike_Kinematics(pt2fin);
     p_suds            = new Spacelike_Sudakov*[2];
     p_suds[0]         = new Spacelike_Sudakov(_isr->PDF(0),p_tools,p_kin,m_t0,_dataread);

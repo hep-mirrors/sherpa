@@ -8,7 +8,6 @@ libApacicShowers_la_SOURCES = Final_State_Shower.C Timelike_Sudakov.C \
 INCLUDES = -I../../APACIC++-2.0/Main \
 	   -I../../MODEL-1.0/Main \
 	   -I../../PDF-1.0/Main \
-	   -I../../PHASIC++-1.0/ISR \
 	   -I../../ATOOLS-2.0/Phys \
 	   -I../../ATOOLS-2.0/Math \
 	   -I../../ATOOLS-2.0/Org

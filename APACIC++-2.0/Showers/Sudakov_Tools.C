@@ -1,8 +1,7 @@
 #include "Sudakov_Tools.H"
+#include "Run_Parameter.H"
 #include "Running_AlphaS.H"
 #include "Running_AlphaQED.H"
-#include "Run_Parameter.H"
-#include "Function_Base.H"
 
 #include "Message.H"
 
@@ -13,16 +12,20 @@ using namespace AORGTOOLS;
 using namespace AMATOOLS;
 
 
-Sudakov_Tools::Sudakov_Tools() {
+Sudakov_Tools::Sudakov_Tools(MODEL::Model_Base * _model) {
   scalefac = 1.;
+  p_as     = _model->GetScalarFunction(string("alpha_S"));
+  p_aqed   = _model->GetScalarFunction(string("alpha_QED"));
   FixLambda2(sqr((Flavour(kf::Z)).Mass()));
   if (rpa.gen.Debugging()) Output();
 }
 
-Sudakov_Tools::Sudakov_Tools(int _scheme,double tmin, double tmax) {
+Sudakov_Tools::Sudakov_Tools(int _scheme,MODEL::Model_Base * _model,double tmin, double tmax) {
+  p_as   = _model->GetScalarFunction(string("alpha_S"));
+  p_aqed = _model->GetScalarFunction(string("alpha_QED"));
   scheme = _scheme;
   if (scheme>0) {
-    alphaQEDmax = (*aqed)(tmax);    // max alpha_S 
+    alphaQEDmax = (*p_aqed)(tmax);    // max alpha_S 
     alphaSmax   = AlphaS(tmin);      // max alpha_S 
     FixLambda2(sqr((Flavour(kf::Z)).Mass()));                   
     // determine Lambda2 and beta0 at MZ;
@@ -36,18 +39,17 @@ Sudakov_Tools::Sudakov_Tools(int _scheme,double tmin, double tmax) {
     scalefac        = 1.;           // won't be used ....
   }
   if (rpa.gen.Debugging()) { 
-    Output();
     cout<<" tmin= "<< tmin<<endl;
     cout<<" alpha_max="<< alphaSmax <<endl;
     cout<<" Checking alphaS "<<endl;
+    Output();
     double q2_max=sqr(91.2);
     double q2_min=sqr(.912);
     int    n =10;
     for (int i=0;i<=n;++i) {
       double q2=q2_min*pow((q2_max/q2_min),double(i)/double(n));
-      cout<<" "<<q2<<" \t"<<CrudeAlphaS(q2)<<" \t"<<AlphaS(q2)<<" \t"<<(*as)(q2)<<endl;
+      cout<<" "<<q2<<" \t"<<CrudeAlphaS(q2)<<" \t"<<AlphaS(q2)<<" \t"<<(*p_as)(q2)<<endl;
     }
-    //    exit(0);
   }
 }
 
@@ -60,7 +62,7 @@ double Sudakov_Tools::AlphaS(double t){
   if (t<0.) t = -t;
 
   // exact (LO) alphaS
-  return (*as)(t);
+  return (*p_as)(t);
 
   const double b   =0.6100939485; // 1/(12 Pi) * (33 - 2*5)
   const double lam2=sqr(0.29); 
@@ -89,20 +91,14 @@ double Sudakov_Tools::AlphaS(double t){
   const double lam2=0.02106116817; //0.16;
   int nf =5;
   double lam2_eff=lam2;
-//   cout<<"as b="<<b<<endl;
-//   cout<<"as lam2="<<lam2<<endl;
-//   cout<<"as t="<<t<<endl;
   double thr[7];
   thr[0]=thr[1]=thr[2]=thr[3]=0.;
   thr[4]=sqr(Flavour(kf::c).PSMass());
   thr[5]=sqr(Flavour(kf::b).PSMass());
   thr[6]=sqr(Flavour(kf::t).PSMass());
   while (t<thr[nf]) {
-    //    cout<<thr[nf]<<endl;
     --nf;
-    //    cout<<"lam was = "<<lam2_eff<<endl;
     lam2_eff=lam2_eff*pow(thr[nf+1]/lam2_eff,2./(33. - 2.* nf));
-    //    cout<<"lam is = "<<lam2_eff<<endl;
   }
   double b_eff=1./(12.* M_PI) * (33. - 2.*nf);
   return 1./(b_eff*log(t/lam2_eff));
@@ -111,7 +107,7 @@ double Sudakov_Tools::AlphaS(double t){
 
 double Sudakov_Tools::Alpha(double t){
   if (t<0.) t = -t;
-  return (*aqed)(t);
+  return (*p_aqed)(t);
 };
 
 void Sudakov_Tools::FixLambda2(double t) { 

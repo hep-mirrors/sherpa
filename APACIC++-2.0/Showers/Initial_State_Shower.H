@@ -2,6 +2,7 @@
 #define Initial_State_Shower_H
 
 #include "ISR_Handler.H"
+#include "Model_Base.H"
 #include "Spacelike_Kinematics.H"
 #include "Spacelike_Sudakov.H"
 #include "Final_State_Shower.H"
@@ -30,8 +31,8 @@ namespace APACIC {
     AMATOOLS::Vec4D m_lab;
 
   public:
-    Initial_State_Shower(ISR::ISR_Handler *, Final_State_Shower *,
-			 AORGTOOLS::Data_Read *);// for testing purposes
+    Initial_State_Shower(PDF::ISR_Handler *,Final_State_Shower *,
+			 MODEL::Model_Base *,AORGTOOLS::Data_Read *);// for testing purposes
     ~Initial_State_Shower();
     bool PerformShower(Tree **,bool);
     void InitShowerPT(double pt2max);
@@ -96,7 +97,7 @@ namespace APACIC {
   */
 
   /*! 
-    \fn    Initial_State_Shower::Initial_State_Shower(ISR::ISR_Handler *,Final_State_Shower *)
+    \fn    Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *,Final_State_Shower *)
     \brief Standard constructor
   */
 

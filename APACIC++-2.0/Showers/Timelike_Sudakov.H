@@ -2,6 +2,7 @@
 #define Timelike_Sudakov_H
 
 #include "Splitting_Group.H"
+#include "Model_Base.H"
 #include "Random.H"
 
 namespace APACIC {
@@ -40,7 +41,7 @@ namespace APACIC {
 
     void CheckSplittings();
   public:
-    Timelike_Sudakov(Timelike_Kinematics *,double,AORGTOOLS::Data_Read *);
+    Timelike_Sudakov(Timelike_Kinematics *,double,MODEL::Model_Base *,AORGTOOLS::Data_Read *);
     ~Timelike_Sudakov();
 
     bool Dice(Knot * mother,Knot * granny=0);

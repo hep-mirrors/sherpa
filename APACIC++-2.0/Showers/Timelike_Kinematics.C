@@ -239,6 +239,7 @@ bool Timelike_Kinematics::ShuffleMoms(Knot * mo)
     msg.Debugging()<<"ShuffleMoms::Failed KinCheck"<<endl;
     return 0;
   }
+  msg.Debugging()<<"done."<<endl;
 
   // set shuffled fourvectors of daughters - and the energies squared 
   Vec4D p1 = d1->part->Momentum();
@@ -279,19 +280,17 @@ bool Timelike_Kinematics::ShuffleMoms(Knot * mo)
   d2->E2   = (1.-mo->z)*(1.-mo->z)*mo->E2;
 
 
-
   /*
     msg.Debugging()<<"Timelike_Kinematics::ShuffleMoms ("
-                   <<d1->kn_no<<", "<<d2->kn_no<<")"<<endl
-		   <<"      Rs and Es: "<<r1<<", "<<r2<<" : "
-		   <<mo->z*sqrt(mo->E2)<<", "<<(1.-mo->z)*sqrt(mo->E2)<<endl
-		   <<"      should be :"<<sqrt(d1->E2)<<", "<<sqrt(d2->E2)<<endl
-		   <<"      t, p "<<d1->t<<", "<<d1->part->Momentum()<<", "
-		   <<d1->part->Momentum().Abs2()<<endl
-		   <<"      t, p "<<d2->t<<", "<<d2->part->Momentum()<<", "
-		   <<d2->part->Momentum().Abs2()<<endl;
+    <<d1->kn_no<<", "<<d2->kn_no<<")"<<endl
+    <<"      Rs and Es: "<<r1<<", "<<r2<<" : "
+    <<mo->z*sqrt(mo->E2)<<", "<<(1.-mo->z)*sqrt(mo->E2)<<endl
+    <<"      should be :"<<sqrt(d1->E2)<<", "<<sqrt(d2->E2)<<endl
+    <<"      t, p "<<d1->t<<", "<<d1->part->Momentum()<<", "
+    <<d1->part->Momentum().Abs2()<<endl
+    <<"      t, p "<<d2->t<<", "<<d2->part->Momentum()<<", "
+    <<d2->part->Momentum().Abs2()<<endl;
   */
-
   return 1;
 };
 

@@ -18,7 +18,7 @@ using namespace std;
 //----------------------------------------------------------------------- 
 
 Timelike_Sudakov::Timelike_Sudakov(Timelike_Kinematics * _kin,double _pt2min,
-				   Data_Read * _dataread) :
+				   MODEL::Model_Base * _model,Data_Read * _dataread) :
   p_kin(_kin), m_pt2min(_pt2min) 
 {
   m_ordering_scheme = _dataread->GetValue<int>("FS ORDERING",1);       /*  (1=VO+Coherence, 2=VO)                  */ 
@@ -39,7 +39,7 @@ Timelike_Sudakov::Timelike_Sudakov(Timelike_Kinematics * _kin,double _pt2min,
   m_direct_photons  = _dataread->GetValue<int>("FS PHOTONS",0);        /*  (0=no photons in shower,         
 									   1=photons in shower)                    */
   m_pt2max = sqr(rpa.gen.Ecms());         // this is an obvious choice ....
-  p_tools  = new Sudakov_Tools(m_cpl_scheme,m_pt2min,m_pt2max);
+  p_tools  = new Sudakov_Tools(m_cpl_scheme,_model,m_pt2min,m_pt2max);
   m_t0     = 4.*m_pt2min;
   //      -- initialise QCD splitting functions -- 
   //      -- initialise QED splitting functions -- 
@@ -60,7 +60,7 @@ Timelike_Sudakov::Timelike_Sudakov(Timelike_Kinematics * _kin,double _pt2min,
       }
     }
   }
-  Add(new g_gg());
+  Add(new g_gg(p_tools));
   
   
   PrintStat();
