@@ -26,10 +26,10 @@ EMOPT=""
 for I in $* ; do
   if [ "$I" = "-c" ]; then CONFIGURE=TRUE 
   elif [ "$I" = "-t" ]; then TOTAL=TRUE && CONFIGURE=TRUE
-  elif [ "$I" = "-e" ]; then EXTRACT=TRUE
   elif [ "$I" = "-f" ]; then RELEASE=FALSE
   elif [ "$I" = "-r" ]; then RELEASE=TRUE
   elif [ "$I" = "-s" ]; then SCRIPT=TRUE
+  elif [ "$I" = "-n" ]; then NOEXTRACT=TRUE
   elif [ "$I" = "--clean" ]; then CLEAN=TRUE
   elif [ "$I" = "--clean-run" ]; then RUNCLEAN=TRUE
   elif [ "$I" = "--no-abort" ]; then NOABORT=TRUE
@@ -37,17 +37,17 @@ for I in $* ; do
   elif [ "$I" = "--mopt" ]; then DMOPT=TRUE 
   elif [ "$I" = "--cxx" ]; then DCXXFLAGS=TRUE 
   elif [ "$I" = "--f" ]; then DFFLAGS=TRUE 
-  elif [ "$I" = "--force-tar" ]; then FORCE=TRUE && EXTRACT=TRUE
+  elif [ "$I" = "--force-tar" ]; then FORCE=TRUE && NOEXTRACT=""
   elif [ "$I" = "--clean-up" ]; then CLEANUP=TRUE
   elif [ "$I" = "--rm-libs" ]; then RMLIBS=TRUE
   elif [ "$I" = "-h" ]; then echo && \
     echo "makeinstall version 1.0" && echo && \
     echo "options: -c             configure before compiling (enabled with '-t')" && \
     echo "         -t             rebuild 'Makefile.in's and 'configure' before compiling" && \
-    echo "         -e             extract tar files" && \
     echo "         -f             display the full information on the setup" && \
     echo "         -r             display minimal information but write a logfile instead" && \
     echo "         -s             create simple install scripts to be customized by the user" && \
+    echo "         -n             do not extract tar files" && \
     echo "         --clean        execute 'make clean' in every module before compiling" && \
     echo "         --clean-run    execute './SHERPA-1.0/Run/makeclean' before compiling" && \
     echo "         --no-abort     ignore exit status of 'make'" && \
@@ -55,7 +55,7 @@ for I in $* ; do
     echo "         --mopt         define option for 'make' (default is '-j2')" && \
     echo "         --cxx          define cxx flag for 'make'" && \
     echo "         --f            define fortran flag for 'make'" && \
-    echo "         --force-tar    force extraction of tar files (enables '-e')" && \
+    echo "         --force-tar    force extraction of tar files" && \
     echo "         --clean-up     execute 'make clean' in every module" && \
     echo "         --rm-libs      remove shared libraries (does not remove '.lo' files)" && \
     echo "         -h             display this help and exit" && echo && \
@@ -113,21 +113,26 @@ if [ "`gcc -dumpversion`" = "2.96" ] ; then
   exit 1;
 fi
 
-if [ "$EXTRACT" = "TRUE" ] ; then
-  if [ "$RELEASE" = "TRUE" ] ; then
-    echo -e "\n\e[1m\e[31m******************************************************\e[0m"
-    echo -e "\e[1m\e[31m*\e[0m\e[1m           Extracting the SHERPA package            \e[31m*\e[0m"
-    echo -e "\e[1m\e[31m******************************************************\e[0m\n"
-  else
-    echo "**************************************"
-    echo "*   Extracting the SHERPA package    *"
-    echo "**************************************"
-  fi
+if [ ! "$NOEXTRACT" = "TRUE" ] ; then
   ALL=
+  INFORM=TRUE
   for I in $DIRS;
   do
     if test -s $I.tar.gz; then
       if `test ! -d $I` || `test "$FORCE" = "TRUE"` ; then 
+        if [ "$INFORM" = "TRUE" ] ; then
+	  INFORM=
+	  CONFIGURE=TRUE
+	  if [ "$RELEASE" = "TRUE" ] ; then
+	    echo -e "\n\e[1m\e[31m******************************************************\e[0m"
+	    echo -e "\e[1m\e[31m*\e[0m\e[1m           Extracting the SHERPA package            \e[31m*\e[0m"
+	    echo -e "\e[1m\e[31m******************************************************\e[0m\n"
+	  else
+	    echo "**************************************"
+	    echo "*   Extracting the SHERPA package    *"
+	    echo "**************************************"
+	  fi
+        fi
         if [ ! "$RELEASE" = "TRUE" ] ; then
           echo "======================================"
           echo " extracting $I"
@@ -140,43 +145,11 @@ if [ "$EXTRACT" = "TRUE" ] ; then
         fi
         ALL=$ALL" "$I.tar.gz 
       else
-        echo "makeinstall: warning: directory $I already present"
+        echo "makeinstall: warning: cannot extract $I.tar.gz. directory present"
       fi
-    else
-      echo "makeinstall: warning: tar file $I.tar.gz not found"
     fi
   done
   rm -f $ALL
-else
-  INFORM=""
-  for I in $DIRS;
-  do
-    if test ! -d $I && test -s $I.tar.gz ; then
-      if [ ! "$INFORM" = "TRUE" ] ; then
-        if [ "$RELEASE" = "TRUE" ] ; then
-          echo -e "\n\e[1m\e[31m******************************************************\e[0m"
-          echo -e "\e[1m\e[31m*\e[0m\e[1m           Extracting the SHERPA package            \e[31m*\e[0m"
-          echo -e "\e[1m\e[31m******************************************************\e[0m\n"
-        else
-          echo "**************************************"
-          echo "*   Extracting the SHERPA package    *"
-          echo "**************************************"
-        fi
-      fi
-      INFORM="TRUE"
-      CONFIGURE="TRUE"
-      if [ ! "$RELEASE" = "TRUE" ] ; then
-        echo "======================================"
-        echo " extracting $I"
-        echo "======================================"
-        tar -xzvf $I.tar.gz
-      else
-	echo -ne "extracting module $I ...\r"
-        tar -xzf $I.tar.gz > /dev/null
-        echo -e "\e[32m\t\t\t\t\t\t  done\e[0m"
-      fi
-    fi
-  done
 fi
 
 if [ "$RELEASE" = "TRUE" ] ; then
