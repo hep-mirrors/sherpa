@@ -25,9 +25,10 @@ echo "*************************************"
 echo "*  creating distribution of SHERPA  *"
 echo "*************************************"
 if test "$CLEAN" = "TRUE" || test "$ALLCLEAN" = "TRUE" ; then
-  cd SHERPA-1.0/Run
-  ./makeclean
-  cd ../..
+  if cd SHERPA-1.0/Run ; then 
+    ./makeclean
+    cd ../..
+  fi
 fi
 ALL=
 for I in $DIRS;
@@ -56,7 +57,7 @@ do
     while test "$CONTINUE" = "r" ; do 
       CONTINUE=""
       if ! make dist ; then 
-	echo "makeinstall: error: \"make install\" in $I failed"
+	echo "makedist: error: \"make dist\" in $I failed"
         if test ! "$NOABORT" = "TRUE" ; then
           until test "$CONTINUE" = "y" || test "$CONTINUE" = "n" || test "$CONTINUE" = "r" ; do
     	    if ! read -t 300 -p "continue anyway (y/n/r) ? " CONTINUE ; then

@@ -10,7 +10,8 @@ for I in $* ; do
   elif [ "$I" = "-e" ]; then EXTRACT=TRUE
   elif [ "$I" = "-t" ]; then TOTAL=TRUE && CONFIGURE=TRUE
   elif [ "$I" = "-O2" ]; then OPTIMIZE=-O2 
-  elif [ "$I" = "--clean" ]; then CLEAN=TRUE 
+  elif [ "$I" = "--clean" ]; then CLEAN=TRUE
+  elif [ "$I" = "--clean-run" ]; then RUNCLEAN=TRUE
   elif [ "$I" = "--no-abort" ]; then NOABORT=TRUE
   elif [ "$I" = "--enable-clhep" ]; then CLHEP=--enable-clhep 
   elif [ "$I" = "--force-tar" ]; then FORCE=TRUE && EXTRACT=TRUE
@@ -20,6 +21,7 @@ for I in $* ; do
     echo "                     -t             apply libtool and aclocal before compiling" && \
     echo "                     -O2            compile with \"-O2\" " && \
     echo "                     --clean        \"make clean\" before compiling" && \
+    echo "                     --clean-run    apply \"makeclean\" in SHERPA-1.0/Run before compiling" && \
     echo "                     --no-abort     force installation in every module" && \
     echo "                     --enable-clhep enable CLHEP support" && \
     echo "                     --force-tar    force extraction of tar files (enables '-e')" && \
@@ -58,6 +60,12 @@ fi
 echo "**************************************"
 echo "*   installing the SHERPA package    *"
 echo "**************************************"
+if test "$RUNCLEAN" = "TRUE" ; then
+  if cd SHERPA-1.0/Run ; then
+    ./makeclean
+    cd ../..
+  fi
+fi
 for I in $DIRS;
 do
   if test -d $I; then
