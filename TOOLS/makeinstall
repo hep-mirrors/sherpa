@@ -9,6 +9,19 @@ DIRS=$DIRS" EXTRA_XS-1.0 APACIC++-2.0 AMEGIC++-2.0 ANALYSIS-1.0"
 DIRS=$DIRS" SHERPA-1.0"
 #DIRS=$DIRS" COMPARE-1.0"
 
+rmr () {  
+  for file in * ; do                                                          
+    if [ -d $file ] ; then                                                       
+      cd $file                                                                  
+      rmr "$1"
+      cd ..                                                             
+    fi
+  done  
+  for i in $1 ; do    
+    rm -f $i                                                                         
+  done
+}                                                                               
+
 ECXXFLAGS=""
 EFFLAGS=""
 ECOPT=""
@@ -155,6 +168,12 @@ if test "$RUNCLEAN" = "TRUE" ; then
   fi
 fi
 
+if [ "$TOTAL" = "TRUE" ] ; then
+  rmr "*.la *.so *.so.0 *.so.0.0.0 Makefile Makefile.in \
+       aclocal.m4 config.guess config.log config.status config.sub configure \
+       depcomp install-sh libtool ltconfig ltmain.sh missing mkinstalldirs"
+fi
+
 for I in $DIRS;
 do
   if test -d $I; then
@@ -166,7 +185,7 @@ do
       echo -ne "installing module $I ...\r"
     fi
     cd $I 
-    if `test "$TOTAL" = "TRUE"` ; then
+    if [ "$TOTAL" = "TRUE" ] ; then
       if [ "$RELEASE" = "TRUE" ] ; then
         libtoolize --force >> ../$LOGFILE 2>&1
         aclocal >> ../$LOGFILE 2>&1
