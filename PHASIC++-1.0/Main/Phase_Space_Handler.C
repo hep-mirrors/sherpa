@@ -450,7 +450,7 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
   msg.Out()<<"WARNING in Phase_Space_Handler::WeightedEvent() : "
 	   <<" too many trials for "<<p_process->Selected()->Name()<<endl;
   m_weight=0.;
-  return 0;
+  return NULL;
 } 
 
 void Phase_Space_Handler::AddPoint(const double value) 

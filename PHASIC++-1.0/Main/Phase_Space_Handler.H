@@ -123,8 +123,9 @@ namespace PHASIC {
     inline ATOOLS::Flavour *const  Flavs() const { return p_flavours; }
     inline ATOOLS::Cut_Data *const Cuts() const  { return p_cuts;     }
 
-    inline double Weight() const { return m_weight;   }
-    inline double Error() const  { return m_error;    }
+    inline double   Weight() const    { return m_weight;    }
+    inline double   Error() const     { return m_error;     }
+    inline long int MaxTrials() const { return m_maxtrials; }
  
     inline Multi_Channel *const BeamIntegrator() const  
     { return p_beamchannels; }
@@ -160,9 +161,12 @@ namespace PHASIC {
 
     inline Integrable_Base *const Process() const { return p_process; }
 
-    inline void SetError(const double error) { m_error=error; }
-
     inline double PSWeight() const { return m_psweight; }
+
+    inline void SetError(const double error) 
+    { m_error=error; }
+    inline void SetMaxTrials(const long int maxtrials)
+    { m_maxtrials=maxtrials; }
 
   };// end of class Phase_Space_Handler
 
