@@ -19,7 +19,7 @@ namespace EXTRAXS {
     }
     double operator()(double,double,double) {};
     bool SetColours(double s,double t,double u) { 
-      scale = s;
+      //      scale = s;
       return 1; 
     }
 

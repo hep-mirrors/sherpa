@@ -46,18 +46,18 @@ QED_Processes::QED_Processes() :
   fl[2]  = Flavour(kf::u);
   fl[3]  = Flavour(kf::u).bar();
 
-  isr_types.push_back(0);
-  isr_masses.push_back(0.);
-  isr_widths.push_back(0.);
+//   isr_types.push_back(0);
+//   isr_masses.push_back(0.);
+//   isr_widths.push_back(0.);
 
-  isr_types.push_back(3);
-  isr_masses.push_back(0.);
-  isr_widths.push_back(0.);
+//   isr_types.push_back(3);
+//   isr_masses.push_back(0.);
+//   isr_widths.push_back(0.);
 
   if (APHYTOOLS::Flavour(APHYTOOLS::kf::Z).ison()) {
-    isr_types.push_back(1);
-    isr_masses.push_back(Flavour(APHYTOOLS::kf::Z).mass());
-    isr_widths.push_back(Flavour(APHYTOOLS::kf::Z).width());
+//     isr_types.push_back(1);
+//     isr_masses.push_back(Flavour(APHYTOOLS::kf::Z).mass());
+//     isr_widths.push_back(Flavour(APHYTOOLS::kf::Z).width());
   }
 
   CreateSelector();
@@ -68,11 +68,11 @@ void QED_Processes::CreateSelector()
   msg.Tracking()<<"In QED_Processes::CreateSelector() :"<<std::endl;
   Data_Read dr(rpa.GetPath()+std::string("/ISR.dat"));
 
-  taumin = dr.GetValue<double>("SMIN");
-  taumax = dr.GetValue<double>("SMAX");
+//   taumin = dr.GetValue<double>("SMIN");
+//   taumax = dr.GetValue<double>("SMAX");
 
-  sel = new No_Selector();
-  msg.Tracking()<<" s-range : "<<taumin<<" ... "<<taumax<<std::endl;
+//   sel = new No_Selector();
+//   msg.Tracking()<<" s-range : "<<taumin<<" ... "<<taumax<<std::endl;
 }
 
 

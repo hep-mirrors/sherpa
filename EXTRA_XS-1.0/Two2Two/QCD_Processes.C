@@ -167,8 +167,8 @@ void QCD_Processes::CreateSelector()
   dummies[1] = AORGTOOLS::rpa.gen.Beam2();
   for (int i=nin;i<nin+nout;i++) dummies[i] = Flavour(kf::gluon);
 
-  sel        = new Jet_Finder(nin+nout,dummies,ycut,jetfinder,4);
-  taumin     = ycut;
+//   sel        = new Jet_Finder(nin+nout,dummies,ycut,jetfinder,4);
+//   taumin     = ycut;
 
   msg.Tracking()<<" tau-range : "<<ycut<<" ... 1."<<std::endl
 		<<" pt-range  : "<<sqrt(ycut)*rpa.gen.Ecms()<<" ... "<<rpa.gen.Ecms()<<std::endl
@@ -177,10 +177,10 @@ void QCD_Processes::CreateSelector()
 
 double QCD_Processes::Scale(AMATOOLS::vec4d * p)
 {
-  s = (p[0]+p[1]).abs2();
-  t = (p[0]-p[2]).abs2();
-  u = (p[0]-p[3]).abs2();
-  return scale = (2.*s*t*u)/(s*s+t*t+u*u);
+//   s = (p[0]+p[1]).abs2();
+//   t = (p[0]-p[2]).abs2();
+//   u = (p[0]-p[3]).abs2();
+//   return scale = (2.*s*t*u)/(s*s+t*t+u*u);
 }
 
 

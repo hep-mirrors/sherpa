@@ -30,7 +30,7 @@ double XS_q1q2_q1q2::operator()(double s,double t,double u) {
 };
 
 bool XS_q1q2_q1q2::SetColours(double s,double t,double u) { 
-  scale = (2.*s*t*u)/(s*s+t*t+u*u);
+  //  scale = (2.*s*t*u)/(s*s+t*t+u*u);
   return 1; 
 }
 bool XS_q1q2_q1q2::SetColours()                           { return 1; }
@@ -58,7 +58,7 @@ double XS_q1qbar1_q2qbar2::operator()(double s,double t,double u) {
 };
 
 bool XS_q1qbar1_q2qbar2::SetColours(double s,double t,double u) { 
-  scale = (2.*s*t*u)/(s*s+t*t+u*u);
+  //  scale = (2.*s*t*u)/(s*s+t*t+u*u);
   return 1; 
 }
 bool XS_q1qbar1_q2qbar2::SetColours()                           { return 1; }
@@ -84,7 +84,7 @@ double XS_q1q1_q1q1::operator()(double s,double t,double u) {
 
 bool XS_q1q1_q1q1::SetColours(double s, double t, double u) 
 {
-  scale = (2.*s*t*u)/(s*s+t*t+u*u);
+  //  scale = (2.*s*t*u)/(s*s+t*t+u*u);
   Mt    = (s*s + u*u) / (t*t);
   Mu    = (s*s + t*t) / (u*u);
   return SetColours();
@@ -128,7 +128,7 @@ double XS_q1qbar1_q1qbar1::operator()(double s,double t,double u) {
 bool XS_q1qbar1_q1qbar1::SetColours(double s, double t, double u) {
   Mt    = (s*s + u*u) / (t*t);
   Ms    = (t*t + u*u) / (s*s);
-  scale = (2.*s*t*u)/(s*s+t*t+u*u);
+  //  scale = (2.*s*t*u)/(s*s+t*t+u*u);
   return SetColours();
 }
 
@@ -172,7 +172,7 @@ double XS_q1qbar1_gg::operator()(double s,double t,double u) {
 bool XS_q1qbar1_gg::SetColours(double s, double t, double u) {
   Mt    = u/t;
   Mu    = t/u;
-  scale = (2.*s*t*u)/(s*s+t*t+u*u);
+  //  scale = (2.*s*t*u)/(s*s+t*t+u*u);
   return SetColours();
 }
 
@@ -214,7 +214,7 @@ double XS_gg_q1qbar1::operator()(double s,double t,double u) {
 bool XS_gg_q1qbar1::SetColours(double s, double t, double u) {
   Mt    = u/t;
   Mu    = t/u;
-  scale = (2.*s*t*u)/(s*s+t*t+u*u);
+  //  scale = (2.*s*t*u)/(s*s+t*t+u*u);
   return SetColours();
 }
 
@@ -256,7 +256,7 @@ double XS_q1g_q1g::operator()(double s,double t,double u) {
 bool XS_q1g_q1g::SetColours(double s, double t, double u) {
   Ms    = u/s;
   Mu    = s/u;
-  scale = (2.*s*t*u)/(s*s+t*t+u*u);
+  //  scale = (2.*s*t*u)/(s*s+t*t+u*u);
   return SetColours();
 }
       
@@ -298,7 +298,7 @@ bool XS_gg_gg::SetColours(double s, double t, double u) {
   Ms    = 1 - t*u/(s*s);
   Mt    = 1 - s*u/(t*t);
   Mu    = 1 - s*t/(u*u);
-  scale = (2.*s*t*u)/(s*s+t*t+u*u);
+  //  scale = (2.*s*t*u)/(s*s+t*t+u*u);
   return SetColours();
 }
     

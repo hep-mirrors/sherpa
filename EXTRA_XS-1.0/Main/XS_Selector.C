@@ -38,7 +38,8 @@ Single_XS * XS_Selector::GetXS(int nin,int nout,Flavour * fl)
   if (fl[2].islepton() && fl[3]==fl[2].bar() &&
       fl[0].isquark()  && fl[1]==fl[0].bar())    { return new XS_ee_ffbar(nin,nout,fl); }
   if (fl[0].islepton() && fl[1]==fl[0].bar() &&
-      fl[2].isquark()  && fl[3]==fl[2].bar())    { return new XS_ee_ffbar(nin,nout,fl); }
+      fl[2].isquark()  && fl[3]==fl[2].bar())    { return new XS_ee_ffbar(nin,nout,fl); 
+  }
 
   if (((fl[0].isquark() && fl[1].isgluon()) ||
        (fl[1].isquark() && fl[0].isgluon()) )   &&

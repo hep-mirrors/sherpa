@@ -24,17 +24,14 @@ int fak(int N)
   return res;
 }
 
-/*-------------------------------------------------------------------------------
-
-  Constructor, generic sequence of flavours, name generation,
-  symmetry factors (flavour, helicities ..)
-
-  ------------------------------------------------------------------------------- */
-
 Single_XS::Single_XS(int _nin,int _nout,Flavour * _fl)
 {
   Init(_nin,_nout,_fl);
   GenerateName();
+}
+
+Single_XS::~Single_XS() {
+  if (broker) delete broker;
 }
 
 void Single_XS::GenerateName() {
@@ -84,42 +81,7 @@ void Single_XS::GenerateName() {
   name.erase(name.length()-1,1);
 }
 
-double Single_XS::Differential(vec4d * p) {
-  s = (p[0]+p[1]).abs2();
-  t = (p[0]-p[2]).abs2();
-  u = (p[0]-p[3]).abs2();
-  return DSigma(s,t,u);
-};
-
-double Single_XS::Differential2() {
-  return DSigma2();
-};
-
-double Single_XS::DSigma(double s,double t,double u)
-{
-  lastdxs  = operator()(s,t,u);
-  lastlumi = isr->Weight(fl);
-  return last = lastdxs * lastlumi;
-}
-
-double Single_XS::DSigma2() { 
-  if (fl[0]==fl[1]) return 0.;
-  double tmp = lastdxs * isr->Weight2(fl); 
-  last      += tmp;
-  return tmp;
-}
-
 double Single_XS::operator()(double s,double t,double u) {
   AORGTOOLS::msg.Error()<<"Virtual Method : Single_XS::operator()."<<std::endl; 
   return 0.; 
-}
-
-void Single_XS::SetISR(ISR::ISR_Handler * _isr) { 
-  msg.Debugging()<<"Single_XS::SetISR("<<_isr->Type()<<") for "<<name<<" : "<<_isr<<endl;
-  isr = _isr; 
-}
-
-void Single_XS::SetBeam(BEAM::Beam_Handler * _beam) { 
-  msg.Debugging()<<"Single_XS::SetISR("<<_beam->Type()<<") for "<<name<<" : "<<_beam<<endl;
-  beam = _beam; 
 }

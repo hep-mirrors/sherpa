@@ -32,7 +32,7 @@ double XS_qqbar_pg::operator()(double s,double t,double u) {
 } 
 
 bool XS_qqbar_pg::SetColours(double s,double t,double u) { 
-  scale = (2.*s*t*u)/(s*s+t*t+u*u);
+  //  scale = (2.*s*t*u)/(s*s+t*t+u*u);
   return 1; 
 }
 
@@ -56,7 +56,7 @@ double XS_qg_qp::operator()(double s,double t,double u) {
 } 
 
 bool XS_qg_qp::SetColours(double s,double t,double u) { 
-  scale = (2.*s*t*u)/(s*s+t*t+u*u);
+  //  scale = (2.*s*t*u)/(s*s+t*t+u*u);
   return 1; 
 }
 
@@ -86,7 +86,7 @@ XS_ee_ffbar::XS_ee_ffbar(int _nin,int _nout,APHYTOOLS::Flavour * _fl)
   vf       = af - 2.*qf*sin2tw;
   colfac   = 1.;
 
-  kswitch  = 0;  
+  kswitch  = 2;  
   fac      = 2./(3.*M_PI);
   fin      = 2.*M_PI/9. - 7./(3.*M_PI) + 9./(3.*M_PI);
 
@@ -119,13 +119,13 @@ double XS_ee_ffbar::operator()(double s,double t,double u) {
 }
 
 bool XS_ee_ffbar::SetColours(double s,double t,double u) { 
-  scale = s;
+  //  scale = s;
   return 1; 
 }
 
 
 double XS_ee_ffbar::KFactor(double s) {
-  double alphaS = (*as)(s);
+  double alphaS = (*as).AlphaS(s);
   if (kswitch==1) return exp(fac*alphaS) * (1. + fin*alphaS);
   if (kswitch==2) return 1. + alphaS/M_PI + (1.986 - 0.115*5.) * sqr(alphaS/M_PI);
   return 1.;
