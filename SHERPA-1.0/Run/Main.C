@@ -42,11 +42,15 @@ int main(int argc,char* argv[])
 		       <<nevt<<" events"<<std::endl
 		       <<"=========================================================================="<<std::endl;
       Generator.InitializeTheEventHandler();
+      double starttime=ATOOLS::rpa.gen.Timer().UserTime();
       for (int i=1;i<=nevt;i++) {
 	if (i%100==0) {
+	  double cur=ATOOLS::rpa.gen.Timer().UserTime();
 	  msg_Info()<<"  Event "<<i<<" ( "
-		    <<ATOOLS::rpa.gen.Timer().UserTime()
-		    <<" s )  "<<ATOOLS::bm::cr<<std::flush; 
+		    <<(int(cur-starttime)/1)<<" s elapsed / "
+		    <<(int((nevt-i)/(double)i*(cur-starttime))/1)<<" s left / "
+		    <<(int(nevt/(double)i*(cur-starttime))/1)
+		    <<" s total )         "<<ATOOLS::bm::cr<<std::flush; 
 	}
 	if (Generator.GenerateOneEvent()) msg_Events()<<"Sherpa : Passed "<<i<<" events."<<std::endl;
       }
