@@ -117,6 +117,7 @@ bool Read_Write_Base::OpenInFile(const unsigned int i)
     bool checkbegin=(bool)(m_filebegin.size()>0);
     bool checkend=(bool)(m_fileend.size()>0);
     int filebegin=0;
+    unsigned int occurrence=0;
     if (*m_infile[i]) {
       getline(*m_infile[i],lastline);
       do {
@@ -126,7 +127,8 @@ bool Read_Write_Base::OpenInFile(const unsigned int i)
 	      if (filebegin==0) {
 		lastline=lastline.substr(Find(lastline,m_filebegin[j],length)+length);
 	      }
-	      ++filebegin;
+	      if (occurrence==m_occurrence) ++filebegin;
+	      if (filebegin==0) ++occurrence;
 	      break;
 	    }
 	  }
@@ -136,7 +138,7 @@ bool Read_Write_Base::OpenInFile(const unsigned int i)
 	  else if (checkend) {
 	    for (size_t length=0,j=0;j<m_fileend.size();++j) {
 	      if (Find(lastline,m_fileend[j],length)!=std::string::npos) {
-		--filebegin;
+		if (occurrence==m_occurrence) --filebegin;
 		if (filebegin==0) {
 		  lastline=lastline.substr(0,Find(lastline,m_fileend[j],length));
 		}
