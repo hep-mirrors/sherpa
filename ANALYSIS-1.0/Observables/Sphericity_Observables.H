@@ -26,7 +26,7 @@ namespace ANALYSIS {
     std::string m_key;
   public:
     Sphericity(int type, double xmin, double xmax, int nbin, std::string listname);
-    void Evaluate(const ATOOLS::Particle_List &,double=1.,int ncount=1);
+    void Evaluate(const ATOOLS::Blob_List & ,double weight, int ncout);
     Primitive_Observable_Base * Copy() const;
   };
 
@@ -34,7 +34,7 @@ namespace ANALYSIS {
     std::string m_key;
   public:
     Aplanarity(int type, double xmin, double xmax, int nbin, std::string listname);
-    void Evaluate(const ATOOLS::Particle_List &,double=1.,int ncount=1);
+    void Evaluate(const ATOOLS::Blob_List & ,double weight, int ncout);
     Primitive_Observable_Base * Copy() const;
   };
 
@@ -42,7 +42,7 @@ namespace ANALYSIS {
     std::string m_key;
   public:
     Planarity(int type, double xmin, double xmax, int nbin, std::string listname);
-    void Evaluate(const ATOOLS::Particle_List &,double=1.,int ncount=1);
+    void Evaluate(const ATOOLS::Blob_List & ,double weight, int ncout);
     Primitive_Observable_Base * Copy() const;
   };
 

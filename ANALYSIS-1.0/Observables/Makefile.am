@@ -36,6 +36,7 @@ libObservables_la_SOURCES     =	\
 				Sphericity_Observables.C \
 			    	Event_Shapes_EE.C \
 			    	Shape_Observables_EE.C \
+				Jet_Mass_and_Broadening.C \
 			    	Scaled_Observables.C \
 				Four_Jet_Angles.C
 noinst_HEADERS        =	\
@@ -56,6 +57,7 @@ noinst_HEADERS        =	\
 			Sphericity_Observables.H \
 			Event_Shapes_EE.H \
 			Shape_Observables_EE.H \
+			Jet_Mass_and_Broadening.C \
 			Scaled_Observables.H \
 			Four_Jet_Angles.H
 EXTRA_DIST    = $(CVSINCLUDE)

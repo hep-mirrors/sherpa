@@ -4,7 +4,7 @@
 
 namespace ANALYSIS {
   std::ostream& operator<<( std::ostream& ostr, const Sphericity_Data & data) {
-    ostr<<"Sphericity_Data : "<<data.sphericity<<","<<data.aplanarity<<","<<data.planarity<<std::endl;
+    ostr<<"Sphericity_Data : "<<data.sphericity<<","<<data.aplanarity<<","<<data.planarity;
     return ostr;
   }
 }
@@ -120,7 +120,7 @@ Sphericity::Sphericity(int type, double xmin, double xmax, int nbin, std::string
   m_name = std::string("Sphericity.dat");
 }
 
-void Sphericity::Evaluate(const ATOOLS::Particle_List & pl, double weight, int ncount)
+void Sphericity::Evaluate(const ATOOLS::Blob_List & bl, double weight, int ncount)
 {
   Blob_Data_Base * data = (*p_ana)[m_key];
   if (data) {
@@ -149,7 +149,7 @@ Aplanarity::Aplanarity(int type, double xmin, double xmax, int nbin, std::string
   m_name = std::string("Aplanarity.dat");
 }
 
-void Aplanarity::Evaluate(const ATOOLS::Particle_List & pl, double weight, int ncount)
+void Aplanarity::Evaluate(const ATOOLS::Blob_List & bl, double weight, int ncount)
 {
   Blob_Data_Base * data = (*p_ana)[m_key];
   if (data) {
@@ -177,7 +177,7 @@ Planarity::Planarity(int type, double xmin, double xmax, int nbin, std::string l
   m_name = std::string("Planarity.dat");
 }
 
-void Planarity::Evaluate(const ATOOLS::Particle_List & pl, double weight, int ncount)
+void Planarity::Evaluate(const ATOOLS::Blob_List & bl, double weight, int ncount)
 {
   Blob_Data_Base * data = (*p_ana)[m_key];
   if (data) {

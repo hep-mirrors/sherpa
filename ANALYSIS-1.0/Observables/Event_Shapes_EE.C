@@ -72,7 +72,7 @@ Event_Shape_EE_Data::Event_Shape_EE_Data(double thru,double m1,double m2,double 
 
 namespace ANALYSIS {
   std::ostream& operator<<( std::ostream& ostr, const Event_Shape_EE_Data & evt) {
-    ostr<<"Event_Shape_Data : "<<evt.thrust<<"/"<<evt.thrustaxis<<std::endl;
+    ostr<<"Event_Shape_Data : "<<evt.thrust<<"/"<<evt.thrustaxis;
     return ostr;
   }
 }

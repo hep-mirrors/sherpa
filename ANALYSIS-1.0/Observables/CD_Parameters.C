@@ -3,7 +3,7 @@
 
 namespace ANALYSIS {
   std::ostream& operator<<( std::ostream& ostr, const CD_Parameter_Data & data) {
-    ostr<<"CD_Parameter_Data : "<<data.cparameter<<","<<data.dparameter<<std::endl;
+    ostr<<"CD_Parameter_Data : "<<data.cparameter<<","<<data.dparameter;
     return ostr;
   }
 }
@@ -119,7 +119,7 @@ C_Parameter::C_Parameter(int type, double xmin, double xmax, int nbin, std::stri
   m_name = std::string("C_Parameter.dat");
 }
 
-void C_Parameter::Evaluate(const ATOOLS::Particle_List & pl, double weight, int ncount)
+void C_Parameter::Evaluate(const ATOOLS::Blob_List & bl, double weight, int ncount)
 {
   Blob_Data_Base * data = (*p_ana)[m_key];
   if (data) {
@@ -148,7 +148,7 @@ D_Parameter::D_Parameter(int type, double xmin, double xmax, int nbin, std::stri
   m_name = std::string("D_Parameter.dat");
 }
 
-void D_Parameter::Evaluate(const ATOOLS::Particle_List & pl, double weight, int ncount)
+void D_Parameter::Evaluate(const ATOOLS::Blob_List & bl, double weight, int ncount)
 {
   Blob_Data_Base * data = (*p_ana)[m_key];
   if (data) {
