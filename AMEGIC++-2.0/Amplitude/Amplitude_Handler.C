@@ -43,7 +43,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,
 }
 
 void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation* pol,
-				      Topology* top,Basic_Sfuncs* BS,std::string pID)
+					   Topology* top,Basic_Sfuncs* BS,std::string pID)
 {
   bool gen_colors=true;
   // look for file
@@ -76,12 +76,12 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
   PreCluster(firstgraph); 
   CheckEqual(firstgraph);
 
-  msg.Debugging()<<ngraph<<" Graph(s) found"<<endl;  
-
   if (ngraph==0) {
-    msg.Tracking()<<"No Graph found for ";
-    for (short int i=0;i<N;i++) msg.Tracking()<<fl[i]<<";";
-    msg.Tracking()<<endl;
+    if (msg.LevelIsTracking()) {
+      msg.Out()<<"No graph found for ";
+      for (short int i=0;i<N;i++) msg.Out()<<fl[i]<<";";
+      msg.Out()<<endl;
+    }
     return;
   }
 
@@ -102,9 +102,11 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
   int ncount = 0;
   int maxorder = 1;
   for(int i=0; i<N; i++) if (fl[i].IsKK()) maxorder--;
-  if (maxorder<0) 
-    msg.Error()<<"Error in Amplitude Handler! Multiple external KK-particles not supported!"<<endl;
-
+  if (maxorder<0) {
+    msg.Error()<<"ERROR in Amplitude_Handler::CompleteAmplitudes :"<<std::endl
+	       <<"   Multiple external KK-particles not supported. Abort the run."<<std::endl;
+    abort();
+  }
   while (n) {
     while(TOrder(n)>maxorder){
       ncount++;	   
@@ -127,25 +129,7 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
   SetNumber(dummy);  
   namplitude = dummy;
 
-  if (msg.LevelIsTracking()) {
-    PrintGraph();
-    /*
-    Amplitude_Output ao(pID,top);
-    for (int i=0;i<namplitude;i++) {
-      Amplitude_Base * am = GetAmplitude(i);
-      if (am->Size()==1) {
-        ao.WriteOut(am->GetPointlist());
-      }
-      else {
-        ao.BeginSuperAmplitude();
-        for (int j=0;j<am->Size();++j) ao.WriteOut((*am)[j]->GetPointlist());
-        ao.EndSuperAmplitude();
-      }
-    }
-    */
-
-    //BS->PrintMomlist();
-  }
+  if (msg.LevelIsTracking()) PrintGraph();
 
   CheckEqualInGroup();
   
@@ -181,7 +165,8 @@ int Amplitude_Handler::PropProject(Amplitude_Base* f,int zarg)
   for (Pfunc_Iterator pit=pl->begin();pit!=pl->end();++pit) {
     if ((*pit)->arg[0]==iabs(zarg)) return (*pit)->momnum; 
   }  
-  msg.Error()<<"Bug in Amplitude_Handler::PropProject()"<<endl;
+  msg.Error()<<"ERROR in Amplitude_Handler::PropProject() :"<<endl
+	     <<"   Did not find a mom-number for propagator. Abort the run."<<std::endl;
   abort();
   return 0;
 }
@@ -494,16 +479,13 @@ void Amplitude_Handler::Kicker(int* Switch_Vector,int ngraph,std::string pID)
     for(;from;) {
       from>>i>>sw;
       Switch_Vector[i-1] =sw;
-      if (sw==0) msg.Debugging()<<"Diagram "<<i<<" kicked!"<<endl;
+      if (sw==0) msg.Tracking()<<"Amplitude_Handler::Kicker : Diagram "<<i<<" kicked!"<<endl;
       if (i==ngraph) break;
     }
-    msg.Debugging()<<"File "<<name<<" read."<<endl;  
     return;
   }
 
   test.close();
-
-  msg.Debugging()<<"File "<<name<<" not found."<<endl;  
 
   for(short int i=0;i<ngraph;i++) Switch_Vector[i] = 1;
   
@@ -512,8 +494,6 @@ void Amplitude_Handler::Kicker(int* Switch_Vector,int ngraph,std::string pID)
   to.open(name);
 
   for(short int i=0;i<ngraph;i++) to<<i+1<<"     "<<Switch_Vector[i]<<endl;
-  
-  msg.Debugging()<<"File "<<name<<" saved."<<endl;  
 }
 
 Point* Amplitude_Handler::GetPointlist(int n)

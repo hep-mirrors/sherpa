@@ -169,7 +169,7 @@ Zfunc_Group::Zfunc_Group(Zfunc& z1,Zfunc& z2,int si,Pfunc_List* pl)
     if (z2.p_arguments[i]==99) n99++;
   }
   if ( (i1==0&&i2>0) || (i2==0&&i1>0) ) {
-    msg.Error()<<"Error in Zfunc_Group(Z*Z-Constructor): sum index"<<endl;
+    msg.Error()<<"Error in Zfunc_Group(Z*Z-Constructor): sum index, will abort."<<endl;
     abort();
   }
 

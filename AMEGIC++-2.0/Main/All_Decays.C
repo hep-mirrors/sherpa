@@ -23,7 +23,7 @@ bool All_Decays::AddToDecays(const Flavour & flav)
     m_particles.insert(flav);
     return 1;
   }
-  msg.Error()<<"Error in All_Decays::AddToDecays("<<flav<<") :"<<endl
+  msg.Error()<<"ERROR in All_Decays::AddToDecays("<<flav<<") :"<<endl
 	     <<"   could not add flavour to list of all_decays, no vertex found. Abort run."<<endl;
   abort();
   return 0;
@@ -34,7 +34,7 @@ bool All_Decays::AddToDecays(ATOOLS::Decay_Channel * _dec)
   Flavour flav = _dec->GetDecaying();
   DMIterator dit = m_decays.find(flav);
   if (dit->first==flav) {
-    msg.Error()<<"Error in All_Decays::AddToDecays("<<flav<<") :"<<endl
+    msg.Error()<<"ERROR in All_Decays::AddToDecays("<<flav<<") :"<<endl
 	       <<"   could not add flavour to list of all_decays with specfied decay."<<endl
 	       <<"   Already booked for unspecified decays. Will continue."<<endl;
     return 0;
@@ -45,18 +45,17 @@ bool All_Decays::AddToDecays(ATOOLS::Decay_Channel * _dec)
     if (dc->CreateDecay()) {
       Full_Decay_Table * dt = new Full_Decay_Table(flav,false);
       dt->AddDecayChannel(dc);
-      msg.Tracking()<<"Added Decay_Channel :"<<endl;
       if (msg.LevelIsTracking()) dc->Output();
       m_decays.insert(std::make_pair(flav,dt));
       return 1;
     }
-    msg.Error()<<"Error in All_Decays::AddToDecays("<<flav<<") :"<<endl
+    msg.Error()<<"ERROR in All_Decays::AddToDecays("<<flav<<") :"<<endl
 	       <<"   Specified decay is impossible : ";dc->Output();
     msg.Error()<<"   Will continue and hope for the best."<<endl;
     delete dc;
     return 0;
   }
-  msg.Error()<<"Error in All_Decays::AddToDecays("<<flav<<") :"<<endl
+  msg.Error()<<"ERROR in All_Decays::AddToDecays("<<flav<<") :"<<endl
 	     <<"   could not add flavour to list of all_decays, no vertex found. Abort run."<<endl;
   abort();
   return 0;
@@ -89,7 +88,7 @@ double All_Decays::Width(ATOOLS::Flavour _fl)
 {
   DMIterator dit = m_decays.find(_fl);
   if (dit->first==_fl) return dit->second->Width();
-  msg.Error()<<"Error in All_Decays::Width("<<_fl<<")."<<endl
+  msg.Error()<<"ERROR in All_Decays::Width("<<_fl<<")."<<endl
 	     <<"   Flavour not found in internal tables. Return width = 0 GeV."<<endl;
   return 0.;
 }
@@ -98,7 +97,7 @@ Full_Decay_Table * All_Decays::GetFullDecayTable(ATOOLS::Flavour _fl)
 {
   DMIterator dit = m_decays.find(_fl);
   if (dit->first==_fl) return dit->second;
-  msg.Error()<<"Error in All_Decays::GetFullDecayTable("<<_fl<<")."<<endl
+  msg.Error()<<"ERROR in All_Decays::GetFullDecayTable("<<_fl<<")."<<endl
 	     <<"   Flavour not found in internal tables. Return NULL."<<endl;
   return NULL;
 }
@@ -114,7 +113,8 @@ bool All_Decays::UnweightedEvent(ATOOLS::Decay_Channel * _dec,double _mass)
   }
 }
 
-bool All_Decays::InitializeDecayTables() {
+bool All_Decays::InitializeDecayTables() 
+{
   BinaryDecays();
   //ThreeBodyDecays();
   ArrangeDecays();
@@ -133,13 +133,11 @@ void All_Decays::BinaryDecays()
     msg.Tracking()<<"Construct decays for "<<(*flit)<<endl;
     skippit = 0;
     dmit    = m_decays.find((*flit));
-    if (dmit->first==(*flit)) {
-      if (dmit->second->IsEvaluated()) skippit = 1;
-    }
+    if (dmit->first==(*flit) && dmit->second->IsEvaluated()) skippit = true;
     if (!skippit) {
       vertexlist = m_vertextable[(*flit)];
       if (vertexlist.size()==0) {
-	msg.Error()<<"Error in Decay_Handler::BinaryDecays()."<<endl
+	msg.Error()<<"ERROR in Decay_Handler::BinaryDecays()."<<endl
 		   <<"   Zero-length vertex list. Abort"<<endl;
 	abort();
       }
@@ -153,7 +151,6 @@ void All_Decays::BinaryDecays()
 	  for (int j=1;j<3;j++) dc->AddDecayProduct(flavs[j]);
 	  dc->CreateDecay();
 	  dt->AddDecayChannel(dc);
-	  msg.Tracking()<<"Added Decay_Channel :"<<endl;
 	  if (msg.LevelIsTracking()) dc->Output();
 	}
       }
@@ -181,13 +178,11 @@ void All_Decays::ThreeBodyDecays()
     if (!skippit) {
       primarylist = m_vertextable[(*flit)];
       if (primarylist.size()==0) {
-	msg.Error()<<"Error in Decay_Handler::ThreeBodyDecays()."<<endl
+	msg.Error()<<"ERROR in Decay_Handler::ThreeBodyDecays()."<<endl
 		   <<"   Zero-length vertex list. Abort"<<endl;
 	abort();
       }
       if (!dt) {
-	msg.Tracking()<<"Funny finding in Decay_Handler::ThreeBodyDecays()."<<endl
-		      <<"   Have to instantiate new Full_Decay_Table for "<<(*flit)<<endl;
 	dt = new Full_Decay_Table((*flit));
       }
       for (int i=0;i<primarylist.size();i++) {
@@ -220,16 +215,17 @@ void All_Decays::ArrangeDecays()
   for (DMIterator dmit=m_decays.begin();dmit!=m_decays.end();dmit++) dmit->second->ArrangeDecays();
 }
 
-bool All_Decays::InitializeDecays() { 
-  bool okay = 1;
+
+bool All_Decays::InitializeDecays() 
+{ 
+  bool okay = true;
   for (DMIterator dmit=m_decays.begin();dmit!=m_decays.end();dmit++) {
     if (!dmit->second->IsEvaluated()) okay = okay && dmit->second->InitAllDecays(p_model,p_top);
   }
-  msg.Tracking()<<"All_Decays::InitializeDecays() ";
-  if (okay) msg.Tracking()<<" successful."<<endl;
-  else {
-    msg.Tracking()<<" failed."<<endl;
-    msg.Error()<<"Some libraries were missing ! Type make install and rerun."<<endl;
+  if (!okay) {
+    msg.Error()<<"Amegic::InitializeDecays : "<<std::endl
+	       <<"   Some new libraries were created and have to be compiled and linked."<<std::endl
+	       <<"   Type \"./makelibs\" and rerun."<<endl;
     abort();
   }
   return okay; 

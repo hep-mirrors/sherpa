@@ -191,7 +191,8 @@ void Super_Amplitude::SetZfuncSign()
   }
   // did not find a permutation
   if (ok==0) {
-    msg.Error()<<"Found no suitable factor in Super_Amplitude::SetZfuncSign()!"<<endl;
+    msg.Error()<<"ERROR in Super_Amplitude::SetZfuncSign : "<<std::endl
+	       <<"   Found no suitable factor in Super_Amplitude::SetZfuncSign(), will abort."<<endl;
     abort();
   }
 }

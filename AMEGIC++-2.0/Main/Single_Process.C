@@ -56,8 +56,8 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
   if (_seldata) p_selector = new Combined_Selector(m_nin,m_nout,p_flavours,_seldata);
   else {
     if (m_nout>2)
-      msg.Error()<<"Potential Error in Single_Process "<<m_name<<endl
-		 <<"   No selection cuts specified. Init No_Selector !"<<endl;
+      msg.Out()<<"WARNING in Single_Process "<<m_name<<endl
+	       <<"   No selection cuts specified. Init No_Selector !"<<endl;
     p_selector = new No_Selector();
   }
 
@@ -73,7 +73,7 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
     unsigned int  mode_dir = 0755;
     mkdir((string("Process/")+m_ptypename).c_str(),mode_dir); 
   }
-  msg.Tracking()<<"Initialized Single_Process : "<<m_name<<", "<<m_nvector<<", 1/norm = "<<1./m_Norm<<endl;
+  msg.Tracking()<<"Initialized Single_Process : "<<m_name<<"."<<std::endl;
 }
 
 
@@ -204,7 +204,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
   for (int j=0;j<links.size();j++) {
     if (p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler())) {
       if (p_hel->Compare(links[j]->GetHelicity(),m_nin+m_nout)) {
-	msg.Tracking()<<"Found compatible Process: "<<links[j]->Name()<<endl;
+	msg.Tracking()<<"Single_Process::InitAmplitude : Found compatible process for "<<m_name<<" : "<<links[j]->Name()<<endl;
 
 	if (!FoundMappingFile(m_libname,m_pslibname)) {
 	  system((string("cp Process/")+m_ptypename+string("/")+links[j]->Name()+string(".map ")
@@ -229,7 +229,9 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
   case 2 : 
     for (int j=0;j<links.size();j++) {
       if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
-	msg.Tracking()<<"Test : 2.  Can map "<<m_name<<" on "<<links[j]->Name()<<endl;
+	msg.Tracking()<<"Single_Process::InitAmplitude : "<<std::endl
+		      <<"   Found an equivalent partner process for "<<m_name<<" : "<<links[j]->Name()<<std::endl
+		      <<"   Map processes."<<std::endl;
 	p_partner = links[j];
 	break;
       } 
@@ -243,8 +245,9 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
   case 1 :
     for (int j=0;j<links.size();j++) {
       if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
-	msg.Tracking()<<"Test : 1.  Can map "<<m_name<<" on "<<links[j]->Name()<<endl;
-	p_partner = links[j];
+	msg.Tracking()<<"Single_Process::InitAmplitude : "<<std::endl
+		      <<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
+	p_partner   = links[j];
 	m_pslibname = links[j]->PSLibName();
 	break;
       } 
@@ -253,7 +256,6 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
     
     if (CheckLibraries()) return 1;
     for (int j=0;j<links.size();j++) {
-      //if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
       if (links[j]->NewLibs()) {
 	if (CheckStrings(links[j])) return 1;	
       }      
@@ -262,12 +264,19 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
     
     if (m_gen_str<2) return 1;
     totalsize++;
+    if (p_partner!=this) {
+      msg.Tracking()<<"Single_Process::InitAmplitude : "<<std::endl
+		    <<"   Strings of process "<<m_name<<" and partner "
+		    <<p_partner->Name()<<" did not fit."<<std::endl
+		    <<"   Have to write new library."<<std::endl;
+    }
     WriteLibrary();
     if (p_partner==this && Result()>0.) SetUpIntegrator();
     return 0;
   case -3: return -3;
   default :
-    msg.Error()<<"Error in Single_Process::InitAmplitude : Failed for "<<m_name<<"."<<endl;
+    msg.Error()<<"ERROR in Single_Process::InitAmplitude : "<<std::endl
+	       <<"   Failed for "<<m_name<<"."<<endl;
     errs.push_back(this);
     return 1;
   }
@@ -310,6 +319,8 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology * top)
 
 void Single_Process::InitDecay(Topology* top) { }
 
+
+
 int Single_Process::Tests() {
   int number      = 1;
   int gauge_test  = 1;
@@ -340,19 +351,14 @@ int Single_Process::Tests() {
     p_BS->CalcEtaMu(p_momenta);  
     p_BS->InitGaugeTest(.9);
 
-    msg.Debugging()<<number<<" :";ATOOLS::msg.Debugging().flush();
+    msg.Info()<<"Single_Process::Tests for "<<m_name<<std::endl
+	      <<"   Prepare gauge test and init helicity amplitudes. This may take some time."<<std::endl;
     for (short int i=0;i<p_hel->MaxHel();i++) { 
       if (p_hel->On(i)) {
 	helvalue = p_ampl->Differential(i,(*p_hel)[i])*p_hel->PolarizationFactor(i); 
-	//cout<<i<<". :"<<helvalue<<endl;
 	M2      +=  helvalue;
-	msg.Debugging()<<"*";msg.Debugging().flush();
       } 
-      else {
-	msg.Debugging()<<"0";msg.Debugging().flush();
-      }
     }
-    msg.Debugging()<<endl;
     M2     *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_flavours,p_BS));
     m_iresult  = M2;
   }
@@ -377,7 +383,6 @@ int Single_Process::Tests() {
 #endif
   p_BS->CalcEtaMu(p_momenta);
   number++;
-  msg.Debugging()<<number<<" :";
 
   if (!gauge_test) p_ampl->SetStringOff();  //second test without string production 
 
@@ -387,21 +392,20 @@ int Single_Process::Tests() {
   for (short int i=0;i<p_hel->MaxHel();i++) { 
     if (p_hel->On(i)) {
       M_doub[i]  = p_ampl->Differential(i,(*p_hel)[i])*p_hel->PolarizationFactor(i);  
-      //cout<<i<<". :"<<M_doub[i]<<endl;
       M2g       += M_doub[i];
-      msg.Debugging()<<"*";msg.Debugging().flush();
     }
   }
-  msg.Debugging()<<endl;
 
   //shorten helicities
+  int switchhit = 0;
   for (short int i=0;i<p_hel->MaxHel();i++) {
     if (M_doub[i]==0. || M_doub[i]/M2g<(ATOOLS::Accu()*1.e-2)) {
       p_hel->SwitchOff(i);
-      msg.Debugging()<<"Switch off zero helicity "<<i<<" : "
-		     <<M_doub[i]<<"/"<<M_doub[i]/M2g<<endl;
+      switchhit++;
     }
   }
+  msg.Tracking()<<"Single_Process::Tests for "<<m_name<<std::endl
+		<<"   Switched off or mapped "<<switchhit<<" helicities."<<std::endl;
 
   M2g    *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_flavours,p_BS));
   m_iresult  = M2g;
@@ -413,19 +417,21 @@ int Single_Process::Tests() {
 
   if (gauge_test) {
     if (!ATOOLS::IsEqual(M2,M2g)) {
-      msg.Out()<<"Gauge(1): "<<abs(M2)<<endl
-	       <<"Gauge(2): "<<abs(M2g)<<endl;
       msg.Out()<<"WARNING:  Gauge test not satisfied: "
-	       <<M2<<" vs. "<<M2g<<" : "<<dabs(M2/M2g-1.)*100.<<"%"<<endl;
+	       <<M2<<" vs. "<<M2g<<" : "<<dabs(M2/M2g-1.)*100.<<"%"<<endl
+	       <<"Gauge(1): "<<abs(M2)<<endl
+	       <<"Gauge(2): "<<abs(M2g)<<endl;
     }
-    else {
+    /*
+      else {
       msg.Debugging()<<"Gauge(1): "<<abs(M2)<<endl
-		     <<"Gauge(2): "<<abs(M2g)<<endl;
+      <<"Gauge(2): "<<abs(M2g)<<endl;
       if (M2g!=0.)
-	msg.Debugging()<<"Gauge test: "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
+      msg.Debugging()<<"Gauge test: "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
       else
-	msg.Debugging()<<"Gauge test: "<<0.<<"%"<<endl;
-    }
+      msg.Debugging()<<"Gauge test: "<<0.<<"%"<<endl;
+      }
+    */
   }
   else {
     delete[] M_doub;
@@ -437,22 +443,41 @@ int Single_Process::Tests() {
       M2 = operator()(p_momenta);
       gauge_test = string_test = 0;
     }
-    if (!ATOOLS::IsEqual(M2,M2g)) {
-      msg.Out()<<"Mapping file(1) : "<<abs(M2)<<endl
-	       <<"Original    (2) : "<<abs(M2g)<<endl
-	       <<"Cross check (T) : "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
-      msg.Out()<<"WARNING: Library cross check not satisfied: "
-	       <<M2<<" vs. "<<M2g<<"  difference:"<<abs(M2/M2g-1.)*100.<<"%"<<endl;
-      if (abs(M2/M2g-1.)>rpa.gen.Accu()) return 0;
-      msg.Out()<<"         assuming numerical reasons, continuing "<<endl;
-    } 
     else {
-      msg.Debugging()<<"Mapping file(1) : "<<abs(M2)<<endl
-		     <<"Original    (2) : "<<abs(M2g)<<endl;
-      if (M2g!=0.)
-	msg.Debugging()<<"Cross check (T) : "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
+      string searchfilename = string("Process/")+m_ptypename+string("/")+testname+string("/V.H");
+      if (IsFile(searchfilename)) {
+      	ATOOLS::msg.Error()<<"ERROR in Single_Process::Tests()"<<std::endl
+			   <<"   No compiled & linked library found for process "<<testname<<std::endl
+			   <<"   but files already written out !"<<std::endl
+			   <<"   Interrupt run and execute \"makelibs\" in Run-directory."<<std::endl;
+	abort(); // How 'bout exception handling ???
+      }
       else {
-	msg.Debugging()<<"Cross check (T) : "<<0.<<"%"<<endl;
+      	ATOOLS::msg.Error()<<"ERROR in Single_Process::Tests()"<<std::endl
+			   <<"   Mapping file exists, but no compiled & linked library found for process "
+			   <<testname<<std::endl
+			   <<"   and no files written out !"<<std::endl
+			   <<"   Interrupt run, execute \"makeclean\" in Run-directory and re-start."<<std::endl;
+	abort(); // How 'bout exception handling ???
+      }
+    }
+    if (!ATOOLS::IsEqual(M2,M2g)) {
+      if (abs(M2/M2g-1.)>rpa.gen.Accu()) {
+	msg.Out()<<"WARNING: Library cross check not satisfied: "
+		 <<M2<<" vs. "<<M2g<<"  difference:"<<abs(M2/M2g-1.)*100.<<"%"<<endl
+		 <<"   Mapping file(1) : "<<abs(M2)<<endl
+		 <<"   Original    (2) : "<<abs(M2g)<<endl
+		 <<"   Cross check (T) : "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
+	return 0;
+      }
+      else {
+	msg.Out()<<"WARNING: Library cross check not satisfied: "
+		 <<M2<<" vs. "<<M2g<<"  difference:"<<abs(M2/M2g-1.)*100.<<"%"<<endl
+		 <<"   assuming numerical reasons with small numbers, continuing "<<endl;
+      }
+    }
+    else {
+      if (M2g==0.) {
 	m_libname    = testname;
 	return -3;
       }
@@ -467,7 +492,7 @@ int Single_Process::Tests() {
      Second test : string test
 
      --------------------------------------------------- */
-
+  
   if (string_test) {
     //String-Test
     for (short int i=0;i<p_hel->MaxHel();i++) {
@@ -475,7 +500,6 @@ int Single_Process::Tests() {
 	for (short int j=i+1;j<p_hel->MaxHel();j++) {
 	  if (p_hel->On(j)) {
 	    if (ATOOLS::IsEqual(M_doub[i],M_doub[j])) {
-	      msg.Debugging()<<"Mapping equal helicities "<<j<<" -> "<<i<<endl;
 	      p_hel->SwitchOff(j);
 	      p_hel->SetPartner(i,j);
 	      p_hel->IncMultiplicity(i);
@@ -492,27 +516,17 @@ int Single_Process::Tests() {
       double  M2S = 0.;
       p_shand->Calculate();
       
-      msg.Debugging()<<"3:";msg.Debugging().flush();
       for (short int i=0;i<p_hel->MaxHel();i++) {
 	if (p_hel->On(i)) {
-	  msg.Debugging()<<"*";msg.Debugging().flush();
 	  M2S += p_ampl->Differential(i)*p_hel->PolarizationFactor(i)*p_hel->Multiplicity(i);
 	}
       }
-      msg.Debugging()<<endl;
       M2S *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_flavours,p_BS));
       if (!ATOOLS::IsEqual(M2g,M2S)) {
 	msg.Out()<<"WARNING: String test not satisfied: "
 		 <<M2g<<" vs. "<<M2S<<"  difference:"<<abs(M2g/M2S-1.)*100.<<"%"<<endl;
 	if (abs(M2g/M2S-1.)>rpa.gen.Accu()) return 0;
 	msg.Out()<<"         assuming numerical reasons, continuing "<<endl;
-      }
-      else {
-	if (M2S!=0.)
-	  msg.Debugging()<<"String test: "<<abs(M2g/M2S-1.)*100.<<"%"<<endl;
-	else
-	  msg.Debugging()<<"String test: "<<0.<<"%"<<endl;
-      
       }
       return 1;
     }
@@ -526,6 +540,7 @@ int Single_Process::CheckLibraries() {
   if (m_gen_str==0) return 1;
   if (p_shand->IsLibrary()) return 1;
 
+  msg.Info()<<"Single_Process::CheckLibraries : Looking for a suitable library. This may take some time."<<std::endl;
   char help[20];
   String_Handler * shand1;
   shand1      = new String_Handler(p_shand->Get_Generator());
@@ -543,21 +558,13 @@ int Single_Process::CheckLibraries() {
       shand1->Calculate();
       
       M2s = 0.;
-      ATOOLS::msg.Debugging()<<"Check "<<m_libnumb<<" :";ATOOLS::msg.Debugging().flush();
       for (short int i=0;i<p_hel->MaxHel();i++) {
 	helvalue = p_ampl->Differential(shand1,i) * p_hel->PolarizationFactor(i) *
 	  p_hel->Multiplicity(i);
 	M2s     += helvalue;
-	msg.Debugging()<<"*";ATOOLS::msg.Debugging().flush();
       }
-      msg.Debugging()<<endl;
       M2s *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_flavours,p_BS));
-      if (Result()!=0.)
-	msg.Debugging()<<"Cross check (1): "<<abs(M2s/Result()-1.)*100.<<"%"<<"  : "
-		       <<M2s<<"/"<<Result()<<endl;
-      else msg.Debugging()<<"Cross check (1): "<<M2s<<"/"<<Result()<<endl;
       if (ATOOLS::IsEqual(M2s,Result())) {
-	msg.Tracking()<<"Found a suitable Library."<<endl;
 	m_libname = testname;
 	m_pslibname = testname;
 	if (shand1) { delete shand1; shand1 = 0; }
@@ -586,24 +593,16 @@ int Single_Process::CheckStrings(Single_Process* tproc)
   shand1->Calculate();
 
   M2s = 0.;
-  ATOOLS::msg.Debugging()<<"Check "<<tproc->Name()<<" :";ATOOLS::msg.Debugging().flush();
   for (short int i=0;i<p_hel->MaxHel();i++) {
     helvalue = p_ampl->Differential(shand1,i) * p_hel->PolarizationFactor(i) *
       p_hel->Multiplicity(i);
     M2s     += helvalue;
-    msg.Debugging()<<"*";ATOOLS::msg.Debugging().flush();
   }
-  msg.Debugging()<<endl;
   M2s *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_flavours,p_BS));
-  if (Result()!=0.)
-    msg.Debugging()<<"Cross check (2): "<<abs(M2s/Result()-1.)*100.<<"%"<<"  : "
-		   <<M2s<<"/"<<Result()<<endl;
-  else msg.Debugging()<<"Cross check (2): "<<M2s<<"/"<<Result()<<endl;  
   (shand1->Get_Generator())->ReStore();
   delete shand1;
 
   if (ATOOLS::IsEqual(M2s,Result())) {
-    msg.Tracking()<<"Found a suitable string."<<endl;
     m_libname = tproc->LibName();
     m_pslibname = tproc->PSLibName();
     Minimize();
@@ -627,13 +626,13 @@ void Single_Process::WriteLibrary()
   m_libname = testname;
   if (p_partner==this) m_pslibname = m_libname;
                   else m_pslibname = p_partner->PSLibName();
-  msg.Debugging()<<"Write Library for "<<m_name<<" = "<<m_libname<<", = case."<<endl;
   int  mode_dir = 448;
-  msg.Debugging()<<" m_ptypename = "<<m_ptypename<<endl<<" m_libname = "<<m_libname<<endl;
   mkdir((string("Process/")+m_ptypename+string("/")+m_libname).c_str(),mode_dir); 
   p_shand->Output(p_hel,m_ptypename+string("/")+m_libname);
   CreateMappingFile();
   m_newlib=true;
+  msg.Info()<<"Single_Process::WriteLibrary : "<<std::endl
+	    <<"   Library for "<<m_name<<" has been written, name is "<<m_libname<<std::endl;
 }
 
 std::string  Single_Process::CreateLibName()
@@ -666,7 +665,8 @@ void Single_Process::CreateMappingFile() {
     string MEname,PSname;
     FoundMappingFile(MEname,PSname);
     if (MEname != m_libname || PSname != m_pslibname) {
-      msg.Error()<<"In Single_Process::CreateMappingFile() : Files do not coincide. Maybe changed input data ?"<<endl;
+      msg.Error()<<"ERROR in Single_Process::CreateMappingFile() :"<<std::endl
+		 <<"   Files do not coincide. Maybe changed input data ? Abort the run."<<std::endl;
       abort();
     }
     else return;
@@ -735,8 +735,9 @@ bool Single_Process::CreateChannelLibrary()
   if (m_nin>1)  newch = p_psgen->Construct(p_pshandler->FSRIntegrator(),m_ptypename,m_pslibname,p_flavours,this); 
 
   if (newch>0) {
-    msg.Error()<<p_pshandler->NumberOfFSRIntegrators()<<" new Channels produced for "<<m_pslibname<<" ! "<<endl
-	       <<"After program termination please enter \"make install\" and rerun !"<<endl;
+    msg.Tracking()<<"Single_Process::CreateChannelLibrary() :"<<std::endl
+		  <<"   "<<p_pshandler->NumberOfFSRIntegrators()<<" new channels produced for "
+		  <<m_pslibname<<". After program termination please enter \"makelibs\" and rerun."<<endl;
     return 0;
   }
   else {
@@ -783,17 +784,16 @@ void Single_Process::SetTotal(int _tables)  {
     //   nothing to do for a Single_Process
   }
   if (m_nin==2) {
-    msg.Events()<<"      xs for "<<om::bold<<m_name<<om::reset<<" : "
-		<<om::blue<<om::bold<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"<<om::reset
-		<<" +/- "<<om::reset<<om::blue<<m_totalerr/m_totalxs*100.<<" %,"<<om::reset<<endl
-		<<"       max : "<<m_max<<endl
-		<<om::bold<<"   exp. eff: "<<om::red<<(100.*m_totalxs/m_max)<<" %"<<om::reset<<endl;
+    msg.Info()<<"Total xs for "<<om::bold<<m_name<<om::reset<<" : "
+	      <<om::blue<<om::bold<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"<<om::reset
+	      <<" +/- "<<om::reset<<om::blue<<m_totalerr/m_totalxs*100.<<" %,"<<om::reset
+	      <<" max : "<<m_max<<", "
+	      <<om::bold<<" exp. eff: "<<om::red<<(100.*m_totalxs/m_max)<<" %."<<om::reset<<endl;
   }
   if (m_nin==1) {
-    msg.Events()<<"      width for "<<m_name<<" : "
-		<<m_totalxs<<" GeV"
-		<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
-		<<"       max : "<<m_max<<endl;
+    msg.Info()<<"Total width for "<<m_name<<" : "
+	      <<m_totalxs<<" GeV"
+	      <<" +/- "<<m_totalerr/m_totalxs*100.<<"%, max : "<<m_max<<endl;
   }
 }
 
@@ -804,7 +804,7 @@ void Single_Process::SetTotal(int _tables)  {
   ------------------------------------------------------------------------------*/
 
 bool Single_Process::CalculateTotalXSec(std::string _resdir) { 
-  msg.Events()<<"In Single_Process::CalculateTotalXSec("<<_resdir<<") for "<<m_name<<endl; 
+  msg.Info()<<"In Single_Process::CalculateTotalXSec("<<_resdir<<") for "<<m_name<<endl; 
   
   string _name;
   double _totalxs,_totalerr,_max,sum,sqrsum;
@@ -824,10 +824,9 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
 	m_totalsum = sum;
 	m_totalsumsqr = sqrsum;
       }
-      msg.Events()<<"Found result : xs for "<<m_name<<" : "
-		  <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
-		  <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
-		  <<"       max : "<<m_max<<endl;
+      msg.Tracking()<<"Found result : xs for "<<m_name<<" : "
+		    <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
+		    <<" +/- "<<m_totalerr/m_totalxs*100.<<"%, max : "<<m_max<<endl;
       from.close();
       p_pshandler->ReadIn(_resdir+string("/MC_")+m_name);
       if (p_pshandler->BeamIntegrator() != 0) p_pshandler->BeamIntegrator()->Print();
@@ -843,8 +842,9 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
   m_totalxs = p_pshandler->Integrate();
   if (m_nin==2) m_totalxs /= ATOOLS::rpa.Picobarn();
   if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
-    msg.Error()<<"Result of PS-Integrator and internal summation to not coincide!"<<endl
-	       <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
+    msg.Error()<<"ERROR in Single_Process::CalculateTotalXSec :"<<std::endl
+	       <<"   Result of PS-Integrator and internal summation to not coincide for "<<endl
+	       <<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
   }
   SetTotal(0);
   if (m_totalxs>=0.) {
@@ -856,10 +856,10 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
       std::ofstream to;
       to.open(filename,ios::out);
       WriteOutXSecs(to);
-      msg.Events()<<"Store result : xs for "<<m_name<<" : "
-		  <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
-		  <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
-		  <<"       max : "<<m_max<<endl;
+      msg.Info()<<"Store result : xs for "<<m_name<<" : "
+		<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
+		<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
+		<<"       max : "<<m_max<<endl;
       p_pshandler->WriteOut(_resdir+string("/MC_")+m_name);
       to.close();
     }
@@ -877,10 +877,10 @@ void Single_Process::PrepareTerminate()
   std::ofstream to;
   to.open(m_resultfile.c_str(),ios::out);
   WriteOutXSecs(to);
-  msg.Events()<<"Store result : xs for "<<m_name<<" : "
-	      <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
-	      <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
-	      <<"       max : "<<m_max<<endl;
+  msg.Info()<<"Store result : xs for "<<m_name<<" : "
+	    <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
+	    <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
+	    <<"       max : "<<m_max<<endl;
   p_pshandler->WriteOut(m_resultpath+string("/MC_")+m_name);
   to.close();
 }
@@ -909,8 +909,8 @@ bool Single_Process::LookUpXSec(double ycut,bool calc,string obs) {
     histo->Extrapolate(ycut,res,1);
     m_totalxs = res[0];
     m_max     = res[1];
-    msg.Events()<<m_name<<" : Set total xsec and max at ycut = "<<ycut
-		<<" : "<<endl<<"   "<<m_totalxs<<" / "<<m_max<<endl;
+    msg.Info()<<m_name<<" : Set total xsec and max at ycut = "<<ycut
+	      <<" : "<<endl<<"   "<<m_totalxs<<" / "<<m_max<<endl;
     delete histo;
     delete res;
 
@@ -930,19 +930,15 @@ bool Single_Process::LookUpXSec(double ycut,bool calc,string obs) {
 }
 
 bool Single_Process::PrepareXSecTables() { 
-  msg.Events()<<"In Single_Process::PrepareXSecTables() for "<<m_name<<endl; 
-
   string filename = (m_resdir+string("/Tab")+m_name+string("dY_cut")).c_str();
-  if (IsFile(filename)) {
-    msg.Events()<<"Found "<<filename<<endl;
-  }
 
   m_totalxs = p_pshandler->Integrate();
   if (m_nin==2) m_totalxs /= ATOOLS::rpa.Picobarn();
 
   if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
-    msg.Error()<<"Result of PS-Integrator and internal summation to not coincide!"<<endl;
-    msg.Error()<<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
+    msg.Error()<<"ERROR in Single_Process::PrepareXSecTables :"<<std::endl
+	       <<"   Result of PS-Integrator and internal summation to not coincide for "
+	       <<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
   }
   SetTotal(1);
   p_pshandler->WriteOut(m_resdir+string("/MC_")+m_name);
@@ -1123,14 +1119,6 @@ void Single_Process::InitializeHelicityWeights()
   m_throws        = 0;
   m_helnumber     = m_helnumbers.size();
   m_inithelsample = true;
-  if (msg.Level()>1) {
-    msg.Out()<<"Initialize sampling over helicities."<<std::endl
-	     <<"   Found "<<active<<" active helicities with the following weights: "<<std::endl;
-    for (int i=0;i<m_helnumber;i++) {
-      msg.Out()<<"   "<<i<<"("<<m_helnumber<<") : "<<m_helnumbers[i]<<" * "
-	       <<p_hel->Multiplicity(m_helnumbers[i])<<" -> "<<m_helalphas[i]<<std::endl;
-    }
-  }
 }
 
 const int Single_Process::SelectedHelicity()
@@ -1143,7 +1131,7 @@ const int Single_Process::SelectedHelicity()
     if (disc<=0.) break;
   }
   if (hel>=m_helnumber) {
-    msg.Error()<<"Warning in Single_Process::SelectedHelicity() after "<<m_throws<<std::endl;
+    msg.Out()<<"WARNING in Single_Process::SelectedHelicity() after "<<m_throws<<std::endl;
     hel = m_helnumber-1;
   }
   return hel;

@@ -167,7 +167,7 @@ void Channel_Generator::Step0(int flag,Point* p,int& rannum,ofstream& sf,
 	    if (!StepS(flag,p->right,rannum,sf,flav,maxnumb)) {
 	      if (p->middle == 0) {
 		msg.Error()<<"This seems to be a 2->1 process !!!"<<endl
-			   <<"  "<<p->fl<<" -> { "<<p->left->fl<<" "<<p->right->fl<<" }"<<endl;
+			   <<"  "<<p->fl<<" -> { "<<p->left->fl<<" "<<p->right->fl<<" }. Abort the run."<<endl;
 		abort();
 	      }
 	    }
@@ -181,7 +181,7 @@ void Channel_Generator::Step0(int flag,Point* p,int& rannum,ofstream& sf,
 	    if (ph->left==0 && p->middle) ph = p->middle;
 	    if (ph->left==0) {
 	      msg.Error()<<"This seems to be a 2->1 process !!!"<<endl
-			 <<"  "<<p->fl<<" -> { "<<p->left->fl<<" "<<p->right->fl<<" }"<<endl;
+			 <<"  "<<p->fl<<" -> { "<<p->left->fl<<" "<<p->right->fl<<" }. Abort the run."<<endl;
 	      abort();
 	    }
 	  }
@@ -954,7 +954,7 @@ void  Channel_Generator::AddToVariables(int flag,const string& lhs,const string&
   else {
     // already exists
     if (rhs != declarations[name]) {
-      msg.Error()<<" ERROR in Channel_Generator::AddToVariables ()"<<endl;
+      msg.Error()<<" ERROR in Channel_Generator::AddToVariables. Abort the run."<<endl;
       abort();
     }
   }

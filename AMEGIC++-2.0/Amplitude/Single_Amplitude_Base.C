@@ -157,7 +157,8 @@ Kabbala Single_Amplitude_Base::SingleZvalueTensor(Zfunc* z,vector<int>* iz, vect
   Kabbala value;
   int narg=z->m_narg - z->p_calculator->GetScalarNumb();
   if(z->p_arguments[narg-2]!=z->p_arguments[narg-1]){
-    msg.Error()<<"Single_Amplitude_Base::SingleZvalueTensor: Unexpected tensor sign! "<<(*iargs)[2*k+1]<<" "<<k<<endl;
+    msg.Error()<<"ERROR in Single_Amplitude_Base::SingleZvalueTensor: "<<std::endl
+	       <<"   Unexpected tensor sign! "<<(*iargs)[2*k+1]<<" "<<k<<endl;
     z->Print();
     abort();
   }
@@ -178,8 +179,8 @@ Kabbala Single_Amplitude_Base::SingleZvalueTensor(Zfunc* z,vector<int>* iz, vect
 }
 
 Kabbala Single_Amplitude_Base::SingleZGroupvalue(Zfunc* z,
-					     vector<int>* iz,              //list of indizes(propagators to sum)
-					     vector<int>* iargs,int last)
+						 vector<int>* iz,//list of indizes(propagators to sum)
+						 vector<int>* iargs,int last)
 { 
   Kabbala value;
   if(z->GetOp()=='+') { 
@@ -195,7 +196,8 @@ Kabbala Single_Amplitude_Base::SingleZGroupvalue(Zfunc* z,
     Kabbala hlp;
 
     if(z->GetSize()!=2){
-      msg.Error()<<"Invalid Zfunc_ProdGroup!"<<endl;
+      msg.Error()<<"ERROR in Single_Amplitude_Base::SingleZGroupvalue : "<<std::endl
+		 <<"   Invalid Zfunc_ProdGroup. Abort the run."<<endl;
       abort();
     }
     vector<int> iz_s;
@@ -375,7 +377,8 @@ Flavour* Single_Amplitude_Base::GetPflav(int pn)
     Pfunc*  p = *pit;
     if(pn==p->arg[0])return &(p->fl);
   }
-  msg.Error()<<"Single_Amplitude_Base::GetPflav: Propagator not found!"<<endl;
+  msg.Error()<<"ERROR in Single_Amplitude_Base::GetPflav: "<<std::endl
+	     <<"   Propagator "<<pn<<" not found. Abort the run."<<endl;
   abort();
 }
 
@@ -518,7 +521,8 @@ void Single_Amplitude_Base::GroupZfuncs()
 	if(!hit){++ilt;++zit;}
       }
       if(ia!=2){
-	msg.Error()<<"Error Single_Amplitude_Base::GroupZfuncs: index appeared "<<ia<<" times!"<<endl;
+	msg.Error()<<"ERROR Single_Amplitude_Base::GroupZfuncs: "<<std::endl
+		   <<"   Index appeared "<<ia<<" times, will abort the run."<<endl;
 	zh[0]->Print();zh[1]->Print();
 	abort();
       }
@@ -533,7 +537,8 @@ void Single_Amplitude_Base::GroupZfuncs()
 Complex Single_Amplitude_Base::Zvalue(String_Handler * sh, int ihel) 
 {
   if (sh) return sh->Zvalue(amplnumber,ihel);
-  msg.Error()<<" ERROR in Single_Amplitude_Base::Zvalue(String_Handler * sh, int ihel) "<<endl;
+  msg.Error()<<"ERROR in Single_Amplitude_Base::Zvalue(String_Handler * sh, int ihel) : "<<endl
+	     <<"   Will try to circumvent this and continue the run."<<std::endl; 
   shand->Zvalue(amplnumber,ihel);   
   return Complex(0.,0.);
 }

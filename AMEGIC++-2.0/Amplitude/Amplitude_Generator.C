@@ -24,7 +24,6 @@ MPI::Datatype   mpi_point_type;
 
 std::ostream & AMEGIC::operator<<(std::ostream & s, const Point * p)
 {
-  //  if (!(ATOOLS::msg.LevelIsDebugging())) return s;
   if ((p->left==0) && (p->right==0)) {
     s<<"EndPoint : "<<p->fl<<"("<<p->b<<")"<<std::endl;
     return s;
@@ -87,7 +86,6 @@ Amplitude_Generator::Amplitude_Generator(int _no,Flavour* _fl,int* _b,
   if (rank==0) {
     for (int i=0; i<size; ++i) {
       r_buffers.push_back(Prea_Buffer());
-      msg.Debugging()<<" create Buffer for "<<i<<" size "<<NMAX<<endl;
       r_buffers[i].buff     = new MPI_Point[NMAX];
       r_buffers[i].counters = new int[2*NMAX]; // too big!!!
       r_buffers[i].nbuff = 0;
@@ -95,7 +93,6 @@ Amplitude_Generator::Amplitude_Generator(int _no,Flavour* _fl,int* _b,
   }
   else {
     r_buffers.push_back(Prea_Buffer());
-    msg.Debugging()<<" create Buffer for Slave "<<rank<<" size "<<NMAX<<endl;
     r_buffers[0].buff     = new MPI_Point[NMAX];
     r_buffers[0].counters = new int[2*NMAX]; // too big!!!
     r_buffers[0].nbuff = 0;
@@ -712,7 +709,8 @@ void Amplitude_Generator::ReplaceVertex(Point * p) {
     }
   }
   if (!hit) {
-    msg.Error()<<" vertex not found , something wrong with MPI "<<endl;
+    msg.Error()<<"ERROR in Amplitude_Generator::ReplaceVertex :"<<std::endl
+	       <<"   Vertex not found , something wrong with MPI mode. Abort the run."<<endl;
     abort();
   }
 }
@@ -788,7 +786,9 @@ void Amplitude_Generator::Unite(Point* p,Point* pdel)
 	      p[hit].cpl[count+j] = pdel[hit].cpl[j];			
 	    p[hit].ncpl = ncpl;	  
 	  }
-	  else ATOOLS::msg.Error()<<"Error in Amplitude_Generator"<<endl;
+	  else 
+	    ATOOLS::msg.Error()<<"ERROR in Amplitude_Generator"<<endl
+			       <<"   Continue and hope for the best ..."<<std::endl;
 	}
       }
     }
@@ -808,7 +808,9 @@ int Amplitude_Generator::CompareColors(Point* p1,Point* p2)
       if (c1->String()==c2->String() && c1->Next()->String()==c2->Next()->String()) return 1;
       else return 0;
     }
-    else msg.Out()<<"ERROR in Amplitude_Generator::CompareColors, Color structure not supported !!! "<<endl;
+    else 
+      msg.Error()<<"ERROR in Amplitude_Generator::CompareColors :"<<std::endl
+		 <<"   Color structure not supported. Continue and hope for the best. "<<endl;
   }
   int l1[3],l2[3],l1n[3],l2n[3];
   for (int i=0;i<3;i++){
@@ -818,7 +820,8 @@ int Amplitude_Generator::CompareColors(Point* p1,Point* p2)
     l2n[i]=c2->Next()->ParticleArg(i);
   }
   if (c1->Next()->Type()!=cf::T)
-    msg.Out()<<"ERROR in Amplitude_Generator::CompareColors !!! "<<std::endl; 
+    msg.Error()<<"ERROR in Amplitude_Generator::CompareColors :"<<std::endl
+	       <<"   Unexpected sequence in color structure. Continue and hope for the best. "<<endl;
   
   if (l1[0]!=l2[0] && l1n[0]!=l2n[0]) {
     if (l1[1]==l2[1] && l1[2]==l2[2] && l1n[1]==l2n[1] && l1n[2]==l2n[2]) return 0;
@@ -987,8 +990,6 @@ void Amplitude_Generator::KillHigherOrders(Single_Amplitude * & first)
     hitQED = FindQEDOrder(f1->GetPointlist(),hitQED);
     hitQCD = FindQCDOrder(f1->GetPointlist(),hitQCD);
     if (hitQED > nEW || hitQCD > nQCD) {
-      msg.Debugging()<<"Diagram has to be kicked "
-		    <<hitQED<<" < "<<nEW<<" or "<<hitQCD<<" < "<<nQCD<<endl;
       ++count;
       if (f1==first) {
 	first = f1->Next;
@@ -1008,7 +1009,7 @@ void Amplitude_Generator::KillHigherOrders(Single_Amplitude * & first)
       f1 = f1->Next;
     }
   }
-  msg.Debugging()<<"Kicked number of diagrams (Amplitude_Generator::KillHigherOrders()) "<<count<<endl;
+  msg.Tracking()<<"Kicked number of diagrams (Amplitude_Generator::KillHigherOrders()) "<<count<<endl;
 }
 
 

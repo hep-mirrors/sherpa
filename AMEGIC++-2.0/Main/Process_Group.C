@@ -71,8 +71,8 @@ Process_Group::Process_Group(int _nin,int _nout,Flavour *& _fl,
   if (_seldata) p_selector = new Combined_Selector(m_nin,m_nout,p_flavours,_seldata);
   else {
     if (m_nout>2) 
-      msg.Error()<<"Potential Error in Process_Group "<<m_name<<endl
-		 <<"   No selection cuts specified. Init No_Selector !"<<endl;
+      msg.Out()<<"WARNING in Process_Group "<<m_name<<endl
+	       <<"   No selection cuts specified. Init No_Selector !"<<endl;
     p_selector = new No_Selector();
   }
 }
@@ -122,8 +122,9 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
 	}
 	else {
 	  if (p_pl[i].GetPol()!=' ' && p_pl[i].GetPol()!='s') {
-	    msg.Out()<<" WARNING: wrong polarisation state in Particle.dat !!!!"<<endl;
-	    msg.Out()<<"          Polarisation ignored. "<<endl;
+	    msg.Out()<<" WARNING in Process_Group::ConstructProcesses : "<<std::endl
+		     <<"   wrong polarisation state in Particle.dat."<<endl
+		     <<" Polarisation ignored, run will continue."<<endl;
 	  }
 	}
       }
@@ -226,16 +227,21 @@ void Process_Group::GroupProcesses() {
   for (int i=0;i<m_procs.size();i++) {
     for (int j=0;j<m_procs[i]->NIn();j++) {
       if (!(ATOOLS::IsEqual(massin[j],(m_procs[i]->Flavours()[j]).Mass()))) {
-	msg.Error()<<"Error in Incoming masses ; "<<massin[j]<<" vs. "<<(m_procs[i]->Flavours()[j]).Mass()
-		   <<" for "<<p_flin[j]<<" "<<m_procs[i]->Flavours()[j]<<endl;
+	msg.Error()<<"Error in Process_Group::GroupProcesses : "<<std::endl
+		   <<"   Incoming masses "<<massin[j]<<" vs. "<<(m_procs[i]->Flavours()[j]).Mass()
+		   <<" for "<<p_flin[j]<<" "<<m_procs[i]->Flavours()[j]<<endl
+		   <<"   Continue run and hope for the best."<<std::endl;
 	massok = 0; break;
-	}
+      }
     }
     if (!massok) break;
     for (int j=0;j<m_procs[i]->NOut();j++) {
       if (!(ATOOLS::IsEqual(massout[j],(m_procs[i]->Flavours()[j+m_procs[i]->NIn()]).Mass()))) {
-	msg.Error()<<"Error in outgoing masses ; "<<massout[j]<<" vs. "<<(m_procs[i]->Flavours()[j+m_procs[i]->NIn()]).Mass()
-		   <<"for "<<p_flout[j]<<" "<<m_procs[i]->Flavours()[j+m_procs[i]->NIn()]<<endl;
+	msg.Error()<<"Error in Process_Group::GroupProcesses : "<<std::endl
+		   <<"   Incoming masses "<<massout[j]<<" vs. "
+		   <<(m_procs[i]->Flavours()[j+m_procs[i]->NIn()]).Mass()
+		   <<" for "<<p_flout[j]<<" "<<m_procs[i]->Flavours()[j+m_procs[i]->NIn()]<<endl
+		   <<"   Continue run and hope for the best."<<std::endl;
 	massok = 0; break;
       }
     }
@@ -245,8 +251,8 @@ void Process_Group::GroupProcesses() {
     SetISRThreshold(ATOOLS::Max(sum_massin,sum_massout));
   }
   else {
-    msg.Error()<<"Error in Process_Group : "<<m_name<<endl
-	       <<"   Processes do not have equal masses. Abort."<<endl;
+    msg.Error()<<"ERROR in Process_Group::GroupProcesses : "<<m_name<<endl
+	       <<"   Processes do not have equal masses. Abort the run."<<endl;
     abort();
   }
   delete [] massin;
@@ -350,7 +356,7 @@ void Process_Group::GroupProcesses() {
   }
 
   for (int i=0;i<m_procs.size();i++) {
-    msg.Tracking()<<"Process_Group "<<m_procs[i]->Name()<<" : "<<m_procs[i]->Size()<<endl;
+    msg.Tracking()<<"Process_Group::GroupProcesses "<<m_procs[i]->Name()<<" : "<<m_procs[i]->Size()<<endl;
     for (int j=0;j<m_procs[i]->Size();j++) 
       msg.Tracking()<<"    "<<((*m_procs[i])[j])->Name()<<endl;
     msg.Tracking()<<"--------------------------------------------------"<<endl;
@@ -422,8 +428,8 @@ void Process_Group::SelectOne()
 	}
       }
       if (disc>0.) { 
-	msg.Error()<<"Error in Process_Group::SelectOne() : "
-		   <<"Total xsec, max = "<<m_totalxs<<", "<<m_max<<endl;
+	msg.Error()<<"ERROR in Process_Group::SelectOne() : "
+		   <<"   Total xsec, max = "<<m_totalxs<<", "<<m_max<<endl;
 	return;
       }
     }
@@ -445,8 +451,8 @@ void Process_Group::SelectOne()
 	}
       }
       if (disc>0.) { 
-	msg.Error()<<"Error in Process_Group::SelectOne() : "
-		   <<"Total xsec, max = "<<m_totalxs<<", "<<m_max<<endl;
+	msg.Error()<<"ERROR in Process_Group::SelectOne() : "
+		   <<"   Total xsec, max = "<<m_totalxs<<", "<<m_max<<endl;
 	return;
       }
     }
@@ -508,14 +514,18 @@ void Process_Group::SetTotal(int tables)  {
     //               update maximum to sum of maximum
     SetMax(0.);
   }
-  msg.Events()<<"-----------------------------------------------------------------------"<<endl;
-  if (m_nin==2) 
-    msg.Events()<<"Total XS for "<<m_name<<"("<<m_procs.size()<<") : "
-		<<m_totalxs*rpa.Picobarn()<<" pb"<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl;
-  
-  if (m_nin==1) 
-    msg.Events()<<"Total Width for "<<m_name<<"("<<m_procs.size()<<") : "
-		<<m_totalxs<<" GeV"<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl;
+  if (m_nin==2) {
+    msg.Info()<<"Total xs for "<<om::bold<<m_name<<om::reset<<" : "
+	      <<om::blue<<om::bold<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"<<om::reset
+	      <<" +/- "<<om::reset<<om::blue<<m_totalerr/m_totalxs*100.<<" %,"<<om::reset
+	      <<" max : "<<m_max<<", "
+	      <<om::bold<<" exp. eff: "<<om::red<<(100.*m_totalxs/m_max)<<" %."<<om::reset<<endl;    
+  }
+  if (m_nin==1) {
+    msg.Info()<<"Total width for "<<m_name<<" : "
+	      <<m_totalxs<<" GeV"
+	      <<" +/- "<<m_totalerr/m_totalxs*100.<<"%, max : "<<m_max<<endl;
+  }
 }
 
 void Process_Group::SetMax(double max) {
@@ -533,10 +543,11 @@ void Process_Group::SetMax(double max) {
   }
   if (m_totalxs!=0.) {
     if (!ATOOLS::IsEqual(sum,m_totalxs)) {
-      msg.Events().precision(12);
-      msg.Events()<<" WARNING: group "<<Name()<<": xs and sum of daughters does not agree ! "<<endl
-		  <<" sum="<<sum<<"  total:"<<m_totalxs
-		  <<"  ("<<((sum-m_totalxs)/m_totalxs)<<")"<<endl;
+      msg.Out().precision(12);
+      msg.Out()<<"WARNING in Process_Group::SetMax :"<<std::endl
+	       <<"   In group "<<Name()<<": xs and sum of daughters does not agree ! "<<endl
+	       <<" sum="<<sum<<"  total:"<<m_totalxs
+	       <<"  ("<<((sum-m_totalxs)/m_totalxs)<<")"<<endl;
     }
     m_totalxs=sum;
   }
@@ -566,14 +577,11 @@ int Process_Group::InitAmplitude(Interaction_Model_Base * model,Topology * top,V
   vector <string> deletethem;
 
   for (int i=0;i<m_procs.size();i++) {
-    msg.Debugging()<<"========================================================="<<endl
-		   <<"========================================================="<<endl
-		   <<"Process_Group::InitAmplitude for "<<m_procs[i]->Name()<<endl;
     if (m_atoms) { delete [] testmoms; testmoms = 0; }
 
     switch (m_procs[i]->InitAmplitude(model,top,testmoms,links,errs,totalsize,procs)) {
     case -3 :
-      msg.Debugging()<<"Amplitude is zero: "<<m_procs[i]->Name()<<endl
+      msg.Tracking()<<"Amplitude is zero for "<<m_procs[i]->Name()<<endl
 		     <<"   delete it."<<endl;
       deletethem.push_back(m_procs[i]->Name());
       break;
@@ -581,8 +589,8 @@ int Process_Group::InitAmplitude(Interaction_Model_Base * model,Topology * top,V
       msg.Error()<<"Error in creation of amplitude "<<m_procs[i]->Name()<<endl;
       return -2;
     case -1 : 
-      msg.Debugging()<<"No diagrams or amplitudes for "<<m_procs[i]->Name()<<endl
-		     <<"   delete it."<<endl;
+      msg.Tracking()<<"No diagrams or amplitudes for "<<m_procs[i]->Name()<<endl
+		    <<"   delete it."<<endl;
       deletethem.push_back(m_procs[i]->Name());
       break;
     case 0 :
@@ -636,9 +644,6 @@ int Process_Group::InitAmplitude(Interaction_Model_Base * model,Topology * top,V
     m_procs.clear();
   }
 
-  msg.Debugging()<<"Process_Group::Initialize Amplitude for "<<m_name;
-  if (okay) msg.Debugging()<<" successful."<<endl;
-       else msg.Debugging()<<" failed."<<endl;
   return okay;
 }
 
@@ -678,7 +683,7 @@ bool Process_Group::SetUpIntegrator()
 
 bool Process_Group::CalculateTotalXSec(std::string _resdir)
 {
-  msg.Tracking()<<"Process_Group::CalculateTotalXSec("<<_resdir<<")"<<endl;
+  msg.Info()<<"Process_Group::CalculateTotalXSec("<<_resdir<<")"<<endl;
   if (m_atoms) {
     bool okay = 1;
     for (int i=0;i<m_procs.size();i++) {
@@ -700,10 +705,9 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	while (from) {
 	  from>>_name>>_totalxs>>_max>>_totalerr>>sum>>sqrsum>>n;
 	  if (_name==m_name) m_totalxs += _totalxs;
-	  msg.Events()<<"Found result : xs for "<<_name<<" : "
-		      <<_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
-		      <<" +/- "<<_totalerr/_totalxs*100.<<"%,"<<endl
-		      <<"       max : "<<_max<<endl;
+	  msg.Tracking()<<"Found result : xs for "<<_name<<" : "
+			<<_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
+			<<" +/- "<<_totalerr/_totalxs*100.<<"%, max : "<<_max<<endl;
 	  Process_Base * _proc = NULL;
 	  if (Find(_name,_proc)) {
 	    _proc->SetTotalXS(_totalxs);
@@ -724,14 +728,15 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	if (p_pshandler->FSRIntegrator() != 0)  p_pshandler->FSRIntegrator()->Print();
 	p_pshandler->InitIncoming();
 	if (m_totalxs<=0.) {
-	  msg.Error()<<"In "<<m_name<<"::CalculateTotalXSec("<<_resdir<<")"<<endl
+	  msg.Error()<<"ERROR in Process_Group::CalculateTotalXSec :"
+		     <<"   In "<<m_name<<"::CalculateTotalXSec("<<_resdir<<")"<<endl
 		     <<"   Something went wrong : Negative xsec : "<<m_totalxs<<endl;
 	  return 0;
 	}
 	else {
 	  if (okay) {
-	    msg.Debugging()<<"In "<<m_name<<"::CalculateTotalXSec("<<_resdir<<")"<<endl
-			   <<"   Found all xsecs. Continue"<<endl;
+	    msg.Tracking()<<"In "<<m_name<<"::CalculateTotalXSec("<<_resdir<<")"<<endl
+			  <<"   Found all xsecs. Continue"<<endl;
 	    SetTotal(2);
 	  }
 	}
@@ -750,7 +755,8 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
     m_totalxs = p_pshandler->Integrate();
     if (m_nin==2) m_totalxs /= ATOOLS::rpa.Picobarn(); 
     if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
-      msg.Error()<<"Result of PS-Integrator and internal summation do not coincide!"<<endl
+      msg.Error()<<"ERROR in Process_Group::CalculateTotalXSec :"
+		 <<"Result of PS-Integrator and internal summation do not coincide!"<<endl
 		 <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
     }
     SetTotal(0);
@@ -763,11 +769,11 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	std::ofstream to;
 	to.open(filename,ios::out);
 	to.precision(12);
-	msg.Events()<<"Store result : xs for "<<m_name<<" : ";
-	if (m_nin==2) msg.Events()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
-	if (m_nin==1) msg.Events()<<m_totalxs<<" GeV";
-	msg.Events()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
-		    <<"       max : "<<m_max<<endl;
+	msg.Info()<<"Store result : xs for "<<m_name<<" : ";
+	if (m_nin==2) msg.Info()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
+	if (m_nin==1) msg.Info()<<m_totalxs<<" GeV";
+	msg.Info()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
+		  <<"       max : "<<m_max<<endl;
 	WriteOutXSecs(to);
 	p_pshandler->WriteOut(_resdir+string("/MC_")+m_name);
 	to.close();
@@ -788,11 +794,11 @@ void Process_Group::PrepareTerminate()
   std::ofstream to;
   to.open(m_resultfile.c_str(),ios::out);
   to.precision(12);
-  msg.Events()<<"Store result : xs for "<<m_name<<" : ";
-  if (m_nin==2) msg.Events()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
-  if (m_nin==1) msg.Events()<<m_totalxs<<" GeV";
-  msg.Events()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
-	      <<"       max : "<<m_max<<endl;
+  msg.Info()<<"Store result : xs for "<<m_name<<" : ";
+  if (m_nin==2) msg.Info()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
+  if (m_nin==1) msg.Info()<<m_totalxs<<" GeV";
+  msg.Info()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
+	    <<"       max : "<<m_max<<endl;
   WriteOutXSecs(to);
   p_pshandler->WriteOut(m_resultpath+string("/MC_")+m_name);
   to.close();
@@ -807,7 +813,6 @@ void  Process_Group::RescaleXSec(double fac) {
 
 void Process_Group::SetupEnhance() {
   if (m_enhancefac==1. && m_maxfac==1.) return;
-  std::cout<<" Process_Group::SetupEnhance() "<<std::endl;
 
   for (int i=0;i<m_procs.size();++i) {
     double xs=TotalXS();
@@ -815,18 +820,20 @@ void Process_Group::SetupEnhance() {
     m_procs[i]->SetupEnhance();
     if (m_enhancefac!=1.) {
       SetTotalXS(xs*m_enhancefac);
-      std::cout<<" changing xs from "<<xs<<" to "<<TotalXS()<<std::endl;
     }
   }
 }
 
 
 bool Process_Group::LookUpXSec(double ycut,bool calc,string obs) {
-  msg.Tracking()<<"Process_Group::LookUpXSec() for "<<m_name<<" in "<<m_resdir<<endl;
   bool okay = 1;
   if (m_atoms) {
     for (int i=0;i<m_procs.size();i++) {
       if (!(m_procs[i]->LookUpXSec(ycut,1,obs))) okay = 0;
+    }
+    if (msg.LevelIsTracking() && okay) {
+      msg.Out()<<"Process_Group::LookUpXSec() : "<<std::endl
+	       <<"   Read in cross section for "<<m_name<<" from file in directory "<<m_resdir<<endl;
     }
     return okay;
   }
@@ -841,9 +848,13 @@ bool Process_Group::LookUpXSec(double ycut,bool calc,string obs) {
 	m_max     += m_procs[i]->Max();
       }
       p_pshandler->ReadIn(m_resdir+string("/MC_")+m_name);
-      if (p_pshandler->BeamIntegrator() != 0) p_pshandler->BeamIntegrator()->Print();
-      if (p_pshandler->ISRIntegrator() != 0)  p_pshandler->ISRIntegrator()->Print();
-      if (p_pshandler->FSRIntegrator() != 0)  p_pshandler->FSRIntegrator()->Print();
+      if (msg.LevelIsTracking()) {
+	msg.Out()<<"Process_Group::LookUpXSec() : "<<std::endl
+		 <<"   Read in cross sections for "<<m_name<<" from file in directory "<<m_resdir<<endl;
+	if (p_pshandler->BeamIntegrator() != 0) p_pshandler->BeamIntegrator()->Print();
+	if (p_pshandler->ISRIntegrator() != 0)  p_pshandler->ISRIntegrator()->Print();
+	if (p_pshandler->FSRIntegrator() != 0)  p_pshandler->FSRIntegrator()->Print();
+      }
       return 1;
     }
     if (calc) {
@@ -858,6 +869,8 @@ bool Process_Group::LookUpXSec(double ycut,bool calc,string obs) {
 	  m_totalxs += m_procs[i]->TotalXS();
 	  m_max     += m_procs[i]->Max();
 	}
+	msg.Tracking()<<"Process_Group::LookUpXSec() : "<<std::endl
+		      <<"   Read in cross sections for "<<m_name<<" from file in directory "<<m_resdir<<endl;
 	return 1;
       }
     }
@@ -881,8 +894,9 @@ bool Process_Group::PrepareXSecTables()
     }
     m_totalxs = p_pshandler->Integrate()/ATOOLS::rpa.Picobarn(); 
     if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
-      msg.Error()<<"Result of PS-Integrator and internal summation do not coincide!"<<endl;
-      msg.Error()<<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
+      msg.Error()<<"ERROR in Process_Group::PrepareXSecTables :"<<std::endl
+		 <<"   Result of PS-Integrator and internal summation do not coincide for"<<endl
+		 <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
     }
     SetTotal(1);
     p_pshandler->WriteOut(m_resdir+string("/MC_")+m_name);
@@ -927,9 +941,9 @@ double Process_Group::Differential(const Vec4D * p)
   //ControlOutput(p);
 
   if ((!(m_last<=0)) && (!(m_last>0))) {
-    msg.Error()<<"---- Process_Group::Differential -------------------"<<endl;
+    msg.Error()<<"ERROR in Process_Group::Differential :"<<endl;
     for (int i=0;i<m_nin+m_nout;i++) 
-      msg.Error()<<i<<" th Momentum "<<p[i]<<endl;
+      msg.Error()<<"   "<<i<<" th Momentum "<<p[i]<<endl;
     PrintDifferential();
   }
   return m_last;
@@ -944,7 +958,7 @@ double Process_Group::Differential2()
   for (int i=0;i<m_procs.size();i++) tmp += m_procs[i]->DSigma2();
 
   if ((!(tmp<=0)) && (!(tmp>0))) {
-    msg.Error()<<"---- Process_Group::Differential -------------------"<<endl;
+    msg.Error()<<"ERROR in Process_Group::Differential2 :"<<endl;
     PrintDifferential();
   }
   m_last += tmp;

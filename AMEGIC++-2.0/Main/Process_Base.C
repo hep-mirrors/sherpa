@@ -384,18 +384,6 @@ bool Process_Base::CheckExternalFlavours(int _nin,Flavour * _in,
   sin = sin%2; sout = sout%2;
   qin = qin%9; qout = qout%9;
 
-  /*
-    ATOOLS::msg.Debugging()<<"Check "<<_in[0]<<" "<<_in[1]<<" -> "
-    <<_out[0]<<" "<<_out[1]<<"  "
-    <<chin<<" <-> "<<chout<<"  "
-    <<sin<<" <-> "<<sout<<"  "
-    <<bin<<" <-> "<<bout<<"  "
-    <<lin<<" <-> "<<lout<<"  "
-    <<qin<<" <-> "<<qout<<"  "
-    <<qfin<<" <-> "<<qfout<<"  "
-    <<lfin<<" <-> "<<lfout<<endl;
-  */
-
   if (chin  != chout) return 0;    // electric charge violation
   if (sin  != sout) return 0;    // spin/fermion number violation
   if (bin  != bout) return 0;    // baryon number violation
@@ -521,20 +509,18 @@ void Process_Base::SetupEnhance() {
   if (m_enhancefac!=1.) {
     double xs=TotalXS();
     SetTotal(xs*m_enhancefac);
-    std::cout<<" changing xs from "<<xs<<" to "<<TotalXS()<<std::endl;
   }
   if (m_maxfac!=1.) {
     double max=Max();
     SetMax(max*m_maxfac);
-    std::cout<<" changing xs-max from "<<max<<" to "<<Max()<<std::endl;
   }
 }
 
 double Process_Base::Scale(const ATOOLS::Vec4D * _p) {
   if (m_nin==1) return _p[0].Abs2();
   if (m_nin!=2) {
-    ATOOLS::msg.Error()<<"Error in Process_Base::Scale. "
-			  <<"Do not know how to handle more than 2 incoming particles."<<endl;
+    ATOOLS::msg.Error()<<"ERROR in Process_Base::Scale. "
+		       <<"   Do not know how to handle more than 2 incoming particles, abort."<<endl;
     abort();
   }
   double s;
@@ -549,8 +535,10 @@ double Process_Base::Scale(const ATOOLS::Vec4D * _p) {
     break;
   case 2  :
     if (m_nin+m_nout==4) {
-      double t = (_p[0]-_p[2]).Abs2()-(ATOOLS::sqr(p_flavours[2].PSMass())+ATOOLS::sqr(p_flavours[3].PSMass()))/2.;
-      double u = (_p[0]-_p[3]).Abs2()-(ATOOLS::sqr(p_flavours[2].PSMass())+ATOOLS::sqr(p_flavours[3].PSMass()))/2.;
+      double t = (_p[0]-_p[2]).Abs2()-
+	(ATOOLS::sqr(p_flavours[2].PSMass())+ATOOLS::sqr(p_flavours[3].PSMass()))/2.;
+      double u = (_p[0]-_p[3]).Abs2()-
+	(ATOOLS::sqr(p_flavours[2].PSMass())+ATOOLS::sqr(p_flavours[3].PSMass()))/2.;
       pt2 = 4.*s*t*u/(s*s+t*t+u*u);
     }
     else {
@@ -590,17 +578,17 @@ double Process_Base::Scale(const ATOOLS::Vec4D * _p) {
     pt2 = m_asscale;
 
     // if highest number of jets
-    //cout<<" Scale : "<<pt2<<" "<<m_nout<<" vs. "<<m_maxjetnumber<<" ("<<p_selector->Name()<<")"<<endl;
     if (m_nout==m_maxjetnumber) {
       if (p_selector->Name()=="Combined_Selector") {
 	Selector_Base * jf = ((Combined_Selector*)p_selector)->GetSelector("Jetfinder");
 	if (jf) {
 	  pt2=jf->ActualValue()[0]*sqr(rpa.gen.Ecms());
-	  //	  cout<<" value="<<pt2<<endl;
 	}
 	else {
-	  cout<<" NO JETFINDER FOUND! "<<endl;
-	  cout<<" do not used SCALESCHEME=="<<m_scalescheme<<" without Jetfinder! "<<endl;
+	  msg.Out()<<"WARNING in Process_Base::Scale : "<<std::endl
+		   <<"   No jetfinder found, cannot use SCALESCHEME=="<<m_scalescheme<<"."
+		   <<" Return s as scale."<<std::endl;
+	  pt2 = s;
 	}
       }
     }

@@ -1,5 +1,6 @@
 #include "Amplitude_Output.H"
 #include "MyStrStream.H"
+#include "Message.H"
 
 
 using namespace AMEGIC;
@@ -9,7 +10,6 @@ using namespace std;
 Amplitude_Output::Amplitude_Output(std::string pid, Topology * _top)
 {
   std::string fname=std::string("Process/")+pid+std::string(".tex");
-  cout<<" open "<<fname<<endl;
   pios.open(fname.c_str());
   top = top;
   ampl=0;
@@ -55,7 +55,7 @@ string Amplitude_Output::Int2String(const int i) {
 
 void Amplitude_Output::LegCount(Point * mo) {
   if (!mo) {
-    cout<<" Error in Amplitude_Output::LegCount"<<endl;
+    msg.Error()<<"ERROR in Amplitude_Output::LegCount : no point found, continue run."<<endl;
     return;
   }
 
@@ -106,13 +106,10 @@ void Amplitude_Output::WriteOut(Point * start) {
   InclInComming(ampl);  
 
   ostream & s= pios;
-  // cout incomming and outgoing
   nin=1;
   nout=0;
   nmed=0;
   LegCount(ampl);
-//   cout<<" Graph found with nin="<<nin<<" and nout="<<nout
-//       <<" and nmed="<<nmed<<endl;
 
   // number, fl
   for (int i=0; i<nin; ++i) {

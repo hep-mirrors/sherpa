@@ -37,9 +37,6 @@ String_Output::String_Output(const string &_path,int _maxgraph,int _maxhel, int 
   }
 
   path=string("Process/")+path;
-
-  msg.Debugging()<<"String_Output::String_Output("<<pathID<<"/"<<pID<<")"<<endl
-		 <<"                       path= "<<path<<endl;
 }
 
 void String_Output::Output(sknot*** sk,String_Tree* stree,
@@ -72,7 +69,6 @@ void String_Output::Output(sknot*** sk,String_Tree* stree,
   header<<"#endif"<<endl;
 
   header.close();
-  msg.Tracking()<<headername.c_str()<<" saved."<<endl;
   Add_To_Set_Values();
 }
 

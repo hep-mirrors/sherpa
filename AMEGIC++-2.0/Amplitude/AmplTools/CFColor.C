@@ -204,7 +204,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
       n1++;
       m1 = m1->Next;
     } 
-    msg.Debugging()<<ncount<<" different color structures left"<<endl;
     map = new int[mcount];
     int cc=0;
     for (int m=0; m<mcount; ++m) {
@@ -216,7 +215,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 	map[m]=map[iabs(id[m])];
       }
     }
-    msg.Debugging()<<cc<<" different color structures left (cc)"<<endl;
 
     // generate "reduced matrix"
     CFC = new Complex*[ncount];
@@ -369,7 +367,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 
 	    CFC[map[c1]][map[c2]] = cffactor;
 	    CFC[map[c2]][map[c1]] = conj(CFC[map[c1]][map[c2]]);
-	    msg.Debugging()<<"+";msg.Out().flush();
 	    
 	    //clean up the string tree ...
 	    st.CleanValues();
@@ -378,7 +375,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 	  m2 = m2->Next;
 	  c2++;
 	}
-	msg.Debugging()<<endl;
       }
       m1 = m1->Next;
       c1++;
@@ -410,7 +406,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
       }
     }
   }
-  if (ncount!=idcc) msg.Debugging()<<"Color Matrix could  be further simplified to "<<idcc<<" structure(s)"<<endl;
 
   delete [] idid;
 
@@ -494,7 +489,6 @@ string CFColor::MapFChain(vector<string> fstring_list)
 void CFColor::Output(string & dirname) {
   char name[100];
   sprintf(name,"%s.col",(string("Process/")+dirname).c_str());
-  msg.Debugging()<<" Writing Color Information to : "<<name<<endl;
   IO_Handler ioh;
   ioh.SetFileName(name);
 

@@ -372,8 +372,6 @@ Vertex::Vertex(Interaction_Model_Base * _model)
      use (roughly) notation and Vertices of J. Rosiek, PRD41 (1990) 3464
      pull out common factor -i of all Vertices
   */ 
-  ATOOLS::msg.Debugging()<<"In Vertex::Vertex()."<<endl;
-
   m_nvertex  = 10000;
   m_n4vertex = 30000;
   m_v  = new Single_Vertex[m_nvertex];
@@ -381,7 +379,7 @@ Vertex::Vertex(Interaction_Model_Base * _model)
   int vanz  = 0;
   int vanz4 = 0;
 
-  ATOOLS::msg.Tracking()<<"   Setting vertices..."<<endl;
+  ATOOLS::msg.Debugging()<<"   Setting vertices..."<<endl;
   _model->c_FFV(m_v,vanz);
   ATOOLS::msg.Debugging()<<"   FFV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_FFS(m_v,vanz);
@@ -436,8 +434,8 @@ Vertex::Vertex(Interaction_Model_Base * _model)
       abort();
   }
   
-  ATOOLS::msg.Debugging()<<"... done with it ("<<vanz<<")."<<endl
-                          <<"... done with the 4 legs ("<<vanz4<<")."<<endl;
+  ATOOLS::msg.Debugging()<<"... done with it ("<<vanz+vanz4<<")."<<endl;
+  ATOOLS::msg.Tracking()<<"Initialized interaction model of AMEGIC : "<<vanz+vanz4<<" vertices."<<std::endl;
   m_nvertex  = vanz;
   m_n4vertex = vanz4;
 }
@@ -814,9 +812,7 @@ int Vertex::FindVertex(Single_Vertex* v_tofind)
 	    }
       }
     }
-    ATOOLS::msg.Debugging()<<"Vertex not found!"<<endl;
   }
-  else ATOOLS::msg.Debugging()<<"no routine to search for 4 legs"<<endl;
   return 0;
 }
 

@@ -36,7 +36,7 @@ Amplitude_Group::~Amplitude_Group()
 
 void Amplitude_Group::PrintGraph() {
   if (!ATOOLS::msg.LevelIsTracking()) return;
-  ATOOLS::msg.Tracking()<<"Group: "<<groupname<<std::endl;
+  ATOOLS::msg.Out()<<"Group: "<<groupname<<std::endl;
   for (size_t i=0;i<graphs.size();i++) graphs[i]->PrintGraph();
 }
 

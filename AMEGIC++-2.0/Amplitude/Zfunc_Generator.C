@@ -168,7 +168,7 @@ void Zfunc_Generator::Convert(Point* p)
 	Convert(p);
 	return;
       }
-      msg.Error()<<"Zfunc_Generator::Convert(Point* p) : Cutting Error!"<<endl;
+      msg.Error()<<"Zfunc_Generator::Convert(Point* p) : Cutting Error, abort the run."<<endl;
       abort();
     }
   }
@@ -298,7 +298,8 @@ int Zfunc_Generator::LFDetermine_Zfunc(Zfunc* Zh,Point* p,Point* pf,Point* pb)
   }
   if (Zh->m_type==-10) {
     return 0;
-    ATOOLS::msg.Error()<<"No Lorentzfunction found!"<<endl;
+    ATOOLS::msg.Error()<<"ERROR in Zfunc_Generator::LFDetermine_Zfunc : "<<std::endl
+		       <<"   No Lorentzfunction found, abort the run."<<endl;
     LFPrint(lflist);  
     abort();
   }
@@ -365,7 +366,8 @@ int Zfunc_Generator::Compare(int Nargs,
   return lfpointer.size();
 }
 
-void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,Point* p,Point* pf,Point* pb)
+void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,
+				   Point* p,Point* pf,Point* pb)
 {
   vector<Lorentz_Function*> lfpointer;
   CopyOrder(lflist,lfpointer);
@@ -461,7 +463,7 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,Po
 
 	if (max<typemin) i = typemin-1;
 	if (i<0) {
-	  ATOOLS::msg.Error()<<"Error in Zfunc_Generator::LFFill_Zfunc()!!"<<endl;
+	  ATOOLS::msg.Error()<<"ERROR in Zfunc_Generator::LFFill_Zfunc() : abort the run."<<endl;
 	  abort();
 	}
 	//LFPrint(lfpointer);
@@ -662,8 +664,8 @@ void Zfunc_Generator::SetScalarArgs(Zfunc* Zh,int &scnt,Point* pb)
     if  (scnt<Zh->m_narg)  Zh->p_arguments[scnt]=pb->number;
     else{
       Zh->Print();
-      msg.Error()<<"scnt : "<<scnt<<" Zh->m_narg : "<<Zh->m_narg<<endl;
-      msg.Error()<<"Error in Zfunc_Generator::SetScalarArgs!"<<endl;
+      msg.Error()<<"ERROR in Zfunc_Generator::SetScalarArgs : "<<std::endl
+		 <<"   scnt : "<<scnt<<" Zh->m_narg : "<<Zh->m_narg<<", will abort."<<endl;
       abort();
     }
     scnt++;

@@ -180,7 +180,7 @@ void Amplitude_Manipulator::GetFermionLine(Point* pcurr,Point*& pbegin,Point*& p
     return;
   }
 
-  msg.Error()<<"Error in Amplitude_Manipulator::GetFermionLine()"<<endl;
+  msg.Error()<<"ERROR in Amplitude_Manipulator::GetFermionLine(). Continue run."<<endl;
   return;
 }
 
@@ -198,7 +198,8 @@ Point* Amplitude_Manipulator::ForwardLine(Point* p)
 
   if (p->right->fl.IsFermion()) return ForwardLine(p->right);
 
-  msg.Error()<<"Dead fermion line in Amplitude_Manipulator::ForwardLine !!!"<<endl;
+  msg.Error()<<"ERROR in Amplitude_Manipulator::ForwardLine :"<<std::endl
+	     <<"   Dead fermion line in Amplitude_Manipulator::ForwardLine. Continue run."<<endl;
   return 0;
 }
 
@@ -222,7 +223,8 @@ Point* Amplitude_Manipulator::BackwardLine(Point* p)
     return ForwardLine(p->prev->middle);
   }
 
-  msg.Error()<<"Dead fermion line in Amplitude_Manipulator::BackwardLine !!!"<<endl;
+  msg.Error()<<"ERROR in Amplitude_Manipulator::BackwardLine :"<<std::endl
+	     <<"   Dead fermion line in Amplitude_Manipulator::BackwardLine. Continue run."<<endl;
   return 0;
 }
 
@@ -314,7 +316,8 @@ void Amplitude_Manipulator::ForwardLineOrientation(Point* p,int& sign)
 
   if (p->right->fl.IsFermion())    {ForwardLineOrientation(p->right,sign);return;}
 
-  msg.Error()<<"Error in Amplitude_Manipulator::ForwardLineOrientation : Dead fermion line!!!"<<endl;
+  msg.Error()<<"ERROR in Amplitude_Manipulator::ForwardLineOrientation :"<<std::endl 
+	     <<"   Dead fermion line. Continue run."<<endl;
 }
 
 void Amplitude_Manipulator::BackwardLineOrientation(Point* p,int& sign)
@@ -403,7 +406,8 @@ void Amplitude_Manipulator::BackwardLineOrientation(Point* p,int& sign)
     ForwardLineOrientation(p->prev->middle,sign); return;
   }
 
-  msg.Error()<<"Error in Amplitude_Manipulator::BackwardLineOrientation : Dead fermion line!!!"<<endl;
+  msg.Error()<<"ERROR in Amplitude_Manipulator::BackwardLineOrientation :"<<std::endl 
+	     <<"   Dead fermion line. Continue run."<<endl;
 }
 
 int Amplitude_Manipulator::SetFermionNumberFlow(Point* pb,Point* pe)
@@ -474,7 +478,6 @@ int Amplitude_Manipulator::SetFermionNumberFlow(Point* pb,Point* pe)
   if (pb->fl.Majorana() && pe->fl.Majorana()) fermflag = 2;
   
   if (majoflag) {
-    //ATOOLS::msg.Debugging()<<"Fermion Flow(Majo): "<<pb->number<<" <-> "<<pe->number<<endl;
     if (!pb->fl.IsAnti() && b[pb->number]==-1) majoflag=1;
     if (pb->fl.IsAnti()  && b[pb->number]==-1) majoflag=-1;
     if (!pb->fl.IsAnti() && b[pb->number]==1)  majoflag=-1;
@@ -492,13 +495,11 @@ int Amplitude_Manipulator::SetFermionNumberFlow(Point* pb,Point* pe)
     else SetBackwardFNFlow(pe,majoflag,fermflag);
   }
   if (fermflag) {
-    //ATOOLS::msg.Debugging()<<"Majorana Flow: "<<pb->number<<" -> "<<pe->number<<endl;
     if (pb->prev==0) SetForwardFNFlow(pb,0,fermflag);
     else SetBackwardFNFlow(pb,0,fermflag);
     if (fermflag==1) return 1;
   }
   if (!fermflag && !majoflag) {   
-    //ATOOLS::msg.Debugging()<<"Fermion Flow: "<<pb->number<<" -> "<<pe->number<<endl;
     if (pb->prev==0) SetForwardFNFlow(pb,0,fermflag);
     else SetBackwardFNFlow(pb,0,fermflag);
   }
@@ -551,7 +552,7 @@ void Amplitude_Manipulator::SetForwardFNFlow(Point* p,int majoflag,int& fermflag
   }
   if (p->right->fl.IsFermion())    { SetForwardFNFlow(p->right,majoflag,fermflag);  return; }
 
-  msg.Error()<<"Dead fermion line in Amplitude_Manipulator::SetForwardFNFlow !!!"<<endl;
+  msg.Error()<<"ERROR in Amplitude_Manipulator::SetForwardFNFlow : Dead fermion line, continue run."<<endl;
 }
 
 void Amplitude_Manipulator::SetMajoFlowForward(Point* p,int fermflag)
@@ -625,7 +626,7 @@ void Amplitude_Manipulator::SetBackwardFNFlow(Point* p,int majoflag,int& fermfla
     if (p->prev->left->fl.IsFermion()) { SetForwardFNFlow(p->prev->left,majoflag,fermflag); return; }
     SetForwardFNFlow(p->prev->middle,majoflag,fermflag); return;
   }
-  msg.Error()<<"Dead fermion line in Amplitude_Manipulator::SetBackwardFNFlow !!!"<<endl;
+  msg.Error()<<"ERROR in Amplitude_Manipulator::SetBackwardFNFlow : Dead fermion line, continue run."<<endl;
 }
 
 void Amplitude_Manipulator::SetMajoFlowBackward(Point* p,int fermflag)

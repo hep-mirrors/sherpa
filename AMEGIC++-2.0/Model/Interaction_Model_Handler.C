@@ -18,9 +18,7 @@ using namespace std;
 
 Interaction_Model_Handler::Interaction_Model_Handler(MODEL::Model_Base * model) :
   p_model(model) 
-{
-  msg.Tracking()<<"Initialized Interaction_Model_Handler("<<p_model->Name()<<")"<<endl;
-}
+{ }
 
 Interaction_Model_Base * Interaction_Model_Handler::GetModel(std::string modeltype,
 							     std::string cplscheme,

@@ -61,13 +61,12 @@ bool String_Handler::SearchValues(const int _gen_str,string & pID,Basic_Sfuncs* 
     val = Set_Values(vpID,_BS);
   }
   if (val!=0) {
-    msg.Tracking()<<vpID<<" loaded."<<endl;
+    msg.Info()<<vpID<<" loaded."<<endl;
     val->SetCouplFlav(*sgen->GetCouplList());
     working = 1;
     return 1;
   }
   else {
-    msg.Tracking()<<vpID<<" not loaded."<<endl; 
     return 0;
   }
 }
@@ -153,7 +152,7 @@ void String_Handler::Complete(Helicity* hel)
   working = 1;
 
   if (val!=0) return;
-  msg.Debugging()<<"Completing the strings, this may take some time...."<<endl;
+  msg.Info()<<"In String_Handler::Complete : this may take some time...."<<endl;
 
   //connect sgenZ to treeZ
   list<sknot*> endpoint;
@@ -216,7 +215,6 @@ void String_Handler::Output(Helicity* hel, string path)
 void String_Handler::Z_Kill()
 {
   int count = 0;
-  msg.Debugging()<<"Number of Z functions: "<<sgen->ZXMaxNumber()<<endl;
   string str;
   for (long int i=1;i<sgen->ZXMaxNumber();i++) {
     if (sgen->GetZXl(i)->on==0) {
@@ -236,7 +234,5 @@ void String_Handler::Z_Kill()
       count++;
     }
   }
-  
-  msg.Debugging()<<count<<"/"<<sgen->ZXMaxNumber()<<" Z functions have been deleted."<<endl;
 }
 

@@ -20,16 +20,7 @@ Single_Amplitude::Single_Amplitude(Point* _p,int _topnum, int _permnum,int* _b,i
 {
 
   static int first = 1;
-
-  if (first) {
-    first = 0;
-#ifdef Cut_Fermion_Prop
-    msg.Debugging()<<"Cutting Fermions according to the outer particle version."<<endl;
-#else
-    msg.Debugging()<<"Cutting Fermions according to the Propagator version."<<endl;
-#endif
-  }
-  
+  if (first) first = 0; 
   topnum  = _topnum;
   permnum = _permnum;
   
@@ -63,14 +54,7 @@ Single_Amplitude::Single_Amplitude(Point* _p,int* _b,int dep,int _no,
 
   static int first = 1;
 
-  if (first) {
-    first = 0;
-#ifdef Cut_Fermion_Prop
-    msg.Debugging()<<"Cutting Fermions according to the outer particle version."<<endl;
-#else
-    msg.Debugging()<<"Cutting Fermions according to the Propagator version."<<endl;
-#endif
-  }
+  if (first) first = 0;
   icoul = 0;
   on = 1;
   Pointlist = new Point[dep];
@@ -133,7 +117,7 @@ void Single_Amplitude::AddSpinorDirection(const int& from,const int& to)
 
 void Single_Amplitude::PrintGraph() 
 {
-  if (!msg.LevelIsDebugging()) return;
+  if (!msg.LevelIsTracking()) return;
   
   ATOOLS::msg.Out()<<"--------"<<amplnumber+1<<". Amplitude----------"<<endl;
 

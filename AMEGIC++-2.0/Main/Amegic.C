@@ -59,6 +59,7 @@ double Amegic::OverflowStatistics(Process_Base * proc,int level)
 
 
 Amegic::~Amegic() {
+  msg.Out()<<"Amegic::OverflowStatistics for : "<<std::endl;
   OverflowStatistics();
 
   if (p_dataread) { delete p_dataread; p_dataread = NULL; }
@@ -93,18 +94,22 @@ bool Amegic::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,PDF::ISR_Han
   ReadInProcessfile(processfile);
 
   m_count            = p_procs->Size();
-  msg.Tracking()<<"All together : "<<m_count<<" processes with up to "<<m_nmax<<" legs."<<endl;
 
   m_nmax             = ATOOLS::Max(m_nmax,4);
   p_top              = new Topology(m_nmax);
 
   ATOOLS::Vec4D * moms  = 0;
 
+  msg.Out()<<"Amegic::InitializeProcesses : "
+	   <<"Process initialization started; new libraries may be created."<<std::endl;
   switch (p_procs->InitAllProcesses(p_model,p_top,moms)) { 
   case 1  : 
+    msg.Out()<<"   No new libraries have been created."<<std::endl;
     return 1;
   case 0  : 
-    msg.Error()<<"Some libraries were missing ! Type make install and rerun."<<endl;
+    msg.Error()<<"Amegic::InitializeProcesses : "<<std::endl
+	       <<"   Some new libraries were created and have to be compiled and linked."<<std::endl
+	       <<"   Type \"./makelibs\" and rerun."<<endl;
     return 0;
   default :
     return 0;
@@ -116,7 +121,7 @@ bool Amegic::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,PDF::ISR_Han
 bool Amegic::InitializeDecays(bool constructall) {
   int maxnumber = p_dataread->GetValue<int>("DECAY_PRODUCTS",3);
   if (maxnumber>3) {
-    msg.Error()<<"Error in Amegic::InitializeDecays()."<<endl
+    msg.Error()<<"ERROR in Amegic::InitializeDecays()."<<endl
 	       <<"   Number of potential decay products larger than three."<<endl
 	       <<"   This has not been implemented yet. Reduce number of decay products"<<endl
 	       <<"   to three and continue run."<<endl;
@@ -124,7 +129,7 @@ bool Amegic::InitializeDecays(bool constructall) {
   }
   if (p_top) {
     if (m_nmax<maxnumber) {
-      msg.Error()<<"Error in Amegic::InitializeDecays()."<<endl
+      msg.Error()<<"ERROR in Amegic::InitializeDecays()."<<endl
 		 <<"   Potential inconsistency in number of legs of processes and decays."<<endl
 		 <<"   Processes : "<<m_nmax<<", Decays : "<<1+maxnumber<<endl
 		 <<"   Reduce number of legs for decay accordingly."<<endl; 
@@ -159,8 +164,9 @@ void Amegic::ReadInProcessfile(string file)
 
   ifstream from((m_path+file).c_str());
   if (!from) {
-    msg.Error()<<"Error in Amegic::InitializeProcesses : "<<endl
-	       <<"   File : "<<(m_path+file).c_str()<<" not found ! Abort program execution."<<endl;
+    msg.Error()<<"ERROR in Amegic::InitializeProcesses : "<<endl
+	       <<"   Process data file : "<<(m_path+file).c_str()<<" not found."<<std::endl
+	       <<"   Abort program execution."<<endl;
     abort();
   }
 
@@ -317,7 +323,6 @@ void Amegic::ReadInProcessfile(string file)
 		  Shorten(buf);
 		  str<<buf;
 		  str>>maxreduction_factor;
-		  cout<<" Max_Reduction : "<<maxreduction_factor<<std::endl;
 		}
 
 		position     = buf.find(string("N_Max :"));
@@ -344,16 +349,6 @@ void Amegic::ReadInProcessfile(string file)
 	      }
 	    }
 	    while (position==-1);
-	    msg.Debugging()<<"Read in process :";
-	    for (short int i=0;i<nIS;i++) msg.Debugging()<<" "<<IS[i].Name();
-	    msg.Debugging()<<" -> ";
-	    for (short int i=0;i<nFS;i++) msg.Debugging()<<FS[i].Name()<<" ";
-	    msg.Debugging()<<" EW("<<order_ew<<"), QCD("<<order_strong<<")"<<endl;
-	    if (nex>0) {
-	      msg.Debugging()<<" Excluded particles : ";
-	      for (short int i=0;i<nex;i++) msg.Debugging()<<excluded[i].Name()<<" ";
-	      msg.Debugging()<<endl;
-	    }
 
 	    if (nIS+nFS>m_nmax) m_nmax = nIS+nFS;
 	    flavs              = new Flavour[nIS+nFS];
@@ -392,7 +387,7 @@ void Amegic::ReadInProcessfile(string file)
 
 	    }
 	    else {
-	      msg.Out()<<"Kicked Process: ";
+	      msg.Out()<<"Ignored process: ";
 	      for (short int i=0;i<nIS;i++) msg.Out()<<" "<<IS[i].Name();
 	      msg.Out()<<" -> ";
 	      for (short int i=0;i<nFS;i++) msg.Out()<<FS[i].Name()<<" ";
@@ -605,9 +600,9 @@ bool Amegic::UnweightedEvent()
 
 void Amegic::SingleEvents() {
   for (int i=1;i<=rpa.gen.NumberOfEvents();++i) {
-    msg.Debugging()<<"------------------------------------------------------------"<<endl
-		   <<"----------------"<<i<<" th Event --------------------------"<<endl
-		   <<"------------------------------------------------------------"<<endl;
+    msg.Events()<<"------------------------------------------------------------"<<endl
+		<<"----------------"<<i<<" th Event --------------------------"<<endl
+		<<"------------------------------------------------------------"<<endl;
     if (p_procs->OneEvent()) {
       if (p_fifo) {
 	FifoOutput();

@@ -15,7 +15,7 @@ String_Library::String_Library(int mode):m_mode(mode)
 
 void String_Library::UpdateConfigure(std::string pathID)
 {
-  ATOOLS::msg.Tracking()<<"String_Library::UpdateConfigure("<<pathID<<") called";
+  ATOOLS::msg.Tracking()<<"String_Library::UpdateConfigure("<<pathID<<") called :"<<std::endl;
 
   string cnf("/configure.in");
   string mkam("/Makefile.am");
@@ -24,7 +24,7 @@ void String_Library::UpdateConfigure(std::string pathID)
   string subdirname=pathID.substr(hit+1);
   string name=string("Process/")+base+cnf;
   if (!IsFile(name)) {
-    ATOOLS::msg.Tracking()<<" file "<<name<<" does not exist creating it "<<endl;
+    ATOOLS::msg.Tracking()<<"   file "<<name<<" does not exist, create it."<<endl;
 
 
     ofstream file(name.c_str());
@@ -67,7 +67,7 @@ void String_Library::UpdateConfigure(std::string pathID)
   
   name=string("Process/")+base+mkam;
   if (!IsFile(name)) {
-    ATOOLS::msg.Tracking()<<" file "<<name<<" does not exist creating it "<<endl;
+    ATOOLS::msg.Tracking()<<"   file "<<name<<" does not exist, create it."<<endl;
 
     ofstream file(name.c_str());
 
@@ -113,7 +113,8 @@ void String_Library::CreateExtraFiles(std::string path)
 
 void String_Library::AddToMakefileAM(string makefilename,string pathID,string fileID)
 {
-  ATOOLS::msg.Tracking()<<"String_Library::AddToMakefileAM("<<makefilename<<","<<pathID<<","<<fileID<<")"<<endl;
+  ATOOLS::msg.Tracking()<<"String_Library::AddToMakefileAM("<<makefilename<<","
+			<<pathID<<","<<fileID<<")"<<endl;
 
   unsigned int hit=pathID.find("/");
   string base=pathID.substr(0,hit);
