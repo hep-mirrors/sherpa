@@ -52,11 +52,14 @@ do
     fi
     if ! make dist ; then 
       echo "makedist: error: cannot create distribution of $I"
+      if test "$I" = "SHERPA-1.0" ; then
+        echo "                 possibly try the '-c' option"
+      fi 
       exit 1
     fi
     mv $I.tar.gz ../$I.tar.gz
     cd ..
   fi
 done;
-tar -czvf $DISTDIR.tar.gz $ALL makedist makeinstall replace
+tar -czvf $DISTDIR.tar.gz $ALL makedist makeinstall
 rm -rf $ALL
