@@ -16,6 +16,8 @@ namespace SHERPA {
     double       m_deltax, m_scale;
     unsigned int m_xscheme, m_maxtrials;
 
+    ATOOLS::Vec4D m_hardpt;
+
     void GetConstituents(ATOOLS::Flavour flav);
 
     ATOOLS::Particle *FindConnected(ATOOLS::Particle*,bool=false,int=1); 

@@ -29,7 +29,7 @@ namespace SHERPA {
     bool     GenerateOneEvent();
     bool     SummarizeRun();
     long int NumberOfErrors() { return m_errors; } 
-
+    
     bool     PerformScan();
   };
 

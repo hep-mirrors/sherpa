@@ -216,7 +216,7 @@ void Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
   ++m_current[beam];
   Vec3D kp1;
   Vec4D mom1, old1=cur1->Momentum();
-  kp1=(*p_kperp[beam])[m_current[beam]];
+  kp1=(*p_kperp[beam])[m_current[beam]]+Vec3D(old1[1],old1[2],0.0);
   Particle *cur2;
   if (!FindConnected(cur1,cur2,true,0)) {
     mom1=Vec4D(old1[0],kp1[1],kp1[2],
@@ -226,8 +226,8 @@ void Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
     return;
   }
   ++m_current[1-beam];
-  Vec3D kp2=(*p_kperp[1-beam])[m_current[1-beam]];
   Vec4D mom2, old2=cur2->Momentum(), oldcms=old1+old2;
+  Vec3D kp2=(*p_kperp[1-beam])[m_current[1-beam]]+Vec3D(old2[1],old2[2],0.0);
   m_oldcms=Poincare(oldcms);
   double sp, sp1, sp2, Enew, pznew, E1, E2, pz1, pz2;
   sp1=old1.Abs2()+sqr(kp1.Abs());

@@ -18,7 +18,7 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(std::string,std::string) :
 }
 
 Hadron_Decay_Handler::Hadron_Decay_Handler(std::string _dir,std::string _file,
-					   Lund_Fortran_Interface * _lund) :
+					   Lund_Interface * _lund) :
   m_dir(_dir), m_file(_file), p_lund(_lund)
 {
 }

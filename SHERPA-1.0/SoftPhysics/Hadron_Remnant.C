@@ -63,8 +63,10 @@ bool Hadron_Remnant::FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *part
   p_beamblob=beamblob;
   m_pbeam=beamblob->InParticle(0)->Momentum();
   // decompose hadron
+  m_hardpt=ATOOLS::Vec4D();
   for (size_t i=0;i<m_parton[1].size();++i) {
     ATOOLS::Particle *cur=m_parton[1][i];
+    m_hardpt+=cur->Momentum();
     if (i>0) {
       if (cur->Flav().Kfcode()==ATOOLS::kf::gluon) TreatGluon(cur);
       else TreatQuark(cur);
@@ -135,8 +137,10 @@ void Hadron_Remnant::DiceKinematics()
   for (unsigned int i=0;i<m_parton[1].size();++i) ptot-=m_parton[1][i]->Momentum();
   for (unsigned int j=0;j<m_parton[0].size();++j) {
     double E=xmap[m_parton[0][j]]*m_pbeam[0];
-    double pz=ATOOLS::Sign(m_pbeam[3])*sqrt(E*E-ATOOLS::sqr(m_parton[0][j]->Flav().PSMass()));
-    m_parton[0][j]->SetMomentum(ATOOLS::Vec4D(E,0.0,0.0,pz));
+    double pz=ATOOLS::Sign(m_pbeam[3])*sqrt(E*E-ATOOLS::sqr(m_parton[0][j]->Flav().PSMass())
+					    -m_hardpt.PPerp2()/ATOOLS::sqr(m_parton[0].size()));
+    m_parton[0][j]->SetMomentum(ATOOLS::Vec4D(E,-m_hardpt[1]/m_parton[0].size(),
+					      -m_hardpt[2]/m_parton[0].size(),pz));
   }
 }
 
@@ -340,11 +344,11 @@ bool Hadron_Remnant::TreatGluon(ATOOLS::Particle *cur)
 double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale) 
 {
   double cut, x;
-  cut=2.0*flavour.PSMass()/sqrt(scale);
-  if (scale<p_pdfbase->GetQ2Min()) {
+  cut=2.0*(flavour.PSMass()+m_hardpt.PPerp2()/ATOOLS::sqr(m_parton[0].size()))/sqrt(scale);
+  if (scale<p_pdfbase->Q2Min()) {
     ATOOLS::msg.Error()<<"Hadron_Remnant::GetXPDF("<<flavour<<","<<scale<<"): "
 		       <<"Scale under-runs minimum as given by PDF: "
-		       <<scale<<" < "<<p_pdfbase->GetQ2Min()<<std::endl;
+		       <<scale<<" < "<<p_pdfbase->Q2Min()<<std::endl;
     return cut;
   } 
   if (cut>0.49) return 0.5;
@@ -357,14 +361,9 @@ double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale)
       x=ATOOLS::ran.Get(); 
       if (xtrials>=m_maxtrials) x=cut;
     } while (x<cut);
-    p_pdfbase->Calculate(x,scale);
-    if (pdftrials>=m_maxtrials) { 
-      ATOOLS::msg.Tracking()<<"Hadron_Remnant::GetXPDF("<<flavour<<","<<scale<<"): "
-			    <<"Cannot determine x according to PDF."<<std::endl;
-      m_xscheme=0; 
-      return 0.01; 
-    }
-    if (p_pdfbase->GetXPDF(flavour)/x>ATOOLS::ran.Get()) return x;
+    p_pdfbase->GetBasicPDF()->Calculate(x,0.,0.,scale);
+    if (pdftrials>=m_maxtrials) { m_xscheme=0; return 0.01; }
+    if (p_pdfbase->GetBasicPDF()->GetXPDF(flavour)/x>ATOOLS::ran.Get()) return x;
   } 
   return 0.0;
 }

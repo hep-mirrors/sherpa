@@ -117,16 +117,17 @@ bool Event_Handler::GenerateEvent(int mode)
   hardblob->SetType(btp::Signal_Process);
   hardblob->SetStatus(-1);
   hardblob->SetId(0);
+  hardblob->SetStatus(2);
   m_blobs.push_back(hardblob);
-
   while (flag) {
     flag = 0;
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       if ((*pit)->Type()==std::string("Perturbative") &&
 	  (*pit)->Name()!=std::string("Analysis") ) {
 	bool result=(*pit)->Treat(&m_blobs,weight);
-	ATOOLS::msg.Tracking()<<"Event_Handler::Generate_Event("<<mode<<"): "
-			      <<"Phase "<<(*pit)->Name()<<" yields: "<<result<<std::endl;
+	ATOOLS::msg.Tracking()<<ATOOLS::om::blue<<"Event_Handler::GenerateEvent("<<mode<<"): "<<ATOOLS::om::reset
+			      <<"Event phase "<<ATOOLS::om::bold<<(*pit)->Name()<<ATOOLS::om::reset
+			      <<" yields "<<ATOOLS::om::bold<<result<<ATOOLS::om::reset<<std::endl;
  	if (result) flag = 1;
       }
     }
@@ -152,7 +153,6 @@ bool Event_Handler::GenerateEvent(int mode)
     if ((*pit)->Type()==std::string("Hadronization") &&
 	(*pit)->Name()==std::string("Analysis") ) (*pit)->Treat(&m_blobs,weight);
   }
-
   PrintBlobs();
   return 1;
 }

@@ -776,7 +776,7 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
     mo->thcrit = M_PI;
 
     double scale = Scale();
-    if (xs) scale = dynamic_cast<PHASIC::Integrable_Base*>(xs)->Scale();          // *AS* perhaps additional factor but 
+    if (xs) scale = dynamic_cast<PHASIC::Integrable_Base*>(xs)->Scale(PHASIC::stp::as);// *AS* perhaps additional factor but 
     mo->t      = scale;                   // s for drell-yan and e+e- seems fine
     mo->t      = mo->part->Momentum().Abs2();  // ????? *FK* 
   }

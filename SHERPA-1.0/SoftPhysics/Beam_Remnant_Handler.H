@@ -37,6 +37,9 @@ namespace SHERPA {
     bool FillBunchBlobs(ATOOLS::Blob_List *,ATOOLS::Particle_List * = NULL);
     bool FillBeamBlobs(ATOOLS::Blob_List *,ATOOLS::Particle_List * = NULL);
 
+    // inline functions
+    inline Remnant_Base *const BeamParticle(const size_t i) const { return p_beampart[i]; }
+
   };// end of class Beam_Remnant_Handler
 
   /*! 

@@ -1,7 +1,7 @@
 #ifndef Lund_Wrapper_H
 #define Lund_Wrapper_H
 
-#ifdef EXPORT__AlphaS
+#ifndef NO_EXPORT__AlphaS
 #include "Running_AlphaS.H"
 #endif
 
@@ -16,15 +16,10 @@ extern "C" {
   void pyplst_();
   void pymult_(int*);
   double pyalps_(double*);
-#ifdef EXPORT__AlphaS
+#ifndef NO_EXPORT__AlphaS
   double shalps_(double*);
 #endif
 }
-
-extern struct {
-  double xt2e[100];
-  int nmulte;
-} pyexp1_;
 
 void pyhepc(int mconv) { 
   pyhepc_(&mconv); 
@@ -62,7 +57,7 @@ double pyalps(double q2) {
   return pyalps_(&q2);
 }
 
-#ifdef EXPORT__AlphaS
+#ifndef NO_EXPORT__AlphaS
 double shalps_(double *q2) {
   return (*MODEL::as)(*q2);
 }

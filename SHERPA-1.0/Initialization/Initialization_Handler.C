@@ -83,6 +83,10 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 
 Initialization_Handler::~Initialization_Handler()
 {
+  while (m_analyses.size()>0) {
+    delete m_analyses.begin()->second;
+    m_analyses.erase(m_analyses.begin());
+  }
   if (p_outputhandler) { delete p_outputhandler; p_outputhandler = NULL; }
   if (p_hadrondecays)  { delete p_hadrondecays;  p_hadrondecays  = NULL; }
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
@@ -93,15 +97,11 @@ Initialization_Handler::~Initialization_Handler()
   if (p_isrhandler)    { delete p_isrhandler;    p_isrhandler    = NULL; }
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
   if (p_model)         { delete p_model;         p_model         = NULL; }
-
-  for (MEHandlersMap::iterator mit=m_mehandlers.begin();mit!=m_mehandlers.end();mit++) {
-    if (mit->second) { delete mit->second; mit->second=NULL; }
+  while (m_mehandlers.size()>0) {
+    delete m_mehandlers.begin()->second;
+    m_mehandlers.erase(m_mehandlers.begin());
   }
-  m_mehandlers.clear();
-  for (AnalysesMap::iterator ait=m_analyses.begin();ait!=m_analyses.end();ait++) {
-    if (ait->second) { delete ait->second; ait->second=NULL; }
-  }
-  m_analyses.clear();
+  PHASIC::Phase_Space_Handler::DeleteInfo();
 }
 
 
@@ -126,8 +126,11 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   SetParameter(nr);
   UpdateParameters();
     
-  okay      = okay && InitializeTheBeams();
-  okay      = okay && InitializeThePDFs();
+  okay = okay && InitializeTheBeams();
+  okay = okay && InitializeThePDFs();
+
+  ATOOLS::Integration_Info *info=PHASIC::Phase_Space_Handler::GetInfo();
+  p_isrhandler->AssignKeys(info);
 
   PHASIC::Phase_Space_Handler::GetInfo();
 
@@ -270,11 +273,15 @@ bool Initialization_Handler::InitializeThePDFs()
   for (int i=0;i<2;++i) {
     pdfbase = pdfhandler->GetPDFLib(dataread,m_bunch_particles[i],i);
     if (pdfbase==NULL) isrbases[i] = new Intact(m_bunch_particles[i]);     
-                  else isrbases[i] = new Structure_Function(pdfbase,m_bunch_particles[i]);
+    else isrbases[i] = new Structure_Function(pdfbase,m_bunch_particles[i]);
+    ATOOLS::rpa.gen.SetBunch(m_bunch_particles[i],i);
   }
-  m_bunch_splimits[0]      = dataread->GetValue<double>("ISR_SMIN",0.);
-  m_bunch_splimits[1]      = dataread->GetValue<double>("ISR_SMAX",1.);
-  p_isrhandler             = new ISR_Handler(isrbases,m_bunch_splimits);
+  m_bunch_splimits[0] = dataread->GetValue<double>("ISR_SMIN",0.);
+  m_bunch_splimits[1] = dataread->GetValue<double>("ISR_SMAX",1.);
+  double kplimits[2];
+  kplimits[0] = dataread->GetValue<double>("ISR_KPMIN",m_bunch_splimits[0]);
+  kplimits[1] = dataread->GetValue<double>("ISR_KPMAX",m_bunch_splimits[1]);
+  p_isrhandler = new ISR_Handler(isrbases,m_bunch_splimits,kplimits);
 
   delete pdfhandler;
   delete dataread;
@@ -370,7 +377,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
 {
   if (p_hadrondecays)  { delete p_hadrondecays;  p_hadrondecays  = NULL; }
   p_hadrondecays  = new Hadron_Decay_Handler(m_path,m_hadrondecaysdat,
- 					     p_fragmentation->GetLundFortranInterface());
+  					     p_fragmentation->GetLundInterface());
   return 1;
 }
 
@@ -447,11 +454,11 @@ bool Initialization_Handler::CalculateTheHardProcesses()
   if (ok && m_scan_istep!=-1) {
     AMEGIC::Process_Base * procs= me->GetAmegic()->Processes();
     ATOOLS::msg.Out()<<ParameterValue()<<" ";
-    for (int i=0; i<procs->Size();++i) {
-      double xstot = (*procs)[i]->Total()*rpa.Picobarn();
+    for (size_t i=0; i<procs->Size();++i) {
+      double xstot = (*procs)[i]->TotalXS()*rpa.Picobarn();
       ATOOLS::msg.Out()<<xstot<<" ";
     }
-    for (int i=0; i<procs->Size();++i) {
+    for (size_t i=0; i<procs->Size();++i) {
       ATOOLS::msg.Out()<<"###"<<(*procs)[i]->Name();
     }
     ATOOLS::msg.Out()<<endl;

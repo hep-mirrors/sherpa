@@ -17,6 +17,10 @@ C*********************************************************************
       SAVE /PYDAT1/,/PYDAT2/,/PYDAT3/,/PYDAT4/,/PYSUBS/,/PYPARS/,
      &/PYINT1/,/PYINT2/,/PYINT5/
 C
+      WRITE(*,*) 'MSEL = ',MSEL
+      DO 9999 ITEST=1,200
+         WRITE(*,*) 'MSUB(',ITEST,') = ',MSUB(ITEST)
+9999  CONTINUE
       DO 10000 ITEST=1,200
          WRITE(*,*) 'MSTP(',ITEST,') = ',MSTP(ITEST),
      &        ' PARP(',ITEST,') = ',PARP(ITEST),

@@ -11,20 +11,17 @@ using namespace SHERPA;
 using namespace ATOOLS;
 
 
-Fragmentation_Handler::Fragmentation_Handler(std::string _dir,std::string _file) :
+Fragmentation_Handler::Fragmentation_Handler(std::string _dir,std::string _file):
   m_dir(_dir), m_file(_file)
 {
   Data_Read dr(m_dir+m_file);
   m_fragmentationmodel = dr.GetValue<std::string>("FRAGMENTATION",std::string("Lund"));
-  
+  std::string lundfile;
   if (m_fragmentationmodel==std::string("Lund")) {
-    m_lund_a     = dr.GetValue<double>("LUND_A",0.4);
-    m_lund_b     = dr.GetValue<double>("LUND_B",0.85);
-    m_lund_sigma = dr.GetValue<double>("LUND_SIGMA",0.36);
-    msg.Events()<<"Initialize Lund Fragmentation : "<<std::endl
-		<<"  LUND_A = "<<m_lund_a<<", LUND_B = "<<m_lund_b
-		<<", LUND_SIGMA = "<<m_lund_sigma<<std::endl;
-    p_lund       = new Lund_Fortran_Interface(m_lund_a,m_lund_b,m_lund_sigma);
+    lundfile     = dr.GetValue<std::string>("LUND_FILE",std::string("Lund.dat"));
+    ATOOLS::msg.Events()<<"Fragmentation_Handler::Fragmentation_Handler(..): "
+			<<"Initialize Lund Fragmentation according to "<<lundfile<<std::endl;
+    p_lund       = new Lund_Interface(m_dir,lundfile);
     m_mode       = 1;
     return;
   }
@@ -35,7 +32,6 @@ Fragmentation_Handler::Fragmentation_Handler(std::string _dir,std::string _file)
     m_mode       = 0;
     return;
   }
-
   msg.Error()<<"ERROR in Fragmentation_Handler::Fragmentation_Handler."<<std::endl
 	     <<"    please choose between <Lund> and <Off> as Fragmentation model"<<std::endl
 	     <<"    the Fragmentation model <"<<m_fragmentationmodel
@@ -43,27 +39,22 @@ Fragmentation_Handler::Fragmentation_Handler(std::string _dir,std::string _file)
   abort();
 }
    
-Fragmentation_Handler::~Fragmentation_Handler() {
+Fragmentation_Handler::~Fragmentation_Handler() 
+{
   if (p_lund)      delete p_lund;
 }
-
-
-
 
 bool Fragmentation_Handler::PerformFragmentation(ATOOLS::Blob_List * bl,
 						 ATOOLS::Particle_List * pl) 
 {
   if (m_mode==0) return 1;
-
   if (!ExtractSinglets(bl,pl)) return 0;
-
   bool okay = 1;
   for (Blob_Iterator biter=bl->begin();biter!=bl->end();++biter) {
     if ( (*biter)->Type()==btp::Fragmentation && (*biter)->Status()==1 ) {
       //(*biter)->BoostInCMS();
       (*biter)->SetCMS();
-       okay = okay && p_lund->Hadronize((*biter),bl,pl);
-      //(*biter)->BoostInLab();
+      okay = okay && p_lund->Hadronize((*biter),bl,pl);
       (*biter)->SetStatus(0);
     }
   }
@@ -75,7 +66,6 @@ bool Fragmentation_Handler::ExtractSinglets(Blob_List * _bloblist,Particle_List 
   Blob       * newb = NULL;
   Particle     * part;
   bool use_one_blob = 1;
-
   bool foundatall   = 0;
   bool found        = 1;
   bool active;
@@ -166,13 +156,11 @@ bool Fragmentation_Handler::FindConnected(Blob_List * _bloblist,
   return 0;
 }
 
-Lund_Fortran_Interface * Fragmentation_Handler::GetLundFortranInterface() 
+Lund_Interface * Fragmentation_Handler::GetLundInterface() 
 { 
   if (p_lund) return p_lund; 
   msg.Out()<<"WARNING: in Fragmentation_Handler::GetLundFortranInterface()."<<std::endl
 	   <<"   Not yet initialized. This is an inconsistent option at the moment."<<std::endl;
-    //	   <<"   Abort program. "<<std::endl;
-    //  abort();
   return p_lund;
 }
 

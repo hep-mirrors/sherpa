@@ -6,7 +6,7 @@ ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
 EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
 AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
 APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
-SHERPAINCS    =	-I../SoftPhysics/Lund -I../LundTools -I../Tools 
+SHERPAINCS    =	-I../Single_Events -I../SoftPhysics/Lund -I../LundTools -I../Tools 
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
 PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main
 BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
@@ -17,7 +17,6 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-SUBDIRS       =	Lund
 lib_LTLIBRARIES       =	libSherpaSoftPhysics.la
 libSherpaSoftPhysics_la_SOURCES	      =	\
 					Primordial_KPerp.C \

@@ -26,14 +26,13 @@ Signal_Processes::~Signal_Processes()
 }
 
 
-bool Signal_Processes::Treat(Blob_List * _bloblist, double & weight)
+bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 {
-  PROFILE_LOCAL("Signal_Processes::Treat");
-
-  //  if (_bloblist->size()>1) return 0;
-  if (_bloblist->empty()) {
+  PROFILE_HERE;
+  // if (bloblist->size()>1) return 0;
+  if (bloblist->empty()) {
     msg.Error()<<"Potential error in Signal_Processes::Treat."<<endl
-	       <<"   Incoming blob list contains "<<_bloblist->size()<<" entries."<<endl
+	       <<"   Incoming blob list contains "<<bloblist->size()<<" entries."<<endl
 	       <<"   Continue and hope for the best."<<endl;
     return 0;
   }
@@ -44,7 +43,7 @@ bool Signal_Processes::Treat(Blob_List * _bloblist, double & weight)
   
   while (found) {
     found = 0;
-    for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
+    for (Blob_Iterator blit=bloblist->begin();blit!=bloblist->end();++blit) {
       if ((*blit)->Type()==btp::Signal_Process && (*blit)->Status()==-1) {
 	myblob = (*blit);
 	found  = 1;
@@ -85,14 +84,14 @@ void Signal_Processes::FillBlob(Blob * blob, const double, const int)
   for (size_t i=0;i<p_mehandler->NIn();i++) cms += p_mehandler->Momenta()[i];
   blob->SetCMS(cms);
   blob->SetBeam(-1);
-
+  
   // make sure that blob is empty
   blob->DeleteOwnedParticles();
   blob->ClearAllData();
 
   Particle * particle;
   for (unsigned int i=0;i<p_mehandler->NIn();i++) {
-    particle = new Particle(i,p_mehandler->Flavs()[i],p_mehandler->Momenta()[i]);
+    particle = new Particle(i,p_mehandler->Flavours()[i],p_mehandler->Momenta()[i]);
     particle->SetNumber((long int)particle);
     particle->SetStatus(2);
     particle->SetInfo('G');
@@ -100,7 +99,7 @@ void Signal_Processes::FillBlob(Blob * blob, const double, const int)
   }
   bool unstable = false; 
   for (unsigned int i=p_mehandler->NIn();i<p_mehandler->NIn()+p_mehandler->NOut();i++) {
-    particle = new Particle(i,p_mehandler->Flavs()[i],p_mehandler->Momenta()[i]);
+    particle = new Particle(i,p_mehandler->Flavours()[i],p_mehandler->Momenta()[i]);
     if (!(particle->Flav().IsStable())) unstable = true;
     particle->SetStatus(1);
     particle->SetInfo('H');

@@ -52189,7 +52189,10 @@ C...Commonblocks.
       SAVE /PYDAT1/,/PYDAT2/
  
 C...Interface Sherpa AlphaS
+C ** start ** you may use the sherpa alpha_s here
 C      PYALPS=SHALPS(Q2)
+C      RETURN
+C ** end   **
 
 C...Constant alpha_strong trivial. Pick artificial Lambda.
       IF(MSTU(111).LE.0) THEN

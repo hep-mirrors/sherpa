@@ -4,6 +4,7 @@ CVSINCLUDE    =	CVS
 endif
 SUBDIRS       =	\
 		Tools \
+		LundTools \
 		Initialization \
 		PerturbativePhysics \
 		SoftPhysics \

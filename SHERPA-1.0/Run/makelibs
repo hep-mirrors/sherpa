@@ -6,20 +6,31 @@
 
 DIRS=`find Process -name P?_?`
 
-for I in $DIRS
-do
-  echo .
-  echo ======================
-  echo $I;
-  echo ======================
-  cd $I 
+for I in $* ; do
+  if [ "$I" = "-c" ]; then CLEAN=TRUE ;
+  elif [ "$I" = "-h" ]; then \
+    echo "makelibs options: -c \"make clean\" before compiling" && \
+    echo "                  -h display this help and exit" && \
+    exit 0
+  else echo "makelibs: error: unrecognized option $I" && exit 1 ;
+  fi
+done
+
+for J in $DIRS ; do
+  echo "."
+  echo "======================"
+  echo "$J";
+  echo "======================"
+  cd $J 
   libtoolize --force
   aclocal
   automake -a
   autoconf
   ./configure
-#  make clean
-  make install CXXFLAGS="-O2" 
+  if `test "$CLEAN" = "TRUE"` ; then make clean ; fi
+  if ! make install -j2 "CXXFLAGS=-O2" ; then
+    echo "makeinstall: error: \"make install\" in $I failed"
+    exit 1
+  fi
   cd ../..
 done
-

@@ -4,6 +4,7 @@
 #include "Amegic.H"
 #include "Simple_XS.H"
 #include "Random.H"
+#include "Exception.H"
 #include <iomanip>
 
 using namespace SHERPA;
@@ -86,11 +87,9 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
   msg.Debugging()<<"Run Matrix_Element_Handler in mode :"<<m_mode
 		 <<" and event generation mode : "<<m_eventmode<<endl;
   if (m_mode>0) return;
-
-  msg.Error()<<"Error in Matrix_Element_Handler::Matrix_Element_Handler."<<endl
-	     <<"   Failed to initialize "<<m_signalgenerator<<" for hard interactions."<<endl
-	     <<"   will abort the run."<<endl;
-  abort();
+  throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,std::string("Failed to initialize ")
+			  +m_signalgenerator+std::string(" for hard interactions."),
+			  "Matrix_Element_Handler","Matrix_Element_Handler"));
 }
 
 Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _file,
@@ -124,11 +123,9 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
   msg.Debugging()<<"Run Matrix_Element_Handler in mode :"<<m_mode
 		 <<" and event generation mode : "<<m_eventmode<<endl;
   if (m_mode>0) return;
-
-  msg.Error()<<"Error in Matrix_Element_Handler::Matrix_Element_Handler."<<endl
-	     <<"   Failed to initialize "<<m_signalgenerator<<" for hard interactions."<<endl
-	     <<"   will abort the run."<<endl;
-  abort();
+  throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,std::string("Failed to initialize ")
+			  +m_signalgenerator+std::string(" for hard interactions."),
+			  "Matrix_Element_Handler","Matrix_Element_Handler"));
 }
 
 Matrix_Element_Handler::~Matrix_Element_Handler()
@@ -498,14 +495,15 @@ std::string Matrix_Element_Handler::ProcessName()
 
 const ATOOLS::Vec4D * Matrix_Element_Handler::Momenta() {
   switch (m_mode) {
-  case 1: return p_amegic->GetAllDecays()->Momenta();
+  case 1: return p_amegic->Momenta();
+  case 2: return p_simplexs->Momenta();
   }
   return NULL;
 }
 
 const ATOOLS::Vec4D * Matrix_Element_Handler::DecMomenta() {
   switch (m_mode) {
-  case 1: return p_amegic->Momenta();
+  case 1: return p_amegic->GetAllDecays()->Momenta();
   }
   return NULL;
 }

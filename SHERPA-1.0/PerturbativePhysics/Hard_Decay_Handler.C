@@ -40,7 +40,8 @@ void Hard_Decay_Handler::ReadInDecays()
 
   char   buffer[100];
   string buf,number;
-  int    kfc, pos;
+  int    kfc;
+  size_t pos;
   Decay_Table * dt = NULL;
   Flavour     flav;
   FlavourSet  decflavs;
@@ -50,13 +51,13 @@ void Hard_Decay_Handler::ReadInDecays()
       buf    = string(buffer);
       // Init decay table for another particle
       pos    = buf.find(string("Decays :")); 
-      if (pos>-1 && pos<=buf.length()) {
+      if (pos!=std::string::npos && pos<=buf.length()) {
 	buf  = buf.substr(pos+8);
 	while(buf.length()>0) {
 	  if (buf[0]==' ') buf = buf.substr(1);
 	  else {
 	    pos = buf.find(string(" "));
-	    if (pos>0) buf = buf.substr(0,pos);
+	    if (pos!=std::string::npos) buf = buf.substr(0,pos);
 	    MyStrStream sstream;
 	    sstream<<buf;
 	    sstream>>kfc;
@@ -69,7 +70,7 @@ void Hard_Decay_Handler::ReadInDecays()
       }
 
       pos     = buf.find(string("forced channel :"));  
-      if (pos>-1 && pos<=buf.length()) {
+      if (pos!=std::string::npos && pos<=buf.length()) {
 	decflavs.clear();
 	buf  = buf.substr(pos+16);
 	buf  = buf+string(" ");
@@ -91,11 +92,11 @@ void Hard_Decay_Handler::ReadInDecays()
 
       // Check, if width of particle.dat is to be overwritten by total width as calculated
       pos     = buf.find(string("overwrite"));  
-      if (pos>-1 && pos<=buf.length()) dt->SetOverwrite(); 
+      if (pos!=std::string::npos && pos<=buf.length()) dt->SetOverwrite(); 
 
       // Check, if Breit Wigner smearing is to be applied in event generation
       pos     = buf.find(string("Breit-Wigner on"));  
-      if (pos>-1 && pos<=buf.length()) dt->SetSmearing(); 
+      if (pos!=std::string::npos && pos<=buf.length()) dt->SetSmearing(); 
     }
   }
 }

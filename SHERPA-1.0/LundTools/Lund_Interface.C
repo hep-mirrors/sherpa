@@ -5,10 +5,9 @@
 #include "Particle.H"
 #include "Run_Parameter.H"
 #include "Message.H"
-#ifdef EXPORT__AlphaS
+#ifndef NO_EXPORT__AlphaS
 #include "Running_AlphaS.H"
 #endif
-
 
 using namespace SHERPA;
 
@@ -19,12 +18,13 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file):
   double win;
   std::string beam[2], frame("CMS");
   for (size_t i=0;i<2;++i) {
-    ATOOLS::Flavour flav;
-    if (i==0) flav=ATOOLS::rpa.gen.Beam1();
-    else flav=ATOOLS::rpa.gen.Beam1();
+    ATOOLS::Flavour flav=ATOOLS::rpa.gen.Bunch(i);
     if (flav==ATOOLS::kf::e) {
-      if (flav.IsAnti()) beam[i]=std::string("e-");
-      else beam[i]=std::string("e+");
+      if (flav.IsAnti()) beam[i]=std::string("e+");
+      else beam[i]=std::string("e-");
+    }
+    else if (flav=ATOOLS::kf::photon) {
+      beam[i]=std::string("gamma");
     }
     else {
       if (flav.IsAnti()) beam[i]=std::string("p-");
@@ -40,7 +40,8 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file):
   reader->AddIgnore("(");
   reader->AddIgnore(")");
   reader->AddIgnore(",");
-  if (!reader->ReadFromFile(pysubs.msel,"MSEL")) pysubs.msel=1;
+  // if (!reader->ReadFromFile(pysubs.msel,"MSEL")) pysubs.msel=1;
+  pysubs.msel=1;
   reader->MatrixFromFile(help,"MSUB");
   for (size_t i=0;i<help.size();++i) {
     if (help[i].size()>1) if ((int)help[i][0]>0) pysubs.msub[(int)help[i][0]-1]=(int)help[i][1];
@@ -88,7 +89,7 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file):
   }
   // replacement ends here
   pyinit(frame.c_str(),beam[0].c_str(),beam[1].c_str(),win);
-  if (ATOOLS::msg.Level()>2) ListLundParameters();
+  if (ATOOLS::msg.Level()&8) ListLundParameters();
   delete reader;
 }
 
@@ -151,6 +152,12 @@ bool Lund_Interface::ConstructBlobs(ATOOLS::Blob_List *blobs,std::map<int,ATOOLS
       }
     }
   }
+  for (int i=0;i<hepevt.nhep;++i) {
+    if (converted[i]->DecayBlob()==NULL) {
+      ATOOLS::Particle *daughter=converted[hepevt.jdahep[i][0]-1];
+      if (daughter!=NULL) daughter->ProductionBlob()->AddToInParticles(converted[i]);
+    }
+  }
   return true;
 }
 
@@ -196,7 +203,8 @@ bool Lund_Interface::Hadronize(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
 			       ATOOLS::Particle_List *pl) 
 {
   int nhep = 0;
-  blob->SetType("Fragmentation (Lund : Pythia 6.214)");
+  blob->SetType(ATOOLS::btp::Fragmentation);
+  blob->SetTypeSpec("Lund : Pythia 6.214");
   if (nhep==0) {
     hepevt.idhep[nhep]=ATOOLS::Flavour(ATOOLS::kf::photon).HepEvt();
     for (short int j=1;j<4;++j) hepevt.phep[nhep][j-1]=blob->CMS()[j];
@@ -289,7 +297,8 @@ void Lund_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_Li
 	if (hepevt.jdahep[j][0]!=0 && hepevt.jdahep[j][1]!=0) {
 	  decay = new ATOOLS::Blob();
 	  decay->SetStatus(1);
-	  decay->SetType(std::string("Hadron decay"));
+	  decay->SetType(ATOOLS::btp::Hadron_Decay);
+	  decay->SetTypeSpec("Lund : Pythia 6.214");
 	  decay->SetId(bloblist->size());
 	  decay->AddToInParticles(particle);
 	  if (particle->Info()=='P') particle->SetInfo('p');
@@ -331,7 +340,8 @@ void Lund_Interface::FillSecondaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_
     if (hepevt.jdahep[i][0]!=0 && hepevt.jdahep[i][1]!=0) {
       decay = new ATOOLS::Blob();
       decay->SetStatus(1);
-      decay->SetType(std::string("Hadron decay"));
+      decay->SetType(ATOOLS::btp::Hadron_Decay);
+      decay->SetTypeSpec("Lund : Pythia 6.214");
       decay->SetId(bloblist->size());
       decay->AddToInParticles(particle);
       if (particle->Info()=='P') particle->SetInfo('p');

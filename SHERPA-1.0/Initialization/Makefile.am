@@ -7,8 +7,8 @@ ANALYSISDIR   =	$(SHERPASYS)/ANALYSIS-1.0
 EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
 AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
 APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
-SHERPAINCS    =	-I../PerturbativePhysics -I../SoftPhysics \
-		-I../SoftPhysics/Lund  -I../SoftPhysics/Lund -I../Tools 
+SHERPAINCS    =	-I../Single_Events -I../PerturbativePhysics -I../SoftPhysics \
+		-I../SoftPhysics/Lund  -I../LundTools -I../Tools 
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
 ANALYSISINCS  = -I$(ANALYSISDIR)/Main -I$(ANALYSISDIR)/Observables
 PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main

@@ -5,7 +5,7 @@
 #include <iterator> 
 #include <iostream> 
 
-#include "Lund_Fortran_Interface.H"
+#include "Lund_Interface.H"
 #include "Particle_List.H"
 #include "Particle.H"
 #include "Blob_List.H"
@@ -17,7 +17,7 @@ namespace SHERPA {
     std::string              m_fragmentationmodel;
     double                   m_lund_a,m_lund_b,m_lund_sigma;
     int                      m_mode;
-    Lund_Fortran_Interface * p_lund; 
+    Lund_Interface         * p_lund;
     bool   ExtractSinglets(ATOOLS::Blob_List *,ATOOLS::Particle_List *);
     bool   FindConnected(ATOOLS::Blob_List *,ATOOLS::Particle *,
 			 ATOOLS::Blob *);
@@ -26,7 +26,7 @@ namespace SHERPA {
     ~Fragmentation_Handler();
     bool PerformFragmentation(ATOOLS::Blob_List *,ATOOLS::Particle_List * = NULL);
     void EmptyMyLists();
-    Lund_Fortran_Interface * GetLundFortranInterface();
+    Lund_Interface * GetLundInterface();
     std::string FragmentationModel() { return m_fragmentationmodel; }
   };
 

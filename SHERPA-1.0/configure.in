@@ -70,10 +70,10 @@ AC_CHECK_FUNCS(mkdir)
 
 dnl Produce makefiles
 AC_OUTPUT(Tools/Makefile \
+	  LundTools/Makefile \
           Initialization/Makefile \
           PerturbativePhysics/Makefile \
           SoftPhysics/Makefile \
-          SoftPhysics/Lund/Makefile \
           Single_Events/Makefile \
           Main/Makefile \
           Run/Makefile \

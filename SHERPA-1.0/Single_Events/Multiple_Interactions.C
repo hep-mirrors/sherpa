@@ -30,7 +30,7 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
 		       <<"   Incoming blob list is empty!"<<std::endl;
     return false;
   }
-  Blob * myblob;
+  ATOOLS::Blob * myblob;
   bool hit=false;
   m_one=false;
   for (Blob_Iterator bit=bloblist->begin();bit!=bloblist->end();++bit) {
@@ -121,7 +121,7 @@ void Multiple_Interactions::CleanUp()
   return; 
 }
 
-void Multiple_Interactions::CompleteBlob(Blob *blob)
+void Multiple_Interactions::CompleteBlob(ATOOLS::Blob *blob)
 {
   PROFILE_HERE;
   EXTRAXS::XS_Base *xs=NULL;
@@ -134,12 +134,12 @@ void Multiple_Interactions::CompleteBlob(Blob *blob)
   blob->SetPosition(Vec4D(0.,0.,0.,0.));
   blob->SetStatus(1);
 
-  Vec4D cms = Vec4D(0.,0.,0.,0.);
-  for (int i=0;i<xs->Nin();i++) cms += xs->Momenta()[i];
+  ATOOLS::Vec4D cms = ATOOLS::Vec4D(0.,0.,0.,0.);
+  for (size_t i=0;i<xs->NIn();i++) cms += xs->Momenta()[i];
   blob->SetCMS(cms);
   blob->SetBeam(-1);
 
-  Particle *particle;
+  ATOOLS::Particle *particle;
   for (int i=0;i<(int)blob->NInP();i++) {
     particle=blob->InParticle(i);
     particle->SetNumber((long int)particle);

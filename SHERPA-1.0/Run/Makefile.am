@@ -1,6 +1,6 @@
 SHERPASYS  = ../..
 
-SHERPAFLAGS   =	# -pedantic -Wall -Winline
+SHERPAFLAGS   =	-pedantic -Wall -Winline -Wno-long-long
 
 ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
 ANALYSISDIR   =	$(SHERPASYS)/ANALYSIS-1.0
@@ -8,7 +8,7 @@ EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
 AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
 APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
 SHERPAINCS    =	-I../Main -I../Initialization -I../PerturbativePhysics \
-		-I../SoftPhysics -I../SoftPhysics/Lund -I../Single_Events \
+		-I../SoftPhysics -I../LundTools -I../Single_Events \
 		-I../Tools 
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
 ANALYSISINCS  = -I$(ANALYSISDIR)/Main -I$(ANALYSISDIR)/Observables
@@ -28,21 +28,21 @@ APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
 
 SYSLIBS	      =	-lg2c -lm -ldl
 ATOOLSLIBS    =	-L@libdir@ -lToolsPhys -lToolsMath -lToolsOrg 
+PDFLIBS       =	-L@libdir@ -lPDF -lLHAPDF -lDUPDF
 ANALYSISLIBS  = -L@libdir@ -lAnalysis -lObservables
-PDFLIBS       =	-L@libdir@ -lPDF -lLHAPDF 
 BEAMLIBS      =	-L@libdir@ -lBeam 
 PHASICLIBS    =	-L@libdir@ -lPhasespace 
 MODELLIBS     =	-L@libdir@ -lModelMain -lIsajet -lHdecay 
 EXTRAXSLIBS   =	-L@libdir@ -lExtraXS -lExtraXS2_2 
 if AMISIC_SUPPORT
-AMISICLIBS    =	-L@libdir@ -lAmisic -lAmisicAnalysis
+AMISICLIBS    =	-L@libdir@ -lAmisic
 endif
 AMEGICLIBS    =	-L@libdir@ -lAmegic -lAmplitude -lAmegicPSGen \
 		-lZfunctions -lAmplTools -lModel -lProcess -lString 
 APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain 
 SHERPALIBS    =	-L@libdir@ -lSherpaMain -lSherpaInitialization \
 		-lSherpaSingleEvents -lSherpaPerturbativePhysics \
-		-lSherpaSoftPhysics -lLundInterface -lSherpaTools 
+		-lSherpaSoftPhysics -lLundTools -lSherpaTools 
 
 if AMISIC_SUPPORT
 AMISICFLAGS   =	-DUSING__Amisic
@@ -67,14 +67,14 @@ endif
 
 bin_PROGRAMS  =	Sherpa
 Sherpa_SOURCES        =	Main.C 
-Sherpa_LDADD  =	$(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) $(AMISICLIBS) \
-		$(EXTRAXSLIBS) $(PHASICLIBS) $(MODELLIBS) $(PDFLIBS) $(BEAMLIBS) \
-		$(ATOOLSLIBS) $(SYSLIBS) $(CLHEPLIBS) $(ROOTLIBS) $(ANALYSISLIBS)
+Sherpa_LDADD  =	$(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) \
+		$(AMISICLIBS) $(EXTRAXSLIBS) $(PHASICLIBS) $(MODELLIBS) $(PDFLIBS) \
+		$(BEAMLIBS) $(ATOOLSLIBS) $(SYSLIBS) $(CLHEPLIBS) $(ROOTLIBS)
 Sherpa_LDFLAGS        =	-rdynamic
 AM_CXXFLAGS   =	$(SHERPAFLAGS) $(AMISICFLAGS) $(CLHEPFLAGS)
-INCLUDES      = $(SHERPAINCS) $(APACICINCS) $(AMEGICINCS) $(AMISICINCS) \
-		$(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) $(PDFINCS) \
-		$(BEAMINCS) $(ATOOLSINCS) $(ANALYSISINCS) $(CLHEPINCS) $(ROOTINCS)
+INCLUDES      = $(ANALYSISINCS) $(SHERPAINCS) $(APACICINCS) $(AMEGICINCS) \
+		$(AMISICINCS) $(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) $(PDFINCS) \
+		$(BEAMINCS) $(ATOOLSINCS) $(CLHEPINCS) $(ROOTINCS)
 SUBDIRS       =	Process
 EXTRA_DIST    =	\
 		$(CVSINCLUDE) \

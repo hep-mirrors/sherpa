@@ -58,7 +58,6 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
   PROFILE_HERE;
   m_path = std::string("./");
   p_inithandler  = new Initialization_Handler(argc, argv);
-
   int mode = p_inithandler->Mode();  
   if (mode==14) {
     return PerformScan();
@@ -68,7 +67,6 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
       return p_inithandler->CalculateTheHardProcesses();
     }
   }
-  
   msg.Error()<<"Error in Sherpa::InitializeRun("<<m_path<<")"<<endl
 	     <<"   Did not manage to initialize the framework."<<endl
 	     <<"   Try to run nevertheless ... ."<<endl;
