@@ -1,0 +1,74 @@
+#ifndef File_IO_Base_IC
+#define File_IO_Base_IC
+
+#include "Message.H"
+
+namespace ATOOLS {
+
+  inline void File_IO_Base::SetInputPath(std::string _m_inputpath)
+  { m_inputpath=_m_inputpath; }
+
+  inline std::string File_IO_Base::InputPath()
+  { return m_inputpath; }
+
+  inline void File_IO_Base::SetInputFile(std::string _m_inputfile)
+  { m_inputfile=_m_inputfile; }
+
+  inline std::string File_IO_Base::InputFile()
+  { return m_inputfile; }
+
+  inline void File_IO_Base::SetOutputPath(std::string _m_outputpath)
+  { m_outputpath=_m_outputpath; }
+
+  inline std::string File_IO_Base::OutputPath()
+  { return m_outputpath; }
+
+  inline void File_IO_Base::SetOutputFile(std::string _m_outputfile)
+  { m_outputfile=_m_outputfile; }
+
+  inline std::string File_IO_Base::OutputFile()
+  { return m_outputfile; }
+
+  inline bool File_IO_Base::CheckInputPath()
+  {	
+    if (m_inputpath==std::string("")) {
+      ATOOLS::msg.Error()<<"File_IO_Base::CheckInputPath(): "
+	  	         <<"No input path specified!"<<std::endl;
+      return false;
+    }
+    return true;
+  }
+
+  inline bool File_IO_Base::CheckInputFile()
+  {	
+    if (m_inputfile==std::string("")) {
+      ATOOLS::msg.Error()<<"File_IO_Base::CheckInputFile(): "
+	  	         <<"No input file specified!"<<std::endl;
+      return false;
+    }
+    return true;
+  }
+
+  inline bool File_IO_Base::CheckOutputPath()
+  {	
+    if (m_outputpath==std::string("")) {
+      ATOOLS::msg.Error()<<"File_IO_Base::CheckOutputPath(): "
+	  	         <<"No output path specified!"<<std::endl;
+      return false;
+    }
+    return true;
+  }
+
+  inline bool File_IO_Base::CheckOutputFile()
+  {	
+    if (m_outputfile==std::string("")) {
+      ATOOLS::msg.Error()<<"File_IO_Base::CheckOutputFile(): "
+	  	         <<"No output file specified!"<<std::endl;
+      return false;
+    }
+    return true;
+  }
+
+} // end of namespace ATOOLS; 
+
+#endif

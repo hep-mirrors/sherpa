@@ -18,11 +18,7 @@ namespace AMISIC {
     m_relativedeltaymin(false) {}
 
   template <class Argument_Type,class Result_Type>
-  Grid_Creator_Base<Argument_Type,Result_Type>::Grid_Creator_Base():
-    m_inputpath("./"),
-    m_inputfile(""),
-    m_outputpath("./"),
-    m_outputfile("") {}
+  Grid_Creator_Base<Argument_Type,Result_Type>::Grid_Creator_Base() {}
 
   template <class Argument_Type,class Result_Type>
   Grid_Creator_Base<Argument_Type,Result_Type>::~Grid_Creator_Base() {}
@@ -71,11 +67,7 @@ namespace AMISIC {
   template <class Argument_Type,class Result_Type>
   bool Grid_Creator_Base<Argument_Type,Result_Type>::ReadSingleArguments(GridHandlerType *grid)
   {
-    if (m_inputfile==ATOOLS::nullstring) {
-      ATOOLS::msg.Error()<<"Grid_Creator_Base::ReadSingleArguments("<<grid<<"): "
-			 <<"No input file specified! Abort."<<std::endl;
-      return false;
-    }
+    if (!CheckInputFile()) return false;
     std::vector<std::string> temp;
     ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
     reader->SetFileName(m_inputpath+m_inputfile);
@@ -229,7 +221,7 @@ namespace AMISIC {
     }
     unsigned int errorcounter=0, correct;
     GridArgumentType left, right, middle, delta, *boundary = new GridArgumentType[3];
-    GridResultType min, max, deltaymax;
+    GridResultType deltaymax;
     if (grid==NULL) return false;
     ATOOLS::Axis<GridArgumentType> *xaxis=grid->Grid()->XAxis();
     ATOOLS::Axis<GridResultType> *yaxis=grid->Grid()->YAxis();
@@ -237,26 +229,24 @@ namespace AMISIC {
     yaxis->SetScalingMode(yaxis->Identical);
     for (;(deltaymax=grid->Grid()->DeltaYMax(left,right))>GridDeltaYMax();yaxis->SetScalingMode(yaxis->Identical)) {
       if (((*xaxis)(right)-(*xaxis)(left))<GridDeltaXMin()) break;
-      min=ATOOLS::Min(grid->Grid()->Y(left,grid->Grid()->Data),grid->Grid()->Y(right,grid->Grid()->Data));
-      max=ATOOLS::Max(grid->Grid()->Y(left,grid->Grid()->Data),grid->Grid()->Y(right,grid->Grid()->Data));
       if (!m_useymin) SetGridYMin(grid->Grid()->YMin());
       if (!m_useymax) SetGridYMax(grid->Grid()->YMax());
-      yaxis->SetScalingMode(yaxis->Reference);
-      if ((min>=GridYMin())&&(max<=GridYMax())) {
+      if ((grid->Grid()->YMin()>=GridYMin())&&(grid->Grid()->YMax()<=GridYMax())) {
+	yaxis->SetScalingMode(yaxis->Reference);
 	middle=(*xaxis)[((*xaxis)(left)+(*xaxis)(right))/(GridArgumentType)2.0];
 	boundary[0]=middle;
 	boundary[1]=left;
 	boundary[2]=right;
-	ATOOLS::msg.Out()<<"Grid_Creator_Base::OptimizeGrid(): "
+	ATOOLS::msg.Out()<<"Grid_Creator_Base::OptimizeSingleGrid(): "
 			 <<"Calculation for new grid point in progress."<<std::endl
 			 <<"   Currently \\Delta y_{max} = "<<deltaymax
 			 <<" vs. \\Delta y_{limit} = "<<GridDeltaYMax()<<std::endl;
 	if ((correct=CreateSinglePoint(boundary))==0) {
-	  ATOOLS::msg.Error()<<"Grid_Creator_Base::OptimizeGrid(): "
+	  ATOOLS::msg.Error()<<"Grid_Creator_Base::OptimizeSingleGrid(): "
 			     <<"Cannot determine point at "<<m_gridxvariable<<" = "<<boundary[0]<<"!"<<std::endl
 			     <<"   Abort attempt and continue."<<std::endl;
 	  if (++errorcounter>grid->Grid()->XDataSize()/10) {
-	    ATOOLS::msg.Error()<<"Grid_Creator_Base::CreateOptimizedGrid(): Too many errors occured! "
+	    ATOOLS::msg.Error()<<"Grid_Creator_Base::OptimizeSingleGrid(): Too many errors occured! "
 			       <<"Abort optimization."<<std::endl;
 	    return false;
 	  }
@@ -268,12 +258,12 @@ namespace AMISIC {
 	    boundary[1]=(*xaxis)[(*xaxis)(left)-delta*(GridArgumentType)(i+1)];
 	    boundary[2]=(*xaxis)[(*xaxis)(left)-delta*(GridArgumentType)(i-1)];
 	    if ((boundary[0]>=(*xaxis)[GridXMin()])&&(boundary[0]<=(*xaxis)[GridXMax()])) {
-	      ATOOLS::msg.Out()<<"Grid_Creator_Base::CreateOptimizedGrid(): "
+	      ATOOLS::msg.Out()<<"Grid_Creator_Base::OptimizeSingleGrid(): "
 			       <<"Calculation for corrected "<<i+1<<"th left point in progress."<<std::endl
 			       <<"   Currently \\Delta y_{max} = "<<deltaymax
 			       <<" vs. \\Delta y_{limit} = "<<GridDeltaYMax()<<std::endl;
 	      if (!CreateSinglePoint(boundary,false)) {
-		ATOOLS::msg.Error()<<"Grid_Creator_Base::CreateOptimizedGrid(): Cannot delete obsolete grid point at "
+		ATOOLS::msg.Error()<<"Grid_Creator_Base::OptimizeSingleGrid(): Cannot delete obsolete grid point at "
 				   <<boundary[0]<<"! Abort optimization."<<std::endl
 				   <<"   Warning! Grid values will be unreliable."<<std::endl;
 		return false;
@@ -283,12 +273,12 @@ namespace AMISIC {
 	    boundary[1]=(*xaxis)[(*xaxis)(right)+delta*(GridArgumentType)(i-1)];
 	    boundary[2]=(*xaxis)[(*xaxis)(right)+delta*(GridArgumentType)(i+1)];
 	    if ((boundary[0]>=(*xaxis)[GridXMin()])&&(boundary[0]<=(*xaxis)[GridXMax()])) {
-	      ATOOLS::msg.Out()<<"Grid_Creator_Base::CreateOptimizedGrid(): "
+	      ATOOLS::msg.Out()<<"Grid_Creator_Base::OptimizeSingleGrid(): "
 			       <<"Calculation for corrected "<<i+1<<"th right point in progress."<<std::endl
 			       <<"   Currently \\Delta y_{max} = "<<deltaymax
 			       <<" vs. \\Delta y_{limit} = "<<GridDeltaYMax()<<std::endl;
 	      if (!CreateSinglePoint(boundary,false)) {
-		ATOOLS::msg.Error()<<"Grid_Creator_Base::CreateOptimizedGrid(): Cannot delete obsolete grid point at "
+		ATOOLS::msg.Error()<<"Grid_Creator_Base::OptimizeSingleGrid(): Cannot delete obsolete grid point at "
 				   <<boundary[0]<<"! Abort optimization."<<std::endl
 				   <<"   Warning! Grid values will be unreliable."<<std::endl;
 		return false;
@@ -298,8 +288,9 @@ namespace AMISIC {
 	}
       }
       else {
-	if (min<GridYMin()) grid->Grid()->DeleteXPoint(min);
-	else if (max>GridYMax()) grid->Grid()->DeleteXPoint(max);
+	if (grid->Grid()->YMin()<GridYMin()) grid->Grid()->DeleteYPoint(grid->Grid()->YMin());
+	else if (grid->Grid()->YMax()>GridYMax()) grid->Grid()->DeleteYPoint(grid->Grid()->YMax());
+	yaxis->SetScalingMode(yaxis->Reference);
       }
     } 
     delete boundary;
@@ -328,11 +319,7 @@ namespace AMISIC {
   bool Grid_Creator_Base<Argument_Type,Result_Type>::
   WriteSingleGrid(GridHandlerType *grid,std::vector<std::string> addcomments)
   {
-    if (m_outputfile==ATOOLS::nullstring) {
-      ATOOLS::msg.Error()<<"Grid_Creator_Base::WriteOutSingleGrid("<<grid<<","<<&addcomments<<"): "
-			 <<"No output file specified! Abort."<<std::endl;
-      return false;
-    }
+    if (!CheckOutputFile()) return false;
     std::vector<std::string> comments;
     std::string xvar, yvar;
     xvar=grid->Grid()->XAxis()->Variable().Name();

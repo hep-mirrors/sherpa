@@ -38,6 +38,7 @@ namespace EXTRAXS {
     // member functions
     void FillMode(Mode);
     void CreateFSRChannels();
+    void InitIntegrators();
   };
 }
 

@@ -158,3 +158,16 @@ void QCD_Processes_C::CreateFSRChannels()
     }
   }
 }
+
+void QCD_Processes_C::InitIntegrators() 
+{
+  if (p_isr->On()) {
+    p_isr->SetPartonMasses(p_fl);
+    for (unsigned int i=0;i<m_xsecs.size();i++) m_xsecs[i]->SetISR(p_isr);
+    p_ps->ISRIntegrator()->DropAllChannels();
+  }
+  p_ps->CreateIntegrators();
+  if (p_isr->On()) p_ps->ISRIntegrator()->Reset();
+  p_ps->FSRIntegrator()->Reset();
+}
+      

@@ -9,7 +9,9 @@ EXTRAXSINC = $(SHERPASYS)/EXTRA_XS-1.0
 
 lib_LTLIBRARIES       = libAmisic.la
 libAmisic_la_SOURCES  = \
+			MI_Base.C \
 			Environment.C \
+			Simple_Chain.C \
 			Amisic.C 
 CXXFLAGS      =	-pedantic -Wall -Winline
 INCLUDES      =	\
@@ -31,9 +33,16 @@ noinst_HEADERS        = \
 			Grid_Creator_Base.H \
 			Grid_Creator_Base.IC \
 		       	Grid_Creator_Base.C \
+			Grid_Creator.H \
+			Grid_Creator.IC \
+		       	Grid_Creator.C \
 			Fixed_Variable_Channel.H \
 			Fixed_Variable_Channel.IC \
 			Fixed_Variable_Channel.C \
+			MI_Base.H \
+			MI_Base.IC \
 			Environment.H \
+			Simple_Chain.H \
+			Simple_Chain.IC \
 			Amisic.H \
 			Amisic.IC 

@@ -6,46 +6,6 @@
 namespace AMISIC {
 
   template <class Argument_Type,class Result_Type>
-  inline void Grid_Creator_Base<Argument_Type,Result_Type>::
-  SetInputPath(std::string _m_inputpath)
-  { m_inputpath=_m_inputpath; }
-  
-  template <class Argument_Type,class Result_Type>
-  inline std::string Grid_Creator_Base<Argument_Type,Result_Type>::
-  InputPath()
-  { return m_inputpath; }
-  
-  template <class Argument_Type,class Result_Type>
-  inline void Grid_Creator_Base<Argument_Type,Result_Type>::
-  SetInputFile(std::string _m_inputfile)
-  { m_inputfile=_m_inputfile; }
-  
-  template <class Argument_Type,class Result_Type>
-  inline std::string Grid_Creator_Base<Argument_Type,Result_Type>::
-  InputFile()
-  { return m_inputfile; }
-  
-  template <class Argument_Type,class Result_Type>
-  inline void Grid_Creator_Base<Argument_Type,Result_Type>::
-  SetOutputFile(std::string _m_outputfile)
-  { m_outputfile=_m_outputfile; }
-  
-  template <class Argument_Type,class Result_Type>
-  inline std::string Grid_Creator_Base<Argument_Type,Result_Type>::
-  OutputFile()
-  { return m_outputfile; }
-  
-  template <class Argument_Type,class Result_Type>
-  inline void Grid_Creator_Base<Argument_Type,Result_Type>::
-  SetOutputPath(std::string _m_outputpath)
-  { m_outputpath=_m_outputpath; }
-  
-  template <class Argument_Type,class Result_Type>
-  inline std::string Grid_Creator_Base<Argument_Type,Result_Type>::
-  OutputPath()
-  { return m_outputpath; }
-  
-  template <class Argument_Type,class Result_Type>
   inline Grid_Creator_Arguments<Argument_Type,Result_Type> 
   Grid_Creator_Base<Argument_Type,Result_Type>::Arguments()
   { return (ArgumentsType)*this; }

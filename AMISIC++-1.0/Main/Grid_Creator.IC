@@ -1,0 +1,34 @@
+#ifndef Grid_Creator_IC
+#define Grid_Creator_IC
+
+namespace AMISIC {
+
+  template <class Argument_Type,class Result_Type>
+  bool Grid_Creator<Argument_Type,Result_Type>::CreateInitialGrid()
+  { return InitializeSingleGrid(p_gridhandler[0]); }
+
+  template <class Argument_Type,class Result_Type>
+  inline bool Grid_Creator<Argument_Type,Result_Type>::CreateOptimizedGrid()
+  { return OptimizeSingleGrid(p_gridhandler[0]); }
+
+  template <class Argument_Type,class Result_Type>
+  inline void Grid_Creator<Argument_Type,Result_Type>::
+  SetMaxExtension(std::string _m_maxextension)
+  { m_maxextension=_m_maxextension; }
+
+  template <class Argument_Type,class Result_Type>
+  inline std::string Grid_Creator<Argument_Type,Result_Type>::MaxExtension()
+  { return m_maxextension; }
+
+  template <class Argument_Type,class Result_Type>
+  inline void Grid_Creator<Argument_Type,Result_Type>::
+  SetXSExtension(std::string _m_xsextension)
+  { m_xsextension=_m_xsextension; }
+
+  template <class Argument_Type,class Result_Type>
+  inline std::string Grid_Creator<Argument_Type,Result_Type>::XSExtension()
+  { return m_xsextension; }
+
+} // end of namespace AMISIC
+
+#endif

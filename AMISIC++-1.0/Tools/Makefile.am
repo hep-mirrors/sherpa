@@ -4,6 +4,7 @@ ATOOLSINC  = $(SHERPASYS)/ATOOLS-2.0
 
 lib_LTLIBRARIES               =	libAmisicTools.la
 libAmisicTools_la_SOURCES     = \
+				File_IO_Base.C \
 				Read_Write_Base.C \
 				Data_Reader.C \
 				Data_Writer.C \
@@ -23,6 +24,8 @@ noinst_HEADERS        =	\
 			My_Filestream.H \
 			Type.H \
 			Type.IC \
+			File_IO_Base.H \
+			File_IO_Base.IC \
 			Read_Write_Base.H \
 			Read_Write_Base.IC \
 			Data_Reader.H \

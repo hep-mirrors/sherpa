@@ -1,0 +1,16 @@
+#ifndef Simple_Chain_IC
+#define Simple_Chain_IC
+
+#include "Simple_Chain.H"
+
+namespace AMISIC {
+	
+  inline void Simple_Chain::SetEnvironmentFile(std::string _m_environmentfile)
+  { m_environmentfile=_m_environmentfile; }
+
+  inline std::string Simple_Chain::EnvironmentFile()
+  { return m_environmentfile; }
+
+} // end of namespace AMISIC
+
+#endif

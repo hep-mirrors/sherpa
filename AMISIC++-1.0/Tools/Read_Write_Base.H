@@ -50,24 +50,10 @@ namespace ATOOLS {
 
   protected:
 
-    // access functions
-    std::vector<std::string> M_Comment();
-    std::vector<std::string> M_Ignore();
-    std::vector<std::string> M_Seperator();
+    OpenModeID OpenMode();
 
-    std::vector<int> M_Blank();
+    std::fstream *File();
 
-    std::string M_FileName();
-    std::string M_String();
-
-    OpenModeID M_OpenMode();
-
-    std::fstream *M_File();
-
-    VectorTypeID M_VectorType();
-    MatrixTypeID M_MatrixType();
-
-    // member functions
     bool OpenFile(std::string filename=nullstring,
 		  std::ios_base::openmode omode=std::ios_base::in,
 		  OpenModeID tempomode=Unknown);

@@ -34,7 +34,7 @@ Amisic_LDADD  =	\
 		-lGraf3d -lGpad -lTree -lRint -lPostscript \
 		-lMatrix -lPhysics -lGui -ldl \
 		-lg2c -lm 
-CXXFLAGS      =	-pedantic -Wall -Winline -g
+CXXFLAGS      =	-pedantic -Wall -Winline -Wno-long-long
 INCLUDES      = \
 		-I../Main \
 		-I../Tools \

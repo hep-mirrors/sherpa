@@ -1,0 +1,113 @@
+#ifndef MI_Base_H
+#define MI_Base_H
+
+#include "File_IO_Base.H"
+#include "Blob_List.H"
+#include "XS_Base.H"
+#include "My_Map.H"
+
+namespace AMISIC {
+
+  class MI_Base: public ATOOLS::File_IO_Base {
+  public:
+
+    enum TypeID { HardEvent =  1,
+		  SoftEvent =  2,
+		  Unknown   = 99 };
+
+    typedef std::pair<const std::string,MI_Base*> NameMIBasePair;
+    typedef std::map<const std::string,MI_Base*> NameMIBaseMap;
+    typedef std::_Rb_tree_iterator<NameMIBasePair,
+				   NameMIBasePair&,
+				   NameMIBasePair*> NameMIBaseMapIterator;
+
+  private:
+
+    static long int m_particlecounter;
+
+    std::string m_name;
+    TypeID      m_type;
+
+  protected:
+
+    static NameMIBaseMap m_bases;
+    
+    double       *m_start, *m_stop, *m_last;
+    unsigned int  n_parameter;
+
+    bool m_dicedparameter, m_dicedprocess;
+
+    ATOOLS::Blob *p_blob;
+
+    EXTRAXS::XS_Base *p_xs;
+
+    static bool m_stophard;
+    static bool m_stopsoft;
+
+  public:
+
+    // constructor
+    MI_Base(std::string _m_name,TypeID _m_type,
+	    unsigned int _n_parameter=0);
+
+    // destructor
+    virtual ~MI_Base();
+
+    // setters 
+    void SetStart(double _m_start,unsigned int i=0);
+    void SetStop(double _m_stop,unsigned int i=0);
+
+    // getters
+    double Start(unsigned int i=0);
+    double Stop(unsigned int i=0);
+
+    EXTRAXS::XS_Base *XS();
+
+    // member functions
+    virtual bool Initialize();
+
+    virtual void Update(MI_Base *mibase);
+    virtual void Reset();
+
+    virtual bool DiceOrderingParameter();
+    virtual bool DiceProcess();
+
+    bool CreateBlob(ATOOLS::Blob *blob);
+
+    static bool StopGeneration(TypeID type=Unknown);
+
+    static void UpdateAll(MI_Base *mibase);
+    static void ResetAll();  
+
+    static std::string TypeToString(TypeID type);
+    static TypeID StringToType(std::string type);
+
+  }; // end of class MI_Base
+
+  class MI_None: public MI_Base {
+  protected:
+
+    void Update(MI_Base *mibase);
+
+  public:
+
+    // constructor
+    MI_None(TypeID _m_type);
+
+    // destructor
+    ~MI_None();
+
+    // member functions
+    bool Initialize();
+    void Reset();
+
+    bool DiceOrderingParameter();
+    bool DiceProcess();
+
+  }; // end of class MI_None
+
+} // end of namespace AMISIC
+
+#include "MI_Base.IC"
+
+#endif

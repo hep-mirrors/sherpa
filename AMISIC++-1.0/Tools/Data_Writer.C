@@ -34,12 +34,12 @@ namespace ATOOLS {
   bool Data_Writer::InitFile(std::string tempfname) 
   {
     if (tempfname!=nullstring) SetFileName(tempfname);
-    if (M_FileName()==nullstring) {
+    if (FileName()==nullstring) {
       ATOOLS::msg.Error()<<"Data_Writer: Error in InitFile(..)! No output file specified."<<std::endl
 			 <<"             Ignore command."<<std::endl;
       return false;
     }
-    if (!OpenFile(M_FileName(),std::ios_base::out)) {
+    if (!OpenFile(FileName(),std::ios_base::out)) {
       ATOOLS::msg.Error()<<"Data_Writer: Error in WriteComment(..)! Could not open output file."<<std::endl
 			 <<"             Ignore command."<<std::endl;
       return false;
@@ -55,15 +55,15 @@ namespace ATOOLS {
 #ifdef DEBUG__Data_Writer
     std::cout<<"Data_Writer::WriteComment("<<comment<<","<<tagreference<<","<<tempfname<<")"<<std::endl;
     std::cout<<"   comment tags are ";
-    for (unsigned int i=0;i<M_Comment().size();std::cout<<"'"<<M_Comment()[i++]<<"' ");
+    for (unsigned int i=0;i<Comment().size();std::cout<<"'"<<Comment()[i++]<<"' ");
     std::cout<<std::endl;
 #endif
-    if (tagreference>=M_Comment().size()) tag=defaultcom;
-    else tag=M_Comment()[tagreference];
+    if (tagreference>=Comment().size()) tag=defaultcom;
+    else tag=Comment()[tagreference];
     if (!InitFile(tempfname)) return false;
-    if (M_Blank().size()>0) blank=M_Blank()[0];
-    *M_File()<<tag<<(char)blank<<comment;
-    if (endline) *M_File()<<std::endl;
+    if (Blank().size()>0) blank=Blank()[0];
+    *File()<<tag<<(char)blank<<comment;
+    if (endline) *File()<<std::endl;
     CloseFile();
     return true;
   }
@@ -82,13 +82,13 @@ namespace ATOOLS {
 				  std::string tempfname,int precision)
   {
     if (!InitFile(tempfname)) return false;
-    const std::ios_base::fmtflags defaultflags=M_File()->flags();
-    M_File()->precision(precision);
+    const std::ios_base::fmtflags defaultflags=File()->flags();
+    File()->precision(precision);
     int blank=defaultblank;
-    if (M_Blank().size()>0) blank=M_Blank()[0];
-    *M_File()<<tag<<(char)blank<<value;
-    if (endline) *M_File()<<std::endl;
-    M_File()->flags(defaultflags);
+    if (Blank().size()>0) blank=Blank()[0];
+    *File()<<tag<<(char)blank<<value;
+    if (endline) *File()<<std::endl;
+    File()->flags(defaultflags);
     CloseFile();
     return true;    
   }
@@ -100,16 +100,16 @@ namespace ATOOLS {
   {
     int blank=defaultblank;
     if (!InitFile(tempfname)) return false;
-    if (tempvtype==VUnknown) tempvtype=M_VectorType();
-    if (M_Blank().size()>0) blank=M_Blank()[0];
+    if (tempvtype==VUnknown) tempvtype=VectorType();
+    if (Blank().size()>0) blank=Blank()[0];
     switch (tempvtype) {
     case VHorizontal:
       if (values.size()>0) M_WriteToFile<Write_Type>(values[0],tag,false,tempfname,precision);
       for (unsigned int i=1;i<values.size();++i) {
 	M_WriteToFile<Write_Type>(values[i],"",false,tempfname,precision);
-	*M_File()<<(char)blank;
+	*File()<<(char)blank;
       }
-      if (endline) *M_File()<<std::endl;
+      if (endline) *File()<<std::endl;
       break;
     case VVertical:
     default:
@@ -128,7 +128,7 @@ namespace ATOOLS {
   {
     std::vector<std::vector<Write_Type> > tempvalues;
     if (!InitFile(tempfname)) return false;
-    if (tempmtype==MUnknown) tempmtype=M_MatrixType();
+    if (tempmtype==MUnknown) tempmtype=MatrixType();
     switch (tempmtype) {
     case MTransposed:
       for (unsigned int i=0;i<values.size();++i) {

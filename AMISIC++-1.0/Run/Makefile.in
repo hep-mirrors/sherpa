@@ -117,7 +117,7 @@ Amisic_LDADD = \
 		-lMatrix -lPhysics -lGui -ldl \
 		-lg2c -lm 
 
-CXXFLAGS = -pedantic -Wall -Winline -g
+CXXFLAGS = -pedantic -Wall -Winline -Wno-long-long
 INCLUDES = \
 		-I../Main \
 		-I../Tools \

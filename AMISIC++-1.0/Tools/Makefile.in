@@ -85,6 +85,7 @@ ATOOLSINC = $(SHERPASYS)/ATOOLS-2.0
 
 lib_LTLIBRARIES = libAmisicTools.la
 libAmisicTools_la_SOURCES = \
+				File_IO_Base.C \
 				Read_Write_Base.C \
 				Data_Reader.C \
 				Data_Writer.C \
@@ -106,6 +107,8 @@ noinst_HEADERS = \
 			My_Filestream.H \
 			Type.H \
 			Type.IC \
+			File_IO_Base.H \
+			File_IO_Base.IC \
 			Read_Write_Base.H \
 			Read_Write_Base.IC \
 			Data_Reader.H \
@@ -129,8 +132,8 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 
 libAmisicTools_la_LDFLAGS =
 libAmisicTools_la_LIBADD =
-am_libAmisicTools_la_OBJECTS = Read_Write_Base.lo Data_Reader.lo \
-	Data_Writer.lo Variable.lo
+am_libAmisicTools_la_OBJECTS = File_IO_Base.lo Read_Write_Base.lo \
+	Data_Reader.lo Data_Writer.lo Variable.lo
 libAmisicTools_la_OBJECTS = $(am_libAmisicTools_la_OBJECTS)
 
 DEFS = @DEFS@
@@ -141,6 +144,7 @@ LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 @AMDEP_TRUE@DEP_FILES = $(DEPDIR)/Data_Reader.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/Data_Writer.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/File_IO_Base.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/Read_Write_Base.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/Variable.Plo
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
@@ -207,6 +211,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Data_Reader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Data_Writer.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/File_IO_Base.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Read_Write_Base.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Variable.Plo@am__quote@
 

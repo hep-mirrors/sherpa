@@ -1,6 +1,7 @@
 #ifndef Grid_Creator_Base_H
 #define Grid_Creator_Base_H
 
+#include "File_IO_Base.H"
 #include "Grid_Handler.H"
 
 namespace AMISIC { template <class Argument_Type,class Result_Type>
@@ -60,7 +61,8 @@ namespace AMISIC {
   }; // end of class Arguments
 
   template <class Argument_Type,class Result_Type>
-  class Grid_Creator_Base: public Grid_Creator_Arguments<Argument_Type,Result_Type> {
+  class Grid_Creator_Base: public File_IO_Base,
+			   public Grid_Creator_Arguments<Argument_Type,Result_Type> {
   public:
     
     typedef Argument_Type GridArgumentType;
@@ -90,10 +92,6 @@ namespace AMISIC {
     bool ReadSingleArguments(GridHandlerType *grid);
     bool WriteSingleGrid(GridHandlerType *grid,std::vector<std::string> addcomments);
 
-  private:
-
-    std::string m_inputpath, m_inputfile, m_outputpath, m_outputfile;
-
   public:
 
     // constructors
@@ -103,17 +101,9 @@ namespace AMISIC {
     virtual ~Grid_Creator_Base();
     
     // setters
-    void SetInputPath(std::string _m_outputfile);
-    void SetInputFile(std::string _m_outputfile);
-    void SetOutputPath(std::string _m_outputpath);
-    void SetOutputFile(std::string _m_outputfile);
     bool SetArguments(GridHandlerType *grid,ArgumentsType _m_arguments);
 
     // getters
-    std::string InputPath();
-    std::string InputFile();
-    std::string OutputPath();
-    std::string OutputFile();
     ArgumentsType Arguments();
 
     // member functions

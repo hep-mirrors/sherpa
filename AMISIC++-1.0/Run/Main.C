@@ -5,6 +5,15 @@
 #include "TH1D.h"
 #include "TCanvas.h"
 
+// #include "Random.H"
+
+// long int fac(int n)
+// {
+//   long int result=1;
+//   for(int i=0;i<n;result*=((i++)+1));
+//   return result;
+// }
+
 int main(int argc, const char *argv[]) 
 {
   std::string arguments;
@@ -25,10 +34,9 @@ int main(int argc, const char *argv[])
     testevents=0;
   }
   std::vector<std::string> options;
-  bool creategrid=false, debug=false, analyse=false, display=false;
+  bool debug=false, analyse=false, display=false;
   if (reader->VectorFromString(options,ATOOLS::nullstring,arguments,reader->VHorizontal)) { 
     for (std::vector<std::string>::iterator it=options.begin();it!=options.end();++it) {
-      if (*it==std::string("-c")) creategrid=true;
       if (*it==std::string("-d")) debug=true;
       if (*it==std::string("-a")) analyse=true;
       if (*it==std::string("-D")) display=true;
@@ -36,7 +44,7 @@ int main(int argc, const char *argv[])
   }
   TApplication *myroot;
   TFile *myfile;
-  TH1D *multiplicity, *correlation;
+  TH1D *multiplicity, *check;
   if (analyse) {
     if (!reader->ReadFromString(outputfile,"-o")) { 
       ATOOLS::msg.Out()<<"main: No output file specified. Using default value 'output.root'"<<std::endl;
@@ -48,20 +56,23 @@ int main(int argc, const char *argv[])
     delete [] argvf;
     myfile = new TFile(outputfile.c_str(),"recreate",outputfile.c_str());
     multiplicity = new TH1D("multiplicity","multiplicity",120,0.0,120.0);
-    correlation = new TH1D("correlation","correlation",7,-0.5,6.5);
+    check = new TH1D("check","check",120,0.0,120.0);
   }
   delete reader;
   
   int result=0;
 
   AMISIC::Amisic *test = new AMISIC::Amisic();
-  result=1*(1-test->Initialize(inputpath,inputfile,creategrid));
+  test->SetInputPath(inputpath);
+  test->SetInputFile(inputfile);
+  result=1*(1-test->Initialize());
   double mfw[6], msqrfw[6], mfwbw[6];
   for (unsigned int i=0;i<6;++i) mfw[i]=msqrfw[i]=mfwbw[i]=0.0;
   if (result!=1) {
+    ATOOLS::Blob_List *blobs = new ATOOLS::Blob_List();
     for (int i=0;i<testevents;++i) {
       if (i%(testevents/10)==0) std::cout<<"##### Attempt "<<i<<" #####"<<std::endl;
-      ATOOLS::Blob_List *blobs=test->CreateProcesses();
+      test->GenerateEvent(blobs);
       if (debug) { 
 	std::cout<<"***** Attempt "<<i<<" *****"<<std::endl;
 	for (ATOOLS::Blob_Iterator bit=blobs->begin();bit!=blobs->end();std::cout<<*bit++<<std::endl);
@@ -70,44 +81,27 @@ int main(int argc, const char *argv[])
 	unsigned int npartons=0;
 	for (ATOOLS::Blob_Iterator bit=blobs->begin();bit!=blobs->end();++bit) {
 	  npartons+=(*bit)->NOutP();
-	  for (double eta=0.0;eta<=6.0;++eta) {
-	    double cur, nfw=0.0, nbw=0.0;
-	    for (int j=0;j<(*bit)->NOutP();++j) {
-	      ATOOLS::Vec4D p=(*bit)->OutParticle(j)->Momentum();
-	      cur=0.5*log((p[0]+p[3])/(p[0]-p[3]));
-	      if (cur>(eta-0.5)&&cur<(eta+0.5)) ++nfw;
-	      cur*=-1.0;
-	      if (cur>(eta-0.5)&&cur<(eta+0.5)) ++nbw;
-	    }
-	    mfw[(unsigned int)eta]+=nfw;
-	    msqrfw[(unsigned int)eta]+=nfw*nfw;
-	    mfwbw[(unsigned int)eta]+=nfw*nbw;
-	    if (debug) { 
-	      std::cout<<"eta = "<<eta<<" yields nfw = "<<nfw<<" nbw "<<nbw<<std::endl;
-	    }
-	  }
 	}
-	multiplicity->Fill((double)npartons,1.0);
+ 	multiplicity->Fill((double)npartons,1.0);
       }
       while (blobs->size()>0) {
 	delete *blobs->begin();
 	blobs->erase(blobs->begin());
       }
-      delete blobs;
     }
+    delete blobs;
   }
   delete test;
   if (analyse) {
-    for (unsigned int i=0;i<6;++i) if (msqrfw[i]!=mfw[i]*mfw[i]) 
-      correlation->Fill((double)i,(mfwbw[i]-mfw[i]*mfw[i])/(msqrfw[i]-mfw[i]*mfw[i]));
+//     for (double i=0.0;i<20.0;++i) { 
+//       check->Fill(i,3.0e5*exp(-4.0)*pow(4.0,i)/(double)fac((int)i));
+//     }
     myfile->Write();
     if (display) {
-      TCanvas *ccanvas = new TCanvas("cresults","results");
-      ccanvas->cd();
-      correlation->Draw();
       TCanvas *mcanvas = new TCanvas("mresults","results");
       mcanvas->cd();
       multiplicity->Draw();
+//       check->Draw("same");
       myroot->Run(kTRUE);
     }
     delete myfile;

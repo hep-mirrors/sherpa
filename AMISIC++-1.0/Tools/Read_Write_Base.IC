@@ -56,16 +56,8 @@ namespace ATOOLS {
     inline std::string                   Read_Write_Base::String()           { return m_string;     }
     inline Read_Write_Base::VectorTypeID Read_Write_Base::VectorType()       { return m_vectortype; }
     inline Read_Write_Base::MatrixTypeID Read_Write_Base::MatrixType()       { return m_matrixtype; }
-    inline std::vector<std::string>      Read_Write_Base::M_Comment()        { return m_comment;    }
-    inline std::vector<std::string>      Read_Write_Base::M_Ignore()         { return m_ignore;     }
-    inline std::vector<std::string>      Read_Write_Base::M_Seperator()      { return m_seperator;  }
-    inline std::vector<int>              Read_Write_Base::M_Blank()          { return m_blank;      }
-    inline std::string                   Read_Write_Base::M_FileName()       { return m_filename;   }
-    inline std::string                   Read_Write_Base::M_String()         { return m_string;     }
-    inline Read_Write_Base::OpenModeID   Read_Write_Base::M_OpenMode()       { return m_openmode;   }
-    inline std::fstream                 *Read_Write_Base::M_File()           { return p_file;       }
-    inline Read_Write_Base::VectorTypeID Read_Write_Base::M_VectorType()     { return m_vectortype; }
-    inline Read_Write_Base::MatrixTypeID Read_Write_Base::M_MatrixType()     { return m_matrixtype; }
+    inline Read_Write_Base::OpenModeID   Read_Write_Base::OpenMode()         { return m_openmode;   }
+    inline std::fstream                 *Read_Write_Base::File()             { return p_file;       }
 
     template <class Read_Type>
     inline Read_Type Read_Write_Base::NotDefined() { return (Read_Type)0; }
