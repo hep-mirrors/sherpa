@@ -695,7 +695,10 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
   int  ins, intermed, pint, lsize, testint;
   lsize = signalints.size();
   for (int i=0;i<lsize;++i) {
-    if (IsZero(m_convertH2S[signalints[i]]->Momentum()[0])) {
+    piter = m_convertH2S.find(i);
+    if (piter==m_convertH2S.end()) continue;
+    part = piter->second;
+    if (IsZero(part->Momentum()[0])) {
       msg.Error()<<"WARNING : Error in HepEvt_Interface::ConstructBlobsFromPythia."<<std::endl
 		 <<"    Signal particles with zero energy: Looks like a nonsensical event."<<std::endl
 		 <<"    Will return .false. and hope that event is discarded."<<std::endl;
@@ -714,7 +717,9 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
     inout    = true;
     for (int i=0;i<lsize;++i) {
       pint = signalints.back();
-      part = m_convertH2S[pint];
+      piter = m_convertH2S.find(pint);
+      if (piter==m_convertH2S.end()) continue;
+      part = piter->second;
       part->SetStatus(3);
       test = true;
       if (i<2) {
@@ -747,7 +752,9 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
 	  blob->AddToOutParticles(part);
 	  m_delete[pint] = false;
 	  _blobs.push_back(blob);
-	  if (pint==0 || pint==1) mother = m_convertH2S[pint];
+	  if (pint==0 || pint==1) {
+	    mother = m_convertH2S[pint];
+	  }
 	  else {
 	    if (p_jmohep[2*pint-2]==intermed) mother = NULL;
 	    else mother = m_convertH2S[p_jmohep[2*pint-2]];
