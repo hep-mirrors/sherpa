@@ -195,8 +195,17 @@ void Process_Group::GroupProcesses() {
   // First : Check for identical masses.
   double * massin  = new double[nin];
   double * massout = new double[nout];
-  for (int i=0;i<nin;i++)  massin[i]  = flin[i].Mass();
-  for (int i=0;i<nout;i++) massout[i] = flout[i].Mass();
+  double   sum_massin  = 0.;
+  double   sum_massout = 0.;
+  
+  for (int i=0;i<nin;i++)  {
+    massin[i]   = flin[i].Mass();
+    sum_massin += massin[i];
+  }
+    for (int i=0;i<nout;i++) {
+      massout[i]   = flout[i].Mass();
+      sum_massout += massout[i];
+    }
 
   bool massok = 1;
   for (int i=0;i<procs.size();i++) {
@@ -213,7 +222,11 @@ void Process_Group::GroupProcesses() {
     }
     if (!massok) break;
   }
-  if (massok) msg.Debugging()<<"All processes in "<<name<<" have equal masses."<<endl;
+  if (massok) {
+    //new SS
+    SetISRThreshold(AMATOOLS::Max(sum_massin,sum_massout));
+    msg.Debugging()<<"All processes in "<<name<<" have equal masses, ISR threshold set."<<endl;
+  }
   else {
     msg.Error()<<"Error in Process_Group : "<<name<<endl
 	       <<"   Processes do not have equal masses. Abort."<<endl;
@@ -412,6 +425,12 @@ void Process_Group::SetScale(double _scale)
   for (int i=0;i<procs.size();i++) procs[i]->SetScale(scale); 
 } 
 
+
+void Process_Group::SetISRThreshold(double _isrth)
+{
+  isrthreshold = _isrth;
+  for (int i=0;i<procs.size();i++) procs[i]->SetISRThreshold(isrthreshold); 
+} 
 
 
 void Process_Group::SetTables(bool _tables)

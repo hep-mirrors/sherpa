@@ -45,6 +45,7 @@ namespace AMEGIC {
     Process_Base * operator[] (int idx)            { return procs[idx]; } 
     void           SetResDir(std::string);
     void           SetScale(double);
+    void           SetISRThreshold(double);
     void           SetTables(bool);
     void           SetTotalXS(int);
     void           SetAtoms(bool);

@@ -63,7 +63,9 @@ namespace AMEGIC {
     virtual void           Initialize(APHYTOOLS::Selector_Data * _seldata=0);
     virtual void           PolarizationNorm();
     virtual double         SymmetryFactors();
+    //void                   ISRThreshold();
     virtual void           InitCuts();
+
     /*------------------------------------------------------------------------------
 
       Initializing libraries, amplitudes, etc.
@@ -88,21 +90,23 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    Process_Base   * Selected()                       { return this;        }
+    Process_Base   * Selected()                       { return this;          }
 
-    void             SelectOne()                      { selected = this;    }
-    void             SetAnalyse(int _analyse)         { analyse = _analyse; }
+    void             SelectOne()                      { selected = this;      }
+    void             SetAnalyse(int _analyse)         { analyse = _analyse;   }
 
-    void             DeSelect()                       {                     }
-    int              Size()                           { return 1;           }
-    Process_Base   * operator[] (int idx)             { return this;        }
-    std::string      LibName()                        { return libname;     }
-    void             SetLibName(std::string _libname) { libname = _libname; }
+    void             DeSelect()                       {                       }
+    int              Size()                           { return 1;             }
+    Process_Base   * operator[] (int idx)             { return this;          }
+    std::string      LibName()                        { return libname;       }
+    void             SetLibName(std::string _libname) { libname = _libname;   }
     void             SetTotalXS(int);
-    void             SetScale(double _sc)             { scale = _sc;        }
+    void             SetScale(double _sc)             { scale        = _sc;   }
+    void             FixISRThreshold();
+    void             SetISRThreshold(double _isrth)   { isrthreshold = _isrth;}
     virtual void     Empty();
-    void             SetPartner(Single_Process * _p)  { partner = _p;       }
-    Process_Base   * Partner()                        { return partner;     }
+    void             SetPartner(Single_Process * _p)  { partner = _p;         }
+    Process_Base   * Partner()                        { return partner;       }
 
     /*------------------------------------------------------------------------------
 

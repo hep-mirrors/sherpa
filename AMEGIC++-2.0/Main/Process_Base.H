@@ -40,7 +40,8 @@ namespace AMEGIC {
     int                              kfactorscheme,scalescheme;
     int                              nstrong,neweak;
     double                           scale;
-
+    double                           isrthreshold;
+    
     PHASIC::Phase_Space_Handler    * ps; 
 
     BEAM::Beam_Handler             * beam;
@@ -109,6 +110,7 @@ namespace AMEGIC {
     virtual void             Empty()                                               =0;
     virtual void             SetTotalXS(int)                                       =0;
     virtual void             SetScale(double)                                      =0;
+    virtual void             SetISRThreshold(double)                               =0;
     virtual void             SetMax(double);
 
 
@@ -186,6 +188,8 @@ namespace AMEGIC {
     virtual double                          LastXS();
     virtual double                          LastLumi();
     virtual double                          KFactor(double);
+    virtual double                          ISRThreshold();
+    
 
     /*------------------------------------------------------------------------------
 

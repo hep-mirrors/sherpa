@@ -91,7 +91,14 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour* _fl,
   GenerateNames(nin,flin,plin,nout,flout,plout,name,ptypename,libname);
 
   PolarizationNorm();
+  
   Initialize(_seldata);
+
+  cout<<"Before FixISRThreshold "<<isrthreshold<<endl;
+  
+  FixISRThreshold();
+
+  cout<<"Past FixISRThreshold "<<isrthreshold<<endl;
 
   // making directory
   int  mode_dir = 448;
@@ -198,6 +205,22 @@ double Single_Process::SymmetryFactors()
     if (cap>1) sym *= double(fak(cap));
   } 
   return 1./sym;
+}
+
+void Single_Process::FixISRThreshold()
+{
+  double m_mass_in  = 0.;
+  double m_mass_out = 0.;
+  
+  for (int i = 0;i<nin;i++)  m_mass_in  += flin[i].Mass(); 
+  for (int i = 0;i<nout;i++) m_mass_out += flout[i].Mass(); 
+  
+  //cout<<"threshold would be : "<<AMATOOLS::Max(m_mass_in,m_mass_out)<<endl;
+
+  double isrth = AMATOOLS::Max(m_mass_in,m_mass_out);
+  
+  SetISRThreshold(isrth);
+
 }
 
 void Single_Process::InitCuts() 
