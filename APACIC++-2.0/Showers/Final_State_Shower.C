@@ -1060,7 +1060,7 @@ Particle * Final_State_Shower::FindAuntParton(Knot * mo)
 
 void Final_State_Shower::SavePartner(size_t no, Knot * di)
 {
-  while (m_save_knots.size()<no) {
+  while (m_save_knots.size()<=no) {
     m_save_knots.push_back(Knot());
     m_save_knots.back().t=-1.;
   }
@@ -1072,13 +1072,13 @@ void Final_State_Shower::SavePartner(size_t no, Knot * di)
 
 void Final_State_Shower::ClearPartner(size_t no) 
 {
-  if (m_save_knots.size()<no) return;
+  if (m_save_knots.size()<=no) return;
   m_save_knots[no].t=-1.;
 }
 
 void Final_State_Shower::RestorePartner(size_t no, Knot * di)
 {
-  if (m_save_knots.size()<no) return;
+  if (m_save_knots.size()<=no) return;
   if (m_save_knots[no].t==-1.) return;
   di->Copy(&m_save_knots[no]);
 }
