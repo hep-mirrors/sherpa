@@ -74,7 +74,20 @@ namespace ATOOLS {
 
   };// end of class Interpreter_Function
 
-  class Algebra_Interpreter {
+  class Tag_Replacer {
+  public:
+
+    // destructor
+    virtual ~Tag_Replacer();
+
+    // member functions
+    std::string &KillBlanks(std::string& expr) const;
+
+    virtual std::string &ReplaceTags(std::string &expr) const;    
+
+  };// end of class Tag_Replacer
+
+  class Algebra_Interpreter: public Tag_Replacer {
   public:
 
     typedef std::map<std::string,std::string> String_Map;
@@ -91,10 +104,9 @@ namespace ATOOLS {
 
     Interpreter_Set m_interpreters;
 
-    String_Map m_tags;
+    Tag_Replacer *p_replacer;
 
-    std::string &KillBlanks(std::string& expr) const;
-    std::string &ReplaceTags(std::string &expr) const;
+    String_Map m_tags;
 
   public:
 
@@ -102,7 +114,7 @@ namespace ATOOLS {
     Algebra_Interpreter(const bool standard=true);
 
     // destructor
-    ~Algebra_Interpreter();
+    virtual ~Algebra_Interpreter();
 
     // member functions
     std::string Interprete(const std::string &expr);
@@ -111,12 +123,19 @@ namespace ATOOLS {
     void AddFunction(Function *const f);
     void AddOperator(Operator *const b);
 
+    std::string &ReplaceTags(std::string &expr) const;    
+
     void AddTag(const std::string &tag,const std::string &value);
     void SetTags(const String_Map &tags);
 
     // inline functions
+    inline void SetTagReplacer(Tag_Replacer *const replacer) 
+    { p_replacer=replacer; }
+
     inline const Function_Set &Functions() const { return m_functions; }
     inline const Operator_Map &Operators() const { return m_operators; }
+
+    inline Tag_Replacer *const TagReplacer() const { return p_replacer; }
 
   };// end of class Algebra_Interpreter
 

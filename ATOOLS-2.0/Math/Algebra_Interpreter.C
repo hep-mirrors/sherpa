@@ -284,6 +284,8 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
 	}
       }
       if (oit->second->Binary() && pos!=0) {
+	size_t mpos=pos+oit->second->Tag().length();
+	if (mpos<expr.length() && expr[mpos]=='-') tpos=pos;
 	op=oit->second;
 	break;
       }
@@ -395,7 +397,8 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
     Iterate(lrstr+op->Evaluate(args)+rrstr);
 }
 
-Algebra_Interpreter::Algebra_Interpreter(const bool standard) 
+Algebra_Interpreter::Algebra_Interpreter(const bool standard):
+  p_replacer(this)
 {
   m_interpreters.insert(new Resolve_Bracket(this));
   m_interpreters.insert(new Interprete_Binary(this));
@@ -439,28 +442,11 @@ Algebra_Interpreter::~Algebra_Interpreter()
   }
 }
 
-std::string &Algebra_Interpreter::KillBlanks(std::string& expr) const
-{
-  for (size_t i=0;i<expr.length();++i) 
-    if (expr[i]==32 || expr[i]==9) expr.replace(i--,1,"");
-  return expr;
-}
-
-std::string &Algebra_Interpreter::ReplaceTags(std::string &expr) const
-{
-  size_t pos=std::string::npos;
-  for (String_Map::const_iterator sit=m_tags.begin();
-       sit!=m_tags.end();++sit) 
-    if ((pos=expr.find(sit->first))!=std::string::npos) 
-      return ReplaceTags(expr.replace(pos,sit->first.length(),sit->second));
-  return expr;
-}
-
 std::string Algebra_Interpreter::Interprete(const std::string &expr)
 {
   std::string res=expr;
   KillBlanks(res);
-  ReplaceTags(res);
+  p_replacer->ReplaceTags(res);
   return Iterate(res);
 }
 
@@ -496,4 +482,28 @@ void Algebra_Interpreter::AddTag(const std::string &tag,
 void Algebra_Interpreter::SetTags(const String_Map &tags)
 {
   m_tags=tags;
+}
+
+std::string &Algebra_Interpreter::ReplaceTags(std::string &expr) const
+{
+  size_t pos=std::string::npos;
+  for (String_Map::const_iterator sit=m_tags.begin();
+       sit!=m_tags.end();++sit) 
+    if ((pos=expr.find(sit->first))!=std::string::npos) 
+      return ReplaceTags(expr.replace(pos,sit->first.length(),sit->second));
+  return expr;
+}
+
+Tag_Replacer::~Tag_Replacer() {}
+
+std::string &Tag_Replacer::KillBlanks(std::string& expr) const
+{
+  for (size_t i=0;i<expr.length();++i) 
+    if (expr[i]==32 || expr[i]==9) expr.replace(i--,1,"");
+  return expr;
+}
+
+std::string &Tag_Replacer::ReplaceTags(std::string &expr) const
+{
+  return expr;
 }
