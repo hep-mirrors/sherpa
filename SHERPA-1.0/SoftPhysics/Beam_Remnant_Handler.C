@@ -73,6 +73,7 @@ Beam_Remnant_Handler(const std::string path,const std::string file,
     else if (p_isr->Flav(i).IsPhoton()) 
       p_beampart[i] = new Photon_Remnant(i);
     else p_beampart[i] = new No_Remnant(i);
+    p_beampart[i]->SetBeamEnergy(beam->GetBeam(i)->Energy());
   }
   for (size_t i=0;i<2;++i) p_beampart[i]->SetPartner(p_beampart[1-i]);
   p_kperp = new Primordial_KPerp(path,file);
