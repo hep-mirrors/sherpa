@@ -26,8 +26,6 @@ namespace SHERPA {
     unsigned int m_xscheme, m_maxtrials, m_set;
     size_t       m_initial, m_constrained;
 
-    bool m_dupdf;
-
     double *p_string;
 
     Color_Dipole *FindClosest(const Color_Dipole *info,
