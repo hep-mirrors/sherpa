@@ -291,6 +291,11 @@ void Two_Particle_DR::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weig
     double deta=0.5 *log( (1 + c1)*(1 - c2)/((1-c1)*(1+c2)));
     double dr= sqrt(sqr(deta) + sqr(dphi)); 
     //cout<<"Deat in DR "<<deta<<" DR is :  "<<dr<<endl;
+    //if(dr<0.4) {
+    //  std::cout<<"\n>>>>>>>>>>>>>>>>>> DR = "<<dr<<"\n";
+    //  std::cout<<m_flav1<<"\n"<<mom1<<"\n";
+    //  std::cout<<m_flav2<<"\n"<<mom2<<"\n\n";
+    //}
     p_histo->Insert(dr,weight,ncount); 
 } 
 

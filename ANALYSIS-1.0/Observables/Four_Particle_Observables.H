@@ -4,8 +4,10 @@
 #include "Primitive_Observable_Base.H"
 
 namespace ANALYSIS {
+
   class Four_Particle_Observable_Base : public Primitive_Observable_Base {  
   protected:
+    bool f_special;
     std::vector<ATOOLS::Flavour> m_flavs;
     void virtual Evaluate(const ATOOLS::Vec4D &, const ATOOLS::Vec4D &, 
 			  const ATOOLS::Vec4D &, const ATOOLS::Vec4D &,
@@ -22,14 +24,17 @@ namespace ANALYSIS {
 			  double=1.,int=1);
   };
 
+  //==========================================================================
+
   class Four_Particle_PlaneAngle : public Four_Particle_Observable_Base {  
     void Evaluate(const ATOOLS::Vec4D &, const ATOOLS::Vec4D &, 
-		  const ATOOLS::Vec4D &, const ATOOLS::Vec4D &,double=1.,int=1); 
+		  const ATOOLS::Vec4D &, const ATOOLS::Vec4D &,
+		  double=1.,int=1); 
   public:
     Four_Particle_PlaneAngle(const std::vector<ATOOLS::Flavour>&,
 			     int,double,double,int,
 			     const std::string& listname);//=std::string("NRAngle:"));
-    Primitive_Observable_Base * Copy() const;
+    Primitive_Observable_Base* Copy() const;
   };
 
   class Four_Particle_PT : public Four_Particle_Observable_Base {  
@@ -40,6 +45,28 @@ namespace ANALYSIS {
     Four_Particle_PT(const std::vector<ATOOLS::Flavour>&,
 		     int,double,double,int,
 		     const std::string& listname);
+    Primitive_Observable_Base* Copy() const;
+  };
+
+  class Two_Partonpair_PTdiff : public Four_Particle_Observable_Base {  
+    void Evaluate(const ATOOLS::Vec4D&, const ATOOLS::Vec4D&,
+		  const ATOOLS::Vec4D&, const ATOOLS::Vec4D&,
+		  double=1.,int=1);
+  public:
+    Two_Partonpair_PTdiff(const std::vector<ATOOLS::Flavour>&,
+			  int, double, double, int,
+			  const std::string& listname);
+    Primitive_Observable_Base* Copy() const;
+  };
+
+  class Two_Partonpair_Theta : public Four_Particle_Observable_Base {  
+    void Evaluate(const ATOOLS::Vec4D&, const ATOOLS::Vec4D&,
+		  const ATOOLS::Vec4D&, const ATOOLS::Vec4D&,
+		  double=1.,int=1);
+  public:
+    Two_Partonpair_Theta(const std::vector<ATOOLS::Flavour>&,
+			 int, double, double, int,
+			 const std::string& listname);
     Primitive_Observable_Base* Copy() const;
   };
 
