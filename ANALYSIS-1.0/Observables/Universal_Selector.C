@@ -32,24 +32,24 @@ void Universal_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) 
 
 Universal_Selector::Universal_Selector(const std::string & obskey, const double keymin, const double keymax, 
 				       const std::string & inlistname, const std::string & outlistname) :
-  m_outlist(outlistname),m_key(obskey),m_keymin(keymin),m_keymax(keymin)
+  m_outlist(outlistname),m_key(obskey),m_keymin(keymin),m_keymax(keymax)
 {
-  std::cout<<"Universal_Selector::Universal_Selector("<<obskey<<","<<inlistname<<","<<outlistname<<")\n";
-
+  m_name = std::string("UniversalSelector_")+outlistname;
   m_splitt_flag = false;
   m_listname = inlistname;
 }
 
-void Universal_Selector::Evaluate(const ATOOLS::Blob_List & ,double weight, int ncout)
+void Universal_Selector::CreateParticleList(bool force)
 {
   Particle_List * pl_in = p_ana->GetParticleList(m_listname);
   if (pl_in==NULL) {
     msg.Out()<<"WARNING in Universal_Selector::Evaluate : particle list "<<m_listname<<" not found "<<std::endl;
   }
-  Particle_List * pl_out = new Particle_List;
   Blob_Data_Base * key=(*p_ana)[m_key];
 
+  Particle_List * pl_out = NULL;
   if (key && pl_in) {
+    pl_out = new Particle_List;
     double value = key->Get<double>();
     if (m_keymin<=value && value<=m_keymax) {
       for (Particle_List::iterator pit=pl_in->begin();pit!=pl_in->end();++pit) {
@@ -57,7 +57,13 @@ void Universal_Selector::Evaluate(const ATOOLS::Blob_List & ,double weight, int 
       }
     }
   }
-  p_ana->AddParticleList(m_outlist,pl_out);
+  if (!pl_out && force) pl_out = new Particle_List;
+  if (pl_out) p_ana->AddParticleList(m_outlist,pl_out);
+}
+
+void Universal_Selector::Evaluate(const ATOOLS::Blob_List & ,double weight, int ncout)
+{
+  CreateParticleList(false);
 }
 
 Primitive_Observable_Base *Universal_Selector::Copy() const

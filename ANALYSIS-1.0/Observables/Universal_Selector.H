@@ -14,6 +14,7 @@ namespace ANALYSIS {
     Universal_Selector(const std::string & obskey, const double keymin, const double keymax, 
 		       const std::string & inlistname, const std::string & outlistname);
     void Evaluate(const ATOOLS::Blob_List & ,double weight, int ncout);
+    void CreateParticleList(bool force=true);
     Primitive_Observable_Base *Copy() const;
 
   };// end of class Universal_Selector
