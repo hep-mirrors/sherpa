@@ -103,6 +103,9 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   msg.Init(gen.m_output,logfile);
   if (argc>0) {
     std::string command=argv[0];
+    if (command.length()>6 && !(command[0]=='/')) {
+      command=std::string(getenv("PWD"))+std::string("/Sherpa");
+    }
     if (!system((std::string("test -f ")+command).c_str())) {
       command=command.substr(0,command.find("Sherpa"));
       s_variables["SHERPA_BIN_PATH"]=command[command.length()-1]!='/'?command:
