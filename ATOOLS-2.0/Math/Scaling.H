@@ -27,8 +27,7 @@ namespace ATOOLS {
 
     static void ShowScalings(const int mode=1);
 
-    // inline functions
-    inline const std::string Name() const { return m_name; }
+    const std::string Name() const;
 
   };// end of class Scaling_Base
   

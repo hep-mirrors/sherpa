@@ -47,6 +47,18 @@ Matrix<_rank>::~Matrix()
 }
 
 template<int _rank>
+double *Matrix<_rank>::operator[](int i)
+{
+  return p_m[i]; 
+}
+
+template<int _rank>
+const double *Matrix<_rank>::operator[](int i) const 
+{
+  return p_m[i]; 
+}
+
+template<int _rank>
 Matrix<_rank>& Matrix<_rank>::operator=(const Matrix<_rank>& in) 
 {
   for(short int i=0; i<_rank; i++) {

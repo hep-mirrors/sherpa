@@ -24,8 +24,8 @@ namespace ATOOLS {
     Matrix<_rank>& operator=(const Matrix<_rank>&);
     Matrix<_rank>  operator*(const double);
     Matrix<_rank>  operator*(const Matrix<_rank>&);
-    double       * operator[](int i) { return p_m[i]; }
-    const double * operator[](int i) const { return p_m[i]; }
+    double       * operator[](int i);
+    const double * operator[](int i) const;
     void MatrixOut() const;  
     const int Rank() const {return _rank;}
     void Diagonalize(double *,Matrix<_rank>&) const;

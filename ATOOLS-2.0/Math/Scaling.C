@@ -26,6 +26,12 @@ ValueType Scaling_Base<ValueType>::operator[](const Value_Type &y)
 }
 
 template <class ValueType>
+const std::string Scaling_Base<ValueType>::Name() const 
+{
+  return m_name; 
+}
+
+template <class ValueType>
 void Scaling_Base<ValueType>::ShowScalings(const int mode)
 {
   if (!msg.LevelIsInfo() || mode==0) return;
@@ -37,93 +43,124 @@ void Scaling_Base<ValueType>::ShowScalings(const int mode)
 template <class Value_Type>
 class Id_Scaling: public Scaling_Base<Value_Type> {
 public:
-  Id_Scaling(const std::string &parameter) { m_name="Id"; }
+  Id_Scaling(const std::string &parameter);
   virtual Value_Type operator()(const Value_Type &x) { return x; }
   virtual Value_Type operator[](const Value_Type &y) { return y; }
 };// end of class Id_Scaling  
+template <class Value_Type>
+Id_Scaling<Value_Type>::Id_Scaling(const std::string &parameter) 
+{
+  m_name="Id"; 
+}
 
 template <class Value_Type>
 class Log_Scaling: public Scaling_Base<Value_Type> {
 public:
-  Log_Scaling(const std::string &parameter) { m_name="Log"; }
+  Log_Scaling(const std::string &parameter);
   virtual Value_Type operator()(const Value_Type &x) { return log(x); }
   virtual Value_Type operator[](const Value_Type &y) { return exp(y); }
 };// end of class Log_Scaling   
+template <class Value_Type>
+Log_Scaling<Value_Type>::Log_Scaling(const std::string &parameter) 
+{
+  m_name="Log"; 
+}
 
 template <class Value_Type>
 class Exp_Scaling: public Scaling_Base<Value_Type> {
 public:
-  Exp_Scaling(const std::string &parameter) { m_name="Exp"; }
+  Exp_Scaling(const std::string &parameter);
   virtual Value_Type operator()(const Value_Type &x) { return exp(x); }
   virtual Value_Type operator[](const Value_Type &y) { return log(y); }
 };// end of class Exp_Scaling   
+template <class Value_Type>
+Exp_Scaling<Value_Type>::Exp_Scaling(const std::string &parameter) 
+{
+  m_name="Exp"; 
+}
 
 template <class Value_Type>
 class Sqr_Scaling: public Scaling_Base<Value_Type> {
 public:
-  Sqr_Scaling(const std::string &parameter) { m_name="Sqr"; }
+  Sqr_Scaling(const std::string &parameter);
   virtual Value_Type operator()(const Value_Type &x) { return x*x; }
   virtual Value_Type operator[](const Value_Type &y) { return sqrt(y); }
 };// end of class Sqr_Scaling
+template <class Value_Type>
+Sqr_Scaling<Value_Type>::Sqr_Scaling(const std::string &parameter) 
+{
+  m_name="Sqr"; 
+}
 
 template <class Value_Type>
 class Sqrt_Scaling: public Scaling_Base<Value_Type> {
 public:
-  Sqrt_Scaling(const std::string &parameter) { m_name="Sqrt"; }
+  Sqrt_Scaling(const std::string &parameter);
   virtual Value_Type operator()(const Value_Type &x) { return sqrt(x); }
   virtual Value_Type operator[](const Value_Type &y) { return y*y; }
 };// end of class Sqr_Scaling
+template <class Value_Type>
+Sqrt_Scaling<Value_Type>::Sqrt_Scaling(const std::string &parameter) 
+{
+  m_name="Sqrt"; 
+}
 
 template <class Value_Type>
 class Log_B_Scaling: public Scaling_Base<Value_Type> {
 private:
   Value_Type m_b, m_logb;
 public:
-  Log_B_Scaling(const std::string &parameter)
-  {
-    Data_Reader reader;
-    reader.SetString(parameter);
-    reader.ReadFromString(m_b,"Log_B_");
-    m_logb=log(m_b); 
-    m_name="Log_B_"+ToString(m_b);
-  }
+  Log_B_Scaling(const std::string &parameter);
   virtual Value_Type operator()(const Value_Type &x) { return log(x)/m_logb; }
   virtual Value_Type operator[](const Value_Type &y) { return pow(m_b,y); }
 };// end of class Log_B_Scaling
+template <class Value_Type>
+Log_B_Scaling<Value_Type>::Log_B_Scaling(const std::string &parameter)
+{
+  Data_Reader reader;
+  reader.SetString(parameter);
+  reader.ReadFromString(m_b,"Log_B_");
+  m_logb=log(m_b); 
+  m_name="Log_B_"+ToString(m_b);
+}
 
 template <class Value_Type>
 class B_To_X_Scaling: public Scaling_Base<Value_Type> {
 private:
   Value_Type m_b;
 public:
-  B_To_X_Scaling(const std::string &parameter)
-  {
-    Data_Reader reader;
-    reader.SetString(parameter);
-    reader.ReadFromString(m_b,"B_To_X_");
-    m_name="B_To_X_"+ToString(m_b);
-  }
+  B_To_X_Scaling(const std::string &parameter);
   virtual Value_Type operator()(const Value_Type &x) { return pow(m_b,x); }
   virtual Value_Type operator[](const Value_Type &y) 
   { return log(y)/log(m_b); }
 };// end of class B_To_X_Scaling
+template <class Value_Type>
+B_To_X_Scaling<Value_Type>::B_To_X_Scaling(const std::string &parameter)
+{
+  Data_Reader reader;
+  reader.SetString(parameter);
+  reader.ReadFromString(m_b,"B_To_X_");
+  m_name="B_To_X_"+ToString(m_b);
+}
 
 template <class Value_Type>
 class X_To_P_Scaling: public Scaling_Base<Value_Type> {
 private:
   Value_Type m_p;
 public:
-  X_To_P_Scaling(const std::string &parameter)
-  {
-    Data_Reader reader;
-    reader.SetString(parameter);
-    reader.ReadFromString(m_p,"X_To_P_");
-    m_name="X_To_P_"+ToString(m_p);
-  }
+  X_To_P_Scaling(const std::string &parameter);
   virtual Value_Type operator()(const Value_Type &x) { return pow(x,m_p); }
   virtual Value_Type operator[](const Value_Type &y) 
   { return pow(y,(Value_Type)1.0/m_p); }
 };// end of class X_To_P_Scaling
+template <class Value_Type>
+X_To_P_Scaling<Value_Type>::X_To_P_Scaling(const std::string &parameter)
+{
+  Data_Reader reader;
+  reader.SetString(parameter);
+  reader.ReadFromString(m_p,"X_To_P_");
+  m_name="X_To_P_"+ToString(m_p);
+}
 
 template class Scaling_Base<double>;
 
