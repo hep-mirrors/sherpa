@@ -7,6 +7,7 @@
 #include "Channel_Elements.H"
 #include "Particle.H"
 #include "Random.H"
+#include "My_Limits.H"
 #ifdef USING__Sherpa
 #include "Matrix_Element_Handler.H"
 #endif
@@ -496,12 +497,12 @@ bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename)
   p_gridcreator = new GridCreatorType(gridhandler,group);
   p_gridcreator->ReadInArguments(InputFile(),InputPath());
   if (mkdir(OutputPath().c_str(),448)==0) {
-    ATOOLS::msg.Out()<<"Simple_Chain::CreateGrid(..): "
+    ATOOLS::msg.Tracking()<<"Simple_Chain::CreateGrid(..): "
 		     <<"Created output directory "<<OutputPath()<<"."<<std::endl;
   }
   if (mkdir((OutputPath()+filename+m_mcextension+std::string("/")).c_str(),448)==0) {
-    ATOOLS::msg.Out()<<"Simple_Chain::CreateGrid(..): Created output directory "
-		     <<OutputPath()+filename+m_mcextension+std::string("/")<<"."<<std::endl;
+    ATOOLS::msg.Tracking()<<"Simple_Chain::CreateGrid(..): Created output directory "
+			  <<OutputPath()+filename+m_mcextension+std::string("/")<<"."<<std::endl;
   }
   p_gridcreator->SetXSExtension(m_xsextension);
   p_gridcreator->SetMaxExtension(m_maxextension);
@@ -544,6 +545,7 @@ bool Simple_Chain::InitializeBlobList()
   }
   SetStart(sqrt(p_isr->SprimeMax()),1);
   SetStop(sqrt(p_isr->SprimeMin()),1);
+  m_ecms=sqrt(p_isr->Pole());
   p_processes = new EXTRAXS::Simple_XS(InputPath(),InputFile(1),p_model);
   if (p_processes->Size()>0) {
     ATOOLS::msg.Tracking()<<"Simple_Chain::InitializeBlobList(): "
@@ -780,32 +782,36 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
       // std::cout<<"   Completed one event."<<std::endl;
 #endif
       p_xs=static_cast<EXTRAXS::XS_Base*>((*p_processes)[m_selected]->Selected());
-      ATOOLS::Vec4D ptot;
-      double x[2];
+      double x[2], xrem[2];
       test=true;
       for (size_t j=0;j<p_xs->NIn();++j) {
-	ptot+=p_xs->Momenta()[j];
-	x[j]=2.0*p_xs->Momenta()[j][0]/ATOOLS::rpa.gen.Ecms();
+	x[j]=2.0*p_xs->Momenta()[j][0]/m_ecms;
 	if (s_remnanthandlers[j]!=NULL) {
-	  double xremmin=2.0*s_remnanthandlers[j]->
+	  xrem[j]=2.0*s_remnanthandlers[j]->
 	    MinimalEnergy(p_xs->Flavours()[j])/ATOOLS::rpa.gen.Ecms();
-	  if (m_last[j+2]-x[j]<xremmin) test=false;
-	  if (!test && ATOOLS::msg.LevelIsTracking()) {
-	    ATOOLS::msg.Tracking()<<"Simple_Chain::FillBlob(..): Remnant_Info ["<<j<<"] says: "
-				  <<"x_{rem min} = "<<xremmin<<" vs. x_{old} = "<<m_last[j+2]
-				  <<" -> x_{new} = "<<m_last[j+2]-x[j]-xremmin<<" from "
-				  <<p_xs->Flavours()[j]<<" => ("<<test<<")"<<std::endl;
+	  if (m_last[j+2]-x[j]<xrem[j]) {
+	    test=false;
+	    if (ATOOLS::msg.LevelIsTracking()) {
+	      ATOOLS::msg.Tracking()<<"Simple_Chain::FillBlob(..): Remnant_Info ["<<j<<"] says: "
+				    <<"x_{rem min} = "<<xrem[j]<<" vs. x_{old} = "<<m_last[j+2]
+				    <<" -> x_{new} = "<<m_last[j+2]-x[j]-xrem[j]<<" from "
+				    <<p_xs->Flavours()[j]<<" => ("<<test<<")"<<std::endl;
+	    }
 	  }
 	}
 	else {
 	  if (m_last[j+2]<=x[j]) test=false;
+	  // default: need 1 GeV per process and beam to adjust remnants
+	  xrem[1]=xrem[0]=1.;
 	}
       }
+      m_last[1]=std::numeric_limits<double>::max();
+      for (size_t j=0;j<p_xs->NIn();++j) {
+	m_last[1]=ATOOLS::Min(m_last[1],p_xs->Momenta()[p_xs->NIn()+j].PPerp2());
+      }
       if (!test) continue;
-      m_last[1]-=sqrt(ptot.Abs2());
-      m_last[2]-=x[0];
-      m_last[3]-=x[1];
-      if (m_last[1]<=0.0) return true;
+      m_last[2]-=x[0]+xrem[0];
+      m_last[3]-=x[1]+xrem[1];
       p_xs->SetColours(p_xs->Momenta());
       ATOOLS::Particle *particle;
       for (size_t j=0;j<p_xs->NIn();++j) {
@@ -863,14 +869,14 @@ bool Simple_Chain::DiceProcess()
       m_selected=sorter.XYData(i).second;
       p_processes->SetSelected((*p_processes)[m_selected]);
       if (m_last[1]<(*p_processes)[m_selected]->ISR()->SprimeMin()) {
-	ATOOLS::msg.Error()<<"Simple_Chain::DiceProcess(): s' out of bounds: "
-			   <<m_last[1]<<" vs. "<<(*p_processes)[m_selected]->ISR()->SprimeMin()
-			   <<std::endl<<"   Cannot create any process."<<std::endl;
+	ATOOLS::msg.Error()<<"Simple_Chain::DiceProcess(): p_{perp max} = "<<m_last[1]
+			   <<" < s'_{min} = "<<(*p_processes)[m_selected]->ISR()->SprimeMin()
+			   <<" ."<<std::endl<<"   Cannot create any hard subprocess."<<std::endl;
 	return false;
       }
       PDF::ISR_Handler *isr=(*p_processes)[m_selected]->ISR();
       double sprimemin=isr->SprimeMin(), sprimemax=isr->SprimeMax();
-      isr->SetSprimeMax(m_last[1]*m_last[1]);
+      isr->SetSprimeMax(m_last[1]);
       isr->SetSprimeMin(4.0*m_last[0]*m_last[0]);
       SetMaximum((*p_processes)[m_selected]);
       FillBlob(p_blob);
@@ -889,9 +895,9 @@ bool Simple_Chain::DiceOrderingParameter()
 { 
   PROFILE_HERE;
   if (m_last[0]<=m_stop[0]) {
-    ATOOLS::msg.Tracking()<<"Simple_Chain::DiceOrderingParameter(): "
-			  <<"Ordering parameter exceeded allowed range."<<std::endl
-			  <<"   Cannot proceed in blob creation."<<std::endl;
+    ATOOLS::msg.Error()<<"Simple_Chain::DiceOrderingParameter(): "
+		       <<"Ordering parameter exceeded allowed range."<<std::endl
+		       <<"   Cannot proceed in blob creation."<<std::endl;
     m_stophard=true;
     return false;
   }

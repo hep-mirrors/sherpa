@@ -47,7 +47,7 @@ namespace AMISIC {
 
     unsigned int m_selected, m_nflavour, m_scalescheme;
     unsigned int m_kfactorscheme, m_maxtrials;
-    double       m_sigmahard, m_error;
+    double       m_sigmahard, m_error, m_ecms;
     bool         m_external;
 
     ATOOLS::Blob *GetBlob(ATOOLS::Flavour *flavour);

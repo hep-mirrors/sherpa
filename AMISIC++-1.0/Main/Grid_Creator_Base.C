@@ -201,8 +201,8 @@ namespace AMISIC {
       boundary[0]=(*xaxis)[GridXMin()+(double)i*GridDeltaXMax()];
       boundary[1]=(*xaxis)[GridXMin()+((double)i-1.0)*GridDeltaXMax()];
       boundary[2]=(*xaxis)[GridXMin()+((double)i+1.0)*GridDeltaXMax()];
-      ATOOLS::msg.Out()<<"Grid_Creator_Base::CreateInitialGrid(): "
-		       <<"Calculation for "<<npoints-i<<"th of "<<npoints<<" points in progress."<<std::endl;
+      ATOOLS::msg.Tracking()<<"Grid_Creator_Base::CreateInitialGrid(): "
+			    <<"Calculation for "<<npoints-i<<"th of "<<npoints<<" points in progress."<<std::endl;
       if (!CreateSinglePoint(boundary,true,(i==0)||(i==npoints))) {
 	ATOOLS::msg.Error()<<"Grid_Creator_Base::CreateInitialGrid(): "
 			   <<"Cannot determine point at "<<m_gridxvariable<<" = "<<boundary[0]<<"!"<<std::endl
@@ -241,10 +241,10 @@ namespace AMISIC {
 	boundary[0]=middle;
 	boundary[1]=left;
 	boundary[2]=right;
-	ATOOLS::msg.Out()<<"Grid_Creator_Base::OptimizeSingleGrid(): "
-			 <<"Calculation for new grid point in progress."<<std::endl
-			 <<"   Currently \\Delta y_{max} = "<<deltaymax
-			 <<" vs. \\Delta y_{limit} = "<<GridDeltaYMax()<<std::endl;
+	ATOOLS::msg.Info()<<"Grid_Creator_Base::OptimizeSingleGrid(): "
+			  <<"Calculation for new grid point in progress."<<std::endl
+			  <<"   Currently \\Delta y_{max} = "<<deltaymax
+			  <<" vs. \\Delta y_{limit} = "<<GridDeltaYMax()<<std::endl;
 	if ((correct=CreateSinglePoint(boundary))==0) {
 	  ATOOLS::msg.Error()<<"Grid_Creator_Base::OptimizeSingleGrid(): "
 			     <<"Cannot determine point at "<<m_gridxvariable<<" = "<<boundary[0]<<"!"<<std::endl
@@ -262,10 +262,10 @@ namespace AMISIC {
 	    boundary[1]=(*xaxis)[(*xaxis)(left)-delta*(GridArgumentType)(i+1)];
 	    boundary[2]=(*xaxis)[(*xaxis)(left)-delta*(GridArgumentType)(i-1)];
 	    if ((boundary[0]>=(*xaxis)[GridXMin()])&&(boundary[0]<=(*xaxis)[GridXMax()])) {
-	      ATOOLS::msg.Out()<<"Grid_Creator_Base::OptimizeSingleGrid(): "
-			       <<"Calculation for corrected "<<i+1<<"th left point in progress."<<std::endl
-			       <<"   Currently \\Delta y_{max} = "<<deltaymax
-			       <<" vs. \\Delta y_{limit} = "<<GridDeltaYMax()<<std::endl;
+	      ATOOLS::msg.Info()<<"Grid_Creator_Base::OptimizeSingleGrid(): "
+				<<"Calculation for corrected "<<i+1<<"th left point in progress."<<std::endl
+				<<"   Currently \\Delta y_{max} = "<<deltaymax
+				<<" vs. \\Delta y_{limit} = "<<GridDeltaYMax()<<std::endl;
 	      if (!CreateSinglePoint(boundary,false)) {
 		ATOOLS::msg.Error()<<"Grid_Creator_Base::OptimizeSingleGrid(): Cannot delete obsolete grid point at "
 				   <<boundary[0]<<"! Abort optimization."<<std::endl
@@ -277,10 +277,10 @@ namespace AMISIC {
 	    boundary[1]=(*xaxis)[(*xaxis)(right)+delta*(GridArgumentType)(i-1)];
 	    boundary[2]=(*xaxis)[(*xaxis)(right)+delta*(GridArgumentType)(i+1)];
 	    if ((boundary[0]>=(*xaxis)[GridXMin()])&&(boundary[0]<=(*xaxis)[GridXMax()])) {
-	      ATOOLS::msg.Out()<<"Grid_Creator_Base::OptimizeSingleGrid(): "
-			       <<"Calculation for corrected "<<i+1<<"th right point in progress."<<std::endl
-			       <<"   Currently \\Delta y_{max} = "<<deltaymax
-			       <<" vs. \\Delta y_{limit} = "<<GridDeltaYMax()<<std::endl;
+	      ATOOLS::msg.Info()<<"Grid_Creator_Base::OptimizeSingleGrid(): "
+				<<"Calculation for corrected "<<i+1<<"th right point in progress."<<std::endl
+				<<"   Currently \\Delta y_{max} = "<<deltaymax
+				<<" vs. \\Delta y_{limit} = "<<GridDeltaYMax()<<std::endl;
 	      if (!CreateSinglePoint(boundary,false)) {
 		ATOOLS::msg.Error()<<"Grid_Creator_Base::OptimizeSingleGrid(): Cannot delete obsolete grid point at "
 				   <<boundary[0]<<"! Abort optimization."<<std::endl
