@@ -8,6 +8,7 @@ DIRS=$DIRS" SHERPA-1.0"
 ECXXFLAGS=""
 EFFLAGS=""
 ECOPT=""
+EMOPT="-j2"
 for I in $* ; do
   if [ "$I" = "-c" ]; then CONFIGURE=TRUE 
   elif [ "$I" = "-e" ]; then EXTRACT=TRUE
@@ -18,6 +19,7 @@ for I in $* ; do
   elif [ "$I" = "--clean-run" ]; then RUNCLEAN=TRUE
   elif [ "$I" = "--no-abort" ]; then NOABORT=TRUE
   elif [ "$I" = "--copt" ]; then DCOPT=TRUE 
+  elif [ "$I" = "--mopt" ]; then DMOPT=TRUE 
   elif [ "$I" = "--force-tar" ]; then FORCE=TRUE && EXTRACT=TRUE
   elif [ "$I" = "-h" ]; then \
     echo "makeinstall options: -c             configure before compiling (enabled with '-t')" && \
@@ -29,12 +31,14 @@ for I in $* ; do
     echo "                     --clean-run    apply \"makeclean\" in SHERPA-1.0/Run before compiling" && \
     echo "                     --no-abort     force installation in every module" && \
     echo "                     --copt         define option for 'configure'" && \
+    echo "                     --mopt         define option for 'make'" && \
     echo "                     --force-tar    force extraction of tar files (enables '-e')" && \
     echo "                     -h             display this help and exit" && \
     exit 0
   elif [ "$DCXXFLAGS" = "TRUE" ]; then DCXXFLAGS="" && ECXXFLAGS=$ECXXFLAGS" "$I
   elif [ "$DFFLAGS" = "TRUE" ]; then DFFLAGS="" && EFFLAGS=$EFFLAGS" "$I
   elif [ "$DCOPT" = "TRUE" ]; then DCOPT="" && ECOPT=$ECOPT" "$I
+  elif [ "$DMOPT" = "TRUE" ]; then DMOPT="" && EMOPT=$EMOPT" "$I
   else echo "makeinstall: error: unrecognized option '$I'. try '-h'" && \
     exit 1 
   fi
@@ -98,7 +102,11 @@ do
     CONTINUE="r"
     while test "$CONTINUE" = "r" ; do 
       CONTINUE=""
-      if ! make install -j2 "$ECXXFLAGS" "$EFFLAGS" ; then
+      if ! ( if [ "$ECXXFLAGS" = "" ] && [ "$EFFLAGS" = "" ] ; then make install $EMOPT 
+             elif [ "$EFFLAGS" = "" ] ; then make install $EMOPT "$ECXXFLAGS" 
+             elif [ "$ECXXFLAGS" = "" ] ; then make install $EMOPT "$EFFLAGS" 
+             else make install $EMOPT "$ECXXFLAGS" "$EFFLAGS" 
+             fi ) ; then
 	echo "makeinstall: error: \"make install\" in $I failed"
         if test ! "$NOABORT" = "TRUE" ; then
           until test "$CONTINUE" = "y" || test "$CONTINUE" = "n" || test "$CONTINUE" = "r" ; do
