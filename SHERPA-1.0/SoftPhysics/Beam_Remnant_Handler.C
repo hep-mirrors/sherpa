@@ -51,8 +51,8 @@ bool SumMomenta(ATOOLS::Blob *bl)
   SumMomenta(bl,inisum,finsum);
   bool test=inisum==finsum;
   if (!test) {
-    msg_Tracking()<<"SumMomenta(..): Summation does not agree."<<std::endl
-		  <<"initial = "<<inisum<<" vs. final = "<<finsum<<std::endl;
+    ATOOLS::msg.Error()<<"SumMomenta(..): Summation does not agree."<<std::endl
+		       <<"initial = "<<inisum<<" vs. final = "<<finsum<<std::endl;
   }
   return test;
 }
