@@ -25,7 +25,7 @@ Tester_Object::~Tester_Object()
 bool Tester_Object::ApproveTerminate()
 {
   msg.Error()<<"Tester_Oject::ApproveTerminate(): "
-	     <<"Vitual function called !"<<std::endl;
+	     <<"Virtual function called !"<<std::endl;
   return true;
 }
 
@@ -36,7 +36,7 @@ Terminator_Object::~Terminator_Object()
 void Terminator_Object::PrepareTerminate()
 {
   msg.Error()<<"Terminator_Object::PrepareTerminate(): "
-	     <<"Vitual function called !"<<std::endl;
+	     <<"Virtual function called !"<<std::endl;
 }
 
 Exception::Exception(const ex::type type,const std::string info):
