@@ -17,7 +17,7 @@ namespace ATOOLS {
       Pythia       = 3
     };
   };
-  typedef std::map<int,bool> Int_Bool_Map;
+  typedef std::map<int,std::pair<Particle *,bool> > Translation_Map;
 
   class HepEvt_Interface {
     bool            m_io;
@@ -27,8 +27,7 @@ namespace ATOOLS {
     std::ifstream * p_instream;
 
     ATOOLS::Particle_Int_Map m_convertS2H;
-    ATOOLS::Int_Particle_Map m_convertH2S;
-    Int_Bool_Map             m_delete;
+    Translation_Map          m_convertH2S;
 
     int       m_evtnumber,m_nhep;
     long int  m_filesize, m_evtcount;

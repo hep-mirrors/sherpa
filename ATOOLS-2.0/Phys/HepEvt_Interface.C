@@ -430,6 +430,16 @@ void HepEvt_Interface::EstablishRelations(Particle * const _mother,
 
 bool HepEvt_Interface::HepEvt2Sherpa(Blob_List * const blobs) {
   bool okay;
+  if (!m_convertH2S.empty()) {
+    for (Translation_Map::iterator piter=m_convertH2S.begin();
+	 piter!=m_convertH2S.end();piter++) {
+      if (piter->second.second) {
+	delete (piter->second.first); piter->second.first=NULL; 
+      }
+    }
+    m_convertH2S.clear();
+  }
+
   if (p_instream) ReadHepEvt(blobs);
   else { for (int i=0;i<m_nhep;++i) HepEvt2Particle(i); }
   switch (m_generator)  {
@@ -446,25 +456,6 @@ bool HepEvt_Interface::HepEvt2Sherpa(Blob_List * const blobs) {
   okay = okay && IdentifyBlobs(blobs);
   m_evtcount++;
   if (p_instream && m_evtcount%m_filesize==0) OpenNewHepEvtFile();
-
-  if (!m_convertH2S.empty()) {
-    if (m_convertH2S.size()!=m_delete.size()) {
-      msg.Error()<<"Error in HepEvt_Interface::HepEvt2Sherpa."<<std::endl
-		 <<"   Particle and delete list have different size."<<std::endl
-		 <<"   Could result in a memory leak or a segmentation fault."<<std::endl
-		 <<"   Continue anyway."<<std::endl;
-    }
-    Int_Bool_Map::iterator del = m_delete.begin();
-    for (Int_Particle_Map::iterator piter=m_convertH2S.begin();
-	 piter!=m_convertH2S.end();piter++) {
-      if (del->second) {
-	delete piter->second; piter->second=NULL; 
-      }
-      del++;
-    }
-    m_convertH2S.clear();
-    m_delete.clear();
-  }
   return okay; 
 }
 
@@ -513,8 +504,7 @@ void HepEvt_Interface::HepEvt2Particle(const int pos)
   Vec4D momentum     = Vec4D(p_phep[3+pos*5],p_phep[0+pos*5],p_phep[1+pos*5],p_phep[2+pos*5]);
   Particle * newpart = new Particle(pos+1,flav,momentum);
   newpart->SetStatus(p_isthep[pos]);
-  m_convertH2S.insert(std::make_pair(pos,newpart));
-  m_delete.insert(std::make_pair(pos,true));
+  m_convertH2S.insert(std::make_pair(pos,std::make_pair(newpart,true)));
 }
 
 bool HepEvt_Interface::ConstructBlobsFromHerwig(ATOOLS::Blob_List * const blobs)
@@ -547,52 +537,52 @@ bool HepEvt_Interface::ConstructBlobsFromHerwig(ATOOLS::Blob_List * const blobs)
   blobs->push_back(fsr2);   fsr2->SetId(blobs->size());
   blobs->push_back(cf);     cf->SetId(blobs->size());
 
-  Int_Particle_Map::iterator piter;
+  Translation_Map::iterator piter, miter;
   for (int i=0;i<m_nhep;i++) {
     piter = m_convertH2S.find(i);
     if (piter==m_convertH2S.end()) continue;
-    part = piter->second;
+    part = piter->second.first;
     if (part->Status()!=2 && part->Status()!=1) part->SetStatus(3);
     switch (p_isthep[i]) {
     case 101:
       beam1->AddToInParticles(part);
-      m_delete[i] = false;
+      piter->second.second = false;
       break;
     case 102:
       beam2->AddToInParticles(part);
-      m_delete[i] = false;
+      piter->second.second = false;
       break;
     case 121:
       isr1->AddToOutParticles(part);
       signal->AddToInParticles(part);
-      m_delete[i] = false;
+      piter->second.second = false;
       break;
     case 122:
       isr2->AddToOutParticles(part);
       signal->AddToInParticles(part);
-      m_delete[i] = false;
+      piter->second.second = false;
       break;
     case 123:
       signal->AddToOutParticles(part);
       fsr1->AddToInParticles(part);
-      m_delete[i] = false;
+      piter->second.second = false;
       part->SetStatus(2);
       break;
     case 124:
       signal->AddToOutParticles(part);
       fsr2->AddToInParticles(part);
-      m_delete[i] = false;
+      piter->second.second = false;
       part->SetStatus(2);
       break;
     case 141:
       beam1->AddToOutParticles(part);
       isr1->AddToInParticles(part);
-      m_delete[i] = false;
+      piter->second.second = false;
       break;
     case 142:
       beam2->AddToOutParticles(part);
       isr2->AddToInParticles(part);
-      m_delete[i] = false;
+      piter->second.second = false;
       break;
     case 143:
       // Outgoing jet 
@@ -612,7 +602,6 @@ bool HepEvt_Interface::ConstructBlobsFromHerwig(ATOOLS::Blob_List * const blobs)
     case 186:
       part->SetStatus(2);
       cf->AddToOutParticles(part);
-      m_delete[i] = false;
       if (p_jdahep[2*i]!=0) {
 	blob = new ATOOLS::Blob();
 	blobs->push_back(blob);
@@ -620,6 +609,7 @@ bool HepEvt_Interface::ConstructBlobsFromHerwig(ATOOLS::Blob_List * const blobs)
 	blob->SetId(blobs->size());
 	blob->AddToInParticles(part);
       }
+      piter->second.second = false;
       break;
     case 195:
     case 196:
@@ -627,14 +617,14 @@ bool HepEvt_Interface::ConstructBlobsFromHerwig(ATOOLS::Blob_List * const blobs)
     case 198:
     case 199:
     case 200:
-      piter = m_convertH2S.find(p_jmohep[2*i]-1);
-      if (piter==m_convertH2S.end()) continue;
-      mother = piter->second;
+      miter = m_convertH2S.find(p_jmohep[2*i]-1);
+      if (miter==m_convertH2S.end()) continue;
+      mother = miter->second.first;
       blob   = mother->DecayBlob();
       if (blob) {
 	mother->SetStatus(2);
 	blob->AddToOutParticles(part);
-	m_delete[i] = false;
+	piter->second.second = false;
 	blob->SetPosition(Vec4D(p_vhep[4*i+3],p_vhep[4*i+0],p_vhep[4*i+1],p_vhep[4*i+2]));
       }
       if (p_jdahep[2*i]!=0) {
@@ -644,19 +634,19 @@ bool HepEvt_Interface::ConstructBlobsFromHerwig(ATOOLS::Blob_List * const blobs)
 	blob->SetType(btp::Hadron_Decay);
 	blob->SetId(blobs->size());
 	blob->AddToInParticles(part);
-	m_delete[i] = false;
+	piter->second.second = false;
       }
       else part->SetStatus(1);
       break;
     case 1:
-      piter = m_convertH2S.find(p_jmohep[2*i]-1);
-      if (piter==m_convertH2S.end()) continue;
-      mother = piter->second;
+      miter = m_convertH2S.find(p_jmohep[2*i]-1);
+      if (miter==m_convertH2S.end()) continue;
+      mother = miter->second.first;
       blob   = mother->DecayBlob();
       if (blob) {
 	mother->SetStatus(2);
 	blob->AddToOutParticles(part);
-	m_delete[i] = false;
+	piter->second.second = false;
 	blob->SetPosition(Vec4D(p_vhep[4*i+3],p_vhep[4*i+0],p_vhep[4*i+1],p_vhep[4*i+2]));
       }
       part->SetStatus(1);
@@ -666,8 +656,8 @@ bool HepEvt_Interface::ConstructBlobsFromHerwig(ATOOLS::Blob_List * const blobs)
       if (p_isthep[p_jmohep[2*i]-1]==142) isr2->AddToOutParticles(part);
       if (p_isthep[p_jmohep[2*i]-1]==143) fsr1->AddToOutParticles(part);
       if (p_isthep[p_jmohep[2*i]-1]==144) fsr2->AddToOutParticles(part);
-      cf->AddToInParticles(part);
-      m_delete[i] = false;
+      cf->AddToInParticles(part); 
+      piter->second.second = false; 
     default : break;
     }
   }
@@ -681,11 +671,11 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
   std::vector<Blob *> _blobs;
   std::vector<int>    signalints, ueints;
 
-  Int_Particle_Map::iterator piter;
+  Translation_Map::iterator piter, miter, partiter, diter;
   for (int i=0;i<m_nhep;++i) {
     piter = m_convertH2S.find(i);
     if (piter==m_convertH2S.end()) continue;
-    part = piter->second;
+    part = piter->second.first;
     if (part->Status()==3) signalints.push_back(i);
     if (part->Status()==2 && 
 	(part->Flav().IsGluon() || part->Flav().IsQuark()) &&
@@ -697,7 +687,7 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
   for (int i=0;i<lsize;++i) {
     piter = m_convertH2S.find(i);
     if (piter==m_convertH2S.end()) continue;
-    part = piter->second;
+    part = piter->second.first;
     if (IsZero(part->Momentum()[0])) {
       msg.Error()<<"WARNING : Error in HepEvt_Interface::ConstructBlobsFromPythia."<<std::endl
 		 <<"    Signal particles with zero energy: Looks like a nonsensical event."<<std::endl
@@ -719,12 +709,12 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
       pint = signalints.back();
       piter = m_convertH2S.find(pint);
       if (piter==m_convertH2S.end()) continue;
-      part = piter->second;
+      part = piter->second.first;
       part->SetStatus(3);
       test = true;
       if (i<2) {
 	signal->AddToOutParticles(part);
-	m_delete[pint] = false;
+	piter->second.second = false;
 	if (testint==-1) testint = p_jmohep[2*pint]-1;
 	else { if (p_jmohep[2*pint]-1!=testint) testint = -1; }
       }
@@ -732,14 +722,14 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
 	if (p_jmohep[2*pint]!=0 && p_jmohep[2*pint+1]!=0) {
 	  if (pint!=testint) {
 	    signal->AddToOutParticles(part);
-	    m_delete[pint] = false;
+	    piter->second.second = false;
 	  }
 	  else { intermed = pint; test = false; }
 	}
 	else {
 	  if (ins<2) { 
 	    signal->AddToInParticles(part); 
-	    m_delete[pint] = false;
+	    piter->second.second = false;
 	    ins++; 
 	  }
 	}
@@ -750,18 +740,24 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
 	if (create) {
 	  blob = new Blob();
 	  blob->AddToOutParticles(part);
-	  m_delete[pint] = false;
+	  piter->second.second = false;
 	  _blobs.push_back(blob);
 	  if (pint==0 || pint==1) {
-	    mother = m_convertH2S[pint];
+	    miter = m_convertH2S.find(pint);
+	    if (miter==m_convertH2S.end()) mother = NULL;
+	    else mother = miter->second.first;
 	  }
 	  else {
 	    if (p_jmohep[2*pint-2]==intermed) mother = NULL;
-	    else mother = m_convertH2S[p_jmohep[2*pint-2]];
+	    else {
+	      miter = m_convertH2S.find(p_jmohep[2*pint-2]);
+	      if (miter==m_convertH2S.end()) mother = NULL;
+	      else mother = miter->second.first;
+	    }
 	  }
 	  if (mother!=NULL && !mother->DecayBlob()) {
 	    blob->AddToInParticles(mother);
-	    m_delete[pint] = false;
+	    miter->second.second = false;
 	    mother->SetStatus(3);
 	  }
 	}
@@ -777,26 +773,29 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
   }
 
   if (intermed>0) {
-    mother = m_convertH2S[intermed];
-    if (mother->Status()==3) {
-      for (int i=0;i<m_nhep;++i) {
-	piter = m_convertH2S.find(i);
-	if (piter==m_convertH2S.end()) continue;
-	part = piter->second;
-	if (part->Status()!=3 && p_jmohep[2*i]-1==intermed) {
-	  part->SetStatus(3);
-	  p_jmohep[2*i]   = 0;
-	  p_jmohep[2*i+1] = 0;
-	  p_jdahep[2*i]   = 0;
-	  p_jdahep[2*i+1] = 0;
-	}
-	if (part->Status()==3 && p_jmohep[2*i]-1==intermed) {
-	  p_jmohep[2*i]   = 0;
-	  p_jmohep[2*i+1] = 0;
-	  p_jdahep[2*i]   = 0;
-	  p_jdahep[2*i+1] = 0;
-	  p_jdahep[2*intermed]   = 0;
-	  p_jdahep[2*intermed+1] = 0;
+    miter = m_convertH2S.find(intermed);
+    if (miter!=m_convertH2S.end()) {
+      mother = miter->second.first;
+      if (mother->Status()==3) {
+	for (int i=0;i<m_nhep;++i) {
+	  piter = m_convertH2S.find(i);
+	  if (piter==m_convertH2S.end()) continue;
+	  part = piter->second.first;
+	  if (part->Status()!=3 && p_jmohep[2*i]-1==intermed) {
+	    part->SetStatus(3);
+	    p_jmohep[2*i]   = 0;
+	    p_jmohep[2*i+1] = 0;
+	    p_jdahep[2*i]   = 0;
+	    p_jdahep[2*i+1] = 0;
+	  }
+	  if (part->Status()==3 && p_jmohep[2*i]-1==intermed) {
+	    p_jmohep[2*i]   = 0;
+	    p_jmohep[2*i+1] = 0;
+	    p_jdahep[2*i]   = 0;
+	    p_jdahep[2*i+1] = 0;
+	    p_jdahep[2*intermed]   = 0;
+	    p_jdahep[2*intermed+1] = 0;
+	  }
 	}
       }
     }
@@ -820,7 +819,7 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
 	  if (beam2==NULL) beam2 = part->DecayBlob();
 	  else {
 	    msg.Error()<<"WARNING : Error in HepEvt_Interface::ConstructBlobsFromPythia."<<std::endl
-		       <<"    too many transition blobs (1) found for hadron->partons for u.e.."<<std::endl
+		       <<"    too many transition blobs (2) found for hadron->partons for u.e.."<<std::endl
 		       <<"    Will return .false. and hope that event is discarded."<<std::endl;
 	    return false;
 	  }
@@ -831,7 +830,8 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
 
   if (beam1==NULL || beam2==NULL) {
     msg.Error()<<"WARNING : Error in HepEvt_Interface::ConstructBlobsFromPythia."<<std::endl
-	       <<"    too little transition blobs (1/2) found for hadron->partons for u.e.."<<std::endl
+	       <<"    too little transition blobs (1/2) found for hadron->partons for u.e. "
+	       <<"("<<(beam1==NULL)<<"/"<<(beam2==NULL)<<")"<<std::endl
 	       <<"    Will return .false. and hope that event is discarded."<<std::endl;
     return false;
   }
@@ -844,16 +844,20 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
     blob->SetType(btp::Hard_Collision);
     // Find pairs of particles.
     pint = ueints[lsize-1];
-    part = m_convertH2S[pint];
+    piter = m_convertH2S.find(pint);
+    if (piter==m_convertH2S.end()) continue;
+    part = piter->second.first;
     pt2  = part->Momentum().PPerp2();
     ueints.pop_back();
     for (int i=0;i<lsize;i++) {
-      partner = m_convertH2S[ueints[i]];
+      partiter = m_convertH2S.find(ueints[i]);
+      if (partiter==m_convertH2S.end()) continue;
+      partner = partiter->second.first;
       if (IsEqual(partner->Momentum().PPerp2(),pt2)) {
 	blob->AddToOutParticles(part);
 	blob->AddToOutParticles(partner);
-	m_delete[pint]      = false;
-	m_delete[ueints[i]] = false;
+	piter->second.second = false;
+	partiter->second.second = false;
 	blobs->push_back(blob);
 	E      = part->Momentum()[0]+partner->Momentum()[0];
 	pl     = part->Momentum()[3]+partner->Momentum()[3];
@@ -888,11 +892,13 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
   for (int i=0;i<m_nhep;++i) {
     piter = m_convertH2S.find(i);
     if (piter==m_convertH2S.end()) continue;
-    part = piter->second;
+    part = piter->second.first;
     if (part->Status()!=3) {
       productionblob = part->ProductionBlob();
       pint           = p_jmohep[2*i]-1;
-      mother         = m_convertH2S[pint];
+      miter = m_convertH2S.find(pint);
+      if (miter==m_convertH2S.end()) continue;
+      mother = miter->second.first;
       if (productionblob==NULL) {
 	create=(mother==NULL);
 	if (!create) create=create||(mother->DecayBlob()==NULL); 
@@ -901,17 +907,17 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
 	  productionblob->SetPosition(ATOOLS::Vec4D(p_vhep[4*i+3],p_vhep[4*i+0],
 						    p_vhep[4*i+1],p_vhep[4*i+2]));
 	  productionblob->AddToOutParticles(part);
-	  m_delete[i] = false;
+	  piter->second.second = false;
 	  if (mother!=NULL) {
 	    productionblob->AddToInParticles(mother);
-	    m_delete[pint] = false;
+	    miter->second.second = false;
 	  }
 	  productionblob->SetId(blobs->size());
 	  blobs->push_back(productionblob);
 	}
 	else {
 	  mother->DecayBlob()->AddToOutParticles(part);
-	  m_delete[i] = false;
+	  piter->second.second = false;
 	  productionblob = part->ProductionBlob();
 	}
       }
@@ -923,14 +929,14 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
     for (unsigned int j=0;j<2;++j) {
       if (decayblob==NULL) {
 	pint     = p_jdahep[2*i+j]-1;
-	piter = m_convertH2S.find(pint);
-	if (piter==m_convertH2S.end()) continue;
-	daughter = piter->second;
+	diter = m_convertH2S.find(pint);
+	if (diter==m_convertH2S.end()) continue;
+	daughter = diter->second.first;
 	if (daughter!=NULL) {
 	  if (daughter->ProductionBlob()!=NULL) {
 	    if (!test) {
 	      daughter->ProductionBlob()->AddToInParticles(part);
-	      m_delete[i] = false;
+	      piter->second.second = false;
 	      test        = true;
 	    }
 	  }
@@ -940,8 +946,8 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
 						 p_vhep[4*pint+1],p_vhep[4*pint+2]));
 	    decayblob->AddToOutParticles(daughter);
 	    decayblob->AddToInParticles(part);
-	    m_delete[i]    = false;
-	    m_delete[pint] = false;
+	    diter->second.second = false;
+	    piter->second.second = false;
 	    decayblob->SetId(blobs->size());
 	    blobs->push_back(decayblob);
 	  }
@@ -953,15 +959,15 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
   for (int i=0;i<m_nhep;++i) {
     piter = m_convertH2S.find(i);
     if (piter==m_convertH2S.end()) continue;
-    daughter = piter->second;
-    piter = m_convertH2S.find(p_jmohep[2*i]-1);
-    if (piter==m_convertH2S.end()) continue;
-    mother = piter->second;
+    daughter = piter->second.first;
+    miter = m_convertH2S.find(p_jmohep[2*i]-1);
+    if (miter==m_convertH2S.end()) continue;
+    mother = miter->second.first;
     if (mother!=NULL) {
       if (mother->DecayBlob()==NULL) {
 	daughter->ProductionBlob()->AddToInParticles(mother);
-	m_delete[p_jmohep[2*i]-1] = false;
-      }
+	miter->second.second = false;
+     }
     }
   }
 
@@ -971,10 +977,17 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
 bool HepEvt_Interface::ConstructBlobs(ATOOLS::Blob_List * const blobs)
 {
   ATOOLS::Blob     * productionblob;
-  ATOOLS::Particle * mother;
+  ATOOLS::Particle * part, * mother, * daughter;
+
+  Translation_Map::iterator piter, miter, diter;
   for (int i=0;i<m_nhep;++i) {
-    productionblob = m_convertH2S[i]->ProductionBlob();
-    mother         = m_convertH2S[p_jmohep[2*i]-1];
+    piter          = m_convertH2S.find(i);
+    if (piter==m_convertH2S.end()) continue;
+    part           = piter->second.first;
+    productionblob = part->ProductionBlob();
+    miter          = m_convertH2S.find(i);
+    if (miter==m_convertH2S.end()) mother = NULL;
+    else mother    = miter->second.first;
     if (productionblob==NULL) {
       bool createblob=(mother==NULL);
       if (!createblob) createblob=createblob||(mother->DecayBlob()==NULL); 
@@ -982,41 +995,47 @@ bool HepEvt_Interface::ConstructBlobs(ATOOLS::Blob_List * const blobs)
 	productionblob = new ATOOLS::Blob();
 	productionblob->SetPosition(ATOOLS::Vec4D(p_vhep[4*i+3],p_vhep[4*i+0],
 						  p_vhep[4*i+1],p_vhep[4*i+2]));
-	productionblob->AddToOutParticles(m_convertH2S[i]);
-	m_delete[i] = false;
+	productionblob->AddToOutParticles(part);
+	piter->second.second = false;
 	if (mother!=NULL) {
 	  productionblob->AddToInParticles(mother);
-	  m_delete[p_jmohep[2*i]-1] = false;
+	  miter->second.second = false;
 	}
 	productionblob->SetId(blobs->size());
 	blobs->push_back(productionblob);
       }
       else {
-	mother->DecayBlob()->AddToOutParticles(m_convertH2S[i]);
-	m_delete[i] = false;
-	productionblob=m_convertH2S[i]->ProductionBlob();
+	mother->DecayBlob()->AddToOutParticles(part);
+	piter->second.second = false;
+	productionblob=part->ProductionBlob();
       }
     }
-    ATOOLS::Blob *decayblob=m_convertH2S[i]->DecayBlob();
+    ATOOLS::Blob *decayblob=part->DecayBlob();
     for (unsigned int j=0;j<2;++j) {
       if (decayblob==NULL) {
-	ATOOLS::Particle *daughter=m_convertH2S[p_jdahep[2*i+j]-1];
+	diter    = m_convertH2S.find(p_jdahep[2*i+j]-1);
+	if (diter==m_convertH2S.end()) daughter = NULL;
+	else daughter = diter->second.first;
 	if (daughter!=NULL) {
 	  if (daughter->ProductionBlob()!=NULL) {
-	    daughter->ProductionBlob()->AddToInParticles(m_convertH2S[i]);
-	    m_delete[i] = false;
+	    daughter->ProductionBlob()->AddToInParticles(part);
+	    piter->second.second = false;
 	  }
 	}
       }
     }
   }
   for (int i=0;i<m_nhep;++i) {
-    ATOOLS::Particle *mother=m_convertH2S[p_jmohep[2*i]-1];
-    ATOOLS::Particle *daughter=m_convertH2S[i];
+    piter    = m_convertH2S.find(i);
+    if (piter==m_convertH2S.end()) continue;
+    part = piter->second.first;
+    miter    = m_convertH2S.find(p_jmohep[2*i]-1);
+    if (miter==m_convertH2S.end()) mother = NULL;
+    else mother = miter->second.first;
     if (mother!=NULL) {
       if (mother->DecayBlob()==NULL) {
-	daughter->ProductionBlob()->AddToInParticles(mother);
-	m_delete[p_jmohep[2*i]-1] = false;
+	part->ProductionBlob()->AddToInParticles(mother);
+	miter->second.second = false;
       }
     }
   }
