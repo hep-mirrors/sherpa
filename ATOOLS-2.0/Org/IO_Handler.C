@@ -285,6 +285,7 @@ Type IO_Handler::Input(const std::string name) {
    return value;
   */
  }
+ return (Type)0.0;
 }
 
 template <class Type> 
@@ -351,6 +352,7 @@ void IO_Handler::Shorten(std::string& str) {
 template <class Type> 
 IO_Handler & IO_Handler::operator>>(Type & value) {
   m_file>>value;
+  return *this;
 }
 
 template IO_Handler & IO_Handler::operator<< (const double &);

@@ -295,7 +295,7 @@ template <>  Flavour Data_Read::GetValue<Flavour>(std::string name) {
  
 int Data_Read::Crossfoot(string name) {
   int sum = 0;
-  for (int i=0;i<name.length();++i)
+  for (size_t i=0;i<name.length();++i)
     sum+=int(name[i]);
   return sum;
 }
