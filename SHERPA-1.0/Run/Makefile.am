@@ -35,7 +35,7 @@ Sherpa_LDADD =  \
 	 @libdir@/libToolsPhys.la \
 	 @libdir@/libToolsMath.la \
 	 @libdir@/libToolsOrg.la \
-	 @libdir@/libHepMC.so \
+	 ${HEPMC_shared_object} \
 	 -lg2c -lm 
 #	 -L$(rootlibdir) -lCore -lCint -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lGui -ldl
 Sherpa_LDFLAGS =  -rdynamic
@@ -67,8 +67,7 @@ INCLUDES = -I../../SHERPA-1.0/Main \
            -I../../ATOOLS-2.0/Phys \
            -I../../ATOOLS-2.0/Math \
            -I../../ATOOLS-2.0/Org \
-	   -I../../../HepMC_Version1.23 \
-	   -I../../../HepMC_Version1.23/HepMC \
+	   -I$(HEPMCINCDIR) \
 	   -I$(CLHEPincdir)
 SUBDIRS    = Process
 EXTRA_DIST = Integration.dat Processes.dat Selector.dat Model.dat Beam.dat \

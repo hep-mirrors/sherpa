@@ -206,7 +206,7 @@ int Matrix_Element_Handler::InSwaped() {
   case 1: return p_amegic->InSwaped();
   case 2: return p_simplexs->InSwaped();
   }
-  return NULL;
+  return 0;
 }
 
 
