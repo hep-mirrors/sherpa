@@ -127,10 +127,15 @@ namespace AMISIC {
 	success=0;
       }
     }
-    msg_Tracking()<<"Grid_Creator::CalculateSingleValue(): Got value for "<<boundary[0]<<" GeV"<<std::endl
-			  <<"   Calculation for "<<lower<<" GeV < "<<p_xaxis->Variable().Name()
-			  <<" < "<<upper<<" GeV yielded "<<newxs*rpa.Picobarn()<<" pb/GeV ( max = "
-			  <<p_processes->Max()*rpa.Picobarn()<<" pb/GeV )"<<std::endl;
+    msg_Events()<<"Grid_Creator::CalculateSingleValue(): Got value for "
+		<<boundary[0]<<" GeV\n   Calculation for "<<ATOOLS::om::bold
+		<<lower<<" GeV "<<ATOOLS::om::reset
+		<<"< "<<p_xaxis->Variable().Name()<<" < "<<ATOOLS::om::bold
+		<<upper<<" GeV"<<ATOOLS::om::reset<<" yielded\n   "
+		<<ATOOLS::om::blue<<newxs*rpa.Picobarn()<<" pb/GeV "
+		<<ATOOLS::om::reset<<"( "<<ATOOLS::om::red<<"max = "
+		<<p_processes->Max()*rpa.Picobarn()<<" pb/GeV "
+		<<ATOOLS::om::reset<<")"<<std::endl;
     return success;
   }
   

@@ -134,7 +134,9 @@ namespace AMISIC {
       m_griddeltaymin=(GridResultType)1.0e-6;
       m_relativedeltaymin=true;
     }
-    if (!reader->ReadFromFile(m_outputlevel,"OUTPUT")) m_outputlevel=ATOOLS::msg.Level();
+    if (!reader->ReadFromFile(m_outputlevel,"GRID_CREATOR_OUTPUT")) {
+      m_outputlevel=ATOOLS::msg.Level();
+    }
     delete reader;
     grid->Grid()->XAxis()->SetVariable(m_gridxvariable);
     grid->Grid()->YAxis()->SetVariable(m_gridyvariable);
@@ -264,10 +266,10 @@ namespace AMISIC {
 	boundary[0]=middle;
 	boundary[1]=left;
 	boundary[2]=right;
-	msg_Info()<<"Grid_Creator_Base::OptimizeSingleGrid(): "
-			  <<"Calculation for new grid point in progress."<<std::endl
-			  <<"   Currently \\Delta y_{max} = "<<deltaymax
-			  <<" vs. \\Delta y_{limit} = "<<GridDeltaYMax()<<std::endl;
+	msg_Events()<<"Grid_Creator_Base::OptimizeSingleGrid(): "
+		    <<"Calculation for new grid point in progress."<<std::endl
+		    <<"   Currently \\Delta y_{max} = "<<deltaymax
+		    <<" vs. \\Delta y_{limit} = "<<GridDeltaYMax()<<std::endl;
 	if ((correct=CreateSinglePoint(boundary))==0) {
 	  ATOOLS::msg.Error()<<"Grid_Creator_Base::OptimizeSingleGrid(): "
 			     <<"Cannot determine point at "<<m_gridxvariable<<" = "<<boundary[0]<<"!"<<std::endl
