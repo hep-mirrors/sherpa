@@ -2,6 +2,7 @@
 #define MI_Base_H
 
 #include "File_IO_Base.H"
+#include "Remnant_Info.H"
 #include "Blob_List.H"
 #include "Exception.H"
 #include <map>
@@ -29,14 +30,14 @@ namespace AMISIC {
 
   private:
 
-    static long int m_particlecounter;
-
     std::string m_name;
     TypeID      m_type;
 
   protected:
 
-    static NameMIBaseMap m_bases;
+    static NameMIBaseMap s_bases;
+
+    static std::vector<ATOOLS::Remnant_Info*> s_remnanthandlers;    
     
     double       *m_start, *m_stop, *m_last;
     unsigned int  m_nparameter;
@@ -53,8 +54,6 @@ namespace AMISIC {
 
     static bool m_stophard;
     static bool m_stopsoft;
-
-    static double s_stopscale;
 
   public:
 
@@ -99,8 +98,10 @@ namespace AMISIC {
     static std::string TypeToString(TypeID type);
     static TypeID StringToType(std::string type);
 
-    static double StopScale();
-    
+    static void SetRemnantHandler(ATOOLS::Remnant_Info *const remnanthandler,
+				  const size_t i);
+    static ATOOLS::Remnant_Info *RemnantHandler(const size_t i);
+
   }; // end of class MI_Base
 
   class MI_None: public MI_Base {

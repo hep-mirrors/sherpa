@@ -724,7 +724,6 @@ bool Simple_Chain::Initialize()
   SetInputFile(xsfile,1);
   double stop;
   if (!reader->ReadFromFile(stop,"EVENT_X_MIN")) stop=Stop(0);
-  s_stopscale=ATOOLS::Max(s_stopscale,stop);
   delete reader;
   for (unsigned int i=0;i<m_blobs.size();++i) {
     if (!CreateGrid(m_blobs[i],m_filename[i])) {
@@ -787,9 +786,22 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
       for (size_t j=0;j<p_xs->NIn();++j) {
 	ptot+=p_xs->Momenta()[j];
 	x[j]=2.0*p_xs->Momenta()[j][0]/ATOOLS::rpa.gen.Ecms();
-	if (m_last[j+2]<=x[j]) test=false;
+	if (s_remnanthandlers[j]!=NULL) {
+	  double xremmin=2.0*s_remnanthandlers[j]->
+	    MinimalEnergy(p_xs->Flavours()[j])/ATOOLS::rpa.gen.Ecms();
+	  if (m_last[j+2]-x[j]<xremmin) test=false;
+	  if (!test && ATOOLS::msg.LevelIsTracking()) {
+	    ATOOLS::msg.Tracking()<<"Simple_Chain::FillBlob(..): Remnant_Info ["<<j<<"] says: "
+				  <<"x_{rem min} = "<<xremmin<<" vs. x_{old} = "<<m_last[j+2]
+				  <<" -> x_{new} = "<<m_last[j+2]-x[j]-xremmin<<" from "
+				  <<p_xs->Flavours()[j]<<" => ("<<test<<")"<<std::endl;
+	  }
+	}
+	else {
+	  if (m_last[j+2]<=x[j]) test=false;
+	}
       }
-      if (test==false) continue;
+      if (!test) continue;
       m_last[1]-=sqrt(ptot.Abs2());
       m_last[2]-=x[0];
       m_last[3]-=x[1];

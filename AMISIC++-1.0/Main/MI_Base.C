@@ -13,14 +13,12 @@
 
 using namespace AMISIC;
 
-MI_Base::NameMIBaseMap MI_Base::m_bases=MI_Base::NameMIBaseMap();
-
-long int MI_Base::m_particlecounter=0;
+MI_Base::NameMIBaseMap MI_Base::s_bases=MI_Base::NameMIBaseMap();
+std::vector<ATOOLS::Remnant_Info*> 
+MI_Base::s_remnanthandlers=std::vector<ATOOLS::Remnant_Info*>(2,(ATOOLS::Remnant_Info*)NULL);
 
 bool MI_Base::m_stophard=true;
 bool MI_Base::m_stopsoft=true;
-
-double MI_Base::s_stopscale=0.;
 
 MI_Base::MI_Base(std::string _m_name,TypeID _m_type,unsigned int _m_nparameter,
 		 unsigned int infiles,unsigned int outfiles):
@@ -34,7 +32,7 @@ MI_Base::MI_Base(std::string _m_name,TypeID _m_type,unsigned int _m_nparameter,
 #endif
   p_xs(NULL)
 {
-  for (NameMIBaseMapIterator nbit=m_bases.begin();nbit!=m_bases.end();++nbit) {
+  for (NameMIBaseMapIterator nbit=s_bases.begin();nbit!=s_bases.end();++nbit) {
     if (nbit->first==m_name) {
       throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"MI_Base already exists!",
 			      "MI_Base","MI_Base"));
@@ -48,14 +46,14 @@ MI_Base::MI_Base(std::string _m_name,TypeID _m_type,unsigned int _m_nparameter,
   m_stop = new double[m_nparameter];
   m_last = new double[m_nparameter];
   p_blob = new ATOOLS::Blob();
-  m_bases[m_name]=this;
+  s_bases[m_name]=this;
 }
 
 MI_Base::~MI_Base()
 {
-  for (NameMIBaseMapIterator nbit=m_bases.begin();nbit!=m_bases.end();++nbit) {
+  for (NameMIBaseMapIterator nbit=s_bases.begin();nbit!=s_bases.end();++nbit) {
     if (nbit->first==m_name) {
-      m_bases.erase(nbit--);
+      s_bases.erase(nbit--);
       break;
     }
   }
@@ -68,7 +66,7 @@ MI_Base::~MI_Base()
 void MI_Base::UpdateAll(const MI_Base *mibase)
 {
   PROFILE_HERE;
-  for (NameMIBaseMapIterator nbit=m_bases.begin();nbit!=m_bases.end();++nbit) {
+  for (NameMIBaseMapIterator nbit=s_bases.begin();nbit!=s_bases.end();++nbit) {
     nbit->second->Update(mibase);
   }  
 }
@@ -111,8 +109,7 @@ bool MI_Base::DiceProcess()
 void MI_Base::ResetAll()
 {
   PROFILE_HERE;
-  m_particlecounter=0;
-  for (NameMIBaseMapIterator nbit=m_bases.begin();nbit!=m_bases.end();++nbit) {
+  for (NameMIBaseMapIterator nbit=s_bases.begin();nbit!=s_bases.end();++nbit) {
     nbit->second->Reset();
   }  
 }
@@ -136,8 +133,7 @@ bool MI_Base::CreateBlob(ATOOLS::Blob *blob)
   m_dicedprocess=false;
   ATOOLS::Particle *particle;
   for (unsigned int i=0;i<(unsigned int)p_blob->NInP();++i) {
-    particle = new ATOOLS::Particle(m_particlecounter++,
-				    p_blob->InParticle(i)->Flav(),
+    particle = new ATOOLS::Particle(-1,p_blob->InParticle(i)->Flav(),
 				    p_blob->InParticle(i)->Momentum());
     particle->SetFlow(1,p_blob->InParticle(i)->GetFlow(1));
     particle->SetFlow(2,p_blob->InParticle(i)->GetFlow(2));
@@ -146,8 +142,7 @@ bool MI_Base::CreateBlob(ATOOLS::Blob *blob)
     blob->AddToInParticles(particle);
   }
   for (unsigned int i=0;i<(unsigned int)p_blob->NOutP();++i) {
-    particle = new ATOOLS::Particle(m_particlecounter++,
-				    p_blob->OutParticle(i)->Flav(),
+    particle = new ATOOLS::Particle(-1,p_blob->OutParticle(i)->Flav(),
 				    p_blob->OutParticle(i)->Momentum());
     particle->SetFlow(1,p_blob->OutParticle(i)->GetFlow(1));
     particle->SetFlow(2,p_blob->OutParticle(i)->GetFlow(2));

@@ -40,8 +40,12 @@ namespace AMISIC {
   inline EXTRAXS::XS_Base *MI_Base::XS()
   { return p_xs; }
 
-  inline double MI_Base::StopScale()
-  { return s_stopscale; }
+  inline void MI_Base::SetRemnantHandler(ATOOLS::Remnant_Info *const remnanthandler,
+					 const size_t i)
+  { s_remnanthandlers[i]=remnanthandler; }
+
+  inline ATOOLS::Remnant_Info *MI_Base::RemnantHandler(const size_t i)
+  { return s_remnanthandlers[i]; }
 
 } // end of namespace AMISIC
 
