@@ -73,6 +73,13 @@ bool Hadron_Remnant::FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *part
       if (cur->Flav().Kfcode()==ATOOLS::kf::gluon) TreatFirstGluon(cur);
       else TreatFirstQuark(cur);
     }
+#ifdef DEBUG__Hadron_Remnant
+    std::cout<<"particle ["<<i<<"]("<<m_parton[1].size()<<") {\n";
+    for (size_t j=0;j<m_parton[0].size();++j) std::cout<<m_parton[0][j]<<std::endl;
+    std::cout<<"\n";
+    for (size_t j=0;j<m_parton[2].size();++j) std::cout<<m_parton[2][j]<<std::endl;
+    std::cout<<"}\n";
+#endif
   }
   // select x's according to pdf
   DiceKinematics();
@@ -83,7 +90,7 @@ bool Hadron_Remnant::FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *part
 	m_parton[i][j]->SetNumber((long int)m_parton[i][j]);
 	m_parton[i][j]->SetInfo('F');
       }
-      beamblob->AddToOutParticles(m_parton[i][j]);
+      // if (i==1) beamblob->AddToOutParticles(m_parton[i][j]);
       if (particlelist!=NULL) {
 	m_parton[i][j]->SetNumber(particlelist->size());
 	particlelist->push_back(m_parton[i][j]);
@@ -166,8 +173,12 @@ bool Hadron_Remnant::TreatFirstGluon(ATOOLS::Particle *cur)
   newpart[0]->SetFlow(1+anti,0);
   newpart[1]->SetFlow(1+anti,cur->GetFlow(2-anti));
   newpart[1]->SetFlow(2-anti,0); 
-  for (unsigned int i=0;i<2;++i) m_parton[0].push_back(newpart[i]);
+  for (unsigned int i=0;i<2;++i) {
+    m_parton[0].push_back(newpart[i]);
+    p_beamblob->AddToOutParticles(newpart[i]);
+  }
   m_parton[2].push_back(cur);
+  p_beamblob->AddToOutParticles(cur);
   p_last[0]=newpart[0];
   return true;
 }
@@ -194,6 +205,7 @@ bool Hadron_Remnant::TreatFirstQuark(ATOOLS::Particle *cur)
     newpart->SetFlow(1,cur->GetFlow(2));
     newpart->SetFlow(2,cur->GetFlow(1));
     m_parton[0].push_back(newpart);
+    p_beamblob->AddToOutParticles(newpart);
     p_last[0]=newpart;
   }
   else {
@@ -221,74 +233,89 @@ bool Hadron_Remnant::TreatFirstQuark(ATOOLS::Particle *cur)
     newpart[1]->SetFlow(1+anti,0);
     newpart[2]->SetFlow(1+anti,newpart[1]->GetFlow(2-anti));
     newpart[2]->SetFlow(2-anti,0);
-    for (unsigned int i=0;i<3;++i) m_parton[0].push_back(newpart[i]);
+    for (unsigned int i=0;i<3;++i) {
+      m_parton[0].push_back(newpart[i]);
+      p_beamblob->AddToOutParticles(newpart[i]);
+    }
     p_last[0]=newpart[0];
   }
   m_parton[2].push_back(cur);
+  p_beamblob->AddToOutParticles(cur);
   return true;
 }
 
-bool Hadron_Remnant::AdjustColours(ATOOLS::Particle *particle,unsigned int oldc,unsigned int newc,
-				   bool &singlet,unsigned int catcher)
+bool Hadron_Remnant::AdjustColours(ATOOLS::Particle *particle,int oldc,int newc,bool &singlet,
+				   int anti,bool forward)
 {
-  if (oldc==newc) return true;
-  if (particle->GetFlow(1)==particle->GetFlow(2)) {
-    singlet=true;
+  m_adjusted.insert(particle);
+#ifdef DEBUG__Hadron_Remnant
+  std::cout<<"["<<m_adjusted.size()<<"] ("<<oldc<<" -> "<<newc<<")"<<particle<<std::endl;
+#endif
+  if (particle->GetFlow(1)==newc || particle->GetFlow(2)==newc) {
+    ATOOLS::msg.Tracking()<<"Hadron_Remnant::AdjustColours(..): "
+			  <<"Created colour singlet. Retry."<<std::endl;
+    return singlet=true;
+  }
+  if ((forward && particle->DecayBlob()==NULL) ||
+      (!forward && particle->ProductionBlob()==NULL)) {
     return true;
   }
-  if (++catcher>100) {
+  if (m_adjusted.size()>100) {
     ATOOLS::msg.Error()<<"Hadron_Remnant::AdjustColours(..): "
-		       <<"Colour nesting is too deep (more than "<<catcher-1<<" levels)."<<std::endl
+		       <<"Colour nesting is too deep (more than "<<m_adjusted.size()-1
+		       <<" levels)."<<std::endl
 		       <<"   Cannot adjust colours completely. "
 		       <<"Result might be unreliable."<<std::endl;
     return false;
   }
-  ATOOLS::Blob *cur;
-  for (size_t step=0;step<2;++step) {
-    if (step==0) cur=particle->DecayBlob();
-    else cur=particle->ProductionBlob();
-    if (cur!=NULL) {
-      for (int i=0;i<cur->NOutP();++i) {
-	for (int j=1;j<3;++j) {
-	  ATOOLS::Particle *help=cur->OutParticle(i);
-	  if (help->GetFlow(j)==(int)oldc) {
-	    help->SetFlow(j,newc);
-	    if (!AdjustColours(help,oldc,newc,singlet,catcher)) {
-	      ATOOLS::msg.Error()<<"   ("<<oldc<<" -> "<<newc<<") for:"<<help<<std::endl;
-	      help->SetFlow(j,oldc);
-	      return false;
-	    }
-	    if (singlet) {
-	      ATOOLS::msg.Tracking()<<"Hadron_Remnant::AdjustColours(..): "
-				    <<"Created colour singlet. Try to correct."<<std::endl;
-	      help->SetFlow(j,oldc);
-	      return true;
-	    }
-	  }
-	}
+  if (forward) {
+    for (int i=0;i<particle->DecayBlob()->NOutP();++i) {
+      ATOOLS::Particle *help=particle->DecayBlob()->OutParticle(i);
+      if (help->GetFlow(anti)==oldc && m_adjusted.find(help)==m_adjusted.end()) {
+	if (!AdjustColours(help,oldc,newc,singlet,anti,forward)) return false;
+	if (!singlet) help->SetFlow(anti,newc);
+	return true;
       }
-      for (int i=0;i<cur->NInP();++i) {
-	for (int j=1;j<3;++j) {
-	  ATOOLS::Particle *help=cur->InParticle(i);
-	  if (help->GetFlow(j)==(int)oldc) {
-	    help->SetFlow(j,newc);
-	    if (!AdjustColours(help,oldc,newc,singlet,catcher)) {
- 	      ATOOLS::msg.Error()<<"   ("<<oldc<<" -> "<<newc<<") for:"<<help<<std::endl;
-	      return false;
-	      help->SetFlow(j,oldc);
-	    }
-	    if (singlet) {
-	      ATOOLS::msg.Tracking()<<"Hadron_Remnant::AdjustColours(..): "
-				    <<"Created colour singlet. Try to correct."<<std::endl;
-	      help->SetFlow(j,oldc);
-	      return true;
-	    }
-	  }
-	}
+    }
+    for (int i=0;i<particle->DecayBlob()->NInP();++i) {
+      ATOOLS::Particle *help=particle->DecayBlob()->InParticle(i);
+      if (help->GetFlow(3-anti)==oldc && m_adjusted.find(help)==m_adjusted.end()) {
+	if (!AdjustColours(help,oldc,newc,singlet,3-anti,!forward)) return false;
+	if (!singlet) help->SetFlow(3-anti,newc);
+	return true;
+      }
+    }
+  }
+  else {
+    for (int i=0;i<particle->ProductionBlob()->NInP();++i) {
+      ATOOLS::Particle *help=particle->ProductionBlob()->InParticle(i);
+      if (help->GetFlow(anti)==oldc && m_adjusted.find(help)==m_adjusted.end()) {
+	if (!AdjustColours(help,oldc,newc,singlet,anti,forward)) return false;
+	if (!singlet) help->SetFlow(anti,newc);
+	return true;
+      }
+    }
+    for (int i=0;i<particle->ProductionBlob()->NOutP();++i) {
+      ATOOLS::Particle *help=particle->ProductionBlob()->OutParticle(i);
+      if (help->GetFlow(3-anti)==(int)oldc && m_adjusted.find(help)==m_adjusted.end()) {
+	if (!AdjustColours(help,oldc,newc,singlet,3-anti,!forward)) return false;
+	if (!singlet) help->SetFlow(3-anti,newc);
+	return true;
       }
     }
   }
   return true;
+}
+
+bool Hadron_Remnant::AdjustColours(ATOOLS::Particle *particle,int oldc,int newc,bool &singlet)
+{
+  m_adjusted.clear();
+  if (oldc==newc) return true; 
+  size_t i=1;
+  for (;i<3;++i) if (particle->GetFlow(i)==oldc) break;
+  bool result=AdjustColours(particle,oldc,newc,singlet,i,true);
+  if (result && !singlet) particle->SetFlow(i,newc);
+  return result;
 }
 
 ATOOLS::Particle *Hadron_Remnant::FindConnected(ATOOLS::Particle *particle,bool same,int orig) 
@@ -346,28 +373,32 @@ bool Hadron_Remnant::TreatQuark(ATOOLS::Particle *cur)
       ATOOLS::Particle *rem=comp[0]; comp[0]=comp[1]; comp[1]=rem;
     }
     if (cur->Flav().IsAnti()) {
-      unsigned int old1=comp[1]->GetFlow(2), new1=newpart->GetFlow(1);
-      unsigned int old2=comp[0]->GetFlow(1), new2=cur->GetFlow(2);
-      success=success&&AdjustColours(comp[1],old1,new1,singlet,0);
+      int old=comp[1]->GetFlow(2);
+      success=success&&AdjustColours(comp[1],old,newpart->GetFlow(1),singlet);
       if (singlet) continue;
-      success=success&&AdjustColours(comp[0],old2,new2,singlet,0);
-      if (singlet) continue;
-      comp[1]->SetFlow(2,new1);
-      comp[0]->SetFlow(1,new2);
+      success=success&&AdjustColours(cur,cur->GetFlow(2),comp[0]->GetFlow(1),singlet);
+      if (singlet) {
+	AdjustColours(comp[1],comp[1]->GetFlow(2),old,singlet=false);
+	singlet=true;
+	continue;
+      }
     }
     else {
-      unsigned int old1=comp[1]->GetFlow(1), new1=newpart->GetFlow(2);
-      unsigned int old2=comp[0]->GetFlow(2), new2=cur->GetFlow(1);
-      success=success&&AdjustColours(comp[1],old1,new1,singlet,0);
+      int old=comp[1]->GetFlow(1);
+      success=success&&AdjustColours(comp[1],old,newpart->GetFlow(2),singlet);
       if (singlet) continue;
-      success=success&&AdjustColours(comp[0],old2,new2,singlet,0);
-      if (singlet) continue;
-      comp[1]->SetFlow(1,new1);
-      comp[0]->SetFlow(2,new2);
+      success=success&&AdjustColours(cur,cur->GetFlow(1),comp[0]->GetFlow(2),singlet);
+      if (singlet) {
+	AdjustColours(comp[1],comp[1]->GetFlow(1),old,singlet=false);
+	singlet=true;
+	continue;
+      }
     }
   }
   m_parton[0].push_back(newpart);
+  p_beamblob->AddToOutParticles(newpart);
   m_parton[2].push_back(cur);
+  p_beamblob->AddToOutParticles(cur);
   return success;
 }
 
@@ -382,27 +413,30 @@ bool Hadron_Remnant::TreatGluon(ATOOLS::Particle *cur)
     singlet=false;
     do { comp[0]=SelectCompanion(cur); } while ((comp[1]=FindConnected(comp[0]))==NULL);
     if (comp[0]->Flav().IsAnti()^comp[0]->Flav().IsDiQuark()) {
-      unsigned int old1=comp[0]->GetFlow(2), new1=cur->GetFlow(1);
-      unsigned int old2=comp[1]->GetFlow(1), new2=cur->GetFlow(2);
-      success=success&&AdjustColours(comp[0],old1,new1,singlet,0);
+      int old=comp[0]->GetFlow(2);
+      success=success&&AdjustColours(comp[0],old,cur->GetFlow(1),singlet);
       if (singlet) continue;
-      success=success&&AdjustColours(comp[1],old2,new2,singlet,0);
-      if (singlet) continue;
-      comp[0]->SetFlow(2,new1);
-      comp[1]->SetFlow(1,new2);
+      success=success&&AdjustColours(cur,cur->GetFlow(2),comp[1]->GetFlow(1),singlet);
+      if (singlet) {
+	AdjustColours(comp[0],comp[0]->GetFlow(2),old,singlet=false);
+	singlet=true;
+	continue;
+      }
     }
     else {
-      unsigned int old1=comp[0]->GetFlow(1), new1=cur->GetFlow(2);
-      unsigned int old2=comp[1]->GetFlow(2), new2=cur->GetFlow(1);
-      success=success&&AdjustColours(comp[0],old1,new1,singlet,0);
+      int old=comp[0]->GetFlow(1);
+      success=success&&AdjustColours(comp[0],old,cur->GetFlow(2),singlet);
       if (singlet) continue;
-      success=success&&AdjustColours(comp[1],old2,new2,singlet,0);
-      if (singlet) continue;
-      comp[0]->SetFlow(1,new1);
-      comp[1]->SetFlow(2,new2);
+      success=success&&AdjustColours(cur,cur->GetFlow(1),comp[1]->GetFlow(2),singlet);
+      if (singlet) {
+	AdjustColours(comp[0],comp[0]->GetFlow(1),old,singlet=false);
+	singlet=true;
+	continue;
+      }
     }
   }
   m_parton[2].push_back(cur);
+  p_beamblob->AddToOutParticles(cur);
   return success;
 }
 
