@@ -6,6 +6,7 @@
 
 using namespace APHYTOOLS;
 using namespace AMATOOLS;
+using namespace std;
 
 Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
 				     Selector_Data * _seldata) {
