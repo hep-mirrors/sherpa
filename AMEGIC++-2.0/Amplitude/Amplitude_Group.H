@@ -47,11 +47,8 @@ namespace AMEGIC {
     Amplitude_Base* operator[](const int i) {return (i<graphs.size()) ? graphs[i] : 0;}
 
     Amplitude_Base* GetAmplitude(const int n) {
-      //      std::cout<<"Searching for number "<<n<<std::endl;
-      //      std::cout<<"Number of Graphs: "<<graphs.size()<<std::endl;
       for (int i=0;i<graphs.size();i++) {
 	Amplitude_Base* help = graphs[i]->GetAmplitude(n);
-	//        if (help!=0) std::cout<<"Found it as number "<<i<<std::endl; 
 	if (help!=0) return help;
       }
       return 0;
@@ -59,6 +56,46 @@ namespace AMEGIC {
 
     void BuildGlobalString(int*,int,Basic_Sfuncs*,APHYTOOLS::Flavour*,String_Handler*);
   };
+
+  /*! 
+    \file
+    \brief this file contains the class AMEGIC::Amplitude_Group
+  */
+
+  /*! \class Amplitude_Group
+      \brief is the basis class for gouping Feynman amplitudes in
+             Color_Group's or Super_Amplitudes
+  */
+
+  /*!
+    \fn Amplitude_Base* GetSingleGraph(std::list<sknot*>&)
+    \brief
+  */
+
+  /*!
+    \fn Complex Zvalue(String_Handler * sh,int ihel) 
+    \brief
+  */
+
+  /*!
+    \fn Complex Zvalue(int ihel,int* signlist) 
+
+    void    PrintGraph()
+    void FillCoupling(String_Handler* shand) 
+    void ClearCalcList()
+
+    void SetStringOn()  
+    void SetStringOff() 
+    void SetNumber(int& n) 
+    void Add(Amplitude_Base* ab, int sign =1)
+    int  Size() 
+    Amplitude_Base* operator[](const int i) 
+
+    Amplitude_Base* GetAmplitude(const int n)
+    void BuildGlobalString(int*,int,Basic_Sfuncs*,APHYTOOLS::Flavour*,String_Handler*)
+
+  */
+
 }
 #endif
 
