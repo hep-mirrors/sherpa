@@ -128,7 +128,7 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,int beam,Blob * jet,
   if (m_bl_meps_is==NULL) {
     ATOOLS::msg.Error()<<"Initial_State_Shower::ExtractPartons(..): "
 		       <<"No ME PS Interface found. Cannot proceed. Abort."<<std::endl;
-    exit(126);
+    abort();
   }
   m_bl_meps_is->SetStatus(0);
 
