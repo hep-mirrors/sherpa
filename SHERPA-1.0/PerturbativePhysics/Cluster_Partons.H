@@ -58,7 +58,7 @@ namespace SHERPA {
     double  m_weight;
 
     double  m_qmin_i,m_qmin_f;
-    double  m_ycut;
+    double  m_ycut,m_delta_r;
 
     double  m_scale,m_asscale;
     int     m_colors[4][2];

@@ -1375,6 +1375,7 @@ void Cluster_Partons::CreateFlavourMap() {
   m_nstrong   = proc->NStrong();
   const Flavour * flavs=proc->Flavours();
   double ycut= proc->Ycut();
+  m_delta_r=ATOOLS::rpa.gen.DeltaR();
   if (ycut!=-1.) {
 //     std::cout<<" selector ycut= "<<ycut<<" \n"<<std::endl;
     m_ycut=ycut;

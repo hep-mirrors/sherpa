@@ -469,10 +469,10 @@ void Timelike_Sudakov::CheckSplittings()
 }
 
 
-void Timelike_Sudakov::SetJetvetoPt2(const double pt2) 
-{ 
-  p_kin->SetJetvetoPt2(pt2); 
-}
+// void Timelike_Sudakov::SetJetvetoPt2(const double pt2) 
+// { 
+//   p_kin->SetJetvetoPt2(pt2); 
+// }
 
 const Simple_Polarisation_Info & Timelike_Sudakov::GetPolB()
 {

@@ -57,9 +57,9 @@ void Apacic::SetJetvetoPt2(const double q2i, const double q2f)
 //   std::cout<<" Apacic::SetJetvetoPt2("<<q2i<<","<<q2f<<")\n";
   
   if (m_fsron) 
-    p_finshower->SetJetvetoPt2(q2f); 
+    p_finshower->SetJetvetoPt2(q2i); 
   if (m_isron)
-    p_inishower->SetJetvetoPt2(q2i,q2f); 
+    p_inishower->SetJetvetoPt2(q2i,q2i); 
 }
 
 void Apacic::SetFactorisationScale(const double scale)

@@ -642,5 +642,5 @@ void Jet_Finder::BoostBack(Vec4D & p)
 void Jet_Finder::SetDeltaR(double dr) 
 { 
   m_delta_r = dr; 
-  rpa.gen.SetDeltaR(dr);
+//   rpa.gen.SetDeltaR(dr);
 }

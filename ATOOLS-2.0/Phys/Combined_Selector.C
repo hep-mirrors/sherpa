@@ -51,8 +51,8 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
 	}
 	rmin=Max(rmin,rpa.gen.Ycut());
 	rpa.gen.SetYcut(rmin);
+	rpa.gen.SetDeltaR(rmax);
 	if (ycut>0.) { 
-// 	  cout<<"Combined selector: reset ycut: "<<ycut<<endl;
 	  rmin=ycut;
 	}
 	{
