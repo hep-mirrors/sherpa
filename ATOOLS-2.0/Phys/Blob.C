@@ -47,7 +47,6 @@ namespace ATOOLS {
 #endif
     ostr<<std::setw(4)<<std::setprecision(4);
     ostr<<"Blob ["<<bl.Status()<<"]( "<<bl.Id()<<", "<<bl.Type()<<", ";
-    //    ostr<<"Blob ( "<<bl.Id()<<", "<<bl.Type()<<", ";
     if (bl.Beam() != -1) {
       ostr<<" from Beam "<<bl.Beam()<<", ";
     }
