@@ -115,20 +115,21 @@ for EXTENSION in $EXTENSIONS ; do
   COUNT=`cat $LOGFILE | grep "R " | grep $EXTENSION | wc -l`
   (( TRCOUNT = TRCOUNT + COUNT )); COUNT=0
 done
-if [ ! "$NOSTATS" = "TRUE" ] ; then
+if [ ! "$CHANGES" = "TRUE" ] ; then
   echo -e "\e[1m==================================================\e[0m"
-  if (( $TUCOUNT != 0 )) ; then echo "Updated   : $TUCOUNT" ; fi
-  if (( $TMCOUNT != 0 )) ; then echo "Modified  : $TMCOUNT" ; fi
-  if (( $TCCOUNT != 0 )) ; then echo "Conflicts : $TCCOUNT" ; fi
-  if (( $TNCOUNT != 0 )) ; then echo "New       : $TNCOUNT" ; fi
-  if (( $TACOUNT != 0 )) ; then echo "Added     : $TACOUNT" ; fi
-  if (( $TRCOUNT != 0 )) ; then echo "Removed   : $TRCOUNT" ; fi
+  echo -e "update: no recognized changes"
+else 
+  if [ ! "$NOSTATS" = "TRUE" ] ; then
+    echo -e "\e[1m==================================================\e[0m"
+    if (( $TUCOUNT != 0 )) ; then echo "Updated   : $TUCOUNT" ; fi
+    if (( $TMCOUNT != 0 )) ; then echo "Modified  : $TMCOUNT" ; fi
+    if (( $TCCOUNT != 0 )) ; then echo "Conflicts : $TCCOUNT" ; fi
+    if (( $TNCOUNT != 0 )) ; then echo "New       : $TNCOUNT" ; fi
+    if (( $TACOUNT != 0 )) ; then echo "Added     : $TACOUNT" ; fi
+    if (( $TRCOUNT != 0 )) ; then echo "Removed   : $TRCOUNT" ; fi
+  fi
 fi
 echo -e "\e[1m==================================================\e[0m"
-if [ ! "$CHANGES" = "TRUE" ] ; then
-  echo -e "update: no recognized changes"
-  echo -e "\e[1m==================================================\e[0m"
-fi
 
 if test -f $TEMPFILE ; then rm $TEMPFILE ; fi
 if [ ! "$CLOGFILE" = "TRUE" ] ; then
