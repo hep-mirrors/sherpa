@@ -21,12 +21,17 @@ namespace ATOOLS {
   const ATOOLS::Vec4D UNDEFINED_VECTOR=ATOOLS::Vec4D();
 
   class Integration_Info {
+  public:
+
+    typedef std::vector<Info_Key*>                     Key_Vector;
+    typedef std::pair<size_t,Key_Vector>               SizeT_KeyVector_Pair;
+    typedef std::map<std::string,SizeT_KeyVector_Pair> String_KeyPair_Map;
+    typedef std::pair<size_t,String_KeyPair_Map>       SizeT_KeyMap_Pair;
+    typedef std::map<std::string,SizeT_KeyMap_Pair>    String_MapPair_Map;
+
   private:
 
-    std::map<std::string,
-	     std::pair<size_t,
-		       std::map<std::string,
-				std::pair<size_t,std::vector<Info_Key*> > > > > m_keymap;
+    String_MapPair_Map m_keymap;
 
     std::vector<Double_Container> m_doubles;
     std::vector<Vector_Container> m_vectors;
@@ -45,7 +50,8 @@ namespace ATOOLS {
     double        Double(const size_t valuekey,const size_t i) const;
     ATOOLS::Vec4D Vector(const size_t valuekey,const size_t i) const;
 
-    void   SetWeight(const size_t valuekey,const size_t weightkey,const double weight);
+    void   SetWeight(const size_t valuekey,const size_t weightkey,
+		     const double weight);
     double Weight(const size_t valuekey,const size_t weightkey) const;
     
     si::code SetStatus(const size_t statuskey,const si::code status);
@@ -53,13 +59,17 @@ namespace ATOOLS {
 
     friend class Info_Key;
 
-    friend std::ostream &operator<<(std::ostream &str,const Integration_Info &info);
+    friend std::ostream &operator<<(std::ostream &str,
+				    const Integration_Info &info);
     friend std::ostream &operator<<(std::ostream &str,const Info_Key &key);
 
   public:
 
     // constructor
     Integration_Info();
+
+    // destructor
+    ~Integration_Info();
 
     // member functions
     void ResetAll();
@@ -77,11 +87,12 @@ namespace ATOOLS {
     of the phase space integrator.
     Information is stored in a std::vector<Double_Container> and a 
     std::vector<Vector_Container> respectively to provide constant time access.
-    Weight storage and status information is provided too, such that multiple calculation 
-    of weights becomes obsolete.
+    Weight storage and status information is provided too, 
+    such that multiple calculation of weights becomes obsolete.
 
-    Each Channel evaluating a certain variable may access Integration_Info through
-    a corresponding Info_Key which communicates with Integration_Info automatically.
+    Each Channel evaluating a certain variable may access Integration_Info 
+    through a corresponding Info_Key which communicates with Integration_Info 
+    automatically.
     The appropriate way is to create a key like in the example below
     \code
        class Example_Channel: public Single_Channel {
@@ -101,8 +112,8 @@ namespace ATOOLS {
     \endcode
     The usage of keys is described in the documentation of Info_Key.
 
-    Direct access to Integration_Info is prohibited to preserve the corruption of 
-    data.
+    Direct access to Integration_Info is prohibited to preserve 
+    the corruption of data.
   */
 
 }// end of namespace ATOOLS
