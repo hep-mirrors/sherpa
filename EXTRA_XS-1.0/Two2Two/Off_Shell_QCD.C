@@ -104,22 +104,20 @@ double Off_Shell_gg_gg::operator()(double s,double t,double u)
   double S=2.*p1*p2, S2=2./S;
   double a=p2*k*S2, b=p1*k*S2;
   double a1=p2*k1*S2, b2=p1*k2*S2;
-  ATOOLS::Vec4D At1=
-    (k1.Perp()*k.Perp())*(k1+k)
-    +(k1.Perp()*(p3-k))*k.Perp()
-    -(k.Perp()*(k1+p3))*k1.Perp();
-  ATOOLS::Vec4D At2=
-    (k.Perp()*k2.Perp())*(k+k2)
-    +(k.Perp()*(p4-k2))*k2.Perp()
-    -(k2.Perp()*(k+p4))*k.Perp();
-  double Mt1=2*(At1*p3)*(At1*p4)/(p3*p4)-At1*At1;
-  double Mt2=2*(At2*p4)*(At2*p3)/(p4*p3)-At2*At2;
+  const ATOOLS::Vec4D epslp(0.0,1.0,0.0,0.0), epsrp(0.0,0.0,1.0,0.0);
+  double kp12=k1.PPerp2(), kp22=k2.PPerp2(), kp2=k.PPerp2();
+  ATOOLS::Vec4D L1=(a1+2.0*kp12/(b*S))*p1+(b+2.0*kp2/(a1*S))*p2-(k1+k).Perp();
+  ATOOLS::Vec4D L2=(a+2.0*kp2/(b2*S))*p1+(b2+2.0*kp22/(a*S))*p2-(k+k2).Perp();
+  ATOOLS::Vec4D eps1=epsrp-(k1*epsrp)/(k1*p2)*p2;
+  ATOOLS::Vec4D eps2=epslp-(k2*epslp)/(k2*p1)*p1;
+  double A=ATOOLS::sqr((L1*eps1)*(L2*eps2)/kp2);
   double Xi1=p3.PMinus()/p3.PPlus(), Xi2=p4.PPlus()/p4.PMinus();
-  double xi1=k1.PMinus()/k1.PPlus(), xi2=k2.PPlus()/k2.PMinus();
-  if (xi1>=Xi1 || xi2>=Xi2 || Xi1*Xi2>=1.) return 0.;
-  double result=(Mt1*Mt2)*
-    ATOOLS::sqr(S2*S2/(k.PPerp2()*a1*a*b*b2));
-  return ATOOLS::sqr(4.*M_PI*m_alphas)*(NC*NC)/(NC*NC-1)/(2.*4.)*result;
+  const double m_cut=Xi1*Xi2;
+  if (m_cut>=1.) return 0.;
+  if (kp12/kp22<m_cut || kp22/kp12<m_cut) return 0.0;
+  if (kp2/kp12<m_cut || kp12/kp2<m_cut) return 0.0;
+  if (kp2/kp22<m_cut || kp22/kp2<m_cut) return 0.0;
+  return ATOOLS::sqr(4.*M_PI*m_alphas)*(NC*NC)/(NC*NC-1)/(2.*4.)*A;
 }
 
 bool Off_Shell_gg_gg::SetColours(double s,double t,double u) 
@@ -135,8 +133,10 @@ bool Off_Shell_gg_gg::Trigger(const ATOOLS::Vec4D *const momenta)
   for (int i=2;i<4;++i) temp[i+2]=momenta[i];
   double x1=momenta[0]*momenta[5]/(momenta[4]*momenta[5]);
   double x2=momenta[1]*momenta[4]/(momenta[4]*momenta[5]);
-  double b1=m_zkey[0][2]/(1.-m_zkey[0][2])*momenta[0].PPerp2()/x1/p_isrhandler->Pole();
-  double b2=m_zkey[1][2]/(1.-m_zkey[1][2])*momenta[1].PPerp2()/x2/p_isrhandler->Pole();
+  double b1=m_zkey[0][2]/(1.-m_zkey[0][2])*
+    momenta[0].PPerp2()/x1/p_isrhandler->Pole();
+  double b2=m_zkey[1][2]/(1.-m_zkey[1][2])*
+    momenta[1].PPerp2()/x2/p_isrhandler->Pole();
   temp[2]=x1*(1./m_zkey[0][2]-1.)*momenta[4]+b1*momenta[5]-momenta[0].Perp();
   temp[3]=x2*(1./m_zkey[1][2]-1.)*momenta[5]+b2*momenta[4]-momenta[1].Perp();
   p_selector->SetNOut(m_nvector-m_nin);
