@@ -106,7 +106,6 @@ namespace APACIC {
     ResetKnots();    
   }
 
-
 }
 #endif
 

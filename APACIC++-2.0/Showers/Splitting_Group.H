@@ -27,11 +27,12 @@ namespace APACIC {
     //! Summing over all splittings, filling individual values and total sum
     virtual double CrudeInt(double _zmin, double _zmax);
     /*!
-      A load of varios functions to return values of the particular
+      A load of various functions to return values of the particular
       selected function out of the group, see Splitting_Function.H
       for more details.
     */
     double operator()(double z);
+    double Integral(double zmin,double zmax);
     double GetZ();
     double GetCoupling();
     double GetCoupling(double t);

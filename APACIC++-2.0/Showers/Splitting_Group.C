@@ -85,7 +85,17 @@ ATOOLS::Flavour & Splitting_Group::GetFlC()
   return p_selected->GetFlC();
 }  
 
-void Splitting_Group::Add(Splitting_Function * spl) {
+void Splitting_Group::Add(Splitting_Function * spl) 
+{
   m_group.Append(spl);
   p_selected = spl;
+}
+
+double Splitting_Group::Integral(double zmin,double zmax)
+{
+  double value=0.; 
+  for (SplFunIter iter(m_group);iter();++iter) {
+    value+=iter()->Integral(zmin,zmax);
+  }
+  return value;
 }

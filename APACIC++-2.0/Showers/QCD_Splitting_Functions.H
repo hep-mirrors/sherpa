@@ -21,6 +21,7 @@ namespace APACIC {
     double GetCoupling(double t);
     double GetWeight(double z,double pt2,bool massterm);
     double CrudeInt(double _zmin, double _zmax);
+    double Integral(double zmin, double zmax);
   };
 
   // gluon to gluon + gluon splitting function (needed twice for initial state shower)
@@ -36,6 +37,7 @@ namespace APACIC {
     double GetCoupling(double t);
     double GetWeight(double z,double pt2,bool masses);
     double CrudeInt(double _zmin, double _zmax);
+    double Integral(double zmin, double zmax);
   };
 
   // gluon to quark + anti-quark splitting function
@@ -51,6 +53,7 @@ namespace APACIC {
     double GetCoupling(double t);
     double GetWeight(double z,double pt2,bool masses);
     double CrudeInt(double _zmin, double _zmax);
+    double Integral(double zmin, double zmax);
   };
 
 
@@ -67,6 +70,7 @@ namespace APACIC {
     double GetCoupling(double t);
     double GetWeight(double z,double pt2,bool massterm);
     double CrudeInt(double _zmin, double _zmax);
+    double Integral(double zmin, double zmax);
   };
 
   /*!

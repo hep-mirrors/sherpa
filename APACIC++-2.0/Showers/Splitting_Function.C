@@ -16,6 +16,11 @@ double Splitting_Function::CrudeInt(double z0)
   return CrudeInt(z0,1.-z0);
 }
 
+double Splitting_Function::Integral(double zmin,double zmax)  
+{ 
+  return 0.;
+}
+
 double Splitting_Function::GetLastInt() 
 {
   return m_lastint;

@@ -3,6 +3,8 @@
 #include "MathTools.H"
 #include "Random.H"
 
+#include "Message.H"
+
 using namespace APACIC;
 using namespace std;
 
@@ -49,6 +51,11 @@ double q_qg::CrudeInt(double _zmin, double _zmax)
   return 2.*s_CF*m_alpha*log((1.-m_zmin)/(1.-m_zmax));                              
 }
 
+double q_qg::Integral(double zmin, double zmax) 
+{
+  return s_CF*(-0.5*((1.+zmax)*(1.+zmax)-(1.+zmin)*(1.+zmin))-2.*log((1.-zmax)/(1.-zmin)));
+}
+
 // gluon to gluon + gluon splitting function (needed twice for initial state shower)
 g_gg::g_gg() : p_tools(0) 
 {
@@ -90,6 +97,12 @@ double g_gg::CrudeInt(double _zmin, double _zmax)
   m_zmax = _zmax;
   return s_CA*m_alpha*log((1.-m_zmin)*m_zmax/(m_zmin*(1.-m_zmax)));                    
 } 
+
+double g_gg::Integral(double zmin, double zmax) 
+{
+  return s_CA*(log(zmax*(1.-zmin)/(zmin*(1.-zmax)))-
+	       zmax*(zmax*(zmax/3.-0.5)+2.)+zmin*(zmin*(zmin/3.-0.5)+2.));
+}
 
 //! gluon to quark + anti-quark splitting function
 g_qq::g_qq(ATOOLS::Flavour quarkflavour): p_tools(0) 
@@ -134,6 +147,12 @@ double g_qq::CrudeInt(double _zmin, double _zmax)
   return s_TR*m_alpha*(m_zmax-m_zmin);                                             
 }
 
+double g_qq::Integral(double zmin, double zmax) 
+{
+  return s_TR*(zmax*(zmax*(2.0*zmax/3.0-1.0)+1.0)+
+	       -zmin*(zmin*(2.0*zmin/3.0-1.0)+1.0));
+}
+
 // quark to qluon + quark splitting function (only used in Initial State Shower)
 q_gq::q_gq(ATOOLS::Flavour quarkflavour) 
 {
@@ -172,4 +191,9 @@ double q_gq::CrudeInt(double _zmin, double _zmax) {
   m_zmin = _zmin;
   m_zmax = _zmax;
   return 2.*s_CF*m_alpha*log(m_zmax/m_zmin);
+}
+
+double q_gq::Integral(double zmin, double zmax) 
+{
+  return s_CF*(0.5*(zmax*zmax-zmin*zmin)-2.*(zmax-zmin)+2.0*log(zmax/zmin));
 }

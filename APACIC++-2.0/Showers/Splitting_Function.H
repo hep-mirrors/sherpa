@@ -30,6 +30,8 @@ namespace APACIC {
     virtual double CrudeInt(double,double) = 0;        
     virtual double GetLastInt();
 
+    virtual double Integral(double zmin,double zmax);        
+
     virtual void Add(Splitting_Function *);
     virtual void SelectOne();
   
@@ -53,7 +55,7 @@ namespace APACIC {
     The class Spltting_Function is a purely virtual class.
     All specific splitting functions are derived from this class, and 
     have to implement the physics.
-    This class can be understand as an interface to access an arbitrary 
+    This class can be understood as an interface to access an arbitrary 
     splitting function.
   */
 
