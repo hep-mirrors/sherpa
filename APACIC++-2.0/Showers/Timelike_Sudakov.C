@@ -23,7 +23,7 @@ Timelike_Sudakov::Timelike_Sudakov(Timelike_Kinematics * _kin,double _pt2min,
 {
   m_ordering_scheme = _dataread->GetValue<int>("FS ORDERING",1);       /*  (1=VO+Coherence, 2=VO)                  */ 
   m_cpl_scheme      = _dataread->GetValue<int>("FS COUPLINGS",1);      /*  (0=fix, 1=pt^2, 2=t/4)                  */ 
-  m_pt_scheme       = _dataread->GetValue<int>("FS PT DEFINITION",1);  /*  (0=> pt^2 = z(1-z)t      
+  m_pt_scheme       = _dataread->GetValue<int>("FS PT DEFINITION",2);  /*  (0=> pt^2 = z(1-z)t      
 									   for VO
 			                                                   1=> z(1-z)t - (1-z)*t_0(b) - z*t_0(c)   */
   m_mass_scheme     = _dataread->GetValue<int>("FS MASS SCHEME",1);    /*  (0=cuts, 1=a la Catani, 2=define t_eff) */
