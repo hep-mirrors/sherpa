@@ -2,7 +2,6 @@ SHERPASYS     =	../..
 
 PHASICFLAGS   =	-pedantic -Wall -Winline
 
-PHASICINCS    =	-I../Foam
 MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
 PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main
 BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
@@ -39,7 +38,7 @@ libPhasespace_la_SOURCES      =	\
 				Vegas.C ISR_Vegas.C \
 				Channel_Interface.C \
 			   	Multi_Channel.C \
-				Foam_Interface.C \
+				PI_Interface.C \
 				Phase_Space_Handler.C \
 				Phase_Space_Integrator.C 
 noinst_HEADERS        =	\
@@ -62,7 +61,7 @@ noinst_HEADERS        =	\
 			Vegas.H ISR_Vegas.H \
 			Multi_Channel.H \
 		 	Integrable_Base.H \
-			Foam_Interface.H \
+			PI_Interface.H \
 			Phase_Space_Handler.H \
 			Phase_Space_Integrator.H 
 AM_CXXFLAGS   =	$(PHASICFLAGS) $(ROOTFLAGS)
