@@ -137,6 +137,7 @@ bool MI_Base::CreateBlob(ATOOLS::Blob *blob)
 				    p_blob->InParticle(i)->Momentum());
     particle->SetFlow(1,p_blob->InParticle(i)->GetFlow(1));
     particle->SetFlow(2,p_blob->InParticle(i)->GetFlow(2));
+    particle->SetNumber(1);
     particle->SetStatus(1);
     particle->SetInfo('G');
     blob->AddToInParticles(particle);
@@ -146,6 +147,7 @@ bool MI_Base::CreateBlob(ATOOLS::Blob *blob)
 				    p_blob->OutParticle(i)->Momentum());
     particle->SetFlow(1,p_blob->OutParticle(i)->GetFlow(1));
     particle->SetFlow(2,p_blob->OutParticle(i)->GetFlow(2));
+    particle->SetNumber(1);
     particle->SetStatus(1);
     particle->SetInfo('H');
     blob->AddToOutParticles(particle);
