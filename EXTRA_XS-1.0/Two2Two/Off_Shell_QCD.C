@@ -38,6 +38,7 @@ Off_Shell_gg_qqb::Off_Shell_gg_qqb(const size_t nin,const size_t nout,
   p_addflavours[1]=ATOOLS::kf::gluon;
   p_addmomenta = new ATOOLS::Vec4D[2];
   m_naddout=2;
+  m_nstrong=4;
 }
 
 double Off_Shell_gg_qqb::operator()(double s,double t,double u) 
@@ -109,6 +110,7 @@ Off_Shell_gg_gg::Off_Shell_gg_gg(const size_t nin,const size_t nout,
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader();
   if (!reader->ReadFromFile(m_jets,"LIPATOV_JETS","")) m_jets=2;
   delete reader;
+  m_nstrong=4;
 }
 
 #include "MyComplex.H"
