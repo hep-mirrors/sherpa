@@ -2,7 +2,7 @@
 #define Run_Parameter_H
 
 #include <string>
-#ifdef USING__ATOOLS_only
+#ifndef USING__ATOOLS_only
 #include "Model_Base.H"
 #endif
 #include "Data_Read.H"
@@ -37,7 +37,7 @@ namespace ATOOLS {
       double              m_accu;
       Flavour  m_beam1, m_beam2;
       std::string         m_rpa_id, m_flavour_id;
-#ifdef USING__ATOOLS_only
+#ifndef USING__ATOOLS_only
       Model_Type::code    m_modelcode;
       MODEL::Model_Base * p_model;
 #endif
@@ -55,7 +55,7 @@ namespace ATOOLS {
       inline const  Flavour Beam2()            { return m_beam2; }
       inline void   SetBeam1(const Flavour _b) { m_beam1     = _b; }
       inline void   SetBeam2(const Flavour _b) { m_beam2     = _b; }
-#ifdef USING__ATOOLS_only
+#ifndef USING__ATOOLS_only
       inline void SetModel(MODEL::Model_Base * _mo)       { p_model     = _mo; }
       inline void SetModelType(Model_Type::code _code)    { m_modelcode = _code; }
       inline Model_Type::code Model()                     { return m_modelcode; }
