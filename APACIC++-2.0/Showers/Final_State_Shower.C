@@ -604,8 +604,6 @@ bool  Final_State_Shower::ExtraJetCheck(Knot * mo, Knot * d1, Knot * d2) {
 bool  Final_State_Shower::ExtraJetCheck() const {
   bool test=1;
 
-  std::cout<<"Look at this: "<<m_ini_partons.size()
-	   <<" : "<<(*m_ini_partons[0])<<std::endl;
   if (m_ini_partons.size()>=2) {
     for (size_t i=0;i<m_ini_partons.size()-1;++i) {
       for (size_t j=i+1;j<m_ini_partons.size();++j) {
