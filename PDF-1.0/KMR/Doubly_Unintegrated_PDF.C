@@ -99,6 +99,7 @@ double DGLAP_PDF::Integrate(const double &x,const double &z,const double &kp2)
   bound[1]=2.0*M_PI;
   integrator.SetMax(bound);
   integrator.SetMode(0);
+  integrator.SetShuffleMode(0);
   integrator.SetNOpt(1000);
   integrator.SetNCells(1000);
   integrator.SetNMax(100000);
@@ -405,9 +406,6 @@ bool Doubly_Unintegrated_PDF::Unintegrate(ATOOLS::Flavour flavour)
   }
   switch (m_mode) {
   case 1: {
-#ifdef TEST__Order_All
-    if (m_z*(1.+sqrt(m_kperp2/m_mu2))>1.) return true;
-#endif
     LL_Branching::SF_Set::iterator sfit=
       LL_Branching::AllSplittings().begin();
     for (;sfit!=LL_Branching::AllSplittings().end();++sfit) {
@@ -416,7 +414,7 @@ bool Doubly_Unintegrated_PDF::Unintegrate(ATOOLS::Flavour flavour)
 	    m_z*(1.+sqrt(m_kperp2/m_mu2))>1.) continue;
 	double cur=(*(*sfit))(m_z);
 	if (flavour.IsGluon() && (*sfit)->GetFlA().IsGluon()) {
-	  cur-=6.0/m_z;
+ 	  cur-=6.0/m_z;
 	  cur*=2.0;
 	}
 	m_unintegrated+=cur*p_pdf->GetXPDF((*sfit)->GetFlA());
@@ -424,7 +422,7 @@ bool Doubly_Unintegrated_PDF::Unintegrate(ATOOLS::Flavour flavour)
     }
     if (flavour==ATOOLS::kf::gluon && 
 	m_z*(1.+sqrt(m_kperp2/m_mu2))<=1.) {
-      std::vector<double> x(3,log10(m_kperp2));
+      std::vector<double> x(3,0.5*log10(m_kperp2));
       x[0]=log10(m_x);
       x[1]=log10(m_z);
       p_pdf->Calculate(m_x/m_z,0.0,0.0,m_kperp2*(1.0+1.0e-9));
@@ -432,7 +430,7 @@ bool Doubly_Unintegrated_PDF::Unintegrate(ATOOLS::Flavour flavour)
       p_pdf->Calculate(m_x/m_z,0.0,0.0,m_kperp2);
       cur=(cur-p_pdf->GetXPDF(flavour))/1.0e-9;
       m_unintegrated+=2.0*6.0/m_z*((*p_integral)(x)/M_PI-
-				   cur/2.0*(log(m_kperp2)-log(m_mu02)));
+				   cur*(log(m_kperp2)-log(m_mu02)));
     }
     break;
   }
@@ -441,7 +439,7 @@ bool Doubly_Unintegrated_PDF::Unintegrate(ATOOLS::Flavour flavour)
       LL_Branching::AllSplittings().begin();
     for (;sfit!=LL_Branching::AllSplittings().end();++sfit) {
       if ((*sfit)->GetFlB()==flavour) {
- 	if ((*sfit)->GetFlC().IsGluon() && 
+	if ((*sfit)->GetFlC().IsGluon() && 
 	    m_z*(1.+sqrt(m_kperp2/m_mu2))>1.) continue;
 	m_unintegrated+=(*(*sfit))(m_z)*p_pdf->GetXPDF((*sfit)->GetFlA());
 	if (flavour.IsGluon() && (*sfit)->GetFlA().IsGluon())
