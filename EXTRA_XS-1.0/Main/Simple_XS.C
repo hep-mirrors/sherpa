@@ -69,6 +69,11 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 				      std::string("Selector.dat"));
   if (construct) p_selectordata = new Selector_Data(m_path+selectorfile);
   else p_selectordata = new Selector_Data();
+  ATOOLS::Model_Type::code 
+    model=p_dataread->GetValue<ATOOLS::Model_Type::code>("SIGNAL_MODEL");
+  if (model==ATOOLS::NotDefined<ATOOLS::Model_Type::code>()) 
+    model=ATOOLS::Model_Type::SM;
+  ATOOLS::rpa.gen.SetModelType(model);
   m_scalescheme=p_dataread->GetValue<int>("SCALE_SCHEME",0);
   m_kfactorscheme=p_dataread->GetValue<int>("KFACTOR_SCHEME",0);
   m_scalefactor=p_dataread->GetValue<double>("SCALE_FACTOR",1.);
