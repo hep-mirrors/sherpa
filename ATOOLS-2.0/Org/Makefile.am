@@ -28,9 +28,9 @@ libToolsOrg_la_SOURCES        = \
 noinst_HEADERS        =	\
 			Exeptions.H \
 			File_IO_Base.H \
-			File_IO_Base.IC \
+			File_IO_Base.inl.H \
 			Read_Write_Base.H \
-			Read_Write_Base.IC \
+			Read_Write_Base.inl.H \
 			Data_Reader.H \
 			Data_Writer.H \
 			Data_Read.H \
