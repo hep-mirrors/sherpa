@@ -1,0 +1,52 @@
+#!/bin/bash
+# creates a script for the distribution of compiles of libraries on
+# a gridengine batch system (our Xeon cluster)
+#
+# to use this script you have to
+#  * modify ./makelibs to only create the makefiles (comment make install)
+#  * the execute this script in the subdirectory you want to compile
+#    (usually something like Process/P2_6)
+#  * commit the jobs as printed by this script
+#  * run "make install" to copy the libraries to the lib directory
+
+SFILE="docompile.sh"
+
+echo "#!/bin/bash" >> $SFILE
+echo "#$ -j y"  >> $SFILE
+echo "#$ -N Compile"  >> $SFILE
+echo "" >> $SFILE
+echo "cd $PWD" >> $SFILE
+echo "" >> $SFILE
+echo "TASK_ID=\$SGE_TASK_ID" >> $SFILE
+echo "" >> $SFILE
+echo "if [ \"\$TASK_ID\" = \"0\" ]; then CDIR=\".\"" >> $SFILE
+
+DIRS=`ls -d P2_* fsrchannels*`
+COUNTER=0
+
+for J in $DIRS; do
+ if test -d $J; then 
+  COUNTER=`expr $COUNTER + 1`
+  echo "elif [ \"\$TASK_ID\" = \"$COUNTER\" ]; then CDIR=$J" >> $SFILE
+ fi
+done
+
+echo "else" >> $SFILE
+echo " echo error sge_task_id $SGE_TASK_ID" >> $SFILE
+echo " echo error task_id $TASK_ID not supported" >> $SFILE
+echo "  exit 1" >> $SFILE
+echo "fi" >> $SFILE
+
+echo "" >> $SFILE
+echo "cd \$CDIR" >> $SFILE
+echo "make -j2" >> $SFILE
+
+chmod 755 $SFILE
+echo "$SFILE created"
+echo "commit via"
+echo "   qsub -t 1-$COUNTER $SFILE"
+
+# Local Variables:
+# mode: shell-script
+# sh-indentation: 2
+# End:

@@ -1,0 +1,78 @@
+#!/bin/bash
+
+SSIZE=0
+CPID=0
+
+if [ "$1" = "-h" ]; then
+  echo "guard -h|-a|<pid> [<thresold>]"
+  echo " checks memory consumption of running Sherpa instances and stops them if a threshold is exceeded"
+  echo " options: -h         display this help end exit"
+  echo "          -a         automatically choose a running Sherpa instance"
+  echo "          <pid>      guard process with that PID"
+  echo "          <thresold> value of memory consumption in kB, when process is stopped"
+  exit 0
+elif [ "$1" = "-a" ]; then
+  echo " looking for running Sherpa "
+  PACS=`ps -fu $USER | grep "Sherpa" | grep -v -e grep | awk '{printf $2 "\n"}'` 
+  echo $PACS
+  for J in $PACS ; do 
+    if test -d  /proc/$J; then 
+      CPID=$J
+      ps --no-headers -fp $J 
+    fi
+  done
+  if (( $CPID == 0 )); then
+    echo "no Sherpa found"
+    exit 2
+  fi 
+elif [ "$1" = "" ]; then
+  echo "too few arguments given, use -h to get an overview"
+  exit 1
+else 
+  CPID=$1
+  if [ "$2" != "" ]; then
+    SSIZE=$2
+  fi
+fi
+
+#
+# set theshold if not set externally
+#
+if (( $SSIZE == 0 )); then
+  SSIZE=`grep -e VmSize /proc/$CPID/status | awk '{ printf $2 }'`
+  (( SSIZE+=100 ))
+  echo "$SSIZE kb"    
+fi
+
+#
+# starting garding loop
+#
+
+ISIZE=0
+I=0
+
+echo "guarding...."
+
+while (( $ISIZE < $SSIZE )) ; do
+  (( ++I ))
+  sleep 1
+  if test -d  /proc/$CPID; then 
+    ISIZE=`grep -e VmSize /proc/$CPID/status | awk '{ printf $2 }'`
+    echo $I $ISIZE "kb"
+  else
+    echo "job finished"
+    exit 0
+  fi
+done
+
+#
+# stop process in question
+#   continue  with "kill -18 $CPID"
+#   or debugg with "gdb Sherpa $CPID"
+#
+kill -19 $CPID
+
+# Local Variables:
+# mode: shell-script
+# sh-indentation: 2
+# End:
