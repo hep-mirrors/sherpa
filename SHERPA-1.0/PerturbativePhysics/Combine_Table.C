@@ -303,15 +303,15 @@ Combine_Table * Combine_Table::CalcJet(int nl,double _x1,double _x2, ATOOLS::Vec
       }
     }
     
-    // make sure min search starts with the highest scale
-    if (pt2ij>pt2max && pt2min==pt2max) {
-      //	pt2max=pt2min;
-      pt2min=pt2ij;
-      cwin = cit;
-    }
     if (cit->strong==0 && pt2ij>pt2max && ewpt2min==pt2max) {
       ewpt2min=pt2ij;
       ewcit=cit;
+    }
+    // make sure min search starts with the highest scale
+    if (pt2ij>pt2max && pt2min==pt2max) {
+      pt2max=pt2min;
+      pt2min=pt2ij;
+      cwin = cit;
     }
     
     if (pt2ij<pt2min) {

@@ -484,26 +484,18 @@ int Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
     m_asscale = 0.5*(sqr(p[2][1])+sqr(p[2][2])+sqr(p[3][1])+sqr(p[3][2]));
     msg.Tracking()<<"q1^2 = "<<m_asscale<<endl;
 
-    // --- test only ---
+    // --- better determine pt in the right system  ---
 
     Vec4D q[4];
-    for (int i=0;i<4;++i) {
-      q[i]=p[i];
-    }
+    for (int i=0;i<4;++i) q[i]=p[i];
     Poincare cms(q[0]+q[1]);
-    for (int i=0;i<4;++i) {
-      cms.Boost(q[i]);
-      //      msg.Out()<<i<<" : "<<q[i]<<endl;
-    }
+    for (int i=0;i<4;++i)    cms.Boost(q[i]);
     Poincare rot(q[0],Vec4D::ZVEC);
-    for (int i=0;i<4;++i) {
-      rot.Rotate(q[i]);
-      //      msg.Out()<<i<<" : "<<q[i]<<" ("<<q[i].Abs2()<<")"<<endl;
-    }
+    for (int i=0;i<4;++i)      rot.Rotate(q[i]);
     m_asscale = 0.5*(sqr(q[2][1])+sqr(q[2][2])+sqr(q[3][1])+sqr(q[3][2]));
     msg.Tracking()<<"q1^2 = "<<m_asscale<<endl;
 
-    // --- end test
+    // --- end ---
 
     m_scale = m_asscale + p[2].Abs2()+p[3].Abs2();
 
@@ -913,6 +905,8 @@ void Cluster_Partons::EstablishRelations(Knot * mo, Knot * d1,Knot * d2,int mode
     d2->prev  = mo;
 
     APACIC::Final_State_Shower::EstablishRelations(mo,d1,d2);
+
+    mo->tout = mo->t;
 
     return;
   }
