@@ -449,7 +449,7 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p)
 
 void Phase_Space_Handler::WriteOut(const std::string &pID) 
 {
-  msg.Info()<<"Write out channels into directory : "<<pID<<endl;
+  msg.Tracking()<<"Write out channels into directory : "<<pID<<endl;
   int  mode_dir = 448;
   mkdir(pID.c_str(),mode_dir); 
   if (p_beamchannels != 0) p_beamchannels->WriteOut(pID+string("/MC_Beam"));

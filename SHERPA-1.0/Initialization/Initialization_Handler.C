@@ -583,11 +583,11 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 
     if (special_options.find(par)!=special_options.end()) 
       mode = special_options[par];
-    ATOOLS::msg.Out()<<i<<" : "<<argv[i]<<" ->"<<mode<<endl;
+    ATOOLS::msg.Info()<<i<<" : "<<argv[i]<<" ->"<<mode<<endl;
 
     // variables in dat files
     if (equal!=-1 && mode==1) {
-      ATOOLS::msg.Out()<<equal<<":"<<key<<" = "<<value<<" ("<<par<<")"<<endl;
+      ATOOLS::msg.Info()<<equal<<":"<<key<<" = "<<value<<" ("<<par<<")"<<endl;
       Data_Read::SetCommandLine(key,value);
     }
     
