@@ -35,7 +35,7 @@ Exception::Exception(const ex::type type,const std::string info,
 
 void Exception::Terminate() 
 {
-  msg.Error()<<"ATOOLS::Terminate(): Preparing termination ..."<<std::endl;
+  msg.Error()<<"Exception::Terminate(): Preparing termination ..."<<std::endl;
   PrepareTerminate();
   Exit(s_exitcode);
 }
