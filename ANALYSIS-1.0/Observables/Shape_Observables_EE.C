@@ -67,10 +67,13 @@ Event_Shapes_Observable_Base::Event_Shapes_Observable_Base(int _type,double _min
 
 DEFINE_OBSERVABLE_GETTER(Thrust,Thrust_Getter,"Thrust");
 
-Thrust::Thrust(int _type,double _min,double _max,int _nbins,const string & _name) :
-  Event_Shapes_Observable_Base(_type,_min,_max,_nbins,_name) {}
+Thrust::Thrust(int type, double xmin, double xmax, int nbins, 
+	       const std::string & listname, const std::string & name) :
+  Event_Shapes_Observable_Base(type,xmin,xmax,nbins,name) 
+{
+}
 
-void Thrust::Evaluate(const Particle_List &,double weight,int ncount) 
+void Thrust::Evaluate(const Blob_List &,double weight,int ncount) 
 {
   Blob_Data_Base * data = (*p_ana)[m_key];
   if (data) {
@@ -80,7 +83,7 @@ void Thrust::Evaluate(const Particle_List &,double weight,int ncount)
 
 Primitive_Observable_Base * Thrust::Copy() const 
 {
-  return new Thrust(m_type,m_xmin,m_xmax,m_nbins);
+  return new Thrust(m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
 
 //================================================================================
@@ -90,10 +93,13 @@ Primitive_Observable_Base * Thrust::Copy() const
 
 DEFINE_OBSERVABLE_GETTER(Major,Major_Getter,"Major");
 
-Major::Major(int _type,double _min,double _max,int _nbins,const string & _name) :
-  Event_Shapes_Observable_Base(_type,_min,_max,_nbins,_name) {}
+Major::Major(int type, double xmin, double xmax, int nbins, 
+		       const std::string & listname, const std::string & name) :
+  Event_Shapes_Observable_Base(type,xmin,xmax,nbins,name) 
+{
+}
 
-void Major::Evaluate(const Particle_List &,double weight,int ncount) 
+void Major::Evaluate(const Blob_List &,double weight,int ncount) 
 {
   Blob_Data_Base * data = (*p_ana)[m_key];
   if (data) {
@@ -103,7 +109,7 @@ void Major::Evaluate(const Particle_List &,double weight,int ncount)
 
 Primitive_Observable_Base * Major::Copy() const 
 {
-  return new Major(m_type,m_xmin,m_xmax,m_nbins);
+  return new Major(m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
 
 //================================================================================
@@ -113,10 +119,13 @@ Primitive_Observable_Base * Major::Copy() const
 
 DEFINE_OBSERVABLE_GETTER(Minor,Minor_Getter,"Minor");
 
-Minor::Minor(int _type,double _min,double _max,int _nbins,const string & _name) :
-  Event_Shapes_Observable_Base(_type,_min,_max,_nbins,_name) {}
+Minor::Minor(int type, double xmin, double xmax, int nbins, 
+		       const std::string & listname, const std::string & name) :
+  Event_Shapes_Observable_Base(type,xmin,xmax,nbins,name) 
+{
+}
 
-void Minor::Evaluate(const Particle_List &,double weight,int ncount) 
+void Minor::Evaluate(const Blob_List &,double weight,int ncount) 
 {
   Blob_Data_Base * data = (*p_ana)[m_key];
   if (data) {
@@ -126,7 +135,7 @@ void Minor::Evaluate(const Particle_List &,double weight,int ncount)
 
 Primitive_Observable_Base * Minor::Copy() const 
 {
-  return new Minor(m_type,m_xmin,m_xmax,m_nbins);
+  return new Minor(m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
 
 //================================================================================
@@ -136,10 +145,13 @@ Primitive_Observable_Base * Minor::Copy() const
 
 DEFINE_OBSERVABLE_GETTER(Oblateness,Oblateness_Getter,"Oblat");
 
-Oblateness::Oblateness(int _type,double _min,double _max,int _nbins,const string & _name) :
-  Event_Shapes_Observable_Base(_type,_min,_max,_nbins,_name) {}
+Oblateness::Oblateness(int type, double xmin, double xmax, int nbins, 
+		       const std::string & listname, const std::string & name) :
+  Event_Shapes_Observable_Base(type,xmin,xmax,nbins,name) 
+{
+}
 
-void Oblateness::Evaluate(const Particle_List &,double weight,int ncount) 
+void Oblateness::Evaluate(const Blob_List &,double weight,int ncount) 
 {
   Blob_Data_Base * data = (*p_ana)[m_key];
   if (data) {
@@ -149,7 +161,7 @@ void Oblateness::Evaluate(const Particle_List &,double weight,int ncount)
 
 Primitive_Observable_Base * Oblateness::Copy() const 
 {
-  return new Oblateness(m_type,m_xmin,m_xmax,m_nbins);
+  return new Oblateness(m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
 
 //================================================================================
@@ -159,18 +171,19 @@ Primitive_Observable_Base * Oblateness::Copy() const
 
 DEFINE_OBSERVABLE_GETTER(PT_In_Thrust,PT_In_Thrust_Getter,"PTIn");
 
-PT_In_Thrust::PT_In_Thrust(int type,double min,double max,int nbins,
-			   const std::string & listname,const string & name) :
-  Event_Shapes_Observable_Base(type,min,max,nbins,name) 
-{ m_listname = listname; }
+PT_In_Thrust::PT_In_Thrust(int type, double xmin, double xmax, int nbins, 
+		       const std::string & listname, const std::string & name) :
+  Event_Shapes_Observable_Base(type,xmin,xmax,nbins,name) 
+{ 
+  m_listname = listname; 
+}
 
-void PT_In_Thrust::Evaluate(const Particle_List &,double weight,int ncount) 
+void PT_In_Thrust::Evaluate(const Particle_List & pl,double weight,int ncount) 
 {
   Blob_Data_Base * data = (*p_ana)[m_key];
   if (data) {
     Vec3D Majoraxis = data->Get<Event_Shape_EE_Data>().majoraxis;
-    Particle_List * pl=p_ana->GetParticleList(m_listname);
-    for (Particle_List::const_iterator pit=pl->begin();pit!=pl->end();++pit) {
+    for (Particle_List::const_iterator pit=pl.begin();pit!=pl.end();++pit) {
       p_histo->Insert(dabs(Majoraxis*Vec3D((*pit)->Momentum())),weight,ncount);
     }
   }
@@ -188,19 +201,20 @@ Primitive_Observable_Base * PT_In_Thrust::Copy() const
 
 DEFINE_OBSERVABLE_GETTER(PT_Out_Thrust,PT_Out_Thrust_Getter,"PTOut");
 
-PT_Out_Thrust::PT_Out_Thrust(int _type,double _min,double _max,int _nbins,
-			     const std::string & _inlistname,const string & _name) :
-  Event_Shapes_Observable_Base(_type,_min,_max,_nbins,_name) 
-{ m_listname = _inlistname; }
+PT_Out_Thrust::PT_Out_Thrust(int type, double xmin, double xmax, int nbins, 
+		       const std::string & listname, const std::string & name) :
+  Event_Shapes_Observable_Base(type,xmin,xmax,nbins,name) 
+{
+  m_listname = listname; 
+}
 
 
-void PT_Out_Thrust::Evaluate(const Particle_List &,double weight,int ncount) 
+void PT_Out_Thrust::Evaluate(const Particle_List & pl,double weight,int ncount) 
 {
   Blob_Data_Base * data = (*p_ana)[m_key];
   if (data) {
     Vec3D Minoraxis = data->Get<Event_Shape_EE_Data>().minoraxis;
-    Particle_List * pl=p_ana->GetParticleList(m_listname);
-    for (Particle_List::const_iterator pit=pl->begin();pit!=pl->end();++pit) {
+    for (Particle_List::const_iterator pit=pl.begin();pit!=pl.end();++pit) {
       p_histo->Insert(dabs(Minoraxis*Vec3D((*pit)->Momentum())),weight,ncount);
     }
   }
