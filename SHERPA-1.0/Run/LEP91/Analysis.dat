@@ -4,7 +4,7 @@ BEGIN_ANALYSIS {
  EEShapes {
    InList  FinalState
    OutList EventShapes
-   Qual    10
+   Qual    4
  }
  Thrust     .0   .5    50 Lin EventShapes
  Major      .0   .64   64 Lin EventShapes
@@ -28,8 +28,8 @@ BEGIN_ANALYSIS {
  ML         .0   .12   12 Lin EventShapes
  MD         .0   .4    40 Lin EventShapes
 % scaled momentum
- XP         .0  1.    200 Lin ChargedParticle
- LogXP      .0 10.    100 Lin ChargedParticle
+ XP         .0  1.    200 Lin Charged
+ LogXP      .0 10.    100 Lin Charged
  XP         .0  1.    100 Lin ChargedPion
  XP         .0  1.    100 Lin ChargedKaon
  XP         .0  1.    100 Lin ProtonAntiproton
@@ -49,7 +49,7 @@ BEGIN_ANALYSIS {
  XE         .0  .5    10 Lin NeutralXi
 % multiplicities
  Multi     -.5 100.5  101 Lin FinalState
- Multi     -.5 50.5   51  Lin ChargedParticle
+ Multi     -.5 50.5   51  Lin Charged
  Multi     -.5 50.5   51  Lin ChargedPion
  Multi     -.5 20.5   21  Lin ChargedKaon
  Multi     -.5 20.5   21  Lin ProtonAntiproton
@@ -58,7 +58,7 @@ Trigger {
  InList  FinalState
  OutList Analysed
  Finder  93   0. 0.  0.  .008  1.
-% Qual    43
+ Qual    4|3|kf22|kf21
 }
 % diff jet rates
  JetDRate  1.e-5  1. 100    1  1  5 Log Analysed
