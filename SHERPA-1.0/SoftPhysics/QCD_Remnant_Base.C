@@ -78,7 +78,9 @@ Color_Dipole *QCD_Remnant_Base::FindClosest(const Color_Dipole *dipole,
   for (Dipole_Vector::iterator dit=m_attached.begin();
        dit!=m_attached.end();++dit) {
     if (*dit==dipole) continue;
-    double cur=(*dit)->End(type)->Momentum().PPerp(ref);
+    const ATOOLS::Vec4D &p=(*dit)->End(type)->Momentum();
+    double cur=p.PPerp(ref);
+    if (p==ATOOLS::Vec4D()) cur=ref.PPerp();
     if (p_string[0]!=1.0) 
       sorted.insert(std::pair<double,Color_Dipole*>(cur,*dit));
     if (cur<=min) {
@@ -118,29 +120,29 @@ Color_Dipole *QCD_Remnant_Base::Find(const Color_Dipole *dipole,
 
 class Compare_PT {
 public:
-  
-  bool operator()(const Color_Dipole *i1,const Color_Dipole *i2) 
-  {
-    double pp21=ATOOLS::Max(i1->End(qri::real)->Momentum().PPerp2(),
-			    i1->End(qri::anti)->Momentum().PPerp2());
-    double pp22=ATOOLS::Max(i2->End(qri::real)->Momentum().PPerp2(),
-			    i2->End(qri::anti)->Momentum().PPerp2());
-    return (pp21<pp22);
-  }
-
+  bool operator()(const Color_Dipole *i1,const Color_Dipole *i2);
 };
+
+bool Compare_PT::operator()(const Color_Dipole *i1,const Color_Dipole *i2) 
+{
+  double pp21=ATOOLS::Max(i1->End(qri::real)->Momentum().PPerp2(),
+			  i1->End(qri::anti)->Momentum().PPerp2());
+  double pp22=ATOOLS::Max(i2->End(qri::real)->Momentum().PPerp2(),
+			  i2->End(qri::anti)->Momentum().PPerp2());
+  return (pp21<pp22);
+}
 
 bool QCD_Remnant_Base::Connect(const bool sorted) 
 {
   m_attached.clear();
   m_attached.push_back(p_start);
   std::stable_sort(m_connected.begin(),m_connected.end(),Compare_PT());
-  for (Dipole_Vector::reverse_iterator dit=m_connected.rbegin();
-       dit!=m_connected.rend();++dit) {
+  for (Dipole_Vector::iterator dit=m_connected.begin();
+       dit!=m_connected.end();++dit) {
     qri::type type=(qri::type)((*dit)->End(qri::real)->Momentum().PPerp2()>=
 			       (*dit)->End(qri::anti)->Momentum().PPerp2());
     if (!Find(*dit,type)->Insert(*dit,type)) {
-      for (Dipole_Vector::reverse_iterator uit=m_connected.rbegin();
+      for (Dipole_Vector::iterator uit=m_connected.begin();
 	   uit!=dit;++uit) (*uit)->UnDo();
       return false;
     }
