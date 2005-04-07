@@ -53,3 +53,16 @@ bool ATOOLS::operator==(const Vec4D& v1, const Vec4D& v2)
   }
   return true;
 }
+
+const double Vec4D::PPerp(const Vec4D &ref) const 
+{ 
+  Vec3D perp=1./ATOOLS::Max(Vec3D(ref).Abs(),1.e-12)*Vec3D(ref);
+  perp=Vec3D(*this)-perp*(perp*Vec3D(*this));
+  return perp.Abs();
+}
+
+const double Vec4D::PPerp2(const Vec4D &ref) const 
+{ 
+  return sqr(PPerp(ref)); 
+}
+  

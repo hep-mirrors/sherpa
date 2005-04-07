@@ -119,8 +119,8 @@ namespace ATOOLS {
     inline const double SinTheta() const; 
     inline const double Theta() const; 
 
-    inline const double PPerp2(const Vec4D &) const; 
-    inline const double PPerp(const Vec4D &) const; 
+    const double PPerp2(const Vec4D &) const; 
+    const double PPerp(const Vec4D &) const; 
     inline const double CosTheta(const Vec4D &) const; 
     inline const double Theta(const Vec4D &) const; 
     inline const double Eta(const Vec4D &) const; 
@@ -472,18 +472,6 @@ namespace ATOOLS {
   inline const double Vec4D::Theta() const 
   {
     return acos(CosTheta());
-  }
-  
-  inline const double Vec4D::PPerp(const Vec4D &ref) const 
-  { 
-    Vec3D perp=1./ATOOLS::Max(Vec3D(ref).Abs(),1.e-12)*Vec3D(ref);
-    perp=Vec3D(*this)-perp*(perp*Vec3D(*this));
-    return perp.Abs();
-  }
-  
-  inline const double Vec4D::PPerp2(const Vec4D &ref) const 
-  { 
-    return sqr(PPerp(ref)); 
   }
   
   inline const double Vec4D::CosTheta(const Vec4D &ref) const 
