@@ -79,6 +79,21 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const mm modifier)
   return str;
 }
 
+std::ostream &ATOOLS::operator<<(std::ostream &str,const tm::code modifier) 
+{
+  if (!msg.Modifiable()) return str;
+  switch (modifier) {
+#ifdef USING__COLOUR
+  case tm::curon:  return str<<"\e[?25h";
+  case tm::curoff: return str<<"\e[?25l";
+  case mm::none:   return str;
+#else
+  default: return str;
+#endif
+  }
+  return str;
+}
+
 Message::Message() 
 {      
   p_output = &std::cout;
@@ -121,7 +136,7 @@ void Message::InitLogFile(const std::string &logfile)
   command+="! *           Sherpa Log File            *\n";
   command+="! ****************************************\n\" > ";
   system((command+name).c_str());
-  command="echo \"! starting Sherpa 1.0.3 at '$HOSTNAME' ";
+  command="echo \"! starting Sherpa 1.0.6 at '$HOSTNAME' ";
   command+="(architecture $HOSTTYPE) \n! on `date`\n\" >> ";
   system((command+name).c_str());
   command="echo \"! +--------------------------------------+\n";

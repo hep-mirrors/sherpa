@@ -290,6 +290,7 @@ double Primitive_Integrator::Integrate(Primitive_Integrand *const function)
   m_apweight=m_channels[0]->Alpha();
   for (long unsigned int n=0;n<nfirst;++n) Point();
   Split();
+  msg_Info()<<tm::curoff;
   while (((long unsigned int)m_np)<m_nmax &&
 	 m_channels.size()-m_point.size()<m_ncells) {
     for (long unsigned int n=0;n<m_nopt;++n) Point();
@@ -314,7 +315,7 @@ double Primitive_Integrator::Integrate(Primitive_Integrand *const function)
 	add++>=ATOOLS::Max((size_t)5,m_point.size())) break;
     Shuffle();
   }
-  msg_Info()<<mm(1,mm::down)<<std::endl;
+  msg_Info()<<mm(1,mm::down)<<tm::curon<<std::endl;
   return m_sum/m_np;
 }
 

@@ -3,19 +3,27 @@
 #include "Message.H"
 #include "MyStrStream.H"
 #include "Exception.H"
-#include "Type.H"
+#include "Algebra_Interpreter.H"
 #include <iomanip>
+#include <typeinfo>
 
 using namespace ATOOLS;
-using namespace std;
-// static
+ 
+Algebra_Interpreter s_interpreter;
+
 Parameter_Map ATOOLS::Data_Read::s_commandlineparameters;
+
+bool s_nowrite=false;
 
 template <class Type> 
 const Type Data_Read::ReturnData(const std::string &name,const Type type) 
 {
-  ATOOLS::msg.LogFile()<<name<<" \t= \t"<<type<<" \t! "
-		       <<"Type<"<<ATOOLS::Type::GetType(type)<<"> "<<std::endl;
+  if (!s_nowrite)
+    ATOOLS::msg.LogFile()<<std::setiosflags(std::ios::left)
+			 <<std::setw(30)<<name<<" = "
+			 <<std::setiosflags(std::ios::left)
+			 <<std::setw(20)<<type
+			 <<" ! "<<"Type<"<<typeid(type).name()<<"> "<<std::endl;
   return type;
 }
 
@@ -30,17 +38,20 @@ template <class Type>
 Type  Data_Read::GetValue(std::string name, Type default_value) {
   Shorten(name);
   if (name.length()==0) {
-    msg.LogFile()<<"Could not find any value for empty name. Return "<<default_value<<"."<<endl;
     return ReturnData(name,default_value);
   }
+  s_nowrite=true;
   Type dummy = GetValue<Type>(name);
+  s_nowrite=false;
   if (dummy!=NotDefined<Type>()) { 
     return ReturnData(name,dummy); 
   }
-  msg.LogFile()<<"WARNING: Could not find any allowed value for "<<name
-	       <<". Return "<<default_value<<"."<<endl;
-  MyStrStream str;      
   std::string default_value_str;
+  if (typeid(dummy)==typeid(int) || typeid(dummy)==typeid(unsigned int) ||
+      typeid(dummy)==typeid(float) ||	typeid(dummy)==typeid(double)) {
+    default_value_str=s_interpreter.Interprete(default_value_str);
+  }
+  MyStrStream str;      
   str<<default_value;
   str>>default_value_str;
 
@@ -57,6 +68,10 @@ Type  Data_Read::GetValue(std::string name) {
   if (cit==m_parameters.end()) return ReturnData(name,NotDefined<Type>());
   std::string value = m_parameters[name];
   if (value.length()==0) return ReturnData(name,NotDefined<Type>());
+  if (typeid(invar)==typeid(int) || typeid(invar)==typeid(unsigned int) ||
+      typeid(invar)==typeid(float) ||	typeid(invar)==typeid(double)) {
+    value=s_interpreter.Interprete(value);
+  }
   MyStrStream str;      
   str<<value;
   str>>invar;
@@ -140,8 +155,8 @@ template <> Switch::code Data_Read::GetValue<Switch::code>(std::string name) {
   if (value.length()==0) return ReturnData(name,NotDefined<Switch::code>());
   if (value==std::string("On")) return ReturnData(name,Switch::On);
   if (value==std::string("Off")) return ReturnData(name,Switch::Off);
-  msg.Error()<<"Error in Data_Read::GetValue<Switch::code>:"<<endl
-	     <<"   Unknown Switch::code "<<name<<" = "<<value<<"."<<endl;
+  msg.Error()<<"Error in Data_Read::GetValue<Switch::code>:"<<std::endl
+	     <<"   Unknown Switch::code "<<name<<" = "<<value<<"."<<std::endl;
   return ReturnData(name,NotDefined<Switch::code>());
 }
 
@@ -157,8 +172,8 @@ template <> Beam_Type::code Data_Read::GetValue<Beam_Type::code>(std::string nam
   if (value==std::string("Laser_Backscattering")) return ReturnData(name,Beam_Type::Laser_Back);    
   if (value==std::string("Spectrum_Reader")) return ReturnData(name,Beam_Type::Spec_Read);    
   if (value==std::string("Simple_Compton")) return ReturnData(name,Beam_Type::Simple_Compton);
-  msg.Error()<<"Error in Data_Read::GetValue<Beam_Type::code>:"<<endl
-	     <<"   Unknown Beam type  "<<name<<" = "<<value<<"."<<endl;
+  msg.Error()<<"Error in Data_Read::GetValue<Beam_Type::code>:"<<std::endl
+	     <<"   Unknown Beam type  "<<name<<" = "<<value<<"."<<std::endl;
   return ReturnData(name,NotDefined<Beam_Type::code>());
 }
 
@@ -168,8 +183,8 @@ template <> Beam_Generator::code Data_Read::GetValue<Beam_Generator::code>(std::
   if (cit==m_parameters.end()) return ReturnData(name,NotDefined<Beam_Generator::code>());
   std::string value = m_parameters[name];
   if (value==std::string("Internal")) return ReturnData(name,Beam_Generator::Internal);
-  msg.Error()<<"Error in Data_Read::GetValue<Beam_Generator::code>:"<<endl
-	     <<"Unknown Beam generator  "<<name<<" = "<<value<<"."<<endl;
+  msg.Error()<<"Error in Data_Read::GetValue<Beam_Generator::code>:"<<std::endl
+	     <<"Unknown Beam generator  "<<name<<" = "<<value<<"."<<std::endl;
   return ReturnData(name,NotDefined<Beam_Generator::code>());
 }
 
@@ -180,8 +195,8 @@ template <> Beam_Shape::code Data_Read::GetValue<Beam_Shape::code>(std::string n
   std::string value = m_parameters[name];
   if (value==std::string("Cylinder")) return ReturnData(name,Beam_Shape::Cylinder);
   if (value==std::string("Gaussian_Cylinder")) return ReturnData(name,Beam_Shape::Gaussian_Cylinder);
-  msg.Error()<<"Error in Data_Read::GetValue<Beam_Shape::code>:"<<endl
-	     <<"Unknown Beam shape  "<<name<<" = "<<value<<" !!!"<<endl;
+  msg.Error()<<"Error in Data_Read::GetValue<Beam_Shape::code>:"<<std::endl
+	     <<"Unknown Beam shape  "<<name<<" = "<<value<<" !!!"<<std::endl;
   return ReturnData(name,NotDefined<Beam_Shape::code>());
 }
 
@@ -202,8 +217,8 @@ template <> ISR_Type::code Data_Read::GetValue<ISR_Type::code>(std::string name)
   if (value==std::string("Pythia"))          return ReturnData(name,ISR_Type::Pythia);   
   if (value==std::string("KKMC"))            return ReturnData(name,ISR_Type::KKMC);    
   
-  msg.Error()<<"Error in Data_Read::GetValue<ISR_Type::code>:"<<endl
-	     <<"   Unknown ISR type  "<<name<<" = "<<value<<" !!!"<<endl;
+  msg.Error()<<"Error in Data_Read::GetValue<ISR_Type::code>:"<<std::endl
+	     <<"   Unknown ISR type  "<<name<<" = "<<value<<" !!!"<<std::endl;
   return ReturnData(name,NotDefined<ISR_Type::code>());
 }
 
@@ -218,8 +233,8 @@ template <> String_Type::code Data_Read::GetValue<String_Type::code>(std::string
   if (value==std::string("String"))   return ReturnData(name,String_Type::String);    
   if (value==std::string("Library"))  return ReturnData(name,String_Type::Library);    
 
-  msg.Error()<<"Error in Data_Read::GetValue<String_Type::code>:"<<endl
-	     <<"   Unknown String_Type  "<<name<<" = "<<value<<" !!!"<<endl;
+  msg.Error()<<"Error in Data_Read::GetValue<String_Type::code>:"<<std::endl
+	     <<"   Unknown String_Type  "<<name<<" = "<<value<<" !!!"<<std::endl;
   return ReturnData(name,NotDefined<String_Type::code>());
 }
 
@@ -236,8 +251,8 @@ template <> Model_Type::code Data_Read::GetValue<Model_Type::code>(std::string n
   if (value==std::string("THDM"))     return ReturnData(name,Model_Type::THDM);
   if (value==std::string("ADD"))      return ReturnData(name,Model_Type::ADD);
   if (value==std::string("SM+EHC"))   return ReturnData(name,Model_Type::SMEHC);
-  msg.Error()<<"Error in Data_Read::GetValue<Model_Type::code>:"<<endl
-	     <<"   Unknown Model "<<name<<" = "<<value<<" !!!"<<endl;
+  msg.Error()<<"Error in Data_Read::GetValue<Model_Type::code>:"<<std::endl
+	     <<"   Unknown Model "<<name<<" = "<<value<<" !!!"<<std::endl;
   return ReturnData(name,NotDefined<Model_Type::code>());
 }
 
@@ -247,8 +262,8 @@ template <>  Flavour Data_Read::GetValue<Flavour>(std::string name) {
   Parameter_Map::const_iterator cit=m_parameters.find(name);
   if (cit==m_parameters.end()) return ReturnData(name,NotDefined<Flavour>());
   if (!kf_table.IsInitialised()) {
-    msg.Error()<<"Warning in Flavour Data_Read::GetValue."<<endl
-	       <<"   kf table not initialized yet. Return undefined flavour."<<endl;
+    msg.Error()<<"Warning in Flavour Data_Read::GetValue."<<std::endl
+	       <<"   kf table not initialized yet. Return undefined flavour."<<std::endl;
     return ReturnData(name,NotDefined<Flavour>());
   }
 
@@ -283,20 +298,22 @@ template <>  Flavour Data_Read::GetValue<Flavour>(std::string name) {
     if (anti) return ReturnData(name,(Flavour(kfc).Bar()));
     return Flavour(kfc);
   }
+  s_nowrite=true;
   int kfci = GetValue<int>(name);
+  s_nowrite=false;
   Flavour fl = Flavour(kf::code(abs(kfci)));
   if (kfci<0) fl = fl.Bar();
   return ReturnData(name,fl);
 }
  
-int Data_Read::Crossfoot(string name) {
+int Data_Read::Crossfoot(std::string name) {
   int sum = 0;
   for (size_t i=0;i<name.length();++i)
     sum+=int(name[i]);
   return sum;
 }
 
-string Data_Read::GenerateKey() {
+std::string Data_Read::GenerateKey() {
   // Hexadeximal Number
   //  nn_m_dddddd
   //  v v  version main and subnumber of code (not included yet)
@@ -318,8 +335,8 @@ string Data_Read::GenerateKey() {
   sum=(sum&0xffffff); //|(0x1000000*(parameters.size() & 255));
 
   MyStrStream str;  
-  string key;
-  str.setf(ios::hex, ios::basefield);
+  std::string key;
+  str.setf(std::ios::hex, std::ios::basefield);
   str<<(m_parameters.size() & 255);
   Model_Type::code m = GetValue<Model_Type::code>("MODEL");
   str<<"_";
@@ -342,7 +359,7 @@ void Data_Read::WriteOut(std::string filename,int flag) {
 #ifdef __GNUC__
 #if __GNUC__ > 2 
   // GNU gcc 3.x.x C++ Compiler
-  std::_Ios_Openmode flagc = _Ios_Openmode(flag);
+  std::_Ios_Openmode flagc = std::_Ios_Openmode(flag);
   file.open(filename.c_str(),flagc);
 #else
   // GNU gcc 2.95.x C++ Compiler
@@ -354,13 +371,13 @@ void Data_Read::WriteOut(std::string filename,int flag) {
 #endif
   
   // add a header
-  file<<"!======================================== "<<endl;
-  file<<"! File: "<<filename<<endl;
-  file<<"!======================================== "<<endl;
+  file<<"!======================================== "<<std::endl;
+  file<<"! File: "<<filename<<std::endl;
+  file<<"!======================================== "<<std::endl;
   
   // write out map content
   for (Parameter_Iterator it = m_parameters.begin(); it!=m_parameters.end() ; ++it) {
-    file<<" "<<it->first<<" = "<<it->second<<endl;
+    file<<" "<<it->first<<" = "<<it->second<<std::endl;
   }
   file.close();
 }

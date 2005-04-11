@@ -101,7 +101,7 @@ void Exception_Handler::Exit(int exitcode)
 			  <<om::reset<<om::blue<<"Exiting Sherpa with code "
 			  <<om::reset<<om::bold<<"("
 			  <<om::red<<exitcode<<om::reset<<om::bold<<")"
-			  <<om::reset<<std::endl;
+			  <<om::reset<<tm::curon<<std::endl;
   msg.LogFile()<<"Exception_Handler::Exit: "
 	       <<"Exiting Sherpa with code ("<<exitcode<<")"<<std::endl;
   exit(exitcode);
@@ -109,7 +109,10 @@ void Exception_Handler::Exit(int exitcode)
 
 void Exception_Handler::Terminate() 
 {
+  bool modifiable=msg.Modifiable();
+  msg.SetModifiable(false);
   GenerateStackTrace(msg.LogFile(),true,"! ");
+  msg.SetModifiable(modifiable);
   if (s_stacktrace) GenerateStackTrace(msg.Error());
   if (!ApproveTerminate()) {
     s_exception=NULL;
@@ -189,6 +192,7 @@ void Exception_Handler::SignalHandler(int signal)
   switch (signal) {
   case SIGSEGV:
     ++s_nsegv;
+    GenerateStackTrace(std::cout,false);
     if (!rpa.gen.BatchMode()) {
       msg.Error()<<"   Do you want to debug the program (y/n)? "<<om::reset;
       std::cin>>input;
@@ -244,6 +248,7 @@ void Exception_Handler::SignalHandler(int signal)
       msg.Error()<<om::reset<<"   Abort immediately."<<om::reset<<std::endl;
       kill(getpid(),9);
     }
+    GenerateStackTrace(std::cout,false);
     msg.Error()<<om::reset<<"   Cannot continue."<<om::reset<<std::endl;
     s_exitcode=3;
     Terminate();
@@ -266,7 +271,7 @@ void Exception_Handler::GenerateStackTrace(std::ostream &ostr,
 #ifdef USING_Stack_Trace
   ostr<<comment<<om::bold<<"Exception_Handler::GenerateStackTrace(..): "
       <<om::reset<<om::blue<<"Generating stack trace "<<om::reset
-      <<"(adapted from ROOT version 3.10) "<<om::bold<<"{"
+      <<"(adapted from ROOT version 3.10) "<<om::bold<<"\n{"
       <<om::reset<<std::endl;
   // adapted from root version 3.10 TUnixSystem.cxx
   void *trace[MAX_BACKTRACE_DEPTH];
@@ -278,8 +283,11 @@ void Exception_Handler::GenerateStackTrace(std::ostream &ostr,
       unsigned long symaddr=(unsigned long)info.dli_saddr;
       const char *symname=info.dli_sname;
       if (!info.dli_sname || !info.dli_sname[0]) symname="<unknown>";
-      ostr<<comment<<"   0x"<<std::hex<<symaddr<<std::dec<<" in "
-	  <<symname<<" from "<<info.dli_fname<<std::endl;
+      ostr<<comment<<om::bold<<"   0x"<<std::setiosflags(std::ios::left)
+	  <<std::setw(8)<<std::hex<<symaddr<<std::dec<<om::reset
+	  <<" in   '"<<om::red<<symname<<om::reset
+	  <<"'\n              from '"<<om::brown<<info.dli_fname
+	  <<om::reset<<"'"<<std::endl;
     } 
     else {
       ostr<<comment<<"   "<<addr<<" in <unknown function>"<<std::endl;
