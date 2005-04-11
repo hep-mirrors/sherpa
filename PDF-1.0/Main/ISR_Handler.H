@@ -32,19 +32,20 @@ namespace PDF {
 
     std::vector<double> m_info_lab, m_info_cms;
     
-    void Init(const double *splimits,const double *kplimits);
     const ATOOLS::Flavour  DiQuark(const ATOOLS::Flavour &,const ATOOLS::Flavour &);
     bool CheckRemnantKinematics(const ATOOLS::Flavour &,double,int);
 
   public:
 
     // constructor
-    ISR_Handler(ISR_Base **isrbase,const double *splimits,const double *kplimits);
+    ISR_Handler(ISR_Base **isrbase);
 
     // destructor
     ~ISR_Handler();
 
     // member functions
+    void Init(double *splimits,double *kplimits);
+
     bool CheckConsistency(ATOOLS::Flavour *bunches,ATOOLS::Flavour *partons);
     bool CheckConsistency(ATOOLS::Flavour *partons);
     void SetPartonMasses(ATOOLS::Flavour *fl); 

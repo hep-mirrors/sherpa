@@ -58,7 +58,7 @@ double Lambda2(double sp,double sp1,double sp2)
   return (sp-sp1-sp2)*(sp-sp1-sp2)-4.0*sp1*sp2;
 }
 
-ISR_Handler::ISR_Handler(ISR_Base **isrbase,const double *splimits,const double *kplimits):
+ISR_Handler::ISR_Handler(ISR_Base **isrbase):
   p_isrbase(isrbase),
   p_info(new ATOOLS::Integration_Info()),
   m_kperpscheme((int)kps::constant),
@@ -78,7 +78,6 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase,const double *splimits,const double 
   m_mass2[0]=sqr(p_isrbase[0]->Flavour().Mass());
   m_mass2[1]=sqr(p_isrbase[1]->Flavour().Mass());
   m_x[1]=m_x[0]=1.; 
-  Init(splimits,kplimits);
   Doubly_Unintegrated_PDF *dupdf=
     dynamic_cast<Doubly_Unintegrated_PDF*>(p_isrbase[0]->PDF());
   if (dupdf!=NULL) m_kperpscheme=dupdf->KPerpScheme();
@@ -129,10 +128,16 @@ ISR_Handler::~ISR_Handler()
   delete p_info;
 }
 
-void ISR_Handler::Init(const double *splimits,const double *kplimits) 
+void ISR_Handler::Init(double *splimits,double *kplimits) 
 {
+  m_mass2[0]=sqr(p_isrbase[0]->Flavour().Mass());
+  m_mass2[1]=sqr(p_isrbase[1]->Flavour().Mass());
+
+  double s=sqr(m_ebeam[0]+m_ebeam[1])-
+    sqr(sqrt(sqr(m_ebeam[0])-m_mass2[0])-sqrt(sqr(m_ebeam[1])-m_mass2[1]));
+  ATOOLS::rpa.gen.SetEcms(sqrt(s));
+
   m_type = p_isrbase[0]->Type()+std::string("*")+p_isrbase[1]->Type();
-  double s = sqr(ATOOLS::rpa.gen.Ecms());
   m_splimits[0] = s*splimits[0];
   m_splimits[1] = ATOOLS::Min(s*splimits[1],s*Upper1()*Upper2());
   m_splimits[2] = s;
@@ -149,8 +154,6 @@ void ISR_Handler::Init(const double *splimits,const double *kplimits)
     m_kplimits[1] = p_isrbase[0]->Cut("kp");
     m_kplimits[2] = kplimits[1]*s;
   }
-  m_mass2[0]=sqr(p_isrbase[0]->Flavour().Mass());
-  m_mass2[1]=sqr(p_isrbase[1]->Flavour().Mass());
   double E=ATOOLS::rpa.gen.Ecms();
   double x=1./2.+(m_mass2[0]-m_mass2[1])/(2.*E*E);
   double E1=x*E;
