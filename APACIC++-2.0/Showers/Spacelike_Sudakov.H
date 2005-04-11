@@ -50,7 +50,7 @@ namespace APACIC {
     void Add(Splitting_Function * spl) ;
     double CrudeInt(double _zmin, double _zmax);
     
-    void SelectOne() { p_selected->SelectOne();};
+    void SelectOne();
     void ProduceT();  
     bool Veto(Knot *,bool,int & extra_pdf); 
     bool CplVeto();

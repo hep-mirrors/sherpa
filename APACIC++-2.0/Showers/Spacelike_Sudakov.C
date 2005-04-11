@@ -14,6 +14,13 @@
 
 #include <iomanip>
 
+#ifdef PROFILE__all
+#include "prof.hh"
+#else 
+#define PROFILE_HERE {}
+#define PROFILE_LOCAL(LOCALNAME) {}
+#endif
+
 
 using namespace APACIC;
 using namespace PDF;
@@ -73,7 +80,9 @@ Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * pdf,Sudakov_Tools * tools,Spacel
 }
 
 
-bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,bool jetveto,int & extra_pdf) {
+bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,bool jetveto,int & extra_pdf) 
+{
+  PROFILE_HERE;
   mo->tmax = mo->t;  // last start t
   m_last_veto = 0;
   m_inflav = mo->part->Flav(); 
@@ -147,6 +156,7 @@ void Spacelike_Sudakov::ProduceT() {
 
 bool Spacelike_Sudakov::Veto(Knot * mo,bool jetveto,int & extra_pdf) 
 {  
+  PROFILE_HERE;
   m_last_veto=0;
 
   if ((1.-m_z)*m_t>m_t0) {
@@ -192,6 +202,7 @@ bool Spacelike_Sudakov::Veto(Knot * mo,bool jetveto,int & extra_pdf)
 
 bool Spacelike_Sudakov::MassVeto(int extra_pdf) 
 {
+  PROFILE_HERE;
   double weight  = p_pdf->GetXPDF(GetFlB())/(p_pdf->GetXPDF(GetFlA())*m_pdf_fac); 
 
   double q2 = -m_t;
@@ -309,10 +320,11 @@ void Spacelike_Sudakov::Add(Splitting_Function * spl)
 
 double Spacelike_Sudakov::CrudeInt(double _zmin, double _zmax) 
 {
+  PROFILE_HERE;
   SplFunIter iter(m_group);
   for (;iter();++iter)
     if (iter()->GetFlB()==m_inflav) { p_selected=iter(); break; }
-  if (!iter()) return m_lastint = -1.;
+  if (!iter()) { p_selected=NULL; return m_lastint = -1.; }
   return m_lastint = p_selected->CrudeInt(_zmin,_zmax);
 }     
 
@@ -321,4 +333,9 @@ void Spacelike_Sudakov::SetFactorisationScale(const double scale)
 {
   //  std::cout<<"Spacelike_Sudakov::SetFactorisationScale("<<scale<<")"<<std::endl;
   m_facscale=scale;
+}
+
+void Spacelike_Sudakov::SelectOne() 
+{
+  p_selected->SelectOne();
 }
