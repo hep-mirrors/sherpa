@@ -4,6 +4,7 @@
 #include "Color_Generator.H"
 #include "Kabbala.H"
 #include "Zfunc_Generator.H"
+#include "Process_Info.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -61,6 +62,38 @@ Single_Amplitude::Single_Amplitude(Point* _p,int* _b,int dep,int _no,
   Next = 0;
   int ll = 0;
   top->Copy(_p,Pointlist,ll);
+
+  CFlist  = NULL;
+  CCFlist = NULL;
+  spind   = NULL;
+  SetStringOn(); 
+
+  static int ampltotalnumber = 0;
+  ampltotalnumber++;
+  amplnumber = ampltotalnumber;
+}
+
+Single_Amplitude::Single_Amplitude(int* _b,int _no,Process_Info* pinfo,Single_Amplitude** sglist,
+				   Basic_Sfuncs* _BS,ATOOLS::Flavour* _fl,String_Handler* _shand) : 
+  Single_Amplitude_Base(_b,_no,_BS,_fl,_shand)
+{
+  topnum  = 0;
+  permnum = 0;
+
+  static int first = 1;
+  if (first) first = 0;
+  icoul = 0;
+  on = 1;
+  int nin = 1;
+  if (_b[1]==-1) nin=2;
+  int ndecays = pinfo->Ndecays();
+  Pointlist = new Point[2*N-3+ndecays];
+  Point** pl = new Point*[ndecays+1];
+  for (int i=0; i<ndecays+1;i++) pl[i]=sglist[i]->GetPointlist();
+  pinfo->MergePointList(pl,Pointlist,nin);
+  Pointlist->ResetProps();
+
+  Next = 0;
 
   CFlist  = NULL;
   CCFlist = NULL;

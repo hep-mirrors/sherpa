@@ -90,7 +90,6 @@ namespace PHASIC {
 
     // constructor
     Integrable_Base(const size_t nin=0,const size_t nout=0,
-		    const ATOOLS::Flavour *flavours=NULL,
 		    const int scalescheme=0,const int kfactorscheme=0,
 		    BEAM::Beam_Spectra_Handler *const beamhandler=NULL,
 		    PDF::ISR_Handler *const isrhandler=NULL,

@@ -427,7 +427,7 @@ void Channel_Generator_NPV::GenerateDecayChain(int flag,Point* p,int& rannum,ofs
       else help1 = string("p[0]");
 
       if (help2.length()>1) AddToVariables(flag,string("0_")+pin0sum,help1+string("-p")+help2,1,sf);
-      else AddToVariables(flag,string("0_")+pin0sum,help1+string("-p[")+help2+string("]"),1,sf);
+      else AddToVariables(flag,string("0_")+pin0sum,help1+string("-p[")+GetMassIndex(help2)+string("]"),1,sf);
 //       for (int i=0;i<pin0.size();i++) pin0sum+=pin0[i];
 //       pin0sum = Order(pin0sum);
 //       if (pin0sum.length()>1) AddToVariables(flag,string("0_")+pin0sum,string("p[0]-p")+pin0sum,1,sf);
@@ -442,7 +442,7 @@ void Channel_Generator_NPV::GenerateDecayChain(int flag,Point* p,int& rannum,ofs
       else help1 = string("p[1]");
 
       if (help2.length()>1) AddToVariables(flag,string("1_")+pin1sum,help1+string("-p")+help2,1,sf);
-      else AddToVariables(flag,string("1_")+pin1sum,help1+string("-p[")+help2+string("]"),1,sf);
+      else AddToVariables(flag,string("1_")+pin1sum,help1+string("-p[")+GetMassIndex(help2)+string("]"),1,sf);
 //       for (int i=0;i<pin1.size();i++) pin1sum+=pin1[i];
 //       pin1sum = Order(pin1sum);
 //       if (pin1sum.length()>1) AddToVariables(flag,string("1_")+pin1sum,string("p[1]-p")+pin1sum,1,sf);
@@ -456,16 +456,18 @@ void Channel_Generator_NPV::GenerateDecayChain(int flag,Point* p,int& rannum,ofs
     string sctmin("m_ctmin");
     if (flag>=0) {
       if (pin0.size()==0 && pout0sum.length()==1 && pin1.size()==0 && pout1sum.length()==1) {
-	sf<<"  m_ctmax = Min(cuts->cosmax[0]["<<pout0sum<<"],cuts->cosmax[1]["<<pout1sum<<"]);"<<endl;
-	if (nout>2) sf<<"  m_ctmin = Max(cuts->cosmin[0]["<<pout0sum<<"],cuts->cosmin[1]["<<pout1sum<<"]);"<<endl;
+	sf<<"  m_ctmax = Min(cuts->cosmax[0]["<<GetMassIndex(pout0sum)
+	  <<"],cuts->cosmax[1]["<<GetMassIndex(pout1sum)<<"]);"<<endl;
+	if (nout>2) sf<<"  m_ctmin = Max(cuts->cosmin[0]["<<GetMassIndex(pout0sum)
+		      <<"],cuts->cosmin[1]["<<GetMassIndex(pout1sum)<<"]);"<<endl;
       }
       else if (pin0.size()==0 && pin1.size()==0 && pout0sum.length()==1) {
-	sf<<"  m_ctmax = cuts->cosmax[0]["<<pout0sum<<"];"<<endl;
-	if (nout>2) sf<<"  m_ctmin = cuts->cosmin[0]["<<pout0sum<<"];"<<endl;
+	sf<<"  m_ctmax = cuts->cosmax[0]["<<GetMassIndex(pout0sum)<<"];"<<endl;
+	if (nout>2) sf<<"  m_ctmin = cuts->cosmin[0]["<<GetMassIndex(pout0sum)<<"];"<<endl;
       }
       else if (pin0.size()==0 && pin1.size()==0 && pout1sum.length()==1) {
-	sf<<"  m_ctmax = cuts->cosmax[1]["<<pout1sum<<"];"<<endl;
-	if (nout>2) sf<<"  m_ctmin = cuts->cosmin[1]["<<pout1sum<<"];"<<endl;
+	sf<<"  m_ctmax = cuts->cosmax[1]["<<GetMassIndex(pout1sum)<<"];"<<endl;
+	if (nout>2) sf<<"  m_ctmin = cuts->cosmin[1]["<<GetMassIndex(pout1sum)<<"];"<<endl;
       }
       else {
 	sctmax = string("1.");
@@ -485,8 +487,8 @@ void Channel_Generator_NPV::GenerateDecayChain(int flag,Point* p,int& rannum,ofs
       sf<<"  CE.TChannelMomenta(";
       if (pin0.size()==0) sf<<"p[0]"; else sf<<"p"<<pin0sum;
       if (pin1.size()==0) sf<<",p[1]"; else sf<<",p"<<pin1sum;
-      if (pout0sum.length()==1) sf<<",p["<<pout0sum<<"]"; else sf<<",p"<<pout0sum;
-      if (pout1sum.length()==1) sf<<",p["<<pout1sum<<"]"; else sf<<",p"<<pout1sum;
+      if (pout0sum.length()==1) sf<<",p["<<GetMassIndex(pout0sum)<<"]"; else sf<<",p"<<pout0sum;
+      if (pout1sum.length()==1) sf<<",p["<<GetMassIndex(pout1sum)<<"]"; else sf<<",p"<<pout1sum;
       sf<<",s"<<pout0sum<<",s"<<pout1sum;
       sf<<","<<tmstr<<",m_alpha,"<<sctmax<<","<<sctmin<<",m_amct,0,ran["<<rannum++<<"],ran[";
       sf<<rannum++<<"]);"<<endl;
@@ -500,8 +502,8 @@ void Channel_Generator_NPV::GenerateDecayChain(int flag,Point* p,int& rannum,ofs
       sf<<"    m_k"<<idh<<"<<CE.TChannelWeight(";
       if (pin0.size()==0) sf<<"p[0]"; else sf<<"p"<<pin0sum;
       if (pin1.size()==0) sf<<",p[1]"; else sf<<",p"<<pin1sum;
-      if (pout0sum.length()==1) sf<<",p["<<pout0sum<<"]"; else sf<<",p"<<pout0sum;
-      if (pout1sum.length()==1) sf<<",p["<<pout1sum<<"]"; else sf<<",p"<<pout1sum;
+      if (pout0sum.length()==1) sf<<",p["<<GetMassIndex(pout0sum)<<"]"; else sf<<",p"<<pout0sum;
+      if (pout1sum.length()==1) sf<<",p["<<GetMassIndex(pout1sum)<<"]"; else sf<<",p"<<pout1sum;
       sf<<","<<tmstr<<",m_alpha,"<<sctmax<<","<<sctmin<<",m_amct,0,m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
       sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
       sf<<"  rans["<<rannum++<<"]= m_k"<<idh<<"[0];"<<endl;
@@ -518,9 +520,9 @@ void Channel_Generator_NPV::GenerateDecayChain(int flag,Point* p,int& rannum,ofs
     string mummy = Order(lm+rm);
     string moml,momr;
     //Minima
-    if (l->left==0) moml = string("p[") + lm + string("]");
+    if (l->left==0) moml = string("p[") + GetMassIndex(lm) + string("]");
     else moml = string("p") + Order(lm);
-    if (r->left==0) momr = string("p[") + rm + string("]");
+    if (r->left==0) momr = string("p[") + GetMassIndex(rm) + string("]");
     else momr = string("p") + Order(rm);
 
     bool first = p->prev->number==0;
@@ -624,20 +626,22 @@ bool Channel_Generator_NPV::QCDAntenna(int flag,Point* p,int& rannum,ofstream& s
 
   switch(flag) {
   case 0:
-    sf <<"  double s0"<<acount<<" = cuts->scut["<<mummy[0]<<"]["<<mummy[1]<<"];"<<endl;
+    sf <<"  double s0"<<acount<<" = cuts->scut["<<GetMassIndex(mummy[0])
+       <<"]["<<GetMassIndex(mummy[1])<<"];"<<endl;
     sf <<"  Vec4D ps"<<acount<<"["<<n<<"];"<<endl;
     sf <<"  CE.QCDAPMomenta(ps"<<acount<<",p"<<mummy<<","<<n<<",s0"<<acount<<");"<<endl;
     for (int i=0;i<n;i++) {
-      sf<<"  p["<<mummy[i]<<"] = ps"<<acount<<"["<<i<<"];"<<endl;
+      sf<<"  p["<<GetMassIndex(mummy[i])<<"] = ps"<<acount<<"["<<i<<"];"<<endl;
     }
     break;
   default:
     string idh = string("AP_")+mummy;
     sf <<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT) {"<<endl; 
-    sf <<"    double s0"<<acount<<" = cuts->scut["<<mummy[0]<<"]["<<mummy[1]<<"];"<<endl;
+    sf <<"    double s0"<<acount<<" = cuts->scut["<<GetMassIndex(mummy[0])
+       <<"]["<<GetMassIndex(mummy[1])<<"];"<<endl;
     sf <<"    Vec4D ps"<<acount<<"["<<n<<"];"<<endl;
     for (int i=0;i<n;i++) {
-      sf<<"    ps"<<acount<<"["<<i<<"] = p["<<mummy[i]<<"];"<<endl;
+      sf<<"    ps"<<acount<<"["<<i<<"] = p["<<GetMassIndex(mummy[i])<<"];"<<endl;
     }
     sf <<"    m_k"<<idh<<"<<CE.QCDAPWeight(ps"<<acount<<","<<n<<",s0"<<acount<<");"<<endl;    
     sf <<"  }"<<endl;
@@ -655,7 +659,7 @@ void Channel_Generator_NPV::GenerateMassChain(int flag,Point* p,Point* clmp,int&
 {
   if (p->left==0) {
     string m = LinkedMasses(p);
-    AddToVariables(flag,m,string("ms[")+m+string("]"),0,sf);
+    AddToVariables(flag,m,string("ms[")+GetMassIndex(m)+string("]"),0,sf);
     return;
   }
   string lm,rm;
@@ -679,7 +683,7 @@ void Channel_Generator_NPV::GenerateMassChain(int flag,Point* p,Point* clmp,int&
   }
   if (prt.length()==1) {
     AddToVariables(flag,mummy+string("_max"),string("sqr(sqrt(s") + clm +
-		   string("_max)-sqrt(ms[") + prt + string("]))"),0,sf);
+		   string("_max)-sqrt(ms[") + GetMassIndex(prt) + string("]))"),0,sf);
   }
   
   if (rm.length()>1 && lm.length()>1) sclmp = p;
@@ -754,8 +758,8 @@ void Channel_Generator_NPV::GenerateMassChain(int flag,Point* p,Point* clmp,int&
   default:
     string s; 
     if (mummy.length()>0) {
-      for (size_t i=0;i<mummy.length()-1;++i) s += string("p[")+mummy[i]+string("]+");
-      s += string("p[")+mummy[mummy.length()-1]+string("]");
+      for (size_t i=0;i<mummy.length()-1;++i) s += string("p[")+GetMassIndex(mummy[i])+string("]+");
+      s += string("p[")+GetMassIndex(mummy[mummy.length()-1])+string("]");
     }
     AddToVariables(flag,mummy,s,1,sf);
     AddToVariables(flag,mummy,string("dabs(p")+mummy+string(".Abs2())"),0,sf);
@@ -779,7 +783,7 @@ void Channel_Generator_NPV::GenerateMassChain(int flag,Point* p,Point* clmp,int&
       }
       else {
 	AddToVariables(flag,rm + string("_max"),string("sqr(sqrt(s") + mummy +
-		       string(")-sqrt(ms[") + lm + string("]))"),0,sf);
+		       string(")-sqrt(ms[") + GetMassIndex(lm) + string("]))"),0,sf);
       }
     }
     GenerateMassFwd(flag,p->right,rannum,sf);
@@ -795,7 +799,7 @@ void Channel_Generator_NPV::GenerateMassFwd(int flag,Point* p,int& rannum,ofstre
 {
   if (p->left==0) {
     string m = LinkedMasses(p);
-    AddToVariables(flag,m,string("ms[")+m+string("]"),0,sf);
+    AddToVariables(flag,m,string("ms[")+GetMassIndex(m)+string("]"),0,sf);
     return;
   }
   string lm,rm;
@@ -840,8 +844,8 @@ void Channel_Generator_NPV::GenerateMassFwd(int flag,Point* p,int& rannum,ofstre
   default:
     string s; 
     if (mummy.length()>0) {
-      for (size_t i=0;i<mummy.length()-1;++i) s += string("p[")+mummy[i]+string("]+");
-      s += string("p[")+mummy[mummy.length()-1]+string("]");
+      for (size_t i=0;i<mummy.length()-1;++i) s += string("p[")+GetMassIndex(mummy[i])+string("]+");
+      s += string("p[")+GetMassIndex(mummy[mummy.length()-1])+string("]");
     }
     AddToVariables(flag,mummy,s,1,sf);
     AddToVariables(flag,mummy,string("dabs(p")+mummy+string(".Abs2())"),0,sf);
@@ -864,7 +868,7 @@ void Channel_Generator_NPV::GenerateMassFwd(int flag,Point* p,int& rannum,ofstre
     }
     else {
       AddToVariables(flag,rm + string("_max"),string("sqr(sqrt(s") + mummy +
-		     string(")-sqrt(ms[") + lm + string("]))"),0,sf);
+		     string(")-sqrt(ms[") + GetMassIndex(lm) + string("]))"),0,sf);
     }
   }
   GenerateMassFwd(flag,p->right,rannum,sf);
@@ -954,7 +958,7 @@ void Channel_Generator_NPV::CalcSmin(int flag,char* min,string lm,ofstream& sf,P
   }
   else {
     AddToVariables(flag,Order(lm) + string("_") + string(min),
-		   string("ms[") + Order(lm) + string("]"),0,sf);
+		   string("ms[") + GetMassIndex(lm) + string("]"),0,sf);
   }
   /*  string s("");
 
@@ -996,7 +1000,9 @@ string Channel_Generator_NPV::LinkedMasses(Point* p)
 {
   if (p->left==0) {
     char help[4];
-    sprintf(help,"%i",p->number);
+    sprintf(help,"%i",0);
+    if (p->number<10) help[0]=p->number+48;
+    else help[0]=p->number+55;
     return string(help);
   }
   return LinkedMasses(p->left)+LinkedMasses(p->right);
@@ -1057,7 +1063,7 @@ string Channel_Generator_NPV::Order(string s)
   if (beg!=-1) {
     return Order(s.substr(0,beg)) + string("_") + Order(s.substr(beg+1));
   }
-  if (s[0]>'9' || s[0]<='0') return s;
+  if (s[0]>85 || s[0]<='0') return s;
 
   for (size_t i=0;i<s.length();++i) 
     for (size_t j=i+1;j<s.length();++j) {

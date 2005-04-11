@@ -5,7 +5,7 @@
 #include "Topology.H"
 #include "Algebra_Interpreter.H"
 #include "MyStrStream.H"
-
+#include "Process_Info.H"
 #include <iomanip>
 
 //#define _DECAYS_
@@ -203,8 +203,9 @@ void Amegic::ReadInProcessfile(string file)
   int         flag,position,njets;
   string      buf,ini,fin;
   int         nIS,   nFS,    nex;
-  Flavour   * IS,  * FS,   * excluded, * flavs;
-  Pol_Info  * plIS,* plFS, * pldummy,  * plavs;
+  Flavour   * IS,  * FS,   * excluded, * flavs, *iflb, *fflb;
+  Pol_Info  * plIS,* plFS, * pldummy,  * plavs, *iplb, *fplb;
+  Process_Info* pinfo=0;
   int         order_ew,order_strong,scale_scheme,kfactor_scheme; 
   double      fixed_scale;
   double      enhance_factor=1.,maxreduction_factor=1.,maxredepsilon=0.,ycut=-1.;
@@ -219,6 +220,7 @@ void Amegic::ReadInProcessfile(string file)
       position   = buf.find(string("Process :")); 
       flag       = 0;
       if (position>-1 && position<(int)buf.length()) {
+	pinfo    = new Process_Info(0,0);
 	flag     = 1;
 	buf      = buf.substr(position+9);
 	position = buf.find(string("->"));
@@ -227,6 +229,7 @@ void Amegic::ReadInProcessfile(string file)
 	  fin    = buf.substr(position+2);
 	  nIS    = ExtractFlavours(IS,plIS,ini);
 	  nFS    = ExtractFlavours(FS,plFS,fin);
+	  pinfo->AddSubList(nFS,FS,plFS);
 	  njets  = 0;
 	  if (nFS>m_maxjet) m_maxjet = nFS;
 	  if ((nIS< 1) || (nIS > 2)) {
@@ -235,7 +238,7 @@ void Amegic::ReadInProcessfile(string file)
 	    flag = 0;
 	  }
 	  if (nIS==2) {
-	    if (!(p_procs->CheckExternalFlavours(2,IS,nFS,FS))) {
+	    if (!(CF.ValidProcess(2,IS,nFS,FS))) {
 	      msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
 			 <<"   Mismatch of flavours. Cannot initialize this process."<<endl
 			 <<"   flavours are "<<buf<<endl;
@@ -254,6 +257,7 @@ void Amegic::ReadInProcessfile(string file)
 	    delete [] plIS;
 	    delete [] FS;
 	    delete [] plFS;
+	    if (pinfo) delete pinfo;
 	  }
 	  else {
 	    order_ew = order_strong = -1;
@@ -270,6 +274,49 @@ void Amegic::ReadInProcessfile(string file)
 	      if (buffer[0] != '%' && strlen(buffer)>0) {
 		msg.LogFile()<<buffer<<std::endl;
 		buf      = string(buffer);
+		position = buf.find(string("Decay :"));
+		if (position > -1) {
+		  buf    = buf.substr(position+7);
+		  position = buf.find(string("->"));
+		  if (position > 0) {
+		    ini    = buf.substr(0,position);
+		    fin    = buf.substr(position+2);
+		    int c=ExtractFlavours(iflb,iplb,ini);
+		    if (iflb[0].Size()>1 || c!=1) {
+		      msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
+				 <<"   Invalid subsequent decay channel: "<<buf<<endl;
+		      abort();
+		    }
+
+		    Process_Info *phelp = pinfo->FindDM(iplb[0].type[0]);
+		    if (phelp) {
+		      if (iflb[0]!=*(phelp->Flav())) {
+			msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
+				   <<"   Mismatch of decay flavour and identifier: "<<iflb[0]<<" "<<*(phelp->Flav())<<endl;
+			abort();
+		      }
+
+		      int c=ExtractFlavours(fflb,fplb,fin);
+		      if (c<2) {
+			msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
+				   <<"   Wrong number of partons in decay process: "<<string(buffer)<<endl;
+			abort();
+		      }
+		      if (!(CF.ValidProcess(1,iflb,c,fflb))) {
+			msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
+				   <<"   Mismatch of flavours in decay process. Cannot initialize this process."<<endl
+				   <<"   flavours are "<<buf<<endl;
+			abort();
+		      }
+		      phelp->AddSubList(c,fflb,fplb);
+		      delete [] fflb;
+		      delete [] fplb;		      
+		    }
+		    delete [] iflb;
+		    delete [] iplb;
+		  }
+		}
+
 		position = buf.find(string("Excluded particles :"));
 		if (position > -1) {
 		  buf    = buf.substr(position+20);
@@ -301,7 +348,7 @@ void Amegic::ReadInProcessfile(string file)
 		  Shorten(buf);
 		  selectorfile = buf;
 		}
-
+		
 		position       = buf.find(string("Scale scheme :"));
 		if (position > -1) {
 		  MyStrStream str;      
@@ -402,17 +449,26 @@ void Amegic::ReadInProcessfile(string file)
 	      }
 	    }
 	    while (position==-1);
+	    if (!pinfo || !pinfo->CheckCompleteness()) {
+	      msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
+			 <<"   Missing decay processes! "<<endl;
+	      if (pinfo) pinfo->Print();
+	      abort();
+	    }
 
-	    if (nIS+nFS>m_nmax) m_nmax = nIS+nFS;
+	    nFS = pinfo->TotalNout();
+	    m_nmax = Max(m_nmax,pinfo->Nmax(nIS));
 	    flavs              = new Flavour[nIS+nFS];
 	    plavs              = new Pol_Info[nIS+nFS];
-	    for (int i=0;i<nIS;i++) { flavs[i]     = IS[i]; plavs[i]     = plIS[i]; } 
-	    for (int i=0;i<nFS;i++) { flavs[i+nIS] = FS[i]; plavs[i+nIS] = plFS[i]; }
+	    for (int i=0;i<nIS;i++) { flavs[i]     = IS[i]; plavs[i]     = plIS[i]; }
+	    pinfo->GetFlavList(&flavs[nIS]);
+	    pinfo->GetPolList(&plavs[nIS]);
 	    bool single        = 1;
 	    for (int i=0;i<nIS+nFS;i++) {
 	      if (flavs[i].Size()>1) { single = 0; break; }
-	    } 
+	    }
 
+	    
 	    // for beam
 	    int bsh_pol=p_beam->Polarisation();
 	    int beam_is_poled[2]={bsh_pol&1,bsh_pol&2};
@@ -427,11 +483,13 @@ void Amegic::ReadInProcessfile(string file)
 
 	    if (summass<rpa.gen.Ecms()) {
 	      Process_Base * proc=NULL;
-	      if (single) proc = new Single_Process(nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
-						     order_strong,order_ew,
-						     -kfactor_scheme,-scale_scheme,fixed_scale,
-						    plavs,nex,excluded,usepi,ycut,maxerror);
-	      else proc = new Process_Group(nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
+	      if (single) {
+		proc = new Single_Process(pinfo,nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
+					  order_strong,order_ew,
+					  -kfactor_scheme,-scale_scheme,fixed_scale,
+					  plavs,nex,excluded,usepi,ycut,maxerror);
+	      }
+	      else proc = new Process_Group(pinfo,nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
 					    order_strong,order_ew,
 					    -kfactor_scheme,-scale_scheme,fixed_scale,
 					    plavs,nex,excluded,usepi,ycut,maxerror);
@@ -504,6 +562,19 @@ int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf)
 	  pstream>>pd[count];	  
 	}
       }
+      nxt = number.find(string("["));
+      if (nxt!=(int)string::npos) {
+	pn = number;
+	number = pn.substr(0,nxt);
+	pn.erase(0,nxt);
+	if(pn[pn.length()-1]==']'){
+	  pn.erase(0,1);
+	  pn.erase(pn.length()-1,1);
+	  pc[count]='d';
+	  pp[count]=pn[0];
+	}
+      }
+
       MyStrStream sstream;
       sstream<<number;
       sstream>>ii[count];
@@ -523,7 +594,7 @@ int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf)
 
 #ifdef Explicit_Pols
     int t1=mt::p_m, t2=mt::p_p;
-    if(pc[i]=='l') { t1=mt::p_l0; t2=mt::p_l1; }
+    if (pc[i]=='l') { t1=mt::p_l0; t2=mt::p_l1; }
     if (pc[i]!=' ') pl[i].pol_type = pc[i];
     pl[i].angle    = angle[i];
  
@@ -534,22 +605,25 @@ int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf)
       case '0' : type = mt::p_l;break;
       default  : type = t1;
     }
-    if(!fl[i].IsTensor()){
-      int tf[3] = {t1,t2,mt::p_l};
-      if (ATOOLS::IsZero(pd[i]-1.)) {
-	pl[i].type[0]=type;
-	pl[i].factor[0]=pl[i].num;
-	pl[i].num=1;
-      }
-      else{
-	for (int j=0;j<pl[i].num;j++){
-	  pl[i].type[j]=tf[j];
-	  if(pl[i].type[j]==type)  pl[i].factor[j] = 1.+pd[i]*(pl[i].num-1.);
-	                     else  pl[i].factor[j] = 1.-pd[i];
+
+    if (pc[i]=='d') pl[i].type[0] = pp[i];
+    else {
+      if(!fl[i].IsTensor()){
+	int tf[3] = {t1,t2,mt::p_l};
+	if (ATOOLS::IsZero(pd[i]-1.)) {
+	  pl[i].type[0]=type;
+	  pl[i].factor[0]=pl[i].num;
+	  pl[i].num=1;
+	}
+	else{
+	  for (int j=0;j<pl[i].num;j++) {
+	    pl[i].type[j]=tf[j];
+	    if(pl[i].type[j]==type)  pl[i].factor[j] = 1.+pd[i]*(pl[i].num-1.);
+	    else  pl[i].factor[j] = 1.-pd[i];
+	  }
 	}
       }
     }
-  
 #else
     pl[i] = Pol_Info(fl[i]); 
 #endif

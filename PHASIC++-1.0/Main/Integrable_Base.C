@@ -11,7 +11,7 @@
 
 using namespace PHASIC;
 
-Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
+Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,
 				 const int scalescheme,const int kfactorscheme,
 				 BEAM::Beam_Spectra_Handler *const beamhandler,
 				 PDF::ISR_Handler *const isrhandler,

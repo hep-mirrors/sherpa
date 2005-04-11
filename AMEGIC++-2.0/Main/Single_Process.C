@@ -40,7 +40,7 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
 			       int _gen_str,int _orderQCD, int _orderEW,
 			       int _kfactorscheme, int _scalescheme,double _scale,
 			       Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi, double ycut,double error) :
-  Process_Base(_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
+  Process_Base(NULL,_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
 	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,ycut,error),
   m_sfactor(1.), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this), 
   m_helsample(false), m_inithelsample(false), m_throws(0), m_helresult(0.), m_helresult2(0.)
@@ -57,7 +57,67 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
   m_newlib   = false;
   m_libnumb  = 0;
   m_save_max = 0.;
-  GenerateNames(m_nin,p_flin,p_plin,m_nout,p_flout,p_plout,m_name,m_ptypename,m_libname);
+  GenerateNames(m_nin,p_flin,p_plin,m_name,m_ptypename,m_libname);
+  m_pslibname = m_libname;
+
+  PolarizationNorm();
+  if (_seldata) p_selector = new Combined_Selector(m_nin,m_nout,p_flavours,_seldata,ycut);
+  else {
+    if (m_nout>2)
+      msg.Out()<<"WARNING in Single_Process "<<m_name<<endl
+	       <<"   No selection cuts specified. Init No_Selector !"<<endl;
+    p_selector = new No_Selector();
+  }
+
+  double sum_massin = 0.,sum_massout = 0.;
+  for (size_t i=0;i<m_nin;i++)  sum_massin  += p_flin[i].Mass();
+  for (size_t i=0;i<m_nout;i++) sum_massout += p_flout[i].Mass();
+  m_threshold = ATOOLS::Max(sum_massin,sum_massout);
+
+  p_pshandler = new Phase_Space_Handler(this,p_isrhandler,p_beamhandler,m_maxerror);
+  p_pshandler->SetUsePI(m_usepi);
+
+  // making directory
+  if (m_gen_str>1) {
+    unsigned int  mode_dir = 0755;
+    ATOOLS::MakeDir((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename).c_str(),mode_dir); 
+  }
+  msg_Tracking()<<"Initialized Single_Process : "<<m_name<<"."<<std::endl;
+
+  if (m_scalescheme==65 && m_updatescales) {
+    double dr   = rpa.gen.DeltaR();
+    double ycut = rpa.gen.Ycut();
+    m_scale[stp::fac] = ycut*sqr(rpa.gen.Ecms());
+    ycut=Min(ycut,ycut*sqr(dr));
+    m_scale[stp::as] = ycut*sqr(rpa.gen.Ecms());
+    SetScales(m_scale[stp::fac],m_scale[stp::as]);
+  }
+}
+
+
+Single_Process::Single_Process(Process_Info* pinfo,int _nin,int _nout,Flavour * _fl,
+			       ISR_Handler * _isr,Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
+			       int _gen_str,int _orderQCD, int _orderEW,
+			       int _kfactorscheme, int _scalescheme,double _scale,
+			       Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi, double ycut,double error) :   
+  Process_Base(pinfo,_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
+	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,ycut,error),
+  m_sfactor(1.), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this), 
+  m_helsample(false), m_inithelsample(false), m_throws(0), m_helresult(0.), m_helresult2(0.)
+{
+  string newpath=rpa.gen.Variable("SHERPA_CPP_PATH");
+  ATOOLS::MakeDir(newpath.c_str(),493);
+  if (system((string("test -d ")+newpath+string("/Process")).c_str())) {
+//     system((string("cp -r ")+rpa.gen.Variable("SHERPA_BIN_PATH")+
+// 	    string("/Process/Dummy ")+newpath+string("/Process")).c_str());
+    system((string("cp ")+rpa.gen.Variable("SHERPA_BIN_PATH")+
+	    string("/makelibs ")+newpath).c_str());
+  }
+  m_usepi    = usepi;
+  m_newlib   = false;
+  m_libnumb  = 0;
+  m_save_max = 0.;
+  GenerateNames(m_nin,p_flin,p_plin,m_name,m_ptypename,m_libname);
   m_pslibname = m_libname;
 
   PolarizationNorm();
@@ -191,7 +251,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
 				  vector<Single_Process *> & links,vector<Single_Process *> & errs,
 				  int & totalsize, int & procs, int & current_atom)
 {
- if (_testmoms==0) {
+  if (_testmoms==0) {
     string model_name = model->Name();
     if (model_name==string("ADD")) {
       double ms=model->ScalarConstant("M_s");
@@ -222,8 +282,8 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
   p_hel    = new Helicity(m_nin,m_nout,p_flavours,p_pl);
   p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvector,p_flavours,p_b);  
   p_shand  = new String_Handler(m_gen_str,p_BS);
-
-  p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_flavours,p_b,model,top,m_orderQCD,m_orderEW,
+  
+  p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_flavours,p_b,p_pinfo,model,top,m_orderQCD,m_orderEW,
 				   p_BS,p_shand,m_print_graphs);
   if (p_ampl->GetGraphNumber()==0) {
     msg_Tracking()<<"Single_Process::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
@@ -254,7 +314,6 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
 
   p_ampl->CompleteAmplitudes(m_nin+m_nout,p_flavours,p_b,&m_pol,
 			     top,p_BS,m_ptypename+string("/")+m_name);
-
   m_pol.Add_Extern_Polarisations(p_BS,p_flavours,p_hel);
   p_BS->Initialize();
 
@@ -327,7 +386,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology * top)
   p_hel    = new Helicity(m_nin,m_nout,p_flavours,p_pl);
   p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvector,p_flavours,p_b);  
   p_shand  = new String_Handler(m_gen_str,p_BS);
-  p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_flavours,p_b,model,top,m_orderQCD,m_orderEW,
+  p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_flavours,p_b,p_pinfo,model,top,m_orderQCD,m_orderEW,
 				   p_BS,p_shand);
   if (p_ampl->GetGraphNumber()==0) {
     msg_Tracking()<<"Single_Process::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;

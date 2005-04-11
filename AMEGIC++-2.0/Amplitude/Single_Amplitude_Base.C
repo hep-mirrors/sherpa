@@ -386,7 +386,6 @@ Kabbala Single_Amplitude_Base::GetProp(Zfunc* z)
 {
   Kabbala Pols(string("1"),Complex(1.,0.));
   Basic_Pfunc bpf(shand->Get_Generator(),BS);
-
   int cnt=0,sign=1;
   for(int i=0;i<z->m_nprop;i++){
 
@@ -566,7 +565,6 @@ Complex Single_Amplitude_Base::Zvalue(int ihel,int* signlist)
       iarg.push_back(signlist[j]);
     }
   }
-
   for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();++zit) {
     Zfunc* z = (*zit);
 

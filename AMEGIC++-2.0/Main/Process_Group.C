@@ -28,7 +28,7 @@ using namespace std;
   ----------------------------------------------------------------------------------*/
 
 Process_Group::Process_Group() :
-  Process_Base(0,0,NULL,NULL,NULL,0,0,0,0,0,-1.),
+  Process_Base(NULL,0,0,NULL,NULL,NULL,0,0,0,0,0,-1.),
   m_resetted(false), m_weventmode(0)
 { 
   m_name  = "Empty_Group"; 
@@ -36,19 +36,19 @@ Process_Group::Process_Group() :
   m_procs.clear();
 }
 
-Process_Group::Process_Group(int _nin,int _nout,Flavour *& _fl,
+Process_Group::Process_Group(Process_Info* pinfo,int _nin,int _nout,Flavour *& _fl,
 			     PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			     int _gen_str,int _orderQCD, int _orderEW,
 			     int _kfactorscheme,int _scalescheme,double _scale,
 			     Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi,double ycut, double error) :
-  Process_Base(_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
+  Process_Base(pinfo,_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
 	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,ycut,error),
   m_resetted(false), m_weventmode(0)
 {
   p_selected  = NULL;
 
   string stan,oli;
-  GenerateNames(m_nin,p_flin,p_plin,m_nout,p_flout,p_plout,m_name,stan,oli);
+  GenerateNames(m_nin,p_flin,p_plin,m_name,stan,oli);
 
   p_flavours   = new Flavour[m_nvector];
   p_pl   = new Pol_Info[m_nvector];
@@ -115,28 +115,42 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
   int beam_is_poled[2]={bsh_pol&1,bsh_pol&2};
   // ====
 
-  int  * flindex = new int[m_nin+m_nout];
-  for (size_t i=0;i<m_nin+m_nout;i++) flindex[i] = 0;
-  char * plindex = new char[m_nin+m_nout];
-  for (size_t i=0;i<m_nin+m_nout;i++) plindex[i] = ' ';
-  Flavour  * _fl  = new Flavour[m_nin+m_nout];
-  Pol_Info  * _pl = new Pol_Info[m_nin+m_nout];
+  p_pinfo->Reshuffle();
+  p_pinfo->Expand();
+  int nsproc=p_pinfo->NProcs();
+  cout<<"Process_Group::ConstructProcesses:  subprocs: "<<nsproc<<endl;
+  int nout = p_pinfo->Nout();
+  int  * flindex = new int[m_nin+nout];
+  for (size_t i=0;i<m_nin+nout;i++) flindex[i] = 0;
+  char * plindex = new char[m_nin+nout];
+  for (size_t i=0;i<m_nin+nout;i++) plindex[i] = ' ';
+  Flavour  * _fl  = new Flavour[m_nin+nout];
+  Flavour  * ofl  = new Flavour[m_nin+nout];
+  Pol_Info  * _pl = new Pol_Info[m_nin+nout];
+  Pol_Info  * opl = new Pol_Info[m_nin+nout];
+  for (size_t i=0;i<m_nin;i++) {
+    ofl[i]=p_flin[i];
+    opl[i]=p_plin[i];
+  }
+  p_pinfo->GetFlavList(ofl+m_nin);
+  p_pinfo->GetPolList(opl+m_nin);
+  Process_Info *pi = NULL;
 
   string _name,_stan,_oli;
   bool flag = 1;
-  bool take;
+  bool take = 0;
   int overflow = 0;
   for (;;) {
     if (!flag) break;
-    for (size_t i=0;i<m_nin+m_nout;++i) {
-      if (p_flavours[i].Size() != 1) {
-	_fl[i] = p_flavours[i][flindex[i]]; 
+    for (size_t i=0;i<m_nin+nout;++i) {
+      if (ofl[i].Size() != 1) {
+	_fl[i] = ofl[i][flindex[i]]; 
 	_pl[i] = Pol_Info(_fl[i]);
-	if (_pl[i].pol_type==p_pl[i].pol_type) {
-	  _pl[i] = p_pl[i];
+	if (_pl[i].pol_type==opl[i].pol_type) {
+	  _pl[i] = opl[i];
 	}
 	else {
-	  if (p_pl[i].GetPol()!=' ' && p_pl[i].GetPol()!='s') {
+	  if (opl[i].GetPol()!=' ' && opl[i].GetPol()!='s') {
 	    msg.Out()<<" WARNING in Process_Group::ConstructProcesses : "<<std::endl
 		     <<"   wrong polarisation state in Particle.dat."<<endl
 		     <<" Polarisation ignored, run will continue."<<endl;
@@ -144,30 +158,41 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
 	}
       }
       else {
-	_fl[i] = p_flavours[i];
-	_pl[i] = p_pl[i];
+	_fl[i] = ofl[i];
+	_pl[i] = opl[i];
       }
     }
-    if (CheckExternalFlavours(m_nin,_fl,m_nout,_fl+m_nin)) {
+    if (CF.ValidProcess(m_nin,_fl,nout,_fl+m_nin)) {
       overflow = SetPolarisations(plindex,_pl,beam_is_poled);
-      for (size_t i=0;i<m_nin+m_nout;++i) {
+      for (size_t i=0;i<m_nin+nout;++i) {
 	if (plindex[i]!=' ') _pl[i].SetPol(plindex[i]);
       }
-      GenerateNames(m_nin,_fl,_pl,m_nout,_fl+m_nin,_pl+m_nin,_name,_stan,_oli);
-      take = 1;
-      for (size_t k=0;k<m_procs.size();k++) {
-	if (_name == m_procs[k]->Name()) { take = 0; break; }
+      for (int j=0;j<nsproc;j++) {
+	if (nsproc==1) pi = p_pinfo->GetSubProcess(-1);
+	else pi = p_pinfo->GetSubProcess(j);
+ 	pi->ResetSubList(nout,_fl+m_nin,_pl+m_nin);
+	pi->Reshuffle();
+	GenerateNames(m_nin,_fl,_pl,_name,_stan,_oli,pi);
+	take = 1;
+	for (size_t k=0;k<m_procs.size();k++) {
+	  if (_name == m_procs[k]->Name()) { 
+	    take = 0; 
+	    delete pi;
+	    break; 
+	  }
+	}
+	if (take) {
+	  Add(new Single_Process(pi,m_nin,m_nout,_fl,p_isrhandler,p_beamhandler,_seldata,m_gen_str,m_orderQCD,m_orderEW,
+				 m_kfactorscheme,m_scalescheme,m_scale[stp::as],_pl,m_nex,p_ex_fl,m_usepi,m_ycut,m_maxerror));
+	}
       }
     }
     else take=0;
-    if (take) {
-      Add(new Single_Process(m_nin,m_nout,_fl,p_isrhandler,p_beamhandler,_seldata,m_gen_str,m_orderQCD,m_orderEW,
-			     m_kfactorscheme,m_scalescheme,m_scale[stp::as],_pl,m_nex,p_ex_fl,m_usepi,m_ycut,m_maxerror));
-    }
+
     if (overflow || take==0) {
-      for (size_t i=0; i<m_nin+m_nout; ++i) plindex[i]=' ';
-      for (size_t i=m_nin+m_nout-1;i>=0;--i) {
-	if (p_flavours[i].Size()-1>flindex[i]) {
+      for (size_t i=0; i<m_nin+nout; ++i) plindex[i]=' ';
+      for (size_t i=m_nin+nout-1;i>=0;--i) {
+	if (ofl[i].Size()-1>flindex[i]) {
 	  ++flindex[i];
 	  break;
 	}
@@ -181,6 +206,10 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
   }
   delete [] _fl;
   delete [] _pl;
+  delete [] ofl;
+  delete [] opl;
+  delete [] flindex;
+  delete [] plindex;
 }
 
 int Process_Group::SetPolarisations(char * plindex, Pol_Info * pl, int * beam_is_poled) 
@@ -227,6 +256,8 @@ void Process_Group::GroupProcesses() {
   double * massout = new double[m_nout];
   double   sum_massin  = 0.;
   double   sum_massout = 0.;
+  Flavour* flout = new Flavour[m_nout];
+  p_pinfo->GetTotalFlavList(flout);
 
   for (size_t i=0;i<m_nin;i++)  {
     massin[i]   = p_flin[i].Mass();

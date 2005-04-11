@@ -17,7 +17,7 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public :
-    Process_Group(int,int,ATOOLS::Flavour *&,
+    Process_Group(Process_Info*,int,int,ATOOLS::Flavour *&,
 		  PDF::ISR_Handler * =NULL,BEAM::Beam_Spectra_Handler * =NULL,
 		  ATOOLS::Selector_Data * =NULL,
 		  int=0,int=99,int=99,int=0,int=0,double=-1.,

@@ -31,7 +31,7 @@ Process_Base::Process_Base():
   m_gen_str(3),p_b(0),p_flin(0),p_flout(0),
   p_pl(0),p_plin(0),p_plout(0), 
   m_enhancefac(1.), m_maxfac(1.), p_psgen(0),
-  m_print_graphs(false), m_ycut(-1.), m_maxerror(-1.)
+  m_print_graphs(false), m_ycut(-1.), m_maxerror(-1.), p_pinfo(0)
 {
   m_atoms=1;
   m_analyse=m_tables=0;
@@ -49,46 +49,22 @@ Process_Base::Process_Base():
 
 
 
-Process_Base::Process_Base(int _nin,int _nout,ATOOLS::Flavour * _fl,
+Process_Base::Process_Base(Process_Info* pinfo,int _nin,int _nout,ATOOLS::Flavour * _fl,
 			   PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
 			   int _gen_str, int _orderQCD, int _orderEW,
 			   int _scalescheme,int _kfactorscheme,double _scale,
 			   Pol_Info * _pl,
 			   int _nex,ATOOLS::Flavour * _ex_fl,double ycut,double error) :
-  Integrable_Base(_nin,_nout,_fl,_scalescheme,_kfactorscheme,_beam,_isr),
-  m_gen_str(_gen_str),m_nex(_nex),
+  Integrable_Base(_nin,_nout,_scalescheme,_kfactorscheme,_beam,_isr),
+  p_pinfo(pinfo),m_gen_str(_gen_str),m_nex(_nex),
   p_ex_fl(_ex_fl),
   m_atoms(0), m_analyse(0), m_tables(0), 
   m_enhancefac(1.), m_maxfac(1.),
   m_orderQCD(_orderQCD), m_orderEW(_orderEW),
   p_psgen(0), m_print_graphs(false), m_ycut(ycut),m_maxerror(error)
 {
-  m_scale[stp::as]=m_scale[stp::fac]=_scale;
 
-  p_flin    = new Flavour[m_nin];
-  p_flout   = new Flavour[m_nout];  
-  p_plin    = new Pol_Info[m_nin];
-  p_plout   = new Pol_Info[m_nout]; 
-  
-  p_flavours = 0;
-  p_pl = 0;
-  p_pshandler = 0;
-  p_selector = 0;
-  
-  for (size_t i=0;i<m_nin;i++) {
-    p_flin[i]  = _fl[i];
-    if (_pl!=0) p_plin[i] = _pl[i];
-           else p_plin[i] = Pol_Info(p_flin[i]); 
-    if (p_flin[i].Strong())        m_nstrong++;
-    if (p_flin[i].IntCharge()!=0)  m_neweak++;
-  }
-  for (size_t i=0;i<m_nout;i++) { 
-    p_flout[i] = _fl[i+m_nin]; 
-    if (_pl!=0) p_plout[i] = _pl[i+m_nin];
-           else p_plout[i] = Pol_Info(p_flout[i]); 
-    if (p_flout[i].Strong())       m_nstrong++;
-    if (p_flout[i].IntCharge()!=0) m_neweak++;
-  }
+  m_scale[stp::as]=m_scale[stp::fac]=_scale;
 
   if (m_scale[stp::as]<0.) {
     m_scale[stp::as]=m_scale[stp::fac]=sqr(rpa.gen.Ecms());
@@ -99,8 +75,41 @@ Process_Base::Process_Base(int _nin,int _nout,ATOOLS::Flavour * _fl,
   
   if (m_scalescheme<0)   m_scalescheme   = -m_scalescheme;
   if (m_kfactorscheme<0) m_kfactorscheme = -m_kfactorscheme;
-}
+  
+  p_flavours = 0;
+  p_pl = 0;
+  p_pshandler = 0;
+  p_selector = 0;
+  p_flin  = 0;
+  p_flout = 0;
+  p_plin  = 0;
+  p_plout = 0;
 
+  if (m_nin==0) return;
+
+  p_flin    = new Flavour[m_nin];
+  p_flout   = new Flavour[m_nout];  
+  p_plin    = new Pol_Info[m_nin];
+  p_plout   = new Pol_Info[m_nout]; 
+  
+  for (size_t i=0;i<m_nin;i++) {
+    p_flin[i]  = _fl[i];
+    if (_pl!=0) p_plin[i] = _pl[i];
+           else p_plin[i] = Pol_Info(p_flin[i]); 
+    if (p_flin[i].Strong())        m_nstrong++;
+    if (p_flin[i].IntCharge()!=0)  m_neweak++;
+  }
+
+//   pinfo->Print();
+//   pinfo->FullPrint();
+  pinfo->Reshuffle();
+  pinfo->GetTotalFlavList(p_flout);
+  pinfo->GetTotalPolList(p_plout);
+  for (size_t i=0;i<m_nout;i++) { 
+    if (p_flout[i].Strong())       m_nstrong++;
+    if (p_flout[i].IntCharge()!=0) m_neweak++;
+  }
+}
 
 Process_Base::~Process_Base() {
   if (p_flin)     { delete [] p_flin;  p_flin     = 0; }
@@ -119,9 +128,10 @@ Process_Base::~Process_Base() {
   ------------------------------------------------------------------------------*/
 
 string * Process_Base::GenerateNames(int _nin, Flavour * _flin, Pol_Info * _plin,
-				     int _nout,Flavour * _flout,Pol_Info * _plout,
-				     string & _name,string & _ptype, string & _lib)
+				     string & _name,string & _ptype, string & _lib, Process_Info* pi)
 {
+  Process_Info *ppi = pi;
+  if (ppi==NULL) ppi=p_pinfo;
   Reshuffle(_nin, _flin, _plin);
 
   if (_flin[0].IsAnti() && !_flin[1].IsAnti()) {
@@ -132,8 +142,7 @@ string * Process_Base::GenerateNames(int _nin, Flavour * _flin, Pol_Info * _plin
     _plin[0] = _plin[1];
     _plin[1] = plhelp;    
   }
-  
-  Reshuffle(_nout, _flout, _plout);
+  int _nout=ppi->TotalNout();
   
   _name=ToString(_nin)+"_"+ToString(_nout);
   if (m_gen_str>1) _ptype      = string("P")+_name;
@@ -142,18 +151,7 @@ string * Process_Base::GenerateNames(int _nin, Flavour * _flin, Pol_Info * _plin
   _name      += string("_");
   
   for (size_t i=0;i<m_nin;i++) {
-    _name += string(_flin[i].Name());
-    if ((_flin[i].Kfcode()==kf::e)   ||
-	(_flin[i].Kfcode()==kf::mu)  ||
-	(_flin[i].Kfcode()==kf::tau) ||
-	(_flin[i].Kfcode()==kf::Hmin)) {
-      _name.erase(_name.length()-1,1);
-      if (_flin[i].IsAnti()) _name += string("+");
-                        else _name += string("-");      
-    }
-    else {
-      if (_flin[i].IsAnti()) _name += string("b"); 
-    }
+    _name += _flin[i].IDName();
     // polinfo for fully polarised incommings
     if (_plin[i].pol_type=='c' && _plin[i].num==1) {
       if (_plin[i].type[0]==-1) _name += string("m");
@@ -170,73 +168,7 @@ string * Process_Base::GenerateNames(int _nin, Flavour * _flin, Pol_Info * _plin
   }
   _name += string("__");
 
-  for (size_t i=0;i<m_nout;i++) {
-    _name += string(_flout[i].Name());
-    if (_flout[i].Kfcode()==kf::e  ||
-	_flout[i].Kfcode()==kf::mu ||
-	_flout[i].Kfcode()==kf::tau ||
-	_flout[i].Kfcode()==kf::Hmin ||
-	_flout[i].Kfcode()==kf::W) {
-      _name.erase(_name.length()-1,1);
-      if (_flout[i].IsAnti()) _name += string("+");
-                         else _name += string("-");      
-    }
-    else {
-      if (_flout[i].IsAnti()) _name += string("b"); 
-    }
-    // polinfo for fully polarised outgoings
-    if (_plout[i].pol_type=='c' && _plout[i].num==1) {
-      if (_plout[i].type[0]==-1) _name += string("m");
-      if (_plout[i].type[0]==+1) _name += string("p");
-      if (_plout[i].type[0]==0)  _name += string("z");
-    }
-    else if (_plout[i].pol_type=='h' && _plout[i].num==1) {
-      if (_plout[i].type[0]==-1) _name += string("m");
-      if (_plout[i].type[0]==+1) _name += string("p");
-    }
-
-
-    _name += string("_");
-  }
-  _name.erase(_name.length()-1,1);
-
-  string hname;
-  size_t i;
-  // erase _quark
-  for (;;) {
-    i = _name.find("_quark");
-    if (i==string::npos) break;
-    hname = _name;
-    _name = hname.substr(0,i) + hname.substr(i+6); 
-  }
-  // gluon -> G
-  for (;;) {
-    i = _name.find("gluon");
-    if (i==string::npos) break;
-    hname = _name;
-    _name = hname.substr(0,i) + string("G") + hname.substr(i+5); 
-  }
-  // jet -> j
-  for (;;) {
-    i = _name.find("jet");
-    if (i==string::npos) break;
-    hname = _name;
-    _name = hname.substr(0,i) + string("j") + hname.substr(i+3); 
-  }
-  // Quark -> Q
-  for (;;) {
-    i = _name.find("Quark");
-    if (i==string::npos) break;
-    hname = _name;
-    _name = hname.substr(0,i) + string("Q") + hname.substr(i+5); 
-  }
-  // photon -> P
-  for (;;) {
-    i = _name.find("photon");
-    if (i==string::npos) break;
-    hname = _name;
-    _name = hname.substr(0,i) + string("P") + hname.substr(i+6); 
-  }
+  _name +=ppi->GenerateName();
   return &_name;
 }
 
@@ -354,49 +286,6 @@ void Process_Base::Reshuffle(int n, Flavour* flav, Pol_Info* plav)
   }
 }
 
-bool Process_Base::CheckExternalFlavours(int _nin,Flavour * _in,
-					 int _nout,Flavour * _out) {
-  // first : sum over all invariants and compare
-  for (int i=0;i<_nin;i++)  { if (_in[i].Size()>1)  return 1; }
-  for (int i=0;i<_nout;i++) { if (_out[i].Size()>1) return 1; }
-  
-  int    chin  = 0, chout  = 0;
-  int    sin  = 0, sout  = 0;
-  int    qin  = 0, qout  = 0;
-  int    lin  = 0, lout  = 0;
-  int    qfin = 0, qfout = 0;  
-  int    lfin = 0, lfout = 0;  
-  double bin  = 0, bout  = 0;
-  for (int i=0;i<_nin;i++) {
-    chin   += _in[i].IntCharge();
-    sin   += _in[i].IntSpin();
-    bin   += _in[i].BaryonNumber();
-    lin   += _in[i].LeptonNumber();
-    qin   += _in[i].StrongCharge();
-    qfin  += int(pow(-1.,_in[i].IsAnti())*pow(10.,_in[i].QuarkFamily()-1));
-    lfin  += int(pow(-1.,_in[i].IsAnti())*pow(10.,_in[i].LeptonFamily()-1));
-  }
-  for (int i=0;i<_nout;i++) {
-    chout  += _out[i].IntCharge();
-    sout  += _out[i].IntSpin();
-    bout  += _out[i].BaryonNumber();
-    lout  += _out[i].LeptonNumber();
-    qout  += _out[i].StrongCharge();
-    qfout += int(pow(-1.,_out[i].IsAnti())*pow(10.,_out[i].QuarkFamily()-1));
-    lfout += int(pow(-1.,_out[i].IsAnti())*pow(10.,_out[i].LeptonFamily()-1));
-  }
-  sin = sin%2; sout = sout%2;
-  qin = qin%9; qout = qout%9;
-
-  if (chin  != chout) return 0;    // electric charge violation
-  if (sin  != sout) return 0;    // spin/fermion number violation
-  if (!ATOOLS::IsZero(bin-bout)) return 0;    // baryon number violation
-  //if (lin  != lout) return 0;    // lepton number violation
-  //if (qin  != qout) return 0;    // strong charge violation
-  //if (qfin != qfout) return 0;   // quark family violation
-  //if (lfin != lfout) return 0;   // lepton family violation
-  return 1;
-}
 
 bool Process_Base::IsFile(string filename)
 {
@@ -532,8 +421,8 @@ void Process_Base::AddToDataCollector(int i)
   for (int j=0; j<m_nin; ++j) name+=p_flavours[j].TexName()+"\\,";
   name+="\\to\\,";
   for (int j=m_nin; j<m_nin+m_nout; ++j) name+=p_flavours[j].TexName()+"\\,";
-  Process_Info pi(name,m_totalxs*rpa.Picobarn(),m_totalerr*rpa.Picobarn());
-  Data_Collector::AddData("PROCESS"+ToString(i),new Blob_Data<Process_Info>(pi));
+  ATOOLS::Process_Info pi(name,m_totalxs*rpa.Picobarn(),m_totalerr*rpa.Picobarn());
+  Data_Collector::AddData("PROCESS"+ToString(i),new Blob_Data<ATOOLS::Process_Info>(pi));
 }
 
 /*------------------------------------------------------------------------------

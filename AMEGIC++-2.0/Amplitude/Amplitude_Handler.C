@@ -4,11 +4,13 @@
 #include "Random.H"
 #include "Run_Parameter.H"
 #include "Amplitude_Generator.H"
+#include "Amplitude_Manipulator.H"
 #include "Color_Group.H"
 #include <iostream>
 #include <stdio.h>
 #include "prof.hh"
 #include "MyStrStream.H"
+#include "Process_Info.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -19,20 +21,72 @@ void out_pfunc(Pfunc & pf) {
 }
 
 
-Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,
+Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Info* pinfo,
 				     Interaction_Model_Base * model,Topology* top,
 				     int & _orderQCD,int & _orderEW,Basic_Sfuncs* BS,
 				     String_Handler* _shand, bool print_graph) 
   : shand(_shand),CFCol_Matrix(0),probabs(0),Mi(0), m_print_graph(print_graph)
 {
-  groupname = string("All Amplitudes");
+  int ndecays=pinfo->Ndecays();
+  int nm = pinfo->Nmax(0);
+  int nin = 1;
+  if (b[1]==-1) nin=2;
+  int * b_dec = new int[nm];
+  b_dec[0] = -1;
+  for (int i=1;i<nm;i++) b_dec[i] = 1;
 
-  Amplitude_Generator * gen = 
-    new Amplitude_Generator(N,fl,b,model,top,_orderQCD,_orderEW,BS,shand);
+  Single_Amplitude** subgraphlist = new Single_Amplitude*[ndecays+1];
+  Amplitude_Generator * gen; 
 
-  firstgraph = gen->Matching();
+  Flavour *sfl;
+  if (ndecays>0) {
+    sfl = new Flavour[pinfo->Nmax(nin)];
+    sfl[0] = fl[0];
+    sfl[1] = fl[1];
+    pinfo->GetFlavList(sfl+nin);
+  }
+  else sfl=fl;
+
+  //core process
+  gen = new Amplitude_Generator(nin+pinfo->Nout(),sfl,b,model,top,_orderQCD,_orderEW,BS,shand);
+  subgraphlist[0] = gen->Matching();
   gen->GetOrders(_orderEW,_orderQCD);
   delete gen;
+
+  //decay processes
+  for (int i=1;i<=ndecays;i++) {
+    int j=i;
+    Process_Info *pi=pinfo->GetDecay(j);
+//     pi->Print();cout<<endl;
+    sfl[0] = *(pi->p_fl);
+    pi->GetFlavList(sfl+1);
+    gen = new Amplitude_Generator(1+pi->Nout(),sfl,b_dec,model,top,99,99,BS,shand);
+    subgraphlist[i] = gen->Matching();
+    delete gen;
+  }
+
+
+  if (msg.LevelIsTracking()) {
+    msg.Out()<<"Amplitude_Handler::Amplitude_Handler:"<<endl;
+    int f=1;
+    for(int i=0;i<ndecays+1;i++) {
+      int j=0;
+      Single_Amplitude* nn = subgraphlist[i];
+      while (nn){ 
+	++j;
+	nn = nn->Next;
+      }
+      msg.Out()<<"Process "<<i;
+      if (i==0)msg.Out()<<" (core)";
+      else msg.Out()<<" (decay)";
+      msg.Out()<<" has "<<j<<" Amplitudes"<<endl;
+      f*=j;
+    }
+    msg.Out()<<"Total: "<<f<<" Amplitudes"<<endl;
+  }
+
+  if (ndecays==0 || subgraphlist[0]==0) firstgraph = subgraphlist[0];
+  else ConstructSignalAmplitudes(N,fl,b,pinfo,subgraphlist,BS);
 
   Single_Amplitude* n = firstgraph;
   ntotal = 0;
@@ -40,7 +94,48 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,
     ++ntotal;
     n = n->Next;
   }
+  msg.Tracking()<<"Total number of Amplitudes "<<ntotal<<endl;
   ngraph = ntotal;
+  delete [] b_dec;
+}
+
+void Amplitude_Handler::ConstructSignalAmplitudes(int N,Flavour* fl,int* b,
+						  Process_Info* pinfo,Single_Amplitude** sglist,
+						  Basic_Sfuncs* BS)
+{
+  int ndecays=pinfo->Ndecays();
+  firstgraph = NULL;
+  Single_Amplitude *n=NULL,*next;
+  Single_Amplitude** nl = new Single_Amplitude*[ndecays+1];
+  for (int i=0;i<ndecays+1;i++) nl[i] = sglist[i];
+  int over = 0;
+  for (;;) {
+    next = new Single_Amplitude(b,N,pinfo,nl,BS,fl,shand);
+    if (n) n->Next=next;
+    n = next;
+    if (!firstgraph) firstgraph = n;
+
+    for (int i=ndecays;i>=0;i--) {
+      nl[i] = nl[i]->Next;
+      if (nl[i]) break;
+      nl[i] = sglist[i];
+      if (i==0) over = 1;
+    }
+    if (over) break;
+  }
+  
+  Amplitude_Manipulator(N,fl,b,ndecays).FixSign(firstgraph);
+
+  delete [] nl;
+  for (int i=0;i<ndecays+1;i++) {
+    n = sglist[i];
+    while (n) {
+      next = n->Next;
+      delete n;
+      n = next;
+    }
+  }
+  delete [] sglist;
 }
 
 void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation* pol,
@@ -68,7 +163,7 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
       OptimizeProps(N,n);
 
       BS->BuildMomlist(*n->GetPlist());
-    } 
+   } 
     n = n->Next;
   }
 

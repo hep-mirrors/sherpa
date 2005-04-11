@@ -23,7 +23,7 @@ XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavo
 		 BEAM::Beam_Spectra_Handler *const beamhandler,
 		 PDF::ISR_Handler *const isrhandler,
 		 ATOOLS::Selector_Data *const selectordata):
-  Integrable_Base(nin,nout,flavours,scalescheme,kfactorscheme,
+  Integrable_Base(nin,nout,scalescheme,kfactorscheme,
 		  beamhandler,isrhandler,selectordata),
   p_colours(NULL), m_order_ew(0), m_order_strong(0)
 {
@@ -34,7 +34,7 @@ XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavo
 }
 
 XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours):
-  Integrable_Base(nin,nout,flavours),
+  Integrable_Base(nin,nout),
   p_colours(NULL), m_order_ew(0), m_order_strong(0)
 {
   Init(flavours);

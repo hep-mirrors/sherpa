@@ -272,9 +272,9 @@ bool Channel_Generator::StepS(int flag,Point* p,int& rannum,
   string mummy = Order(lm+rm);
   string moml,momr;
   //Minima
-  if (l->left==0) moml = string("p[") + lm + string("]");
+  if (l->left==0) moml = string("p[") + GetMassIndex(lm) + string("]");
             else  moml = string("p") + Order(lm);
-  if (r->left==0) momr = string("p[") + rm + string("]");
+  if (r->left==0) momr = string("p[") + GetMassIndex(rm) + string("]");
              else momr = string("p") + Order(rm);
 
   Point** _plist = new Point*[2]; 
@@ -500,7 +500,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
       string s = string("sqr(sqrt(dabs((p")+Order(pin0sum)+string("+p")+
 	         Order(pin1sum)+string(").Abs2()))-");
     if (pout1.size()==1) {
-      if (pout1[0].length()==1) s += string("sqrt(ms[")+pout1[0]+string("])");
+      if (pout1[0].length()==1) s += string("sqrt(ms[")+GetMassIndex(pout1[0])+string("])");
       else                      s += string("sqrt(s")+Order(pout1[0])+string(")");    
     }
     else s += string("sqrt(s")+Order(pout1sum)+string("_min)");  
@@ -549,8 +549,8 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
     default:
       string s;
       for (size_t i=0;i<pout0sum.length()-1;i++)
-	s += string("p[")+pout0sum[i]+string("]+");
-      s += string("p[")+pout0sum[pout0sum.length()-1]+string("]");
+	s += string("p[")+GetMassIndex(pout0sum[i])+string("]+");
+      s += string("p[")+GetMassIndex(pout0sum[pout0sum.length()-1])+string("]");
     
       AddToVariables(flag,pout0sum,s,1,sf);
       AddToVariables(flag,pout0sum,string("dabs(p")+Order(pout0sum)+string(".Abs2())"),0,sf);
@@ -575,7 +575,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
       string s = string("sqr(sqrt(dabs((p")+Order(pin0sum)+string("+p")+
 	Order(pin1sum)+string(").Abs2()))-");
       if (pout0.size()==1) {
-	if (pout0[0].size()==1) s += string("sqrt(ms[")+pout0[0]+string("])");
+	if (pout0[0].size()==1) s += string("sqrt(ms[")+GetMassIndex(pout0[0])+string("])");
 	else                    s += string("sqrt(s")+Order(pout0[0])+string(")");    
       }
       else s += string("sqrt(s")+Order(pout1sum)+string(")");  
@@ -598,8 +598,8 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
     default:
       string s;
       for (size_t i=0;i<pout1sum.length()-1;i++)
-	s += string("p[")+pout1sum[i]+string("]+");
-      s += string("p[")+pout1sum[pout1sum.length()-1]+string("]");
+	s += string("p[")+GetMassIndex(pout1sum[i])+string("]+");
+      s += string("p[")+GetMassIndex(pout1sum[pout1sum.length()-1])+string("]");
       
       AddToVariables(flag,pout1sum,s,1,sf);
       AddToVariables(flag,pout1sum,string("dabs(p")+Order(pout1sum)+string(".Abs2())"),0,sf);
@@ -614,16 +614,17 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
   string sctmin("m_ctmin");
   if (flag>=0) {
     if (pin0.size()==1 && pout0sum.length()==1 && pin1.size()==1 && pout1sum.length()==1) {
-      sf<<"  m_ctmax = Min(cuts->cosmax[0]["<<pout0sum<<"],cuts->cosmax[1]["<<pout1sum<<"]);"<<endl;
-      if (nout>2) sf<<"  m_ctmin = Max(cuts->cosmin[0]["<<pout0sum<<"],cuts->cosmin[1]["<<pout1sum<<"]);"<<endl;
+      sf<<"  m_ctmax = Min(cuts->cosmax[0]["<<GetMassIndex(pout0sum)<<"],cuts->cosmax[1]["<<pout1sum<<"]);"<<endl;
+      if (nout>2) sf<<"  m_ctmin = Max(cuts->cosmin[0]["<<GetMassIndex(pout0sum)
+		    <<"],cuts->cosmin[1]["<<GetMassIndex(pout1sum)<<"]);"<<endl;
     }
     else if (pin0.size()==1 && pin1.size()==1 && pout0sum.length()==1) {
-      sf<<"  m_ctmax = cuts->cosmax[0]["<<pout0sum<<"];"<<endl;
-      if (nout>2) sf<<"  m_ctmin = cuts->cosmin[0]["<<pout0sum<<"];"<<endl;
+      sf<<"  m_ctmax = cuts->cosmax[0]["<<GetMassIndex(pout0sum)<<"];"<<endl;
+      if (nout>2) sf<<"  m_ctmin = cuts->cosmin[0]["<<GetMassIndex(pout0sum)<<"];"<<endl;
     }
     else if (pin0.size()==1 && pin1.size()==1 && pout1sum.length()==1) {
-      sf<<"  m_ctmax = cuts->cosmax[1]["<<pout1sum<<"];"<<endl;
-      if (nout>2) sf<<"  m_ctmin = cuts->cosmin[1]["<<pout1sum<<"];"<<endl;
+      sf<<"  m_ctmax = cuts->cosmax[1]["<<GetMassIndex(pout1sum)<<"];"<<endl;
+      if (nout>2) sf<<"  m_ctmin = cuts->cosmin[1]["<<GetMassIndex(pout1sum)<<"];"<<endl;
     }
     else {
       sctmax = string("1.");
@@ -642,9 +643,9 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
     break;
   case 0:
     sf<<"  CE.TChannelMomenta(p"<<Order(pin0sum)<<",p"<<Order(pin1sum);
-    if (pout0.size()==1 && pout0[0].length()==1) sf<<",p["<<pout0[0]<<"]";
+    if (pout0.size()==1 && pout0[0].length()==1) sf<<",p["<<GetMassIndex(pout0[0])<<"]";
                                             else sf<<",p"<<Order(pout0sum);
-    if (pout1.size()==1 && pout1[0].length()==1) sf<<",p["<<pout1[0]<<"]";
+    if (pout1.size()==1 && pout1[0].length()==1) sf<<",p["<<GetMassIndex(pout1[0])<<"]";
                                             else sf<<",p"<<Order(pout1sum);
     sf<<",s"<<Order(pout0sum)<<",s"<<Order(pout1sum);
     sf<<","<<tmstr<<",m_alpha,"<<sctmax<<","<<sctmin<<",m_amct,0,ran["<<rannum++<<"],ran[";
@@ -659,9 +660,9 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
      //sf<<"  std::cout<<\""<<idh<<"\";"<<endl;
       sf<<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT)"<<endl; 
       sf<<"    m_k"<<idh<<"<<CE.TChannelWeight(p"<<Order(pin0sum)<<",p"<<Order(pin1sum);
-      if (pout0.size()==1 && pout0[0].length()==1) sf<<",p["<<pout0[0]<<"]";
+      if (pout0.size()==1 && pout0[0].length()==1) sf<<",p["<<GetMassIndex(pout0[0])<<"]";
                                               else sf<<",p"<<Order(pout0sum);
-      if (pout1.size()==1 && pout1[0].length()==1) sf<<",p["<<pout1[0]<<"]";
+      if (pout1.size()==1 && pout1[0].length()==1) sf<<",p["<<GetMassIndex(pout1[0])<<"]";
                                               else sf<<",p"<<Order(pout1sum);
       sf<<","<<tmstr<<",m_alpha,"<<sctmax<<","<<sctmin<<",m_amct,0,m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
     
@@ -681,7 +682,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
 	for (size_t i=1;i<pin1.size();i++) pin1sum += pin1[i];
 	string s = string("p[1]");
 	for (size_t i=1;i<pin1.size();i++) {
-	  if (pin1[i].length()==1) s += string("-p[")+pin1[i]+string("]");
+	  if (pin1[i].length()==1) s += string("-p[")+GetMassIndex(pin1[i])+string("]");
 	                      else s += string("-p")+Order(pin1[i]);
 	}
 	
@@ -719,7 +720,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
 
 	  string s = string("p[0]");
 	  for (size_t i=1;i<pin0.size();i++) {
-	    if (pin0[i].length()==1) s+=string("-p[")+pin0[i]+string("]");
+	    if (pin0[i].length()==1) s+=string("-p[")+GetMassIndex(pin0[i])+string("]");
 	                        else s+=string("-p")+Order(pin0[i]);
 	  }
 	  //sf<<";"<<endl;
@@ -757,9 +758,9 @@ void Channel_Generator::GenerateMasses(int flag,Point** _plist,int pcount,
     lm[i] = LinkedMasses(_plist[i]);
     mummy += lm[i];
     if (_plist[i]->left==0) {
-      if (flag==0 || flag==10) AddToVariables(flag,lm[i],string("ms[")+lm[i]+string("]"),0,sf);
+      if (flag==0 || flag==10) AddToVariables(flag,lm[i],string("ms[")+GetMassIndex(lm[i])+string("]"),0,sf);
       //sf<<"  double s"<<lm[i]<<" = ms["<<lm[i]<<"];"<<endl;
-      momp[i]  = string("p[") + lm[i] + string("]");
+      momp[i]  = string("p[") + GetMassIndex(lm[i]) + string("]");
       sflag[i] = 1;
       //sum_s_i  += string("-sqrt(s")+lm[i]+string(")");
       help    += lm[i];
@@ -842,8 +843,8 @@ void Channel_Generator::GenerateMasses(int flag,Point** _plist,int pcount,
       break;
     default:
       string s(""); 
-      for (int i=0;i<(int)lm[hit].length()-1;i++) s += string("p[")+lm[hit][i]+string("]+");
-      s += string("p[")+lm[hit][lm[hit].length()-1]+string("]");
+      for (int i=0;i<(int)lm[hit].length()-1;i++) s += string("p[")+GetMassIndex(lm[hit][i])+string("]+");
+      s += string("p[")+GetMassIndex(lm[hit][lm[hit].length()-1])+string("]");
      
       AddToVariables(flag,lm[hit],s,1,sf);
       AddToVariables(flag,lm[hit],string("dabs(")+momp[hit]+string(".Abs2())"),0,sf);
@@ -966,12 +967,13 @@ void Channel_Generator::CalcSmin(int flag,char* min,string lm,ofstream& sf,Point
     }*/
 }
 
-
 string Channel_Generator::LinkedMasses(Point* p)
 {
   if (p->left==0) {
     char help[4];
-    sprintf(help,"%i",p->number);
+    sprintf(help,"%i",0);
+    if (p->number<10) help[0]=p->number+48;
+    else help[0]=p->number+55;
     return string(help);
   }
   return LinkedMasses(p->left)+LinkedMasses(p->right);
@@ -1032,7 +1034,7 @@ string Channel_Generator::Order(string s)
   if (beg!=-1) {
     return Order(s.substr(0,beg)) + string("_") + Order(s.substr(beg+1));
   }
-  if (s[0]>'9' || s[0]<='0') return s;
+  if (s[0]>85 || s[0]<='0') return s;
 
   for (size_t i=0;i<s.length();i++) 
     for (size_t j=i+1;j<s.length();j++) {

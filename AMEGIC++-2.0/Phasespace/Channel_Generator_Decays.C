@@ -202,9 +202,9 @@ bool Channel_Generator_Decays::StepS(int flag,Point* p,int& rannum,
   string mummy = Order(lm+rm);
   string moml,momr;
   //Minima
-  if (l->left==0) moml = string("p[") + lm + string("]");
+  if (l->left==0) moml = string("p[") + GetMassIndex(lm) + string("]");
             else  moml = string("p") + Order(lm);
-  if (r->left==0) momr = string("p[") + rm + string("]");
+  if (r->left==0) momr = string("p[") + GetMassIndex(rm) + string("]");
              else momr = string("p") + Order(rm);
 
   Point** _plist = new Point*[2]; 
@@ -331,9 +331,9 @@ void Channel_Generator_Decays::GenerateMasses(int flag,Point** _plist,int pcount
     lm[i] = LinkedMasses(_plist[i]);
     mummy += lm[i];
     if (_plist[i]->left==0) {
-      if (flag==0 || flag==10) AddToVariables(flag,lm[i],string("ms[")+lm[i]+string("]"),0,sf);
+      if (flag==0 || flag==10) AddToVariables(flag,lm[i],string("ms[")+GetMassIndex(lm[i])+string("]"),0,sf);
       //sf<<"  double s"<<lm[i]<<" = ms["<<lm[i]<<"];"<<endl;
-      momp[i]  = string("p[") + lm[i] + string("]");
+      momp[i]  = string("p[") + GetMassIndex(lm[i]) + string("]");
       sflag[i] = 1;
       //sum_s_i  += string("-sqrt(s")+lm[i]+string(")");
       help    += lm[i];
@@ -416,8 +416,8 @@ void Channel_Generator_Decays::GenerateMasses(int flag,Point** _plist,int pcount
       break;
     default:
       string s(""); 
-      for (int i=0;i<(int)lm[hit].length()-1;i++) s += string("p[")+lm[hit][i]+string("]+");
-      s += string("p[")+lm[hit][lm[hit].length()-1]+string("]");
+      for (int i=0;i<(int)lm[hit].length()-1;i++) s += string("p[")+GetMassIndex(lm[hit][i])+string("]+");
+      s += string("p[")+GetMassIndex(lm[hit][lm[hit].length()-1])+string("]");
      
       AddToVariables(flag,lm[hit],s,1,sf);
       AddToVariables(flag,lm[hit],string("dabs(")+momp[hit]+string(".Abs2())"),0,sf);
@@ -454,7 +454,9 @@ string Channel_Generator_Decays::LinkedMasses(Point* p)
 {
   if (p->left==0) {
     char help[4];
-    sprintf(help,"%i",p->number);
+    sprintf(help,"%i",0);
+    if (p->number<10) help[0]=p->number+48;
+    else help[0]=p->number+55;
     return string(help);
   }
   return LinkedMasses(p->left)+LinkedMasses(p->right);
@@ -476,7 +478,7 @@ string Channel_Generator_Decays::Order(string s)
   if (beg!=-1) {
     return Order(s.substr(0,beg)) + string("_") + Order(s.substr(beg+1));
   }
-  if (s[0]>='9' || s[0]<='0') return s;
+  if (s[0]>=85 || s[0]<='0') return s;
 
   for (size_t i=0;i<s.length();i++) 
     for (size_t j=i+1;j<s.length();j++) {

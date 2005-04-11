@@ -19,6 +19,8 @@ typedef std::map<std::string,std::string> Decls;
   protected:
     int         nin,nout;
     Point     * plist;
+    std::string GetMassIndex(std::string &str);
+    std::string GetMassIndex(char &str);
   public:
     Channel_Generator_Base(int,int,ATOOLS::Flavour *,Point *);
     virtual ~Channel_Generator_Base();

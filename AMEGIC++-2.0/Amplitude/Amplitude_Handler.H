@@ -13,6 +13,7 @@
 
 namespace AMEGIC {
   //! This is the master class for the generation and calculation of an amplitude.
+  class Process_Info;
   class Amplitude_Handler : public Amplitude_Group {
     String_Handler* shand;
     CFColor              * CFCol_Matrix;   
@@ -34,10 +35,13 @@ namespace AMEGIC {
     int  TOrder(Single_Amplitude* a);
     int  SingleCompare(Point*,Point*,double &);
   public:
-    Amplitude_Handler(int,ATOOLS::Flavour *,int *,
+    Amplitude_Handler(int,ATOOLS::Flavour *,int *,Process_Info*,
 		      Interaction_Model_Base *,Topology *,int &,int &,
 		      Basic_Sfuncs *,String_Handler *, bool print_graph=false);
     ~Amplitude_Handler();
+    void ConstructSignalAmplitudes(int N,ATOOLS::Flavour* fl,int* b,
+				   Process_Info* pinfo,Single_Amplitude** sglist,
+				   Basic_Sfuncs* BS);
     void CompleteAmplitudes(int,ATOOLS::Flavour*,int*,Polarisation*,
 			    Topology*,Basic_Sfuncs*,std::string);
     void Kicker(int*,int,std::string);

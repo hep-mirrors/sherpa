@@ -425,6 +425,39 @@ std::string Flavour::TexName() const
   return name;
 }
 
+std::string Flavour::IDName() const 
+{
+  std::string name = string(Name());
+  if (Kfcode()==kf::e  ||
+      Kfcode()==kf::mu ||
+      Kfcode()==kf::tau ||
+      Kfcode()==kf::Hmin ||
+      Kfcode()==kf::W) {
+    name.erase(name.length()-1,1);
+    if (IsAnti()) name += string("+");
+    else name += string("-");      
+  }
+  else {
+    if (IsAnti()) name += string("b"); 
+  }
+  if (Kfcode()==kf::photon) name= string("P");
+  if (Kfcode()==kf::gluon)  name= string("G");
+  if (Kfcode()==kf::jet)    name= string("j");
+  if (Kfcode()==kf::quark)  name= string("Q");
+
+  string hname;
+  size_t i;
+  // erase _quark
+  for (;;) {
+    i = name.find("_quark");
+    if (i==string::npos) break;
+    hname = name;
+    name = hname.substr(0,i) + hname.substr(i+6); 
+  }
+
+  return name;
+}
+
 std::ostream& ATOOLS::operator<<(std::ostream& os, const Flavour& f)
 {
   if(f.anti) {

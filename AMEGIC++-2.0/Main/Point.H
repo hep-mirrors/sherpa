@@ -7,6 +7,7 @@ namespace AMEGIC {
 
 class Point {
 
+  void ResetProps(int&);
 public:
   int             number;
   int             b;
@@ -36,6 +37,10 @@ public:
     delete Color;
     delete Lorentz;
   }
+  void Print();
+  void ResetExternalNumbers(int);
+  void ResetProps();
+  Point* CopyList(Point* p);
 };
 
  // Format of a Point to transport via MPI:

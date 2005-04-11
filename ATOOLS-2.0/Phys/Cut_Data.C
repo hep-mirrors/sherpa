@@ -153,6 +153,13 @@ void Cut_Data::Reset(bool update)
   }
 }
 
+char Cut_Data::GetIndexID(int id)
+{
+  char c = id;
+  c<10 ? c+=48 : c+=55;
+  return c;
+}
+
 double Cut_Data::Getscut(string str)
 {
   map<string,double>::iterator it = m_smin_map.find(str);
@@ -161,8 +168,11 @@ double Cut_Data::Getscut(string str)
 
   int length = str.length();
   int *legs = new int[length];
-  char ca = '0';
-  for (int i=0;i<length;i++) legs[i]=str[i]-ca;
+  for (int i=0;i<length;i++) {
+    char c = str[i];
+    if (c<58) legs[i]=c-48;
+    else legs[i]=c-55;
+  }
   double sc = 0.;
 
   if (length==1) {
@@ -179,15 +189,15 @@ double Cut_Data::Getscut(string str)
 
   string help("0"), help2("");
   for (int i=0;i<length;i++) {
-    help[0] = ca+legs[i];
+    help[0] = GetIndexID(legs[i]);
     sc += Getscut(help);
   }
   sc *= 2.-(double)length;
   help = string("00");
   for (int i=0;i<length;i++) {
     for (int j=i+1;j<length;j++) {
-      help[0] = ca+legs[i];
-      help[1] = ca+legs[j];
+      help[0] = GetIndexID(legs[i]);
+      help[1] = GetIndexID(legs[j]);
       sc += Getscut(help);
     }
   }
@@ -207,10 +217,10 @@ double Cut_Data::Getscut(string str)
       int pos = 0;
       for (int j=0;j<length;j++) {
 	if (ii[pos%i]==j) {
-	  help[pos] = ca+legs[j];
+	  help[pos] = GetIndexID(legs[j]);
 	  pos++;
 	}
-	else help2[j-pos] = ca+legs[j];
+	else help2[j-pos] = GetIndexID(legs[j]);
       }
 
       sc = Max(sc,sqr(sqrt(Getscut(help))+sqrt(Getscut(help2))));

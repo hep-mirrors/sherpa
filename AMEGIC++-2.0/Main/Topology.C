@@ -20,7 +20,7 @@ Topology::Topology(int Nmax)
 
 Topology::~Topology() 
 {
-  short int i,j;
+  int i,j;
   if (top) {
     for (i=0;i<ntop;i++) {
       for (j=0;j<top[i].number;j++) 
@@ -41,9 +41,7 @@ void Topology::Build_All(int N)
   top[0].p[0][0].left  = 0;
   top[0].p[0][0].right = 0;
 
-  short int i;
-
-  for(i=1;i<N;i++) Build_Single(i+1,top);
+  for(int i=1;i<N;i++) Build_Single(i+1,top);
 }
 
 void Topology::Print(Point* p)
@@ -88,7 +86,7 @@ void Topology::Build_Single(int nlegs,Single_Topology* t)
   // t[1] = 2jet
   // t[2] = 3jet etc.
 
-  short int i,j,k;
+  int i,j,k;
   
   for (i=0;i<nlegs-1;i++) {
      newnumber += t[i].number * t[nlegs-i-2].number;

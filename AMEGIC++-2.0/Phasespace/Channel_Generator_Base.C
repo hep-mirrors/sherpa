@@ -4,6 +4,7 @@
 
 using namespace AMEGIC;
 using namespace ATOOLS;
+using namespace std;
 
 Channel_Generator_Base::Channel_Generator_Base(int _nin,int _nout,Flavour * _fl,
                                      Point * _plist) 
@@ -16,3 +17,23 @@ Channel_Generator_Base::Channel_Generator_Base(int _nin,int _nout,Flavour * _fl,
 }
 
 Channel_Generator_Base::~Channel_Generator_Base() { delete[] plist; }
+
+
+string Channel_Generator_Base::GetMassIndex(string &str)
+{
+  char c = str[0];
+  c<58 ? c-=48 : c-=55;
+  char hc[4];
+  sprintf(hc,"%i",c);
+  return string(hc);
+}
+
+string Channel_Generator_Base::GetMassIndex(char &str)
+{
+  char c = str;
+  c<58 ? c-=48 : c-=55;
+  char hc[4];
+  sprintf(hc,"%i",c);
+  return string(hc);
+}
+

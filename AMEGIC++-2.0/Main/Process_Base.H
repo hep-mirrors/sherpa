@@ -6,6 +6,7 @@
 #include "Phase_Space_Handler.H"
 #include "Multi_Channel.H"
 #include "Integrable_Base.H"
+#include "Process_Info.H"
 
 #include "Phase_Space_Generator.H"
 
@@ -42,18 +43,17 @@ namespace AMEGIC {
     Phase_Space_Generator          * p_psgen;
     
     bool m_print_graphs;
+
+    Process_Info *p_pinfo;
     /*------------------------------------------------------------------------------
 
       Naming
 
       ------------------------------------------------------------------------------*/
-  public:
-    bool           CheckExternalFlavours(int,ATOOLS::Flavour *,
-					 int,ATOOLS::Flavour *);
   protected:
-    std::string *  GenerateNames(int,ATOOLS::Flavour *,AMEGIC::Pol_Info *,
-				 int,ATOOLS::Flavour *,Pol_Info *,
-				 std::string &,std::string &,std::string &);
+    std::string *  GenerateNames(int,ATOOLS::Flavour *,Pol_Info *,
+				 std::string &,std::string &,std::string &,
+				 Process_Info *pi=NULL);
     void           Reshuffle(int,ATOOLS::Flavour *,AMEGIC::Pol_Info *);
     bool           IsFile(std::string);
     /*------------------------------------------------------------------------------
@@ -63,12 +63,13 @@ namespace AMEGIC {
       ------------------------------------------------------------------------------*/
   public:
     Process_Base();
-    Process_Base(int nin,int nout,ATOOLS::Flavour * fl,
+    Process_Base(Process_Info*,int nin,int nout,ATOOLS::Flavour * fl,
 		 PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam,
 		 int gen_str, int orderQCD, int orderEW,
 		 int scalescheme,int kfactorscheme,double scale,
 		 Pol_Info * pl = 0,
 		 int nex = 0,ATOOLS::Flavour * ex_fl = 0,double ycut=-1., double error=-1.);
+    
     virtual ~Process_Base();
 
     virtual int    InitAmplitude(Interaction_Model_Base *,AMEGIC::Topology *,

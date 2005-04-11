@@ -47,7 +47,7 @@ void Amplitude_Manipulator::FixSign(Single_Amplitude* first_amp)
 void Amplitude_Manipulator::GetPerm(int* perm,Single_Amplitude* f,int& sign)
 {
   Point* p = f->GetPointlist();
-  int depth = 2*N-3;
+  int depth = 2*N-3+dec;
 
   for (short int i=0;i<depth;i++) p[i].m = 0;
   

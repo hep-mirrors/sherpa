@@ -40,6 +40,12 @@ namespace AMEGIC {
 		   int=1,int=99,int=99,int=0,int=0,
 		   double=-1.,Pol_Info* _pl=0,int _nex=0,ATOOLS::Flavour * _ex_fl=0,
 		   int usepi=0,double ycut=-1.,double error=-1.);
+    Single_Process(Process_Info*,int,int,ATOOLS::Flavour *,
+		   PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,
+		   ATOOLS::Selector_Data *,
+		   int,int,int,int,int,
+		   double,Pol_Info* _pl,int _nex,ATOOLS::Flavour * _ex_fl,
+		   int usepi,double ycut,double error);
     ~Single_Process();
     void Add(Process_Base *) {
       ATOOLS::msg.Error()<<"Error in Single_Process. Method Add called."<<std::endl;

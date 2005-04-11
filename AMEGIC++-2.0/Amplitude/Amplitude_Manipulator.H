@@ -11,7 +11,8 @@ namespace AMEGIC {
     int N;
     ATOOLS::Flavour* fl;
     int* b;
-    
+    int dec;
+
     void   SetPrev(Point*);
     int    Permutation(int*,int);
     void   GetPerm(int*,Single_Amplitude*,int&);
@@ -32,7 +33,8 @@ namespace AMEGIC {
     void SetMajoFlowBackward(Point*,int);
     
   public:
-    Amplitude_Manipulator(int _no,ATOOLS::Flavour* _fl,int* _b): N(_no), fl(_fl), b(_b) {}
+    Amplitude_Manipulator(int _no,ATOOLS::Flavour* _fl,int* _b,int d=0): 
+      N(_no), fl(_fl), b(_b), dec(d){}
     void   FixSign(Single_Amplitude*);  
   };
 
