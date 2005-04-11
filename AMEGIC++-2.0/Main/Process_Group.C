@@ -118,7 +118,6 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
   p_pinfo->Reshuffle();
   p_pinfo->Expand();
   int nsproc=p_pinfo->NProcs();
-  cout<<"Process_Group::ConstructProcesses:  subprocs: "<<nsproc<<endl;
   int nout = p_pinfo->Nout();
   int  * flindex = new int[m_nin+nout];
   for (size_t i=0;i<m_nin+nout;i++) flindex[i] = 0;
