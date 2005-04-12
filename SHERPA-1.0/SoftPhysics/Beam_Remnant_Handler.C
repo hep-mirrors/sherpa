@@ -139,19 +139,15 @@ FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
 	    p->SetStatus(2);
 	    p_beamblob[i]->AddToInParticles(p);
 	}
-	if (p_beampart[i]->Type()&rtp::qcd_remnant ||
-	    !IsEqual((*bit)->InParticle(0)->E(),
-		     p_beam->GetBeam(i)->OutMomentum()[0])) {
-	  if (!p_beampart[i]->Extract((*bit)->InParticle(0))) {
-	    msg.Error()<<"Beam_Remnant_Handler::FillBeamBlobs(..): "
-		       <<"Extract parton failed for\n   "
-		       <<*(*bit)->InParticle(0)<<".\n   Retry event "
-		       <<rpa.gen.NumberOfDicedEvents()<<"."<<std::endl;
-	    msg_Tracking()<<*bloblist<<std::endl;
-	    bloblist->Clear();
-	    if (p_mehandler->Weight()!=1.0) p_mehandler->SaveNumberOfTrials();
-	    return false;
-	  }
+	if (!p_beampart[i]->Extract((*bit)->InParticle(0))) {
+	  msg.Error()<<"Beam_Remnant_Handler::FillBeamBlobs(..): "
+		     <<"Extract parton failed for\n   "
+		     <<*(*bit)->InParticle(0)<<".\n   Retry event "
+		     <<rpa.gen.NumberOfDicedEvents()<<"."<<std::endl;
+	  msg_Tracking()<<*bloblist<<std::endl;
+	  bloblist->Clear();
+	  if (p_mehandler->Weight()!=1.0) p_mehandler->SaveNumberOfTrials();
+	  return false;
 	}
 	(*bit)->SetStatus(2);
       }
