@@ -61,7 +61,7 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
   p_boosted->clear();
   double Etot=p_remnants[0]->BeamEnergy()+p_remnants[1]->BeamEnergy();
   if (m_scheme==0) {
-    bool success;
+    bool success=true;
     Vec3D sum[2];
     size_t trials=0;
     do {
@@ -120,14 +120,7 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
 	  }
 	}
 	for (size_t j=0;j<2;++j) (*p_kperp[j])[blob[j]->NOutP()-1]=sum[j];
-	// test whether last k_\perp is reasonable
 	success=true;
-	if (m_kperpsigma[0]!=0.0) 
-	  success=success&&(exp(-0.5*sqr((m_kperpmean[0]-sum[0].Abs())/
-					 m_kperpsigma[0]))<ran.Get());
-	if (m_kperpsigma[1]!=0.0) 
-	  success=success&&(exp(-0.5*sqr((m_kperpmean[1]-sum[1].Abs())/
-					 m_kperpsigma[1]))<ran.Get());
       } while (!success);
       success=true;
       // sort k_\perp values
@@ -198,6 +191,20 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
       if ((m_kperpmean[0]==0.0)&&(m_kperpmean[1]==0.0)) success=true;
     } while (!success);
   }
+#ifdef ANALYSE__Primordial_KPerp
+  static TH1D *rpkp[2]={NULL,NULL};
+  if (rpkp[0]==NULL) {
+    rpkp[0] = new TH1D("rkperp_1","rkperp_1",200,0.0,10.0);
+    rpkp[1] = new TH1D("rkperp_2","rkperp_2",200,0.0,10.0);
+    MYROOT::myroot->AddObject(rpkp[0],"rkperp_1");
+    MYROOT::myroot->AddObject(rpkp[1],"rkperp_2");
+  }
+  int pairs=ATOOLS::Max(blob1->NOutP(),blob2->NOutP())-1;
+  for (int i=0;i<pairs;++i) {
+    rpkp[0]->Fill((*p_kperp[0])[i].Abs());
+    rpkp[1]->Fill((*p_kperp[1])[i].Abs());
+  }
+#endif
   m_current[1]=m_current[0]=-1;
   m_kperpmean[0]=kpm1; 
   m_kperpmean[1]=kpm2;
@@ -301,7 +308,7 @@ void Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
     mom1=Vec4D(old1[0],kp1[1],kp1[2],
 	       Sign(old1[3])*sqrt(old1[3]*old1[3]-kp1[1]*kp1[1]-kp1[2]*kp1[2])); 
 #ifdef ANALYSE__Primordial_KPerp
-    pkp[beam]->Fill(mom1.PPerp());
+    pkp[beam]->Fill((*p_kperp[beam])[m_current[beam]].Abs());
 #endif
     cur1->SetMomentum(mom1); 
     p_filled->insert(cur1);
@@ -338,8 +345,8 @@ void Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
   mom1=Vec4D(E1,kp1[1],kp1[2],pz1);
   mom2=Vec4D(E2,kp2[1],kp2[2],pz2);
 #ifdef ANALYSE__Primordial_KPerp
-  pkp[0]->Fill(mom1.PPerp());
-  pkp[1]->Fill(mom2.PPerp());
+  pkp[0]->Fill((*p_kperp[beam])[m_current[beam]].Abs());
+  pkp[1]->Fill((*p_kperp[1-beam])[m_current[1-beam]].Abs());
 #endif
   m_newcms=Poincare(mom1+mom2);
   cur1->SetMomentum(mom1); 
