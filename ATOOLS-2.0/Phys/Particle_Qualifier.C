@@ -88,6 +88,10 @@ DEFINE_QUALIFIER_CLASS(Is_BHadron_Decay_Product);
 DEFINE_QUALIFIER_GETTER(Is_BHadron_Decay_Product,Is_BHadron_Decay_Product_Getter,
 			"DecayedBHadron","decay product of bhadron");
 
+DEFINE_QUALIFIER_CLASS(Is_BQuark);
+DEFINE_QUALIFIER_GETTER(Is_BQuark,Is_BQuark_Getter,
+			"BQuark","b quark");
+
 DEFINE_QUALIFIER_CLASS(Is_Zboson);
 DEFINE_QUALIFIER_GETTER(Is_Zboson,Is_Zboson_Getter,
 			"kf24","zboson");
@@ -218,6 +222,11 @@ bool Is_BHadron_Decay_Product::operator() (const Particle * p) const {
   Blob * b = p->ProductionBlob();
   if (!b || b->NInP()!=1 || b->Type()==btp::Fragmentation) return 0;
   return operator()(b->InParticle(0));
+};
+
+bool Is_BQuark::operator() (const Particle * p) const {
+  if ( p && p->Flav().Kfcode()==kf::b ) return 1;
+  return 0;
 };
 
 
