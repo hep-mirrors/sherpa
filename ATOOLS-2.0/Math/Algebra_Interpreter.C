@@ -196,7 +196,8 @@ DEFINE_INTERPRETER_FUNCTION(Resolve_Bracket)
   if (expr.find("(")==std::string::npos ||
       expr.find(")")==std::string::npos) return expr;
   static int cnt=0;
-  if (++cnt==100) exit(0);
+  if (++cnt==100) 
+    THROW(critical_error,"Bracket nesting deeper than 100 levels.");
   int open=0, take=1;
   size_t l=std::string::npos, r=std::string::npos;
   for (size_t i=0;i<expr.length();++i) {
@@ -228,9 +229,11 @@ DEFINE_INTERPRETER_FUNCTION(Resolve_Bracket)
   std::string right=expr.substr(r+1);
   msg_Tracking()<<"Resolve_Bracket -> '"
 		<<left<<"' '"<<expr.substr(l+1,r-l-1)<<"' '"<<right<<"'\n";
-  return p_interpreter->
+  std::string res=p_interpreter->
     Iterate(left+p_interpreter->
 	    Iterate(expr.substr(l+1,r-l-1))+right);
+  --cnt;
+  return res;
 }
 
 DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
