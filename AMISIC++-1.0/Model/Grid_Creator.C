@@ -186,6 +186,7 @@ bool Grid_Creator::CreateOptimizedGrid()
   msg_Info()<<"Grid_Creator::CreateOptimizedGrid(): "
 	    <<"Optimizing grid for MI.\n";
   double starttime=ATOOLS::rpa.gen.Timer().UserTime();
+  msg_Info()<<ATOOLS::tm::curoff;
   for (;m_events<m_maxevents;++m_events) {
     if (!UpdateHistogram(p_processes)) return false;
     if ((m_events%(m_maxevents/100))==0 && m_events>0) {
@@ -197,6 +198,7 @@ bool Grid_Creator::CreateOptimizedGrid()
 		<<" s total )   "<<ATOOLS::bm::cr<<std::flush;
     }
   }
+  msg_Info()<<ATOOLS::tm::curon;
   return true;
 }
 
@@ -205,6 +207,7 @@ bool Grid_Creator::CreateInitialGrid()
   msg_Info()<<"Grid_Creator::CreateInitialGrid(): "
 	    <<"Initializing grid for MI.\n";
   double starttime=ATOOLS::rpa.gen.Timer().UserTime();
+  msg_Info()<<ATOOLS::tm::curoff;
   for (;m_events<m_initevents;++m_events) {
     if (!UpdateHistogram(p_processes)) return false;
     if ((m_events%(m_initevents/100))==0 && m_events>0) {
@@ -216,6 +219,7 @@ bool Grid_Creator::CreateInitialGrid()
 		<<" s total )   "<<ATOOLS::bm::cr<<std::flush;
     }
   }
+  msg_Info()<<ATOOLS::tm::curon;
   return true;
 }
 

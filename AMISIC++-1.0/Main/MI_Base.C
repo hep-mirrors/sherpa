@@ -14,7 +14,7 @@
 
 using namespace AMISIC;
 
-MI_Base::String_MI_Base_Map MI_Base::s_bases=MI_Base::String_MI_Base_Map();
+MI_Base::String_MI_Base_Map MI_Base::s_bases;
 
 bool MI_Base::s_stophard=true;
 bool MI_Base::s_stopsoft=true;
@@ -29,8 +29,6 @@ MI_Base::MI_Base(std::string name,TypeID type,unsigned int nparameter,
   m_name(name),
   m_type(type),
   m_nparameter(nparameter),
-  m_weighted(false),
-  p_blob(NULL),
 #ifdef USING__Sherpa
   p_mehandler(NULL),
 #endif
@@ -48,9 +46,6 @@ MI_Base::MI_Base(std::string name,TypeID type,unsigned int nparameter,
   m_start = new double[m_nparameter];
   m_stop = new double[m_nparameter];
   m_last = new double[m_nparameter];
-  p_blob = new ATOOLS::Blob();
-  p_blob->AddData("MI_Weight",new ATOOLS::Blob_Data<double>(1.0));
-  p_blob->AddData("MI_Trials",new ATOOLS::Blob_Data<size_t>(1));
   s_bases[m_name]=this;
   switch (m_type) {
   case SoftEvent: 
@@ -73,7 +68,6 @@ MI_Base::~MI_Base()
       break;
     }
   }
-  delete p_blob;
   delete [] m_start;
   delete [] m_stop;
   delete [] m_last;
@@ -111,6 +105,11 @@ void MI_Base::Reset()
 
 void MI_Base::CleanUp()
 {
+  for (String_MI_Base_Map::iterator nbit=s_bases.begin();
+       nbit!=s_bases.end();++nbit) {
+    nbit->second->m_inparticles.Clear();
+    nbit->second->m_outparticles.Clear();
+  }
   s_stophard=false;
   s_stopsoft=false;
   s_cleaned=true;
@@ -139,18 +138,19 @@ void MI_Base::ResetAll()
   }  
 }
 
-bool MI_Base::CreateBlob(ATOOLS::Blob *blob)
+bool MI_Base::FillBlob(ATOOLS::Blob *blob)
 {
   PROFILE_HERE;
   if (blob==NULL) {
-    ATOOLS::msg.Error()<<"MI_Base::CreateBlob(..): "
+    ATOOLS::msg.Error()<<"MI_Base::FillBlob(..): "
 		       <<"Blob is not initialized!"<<std::endl
 		       <<"   Cannot proceed in filling."<<std::endl;
     return false;
   }
-  if (p_blob==NULL) {
-    ATOOLS::msg.Error()<<"MI_Base::CreateBlob(..): "
-		       <<"Did not select any blob yet!"<<std::endl
+  if (!m_dicedprocess) return false;
+  if (m_inparticles.empty()) {
+    ATOOLS::msg.Error()<<"MI_Base::FillBlob(..): "
+		       <<"Did not create any process yet!"<<std::endl
 		       <<"   Cannot proceed in filling."<<std::endl;
     return false;
   }
@@ -160,30 +160,26 @@ bool MI_Base::CreateBlob(ATOOLS::Blob *blob)
   else blob->SetType(ATOOLS::btp::Soft_Collision);
   blob->SetStatus(1);
   ATOOLS::Particle *particle;
-  for (unsigned int i=0;i<(unsigned int)p_blob->NInP();++i) {
-    particle = new ATOOLS::Particle(-1,p_blob->InParticle(i)->Flav(),
-				    p_blob->InParticle(i)->Momentum());
-    particle->SetFlow(1,p_blob->InParticle(i)->GetFlow(1));
-    particle->SetFlow(2,p_blob->InParticle(i)->GetFlow(2));
+  for (size_t i=0;i<m_inparticles.size();++i) {
+    particle = new ATOOLS::Particle(-1,m_inparticles[i]->Flav(),
+				    m_inparticles[i]->Momentum());
+    particle->SetFlow(1,m_inparticles[i]->GetFlow(1));
+    particle->SetFlow(2,m_inparticles[i]->GetFlow(2));
     particle->SetNumber(1);
     particle->SetStatus(1);
     particle->SetInfo('G');
     blob->AddToInParticles(particle);
   }
-  for (unsigned int i=0;i<(unsigned int)p_blob->NOutP();++i) {
-    particle = new ATOOLS::Particle(-1,p_blob->OutParticle(i)->Flav(),
-				    p_blob->OutParticle(i)->Momentum());
-    particle->SetFlow(1,p_blob->OutParticle(i)->GetFlow(1));
-    particle->SetFlow(2,p_blob->OutParticle(i)->GetFlow(2));
+  for (size_t i=0;i<m_outparticles.size();++i) {
+    particle = new ATOOLS::Particle(-1,m_outparticles[i]->Flav(),
+				    m_outparticles[i]->Momentum());
+    particle->SetFlow(1,m_outparticles[i]->GetFlow(1));
+    particle->SetFlow(2,m_outparticles[i]->GetFlow(2));
     particle->SetNumber(1);
     particle->SetStatus(1);
     particle->SetInfo('H');
     blob->AddToOutParticles(particle);
   }
-  blob->AddData("MI_Weight",new ATOOLS::Blob_Data<double>
-		((*p_blob)["MI_Weight"]->Get<double>()));
-  blob->AddData("MI_Trials",new ATOOLS::Blob_Data<size_t>
-		((*p_blob)["MI_Trials"]->Get<size_t>()));
   return dicedprocess;
 }
 

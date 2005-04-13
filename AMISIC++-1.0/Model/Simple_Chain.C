@@ -36,8 +36,6 @@ const std::string integralfile=std::string("integral.dat");
 const std::string normalizedfile=std::string("normalized.dat");
 #endif
 
-#define REWEIGHT_HARDEST
-
 static double s_epsilon=1.0e-3, s_xsnd, s_xstot;
 
 using namespace AMISIC;
@@ -212,10 +210,11 @@ bool Simple_Chain::AddProcess(EXTRAXS::XS_Group *const group,
 	  help[2]=flavs[2][k];
 	  help[3]=flavs[3][l];
 	  OrderFlavours(help);
-	  EXTRAXS::XS_Group *pdfgroup = FindPDFGroup(2,2,help);
-	  EXTRAXS::XS_Base *newxs = pdfgroup->XSSelector()->GetXS(2,2,help,false,0,2);
+	  EXTRAXS::XS_Base *newxs = p_processes->XSSelector()->
+	    GetXS(2,2,help,false,0,2);
 	  if (newxs==NULL) continue;
 	  EXTRAXS::XS_Base *testxs=NULL;
+	  EXTRAXS::XS_Group *pdfgroup = FindPDFGroup(2,2,help);
           EXTRAXS::XS_Selector::FindInGroup(pdfgroup,testxs,2,2,help);
           if (testxs==NULL) {
 	    if (m_regulate) newxs->AssignRegulator(m_regulator,m_regulation);
@@ -239,14 +238,11 @@ bool Simple_Chain::ReadInData()
 {
   PROFILE_HERE;
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
+  reader->SetInterprete(true);
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
   reader->SetMatrixType(reader->MTransposed);
   reader->SetVectorType(reader->VHorizontal);
-  std::string helps;
-  if (reader->ReadFromFile(helps,"GENERATION_MODE")) {
-    m_weighted=helps.find("Weighted")!=std::string::npos;
-  }
   int regulate=0;
   if (reader->ReadFromFile(regulate,"REGULATE_XS")) {
     m_regulate=regulate;
@@ -285,6 +281,7 @@ bool Simple_Chain::CreateGrid()
   p_processes->InitializeProcesses(p_beam,p_isr,false);  
   p_processes->SetScaleScheme(m_scalescheme);
   p_processes->SetKFactorScheme(m_kfactorscheme);
+  p_processes->XSSelector()->SetOffShell(p_isr->KMROn());
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
@@ -561,6 +558,7 @@ bool Simple_Chain::Initialize()
       !ATOOLS::rpa.gen.Beam2().IsHadron()) return false;
   CleanUp();
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
+  reader->SetInterprete(true);
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
   reader->SetVectorType(reader->VHorizontal);
@@ -655,102 +653,96 @@ void Simple_Chain::ResetISRRange()
   p_isr->SetSprimeMin(m_isrspkey[1]);
 }
 
-bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
+bool Simple_Chain::CreateMomenta()
 {
   PROFILE_HERE;
   m_filledblob=false;
-  if (p_processes==NULL || blob==NULL) {
+  if (p_processes==NULL) {
     THROW(fatal_error,"Multiple interactions are not initialized");
   }
-  blob->DeleteOwnedParticles();
+  m_inparticles.Clear();
+  m_outparticles.Clear();
   if (m_processmap.find(m_selected)!=m_processmap.end()) {
     EXTRAXS::XS_Base *selected=m_processmap[m_selected];
     selected->Parent()->SetSelected(selected);
     double weight=1.;
     size_t pstrials=0, trials=0;
-    if (!m_weighted) {
-      Amisic_Histogram<double> *cur=m_differentials[m_selected];
-      double max=cur->BinMax(m_last[0]);
-      p_fsrinterface->SetTrigger(false);
-      while (++pstrials<m_maxtrials) {
-	ATOOLS::Blob_Data_Base *data=selected->
-	  WeightedEvent(PHASIC::psm::no_lim_isr|
-			(PHASIC::psm::code)m_pi);
-	if (data!=NULL) {
-	  weight=data->Get<PHASIC::Weight_Info>().weight;
-	  trials=data->Get<PHASIC::Weight_Info>().ntrial;
-	  delete data;
-	  if (weight>max) {
-	    ATOOLS::msg.Tracking()<<"Simple_Chain::FillBlob(..): "
-				  <<"Weight exceeded maximum.\n"
-				  <<"   Setting new maximum "
-				  <<max<<" -> "<<weight<<std::endl;
-	    m_differentials[m_selected]->SetBinMax(m_last[0],weight);
-	  }
-	  if (p_fsrinterface->Trigger()) {
-	    double ran=ATOOLS::ran.Get();
-	    if (weight*m_maxreduction>=max*ran) {
-	      if (weight*m_maxreduction<max) break;
-	      double value=cur->BinExtra(m_last[0]);
-	      if (value>0.0) {
-		if (value>=1.0 || (value<1.0 && value>ATOOLS::ran.Get())) {
-		  cur->SetBinExtra(m_last[0],ATOOLS::Max(0.0,value-1.0));
-		  m_spkey[3]=
-		    ATOOLS::Max(cur->BinExtra(m_last[0],1),
-				4.0*(1.0+s_epsilon)*m_last[0]*m_last[0]);
-		  m_ykey[2]=cur->BinExtra(m_last[0],2);
-		  double logtau=log(m_spkey[3]/m_spkey[2]);
-		  if (-logtau<m_ykey[2]) m_ykey[2]=-logtau;
-		  else if (m_ykey[2]<logtau) m_ykey[2]=logtau;
-		  msg_Debugging()<<"hit "<<m_selected<<" "<<m_last[0]<<" "
-				 <<value<<" "<<cur->BinExtra(m_last[0])
-				 <<" "<<m_spkey[3]<<" "<<m_ykey[2]<<"\n";
-		  SetISRRange();
-		  p_isr->SetLimits();
-		  selected->WeightedEvent(PHASIC::psm::no_lim_isr|
-					  PHASIC::psm::no_dice_isr|
-					  (PHASIC::psm::code)m_pi);
-		  ResetISRRange();
-		  cur->AddBinExtra(m_last[0],1.0,3);
-		}
-		else {
-		  msg_Debugging()<<"no hit "<<m_selected<<" "
-				 <<m_last[0]<<" "<<value<<" "
-				 <<cur->BinExtra(m_last[0])<<" "
-				 <<m_spkey[3]<<" "<<m_ykey[2]<<"\n";
-		  if (value<1.0) cur->SetBinExtra(m_last[0],0.0);
-		  return false;
-		}
+    Amisic_Histogram<double> *cur=m_differentials[m_selected];
+    double max=cur->BinMax(m_last[0]);
+    p_fsrinterface->SetTrigger(false);
+    while (++pstrials<m_maxtrials) {
+      ATOOLS::Blob_Data_Base *data=selected->
+	WeightedEvent(PHASIC::psm::no_lim_isr|
+		      (PHASIC::psm::code)m_pi);
+      if (data!=NULL) {
+	weight=data->Get<PHASIC::Weight_Info>().weight;
+	trials=data->Get<PHASIC::Weight_Info>().ntrial;
+	delete data;
+	if (weight>max) {
+	  ATOOLS::msg.Tracking()<<"Simple_Chain::CreateMomenta(): "
+				<<"Weight exceeded maximum.\n"
+				<<"   Setting new maximum "
+				<<max<<" -> "<<weight<<std::endl;
+	  m_differentials[m_selected]->SetBinMax(m_last[0],weight);
+	}
+	if (p_fsrinterface->Trigger()) {
+	  double ran=ATOOLS::ran.Get();
+	  if (weight*m_maxreduction>=max*ran) {
+	    if (weight*m_maxreduction<max) break;
+	    double value=cur->BinExtra(m_last[0]);
+	    if (value>0.0) {
+	      if (value>=1.0 || (value<1.0 && value>ATOOLS::ran.Get())) {
+		cur->SetBinExtra(m_last[0],ATOOLS::Max(0.0,value-1.0));
+		m_spkey[3]=
+		  ATOOLS::Max(cur->BinExtra(m_last[0],1),
+			      4.0*(1.0+s_epsilon)*m_last[0]*m_last[0]);
+		m_ykey[2]=cur->BinExtra(m_last[0],2);
+		double logtau=log(m_spkey[3]/m_spkey[2]);
+		if (-logtau<m_ykey[2]) m_ykey[2]=-logtau;
+		else if (m_ykey[2]<logtau) m_ykey[2]=logtau;
+		msg_Debugging()<<"hit "<<m_selected<<" "<<m_last[0]<<" "
+			       <<value<<" "<<cur->BinExtra(m_last[0])
+			       <<" "<<m_spkey[3]<<" "<<m_ykey[2]<<"\n";
+		SetISRRange();
+		p_isr->SetLimits();
+		selected->WeightedEvent(PHASIC::psm::no_lim_isr|
+					PHASIC::psm::no_dice_isr|
+					(PHASIC::psm::code)m_pi);
+		ResetISRRange();
+		cur->AddBinExtra(m_last[0],1.0,3);
 	      }
 	      else {
-		msg_Debugging()<<"set "<<m_selected<<" "<<m_last[0]<<" "
-			       <<value<<" "<<m_spkey[3]<<" "
-			       <<m_ykey[2]<<" "
-			       <<weight*m_maxreduction/max<<"\n";
-		double overflow=weight*m_maxreduction/max;
-		if (overflow>m_maxreduction) {
-		  msg_Tracking()<<"Simple_Chain::FillBlob(..): "
-				<<"overflow = "<<overflow<<" > "
-				<<"m_maxreduction = "<<m_maxreduction
-				<<std::endl;
-		  cur->SetBinMax(m_last[0],weight);
-		}
-		cur->SetBinExtra(m_last[0],overflow-1.0);
-		cur->SetBinExtra(m_last[0],m_spkey[3],1);
-		cur->SetBinExtra(m_last[0],m_ykey[2],2);
-		cur->SetBinExtra(m_last[0],1.0,3);
+		msg_Debugging()<<"no hit "<<m_selected<<" "
+			       <<m_last[0]<<" "<<value<<" "
+			       <<cur->BinExtra(m_last[0])<<" "
+			       <<m_spkey[3]<<" "<<m_ykey[2]<<"\n";
+		if (value<1.0) cur->SetBinExtra(m_last[0],0.0);
+		return false;
 	      }
-	      break;
 	    }
+	    else {
+	      msg_Debugging()<<"set "<<m_selected<<" "<<m_last[0]<<" "
+			     <<value<<" "<<m_spkey[3]<<" "
+			     <<m_ykey[2]<<" "
+			     <<weight*m_maxreduction/max<<"\n";
+	      double overflow=weight*m_maxreduction/max;
+	      if (overflow>m_maxreduction) {
+		msg_Tracking()<<"Simple_Chain::CreateMomenta(): "
+			      <<"overflow = "<<overflow<<" > "
+			      <<"m_maxreduction = "<<m_maxreduction
+			      <<std::endl;
+		cur->SetBinMax(m_last[0],weight);
+	      }
+	      cur->SetBinExtra(m_last[0],overflow-1.0);
+	      cur->SetBinExtra(m_last[0],m_spkey[3],1);
+	      cur->SetBinExtra(m_last[0],m_ykey[2],2);
+	      cur->SetBinExtra(m_last[0],1.0,3);
+	    }
+	    break;
 	  }
 	}
       }
     }
-    else {
-      THROW(not_implemented,"Weighted events not available");
-    }
-    (*p_blob)["MI_Weight"]->Set(weight);
-    (*p_blob)["MI_Trials"]->Set(trials);
     for (size_t j=0;j<selected->NIn();++j) 
       m_last[2+j]-=2.0*selected->Momenta()[j][0]/m_ecms;
     selected->SetColours(selected->Momenta());
@@ -761,7 +753,7 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
       particle->SetFlow(1,selected->Colours()[j][0]);
       particle->SetFlow(2,selected->Colours()[j][1]);
       particle->SetStatus(1);
-      blob->AddToInParticles(particle);
+      m_inparticles.push_back(particle);
     }
     for (size_t j=selected->NIn();j<selected->NIn()+selected->NOut();++j) {
       particle = new ATOOLS::Particle(0,selected->Flavours()[j]);
@@ -769,12 +761,12 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
       particle->SetFlow(1,selected->Colours()[j][0]);
       particle->SetFlow(2,selected->Colours()[j][1]);
       particle->SetStatus(1);
-      blob->AddToOutParticles(particle);
+      m_outparticles.push_back(particle);
     }
     m_filledblob=true;
     return true;
   }
-  ATOOLS::msg.Error()<<"Simple_Chain::FillBlob(..): "
+  ATOOLS::msg.Error()<<"Simple_Chain::CreateMomenta(..): "
 		     <<"Cannot create momentum configuration."<<std::endl;
   return false;
 }
@@ -810,7 +802,7 @@ bool Simple_Chain::DiceProcess()
       if ((cur+=sit->first/norm)>rannr) {
 	m_selected=sit->second;
 	SetISRRange();
-	FillBlob(p_blob);
+	CreateMomenta();
 	ResetISRRange();
 	m_dicedprocess=true;
 	return m_filledblob;

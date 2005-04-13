@@ -125,9 +125,9 @@ namespace AMISIC {
       \brief Resets the ISR range to the ISR handler default.
     */
 
-    bool FillBlob(ATOOLS::Blob *blob);
+    bool CreateMomenta();
     /*!
-      \fn bool FillBlob(ATOOLS::Blob *blob)
+      \fn bool CreateMomenta()
       \brief Employs the selected process to determine the kinematics
       of the interaction. The outgoing transverse momentum is kept fixed. 
       It is diced in advance by DiceOrderingParameter.      

@@ -27,7 +27,7 @@ namespace AMISIC {
     void CleanUp();
     void PrepareTerminate();
 
-    bool FillBlob(ATOOLS::Blob *blob);
+    bool CreateMomenta();
 
   public:
 

@@ -6,6 +6,7 @@
 */
 
 #include "File_IO_Base.H"
+#include "Particle_List.H"
 #include "Blob_List.H"
 #include "Exception.H"
 #include <map>
@@ -40,9 +41,9 @@ namespace AMISIC {
     double       *m_start, *m_stop, *m_last;
     unsigned int  m_nparameter;
 
-    bool m_dicedparameter, m_dicedprocess, m_filledblob, m_weighted;
+    bool m_dicedparameter, m_dicedprocess, m_filledblob;
 
-    ATOOLS::Blob *p_blob;
+    ATOOLS::Particle_List m_inparticles, m_outparticles;
 
 #ifdef USING__Sherpa
     SHERPA::Matrix_Element_Handler *p_mehandler;
@@ -106,9 +107,9 @@ namespace AMISIC {
       specific probability density.
     */
 
-    bool CreateBlob(ATOOLS::Blob *blob);
+    bool FillBlob(ATOOLS::Blob *blob);
     /*!
-      \fn bool CreateBlob(ATOOLS::Blob *blob)
+      \fn bool FillBlob(ATOOLS::Blob *blob)
       \brief Converts the information from the event 
       generation step into the Sherpa standard format.
     */

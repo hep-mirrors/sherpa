@@ -86,23 +86,22 @@ bool Simple_String::Initialize()
   return true;
 }
 
-bool Simple_String::FillBlob(ATOOLS::Blob *blob)
+bool Simple_String::CreateMomenta()
 {
   PROFILE_HERE;
   m_filledblob=false;
   if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
-    ATOOLS::msg.Error()<<"Simple_String::FillBlob(..): "
+    ATOOLS::msg.Error()<<"Simple_String::CreateMomenta(): "
 		       <<"No remnant found."<<std::endl;
     return false;
   }
   m_reggeons[0]->Fit(m_start[0]*m_start[0],m_start[2]);
   m_start[1]=sqrt(m_reggeons[0]->GetT(0.0,m_start[0]*m_start[0],ATOOLS::ran.Get()));
-  blob->DeleteOwnedParticles();
   const unsigned int flow=ATOOLS::Flow::Counter();
   for (short unsigned int i=0;i<2;++i) {
     SHERPA::Hadron_Remnant *hadron=dynamic_cast<SHERPA::Hadron_Remnant*>(p_remnants[i]);
     if (hadron==NULL) {
-      ATOOLS::msg.Error()<<"Simple_String::FillBlob(..): "
+      ATOOLS::msg.Error()<<"Simple_String::CreateMomenta(): "
 			 <<"Incoming particle is no hadron."<<std::endl;
       return false;
     }
@@ -123,8 +122,8 @@ bool Simple_String::FillBlob(ATOOLS::Blob *blob)
 	particle->SetFlow(1+constit[j].IsAnti(),flow);
  	particle->SetFlow(2-constit[j].IsAnti(),0);
 	particle->SetStatus(1);
-	blob->AddToInParticles(particle);
-	blob->AddToOutParticles(particle);
+	m_inparticles.push_back(particle);
+	m_outparticles.push_back(particle);
 	break;
       }
     }
@@ -136,7 +135,7 @@ bool Simple_String::FillBlob(ATOOLS::Blob *blob)
 bool Simple_String::DiceProcess()
 {
   s_stopsoft=true;
-  return m_dicedprocess=FillBlob(p_blob);
+  return m_dicedprocess=CreateMomenta();
 }
 
 void Simple_String::Reset()
