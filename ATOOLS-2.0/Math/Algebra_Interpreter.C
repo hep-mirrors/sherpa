@@ -224,7 +224,10 @@ DEFINE_INTERPRETER_FUNCTION(Resolve_Bracket)
     }
   }
   if (open!=0) THROW(fatal_error,"Ambiguous bracket structure .");
-  if (l==std::string::npos) return expr;
+  if (l==std::string::npos) {
+    --cnt;
+    return expr;
+  }
   std::string left=expr.substr(0,l);
   std::string right=expr.substr(r+1);
   msg_Tracking()<<"Resolve_Bracket -> '"
