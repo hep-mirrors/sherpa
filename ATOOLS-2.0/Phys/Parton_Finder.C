@@ -11,6 +11,8 @@
 #define PROFILE_HERE
 #endif
 
+size_t s_maxdepth=1000;
+
 using namespace ATOOLS;
 
 void Parton_Tester::Turn()
@@ -35,20 +37,19 @@ void Parton_Finder::Turn()
 }
 
 Parton_Finder::Parton_Finder(Parton_Tester &criterion):
-  p_criterion(&criterion) {}
+  p_criterion(&criterion), m_forward(true) {}
 
 const Particle *Parton_Finder::
 FindConstConnectedForward(const Particle *start)
 {
-  if (m_track.size()>200) {
-    std::cout<<" caught in infinite loop in Parton_Finder::FindConstConnectedForward \n";
-    THROW(critical_error,"Parton_Finder::FindConstConnectedForward :caught in infinite loop in");
+  if (m_track.size()>s_maxdepth) {
+    THROW(critical_error,"Caught in infinite loop.");
     return start;
   }
   if (!Test(start) ||
       m_excludeflavours.find(start->Flav().Kfcode())!=m_excludeflavours.end())
     return NULL;
-  m_track.push_back(start);
+  m_track.push_back((Particle*)start);
   Blob *decay=start->DecayBlob();
   if (decay==NULL) return m_end=start;
   if (m_excludeblobs.find(decay->Type())!=m_excludeblobs.end())
@@ -56,6 +57,7 @@ FindConstConnectedForward(const Particle *start)
   const Particle *stop=NULL;
   for (size_t i=0;i<(size_t)decay->NOutP();++i) {
     const Particle *next=decay->ConstOutParticle(i);
+    if (m_forward && next==m_track.front()) continue;
     if ((stop=FindConstConnectedForward(next))!=NULL) break;
   }
   if (stop==NULL) {
@@ -63,24 +65,25 @@ FindConstConnectedForward(const Particle *start)
     for (size_t i=0;i<(size_t)decay->NInP();++i) {
       const Particle *next=decay->ConstInParticle(i);
       if (next==start) continue;
+      if (!m_forward && next==m_track.front()) continue;
       if ((stop=FindConstConnectedBackward(next))!=NULL) break;
     }
   }
+  if (stop==NULL) stop=start;
   return m_end=stop;
 }
 
 const Particle *Parton_Finder::
 FindConstConnectedBackward(const Particle *start)
 {
-  if (m_track.size()>200) {
-    std::cout<<" Parton_Finder::FindConstConnectedBackward :caught in infinite loop in  \n";
-    THROW(critical_error,"Parton_Finder::FindConstConnectedBackward :caught in infinite loop in");
+  if (m_track.size()>s_maxdepth) {
+    THROW(critical_error,"Caught in infinite loop.");
     return start;
   }
   if (!Test(start) ||
       m_excludeflavours.find(start->Flav().Kfcode())!=m_excludeflavours.end())
     return NULL;
-  m_track.push_back(start);
+  m_track.push_back((Particle*)start);
   Blob *production=start->ProductionBlob();
   if (production==NULL) return m_end=start;
   if (m_excludeblobs.find(production->Type())!=m_excludeblobs.end())
@@ -88,6 +91,7 @@ FindConstConnectedBackward(const Particle *start)
   const Particle *stop=NULL;
   for (size_t i=0;i<(size_t)production->NInP();++i) {
     const Particle *previous=production->ConstInParticle(i);
+    if (!m_forward && previous==m_track.front()) continue;
     if ((stop=FindConstConnectedBackward(previous))!=NULL) break;
   }
   if (stop==NULL) {
@@ -95,9 +99,11 @@ FindConstConnectedBackward(const Particle *start)
     for (size_t i=0;i<(size_t)production->NOutP();++i) {
       const Particle *previous=production->ConstOutParticle(i);
       if (previous==start) continue;
+      if (m_forward && previous==m_track.front()) continue;
       if ((stop=FindConstConnectedForward(previous))!=NULL) break;
     }
   }
+  if (stop==NULL) stop=start;
   return m_end=stop;
 }
 
@@ -106,6 +112,7 @@ FindConstConnected(const Particle *start,bool forward)
 {
   PROFILE_HERE;
   m_track.clear();
+  m_forward=forward;
   for (short unsigned int i=0;i<2;++i) {
     if (forward) {
       if (FindConstConnectedForward(start)!=NULL) break;

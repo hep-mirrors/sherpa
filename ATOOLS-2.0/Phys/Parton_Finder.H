@@ -1,6 +1,7 @@
 #ifndef Parton_Finder_H
 #define Parton_Finder_H
 
+#include "Particle_List.H"
 #include "Blob.H"
 
 namespace ATOOLS {
@@ -15,10 +16,6 @@ namespace ATOOLS {
   };// end of class Parton_Tester
 
   class Parton_Finder {
-  public:
-
-    typedef std::vector<const Particle*> Const_Particle_Vector;
-
   private:
     
     const Particle *m_start, *m_end;
@@ -27,8 +24,9 @@ namespace ATOOLS {
     std::set<kf::code>  m_excludeflavours;
 
     Parton_Tester *p_criterion;
+    Particle_List  m_track;
 
-    Const_Particle_Vector m_track;
+    bool m_forward;
 
     void Turn();
     bool Test(const Particle *cur);
@@ -67,7 +65,7 @@ namespace ATOOLS {
     inline const Particle *ConstStart() const { return m_start; }
     inline const Particle *ConstEnd() const   { return m_end;   }
 
-    inline const Const_Particle_Vector &Track() { return m_track; }
+    inline const Particle_List &Track() { return m_track; }
 
   };// end of class Parton_Finder
 
