@@ -52,6 +52,7 @@ namespace ATOOLS {
     Vec4D OutgoingFourMomentum() const;
 
     bool FourMomentumConservation() const;
+    bool ColorConservation() const;
 
     Blob *FindFirst(const btp::code code) const;
     Blob *FindLast(const btp::code code) const;

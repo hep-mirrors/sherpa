@@ -242,3 +242,46 @@ void Blob_List::Clear()
     pop_back();
   }
 }
+
+bool Blob_List::ColorConservation() const
+{
+  bool singlet=true;
+  Particle_List outgoing=ExtractLooseParticles();
+  std::map<int,Particle*> flows;
+  for (Particle_List::const_iterator pit=outgoing.begin();
+       pit!=outgoing.end();++pit) {
+    int real=(*pit)->GetFlow()->Code(1);
+    int anti=-(*pit)->GetFlow()->Code(2);
+    if (real!=0) {
+      if (flows.find(real)!=flows.end()) {
+	msg.Error()<<"Blob_List::ColorConservation(): "
+			   <<"Doubled color index '"<<real<<"' {\n   "
+			   <<**pit<<"\n   "<<*flows[real]<<"\n}"<<std::endl;
+	singlet=false;
+      }
+      std::map<int,Particle*>::iterator dit=flows.find(-real);
+      if (dit!=flows.end()) flows.erase(dit);
+      else flows[real]=*pit;
+    }
+    if (anti!=0) {
+      if (flows.find(anti)!=flows.end()) {
+	msg.Error()<<"Blob_List::ColorConservation(): "
+			   <<"Doubled color index '"<<anti<<"' {\n   "
+			   <<**pit<<"\n   "<<*flows[anti]<<"\n}"<<std::endl;
+	singlet=false;
+      }
+      std::map<int,Particle*>::iterator dit=flows.find(-anti);
+      if (dit!=flows.end()) flows.erase(dit);
+      else flows[anti]=*pit;
+    }
+  }
+  if (!flows.empty()) {
+    msg.Error()<<"Blob_List::ColorConservation(): "
+	       <<"Unconnected particles {\n";
+    for (std::map<int,Particle*>::iterator uit=flows.begin();
+	 uit!=flows.end();++uit) msg.Error()<<"   "<<*uit->second<<"\n";
+    msg.Error()<<"}\n"<<*this<<std::endl;
+    singlet=false;
+  }
+  return singlet;
+}
