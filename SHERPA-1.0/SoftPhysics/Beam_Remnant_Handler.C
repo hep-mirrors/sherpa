@@ -35,7 +35,7 @@ Beam_Remnant_Handler(const std::string path,const std::string file,
       reader.SetInputPath(m_path);
       reader.SetInputFile(m_file);
       double helpd;
-      if (!reader.ReadFromFile(helpd,"REMNANT_STRING_TENSION")) helpd=1.0;
+      if (!reader.ReadFromFile(helpd,"REMNANT_STRING_DRAWING")) helpd=1.0;
       remnant->SetStringDrawing(helpd,0);
       if (!reader.ReadFromFile(helpd,"REMNANT_RANDOM_STRINGS")) helpd=0.0;
       remnant->SetStringDrawing(helpd,1);
@@ -169,24 +169,27 @@ FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
     for (short unsigned int i=0;i<2;++i) p_kperp->FillKPerp(p_beamblob[i]);
   }
   bool adjusted=true;
-  for (short unsigned int i=0;i<2;++i) 
+  for (short unsigned int i=0;i<2;++i) {
     if (!p_beampart[i]->AdjustKinematics()) adjusted=false;
+    if (!p_beampart[i]->AdjustColors()) adjusted=false;
+  }
   if (!adjusted) {
     bloblist->Clear();
     if (p_mehandler->Weight()!=1.0) p_mehandler->SaveNumberOfTrials();
     return false;
   }
-  if (!bloblist->FourMomentumConservation()) {
-    ATOOLS::msg.Error()<<"Beam_Remnant_Handler::FillBeamBlobs(..): Retry event "
-		       <<rpa.gen.NumberOfDicedEvents()<<"."<<std::endl;
-    bloblist->Clear();
-    return false;
+  if (bloblist->FourMomentumConservation() && bloblist->ColorConservation()) {
+    p_mehandler->ResetNumberOfTrials();
+    return true;
   }
-  p_mehandler->ResetNumberOfTrials();
-  return true;
+  ATOOLS::msg.Error()<<"Beam_Remnant_Handler::FillBeamBlobs(..): Retry event "
+		     <<rpa.gen.NumberOfDicedEvents()<<"."<<std::endl;
+  bloblist->Clear();
+  return false;
 }
 
 void Beam_Remnant_Handler::SetScale(const double scale)
 {
   for (short unsigned int i=0;i<2;++i) p_beampart[i]->SetScale(scale);
 }
+

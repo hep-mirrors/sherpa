@@ -66,6 +66,7 @@ GetConstituents(const ATOOLS::Flavour flav)
 bool Hadron_Remnant::FillBlob(ATOOLS::Blob *beamblob,
 			      ATOOLS::Particle_List *particlelist)
 {
+  PROFILE_HERE;
   p_beamblob=beamblob;
   m_pbeam=beamblob->InParticle(0)->Momentum();
   m_hardpt=ATOOLS::Vec4D();
@@ -75,7 +76,6 @@ bool Hadron_Remnant::FillBlob(ATOOLS::Blob *beamblob,
   bool success=true;
   if (!DecomposeHadron()) success=false;
   AssignRemnants();
-  if (!ConnectRemnants()) success=false;
   FillRemnants();
   if (!DiceKinematics()) success=false;
   for (size_t j=0;j<m_extracted.size();++j) {

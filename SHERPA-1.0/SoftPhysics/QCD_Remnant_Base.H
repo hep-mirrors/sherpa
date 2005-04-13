@@ -11,14 +11,15 @@ namespace SHERPA {
   class QCD_Remnant_Base: public Remnant_Base {
   public:
 
-    typedef std::vector<Color_Dipole*> Dipole_Vector;
+    typedef std::vector<Color_Dipole*>  Dipole_Vector;
+    typedef std::set<ATOOLS::Particle*> Particle_Set;
 
   protected:
 
     std::vector<ATOOLS::Flavour> m_constit;
 
     Color_Dipole  *p_start;
-    Dipole_Vector  m_connected, m_attached;
+    Dipole_Vector  m_connected;
 
     PDF::PDF_Base *p_pdfbase;
 
@@ -36,10 +37,8 @@ namespace SHERPA {
 		       const qri::type type);
 
     bool Connect(const bool sorted); 
-    void SplitSinglet(Color_Dipole *const singlet);
 
     void AssignRemnants();
-    bool ConnectRemnants();
     void FillRemnants();
  
   public:
@@ -53,6 +52,8 @@ namespace SHERPA {
     
     // member functions
     void Clear();
+
+    bool AdjustColors();
 
     inline void SetStringDrawing(const double opt,const size_t i)
     { p_string[i]=opt; }

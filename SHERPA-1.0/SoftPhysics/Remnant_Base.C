@@ -117,6 +117,11 @@ bool Remnant_Base::AdjustKinematics()
   return true;
 }
 
+bool Remnant_Base::AdjustColors()
+{
+  return true;
+}
+
 void Remnant_Base::UnDo() 
 {
   msg_Tracking()<<"Remnant_Base::UnDo(): "
@@ -207,3 +212,4 @@ bool Remnant_Base::ChooseLast()
   }
   return false;
 }
+

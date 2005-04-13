@@ -17,8 +17,9 @@
 
 using namespace SHERPA;
 
-QCD_Remnant_Base::QCD_Remnant_Base(PDF::ISR_Handler *isrhandler,
-				   const unsigned int beam,const rtp::code type):
+QCD_Remnant_Base::
+QCD_Remnant_Base(PDF::ISR_Handler *isrhandler,
+		 const unsigned int beam,const rtp::code type):
   Remnant_Base(type,beam), p_start(NULL), m_deltax(0.0125),
   m_xscheme(1), m_maxtrials(100), p_string(new double[2])
 {
@@ -36,12 +37,13 @@ QCD_Remnant_Base::~QCD_Remnant_Base()
 
 void QCD_Remnant_Base::Clear()
 {
+  PROFILE_HERE;
   if (p_start!=NULL) delete p_start;
   while (m_connected.size()>0) {
     if (m_connected.front()!=p_start) delete m_connected.front();
     m_connected.erase(m_connected.begin());
   }
-  Color_Dipole::s_partons.clear();
+  Color_Dipole::ClearAll();
   Remnant_Base::Clear();
   p_start=NULL;
 }
@@ -54,47 +56,30 @@ void QCD_Remnant_Base::AssignRemnants()
   for (ATOOLS::Particle_List::iterator pit=m_extracted.begin();
        pit!=m_extracted.end();++pit) {
     if (*pit==startreal || *pit==startanti) continue;
-    Color_Dipole *dipole = new Color_Dipole(*pit,&m_companions);
-    if (p_start->Cat(dipole)) delete dipole;
-    else {
-      Dipole_Vector::iterator dit=m_connected.begin();
-      for (;dit!=m_connected.end();++dit) 
-	if ((*dit)->Cat(dipole)) {
-	  delete dipole;
-	  break;
-	}
-      if (dit==m_connected.end()) m_connected.push_back(dipole);
-    }
+    m_connected.push_back(new Color_Dipole(*pit,&m_companions));
   }
 }
 
 Color_Dipole *QCD_Remnant_Base::FindClosest(const Color_Dipole *dipole,
 					    const qri::type type)
 {
+  PROFILE_HERE;
   Color_Dipole *closest=p_start;
-  const ATOOLS::Vec4D &ref=dipole->End(ANTI(type))->Momentum();
+  const ATOOLS::Vec4D &ref=dipole->End(type)->Momentum();
   double min=std::numeric_limits<double>::max();
-  std::multimap<double,Color_Dipole*> sorted;
-  for (Dipole_Vector::iterator dit=m_attached.begin();
-       dit!=m_attached.end();++dit) {
-    if (*dit==dipole) continue;
-    const ATOOLS::Vec4D &p=(*dit)->End(type)->Momentum();
+  int poss=0;
+  for (Dipole_Vector::iterator dit=m_connected.begin();
+       dit!=m_connected.end();++dit) {
+    if ((*dit)->Next(ANTI(type))!=NULL ||
+	(*dit)->Connected(dipole,ANTI(type))) continue;
+    const ATOOLS::Vec4D &p=(*dit)->End(ANTI(type))->Momentum();
     double cur=p.PPerp(ref);
     if (p==ATOOLS::Vec4D()) cur=ref.PPerp();
-    if (p_string[0]!=1.0) 
-      sorted.insert(std::pair<double,Color_Dipole*>(cur,*dit));
     if (cur<=min) {
       min=cur;
       closest=*dit;
     }
-  }
-  if (p_string[0]!=1.0) {
-    double pos=(1.-p_string[0])*(sorted.size()-1), i=0.0;
-    for (std::multimap<double,Color_Dipole*>::const_iterator dit=sorted.begin();
-	 dit!=sorted.end();++dit) {
-      //     std::cout<<pos<<" vs "<<i<<" "<<sorted.size()<<std::endl;
-      if (i++>pos) return dit->second;
-    }
+    ++poss;
   }
   return closest;
 }
@@ -102,13 +87,16 @@ Color_Dipole *QCD_Remnant_Base::FindClosest(const Color_Dipole *dipole,
 Color_Dipole *QCD_Remnant_Base::FindRandom(const Color_Dipole *dipole,
 					   const qri::type type)
 {
-  double ran=ATOOLS::ran.Get()*(m_attached.size()-1), i=0.0;
-  for (Dipole_Vector::iterator dit=m_attached.begin();
-       dit!=m_attached.end();++dit) {
-    if (*dit==dipole) continue;
-    if (i++>ran) return *dit;
+  PROFILE_HERE;
+  Dipole_Vector cand;
+  for (Dipole_Vector::iterator dit=m_connected.begin();
+       dit!=m_connected.end();++dit) {
+    if ((*dit)->Next(ANTI(type))==NULL &&
+	!(*dit)->Connected(dipole,ANTI(type))) cand.push_back(*dit);
   }
-  return p_start;
+  if (cand.empty()) return p_start;
+  double ran=ATOOLS::ran.Get()*cand.size();
+  return cand[ATOOLS::Max((size_t)ran,cand.size()-1)];
 }
 
 Color_Dipole *QCD_Remnant_Base::Find(const Color_Dipole *dipole,
@@ -120,82 +108,114 @@ Color_Dipole *QCD_Remnant_Base::Find(const Color_Dipole *dipole,
 
 class Compare_PT {
 public:
-  bool operator()(const Color_Dipole *i1,const Color_Dipole *i2);
+  bool operator()(const std::pair<qri::type,Color_Dipole *> i1,
+		  const std::pair<qri::type,Color_Dipole *> i2);
 };
 
-bool Compare_PT::operator()(const Color_Dipole *i1,const Color_Dipole *i2) 
+bool Compare_PT::operator()(const std::pair<qri::type,Color_Dipole *> i1,
+			    const std::pair<qri::type,Color_Dipole *> i2)
 {
-  double pp21=ATOOLS::Max(i1->End(qri::real)->Momentum().PPerp2(),
-			  i1->End(qri::anti)->Momentum().PPerp2());
-  double pp22=ATOOLS::Max(i2->End(qri::real)->Momentum().PPerp2(),
-			  i2->End(qri::anti)->Momentum().PPerp2());
-  return (pp21<pp22);
+  double pt21=i1.second->End(i1.first)->Momentum().PPerp2();
+  double pt22=i2.second->End(i2.first)->Momentum().PPerp2();
+  if (pt21==pt22) return i1.first<i2.first;
+  return pt21>pt22;
 }
 
-bool QCD_Remnant_Base::Connect(const bool sorted) 
+bool QCD_Remnant_Base::Connect(const bool sort) 
 {
-  m_attached.clear();
-  m_attached.push_back(p_start);
-  std::stable_sort(m_connected.begin(),m_connected.end(),Compare_PT());
+  PROFILE_HERE;
+  std::vector<std::pair<qri::type,Color_Dipole*> > sorted;
   for (Dipole_Vector::iterator dit=m_connected.begin();
        dit!=m_connected.end();++dit) {
-    qri::type type=(qri::type)((*dit)->End(qri::real)->Momentum().PPerp2()>=
-			       (*dit)->End(qri::anti)->Momentum().PPerp2());
-    if (!Find(*dit,type)->Insert(*dit,type)) {
-      for (Dipole_Vector::iterator uit=m_connected.begin();
-	   uit!=dit;++uit) (*uit)->UnDo();
+    if ((*dit)->Begin(qri::real)==(*dit)->End(qri::real) ||
+	(*dit)->End(qri::real)->ProductionBlob()!=p_beamblob) 
+      sorted.push_back(std::pair<qri::type,Color_Dipole*>(qri::real,*dit));
+    if ((*dit)->Begin(qri::anti)==(*dit)->End(qri::anti) ||
+	(*dit)->End(qri::anti)->ProductionBlob()!=p_beamblob) 
+      sorted.push_back(std::pair<qri::type,Color_Dipole*>(qri::anti,*dit));
+  }
+  std::stable_sort(sorted.begin(),sorted.end(),Compare_PT());
+  sorted.push_back(std::pair<qri::type,Color_Dipole*>(qri::real,p_start));
+  sorted.push_back(std::pair<qri::type,Color_Dipole*>(qri::anti,p_start));
+  for (std::vector<std::pair<qri::type,Color_Dipole*> >::iterator
+	 sit=sorted.begin();sit!=sorted.end();++sit) {
+    if (sit->second->Next(sit->first)!=NULL) continue;
+    Color_Dipole *next=sort?Find(sit->second,sit->first):
+      FindRandom(sit->second,sit->first);
+    if (!sit->second->Cat(next,sit->first)) {
+      Color_Dipole::ResetAllColors();
       return false;
     }
-    m_attached.push_back(*dit);
   }
   return true;
 }
 
-bool QCD_Remnant_Base::ConnectRemnants() 
+bool QCD_Remnant_Base::AdjustColors() 
 {
   PROFILE_HERE;
-  if (Connect(true)) return true;
-  ATOOLS::msg.Error()<<"QCD_Remnant_Base::ConnectRemnants(): "
-		     <<"No solution in event ["
-		     <<ATOOLS::rpa.gen.NumberOfDicedEvents()<<"]. Abort."
-		     <<std::endl;
-  return false;
-}
-
-void QCD_Remnant_Base::SplitSinglet(Color_Dipole *const singlet)
-{
-  for (int i=0;i<2;++i) {
-    qri::type type=(qri::type)i;
-    if (!singlet->Singlet(type)) continue;
-    msg_Debugging()<<"QCD_Remnant_Base::SplitSinglet(..): {\n"
-		   <<*singlet<<"\n";
-    m_attached.clear();
-    Color_Dipole *dipole=Find(singlet,type);
-    if (dipole!=NULL) {
-      singlet->Cross(dipole,type);
-    }
-    else {
-      for (size_t i=0;i<m_connected.size();++i) {
-	dipole=m_connected[i];
-	if (singlet->Cross(dipole,type)) break;
+  if (!m_active) return true;
+  static double tot=0.0, rej=0.0;
+  ++tot;
+  QCD_Remnant_Base *partner=dynamic_cast<QCD_Remnant_Base*>(p_partner);
+  if (partner==NULL) 
+    THROW(not_implemented,
+	  "QCD <-> non-QCD remnant combination not available.");
+  QCD_Remnant_Base *self=this;
+  size_t i=0;
+  while (++i<m_maxtrials) {
+    bool order=i==1;
+    for (short unsigned int j=0;j<2;++j) {
+      if (j>0) std::swap<QCD_Remnant_Base*>(self,partner);
+      for (Dipole_Vector::iterator dit=partner->m_connected.begin(); 
+	   dit!=partner->m_connected.end();++dit) {
+	(*dit)->CollectStrings();
+	(*dit)->DetectLoops();
+      }
+      partner->p_start->CollectStrings();
+      partner->p_start->DetectLoops();
+      if (partner->Connect(order)) {
+	Color_Dipole::SetAllColors();
+	for (Dipole_Vector::iterator dit=self->m_connected.begin();
+	     dit!=self->m_connected.end();++dit) {
+	  (*dit)->CollectStrings();
+	  (*dit)->DetectLoops();
+	}
+	self->p_start->CollectStrings();
+	self->p_start->DetectLoops();
+	if (self->Connect(order)) {
+	  Color_Dipole::SetAllColors();
+	  for (Dipole_Vector::iterator rit=partner->m_connected.begin();
+	       rit!=partner->m_connected.end();++rit) {
+	    if ((*rit)->Singlet(qri::real) || (*rit)->Singlet(qri::anti)) 
+	      ATOOLS::msg.Error()<<"QCD_Remnant_Base::AdjustColors(): "
+				 <<"Colour singlet."<<std::endl;
+	  }
+	  for (Dipole_Vector::iterator rit=self->m_connected.begin();
+	       rit!=self->m_connected.end();++rit) {
+	    if ((*rit)->Singlet(qri::real) || (*rit)->Singlet(qri::anti)) 
+	      ATOOLS::msg.Error()<<"QCD_Remnant_Base::AdjustColors(): "
+				 <<"Colour singlet."<<std::endl;
+	  }
+	  return true;
+	}
       }
     }
-    if (dipole==NULL) return;
-    dipole->SetColors();
-    singlet->SetColors();
-    msg_Debugging()<<*singlet<<*dipole<<"}"<<std::endl;
   }
+  ++rej;
+  msg_Tracking()<<"QCD_Remnant_Base::AdjustColors(): "
+		<<"No solution in event ["
+		<<ATOOLS::rpa.gen.NumberOfDicedEvents()<<"]."
+		<<std::endl;
+  if (100*rej>tot) 
+    ATOOLS::msg.Error()<<"QCD_Remnant_Base::AdjustColors(): "
+		       <<"Remnant rejection rate is "
+		       <<rej/tot<<"."<<std::endl;
+  return false;
 }
 
 void QCD_Remnant_Base::FillRemnants()
 {
   PROFILE_HERE;
-  for (Dipole_Vector::iterator rit=m_connected.begin();
-       rit!=m_connected.end();++rit) {
-    (*rit)->SetColors();
-  }
-  p_start->SetColors();
-  for (size_t i=0;i<m_connected.size();++i) SplitSinglet(m_connected[i]);
   for (ATOOLS::Particle_List::iterator pit=m_extracted.begin();
        pit!=m_extracted.end();++pit) {
     p_beamblob->AddToOutParticles(*pit);
@@ -205,4 +225,3 @@ void QCD_Remnant_Base::FillRemnants()
     p_beamblob->AddToOutParticles(*pit);
   }
 }
-

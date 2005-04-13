@@ -1,6 +1,7 @@
 #include "Color_Dipole.H"
 
 #include "Color_Tester.H"
+#include "Exception.H"
 #include "Message.H"
 #include <iomanip>
 
@@ -16,6 +17,10 @@
 #define COMPANIONTAG 0
 
 using namespace SHERPA;
+
+Color_Dipole::Dipole_Vector Color_Dipole::s_dipoles;
+Color_Dipole::Particle_Flow_Map Color_Dipole::s_flows;
+Color_Dipole::Particle_Flow_Map Color_Dipole::s_oldflows;
 
 std::set<ATOOLS::Particle*> SHERPA::Color_Dipole::s_partons;
 
@@ -56,33 +61,29 @@ std::ostream &SHERPA::operator<<(std::ostream &str,
 Color_Dipole::Color_Dipole():
   p_companions(NULL)
 {
-  p_begin[qri::real]=p_end[qri::real]=NULL;
-  p_begin[qri::anti]=p_end[qri::anti]=NULL;
+  s_dipoles.push_back(this);
+  p_begin[qri::anti]=p_begin[qri::real]=NULL;
+  p_end[qri::anti]=p_end[qri::real]=NULL;
+  p_next[qri::anti]=p_next[qri::real]=NULL;
 }
 
 Color_Dipole::Color_Dipole(ATOOLS::Particle *const begin,
 			   ATOOLS::Particle_List *const companions):
   p_companions(companions)
 {
+  s_dipoles.push_back(this);
   SelectCompanion(begin);
-  CollectString(qri::real);
-  CollectString(qri::anti);
-//  msg_Tracking()<<*this<<std::endl;
+  p_next[qri::anti]=p_next[qri::real]=NULL;
 }
 
 Color_Dipole::~Color_Dipole()
 {
-  Clear(qri::real);
-  Clear(qri::anti);
-}
-
-void Color_Dipole::Clear(const qri::type type)
-{
-  while (m_flows[type].size()>0) {
-    delete m_flows[type].begin()->second;
-    m_flows[type].erase(m_flows[type].begin());
-  }
-  p_end[type]=p_begin[type]=NULL;
+  for (Dipole_Vector::iterator dit=s_dipoles.begin();
+       dit!=s_dipoles.end();++dit) 
+    if (*dit==this) {
+      s_dipoles.erase(dit);
+      break;
+    }
 }
 
 void Color_Dipole::SelectCompanion(ATOOLS::Particle *const begin)
@@ -114,77 +115,45 @@ void Color_Dipole::SelectCompanion(ATOOLS::Particle *const begin)
 void Color_Dipole::CollectString(const qri::type type) 
 {
   if (p_begin[type]==NULL) return;
-  ATOOLS::Color_Tester tester(COLOR(type),p_begin[type]->GetFlow(COLOR(type)));
+  ATOOLS::Color_Tester tester(COLOR(type),p_begin[type]->
+			      GetFlow(COLOR(type)));
   ATOOLS::Parton_Finder finder(tester);
   p_end[type]=finder.FindConnected(p_begin[type],true);
-  if (p_end[type]==NULL) p_end[type]=finder.FindConnected(p_begin[type],false);
-  for (std::vector<const ATOOLS::Particle *>::const_iterator 
+  if (p_end[type]==NULL) p_end[type]=
+    finder.FindConnected(p_begin[type],false);
+  m_flows[type].clear();
+  p_next[type]=NULL;
+  for (ATOOLS::Particle_List::const_iterator 
 	 pit=finder.Track().begin(); pit!=finder.Track().end();++pit) {
-    m_flows[type][(ATOOLS::Particle*)*pit] = 
-      new ATOOLS::Flow(*(*pit)->GetFlow());
-    if ((*pit)->DecayBlob()==NULL) s_partons.insert((ATOOLS::Particle*)*pit);
+    if (s_flows.find(*pit)==s_flows.end()) {
+      s_flows[*pit] = new ATOOLS::Flow(*(*pit)->GetFlow());
+      s_oldflows[*pit] = new ATOOLS::Flow(*(*pit)->GetFlow());
+    }
+    m_flows[type][*pit]=s_flows[*pit];
+    if ((*pit)->DecayBlob()==NULL &&
+	(*pit)->ProductionBlob()==NULL) s_partons.insert(*pit);
   }
 }
 
-void Color_Dipole::Prepend(ATOOLS::Particle *const part,
-			   const qri::type type,const bool same)
+void Color_Dipole::CollectStrings() 
 {
-  unsigned int color=Begin(type)->GetFlow()->Code(COLOR(type));
-  unsigned int index=COLOR(type);
-  if (!same) index=3-index;
-  part->GetFlow()->SetCode(index,color);
-  m_flows[type][part] = new ATOOLS::Flow(*part->GetFlow());
-  p_begin[type]=part;
+  CollectString(qri::real);
+  CollectString(qri::anti);
 }
 
-void Color_Dipole::Append(ATOOLS::Particle *const part,
-			  const qri::type type,const bool same)
+void Color_Dipole::DetectLoop(const qri::type type)
 {
-  unsigned int color=Begin(type)->GetFlow()->Code(COLOR(type));
-  unsigned int index=End(type)->GetFlow()->Index(color);
-  if (!same) index=3-index;
-  part->GetFlow()->SetCode(index,color);
-  m_flows[type][part] = new ATOOLS::Flow(*part->GetFlow());
-  p_end[type]=part;
-}
-
-bool Color_Dipole::Cat(Color_Dipole *const dipole,const qri::type type)
-{
-  unsigned int color=p_begin[type]->GetFlow()->Code(COLOR(type));
-//   msg_Debugging()<<"Color_Dipole::Cat(..): ["<<type<<"] ("<<color<<") {"
-// 		 <<"\n   t->b = "<<*p_begin[type]
-// 		 <<"\n   d->e = "<<*dipole->p_end[ANTI(type)]
-// 		 <<"\n   t->e = "<<*p_end[type]
-// 		 <<"\n   d->b = "<<*dipole->p_begin[ANTI(type)]
-// 		 <<"\n}"<<std::endl;
-  dipole->AssignColors(ANTI(type),ATOOLS::Flow::Counter());
-  dipole->SetColors(ANTI(type));
-  Clear(type);
-  p_begin[type]=dipole->p_begin[type];
-  p_end[type]=dipole->p_end[type];
-  for (Particle_Flow_Map::iterator fit=dipole->m_flows[type].begin();
-       fit!=dipole->m_flows[type].end();++fit) 
-    m_flows[type][fit->first] = new ATOOLS::Flow(*fit->first->GetFlow());
-  AssignColors(type,color);
-  SetColors(type);
-//   msg_Debugging()<<*this<<std::endl;
-  return true;
-}
-
-bool Color_Dipole::Cat(Color_Dipole *const dipole)
-{
-  bool success=false;
-  for (short unsigned int i=0;i<2;++i) {
-    if (Begin((qri::type)i)==dipole->End(ANTI(i)))
-      if (Cat(dipole,(qri::type)i)) success=true;
+  if (p_begin[type]!=p_end[type] &&
+      p_begin[type]->ProductionBlob()!=NULL &&
+      p_begin[type]->ProductionBlob()==
+      p_end[type]->ProductionBlob()) {
+    p_next[type]=this;
   }
-  return success;
 }
 
-bool Color_Dipole::Includes(ATOOLS::Particle *const part)
+void Color_Dipole::DetectLoops()
 {
-  return (m_flows[qri::real].find(part)!=m_flows[qri::real].end() ||
-	  m_flows[qri::anti].find(part)!=m_flows[qri::anti].end());
+  for (short unsigned int i=0; i<2;++i) DetectLoop((qri::type)i);
 }
 
 bool Color_Dipole::AssignColor(Particle_Flow_Map::iterator fit,
@@ -214,112 +183,76 @@ bool Color_Dipole::AssignColor(Particle_Flow_Map::iterator fit,
 bool Color_Dipole::AssignColors(const qri::type type,const int color)
 {
   unsigned int oldc=m_flows[type][p_begin[type]]->Code(COLOR(type));
-  return m_status[type]=AssignColor(m_flows[type].begin(),oldc,color);
-}
-
-void Color_Dipole::UnDo(const qri::type type)
-{
-  for (Particle_Flow_Map::iterator fit=m_flows[type].begin();
-       fit!=m_flows[type].end();++fit) {
-    fit->second->SetCode(*fit->first->GetFlow());
-  }
-}
-
-void Color_Dipole::UnDo()
-{
-  for (short unsigned int i=0;i<2;++i) UnDo((qri::type)i);
-}
-
-void Color_Dipole::SetColors(const qri::type type)
-{
-  unsigned int newcolor=m_flows[type][p_begin[type]]->Code(COLOR(type));
-  for (Particle_Flow_Map::iterator fit=m_flows[type].begin();
-       fit!=m_flows[type].end();++fit) {
-    unsigned int index=fit->second->Index(newcolor);
-    fit->first->GetFlow()->SetCode(index,fit->second->Code(index));
-  }
-}
-
-void Color_Dipole::SetColors()
-{
-  for (short unsigned int i=0;i<2;++i) SetColors((qri::type)i);
-}
-
-void Color_Dipole::Split(const qri::type type)
-{
-  ATOOLS::Particle *gluon = new ATOOLS::Particle(-1,ATOOLS::kf::gluon);
-  s_partons.insert(gluon);
-  gluon->SetNumber(0);
-  unsigned int color=ATOOLS::Flow::Counter();
-  gluon->GetFlow()->SetCode(COLOR(type),p_begin[ANTI(type)]->
-			    GetFlow()->Code(COLOR(ANTI(type))));
-  gluon->GetFlow()->SetCode(COLOR(ANTI(type)),color);
-  AssignColors(type,color);
-  SetColors(type);
-  Clear(type);
-  p_companions->push_back(gluon);
-  p_end[type]=p_begin[type]=gluon;
-  m_flows[type][gluon] = new ATOOLS::Flow(*gluon->GetFlow());
-//   msg_Debugging()<<"Color_Dipole::Split("<<type<<"): "
-//   		 <<*this<<std::endl;
-}
-
-bool Color_Dipole::Insert(Color_Dipole *const info,const qri::type type)
-{
-  qri::type anti=ANTI(type);
-  int oldc=m_flows[type][Begin(type)]->Code(COLOR(type));
-  int newc=info->m_flows[anti][info->Begin(anti)]->Code(COLOR(anti));
-  msg_Debugging()<<"Color_Dipole::Insert(..): ["<<type<<"] => ("
-		 <<oldc<<","<<newc<<") -> ("<<") { "
-		 <<*m_flows[type][Begin(type)]<<" "
-		 <<*info->m_flows[anti][info->Begin(anti)]<<"\n   /";
-  if (!AssignColors(type,newc)) {
-    Split(type);
-    AssignColors(type,newc);
-  }
-  if (!info->AssignColors(type,oldc)) {
-    info->Split(type);
-    info->AssignColors(type,oldc);
-  }
-  msg_Debugging()<<*info->Begin(type)
-		 <<" -> ("<<std::setw(3)
-		 <<info->m_flows[type][info->Begin(type)]->Code(1)
-		 <<","<<std::setw(3)
-		 <<info->m_flows[type][info->Begin(type)]->Code(2)<<")"
-		 <<"\\\n   \\"<<*info->Begin(anti)
-		 <<" -> ("<<std::setw(3)
-		 <<info->m_flows[anti][info->Begin(anti)]->Code(1)
-		 <<","<<std::setw(3)
-		 <<info->m_flows[anti][info->Begin(anti)]->Code(2)<<")"
-		 <<"\\\\\n   /"<<*Begin(type)
-		 <<" -> ("<<std::setw(3)<<m_flows[type][Begin(type)]->Code(1)
-		 <<","<<std::setw(3)<<m_flows[type][Begin(type)]->Code(2)<<")"
-		 <<"//\n   \\"<<*Begin(anti)
-		 <<" -> ("<<std::setw(3)<<m_flows[anti][Begin(anti)]->Code(1)
-		 <<","<<std::setw(3)<<m_flows[anti][Begin(anti)]->Code(2)<<")"
-		 <<"/\n}"<<std::endl;
-  return true;
+  return AssignColor(m_flows[type].begin(),oldc,color);
 }
 
 bool Color_Dipole::Singlet(const qri::type type) const 
 {
   for (Particle_Flow_Map::const_iterator fit=m_flows[type].begin();
        fit!=m_flows[type].end();++fit) {
-    if (fit->first->GetFlow(1)==fit->first->GetFlow(2)) return true;
+    if (fit->first->GetFlow(COLOR(qri::real))==
+	fit->first->GetFlow(COLOR(qri::anti))) return true;
   }
   return false;
 }
 
-bool Color_Dipole::Cross(Color_Dipole *const info,
-			 const qri::type type)
+bool Color_Dipole::Cat(Color_Dipole *const dipole,const qri::type type)
 {
-  int oldc=m_flows[type][Begin(type)]->Code(COLOR(type));
-  int newc=info->m_flows[type][info->Begin(type)]->Code(COLOR(type));
-  if (!AssignColors(type,newc)) return false;
-  if (!info->AssignColors(type,oldc)) {
-    AssignColors(type,oldc);
-    return false;
-  }
+  unsigned int color=ATOOLS::Flow::Counter();
+  dipole->AssignColors(ANTI(type),color);
+  if (!AssignColors(type,color)) return false;
+  dipole->p_next[ANTI(type)]=this;
+  p_next[type]=dipole;
   return true;
+}
+
+bool Color_Dipole::
+Connected(const Color_Dipole *dipole,
+	  const qri::type type,const size_t catcher) const
+{
+  if (catcher>1000) 
+    THROW(fatal_error,"Dipole nesting deeper than 1000 levels.");
+  if (this==dipole) return true;
+  if (p_next[ANTI(type)]!=NULL && p_next[ANTI(type)]!=this) 
+    return p_next[ANTI(type)]->Connected(dipole,type,catcher+1);
+  return false;
+}
+
+void Color_Dipole::SetAllColors()
+{
+  for (Particle_Flow_Map::iterator fit=s_flows.begin();
+       fit!=s_flows.end();++fit) {
+    ATOOLS::Flow *flow=fit->first->GetFlow();
+    for (short unsigned int i=0;i<2;++i) 
+      flow->SetCode(COLOR((qri::type)i),
+		    fit->second->Code(COLOR((qri::type)i)));
+  }
+}
+
+void Color_Dipole::ResetAllColors()
+{
+  for (Particle_Flow_Map::iterator fit=s_oldflows.begin();
+       fit!=s_oldflows.end();++fit) {
+    ATOOLS::Flow *oflow=fit->first->GetFlow(), *nflow=s_flows[fit->first];
+    for (short unsigned int i=0;i<2;++i) {
+      oflow->SetCode(COLOR((qri::type)i),
+		     fit->second->Code(COLOR((qri::type)i)));
+      nflow->SetCode(COLOR((qri::type)i),
+		     fit->second->Code(COLOR((qri::type)i)));
+    }
+  }
+}
+
+void Color_Dipole::ClearAll()
+{
+  while (s_flows.size()>0) {
+    delete s_flows.begin()->second;
+    s_flows.erase(s_flows.begin());
+  }
+  while (s_oldflows.size()>0) {
+    delete s_oldflows.begin()->second;
+    s_oldflows.erase(s_oldflows.begin());
+  }
+  s_partons.clear();
 }
 

@@ -22,34 +22,35 @@ namespace SHERPA {
   class Color_Dipole {
   public:
 
+    typedef std::vector<Color_Dipole*>  Dipole_Vector;
+    typedef std::set<ATOOLS::Particle*> Particle_Set;
+
     typedef std::map<ATOOLS::Particle *const,
 		     ATOOLS::Flow *> Particle_Flow_Map;
 
-    static std::set<ATOOLS::Particle*> s_partons;
-
   private:
+
+    static Dipole_Vector s_dipoles;
+    static Particle_Set  s_partons;
+
+    static Particle_Flow_Map s_flows, s_oldflows;
    
     Particle_Flow_Map      m_flows[qri::size];
     ATOOLS::Particle_List *p_companions;
 
     ATOOLS::Particle *p_begin[qri::size], *p_end[qri::size];
-
-    bool m_status[qri::size];
+    Color_Dipole     *p_next[qri::size];
 
     Color_Dipole();
 
     void SelectCompanion(ATOOLS::Particle *const begin);
     void CollectString(const qri::type type); 
-    
-    void SetColors(const qri::type type);
+
     bool AssignColor(Particle_Flow_Map::iterator fit,
 		     const unsigned int oldc,const unsigned int newc);
+    bool AssignColors(const qri::type type,const int color);
 
-    bool Cat(Color_Dipole *const dipole,const qri::type type);
-    void Split(const qri::type type);
-
-    void UnDo(const qri::type type);
-    void Clear(const qri::type type);
+    void DetectLoop(const qri::type type);
 
     friend std::ostream &operator<<(std::ostream &str,
 				    const Color_Dipole &info);
@@ -64,33 +65,27 @@ namespace SHERPA {
     ~Color_Dipole();
 
     // member functions
-    bool Insert(Color_Dipole *const info,const qri::type type);
-    bool Cross(Color_Dipole *const info,const qri::type type);
-
-    bool AssignColors(const qri::type type,const int color);
-    void SetColors();
-
-    void UnDo();
-
-    bool Includes(ATOOLS::Particle *const part);
-
-    void Prepend(ATOOLS::Particle *const part,
-		 const qri::type type,const bool same=true);
-    void Append(ATOOLS::Particle *const part,
-		const qri::type type,const bool same=true);
-
-    bool Cat(Color_Dipole *const dipole);
+    void CollectStrings(); 
+    void DetectLoops();
+    
+    bool Cat(Color_Dipole *const dipole,const qri::type type);
 
     bool Singlet(const qri::type type) const;
-    
+    bool Connected(const Color_Dipole *dipole,const qri::type type,
+		   const size_t catcher=0) const;
+
+    static void SetAllColors();
+    static void ResetAllColors();
+    static void ClearAll();
+
     // inline functions
     inline ATOOLS::Particle *const Begin(const qri::type type) const     
     { return p_begin[type]; }
     inline ATOOLS::Particle *const End(const qri::type type) const       
     { return p_end[type]; }
 
-    inline bool Status(const qri::type type) const 
-    { return m_status[type]; }
+    inline Color_Dipole *const Next(const qri::type type) const       
+    { return p_next[type]; }
 
   };// end of class Color_Dipole
 
