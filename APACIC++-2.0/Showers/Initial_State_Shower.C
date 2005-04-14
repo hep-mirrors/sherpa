@@ -4,6 +4,13 @@
 
 #include <iomanip>
 
+#ifdef PROFILE__all
+#include "prof.hh"
+#else 
+#define PROFILE_HERE {}
+#define PROFILE_LOCAL(LOCALNAME) {}
+#endif
+
 using namespace APACIC;
 using namespace ATOOLS;
 using namespace std;
@@ -62,6 +69,7 @@ Initial_State_Shower::~Initial_State_Shower()
 //----------------------------------------------------------------------- 
 
 bool Initial_State_Shower::PerformShower(Tree ** trees,int jetvetoflag) {
+  PROFILE_HERE;
   m_jetveto = (jetvetoflag>0);
   if (jetvetoflag<0 || jetvetoflag>1) {
     m_extra_pdf[0]    = 0;

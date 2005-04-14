@@ -9,6 +9,13 @@
 
 #include "Random.H"
 
+#ifdef PROFILE__all
+#include "prof.hh"
+#else 
+#define PROFILE_HERE {}
+#define PROFILE_LOCAL(LOCALNAME) {}
+#endif
+
 using namespace APACIC;
 using namespace ATOOLS;
 
@@ -38,6 +45,7 @@ void Final_State_Shower::SetJetvetoPt2(const double pt2) {
 
 int Final_State_Shower::PerformShower(Tree * tree,int jetvetoflag) 
 {
+  PROFILE_HERE;
   m_save_knots.clear();
   msg_Debugging()<<"* Final_State_Shower::PerformShower"<<std::endl;
   bool jetveto = (jetvetoflag>0);
