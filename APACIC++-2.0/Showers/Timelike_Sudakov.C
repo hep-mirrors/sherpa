@@ -42,6 +42,7 @@ Timelike_Sudakov::Timelike_Sudakov(Timelike_Kinematics * kin, double pt2min,
   m_angle_scheme    = dataread->GetValue<int>("FS_ANGLE_DEF",1);  
   /*  (0=no photons in shower, 1=photons in shower) */
   m_direct_photons  = dataread->GetValue<int>("FS_PHOTONS",0);        
+  s_kfactorscheme   = dataread->GetValue<int>("S_KFACTOR_SCHEME",1);        
 
   m_azimuthal_correlation = dataread->GetValue<int>("FS_ANGLE_CORR",0);
 

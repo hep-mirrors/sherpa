@@ -11,6 +11,7 @@
 #include "NLL_Branching_Probabilities.H"
 #include "NLL_JetRate.H"
 #include "MyStrStream.H"
+#include "Splitting_Function.H"
 
 namespace SHERPA {
   const double   Nc    = 3;
@@ -46,6 +47,8 @@ void NLL_Sudakov::PrepareMap(MODEL::Running_AlphaS * runas)
 {
   int  smode=Sudakov::analytic|(m_mode&3);
   BP::code    bpmode=(BP::code)(m_mode&124);
+  if (APACIC::Splitting_Function::KFactorScheme()==1)
+    bpmode=bpmode|BP::gamma_kfac;
   if ((bpmode!=BP::gamma && bpmode!=BP::gamma_powercorr) || (runas!=0)) {
     smode=Sudakov::table;
     //     smode=Sudakov::numeric;
@@ -98,6 +101,8 @@ void NLL_Sudakov::PrepareMassiveMap(MODEL::Running_AlphaS * runas, int mode)
   //  BP::code    bpmode=BP::gamma_cut;
   //  BP::code    bpmode=BP::gamma;
   BP::code    bpmode=(BP::code)(m_mode&124);
+  if (APACIC::Splitting_Function::KFactorScheme()==1)
+    bpmode=bpmode|BP::gamma_kfac;
 
   // ----------------------------------------
   // add dummy sudakov (const one)
@@ -244,6 +249,8 @@ void NLL_Sudakov::CheckSudakovs(int jetmode)
 
 
   BP::code    bpmode=(BP::code)(m_mode&124);
+  if (APACIC::Splitting_Function::KFactorScheme()==1)
+    bpmode=bpmode|BP::gamma_kfac;
 
 
   GammaQ_Lambda_Massive gammaq(BP::gamma,m_lambda,0,Flavour(kf::b));
@@ -381,6 +388,8 @@ void NLL_Sudakov::CheckSudakovs(int jetmode)
   }
   if (p_jetrate) {
     BP::code    bpmode=(BP::code)(m_mode&124);
+  if (APACIC::Splitting_Function::KFactorScheme()==1)
+    bpmode=bpmode|BP::gamma_kfac;
     //    int  smode=Sudakov::analytic|(m_mode&3);
 
     MyStrStream s;

@@ -11,7 +11,7 @@ namespace APACIC {
   // quark to quark + gluon  splitting function
   class q_qg : public Splitting_Function {
     Sudakov_Tools * p_tools;
-    double          m_alpha;
+    double          m_alpha, m_kfactor;
   public:
     q_qg(ATOOLS::Flavour quarkflavour);
     q_qg(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
@@ -31,7 +31,7 @@ namespace APACIC {
   // gluon to gluon + gluon splitting function (needed twice for initial state shower)
   class g_gg : public Splitting_Function {
     Sudakov_Tools * p_tools;
-    double          m_alpha;
+    double          m_alpha, m_kfactor;
   public:
     g_gg();
     g_gg(Sudakov_Tools * _tools);

@@ -40,6 +40,7 @@ Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * pdf,Sudakov_Tools * tools,Spacel
   m_pdf_scheme      = dataread->GetValue<int>("IS_PDF_SCALE",1); /*  0 = -Q^2, 1 = -(1-z)*Q^2 */
   m_pdf_scale_fac   = dataread->GetValue<double>("IS_PDF_SCALE_FACTOR",.25);
   m_jetveto_scheme  = dataread->GetValue<int>("IS_JETVETOSCHEME",2);
+  s_kfactorscheme   = dataread->GetValue<int>("S_KFACTOR_SCHEME",1);        
 
   m_emin            = .5;
   m_pt2max          = sqr(rpa.gen.Ecms());

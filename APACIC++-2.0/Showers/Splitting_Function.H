@@ -12,6 +12,9 @@ namespace APACIC {
     const static double s_CF;
     const static double s_CA;
     const static double s_TR;
+    const static double s_Tf;
+    const static double s_kappa;
+    static int s_kfactorscheme;
     // Flavours of this particular splitting function
     ATOOLS::Flavour m_flavs[3]; // a -> b c
     // Domain of last intergral
@@ -19,6 +22,11 @@ namespace APACIC {
     // Last integral
     double m_lastint;
   public:
+
+    Splitting_Function();
+
+    virtual ~Splitting_Function();
+
     virtual double operator() (double) = 0;
     virtual double GetZ()=0;         
     virtual double GetPhi(double z);
@@ -44,6 +52,9 @@ namespace APACIC {
     virtual ATOOLS::Flavour & GetFlC();
 
     virtual void PrintStat(int mode=0);
+    
+    inline static int KFactorScheme() { return s_kfactorscheme; }
+
   };
 
 

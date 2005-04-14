@@ -84,6 +84,15 @@ double Sudakov_Tools::AlphaS(double t){
   return alp;
 }
 
+double Sudakov_Tools::Nf(double t){
+  //  std::cout<<"Sudakov_Tools::Nf("<<t<<")*"<<m_renormalization_scale_factor<<"\n";
+  t*=m_renormalization_scale_factor;
+  if (t<0.) t = -t;
+
+  MODEL::Running_AlphaS* as=static_cast<MODEL::Running_AlphaS*>(p_as);
+  return as->Nf(t);
+}
+
 double Sudakov_Tools::Alpha(double t){
   t*=m_renormalization_scale_factor;
   if (t<0.) t = -t;

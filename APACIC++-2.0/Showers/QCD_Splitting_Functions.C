@@ -9,7 +9,8 @@ using namespace APACIC;
 using namespace std;
 
 // quark to quark + gluon  splitting function
-q_qg::q_qg(ATOOLS::Flavour quarkflavour) : p_tools(0) 
+q_qg::q_qg(ATOOLS::Flavour quarkflavour) : 
+  p_tools(0), m_kfactor(1.0) 
 {
   m_flavs[0] = quarkflavour; 
   m_flavs[1] = quarkflavour; 
@@ -18,15 +19,17 @@ q_qg::q_qg(ATOOLS::Flavour quarkflavour) : p_tools(0)
 }
 
 q_qg::q_qg(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools) :
-  p_tools(_tools) 
+  p_tools(_tools), m_kfactor(1.0) 
 {
   m_flavs[0] = quarkflavour; 
   m_flavs[1] = quarkflavour; 
   m_flavs[2] = ATOOLS::Flavour(ATOOLS::kf::gluon);
   m_alpha    = p_tools->GetASmax();
+  if (s_kfactorscheme==1) 
+    m_kfactor  = 1.0+m_alpha/(2.0*M_PI)*s_kappa;
 }
 
-double q_qg::operator()(double z) {return s_CF*(1.+z*z)/(1.-z);};             
+double q_qg::operator()(double z) {return m_kfactor*s_CF*(1.+z*z)/(1.-z);};             
 
 double q_qg::GetZ()
 {
@@ -63,7 +66,16 @@ double q_qg::GetCoupling(double t) { return p_tools->AlphaS(t);}
 
 double q_qg::GetWeight(double z,double pt2,bool massterm) 
 { 
-  if (!massterm) return 0.5*(1.+z*z);
+  if (!massterm) 
+    if (s_kfactorscheme==1) {
+      double kappa=s_CA*(67.0/18.0-ATOOLS::sqr(M_PI)/6.0)-
+	s_TR*p_tools->Nf(pt2)*10.0/9.0;
+      return 0.5*(1.+z*z)*
+	(1.+kappa/(2.*M_PI)*p_tools->AlphaS(pt2))/m_kfactor;
+    }
+    else {
+      return 0.5*(1.+z*z);
+    }
   return ( (1.+z*z)/2. - 
 	   z*ATOOLS::sqr((1.-z)*m_flavs[0].PSMass())/
 	   (pt2+ATOOLS::sqr((1.-z)*m_flavs[0].PSMass())) );
@@ -73,7 +85,7 @@ double q_qg::CrudeInt(double _zmin, double _zmax)
 {
   m_zmin = _zmin;
   m_zmax = _zmax;
-  return 2.*s_CF*m_alpha*log((1.-m_zmin)/(1.-m_zmax));                              
+  return m_kfactor*2.*s_CF*m_alpha*log((1.-m_zmin)/(1.-m_zmax));                              
 }
 
 double q_qg::Integral(double zmin, double zmax) 
@@ -82,7 +94,8 @@ double q_qg::Integral(double zmin, double zmax)
 }
 
 // gluon to gluon + gluon splitting function (needed twice for initial state shower)
-g_gg::g_gg() : p_tools(0) 
+g_gg::g_gg() : 
+  p_tools(0), m_kfactor(1.0) 
 {
   m_flavs[0] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
   m_flavs[1] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
@@ -90,17 +103,20 @@ g_gg::g_gg() : p_tools(0)
   m_alpha    = 1.;
 }
 
-g_gg::g_gg(Sudakov_Tools * _tools) : p_tools(_tools) 
+g_gg::g_gg(Sudakov_Tools * _tools) : 
+  p_tools(_tools), m_kfactor(1.0) 
 { 
   m_flavs[0] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
   m_flavs[1] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
   m_flavs[2] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
   m_alpha    = p_tools->GetASmax();
+  if (s_kfactorscheme==1)
+    m_kfactor  = 1.0+m_alpha/(2.0*M_PI)*s_kappa;
 }
 
 double g_gg::operator()(double z) 
 {
-  return s_CA*ATOOLS::sqr(1.-z*(1.-z))/(z*(1.-z));
+  return m_kfactor*s_CA*ATOOLS::sqr(1.-z*(1.-z))/(z*(1.-z));
 }
 
 double g_gg::GetZ() 
@@ -177,6 +193,12 @@ double g_gg::GetCoupling()         { return m_alpha;}
 double g_gg::GetCoupling(double t) { return p_tools->AlphaS(t);}
 double g_gg::GetWeight(double z,double pt2,bool masses)   
 { 
+  if (s_kfactorscheme==1) {
+    double kappa=s_CA*(67.0/18.0-ATOOLS::sqr(M_PI)/6.0)-
+      s_TR*p_tools->Nf(pt2)*10.0/9.0;
+    return ATOOLS::sqr(1.-z*(1.-z))*
+      (1.+kappa/(2.*M_PI)*p_tools->AlphaS(pt2))/m_kfactor;
+  }
   return ATOOLS::sqr(1.-z*(1.-z));
 }
     
@@ -184,7 +206,7 @@ double g_gg::CrudeInt(double _zmin, double _zmax)
 {
   m_zmin = _zmin;
   m_zmax = _zmax;
-  return s_CA*m_alpha*log((1.-m_zmin)*m_zmax/(m_zmin*(1.-m_zmax)));                    
+  return m_kfactor*s_CA*m_alpha*log((1.-m_zmin)*m_zmax/(m_zmin*(1.-m_zmax)));                    
 } 
 
 double g_gg::Integral(double zmin, double zmax) 

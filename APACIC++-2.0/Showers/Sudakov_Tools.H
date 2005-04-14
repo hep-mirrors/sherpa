@@ -40,6 +40,8 @@ namespace APACIC {
     double  CrudeAlphaS(double);
     //! Exact alpha_S
     double  AlphaS(double);
+    //! Exact N_f
+    double  Nf(double);
     //! Exact alpha_QED
     double  Alpha(double);
 
