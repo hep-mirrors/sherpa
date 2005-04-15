@@ -16,6 +16,7 @@ for I in $* ; do
   elif [ "$I" = "--total" ]; then TOTAL=TRUE && CONFIGURE=TRUE
   elif [ "$I" = "--copt" ]; then DCOPT=TRUE 
   elif [ "$I" = "--no-abort" ]; then NOABORT=TRUE
+  elif [ "$I" = "--force" ]; then FORCE=TRUE 
   elif [ "$I" = "-h" ]; then echo && \
     echo "makedist version 1.0 " && echo && \
     echo "options: -f             include full time information in distribution name" && \
@@ -26,6 +27,7 @@ for I in $* ; do
     echo "         --total        rebuild 'Makefile.in's' and 'configure's' before 'make dist'" && \
     echo "         --copt         define option for 'configure'" && \
     echo "         --no-abort     ignore exit status of 'make'" && \
+    echo "         --force        overwrite existing targets" && \
     echo "         -h             display this help and exit" && echo && \
     exit 0
   elif [ "$DNAME" = "TRUE" ]; then DNAME="" && DISTDIR=$I
@@ -45,9 +47,20 @@ if [ "$ONE" = "TRUE" ] ; then
   done
 fi
 
+if test -d $DISTDIR ; then
+  echo "makedist: error: temporary directory '$DISTDIR' exists"
+  exit 1
+fi
+if test -f $DISTDIR.tar.gz && [ "$FORCE" != "TRUE" ] ; then
+  echo "makedist: error: dist file '$DISTDIR.tar.gz' exists"
+  echo "makedist: add '--force' to override"
+  exit 2
+fi
+
 echo "*************************************"
 echo "*  creating distribution of SHERPA  *"
 echo "*************************************"
+mkdir $DISTDIR/
 ALL=
 for I in $DIRS;
 do
@@ -90,13 +103,20 @@ do
         fi
       fi
     done
-    mv $I.tar.gz ../$I.tar.gz
+    mv $I.tar.gz ../$DISTDIR/$I.tar.gz
     cd ..
   fi
 done;
-rm TOOLS/*~ TOOLS/\#*
-tar -czvf $DISTDIR.tar.gz $ALL TOOLS
-rm -rf $ALL
+cp -r TOOLS/ $DISTDIR/
+cd $DISTDIR
+  rm TOOLS/*~ TOOLS/\#* TOOLS/.\#*
+  for I in $ALL; do
+    tar -xzf $I
+  done
+  rm -rf $ALL
+cd ..
+tar -czvf $DISTDIR.tar.gz $DISTDIR
+rm -rf $DISTDIR
 echo -e "\nwrote distribution to '$DISTDIR".tar.gz"'\n"
 exit 0
 
