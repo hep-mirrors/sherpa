@@ -106,7 +106,7 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
   }
   switch (p_mihandler->ScaleScheme()) {
     // min p_{T, out}
-  case 1: {
+  case 2: {
     bool construct=false;
     Blob_Data_Base *xsinfo=
       (*bloblist->FindLast(btp::ME_PS_Interface_FS))["Core_Process"];
@@ -142,6 +142,32 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
       }
       jets.Clear();
     }
+    break;
+  }
+  case 1: {
+    Blob_List shower=bloblist->
+      FindConnected(m_diced?bloblist->FindLast(btp::Hard_Collision):signal);
+    int njets=2;
+    if (!m_diced) {
+      Blob_Data_Base *xsinfo=
+	(*bloblist->FindFirst(btp::ME_PS_Interface_FS))["Core_Process"];
+      if (xsinfo==NULL) {
+	njets=1;
+      }
+      else {
+	XS_Base *xs=xsinfo->Get<XS_Base*>();
+	if (xs!=NULL) if (xs->NStrong()<4) njets=1;
+      }
+    }
+    Particle_List jets=shower.ExtractLooseParticles(1);
+    Jet_Finder finder(p_mihandler->YCut(),4);
+    finder.ConstructJets(&jets,njets,true);
+    double ptmax=0.0;
+    for (Particle_List::const_iterator pit=jets.begin();
+	 pit!=jets.end();++pit)
+      ptmax=Max(ptmax,(*pit)->Momentum().PPerp());
+    jets.Clear();
+    m_ptmax=Min(m_ptmax,ptmax);
     break;
   }
     // mean p_{T, out}
