@@ -4,7 +4,7 @@
 # the bin - directory or adjust accordingly.
 #
 
-DIRS=`find Process -name P?_?`
+DIRS=`find Process -name P?_?`" "`find Process -name P?_??`
 
 for I in $* ; do
   if [ "$I" = "-c" ]; then CLEAN=TRUE ;
