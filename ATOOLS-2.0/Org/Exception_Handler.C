@@ -286,11 +286,11 @@ void Exception_Handler::GenerateStackTrace(std::ostream &ostr,
       ostr<<comment<<om::bold<<"   0x"<<std::setiosflags(std::ios::left)
 	  <<std::setw(8)<<std::hex<<symaddr<<std::dec<<om::reset
 	  <<" in   '"<<om::red<<symname<<om::reset
-	  <<"'\n              from '"<<om::brown<<info.dli_fname
+	  <<"'\n                from '"<<om::brown<<info.dli_fname
 	  <<om::reset<<"'"<<std::endl;
     } 
     else {
-      ostr<<comment<<"   "<<addr<<" in <unknown function>"<<std::endl;
+      ostr<<comment<<"   "<<addr<<" in   <unknown function>"<<std::endl;
     }
   }
   ostr<<comment<<om::bold<<"}"<<om::reset;
