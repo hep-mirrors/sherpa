@@ -76,7 +76,7 @@ bool SimpleXS_Adicic_Interface::FillBlobs(Blob_List * blobs)
 
 int SimpleXS_Adicic_Interface::PerformShowers()
 {
-  return p_shower->PerformShowers(false,1.,1.,rpa.gen.Ycut());
+  return p_shower->PerformShowers(false,1,1.,1.,rpa.gen.Ycut());
 }
 
 

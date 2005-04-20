@@ -33,7 +33,7 @@ namespace SHERPA {
     Shower_Handler(std::string,std::string,MODEL::Model_Base *,
 		   PDF::ISR_Handler *,int);
     ~Shower_Handler();
-    int             PerformShowers(int,double,double,double ycut);
+    int             PerformShowers(int,int,double,double,double ycut);
     int             PerformDecayShowers(bool);
     void            FillBlobs(ATOOLS::Blob_List *);
     void            FillDecayBlobs(ATOOLS::Blob_List *);

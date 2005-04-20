@@ -70,7 +70,7 @@ void Apacic::SetFactorisationScale(const double scale)
   }
 }
 
-int Apacic::PerformShowers(bool ini,bool fin,int jetveto,double x1,double x2, double ycut) {
+int Apacic::PerformShowers(bool ini,bool fin,int jetveto,int losejv,double x1,double x2, double ycut) {
   if (!m_showers) return 1;
   if (msg.LevelIsDebugging()) {
     if (m_fsron) 
@@ -182,7 +182,7 @@ int Apacic::PerformShowers(bool ini,bool fin,int jetveto,double x1,double x2, do
 
       //      std::cout<<" sum_left : "<<p_finshower->GetMomentum(p_initrees[0]->GetInitiator(),number)<<"\n";
       //      std::cout<<" sum_right : "<<p_finshower->GetMomentum(p_initrees[1]->GetInitiator(),number)<<"\n";
-      if (!p_finshower->ExtraJetCheck()) {
+      if (losejv && !p_finshower->ExtraJetCheck()) {
 	//	std::cout<<" extrajetcheck failed"<<std::endl;
 	return 3;
       }

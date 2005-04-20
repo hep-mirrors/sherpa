@@ -264,6 +264,7 @@ int Amegic_Apacic_Interface::PerformShowers()
 {
   // PROFILE_LOCAL("Amegic_Apacic_Interface::PerformShowers");
   int jetveto=-1;
+  int losejv=1;
   if (p_mehandler->UseSudakovWeight()) {
     double qmin2i,qmin2f; 
     double scale = p_mehandler->FactorisationScale();
@@ -281,8 +282,9 @@ int Amegic_Apacic_Interface::PerformShowers()
       //      std::cout<<" no jetveto mu_f="<<scale<<std::endl;
       jetveto=0;
     }
+    if (m_nout==2) losejv=0;
   }
-  return m_lastshowerveto = p_shower->PerformShowers(jetveto,
+  return m_lastshowerveto = p_shower->PerformShowers(jetveto,losejv,
 						     p_mehandler->GetISR_Handler()->X1(),
 						     p_mehandler->GetISR_Handler()->X2(),
 						     p_cluster->Ycut());

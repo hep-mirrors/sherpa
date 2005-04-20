@@ -144,7 +144,7 @@ int SimpleXS_Apacic_Interface::PerformShowers()
 		 <<"    maxpt ini = "<<qmin2i<<" maxpt fin = "<<qmin2f
 		 <<" vs. "<<p_hard->OutParticle(0)->Momentum().PPerp2()
 		 <<"\n}"<<std::endl;
-  return p_shower->PerformShowers(jetveto,p_mehandler->GetISR_Handler()->X1(),
+  return p_shower->PerformShowers(jetveto,1,p_mehandler->GetISR_Handler()->X1(),
 				  p_mehandler->GetISR_Handler()->X2(),rpa.gen.Ycut());
 }
 
