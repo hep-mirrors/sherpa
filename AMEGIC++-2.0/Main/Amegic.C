@@ -198,8 +198,6 @@ void Amegic::ReadInProcessfile(string file)
     abort();
   }
 
-  char buffer[100];
-
   int         flag,position,njets;
   string      buf,ini,fin;
   int         nIS,   nFS,    nex;
@@ -213,10 +211,9 @@ void Amegic::ReadInProcessfile(string file)
   bool        print_graphs=false;
   string      selectorfile;
   for(;from;) {
-    from.getline(buffer,100);
-    if (buffer[0] != '%' && strlen(buffer)>0) {
-      msg.LogFile()<<buffer<<std::endl;
-      buf        = string(buffer);
+    getline(from,buf);
+    if (buf[0] != '%' && buf.length()>0) {
+      msg.LogFile()<<buf<<std::endl;
       position   = buf.find(string("Process :")); 
       flag       = 0;
       if (position>-1 && position<(int)buf.length()) {
@@ -234,7 +231,7 @@ void Amegic::ReadInProcessfile(string file)
 	  if (nFS>m_maxjet) m_maxjet = nFS;
 	  if ((nIS< 1) || (nIS > 2)) {
 	    msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
-		       <<"   Wrong number of partons in "<<string(buffer)<<endl;
+		       <<"   Wrong number of partons in "<<buf<<endl;
 	    flag = 0;
 	  }
 	  if (nIS==2) {
@@ -270,10 +267,9 @@ void Amegic::ReadInProcessfile(string file)
 	    order_strong   = 99;
 	    nex            = 0;
 	    do {
-	      from.getline(buffer,100);
-	      if (buffer[0] != '%' && strlen(buffer)>0) {
-		msg.LogFile()<<buffer<<std::endl;
-		buf      = string(buffer);
+	      getline(from,buf);
+	      if (buf[0] != '%' && buf.length()>0) {
+		msg.LogFile()<<buf<<std::endl;
 		position = buf.find(string("Decay :"));
 		if (position > -1) {
 		  buf    = buf.substr(position+7);
@@ -299,7 +295,7 @@ void Amegic::ReadInProcessfile(string file)
 		      int c=ExtractFlavours(fflb,fplb,fin);
 		      if (c<2) {
 			msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
-				   <<"   Wrong number of partons in decay process: "<<string(buffer)<<endl;
+				   <<"   Wrong number of partons in decay process: "<<buf<<endl;
 			abort();
 		      }
 		      if (!(CF.ValidProcess(1,iflb,c,fflb))) {
