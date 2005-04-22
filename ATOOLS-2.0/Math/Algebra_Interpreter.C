@@ -230,7 +230,7 @@ DEFINE_INTERPRETER_FUNCTION(Resolve_Bracket)
   }
   std::string left=expr.substr(0,l);
   std::string right=expr.substr(r+1);
-  msg_Tracking()<<"Resolve_Bracket -> '"
+  msg_Debugging()<<"Resolve_Bracket -> '"
 		<<left<<"' '"<<expr.substr(l+1,r-l-1)<<"' '"<<right<<"'\n";
   std::string res=p_interpreter->
     Iterate(left+p_interpreter->
@@ -270,7 +270,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
   if (msg.LevelIsTracking()) {
     std::string out=args[0];
     for (size_t j=1;j<args.size();++j) out+=","+args[j];
-    msg_Tracking()<<"Interprete_Function -> '"<<left
+    msg_Debugging()<<"Interprete_Function -> '"<<left
 		  <<"' '"<<func->Tag()<<"("<<out
 		  <<")' '"<<right<<"'\n";
   }
@@ -372,7 +372,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
   std::vector<std::string> args(2);
   args[0]=p_interpreter->Iterate(lstr);
   args[1]=p_interpreter->Iterate(rstr);
-  msg_Tracking()<<"Interprete_Binary -> '"
+  msg_Debugging()<<"Interprete_Binary -> '"
 	    <<lrstr<<"' '"<<lstr<<"' '"<<op->Tag()
 	    <<"' '"<<rstr<<"' '"<<rrstr<<"'\n";
   return p_interpreter->
@@ -422,7 +422,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
   rstr=rstr.substr(0,rfpos);
   std::vector<std::string> args(1);
   args[0]=p_interpreter->Iterate(rstr);
-  msg_Tracking()<<"Interprete_Unary -> '"
+  msg_Debugging()<<"Interprete_Unary -> '"
 		<<lrstr<<"' '"<<op->Tag()<<"' '"<<rstr<<"' '"<<rrstr<<"'\n";
   return p_interpreter->
     Iterate(lrstr+op->Evaluate(args)+rrstr);
@@ -475,7 +475,7 @@ Algebra_Interpreter::~Algebra_Interpreter()
 
 std::string Algebra_Interpreter::Interprete(const std::string &expr)
 {
-  msg_Tracking()<<"Algebra_Interpreter::Interprete("<<expr<<")\n";
+  msg_Debugging()<<"Algebra_Interpreter::Interprete("<<expr<<")\n";
   std::string res=expr;
   KillBlanks(res);
   res=p_replacer->ReplaceTags(res);
@@ -518,7 +518,7 @@ void Algebra_Interpreter::SetTags(const String_Map &tags)
 
 std::string Algebra_Interpreter::ReplaceTags(std::string &expr) const
 {
-  msg_Tracking()<<"Algebra_Interpreter::ReplaceTags("<<expr<<")\n";
+  msg_Debugging()<<"Algebra_Interpreter::ReplaceTags("<<expr<<")\n";
   size_t pos=std::string::npos;
   for (String_Map::const_iterator sit=m_tags.begin();
        sit!=m_tags.end();++sit) {
