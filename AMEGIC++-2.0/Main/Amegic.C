@@ -443,8 +443,7 @@ void Amegic::ReadInProcessfile(string file)
 		  position     = 0;
 		}
 	      }
-	    }
-	    while (position==-1);
+	    } while (from && position==-1);
 	    if (!pinfo || !pinfo->CheckCompleteness()) {
 	      msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
 			 <<"   Missing decay processes! "<<endl;
