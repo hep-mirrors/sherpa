@@ -84,7 +84,7 @@ void Simple_Chain::Init()
     p_remnants[0]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_0");
     p_remnants[1]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_1");
     if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
-      ATOOLS::msg.Error()<<"Simple_XS::Simple_XS(..): "
+      ATOOLS::msg.Error()<<"Simple_Chain::Simple_Chain(..): "
 			 <<"No beam remnant handler found."<<std::endl;
     }
   }
@@ -665,6 +665,7 @@ bool Simple_Chain::CreateMomenta()
   if (m_processmap.find(m_selected)!=m_processmap.end()) {
     EXTRAXS::XS_Base *selected=m_processmap[m_selected];
     selected->Parent()->SetSelected(selected);
+    p_processes->SetSelected(selected->Parent());
     double weight=1.;
     size_t pstrials=0, trials=0;
     Amisic_Histogram<double> *cur=m_differentials[m_selected];
