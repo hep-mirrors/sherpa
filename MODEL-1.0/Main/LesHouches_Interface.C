@@ -109,7 +109,7 @@ void LesHouches_Interface::SetSMInput() {
   p_reader->RereadInFile();
   
   if(p_reader->MatrixFromFile(vd,"")) {
-    double alphaQED, MZ, GF,alphaS, sin2TW, MW;
+    double alphaQED=0., MZ=0., GF=0.,alphaS=0., sin2TW=0., MW=0.;
     for (unsigned int i=0;i<vd.size();++i) {
       if (vd[i][0]==1) alphaQED = 1./vd[i][1]; 
       if (vd[i][0]==2) GF       = vd[i][1]; 
@@ -170,7 +170,7 @@ void LesHouches_Interface::SetMasses() {
 void LesHouches_Interface::SetHiggsParameters() {
 
   msg_Tracking()<<std::endl<<"  Reading Block alpha and Block hmix: "<<std::endl;
-  double alpha,mu,tanb,vev;
+  double alpha=0.,mu=0.,tanb=0.,vev=0.;
   std::vector<std::vector<double> >   vd;
   
   p_reader->SetFileBegin(std::string("Block alpha"));

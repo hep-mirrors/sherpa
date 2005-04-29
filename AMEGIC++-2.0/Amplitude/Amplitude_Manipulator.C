@@ -171,15 +171,17 @@ void Amplitude_Manipulator::GetFermionLine(Point* pcurr,Point*& pbegin,Point*& p
   }
   
   if (fl[pbegin->number].Majorana() && fl[pend->number].Majorana()) {
-    if (pbegin->number<pend->number) {
+    /*
+      if (pbegin->number<pend->number) {
       Point* h = pbegin;
       pbegin   = pend;
       pend     = h;
       return;
-    }
+      }
+    */
     return;
   }
-
+  
   msg.Error()<<"ERROR in Amplitude_Manipulator::GetFermionLine(). Continue run."<<endl;
   return;
 }

@@ -596,8 +596,8 @@ C
       v1    = v*SQRT(1./(1.+RV2V1**2))
       v2    = v1*RV2V1
 C     Changed v2 <-> v1 with respect to our notation
-      US_22 = -AAT*AMTP*SQRT(2.)/v1
-
+      US_22 = AAT*AMTP*SQRT(2.)/v1
+C      PRINT*, 'AAT',AAT,'YUK',AMTP*SQRT(2.)/v1
       END
 C================================================================
 C
@@ -646,8 +646,9 @@ C
       v1     = v*SQRT(1./(1.+RV2V1**2))
       v2    = v1*RV2V1
 C     Changed v2 <-> v1 with respect to our notation
-      DS_22  = AAB*AMBT*SQRT(2.)/v2
-      
+C     there seems to be a bug in the Yuk (factor two to large)      
+      DS_22  = AAB*AMBT*SQRT(2.)/(2.*v2)
+C      PRINT*, 'AAB',AAB,'YUK',AMBT*SQRT(2.)/(2.*v2)
       END
 C================================================================
 C

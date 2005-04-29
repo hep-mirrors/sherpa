@@ -9,6 +9,8 @@ namespace AMEGIC {
     Kabbala g1,g3,PL,PR,M_I,root2,num_2;    
     Kabbala K_Z_U(short int i,short int j);
     Kabbala K_Z_D(short int i,short int j);
+    int gen_sUp(ATOOLS::Flavour fl);
+    int gen_sDown(ATOOLS::Flavour fl);
   public:
     Interaction_Model_sQCD(MODEL::Model_Base *,std::string,std::string);
     void c_FFV(Single_Vertex *,int &);

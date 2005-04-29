@@ -37,60 +37,62 @@ void Interaction_Model_sQCD::c_FFS(Single_Vertex* vertex,int& vanz)
       Flavour flav1 = Flavour(kf::code(i));
       for (short int j=51;j<57;j++) {
 	Flavour flav2 = Flavour(kf::code(j));
-	if (flav1.IsOn() && flav2.IsOn()) {
-	vertex[vanz].in[0] = flav1;
-	vertex[vanz].in[1] = flav2;
-	vertex[vanz].in[2] = flgluino;
-	
-	kcpl0 = M_I*g3*root2*K_Z_U((i-2)/2+3,j-51);
-	kcpl1 = -M_I*g3*root2*K_Z_U((i-2)/2,j-51);
-	
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
-	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
-
-	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function(cf::T);     
-	vertex[vanz].Color->SetParticleArg(2,1,0);     
-	vertex[vanz].Color->SetStringArg('2','1','0');     
-	
-	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
-	
-	vertex[vanz].on      = 1;
-	vanz++;
-      }  
+	if (flav1.IsOn() && flav2.IsOn() && gen_sUp(flav2)==((i-2)/2)) {
+	  vertex[vanz].in[0] = flav1;
+	  vertex[vanz].in[2] = flav2;
+	  vertex[vanz].in[1] = flgluino;
+	  
+	  kcpl0 = M_I*g3*root2*K_Z_U((i-2)/2+3,j-51);
+	  kcpl1 = -M_I*g3*root2*K_Z_U((i-2)/2,j-51);
+	  
+	  vertex[vanz].cpl[0]  = kcpl0.Value();
+	  vertex[vanz].cpl[1]  = kcpl1.Value();
+	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+	  
+	  vertex[vanz].ncf   = 1;
+	  vertex[vanz].Color = new Color_Function(cf::T);     
+	  
+	  vertex[vanz].Color->SetParticleArg(1,2,0);     
+	  vertex[vanz].Color->SetStringArg('1','2','0');     
+	  
+	  vertex[vanz].nlf     = 1;
+	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
+	  
+	  vertex[vanz].on      = 1;
+	  vanz++;
+	}
       }
     }
-  //downtype - sdown - gluino
+    //downtype - sdown - gluino
     for (short int i=1;i<6;i+=2) {
       Flavour flav1 = Flavour(kf::code(i));
       for (short int j=61;j<67;j++) {
 	Flavour flav2 = Flavour(kf::code(j));
-	if (flav1.IsOn() && flav2.IsOn()) {
-	vertex[vanz].in[0] = flav1;
-	vertex[vanz].in[1] = flav2;
-	vertex[vanz].in[2] = flgluino;
-	
-	kcpl0 = M_I*g3*root2*K_Z_D((i-1)/2+3,j-61);
-	kcpl1 = -M_I*g3*root2*K_Z_D((i-1)/2,j-61);
-	
-	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function(cf::T);     
-	vertex[vanz].Color->SetParticleArg(2,1,0);     
-	vertex[vanz].Color->SetStringArg('2','1','0');     
+	if (flav1.IsOn() && flav2.IsOn() && gen_sDown(flav2)==((i-1)/2)) {
 
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
-	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
-	
-	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
-	
-	vertex[vanz].on      = 1;
-	vanz++;
+	  vertex[vanz].in[0] = flav1;
+	  vertex[vanz].in[2] = flav2;
+	  vertex[vanz].in[1] = flgluino;
+	  
+	  kcpl0 = M_I*g3*root2*K_Z_D((i-1)/2+3,j-61);
+	  kcpl1 = -M_I*g3*root2*K_Z_D((i-1)/2,j-61);
+
+	  vertex[vanz].ncf   = 1;
+	  vertex[vanz].Color = new Color_Function(cf::T);     
+	  vertex[vanz].Color->SetParticleArg(1,2,0);     
+	  vertex[vanz].Color->SetStringArg('1','2','0');     
+	  
+	  vertex[vanz].cpl[0]  = kcpl0.Value();
+	  vertex[vanz].cpl[1]  = kcpl1.Value();
+	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+	  
+	  vertex[vanz].nlf     = 1;
+	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
+	  
+	  vertex[vanz].on      = 1;
+	  vanz++;
 	}  
       }
     }
@@ -141,7 +143,8 @@ void Interaction_Model_sQCD::c_SSV(Single_Vertex* vertex,int& vanz)
 
   Flavour flgl = Flavour(kf::gluon); 
   if (flgl.IsOn()) {    
-    kcpl0 = g3*M_I;
+   
+    kcpl0 = -g3*M_I;
     kcpl1 = kcpl0;
     for (short int i=51;i<67;i++) {
       if (i==57) i=61;
@@ -149,7 +152,8 @@ void Interaction_Model_sQCD::c_SSV(Single_Vertex* vertex,int& vanz)
       if (flav.IsOn()) { 
 	vertex[vanz].in[0] = flav;
 	vertex[vanz].in[1] = flgl;
-	vertex[vanz].in[2] = flav;	
+	vertex[vanz].in[2] = flav;
+	
 	vertex[vanz].cpl[0]  = kcpl0.Value();
 	vertex[vanz].cpl[1]  = kcpl1.Value();
 	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
@@ -157,8 +161,8 @@ void Interaction_Model_sQCD::c_SSV(Single_Vertex* vertex,int& vanz)
 	
 	vertex[vanz].ncf   = 1;
 	vertex[vanz].Color = new Color_Function(cf::T);     
-	vertex[vanz].Color->SetParticleArg(1,0,2);     
-	vertex[vanz].Color->SetStringArg('1','0','2');     
+	vertex[vanz].Color->SetParticleArg(1,2,0);     
+	vertex[vanz].Color->SetStringArg('1','2','0');     
 	
 	vertex[vanz].nlf     = 1;
 	vertex[vanz].Lorentz = new Lorentz_Function(lf::SSV);
@@ -203,11 +207,11 @@ void Interaction_Model_sQCD::c_SSVV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Color   = new Color_Function[2]; 
 	vertex[vanz].Lorentz = new Lorentz_Function[2]; 
 
-	vertex[vanz].Color[0]        = Color_Function(cf::T,0,1,4,'0','1','4',
-						      new Color_Function(cf::T,3,4,2,'3','4','2'));
+	vertex[vanz].Color[0]        = Color_Function(cf::T,0,2,4,'0','2','4',
+						      new Color_Function(cf::T,3,4,1,'3','4','1'));
 		
-	vertex[vanz].Color[1]        = Color_Function(cf::T,3,1,4,'3','1','4',
-						      new Color_Function(cf::T,0,4,2,'0','4','2'));
+	vertex[vanz].Color[1]        = Color_Function(cf::T,3,2,4,'3','2','4',
+						      new Color_Function(cf::T,0,4,1,'0','4','1'));
 						      
 						      
 	vertex[vanz].Lorentz[0] = Lorentz_Function(lf::VVSS);     
@@ -239,4 +243,32 @@ Kabbala Interaction_Model_sQCD::K_Z_U(short int i,short int j)
   return Kabbala(string("Z^{")+string(hi)+string(hj)+string("}_U"),
 		 ComplexMatrixElement(std::string("Z_u"),i,j));
 }  
+
+int Interaction_Model_sQCD::gen_sUp(Flavour fl)
+{
+  int gen_sUp;
+
+  if (fl.Kfcode() == 51 || fl.Kfcode() == 54)
+    gen_sUp = 0;
+  if (fl.Kfcode() == 52 || fl.Kfcode() == 55)
+    gen_sUp = 1;
+  if (fl.Kfcode() == 53 || fl.Kfcode() == 56)
+    gen_sUp = 2;
+
+  return gen_sUp;
+}
+
+int Interaction_Model_sQCD::gen_sDown(Flavour fl)
+{
+  int gen_sDown;
+
+  if (fl.Kfcode() == 61 || fl.Kfcode() == 64)
+    gen_sDown = 0;
+  if (fl.Kfcode() == 62 || fl.Kfcode() == 65)
+    gen_sDown = 1;
+  if (fl.Kfcode() == 63 || fl.Kfcode() == 66)
+    gen_sDown = 2;
+
+  return gen_sDown;
+}
 

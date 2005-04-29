@@ -2,6 +2,7 @@
 #include "Message.H"
 #include "Standard_Model.H"
 #include "Isajet_Fortran_Interface.H"
+#include "LesHouches_Interface.H"
 
 using namespace MODEL;
 using namespace ATOOLS;
@@ -189,7 +190,14 @@ bool MSSM::RunSpectrumGenerator() {
       p_spectrumgenerator = new ISAJET::Isajet_Fortran_Interface(p_dataread,this);
       p_spectrumgenerator->Run(std::string(m_scenario));
       p_spectrumgenerator->FillMasses();
-      p_spectrumgenerator->FillDecays();
+      //p_spectrumgenerator->FillDecays();
+      return 1;
+    }
+    if (m_generator==std::string("LesHouches")) {
+      p_spectrumgenerator = new LesHouches_Interface(p_dataread,this,m_dir);
+      p_spectrumgenerator->Run(std::string(m_scenario));
+      p_spectrumgenerator->FillMasses();
+      //p_spectrumgenerator->FillDecays();
       return 1;
     }
     

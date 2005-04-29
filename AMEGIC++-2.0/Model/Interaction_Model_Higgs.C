@@ -30,10 +30,7 @@ Interaction_Model_Higgs::Interaction_Model_Higgs(MODEL::Model_Base * _model,
   v1     = Kabbala(string("v_1"),
 		   ScalarConstant(std::string("vev")) *
 		   sqrt(1./(1.+sqr(ScalarConstant(std::string("tan(beta)"))))));
-  v2     = Kabbala(string("v_2"),
-		   ScalarConstant(std::string("vev")) *
-		   ScalarConstant(std::string("tan(beta)")) *
-		   sqrt(1./(1.+sqr(ScalarConstant(std::string("tan(beta)"))))));
+  v2     = Kabbala(string("v_2"),v1.Value()*ScalarConstant(std::string("tan(beta)")));
   root2  = Kabbala(string("\\sqrt{2}"),sqrt(2.));
   K_zero = Kabbala(string("zero"),0.);
   num_2  = Kabbala(string("2"),2.);    	
@@ -90,39 +87,39 @@ void Interaction_Model_Higgs::c_FFS(Single_Vertex* vertex,int& vanz)
 	  //checked FK & RK	  
 	}
       }
-    }
-  
-    // q(u) -> h0/H0 + q(u)
-    
-    for(short int t=1;t<17;t++) {
-      if (t==7) t=11;
-      Flavour fl1 = Flavour(kf::code(t)); 
-      if(fl1.IsOn() && fl1.IsQuark() && fl1.IsUptype() && (fl1.Yuk() > 1.)) {
-	
-	vertex[vanz].in[0] = fl1; 
-	vertex[vanz].in[1] = flav;
-	vertex[vanz].in[2] = fl1; 
-
-	kcpl0 = -M_I/v2*K_yuk(fl1)*K_Z_R(1,i-31);
-	kcpl1 = kcpl0;
-
-	vertex[vanz].cpl[0]  = kcpl0.Value();
-	vertex[vanz].cpl[1]  = kcpl1.Value();
-	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
-	vertex[vanz].on      = 1;
-	
-	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function(cf::D);     
-	vertex[vanz].Color->SetParticleArg(0,2);     
-	vertex[vanz].Color->SetStringArg('0','2');     
-	
-	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
-	vertex[vanz].Lorentz->SetParticleArg(1);     
-	
-	vanz++;
-	//checked FK & RK
+      
+      // q(u) -> h0/H0 + q(u)
+      
+      for(short int t=1;t<17;t++) {
+	if (t==7) t=11;
+	Flavour fl1 = Flavour(kf::code(t)); 
+	if(fl1.IsOn() && fl1.IsQuark() && fl1.IsUptype() && (fl1.Yuk() > 1.)) {
+	  
+	  vertex[vanz].in[0] = fl1; 
+	  vertex[vanz].in[1] = flav;
+	  vertex[vanz].in[2] = fl1; 
+	  
+	  kcpl0 = -M_I/v2*K_yuk(fl1)*K_Z_R(1,i-31);
+	  kcpl1 = kcpl0;
+	  
+	  vertex[vanz].cpl[0]  = kcpl0.Value();
+	  vertex[vanz].cpl[1]  = kcpl1.Value();
+	  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+	  vertex[vanz].on      = 1;
+	  
+	  vertex[vanz].ncf   = 1;
+	  vertex[vanz].Color = new Color_Function(cf::D);     
+	  vertex[vanz].Color->SetParticleArg(0,2);     
+	  vertex[vanz].Color->SetStringArg('0','2');     
+	  
+	  vertex[vanz].nlf     = 1;
+	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
+	  vertex[vanz].Lorentz->SetParticleArg(1);     
+	  
+	  vanz++;
+	  //checked FK & RK
+	}
       }
     }
   }
@@ -407,16 +404,16 @@ void Interaction_Model_Higgs::c_SSS(Single_Vertex* vertex,int& vanz)
   }
   
   // h0 -> h0/H0 + h0/H0 
-
-    if(flh0.IsOn()) { 
-      for(short int j=31;j<33;j++) {
-	Flavour flav2 = Flavour(kf::code(j));
-	if(flav2.IsOn()) {
-	  for(short int k=31;k<33;k++) {
-	    Flavour flav3 = Flavour(kf::code(k));
-	    if(flav3.IsOn()) {
-	      if(flav2 != flH0 || flav3 != flh0){
-
+  
+  if(flh0.IsOn()) { 
+    for(short int j=31;j<33;j++) {
+      Flavour flav2 = Flavour(kf::code(j));
+      if(flav2.IsOn()) {
+	for(short int k=31;k<33;k++) {
+	  Flavour flav3 = Flavour(kf::code(k));
+	  if(flav3.IsOn()) {
+	    if(flav2 != flH0 || flav3 != flh0) {
+	      
 	      vertex[vanz].in[0] = flh0;
 	      vertex[vanz].in[1] = flav2;      
 	      vertex[vanz].in[2] = flav3;
@@ -553,7 +550,6 @@ void Interaction_Model_Higgs::c_SSV(Single_Vertex* vertex,int& vanz)
       vertex[vanz].in[0] = flHmin;
       vertex[vanz].in[1] = flZ;
       vertex[vanz].in[2] = flHmin;
-     
 
       Complex cos2tw = (costW.Value()*costW.Value()-sintW.Value()*sintW.Value())/(2.*sintW.Value()*costW.Value());
       Kabbala cot2TW = Kabbala(string("cot2\\theta_W"),cos2tw);

@@ -27,7 +27,7 @@ namespace MODEL {
 
   /*!
     \class Spectrum_Generator_Base
-    \brief is the base class for all spectrum geenrators to be linked.
+    \brief is the base class for all spectrum generators to be linked.
 
     Spectrum_Generator_Base is the base class used for wrappers around various
     spectrum generators, so far the two Fortran codes Hdecay and Isasusy have been 
@@ -44,7 +44,7 @@ namespace MODEL {
   /*!
     ATOOLS::Data_Read * Spectrum_Generator_Base::p_dataread
     A pointer to the model's dataread object. It is handed over through the constructor.
-    This might become important, if moer information is needed.
+    This might become important, if more information is needed.
   */
   /*!
     std::vector<double> Spectrum_Generator_Base::m_widths

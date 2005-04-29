@@ -568,11 +568,10 @@ void Isajet_Fortran_Interface::HiggsMasses()
   double cosa = cos(alpha);
 
   CMatrix ZR  = CMatrix(2);
-  ZR[0][0]    = Complex(-sina,0.);
-  ZR[0][1]    = Complex(cosa,0.);
-  ZR[1][0]    = Complex(cosa,0.);
-  ZR[1][1]    = Complex(sina,0.);
-  
+  ZR[0][0]    = Complex(cosa,0.);
+  ZR[0][1]    = Complex(-sina,0.);
+  ZR[1][0]    = Complex(sina,0.);
+  ZR[1][1]    = Complex(cosa,0.);
   Flavour flav;
   flav = Flavour(kf::h0);flav.SetMass(mh);
   flav = Flavour(kf::H0);flav.SetMass(mH);

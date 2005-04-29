@@ -87,6 +87,8 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 RANLIB = @RANLIB@
+ROOT_SUPPORT_FALSE = @ROOT_SUPPORT_FALSE@
+ROOT_SUPPORT_TRUE = @ROOT_SUPPORT_TRUE@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -135,6 +137,8 @@ lib_LTLIBRARIES = libAmplTools.la
 
 @CVS_INCLUDE_TRUE@CVSINCLUDE = CVS
 
+AMEGICFLAGS = -pedantic -Wall -Winline
+
 libAmplTools_la_SOURCES = CFColor.C
 INCLUDES = -I../../Amplitude \
 	   -I../../Amplitude/AmplTools \
@@ -150,6 +154,7 @@ INCLUDES = -I../../Amplitude \
 
 noinst_HEADERS = CFColor.H
 EXTRA_DIST = $(CVSINCLUDE)
+AM_CXXFLAGS = $(AMEGICFLAGS)
 subdir = Amplitude/AmplTools
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
