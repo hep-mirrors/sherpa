@@ -9,7 +9,6 @@
 #include "Sarge.H"
 #include "Leading_Log_Z.H"
 #include "LL_KPerp.H"
-#include "LDL_KPerp.H"
 #include "FSR_Channel.H"
 #include "ISR_Vegas.H"
 #include "PI_Interface.H"
@@ -1437,10 +1436,6 @@ bool Phase_Space_Handler::CreateKMRChannels()
     channel = new LL_KPerp(m_kpparams[i].parameters[0],"",p_info);
     p_kpchannels->Add(channel);
   }
-  double lambda2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Mass());
-  lambda2*=exp(-M_PI/(MODEL::as->Beta0(lambda2)*(*MODEL::as)(lambda2)));
-  channel = new LDL_KPerp(lambda2,"",p_info);
-  p_kpchannels->Add(channel);
   return 1;
 }
 
