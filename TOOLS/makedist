@@ -9,6 +9,7 @@ ECOPT=""
 for I in $* ; do
   if [ "$I" = "-f" ]; then DISTDIR=$DISTDIR"_"`date +'%H-%M'` 
   elif [ "$I" = "-n" ]; then DNAME=TRUE
+  elif [ "$I" = "-u" ]; then COMP=FALSE
   elif [ "$I" = "-o" ]; then ONE=TRUE
   elif [ "$I" = "--clean" ]; then ALLCLEAN=TRUE 
   elif [ "$I" = "--configure" ]; then CONFIGURE=TRUE 
@@ -21,7 +22,8 @@ for I in $* ; do
     echo "makedist version 1.0 " && echo && \
     echo "options: -f             include full time information in distribution name" && \
     echo "         -n <name>      write compressed distribution to <name>.tar.gz" && \
-    echo "         -o             install single module" && \
+    echo "         -u             distribute uncompressed modules" && \
+    echo "         -o             create distribution of single module" && \
     echo "         --clean        execute 'make clean' before 'make dist'" && \
     echo "         --configure    configure before 'make dist' (enabled with '--total')" && \
     echo "         --total        rebuild 'Makefile.in's' and 'configure's' before 'make dist'" && \
@@ -110,12 +112,19 @@ done;
 cp -r TOOLS/ $DISTDIR/
 cd $DISTDIR
   rm TOOLS/*~ TOOLS/\#* TOOLS/.\#*
-  for I in $ALL; do
-    tar -xzf $I
-  done
-  rm -rf $ALL
+  if [ "$COMP" = "FALSE" ] ; then
+    for I in $ALL; do
+      tar -xzf $I
+    done
+    rm -rf $ALL
+  else
+    tar -czvf $DISTDIR.tar.gz $ALL TOOLS
+    mv $DISTDIR.tar.gz ..
+  fi
 cd ..
-tar -czvf $DISTDIR.tar.gz $DISTDIR
+if [ "$COMP" = "FALSE" ] ; then
+  tar -czvf $DISTDIR.tar.gz $DISTDIR
+fi
 rm -rf $DISTDIR
 echo -e "\nwrote distribution to '$DISTDIR".tar.gz"'\n"
 exit 0
