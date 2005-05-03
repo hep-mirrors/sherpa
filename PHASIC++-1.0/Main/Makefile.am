@@ -32,7 +32,6 @@ libPhasespace_la_SOURCES      =	\
 				LBS_Compton_Peak.C \
 			   	Leading_Log_Z.C \
 			   	LL_KPerp.C \
-			   	LDL_KPerp.C \
 				FSR_Channel.C \
 				Rambo.C \
 				RamboKK.C \
@@ -56,7 +55,6 @@ noinst_HEADERS        =	\
 			LBS_Compton_Peak.H \
 		 	Leading_Log_Z.H \
 		 	LL_KPerp.H \
-		 	LDL_KPerp.H \
 			FSR_Channel.H \
 			Channel_Interface.H \
 			Rambo.H \
