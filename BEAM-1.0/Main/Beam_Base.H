@@ -1,57 +1,52 @@
-#ifndef Beam_Base_h
-#define Beam_Base_h
+#ifndef Beam_Base_H
+#define Beam_Base_H
 
 #include "Flavour.H"
 #include "Vector.H"
 #include "Message.H"
 
 namespace BEAM {
+
   class Beam_Base { 
   protected:
+
     std::string        m_type;
     ATOOLS::Flavour    m_beam,m_bunch;
-    double             m_energy,m_polarisation;
     ATOOLS::Vec4D      m_lab,m_vecout;
     int                m_dir;
+    double             m_energy,m_polarisation;
     double             m_x,m_Q2,m_weight;
-  public:
-    Beam_Base(std::string _type,const ATOOLS::Flavour _beam,
-	      const double _energy,const double _polarisation,const int _dir) :
-      m_type(_type), m_beam(_beam), m_bunch(m_beam),
-      m_energy(_energy),m_polarisation(_polarisation),
-      m_dir(_dir),m_x(1.),m_Q2(0.),m_weight(1.)
-    {
-      double disc      =  1.-ATOOLS::sqr(m_beam.PSMass()/m_energy);
-      if (disc<0) {
-	ATOOLS::msg.Error()<<"Error in Beam_Base :"<<m_type<<std::endl
-			      <<"   Mismatch of energy and mass of beam particle : "
-			      <<m_beam<<" / "<<m_energy<<std::endl
-			      <<"   Will lead to termination of program."<<std::endl;
-	abort();
-      }
-      m_lab    = ATOOLS::Vec4D(m_energy,0.,0.,_dir*m_energy*sqrt(disc));
-      m_vecout = ATOOLS::Vec4D(m_energy,0.,0.,_dir*m_energy*sqrt(disc));
-    }
 
-    virtual ~Beam_Base() {};
+  public:
+
+    Beam_Base(std::string _type,const ATOOLS::Flavour _beam,
+	      const double _energy,const double _polarisation,
+	      const int _dir);
+
+    virtual ~Beam_Base();
+
     virtual Beam_Base * Copy()                                     = 0;
     virtual bool        CalculateWeight(const double,const double) = 0;
 
-    virtual ATOOLS::Flavour    Beam()         { return m_beam; }
-    virtual ATOOLS::Flavour    Bunch()        { return m_bunch; }
-    virtual ATOOLS::Flavour    Remnant()      { return m_beam; }
-    virtual ATOOLS::Vec4D      OutMomentum()  { return m_vecout; }
-    virtual ATOOLS::Vec4D      InMomentum()   { return m_lab; }
-    virtual double             Energy()       { return m_energy; }
-    virtual double             Polarisation() { return m_polarisation; }
-    virtual double             Weight(ATOOLS::Flavour fl = ATOOLS::Flavour(ATOOLS::kf::none)) 
-                                              { return m_weight; }
-    virtual bool               On()           { return 0; }
-    virtual bool               PolarisationOn() { return (m_polarisation!=0.); }
-    virtual std::string        Type()         { return m_type; }
-    virtual double             Exponent()     { return 0.; }
-    virtual double             Xmax()         { return 1.; }
-    virtual double             Peak()         { return 1.; }
+    virtual ATOOLS::Flavour Beam();
+    virtual ATOOLS::Flavour Bunch();
+    virtual ATOOLS::Flavour Remnant();
+
+    virtual ATOOLS::Vec4D OutMomentum();
+    virtual ATOOLS::Vec4D InMomentum();
+
+    virtual double Energy();
+    virtual double Polarisation();
+    virtual double Weight(ATOOLS::Flavour fl=ATOOLS::kf::none);
+    virtual double Exponent();
+    virtual double Xmax();
+    virtual double Peak();
+
+    virtual bool On();
+    virtual bool PolarisationOn();
+
+    virtual std::string Type();
+
   };
 
   /*!

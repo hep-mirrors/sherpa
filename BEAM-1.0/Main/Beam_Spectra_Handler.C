@@ -32,6 +32,8 @@ Beam_Spectra_Handler::Beam_Spectra_Handler(Data_Read * dataread) :
   }
   ATOOLS::rpa.gen.SetBeam1(p_BeamBase[0]->Beam());
   ATOOLS::rpa.gen.SetBeam2(p_BeamBase[1]->Beam());
+  ATOOLS::rpa.gen.SetPBeam(0,p_BeamBase[0]->InMomentum());
+  ATOOLS::rpa.gen.SetPBeam(1,p_BeamBase[1]->InMomentum());
 }
 
 Beam_Spectra_Handler::~Beam_Spectra_Handler() { 
