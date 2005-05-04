@@ -52,6 +52,7 @@ namespace ATOOLS {
       Model_Type::code    m_modelcode;
       MODEL::Model_Base * p_model;
 #endif
+      Vec4D m_pbeam[2];
       MyTiming m_timer;
       double m_timeout;
       bool m_batchmode;
@@ -68,6 +69,8 @@ namespace ATOOLS {
       inline void   SetNumberOfEvents(long N)             { m_nevents    = N; }
       inline double Ecms()                                { return m_ecms; }
       void   SetEcms(double _ecms);
+      inline Vec4D PBeam(short unsigned int i)            { return m_pbeam[i]; }
+      void   SetPBeam(short unsigned int i,Vec4D pbeam);
       inline double Ycut()                                { return m_ycut; }
       inline void   SetYcut(double _ycut)                 { m_ycut    = _ycut;}
       inline double DeltaR()                              { return m_delta_r; }

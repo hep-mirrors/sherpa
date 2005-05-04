@@ -6,6 +6,7 @@
 #include "Random.H"
 #include "Data_Reader.H"
 #include "Data_Collector.H"
+#include "MyStrStream.H"
 #include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
@@ -194,6 +195,10 @@ bool Run_Parameter::Gen::CheckTime(const double limit)
 void  Run_Parameter::Gen::SetEcms(double _ecms)     { 
   m_ecms    = _ecms;
   Data_Collector::AddData("ECMS",new Blob_Data<double>(m_ecms));
+}
+void  Run_Parameter::Gen::SetPBeam(short unsigned int i,Vec4D pbeam) { 
+  m_pbeam[i]=pbeam;
+  //  Data_Collector::AddData("PBEAM"+ToString(i),new Blob_Data<Vec4D>(m_pbeam[i]));
 }
 void  Run_Parameter::Gen::SetBeam1(const Flavour b) { 
   m_beam1  = b;   
