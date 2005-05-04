@@ -88,9 +88,9 @@ DEFINE_QUALIFIER_CLASS(Is_BHadron_Decay_Product);
 DEFINE_QUALIFIER_GETTER(Is_BHadron_Decay_Product,Is_BHadron_Decay_Product_Getter,
 			"DecayedBHadron","decay product of bhadron");
 
-DEFINE_QUALIFIER_CLASS(Is_BQuark);
-DEFINE_QUALIFIER_GETTER(Is_BQuark,Is_BQuark_Getter,
-			"BQuark","b quark");
+DEFINE_QUALIFIER_CLASS(Is_BQuark_Decay_Product);
+DEFINE_QUALIFIER_GETTER(Is_BQuark_Decay_Product,Is_BQuark_Decay_Product_Getter,
+			"DecayedBQuark","decayed b quark");
 
 DEFINE_QUALIFIER_CLASS(Is_Zboson);
 DEFINE_QUALIFIER_GETTER(Is_Zboson,Is_Zboson_Getter,
@@ -224,11 +224,13 @@ bool Is_BHadron_Decay_Product::operator() (const Particle * p) const {
   return operator()(b->InParticle(0));
 };
 
-bool Is_BQuark::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::b ) return 1;
-  return 0;
+bool Is_BQuark_Decay_Product::operator() (const Particle * p) const {
+  if (!p) return 0;
+  if (p->Flav().Kfcode()==kf::b) return 1;
+  Blob * b = p->ProductionBlob();
+  if (!b || b->Type()==btp::Beam || b->Type()==btp::Signal_Process) return 0;
+  return operator()(b->InParticle(0));
 };
-
 
 bool Is_Photon::operator() (const Particle * p) const {
   if ( p && p->Flav().IsPhoton() ) return 1;
