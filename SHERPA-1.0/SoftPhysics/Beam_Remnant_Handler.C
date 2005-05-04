@@ -126,6 +126,9 @@ FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
     for (Blob_List::iterator bit=bloblist->begin();
 	 bit!=bloblist->end();++bit) {
       if ((*bit)->Beam()==i && (*bit)->Type()==btp::IS_Shower) { 
+	ATOOLS::Particle *in=(*bit)->InParticle(0);
+	if (in->Flav().Strong() &&
+	    in->GetFlow(1)==0 && in->GetFlow(2)==0) continue;
 	if (p_beamblob[i]==NULL) {
 	    p_beamblob[i] = new Blob();
 	    p_beamblob[i]->SetType(btp::Beam);
@@ -153,7 +156,12 @@ FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
       }
     }
   }
-  if (p_beamblob[0]==NULL || p_beamblob[1]==NULL) return false;
+  if (p_beamblob[0]==NULL || p_beamblob[1]==NULL) {
+    if (bloblist->FourMomentumConservation()) {
+      p_mehandler->ResetNumberOfTrials();
+      return true;
+    }
+  }
   for (short unsigned int i=0;i<2;++i) 
     if (p_beamblob[i]) 
       if (!p_beampart[i]->FillBlob(p_beamblob[i],particlelist)) {
