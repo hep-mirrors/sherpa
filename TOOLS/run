@@ -34,6 +34,7 @@ for I in $* ; do
   elif [ "$I" = "-l" ]; then DLIBPATH=TRUE 
   elif [ "$I" = "-o" ]; then DSOPTIONS=TRUE 
   elif [ "$I" = "-B" ]; then DBATCH=TRUE 
+  elif [ "$I" = "-C" ]; then DSLOGFILE=TRUE 
   elif [ "$I" = "-O" ]; then DBOPTIONS=TRUE 
   elif [ "$I" = "-H" ]; then DHOST=TRUE
   elif [ "$I" = "-N" ]; then DNICE=TRUE
@@ -50,6 +51,7 @@ for I in $* ; do
     echo "         -l <libpath>   define library path <libpath>" && \
     echo "         -o <option>    define commandline option <option>" && \
     echo "         -B <system>    select batch system <system>" && \
+    echo "         -C <checkfile> write check file <checkfile>" && \
     echo "         -O <option>    define batch system option <option>" && \
     echo "         -H <host>      run job locally on <host>" && \
     echo "         -N <level>     set nice level for nohup" && \
@@ -66,6 +68,7 @@ for I in $* ; do
   elif [ "$DLIBPATH" = "TRUE" ]; then DLIBPATH="" && LIBPATH=$I
   elif [ "$DSOPTIONS" = "TRUE" ]; then DSOPTIONS="" && SOPTIONS=$SOPTIONS" "$I
   elif [ "$DBATCH" = "TRUE" ]; then DBATCH="" && BATCH=$I
+  elif [ "$DSLOGFILE" = "TRUE" ]; then DSLOGFILE="" && SLOGFILE=$I
   elif [ "$DBOPTIONS" = "TRUE" ]; then DBOPTIONS="" && BOPTIONS=$BOPTIONS" "$I
   elif [ "$DHOST" = "TRUE" ]; then DHOST="" && RHOST=$I
   elif [ "$DNICE" = "TRUE" ]; then DNICE="" && NICE=$I
@@ -206,6 +209,10 @@ elif [ "$RUN" = "TRUE" ] ; then
   else 
     echo "run: error: cannot submit job '"$BASENAME"_"$COUNTER"'"
   fi 
+fi
+if ! [ "$SLOGFILE" = "" ] ; then
+  echo "tail -1 $SETUPPATH/$LOGFILE" >> $SLOGFILE
+  chmod 755 $SLOGFILE
 fi
 
 # mode:shell-script
