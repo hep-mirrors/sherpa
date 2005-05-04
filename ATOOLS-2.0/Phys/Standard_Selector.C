@@ -235,6 +235,78 @@ void PT_Selector::SetRange(std::vector<Flavour> crit,double _min,
 
 /*--------------------------------------------------------------------
 
+  Z Selector
+
+  --------------------------------------------------------------------*/
+
+X_Selector::X_Selector(int nin,int nout,Flavour *fl) 
+{
+  m_name="X_Selector"; 
+  m_nin=nin; 
+  m_nout=nout; 
+  m_n=m_nin+m_nout;
+  m_fl=fl;
+  m_smax=sqr(rpa.gen.Ecms());
+  m_smin=0.0;
+  zmin = new double[m_nin];
+  zmax = new double[m_nin];
+  value = new double[m_nin];
+  for (int i=0;i<m_nin;i++) { 
+    zmin[i]=0.0; 
+    zmax[i]=1.0; 
+  }
+  m_sel_log = new Selector_Log(m_name);
+}
+
+X_Selector::~X_Selector() 
+{
+  delete [] zmin;
+  delete [] zmax;
+  delete [] value;
+  delete m_sel_log;
+}
+
+
+bool X_Selector::Trigger(const Vec4D * mom) 
+{
+  for (int i=0;i<m_nin;i++) {
+    if (i==0) value[i]=mom[i].PPlus()/rpa.gen.PBeam(i).PPlus();
+    else value[i]=mom[i].PMinus()/rpa.gen.PBeam(i).PMinus();
+    if (m_sel_log->Hit(value[i]<zmin[i] || 
+		       value[i]>zmax[i])) return false;
+  }
+  return true;
+}
+
+double *X_Selector::ActualValue() 
+{ 
+  return value; 
+}
+
+void X_Selector::BuildCuts(Cut_Data *cuts) 
+{
+  cuts->energymin[0]=Max(cuts->energymin[0],
+			 rpa.gen.PBeam(0).PPlus()*zmin[0]/2.0);
+  cuts->energymin[1]=Max(cuts->energymin[1],
+			 rpa.gen.PBeam(1).PMinus()*zmin[1]/2.0);
+}
+
+void X_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) 
+{
+}
+ 
+void X_Selector::SetRange(std::vector<Flavour> crit,double min,double max)
+{
+  for (int i=0;i<m_nin;i++) {
+    zmin[i]=Max(min,1.0e-37); 
+    zmax[i]=Min(max,1.0);
+  }
+  m_smin=Max(m_smin,min*rpa.gen.PBeam(0).PPlus()*rpa.gen.PBeam(1).PMinus());
+  m_smax=Min(m_smax,max*rpa.gen.PBeam(0).PPlus()*rpa.gen.PBeam(1).PMinus());
+}
+
+/*--------------------------------------------------------------------
+
   Rapidity Selector
 
   --------------------------------------------------------------------*/

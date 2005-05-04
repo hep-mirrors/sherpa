@@ -52,6 +52,18 @@ namespace ATOOLS {
     double * ActualValue();
   };
 
+  class X_Selector : public Selector_Base {
+    double * zmin, * zmax, * value;
+  public:
+    X_Selector(int,int,Flavour *);
+    ~X_Selector();
+    void     SetRange(std::vector<Flavour>,double,double);
+    bool     Trigger(const Vec4D * );
+    void     BuildCuts(Cut_Data *);
+    void     UpdateCuts(double,double,Cut_Data *);
+    double * ActualValue();
+  };
+
   class Rapidity_Selector : public Selector_Base {
     double * ymin, * ymax, * value;
   public:

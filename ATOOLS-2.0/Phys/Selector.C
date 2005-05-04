@@ -117,6 +117,15 @@ bool Selector_Data::ReadInData(std::string filename) {
       (dat.flavs).push_back(flav);
       data.push_back(dat);
     }
+    if (keyword == string("X")) {
+      dat.type = 24;
+      std::string dmin, dmax;
+      from>>dmin>>dmax;
+      Algebra_Interpreter inter;
+      dat.min=ToType<double>(inter.Interprete(dmin));
+      dat.max=ToType<double>(inter.Interprete(dmax));
+      data.push_back(dat);
+    }
     if (keyword == string("PT2")) {
       dat.type = 23;
       from>>crit1>>crit2>>dat.min>>dat.max;
