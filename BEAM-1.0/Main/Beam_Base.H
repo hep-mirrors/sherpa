@@ -11,11 +11,11 @@ namespace BEAM {
   protected:
 
     std::string        m_type;
-    ATOOLS::Flavour    m_beam,m_bunch;
-    ATOOLS::Vec4D      m_lab,m_vecout;
+    ATOOLS::Flavour    m_beam, m_bunch;
+    ATOOLS::Vec4D      m_lab, m_vecout;
     int                m_dir;
-    double             m_energy,m_polarisation;
-    double             m_x,m_Q2,m_weight;
+    double             m_energy, m_polarisation;
+    double             m_x, m_Q2, m_weight;
 
   public:
 
