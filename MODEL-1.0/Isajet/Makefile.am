@@ -30,7 +30,6 @@ INCLUDES = -I../../MODEL-1.0/Main \
            -I../../ATOOLS-2.0/Phys \
 	   -I../../ATOOLS-2.0/Math \
 	   -I../../ATOOLS-2.0/Org 
-FFLAGS = 
 noinst_HEADERS = Isajet_Fortran_Interface.H 
 AM_CXXFLAGS   =	$(MODELFLAGS)
 EXTRA_DIST    = $(CVSINCLUDE)
