@@ -68,16 +68,24 @@ Off_Shell_qqb_llb::Off_Shell_qqb_llb(const size_t nin,const size_t nout,
   m_naddout=2;
 }
 
+double Lambda(double &s,double &s1,double &s2)
+{
+  return sqrt(ATOOLS::sqr(s-s1-s2)-4.0*s1*s2);
+}
+
 double Off_Shell_qqb_llb::operator()(double s,double t,double u) 
 {
-  ATOOLS::Poincare boost(p_momenta[0]+p_momenta[1]);
-  ATOOLS::Vec4D p2(p_momenta[2]), p0(p_momenta[0]);
-  boost.Boost(p2);
-  boost.Boost(p0);
-  double costh = p2.CosTheta(p0);
+  double m2[4];
+  for (int i=0;i<4;++i) m2[i]=p_momenta[i].Abs2();
+  double costh = (t-m2[0]-m2[2]+(s+m2[0]-m2[1])*(s+m2[2]-m2[3])/(2.0*s))*
+    2.0*s/(Lambda(s,m2[0],m2[1])*Lambda(s,m2[2],m2[3]));
+  chi1  = kappa * s * (s-MZ2)/(ATOOLS::sqr(s-MZ2) + GZ2*MZ2);
   chi2  = ATOOLS::sqr(kappa * s)/(ATOOLS::sqr(s-MZ2) + GZ2*MZ2);
-  term1 = (1+ATOOLS::sqr(costh)) * ((ae*ae+ve*ve) * (af*af+vf*vf) * chi2);
-  term2 = (costh) * (8. * ae*ve*af*vf * chi2);
+  term1 = (1+ATOOLS::sqr(costh)) * (ATOOLS::sqr(qf*qe) + 
+				    2.*(qf*qe*vf*ve) * chi1 +
+				    (ae*ae+ve*ve) * (af*af+vf*vf) * chi2);
+  term2 = (costh) * (4. * qe*qf*ae*af * chi1 + 
+		     8. * ae*ve*af*vf * chi2);
   return ATOOLS::sqr(4.*M_PI*alpha) * colfac * (term1+term2); 
 }
 
