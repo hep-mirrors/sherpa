@@ -176,68 +176,13 @@ Complex Lpp(const ATOOLS::Vec4D *p)
     /kt[2]/kt[3];
 }
 
-#define USING__NLO_LEV
-#define TESTING__LO_LEV
-// #define USING__LEV
-// #define USING__Angular_Ordering_Check
-// #define USING__NLO_LEV_Rapidity_Check
-// #define USING__Turn
-// #define USING__LO_Offshell_ME
-
-#ifdef USING__LO_Offshell_ME
-#include "GO1.C"
-#endif
+// #define USING__NLO_LEV
 
 double Off_Shell_gg_gg::operator()(double s,double t,double u) 
 {
-#ifdef USING__NLO_LEV
-  // use nlo lipatov vertex
   ATOOLS::Vec4D *const p=p_momenta;
-#ifdef USING__LO_Offshell_ME
-  return ATOOLS::sqr(4.0*M_PI*m_alphas)*GO1(p)/2.0;
-#endif
-#ifdef USING__Angular_Ordering_Check
-  // check angular ordering of emitted gluons
-  const ATOOLS::Vec4D &g1=p_addmomenta[0];
-  const ATOOLS::Vec4D &g2=p_addmomenta[1];
-  double Xi1=p[2].PMinus()/p[2].PPlus(), Xi2=p[3].PPlus()/p[3].PMinus();
-  double xi1=g1.PMinus()/g1.PPlus(), xi2=g2.PPlus()/g2.PMinus();
-  if (xi1>=Xi1 || xi2>=Xi2) return 0.;
-#endif
-#ifdef USING__NLO_LEV_Rapidity_Check
-  const double m_cut=1.0;
-  double y1=p_addmomenta[0].Y();
-  double y2=p[2].Y();
-  double y3=p[3].Y();
-  double y4=p_addmomenta[1].Y();
-  //  std::cout<<y1<<" "<<y2<<" "<<y3<<" "<<y4<<std::endl;
-  if ((p[2]+p[3]).Y()>0.0) {
-    if (m_cut*y1<y2) return 0.0;
-    if (m_cut*y3<y4) return 0.0;
-  }
-  else {
-    if (y1<m_cut*y2) return 0.0;
-    if (y3<m_cut*y4) return 0.0;
-  }
-#endif
-#ifdef USING__Turn
-  double c1=(p_addmomenta[0]+p[2]+p[3]).PPlus()/p[4].PPlus();
-  double c2=(p_addmomenta[1]+p[2]+p[3]).PMinus()/p[5].PMinus();
-  bool turn=false;
-  if (c2>c1) {
-    ATOOLS::Vec4D plus(1.0,0.0,0.0,1.0);
-    ATOOLS::Vec4D minus(1.0,0.0,0.0,-1.0);
-    ATOOLS::Poincare rot(plus,minus);
-    for (short unsigned int i=0;i<6;++i) rot.Rotate(p[i]);
-    for (short unsigned int i=0;i<2;++i) rot.Rotate(p_addmomenta[i]);
-    std::swap<ATOOLS::Vec4D>(p[0],p[1]);
-    std::swap<ATOOLS::Vec4D>(p[2],p[3]);
-    std::swap<ATOOLS::Vec4D>(p[4],p[5]);
-    std::swap<ATOOLS::Vec4D>(p_addmomenta[0],p_addmomenta[1]);
-    turn=true;
-  }
-#endif
-#ifndef TESTING__LO_LEV
+#ifdef USING__NLO_LEV
+  // nlo lipatov vertex
   Complex app34=App(p);
   Complex apm34=Apm(p);
   std::swap<ATOOLS::Vec4D>(p[2],p[3]);
@@ -251,68 +196,6 @@ double Off_Shell_gg_gg::operator()(double s,double t,double u)
 #else
   Complex lpp34=Lpp(p);
   double M=2.0*(2.0*std::abs(lpp34*std::conj(lpp34)));
-#endif
-#ifdef USING__Turn
-  if (turn) {
-    ATOOLS::Vec4D plus(1.0,0.0,0.0,1.0);
-    ATOOLS::Vec4D minus(1.0,0.0,0.0,-1.0);
-    ATOOLS::Poincare rot(plus,minus);
-    for (short unsigned int i=0;i<6;++i) rot.Rotate(p[i]);
-    for (short unsigned int i=0;i<2;++i) rot.Rotate(p_addmomenta[i]);
-    std::swap<ATOOLS::Vec4D>(p[0],p[1]);
-    std::swap<ATOOLS::Vec4D>(p[2],p[3]);
-    std::swap<ATOOLS::Vec4D>(p[4],p[5]);
-    std::swap<ATOOLS::Vec4D>(p_addmomenta[0],p_addmomenta[1]);
-  }
-#endif
-  return ATOOLS::sqr(4.0*M_PI*m_alphas)*(NC*NC)/(NC*NC-1)/(2.0*4.0)*M;
-#else
-  const ATOOLS::Vec4D *p=p_momenta;
-  const ATOOLS::Vec4D &p1=p[4], &p2=p[5];
-  const ATOOLS::Vec4D &k1=p[0], k2=-1.*p[1], &p3=p[2], &p4=p[3];
-  ATOOLS::Vec4D k=k1-p3, l=k1-p4, m=k1+k2;
-  double S=2.*p1*p2, S2=2./S;
-  double a=p2*k*S2, b=p1*k*S2;
-  double a1=p2*k1*S2, b2=p1*k2*S2;
-  double kp12=k1.PPerp2(), kp22=k2.PPerp2(), kp2=k.PPerp2();
-#ifndef USING__LEV
-  // use equivalence of lipatov vertex and triple gluon vertex
-  // note: this correspondence is not gauge invariant
-  ATOOLS::Vec4D A1=
-    (k1.Perp()*k.Perp())*(k1+k)
-    +(k1.Perp()*(p3-k))*k.Perp()
-    -(k.Perp()*(k1+p3))*k1.Perp();
-  ATOOLS::Vec4D A2=
-    (k.Perp()*k2.Perp())*(k+k2)
-    +(k.Perp()*(p4-k2))*k2.Perp()
-    -(k2.Perp()*(k+p4))*k.Perp();
-  double M1=2*(A1*p3)*(A1*p4)/(p3*p4)-A1*A1;
-  double M2=2*(A2*p4)*(A2*p3)/(p4*p3)-A2*A2;
-  double M=(M1*M2)*ATOOLS::sqr(S2*S2/(kp2*a1*a*b*b2));
-  double Xi1=p3.PMinus()/p3.PPlus(), Xi2=p4.PPlus()/p4.PMinus();
-  double m_cut=Xi1*Xi2;
-  if (m_cut>=1.) return 0.0;
-#else
-  // use lipatov vertex 
-  ATOOLS::Vec4D L1=
-    (a1+2.0*kp12/(b*S))*p1
-    +(b+2.0*kp2/(a1*S))*p2
-    -(k1+k).Perp();
-  ATOOLS::Vec4D L2=
-    (a+2.0*kp2/(b2*S))*p1
-    +(b2+2.0*kp22/(a*S))*p2
-    -(k+k2).Perp();
-  double M1=2*L1*p3*L1*p4/(p4*p3)-L1*L1;
-  double M2=2*L2*p4*L2*p3/(p3*p4)-L2*L2;
-  double M=(M1*M2)/ATOOLS::sqr(kp2);
-  double Xi1=p3.PMinus()/p3.PPlus(), Xi2=p4.PPlus()/p4.PMinus();
-  double m_cut=Xi1*Xi2;
-  if (m_cut>=1.) return 0.0;
-  // check kperp similarity
-  if (kp12/kp22<m_cut || kp22/kp12<m_cut) return 0.0;
-  if (kp2/kp12<m_cut || kp12/kp2<m_cut) return 0.0;
-  if (kp2/kp22<m_cut || kp22/kp2<m_cut) return 0.0;
-#endif
 #endif
   return ATOOLS::sqr(4.0*M_PI*m_alphas)*(NC*NC)/(NC*NC-1)/(2.0*4.0)*M;
 }
