@@ -31,6 +31,7 @@ libObservables_la_SOURCES     =	\
 			    	Shower_Statistics.C \
 			    	One_Particle_Observables.C \
 			    	Two_Particle_Observables.C \
+                                Three_Particle_Observables.C \
 			    	Four_Particle_Observables.C \
 				Midpoint_Cone.C \
 			    	Calorimeter_Cone.C \
@@ -59,6 +60,7 @@ noinst_HEADERS        =	\
 			Shower_Statistics.H \
 			One_Particle_Observables.H \
 			Two_Particle_Observables.H \
+			Three_Particle_Observables.H \
 			Four_Particle_Observables.H \
 			Midpoint_Cone.H \
 			Calorimeter_Cone.H \
