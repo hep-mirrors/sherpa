@@ -151,10 +151,8 @@ Off_Shell_q1q2b_lnulb::Off_Shell_q1q2b_lnulb(const size_t nin,const size_t nout,
 
 double Off_Shell_q1q2b_lnulb::operator()(double s,double t,double u) 
 {
-  double sc=p_momenta[0]*p_momenta[2];
-  if (m_swaped) sc=p_momenta[1]*p_momenta[2];
-  return ATOOLS::sqr(M_PI*m_aqed/m_sin2tw)*16./3.*m_ckm2[0]*m_ckm2[1]*
-    ATOOLS::sqr(sc)/(ATOOLS::sqr(s-m_mw2)+m_mw2*m_ww2); 
+  return ATOOLS::sqr(M_PI*m_aqed/m_sin2tw)*1./3.*m_ckm2[0]*m_ckm2[1]*
+    ATOOLS::sqr(s)/(ATOOLS::sqr(s-m_mw2)+m_mw2*m_ww2); 
 }
 
 bool Off_Shell_q1q2b_lnulb::SetColours(double s,double t,double u) 
