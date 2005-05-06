@@ -211,6 +211,7 @@ elif [ "$RUN" = "TRUE" ] ; then
   fi 
 fi
 if ! [ "$SLOGFILE" = "" ] ; then
+  echo "echo \"===> $SETUPPATH <===\"" >> $SLOGFILE
   echo "tail -1 $SETUPPATH/$LOGFILE" >> $SLOGFILE
   chmod 755 $SLOGFILE
 fi
