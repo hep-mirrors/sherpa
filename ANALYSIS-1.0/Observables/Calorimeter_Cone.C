@@ -172,7 +172,7 @@ void Calorimeter_Cone::FillShape(int jetno,ATOOLS::Histogram * histo,
   if (jetno>(int)m_jets.size()) return;
 
   double dR, phi, et = m_jets[jetno-1].et;
-
+  
   Vec4D  mom         = m_jets[jetno-1].mom;
   int    number      = m_jets[jetno-1].orig;
   double y           = p_calorimeter->PseudoRapidityNAzimuthalAngle(mom,phi);
@@ -180,13 +180,31 @@ void Calorimeter_Cone::FillShape(int jetno,ATOOLS::Histogram * histo,
 
   int ipos=m_jets[jetno-1].i, jpos=m_jets[jetno-1].j;
 
+  /*
+    int itest = int((y-m_mineta)/m_delta_eta);
+    int jtest = int(phi/m_delta_phi);
+    
+    std::cout<<"Check this out : "<<ipos<<"/"<<jpos<<" -> "<<mom<<","<<et<<","
+    <<itest<<"/"<<jtest<<"("<<number<<")"<<std::endl;
+    p_calorimeter->Print();
+  */
+  
+  double cells = 0.;
 
-//   int itest = int((y-m_mineta)/m_delta_eta);
-//   int jtest = int(phi/m_delta_phi);
+  //determine number of entries
+  for (int i=ipos-m_dneta;i<=ipos+m_dneta;++i) {
+    if (i<0) i=0;
+    if (i>=m_neta) break; 
+    for (int jp=jpos-m_dnphi;jp<=jpos+m_dnphi;++jp) {
+      int j=jp;
+      if (j<0) j+=m_nphi;
+      else if (j>=m_nphi) j-=m_nphi;
+      if (p_calorimeter->Cell(i,j)==0.) continue; 
+      if (p_jetno[i][j]!=number) continue;
+      cells+=1.;
+    }
+  }
 
-  //std::cout<<"Check this out : "<<ipos<<"/"<<jpos<<" -> "<<mom<<","<<et<<","
-  //	   <<itest<<"/"<<jtest<<"("<<number<<")"<<std::endl;
-  //p_calorimeter->Print();
   for (int i=ipos-m_dneta;i<=ipos+m_dneta;++i) {
     if (i<0) i=0;
     if (i>=m_neta) break; 
@@ -199,7 +217,7 @@ void Calorimeter_Cone::FillShape(int jetno,ATOOLS::Histogram * histo,
       double dphi = sqr(Min(dabs(j*m_delta_phi-phi),dabs(j*m_delta_phi-phi-2.*M_PI)));
       double deta = sqr(m_mineta+m_delta_eta*i-y);
       dR    = sqrt(dphi+deta);
-      histo->Insert(dR,p_calorimeter->Cell(i,j)*weight/et,ncount);
+      histo->Insert(dR,p_calorimeter->Cell(i,j)*weight/et*cells,ncount);
     }
   }
 }
