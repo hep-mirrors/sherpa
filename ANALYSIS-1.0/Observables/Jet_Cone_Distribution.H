@@ -80,16 +80,19 @@ namespace ANALYSIS {
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   class Jet_Cone_Shape : public Primitive_Observable_Base {
+    double                           m_Etcut, m_R;
+    double                           m_etamin, m_etamax;
     int  m_jetmin, m_jetmax;
     Calorimeter_Cone               * p_cone;
     std::vector<ATOOLS::Histogram *> m_histos;
-    void Init();
     void Fill(int jetno,double weight=1.,int ncount=1);
     void Fill(double weight=1.,int ncount=1);
   public:
-    Jet_Cone_Shape(const int type,const double Rmin, const double Rmax,
+    Jet_Cone_Shape(const int type,const double Etcut, const double radius, 
+		   const double etamin, const double etamax,
+		   const double Rmin, const double Rmax,
 		   const int nbins, const int jetmin, const int jetmax, 
-		   Calorimeter_Cone *);
+		   Primitive_Analysis *);
     ~Jet_Cone_Shape();
     Primitive_Observable_Base * Copy() const ;
     void   Reset();

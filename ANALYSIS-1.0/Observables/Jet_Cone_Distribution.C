@@ -125,6 +125,7 @@ void Jet_Cone_Distribution::Fill(double weight, int ncount)
     m_cones[i]->ConstructJets();
     NofJets = m_cones[i]->NumberOfJets();
     m_histos[i]->Insert(NofJets,weight,ncount);
+    //insert zero in others
   }
 }
 
@@ -219,7 +220,11 @@ Jet_Cone_Dependence::~Jet_Cone_Dependence()
 
 Primitive_Observable_Base * Jet_Cone_Dependence::Copy() const 
 {
+  /*
   return new Jet_Cone_Dependence(m_type,m_Etcut,m_xmin,m_xmax,m_etamin,m_etamax,
+				 m_njetmin,m_njetmax,m_nbins,p_ana);
+  */
+  return new Jet_Cone_Dependence(m_type,m_Etcut,m_etamin,m_etamax,m_xmin,m_xmax,
 				 m_njetmin,m_njetmax,m_nbins,p_ana);
 }
 
@@ -261,7 +266,17 @@ void Jet_Cone_Dependence::Fill(double weight, int ncount)
   for (unsigned int i=0;i<m_cones.size();++i) {
     m_cones[i]->ConstructJets();
     NofJets = m_cones[i]->NumberOfJets();
-    if (NofJets<m_njetmax) m_histos[NofJets-m_njetmin]->Insert(m_cones[i]->Radius(),weight,ncount);
+    if (NofJets<m_njetmax) {
+      m_histos[NofJets-m_njetmin]->Insert(m_cones[i]->Radius(),weight,ncount);
+      for (size_t j=1; j<m_histos.size();++j) {
+	if (j!=(NofJets-m_njetmin)) m_histos[j]->Insert(0.,0.,ncount);
+      }
+    }
+    else {
+      for (size_t j=1; j<m_histos.size();++j) {
+	m_histos[j]->Insert(0.,0.,ncount);
+      }
+    }
   }
 }
 
@@ -279,54 +294,81 @@ DECLARE_GETTER(Jet_Cone_Shape_Getter,"JetConeShape",
 
 Primitive_Observable_Base * 
 Jet_Cone_Shape_Getter::operator()(const String_Matrix &parameters) const
-{									
+{			
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
-    if (parameters[0].size()<6) return NULL;
-    return new Jet_Cone_Shape(HistogramType(parameters[0][5]),
-				     ATOOLS::ToType<double>(parameters[0][0]),
-				     ATOOLS::ToType<double>(parameters[0][1]),
-				     ATOOLS::ToType<int>(parameters[0][2]),
-				     ATOOLS::ToType<int>(parameters[0][3]),
-				     ATOOLS::ToType<int>(parameters[0][4]),
-			             NULL);
+    if (parameters[0].size()<10) return NULL;
+    return new Jet_Cone_Shape(HistogramType(parameters[0][9]),
+			      ATOOLS::ToType<double>(parameters[0][0]),
+			      ATOOLS::ToType<double>(parameters[0][1]),
+			      ATOOLS::ToType<double>(parameters[0][2]),
+			      ATOOLS::ToType<double>(parameters[0][3]),
+			      ATOOLS::ToType<double>(parameters[0][4]),
+			      ATOOLS::ToType<double>(parameters[0][5]),
+			      ATOOLS::ToType<int>(parameters[0][6]),
+			      ATOOLS::ToType<int>(parameters[0][7]),
+			      ATOOLS::ToType<int>(parameters[0][8]),
+			      parameters());
   }
-  else if (parameters.size()<6) return NULL;
-  double rmin=0., rmax=10.;
+  else if (parameters.size()<10) return NULL;
+  double etcut=0.0,radius=0.7, etamin=-10., etamax=10., rmin=0., rmax=10.;
   size_t bins=100, nmin=1, nmax=10;
   std::string scale="Lin";
   for (size_t i=0;i<parameters.size();++i) {
     if (parameters[i].size()<2) continue;
-    if (parameters[i][0]=="RMIN")   rmin=ATOOLS::ToType<double>(parameters[i][1]);
+    if (parameters[i][0]=="ETCUT")   rmin=ATOOLS::ToType<double>(parameters[i][1]);
+    else if (parameters[i][0]=="RADIUS") radius=ATOOLS::ToType<double>(parameters[i][1]);
+    else if (parameters[i][0]=="ETAMIN") etamin=ATOOLS::ToType<double>(parameters[i][1]);
+    else if (parameters[i][0]=="ETAMAX") etamax=ATOOLS::ToType<double>(parameters[i][1]);
+    else if (parameters[i][0]=="RMIN")   rmin=ATOOLS::ToType<double>(parameters[i][1]);
     else if (parameters[i][0]=="RMAX")   rmax=ATOOLS::ToType<double>(parameters[i][1]);
     else if (parameters[i][0]=="SCALE")  scale=parameters[i][1];
     else if (parameters[i][0]=="NMIN")   nmin=ATOOLS::ToType<int>(parameters[i][1]);
     else if (parameters[i][0]=="NMAX")   nmax=ATOOLS::ToType<int>(parameters[i][1]);
     else if (parameters[i][0]=="NBINS")  bins=ATOOLS::ToType<int>(parameters[i][1]);
+    else if (parameters[i][0]=="SCALE")  scale=parameters[i][1];
   }
-  return new Jet_Cone_Shape(HistogramType(scale),rmin,rmax,nmin,nmax,bins,NULL);
+  return new Jet_Cone_Shape(HistogramType(scale),etcut,radius,etamin,etamax,rmin,rmax,nmin,nmax,bins,parameters());
 }									
 
 void Jet_Cone_Shape_Getter::PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"rmin rmax nmin nmax bins Lin|LinErr|Log|LogErr";
+  str<<"etcut radius etamin etamax rmin rmax nmin nmax bins Lin|LinErr|Log|LogErr";
 }
 
 
-Jet_Cone_Shape::Jet_Cone_Shape(const int linlog,const double Rmin, const double Rmax,
+Jet_Cone_Shape::Jet_Cone_Shape(const int linlog,const double Etcut, const double radius, 
+			       const double etamin, const double etamax,
+			       const double Rmin, const double Rmax,
 			       const int jetmin, const int jetmax, const int nbins, 
-			       Calorimeter_Cone * cone) :
+			       Primitive_Analysis * const ana) :
   Primitive_Observable_Base(linlog,Rmin,Rmax,nbins,NULL), 
-  m_jetmin(jetmin), m_jetmax(jetmax), p_cone(cone)
+  m_Etcut(Etcut), m_R(radius), m_etamin(etamin), m_etamax(etamax), m_jetmin(jetmin), m_jetmax(jetmax)
 {
-  m_name = std::string("ConeShape_");
-  for (int i=jetmin;i<jetmax;i++) {
+  p_ana=ana;
+  std::string etname;
+  MyStrStream s1;
+  s1<<m_Etcut;
+  s1>>etname;
+  std::string rname;
+  MyStrStream s2;
+  s2<<m_R;
+  s2>>rname;
+  m_name = std::string("ConeShape_")+etname+std::string("_")+rname;
+  
+  p_cone = new Calorimeter_Cone(Etcut,p_ana,m_R);
+ 
+  p_cone->SetEtaRangeForJets(m_etamin,m_etamax,1);
+   for (int i=jetmin;i<jetmax;i++) {
     m_histos.push_back(new ATOOLS::Histogram(linlog,Rmin,Rmax,nbins));
   }
 }
 
 Jet_Cone_Shape::~Jet_Cone_Shape()
 {
+  
+  delete p_cone;
+  
   int size = m_histos.size();
   for (int i=0;i<size;++i) {
     if (m_histos[size-i-1]) { delete m_histos[size-i-1]; m_histos.pop_back(); } 
@@ -335,7 +377,7 @@ Jet_Cone_Shape::~Jet_Cone_Shape()
 
 Primitive_Observable_Base * Jet_Cone_Shape::Copy() const 
 {
-  return new Jet_Cone_Shape(m_type,m_xmin,m_xmax,m_jetmin,m_jetmax,m_nbins,p_cone);
+  return new Jet_Cone_Shape(m_type,m_Etcut,m_R,m_etamin,m_etamax,m_xmin,m_xmax,m_jetmin,m_jetmax,m_nbins,p_ana);
 }
 
 void Jet_Cone_Shape::Reset()
@@ -357,13 +399,8 @@ void Jet_Cone_Shape::Output(const std::string & pname)
     s1<<i+m_jetmin;
     s1<<".dat"; 
     s1>>fname;
-    std::string rname,etname;
-    s2<<p_cone->Radius();
-    s2>>rname;
-    s3<<p_cone->Et_cut();
-    s3>>etname;
     m_histos[i]->Output((pname+std::string("/")+m_name+
-			 etname+std::string("_")+rname+std::string("_")+fname).c_str());
+			 std::string("_")+fname).c_str());
   }
   p_histo->Output((pname+std::string("/")+m_name+std::string(".dat")).c_str());
 }
@@ -377,19 +414,8 @@ void Jet_Cone_Shape::EndEvaluation(double scale)
   }
 }
 
-void Jet_Cone_Shape::Init()
-{
-  Final_Selector *selector=
-    dynamic_cast<Final_Selector *>(p_ana->GetObservable("Trigger"));
-  p_cone=dynamic_cast<Calorimeter_Cone *>(selector->GetJetAlgorithm());
-  if (!p_cone) {
-    msg.Out()<<"ERROR in Jet_Cone_Shape::Init() "<<std::endl;
-  }
-}
-
 void Jet_Cone_Shape::Fill(double weight,int ncount)
 {
-  if (!p_cone) Init();
   p_cone->ConstructJets();
   for (unsigned int i=0; i<m_histos.size();++i) Fill(i,weight,ncount);
 }
