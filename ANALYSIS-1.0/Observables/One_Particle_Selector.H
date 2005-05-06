@@ -10,13 +10,14 @@ namespace ANALYSIS {
 
     std::string     m_outlist;
     ATOOLS::Flavour m_flavour;
-
-    size_t m_item;
-
+    
+    size_t       m_item;
+    unsigned int m_mode;
+    
   public:
 
     One_PT_Selector(const ATOOLS::Flavour flav,
-		    const size_t item,const double min,const double max,
+		    const size_t item,const int mode,const double min,const double max,
 		    const std::string &inlist,const std::string &outlist);
     
     void Evaluate(const ATOOLS::Particle_List &particlelist,
@@ -35,11 +36,11 @@ namespace ANALYSIS {
     ATOOLS::Flavour m_flavour;
 
     size_t m_item;
-
+    unsigned int m_mode;
   public:
 
     One_ET_Selector(const ATOOLS::Flavour flav,
-		    const size_t item,const double min,const double max,
+		    const size_t item,const int mode,const double min,const double max,
 		    const std::string &inlist,const std::string &outlist);
     
     void Evaluate(const ATOOLS::Particle_List &particlelist,
@@ -58,11 +59,11 @@ namespace ANALYSIS {
     ATOOLS::Flavour m_flavour;
 
     size_t m_item;
-
+    unsigned int m_mode;
   public:
 
     One_Eta_Selector(const ATOOLS::Flavour flav,
-		    const size_t item,const double min,const double max,
+		    const size_t item,const int mode,const double min,const double max,
 		    const std::string &inlist,const std::string &outlist);
     
     void Evaluate(const ATOOLS::Particle_List &particlelist,
@@ -81,11 +82,11 @@ namespace ANALYSIS {
     ATOOLS::Flavour m_flavour;
 
     size_t m_item;
-
+    unsigned int m_mode;
   public:
 
     One_Y_Selector(const ATOOLS::Flavour flav,
-		    const size_t item,const double min,const double max,
+		    const size_t item,const int mode,const double min,const double max,
 		    const std::string &inlist,const std::string &outlist);
     
     void Evaluate(const ATOOLS::Particle_List &particlelist,
