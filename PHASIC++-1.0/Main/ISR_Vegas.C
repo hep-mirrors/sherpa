@@ -8,8 +8,10 @@
 
 using namespace PHASIC;
 
-ISR_Channel_Base::ISR_Channel_Base()
+ISR_Channel_Base::ISR_Channel_Base(ATOOLS::Integration_Info *info)
 {
+  m_kp1key.Assign("k_perp_1",4,1,info);
+  m_kp2key.Assign("k_perp_2",4,1,info);
 }
 
 ISR_Channel_Base::~ISR_Channel_Base()
@@ -44,6 +46,7 @@ void ISR_Channel_Base::EndOptimize()
 
 Threshold_Uniform_V::Threshold_Uniform_V(const double mass,const double sexp,const std::string cinfo,
 				     ATOOLS::Integration_Info *info):
+  ISR_Channel_Base(info),
   m_mass(mass), m_sexp(sexp)
 {
   name=std::string("Threshold_Uniform_")+ATOOLS::ToString((int)(100.*mass));
@@ -66,7 +69,7 @@ void Threshold_Uniform_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) rans[i]=ran[i];
   m_spkey[3]=CE.ThresholdMomenta(m_sexp,m_mass,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYUniform(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
+  m_ykey[2]=CE.DiceYUniform((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
 }
 
 void Threshold_Uniform_V::GenerateWeight(const int mode) 
@@ -79,7 +82,7 @@ void Threshold_Uniform_V::GenerateWeight(const int mode)
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
-      m_ykey<<CE.WeightYUniform(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),m_ygridkey[0],mode);
+      m_ykey<<CE.WeightYUniform((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),m_ygridkey[0],mode);
     }
   }
   rans[0] = m_sgridkey[0];
@@ -96,6 +99,7 @@ void Threshold_Uniform_V::AddPoint(double value)
 
 Threshold_Forward_V::Threshold_Forward_V(const double mass,const double sexp,const double yexponent,
 				     const std::string cinfo,ATOOLS::Integration_Info *info): 
+  ISR_Channel_Base(info),
   m_mass(mass), m_sexp(sexp), 
   m_yexponent(yexponent)
 {
@@ -119,7 +123,7 @@ void Threshold_Forward_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) rans[i]=ran[i];
   m_spkey[3]=CE.ThresholdMomenta(m_sexp,m_mass,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYForward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
+  m_ykey[2]=CE.DiceYForward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 			     m_ykey.Doubles(),rans[1],mode);
 }
 
@@ -133,7 +137,7 @@ void Threshold_Forward_V::GenerateWeight(int mode)
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
-      m_ykey<<CE.WeightYForward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
+      m_ykey<<CE.WeightYForward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 				m_ykey.Doubles(),m_ygridkey[0],mode);
     }
   }
@@ -151,6 +155,7 @@ void Threshold_Forward_V::AddPoint(double value)
 
 Threshold_Backward_V::Threshold_Backward_V(const double mass,const double sexp,const double yexponent,
 				       const std::string cinfo,ATOOLS::Integration_Info *info): 
+  ISR_Channel_Base(info),
   m_mass(mass), m_sexp(sexp), 
   m_yexponent(yexponent)
 {
@@ -174,7 +179,7 @@ void Threshold_Backward_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Ke
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) rans[i]=ran[i];
   m_spkey[3]=CE.ThresholdMomenta(m_sexp,m_mass,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYBackward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
+  m_ykey[2]=CE.DiceYBackward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 			      m_ykey.Doubles(),rans[1],mode);
 }
 
@@ -188,7 +193,7 @@ void Threshold_Backward_V::GenerateWeight(int mode)
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
-      m_ykey<<CE.WeightYBackward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
+      m_ykey<<CE.WeightYBackward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 				 m_ykey.Doubles(),m_ygridkey[0],mode);
      }
   }
@@ -206,6 +211,7 @@ void Threshold_Backward_V::AddPoint(double value)
 
 Threshold_Central_V::Threshold_Central_V(const double mass,const double sexp,const std::string cinfo,
 				     ATOOLS::Integration_Info *info,int mode):
+  ISR_Channel_Base(info),
   m_mass(mass), m_sexp(sexp)
 {
   name=std::string("Threshold_Central_")+ATOOLS::ToString((int)(100.*mass));
@@ -229,7 +235,7 @@ void Threshold_Central_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) rans[i]=ran[i];
   m_spkey[3]=CE.ThresholdMomenta(m_sexp,m_mass,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYCentral(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
+  m_ykey[2]=CE.DiceYCentral((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
 }
 
 void Threshold_Central_V::GenerateWeight(int mode)
@@ -242,7 +248,7 @@ void Threshold_Central_V::GenerateWeight(int mode)
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
-      m_ykey<<CE.WeightYCentral(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),m_ygridkey[0],mode);
+      m_ykey<<CE.WeightYCentral((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),m_ygridkey[0],mode);
     }
   }
   rans[0] = m_sgridkey[0];
@@ -260,6 +266,7 @@ void Threshold_Central_V::AddPoint(double value)
 
 Resonance_Uniform_V::Resonance_Uniform_V(const double mass,const double width,
 				     const std::string cinfo,ATOOLS::Integration_Info *info):
+  ISR_Channel_Base(info),
   m_mass(mass),
   m_width(width)
 {
@@ -283,7 +290,7 @@ void Resonance_Uniform_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) rans[i]=ran[i];
   m_spkey[3]=CE.MassivePropMomenta(m_mass,m_width,1,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYUniform(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
+  m_ykey[2]=CE.DiceYUniform((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
 }
 
 void Resonance_Uniform_V::GenerateWeight(const int mode) 
@@ -296,7 +303,7 @@ void Resonance_Uniform_V::GenerateWeight(const int mode)
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
-      m_ykey<<CE.WeightYUniform(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),m_ygridkey[0],mode);
+      m_ykey<<CE.WeightYUniform((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),m_ygridkey[0],mode);
     }
   }
   rans[0] = m_sgridkey[0];
@@ -314,6 +321,7 @@ void Resonance_Uniform_V::AddPoint(double value)
 
 Resonance_Forward_V::Resonance_Forward_V(const double mass,const double width,const double yexponent,
 				   const std::string cinfo,ATOOLS::Integration_Info *info): 
+  ISR_Channel_Base(info),
   m_mass(mass),
   m_width(width),
   m_yexponent(yexponent)
@@ -338,7 +346,7 @@ void Resonance_Forward_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) rans[i]=ran[i];
   m_spkey[3]=CE.MassivePropMomenta(m_mass,m_width,1,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYForward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
+  m_ykey[2]=CE.DiceYForward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 			     m_ykey.Doubles(),rans[1],mode);
 }
 
@@ -352,7 +360,7 @@ void Resonance_Forward_V::GenerateWeight(int mode)
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
-      m_ykey<<CE.WeightYForward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
+      m_ykey<<CE.WeightYForward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 				m_ykey.Doubles(),m_ygridkey[0],mode);
     }
   }
@@ -371,6 +379,7 @@ void Resonance_Forward_V::AddPoint(double value)
 
 Resonance_Backward_V::Resonance_Backward_V(const double mass,const double width,const double yexponent,
 				       const std::string cinfo,ATOOLS::Integration_Info *info): 
+  ISR_Channel_Base(info),
   m_mass(mass),
   m_width(width),
   m_yexponent(yexponent)
@@ -395,7 +404,7 @@ void Resonance_Backward_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Ke
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) rans[i]=ran[i];
   m_spkey[3]=CE.MassivePropMomenta(m_mass,m_width,1,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYBackward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
+  m_ykey[2]=CE.DiceYBackward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 			      m_ykey.Doubles(),rans[1],mode);
 }
 
@@ -409,7 +418,7 @@ void Resonance_Backward_V::GenerateWeight(int mode)
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
-      m_ykey<<CE.WeightYBackward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
+      m_ykey<<CE.WeightYBackward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 				 m_ykey.Doubles(),m_ygridkey[0],mode);
     }
   }
@@ -428,6 +437,7 @@ void Resonance_Backward_V::AddPoint(double value)
 
 Resonance_Central_V::Resonance_Central_V(const double mass,const double width,
 				     const std::string cinfo,ATOOLS::Integration_Info *info,int mode): 
+  ISR_Channel_Base(info),
   m_mass(mass),
   m_width(width)
 {
@@ -452,7 +462,7 @@ void Resonance_Central_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) rans[i]=ran[i];
   m_spkey[3]=CE.MassivePropMomenta(m_mass,m_width,1,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYCentral(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
+  m_ykey[2]=CE.DiceYCentral((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
 }
 
 void Resonance_Central_V::GenerateWeight(int mode)
@@ -465,7 +475,7 @@ void Resonance_Central_V::GenerateWeight(int mode)
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
-      m_ykey<<CE.WeightYCentral(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),m_ygridkey[0],mode);
+      m_ykey<<CE.WeightYCentral((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),m_ygridkey[0],mode);
     }
   }
   rans[0] = m_sgridkey[0];
@@ -483,6 +493,7 @@ void Resonance_Central_V::AddPoint(double value)
 
 Simple_Pole_Uniform_V::Simple_Pole_Uniform_V(const double exponent,const std::string cinfo,
 					 ATOOLS::Integration_Info *info):
+  ISR_Channel_Base(info),
   m_exponent(exponent)
 {
   name=std::string("Simple_Pole_Uniform_")+ATOOLS::ToString((int)(100.*exponent));
@@ -505,7 +516,7 @@ void Simple_Pole_Uniform_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_K
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) rans[i]=ran[i];
   m_spkey[3]=CE.MasslessPropMomenta(m_exponent,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYUniform(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
+  m_ykey[2]=CE.DiceYUniform((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
 }
 
 void Simple_Pole_Uniform_V::GenerateWeight(const int mode) 
@@ -518,7 +529,7 @@ void Simple_Pole_Uniform_V::GenerateWeight(const int mode)
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
-      m_ykey<<CE.WeightYUniform(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),m_ygridkey[0],mode);
+      m_ykey<<CE.WeightYUniform((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),m_ygridkey[0],mode);
     }
   }
   rans[0] = m_sgridkey[0];
@@ -536,6 +547,7 @@ void Simple_Pole_Uniform_V::AddPoint(double value)
 
 Simple_Pole_Forward_V::Simple_Pole_Forward_V(const double sexponent,const double yexponent,
 					 const std::string cinfo,ATOOLS::Integration_Info *info): 
+  ISR_Channel_Base(info),
   m_sexponent(sexponent), 
   m_yexponent(yexponent)
 {
@@ -559,7 +571,7 @@ void Simple_Pole_Forward_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_K
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) rans[i]=ran[i];
   m_spkey[3]=CE.MasslessPropMomenta(m_sexponent,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYForward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
+  m_ykey[2]=CE.DiceYForward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 			     m_ykey.Doubles(),rans[1],mode);
 }
 
@@ -573,7 +585,7 @@ void Simple_Pole_Forward_V::GenerateWeight(int mode)
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
-      m_ykey<<CE.WeightYForward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
+      m_ykey<<CE.WeightYForward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 				m_ykey.Doubles(),m_ygridkey[0],mode);
     }
   }
@@ -592,6 +604,7 @@ void Simple_Pole_Forward_V::AddPoint(double value)
 
 Simple_Pole_Backward_V::Simple_Pole_Backward_V(const double sexponent,const double yexponent,
 					   const std::string cinfo,ATOOLS::Integration_Info *info): 
+  ISR_Channel_Base(info),
   m_sexponent(sexponent), 
   m_yexponent(yexponent)
 {
@@ -615,7 +628,7 @@ void Simple_Pole_Backward_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) rans[i]=ran[i];
   m_spkey[3]=CE.MasslessPropMomenta(m_sexponent,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYBackward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
+  m_ykey[2]=CE.DiceYBackward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 			      m_ykey.Doubles(),rans[1],mode);
 }
 
@@ -629,7 +642,7 @@ void Simple_Pole_Backward_V::GenerateWeight(int mode)
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
-      m_ykey<<CE.WeightYBackward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
+      m_ykey<<CE.WeightYBackward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 				 m_ykey.Doubles(),m_ygridkey[0],mode);
     }
   }
@@ -648,6 +661,7 @@ void Simple_Pole_Backward_V::AddPoint(double value)
 
 Simple_Pole_Central_V::Simple_Pole_Central_V(const double exponent,const std::string cinfo,
 					 ATOOLS::Integration_Info *info,int mode):
+  ISR_Channel_Base(info),
   m_exponent(exponent)
 {
   name=std::string("Simple_Pole_Central_")+ATOOLS::ToString((int)(100.*exponent));
@@ -671,7 +685,7 @@ void Simple_Pole_Central_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_K
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) rans[i]=ran[i];
   m_spkey[3]=CE.MasslessPropMomenta(m_exponent,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYCentral(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
+  m_ykey[2]=CE.DiceYCentral((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
 }
 
 void Simple_Pole_Central_V::GenerateWeight(int mode)
@@ -684,7 +698,7 @@ void Simple_Pole_Central_V::GenerateWeight(int mode)
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
-      m_ykey<<CE.WeightYCentral(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),m_ygridkey[0],mode);
+      m_ykey<<CE.WeightYCentral((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),m_ygridkey[0],mode);
     }
   }
   rans[0] = m_sgridkey[0];
@@ -702,6 +716,7 @@ void Simple_Pole_Central_V::AddPoint(double value)
 
 Leading_Log_Uniform_V::Leading_Log_Uniform_V(const double beta,const double factor,
 					 const std::string cinfo,ATOOLS::Integration_Info *info):
+  ISR_Channel_Base(info),
   m_beta(beta),
   m_factor(factor)
 {
@@ -727,7 +742,7 @@ void Leading_Log_Uniform_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_K
   double pole=m_spkey[2];
   if (ATOOLS::IsEqual(m_spkey[2],m_spkey[1])) pole*=m_factor;
   m_spkey[3]=CE.LLPropMomenta(1.-m_beta,pole,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYUniform(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
+  m_ykey[2]=CE.DiceYUniform((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
 }
 
 void Leading_Log_Uniform_V::GenerateWeight(const int mode) 
@@ -744,7 +759,7 @@ void Leading_Log_Uniform_V::GenerateWeight(const int mode)
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
-      m_ykey<<CE.WeightYUniform(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),m_ygridkey[0],mode);
+      m_ykey<<CE.WeightYUniform((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),m_ygridkey[0],mode);
     }
   }
   rans[0] = m_sgridkey[0];
@@ -762,6 +777,7 @@ void Leading_Log_Uniform_V::AddPoint(double value)
 
 Leading_Log_Forward_V::Leading_Log_Forward_V(const double beta,const double factor,const double yexponent,
 					 const std::string cinfo,ATOOLS::Integration_Info *info): 
+  ISR_Channel_Base(info),
   m_beta(beta),
   m_factor(factor),
   m_yexponent(yexponent)
@@ -788,7 +804,7 @@ void Leading_Log_Forward_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_K
   double pole=m_spkey[2];
   if (ATOOLS::IsEqual(m_spkey[2],m_spkey[1])) pole*=m_factor;
   m_spkey[3]=CE.LLPropMomenta(1.-m_beta,pole,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYForward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
+  m_ykey[2]=CE.DiceYForward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 			     m_ykey.Doubles(),rans[1],mode);
 }
 
@@ -806,7 +822,7 @@ void Leading_Log_Forward_V::GenerateWeight(int mode)
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
-      m_ykey<<CE.WeightYForward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
+      m_ykey<<CE.WeightYForward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 				m_ykey.Doubles(),m_ygridkey[0],mode);
     }
   }
@@ -825,6 +841,7 @@ void Leading_Log_Forward_V::AddPoint(double value)
 
 Leading_Log_Backward_V::Leading_Log_Backward_V(const double beta,const double factor,const double yexponent,
 					   const std::string cinfo,ATOOLS::Integration_Info *info): 
+  ISR_Channel_Base(info),
   m_beta(beta),
   m_factor(factor),
   m_yexponent(yexponent)
@@ -851,7 +868,7 @@ void Leading_Log_Backward_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_
   double pole=m_spkey[2];
   if (ATOOLS::IsEqual(m_spkey[2],m_spkey[1])) pole*=m_factor;
   m_spkey[3]=CE.LLPropMomenta(1.-m_beta,pole,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYBackward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
+  m_ykey[2]=CE.DiceYBackward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 			      m_ykey.Doubles(),rans[1],mode);
 }
 
@@ -868,7 +885,7 @@ void Leading_Log_Backward_V::GenerateWeight(int mode)
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
-      m_ykey<<CE.WeightYBackward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
+      m_ykey<<CE.WeightYBackward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 				 m_ykey.Doubles(),m_ygridkey[0],mode);
     }
   }
@@ -887,6 +904,7 @@ void Leading_Log_Backward_V::AddPoint(double value)
 
 Leading_Log_Central_V::Leading_Log_Central_V(const double beta,const double factor,
 					 const std::string cinfo,ATOOLS::Integration_Info *info,int mode): 
+  ISR_Channel_Base(info),
   m_beta(beta),
   m_factor(factor)
 {
@@ -913,7 +931,7 @@ void Leading_Log_Central_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_K
   double pole=m_spkey[2];
   if (ATOOLS::IsEqual(m_spkey[2],m_spkey[1])) pole*=m_factor;
   m_spkey[3]=CE.LLPropMomenta(1.-m_beta,pole,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYCentral(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
+  m_ykey[2]=CE.DiceYCentral((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
 }
 
 void Leading_Log_Central_V::GenerateWeight(int mode)
@@ -930,7 +948,7 @@ void Leading_Log_Central_V::GenerateWeight(int mode)
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
-      m_ykey<<CE.WeightYCentral(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),m_ygridkey[0],mode);
+      m_ykey<<CE.WeightYCentral((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),m_ygridkey[0],mode);
     }
   }
   rans[0] = m_sgridkey[0];
@@ -948,6 +966,7 @@ void Leading_Log_Central_V::AddPoint(double value)
 
 LBS_Compton_Peak_Uniform_V::LBS_Compton_Peak_Uniform_V(const double exponent,const double pole,
 						   const std::string cinfo,ATOOLS::Integration_Info *info):
+  ISR_Channel_Base(info),
   m_exponent(exponent),
   m_pole(pole)
 {
@@ -980,7 +999,7 @@ void LBS_Compton_Peak_Uniform_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::I
   else {
     m_spkey[3]=help;
   }
-  m_ykey[2]=CE.DiceYUniform(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
+  m_ykey[2]=CE.DiceYUniform((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
 }
 
 void LBS_Compton_Peak_Uniform_V::GenerateWeight(const int mode) 
@@ -999,7 +1018,7 @@ void LBS_Compton_Peak_Uniform_V::GenerateWeight(const int mode)
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
-      m_ykey<<CE.WeightYUniform(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),m_ygridkey[0],mode);
+      m_ykey<<CE.WeightYUniform((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),m_ygridkey[0],mode);
     }
   }
   rans[0] = m_sgridkey[0];
@@ -1018,6 +1037,7 @@ void LBS_Compton_Peak_Uniform_V::AddPoint(double value)
 LBS_Compton_Peak_Forward_V::LBS_Compton_Peak_Forward_V(const double exponent,const double pole,
 						   const double yexponent,
 						   const std::string cinfo,ATOOLS::Integration_Info *info): 
+  ISR_Channel_Base(info),
   m_exponent(exponent),
   m_pole(pole),
   m_yexponent(yexponent)
@@ -1051,7 +1071,7 @@ void LBS_Compton_Peak_Forward_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::I
   else {
     m_spkey[3]=help;
   }
-  m_ykey[2]=CE.DiceYForward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
+  m_ykey[2]=CE.DiceYForward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 			     m_ykey.Doubles(),rans[1],mode);
 }
 
@@ -1071,7 +1091,7 @@ void LBS_Compton_Peak_Forward_V::GenerateWeight(int mode)
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
-      m_ykey<<CE.WeightYForward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
+      m_ykey<<CE.WeightYForward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 				m_ykey.Doubles(),m_ygridkey[0],mode);
     }
   }
@@ -1091,6 +1111,7 @@ void LBS_Compton_Peak_Forward_V::AddPoint(double value)
 LBS_Compton_Peak_Backward_V::LBS_Compton_Peak_Backward_V(const double exponent,const double pole,
 						     const double yexponent,
 						     const std::string cinfo,ATOOLS::Integration_Info *info): 
+  ISR_Channel_Base(info),
   m_exponent(exponent),
   m_pole(pole),
   m_yexponent(yexponent)
@@ -1124,7 +1145,7 @@ void LBS_Compton_Peak_Backward_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::
   else {
     m_spkey[3]=help;
   }
-  m_ykey[2]=CE.DiceYBackward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
+  m_ykey[2]=CE.DiceYBackward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 			      m_ykey.Doubles(),rans[1],mode);
 }
 
@@ -1144,7 +1165,7 @@ void LBS_Compton_Peak_Backward_V::GenerateWeight(int mode)
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
-      m_ykey<<CE.WeightYBackward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
+      m_ykey<<CE.WeightYBackward(m_yexponent,(m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 				 m_ykey.Doubles(),m_ygridkey[0],mode);
     }
   }
@@ -1163,6 +1184,7 @@ void LBS_Compton_Peak_Backward_V::AddPoint(double value)
 
 LBS_Compton_Peak_Central_V::LBS_Compton_Peak_Central_V(const double exponent,const double pole,
 						   const std::string cinfo,ATOOLS::Integration_Info *info,int mode): 
+  ISR_Channel_Base(info),
   m_exponent(exponent),
   m_pole(pole)
 {
@@ -1196,7 +1218,7 @@ void LBS_Compton_Peak_Central_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::I
   else {
     m_spkey[3]=help;
   }
-  m_ykey[2]=CE.DiceYCentral(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
+  m_ykey[2]=CE.DiceYCentral((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
 }
 
 void LBS_Compton_Peak_Central_V::GenerateWeight(int mode)
@@ -1215,7 +1237,7 @@ void LBS_Compton_Peak_Central_V::GenerateWeight(int mode)
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
-      m_ykey<<CE.WeightYCentral(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),m_ygridkey[0],mode);
+      m_ykey<<CE.WeightYCentral((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),m_ygridkey[0],mode);
     }
   }
   rans[0] = m_sgridkey[0];
@@ -1233,6 +1255,7 @@ void LBS_Compton_Peak_Central_V::AddPoint(double value)
 
 Flat_ISR_V::Flat_ISR_V(const double exponent,const std::string cinfo,
 		       ATOOLS::Integration_Info *info):
+  ISR_Channel_Base(info),
   m_exponent(exponent)
 {
   name=std::string("Simple_Pole_PDF_Uniform_")+ATOOLS::ToString((int)(100.*exponent));
@@ -1255,7 +1278,7 @@ void Flat_ISR_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) rans[i]=ran[i];
   m_spkey[3]=CE.FlatMomenta(m_exponent,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYUniform(m_spkey[3]/m_spkey[2],
+  m_ykey[2]=CE.DiceYUniform((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],
 			    m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
 }
 
@@ -1270,7 +1293,7 @@ void Flat_ISR_V::GenerateWeight(const int mode)
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
-      m_ykey<<CE.WeightYUniform(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
+      m_ykey<<CE.WeightYUniform((m_spkey[3]-(m_kp1key(0)+m_kp2key(0)).Abs2())/m_spkey[2],m_xkey.Doubles(),
 				m_ykey.Doubles(),m_ygridkey[0],mode);
     }
   }

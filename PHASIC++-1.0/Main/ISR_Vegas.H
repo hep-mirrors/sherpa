@@ -10,13 +10,14 @@ namespace PHASIC {
   protected:
 
     ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
+    ATOOLS::Info_Key m_kp1key, m_kp2key;
 
     Vegas *p_vegas;
 
   public:
 
     // constructor
-    ISR_Channel_Base();
+    ISR_Channel_Base(ATOOLS::Integration_Info *info);
 
     // destructor
     ~ISR_Channel_Base();

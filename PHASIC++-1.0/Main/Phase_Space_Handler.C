@@ -40,7 +40,7 @@
 #include "My_Root.H"
 #include "TH2D.h"
 #include "TH3D.h"
-static ATOOLS::Info_Key m_isrzkey[2], m_isrkpkey[2];
+static ATOOLS::Info_Key m_isrzkey[2];
 class PS_Histogram_2D: public TH2D {
 private:
   TH2D *p_ps;
@@ -194,9 +194,9 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
 #ifdef ANALYSE__Phase_Space_Handler
     m_isrzkey[0].Assign("z_1",3,0,p_info);
     m_isrzkey[1].Assign("z_2",3,0,p_info);
-    m_isrkpkey[0].Assign("k_perp_1",4,0,p_info);
-    m_isrkpkey[1].Assign("k_perp_2",4,0,p_info);
 #endif
+    m_isrkpkey[0].Assign("k_perp_1",4,1,p_info);
+    m_isrkpkey[1].Assign("k_perp_2",4,1,p_info);
     p_beamhandler->AssignKeys(p_info);
     p_isrhandler->AssignKeys(p_info);
   }
@@ -357,11 +357,6 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
     if (!(mode&psm::no_dice_isr)) {
       p_isrhandler->SetLimits();
       if (p_isrhandler->On()>0) { 
-	if (mode&psm::pi_isr) 
-	  p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey, 
-				       p_isrhandler->On(),p_pi);
-	else p_isrchannels->
-	  GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
 	if (p_isrhandler->KMROn()) {
 	  if (mode&psm::pi_kp) p_kpchannels->
 	    GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn(),p_pi);
@@ -371,7 +366,16 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
 	    GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn(),p_pi);
 	  else p_zchannels->
 	    GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn());
+	  p_isrhandler->
+	    SetSprimeMax(p_isrhandler->SprimeMax()+
+			 (m_isrkpkey[0](0)+m_isrkpkey[1](0)).Abs2());
+	  if (p_isrhandler->SprimeMax()<p_isrhandler->SprimeMin()) return 0.0;
 	}
+	if (mode&psm::pi_isr) 
+	  p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey, 
+				       p_isrhandler->On(),p_pi);
+	else p_isrchannels->
+	  GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
       }
     }
     if (!p_isrhandler->MakeISR(p_lab,m_nvec,
