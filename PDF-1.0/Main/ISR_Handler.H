@@ -28,7 +28,7 @@ namespace PDF {
     double m_fixed_smin, m_fixed_smax, m_weight, m_flux;
 
     ATOOLS::Poincare m_cmsboost, m_kmrboost, m_kmrrot;
-    ATOOLS::Vec4D    m_fixvecs[2], m_kp[2], p_cms[2], p_kmrlast[2];
+    ATOOLS::Vec4D    m_fixvecs[2], p_cms[2], p_kmrlast[2];
 
     std::vector<double> m_info_lab, m_info_cms;
     

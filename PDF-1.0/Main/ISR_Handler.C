@@ -164,12 +164,12 @@ void ISR_Handler::Init(double *splimits,double *kplimits)
 
 void ISR_Handler::SetSprimeMin(const double spmin)       
 { 
-  m_splimits[0] = Max(m_fixed_smin,spmin); 
+  m_spkey[0]=m_splimits[0]=Max(m_fixed_smin,spmin); 
 }
 
 void ISR_Handler::SetSprimeMax(const double spmax)       
 { 
-  m_splimits[1] = Min(m_fixed_smax,spmax); 
+  m_spkey[1]=m_splimits[1]=Min(m_fixed_smax,spmax); 
 }
 
 void ISR_Handler::SetFixedSprimeMin(const double spmin)  
@@ -255,8 +255,8 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
     m_kpkey[1][3]=m_kpkey[0][3]=0.;
     m_x[1]=m_x[0]=1.;
     m_zkey[1][2]=m_zkey[0][2]=1.;
-    m_flux=.25;
-    m_flux/=sqrt(sqr(p[0]*p[1])-p[0].Abs2()*p[1].Abs2());
+    m_flux=0.5/sqrt(sqr(m_spkey[3]-m_mass2[0]-m_mass2[1])
+		    -4.0*m_mass2[0]*m_mass2[1]);
     return true;
   }
   if (m_spkey[3]<m_splimits[0] || m_spkey[3]>m_splimits[1]) {
@@ -277,8 +277,8 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
   m_cmsboost.BoostBack(p_cms[1]);
   m_x[0]=p_cms[0].PPlus()/Q;
   m_x[1]=p_cms[1].PMinus()/Q;
-  m_flux=.25;
-  m_flux/=sqrt(sqr(p[0]*p[1])-p[0].Abs2()*p[1].Abs2());
+  m_flux=0.5/sqrt(sqr(m_spkey[3]-m_mass2[0]-m_mass2[1])
+		  -4.0*m_mass2[0]*m_mass2[1]);
   if (!m_kmrmode) {
 #ifndef NO_ANALYSIS__ISR_Handler
     m_info_lab[iic::E_1]=m_x[0];
@@ -286,17 +286,7 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
 #endif
     return true;
   }
-  double phi=0.0;
-  for (size_t i=0;i<2;++i) {
-    phi=2.0*M_PI*ran.Get();
-    double kp=sqrt(m_kpkey[i][3]); 
-#ifndef USING__No_Exact_Kinematics
-    if (m_kperpscheme==(int)kps::constant &&
-    	p_isrbase[i]->Collinear(m_kpkey[i][3])) m_zkey[i][2]=0.;
-#endif
-    m_kp[i]=Vec4D(0.0,cos(phi)*kp,sin(phi)*kp,0.0);
-  }
-  E=sqrt(m_spkey[3]-(m_kp[0]+m_kp[1]).Abs2());
+  E=sqrt(m_spkey[3]-(m_kpkey[0](0)+m_kpkey[1](0)).Abs2());
   double xi=exp(m_ykey[2]);
   double D1=E/Q*xi;
   double D2=E/Q/xi;
@@ -310,12 +300,16 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
   if (m_x[0]>m_zkey[0][2] || m_x[1]>m_zkey[1][2]) return false;
   if (b1>m_x[1] || b2>m_x[0]) return false;
   if (b1<0. || b2<0.) return false;
-  p[0]=Vec4D((m_x[0]-b1)*Q/2.,m_kp[0][1],m_kp[0][2],(m_x[0]+b1)*Q/2.);
-  p[1]=Vec4D((m_x[1]-b2)*Q/2.,m_kp[1][1],m_kp[1][2],-(m_x[1]+b2)*Q/2.);
+  p[0]=Vec4D((m_x[0]-b1)*Q/2.,m_kpkey[0](0)[1],
+	     m_kpkey[0](0)[2],(m_x[0]+b1)*Q/2.);
+  p[1]=Vec4D((m_x[1]-b2)*Q/2.,m_kpkey[1](0)[1],
+	     m_kpkey[1](0)[2],-(m_x[1]+b2)*Q/2.);
   double a1=m_zkey[0][2]==0.0?0.0:m_x[0]*(1./m_zkey[0][2]-1.);
-  p_kmrlast[0]=Vec4D((a1+b1)*Q/2.,-m_kp[0][1],-m_kp[0][2],(a1-b1)*Q/2.);
+  p_kmrlast[0]=Vec4D((a1+b1)*Q/2.,-m_kpkey[0](0)[1],
+		     -m_kpkey[0](0)[2],(a1-b1)*Q/2.);
   double a2=m_zkey[1][2]==0.0?0.0:m_x[1]*(1./m_zkey[1][2]-1.);
-  p_kmrlast[1]=Vec4D((a2+b2)*Q/2.,-m_kp[1][1],-m_kp[1][2],-(a2-b2)*Q/2.);
+  p_kmrlast[1]=Vec4D((a2+b2)*Q/2.,-m_kpkey[1](0)[1],
+		     -m_kpkey[1](0)[2],-(a2-b2)*Q/2.);
   double min=0.0;
   for (size_t i=2;i<nflavs;++i) min+=flavs[i].Mass();
   if ((p[0]+p[1]).Abs2()<min*min) return false;
@@ -337,7 +331,6 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
   else m_kmrrot=Poincare(Vec4D::ZVEC,p[0]);
   m_kmrrot.RotateBack(p[0]);
   m_kmrrot.RotateBack(p[1]);
-  xi*=xi;
 #ifndef NO_ANALYSIS__ISR_Handler
   m_info_cms[iic::E_1]=p[0][0];
   m_info_cms[iic::t_1]=p[0].Abs2();
@@ -347,8 +340,8 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
   m_info_cms[iic::Em_2]=p[1][0]/p[0].Mass();		
 #endif
   m_weight=(m_x[1]*m_x[0]-b2*b1)/(m_x[1]*m_x[0]);
-  m_flux=.25;
-  m_flux/=sqrt(sqr(p[0]*p[1])-p[0].Abs2()*p[1].Abs2());
+  m_flux=0.5/sqrt(sqr(m_spkey[3]-m_mass2[0]-m_mass2[1])
+		  -4.0*m_mass2[0]*m_mass2[1]);
   for (int i=0;i<2;++i) {
     p[n-2+i]=m_fixvecs[i];
     m_kmrboost.Boost(p[n-2+i]);
@@ -368,8 +361,8 @@ void ISR_Handler::AssignKeys(ATOOLS::Integration_Info *const info)
   m_xkey.Assign("x isr",5,0,info);
   m_zkey[0].Assign("z_1",3,0,info);
   m_zkey[1].Assign("z_2",3,0,info);
-  m_kpkey[0].Assign("k_perp_1",4,0,info);
-  m_kpkey[1].Assign("k_perp_2",4,0,info);
+  m_kpkey[0].Assign("k_perp_1",4,1,info);
+  m_kpkey[1].Assign("k_perp_2",4,1,info);
   m_mu2key[0].Assign("mu2_1",1,0,info);
   m_mu2key[1].Assign("mu2_2",1,0,info);
 }
@@ -389,6 +382,7 @@ void ISR_Handler::SetLimits()
       if (i<2) m_zkey[j][i]=m_zlimits[i];
     }
   }
+  m_kpkey[1](0)=m_kpkey[0](0)=Vec4D();
   m_xkey[0]=m_mass2[0]==0.0?-0.5*std::numeric_limits<double>::max():
     0.5*log(m_mass2[0]*4.0/sqr(rpa.gen.Ecms()));
   m_xkey[2]=m_mass2[1]==0.0?-0.5*std::numeric_limits<double>::max():
@@ -418,14 +412,25 @@ bool ISR_Handler::CalculateWeight(const double scale)
       ATOOLS::Flavour fld(ATOOLS::kf::d);
       ATOOLS::Flavour fls(ATOOLS::kf::s);
       ATOOLS::Flavour flg(ATOOLS::kf::gluon);
-      p_isrbase[0]->CalculateWeight(0.1,0.3,100.,8100.);
-      p_isrbase[0]->PDF()->GetXPDF(flu);
-      p_isrbase[0]->PDF()->GetXPDF(fld);
-      p_isrbase[0]->PDF()->GetXPDF(fls);
-      p_isrbase[0]->PDF()->GetXPDF(flu.Bar());
-      p_isrbase[0]->PDF()->GetXPDF(fld.Bar());
-      p_isrbase[0]->PDF()->GetXPDF(fls.Bar());
-      p_isrbase[0]->PDF()->GetXPDF(flg);
+      double x=0.01, z=0.9999, kp2=4000.0, mu2=8100.0;
+      p_isrbase[0]->CalculateWeight(x,z,kp2,mu2);
+      PRINT_INFO("x = "<<x<<", z = "<<z<<", kt2 = "<<kp2<<", mu2 = "<<mu2);
+      PRINT_INFO("f_u  = "<<(p_isrbase[0]->PDF()->GetXPDF(flu)*kp2));
+      PRINT_INFO("f_d  = "<<(p_isrbase[0]->PDF()->GetXPDF(fld)*kp2));
+      PRINT_INFO("f_s  = "<<(p_isrbase[0]->PDF()->GetXPDF(fls)*kp2));
+      PRINT_INFO("f_ub = "<<(p_isrbase[0]->PDF()->GetXPDF(flu.Bar())*kp2));
+      PRINT_INFO("f_db = "<<(p_isrbase[0]->PDF()->GetXPDF(fld.Bar())*kp2));
+      PRINT_INFO("f_sb = "<<(p_isrbase[0]->PDF()->GetXPDF(fls.Bar())*kp2));
+      PRINT_INFO("f_g  = "<<(p_isrbase[0]->PDF()->GetXPDF(flg)*kp2));
+      PDF_Base *pdf=p_isrbase[0]->PDF()->GetBasicPDF();
+      pdf->Calculate(x,0.0,0.0,mu2);
+      PRINT_INFO("xu  = "<<pdf->GetXPDF(flu));
+      PRINT_INFO("xd  = "<<pdf->GetXPDF(fld));
+      PRINT_INFO("xs  = "<<pdf->GetXPDF(fls));
+      PRINT_INFO("xub = "<<pdf->GetXPDF(flu.Bar()));
+      PRINT_INFO("xdb = "<<pdf->GetXPDF(fld.Bar()));
+      PRINT_INFO("xsb = "<<pdf->GetXPDF(fls.Bar()));
+      PRINT_INFO("xg  = "<<pdf->GetXPDF(flg));
       abort();
     }
 #endif
