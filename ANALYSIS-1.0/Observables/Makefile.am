@@ -20,6 +20,7 @@ endif
 lib_LTLIBRARIES       =	libObservables.la
 libObservables_la_SOURCES     =	\
 				HT.C \
+				PSM_Observables.C \
 				Multiplicity.C \
 			    	Statistics_Observable.C \
 				One_Particle_Selector.C \
@@ -49,6 +50,7 @@ libObservables_la_SOURCES     =	\
 				Blob_Selector.C 
 noinst_HEADERS        =	\
 			HT.H \
+			PSM_Observables.H \
 			Multiplicity.H \
 			Statistics_Observable.H \
 			One_Particle_Selector.H \
