@@ -16,7 +16,7 @@ Decay_Table_Reader::Decay_Table_Reader(string path,string file)
 	       <<"   No file specified, will return and hope for the best."<<endl;
     return;
   }
-  std::cout<<"New Decay_Table_Reader("<<path+file<<")"<<std::endl;
+  msg_Info()<<"New Decay_Table_Reader("<<path+file<<")"<<endl;
   Data_Reader reader = Data_Reader(string("|"),string(";"),string("!"));
   reader.AddComment("#");
   reader.AddComment("//");
@@ -28,48 +28,49 @@ Decay_Table_Reader::Decay_Table_Reader(string path,string file)
 
 int Decay_Table_Reader::FillDecayTable(Decay_Table * dt)
 {
-  int              nchannels = 0;
-  vector<int>      helpkfc;
-  double           BR;
-  Flavour          flav;
-  Decay_Channel  * dc;
+  int              nchannels = 0;									// number of channels
+  vector<int>      helpkfc;											// aux. kf-code used to extract flavours
+  double           BR;												// branching ratio
+  Flavour          flav;											// involved flavors
+  Decay_Channel  * dc;												// pointer on decay channel
 
-  for (int i=0;i<m_helpsvv.size();i++) {
-    if (ExtractFlavours(helpkfc,m_helpsvv[i][0])) {
-      BR = double(atof(m_helpsvv[i][1].c_str()));
-      if (BR>1.e-6) {
-	dc = new Decay_Channel(dt->Flav());
-	for (int j=0;j<helpkfc.size();++j) {
-	  flav = Flavour(kf::code(abs(helpkfc[j])));
-	  if (helpkfc[j]<0) flav = flav.Bar();
-	  dc->AddDecayProduct(flav);
-	}
-	dc->SetWidth(BR*dt->Flav().Width());
-	dc->SetProcessName();
-	if (m_helpsvv[i].size()>2) dc->SetMEType(m_helpsvv[i][2]);
-	if (m_helpsvv[i].size()>3) dc->SetPSFile(m_helpsvv[i][3]);
-	dt->AddDecayChannel(dc);
-	nchannels++;
-      }
+  for (int i=0;i<m_helpsvv.size();i++) {							// for each element
+    if (ExtractFlavours(helpkfc,m_helpsvv[i][0])) {					//   extract flavours
+      BR = double(atof(m_helpsvv[i][1].c_str()));					//   get branching ratio
+      if (BR>1.e-6) {												
+		dc = new Decay_Channel(dt->Flav());							//   create new decay channel
+		for (int j=0;j<helpkfc.size();++j) {
+		  flav = Flavour(kf::code(abs(helpkfc[j])));
+		  if (helpkfc[j]<0) flav = flav.Bar();
+		  dc->AddDecayProduct(flav);				
+		}
+		dc->SetWidth(BR*dt->Flav().Width());						//   set decay width
+		dc->SetProcessName();										//   set process name
+		if (m_helpsvv[i].size()>2) dc->SetMEType(m_helpsvv[i][2]);
+		if (m_helpsvv[i].size()>3) dc->SetPSFile(m_helpsvv[i][3]);
+		dt->AddDecayChannel(dc);									//   add to ex. decay channels
+		nchannels++;								
+      } // if BR>...
     }
-  }
-  return nchannels;
+  } // for
+  return nchannels;												// return number of channels
 }
 
-void Decay_Table_Reader::FillInMatrixElementsAndPS(Decay_Table * dt)
+void Decay_Table_Reader::FillInMatrixElementsAndPS( Decay_Table * dt, Channel_Map * chmap )
 {
-  Decay_Channel        * dc;
-  Hadron_Decay_Channel * hdc;
-  for (int i=0;i<dt->NumberOfDecayChannels();i++) {
-    dc  = dt->GetDecayChannel(i);
-    hdc = new Hadron_Decay_Channel(dc);
-    hdc->InitialisePhaseSpace(m_helpsvv[i]);
+  Decay_Channel        * dc;								// pointer on decay channel
+  Hadron_Decay_Channel * hdc;								// pointer on hadronic decay channel
+  for (int i=0;i<dt->NumberOfDecayChannels();i++) {			// for each channel in decay table
+    dc  = dt->GetDecayChannel(i);							//   get channel
+    hdc = new Hadron_Decay_Channel(dc);						//   create new hadronic channel
+    hdc->InitialisePhaseSpace(m_helpsvv[i]);				//   initialise phase space
+	(*chmap)[ dc ] = hdc;									//   map channel to hadronic channel
   }
 }
 
 bool Decay_Table_Reader::ExtractFlavours(vector<int> & helpkfc,string help)
 {
-  helpkfc.clear();
+  helpkfc.clear();													
   size_t pos = help.find("{");
   bool             hit;
   if (pos!=string::npos) help = help.substr(pos+1);

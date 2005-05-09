@@ -13,19 +13,20 @@ Dalitz::Dalitz(const ATOOLS::Flavour * fl,const ATOOLS::Flavour prop,
 	       const int p1, const int p2) :
   Single_Channel(1,3,fl),
   m_decvec(Vec4D(fl[0].Mass(),0.,0.,0.)),
-  m_pmass(prop.Mass()), m_pwidth(prop.Width()), m_p1(p1), m_p2(p2), m_mode(0),
+  m_pmass(prop.Mass()), m_pwidth(prop.Width()), 
+  m_p1(p1), m_p2(p2), m_mode(0),
   m_sexp(.5)
 {
   name = string("Dalitz_")+prop.Name()+string("_")+ToString(m_p1)+ToString(m_p2);
-
+											// generate channel name
   for (short int i=0;i<nin+nout;i++) ms[i] = ATOOLS::sqr(fl[i].PSMass());
-
+											// set masses^2
   msg.Out()<<"Init Dalitz("<<name<<" : "
 	   <<fl[0]<<"->"<<fl[1]<<" "<<fl[2]<<" "<<fl[3]<<", "
 	   <<ms[0]<<"->"<<ms[1]<<" "<<ms[2]<<" "<<ms[3]<<")"<<endl;
   for (int i=1;i<4;i++) {
     if (m_p1!=i && m_p2!=i) { m_dir=i; break; }
-  }
+  }				// get the one with no resonance
   m_smin = ATOOLS::sqr(fl[m_p1].PSMass()+fl[m_p2].PSMass());
   m_smax = ATOOLS::sqr(fl[0].Mass()-fl[m_dir].PSMass());
   if (sqrt(m_smin)<m_pmass*10.) m_mode = 1;

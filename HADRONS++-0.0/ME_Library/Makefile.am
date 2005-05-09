@@ -8,13 +8,19 @@ libHadronsMEs_la_SOURCES = \
 		HD_ME_Base.C \
 		HD_ME_Selector.C \
 		Three_Body_MEs.C \
-		Two_Body_MEs.C 
+		Two_Body_MEs.C \
+		Tau_Decay_MEs.C  \
+		Traces.C \
+		XYZFuncs.C
 
 noinst_HEADERS = \
 		HD_ME_Base.H \
 		HD_ME_Selector.H \
 		Three_Body_MEs.H \
-		Two_Body_MEs.H 
+		Two_Body_MEs.H  \
+		Tau_Decay_MEs.H \
+		Traces.H \
+		XYZFuncs.H
 
 INCLUDES = \
 	-I../../HADRONS++-0.0/PS_Library \

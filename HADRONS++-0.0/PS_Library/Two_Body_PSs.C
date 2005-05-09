@@ -13,7 +13,7 @@ Iso2Channel::Iso2Channel(const ATOOLS::Flavour * fl) :
   m_decvec(Vec4D(fl[0].Mass(),0.,0.,0.))
 {
   for (short int i=0;i<nin+nout;i++) ms[i] = ATOOLS::sqr(fl[i].Mass());
-
+														// get masses^2
   msg.Out()<<"Init Iso2Channel("
 	   <<fl[0]<<"->"<<fl[1]<<" "<<fl[2]<<", "
 	   <<ms[0]<<"->"<<ms[1]<<" "<<ms[2]<<")"<<endl;
@@ -44,3 +44,4 @@ void Iso2Channel::GenerateWeight(ATOOLS::Vec4D * p)
 {
   weight = 1. / ( CE.Isotropic2Weight(p[1],p[2]) * pow(2.*M_PI,2.*3.-4.) );
 }
+

@@ -35,4 +35,3 @@ Isotropic::Isotropic(int _nout,Flavour * _flavs,string _met) :
   }
 }
 
-
