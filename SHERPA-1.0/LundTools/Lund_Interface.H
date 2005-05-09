@@ -6,6 +6,7 @@
 #include "Blob_List.H"
 #include "ISR_Handler.H"
 #include <list>
+#include <map>
 
 namespace SHERPA {
 
@@ -31,6 +32,8 @@ namespace SHERPA {
 
     static bool s_exportas, s_exportpdf;
 
+	std::map<ATOOLS::Particle *,int> m_secondarymap;
+	
     void NextFile(const bool newfile);
 
     // preparing and doing the fragmentation
@@ -42,9 +45,12 @@ namespace SHERPA {
     // tools for extracting hadrons
     void AddPartonToString(ATOOLS::Particle *particle,int &nhep);
     void FillPrimaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
-				  ATOOLS::Particle_List *pl=NULL);
+								  ATOOLS::Particle_List *pl=NULL);
+    void FillPrimaryTauInBlob(int,ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
+							  ATOOLS::Particle_List *pl=NULL);
     void FillSecondaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
-				    int daughter1,int daughter2,ATOOLS::Particle_List *pl=NULL);
+									int daughter1,int daughter2,
+									ATOOLS::Particle_List *pl=NULL);
 
   public:
 
@@ -52,6 +58,12 @@ namespace SHERPA {
     ~Lund_Interface();
 
     bool        Hadronize(ATOOLS::Blob_List *bloblist,ATOOLS::Particle_List *pl=NULL);
+	bool        FillDecay(ATOOLS::Particle * part,
+						  ATOOLS::Blob_List *bloblist,ATOOLS::Particle_List *pl=NULL);
+	bool        FindDecay( ATOOLS::Particle * part ); 
+	ATOOLS::FlavourSet PerformDecay( ATOOLS::Particle * part, 
+		std::vector<ATOOLS::Vec4D> &,
+		std::vector<ATOOLS::Vec4D> & ); 
     static void Error(const int error);
     bool        OneEvent(ATOOLS::Blob_List *const bloblist,double &weight);
 
@@ -62,6 +74,8 @@ namespace SHERPA {
     inline static bool ExportAS()  { return s_exportas;  }
     inline static bool ExportPDF() { return s_exportpdf; }
 
+	void SwitchOfDecays(ATOOLS::kf::code);
+	void LeaveOpenOnlyDC( int idc ); 
   };// end of class Lund_Interface
 
 }// end of namespace SHERPA
