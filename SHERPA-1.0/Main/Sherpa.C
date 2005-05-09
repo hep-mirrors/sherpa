@@ -10,6 +10,7 @@
 #include "Multiple_Interactions.H"
 #include "Jet_Evolution.H"
 #include "Hadronization.H"
+#include "Hadron_Decays.H"
 #include "MC_Interface.H"
 #include "Message.H"
 #include "Scaling.H"
@@ -108,13 +109,14 @@ bool Sherpa::InitializeTheEventHandler()
     break;
   default:
     p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler(sme),
-						       p_inithandler->GetHardDecayHandler()));
+													   p_inithandler->GetHardDecayHandler()));
     p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
     p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandlers(),
-						    p_inithandler->GetShowerHandler()));
+													p_inithandler->GetShowerHandler()));
     p_eventhandler->AddEventPhase(new Multiple_Interactions(p_inithandler->GetMIHandler()));
     p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetBeamRemnantHandler(),
-						    p_inithandler->GetFragmentationHandler()));
+													p_inithandler->GetFragmentationHandler()));
+    p_eventhandler->AddEventPhase(new Hadron_Decays(p_inithandler->GetHadronDecayHandlers()));
     break;
   }
   ANALYSIS::Analysis_Handler * ana = p_inithandler->GetSampleAnalysis();
@@ -131,7 +133,7 @@ bool Sherpa::GenerateOneEvent()
   for (int i=0;i<m_trials;i++) {
     if (p_eventhandler->GenerateEvent(p_inithandler->Mode())) {
       if (p_iohandler->OutputOn()) {
-	p_iohandler->OutputToFormat(p_eventhandler->GetBlobs());
+		p_iohandler->OutputToFormat(p_eventhandler->GetBlobs());
       }
       return 1;
     }
