@@ -1,0 +1,13 @@
+Channels {
+    Isotropic 1;
+}
+Parameters {
+  a = 1.;                   ! aV - bA coupling of tau
+  b = 1.;
+  ME_MODEL         = XYZ;	! Traces, XYZ, SimpleTraces
+  RUNNING_WIDTH    = 1;     ! 0 = Off, 1 = On; rho-resonance
+  FORM_FACTOR      = 2;     ! 1 = Breit-Wigner, 2 = extended; rho-resonance
+}
+Result {
+   5.42727e-13 1.45614e-16 5.53977e-12;
+}

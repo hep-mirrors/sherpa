@@ -1,0 +1,11 @@
+Channels {
+    Iso2 1;
+}
+Parameters {
+  a = 1.;                   ! aV - bA coupling of tau
+  b = 1.;
+  ME_MODEL         = XYZ;	! Traces, XYZ, SimpleTraces
+}
+Result {
+   1.60485e-14 -2.67853e-17 1.60485e-14;
+}

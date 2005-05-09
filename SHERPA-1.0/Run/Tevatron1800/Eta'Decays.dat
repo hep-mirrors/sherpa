@@ -1,0 +1,7 @@
+{22,22}           | 0.0212 | P_2Gamma       | Tevatron1800/Eta'_2Gamma.dat;
+{13,-13,22}       | 0.0001 | P_FFGamma      | Tevatron1800/Eta'_GammaMu+Mu-.dat;
+{111,111,111}     | 0.0016 | P_3P_Dalitz    | Tevatron1800/Eta'_3Pi0.dat;
+{111,111,221}     | 0.209  | P_3P_Dalitz    | Tevatron1800/Eta'_2Pi0Eta.dat;
+{211,-211,221}    | 0.443  | P_3P_Dalitz    | Tevatron1800/Eta'_2PiEta.dat;
+{211,-211,22}     | 0.295  | P_(V)2PGamma   | Tevatron1800/Eta'_2PiGamma.dat;
+{223,22}          | 0.0303 | P_VGamma       | Tevatron1800/Eta'_OmegaGamma.dat;

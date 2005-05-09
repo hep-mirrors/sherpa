@@ -1,0 +1,13 @@
+Channels {
+    Isotropic 1;
+}
+Parameters {
+  a = 1.;                   ! aV - bA coupling of tau
+  b = 1.;
+  a2 = 1.;                  ! aV - bA coupling of muon
+  b2 = 1.;
+  ME_MODEL         = XYZ;	! Traces, XYZ, SimpleTraces
+}
+Result {
+   4.04786e-13 7.17273e-18 6.07284e-13;
+}
