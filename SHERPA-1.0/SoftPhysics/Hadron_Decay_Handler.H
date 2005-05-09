@@ -12,33 +12,36 @@
 #include "Blob_List.H"
 #include "Blob.H"
 
-namespace HADRONS { class Hadron_Decays; }
+namespace HADRONS { class Hadrons; }
 
 namespace SHERPA {
   class Hadron_Decay_Handler {
   protected :
-    std::string              m_dir,m_file,m_decmodel;
+    std::string              m_decmodel;
     int                      m_mode;
     Lund_Interface         * p_lund; 
-#ifdef USING__Hadrons
-    HADRONS::Hadron_Decays * p_hadrons;
-#endif
+    HADRONS::Hadrons       * p_hadrons;
 
-    bool ReconstructLundHadronDecays();
+	void SwitchOfLundDecays();
 
   public :
 
-#ifdef USING__Hadrons
-    Hadron_Decay_Handler(std::string,std::string,HADRONS::Hadron_Decays *);
-#endif
-    Hadron_Decay_Handler(std::string,std::string,Lund_Interface *);
+    Hadron_Decay_Handler(HADRONS::Hadrons *);
+    Hadron_Decay_Handler(Lund_Interface *);
 
     ~Hadron_Decay_Handler();
+	void DeletePointers(); 
 
-    bool FillHadronDecayBlobs(ATOOLS::Blob_List *,ATOOLS::Particle_List *);
-
+    bool FillHadronDecayBlobs(ATOOLS::Particle *,ATOOLS::Blob_List *,
+							  ATOOLS::Particle_List *part_list=NULL);
+	HADRONS::Hadrons * GetHadrons() { return p_hadrons; }
+	Lund_Interface * GetLund() { return p_lund; }
+	void EraseTreated(std::set<int> *);
   };
 
+  typedef std::map<std::string,Hadron_Decay_Handler *> HDHandlersMap;
+  typedef HDHandlersMap::iterator                      HDHandlersIter;
+ 
   /*!
     \class Hadron_Decay_Handler
     \brief So far not being used.
