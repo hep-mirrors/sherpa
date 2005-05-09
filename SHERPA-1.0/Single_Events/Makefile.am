@@ -32,6 +32,11 @@ ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
 AHADICDIR     =	$(SHERPASYS)/AHADIC++-0.0
 AHADICINCS    =	-I$(AHADICDIR)/Main -I$(AHADICDIR)/ClusterFormation \
 		-I$(AHADICDIR)/ClusterDecays
+HADRONSDIR     = $(SHERPASYS)/HADRONS++-0.0
+HADRONSINCS    = -I$(HADRONSDIR)/Main -I$(HADRONSDIR)/PS_Library -I$(HADRONSDIR)/ME_Library
+	-I$(HADRONSDIR)/ME_Library -I$(HADRONSDIR)/PS_Library \
+HADRONSFLAGS   = -DUSING__Hadrons
+
 
 if ROOT_SUPPORT
 ROOTINCS      =	-I$(ROOTSYS)/include
@@ -55,6 +60,7 @@ libSherpaSingleEvents_la_SOURCES      =	\
 					Jet_Evolution.C \
 					Hard_Decays.C \
 					Hadronization.C \
+					Hadron_Decays.C \
 					Analysis_Phase.C \
 					EvtReadin_Phase.C \
 					MC_Interface.C
@@ -67,6 +73,7 @@ noinst_HEADERS        =	\
 			Jet_Evolution.H \
 			Hard_Decays.H \
 		 	Hadronization.H \
+			Hadron_Decays.H \
 			Analysis_Phase.H \
 			EvtReadin_Phase.H \
 			MC_Interface.H
@@ -75,7 +82,7 @@ EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(SHERPAFLAGS) $(ADICICFLAGS) $(MCATNLOFLAGS) $(ROOTFLAGS)
 INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(APACICINCS) $(ADICICINCS) \
 		$(AMEGICINCS) $(AMISICINCS) $(AHADICINCS) $(EXTRAXSINCS) \
-		$(PHASICINCS) $(MODELINCS) $(PDFINCS) $(BEAMINCS) \
+		$(PHASICINCS) $(MODELINCS) $(PDFINCS) $(BEAMINCS) $(HADRONSINCS) \
 		$(ATOOLSINCS) $(ROOTINCS)
 
 
