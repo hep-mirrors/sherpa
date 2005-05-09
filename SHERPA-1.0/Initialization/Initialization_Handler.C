@@ -1,3 +1,4 @@
+#include <time.h>
 #include "Initialization_Handler.H"
 
 #include "IO_Handler.H"
@@ -8,6 +9,7 @@
 #include "PDF_Base.H"
 #include "Initial_State_Shower.H"
 #include "MI_Base.H"
+#include "Hadrons.H"
 #include "Data_Read.H"
 #include "Data_Reader.H"
 #include "Message.H"
@@ -39,7 +41,7 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
   m_path(_path), m_file(_file), m_mode(0),
   p_model(NULL), p_beamspectra(NULL), p_harddecays(NULL), 
   p_showerhandler(NULL), p_beamremnants(NULL), p_fragmentation(NULL), 
-  p_hadrondecays(NULL), p_mihandler(NULL), p_iohandler(NULL), p_pythia(NULL), 
+  p_mihandler(NULL), p_iohandler(NULL), p_pythia(NULL), 
   p_evtreader(NULL),
 #ifdef USING__MCatNLO
   p_herwig(NULL), p_mcatnlo(NULL),
@@ -67,7 +69,7 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
 Initialization_Handler::Initialization_Handler(int argc,char * argv[]) : 
   m_mode(0), p_model(NULL), p_beamspectra(NULL), 
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
-  p_fragmentation(NULL), p_hadrondecays(NULL), p_mihandler(NULL),
+  p_fragmentation(NULL), p_mihandler(NULL),
   p_iohandler(NULL), p_pythia(NULL), p_evtreader(NULL), 
 #ifdef USING__MCatNLO
   p_herwig(NULL), p_mcatnlo(NULL),
@@ -114,7 +116,6 @@ Initialization_Handler::~Initialization_Handler()
 {
   if (p_evtreader)     { delete p_evtreader;     p_evtreader     = NULL; }
   if (p_iohandler)     { delete p_iohandler;     p_iohandler     = NULL; }
-  if (p_hadrondecays)  { delete p_hadrondecays;  p_hadrondecays  = NULL; }
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
   if (p_beamremnants)  { delete p_beamremnants;  p_beamremnants  = NULL; }
   if (p_showerhandler) { delete p_showerhandler; p_showerhandler = NULL; }
@@ -129,13 +130,21 @@ Initialization_Handler::~Initialization_Handler()
 #endif
   if (p_analysis)      { delete p_analysis;      p_analysis      = NULL; }
   if (p_dataread)      { delete p_dataread;      p_dataread      = NULL; }
-  std::set<Matrix_Element_Handler*> deleted;
+  std::set<Matrix_Element_Handler*> deletedme;
   while (m_mehandlers.size()>0) {
-    if (deleted.find(m_mehandlers.begin()->second)==deleted.end()) {
-      deleted.insert(m_mehandlers.begin()->second);
+    if (deletedme.find(m_mehandlers.begin()->second)==deletedme.end()) {
+      deletedme.insert(m_mehandlers.begin()->second);
       delete m_mehandlers.begin()->second;
     }
     m_mehandlers.erase(m_mehandlers.begin());
+  }
+  std::set<Hadron_Decay_Handler*> deletedhd;
+  while (m_hdhandlers.size()>0) {
+    if (deletedhd.find(m_hdhandlers.begin()->second)==deletedhd.end()) {
+      deletedhd.insert(m_hdhandlers.begin()->second);
+      delete m_hdhandlers.begin()->second;
+    }
+    m_hdhandlers.erase(m_hdhandlers.begin());
   }
   while (m_isrhandlers.size()>0) {
     delete m_isrhandlers.begin()->second;
@@ -395,7 +404,7 @@ bool Initialization_Handler::InitializeTheMatrixElements()
   if (p_analysis) {
     int weighted=1-me->EventGenerationMode();
     msg_Info()<<"Initialization_Handler::InitializeTheMatrixElements(): "
-	      <<"Setting analysis mode "<<(weighted?"weighted":"unweighted")<<endl;
+			  <<"Setting analysis mode "<<(weighted?"weighted":"unweighted")<<endl;
     p_analysis->SetWeighted(weighted);
   }
   return 1;
@@ -464,11 +473,62 @@ bool Initialization_Handler::InitializeTheFragmentation()
 
 bool Initialization_Handler::InitializeTheHadronDecays() 
 {
-  if (p_hadrondecays)  { delete p_hadrondecays;  p_hadrondecays  = NULL; }
-  p_hadrondecays  = new Hadron_Decay_Handler(m_path,m_hadrondecaysdat,
-  					     p_fragmentation->GetLundInterface());
-  return 1;
+  Data_Read dr(m_path+m_hadrondecaysdat);
+  std::string frag=dr.GetValue<string>("FRAGMENTATION",string("Off"));
+  if (frag=="Off") return true;
+
+  if (m_hdhandlers.size()>0) {
+	for (HDHandlersIter hditer=m_hdhandlers.begin();hditer!=m_hdhandlers.end();hditer++) {
+	  msg_Info()<<"Delete Hadron_Decay_Handler for "<<hditer->first<<endl;
+	  if (hditer->second!=NULL) { delete hditer->second; hditer->second=NULL; }
+	}
+	m_hdhandlers.clear();
+  }
+
+  std::set<int> * UnstableHadrons = new std::set<int>;
+  if (!Flavour(kf::tau).IsStable()) UnstableHadrons->insert(int(Flavour(kf::tau).Kfcode()));
+  Fl_Iter fli;
+  for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
+    if (flav.IsOn() && flav.IsHadron() && !flav.IsStable()) {
+	  UnstableHadrons->insert(int(flav.Kfcode()));
+//	  cout<<"Insert "<<int(flav.Kfcode())<<" into set : "<<UnstableHadrons->size()<<endl;
+	}
+//	if (flav.IsOn()) cout<<"Test this : "<<flav.IsHadron()<<" "<<flav.IsStable()<<" "<<flav.Kfcode()<<endl;
+  }
+//  for (std::set<int>::iterator tester=UnstableHadrons->begin();tester!=UnstableHadrons->end();tester++)
+//	cout<<(*tester)<<" ";
+//  cout<<endl;
+  
+  bool needextra = true;
+  Hadron_Decay_Handler * hdhandler = NULL;
+  string decmodel = dr.GetValue<string>("DECAYMODEL",string("Lund"));
+  if (decmodel==std::string("Hadrons")) {
+    string decayfile       = dr.GetValue<string>("DECAYFILE",string("HadronDecays.dat"));
+	hdhandler              = new Hadron_Decay_Handler(new HADRONS::Hadrons(m_path,decayfile));
+	hdhandler->EraseTreated(UnstableHadrons);
+	if (UnstableHadrons->empty()) needextra = false;
+	m_hdhandlers["Sherpa"] = hdhandler;
+  }
+  if ((p_fragmentation->GetLundInterface()!=NULL) && (decmodel==string("Lund") || needextra) ) {
+	hdhandler              = new Hadron_Decay_Handler(p_fragmentation->GetLundInterface());
+	m_hdhandlers["Lund"]   = hdhandler;
+  }
+  if (decmodel!=std::string("Hadrons") && decmodel!=string("Lund")) {
+	THROW(critical_error,"Fragmentation model not implemented.");
+	abort();
+  }
+  delete UnstableHadrons;
+  return true;
 }
+
+Hadron_Decay_Handler * Initialization_Handler::GetHadronDecayHandler(std::string _key) { 
+  HDHandlersIter pos = m_hdhandlers.find(_key);
+  if (pos!=m_hdhandlers.end()) return pos->second;
+  msg.Error()<<"Error in Initialization_Handler::GetHadronDecayHandler("<<_key<<") :"
+		     <<"   Key not found. Return Null pointer."<<endl;
+  return NULL;
+}
+
 
 bool Initialization_Handler::InitializeTheAnalyses()
 {

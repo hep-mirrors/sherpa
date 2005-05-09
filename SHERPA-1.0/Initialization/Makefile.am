@@ -7,6 +7,7 @@ ANALYSISDIR   =	$(SHERPASYS)/ANALYSIS-1.0
 EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
 AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
 APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
+HADRONSDIR    =	$(SHERPASYS)/HADRONS++-0.0
 SHERPAINCS    =	-I../Single_Events -I../PerturbativePhysics -I../SoftPhysics \
 		-I../SoftPhysics/Lund  -I../LundTools -I../HerwigTools -I../Tools 
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
@@ -23,7 +24,7 @@ AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
 		-I$(AMEGICDIR)/Phasespace -I$(AMEGICDIR)/Model \
 		-I$(AMEGICDIR)/String 
 APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
-HADRONSINCS   = -I$(SHERPASYS)/HADRONS++-0.0/Main
+HADRONSINCS   = -I$(HADRONSDIR)/Main -I$(HADRONSDIR)/ME_Library -I$(HADRONSDIR)/PS_Library
 
 if CLHEP_SUPPORT
 CLHEPINCS     =	-I$(CLHEPDIR)/include

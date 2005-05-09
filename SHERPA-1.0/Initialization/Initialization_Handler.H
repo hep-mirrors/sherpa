@@ -67,7 +67,7 @@ namespace SHERPA {
     Shower_Handler             * p_showerhandler;
     Beam_Remnant_Handler       * p_beamremnants;
     Fragmentation_Handler      * p_fragmentation;
-    Hadron_Decay_Handler       * p_hadrondecays;
+    HDHandlersMap                m_hdhandlers;
     MI_Handler                 * p_mihandler; 
     IO_Handler                 * p_iohandler;
     Lund_Interface             * p_pythia;
@@ -112,6 +112,7 @@ namespace SHERPA {
     const std::string EvtFile() const { return m_evtfile; }
 
     Matrix_Element_Handler      * GetMatrixElementHandler(std::string);
+    Hadron_Decay_Handler        * GetHadronDecayHandler(std::string);
     ANALYSIS::Analysis_Handler  * GetAnalysisHandler(std::string);
     inline PDF::ISR_Handler     * GetISRHandler(const isr::id id) { return m_isrhandlers[id]; }
 
@@ -124,7 +125,7 @@ namespace SHERPA {
     Shower_Handler              * GetShowerHandler()         { return p_showerhandler;   }
     Beam_Remnant_Handler        * GetBeamRemnantHandler()    { return p_beamremnants;    }
     Fragmentation_Handler       * GetFragmentationHandler()  { return p_fragmentation;   }
-    Hadron_Decay_Handler        * GetHadronDecayHandler()    { return p_hadrondecays;    }
+    HDHandlersMap               * GetHadronDecayHandlers()   { return &m_hdhandlers;     }
     ATOOLS::Flavour             * GetBunches()               { return m_bunch_particles; }
     MI_Handler                  * GetMIHandler()             { return p_mihandler;       }
     IO_Handler                  * GetIOHandler()             { return p_iohandler;       }
