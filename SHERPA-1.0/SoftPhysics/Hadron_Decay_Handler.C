@@ -46,82 +46,22 @@ void Hadron_Decay_Handler::DeletePointers()
 {
 }
 
-bool Hadron_Decay_Handler::FillHadronDecayBlobs(Particle *part,ATOOLS::Blob_List *blob_list,
-												Particle_List *part_list )
+bool Hadron_Decay_Handler::FillHadronDecayBlobs(
+	Particle *part,
+	Blob_List *blob_list,
+	Particle_List *part_list )
 {
   msg_Tracking()<<"Hadron_Decay_Handler::FillHadronDecayBlobs "<<part->Flav()<<endl;
   msg.Debugging()<<"Momentum: "<<part->Momentum()<<endl;
 
-  // perform decay with resting decayer (CMS system)
-  bool anti = part->Flav().IsAnti();					// antiparticle ?
-  FlavourSet daughters; 
-  vector <Vec4D> v_mom;
-  vector <Vec4D> v_pos;
-  string type("");
-  bool transform( false );								// Lorentztrafo momenta
-  int status( 0 );
+  // perform decay 
   switch( m_mode ) {
-	case 1: daughters = p_hadrons->PerformDecay( v_mom, v_pos );
-			type = "Sherpa"; 
-			transform =  true;
-			status = 1;									// no need for second check
+	case 1: p_hadrons->PerformDecay( part, blob_list, part_list );
 			break;
-	case 0: daughters = p_lund->PerformDecay( part, v_mom, v_pos );
-			type = "Pythia_v6.214";
-			transform =  false;
-			status = 0;									// see if sherpa can treat remaining part
+	case 0: p_lund->PerformDecay( part, blob_list, part_list );
 			break;
   }
 
-  // transform momentum into Lab System and create blob
-  Poincare lambda(part->Momentum());
-  lambda.Invert();
-  Blob * blob;											// decay blob
-  blob = new Blob();
-  blob->SetStatus(status);
-  blob->SetType( btp::Hadron_Decay );
-  blob->SetTypeSpec(type);
-  blob->SetId();
-  msg.Debugging()<<"created new blob: #"<<blob->Id()<<" with status "<<status<<endl;
-  blob->AddToInParticles( part );
-  if( part->Info() == 'P' ) part->SetInfo('p');
-  if( part->Info() == 'D' ) part->SetInfo('d');
-  blob_list->push_back( blob );
-  Particle * particle;									// daughter part.
-  Vec4D momentum;										// daughter mom.
-  Flavour flav;											// daughter flav.
-  FlSetConstIter dit;									// Iterator
-  int i(0);
-
-  // treat every daughter
-  for( dit = daughters.begin(); dit != daughters.end(); dit++ ) {
-	i++;
-	v_mom[i] = ( transform )? lambda*v_mom[i] : v_mom[i];		// Lorentz trafo (if appl.)
-	momentum = v_mom[i];
-	flav = (*dit);
-	if( anti ) flav = flav.Bar();
-	msg.Debugging()<<"Daughters: "<<i<<"   "<<flav<<"  "<<momentum<<endl;
-	particle = new Particle( -1, flav, momentum );
-	if( part_list ) particle->SetNumber( part_list->size() );
-	else particle->SetNumber( 0 );
-	particle->SetStatus(1);
-	particle->SetInfo('D');
-	blob->SetPosition( v_pos[i] );
-	if( part_list ) part_list->push_back( particle ); 
-	blob->AddToOutParticles( particle );
-	// check if daughter can be treated as well
-	bool can_sherpa(false);
-	switch( m_mode ) {
-	  case 1 : can_sherpa = p_hadrons->FindDecay(particle->RefFlav()); 
-			   break;
-	  case 0:  can_sherpa = p_lund->FindDecay( particle );		   
-			   break;
-	}
-	if( can_sherpa ) {
-	  blob->SetStatus(1);
-	  FillHadronDecayBlobs( particle, blob_list, part_list );
-	}
-  }
   return 1;
 }
 
