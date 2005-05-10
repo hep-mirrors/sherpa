@@ -311,7 +311,8 @@ bool Phase_Space_Handler::MakeIncoming(ATOOLS::Vec4D *const p,const double mass)
       double eb2=p_beamhandler->GetBeam(1)->Energy();
       p[0] = Vec4D(eb1,0.,0.,sqrt(sqr(eb1)-sqr(m_m[0])));
       p[1] = Vec4D(eb2,0.0,0.0,-sqrt(sqr(eb2)-sqr(m_m[1])));
-      p_massboost = new ATOOLS::Poincare(p[0]+p[1]);
+      if (!p_massboost) p_massboost = new ATOOLS::Poincare(p[0]+p[1]);
+      else *p_massboost=ATOOLS::Poincare(p[0]+p[1]);
       for (int i=0;i<m_nin;++i) p_massboost->Boost(p[i]);
     }
     return 1;
