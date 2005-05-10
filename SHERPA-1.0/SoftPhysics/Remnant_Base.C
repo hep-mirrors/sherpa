@@ -165,7 +165,7 @@ bool Remnant_Base::TestExtract(ATOOLS::Particle *parton)
     return false;
   }
   double E=parton->Momentum()[0];
-  if (E<0.0 || E>m_ebeam) {
+  if (E<0.0 || (E>m_ebeam && !ATOOLS::IsEqual(E,m_ebeam))) {
     ATOOLS::msg.Error()<<"Remnant_Base::TestExtract("<<parton<<"): "
 		       <<"Constituent energy out of range E = "
 		       <<E<<"."<<std::endl;
@@ -173,6 +173,7 @@ bool Remnant_Base::TestExtract(ATOOLS::Particle *parton)
   }
   double erem=m_erem-(parton->Momentum()[0]+
     (m_lastemin=MinimalEnergy(parton->Flav())));
+  if (ATOOLS::IsZero(erem)) erem=0.0;
   if (erem<0.0) {
     msg_Tracking()<<"Remnant_Base::TestExtract(..): No remaining energy for "
 		  <<parton->Flav()<<", p = "<<parton->Momentum()<<" -> E_min = "
