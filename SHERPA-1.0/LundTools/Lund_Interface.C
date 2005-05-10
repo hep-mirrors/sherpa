@@ -11,6 +11,7 @@
 #include "Running_AlphaS.H"
 #include "MyStrStream.H"
 #include <list>
+#include "Message.H"
 
 using namespace SHERPA;
 using namespace std;
@@ -618,7 +619,6 @@ void Lund_Interface::FillPrimaryTauInBlob(int pos,ATOOLS::Blob *blob,
 										  ATOOLS::Blob_List *bloblist,
 										  ATOOLS::Particle_List *pl)
 {
-  ATOOLS::Blob *decay;
   ATOOLS::Particle *particle;
   ATOOLS::Flavour flav;
   ATOOLS::Vec4D momentum, position;
@@ -649,39 +649,59 @@ bool Lund_Interface::FindDecay( ATOOLS::Particle * part )
   return true;
 }  
 
-ATOOLS::FlavourSet Lund_Interface::PerformDecay( ATOOLS::Particle * part, 
-	vector<ATOOLS::Vec4D> &_mom, vector<ATOOLS::Vec4D> &_pos )
+void Lund_Interface::PerformDecay( ATOOLS::Particle * part, 
+	                               ATOOLS::Blob_List * blob_list, 
+								   ATOOLS::Particle_List * part_list )
 {
+  // choose decay channel and kinematics
   int pos = m_secondarymap[part];					// find particle in secondary map
   int daughter1 = hepevt.jdahep[pos][0]-1,
       daughter2 = hepevt.jdahep[pos][1];
-  ATOOLS::Flavour flav;
-  ATOOLS::FlavourSet flavset;
-  ATOOLS::Vec4D momentum, position;
   const int n = daughter2-daughter1+1;
-  _mom.clear();
-  _mom.push_back( ATOOLS::Vec4D( hepevt.phep[pos][3],
-	                             hepevt.phep[pos][0],
-					   	   	     hepevt.phep[pos][1],
-						         hepevt.phep[pos][2] ) );
-  _pos.clear();
-  _pos.push_back( ATOOLS::Vec4D( hepevt.vhep[pos][3],
-	                             hepevt.vhep[pos][0],
-					   	   	     hepevt.vhep[pos][1],
-						         hepevt.vhep[pos][2] ) );
-  for (int i=daughter1;i<daughter2;++i) {
-    flav.FromHepEvt(hepevt.idhep[i]);
-    momentum=ATOOLS::Vec4D(hepevt.phep[i][3],hepevt.phep[i][0],
-			   hepevt.phep[i][1],hepevt.phep[i][2]);
-    position=ATOOLS::Vec4D(hepevt.vhep[i][3],hepevt.vhep[i][0],
-			   hepevt.vhep[i][1],hepevt.vhep[i][2]);
-	_mom.push_back( momentum );
-	_pos.push_back( position );
-	flavset.insert( flav );
-  }
-  return flavset;
-}
 
+  // create blob
+  ATOOLS::Blob * blob;											// decay blob
+  blob = new ATOOLS::Blob();
+  blob->SetStatus(0);
+  blob->SetType( ATOOLS::btp::Hadron_Decay );
+  blob->SetTypeSpec( "Pythia_v6.214" );
+  blob->SetId();
+  blob->AddToInParticles( part );
+  if( part->Info() == 'P' ) part->SetInfo('p');
+  if( part->Info() == 'D' ) part->SetInfo('d');
+  blob_list->push_back( blob );
+  ATOOLS::Particle * particle;									// daughter part.
+  ATOOLS::Vec4D momentum;										// daughter mom.
+  ATOOLS::Vec4D position;										// daughter pos.
+  ATOOLS::Flavour flav;											// daughter flav.
+
+  // treat every daughter
+  for (int i=daughter1;i<daughter2;++i) {
+    flav.FromHepEvt( hepevt.idhep[i] );
+    momentum=ATOOLS::Vec4D( hepevt.phep[i][3],
+		                    hepevt.phep[i][0],
+			                hepevt.phep[i][1],
+							hepevt.phep[i][2] );
+    position=ATOOLS::Vec4D( hepevt.vhep[i][3],
+		                    hepevt.vhep[i][0],
+			                hepevt.vhep[i][1],
+							hepevt.vhep[i][2] );
+	particle = new ATOOLS::Particle( -1, flav, momentum );
+	if( part_list ) particle->SetNumber( part_list->size() );
+	else particle->SetNumber( 0 );
+	particle->SetStatus(1);
+	particle->SetInfo('D');
+	blob->SetPosition( position );
+	if( part_list ) part_list->push_back( particle ); 
+	blob->AddToOutParticles( particle );
+	// check if daughter can be treated as well
+	if( FindDecay(particle) ) {
+	  blob->SetStatus(1);
+	  PerformDecay( particle, blob_list, part_list );
+	}
+  }
+}
+  
 bool Lund_Interface::FillDecay(ATOOLS::Particle * part,ATOOLS::Blob_List *bloblist,
 							   ATOOLS::Particle_List *pl)
 {
@@ -741,72 +761,6 @@ void Lund_Interface::FillSecondaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_
   }
 }
 
-//bool Lund_Interface::FillDecay(ATOOLS::Particle * part,ATOOLS::Blob_List *bloblist,
-//							   ATOOLS::Particle_List *pl)
-//{
-//  msg_Tracking()<<"Lund_Interface::FillDecay()"<<endl;
-//  ATOOLS::Blob *decay;
-//  ATOOLS::Particle *particle;
-//  if (m_secondarymap.find(part)==m_secondarymap.end()) return; 
-//  int pos = m_secondarymap[part];
-//  decay = new ATOOLS::Blob();
-//  cout<<"new blob #";
-//  decay->SetStatus(1);
-//  decay->SetType(ATOOLS::btp::Hadron_Decay);
-//  decay->SetTypeSpec("Pythia_v6.214");
-//  decay->SetId();
-//  cout<<decay->Id()<<endl;
-//  decay->AddToInParticles(particle);
-//  if (particle->Info()=='P') particle->SetInfo('p');
-//  if (particle->Info()=='D') particle->SetInfo('d');
-//  particle->SetStatus(2);
-//  cout<<"add to bloblist     before "<<bloblist->size()<<endl;
-//  bloblist->push_back(decay);
-//  cout<<"                    after  "<<bloblist->size()<<endl;
-//  FillSecondaryHadronsInBlob(decay,bloblist,hepevt.jdahep[pos][0]-1,hepevt.jdahep[pos][1],pl);
-//  abort();
-//}
-//
-//
-//void Lund_Interface::FillSecondaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
-//												int daughter1,int daughter2,ATOOLS::Particle_List *pl) 
-//{
-//  ATOOLS::Blob *decay;
-//  ATOOLS::Particle *particle;
-//  ATOOLS::Flavour flav;
-//  ATOOLS::Vec4D momentum, position;
-//  for (int i=daughter1;i<daughter2;++i) {
-//    flav.FromHepEvt(hepevt.idhep[i]);
-//    momentum=ATOOLS::Vec4D(hepevt.phep[i][3],hepevt.phep[i][0],
-//			   hepevt.phep[i][1],hepevt.phep[i][2]);
-//    position=ATOOLS::Vec4D(hepevt.vhep[i][3],hepevt.vhep[i][0],
-//			   hepevt.vhep[i][1],hepevt.vhep[i][2]);
-//    particle = new ATOOLS::Particle(-1,flav,momentum);
-//	cout<<"daughter "<<i-daughter1+1<<"  "<<particle->Flav()<<" ";
-//    if (pl) particle->SetNumber(pl->size());
-//       else particle->SetNumber(0);
-//    particle->SetStatus(1);
-//    particle->SetInfo('D');
-//    blob->SetPosition(position);
-//    if (pl) pl->push_back(particle);
-//    blob->AddToOutParticles(particle);
-//    if (hepevt.jdahep[i][0]!=0 && hepevt.jdahep[i][1]!=0) {
-//	  cout<<"   has daughter itself."<<endl;
-//      decay = new ATOOLS::Blob();
-//      decay->SetStatus(1);
-//      decay->SetType(ATOOLS::btp::Hadron_Decay);
-//      decay->SetTypeSpec("Pythia_v6.214");
-//      decay->SetId();
-//      decay->AddToInParticles(particle);
-//      if (particle->Info()=='P') particle->SetInfo('p');
-//      if (particle->Info()=='D') particle->SetInfo('d');
-//      particle->SetStatus(2);
-//      bloblist->push_back(decay);
-//      FillSecondaryHadronsInBlob(decay,bloblist,hepevt.jdahep[i][0]-1,hepevt.jdahep[i][1],pl);
-//    }
-//	else cout<<"ok"<<endl;
-//  }
-//}
 
 void Lund_Interface::Error(const int error)
 {

@@ -61,9 +61,9 @@ namespace SHERPA {
 	bool        FillDecay(ATOOLS::Particle * part,
 						  ATOOLS::Blob_List *bloblist,ATOOLS::Particle_List *pl=NULL);
 	bool        FindDecay( ATOOLS::Particle * part ); 
-	ATOOLS::FlavourSet PerformDecay( ATOOLS::Particle * part, 
-		std::vector<ATOOLS::Vec4D> &,
-		std::vector<ATOOLS::Vec4D> & ); 
+	void        PerformDecay( ATOOLS::Particle * part, 
+		                      ATOOLS::Blob_List * blob_list, 
+				 		      ATOOLS::Particle_List * part_list );
     static void Error(const int error);
     bool        OneEvent(ATOOLS::Blob_List *const bloblist,double &weight);
 
