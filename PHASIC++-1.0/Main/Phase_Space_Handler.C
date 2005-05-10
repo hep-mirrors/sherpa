@@ -306,6 +306,14 @@ bool Phase_Space_Handler::MakeIncoming(ATOOLS::Vec4D *const p,const double mass)
     p[0] = Vec4D(E1,0.,0.,sqrt(sqr(E1)-sqr(m_m[0])));
     p[1] = Vec4D(E2,(-1.)*Vec3D(p[0]));
     m_flux = 1./(2.*sqrt(sqr(m_isrspkey[3]-m_m2[0]-m_m2[1])-4.*m_m2[0]*m_m2[1]));
+    if (p_beamhandler->On()==0 && p_isrhandler->On()==0) {
+      double eb1=p_beamhandler->GetBeam(0)->Energy();
+      double eb2=p_beamhandler->GetBeam(1)->Energy();
+      p[0] = Vec4D(eb1,0.,0.,sqrt(sqr(eb1)-sqr(m_m[0])));
+      p[1] = Vec4D(eb2,0.0,0.0,-sqrt(sqr(eb2)-sqr(m_m[1])));
+      p_massboost = new ATOOLS::Poincare(p[0]+p[1]);
+      for (int i=0;i<m_nin;++i) p_massboost->Boost(p[i]);
+    }
     return 1;
   }
   return 0;
@@ -391,6 +399,9 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
       if (p_isrhandler->On()==0) m_isrspkey[3]=m_beamspkey[3];
       process->Selector()->UpdateCuts(m_isrspkey[3],m_beamykey[2]+m_isrykey[2],p_cuts);
     }
+    else {
+      MakeIncoming(p_lab);
+    }
   }
   if (mode&psm::pi_fsr) p_fsrchannels->GeneratePoint(p_lab,p_cuts,p_pi);
   else p_fsrchannels->GeneratePoint(p_lab,p_cuts);
@@ -406,6 +417,8 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
   if (m_nin>1) {
     if (p_isrhandler->On()>0) p_isrhandler->BoostInLab(p_lab,m_nvec);
     if (p_beamhandler->On()>0) p_beamhandler->BoostInLab(p_lab,m_nvec);
+    if (p_massboost) for (int i=0;i<m_nvec;++i) 
+      p_massboost->BoostBack(p_lab[i]);
   }
   if (p_process->NAddOut()>0) 
     p_process->SetAddMomenta(p_isrhandler->KMRMomenta());

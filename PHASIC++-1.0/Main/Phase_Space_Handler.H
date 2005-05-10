@@ -6,7 +6,10 @@
 #include "Multi_Channel.H"
 #include <list>
 
-namespace ATOOLS { class Blob_Data_Base; }
+namespace ATOOLS { 
+  class Blob_Data_Base; 
+  class Poincare;
+}
 
 namespace PHASIC {
 
@@ -75,6 +78,8 @@ namespace PHASIC {
 
     ATOOLS::Flavour *p_flavours;
     ATOOLS::Vec4D   *p_cms, *p_lab;
+
+    ATOOLS::Poincare *p_massboost;
 
     int  m_nin, m_nout, m_nvec, m_inttype, m_fin_opt, m_use_pi;
     bool m_initialized;
