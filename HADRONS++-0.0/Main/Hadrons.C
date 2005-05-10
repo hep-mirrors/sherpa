@@ -25,14 +25,13 @@ bool Hadrons::FindDecay(const ATOOLS::Flavour & Decayer)
   return true;
 }
 
-FlavourSet Hadrons::PerformDecay( vector<Vec4D> &_mom, vector<Vec4D> &_pos )
+Hadron_Decay_Channel * Hadrons::ChooseDecayChannel()
 {
   const int nchan = p_table->NumberOfDecayChannels();
   Decay_Channel * dec_channel;
-  msg_Tracking()<<"Hadrons::PerformDecay(): Do Decay for "<<p_table->Flav()<<"."<<endl;
   double TotalWidth = p_table->TotalWidth();
-  bool channel_choosen(0);
-  int k(0);
+  bool channel_choosen (0);
+  int k (0);
 
   // dice decay channel acc. to BR
   while( !channel_choosen ) {
@@ -42,40 +41,104 @@ FlavourSet Hadrons::PerformDecay( vector<Vec4D> &_mom, vector<Vec4D> &_pos )
 	  dec_channel = p_table->GetDecayChannel(k);
 	  channel_choosen = 1;
 	}
-  }	// now a channel is choosen
+  }	
+
 //  k = 4;
 //  dec_channel = p_table->GetDecayChannel(k);
   msg_Tracking()<<"     choosen channel: "<<k<<endl;
   if( p_channelmap->find(dec_channel ) == p_channelmap->end() ) {
-	msg.Error()<<"Error in Hadrons::PerformDecay() \n"
+	msg.Error()<<"Error in Hadrons::ChooseDecayChannel() \n"
 	  		   <<"      Couldn't find appropriate channel pointer for "<<dec_channel->GetDecaying()
 			   <<" decay. \n"
 			   <<"      Don't know what to do, will abort."<<endl;
 	abort();
   }
-  Hadron_Decay_Channel * hdc = (*p_channelmap)[dec_channel];
+  return (*p_channelmap)[dec_channel];
+}
 
-  // choose a kinematics that corresponds to the ME kinematic distribution
+void Hadrons::ChooseDecayKinematics( Vec4D * _p, Vec4D * _v, Hadron_Decay_Channel * _hdc )
+{
   double value(0.);
-  const double max = hdc->GetPS()->Maximum();
+  const double max = _hdc->GetPS()->Maximum();
   int trials(0);											// number of trials
   do {
-	value = hdc->Differential();							// current val. of |M|^2
+	value = _hdc->Differential();							// current val. of |M|^2
 	trials++;
   } while( ran.Get() > value/max );
 //  ofstream f("trials.out",ios::app|ios::out );
 //  f<<trials<<endl;
-  msg.Info()<<"Hadrons::PerformDecay:  # Trials "<<trials
+  msg.Info()<<"Hadrons::ChooseDecayKinematics:  # Trials "<<trials
 	        <<"   <=>  "<<100./trials<<" %"<<endl;
-  Vec4D * mom_pointer = hdc->Momenta();									// diced momemta
-  const int n = dec_channel->NumberOfDecayProducts()+1;
-  _pos.clear(); _mom.clear();
-  for( int i=0; i<n; i++ ) {
-	_pos.push_back( Vec4D( 1., 1., 0., 0. ) );
-	_mom.push_back( mom_pointer[i] );
+  for( int i=0; i < _hdc->DecayChannel()->NumberOfDecayProducts()+1; i++ ) {
+	_p[i] = _hdc->Momenta(i);
+	_v[i] = Vec4D( 1., 1., 0., 0. );
+  }
+}
+
+void Hadrons::PerformDecay( Particle * part, Blob_List * blob_list, Particle_List * part_list )
+{
+  msg_Tracking()<<"Hadrons::PerformDecay() for "<<part->Flav()<<endl;
+  msg.Debugging()<<"Momentum: "<<part->Momentum()<<endl;
+  if( part->Flav().Kfcode() != p_table->Flav().Kfcode() ) {
+	msg.Error()<<"ERROR in Hadrons::PerformDecay() : Particle in selected decay table is not \n"
+	           <<"        identical to the decayer.\n"
+			   <<"        >>>   "<<p_table->Flav()<<" <-> "<<part->Flav()<<"   <<<"<<endl
+			   <<"        Don't know which to take, will abort."<<endl;
+	abort();
   }
 
-  return dec_channel->GetDecayProducts();
+  bool anti = part->Flav().IsAnti();					// antiparticle ?
+
+  // choose decay channel acc. to BR
+  Hadron_Decay_Channel * hdc = ChooseDecayChannel();
+  FlavourSet daughters = hdc->DecayChannel()->GetDecayProducts();
+  const int n = hdc->DecayChannel()->NumberOfDecayProducts()+1;
+
+  // choose a kinematics that corresponds to the ME kinematic distribution
+  Vec4D mom[n];
+  Vec4D pos[n];
+  ChooseDecayKinematics( mom, pos, hdc ); 
+
+  // transform momentum into Lab System and create blob
+  Poincare lambda(part->Momentum());
+  lambda.Invert();
+  Blob * blob;											// decay blob
+  blob = new Blob();
+  blob->SetStatus(1);
+  blob->SetType( btp::Hadron_Decay );
+  blob->SetTypeSpec( "Sherpa" );
+  blob->SetId();
+  msg.Debugging()<<"created new blob: #"<<blob->Id()<<" with status 1"<<endl;
+  blob->AddToInParticles( part );
+  if( part->Info() == 'P' ) part->SetInfo('p');
+  if( part->Info() == 'D' ) part->SetInfo('d');
+  blob_list->push_back( blob );
+  Particle * particle;									// daughter part.
+  Vec4D momentum;										// daughter mom.
+  Flavour flav;											// daughter flav.
+  FlSetConstIter dit;									// Iterator
+  int i(0);
+
+  // treat every daughter
+  for( dit = daughters.begin(); dit != daughters.end(); dit++ ) {
+	i++;
+	momentum = lambda * mom[i];							// Lorentz trafo
+	flav = (*dit);
+	if( anti ) flav = flav.Bar();
+	msg.Debugging()<<"Daughters: "<<i<<"   "<<flav<<"  "<<momentum<<endl;
+	particle = new Particle( -1, flav, momentum );
+	if( part_list ) particle->SetNumber( part_list->size() );
+	else particle->SetNumber( 0 );
+	particle->SetStatus(1);
+	particle->SetInfo('D');
+	blob->SetPosition( pos[i] );
+	if( part_list ) part_list->push_back( particle ); 
+	blob->AddToOutParticles( particle );
+	// check if daughter can be treated as well
+	if( FindDecay(particle->RefFlav()) ) {
+	  PerformDecay( particle, blob_list, part_list );
+	}
+  }
 }
   
 void Hadrons::ReadInDecayTables()

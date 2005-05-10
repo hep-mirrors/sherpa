@@ -30,9 +30,11 @@ namespace HADRONS {
     double Differential(const ATOOLS::Vec4D *momenta) { return 0.; }
     double Differential2()                            { return 0.; }
 
-    HD_ME_Base * GetME() { return p_me; }
-    HD_PS_Base * GetPS() { return p_ps; }
-	ATOOLS::Vec4D * Momenta() { return p_momenta; }		// not as const
+    HD_ME_Base            * GetME() { return p_me; }
+    HD_PS_Base            * GetPS() { return p_ps; }
+	ATOOLS::Vec4D         * Momenta() { return p_momenta; }		// not as const
+	ATOOLS::Vec4D           Momenta( int i ) { return p_momenta[i]; }
+	ATOOLS::Decay_Channel * DecayChannel() { return p_dc; }
   }; // end of class
 
   /*!

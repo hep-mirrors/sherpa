@@ -11,7 +11,11 @@
 #include <map>
 #include "Vector.H"
 #include "Hadron_Decay_Channel.H"
+#include "Particle.H"
+#include "Particle_List.H"
+#include "Blob_List.H"
 
+using namespace ATOOLS;
 
 namespace HADRONS {
   
@@ -28,8 +32,14 @@ namespace HADRONS {
 
   public: 
     Hadrons(std::string _path=std::string("./"), std::string _file=std::string("HadronDecays.dat"));
-	bool FindDecay(const ATOOLS::Flavour &);
-	ATOOLS::FlavourSet PerformDecay( std::vector<ATOOLS::Vec4D> &, std::vector<ATOOLS::Vec4D> & );
+	
+	bool                   FindDecay( const Flavour & );
+	Hadron_Decay_Channel * ChooseDecayChannel();
+	void                   ChooseDecayKinematics( Vec4D * _p, Vec4D * _v, Hadron_Decay_Channel * _hdc );
+	void                   PerformDecay( Particle * part, 
+		                                 Blob_List * blob_list, 
+		                                 Particle_List * part_list );
+
 	std::map<ATOOLS::kf::code,ATOOLS::Decay_Table *> * GetDecayMap() { return p_decaymap; }
   }; // end of class Hadrons
   
