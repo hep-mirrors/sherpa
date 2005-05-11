@@ -17,6 +17,7 @@ libModel_la_SOURCES = Interaction_Model_Base.C Interaction_Model_Handler.C \
 		      Interaction_Model_QCD_Grav.C Interaction_Model_EW_Grav.C \
 		      Interaction_Model_ADD.C \
 		      Interaction_Model_EHC.C Interaction_Model_SMEHC.C \
+		      Interaction_Model_SM_ZPrime.C \
 		      Vertex.C Lorentz_Function.C Color_Function.C
 INCLUDES = -I../Amplitude \
 	   -I../Amplitude/AmplTools \
@@ -38,6 +39,7 @@ noinst_HEADERS = Interaction_Model_Base.H Interaction_Model_Handler.H \
 	         Interaction_Model_QCD_Grav.H Interaction_Model_EW_Grav.H \
 		 Interaction_Model_ADD.H \
 	         Interaction_Model_EHC.H Interaction_Model_SMEHC.H \
+	         Interaction_Model_SM_ZPrime.H \
 	         Vertex.H Lorentz_Function.H Color_Function.H 
 AM_CXXFLAGS   =	$(AMEGICFLAGS)
 CXXFLAGS=-g $(AMEGICFLAGS)
