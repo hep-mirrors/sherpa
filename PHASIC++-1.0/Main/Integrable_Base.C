@@ -22,7 +22,7 @@ Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,
   m_scalescheme(scalescheme), m_kfactorscheme(kfactorscheme), 
   m_nstrong(0), m_neweak(0), m_usepi(0),
   m_threshold(0.), m_overflow(0.), m_rfactor(1.0), m_xinfo(std::vector<double>(4)),
-  m_n(0), m_expevents(0), m_dicedevents(0), m_accevents(0), m_last(0.), m_lastlumi(0.), m_lastdxs(0.), 
+  m_n(0), m_expevents(1), m_dicedevents(0), m_accevents(0), m_last(0.), m_lastlumi(0.), m_lastdxs(0.), 
   m_max(0.), m_totalxs(0.),m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), 
   m_ssum(0.), m_ssumsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.), 
   m_sn(0), m_son(1), m_swaped(false), 
@@ -30,7 +30,7 @@ Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,
   p_regulator(Regulator_Base::GetRegulator(this,"Identity",std::vector<double>())),
   p_beamhandler(beamhandler), p_isrhandler(isrhandler), 
   p_pshandler(NULL), p_activepshandler(NULL), p_selector(NULL), 
-  p_cuts(NULL), p_whisto(NULL), m_ownselector(true) {}
+  p_cuts(NULL), p_whisto(NULL), m_ownselector(true), m_efunc("1") {}
 
 Integrable_Base::~Integrable_Base()
 {
@@ -477,7 +477,7 @@ double Integrable_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
     double b2=p[4]*p[1]/S2;
     m_scale[stp::kp21]=a1*a1*2.*S2*p2.PMinus()/p2.PPlus();
     m_scale[stp::kp22]=b2*b2*2.*S2*p3.PPlus()/p3.PMinus();
-    // qcd scale
+    // mean of factorisation scales
     pt2=m_scale[stp::as]=
       ATOOLS::sqr(sqrt(m_scale[stp::kp21])+sqrt(m_scale[stp::kp22]))/4.0;
     break;
@@ -493,7 +493,7 @@ double Integrable_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
     double fac=ATOOLS::rpa.gen.FactorizationScaleFactor();
     m_scale[stp::kp21]=fac*a1*a1*2.*S2*p2.PMinus()/p2.PPlus();
     m_scale[stp::kp22]=fac*b2*b2*2.*S2*p3.PPlus()/p3.PMinus();
-    // qcd scale
+    // mean of factorisation scales
     pt2=m_scale[stp::as]=
       sqrt(m_scale[stp::kp21]*m_scale[stp::kp22]);
     break;
@@ -610,4 +610,9 @@ void Integrable_Base::GetGMin(double &g, double &meff)
   if (m_expevents<100) return;
   if (q<1.) if (m_expevents<sqrt(Parent()->m_expevents)) q=1.;
   g = ATOOLS::Min(g,q);
+}
+
+void Integrable_Base::SetISRThreshold(const double threshold) 
+{
+  m_threshold=threshold;
 }

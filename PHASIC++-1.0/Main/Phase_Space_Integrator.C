@@ -4,6 +4,8 @@
 #include "Message.H"
 #include "Single_Channel.H"
 #include "PI_Interface.H"
+#include "Algebra_Interpreter.H"
+#include "MyStrStream.H"
 
 #include "Random.H"
 #include <unistd.h>
@@ -172,11 +174,21 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxer
 
 bool Phase_Space_Integrator::AddPoint(const double value)
 {
-    if ((psh->BeamIntegrator())) (psh->BeamIntegrator())->AddPoint(value);    
-    if ((psh->ISRIntegrator()))  (psh->ISRIntegrator())->AddPoint(value);    
-    if ((psh->KMRZIntegrator()))  (psh->KMRZIntegrator())->AddPoint(value);    
-    if ((psh->KMRKPIntegrator()))  (psh->KMRKPIntegrator())->AddPoint(value);    
-    (psh->FSRIntegrator())->AddPoint(value);    
+  Integrable_Base *proc=psh->Process();
+  std::string func=proc->EnhanceFunction();
+  double enhance=1.0;
+  if (func!="1") {
+    Algebra_Interpreter inter;
+    for (size_t i=0;i<proc->NIn()+proc->NOut();++i) 
+      inter.AddTag("p["+ToString(i)+"]",ToString(psh->Point()[i]));
+    enhance=ToType<double>(inter.Interprete(func));
+  }
+  
+    if ((psh->BeamIntegrator())) (psh->BeamIntegrator())->AddPoint(value*enhance);    
+    if ((psh->ISRIntegrator()))  (psh->ISRIntegrator())->AddPoint(value*enhance);    
+    if ((psh->KMRZIntegrator()))  (psh->KMRZIntegrator())->AddPoint(value*enhance);    
+    if ((psh->KMRKPIntegrator()))  (psh->KMRKPIntegrator())->AddPoint(value*enhance);    
+    (psh->FSRIntegrator())->AddPoint(value*enhance);    
     psh->AddPoint(value);
 
     local.sum+=value;

@@ -80,6 +80,8 @@ namespace PHASIC {
 
     bool m_ownselector;
 
+    std::string m_efunc;
+
   public:
 
     double TotalResult();
@@ -139,12 +141,14 @@ namespace PHASIC {
     virtual ATOOLS::Blob_Data_Base *SameWeightedEvent();
 
     virtual void SetPSHandler(Phase_Space_Handler *const pshandler);
+    virtual void SetISRThreshold(const double threshold);
     
     virtual void InitWeightHistogram();
     virtual void ReadInHistogram(std::string);
     virtual void WriteOutHistogram(std::string);
 
-    virtual void AddEvent(const double xs,const double validxs,const int ncounts);
+    virtual void AddEvent(const double xs,const double validxs,
+			  const int ncounts);
 
     virtual double TriggerEfficiency();
     
@@ -252,6 +256,8 @@ namespace PHASIC {
     
     inline void CreateMomenta(const size_t n)
     { delete p_momenta; p_momenta = new ATOOLS::Vec4D[n]; m_nvector=n; }
+
+    inline std::string EnhanceFunction() const { return m_efunc; }
 
   };// end of class Integrable_Base
 
