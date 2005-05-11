@@ -96,14 +96,15 @@ namespace ATOOLS {
     typedef std::map<std::string,Function*>  Function_Map;
     typedef std::pair<size_t,Operator*>      Operator_Pair;
     typedef std::multimap<size_t,Operator*>  Operator_Map;
-    typedef std::set<Interpreter_Function*>  Interpreter_Set;
+
+    typedef std::map<size_t,Interpreter_Function*> Interpreter_Map;
 
   private:
 
     Function_Map m_functions;
     Operator_Map m_operators;
 
-    Interpreter_Set m_interpreters;
+    Interpreter_Map m_interpreters;
 
     Tag_Replacer *p_replacer;
 

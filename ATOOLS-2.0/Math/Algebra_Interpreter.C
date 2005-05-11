@@ -4,6 +4,7 @@
 #include "MathTools.H"
 #include "Exception.H"
 #include "Message.H"
+#include "Vector.H"
 
 using namespace ATOOLS;
 
@@ -127,7 +128,7 @@ DEFINE_UNARY_OPERATOR(Unary_Not,"!",14)
 
 DEFINE_FUNCTION(Power,"pow")
 {
-  if (args.size()!=2) THROW(fatal_error,"Pow requires 2 arguments.")
+  if (args.size()!=2) THROW(fatal_error,"Pow requires 2 arguments.");
   double arg0=ToType<double>(args[0]);
   double arg1=ToType<double>(args[1]);
   return ToString(pow(arg0,arg1));
@@ -135,49 +136,49 @@ DEFINE_FUNCTION(Power,"pow")
 
 DEFINE_FUNCTION(Logarithm,"log")
 {
-  if (args.size()!=1) THROW(fatal_error,"Log requires 1 argument.")
+  if (args.size()!=1) THROW(fatal_error,"Log requires 1 argument.");
   double arg0=ToType<double>(args[0]);
   return ToString(log(arg0));
 }
 
 DEFINE_FUNCTION(Logarithm10,"log10")
 {
-  if (args.size()!=1) THROW(fatal_error,"Log10 requires 1 argument.")
+  if (args.size()!=1) THROW(fatal_error,"Log10 requires 1 argument.");
   double arg0=ToType<double>(args[0]);
   return ToString(log10(arg0));
 }
 
 DEFINE_FUNCTION(Exponential,"exp")
 {
-  if (args.size()!=1) THROW(fatal_error,"Exp requires 1 argument.")
+  if (args.size()!=1) THROW(fatal_error,"Exp requires 1 argument.");
   double arg0=ToType<double>(args[0]);
   return ToString(exp(arg0));
 }
 
 DEFINE_FUNCTION(Absolute_Value,"abs")
 {
-  if (args.size()!=1) THROW(fatal_error,"Abs requires 1 argument.")
+  if (args.size()!=1) THROW(fatal_error,"Abs requires 1 argument.");
   double arg0=ToType<double>(args[0]);
   return ToString(dabs(arg0));
 }
 
 DEFINE_FUNCTION(Square,"sqr")
 {
-  if (args.size()!=1) THROW(fatal_error,"Sqr requires 1 argument.")
+  if (args.size()!=1) THROW(fatal_error,"Sqr requires 1 argument.");
   double arg0=ToType<double>(args[0]);
   return ToString(sqr(arg0));
 }
 
 DEFINE_FUNCTION(Square_Root,"sqrt")
 {
-  if (args.size()!=1) THROW(fatal_error,"Sqrt requires 1 argument.")
+  if (args.size()!=1) THROW(fatal_error,"Sqrt requires 1 argument.");
   double arg0=ToType<double>(args[0]);
   return ToString(sqrt(arg0));
 }
 
 DEFINE_FUNCTION(Minimum,"min")
 {
-  if (args.size()!=2) THROW(fatal_error,"Min requires 2 arguments.")
+  if (args.size()!=2) THROW(fatal_error,"Min requires 2 arguments.");
   double arg0=ToType<double>(args[0]);
   double arg1=ToType<double>(args[1]);
   return ToString(Min(arg0,arg1));
@@ -185,10 +186,85 @@ DEFINE_FUNCTION(Minimum,"min")
 
 DEFINE_FUNCTION(Maximum,"max")
 {
-  if (args.size()!=2) THROW(fatal_error,"Max requires 2 arguments.")
+  if (args.size()!=2) THROW(fatal_error,"Max requires 2 arguments.");
   double arg0=ToType<double>(args[0]);
   double arg1=ToType<double>(args[1]);
   return ToString(Max(arg0,arg1));
+}
+
+DEFINE_FUNCTION(Vec4D_Part,"Part")
+{
+  if (args.size()!=2) THROW(fatal_error,"Part requires 2 arguments.");
+  Vec4D arg0=ToType<Vec4D>("("+args[0]+")");
+  int arg1=ToType<int>(args[1]);
+  return ToString(arg0[arg1]);
+}
+
+DEFINE_FUNCTION(Vec4D_Abs2,"Abs2")
+{
+  if (args.size()!=1) THROW(fatal_error,"Abs2 requires 1 argument.");
+  Vec4D arg0=ToType<Vec4D>("("+args[0]+")");
+  return ToString(arg0.Abs2());
+}
+
+DEFINE_FUNCTION(Vec4D_PPerp,"PPerp")
+{
+  if (args.size()!=1) THROW(fatal_error,"PPerp requires 1 argument.");
+  Vec4D arg0=ToType<Vec4D>("("+args[0]+")");
+  return ToString(arg0.PPerp());
+}
+
+DEFINE_FUNCTION(Vec4D_Theta,"Theta")
+{
+  if (args.size()!=1) THROW(fatal_error,"Theta requires 1 argument.");
+  Vec4D arg0=ToType<Vec4D>("("+args[0]+")");
+  return ToString(arg0.Theta());
+}
+
+DEFINE_FUNCTION(Vec4D_Eta,"Eta")
+{
+  if (args.size()!=1) THROW(fatal_error,"Eta requires 1 argument.");
+  Vec4D arg0=ToType<Vec4D>("("+args[0]+")");
+  return ToString(arg0.Eta());
+}
+
+DEFINE_FUNCTION(Vec4D_Phi,"Phi")
+{
+  if (args.size()!=1) THROW(fatal_error,"Phi requires 1 argument.");
+  Vec4D arg0=ToType<Vec4D>("("+args[0]+")");
+  return ToString(arg0.Phi());
+}
+
+DEFINE_FUNCTION(Vec4D_PPerpR,"PPerpR")
+{
+  if (args.size()!=2) THROW(fatal_error,"PPerpR requires 2 arguments.");
+  Vec4D arg0=ToType<Vec4D>("("+args[0]+")");
+  Vec4D arg1=ToType<Vec4D>("("+args[1]+")");
+  return ToString(arg0.PPerp(arg1));
+}
+
+DEFINE_FUNCTION(Vec4D_ThetaR,"ThetaR")
+{
+  if (args.size()!=2) THROW(fatal_error,"ThetaR requires 2 arguments.");
+  Vec4D arg0=ToType<Vec4D>("("+args[0]+")");
+  Vec4D arg1=ToType<Vec4D>("("+args[1]+")");
+  return ToString(arg0.Theta(arg1));
+}
+
+DEFINE_FUNCTION(Vec4D_DEta,"DEta")
+{
+  if (args.size()!=2) THROW(fatal_error,"DEta requires 2 arguments.");
+  Vec4D arg0=ToType<Vec4D>("("+args[0]+")");
+  Vec4D arg1=ToType<Vec4D>("("+args[1]+")");
+  return ToString(arg0.DEta(arg1));
+}
+
+DEFINE_FUNCTION(Vec4D_DPhi,"DPhi")
+{
+  if (args.size()!=2) THROW(fatal_error,"DPhi requires 2 arguments.");
+  Vec4D arg0=ToType<Vec4D>("("+args[0]+")");
+  Vec4D arg1=ToType<Vec4D>("("+args[1]+")");
+  return ToString(arg0.DPhi(arg1));
 }
 
 DEFINE_INTERPRETER_FUNCTION(Resolve_Bracket)
@@ -204,14 +280,14 @@ DEFINE_INTERPRETER_FUNCTION(Resolve_Bracket)
     if (expr[i]=='(') {
       ++open;
       if (l==std::string::npos) {
-	Algebra_Interpreter::Function_Map::const_iterator fit=
-	  p_interpreter->Functions().begin();
-	for (;fit!=p_interpreter->Functions().end();++fit) {
+	Algebra_Interpreter::Function_Map::const_reverse_iterator fit=
+	  p_interpreter->Functions().rbegin();
+	for (;fit!=p_interpreter->Functions().rend();++fit) {
 	  size_t pos=expr.rfind(fit->second->Tag(),i);
 	  if (pos!=std::string::npos &&
 	      pos+fit->second->Tag().length()==i) break;
 	}
-	if (fit==p_interpreter->Functions().end()) {
+	if (fit==p_interpreter->Functions().rend()) {
 	  l=i;
 	  take=open;
 	}
@@ -244,22 +320,24 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
   if (expr.find("(")==std::string::npos ||
       expr.find(")")==std::string::npos) return expr;
   Function *func=NULL;
-  size_t pos=std::string::npos;
+  size_t pos=std::string::npos, rem=std::string::npos;
   for (Algebra_Interpreter::Function_Map::const_reverse_iterator 
 	 fit=p_interpreter->Functions().rbegin();
        fit!=p_interpreter->Functions().rend();++fit) {
-    if ((pos=expr.rfind(fit->second->Tag()))!=std::string::npos) {
+    if ((pos=expr.rfind(fit->second->Tag()))!=std::string::npos &&
+	pos<rem) {
       func=fit->second;
-      break;
+      rem=pos;
     }}
   if (func==NULL) return expr;
+  pos=rem;
   size_t last=pos+func->Tag().length()+1, open=0;
   std::vector<std::string> args;
   size_t i=last-1;
   for (;i<expr.length();++i) {
     if (expr[i]=='(') ++open;
     if (expr[i]==')') --open;
-    if (open==0 || expr[i]==',') {
+    if (open==0 || (open==1 && expr[i]==',')) {
       args.push_back(expr.substr(last,i-last));
       last=i+1;
       if (open==0) break;
@@ -431,11 +509,13 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
 Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   p_replacer(this)
 {
-  m_interpreters.insert(new Resolve_Bracket(this));
-  m_interpreters.insert(new Interprete_Binary(this));
-  m_interpreters.insert(new Interprete_Unary(this));
-  m_interpreters.insert(new Interprete_Function(this));
+  m_interpreters[0] = new Interprete_Function(this);
+  m_interpreters[1] = new Resolve_Bracket(this);
+  m_interpreters[2] = new Interprete_Binary(this);
+  m_interpreters[3] = new Interprete_Unary(this);
   if (!standard) return;
+  m_tags["M_PI"]=ToString(M_PI);
+  m_tags["M_E"]=ToString(exp(1.0));
   AddOperator(new Binary_Plus());
   AddOperator(new Binary_Minus());
   AddOperator(new Binary_Times());
@@ -459,6 +539,16 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   AddFunction(new Square_Root());
   AddFunction(new Minimum());
   AddFunction(new Maximum());
+  AddFunction(new Vec4D_Part());
+  AddFunction(new Vec4D_Abs2());
+  AddFunction(new Vec4D_PPerp());
+  AddFunction(new Vec4D_Theta());
+  AddFunction(new Vec4D_Eta());
+  AddFunction(new Vec4D_Phi());
+  AddFunction(new Vec4D_PPerpR());
+  AddFunction(new Vec4D_ThetaR());
+  AddFunction(new Vec4D_DEta());
+  AddFunction(new Vec4D_DPhi());
 }
 
 Algebra_Interpreter::~Algebra_Interpreter()
@@ -498,9 +588,9 @@ std::string Algebra_Interpreter::Iterate(const std::string &expr)
   if (++depth>1000) THROW(critical_error,"Max depth reached.");
   msg_Indent();
   std::string res=expr;
-  Interpreter_Set::const_iterator iit=m_interpreters.begin();
+  Interpreter_Map::const_iterator iit=m_interpreters.begin();
   for (;iit!=m_interpreters.end();++iit) 
-    res=(*iit)->Interprete(res);
+    res=iit->second->Interprete(res);
   --depth;
   return res;
 }
