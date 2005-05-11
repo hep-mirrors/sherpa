@@ -66,7 +66,12 @@ namespace ATOOLS {
       H0                     = 32,
       A0                     = 33,
       Hmin                   = 34,
-      
+
+      /* ------------------------------------------
+        Left-Right Symmetric Models
+	----------------------------------------- */
+      ZPrime                 = 35,
+
       /* ------------------------------------------
 	SUSY - has to get other numbers to comply 
 	       with the PDG numbering scheme

@@ -212,6 +212,7 @@ int Flavour::HepEvt() {
   if (IsGluon())                             return 21;
   if (IsPhoton())                            return 22;
   if (kfc==kf::Z)                            return 23;
+  if (kfc==kf::ZPrime)                       return 32;
   if (kfc==kf::W)                            return (anti)? 24:-24;
   if ((kfc==kf::h) || (kfc==kf::h0))         return 25;
 
@@ -280,6 +281,7 @@ void Flavour::FromHepEvt(int code) {
     if (Flavour(kf::h0).IsOn()) kfc = kf::h0; 
     else kfc = kf::h; 
     return;
+  case 32:      kfc = kf::ZPrime; return;
   case 35:      kfc = kf::H0; return;
   case 36:      kfc = kf::A0; return;
   case 37:      kfc = kf::Hmin; anti = 1-anti; return; 
