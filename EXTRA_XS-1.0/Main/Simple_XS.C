@@ -62,7 +62,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   p_isrhandler=isrhandler;
   XSSelector()->SetOffShell(p_isrhandler->KMROn());
   std::string processfile=
-    p_dataread->GetValue<std::string>("PROCESS_FILE",
+    p_dataread->GetValue<std::string>("PROCESSFILE",
 				      std::string("Processes.dat"));
   std::string selectorfile=
     p_dataread->GetValue<std::string>("SELECTOR_FILE",
@@ -154,12 +154,12 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	    flavs              = new Flavour[nIS+nFS];
 	    for (int i=0;i<nIS;i++) flavs[i]     = IS[i]; 
 	    for (int i=0;i<nFS;i++) flavs[i+nIS] = FS[i]; 
-	    double summass = 0.;
-	    for (int i=0;i<nFS;i++) summass += flavs[i+nIS].Mass();
-	    if (summass<rpa.gen.Ecms()) {
+	    double inisum=0.0, finsum=0.0;
+	    for (int i=0;i<nIS;i++) inisum+=flavs[i].Mass();
+	    for (int i=0;i<nFS;i++) finsum+=flavs[i+nIS].Mass();
+	    if (inisum<rpa.gen.Ecms() && finsum<rpa.gen.Ecms()) {
 	      Flavour help[4];
 	      std::set<std::string> setup;
-	      // XS_Group *group=FindGroup(nIS,nFS,flavs);
 	      for (size_t i=0;i<(size_t)flavs[0].Size();++i) {
 		for (size_t j=0;j<(size_t)flavs[1].Size();++j) {
 		  for (size_t k=0;k<(size_t)flavs[2].Size();++k) {
@@ -177,16 +177,14 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
  			XS_Base *newxs = XSSelector()->
 			  GetXS(nIS,nFS,help,false,order_ew,order_strong);
 			if (newxs!=NULL) {
-			  delete newxs;
 			  XS_Group *pdfgroup = 
 			    FindPDFGroup(nIS,nFS,help,this);
-			  XS_Base *newxs = pdfgroup->
- 			    XSSelector()->GetXS(nIS,nFS,help,false,
-						order_ew,order_strong);
 			  if (m_regulator.length()>0) 
 			    newxs->AssignRegulator(m_regulator,m_regulation);
 			  pdfgroup->Add(newxs);
 			  newxs->PSHandler(false)->SetUsePI(m_usepi);
+			  newxs->
+			    SetISRThreshold(sqr(ATOOLS::Max(inisum,finsum)));
 			}
 			setup.insert(name);
 		      }
