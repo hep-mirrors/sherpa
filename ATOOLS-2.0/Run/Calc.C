@@ -15,9 +15,8 @@ int main(int argc,char **argv)
   signal(SIGTERM,Exception_Handler::SignalHandler);
   signal(SIGXCPU,Exception_Handler::SignalHandler);
   try {
-    msg.Init(6,"");
+    msg.Init(2,"");
     msg.SetModifiable(true);
-    PRINT_INFO("Initialize interpreter");
     Algebra_Interpreter interpreter;
     std::string expr;
     for (int i=1;i<argc;++i) {
@@ -27,7 +26,7 @@ int main(int argc,char **argv)
       else interpreter.AddTag(argvs.substr(0,pos),
 			      argvs.substr(pos+1));
     }
-    PRINT_INFO(expr<<" = "<<interpreter.Interprete(expr));
+    std::cout<<"Calc: "<<expr<<" = "<<interpreter.Interprete(expr)<<std::endl;
     return 0;
   }
   catch (Exception exception) {
