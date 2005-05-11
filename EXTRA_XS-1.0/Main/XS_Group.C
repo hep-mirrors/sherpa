@@ -70,6 +70,10 @@ void XS_Group::Add(XS_Base *const xsec)
     for (size_t i=0;i<m_nin+m_nout;++i) p_flavours[i]=xsec->Flavours()[i];
     m_neweak=xsec->m_neweak;
     m_nstrong=xsec->m_nstrong;
+    double inisum=0.0, finsum=0.0;
+    for (size_t i=0;i<m_nin;i++) inisum+=p_flavours[i].Mass();
+    for (size_t i=0;i<m_nout;i++) finsum+=p_flavours[i+m_nin].Mass();
+    m_threshold=ATOOLS::Max(inisum,finsum);
   }
   if (m_neweak!=xsec->m_neweak) m_neweak=0;
   if (m_nstrong!=xsec->m_nstrong) m_nstrong=0;
@@ -593,4 +597,11 @@ void XS_Group::AddEvent(const double xs,const double validxs,const int ncounts)
 
 void XS_Group::ResetEvents()
 {
+}
+
+void XS_Group::SetISRThreshold(const double threshold) 
+{
+  m_threshold=threshold;
+  for (size_t i=0;i<m_xsecs.size();i++) 
+    m_xsecs[i]->SetISRThreshold(threshold);
 }

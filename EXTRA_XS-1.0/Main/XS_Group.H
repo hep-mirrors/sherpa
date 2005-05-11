@@ -77,6 +77,7 @@ namespace EXTRAXS {
     bool ReSelect(int);
     void SetEvents(const double number);
 
+    void SetISRThreshold(const double threshold);
     void AddEvent(const double xs,const double validxs,const int ncounts);
     void ResetEvents();
 
