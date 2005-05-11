@@ -117,15 +117,15 @@ namespace ATOOLS {
     inline const double Phi() const; 
     inline const double CosTheta() const; 
     inline const double SinTheta() const; 
-    inline const double Theta() const; 
+    const double Theta() const; 
 
     const double PPerp2(const Vec4D &) const; 
     const double PPerp(const Vec4D &) const; 
-    inline const double CosTheta(const Vec4D &) const; 
-    inline const double Theta(const Vec4D &) const; 
-    inline const double Eta(const Vec4D &) const; 
+    const double CosTheta(const Vec4D &) const; 
+    const double Theta(const Vec4D &) const; 
+    const double Eta(const Vec4D &) const; 
 
-    inline const double CosDPhi(const Vec4D &) const; 
+    const double CosDPhi(const Vec4D &) const; 
     inline const double DPhi(const Vec4D &) const; 
     inline const double DEta(const Vec4D &) const; 
 
@@ -469,37 +469,9 @@ namespace ATOOLS {
     return Max(Min(sqrt(PPerp2()/PSpat2()),1.0),-1.0);
   }
 
-  inline const double Vec4D::Theta() const 
-  {
-    return acos(CosTheta());
-  }
-  
-  inline const double Vec4D::CosTheta(const Vec4D &ref) const 
-  { 
-    Vec3D pref=Vec3D(ref), p=Vec3D(*this);
-    return Max(Min(pref*p/(pref.Abs()*p.Abs()),1.0),-1.0);
-  }
-  
-  inline const double Vec4D::Theta(const Vec4D &ref) const 
-  { 
-    return acos(CosTheta(ref));
-  }
-  
-  inline const double Vec4D::CosDPhi(const Vec4D &ref) const 
-  { 
-    Vec3D pref=Vec3D(ref[1],ref[2],0.0), p=Vec3D(m_x[1],m_x[2],0.0);
-    return Max(Min(pref*p/(pref.Abs()*p.Abs()),1.0),-1.0);
-  }
-  
   inline const double Vec4D::DPhi(const Vec4D &ref) const 
   { 
     return acos(CosDPhi(ref));
-  }
-  
-  inline const double Vec4D::Eta(const Vec4D &ref) const 
-  { 
-    double cos=CosTheta(ref);
-    return (2.0*cos>M_PI?-0.5:0.5)*log(sqr(1.0+cos)/(1.0-cos*cos));
   }
   
   inline const double Vec4D::DEta(const Vec4D &ref) const 
@@ -527,6 +499,9 @@ namespace ATOOLS {
   // output streams:
   std::ostream& operator<<(std::ostream& s, const Vec4D& vec);
   std::ostream& operator<<(std::ostream& s, const Vec3D& vec);
+  // input streams
+  std::istream& operator>>(std::istream& s,Vec4D& vec);
+  std::istream& operator>>(std::istream& s,Vec3D& vec);
 
 
 
