@@ -281,6 +281,9 @@ void Process_Base::Reshuffle(int n, Flavour* flav, Pol_Info* plav)
   
   
   for (int i=0;i<n;++i) {
+    size_t pos=m_efunc.find("p["+ToString(sd[i].i)+"]");
+    if (pos!=std::string::npos) 
+      m_efunc.replace(pos,3+ToString(sd[i].i).length(),"p["+ToString(i)+"]");
     flav[i]=sd[i].fl;
     plav[i]=sd[i].pl;
   }
@@ -413,7 +416,6 @@ void Process_Base::SetScales(double q2_fac, double q2_ren)
   m_scale[stp::fac] = rpa.gen.FactorizationScaleFactor() * q2_fac;  
   m_scale[stp::as]  = rpa.gen.RenormalizationScaleFactor() * q2_ren;
 } 
-void Process_Base::SetISRThreshold(double threshold)    { m_threshold  = threshold;}
 
 void Process_Base::AddToDataCollector(int i)
 {

@@ -207,6 +207,7 @@ void Amegic::ReadInProcessfile(string file)
   int         order_ew,order_strong,scale_scheme,kfactor_scheme; 
   double      fixed_scale;
   double      enhance_factor=1.,maxreduction_factor=1.,maxredepsilon=0.,ycut=-1.;
+  std::string enhance_function="1";
   double      maxerror=-1.;
   bool        print_graphs=false;
   string      selectorfile;
@@ -380,6 +381,13 @@ void Amegic::ReadInProcessfile(string file)
 		  str<<buf;
 		  str>>enhance_factor;
 		}
+		position       = buf.find(string("Enhance_Function :"));
+		if (position > -1) {
+		  MyStrStream str;      
+		  buf          = buf.substr(buf.find(":",position)+1);
+		  Shorten(buf);
+		  enhance_function=buf;
+		}
 		position       = buf.find(string("Max_Reduction :"));
 		if (position > -1) {
 		  MyStrStream str;      
@@ -482,12 +490,12 @@ void Amegic::ReadInProcessfile(string file)
 		proc = new Single_Process(pinfo,nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
 					  order_strong,order_ew,
 					  -kfactor_scheme,-scale_scheme,fixed_scale,
-					  plavs,nex,excluded,usepi,ycut,maxerror);
+					  plavs,nex,excluded,usepi,ycut,maxerror,enhance_function);
 	      }
 	      else proc = new Process_Group(pinfo,nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
 					    order_strong,order_ew,
 					    -kfactor_scheme,-scale_scheme,fixed_scale,
-					    plavs,nex,excluded,usepi,ycut,maxerror);
+					    plavs,nex,excluded,usepi,ycut,maxerror,enhance_function);
 	      proc->SetEnhance(enhance_factor,maxreduction_factor,maxredepsilon);
 	      if (print_graphs) proc->SetPrintGraphs();
 	      p_procs->Add(proc);

@@ -39,7 +39,7 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
 			       ISR_Handler * _isr,Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			       int _gen_str,int _orderQCD, int _orderEW,
 			       int _kfactorscheme, int _scalescheme,double _scale,
-			       Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi, double ycut,double error) :
+			       Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi, double ycut,double error,std::string e_func) :
   Process_Base(NULL,_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
 	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,ycut,error),
   m_sfactor(1.), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this), 
@@ -57,6 +57,7 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
   m_newlib   = false;
   m_libnumb  = 0;
   m_save_max = 0.;
+  m_efunc=e_func;
   GenerateNames(m_nin,p_flin,p_plin,m_name,m_ptypename,m_libname);
   m_pslibname = m_libname;
 
@@ -99,7 +100,7 @@ Single_Process::Single_Process(Process_Info* pinfo,int _nin,int _nout,Flavour * 
 			       ISR_Handler * _isr,Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			       int _gen_str,int _orderQCD, int _orderEW,
 			       int _kfactorscheme, int _scalescheme,double _scale,
-			       Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi, double ycut,double error) :   
+			       Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi, double ycut,double error,std::string e_func) :   
   Process_Base(pinfo,_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
 	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,ycut,error),
   m_sfactor(1.), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this), 
@@ -117,6 +118,7 @@ Single_Process::Single_Process(Process_Info* pinfo,int _nin,int _nout,Flavour * 
   m_newlib   = false;
   m_libnumb  = 0;
   m_save_max = 0.;
+  m_efunc=e_func;
   GenerateNames(m_nin,p_flin,p_plin,m_name,m_ptypename,m_libname);
   m_pslibname = m_libname;
 

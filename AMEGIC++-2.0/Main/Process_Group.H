@@ -22,7 +22,7 @@ namespace AMEGIC {
 		  ATOOLS::Selector_Data * =NULL,
 		  int=0,int=99,int=99,int=0,int=0,double=-1.,
 		  Pol_Info* _pl=0,int _nex=0,ATOOLS::Flavour * _ex_fl=0,int usepi=0, 
-		  double ycut=-1., double error=-1.);
+		  double ycut=-1., double error=-1.,std::string e_func="1");
     Process_Group();
     ~Process_Group();
     /*------------------------------------------------------------------------------
