@@ -12,6 +12,7 @@ namespace ATOOLS {
     double     m_lower, m_upper;
     double   * m_yvalues;
     double   * m_y2values;
+    double   * m_psvalues;
     long int   m_fills;
     double     m_binsize, m_logbase;
     int        m_depth;

@@ -10,8 +10,6 @@ namespace ANALYSIS {
   class PSM_Observable : public Primitive_Observable_Base {
   protected:
     std::vector<int> m_pnb;
-    ATOOLS::Histogram*  p_mehisto;
-    ATOOLS::Histogram*  p_chhisto;
   public:
     PSM_Observable(unsigned int type,double xmin,double xmax,int nbins,
 		   int p0, int p1, int p2, int p3, 

@@ -80,9 +80,7 @@ PSM_Observable::PSM_Observable(unsigned int type,double xmin,double xmax,int nbi
     str>>m_name;
   }
 
-  p_histo =  0;
-  p_mehisto = new Histogram(type,m_xmin,m_xmax,m_nbins);
-  p_chhisto = new Histogram(type,m_xmin,m_xmax,m_nbins);
+  p_histo = new Histogram(type,m_xmin,m_xmax,m_nbins);
 
 }
 
@@ -92,13 +90,11 @@ void PSM_Observable::Evaluate(const Particle_List & pl,double weight, int ncount
   Vec4D smom(0.,0.,0.,0.);
   for (Particle_List::const_iterator it=pl.begin();it!=pl.end();++it) {
     smom+=(*it)->Momentum();
-    //std::cout<<moms.size()-1<<": "<<moms[moms.size()-1]<<std::endl;
   }
   moms.push_back(Vec4D(0.5*(smom[0]+smom[3]),0.,0.,0.5*(smom[0]+smom[3])));
   moms.push_back(Vec4D(0.5*(smom[0]-smom[3]),0.,0.,-0.5*(smom[0]-smom[3])));
   for (Particle_List::const_iterator it=pl.begin();it!=pl.end();++it) {
     moms.push_back((*it)->Momentum());
-    //std::cout<<moms.size()-1<<": "<<moms[moms.size()-1]<<std::endl;
   }
   
   Vec4D ms=Vec4D(0.,0.,0.,0.);
@@ -107,27 +103,21 @@ void PSM_Observable::Evaluate(const Particle_List & pl,double weight, int ncount
       int hit=0;
       for(size_t j=0;j<m_pnb.size();j++) {
 	if (m_pnb[j]==(int)i) hit = 1;
-	//std::cout<<i<<" "<<j<<" "<<m_nbs[j]<<" "<<hit<<std::endl; 
       }
-      //std::cout<<i<<" "<<hit<<std::endl;
       if (hit) {
 	if (i<2) ms -= moms[i];
 	else ms += moms[i];
-	//std::cout<<"evaluate: "<<i<<": "<<moms[i]<<" "<<ms<<std::endl;
       }
     } 
-    //cout<<m_name<<": "<<ms.Abs2()<<" "<<weight<<" "<<ncount<<endl;
     double st=ms.Abs2();
     if (st<0.) st=-sqrt(-st);
     else st=sqrt(st);
-    p_mehisto->Insert(st,weight,ncount);
-    p_chhisto->Insert(st,1.,1);
+    p_histo->Insert(st,weight,ncount);
   }
   else {
     ms = moms[0]+moms[1];
     double y = 0.5 * log( (ms[0]+ms[3])/(ms[0]-ms[3]) );
-    p_mehisto->Insert(y,weight,ncount);
-    p_chhisto->Insert(y,1.,1);
+    p_histo->Insert(y,weight,ncount);
   }
 }
 
@@ -138,44 +128,31 @@ void PSM_Observable::Evaluate(const Blob_List & blobs,double value, int ncount)
 }
 
 void PSM_Observable::EndEvaluation(double scale) {
-    p_mehisto->Finalize();
-    //    p_mehisto->Output();
-    p_chhisto->Finalize();
-    p_chhisto->Scale(p_mehisto->Integral());
-  
+    p_histo->Finalize();
 }
 
 void PSM_Observable::Output(const std::string & pname) {
   int  mode_dir = 448;
   ATOOLS::MakeDir((pname).c_str(),mode_dir); 
-  p_mehisto->Output((pname + std::string("/") + m_name+std::string(".dat")).c_str());
-  p_chhisto->Output((pname + std::string("/") + std::string("MD")
-		     +m_name+std::string(".dat")).c_str());
+  p_histo->Output((pname + std::string("/") + m_name+std::string(".dat")).c_str());
 }
 
 Primitive_Observable_Base & PSM_Observable::operator+=(const Primitive_Observable_Base & ob)
 {
  PSM_Observable * cob = ((PSM_Observable*)(&ob));
- if (p_mehisto) {
-    (*p_mehisto)+=(cob->p_mehisto);
+ if (p_histo) {
+    (*p_histo)+=(cob->p_histo);
   }
   else {
     msg.Out()<<" warning "<<Name()<<" has not overloaded the operator+="<<std::endl;
   }
  
-  if (p_chhisto) {
-    (*p_chhisto)+=(cob->p_chhisto);
-  }
-  else {
-    msg.Out()<<" warning "<<Name()<<" has not overloaded the operator+="<<std::endl;
-  }
   return *this;
 }
 
 void PSM_Observable::Reset()
 {
-  p_mehisto->Reset();
-  p_chhisto->Reset();
+  p_histo->Reset();
 }
 
 

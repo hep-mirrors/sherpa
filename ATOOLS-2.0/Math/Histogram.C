@@ -22,7 +22,7 @@ Type Get(const std::string & in)
 
 Histogram::Histogram(int _type,double _lower,double _upper,int _nbin) :
   m_type(_type), m_nbin(_nbin), m_lower(_lower), m_upper(_upper), 
-  m_yvalues(0),m_y2values(0), m_fills(0), m_finished(false), m_initialized(false)
+  m_yvalues(0),m_y2values(0), m_psvalues(0), m_fills(0), m_finished(false), m_initialized(false)
 {
   m_logarithmic = int(m_type/10);
   m_depth       = m_type-m_logarithmic*10+1;
@@ -56,6 +56,13 @@ Histogram::Histogram(int _type,double _lower,double _upper,int _nbin) :
     }
   }
 
+  if (m_depth>2) {
+    m_psvalues   = new double[m_nbin];
+    for (int i=0;i<m_nbin;i++) {
+      m_psvalues[i]=0.;
+    }
+  }
+
   for (int i=0;i<m_nbin;i++) {
     m_yvalues[i]=0.;
   }
@@ -84,6 +91,12 @@ Histogram::Histogram(const Histogram * histo)
     m_y2values   = new double[m_nbin];
     for (int i=0;i<m_nbin;i++) {
       m_y2values[i]=histo->m_y2values[i];
+    }
+  }
+  if (m_depth>2) {
+    m_psvalues   = new double[m_nbin];
+    for (int i=0;i<m_nbin;i++) {
+      m_psvalues[i]=histo->m_psvalues[i];
     }
   }
 }
@@ -141,6 +154,10 @@ Histogram::Histogram(const std::string & pID)
       m_y2values   = new double[m_nbin];
       m_y2values[0] = Get<double>(conf[k++]);
     }    
+    if (m_depth>2) {
+      m_psvalues   = new double[m_nbin];
+      m_psvalues[0] = Get<double>(conf[k++]);
+    }    
     if (k>=conf.size()) {
       msg.Error()<<"Error in Histogram : reading file :"<<pID<<std::endl;
       m_active = 0;
@@ -150,6 +167,9 @@ Histogram::Histogram(const std::string & pID)
     m_yvalues[m_nbin-1]  = Get<double>(conf[k++]);
     if (m_depth>1) {
       m_y2values[m_nbin-1] = Get<double>(conf[k++]);
+    }    
+    if (m_depth>2) {
+      m_psvalues[m_nbin-1] = Get<double>(conf[k++]);
     }    
     if (k>=conf.size()) {
       msg.Error()<<"Error in Histogram : reading file :"<<pID<<std::endl;
@@ -179,6 +199,9 @@ Histogram::Histogram(const std::string & pID)
       m_y2values[i+1] = Get<double>(data[2]);
       m_y2values[i+1] = sqr(m_y2values[i+1]);
     }    
+    if (m_depth>2) {
+      m_psvalues[i+1] = Get<double>(data[3]);
+    }    
   }
   ifile.close();
 }
@@ -191,6 +214,9 @@ Histogram::~Histogram() {
   }
   if (m_y2values!=0) { 
     delete [] m_y2values; m_y2values = 0; 
+  }
+  if (m_psvalues!=0) { 
+    delete [] m_psvalues; m_psvalues = 0; 
   }
 };
 
@@ -206,6 +232,12 @@ void Histogram::Finalize() {
 	if (m_fills>1) m_y2values[i]=(m_y2values[i]-sqr(m_yvalues[i]))/(m_fills-1);
       }
     }
+    if (m_depth>2) {
+      double itg = Integral()/(m_fills*m_binsize);
+      for (int i=0;i<m_nbin;++i) {
+	m_psvalues[i]*=itg;
+      }
+    }
   }
 }
 
@@ -215,6 +247,9 @@ void Histogram::Restore() {
       if (m_depth>1) {
 	if (m_fills>1) m_y2values[i]=(m_fills-1)*m_y2values[i]+sqr(m_yvalues[i]);
 	m_y2values[i]*=m_fills*sqr(m_binsize);
+	if (m_depth>2) {
+	  m_psvalues[i]*=m_fills*m_binsize;
+	}
       }
       m_yvalues[i]*=m_fills*m_binsize;
     }
@@ -241,6 +276,9 @@ void Histogram::Reset() {
     if (m_depth>1) {
       m_y2values[i]=0.;
     }
+    if (m_depth>2) {
+      m_psvalues[i]=0.;
+    }
   }
   m_fills=0;
 }
@@ -249,6 +287,7 @@ void Histogram::Scale(double scale) {
   for (int i=0;i<m_nbin;i++) { 
     m_yvalues[i]*= scale;
     if (m_depth>1) m_y2values[i]*=sqr(scale); 
+    if (m_depth>2) m_psvalues[i]*=scale; 
   }
 }
 
@@ -281,15 +320,21 @@ void Histogram::Output(const std::string name)
   ofile.open(name.c_str());
 
   ofile<<m_type<<" "<<m_nbin<<" "<<m_lower<<" "<<m_upper<<" ";
-  ofile<<m_yvalues[0]<<"  ";
-  if (m_depth>1) ofile<<m_y2values[0]<<"  ";
-  ofile<<m_yvalues[m_nbin-1]<<"  ";
-  if (m_depth>1) ofile<<m_y2values[m_nbin-1]<<"  ";
-  ofile<<m_fills<<std::endl;
+  if (m_depth>2) ofile<<std::endl;
+  else {
+    ofile<<m_yvalues[0]<<"  ";
+    if (m_depth>1) ofile<<m_y2values[0]<<"  ";
+    if (m_depth>2) ofile<<m_psvalues[0]<<"  ";
+    ofile<<m_yvalues[m_nbin-1]<<"  ";
+    if (m_depth>1) ofile<<m_y2values[m_nbin-1]<<"  ";
+    if (m_depth>2) ofile<<m_psvalues[m_nbin-1]<<"  ";
+    ofile<<m_fills<<std::endl;
+  }
   for (int i=0;i<m_nbin-1;i++) {
     ofile<<m_lower+i*m_binsize<<"  ";
     ofile<<m_yvalues[i+1]<<"  ";
-    if (m_depth>1) ofile<<sqrt(m_y2values[i+1]);
+    if (m_depth>1) ofile<<sqrt(m_y2values[i+1])<<"  ";
+    if (m_depth>2) ofile<<m_psvalues[i+1]<<"  ";
     ofile<<std::endl;
   }
   ofile.close();
@@ -338,6 +383,7 @@ void Histogram::Insert(double coordinate,double value,int ncount) {
     m_yvalues[0] += value;
     if (m_depth>1) {
       if (value>m_y2values[0]) m_y2values[0] = value;
+      if (m_depth>2) m_psvalues[0] += 1.;
     }
     return; 
   }
@@ -346,6 +392,7 @@ void Histogram::Insert(double coordinate,double value,int ncount) {
     m_yvalues[m_nbin-1] += value; 
     if (m_depth>1) {
       if (value>m_y2values[m_nbin-1]) m_y2values[m_nbin-1] = value;
+      if (m_depth>2) m_psvalues[m_nbin-1] += 1.;
     }
     return; 
   }
@@ -357,6 +404,7 @@ void Histogram::Insert(double coordinate,double value,int ncount) {
       m_yvalues[i] += value;
       if (m_depth>1) {
 	m_y2values[i] += value*value;
+	if (m_depth>2) m_psvalues[i] += 1.;
       }
       return; 
     }
@@ -600,6 +648,11 @@ Histogram & Histogram::operator+=(const Histogram & histo)
   if (m_depth>1) {
     for (int i=0;i<m_nbin;i++) { 
       m_y2values[i]+= histo.m_y2values[i]; 
+    }
+  }
+  if (m_depth>2) {
+    for (int i=0;i<m_nbin;i++) { 
+      m_psvalues[i]+= histo.m_psvalues[i]; 
     }
   }
   
