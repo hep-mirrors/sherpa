@@ -19,7 +19,19 @@ using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
+struct TDouble: public Term {
+  double m_value;
+};// end of struct Double
+
 long int Phase_Space_Integrator::nmax=10000000;                  
+
+Phase_Space_Integrator::Phase_Space_Integrator():
+  p_interpreter(NULL) {}
+
+Phase_Space_Integrator::~Phase_Space_Integrator()
+{
+  if (p_interpreter!=NULL) delete p_interpreter;
+}
 
 double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxerror, int _fin_opt) 
 {
@@ -178,10 +190,17 @@ bool Phase_Space_Integrator::AddPoint(const double value)
   std::string func=proc->EnhanceFunction();
   double enhance=1.0;
   if (func!="1") {
-    Algebra_Interpreter inter;
-    for (size_t i=0;i<proc->NIn()+proc->NOut();++i) 
-      inter.AddTag("p["+ToString(i)+"]",ToString(psh->Point()[i]));
-    enhance=ToType<double>(inter.Interprete(func));
+    if (p_interpreter!=NULL) {
+      for (size_t i=0;i<proc->NIn()+proc->NOut();++i) 
+	p_interpreter->AddTag("p["+ToString(i)+"]",ToString(psh->Point()[i]));
+    }
+    else {
+      p_interpreter = new Algebra_Interpreter();
+      for (size_t i=0;i<proc->NIn()+proc->NOut();++i) 
+	p_interpreter->AddTag("p["+ToString(i)+"]",ToString(psh->Point()[i]));
+      p_interpreter->Interprete(func);
+    }
+    enhance=((TDouble*)p_interpreter->Calculate())->m_value;
   }
   
     if ((psh->BeamIntegrator())) (psh->BeamIntegrator())->AddPoint(value*enhance);    

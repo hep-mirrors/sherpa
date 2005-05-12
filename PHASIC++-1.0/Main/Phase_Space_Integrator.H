@@ -2,6 +2,7 @@
 #define Phase_Space_Integrator_h
 
 namespace PHASIC {class Phase_Space_Handler;}
+namespace ATOOLS {class Algebra_Interpreter;}
 
 namespace PHASIC {
 
@@ -34,7 +35,13 @@ namespace PHASIC {
 
     Phase_Space_Handler *psh;
 
+    ATOOLS::Algebra_Interpreter *p_interpreter;
+ 
   public:
+
+    Phase_Space_Integrator();
+    
+    ~Phase_Space_Integrator();
 
     double Calculate(Phase_Space_Handler*,double,int); 
     double CalculateDecay(Phase_Space_Handler*,double,double); 
