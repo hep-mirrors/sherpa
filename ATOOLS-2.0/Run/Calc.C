@@ -3,6 +3,10 @@
 
 using namespace ATOOLS;
 
+struct TDouble: public Term {
+  double m_value;
+};// end of struct Double
+
 int main(int argc,char **argv)
 {
   std::set_terminate(Exception_Handler::Terminate);
@@ -26,7 +30,11 @@ int main(int argc,char **argv)
       else interpreter.AddTag(argvs.substr(0,pos),
 			      argvs.substr(pos+1));
     }
-    std::cout<<"Calc: "<<expr<<" = "<<interpreter.Interprete(expr)<<std::endl;
+    std::cout<<"Calc: interpreting formula -> "<<expr<<" = "
+	     <<interpreter.Interprete(expr)<<std::endl;
+    if (msg.LevelIsDebugging()) interpreter.PrintEquation();
+    std::cout<<"Calc: recalculating tree   -> "<<expr<<" = "
+	     <<((TDouble*)interpreter.Calculate())->m_value<<std::endl;
     return 0;
   }
   catch (Exception exception) {

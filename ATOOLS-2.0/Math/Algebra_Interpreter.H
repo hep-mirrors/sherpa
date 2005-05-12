@@ -9,6 +9,10 @@
 
 namespace ATOOLS {
 
+  struct Term {
+
+  };// end of struct Term
+
   class Function {
   private:
 
@@ -23,7 +27,8 @@ namespace ATOOLS {
     virtual ~Function();
 
     // member functions
-    virtual std::string Evaluate(const std::vector<std::string> &args) const;
+    virtual std::string  Evaluate(const std::vector<std::string> &args) const;
+    virtual Term        *Evaluate(const std::vector<Term*> &args) const;
 
     // inline functions
     inline const std::string &Tag() const { return m_tag; }
@@ -69,8 +74,7 @@ namespace ATOOLS {
       p_interpreter(interpreter) {}
 
     // member functions
-    virtual std::string 
-    Interprete(const std::string &expr) = 0;
+    virtual std::string Interprete(const std::string &expr) = 0;
 
   };// end of class Interpreter_Function
 
@@ -101,14 +105,19 @@ namespace ATOOLS {
 
   private:
 
-    Function_Map m_functions;
+    Function_Map m_functions, m_leafs;
     Operator_Map m_operators;
 
-    Interpreter_Map m_interpreters;
+    Interpreter_Map       m_interpreters;
+    Interpreter_Function *p_extractor;
 
     Tag_Replacer *p_replacer;
 
     String_Map m_tags;
+    
+    Node<Function*> *p_root, *p_leaf;
+
+    void PrintNode(Node<Function*> *const node) const;
 
   public:
 
@@ -122,8 +131,12 @@ namespace ATOOLS {
     std::string Interprete(const std::string &expr);
     std::string Iterate(const std::string &expr);
 
+    Term *Calculate();
+    Term *Iterate(Node<Function*> *const node);
+
     void AddFunction(Function *const f);
     void AddOperator(Operator *const b);
+    void AddLeaf(Function *const f);
 
     std::string ReplaceTags(std::string &expr) const;    
 
@@ -133,11 +146,20 @@ namespace ATOOLS {
     // inline functions
     inline void SetTagReplacer(Tag_Replacer *const replacer) 
     { p_replacer=replacer; }
+    inline void SetLeaf(Node<Function*> *const leaf) 
+    { p_leaf=leaf; }
+
+    inline Interpreter_Function *const Extractor() const 
+    { return p_extractor; }
 
     inline const Function_Map &Functions() const { return m_functions; }
     inline const Operator_Map &Operators() const { return m_operators; }
 
+    inline Node<Function*> *const Leaf() const { return p_leaf; }
+
     inline Tag_Replacer *const TagReplacer() const { return p_replacer; }
+
+    inline void PrintEquation() const { PrintNode(p_root); }
 
   };// end of class Algebra_Interpreter
 
@@ -148,6 +170,7 @@ namespace ATOOLS {
   public:								\
     NAME();								\
     std::string Evaluate(const std::vector<std::string> &args) const;	\
+    Term        *Evaluate(const std::vector<Term*> &args) const;	\
   };									\
   NAME::NAME(): Function(TAG) {}					\
   std::string NAME::Evaluate(const std::vector<std::string> &args) const
@@ -157,6 +180,7 @@ namespace ATOOLS {
   public:								\
     NAME();								\
     std::string Evaluate(const std::vector<std::string> &args) const;	\
+    Term        *Evaluate(const std::vector<Term*> &args) const;	\
   };									\
   NAME::NAME(): Operator(TAG,PRIORITY,false) {}				\
   std::string NAME::Evaluate(const std::vector<std::string> &args) const
@@ -165,7 +189,8 @@ namespace ATOOLS {
   class NAME: public Operator {						\
   public:								\
     NAME();								\
-    std::string Evaluate(const std::vector<std::string> &args) const;	\
+    std::string  Evaluate(const std::vector<std::string> &args) const;	\
+    Term        *Evaluate(const std::vector<Term*> &args) const;	\
   };									\
   NAME::NAME(): Operator(TAG,PRIORITY,true) {}				\
   std::string NAME::Evaluate(const std::vector<std::string> &args) const

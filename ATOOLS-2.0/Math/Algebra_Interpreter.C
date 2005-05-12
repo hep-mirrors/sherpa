@@ -8,6 +8,16 @@
 
 using namespace ATOOLS;
 
+struct TDouble: public Term {
+  double m_value;
+  TDouble(const double &value): m_value(value) {}
+};// end of struct Double
+
+struct TVec4D: public Term {
+  Vec4D m_value;
+  TVec4D(const Vec4D &value): m_value(value) {}
+};// end of struct Vec4D
+
 Function::Function(const std::string &tag): m_tag(tag) {}
 
 Function::~Function() {}
@@ -17,108 +27,111 @@ std::string Function::Evaluate(const std::vector<std::string> &args) const
   THROW(fatal_error,"No evaluation rule.");
 }
 
+Term *Function::Evaluate(const std::vector<Term*> &args) const
+{
+  THROW(fatal_error,"No evaluation rule.");
+}
+
+class Number: public Function {
+private:
+
+  Tag_Replacer *p_replacer;
+
+  double m_value;
+  bool   m_replace;
+
+public:
+
+  Number(const std::string &tag,Tag_Replacer *const replacer);
+
+  Term *Evaluate(const std::vector<Term*> &args) const;
+
+};// end of class Number
+
+Number::Number(const std::string &tag,Tag_Replacer *const replacer): 
+  Function(tag), p_replacer(replacer), m_replace(false)
+{
+  std::string value=tag;
+  p_replacer->ReplaceTags(value);
+  if (tag!=value) m_replace=true;
+  else m_value=ToType<double>(tag);
+}
+
+Term *Number::Evaluate(const std::vector<Term*> &args) const
+{
+  if (args.size()!=0) THROW(fatal_error,"Number requires no argument.");
+  TDouble *res = new TDouble(m_value);
+  std::string tag=Tag();
+  if (m_replace) res->m_value=ToType<double>(p_replacer->ReplaceTags(tag));
+  return res;
+}
+
+class Vector: public Function {
+private:
+
+  Tag_Replacer *p_replacer;
+
+  Vec4D m_value;
+  bool  m_replace;
+
+public:
+
+  Vector(const std::string &tag,Tag_Replacer *const replacer);
+
+  Term *Evaluate(const std::vector<Term*> &args) const;
+
+};// end of class Vector
+
+Vector::Vector(const std::string &tag,Tag_Replacer *const replacer): 
+  Function(tag), p_replacer(replacer), m_replace(false) 
+{
+  std::string value=tag;
+  p_replacer->ReplaceTags(value);
+  if (tag!=value) m_replace=true;
+  else m_value=ToType<Vec4D>(tag);
+}
+
+Term *Vector::Evaluate(const std::vector<Term*> &args) const
+{
+  if (args.size()!=0) THROW(fatal_error,"Vector requires no argument.");
+  TVec4D *res = new TVec4D(m_value);
+  std::string tag=Tag();
+  if (m_replace) res->m_value=ToType<Vec4D>(p_replacer->ReplaceTags(tag));
+  return res;
+}
+
 Operator::~Operator() {}
 
-DEFINE_BINARY_OPERATOR(Binary_Plus,"+",12)
-{
-  double arg0=ToType<double>(args[0]);
-  double arg1=ToType<double>(args[1]);
-  return ToString(arg0+arg1);
-}
+#define DEFINE_BINARY_DOUBLE_OPERATOR(NAME,TAG,OP,PRIORITY,TYPE)    \
+  DEFINE_BINARY_OPERATOR(NAME,TAG,PRIORITY)                         \
+  {                                                                 \
+    TYPE arg0=ToType<TYPE>(args[0]);                                \
+    TYPE arg1=ToType<TYPE>(args[1]);                                \
+    return ToString(arg0 OP arg1);                                  \
+  }                                                                 \
+  Term *NAME::Evaluate(const std::vector<Term*> &args) const        \
+  {                                                                 \
+    ((TDouble*)args[0])->m_value=(TYPE)((TDouble*)args[0])->m_value \
+      OP(TYPE)((TDouble*)args[1])->m_value;                         \
+    delete args[1];                                                 \
+    return args[0];                                                 \
+  }
 
-DEFINE_BINARY_OPERATOR(Binary_Minus,"-",12)
-{
-  double arg0=ToType<double>(args[0]);
-  double arg1=ToType<double>(args[1]);
-  return ToString(arg0-arg1);
-}
-
-DEFINE_BINARY_OPERATOR(Binary_Times,"*",13)
-{
-  double arg0=ToType<double>(args[0]);
-  double arg1=ToType<double>(args[1]);
-  return ToString(arg0*arg1);
-}
-
-DEFINE_BINARY_OPERATOR(Binary_Divide,"/",13)
-{
-  double arg0=ToType<double>(args[0]);
-  double arg1=ToType<double>(args[1]);
-  return ToString(arg0/arg1);
-}
-
-DEFINE_BINARY_OPERATOR(Binary_Modulus,"%",13)
-{
-  long int arg0=ToType<long int>(args[0]);
-  long int arg1=ToType<long int>(args[1]);
-  return ToString(arg0%arg1);
-}
-
-DEFINE_BINARY_OPERATOR(Binary_Shift_Left,"<<",11)
-{
-  long int arg0=ToType<long int>(args[0]);
-  long int arg1=ToType<long int>(args[1]);
-  return ToString(arg0<<arg1);
-}
-
-DEFINE_BINARY_OPERATOR(Binary_Shift_Right,">>",11)
-{
-  long int arg0=ToType<long int>(args[0]);
-  long int arg1=ToType<long int>(args[1]);
-  return ToString(arg0>>arg1);
-}
-
-DEFINE_BINARY_OPERATOR(Binary_Equal,"==",9)
-{
-  return args[0]==args[1]?"1":"0";
-}
-
-DEFINE_BINARY_OPERATOR(Binary_Not_Equal,"!=",9)
-{
-  return args[0]!=args[1]?"1":"0";
-}
-
-DEFINE_BINARY_OPERATOR(Binary_Less,"<",10)
-{
-  double arg0=ToType<double>(args[0]);
-  double arg1=ToType<double>(args[1]);
-  return arg0<arg1?"1":"0";
-}
-
-DEFINE_BINARY_OPERATOR(Binary_Greater,">",10)
-{
-  double arg0=ToType<double>(args[0]);
-  double arg1=ToType<double>(args[1]);
-  return arg0>arg1?"1":"0";
-}
-
-DEFINE_BINARY_OPERATOR(Binary_Less_Equal,"<=",10)
-{
-  double arg0=ToType<double>(args[0]);
-  double arg1=ToType<double>(args[1]);
-  return arg0<=arg1?"1":"0";
-}
-
-DEFINE_BINARY_OPERATOR(Binary_Greater_Equal,">=",10)
-{
-  double arg0=ToType<double>(args[0]);
-  double arg1=ToType<double>(args[1]);
-  return arg0>=arg1?"1":"0";
-}
-
-DEFINE_BINARY_OPERATOR(Binary_Logical_And,"&&",5)
-{
-  int arg0=ToType<int>(args[0]);
-  int arg1=ToType<int>(args[1]);
-  return ToString(arg0&&arg1);
-}
-
-DEFINE_BINARY_OPERATOR(Binary_Logical_Or,"||",4)
-{
-  int arg0=ToType<int>(args[0]);
-  int arg1=ToType<int>(args[1]);
-  return ToString(arg0||arg1);
-}
+DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Plus,"+",+,12,double);
+DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Minus,"-",-,12,double);
+DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Times,"*",*,13,double);
+DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Divide,"/",/,13,double);
+DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Modulus,"%",%,13,long int);
+DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Shift_Left,"<<",<<,11,long int);
+DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Shift_Right,">>",>>,11,long int);
+DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Equal,"==",==,9,double);
+DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Not_Equal,"!=",!=,9,double);
+DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Less,"<",<,10,double);
+DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Greater,">",>,10,double);
+DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Less_Equal,"<=",<=,10,double);
+DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Greater_Equal,">=",>=,10,double);
+DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Logical_And,"&&",&&,5,long int);
+DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Logical_Or,"||",||,4,long int);
 
 DEFINE_UNARY_OPERATOR(Unary_Not,"!",14)
 {
@@ -126,71 +139,53 @@ DEFINE_UNARY_OPERATOR(Unary_Not,"!",14)
   return ToString(!arg0);
 }
 
-DEFINE_FUNCTION(Power,"pow")
+Term *Unary_Not::Evaluate(const std::vector<Term*> &args) const
 {
-  if (args.size()!=2) THROW(fatal_error,"Pow requires 2 arguments.");
-  double arg0=ToType<double>(args[0]);
-  double arg1=ToType<double>(args[1]);
-  return ToString(pow(arg0,arg1));
+  ((TDouble*)args[0])->m_value=!(int)((TDouble*)args[0])->m_value;
+  return args[0];
 }
 
-DEFINE_FUNCTION(Logarithm,"log")
-{
-  if (args.size()!=1) THROW(fatal_error,"Log requires 1 argument.");
-  double arg0=ToType<double>(args[0]);
-  return ToString(log(arg0));
-}
+#define DEFINE_BINARY_DOUBLE_FUNCTION(NAME,TAG,OP)                  \
+  DEFINE_FUNCTION(NAME,TAG)                                         \
+  {                                                                 \
+    if (args.size()!=2)                                             \
+      THROW(fatal_error,std::string(TAG)+" requires 2 arguments."); \
+    double arg0=ToType<double>(args[0]);                            \
+    double arg1=ToType<double>(args[1]);                            \
+    return ToString(OP(arg0,arg1));                                 \
+  }                                                                 \
+  Term *NAME::Evaluate(const std::vector<Term*> &args) const        \
+  {                                                                 \
+    ((TDouble*)args[0])->m_value=OP(((TDouble*)args[0])->m_value,   \
+				    ((TDouble*)args[1])->m_value);  \
+    delete args[1];                                                 \
+    return args[0];                                                 \
+  }
 
-DEFINE_FUNCTION(Logarithm10,"log10")
-{
-  if (args.size()!=1) THROW(fatal_error,"Log10 requires 1 argument.");
-  double arg0=ToType<double>(args[0]);
-  return ToString(log10(arg0));
-}
+DEFINE_BINARY_DOUBLE_FUNCTION(Power,"pow",pow);
+DEFINE_BINARY_DOUBLE_FUNCTION(Minimum,"min",Min)
+DEFINE_BINARY_DOUBLE_FUNCTION(Maximum,"max",Max)
 
-DEFINE_FUNCTION(Exponential,"exp")
-{
-  if (args.size()!=1) THROW(fatal_error,"Exp requires 1 argument.");
-  double arg0=ToType<double>(args[0]);
-  return ToString(exp(arg0));
-}
+#define DEFINE_UNARY_DOUBLE_FUNCTION(NAME,TAG,OP)                  \
+  DEFINE_FUNCTION(NAME,TAG)                                        \
+  {                                                                \
+    if (args.size()!=1)                                            \
+      THROW(fatal_error,std::string(TAG)+" requires 1 argument."); \
+    double arg0=ToType<double>(args[0]);                           \
+    return ToString(OP(arg0));                                     \
+  }                                                                \
+  Term *NAME::Evaluate(const std::vector<Term*> &args) const       \
+  {                                                                \
+    ((TDouble*)args[0])->m_value=OP(((TDouble*)args[0])->m_value); \
+    return args[0];                                                \
+  }
 
-DEFINE_FUNCTION(Absolute_Value,"abs")
-{
-  if (args.size()!=1) THROW(fatal_error,"Abs requires 1 argument.");
-  double arg0=ToType<double>(args[0]);
-  return ToString(dabs(arg0));
-}
-
-DEFINE_FUNCTION(Square,"sqr")
-{
-  if (args.size()!=1) THROW(fatal_error,"Sqr requires 1 argument.");
-  double arg0=ToType<double>(args[0]);
-  return ToString(sqr(arg0));
-}
-
-DEFINE_FUNCTION(Square_Root,"sqrt")
-{
-  if (args.size()!=1) THROW(fatal_error,"Sqrt requires 1 argument.");
-  double arg0=ToType<double>(args[0]);
-  return ToString(sqrt(arg0));
-}
-
-DEFINE_FUNCTION(Minimum,"min")
-{
-  if (args.size()!=2) THROW(fatal_error,"Min requires 2 arguments.");
-  double arg0=ToType<double>(args[0]);
-  double arg1=ToType<double>(args[1]);
-  return ToString(Min(arg0,arg1));
-}
-
-DEFINE_FUNCTION(Maximum,"max")
-{
-  if (args.size()!=2) THROW(fatal_error,"Max requires 2 arguments.");
-  double arg0=ToType<double>(args[0]);
-  double arg1=ToType<double>(args[1]);
-  return ToString(Max(arg0,arg1));
-}
+DEFINE_UNARY_DOUBLE_FUNCTION(Logarithm,"log",log);
+DEFINE_UNARY_DOUBLE_FUNCTION(Logarithm10,"log10",log10);
+DEFINE_UNARY_DOUBLE_FUNCTION(Exponential,"exp",exp);
+DEFINE_UNARY_DOUBLE_FUNCTION(Absolute_Value,"abs",abs);
+DEFINE_UNARY_DOUBLE_FUNCTION(Square,"sqr",sqr);
+DEFINE_UNARY_DOUBLE_FUNCTION(Square_Root,"sqrt",sqrt);
 
 DEFINE_FUNCTION(Vec4D_Part,"Part")
 {
@@ -200,72 +195,57 @@ DEFINE_FUNCTION(Vec4D_Part,"Part")
   return ToString(arg0[arg1]);
 }
 
-DEFINE_FUNCTION(Vec4D_Abs2,"Abs2")
+Term *Vec4D_Part::Evaluate(const std::vector<Term*> &args) const
 {
-  if (args.size()!=1) THROW(fatal_error,"Abs2 requires 1 argument.");
-  Vec4D arg0=ToType<Vec4D>("("+args[0]+")");
-  return ToString(arg0.Abs2());
+  ((TDouble*)args[1])->m_value=(((TVec4D*)args[0])->m_value)
+    [(int)((TDouble*)args[1])->m_value];
+  delete args[0];
+  return args[1];
 }
 
-DEFINE_FUNCTION(Vec4D_PPerp,"PPerp")
-{
-  if (args.size()!=1) THROW(fatal_error,"PPerp requires 1 argument.");
-  Vec4D arg0=ToType<Vec4D>("("+args[0]+")");
-  return ToString(arg0.PPerp());
-}
+#define DEFINE_ONE_VECTOR_OPERATOR(NAME,TAG,OP)				\
+  DEFINE_FUNCTION(NAME,TAG)						\
+  {									\
+    if (args.size()!=1)							\
+      THROW(fatal_error,std::string(TAG)+" requires 1 argument.");      \
+    Vec4D arg0=ToType<Vec4D>(args[0]);				        \
+    return ToString(arg0.OP());						\
+  }									\
+  Term *NAME::Evaluate(const std::vector<Term*> &args) const		\
+  {									\
+    TDouble *res = new TDouble((((TVec4D*)args[0])->m_value).OP());	\
+    delete args[0];							\
+    return res;								\
+  }									\
 
-DEFINE_FUNCTION(Vec4D_Theta,"Theta")
-{
-  if (args.size()!=1) THROW(fatal_error,"Theta requires 1 argument.");
-  Vec4D arg0=ToType<Vec4D>("("+args[0]+")");
-  return ToString(arg0.Theta());
-}
+DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Abs2,"Abs2",Abs2);
+DEFINE_ONE_VECTOR_OPERATOR(Vec4D_PPerp,"PPerp",PPerp);
+DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Theta,"Theta",Theta);
+DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Eta,"Eta",Eta);
+DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Phi,"Phi",Phi);
 
-DEFINE_FUNCTION(Vec4D_Eta,"Eta")
-{
-  if (args.size()!=1) THROW(fatal_error,"Eta requires 1 argument.");
-  Vec4D arg0=ToType<Vec4D>("("+args[0]+")");
-  return ToString(arg0.Eta());
-}
+#define DEFINE_TWO_VECTOR_OPERATOR(NAME,TAG,OP)				\
+  DEFINE_FUNCTION(NAME,TAG)						\
+  {									\
+    if (args.size()!=2)							\
+      THROW(fatal_error,"Operator requires 2 arguments.");		\
+    Vec4D arg0=ToType<Vec4D>(args[0]);				        \
+    Vec4D arg1=ToType<Vec4D>(args[1]);				        \
+    return ToString(arg0.OP(arg1));					\
+  }									\
+  Term *NAME::Evaluate(const std::vector<Term*> &args) const		\
+  {									\
+    TDouble *res = new TDouble((((TVec4D*)args[0])->m_value).		\
+      OP(((TVec4D*)args[1])->m_value));					\
+    delete args[0];							\
+    delete args[1];							\
+    return res;								\
+  }									\
 
-DEFINE_FUNCTION(Vec4D_Phi,"Phi")
-{
-  if (args.size()!=1) THROW(fatal_error,"Phi requires 1 argument.");
-  Vec4D arg0=ToType<Vec4D>("("+args[0]+")");
-  return ToString(arg0.Phi());
-}
-
-DEFINE_FUNCTION(Vec4D_PPerpR,"PPerpR")
-{
-  if (args.size()!=2) THROW(fatal_error,"PPerpR requires 2 arguments.");
-  Vec4D arg0=ToType<Vec4D>("("+args[0]+")");
-  Vec4D arg1=ToType<Vec4D>("("+args[1]+")");
-  return ToString(arg0.PPerp(arg1));
-}
-
-DEFINE_FUNCTION(Vec4D_ThetaR,"ThetaR")
-{
-  if (args.size()!=2) THROW(fatal_error,"ThetaR requires 2 arguments.");
-  Vec4D arg0=ToType<Vec4D>("("+args[0]+")");
-  Vec4D arg1=ToType<Vec4D>("("+args[1]+")");
-  return ToString(arg0.Theta(arg1));
-}
-
-DEFINE_FUNCTION(Vec4D_DEta,"DEta")
-{
-  if (args.size()!=2) THROW(fatal_error,"DEta requires 2 arguments.");
-  Vec4D arg0=ToType<Vec4D>("("+args[0]+")");
-  Vec4D arg1=ToType<Vec4D>("("+args[1]+")");
-  return ToString(arg0.DEta(arg1));
-}
-
-DEFINE_FUNCTION(Vec4D_DPhi,"DPhi")
-{
-  if (args.size()!=2) THROW(fatal_error,"DPhi requires 2 arguments.");
-  Vec4D arg0=ToType<Vec4D>("("+args[0]+")");
-  Vec4D arg1=ToType<Vec4D>("("+args[1]+")");
-  return ToString(arg0.DPhi(arg1));
-}
+DEFINE_TWO_VECTOR_OPERATOR(Vec4D_PPerpR,"PPerpR",PPerp);
+DEFINE_TWO_VECTOR_OPERATOR(Vec4D_ThetaR,"ThetaR",Theta);
+DEFINE_TWO_VECTOR_OPERATOR(Vec4D_DEta,"DEta",DEta);
+DEFINE_TWO_VECTOR_OPERATOR(Vec4D_DPhi,"DPhi",DPhi);
 
 DEFINE_INTERPRETER_FUNCTION(Resolve_Bracket)
 {
@@ -315,6 +295,43 @@ DEFINE_INTERPRETER_FUNCTION(Resolve_Bracket)
   return res;
 }
 
+DEFINE_INTERPRETER_FUNCTION(Extract_Leaf)
+{
+  if (expr.find("{")!=0 || expr.find("}")!=expr.length()-1) {
+    Node<Function*> *leaf=p_interpreter->Leaf();
+    Function *func=NULL;
+    if (expr.find(",")!=std::string::npos)
+      func = new Vector("("+expr+")",p_interpreter->TagReplacer());
+    else if (expr.find("[")!=std::string::npos)
+      func = new Vector(expr,p_interpreter->TagReplacer());
+    else func = new Number(expr,p_interpreter->TagReplacer());
+    p_interpreter->AddLeaf(func);
+    (*leaf)[0]=func;
+    std::string value=expr;
+    p_interpreter->TagReplacer()->ReplaceTags(value);
+    return value;
+  }
+  size_t pos=expr.find(",");
+  Node<Function*> *leaf=p_interpreter->Leaf(), *mother=--*leaf;
+  if (mother!=NULL) 
+    for (size_t i=0;i<(*mother)->size();++i)
+      if ((*mother)()[i]==leaf) {
+	delete (*mother)()[i];
+	unsigned long add;
+	MyStrStream sstr;
+	sstr<<std::hex<<expr.substr(pos+1,expr.length()-pos-2);
+	sstr>>add;
+	(*mother)()[i]=dynamic_cast<Node<Function*>*>
+	  ((Node<Function*>*)add);
+	if ((*mother)()[i]==NULL) 
+	  THROW(fatal_error,"Cannot recover node pointer.");
+	p_interpreter->SetLeaf((*mother)()[i]);
+      }
+  std::string value=expr.substr(1,pos-1);
+  p_interpreter->TagReplacer()->ReplaceTags(value);
+  return value;
+}
+
 DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
 {
   if (expr.find("(")==std::string::npos ||
@@ -352,9 +369,17 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
 		  <<"' '"<<func->Tag()<<"("<<out
 		  <<")' '"<<right<<"'\n";
   }
-  for (size_t j=0;j<args.size();++j) 
+  Node<Function*> *leaf = new Node<Function*>(func,true);
+  for (size_t j=0;j<args.size();++j) {
+    (*leaf)->push_back(new Node<Function*>(NULL,true));
+    (*(*leaf)->back())<<leaf;
     args[j]=p_interpreter->Iterate(args[j]);
-  return p_interpreter->Iterate(left+func->Evaluate(args)+right);
+    p_interpreter->SetLeaf((*leaf)->back());
+    args[j]=p_interpreter->Extractor()->Interprete(args[j]);
+  }
+  p_interpreter->SetLeaf(leaf);
+  return p_interpreter->
+    Iterate(left+"{"+func->Evaluate(args)+","+ToString(leaf)+"}"+right);
 }
 
 size_t FindBinaryPlus(const std::string &expr,const bool fwd,
@@ -365,7 +390,7 @@ size_t FindBinaryPlus(const std::string &expr,const bool fwd,
   if (pos==std::string::npos || (pos==0 && !fwd)) return std::string::npos;
   if (pos==0) return FindBinaryPlus(expr,fwd,1);
   if (expr[pos-1]=='e' || expr[pos-1]=='E' ||
-      expr[pos-1]<48 || expr[pos-1]>57) 
+      ((expr[pos-1]<48 || expr[pos-1]>57) && expr[pos-1]!='}')) 
     return FindBinaryPlus(expr,fwd,fwd?pos+1:pos-1);
   return pos;  
 }
@@ -378,7 +403,7 @@ size_t FindBinaryMinus(const std::string &expr,const bool fwd,
   if (pos==std::string::npos || (pos==0 && !fwd)) return std::string::npos;
   if (pos==0) return FindBinaryMinus(expr,fwd,1);
   if (expr[pos-1]=='e' || expr[pos-1]=='E' ||
-      expr[pos-1]<48 || expr[pos-1]>57) 
+      ((expr[pos-1]<48 || expr[pos-1]>57) && expr[pos-1]!='}')) 
     return FindBinaryMinus(expr,fwd,fwd?pos+1:pos-1);
   return pos;  
 }
@@ -447,14 +472,24 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
   }
   rrstr=rstr.substr(rfpos);
   rstr=rstr.substr(0,rfpos);
+  Node<Function*> *leaf = new Node<Function*>(op,true);
   std::vector<std::string> args(2);
+  (*leaf)->push_back(new Node<Function*>(NULL,true));
+  (*(*leaf)->back())<<leaf;
   args[0]=p_interpreter->Iterate(lstr);
+  p_interpreter->SetLeaf((*leaf)->back());
+  args[0]=p_interpreter->Extractor()->Interprete(args[0]);
+  (*leaf)->push_back(new Node<Function*>(NULL,true));
+  (*(*leaf)->back())<<leaf;
   args[1]=p_interpreter->Iterate(rstr);
+  p_interpreter->SetLeaf((*leaf)->back());
+  args[1]=p_interpreter->Extractor()->Interprete(args[1]);
+  p_interpreter->SetLeaf(leaf);
   msg_Debugging()<<"Interprete_Binary -> '"
-	    <<lrstr<<"' '"<<lstr<<"' '"<<op->Tag()
-	    <<"' '"<<rstr<<"' '"<<rrstr<<"'\n";
+	    <<lrstr<<"' '"<<args[0]<<"' '"<<op->Tag()
+	    <<"' '"<<args[1]<<"' '"<<rrstr<<"'\n";
   return p_interpreter->
-    Iterate(lrstr+op->Evaluate(args)+rrstr);
+    Iterate(lrstr+"{"+op->Evaluate(args)+","+ToString(leaf)+"}"+rrstr);
 }
 
 DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
@@ -498,17 +533,24 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
   }
   rrstr=rstr.substr(rfpos);
   rstr=rstr.substr(0,rfpos);
+  Node<Function*> *leaf = new Node<Function*>(op,true);
   std::vector<std::string> args(1);
+  (*leaf)->push_back(new Node<Function*>(NULL,true));
+  (*(*leaf)->back())<<leaf;
   args[0]=p_interpreter->Iterate(rstr);
+  p_interpreter->SetLeaf((*leaf)->back());
+  args[0]=p_interpreter->Extractor()->Interprete(args[0]);
+  p_interpreter->SetLeaf(leaf);
   msg_Debugging()<<"Interprete_Unary -> '"
-		<<lrstr<<"' '"<<op->Tag()<<"' '"<<rstr<<"' '"<<rrstr<<"'\n";
+		<<lrstr<<"' '"<<op->Tag()<<"' '"<<args[0]<<"' '"<<rrstr<<"'\n";
   return p_interpreter->
-    Iterate(lrstr+op->Evaluate(args)+rrstr);
+    Iterate(lrstr+"{"+op->Evaluate(args)+","+ToString(leaf)+"}"+rrstr);
 }
 
 Algebra_Interpreter::Algebra_Interpreter(const bool standard):
-  p_replacer(this)
+  p_replacer(this), p_root(NULL), p_leaf(NULL)
 {
+  p_extractor = new Extract_Leaf(this);
   m_interpreters[0] = new Interprete_Function(this);
   m_interpreters[1] = new Resolve_Bracket(this);
   m_interpreters[2] = new Interprete_Binary(this);
@@ -561,15 +603,48 @@ Algebra_Interpreter::~Algebra_Interpreter()
     delete m_functions.begin()->second;
     m_functions.erase(m_functions.begin());
   }
+  if (p_root!=NULL) delete p_root;
+  while (m_leafs.size()>0) {
+    delete m_leafs.begin()->second;
+    m_leafs.erase(m_leafs.begin());
+  }
 }
 
 std::string Algebra_Interpreter::Interprete(const std::string &expr)
 {
   msg_Debugging()<<"Algebra_Interpreter::Interprete("<<expr<<")\n";
+  if (p_root!=NULL) delete p_root;
+  p_root=p_leaf=NULL;
+  while (m_leafs.size()>0) {
+    delete m_leafs.begin()->second;
+    m_leafs.erase(m_leafs.begin());
+  }
   std::string res=expr;
   KillBlanks(res);
-  res=p_replacer->ReplaceTags(res);
-  return Iterate(res);
+  std::string result=Iterate(res);
+  size_t pos=result.find(",");
+  if (pos==std::string::npos) return result;
+  p_root = p_leaf;
+  return result.substr(1,pos-1);
+}
+
+Term *Algebra_Interpreter::Calculate()
+{
+  if (p_root==NULL) return new TDouble(0.0);
+  return Iterate(p_root);
+}
+
+Term *Algebra_Interpreter::Iterate(Node<Function*> *const node)
+{
+  if (node->operator->()==NULL) {
+    std::vector<Term*> args;
+    return (*node)[0]->Evaluate(args);
+  }
+  std::vector<Term*> args((*node)->size());
+  for (size_t i=0;i<(*node)->size();++i) {
+    args[i]=Iterate((*node)()[i]);
+  }
+  return (*node)[0]->Evaluate(args);
 }
 
 void Algebra_Interpreter::AddFunction(Function *const f)
@@ -580,6 +655,11 @@ void Algebra_Interpreter::AddFunction(Function *const f)
 void Algebra_Interpreter::AddOperator(Operator *const b)
 { 
   m_operators.insert(Operator_Pair(b->Priority(),b)); 
+}
+
+void Algebra_Interpreter::AddLeaf(Function *const f)
+{
+  m_leafs.insert(Function_Pair(ToString(f),f)); 
 }
 
 std::string Algebra_Interpreter::Iterate(const std::string &expr)
@@ -615,6 +695,19 @@ std::string Algebra_Interpreter::ReplaceTags(std::string &expr) const
     if ((pos=expr.find(sit->first))!=std::string::npos) 
       return ReplaceTags(expr.replace(pos,sit->first.length(),sit->second));}
   return expr;
+}
+
+void Algebra_Interpreter::PrintNode(Node<Function*> *const node) const
+{
+  msg_Info()<<"("<<node<<") '"
+	    <<((*node)[0]!=NULL?(*node)[0]->Tag():"<NULL>")<<"' {\n";
+  {
+    msg_Indent();
+    if (node->operator->()!=NULL) 
+      for (size_t i=0;i<(*node)().size();++i) PrintNode((*node)()[i]);
+    else msg_Info()<<"<NULL>\n";
+  }
+  msg_Info()<<"}\n";
 }
 
 Tag_Replacer::~Tag_Replacer() {}
