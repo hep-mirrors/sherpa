@@ -657,7 +657,6 @@ void Lund_Interface::PerformDecay( ATOOLS::Particle * part,
   int pos = m_secondarymap[part];					// find particle in secondary map
   int daughter1 = hepevt.jdahep[pos][0]-1,
       daughter2 = hepevt.jdahep[pos][1];
-  const int n = daughter2-daughter1+1;
 
   // create blob
   ATOOLS::Blob * blob;											// decay blob
@@ -707,8 +706,8 @@ bool Lund_Interface::FillDecay(ATOOLS::Particle * part,ATOOLS::Blob_List *blobli
 {
   msg_Tracking()<<"Lund_Interface::FillDecay()"<<endl;
   ATOOLS::Blob *decay;
-  ATOOLS::Particle *particle;
-  if (m_secondarymap.find(part)==m_secondarymap.end()) return; 
+  ATOOLS::Particle *particle=NULL;
+  if (m_secondarymap.find(part)==m_secondarymap.end()) return true; 
   int pos = m_secondarymap[part];
   decay = new ATOOLS::Blob();
   decay->SetStatus(1);
@@ -721,6 +720,7 @@ bool Lund_Interface::FillDecay(ATOOLS::Particle * part,ATOOLS::Blob_List *blobli
   particle->SetStatus(2);
   bloblist->push_back(decay);
   FillSecondaryHadronsInBlob(decay,bloblist,hepevt.jdahep[pos][0]-1,hepevt.jdahep[pos][1],pl);
+  return true;
 }
 
 
