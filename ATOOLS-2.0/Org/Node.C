@@ -6,7 +6,8 @@ namespace ATOOLS {
   template <class Node_Type>
   Node<Node_Type>::Node(const Node_Type &node,const bool create): 
     std::vector<Node_Type>(1,node), 
-    p_next(NULL) 
+    p_next(NULL),
+    p_previous(NULL)
   {
     if (create) p_next = new std::vector<Node<Node_Type>*>();
   }

@@ -171,7 +171,7 @@ void Exception_Handler::RemoveTerminatorFunction(void (*function)(void))
 void Exception_Handler::SetExitCode()
 {
   s_print=true;
-  if (s_exception==NULL) return;
+  if (s_exception==NULL) abort();
   if (s_exception->m_class=="ISR_Handler")                 s_exitcode=151;
   else if (s_exception->m_class=="MI_Base")                s_exitcode=211;
   else if (s_exception->m_class=="Simple_Chain")           s_exitcode=212;

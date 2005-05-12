@@ -11,6 +11,8 @@ namespace ATOOLS {
     
     std::vector<Node<Node_Type>*> *p_next;
 
+    Node<Node_Type> *p_previous; 
+
     Node();
     
   public:
@@ -24,6 +26,11 @@ namespace ATOOLS {
     // member functions
     std::vector<Node<Node_Type>*> *operator->();
     std::vector<Node<Node_Type>*> &operator()();
+
+    // inline functions
+    inline void operator<<(Node<Node_Type> *const prev) { p_previous=prev; }
+
+    inline Node<Node_Type> *const operator--() const { return p_previous; }
 
   };// end of class Node
 
