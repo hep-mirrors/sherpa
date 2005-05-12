@@ -1,12 +1,13 @@
 #ifndef Phase_Space_Integrator_h
 #define Phase_Space_Integrator_h
 
+#include "Algebra_Interpreter.H"
+
 namespace PHASIC {class Phase_Space_Handler;}
-namespace ATOOLS {class Algebra_Interpreter;}
 
 namespace PHASIC {
 
-  class Phase_Space_Integrator {
+  class Phase_Space_Integrator: public ATOOLS::Tag_Replacer {
   private:
 
     double          result, max, error;
@@ -54,6 +55,9 @@ namespace PHASIC {
     static void     SetMaxPoints(long int _nmax);
 
     bool AddPoint(const double value);
+
+    std::string   ReplaceTags(std::string &expr) const;    
+    ATOOLS::Term *ReplaceTags(ATOOLS::Term *term) const;    
 
   };
   /*!

@@ -23,6 +23,11 @@ struct TDouble: public Term {
   double m_value;
 };// end of struct Double
 
+struct TVec4D: public Term {
+  Vec4D m_value;
+  TVec4D(const Vec4D &value): m_value(value) {}
+};// end of struct Vec4D
+
 long int Phase_Space_Integrator::nmax=10000000;                  
 
 Phase_Space_Integrator::Phase_Space_Integrator():
@@ -190,12 +195,9 @@ bool Phase_Space_Integrator::AddPoint(const double value)
   std::string func=proc->EnhanceFunction();
   double enhance=1.0;
   if (func!="1") {
-    if (p_interpreter!=NULL) {
-      for (size_t i=0;i<proc->NIn()+proc->NOut();++i) 
-	p_interpreter->AddTag("p["+ToString(i)+"]",ToString(psh->Point()[i]));
-    }
-    else {
+    if (p_interpreter==NULL) {
       p_interpreter = new Algebra_Interpreter();
+      p_interpreter->SetTagReplacer(this);
       for (size_t i=0;i<proc->NIn()+proc->NOut();++i) 
 	p_interpreter->AddTag("p["+ToString(i)+"]",ToString(psh->Point()[i]));
       p_interpreter->Interprete(func);
@@ -472,3 +474,14 @@ long int Phase_Space_Integrator::MaxPoints()
 void     Phase_Space_Integrator::SetMaxPoints(long int _nmax) 
 { nmax=_nmax;  };
 
+std::string Phase_Space_Integrator::ReplaceTags(std::string &expr) const
+{
+  return p_interpreter->ReplaceTags(expr);
+}
+
+Term *Phase_Space_Integrator::ReplaceTags(Term *term) const
+{
+  int i=ATOOLS::ToType<int>(term->m_tag.substr(2,term->m_tag.length()-3));
+  ((TVec4D*)term)->m_value=psh->Point()[i];
+  return term;
+}

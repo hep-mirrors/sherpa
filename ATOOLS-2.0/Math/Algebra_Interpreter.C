@@ -18,7 +18,8 @@ struct TVec4D: public Term {
   TVec4D(const Vec4D &value): m_value(value) {}
 };// end of struct Vec4D
 
-Function::Function(const std::string &tag): m_tag(tag) {}
+Function::Function(const std::string &tag): 
+  m_tag(tag), p_interpreter(NULL) {}
 
 Function::~Function() {}
 
@@ -37,8 +38,9 @@ private:
 
   Tag_Replacer *p_replacer;
 
-  double m_value;
-  bool   m_replace;
+  bool m_replace;
+
+  mutable TDouble m_value;
 
 public:
 
@@ -49,21 +51,21 @@ public:
 };// end of class Number
 
 Number::Number(const std::string &tag,Tag_Replacer *const replacer): 
-  Function(tag), p_replacer(replacer), m_replace(false)
+  Function(tag), p_replacer(replacer), m_replace(false), m_value(1.0)
 {
+  m_value.m_tag=tag;
   std::string value=tag;
   p_replacer->ReplaceTags(value);
   if (tag!=value) m_replace=true;
-  else m_value=ToType<double>(tag);
+  else m_value.m_value=ToType<double>(tag);
 }
 
 Term *Number::Evaluate(const std::vector<Term*> &args) const
 {
   if (args.size()!=0) THROW(fatal_error,"Number requires no argument.");
-  TDouble *res = new TDouble(m_value);
-  std::string tag=Tag();
-  if (m_replace) res->m_value=ToType<double>(p_replacer->ReplaceTags(tag));
-  return res;
+  std::string tag=m_tag;
+  if (m_replace) p_replacer->ReplaceTags(&m_value);
+  return &m_value;
 }
 
 class Vector: public Function {
@@ -71,8 +73,9 @@ private:
 
   Tag_Replacer *p_replacer;
 
-  Vec4D m_value;
   bool  m_replace;
+
+  mutable TVec4D m_value;
 
 public:
 
@@ -83,21 +86,21 @@ public:
 };// end of class Vector
 
 Vector::Vector(const std::string &tag,Tag_Replacer *const replacer): 
-  Function(tag), p_replacer(replacer), m_replace(false) 
+  Function(tag), p_replacer(replacer), m_replace(false), m_value(Vec4D()) 
 {
+  m_value.m_tag=tag;
   std::string value=tag;
   p_replacer->ReplaceTags(value);
   if (tag!=value) m_replace=true;
-  else m_value=ToType<Vec4D>(tag);
+  else m_value.m_value=ToType<Vec4D>(tag);
 }
 
 Term *Vector::Evaluate(const std::vector<Term*> &args) const
 {
   if (args.size()!=0) THROW(fatal_error,"Vector requires no argument.");
-  TVec4D *res = new TVec4D(m_value);
-  std::string tag=Tag();
-  if (m_replace) res->m_value=ToType<Vec4D>(p_replacer->ReplaceTags(tag));
-  return res;
+  std::string tag=m_tag;
+  if (m_replace) p_replacer->ReplaceTags(&m_value);
+  return &m_value;
 }
 
 Operator::~Operator() {}
@@ -113,7 +116,6 @@ Operator::~Operator() {}
   {                                                                 \
     ((TDouble*)args[0])->m_value=(TYPE)((TDouble*)args[0])->m_value \
       OP(TYPE)((TDouble*)args[1])->m_value;                         \
-    delete args[1];                                                 \
     return args[0];                                                 \
   }
 
@@ -158,7 +160,6 @@ Term *Unary_Not::Evaluate(const std::vector<Term*> &args) const
   {                                                                 \
     ((TDouble*)args[0])->m_value=OP(((TDouble*)args[0])->m_value,   \
 				    ((TDouble*)args[1])->m_value);  \
-    delete args[1];                                                 \
     return args[0];                                                 \
   }
 
@@ -183,7 +184,7 @@ DEFINE_BINARY_DOUBLE_FUNCTION(Maximum,"max",Max)
 DEFINE_UNARY_DOUBLE_FUNCTION(Logarithm,"log",log);
 DEFINE_UNARY_DOUBLE_FUNCTION(Logarithm10,"log10",log10);
 DEFINE_UNARY_DOUBLE_FUNCTION(Exponential,"exp",exp);
-DEFINE_UNARY_DOUBLE_FUNCTION(Absolute_Value,"abs",abs);
+DEFINE_UNARY_DOUBLE_FUNCTION(Absolute_Value,"abs",dabs);
 DEFINE_UNARY_DOUBLE_FUNCTION(Square,"sqr",sqr);
 DEFINE_UNARY_DOUBLE_FUNCTION(Square_Root,"sqrt",sqrt);
 
@@ -199,7 +200,6 @@ Term *Vec4D_Part::Evaluate(const std::vector<Term*> &args) const
 {
   ((TDouble*)args[1])->m_value=(((TVec4D*)args[0])->m_value)
     [(int)((TDouble*)args[1])->m_value];
-  delete args[0];
   return args[1];
 }
 
@@ -214,7 +214,7 @@ Term *Vec4D_Part::Evaluate(const std::vector<Term*> &args) const
   Term *NAME::Evaluate(const std::vector<Term*> &args) const		\
   {									\
     TDouble *res = new TDouble((((TVec4D*)args[0])->m_value).OP());	\
-    delete args[0];							\
+    p_interpreter->AddTerm(res);                                        \
     return res;								\
   }									\
 
@@ -237,8 +237,7 @@ DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Phi,"Phi",Phi);
   {									\
     TDouble *res = new TDouble((((TVec4D*)args[0])->m_value).		\
       OP(((TVec4D*)args[1])->m_value));					\
-    delete args[0];							\
-    delete args[1];							\
+    p_interpreter->AddTerm(res);                                        \
     return res;								\
   }									\
 
@@ -608,6 +607,10 @@ Algebra_Interpreter::~Algebra_Interpreter()
     delete m_leafs.begin()->second;
     m_leafs.erase(m_leafs.begin());
   }
+  while (m_terms.size()>0) {
+    delete *m_terms.begin();
+    m_terms.erase(m_terms.begin());
+  }
 }
 
 std::string Algebra_Interpreter::Interprete(const std::string &expr)
@@ -631,6 +634,10 @@ std::string Algebra_Interpreter::Interprete(const std::string &expr)
 Term *Algebra_Interpreter::Calculate()
 {
   if (p_root==NULL) return new TDouble(0.0);
+  while (m_terms.size()>0) {
+    delete *m_terms.begin();
+    m_terms.erase(m_terms.begin());
+  }
   return Iterate(p_root);
 }
 
@@ -650,16 +657,23 @@ Term *Algebra_Interpreter::Iterate(Node<Function*> *const node)
 void Algebra_Interpreter::AddFunction(Function *const f)
 {
   m_functions.insert(Function_Pair(f->Tag(),f)); 
+  f->SetInterpreter(this);
 }
 
 void Algebra_Interpreter::AddOperator(Operator *const b)
 { 
   m_operators.insert(Operator_Pair(b->Priority(),b)); 
+  b->SetInterpreter(this);
 }
 
 void Algebra_Interpreter::AddLeaf(Function *const f)
 {
   m_leafs.insert(Function_Pair(ToString(f),f)); 
+}
+
+void Algebra_Interpreter::AddTerm(Term *const t)
+{
+  m_terms.insert(t); 
 }
 
 std::string Algebra_Interpreter::Iterate(const std::string &expr)
@@ -722,4 +736,9 @@ std::string &Tag_Replacer::KillBlanks(std::string& expr) const
 std::string Tag_Replacer::ReplaceTags(std::string &expr) const
 {
   return expr;
+}
+
+Term *Tag_Replacer::ReplaceTags(Term *term) const
+{
+  return term;
 }

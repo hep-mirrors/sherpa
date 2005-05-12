@@ -10,13 +10,17 @@
 namespace ATOOLS {
 
   struct Term {
-
+    std::string m_tag;
   };// end of struct Term
 
+  class Algebra_Interpreter;
+
   class Function {
-  private:
+  protected:
 
     std::string m_tag;
+
+    Algebra_Interpreter *p_interpreter;
 
   public:
 
@@ -32,6 +36,9 @@ namespace ATOOLS {
 
     // inline functions
     inline const std::string &Tag() const { return m_tag; }
+
+    inline void SetInterpreter(Algebra_Interpreter *const interpreter)
+    { p_interpreter=interpreter; }
 
   };// end of class Function
 
@@ -60,8 +67,6 @@ namespace ATOOLS {
 
   };// end of class Operator
 
-  class Algebra_Interpreter;
-
   class Interpreter_Function {
   protected:
     
@@ -87,7 +92,8 @@ namespace ATOOLS {
     // member functions
     std::string &KillBlanks(std::string& expr) const;
 
-    virtual std::string ReplaceTags(std::string &expr) const;    
+    virtual std::string  ReplaceTags(std::string &expr) const;    
+    virtual Term        *ReplaceTags(Term *term) const;    
 
   };// end of class Tag_Replacer
 
@@ -103,6 +109,8 @@ namespace ATOOLS {
 
     typedef std::map<size_t,Interpreter_Function*> Interpreter_Map;
 
+    typedef std::set<Term*> Term_Set;
+
   private:
 
     Function_Map m_functions, m_leafs;
@@ -114,7 +122,8 @@ namespace ATOOLS {
     Tag_Replacer *p_replacer;
 
     String_Map m_tags;
-    
+    Term_Set   m_terms;
+
     Node<Function*> *p_root, *p_leaf;
 
     void PrintNode(Node<Function*> *const node) const;
@@ -136,7 +145,9 @@ namespace ATOOLS {
 
     void AddFunction(Function *const f);
     void AddOperator(Operator *const b);
+
     void AddLeaf(Function *const f);
+    void AddTerm(Term *const t);
 
     std::string ReplaceTags(std::string &expr) const;    
 
