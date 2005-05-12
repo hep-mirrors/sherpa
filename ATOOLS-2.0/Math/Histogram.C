@@ -69,7 +69,7 @@ Histogram::Histogram(int _type,double _lower,double _upper,int _nbin) :
 }
 
 Histogram::Histogram(const Histogram * histo)
-: m_y2values(0) {
+: m_yvalues(0), m_y2values(0), m_psvalues(0) {
   m_lower   = histo->m_lower;
   m_upper   = histo->m_upper;
   m_logbase = histo->m_logbase;
@@ -103,7 +103,7 @@ Histogram::Histogram(const Histogram * histo)
 
 
 Histogram::Histogram(const std::string & pID)
-: m_y2values(0) {
+  :  m_yvalues(0), m_y2values(0), m_psvalues(0)  {
   m_finished=false;
   std::ifstream ifile(pID.c_str());
 
