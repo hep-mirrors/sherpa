@@ -1,0 +1,55 @@
+#!/bin/bash
+
+SIGNAL=2
+for I in $* ; do
+  if [ "$I" = "-j" ]; then DJOB=TRUE 
+  elif [ "$I" = "-s" ]; then DSIGNAL=TRUE 
+  elif [ "$I" = "-l" ]; then LOCAL=TRUE 
+  elif [ "$I" = "-h" ]; then echo && \
+    echo "killjob version 1.0" && echo && \
+    echo "options: -j <job>       kill job running in directory <job>" && \
+    echo "         -s <signal>    kill job with signal <signal>" && echo && \
+    echo "         -l             run on local host" && echo && \
+    echo "         -h             display this help and exit" && echo && \
+    exit 0
+  elif [ "$DJOB" = "TRUE" ]; then DJOB="" && JOB=$I
+  elif [ "$DSIGNAL" = "TRUE" ]; then DSIGNAL="" && SIGNAL=$I
+  else echo "killjob: error: unrecognized option '$I'. try '-h'" && \
+    exit 1 
+  fi
+done
+
+if [ "$LOCAL" = "TRUE" ] ; then 
+
+  ITEM=0
+  for I in `ps aux | grep Sherpa | grep $USER` ; do
+    (( ++ITEM ))
+    if [ "$I" = "$USER" ] ; then ITEM=0 ; fi
+    if (( ITEM == 1 )) ; then 
+      if test -d /proc/$I ; then 
+        MATCH=`ls -l /proc/$I/cwd | grep $JOB`
+	if [ "$MATCH" != "" ] ; then 
+          echo "killjob ($HOSTNAME): job '$JOB' runs as pid $I" 
+	  echo "killjob ($HOSTNAME): killing pid $I with signal $SIGNAL"
+	  kill -s $SIGNAL $I
+	  echo "killjob ($HOSTNAME): logout"
+	  exit
+	fi
+      else
+        echo "killjob ($HOSTNAME): process $I has no entry in /proc"
+      fi
+    fi
+  done
+  echo "killjob ($HOSTNAME): no matching process found"
+  echo "killjob ($HOSTNAME): logout"
+  exit
+
+else 
+
+  NODE=`head -20 $JOB/run.log | grep QUEUE | awk '{ print $3 }'`
+  NODE=${NODE%'.q'}
+  echo "killjob: job '$JOB' runs on $NODE (according to 'run.log')"
+  echo "killjob: login at $NODE"
+  ssh $NODE ~/bin/killjob -l -s $SIGNAL -j $JOB 
+
+fi
