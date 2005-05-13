@@ -7,9 +7,8 @@
 
 #include "MI_Base.H"
 #include "Environment.H"
-#ifdef USING__Sherpa
-#include "Remnant_Base.H"
-#endif
+
+namespace ATOOLS { class Object; }
 
 namespace AMISIC {
 
@@ -18,9 +17,7 @@ namespace AMISIC {
   class Simple_String: public MI_Base {
   private:
 
-#ifdef USING__Sherpa
-    SHERPA::Remnant_Base  *p_remnants[2];
-#endif
+    ATOOLS::Object *p_remnants[2];
 
     std::vector<Reggeon_Trajectory*> m_reggeons;
 

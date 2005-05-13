@@ -170,9 +170,10 @@ EXTRAXS::XS_Group *Simple_Chain::FindPDFGroup(const size_t nin,const size_t nout
     if (nin==2 && nout==(*p_processes)[i]->NOut()) {
       ATOOLS::Flavour ref[2], test[2];
       for (size_t j=0;j<2;++j) {
-	ref[j]=p_remnants[j]->
+	ref[j]=((SHERPA::Remnant_Base*)p_remnants[j])->
 	  ConstituentType((*p_processes)[i]->Flavours()[j]);
-	test[j]=p_remnants[j]->ConstituentType(flavours[j]);
+	test[j]=((SHERPA::Remnant_Base*)p_remnants[j])->
+	  ConstituentType(flavours[j]);
       }
       if (ref[0]==test[0] && ref[1]==test[1])
 	return dynamic_cast<EXTRAXS::XS_Group*>((*p_processes)[i]);
@@ -180,7 +181,8 @@ EXTRAXS::XS_Group *Simple_Chain::FindPDFGroup(const size_t nin,const size_t nout
   }
   ATOOLS::Flavour *copy = new ATOOLS::Flavour[nin+nout];
   for (short unsigned int i=0;i<nin;++i) 
-    copy[i]=p_remnants[i]->ConstituentType(flavours[i]);
+    copy[i]=((SHERPA::Remnant_Base*)p_remnants[i])->
+      ConstituentType(flavours[i]);
   for (short unsigned int i=nin;i<nin+nout;++i) copy[i]=ATOOLS::kf::jet;
   Semihard_QCD *newgroup = 
     new Semihard_QCD(p_beam,p_isr,p_processes->SelectorData(),

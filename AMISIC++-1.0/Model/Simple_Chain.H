@@ -11,11 +11,9 @@
 #include "Fixed_Variable_Channel.H"
 #include "Simple_XS.H"
 #include "Environment.H"
-#ifdef USING__Sherpa
-#include "Remnant_Base.H"
-#endif
 
 namespace SHERPA { class Remnant_Base; }
+namespace ATOOLS { class Object; }
 
 namespace AMISIC {
 
@@ -63,7 +61,7 @@ namespace AMISIC {
     std::string         m_regulator; 
     std::vector<double> m_regulation;
 
-    SHERPA::Remnant_Base *p_remnants[2];
+    ATOOLS::Object *p_remnants[2];
 
     ATOOLS::Info_Key m_spkey, m_ykey, m_isrspkey, m_isrykey;
 
