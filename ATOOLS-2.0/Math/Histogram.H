@@ -13,7 +13,7 @@ namespace ATOOLS {
     double   * m_yvalues;
     double   * m_y2values;
     double   * m_psvalues;
-    long int   m_fills;
+    long int   m_fills,m_psfills;
     double     m_binsize, m_logbase;
     int        m_depth;
     bool       m_active, m_finished, m_initialized;
