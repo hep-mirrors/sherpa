@@ -57,7 +57,7 @@ Number::Number(const std::string &tag,Tag_Replacer *const replacer):
   std::string value=tag;
   p_replacer->ReplaceTags(value);
   if (tag!=value) m_replace=true;
-  else m_value.m_value=ToType<double>(tag);
+  m_value.m_value=ToType<double>(value);
 }
 
 Term *Number::Evaluate(const std::vector<Term*> &args) const
@@ -92,7 +92,7 @@ Vector::Vector(const std::string &tag,Tag_Replacer *const replacer):
   std::string value=tag;
   p_replacer->ReplaceTags(value);
   if (tag!=value) m_replace=true;
-  else m_value.m_value=ToType<Vec4D>(tag);
+  m_value.m_value=ToType<Vec4D>(value);
 }
 
 Term *Vector::Evaluate(const std::vector<Term*> &args) const
@@ -708,6 +708,23 @@ std::string Algebra_Interpreter::ReplaceTags(std::string &expr) const
        sit!=m_tags.end();++sit) {
     if ((pos=expr.find(sit->first))!=std::string::npos) 
       return ReplaceTags(expr.replace(pos,sit->first.length(),sit->second));}
+  return expr;
+}
+
+Term *Algebra_Interpreter::ReplaceTags(Term *expr) const
+{
+  msg_Debugging()<<"Algebra_Interpreter::ReplaceTags("<<expr->m_tag<<")\n";
+  size_t pos=std::string::npos;
+  for (String_Map::const_iterator sit=m_tags.begin();
+       sit!=m_tags.end();++sit) {
+    if ((pos=expr->m_tag.find(sit->first))!=std::string::npos) {
+      if (expr->m_tag[0]=='(' && expr->m_tag[expr->m_tag.length()-1]==')') 
+	((TVec4D*)expr)->m_value=ToType<Vec4D>(sit->second);      
+      else 
+	((TDouble*)expr)->m_value=ToType<double>(sit->second);      
+      return expr;
+    }
+  }
   return expr;
 }
 

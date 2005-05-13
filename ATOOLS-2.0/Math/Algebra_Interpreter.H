@@ -149,7 +149,8 @@ namespace ATOOLS {
     void AddLeaf(Function *const f);
     void AddTerm(Term *const t);
 
-    std::string ReplaceTags(std::string &expr) const;    
+    std::string  ReplaceTags(std::string &expr) const;    
+    Term        *ReplaceTags(Term *expr) const;
 
     void AddTag(const std::string &tag,const std::string &value);
     void SetTags(const String_Map &tags);
