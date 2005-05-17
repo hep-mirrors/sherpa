@@ -10,34 +10,32 @@ using namespace ATOOLS;
 using namespace std;
 
 
-Interaction_Model_SM_ZPrime::Interaction_Model_SM_ZPrime(MODEL::Model_Base * _model,
-					   std::string _cplscheme,std::string _yukscheme) :
-  Interaction_Model_Base(_model,_cplscheme,_yukscheme)
+Interaction_Model_SM_ZPrime::Interaction_Model_SM_ZPrime(
+MODEL::Model_Base * _model, std::string _cplscheme,std::string _yukscheme)
+: Interaction_Model_Base(_model,_cplscheme,_yukscheme)
 { // The Standard Model is part of this extended model
   p_moSM  = new Interaction_Model_SM(p_model,_cplscheme,_yukscheme);
 
   // set up constants for the model
   double Ecms2 = sqr(rpa.gen.Ecms());
 
-  // sin and cos of the Weinberg angle
   sintW = Kabbala(std::string("\\sin\\theta_W"),
 		  sqrt(ScalarConstant(std::string("sin2_thetaW"))));
   costW = Kabbala(std::string("\\cos\\theta_W"),
 		  sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
 
-
-  // coupling constant of the gamma
+  // coupling constants
   g1    = Kabbala(string("g_1"),
 		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),Ecms2)));
-  // coupling constant of Z'
   gP = Kabbala(string("g_1/\\cos\\theta_W"), g1.Value()/costW.Value());
+
 
   PL    = Kabbala(string("P_L"),1.);
   PR    = Kabbala(string("P_R"),1.);
-// unneeded constants from original EW-Model
-//  M_I   = Kabbala(string("i"),Complex(0.,1.));
-//  root2 = Kabbala(string("\\sqrt{2}"),sqrt(2.));
-//  vev   = Kabbala(string("v_{EW}"),ScalarConstant(std::string("vev")));
+  M_I   = Kabbala(string("i"),Complex(0.,1.));
+
+  // the parameter specifying the LR model
+  alphaLR = Kabbala(string("\\alpha_{LR}"), sqrt(2.));
 };
 
 void Interaction_Model_SM_ZPrime::c_FFV(Single_Vertex* vertex,int& vanz)
@@ -45,57 +43,76 @@ void Interaction_Model_SM_ZPrime::c_FFV(Single_Vertex* vertex,int& vanz)
 // create the vertices for the standard model
   p_moSM->c_FFV(vertex,vanz);
 
-
-// create the ZPrime-Flavour
+// create FFV vertices with Z' if it's on
   Flavour flZPrime(kf::ZPrime);
-
-  // only generate vertices if ZPrime is on
   if (flZPrime.IsOn()) {
-    /* Particle information
-    PRINT_INFO("ZPrime is on");
-    cout << kf::ZPrime; PRINT_INFO(" << Particle Number: ");
-    cout << flZPrime.Charge(); PRINT_INFO(" << Charge");
-    cout << flZPrime.Mass(); PRINT_INFO(" << Mass");
-    cout << flZPrime.Spin(); PRINT_INFO(" << Spin"); */
 
-    // list of all fermions that can undergo p -> Z' + p reactions
+    // parse through all fermions than couple to Z' and create vertices
     int PossibleFermions[12] = {1,2,3,4,5,6,11,12,13,14,15,16};
-    // scan the list
     for (int i=0; i<12; i++) {
+
+      // initialize the currently parsed fermion
       int FermionNumber = PossibleFermions[i];
       Flavour flFermion = Flavour(kf::code(FermionNumber));
-      PRINT_INFO("Creating Vertices for Particle");
-      cout << FermionNumber << " : " << flFermion <<"\n";
+      Kabbala B = Kabbala(string("B_{")+flFermion.TexName()+string("}"),
+                          flFermion.BaryonNumber());
+      Kabbala L = Kabbala(string("L_{")+ flFermion.TexName()+string("}"),
+                          flFermion.LeptonNumber());
+      Kabbala Y3R = Kabbala(string("YR_{")+flFermion.TexName()+string("}"),
+                            flFermion.IsoWeak());
 
-      /*
-      // if the fermion is on it can undergo the p -> p + Z' reaction
       if (flFermion.IsOn()) {
-        // create the vertex for that particular fermion and a Z'
-        Kabbala kcpl0: // *** add value here
-	Kabbala kcpl1; // *** add value here
-
-	vertex[vanz].in[0] = vertex[vanz].in[2] = flFermion;
+        // create the vertex for that particular fermion and a Z'.
+	// Right-handed neutrinos will not take part in any interaction.
+        Kabbala kcpl0;
+        if ((FermionNumber==12)||(FermionNumber==14)||(FermionNumber==16))
+          {kcpl0 = Kabbala("0.0", 0.);}
+        else {kcpl0 = -M_I * gP * (Y3R * alphaLR + (L-B)/(alphaLR*2));};
+	Kabbala kcpl1 = -M_I * gP * (L-B) / (alphaLR*2);
+	
+	// set couplings and particle info for current vertex
+	vertex[vanz].in[0] = flFermion;
 	vertex[vanz].in[1] = flZPrime;
+        vertex[vanz].in[2] = Flavour(kf::code(FermionNumber));
 	vertex[vanz].cpl[0] = kcpl0.Value();
 	vertex[vanz].cpl[1] = kcpl1.Value();
 	vertex[vanz].cpl[2] = 0.;
 	vertex[vanz].cpl[3] = 0.;
-	// PR = "Parton right handed" ???
-	vertex[vanz].Str = (kcpl0*PR+kcpl1*PL).String(); 
-	}; */
+        vertex[vanz].Str = (kcpl0*PR+kcpl1*PL).String(); 
+
+	// Color Function for vertex
+	vertex[vanz].ncf       = 1;
+	if (flFermion.Strong()) {
+	  vertex[vanz].Color     = new Color_Function(cf::D);
+	  vertex[vanz].Color->SetParticleArg(0,2);
+	  vertex[vanz].Color->SetStringArg('0','2');
+	} 
+        else 
+          vertex[vanz].Color = new Color_Function(cf::None);
+
+	// Lorenz function for vertex
+	vertex[vanz].nlf     = 1;
+        vertex[vanz].Lorentz = new Lorentz_Function(lf::Gamma);
+	vertex[vanz].Lorentz->SetParticleArg(1);
+
+	vertex[vanz].on     = 1;
+	vanz++; 
+	}; 
     };
   };
 }
 
 
+// no other couplings of the ZPrime are built in, yet. All the following
+// methods simply call the Standard Model to create its vertices.
 void Interaction_Model_SM_ZPrime::c_VVV(Single_Vertex* vertex,int& vanz)
-{
-  p_moSM->c_VVV(vertex,vanz);
-}
+{ // ZPrime does not couple on any gauge boson.
+  // Reason: None of the quantum numbers Z' does couple to (B, L, Y)
+  //         are carried by any gauge boson.
+  p_moSM->c_VVV(vertex,vanz); }
 void Interaction_Model_SM_ZPrime::c_VVVV(Single_Vertex* vertex,int& vanz)
-{
-  p_moSM->c_VVVV(vertex,vanz);
-}
+{ // No Z' interactions here - same reason as in c_VVV
+  p_moSM->c_VVVV(vertex,vanz); }
 
 void Interaction_Model_SM_ZPrime::c_FFS(Single_Vertex* vertex,int& vanz)  { p_moSM->c_FFS(vertex,vanz); }
 void Interaction_Model_SM_ZPrime::c_VVS(Single_Vertex* vertex,int& vanz)  { p_moSM->c_VVS(vertex,vanz); }

@@ -9,7 +9,8 @@ namespace AMEGIC {
   class Interaction_Model_SM_ZPrime : public Interaction_Model_Base {
     Interaction_Model_SM * p_moSM;
   protected:
-    Kabbala sintW, costW, g1, gP, PL, PR;
+    Kabbala sintW, costW, g1, gP, PL, PR, M_I;
+    Kabbala alphaLR; // Model Parameter
   public:
     Interaction_Model_SM_ZPrime(MODEL::Model_Base *,std::string,std::string);
     void c_FFV(Single_Vertex *,int &);
