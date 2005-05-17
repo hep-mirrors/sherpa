@@ -6,8 +6,8 @@ using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace std;
 
-Channel_Generator_Base::Channel_Generator_Base(int _nin,int _nout,Flavour * _fl,
-                                     Point * _plist) 
+Channel_Generator_Base::Channel_Generator_Base(int _nin,int _nout,
+					       Point * _plist) 
   : nin(_nin), nout(_nout)
 {
   Topology top;

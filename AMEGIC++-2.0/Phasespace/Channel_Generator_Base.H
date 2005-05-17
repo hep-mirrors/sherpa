@@ -10,7 +10,6 @@
 namespace AMEGIC {
 
 typedef std::map<std::string,std::string> Decls;
-  class ATOOLS::Flavour;
   class Point;
   
   typedef std::vector<std::string> String_List;
@@ -22,7 +21,7 @@ typedef std::map<std::string,std::string> Decls;
     std::string GetMassIndex(std::string &str);
     std::string GetMassIndex(char &str);
   public:
-    Channel_Generator_Base(int,int,ATOOLS::Flavour *,Point *);
+    Channel_Generator_Base(int,int,Point *);
     virtual ~Channel_Generator_Base();
     virtual int  MakeChannel(int&,int,std::string&,std::string&) = 0;
     Point     * GetPointlist()             { return plist; }

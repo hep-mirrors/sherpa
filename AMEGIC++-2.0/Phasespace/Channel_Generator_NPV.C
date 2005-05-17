@@ -15,9 +15,9 @@ using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
-Channel_Generator_NPV::Channel_Generator_NPV(int _nin,int _nout,Flavour * _fl,
+Channel_Generator_NPV::Channel_Generator_NPV(int _nin,int _nout,
                                      Point * _plist,int _aid) 
-  : Channel_Generator_Base(_nin,_nout,_fl,_plist)
+  : Channel_Generator_Base(_nin,_nout,_plist)
 {
   IdentifyProps(plist);
   m_idstr = string("");

@@ -1,4 +1,4 @@
-#include "Channel_Generator3_NPV.H"
+#include "Channel_Generator_KK.H"
 #include "Topology.H"
 #include "Flavour.H"
 #include "Point.H"
@@ -15,7 +15,7 @@ using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
-Channel_Generator3_NPV::Channel_Generator3_NPV(int _nin,int _nout,
+Channel_Generator_KK::Channel_Generator_KK(int _nin,int _nout,
                                      Point * _plist,int _aid) 
   : Channel_Generator_Base(_nin,_nout,_plist)
 {
@@ -25,12 +25,12 @@ Channel_Generator3_NPV::Channel_Generator3_NPV(int _nin,int _nout,
   m_aid = _aid;
 }
 
-Channel_Generator3_NPV::~Channel_Generator3_NPV() 
+Channel_Generator_KK::~Channel_Generator_KK() 
 { 
   for (size_t i=0;i<m_pclist.size();++i) delete m_pclist[i];
 }
 
-void Channel_Generator3_NPV::GenerateTopos(Point* p)
+void Channel_Generator_KK::GenerateTopos(Point* p)
 {
   if (nin != 2) return;
   Point* ph = p->left;
@@ -53,7 +53,7 @@ void Channel_Generator3_NPV::GenerateTopos(Point* p)
   MRPScan();
 }
 
-Point* Channel_Generator3_NPV::CopyPoints(Point* p)
+Point* Channel_Generator_KK::CopyPoints(Point* p)
 {
   Point* ph = NULL; 
   if (p!=NULL) { 
@@ -68,7 +68,7 @@ Point* Channel_Generator3_NPV::CopyPoints(Point* p)
 }
 
 
-Point* Channel_Generator3_NPV::TransformTS(Point* p)
+Point* Channel_Generator_KK::TransformTS(Point* p)
 {
   Point **props = new Point*[tcount+1];
   Point **propt = new Point*[tcount+1];
@@ -135,61 +135,11 @@ Point* Channel_Generator3_NPV::TransformTS(Point* p)
   return ps;
 }
 
-Point* Channel_Generator3_NPV::GetMirrorTopo(Point* p)
-{
-  Point* ph = NULL; 
-  if (p!=NULL) { 
-    ph = new Point(*p);
-    m_pclist.push_back(ph);
-    ph->middle = NULL;
-    if (ph->m!=2) {
-      ph->left  = GetMirrorTopo(p->left);
-      ph->right = GetMirrorTopo(p->right);
-    }
-    else {
-      ph->left  = GetMirrorTopo(p->right);
-      ph->right = GetMirrorTopo(p->left);
-    }
-  }
-  return ph;
-}
 
-int Channel_Generator3_NPV::MarkNP(Point* p)
-{
-  if (p->left==0) return 0;
-  if (p->m>0 && p->fl.IsMassive() && p->fl.Width()>0.) {
-    if (p->fl.Mass()<PMassSum(p,0)) {
-      p->m=2;
-      if (p->left->left==0 || p->right->left==0) return 1;
-      return 2;
-    }
-  }
-  return MarkNP(p->left) + MarkNP(p->right);
-}
+void Channel_Generator_KK::MRPScan()
+{}
 
-void Channel_Generator3_NPV::MRPScan()
-{
-  Point* ph = m_topos[0]->left;
-  if (ph->left==0) {
-    ph = m_topos[0]->right;
-    if (ph->left==0 && m_topos[0]->middle) ph = m_topos[0]->middle;
-  }
-  switch (MarkNP(ph->left)) {
-  case 2:
-    m_topos.push_back(GetMirrorTopo(m_topos[0]));
-  case 1:
-    return;
-  }
-  switch (MarkNP(ph->right)) {
-  case 2:
-    m_topos.push_back(GetMirrorTopo(m_topos[0]));
-  case 1:
-    return;
-  }
-  m_topos.clear();
-}
-
-int Channel_Generator3_NPV::MakeChannel(int& echflag,int n,string& path,string& pID)
+int Channel_Generator_KK::MakeChannel(int& echflag,int n,string& path,string& pID)
 {  
   if (m_idstr==string("")) CreateChannelID(echflag);
 
@@ -199,19 +149,21 @@ int Channel_Generator3_NPV::MakeChannel(int& echflag,int n,string& path,string& 
 
   string filename = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path+string("/")+
                     string(name)+string(".C");
+
+//   cout<<name<<endl<<endl;
   
   ifstream from;
   from.open((filename).c_str());
   
-  int    rannum = 0;
+  int    rannum = 1;
 
   ofstream chf;
   chf.open((filename).c_str());
 
   chf<<"#include "<<'"'<<"Single_Channel.H"<<'"'<<endl;
-  chf<<"#include "<<'"'<<"Multi_Channel.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"Run_Parameter.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"Channel_Elements.H"<<'"'<<endl;  
+  chf<<"#include "<<'"'<<"Channel_Elements_KK.H"<<'"'<<endl;  
   chf<<"#include "<<'"'<<"Vegas.H"<<'"'<<endl<<endl;  
 
   chf<<"using namespace PHASIC;"<<endl;  
@@ -265,8 +217,7 @@ int Channel_Generator3_NPV::MakeChannel(int& echflag,int n,string& path,string& 
   chf<<"  double *ran = p_vegas->GeneratePoint(_ran);"<<endl;
   chf<<"  for(int i=0;i<rannum;i++) rans[i]=ran[i];"<<endl;
   Flavour * flav    = new Flavour[nout];  
-  int       maxnumb = 0;
-  
+  int       maxnumb = 0;   
   acount = 0;
   newchannel = 0;
   Step0(0,m_topos[echflag],rannum,chf);
@@ -274,7 +225,7 @@ int Channel_Generator3_NPV::MakeChannel(int& echflag,int n,string& path,string& 
   chf<<"}"<<endl<<endl;
   
   int rannumber = rannum;
-  rannum = 0;
+  rannum = 1;
   //Weight
   chf<<"void "<<name<<"::";
   chf<<"GenerateWeight(Vec4D* p,Cut_Data * cuts)"<<endl<<"{"<<endl;
@@ -285,6 +236,7 @@ int Channel_Generator3_NPV::MakeChannel(int& echflag,int n,string& path,string& 
 
   Step0(1,m_topos[echflag],rannum,chf);
   ClearDeclarations();
+  chf<<"  wt/= CEKK.GetWeightKK(rans[0]);"<<endl;
   chf<<"  double vw = p_vegas->GenerateWeight(rans);"<<endl;
   chf<<"  if (wt!=0.) wt = vw/wt/pow(2.*M_PI,"<<nout<<"*3.-4.);"<<endl;
   chf<<endl<<"  weight = wt;"<<endl; 
@@ -309,6 +261,7 @@ int Channel_Generator3_NPV::MakeChannel(int& echflag,int n,string& path,string& 
     }
   }
   chf	<<"  p_vegas = new Vegas(rannum,100,name);"<<endl;
+  chf   <<"  CEKK.Init(nin,nout,fl);"<<endl;
   chf	<<"}"<<endl<<endl;
 
   //Destructor
@@ -341,7 +294,7 @@ int Channel_Generator3_NPV::MakeChannel(int& echflag,int n,string& path,string& 
 
 
 
-void Channel_Generator3_NPV::Step0(int flag,Point* p,int& rannum,ofstream& sf) 
+void Channel_Generator_KK::Step0(int flag,Point* p,int& rannum,ofstream& sf) 
 {
   if (nin != 2) return;
   Point* ph = p->left;
@@ -371,12 +324,18 @@ void Channel_Generator3_NPV::Step0(int flag,Point* p,int& rannum,ofstream& sf)
       }
       else help+=string("ZS_");
     }
-    sprintf(hs,"%i",(int)PMassSum(ph,0));
-    help+=string(hs);
-    m_idc.push_back(help);
+    {
+      int pt;
+      double mass = PMassSum(ph,&pt);
+      if (pt>1) mass*=pow(1.5,(double)pt-1.);
+      sprintf(hs,"%i",(int)mass);
+      help+=string(hs);
+      m_idc.push_back(help);
+    }
   case 0: case 1:
     sf<<"  Vec4D p"<<m<<"=p[0]+p[1];"<<endl;
     AddToVariables(flag,m+string("_max"),string("p")+m+string(".Abs2()"),0,sf);
+    if (flag==0) sf<<"  CEKK.SetKKmass(ms,sqrt(s"<<m<<"_max),cuts,ran[0]);"<<endl;
  
     GenerateMassChain(flag,ph,ph,rannum,sf);
     break;
@@ -388,7 +347,10 @@ void Channel_Generator3_NPV::Step0(int flag,Point* p,int& rannum,ofstream& sf)
       return;
     }
     {
-     sprintf(hs,"%f",PMassSum(ph,0));
+      int pt;
+      double mass = PMassSum(ph,&pt);
+      if (pt>1) mass*=pow(1.5,(double)pt-1.);
+      sprintf(hs,"%f",mass);
       sf<<"  type  = 2;"<<endl
 	<<"  mass  = "<<string(hs)<<";"<<endl
 	<<"  width = 0.;"<<endl;
@@ -400,7 +362,7 @@ void Channel_Generator3_NPV::Step0(int flag,Point* p,int& rannum,ofstream& sf)
   GenerateDecayChain(flag,ph,rannum,sf,pin0,pin1);
 }
 
-void Channel_Generator3_NPV::GenerateDecayChain(int flag,Point* p,int& rannum,ofstream& sf,
+void Channel_Generator_KK::GenerateDecayChain(int flag,Point* p,int& rannum,ofstream& sf,
 					    vector<string> pin0, vector<string> pin1)
 {
   if (p->left==0) return;
@@ -420,21 +382,19 @@ void Channel_Generator3_NPV::GenerateDecayChain(int flag,Point* p,int& rannum,of
     string pin0sum(""),pin1sum("");
     if (pin0.size()>0) {
       for (size_t i=0;i<pin0.size();++i) pin0sum+=pin0[i];
+ //      cout<<"GDC0: "<<pin0sum<<":";for (int i=0;i<pin0.size();i++)cout<<" "<<pin0[i];cout<<endl;
       pin0sum = Order(pin0sum);
       string help1(""),help2 = pin0[pin0.size()-1];
       for (size_t i=0;i<pin0.size()-1;++i) help1+=pin0[i];
       if (help1.length()>0) help1 = string("p0_") + help1;
       else help1 = string("p[0]");
 
-      if (help2.length()>1) AddToVariables(flag,string("0_")+pin0sum,help1+string("-p")+help2,1,sf);
-      else AddToVariables(flag,string("0_")+pin0sum,help1+string("-p[")+GetMassIndex(help2)+string("]"),1,sf);
-//       for (int i=0;i<pin0.size();i++) pin0sum+=pin0[i];
-//       pin0sum = Order(pin0sum);
-//       if (pin0sum.length()>1) AddToVariables(flag,string("0_")+pin0sum,string("p[0]-p")+pin0sum,1,sf);
-//       else AddToVariables(flag,string("0_")+pin0sum,string("p[0]-p[")+pin0sum+string("]"),1,sf);
+       if (help2.length()>1) AddToVariables(flag,string("0_")+pin0sum,help1+string("-p")+help2,1,sf);
+       else AddToVariables(flag,string("0_")+pin0sum,help1+string("-p[")+help2+string("]"),1,sf);
     }
     if (pin1.size()>0) {
       for (size_t i=0;i<pin1.size();++i) pin1sum+=pin1[i];
+ //      cout<<"GDC1: "<<pin1sum<<":";for (int i=0;i<pin1.size();i++)cout<<" "<<pin1[i];cout<<endl;
       pin1sum = Order(pin1sum);
       string help1(""),help2 = pin1[pin1.size()-1];
       for (size_t i=0;i<pin1.size()-1;++i) help1+=pin1[i];
@@ -442,11 +402,7 @@ void Channel_Generator3_NPV::GenerateDecayChain(int flag,Point* p,int& rannum,of
       else help1 = string("p[1]");
 
       if (help2.length()>1) AddToVariables(flag,string("1_")+pin1sum,help1+string("-p")+help2,1,sf);
-      else AddToVariables(flag,string("1_")+pin1sum,help1+string("-p[")+GetMassIndex(help2)+string("]"),1,sf);
-//       for (int i=0;i<pin1.size();i++) pin1sum+=pin1[i];
-//       pin1sum = Order(pin1sum);
-//       if (pin1sum.length()>1) AddToVariables(flag,string("1_")+pin1sum,string("p[1]-p")+pin1sum,1,sf);
-//       else AddToVariables(flag,string("1_")+pin1sum,string("p[1]-p[")+pin1sum+string("]"),1,sf);
+      else AddToVariables(flag,string("1_")+pin1sum,help1+string("-p[")+help2+string("]"),1,sf);
     }
     pin0sum = string("0_") + pin0sum; 
     pin1sum = string("1_") + pin1sum; 
@@ -456,18 +412,16 @@ void Channel_Generator3_NPV::GenerateDecayChain(int flag,Point* p,int& rannum,of
     string sctmin("m_ctmin");
     if (flag>=0) {
       if (pin0.size()==0 && pout0sum.length()==1 && pin1.size()==0 && pout1sum.length()==1) {
-	sf<<"  m_ctmax = Min(cuts->cosmax[0]["<<GetMassIndex(pout0sum)
-	  <<"],cuts->cosmax[1]["<<GetMassIndex(pout1sum)<<"]);"<<endl;
-	if (nout>2) sf<<"  m_ctmin = Max(cuts->cosmin[0]["<<GetMassIndex(pout0sum)
-		      <<"],cuts->cosmin[1]["<<GetMassIndex(pout1sum)<<"]);"<<endl;
+	sf<<"  m_ctmax = Min(cuts->cosmax[0]["<<pout0sum<<"],cuts->cosmax[1]["<<pout1sum<<"]);"<<endl;
+	if (nout>2) sf<<"  m_ctmin = Max(cuts->cosmin[0]["<<pout0sum<<"],cuts->cosmin[1]["<<pout1sum<<"]);"<<endl;
       }
       else if (pin0.size()==0 && pin1.size()==0 && pout0sum.length()==1) {
-	sf<<"  m_ctmax = cuts->cosmax[0]["<<GetMassIndex(pout0sum)<<"];"<<endl;
-	if (nout>2) sf<<"  m_ctmin = cuts->cosmin[0]["<<GetMassIndex(pout0sum)<<"];"<<endl;
+	sf<<"  m_ctmax = cuts->cosmax[0]["<<pout0sum<<"];"<<endl;
+	if (nout>2) sf<<"  m_ctmin = cuts->cosmin[0]["<<pout0sum<<"];"<<endl;
       }
       else if (pin0.size()==0 && pin1.size()==0 && pout1sum.length()==1) {
-	sf<<"  m_ctmax = cuts->cosmax[1]["<<GetMassIndex(pout1sum)<<"];"<<endl;
-	if (nout>2) sf<<"  m_ctmin = cuts->cosmin[1]["<<GetMassIndex(pout1sum)<<"];"<<endl;
+	sf<<"  m_ctmax = cuts->cosmax[1]["<<pout1sum<<"];"<<endl;
+	if (nout>2) sf<<"  m_ctmin = cuts->cosmin[1]["<<pout1sum<<"];"<<endl;
       }
       else {
 	sctmax = string("1.");
@@ -487,8 +441,8 @@ void Channel_Generator3_NPV::GenerateDecayChain(int flag,Point* p,int& rannum,of
       sf<<"  CE.TChannelMomenta(";
       if (pin0.size()==0) sf<<"p[0]"; else sf<<"p"<<pin0sum;
       if (pin1.size()==0) sf<<",p[1]"; else sf<<",p"<<pin1sum;
-      if (pout0sum.length()==1) sf<<",p["<<GetMassIndex(pout0sum)<<"]"; else sf<<",p"<<pout0sum;
-      if (pout1sum.length()==1) sf<<",p["<<GetMassIndex(pout1sum)<<"]"; else sf<<",p"<<pout1sum;
+      if (pout0sum.length()==1) sf<<",p["<<pout0sum<<"]"; else sf<<",p"<<pout0sum;
+      if (pout1sum.length()==1) sf<<",p["<<pout1sum<<"]"; else sf<<",p"<<pout1sum;
       sf<<",s"<<pout0sum<<",s"<<pout1sum;
       sf<<","<<tmstr<<",m_alpha,"<<sctmax<<","<<sctmin<<",m_amct,0,ran["<<rannum++<<"],ran[";
       sf<<rannum++<<"]);"<<endl;
@@ -502,8 +456,8 @@ void Channel_Generator3_NPV::GenerateDecayChain(int flag,Point* p,int& rannum,of
       sf<<"    m_k"<<idh<<"<<CE.TChannelWeight(";
       if (pin0.size()==0) sf<<"p[0]"; else sf<<"p"<<pin0sum;
       if (pin1.size()==0) sf<<",p[1]"; else sf<<",p"<<pin1sum;
-      if (pout0sum.length()==1) sf<<",p["<<GetMassIndex(pout0sum)<<"]"; else sf<<",p"<<pout0sum;
-      if (pout1sum.length()==1) sf<<",p["<<GetMassIndex(pout1sum)<<"]"; else sf<<",p"<<pout1sum;
+      if (pout0sum.length()==1) sf<<",p["<<pout0sum<<"]"; else sf<<",p"<<pout0sum;
+      if (pout1sum.length()==1) sf<<",p["<<pout1sum<<"]"; else sf<<",p"<<pout1sum;
       sf<<","<<tmstr<<",m_alpha,"<<sctmax<<","<<sctmin<<",m_amct,0,m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
       sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
       sf<<"  rans["<<rannum++<<"]= m_k"<<idh<<"[0];"<<endl;
@@ -520,9 +474,9 @@ void Channel_Generator3_NPV::GenerateDecayChain(int flag,Point* p,int& rannum,of
     string mummy = Order(lm+rm);
     string moml,momr;
     //Minima
-    if (l->left==0) moml = string("p[") + GetMassIndex(lm) + string("]");
+    if (l->left==0) moml = string("p[") + lm + string("]");
     else moml = string("p") + Order(lm);
-    if (r->left==0) momr = string("p[") + GetMassIndex(rm) + string("]");
+    if (r->left==0) momr = string("p[") + rm + string("]");
     else momr = string("p") + Order(rm);
 
     bool first = p->prev->number==0;
@@ -610,7 +564,7 @@ void Channel_Generator3_NPV::GenerateDecayChain(int flag,Point* p,int& rannum,of
 }
 
 
-bool Channel_Generator3_NPV::QCDAntenna(int flag,Point* p,int& rannum,ofstream& sf,int n)
+bool Channel_Generator_KK::QCDAntenna(int flag,Point* p,int& rannum,ofstream& sf,int n)
 { 
   string lm    = LinkedMasses(p->left);
   string rm    = LinkedMasses(p->right);
@@ -626,22 +580,20 @@ bool Channel_Generator3_NPV::QCDAntenna(int flag,Point* p,int& rannum,ofstream& 
 
   switch(flag) {
   case 0:
-    sf <<"  double s0"<<acount<<" = cuts->scut["<<GetMassIndex(mummy[0])
-       <<"]["<<GetMassIndex(mummy[1])<<"];"<<endl;
+    sf <<"  double s0"<<acount<<" = cuts->scut["<<mummy[0]<<"]["<<mummy[1]<<"];"<<endl;
     sf <<"  Vec4D ps"<<acount<<"["<<n<<"];"<<endl;
     sf <<"  CE.QCDAPMomenta(ps"<<acount<<",p"<<mummy<<","<<n<<",s0"<<acount<<");"<<endl;
     for (int i=0;i<n;i++) {
-      sf<<"  p["<<GetMassIndex(mummy[i])<<"] = ps"<<acount<<"["<<i<<"];"<<endl;
+      sf<<"  p["<<mummy[i]<<"] = ps"<<acount<<"["<<i<<"];"<<endl;
     }
     break;
   default:
     string idh = string("AP_")+mummy;
     sf <<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT) {"<<endl; 
-    sf <<"    double s0"<<acount<<" = cuts->scut["<<GetMassIndex(mummy[0])
-       <<"]["<<GetMassIndex(mummy[1])<<"];"<<endl;
+    sf <<"    double s0"<<acount<<" = cuts->scut["<<mummy[0]<<"]["<<mummy[1]<<"];"<<endl;
     sf <<"    Vec4D ps"<<acount<<"["<<n<<"];"<<endl;
     for (int i=0;i<n;i++) {
-      sf<<"    ps"<<acount<<"["<<i<<"] = p["<<GetMassIndex(mummy[i])<<"];"<<endl;
+      sf<<"    ps"<<acount<<"["<<i<<"] = p["<<mummy[i]<<"];"<<endl;
     }
     sf <<"    m_k"<<idh<<"<<CE.QCDAPWeight(ps"<<acount<<","<<n<<",s0"<<acount<<");"<<endl;    
     sf <<"  }"<<endl;
@@ -655,11 +607,11 @@ bool Channel_Generator3_NPV::QCDAntenna(int flag,Point* p,int& rannum,ofstream& 
 
 
 
-void Channel_Generator3_NPV::GenerateMassChain(int flag,Point* p,Point* clmp,int& rannum,ofstream& sf)
+void Channel_Generator_KK::GenerateMassChain(int flag,Point* p,Point* clmp,int& rannum,ofstream& sf)
 {
   if (p->left==0) {
     string m = LinkedMasses(p);
-    AddToVariables(flag,m,string("ms[")+GetMassIndex(m)+string("]"),0,sf);
+    AddToVariables(flag,m,string("ms[")+m+string("]"),0,sf);
     return;
   }
   string lm,rm;
@@ -683,19 +635,17 @@ void Channel_Generator3_NPV::GenerateMassChain(int flag,Point* p,Point* clmp,int
   }
   if (prt.length()==1) {
     AddToVariables(flag,mummy+string("_max"),string("sqr(sqrt(s") + clm +
-		   string("_max)-sqrt(ms[") + GetMassIndex(prt) + string("]))"),0,sf);
+		   string("_max)-sqrt(ms[") + prt + string("]))"),0,sf);
   }
   
   if (rm.length()>1 && lm.length()>1) sclmp = p;
   else if (clmp->left==p && LinkedMasses(clmp->right).length()>1) sclmp = p;
   else if (clmp->right==p && LinkedMasses(clmp->left).length()>1) sclmp = p;
 
-  if (p->m!=2) {
-    //cout<<":GenerateMassChain: right: "<<LinkedMasses(p->right)<<endl;
-    GenerateMassChain(flag,p->right,sclmp,rannum,sf);
-    //cout<<":GenerateMassChain: left:  "<<LinkedMasses(p->left)<<endl;
-    GenerateMassChain(flag,p->left,sclmp,rannum,sf);
-  }
+  //cout<<":GenerateMassChain: right: "<<LinkedMasses(p->right)<<endl;
+  GenerateMassChain(flag,p->right,sclmp,rannum,sf);
+  //cout<<":GenerateMassChain: left:  "<<LinkedMasses(p->left)<<endl;
+  GenerateMassChain(flag,p->left,sclmp,rannum,sf);
 
   if (clmp==p) return; 
 
@@ -713,11 +663,10 @@ void Channel_Generator3_NPV::GenerateMassChain(int flag,Point* p,Point* clmp,int
 //   }
   //min
   CalcSmin(flag,"min",mummy,sf,0);
-  if (p->m!=2) {
-    if (mummy.length()>2 && flag>=0) {
-      sf <<"  s"<< mummy <<"_min = Max(s"<< mummy <<"_min,sqr(sqrt(s"<< lm <<")+sqrt(s"<< rm <<")));"<<endl;
-    }
+  if (mummy.length()>2 && flag>=0) {
+    sf <<"  s"<< mummy <<"_min = Max(s"<< mummy <<"_min,sqr(sqrt(s"<< lm <<")+sqrt(s"<< rm <<")));"<<endl;
   }
+
 
   double maxpole = -1.;
   double res = ATOOLS::sqr(p->fl.Width()*p->fl.Mass());
@@ -758,8 +707,8 @@ void Channel_Generator3_NPV::GenerateMassChain(int flag,Point* p,Point* clmp,int
   default:
     string s; 
     if (mummy.length()>0) {
-      for (size_t i=0;i<mummy.length()-1;++i) s += string("p[")+GetMassIndex(mummy[i])+string("]+");
-      s += string("p[")+GetMassIndex(mummy[mummy.length()-1])+string("]");
+      for (size_t i=0;i<mummy.length()-1;++i) s += string("p[")+mummy[i]+string("]+");
+      s += string("p[")+mummy[mummy.length()-1]+string("]");
     }
     AddToVariables(flag,mummy,s,1,sf);
     AddToVariables(flag,mummy,string("dabs(p")+mummy+string(".Abs2())"),0,sf);
@@ -773,115 +722,10 @@ void Channel_Generator3_NPV::GenerateMassChain(int flag,Point* p,Point* clmp,int
     }
     rannum++;
   }
-
-  if (p->m==2) {
-    if (rm.length()>1) {
-      if (lm.length()>1) {
-	CalcSmin(flag,"min",lm,sf,0);
-	AddToVariables(flag,rm + string("_max"),string("sqr(sqrt(s") + mummy +
-		       string(")-sqrt(s") + lm + string("_min))"),0,sf);    
-      }
-      else {
-	AddToVariables(flag,rm + string("_max"),string("sqr(sqrt(s") + mummy +
-		       string(")-sqrt(ms[") + GetMassIndex(lm) + string("]))"),0,sf);
-      }
-    }
-    GenerateMassFwd(flag,p->right,rannum,sf);
-    if (lm.length()>1) {
-      AddToVariables(flag,lm + string("_max"),string("sqr(sqrt(s") + mummy +
-		     string(")-sqrt(s") + rm + string("))"),0,sf);    
-    }
-    GenerateMassFwd(flag,p->left,rannum,sf);
-  }
-}
-
-void Channel_Generator3_NPV::GenerateMassFwd(int flag,Point* p,int& rannum,ofstream& sf)
-{
-  if (p->left==0) {
-    string m = LinkedMasses(p);
-    AddToVariables(flag,m,string("ms[")+GetMassIndex(m)+string("]"),0,sf);
-    return;
-  }
-  string lm,rm;
-  string mummy;
-  lm = Order(LinkedMasses(p->left));
-  rm = Order(LinkedMasses(p->right));
-  mummy = Order(lm+rm);
-  CalcSmin(flag,"min",mummy,sf,0);
-
-  double maxpole = -1.;
-  double res = ATOOLS::sqr(p->fl.Width()*p->fl.Mass());
-  if (p->m>0 && !ATOOLS::IsZero(res) && Massive(p->fl)) maxpole = 1./res;
-
-  int hi = 4;
-  if (mummy.length()>2) hi = 2;
-  if (maxpole>0.) {
-    hi = (p->fl).Kfcode();
-    if (flag>=0) sf<<"  Flavour fl"<<mummy<<" = "<<"Flavour(kf::code("<<hi<<"));"<<endl;
-  } 
-  switch (flag) {
-  case -11: 
-    if (maxpole>0.) {
-      char hs[4];
-      sprintf(hs,"%i",hi);
-      m_idc.push_back(string("MP")+string(hs)+string("_")+mummy);
-    }
-    else m_idc.push_back(string("MlP_")+mummy);
-    break;
-  case 0: 
-    sf<<"  Vec4D  p"<<mummy<<";"<<endl;
-    if (maxpole>0.) {
-      sf<<"  double s"<< mummy
-	  <<" = CE.MassivePropMomenta(fl"<<mummy<<".Mass(),"<<"fl"<<mummy<<".Width(),1,"
-	<<"s"<<mummy<<"_min,s"<<mummy<<"_max,ran["<<rannum<<"]);"<<endl;
-    }
-    else {
-      sf<<"  double s"<<mummy<<" = CE.MasslessPropMomenta(1.,s"<<mummy<<"_min,"
-	<<"s"<<mummy<<"_max,ran["<<rannum<<"]);"<<endl;
-    }
-    rannum++;
-    break;
-  default:
-    string s; 
-    if (mummy.length()>0) {
-      for (size_t i=0;i<mummy.length()-1;++i) s += string("p[")+GetMassIndex(mummy[i])+string("]+");
-      s += string("p[")+GetMassIndex(mummy[mummy.length()-1])+string("]");
-    }
-    AddToVariables(flag,mummy,s,1,sf);
-    AddToVariables(flag,mummy,string("dabs(p")+mummy+string(".Abs2())"),0,sf);
-    if (maxpole>0.) {
-      sf<<"  wt *= CE.MassivePropWeight(fl"<<mummy<<".Mass(),"<<"fl"<<mummy<<".Width(),1,"
-	<<"s"<<mummy<<"_min,s"<<mummy<<"_max,"<<"s"<<mummy<<",rans["<<rannum<<"]);"<<endl;
-    }
-    else {
-      sf<<"  wt *= CE.MasslessPropWeight(1.,s"<<mummy<<"_min,"
-	<<"s"<<mummy<<"_max,s"<<mummy<<",rans["<<rannum<<"]);"<<endl;
-    }
-    rannum++;
-  }
-
-  if (rm.length()>1) {
-    if (lm.length()>1) {
-      CalcSmin(flag,"min",lm,sf,0);
-      AddToVariables(flag,rm + string("_max"),string("sqr(sqrt(s") + mummy +
-		     string(")-sqrt(s") + lm + string("_min))"),0,sf);    
-    }
-    else {
-      AddToVariables(flag,rm + string("_max"),string("sqr(sqrt(s") + mummy +
-		     string(")-sqrt(ms[") + GetMassIndex(lm) + string("]))"),0,sf);
-    }
-  }
-  GenerateMassFwd(flag,p->right,rannum,sf);
-  if (lm.length()>1) {
-    AddToVariables(flag,lm + string("_max"),string("sqr(sqrt(s") + mummy +
-		   string(")-sqrt(s") + rm + string("))"),0,sf);    
-  }
-  GenerateMassFwd(flag,p->left,rannum,sf);
-
 }
 
 
-void Channel_Generator3_NPV::SetProps(Point* p,Point** props,Point** propt, int& count)
+void Channel_Generator_KK::SetProps(Point* p,Point** props,Point** propt, int& count)
 {
   if (p->left==0) return;
 
@@ -911,7 +755,7 @@ void Channel_Generator3_NPV::SetProps(Point* p,Point** props,Point** propt, int&
   SetProps(propt[count-1],props,propt,count);
 }
 
-void Channel_Generator3_NPV::CalcTSmin(int flag,vector<string>& p,ofstream& sf)
+void Channel_Generator_KK::CalcTSmin(int flag,vector<string>& p,ofstream& sf)
 {
   string help;
   for (size_t i=0;i<p.size();++i) {
@@ -948,7 +792,7 @@ void Channel_Generator3_NPV::CalcTSmin(int flag,vector<string>& p,ofstream& sf)
 
 
 
-void Channel_Generator3_NPV::CalcSmin(int flag,char* min,string lm,ofstream& sf,Point* p)
+void Channel_Generator_KK::CalcSmin(int flag,char* min,string lm,ofstream& sf,Point* p)
 {
   // sum_{i<j} sij + (2-n)*sum_i m_i^2
 
@@ -958,7 +802,7 @@ void Channel_Generator3_NPV::CalcSmin(int flag,char* min,string lm,ofstream& sf,
   }
   else {
     AddToVariables(flag,Order(lm) + string("_") + string(min),
-		   string("ms[") + GetMassIndex(lm) + string("]"),0,sf);
+		   string("ms[") + Order(lm) + string("]"),0,sf);
   }
   /*  string s("");
 
@@ -996,20 +840,33 @@ void Channel_Generator3_NPV::CalcSmin(int flag,char* min,string lm,ofstream& sf,
     }*/
 }
 
-string Channel_Generator3_NPV::LinkedMasses(Point* p)
+string Channel_Generator_KK::GetFlMass(Point* p)
+{
+  if (p->left==0) return string("");
+  if (p->fl.Mass()>PMassSum(p->left,0)+PMassSum(p->right,0)) {
+    char hs[5];
+    sprintf(hs,"%i",(p->fl).Kfcode());
+    return string("Flavour(kf::code(")+string(hs)+string(")).Mass()");
+  } 
+  string h1 = GetFlMass(p->left);
+  string h2 = GetFlMass(p->right);
+  if (h1.length()==0) return h2;
+  if (h2.length()==0) return h1;
+  return h1+string("+")+h2;
+}
+
+string Channel_Generator_KK::LinkedMasses(Point* p)
 {
   if (p->left==0) {
     char help[4];
-    sprintf(help,"%i",0);
-    if (p->number<10) help[0]=p->number+48;
-    else help[0]=p->number+55;
+    sprintf(help,"%i",p->number);
     return string(help);
   }
   return LinkedMasses(p->left)+LinkedMasses(p->right);
 }
 
 
-void Channel_Generator3_NPV::IdentifyProps(Point* _plist)
+void Channel_Generator_KK::IdentifyProps(Point* _plist)
 {
   InitT(_plist);
   Point* endp;
@@ -1027,7 +884,7 @@ void Channel_Generator3_NPV::IdentifyProps(Point* _plist)
   }
 }
 
-void Channel_Generator3_NPV::BackLinks(Point* p,Point* &endp)
+void Channel_Generator_KK::BackLinks(Point* p,Point* &endp)
 {
   if ((p->left==0) && (p->right==0)) {
     if (p->b == -1) endp = p;
@@ -1040,7 +897,7 @@ void Channel_Generator3_NPV::BackLinks(Point* p,Point* &endp)
   BackLinks(p->right,endp);
 }
 
-void Channel_Generator3_NPV::InitT(Point* p)
+void Channel_Generator_KK::InitT(Point* p)
 {
   p->t = 0;
   if (p->left==0) return;
@@ -1048,7 +905,7 @@ void Channel_Generator3_NPV::InitT(Point* p)
   InitT(p->right);
 }
 
-string Channel_Generator3_NPV::IString(int i)
+string Channel_Generator_KK::IString(int i)
 {
   MyStrStream sstr;
   sstr<<i;
@@ -1057,13 +914,13 @@ string Channel_Generator3_NPV::IString(int i)
   return istr;
 }
 
-string Channel_Generator3_NPV::Order(string s)
+string Channel_Generator_KK::Order(string s)
 {
   int beg = s.find("_");
   if (beg!=-1) {
     return Order(s.substr(0,beg)) + string("_") + Order(s.substr(beg+1));
   }
-  if (s[0]>85 || s[0]<='0') return s;
+  if (s[0]>'9' || s[0]<='0') return s;
 
   for (size_t i=0;i<s.length();++i) 
     for (size_t j=i+1;j<s.length();++j) {
@@ -1076,7 +933,7 @@ string Channel_Generator3_NPV::Order(string s)
   return s;
 }
 
-void  Channel_Generator3_NPV::AddToVariables(int flag,const string& lhs,const string& rhs,const int& type,
+void  Channel_Generator_KK::AddToVariables(int flag,const string& lhs,const string& rhs,const int& type,
 					ofstream& sf)
 {
   if (flag<0) return;
@@ -1100,13 +957,13 @@ void  Channel_Generator3_NPV::AddToVariables(int flag,const string& lhs,const st
   else {
     // already exists
     if (rhs != declarations[name]) {
-      msg.Error()<<" ERROR in Channel_Generator3_NPV::AddToVariables ()"<<endl;
+      msg.Error()<<" ERROR in Channel_Generator_KK::AddToVariables ()"<<endl;
       abort();
     }
   }
 }
 
-bool  Channel_Generator3_NPV::CheckVariables(int flag,const string& lhs,const int& type)
+bool  Channel_Generator_KK::CheckVariables(int flag,const string& lhs,const int& type)
 {
   if (flag<0) return true;
   string lhso = Order(lhs);
@@ -1119,7 +976,7 @@ bool  Channel_Generator3_NPV::CheckVariables(int flag,const string& lhs,const in
   return true; 
 }
 
-int Channel_Generator3_NPV::AntennaS(Point* p)
+int Channel_Generator_KK::AntennaS(Point* p)
 {
   if (!p->fl.Strong() || p->fl.IsMassive() || p->m!=1) return 0;
   if (p->left==0) return 1;
@@ -1138,9 +995,8 @@ namespace AMEGIC {
   };
 }
 
-std::string Channel_Generator3_NPV::CreateChannelID(int echflag)
+std::string Channel_Generator_KK::CreateChannelID(int echflag)
 {
-  m_idc.clear();
   extrachannelflag = echflag;
   int    rannum = 1;
   ofstream chf;
@@ -1162,20 +1018,22 @@ std::string Channel_Generator3_NPV::CreateChannelID(int echflag)
     idstr+=(*it);
     idstr+=string("$");
   }
-  if (echflag==0) idstr = string("CGPR$")+idstr;
-  if (echflag==1) idstr = string("CGPL$")+idstr;
+  idstr = string("CGKK$")+idstr;
   m_idstr = idstr;
   return idstr;
 }
 
-double Channel_Generator3_NPV::PMassSum(Point* p,vector<int>* kfs)
+double Channel_Generator_KK::PMassSum(Point* p,int *pt)
 {
+  int tptl,tptr;
+  *pt=0;
   if (!p->left) return 0.;
   double m = 0.;
   if (p->m>0 && p->fl.IsMassive()) {
     m = p->fl.Mass();
-    if (kfs) kfs->push_back(p->fl.Kfcode());
   }
-  double mc = PMassSum(p->left,kfs) + PMassSum(p->right,kfs);
+  double mc = PMassSum(p->left,&tptl) + PMassSum(p->right,&tptr);
+  if (m>mc) *pt=1; 
+  else if (tptl+tptr>0) *pt=Max(tptl,tptr)+1;
   return Max(m,mc);  
 }

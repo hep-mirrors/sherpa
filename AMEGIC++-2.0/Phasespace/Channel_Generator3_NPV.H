@@ -50,7 +50,7 @@ typedef std::map<std::string,std::string> Decls;
     double      PMassSum(Point*,std::vector<int>*);
     std::string GetFlMass(Point* p);
   public:
-    Channel_Generator3_NPV(int,int,ATOOLS::Flavour *,Point *,int);
+    Channel_Generator3_NPV(int,int,Point *,int);
     ~Channel_Generator3_NPV();
     int         MakeChannel(int&,int,std::string&,std::string&);
     Point     * GetPointlist()             { return plist; }

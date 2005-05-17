@@ -71,7 +71,7 @@ void Cut_Data::Init(int _ncut,Flavour * _fl) {
     cosmax_save[i] = new double[ncut];
     scut[i]        = new double[ncut];
     scut_save[i]   = new double[ncut];
-    energymin[i]   = Max(0.,fl[i].Mass());
+    energymin[i]   = Max(0.,fl[i].SelMass());
     if (fl[i].IsKK()) energymin[i] = 0.;
     smin += energymin_save[i] = energymin[i];
     energymax[i]   = E;
@@ -84,10 +84,10 @@ void Cut_Data::Init(int _ncut,Flavour * _fl) {
       cosmin[i][j] = cosmin[j][i] = -1.;
       cosmax[i][j] = cosmax[j][i] = cosmax_save[i][j] = 1.;
       /*      double sc =
-	+sqr(fl[i].Mass())+sqr(fl[j].Mass())
+	+sqr(fl[i].SelMass())+sqr(fl[j].SelMass())
 	+2.*energymin[i]*energymin[j]
-	-2.*sqrt(dabs(sqr(energymin[i])-sqr(fl[i].Mass())))
-	*sqrt(dabs(sqr(energymin[j])-sqr(fl[j].Mass())))
+	-2.*sqrt(dabs(sqr(energymin[i])-sqr(fl[i].SelMass())))
+	*sqrt(dabs(sqr(energymin[j])-sqr(fl[j].SelMass())))
 	*cosmax[i][j];*/
       scut[i][j] = scut[j][i] = scut_save[i][j] = 1.e-12*sqr(rpa.gen.Ecms());
 	//Max(sc,1.e-12*sqr(rpa.gen.Ecms()));
@@ -100,12 +100,12 @@ void Cut_Data::Complete()
   for (int i=0;i<ncut;i++) {
     for (int j=i+1;j<ncut;j++) {
       scut[i][j] =  
-// 	Max(scut[i][j],2.*energymin[i]*energymin[j]*(1.-cosmax[i][j])+sqr(fl[i].Mass())+sqr(fl[j].Mass()));
-	Max(scut[i][j],2.*energymin[i]*energymin[j]-2.*sqrt(sqr(energymin[i])-sqr(fl[i].Mass()))
-	    *sqrt(sqr(energymin[j])-sqr(fl[j].Mass()))*cosmax[i][j]
-	    +sqr(fl[i].Mass())+sqr(fl[j].Mass()));
+// 	Max(scut[i][j],2.*energymin[i]*energymin[j]*(1.-cosmax[i][j])+sqr(fl[i].SelMass())+sqr(fl[j].SelMass()));
+	Max(scut[i][j],2.*energymin[i]*energymin[j]-2.*sqrt(sqr(energymin[i])-sqr(fl[i].SelMass()))
+	    *sqrt(sqr(energymin[j])-sqr(fl[j].SelMass()))*cosmax[i][j]
+	    +sqr(fl[i].SelMass())+sqr(fl[j].SelMass()));
       scut[i][j] = scut[j][i] = 
-	Max(scut[i][j],sqr(fl[i].Mass()+fl[j].Mass()));
+	Max(scut[i][j],sqr(fl[i].SelMass()+fl[j].SelMass()));
 //       std::cout<<i<<","<<j<<": "<<scut[i][j]<<std::endl;
     }
   } 
@@ -176,7 +176,7 @@ double Cut_Data::Getscut(string str)
   double sc = 0.;
 
   if (length==1) {
-    m_smin_map[str] = sc = sqr(fl[legs[0]].Mass());
+    m_smin_map[str] = sc = sqr(fl[legs[0]].SelMass());
     delete[] legs;
     return sc;
   }
@@ -307,8 +307,8 @@ void Cut_Data::Update(double sprime,double y)
       else cosmax[1][i] = cosmax[i][1] = 1.;  // No better estimate for massive particles
     }
 
-    double ct= sqrt(1.0-(sqr(etmin[i])-sqr(fl[i].Mass()))/(sprime/4.0-sqr(fl[i].Mass())));
-    if (etmin[i]<fl[i].Mass()) ct=1.;
+    double ct= sqrt(1.0-(sqr(etmin[i])-sqr(fl[i].SelMass()))/(sprime/4.0-sqr(fl[i].SelMass())));
+    if (etmin[i]<fl[i].SelMass()) ct=1.;
     cosmax[i][0] = cosmax[0][i] = Min(cosmax[0][i],ct);
     cosmax[i][1] = cosmax[1][i] = Min(cosmax[1][i],ct);
     cosmin[i][1] = cosmin[i][0] = cosmin[1][i] = cosmin[0][i] = -ct;
@@ -318,7 +318,7 @@ void Cut_Data::Update(double sprime,double y)
     //cosmax[0][i] = cosmax[1][i] =1.;
   /*  double E = sqrt(sprime);
   for (int i=0;i<ncut;i++) {
-    energymin[i]   = Max(0.,fl[i].Mass());
+    energymin[i]   = Max(0.,fl[i].SelMass());
     energymax[i]   = E;
     for (int j=i+1;j<ncut;j++) {
       cosmin[i][j] = cosmin[j][i] = -1.;

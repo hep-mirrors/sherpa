@@ -73,7 +73,7 @@ void Energy_Selector::SetRange(std::vector<Flavour> crit,double _min,
   for (int i=m_nin;i<m_n;i++) {
     //    if (crit[0].Includes(m_fl[i]) || crit[0].Bar().Includes(m_fl[i])) {
     if (crit[0].Includes(m_fl[i])) {
-      emin[i] = Max(_min,m_fl[i].Mass()); 
+      emin[i] = Max(_min,m_fl[i].SelMass()); 
       emax[i] = Min(_max,rpa.gen.Ecms());
       if (emin[i]>MaxEmin ) MaxEmin = emin[i];
     }
@@ -204,10 +204,10 @@ double * PT_Selector::ActualValue() { return value; }
 void PT_Selector::BuildCuts(Cut_Data * cuts) 
 {
   for (int i=m_nin;i<m_n;i++) {
-    cuts->energymin[i] = Max(sqrt(sqr(ptmin[i])+sqr(m_fl[i].Mass())),cuts->energymin[i]);
+    cuts->energymin[i] = Max(sqrt(sqr(ptmin[i])+sqr(m_fl[i].SelMass())),cuts->energymin[i]);
     cuts->cosmax[0][i] = cuts->cosmax[1][i] = cuts->cosmax[i][0] = cuts->cosmax[i][1] =  
-      Min(cuts->cosmax[0][i],sqrt(1.-sqr(ptmin[i])/(0.25*m_smax-sqr(m_fl[i].Mass()))));
-    cuts->etmin[i] = Max(sqrt(sqr(ptmin[i])+sqr(m_fl[i].Mass())*(1.-sqr(cuts->cosmax[0][i]))),cuts->etmin[i]);
+      Min(cuts->cosmax[0][i],sqrt(1.-sqr(ptmin[i])/(0.25*m_smax-sqr(m_fl[i].SelMass()))));
+    cuts->etmin[i] = Max(sqrt(sqr(ptmin[i])+sqr(m_fl[i].SelMass())*(1.-sqr(cuts->cosmax[0][i]))),cuts->etmin[i]);
   }
 }
 
@@ -327,7 +327,7 @@ Rapidity_Selector::Rapidity_Selector(int _nin,int _nout, Flavour * _fl) {
   ymax  = new double[m_n];
   value = new double[m_n];
   for (int i=0;i<m_n;i++) {
-    pl      = sqrt(E*E-sqr(_fl[i].Mass()));
+    pl      = sqrt(E*E-sqr(_fl[i].SelMass()));
     ymax[i] = log( (E+pl)/(E-pl) );
     ymin[i] = -ymax[i];
   }
@@ -358,20 +358,20 @@ void Rapidity_Selector::BuildCuts(Cut_Data * cuts)
 {
   for (int i=m_nin;i<m_n;i++) {
     cuts->cosmax[0][i] = cuts->cosmax[i][0] =  
-      Min(cuts->cosmax[0][i],1./sqrt(1.-sqr(m_fl[i].Mass())/sqr(cuts->energymin[i]))*tanh(ymax[i]));
+      Min(cuts->cosmax[0][i],1./sqrt(1.-sqr(m_fl[i].SelMass())/sqr(cuts->energymin[i]))*tanh(ymax[i]));
     cuts->cosmax[1][i] = cuts->cosmax[i][1] = 
-      Min(cuts->cosmax[0][i],1./sqrt(1.-sqr(m_fl[i].Mass())/sqr(cuts->energymin[i]))*tanh(-ymin[i]));
+      Min(cuts->cosmax[0][i],1./sqrt(1.-sqr(m_fl[i].SelMass())/sqr(cuts->energymin[i]))*tanh(-ymin[i]));
   }
 }
 
 void Rapidity_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) 
 {
   for (int i=m_nin;i<m_n-1;i++) {
-    if (!ATOOLS::IsZero(m_fl[i].Mass())) {
+    if (!ATOOLS::IsZero(m_fl[i].SelMass())) {
       cuts->cosmax[0][i] = cuts->cosmax[i][0] =  
-	1./sqrt(1.-sqr(m_fl[i].Mass())/sqr(cuts->energymin[i]))*tanh(ymax[i]);
+	1./sqrt(1.-sqr(m_fl[i].SelMass())/sqr(cuts->energymin[i]))*tanh(ymax[i]);
       cuts->cosmax[1][i] = cuts->cosmax[i][1] = 
-	1./sqrt(1.-sqr(m_fl[i].Mass())/sqr(cuts->energymin[i]))*tanh(-ymin[i]);
+	1./sqrt(1.-sqr(m_fl[i].SelMass())/sqr(cuts->energymin[i]))*tanh(-ymin[i]);
     }  
   }
 }
@@ -393,7 +393,7 @@ void Rapidity_Selector::SetRange(std::vector<Flavour> crit,double _min,
   for (int i=m_nin;i<m_n;i++) {
     //    if (crit[0].Includes(m_fl[i]) || crit[0].Bar().Includes(m_fl[i])) {
     if (crit[0].Includes(m_fl[i])) {
-      pl      = sqrt(E*E-sqr(m_fl[i].Mass())); 
+      pl      = sqrt(E*E-sqr(m_fl[i].SelMass())); 
       y       = log((E+pl)/(E-pl));
       ymin[i] = Max(_min,-y);
       ymax[i] = Min(_max,y);
@@ -679,7 +679,7 @@ void Mass_Selector::SetRange(std::vector<Flavour> crit,double _min, double _max)
     for (int j=m_nin+1;j<m_n;j++) {
       if ( ((crit[0].Includes(m_fl[i])) && (crit[1].Includes(m_fl[j])) ) || 
 	   ((crit[0].Includes(m_fl[j])) && (crit[1].Includes(m_fl[i])) ) ) {
-	massmin[i][j] = massmin[j][i] = Max(_min,m_fl[i].Mass()+m_fl[j].Mass()); 
+	massmin[i][j] = massmin[j][i] = Max(_min,m_fl[i].SelMass()+m_fl[j].SelMass()); 
 	massmax[i][j] = massmax[j][i] = _max;
 	if (sqr(massmin[i][j])>m_smin) m_smin = Max(sqr(massmin[i][j]),m_smin);
       }

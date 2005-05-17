@@ -13,6 +13,5 @@ INTEGRATOR = 4   ! Phasespace : Rambo=0, Sarge=1,
 		 !              =5 (Original+extra channels for competing peaks
 		 !                  like in ->Higgs->ZZ->q qb q qb) 
 		 !              =6 (New channel generator) 
-		 !              RamboKK=7 
 		 ! Choice 4-6 only affects channel generation!
 VEGAS = On

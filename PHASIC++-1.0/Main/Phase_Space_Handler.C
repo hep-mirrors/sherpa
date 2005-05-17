@@ -801,7 +801,7 @@ bool Phase_Space_Handler::CreateIntegrators()
     } */
   if (m_nin==1) {
     if (m_nout==2) m_inttype = 0;
-    if (m_inttype<4 || m_inttype==7)  m_inttype = 0;
+    if (m_inttype<4)  m_inttype = 0;
     else m_inttype = 4;
   }
   if(!LoadChannelLibraries()) return 0;
@@ -828,10 +828,21 @@ bool Phase_Space_Handler::CreateIntegrators()
     }
   }
   if (m_nin==2) { 
-    if (m_inttype < 3 || m_inttype == 7 && (p_fsrchannels!=0)) p_fsrchannels->DropAllChannels();
+    if (m_inttype < 3 && (p_fsrchannels!=0)) p_fsrchannels->DropAllChannels();
   }
   switch (m_inttype) {
-  case 0: 
+  case 0:
+    {
+      bool kk_fs=false;
+      for (int i=0;i<m_nout;i++){
+	if (p_flavours[i+m_nin].IsKK()) kk_fs=true;
+      }
+      if (kk_fs) {
+	p_fsrchannels->Add(new RamboKK(m_nin,m_nout,p_flavours));
+	break;
+      }
+    }
+ 
     if (m_nin==1 && m_nout==2) p_fsrchannels->Add(new Decay2Channel(m_nin,m_nout,p_flavours));
     else p_fsrchannels->Add(new Rambo(m_nin,m_nout,p_flavours));
     break;
@@ -850,9 +861,6 @@ bool Phase_Space_Handler::CreateIntegrators()
   case 4:case 5:case 6: 
     DropRedundantChannels();
     break;
-  case 7:
-    p_fsrchannels->Add(new RamboKK(m_nin,m_nout,p_flavours));
-    break;    
   default:
     msg.Error()<<"Wrong phasespace integration switch ! Using RAMBO as default."<<std::endl;
     p_fsrchannels->Add(new Rambo(m_nin,m_nout,p_flavours));

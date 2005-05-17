@@ -15,9 +15,9 @@ using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
-Channel_Generator_Decays::Channel_Generator_Decays(int _nin,int _nout,Flavour * _fl,
+Channel_Generator_Decays::Channel_Generator_Decays(int _nin,int _nout,
                                      Point * _plist,int _aid) 
-  : Channel_Generator_Base(_nin,_nout,_fl,_plist)
+  : Channel_Generator_Base(_nin,_nout,_plist)
 {
   m_idstr = string("");
   m_aid = _aid;

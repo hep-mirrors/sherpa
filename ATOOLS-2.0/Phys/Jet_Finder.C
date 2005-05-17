@@ -562,7 +562,7 @@ bool Jet_Finder::TwoJets(double & E2,double & z,double & costheta,bool mode)
 void Jet_Finder::BuildCuts(Cut_Data * cuts) 
 {
   for (int i=m_nin; i<m_nin+m_nout; ++i) {
-    cuts->energymin[i] = m_fl[i].Mass();
+    cuts->energymin[i] = m_fl[i].SelMass();
     if (m_fl[i].Strong()) {                
       /* 
 	 minimal energies : 

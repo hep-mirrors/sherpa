@@ -562,6 +562,10 @@ namespace ATOOLS {
       if (particles[ Index() ].msv) return particles[Index()].m;
       return 0.;
     }
+    inline double SelMass() const {
+      if (particles[ Index() ].msv && !IsKK()) return particles[Index()].m;
+      return 0.;
+    }
     inline double PSMass() const {
       return particles[Index()].m;
     }

@@ -1,5 +1,5 @@
-#ifndef Channel_Generator_NPV_h
-#define Channel_Generator_NPV_h
+#ifndef Channel_Generator_KK_h
+#define Channel_Generator_KK_h
 
 #include "Channel_Generator_Base.H"
 
@@ -12,7 +12,7 @@ typedef std::map<std::string,std::string> Decls;
 
   
 
-  class Channel_Generator_NPV : public Channel_Generator_Base {
+  class Channel_Generator_KK : public Channel_Generator_Base {
     Decls declarations;
     
     int         extrachannelflag,newchannel;
@@ -24,7 +24,6 @@ typedef std::map<std::string,std::string> Decls;
     bool        QCDAntenna(int,Point*,int&,std::ofstream&,int);
 
     void        GenerateMassChain(int,Point *,Point *,int&,std::ofstream&);
-    void        GenerateMassFwd(int,Point*,int&,std::ofstream&);
     void        GenerateDecayChain(int flag,Point* p,int& rannum,std::ofstream& sf,
 				   std::vector<std::string>, std::vector<std::string>);
     std::string LinkedMasses(Point *);
@@ -39,24 +38,21 @@ typedef std::map<std::string,std::string> Decls;
     void        GenerateTopos(Point*);
     Point*      CopyPoints(Point*);
     Point*      TransformTS(Point*);
-    Point*      GetMirrorTopo(Point*);
-    int         MarkNP(Point*);
     void        MRPScan();
     std::string Order(std::string);
     std::string IString(int);
     void        AddToVariables(int,const std::string&,const std::string&,const int&,std::ofstream&); 
     bool        CheckVariables(int flag,const std::string& lhs,const int& type);
     void        ClearDeclarations() { declarations.clear(); } 
-    double      PMassSum(Point*,std::vector<int>*);
+    double      PMassSum(Point*,int *);
     std::string GetFlMass(Point* p);
   public:
-    Channel_Generator_NPV(int,int,Point *,int);
-    ~Channel_Generator_NPV();
+    Channel_Generator_KK(int,int,Point *,int);
+    ~Channel_Generator_KK();
     int         MakeChannel(int&,int,std::string&,std::string&);
     Point     * GetPointlist()             { return plist; }
     //void        SetName(std::string _name) { name = _name; }
     std::string CreateChannelID(int);
-    int         NumberOfChannels() { return m_topos.size(); }
   };
       //! The usual identifiers, number of incoming and outgoing legs.
     /*!

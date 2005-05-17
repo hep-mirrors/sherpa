@@ -31,7 +31,7 @@ typedef std::map<std::string,std::string> Decls;
     void        ClearDeclarations() { declarations.clear(); } 
     double      PMassSum(Point*,std::vector<int>*);
   public:
-    Channel_Generator_Decays(int,int,ATOOLS::Flavour *,Point *,int);
+    Channel_Generator_Decays(int,int,Point *,int);
     ~Channel_Generator_Decays();
     int         MakeChannel(int&,int,std::string&,std::string&);
     Point     * GetPointlist()             { return plist; }

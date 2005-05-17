@@ -24,6 +24,7 @@ libPhasespace_la_SOURCES      =	\
 				Integrable_Base.C \
 			   	Channel_Basics.C \
 				Channel_Elements.C \
+				Channel_Elements_KK.C \
 				Single_Channel.C \
 				Simple_Pole.C \
 			   	Resonance.C \
@@ -47,6 +48,7 @@ noinst_HEADERS        =	\
 			Regulator.H \
 		 	Channel_Basics.H \
 			Channel_Elements.H \
+			Channel_Elements_KK.H \
 			Single_Channel.H \
 		 	Simple_Pole.H \
 		 	Resonance.H \

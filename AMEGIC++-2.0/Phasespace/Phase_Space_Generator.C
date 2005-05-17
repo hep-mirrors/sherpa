@@ -5,6 +5,7 @@
 #include "Channel_Generator_NPV.H"
 #include "Channel_Generator3V.H"
 #include "Channel_Generator3_NPV.H"
+#include "Channel_Generator_KK.H"
 #include "Channel_Generator_Decays.H"
 #include "Process_Base.H"
 #include "Run_Parameter.H"
@@ -43,8 +44,6 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
 
   Data_Read dr(rpa.GetPath()+string("/Integration.dat"));
   int inttype  = dr.GetValue<int>("INTEGRATOR",4);
-  int ng = 2;
-  if (inttype==4) ng=1;
 
   if (IsFile(lmapname)) return 1-GetLibList(liblist);
 
@@ -79,19 +78,31 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
   }
   string fsrp = path+string("/")+fsrpath;
 
+  bool kk_fs=false;
+  for (int i=0;i<nout;i++){
+    if (fl[i+nin].IsKK()) kk_fs=true;
+  }
+  int ng = 2;
+  if (inttype==4 || kk_fs) ng=1;
+
   for (int i=0;i<ngraph;i++) {
     if (proc->IsFreeOfFourVertex(proc->Diagram(i))) {
     for(int j=0;j<ng;j++){
       Channel_Generator_Base *cg;
-      if (nin==1 && nout>2) cg = new Channel_Generator_Decays(nin,nout,fl,proc->Diagram(i),0);
+      if (nin==1 && nout>2) cg = new Channel_Generator_Decays(nin,nout,proc->Diagram(i),0);
       else {
-	if (inttype==6) {
-	  if (j==0) cg = new Channel_Generator3V(nin,nout,fl,proc->Diagram(i),0);
-	  else cg = new Channel_Generator3_NPV(nin,nout,fl,proc->Diagram(i),0);
+	if (kk_fs){
+	  cg = new Channel_Generator_KK(nin,nout,proc->Diagram(i),0);
 	}
 	else {
-	  if (j==0) cg = new Channel_Generator(nin,nout,fl,proc->Diagram(i),0);
-	  else cg = new Channel_Generator_NPV(nin,nout,fl,proc->Diagram(i),0);
+	  if (inttype==6) {
+	    if (j==0) cg = new Channel_Generator3V(nin,nout,proc->Diagram(i),0);
+	    else cg = new Channel_Generator3_NPV(nin,nout,proc->Diagram(i),0);
+	  }
+	  else {
+	    if (j==0) cg = new Channel_Generator(nin,nout,proc->Diagram(i),0);
+	    else cg = new Channel_Generator_NPV(nin,nout,proc->Diagram(i),0);
+	  }
 	}
       }
       for (int k=0;k<cg->NumberOfChannels();k++) {
