@@ -40,6 +40,8 @@ private:
 
   bool m_replace;
 
+  double m_svalue;
+
   mutable TDouble m_value;
 
 public:
@@ -57,7 +59,7 @@ Number::Number(const std::string &tag,Tag_Replacer *const replacer):
   std::string value=tag;
   p_replacer->ReplaceTags(value);
   if (tag!=value) m_replace=true;
-  m_value.m_value=ToType<double>(value);
+  m_value.m_value=m_svalue=ToType<double>(value);
 }
 
 Term *Number::Evaluate(const std::vector<Term*> &args) const
@@ -65,6 +67,7 @@ Term *Number::Evaluate(const std::vector<Term*> &args) const
   if (args.size()!=0) THROW(fatal_error,"Number requires no argument.");
   std::string tag=m_tag;
   if (m_replace) p_replacer->ReplaceTags(&m_value);
+  else m_value.m_value=m_svalue;
   return &m_value;
 }
 
@@ -74,6 +77,8 @@ private:
   Tag_Replacer *p_replacer;
 
   bool  m_replace;
+
+  Vec4D m_svalue;
 
   mutable TVec4D m_value;
 
@@ -92,7 +97,7 @@ Vector::Vector(const std::string &tag,Tag_Replacer *const replacer):
   std::string value=tag;
   p_replacer->ReplaceTags(value);
   if (tag!=value) m_replace=true;
-  m_value.m_value=ToType<Vec4D>(value);
+  m_value.m_value=m_svalue=ToType<Vec4D>(value);
 }
 
 Term *Vector::Evaluate(const std::vector<Term*> &args) const
@@ -100,6 +105,7 @@ Term *Vector::Evaluate(const std::vector<Term*> &args) const
   if (args.size()!=0) THROW(fatal_error,"Vector requires no argument.");
   std::string tag=m_tag;
   if (m_replace) p_replacer->ReplaceTags(&m_value);
+  else m_value.m_value=m_svalue;
   return &m_value;
 }
 
