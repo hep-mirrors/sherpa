@@ -1,5 +1,7 @@
 #include "Algebra_Interpreter.H"
 #include "Exception.H"
+#include <termios.h>
+#include <unistd.h>
 
 using namespace ATOOLS;
 
@@ -20,7 +22,9 @@ int main(int argc,char **argv)
   signal(SIGXCPU,Exception_Handler::SignalHandler);
   try {
     msg.Init(2,"");
-    msg.SetModifiable(true);
+    termios testos;
+    if (tcgetattr(STDOUT_FILENO,&testos)==0) msg.SetModifiable(true);
+    else msg.SetModifiable(false);
     Algebra_Interpreter interpreter;
     std::string expr;
     for (int i=1;i<argc;++i) {
