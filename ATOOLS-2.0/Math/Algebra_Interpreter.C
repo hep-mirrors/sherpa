@@ -369,7 +369,6 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
   pos=rem;
   size_t last=pos+func->Tag().length()+1, open=0;
   std::vector<std::string> args;
-  PRINT_INFO(expr);
   size_t i=last-1;
   for (;i<expr.length();++i) {
     if (expr[i]=='(' || expr[i]=='{') ++open;
@@ -604,6 +603,7 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   AddFunction(new Vec4D_Part());
   AddFunction(new Vec4D_Abs2());
   AddFunction(new Vec4D_PPerp());
+  AddFunction(new Vec4D_PPerp2());
   AddFunction(new Vec4D_Theta());
   AddFunction(new Vec4D_Eta());
   AddFunction(new Vec4D_Phi());
