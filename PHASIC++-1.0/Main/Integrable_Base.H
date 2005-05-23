@@ -190,6 +190,9 @@ namespace PHASIC {
     inline void SetParent(Integrable_Base *const parent) 
     { p_parent=parent; }
     
+    inline void SetEnhanceFunction(const std::string &efunc)
+    { m_efunc=efunc; }
+
     inline size_t NIn() const     { return m_nin;     }
     inline size_t NOut() const    { return m_nout;    }
     inline size_t NVector() const { return m_nvector; }
