@@ -33,14 +33,24 @@ S1Channel::S1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   if (res!=Flavour(kf::none)) {
     mass = res.Mass(); width = res.Width(); type = 1;
   }
+  p_vegas = new Vegas(2,100,name,0);
 }
 
 void S1Channel::GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts,double * _ran=0) {
-  CE.Isotropic2Momenta(p[0]+p[1],ms[2],ms[3],p[2],p[3],_ran[1],_ran[2]);
+  double *ran = p_vegas->GeneratePoint(_ran);
+  double ctmax=Min(cuts->cosmax[0][2],cuts->cosmax[1][3]);
+  double s=(p[0]+p[1]).Abs2(), E12=sqr(s+ms[2]-ms[3])/4.0/s;
+  ctmax=Min(ctmax,sqrt(1.0-sqr(cuts->etmin[2])/E12));
+  CE.Isotropic2Momenta(p[0]+p[1],ms[2],ms[3],p[2],p[3],ran[1],ran[2],-ctmax,ctmax);
 }
 
 void S1Channel::GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts) {
-  weight = 1. / ( CE.Isotropic2Weight(p[2],p[3]) * pow(2.*M_PI,2.*3.-4.) );
+  double ctmax=Min(cuts->cosmax[0][2],cuts->cosmax[1][3]);
+  double s=(p[0]+p[1]).Abs2(), E12=sqr(s+ms[2]-ms[3])/4.0/s;
+  ctmax=Min(ctmax,sqrt(1.0-sqr(cuts->etmin[2])/E12));
+  double rans[2];
+  weight = 1. / ( CE.Isotropic2Weight(p[2],p[3],rans[0],rans[1],-ctmax,ctmax) * pow(2.*M_PI,2.*3.-4.) );
+  weight *= p_vegas->GenerateWeight(rans);
 }
 
 void S1Channel::ISRInfo(int & _type,double & _mass,double & _width) {
@@ -73,15 +83,17 @@ T1Channel::T1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   if (res!=Flavour(kf::none)) {
     mass = res.Mass(); width = res.Width(); type = 1;
   }
+  p_vegas = new Vegas(2,100,name,0);
 }
 
 void T1Channel::GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts,double * _ran =0) 
 {
+  double *ran = p_vegas->GeneratePoint(_ran);
   double ctmax=Min(cuts->cosmax[0][2],cuts->cosmax[1][3]);
   double s=(p[0]+p[1]).Abs2(), E12=sqr(s+ms[2]-ms[3])/4.0/s;
   ctmax=Min(ctmax,sqrt(1.0-sqr(cuts->etmin[2])/E12));
   CE.TChannelMomenta(p[0],p[1],p[2],p[3],ms[2],ms[3],0.,
-		     .5,ctmax,-1.,1.,0,_ran[1],_ran[2]);
+		     .5,ctmax,-ctmax,1.,0,ran[1],ran[2]);
 }
 
 void T1Channel::GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts) 
@@ -89,8 +101,11 @@ void T1Channel::GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts)
   double ctmax=Min(cuts->cosmax[0][2],cuts->cosmax[1][3]);
   double s=(p[0]+p[1]).Abs2(), E12=sqr(s+ms[2]-ms[3])/4.0/s;
   ctmax=Min(ctmax,sqrt(1.0-sqr(cuts->etmin[2])/E12));
+  double rans[2];
   weight = 1. / ( CE.TChannelWeight(p[0],p[1],p[2],p[3],0.,
-				    .5,ctmax,-1.,1.,0) * pow(2.*M_PI,2*3.-4.) );
+				    .5,ctmax,-ctmax,1.,0,rans[0],rans[1]) 
+		  * pow(2.*M_PI,2*3.-4.) );
+  weight *= p_vegas->GenerateWeight(rans);
 }
 
 void T1Channel::ISRInfo(int & _type,double & _mass,double & _width) {
@@ -123,15 +138,17 @@ U1Channel::U1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   if (res!=Flavour(kf::none)) {
     mass = res.Mass(); width = res.Width(); type = 1;
   }
+  p_vegas = new Vegas(2,100,name,0);
 }
 
 void U1Channel::GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts,double * _ran =0) 
 {
+  double *ran = p_vegas->GeneratePoint(_ran);
   double ctmax=Min(cuts->cosmax[0][3],cuts->cosmax[1][2]);
   double s=(p[0]+p[1]).Abs2(), E12=sqr(s+ms[2]-ms[3])/4.0/s;
   ctmax=Min(ctmax,sqrt(1.0-sqr(cuts->etmin[2])/E12));
   CE.TChannelMomenta(p[0],p[1],p[3],p[2],ms[3],ms[2],0.,
-		     0.5,ctmax,-1.,1.,0,_ran[1],_ran[2]);
+		     0.5,ctmax,-ctmax,1.,0,ran[1],ran[2]);
 }
 
 void U1Channel::GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts) 
@@ -139,8 +156,11 @@ void U1Channel::GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts)
   double ctmax=Min(cuts->cosmax[0][3],cuts->cosmax[1][2]);
   double s=(p[0]+p[1]).Abs2(), E12=sqr(s+ms[2]-ms[3])/4.0/s;
   ctmax=Min(ctmax,sqrt(1.0-sqr(cuts->etmin[2])/E12));
+  double rans[2];
   weight = 1. / ( CE.TChannelWeight(p[0],p[1],p[3],p[2],0.,
-				    .5,ctmax,-1.,1.,0) * pow(2.*M_PI,2*3.-4.) );
+				    .5,ctmax,-ctmax,1.,0,rans[0],rans[1]) 
+		  * pow(2.*M_PI,2*3.-4.) );
+  weight *= p_vegas->GenerateWeight(rans);
 }
 
 void U1Channel::ISRInfo(int & _type,double & _mass,double & _width) {
@@ -176,11 +196,11 @@ Decay2Channel::Decay2Channel(int _nin,int _nout,Flavour * fl,Flavour res)
 }
 
 void Decay2Channel::GeneratePoint(ATOOLS::Vec4D * p,double * _ran=0) {
-  CE.Isotropic2Momenta(p[0],ms[1],ms[2],p[1],p[2],_ran[1],_ran[2]);
+  CE.Isotropic2Momenta(p[0],ms[1],ms[2],p[1],p[2],_ran[1],_ran[2],-1.,1.);
 }
 
 void Decay2Channel::GenerateWeight(ATOOLS::Vec4D * p) {
-  weight = 1. / ( CE.Isotropic2Weight(p[1],p[2]) * pow(2.*M_PI,2.*3.-4.) );
+  weight = 1. / ( CE.Isotropic2Weight(p[1],p[2],-1.,1.) * pow(2.*M_PI,2.*3.-4.) );
 }
 
 void Decay2Channel::ISRInfo(int & _type,double & _mass,double & _width) {
@@ -225,7 +245,7 @@ GeneratePoint(ATOOLS::Vec4D *pi,ATOOLS::Cut_Data *cuts,double *ran)
 
 void SimpleQCDChannel::GenerateWeight(ATOOLS::Vec4D *p,ATOOLS::Cut_Data *cuts) 
 {
-  weight = 1. / ( CE.Isotropic2Weight(p[2],p[3]) * pow(2.*M_PI,2.*3.-4.) );
+  weight = 1. / ( CE.Isotropic2Weight(p[2],p[3],-1.,1.) * pow(2.*M_PI,2.*3.-4.) );
   double s1=ms[2], s2=ms[3];
   double s    = (p[0]+p[1]).Abs2();
   double E1=(s+s1-s2)/2.0/sqrt(s);

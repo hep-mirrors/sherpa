@@ -2,6 +2,7 @@
 #define FSR_Channel_h
 
 #include "Single_Channel.H"
+#include "Vegas.H"
 
 namespace PHASIC {
   class S1Channel : public Single_Channel {
@@ -17,6 +18,7 @@ namespace PHASIC {
     double mass,width;
     int    type;
     int    chnumber;
+    Vegas *p_vegas;
   public :
     S1Channel(int,int,ATOOLS::Flavour *,
 	      ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none)); 
@@ -50,6 +52,7 @@ namespace PHASIC {
     double mass,width;
     int    type;
     int    chnumber;
+    Vegas *p_vegas;
   public :
     T1Channel(int,int,ATOOLS::Flavour *,
 	      ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none)); 
@@ -76,6 +79,7 @@ namespace PHASIC {
     double mass,width;
     int    type;
     int    chnumber;
+    Vegas *p_vegas;
   public :
     U1Channel(int,int,ATOOLS::Flavour *,
 	      ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none)); 

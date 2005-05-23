@@ -11,12 +11,12 @@ using namespace std;
 Channel_Elements PHASIC::CE;
 
 double Channel_Elements::Isotropic2Weight(Vec4D& p1,Vec4D& p2,
-					  double& ran1,double& ran2)
+					  double& ran1,double& ran2,double ctmin,double ctmax)
 {
   Vec4D p1h,p=p1+p2;
 
   Channel_Basics::Boost(1,p,p1h,p1);
-  ran1        = 0.5*(p1h[3]/p1h.PSpat()+1.); 
+  ran1        = (p1h[3]/p1h.PSpat()-ctmin)/(ctmax-ctmin);  
   ran2        = ::asin(p1h[1]/p1h.PPerp())/(2.*M_PI);
   if(p1h[2]<0.) ran2=.5-ran2;
   if (ran2<0.) ran2+=1.;
@@ -26,29 +26,29 @@ double Channel_Elements::Isotropic2Weight(Vec4D& p1,Vec4D& p2,
   if (!(massfactor>0) && !(massfactor<0)) 
     ATOOLS::msg.Error()<<"Isotropic2Weight produces a nan!"<<endl;
   
-  return 2./M_PI/massfactor;
+  return 2./M_PI/massfactor*2.0/(ctmax-ctmin);
 }
 
-double Channel_Elements::Isotropic2Weight(const Vec4D& p1,const Vec4D& p2)
+double Channel_Elements::Isotropic2Weight(const Vec4D& p1,const Vec4D& p2,double ctmin,double ctmax)
 {
   double massfactor = Channel_Basics::SqLam((p1+p2).Abs2(),p1.Abs2(),p2.Abs2());
   if (ATOOLS::IsZero(massfactor)) return 0.;  
   if (!(massfactor>0) && !(massfactor<0)) 
     ATOOLS::msg.Error()<<"Isotropic2Weight produces a nan!"<<endl;
   
-  return 2./M_PI/massfactor;
+  return 2./M_PI/massfactor*2.0/(ctmax-ctmin);
 }
 
 void Channel_Elements::Isotropic2Momenta(Vec4D p,double s1,double s2,
 					 Vec4D& p1,Vec4D& p2,
-					 double ran1,double ran2)
+					 double ran1,double ran2,double ctmin,double ctmax)
 {
   double s    = p.Abs2();
   double rs   = sqrt(dabs(s));
   Vec4D p1h;
   p1h[0]      = (s+s1-s2)/rs/2.;
   double p1m  = rs*Channel_Basics::SqLam(s,s1,s2)/2.;
-  double ct   = 2.*ran1-1.;
+  double ct   = ctmin+(ctmax-ctmin)*ran1;
   double st   = sqrt(1.-ct*ct);
   double phi  = 2.*M_PI*ran2;
 
@@ -67,11 +67,11 @@ void Channel_Elements::Isotropic2Momenta(Vec4D p,double s1,double s2,
 }
 
 void Channel_Elements::Isotropic2Grid(Vec4D &p1,Vec4D &p2,
-				      double& ran1,double& ran2)
+				      double& ran1,double& ran2,double ctmin,double ctmax)
 {
   Vec4D p1h,p=p1+p2;
   Channel_Basics::Boost(1,p,p1h,p1);
-  ran1        = 0.5*(p1h[3]/p1h.PSpat()+1.); 
+  ran1        = (p1h[3]/p1h.PSpat()-ctmin)/(ctmax-ctmin); 
   ran2        = ::asin(p1h[1]/p1h.PPerp())/(2.*M_PI);
   if(p1h[2]<0.) ran2=.5-ran2;
   if (ran2<0.) ran2+=1.;

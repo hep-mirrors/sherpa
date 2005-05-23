@@ -17,11 +17,11 @@ namespace PHASIC {
     void Polytope(int,double* &);
   public:
 
-    double Isotropic2Weight(const ATOOLS::Vec4D&,const ATOOLS::Vec4D&);
-    double Isotropic2Weight(ATOOLS::Vec4D&,ATOOLS::Vec4D&,double&,double&);
+    double Isotropic2Weight(const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,double=-1.0,double=1.0);
+    double Isotropic2Weight(ATOOLS::Vec4D&,ATOOLS::Vec4D&,double&,double&,double=-1.0,double=1.0);
     void Isotropic2Momenta(ATOOLS::Vec4D,double,double,
-			   ATOOLS::Vec4D&,ATOOLS::Vec4D&,double,double);
-    void Isotropic2Grid(ATOOLS::Vec4D&,ATOOLS::Vec4D&,double&,double&);
+			   ATOOLS::Vec4D&,ATOOLS::Vec4D&,double,double,double=-1.0,double=1.0);
+    void Isotropic2Grid(ATOOLS::Vec4D&,ATOOLS::Vec4D&,double&,double&,double=-1.0,double=1.0);
 
     double Anisotropic2Weight(double,double,double,
 			      const ATOOLS::Vec4D&,const ATOOLS::Vec4D&);
