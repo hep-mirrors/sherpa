@@ -5,7 +5,7 @@
 
 namespace ATOOLS { class Data_Read;    }
 namespace MODEL  { class Model_Base;   }
-namespace SHERPA { class Remnant_Base; }
+namespace ATOOLS { class Object;       }
 
 namespace EXTRAXS {
 
@@ -21,7 +21,7 @@ namespace EXTRAXS {
     std::string         m_regulator;
     std::vector<double> m_regulation;
 
-    SHERPA::Remnant_Base *p_remnants[2];
+    ATOOLS::Object *p_remnants[2];
 
     int  ExtractFlavours(ATOOLS::Flavour *&flavours,std::string buffer);
     void OrderFlavours(ATOOLS::Flavour *flavours);
