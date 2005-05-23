@@ -164,8 +164,27 @@ Term *Unary_Not::Evaluate(const std::vector<Term*> &args) const
   }
 
 DEFINE_BINARY_DOUBLE_FUNCTION(Power,"pow",pow);
-DEFINE_BINARY_DOUBLE_FUNCTION(Minimum,"min",Min)
-DEFINE_BINARY_DOUBLE_FUNCTION(Maximum,"max",Max)
+
+#define DEFINE_ITERATED_DOUBLE_FUNCTION(NAME,TAG,OP)                 \
+  DEFINE_FUNCTION(NAME,TAG)                                          \
+  {                                                                  \
+    if (args.size()<2)                                               \
+      THROW(fatal_error,std::string(TAG)+" requires 2 arguments.");  \
+    double arg0=ToType<double>(args[0]);                             \
+    for (size_t i=1;i<args.size();++i)                               \
+      arg0=OP(arg0,ToType<double>(args[i]));                         \
+    return ToString(arg0);                                           \
+  }                                                                  \
+  Term *NAME::Evaluate(const std::vector<Term*> &args) const         \
+  {                                                                  \
+    for (size_t i=1;i<args.size();++i)                               \
+      ((TDouble*)args[0])->m_value=OP(((TDouble*)args[0])->m_value,  \
+	  			      ((TDouble*)args[i])->m_value); \
+    return args[0];                                                  \
+  }
+
+DEFINE_ITERATED_DOUBLE_FUNCTION(Minimum,"min",Min)
+DEFINE_ITERATED_DOUBLE_FUNCTION(Maximum,"max",Max)
 
 #define DEFINE_UNARY_DOUBLE_FUNCTION(NAME,TAG,OP)                  \
   DEFINE_FUNCTION(NAME,TAG)                                        \
@@ -351,8 +370,8 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
   std::vector<std::string> args;
   size_t i=last-1;
   for (;i<expr.length();++i) {
-    if (expr[i]=='(') ++open;
-    if (expr[i]==')') --open;
+    if (expr[i]=='(' || expr[i]=='{') ++open;
+    if (expr[i]==')' || expr[i]=='}') --open;
     if (open==0 || (open==1 && expr[i]==',')) {
       args.push_back(expr.substr(last,i-last));
       last=i+1;
