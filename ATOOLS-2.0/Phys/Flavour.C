@@ -134,6 +134,7 @@ Flavour::Flavour(kf::code _kfc, bool _anti) {
   anti=0;
   if (_kfc==kf::photon)   return;
   if (_kfc==kf::Z)        return;
+  if (_kfc==kf::ZPrime)   return;
   if (_kfc==kf::gluon)    return;
   if (_kfc==kf::shgluon)  return;
   if (_kfc==kf::h)        return;
@@ -155,6 +156,7 @@ const Flavour Flavour::Bar() const {
   
   if (flbar==Flavour(kf::photon))   return flbar;
   if (flbar==Flavour(kf::Z))        return flbar;
+  if (flbar==Flavour(kf::ZPrime))   return flbar;
   if (flbar==Flavour(kf::gluon))    return flbar;
   if (flbar==Flavour(kf::shgluon))  return flbar;
   if (flbar==Flavour(kf::h))        return flbar;
@@ -345,6 +347,7 @@ std::string Flavour::TexName() const
   case kf::photon: {name= std::string("\\gamma");break;}
   case kf::W: {name=std::string("W^\\m");break;}
   case kf::Z: {name=std::string("Z^0");break;}
+  case kf::ZPrime: {name=std::string("Z'");break;}
   case kf::h: {name=std::string("h");break;}
   case kf::h0: {name=std::string("h^0");break;}
   case kf::H0: {name=std::string("H^0");break;}
@@ -752,7 +755,7 @@ int Flavour::ID_SM() {
   int sm_id=0;
 
   for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
-    if (flav.IsOn() && !flav.IsHadron() && !flav.IsSusy()) {
+    if (flav.IsOn() && !flav.IsHadron() && !flav.IsSusy() && (flav.Kfcode()!=35)) {
       count++;
       int local_id=flav.PropertiesID();
       local_id=Rot(local_id,flav.Kfcode(),24);

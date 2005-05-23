@@ -786,7 +786,7 @@ namespace ATOOLS {
     }
 
     inline const bool IsSusy() const {     
-      if ((30<kfc)&&(kfc<100)) return 1;
+      if ((35!=kfc)&&(30<kfc)&&(kfc<100)) return 1;
       return 0;
     }
 
