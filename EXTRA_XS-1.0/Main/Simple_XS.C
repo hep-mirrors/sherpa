@@ -94,19 +94,19 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   if (!from) {
     THROW(critical_error,"Cannot open file '"+m_path+processfile+"'");
   }
-  char buffer[100];
   size_t position, order_ew, order_strong;
   int         flag;
   string      buf,ini,fin;
   int         nIS,   nFS;
   Flavour   * IS,  * FS, * flavs;
+  std::string efunc="1";
   Data_Reader reader;
   while(from) {
-    from.getline(buffer,100);
-    if (buffer[0] != '%' && strlen(buffer)>0) {
+    getline(from,buf);
+    if (buf[0] != '%' && buf.length()>0) {
       order_ew=99;
       order_strong=99;
-      buf      = string(buffer);
+      efunc="1";
       position   = buf.find(string("Process :")); 
       flag       = 0;
       if (position!=std::string::npos && position<buf.length()) {
@@ -131,14 +131,14 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	  }
 	  else {
 	    do {
-	      from.getline(buffer,100);
-	      if (buffer[0] != '%' && strlen(buffer)>0) {
-		buf      = string(buffer);
+	      getline(from,buf);
+	      if (buf[0] != '%' && buf.length()>0) {
 		reader.SetString(buf);
 		unsigned int order_ew_t, order_strong_t;
+		std::string efunc_t="1";
 		if (reader.ReadFromString(order_ew_t,"Order electroweak :")) order_ew=order_ew_t;
 		if (reader.ReadFromString(order_strong_t,"Order strong :")) order_strong=order_strong_t;
-
+		if (reader.ReadFromString(efunc_t,"Enhance_Function :")) efunc=efunc_t;
 		position = buf.find(string("End process"));
 		if (!from) {
 		  msg.Error()<<"Error in Simple_XS::InitializeProcesses("
@@ -182,9 +182,11 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 			  if (m_regulator.length()>0) 
 			    newxs->AssignRegulator(m_regulator,m_regulation);
 			  pdfgroup->Add(newxs);
+			  pdfgroup->SetEnhanceFunction(efunc);
 			  newxs->PSHandler(false)->SetUsePI(m_usepi);
 			  newxs->
 			    SetISRThreshold(sqr(ATOOLS::Max(inisum,finsum)));
+			  newxs->SetEnhanceFunction(efunc);
 			}
 			setup.insert(name);
 		      }
@@ -236,8 +238,10 @@ XS_Group *Simple_XS::FindPDFGroup(const size_t nin,const size_t nout,
     if (nin==2 && nout==(*container)[i]->NOut()) {
       ATOOLS::Flavour ref[2], test[2];
       for (size_t j=0;j<2;++j) {
-	ref[j]=p_remnants[j]->ConstituentType((*container)[i]->Flavours()[j]);
-	test[j]=p_remnants[j]->ConstituentType(flavours[j]);
+	ref[j]=((SHERPA::Remnant_Base*)p_remnants[j])->
+	  ConstituentType((*container)[i]->Flavours()[j]);
+	test[j]=((SHERPA::Remnant_Base*)p_remnants[j])->
+	  ConstituentType(flavours[j]);
       }
       if (ref[0]==test[0] && ref[1]==test[1])
 	return dynamic_cast<XS_Group*>((*container)[i]);
@@ -245,7 +249,8 @@ XS_Group *Simple_XS::FindPDFGroup(const size_t nin,const size_t nout,
   }
   ATOOLS::Flavour *copy = new ATOOLS::Flavour[nin+nout];
   for (short unsigned int i=0;i<nin;++i) 
-    copy[i]=p_remnants[i]->ConstituentType(flavours[i]);
+    copy[i]=((SHERPA::Remnant_Base*)p_remnants[i])->
+      ConstituentType(flavours[i]);
   for (short unsigned int i=nin;i<nin+nout;++i) copy[i]=ATOOLS::kf::jet;
   XS_Group *newgroup = 
     new XS_Group(nin,nout,copy,m_scalescheme,m_kfactorscheme,
