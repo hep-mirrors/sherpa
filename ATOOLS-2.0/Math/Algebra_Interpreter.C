@@ -239,6 +239,7 @@ Term *Vec4D_Part::Evaluate(const std::vector<Term*> &args) const
 
 DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Abs2,"Abs2",Abs2);
 DEFINE_ONE_VECTOR_OPERATOR(Vec4D_PPerp,"PPerp",PPerp);
+DEFINE_ONE_VECTOR_OPERATOR(Vec4D_PPerp2,"PPerp2",PPerp2);
 DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Theta,"Theta",Theta);
 DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Eta,"Eta",Eta);
 DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Phi,"Phi",Phi);
@@ -368,6 +369,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
   pos=rem;
   size_t last=pos+func->Tag().length()+1, open=0;
   std::vector<std::string> args;
+  PRINT_INFO(expr);
   size_t i=last-1;
   for (;i<expr.length();++i) {
     if (expr[i]=='(' || expr[i]=='{') ++open;
