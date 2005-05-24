@@ -378,8 +378,10 @@ void Amegic::ReadInProcessfile(string file)
 		  MyStrStream str;      
 		  buf          = buf.substr(buf.find(":",position)+1);
 		  Shorten(buf);
-		  str<<buf;
-		  str>>enhance_factor;
+		  Algebra_Interpreter inter;
+		  enhance_factor=ToType<double>(inter.Interprete(buf));
+		  std::cout<<"AMEGIC: found enhance factor "
+			   <<enhance_factor<<std::endl;
 		}
 		position       = buf.find(string("Enhance_Function :"));
 		if (position > -1) {
