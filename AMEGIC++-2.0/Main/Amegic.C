@@ -229,7 +229,6 @@ void Amegic::ReadInProcessfile(string file)
 	  nFS    = ExtractFlavours(FS,plFS,fin);
 	  pinfo->AddSubList(nFS,FS,plFS);
 	  njets  = 0;
-	  if (nFS>m_maxjet) m_maxjet = nFS;
 	  if ((nIS< 1) || (nIS > 2)) {
 	    msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
 		       <<"   Wrong number of partons in "<<buf<<endl;
@@ -462,6 +461,7 @@ void Amegic::ReadInProcessfile(string file)
 	    }
 
 	    nFS = pinfo->TotalNout();
+	    if (nFS>m_maxjet) m_maxjet = nFS;
 	    m_nmax = Max(m_nmax,pinfo->Nmax(nIS));
 	    flavs              = new Flavour[nIS+nFS];
 	    plavs              = new Pol_Info[nIS+nFS];
