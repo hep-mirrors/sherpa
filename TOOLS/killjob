@@ -49,6 +49,7 @@ else
   NODE=`head -5 $JOB/run.log | grep HOSTNAME | awk '{ print $3 }'`
   echo "killjob: job '$JOB' runs on $NODE (according to 'run.log')"
   echo "killjob: login at $NODE"
-  ssh $NODE ~/bin/killjob -l -s $SIGNAL -j $JOB 
+  COMMAND=`type -p killjob`
+  ssh $NODE $COMMAND -l -s $SIGNAL -j $JOB
 
 fi
