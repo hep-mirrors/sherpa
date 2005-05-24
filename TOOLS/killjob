@@ -46,7 +46,15 @@ if [ "$LOCAL" = "TRUE" ] ; then
 
 else 
 
+  if ! test -d $JOB ; then
+    echo "killjob: error: no such job"
+    exit 1
+  fi
   NODE=`head -5 $JOB/run.log | grep HOSTNAME | awk '{ print $3 }'`
+  if [ "$NODE" = "" ] ; then
+    echo "killjob: error: no runtime information (according to 'run.log')"
+    exit 2
+  fi
   echo "killjob: job '$JOB' runs on $NODE (according to 'run.log')"
   echo "killjob: login at $NODE"
   COMMAND=`type -p killjob`
