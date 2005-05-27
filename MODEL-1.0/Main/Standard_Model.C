@@ -183,8 +183,8 @@ void Standard_Model::FixCKM() {
   if (m_ckmorder>2) {
     eta        = p_dataread->GetValue<double>("ETA",0.5);
     rho        = p_dataread->GetValue<double>("RHO",0.5);
-    CKM[1][2] += A*sqr(Cabibbo) * Complex(rho,-eta);
-    CKM[2][1] += A*sqr(Cabibbo) * Complex(1.-rho,-eta);
+    CKM[0][2] += A*pow(Cabibbo,3) * Complex(rho,-eta);
+    CKM[2][0] += A*pow(Cabibbo,3) * Complex(1.-rho,-eta);
   }
   p_matrices->insert(std::make_pair(std::string("CKM"),CKM));
 }
