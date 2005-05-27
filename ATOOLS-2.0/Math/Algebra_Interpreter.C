@@ -132,14 +132,38 @@ DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Divide,"/",/,13,double);
 DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Modulus,"%",%,13,long int);
 DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Shift_Left,"<<",<<,11,long int);
 DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Shift_Right,">>",>>,11,long int);
-DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Equal,"==",==,9,double);
-DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Not_Equal,"!=",!=,9,double);
-DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Less,"<",<,10,double);
-DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Greater,">",>,10,double);
-DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Less_Equal,"<=",<=,10,double);
-DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Greater_Equal,">=",>=,10,double);
 DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Logical_And,"&&",&&,5,long int);
 DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Logical_Or,"||",||,4,long int);
+
+bool IsAlpha(const std::string& expr) 
+{
+  for (size_t i=0;i<expr.length();++i) 
+    if (expr[i]<48 || expr[i]>57) return true;
+  return false;
+}
+
+#define DEFINE_BINARY_SORTABLE_OPERATOR(NAME,TAG,OP,PRIORITY,TYPE)  \
+  DEFINE_BINARY_OPERATOR(NAME,TAG,PRIORITY)                         \
+  {                                                                 \
+    if (IsAlpha(args[0]) || IsAlpha(args[1]))                       \
+      return ToString(args[0] OP args[1]);                          \
+    TYPE arg0=ToType<TYPE>(args[0]);                                \
+    TYPE arg1=ToType<TYPE>(args[1]);                                \
+    return ToString(arg0 OP arg1);                                  \
+  }                                                                 \
+  Term *NAME::Evaluate(const std::vector<Term*> &args) const        \
+  {                                                                 \
+    ((TDouble*)args[0])->m_value=(TYPE)((TDouble*)args[0])->m_value \
+      OP(TYPE)((TDouble*)args[1])->m_value;                         \
+    return args[0];                                                 \
+  }
+
+DEFINE_BINARY_SORTABLE_OPERATOR(Binary_Equal,"==",==,9,double);
+DEFINE_BINARY_SORTABLE_OPERATOR(Binary_Not_Equal,"!=",!=,9,double);
+DEFINE_BINARY_SORTABLE_OPERATOR(Binary_Less,"<",<,10,double);
+DEFINE_BINARY_SORTABLE_OPERATOR(Binary_Greater,">",>,10,double);
+DEFINE_BINARY_SORTABLE_OPERATOR(Binary_Less_Equal,"<=",<=,10,double);
+DEFINE_BINARY_SORTABLE_OPERATOR(Binary_Greater_Equal,">=",>=,10,double);
 
 DEFINE_UNARY_OPERATOR(Unary_Not,"!",14)
 {
