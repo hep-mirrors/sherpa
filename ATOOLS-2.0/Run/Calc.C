@@ -30,9 +30,10 @@ int main(int argc,char **argv)
     for (int i=1;i<argc;++i) {
       std::string argvs=argv[i];
       size_t pos=argvs.find("=");
-      if (pos==std::string::npos) expr+=argv[i];
-      else interpreter.AddTag(argvs.substr(0,pos),
-			      argvs.substr(pos+1));
+      if (pos!=std::string::npos && 
+	  expr.length()>pos && expr[pos+1]!='=')
+	interpreter.AddTag(argvs.substr(0,pos),argvs.substr(pos+1));
+      else expr+=argv[i];
     }
     std::cout<<"Calc: interpreting formula -> "<<expr<<" = "
 	     <<interpreter.Interprete(expr)<<std::endl;
