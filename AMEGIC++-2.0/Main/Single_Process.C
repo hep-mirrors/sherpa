@@ -944,7 +944,7 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
   if (m_nin==2) m_totalxs /= ATOOLS::rpa.Picobarn();
   if (!(ATOOLS::IsZero((m_totalxs-TotalResult())/(m_totalxs+TotalResult())))) {
     msg.Error()<<"ERROR in Single_Process::CalculateTotalXSec :"<<std::endl
-	       <<"   Result of PS-Integrator and internal summation to not coincide for "<<endl
+	       <<"   Result of PS-Integrator and internal summation do not coincide for "<<endl
 	       <<m_name<<" : "<<m_totalxs<<" vs. "<<TotalResult()<<endl;
   }
   SetTotal(0);
@@ -1048,7 +1048,7 @@ bool Single_Process::PrepareXSecTables() {
 
   if (!(ATOOLS::IsZero((m_totalxs-TotalResult())/(m_totalxs+TotalResult())))) {
     msg.Error()<<"ERROR in Single_Process::PrepareXSecTables :"<<std::endl
-	       <<"   Result of PS-Integrator and internal summation to not coincide for "
+	       <<"   Result of PS-Integrator and internal summation do not coincide for "
 	       <<m_name<<" : "<<m_totalxs<<" vs. "<<TotalResult()<<endl;
   }
   SetTotal(1);
