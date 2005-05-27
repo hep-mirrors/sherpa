@@ -357,7 +357,7 @@ DEFINE_INTERPRETER_FUNCTION(Extract_Leaf)
     p_interpreter->AddLeaf(func);
     (*leaf)[0]=func;
     std::string value=expr;
-    p_interpreter->TagReplacer()->ReplaceTags(value);
+    value=p_interpreter->TagReplacer()->ReplaceTags(value);
     return value;
   }
   size_t pos=expr.find(",");
@@ -377,7 +377,7 @@ DEFINE_INTERPRETER_FUNCTION(Extract_Leaf)
 	p_interpreter->SetLeaf((*mother)()[i]);
       }
   std::string value=expr.substr(1,pos-1);
-  p_interpreter->TagReplacer()->ReplaceTags(value);
+  value=p_interpreter->TagReplacer()->ReplaceTags(value);
   return value;
 }
 
@@ -666,7 +666,7 @@ Algebra_Interpreter::~Algebra_Interpreter()
 
 std::string Algebra_Interpreter::Interprete(const std::string &expr)
 {
-  msg_Debugging()<<"Algebra_Interpreter::Interprete("<<expr<<")\n";
+  msg_Debugging()<<"Algebra_Interpreter::Interprete("<<expr<<") {\n";
   if (p_root!=NULL) delete p_root;
   p_root=p_leaf=NULL;
   while (m_leafs.size()>0) {
@@ -677,7 +677,11 @@ std::string Algebra_Interpreter::Interprete(const std::string &expr)
   KillBlanks(res);
   std::string result=Iterate(res);
   size_t pos=result.find(",");
-  if (pos==std::string::npos) return result;
+  if (pos==std::string::npos) {
+    msg_Debugging()<<"} -> "<<result<<std::endl;
+    return result;
+  }
+  msg_Debugging()<<"} -> "<<result.substr(1,pos-1)<<std::endl;
   p_root = p_leaf;
   return result.substr(1,pos-1);
 }
