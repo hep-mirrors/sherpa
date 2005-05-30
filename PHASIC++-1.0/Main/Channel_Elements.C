@@ -758,6 +758,13 @@ double Channel_Elements::DiceYUniform(const double tau,const Double_Container &x
     ATOOLS::msg.Error()<<"Channel_Elements::DiceYUniform("<<tau<<","<<xinfo<<","
 		       <<yinfo<<"): "<<" Y out of bounds ! "<<std::endl<<"   ymin, ymax vs. y : "
 		       <<ymin<<" "<<ymax<<" vs. "<<y<<endl;
+  // If y is close to any bound, set it to this bound
+    if (ATOOLS::IsEqual(y, ymin)) 
+       { ATOOLS::msg.Error()<<"Setting y to lower bound  ymin="<<ymin<<endl;
+	 y = ymin; }
+    if (ATOOLS::IsEqual(y, ymax)) 
+      { ATOOLS::msg.Error()<<"Setting y to upper bound ymax="<<ymax<<endl;
+	 y = ymax; }
   }
   return y;
 }
@@ -823,6 +830,12 @@ double Channel_Elements::DiceYCentral(const double tau,const Double_Container &x
     ATOOLS::msg.Error()<<"Channel_Elements::DiceYCentral("<<tau<<","<<xinfo<<","
 		       <<yinfo<<"): "<<" Y out of bounds ! "<<std::endl<<"   ymin, ymax vs. y : "
 		       <<ymin<<" "<<ymax<<" vs. "<<y<<endl;
+    if (ATOOLS::IsEqual(y, ymin)) 
+       { ATOOLS::msg.Error()<<"Setting y to lower bound  ymin="<<ymin<<endl;
+	 y = ymin; }
+    if (ATOOLS::IsEqual(y, ymax)) 
+      { ATOOLS::msg.Error()<<"Setting y to upper bound ymax="<<ymax<<endl;
+	 y = ymax; }
   }
   return y;
 }
@@ -883,10 +896,16 @@ double Channel_Elements::DiceYForward(const double yexponent,const double tau,
 
   double y=Channel_Basics::PeakedDist(ypeak,yexponent,ymin,ymax,-1,ran);
   if (ATOOLS::IsZero(y)) y=0.;
-  if (y<=ymin || y>=ymax){ 
+  if (y<ymin || y>ymax){ 
     ATOOLS::msg.Error()<<"Channel_Elements::DiceYForward("<<tau<<","<<xinfo<<","
 		       <<yinfo<<"): "<<" Y out of bounds ! "<<std::endl<<"   ymin, ymax vs. y : "
 		       <<ymin<<" "<<ymax<<" vs. "<<y<<endl;
+     if (ATOOLS::IsEqual(y, ymin)) 
+       { ATOOLS::msg.Error()<<"Setting y to lower bound  ymin="<<ymin<<endl;
+	 y = ymin; }
+    if (ATOOLS::IsEqual(y, ymax)) 
+      { ATOOLS::msg.Error()<<"Setting y to upper bound ymax="<<ymax<<endl;
+	 y = ymax; }
   }
   //std::cout<<ymin<<" "<<ymax<<" vs. "<<y<<endl;
   return y;
@@ -963,10 +982,20 @@ double Channel_Elements::DiceYBackward(const double yexponent,const double tau,
   ymax=ATOOLS::Min(yinfo[1],ymax);
   double y=-Channel_Basics::PeakedDist(-ymin-xinfo[1],yexponent,-ymax,-ymin,-1,ran);
   if (ATOOLS::IsZero(y)) y=0.;
-  if (y<=ymin || y>=ymax){ 
+  if (y<ymin || y>ymax){ 
+    std::cout.precision(14);
     ATOOLS::msg.Error()<<"Channel_Elements::DiceYBackward("<<tau<<","<<xinfo<<","
-		       <<yinfo<<"): "<<" Y out of bounds ! "<<std::endl<<"   ymin, ymax vs. y : "
-		       <<ymin<<" "<<ymax<<" vs. "<<y<<endl;
+		       <<yinfo<<"): ";
+    std::cout.precision(14);
+ATOOLS::msg.Error()<<" Y out of bounds ! "<<std::endl<<"   ymin, ymax vs. y : "
+		   <<ymin<<" "<<ymax<<" vs. "<<y<<endl;
+    if (ATOOLS::IsEqual(y, ymin)) 
+       { ATOOLS::msg.Error()<<"Setting y to lower bound  ymin="<<ymin<<endl;
+	 y = ymin; }
+    if (ATOOLS::IsEqual(y, ymax)) 
+      { ATOOLS::msg.Error()<<"Setting y to upper bound ymax="<<ymax<<endl;
+	 y = ymax; }
+
   }
   return y;
 }
