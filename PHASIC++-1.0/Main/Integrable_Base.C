@@ -125,7 +125,8 @@ void Integrable_Base::SetAddFlavours(const ATOOLS::Flavour *flavours)
 
 void Integrable_Base::InitWeightHistogram() 
 {
-  if (p_whisto!=NULL) delete p_whisto;
+  if (p_whisto!=NULL) {
+    delete p_whisto; };
   double av=TotalResult();
   if (!av>0.) {
     ATOOLS::msg.Error()<<"Integrable_Base::InitWeightHistogram(): "
@@ -146,7 +147,7 @@ void Integrable_Base::ReadInHistogram(std::string dir)
   if (from) hit = 1;
   from.close();
   if (!hit) return;
-  if (p_whisto) delete p_whisto;
+  if (p_whisto) delete p_whisto; 
   p_whisto = new ATOOLS::Histogram(filename);	
 }
 
