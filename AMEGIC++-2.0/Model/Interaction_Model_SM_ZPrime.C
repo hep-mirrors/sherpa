@@ -29,13 +29,14 @@ MODEL::Model_Base * _model, std::string _cplscheme,std::string _yukscheme)
 		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),Ecms2)));
   gP = Kabbala(string("g_1/\\cos\\theta_W"), g1.Value()/costW.Value());
 
-
   PL    = Kabbala(string("P_L"),1.);
   PR    = Kabbala(string("P_R"),1.);
   M_I   = Kabbala(string("i"),Complex(0.,1.));
 
   // the parameter specifying the LR model
-  alphaLR = Kabbala(string("\\alpha_{LR}"), sqrt(2.));
+  // - sqrt(2.) will describe a totally LR-symm model
+  // - sqrt(2./3.) describes an E6-inspired model
+  alphaLR = Kabbala(std::string("\\alpha_{LR}"), sqrt(2./3.));
 };
 
 void Interaction_Model_SM_ZPrime::c_FFV(Single_Vertex* vertex,int& vanz)
@@ -114,6 +115,7 @@ void Interaction_Model_SM_ZPrime::c_VVVV(Single_Vertex* vertex,int& vanz)
 { // No Z' interactions here - same reason as in c_VVV
   p_moSM->c_VVVV(vertex,vanz); }
 
+// no interaction with the Higgs particles implemented => no interaction here
 void Interaction_Model_SM_ZPrime::c_FFS(Single_Vertex* vertex,int& vanz)  { p_moSM->c_FFS(vertex,vanz); }
 void Interaction_Model_SM_ZPrime::c_VVS(Single_Vertex* vertex,int& vanz)  { p_moSM->c_VVS(vertex,vanz); }
 void Interaction_Model_SM_ZPrime::c_SSS(Single_Vertex* vertex,int& vanz)  { p_moSM->c_SSS(vertex,vanz); }
