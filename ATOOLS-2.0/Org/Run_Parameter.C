@@ -151,8 +151,18 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   gen.m_analysis           = dr.GetValue<int>("ANALYSIS",0);
   gen.m_nevents            = dr.GetValue<long>("EVENTS",100);
   // read only if defined (no error message if not defined)
-  gen.m_seed               = dr.GetValue<long>("RANDOM_SEED");
-  if (gen.m_seed==NotDefined<long>()) gen.m_seed=1234;
+
+  Data_Reader dreader;
+  dreader.SetInputFile(m_path+file);
+  dreader.SetVectorType(reader->VHorizontal);
+  std::vector<long int> seeds;
+  gen.m_seed2 = -1;
+  if (dreader.VectorFromFile(seeds,"RANDOM_SEED")) {
+    gen.m_seed = seeds[0];
+    // if 2nd seed is given, store it
+    if (seeds.size() == 2) { gen.m_seed2 = seeds[1]; } 
+  } else gen.m_seed=1234;
+
   gen.m_timeout            = dr.GetValue<double>("TIMEOUT");
   if (gen.m_timeout<0.) gen.m_timeout=0.;
   rpa.gen.m_timer.Start();
@@ -171,7 +181,9 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
     if (tcgetattr(STDOUT_FILENO,&testos)==0) msg.SetModifiable(true);
   }
   gen.m_rpa_id = dr.GenerateKey();
-  if (gen.m_seed!=1234) ran.SetSeed(gen.m_seed);
+  PRINT_INFO("I'm still alive before setting the seeds!");
+  if (gen.m_seed2!=-1) { ran.SetSeed(gen.m_seed, gen.m_seed2); }
+                  else { ran.SetSeed(gen.m_seed); }
   gen.m_ren_scale_fac=1.0;
   gen.m_fac_scale_fac=1.0;
 }

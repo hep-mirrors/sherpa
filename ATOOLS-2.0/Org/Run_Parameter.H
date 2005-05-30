@@ -44,6 +44,7 @@ namespace ATOOLS {
       long int            m_nevents, m_ndicedevents, m_estimatedevents;
       double              m_wana_scale;
       long int            m_seed;
+      long int            m_seed2; 
       double              m_ecms, m_ycut, m_delta_r;
       double              m_accu;
       Flavour  m_beam1, m_beam2, p_bunch[2];
