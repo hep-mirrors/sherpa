@@ -503,8 +503,9 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   Hadron_Decay_Handler * hdhandler = NULL;
   string decmodel = dr.GetValue<string>("DECAYMODEL",string("Lund"));
   if (decmodel==std::string("Hadrons")) {
+	string decaypath       = dr.GetValue<string>("DECAYPATH",string("Decaydata/"));
     string decayfile       = dr.GetValue<string>("DECAYFILE",string("HadronDecays.dat"));
-	hdhandler              = new Hadron_Decay_Handler(new HADRONS::Hadrons(m_path,decayfile));
+	hdhandler              = new Hadron_Decay_Handler(new HADRONS::Hadrons(decaypath,decayfile));
 	hdhandler->EraseTreated(UnstableHadrons);
 	if (UnstableHadrons->empty()) needextra = false;
 	m_hdhandlers["Sherpa"] = hdhandler;
