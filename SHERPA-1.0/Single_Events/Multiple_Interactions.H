@@ -4,9 +4,10 @@
 #include "Event_Phase_Handler.H"
 #include "MI_Handler.H"
 
+namespace PDF    { class Remnant_Base; }
+
 namespace SHERPA {
 
-  class Remnant_Base;
   class Matrix_Element_Handler;
 
   class Multiple_Interactions: public Event_Phase_Handler {
@@ -15,8 +16,8 @@ namespace SHERPA {
     double m_ecms, m_ptmax, m_lastptmax, m_ecmsmax, m_emax[2];
     double m_weight, m_ntrials;
 
-    MI_Handler   *p_mihandler;
-    Remnant_Base *p_remnants[2];
+    MI_Handler        *p_mihandler;
+    PDF::Remnant_Base *p_remnants[2];
 
     Matrix_Element_Handler *p_mehandler;
 

@@ -337,30 +337,29 @@ bool Initialization_Handler::InitializeThePDFs()
 {
   for (size_t i=0;i<2;++i) {
     isr::id id=(isr::id)(i+1);
-    if (m_isrhandlers.find(id)!=m_isrhandlers.end()) delete m_isrhandlers[id]; 
-    Data_Read * dataread = new Data_Read(m_path+m_isrdat[i]);
-    PDF_Handler * pdfhandler = new PDF_Handler();
+    if (m_isrhandlers.find(id)!=m_isrhandlers.end()) 
+      delete m_isrhandlers[id]; 
+    Data_Read dataread(m_path+m_isrdat[i]);
+    PDF_Handler pdfhandler;
     PDF_Base * pdfbase;
     ISR_Base ** isrbases = new ISR_Base*[2];
     double m_bunch_splimits[2];
     for (int j=0;j<2;++j) {
-      pdfbase = pdfhandler->GetPDFLib(dataread,m_bunch_particles[j],j);
+      pdfbase = pdfhandler.GetPDFLib(&dataread,m_bunch_particles[j],j);
       if (pdfbase==NULL) isrbases[j] = new Intact(m_bunch_particles[j]);     
       else isrbases[j] = new Structure_Function(pdfbase,m_bunch_particles[j]);
       ATOOLS::rpa.gen.SetBunch(m_bunch_particles[j],j);
     }
-    m_bunch_splimits[0] = dataread->GetValue<double>("ISR_SMIN",0.);
-    m_bunch_splimits[1] = dataread->GetValue<double>("ISR_SMAX",1.);
+    m_bunch_splimits[0] = dataread.GetValue<double>("ISR_SMIN",0.);
+    m_bunch_splimits[1] = dataread.GetValue<double>("ISR_SMAX",1.);
     double kplimits[2];
-    kplimits[0] = dataread->GetValue<double>("ISR_KPMIN",m_bunch_splimits[0]);
-    kplimits[1] = dataread->GetValue<double>("ISR_KPMAX",m_bunch_splimits[1]);
+    kplimits[0] = dataread.GetValue<double>("ISR_KPMIN",m_bunch_splimits[0]);
+    kplimits[1] = dataread.GetValue<double>("ISR_KPMAX",m_bunch_splimits[1]);
     m_isrhandlers[id] = new ISR_Handler(isrbases);
-    m_isrhandlers[id]->SetBeamEnergy(p_beamspectra->GetBeam(0)->Energy(),0);
-    m_isrhandlers[id]->SetBeamEnergy(p_beamspectra->GetBeam(1)->Energy(),1);
+    m_isrhandlers[id]->SetBeam(p_beamspectra->GetBeam(0),0);
+    m_isrhandlers[id]->SetBeam(p_beamspectra->GetBeam(1),1);
     m_isrhandlers[id]->Init(m_bunch_splimits,kplimits);
     msg_Info()<<"Initialized the ISR["<<id<<"] : "<<m_isrhandlers[id]->Type()<<endl;
-    delete pdfhandler;
-    delete dataread;
     if (!(p_beamspectra->CheckConsistency(m_bunch_particles))) {
       msg.Error()<<"Error in Environment::InitializeThePDFs()"<<endl
 		 <<"   Inconsistent ISR & Beam:"<<endl

@@ -105,6 +105,7 @@ bool Event_Handler::GenerateEvent(int mode)
   case 0:
     do {
       CleanUpEvent();
+      ATOOLS::Vec4D::ResetAccu();
       ATOOLS::ran.SaveStatus();
       hardblob = new Blob();
       hardblob->SetType(btp::Signal_Process);

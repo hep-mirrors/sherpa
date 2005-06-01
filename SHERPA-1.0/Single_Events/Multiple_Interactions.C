@@ -29,8 +29,8 @@ Multiple_Interactions::Multiple_Interactions(MI_Handler *mihandler):
   m_name = std::string("Multiple_Interactions:")+p_mihandler->Name();
   m_type = eph::Perturbative;
   m_ecms = sqrt(p_mihandler->ISRHandler()->Pole());
-  p_remnants[0]=GET_OBJECT(Remnant_Base,"Remnant_Base_0");
-  p_remnants[1]=GET_OBJECT(Remnant_Base,"Remnant_Base_1");
+  p_remnants[0]=mihandler->ISRHandler()->GetRemnant(0);
+  p_remnants[1]=mihandler->ISRHandler()->GetRemnant(1);
   if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
     THROW(fatal_error,"No beam remnant handler found.");
   }

@@ -23,8 +23,8 @@ Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler,
 {
   m_name      = string("Signal_Processes:")+p_mehandler->Name();
   m_type      = eph::Perturbative;
-  p_remnants[0]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_0");
-  p_remnants[1]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_1");
+  p_remnants[0]=mehandler->GetISR_Handler()->GetRemnant(0);
+  p_remnants[1]=mehandler->GetISR_Handler()->GetRemnant(1);
   if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
     THROW(critical_error,"No beam remnant handler found.");
   }

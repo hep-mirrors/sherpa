@@ -3,6 +3,7 @@ SHERPASYS     =	../..
 SHERPAFLAGS   =	-pedantic -Wall # -Winline 
 
 ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
+PDFDIR        =	$(SHERPASYS)/PDF-1.0
 ANALYSISDIR   =	$(SHERPASYS)/ANALYSIS-1.0
 EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
 AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
@@ -12,7 +13,7 @@ SHERPAINCS    =	-I../Initialization -I../PerturbativePhysics \
 		-I../LundTools -I../HerwigTools -I../Tools 
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
 ANALYSISINCS  = -I$(ANALYSISDIR)/Main -I$(ANALYSISDIR)/Observables
-PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main
+PDFINCS       =	-I$(PDFDIR)/Main -I$(PDFDIR)/Remnant
 BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
 PHASICINCS    =	-I$(SHERPASYS)/PHASIC++-1.0/Main
 MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
