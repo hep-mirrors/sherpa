@@ -5,7 +5,7 @@
 
 namespace ATOOLS { class Data_Read;    }
 namespace MODEL  { class Model_Base;   }
-namespace ATOOLS { class Object;       }
+namespace PDF    { class Remnant_Base; }
 
 namespace EXTRAXS {
 
@@ -21,10 +21,17 @@ namespace EXTRAXS {
     std::string         m_regulator;
     std::vector<double> m_regulation;
 
-    ATOOLS::Object *p_remnants[2];
+    PDF::Remnant_Base *p_remnants[2];
+
+    std::set<std::string> m_setup;
 
     int  ExtractFlavours(ATOOLS::Flavour *&flavours,std::string buffer);
     void OrderFlavours(ATOOLS::Flavour *flavours);
+
+    void InitializeProcess(ATOOLS::Flavour *flavs,std::string &efunc,
+			   double &inisum,double &finsum,
+			   size_t order_ew,size_t order_strong,
+			   size_t nin,size_t nout,size_t i);
 
     XS_Group *FindGroup(const size_t nin,const size_t nout,
 			const ATOOLS::Flavour *flavours);

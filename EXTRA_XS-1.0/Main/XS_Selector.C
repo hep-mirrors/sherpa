@@ -39,8 +39,8 @@ XS_Base *XS_Selector::GetXS(const size_t nin, const size_t nout,
     }
   }
   else {
-    nqed=Min(nqed,(size_t)2);
-    nqcd=Min(nqcd,(size_t)2);
+    nqed=Min(nqed,(size_t)nin+nout-2);
+    nqcd=Min(nqcd,(size_t)nin+nout-2);
     for (int j=nqcd;j>=0;--j) {
       for (int i=nqed;i>=0;--i) {
 	XS_Base * xst = GetSingleXS(nin,nout,flavours,i,j);

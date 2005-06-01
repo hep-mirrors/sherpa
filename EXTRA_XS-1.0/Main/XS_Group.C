@@ -476,12 +476,21 @@ void XS_Group::SetMax(const double max,const int flag)
 void XS_Group::CreateFSRChannels() 
 {
   p_pshandler->FSRIntegrator()->DropAllChannels();
-  p_pshandler->FSRIntegrator()->Add(new PHASIC::S1Channel(2,2,p_flavours));
-  p_pshandler->FSRIntegrator()->Add(new PHASIC::T1Channel(2,2,p_flavours));
-  p_pshandler->FSRIntegrator()->Add(new PHASIC::U1Channel(2,2,p_flavours));
+  if (m_nout>2) {
+    p_pshandler->FSRIntegrator()->
+      Add(new PHASIC::T1Channel(m_nin,m_nout,p_flavours));
+  }
+  else {
+    p_pshandler->FSRIntegrator()->
+      Add(new PHASIC::S1Channel(m_nin,m_nout,p_flavours));
+    p_pshandler->FSRIntegrator()->
+      Add(new PHASIC::T1Channel(m_nin,m_nout,p_flavours));
+    p_pshandler->FSRIntegrator()->
+      Add(new PHASIC::U1Channel(m_nin,m_nout,p_flavours));
+  }
   for (size_t i=0;i<m_resonances.size();++i) {
-    p_pshandler->FSRIntegrator()->Add(new PHASIC::S1Channel(2,2,p_flavours,
-							    m_resonances[i]));
+    p_pshandler->FSRIntegrator()->
+      Add(new PHASIC::S1Channel(m_nin,m_nout,p_flavours,m_resonances[i]));
   }
 }      
 
