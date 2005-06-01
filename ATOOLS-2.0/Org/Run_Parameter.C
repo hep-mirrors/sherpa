@@ -181,7 +181,6 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
     if (tcgetattr(STDOUT_FILENO,&testos)==0) msg.SetModifiable(true);
   }
   gen.m_rpa_id = dr.GenerateKey();
-  PRINT_INFO("I'm still alive before setting the seeds!");
   if (gen.m_seed2!=-1) { ran.SetSeed(gen.m_seed, gen.m_seed2); }
                   else { ran.SetSeed(gen.m_seed); }
   gen.m_ren_scale_fac=1.0;
