@@ -1,9 +1,6 @@
 #include "Beam_Remnant_Handler.H"
 
 #include "Hadron_Remnant.H"
-#include "Electron_Remnant.H"
-#include "Photon_Remnant.H"
-#include "No_Remnant.H"
 #include "Data_Reader.H"
 #include "Run_Parameter.H"
 #include "Matrix_Element_Handler.H"
@@ -28,29 +25,12 @@ Beam_Remnant_Handler(const std::string path,const std::string file,
   p_isr(isr), p_beam(beam), 
   p_mehandler(NULL), m_path(path), m_file(file), m_fill(true)
 {
-  for (size_t i=0;i<2;++i) {
-    if (p_isr->Flav(i).IsHadron()) {
-      Hadron_Remnant *remnant = new Hadron_Remnant(p_isr,i);
-      Data_Reader reader;
-      reader.SetInputPath(m_path);
-      reader.SetInputFile(m_file);
-      double helpd;
-      if (!reader.ReadFromFile(helpd,"REMNANT_STRING_DRAWING")) helpd=1.0;
-      remnant->SetStringDrawing(helpd,0);
-      if (!reader.ReadFromFile(helpd,"REMNANT_RANDOM_STRINGS")) helpd=0.0;
-      remnant->SetStringDrawing(helpd,1);
-      p_beampart[i]=remnant;
-    }
-    else if (p_isr->Flav(i).IsLepton()) 
-      p_beampart[i] = new Electron_Remnant(p_isr,i);
-    else if (p_isr->Flav(i).IsPhoton()) 
-      p_beampart[i] = new Photon_Remnant(i);
-    else p_beampart[i] = new No_Remnant(i);
-    p_beampart[i]->SetBeamEnergy(beam->GetBeam(i)->Energy());
-  }
-  for (size_t i=0;i<2;++i) p_beampart[i]->SetPartner(p_beampart[1-i]);
   p_kperp = new Primordial_KPerp(path,file);
-  for (size_t i=0;i<2;++i) p_kperp->SetRemnant(p_beampart[i],i);
+  for (size_t i=0;i<2;++i) {
+    p_beampart[i]=p_isr->GetRemnant(i);
+    p_beampart[i]->SetBeamEnergy(beam->GetBeam(i)->Energy());
+    p_kperp->SetRemnant(p_beampart[i],i);
+  }
 }
 
 Beam_Remnant_Handler::~Beam_Remnant_Handler() 
@@ -171,8 +151,8 @@ FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
 	if (p_mehandler->Weight()!=1.0) p_mehandler->SaveNumberOfTrials();
 	return false;
       }
-  if (p_beampart[0]->Type()==rtp::hadron || 
-      p_beampart[1]->Type()==rtp::hadron) {
+  if (p_beampart[0]->Type()==PDF::rtp::hadron || 
+      p_beampart[1]->Type()==PDF::rtp::hadron) {
     p_kperp->CreateKPerp(p_beamblob[0],p_beamblob[1]);
     for (short unsigned int i=0;i<2;++i) p_kperp->FillKPerp(p_beamblob[i]);
   }

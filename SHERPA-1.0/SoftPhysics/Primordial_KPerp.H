@@ -5,9 +5,9 @@
 #include "Blob_List.H"
 #include "Poincare.H"
 
-namespace SHERPA {
+namespace PDF    { class Remnant_Base; }
 
-  class Remnant_Base;
+namespace SHERPA {
 
   class Primordial_KPerp {
   private:
@@ -23,7 +23,7 @@ namespace SHERPA {
     double m_kperpmean[2], m_kperpsigma[2];
     double m_kperpmeans[2], m_kperpsigmas[2];
 
-    Remnant_Base *p_remnants[2];
+    PDF::Remnant_Base *p_remnants[2];
 
     double Lambda2(double sp,double sp1,double sp2); 
 
@@ -51,7 +51,7 @@ namespace SHERPA {
     { if (beam<2) m_kperpmean[beam]=ATOOLS::dabs(_m_kperpmean); }
     inline void SetKPerpSigma(const double _m_kperpsigma,unsigned int beam)
     { if (beam<2) m_kperpsigma[beam]=ATOOLS::dabs(_m_kperpsigma); }
-    inline void SetRemnant(Remnant_Base *const rem,const size_t beam)
+    inline void SetRemnant(PDF::Remnant_Base *const rem,const size_t beam)
     { if (beam<2) p_remnants[beam]=rem; }
     inline void SetScheme(const int _m_scheme)
     { m_scheme=_m_scheme; }

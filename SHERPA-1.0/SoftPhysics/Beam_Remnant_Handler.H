@@ -17,8 +17,8 @@ namespace SHERPA {
     PDF::ISR_Handler           *p_isr;
     BEAM::Beam_Spectra_Handler *p_beam;
 
-    SHERPA::Remnant_Base *p_beampart[2];
-    Primordial_KPerp     *p_kperp;
+    PDF::Remnant_Base *p_beampart[2];
+    Primordial_KPerp  *p_kperp;
 
     ATOOLS::Blob *p_beamblob[2];
 
@@ -49,7 +49,7 @@ namespace SHERPA {
     void SetScale(const double scale);
 
     // inline functions
-    inline Remnant_Base *const BeamParticle(const size_t i) const 
+    inline PDF::Remnant_Base *const BeamParticle(const size_t i) const 
     { return p_beampart[i]; }
 
   };// end of class Beam_Remnant_Handler
