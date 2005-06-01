@@ -151,21 +151,34 @@ void Hadrons::ReadInDecayTables()
 
   vector<vector<string> > Decayers;
   reader.SetMatrixType(reader.MTransposed);
-  reader.MatrixFromFile(Decayers);
+  if(!reader.MatrixFromFile(Decayers)) {
+    msg.Error()<<"ERROR in Hadrons::ReadInDecayTables() :\n"
+	       <<"   Read in failure, will abort."<<endl;
+    abort();
+  }
+
+  //Check.
+  //for (int i=0;i<Decayers.size();i++) {
+  //  for (int j=0;j<Decayers[i].size();j++) {
+  //    std::cout<<Decayers[i][j]<<std::endl;
+  //  }
+  //  std::cout<<std::endl;
+  //}
 
   p_decaymap = new map<ATOOLS::kf::code,ATOOLS::Decay_Table *>;
   p_channelmap = new map< Decay_Channel*, Hadron_Decay_Channel* >;
   Decay_Table * dt;
   Flavour fl;
+  //for (size_t i=0;i<3;++i) {
   for (size_t i=0;i<Decayers.size();++i) {
-	fl = Flavour(kf::code(atoi((Decayers[i][0]).c_str())));
-	if (p_decaymap->find(fl.Kfcode())!=p_decaymap->end()) {
-	  msg.Error()<<"ERROR in Hadrons::ReadInDecayTables() :"<<endl
-				 <<"   Flavour "<<fl<<" already in map. Don't know what to do, will abort."<<endl;
-	  abort();
-	}
+    fl = Flavour(kf::code(atoi((Decayers[i][0]).c_str())));
+    if (p_decaymap->find(fl.Kfcode())!=p_decaymap->end()) {
+      msg.Error()<<"ERROR in Hadrons::ReadInDecayTables() :"<<endl
+		 <<"   Flavour "<<fl<<" already in map. Don't know what to do, will abort."<<endl;
+      abort();
+    }
     dt = InitialiseOneDecayTable(Decayers[i]);
-	(*p_decaymap)[fl.Kfcode()] = dt;
+    (*p_decaymap)[fl.Kfcode()] = dt;
   }
 }
 

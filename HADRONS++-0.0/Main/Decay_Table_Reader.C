@@ -23,7 +23,21 @@ Decay_Table_Reader::Decay_Table_Reader(string path,string file)
   reader.SetInputPath(path);
   reader.SetInputFile(file);
   reader.SetMatrixType(reader.MTransposed);
-  reader.MatrixFromFile(m_helpsvv,"");
+  if(!reader.MatrixFromFile(m_helpsvv)) {
+    msg.Error()<<"ERROR in Decay_Table_Reader::"
+	       <<"Decay_Table_Reader(string,string) :\n"
+	       <<"   Read in failure, will abort."<<endl;
+    abort();
+  }
+
+  //Check.
+  //for (int i=0;i<m_helpsvv.size();i++) {
+  //  for (int j=0;j<m_helpsvv[i].size();j++) {
+  //    std::cout<<m_helpsvv[i][j]<<std::endl;
+  //  }
+  //  std::cout<<std::endl;
+  //}
+
 }
 
 int Decay_Table_Reader::FillDecayTable(Decay_Table * dt)
