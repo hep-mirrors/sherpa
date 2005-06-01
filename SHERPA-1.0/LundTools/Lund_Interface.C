@@ -568,6 +568,7 @@ void Lund_Interface::AddPartonToString(ATOOLS::Particle *parton,int &nhep)
 void Lund_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
 					      ATOOLS::Particle_List *pl)
 {
+  //pylist(1);
   m_secondarymap.clear();
 //  ATOOLS::Blob *decay;
   ATOOLS::Particle *particle;
@@ -613,6 +614,11 @@ void Lund_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_Li
     }
   }
   blob->SetStatus(0);
+
+  //for(std::map<ATOOLS::Particle *,int>::const_iterator
+  //	it=m_secondarymap.begin(); it!=m_secondarymap.end(); ++it) {
+  //  std::cout<<*it->first<<"  :  "<<it->second<<std::endl;
+  //}
 }
 
 void Lund_Interface::FillPrimaryTauInBlob(int pos,ATOOLS::Blob *blob,
@@ -694,7 +700,8 @@ void Lund_Interface::PerformDecay( ATOOLS::Particle * part,
 	if( part_list ) part_list->push_back( particle ); 
 	blob->AddToOutParticles( particle );
 	// check if daughter can be treated as well
-	if( FindDecay(particle) ) {
+	if (hepevt.jdahep[i][0]!=0 && hepevt.jdahep[i][1]!=0) {
+	  m_secondarymap[particle]=i;
 	  blob->SetStatus(1);
 	  PerformDecay( particle, blob_list, part_list );
 	}
