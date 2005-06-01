@@ -41,7 +41,6 @@ libToolsOrg_la_SOURCES        = \
 		 		Sort.C \
 				prof.cc \
 				IO_Handler.C \
-				Type.C \
 				Info_Key.C \
 				Integration_Info.C \
 				Debugger.C \
@@ -72,7 +71,6 @@ noinst_HEADERS        =	\
 			prof_exampl.cc \
 			IO_Handler.H \
 			MyStrStream.H \
-			Type.H \
 			Info_Key.H \
 			Info_Key.inl.H \
 			Integration_Info.H \
