@@ -78,5 +78,6 @@ AC_OUTPUT(Main/Makefile \
 	  GRV/Makefile \
 	  Sudakov/Makefile \
 	  KMR/Makefile \
+	  Remnant/Makefile \
 	  Makefile )
 
