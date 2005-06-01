@@ -365,6 +365,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
     if (!(mode&psm::no_lim_isr)) p_isrhandler->SetSprimeMin(m_smin);
     if (!(mode&psm::no_dice_isr)) {
       p_isrhandler->SetLimits();
+      p_isrhandler->SetMasses(p_process->Selected()->Flavours(),m_nout);
       if (p_isrhandler->On()>0) { 
 	if (p_isrhandler->KMROn()) {
 	  if (mode&psm::pi_kp) p_kpchannels->
@@ -542,7 +543,7 @@ bool Phase_Space_Handler::Check4Momentum(const ATOOLS::Vec4D *p)
   for (int i=0;i<m_nin;i++) pin += p[i];
   for (int i=m_nin;i<m_nin+m_nout;i++) pout += p[i];
   double sin = pin.Abs2(), sout = pout.Abs2();
-  if (!(ATOOLS::IsZero((sin-sout)/(sin+sout)))) {
+  if (pin!=pout || !ATOOLS::IsEqual(sin,sout)) {
     ATOOLS::msg.Error()<<"Phase_Space_Handler::Check4Momentum(..): "
 		       <<"Difference: "<<pin-pout<<std::endl;
     return false;
