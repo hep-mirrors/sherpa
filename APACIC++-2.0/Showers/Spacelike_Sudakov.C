@@ -7,10 +7,7 @@
 #include "QCD_Splitting_Functions.H"
 #include "QED_Splitting_Functions.H"
 #include "Run_Parameter.H"
-#ifdef SHERPA_SUPPORT
 #include "Remnant_Base.H"
-#include "MyStrStream.H"
-#endif
 
 #include <iomanip>
 
@@ -72,10 +69,6 @@ Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * pdf,Sudakov_Tools * tools,Spacel
     Add(new p_ff(Flavour(kf::e),p_tools));
     Add(new p_ff(Flavour(kf::e).Bar(),p_tools));
   }
-#ifdef SHERPA_SUPPORT
-  p_remnant=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_"
-		       +ATOOLS::ToString(beam));
-#endif
 
   PrintStat();
 }
@@ -151,7 +144,11 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,bool jetveto,int & extra_pd
 
 void Spacelike_Sudakov::ProduceT() {
   if (m_lastint <0.) m_t = +1.;            
-  else m_t *= exp( 2.*M_PI*log(ran.Get()) / (m_lastint*m_pdf_fac) );
+  else {
+    double rn=ran.Get();
+    if (IsZero( 2.*M_PI*log(rn) / (m_lastint*m_pdf_fac) )) m_t=m_t0;
+    else m_t *= exp( 2.*M_PI*log(rn) / (m_lastint*m_pdf_fac) );
+  }
   return;
 }
 
@@ -298,11 +295,9 @@ bool Spacelike_Sudakov::JetVeto(Knot * mo)
 
 bool Spacelike_Sudakov::RemnantVeto(Knot * mo) 
 {
-#ifdef SHERPA_SUPPORT
   double E=p_remnant->BeamEnergy()*mo->x/m_z;
   Particle part(1,GetFlA(),Vec4D(E,0.0,0.0,E));
   if (!p_remnant->TestExtract(&part)) return 1;
-#endif
   return 0;
 }
 
