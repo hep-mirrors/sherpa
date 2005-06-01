@@ -12,6 +12,8 @@
 
 using namespace ATOOLS;
 
+double Vec4D::s_accu=1.0e-12;
+
 // "reference" to tags for computational constructors
 const Tag::Tsum Tag::sum={};
 const Tag::Tdiff Tag::diff={};
@@ -85,9 +87,14 @@ bool ATOOLS::operator==(const Vec4D& v1, const Vec4D& v2)
   double q=1.;
   if (!IsZero(maxp)) q=1./maxp;
   for(short int i=0;i<4;i++) {
-    if (dabs(q*(v1[i]-v2[i]))>ATOOLS::rpa.gen.Accu()) return false;
+    if (dabs(q*(v1[i]-v2[i]))>Vec4D::Accu()) return false;
   }
   return true;
+}
+
+void Vec4D::ResetAccu()                
+{ 
+  s_accu=rpa.gen.Accu(); 
 }
 
 const double Vec4D::PPerp(const Vec4D &ref) const 

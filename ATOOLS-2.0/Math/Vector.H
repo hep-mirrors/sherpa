@@ -71,6 +71,7 @@ namespace ATOOLS {
 
   class Vec4D {
     double m_x[4];
+    static double s_accu;
   public:
     Vec4D() {
       m_x[0]=m_x[1]=m_x[2]=m_x[3]=0.;
@@ -95,6 +96,11 @@ namespace ATOOLS {
     //! Computational constructor
     Vec4D(const Vec4D& v1 ,const double scal, const Tag::Tsmul); 
   
+    static void ResetAccu();
+
+    inline static void   SetAccu(const double &accu) { s_accu=accu;   }
+    inline static double Accu()                      { return s_accu; }
+
     inline double& operator[] (int i);
     inline const double operator[] (int i) const;
     inline const double Abs2() const; 
