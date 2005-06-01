@@ -64,6 +64,8 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *const model,
   m_ecms(ATOOLS::rpa.gen.Ecms()), m_external(true), m_regulate(false)
 {
   Init();
+  p_remnants[0]=p_isr->GetRemnant(0);
+  p_remnants[1]=p_isr->GetRemnant(1);
 }
 
 void Simple_Chain::Init()
@@ -77,21 +79,11 @@ void Simple_Chain::Init()
   m_stop[4]=m_stop[0]=0.0;
   m_start[3]=m_start[2]=m_ecms/2;
   m_stop[3]=m_stop[2]=0.0;
-  if (!m_external) {
-    p_remnants[1]=p_remnants[0]=NULL;
-  }
-  else {
-    p_remnants[0]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_0");
-    p_remnants[1]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_1");
-    if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
-      ATOOLS::msg.Error()<<"Simple_Chain::Simple_Chain(..): "
-			 <<"No beam remnant handler found."<<std::endl;
-    }
-  }
   m_spkey.Assign("s' isr",4,0,PHASIC::Phase_Space_Handler::GetInfo());
   m_ykey.Assign("y isr",3,0,PHASIC::Phase_Space_Handler::GetInfo());
   m_isrspkey.Assign("s' isr mi",3,0,PHASIC::Phase_Space_Handler::GetInfo());
   m_isrykey.Assign("y isr mi",2,0,PHASIC::Phase_Space_Handler::GetInfo());
+  p_remnants[1]=p_remnants[0]=NULL;
 }
 
 Simple_Chain::~Simple_Chain()
@@ -170,10 +162,8 @@ EXTRAXS::XS_Group *Simple_Chain::FindPDFGroup(const size_t nin,const size_t nout
     if (nin==2 && nout==(*p_processes)[i]->NOut()) {
       ATOOLS::Flavour ref[2], test[2];
       for (size_t j=0;j<2;++j) {
-	ref[j]=((SHERPA::Remnant_Base*)p_remnants[j])->
-	  ConstituentType((*p_processes)[i]->Flavours()[j]);
-	test[j]=((SHERPA::Remnant_Base*)p_remnants[j])->
-	  ConstituentType(flavours[j]);
+	ref[j]=p_remnants[j]->ConstituentType((*p_processes)[i]->Flavours()[j]);
+	test[j]=p_remnants[j]->ConstituentType(flavours[j]);
       }
       if (ref[0]==test[0] && ref[1]==test[1])
 	return dynamic_cast<EXTRAXS::XS_Group*>((*p_processes)[i]);
@@ -181,8 +171,7 @@ EXTRAXS::XS_Group *Simple_Chain::FindPDFGroup(const size_t nin,const size_t nout
   }
   ATOOLS::Flavour *copy = new ATOOLS::Flavour[nin+nout];
   for (short unsigned int i=0;i<nin;++i) 
-    copy[i]=((SHERPA::Remnant_Base*)p_remnants[i])->
-      ConstituentType(flavours[i]);
+    copy[i]=p_remnants[i]->ConstituentType(flavours[i]);
   for (short unsigned int i=nin;i<nin+nout;++i) copy[i]=ATOOLS::kf::jet;
   Semihard_QCD *newgroup = 
     new Semihard_QCD(p_beam,p_isr,p_processes->SelectorData(),

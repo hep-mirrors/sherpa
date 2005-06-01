@@ -4,7 +4,8 @@ AMISICFLAGS   =	-pedantic -Wall -Winline
 
 ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
-PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main
+PDFDIR        =	$(SHERPASYS)/PDF-1.0
+PDFINCS       =	-I$(PDFDIR)/Main -I$(PDFDIR)/Remnant
 BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
 PHASICINCS    =	-I$(SHERPASYS)/PHASIC++-1.0/Main
 MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
@@ -14,7 +15,7 @@ AMISICINCS    = -I../Tools -I../Main
 
 if SHERPA_SUPPORT
 SHERPADIR     = $(SHERPASYS)/SHERPA-1.0
-SHERPAINCS    =	-I$(SHERPADIR)/PerturbativePhysics -I$(SHERPADIR)/SoftPhysics
+SHERPAINCS    =	-I$(SHERPADIR)/PerturbativePhysics
 SHERPAFLAGS   =	-DUSING__Sherpa 
 else
 endif

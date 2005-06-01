@@ -4,12 +4,10 @@ endif
 
 APACICFLAGS   =	-pedantic -Wall -Winline 
 
-SHERPASYS     =	../..
+PDFDIR        =	$(SHERPASYS)/PDF-1.0
+PDFINCS       =	-I$(PDFDIR)/Main -I$(PDFDIR)/Remnant
 
-if SHERPA_SUPPORT
-SHERPAFLAGS   = -DSHERPA_SUPPORT
-SHERPAINCS    =	-I$(SHERPASYS)/SHERPA-1.0/SoftPhysics
-endif
+SHERPASYS     =	../..
 
 lib_LTLIBRARIES = libApacicShowers.la
 libApacicShowers_la_SOURCES = Final_State_Shower.C Timelike_Sudakov.C \
@@ -20,7 +18,7 @@ libApacicShowers_la_SOURCES = Final_State_Shower.C Timelike_Sudakov.C \
 			      QED_Splitting_Functions.C QCD_Splitting_Functions.C \
 			      SUSY_QCD_Splitting_Functions.C
 AM_CXXFLAGS   = $(APACICFLAGS) $(SHERPAFLAGS)
-INCLUDES = $(SHERPAINCS) -I../../APACIC++-2.0/Main \
+INCLUDES = $(PDFINCS) -I../../APACIC++-2.0/Main \
 	   -I../../MODEL-1.0/Main \
 	   -I../../PDF-1.0/Main \
 	   -I../../ATOOLS-2.0/Phys \

@@ -91,8 +91,8 @@ bool Environment::InitializeThePDFs()
   kplimits[0]=dataread.GetValue<double>("ISR_KPMIN",ATOOLS::Accu());
   kplimits[1]=dataread.GetValue<double>("ISR_KPMAX",splimits[1]);
   p_isrhandler = new PDF::ISR_Handler(isrbases);
-  p_isrhandler->SetBeamEnergy(p_beamhandler->GetBeam(0)->Energy(),0);
-  p_isrhandler->SetBeamEnergy(p_beamhandler->GetBeam(1)->Energy(),1);
+  p_isrhandler->SetBeam(p_beamhandler->GetBeam(0),0);
+  p_isrhandler->SetBeam(p_beamhandler->GetBeam(1),1);
   p_isrhandler->Init(splimits,kplimits);
   if (!(p_beamhandler->CheckConsistency(m_beam))) {
     ATOOLS::msg.Error()<<"Error in Environment::InitializeThePDFs() \n"

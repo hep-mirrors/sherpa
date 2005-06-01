@@ -38,6 +38,8 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler * isr,
     p_suds            = new Spacelike_Sudakov*[2];
     p_suds[0]         = new Spacelike_Sudakov(isr->PDF(0),p_tools,p_kin,m_t0,dataread,0);
     p_suds[1]         = new Spacelike_Sudakov(isr->PDF(1),p_tools,p_kin,m_t0,dataread,1);
+    p_suds[0]->SetRemnant(isr->GetRemnant(0));
+    p_suds[1]->SetRemnant(isr->GetRemnant(1));
 
     m_allowed         = 200;
 

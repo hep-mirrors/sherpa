@@ -194,7 +194,7 @@ bool Amisic::SelectSoftModel(const std::string &softmodel)
     msg_Tracking()<<"Initialize simple soft underlying event model."
 		  <<std::endl;
     if (m_external) p_softbase = new Simple_String();
-    else p_softbase = new Simple_String();
+    else p_softbase = new Simple_String(p_isr);
   }
   else {
     msg_Tracking()<<"Initialize no soft underlying event handler."<<std::endl;

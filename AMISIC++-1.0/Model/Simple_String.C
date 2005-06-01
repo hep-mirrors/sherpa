@@ -31,6 +31,18 @@ Simple_String::Simple_String():
   m_stop[0]=0.0;
   m_start[3]=m_start[2]=0.0;
   m_stop[3]=m_stop[2]=0.0;
+  THROW(fatal_error,"Simple_String needs ISR_Handler");
+}
+
+Simple_String::Simple_String(PDF::ISR_Handler *const isr):
+  MI_Base("Simple String",MI_Base::SoftEvent,5,4,1),
+  p_isr(isr)
+{
+  SetInputFile("MI.dat");
+  m_start[0]=1.0;
+  m_stop[0]=0.0;
+  m_start[3]=m_start[2]=0.0;
+  m_stop[3]=m_stop[2]=0.0;
 }
 
 Simple_String::~Simple_String()
@@ -78,11 +90,8 @@ bool Simple_String::Initialize()
 	      <<" "<<std::setw(8)<<helpsvv[i][2]<<"\n";
   }
   msg_Info()<<"}"<<std::endl;
-  p_remnants[0]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_0");
-  p_remnants[1]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_1");
-  if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
-    THROW(fatal_error,"No beam remnant handler found.");
-  }
+  p_remnants[0]=p_isr->GetRemnant(0);
+  p_remnants[1]=p_isr->GetRemnant(1);
   return true;
 }
 
@@ -99,7 +108,8 @@ bool Simple_String::CreateMomenta()
   m_start[1]=sqrt(m_reggeons[0]->GetT(0.0,m_start[0]*m_start[0],ATOOLS::ran.Get()));
   const unsigned int flow=ATOOLS::Flow::Counter();
   for (short unsigned int i=0;i<2;++i) {
-    SHERPA::Hadron_Remnant *hadron=dynamic_cast<SHERPA::Hadron_Remnant*>(p_remnants[i]);
+    PDF::Hadron_Remnant *hadron=
+      dynamic_cast<PDF::Hadron_Remnant*>(p_remnants[i]);
     if (hadron==NULL) {
       ATOOLS::msg.Error()<<"Simple_String::CreateMomenta(): "
 			 <<"Incoming particle is no hadron."<<std::endl;

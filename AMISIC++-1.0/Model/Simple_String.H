@@ -8,7 +8,12 @@
 #include "MI_Base.H"
 #include "Environment.H"
 
-namespace ATOOLS { class Object; }
+namespace PDF    { 
+
+  class ISR_Handler;
+  class Remnant_Base; 
+
+}
 
 namespace AMISIC {
 
@@ -17,7 +22,8 @@ namespace AMISIC {
   class Simple_String: public MI_Base {
   private:
 
-    ATOOLS::Object *p_remnants[2];
+    PDF::ISR_Handler  *p_isr;
+    PDF::Remnant_Base *p_remnants[2];
 
     std::vector<Reggeon_Trajectory*> m_reggeons;
 
@@ -33,6 +39,11 @@ namespace AMISIC {
     /*!
       \fn Simple_String()
       \brief The default constructor
+    */
+    Simple_String(PDF::ISR_Handler *const isr);
+    /*!
+      \fn Simple_String()
+      \brief The standard constructor
     */
 
     // destructor

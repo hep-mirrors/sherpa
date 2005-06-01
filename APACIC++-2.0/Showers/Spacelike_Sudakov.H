@@ -3,12 +3,12 @@
 
 #include "Backward_Splitting_Group.H"
 #include "Random.H"
-#ifdef SHERPA_SUPPORT
-namespace SHERPA { class Remnant_Base; }
-#endif
+
+namespace ATOOLS { class Object; }
 
 namespace PDF {
   class PDF_Base;
+  class Remnant_Base;
 }
 
 namespace APACIC {
@@ -22,9 +22,7 @@ namespace APACIC {
     Sudakov_Tools        * p_tools;
     Spacelike_Kinematics * p_kin;
     PDF::PDF_Base        * p_pdfa;
-#ifdef SHERPA_SUPPORT
-    SHERPA::Remnant_Base * p_remnant;
-#endif
+    PDF::Remnant_Base    * p_remnant;
     double          m_pt2min, m_pt2max; 
     double          m_alphaSmax, m_alphaSfix; 
     double          m_lambda2, m_b, m_t0;
@@ -73,6 +71,10 @@ namespace APACIC {
     } //!!!mass
 
     void SetFactorisationScale(const double scale);
+
+    inline void SetRemnant(PDF::Remnant_Base *const remnant)
+    { p_remnant=remnant; }
+
   };
 
   /*!
