@@ -98,7 +98,7 @@ void Cluster_Formation_Handler::ExtractSinglets(Blob_List * bl)
 {
   Particle  * part1, * part2;
   Part_List * pl = new Part_List;
-  for (Blob_Iterator blit=bl->begin();blit!=bl->end();++blit) {
+  for (Blob_List::iterator blit=bl->begin();blit!=bl->end();++blit) {
     if ((*blit)->Type()==btp::FS_Shower || (*blit)->Type()==btp::IS_Shower) {
       for (int i=0;i<(*blit)->NOutP();i++) {
 	part2 = (*blit)->OutParticle(i); 
