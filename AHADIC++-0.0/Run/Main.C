@@ -85,7 +85,7 @@ int main(int argc,char* argv[])
     std::cout<<check<<std::endl;
 
     if (!(*bl).empty()) {
-      for (Blob_Iterator blit=(*bl).begin();blit!=(*bl).end();++blit) delete (*blit);
+      for (Blob_List::iterator blit=(*bl).begin();blit!=(*bl).end();++blit) delete (*blit);
       (*bl).clear();
     }
 
