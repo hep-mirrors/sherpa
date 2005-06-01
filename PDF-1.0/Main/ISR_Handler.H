@@ -7,8 +7,11 @@
 #include "Info_Key.H"
 
 namespace ATOOLS { class Blob_Data_Base; }
+namespace BEAM   { class Beam_Base;      }
 
 namespace PDF {
+
+  class Remnant_Base; 
 
   class ISR_Handler {
   protected:
@@ -23,7 +26,7 @@ namespace PDF {
 
     int m_mode, m_kmrmode, m_kperpscheme; 
 
-    double m_ebeam[2], m_mass2[2], m_exponent[2], m_x[2], m_mu2[2];
+    double m_mass2[2], m_exponent[2], m_x[2], m_mu2[2];
     double m_splimits[3],m_ylimits[2], m_kplimits[3], m_zlimits[2];
     double m_fixed_smin, m_fixed_smax, m_weight, m_flux;
 
@@ -31,9 +34,12 @@ namespace PDF {
     ATOOLS::Vec4D    m_fixvecs[2], p_cms[2], p_kmrlast[2];
 
     std::vector<double> m_info_lab, m_info_cms;
-    
-    const ATOOLS::Flavour  DiQuark(const ATOOLS::Flavour &,const ATOOLS::Flavour &);
-    bool CheckRemnantKinematics(const ATOOLS::Flavour &,double,int);
+
+    BEAM::Beam_Base *p_beam[2];
+    Remnant_Base    *p_remnants[2];
+
+    bool CheckRemnantKinematics(const ATOOLS::Flavour &flav,
+				double &x,int beam,bool swaped);
 
   public:
 
@@ -49,6 +55,7 @@ namespace PDF {
     bool CheckConsistency(ATOOLS::Flavour *bunches,ATOOLS::Flavour *partons);
     bool CheckConsistency(ATOOLS::Flavour *partons);
     void SetPartonMasses(ATOOLS::Flavour *fl); 
+    void SetMasses(const ATOOLS::Flavour *fl,const size_t nout=0); 
 
     bool MakeISR(ATOOLS::Vec4D *const p,const size_t n,
 		 const ATOOLS::Flavour *flavs,const size_t nflavs);
@@ -117,8 +124,11 @@ namespace PDF {
 
     inline const ATOOLS::Vec4D *KMRMomenta() const { return p_kmrlast; }
 
-    inline void SetBeamEnergy(const double ebeam,const size_t i)
-    { if (i<2) m_ebeam[i]=ebeam; }
+    inline void SetBeam(BEAM::Beam_Base *const beam,const size_t i)
+    { if (i<2) p_beam[i]=beam; }
+
+    inline Remnant_Base *const GetRemnant(const size_t i) const
+    { return i<2?p_remnants[i]:NULL; }
 
   };// end of class ISR_Handler
   

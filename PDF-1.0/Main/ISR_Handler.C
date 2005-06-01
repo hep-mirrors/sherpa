@@ -1,9 +1,14 @@
 #include "ISR_Handler.H"
 
+#include "Beam_Base.H"
 #include "Intact.H"
 #include "Structure_Function.H"
 #include "Doubly_Unintegrated_PDF.H"
 #include "Run_Parameter.H" 
+#include "Hadron_Remnant.H"
+#include "Electron_Remnant.H"
+#include "Photon_Remnant.H"
+#include "No_Remnant.H"
 #include "Info_Key.H"
 #include "Exception.H"
 #include "Random.H"
@@ -66,6 +71,7 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase):
   m_info_lab(8),
   m_info_cms(8)
 {
+  p_remnants[1]=p_remnants[0]=NULL;
   m_mode=0;
   m_kmrmode=0;
   for (short int i=0;i<2;i++) {
@@ -81,6 +87,20 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase):
   Doubly_Unintegrated_PDF *dupdf=
     dynamic_cast<Doubly_Unintegrated_PDF*>(p_isrbase[0]->PDF());
   if (dupdf!=NULL) m_kperpscheme=dupdf->KPerpScheme();
+  for (size_t i=0;i<2;++i) {
+    if (Flav(i).IsHadron()) {
+      Hadron_Remnant *remnant = new Hadron_Remnant(this,i);
+      remnant->SetStringDrawing(1.0,0);
+      remnant->SetStringDrawing(0.0,1);
+      p_remnants[i]=remnant;
+    }
+    else if (Flav(i).IsLepton()) 
+      p_remnants[i] = new Electron_Remnant(this,i);
+    else if (Flav(i).IsPhoton()) 
+      p_remnants[i] = new Photon_Remnant(i);
+    else p_remnants[i] = new No_Remnant(i);
+  }
+  for (size_t i=0;i<2;++i) p_remnants[i]->SetPartner(p_remnants[1-i]);
 #ifdef TEST__ISR_Handler
   TestPDF testpdf;
   testpdf.p_pdf=p_isrbase[0]->PDF();
@@ -133,8 +153,8 @@ void ISR_Handler::Init(double *splimits,double *kplimits)
   m_mass2[0]=sqr(p_isrbase[0]->Flavour().Mass());
   m_mass2[1]=sqr(p_isrbase[1]->Flavour().Mass());
 
-  double s=sqr(m_ebeam[0]+m_ebeam[1])-
-    sqr(sqrt(sqr(m_ebeam[0])-m_mass2[0])-sqrt(sqr(m_ebeam[1])-m_mass2[1]));
+  double s=(p_beam[0]->OutMomentum()+
+	    p_beam[1]->OutMomentum()).Abs2();
   ATOOLS::rpa.gen.SetEcms(sqrt(s));
 
   m_type = p_isrbase[0]->Type()+std::string("*")+p_isrbase[1]->Type();
@@ -158,6 +178,8 @@ void ISR_Handler::Init(double *splimits,double *kplimits)
   double x=1./2.+(m_mass2[0]-m_mass2[1])/(2.*E*E);
   double E1=x*E;
   double E2=E-E1;
+  p_remnants[0]->SetBeamEnergy(E1);
+  p_remnants[1]->SetBeamEnergy(E2);
   m_fixvecs[0]=Vec4D(E1,0.,0.,sqrt(sqr(E1)-m_mass2[0]));
   m_fixvecs[1]=Vec4D(E2,0.,0.,-m_fixvecs[0][3]);
 }
@@ -233,10 +255,19 @@ bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *partons)
   return fit;
 }
 
-void ISR_Handler::SetPartonMasses(Flavour *fl) 
+void ISR_Handler::SetMasses(const Flavour *fl,const size_t nout) 
 {
   m_mass2[0]=sqr(fl[0].Mass());
   m_mass2[1]=sqr(fl[1].Mass());
+  double emin=0.0;
+  for (size_t i=0;i<nout;++i) emin+=fl[2+i].Mass();
+  emin=ATOOLS::Max(emin,fl[0].Mass()+fl[1].Mass());
+  m_splimits[0]=ATOOLS::Max(m_splimits[0],sqr(emin));
+}
+
+void ISR_Handler::SetPartonMasses(Flavour *fl) 
+{
+  SetMasses(fl);
   double E=ATOOLS::rpa.gen.Ecms();
   double x=1./2.+(m_mass2[0]-m_mass2[1])/(2.*E*E);
   double E1=x*E;
@@ -255,8 +286,7 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
     m_kpkey[1][3]=m_kpkey[0][3]=0.;
     m_x[1]=m_x[0]=1.;
     m_zkey[1][2]=m_zkey[0][2]=1.;
-    m_flux=0.5/sqrt(sqr(m_spkey[3]-m_mass2[0]-m_mass2[1])
-		    -4.0*m_mass2[0]*m_mass2[1]);
+    m_flux=0.25/sqrt(sqr(p[0]*p[1])-p[0].Abs2()*p[1].Abs2());
     return true;
   }
   if (m_spkey[3]<m_splimits[0] || m_spkey[3]>m_splimits[1]) {
@@ -268,8 +298,8 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
     return false;
   }
   double Q=sqrt(m_splimits[2]), E=sqrt(m_spkey[3]);
-  double E1=E*(1./2.+(m_mass2[0]-m_mass2[1])/(2.*m_spkey[3]));
-  p_cms[0]=p[0]=Vec4D(E1,0.,0.,sqrt(sqr(E1)-m_mass2[0]));
+  double E1=(m_spkey[3]+sqr(flavs[0].Mass())-sqr(flavs[1].Mass()))/(2.0*E);
+  p_cms[0]=p[0]=Vec4D(E1,0.,0.,sqrt(sqr(E1)-sqr(flavs[0].Mass())));
   p_cms[1]=p[1]=Vec4D(E-E1,(-1.)*Vec3D(p[0]));
   Vec4D plab[2]; plab[0]=p[0]; plab[1]=p[1];
   m_cmsboost=Poincare(Vec4D(cosh(m_ykey[2]),0.,0.,sinh(m_ykey[2])));
@@ -277,8 +307,7 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
   m_cmsboost.BoostBack(p_cms[1]);
   m_x[0]=p_cms[0].PPlus()/Q;
   m_x[1]=p_cms[1].PMinus()/Q;
-  m_flux=0.5/sqrt(sqr(m_spkey[3]-m_mass2[0]-m_mass2[1])
-		  -4.0*m_mass2[0]*m_mass2[1]);
+  m_flux=0.25/sqrt(sqr(p[0]*p[1])-p[0].Abs2()*p[1].Abs2());
   if (!m_kmrmode) {
 #ifndef NO_ANALYSIS__ISR_Handler
     m_info_lab[iic::E_1]=m_x[0];
@@ -340,8 +369,10 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
   m_info_cms[iic::Em_2]=p[1][0]/p[0].Mass();		
 #endif
   m_weight=(m_x[1]*m_x[0]-b2*b1)/(m_x[1]*m_x[0]);
-  m_flux=0.5/sqrt(sqr(m_spkey[3]-m_mass2[0]-m_mass2[1])
-		  -4.0*m_mass2[0]*m_mass2[1]);
+  // for on-shell kinematics only !
+  //   m_flux=0.5/sqrt(sqr(m_spkey[3]-m_mass2[0]-m_mass2[1])
+  // 		  -4.0*m_mass2[0]*m_mass2[1]);
+  m_flux=0.25/sqrt(sqr(p[0]*p[1])-p[0].Abs2()*p[1].Abs2());
   for (int i=0;i<2;++i) {
     p[n-2+i]=m_fixvecs[i];
     m_kmrboost.Boost(p[n-2+i]);
@@ -384,11 +415,15 @@ void ISR_Handler::SetLimits()
   }
   m_kpkey[1](0)=m_kpkey[0](0)=Vec4D();
   m_xkey[0]=m_mass2[0]==0.0?-0.5*std::numeric_limits<double>::max():
-    0.5*log(m_mass2[0]*4.0/sqr(rpa.gen.Ecms()));
+    log(m_mass2[0]/sqr(p_beam[0]->OutMomentum().PPlus()));
   m_xkey[2]=m_mass2[1]==0.0?-0.5*std::numeric_limits<double>::max():
-    0.5*log(m_mass2[1]*4.0/sqr(rpa.gen.Ecms()));
-  m_xkey[1]=log(Upper1());
-  m_xkey[3]=log(Upper2());
+    log(m_mass2[1]/sqr(p_beam[1]->OutMomentum().PMinus()));
+  double e1=p_beam[0]->OutMomentum()[0];
+  m_xkey[1]=log(ATOOLS::Min(e1/p_beam[0]->OutMomentum().PPlus()*
+			    (1.0+sqrt(1.0-m_mass2[0]/sqr(e1))),Upper1()));
+  double e2=p_beam[0]->OutMomentum()[0];
+  m_xkey[3]=log(ATOOLS::Min(e2/p_beam[1]->OutMomentum().PMinus()*
+			    (1.0+sqrt(1.0-m_mass2[1]/sqr(e2))),Upper2()));
 }
 
 bool ISR_Handler::CalculateWeight(const double scale) 
@@ -468,17 +503,19 @@ bool ISR_Handler::CalculateWeight2(const double scale)
 
 double ISR_Handler::Weight(const Flavour *const flin)
 {
-  if (m_mode!=3 || (CheckRemnantKinematics(flin[0],m_xkey[0],0) &&
-		    CheckRemnantKinematics(flin[1],m_xkey[1],1))) 
-    return p_isrbase[0]->Weight(flin[0])*p_isrbase[1]->Weight(flin[1])/m_weight;
+  if (m_mode!=3 || (CheckRemnantKinematics(flin[0],m_x[0],0,false) &&
+		    CheckRemnantKinematics(flin[1],m_x[1],1,false))) 
+    return p_isrbase[0]->Weight(flin[0])*p_isrbase[1]->Weight(flin[1])
+      /m_weight;
   return 0.;
 }
 
 double ISR_Handler::Weight2(const Flavour *const flin)
 {
-  if (CheckRemnantKinematics(flin[0],m_xkey[0],1) &&
-      CheckRemnantKinematics(flin[1],m_xkey[1],0)) 
-    return p_isrbase[0]->Weight(flin[1])*p_isrbase[1]->Weight(flin[0])/m_weight;
+  if (CheckRemnantKinematics(flin[0],m_x[0],1,true) &&
+      CheckRemnantKinematics(flin[1],m_x[1],0,true)) 
+    return p_isrbase[0]->Weight(flin[1])*p_isrbase[1]->Weight(flin[0])
+      /m_weight;
   return 0.;
 }
 
@@ -522,62 +559,23 @@ bool ISR_Handler::BoostInLab(Vec4D* p,const size_t n)
   return true;
 }
 
-
-const Flavour ISR_Handler::DiQuark(const Flavour & fl1,const Flavour & fl2) 
+bool ISR_Handler::CheckRemnantKinematics(const ATOOLS::Flavour &fl,
+					 double &x,int beam,bool swaped)
 {
-  // lightes flavour with that content
-  int kf1=fl1.Kfcode();
-  int kf2=fl2.Kfcode();
-  Flavour diquark;
-  if (kf1>kf2) diquark =(kf::code)(kf1*1000 + kf2*100 + 1);
-  else if (kf1<kf2)  diquark =(kf::code)(kf2*1000 + kf1*100 + 1);
-  else diquark =(kf::code)(kf2*1000 + kf1*100 + 3);
-  if (fl1.IsAnti()) diquark=diquark.Bar();
-  return diquark;    
-}
-
-
-bool ISR_Handler::CheckRemnantKinematics(const ATOOLS::Flavour & fl,double x,int nbeam)
-{
-  if (x<.99) return true;
-  double mf   = fl.PSMass();
-  double msum = 0.;
-  double erem = (1. -x -1.e-6)*ATOOLS::rpa.gen.Ecms();
-  ATOOLS::Flavour bunch=p_isrbase[nbeam]->Flavour();
-  if (!bunch.IsHadron()) return true;
-  int hadint=(bunch.Kfcode()-bunch.Kfcode()/10000)/10;
-  if ((hadint<=100)||(hadint>=1000)) return true;
-  Flavour constit[3];
-  constit[0]=ATOOLS::Flavour(ATOOLS::kf::code(hadint)/100);
-  constit[1]=ATOOLS::Flavour(ATOOLS::kf::code((hadint-(hadint/100)*100)/10));
-  constit[2]=ATOOLS::Flavour(ATOOLS::kf::code(hadint-(hadint/10)*10));
-  if (bunch.IsAnti()) {
-    for (int i=0;i<3;i++) constit[i]=constit[i].Bar();
+  p_remnants[beam]->QuickClear();
+  double pp=beam==0?x*p_beam[0]->OutMomentum().PPlus():
+    x*p_beam[1]->OutMomentum().PMinus();
+  double pm=ATOOLS::sqr(fl.Mass());
+  if (m_kmrmode>0) pm=-m_kpkey[beam][3]/(1.0-m_zkey[beam][2])+m_kpkey[beam][3];
+  pm/=pp;
+  ATOOLS::Vec4D mom((pp+pm)/2.0,m_kpkey[beam](0)[1],
+		    m_kpkey[beam](0)[2],beam==0?(pp-pm)/2.0:(pm-pp)/2.0);
+  if (m_kmrmode>0) {
+    mom+=p_kmrlast[swaped?1-beam:beam];
+    if (mom[0]<0.0 || mom[0]>p_beam[beam]->OutMomentum()[0]) return false;
   }
-  // valence quark
-  for (int i=0;i<3;++i) if (constit[i]==fl) {
-    for (int j=i+1;j<3;++j) {
-      constit[j-1]=constit[j];
-    }
-    Flavour diquark=DiQuark(constit[0], constit[1]);
-    msum+=diquark.PSMass();
-    break;
-  }
-  if (msum==0) {
-    // gluon
-    if (fl.IsGluon()) {
-      Flavour diquark=DiQuark(constit[0], constit[2]);
-      msum+=constit[1].PSMass()+diquark.PSMass();    
-    }
-    else {
-      // sea quark
-      Flavour diquark=DiQuark(constit[0], constit[2]);
-      msum+=constit[1].PSMass()+diquark.PSMass();
-      msum+=fl.PSMass();
-    }
-  }
-  if (erem < mf + msum) return false;
-  return true;
+  ATOOLS::Particle p(-1,fl,mom);
+  return p_remnants[beam]->TestExtract(&p);
 }
 
 void ISR_Handler::Extract(const ATOOLS::Flavour flavour,const double energy,
