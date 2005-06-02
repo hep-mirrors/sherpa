@@ -33,12 +33,12 @@ Poincare::Poincare(Vec4D v1, Vec4D v2)   // rotations constructor
   pp[0] = (1./pm[0])*v1;
   pp[1] = (1./pm[1])*v2;
   // look for smaller cs to improve numeric
-  if ((pp[0][3]<0.7)&&(pp[1][3]<0.7)) {
+  if ((dabs(pp[0][3])<0.7)&&(dabs(pp[1][3])<0.7)) {
     n2 = 2;       // 3rd component
     n1 = 1;       // 2nd component
     n0 = 0;       // 1st component
   } 
-  else if ((pp[1][2]<0.7)&&(pp[1][2]<0.7)) {
+  else if ((dabs(pp[1][2])<0.7)&&(dabs(pp[1][2])<0.7)) {
     n2 = 1;      
     n1 = 0;      
     n0 = 2;      
@@ -55,11 +55,13 @@ Poincare::Poincare(Vec4D v1, Vec4D v2)   // rotations constructor
     cp[i] = pp[i][n1+1]/st[i];
     sp[i] = pp[i][n0+1]/st[i];
 #ifdef DEBUG__Poincare
-    std::cout<<"Poincare::Poincare("<<v1<<","<<v2<<"): "
-	     <<"cos(\\theta)="<<ct[i]<<" \t"
-	     <<"sin(\\theta)="<<st[i]<<" \t"
-	     <<"cos(\\phi)="<<cp[i]<<" \t"
-	     <<"sin(\\phi)="<<sp[i]<<std::endl;
+    std::cout<<"Poincare::Poincare("<<v1<<","<<v2<<"): \n"
+	     <<"cos(\\theta)="<<ct[i]<<" \n"
+	     <<"sin(\\theta)="<<st[i]<<" \n"
+	     <<"cos(\\phi)="<<cp[i]<<" \n"
+	     <<"sin(\\phi)="<<sp[i]<<std::endl
+	     <<"\\phi   -> "<<(sqr(sp[i])+sqr(cp[i])-1.0)<<std::endl
+	     <<"\\theta -> "<<(sqr(st[i])+sqr(ct[i])-1.0)<<std::endl;
 #endif
     // calculate matrix
     r[i][n0][n0] = cp[i]; 
