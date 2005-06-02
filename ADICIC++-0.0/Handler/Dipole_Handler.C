@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/09/06
+//Version: 2 ADICIC++-0.0/2005/06/02
 
 //Implementation of Dipole_Handler.H.
 
@@ -458,8 +458,13 @@ const bool Dipole_Handler::FinishDipoleRadiation() {
   m_p1=p_dip->GetTopBranchPointer()->Momentum();
   m_p3=p_dip->GetBotBranchPointer()->Momentum();
 
-  assert(m_p1.Abs2() > -1.0e-6);
-  assert(m_p3.Abs2() > -1.0e-6);
+  if(dabs(m_p1.Abs2()) > 1.0e-11)
+    cout<<" p1^2 ! -> "<<m_p1.Abs2()<<" \t"<<m_p1<<endl;
+  if(dabs(m_p3.Abs2()) > 1.0e-11)
+    cout<<" p3^2 ! -> "<<m_p3.Abs2()<<" \t"<<m_p3<<endl;
+
+  assert(dabs(m_p1.Abs2()) < 1.0e-10);
+  assert(dabs(m_p3.Abs2()) < 1.0e-10);
   assert(m_p1[0] > 0.0);
   assert(m_p3[0] > 0.0);
 
