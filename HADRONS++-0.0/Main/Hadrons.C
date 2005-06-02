@@ -144,6 +144,7 @@ void Hadrons::PerformDecay( Particle * part, Blob_List * blob_list, Particle_Lis
 void Hadrons::ReadInDecayTables()
 {
   Data_Reader reader = Data_Reader(string("->"),string(";"),string("!"));
+  reader.SetAddCommandLine(false);
   reader.AddComment("#");
   reader.AddComment("//");
   reader.SetInputPath(m_path);
@@ -157,24 +158,16 @@ void Hadrons::ReadInDecayTables()
     abort();
   }
 
-  //Check.
-  //for (int i=0;i<Decayers.size();i++) {
-  //  for (int j=0;j<Decayers[i].size();j++) {
-  //    std::cout<<Decayers[i][j]<<std::endl;
-  //  }
-  //  std::cout<<std::endl;
-  //}
-
   p_decaymap = new map<ATOOLS::kf::code,ATOOLS::Decay_Table *>;
   p_channelmap = new map< Decay_Channel*, Hadron_Decay_Channel* >;
   Decay_Table * dt;
   Flavour fl;
-  //for (size_t i=0;i<3;++i) {
   for (size_t i=0;i<Decayers.size();++i) {
     fl = Flavour(kf::code(atoi((Decayers[i][0]).c_str())));
     if (p_decaymap->find(fl.Kfcode())!=p_decaymap->end()) {
       msg.Error()<<"ERROR in Hadrons::ReadInDecayTables() :"<<endl
-		 <<"   Flavour "<<fl<<" already in map. Don't know what to do, will abort."<<endl;
+		 <<"   Flavour "<<fl
+		 <<" already in map. Don't know what to do, will abort."<<endl;
       abort();
     }
     dt = InitialiseOneDecayTable(Decayers[i]);

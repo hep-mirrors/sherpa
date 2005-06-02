@@ -18,6 +18,7 @@ Decay_Table_Reader::Decay_Table_Reader(string path,string file)
   }
   msg_Info()<<"New Decay_Table_Reader("<<path+file<<")"<<endl;
   Data_Reader reader = Data_Reader(string("|"),string(";"),string("!"));
+  reader.SetAddCommandLine(false);
   reader.AddComment("#");
   reader.AddComment("//");
   reader.SetInputPath(path);
@@ -29,15 +30,6 @@ Decay_Table_Reader::Decay_Table_Reader(string path,string file)
 	       <<"   Read in failure, will abort."<<endl;
     abort();
   }
-
-  //Check.
-  //for (int i=0;i<m_helpsvv.size();i++) {
-  //  for (int j=0;j<m_helpsvv[i].size();j++) {
-  //    std::cout<<m_helpsvv[i][j]<<std::endl;
-  //  }
-  //  std::cout<<std::endl;
-  //}
-
 }
 
 int Decay_Table_Reader::FillDecayTable(Decay_Table * dt)
