@@ -29,7 +29,8 @@ SHERPAINCS    =	-I../Main -I../Initialization -I../PerturbativePhysics \
 		-I../HerwigTools -I../Tools 
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
 ANALYSISINCS  = -I$(ANALYSISDIR)/Main -I$(ANALYSISDIR)/Observables
-PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main
+PDFDIR        =	$(SHERPASYS)/PDF-1.0
+PDFINCS       =	-I$(PDFDIR)/Main -I$(PDFDIR)/Remnant
 BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
 PHASICINCS    =	-I$(SHERPASYS)/PHASIC++-1.0/Main
 MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
@@ -56,10 +57,7 @@ endif
 
 SYSLIBS	      =	-lg2c -lm -ldl
 ATOOLSLIBS    =	-L@libdir@ -lToolsPhys -lToolsMath -lToolsOrg 
-PDFLIBS       =	-L@libdir@ -lPDF -lDUPDF -lSudakov -lMRST -lGRV 
-
-
-
+PDFLIBS       =	-L@libdir@ -lPDF -lDUPDF -lSudakov -lMRST -lGRV -lRemnant
 ANALYSISLIBS  = -L@libdir@ -lAnalysis -lObservables
 BEAMLIBS      =	-L@libdir@ -lBeam 
 PHASICLIBS    =	-L@libdir@ -lPhasespace 
