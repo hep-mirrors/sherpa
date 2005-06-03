@@ -2,6 +2,7 @@
 #include "Hadron_Decay_Channel.H"
 #include "Two_Body_PSs.H"
 #include "Three_Body_PSs.H"
+//#include "Four_Body_PSs.H"
 #include "Rambo.H"
 #include "Data_Reader.H"
 #include "Message.H"
@@ -22,14 +23,43 @@ Single_Channel * HD_Channel_Selector::GetChannel( int nin, int nout,
 	       <<"   Return nothing and hope for the best."<<endl;
     return NULL;
   }
-  if (name==string("Isotropic")) return new Rambo(1,nout,flavs);
-  if (nout==2) {
-    if (name==string("Iso2")) return new Iso2Channel(flavs);
+  if (name==string("Isotropic")) {
+	if ( nout == 2 ) return new Iso2Channel(flavs);
+	return new Rambo(1,nout,flavs);
   }
+  if (name==string("Iso2") || nout==2 ) return new Iso2Channel(flavs);
   if (nout==3) {
     if (name==string("Dalitz_photon_23"))  return new Dalitz(flavs,Flavour(kf::photon),2,3);
     if (name==string("Dalitz_rho(770)_23")) return new Dalitz(flavs,Flavour(kf::rho_770),2,3);
+    if (name==string("Dalitz_rho(770)_13")) return new Dalitz(flavs,Flavour(kf::rho_770),1,3);
+    if (name==string("Dalitz_rho(770)_12")) return new Dalitz(flavs,Flavour(kf::rho_770),1,2);
   }
+//  if (nout==4) {
+//	if (name==string("TwoResonances_a(1)(1260)_1_rho(770)_23")) 
+//	  return new TwoResonances( flavs, Flavour(kf::a_1_1260), 1, Flavour(kf::rho_770), 2, 3 );
+//	if (name==string("TwoResonances_a(1)(1260)_1_rho(770)_24")) 
+//	  return new TwoResonances( flavs, Flavour(kf::a_1_1260), 1, Flavour(kf::rho_770), 2, 4 );
+//	if (name==string("TwoResonances_a(1)(1260)_1_rho(770)_34")) 
+//	  return new TwoResonances( flavs, Flavour(kf::a_1_1260), 1, Flavour(kf::rho_770), 3, 4 );
+//	if (name==string("TwoResonances_a(1)(1260)_2_rho(770)_13")) 
+//	  return new TwoResonances( flavs, Flavour(kf::a_1_1260), 2, Flavour(kf::rho_770), 1, 3 );
+//	if (name==string("TwoResonances_a(1)(1260)_2_rho(770)_14")) 
+//	  return new TwoResonances( flavs, Flavour(kf::a_1_1260), 2, Flavour(kf::rho_770), 1, 4 );
+//	if (name==string("TwoResonances_a(1)(1260)_2_rho(770)_34")) 
+//	  return new TwoResonances( flavs, Flavour(kf::a_1_1260), 2, Flavour(kf::rho_770), 3, 4 );
+//	if (name==string("TwoResonances_a(1)(1260)_3_rho(770)_12")) 
+//	  return new TwoResonances( flavs, Flavour(kf::a_1_1260), 3, Flavour(kf::rho_770), 1, 2 );
+//	if (name==string("TwoResonances_a(1)(1260)_3_rho(770)_14")) 
+//	  return new TwoResonances( flavs, Flavour(kf::a_1_1260), 3, Flavour(kf::rho_770), 1, 4 );
+//	if (name==string("TwoResonances_a(1)(1260)_3_rho(770)_24")) 
+//	  return new TwoResonances( flavs, Flavour(kf::a_1_1260), 3, Flavour(kf::rho_770), 2, 4 );
+//	if (name==string("TwoResonances_a(1)(1260)_4_rho(770)_12")) 
+//	  return new TwoResonances( flavs, Flavour(kf::a_1_1260), 4, Flavour(kf::rho_770), 1, 2 );
+//	if (name==string("TwoResonances_a(1)(1260)_4_rho(770)_13")) 
+//	  return new TwoResonances( flavs, Flavour(kf::a_1_1260), 4, Flavour(kf::rho_770), 1, 3 );
+//	if (name==string("TwoResonances_a(1)(1260)_4_rho(770)_23")) 
+//	  return new TwoResonances( flavs, Flavour(kf::a_1_1260), 4, Flavour(kf::rho_770), 2, 3 );
+//  }
 
   msg.Error()<<"Error in HD_Channel_Selector::GetChannel : "<<endl
 	     <<"   No channel for ("<<nin<<" -> "<<nout<<") with name "<<name<<endl
@@ -39,13 +69,20 @@ Single_Channel * HD_Channel_Selector::GetChannel( int nin, int nout,
 
 ////////// class HD_PS_Base /////////
 
-HD_PS_Base::HD_PS_Base( Hadron_Decay_Channel * hdc, vector<string> & _pst, 
-	bool & mustinit, struct Model &_locmd ) :
+HD_PS_Base::HD_PS_Base( 
+	Hadron_Decay_Channel * hdc, 
+	string _path,
+	vector<string> & _pst, 
+	bool & mustinit, 
+	struct GeneralModel &_locmd,
+	bool read_dc ) :
   Multi_Channel(_pst[2]), p_hdc(hdc),
   p_channelselector(new HD_Channel_Selector), m_file(string("")),
-  m_res(-1.), m_error(0.), m_max(-1.), m_flux(1./(2.*hdc->Flavours()[0].Mass()))
+  m_res(-1.), m_error(0.), m_max(-1.), m_flux(1./(2.*hdc->Flavours()[0].Mass())),
+  m_read_dcfile( read_dc ),
+  m_path(_path)
 {
-  if (_pst.size()>2) m_file = _pst[3]; 	// filename of DC file
+  if (_pst.size()>2) m_file = _pst[3]; 		// filename of DC file
   mustinit = Construct(_locmd);				// call Construct to do the rest
   delete p_channelselector;
 }
@@ -59,30 +96,36 @@ void HD_PS_Base::Initialise()
   WriteOut();
 }
 
-bool HD_PS_Base::Construct(HADRONS::Model & _md )
+bool HD_PS_Base::Construct( GeneralModel & _md )
 {
-  Initialize( _md );
-  if (m_file!=string("")) {
+  if (m_file!=string("") && m_read_dcfile) {		// in case there is a DC file => read it !
+	msg_Tracking()<<"HD_PS_Base::Construct(...) : read "<<m_path<<m_file<<endl;
+	Initialize( _md );
     vector<vector<string> > helpsvv;
     Data_Reader reader = Data_Reader(string("|"),string(";"),string("!"));
     reader.SetAddCommandLine(false);
     reader.AddComment("#");
     reader.AddComment("//");
-    reader.SetInputPath("./");
+    reader.SetInputPath(m_path);
     reader.SetInputFile(m_file);
     reader.SetMatrixType(reader.MTransposed);
     if(!reader.MatrixFromFile(helpsvv)) {
-      msg.Error()<<"ERROR in HD_PS_Base::Construct(HADRONS::Model&) :\n"
-		 <<"   Read in failure, will abort."<<endl;
+      msg.Error()<<"ERROR in HD_PS_Base::Construct(...) :\n"
+		 <<"   Read in failure "<<m_path<<m_file<<", will abort."<<endl;
       abort();
     }
-
+	
     string name;
     double weight;
+	bool skipresult(false);
     for (int i=0;i<helpsvv.size();i++) {
       if ( helpsvv[i][0]==string("Channels") ) {
 		i++;											// next line
-		while (helpsvv[i][0]!=string("}")) {
+		if (helpsvv[i][0]==string("}")) {				// if no channel given =>
+			AddChannel( string("Isotropic"), 1. );		//   take Rambo
+			skipresult = true;							//	 and don't read Result
+		}
+		else while (helpsvv[i][0]!=string("}")) {
 		  weight=1.;
 		  if (helpsvv[i].size()>1) {					// if factor is given
 			weight=atof(helpsvv[i][1].c_str());
@@ -94,12 +137,13 @@ bool HD_PS_Base::Construct(HADRONS::Model & _md )
 	  if ( helpsvv[i][0] == string("Parameters") ) {
 		i++;
 		while ( helpsvv[i][0] != string("}") ) {
-		  cout<<i<<"  "<<helpsvv[i][0]<<"|"<<helpsvv[i][1]<<"|"<<helpsvv[i][2]<<endl;
 		  if ( helpsvv[i][1] == string("=") ) {
 			if ( helpsvv[i][0] == string("a") ) _md.pm.a   = atof( string(helpsvv[i][2]).c_str() );
 			if ( helpsvv[i][0] == string("b") ) _md.pm.b   = atof( string(helpsvv[i][2]).c_str() );
 			if ( helpsvv[i][0] == string("a2") ) _md.pm.a2 = atof( string(helpsvv[i][2]).c_str() );
 			if ( helpsvv[i][0] == string("b2") ) _md.pm.b2 = atof( string(helpsvv[i][2]).c_str() );
+			if ( helpsvv[i][0] == string("Vud")) _md.pm.Vud = atof( string(helpsvv[i][2]).c_str() );
+			if ( helpsvv[i][0] == string("Vus")) _md.pm.Vus = atof( string(helpsvv[i][2]).c_str() );
 			if ( helpsvv[i][0] == string("ME_MODEL") ) {
 			  if ( string(helpsvv[i][2])=="Traces" )            _md.me = 1;
 			  else if ( string(helpsvv[i][2])=="XYZ" )          _md.me = 2;
@@ -128,7 +172,7 @@ bool HD_PS_Base::Construct(HADRONS::Model & _md )
 		  i++;
 		}
       }
-      if (helpsvv[i][0]==string("Result")) {
+      if (helpsvv[i][0]==string("Result") && !skipresult ) {
 		i++;
 		while (helpsvv[i][0]!=string("}")) {
 		  m_res   = atof(helpsvv[i][0].c_str());
@@ -136,14 +180,18 @@ bool HD_PS_Base::Construct(HADRONS::Model & _md )
 		  m_max   = atof(helpsvv[i][2].c_str());
 		  i++;
 		}
-		return false;
+		return false; 	// return: no need to integrate
       }
     }
   }
-  return true;
+  else {				// in case there is no DC file
+	AddChannel( string("Isotropic"), 1. );
+  }
+  return true;			// return: it has to be integrated
 }
 
-void HD_PS_Base::AddChannel(string name,double weight) {
+void HD_PS_Base::AddChannel(string name,double weight) 
+{
   Single_Channel * sc = p_channelselector->GetChannel( 1, p_hdc->NOut(), 
 	   											       p_hdc->Flavours(),
 													   name );
@@ -168,7 +216,9 @@ void HD_PS_Base::CalculateNormalisedWidth() {
       sum  += value;
       sum2 += ATOOLS::sqr(value);
       AddPoint(value);
-      if (value>m_max) { m_max = value; maxincrease = true; }
+      if (value>m_max) { 
+		m_max = value; maxincrease = true; 
+	  }
       if (value!=0. && value==oldvalue) { simple = true; break; }
       oldvalue = value;
     }
@@ -189,10 +239,11 @@ void HD_PS_Base::CalculateNormalisedWidth() {
 
 
 bool HD_PS_Base::WriteOut() {
-  system((string("mv ")+m_file+string(" ")+m_file+string(".old")).c_str());
+  if ( m_read_dcfile )
+	system((string("mv \"")+m_path+m_file+string("\" \"")+m_path+m_file+string(".old\"")).c_str());
 
   ofstream to;
-  to.open(m_file.c_str(),ios::out);
+  to.open((m_path+m_file).c_str(),ios::out);
   to<<"Channels {"<<endl;
   for (int i=0;i<channels.size();i++) {
     if (channels[i]->Name()==string("Rambo"))
@@ -224,16 +275,16 @@ bool HD_PS_Base::WriteOut() {
 
 // Initialization of calculation model
 
-void HD_PS_Base::Initialize( struct Model &md )
+void HD_PS_Base::Initialize( struct GeneralModel &md )
 {
   md.me = 2;				// xyz functions
   md.run = 1;				// running width
   md.ff = 2;				// form factor
   md.pm.a   = 1.;
-  md.pm.b	 = 1.;
+  md.pm.b	= 1.;
   md.pm.a2  = 1.;
   md.pm.b2  = 1.;
-  md.pm.GF  = 	1.16639e-5; 
+  md.pm.GF  = 1.16639e-5; 
   md.pm.Vud = 0.9744;
   md.pm.Vus = 0.2205;
   md.pm.fpi = 0.0924;

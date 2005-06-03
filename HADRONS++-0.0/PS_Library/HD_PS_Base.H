@@ -15,24 +15,32 @@ namespace HADRONS {
 
   class HD_Channel_Selector {
   public:
-    PHASIC::Single_Channel * GetChannel(int nin, int nout, const ATOOLS::Flavour * flavs, std::string name);
+    PHASIC::Single_Channel * GetChannel(
+		int nin, int nout, const ATOOLS::Flavour * flavs, std::string name);
   }; // end of class
   
   class HD_PS_Base : public PHASIC::Multi_Channel {
-	void Initialize( struct Model& );
+	void Initialize( GeneralModel& );
   private:
     HD_Channel_Selector  * p_channelselector;
     Hadron_Decay_Channel * p_hdc;
-    std::string            m_file;
+    std::string            m_path, m_file;
     double                 m_res,m_error,m_max,m_flux;
+	bool                   m_read_dcfile;
 
-    bool     Construct( struct Model & );
+    bool     Construct( struct GeneralModel & );
     void     AddChannel(std::string,double=1.);
     void     CalculateNormalisedWidth();
     bool     ReadIn();
     bool     WriteOut();
   public:
-    HD_PS_Base(Hadron_Decay_Channel * hdc, std::vector<std::string> & _pst, bool & mustinit, struct Model & );
+    HD_PS_Base(
+		Hadron_Decay_Channel * hdc, 
+		std::string _path,
+		std::vector<std::string> & _pst, 
+		bool & mustinit, 
+		struct GeneralModel &,
+		bool );
     virtual ~HD_PS_Base();
     void     Initialise();
 	inline double Maximum() { return m_max; }
