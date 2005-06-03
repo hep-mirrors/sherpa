@@ -45,15 +45,22 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
   Hadron_Decay_Handler * hdhandler;				// pointer on considered HD Handler
   while (found) {
 	found = false;
-	for (Blob_List::iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
-	  msg.Debugging()<<"status: "<<(*blit)->Status()
-		<<" type: "<<(*blit)->Type()
-		<<" ID: "<<(*blit)->Id()<<endl;
+	bool keeprunning (true);
+	for (Blob_List::iterator blit=_bloblist->begin();blit!=_bloblist->end() && keeprunning;++blit) {
+	  msg.Debugging()<<"ID: "<<(*blit)->Id()<<" status: "<<(*blit)->Status()
+		<<" type: "<<(*blit)->Type()<<" last "<<(*(_bloblist->end()-1))->Id()<<"  at "<<*blit<<endl;
+	  msg.Debugging()<<"          "<<(*blit)->NInP()<<" -> "<<(*blit)->NOutP()<<endl;
+	  msg.Debugging()<<"      IN  "<<endl;
+	  for (int r=0; r<(*blit)->NInP(); r++) 
+		msg.Debugging()<<"          "<<(*blit)->InParticle(r)->Flav()<<endl;
+	  msg.Debugging()<<"      OUT "<<endl;
+	  for (int r=0; r<(*blit)->NOutP(); r++) 
+	  msg.Debugging()<<"          "<<(*blit)->OutParticle(r)->Flav()<<endl;
 	  if ( (*blit)->Status()==0 && (*blit)->Type()==btp::Fragmentation  ||
 		   (*blit)->Status()==0 && (*blit)->Type()==btp::Hadron_Decay      ) {
 		myblob = (*blit);
-		found  = true;
-		msg.Debugging()<<"Found a blob : "<<myblob->Id()<<"  "<<_bloblist->size()<<endl;
+		msg.Debugging()<<"  Found a blob : "<<myblob->Id()<<" last "<<(*(_bloblist->end()-1))->Id()<<endl;
+			
 		bool decayed(false); 
 		for (int i=0;i<myblob->NOutP();i++) {
 		  decayed = false;
@@ -66,6 +73,8 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
 				msg.Debugging()<<"Hadron_Decays::Treat (Sherpa): Decay for "
 				  <<myblob->OutParticle(i)->Flav()<<std::endl;
 				hdhandler->FillHadronDecayBlobs( myblob->OutParticle(i), _bloblist );
+				found  = true;
+				keeprunning = false;		// start again !
 			  }
 			  else {
 				msg.Error()<<"Error in Hadron_Decays::Treat (Sherpa): "<<endl
@@ -82,10 +91,12 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
 			hdhandler = (*p_dechandlers)["Lund"];
 			if( hdhandler->GetLund()->FindDecay(myblob->OutParticle(i)) ) {
 			  if (myblob->OutParticle(i)->DecayBlob()==NULL) {
-				msg.Debugging()<<"Hadron_Decays::Treat (Lund): Decay for "
+				msg.Debugging()<<(*(_bloblist->end()-1))->Id()<<" Hadron_Decays::Treat (Lund): Decay for "
 				  <<myblob->OutParticle(i)->Flav()
-				  <<" "<<myblob->OutParticle(i)->Flav().Kfcode()<<std::endl;
+				  <<" "<<myblob->OutParticle(i)->Flav().Kfcode()<<endl;
 				hdhandler->FillHadronDecayBlobs( myblob->OutParticle(i), _bloblist );
+				found  = true;
+				keeprunning = false;		// start again !
 			  }
 			  else {
 				msg.Error()<<"Error in Hadron_Decays::Treat (Lund): "<<endl
@@ -97,6 +108,9 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
 		  }
 		}
 		myblob->SetStatus(1);
+	  }
+	  if ( (*blit)->Id() == (*(_bloblist->end()-1))->Id() ) {
+		keeprunning = false;
 	  }
 	}
   }
