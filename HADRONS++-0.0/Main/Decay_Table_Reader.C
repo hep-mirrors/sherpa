@@ -8,7 +8,8 @@ using namespace HADRONS;
 using namespace ATOOLS;
 using namespace std;
 
-Decay_Table_Reader::Decay_Table_Reader(string path,string file)
+Decay_Table_Reader::Decay_Table_Reader(string path,string file) :
+  m_path( path ), m_file( file )
 {
   if (file==string("")) {
     msg.Error()<<"Error in Decay_Table_Reader::Decay_Table_Reader("
@@ -27,7 +28,7 @@ Decay_Table_Reader::Decay_Table_Reader(string path,string file)
   if(!reader.MatrixFromFile(m_helpsvv)) {
     msg.Error()<<"ERROR in Decay_Table_Reader::"
 	       <<"Decay_Table_Reader(string,string) :\n"
-	       <<"   Read in failure, will abort."<<endl;
+	       <<"   Read in failure "<<path<<file<<", will abort."<<endl;
     abort();
   }
 }
@@ -66,11 +67,25 @@ void Decay_Table_Reader::FillInMatrixElementsAndPS( Decay_Table * dt, Channel_Ma
 {
   Decay_Channel        * dc;								// pointer on decay channel
   Hadron_Decay_Channel * hdc;								// pointer on hadronic decay channel
+  bool rewrite (false);										// rewrite D file ?
   for (int i=0;i<dt->NumberOfDecayChannels();i++) {			// for each channel in decay table
     dc  = dt->GetDecayChannel(i);							//   get channel
-    hdc = new Hadron_Decay_Channel(dc);						//   create new hadronic channel
-    hdc->InitialisePhaseSpace(m_helpsvv[i]);				//   initialise phase space
+    hdc = new Hadron_Decay_Channel(dc,m_path);						//   create new hadronic channel
+    rewrite = hdc->InitialisePhaseSpace(m_helpsvv[i]);		//   initialise phase space
 	(*chmap)[ dc ] = hdc;									//   map channel to hadronic channel
+  }
+  if (rewrite) {
+	ofstream f( (m_path + string("/") + m_file).c_str() );
+	f<<"# outgoing part. \t | BR \t | ME-type \t | DC-file"<<endl;
+	for (int j=0; j<dt->NumberOfDecayChannels();j++) {
+	  int nr( m_helpsvv[j].size() );
+	  for (int i=0; i<nr; i++) {
+		f<<m_helpsvv[j][i];
+		if (i==nr-1) f<<";"<<endl;
+		else f<<"\t | ";
+	  }
+	}
+	f.close();
   }
 }
 

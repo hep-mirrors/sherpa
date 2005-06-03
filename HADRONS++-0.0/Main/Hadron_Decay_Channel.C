@@ -5,9 +5,10 @@ using namespace HADRONS;
 using namespace ATOOLS;
 using namespace std;
 
-Hadron_Decay_Channel::Hadron_Decay_Channel(Decay_Channel * _dc) :
+Hadron_Decay_Channel::Hadron_Decay_Channel( Decay_Channel * _dc, string _path ) :
   p_dc(_dc), p_me(NULL), m_metype(p_dc->METype()),
-  Integrable_Base(1,_dc->NumberOfDecayProducts())
+  Integrable_Base(1,_dc->NumberOfDecayProducts()),
+  m_path(_path)
 {
   m_resultpath      = string("./");								// where to write results
   m_resultfile      = m_histofile = string("");					// filename
@@ -29,13 +30,27 @@ Hadron_Decay_Channel::~Hadron_Decay_Channel()
 }
 
 
-void Hadron_Decay_Channel::InitialisePhaseSpace(vector<string> & PStype) 
+bool Hadron_Decay_Channel::InitialisePhaseSpace(vector<string> & PStype) 
+  // PStype: decay products | BR | channel name | DC filename  <-- line of Decay file
 {
   bool mustinit;
-  struct Model locmd;
-  p_ps = new HD_PS_Base(this,PStype,mustinit,locmd);					// new PS
-  p_me->SetModelParameters( locmd );
+  struct GeneralModel locmd;
+  bool read_dc (true);
+  if ( PStype.size() == 2 ) PStype.push_back(string("Rambo"));  // in case channel has no name
+  if ( PStype.size() == 3 ) {									// in case no DC file given
+	string fn("");
+	fn += p_dc->GetDecaying().Name() + string("_");
+	for ( int i=0; i<p_dc->NumberOfDecayProducts(); i++ ) {
+	  fn += p_dc->GetDecayProduct(i).Name();
+	}
+	fn += string(".dat");
+	PStype.push_back( fn );										// generate DC filename
+	read_dc = false;											// don't read DC file
+  }
+  p_ps = new HD_PS_Base(this,m_path,PStype,mustinit,locmd,read_dc);	// new PS
+  p_me->SetModelParameters( locmd );							// set parameters for ME
   if (mustinit) p_ps->Initialise();								// if in need => ini
+  return not read_dc;											// rewrite D file ?
 }
 
 

@@ -7,6 +7,7 @@
 #include "Decay_Table.H"
 #include <string>
 #include "Vector.H"
+//#include "Simple_Point.H"
 
 namespace HADRONS {
   class Hadron_Decay_Channel : public PHASIC::Integrable_Base {
@@ -16,10 +17,11 @@ namespace HADRONS {
     HD_PS_Base            * p_ps;
     std::string             m_metype;
     void                    CalculateNormalisedWidth();
+	std::string				m_path;
   public: 
-    Hadron_Decay_Channel(ATOOLS::Decay_Channel * _dc);
+    Hadron_Decay_Channel( ATOOLS::Decay_Channel * _dc, std::string _path );
     ~Hadron_Decay_Channel();
-    void   InitialisePhaseSpace(std::vector<std::string> & PStype );
+    bool   InitialisePhaseSpace(std::vector<std::string> & PStype );
     void   SwapInOrder()    {}
     void   RestoreInOrder() {}
     void   DeSelect()       {}

@@ -35,8 +35,8 @@ Hadron_Decay_Channel * Hadrons::ChooseDecayChannel()
 
   // dice decay channel acc. to BR
   while( !channel_choosen ) {
-	k = rand() % nchan;									// dice decay channel
-	double r = 1.*rand()/RAND_MAX;						// take it acc. to BR
+	k = int( ran.Get() * nchan );					// dice decay channel
+	double r = ran.Get();							// random number for rejection
 	if( r < p_table->Width(k) / TotalWidth ) {
 	  dec_channel = p_table->GetDecayChannel(k);
 	  channel_choosen = 1;
@@ -154,7 +154,7 @@ void Hadrons::ReadInDecayTables()
   reader.SetMatrixType(reader.MTransposed);
   if(!reader.MatrixFromFile(Decayers)) {
     msg.Error()<<"ERROR in Hadrons::ReadInDecayTables() :\n"
-	       <<"   Read in failure, will abort."<<endl;
+	       <<"   Read in failure "<<m_path<<m_file<<", will abort."<<endl;
     abort();
   }
 
