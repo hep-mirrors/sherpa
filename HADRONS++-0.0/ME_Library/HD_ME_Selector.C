@@ -70,19 +70,25 @@ void HD_ME_Selector::SelectTauDecay(
 		  if( flavs[i].Kfcode() == kf::pi_plus ) nPion++;
 		  if( flavs[i].Kfcode() == kf::K_plus ) nKaon++;
 		}
-		if( nPion == 1 || nKaon == 1 ) {
+		if( nPion == 1 ) {
 		  msg_Tracking()<<"HD_ME_Selector::SelectTauDecay: found Tau_Pion"<<endl;
+		  hdme = new Tau_Pion( nout, flavs );
+		}
+		if( nKaon == 1 ) {
+		  msg_Tracking()<<"HD_ME_Selector::SelectTauDecay: found Tau_Pion (as Tau_Kaon)"<<endl;
 		  hdme = new Tau_Pion( nout, flavs );
 		}
 		break;
 	  }
 	case 3:
 	  {
-		int nLep(0), nPion(0);
+		int nLep(0), nPion(0), nKaon(0);
 		for( int i=1; i<4; i++ ) {
 		  if( flavs[i].IsLepton() ) nLep++;
 		  if( flavs[i].Kfcode() == kf::pi_plus ||
 			  flavs[i].Kfcode() == kf::pi ) nPion++;
+		  if( flavs[i].Kfcode() == kf::K_plus ||
+			  flavs[i].Kfcode() == kf::K ) nKaon++;
 		}
 		if( nLep == 3 ) {
 		  msg_Tracking()<<"HD_ME_Selector::SelectTauDecay: found Tau_Lepton"<<endl;
@@ -92,7 +98,27 @@ void HD_ME_Selector::SelectTauDecay(
 		  msg_Tracking()<<"HD_ME_Selector::SelectTauDecay: found Tau_Two_Pion"<<endl;
 		  hdme = new Tau_Two_Pion( nout, flavs );
 		}
+		if( nKaon == 2 ) {
+		  msg_Tracking()<<"HD_ME_Selector::SelectTauDecay: found Tau_Two_Pion (as Tau_Two_Kaon)"<<endl;
+		  hdme = new Tau_Two_Pion( nout, flavs );
+		}
 		break;
+	  }
+	case 4:
+	  {
+		int nPion_ch(0), nPion_0(0);
+		for( int i=1; i<5; i++ ) {
+		  if( flavs[i].Kfcode() == kf::pi_plus ) nPion_ch++;
+		  if( flavs[i].Kfcode() == kf::pi )      nPion_0++;
+		}
+		if( nPion_ch == 1 && nPion_0 == 2 ) {
+		  msg_Tracking()<<"HD_ME_Selector::SelectTauDecay: found Tau_Three_Pion (as Tau_Pion-_2Pion0)"<<endl;
+		  hdme = new Tau_Three_Pion( nout, flavs );
+		}
+		if( nPion_ch == 3 && nPion_0 == 0 ) {
+		  msg_Tracking()<<"HD_ME_Selector::SelectTauDecay: found Tau_Three_Pion (as Tau_Pion+_2Pion-)"<<endl;
+		  hdme = new Tau_Three_Pion( nout, flavs );
+		}
 	  }
   }
 }

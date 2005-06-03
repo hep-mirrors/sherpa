@@ -7,20 +7,20 @@
 
 namespace HADRONS {
 
-  struct Param {					// parameter
+  struct GeneralParam {				// parameter
 	double a, b;					// V-A structure
 	double a2, b2;					// V-A structure
-	double fpi, fK;					// decay constants
-	double Vud, Vus;				// CKM ME
+	double fpi, fK; 				// decay constants
+	double Vud, Vus; 				// CKM ME; 
 	double GF;						// Fermi constant
 	double frho, grpp;				// rho-pipi coupling
   }; 
 
-  struct Model {
+  struct GeneralModel {
 	int me;							// model for ME
 	int run;						// running coupling
 	int ff;							// form factor
-	struct Param pm;				// coupling parameters
+	struct GeneralParam pm;			// coupling parameters
   }; 
 
   class HD_ME_Base {
@@ -29,13 +29,12 @@ namespace HADRONS {
     int               m_nout;
     ATOOLS::Flavour * p_flavs;
     double          * p_masses,* p_masses2;
-	Model			  m_md;
   public:
     HD_ME_Base(int,ATOOLS::Flavour *);
     virtual ~HD_ME_Base();
     virtual double operator()(const ATOOLS::Vec4D *) { return 1.; }
     virtual void AddVector(double,double) {}
-	inline void SetModelParameters( struct Model _md ) { m_md = _md; }
+	virtual void SetModelParameters( struct GeneralModel _md ) {};
   }; // end of class HD_ME_Base
 
   class Isotropic : public HD_ME_Base {
