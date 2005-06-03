@@ -1,9 +1,0 @@
-Channels {
-    Isotropic 1;
-}
-Dalitz-Parameters {
-    -1.16   0.24   0.0   0.09   0.0    
-}
-Result {
-   4.32382e-06 1.34039e-11 6.30011e-06;
-}

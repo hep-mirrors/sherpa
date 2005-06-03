@@ -1,6 +1,0 @@
-# outgoing part.   | BR      | ME-type | DC-file
-{16,11,-12}        | 0.1784  | L_L     | Tevatron1800/Tau_Electron.dat;
-{16,13,-14}        | 0.1736  | L_L     | Tevatron1800/Tau_Muon.dat;
-{16,-211}          | 0.1106  | L_S     | Tevatron1800/Tau_Pion.dat;
-{16,-321}          | 0.00686 | L_S     | Tevatron1800/Tau_Kaon.dat;
-{16,-211,111}      | 0.2542  | L_2S    | Tevatron1800/Tau_2Pion.dat;
