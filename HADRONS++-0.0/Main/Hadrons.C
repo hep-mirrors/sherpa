@@ -67,8 +67,8 @@ void Hadrons::ChooseDecayKinematics( Vec4D * _p, Vec4D * _v, Hadron_Decay_Channe
   } while( ran.Get() > value/max );
 //  ofstream f("trials.out",ios::app|ios::out );
 //  f<<trials<<endl;
-  msg.Info()<<"Hadrons::ChooseDecayKinematics:  # Trials "<<trials
-	        <<"   <=>  "<<100./trials<<" %"<<endl;
+  msg_Tracking()<<"Hadrons::ChooseDecayKinematics:  # Trials "<<trials
+  	        <<"   <=>  "<<100./trials<<" %"<<endl;
   for( int i=0; i < _hdc->DecayChannel()->NumberOfDecayProducts()+1; i++ ) {
 	_p[i] = _hdc->Momenta(i);
 	_v[i] = Vec4D( 1., 1., 0., 0. );

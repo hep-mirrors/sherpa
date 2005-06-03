@@ -37,8 +37,7 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
     return 0;
   }
 
-  Blob     * myblob, * decblob;
-  Particle * check;
+  Blob     * myblob;
   bool found = true;
   msg_Tracking()<<"Hadron_Decays::Treat"<<endl
 	<<"Check if Sherpa can handle an occuring hadron decay"<<endl;

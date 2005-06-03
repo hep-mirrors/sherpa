@@ -59,18 +59,24 @@ void HD_PS_Base::Initialise()
   WriteOut();
 }
 
-bool HD_PS_Base::Construct( struct Model & _md )
+bool HD_PS_Base::Construct(HADRONS::Model & _md )
 {
   Initialize( _md );
   if (m_file!=string("")) {
     vector<vector<string> > helpsvv;
     Data_Reader reader = Data_Reader(string("|"),string(";"),string("!"));
+    reader.SetAddCommandLine(false);
     reader.AddComment("#");
     reader.AddComment("//");
     reader.SetInputPath("./");
     reader.SetInputFile(m_file);
     reader.SetMatrixType(reader.MTransposed);
-    reader.MatrixFromFile(helpsvv,"");
+    if(!reader.MatrixFromFile(helpsvv)) {
+      msg.Error()<<"ERROR in HD_PS_Base::Construct(HADRONS::Model&) :\n"
+		 <<"   Read in failure, will abort."<<endl;
+      abort();
+    }
+
     string name;
     double weight;
     for (int i=0;i<helpsvv.size();i++) {
