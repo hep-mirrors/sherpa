@@ -1,0 +1,8 @@
+{22,22}           | 0.3943 | P_2Gamma       | Eta_2Gamma.dat;
+{11,-11,22}       | 0.006  | P_FFGamma      | Eta_GammaE+E-.dat;
+{13,-13,22}       | 0.0003 | P_FFGamma      | Eta_GammaMu+Mu-.dat;
+{111,111,111}     | 0.3251 | P_3P_DalitzDef | Eta_3Pi0.dat;
+{111,211,-211}    | 0.226  | P_3P_DalitzDef | Eta_3Pi.dat;
+{111,22,22}       | 0.0007 | P_P2Gamma      | Eta_Pi02Gamma.dat;
+{211,-211,22}     | 0.0468 | P_2PGamma      | Eta_2PiGamma.dat;
+#{211,-211,11,-11} | 0.0005 | P_2PFF         | Eta_2PiE+E-.dat;

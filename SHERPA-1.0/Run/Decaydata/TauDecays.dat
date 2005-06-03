@@ -1,0 +1,12 @@
+# outgoing part.   | BR      | ME-type | DC-file
+{16,11,-12}        | 0.1784  | L_L     | Tau_Electron.dat;
+{16,13,-14}        | 0.1736  | L_L     | Tau_Muon.dat;
+{16,-211}          | 0.1106  | L_S     | Tau_Pion.dat;
+{16,-321}          | 0.00686 | L_S     | Tau_Kaon.dat;
+{16,-211,111}      | 0.2542  | L_2S    | Tau_2Pion.dat;
+{16,-321,311}      | 0.00154 | L_2S    | Tau_2Kaon.dat;
+!{16,-211,111,111}  | 0.0917  | L_3S    | Tau_3Pion(1charged).dat;
+!{16,211,-211,-211} | 0.0916  | L_3S    | Tau_3Pion(3charged).dat;
+
+
+
