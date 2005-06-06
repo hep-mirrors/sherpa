@@ -235,7 +235,7 @@ void HD_PS_Base::CalculateNormalisedWidth() {
   m_max *= m_flux;
   disc   = sqr(m_res)/((sum2*sqr(m_flux)/n - sqr(m_res))/(n-1));
   if (disc>0) m_error  = result/disc;
-}
+} 
 
 
 bool HD_PS_Base::WriteOut() {
@@ -244,29 +244,41 @@ bool HD_PS_Base::WriteOut() {
 
   ofstream to;
   to.open((m_path+m_file).c_str(),ios::out);
+  cout<<"OPEN "<<m_path+m_file<<endl;
+
+  // write out channels
   to<<"Channels {"<<endl;
   for (int i=0;i<channels.size();i++) {
-    if (channels[i]->Name()==string("Rambo"))
-      to<<"    Isotropic"<<" "<<channels[i]->Alpha()<<";"<<endl;
-    else
-      to<<"    "<<channels[i]->ChID()<<" "<<channels[i]->Alpha()<<";"<<endl;
+	if (channels[i]->Name()==string("Rambo"))
+	  to<<"    Isotropic"<<" "<<channels[i]->Alpha()<<";"<<endl;
+	else
+	  to<<"    "<<channels[i]->ChID()<<" "<<channels[i]->Alpha()<<";"<<endl;
   }
   to<<"}"<<endl;
-  
+
+  // copy ME and Dalitz parameters
   char buffer[100];
   ifstream from;
-  from.open((m_file+string(".old")).c_str());
+  from.open((m_path+m_file+string(".old")).c_str());
   while (from.getline(buffer,100)) {
-    if (buffer==string("Dalitz-Parameters {")) {
-      to<<"Dalitz-Parameters {"<<endl;
-      while (buffer!=string("}")) {
-	from.getline(buffer,100);
-	to<<buffer<<endl;
-      }
-      break;
-    }
+	if (buffer==string("Parameters {")) {
+	  to<<"Parameters {"<<endl;
+	  while (buffer!=string("}")) {
+		from.getline(buffer,100);
+		to<<buffer<<endl;
+	  }
+	}
+	if (buffer==string("Dalitz-Parameters {")) {
+	  to<<"Dalitz-Parameters {"<<endl;
+	  while (buffer!=string("}")) {
+		from.getline(buffer,100);
+		to<<buffer<<endl;
+	  }
+	}
   }
   from.close();
+
+  // write out result
   to<<"Result {"<<endl;
   to<<"   "<<m_res<<" "<<m_error<<" "<<m_max<<";"<<endl;
   to<<"}"<<endl;
