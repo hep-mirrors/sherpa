@@ -144,6 +144,8 @@ bool HD_PS_Base::Construct( GeneralModel & _md )
 			if ( helpsvv[i][0] == string("b2") ) _md.pm.b2 = atof( string(helpsvv[i][2]).c_str() );
 			if ( helpsvv[i][0] == string("Vud")) _md.pm.Vud = atof( string(helpsvv[i][2]).c_str() );
 			if ( helpsvv[i][0] == string("Vus")) _md.pm.Vus = atof( string(helpsvv[i][2]).c_str() );
+			if ( helpsvv[i][0] == string("MA")) _md.pm.MA   = atof( string(helpsvv[i][2]).c_str() );
+			if ( helpsvv[i][0] == string("MV")) _md.pm.MV   = atof( string(helpsvv[i][2]).c_str() );
 			if ( helpsvv[i][0] == string("ME_MODEL") ) {
 			  if ( string(helpsvv[i][2])=="Traces" )            _md.me = 1;
 			  else if ( string(helpsvv[i][2])=="XYZ" )          _md.me = 2;
@@ -244,7 +246,6 @@ bool HD_PS_Base::WriteOut() {
 
   ofstream to;
   to.open((m_path+m_file).c_str(),ios::out);
-  cout<<"OPEN "<<m_path+m_file<<endl;
 
   // write out channels
   to<<"Channels {"<<endl;
@@ -303,4 +304,6 @@ void HD_PS_Base::Initialize( struct GeneralModel &md )
   md.pm.fK  = 0.113;
   md.pm.frho = 0.150;
   md.pm.grpp = 6.038;
+  md.pm.MA   = 1.204;
+  md.pm.MV   = 0.775;
 }
