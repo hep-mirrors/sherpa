@@ -28,7 +28,7 @@ namespace HADRONS {
     double                 m_res,m_error,m_max,m_flux;
 	bool                   m_read_dcfile;
 
-    bool     Construct( struct GeneralModel & );
+    bool     Construct( GeneralModel & );
     void     AddChannel(std::string,double=1.);
     void     CalculateNormalisedWidth();
     bool     ReadIn();
