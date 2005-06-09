@@ -17,6 +17,14 @@ void Info_Key::Assign(const std::string name,const size_t doubles,
   p_info->AssignKey(*this,doubles,vectors); 
 }
 
+void Info_Key::Assign(const std::string name,const size_t doubles,
+		      const size_t vectors,const SP(Integration_Info) &info)
+{
+  p_info=info.operator->();
+  m_name=name;
+  p_info->AssignKey(*this,doubles,vectors); 
+}
+
 Info_Key::~Info_Key()
 {
   if (p_info!=NULL) p_info->ReleaseKey(*this);

@@ -1,6 +1,7 @@
 #ifndef Info_Key_H
 #define Info_Key_H
 
+#include "Smart_Pointer.H"
 #include "Vector.H"
 #include <string>
 #include <vector>
@@ -58,6 +59,8 @@ namespace ATOOLS {
     // member functions
     void Assign(const std::string name,const size_t doubles,
 		const size_t vectors,Integration_Info *const info);
+    void Assign(const std::string name,const size_t doubles,
+		const size_t vectors,const SP(Integration_Info) &info);
 
     Double_Container &Doubles();
     Vector_Container &Vectors();
