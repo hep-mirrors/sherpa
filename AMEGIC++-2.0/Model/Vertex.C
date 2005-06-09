@@ -15,66 +15,70 @@ using namespace ATOOLS;
 using namespace ATOOLS;
 using namespace std;
 
+// Constructor and Destructor
+Vertex::Vertex(Interaction_Model_Base * _model)
+{
+  /* 
+     use (roughly) notation and Vertices of J. Rosiek, PRD41 (1990) 3464
+     pull out common factor -i of all Vertices
+  */ 
+ 
+  // for backward compatibility there allways has to be a dummy vertex at
+  // the end of the arrys that's overwritten, then.
+  m_v.resize(1); m_v4.resize(1);
 
-Single_Vertex::Single_Vertex() : Color(NULL), Lorentz(NULL) 
-{ ncf = nlf = t = 0; nleg=3; }
+  int vanz  = 0;
+  int vanz4 = 0;  
 
-Single_Vertex::Single_Vertex(const Single_Vertex& v): Color(NULL), 
-  Lorentz(NULL) { *this=v; };
+  msg_Debugging()<<"   Setting vertices..."<<endl;
+  _model->c_FFV(m_v,vanz);
+  msg_Debugging()<<"   FFV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  _model->c_FFS(m_v,vanz);
+  msg_Debugging()<<"   FFS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  _model->c_VVV(m_v,vanz);
+  msg_Debugging()<<"   VVV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  _model->c_SSV(m_v,vanz);
+  msg_Debugging()<<"   SSV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  _model->c_VVS(m_v,vanz);
+  msg_Debugging()<<"   VVS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  _model->c_SSS(m_v,vanz);
+  msg_Debugging()<<"   SSS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  _model->c_VVVV(m_v4,vanz4);
+  msg_Debugging()<<"   VVVV : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  _model->c_SSVV(m_v4,vanz4);
+  msg_Debugging()<<"   SSVV : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  _model->c_SSSS(m_v4,vanz4);
+  msg_Debugging()<<"   SSSS : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  _model->c_FFT(m_v,vanz);
+  msg_Debugging()<<"   FFT  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  _model->c_VVT(m_v,vanz);
+  msg_Debugging()<<"   VVT  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  _model->c_SST(m_v,vanz);
+  msg_Debugging()<<"   SST  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  _model->c_VVVT(m_v4,vanz4);
+  msg_Debugging()<<"   VVVT : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  _model->c_FFVT(m_v4,vanz4);
+  msg_Debugging()<<"   FFVT : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  _model->c_SSST(m_v4,vanz4);
+  msg_Debugging()<<"   SSST : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
 
-Single_Vertex::~Single_Vertex(){
-      if (Color)   if (ncf==1) delete Color;
-      else delete [] Color;
-      if (Lorentz) if (nlf==1) delete Lorentz;
-      else delete [] Lorentz;
-    }
+  m_v.resize(vanz);
+  m_v4.resize(vanz4);
 
-Single_Vertex& Single_Vertex::operator=(const Single_Vertex& v) {
-      if (Color)   if (ncf==1) delete Color;
-                   else        delete [] Color;
-      if (Lorentz) if (nlf==1) delete Lorentz;
-                   else        delete [] Lorentz;
-    
-      if (this!=&v) {
-	for (short int i=0;i<4;i++) in[i]  = v.in[i];
-	for (short int j=0;j<4;j++) cpl[j] = v.cpl[j];
-	
-	nleg = v.nleg;
-	Str  = v.Str;
-	on   = v.on;
-	ncf  = v.ncf;
-	nlf  = v.nlf;
-	t=v.t;
-	if (ncf==1) Color   = new Color_Function(*v.Color);
-	else {
-	  Color = new Color_Function[ncf];
-	  for (int i=0;i<ncf;i++)
-	    Color[i] = v.Color[i];
-	}
-	if (nlf==1) Lorentz = new Lorentz_Function(*v.Lorentz);
-	else {
-	  Lorentz = new Lorentz_Function[nlf];
-	  for (int i=0;i<nlf;i++)
-	    Lorentz[i] = v.Lorentz[i];
-	}
-      }
-      return *this;
-    }
+  m_nvertex  = m_v.size();
+  m_n4vertex = m_v4.size();
+  //Print();
+  //TexOutput();
+  GenerateVertex();
+  Print();
+  
+  msg_Debugging()<<"... done with it ("<<m_nvertex+m_n4vertex<<")."<<endl;
+  msg_Tracking()<<"Initialized interaction model of AMEGIC : "<<m_nvertex+m_n4vertex<<" vertices."<<std::endl;
+}
 
-int Single_Vertex::operator==(Single_Vertex& probe) {
-      // checks if vertex probe has the same flavours at the same legs
-      if ((probe.nleg==4)&&(nleg==4)) { // both 4 legs
-        if (in[0]==probe.in[0] &&
-	    in[1]==probe.in[1] &&
-	    in[2]==probe.in[2] &&
-	    in[3]==probe.in[3] ) return 1;} // and legs equal
-      if ((probe.nleg==3)&&(nleg==3)) {  // both 3 legs
-        if (in[0]==probe.in[0] &&
-	    in[1]==probe.in[1] &&
-	    in[2]==probe.in[2]) return 1;} // and legs equal
-      return 0; // otherwise the vertices are not equal
-    }
+Vertex::~Vertex() {}
 
+// General Methods
 void Vertex::GenerateVertex()
 {
   int vanzsave = m_nvertex; 
@@ -154,7 +158,6 @@ void Vertex::GenerateVertex()
     }
   }
 }
-
 
 int Vertex::CheckExistence(Single_Vertex& probe)
 { // checks if a vertex with the same flavours at the same legs allready
@@ -391,7 +394,6 @@ void Vertex::ColorExchange(Color_Function* colfunc,int new0,int new1,int new2,in
   }
 }
 
-
 void Vertex::LorentzExchange(Lorentz_Function* lorfunc,int new0,int new1,int new2,int new3)
 {
   int partarg[4]={-1,-1,-1,-1};
@@ -406,78 +408,49 @@ void Vertex::LorentzExchange(Lorentz_Function* lorfunc,int new0,int new1,int new
   lorfunc->SetParticleArg(partarg[0],partarg[1],partarg[2],partarg[3]);
 }
 
-Vertex::Vertex(Interaction_Model_Base * _model)
-{
-  /* 
-     use (roughly) notation and Vertices of J. Rosiek, PRD41 (1990) 3464
-     pull out common factor -i of all Vertices
-  */ 
- 
-  // for backward compatibility there allways has to be a dummy vertex at
-  // the end of the arrys that's overwritten, then.
-  m_v.resize(1); m_v4.resize(1);
-
-  int vanz  = 0;
-  int vanz4 = 0;  
-
-  msg_Debugging()<<"   Setting vertices..."<<endl;
-  _model->c_FFV(m_v,vanz);
-  msg_Debugging()<<"   FFV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  _model->c_FFS(m_v,vanz);
-  msg_Debugging()<<"   FFS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  _model->c_VVV(m_v,vanz);
-  msg_Debugging()<<"   VVV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  _model->c_SSV(m_v,vanz);
-  msg_Debugging()<<"   SSV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  _model->c_VVS(m_v,vanz);
-  msg_Debugging()<<"   VVS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  _model->c_SSS(m_v,vanz);
-  msg_Debugging()<<"   SSS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  _model->c_VVVV(m_v4,vanz4);
-  msg_Debugging()<<"   VVVV : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  _model->c_SSVV(m_v4,vanz4);
-  msg_Debugging()<<"   SSVV : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  _model->c_SSSS(m_v4,vanz4);
-  msg_Debugging()<<"   SSSS : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  _model->c_FFT(m_v,vanz);
-  msg_Debugging()<<"   FFT  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  _model->c_VVT(m_v,vanz);
-  msg_Debugging()<<"   VVT  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  _model->c_SST(m_v,vanz);
-  msg_Debugging()<<"   SST  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  _model->c_VVVT(m_v4,vanz4);
-  msg_Debugging()<<"   VVVT : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  _model->c_FFVT(m_v4,vanz4);
-  msg_Debugging()<<"   FFVT : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  _model->c_SSST(m_v4,vanz4);
-  msg_Debugging()<<"   SSST : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-
-  m_v.resize(vanz);
-  m_v4.resize(vanz4);
-
-  m_nvertex  = m_v.size();
-  m_n4vertex = m_v4.size();
-  //Print();
-  //TexOutput();
-  GenerateVertex();
-  Print();
-  
-  msg_Debugging()<<"... done with it ("<<m_nvertex+m_n4vertex<<")."<<endl;
-  msg_Tracking()<<"Initialized interaction model of AMEGIC : "<<m_nvertex+m_n4vertex<<" vertices."<<std::endl;
-}
-
 void Vertex::CheckEqual(Flavour** fl,short int& count)
 {
   for (short int i=0;i<count-1;++i) {
     if (fl[i][0]==fl[count-1][0] &&
 	fl[i][1]==fl[count-1][1] &&
 	fl[i][2]==fl[count-1][2]) {
-      count--;
+      --count;
       break;
     }
   }
 }
 
+int Vertex::FindVertex(Single_Vertex* v_tofind)
+{
+  // find a vertex in m_v - does not search in m_v4
+  int nr=-1;
+  Flavour help;
+  if (v_tofind->nleg==3) {
+    for (int j=0;j<3;++j){
+      // rotate flavours
+      help           =v_tofind->in[0];
+      v_tofind->in[0]=v_tofind->in[1];
+      v_tofind->in[1]=v_tofind->in[2];
+      v_tofind->in[2]=help;
+
+      // find vertex with the rotated flavours in m_v
+      for (int i=0;i<m_nvertex;++i) {
+	if (v_tofind->in[0].Kfcode()==m_v[i].in[0].Kfcode())
+	  if (v_tofind->in[1].Kfcode()==m_v[i].in[1].Kfcode())
+	    if (v_tofind->in[2].Kfcode()==m_v[i].in[2].Kfcode()) {
+	      // vertex found in m_v
+	      nr=i;
+	      v_tofind=&m_v[nr];
+	      return nr;
+	    }
+      }
+    }
+  }
+  return 0;
+}
+
+
+// Output methods
 void Vertex::Print()
 {
   if (!msg.LevelIsDebugging()) return;
@@ -519,7 +492,6 @@ void Vertex::Print()
     }
   }
 }
-Vertex::~Vertex() {}
 
 void Vertex::TexOutput()
 {
@@ -797,42 +769,6 @@ void Vertex::TexOutput()
   sf<<"\\end{document}"<<endl;
   sf.close();
 }
-
-int Vertex::FindVertex(Single_Vertex* v_tofind)
-{
-  int nr=-1;
-  Flavour help;
-  if (v_tofind->nleg==3) {
-    for (int j=0;j<3;++j){
-      // rotate flavours
-      help           =v_tofind->in[0];
-      v_tofind->in[0]=v_tofind->in[1];
-      v_tofind->in[1]=v_tofind->in[2];
-      v_tofind->in[2]=help;
-      //    printvertex(v_tofind);
-      for (int i=0;i<m_nvertex;++i) {
-	//   printvertex(&m_v[i]);
-	if (v_tofind->in[0].Kfcode()==m_v[i].in[0].Kfcode())
-	  if (v_tofind->in[1].Kfcode()==m_v[i].in[1].Kfcode())
-	    if (v_tofind->in[2].Kfcode()==m_v[i].in[2].Kfcode()) {
-	    //    v_tofind=&m_v[i];
-	      nr=i;
-	      //break;
-	      v_tofind=&m_v[nr];
-	      return nr;
-	    }
-      }
-    }
-  }
-  return 0;
-}
-
-ostream& AMEGIC::operator<<(ostream& s, const Single_Vertex& sv)
-{
-  return s<<'('<<sv.in[0]<<','<<sv.in[1]<<','<<sv.in[2]<<','<<sv.in[3]
-          <<") with cpl["<<sv.cpl[0]<<','<<sv.cpl[1]<<','<<sv.cpl[2]<<','<<sv.cpl[3]<<']'
-          <<" is "<<((sv.on) ? "on" : "off");
-}
  
 ostream& AMEGIC::operator<<(ostream& s, const Vertex& v)
 {
@@ -844,61 +780,5 @@ ostream& AMEGIC::operator<<(ostream& s, const Vertex& v)
     s<<(*v[i])<<endl;
   s<<"-----------------------------------------------------------"<<endl;
 
-  return s;
-}
-
-void AMEGIC::Single_Vertex2MPI(const Single_Vertex * v , MPI_Single_Vertex & mpi_v) {
-  
-    
-  if (!v) {
-    for (int i=0;i<4;++i)
-      mpi_v.m_fl[i] = 0;
-    
-    return; 
-  }
-  /*
-  Lorentz_Function2MPI(v->Lorentz,mpi_v.m_lf);
-  Color_Function2MPI(v->Color,mpi_v.m_cf);
-  */
-
-  for (int i=0;i<4;++i)
-    mpi_v.m_fl[i] = int(v->in[i]);
-
-  /*  
-  for (int i=0;i<7;i+=2) {
-    mpi_v.m_cpl[i]   = real(v->cpl[i/2]);
-    mpi_v.m_cpl[i+1] = imag(v->cpl[i/2]);
-  }
-  */
-}
-
-
-Single_Vertex * AMEGIC::MPI2Single_Vertex(const MPI_Single_Vertex & mpi_v ) {
-
-  Single_Vertex * v ;
-  
-  v = new Single_Vertex();
-  
-  for (int i=0;i<4;++i) {
-    v->in[i] = Flavour((kf::code)(abs(mpi_v.m_fl[i])));
-    if (mpi_v.m_fl[i]<0) v->in[i]=v->in[i].Bar();
-  }
-
-  /*
-  v->Lorentz = AMEGIC::MPI2Lorentz_Function(mpi_v.m_lf);
-  v->Color   = AMEGIC::MPI2Color_Function(mpi_v.m_cf);
-  
-  for (int i=0;i<7;i+=2) {
-    (v->cpl[i/2]) = Complex(mpi_v.m_cpl[i],mpi_v.m_cpl[i+1]);
-  }
-  */
-  
-  return v;
-
-}
-
-
-std::ostream & AMEGIC::operator<<(std::ostream & s, const MPI_Single_Vertex & sv) {
-  s<<sv.m_fl[0]<<","<<sv.m_fl[1]<<","<<sv.m_fl[2]<<","<<sv.m_fl[3];
   return s;
 }
