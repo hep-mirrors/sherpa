@@ -20,7 +20,7 @@ Interaction_Model_MSSM::Interaction_Model_MSSM(MODEL::Model_Base * _model,
   p_moslesqu  = new Interaction_Model_sLepton_sQuark(p_model,_cplscheme,_yukscheme); 
 }
 
-void Interaction_Model_MSSM::c_FFV(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_MSSM::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   p_mothdm->c_FFV(vertex,vanz);
   p_moinos->c_FFV(vertex,vanz);
@@ -29,7 +29,7 @@ void Interaction_Model_MSSM::c_FFV(Single_Vertex* vertex,int& vanz)
   p_mosquark->c_FFV(vertex,vanz);
 }
 
-void Interaction_Model_MSSM::c_VVV(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_MSSM::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   p_mothdm->c_VVV(vertex,vanz);
   p_moinos->c_VVV(vertex,vanz);
@@ -38,7 +38,7 @@ void Interaction_Model_MSSM::c_VVV(Single_Vertex* vertex,int& vanz)
   p_mosquark->c_VVV(vertex,vanz);
 }
 
-void Interaction_Model_MSSM::c_VVVV(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_MSSM::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   p_mothdm->c_VVVV(vertex,vanz);
   p_moinos->c_VVVV(vertex,vanz);
@@ -47,7 +47,7 @@ void Interaction_Model_MSSM::c_VVVV(Single_Vertex* vertex,int& vanz)
   p_mosquark->c_VVVV(vertex,vanz);
 }
 
-void Interaction_Model_MSSM::c_FFS(Single_Vertex* vertex,int& vanz)  
+void Interaction_Model_MSSM::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)  
 { 
   p_mothdm->c_FFS(vertex,vanz);
   p_moinos->c_FFS(vertex,vanz);
@@ -56,7 +56,7 @@ void Interaction_Model_MSSM::c_FFS(Single_Vertex* vertex,int& vanz)
   p_mosquark->c_FFS(vertex,vanz);
 }
 
-void Interaction_Model_MSSM::c_VVS(Single_Vertex* vertex,int& vanz)  
+void Interaction_Model_MSSM::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz)  
 { 
   p_mothdm->c_VVS(vertex,vanz);
   p_moinos->c_VVS(vertex,vanz);
@@ -65,7 +65,7 @@ void Interaction_Model_MSSM::c_VVS(Single_Vertex* vertex,int& vanz)
   p_mosquark->c_VVS(vertex,vanz);
 }
 
-void Interaction_Model_MSSM::c_SSS(Single_Vertex* vertex,int& vanz)  
+void Interaction_Model_MSSM::c_SSS(std::vector<Single_Vertex>& vertex,int& vanz)  
 { 
   p_mothdm->c_SSS(vertex,vanz);
   p_moinos->c_SSS(vertex,vanz);
@@ -74,7 +74,7 @@ void Interaction_Model_MSSM::c_SSS(Single_Vertex* vertex,int& vanz)
   p_mosquark->c_SSS(vertex,vanz);
 }
 
-void Interaction_Model_MSSM::c_SSV(Single_Vertex* vertex,int& vanz) 
+void Interaction_Model_MSSM::c_SSV(std::vector<Single_Vertex>& vertex,int& vanz) 
 { 
   p_mothdm->c_SSV(vertex,vanz);
   p_moinos->c_SSV(vertex,vanz);
@@ -83,7 +83,7 @@ void Interaction_Model_MSSM::c_SSV(Single_Vertex* vertex,int& vanz)
   p_mosquark->c_SSV(vertex,vanz);
 }
 
-void Interaction_Model_MSSM::c_SSVV(Single_Vertex* vertex,int& vanz) 
+void Interaction_Model_MSSM::c_SSVV(std::vector<Single_Vertex>& vertex,int& vanz) 
 { 
   p_mothdm->c_SSVV(vertex,vanz);
   p_moinos->c_SSVV(vertex,vanz);
@@ -92,7 +92,7 @@ void Interaction_Model_MSSM::c_SSVV(Single_Vertex* vertex,int& vanz)
   p_mosquark->c_SSVV(vertex,vanz);
 }
 
-void Interaction_Model_MSSM::c_SSSS(Single_Vertex* vertex,int& vanz) 
+void Interaction_Model_MSSM::c_SSSS(std::vector<Single_Vertex>& vertex,int& vanz) 
 { 
   p_mothdm->c_SSSS(vertex,vanz);
   p_moinos->c_SSSS(vertex,vanz);

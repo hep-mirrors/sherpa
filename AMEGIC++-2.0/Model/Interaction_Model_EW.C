@@ -30,7 +30,7 @@ Interaction_Model_EW::Interaction_Model_EW(MODEL::Model_Base * _model,
   vev   = Kabbala(string("v_{EW}"),ScalarConstant(std::string("vev")));
 }
 
-void Interaction_Model_EW::c_FFV(Single_Vertex * vertex,int & vanz)
+void Interaction_Model_EW::c_FFV(std::vector<Single_Vertex>& vertex,int & vanz)
 {
   Flavour flphoton(kf::photon);
   Flavour flZ(kf::Z);
@@ -79,7 +79,7 @@ void Interaction_Model_EW::c_FFV(Single_Vertex * vertex,int & vanz)
 		vertex[vanz].Lorentz->SetParticleArg(1);     
 
 		vertex[vanz].on      = 1;
-		vanz++;
+		vertex.push_back(Single_Vertex());vanz++;
 	      }
 	    }
 	    //Z
@@ -111,7 +111,7 @@ void Interaction_Model_EW::c_FFV(Single_Vertex * vertex,int & vanz)
 	      vertex[vanz].Lorentz->SetParticleArg(1);     
 
 	      vertex[vanz].on     = 1;
-	      vanz++;
+	      vertex.push_back(Single_Vertex());vanz++;
 	    }
 	  }
 	  //W
@@ -164,7 +164,7 @@ void Interaction_Model_EW::c_FFV(Single_Vertex * vertex,int & vanz)
 		vertex[vanz].Lorentz->SetParticleArg(1);     
 
 		vertex[vanz].on      = 1;
-		vanz++;
+		vertex.push_back(Single_Vertex());vanz++;
 	      }
 	    }
 	  }
@@ -174,7 +174,7 @@ void Interaction_Model_EW::c_FFV(Single_Vertex * vertex,int & vanz)
   }
 }
 
-void Interaction_Model_EW::c_VVV(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_EW::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Flavour flW(kf::W);
   Flavour flZ(kf::Z);
@@ -206,7 +206,7 @@ void Interaction_Model_EW::c_VVV(Single_Vertex* vertex,int& vanz)
   vertex[vanz].Lorentz->SetParticleArg(0,1,2);     
 
   vertex[vanz].on      = 1;
-  vanz++;
+  vertex.push_back(Single_Vertex());vanz++;
 }
   if (flZ.IsOn()) {
  
@@ -231,12 +231,12 @@ void Interaction_Model_EW::c_VVV(Single_Vertex* vertex,int& vanz)
   vertex[vanz].Lorentz->SetParticleArg(0,1,2);     
 
   vertex[vanz].on      = 1;
-  vanz++;
+  vertex.push_back(Single_Vertex());vanz++;
   }
 }
 
 
-void Interaction_Model_EW::c_FFS(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Flavour flh(kf::h);
   Kabbala kcpl0,kcpl1,M_h;
@@ -276,14 +276,14 @@ void Interaction_Model_EW::c_FFS(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 
 	vertex[vanz].on      = 1;
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
       }
     }
   }
 }
 
 
-void Interaction_Model_EW::c_VVS(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_EW::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Flavour flh(kf::h);
   Kabbala kcpl0,kcpl1;  
@@ -314,7 +314,7 @@ void Interaction_Model_EW::c_VVS(Single_Vertex* vertex,int& vanz)
     vertex[vanz].Lorentz->SetParticleArg(0,2);     
 
     vertex[vanz].on      = 1;
-    vanz++;
+    vertex.push_back(Single_Vertex());vanz++;
   }
 
   flav = Flavour(kf::Z);
@@ -340,12 +340,12 @@ void Interaction_Model_EW::c_VVS(Single_Vertex* vertex,int& vanz)
     vertex[vanz].Lorentz->SetParticleArg(0,2);     
 
     vertex[vanz].on      = 1;
-    vanz++;
+    vertex.push_back(Single_Vertex());vanz++;
   }
 }
 
 
-void Interaction_Model_EW::c_SSS(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Flavour flh = Flavour(kf::h);
   Kabbala kcpl0,kcpl1,yuk;  
@@ -372,11 +372,11 @@ void Interaction_Model_EW::c_SSS(Single_Vertex* vertex,int& vanz)
     vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);     
 
     vertex[vanz].on      = 1;
-    vanz++;
+    vertex.push_back(Single_Vertex());vanz++;
   }
 }
 
-void Interaction_Model_EW::c_SSSS(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Flavour flh = Flavour(kf::h);
   Kabbala kcpl0,kcpl1,yuk;  
@@ -406,11 +406,11 @@ void Interaction_Model_EW::c_SSSS(Single_Vertex* vertex,int& vanz)
     vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
 
     vertex[vanz].on      = 1;
-    vanz++;
+    vertex.push_back(Single_Vertex());vanz++;
   }
 }
 
-void Interaction_Model_EW::c_VVVV(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_EW::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
 
   Flavour flavW(kf::W);
@@ -443,7 +443,7 @@ void Interaction_Model_EW::c_VVVV(Single_Vertex* vertex,int& vanz)
   vertex[vanz].Lorentz->SetParticleArg(0,3,1,2);     
 
   vertex[vanz].on      = 1;
-  vanz++;
+  vertex.push_back(Single_Vertex());vanz++;
   }
 
   // Ph - W - W - Z  
@@ -471,7 +471,7 @@ void Interaction_Model_EW::c_VVVV(Single_Vertex* vertex,int& vanz)
   vertex[vanz].Lorentz->SetParticleArg(0,3,1,2);     
 
   vertex[vanz].on      = 1;
-  vanz++;
+  vertex.push_back(Single_Vertex());vanz++;
   }
   // Z - W - W - Z  
   if (flavW.IsOn() && flavZ.IsOn()) {
@@ -498,7 +498,7 @@ void Interaction_Model_EW::c_VVVV(Single_Vertex* vertex,int& vanz)
   vertex[vanz].Lorentz->SetParticleArg(0,3,1,2);     
 
   vertex[vanz].on      = 1;
-  vanz++;
+  vertex.push_back(Single_Vertex());vanz++;
   }
   
  // W - W - W - W  
@@ -526,11 +526,11 @@ void Interaction_Model_EW::c_VVVV(Single_Vertex* vertex,int& vanz)
   vertex[vanz].Lorentz->SetParticleArg(0,1,2,3);     
 
   vertex[vanz].on      = 1;
-  vanz++;
+  vertex.push_back(Single_Vertex());vanz++;
   }
 }
 
-void Interaction_Model_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Kabbala num_2 = Kabbala(string("2"),2.);  
 
@@ -564,7 +564,7 @@ void Interaction_Model_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
     vertex[vanz].Lorentz->SetParticleArg(0,3);     
     
     vertex[vanz].on      = 1;
-    vanz++;
+    vertex.push_back(Single_Vertex());vanz++;
   }
 
   // h - W - W - h  
@@ -592,7 +592,7 @@ void Interaction_Model_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
     vertex[vanz].Lorentz->SetParticleArg(0,3);     
     
     vertex[vanz].on      = 1;
-    vanz++;
+    vertex.push_back(Single_Vertex());vanz++;
   }
 }
 

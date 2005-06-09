@@ -6,7 +6,7 @@ endif
 
 AMEGICFLAGS  =	-pedantic -Wall #-Winline
 
-libModel_la_SOURCES = Interaction_Model_Base.C Interaction_Model_Handler.C \
+libModel_la_SOURCES = Interaction_Model_Base.C \
 		      Interaction_Model_QCD.C Interaction_Model_EW.C \
 		      Interaction_Model_SM.C \
 		      Interaction_Model_Higgs.C Interaction_Model_THDM.C \
@@ -17,7 +17,7 @@ libModel_la_SOURCES = Interaction_Model_Base.C Interaction_Model_Handler.C \
 		      Interaction_Model_QCD_Grav.C Interaction_Model_EW_Grav.C \
 		      Interaction_Model_ADD.C \
 		      Interaction_Model_EHC.C Interaction_Model_SMEHC.C \
-		      Interaction_Model_SM_ZPrime.C \
+		      Interaction_Model_SM_ZPrime.C Interaction_Model_Handler.C  \
 		      Vertex.C Lorentz_Function.C Color_Function.C
 INCLUDES = -I../Amplitude \
 	   -I../Amplitude/AmplTools \

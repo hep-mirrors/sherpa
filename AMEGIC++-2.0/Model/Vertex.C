@@ -1,5 +1,4 @@
 #include "Vertex.H"
-
 #include "Interaction_Model_Base.H"
 #include "Message.H"
 #include "Vector.H"
@@ -16,6 +15,65 @@ using namespace ATOOLS;
 using namespace ATOOLS;
 using namespace std;
 
+
+Single_Vertex::Single_Vertex() : Color(NULL), Lorentz(NULL) 
+{ ncf = nlf = t = 0; nleg=3; }
+
+Single_Vertex::Single_Vertex(const Single_Vertex& v): Color(NULL), 
+  Lorentz(NULL) { *this=v; };
+
+Single_Vertex::~Single_Vertex(){
+      if (Color)   if (ncf==1) delete Color;
+      else delete [] Color;
+      if (Lorentz) if (nlf==1) delete Lorentz;
+      else delete [] Lorentz;
+    }
+
+Single_Vertex& Single_Vertex::operator=(const Single_Vertex& v) {
+      if (Color)   if (ncf==1) delete Color;
+                   else        delete [] Color;
+      if (Lorentz) if (nlf==1) delete Lorentz;
+                   else        delete [] Lorentz;
+    
+      if (this!=&v) {
+	for (short int i=0;i<4;i++) in[i]  = v.in[i];
+	for (short int j=0;j<4;j++) cpl[j] = v.cpl[j];
+	
+	nleg = v.nleg;
+	Str  = v.Str;
+	on   = v.on;
+	ncf  = v.ncf;
+	nlf  = v.nlf;
+	t=v.t;
+	if (ncf==1) Color   = new Color_Function(*v.Color);
+	else {
+	  Color = new Color_Function[ncf];
+	  for (int i=0;i<ncf;i++)
+	    Color[i] = v.Color[i];
+	}
+	if (nlf==1) Lorentz = new Lorentz_Function(*v.Lorentz);
+	else {
+	  Lorentz = new Lorentz_Function[nlf];
+	  for (int i=0;i<nlf;i++)
+	    Lorentz[i] = v.Lorentz[i];
+	}
+      }
+      return *this;
+    }
+
+int Single_Vertex::operator==(Single_Vertex& probe) {
+      // checks if vertex probe has the same flavours at the same legs
+      if ((probe.nleg==4)&&(nleg==4)) { // both 4 legs
+        if (in[0]==probe.in[0] &&
+	    in[1]==probe.in[1] &&
+	    in[2]==probe.in[2] &&
+	    in[3]==probe.in[3] ) return 1;} // and legs equal
+      if ((probe.nleg==3)&&(nleg==3)) {  // both 3 legs
+        if (in[0]==probe.in[0] &&
+	    in[1]==probe.in[1] &&
+	    in[2]==probe.in[2]) return 1;} // and legs equal
+      return 0; // otherwise the vertices are not equal
+    }
 
 void Vertex::GenerateVertex()
 {
@@ -44,11 +102,11 @@ void Vertex::GenerateVertex()
 			if (m==1) m = -m;
 			if (n==1) n = -n;
 			if (SetVertex(m_v4[i],dummy,k,l,m,n)) {
-			  m_v4[m_n4vertex] = dummy;
+			  m_v4.push_back(dummy);
 			  m_n4vertex++;
 			}
 			if (SetVertex(m_v4[i],dummy,-k,-l,-m,-n)) {
-			  m_v4[m_n4vertex] = dummy;
+			  m_v4.push_back(dummy);
 			  m_n4vertex++;
 			}
 			k = abs(k);l=abs(l);m=abs(m);n=abs(n);
@@ -79,11 +137,11 @@ void Vertex::GenerateVertex()
 		  if (l==1) l = -l;
 		  if (m==1) m = -m;
 		  if (SetVertex(m_v[i],dummy,k,l,m)) {
-		    m_v[m_nvertex] = dummy;
+		    m_v.push_back(dummy);
 		    m_nvertex++;
 		  }
 		  if (SetVertex(m_v[i],dummy,-k,-l,-m)) {
-		    m_v[m_nvertex] = dummy;
+		    m_v.push_back(dummy);
 		    m_nvertex++;
 		  }
 		  k = abs(k);l=abs(l);m=abs(m);
@@ -99,32 +157,14 @@ void Vertex::GenerateVertex()
 
 
 int Vertex::CheckExistence(Single_Vertex& probe)
-{
-  //4 leg vertices
-  if (probe.nleg==4) {
-    for (short int i=0;i<m_n4vertex;++i) {     
-      // 0 -> 1 2 3
-      if (m_v4[i].in[0]==probe.in[0] &&
-	  m_v4[i].in[1]==probe.in[1] &&
-	  m_v4[i].in[2]==probe.in[2] &&
-	  m_v4[i].in[3]==probe.in[3] ) return 0;
-    }
-  }
-  //3 leg vertices
-  if (probe.nleg==3) {
-    // 0 -> 1 2
-    for (short int i=0;i<m_nvertex;++i) {
-      if (m_v[i].in[0]==probe.in[0] &&
-	  m_v[i].in[1]==probe.in[1] &&
-	  m_v[i].in[2]==probe.in[2]) return 0;
-      /*      
-      // 0 -> 2 1
-      if (m_v[i].in[0]==probe.in[0] &&
-	  m_v[i].in[1]==probe.in[2] &&
-	  m_v[i].in[2]==probe.in[1]) return 0;
-      */
-    }
-  }
+{ // checks if a vertex with the same flavours at the same legs allready
+  // exists; returns TRUE IF NOT.
+
+  // search both 3-leg and 4-leg vertices, return 0 if equal found
+  for (size_t i=0;i<m_v4.size();++i) if (probe==m_v4[i]) return 0;
+  for (size_t i=0;i<m_v.size();++i)  if (probe==m_v[i])  return 0;
+
+  // no equal vertex found: Return 1
   return 1;
 }
   
@@ -372,12 +412,13 @@ Vertex::Vertex(Interaction_Model_Base * _model)
      use (roughly) notation and Vertices of J. Rosiek, PRD41 (1990) 3464
      pull out common factor -i of all Vertices
   */ 
-  m_nvertex  = 10000;
-  m_n4vertex = 30000;
-  m_v  = new Single_Vertex[m_nvertex];
-  m_v4 = new Single_Vertex[m_n4vertex];
+ 
+  // for backward compatibility there allways has to be a dummy vertex at
+  // the end of the arrys that's overwritten, then.
+  m_v.resize(1); m_v4.resize(1);
+
   int vanz  = 0;
-  int vanz4 = 0;
+  int vanz4 = 0;  
 
   msg_Debugging()<<"   Setting vertices..."<<endl;
   _model->c_FFV(m_v,vanz);
@@ -411,33 +452,18 @@ Vertex::Vertex(Interaction_Model_Base * _model)
   _model->c_SSST(m_v4,vanz4);
   msg_Debugging()<<"   SSST : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
 
-  m_nvertex  = vanz;
-  m_n4vertex = vanz4;
+  m_v.resize(vanz);
+  m_v4.resize(vanz4);
+
+  m_nvertex  = m_v.size();
+  m_n4vertex = m_v4.size();
   //Print();
   //TexOutput();
   GenerateVertex();
   Print();
-  vanz = m_nvertex;
-  vanz4 = m_n4vertex;
-  //Kill_Off(); to be written....
-  m_nvertex = 10000;
-  m_n4vertex = 30000;
   
-  //should be improved and made dynamical
-
-  if (vanz>m_nvertex) {
-      msg.Error()<<"Number of vertices to large"<<endl;
-      abort();
-  }
-  if (vanz4>m_n4vertex) {
-      msg.Error()<<"Number of 4 leg vertices to large"<<endl;
-      abort();
-  }
-  
-  msg_Debugging()<<"... done with it ("<<vanz+vanz4<<")."<<endl;
-  msg_Tracking()<<"Initialized interaction model of AMEGIC : "<<vanz+vanz4<<" vertices."<<std::endl;
-  m_nvertex  = vanz;
-  m_n4vertex = vanz4;
+  msg_Debugging()<<"... done with it ("<<m_nvertex+m_n4vertex<<")."<<endl;
+  msg_Tracking()<<"Initialized interaction model of AMEGIC : "<<m_nvertex+m_n4vertex<<" vertices."<<std::endl;
 }
 
 void Vertex::CheckEqual(Flavour** fl,short int& count)
@@ -493,7 +519,7 @@ void Vertex::Print()
     }
   }
 }
-Vertex::~Vertex() {delete[] m_v;delete[] m_v4;}
+Vertex::~Vertex() {}
 
 void Vertex::TexOutput()
 {
@@ -772,21 +798,6 @@ void Vertex::TexOutput()
   sf.close();
 }
 
-void Vertex::AddVertex(Single_Vertex* addv){
-  Single_Vertex * oldv=m_v;
-  m_v = new Single_Vertex[m_nvertex+1];
-  for (int i=0;i<m_nvertex;++i) {
-    m_v[i].on=oldv[i].on;
-    for (int j=0;j<4;++j) m_v[i].in[j]=oldv[i].in[j];
-    for (int j=0;j<4;++j) m_v[i].cpl[j]=oldv[i].cpl[j];
-  }
-  m_v[m_nvertex].on=addv->on;
-  for (int j=0;j<4;++j) m_v[m_nvertex].in[j]=addv->in[j];
-  for (int j=0;j<4;++j) m_v[m_nvertex].cpl[j]=addv->cpl[j];
-  ++m_nvertex;
-  //  for (int i=0;i<m_nvertex;++i) printvertex(&m_v[i]);
-}
-
 int Vertex::FindVertex(Single_Vertex* v_tofind)
 {
   int nr=-1;
@@ -891,7 +902,3 @@ std::ostream & AMEGIC::operator<<(std::ostream & s, const MPI_Single_Vertex & sv
   s<<sv.m_fl[0]<<","<<sv.m_fl[1]<<","<<sv.m_fl[2]<<","<<sv.m_fl[3];
   return s;
 }
-
-
-
-

@@ -39,10 +39,11 @@ MODEL::Model_Base * _model, std::string _cplscheme,std::string _yukscheme)
   alphaLR = Kabbala(std::string("\\alpha_{LR}"), sqrt(2./3.));
 };
 
-void Interaction_Model_SM_ZPrime::c_FFV(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_SM_ZPrime::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
 // create the vertices for the standard model
   p_moSM->c_FFV(vertex,vanz);
+
 
 // create FFV vertices with Z' if it's on
   Flavour flZPrime(kf::ZPrime);
@@ -97,7 +98,7 @@ void Interaction_Model_SM_ZPrime::c_FFV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz->SetParticleArg(1);
 
 	vertex[vanz].on     = 1;
-	vanz++; 
+	vertex.push_back(Single_Vertex());vanz++; 
 	}; 
     };
   };
@@ -106,21 +107,21 @@ void Interaction_Model_SM_ZPrime::c_FFV(Single_Vertex* vertex,int& vanz)
 
 // no other couplings of the ZPrime are built in, yet. All the following
 // methods simply call the Standard Model to create its vertices.
-void Interaction_Model_SM_ZPrime::c_VVV(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_SM_ZPrime::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
 { // ZPrime does not couple on any gauge boson.
   // Reason: None of the quantum numbers Z' does couple to (B, L, Y)
   //         are carried by any gauge boson.
   p_moSM->c_VVV(vertex,vanz); }
-void Interaction_Model_SM_ZPrime::c_VVVV(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_SM_ZPrime::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
 { // No Z' interactions here - same reason as in c_VVV
   p_moSM->c_VVVV(vertex,vanz); }
 
 // no interaction with the Higgs particles implemented => no interaction here
-void Interaction_Model_SM_ZPrime::c_FFS(Single_Vertex* vertex,int& vanz)  { p_moSM->c_FFS(vertex,vanz); }
-void Interaction_Model_SM_ZPrime::c_VVS(Single_Vertex* vertex,int& vanz)  { p_moSM->c_VVS(vertex,vanz); }
-void Interaction_Model_SM_ZPrime::c_SSS(Single_Vertex* vertex,int& vanz)  { p_moSM->c_SSS(vertex,vanz); }
-void Interaction_Model_SM_ZPrime::c_SSVV(Single_Vertex* vertex,int& vanz) { p_moSM->c_SSVV(vertex,vanz); }
-void Interaction_Model_SM_ZPrime::c_SSSS(Single_Vertex* vertex,int& vanz) { p_moSM->c_SSSS(vertex,vanz); }
+void Interaction_Model_SM_ZPrime::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)  { p_moSM->c_FFS(vertex,vanz); }
+void Interaction_Model_SM_ZPrime::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz)  { p_moSM->c_VVS(vertex,vanz); }
+void Interaction_Model_SM_ZPrime::c_SSS(std::vector<Single_Vertex>& vertex,int& vanz)  { p_moSM->c_SSS(vertex,vanz); }
+void Interaction_Model_SM_ZPrime::c_SSVV(std::vector<Single_Vertex>& vertex,int& vanz) { p_moSM->c_SSVV(vertex,vanz); }
+void Interaction_Model_SM_ZPrime::c_SSSS(std::vector<Single_Vertex>& vertex,int& vanz) { p_moSM->c_SSSS(vertex,vanz); }
 
 Interaction_Model_SM_ZPrime::~Interaction_Model_SM_ZPrime()
 {

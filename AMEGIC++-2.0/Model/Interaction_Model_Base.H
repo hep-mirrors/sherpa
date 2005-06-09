@@ -3,6 +3,7 @@
 
 #include "Model_Base.H"
 #include "Vertex.H"
+#include <vector>
 //#include "Run_Parameter.H"
 
 namespace AMEGIC {
@@ -21,21 +22,21 @@ namespace AMEGIC {
 
     virtual ~Interaction_Model_Base();
 
-    virtual void c_FFV(Single_Vertex  *,int&) = 0;
-    virtual void c_FFS(Single_Vertex  *,int&) = 0;
-    virtual void c_VVV(Single_Vertex  *,int&) = 0;
-    virtual void c_SSV(Single_Vertex  *,int&) = 0;
-    virtual void c_VVS(Single_Vertex  *,int&) = 0;
-    virtual void c_SSS(Single_Vertex  *,int&) = 0;
-    virtual void c_VVVV(Single_Vertex *,int&) = 0;
-    virtual void c_SSVV(Single_Vertex *,int&) = 0;
-    virtual void c_SSSS(Single_Vertex *,int&) = 0;
-    virtual void c_FFT(Single_Vertex  *,int&) = 0;
-    virtual void c_VVT(Single_Vertex  *,int&) = 0;
-    virtual void c_SST(Single_Vertex  *,int&) = 0;
-    virtual void c_VVVT(Single_Vertex *,int&) = 0;
-    virtual void c_FFVT(Single_Vertex *,int&) = 0;
-    virtual void c_SSST(Single_Vertex *,int&) = 0;
+    virtual void c_FFV(std::vector<Single_Vertex>&,int&) = 0;
+    virtual void c_FFS(std::vector<Single_Vertex>&,int&) = 0;
+    virtual void c_VVV(std::vector<Single_Vertex>&,int&) = 0;
+    virtual void c_SSV(std::vector<Single_Vertex>&,int&) = 0;
+    virtual void c_VVS(std::vector<Single_Vertex>&,int&) = 0;
+    virtual void c_SSS(std::vector<Single_Vertex>&,int&) = 0;
+    virtual void c_VVVV(std::vector<Single_Vertex>&,int&) = 0;
+    virtual void c_SSVV(std::vector<Single_Vertex>&,int&) = 0;
+    virtual void c_SSSS(std::vector<Single_Vertex>&,int&) = 0;
+    virtual void c_FFT(std::vector<Single_Vertex>&,int&) = 0;
+    virtual void c_VVT(std::vector<Single_Vertex>&,int&) = 0;
+    virtual void c_SST(std::vector<Single_Vertex>&,int&) = 0;
+    virtual void c_VVVT(std::vector<Single_Vertex>&,int&) = 0;
+    virtual void c_FFVT(std::vector<Single_Vertex>&,int&) = 0;
+    virtual void c_SSST(std::vector<Single_Vertex>&,int&) = 0;
 
     virtual int                       ScalarNumber(const std::string);
     virtual double                    ScalarConstant(const std::string);

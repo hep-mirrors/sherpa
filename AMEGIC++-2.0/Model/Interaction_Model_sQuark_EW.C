@@ -49,7 +49,7 @@ Interaction_Model_sQuark_EW::Interaction_Model_sQuark_EW(MODEL::Model_Base * _mo
 }
 
 
-void Interaction_Model_sQuark_EW::c_FFS(Single_Vertex* vertex,int& vanz) {  
+void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz) {  
   Kabbala kcpl0,kcpl1; 
   
   //quark - squark - neutralino
@@ -91,7 +91,7 @@ void Interaction_Model_sQuark_EW::c_FFS(Single_Vertex* vertex,int& vanz) {
 	    vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	    
 	    vertex[vanz].on      = 1;
-	    vanz++;
+	    vertex.push_back(Single_Vertex());vanz++;
 	  }
 	}
       }
@@ -136,7 +136,7 @@ void Interaction_Model_sQuark_EW::c_FFS(Single_Vertex* vertex,int& vanz) {
 	      vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	    	
 	      vertex[vanz].on     = 1;
-	      vanz++;
+	      vertex.push_back(Single_Vertex());vanz++;
 	    }
 	  }
       }
@@ -183,7 +183,7 @@ void Interaction_Model_sQuark_EW::c_FFS(Single_Vertex* vertex,int& vanz) {
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	}
      }
     }
@@ -228,14 +228,14 @@ void Interaction_Model_sQuark_EW::c_FFS(Single_Vertex* vertex,int& vanz) {
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	  
 	  vertex[vanz].on     = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	}
       }
     } 
   }
 }
 
-void Interaction_Model_sQuark_EW::c_SSV(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_sQuark_EW::c_SSV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Kabbala kcpl0,kcpl1,help;
   
@@ -272,7 +272,7 @@ void Interaction_Model_sQuark_EW::c_SSV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz->SetParticleArg(0,2,1);     
 	
 	vertex[vanz].on      = 1;
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
       }  
     }
 
@@ -304,7 +304,7 @@ void Interaction_Model_sQuark_EW::c_SSV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz->SetParticleArg(0,2,1);     
 	
 	vertex[vanz].on      = 1;
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
       }
     }
   }   
@@ -347,7 +347,7 @@ void Interaction_Model_sQuark_EW::c_SSV(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz->SetParticleArg(0,2,1);     
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	} 
       }
     }
@@ -385,7 +385,7 @@ void Interaction_Model_sQuark_EW::c_SSV(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz->SetParticleArg(0,2,1);     
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	}  
       }
     }
@@ -431,14 +431,14 @@ void Interaction_Model_sQuark_EW::c_SSV(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz->SetParticleArg(0,2,1);     
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	} 
       }			
     }
   } 
 }
 
-void Interaction_Model_sQuark_EW::c_SSS(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Kabbala kcpl0,kcpl1,help;
     
@@ -487,7 +487,7 @@ void Interaction_Model_sQuark_EW::c_SSS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	}
       }
     }
@@ -538,7 +538,7 @@ void Interaction_Model_sQuark_EW::c_SSS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	}
       }
     }
@@ -605,7 +605,7 @@ void Interaction_Model_sQuark_EW::c_SSS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
   	}
       }
     }
@@ -663,7 +663,7 @@ void Interaction_Model_sQuark_EW::c_SSS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	  
 	}
       }
@@ -733,13 +733,13 @@ void Interaction_Model_sQuark_EW::c_SSS(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);
 	
 	vertex[vanz].on      = 1;
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
       }
     }
   }
 }
 
-void Interaction_Model_sQuark_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Flavour flavW(kf::W);
   Flavour flavZ(kf::Z);
@@ -779,7 +779,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	 vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	 
 	 vertex[vanz].on      = 1;
-	 vanz++;
+	 vertex.push_back(Single_Vertex());vanz++;
        }
   }
   
@@ -823,7 +823,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	}
       }
     }
@@ -868,7 +868,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	}
       }
     }
@@ -915,7 +915,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	}
       }
     }
@@ -961,7 +961,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	}
       }
     }      
@@ -1012,7 +1012,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	    vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	    
 	    vertex[vanz].on      = 1;
-	    vanz++;
+	    vertex.push_back(Single_Vertex());vanz++;
 	  }
 	  
 	  if (flavZ.IsOn()) {
@@ -1053,7 +1053,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	    vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	    
 	    vertex[vanz].on      = 1;
-	    vanz++;
+	    vertex.push_back(Single_Vertex());vanz++;
 	  }
 	}
       }
@@ -1095,7 +1095,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	}
       }
     }
@@ -1134,7 +1134,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	}
       }
     }	
@@ -1177,7 +1177,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	
 	vertex[vanz].on      = 1;
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
       }
     }
     for (short int i=61;i<67;i++) {
@@ -1211,7 +1211,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	
 	vertex[vanz].on      = 1;
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
       }
     }
     // G - U/D - U/D - Z  
@@ -1252,7 +1252,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	    vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	    
 	    vertex[vanz].on      = 1;
-	    vanz++;
+	    vertex.push_back(Single_Vertex());vanz++;
 	  }
 	}
       }
@@ -1293,7 +1293,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	    vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	    
 	    vertex[vanz].on      = 1;
-	    vanz++;
+	    vertex.push_back(Single_Vertex());vanz++;
 	  }
 	}
       }
@@ -1336,7 +1336,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	    vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	    
 	    vertex[vanz].on      = 1;
-	    vanz++;
+	    vertex.push_back(Single_Vertex());vanz++;
 	  }
 	}
       }
@@ -1344,7 +1344,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
   }
 }
 
-void Interaction_Model_sQuark_EW::c_SSSS(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Flavour flHmin(kf::Hmin);    
   Flavour flA0(kf::A0);    
@@ -1404,7 +1404,7 @@ void Interaction_Model_sQuark_EW::c_SSSS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	}
 	//A0 -> sUp - sUp - A0 
 	if (flA0.IsOn()) {
@@ -1442,7 +1442,7 @@ void Interaction_Model_sQuark_EW::c_SSSS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	}
 	//h0/H0 -> sUp - sUp - h0/H0 
 	for (int k=31;k<33;k++) {
@@ -1484,7 +1484,7 @@ void Interaction_Model_sQuark_EW::c_SSSS(Single_Vertex* vertex,int& vanz)
 	      vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
 	      
 	      vertex[vanz].on      = 1;
-		vanz++;
+		vertex.push_back(Single_Vertex());vanz++;
 	    }
 	  }
 	}
@@ -1545,7 +1545,7 @@ void Interaction_Model_sQuark_EW::c_SSSS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	}
 	//A0 -> sdown - sdown - A0 
 	if (flA0.IsOn()) {
@@ -1583,7 +1583,7 @@ void Interaction_Model_sQuark_EW::c_SSSS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	}
 	//h0/H0 -> sdown - sdown - h0/H0 
 	for (int k=31;k<33;k++) {
@@ -1625,7 +1625,7 @@ void Interaction_Model_sQuark_EW::c_SSSS(Single_Vertex* vertex,int& vanz)
 	      vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
 	      
 	      vertex[vanz].on      = 1;
-		vanz++;
+		vertex.push_back(Single_Vertex());vanz++;
 	    }
 	  }
 	}
@@ -1686,7 +1686,7 @@ void Interaction_Model_sQuark_EW::c_SSSS(Single_Vertex* vertex,int& vanz)
 	      vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
 	      
 	      vertex[vanz].on      = 1;
-	      vanz++;
+	      vertex.push_back(Single_Vertex());vanz++;
 	    }
 	  }
 	  if (flA0.IsOn()) {
@@ -1718,7 +1718,7 @@ void Interaction_Model_sQuark_EW::c_SSSS(Single_Vertex* vertex,int& vanz)
 	     vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
 	     
 	     vertex[vanz].on      = 1;
-	     vanz++;
+	     vertex.push_back(Single_Vertex());vanz++;
 	  }
 	}
       }

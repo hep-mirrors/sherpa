@@ -19,7 +19,7 @@ Interaction_Model_QCD::Interaction_Model_QCD(MODEL::Model_Base * _model,
   M_I = Kabbala(string("i"),Complex(0.,1.)); 
 }
 
-void Interaction_Model_QCD::c_FFV(Single_Vertex * vertex,int & vanz)
+void Interaction_Model_QCD::c_FFV(std::vector<Single_Vertex>& vertex,int & vanz)
 {
   Kabbala kcpl0 = -g3*M_I;
   Kabbala kcpl1 = kcpl0;
@@ -45,12 +45,12 @@ void Interaction_Model_QCD::c_FFV(Single_Vertex * vertex,int & vanz)
       vertex[vanz].Lorentz->SetParticleArg(1);     
                   
       vertex[vanz].on            = 1;
-      vanz++;
+      vertex.push_back(Single_Vertex());vanz++;
     } 
   }
 }
 
-void Interaction_Model_QCD::c_VVV(Single_Vertex * vertex,int& vanz)
+void Interaction_Model_QCD::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Kabbala kcpl0 = -g3;
   Kabbala kcpl1 = kcpl0; 
@@ -75,12 +75,12 @@ void Interaction_Model_QCD::c_VVV(Single_Vertex * vertex,int& vanz)
   vertex[vanz].Lorentz->SetParticleArg(0,1,2);     
 
   vertex[vanz].on            = 1;
-  vanz++;
+  vertex.push_back(Single_Vertex());vanz++;
 
   }
 }
 
-void Interaction_Model_QCD::c_VVVV(Single_Vertex * vertex,int& vanz)
+void Interaction_Model_QCD::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Kabbala kcpl0 = -M_I*g3*g3; 
   Kabbala kcpl1 = kcpl0; 
@@ -118,7 +118,7 @@ void Interaction_Model_QCD::c_VVVV(Single_Vertex * vertex,int& vanz)
   vertex[vanz].Lorentz[2].SetParticleArg(0,3,1,2);     
   
   vertex[vanz].on              = 1;
-  vanz++;
+  vertex.push_back(Single_Vertex());vanz++;
   }  
 }
 

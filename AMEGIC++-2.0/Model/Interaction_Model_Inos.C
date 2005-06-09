@@ -31,7 +31,7 @@ Interaction_Model_Inos::Interaction_Model_Inos(MODEL::Model_Base * _model,
   num_4  = Kabbala(string("4"),4.);    		
 }
 
-void Interaction_Model_Inos::c_FFS(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
  
   Kabbala kcpl0,kcpl1;
@@ -68,7 +68,7 @@ void Interaction_Model_Inos::c_FFS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	  
 	  vertex[vanz].on     = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	  //checked RK
 	}
 	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn() && (k == 33)) {
@@ -96,7 +96,7 @@ void Interaction_Model_Inos::c_FFS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	  
 	  vertex[vanz].on     = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	}
       }
     }
@@ -136,7 +136,7 @@ void Interaction_Model_Inos::c_FFS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	  
 	  vertex[vanz].on     = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	  //checked FK & RK & SS 
 	}
 	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn() && (k == 33)) {
@@ -169,7 +169,7 @@ void Interaction_Model_Inos::c_FFS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	  //checked SS 
 	}
       }
@@ -209,14 +209,14 @@ void Interaction_Model_Inos::c_FFS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	  
 	  vertex[vanz].on     = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	}
       }
     }
   }
 }
 
-void Interaction_Model_Inos::c_FFV(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_Inos::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
    Kabbala kcpl0,kcpl1;  
    Flavour flph = Flavour(kf::photon);
@@ -249,7 +249,7 @@ void Interaction_Model_Inos::c_FFV(Single_Vertex* vertex,int& vanz)
 	   vertex[vanz].Lorentz->SetParticleArg(1);     
 	   
 	   vertex[vanz].on      = 1;
-	   vanz++;
+	   vertex.push_back(Single_Vertex());vanz++;
 	 }
 	 if (flZ.IsOn()) {	
 
@@ -281,7 +281,7 @@ void Interaction_Model_Inos::c_FFV(Single_Vertex* vertex,int& vanz)
 	   vertex[vanz].Lorentz->SetParticleArg(1);     
 	   
 	   vertex[vanz].on     = 1;
-	   vanz++;
+	   vertex.push_back(Single_Vertex());vanz++;
 	 }     
        } 
      }
@@ -316,7 +316,7 @@ void Interaction_Model_Inos::c_FFV(Single_Vertex* vertex,int& vanz)
 	 vertex[vanz].Lorentz->SetParticleArg(1);     
 	 
 	 vertex[vanz].on     = 1;
-	 vanz++;
+	 vertex.push_back(Single_Vertex());vanz++;
        }
        
      }
@@ -353,7 +353,7 @@ void Interaction_Model_Inos::c_FFV(Single_Vertex* vertex,int& vanz)
 	 vertex[vanz].Lorentz->SetParticleArg(1);     
 	 
 	 vertex[vanz].on      = 1;
-	 vanz++;
+	 vertex.push_back(Single_Vertex());vanz++;
 	 //checked FK & RK & SS 
        }
      }

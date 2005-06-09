@@ -39,7 +39,7 @@ Interaction_Model_Higgs::Interaction_Model_Higgs(MODEL::Model_Base * _model,
 }
 
 
-void Interaction_Model_Higgs::c_FFS(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_Higgs::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Flavour flHmin(kf::Hmin);
   Flavour flA0(kf::A0);
@@ -83,7 +83,7 @@ void Interaction_Model_Higgs::c_FFS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].nlf     = 1;
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	  	  
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	  //checked FK & RK	  
 	}
       }
@@ -117,7 +117,7 @@ void Interaction_Model_Higgs::c_FFS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	  vertex[vanz].Lorentz->SetParticleArg(1);     
 	  
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	  //checked FK & RK
 	}
       }
@@ -162,7 +162,7 @@ void Interaction_Model_Higgs::c_FFS(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);     
 	vertex[vanz].Lorentz->SetParticleArg(1);     
 	
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
 	//checked FK & RK	
       }
     }
@@ -195,7 +195,7 @@ void Interaction_Model_Higgs::c_FFS(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);    
 	vertex[vanz].Lorentz->SetParticleArg(1);     
 
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
 	//checked FK & RK
       }
     }
@@ -233,7 +233,7 @@ void Interaction_Model_Higgs::c_FFS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);     
 	  vertex[vanz].Lorentz->SetParticleArg(1);     
 	  
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	  //checked FK & RK	  
 	}
       }
@@ -275,7 +275,7 @@ void Interaction_Model_Higgs::c_FFS(Single_Vertex* vertex,int& vanz)
 	    vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);     
 	    vertex[vanz].Lorentz->SetParticleArg(1);     
 	    
-	    vanz++;
+	    vertex.push_back(Single_Vertex());vanz++;
 	    //checked FK & RK
 	  }
 	}
@@ -284,7 +284,7 @@ void Interaction_Model_Higgs::c_FFS(Single_Vertex* vertex,int& vanz)
   }
 }
 
-void Interaction_Model_Higgs::c_VVS(Single_Vertex* vertex,int& vanz) 
+void Interaction_Model_Higgs::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz) 
 {
     
   Flavour flW(kf::W);
@@ -320,7 +320,7 @@ void Interaction_Model_Higgs::c_VVS(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz = new Lorentz_Function(lf::Gab);
 	vertex[vanz].Lorentz->SetParticleArg(0,2);     
 	
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
 	//checked FK & RK
       }
     }
@@ -353,7 +353,7 @@ void Interaction_Model_Higgs::c_VVS(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz = new Lorentz_Function(lf::Gab);
 	vertex[vanz].Lorentz->SetParticleArg(0,2);     
 	
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
 	//checked FK & RK & SS
       }
     }  
@@ -361,7 +361,7 @@ void Interaction_Model_Higgs::c_VVS(Single_Vertex* vertex,int& vanz)
 }
 
 
-void Interaction_Model_Higgs::c_SSS(Single_Vertex* vertex,int& vanz) 
+void Interaction_Model_Higgs::c_SSS(std::vector<Single_Vertex>& vertex,int& vanz) 
 {
   Flavour flHmin(kf::Hmin);    
   Flavour flh0(kf::h0);
@@ -396,7 +396,7 @@ void Interaction_Model_Higgs::c_SSS(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);
 	
 	vertex[vanz].on      = 1;
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
 	//checked FK & RK
       }  
       
@@ -436,7 +436,7 @@ void Interaction_Model_Higgs::c_SSS(Single_Vertex* vertex,int& vanz)
 	      vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);
 	      
 	      vertex[vanz].on      = 1;
-	      vanz++;
+	      vertex.push_back(Single_Vertex());vanz++;
 	      //checked FK & RK
 	      }
 	    }
@@ -466,7 +466,7 @@ void Interaction_Model_Higgs::c_SSS(Single_Vertex* vertex,int& vanz)
       vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);
       
       vertex[vanz].on      = 1;
-      vanz++;
+      vertex.push_back(Single_Vertex());vanz++;
     }
       
   // A0 -> h0/H0 + A0
@@ -495,7 +495,7 @@ void Interaction_Model_Higgs::c_SSS(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);
 	
 	vertex[vanz].on      = 1;
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
 	//checked FK & RK	
       }
     }
@@ -504,7 +504,7 @@ void Interaction_Model_Higgs::c_SSS(Single_Vertex* vertex,int& vanz)
 }
 
 
-void Interaction_Model_Higgs::c_SSV(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_Higgs::c_SSV(std::vector<Single_Vertex>& vertex,int& vanz)
 {   
   Flavour flW(kf::W);
   Flavour flZ(kf::Z);
@@ -539,7 +539,7 @@ void Interaction_Model_Higgs::c_SSV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz->SetParticleArg(0,2,1);     	
 
 	vertex[vanz ].on      = 1;
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
 	//checked FK & RK
       }  
     }
@@ -570,7 +570,7 @@ void Interaction_Model_Higgs::c_SSV(Single_Vertex* vertex,int& vanz)
       vertex[vanz].Lorentz->SetParticleArg(0,2,1);     	
       
       vertex[vanz].on      = 1;
-      vanz++;
+      vertex.push_back(Single_Vertex());vanz++;
       //checked FK & RK
     }    
   }
@@ -599,7 +599,7 @@ void Interaction_Model_Higgs::c_SSV(Single_Vertex* vertex,int& vanz)
     vertex[vanz].Lorentz->SetParticleArg(0,2,1);     	
           
     vertex[vanz].on      = 1;
-    vanz++;
+    vertex.push_back(Single_Vertex());vanz++;
     //checked FK & RK
   }    
   
@@ -631,7 +631,7 @@ void Interaction_Model_Higgs::c_SSV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz->SetParticleArg(0,2,1);     	
 	
 	vertex[vanz].on      = 1;
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
 	//checked FK & RK
       }
     }
@@ -659,13 +659,13 @@ void Interaction_Model_Higgs::c_SSV(Single_Vertex* vertex,int& vanz)
       vertex[vanz].Lorentz->SetParticleArg(0,2,1);     	
       
       vertex[vanz].on      = 1;
-      vanz++;
+      vertex.push_back(Single_Vertex());vanz++;
       //checked FK & RK
     }
   } 
 }
 
-void Interaction_Model_Higgs::c_SSSS(Single_Vertex* vertex,int& vanz) 
+void Interaction_Model_Higgs::c_SSSS(std::vector<Single_Vertex>& vertex,int& vanz) 
 {
   Flavour flHmin(kf::Hmin);    
   Flavour flA0(kf::A0);
@@ -697,7 +697,7 @@ void Interaction_Model_Higgs::c_SSSS(Single_Vertex* vertex,int& vanz)
     vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
     
     vertex[vanz].on      = 1;
-    vanz++;
+    vertex.push_back(Single_Vertex());vanz++;
   }
   // H- - H- - H+ - H-
   if (flHmin.IsOn()) {
@@ -724,7 +724,7 @@ void Interaction_Model_Higgs::c_SSSS(Single_Vertex* vertex,int& vanz)
     vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
     
     vertex[vanz].on      = 1;
-    vanz++;
+    vertex.push_back(Single_Vertex());vanz++;
   }
   // A0 - H- - H+ - A0
   if (flA0.IsOn() && flHmin.IsOn()) {
@@ -750,7 +750,7 @@ void Interaction_Model_Higgs::c_SSSS(Single_Vertex* vertex,int& vanz)
     vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
     
     vertex[vanz].on      = 1;
-    vanz++;
+    vertex.push_back(Single_Vertex());vanz++;
   }
 
   for (int i=31;i<33;i++) {
@@ -785,7 +785,7 @@ void Interaction_Model_Higgs::c_SSSS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	}
 	// A0 - h0/H0 - h0/H0 - A0
 	if (flA0.IsOn()) {
@@ -813,7 +813,7 @@ void Interaction_Model_Higgs::c_SSSS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	}
 	// h0/H0 - h0/H0 - h0/H0 - h0/H0 
 	for (int k=j;k<33;k++) {
@@ -847,7 +847,7 @@ void Interaction_Model_Higgs::c_SSSS(Single_Vertex* vertex,int& vanz)
 	      vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
 	      
 	      vertex[vanz].on      = 1;
-	      vanz++;
+	      vertex.push_back(Single_Vertex());vanz++;
 	    }     
 	  }      
 	}
@@ -856,7 +856,7 @@ void Interaction_Model_Higgs::c_SSSS(Single_Vertex* vertex,int& vanz)
   }
 }
 
-void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz) 
+void Interaction_Model_Higgs::c_SSVV(std::vector<Single_Vertex>& vertex,int& vanz) 
 {
     
   Flavour flW(kf::W);
@@ -896,7 +896,7 @@ void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	
 	vertex[vanz].on      = 1;
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
       }
     }
   }
@@ -929,7 +929,7 @@ void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	
 	vertex[vanz].on      = 1;
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
       }
     }
   }
@@ -959,7 +959,7 @@ void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz)
     vertex[vanz].Lorentz->SetParticleArg(0,3);     
     
     vertex[vanz].on      = 1;
-    vanz++;
+    vertex.push_back(Single_Vertex());vanz++;
     
     // W+ -> H+ + h0/H0 + Z/P 
     for(short int i=31; i<33;++i){
@@ -990,7 +990,7 @@ void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	}
 	
 	if(flPhoton.IsOn()) {
@@ -1018,7 +1018,7 @@ void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	}
       }
     }
@@ -1049,7 +1049,7 @@ void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	
 	vertex[vanz].on      = 1;
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
       }
       if (flPhoton.IsOn()) {
 	
@@ -1076,7 +1076,7 @@ void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	
 	vertex[vanz].on      = 1;
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
       }
     }
   }
@@ -1110,7 +1110,7 @@ void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz)
       vertex[vanz].Lorentz->SetParticleArg(0,3);     
       
       vertex[vanz].on      = 1;
-      vanz++;
+      vertex.push_back(Single_Vertex());vanz++;
       
       if(flPhoton.IsOn()) {
 
@@ -1137,7 +1137,7 @@ void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	
 	vertex[vanz].on      = 1;
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
       }
     }
     if(flPhoton.IsOn()) {
@@ -1164,7 +1164,7 @@ void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz)
       vertex[vanz].Lorentz->SetParticleArg(0,3);     
       
       vertex[vanz].on      = 1;
-      vanz++;
+      vertex.push_back(Single_Vertex());vanz++;
     }
   }    
 }

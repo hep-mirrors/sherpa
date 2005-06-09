@@ -42,7 +42,7 @@ Interaction_Model_sLepton_EW::Interaction_Model_sLepton_EW(MODEL::Model_Base * _
   invroot2 = Kabbala(string("1/\\sqrt{2}"),sqrt(.5));
 }
 
-void Interaction_Model_sLepton_EW::c_SSS(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_sLepton_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Kabbala kcpl0,kcpl1;
 
@@ -71,7 +71,7 @@ void Interaction_Model_sLepton_EW::c_SSS(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);
 	
 	vertex[vanz].on      = 1;
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
 	//checked RK & FK
       }
     }
@@ -119,7 +119,7 @@ void Interaction_Model_sLepton_EW::c_SSS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	  
 	}
       }
@@ -165,7 +165,7 @@ void Interaction_Model_sLepton_EW::c_SSS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);
 	  	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
   
 	}
       }
@@ -231,14 +231,14 @@ void Interaction_Model_sLepton_EW::c_SSS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
   	}
       }
     }
   }
 }
 
-void Interaction_Model_sLepton_EW::c_SSV(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_sLepton_EW::c_SSV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Kabbala kcpl0,kcpl1;
 
@@ -269,7 +269,7 @@ void Interaction_Model_sLepton_EW::c_SSV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz->SetParticleArg(0,2,1);     	
 
 	vertex[vanz].on      = 1;
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
       }
     }
   }
@@ -307,7 +307,7 @@ void Interaction_Model_sLepton_EW::c_SSV(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz->SetParticleArg(0,2,1);     	
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	  //checked SS
 	}
       }
@@ -338,7 +338,7 @@ void Interaction_Model_sLepton_EW::c_SSV(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz->SetParticleArg(0,2,1);     	
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
       }
     }
     
@@ -374,14 +374,14 @@ void Interaction_Model_sLepton_EW::c_SSV(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz->SetParticleArg(0,2,1);     	
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
   	}
       }
     }
   }
 }
 
-void Interaction_Model_sLepton_EW::c_SSSS(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Flavour flHmin(kf::Hmin);    
   Flavour flA0(kf::A0);    
@@ -431,7 +431,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(Single_Vertex* vertex,int& vanz)
 	    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
 	    
 	    vertex[vanz].on      = 1;
-	    if (kcpl0.Value()!=Complex(0.,0.) && kcpl1.Value()!=Complex(0.,0.)) vanz++;
+	    if (kcpl0.Value()!=Complex(0.,0.) && kcpl1.Value()!=Complex(0.,0.)) vertex.push_back(Single_Vertex());vanz++;
 	  }
 	  //A0 -> slepton - slepton - A0 
 	  if (flA0.IsOn()) {
@@ -470,7 +470,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(Single_Vertex* vertex,int& vanz)
 	    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
 	    
 	    vertex[vanz].on      = 1;
-	    if (kcpl0.Value()!=Complex(0.,0.) && kcpl1.Value()!=Complex(0.,0.)) vanz++;
+	    if (kcpl0.Value()!=Complex(0.,0.) && kcpl1.Value()!=Complex(0.,0.)) vertex.push_back(Single_Vertex());vanz++;
 	  }
 	  //h0/H0 -> slepton - slepton - h0/H0 
 	  for (int k=31;k<33;k++) {
@@ -514,7 +514,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(Single_Vertex* vertex,int& vanz)
 		vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
 		
 		vertex[vanz].on      = 1;
-		if (kcpl0.Value()!=Complex(0.,0.) && kcpl1.Value()!=Complex(0.,0.)) vanz++;
+		if (kcpl0.Value()!=Complex(0.,0.) && kcpl1.Value()!=Complex(0.,0.)) vertex.push_back(Single_Vertex());vanz++;
 	      }
 	    }
 	  }
@@ -555,7 +555,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(Single_Vertex* vertex,int& vanz)
 		vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
 		
 		vertex[vanz].on      = 1;
-		vanz++;
+		vertex.push_back(Single_Vertex());vanz++;
 	      }
 	    }
 	}
@@ -584,7 +584,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	} 
 	if (flHmin.IsOn()) {
 	  // H- -> snu - snub - H-
@@ -623,7 +623,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	} 
 	if (flHmin.IsOn()) {
 	  for (int j=71;j<77;j++) {
@@ -663,7 +663,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(Single_Vertex* vertex,int& vanz)
 		  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
 		  
 		  vertex[vanz].on      = 1;
-		  if (kcpl0.Value()!=Complex(0.,0.) && kcpl1.Value()!=Complex(0.,0.)) vanz++;
+		  if (kcpl0.Value()!=Complex(0.,0.) && kcpl1.Value()!=Complex(0.,0.)) vertex.push_back(Single_Vertex());vanz++;
 		}
 	      }
 	      // H- -> sLepton - snub - A0
@@ -697,7 +697,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(Single_Vertex* vertex,int& vanz)
 		vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
 		
 		vertex[vanz].on      = 1;
-		if (kcpl0.Value()!=Complex(0.,0.) && kcpl1.Value()!=Complex(0.,0.)) vanz++;
+		if (kcpl0.Value()!=Complex(0.,0.) && kcpl1.Value()!=Complex(0.,0.)) vertex.push_back(Single_Vertex());vanz++;
 	      }
 	    }
 	  }
@@ -739,7 +739,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
 	  
 	  vertex[vanz].on      = 1;
-	  if (kcpl0.Value()!=Complex(0.,0.) && kcpl1.Value()!=Complex(0.,0.)) vanz++;
+	  if (kcpl0.Value()!=Complex(0.,0.) && kcpl1.Value()!=Complex(0.,0.)) vertex.push_back(Single_Vertex());vanz++;
 	
 	  //snu - sLep - snu - sLep
 
@@ -793,7 +793,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(Single_Vertex* vertex,int& vanz)
 		  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
 		  
 		  if (kcpl0.Value()!=Complex(0.,0.) && kcpl1.Value()!=Complex(0.,0.)) vertex[vanz].on      = 1;
-		  vanz++;
+		  vertex.push_back(Single_Vertex());vanz++;
 		}
 	      }
 	    }
@@ -878,7 +878,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(Single_Vertex* vertex,int& vanz)
 		  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
 		  
 		  vertex[vanz].on      = 1;
-		  if (kcpl0.Value()!=Complex(0.,0.) && kcpl1.Value()!=Complex(0.,0.)) vanz++;
+		  if (kcpl0.Value()!=Complex(0.,0.) && kcpl1.Value()!=Complex(0.,0.)) vertex.push_back(Single_Vertex());vanz++;
 		}
 	      }
 	    }
@@ -890,7 +890,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(Single_Vertex* vertex,int& vanz)
 }
 
 
-void Interaction_Model_sLepton_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_sLepton_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Flavour flavW(kf::W);
   Flavour flavZ(kf::Z);
@@ -927,7 +927,7 @@ void Interaction_Model_sLepton_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
       vertex[vanz].Lorentz->SetParticleArg(0,3);     
       
       vertex[vanz].on      = 1;
-      vanz++;
+      vertex.push_back(Single_Vertex());vanz++;
     }
   }
   for (short int i=71;i<77;i++) {
@@ -967,7 +967,7 @@ void Interaction_Model_sLepton_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	    vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	    
 	    vertex[vanz].on      = 1;
-	    vanz++;
+	    vertex.push_back(Single_Vertex());vanz++;
 	  }			   
 	  // Z - L - L - Z
 	    vertex[vanz].in[0] = flavZ;
@@ -998,7 +998,7 @@ void Interaction_Model_sLepton_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	    vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	    
 	    vertex[vanz].on      = 1;
-	    vanz++;
+	    vertex.push_back(Single_Vertex());vanz++;
 	}
       }
     }
@@ -1033,7 +1033,7 @@ void Interaction_Model_sLepton_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	
 	vertex[vanz].on      = 1;
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
       }
       if (flavW.IsOn()) {
 	// W - snu - snu - W 
@@ -1060,7 +1060,7 @@ void Interaction_Model_sLepton_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	
 	vertex[vanz].on      = 1;
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
       }
     }
   }
@@ -1096,7 +1096,7 @@ void Interaction_Model_sLepton_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	}
       }
     }
@@ -1137,7 +1137,7 @@ void Interaction_Model_sLepton_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	    vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	    
 	    vertex[vanz].on      = 1;
-	    vanz++;
+	    vertex.push_back(Single_Vertex());vanz++;
 	  }
 	  
 	  if (flavZ.IsOn()) {
@@ -1167,7 +1167,7 @@ void Interaction_Model_sLepton_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	    vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	    
 	    vertex[vanz].on      = 1;
-	    vanz++;
+	    vertex.push_back(Single_Vertex());vanz++;
 	  }
 	}
       }
@@ -1175,7 +1175,7 @@ void Interaction_Model_sLepton_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
   }
 }
 
-void Interaction_Model_sLepton_EW::c_FFS(Single_Vertex* vertex,int& vanz){
+void Interaction_Model_sLepton_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz){
 
   Kabbala kcpl0,kcpl1;
   
@@ -1217,7 +1217,7 @@ void Interaction_Model_sLepton_EW::c_FFS(Single_Vertex* vertex,int& vanz){
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	  //checked SS
 	}
       }
@@ -1258,7 +1258,7 @@ void Interaction_Model_sLepton_EW::c_FFS(Single_Vertex* vertex,int& vanz){
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	  
 	  vertex[vanz].on     = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	  //checked SS
 	}
       }
@@ -1297,7 +1297,7 @@ void Interaction_Model_sLepton_EW::c_FFS(Single_Vertex* vertex,int& vanz){
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	  //checked RK & FK & SS
 	}
       }
@@ -1340,7 +1340,7 @@ void Interaction_Model_sLepton_EW::c_FFS(Single_Vertex* vertex,int& vanz){
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	  
 	  vertex[vanz].on     = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	  //checked RK & SS
 	}
       }

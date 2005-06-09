@@ -24,7 +24,7 @@ Interaction_Model_sQCD::Interaction_Model_sQCD(MODEL::Model_Base * _model,
   num_2    = Kabbala(string("2"),2.);    
 }
 
-void Interaction_Model_sQCD::c_FFS(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_sQCD::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Kabbala kcpl0,kcpl1;
 
@@ -60,7 +60,7 @@ void Interaction_Model_sQCD::c_FFS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	}
       }
     }
@@ -92,14 +92,14 @@ void Interaction_Model_sQCD::c_FFS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	  
 	  vertex[vanz].on      = 1;
-	  vanz++;
+	  vertex.push_back(Single_Vertex());vanz++;
 	}  
       }
     }
   }
 }
 
-void Interaction_Model_sQCD::c_FFV(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_sQCD::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Kabbala kcpl0,kcpl1;
   
@@ -130,12 +130,12 @@ void Interaction_Model_sQCD::c_FFV(Single_Vertex* vertex,int& vanz)
       vertex[vanz].Lorentz->SetParticleArg(1);     
       
       vertex[vanz].on      = 1;
-      vanz++;
+      vertex.push_back(Single_Vertex());vanz++;
     }   
   }
 }
 
-void Interaction_Model_sQCD::c_SSV(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_sQCD::c_SSV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   //sQuark - Gluon - sQuark
   
@@ -169,13 +169,13 @@ void Interaction_Model_sQCD::c_SSV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz->SetParticleArg(0,2,1);     
 	
 	vertex[vanz].on      = 1;
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
       } 
     }
   }
 }
 
-void Interaction_Model_sQCD::c_SSVV(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_sQCD::c_SSVV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Kabbala kcpl0,kcpl1;
   Flavour flgl = Flavour(kf::gluon); 
@@ -220,7 +220,7 @@ void Interaction_Model_sQCD::c_SSVV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz[1].SetParticleArg(0,3);     
 	
 	vertex[vanz].on      = 1;
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
       } 
     }
   }

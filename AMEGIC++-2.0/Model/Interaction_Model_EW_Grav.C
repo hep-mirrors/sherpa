@@ -38,7 +38,7 @@ Interaction_Model_EW_Grav::Interaction_Model_EW_Grav(MODEL::Model_Base * _model,
 
 }
 
-void Interaction_Model_EW_Grav::c_FFT(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_EW_Grav::c_FFT(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Flavour flgraviton(kf::graviton);
   Flavour flgs(kf::gscalar);
@@ -85,7 +85,7 @@ void Interaction_Model_EW_Grav::c_FFT(Single_Vertex* vertex,int& vanz)
 	      vertex[vanz].Lorentz->SetParticleArg(1);     
 
 	      vertex[vanz].on      = 1;
-	      vanz++;	      
+	      vertex.push_back(Single_Vertex());vanz++;	      
 	    }
 	    //scalar graviton mode
 	    if (flgs.IsOn()) {
@@ -116,7 +116,7 @@ void Interaction_Model_EW_Grav::c_FFT(Single_Vertex* vertex,int& vanz)
 	      vertex[vanz].nlf     = 1;
 	      vertex[vanz].Lorentz = new Lorentz_Function(lf::FFGS);     
 	      vertex[vanz].on     = 1;
-	      vanz++;
+	      vertex.push_back(Single_Vertex());vanz++;
 	    }
 	  }   
      	}
@@ -126,7 +126,7 @@ void Interaction_Model_EW_Grav::c_FFT(Single_Vertex* vertex,int& vanz)
 }
 
 
-void Interaction_Model_EW_Grav::c_FFVT(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_EW_Grav::c_FFVT(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   //return;
   Flavour flphoton(kf::photon);
@@ -181,7 +181,7 @@ void Interaction_Model_EW_Grav::c_FFVT(Single_Vertex* vertex,int& vanz)
 		vertex[vanz].Lorentz->SetParticleArg(1,3);     
 
 		vertex[vanz].on      = 1;
-		vanz++;
+		vertex.push_back(Single_Vertex());vanz++;
 	      }
 	    }
 	    //Z +graviton
@@ -215,7 +215,7 @@ void Interaction_Model_EW_Grav::c_FFVT(Single_Vertex* vertex,int& vanz)
 	      vertex[vanz].Lorentz->SetParticleArg(1,3);     
 
 	      vertex[vanz].on     = 1;
-	      vanz++;
+	      vertex.push_back(Single_Vertex());vanz++;
 	    }
 	    //photon + gscalar
 	    if (flphoton.IsOn()&&flgs.IsOn()) {
@@ -249,7 +249,7 @@ void Interaction_Model_EW_Grav::c_FFVT(Single_Vertex* vertex,int& vanz)
 		vertex[vanz].Lorentz->SetParticleArg(1);     
 
 		vertex[vanz].on      = 1;
-		vanz++;
+		vertex.push_back(Single_Vertex());vanz++;
 	      }
 	    }
 	    //Z +gscalar
@@ -283,7 +283,7 @@ void Interaction_Model_EW_Grav::c_FFVT(Single_Vertex* vertex,int& vanz)
 	      vertex[vanz].Lorentz->SetParticleArg(1);     
 
 	      vertex[vanz].on     = 1;
-	      vanz++;
+	      vertex.push_back(Single_Vertex());vanz++;
 	    }
 	  }
 	  //W + graviton
@@ -338,7 +338,7 @@ void Interaction_Model_EW_Grav::c_FFVT(Single_Vertex* vertex,int& vanz)
 		vertex[vanz].Lorentz->SetParticleArg(1,3);     
 
 		vertex[vanz].on      = 1;
-		vanz++;
+		vertex.push_back(Single_Vertex());vanz++;
 	      }
 	    }
 	  }
@@ -394,7 +394,7 @@ void Interaction_Model_EW_Grav::c_FFVT(Single_Vertex* vertex,int& vanz)
 		vertex[vanz].Lorentz->SetParticleArg(1);     
 
 		vertex[vanz].on      = 1;
-		vanz++;
+		vertex.push_back(Single_Vertex());vanz++;
 	      }
 	    }
 	  }
@@ -404,7 +404,7 @@ void Interaction_Model_EW_Grav::c_FFVT(Single_Vertex* vertex,int& vanz)
   }
 }
 
-void Interaction_Model_EW_Grav::c_VVT(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_EW_Grav::c_VVT(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Flavour flgraviton(kf::graviton);
   Flavour flgs(kf::gscalar);
@@ -434,7 +434,7 @@ void Interaction_Model_EW_Grav::c_VVT(Single_Vertex* vertex,int& vanz)
       vertex[vanz].Lorentz->SetParticleArg(0,2,1);     
 
       vertex[vanz].on      = 1;
-      vanz++;
+      vertex.push_back(Single_Vertex());vanz++;
     }
 
     flav = Flavour(kf::Z);
@@ -460,7 +460,7 @@ void Interaction_Model_EW_Grav::c_VVT(Single_Vertex* vertex,int& vanz)
       vertex[vanz].Lorentz->SetParticleArg(0,2,1);     
 
       vertex[vanz].on      = 1;
-      vanz++;
+      vertex.push_back(Single_Vertex());vanz++;
     }
     flav = Flavour(kf::photon);
     // photon graviton photon
@@ -485,7 +485,7 @@ void Interaction_Model_EW_Grav::c_VVT(Single_Vertex* vertex,int& vanz)
       vertex[vanz].Lorentz->SetParticleArg(0,2,1);     
       
       vertex[vanz].on      = 1;
-      vanz++;
+      vertex.push_back(Single_Vertex());vanz++;
     }
   }
   if (!flgs.IsOn()) return;
@@ -514,7 +514,7 @@ void Interaction_Model_EW_Grav::c_VVT(Single_Vertex* vertex,int& vanz)
     vertex[vanz].Lorentz->SetParticleArg(0,2,1);     
 
     vertex[vanz].on      = 1;
-    vanz++;
+    vertex.push_back(Single_Vertex());vanz++;
   }
 
   flav = Flavour(kf::Z);
@@ -541,7 +541,7 @@ void Interaction_Model_EW_Grav::c_VVT(Single_Vertex* vertex,int& vanz)
     vertex[vanz].Lorentz->SetParticleArg(0,2,1);     
 
     vertex[vanz].on      = 1;
-    vanz++;
+    vertex.push_back(Single_Vertex());vanz++;
   }
   flav = Flavour(kf::photon);
   // photon gscalar photon
@@ -566,11 +566,11 @@ void Interaction_Model_EW_Grav::c_VVT(Single_Vertex* vertex,int& vanz)
     vertex[vanz].Lorentz->SetParticleArg(0,2,1);     
 
     vertex[vanz].on      = 1;
-    vanz++;
+    vertex.push_back(Single_Vertex());vanz++;
   }
 }
 
-void Interaction_Model_EW_Grav::c_VVVT(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_EW_Grav::c_VVVT(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Flavour flgraviton(kf::graviton);
   Flavour flav(kf::W);
@@ -602,7 +602,7 @@ void Interaction_Model_EW_Grav::c_VVVT(Single_Vertex* vertex,int& vanz)
     vertex[vanz].Lorentz->SetParticleArg(0,1,2,3);     
     
     vertex[vanz].on      = 1;
-    vanz++;
+    vertex.push_back(Single_Vertex());vanz++;
     
     // ZWW graviton
     vertex[vanz].nleg     = 4;
@@ -627,12 +627,12 @@ void Interaction_Model_EW_Grav::c_VVVT(Single_Vertex* vertex,int& vanz)
     vertex[vanz].Lorentz->SetParticleArg(0,1,2,3);     
     
     vertex[vanz].on      = 1;
-    vanz++;
+    vertex.push_back(Single_Vertex());vanz++;
   }
 }
 
 
-void Interaction_Model_EW_Grav::c_SST(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_EW_Grav::c_SST(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Kabbala kcpl0,kcpl1;
 
@@ -661,7 +661,7 @@ void Interaction_Model_EW_Grav::c_SST(Single_Vertex* vertex,int& vanz)
     vertex[vanz].Lorentz->SetParticleArg(0,2,1);     	
 
     vertex[vanz].on      = 1;
-    vanz++;
+    vertex.push_back(Single_Vertex());vanz++;
   }
 
  if (flh.IsOn()&&flgs.IsOn()) {  
@@ -685,12 +685,12 @@ void Interaction_Model_EW_Grav::c_SST(Single_Vertex* vertex,int& vanz)
     vertex[vanz].Lorentz->SetParticleArg(0,2);     	
 
     vertex[vanz].on      = 1;
-    vanz++;
+    vertex.push_back(Single_Vertex());vanz++;
   }
 }
 
 
-void Interaction_Model_EW_Grav::c_SSST(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_EW_Grav::c_SSST(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Kabbala kcpl0,kcpl1,yuk;
   Kabbala num3  = Kabbala(string("3"),3.);
@@ -725,7 +725,7 @@ void Interaction_Model_EW_Grav::c_SSST(Single_Vertex* vertex,int& vanz)
     vertex[vanz].Lorentz->SetParticleArg(3);     	
 
     vertex[vanz].on      = 1;
-    vanz++;
+    vertex.push_back(Single_Vertex());vanz++;
   }
 
  if (flh.IsOn()&&flgs.IsOn()) {  
@@ -753,7 +753,7 @@ void Interaction_Model_EW_Grav::c_SSST(Single_Vertex* vertex,int& vanz)
     vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
 
     vertex[vanz].on      = 1;
-    vanz++;
+    vertex.push_back(Single_Vertex());vanz++;
   }
 }
 

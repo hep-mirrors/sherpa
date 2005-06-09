@@ -13,145 +13,63 @@ namespace AMEGIC {
 
   class Single_Vertex {
   public:
-    /*!
-      \brief Array of Flavour objects according to the particles 
-      participating in the considered interaction
-    */
-    ATOOLS::Flavour   in[4];
-    //!number of external legs the Single_Vertex possesses
-    int       nleg;
-    //!On/Off switch of a Single_Vertex 
-    short int on;
-    //!Array of complex couplings 
-    Complex   cpl[4];
-    /*!
-      \brief 
-      String expression associated to the coupling of the Single_Vertex object,
-      here latex commands should be used
-    */
-    std::string    Str;
-    //!the \f$SU(3)_C\f$ color structure of the interaction
-    Color_Function*   Color;
-    //!number of Color_Functions the Single_Vertex possesses
-    int               ncf;
-    //!the Lorentz structure of the interaction
-    Lorentz_Function* Lorentz;
-    //!number of Lorentz_Functions the SIngle_Vertex possesses
-    int               nlf,t;
-    
-    /*!
-      \brief The constructor initializes the number of external legs as 3 and 
-      alocates a Color_Function and Lorentz_Function object
-    */
+    short int on;                 // flag if vertex is on
+    std::string    Str;           // name of the verte
+    int nleg, ncf, nlf, t;        // number of legs, color functions, lorentz
+                                  //  functions and ?
 
-    Single_Vertex() {
-      nleg    = 3;
-      Color   = 0;
-      Lorentz = 0;
-      t=0;
-    }
+    ATOOLS::Flavour   in[4];      // flavours at the legs 
+    Complex   cpl[4];             // coupling constants
+    Color_Function*   Color;      // color structure 
+    Lorentz_Function* Lorentz;    // lorentz structure
 
-    //! Copy constructor
-    Single_Vertex(const Single_Vertex& v)
-    {
-      *this=v;
-      
-    }
-    //! The destructor 
+    // constructors and destructor
+    Single_Vertex();
+    Single_Vertex(const Single_Vertex& v);
+    ~Single_Vertex(); 
     
-    ~Single_Vertex() {
-      if (Color)   if (ncf==1) delete Color;
-      else delete [] Color;
-      if (Lorentz) if (nlf==1) delete Lorentz;
-      else delete [] Lorentz;
-    }
-    
-    
-
-    Single_Vertex& operator=(const Single_Vertex& v) {
-      if (Color)   if (ncf==1) delete Color;
-      else delete [] Color;
-      if (Lorentz) if (nlf==1) delete Lorentz;
-      else delete [] Lorentz;
-      if (this!=&v) {
-	for (short int i=0;i<4;i++) in[i]  = v.in[i];
-	for (short int j=0;j<4;j++) cpl[j] = v.cpl[j];
-	
-	nleg = v.nleg;
-	Str  = v.Str;
-	on   = v.on;
-	ncf  = v.ncf;
-	nlf  = v.nlf;
-	t=v.t;
-	if (ncf==1) Color   = new Color_Function(*v.Color);
-	else {
-	  Color = new Color_Function[ncf];
-	  for (int i=0;i<ncf;i++)
-	    Color[i] = v.Color[i];
-	}
-	if (nlf==1) Lorentz = new Lorentz_Function(*v.Lorentz);
-	else {
-	  Lorentz = new Lorentz_Function[nlf];
-	  for (int i=0;i<nlf;i++)
-	    Lorentz[i] = v.Lorentz[i];
-	}
-      }
-      return *this;
-    }
-  };
+    // operators
+    Single_Vertex& operator=(const Single_Vertex&);
+    int            operator==(Single_Vertex&);
+};
   
   class Interaction_Model_Base;
 
   class Vertex {
-    //! list of all vertices with three external legs
-    Single_Vertex* m_v;
-    //
-    //!The total number of \f$ 1\to 2\f$ interactions present 
-    int            m_nvertex;
-    //! list of all vertices with four external legs
-    Single_Vertex* m_v4;
-    //!The total number of \f$ 1\to 3\f$ interactions present 
-    int            m_n4vertex;
+    int m_nvertex, m_n4vertex;       // number of single vertices included
+    std::vector<Single_Vertex> m_v;  // list of 3-vertices 
+    std::vector<Single_Vertex> m_v4; // list of 4-vertices 
+   
     
-    void           CheckEqual(ATOOLS::Flavour**,short int&);
-    void           GenerateVertex();
-    int            CheckExistence(Single_Vertex&);
-    int            FermionRule(Single_Vertex& probe);
-    int            SetVertex(Single_Vertex&,Single_Vertex&,int,int,int,int a=99);
+    void        CheckEqual(ATOOLS::Flavour**,short int&);
+    void        GenerateVertex();
+    int         CheckExistence(Single_Vertex&);
+    int         FermionRule(Single_Vertex& probe);
+    int         SetVertex(Single_Vertex&,Single_Vertex&,int,int,int,int a=99);
 
-    void           ColorExchange(Color_Function*,int,int,int,int);
-    void           LorentzExchange(Lorentz_Function*,int,int,int,int);
-    //    void           Conjugate(Color_Function*);
+    void        ColorExchange(Color_Function*,int,int,int,int);
+    void        LorentzExchange(Lorentz_Function*,int,int,int,int);
+
   public:
     int on;
     Vertex(Interaction_Model_Base *);
-    void Print();
     ~Vertex();
+
+    void Print();
     
-    //! The access operators for three leg vertices
+
     inline Single_Vertex* operator[] (int n) {return &m_v[n];}  
     inline const Single_Vertex* operator[] (int n) const {return &m_v[n];}
-    //! The access operators for four leg vertices
+
     inline Single_Vertex* operator() (int n) {return &m_v4[n];}  
     inline const Single_Vertex* operator() (int n) const {return &m_v4[n];}
-    /*! 
-      \brief The total number of \f$ 1\to 2\f$ interactions present (nvertex) 
-      is returned  
-    */
+
     inline const int MaxNumber() const {return m_nvertex;}
-    /*! 
-      \brief The total number of \f$ 1\to 3\f$ interactions present (n4vertex) 
-      is returned
-    */
+
     inline const int MaxNumber4() const {return m_n4vertex;}
-    /*!
-      \brief LaTeX output is generated for all Feynman rules. The 
-      string expression for each Single_Vertex is combine with a
-      FeynMF picture. 
-    */
+
     void TexOutput();
-    //! Adds a Single_Vertex to the list of vertices
-    void AddVertex(Single_Vertex*);
+
     int  FindVertex(Single_Vertex*);
   };
   
@@ -178,7 +96,6 @@ namespace AMEGIC {
   
   Single_Vertex * MPI2Single_Vertex(const MPI_Single_Vertex &);
   
-
   std::ostream & operator<<(std::ostream &, const MPI_Single_Vertex &);
 
   /*! 

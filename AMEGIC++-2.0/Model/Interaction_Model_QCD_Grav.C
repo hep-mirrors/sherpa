@@ -23,7 +23,7 @@ Interaction_Model_QCD_Grav::Interaction_Model_QCD_Grav(MODEL::Model_Base * _mode
   num15 = Kabbala(string("1.5"),1.5);
 }
 
-void Interaction_Model_QCD_Grav::c_VVT(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_QCD_Grav::c_VVT(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Kabbala kcpl0,kcpl1; 
   
@@ -54,7 +54,7 @@ void Interaction_Model_QCD_Grav::c_VVT(Single_Vertex* vertex,int& vanz)
     vertex[vanz].Lorentz->SetParticleArg(0,2,1);     
 
     vertex[vanz].on      = 1;
-    vanz++;
+    vertex.push_back(Single_Vertex());vanz++;
   }
 
   // gluon gscalar gluon
@@ -81,11 +81,11 @@ void Interaction_Model_QCD_Grav::c_VVT(Single_Vertex* vertex,int& vanz)
     vertex[vanz].Lorentz->SetParticleArg(0,2,1);     
 
     vertex[vanz].on      = 1;
-    vanz++;
+    vertex.push_back(Single_Vertex());vanz++;
   }
 }
 
-void Interaction_Model_QCD_Grav::c_FFVT(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_QCD_Grav::c_FFVT(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   
   Flavour flgraviton(kf::graviton);
@@ -122,7 +122,7 @@ void Interaction_Model_QCD_Grav::c_FFVT(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz->SetParticleArg(1,3);     
 	
 	vertex[vanz].on      = 1;
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
       }
       if(flgs.IsOn()){
 	vertex[vanz].nleg    = 4;
@@ -151,13 +151,13 @@ void Interaction_Model_QCD_Grav::c_FFVT(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz->SetParticleArg(1,3);     
 	
 	vertex[vanz].on      = 1;
-	vanz++;
+	vertex.push_back(Single_Vertex());vanz++;
       }
     } 
   }
 }
 
-void Interaction_Model_QCD_Grav::c_VVVT(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_QCD_Grav::c_VVVT(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Kabbala kcpl0,kcpl1; 
   
@@ -187,7 +187,7 @@ void Interaction_Model_QCD_Grav::c_VVVT(Single_Vertex* vertex,int& vanz)
   vertex[vanz].Lorentz->SetParticleArg(0,1,2,3);     
 
   vertex[vanz].on      = 1;
-  vanz++;
+  vertex.push_back(Single_Vertex());vanz++;
 }
 
 

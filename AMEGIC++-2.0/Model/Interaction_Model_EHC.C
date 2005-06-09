@@ -37,7 +37,7 @@ Interaction_Model_EHC::Interaction_Model_EHC(MODEL::Model_Base * _model,
 
 
 
-void Interaction_Model_EHC::c_VVS(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_EHC::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Flavour flh(kf::h);
   Kabbala kcpl0,kcpl1;  
@@ -68,7 +68,7 @@ void Interaction_Model_EHC::c_VVS(Single_Vertex* vertex,int& vanz)
     vertex[vanz].Lorentz->SetParticleArg(0,2);     
 
     vertex[vanz].on      = 1;
-    vanz++;
+    vertex.push_back(Single_Vertex());vanz++;
   }
 
   Flavour flg(kf::gluon);
@@ -96,7 +96,7 @@ void Interaction_Model_EHC::c_VVS(Single_Vertex* vertex,int& vanz)
     vertex[vanz].Lorentz->SetParticleArg(0,2);     
 
     vertex[vanz].on      = 1;
-    vanz++;
+    vertex.push_back(Single_Vertex());vanz++;
   }
   Flavour flsh(kf::shgluon);
   // gluon h shgluon
@@ -124,14 +124,14 @@ void Interaction_Model_EHC::c_VVS(Single_Vertex* vertex,int& vanz)
 
     vertex[vanz].on      = 1;
     vertex[vanz].t       = -1;
-    vanz++;
+    vertex.push_back(Single_Vertex());vanz++;
   }
 
 }
  
 
 
-void Interaction_Model_EHC::c_VVVV(Single_Vertex* vertex,int& vanz)
+void Interaction_Model_EHC::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Kabbala kcpl0,kcpl1; 
   
@@ -163,7 +163,7 @@ void Interaction_Model_EHC::c_VVVV(Single_Vertex* vertex,int& vanz)
   vertex[vanz].Lorentz->SetParticleArg(0,1,2);     
 
   vertex[vanz].on      = 1;
-  vanz++;
+  vertex.push_back(Single_Vertex());vanz++;
 
   Flavour flsh(kf::shgluon);
   kcpl0 = M_I*g3*g3*ghgg; 
@@ -202,5 +202,5 @@ void Interaction_Model_EHC::c_VVVV(Single_Vertex* vertex,int& vanz)
   
   vertex[vanz].on              = 1;
   vertex[vanz].t               = 1;
-  vanz++;
+  vertex.push_back(Single_Vertex());vanz++;
 }
