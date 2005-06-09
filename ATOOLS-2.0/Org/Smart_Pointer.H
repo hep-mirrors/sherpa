@@ -233,6 +233,8 @@ namespace ATOOLS {
     used with the Delete() method must have the 
     INSTANTIATE_SMART_POINTER(Class_Name) statement in its C-file
     in order to instantiate the appropriate delete methods.
+    Idem applies to the output operator << and 
+    the Print(..) method, respectively,
   */
 
 #ifdef _CPP_IOSTREAM
