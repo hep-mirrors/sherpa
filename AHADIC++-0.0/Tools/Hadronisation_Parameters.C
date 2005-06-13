@@ -131,22 +131,26 @@ Hadronisation_Parameters::Hadronisation_Parameters() :
 
 Hadronisation_Parameters::~Hadronisation_Parameters() {
   if (p_constituents!=NULL) { delete p_constituents; p_constituents=NULL; }
-  if (p_multiplets!=NULL)   { delete p_multiplets; p_multiplets=NULL; }
+  if (p_multiplets!=NULL)   { delete p_multiplets;   p_multiplets=NULL;   }
   if (p_transitions1!=NULL) { delete p_transitions1; p_transitions1=NULL; }
+  if (p_transitions2!=NULL) { delete p_transitions2; p_transitions2=NULL; }
 }
 
 void Hadronisation_Parameters::Init(string dir,string file)
 {
-  cout<<"In Hadronisation_Parameters::Init("<<dir<<file<<")"<<endl;
+  msg.Tracking()<<"In Hadronisation_Parameters::Init("<<dir<<file<<")"<<endl;
   ReadParameters(dir,file);
   p_constituents = new Constituents(true);
-  p_constituents->PrintConstituents();
+  if (msg.LevelIsTracking()) p_constituents->PrintConstituents();
 
   p_multiplets   = new All_Hadron_Multiplets();
-  p_multiplets->PrintWaveFunctions(); 
+  if (msg.LevelIsTracking()) p_multiplets->PrintWaveFunctions(); 
 
   p_transitions1 = new All_Single_Transitions(p_multiplets);
-  p_transitions1->PrintSingleTransitions(); 
+  if (msg.LevelIsTracking()) p_transitions1->PrintSingleTransitions(); 
+
+  p_transitions2 = new All_Double_Transitions(p_multiplets);
+  if (msg.LevelIsTracking()) p_transitions2->PrintDoubleTransitions(); 
 }
   
 void Hadronisation_Parameters::ReadParameters(string dir,string file)

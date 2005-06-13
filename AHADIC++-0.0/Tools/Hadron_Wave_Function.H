@@ -16,6 +16,7 @@ namespace AHADIC {
   private:
     ATOOLS::Flavour m_hadron;
     int             m_spin, m_kfcode;
+    double          m_mpletwt;
     WFcomponent     m_waves;
     bool            m_barrable;
   public:
@@ -25,16 +26,18 @@ namespace AHADIC {
 
     void AddToWaves(FlavPair *,double);
     Hadron_Wave_Function * Anti();
-    double Weight(ATOOLS::Flavour,ATOOLS::Flavour);
+    double WaveWeight(ATOOLS::Flavour,ATOOLS::Flavour);
 
-    ATOOLS::Flavour SetFlavour(ATOOLS::Flavour & flav) { m_hadron = flav;    }
-    ATOOLS::Flavour GetFlavour() const                 { return m_hadron;    }
-    int  KfCode() const                                { return m_kfcode;    }
-    void SetKfCode(const int _kfcode)                  { m_kfcode = _kfcode; }
-    int  Spin() const                                  { return m_spin;      }
-    void SetSpin(const int _spin)                      { m_spin   = _spin;   }
-    WFcomponent * GetWaves()                           { return &m_waves;    }
-    bool ExistAnti()                                   { return m_barrable;  }
+    double MultipletWeight()                           { return m_mpletwt;    }
+    void SetMultipletWeight(const double wt)           { m_mpletwt = wt;      }
+    ATOOLS::Flavour SetFlavour(ATOOLS::Flavour & flav) { m_hadron  = flav;    }
+    ATOOLS::Flavour GetFlavour() const                 { return m_hadron;     }
+    int  KfCode() const                                { return m_kfcode;     }
+    void SetKfCode(const int _kfcode)                  { m_kfcode  = _kfcode; }
+    int  Spin() const                                  { return m_spin;       }
+    void SetSpin(const int _spin)                      { m_spin    = _spin;   }
+    WFcomponent * GetWaves()                           { return &m_waves;     }
+    bool ExistAnti()                                   { return m_barrable;   }
 
     friend std::ostream & operator<<(std::ostream & s, Hadron_Wave_Function & wf);
   };

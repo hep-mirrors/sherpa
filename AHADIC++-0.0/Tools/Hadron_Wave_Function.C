@@ -6,12 +6,12 @@ using namespace ATOOLS;
 using namespace std;
 
 Hadron_Wave_Function::Hadron_Wave_Function() :
-  m_hadron(Flavour(kf::none)), m_spin(-1), m_kfcode(0), m_barrable(false)
+  m_hadron(Flavour(kf::none)), m_spin(-1), m_kfcode(0), m_mpletwt(1.), m_barrable(false)
 { }
 
 Hadron_Wave_Function::Hadron_Wave_Function(const ATOOLS::Flavour & _hadron) :
   m_hadron(_hadron), m_spin(_hadron.IntSpin()), 
-  m_kfcode(_hadron.Kfcode()), m_barrable(false)
+  m_kfcode(_hadron.Kfcode()), m_mpletwt(1.), m_barrable(false)
 { }
 
 Hadron_Wave_Function::~Hadron_Wave_Function() 
@@ -51,7 +51,7 @@ Hadron_Wave_Function * Hadron_Wave_Function::Anti() {
   return wf;
 }
 
-double Hadron_Wave_Function::Weight(ATOOLS::Flavour fl1,ATOOLS::Flavour fl2) 
+double Hadron_Wave_Function::WaveWeight(ATOOLS::Flavour fl1,ATOOLS::Flavour fl2) 
 {
   FlavPair * fpair;
   for (WFcompiter wit=m_waves.begin();wit!=m_waves.end();wit++) {

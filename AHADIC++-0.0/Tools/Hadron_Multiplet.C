@@ -14,6 +14,7 @@ All_Hadron_Multiplets::All_Hadron_Multiplets() :
   ConstructWaveFunctions();
   ConstructAntiWaveFunctions();
   CreateMultiplets();
+  AddMultipletWeights();
 }
 
 All_Hadron_Multiplets::~All_Hadron_Multiplets() 
@@ -63,7 +64,6 @@ void All_Hadron_Multiplets::ConstructWaveFunctions()
       wavefunction->SetFlavour(hadron);
       wavefunction->SetKfCode(kfcode);
       (*p_wavefunctions)[hadron] = wavefunction;
-      cout<<"Look : "<<(*wavefunction);
     }
   }
 }
@@ -150,18 +150,20 @@ Hadron_Wave_Function * All_Hadron_Multiplets::ConstructMesonWaveFunction(int spi
   return wavefunction;
 }
 
-Hadron_Wave_Function * All_Hadron_Multiplets::ConstructBaryonWaveFunction(int spin,int lp,int fl1,int fl2,int fl3) 
+Hadron_Wave_Function * All_Hadron_Multiplets::ConstructBaryonWaveFunction(int spin,int lp,
+									  int fl1,int fl2,int fl3) 
 {
+  // Baryon wave functions according to Lichtenberg, Namgung, Wills & Predazzi
   if (spin==0) return NULL;
 
   int wf=-1;
   int pos1,pos2,pos3,di;
 
-  cout<<"Check "<<spin<<" "<<fl1<<" "<<fl2<<" "<<fl3<<" -> "<<wf<<endl;
   if (spin==2 && (fl1<fl2 || fl2<fl3)) {
     // Octet
     if (fl1==fl2 && fl1<fl3) {
-      wf   = 81;
+      if (fl3>3) wf = 810;
+            else wf = 81;
       pos1 = fl1; pos2 = fl2; pos3 = fl3; 
     }
     else if (fl1<fl2 && fl2==fl3) {
@@ -169,18 +171,121 @@ Hadron_Wave_Function * All_Hadron_Multiplets::ConstructBaryonWaveFunction(int sp
       pos1 = fl2; pos2 = fl3; pos3 = fl1; 
     }
     else if (fl1<fl2 && fl2<fl3) {
-      wf   = 82;
+      if (fl3>3) wf = 820;
+            else wf = 82;
       pos1 = fl1; pos2 = fl2; pos3 = fl3; 
     }
     else if (fl1>fl2 && fl2<fl3) {
-      wf   = 83;
+      if (fl3>3) wf = 830;
+            else wf = 83;
       pos1 = fl1; pos2 = fl2; pos3 = fl3; 
     }
   }
+  else if (spin==4) {
+    // Decuplet
+    if (fl1==fl2 && fl2==fl3) {
+      wf   = 101;
+      pos1 = pos2 = pos3 = fl1;
+    }
+    else if (fl1<fl2 && fl2==fl3) {
+      wf   = 102;
+      pos1 = fl1; pos2 = fl2; pos3 = fl3;
+    }
+    else if (fl1==fl2 && fl2<fl3) {
+      if (fl3>3) wf = 1020;
+            else wf = 102;
+      pos1 = fl3; pos2 = fl1; pos3 = fl2;
+    }
+    else if (fl1<fl2 && fl2<fl3) {
+      if (fl3>3) wf = 1030;
+            else wf = 103;
+      pos1 = fl3; pos2 = fl2; pos3 = fl1;
+    }
+  }
+  //cout<<"Check "<<spin<<" "<<fl1<<" "<<fl2<<" "<<fl3<<" -> "<<wf<<endl;
 
   Hadron_Wave_Function * wavefunction = new Hadron_Wave_Function;
   FlavPair             * pair;
   switch (wf) {
+  case 1020:
+    pair         = new FlavPair;
+    pair->first  = Flavour(kf::code(pos1));
+    pair->second = Flavour(kf::code(pos2*1000+pos3*100+3));
+    wavefunction->AddToWaves(pair,1.);
+    break;
+  case 1030:
+    pair         = new FlavPair;
+    pair->first  = Flavour(kf::code(pos1));
+    pair->second = Flavour(kf::code(pos2*1000+pos3*100+3));
+    wavefunction->AddToWaves(pair,1.);
+    break;
+  case 810:
+    pair         = new FlavPair;
+    pair->first  = Flavour(kf::code(pos3));
+    pair->second = Flavour(kf::code(pos1*1000+pos2*100+3));
+    wavefunction->AddToWaves(pair,+1.);
+    break;
+  case 820:
+  case 830:
+    if (wf==82) di=+1;
+           else di=-1;
+    pair         = new FlavPair;
+    pair->first  = Flavour(kf::code(pos3));
+    pair->second = (pos1>pos2)? Flavour(kf::code(pos1*1000+pos2*100+2+di)) :
+                                Flavour(kf::code(pos2*1000+pos1*100+2+di));
+    wavefunction->AddToWaves(pair,+1.);
+    break;
+  case 100:
+    pair         = new FlavPair;
+    pair->first  = Flavour(kf::code(pos1));
+    pair->second = Flavour(kf::code(pos3*1000+pos2*100+3));
+    wavefunction->AddToWaves(pair,+1./sqrt(3.));
+    pair         = new FlavPair;
+    pair->first  = Flavour(kf::code(pos2));
+    pair->second = (pos1>pos3)? Flavour(kf::code(pos1*1000+pos3*100+3)) : 
+                                Flavour(kf::code(pos3*1000+pos1*100+3)); 
+    wavefunction->AddToWaves(pair,+1./sqrt(3.));
+    pair         = new FlavPair;
+    pair->first  = Flavour(kf::code(pos3));
+    pair->second = Flavour(kf::code(pos1*1000+pos2*100+3)); 
+    wavefunction->AddToWaves(pair,+1./sqrt(3.));
+    break;    
+  case 101:
+    pair         = new FlavPair;
+    pair->first  = Flavour(kf::code(pos1));
+    pair->second = Flavour(kf::code(pos3*1000+pos2*100+3));
+    wavefunction->AddToWaves(pair,1.);
+    break;
+  case 102:
+    pair         = new FlavPair;
+    pair->first  = Flavour(kf::code(pos1));
+    pair->second = Flavour(kf::code(pos2*1000+pos3*100+3));
+    wavefunction->AddToWaves(pair,1./sqrt(3.));
+    pair         = new FlavPair;
+    pair->first  = Flavour(kf::code(pos2));
+    pair->second = (pos1>pos3) ? Flavour(kf::code(pos1*1000+pos3*100+3)) :
+                                 Flavour(kf::code(pos3*1000+pos1*100+3));
+    wavefunction->AddToWaves(pair,1./sqrt(3.));
+    pair         = new FlavPair;
+    pair->first  = Flavour(kf::code(pos3));
+    pair->second = (pos1>pos2) ? Flavour(kf::code(pos1*1000+pos2*100+3)) :
+                                 Flavour(kf::code(pos2*1000+pos1*100+3));
+    wavefunction->AddToWaves(pair,1./sqrt(3.));
+    break;
+  case 103:
+    pair         = new FlavPair;
+    pair->first  = Flavour(kf::code(pos1));
+    pair->second = Flavour(kf::code(pos2*1000+pos3*100+3));
+    wavefunction->AddToWaves(pair,1./sqrt(3.));
+    pair         = new FlavPair;
+    pair->first  = Flavour(kf::code(pos2));
+    pair->second = Flavour(kf::code(pos1*1000+pos3*100+3));
+    wavefunction->AddToWaves(pair,1./sqrt(3.));
+    pair         = new FlavPair;
+    pair->first  = Flavour(kf::code(pos3));
+    pair->second = Flavour(kf::code(pos1*1000+pos2*100+3));
+    wavefunction->AddToWaves(pair,1./sqrt(3.));
+    break;
   case 81:
     pair         = new FlavPair;
     pair->first  = Flavour(kf::code(pos3));
@@ -238,6 +343,7 @@ void All_Hadron_Multiplets::ConstructAntiWaveFunctions()
   Hadron_Wave_Function * anti; 
   for (Hadron_WF_Miter wfm=p_wavefunctions->begin();wfm!=p_wavefunctions->end();wfm++) {
     anti = wfm->second->Anti();
+    //cout<<"Anti wave function for "<<wfm->first<<" : "<<anti<<endl;
     if (anti!=NULL) (*p_wavefunctions)[wfm->first.Bar()] = anti;
   } 
 }
@@ -264,30 +370,87 @@ void All_Hadron_Multiplets::CreateMultiplets()
   for (Hadron_WF_Miter wfm=p_wavefunctions->begin();wfm!=p_wavefunctions->end();wfm++) {
     kfcode = wfm->second->KfCode();
     spin   = wfm->second->Spin();
-    if (kfcode<1000) {
-      mpletiter = p_multiplets->find(spin);
-      if (mpletiter!=p_multiplets->end()) {
-	//msg.Debugging()<<"Add "<<wfm->first<<" to "<<mpletiter->second->m_name<<endl;
-	mpletiter->second->m_elements.insert(wfm->first);
-      }
-      else {
-	multiplet = new Hadron_Multiplet;
-	multiplet->m_weight = 1.;
+    if (spin%2==0) {
+      if (abs(kfcode)>4000 && abs(kfcode)<10000) spin += 10;
+      if (abs(kfcode)>5000 && abs(kfcode)<10000) spin += 10;
+      if (wfm->first.IsAnti()) spin = -spin;
+    }
+    else {
+      if (abs(kfcode)>400 && abs(kfcode)<1000) spin += 10;
+      if (abs(kfcode)>500 && abs(kfcode)<1000) spin += 10;
+    }
+    mpletiter = p_multiplets->find(spin);
+    //cout<<"Look for : "<<wfm->first<<" to "<<spin<<" / "<<kfcode<<endl;
+    if (mpletiter!=p_multiplets->end()) {
+      //msg.Debugging()<<"Add "<<wfm->first<<" to "<<mpletiter->second->m_name<<endl;
+      mpletiter->second->AddToElements(wfm->first);
+    }
+    else {
+      multiplet = new Hadron_Multiplet;
+      if (dabs(kfcode)<1000) {
 	switch (spin) {
-	case 1:  multiplet->m_name=string("Pseudoscalars (0-)"); break;
-	case 3:  multiplet->m_name=string("Vectors       (1+)"); break;
-	case 5:  multiplet->m_name=string("Tensors       (2-)"); break;
-	case 7:  multiplet->m_name=string("Tensors       (3+)"); break;
-	default: multiplet->m_name=string("Don't know   ");      break;
+	case 1:  multiplet->SetName(string("Pseudoscalars (0-)")); break;
+	case 3:  multiplet->SetName(string("Vectors       (1+)")); break;
+	case 5:  multiplet->SetName(string("Tensors       (2-)")); break;
+	case 7:  multiplet->SetName(string("Tensors       (3+)")); break;
+	default: multiplet->SetName(string("Don't know        ")); break;
 	}
-	multiplet->m_elements.insert(wfm->first);
+	multiplet->AddToElements(wfm->first);
+	(*p_multiplets)[spin] = multiplet;
+      }
+      else if (dabs(kfcode)<10000) {
+	//cout<<"New multiplet: "<<wfm->first<<" to "<<spin<<endl;
+	switch (spin) {
+	case   2:  multiplet->SetName(string("Nucleons        (1/2)")); break;
+	case   4:  multiplet->SetName(string("Decuplet        (3/2)")); break;
+	case  12:  multiplet->SetName(string("Nucleons_c      (1/2)")); break;
+	case  14:  multiplet->SetName(string("Decuplet_c      (3/2)")); break;
+	case  22:  multiplet->SetName(string("Nucleons_b      (1/2)")); break;
+	case  24:  multiplet->SetName(string("Decuplet_b      (3/2)")); break;
+	case  -2:  multiplet->SetName(string("Anti-Nucleons   (1/2)")); break;
+	case  -4:  multiplet->SetName(string("Anti-Decuplet   (3/2)")); break;
+	case -12:  multiplet->SetName(string("Anti-Nucleons_c (1/2)")); break;
+	case -14:  multiplet->SetName(string("Anti-Decuplet_c (3/2)")); break;
+	case -22:  multiplet->SetName(string("Anti-Nucleons_c (1/2)")); break;
+	case -24:  multiplet->SetName(string("Anti-Decuplet_c (3/2)")); break;
+	default:   multiplet->SetName(string("Don't know     (anti)")); break;
+	}
+	multiplet->AddToElements(wfm->first);
 	(*p_multiplets)[spin] = multiplet;
       }
     }
   }
 } 
 
-Hadron_Wave_Function * All_Hadron_Multiplets::GetWaveFunction(ATOOLS::Flavour flav) {
+void All_Hadron_Multiplets::AddMultipletWeights()
+{
+  Hadron_Multiplet     * mplet;
+  Hadron_Wave_Function * wave;
+  int spin;
+  for (Hadron_Multiplet_Miter miter=p_multiplets->begin();
+       miter!=p_multiplets->end();miter++) {
+    spin  = abs(miter->first);
+    if (spin>20) spin-=20;
+    if (spin>10) spin-=10;
+    mplet = miter->second;
+    miter->second->SetSpinWeight(double(spin));
+    miter->second->SetExtraWeight(1.);
+    miter->second->SetWeight();
+    for (FlSetIter flit=miter->second->GetElements()->begin();
+	 flit!=miter->second->GetElements()->end();flit++) {
+      wave = GetWaveFunction((*flit));
+      if (wave!=NULL) wave->SetMultipletWeight(miter->second->Weight());
+      else {
+	msg.Error()<<"ERROR in All_Hadron_Multiplets::AddMultipletWeights():"<<endl
+		   <<"   No wave function found for "<<(*flit)
+		   <<",continue and hope for the best."<<endl;
+      }
+    }
+  }
+}
+
+Hadron_Wave_Function * All_Hadron_Multiplets::GetWaveFunction(ATOOLS::Flavour flav) 
+{
   Hadron_WF_Miter wfm=p_wavefunctions->find(flav);
   if (wfm!=p_wavefunctions->end()) return wfm->second;
   return NULL;
@@ -297,14 +460,31 @@ void All_Hadron_Multiplets::PrintWaveFunctions()
 {
   Hadron_WF_Miter        wfm;
   Hadron_Wave_Function * wf;
+  map<Flavour,double> checkit;
   for (Hadron_Multiplet_Miter mplet=p_multiplets->begin();mplet!=p_multiplets->end();mplet++) {
     msg.Out()<<"-----------------------------------------------"<<endl
-	     <<" "<<mplet->second->m_name<<" with "
-	     <<mplet->second->m_elements.size()<<" elements: "<<endl;
-    for (FlSetIter fl=mplet->second->m_elements.begin();
-	 fl!=mplet->second->m_elements.end();fl++) {
+	     <<" "<<mplet->second->Name()<<" with "<<mplet->second->Size()<<" elements: "<<endl;
+    for (FlSetIter fl=mplet->second->GetElements()->begin();
+	 fl!=mplet->second->GetElements()->end();fl++) {
       wfm = p_wavefunctions->find((*fl));
       if (wfm!=p_wavefunctions->end()) { wf = wfm->second; msg.Out()<<(*wf); }
+      
+      if (mplet->second->Name()==string("Nucleons        (1/2)")) {
+       	WFcomponent * wfc = wf->GetWaves();
+       	for (WFcompiter cit = wfc->begin();cit!=wfc->end();cit++) {
+       	  if (checkit.find(cit->first->first)==checkit.end()) 
+       	    checkit[cit->first->first] = sqr(cit->second);
+       	  else checkit[cit->first->first] += sqr(cit->second);
+	  if (checkit.find(cit->first->second)==checkit.end()) 
+       	    checkit[cit->first->second] = sqr(cit->second);
+	  else checkit[cit->first->second] += sqr(cit->second);
+       	}
+      }
+    } 
+    if (mplet->second->Name()==string("Nucleons        (1/2)")) {
+      msg.Out()<<"Weight of individual components in "<<mplet->second->Name()<<" : "<<endl;
+      for (map<Flavour,double>::iterator it=checkit.begin();it!=checkit.end();it++) 
+       	msg.Out()<<"     -> "<<it->first<<" : "<<it->second<<endl;
     }
     msg.Out()<<"-----------------------------------------------"<<endl;
   }

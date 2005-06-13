@@ -15,10 +15,10 @@ Gluon_Decayer::Gluon_Decayer()
        fdit!=hadpars.GetConstituents()->CCMap.end();fdit++) {
     if (2.*fdit->second->Mass()<gluonmass && !fdit->first.IsAnti()) {
       m_options.insert(std::make_pair(fdit->first,new DecaySpecs()));
-      msg.Out()<<"Insert option : g->"<<fdit->first<<" "<<fdit->first.Bar()<<std::endl;
+      msg.Tracking()<<"Insert option : g->"<<fdit->first<<" "<<fdit->first.Bar()<<std::endl;
     }
   }
-  msg.Out()<<"------------- END OF GLUON_DECAYER --------------"<<std::endl;
+  msg.Tracking()<<"------------- END OF GLUON_DECAYER --------------"<<std::endl;
 }
 
 Gluon_Decayer::~Gluon_Decayer() {

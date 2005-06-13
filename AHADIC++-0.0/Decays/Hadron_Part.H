@@ -27,8 +27,9 @@ namespace AHADIC {
     hadsel::code  m_hadsel;
     
     All_Single_Transitions * p_stransitions;
+    All_Double_Transitions * p_dtransitions;
   public:
-    Hadron_Part(All_Single_Transitions * trans) : p_stransitions(trans) {}
+    Hadron_Part();
     ~Hadron_Part() {}
     virtual void RedoDecay(Cluster *,Part_List *,int,
 			   ATOOLS::Flavour &,ATOOLS::Flavour &) {}
@@ -40,14 +41,14 @@ namespace AHADIC {
     void CheckDecayKinematics(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &);
     void CheckDecayKinematics(Cluster *,Cluster *,ATOOLS::Flavour &);
   public:
-    Isotropic(All_Single_Transitions *);
+    Isotropic();
     ~Isotropic() {}
     void RedoDecay(Cluster *,Part_List *,int,ATOOLS::Flavour &,ATOOLS::Flavour &);
   };
 
   class Retain : public Hadron_Part {
   public:
-    Retain(All_Single_Transitions * trans) : Hadron_Part(trans) {}
+    Retain() {}
     ~Retain() {}
     void RedoDecay(Cluster *,Part_List *,int,ATOOLS::Flavour &,ATOOLS::Flavour &) {}
   };

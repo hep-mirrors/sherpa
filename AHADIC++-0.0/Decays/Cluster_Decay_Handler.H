@@ -32,6 +32,8 @@ namespace AHADIC {
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
     bool DecayIt(Cluster *);
+    void InitializeAnalysis();
+    void AnalyseThis(ATOOLS::Blob *);
   public:
     Cluster_Decay_Handler(Cluster_Transformer *,bool=false);
     ~Cluster_Decay_Handler();

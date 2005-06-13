@@ -9,18 +9,17 @@ using namespace ATOOLS;
 using namespace std;
 
 
-Isotropic::Isotropic(All_Single_Transitions * trans) :
-  Hadron_Part(trans)
+Hadron_Part::Hadron_Part() :
+  p_stransitions(hadpars.GetSingleTransitions()),
+  p_dtransitions(hadpars.GetDoubleTransitions())   
+{ }
+
+Isotropic::Isotropic() : Hadron_Part()
 {
   m_cht    = chtrans::CH_incl; 
-  m_hadsel = hadsel::keep;
-
+  m_hadsel = hadsel::newpair;
 
   if (m_cht==chtrans::HH_only)   m_hadsel = hadsel::newpair;
-  if (m_hadsel==hadsel::newpair) { 
-    // must produce a double transition map. 
-    abort();
-  }
 }
 
 void Isotropic::RedoDecay(Cluster * cluster,Part_List * pl,int mode,Flavour & had1,Flavour & had2)
