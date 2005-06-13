@@ -1,106 +1,127 @@
-#include "Cluster.H"
-#include "Clusters_2_Hadrons.H"
-#include "Cluster_Decay_Handler.H"
-#include "Cluster_Formation_Handler.H"
-
-
-#include "Particle_List.H"
-#include "Particle.H"
+#include "Ahadic.H"
+#include "Apacic.H"
+#include "Tree.H"
+#include "Knot.H"
+#include "Model_Base.H"
+#include "Standard_Model.H"
+#include "ISR_Base.H"
+#include "ISR_Handler.H"
+#include "Intact.H"
 #include "Blob_List.H"
-#include "Blob.H"
-#include "Rambo.H"
-#include "Vector.H"
+#include "Particle_List.H"
+#include "Run_Parameter.H"
+#include "Data_Read.H"
 #include "Random.H"
+
 
 using namespace AHADIC;
 using namespace ATOOLS;
+using namespace std;
+
 
 int main(int argc,char* argv[]) 
 {  
-  ATOOLS::ParticleInit(std::string("./"));
+  rpa.Init(string("./"),string("Run.dat"),argc,argv);
+  ParticleInit(string("./"));
+  Ahadic * ahadic = new Ahadic(string("./"),string("Cluster.dat"),false);
 
-  Particle_List * pl  = new Particle_List;
-  Blob_List     * bl  = new Blob_List;
-  Blob          * blob;
-  Cluster_List  * clusters;
+  MODEL::Model_Base * model     = new MODEL::Standard_Model(string("./"),
+							    string("Model.dat"));
+  PDF::ISR_Base    ** isrbases  = new PDF::ISR_Base*[2];
+  isrbases[0]                   = new PDF::Intact(Flavour(kf::e));     
+  isrbases[1]                   = new PDF::Intact(Flavour(kf::e).Bar());     
+  PDF::ISR_Handler  * isr       = new PDF::ISR_Handler(isrbases);
 
-  AHADIC::hadpars.Init(std::string("./"),std::string("Cluster.dat"));
-  Clusters_2_Hadrons        * c2hadrons    = new Clusters_2_Hadrons();
-  Cluster_Formation_Handler * cformer      = new Cluster_Formation_Handler(c2hadrons);
-  Cluster_Decay_Handler     * cdecayer     = new Cluster_Decay_Handler(c2hadrons);
+  Data_Read         * dataread  = new Data_Read(string("./")+string("Shower.dat"));
+  APACIC::Apacic    * apacic    = new APACIC::Apacic(isr,model,2,false,true,dataread);
+  delete dataread;
 
-  int nin = 2, nout = 2+8; 
+  APACIC::Tree      * tree      = apacic->FinTree();
+  APACIC::Knot      * mo;
 
-  Flavour * flavs   = new Flavour[nin+nout];
-  flavs[0]          = Flavour(kf::e);     
-  flavs[1]          = Flavour(kf::e).Bar();
-  flavs[nin]        = Flavour(kf::c);
-  flavs[nin+nout-1] = Flavour(kf::c).Bar();
-  for (int i=nin+1;i<nin+nout-1;i++) {
-    flavs[i]        = Flavour(kf::gluon);
-  }
-  PHASIC::Rambo rambo(nin,nout,flavs);
-  Vec4D * vectors     = new Vec4D[nin+nout];
-  vectors[0]          = Vec4D(45.6,0.,0.,45.6);
-  vectors[1]          = Vec4D(45.6,0.,0.,-45.6);
+  Blob              * blob;
+  Blob_List         * blobs     = new Blob_List;
+  Particle_List     * particles = new Particle_List;
 
-  for (int nevents=0;nevents<2;nevents++) {
-    Blob     * hard = new Blob;
-    Particle * part;
-    for (int i=0;i<nin;i++) {
-      part = new Particle(0,flavs[i],vectors[i]);
-      part->SetNumber(0);
-      hard->AddToInParticles(part);
-    }
-    rambo.GeneratePoint(vectors,NULL);
-    int col1 = 500;
-    for (int i=nin;i<nin+nout;i++) {
-      part = new Particle(0,flavs[i],vectors[i]);
-      part->SetNumber(0);
-      if (flavs[i].IsQuark() && !flavs[i].IsAnti()) part->SetFlow(1,col1);  
-      if (flavs[i].IsQuark() &&  flavs[i].IsAnti()) part->SetFlow(2,col1++);  
-      if (flavs[i].IsGluon()) {
-	part->SetFlow(2,col1); 
-	part->SetFlow(1,++col1); 
-      } 
-      hard->AddToOutParticles(part);
-      pl->push_back(part);
-    }
-    hard->SetStatus(1);
-    hard->SetId();
-    hard->SetType(btp::FS_Shower);
-    bl->push_back(hard);
-    
-    blob     = cformer->FormClusters(bl);
-    clusters = cformer->GetClusters();
-    c2hadrons->Transition(clusters,blob);
-    cdecayer->DecayThem(clusters,blob);
-    std::cout<<(*bl)<<std::endl;
+  Flavour mo_flavs[2];
+  double p, E = 45.6, E2 = 4.*E*E, costh,phi;
+  Vec3D pvec;
 
-    Vec4D check = Vec4D(0.,0.,0.,0.);
-    for (int i=0;i<blob->NInP();i++) check = check+blob->InParticle(i)->Momentum();
-    std::cout<<check<<std::endl;
-    check = Vec4D(0.,0.,0.,0.);
-    for (int i=0;i<blob->NOutP();i++) check = check+blob->OutParticle(i)->Momentum();
-    std::cout<<check<<std::endl;
+  msg.Out()<<"---------------------- Generate "<<rpa.gen.NumberOfEvents()
+	   <<" events -----------------------."<<endl;
+  for (int i=1;i<=rpa.gen.NumberOfEvents();i++) {
+    if (i%1000==0) msg.Out()<<" "<<i<<" th event "<<std::endl;
+    blobs->Clear();
+    particles->clear();
 
-    if (!(*bl).empty()) {
-      for (Blob_List::iterator blit=(*bl).begin();blit!=(*bl).end();++blit) delete (*blit);
-      (*bl).clear();
-    }
-
-    if (Particle::Counter()>2 || Blob::Counter()!=0) 
-      msg.Error()<<"Error in Main while cleaning up the event : "<<std::endl
-		 <<"   After event : "<<Particle::Counter()<<" / "<<Blob::Counter()
-		 <<" particles / blobs undeleted !"<<std::endl
-		 <<"   Continue and hope for the best."<<std::endl;
     Blob::Reset();
     Particle::Reset();
     Flow::ResetCounter();
+
+    apacic->PrepareTrees();
+
+    mo          = tree->NewKnot();
+    mo->t       = E2;
+    mo->E2      = E2;
+    mo->maxpt2  = 0.;
+    mo->z       = 0.5;
+    mo->costh   = -1.; 
+    mo->thcrit  = 1.e6;
+    mo->phi     = 2.*M_PI*ran.Get();
+    mo->stat    = 1;  
+    *(mo->part) = Particle(1,Flavour(kf::photon),Vec4D(2.*E,0.,0.,0.));
+    mo->part->SetStatus(2);
+    mo->part->SetInfo('M');
+
+    mo_flavs[0] = Flavour(kf::code(1+int(ran.Get()*3.)));   
+    mo_flavs[1] = mo_flavs[0].Bar();
+    p           = E; //sqrt(E2-sqr(mo_flavs[0].PSMass()));
+    costh       = 1.-2.*ran.Get();
+    phi         = 2.*M_PI*ran.Get();
+    pvec        = p*Vec3D(sqrt(1.-sqr(costh))*sin(phi),sqrt(1.-sqr(costh))*cos(phi),costh);
+
+    mo->left             = tree->NewKnot();
+    mo->left->prev       = mo;
+    mo->left->stat       = 3;    
+    mo->left->t          = mo->t;
+    mo->left->tout       = sqr(mo_flavs[0].PSMass());
+    mo->left->maxpt2     = 0.;
+    mo->left->E2         = E*E;
+    mo->left->thcrit     = mo->thcrit;
+    *(mo->left->part)    = Particle(2,mo_flavs[0],Vec4D(E,pvec));
+    mo->left->part->SetStatus(1);
+    mo->left->part->SetInfo('H');
+    mo->left->part->SetFlow(1,-1);
+ 
+    mo->right            = tree->NewKnot();
+    mo->right->prev      = mo;
+    mo->right->stat      = 3;     
+    mo->right->t         = mo->t;
+    mo->right->tout      = sqr(mo_flavs[1].PSMass());
+    mo->right->maxpt2    = 0.;
+    mo->right->E2        = E*E;
+    mo->right->thcrit    = mo->thcrit;
+    *(mo->right->part) = Particle(3,mo_flavs[1],Vec4D(E,-1.*pvec)); 
+    mo->right->part->SetStatus(1);
+    mo->right->part->SetInfo('H');
+    mo->right->part->SetFlow(2,mo->left->part->GetFlow(1));
+    
+    blob        = new Blob();
+    blob->SetType(btp::ME_PS_Interface_FS);
+    blob->SetId();
+    blobs->push_back(blob);
+    blob->AddToInParticles(new Particle((*mo->part)));
+
+    if (apacic->PerformShowers(false,true,0,0,1.,1.,1.)) {
+      apacic->ExtractPartons(false,true,blobs,particles);
+      ahadic->Hadronize(blobs);
+    }
   }
 
-
-  delete cformer;
-
-  std::cout<<"Finished."<<std::endl;
+  delete ahadic;
+  delete tree;
+  delete apacic;
+  delete isr;
+  delete model;
 }
+
