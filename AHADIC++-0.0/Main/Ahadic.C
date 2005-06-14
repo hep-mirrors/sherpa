@@ -1,38 +1,31 @@
 #include "Ahadic.H"
+#include "Cluster.H"
+#include "Message.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
+using namespace std;
 
-Ahadic::Ahadic(std::string _m_path,std::string _m_file) : 
-  m_path(_m_path),m_file(_m_file), 
-  p_clusters(NULL), p_constituents(NULL), p_hadrons(NULL),
-  p_c2hadrons(NULL), p_cformer(NULL), p_cdecayer(NULL)
+
+Ahadic::Ahadic(string path,string file,bool ana) 
 {
-  hadpars.Init(m_path,m_file);
-  p_c2hadrons    = new Clusters_2_Hadrons();
-  p_cformer      = new Cluster_Formation_Handler(p_c2hadrons);
-  p_cdecayer     = new Cluster_Decay_Handler(p_c2hadrons);
-};
+  hadpars.Init(path,file);
 
-
-bool Ahadic::Hadronize(ATOOLS::Blob_List *bloblist,
-		       ATOOLS::Particle_List *pl)
-{ 
-  //std::cout<<"In Ahadic::Hadronize("<<bloblist->size()<<")"<<std::endl;
-  Blob * blob = p_cformer->FormClusters(bloblist);
-  //std::cout<<(*blob)<<std::endl;
-  p_clusters  = p_cformer->GetClusters();
-  p_c2hadrons->Transition(p_clusters,blob);
-  p_cdecayer->DecayThem(p_clusters,blob);
-  //std::cout<<(*bloblist)<<std::endl;
-  /*
-    Vec4D check = Vec4D(0.,0.,0.,0.);
-    for (int i=0;i<blob->NInP();i++) check = check+blob->InParticle(i)->Momentum();
-    std::cout<<check<<std::endl;
-    check = Vec4D(0.,0.,0.,0.);
-    for (int i=0;i<blob->NOutP();i++) check = check+blob->OutParticle(i)->Momentum();
-    std::cout<<check<<std::endl;
-  */
-  return true; 
+  p_cformhandler = new Cluster_Formation_Handler(ana);
+  p_cdechandler  = new Cluster_Decay_Handler(p_cformhandler->GetClusterTransformer(),ana);
+  msg.Tracking()<<"Initialisation of Ahadic complete."<<endl;
 }
 
+Ahadic::~Ahadic() 
+{
+  if (p_cdechandler)  { delete p_cdechandler;  p_cdechandler=NULL;  }
+  if (p_cformhandler) { delete p_cformhandler; p_cformhandler=NULL; }
+}
+
+void Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
+{
+  msg.Out()<<"In Ahadic::Hadronize."<<endl;
+  Blob * blob = p_cformhandler->FormClusters(blobs);
+  p_cdechandler->DecayClusters(p_cformhandler->GetClusters(),blob);
+  //cout<<endl<<endl<<endl;
+}
