@@ -57,6 +57,9 @@ namespace MODEL {
     // inline functions
     inline int    Order()                { return m_order;      }
     inline double Beta0(const double q2) { return Beta0(Nf(q2)); }
+    inline double Beta1(const double q2) { return Beta1(Nf(q2)); }
+    inline double Beta2(const double q2) { return Beta2(Nf(q2)); }
+    inline double Beta3(const double q2) { return Beta3(Nf(q2)); }
     inline double AsMZ()                 { return m_as_MZ;      }
     inline double AsFixed()              { return m_defval;     }
     inline int    Nf(const double q2);
