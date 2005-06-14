@@ -30,6 +30,7 @@ void LesHouches_Interface::Run(std::string _model) {
   msg_Tracking()<<"Les Houches input file is: "<<m_dir+m_inputfile<<std::endl;
   
   p_reader = new ATOOLS::Data_Reader("=",";","#");
+  p_reader->SetAddCommandLine(false);
   p_reader->SetVectorType(p_reader->VHorizontal);
   p_reader->SetMatrixType(p_reader->MTransposed);
   p_reader->SetInputPath(m_dir);
@@ -164,7 +165,6 @@ void LesHouches_Interface::SetMasses() {
   }
   else msg.Error()<<std::endl<<"Could not read Block MASS from SLHA file: "
 		  <<m_dir+m_inputfile<<std::endl;
- 
 }
 
 void LesHouches_Interface::SetHiggsParameters() {
