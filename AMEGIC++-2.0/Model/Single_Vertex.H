@@ -5,22 +5,21 @@
 #include "Flavour.H"
 #include "Color_Function.H"
 #include "Lorentz_Function.H"
-#include <map>
-//#include <vector>
 
 
 namespace AMEGIC {
   class Single_Vertex {
   public:
-    short int on;                 // flag if vertex is on
-    std::string    Str;           // name of the verte
-    int nleg, ncf, nlf, t;        // number of legs, color functions, lorentz
-                                  //  functions and ?
-
-    ATOOLS::Flavour   in[4];      // flavours at the legs 
-    Complex   cpl[4];             // coupling constants
-    Color_Function*   Color;      // color structure 
-    Lorentz_Function* Lorentz;    // lorentz structure
+    int               nleg;        // number of legs
+    ATOOLS::Flavour   in[4];       // flavours at the legs 
+    short int         on;          // flag if vertex is on
+    std::string       Str;         // name of the vertex
+    int               ncf, nlf, t; // number of color functions, lorentz
+                                   //  functions and ?
+ 
+    Complex           cpl[4];      // coupling constants
+    Color_Function*   Color;       // color structure 
+    Lorentz_Function* Lorentz;     // lorentz structure
 
     // constructors and destructor
     Single_Vertex();
@@ -28,11 +27,11 @@ namespace AMEGIC {
     ~Single_Vertex(); 
     
     // operators
-    Single_Vertex&       operator=(const Single_Vertex&);
-    int                  operator==(Single_Vertex&);
+    Single_Vertex&       operator= (const Single_Vertex&);
+    const bool           operator==(const Single_Vertex&);
     friend std::ostream& operator<<(std::ostream&, const Single_Vertex&);
 };  
- 
+
 
  //Format of a Single_Vertex to transport via MPI:
   struct MPI_Single_Vertex {    
@@ -62,5 +61,5 @@ namespace AMEGIC {
     Lorentz structure, the left and right handed coupling constants and a
     representation by a charakter string.  
   */ 
-}
+} // end of namespace
 #endif

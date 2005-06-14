@@ -8,7 +8,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
 using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace ATOOLS;
@@ -22,13 +21,14 @@ Vertex::Vertex(Interaction_Model_Base * _model)
      use (roughly) notation and Vertices of J. Rosiek, PRD41 (1990) 3464
      pull out common factor -i of all Vertices
   */ 
- 
+
   // for backward compatibility there allways has to be a dummy vertex at
   // the end of the arrys that's overwritten, then.
   m_v.resize(1); m_v4.resize(1);
 
   int vanz  = 0;
   int vanz4 = 0;  
+
 
   msg_Debugging()<<"   Setting vertices..."<<endl;
   _model->c_FFV(m_v,vanz);
@@ -62,8 +62,9 @@ Vertex::Vertex(Interaction_Model_Base * _model)
   _model->c_SSST(m_v4,vanz4);
   msg_Debugging()<<"   SSST : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
 
-  m_v.resize(vanz);
-  m_v4.resize(vanz4);
+
+  // delete the dummy vertices at the end of the vectors
+  m_v.resize(vanz);  m_v4.resize(vanz4);
 
   m_nvertex  = m_v.size();
   m_n4vertex = m_v4.size();
@@ -76,7 +77,8 @@ Vertex::Vertex(Interaction_Model_Base * _model)
   msg_Tracking()<<"Initialized interaction model of AMEGIC : "<<m_nvertex+m_n4vertex<<" vertices."<<std::endl;
 }
 
-Vertex::~Vertex() {}
+Vertex::~Vertex() { }
+
 
 // General Methods
 void Vertex::GenerateVertex()
@@ -159,17 +161,23 @@ void Vertex::GenerateVertex()
   }
 }
 
+
 int Vertex::CheckExistence(Single_Vertex& probe)
-{ // checks if a vertex with the same flavours at the same legs allready
-  // exists; returns TRUE IF NOT.
+{ // Checks if a vertex with the same flavours at the same legs allready
+  // exists; RETURNS TRUE IF NO SUCH VERTEX EXISTS. 
 
-  // search both 3-leg and 4-leg vertices, return 0 if equal found
-  for (size_t i=0;i<m_v4.size();++i) if (probe==m_v4[i]) return 0;
-  for (size_t i=0;i<m_v.size();++i)  if (probe==m_v[i])  return 0;
+  // check either m_v or m_v4 depending on the probe's number of legs
+  if (probe.nleg==4)
+    { if (find(m_v4.begin(), m_v4.end(), probe)==m_v4.end()) { return 1; }
+                                                        else { return 0; }}
 
-  // no equal vertex found: Return 1
+  if (probe.nleg==3) 
+    { if (find(m_v.begin(), m_v.end(), probe) ==m_v.end()) { return 1; }
+                                                      else { return 0; }}
+  // Default return: Vertex not found
   return 1;
 }
+
   
 int Vertex::FermionRule(Single_Vertex& probe)
 {

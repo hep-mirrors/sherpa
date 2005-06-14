@@ -1,6 +1,5 @@
-#include "Vertex.H"
-#include "Interaction_Model_Base.H"
-#include "Message.H"
+#include "Single_Vertex.H"
+//#include "Message.H"
 #include "Vector.H"
 #include "String_Tree.H"
 #include "Shell_Tools.H"
@@ -10,8 +9,6 @@
 
 
 using namespace AMEGIC;
-using namespace ATOOLS;
-using namespace ATOOLS;
 using namespace ATOOLS;
 using namespace std;
 
@@ -63,19 +60,25 @@ Single_Vertex& Single_Vertex::operator=(const Single_Vertex& v) {
       return *this;
     }
 
-int Single_Vertex::operator==(Single_Vertex& probe) {
-      // checks if vertex probe has the same flavours at the same legs
-      if ((probe.nleg==4)&&(nleg==4)) { // both 4 legs
-        if (in[0]==probe.in[0] &&
-	    in[1]==probe.in[1] &&
-	    in[2]==probe.in[2] &&
-	    in[3]==probe.in[3] ) return 1;} // and legs equal
-      if ((probe.nleg==3)&&(nleg==3)) {  // both 3 legs
-        if (in[0]==probe.in[0] &&
-	    in[1]==probe.in[1] &&
-	    in[2]==probe.in[2]) return 1;} // and legs equal
-      return 0; // otherwise the vertices are not equal
-    }
+
+ 
+const bool Single_Vertex::operator==(const Single_Vertex& probe) 
+{
+  switch (nleg) // different checks for 3-leg and 4-leg vertices
+  {
+    case 4: return (probe.nleg == 4) &&
+       	           (in[0] == probe.in[0]) &&
+                   (in[1] == probe.in[1]) &&
+                   (in[2] == probe.in[2]) &&
+                   (in[3] == probe.in[3]);
+    case 3:  return (probe.nleg == 3) &&
+	            (in[0] == probe.in[0]) &&
+                    (in[1] == probe.in[1]) &&
+                    (in[2] == probe.in[2]);
+    default: return 0; 
+  }
+}
+
 
 ostream& AMEGIC::operator<<(ostream& s, const Single_Vertex& sv)
 {

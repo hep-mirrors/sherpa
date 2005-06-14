@@ -21,7 +21,7 @@ namespace AMEGIC {
     
     void        CheckEqual(ATOOLS::Flavour**,short int&);
     void        GenerateVertex();
-    int         CheckExistence(Single_Vertex&);
+    int         CheckExistence(Single_Vertex&);  
     int         FermionRule(Single_Vertex& probe);
     int         SetVertex(Single_Vertex&,Single_Vertex&,int,int,int,int a=99);
 
