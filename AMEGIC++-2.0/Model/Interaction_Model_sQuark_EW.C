@@ -70,8 +70,8 @@ void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& 
 	    Kabbala K_uI = Kabbala(string("\\frac{\\m M_{")+flav1.TexName()+string("}}{ v_2}\\sqrt{2}"),
 				     flav1.Yuk()/v2.Value()*sqrt(2.));
 	  
-	  
-	    kcpl0 = M_I*((g1*root2*num_2)/(costW*num_3)*K_Z_U((k-2)/2+3,i-51)*K_Z_N(0,j-43)); 
+	    kcpl0 = M_I*((g1*root2*num_2)/(costW*num_3)*K_Z_U((k-2)/2+3,i-51)*K_Z_N(0,j-43)+
+			 -(K_uI*K_Z_U(gen_sUp(flav2),i-51))*K_Z_N(3,j-43)); 
 	    
 	    kcpl1 = M_I*(-g2/(costW*root2)*K_Z_U((k-2)/2,i-51)*
 			 (K_Z_N(0,j-43)*(sintW/num_3) + K_Z_N(1,j-43)*costW)
@@ -213,7 +213,7 @@ void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& 
 	  kcpl1 = -M_I*(g2*K_Z_D(gen_sDown(flav3),k-61)*K_Z_MI(0,j-41)+
 			K_dI*K_Z_D(gen_sDown(flav3)+3,k-61)*K_Z_MI(1,j-41))*
 			conj_K_CKM((i-2)/2,gen_sDown(flav3));
-	  
+			
 	  vertex[vanz].cpl[0] = kcpl0.Value();
 	  vertex[vanz].cpl[1] = kcpl1.Value();
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
