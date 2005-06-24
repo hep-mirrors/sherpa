@@ -34,6 +34,18 @@ namespace ATOOLS {
 		      bool endline=true,std::string tempfname=nullstring,
 		      MatrixTypeID=MUnknown,int precision=6);
 
+    template <class Write_Type >
+    inline Data_Writer &operator<<(Write_Type value) 
+    { WriteToFile(value,nullstring,false); return *this; }
+
+    template <class Write_Type >
+    inline Data_Writer &operator<<(std::vector<Write_Type> &value) 
+    { VectorToFile(value,nullstring,false); return *this; }
+
+    template <class Write_Type > inline Data_Writer &
+    operator<<(std::vector<std::vector<Write_Type> > &value) 
+    { MatrixToFile(value,nullstring,false); return *this; }
+
   }; // end of class Data_Writer
 
   //////////////////
