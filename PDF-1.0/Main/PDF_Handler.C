@@ -100,7 +100,7 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 	        set==std::string("cteq61.LHgrid") ||
 	       set==std::string("cteq61.LHpdf") ||
 	       set==std::string("cteq6mE.LHgrid") ||
-	       set==std::string("cteq6mE.LHgrid") ||
+	       set==std::string("cteq6m.LHpdf") ||
 	       set==std::string("cteq5l.LHgrid") ||
 	       set==std::string("cteq5d.LHgrid") ||
 	       set==std::string("cteq5m1.LHgrid") ||
