@@ -111,7 +111,7 @@ namespace SHERPA {
     void FillDecayTree(APACIC::Tree * fin_tree,EXTRAXS::XS_Base * xs);
 
     EXTRAXS::XS_Base * GetXS(EXTRAXS::XS_Group * group, ATOOLS::Flavour * fl);
-    int    SetColours(EXTRAXS::XS_Base * xs, ATOOLS::Vec4D * p, ATOOLS::Flavour * fl);
+    int     SetColours(EXTRAXS::XS_Base * xs, ATOOLS::Vec4D * p, ATOOLS::Flavour * fl);
     int     SetColours(ATOOLS::Vec4D * p, ATOOLS::Flavour * fl);
     int     SetDecayColours(ATOOLS::Vec4D * p, ATOOLS::Flavour * fl,int col1,int col2);
     inline double  Weight() const;
@@ -161,29 +161,83 @@ namespace SHERPA {
 		    int maxjetnumber, int isrmode, int isrshoweron, int fsrshoweron)
     \brief Constructor, performs the basic initialization.
 
-    The information needed for the initialization are:
+    The information needed for the initialization is:
      - the used Matrix_Element_Handler, to provide information like the included 
        Feynman diagrams
      - the used jet measure (class Jet_Finder)
      - the maximal possble number of outgoing particles, and
-     - information whether the parton showers are available
+     - information whether parton showers are available
   */
 
   /*!
     \fn  bool Cluster_Partons::ClusterConfiguration(ATOOLS::Blob * blob, double x1 ,double x2)
-    \brief Applys a jet cluster algorithm one a given process until
-           \f$2 \to 2\f$ Process is obtained
+    \brief Applys a jet cluster algorithm one a given process until a \f$2 \to 2\f$ Process is obtained
 
     The aim of this routine is to determine the best clustering in order to initialise the PS
     appropriately. A jet measure is employed to determine the pair of particles to be 
     clustered first. In order to disable unphysical parton histories, only those
     clusterings are possible, which have a corresponding Feynman diagram (in the 
-    matrix element). 
-    The jet measure to be used is set up during the initialization
-    process. The default jet
-    measure is \f$k_\perp\f$--cluster algorithm (cf. class ATOOLS::JetFinder).
+    matrix element). The jet measure to be used is set up during the initialization
+    process. The default jet measure is \f$k_\perp\f$--cluster algorithm (cf. class ATOOLS::JetFinder).  
+    The clustering is performed with the help of the class Combine_Table, main steps are
+
+    -# All possible Feynman graphs are iterated over. In AMEGIC, a diagram consists of a doubly 
+    linked tree of AMEGIC::Point's. They represent vertices, whereas the links are the propagating
+    particles. Also, the external particles of each diagram are represented as Points, but with 
+    all but one of the links empty. The number of diagrams and these Point structures
+    themselves are accessible through the methods Matrix_Element_Handler::NumberOfDiagrams() and 
+    Matrix_Element_Handler::GetDiagram(), respectively. However, the external particles of each diagram, 
+    both incoming and outgoing are translated into Leg's, on which the actual clustering is performed 
+    without disturbing the Points underneath. 
+    -# These first Legs and their four-momenta are stored in a Combine_Table. Ultimately, it is this 
+    class, which, step by step, clusters two particles, i.e. Legs into an intermediate particle, i.e. Leg. 
+    Its four-momentum in due course will be given by the appropriate combination of the two
+    incident particles. As a result of this particular step, a new Combine_Table emerges with the number 
+    of Legs diminished by one, which is linked to the previous one. Having thus filled the first 
+    Combine_Table through its method Combine_Table::FillTable, the list of all emerging 
+    Combine_Tables is constructed by calling Combine_Table::CalcJet() of the fist one. 
+  */
+
+  /*!
+    \fn  void Cluster_Partons::GetXS()
+    identifies the hard 2\to 2 core process. In particular, it
+    determines the colour structure of it, and the relevant hard
+    scale(s). The preferred way to carry out this task is to employ an
+    internal library of analytical 2\to 2 processes provided by the
+    module EXTRA_XS. An implemented cross section calculator can be
+    obtained by EXTRA_XS::XS_Selector::GetXS(), selecting the process in
+    question through the flavours of its external particles. The cross
+    section calculator is realised as an XS_Bas}, and it has
+    suitable routines available for selecting colour connections
+    EXTRA_XS::XS_Base::SetColours()) and for retrieving a renormalisation
+    scale (EXTRA_XS::XS_Base::Scale()).    
     
-    The clustering is performed with the help of the class Combine_Table.
+    An alternative solution exists for those processes which are not
+    implemented yet but for which the colour connections are
+    unambiguously defined. This is actually always the case if the
+    number of strongly interacting particle involved is smaller than
+    four. Then, the colour connections are explicitely constructed,
+    using the routine Cluster_Partons::SetColours().
+  */
+  /*!
+    \fn int Cluster_Partons::SetColours(ATOOLS::Vec4D * p, ATOOLS::Flavour * fl)
+    \brief Determines a Colour Structure for a given hard \f$2 \to 2\f$ process
+    and fixes a hard scale. 
+
+    In this case the hard scale reads
+    \f[Q_{\rm hard}^2 = p_\perp^2 + p_3^2 + p_4^2,\f] 
+    if initial and final state are colour connected, and
+    \f[Q_{\rm hard}^2 = (p_1+p_2)^2,\f]
+    if there is no colour connection between initial and final state.
+    In all cases, p_1, p_2 and p_3, p_4 denote the four-momenta of the
+    incoming and outgoing particles, respectively. In case there are 3
+    coloured particles involved in the hard process, a scale for the
+    evaluation of the strong coupling has to be determined too, which is
+    identified with the transverse momentum pperp of the outgoing
+    coloured particle. 
+
+   \note This routine is only called, when the hard \f$2 \to 2\f$ process
+    is not in available in the fast cross section library (cf. module EXTRAXS).
   */
 
   /*!
@@ -224,24 +278,6 @@ namespace SHERPA {
 
     Employs EstablishRelations(), DetermineColourAngles(), Point2Knot()
   */
-
-  /*!
-    \fn  int  Cluster_Partons::SetColours(ATOOLS::Vec4D * p, ATOOLS::Flavour * fl)
-    \brief Determines a Colour Structure for a given hard \f$2 \to 2\f$ process
-    and fixes a hard scale. 
-
-    Determines a Colour Structure for a given hard \f$2 \to 2\f$ process
-    and fixes a hard scale \e m_scale, and possibly a scale used in \f$\alpha_S\f$ factor
-    \e m_asscale. In many cases \e m_scale and \e m_asscale are identical, only
-    when three out of four particles are strong a difference might arise.
-
-    This information can be used as initial condition for 
-    CalculateWeight(). 
-  
-   \note This routine is only called, when the hard \f$2 \to 2\f$ process
-    is not in available in the fast cross section library (cf. module EXTRAXS).
-  */
-
   /*!
     \fn void Cluster_Partons::DetermineColourAngles(const std::vector<APACIC::Knot *> & knots)
     \brief determines the maximum angle between color connected partons of
@@ -317,7 +353,7 @@ namespace SHERPA {
     simple change of the flavour of a massless fermion. In order to save memory and 
     computing time those processes are linked to "partner" processes.
 
-    In order to translate the Feynman diagram of a "partner" processes, to feynman diagrams
+    In order to translate the Feynman diagram of a "partner" processes, to Feynman diagrams
     of the process in question a translation table (a map) is created.
   */
 

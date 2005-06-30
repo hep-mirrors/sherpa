@@ -25,8 +25,6 @@ Cluster_Partons::Cluster_Partons(Matrix_Element_Handler * me, Jet_Finder * jf,
   m_isrmode(isrmode), m_isrshoweron(isrshoweron), 
   m_fsrshoweron(fsrshoweron), m_kfac(0.), p_local_tree(NULL) 
 {
-
-
   // read in some parameters
   Data_Read dr(rpa.GetPath()+"Shower.dat");     // !!!!!!!! SHOWER_DATA_FILE
 
@@ -67,7 +65,7 @@ Cluster_Partons::Cluster_Partons(Matrix_Element_Handler * me, Jet_Finder * jf,
   p_combi = 0;
 
 
-  /* 0 no sudakow weights, 1 alphas only, 2 full sudakov weight  (but for highest jet number) */
+  /* m_sud_mode = 0 no sudakow weights, 1 alphas only, 2 full sudakov weight  (but for highest jet number) */
   /* cf. also begin of Cluster_Partons::CalculateWeight() */
   if (m_isrshoweron==0 && m_fsrshoweron==0) {
     p_sud = NULL; m_sud_mode = 0;
@@ -80,7 +78,7 @@ Cluster_Partons::Cluster_Partons(Matrix_Element_Handler * me, Jet_Finder * jf,
   if (p_runas==0) { p_runas = as; }
   
 
-  p_events   = new long[maxjetnumber];
+  p_events         = new long[maxjetnumber];
   p_weight_sum     = new double[maxjetnumber];
   p_weight_sum_sqr = new double[maxjetnumber]; 
   for (int i=0;i<maxjetnumber;++i) {
@@ -88,6 +86,23 @@ Cluster_Partons::Cluster_Partons(Matrix_Element_Handler * me, Jet_Finder * jf,
     p_weight_sum[i]=p_weight_sum_sqr[i]=0.;
   }
 }
+
+Cluster_Partons::~Cluster_Partons()
+{
+  if (m_as_order && p_runas) delete p_runas;
+
+
+  if (p_local_tree) delete p_local_tree;
+  if (p_combi) delete p_combi;
+  if (p_sud)  delete p_sud;
+  
+  WriteOutSudakovWeights();
+  
+  if (p_events) delete [] p_events;
+  if (p_weight_sum) delete [] p_weight_sum;
+  if (p_weight_sum_sqr) delete [] p_weight_sum_sqr;
+}
+
 
 int Cluster_Partons::Init() 
 {
@@ -107,16 +122,13 @@ int Cluster_Partons::CheckProcess(Process_Base * procs)
       int nexpected = (*procs)[i]->NIn()+(*procs)[i]->NOut()-2;
       test=nexpected-ncpl;
 
-      std::cout<<" checking "<<(*procs)[i]->Name()<<" : "<<test<<std::endl;
+      // std::cout<<" checking "<<(*procs)[i]->Name()<<" : "<<test<<std::endl;
     }
     check = Min(check,test);
   }
 
   return check;
 }
-
-
-
 
 void Cluster_Partons::WriteOutSudakovWeights() 
 {
@@ -155,27 +167,18 @@ void Cluster_Partons::WriteOutSudakovWeights()
 }
 
 
-Cluster_Partons::~Cluster_Partons()
-{
-  if (m_as_order && p_runas) delete p_runas;
 
 
-  if (p_local_tree) delete p_local_tree;
-  if (p_combi) delete p_combi;
-  if (p_sud)  delete p_sud;
-  
-  WriteOutSudakovWeights();
-  
-  if (p_events) delete [] p_events;
-  if (p_weight_sum) delete [] p_weight_sum;
-  if (p_weight_sum_sqr) delete [] p_weight_sum_sqr;
-}
+
+
+
 
 bool Cluster_Partons::ClusterConfiguration(Blob * blob,double x1,double x2) {
   p_blob          = blob;
   int nin         = p_blob->NInP();
   int nout        = p_blob->NOutP();
 
+  // For decays only.
   if (nin==1) {
     if (nout<4) return 1;
     msg.Error()<<"Error in Cluster_Partons::ClusterConfiguration()"<<std::endl
@@ -184,15 +187,15 @@ bool Cluster_Partons::ClusterConfiguration(Blob * blob,double x1,double x2) {
     return 0;
   }
 
-  int nampl       = p_me->NumberOfDiagrams();
+  int    nampl    = p_me->NumberOfDiagrams();
   int    nlegs    = nin + nout;
   Leg ** legs     = 0;
-  bool reuse      = 0;
+  bool   reuse    = 0;
 
   // start cluster algorithm :
   if (!reuse) {
     if (p_combi) delete p_combi;
-    p_combi    = 0;
+    p_combi    = NULL;
 
     // generate a list of "legs" for each amplitude
     legs = new Leg *[nampl];
@@ -213,7 +216,7 @@ bool Cluster_Partons::ClusterConfiguration(Blob * blob,double x1,double x2) {
   // if no combination table exist, create it
   if (!p_combi) {
     /*
-      - copy moms to insert into Combine_Table (will be delete there)
+      - copy moms to insert into Combine_Table (will be deleted there)
       - create new Combine_Table with given momenta and given Jet-measure
       - initialise Combine_Table
       - determine best combination sheme
@@ -230,7 +233,10 @@ bool Cluster_Partons::ClusterConfiguration(Blob * blob,double x1,double x2) {
 
     p_combi = new Combine_Table(p_jf,amoms,0,m_isrmode,m_isrshoweron, m_mode);
     p_combi->FillTable(legs,nlegs,nampl);   
-    p_ct = p_combi->CalcJet(nlegs,x1,x2); 
+    p_ct    = p_combi->CalcJet(nlegs,x1,x2); 
+    // std::cout<<"     ------------------------------------"<<std::endl
+    //       <<(*p_ct)<<std::endl
+    //	     <<"     ------------------------------------"<<std::endl;
   }
   else {
     // use the existing combination table and determine best combination sheme
@@ -249,49 +255,89 @@ bool Cluster_Partons::ClusterConfiguration(Blob * blob,double x1,double x2) {
 
   CreateFlavourMap();
 
-  //  msg_Tracking()
-//      std::cout<<"========================================\n"
-// 	      <<*p_combi<<std::endl;
-
   return 1;
 }
 
 
-bool Cluster_Partons::FillLegs(Leg * alegs, Point * root, int & l, int maxl) {
+bool Cluster_Partons::FillLegs(Leg * alegs, Point * current, int & l, int maxl) {
   if (l>= maxl) {
-    msg.Error()<<" Error in Cluster_Partons::FillLegs() !!! "<<std::endl;
+    msg.Error()<<" Error in Cluster_Partons::FillLegs() Too many Legs "<<std::endl;
     return 0;
   }
   if (l==0) {
-    alegs[root->number]=Leg(root);
+    alegs[current->number]=Leg(current);
     l++;
   }
-  if (root->left) {
-    if (root->middle) return 0; // four vertex 
+  if (current->left) {
+    if (current->middle) return 0; // four vertex 
 
-    if (root->cpl[1]!=Complex(0.,0.)) {
-      if ((root->fl.IsScalar() && root->left->fl.IsVector() && root->right->fl.IsVector()) ||
-	  (root->fl.IsVector() && root->left->fl.IsScalar() && root->right->fl.IsVector()) ||
-	  (root->fl.IsVector() && root->left->fl.IsVector() && root->right->fl.IsScalar())) {
-// 	std::cout<<" reset VSS vertex "<<root->fl<<" "<<root->left->fl<<" "<<root->right->fl<<" \n";
-	  root->cpl[1]=Complex(0.,0.);
+    if (current->cpl[1]!=Complex(0.,0.)) {
+      if ((current->fl.IsScalar() && current->left->fl.IsVector() && current->right->fl.IsVector()) ||
+	  (current->fl.IsVector() && current->left->fl.IsScalar() && current->right->fl.IsVector()) ||
+	  (current->fl.IsVector() && current->left->fl.IsVector() && current->right->fl.IsScalar())) {
+	  current->cpl[1]=Complex(0.,0.);
       }
     }
 
 
-    return FillLegs(alegs,root->left,l,maxl)*FillLegs(alegs,root->right,l,maxl);
+    return FillLegs(alegs,current->left,l,maxl)*FillLegs(alegs,current->right,l,maxl);
   } 
   else {
-    alegs[root->number]=Leg(root);
+    alegs[current->number]=Leg(current);
     l++;
     return 1;
   }
 }
 
+void Cluster_Partons::CreateFlavourMap() {  
+  Process_Base * proc=static_cast<Process_Base*>(p_me->GetAmegic()->GetProcess());
+  Process_Base * partner=proc->Partner();
+  m_nstrong   = proc->NStrong();
+  const Flavour * flavs=proc->Flavours();
+  double ycut = proc->Ycut();
+  if (ycut!=-1.) {
+    m_ycut=ycut;
+  }
+  else {
+    m_ycut=ATOOLS::rpa.gen.Ycut();
+  }
+
+  const Flavour * partner_flavs = partner->Flavours();
+
+  int n[2]={0,1};
+  if (p_me->InSwaped()^partner->InSwaped()) {
+    n[0]=1;
+    n[1]=0;
+  }
+
+  // create new map
+  m_flmap.clear();
+  for (size_t i=0;i<proc->NIn();++i) {
+    if (partner_flavs[i]!=flavs[n[i]]) {
+      m_flmap[partner_flavs[i]]=flavs[n[i]];
+      if (partner_flavs[i]!=(Flavour(partner_flavs[i])).Bar()) {
+	m_flmap[(Flavour(partner_flavs[i])).Bar()]=(Flavour(flavs[n[i]])).Bar();
+      }
+    }
+  }
+  for (size_t i=proc->NIn();i<proc->NIn()+proc->NOut();++i) {
+    if (partner_flavs[i]!=flavs[i]) {
+      m_flmap[partner_flavs[i]]=flavs[i];
+      if (partner_flavs[i]!=(Flavour(partner_flavs[i])).Bar()) {
+	m_flmap[(Flavour(partner_flavs[i])).Bar()]=(Flavour(flavs[i])).Bar();	  
+      }
+    }
+  }
+
+}
+
+
+
+
 void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double jetscale,double qm_i,double qm_f) 
 {
-//      std::cout<<" CalculateWeight("<<hardscale<<","<<asscale<<","<<jetscale<<","
-//      	   <<qm_i*qm_i<<","<<qm_f*qm_f<<") called \n";
+  //std::cout<<" CalculateWeight("<<hardscale<<","<<asscale<<","<<jetscale<<","
+  //    	   <<qm_i*qm_i<<","<<qm_f*qm_f<<") called \n";
 
   m_qmin_i = qm_i;
   m_qmin_f = qm_f;
@@ -333,8 +379,8 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
   // weight with correct alphas at hard scale (if needed).
   if (m_hard_nqcd>0 && m_sud_mode%10>0) {
     m_weight *= pow(as_hard/as_jet,m_hard_nqcd);
-//        std::cout<<" qcd_count="<<m_hard_nqcd<<" ("<<(strong-2)<<")\n";
-//        std::cout<<" hard As : "<<asscale<<"\n";
+    //std::cout<<" qcd_count="<<m_hard_nqcd<<" ("<<(strong-2)<<")\n";
+    //std::cout<<" hard As : "<<asscale<<"\n";
   }
 
   int count_startscale=-10;
@@ -375,8 +421,9 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
       && p_ct->GetLeg(i)->fl.Strong() && p_ct->GetLeg(j)->fl.Strong();
     bool singlet_clustered = !(ct_down->GetLeg(i)->fl.Strong())
       && p_ct->GetLeg(i)->fl.Strong() && p_ct->GetLeg(j)->fl.Strong();
-//     if (singlet_clustered) std::cout<<" singlet clustered "<<std::endl;
-//     else std::cout<<" no singlet clustered "<<std::endl;
+
+    //if (singlet_clustered) std::cout<<" singlet clustered "<<std::endl;
+    //else std::cout<<" no singlet clustered "<<std::endl;
 
     if (m_sud_mode%10>1 && 
 	( strong_vertex || 
@@ -386,8 +433,7 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
       double w_in =  p_sud->Delta(ct_down->GetLeg(i)->fl)(last_q[i],qmin)/
 	             p_sud->Delta(ct_down->GetLeg(i)->fl)(ptij,qmin);
       m_weight *= w_in;
-//       std::cout<<" in  Delta("<<ct_down->GetLeg(i)->fl<<") : "<<last_q[i]<<","<<ptij<<","<<qmin<<" = ";
-//       std::cout<<w_in<<"\n";
+      //std::cout<<" in  Delta("<<ct_down->GetLeg(i)->fl<<") : "<<last_q[i]<<","<<ptij<<","<<qmin<<" = "<<w_in<<"\n";
       ++count_startscale;
     }
 
@@ -397,8 +443,8 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
       if (m_kfac!=0.) 	w_in_as *= 1. + a/(2. * M_PI)*m_kfac;
       m_weight *= w_in_as;
       ++m_hard_nqcd;
-//          std::cout<<" qcd_count="<<m_hard_nqcd<<"\n";
-//          std::cout<<" in  As : "<<ptij<<"\n";
+      //std::cout<<" qcd_count="<<m_hard_nqcd<<"\n";
+      //std::cout<<" in  As : "<<ptij<<"\n";
     }
 
     // store old q values
@@ -431,7 +477,7 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
       if (p_ct->GetLeg(l)->fl.Strong() && last_q[l]>qmin) {//  sudakov form factor
 	double w_out = p_sud->Delta(p_ct->GetLeg(l)->fl)(last_q[l],qmin);
 	m_weight *= w_out;
-//   	std::cout<<" out Delta("<<p_ct->GetLeg(l)->fl<<") : "<<last_q[l]<<","<<qmin<<"\n";
+   	//std::cout<<" out Delta("<<p_ct->GetLeg(l)->fl<<") : "<<last_q[l]<<","<<qmin<<"\n";
       }    
 
       // check that not too many hardscales are present!
@@ -448,21 +494,21 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
     }
   }
 
-  // replace remaning strong couplings
-//    std::cout<<" remaining strong couplings ( "<<m_hard_nqed<<","<<m_hard_nqcd<<") vs "<<m_nstrong-2<<std::endl;
+  // replace remaining strong couplings
+  //std::cout<<" remaining strong couplings ( "<<m_hard_nqed<<","<<m_hard_nqcd<<") vs "<<m_nstrong-2<<std::endl;
   m_hard_nqed = m_nstrong-m_hard_nqcd-2;    
   if (m_nstrong-m_hard_nqcd>2) {
     m_weight *= pow(as_amegic/as_jet,m_hard_nqed);
-//     std::cout<<" cancel As : "<<as_amegic/as_jet<<"^("<<m_hard_nqed<<" ) \n";
+    //std::cout<<" cancel As : "<<as_amegic/as_jet<<"^("<<m_hard_nqed<<" ) \n";
   }
 
-//   std::cout<<" weight="<<m_weight<<"\n";
+  //std::cout<<" weight="<<m_weight<<"\n";
 
   p_ct = ct_tmp;
 
-  p_events[njet-1]+=1;  // count events
-  p_weight_sum[njet-1]+=m_weight;
-  p_weight_sum_sqr[njet-1]+=sqr(m_weight);
+  p_events[njet-1]         += 1;  // count events
+  p_weight_sum[njet-1]     += m_weight;
+  p_weight_sum_sqr[njet-1] += sqr(m_weight);
 }
 
 
@@ -567,10 +613,10 @@ int Cluster_Partons::SetColours(XS_Base * xs, Vec4D * p, Flavour * fl)
   p_xs=xs;
   if (!xs)  {
     int test=SetColours(p,fl);
-//     Process_Base * proc=static_cast<Process_Base*>(p_me->GetAmegic()->GetProcess());
-//     std::cout<<" =Cluster============ \n";    
-//     std::cout<<proc->Name()<<std::endl;
-//     std::cout<<" ("<<m_hard_nqed<<","<<m_hard_nqcd<<")\n";
+    //     Process_Base * proc=static_cast<Process_Base*>(p_me->GetAmegic()->GetProcess());
+    //     std::cout<<" =Cluster============ \n";    
+    //     std::cout<<proc->Name()<<std::endl;
+    //     std::cout<<" ("<<m_hard_nqed<<","<<m_hard_nqcd<<")\n";
     return test;
   }
 
@@ -578,11 +624,11 @@ int Cluster_Partons::SetColours(XS_Base * xs, Vec4D * p, Flavour * fl)
     m_hard_nqed = xs->OrderEW();
     m_hard_nqcd = xs->OrderStrong();
     // output calc remaining ew and strong order
-//     Process_Base * proc=static_cast<Process_Base*>(p_me->GetAmegic()->GetProcess());
-//     std::cout<<" ================== \n";    
-//     std::cout<<proc->Name()<<std::endl;
-//     std::cout<<xs->Name()<<std::endl;
-//     std::cout<<" ("<<m_hard_nqed<<","<<m_hard_nqcd<<")\n";
+    //     Process_Base * proc=static_cast<Process_Base*>(p_me->GetAmegic()->GetProcess());
+    //     std::cout<<" ================== \n";    
+    //     std::cout<<proc->Name()<<std::endl;
+    //     std::cout<<xs->Name()<<std::endl;
+    //     std::cout<<" ("<<m_hard_nqed<<","<<m_hard_nqcd<<")\n";
     bool test=xs->SetColours(p);
     // check colour consistency 
     bool check=true;
@@ -665,8 +711,8 @@ int Cluster_Partons::SetColours(Vec4D * p, Flavour * fl)
   // (a) no colors
   // (b) two quarks
   // (c) two quarks and one gluon
-  // (d) two gluons (ADD-Model) 
-  // (e) three gluons (ADD-Model)
+  // (d) two gluons (ADD-Model or effective Higgs) 
+  // (e) three gluons (ADD-Model or effective Higgs) 
 
   int ncol   = 0;
   int nquark = 0;
@@ -683,8 +729,7 @@ int Cluster_Partons::SetColours(Vec4D * p, Flavour * fl)
   double s = (p[0]+p[1]).Abs2();
   double t = (p[0]-p[2]).Abs2();
   double u = (p[0]-p[3]).Abs2();
-  m_scale = s;
-  m_asscale = m_scale;
+  m_asscale = m_scale = s;
 
   if (ncol==4) {
     msg.Out()<<"WARNING in Cluster_Partons::SetColours() : called for 4 coloured objects \n"
@@ -694,15 +739,15 @@ int Cluster_Partons::SetColours(Vec4D * p, Flavour * fl)
     }
     return 1;
   }
+
+
   // (a) no colors
   if (ncol==0) {
     m_hard_nqed = 2;
     return 0;
-  }
+  }  
 
-  
   int cols[3]={0,0,0};
-
   // (b) two quarks
   if (ncol==2 && nquark==2) {
     cols[0]=cols[1]=500;
@@ -714,8 +759,8 @@ int Cluster_Partons::SetColours(Vec4D * p, Flavour * fl)
   if (ncol==3 && nquark==2 && ngluon==1) {
     m_hard_nqed = 1;
     m_hard_nqcd = 1;
-    cols[0]=500;
-    cols[1]=500+1;
+    cols[0] = 500;
+    cols[1] = 501;
     // in case one leg is massive we add all m^2 to the pt:
     // naive:    m_scale = (2.*s*t*u)/(s*s+t*t+u*u);
     // massive into account:
@@ -764,27 +809,28 @@ int Cluster_Partons::SetColours(Vec4D * p, Flavour * fl)
     if (fl[i].IsQuark() || fl[i].IsSquark()) {
       if (i<2) {
 	antis[ncol]=fl[i].IsAnti();
-	test=test && 1;
+	test = test & 1;
       }
       else {
 	antis[ncol]=!fl[i].IsAnti();
-	test=test && 2;
+	test = test & 2;
       }
       m_colors[i][fl[i].IsAnti()]=cols[ncol];
       ++ncol;
     }
   }
+
   if (!test && ncol==2) {
     // if colour flow = 1 particle in IS -> 1 in FS : m_scale = t or u.
     // naive : m_scale = (2.*s*t*u)/(s*s+t*t+u*u);
     //         mass effects ?!
     if (fl[0].Strong()) {
-      if (fl[2].Strong())      m_asscale = m_scale = dabs(t);
-      else if (fl[3].Strong()) m_asscale = m_scale = dabs(u);
+      if (fl[2].Strong())      { /*std::cout<<"Selected t !"<<std::endl; */ m_asscale = m_scale = dabs(t); }
+      else if (fl[3].Strong()) { /*std::cout<<"Selected u !"<<std::endl; */ m_asscale = m_scale = dabs(u); }
     }
     else if (fl[1].Strong()) {
-      if (fl[2].Strong())      m_asscale = m_scale = dabs(u);
-      else if (fl[3].Strong()) m_asscale = m_scale = dabs(t);
+      if (fl[3].Strong())      { /*std::cout<<"Selected t !"<<std::endl; */ m_asscale = m_scale = dabs(t); }
+      else if (fl[2].Strong()) { /*std::cout<<"Selected u !"<<std::endl; */ m_asscale = m_scale = dabs(u); }
     }
   }
 
@@ -808,6 +854,8 @@ int Cluster_Partons::SetColours(Vec4D * p, Flavour * fl)
       }
     }
   }
+  //  for (int i=0; i<4; ++i) { std::cout<<"   {"<<m_colors[i][0]<<","<<m_colors[i][1]<<"}"<<std::endl; }
+
   return 0;
 }
 
@@ -1030,36 +1078,36 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree)
   mo->t = mo->part->Momentum().Abs2();
 
   double scale = Scale();
-   if (p_xs) scale = p_xs->Selected()->Scale(PHASIC::stp::as);
-
-   scale = 4.*(m_qmin_i*m_qmin_i);
-   scale = Max(scale,mo->t);
-
-   double s=sum.Abs2();
-   double t=dabs((p_ct->Momentum(0)-p_ct->Momentum(2)).Abs2());
-   double u=dabs((p_ct->Momentum(1)-p_ct->Momentum(2)).Abs2());
-   if (p_lastproc->OrderEWeak()==0) scale=2.0*s*t*u/(s*s+t*t+u*u);
-
-//   std::cout<<" ew:"<<p_me->OrderEWeak()
-//   	     <<" strong:"<<p_me->OrderStrong()<<"\n";
+  if (p_xs) scale = p_xs->Selected()->Scale(PHASIC::stp::as);
+  
+  scale = 4.*(m_qmin_i*m_qmin_i);
+  scale = Max(scale,mo->t);
+  
+  double s=sum.Abs2();
+  double t=dabs((p_ct->Momentum(0)-p_ct->Momentum(2)).Abs2());
+  double u=dabs((p_ct->Momentum(1)-p_ct->Momentum(2)).Abs2());
+  if (p_lastproc->OrderEWeak()==0) scale=2.0*s*t*u/(s*s+t*t+u*u);
+  
+  //   std::cout<<" ew:"<<p_me->OrderEWeak()
+  //   	     <<" strong:"<<p_me->OrderStrong()<<"\n";
   if(p_me->OrderStrong()==0 && njet==m_maxjetnumber) scale=mo->t;
-//  std::cout<<"scale="<<scale<<std::endl;
+  //  std::cout<<"scale="<<scale<<std::endl;
   EstablishRelations(mo,knots[0],knots[1],0,scale);
   EstablishRelations(mo,knots[2],knots[3],1);      
-
+  
   // determine starting conditions for showers
   // note, that starting conditions for subsequent branches have to be 
   // evaluted during the shower evoultion (since the system, esp. for 
   // final state showers starting from the initial state shower are not
   // known.)
   DetermineColourAngles(knots);
-
+  
   for (int l=0; l<4; ++l) ini_knots.push_back(mo);
-
+  
   Tree * tree;
   int nlegs=4;
   int i,j;
-
+  
   Combine_Table * ct_tmp = p_ct;
 
   p_ct=p_ct->Up();
@@ -1400,56 +1448,6 @@ void Cluster_Partons::DetermineColourAngles(const std::vector<APACIC::Knot *> & 
 }
 
 
-void Cluster_Partons::CreateFlavourMap() {
-  //  if (p_me->GetAmegic()->GetProcess()!=p_me->GetAmegic()->GetProcess()->Partner()) {
-
-  // map needed if :
-  //    process != partner process
-  //    if HHMF is turned on (me_handler->Flavour =! proc->Flavour)
-  //
-  
-  Process_Base * proc=static_cast<Process_Base*>(p_me->GetAmegic()->GetProcess());
-  Process_Base * partner=proc->Partner();
-  m_nstrong   = proc->NStrong();
-  const Flavour * flavs=proc->Flavours();
-  double ycut= proc->Ycut();
-  if (ycut!=-1.) {
-//     std::cout<<" selector ycut= "<<ycut<<" \n"<<std::endl;
-    m_ycut=ycut;
-  }
-  else {
-    m_ycut=ATOOLS::rpa.gen.Ycut();
-  }
-
-  const Flavour * partner_flavs=partner->Flavours();
-
-  int n[2]={0,1};
-  //    if (proc->InSwaped()^partner->InSwaped()) {
-  if (p_me->InSwaped()^partner->InSwaped()) {
-    n[0]=1;
-    n[1]=0;
-  }
-
-  // create new map
-  m_flmap.clear();
-  for (size_t i=0;i<proc->NIn();++i) {
-    if (partner_flavs[i]!=flavs[n[i]]) {
-      m_flmap[partner_flavs[i]]=flavs[n[i]];
-      if (partner_flavs[i]!=(Flavour(partner_flavs[i])).Bar()) {
-	m_flmap[(Flavour(partner_flavs[i])).Bar()]=(Flavour(flavs[n[i]])).Bar();
-      }
-    }
-  }
-  for (size_t i=proc->NIn();i<proc->NIn()+proc->NOut();++i) {
-    if (partner_flavs[i]!=flavs[i]) {
-      m_flmap[partner_flavs[i]]=flavs[i];
-      if (partner_flavs[i]!=(Flavour(partner_flavs[i])).Bar()) {
-	m_flmap[(Flavour(partner_flavs[i])).Bar()]=(Flavour(flavs[i])).Bar();	  
-      }
-    }
-  }
-
-}
 
 void   Cluster_Partons::JetvetoPt2(double & q2i, double & q2f) 
 { 

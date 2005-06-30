@@ -104,13 +104,13 @@ bool Combine_Table::Combinable(const Leg & a , const Leg & b,
   
   // 1.) check if both points have common mother
   if ((a->prev == b->prev) && (a->prev != 0)) {
-    vinfo1.fl=a->prev->fl;
-    vinfo1.cpl = a->prev->cpl;
+    vinfo1.fl    = a->prev->fl;
+    vinfo1.cpl   = a->prev->cpl;
     vinfo1.color = a->prev->Color;
     vinfo1.mode  = 1;
     if (a->prev->prev!=0) {
-      vinfo2.fl=a->prev->prev->fl;
-      vinfo2.cpl = a->prev->prev->cpl;
+      vinfo2.fl    = a->prev->prev->fl;
+      vinfo2.cpl   = a->prev->prev->cpl;
       vinfo2.color = a->prev->prev->Color;
       vinfo2.mode  = 1;
       //    std::cout<<"fls="<<vinfo1.fl<<","<<a->fl<<","<<b->fl<<"\n";
@@ -303,7 +303,13 @@ void Combine_Table::FillTable(Leg **_legs,int _nlegs, int _nampl)
 	}
       }
     }
+    //std::cout<<"Combine_Table: Allowed combinations."<<std::endl;
   }
+  //else std::cout<<"Combine_Table: Done with clustering."<<std::endl;
+  //for (int i=0;i<_nlegs;i++) std::cout<<i<<" : "<<p_legs[0][i]->fl<<std::endl;
+  //for (CD_Iterator cit=m_combinations.begin();cit!=m_combinations.end();cit++) {
+  //  std::cout<<cit->first<<": "<<cit->second<<std::endl;
+  //}
 }
 
 double Combine_Table::ColorFactor(int i, int j, AMEGIC::Color_Function * const color, 
@@ -348,10 +354,10 @@ void Combine_Table::AddPossibility(int i, int j, int ngraph, const Vertex_Info &
   if (cit!=m_combinations.end()) {
     // add graph only ("i&j" row exists already)
     cit->second.graphs.push_back(ngraph);
+    // we should probably only change to strong status if 
+    // strong graph is also to be used in shower initialization !!!
     if (vinfo1.color->Type()==cf::T || vinfo1.color->Type()==cf::F) cit->second.strong=true;
 
-    //    we should probably only change to strong status if 
-    //    strong graph is also to be used in shower initialization !!!
     if (m_mode&1) {
       cit=m_combinations.find(Combine_Key(i,j,vinfo1.fl));
       if (cit!=m_combinations.end()) {
@@ -360,11 +366,11 @@ void Combine_Table::AddPossibility(int i, int j, int ngraph, const Vertex_Info &
       else {
 	double cfac1 = 1.; //ColorFactor(i,j,vinfo1.color,vinfo1.mode);
 	double cfac2 = 1.; //ColorFactor(i,j,vinfo2.color,vinfo2.mode);
-// 	std::cout<<" ngraph="<<ngraph<<" mode="<<vinfo1.mode<<"  fl="<<vinfo1.fl<<" \n"
-// 		 <<vinfo1.color->String()<<"="<<cfac1<<" \n"
-// 		 <<vinfo2.color->String()<<"="<<cfac2<<" \n";
-// 	std::cout<<"  cpl1="<<(norm(vinfo1.cpl[0])+norm(vinfo1.cpl[1]))<<" \n"
-// 		 <<"  cpl2="<<(norm(vinfo2.cpl[0])+norm(vinfo2.cpl[1]))<<" \n";
+	// 	std::cout<<" ngraph="<<ngraph<<" mode="<<vinfo1.mode<<"  fl="<<vinfo1.fl<<" \n"
+	// 		 <<vinfo1.color->String()<<"="<<cfac1<<" \n"
+	// 		 <<vinfo2.color->String()<<"="<<cfac2<<" \n";
+	// 	std::cout<<"  cpl1="<<(norm(vinfo1.cpl[0])+norm(vinfo1.cpl[1]))<<" \n"
+	// 		 <<"  cpl2="<<(norm(vinfo2.cpl[0])+norm(vinfo2.cpl[1]))<<" \n";
 	Combine_Data cd(0.,ngraph);
 	cd.strong   = (vinfo1.color->Type()==cf::T || vinfo1.color->Type()==cf::F);
 	cd.coupling = cfac1*(norm(vinfo1.cpl[0])+norm(vinfo1.cpl[1]));
@@ -376,18 +382,17 @@ void Combine_Table::AddPossibility(int i, int j, int ngraph, const Vertex_Info &
   else {
     // add new "i&j" combination 
     Combine_Data cd(0.,ngraph);
-    //    cd.strong=vinfo1.fl.Strong();
-    cd.strong=(vinfo1.color->Type()==cf::T || vinfo1.color->Type()==cf::F);
+    cd.strong = (vinfo1.color->Type()==cf::T || vinfo1.color->Type()==cf::F);
     m_combinations[Combine_Key(i,j)]=cd;
     if (m_mode&1) {
       double cfac1 = 1.; //ColorFactor(i,j,vinfo1.color,vinfo1.mode);
       double cfac2 = 1.; //ColorFactor(i,j,vinfo2.color,vinfo2.mode);
-//       std::cout<<" ngraph="<<ngraph<<" mode="<<vinfo1.mode<<"  fl="<<vinfo1.fl<<" \n"
-// 	       <<vinfo1.color->String()<<"="<<cfac1<<" \n"
-// 	       <<vinfo2.color->String()<<"="<<cfac2<<" \n";
-//       std::cout<<"  cpl1="<<(norm(vinfo1.cpl[0])+norm(vinfo1.cpl[1]))<<" \n"
-// 	       <<"  cpl2="<<(norm(vinfo2.cpl[0])+norm(vinfo2.cpl[1]))<<" \n";
-      cd.strong   = (vinfo1.color->Type()==cf::T || vinfo1.color->Type()==cf::F);
+      //       std::cout<<" ngraph="<<ngraph<<" mode="<<vinfo1.mode<<"  fl="<<vinfo1.fl<<" \n"
+      // 	       <<vinfo1.color->String()<<"="<<cfac1<<" \n"
+      // 	       <<vinfo2.color->String()<<"="<<cfac2<<" \n";
+      //       std::cout<<"  cpl1="<<(norm(vinfo1.cpl[0])+norm(vinfo1.cpl[1]))<<" \n"
+      // 	       <<"  cpl2="<<(norm(vinfo2.cpl[0])+norm(vinfo2.cpl[1]))<<" \n";
+      //cd.strong   = (vinfo1.color->Type()==cf::T || vinfo1.color->Type()==cf::F);
       cd.coupling = cfac1*(norm(vinfo1.cpl[0])+norm(vinfo1.cpl[1]));
       cd.coupling *= cfac2*(norm(vinfo2.cpl[0])+norm(vinfo2.cpl[1]));
       m_combinations[Combine_Key(i,j,vinfo1.fl)]=cd;
@@ -404,8 +409,8 @@ Combine_Table * Combine_Table::CalcJet(int nl,double _x1,double _x2, ATOOLS::Vec
     m_x1 = _x1;
     m_x2 = _x2;
   }
-  Combine_Table * ct=0;
-  CD_List & cl=m_combinations;
+  Combine_Table * ct = 0;
+  CD_List & cl       = m_combinations;
   if (cl.size()==0) return this;
 
   // change momenta to actual values    
@@ -414,7 +419,7 @@ Combine_Table * Combine_Table::CalcJet(int nl,double _x1,double _x2, ATOOLS::Vec
       p_moms[l]=_moms[l];
   }
   
-  // boost in CMS frame and rotate to z-axis (store old moms)
+  // boost p_moms in CMS frame and rotate to z-axis (before, store p_moms as save_moms)
   Vec4D * save_moms=0;
   save_moms = new Vec4D[nl];
   for (int i=0;i<nl;++i) save_moms[i]=p_moms[i];
@@ -437,14 +442,13 @@ Combine_Table * Combine_Table::CalcJet(int nl,double _x1,double _x2, ATOOLS::Vec
   double prop_max = 0.;
   double ewpt2min = pt2max;
 
-  CD_Iterator ewcit=cl.end();
-  CD_Iterator pwcit=cl.end();
-  CD_Iterator cwin2=cl.end();
-  m_cwin=cl.end();
+  CD_Iterator ewcit = cl.end();
+  CD_Iterator pwcit = cl.end();
+  CD_Iterator cwin2 = cl.end();
+  m_cwin = cl.end();
 
-  bool set=true;
-  m_kt2min=0.;
-  //  std::cout<<" determine kt "<<m_kt2min<<std::endl;
+  bool set = true;
+  m_kt2min = 0.;
   for (CD_Iterator cit=cl.begin(); cit!=cl.end(); ++cit) {
     CD_Iterator tit = CalcPropagator(cit);
     // if flav==none calc  s, pt2ij
@@ -455,7 +459,7 @@ Combine_Table * Combine_Table::CalcJet(int nl,double _x1,double _x2, ATOOLS::Vec
       double pt2 = cit->second.pt2ij;
       if (set) {
 	m_kt2min = pt2;
-	set    = false;
+	set      = false;
       }
       if (pt2 < m_kt2min) m_kt2min=pt2;
     }
@@ -467,8 +471,8 @@ Combine_Table * Combine_Table::CalcJet(int nl,double _x1,double _x2, ATOOLS::Vec
     }
 
     if (tit==cit) {
-      if (cit->first.i < 2  && pt2ij < pt2min ) {
-	// check if is combination has right direction:
+      if (cit->first.i<2  && pt2ij<pt2min ) {
+	// check if this combination (IS-FS clustering) has correct direction:
 	double d = p_moms[cit->first.i][3] * p_moms[cit->first.j][3];
 	if (d<0. ) {
 	  pt2ij*=1.001;
@@ -523,8 +527,7 @@ Combine_Table * Combine_Table::CalcJet(int nl,double _x1,double _x2, ATOOLS::Vec
       ewcit=cit;
     }
   }
-  if (m_cwin==cl.end()) 
-    m_cwin=cwin2;
+  if (m_cwin==cl.end()) m_cwin=cwin2;
 
 
   if (m_mode&1) {
@@ -562,7 +565,7 @@ Combine_Table * Combine_Table::CalcJet(int nl,double _x1,double _x2, ATOOLS::Vec
       }
       Vec4D * amoms;
       CombineMoms(p_moms,m_cwin->first.i,m_cwin->first.j,nl,amoms); // generate new momenta
-      m_cwin->second.down=new Combine_Table(p_jf,amoms,this,m_isr1on+2*m_isr2on,m_isrshoweron, m_mode);
+      m_cwin->second.down = new Combine_Table(p_jf,amoms,this,m_isr1on+2*m_isr2on,m_isrshoweron, m_mode);
       m_cwin->second.down->FillTable(alegs,nl,m_cwin->second.graphs.size());   // initialise Combine_Table
     } 
     else {
@@ -601,21 +604,25 @@ Combine_Table * Combine_Table::CalcJet(int nl,double _x1,double _x2, ATOOLS::Vec
 CD_Iterator  Combine_Table::CalcPropagator(CD_Iterator & cit)
 {
   if (cit->first.flav.Kfcode()==kf::none) {
+    // corresponds to m_mode=0 ???
     // determine general features of the i&j combination first 
-    if (cit->first.i<2)
+    if (cit->first.i<2) {
       cit->second.sij = (p_moms[cit->first.i]-p_moms[cit->first.j]).Abs2();
-    else
+    }
+    else {
       cit->second.sij = (p_moms[cit->first.i]+p_moms[cit->first.j]).Abs2();
+    }
     cit->second.pt2ij = p_jf->MTij2(p_moms[cit->first.i], p_moms[cit->first.j]);
     return cit;
   }
   else {
+    // for m_mode=1 only
     // retrieve information from i&j master
-    CD_Iterator father = m_combinations.find(Combine_Key(cit->first.i,cit->first.j));
-    if (father!=m_combinations.end()) {
+    CD_Iterator mother = m_combinations.find(Combine_Key(cit->first.i,cit->first.j));
+    if (mother!=m_combinations.end()) {
       // calculate propagator and sum them
-      cit->second.pt2ij = father->second.pt2ij;
-      double sij    = cit->second.sij = father->second.sij;
+      cit->second.pt2ij = mother->second.pt2ij;
+      double sij    = cit->second.sij = mother->second.sij;
       double mass2  = sqr(cit->first.flav.Mass());
       double width2 = sqr(cit->first.flav.Width());
       if (mass2==0.) {
@@ -628,8 +635,8 @@ CD_Iterator  Combine_Table::CalcPropagator(CD_Iterator & cit)
 	//	cit->second.prop *= 4.*mass2*width2/(sqr(sij-mass2) + 4.*mass2*width2);
       }
       cit->second.weight = cit->second.prop*cit->second.coupling;
-      father->second.weight += cit->second.weight;
-      return father;
+      mother->second.weight += cit->second.weight;
+      return mother;
     }
     else {
       msg.Out()<<"WARNING: in Combine_Table: "<<cit->first<<std::endl;
@@ -682,20 +689,20 @@ double Combine_Table::MinKt()
 {
   if (p_up) return p_up->MinKt();
 
-//   bool set=true;
-//   double pt2min=0.;
-//   for (CD_Iterator cit=m_combinations.begin(); cit!=m_combinations.end(); ++cit) {
-//     std::cout<<cit->first.i<<"&"<<cit->first.j<<"\n";
-
-//     if (cit->second.strong) {
-//       double pt2 = cit->second.pt2ij;
-//       if (set) {
-// 	pt2min = pt2;
-// 	set    = false;
-//       }
-//       if (pt2 < pt2min) pt2min=pt2;
-//     }
-//   }
+  //   bool set=true;
+  //   double pt2min=0.;
+  //   for (CD_Iterator cit=m_combinations.begin(); cit!=m_combinations.end(); ++cit) {
+  //     std::cout<<cit->first.i<<"&"<<cit->first.j<<"\n";
+  
+  //     if (cit->second.strong) {
+  //       double pt2 = cit->second.pt2ij;
+  //       if (set) {
+  // 	pt2min = pt2;
+  // 	set    = false;
+  //       }
+  //       if (pt2 < pt2min) pt2min=pt2;
+  //     }
+  //   }
   return m_kt2min;
 }
 

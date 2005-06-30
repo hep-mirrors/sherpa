@@ -31,7 +31,7 @@ Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
 
   m_ycut    = rpa.gen.Ycut();
 
-  if (rpa.gen.Beam1().IsLepton() && rpa.gen.Beam2().IsLepton()) m_type = 1;
+  if (rpa.gen.Beam1().IsLepton() && rpa.gen.Beam2().IsLepton())          m_type = 1;
   else if ((!rpa.gen.Beam1().IsLepton() && !rpa.gen.Beam2().IsLepton())) m_type = 4;
   else m_type = 4;
 
@@ -56,72 +56,6 @@ Amegic_Apacic_Interface::~Amegic_Apacic_Interface()
   // note :
   //  p_shower and p_mehandler are deleted in Jet_Evolution
   //  p_fl an p_moms are deleted in Perturbative_Interface
-}
-
-
-bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
-{
-  if (blob->NInP()==1) {
-    m_isdecay = 1;
-    if (!(p_cluster->ClusterConfiguration(blob))) return 0; 
-    p_fl[0]   = blob->InParticle(0)->Flav();
-    p_moms[0] = blob->InParticle(0)->Momentum();
-    for (int i=0;i<blob->NOutP();i++) {
-      p_fl[i+1]   = blob->OutParticle(i)->Flav();
-      p_moms[i+1] = blob->OutParticle(i)->Momentum();
-    }
-  }
-  else {
-    m_isdecay = 0;
-    if (!(p_cluster->ClusterConfiguration(blob,p_mehandler->GetISR_Handler()->X1(),
-					  p_mehandler->GetISR_Handler()->X2()))) {
-      return 0; // Failure!
-    }
-    for (int i=0;i<4;i++) {
-      p_fl[i]   = p_cluster->Flav(i); 
-      p_moms[i] = p_cluster->Momentum(i);
-    }
-  }
-
-  // prepare Blob , will be inserted later
-  /*
-    std::cout<<"Delete two blobs : "<<std::endl;
-    if (p_blob_psme_IS) std::cout<<p_blob_psme_IS<<std::endl;
-    if (p_blob_psme_FS) std::cout<<p_blob_psme_FS<<std::endl;
-  */
-  if (p_blob_psme_IS) { delete p_blob_psme_IS; p_blob_psme_IS = 0; }
-  if (p_blob_psme_FS) { delete p_blob_psme_FS; p_blob_psme_FS = 0; }
-
-  if (!m_isdecay && p_shower->ISROn()) {
-    p_blob_psme_IS = new Blob();
-    p_blob_psme_IS->SetType(btp::ME_PS_Interface_IS);
-    p_blob_psme_IS->SetTypeSpec("Sherpa");
-    p_blob_psme_IS->SetStatus(1);
-    p_blob_psme_IS->SetId();
-    for (int i=0;i<blob->NInP();++i) {
-      p_blob_psme_IS->AddToOutParticles(blob->InParticle(i));
-    }
-  }
-
-  Blob * dec;
-  if (p_shower->FSROn()) {
-    p_blob_psme_FS = new Blob();
-    p_blob_psme_FS->SetType(btp::ME_PS_Interface_FS);
-    p_blob_psme_FS->SetTypeSpec("Sherpa");
-    p_blob_psme_FS->SetStatus(1);
-    p_blob_psme_FS->SetId();
-    for (int i=0;i<blob->NOutP();++i) {
-      dec = NULL;
-      if (blob->OutParticle(i)->DecayBlob()) {
-	if (blob->OutParticle(i)->DecayBlob()->Type()==btp::Hard_Decay) 
-	  dec = blob->OutParticle(i)->DecayBlob();
-      }
-      p_blob_psme_FS->AddToInParticles(blob->OutParticle(i));
-      if (dec) blob->OutParticle(i)->SetDecayBlob(dec);
-    }
-  }
-
-  return 1;  // OK!
 }
 
 int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
@@ -238,6 +172,71 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
   }
   return 1;
 }
+
+
+bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
+{
+  if (blob->NInP()==1) {
+    // For decays only
+    m_isdecay = 1;
+    if (!(p_cluster->ClusterConfiguration(blob))) return 0; 
+    p_fl[0]   = blob->InParticle(0)->Flav();
+    p_moms[0] = blob->InParticle(0)->Momentum();
+    for (int i=0;i<blob->NOutP();i++) {
+      p_fl[i+1]   = blob->OutParticle(i)->Flav();
+      p_moms[i+1] = blob->OutParticle(i)->Momentum();
+    }
+  }
+  else {
+    // For scatterings only
+    m_isdecay = 0;
+    if (!(p_cluster->ClusterConfiguration(blob,p_mehandler->GetISR_Handler()->X1(),
+					  p_mehandler->GetISR_Handler()->X2()))) {
+      return 0; // Failure!
+    }
+    for (int i=0;i<4;i++) {
+      p_fl[i]   = p_cluster->Flav(i); 
+      p_moms[i] = p_cluster->Momentum(i);
+    }
+  }
+
+  // prepare Blobs, insert already known particles (from ME), Blobs will be inserted later
+  if (p_blob_psme_IS) { delete p_blob_psme_IS; p_blob_psme_IS = 0; }
+  if (p_blob_psme_FS) { delete p_blob_psme_FS; p_blob_psme_FS = 0; }
+
+  if (!m_isdecay && p_shower->ISROn()) {
+    p_blob_psme_IS = new Blob();
+    p_blob_psme_IS->SetType(btp::ME_PS_Interface_IS);
+    p_blob_psme_IS->SetTypeSpec("Sherpa");
+    p_blob_psme_IS->SetStatus(1);
+    p_blob_psme_IS->SetId();
+    for (int i=0;i<blob->NInP();++i) {
+      p_blob_psme_IS->AddToOutParticles(blob->InParticle(i));
+    }
+  }
+
+  Blob * dec;
+  if (p_shower->FSROn()) {
+    p_blob_psme_FS = new Blob();
+    p_blob_psme_FS->SetType(btp::ME_PS_Interface_FS);
+    p_blob_psme_FS->SetTypeSpec("Sherpa");
+    p_blob_psme_FS->SetStatus(1);
+    p_blob_psme_FS->SetId();
+    // Looking for decays of outgoing particles, already defined by the Hard_Decay_Handler
+    for (int i=0;i<blob->NOutP();++i) {
+      dec = NULL;
+      if (blob->OutParticle(i)->DecayBlob()) {
+	if (blob->OutParticle(i)->DecayBlob()->Type()==btp::Hard_Decay) 
+	  dec = blob->OutParticle(i)->DecayBlob();
+      }
+      p_blob_psme_FS->AddToInParticles(blob->OutParticle(i));
+      if (dec) blob->OutParticle(i)->SetDecayBlob(dec);
+    }
+  }
+
+  return 1;  // OK!
+}
+
 
 
 
