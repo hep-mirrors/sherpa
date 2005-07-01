@@ -809,18 +809,18 @@ int Cluster_Partons::SetColours(Vec4D * p, Flavour * fl)
     if (fl[i].IsQuark() || fl[i].IsSquark()) {
       if (i<2) {
 	antis[ncol]=fl[i].IsAnti();
-	test = test & 1;
+	test = (test & 1);
       }
       else {
 	antis[ncol]=!fl[i].IsAnti();
-	test = test & 2;
+	test = (test & 2);
       }
       m_colors[i][fl[i].IsAnti()]=cols[ncol];
       ++ncol;
     }
   }
 
-  if (!test && ncol==2) {
+  if (!test && ncol==2 && ngluon==0) {
     // if colour flow = 1 particle in IS -> 1 in FS : m_scale = t or u.
     // naive : m_scale = (2.*s*t*u)/(s*s+t*t+u*u);
     //         mass effects ?!
