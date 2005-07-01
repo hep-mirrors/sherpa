@@ -43,7 +43,7 @@ namespace AHADIC {
     All_Single_Transitions(All_Hadron_Multiplets *);
     ~All_Single_Transitions();
 
-    Single_Transition_Map * GetSingleTRansitions() { return p_transitions; }
+    Single_Transition_Map * GetSingleTransitions() { return p_transitions; }
     bool                    MustTransit(Cluster *,ATOOLS::Flavour &,const double=0.);
     bool                    NextLightest(Cluster *,ATOOLS::Flavour &);
     void                    PrintSingleTransitions();
@@ -77,6 +77,8 @@ namespace AHADIC {
     All_Double_Transitions(All_Hadron_Multiplets *);
     ~All_Double_Transitions();
 
+    bool                    IsoDecay(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &);
+    Double_Transition_Map * GetDoubleTransitions() { return p_transitions; }
     void                    PrintDoubleTransitions();
   };
 }

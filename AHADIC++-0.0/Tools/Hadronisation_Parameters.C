@@ -69,7 +69,9 @@ bool Momenta_Stretcher::MassThem(const int n,Vec4D * momenta,const double * mass
     delete [] oldens2;
     delete [] ens;
     msg.Error()<<"ERROR in Momenta_Stretcher::StretchThem: "<<endl
-	       <<"   Not enough energy ("<<cms<<") for the "<<n<<" masses ("<<xmt<<"); will abort."<<endl;
+	       <<"   Not enough energy ("<<cms<<") for the "<<n<<" masses ("<<xmt<<"); will abort."<<endl
+	       <<"   Masses :";
+    for (int i=0;i<n-1;i++) msg.Error()<<masses[i]<<", ";msg.Error()<<masses[n-1]<<"."<<endl;
     abort();
   }
   return false;
@@ -162,6 +164,8 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
     dataread.GetValue<double>("BARYON_SUPRESSION",0.2);
   m_parametermap[string("Q_breakup")]          = 
     dataread.GetValue<double>("Q_BREAKUP",1.);
+  m_parametermap[string("Offset")] =
+    dataread.GetValue<double>("TransitionOffset",0.75);      
   m_parametermap[string("AngularSmearing")]    = 
     dataread.GetValue<double>("AngularSmearing",Get("Q_breakup"));
   m_parametermap[string("Max_Prod_Mass")]      = 

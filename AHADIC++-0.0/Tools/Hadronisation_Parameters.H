@@ -25,6 +25,7 @@ namespace AHADIC {
 
   class Hadronisation_Parameters {
   private:
+    double                   m_offset;
     Constituents           * p_constituents;
     All_Hadron_Multiplets  * p_multiplets;
     All_Single_Transitions * p_transitions1;

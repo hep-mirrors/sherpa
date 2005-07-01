@@ -1,5 +1,6 @@
 #include "Transitions.H"
 #include "Hadronisation_Parameters.H"
+#include "Random.H"
 #include "Message.H"
 
 using namespace AHADIC;
@@ -93,6 +94,8 @@ bool All_Single_Transitions::NextLightest(Cluster * cluster,Flavour & had)
   Single_Transition_List * stl  = stiter->second;
   Single_Transition_Siter siter;
   for (siter=stl->begin();siter!=stl->end();siter++) {
+    //cout<<"NextLightest, check : "
+    //	<<stiter->first.first<<" "<<stiter->first.second<<" "<<(*siter)<<" "<<had<<endl;
     if ((*siter)==had) break;
   }
   if (siter==stl->end()) {
@@ -231,6 +234,48 @@ All_Double_Transitions::~All_Double_Transitions()
     p_transitions = NULL;
   }
 }  
+
+bool All_Double_Transitions::IsoDecay(Cluster * cluster,Flavour & dec1,Flavour & dec2)
+{
+  FlavPair flpair;
+  flpair.first  = cluster->GetFlav(1);
+  flpair.second = cluster->GetFlav(2);
+  Double_Transition_Miter dtliter = p_transitions->find(flpair);
+  if (dtliter!=p_transitions->end())
+  {
+    //cout<<"Found a dtlist : "<<(*dtliter).second->size()<<endl;
+    double PS=0., cmass2=cluster->Mass2(), ps,m1,m2;
+    for (Double_Transition_Siter decit=dtliter->second->begin();
+	 decit!=dtliter->second->end();decit++) {
+      m1  = decit->first.first.Mass();
+      m2  = decit->first.second.Mass();
+      ps  = (cmass2-sqr(m1+m2))*(cmass2-sqr(m1-m2));
+      if (ps>0.) ps = sqrt(ps);
+            else ps = 0.;
+      PS += ps*decit->second;
+      //std::cout<<"Check this "<<cmass2<<" -> "
+      //	       <<decit->first.first<<" "<<decit->first.second<<" "<<decit->second<<" * "<<ps<<endl;
+    }
+    PS *= ran.Get();
+    for (Double_Transition_Siter decit=dtliter->second->begin();
+	 decit!=dtliter->second->end();decit++) {
+      m1  = decit->first.first.Mass();
+      m2  = decit->first.second.Mass();
+      ps  = (cmass2-sqr(m1+m2))*(cmass2-sqr(m1-m2));
+      if (ps>0.) ps = sqrt(ps);
+            else ps = 0.;
+      PS -= ps*decit->second;
+      if (PS<0.) { 
+	dec1 = decit->first.first;
+	dec2 = decit->first.second;
+	break;
+      }
+    }
+    return true;
+  }
+  dec1 = dec2 = Flavour(kf::none);
+  return false;
+}
 
 void All_Double_Transitions::PrintDoubleTransitions() 
 {

@@ -24,12 +24,15 @@ Isotropic::Isotropic() : Hadron_Part()
 
 void Isotropic::RedoDecay(Cluster * cluster,Part_List * pl,int mode,Flavour & had1,Flavour & had2)
 {
-  //cout<<"Redo decay "<<mode<<" "<<had1<<" "<<had2<<endl; 
+  //cout<<"Redo decay, mode = "<<mode<<" for "<<had1<<" "<<had2<<endl; 
   if (mode==3) {
     if (m_hadsel==hadsel::newpair) {
-      // must produce a double transition map. 
-      abort();
-      return;
+      // must produce a double transition map.
+      if (p_dtransitions->IsoDecay(cluster,had1,had2)) { 
+	//cout<<"Success : "<<had1<<" / "<<had2<<endl;
+	//return;
+      }
+      else cout<<"Failed"<<endl;
     }
     else CheckDecayKinematics(cluster,had1,had2);
 
@@ -48,6 +51,7 @@ void Isotropic::RedoDecay(Cluster * cluster,Part_List * pl,int mode,Flavour & ha
     else {
       masses[0] = had1.Mass();
       masses[1] = cluster->GetRight()->Mass(); 
+      //cout<<"Mode = 1 : "<<had1<<" ("<<masses[0]<<"), cluster ("<<masses[1]<<")"<<endl; 
       CheckDecayKinematics(cluster,cluster->GetRight(),had1);
     }
     hadpars.AdjustMomenta(2,momenta,masses);
@@ -135,12 +139,16 @@ void Isotropic::CheckDecayKinematics(Cluster * cluster,Cluster * other,Flavour &
   double    m1  = had.Mass(), m2 = other->Mass(), mass = cluster->Mass();
   Cluster * clu = cluster->GetLeft();
   if (clu==other) clu = cluster->GetRight();
+  //cout<<"Check for "<<mass<<" -> "
+  //    <<m2<<"("<<clu->GetFlav(1)<<","<<clu->GetFlav(2)<<") + "
+  //    <<m1<<"("<<had<<")"<<endl;
   while (mass<=m1+m2) {
     if (!p_stransitions->NextLightest(clu,had)) {
       msg.Error()<<"Problem in CheckDecayKinematics(cluster,cluster,hadron) : "<<endl
-		 <<"   Nothing found for "<<mass<<" -> "<<m2<<" + "<<had<<endl;
+		 <<"   Nothing found for "<<mass<<" -> "<<m2<<" + "<<m1<<" ("<<had<<")"<<endl;
       abort();
     }
+    m1 = had.Mass();
   }
   return;
 }    

@@ -23,7 +23,7 @@ int main(int argc,char* argv[])
 {  
   rpa.Init(string("./"),string("Run.dat"),argc,argv);
   ParticleInit(string("./"));
-  Ahadic * ahadic = new Ahadic(string("./"),string("Cluster.dat"),false);
+  Ahadic * ahadic = new Ahadic(string("./"),string("Cluster.dat"),true);
 
   MODEL::Model_Base * model     = new MODEL::Standard_Model(string("./"),
 							    string("Model.dat"));

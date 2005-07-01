@@ -7,9 +7,9 @@ using namespace ATOOLS;
 using namespace std;
 
 
-Cluster_Transformer::Cluster_Transformer(double offset) :
+Cluster_Transformer::Cluster_Transformer() :
   m_mode(ctrans::pi0emission), 
-  m_offset(offset), 
+  m_offset(hadpars.Get(string("Offset"))), 
   p_transitions(hadpars.GetSingleTransitions())
 {}
 
@@ -49,7 +49,9 @@ bool Cluster_Transformer::TreatSingleCluster(Cluster_List * clist,ATOOLS::Blob *
 bool Cluster_Transformer::TreatSingleCluster(Cluster * cluster,Part_List * plist) {
   Flavour hadron, extra;
   double  clumass,hadmass,extramass;
-  //if (clist->size()==1) cout<<"      Single cluster with "<<cluster->Momentum()<<"."<<endl;  
+  cout<<"      Single cluster with "<<cluster->Momentum()<<" {"
+      <<cluster->GetFlav(1)<<","<<cluster->GetFlav(2)<<"} "
+      <<cluster->Momentum().Abs2()<<","<<cluster->Mass()<<"."<<endl;  
   if (p_transitions->MustTransit(cluster,hadron,m_offset)) {
     switch (m_mode) {
     case int(ctrans::pi0emission):
@@ -58,7 +60,10 @@ bool Cluster_Transformer::TreatSingleCluster(Cluster * cluster,Part_List * plist
       hadmass   = hadron.Mass();
       extramass = extra.Mass();
       while (clumass<hadmass+extramass) {
-	if (!p_transitions->NextLightest(cluster,hadron)) return true; 
+	if (!p_transitions->NextLightest(cluster,hadron)) {
+	  return true;
+	} 
+	hadmass   = hadron.Mass();
       }
       DecayCluster(cluster,hadron,extra,plist);
       return true;

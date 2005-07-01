@@ -23,7 +23,7 @@ namespace AHADIC {
     void DecayCluster(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &,ATOOLS::Blob *);
     void DecayCluster(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &,Part_List *);
   public:
-    Cluster_Transformer(double=0.75);
+    Cluster_Transformer();
     ~Cluster_Transformer();
     bool TreatSingleCluster(Cluster_List *,ATOOLS::Blob *);
     bool TreatSingleCluster(Cluster *,Part_List *);

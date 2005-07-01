@@ -31,6 +31,7 @@ Cluster_Decay_Handler::Cluster_Decay_Handler(Cluster_Transformer * transformer,b
     hp = new Isotropic();
   }
   p_decayer = new Cluster_Decayer_Base(cp,hp);
+  InitializeAnalysis();
 }
 
 
@@ -65,7 +66,8 @@ void Cluster_Decay_Handler::DecayClusters(Cluster_List * clusters,Blob * blob)
     if (DecayIt((*cit))) cit++;
     else cit=clusters->erase(cit);
   }
-  msg.Tracking()<<"Add particles to the blob -----------------------------------------"<<endl;
+  msg.Tracking()<<"Add "<<p_partlist->size()
+		<<" particles to the blob --------------------------------------"<<endl;
   for (Part_Iterator pit=p_partlist->begin();pit!=p_partlist->end();) {
     blob->AddToOutParticles((*pit));
     partmom += (*pit)->Momentum();
@@ -73,8 +75,9 @@ void Cluster_Decay_Handler::DecayClusters(Cluster_List * clusters,Blob * blob)
   }
 
   if (dabs(blob->CheckMomentumConservation().Abs2())>1.e-9) {
-    msg.Tracking()<<"Check this : "<<blob->CheckMomentumConservation()<<endl;
-    msg.Tracking()<<"   Compare with "<<clumom<<" -> "<<partmom<<endl
+    msg.Tracking()<<"Check this : "
+		  <<blob->CheckMomentumConservation()<<", "<<blob->CheckMomentumConservation().Abs2()<<endl
+		  <<"   Compare with "<<clumom<<" -> "<<partmom<<" = "<<clumom-partmom<<endl
 		  <<(*blob)
 		  <<"----------------------------------------------------------"<<endl;
   }
@@ -119,8 +122,8 @@ void Cluster_Decay_Handler::InitializeAnalysis()
   m_histograms[string("omega_Number")]               = new Histogram(0,0.,20.,20);
   m_histograms[string("phi_Number")]                 = new Histogram(0,0.,20.,20);
   
-  m_histograms[string("x_p_Pseudoscalars")]          = new Histogram(0,0.,50.,100);
-  m_histograms[string("x_p_Vectors")]                = new Histogram(0,0.,50.,100);
+  m_histograms[string("x_p_Pseudoscalars")]          = new Histogram(0,0.,1.,100);
+  m_histograms[string("x_p_Vectors")]                = new Histogram(0,0.,1.,100);
 }
 
 void Cluster_Decay_Handler::AnalyseThis(Blob * blob)

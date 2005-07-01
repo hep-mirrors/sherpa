@@ -24,8 +24,8 @@ Ahadic::~Ahadic()
 
 void Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
 {
-  msg.Out()<<"In Ahadic::Hadronize."<<endl;
+  msg.Tracking()<<"In Ahadic::Hadronize."<<endl;
   Blob * blob = p_cformhandler->FormClusters(blobs);
   p_cdechandler->DecayClusters(p_cformhandler->GetClusters(),blob);
-  //cout<<endl<<endl<<endl;
+  msg.Events()<<(*blob)<<endl<<endl;
 }

@@ -110,7 +110,7 @@ Constituents::~Constituents() {
 double Constituents::Mass(Flavour & flav) {
   FlavCCMap_Iterator     cmit = CCMap.find(flav);
   if (cmit==CCMap.end()) cmit = CCMap.find(flav.Bar());
-  return (cmit!=CCMap.end())? cmit->second->Mass() : 1.e36;
+  return (cmit!=CCMap.end())? cmit->second->Mass() : flav.Mass();
 }
 
 double Constituents::FlWeight(ATOOLS::Flavour & flav) {
