@@ -8,8 +8,8 @@ for I in $* ; do
   elif [ "$I" = "-h" ]; then echo && \
     echo "killjob version 1.0" && echo && \
     echo "options: -j <job>       kill job running in directory <job>" && \
-    echo "         -s <signal>    kill job with signal <signal>" && echo && \
-    echo "         -l             run on local host" && echo && \
+    echo "         -s <signal>    kill job with signal <signal>" && \
+    echo "         -l             run on local host" && \
     echo "         -h             display this help and exit" && echo && \
     exit 0
   elif [ "$DJOB" = "TRUE" ]; then DJOB="" && JOB=$I
