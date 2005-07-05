@@ -2,11 +2,10 @@
 #define Cluster_Decay_Handler_H
 
 #include "Cluster_Decayer_Base.H"
+#include "Cluster_Decay_Analysis.H"
 #include "Cluster_Transformer.H"
 #include "Blob.H"
 #include "Cluster.H"
-#include "Histogram.H"
-#include <map>
 
 
 namespace AHADIC {
@@ -21,12 +20,13 @@ namespace AHADIC {
 
   class Cluster_Decay_Handler {
   private:
-    cdm::code              m_cdm;
-    Cluster_Decayer_Base * p_decayer;
-    Cluster_Transformer  * p_transformer;
+    cdm::code                m_cdm;
+    Cluster_Decayer_Base   * p_decayer;
+    Cluster_Decay_Analysis * p_analysis;
+    Cluster_Transformer    * p_transformer;
 
-    Part_List            * p_partlist;
-    ATOOLS::Blob         * p_blob;
+    Part_List              * p_partlist;
+    ATOOLS::Blob           * p_blob;
 
     bool                                      m_analyse;
     std::map<std::string,ATOOLS::Histogram *> m_histograms;

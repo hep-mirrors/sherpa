@@ -32,7 +32,9 @@ bool QoverM::TestDecay(Cluster * cluster,Part_List * pl)
   do {
     if (m_popper.Pop(flav)) {
       if (m1+hadpars.GetConstituents()->Mass(flav)<E1 &&
-	  m2+hadpars.GetConstituents()->Mass(flav)<E2) massflag = false;
+	  m2+hadpars.GetConstituents()->Mass(flav)<E2) {
+	massflag = false;
+      }
     }
     else { 
       cluster->BoostBack();
@@ -45,6 +47,8 @@ bool QoverM::TestDecay(Cluster * cluster,Part_List * pl)
 
   cluster->SetLeft(left);
   cluster->SetRight(right);
+  left->SetPrev(cluster);
+  right->SetPrev(cluster);
 
   cluster->BoostBack();
   return true;

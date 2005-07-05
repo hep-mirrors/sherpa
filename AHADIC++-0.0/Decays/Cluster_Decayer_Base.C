@@ -32,6 +32,10 @@ bool Cluster_Decayer_Base::Treat(Cluster * cluster,Part_List * pl)
     }
     return true;
   }
+  if (p_chads->ForcedDecay(cluster,pl)) {
+    cout<<"Forced hadronic decay ----------------------------------"<<endl;
+    return true;
+  }
   return false;
 }
 

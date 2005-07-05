@@ -44,7 +44,7 @@ int main(int argc,char* argv[])
   Particle_List     * particles = new Particle_List;
 
   Flavour mo_flavs[2];
-  double p, E = 45.6, E2 = 4.*E*E, costh,phi;
+  double p, E = rpa.gen.Ecms()/2., E2 = 4.*E*E, costh,phi;
   Vec3D pvec;
 
   msg.Out()<<"---------------------- Generate "<<rpa.gen.NumberOfEvents()

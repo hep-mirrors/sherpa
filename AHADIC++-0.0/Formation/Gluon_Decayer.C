@@ -85,15 +85,17 @@ void Gluon_Decayer::Shift(Part_List * pl)
   Flavour flav;
   for (Part_Iterator pit=pl->begin();pit!=pl->end();++pit,++k) {
     flav       = (*pit)->Flav();
-    if (flav==Flavour(kf::c)  || flav==Flavour(kf::c).Bar() ||
-	flav==Flavour(kf::b)  || flav==Flavour(kf::b).Bar()) {
+    /*
+      if (flav==Flavour(kf::c)  || flav==Flavour(kf::c).Bar() ||
+      flav==Flavour(kf::b)  || flav==Flavour(kf::b).Bar()) {
       bool bar = flav.IsAnti();
-      //std::cout<<"Change heavy flavour : "<<flav<<" -> ";
+      std::cout<<"Change heavy flavour : "<<flav<<" -> ";
       flav     = Flavour(int(1+3*ran.Get()));
       if (bar) flav = flav.Bar();
       (*pit)->SetFlav(flav);
-      //std::cout<<flav<<std::endl;
-    }
+      std::cout<<flav<<std::endl;
+      }
+    */
     momenta[k] = (*pit)->Momentum();
     masses[k]  = hadpars.GetConstituents()->Mass(flav);
     //std::cout<<"Gluon_Decayer : "<<k<<" : "<<flav<<" "<<masses[k]<<std::endl;

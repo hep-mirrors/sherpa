@@ -24,15 +24,20 @@ Isotropic::Isotropic() : Hadron_Part()
 
 void Isotropic::RedoDecay(Cluster * cluster,Part_List * pl,int mode,Flavour & had1,Flavour & had2)
 {
-  //cout<<"Redo decay, mode = "<<mode<<" for "<<had1<<" "<<had2<<endl; 
+  if (m_cht==chtrans::HH_only) {
+    if (p_dtransitions->IsoDecay(cluster,had1,had2)) { 
+      TwoHadronDecay(cluster,pl,had1,had2);
+      return;
+    }
+    msg.Error()<<"Error in Isotropic::RedoDecay : HH only mode."<<endl
+	       <<"   Could not find a suitable double transition for cluster decay: "
+	       <<(*cluster)<<"   will abort the run."<<endl;
+    abort();
+  }
   if (mode==3) {
     if (m_hadsel==hadsel::newpair) {
-      // must produce a double transition map.
       if (p_dtransitions->IsoDecay(cluster,had1,had2)) { 
-	//cout<<"Success : "<<had1<<" / "<<had2<<endl;
-	//return;
       }
-      else cout<<"Failed"<<endl;
     }
     else CheckDecayKinematics(cluster,had1,had2);
 
@@ -43,16 +48,22 @@ void Isotropic::RedoDecay(Cluster * cluster,Part_List * pl,int mode,Flavour & ha
     double * masses  = new double[2];
     momenta[0]  = cluster->GetLeft()->Momentum();
     momenta[1]  = cluster->GetRight()->Momentum();
+    Flavour help;
     if (mode==2) {
       masses[0] = cluster->GetLeft()->Mass(); 
       masses[1] = had2.Mass();
-      CheckDecayKinematics(cluster,cluster->GetLeft(),had2);
+      if (CheckDecayKinematics(cluster,cluster->GetLeft(),had2,help)) {
+	TwoHadronDecay(cluster,pl,had2,help);
+	return;
+      }
     }
     else {
       masses[0] = had1.Mass();
       masses[1] = cluster->GetRight()->Mass(); 
-      //cout<<"Mode = 1 : "<<had1<<" ("<<masses[0]<<"), cluster ("<<masses[1]<<")"<<endl; 
-      CheckDecayKinematics(cluster,cluster->GetRight(),had1);
+      if (CheckDecayKinematics(cluster,cluster->GetRight(),had1,help)) {
+	TwoHadronDecay(cluster,pl,had1,had2);
+	return;
+      }
     }
     hadpars.AdjustMomenta(2,momenta,masses);
     if (mode==2) {
@@ -76,6 +87,18 @@ void Isotropic::RedoDecay(Cluster * cluster,Part_List * pl,int mode,Flavour & ha
   }
 }
 
+bool Isotropic::ForcedDecay(Cluster * cluster,Part_List * pl)
+{
+  Flavour had1, had2;
+  if (p_dtransitions->IsoDecay(cluster,had1,had2)) { 
+    TwoHadronDecay(cluster,pl,had1,had2);
+    return true;
+  }
+  msg.Error()<<"Error in Isotropic::ForcedDecay :"<<endl
+	     <<"   Could not find a suitable double transition for cluster decay: "
+	     <<(*cluster)<<"   will abort the run."<<endl;
+  abort();
+}
 
 void Isotropic::TwoHadronDecay(Cluster * cluster,Part_List * pl,Flavour & had1,Flavour & had2)
 {
@@ -96,7 +119,6 @@ void Isotropic::TwoHadronDecay(Cluster * cluster,Part_List * pl,Flavour & had1,F
   cluster->BoostBack(hadmom1);
   cluster->BoostBack(hadmom2);
   cluster->BoostBack();
-  //cout<<"Check C->HH : "<<cluster->Momentum()<<endl<<"   -> "<<hadmom1<<" "<<hadmom2<<endl;
   if (dabs((cluster->Momentum()-hadmom1-hadmom2).Abs2())>1.e-4) {
     msg.Error()<<"Error in Isotropic::TwoHadronDecay (after boost) : "<<endl
 	       <<"   "<<cluster->Momentum()<<" -> "<<hadmom1<<"+"<<hadmom2<<endl
@@ -134,22 +156,24 @@ void Isotropic::CheckDecayKinematics(Cluster * cluster,Flavour & had1,Flavour & 
 }    
 
 
-void Isotropic::CheckDecayKinematics(Cluster * cluster,Cluster * other,Flavour & had)
+bool Isotropic::CheckDecayKinematics(Cluster * cluster,Cluster * other,Flavour & had,Flavour & help)
 {
   double    m1  = had.Mass(), m2 = other->Mass(), mass = cluster->Mass();
   Cluster * clu = cluster->GetLeft();
   if (clu==other) clu = cluster->GetRight();
-  //cout<<"Check for "<<mass<<" -> "
-  //    <<m2<<"("<<clu->GetFlav(1)<<","<<clu->GetFlav(2)<<") + "
-  //    <<m1<<"("<<had<<")"<<endl;
   while (mass<=m1+m2) {
     if (!p_stransitions->NextLightest(clu,had)) {
-      msg.Error()<<"Problem in CheckDecayKinematics(cluster,cluster,hadron) : "<<endl
-		 <<"   Nothing found for "<<mass<<" -> "<<m2<<" + "<<m1<<" ("<<had<<")"<<endl;
-      abort();
+      break;
     }
     m1 = had.Mass();
   }
-  return;
+  if (mass>=m1+m2) false;
+
+  help = Flavour(kf::none);
+  while (mass<=m1+m2) {
+    if (!p_stransitions->NextLightest(other,help)) {
+    }
+    return true;
+  }  
 }    
 

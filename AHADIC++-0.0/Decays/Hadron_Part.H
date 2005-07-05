@@ -32,18 +32,20 @@ namespace AHADIC {
     Hadron_Part();
     ~Hadron_Part() {}
     virtual void RedoDecay(Cluster *,Part_List *,int,
-			   ATOOLS::Flavour &,ATOOLS::Flavour &) {}
+			   ATOOLS::Flavour &,ATOOLS::Flavour &)=0;
+    virtual bool ForcedDecay(Cluster *,Part_List *)=0;
   };
 
   class Isotropic : public Hadron_Part {
   private:
     void TwoHadronDecay(Cluster *,Part_List *,ATOOLS::Flavour &,ATOOLS::Flavour &);
     void CheckDecayKinematics(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &);
-    void CheckDecayKinematics(Cluster *,Cluster *,ATOOLS::Flavour &);
+    bool CheckDecayKinematics(Cluster *,Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &);
   public:
     Isotropic();
     ~Isotropic() {}
     void RedoDecay(Cluster *,Part_List *,int,ATOOLS::Flavour &,ATOOLS::Flavour &);
+    bool ForcedDecay(Cluster *,Part_List *);
   };
 
   class Retain : public Hadron_Part {
@@ -51,6 +53,7 @@ namespace AHADIC {
     Retain() {}
     ~Retain() {}
     void RedoDecay(Cluster *,Part_List *,int,ATOOLS::Flavour &,ATOOLS::Flavour &) {}
+    bool ForcedDecay(Cluster *,Part_List *) {}
   };
 }
 #endif
