@@ -139,7 +139,11 @@ Hadron_Wave_Function * All_Hadron_Multiplets::ConstructMesonWaveFunction(int spi
 	  pair->second = flavs[0].Bar();
 	  wavefunction->AddToWaves(pair,weight);
 	}
-      } 
+      }
+      if (fl1==4 || fl1==5) {
+	wavefunction = new Hadron_Wave_Function;
+	wavefunction->AddToWaves(pair,1.);
+      }
     }
     else if (flavs[0].Charge()+flavs[1].Charge()==0.) {
       wavefunction = new Hadron_Wave_Function;

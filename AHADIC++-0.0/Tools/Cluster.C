@@ -20,7 +20,7 @@ namespace AHADIC {
 Cluster::Cluster() :
   m_type(ctp::no),
   m_momentum(Vec4D(0.,0.,0.,0.)),
-  m_hasboost(false), p_left(NULL), p_right(NULL)
+  m_hasboost(false), p_left(NULL), p_right(NULL), p_prev(NULL)
 {
   m_momenta[0]  = m_momenta[1]  = Vec4D(0.,0.,0.,0.);  
   m_flavours[0] = m_flavours[1] = Flavour(kf::none);
@@ -28,7 +28,7 @@ Cluster::Cluster() :
 
 Cluster::Cluster(const ATOOLS::Flavour & flav1,const ATOOLS::Vec4D & mom1,
 		 const ATOOLS::Flavour & flav2,const ATOOLS::Vec4D & mom2) :
-  m_hasboost(false), p_left(NULL), p_right(NULL)
+  m_hasboost(false), p_left(NULL), p_right(NULL), p_prev(NULL)
 {
   m_momentum = mom1+mom2;
   if (flav1.IsQuark()) {
@@ -190,12 +190,6 @@ Flavour Cluster::GetFlav(const int i) const {
   abort();
 }
 
-void Cluster::BoostBack(ATOOLS::Vec4D & mom) {
-  if (!m_hasboost) return;
-  m_boost.BoostBack(mom);
-}
-
-
 void Cluster::BoostInCMS() {
   if (m_hasboost) return;
   m_boost = ATOOLS::Poincare(m_momentum);
@@ -227,6 +221,11 @@ void Cluster::BoostBack(Poincare & boost) {
   for (int i=0;i<2;i++) boost.BoostBack(m_momenta[i]);
   if (p_left!=NULL)  p_left->Boost(m_boost);
   if (p_right!=NULL) p_right->Boost(m_boost);
+}
+
+void Cluster::BoostBack(ATOOLS::Vec4D & mom) {
+  if (!m_hasboost) return;
+  m_boost.BoostBack(mom);
 }
 
 std::ostream& AHADIC::operator<<(std::ostream& str, const Cluster &cluster) {

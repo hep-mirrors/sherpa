@@ -92,6 +92,10 @@ bool All_Single_Transitions::NextLightest(Cluster * cluster,Flavour & had)
 	       <<"   will continue and hope for the best."<<endl;
   }
   Single_Transition_List * stl  = stiter->second;
+  if (had==Flavour(kf::none)) {
+    had   = (*stl->begin());
+    return true;
+  }
   Single_Transition_Siter siter;
   for (siter=stl->begin();siter!=stl->end();siter++) {
     //cout<<"NextLightest, check : "
