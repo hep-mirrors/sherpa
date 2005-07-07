@@ -237,7 +237,7 @@ Primitive_Integrator::Primitive_Integrator():
   m_apweight(1.0), m_sum(0.0), m_sum2(0.0), m_max(0.0), m_np(0.0), 
   m_smax(std::deque<double>(3,0.0)), 
   m_ncells(1000), m_mode(0), m_split(1), m_shuffle(1), m_last(0), 
-  m_vname("I") {}
+  m_vname("I"), m_asum(NULL) {}
 
 Primitive_Integrator::~Primitive_Integrator()
 {
@@ -245,6 +245,7 @@ Primitive_Integrator::~Primitive_Integrator()
     delete m_channels.back();
     m_channels.pop_back();
   }
+  if (m_asum) delete[] m_asum;
 }
 
 void Primitive_Integrator::SetDimension(const size_t dim)
@@ -308,6 +309,7 @@ double Primitive_Integrator::Integrate(Primitive_Integrand *const function)
       m_channels[i]->Reset();
     }
   size_t add=0;
+
   while (((long unsigned int)m_np)<2.0*m_nmax) {
     for (long unsigned int n=0;n<m_point.size()*m_nopt;++n) Point();
     CheckTime();
@@ -369,14 +371,33 @@ double Primitive_Integrator::Update(const int mode)
 void Primitive_Integrator::Point()
 {
   Primitive_Channel *selected=NULL;
-  double disc=ran.Get(), sum=0.0;
-  for (size_t i=0;i<m_channels.size();++i) {
-    sum+=m_channels[i]->Alpha();
-    if (sum>=disc) {
-      selected=m_channels[m_last=i];
-      break;
-    }
+  double disc=ran.Get(), sum=1.0;
+  if (!m_asum) {
+    for (size_t i=m_channels.size()-1;i>=0;--i) 
+      {
+	sum-=m_channels[i]->Alpha();
+	if (sum<=disc) {
+	  selected=m_channels[m_last=i];
+	  break;
+	}
+      }
   }
+  else {
+    int sts = (m_channels.size()-1)/2+1;
+    int pos = sts;
+    while (sts>7) {
+      sts = (sts-1)/2+1;
+      if (m_asum[pos]>=disc) pos-=sts;
+      else pos+=sts;
+    }
+    size_t sta = ATOOLS::Max(0,pos-sts);
+    for (size_t i=sta;i<m_channels.size();i++)
+      if (m_asum[i]>=disc) {
+ 	selected=m_channels[m_last=i];
+	break;
+      }
+  }
+
   if (selected==NULL) THROW(fatal_error,"No channel selected.");
   if (m_opt.size()>0) selected->Point(p_function,m_point,m_opt);
   else {
@@ -421,6 +442,7 @@ void Primitive_Integrator::Split()
   double max=-std::numeric_limits<double>::max(), cur=0.0;
   Primitive_Channel *selected=NULL;
   for (size_t i=0;i<m_channels.size();++i) {
+//     if (!m_channels[i]->Boundary()) {
     if (m_channels[i]->Position()!=std::string::npos) {
       SelectDimension(m_channels[i]);
       m_channels[i]->SetPosition(std::string::npos);
@@ -438,6 +460,7 @@ void Primitive_Integrator::Split()
       max=cur;
       selected=m_channels[i];
     }
+//     }
   }
   if (selected==NULL) THROW(fatal_error,"Internal error.");
   for (size_t i=0;i<16*m_point.size();++i) m_opt[i]=0.0;
@@ -494,6 +517,7 @@ bool Primitive_Integrator::Shuffle()
   }
   size_t diced=0;
   double norm=0.0, oldnorm=0.0;
+
   for (size_t i=0;i<m_channels.size();++i) {
     if (!m_channels[i]->Boundary()) {
       double alpha=m_channels[i]->Alpha();
@@ -517,6 +541,8 @@ bool Primitive_Integrator::Shuffle()
     }
   }
   norm/=oldnorm;
+
+  if (!m_asum) m_asum = new double[m_channels.size()];
   oldnorm=0.0;
   if (diced==0) THROW(fatal_error,"No channel diced.");
   for (size_t i=0;i<m_channels.size();++i) 
@@ -525,6 +551,7 @@ bool Primitive_Integrator::Shuffle()
 	m_channels[i]->SetAlpha(m_channels[i]->Alpha()/norm);
       oldnorm+=m_channels[i]->Alpha();
       m_channels[i]->Reset();
+      m_asum[i]=oldnorm;  
     }
   if (!IsEqual(oldnorm,1.0)) 
     THROW(fatal_error,"Summation does not agree.");

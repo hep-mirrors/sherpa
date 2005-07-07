@@ -325,6 +325,8 @@ namespace ATOOLS {
     std::string  m_vname, m_uname;
     Position_Map m_reserved;
 
+    double*            m_asum; 
+
     void SelectDimension(Primitive_Channel *const current);
     /*!
       \fn void SelectDimension(Primitive_Channel *const current)
