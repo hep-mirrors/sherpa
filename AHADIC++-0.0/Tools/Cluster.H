@@ -95,7 +95,7 @@ namespace AHADIC {
 
   /*!
     \struct ctp
-    \brief Short description of cluster type. Available labels so far are: 
+    \brief Short description of AHADIC::Cluster type. Available labels so far are: 
     none (0), quark-antiquark (11), quark-diquark (12), antidiquark-quark (21) antidiquark-diquark(22).
   */
 

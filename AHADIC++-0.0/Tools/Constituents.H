@@ -65,8 +65,10 @@ namespace AHADIC {
     \class ConstituentCharacteristic
     \brief Includes all information (constituent mass, spin d.o.f., flavour weight, spin weight and 
     angular smearing parameter) for a flavour that is needed in the cluster hadronisation model. It is
-    accessible through the class Constituents.
+    accessible through the class Constituents. 
 
+    This class is initialised by the AHADIC::Hadronisation_Parameters and made available to the rest of
+    the code through a corresponding Get-method, AHADIC::Hadronisation_Parameters::GetConstituents().
     Since the methods are just simple access methods, no further documentation seems to be neccessary.
   */
   /*!

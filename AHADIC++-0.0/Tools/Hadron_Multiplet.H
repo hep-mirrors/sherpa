@@ -78,18 +78,29 @@ namespace AHADIC {
   */
   /*!
     \class All_Hadron_Multiplets
-    \brief This class sets up and manages the various hadron multiplets.
+    \brief This class sets up and manages the various hadron multiplets. 
+
+    The full work of this class is steered by the constructor, which, first, iterates over all hadrons
+    that are switched on in Hadron.dat, and constructs their wave functions. These wavefunctions are
+    stored in the All_Hadron_Multiplets::p_wavefunctions and sorted into different \f$SU(6)\f$ multiplets, 
+    stored in All_Hadron_Multiplets::p_multiplets. This class is initialised by the object
+    Hadronisation_Parameters and made available to the rest of the code through a corresponding Get-method, 
+    AHADIC::Hadronisation_Parameters::GetMultiplets().
   */
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   // Description of member variables for All_Hadron_Multiplets
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   /*!
     \var Hadron_WF_Map * All_Hadron_Multiplets::p_wavefunctions
-    \brief
+    \brief The list of all wavefunctions (realised through AHADIC::Hadron_Wave_Function)
+    that have been constructed by this class.
   */
   /*!
     \var Hadron_Multiplet_Map * All_Hadron_Multiplets::p_multiplets
-    \brief
+    \brief The list of all hadron multiplets. They are sorted by spin, hence, potentially, some
+    doubling of spins is possible.
+    
+    \todo Will have to think this over.
   */
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   // Description of member methods for All_Hadron_Multiplets
@@ -172,27 +183,103 @@ namespace AHADIC {
   */
   /*!
     \fn Hadron_Wave_Function * All_Hadron_Multiplets::ConstructBaryonWaveFunction(int,int,int,int,int)
-    \brief 
+    \brief Here the baryon wave functions are constructed from the spin, the angular momentum
+    and the three quark flavour indices \f$q_1\f$, \f$q_2\f$, and \f$q_3\f$. The problem here is to
+    map them onto \f$SU(6)\f$ wave functions made of quark-diquark pairs. A solution can be found 
+    in D.B.Lichtenberg, W.Namgung, J.G.Wills, and E.Predazzi.
+
+    In the following \f$d^{S,V}_{ij}\f$ stands for scalar or vector diquarks made of the quarks i and j. 
+    For the octet baryons, there are various cases to be considered:
+    - Proton-like baryons: Two identical quarks, then the wave function reads
+      \f[
+      \Psi_{221} = 
+      \frac{1}{\sqrt{3}}\left|q_1d^S_{22}\right\rangle+
+      \frac{1}{\sqrt{6}}\left|q_2d^V_{12}\right\rangle+
+      \frac{1}{\sqrt{2}}\left|q_2d^S_{12}\right\rangle.
+      \f]
+    - \f$\Lambda\f$-like baryons: Three different quarks, then the wave function reads
+      \f[
+      \Psi_{312} =
+      \frac{1}{\sqrt{3}}\left|q_3d^S_{12}\right\rangle+
+      \frac{1}{\sqrt{12}}\left|q_1d^S_{23}\right\rangle+
+      \frac{1}{\sqrt{12}}\left|q_2d^S_{13}\right\rangle+
+      \frac{1}{\sqrt{4}}\left|q_1d^V_{23}\right\rangle+
+      \frac{1}{\sqrt{4}}\left|q_2d^V_{23}\right\rangle.
+      \f]
+    - \f$\Sigma\f$-like baryons: Three different quarks, then the wave function reads
+      \f[
+      \Psi_{321} =
+      \frac{1}{\sqrt{3}}\left|q_3d^V_{12}\right\rangle+
+      \frac{1}{\sqrt{12}}\left|q_1d^V_{23}\right\rangle+
+      \frac{1}{\sqrt{12}}\left|q_2d^V_{13}\right\rangle+
+      \frac{1}{\sqrt{4}}\left|q_1d^S_{23}\right\rangle+
+      \frac{1}{\sqrt{4}}\left|q_2d^S_{23}\right\rangle.
+      \f]
+
+    For the decuplet baryons, there are again various cases to be considered:
+    - \f$\Delta^{++,-}\f$-like baryons: Three identical quarks with wave function
+      \f[
+      \Psi_{111} = \left|q_1d^V_{11}\right\rangle.
+      \f]
+    - \f$\Delta^{+,0}\f$-like baryons: Two identical quarks with wave function
+      \f[
+      \Psi_{221} = 
+      \frac{1}{\sqrt{3}}\left|q_1d^V_{22}\right\rangle+
+      \frac{2}{\sqrt{3}}\left|q_2d^V_{12}\right\rangle.
+      \f]
+    - \f$\Sigma\f$(1385)-like baryons:
+      \f[
+      \Psi_{321} = 
+      \frac{1}{\sqrt{3}}\left|q_1d^V_{23}\right\rangle+\mbox{\rm cycl.}.
+      \f]
+
+    \todo Here, more work has to be done!!!   
+    For baryons containing one heavy quark, there are the following wavefunctions
+    - \f$\Sigma_c\f$-like baryons:
+      \f[
+      \Psi_{Qqq}^{1/2,3/2} = 
+      \left|Qd^{S,V}_{qq}\right\rangle,
+      \f]
+      where the diquark spin depends on whether the baryons has spin 1/2 (S) or 3/2 (V).
   */
   /*!
     \fn void All_Hadron_Multiplets::ConstructAntiWaveFunctions()
-    \brief
+    \brief Here, wavefunctions for the anti-particles are constructed, where needed. This
+    method fully relies on Hadron_Wave_Function::Anti().
   */
   /*!
     \fn void All_Hadron_Multiplets::CreateMultiplets()
-    \brief
+    \brief This method takes the wave functions constructed so far and, according to the spin
+    of the respective hadrons, places them in different multiplets. 
+    
+    These multiplets basically are \f$SU(3)_F\f$ or \f$SU(3)_F\otimes SU(2)_S\f$ multiplets,
+    and thus constrained on the light quarks. Hadrons containing a heavy quark are treated separately
+    such that "reduced" multiplets are constructed, which are \f$SU(3)_F\f$ symmetric only in
+    the light quark sector.
   */
   /*!
     \fn void All_Hadron_Multiplets::AddMultipletWeights()
-    \brief
+    \brief Weights are added to the multiplets, in particular spin weights taking care of the
+    spin d.o.f. in each multiplet. The addition of further, multiplet-specific weights that allow
+    to steer abundances beyond phasespace, spin, etc., is envisioned but needs to be done.
+    
+    \todo Add multiplet-specific weights!!!
   */
   /*!
     \fn void All_Hadron_Multiplets::LookUpAngles(const int angular,const int spin,double & costh,double & sinth)
-    \brief
+    \brief This method is used to steer mixing of flavour eigenfunctions to hadron wavefunctions.
+
+    Examples for this include the flavour content of the \f$\eta\f$ particles in the pseudoscalar multiplet
+    or \f$\omega-\phi\f$-mixing in the vector octet. The angles have to be given explicitly in the
+    corresponding Cluster.dat file, otherwise they are set to the following default values:
+    - \f$\theta_{0^-} = -0.3491\f$
+    - \f$\theta_{1^+} = 0.6155\f$.
+
+    \todo Further mixing angles for higher multiplets to follow.
   */
   /*!
     \fn bool All_Hadron_Multiplets::LookUpWaveFunction(const int,const int,const int,const Hadron_Wave_Function *)
-    \brief
+    \brief Not realised yet.
   */
 }
 

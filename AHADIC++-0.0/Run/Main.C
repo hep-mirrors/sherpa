@@ -44,11 +44,12 @@ int main(int argc,char* argv[])
   Particle_List     * particles = new Particle_List;
 
   Flavour mo_flavs[2];
+  rpa.gen.SetEcms(91.2);
   double p, E = rpa.gen.Ecms()/2., E2 = 4.*E*E, costh,phi;
   Vec3D pvec;
 
   msg.Out()<<"---------------------- Generate "<<rpa.gen.NumberOfEvents()
-	   <<" events -----------------------."<<endl;
+	   <<" events ("<<2.*E<<" GeV) -----------------------."<<endl;
   for (int i=1;i<=rpa.gen.NumberOfEvents();i++) {
     if (i%1000==0) msg.Out()<<" "<<i<<" th event "<<std::endl;
     blobs->Clear();
@@ -73,9 +74,10 @@ int main(int argc,char* argv[])
     mo->part->SetStatus(2);
     mo->part->SetInfo('M');
 
-    mo_flavs[0] = Flavour(kf::code(1+int(ran.Get()*3.)));   
+    //mo_flavs[0] = Flavour(kf::code(1+int(ran.Get()*3.)));   
+    mo_flavs[0] = Flavour(kf::b);   
     mo_flavs[1] = mo_flavs[0].Bar();
-    p           = E; //sqrt(E2-sqr(mo_flavs[0].PSMass()));
+    p           = sqrt(E*E-sqr(mo_flavs[0].PSMass()));
     costh       = 1.-2.*ran.Get();
     phi         = 2.*M_PI*ran.Get();
     pvec        = p*Vec3D(sqrt(1.-sqr(costh))*sin(phi),sqrt(1.-sqr(costh))*cos(phi),costh);

@@ -415,8 +415,8 @@ void All_Hadron_Multiplets::CreateMultiplets()
 	case  -4:  multiplet->SetName(string("Anti-Decuplet   (3/2)")); break;
 	case -12:  multiplet->SetName(string("Anti-Nucleons_c (1/2)")); break;
 	case -14:  multiplet->SetName(string("Anti-Decuplet_c (3/2)")); break;
-	case -22:  multiplet->SetName(string("Anti-Nucleons_c (1/2)")); break;
-	case -24:  multiplet->SetName(string("Anti-Decuplet_c (3/2)")); break;
+	case -22:  multiplet->SetName(string("Anti-Nucleons_b (1/2)")); break;
+	case -24:  multiplet->SetName(string("Anti-Decuplet_b (3/2)")); break;
 	default:   multiplet->SetName(string("Don't know     (anti)")); break;
 	}
 	multiplet->AddToElements(wfm->first);

@@ -37,7 +37,8 @@ namespace AHADIC {
 
   /*!
     \struct ctrans
-    \brief Short description of cluster transformation type. Available labels so far are: 
+    \brief Short description of cluster transformation type, used to steer the operational mode
+    of AHADIC::Cluster_Transformer. Available labels so far are: 
     nothing (0), forceddecay (1), pi0emission (2).
   */
   /*! 

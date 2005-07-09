@@ -119,7 +119,8 @@ namespace AHADIC {
   /*!
     \fn Hadron_Wave_Function * Hadron_Wave_Function::Anti()
     \brief If possible, i.e. if m_barrable=true, the Hadron_Wave_Function of the antiparticle
-    is initialised and its pointer is returned. 
+    is constructed by simply barring all ingredients of the particle's wavefunction and the 
+    pointer to the new Hadron_Wave_Function is returned. 
   */
   /*!
     \fn double Hadron_Wave_Function::WaveWeight(ATOOLS::Flavour,ATOOLS::Flavour)

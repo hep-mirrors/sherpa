@@ -89,7 +89,9 @@ namespace AHADIC {
   /*!
     \class All_Single_Transitions
     \brief This class is central to the management of transitions of clusters into single hadrons. It
-    is employed by, e.g., AHADIC::Cluster_Transformer.
+    is employed by, e.g., AHADIC::Cluster_Transformer. A pointer to it can be obtained from the
+    AHADIC::Hadronisation_Parameters through AHADIC::Hadronisation_Parameters::GetSingleTransitions().
+    The Hadronisation_Parameters also initialise this object.
 
     So far, there are two modes implemented to select a hadron for a cluster-to-hadron transition:
     - a simple mass criterion, All_Single_Transitions::m_stmode=1. There the hadron is selected, for which
@@ -104,7 +106,9 @@ namespace AHADIC {
   /*!
     \class All_Double_Transitions
     \brief This class is central to the management of transitions of clusters into hadron pairs. It
-    is employed by, e.g., AHADIC::Hadron_Part.
+    is employed by, e.g., AHADIC::Hadron_Part.  A pointer to it can be obtained from the
+    AHADIC::Hadronisation_Parameters through AHADIC::Hadronisation_Parameters::GetDoubleTransitions().
+    The Hadronisation_Parameters also initialise this object.
   */
   /*!
     \class Flavour_Sorting_Mass

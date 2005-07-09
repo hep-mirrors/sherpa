@@ -14,6 +14,7 @@ libAhadicDecays_la_SOURCES = \
 INCLUDES = -I../../ATOOLS-2.0/Phys \
 	   -I../../ATOOLS-2.0/Math \
 	   -I../../ATOOLS-2.0/Org \
+	   -I../../MODEL-1.0/Main \
 	   -I../Tools \
 	   -I../Main
 noinst_HEADERS = \
