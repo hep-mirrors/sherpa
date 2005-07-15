@@ -9,6 +9,16 @@
 #include "Exception.H"
 #include "MyStrStream.H"
 
+#ifdef PROFILE__all
+#include "prof.hh"
+#else
+#ifdef PROFILE__Flavour
+#include "prof.hh"
+#else
+#define PROFILE_HERE
+#endif
+#endif
+
 namespace ATOOLS {
   Part_Info particles[MAX_PARTICLES];
   Kf_To_Int kf_table;
@@ -32,14 +42,16 @@ void Kf_To_Int::Init()
   is_initialised = 1;
 }
 
-kf::code Kf_To_Int::FromInt(int code)
-{
-  return kf_tab[code];
-}
-
 int Kf_To_Int::ToInt(kf::code kfc)
 {
-  for(int i=0;i<anz+1;i++) { if (kf_tab[i]==kfc) return i; }
+  std::map<kf::code,int>::const_iterator kfit(m_kftoint.find(kfc));
+  if (kfit!=m_kftoint.end()) return kfit->second;
+  for(int i=0;i<anz+1;i++) { 
+    if (kf_tab[i]==kfc) {
+      m_kftoint[kfc]=i;
+      return i; 
+    }
+  }
   std::cerr<<"ERROR in Kf_To_Int::to_int(): Particle type unknown ! "
 	   <<kfc<<" in "<<anz<<std::endl;
   abort();
@@ -129,52 +141,52 @@ Flavour Flavour::operator[](int idx) const  {
 
 
 //NEW for ADICIC!
-Flavour::Flavour(kf::code _kfc, bool _anti) {
-  kfc=_kfc;
-  anti=0;
-  if (_kfc==kf::photon)   return;
-  if (_kfc==kf::Z)        return;
-  if (_kfc==kf::ZPrime)   return;
-  if (_kfc==kf::gluon)    return;
-  if (_kfc==kf::shgluon)  return;
-  if (_kfc==kf::h)        return;
-  if (_kfc==kf::h0)       return;
-  if (_kfc==kf::H0)       return;
-  if (_kfc==kf::A0)       return;
-  if (_kfc==kf::graviton) return;
-  if (_kfc==kf::gscalar)  return;
-  if (_kfc==kf::none)     return;
-  if (Majorana())         return;
+Flavour::Flavour(kf::code _kfc, bool _anti):
+  kfc(_kfc), anti(0)
+{
+  switch (_kfc) {
+  case kf::photon:   return;
+  case kf::Z:        return;
+  case kf::ZPrime:   return;
+  case kf::gluon:    return;
+  case kf::shgluon:  return;
+  case kf::h:        return;
+  case kf::h0:       return;
+  case kf::H0:       return;
+  case kf::A0:       return;
+  case kf::graviton: return;
+  case kf::gscalar:  return;
+  case kf::none:     return;
+  default: ;
+  }
+  if (Majorana()) return;
   anti=_anti;
 }
 //***************
 
 
 
-const Flavour Flavour::Bar() const { 
-  Flavour flbar = *this;
-  
-  if (flbar==Flavour(kf::photon))   return flbar;
-  if (flbar==Flavour(kf::Z))        return flbar;
-  if (flbar==Flavour(kf::ZPrime))   return flbar;
-  if (flbar==Flavour(kf::gluon))    return flbar;
-  if (flbar==Flavour(kf::shgluon))  return flbar;
-  if (flbar==Flavour(kf::h))        return flbar;
-  if (flbar==Flavour(kf::h0))       return flbar;
-  if (flbar==Flavour(kf::H0))       return flbar;
-  if (flbar==Flavour(kf::A0))       return flbar;
-  if (flbar==Flavour(kf::graviton)) return flbar;
-  if (flbar==Flavour(kf::gscalar))  return flbar;
-  if (flbar==Flavour(kf::none))     return flbar;
-  if (Majorana())                   return flbar;
-
-  flbar.anti = (anti)?0:1;
+const Flavour Flavour::Bar() const 
+{
+  Flavour flbar(*this);
+  switch (flbar.Kfcode()) {
+  case kf::photon:   return flbar;
+  case kf::Z:        return flbar;
+  case kf::ZPrime:   return flbar;
+  case kf::gluon:    return flbar;
+  case kf::shgluon:  return flbar;
+  case kf::h:        return flbar;
+  case kf::h0:       return flbar;
+  case kf::H0:       return flbar;
+  case kf::A0:       return flbar;
+  case kf::graviton: return flbar;
+  case kf::gscalar:  return flbar;
+  case kf::none:     return flbar;
+  default: ;
+  }
+  if (Majorana()) return flbar;
+  flbar.anti=(anti)?0:1;
   return flbar;
-}
-
-Flavour::Flavour(int kf) { 
-  anti = (kf<0)? 1:0;
-  kfc  = kf_table.FromInt(abs(kf));
 }
 
 

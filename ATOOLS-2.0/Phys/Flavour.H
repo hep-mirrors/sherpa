@@ -10,6 +10,7 @@
 #include <string> 
 #include <vector>
 #include <set>
+#include <map>
 #include <iostream>
 
 namespace ATOOLS {
@@ -404,13 +405,17 @@ namespace ATOOLS {
     static int is_initialised;
     kf::code   kf_tab[MAX_PARTICLES];
     int        anz;
+    std::map<kf::code,int> m_kftoint;
   public:
     void       Init();
     int        ToInt(kf::code);
-    kf::code   FromInt(int);
+
     kf::code   FromString(std::string st);
     int IsInitialised() { return is_initialised;}
     int Size()          { return anz; }
+
+    inline kf::code FromInt(int code) { return kf_tab[code]; }
+
   };
 
   /////////////////////////////////////////////////////////////////////////////
@@ -484,7 +489,7 @@ namespace ATOOLS {
     //***************
     Flavour(kf::code kfc_) : kfc(kfc_) { anti=0; }
     Flavour(kf::code, bool);    //NEW for ADICIC!
-    Flavour(int kfint);
+    inline Flavour(int kf): kfc(kf_table.FromInt(abs(kf))), anti(kf<0?1:0) {}
     const Flavour Bar() const;
     kf::code Kfcode()     const { return kfc; }
     inline operator int() const { return (anti)? -int(kfc) : int(kfc) ; }
@@ -499,8 +504,9 @@ namespace ATOOLS {
     }
     const bool Includes(Flavour _fl) const {
       if ( (kfc==_fl.kfc) && (anti==_fl.anti))  return 1;
-      if ( particles[ Index() ].Size()==1)      return 0;
-      if ( particles[ Index() ].Includes(_fl) ) return 1;
+      int idx(Index());
+      if ( particles[idx].Size()==1)      return 0;
+      if ( particles[idx].Includes(_fl) ) return 1;
       return 0;
     }
 
@@ -555,16 +561,16 @@ namespace ATOOLS {
       return particles[ Index() ].masssign;
     }
     inline bool IsMassive() const {
-      if (particles[ Index() ].m > 0) return particles[ Index() ].msv;
-      return 0;
+      int idx(Index());
+      return particles[idx].m ? particles[idx].msv : 0;
     }
     inline double Mass() const {
-      if (particles[ Index() ].msv) return particles[Index()].m;
-      return 0.;
+      int idx(Index());
+      return particles[idx].msv ? particles[idx].m : 0.0;
     }
     inline double SelMass() const {
-      if (particles[ Index() ].msv && !IsKK()) return particles[Index()].m;
-      return 0.;
+      int idx(Index());
+      return particles[idx].msv && !IsKK() ? particles[idx].m : 0.0;
     }
     inline double PSMass() const {
       return particles[Index()].m;
