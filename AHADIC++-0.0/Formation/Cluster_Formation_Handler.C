@@ -228,7 +228,8 @@ void Cluster_Formation_Handler::ClustersToHadrons()
     else clit++;
   }
   msg.Tracking()<<"   Continue with "<<m_clulists.size()<<" lists."<<endl;
-  for (clit=m_clulists.begin();clit!=m_clulists.end();clit++) p_ctransformer->TreatClusterList((*clit),p_blob);
+  for (clit=m_clulists.begin();clit!=m_clulists.end();clit++) 
+    p_ctransformer->TreatClusterList((*clit),p_blob);
 
   Histogram * histomass, * histonumb;
   if (m_analyse) {

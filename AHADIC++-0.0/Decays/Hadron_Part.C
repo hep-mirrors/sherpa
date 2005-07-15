@@ -167,7 +167,7 @@ bool Isotropic::CheckDecayKinematics(Cluster * cluster,Cluster * other,Flavour &
     }
     m1 = had.Mass();
   }
-  if (mass>=m1+m2) false;
+  if (mass>=m1+m2) return false;
 
   help = Flavour(kf::none);
   while (mass<=m1+m2) {

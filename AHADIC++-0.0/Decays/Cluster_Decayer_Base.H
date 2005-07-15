@@ -25,5 +25,39 @@ namespace AHADIC {
     ~Cluster_Decayer_Base();
     bool Treat(Cluster *,Part_List *);
   };
+  /*!
+    \file Cluster_Decayer_Base.H
+    \brief Contains the class AHADIC::Cluster_Decayer_Base. 
+  */
+
+  /*! 
+    \class Cluster_Decayer_Base
+    \brief This class is responsible for the organisation of individual cluster decays, for which it owns pointers
+    to a AHADIC::Cluster_Part and a AHADIC::Hadron_Part object.
+
+    The cluster decays are organised through a single method, namely Treat(Cluster *,Part_List *).
+  */
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Description of member variables for Cluster_Decayer_Base
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  /*!
+    \var Cluster_Decayer_Base::
+    \brief
+  */
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Description of member methods for Cluster_Decayer_Base
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  /*!
+    \fn Cluster_Decayer_Base::Cluster_Decayer_Base()
+    \brief Constructor, no task so far.
+  */
+  /*!
+    \fn Cluster_Decayer_Base::~Cluster_Decayer_Base()
+    \brief Destructor, no task so far.
+  */
+  /*!
+    \fn void Cluster_Decayer_Base::
+    \brief 
+  */
 }
 #endif

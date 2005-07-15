@@ -40,5 +40,36 @@ namespace AHADIC {
     void DecayClusters(Cluster_List *,ATOOLS::Blob *);
     Part_List    * GetParticles() { return p_partlist; }
   };
+  /*!
+    \file Cluster_Decay_Handler.H
+    \brief Contains the class AHADIC::Cluster_Decay_Handler. 
+  */
+
+  /*! 
+    \class Cluster_Decay_Handler
+    \brief
+  */
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Description of member variables for Cluster_Decay_Handler
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  /*!
+    \var Cluster_Decay_Handler::
+    \brief 
+  */
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Description of member methods for Cluster_Decay_Handler
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  /*!
+    \fn Cluster_Decay_Handler::Cluster_Decay_Handler()
+    \brief Constructor, no task so far.
+  */
+  /*!
+    \fn Cluster_Decay_Handler::~Cluster_Decay_Handler()
+    \brief Destructor, no task so far.
+  */
+  /*!
+    \fn void Cluster_Decay_Handler::
+    \brief 
+  */
 }
 #endif

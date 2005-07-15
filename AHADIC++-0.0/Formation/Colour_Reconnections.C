@@ -7,8 +7,8 @@ using namespace ATOOLS;
 using namespace std;
 
 
-Colour_Reconnections::Colour_Reconnections() : 
-  m_kinmode(1), m_colmode(1), m_t0(1.)
+Colour_Reconnections::Colour_Reconnections(int kinmode,int colmode,double t0) : 
+  m_kinmode(kinmode), m_colmode(colmode), m_t0(t0)
 { }
 
 Colour_Reconnections::~Colour_Reconnections() 
