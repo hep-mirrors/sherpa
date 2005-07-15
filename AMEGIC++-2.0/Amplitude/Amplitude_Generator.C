@@ -1579,22 +1579,22 @@ Single_Amplitude* Amplitude_Generator::Matching()
       if (fl[0].IsQuark() && !fl[0].IsAnti()) {
 	if (!(fl[perm[N-1]].IsQuark() && 
 	      (b[perm[N-1]]==-1 && (fl[perm[N-1]].IsAnti() || fl[perm[N-1]].Majorana())) ||
-	      (b[perm[N-1]]==1  && (!(fl[perm[N-1]].IsAnti()) || fl[perm[N-1]].Majorana())) ))  sw1 = 0;
+	      (b[perm[N-1]]==1  && (!(fl[perm[N-1]].IsAnti()) || fl[perm[N-1]].Majorana())) )) sw1 = 0;
       }
       if (fl[0].IsQuark() && fl[0].IsAnti()) {
 	if (!(fl[perm[1]].IsQuark() && 
-	      (b[perm[1]]==-1 && 
-	       (!fl[perm[1]].IsAnti() || fl[perm[1]].Majorana())) ||
-	      (b[perm[1]]==1 &&  
-	       ((fl[perm[1]].IsAnti()) || fl[perm[1]].Majorana())) ))  sw1 = 0;
+	      (b[perm[1]]==-1 && (!fl[perm[1]].IsAnti() || fl[perm[1]].Majorana())) ||
+	      (b[perm[1]]==1  && ((fl[perm[1]].IsAnti()) || fl[perm[1]].Majorana())) )) sw1 = 0;
       }
-      //Anti-Leptons too!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      if (fl[0].IsLepton()) {
-	if (!(fl[perm[N-1]].IsLepton() //|| fl[perm[N-1]].IsSlepton() 
-	      && 
+      if (fl[0].IsLepton() && !fl[0].IsAnti()) {
+	if (!(fl[perm[N-1]].IsLepton() && 
 	      (b[perm[N-1]]==-1 && (fl[perm[N-1]].IsAnti() || fl[perm[N-1]].Majorana())) ||
-	      (b[perm[N-1]]==1  && (!(fl[perm[N-1]].IsAnti()) || fl[perm[N-1]].Majorana())) )) 
-	  sw1 = 0;
+	      (b[perm[N-1]]==1  && (!(fl[perm[N-1]].IsAnti()) || fl[perm[N-1]].Majorana())) )) sw1 = 0;
+      }
+      if (fl[0].IsLepton() && fl[0].IsAnti()) {
+	if (!(fl[perm[N-1]].IsLepton() && 
+	      (b[perm[N-1]]==-1 && (!fl[perm[N-1]].IsAnti() || fl[perm[N-1]].Majorana())) ||
+	      (b[perm[N-1]]==1  && ((fl[perm[N-1]].IsAnti()) || fl[perm[N-1]].Majorana())) )) sw1 = 0;
       }
     }
     if (sw1) {
