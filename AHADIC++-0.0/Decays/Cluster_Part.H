@@ -13,12 +13,12 @@ namespace AHADIC {
     virtual bool TestDecay(Cluster *,Part_List *)=NULL;
   };
 
-  class QoverM : public Cluster_Part {
+  class Q_over_M : public Cluster_Part {
     Pair_Popper m_popper;
     double      m_Q;
   public:
-    QoverM();
-    ~QoverM();
+    Q_over_M();
+    ~Q_over_M();
     bool TestDecay(Cluster *,Part_List *);
   };
 
@@ -31,7 +31,7 @@ namespace AHADIC {
   /*!
     \file Cluster_Part.H
     \brief Contains the virtual mother class AHADIC::Cluster_Part and its explicit realisations
-    AHADIC::QoverM and AHADIC::FourFermion. 
+    AHADIC::Q_over_M and AHADIC::FourFermion. 
   */
 
   /*! 
@@ -40,7 +40,7 @@ namespace AHADIC {
     they are too light. This latter transition is managed by AHADIC::Hadron_Part.
   */
   /*! 
-    \class QoverM
+    \class Q_over_M
     \brief This is an explicit realisation of the virtual class AHADIC::Cluster_Part. Here, the kinematics of the
     test decays is fixed through simple momenta shuffling with a parameter Q.
 
@@ -81,30 +81,30 @@ namespace AHADIC {
     Called by the Cluster_Decayer_Base::Treat(Cluster * cluster,Part_List * pl) method. 
   */
   ////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Description of member variables for QoverM
+  // Description of member variables for Q_over_M
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   /*!
-    \var Pair_Popper QoverM::m_popper
+    \var Pair_Popper Q_over_M::m_popper
     \brief To pop out quark pairs in the test decays to find out whether the produced two objects fall into the
     cluster or the hadron regime.
   */
   /*!
-    \var double QoverM::m_Q
+    \var double Q_over_M::m_Q
     \brief The parameter for the cluster decays, at the moment \f$m_Q=1 \mbox{\rm GeV}^2\f$. 
   */
   ////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Description of member methods for QoverM
+  // Description of member methods for Q_over_M
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   /*!
-    \fn QoverM::QoverM()
+    \fn Q_over_M::Q_over_M()
     \brief Constructor, initialises the m_popper and m_Q.
   */
   /*!
-    \fn QoverM::~QoverM()
+    \fn Q_over_M::~Q_over_M()
     \brief Destructor, no task so far.
   */
   /*!
-    \fn bool  QoverM::TestDecay(Cluster *,Part_List *)
+    \fn bool  Q_over_M::TestDecay(Cluster *,Part_List *)
     \brief This method produces a test decay of the cluster, including kinematics and a new quark (or diquark) pair;
     if such a test decay can be constructed the method yields "true", otherwise it yields "false".
 
@@ -121,6 +121,12 @@ namespace AHADIC {
     Q_{34}^\mu &=& q_3^\mu+q_4^\mu = \left(1-\frac{Q}{M_C}\right)p_2^\mu + \frac{Q}{M_C}p_1^\mu
     \end{array}\,.
     \f]
+    This leads to masses of, roughly,
+    \f[
+    M_{12}^2 = Q_{12}^2 = m_1^2\left(1-\frac{2Q}{M_C}\right) + \frac{Q^2}{M_C^2}(m_1^2+m_2^2) - 
+                          2(p_1\cdot p_2)\left(\frac{Q}{M_C}-\frac{Q^2}{M_C^2}\right) \approx QM_C\,,
+    \f]
+    i.e. a significant reduction for the emerging clusters w.r.t. the original one. <br>
     Then a quark (or diquark) pair is determined with help of Pair_Popper::Pop(ATOOLS::Flavour &).
     A trivial check is performed whether the energies \f$E_{12}\f$ and \f$E_{34}\f$ of the new clusters
     are larger than the sum of the constituent masses. If not, a new trial flavour is popped; this is repeated until

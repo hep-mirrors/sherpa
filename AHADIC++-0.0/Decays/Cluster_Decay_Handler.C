@@ -13,14 +13,14 @@ Cluster_Decay_Handler::Cluster_Decay_Handler(Cluster_Transformer * transformer,b
   p_transformer(transformer),
   p_partlist(new Part_List)
 { 
-  Cluster_Part * cp;
-  Hadron_Part * hp;
+  Cluster_Part * cp = NULL;
+  Hadron_Part  * hp = NULL;
   switch (int(m_cdm/10)) {
   case 2:
-    cp = new FourFermion();
+    cp = new Four_Fermion();
   case 1:
   default:
-    cp = new QoverM();
+    cp = new Q_over_M();
   }
   switch (int(m_cdm%10)) {
   case 2:

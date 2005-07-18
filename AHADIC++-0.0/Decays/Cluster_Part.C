@@ -7,15 +7,15 @@ using namespace ATOOLS;
 using namespace std;
 
 
-QoverM::QoverM() :
+Q_over_M::Q_over_M() :
   m_popper(Pair_Popper()), m_Q(1.)
 { }
 
-QoverM::~QoverM() { }
+Q_over_M::~Q_over_M() { }
 
 
 
-bool QoverM::TestDecay(Cluster * cluster,Part_List * pl)
+bool Q_over_M::TestDecay(Cluster * cluster,Part_List * pl)
 {
   cluster->BoostInCMS();
   double M    = sqrt(cluster->Momentum(0).Abs2());
