@@ -346,6 +346,9 @@ bool Initialization_Handler::InitializeThePDFs()
     double m_bunch_splimits[2];
     for (int j=0;j<2;++j) {
       pdfbase = pdfhandler.GetPDFLib(&dataread,m_bunch_particles[j],j);
+      if (m_bunch_particles[j].IsHadron() && pdfbase==NULL)
+	THROW(fatal_error,"ISR must be enabled in 'ISR.dat' for "
+	      +ToString(m_bunch_particles[j])+" bunch.");
       if (pdfbase==NULL) isrbases[j] = new Intact(m_bunch_particles[j]);     
       else isrbases[j] = new Structure_Function(pdfbase,m_bunch_particles[j]);
       ATOOLS::rpa.gen.SetBunch(m_bunch_particles[j],j);
