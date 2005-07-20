@@ -195,7 +195,9 @@ namespace ATOOLS {
 #define msg_Indentation(COL) ATOOLS::Indentation indent(COL)
 
 #define PRINT_METHOD \
-  std::cout<<ATOOLS::om::blue<<__FUNCTION__<<ATOOLS::om::reset<<std::endl
+  std::cout<<ATOOLS::om::blue \
+           <<ATOOLS::msg.ExtractMethodName(__PRETTY_FUNCTION__) \
+           <<ATOOLS::om::reset<<std::endl
 
 #define PRINT_INFO(INFO) \
   std::cout<<ATOOLS::om::blue \
