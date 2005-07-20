@@ -205,3 +205,20 @@ std::ostream &Message::LogFile() const
   if (m_level & 16) return *p_logfile<<Indent(); 
   return *p_no; 
 }
+
+std::string Message::ExtractMethodName(std::string cmethod) const   
+{ 
+  std::string cclass("<no class>"), method("<no method>");
+  cmethod=cmethod.substr(0,ATOOLS::Min(cmethod.length(),cmethod.find("(")));
+  size_t pos;
+  while ((pos=cmethod.find(" "))!=std::string::npos) 
+    cmethod=cmethod.substr(pos+1);
+  pos=cmethod.find("::");
+  while (pos!=std::string::npos) {
+    cclass=cmethod.substr(0,pos);
+    cmethod=cmethod.substr(pos+2);
+    pos=cmethod.find("::");
+    method=cmethod.substr(0,ATOOLS::Min(cmethod.length(),pos));
+  }
+  return cclass+"::"+cmethod;
+}

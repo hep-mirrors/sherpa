@@ -125,6 +125,8 @@ namespace ATOOLS {
 
     std::ostream &LogFile() const;   
 
+    std::string ExtractMethodName(std::string cmethod) const;
+
     // inline functions
     inline void SetLevel(const int level)     { m_level = level;    }
     inline void SetModifiable(const bool mod) { m_modifiable = mod; }
@@ -196,8 +198,10 @@ namespace ATOOLS {
   std::cout<<ATOOLS::om::blue<<__FUNCTION__<<ATOOLS::om::reset<<std::endl
 
 #define PRINT_INFO(INFO) \
-  std::cout<<ATOOLS::om::blue<<__FUNCTION__<<ATOOLS::om::reset<<":(" \
-	   <<ATOOLS::om::green<<"\""<<INFO<<"\""<<ATOOLS::om::reset<<")"<<std::endl
+  std::cout<<ATOOLS::om::blue \
+           <<ATOOLS::msg.ExtractMethodName(__PRETTY_FUNCTION__) \
+           <<ATOOLS::om::reset<<":("<<ATOOLS::om::green \
+           <<"\""<<INFO<<"\""<<ATOOLS::om::reset<<")"<<std::endl
 
 #endif
 
