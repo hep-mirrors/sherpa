@@ -224,6 +224,8 @@ Primitive_Observable_Base * Two_Particle_Eta::Copy() const
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+DEFINE_OBSERVABLE_GETTER(Two_Particle_DEta,Two_Particle_DEta_Getter,"DEta");
+
 Two_Particle_DEta::Two_Particle_DEta(const Flavour & flav1,const Flavour & flav2,
 				     int type,double xmin,double xmax,int nbins,
 				     const std::string & listname) :
@@ -242,6 +244,30 @@ void Two_Particle_DEta::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double we
 Primitive_Observable_Base * Two_Particle_DEta::Copy() const 
 {
     return new Two_Particle_DEta(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+    
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DEFINE_OBSERVABLE_GETTER(Two_Particle_DY,Two_Particle_DY_Getter,"DY");
+
+Two_Particle_DY::Two_Particle_DY(const Flavour & flav1,const Flavour & flav2,
+				     int type,double xmin,double xmax,int nbins,
+				     const std::string & listname) :
+    Two_Particle_Observable_Base(flav1,flav2,type,xmin,xmax,nbins,listname,"DY") 
+
+{ 
+}
+
+
+void Two_Particle_DY::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, int ncount) 
+{    
+  double deta = abs((mom1.Y()-mom2.Y()));
+  p_histo->Insert(deta,weight,ncount); 
+} 
+
+Primitive_Observable_Base * Two_Particle_DY::Copy() const 
+{
+    return new Two_Particle_DY(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
     
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
