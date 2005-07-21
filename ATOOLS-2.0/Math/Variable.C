@@ -173,6 +173,22 @@ Theta2<ValueType>::Theta2(): Variable_Base<ValueType>("\\theta_{ij}")
   m_selectorid=22; 
 }
 
+template <class ValueType>
+class T: public Variable_Base<ValueType> {
+public:
+  T();
+};// end of class T
+template <class ValueType>
+T<ValueType>::T(): Variable_Base<ValueType>("t") {}
+  
+template <class ValueType>
+class Delta: public Variable_Base<ValueType> {
+public:
+  Delta();
+};// end of class Delta
+template <class ValueType>
+Delta<ValueType>::Delta(): Variable_Base<ValueType>("\\Delta(t,t_0)") {}
+  
 template class Variable_Base<double>;
 
 #define COMPILE__Getter_Function
@@ -195,7 +211,7 @@ Variable_Base<double> *GetVariable(const std::string &parameter)
   void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
   { str<<PRINT; }
 
-#define DEFINE_VARIABLE_GETTER(CLASS,NAME,TAG,PRINT)			\
+#define DEFINE_VARIABLE_GETTER(CLASS,NAME,TAG,PRINT)		        \
   template class CLASS;							\
   DECLARE_GETTER(NAME,TAG,Variable_Base<double>,std::string);		\
   DEFINE_GETTER_METHOD(CLASS,NAME);					\
@@ -220,3 +236,7 @@ DEFINE_VARIABLE_GETTER(Theta<double>,Theta_Getter,
 DEFINE_VARIABLE_GETTER(Theta2<double>,Theta2_Getter,
 		       "\\theta_{ij}","\\theta_{ij}")
 
+DEFINE_VARIABLE_GETTER(T<double>,T_Getter,
+		       "t","t")
+DEFINE_VARIABLE_GETTER(Delta<double>,Delta_Getter,
+		       "\\Delta(t,t_0)","\\Delta(t,t_0)")
