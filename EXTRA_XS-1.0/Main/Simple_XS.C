@@ -28,6 +28,7 @@ Simple_XS::Simple_XS(const std::string &path,const std::string &file,
   m_file(file),
   m_maxjet(2)
 {
+  m_nmax=0;
   m_atoms=1;
   p_dataread = new Data_Read(m_path+m_file);
 }
@@ -171,6 +172,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   }
   ResetSelector(p_selectordata);
   if (ATOOLS::msg.LevelIsTracking()) this->Print();
+  m_maxjet=m_nmax-m_nin;
   if (m_xsecs.size()>0) return true;
   msg.Error()<<"Simple_XS::InitializeProcesses("<<beamhandler<<","<<isrhandler<<"): "
 	     <<"   Did not find any process in '"<<m_path+processfile<<"' !"<<std::endl;

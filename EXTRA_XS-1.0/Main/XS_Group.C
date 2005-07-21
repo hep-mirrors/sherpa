@@ -8,6 +8,7 @@
 #include "Random.H"
 #include "MathTools.H"
 #include "FSR_Channel.H"
+//#include "Rambo.H"
 
 #ifdef PROFILE__all
 #define PROFILE__XS_Group
@@ -476,9 +477,13 @@ void XS_Group::SetMax(const double max,const int flag)
 void XS_Group::CreateFSRChannels() 
 {
   p_pshandler->FSRIntegrator()->DropAllChannels();
-  if (m_nout>2) {
+  if (p_isrhandler->KMROn()>0) {
     p_pshandler->FSRIntegrator()->
       Add(new PHASIC::T1Channel(m_nin,m_nout,p_flavours));
+    p_pshandler->FSRIntegrator()->
+      Add(new PHASIC::T2Channel(m_nin,m_nout,p_flavours));
+//     p_pshandler->FSRIntegrator()->
+//       Add(new PHASIC::Rambo(m_nin,m_nout,p_flavours));
   }
   else {
     p_pshandler->FSRIntegrator()->
