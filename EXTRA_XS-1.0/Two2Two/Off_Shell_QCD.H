@@ -25,7 +25,7 @@ namespace EXTRAXS {
   class Off_Shell_gg_gg: public Single_XS {  
   private:
     
-    double m_alphas;
+    double m_alphas, m_qtcut;
 
     ATOOLS::Info_Key m_zkey[2];
 
