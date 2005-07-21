@@ -153,6 +153,18 @@ namespace ANALYSIS {
 		const int jet1,const int jet2);
   };
 
+  class Jet_DeltaY_Distribution : public Two_Jet_Observable_Base {
+  protected:
+  public:
+    Jet_DeltaY_Distribution(unsigned int type,double xmin,double xmax,int nbins,
+			    unsigned int mode, unsigned int minn, unsigned int maxn, 
+			    const std::string & =std::string("Jets"));
+    
+    Primitive_Observable_Base * Copy() const;
+    double Calc(const ATOOLS::Particle * p1,const ATOOLS::Particle * p2,
+		const int jet1,const int jet2);
+  };
+
   class Jet_DeltaPhi_Distribution : public Two_Jet_Observable_Base {
   protected:
   public:

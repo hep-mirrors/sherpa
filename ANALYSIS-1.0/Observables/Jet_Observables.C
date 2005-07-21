@@ -610,6 +610,37 @@ double Jet_DeltaEta_Distribution::Calc(const Particle * p1,const Particle * p2,
 }
 //----------------------------------------------------------------------
 
+DEFINE_OBSERVABLE_GETTER(Jet_DeltaY_Distribution,
+			 Jet_DeltaY_Distribution_Getter,"JetDY");
+
+Jet_DeltaY_Distribution::Jet_DeltaY_Distribution(unsigned int type,double xmin,double xmax,int nbins,
+						     unsigned int mode,unsigned int minn,unsigned int maxn, 
+						     const std::string & lname) :
+  Two_Jet_Observable_Base(type,xmin,xmax,nbins,mode,minn,maxn,lname)
+{
+  m_name+="dy2_";
+}
+
+Primitive_Observable_Base * Jet_DeltaY_Distribution::Copy() const 
+{
+  Jet_DeltaY_Distribution * jde =
+    new Jet_DeltaY_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+  return jde;
+}
+
+double Jet_DeltaY_Distribution::Calc(const Particle * p1,const Particle * p2,
+				       const int jet1,const int jet2)
+{
+  Vec4D mom1 = p1->Momentum();
+  Vec4D mom2 = p2->Momentum();
+  
+  double y1(mom1.Y()), y2(mom2.Y());
+  if (!(y1>=0.0) && !(y1<0.0)) return 0.0;
+  if (!(y2>=0.0) && !(y2<0.0)) return 0.0;
+  return dabs(y1-y2);
+}
+//----------------------------------------------------------------------
+
 DEFINE_OBSERVABLE_GETTER(Jet_DeltaPhi_Distribution,
 			 Jet_DeltaPhi_Distribution_Getter,"JetDPhi");
 
