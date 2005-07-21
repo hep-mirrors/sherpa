@@ -17,8 +17,8 @@ Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,
 				 PDF::ISR_Handler *const isrhandler,
 				 ATOOLS::Selector_Data *const selectordata):
   m_name(""), m_nin(nin), m_nout(nout), m_naddin(0), m_naddout(0), 
-  m_nvector(nin+nout), p_flavours(NULL), p_addflavours(NULL), 
-  p_momenta(new ATOOLS::Vec4D[nin+nout]), p_addmomenta(NULL), 
+  m_nvector(ATOOLS::Max(nin+nout,(size_t)1)), p_flavours(NULL), p_addflavours(NULL), 
+  p_momenta(new ATOOLS::Vec4D[ATOOLS::Max(nin+nout,(size_t)1)]), p_addmomenta(NULL), 
   m_scalescheme(scalescheme), m_kfactorscheme(kfactorscheme), 
   m_nstrong(0), m_neweak(0), m_usepi(0),
   m_threshold(0.), m_overflow(0.), m_rfactor(1.0), m_xinfo(std::vector<double>(4)),
@@ -456,11 +456,12 @@ double Integrable_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
   }
   case 102: {// g*g*->qqb scheme
     const ATOOLS::Vec4D *p=momenta;
-    double S2=p[4]*p[5];
-    double a1=p[5]*p[0]/S2;
-    double b2=p[4]*p[1]/S2;
-    m_scale[PHASIC::stp::kp21]=a1*a1*2.*S2*p[2].PMinus()/p[2].PPlus();
-    m_scale[PHASIC::stp::kp22]=b2*b2*2.*S2*p[3].PPlus()/p[3].PMinus();
+    ATOOLS::Vec4D p2=p[m_nin], p3=p[m_nin+m_nout-1];
+    double S2=p[m_nin+m_nout]*p[m_nin+m_nout+1];
+    double a1=p[m_nin+m_nout+1]*p[0]/S2;
+    double b2=p[m_nin+m_nout]*p[1]/S2;
+    m_scale[PHASIC::stp::kp21]=a1*a1*2.*S2*p2.PMinus()/p2.PPlus();
+    m_scale[PHASIC::stp::kp22]=b2*b2*2.*S2*p3.PPlus()/p3.PMinus();
     // qcd scale
     double s=(p[0]+p[1]).Abs2();
     double t=(p[0]-p[2]).Abs2();
@@ -470,12 +471,12 @@ double Integrable_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
   }
   case 103: {// g*g*->gg scheme
     const ATOOLS::Vec4D *p=momenta;
-    ATOOLS::Vec4D p2=p[2], p3=p[3];
+    ATOOLS::Vec4D p2=p[m_nin], p3=p[m_nin+m_nout-1];
     if (p2.PMinus()/p2.PPlus()>p3.PMinus()/p3.PPlus())
       std::swap<ATOOLS::Vec4D>(p2,p3);
-    double S2=p[4]*p[5];
-    double a1=p[5]*p[0]/S2;
-    double b2=p[4]*p[1]/S2;
+    double S2=p[m_nin+m_nout]*p[m_nin+m_nout+1];
+    double a1=p[m_nin+m_nout+1]*p[0]/S2;
+    double b2=p[m_nin+m_nout]*p[1]/S2;
     m_scale[stp::kp21]=a1*a1*2.*S2*p2.PMinus()/p2.PPlus();
     m_scale[stp::kp22]=b2*b2*2.*S2*p3.PPlus()/p3.PMinus();
     // mean of factorisation scales
@@ -485,12 +486,12 @@ double Integrable_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
   }
   case 104: {// g*g*->gg scheme
     const ATOOLS::Vec4D *p=momenta;
-    ATOOLS::Vec4D p2=p[2], p3=p[3];
-    if (p2.PMinus()/p2.PPlus()>p3.PMinus()/p3.PPlus())
-      std::swap<ATOOLS::Vec4D>(p2,p3);
-    double S2=p[4]*p[5];
-    double a1=p[5]*p[0]/S2;
-    double b2=p[4]*p[1]/S2;
+    ATOOLS::Vec4D p2=p[m_nin], p3=p[m_nin+m_nout-1];
+     if (p2.PMinus()/p2.PPlus()>p3.PMinus()/p3.PPlus())
+       std::swap<ATOOLS::Vec4D>(p2,p3);
+    double S2=p[m_nin+m_nout]*p[m_nin+m_nout+1];
+    double a1=p[m_nin+m_nout+1]*p[0]/S2;
+    double b2=p[m_nin+m_nout]*p[1]/S2;
     double fac=ATOOLS::rpa.gen.FactorizationScaleFactor();
     m_scale[stp::kp21]=fac*a1*a1*2.*S2*p2.PMinus()/p2.PPlus();
     m_scale[stp::kp22]=fac*b2*b2*2.*S2*p3.PPlus()/p3.PMinus();
@@ -617,3 +618,11 @@ void Integrable_Base::SetISRThreshold(const double threshold)
 {
   m_threshold=threshold;
 }
+
+void Integrable_Base::CreateMomenta(const size_t n)
+{ 
+  delete [] p_momenta; 
+  p_momenta = new ATOOLS::Vec4D[n]; 
+  m_nvector=n; 
+}
+

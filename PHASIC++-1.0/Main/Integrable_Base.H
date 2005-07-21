@@ -158,6 +158,8 @@ namespace PHASIC {
     Integrable_Base *const Selected();
     Integrable_Base *const Parent();
 
+    void CreateMomenta(const size_t n);
+
     // inline functions
     inline void SetName(const std::string &name) { m_name=name; }
 
@@ -257,9 +259,6 @@ namespace PHASIC {
     inline Phase_Space_Handler *const PSHandler(const bool own=true) 
     { if (own) return p_pshandler; return p_activepshandler; }
     
-    inline void CreateMomenta(const size_t n)
-    { delete p_momenta; p_momenta = new ATOOLS::Vec4D[n]; m_nvector=n; }
-
     inline std::string EnhanceFunction() const { return m_efunc; }
 
   };// end of class Integrable_Base
