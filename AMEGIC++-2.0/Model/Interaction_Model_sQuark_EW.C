@@ -1159,7 +1159,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	
 	Kabbala charge = Kabbala(string("Q_{"+flav.TexName()+"}"),flav.Charge());
 	
-	kcpl0 = -M_I*charge*num_2*g1*g3;;
+	kcpl0 = M_I*charge*num_2*g1*g3;
 	kcpl1 = kcpl0;
 	
 	vertex[vanz].cpl[0]  = kcpl0.Value();
@@ -1169,8 +1169,8 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	
 	vertex[vanz].ncf   = 1;
 	vertex[vanz].Color = new Color_Function(cf::T);     
-	vertex[vanz].Color->SetParticleArg(0,1,2);     
-	vertex[vanz].Color->SetStringArg('0','1','2');    
+	vertex[vanz].Color->SetParticleArg(0,2,1);     
+	vertex[vanz].Color->SetStringArg('0','2','1');    
 	
 	vertex[vanz].nlf     = 1;
 	vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
@@ -1193,7 +1193,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	
 	Kabbala charge = Kabbala(string("Q_{"+flav.TexName()+"}"),flav.Charge());
 	
-	kcpl0 = -M_I*charge*num_2*g1*g3;
+	kcpl0 = M_I*charge*num_2*g1*g3;
 	kcpl1 = kcpl0;
 	
 	vertex[vanz].cpl[0]  = kcpl0.Value();
@@ -1203,8 +1203,8 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	
 	vertex[vanz].ncf   = 1;
 	vertex[vanz].Color = new Color_Function(cf::T);     
-	vertex[vanz].Color->SetParticleArg(0,1,2);     
-	vertex[vanz].Color->SetStringArg('0','1','2');    
+	vertex[vanz].Color->SetParticleArg(0,2,1);     
+	vertex[vanz].Color->SetStringArg('0','2','1');    
 		
 	vertex[vanz].nlf     = 1;
 	vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
@@ -1233,8 +1233,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	    
 	    if (i==j) {help = sintW*sintW*num_4/num_3;}  
 	    
-	    //changed sign compared to Rosiek
-	    kcpl0 = -M_I*g2*g3/costW*(K_Z_U(gen_sUp(flav2),j-51)*K_Z_U(gen_sUp(flav1),i-51) - help);
+	    kcpl0 = M_I*g2*g3/costW*(K_Z_U(gen_sUp(flav2),j-51)*K_Z_U(gen_sUp(flav1),i-51) - help);
 	    kcpl1 = kcpl0;
 	    
 	    vertex[vanz].cpl[0]  = kcpl0.Value();
@@ -1244,8 +1243,8 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	    
 	    vertex[vanz].ncf   = 1;
 	    vertex[vanz].Color = new Color_Function(cf::T);     
-	    vertex[vanz].Color->SetParticleArg(0,1,2);     
-	    vertex[vanz].Color->SetStringArg('0','1','2');    
+	    vertex[vanz].Color->SetParticleArg(0,2,1);     
+	    vertex[vanz].Color->SetStringArg('0','2','1');    
 	    
 	    vertex[vanz].nlf     = 1;
 	    vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
@@ -1275,7 +1274,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	    
 	    if (i==j) {help = sintW*sintW*num_2/num_3;}  
 	    
-	    kcpl0 = -M_I*g2*g3/costW*(-K_Z_D(gen_sDown(flav1),j-61)*K_Z_D(gen_sDown(flav1),i-61) + help);
+	    kcpl0 = M_I*g2*g3/costW*(-K_Z_D(gen_sDown(flav1),j-61)*K_Z_D(gen_sDown(flav1),i-61) + help);
 	    kcpl1 = kcpl0;
 	    
 	    vertex[vanz].cpl[0]  = kcpl0.Value();
@@ -1285,8 +1284,8 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	    
 	    vertex[vanz].ncf   = 1;
 	    vertex[vanz].Color = new Color_Function(cf::T);     
-	    vertex[vanz].Color->SetParticleArg(0,1,2);     
-	    vertex[vanz].Color->SetStringArg('0','1','2');    
+	    vertex[vanz].Color->SetParticleArg(0,2,1);     
+	    vertex[vanz].Color->SetStringArg('0','2','1');    
 	    
 	    vertex[vanz].nlf     = 1;
 	    vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
@@ -1314,8 +1313,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	    vertex[vanz].in[3] = flgluon;
 	    
 	    vertex[vanz].nleg     = 4;
-	    //opposite to rosiek minus
-	    kcpl0 = -M_I*g2*g3*root2*(K_Z_D(gen_sDown(flav2),j-61)*K_Z_U(gen_sUp(flav1),i-51))*
+	    kcpl0 = M_I*g2*g3*root2*(K_Z_D(gen_sDown(flav2),j-61)*K_Z_U(gen_sUp(flav1),i-51))*
 	      conj_K_CKM(gen_sUp(flav1),gen_sDown(flav2));
 	    
 	    kcpl1 = kcpl0;
@@ -1328,8 +1326,8 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	    vertex[vanz].ncf   = 1;
 	    vertex[vanz].Color = new Color_Function(cf::T);
 	    
-	    vertex[vanz].Color->SetParticleArg(3,1,2);     
-	    vertex[vanz].Color->SetStringArg('3','1','2');    
+	    vertex[vanz].Color->SetParticleArg(3,2,1);     
+	    vertex[vanz].Color->SetStringArg('3','2','1');    
 	    
 	    vertex[vanz].nlf     = 1;
 	    vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
