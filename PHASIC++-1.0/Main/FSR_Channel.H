@@ -65,6 +65,57 @@ namespace PHASIC {
   };
 
 
+  class T2Channel : public Single_Channel {
+    /*!
+      This channel is for bfkl stuff only.
+      It dices the momenta in the ladder 
+      from bottom to top.
+    */
+    double E,s;
+    double E1,E2,Ehat,shat,phat;
+    double pt,pl,pt2,pt2min,pt2max,smin,smax;
+    double zmin,zmax,z;
+    double mass,width;
+    int    type;
+    int    chnumber;
+    Vegas *p_vegas;
+  public :
+    T2Channel(int,int,ATOOLS::Flavour *,
+	      ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none)); 
+    void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *,double * _ran);
+    void GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *);
+    void ISRInfo(int &,double &,double &);
+    int  ChNumber()                 { return chnumber;      }
+    void SetChNumber(int _chnumber) { chnumber = _chnumber; }
+    std::string ChID();
+  };
+
+  class T3Channel : public Single_Channel {
+    /*!
+      This channel is for bfkl stuff only.
+      It dices the momenta in the ladder 
+      from top to bottom.
+    */
+    double E,s;
+    double E1,E2,Ehat,shat,phat;
+    double pt,pl,pt2,pt2min,pt2max,smin,smax;
+    double zmin,zmax,z;
+    double mass,width;
+    int    type;
+    int    chnumber;
+    Vegas *p_vegas;
+  public :
+    T3Channel(int,int,ATOOLS::Flavour *,
+	      ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none)); 
+    void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *,double * _ran);
+    void GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *);
+    void ISRInfo(int &,double &,double &);
+    int  ChNumber()                 { return chnumber;      }
+    void SetChNumber(int _chnumber) { chnumber = _chnumber; }
+    std::string ChID();
+  };
+
+
 
   class U1Channel : public Single_Channel {
     /*!
