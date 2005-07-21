@@ -44,6 +44,13 @@ void Selector_Base::SetRange(std::vector<Flavour>,int,double,double) {
   msg.Error()<<"Selector_Base::SetRange : Virtual method."<<std::endl;
 }
 
+bool Selector_Base::GetValue(const std::string &name,double &value)
+{
+  msg.Error()<<"Selector_Base::GetValue("<<name<<",..): "
+	     <<"Virtual method called."<<std::endl;
+  return false;
+}
+
 int    Selector_Base::NeedUpdate()                         { return 0; }
 int    Selector_Base::IsConditional()                      { return 0; }
 void   Selector_Base::SetSRange(double _smin,double _smax) { m_smin = _smin; m_smax = _smax; }
@@ -112,6 +119,18 @@ bool Selector_Data::ReadInData(std::string filename) {
     if (keyword == string("PT")) {
       dat.type = 12;
       from>>crit1>>dat.min>>dat.max;
+      flav = Flavour(kf::code(abs(crit1)));
+      if (crit1<0) flav = flav.Bar();
+      (dat.flavs).push_back(flav);
+      data.push_back(dat);
+    }
+    if (keyword == string("IPT")) {
+      dat.type = 25;
+      std::string dmin, dmax;
+      from>>crit1>>dmin>>dmax;
+      Algebra_Interpreter inter;
+      dat.min=ToType<double>(inter.Interprete(dmin));
+      dat.max=ToType<double>(inter.Interprete(dmax));
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
       (dat.flavs).push_back(flav);

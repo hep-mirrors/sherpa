@@ -5,6 +5,16 @@
 #include "Message.H"
 #include <iomanip>
 
+#ifdef PROFILE__all
+#include "prof.hh"
+#else
+#ifdef PROFILE__Particle
+#include "prof.hh"
+#else
+#define PROFILE_HERE
+#endif
+#endif
+
 namespace ATOOLS {
   int Particle::s_totalnumber=0;
   long unsigned int Particle::s_currentnumber=0;
@@ -122,7 +132,8 @@ Particle& Particle::operator=(const Particle &in)
 }
 
 
-Particle::Particle(int number, Flavour fl, Vec4D p, char a) {
+Particle::Particle(int number, Flavour fl, Vec4D p, char a) 
+{
   ++s_totalnumber;
   m_number    = number;
   m_status    = 1;

@@ -235,6 +235,82 @@ void PT_Selector::SetRange(std::vector<Flavour> crit,double _min,
 
 /*--------------------------------------------------------------------
 
+  PT Selector
+
+  --------------------------------------------------------------------*/
+
+IPT_Selector::IPT_Selector(int _nin,int _nout, Flavour * _fl) {
+  m_name = std::string("IPT_Selector"); 
+  m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
+  m_fl   = _fl;
+  m_smin = 0.;
+  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
+  
+  double E = rpa.gen.Ecms();
+  ptmin  = new double[m_n];
+  ptmax  = new double[m_n];
+  value = new double[m_n];
+  for (int i=0;i<m_n;i++) { ptmin[i] = 0.; ptmax[i] = 10.*E; }
+  m_sel_log = new Selector_Log(m_name);
+}
+
+IPT_Selector::~IPT_Selector() {
+  delete [] ptmin;
+  delete [] ptmax;
+  delete [] value;
+  delete m_sel_log;
+}
+
+bool IPT_Selector::GetValue(const std::string &name,double &value)
+{
+  if (name=="qcut") value=ptmin[0];
+  else return false;
+  return true;
+}
+
+bool IPT_Selector::Trigger(const Vec4D * mom) 
+{
+  Vec4D qt(mom[0]);
+  double pti(qt.PPerp());
+  if (m_sel_log->Hit( ((pti<ptmin[0]) || (pti>ptmax[0])) )) return 0;
+  for (int i=m_nin;i<m_n;i++) {
+    qt-=mom[i];
+    pti = value[i] = qt.PPerp();
+    if (m_sel_log->Hit( ((pti<ptmin[i]) || (pti>ptmax[i])) )) return 0;
+  }
+  return 1;
+}
+
+double * IPT_Selector::ActualValue() { return value; }
+
+void IPT_Selector::BuildCuts(Cut_Data * cuts) 
+{
+}
+
+void IPT_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
+ 
+void IPT_Selector::SetRange(std::vector<Flavour> crit,double _min, 
+			       double _max=0.5*rpa.gen.Ecms())
+{
+  if (crit.size() != 1) {
+    msg.Error()<<"Wrong number of arguments in IPT_Selector::SetRange : "
+	       <<crit.size()<<endl;
+    return;
+  }
+
+  double MaxPTmin = 0.;
+  for (int i=0;i<m_n;i++) {
+    if (crit[0].Includes(m_fl[i])) {
+      ptmin[i] = _min; 
+      ptmax[i] = Min(_max,rpa.gen.Ecms());
+      if (ptmin[i]>MaxPTmin) MaxPTmin = ptmin[i];
+    }
+  }
+  m_smin = Max(m_smin,4.*MaxPTmin*MaxPTmin);
+}
+
+/*--------------------------------------------------------------------
+
   Z Selector
 
   --------------------------------------------------------------------*/

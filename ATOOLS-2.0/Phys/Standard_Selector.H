@@ -52,6 +52,19 @@ namespace ATOOLS {
     double * ActualValue();
   };
 
+  class IPT_Selector : public Selector_Base {
+    double * ptmin, * ptmax, * value;
+  public:
+    IPT_Selector(int,int,Flavour *);
+    ~IPT_Selector();
+    void     SetRange(std::vector<Flavour>,double,double);
+    bool     Trigger(const Vec4D * );
+    void     BuildCuts(Cut_Data *);
+    void     UpdateCuts(double,double,Cut_Data *);
+    double * ActualValue();
+    bool GetValue(const std::string &name,double &value);
+  };
+
   class X_Selector : public Selector_Base {
     double * zmin, * zmax, * value;
   public:

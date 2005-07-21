@@ -56,6 +56,8 @@ namespace ATOOLS {
     virtual void   SetRange(std::vector<Flavour>,double,double);
     virtual void   SetRange(std::vector<Flavour>,int,double,double);
     virtual void   Output();
+    
+    virtual bool GetValue(const std::string &name,double &value);
 
     virtual int    NeedUpdate();
     virtual int    IsConditional();

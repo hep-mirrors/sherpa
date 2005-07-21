@@ -116,6 +116,11 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
 	sel->SetRange(critflavs,rmin,rmax);
 	activetypes.push_back(type);
 	break;
+      case 25 :
+	sel = new IPT_Selector(_nin,_nout,_fl);
+	sel->SetRange(critflavs,rmin,rmax);
+	activetypes.push_back(type);
+	break;
       default :
 	sel = NULL;
 	msg.Error()<<"Error in Combined_Selector::Combined_Selector."<<endl
