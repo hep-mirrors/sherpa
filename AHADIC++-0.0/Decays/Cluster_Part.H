@@ -224,7 +224,6 @@ namespace AHADIC {
     the conditions are met, then "true" is returned. If no flavour can be found that matches the fixed kinematics,
     "false" is returned.
   */
-  */
   /*!
     \fn double Running_Q_over_M::SelectQ(const double)
     \brief Given the cluster's mass (the argument), an actual value \f$Q\f$ is selected according to the 
