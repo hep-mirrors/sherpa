@@ -8,7 +8,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Cluster_Decay_Handler::Cluster_Decay_Handler(Cluster_Transformer * transformer,bool ana) :
-  m_cdm(cdm::QoverM_Isotropic), 
+  m_cdm(cdm::RunningQoverM_Retain), 
   p_decayer(NULL), p_analysis(NULL), 
   p_transformer(transformer),
   p_partlist(new Part_List)
@@ -16,15 +16,20 @@ Cluster_Decay_Handler::Cluster_Decay_Handler(Cluster_Transformer * transformer,b
   Cluster_Part * cp = NULL;
   Hadron_Part  * hp = NULL;
   switch (int(m_cdm/10)) {
-  case 2:
+  case 4:
     cp = new Four_Fermion();
+    break;
+  case 2:
+    cp = new Running_Q_over_M();
+    break;
   case 1:
   default:
-    cp = new Q_over_M();
+    cp = new Simple_Q_over_M();
   }
   switch (int(m_cdm%10)) {
   case 2:
     hp = new Retain();
+    break;
   case 1:
   default:
     hp = new Isotropic();
@@ -46,7 +51,7 @@ void Cluster_Decay_Handler::DecayClusters(Cluster_List * clusters,Blob * blob)
 {
   p_partlist->clear();
   msg.Tracking()<<"Decay the clusters ------------------------------------------------"<<endl;
-  //<<(*clusters);
+  //cout<<"#################################################################################"<<endl<<(*clusters)<<endl;
   Cluster_Iterator cit;
   Vec4D clumom = Vec4D(0.,0.,0.,0.), partmom = Vec4D(0.,0.,0.,0.);
   for (cit=clusters->begin();cit!=clusters->end();) {
@@ -78,10 +83,12 @@ void Cluster_Decay_Handler::DecayClusters(Cluster_List * clusters,Blob * blob)
 bool Cluster_Decay_Handler::DecayIt(Cluster * cluster)
 {
   if (p_decayer->Treat(cluster,p_partlist)) {
+    //cout<<"Decay "<<endl<<(*cluster)<<endl;
     if (cluster->GetLeft())  DecayIt(cluster->GetLeft());
     if (cluster->GetRight()) DecayIt(cluster->GetRight());
     return true;
   }
+  //cout<<"Treat "<<endl<<(*cluster)<<endl;
   p_transformer->TreatSingleCluster(cluster,p_partlist);
   if (cluster->GetPrev()!=NULL) cout<<"------------- Found prev."<<endl;
   return false;

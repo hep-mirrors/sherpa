@@ -22,6 +22,7 @@ void Colour_Reconnections::Singlet_CR(Cluster_List * clin)
   bool direction = (ran.Get()>0.5);
   if (direction) clin->reverse();
 
+  int lead1,lead2;
   cit1 = cit2 = clin->begin(); cit2++;
   do {
     if (TestClusters((*cit1),(*cit2),gen)) {
@@ -32,6 +33,16 @@ void Colour_Reconnections::Singlet_CR(Cluster_List * clin)
       (*cit1)->SetMomentum(2,(*cit2)->Momentum(2));
       (*cit2)->SetFlav(2,helpfla);
       (*cit2)->SetMomentum(2,helpmom);
+      lead1 = int((*cit1)->GetLeads());
+      lead2 = int((*cit2)->GetLeads());
+      if (lead1>1 && lead2<2) {
+	(*cit1)->SetLeads(ltp::code(int((*cit1)->GetLeads())-2));
+	(*cit2)->SetLeads(ltp::code(int((*cit2)->GetLeads())+2));
+      } 
+      else if (lead1<2 && lead2>1) {
+	(*cit1)->SetLeads(ltp::code(int((*cit1)->GetLeads())+2));
+	(*cit2)->SetLeads(ltp::code(int((*cit2)->GetLeads())-2));
+      } 
       (*cit1)->Update();
       (*cit2)->Update();
       //std::cout<<"Clusters after "<<std::endl<<(*(*cit1))<<std::endl<<(*(*cit2))<<std::endl;

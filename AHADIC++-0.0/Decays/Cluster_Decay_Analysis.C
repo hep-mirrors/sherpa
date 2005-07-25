@@ -29,9 +29,14 @@ Cluster_Decay_Analysis::Cluster_Decay_Analysis()
   
   m_histograms[string("x_p_Pseudoscalars")]          = new Histogram(0,0.,1.,100);
   m_histograms[string("x_p_Vectors")]                = new Histogram(0,0.,1.,100);
-  m_histograms[string("x_p_B-Hadrons")]              = new Histogram(0,0.,1.,100);
   m_histograms[string("x_p_C-Hadrons")]              = new Histogram(0,0.,1.,100);
-  m_histograms[string("x_E_B-Hadrons")]              = new Histogram(0,0.,1.,100);
+  m_histograms[string("x_p_B-Mesons")]               = new Histogram(0,0.,1.,100);
+  m_histograms[string("x_p_Bstar-Mesons")]           = new Histogram(0,0.,1.,100);
+  m_histograms[string("x_E_Bstar-Mesons")]           = new Histogram(0,0.,1.,100);
+  m_histograms[string("x_E_B-Mesons")]               = new Histogram(0,0.,1.,100);
+  m_histograms[string("x_E_B-Quarks")]               = new Histogram(0,0.,1.,100);
+  m_histograms[string("x_E_B-Mesons_L")]             = new Histogram(0,0.,1.,100);
+  m_histograms[string("x_E_B-Quarks_L")]             = new Histogram(0,0.,1.,100);
 }
 
 
@@ -57,8 +62,28 @@ void Cluster_Decay_Analysis::AnalyseThis(Blob * blob)
     Nomega=0,Nphi=0,NV=0;
   Particle * part;
   int kfc;
+  double x, max_x = 0., max_xB = 0.;
+  for (int i=0;i<blob->NInP();i++) {
+    part = blob->InParticle(i);
+    kfc  = int(part->Flav());
+    x    = 2.*part->Momentum()[0]/rpa.gen.Ecms();
+    if (x>max_x) max_x = x;
+    switch (kfc) {
+    case 5:
+    case -5:
+      if (x>max_xB) max_xB = x;
+      m_histograms[string("x_E_B-Quarks")]->Insert(x);
+      break;
+    }
+  }
+  if (max_x=max_xB) m_histograms[string("x_E_B-Quarks_L")]->Insert(max_x);
+
+  max_x  = 0.; 
+  max_xB = 0.;
   for (int i=0;i<blob->NOutP();i++) {
     part = blob->OutParticle(i);
+    x    = 2.*part->Momentum()[0]/rpa.gen.Ecms();
+    if (x>max_x) max_x = x;
     kfc  = int(part->Flav());
     switch (kfc) {
     case 111:
@@ -142,16 +167,29 @@ void Cluster_Decay_Analysis::AnalyseThis(Blob * blob)
       m_histograms[string("x_p_C-Hadrons")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms());
       break;
     case 511:
-    case 513:
     case 521:
+      //case 531:
+      //      if (2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms()<0.89 &&
+      //	  2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms()>0.88) 
+      //	cout<<(*blob)<<endl<<endl
+      //	    <<"#################################################################################"<<endl<<endl;
+      m_histograms[string("x_p_B-Mesons")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms());
+      m_histograms[string("x_E_B-Mesons")]->Insert(x);
+      if (x>max_xB) max_xB = x;
+      break;
+    case 513:
     case 523:
-    case 531:
     case 533:
-      m_histograms[string("x_p_B-Hadrons")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms());
-      m_histograms[string("x_E_B-Hadrons")]->Insert(part->Momentum()[0]/rpa.gen.Ecms());
+      //      if (2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms()<0.89 &&
+      //	  2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms()>0.88) 
+      //	cout<<(*blob)<<endl<<endl
+      //	    <<"#################################################################################"<<endl<<endl;
+      m_histograms[string("x_p_Bstar-Mesons")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms());
+      m_histograms[string("x_E_Bstar-Mesons")]->Insert(x);
       break;
     }
   }    
+  if (max_x=max_xB) m_histograms[string("x_E_B-Mesons_L")]->Insert(max_x);
 
   m_histograms[string("pi+_Number")]->Insert(Npiplus);
   m_histograms[string("pi-_Number")]->Insert(Npiminus);

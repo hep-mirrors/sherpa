@@ -18,7 +18,7 @@ namespace AHADIC {
 }
 
 Cluster::Cluster() :
-  m_type(ctp::no),
+  m_type(ctp::no),m_leads(ltp::no),
   m_momentum(Vec4D(0.,0.,0.,0.)),
   m_hasboost(false), p_left(NULL), p_right(NULL), p_prev(NULL)
 {
@@ -28,7 +28,7 @@ Cluster::Cluster() :
 
 Cluster::Cluster(const ATOOLS::Flavour & flav1,const ATOOLS::Vec4D & mom1,
 		 const ATOOLS::Flavour & flav2,const ATOOLS::Vec4D & mom2) :
-  m_hasboost(false), p_left(NULL), p_right(NULL), p_prev(NULL)
+  m_hasboost(false),m_leads(ltp::no),p_left(NULL),p_right(NULL),p_prev(NULL)
 {
   m_momentum = mom1+mom2;
   if (flav1.IsQuark()) {
@@ -232,7 +232,11 @@ std::ostream& AHADIC::operator<<(std::ostream& str, const Cluster &cluster) {
   str<<"-------------------------------------------------------------"<<std::endl
      <<"Cluster ("<<cluster.m_flavours[0]<<" "<<cluster.m_flavours[1]
      <<", "<<cluster.m_momentum<<","<<cluster.m_momentum.Abs2()<<" ): "<<std::endl
-     <<cluster.m_momenta[0]<<" "<<cluster.m_momenta[1]<<std::endl;
+     <<cluster.m_momenta[0]<<" "<<cluster.m_momenta[1];
+  if (cluster.m_leads==ltp::leadingtrip) str<<" L_trip";
+  if (cluster.m_leads==ltp::leadinganti) str<<" L_anti";
+  if (cluster.m_leads==ltp::leadingboth) str<<" L_both";
+  str<<std::endl;
   if (cluster.p_left)  str<<"  ---- Left  ----> "<<std::endl<<(*cluster.p_left);
   if (cluster.p_right) str<<"  ---- Right ----> "<<std::endl<<(*cluster.p_right);
   return str;

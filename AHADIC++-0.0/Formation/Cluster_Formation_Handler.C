@@ -89,6 +89,8 @@ Blob * Cluster_Formation_Handler::FormClusters(Blob_List * bl)
   ClustersToHadrons();
   msg.Tracking()<<"One List ----------------------------------------------------------"<<endl;
   MergeClusterListsIntoOne();
+  //std::cout<<"Blob at the beginning "<<std::endl<<(*p_blob)<<std::endl
+  //	   <<"Cluster List at the end : "<<std::endl<<(*p_clulist)<<std::endl;
   msg.Tracking()<<"Leave Formation ---------------------------------------------------"<<endl;
   return p_blob;
 }

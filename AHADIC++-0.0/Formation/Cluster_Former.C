@@ -16,8 +16,10 @@ void Cluster_Former::ConstructClusters(Part_List * plin, Cluster_List * clout)
 	       <<"   Funny Cluster_List, abort the run."<<std::endl;
     abort();
   }
-  int col1;
 
+  int col1, lead;
+  Cluster * cluster=NULL;
+  
   for (Part_Iterator pit1=plin->begin();pit1!=plin->end();++pit1) {
     col1 = (*pit1)->GetFlow(1);
     if (col1!=0) {
@@ -39,8 +41,12 @@ void Cluster_Former::ConstructClusters(Part_List * plin, Cluster_List * clout)
 		       <<"), abort the run."<<std::endl;
 	    abort();
 	  }
-	  clout->push_back(new Cluster((*pit1)->Flav(),(*pit1)->Momentum(),
-				       (*pit2)->Flav(),(*pit2)->Momentum()));
+	  cluster = new Cluster((*pit1)->Flav(),(*pit1)->Momentum(),(*pit2)->Flav(),(*pit2)->Momentum());
+	  lead = 0;
+	  if ((*pit1)->Info()=='L') lead+=1; 
+	  if ((*pit2)->Info()=='L') lead+=2;
+	  if (lead>0) cluster->SetLeads(ltp::code(lead));
+	  clout->push_back(cluster);
 	  (*pit1)->SetStatus(2);
 	  (*pit2)->SetStatus(2);
 	}

@@ -11,10 +11,12 @@
 namespace AHADIC {
   struct cdm {
     enum code {
-      QoverM_Isotropic        = 11,
-      QoverM_Retain           = 12,
-      FourFermions_Isotropic  = 21,
-      FourFermions_Retain     = 22
+      SimpleQoverM_Isotropic  = 11,
+      SimpleQoverM_Retain     = 12,
+      RunningQoverM_Isotropic = 21,
+      RunningQoverM_Retain    = 22,
+      FourFermions_Isotropic  = 41,
+      FourFermions_Retain     = 42
     };
   };
 
@@ -47,12 +49,14 @@ namespace AHADIC {
     AHADIC::Cluster_Part and AHADIC::Hadron_Part.
 
     For the AHADIC::Cluster_Part there are, so far, the following options
-    - Q_over_M     : 10
-    - Four_Fermion : 20
+    - Simple_Q_over_M : 10
+    - Four_Fermion    : 40
 
     and for the AHADIC::Hadron_Part, there are
     - Isotropic : 1
     - Retain    : 2.
+    
+    These numbers are added.
   */
   /*! 
     \class Cluster_Decay_Handler
@@ -72,7 +76,7 @@ namespace AHADIC {
     \var cdm::code Cluster_Decay_Handler::m_cdm
     \brief The modus operandi of the cluster decays, steers which specific Cluster_Part and Hadron_Part
     implementation is initialised and passed as arguments to the Cluster_Decayer_Base. The default value
-    is cdm::QoverM_Isotropic.
+    is cdm::SimpleQoverM_Isotropic.
   */
   /*!
     \var Cluster_Decayer_Base * Cluster_Decay_Handler::p_decayer

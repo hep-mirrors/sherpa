@@ -261,11 +261,19 @@ namespace AHADIC {
 
     For each combination of two hadrons, the phase space weight is given by
     \f[
-    w^2 = [M_{\rm cluster}^2-(m_{{\rm had}_1}+m_{{\rm had}_2})^2]\cdot
+    w^2_{\rm PS} = [M_{\rm cluster}^2-(m_{{\rm had}_1}+m_{{\rm had}_2})^2]\cdot
     [M_{\rm cluster}^2-(m_{{\rm had}_1}-m_{{\rm had}_2})^2]\,.
     \f]
-    It is multiplied with the corresponding \f$C\to HH\f$ transition weight. The actual decay channel
-    is then selected according to this combined weight.
+    It is multiplied with the corresponding \f$C\to HH\f$ transition weight, a combination of the fixed
+    multiplet weight and the squares of the hadron wave function weights, i.e. the corresponding flavour wave 
+    function components squared:
+    \f[
+    w_{\rm tot} = w_{\rm multi}^{(1)}\cdot w_{\rm multi}^{(2)} 
+    \cdot \left|\Psi_{3\bar 3}^{(1)}\right|^2 \cdot \left|\Psi_{3\bar 3}^{(2)}\right|^2 \cdot w_{\rm PS}
+    \f]
+    The actual decay channel is then selected according to this combined weight.<br>
+    <b>Note that this does not include any further suppression on the popping of the quark- or diquark pair
+    necessary to produce the two hadrons</b>.
 
     The method is called by AHADIC::Hadron_Part.
   */

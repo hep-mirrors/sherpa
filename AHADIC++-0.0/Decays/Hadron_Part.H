@@ -28,32 +28,31 @@ namespace AHADIC {
     
     All_Single_Transitions * p_stransitions;
     All_Double_Transitions * p_dtransitions;
+    virtual void CheckDecayKinematics(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &);
+    virtual bool CheckDecayKinematics(Cluster *,Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &);
+    virtual void TwoHadronDecay(Cluster *,Part_List *,ATOOLS::Flavour &,ATOOLS::Flavour &)=0;
   public:
     Hadron_Part();
     ~Hadron_Part() {}
-    virtual void RedoDecay(Cluster *,Part_List *,int,
-			   ATOOLS::Flavour &,ATOOLS::Flavour &)=0;
-    virtual bool ForcedDecay(Cluster *,Part_List *)=0;
+    virtual void RedoDecay(Cluster *,Part_List *,int,ATOOLS::Flavour &,ATOOLS::Flavour &);
+    virtual bool ForcedDecay(Cluster *,Part_List *);
   };
 
   class Isotropic : public Hadron_Part {
   private:
+    double m_smearparameter;
     void TwoHadronDecay(Cluster *,Part_List *,ATOOLS::Flavour &,ATOOLS::Flavour &);
-    void CheckDecayKinematics(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &);
-    bool CheckDecayKinematics(Cluster *,Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &);
   public:
     Isotropic();
     ~Isotropic() {}
-    void RedoDecay(Cluster *,Part_List *,int,ATOOLS::Flavour &,ATOOLS::Flavour &);
-    bool ForcedDecay(Cluster *,Part_List *);
   };
 
   class Retain : public Hadron_Part {
+    double m_smearparameter;
+    void TwoHadronDecay(Cluster *,Part_List *,ATOOLS::Flavour &,ATOOLS::Flavour &);
   public:
-    Retain() {}
+    Retain();
     ~Retain() {}
-    void RedoDecay(Cluster *,Part_List *,int,ATOOLS::Flavour &,ATOOLS::Flavour &) {}
-    bool ForcedDecay(Cluster *,Part_List *) {}
   };
   /*!
     \file Hadron_Part.H
@@ -137,37 +136,7 @@ namespace AHADIC {
   */
   /*!
     \fn virtual void Hadron_Part::RedoDecay(Cluster *,Part_List *,int,ATOOLS::Flavour &,ATOOLS::Flavour &)
-    \brief Fully virtual method, to be filled by the explicit realisations. If in a cluster decay on or both
-    of the emerging object is light enough to be transformed into a hadron, this method is called.
-
-    In practice, if in the AHADIC::Cluster_Decayer_Base the Cluster_Part::TestDecay(Cluster *,Particle_List *)
-    yields an object that is too light (tested by All_Single_Transitions::MustTransit(Cluster *,ATOOLS::Flavour &,double)),
-    i.e. in the hadron regime, then this method is being called.
-  */
-  /*!
-    \fn virtual bool Hadron_Part::ForcedDecay(Cluster *,Part_List *)
-    \brief Fully virtual method, it is being called if there is no valid test decay according to the kinematics
-    used for clusters as emerging particles. Then the cluster in question is forced to decay into two hadrons.
-
-    In practice, this is the case, when in the AHADIC::Cluster_Decayer_Base the test decay performed through
-    Cluster_Part::TestDecay(Cluster *,Particle_List *) yields a "false". This may happen for instance, if the 
-    AHADIC::Pair_Popper proves unable to pop out a quark pair out of the vacuum.
-  */
-  ////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Description of member methods for Isotropic
-  ////////////////////////////////////////////////////////////////////////////////////////////////////
-  /*!
-    \fn Isotropic::Isotropic()
-    \brief Constructor, fixes the two modes. At the moment, the default value is m_cht = CH_incl and m_hadsel = newpair.
-  */
-  /*!
-    \fn Isotropic::~Isotropic()
-    \brief Destructor, no task so far.
-  */
-  /*!
-    \fn void Isotropic::RedoDecay(Cluster *,Part_List *,int,ATOOLS::Flavour &,ATOOLS::Flavour &)
-    \brief Fixes the decay in case, one of the objects emerging in cluster decays falls into the hadron regime,
-    see also AHADIC::Hadron_Part::RedoDecay(Cluster *,Part_List *,int,ATOOLS::Flavour &,ATOOLS::Flavour &)
+    \brief Fixes the decay in case, one of the objects emerging in cluster decays falls into the hadron regime.
 
     There are different cases to consider:
     - If the cluster decay mode is m_cht=HHonly, i.e. decays into hadrons only, then the decay is performed through 
@@ -191,7 +160,7 @@ namespace AHADIC {
     \todo Some more work has to be done for \f$C\to C'H\f$ decays.
   */
   /*!
-    \fn bool Isotropic::ForcedDecay(Cluster *,Part_List *)
+    \fn virtual bool Hadron_Part::ForcedDecay(Cluster *,Part_List *)
     \brief Forces the decay of a cluster into two hadrons in case, no suitable cluster decay kinematics can be 
     constructed in the Cluster_Part. For more information, cf.
     AHADIC::Hadron_Part::ForcedDecay(Cluster *,Part_List *,int,ATOOLS::Flavour &,ATOOLS::Flavour &)
@@ -204,16 +173,7 @@ namespace AHADIC {
     \todo Here, something nicer should be found, like, e.g., a forced \f$\pi^0\f$ emission.
   */
   /*!
-    \fn void Isotropic::TwoHadronDecay(Cluster *,Part_List *,ATOOLS::Flavour &,ATOOLS::Flavour &)
-    \brief Isotropic decay of a cluster into two hadrons, which are then filled into the particle list to be
-    attached to the fragmentaiton blob later on.
-
-    The cluster is boosted into its c.m. system and two appropriate four vectors, distributed isotropically in
-    \f$4\pi\f$, are constructed. The cluster and the two momenta are boosted back into the lab frame and then particles
-    are initialised and filled accordingly (info flag "P"=primary hadron), which are then added to the Part_List.
-  */
-  /*!
-    \fn void Isotropic::CheckDecayKinematics(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &)
+    \fn virtual void Hadron_Part::CheckDecayKinematics(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &)
     \brief Checks whether a decay is kinematically allowed, i.e. whether \f$m_C\le m_1+m_2\f$.
 
     If this is not the case the two hadrons are sequentially replaced with the next-lighter ones with an
@@ -221,8 +181,38 @@ namespace AHADIC {
     All_Single_Transitions::NextLightest(Cluster *, ATOOLS::Flavour &).
   */
   /*!
-    \fn bool Isotropic::CheckDecayKinematics(Cluster *,Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &)
+    \fn virtual bool Hadron_Part::CheckDecayKinematics(Cluster *,Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &)
     \brief Here, more work is needed.
+  */
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Description of member methods for Isotropic
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  /*!
+    \fn Isotropic::Isotropic()
+    \brief Constructor, fixes the two modes. At the moment, the default value is m_cht = CH_incl and m_hadsel = newpair.
+  */
+  /*!
+    \fn Isotropic::~Isotropic()
+    \brief Destructor, no task so far.
+  */
+  /*!
+    \fn void Isotropic::TwoHadronDecay(Cluster *,Part_List *,ATOOLS::Flavour &,ATOOLS::Flavour &)
+    \brief Isotropic decay of a cluster into two hadrons, which are then filled into the particle list to be
+    attached to the fragmentaiton blob later on.
+
+    The cluster is boosted into its c.m. system and two appropriate four vectors are constructed:
+    - If no leading particle is involved, they are distributed isotropically in \f$4\pi\f$. 
+    - If one of the two particles in the cluster is a leading particle, and if the smearing parameter is larger 
+      than 0, then the decay is not isotropic anymore. Instead a Gaussian smearing of the form
+      \f[
+      {\cal P}(\cos\theta) \sim 
+      \exp\left[-\langle\cos\theta^{(0)}\rangle^2(1-\cos\theta)^2\right]
+      \f]
+      is performed around the original direction of the two clusters constituent momenta. Here, \f$\langle\cos\theta^{(0)}\rangle\f$ 
+      is the smearing parameter.
+
+    The cluster and the two momenta are boosted back into the lab frame and then particles
+    are initialised and filled accordingly (info flag "P"=primary hadron), which are then added to the Part_List.
   */
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   // Description of member methods for Retain
@@ -236,12 +226,21 @@ namespace AHADIC {
     \brief Destructor, no task so far.
   */
   /*!
-    \fn void Retain::RedoDecay(Cluster *,Part_List *,int,ATOOLS::Flavour &,ATOOLS::Flavour &)
-    \brief Not implemented yet. 
-  */
-  /*!
-    \fn bool Retain::ForcedDecay(Cluster *,Part_List *)
-    \brief Not implemented yet.  
+    \fn void Retain::TwoHadronDecay(Cluster *,Part_List *,ATOOLS::Flavour &,ATOOLS::Flavour &)
+    \brief Decay of a cluster into two hadrons, respecting the original directions in the cluster
+    decay as given by the Cluster_Part. 
+
+    - the cluster is boosted into its c.m. system and two appropriate four vectors are constructed,
+      which are oriented along the three-momenta of the two offsprings obtained in the test decay in Clusterr_Part;
+    - the cluster and the two momenta are boosted back into the lab frame and then particles
+      are initialised and filled accordingly (info flag "P"=primary hadron), which are then added to the Part_List;
+    - the leading particle treatment is identical to the one in Isotropic. A Gaussian smearing of the form
+      \f[
+      {\cal P}(\cos\theta) \sim 
+      \exp\left[-\langle\cos\theta^{(0)}\rangle^2(1-\cos\theta)^2\right]
+      \f]
+      is performed around the original direction of the two clusters constituent momenta. Here, \f$\langle\cos\theta^{(0)}\rangle\f$ 
+      is the smearing parameter.
   */
 }
 #endif

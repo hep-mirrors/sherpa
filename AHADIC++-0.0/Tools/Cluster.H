@@ -27,9 +27,19 @@ namespace AHADIC {
     };
   };
 
+  struct ltp {
+    enum code {
+      no          = 0,
+      leadingtrip = 1,
+      leadinganti = 2,
+      leadingboth = 3
+    };
+  };
+
   class Cluster {
   private:
     ctp::code           m_type;
+    ltp::code           m_leads;
     ATOOLS::Flavour     m_flavours[2];
     ATOOLS::Vec4D       m_momentum, m_momenta[2];
     ATOOLS::Poincare    m_boost;
@@ -55,6 +65,8 @@ namespace AHADIC {
     void              SetFlav(const int,const ATOOLS::Flavour &);
     ATOOLS::Vec4D     Momentum(const int=0) const;
     void              SetMomentum(const int,const ATOOLS::Vec4D &);
+    ltp::code         GetLeads() const;
+    void              SetLeads(const ltp::code);
     double            Mass2() const;
     double            Mass(const int=0) const;
     void              Update();
@@ -71,12 +83,14 @@ namespace AHADIC {
   inline Cluster              * Cluster::GetLeft()  const { return p_left;  }
   inline Cluster              * Cluster::GetRight() const { return p_right; }
   inline Cluster              * Cluster::GetPrev()  const { return p_prev;  }
-  inline void                   Cluster::SetLeft(Cluster * left)   { p_left  = left;  }
-  inline void                   Cluster::SetRight(Cluster * right) { p_right = right; }
-  inline void                   Cluster::SetPrev(Cluster * prev)   { p_prev  = prev;  }
+  inline void                   Cluster::SetLeft(Cluster * left)     { p_left  = left;  }
+  inline void                   Cluster::SetRight(Cluster * right)   { p_right = right; }
+  inline void                   Cluster::SetPrev(Cluster * prev)     { p_prev  = prev;  }
   inline void                   Cluster::DeleteLeft()     { delete p_left;  p_left  = NULL; }
   inline void                   Cluster::DeleteRight()    { delete p_right; p_right = NULL; }
   inline double                 Cluster::Mass2()    const { return m_momentum.Abs2(); }
+  inline ltp::code              Cluster::GetLeads() const { return m_leads; }
+  inline void                   Cluster::SetLeads(const ltp::code l) { m_leads = l; }
 
 
 
@@ -90,15 +104,27 @@ namespace AHADIC {
 
   /*!
     \file 
-    \brief Contains the class AHADIC::Cluster and the corresponding struct AHADIC::ctp 
+    \brief Contains the class AHADIC::Cluster and the corresponding structs AHADIC::ctp and
+    AHADIC::ltp. 
   */
 
   /*!
     \struct ctp
-    \brief Short description of AHADIC::Cluster type. Available labels so far are: 
+    \brief Short description of AHADIC::Cluster type. 
+
+    Available labels so far are: 
     none (0), quark-antiquark (11), quark-diquark (12), antidiquark-quark (21) antidiquark-diquark(22).
   */
+  /*!
+    \struct ltp
+    \brief Short description of leading particles in a AHADIC::Cluster. 
 
+    Available labels are: 
+    - no          = 0,
+    - leadingtrip = 1,
+    - leadinganti = 2,
+    - leadingboth = 3
+  */
   /*! 
     \class Cluster
     \brief The basic object of cluster fragmentation models: A colourless object composed of a
@@ -217,6 +243,14 @@ namespace AHADIC {
     \fn void Cluster::SetMomentum(const int,const ATOOLS::Vec4D &)
     \brief Sets the momentum of one of the offsprings (argument equals 1 or 2) or the 
     clusters momentum (argument=0).
+  */
+  /*!
+    \fn ltp::code Cluster::GetLeads() const;
+    \brief Returns the code for the leading particle configuration.
+  */
+  /*!
+    \fn void Cluster::SetLeads(const ltp::code);
+    \brief Sets the code for the leading particle configuration. 
   */
   /*!
     \fn double Cluster::Mass(const int=0) const;
