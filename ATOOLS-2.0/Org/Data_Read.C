@@ -252,6 +252,7 @@ template <> Model_Type::code Data_Read::GetValue<Model_Type::code>(std::string n
   if (value==std::string("ADD"))      return ReturnData(name,Model_Type::ADD);
   if (value==std::string("SM+EHC"))   return ReturnData(name,Model_Type::SMEHC);
   if (value==std::string("SM+ZPrime"))return ReturnData(name,Model_Type::SM_ZPrime);
+  if (value==std::string("SM+AGC"))   return ReturnData(name,Model_Type::SM_AGC);
   msg.Error()<<"Error in Data_Read::GetValue<Model_Type::code>:"<<std::endl
 	     <<"   Unknown Model "<<name<<" = "<<value<<" !!!"<<std::endl;
   return ReturnData(name,NotDefined<Model_Type::code>());

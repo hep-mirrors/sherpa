@@ -65,6 +65,7 @@ namespace ATOOLS {
 	        ADD      = 7,
 	        SMEHC    = 8,
 		SM_ZPrime= 9,
+		SM_AGC   = 10,
 	        Unknown  = 99
     };
   };

@@ -41,6 +41,7 @@ void Lorentz_Function::InitPermutation()
     AddPermutation( 1,2,0,1);  
     break;
   case lf::Gauge4: 
+  case lf::AGauge4: 
     AddPermutation( 1,0,1,2,3);
     AddPermutation( 1,1,0,2,3);
     AddPermutation( 1,0,1,3,2);

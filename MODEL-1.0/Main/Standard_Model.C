@@ -97,6 +97,12 @@ void Standard_Model::ReadInFile() {
     eh = ehc.GetFermionContribution(Flavour(kf::t).Mass());
   }
   p_constants->insert(std::make_pair(std::string("Higgs_gg_fac"),eh));
+
+  //Anomalous gauge couplings (hep-ph/0001065)
+  p_constants->insert(std::make_pair(std::string("Alpha_4"),
+				     p_dataread->GetValue<double>("ALPHA_4_G_4",0.)));
+  p_constants->insert(std::make_pair(std::string("Alpha_5"),
+				     p_dataread->GetValue<double>("ALPHA_5",0.)));
 }
 
 

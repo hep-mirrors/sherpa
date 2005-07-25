@@ -8,6 +8,7 @@
 #include "Interaction_Model_ADD.H"
 #include "Interaction_Model_SMEHC.H"
 #include "Interaction_Model_SM_ZPrime.H"
+#include "Interaction_Model_SM_AGC.H"
 
 #include "Run_Parameter.H"
 #include "Message.H"
@@ -56,6 +57,10 @@ Interaction_Model_Base * Interaction_Model_Handler::GetModel(std::string modelty
   if (modeltype==std::string("SM+ZPrime")) {
     rpa.gen.SetModelType(ATOOLS::Model_Type::SM_ZPrime);
     return new Interaction_Model_SM_ZPrime(p_model,cplscheme,yukscheme);
+  }
+  if (modeltype==std::string("SM+AGC")) {
+    rpa.gen.SetModelType(ATOOLS::Model_Type::SM_AGC);
+    return new Interaction_Model_SM_AGC(p_model,cplscheme,yukscheme);
   }
 
 

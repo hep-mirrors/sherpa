@@ -184,6 +184,17 @@ class VVSS4_Calc : public Zfunc_Calc,
     Kabbala Do();
     };*/
 
+  class AnomalousV4_Calc : public Zfunc_Calc, 
+			   public Basic_Zfunc,
+			   public Basic_Xfunc,
+			   public Basic_Mfunc,
+			   public Basic_Vfunc {
+  public:
+    AnomalousV4_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+    ~AnomalousV4_Calc() {}
+    Kabbala Do();
+  };
+
 
   class FFT_Calc : public Zfunc_Calc, 
 		   public Basic_Yfunc,

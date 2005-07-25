@@ -21,6 +21,7 @@ namespace AMEGIC {
 	       Pol    =10,
 	       VVSS   =11,//the generic interaction of 2 vectors and 2 scalars (Gab)
 	       SSSS   =12,//the generic interaction of 4 scalars
+	       AGauge4=20,//Anomalous gauge coupling 
 	       FFT    =60,
 	       VVT    =61,
 	       SST    =62,
@@ -84,6 +85,7 @@ namespace AMEGIC {
       case lf::Triangle: return 2;	
       case lf::Box   : return 3;
       case lf::C4GS  : return 2;	
+      case lf::AGauge4: return 4;
       default: return 0;
       }
       //default (includes FFS, SSS and SSSS )

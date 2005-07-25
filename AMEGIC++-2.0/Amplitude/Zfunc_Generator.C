@@ -58,6 +58,9 @@ void Zfunc_Generator::BuildZlist(Virtual_String_Generator* _sgen,Basic_Sfuncs* _
       zcalc.push_back(new SSGS_Calc(_sgen,_BS));
       zcalc.push_back(new FFVGS_Calc(_sgen,_BS));  
     }
+    if(rpa.gen.Model()==ATOOLS::Model_Type::SM_AGC){
+      zcalc.push_back(new AnomalousV4_Calc(_sgen,_BS));
+    }     
   }
 }
 
@@ -550,6 +553,7 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,
   case zl::Z:Set_Out(Zh,1,pb,p);break;
   case zl::SSGS:
   case zl::VVGS:
+  case zl::AV4:
     Zh->p_couplings[icoupl] = pb->cpl[0];icoupl++;
   default:
     Zh->p_couplings[icoupl] = pb->cpl[1];icoupl++;
