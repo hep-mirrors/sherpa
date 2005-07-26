@@ -14,11 +14,14 @@
 #include "Analysis_Handler.H"
 #include "Lund_Interface.H"
 #include "Event_Reader.H"
+#include "Data_Read.H"
 #ifdef USING__MCatNLO
 #include "Herwig_Interface.H"
 #include "MCatNLO_Interface.H"
 #endif
-#include "Data_Read.H"
+#ifdef USING__Ahadic
+#include "Ahadic.H"
+#endif
 
 #include <map>
 #include <string>
@@ -76,6 +79,9 @@ namespace SHERPA {
     Herwig_Interface           * p_herwig;
     MCatNLO_Interface          * p_mcatnlo;
 #endif
+#ifdef USING__Ahadic
+    AHADIC::Ahadic             * p_ahadic;
+#endif
     ANALYSIS::Analysis_Handler * p_analysis;
   private :
     bool InitializeTheIO();
@@ -111,36 +117,39 @@ namespace SHERPA {
     const std::string File()    const { return m_file; }
     const std::string EvtFile() const { return m_evtfile; }
 
-    Matrix_Element_Handler      * GetMatrixElementHandler(std::string);
-    Hadron_Decay_Handler        * GetHadronDecayHandler(std::string);
-    ANALYSIS::Analysis_Handler  * GetAnalysisHandler(std::string);
-    inline PDF::ISR_Handler     * GetISRHandler(const isr::id id) { return m_isrhandlers[id]; }
+    Matrix_Element_Handler      * const GetMatrixElementHandler(std::string);
+    Hadron_Decay_Handler        * const GetHadronDecayHandler(std::string);
+    //ANALYSIS::Analysis_Handler  * const GetAnalysisHandler(std::string);
+    inline PDF::ISR_Handler     * const GetISRHandler(const isr::id id) { return m_isrhandlers[id]; }
 
-    MEHandlersMap               * GetMatrixElementHandlers() { return &m_mehandlers;     }
-    ANALYSIS::Analysis_Handler  * GetSampleAnalysis()        { return p_analysis;        }
-    MODEL::Model_Base           * GetModel()                 { return p_model;           }
-    ISR_Handler_Map             * GetISRHandlers()           { return &m_isrhandlers;    }
-    BEAM::Beam_Spectra_Handler  * GetBeamSpectraHandler()    { return p_beamspectra;     }
-    Hard_Decay_Handler          * GetHardDecayHandler()      { return p_harddecays;      }
-    Shower_Handler              * GetShowerHandler()         { return p_showerhandler;   }
-    Beam_Remnant_Handler        * GetBeamRemnantHandler()    { return p_beamremnants;    }
-    Fragmentation_Handler       * GetFragmentationHandler()  { return p_fragmentation;   }
-    HDHandlersMap               * GetHadronDecayHandlers()   { return &m_hdhandlers;     }
-    ATOOLS::Flavour             * GetBunches()               { return m_bunch_particles; }
-    MI_Handler                  * GetMIHandler()             { return p_mihandler;       }
-    IO_Handler                  * GetIOHandler()             { return p_iohandler;       }
-    Lund_Interface              * GetPythiaInterface()       { return p_pythia;          }
-    Event_Reader                * GetEventReader()           { return p_evtreader;       }
+    MEHandlersMap               * const GetMatrixElementHandlers()       { return &m_mehandlers;     }
+    ANALYSIS::Analysis_Handler  * const GetSampleAnalysis()        const { return p_analysis;        }
+    MODEL::Model_Base           * const GetModel()                 const { return p_model;           }
+    ISR_Handler_Map             * const GetISRHandlers()                 { return &m_isrhandlers;    }
+    BEAM::Beam_Spectra_Handler  * const GetBeamSpectraHandler()    const { return p_beamspectra;     }
+    Hard_Decay_Handler          * const GetHardDecayHandler()      const { return p_harddecays;      }
+    Shower_Handler              * const GetShowerHandler()         const { return p_showerhandler;   }
+    Beam_Remnant_Handler        * const GetBeamRemnantHandler()    const { return p_beamremnants;    }
+    Fragmentation_Handler       * const GetFragmentationHandler()  const { return p_fragmentation;   }
+    HDHandlersMap               * const GetHadronDecayHandlers()         { return &m_hdhandlers;     }
+    ATOOLS::Flavour             * const GetBunches()                     { return m_bunch_particles; }
+    MI_Handler                  * const GetMIHandler()             const { return p_mihandler;       }
+    IO_Handler                  * const GetIOHandler()             const { return p_iohandler;       }
+    Lund_Interface              * const GetPythiaInterface()       const { return p_pythia;          }
+    Event_Reader                * const GetEventReader()           const { return p_evtreader;       }
 #ifdef USING__MCatNLO
-    Herwig_Interface            * GetHerwigInterface()       { return p_herwig;          }
-    MCatNLO_Interface           * GetMCatNLOInterface()      { return p_mcatnlo;         }
+    Herwig_Interface            * const GetHerwigInterface()       const { return p_herwig;          }
+    MCatNLO_Interface           * const GetMCatNLOInterface()      const { return p_mcatnlo;         }
+#endif
+#ifdef USING__Ahadic
+    AHADIC::Ahadic              * const GetAhadic()                const { return p_ahadic;          }
 #endif
 
-    int     Mode()          { return m_mode; };
-    int     NumberOfSteps() { return m_scan_nsteps; }
-    double  ParameterValue(){ return m_scan_value; }
+    int    const Mode()           const { return m_mode; };
+    int    const NumberOfSteps()  const { return m_scan_nsteps; }
+    double const ParameterValue() const { return m_scan_value; }
 
-    int     UpdateParameters();
+    int    UpdateParameters();
   };
 
   /*!

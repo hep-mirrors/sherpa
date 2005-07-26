@@ -22,7 +22,7 @@ namespace SHERPA {
     Lund_Interface         * p_lund; 
     HADRONS::Hadrons       * p_hadrons;
 
-	void SwitchOfLundDecays();
+    void SwitchOfLundDecays();
 
   public :
 
@@ -34,9 +34,9 @@ namespace SHERPA {
 
     bool FillHadronDecayBlobs(ATOOLS::Particle *,ATOOLS::Blob_List *,
 							  ATOOLS::Particle_List *part_list=NULL);
-	HADRONS::Hadrons * GetHadrons() { return p_hadrons; }
-	Lund_Interface * GetLund() { return p_lund; }
-	void EraseTreated(std::set<int> *);
+    HADRONS::Hadrons * GetHadrons() { return p_hadrons; }
+    Lund_Interface * GetLund() { return p_lund; }
+    void EraseTreated(std::set<int> *);
   };
 
   typedef std::map<std::string,Hadron_Decay_Handler *> HDHandlersMap;

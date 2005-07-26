@@ -29,11 +29,11 @@ namespace AHADIC {
     All_Single_Transitions * p_stransitions;
     All_Double_Transitions * p_dtransitions;
     virtual void CheckDecayKinematics(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &);
-    virtual bool CheckDecayKinematics(Cluster *,Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &);
+    virtual int  CheckDecayKinematics(Cluster *,Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &);
     virtual void TwoHadronDecay(Cluster *,Part_List *,ATOOLS::Flavour &,ATOOLS::Flavour &)=0;
   public:
     Hadron_Part();
-    ~Hadron_Part() {}
+    virtual ~Hadron_Part() {}
     virtual void RedoDecay(Cluster *,Part_List *,int,ATOOLS::Flavour &,ATOOLS::Flavour &);
     virtual bool ForcedDecay(Cluster *,Part_List *);
   };
@@ -181,7 +181,7 @@ namespace AHADIC {
     All_Single_Transitions::NextLightest(Cluster *, ATOOLS::Flavour &).
   */
   /*!
-    \fn virtual bool Hadron_Part::CheckDecayKinematics(Cluster *,Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &)
+    \fn virtual int Hadron_Part::CheckDecayKinematics(Cluster *,Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &)
     \brief Here, more work is needed.
   */
   ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -28,12 +28,12 @@ void Hadron_Decay_Handler::EraseTreated(std::set<int> * hadrons)
 {
   if (m_mode==0) hadrons->clear();
   if (m_mode==1) {
-	map<kf::code,Decay_Table *> * cans = p_hadrons->GetDecayMap();
-	for (map<kf::code,Decay_Table *>::iterator citer=cans->begin();citer!=cans->end();citer++) {
-	  msg.Debugging()<<"Killing flavours: "<<citer->first<<" ("<<cans->size()<<" ) "<<hadrons->size()<<endl;
-	  hadrons->erase(int(citer->first));
-	  msg.Debugging()<<"                  "<<citer->first<<" ("<<cans->size()<<" ) "<<hadrons->size()<<endl;
-	}
+    map<kf::code,Decay_Table *> * cans = p_hadrons->GetDecayMap();
+    for (map<kf::code,Decay_Table *>::iterator citer=cans->begin();citer!=cans->end();citer++) {
+      msg.Debugging()<<"Killing flavours: "<<citer->first<<" ("<<cans->size()<<" ) "<<hadrons->size()<<endl;
+      hadrons->erase(int(citer->first));
+      msg.Debugging()<<"                  "<<citer->first<<" ("<<cans->size()<<" ) "<<hadrons->size()<<endl;
+    }
   }
 }
 
@@ -46,22 +46,21 @@ void Hadron_Decay_Handler::DeletePointers()
 {
 }
 
-bool Hadron_Decay_Handler::FillHadronDecayBlobs(
-	Particle *part,
-	Blob_List *blob_list,
-	Particle_List *part_list )
+bool Hadron_Decay_Handler::FillHadronDecayBlobs(Particle *part,
+						Blob_List *blob_list,
+						Particle_List *part_list )
 {
   msg_Tracking()<<"Hadron_Decay_Handler::FillHadronDecayBlobs "<<part->Flav()<<endl;
   msg.Debugging()<<"Momentum: "<<part->Momentum()<<endl;
 
   // perform decay 
   switch( m_mode ) {
-	case 1: p_hadrons->PerformDecay( part, blob_list, part_list );
-			break;
-	case 0: p_lund->PerformDecay( part, blob_list, part_list );
-			break;
+  case 1: p_hadrons->PerformDecay( part, blob_list, part_list );
+    break;
+  case 0: p_lund->PerformDecay( part, blob_list, part_list );
+    break;
   }
-
+  
   return 1;
 }
 
@@ -69,7 +68,7 @@ void Hadron_Decay_Handler::SwitchOfLundDecays()
 {
   std::map<ATOOLS::kf::code,ATOOLS::Decay_Table *>::iterator dtiter;
   for (dtiter=p_hadrons->GetDecayMap()->begin();
-	   dtiter!=p_hadrons->GetDecayMap()->end();dtiter++) {
-	p_lund->SwitchOfDecays(dtiter->first);
+       dtiter!=p_hadrons->GetDecayMap()->end();dtiter++) {
+    p_lund->SwitchOfDecays(dtiter->first);
   }
 }

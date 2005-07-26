@@ -204,7 +204,7 @@ namespace AHADIC {
       \frac{1}{\sqrt{12}}\left|q_1d^S_{23}\right\rangle+
       \frac{1}{\sqrt{12}}\left|q_2d^S_{13}\right\rangle+
       \frac{1}{\sqrt{4}}\left|q_1d^V_{23}\right\rangle+
-      \frac{1}{\sqrt{4}}\left|q_2d^V_{23}\right\rangle.
+      \frac{1}{\sqrt{4}}\left|q_2d^V_{13}\right\rangle.
       \f]
     - \f$\Sigma\f$-like baryons: Three different quarks, then the wave function reads
       \f[
@@ -213,7 +213,7 @@ namespace AHADIC {
       \frac{1}{\sqrt{12}}\left|q_1d^V_{23}\right\rangle+
       \frac{1}{\sqrt{12}}\left|q_2d^V_{13}\right\rangle+
       \frac{1}{\sqrt{4}}\left|q_1d^S_{23}\right\rangle+
-      \frac{1}{\sqrt{4}}\left|q_2d^S_{23}\right\rangle.
+      \frac{1}{\sqrt{4}}\left|q_2d^S_{13}\right\rangle.
       \f]
 
     For the decuplet baryons, there are again various cases to be considered:

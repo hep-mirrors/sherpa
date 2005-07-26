@@ -1,3 +1,7 @@
+#ifndef USING__Ahadic
+#define USING__Ahadic
+#endif
+
 #ifndef Ahadic_H
 #define Ahadic_H
 
@@ -7,6 +11,7 @@
 #include "Cluster_Decay_Handler.H"
 #include "Cluster.H"
 #include "Blob_List.H"
+#include "Particle_List.H"
 
 
 namespace AHADIC {
@@ -19,7 +24,7 @@ namespace AHADIC {
 	   std::string file=std::string("Cluster.dat"),bool=false);
     ~Ahadic();
 
-    void Hadronize(ATOOLS::Blob_List *);
+    bool Hadronize(ATOOLS::Blob_List *,ATOOLS::Particle_List * =NULL);
   };
   /*!
     \file Ahadic.H

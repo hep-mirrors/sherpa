@@ -175,7 +175,8 @@ namespace AHADIC {
     is selected. If it is heavier than the cluster mass plus an offset, the cluster must decay into a hadron.
     This hadron is selected according to either of the methods steered by m_stmode, i.e. by one of the methods 
     SimpleMassCriterion(Cluster *,Single_Transition_List *,ATOOLS::Flavour &) or 
-    MassTimesWavefunction(Cluster *,Single_Transition_List *,ATOOLS::Flavour &).
+    MassTimesWavefunction(Cluster *,Single_Transition_List *,ATOOLS::Flavour &). At the moment, clusters
+    consisting of two diquarks are not yet considered. 
 
     The method is called by AHADIC::Cluster_Transformer and AHADIC::Cluster_Decayer_Base.
   */

@@ -16,7 +16,7 @@ namespace AHADIC {
     double m_flweight, m_spweight, m_smearing;
     ConstituentCharacteristic(double _m=0., int _is=-1, 
 			      double _fl=0., double _sp=0., double _sm=0) : 
-      m_mass(_m), m_flweight(_fl), m_spweight(_sp), m_ispin(_is), 
+      m_mass(_m), m_ispin(_is), m_flweight(_fl), m_spweight(_sp), 
       m_smearing(_sm/_m) {}
 
     double Mass()      { return m_mass;     }

@@ -1,5 +1,6 @@
 #include "Cluster_Decay_Analysis.H"
 #include "Run_Parameter.H"
+#include "Vector.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -37,6 +38,8 @@ Cluster_Decay_Analysis::Cluster_Decay_Analysis()
   m_histograms[string("x_E_B-Quarks")]               = new Histogram(0,0.,1.,100);
   m_histograms[string("x_E_B-Mesons_L")]             = new Histogram(0,0.,1.,100);
   m_histograms[string("x_E_B-Quarks_L")]             = new Histogram(0,0.,1.,100);
+
+  m_histograms[string("Q(Lambda_Lambda)")]           = new Histogram(0,0.,5.5,11);
 }
 
 
@@ -61,7 +64,8 @@ void Cluster_Decay_Analysis::AnalyseThis(Blob * blob)
   int Nrhoplus=0,Nrhominus=0,Nrho0=0,NKstarplus=0,NKstarminus=0,NKstar0=0,NKstar0b=0,
     Nomega=0,Nphi=0,NV=0;
   Particle * part;
-  int kfc;
+  int kfc, LambdaCount(0), LambdaP(0), LambdaM(0);
+  Vec4D QLambda(0.,0.,0.,0.);
   double x, max_x = 0., max_xB = 0.;
   for (int i=0;i<blob->NInP();i++) {
     part = blob->InParticle(i);
@@ -78,8 +82,8 @@ void Cluster_Decay_Analysis::AnalyseThis(Blob * blob)
   }
   if (max_x=max_xB) m_histograms[string("x_E_B-Quarks_L")]->Insert(max_x);
 
-  max_x  = 0.; 
-  max_xB = 0.;
+  max_x  = max_xB = 0.;
+
   for (int i=0;i<blob->NOutP();i++) {
     part = blob->OutParticle(i);
     x    = 2.*part->Momentum()[0]/rpa.gen.Ecms();
@@ -180,16 +184,22 @@ void Cluster_Decay_Analysis::AnalyseThis(Blob * blob)
     case 513:
     case 523:
     case 533:
-      //      if (2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms()<0.89 &&
-      //	  2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms()>0.88) 
-      //	cout<<(*blob)<<endl<<endl
-      //	    <<"#################################################################################"<<endl<<endl;
       m_histograms[string("x_p_Bstar-Mesons")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms());
       m_histograms[string("x_E_Bstar-Mesons")]->Insert(x);
       break;
+    case 3122:
+      QLambda += part->Momentum();
+      LambdaCount++; LambdaP++;
+      break;
+    case -3122:
+      QLambda -= part->Momentum();
+      LambdaCount++; LambdaM++;
+      break;
     }
   }    
-  if (max_x=max_xB) m_histograms[string("x_E_B-Mesons_L")]->Insert(max_x);
+  if (LambdaCount==2 && LambdaP==1 && LambdaM==1) 
+    m_histograms[string("Q(Lambda_Lambda)")]->Insert(sqrt(-QLambda.Abs2()));
+  if (max_x=max_xB)   m_histograms[string("x_E_B-Mesons_L")]->Insert(max_x);
 
   m_histograms[string("pi+_Number")]->Insert(Npiplus);
   m_histograms[string("pi-_Number")]->Insert(Npiminus);

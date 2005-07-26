@@ -9,7 +9,7 @@ namespace AHADIC {
   class Cluster_Part {
   public:
     Cluster_Part() {}
-    ~Cluster_Part() {}
+    virtual ~Cluster_Part() {}
     virtual bool TestDecay(Cluster *,Part_List *)=NULL;
   };
 
@@ -36,7 +36,7 @@ namespace AHADIC {
   public:
     Four_Fermion() {}
     ~Four_Fermion() {}
-    bool TestDecay(Cluster *,Part_List *) {}
+    bool TestDecay(Cluster *,Part_List *) { return true; }
   };
   /*!
     \file Cluster_Part.H

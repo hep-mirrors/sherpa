@@ -42,38 +42,55 @@ void Hadron_Part::RedoDecay(Cluster * cluster,Part_List * pl,int mode,Flavour & 
     momenta[0]  = cluster->GetLeft()->Momentum();
     momenta[1]  = cluster->GetRight()->Momentum();
     Flavour help;
+    Particle * part(NULL);
     if (mode==2) {
       masses[0] = cluster->GetLeft()->Mass(); 
       masses[1] = had2.Mass();
-      if (CheckDecayKinematics(cluster,cluster->GetLeft(),had2,help)) {
+      switch (CheckDecayKinematics(cluster,cluster->GetLeft(),had2,help)) {
+      case 0:
 	TwoHadronDecay(cluster,pl,had2,help);
+	break;
+      case 1:
+	hadpars.AdjustMomenta(2,momenta,masses);
+	cluster->GetLeft()->RescaleMomentum(momenta[0]); 
+	part = new Particle(0,had2,momenta[1]);
+	part->SetNumber(0);
+	part->SetStatus(1);
+	part->SetInfo('P');
+	pl->push_back(part);
+	break;
+      case 2:
+	msg.Error()<<"ERROR in Hadron_Part::RedoDecay : "<<endl
+		   <<cluster->Mass()<<" -> "<<cluster->GetLeft()->Mass()<<" + "<<had2<<" does not work out .... "<<endl;
+	abort();
+      default:
 	return;
       }
     }
     else {
       masses[0] = had1.Mass();
       masses[1] = cluster->GetRight()->Mass(); 
-      if (CheckDecayKinematics(cluster,cluster->GetRight(),had1,help)) {
-	TwoHadronDecay(cluster,pl,had1,had2);
+      switch (CheckDecayKinematics(cluster,cluster->GetRight(),had1,help)) {
+      case 0:
+	TwoHadronDecay(cluster,pl,had1,help);
+	break;
+      case 1:
+	hadpars.AdjustMomenta(2,momenta,masses);
+	cluster->GetRight()->RescaleMomentum(momenta[1]); 
+	part = new Particle(0,had1,momenta[0]);
+	part->SetNumber(0);
+	part->SetStatus(1);
+	part->SetInfo('P');
+	pl->push_back(part);
+	cluster->GetRight()->RescaleMomentum(momenta[1]); 
+	break;
+      case 2:
+	msg.Error()<<"ERROR in Hadron_Part::RedoDecay : "<<endl
+		   <<cluster->Mass()<<" -> "<<cluster->GetLeft()->Mass()<<" + "<<had2<<" does not work out .... "<<endl;
+	abort();
+      default:
 	return;
       }
-    }
-    hadpars.AdjustMomenta(2,momenta,masses);
-    if (mode==2) {
-      cluster->GetLeft()->RescaleMomentum(momenta[0]); 
-      Particle * part = new Particle(0,had2,momenta[1]);
-      part->SetNumber(0);
-      part->SetStatus(1);
-      part->SetInfo('P');
-      pl->push_back(part);
-    }
-    else {
-      Particle * part = new Particle(0,had1,momenta[0]);
-      part->SetNumber(0);
-      part->SetStatus(1);
-      part->SetInfo('P');
-      pl->push_back(part);
-      cluster->GetRight()->RescaleMomentum(momenta[1]); 
     }
     delete momenta;
     delete masses;
@@ -111,7 +128,7 @@ void Hadron_Part::CheckDecayKinematics(Cluster * cluster,Flavour & had1,Flavour 
 }    
 
 
-bool Hadron_Part::CheckDecayKinematics(Cluster * cluster,Cluster * other,Flavour & had,Flavour & help)
+int Hadron_Part::CheckDecayKinematics(Cluster * cluster,Cluster * other,Flavour & had,Flavour & help)
 {
   double    m1  = had.Mass(), m2 = other->Mass(), mass = cluster->Mass();
   Cluster * clu = cluster->GetLeft();
@@ -120,16 +137,19 @@ bool Hadron_Part::CheckDecayKinematics(Cluster * cluster,Cluster * other,Flavour
     if (!p_stransitions->NextLightest(clu,had)) {
       break;
     }
-    m1 = had.Mass();
+    else m1 = had.Mass();
   }
-  if (mass>=m1+m2) return false;
-
+  if (mass<=m1+m2) return 1;
+ 
   help = Flavour(kf::none);
   while (mass<=m1+m2) {
     if (!p_stransitions->NextLightest(other,help)) {
+      break;
     }
-    return true;
+    else m2 = help.Mass();
   }  
+  if (mass>=m1+m2) return 0;
+  return 2;
 }    
 
 /////////////////////////////////////////////////////////////////////////////////////////////

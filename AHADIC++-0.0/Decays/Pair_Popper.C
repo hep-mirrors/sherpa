@@ -10,8 +10,11 @@ Pair_Popper::Pair_Popper() :
   p_constituents(hadpars.GetConstituents()), m_totweight(0)
 {
   for (FlavCCMap_Iterator iter=p_constituents->CCMap.begin();
-       iter!=p_constituents->CCMap.end();iter++) 
+       iter!=p_constituents->CCMap.end();iter++) { 
+    //cout<<"Pop "<<iter->first<<" "<<iter->second->TotWeight()<<endl;
     m_totweight += iter->second->TotWeight();
+  }
+  //abort();
 }
 
 

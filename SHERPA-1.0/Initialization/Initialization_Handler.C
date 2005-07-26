@@ -46,6 +46,9 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
 #ifdef USING__MCatNLO
   p_herwig(NULL), p_mcatnlo(NULL),
 #endif
+#ifdef USING__Ahadic
+  p_ahadic(NULL),
+#endif
   p_analysis(NULL) 
 {
   m_scan_istep=-1;  
@@ -73,6 +76,9 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   p_iohandler(NULL), p_pythia(NULL), p_evtreader(NULL), 
 #ifdef USING__MCatNLO
   p_herwig(NULL), p_mcatnlo(NULL),
+#endif
+#ifdef USING__Ahadic
+  p_ahadic(NULL),
 #endif
   p_analysis(NULL)
 {
@@ -127,6 +133,9 @@ Initialization_Handler::~Initialization_Handler()
 #ifdef USING__MCatNLO
   if (p_herwig)        { delete p_herwig;        p_herwig        = NULL; }
   if (p_mcatnlo)       { delete p_mcatnlo;       p_mcatnlo       = NULL; }
+#endif
+#ifdef USING__Ahadic
+  if (p_ahadic)        { delete p_ahadic;        p_ahadic        = NULL; }
 #endif
   if (p_analysis)      { delete p_analysis;      p_analysis      = NULL; }
   if (p_dataread)      { delete p_dataread;      p_dataread      = NULL; }
@@ -412,7 +421,7 @@ bool Initialization_Handler::InitializeTheMatrixElements()
   return 1;
 }
 
-Matrix_Element_Handler * Initialization_Handler::GetMatrixElementHandler(std::string _key) { 
+Matrix_Element_Handler * const Initialization_Handler::GetMatrixElementHandler(std::string _key) { 
   MEHandlerIter pos = m_mehandlers.find(_key);
   if (pos!=m_mehandlers.end()) return pos->second;
   msg.Error()<<"Error in Initialization_Handler::GetMatrixElementHandler("<<_key<<") :"
@@ -524,7 +533,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   return true;
 }
 
-Hadron_Decay_Handler * Initialization_Handler::GetHadronDecayHandler(std::string _key) { 
+Hadron_Decay_Handler * const Initialization_Handler::GetHadronDecayHandler(std::string _key) { 
   HDHandlersIter pos = m_hdhandlers.find(_key);
   if (pos!=m_hdhandlers.end()) return pos->second;
   msg.Error()<<"Error in Initialization_Handler::GetHadronDecayHandler("<<_key<<") :"

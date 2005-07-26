@@ -22,10 +22,11 @@ Ahadic::~Ahadic()
   if (p_cformhandler) { delete p_cformhandler; p_cformhandler=NULL; }
 }
 
-void Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
+bool Ahadic::Hadronize(ATOOLS::Blob_List * blobs,ATOOLS::Particle_List *)
 {
   msg.Tracking()<<"In Ahadic::Hadronize."<<endl;
   Blob * blob = p_cformhandler->FormClusters(blobs);
   p_cdechandler->DecayClusters(p_cformhandler->GetClusters(),blob);
   msg.Events()<<(*blob)<<endl<<endl;
+  return true;
 }

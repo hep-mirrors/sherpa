@@ -30,7 +30,7 @@ namespace AHADIC {
 
     double MultipletWeight()                           { return m_mpletwt;    }
     void SetMultipletWeight(const double wt)           { m_mpletwt = wt;      }
-    ATOOLS::Flavour SetFlavour(ATOOLS::Flavour & flav) { m_hadron  = flav;    }
+    void SetFlavour(ATOOLS::Flavour & flav)            { m_hadron  = flav;    }
     ATOOLS::Flavour GetFlavour() const                 { return m_hadron;     }
     int  KfCode() const                                { return m_kfcode;     }
     void SetKfCode(const int _kfcode)                  { m_kfcode  = _kfcode; }
