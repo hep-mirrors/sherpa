@@ -62,6 +62,7 @@ namespace ATOOLS {
 	        SM       = 3, 
 	        MSSM     = 4, 
 	        THDM     = 5,
+	        MSSM_EHC = 4, 
 	        ADD      = 7,
 	        SMEHC    = 8,
 		SM_ZPrime= 9,

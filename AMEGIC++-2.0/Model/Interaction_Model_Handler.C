@@ -7,6 +7,7 @@
 #include "Interaction_Model_MSSM.H"
 #include "Interaction_Model_ADD.H"
 #include "Interaction_Model_SMEHC.H"
+#include "Interaction_Model_MSSM_EHC.H"
 #include "Interaction_Model_SM_ZPrime.H"
 #include "Interaction_Model_SM_AGC.H"
 
@@ -45,6 +46,10 @@ Interaction_Model_Base * Interaction_Model_Handler::GetModel(std::string modelty
   if (modeltype==std::string("MSSM")) {
       rpa.gen.SetModelType(ATOOLS::Model_Type::MSSM);
       return new Interaction_Model_MSSM(p_model,cplscheme,yukscheme);
+  }
+  if (modeltype==std::string("MSSM+EHC")) {
+    rpa.gen.SetModelType(ATOOLS::Model_Type::MSSM_EHC);
+    return new Interaction_Model_MSSM_EHC(p_model,cplscheme,yukscheme);
   }
   if (modeltype==std::string("ADD")) {
     rpa.gen.SetModelType(ATOOLS::Model_Type::ADD);

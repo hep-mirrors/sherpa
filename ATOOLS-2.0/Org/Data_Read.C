@@ -249,6 +249,7 @@ template <> Model_Type::code Data_Read::GetValue<Model_Type::code>(std::string n
   if (value==std::string("SM"))       return ReturnData(name,Model_Type::SM);
   if (value==std::string("MSSM"))     return ReturnData(name,Model_Type::MSSM);
   if (value==std::string("THDM"))     return ReturnData(name,Model_Type::THDM);
+  if (value==std::string("MSSM+EHC")) return ReturnData(name,Model_Type::MSSM_EHC);
   if (value==std::string("ADD"))      return ReturnData(name,Model_Type::ADD);
   if (value==std::string("SM+EHC"))   return ReturnData(name,Model_Type::SMEHC);
   if (value==std::string("SM+ZPrime"))return ReturnData(name,Model_Type::SM_ZPrime);
