@@ -7,7 +7,10 @@
 #include "QCD_Splitting_Functions.H"
 #include "QED_Splitting_Functions.H"
 #include "Run_Parameter.H"
+#ifdef SHERPA_SUPPORT
 #include "Remnant_Base.H"
+#include "MyStrStream.H"
+#endif
 
 #include <iomanip>
 
@@ -295,9 +298,11 @@ bool Spacelike_Sudakov::JetVeto(Knot * mo)
 
 bool Spacelike_Sudakov::RemnantVeto(Knot * mo) 
 {
+#ifdef SHERPA_SUPPORT
   double E=p_remnant->BeamEnergy()*mo->x/m_z;
   Particle part(1,GetFlA(),Vec4D(E,0.0,0.0,E));
   if (!p_remnant->TestExtract(&part)) return 1;
+#endif
   return 0;
 }
 

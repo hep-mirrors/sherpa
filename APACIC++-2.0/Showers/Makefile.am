@@ -9,10 +9,22 @@ PDFINCS       =	-I$(PDFDIR)/Main -I$(PDFDIR)/Remnant
 
 SHERPASYS     =	../..
 
-lib_LTLIBRARIES = libApacicShowers.la
+if SHERPA_SUPPORT
+SHERPAFLAGS   = -DSHERPA_SUPPORT
+SHERPAINCS    =	-I$(SHERPASYS)/SHERPA-1.0/SoftPhysics
+endif
+
+lib_LTLIBRARIES = libApacicShowers.la libApacicShowersNS.la
 libApacicShowers_la_SOURCES = Final_State_Shower.C Timelike_Sudakov.C \
 			      Timelike_Kinematics.C  Spacelike_Kinematics.C \
 			      Initial_State_Shower.C Spacelike_Sudakov.C \
+			      Sudakov_Tools.C Splitting_Function.C \
+			      Splitting_Group.C Backward_Splitting_Group.C \
+			      QED_Splitting_Functions.C QCD_Splitting_Functions.C \
+			      SUSY_QCD_Splitting_Functions.C
+libApacicShowersNS_la_SOURCES = Final_State_Shower.C Timelike_Sudakov.C \
+			      Timelike_Kinematics.C  Spacelike_Kinematics.C \
+			      Initial_State_Shower.C Spacelike_SudakovNS.C \
 			      Sudakov_Tools.C Splitting_Function.C \
 			      Splitting_Group.C Backward_Splitting_Group.C \
 			      QED_Splitting_Functions.C QCD_Splitting_Functions.C \

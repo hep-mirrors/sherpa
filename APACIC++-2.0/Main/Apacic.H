@@ -30,7 +30,7 @@ namespace APACIC {
     void PrepareTrees();
     void SetJetvetoPt2(const double q2i, const double q2f);
     void SetFactorisationScale(const double scale);
-    int  PerformShowers(bool,bool,int,int,double,double,double ycut);
+    int  PerformShowers(bool=false,bool=true,int=0,int=0,double=1.,double=1.,double ycut=1.e-2);
     bool ExtractPartons(bool,bool,ATOOLS::Blob_List *,ATOOLS::Particle_List * = NULL);
 
     Tree  * FinTree();

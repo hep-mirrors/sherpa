@@ -5,6 +5,29 @@ AM_DISABLE_STATIC
 AC_PREFIX_DEFAULT(${PWD}/..)
 
 dnl Conditional compiling and linking
+AC_ARG_ENABLE(sherpa,
+[  --disable-sherpa        Disable SHERPA Support ],
+[ sherpa=true
+  SHERPADIR="../SHERPA-1.0"
+  if test -d $SHERPADIR ; then
+    echo "checking for SHERPA package... yes"
+    case "${enableval}" in
+      no) echo "disable SHERPA support anyway... yes";
+          sherpa=false ;;
+    esac
+  else
+    echo "checking for SHERPA package... no"
+    sherpa=false
+  fi ],
+[ SHERPADIR="../SHERPA-1.0"
+  if test ! -d $SHERPADIR ; then
+    echo "checking for SHERPA package... no"
+    sherpa=false
+  else 
+    echo "checking for SHERPA package... yes"
+    sherpa=true 
+  fi ])
+AM_CONDITIONAL(SHERPA_SUPPORT, test "$sherpa" = "true" )
 AC_ARG_ENABLE(cvsinclude,
 [  --disable-cvsinclude    Disable CVS Synchronization ],
 [ cvsinclude=true
