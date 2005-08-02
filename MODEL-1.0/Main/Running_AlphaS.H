@@ -74,7 +74,7 @@ namespace MODEL {
 	return p_thresh[i].nf;
     }
     return m_nth;
-  };
+  }
 
   extern Running_AlphaS * as;
 

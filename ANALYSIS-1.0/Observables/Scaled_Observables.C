@@ -46,7 +46,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
-  DEFINE_GETTER_METHOD(CLASS,NAME);					\
+  DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME)
 
 using namespace ATOOLS;
@@ -88,7 +88,7 @@ void Scaled_Observable_Base::Evaluate(const Particle_List & plist,double weight,
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DEFINE_OBSERVABLE_GETTER(Scaled_Momentum,Scaled_Momentum_Getter,"XP");
+DEFINE_OBSERVABLE_GETTER(Scaled_Momentum,Scaled_Momentum_Getter,"XP")
 
 Scaled_Momentum::Scaled_Momentum(int type,double xmin,double xmax,int nbins,
 				 const std::string & listname, double ecms) :
@@ -109,7 +109,7 @@ Primitive_Observable_Base * Scaled_Momentum::Copy() const
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DEFINE_OBSERVABLE_GETTER(Log_Scaled_Momentum,Log_Scaled_Momentum_Getter,"LogXP");
+DEFINE_OBSERVABLE_GETTER(Log_Scaled_Momentum,Log_Scaled_Momentum_Getter,"LogXP")
 
 Log_Scaled_Momentum::Log_Scaled_Momentum(int type,double xmin,double xmax,int nbins,
 					 const std::string & listname, double ecms) :
@@ -131,7 +131,7 @@ Primitive_Observable_Base * Log_Scaled_Momentum::Copy() const
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DEFINE_OBSERVABLE_GETTER(Scaled_Energy,Scaled_Energy_Getter,"XE");
+DEFINE_OBSERVABLE_GETTER(Scaled_Energy,Scaled_Energy_Getter,"XE")
 
 Scaled_Energy::Scaled_Energy(int type,double xmin,double xmax,int nbins,
 			     const std::string & listname, double ecms) :

@@ -43,7 +43,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
-  DEFINE_GETTER_METHOD(CLASS,NAME);					\
+  DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME)
 
 using namespace ATOOLS;
@@ -86,7 +86,7 @@ void Four_Jet_Angle_Base::Evaluate(const Blob_List & blobs,double value, int nco
 // ======================================================================
 
 DEFINE_OBSERVABLE_GETTER(Bengtsson_Zerwas_Angle,
-			 Bengtsson_Zerwas_Angle_Getter,"BZAngle");
+			 Bengtsson_Zerwas_Angle_Getter,"BZAngle")
 
 Bengtsson_Zerwas_Angle::Bengtsson_Zerwas_Angle(unsigned int type,double xmin,double xmax,int nbins,
 					       const std::string & lname) :
@@ -111,7 +111,7 @@ Primitive_Observable_Base * Bengtsson_Zerwas_Angle::Copy() const
 // ======================================================================
 
 DEFINE_OBSERVABLE_GETTER(Nachtmann_Reiter_Angle,
-			 Nachtmann_Reiter_Angle_Getter,"NRAngle");
+			 Nachtmann_Reiter_Angle_Getter,"NRAngle")
 
 Nachtmann_Reiter_Angle::Nachtmann_Reiter_Angle(unsigned int type,double xmin,double xmax,int nbins,
 					       const std::string & lname) :
@@ -136,7 +136,7 @@ Primitive_Observable_Base * Nachtmann_Reiter_Angle::Copy() const
 // ======================================================================
 
 DEFINE_OBSERVABLE_GETTER(Koerner_Schierholz_Willrodt_Angle,
-			 Koerner_Schierholz_Willrodt_Angle_Getter,"KSWAngle");
+			 Koerner_Schierholz_Willrodt_Angle_Getter,"KSWAngle")
 
 Koerner_Schierholz_Willrodt_Angle::Koerner_Schierholz_Willrodt_Angle(unsigned int type,double xmin,double xmax,int nbins,
 					       const std::string & lname) :
@@ -166,7 +166,7 @@ Primitive_Observable_Base * Koerner_Schierholz_Willrodt_Angle::Copy() const
 
 // ======================================================================
 
-DEFINE_OBSERVABLE_GETTER(Alpha34_Angle,Alpha34_Angle_Getter,"A34Angle");
+DEFINE_OBSERVABLE_GETTER(Alpha34_Angle,Alpha34_Angle_Getter,"A34Angle")
 
 Alpha34_Angle::Alpha34_Angle(unsigned int type,double xmin,double xmax,int nbins,
 					       const std::string & lname) :

@@ -780,7 +780,7 @@ void Final_State_Shower::InitTwojetTree(Tree * tree,double scale) {
   mo->right->maxpt2    = 0.;
   mo->right->E2        = E*E;
   mo->right->thcrit    = start_th;
-};
+}
 
 //-----------------------------------------------------------------------
 //------------------------ Evolution of the Shower ----------------------

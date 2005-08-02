@@ -26,7 +26,7 @@ SQuark__SQuark_Gluon::SQuark__SQuark_Gluon(ATOOLS::Flavour squarkflavour,Sudakov
   m_alpha    = p_tools->GetASmax();
 }
 
-double SQuark__SQuark_Gluon::operator()(double z) {return s_CF*(2.*z)/(1.-z);};             
+double SQuark__SQuark_Gluon::operator()(double z) {return s_CF*(2.*z)/(1.-z);}
 
 double SQuark__SQuark_Gluon::GetZ()
 {

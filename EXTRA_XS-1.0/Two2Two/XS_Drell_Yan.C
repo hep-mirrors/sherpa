@@ -62,6 +62,8 @@ bool XS_qg_qp::SetColours(double s,double t,double u) {
 
 //======================================================================
 
+namespace EXTRAXS {
+
 template <> 
 Single_XS *Single_XS::GetProcess<XS_ee_ffbar>(const size_t nin,const size_t nout,
 					      const ATOOLS::Flavour *flavours,
@@ -76,6 +78,8 @@ Single_XS *Single_XS::GetProcess<XS_ee_ffbar>(const size_t nin,const size_t nout
     }
   }
   return NULL;
+}
+
 }
 
 XS_ee_ffbar::XS_ee_ffbar(const size_t nin,const size_t nout,const ATOOLS::Flavour *fl) 

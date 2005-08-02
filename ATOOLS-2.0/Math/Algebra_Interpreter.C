@@ -125,15 +125,15 @@ Operator::~Operator() {}
     return args[0];                                                 \
   }
 
-DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Plus,"+",+,12,double);
-DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Minus,"-",-,12,double);
-DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Times,"*",*,13,double);
-DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Divide,"/",/,13,double);
-DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Modulus,"%",%,13,long int);
-DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Shift_Left,"<<",<<,11,long int);
-DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Shift_Right,">>",>>,11,long int);
-DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Logical_And,"&&",&&,5,long int);
-DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Logical_Or,"||",||,4,long int);
+DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Plus,"+",+,12,double)
+DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Minus,"-",-,12,double)
+DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Times,"*",*,13,double)
+DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Divide,"/",/,13,double)
+DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Modulus,"%",%,13,long int)
+DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Shift_Left,"<<",<<,11,long int)
+DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Shift_Right,">>",>>,11,long int)
+DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Logical_And,"&&",&&,5,long int)
+DEFINE_BINARY_DOUBLE_OPERATOR(Binary_Logical_Or,"||",||,4,long int)
 
 bool IsAlpha(const std::string& expr) 
 {
@@ -158,12 +158,12 @@ bool IsAlpha(const std::string& expr)
     return args[0];                                                 \
   }
 
-DEFINE_BINARY_SORTABLE_OPERATOR(Binary_Equal,"==",==,9,double);
-DEFINE_BINARY_SORTABLE_OPERATOR(Binary_Not_Equal,"!=",!=,9,double);
-DEFINE_BINARY_SORTABLE_OPERATOR(Binary_Less,"<",<,10,double);
-DEFINE_BINARY_SORTABLE_OPERATOR(Binary_Greater,">",>,10,double);
-DEFINE_BINARY_SORTABLE_OPERATOR(Binary_Less_Equal,"<=",<=,10,double);
-DEFINE_BINARY_SORTABLE_OPERATOR(Binary_Greater_Equal,">=",>=,10,double);
+DEFINE_BINARY_SORTABLE_OPERATOR(Binary_Equal,"==",==,9,double)
+DEFINE_BINARY_SORTABLE_OPERATOR(Binary_Not_Equal,"!=",!=,9,double)
+DEFINE_BINARY_SORTABLE_OPERATOR(Binary_Less,"<",<,10,double)
+DEFINE_BINARY_SORTABLE_OPERATOR(Binary_Greater,">",>,10,double)
+DEFINE_BINARY_SORTABLE_OPERATOR(Binary_Less_Equal,"<=",<=,10,double)
+DEFINE_BINARY_SORTABLE_OPERATOR(Binary_Greater_Equal,">=",>=,10,double)
 
 DEFINE_UNARY_OPERATOR(Unary_Not,"!",14)
 {
@@ -193,7 +193,7 @@ Term *Unary_Not::Evaluate(const std::vector<Term*> &args) const
     return args[0];                                                 \
   }
 
-DEFINE_BINARY_DOUBLE_FUNCTION(Power,"pow",pow);
+DEFINE_BINARY_DOUBLE_FUNCTION(Power,"pow",pow)
 
 #define DEFINE_ITERATED_DOUBLE_FUNCTION(NAME,TAG,OP)                 \
   DEFINE_FUNCTION(NAME,TAG)                                          \
@@ -230,12 +230,12 @@ DEFINE_ITERATED_DOUBLE_FUNCTION(Maximum,"max",Max)
     return args[0];                                                \
   }
 
-DEFINE_UNARY_DOUBLE_FUNCTION(Logarithm,"log",log);
-DEFINE_UNARY_DOUBLE_FUNCTION(Logarithm10,"log10",log10);
-DEFINE_UNARY_DOUBLE_FUNCTION(Exponential,"exp",exp);
-DEFINE_UNARY_DOUBLE_FUNCTION(Absolute_Value,"abs",dabs);
-DEFINE_UNARY_DOUBLE_FUNCTION(Square,"sqr",sqr);
-DEFINE_UNARY_DOUBLE_FUNCTION(Square_Root,"sqrt",sqrt);
+DEFINE_UNARY_DOUBLE_FUNCTION(Logarithm,"log",log)
+DEFINE_UNARY_DOUBLE_FUNCTION(Logarithm10,"log10",log10)
+DEFINE_UNARY_DOUBLE_FUNCTION(Exponential,"exp",exp)
+DEFINE_UNARY_DOUBLE_FUNCTION(Absolute_Value,"abs",dabs)
+DEFINE_UNARY_DOUBLE_FUNCTION(Square,"sqr",sqr)
+DEFINE_UNARY_DOUBLE_FUNCTION(Square_Root,"sqrt",sqrt)
 
 DEFINE_FUNCTION(Vec4D_Part,"Part")
 {
@@ -267,12 +267,12 @@ Term *Vec4D_Part::Evaluate(const std::vector<Term*> &args) const
     return res;								\
   }									\
 
-DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Abs2,"Abs2",Abs2);
-DEFINE_ONE_VECTOR_OPERATOR(Vec4D_PPerp,"PPerp",PPerp);
-DEFINE_ONE_VECTOR_OPERATOR(Vec4D_PPerp2,"PPerp2",PPerp2);
-DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Theta,"Theta",Theta);
-DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Eta,"Eta",Eta);
-DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Phi,"Phi",Phi);
+DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Abs2,"Abs2",Abs2)
+DEFINE_ONE_VECTOR_OPERATOR(Vec4D_PPerp,"PPerp",PPerp)
+DEFINE_ONE_VECTOR_OPERATOR(Vec4D_PPerp2,"PPerp2",PPerp2)
+DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Theta,"Theta",Theta)
+DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Eta,"Eta",Eta)
+  DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Phi,"Phi",Phi)
 
 #define DEFINE_TWO_VECTOR_OPERATOR(NAME,TAG,OP)				\
   DEFINE_FUNCTION(NAME,TAG)						\
@@ -291,10 +291,14 @@ DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Phi,"Phi",Phi);
     return res;								\
   }									\
 
-DEFINE_TWO_VECTOR_OPERATOR(Vec4D_PPerpR,"PPerpR",PPerp);
-DEFINE_TWO_VECTOR_OPERATOR(Vec4D_ThetaR,"ThetaR",Theta);
-DEFINE_TWO_VECTOR_OPERATOR(Vec4D_DEta,"DEta",DEta);
-DEFINE_TWO_VECTOR_OPERATOR(Vec4D_DPhi,"DPhi",DPhi);
+DEFINE_TWO_VECTOR_OPERATOR(Vec4D_PPerpR,"PPerpR",PPerp)
+DEFINE_TWO_VECTOR_OPERATOR(Vec4D_ThetaR,"ThetaR",Theta)
+DEFINE_TWO_VECTOR_OPERATOR(Vec4D_DEta,"DEta",DEta)
+DEFINE_TWO_VECTOR_OPERATOR(Vec4D_DPhi,"DPhi",DPhi)
+
+Interpreter_Function::~Interpreter_Function() 
+{
+}
 
 DEFINE_INTERPRETER_FUNCTION(Resolve_Bracket)
 {

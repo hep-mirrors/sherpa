@@ -37,7 +37,7 @@ MODEL::Model_Base * _model, std::string _cplscheme,std::string _yukscheme)
   // - sqrt(2.) will describe a totally LR-symm model
   // - sqrt(2./3.) describes an E6-inspired model
   alphaLR = Kabbala(std::string("\\alpha_{LR}"), sqrt(2./3.));
-};
+}
 
 void Interaction_Model_SM_ZPrime::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
 {

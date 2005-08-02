@@ -32,7 +32,7 @@ QCD_Processes::QCD_Processes(PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler 
 
 void QCD_Processes::FillMode(Mode mode) 
 {
-  XS_Group *group;
+  XS_Group *group(NULL);
   p_xsselector->SetOffShell(p_isrhandler->KMROn());
   switch (mode) {
   case All:

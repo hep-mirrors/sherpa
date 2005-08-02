@@ -51,7 +51,7 @@ public:
 template <class Value_Type>
 Id_Scaling<Value_Type>::Id_Scaling(const std::string &parameter) 
 {
-  m_name="Id"; 
+  this->m_name="Id"; 
 }
 
 template <class Value_Type>
@@ -64,7 +64,7 @@ public:
 template <class Value_Type>
 Log_Scaling<Value_Type>::Log_Scaling(const std::string &parameter) 
 {
-  m_name="Log"; 
+  this->m_name="Log"; 
 }
 
 template <class Value_Type>
@@ -77,7 +77,7 @@ public:
 template <class Value_Type>
 Exp_Scaling<Value_Type>::Exp_Scaling(const std::string &parameter) 
 {
-  m_name="Exp"; 
+  this->m_name="Exp"; 
 }
 
 template <class Value_Type>
@@ -90,7 +90,7 @@ public:
 template <class Value_Type>
 Sqr_Scaling<Value_Type>::Sqr_Scaling(const std::string &parameter) 
 {
-  m_name="Sqr"; 
+  this->m_name="Sqr"; 
 }
 
 template <class Value_Type>
@@ -103,7 +103,7 @@ public:
 template <class Value_Type>
 Sqrt_Scaling<Value_Type>::Sqrt_Scaling(const std::string &parameter) 
 {
-  m_name="Sqrt"; 
+  this->m_name="Sqrt"; 
 }
 
 template <class Value_Type>
@@ -122,7 +122,7 @@ Log_B_Scaling<Value_Type>::Log_B_Scaling(const std::string &parameter)
   reader.SetString(parameter);
   reader.ReadFromString(m_b,"Log_B_");
   m_logb=log(m_b); 
-  m_name="Log_B_"+ToString(m_b);
+  this->m_name="Log_B_"+ToString(m_b);
 }
 
 template <class Value_Type>
@@ -141,7 +141,7 @@ B_To_X_Scaling<Value_Type>::B_To_X_Scaling(const std::string &parameter)
   Data_Reader reader;
   reader.SetString(parameter);
   reader.ReadFromString(m_b,"B_To_X_");
-  m_name="B_To_X_"+ToString(m_b);
+  this->m_name="B_To_X_"+ToString(m_b);
 }
 
 template <class Value_Type>
@@ -160,7 +160,7 @@ X_To_P_Scaling<Value_Type>::X_To_P_Scaling(const std::string &parameter)
   Data_Reader reader;
   reader.SetString(parameter);
   reader.ReadFromString(m_p,"X_To_P_");
-  m_name="X_To_P_"+ToString(m_p);
+  this->m_name="X_To_P_"+ToString(m_p);
 }
 
 template class Scaling_Base<double>;
@@ -189,28 +189,35 @@ Scaling_Base<double> *GetVariable(const std::string &parameter)
 #define DEFINE_SCALING_GETTER(CLASS,NAME,TAG,PRINT)			\
   template class CLASS;							\
   DECLARE_GETTER(NAME,TAG,Scaling_Base<double>,std::string);		\
-  DEFINE_GETTER_METHOD(CLASS,NAME);					\
-  DEFINE_PRINT_METHOD(NAME,PRINT)
+  DEFINE_GETTER_METHOD(CLASS,NAME)					\
+  DEFINE_PRINT_METHOD(NAME,PRINT) 
 
 DECLARE_GETTER(Id_Scaling_Default_Getter,"",
 	       Scaling_Base<double>,std::string);			
-DEFINE_GETTER_METHOD(Id_Scaling<double>,Id_Scaling_Default_Getter);	
+DEFINE_GETTER_METHOD(Id_Scaling<double>,Id_Scaling_Default_Getter)
 DEFINE_PRINT_METHOD(Id_Scaling_Default_Getter,"")
 
 DEFINE_SCALING_GETTER(Id_Scaling<double>,Id_Scaling_Getter,
-		      "Id","identical");
+		      "Id","identical")
+
 DEFINE_SCALING_GETTER(Log_Scaling<double>,Log_Scaling_Getter,
-		      "Log","logarithmical");
+		      "Log","logarithmical")
+
 DEFINE_SCALING_GETTER(Exp_Scaling<double>,Exp_Scaling_Getter,
-		      "Exp","exponential");
+		      "Exp","exponential")
+
 DEFINE_SCALING_GETTER(Sqr_Scaling<double>,Sqr_Scaling_Getter,
-		      "Sqr","square");
+		      "Sqr","square")
+
 DEFINE_SCALING_GETTER(Sqrt_Scaling<double>,Sqrt_Scaling_Getter,
-		      "Sqrt","square root");
+		      "Sqrt","square root")
+
 DEFINE_SCALING_GETTER(Log_B_Scaling<double>,Log_B_Scaling_Getter,
-		      "Log_B_","logarithmical");
+		      "Log_B_","logarithmical")
+
 DEFINE_SCALING_GETTER(B_To_X_Scaling<double>,B_To_X_Scaling_Getter,
-		      "B_To_X_","exponential");
+		      "B_To_X_","exponential")
+
 DEFINE_SCALING_GETTER(X_To_P_Scaling<double>,X_To_P_Scaling_Getter,
-		      "X_To_P_","power");
+		      "X_To_P_","power")
 

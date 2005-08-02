@@ -4,7 +4,7 @@ using namespace MODEL;
 using namespace ATOOLS;
 
 Spectrum_Generator_Base::Spectrum_Generator_Base(ATOOLS::Data_Read * _dataread,Model_Base * _model) :
-  p_dataread(_dataread), p_model(_model)  {};
+  p_dataread(_dataread), p_model(_model)  {}
 
 Spectrum_Generator_Base::~Spectrum_Generator_Base() 
 { 

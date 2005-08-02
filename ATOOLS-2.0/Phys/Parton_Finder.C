@@ -15,6 +15,10 @@ size_t s_maxdepth=1000;
 
 using namespace ATOOLS;
 
+Parton_Tester::~Parton_Tester()
+{
+}
+
 void Parton_Tester::Turn()
 {
   THROW(fatal_error,"Virtual method called.");

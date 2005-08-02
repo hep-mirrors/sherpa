@@ -81,7 +81,7 @@ public:
 template <class ValueType>
 PPerp<ValueType>::PPerp(): Variable_Base<ValueType>("p_\\perp") 
 {
-  m_selectorid=12; 
+  this->m_selectorid=12; 
 }
   
 template <class ValueType>
@@ -93,7 +93,7 @@ public:
 template <class ValueType>
 EPerp<ValueType>::EPerp(): Variable_Base<ValueType>("E_\\perp") 
 {
-  m_selectorid=15; 
+  this->m_selectorid=15; 
 }
   
 template <class ValueType>
@@ -105,7 +105,7 @@ public:
 template <class ValueType>
 Energy<ValueType>::Energy(): Variable_Base<ValueType>("E") 
 {
-  m_selectorid=11; 
+  this->m_selectorid=11; 
 }
   
 template <class ValueType>
@@ -117,7 +117,7 @@ public:
 template <class ValueType>
 Mass<ValueType>::Mass(): Variable_Base<ValueType>("m") 
 {
-  m_selectorid=21; 
+  this->m_selectorid=21; 
 }
   
 template <class ValueType>
@@ -129,7 +129,7 @@ public:
 template <class ValueType>
 Rapidity<ValueType>::Rapidity(): Variable_Base<ValueType>("y") 
 {
-  m_selectorid=13; 
+  this->m_selectorid=13; 
 }
   
 template <class ValueType>
@@ -141,7 +141,7 @@ public:
 template <class ValueType>
 Eta<ValueType>::Eta(): Variable_Base<ValueType>("\\eta") 
 {
-  m_selectorid=16; 
+  this->m_selectorid=16; 
 }
   
 template <class ValueType>
@@ -155,7 +155,7 @@ public:
 template <class ValueType>
 Theta<ValueType>::Theta(): Variable_Base<ValueType>("\\theta") 
 {
-  m_selectorid=14; 
+  this->m_selectorid=14; 
 }
   
 template <class ValueType>
@@ -170,7 +170,7 @@ public:
 template <class ValueType>
 Theta2<ValueType>::Theta2(): Variable_Base<ValueType>("\\theta_{ij}") 
 {
-  m_selectorid=22; 
+  this->m_selectorid=22; 
 }
 
 template <class ValueType>
@@ -214,7 +214,7 @@ Variable_Base<double> *GetVariable(const std::string &parameter)
 #define DEFINE_VARIABLE_GETTER(CLASS,NAME,TAG,PRINT)		        \
   template class CLASS;							\
   DECLARE_GETTER(NAME,TAG,Variable_Base<double>,std::string);		\
-  DEFINE_GETTER_METHOD(CLASS,NAME);					\
+  DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME,PRINT)
 
 DEFINE_VARIABLE_GETTER(No_Variable<double>,No_Variable_Getter,

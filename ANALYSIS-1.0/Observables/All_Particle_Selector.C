@@ -40,7 +40,7 @@ GetParticleSelector(const String_Matrix &parameters)
 
 #define DEFINE_SELECTOR_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
-  DEFINE_SELECTOR_GETTER_METHOD(CLASS,NAME);			\
+  DEFINE_SELECTOR_GETTER_METHOD(CLASS,NAME)			\
   DEFINE_SELECTOR_PRINT_METHOD(NAME)
 
 #include "Primitive_Analysis.H"
@@ -93,12 +93,12 @@ GetParticleDSelector(const String_Matrix &parameters)
 
 #define DEFINE_SELECTOR_D_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
-  DEFINE_SELECTOR_D_GETTER_METHOD(CLASS,NAME);			\
+  DEFINE_SELECTOR_D_GETTER_METHOD(CLASS,NAME)			\
   DEFINE_SELECTOR_D_PRINT_METHOD(NAME)
 
 #include "Primitive_Analysis.H"
 
-DEFINE_SELECTOR_GETTER(PT_Selector,PT_Selector_Getter,"PTSel");
+DEFINE_SELECTOR_GETTER(PT_Selector,PT_Selector_Getter,"PTSel")
 
 PT_Selector::
 PT_Selector(const double min,const double max,
@@ -133,7 +133,7 @@ void PT_Selector::EndEvaluation(double scale)
 {
 }
 
-DEFINE_SELECTOR_GETTER(ET_Selector,ET_Selector_Getter,"ETSel");
+DEFINE_SELECTOR_GETTER(ET_Selector,ET_Selector_Getter,"ETSel")
 
 ET_Selector::
 ET_Selector(const double min,const double max,
@@ -168,7 +168,7 @@ void ET_Selector::EndEvaluation(double scale)
 {
 }
 
-DEFINE_SELECTOR_GETTER(Eta_Selector,Eta_Selector_Getter,"EtaSel");
+DEFINE_SELECTOR_GETTER(Eta_Selector,Eta_Selector_Getter,"EtaSel")
 
 Eta_Selector::
 Eta_Selector(const double min,const double max,
@@ -203,7 +203,7 @@ void Eta_Selector::EndEvaluation(double scale)
 {
 }
 
-DEFINE_SELECTOR_GETTER(Y_Selector,Y_Selector_Getter,"YSel");
+DEFINE_SELECTOR_GETTER(Y_Selector,Y_Selector_Getter,"YSel")
 
 Y_Selector::
 Y_Selector(const double min,const double max,
@@ -238,7 +238,7 @@ void Y_Selector::EndEvaluation(double scale)
 {
 }
 
-DEFINE_SELECTOR_GETTER(Phi_Selector,Phi_Selector_Getter,"PhiSel");
+DEFINE_SELECTOR_GETTER(Phi_Selector,Phi_Selector_Getter,"PhiSel")
 
 Phi_Selector::
 Phi_Selector(const double min,const double max,
@@ -273,7 +273,7 @@ void Phi_Selector::EndEvaluation(double scale)
 {
 }
 
-DEFINE_SELECTOR_D_GETTER(DPhi_Selector,DPhi_Selector_Getter,"DPhiSel");
+DEFINE_SELECTOR_D_GETTER(DPhi_Selector,DPhi_Selector_Getter,"DPhiSel")
 
 DPhi_Selector::
 DPhi_Selector(const double min,const double max,

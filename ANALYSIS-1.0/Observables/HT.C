@@ -42,12 +42,12 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
-  DEFINE_GETTER_METHOD(CLASS,NAME);					\
+  DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME)
 
 #include "Primitive_Analysis.H"
 
-DEFINE_OBSERVABLE_GETTER(HT,HT_Getter,"HT");
+DEFINE_OBSERVABLE_GETTER(HT,HT_Getter,"HT")
  
 HT::HT(int type,double xmin,double xmax,int nbins,
        const std::string & listname) :

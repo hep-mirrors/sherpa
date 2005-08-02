@@ -57,7 +57,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
-  DEFINE_GETTER_METHOD(CLASS,NAME);					\
+  DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME)
 
 using namespace ATOOLS;
@@ -151,7 +151,7 @@ void Four_Particle_Observable_Base::Evaluate(const Particle_List& plist,
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 DEFINE_OBSERVABLE_GETTER(Four_Particle_PlaneAngle,
-			 Four_Particle_PlaneAngle_Getter,"PlaneAngle");
+			 Four_Particle_PlaneAngle_Getter,"PlaneAngle")
 
 void Four_Particle_PlaneAngle::Evaluate(const Vec4D & mom1,const Vec4D & mom2,
 					const Vec4D & mom3,const Vec4D & mom4,
@@ -177,7 +177,7 @@ Primitive_Observable_Base * Four_Particle_PlaneAngle::Copy() const
 //=============================================================================
 
 DEFINE_OBSERVABLE_GETTER(Four_Particle_PT,
-			 Four_Particle_PT_Getter,"PT4");
+			 Four_Particle_PT_Getter,"PT4")
 
 void Four_Particle_PT::Evaluate(const Vec4D& mom1,const Vec4D& mom2,
 				const Vec4D& mom3,const Vec4D& mom4,
@@ -201,7 +201,7 @@ Primitive_Observable_Base* Four_Particle_PT::Copy() const
 //=============================================================================
 
 DEFINE_OBSERVABLE_GETTER(Two_Partonpair_PTdiff,
-			 Two_Partonpair_PTdiff_Getter,"PTdiff4");
+			 Two_Partonpair_PTdiff_Getter,"PTdiff4")
 
 void Two_Partonpair_PTdiff::Evaluate(const Vec4D& mom1,const Vec4D& mom2,
 				     const Vec4D& mom3,const Vec4D& mom4,
@@ -232,7 +232,7 @@ Primitive_Observable_Base* Two_Partonpair_PTdiff::Copy() const {
 //=============================================================================
 
 DEFINE_OBSERVABLE_GETTER(Two_Partonpair_Theta,
-			 Two_Partonpair_Theta_Getter,"Theta4");
+			 Two_Partonpair_Theta_Getter,"Theta4")
 
 void Two_Partonpair_Theta::Evaluate(const Vec4D& mom1,const Vec4D& mom2,
 				    const Vec4D& mom3,const Vec4D& mom4,
@@ -323,12 +323,12 @@ Primitive_Observable_Base *const GetObservable2(const String_Matrix &parameters)
 
 #define DEFINE_OBSERVABLE_GETTER2(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
-  DEFINE_GETTER_METHOD2(CLASS,NAME);					\
+  DEFINE_GETTER_METHOD2(CLASS,NAME)					\
   DEFINE_PRINT_METHOD2(NAME)
 
 
 DEFINE_OBSERVABLE_GETTER2(Di_Mass,
-			 Di_Mass_Getter,"DiMass");
+			 Di_Mass_Getter,"DiMass")
 
 Di_Mass::Di_Mass(unsigned int type,double xmin,double xmax,int nbins,
 	       const std::string & lname) :

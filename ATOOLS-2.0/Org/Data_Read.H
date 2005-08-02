@@ -133,6 +133,7 @@ namespace ATOOLS {
   template <>  Flavour Data_Read::GetValue<Flavour>(std::string);
   template <>  Beam_Type::code    Data_Read::GetValue<Beam_Type::code>(std::string);
   template <>  Beam_Generator::code    Data_Read::GetValue<Beam_Generator::code>(std::string);
+  template <>  Beam_Shape::code   Data_Read::GetValue<Beam_Shape::code>(std::string);
   template <>  ISR_Type::code     Data_Read::GetValue<ISR_Type::code>(std::string);
   template <>  String_Type::code  Data_Read::GetValue<String_Type::code>(std::string);
 

@@ -33,6 +33,7 @@ void Bubble_Sort::Down(Type * a, int n)
   }
 }
 
+namespace ATOOLS {
 
 // specialisation and explicit instatiation
 template <>
@@ -59,6 +60,7 @@ void Bubble_Sort::Down<Vec4D>(Vec4D * a, int n)
   }
 }
 
+}
 
 /*
 template <class Type>

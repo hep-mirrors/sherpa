@@ -52,7 +52,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
-  DEFINE_GETTER_METHOD(CLASS,NAME);					\
+  DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME)
 
 using namespace ATOOLS;
@@ -102,7 +102,7 @@ void One_Particle_Observable_Base::Evaluate(const Particle_List & plist,double w
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DEFINE_OBSERVABLE_GETTER(One_Particle_ET,One_Particle_ET_Getter,"ET");
+DEFINE_OBSERVABLE_GETTER(One_Particle_ET,One_Particle_ET_Getter,"ET")
 
 One_Particle_ET::One_Particle_ET(const Flavour & flav,
 				 int type,double xmin,double xmax,int nbins,
@@ -126,7 +126,7 @@ Primitive_Observable_Base * One_Particle_ET::Copy() const
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DEFINE_OBSERVABLE_GETTER(One_Particle_PT,One_Particle_PT_Getter,"PT");
+DEFINE_OBSERVABLE_GETTER(One_Particle_PT,One_Particle_PT_Getter,"PT")
 
 One_Particle_PT::One_Particle_PT(const Flavour & flav,
 				 int type,double xmin,double xmax,int nbins,
@@ -147,7 +147,7 @@ Primitive_Observable_Base * One_Particle_PT::Copy() const
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DEFINE_OBSERVABLE_GETTER(One_Particle_Eta,One_Particle_Eta_Getter,"Eta");
+DEFINE_OBSERVABLE_GETTER(One_Particle_Eta,One_Particle_Eta_Getter,"Eta")
 
 One_Particle_Eta::One_Particle_Eta(const Flavour & flav,
 				   int type,double xmin,double xmax,int nbins,
@@ -175,7 +175,7 @@ Primitive_Observable_Base * One_Particle_Eta::Copy() const
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DEFINE_OBSERVABLE_GETTER(One_Particle_E,One_Particle_E_Getter,"E");
+DEFINE_OBSERVABLE_GETTER(One_Particle_E,One_Particle_E_Getter,"E")
 
 One_Particle_E::One_Particle_E(const Flavour & flav,
 			       int type,double xmin,double xmax,int nbins,
@@ -196,7 +196,7 @@ Primitive_Observable_Base * One_Particle_E::Copy() const
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DEFINE_OBSERVABLE_GETTER(One_Particle_BeamAngle,One_Particle_BeamAngle_Getter,"BeamAngle");
+DEFINE_OBSERVABLE_GETTER(One_Particle_BeamAngle,One_Particle_BeamAngle_Getter,"BeamAngle")
 
 One_Particle_BeamAngle::One_Particle_BeamAngle(const Flavour & flav,
 					       int type,double xmin,double xmax,int nbins,
@@ -217,7 +217,7 @@ Primitive_Observable_Base * One_Particle_BeamAngle::Copy() const
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DEFINE_OBSERVABLE_GETTER(One_Particle_EVis,One_Particle_EVis_Getter,"EVis");
+DEFINE_OBSERVABLE_GETTER(One_Particle_EVis,One_Particle_EVis_Getter,"EVis")
 
 One_Particle_EVis::One_Particle_EVis(const Flavour & flav,
 			       int type,double xmin,double xmax,int nbins,

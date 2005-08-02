@@ -32,7 +32,7 @@ INCLUDES = -I../Amplitude \
 	   -I../../ATOOLS-2.0/Math \
 	   -I../../ATOOLS-2.0/Org 
 noinst_HEADERS = Lorentz_Function.H Color_Function.H \
-		 Single_Vertex.H Vertex.H
+		 Single_Vertex.H Vertex.H \
 		 Interaction_Model_Base.H Interaction_Model_Handler.H \
 		 Interaction_Model_QCD.H Interaction_Model_EW.H \
 		 Interaction_Model_SM.H \

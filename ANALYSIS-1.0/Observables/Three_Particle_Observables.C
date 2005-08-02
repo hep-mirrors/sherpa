@@ -57,7 +57,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
-  DEFINE_GETTER_METHOD(CLASS,NAME);					\
+  DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME)
 
 #ifdef ROOT_SUPPORT
@@ -105,7 +105,7 @@ void Three_Particle_Observable_Base::Evaluate(const Particle_List & plist,double
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DEFINE_OBSERVABLE_GETTER(Three_Particle_DEta,Three_Particle_DEta_Getter,"DEta3");
+DEFINE_OBSERVABLE_GETTER(Three_Particle_DEta,Three_Particle_DEta_Getter,"DEta3")
 
 Three_Particle_DEta::Three_Particle_DEta(const Flavour & flav1,const Flavour & flav2,
 					 const Flavour & flav3,int type,double xmin,
@@ -130,7 +130,7 @@ Primitive_Observable_Base * Three_Particle_DEta::Copy() const
     
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DEFINE_OBSERVABLE_GETTER(Three_Particle_DPhi,Three_Particle_DPhi_Getter,"DPhi3");
+DEFINE_OBSERVABLE_GETTER(Three_Particle_DPhi,Three_Particle_DPhi_Getter,"DPhi3")
 
 Three_Particle_DPhi::Three_Particle_DPhi(const Flavour & flav1,const Flavour & flav2,
 					 const Flavour & flav3,int type,double xmin,
@@ -158,7 +158,7 @@ Primitive_Observable_Base * Three_Particle_DPhi::Copy() const
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DEFINE_OBSERVABLE_GETTER(Three_Particle_DR,Three_Particle_DR_Getter,"DR3");
+DEFINE_OBSERVABLE_GETTER(Three_Particle_DR,Three_Particle_DR_Getter,"DR3")
 
 Three_Particle_DR::Three_Particle_DR(const Flavour & flav1,const Flavour & flav2,
 				     const Flavour & flav3,int type, double xmin, 

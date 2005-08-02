@@ -85,7 +85,7 @@ namespace AMEGIC {
     
  };
 
-  inline Process_Base * Amegic::Processes() { return p_procs; };
+  inline Process_Base * Amegic::Processes() { return p_procs; }
 
 }
 

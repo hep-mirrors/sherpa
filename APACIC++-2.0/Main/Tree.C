@@ -103,7 +103,7 @@ Knot * Tree::NewKnot(ATOOLS::Flavour fl, ATOOLS::Vec4D p, double t, double x1) {
     p_root = newk;
   }
   return newk;
-};
+}
 
 Knot * Tree::NewKnot(Knot * ink) {
   Knot * newk = new Knot;
@@ -178,7 +178,7 @@ Knot * Tree::GetInitiator() {
   return help;
 }
 
-Knot * Tree::GetRoot() { return p_root; } ;
+Knot * Tree::GetRoot() { return p_root; } 
   
 
 void Tree::UpdateDaughters(Knot * mo)

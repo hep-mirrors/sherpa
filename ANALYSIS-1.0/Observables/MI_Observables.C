@@ -47,7 +47,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
-  DEFINE_GETTER_METHOD(CLASS,NAME);					\
+  DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME)
 
 template <class Class>
@@ -95,7 +95,7 @@ Primitive_Observable_Base *const GetOffsetObservable(const String_Matrix &parame
 
 #define DEFINE_OFFSET_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
-  DEFINE_OFFSET_GETTER_METHOD(CLASS,NAME);				\
+  DEFINE_OFFSET_GETTER_METHOD(CLASS,NAME)				\
   DEFINE_OFFSET_PRINT_METHOD(NAME)
 
 DECLARE_GETTER(MI_Statistics_Getter,"MIStats",
@@ -205,7 +205,7 @@ Primitive_Observable_Base * MI_Statistics::Copy() const
 }
 
 DEFINE_OBSERVABLE_GETTER(Forward_Backward_Eta_Correlation,
-			 Forward_Backward_Eta_Correlation_Getter,"FwBwEta");
+			 Forward_Backward_Eta_Correlation_Getter,"FwBwEta")
 
 Forward_Backward_Eta_Correlation::
 Forward_Backward_Eta_Correlation(const int type,
@@ -306,9 +306,9 @@ void NAME::EndEvaluation(double scale)                             \
 }
 
 DEFINE_OBSERVABLE_GETTER(Multiplicity_vs_JetPT,
-			 Multiplicity_vs_JetPT_Getter,"NvsJetPT");
-DEFINE_OPERATOR_PLUS(Multiplicity_vs_JetPT);
-DEFINE_END_EVALUATION(Multiplicity_vs_JetPT);
+			 Multiplicity_vs_JetPT_Getter,"NvsJetPT")
+DEFINE_OPERATOR_PLUS(Multiplicity_vs_JetPT)
+DEFINE_END_EVALUATION(Multiplicity_vs_JetPT)
 
 Multiplicity_vs_JetPT::
 Multiplicity_vs_JetPT(const int type,
@@ -346,9 +346,9 @@ Primitive_Observable_Base *Multiplicity_vs_JetPT::Copy() const
 
 
 DEFINE_OBSERVABLE_GETTER(Scalar_PT_Sum_vs_JetPT,
-			 Scalar_PT_Sum_vs_JetPT_Getter,"ScPTvsJetPT");
-DEFINE_OPERATOR_PLUS(Scalar_PT_Sum_vs_JetPT);
-DEFINE_END_EVALUATION(Scalar_PT_Sum_vs_JetPT);
+			 Scalar_PT_Sum_vs_JetPT_Getter,"ScPTvsJetPT")
+DEFINE_OPERATOR_PLUS(Scalar_PT_Sum_vs_JetPT)
+DEFINE_END_EVALUATION(Scalar_PT_Sum_vs_JetPT)
 
 Scalar_PT_Sum_vs_JetPT::
 Scalar_PT_Sum_vs_JetPT(const int type,
@@ -388,9 +388,9 @@ Primitive_Observable_Base *Scalar_PT_Sum_vs_JetPT::Copy() const
 }
 
 DEFINE_OBSERVABLE_GETTER(Scalar_PT_Sum_vs_JetET,
-			 Scalar_PT_Sum_vs_JetET_Getter,"ScPTvsJetET");
-DEFINE_OPERATOR_PLUS(Scalar_PT_Sum_vs_JetET);
-DEFINE_END_EVALUATION(Scalar_PT_Sum_vs_JetET);
+			 Scalar_PT_Sum_vs_JetET_Getter,"ScPTvsJetET")
+DEFINE_OPERATOR_PLUS(Scalar_PT_Sum_vs_JetET)
+DEFINE_END_EVALUATION(Scalar_PT_Sum_vs_JetET)
 
 Scalar_PT_Sum_vs_JetET::
 Scalar_PT_Sum_vs_JetET(const int type,
@@ -430,9 +430,9 @@ Primitive_Observable_Base *Scalar_PT_Sum_vs_JetET::Copy() const
 }
 
 DEFINE_OBSERVABLE_GETTER(Multiplicity_vs_PT,
-			 Multiplicity_vs_PT_Getter,"NvsPT");
-DEFINE_OPERATOR_PLUS(Multiplicity_vs_PT);
-DEFINE_END_EVALUATION(Multiplicity_vs_PT);
+			 Multiplicity_vs_PT_Getter,"NvsPT")
+DEFINE_OPERATOR_PLUS(Multiplicity_vs_PT)
+DEFINE_END_EVALUATION(Multiplicity_vs_PT)
 
 Multiplicity_vs_PT::Multiplicity_vs_PT(const int type,
 				       const double ptmin,const double ptmax,
@@ -471,9 +471,9 @@ Primitive_Observable_Base *Multiplicity_vs_PT::Copy() const
 }
 
 DEFINE_OFFSET_OBSERVABLE_GETTER(Multiplicity_vs_DPhi,
-				Multiplicity_vs_DPhi_Getter,"NvsDPhi");
-DEFINE_OPERATOR_PLUS(Multiplicity_vs_DPhi);
-DEFINE_END_EVALUATION(Multiplicity_vs_DPhi);
+				Multiplicity_vs_DPhi_Getter,"NvsDPhi")
+DEFINE_OPERATOR_PLUS(Multiplicity_vs_DPhi)
+DEFINE_END_EVALUATION(Multiplicity_vs_DPhi)
 
 Multiplicity_vs_DPhi::
 Multiplicity_vs_DPhi(const int type,
@@ -535,9 +535,9 @@ Primitive_Observable_Base *Multiplicity_vs_DPhi::Copy() const
 }
 
 DEFINE_OFFSET_OBSERVABLE_GETTER(Scalar_PT_Sum_vs_DPhi,
-				Scalar_PT_Sum_vs_DPhi_Getter,"ScPTvsDPhi");
-DEFINE_OPERATOR_PLUS(Scalar_PT_Sum_vs_DPhi);
-DEFINE_END_EVALUATION(Scalar_PT_Sum_vs_DPhi);
+				Scalar_PT_Sum_vs_DPhi_Getter,"ScPTvsDPhi")
+DEFINE_OPERATOR_PLUS(Scalar_PT_Sum_vs_DPhi)
+DEFINE_END_EVALUATION(Scalar_PT_Sum_vs_DPhi)
 
 Scalar_PT_Sum_vs_DPhi::
 Scalar_PT_Sum_vs_DPhi(const int type,
@@ -598,9 +598,9 @@ Primitive_Observable_Base *Scalar_PT_Sum_vs_DPhi::Copy() const
 }
 
 DEFINE_OFFSET_OBSERVABLE_GETTER(Scalar_ET_Sum_vs_DPhi,
-				Scalar_ET_Sum_vs_DPhi_Getter,"ScETvsDPhi");
-DEFINE_OPERATOR_PLUS(Scalar_ET_Sum_vs_DPhi);
-DEFINE_END_EVALUATION(Scalar_ET_Sum_vs_DPhi);
+				Scalar_ET_Sum_vs_DPhi_Getter,"ScETvsDPhi")
+DEFINE_OPERATOR_PLUS(Scalar_ET_Sum_vs_DPhi)
+DEFINE_END_EVALUATION(Scalar_ET_Sum_vs_DPhi)
 
 Scalar_ET_Sum_vs_DPhi::
 Scalar_ET_Sum_vs_DPhi(const int type,
@@ -661,9 +661,9 @@ Primitive_Observable_Base *Scalar_ET_Sum_vs_DPhi::Copy() const
 }
 
 DEFINE_OFFSET_OBSERVABLE_GETTER(Multiplicity_vs_DEta,
-				Multiplicity_vs_DEta_Getter,"NvsDEta");
-DEFINE_OPERATOR_PLUS(Multiplicity_vs_DEta);
-DEFINE_END_EVALUATION(Multiplicity_vs_DEta);
+				Multiplicity_vs_DEta_Getter,"NvsDEta")
+DEFINE_OPERATOR_PLUS(Multiplicity_vs_DEta)
+DEFINE_END_EVALUATION(Multiplicity_vs_DEta)
 
 Multiplicity_vs_DEta::
 Multiplicity_vs_DEta(const int type,
@@ -707,9 +707,9 @@ Primitive_Observable_Base *Multiplicity_vs_DEta::Copy() const
 }
 
 DEFINE_OFFSET_OBSERVABLE_GETTER(Scalar_PT_Sum_vs_DEta,
-				Scalar_PT_Sum_vs_DEta_Getter,"ScPTvsDEta");
-DEFINE_OPERATOR_PLUS(Scalar_PT_Sum_vs_DEta);
-DEFINE_END_EVALUATION(Scalar_PT_Sum_vs_DEta);
+				Scalar_PT_Sum_vs_DEta_Getter,"ScPTvsDEta")
+DEFINE_OPERATOR_PLUS(Scalar_PT_Sum_vs_DEta)
+DEFINE_END_EVALUATION(Scalar_PT_Sum_vs_DEta)
 
 Scalar_PT_Sum_vs_DEta::
 Scalar_PT_Sum_vs_DEta(const int type,
@@ -753,9 +753,9 @@ Primitive_Observable_Base *Scalar_PT_Sum_vs_DEta::Copy() const
 }
 
 DEFINE_OFFSET_OBSERVABLE_GETTER(Scalar_ET_Sum_vs_DEta,
-				Scalar_ET_Sum_vs_DEta_Getter,"ScETvsDEta");
-DEFINE_OPERATOR_PLUS(Scalar_ET_Sum_vs_DEta);
-DEFINE_END_EVALUATION(Scalar_ET_Sum_vs_DEta);
+				Scalar_ET_Sum_vs_DEta_Getter,"ScETvsDEta")
+DEFINE_OPERATOR_PLUS(Scalar_ET_Sum_vs_DEta)
+DEFINE_END_EVALUATION(Scalar_ET_Sum_vs_DEta)
 
 Scalar_ET_Sum_vs_DEta::
 Scalar_ET_Sum_vs_DEta(const int type,
@@ -799,9 +799,9 @@ Primitive_Observable_Base *Scalar_ET_Sum_vs_DEta::Copy() const
 }
 
 DEFINE_OBSERVABLE_GETTER(Multiplicity_vs_Eta,
-			 Multiplicity_vs_Eta_Getter,"NvsEta");
-DEFINE_OPERATOR_PLUS(Multiplicity_vs_Eta);
-DEFINE_END_EVALUATION(Multiplicity_vs_Eta);
+			 Multiplicity_vs_Eta_Getter,"NvsEta")
+DEFINE_OPERATOR_PLUS(Multiplicity_vs_Eta)
+DEFINE_END_EVALUATION(Multiplicity_vs_Eta)
 
 Multiplicity_vs_Eta::
 Multiplicity_vs_Eta(const int type,
@@ -840,9 +840,9 @@ Primitive_Observable_Base *Multiplicity_vs_Eta::Copy() const
 }
 
 DEFINE_OBSERVABLE_GETTER(Scalar_PT_Sum_vs_Eta,
-			 Scalar_PT_Sum_vs_Eta_Getter,"ScPTvsEta");
-DEFINE_OPERATOR_PLUS(Scalar_PT_Sum_vs_Eta);
-DEFINE_END_EVALUATION(Scalar_PT_Sum_vs_Eta);
+			 Scalar_PT_Sum_vs_Eta_Getter,"ScPTvsEta")
+DEFINE_OPERATOR_PLUS(Scalar_PT_Sum_vs_Eta)
+DEFINE_END_EVALUATION(Scalar_PT_Sum_vs_Eta)
 
 Scalar_PT_Sum_vs_Eta::
 Scalar_PT_Sum_vs_Eta(const int type,
@@ -881,9 +881,9 @@ Primitive_Observable_Base *Scalar_PT_Sum_vs_Eta::Copy() const
 }
 
 DEFINE_OBSERVABLE_GETTER(Scalar_ET_Sum_vs_Eta,
-			 Scalar_ET_Sum_vs_Eta_Getter,"ScETvsEta");
-DEFINE_OPERATOR_PLUS(Scalar_ET_Sum_vs_Eta);
-DEFINE_END_EVALUATION(Scalar_ET_Sum_vs_Eta);
+			 Scalar_ET_Sum_vs_Eta_Getter,"ScETvsEta")
+DEFINE_OPERATOR_PLUS(Scalar_ET_Sum_vs_Eta)
+DEFINE_END_EVALUATION(Scalar_ET_Sum_vs_Eta)
 
 Scalar_ET_Sum_vs_Eta::
 Scalar_ET_Sum_vs_Eta(const int type,
@@ -922,9 +922,9 @@ Primitive_Observable_Base *Scalar_ET_Sum_vs_Eta::Copy() const
 }
 
 DEFINE_OBSERVABLE_GETTER(MIScale_vs_JetPT,
-			 MIScale_vs_JetPT_Getter,"MISvsJetPT");
-DEFINE_OPERATOR_PLUS(MIScale_vs_JetPT);
-DEFINE_END_EVALUATION(MIScale_vs_JetPT);
+			 MIScale_vs_JetPT_Getter,"MISvsJetPT")
+DEFINE_OPERATOR_PLUS(MIScale_vs_JetPT)
+DEFINE_END_EVALUATION(MIScale_vs_JetPT)
 
 MIScale_vs_JetPT::
 MIScale_vs_JetPT(const int type,

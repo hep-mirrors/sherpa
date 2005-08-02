@@ -66,7 +66,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
-  DEFINE_GETTER_METHOD(CLASS,NAME);					\
+  DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME)
 
 
@@ -110,7 +110,7 @@ Primitive_Observable_Base * Sphericity_Calculator::Copy() const
 
 
 DEFINE_OBSERVABLE_GETTER(Sphericity,
-			 Sphericity_Getter,"Sphericity");
+			 Sphericity_Getter,"Sphericity")
 
 
 Sphericity::Sphericity(int type, double xmin, double xmax, int nbin, std::string listname)
@@ -139,7 +139,7 @@ Primitive_Observable_Base * Sphericity::Copy() const
 
 
 DEFINE_OBSERVABLE_GETTER(Aplanarity,
-			 Aplanarity_Getter,"Aplanarity");
+			 Aplanarity_Getter,"Aplanarity")
 
 
 Aplanarity::Aplanarity(int type, double xmin, double xmax, int nbin, std::string listname)
@@ -167,7 +167,7 @@ Primitive_Observable_Base * Aplanarity::Copy() const
 
 
 DEFINE_OBSERVABLE_GETTER(Planarity,
-			 Planarity_Getter,"Planarity");
+			 Planarity_Getter,"Planarity")
 
 
 Planarity::Planarity(int type, double xmin, double xmax, int nbin, std::string listname)

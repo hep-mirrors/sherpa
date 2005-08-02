@@ -40,7 +40,7 @@ namespace ANALYSIS {
 						   double & mineta, double & maxeta) { 
     neta     = m_nx;       nphi     = m_ny;
     mineta   = m_mineta;   maxeta   = m_maxeta;
-  };
+  }
   inline void Primitive_Calorimeter::GetCosSinTheta(const int i,
 						    double & costheta,double & sintheta) {
     if (i>-1&&i<m_nx) { costheta = p_costheta[i]; sintheta = p_sintheta[i]; return; }
@@ -48,7 +48,7 @@ namespace ANALYSIS {
 		       <<i<<") : "<<std::endl
 		       <<"   Out of bounds ("<<m_nx<<"), will return zeroes."<<std::endl;
     costheta = sintheta = 0.;
-  };  
+  }  
   inline void Primitive_Calorimeter::GetCosSinPhi(const int i,
 						  double & cosphi,double & sinphi) {
     if (i>-1&&i<m_ny) { cosphi = p_cosphi[i]; sinphi = p_sinphi[i]; return; }
@@ -56,7 +56,7 @@ namespace ANALYSIS {
 		       <<i<<") : "<<std::endl
 		       <<"   Out of bounds ("<<m_ny<<"), will return zeroes."<<std::endl;
     cosphi = sinphi = 0.;
-  };
+  }
 }
 
 #endif

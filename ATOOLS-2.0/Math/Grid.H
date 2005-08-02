@@ -82,6 +82,6 @@ namespace ATOOLS {
     
   };// end of class Interpolate
 
-};// end of namespace ATOOLS
+}// end of namespace ATOOLS
 
 #endif

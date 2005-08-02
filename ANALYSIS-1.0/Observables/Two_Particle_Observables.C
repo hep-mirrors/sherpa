@@ -57,7 +57,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
-  DEFINE_GETTER_METHOD(CLASS,NAME);					\
+  DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME)
 
 #ifdef ROOT_SUPPORT
@@ -111,7 +111,7 @@ void Two_Particle_Observable_Base::Evaluate(const Particle_List & plist,double w
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DEFINE_OBSERVABLE_GETTER(Two_Particle_Mass,Two_Particle_Mass_Getter,"Mass");
+DEFINE_OBSERVABLE_GETTER(Two_Particle_Mass,Two_Particle_Mass_Getter,"Mass")
 
 Two_Particle_Mass::Two_Particle_Mass(const Flavour & flav1, const Flavour & flav2,
 				     int type, double xmin, double xmax, int nbins,
@@ -135,7 +135,7 @@ Primitive_Observable_Base * Two_Particle_Mass::Copy() const
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DEFINE_OBSERVABLE_GETTER(Two_Particle_PT,Two_Particle_PT_Getter,"PT2");
+DEFINE_OBSERVABLE_GETTER(Two_Particle_PT,Two_Particle_PT_Getter,"PT2")
 
 Two_Particle_PT::Two_Particle_PT(const Flavour & flav1,const Flavour & flav2,
 				 int type,double xmin,double xmax,int nbins,
@@ -155,7 +155,7 @@ Primitive_Observable_Base * Two_Particle_PT::Copy() const
 }
 
 DEFINE_OBSERVABLE_GETTER(Two_Particle_Scalar_PT,
-			 Two_Particle_Scalar_PT_Getter,"SPT2");
+			 Two_Particle_Scalar_PT_Getter,"SPT2")
 
 Two_Particle_Scalar_PT::Two_Particle_Scalar_PT(const Flavour & flav1,const Flavour & flav2,
 				 int type,double xmin,double xmax,int nbins,
@@ -174,7 +174,7 @@ Primitive_Observable_Base * Two_Particle_Scalar_PT::Copy() const
 
 #ifdef ROOT_SUPPORT
 DEFINE_OBSERVABLE_GETTER(Two_Particle_Angles,
-			 Two_Particle_Angles_Getter,"Theta_2D");
+			 Two_Particle_Angles_Getter,"Theta_2D")
 
 Two_Particle_Angles::Two_Particle_Angles(const Flavour & _flav1,const Flavour & _flav2,
 					 int _type,double _xmin,double _xmax,int _nbins,
@@ -201,7 +201,7 @@ Primitive_Observable_Base * Two_Particle_Angles::Copy() const
 }
 #endif
 
-DEFINE_OBSERVABLE_GETTER(Two_Particle_Eta,Two_Particle_Eta_Getter,"Eta2");
+DEFINE_OBSERVABLE_GETTER(Two_Particle_Eta,Two_Particle_Eta_Getter,"Eta2")
 
 Two_Particle_Eta::Two_Particle_Eta(const Flavour & flav1,const Flavour & flav2,
 				 int type,double xmin,double xmax,int nbins,
@@ -224,7 +224,7 @@ Primitive_Observable_Base * Two_Particle_Eta::Copy() const
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DEFINE_OBSERVABLE_GETTER(Two_Particle_DEta,Two_Particle_DEta_Getter,"DEta");
+DEFINE_OBSERVABLE_GETTER(Two_Particle_DEta,Two_Particle_DEta_Getter,"DEta")
 
 Two_Particle_DEta::Two_Particle_DEta(const Flavour & flav1,const Flavour & flav2,
 				     int type,double xmin,double xmax,int nbins,
@@ -248,7 +248,7 @@ Primitive_Observable_Base * Two_Particle_DEta::Copy() const
     
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DEFINE_OBSERVABLE_GETTER(Two_Particle_DY,Two_Particle_DY_Getter,"DY");
+DEFINE_OBSERVABLE_GETTER(Two_Particle_DY,Two_Particle_DY_Getter,"DY")
 
 Two_Particle_DY::Two_Particle_DY(const Flavour & flav1,const Flavour & flav2,
 				     int type,double xmin,double xmax,int nbins,
@@ -272,7 +272,7 @@ Primitive_Observable_Base * Two_Particle_DY::Copy() const
     
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DEFINE_OBSERVABLE_GETTER(Two_Particle_DPhi,Two_Particle_DPhi_Getter,"DPhi");
+DEFINE_OBSERVABLE_GETTER(Two_Particle_DPhi,Two_Particle_DPhi_Getter,"DPhi")
 
 Two_Particle_DPhi::Two_Particle_DPhi(const Flavour & flav1,const Flavour & flav2,
 				     int type,double xmin,double xmax,int nbins,
@@ -297,7 +297,7 @@ Primitive_Observable_Base * Two_Particle_DPhi::Copy() const
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DEFINE_OBSERVABLE_GETTER(Two_Particle_DR,Two_Particle_DR_Getter,"DR");
+DEFINE_OBSERVABLE_GETTER(Two_Particle_DR,Two_Particle_DR_Getter,"DR")
 
 Two_Particle_DR::Two_Particle_DR(const Flavour & flav1,const Flavour & flav2,
 				 int type, double xmin, double xmax, int nbins,
@@ -333,7 +333,7 @@ Primitive_Observable_Base * Two_Particle_DR::Copy() const
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DEFINE_OBSERVABLE_GETTER(Two_Particle_CMS_Angle,Two_Particle_CMS_Angle_Getter,"CMSAngle");
+DEFINE_OBSERVABLE_GETTER(Two_Particle_CMS_Angle,Two_Particle_CMS_Angle_Getter,"CMSAngle")
 // angle of particle in CMS system of particles 1+2 relative to boost direction
 
 Two_Particle_CMS_Angle::Two_Particle_CMS_Angle(const Flavour & flav1, const Flavour & flav2,

@@ -55,13 +55,13 @@ GetOneParticleSelector(const String_Matrix &parameters)
 
 #define DEFINE_ONE_EXTRACTOR_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
-  DEFINE_ONE_EXTRACTOR_GETTER_METHOD(CLASS,NAME);			\
+  DEFINE_ONE_EXTRACTOR_GETTER_METHOD(CLASS,NAME)			\
   DEFINE_ONE_EXTRACTOR_PRINT_METHOD(NAME)
 
 #include "Primitive_Analysis.H"
 
 DEFINE_ONE_EXTRACTOR_GETTER(One_Particle_Extractor,
-			    One_Particle_Extractor_Getter,"OnePartExt");
+			    One_Particle_Extractor_Getter,"OnePartExt")
 
 One_Particle_Extractor::
 One_Particle_Extractor(const std::string &type,const ATOOLS::Flavour flav,

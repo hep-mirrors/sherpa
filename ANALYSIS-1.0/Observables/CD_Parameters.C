@@ -67,7 +67,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
-  DEFINE_GETTER_METHOD(CLASS,NAME);					\
+  DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME)
 
 
@@ -109,7 +109,7 @@ Primitive_Observable_Base * CD_Parameter_Calculator::Copy() const
 // ----------------------------------------------------------------------
 
 DEFINE_OBSERVABLE_GETTER(C_Parameter,
-			 C_Parameter_Getter,"CParam");
+			 C_Parameter_Getter,"CParam")
 
 
 C_Parameter::C_Parameter(int type, double xmin, double xmax, int nbin, std::string listname)
@@ -138,7 +138,7 @@ Primitive_Observable_Base * C_Parameter::Copy() const
 
 
 DEFINE_OBSERVABLE_GETTER(D_Parameter,
-			 D_Parameter_Getter,"DParam");
+			 D_Parameter_Getter,"DParam")
 
 
 D_Parameter::D_Parameter(int type, double xmin, double xmax, int nbin, std::string listname)

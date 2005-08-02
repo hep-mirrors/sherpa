@@ -70,7 +70,7 @@ namespace ANALYSIS {
 	 sdeiter!=m_elements.end();sdeiter++) {
       sdeiter->second->Reset();
     }
-  };
+  }
 }
 
 #endif

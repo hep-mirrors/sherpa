@@ -19,18 +19,18 @@ namespace ATOOLS {
 	     <<std::endl;
     abort();
   }
+
+  template <> double NotDefined<double>();   
+  template <> int NotDefined<int>();      
+  template <> long NotDefined<long int>(); 
+  template <> std::string NotDefined<std::string>(); 
+  template <> Switch::code NotDefined<Switch::code>(); 
+  template <> Beam_Type::code NotDefined<Beam_Type::code>(); 
+  template <> ISR_Type::code NotDefined<ISR_Type::code>(); 
+  template <> String_Type::code NotDefined<String_Type::code>(); 
+  template <> Model_Type::code NotDefined<Model_Type::code>(); 
+  template <> Flavour NotDefined<Flavour>(); 
+
 }// end of namespace ATOOLS
-
-  template <> double ATOOLS::NotDefined<double>();   
-  template <> int ATOOLS::NotDefined<int>();      
-  template <> long ATOOLS::NotDefined<long int>(); 
-  template <> std::string ATOOLS::NotDefined<std::string>(); 
-  template <> ATOOLS::Switch::code ATOOLS::NotDefined<ATOOLS::Switch::code>(); 
-  template <> ATOOLS::Beam_Type::code ATOOLS::NotDefined<ATOOLS::Beam_Type::code>(); 
-  template <> ATOOLS::ISR_Type::code ATOOLS::NotDefined<ATOOLS::ISR_Type::code>(); 
-  template <> ATOOLS::String_Type::code ATOOLS::NotDefined<ATOOLS::String_Type::code>(); 
-  template <> ATOOLS::Model_Type::code ATOOLS::NotDefined<ATOOLS::Model_Type::code>(); 
-  template <> ATOOLS::Flavour ATOOLS::NotDefined<ATOOLS::Flavour>(); 
-
 
 #endif 

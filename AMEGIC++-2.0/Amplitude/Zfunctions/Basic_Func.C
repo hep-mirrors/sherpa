@@ -7,6 +7,10 @@ using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace std;
 
+Basic_Func::~Basic_Func()
+{
+}
+
 void Basic_Func::SetArgCouplProp(int narg,int* _arg,Complex* _coupl,
 				 int _pn,Argument* _ps,Pfunc_List* _pl) 
 {

@@ -82,7 +82,7 @@ static ProfCollect* pcol = 0;
 /*    
 Parameter<int> Pprofiling("profiling", 0 );
 */
-const int Pprofiling() { return 100; };
+const int Pprofiling() { return 100; }
 
 template<typename T>
 struct Validator {

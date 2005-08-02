@@ -89,7 +89,7 @@ Primitive_Observable_Base *const GetObservable<Jet_Differential_Rates>(const Str
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
-  DEFINE_GETTER_METHOD(CLASS,NAME);					\
+  DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME)
 
 using namespace ATOOLS;
@@ -314,7 +314,7 @@ void Two_Jet_Observable_Base::SetPTRange(const unsigned int jetno,const double m
 //########################################################################################
 //########################################################################################
 
-DEFINE_OBSERVABLE_GETTER(Jet_Rapidity_Distribution,Jet_Rapidity_Distribution_Getter,"JetRap");
+DEFINE_OBSERVABLE_GETTER(Jet_Rapidity_Distribution,Jet_Rapidity_Distribution_Getter,"JetRap")
 
 Jet_Rapidity_Distribution::Jet_Rapidity_Distribution(unsigned int type,double xmin,double xmax,int nbins,
 					   unsigned int mode,unsigned int minn,unsigned int maxn, 
@@ -340,7 +340,7 @@ Primitive_Observable_Base * Jet_Rapidity_Distribution::Copy() const
 //########################################################################################
 //########################################################################################
 
-DEFINE_OBSERVABLE_GETTER(Jet_Eta_Distribution,Jet_Eta_Distribution_Getter,"JetEta");
+DEFINE_OBSERVABLE_GETTER(Jet_Eta_Distribution,Jet_Eta_Distribution_Getter,"JetEta")
 
 Jet_Eta_Distribution::Jet_Eta_Distribution(unsigned int type,double xmin,double xmax,int nbins,
 					   unsigned int mode,unsigned int minn,unsigned int maxn, 
@@ -370,7 +370,7 @@ Primitive_Observable_Base * Jet_Eta_Distribution::Copy() const
   return new Jet_Eta_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
 }
 
-DEFINE_OBSERVABLE_GETTER(Jet_PT_Distribution,Jet_PT_Distribution_Getter,"JetPT");
+DEFINE_OBSERVABLE_GETTER(Jet_PT_Distribution,Jet_PT_Distribution_Getter,"JetPT")
 
 Jet_PT_Distribution::Jet_PT_Distribution(unsigned int type,double xmin,double xmax,int nbins,
 					 unsigned int mode,unsigned int minn,unsigned int maxn, 
@@ -392,7 +392,7 @@ Primitive_Observable_Base * Jet_PT_Distribution::Copy() const
   return new Jet_PT_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
 }
 
-DEFINE_OBSERVABLE_GETTER(Jet_ET_Distribution,Jet_ET_Distribution_Getter,"JetET");
+DEFINE_OBSERVABLE_GETTER(Jet_ET_Distribution,Jet_ET_Distribution_Getter,"JetET")
 
 Jet_ET_Distribution::Jet_ET_Distribution(unsigned int type,double xmin,double xmax,int nbins,
 					 unsigned int mode,unsigned int minn,unsigned int maxn, 
@@ -416,7 +416,7 @@ Primitive_Observable_Base * Jet_ET_Distribution::Copy() const
   return new Jet_ET_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
 }
 
-DEFINE_OBSERVABLE_GETTER(Jet_E_Distribution,Jet_E_Distribution_Getter,"JetE");
+DEFINE_OBSERVABLE_GETTER(Jet_E_Distribution,Jet_E_Distribution_Getter,"JetE")
 
 Jet_E_Distribution::Jet_E_Distribution(unsigned int type,double xmin,double xmax,int nbins,
 					 unsigned int mode,unsigned int minn,unsigned int maxn, 
@@ -441,7 +441,7 @@ Primitive_Observable_Base * Jet_E_Distribution::Copy() const
 DECLARE_GETTER(Jet_Differential_Rates_Getter,"JetDRate",
 	       Primitive_Observable_Base,String_Matrix);	
 
-DEFINE_GETTER_METHOD(Jet_Differential_Rates,Jet_Differential_Rates_Getter);
+DEFINE_GETTER_METHOD(Jet_Differential_Rates,Jet_Differential_Rates_Getter)
 
 void Jet_Differential_Rates_Getter::PrintInfo(std::ostream &str,const size_t width) const	
 { 
@@ -541,7 +541,7 @@ Primitive_Observable_Base * Jet_Differential_Rates::Copy() const
 
 
 DEFINE_OBSERVABLE_GETTER(Jet_DeltaR_Distribution,
-			 Jet_DeltaR_Distribution_Getter,"JetDR");
+			 Jet_DeltaR_Distribution_Getter,"JetDR")
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -579,7 +579,7 @@ double Jet_DeltaR_Distribution::Calc(const Particle * p1,const Particle * p2,
 //----------------------------------------------------------------------
 
 DEFINE_OBSERVABLE_GETTER(Jet_DeltaEta_Distribution,
-			 Jet_DeltaEta_Distribution_Getter,"JetDEta");
+			 Jet_DeltaEta_Distribution_Getter,"JetDEta")
 
 Jet_DeltaEta_Distribution::Jet_DeltaEta_Distribution(unsigned int type,double xmin,double xmax,int nbins,
 						     unsigned int mode,unsigned int minn,unsigned int maxn, 
@@ -611,7 +611,7 @@ double Jet_DeltaEta_Distribution::Calc(const Particle * p1,const Particle * p2,
 //----------------------------------------------------------------------
 
 DEFINE_OBSERVABLE_GETTER(Jet_DeltaY_Distribution,
-			 Jet_DeltaY_Distribution_Getter,"JetDY");
+			 Jet_DeltaY_Distribution_Getter,"JetDY")
 
 Jet_DeltaY_Distribution::Jet_DeltaY_Distribution(unsigned int type,double xmin,double xmax,int nbins,
 						     unsigned int mode,unsigned int minn,unsigned int maxn, 
@@ -642,7 +642,7 @@ double Jet_DeltaY_Distribution::Calc(const Particle * p1,const Particle * p2,
 //----------------------------------------------------------------------
 
 DEFINE_OBSERVABLE_GETTER(Jet_DeltaPhi_Distribution,
-			 Jet_DeltaPhi_Distribution_Getter,"JetDPhi");
+			 Jet_DeltaPhi_Distribution_Getter,"JetDPhi")
 
 Jet_DeltaPhi_Distribution::Jet_DeltaPhi_Distribution(unsigned int type,double xmin,double xmax,int nbins,
 						     unsigned int mode,unsigned int minn,unsigned int maxn, 
@@ -674,7 +674,7 @@ double Jet_DeltaPhi_Distribution::Calc(const Particle * p1,const Particle * p2,
 //----------------------------------------------------------------------
 
 DEFINE_OBSERVABLE_GETTER(Jet_DiMass_Distribution,
-			 Jet_DiMass_Distribution_Getter,"JetDiMass");
+			 Jet_DiMass_Distribution_Getter,"JetDiMass")
 
 Jet_DiMass_Distribution::Jet_DiMass_Distribution(unsigned int type,double xmin,double xmax,int nbins,
 						     unsigned int mode,unsigned int minn,unsigned int maxn, 

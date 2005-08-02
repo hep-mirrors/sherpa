@@ -9,6 +9,9 @@ namespace ATOOLS {
   class Parton_Tester {
   public:
     
+    // destructor
+    virtual ~Parton_Tester();
+
     // member functions
     virtual void Turn();
     virtual bool Test(const Particle *parton) const;

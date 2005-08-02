@@ -168,7 +168,7 @@ bool Laser_Backscattering::CalculateWeight(double _x,double _scale)
   m_weight = spec;
 
   return 1;
-};
+}
 
 double Laser_Backscattering::Weight(Flavour flin)
 {

@@ -5,14 +5,18 @@
 
 using namespace AMISIC;
 
-template <> Profile_Function_Base*
-Profile_Function_Base::CreateProfile<Flat_Profile>(const std::string &type,
-						   const std::vector<double> &parameters)
-{
-  if (type==std::string("Flat") && parameters.size()>0) {
-    return new Flat_Profile(parameters[0]);
+namespace AMISIC {
+
+  template <> Profile_Function_Base*
+  Profile_Function_Base::CreateProfile<Flat_Profile>(const std::string &type,
+						     const std::vector<double> &parameters)
+  {
+    if (type==std::string("Flat") && parameters.size()>0) {
+      return new Flat_Profile(parameters[0]);
+    }
+    return NULL;
   }
-  return NULL;
+
 }
 
 Flat_Profile::Flat_Profile(const double radius):
@@ -46,14 +50,18 @@ double Flat_Profile::InverseMajorIntegral(const double I) const
   return 0.0;
 }
 
-template <> Profile_Function_Base*
-Profile_Function_Base::CreateProfile<Exponential_Profile>(const std::string &type,
-						   const std::vector<double> &parameters)
-{
-  if (type==std::string("Exponential") && parameters.size()>0) {
-    return new Exponential_Profile(parameters[0]);
+namespace AMISIC {
+
+  template <> Profile_Function_Base*
+  Profile_Function_Base::CreateProfile<Exponential_Profile>(const std::string &type,
+							    const std::vector<double> &parameters)
+  {
+    if (type==std::string("Exponential") && parameters.size()>0) {
+      return new Exponential_Profile(parameters[0]);
+    }
+    return NULL;
   }
-  return NULL;
+
 }
 
 Exponential_Profile::Exponential_Profile(const double radius):
@@ -85,14 +93,18 @@ double Exponential_Profile::InverseMajorIntegral(const double I) const
   return -m_radius*log(-I/M_PI+exp(-m_bmax/m_radius));
 }
 
-template <> Profile_Function_Base*
-Profile_Function_Base::CreateProfile<Gaussian_Profile>(const std::string &type,
-						   const std::vector<double> &parameters)
-{
-  if (type==std::string("Gaussian") && parameters.size()>0) {
-    return new Gaussian_Profile(parameters[0]);
+namespace AMISIC {
+
+  template <> Profile_Function_Base*
+  Profile_Function_Base::CreateProfile<Gaussian_Profile>(const std::string &type,
+							 const std::vector<double> &parameters)
+  {
+    if (type==std::string("Gaussian") && parameters.size()>0) {
+      return new Gaussian_Profile(parameters[0]);
+    }
+    return NULL;
   }
-  return NULL;
+
 }
 
 Gaussian_Profile::Gaussian_Profile(const double radius):
@@ -127,14 +139,18 @@ double Gaussian_Profile::InverseMajorIntegral(const double I) const
   return m_radius*sqrt(-2.0*log(I/M_PI+exp(-0.5*ATOOLS::sqr(m_bmax/m_radius))));
 }
 
-template <> Profile_Function_Base*
-Profile_Function_Base::CreateProfile<Double_Gaussian_Profile>(const std::string &type,
-						   const std::vector<double> &parameters)
-{
-  if (type==std::string("Double_Gaussian") && parameters.size()>2) {
-    return new Double_Gaussian_Profile(parameters[0],parameters[1],parameters[2]);
+namespace AMISIC {
+
+  template <> Profile_Function_Base*
+  Profile_Function_Base::CreateProfile<Double_Gaussian_Profile>(const std::string &type,
+								const std::vector<double> &parameters)
+  {
+    if (type==std::string("Double_Gaussian") && parameters.size()>2) {
+      return new Double_Gaussian_Profile(parameters[0],parameters[1],parameters[2]);
+    }
+    return NULL;
   }
-  return NULL;
+
 }
 
 Double_Gaussian_Profile::Double_Gaussian_Profile(const double radius1,

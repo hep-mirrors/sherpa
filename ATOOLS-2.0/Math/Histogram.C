@@ -219,7 +219,7 @@ Histogram::~Histogram() {
   if (m_psvalues!=0) { 
     delete [] m_psvalues; m_psvalues = 0; 
   }
-};
+}
 
 
 void Histogram::Finalize() {

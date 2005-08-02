@@ -29,7 +29,7 @@ q_qg::q_qg(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools) :
     m_kfactor  = 1.0+m_alpha/(2.0*M_PI)*s_kappa;
 }
 
-double q_qg::operator()(double z) {return m_kfactor*s_CF*(1.+z*z)/(1.-z);};             
+double q_qg::operator()(double z) {return m_kfactor*s_CF*(1.+z*z)/(1.-z);}    
 
 double q_qg::GetZ()
 {

@@ -469,10 +469,10 @@ double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* psh,double ma
 }
 
 long int Phase_Space_Integrator::MaxPoints()                  
-{ return nmax; };
+{ return nmax; }
 
 void     Phase_Space_Integrator::SetMaxPoints(long int _nmax) 
-{ nmax=_nmax;  };
+{ nmax=_nmax;  }
 
 std::string Phase_Space_Integrator::ReplaceTags(std::string &expr) const
 {

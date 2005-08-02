@@ -38,7 +38,7 @@ PDF_MRST99::PDF_MRST99(const ATOOLS::Flavour _bunch,
   m_xmax=MRST99::xmax;
   m_q2min=MRST99::qsqmin;
   m_q2max=MRST99::qsqmax;
-};
+}
 
 
 PDF_Base *PDF_MRST99::GetCopy() 

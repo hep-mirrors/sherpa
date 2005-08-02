@@ -42,14 +42,14 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
-  DEFINE_GETTER_METHOD(CLASS,NAME);					\
+  DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME)
 
 #include "MathTools.H"
 
 using namespace ATOOLS;
 
-DEFINE_OBSERVABLE_GETTER(Multiplicity,Multiplicity_Getter,"Multi");
+DEFINE_OBSERVABLE_GETTER(Multiplicity,Multiplicity_Getter,"Multi")
 
 Multiplicity::Multiplicity(int type,double xmin,double xmax,int nbins,
 			   const std::string & listname) :

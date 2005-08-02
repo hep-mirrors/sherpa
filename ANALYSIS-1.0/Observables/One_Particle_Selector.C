@@ -55,7 +55,7 @@ GetOneParticleSelector(const String_Matrix &parameters)
 
 #define DEFINE_ONE_SELECTOR_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
-  DEFINE_ONE_SELECTOR_GETTER_METHOD(CLASS,NAME);			\
+  DEFINE_ONE_SELECTOR_GETTER_METHOD(CLASS,NAME)			\
   DEFINE_ONE_SELECTOR_PRINT_METHOD(NAME)
 
 template <class Class>
@@ -116,13 +116,13 @@ GetOneParticleDeltaSelector(const String_Matrix &parameters)
 
 #define DEFINE_ONE_SELECTOR_DELTA_GETTER(CLASS,NAME,TAG)		\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
-  DEFINE_ONE_SELECTOR_DELTA_GETTER_METHOD(CLASS,NAME);		\
+  DEFINE_ONE_SELECTOR_DELTA_GETTER_METHOD(CLASS,NAME)		\
   DEFINE_ONE_SELECTOR_DELTA_PRINT_METHOD(NAME)
 
 #include "Primitive_Analysis.H"
 
 DEFINE_ONE_SELECTOR_GETTER(One_PT_Selector,
-			   One_PT_Selector_Getter,"OnePTSel");
+			   One_PT_Selector_Getter,"OnePTSel")
 
 One_PT_Selector::
 One_PT_Selector(const ATOOLS::Flavour flav,
@@ -191,7 +191,7 @@ void One_PT_Selector::EndEvaluation(double scale)
 }
 
 DEFINE_ONE_SELECTOR_GETTER(One_ET_Selector,
-			   One_ET_Selector_Getter,"OneETSel");
+			   One_ET_Selector_Getter,"OneETSel")
 
 One_ET_Selector::
 One_ET_Selector(const ATOOLS::Flavour flav,
@@ -259,7 +259,7 @@ void One_ET_Selector::EndEvaluation(double scale)
 }
 
 DEFINE_ONE_SELECTOR_GETTER(One_Eta_Selector,
-			   One_Eta_Selector_Getter,"OneEtaSel");
+			   One_Eta_Selector_Getter,"OneEtaSel")
 
 One_Eta_Selector::
 One_Eta_Selector(const ATOOLS::Flavour flav,
@@ -328,7 +328,7 @@ void One_Eta_Selector::EndEvaluation(double scale)
 }
 
 DEFINE_ONE_SELECTOR_GETTER(One_Y_Selector,
-			   One_Y_Selector_Getter,"OneYSel");
+			   One_Y_Selector_Getter,"OneYSel")
 
 One_Y_Selector::
 One_Y_Selector(const ATOOLS::Flavour flav,
@@ -396,7 +396,7 @@ void One_Y_Selector::EndEvaluation(double scale)
 }
 
 DEFINE_ONE_SELECTOR_DELTA_GETTER(One_DPhi_Selector,
-				 One_DPhi_Selector_Getter,"OneDPhiSel");
+				 One_DPhi_Selector_Getter,"OneDPhiSel")
 
 One_DPhi_Selector::
 One_DPhi_Selector(const ATOOLS::Flavour flav,const size_t item,
@@ -465,7 +465,7 @@ void One_DPhi_Selector::EndEvaluation(double scale)
 }
 
 DEFINE_ONE_SELECTOR_DELTA_GETTER(One_ETFrac_Selector,
-				 One_ETFrac_Selector_Getter,"OneETFracSel");
+				 One_ETFrac_Selector_Getter,"OneETFracSel")
 
 One_ETFrac_Selector::
 One_ETFrac_Selector(const ATOOLS::Flavour flav,const size_t item,

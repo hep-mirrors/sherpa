@@ -9,6 +9,8 @@
 using namespace EXTRAXS;
 using namespace MODEL;
 
+namespace EXTRAXS {
+
 template <> 
 Single_XS *Single_XS::GetProcess<Off_Shell_qqb_llb>(const size_t nin,const size_t nout,
 						    const ATOOLS::Flavour *flavours,
@@ -23,6 +25,8 @@ Single_XS *Single_XS::GetProcess<Off_Shell_qqb_llb>(const size_t nin,const size_
     }
   }
   return NULL;
+}
+
 }
 
 Off_Shell_qqb_llb::Off_Shell_qqb_llb(const size_t nin,const size_t nout,
@@ -95,6 +99,8 @@ bool Off_Shell_qqb_llb::SetColours(double s,double t,double u)
   return true; 
 }
 
+namespace EXTRAXS {
+
 template <> 
 Single_XS *Single_XS::GetProcess<Off_Shell_q1q2b_lnulb>(const size_t nin,const size_t nout,
 							const ATOOLS::Flavour *flavours,
@@ -122,6 +128,8 @@ Single_XS *Single_XS::GetProcess<Off_Shell_q1q2b_lnulb>(const size_t nin,const s
     }
   }
   return NULL;
+}
+
 }
 
 Off_Shell_q1q2b_lnulb::Off_Shell_q1q2b_lnulb(const size_t nin,const size_t nout,
@@ -161,6 +169,8 @@ bool Off_Shell_q1q2b_lnulb::SetColours(double s,double t,double u)
   return true; 
 }
 
+namespace EXTRAXS {
+
 template <> 
 Single_XS *Single_XS::GetProcess<Off_Shell_q1q2b_q3q4b>(const size_t nin,const size_t nout,
 							const ATOOLS::Flavour *flavours,
@@ -183,6 +193,8 @@ Single_XS *Single_XS::GetProcess<Off_Shell_q1q2b_q3q4b>(const size_t nin,const s
     return new Off_Shell_q1q2b_q3q4b(nin,nout,flavours); 
   }
   return NULL;
+}
+
 }
 
 Off_Shell_q1q2b_q3q4b::Off_Shell_q1q2b_q3q4b(const size_t nin,const size_t nout,

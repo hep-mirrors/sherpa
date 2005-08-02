@@ -8,6 +8,7 @@ namespace ATOOLS {
 
   class Particle_Qualifier_Base {
   public:
+    virtual ~Particle_Qualifier_Base();
     virtual bool operator() (const Particle *) const = 0;
     static void ShowQualifiers(const int mode);
   };

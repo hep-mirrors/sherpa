@@ -15,6 +15,8 @@ using namespace ATOOLS;
    by the factor 4 Pi for each alpha
 */
 
+namespace EXTRAXS {
+
 template <> 
 Single_XS *Single_XS::GetProcess<XS_pp_ffbar>(const size_t nin,const size_t nout,
 					      const ATOOLS::Flavour *flavours, 
@@ -26,6 +28,8 @@ Single_XS *Single_XS::GetProcess<XS_pp_ffbar>(const size_t nin,const size_t nout
     return new XS_pp_ffbar(nin,nout,flavours); 
   }
   return NULL;
+}
+
 }
 
 XS_pp_ffbar::XS_pp_ffbar(const size_t nin,const size_t nout,
@@ -50,6 +54,8 @@ bool XS_pp_ffbar::SetColours(double s,double t,double u)
   return 1; 
 }
 
+namespace EXTRAXS {
+
 template <> 
 Single_XS *Single_XS::GetProcess<XS_q1q2_q1q2>(const size_t nin,const size_t nout,
 					       const ATOOLS::Flavour *flavours, 
@@ -63,6 +69,8 @@ Single_XS *Single_XS::GetProcess<XS_q1q2_q1q2>(const size_t nin,const size_t nou
     }
   }
   return NULL;
+}
+
 }
 
 XS_q1q2_q1q2::XS_q1q2_q1q2(const size_t nin,const size_t nout, const ATOOLS::Flavour *fl) : 
@@ -125,6 +133,8 @@ bool XS_q1q2_q1q2::SetColours()                           { return 1; }
 
 //----------------------------------------------------------------------
 
+namespace EXTRAXS {
+
 template <> 
 Single_XS *Single_XS::GetProcess<XS_q1qbar1_q2qbar2>(const size_t nin,const size_t nout,
 						     const ATOOLS::Flavour *flavours, 
@@ -138,6 +148,8 @@ Single_XS *Single_XS::GetProcess<XS_q1qbar1_q2qbar2>(const size_t nin,const size
     }
   }
   return NULL;
+}
+
 }
 
 XS_q1qbar1_q2qbar2::XS_q1qbar1_q2qbar2(const size_t nin,const size_t nout, 
@@ -176,6 +188,8 @@ bool XS_q1qbar1_q2qbar2::SetColours()                           { return 1; }
 //----------------------------------------------------------------------
 // Note : Combinatorical factor of 2 for identical outgoing particles explicitly added
 
+namespace EXTRAXS {
+
 template <> 
 Single_XS *Single_XS::GetProcess<XS_q1q1_q1q1>(const size_t nin,const size_t nout,
 					       const ATOOLS::Flavour *flavours, 
@@ -188,6 +202,8 @@ Single_XS *Single_XS::GetProcess<XS_q1q1_q1q1>(const size_t nin,const size_t nou
     }
   }
   return NULL;
+}
+
 }
 
 XS_q1q1_q1q1::XS_q1q1_q1q1(const size_t nin,const size_t nout, const ATOOLS::Flavour *fl) : 
@@ -238,6 +254,8 @@ bool XS_q1q1_q1q1::SetColours()
 
 //----------------------------------------------------------------------
 
+namespace EXTRAXS {
+
 template <> 
 Single_XS *Single_XS::GetProcess<XS_q1qbar1_q1qbar1>(const size_t nin,const size_t nout,
 						     const ATOOLS::Flavour *flavours, 
@@ -251,6 +269,8 @@ Single_XS *Single_XS::GetProcess<XS_q1qbar1_q1qbar1>(const size_t nin,const size
     }
   }
   return NULL;
+}
+
 }
 
 XS_q1qbar1_q1qbar1::XS_q1qbar1_q1qbar1(const size_t nin,const size_t nout, 
@@ -304,6 +324,8 @@ bool XS_q1qbar1_q1qbar1::SetColours()
 //----------------------------------------------------------------------
 // Note : Combinatorical factor of 2 for identical outgoing particles explicitly added
 
+namespace EXTRAXS {
+
 template <> 
 Single_XS *Single_XS::GetProcess<XS_q1qbar1_gg>(const size_t nin,const size_t nout,
 						const ATOOLS::Flavour *flavours, 
@@ -316,6 +338,8 @@ Single_XS *Single_XS::GetProcess<XS_q1qbar1_gg>(const size_t nin,const size_t no
     }
   }
   return NULL;
+}
+
 }
 
 XS_q1qbar1_gg::XS_q1qbar1_gg(const size_t nin,const size_t nout, 
@@ -371,6 +395,8 @@ bool XS_q1qbar1_gg::SetColours()
 
 //----------------------------------------------------------------------
 
+namespace EXTRAXS {
+
 template <> 
 Single_XS *Single_XS::GetProcess<XS_gg_q1qbar1>(const size_t nin,const size_t nout,
 						const ATOOLS::Flavour *flavours, 
@@ -385,6 +411,7 @@ Single_XS *Single_XS::GetProcess<XS_gg_q1qbar1>(const size_t nin,const size_t no
   return NULL;
 }
 
+}
 
 XS_gg_q1qbar1::XS_gg_q1qbar1(const size_t nin,const size_t nout, const ATOOLS::Flavour *fl) : 
   Single_XS(nin,nout,fl) 
@@ -437,6 +464,8 @@ bool XS_gg_q1qbar1::SetColours()
 //----------------------------------------------------------------------
 
 
+namespace EXTRAXS {
+
 template <> 
 Single_XS *Single_XS::GetProcess<XS_q1g_q1g>(const size_t nin,const size_t nout,
 					     const ATOOLS::Flavour *flavours, 
@@ -453,6 +482,8 @@ Single_XS *Single_XS::GetProcess<XS_q1g_q1g>(const size_t nin,const size_t nout,
     }
   }
   return NULL;
+}
+
 }
 
 XS_q1g_q1g::XS_q1g_q1g(const size_t nin,const size_t nout, const ATOOLS::Flavour *fl) : 
@@ -532,6 +563,8 @@ bool XS_q1g_q1g::SetColours()
 //----------------------------------------------------------------------
 // Note : Combinatorical factor of 2 for identical outgoing particles explicitly added
 
+namespace EXTRAXS {
+
 template <> 
 Single_XS *Single_XS::GetProcess<XS_gg_gg>(const size_t nin,const size_t nout,
 					   const ATOOLS::Flavour *flavours, 
@@ -544,6 +577,8 @@ Single_XS *Single_XS::GetProcess<XS_gg_gg>(const size_t nin,const size_t nout,
     }
   }
   return NULL;
+}
+
 }
 
 XS_gg_gg::XS_gg_gg(const size_t nin,const size_t nout, const ATOOLS::Flavour *fl) : 

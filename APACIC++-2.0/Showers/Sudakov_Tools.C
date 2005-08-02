@@ -58,7 +58,7 @@ double Sudakov_Tools::CrudeAlphaS(double t){
   t*=m_renormalization_scale_factor;
   if (t<0.) t = -t;
   return m_scalefac/(m_beta0*log(t/m_lambda2));
-};
+}
 
 double Sudakov_Tools::AlphaS(double t){
   //  std::cout<<"Sudakov_Tools::AlphaS("<<t<<")*"<<m_renormalization_scale_factor<<"\n";

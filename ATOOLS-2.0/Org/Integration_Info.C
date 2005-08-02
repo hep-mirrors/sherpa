@@ -4,8 +4,6 @@
 
 using namespace ATOOLS;
 
-INSTANTIATE_SMART_POINTER(Integration_Info);
-
 Integration_Info::Integration_Info() 
 {
 }

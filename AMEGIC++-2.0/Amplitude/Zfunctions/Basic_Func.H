@@ -67,6 +67,7 @@ namespace AMEGIC {
     Basic_Sfuncs*             BS;
 
     Basic_Func(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : sgen(_sgen), BS(_BS) {}
+    virtual ~Basic_Func();
 
     virtual Kabbala X(const int,const int,const int);
     virtual Kabbala V(const int,const int);

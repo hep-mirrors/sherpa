@@ -42,7 +42,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
-  DEFINE_GETTER_METHOD(CLASS,NAME);					\
+  DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME)
 
 #include "Primitive_Analysis.H"
@@ -65,7 +65,7 @@ Event_Shapes_Observable_Base::Event_Shapes_Observable_Base(int _type,double _min
 //================================================================================
 //================================================================================
 
-DEFINE_OBSERVABLE_GETTER(Thrust,Thrust_Getter,"Thrust");
+DEFINE_OBSERVABLE_GETTER(Thrust,Thrust_Getter,"Thrust")
 
 Thrust::Thrust(int type, double xmin, double xmax, int nbins, 
 	       const std::string & listname, const std::string & name) :
@@ -91,7 +91,7 @@ Primitive_Observable_Base * Thrust::Copy() const
 //================================================================================
 //================================================================================
 
-DEFINE_OBSERVABLE_GETTER(Major,Major_Getter,"Major");
+DEFINE_OBSERVABLE_GETTER(Major,Major_Getter,"Major")
 
 Major::Major(int type, double xmin, double xmax, int nbins, 
 		       const std::string & listname, const std::string & name) :
@@ -117,7 +117,7 @@ Primitive_Observable_Base * Major::Copy() const
 //================================================================================
 //================================================================================
 
-DEFINE_OBSERVABLE_GETTER(Minor,Minor_Getter,"Minor");
+DEFINE_OBSERVABLE_GETTER(Minor,Minor_Getter,"Minor")
 
 Minor::Minor(int type, double xmin, double xmax, int nbins, 
 		       const std::string & listname, const std::string & name) :
@@ -143,7 +143,7 @@ Primitive_Observable_Base * Minor::Copy() const
 //================================================================================
 //================================================================================
 
-DEFINE_OBSERVABLE_GETTER(Oblateness,Oblateness_Getter,"Oblat");
+DEFINE_OBSERVABLE_GETTER(Oblateness,Oblateness_Getter,"Oblat")
 
 Oblateness::Oblateness(int type, double xmin, double xmax, int nbins, 
 		       const std::string & listname, const std::string & name) :
@@ -169,7 +169,7 @@ Primitive_Observable_Base * Oblateness::Copy() const
 //================================================================================
 //================================================================================
 
-DEFINE_OBSERVABLE_GETTER(PT_In_Thrust,PT_In_Thrust_Getter,"PTIn");
+DEFINE_OBSERVABLE_GETTER(PT_In_Thrust,PT_In_Thrust_Getter,"PTIn")
 
 PT_In_Thrust::PT_In_Thrust(int type, double xmin, double xmax, int nbins, 
 		       const std::string & listname, const std::string & name) :
@@ -199,7 +199,7 @@ Primitive_Observable_Base * PT_In_Thrust::Copy() const
 //================================================================================
 //================================================================================
 
-DEFINE_OBSERVABLE_GETTER(PT_Out_Thrust,PT_Out_Thrust_Getter,"PTOut");
+DEFINE_OBSERVABLE_GETTER(PT_Out_Thrust,PT_Out_Thrust_Getter,"PTOut")
 
 PT_Out_Thrust::PT_Out_Thrust(int type, double xmin, double xmax, int nbins, 
 		       const std::string & listname, const std::string & name) :
@@ -229,7 +229,7 @@ Primitive_Observable_Base * PT_Out_Thrust::Copy() const
 //================================================================================
 //================================================================================
 
-DEFINE_OBSERVABLE_GETTER(Eta_Thrust,Eta_Thrust_Getter,"EtaThrust");
+DEFINE_OBSERVABLE_GETTER(Eta_Thrust,Eta_Thrust_Getter,"EtaThrust")
 
 Eta_Thrust::Eta_Thrust(int type, double xmin, double xmax, int nbins, 
 		       const std::string & listname, const std::string & name) :

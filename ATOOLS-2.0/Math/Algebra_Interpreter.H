@@ -78,6 +78,9 @@ namespace ATOOLS {
     inline Interpreter_Function(Algebra_Interpreter *interpreter):
       p_interpreter(interpreter) {}
 
+    // destructor
+    virtual ~Interpreter_Function();
+    
     // member functions
     virtual std::string Interprete(const std::string &expr) = 0;
 

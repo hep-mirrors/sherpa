@@ -321,7 +321,7 @@ bool Beam_Spectra_Handler::CalculateWeight(double scale)
     break;
   }
   return 0;
-};
+}
 
 
 double Beam_Spectra_Handler::Weight(Flavour * flin)

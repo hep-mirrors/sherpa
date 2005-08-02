@@ -366,7 +366,7 @@ Random::Random(int ij,int kl) : p_outstream(NULL)
    SetSeed(ij, kl); 
    Exception_Handler::AddTerminatorObject(this);
    SaveStatus(); 
-};
+}
 
 
 void Random::SetSeed(int ij, int kl)
@@ -496,5 +496,5 @@ void Random::ReadInStatus4(const char * filename, long int index)
 }
 
 
-void Random::SaveStatus4() { backupStat = status; };
-void Random::RestoreStatus4() { status = backupStat; };
+void Random::SaveStatus4() { backupStat = status; }
+void Random::RestoreStatus4() { status = backupStat; }

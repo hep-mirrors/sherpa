@@ -17,7 +17,7 @@ Single_Vertex::Single_Vertex() : Color(NULL), Lorentz(NULL)
 { ncf = nlf = t = 0; nleg=3; }
 
 Single_Vertex::Single_Vertex(const Single_Vertex& v): Color(NULL), 
-  Lorentz(NULL) { *this=v; };
+  Lorentz(NULL) { *this=v; }
 
 Single_Vertex::~Single_Vertex(){
       if (Color)   if (ncf==1) delete Color;

@@ -18,7 +18,11 @@ using namespace std;
 //                Particle_Map
 // ============================================================
 
-INSTANTIATE_OBJECT(Matrix_Element_Handler);
+namespace ATOOLS {
+
+  INSTANTIATE_OBJECT(Matrix_Element_Handler)
+
+}
 
 Particle_Map::Particle_Map():
   m_flip_anti(false), m_change_flavs(false)
@@ -309,8 +313,8 @@ bool Matrix_Element_Handler::PrintTotalXSec()
   return true;
 }
 
-bool Matrix_Element_Handler::PrepareXSecTables() { return true; };
-bool Matrix_Element_Handler::LookUpXSec(double,bool,std::string) { return true; };
+bool Matrix_Element_Handler::PrepareXSecTables() { return true; }
+bool Matrix_Element_Handler::LookUpXSec(double,bool,std::string) { return true; }
 
 
 bool Matrix_Element_Handler::GenerateOneEvent() 

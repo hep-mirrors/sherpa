@@ -50,7 +50,7 @@ void Single_Channel::Reset(double value) {
 void Single_Channel::ResetOpt() {
   res1     = res2      = res3 = 0.;
   n_points = n_contrib = 0;
-};
+}
 
 void Single_Channel::AddPoint(double Value) {
   //if (!ATOOLS::IsZero(Value)) n_contrib++;
@@ -58,7 +58,7 @@ void Single_Channel::AddPoint(double Value) {
   n_points++;
   result  += Value;
   result2 += Value*Value;
-};
+}
 
 
 void Single_Channel::GeneratePoint(Vec4D* p,Cut_Data * cuts)

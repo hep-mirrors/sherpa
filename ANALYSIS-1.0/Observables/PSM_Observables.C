@@ -53,12 +53,12 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
-  DEFINE_GETTER_METHOD(CLASS,NAME);					\
+  DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME)
 
 using namespace ATOOLS;
 
-DEFINE_OBSERVABLE_GETTER(PSM_Observable,PSM_Observable_Getter,"PSM");
+DEFINE_OBSERVABLE_GETTER(PSM_Observable,PSM_Observable_Getter,"PSM")
 
 PSM_Observable::PSM_Observable(unsigned int type,double xmin,double xmax,int nbins,
 						 int p0,int p1,int p2, int p3,

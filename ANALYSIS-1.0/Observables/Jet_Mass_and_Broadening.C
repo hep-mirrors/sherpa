@@ -70,7 +70,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
-  DEFINE_GETTER_METHOD(CLASS,NAME);					\
+  DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME)
 
 
@@ -153,7 +153,7 @@ Primitive_Observable_Base * JetMass_Broadening_Calculator::Copy() const
 
 // ----------------------------------------------------------------------
 
-DEFINE_OBSERVABLE_GETTER(Heavy_Jet_Mass,Heavy_Jet_Mass_Getter,"MH");
+DEFINE_OBSERVABLE_GETTER(Heavy_Jet_Mass,Heavy_Jet_Mass_Getter,"MH")
 
 
 Heavy_Jet_Mass::Heavy_Jet_Mass(int type, double xmin, double xmax, int nbin, std::string listname)
@@ -177,7 +177,7 @@ Primitive_Observable_Base * Heavy_Jet_Mass::Copy() const
 }
 
 
-DEFINE_OBSERVABLE_GETTER(Light_Jet_Mass,Light_Jet_Mass_Getter,"ML");
+DEFINE_OBSERVABLE_GETTER(Light_Jet_Mass,Light_Jet_Mass_Getter,"ML")
 
 
 Light_Jet_Mass::Light_Jet_Mass(int type, double xmin, double xmax, int nbin, std::string listname)
@@ -202,7 +202,7 @@ Primitive_Observable_Base * Light_Jet_Mass::Copy() const
 
 
 DEFINE_OBSERVABLE_GETTER(Jet_Mass_Difference,
-			 Jet_Mass_Difference_Getter,"MD");
+			 Jet_Mass_Difference_Getter,"MD")
 
 
 Jet_Mass_Difference::Jet_Mass_Difference(int type, double xmin, double xmax, int nbin, std::string listname)
@@ -229,7 +229,7 @@ Primitive_Observable_Base * Jet_Mass_Difference::Copy() const
 
 
 DEFINE_OBSERVABLE_GETTER(Single_Inclusive_Jet_Mass,
-			 Single_Inclusive_Jet_Mass_Getter,"MS");
+			 Single_Inclusive_Jet_Mass_Getter,"MS")
 
 
 Single_Inclusive_Jet_Mass::Single_Inclusive_Jet_Mass(int type, double xmin, double xmax, int nbin, std::string listname)
@@ -256,7 +256,7 @@ Primitive_Observable_Base * Single_Inclusive_Jet_Mass::Copy() const
 
 // ----------------------------------------------------------------------
 
-DEFINE_OBSERVABLE_GETTER(Wide_Jet_Broadening,Wide_Jet_Broadening_Getter,"BW");
+DEFINE_OBSERVABLE_GETTER(Wide_Jet_Broadening,Wide_Jet_Broadening_Getter,"BW")
 
 Wide_Jet_Broadening::Wide_Jet_Broadening(int type, double xmin, double xmax, int nbin, std::string listname)
   : Primitive_Observable_Base(type,xmin,xmax,nbin,NULL), m_key(listname+"_JetMass_Broadening")
@@ -279,7 +279,7 @@ Primitive_Observable_Base * Wide_Jet_Broadening::Copy() const
 }
 
 
-DEFINE_OBSERVABLE_GETTER(Narrow_Jet_Broadening,Narrow_Jet_Broadening_Getter,"BN");
+DEFINE_OBSERVABLE_GETTER(Narrow_Jet_Broadening,Narrow_Jet_Broadening_Getter,"BN")
 
 Narrow_Jet_Broadening::Narrow_Jet_Broadening(int type, double xmin, double xmax, int nbin, std::string listname)
   : Primitive_Observable_Base(type,xmin,xmax,nbin,NULL), m_key(listname+"_JetMass_Broadening")
@@ -302,7 +302,7 @@ Primitive_Observable_Base * Narrow_Jet_Broadening::Copy() const
 }
 
 
-DEFINE_OBSERVABLE_GETTER(Total_Jet_Broadening,Total_Jet_Broadening_Getter,"BT");
+DEFINE_OBSERVABLE_GETTER(Total_Jet_Broadening,Total_Jet_Broadening_Getter,"BT")
 
 Total_Jet_Broadening::Total_Jet_Broadening(int type, double xmin, double xmax, int nbin, std::string listname)
   : Primitive_Observable_Base(type,xmin,xmax,nbin,NULL), m_key(listname+"_JetMass_Broadening")
@@ -327,7 +327,7 @@ Primitive_Observable_Base * Total_Jet_Broadening::Copy() const
 }
 
 
-DEFINE_OBSERVABLE_GETTER(Jet_Broadening_Difference,Jet_Broadening_Difference_Getter,"BD");
+DEFINE_OBSERVABLE_GETTER(Jet_Broadening_Difference,Jet_Broadening_Difference_Getter,"BD")
 
 Jet_Broadening_Difference::Jet_Broadening_Difference(int type, double xmin, double xmax, int nbin, std::string listname)
   : Primitive_Observable_Base(type,xmin,xmax,nbin,NULL), m_key(listname+"_JetMass_Broadening")
@@ -351,7 +351,7 @@ Primitive_Observable_Base * Jet_Broadening_Difference::Copy() const
   return new Jet_Broadening_Difference(m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
 
-DEFINE_OBSERVABLE_GETTER(Single_Inclusive_Jet_Broadening,Single_Inclusive_Jet_Broadening_Getter,"BS");
+DEFINE_OBSERVABLE_GETTER(Single_Inclusive_Jet_Broadening,Single_Inclusive_Jet_Broadening_Getter,"BS")
 
 
 Single_Inclusive_Jet_Broadening::Single_Inclusive_Jet_Broadening(int type, double xmin, double xmax, int nbin, std::string listname)

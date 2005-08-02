@@ -13,13 +13,13 @@ IO_Handler::IO_Handler()
   m_seps.push_back(';');
   m_coms.push_back('#');
   m_filename=std::string(""); 
-};
+}
 
 IO_Handler::~IO_Handler() { 
   if (!(m_filename==std::string(""))) {
     m_file.close();
   }
-};
+}
     
 // set output filename
 int IO_Handler::SetFileName(std::string _name) {
@@ -319,7 +319,7 @@ void IO_Handler::FillIn(const std::string & m_buffer) {
     Shorten(value);
     m_vars[name]=value;
   } 
-};
+}
 
 
 void IO_Handler::Shorten(std::string& str) {

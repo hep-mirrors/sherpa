@@ -55,7 +55,7 @@ namespace APACIC {
     
     kn_no  = ink->kn_no;
     polinfo= ink->polinfo;
-  };
+  }
 
   inline void Knot::CopyData(Knot * ink) {
     if (part && ink->part) part->Copy(ink->part);
