@@ -2,6 +2,7 @@
 
 #include "Exception.H"
 #include "Run_Parameter.H"
+#include "MyStrStream.H"
 
 using namespace COLOR;
 using namespace ATOOLS;
@@ -301,105 +302,62 @@ Expression::Expression(const std::string &expression):
   m_result(0.0,0.0),
   m_findex(0), m_aindex(0), m_evaluated(0)
 {
-  // test: t-channel gg->qqb -> 16/3
-  //  ->    0m0.072s (1.6GHz 32Bit)
-  /*
-  back() = new Fundamental(this,0,0,1);
-  push_back(new Fundamental(this,1,1,2));
-  push_back(new Fundamental(this,1,2,3));
-  push_back(new Fundamental(this,0,3,0));
-  */
-  // test: t-u-interference gg->qqb -> -2/3
-  //  ->    0m0.074s (1.6GHz 32Bit)
-  /*
-  back() = new Fundamental(this,0,0,1);
-  push_back(new Fundamental(this,1,1,2));
-  push_back(new Fundamental(this,0,2,3));
-  push_back(new Fundamental(this,1,3,0));
-  */
-  // test: t-channel 2->2 gluons -> 72 (256 terms)
-  //  ->   0m0.081s (1.6GHz 32Bit)
-  //  ->   0m0.036s (2GHz 64Bit)
-  /*
-  back() = new Adjoint(this,1,2,101);
-  push_back(new Adjoint(this,101,3,4));
-  push_back(new Adjoint(this,1,2,111));
-  push_back(new Adjoint(this,111,3,4));
-  */
-  // test: t-channel 2->3 gluons -> 216 (4096 terms)
-  //  ->   0m0.172s (1.6GHz 32Bit)
-  //  ->   0m0.059s (2GHz 64Bit)
-  /*
-  back() = new Adjoint(this,1,2,101);
-  push_back(new Adjoint(this,101,3,102));
-  push_back(new Adjoint(this,102,4,5));
-  push_back(new Adjoint(this,1,2,111));
-  push_back(new Adjoint(this,111,3,112));
-  push_back(new Adjoint(this,112,4,5));
-  */
-  // test: t-channel 2->4 gluons -> 648 (65536 terms)
-  //  ->   0m1.688s (1.6GHz 32Bit)
-  //  ->   0m0.334s (2GHz 64Bit)
-  /*
-  back() = new Adjoint(this,1,2,101);
-  push_back(new Adjoint(this,101,3,102));
-  push_back(new Adjoint(this,102,4,103));
-  push_back(new Adjoint(this,103,5,6));
-  push_back(new Adjoint(this,1,2,111));
-  push_back(new Adjoint(this,111,3,112));
-  push_back(new Adjoint(this,112,4,113));
-  push_back(new Adjoint(this,113,5,6));
-  */
-  // test: t-channel 2->5 gluons -> 1944 (1048576 terms)
-  //  ->   0m31.114s (1.6GHz 32Bit)
-  //  ->   0m5.952s  (2GHz 64Bit)
-  back() = new Adjoint(this,1,2,101);
-  push_back(new Adjoint(this,101,3,102));
-  push_back(new Adjoint(this,102,4,103));
-  push_back(new Adjoint(this,103,5,104));
-  push_back(new Adjoint(this,104,6,7));
-  push_back(new Adjoint(this,1,2,111));
-  push_back(new Adjoint(this,111,3,112));
-  push_back(new Adjoint(this,112,4,113));
-  push_back(new Adjoint(this,113,5,114));
-  push_back(new Adjoint(this,114,6,7));
-  // test: t-channel 2->6 gluons -> 5832 (16777216 terms)
-  //  ->   8m51.661s (1.6GHz 32Bit)
-  //  ->   1m35.427s (2GHz 64Bit)
-  /*
-  back() = new Adjoint(this,1,2,101);
-  push_back(new Adjoint(this,101,3,102));
-  push_back(new Adjoint(this,102,4,103));
-  push_back(new Adjoint(this,103,5,104));
-  push_back(new Adjoint(this,104,6,105));
-  push_back(new Adjoint(this,105,7,8));
-  push_back(new Adjoint(this,1,2,111));
-  push_back(new Adjoint(this,111,3,112));
-  push_back(new Adjoint(this,112,4,113));
-  push_back(new Adjoint(this,113,5,114));
-  push_back(new Adjoint(this,114,6,115));
-  push_back(new Adjoint(this,115,7,8));
-  */
-  // test: t-channel 2->7 gluons -> 17496 (268435456 terms)
-  //  ->              (1.6GHz 32Bit)
-  //  ->   29m41.262s (2GHz 64Bit)
-  /*
-  back() = new Adjoint(this,1,2,101);
-  push_back(new Adjoint(this,101,3,102));
-  push_back(new Adjoint(this,102,4,103));
-  push_back(new Adjoint(this,103,5,104));
-  push_back(new Adjoint(this,104,6,105));
-  push_back(new Adjoint(this,105,7,106));
-  push_back(new Adjoint(this,106,8,9));
-  push_back(new Adjoint(this,1,2,111));
-  push_back(new Adjoint(this,111,3,112));
-  push_back(new Adjoint(this,112,4,113));
-  push_back(new Adjoint(this,113,5,114));
-  push_back(new Adjoint(this,114,6,115));
-  push_back(new Adjoint(this,115,7,116));
-  push_back(new Adjoint(this,116,8,9));
-  */
-  m_aindex=10;
+  if (expression.find('+')!=std::string::npos) 
+    THROW(not_implemented,"No read in routine for sums yet.");
+  std::string expr(expression);
+  for (size_t i(0), mpos(expr.find('*'));
+       mpos!=std::string::npos || expr.length()>0;mpos=expr.find('*')) {
+    if (i>0) push_back(NULL);
+    ++i;
+    std::string factor;
+    if (mpos==std::string::npos) {
+      factor=expr;
+      expr="";
+    }
+    else {
+      factor=expr.substr(0,mpos);
+      expr=expr.substr(mpos+1);
+    }
+    if  (factor.length()==0) THROW(fatal_error,"Missing factor");
+    if (factor.find("f_[")==0 && factor[factor.length()-1]==']') {
+      size_t c1pos(factor.find(','));
+      if (c1pos==std::string::npos)
+	THROW(fatal_error,"Invalid number of indices for t.");
+      size_t c2pos(factor.find(',',c1pos+1));
+      if (c2pos==std::string::npos || factor.find(',',c2pos+1)!=std::string::npos)
+	THROW(fatal_error,"Invalid number of indices for t.");
+      size_t a(ToType<int>(factor.substr(3,c1pos-3)));
+      size_t b(ToType<int>(factor.substr(c1pos+1,c2pos-c1pos-1)));
+      size_t c(ToType<int>(factor.substr(c2pos+1,factor.length()-c2pos-2)));
+      back() = new Adjoint(this,a,b,c);
+      m_aindex=Max(m_aindex,Max(a,Max(b,c)));
+    }
+    else if (factor.find("t_[")==0 && factor[factor.length()-1]==']') {
+      size_t c1pos(factor.find(','));
+      if (c1pos==std::string::npos)
+	THROW(fatal_error,"Invalid number of indices for t.");
+      size_t c2pos(factor.find(',',c1pos+1));
+      if (c2pos==std::string::npos || factor.find(',',c2pos+1)!=std::string::npos)
+	THROW(fatal_error,"Invalid number of indices for t.");
+      size_t a(ToType<int>(factor.substr(3,c1pos-3)));
+      size_t i(ToType<int>(factor.substr(c1pos+1,c2pos-c1pos-1)));
+      size_t j(ToType<int>(factor.substr(c2pos+1,factor.length()-c2pos-2)));
+      back() = new Fundamental(this,a,i,j);
+      m_findex=Max(m_findex,Max(i,j));
+      m_aindex=Max(m_aindex,a);
+    }
+    else if (factor.find("d_[")==0 && factor[factor.length()-1]==']') {
+      size_t cpos(factor.find(','));
+      if (cpos==std::string::npos || factor.find(',',cpos+1)!=std::string::npos)
+	THROW(fatal_error,"Invalid number of indices for \\delta.");
+      std::string i(factor.substr(3,cpos-3));
+      std::string j(factor.substr(cpos+1,factor.length()-cpos-2));
+      back() = new Delta(this,ToType<int>(i),ToType<int>(j));
+    }
+    else {
+      back() = new Number(this,ToType<double>(factor));
+    }
+  }
 }
 
 Expression::~Expression()

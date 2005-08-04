@@ -34,7 +34,7 @@ int main(int argc,char **argv)
     Expression expression(expr);
     expression.Print();
     expression.Evaluate();
-    std::cout<<"Color: calculating -> "<<" = "
+    std::cout<<"Color: calculating -> "<<expr<<" = "
 	     <<expression.Result()<<std::endl;
     return 0;
   }
