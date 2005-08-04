@@ -8,18 +8,29 @@ using namespace std;
 Hadron_Decay_Channel::Hadron_Decay_Channel( Decay_Channel * _dc, string _path ) :
   p_dc(_dc), p_me(NULL), m_metype(p_dc->METype()),
   Integrable_Base(1,_dc->NumberOfDecayProducts()),
-  m_path(_path)
+  m_path(_path), m_fulldecay(3), m_createbooklet(0)
 {
   m_resultpath      = string("./");								// where to write results
   m_resultfile      = m_histofile = string("");					// filename
   m_name            = p_dc->ProcessName();						// name of proces
   p_flavours        = new Flavour[m_nin+m_nout];					
   p_flavours[0]     = p_dc->GetDecaying();						// decaying particle
+  m_channelname     = string("");
+  m_chnamenumbers   = string("0");
+  m_channelname     = p_flavours[0].IDName() + string(" --> ");
+  m_chnamenumbers.append( (p_flavours[0].IDName()).length()-1, ' ' );
+  m_chnamenumbers.append(" --> ");
+  char helpch[2];
   for (int i=0;i<p_dc->NumberOfDecayProducts();i++) {			// decay products
     p_flavours[i+1] = p_dc->GetDecayProduct(i);			
+	m_channelname  += p_flavours[i+1].IDName() + string(" ");
+	sprintf( helpch, "%i%", i+1 );
+	m_chnamenumbers.append(string(helpch));
+	m_chnamenumbers.append( (p_flavours[i+1].IDName()).length(), ' ' );
   }
   HD_ME_Selector mesel;											// ME selector
   p_me = mesel.GetME(m_nin,m_nout,p_flavours,m_metype);			// get the appropr. ME
+  p_me->SetPath( m_path );										// set Decaydata path 
 }
 
 Hadron_Decay_Channel::~Hadron_Decay_Channel()
@@ -38,7 +49,7 @@ bool Hadron_Decay_Channel::InitialisePhaseSpace(vector<string> & PStype)
   bool read_dc (true);
   if ( PStype.size() == 2 ) PStype.push_back(string("Rambo"));  // in case channel has no name
   if ( PStype.size() == 3 ) {									// in case no DC file given
-	string fn("");
+	string fn("");												// filename of DC file
 	fn += p_dc->GetDecaying().Name() + string("_");
 	for ( int i=0; i<p_dc->NumberOfDecayProducts(); i++ ) {
 	  fn += p_dc->GetDecayProduct(i).Name();
@@ -47,10 +58,14 @@ bool Hadron_Decay_Channel::InitialisePhaseSpace(vector<string> & PStype)
 	PStype.push_back( fn );										// generate DC filename
 	read_dc = false;											// don't read DC file
   }
+  // check if dc file exists
+  string dcfilename = PStype[3];
+  ifstream dcf( (m_path+dcfilename).c_str() );
+  read_dc = dcf;												// read DC file if it exists
   p_ps = new HD_PS_Base(this,m_path,PStype,mustinit,locmd,read_dc);	// new PS
   p_me->SetModelParameters( locmd );							// set parameters for ME
   if (mustinit) p_ps->Initialise();								// if in need => ini
-  return not read_dc;											// rewrite D file ?
+  return not read_dc;											// rewrite H file ?
 }
 
 
@@ -60,6 +75,16 @@ double Hadron_Decay_Channel::Differential()
   p_ps->GeneratePoint(p_momenta);								// generate a PS point
   p_ps->GenerateWeight(p_momenta);								// calculate its weight factor
   double value = (*p_me)(p_momenta), weight = p_ps->Weight();	// get ME value & weight f
+  return value*weight;
+}
+
+double Hadron_Decay_Channel::Differential( double & _val )
+{
+  p_momenta[0] = Vec4D(p_flavours[0].Mass(),0.,0.,0.);			// decay from rest
+  p_ps->GeneratePoint(p_momenta);								// generate a PS point
+  p_ps->GenerateWeight(p_momenta);								// calculate its weight factor
+  double value = (*p_me)(p_momenta), weight = p_ps->Weight();	// get ME value & weight f
+  _val = value;
   return value*weight;
 }
 

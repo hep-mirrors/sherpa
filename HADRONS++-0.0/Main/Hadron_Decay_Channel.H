@@ -7,7 +7,8 @@
 #include "Decay_Table.H"
 #include <string>
 #include "Vector.H"
-//#include "Simple_Point.H"
+
+#define HBAR_C 197.326968e-15	// in [GeV mm] used for decay position
 
 namespace HADRONS {
   class Hadron_Decay_Channel : public PHASIC::Integrable_Base {
@@ -18,6 +19,9 @@ namespace HADRONS {
     std::string             m_metype;
     void                    CalculateNormalisedWidth();
 	std::string				m_path;
+	short					m_fulldecay;	
+	bool					m_createbooklet;
+	std::string				m_channelname, m_chnamenumbers;
   public: 
     Hadron_Decay_Channel( ATOOLS::Decay_Channel * _dc, std::string _path );
     ~Hadron_Decay_Channel();
@@ -29,14 +33,26 @@ namespace HADRONS {
 	bool   ReSelect( int )  { return 1; }
 	bool   SelectOneFromList() { return 1; }
     double Differential();
+    double Differential(double&);
     double Differential(const ATOOLS::Vec4D *momenta) { return 0.; }
     double Differential2()                            { return 0.; }
+
+	void   SetFullDecay( short a ) { m_fulldecay = a; }
+	short  FullDecay() { return m_fulldecay; }
+	void   SetCreateBooklet( bool a ) { m_createbooklet = a; }
+	bool   CreateBooklet() { return m_createbooklet; }
 
     HD_ME_Base            * GetME() { return p_me; }
     HD_PS_Base            * GetPS() { return p_ps; }
 	ATOOLS::Vec4D         * Momenta() { return p_momenta; }		// not as const
-	ATOOLS::Vec4D           Momenta( int i ) { return p_momenta[i]; }
+	ATOOLS::Vec4D           Momentum( int i ) { return p_momenta[i]; }
 	ATOOLS::Decay_Channel * DecayChannel() { return p_dc; }
+
+	std::string				ChannelName()     { return m_channelname; }
+	std::string				ChannelNameNumbers() { return m_chnamenumbers; }
+	double                  MeanLifetime()    { return HBAR_C/p_ps->Result(); } // in [mm]
+	double                  InMass()          { return (p_dc->GetDecaying()).Mass(); }
+	
   }; // end of class
 
   /*!
@@ -94,6 +110,16 @@ namespace HADRONS {
 	\var Hadron_Decay_Channel::m_metype
 	Type of ME gained from ATOOLS::Decay_Channel class.
   */ 
+  /*!
+    /var Hadron_Decay_Channel::m_fulldecay
+	Has information about decay: syntax "(binary number) = decimal number"
+	- (00) = 0 ... no full decay, anti particle does not decay
+	- (01) = 1 ... no full decay, anti particle does decay
+	- (10) = 2 ... full decay, anti particle does not decay
+	- (11) = 3 ... full decay, anti particle does decay
+	.
+  */	
+	
 
   
   

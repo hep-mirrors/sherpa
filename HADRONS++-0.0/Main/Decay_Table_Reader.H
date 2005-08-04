@@ -15,6 +15,7 @@ namespace HADRONS {
     std::vector<std::vector<std::string> > m_helpsvv;
     bool ExtractFlavours(std::vector<int> &,std::string);
 	std::string m_path, m_file;
+	bool m_fulldecay, m_antidecays, m_createbooklet;
   public: 
     Decay_Table_Reader( std::string path=std::string("./"), 
 						std::string file=std::string(""));
