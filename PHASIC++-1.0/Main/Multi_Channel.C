@@ -432,12 +432,11 @@ void Multi_Channel::GeneratePoint(Vec4D * p)
   double rn  = ran.Get();
   double sum = 0;
   for (size_t i=0;i<channels.size();i++) {
-//     cout<<"   "<<sum<<" "<<channels[i]->Alpha()<<endl;
     sum += channels[i]->Alpha();
     if (sum>rn) {
       channels[i]->GeneratePoint(p);
       m_lastdice = i;
-      break;
+      return;
     }
   }  
   msg.Error()<<" ERROR in void Multi_Channel::GeneratePoint(Vec4D * p) \n";
