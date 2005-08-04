@@ -1,12 +1,42 @@
-# outgoing part.   | BR      | ME-type | DC-file
-{16,11,-12}        | 0.1784  | L_L     | Tau_Electron.dat;
-{16,13,-14}        | 0.1736  | L_L     | Tau_Muon.dat;
-{16,-211}          | 0.1106  | L_S     | Tau_Pion.dat;
-{16,-321}          | 0.00686 | L_S     | Tau_Kaon.dat;
-{16,-211,111}      | 0.2542  | L_2S    | Tau_2Pion.dat;
-{16,-321,311}      | 0.00154 | L_2S    | Tau_2Kaon.dat;
-!{16,-211,111,111}  | 0.0917  | L_3S    | Tau_3Pion(1charged).dat;
-!{16,211,-211,-211} | 0.0916  | L_3S    | Tau_3Pion(3charged).dat;
+# outgoing part. 	 | BR 	 | ME-type 	 | DC-file
 
+# leptonic modes
+{16,11,-12}	 | 0.1784	 | L_L	 | Tau_Electron.dat;
+{16,13,-14}	 | 0.1736	 | L_L	 | Tau_Muon.dat;
 
+# 1 pseudoscalar modes
+{16,-211}	 	 | 0.1106	 | L_P	 | Tau_Pion.dat;
+{16,-321}	 	 | 0.00686	 | L_P	 | Tau_Kaon.dat;
+ 
+# 2 pseudoscalar modes
+{16,-211,111}	 | 0.2542	 | L_2P	 | Tau_2Pion.dat;
+{16,-321,311}	 | 0.00154	 | L_2P	 | Tau_2Kaon.dat;
+!{16,-211,-311}	 | 0.0089	 | L_2P	 | Tau_PionKaon0.dat;
+!{16,-321,111}	 | 0.0045	 | L_2P	 | Tau_PionKaon.dat;
+ 
+# 3 pseudoscaler modes
+{16,-211,111,111}	 | 0.0917	 | L_3P	 	 | Tau_3Pion(1charged).dat;
+{16,211,-211,-211}	 | 0.0916	 | L_3P	 	 | Tau_3Pion(3charged).dat;
+{16,-211,-311,111}	 | 0.0037	 | L_3P	  	 | Tau_2PionKaon0.dat;
+{16,-321,211,-211}	 | 0.0033	 | L_3P 	 | Tau_2PionKaon.dat;
+{16,111,111,-321}	 | 5.8e-4    | L_3P      | Tau_2Pion0Kaon.dat
+{16,-321,321,-211}	 | 0.00155	 | L_3P  	 | Tau_Pion2Kaon.dat;
+{16,-321,311,111}	 | 0.00155	 | L_3P  	 | Tau_Pion02Kaon.dat;
+{16,-211,-311,311}	 | 0.0011	 | L_3P  	 | Tau_Pion2Kaon0.dat;
+{16,-321,-321,321}  | 3.7e-5    | L_3P      | Tau_3Kaon(3charged).dat;
+{16,-321,-311,311}  | 0.0       | L_3P      | Tau_3Kaon(1charged).dat;
+ 
 
+# 4 pseudoscalar modes
+!{16,211,-211,-211,111}	 | 0.0251	 
+!{16,211,111,111,111}	 | 0.0108	
+ 
+# modes with vector
+!{16,-211,223}	 | 0.01842	
+!{16,-321,223}	 | 0.00094
+!{16,-211,223,111}	 | 0.00418	
+!{16,221,-211,111}	 | 0.00174
+
+! NO_FULLDECAY   ! use this option: no decay of daughters
+! NO_ANTI        ! use this option: anti-mother does not decay
+! CREATE_BOOKLET ! use this option: create a booklet about these decay modes

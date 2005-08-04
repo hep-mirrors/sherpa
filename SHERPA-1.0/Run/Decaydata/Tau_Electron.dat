@@ -1,10 +1,15 @@
 Channels {
+  	AlwaysIntegrate = 0;	! 0...read results and skip integration
+	  						! 1...don't read results and integrate
     Isotropic 1;
 }
 Parameters {
-  a = 1.;                   ! aV - bA coupling of tau
-  b = 1.;
-  a2 = 1.;                  ! aV - bA coupling of electron
-  b2 = 1.;
-  ME_MODEL         = XYZ;	! Traces, XYZ, SimpleTraces
+  V      =  1.		 	! V-A structure of tau-nutau
+  A      =  1.	
+  V2     =  1.			! V-A structure of elec-nuelec
+  A2     =  1.
+  ME_MODEL      = XYZ  	! XYZ, Traces or SimpleTraces
+}
+Result {
+   4.04339e-13 3.22169e-15 6.07386e-13;
 }

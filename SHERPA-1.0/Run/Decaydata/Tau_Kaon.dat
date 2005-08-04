@@ -1,8 +1,15 @@
 Channels {
-    Iso2 1;
+  	AlwaysIntegrate = 0;	! 0...read results and skip integration
+	  						! 1...don't read results and integrate
+    Isotropic 1;
 }
 Parameters {
-  a = 1.;                   ! aV - bA coupling of tau
-  b = 1.;
-  ME_MODEL         = XYZ;	! Traces, XYZ, SimpleTraces
+  V      =  1.		 	! V-A structure of tau-nutau
+  A      =  1.	
+  Vus    =  0.9744   	! CKM
+  fK     =  0.113	 	! decay constant
+  ME_MODEL      = XYZ  	! XYZ, Traces or SimpleTraces
+}
+Result {
+   3.13599e-13 -0 3.13599e-13;
 }
