@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include "Node.H"
+#include "MyComplex.H"
 
 namespace COLOR {
 
@@ -50,12 +51,12 @@ namespace COLOR {
   class Number: public Term {
   private:
 
-    double m_n;
+    Complex m_n;
 
   public:
     
     // constructor
-    Number(Expression *const owner,const double n);
+    Number(Expression *const owner,const Complex n);
 
     // member functions
     bool Evaluate(Expression *const expression);
@@ -64,7 +65,7 @@ namespace COLOR {
     Term *GetCopy(Expression *const expression) const;
 
     // inline functions
-    inline double operator()() { return m_n; }
+    inline Complex operator()() { return m_n; }
 
   };// end of class Number
 
@@ -111,6 +112,12 @@ namespace COLOR {
 
     size_t m_a, m_b, m_c;
 
+    double SwapIndices(Adjoint *const adjoint);
+    void   ReplacePair(Adjoint *const adjoint,
+		       const size_t &i,const size_t &j,
+		       const double &factor,
+		       Expression *const expression);
+
   public:
     
     // constructor
@@ -134,7 +141,7 @@ namespace COLOR {
 
   private:
 
-    double m_result;
+    Complex m_result;
 
     size_t m_findex, m_aindex;
     size_t m_evaluated;
@@ -159,8 +166,11 @@ namespace COLOR {
 
     Expression *GetCopy() const;
 
+    void PrintStatus(const bool endline=true,
+		     const bool print=true);
+
     // inline functions
-    inline double Result() const { return m_result; }
+    inline Complex Result() const { return m_result; }
 
     inline size_t FIndex() { return ++m_findex; }
     inline size_t AIndex() { return ++m_aindex; }
