@@ -71,12 +71,12 @@ void HD_ME_Selector::SelectTauDecay(
 		  if( flavs[i].Kfcode() == kf::K_plus ) nKaon++;
 		}
 		if( nPion == 1 ) {
-		  msg_Tracking()<<"HD_ME_Selector::SelectTauDecay: found Tau_Pion"<<endl;
-		  hdme = new Tau_Pion( nout, flavs );
+		  msg_Tracking()<<"HD_ME_Selector::SelectTauDecay: found Tau_Pseudo (as Tau_Pion)"<<endl;
+		  hdme = new Tau_Pseudo( nout, flavs );
 		}
 		if( nKaon == 1 ) {
-		  msg_Tracking()<<"HD_ME_Selector::SelectTauDecay: found Tau_Pion (as Tau_Kaon)"<<endl;
-		  hdme = new Tau_Pion( nout, flavs );
+		  msg_Tracking()<<"HD_ME_Selector::SelectTauDecay: found Tau_Pseudo (as Tau_Kaon)"<<endl;
+		  hdme = new Tau_Pseudo( nout, flavs );
 		}
 		break;
 	  }
@@ -106,19 +106,19 @@ void HD_ME_Selector::SelectTauDecay(
 	  }
 	case 4:
 	  {
-		int nPion_ch(0), nPion_0(0);
+		int nPseudo(0);
+		// count number of pseudoscalars
 		for( int i=1; i<5; i++ ) {
-		  if( flavs[i].Kfcode() == kf::pi_plus ) nPion_ch++;
-		  if( flavs[i].Kfcode() == kf::pi )      nPion_0++;
+		  if( flavs[i].Kfcode() == kf::pi_plus ||
+			  flavs[i].Kfcode() == kf::pi ||
+			  flavs[i].Kfcode() == kf::K_plus ||
+			  flavs[i].Kfcode() == kf::K ) nPseudo++;
 		}
-		if( nPion_ch == 1 && nPion_0 == 2 ) {
-		  msg_Tracking()<<"HD_ME_Selector::SelectTauDecay: found Tau_Three_Pion (as Tau_Pion-_2Pion0)"<<endl;
-		  hdme = new Tau_Three_Pion( nout, flavs );
+		if( nPseudo==3 ) {
+		  msg_Tracking()<<"HD_ME_Selector::SelectTauDecay: found Tau_Three_Pseudo"<<endl;
+		  hdme = new Tau_Three_Pseudo( nout, flavs );
 		}
-		if( nPion_ch == 3 && nPion_0 == 0 ) {
-		  msg_Tracking()<<"HD_ME_Selector::SelectTauDecay: found Tau_Three_Pion (as Tau_Pion+_2Pion-)"<<endl;
-		  hdme = new Tau_Three_Pion( nout, flavs );
-		}
+
 	  }
   }
 }

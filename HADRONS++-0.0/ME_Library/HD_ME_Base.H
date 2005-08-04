@@ -8,19 +8,32 @@
 namespace HADRONS {
 
   struct GeneralParam {				// parameter
-	double a, b;					// V-A structure
-	double a2, b2;					// V-A structure
-	double fpi, fK; 				// decay constants
-	double Vud, Vus; 				// CKM ME; 
-	double GF;						// Fermi constant
-	double frho, grpp;				// rho-pipi coupling
+	double a, b;									// V-A structure
+	double a2, b2;									// V-A structure
+	double fpi, fK; 								// decay constants
+	double Vud, Vus; 								// CKM ME; 
+	double GF;										// Fermi constant
+	double frho, grpp;								// rho-pipi coupling
+	double alpha, beta, delta, gamma;				// weight factors for different resonances
+	double Beta[2];									// weight factor for resonances
+	double MR, GR, MRR, GRR, MO, GO, MRRR, GRRR;	// rho, omega resonances
+	double MV[2], GV[2], Mv[2], Gv[2];				// vector resonances
+	double MA, GA; 									// axial resonance a1(1260)
+	double lambda;									// parameter in KS model
+	double lambda0, exp_alpha;						// parameters in RChT parameterisation
+	double gammaR, gammaRR, gammaO, gammaRRR;		// global factor for RChT off-shell width
   }; 
+
+  struct GeneralVector {
+	int i, j;
+  };
 
   struct GeneralModel {
 	int me;							// model for ME
 	int run;						// running coupling
 	int ff;							// form factor
-	struct GeneralParam pm;			// coupling parameters
+	GeneralParam pm;			 	// coupling parameters
+	GeneralVector vec[2];			// in which particles do vector resonances decay
   }; 
 
   class HD_ME_Base {
@@ -29,9 +42,12 @@ namespace HADRONS {
     int               m_nout;
     ATOOLS::Flavour * p_flavs;
     double          * p_masses,* p_masses2;
+	std::string       m_path;
   public:
     HD_ME_Base(int,ATOOLS::Flavour *);
     virtual ~HD_ME_Base();
+    void SetPath( std::string s ) { m_path=s; }
+
     virtual double operator()(const ATOOLS::Vec4D *) { return 1.; }
     virtual void AddVector(double,double) {}
 	virtual void SetModelParameters( struct GeneralModel _md ) {};
