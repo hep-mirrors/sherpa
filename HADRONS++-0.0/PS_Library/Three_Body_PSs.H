@@ -3,6 +3,7 @@
 
 #include "Single_Channel.H"
 #include "Vector.H"
+#include "ResonanceFlavour.H"
 
 namespace HADRONS {
   class Dalitz : public PHASIC::Single_Channel {
@@ -12,8 +13,11 @@ namespace HADRONS {
     std::string   m_propmass;				
     int           m_chnumber;			
   public :
-    Dalitz(const ATOOLS::Flavour * fl,const ATOOLS::Flavour prop,
-		   const int p1, const int p2 );
+    Dalitz(
+		const ATOOLS::Flavour * fl,
+		ResonanceFlavour res,
+		const int p1, 
+		const int p2 );
     void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * =NULL,double * _ran=NULL);
     void GeneratePoint(ATOOLS::Vec4D * p,double * _ran=NULL);
     void GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * =NULL);

@@ -3,25 +3,29 @@
 #include "Channel_Basics.H"
 #include "Message.H"
 #include "MyStrStream.H"
+#include "ResonanceFlavour.H"
 
 using namespace HADRONS; 
 using namespace PHASIC; 
 using namespace ATOOLS; 
 using namespace std; 
 
-Dalitz::Dalitz(const ATOOLS::Flavour * fl,const ATOOLS::Flavour prop, 
-	       const int p1, const int p2) :
+Dalitz::Dalitz(
+	const ATOOLS::Flavour * fl,
+	ResonanceFlavour res,
+	const int p1, 
+	const int p2 ) :
   Single_Channel(1,3,fl),
   m_decvec(Vec4D(fl[0].Mass(),0.,0.,0.)),
-  m_pmass(prop.Mass()), m_pwidth(prop.Width()), 
+  m_pmass(res.Mass()), m_pwidth(res.Width()), 
   m_p1(p1), m_p2(p2), m_mode(0),
   m_sexp(.5)
 {
-  name = string("Dalitz_")+prop.Name()+string("_")+ToString(m_p1)+ToString(m_p2);
+  name = string("Dalitz_")+res.Name()+string("_")+ToString(m_p1)+ToString(m_p2);
 											// generate channel name
   for (short int i=0;i<nin+nout;i++) ms[i] = ATOOLS::sqr(fl[i].PSMass());
 											// set masses^2
-  msg.Out()<<"Init Dalitz("<<name<<" : "
+  msg.Tracking()<<"Init Dalitz("<<name<<" : "
 	   <<fl[0]<<"->"<<fl[1]<<" "<<fl[2]<<" "<<fl[3]<<", "
 	   <<ms[0]<<"->"<<ms[1]<<" "<<ms[2]<<" "<<ms[3]<<")"<<endl;
   for (int i=1;i<4;i++) {
@@ -74,8 +78,6 @@ void Dalitz::GenerateWeight(ATOOLS::Vec4D * p)
 {
   weight = 1.;
   double sprop  = (p[m_p1]+p[m_p2]).Abs2();
-  //cout<<"Range for Dalitz pair : "<<sqrt(m_smin)<<" -> "<<sqrt(m_smax)<<" : "<<sqrt(sprop)<<endl
-  //    <<" from "<<p[m_p1].Abs2()<<", "<<p[m_p2].Abs2()<<endl;
   if (m_mode==1) 
     weight *= CE.MassivePropWeight(m_pmass,m_pwidth,1,m_smin,m_smax,sprop);
   else 

@@ -14,7 +14,7 @@ Iso2Channel::Iso2Channel(const ATOOLS::Flavour * fl) :
 {
   for (short int i=0;i<nin+nout;i++) ms[i] = ATOOLS::sqr(fl[i].Mass());
 														// get masses^2
-  msg.Out()<<"Init Iso2Channel("
+  msg.Tracking()<<"Init Iso2Channel("
 	   <<fl[0]<<"->"<<fl[1]<<" "<<fl[2]<<", "
 	   <<ms[0]<<"->"<<ms[1]<<" "<<ms[2]<<")"<<endl;
   rannum = 2;

@@ -7,16 +7,27 @@
 #include "Flavour.H"
 #include "Vector.H"
 #include <string>
+#include "Vegas.H"
 
 namespace HADRONS {
 
 
+
   class Hadron_Decay_Channel;
 
+  struct ChannelInformation
+  {
+	std::string name;				// name of integrator
+	int nRes;						// number of resonances
+	std::string res1, res2, res3;	// resonances
+	int a,b,c,d;					// index for outgoing particles
+  };
+
   class HD_Channel_Selector {
+	bool DecomposeChannel( std::string name, ChannelInformation & ci );
   public:
     PHASIC::Single_Channel * GetChannel(
-		int nin, int nout, const ATOOLS::Flavour * flavs, std::string name);
+		int nin, int nout, const ATOOLS::Flavour * flavs, std::string name, GeneralModel &);
   }; // end of class
   
   class HD_PS_Base : public PHASIC::Multi_Channel {
@@ -27,9 +38,11 @@ namespace HADRONS {
     std::string            m_path, m_file;
     double                 m_res,m_error,m_max,m_flux;
 	bool                   m_read_dcfile;
+	bool				   m_foundPS;
 
     bool     Construct( GeneralModel & );
-    void     AddChannel(std::string,double=1.);
+    bool     AddChannel(std::string,double,GeneralModel&);
+	bool     IsChannel( std::string ); 
     void     CalculateNormalisedWidth();
     bool     ReadIn();
     bool     WriteOut();
@@ -44,6 +57,9 @@ namespace HADRONS {
     virtual ~HD_PS_Base();
     void     Initialise();
 	inline double Maximum() { return m_max; }
+	virtual void   CreatePointerOnVegas() {};
+	virtual void   DeletePointerOnVegas() {};
+	double         Result() { return m_res; }
   }; // end of class
 
   /*!
