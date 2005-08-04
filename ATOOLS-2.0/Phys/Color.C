@@ -354,8 +354,11 @@ Expression::Expression(const std::string &expression):
       std::string j(factor.substr(cpos+1,factor.length()-cpos-2));
       back() = new Delta(this,ToType<int>(i),ToType<int>(j));
     }
+    else if (factor=="i_") {
+      back() = new Number(this,Complex(0.0,1.0));
+    }
     else {
-      back() = new Number(this,ToType<double>(factor));
+      back() = new Number(this,Complex(ToType<double>(factor),0.0));
     }
   }
 }
