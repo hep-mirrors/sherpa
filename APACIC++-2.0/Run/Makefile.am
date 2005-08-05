@@ -26,7 +26,7 @@ APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
 
 SYSLIBS	      =	-lg2c -lm -ldl
 ATOOLSLIBS    =	-L@libdir@ -lToolsPhys -lToolsMath -lToolsOrg 
-PDFLIBS       =	-L@libdir@ -lPDF -lRemnant -lDUPDF -lSudakov -lMRST -lGRV -lCTEQ 
+PDFLIBS       =	-L@libdir@ -lPDF -lMRST -lGRV -lCTEQ -lDUPDF -lRemnant -lSudakov
 #-lDUPDF
 
 

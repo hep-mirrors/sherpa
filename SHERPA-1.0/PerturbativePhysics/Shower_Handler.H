@@ -7,7 +7,10 @@
 #ifdef USING__Adicic    
 #include "Adicic.H"
 #endif
-#include "Data_Read.H"
+#ifdef USING__CSS    
+#include "CS_Shower.H"
+#include "Singlet.H"
+#endif
 
 #include <string>
 #include <iostream> 
@@ -18,37 +21,42 @@ namespace ADICIC { class Chain; }
 namespace SHERPA {
   class Shower_Handler {
   private :
-    std::string          m_dir,m_file;
-    int                  m_maxjetnumber;
+    std::string            m_dir,m_file;
+    int                    m_maxjetnumber;
 
-    std::string          m_showergenerator;
-    bool                 m_isrshowerswitch,m_fsrshowerswitch,m_showermi;
-    ATOOLS::Data_Read  * p_dataread;
-    APACIC::Apacic     * p_apacic;
+    std::string            m_showergenerator;
+    bool                   m_isrshowerswitch,m_fsrshowerswitch,m_showermi;
+    APACIC::Apacic       * p_apacic;
 #ifdef USING__Adicic    
-    ADICIC::Adicic     * p_adicic;
+    ADICIC::Adicic       * p_adicic;
 #endif
-    PDF::ISR_Handler   * p_isr_handler;       
+#ifdef USING__CSS    
+    CS_SHOWER::CS_Shower * p_css;
+#endif
+    PDF::ISR_Handler     * p_isr_handler;       
   public :
     Shower_Handler(std::string,std::string,MODEL::Model_Base *,
 		   PDF::ISR_Handler *,int);
     ~Shower_Handler();
-    int             PerformShowers(int,int,double,double,double ycut);
-    int             PerformDecayShowers(bool);
-    void            FillBlobs(ATOOLS::Blob_List *);
-    void            FillDecayBlobs(ATOOLS::Blob_List *);
-    void            CleanUp();
-    std::string     ShowerGenerator() { return m_showergenerator; }
-    bool            ISROn()           { return m_isrshowerswitch; }
-    bool            FSROn()           { return m_fsrshowerswitch; }
-    unsigned int    MaxJetNumber()    { return m_maxjetnumber;    }
-    PDF::ISR_Handler * GetISRHandler() { return p_isr_handler; }
-    APACIC::Tree     * GetFinTree(); 
-    APACIC::Tree    ** GetIniTrees();
+    int                       PerformShowers(int,int,double,double,double ycut);
+    int                       PerformDecayShowers(bool);
+    void                      FillBlobs(ATOOLS::Blob_List *);
+    void                      FillDecayBlobs(ATOOLS::Blob_List *);
+    void                      CleanUp();
+    std::string               ShowerGenerator() { return m_showergenerator; }
+    bool                      ISROn()           { return m_isrshowerswitch; }
+    bool                      FSROn()           { return m_fsrshowerswitch; }
+    unsigned int              MaxJetNumber()    { return m_maxjetnumber;    }
+    PDF::ISR_Handler        * GetISRHandler()   { return p_isr_handler; }
+    APACIC::Tree            * GetFinTree(); 
+    APACIC::Tree           ** GetIniTrees();
 #ifdef USING__Adicic    
-    ADICIC::Cascade&   GetCascade();
+    ADICIC::Cascade&          GetCascade();
 #endif
-    APACIC::Apacic   * GetApacic() { return p_apacic; }
+#ifdef USING__Adicic    
+    CS_SHOWER::All_Singlets * GetAllSinglets();
+#endif
+    APACIC::Apacic          * GetApacic() { return p_apacic; }
     void SetJetvetoPt2(const double q2i,const double q2f) { p_apacic->SetJetvetoPt2(q2i,q2f); }
     void SetFactorisationScale(const double scale) { p_apacic->SetFactorisationScale(scale); }
     inline bool ShowerMI() const { return m_showermi; }

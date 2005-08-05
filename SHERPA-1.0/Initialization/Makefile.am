@@ -7,6 +7,7 @@ ANALYSISDIR   =	$(SHERPASYS)/ANALYSIS-1.0
 EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
 AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
 APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
+
 SHERPAINCS    =	-I../Single_Events -I../PerturbativePhysics -I../SoftPhysics \
 		-I../SoftPhysics/Lund  -I../LundTools -I../HerwigTools -I../Tools 
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
@@ -46,15 +47,19 @@ AHADICDIR     =	$(SHERPASYS)/AHADIC++-0.0
 AHADICINCS    = -I$(AHADICDIR)/Main -I$(AHADICDIR)/Formation -I$(AHADICDIR)/Decays -I$(AHADICDIR)/Tools
 AHADICFLAGS   = -DUSING__Ahadic
 endif
-
+if CSS_SUPPORT
+CSSDIR        = $(SHERPASYS)/CS_SHOWER++-0.0
+CSSINCS       = -I$(CSSDIR)/Tools -I$(CSSDIR)/Showers -I$(CSSDIR)/Main
+CSSFLAGS      =	-DUSING__CSS -pedantic -Wall -Winline 
+endif
 
 lib_LTLIBRARIES       =	libSherpaInitialization.la
 libSherpaInitialization_la_SOURCES    =	Initialization_Handler.C 
 noinst_HEADERS        =	Initialization_Handler.H 
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(SHERPAFLAGS) $(CLHEPFLAGS) $(MCATNLOFLAGS) \
-		$(HADRONFLAGS) $(AHADICFLAGS)
-INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(APACICINCS) \
+		$(HADRONFLAGS) $(AHADICFLAGS) $(CSSFLAGS)
+INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(APACICINCS) $(CSSINCS) \
 		$(AMEGICINCS) $(AMISICINCS) $(EXTRAXSINCS) \
 		$(PHASICINCS) $(MODELINCS) $(PDFINCS) $(BEAMINCS) \
 		$(ATOOLSINCS) $(HADRONSINCS) $(AHADICINCS) $(CLHEPINCS) 

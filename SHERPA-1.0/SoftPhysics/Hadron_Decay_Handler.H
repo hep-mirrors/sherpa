@@ -12,29 +12,34 @@
 #include "Blob_List.H"
 #include "Blob.H"
 
-namespace HADRONS { class Hadrons; }
+#ifdef USING_Hadrons
+#include "Hadrons.H"
+#endif
 
 namespace SHERPA {
   class Hadron_Decay_Handler {
   protected :
     std::string              m_decmodel;
     int                      m_mode;
-    Lund_Interface         * p_lund; 
+#ifdef USING_Hadrons
     HADRONS::Hadrons       * p_hadrons;
+#endif
+    Lund_Interface         * p_lund; 
 
     void SwitchOfLundDecays();
 
   public :
-
+#ifdef USING_Hadrons
     Hadron_Decay_Handler(HADRONS::Hadrons *);
+    HADRONS::Hadrons * GetHadrons() { return p_hadrons; }
+#endif
     Hadron_Decay_Handler(Lund_Interface *);
 
     ~Hadron_Decay_Handler();
 	void DeletePointers(); 
 
     bool FillHadronDecayBlobs(ATOOLS::Particle *,ATOOLS::Blob_List *,
-							  ATOOLS::Particle_List *part_list=NULL);
-    HADRONS::Hadrons * GetHadrons() { return p_hadrons; }
+			      ATOOLS::Particle_List *part_list=NULL);
     Lund_Interface * GetLund() { return p_lund; }
     void EraseTreated(std::set<int> *);
   };

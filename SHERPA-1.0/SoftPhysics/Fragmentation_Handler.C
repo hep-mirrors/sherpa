@@ -20,7 +20,7 @@ Fragmentation_Handler::Fragmentation_Handler(std::string _dir,std::string _file)
 #ifdef USING__Ahadic
   p_ahadic(NULL),
 #endif
-p_lund(NULL)
+  p_lund(NULL)
 {
   ATOOLS::Data_Read dr(m_dir+m_file);
   m_fragmentationmodel=dr.GetValue<std::string>("FRAGMENTATION",std::string("Pythiav6.214"));
@@ -38,9 +38,7 @@ p_lund(NULL)
     return;
   }
 #endif
-  else if (m_fragmentationmodel==std::string("Off")) {
-    return;
-  }
+  else if (m_fragmentationmodel==std::string("Off")) return;
   THROW(critical_error,"Fragmentation model not implemented.");
 }
    

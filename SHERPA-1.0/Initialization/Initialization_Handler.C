@@ -9,18 +9,22 @@
 #include "PDF_Base.H"
 #include "Initial_State_Shower.H"
 #include "MI_Base.H"
-#include "Hadrons.H"
 #include "Data_Read.H"
 #include "Data_Reader.H"
 #include "Message.H"
 #include "Scaling.H"
 #include "Shell_Tools.H"
 #include "Particle_Qualifier.H"
+#include "Data_Collector.H"
+#include "Variable.H"
+
 #ifdef USING__MCatNLO
 #include "MCatNLO_Wrapper.H"
 #endif
-#include "Data_Collector.H"
-#include "Variable.H"
+#ifdef USING_Hadrons
+#include "Hadrons.H"
+#endif
+
 
 using namespace SHERPA;
 using namespace MODEL;
@@ -411,7 +415,7 @@ bool Initialization_Handler::InitializeTheMatrixElements()
   MEHandlersMap::iterator it=m_mehandlers.find("SignalMEs");
   if (it!=m_mehandlers.end()) delete it->second;
   m_mehandlers["SignalMEs"]=me; 
-  msg_Info()<<"Initialized the Matrix_Element_Handler for the hard processes :"<<me->Name()<<endl;
+  msg_Info()<<"Initialized the Matrix_Element_Handler for the hard processes : "<<me->Name()<<endl;
   if (p_analysis) {
     int weighted=1-me->EventGenerationMode();
     msg_Info()<<"Initialization_Handler::InitializeTheMatrixElements(): "
@@ -432,6 +436,7 @@ Matrix_Element_Handler * const Initialization_Handler::GetMatrixElementHandler(s
 
 bool Initialization_Handler::InitializeTheUnderlyingEvents()
 {
+  std::cout<<"Before MI Init."<<std::endl;
   p_mihandler = new MI_Handler(m_path,m_midat,p_model,p_beamspectra,
 			       m_isrhandlers[isr::hard_subprocess]);
   if (p_mihandler->Type()!=0)
@@ -489,47 +494,50 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   if (frag=="Off") return true;
 
   if (m_hdhandlers.size()>0) {
-	for (HDHandlersIter hditer=m_hdhandlers.begin();hditer!=m_hdhandlers.end();hditer++) {
-	  msg_Info()<<"Delete Hadron_Decay_Handler for "<<hditer->first<<endl;
-	  if (hditer->second!=NULL) { delete hditer->second; hditer->second=NULL; }
-	}
-	m_hdhandlers.clear();
+    for (HDHandlersIter hditer=m_hdhandlers.begin();hditer!=m_hdhandlers.end();hditer++) {
+      msg_Info()<<"Delete Hadron_Decay_Handler for "<<hditer->first<<endl;
+      if (hditer->second!=NULL) { delete hditer->second; hditer->second=NULL; }
+    }
+    m_hdhandlers.clear();
   }
-
+  
   std::set<int> * UnstableHadrons = new std::set<int>;
   if (!Flavour(kf::tau).IsStable()) UnstableHadrons->insert(int(Flavour(kf::tau).Kfcode()));
   Fl_Iter fli;
   for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
     if (flav.IsOn() && flav.IsHadron() && !flav.IsStable()) {
-	  UnstableHadrons->insert(int(flav.Kfcode()));
-//	  cout<<"Insert "<<int(flav.Kfcode())<<" into set : "<<UnstableHadrons->size()<<endl;
-	}
-//	if (flav.IsOn()) cout<<"Test this : "<<flav.IsHadron()<<" "<<flav.IsStable()<<" "<<flav.Kfcode()<<endl;
+      UnstableHadrons->insert(int(flav.Kfcode()));
+      //	  cout<<"Insert "<<int(flav.Kfcode())<<" into set : "<<UnstableHadrons->size()<<endl;
+    }
+    //	if (flav.IsOn()) cout<<"Test this : "<<flav.IsHadron()<<" "<<flav.IsStable()<<" "<<flav.Kfcode()<<endl;
   }
-//  for (std::set<int>::iterator tester=UnstableHadrons->begin();tester!=UnstableHadrons->end();tester++)
-//	cout<<(*tester)<<" ";
-//  cout<<endl;
+  //  for (std::set<int>::iterator tester=UnstableHadrons->begin();tester!=UnstableHadrons->end();tester++)
+  //	cout<<(*tester)<<" ";
+  //  cout<<endl;
   
   bool needextra = true;
   Hadron_Decay_Handler * hdhandler = NULL;
   string decmodel = dr.GetValue<string>("DECAYMODEL",string("Lund"));
+#ifdef USING_Hadrons
   if (decmodel==std::string("Hadrons")) {
-	string decaypath       = dr.GetValue<string>("DECAYPATH",string("Decaydata/"));
+    string decaypath       = dr.GetValue<string>("DECAYPATH",string("Decaydata/"));
     string decayfile       = dr.GetValue<string>("DECAYFILE",string("HadronDecays.dat"));
-	hdhandler              = new Hadron_Decay_Handler(new HADRONS::Hadrons(decaypath,decayfile));
-	hdhandler->EraseTreated(UnstableHadrons);
-	if (UnstableHadrons->empty()) needextra = false;
-	m_hdhandlers["Sherpa"] = hdhandler;
+    hdhandler              = new Hadron_Decay_Handler(new HADRONS::Hadrons(decaypath,decayfile));
+    hdhandler->EraseTreated(UnstableHadrons);
+    if (UnstableHadrons->empty()) needextra = false;
+    m_hdhandlers["Sherpa"] = hdhandler;
   }
+#endif
   if ((p_fragmentation->GetLundInterface()!=NULL) && (decmodel==string("Lund") || needextra) ) {
-	hdhandler              = new Hadron_Decay_Handler(p_fragmentation->GetLundInterface());
-	m_hdhandlers["Lund"]   = hdhandler;
+    hdhandler              = new Hadron_Decay_Handler(p_fragmentation->GetLundInterface());
+    m_hdhandlers["Lund"]   = hdhandler;
   }
   if (decmodel!=std::string("Hadrons") && decmodel!=string("Lund")) {
-	THROW(critical_error,"Fragmentation model not implemented.");
-	abort();
+    THROW(critical_error,"Fragmentation model not implemented.");
+    abort();
   }
   delete UnstableHadrons;
+  msg_Info()<<"Initialized the Hadron_Decay_Handler, Decay model = "<<decmodel<<endl;
   return true;
 }
 

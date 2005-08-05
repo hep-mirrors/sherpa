@@ -1,8 +1,11 @@
 #include "MI_Handler.H"
+#include "Data_Read.H"
 
 #define USING__Sherpa
+#ifdef USING__Amisic
 #include "Amisic.H"
-#include "Data_Read.H"
+#endif
+
 
 #ifdef PROFILE__all
 #define PROFILE__MI_Handler
@@ -16,24 +19,27 @@
 using namespace SHERPA;
 
 MI_Handler::MI_Handler(std::string path,std::string file,MODEL::Model_Base *model,
-		       BEAM::Beam_Spectra_Handler *beam,PDF::ISR_Handler *isr):
-  p_amisic(NULL),
+		       BEAM::Beam_Spectra_Handler *beam,PDF::ISR_Handler *isr) :
   p_beam(beam),
   p_isr(isr),
+#ifdef USING__Amisic
+  p_amisic(NULL),
+#endif
   m_type(None),
   m_scalescheme(1),
   m_ycut(1.0e-7)
 {
-  std::string mihandler;
-  ATOOLS::Data_Read *read = new ATOOLS::Data_Read(path+file,true);
-  mihandler="None";
-  if (read->FileExists()) {
-    mihandler=read->GetValue<std::string>("MI_HANDLER",std::string("Amisic"));
-    m_scalescheme=read->GetValue<int>("MI_HARD_SCALE",1);
-    path+=read->GetValue<std::string>("INPUT_PATH",std::string(""));
-    file=read->GetValue<std::string>("INPUT_FILE",file);
+#ifdef USING__Amisic
+  std::string mihandler="None";
+  ATOOLS::Data_Read read(path+file,true);
+  if (read.FileExists()) {
+    std::cout<<"In . "<<std::endl;
+    mihandler=read.GetValue<std::string>("MI_HANDLER",std::string("Amisic"));
+    std::cout<<"Handler =  "<<mihandler<<std::endl;
+    m_scalescheme=read.GetValue<int>("MI_HARD_SCALE",1);
+    path+=read.GetValue<std::string>("INPUT_PATH",std::string(""));
+    file=read.GetValue<std::string>("INPUT_FILE",file);
   }
-  delete read;
   if (!ATOOLS::rpa.gen.Beam1().IsHadron() ||
       !ATOOLS::rpa.gen.Beam2().IsHadron()) mihandler="None";
   if (mihandler==std::string("Amisic")) {
@@ -48,17 +54,22 @@ MI_Handler::MI_Handler(std::string path,std::string file,MODEL::Model_Base *mode
     m_ycut=ATOOLS::sqr(m_ycut/ATOOLS::rpa.gen.Ecms());
     m_type=Amisic;
   }
+#endif
 }
 
 MI_Handler::~MI_Handler() 
 {
+#ifdef USING__Amisic
   if (p_amisic!=NULL) delete p_amisic;
+#endif
 }
 
 Matrix_Element_Handler *MI_Handler::HardMEHandler()
 {
   switch (m_type) {
+#ifdef USING__Amisic
   case Amisic: return p_amisic->HardMEHandler();
+#endif
   default    : break;
   }
   return NULL;
@@ -67,7 +78,9 @@ Matrix_Element_Handler *MI_Handler::HardMEHandler()
 Matrix_Element_Handler *MI_Handler::SoftMEHandler()
 {
   switch (m_type) {
+#ifdef USING__Amisic
   case Amisic: return p_amisic->SoftMEHandler();
+#endif
   default    : break;
   }
   return NULL;
@@ -77,7 +90,9 @@ bool MI_Handler::GenerateHardProcess(ATOOLS::Blob *blob)
 {
   PROFILE_HERE;
   switch (m_type) {
+#ifdef USING__Amisic
   case Amisic: return p_amisic->GenerateHardProcess(blob);
+#endif
   default    : break;
   }
   return false;
@@ -87,7 +102,9 @@ bool MI_Handler::GenerateSoftProcess(ATOOLS::Blob *blob)
 {
   PROFILE_HERE;
   switch (m_type) {
+#ifdef USING__Amisic
   case Amisic: return p_amisic->GenerateSoftProcess(blob);
+#endif
   default    : break;
   }
   return false;
@@ -96,7 +113,9 @@ bool MI_Handler::GenerateSoftProcess(ATOOLS::Blob *blob)
 bool MI_Handler::GenerateEvent(ATOOLS::Blob_List *bloblist)
 {
   switch (m_type) {
+#ifdef USING__Amisic
   case Amisic: break; // p_amisic->GenerateEvent(bloblist);
+#endif
   default    : break;
   }
   return false;
@@ -105,7 +124,9 @@ bool MI_Handler::GenerateEvent(ATOOLS::Blob_List *bloblist)
 bool MI_Handler::VetoHardProcess(ATOOLS::Blob *blob)
 {
   switch (m_type) {
+#ifdef USING__Amisic
   case Amisic: return p_amisic->VetoHardProcess(blob);
+#endif
   default    : break;
   }
   return false;
@@ -114,10 +135,12 @@ bool MI_Handler::VetoHardProcess(ATOOLS::Blob *blob)
 void MI_Handler::SetScaleMin(double scalemin,unsigned int i)
 {
   switch (m_type) {
+#ifdef USING__Amisic
   case Amisic:
     p_amisic->HardBase()->SetStop(scalemin,i);
     p_amisic->SoftBase()->SetStart(scalemin,i);
     break;
+#endif
   default:
     break;
   }
@@ -126,9 +149,11 @@ void MI_Handler::SetScaleMin(double scalemin,unsigned int i)
 void MI_Handler::SetScaleMax(double scalemax,unsigned int i)
 {
   switch (m_type) {
+#ifdef USING__Amisic
   case Amisic:
     p_amisic->HardBase()->SetStart(scalemax,i);
     break;
+#endif
   default:
     break;
   }
@@ -137,7 +162,9 @@ void MI_Handler::SetScaleMax(double scalemax,unsigned int i)
 double MI_Handler::ScaleMin(unsigned int i)
 {
   switch (m_type) {
+#ifdef USING__Amisic
   case Amisic: return p_amisic->HardBase()->Stop(i);
+#endif
   default    : break;
   }
   return 0.;
@@ -146,7 +173,9 @@ double MI_Handler::ScaleMin(unsigned int i)
 double MI_Handler::ScaleMax(unsigned int i)
 {
   switch (m_type) {
+#ifdef USING__Amisic
   case Amisic: return p_amisic->HardBase()->Start(i);
+#endif
   default    : break;
   }
   return 0.;
@@ -155,7 +184,9 @@ double MI_Handler::ScaleMax(unsigned int i)
 void MI_Handler::Reset()
 {
   switch (m_type) {
+#ifdef USING__Amisic
   case Amisic: p_amisic->Reset();
+#endif
   default    : break;
   }
 }
@@ -163,7 +194,9 @@ void MI_Handler::Reset()
 void MI_Handler::CleanUp()
 {
   switch (m_type) {
+#ifdef USING__Amisic
   case Amisic: p_amisic->CleanUp();
+#endif
   default    : break;
   }
 }
@@ -181,7 +214,9 @@ MI_Handler::TypeID MI_Handler::Type()
 std::string MI_Handler::Name() 
 {
   switch (m_type) {
+#ifdef USING__Amisic
   case Amisic: return std::string("Amisic");
+#endif
   case None  : return std::string("None");
   default    : break;
   }
@@ -191,7 +226,9 @@ std::string MI_Handler::Name()
 unsigned int MI_Handler::NIn()
 {
   switch (m_type) {
+#ifdef USING__Amisic
   case Amisic: return p_amisic->HardXS()->NIn();
+#endif
   default    : break;
   }
   return 0;
@@ -200,7 +237,9 @@ unsigned int MI_Handler::NIn()
 unsigned int MI_Handler::NOut()
 {
   switch (m_type) {
+#ifdef USING__Amisic
   case Amisic: return p_amisic->HardXS()->NOut();
+#endif
   default    : break;
   }
   return 0;

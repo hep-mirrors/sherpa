@@ -291,6 +291,7 @@ bool Lund_Interface::ExtractSinglets(ATOOLS::Blob_List *bloblist,ATOOLS::Particl
   for (ATOOLS::Blob_List::iterator blit=bloblist->begin();blit!=bloblist->end();++blit) {
     if ((*blit)->Type()==ATOOLS::btp::FS_Shower || 
 		(*blit)->Type()==ATOOLS::btp::IS_Shower ||
+		(*blit)->Type()==ATOOLS::btp::Shower ||
 		(*blit)->Type()==ATOOLS::btp::Hard_Collision ||
 		(*blit)->Type()==ATOOLS::btp::Beam) {
  	      for (int i=0;i<(*blit)->NOutP();i++) {

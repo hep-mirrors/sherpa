@@ -7,7 +7,9 @@
 namespace BEAM   { class Beam_Spectra_Handler; }
 namespace PDF    { class ISR_Handler;          }
 namespace MODEL  { class Model_Base;           }
+#ifdef USING__Amisic
 namespace AMISIC { class Amisic;               }
+#endif
 
 namespace SHERPA {
 
@@ -21,11 +23,11 @@ namespace SHERPA {
 		  Unknown = 99 };
 
   private:
-
-    AMISIC::Amisic *p_amisic;
-
     BEAM::Beam_Spectra_Handler *p_beam;
     PDF::ISR_Handler           *p_isr;
+#ifdef USING__Amisic
+    AMISIC::Amisic             *p_amisic;
+#endif
 
     TypeID      m_type;
     std::string m_name;

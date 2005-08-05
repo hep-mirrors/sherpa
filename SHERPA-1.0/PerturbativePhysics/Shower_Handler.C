@@ -2,6 +2,7 @@
 #include "Tree.H"
 #include "ISR_Handler.H"
 #include "Message.H"
+#include "Data_Read.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -14,32 +15,43 @@ Shower_Handler::Shower_Handler(std::string _dir,std::string _file,
 #ifdef USING__Adicic
   p_adicic(NULL),
 #endif
+#ifdef USING__CSS    
+  p_css(NULL),
+#endif
   p_isr_handler(_isr)
 {
-  p_dataread        = new Data_Read(m_dir+m_file);
-  m_showergenerator = p_dataread->GetValue<std::string>("SHOWER_GENERATOR",std::string("Apacic"));
+  Data_Read dataread(m_dir+m_file);
+  m_showergenerator = dataread.GetValue<std::string>("SHOWER_GENERATOR",std::string("Apacic"));
   m_isrshowerswitch = 0;
   if (_isr) {
-    if (_isr->On()>0) m_isrshowerswitch = p_dataread->GetValue<int>("ISR_SHOWER",1);
+    if (_isr->On()>0) m_isrshowerswitch = dataread.GetValue<int>("ISR_SHOWER",1);
 #ifdef USING__Adicic    
     if (m_showergenerator==std::string("Adicic")) m_isrshowerswitch = false;
 #endif
+#ifdef USING__CSS    
+    if (m_showergenerator==std::string("CSS")) m_isrshowerswitch = false;
+#endif
   }
-  m_fsrshowerswitch = p_dataread->GetValue<int>("FSR_SHOWER",1);
+  m_fsrshowerswitch = dataread.GetValue<int>("FSR_SHOWER",1);
   if (m_isrshowerswitch && !m_fsrshowerswitch) {
     msg.Out()<<"WARNING in Shower_Handler : "<<std::endl
 	     <<"   final state shower is switched on, since initial state shower is turned on as well."<<std::endl;
     m_fsrshowerswitch=true;
   }
-  m_showermi = p_dataread->GetValue<int>("SHOWER_MI",1);
+  m_showermi = dataread.GetValue<int>("SHOWER_MI",1);
 
   if (m_showergenerator==std::string("Apacic")) {
     p_apacic = new APACIC::Apacic(_isr,_model,m_maxjetnumber,
-				  m_isrshowerswitch,m_fsrshowerswitch,p_dataread);
+    				  m_isrshowerswitch,m_fsrshowerswitch,&dataread);
   }
 #ifdef USING__Adicic    
   else if (m_showergenerator==std::string("Adicic")) {
     p_adicic = new ADICIC::Adicic(_model);
+  }
+#endif
+#ifdef USING__CSS    
+  else if (m_showergenerator==std::string("CSS")) {
+    p_css = new CS_SHOWER::CS_Shower();
   }
 #endif
   else {
@@ -49,8 +61,6 @@ Shower_Handler::Shower_Handler(std::string _dir,std::string _file,
 	       <<"   Abort."<<std::endl;
     abort();
   }
-
-  delete p_dataread;
 }
 
 
@@ -60,6 +70,9 @@ Shower_Handler::~Shower_Handler()
 #ifdef USING__Adicic    
   if (p_adicic) { delete p_adicic; p_adicic = NULL; }
 #endif
+#ifdef USING__CSS    
+  if (p_css)    { delete p_css;    p_css    = NULL; }
+#endif
 }
 
 
@@ -67,6 +80,9 @@ int Shower_Handler::PerformShowers(int jetveto,int losejv,double _x1,double _x2,
   if (p_apacic) return p_apacic->PerformShowers(m_isrshowerswitch,m_fsrshowerswitch,jetveto,losejv,_x1,_x2, ycut);
 #ifdef USING__Adicic    
   if (p_adicic) return p_adicic->PerformShowers();
+#endif
+#ifdef USING__CSS    
+  if (p_css) return p_css->PerformShowers();
 #endif
   return 0;
 }
@@ -92,6 +108,14 @@ void Shower_Handler::FillBlobs(ATOOLS::Blob_List * _bloblist)
     }
   }
 #endif
+#ifdef USING__CSS    
+  if (p_css) {
+    if (!(p_css->ExtractPartons(_bloblist))) {
+      msg.Error()<<"Error in Shower_Handler::FillBlobs()."<<std::endl
+               <<"   Did not succeed to fill bloblist any further."<<std::endl;
+    }
+  }
+#endif
 }
 
 void Shower_Handler::FillDecayBlobs(ATOOLS::Blob_List * _bloblist) 
@@ -108,6 +132,9 @@ void Shower_Handler::CleanUp() {
   if (p_apacic) p_apacic->PrepareTrees();
 #ifdef USING__Adicic    
   if (p_adicic) p_adicic->PrepareCascade();
+#endif
+#ifdef USING__CSS    
+  if (p_css) p_css->PrepareAllSinglets();
 #endif
 }
 
@@ -131,6 +158,15 @@ APACIC::Tree ** Shower_Handler::GetIniTrees() {
 ADICIC::Cascade& Shower_Handler::GetCascade() {
   if(p_adicic) return p_adicic->GetCascade();
   msg.Error()<<"Error in Shower_Handler::GetChain()."<<std::endl
+           <<"   Adicic is not the shower handler."<<std::endl
+           <<"   Initialized "<<m_showergenerator<<". Abort run."<<std::endl;
+  abort();
+}
+#endif
+#ifdef USING__CSS    
+CS_SHOWER::All_Singlets * Shower_Handler::GetAllSinglets() {
+  if(p_css) return p_css->GetAllSinglets();
+  msg.Error()<<"Error in Shower_Handler::GetAllSinglets()."<<std::endl
            <<"   Adicic is not the shower handler."<<std::endl
            <<"   Initialized "<<m_showergenerator<<". Abort run."<<std::endl;
   abort();

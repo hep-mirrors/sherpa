@@ -4,7 +4,12 @@
 #ifdef USING__Adicic    
 #include "SimpleXS_Adicic_Interface.H"
 #endif
+#ifdef USING__CSS    
+#include "SimpleXS_CSS_Interface.H"
+#endif
+#ifdef USING__Amisic    
 #include "MI_Base.H"
+#endif
 
 #ifdef PROFILE__all
 #define PROFILE__Jet_Evolution
@@ -41,6 +46,11 @@ Jet_Evolution::Jet_Evolution(MEHandlersMap *_mehandlers,Shower_Handler *_showerh
     if (meIter->second->Name()==string("SimpleXS") &&
       p_showerhandler->ShowerGenerator()==string("Adicic")) 
       interface = new SimpleXS_Adicic_Interface(meIter->second,p_showerhandler);
+#endif
+#ifdef USING__CSS
+    if (meIter->second->Name()==string("SimpleXS") &&
+      p_showerhandler->ShowerGenerator()==string("CSS")) 
+      interface = new SimpleXS_CSS_Interface(meIter->second,p_showerhandler);
 #endif
     if (interface!=NULL) m_interfaces.insert(make_pair(meIter->first,interface));
   }

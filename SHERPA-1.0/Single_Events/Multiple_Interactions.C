@@ -1,13 +1,18 @@
 #include "Multiple_Interactions.H"
 
-#include "Amisic.H"
 #include "My_Limits.H"
 #include "Remnant_Base.H"
 #include "ISR_Handler.H"
 #include "Jet_Finder.H"
 #include "Kt_Algorithm.H"
 #include "Run_Parameter.H"
+#include "Exception.H"
 #include "Matrix_Element_Handler.H"
+#include "XS_Base.H"
+
+#ifdef USING__Amisic
+#include "Amisic.H"
+#endif
 
 #ifdef PROFILE__all
 #define PROFILE__Multiple_Interactions
@@ -19,9 +24,11 @@
 #endif
 
 using namespace SHERPA;
-using namespace AMISIC;
 using namespace EXTRAXS;
 using namespace ATOOLS;
+#ifdef USING__Amisic
+using namespace AMISIC;
+#endif
 
 Multiple_Interactions::Multiple_Interactions(MI_Handler *mihandler):
   p_mihandler(mihandler)
@@ -200,6 +207,7 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
 
 bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
 {
+#ifdef USING__Amisic
   PROFILE_HERE;
   if (p_mihandler->Type()==MI_Handler::None ||
       MI_Base::StopGeneration()) return false;
@@ -250,6 +258,7 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
   delete blob;
   p_mihandler->ISRHandler()->Reset(0);
   p_mihandler->ISRHandler()->Reset(1);
+#endif
   return false;
 }
 
