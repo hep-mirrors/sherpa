@@ -484,6 +484,9 @@ double Jet_Finder::MTij2(Vec4D p1,Vec4D p2)
     if (IsZero(pt1_2/(pt1_2+pt2_2))) {
       mt12_2        = mt2_2;
     }
+    if (IsZero(pt2_2/(pt1_2+pt2_2))) {
+      mt12_2        = mt1_2;
+    }
     else 
       if (m_type==2) mt12_2 = 2.*Min(mt1_2,mt2_2) * (1.-DCos12(p1,p2));
                 else mt12_2 = 2.*Min(mt1_2,mt2_2) * (Coshyp(DEta12(p1,p2)) - CosDPhi12(p1,p2));
@@ -497,7 +500,8 @@ double Jet_Finder::MTij2(Vec4D p1,Vec4D p2)
 bool Jet_Finder::TwoJets(const Vec4D & p1) 
 {
   if (m_type>=2) {
-    if (sqr(p1[1]) + sqr(p1[2])  < m_shower_pt2 ) return 0;
+    //    if (sqr(p1[1]) + sqr(p1[2])  < m_shower_pt2 ) return 0;
+    if (p1.MPerp2()  < m_shower_pt2 ) return 0;
   }
   else {
     msg.Out()<<"WARNING in Jet_Finder::TwoJets(Vec4D &) "<<std::endl
@@ -515,8 +519,8 @@ bool Jet_Finder::TwoJets(const Vec4D & _p1,const Vec4D & _p2)
   BoostInFrame(p2);
 
   if (m_type>=2) {
-    double pt1_2  = sqr(p1[1]) + sqr(p1[2]); 
-    double pt2_2  = sqr(p2[1]) + sqr(p2[2]); 
+    double pt1_2  = p1.MPerp2();//sqr(p1[1]) + sqr(p1[2]); 
+    double pt2_2  = p2.MPerp2();//sqr(p2[1]) + sqr(p2[2]); 
     if (pt1_2  < m_shower_pt2 ) return 0;
     if (pt2_2  < m_shower_pt2 ) return 0;
     double pt12_2;
