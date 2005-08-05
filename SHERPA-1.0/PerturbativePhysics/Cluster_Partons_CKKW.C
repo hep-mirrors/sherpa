@@ -92,14 +92,9 @@ void Cluster_Partons_CKKW::InitWeightCalculation()
   Combine_Table_Base *ct_test(p_ct);
   double qmaxt(0.);
   while (ct_test->Up()) {
-    int i, j;
-    ct_test->Up()->GetWinner(i,j);
-    bool strong_vertex(ct_test->GetLeg(i).Point()->fl.Strong() && 
-		       ct_test->Up()->GetLeg(i).Point()->fl.Strong() && 
-		       ct_test->Up()->GetLeg(j).Point()->fl.Strong());
     ct_test=ct_test->Up();
     ++m_njet;
-    if (strong_vertex && qmaxt<ct_test->Kt2()) qmaxt=ct_test->Kt2();
+    if (qmaxt<ct_test->Kt2()) qmaxt=ct_test->Kt2();
   }
   if (qmaxt>m_q2_hard) {
     msg.Error()<<"Cluster_Partons_CKKW::InitWeightCalculation(): Hardest qcd scale exceeds hard scale.\n"
