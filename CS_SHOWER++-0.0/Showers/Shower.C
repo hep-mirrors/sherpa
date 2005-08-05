@@ -5,9 +5,13 @@ using namespace CS_SHOWER;
 using namespace ATOOLS;
 using namespace std;
 
-Shower::Shower() {}
+Shower::Shower() : p_actual(NULL), p_all(NULL) {}
 
-Shower::~Shower() {}
+Shower::~Shower() 
+{
+  if (p_actual) { delete p_actual; p_actual=NULL;}
+  if (p_all)    { delete p_all;    p_all=NULL;}
+}
 
 bool Shower::EvolveShower(All_Singlets * all)
 {

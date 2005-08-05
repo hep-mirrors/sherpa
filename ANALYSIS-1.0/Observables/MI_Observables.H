@@ -1,12 +1,12 @@
 #ifndef MI_Observables_H
 #define MI_Observables_H
 
+#ifdef USING_Amisic
+
 #include "Primitive_Observable_Base.H"
 #include "../../AMISIC++-1.0/Tools/Amisic_Histogram.H"
 
 namespace ANALYSIS {
-
-
   class MI_Statistics: public Primitive_Observable_Base {  
   private:
 
@@ -30,7 +30,6 @@ namespace ANALYSIS {
   private:
 
     AMISIC::Amisic_Histogram<double> m_etafw, m_etafwsq, m_etafwbw;
-
   public:
 
     Forward_Backward_Eta_Correlation(const int type,
@@ -51,9 +50,7 @@ namespace ANALYSIS {
   private:
 
     std::string m_jetlist;
-
     AMISIC::Amisic_Histogram<double> m_histogram;
-    
   public:
 
     Multiplicity_vs_JetPT(const int type,
@@ -399,4 +396,5 @@ namespace ANALYSIS {
 
 }// end of namespace ANALYSIS
 
+#endif
 #endif

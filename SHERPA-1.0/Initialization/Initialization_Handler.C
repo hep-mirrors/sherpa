@@ -21,7 +21,7 @@
 #ifdef USING__MCatNLO
 #include "MCatNLO_Wrapper.H"
 #endif
-#ifdef USING_Hadrons
+#ifdef USING__Hadrons
 #include "Hadrons.H"
 #endif
 
@@ -171,9 +171,12 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   if (nr<=0) {
     ATOOLS::ParticleInit(m_path); 
   }
+  std::cout<<"Particles ....  initialised"<<std::endl;
 
   bool okay = InitializeTheIO();
- 
+  std::cout<<"IO        ....  initialised"<<std::endl;
+
+
   if (m_mode==9999) {
     msg.Out()<<"SHERPA will read in the events."<<std::endl
 	     <<"   The full framework is not needed."<<std::endl;
@@ -182,15 +185,19 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   }
      
   okay = okay && InitializeTheModel();  
+  std::cout<<"Analysis  .... initialised"<<std::endl;
 
   //  set masses and widths from command line
   SetParameter(nr);
   UpdateParameters();
     
   okay = okay && InitializeTheBeams();
+  std::cout<<"Beams     .... initialised"<<std::endl;
   okay = okay && InitializeThePDFs();
+  std::cout<<"PDFs      .... initialised"<<std::endl;
 
   okay = okay && InitializeTheAnalyses();
+  std::cout<<"Analysis  .... initialised"<<std::endl;
 
   ATOOLS::Integration_Info *info=PHASIC::Phase_Space_Handler::GetInfo();
   m_isrhandlers[isr::hard_process]->AssignKeys(info);
@@ -206,14 +213,21 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   }
 
   okay = okay && InitializeTheBeamRemnants();
+  std::cout<<"Beam remnants  initialised"<<std::endl;
   okay = okay && InitializeTheHardDecays();
+  std::cout<<"Hard decays .. initialised"<<std::endl;
   okay = okay && InitializeTheMatrixElements();
+  std::cout<<"MEs       .... initialised"<<std::endl;
   //  only if events:
   if (rpa.gen.NumberOfEvents()>0) {
     okay = okay && InitializeTheShowers();
+    std::cout<<"Showers   .... initialised"<<std::endl;
     okay = okay && InitializeTheFragmentation();
+    std::cout<<"Fragmentation  initialised"<<std::endl;
     okay = okay && InitializeTheHadronDecays();
+    std::cout<<"Hadron decays  initialised"<<std::endl;
     okay = okay && InitializeTheUnderlyingEvents();
+    std::cout<<"UE        .... initialised"<<std::endl;
   }
   return okay;
 }
@@ -518,7 +532,9 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   bool needextra = true;
   Hadron_Decay_Handler * hdhandler = NULL;
   string decmodel = dr.GetValue<string>("DECAYMODEL",string("Lund"));
-#ifdef USING_Hadrons
+  std::cout<<"Decaymodel = "<<decmodel<<std::endl;
+#ifdef USING__Hadrons
+  std::cout<<"             ... USING__HADRONS enabled"<<std::endl;
   if (decmodel==std::string("Hadrons")) {
     string decaypath       = dr.GetValue<string>("DECAYPATH",string("Decaydata/"));
     string decayfile       = dr.GetValue<string>("DECAYFILE",string("HadronDecays.dat"));

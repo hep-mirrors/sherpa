@@ -12,7 +12,7 @@
 #include "Blob_List.H"
 #include "Blob.H"
 
-#ifdef USING_Hadrons
+#ifdef USING__Hadrons
 #include "Hadrons.H"
 #endif
 
@@ -21,7 +21,7 @@ namespace SHERPA {
   protected :
     std::string              m_decmodel;
     int                      m_mode;
-#ifdef USING_Hadrons
+#ifdef USING__Hadrons
     HADRONS::Hadrons       * p_hadrons;
 #endif
     Lund_Interface         * p_lund; 
@@ -29,7 +29,7 @@ namespace SHERPA {
     void SwitchOfLundDecays();
 
   public :
-#ifdef USING_Hadrons
+#ifdef USING__Hadrons
     Hadron_Decay_Handler(HADRONS::Hadrons *);
     HADRONS::Hadrons * GetHadrons() { return p_hadrons; }
 #endif

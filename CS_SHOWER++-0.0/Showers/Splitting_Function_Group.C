@@ -21,6 +21,7 @@ Splitting_Function_Group::~Splitting_Function_Group() {
     if (*m_splitter) { delete (*m_splitter); (*m_splitter=NULL); }
     m_splitter = m_splittings.erase(m_splitter);
   } while (m_splitter!=m_splittings.end());
+  m_splittings.clear();
 }
 
 

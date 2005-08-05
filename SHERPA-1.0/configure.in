@@ -15,20 +15,54 @@ AC_ARG_ENABLE(mcatnlo,
 AM_CONDITIONAL(MCATNLO_SUPPORT, test $mcatnlo = true)
 AC_ARG_ENABLE(adicic,
 [  --enable-adicic        Enable Adicic support ],
-[ adicic=false
+[ adicic=true
+  if test -d "../ADICIC++-0.0"; then
   case "${enableval}" in 
     yes) adicic=true && echo "checking for ADICIC support... yes" ;;
     *) echo "checking for ADICIC support... no" ;;
-  esac ],[ adicic=true ])
+  esac 
+  fi ],[ adicic=true ])
 AM_CONDITIONAL(ADICIC_SUPPORT, test $adicic = true)
+AC_ARG_ENABLE(amisic,
+[  --enable-amisic        Enable Amisic support ],
+[ amisic=true
+  if test -d "../AMISIC++-1.0"; then
+  case "${enableval}" in 
+    yes) amisic=true && echo "checking for AMISIC support... yes" ;;
+    *) echo "checking for AMISIC support... no" ;;
+  esac 
+  fi ],[ amisic=true ])
+AM_CONDITIONAL(AMISIC_SUPPORT, test $amisic = true)
+AC_ARG_ENABLE(hadrons,
+[  --enable-hadrons        Enable Hadrons support ],
+[ hadrons=true
+  if test -d "../HADRONS++-0.0"; then
+  case "${enableval}" in 
+    yes) hadrons=true && echo "checking for HADRONS support... yes" ;;
+    *) echo "checking for HADRONS support... no" ;;
+  esac 
+  fi ],[ hadrons=true ])
+AM_CONDITIONAL(HADRONS_SUPPORT, test $hadrons = true)
 AC_ARG_ENABLE(ahadic,
 [  --enable-ahadic        Enable Ahadic support ],
-[ ahadic=false
+[ ahadic=true
+  if test -d "../AHADIC++-0.0"; then
   case "${enableval}" in 
     yes) ahadic=true && echo "checking for AHADIC support... yes" ;;
     *) echo "checking for AHADIC support... no" ;;
-  esac ],[ ahadic=false ])
+  esac 
+  fi ],[ ahadic=true ])
 AM_CONDITIONAL(AHADIC_SUPPORT, test $ahadic = true)
+AC_ARG_ENABLE(css,
+[  --enable-css        Enable Css support ],
+[ css=true
+  if test -d "../CS_SHOWER++-0.0"; then
+  case "${enableval}" in 
+    yes) css=true && echo "checking for CSS support... yes" ;;
+    *) echo "checking for CSS support... no" ;;
+  esac 
+  fi ],[ css=true ])
+AM_CONDITIONAL(CSS_SUPPORT, test $css = true)
 AC_ARG_ENABLE(clhep,
 [  --enable-clhep          Enable CLHEP support ],
 [ clhep=false
@@ -86,8 +120,6 @@ AC_ARG_ENABLE(cvsinclude,
 [ echo "enable CVS synchronization... yes" ;
   cvsinclude=true ])
 AM_CONDITIONAL(CVS_INCLUDE, test "$cvsinclude" = "true" )
-AM_CONDITIONAL(AMISIC_SUPPORT, test -d "../AMISIC++-1.0")
-AM_CONDITIONAL(HADRONS_SUPPORT, test -d "../HADRONS++-0.0")
 
 AC_CONFIG_COMMANDS_POST([touch PerturbativePhysics/Shower_Handler.H &&
 			 touch Tools/HepMC_Interface.H &&

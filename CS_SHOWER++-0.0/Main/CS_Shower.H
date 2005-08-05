@@ -1,10 +1,6 @@
 #ifndef CS_Shower_h
 #define CS_Shower_h
 
-#ifndef USING__CSS
-#define USING__CSS
-#endif
-
 #include "Shower.H"
 #include "Singlet.H"
 #include "Blob_List.H"

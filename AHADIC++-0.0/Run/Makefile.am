@@ -10,19 +10,6 @@ EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
 AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
 APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
 
-if HADRONS_SUPPORT
-HADRONSDIR    = $(SHERPASYS)/HADRONS++-0.0
-HADRONSFLAGS  = -DUSING__Hadrons
-endif
-if ADICIC_SUPPORT
-ADICICDIR     =	$(SHERPASYS)/ADICIC++-0.0
-ADICICFLAGS   = -DUSING__Adicic
-endif
-if MCATNLO_SUPPORT
-MCATNLOLIBS   = -lHerwigTools
-MCATNLOFLAGS  = -DUSING__MCatNLO
-endif
-
 SHERPAINCS    =	-I../Main -I../Initialization -I../PerturbativePhysics \
 		-I../SoftPhysics -I../LundTools -I../Single_Events \
 		-I../HerwigTools -I../Tools 
@@ -41,56 +28,34 @@ AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
 		-I$(AMEGICDIR)/String 
 APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
 
-if AMISIC_SUPPORT
-AMISICINCS    =	-I$(SHERPASYS)/AMISIC++-1.0/Main
-endif
 if HADRONS_SUPPORT
+HADRONSLIBS   =	-L@libdir@ -lHadronsMain -lHadronsMEs -lHadronsPSs
 HADRONSINCS   = -I$(HADRONSDIR)/Main
+HADRONSDIR    = $(SHERPASYS)/HADRONS++-0.0
+HADRONSFLAGS  = -DUSING__Hadrons
 endif
 if ADICIC_SUPPORT
+ADICICLIBS    =	-L@libdir@ -lAdicicMain -lAdicicHdl -lAdicicStruct \
+		-lAdicicTool -lAdicicInput
 ADICICINCS    = -I$(ADICICDIR)/Main -I$(ADICICDIR)/Structure \
                 -I$(ADICICDIR)/Handler -I$(ADICICDIR)/Tool -I$(ADICICDIR)/Input
+ADICICDIR     =	$(SHERPASYS)/ADICIC++-0.0
+ADICICFLAGS   = -DUSING__Adicic
 endif
-
-
-
-SYSLIBS	      =	-lg2c -lm -ldl
-AHADICLIBS    =	-L@libdir@ -lAhadicMain -lAhadicFormation \
-		-lAhadicDecays -lAhadicTools
-
-SHERPALIBS    =	-L@libdir@ -lSherpaMain -lSherpaInitialization \
-		-lSherpaSingleEvents -lSherpaPerturbativePhysics \
-		-lSherpaSoftPhysics -lLundTools $(MCATNLOLIBS) -lSherpaTools 
-ATOOLSLIBS    =	-L@libdir@ -lToolsPhys -lToolsMath -lToolsOrg 
-PDFLIBS       =	-L@libdir@ -lPDF -lDUPDF -lSudakov -lMRST -lGRV 
-ANALYSISLIBS  = -L@libdir@ -lAnalysis -lObservables
-BEAMLIBS      =	-L@libdir@ -lBeam 
-PHASICLIBS    =	-L@libdir@ -lPhasespace 
-PDFLIBS       =	-L@libdir@ -lDUPDF -lSudakov -lPDF \
-                           -lMRST -lGRV -lRemnant
+if MCATNLO_SUPPORT
+MCATNLOLIBS   = -lHerwigTools
+MCATNLOFLAGS  = -DUSING__MCatNLO
+endif
 if LHAPDF_SUPPORT
 LHAPDFFLAGS    = -DLHAPDF_SUPPORT
 LHAPDFLIBS     = -L@libdir@ -lLHAPDF $(LHAPDFDIR)/libLHAPDF.a 
 else
 CTEQLIBS      = -L@libdir@ -lCTEQ 
 endif
-MODELLIBS     =	-L@libdir@ -lModelMain -lIsajet -lHdecay 
-EXTRAXSLIBS   =	-L@libdir@ -lExtraXS -lExtraXS2_2 
-AMEGICLIBS    =	-L@libdir@ -lAmegic -lAmplitude -lAmegicPSGen \
-		-lZfunctions -lAmplTools -lModel -lString 
-APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain 
 if AMISIC_SUPPORT
-AMISICLIBS    =	-L@libdir@ -lAmisic -lAmisicModel -lAmisicTools
-endif
-if HADRONS_SUPPORT
-HADRONSLIBS   =	-L@libdir@ -lHadronsMain -lHadronsMEs -lHadronsPSs
-endif
-if ADICIC_SUPPORT
-ADICICLIBS    =	-L@libdir@ -lAdicicMain -lAdicicHdl -lAdicicStruct \
-		-lAdicicTool -lAdicicInput
-endif
-if AMISIC_SUPPORT
+AMISICINCS    =	-I$(SHERPASYS)/AMISIC++-1.0/Main
 AMISICFLAGS   =	-DUSING__Amisic
+AMISICLIBS    =	-L@libdir@ -lAmisic -lAmisicModel -lAmisicTools
 endif
 
 if ROOT_SUPPORT
@@ -107,16 +72,29 @@ CLHEPLIBS     =	$(wildcard $(CLHEPDIR)/lib/libCLHEP-g++.*.a)
 CLHEPFLAGS    = -DCLHEP_SUPPORT
 endif
 
-if LHAPDF_SUPPORT
-LHAPDFFLAGS    = -DLHAPDF_SUPPORT
-LHAPDFLIBS     = -L@libdir@ -lLHAPDF $(LHAPDFDIR)/libLHAPDF.a 
-else
-CTEQLIBS      = -L@libdir@ -lCTEQ 
-endif
-
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
+
+
+
+SYSLIBS	      =	-lg2c -lm -ldl
+AHADICLIBS    =	-L@libdir@ -lAhadicMain -lAhadicFormation \
+		-lAhadicDecays -lAhadicTools
+
+SHERPALIBS    =	-L@libdir@ -lSherpaMain -lSherpaInitialization \
+		-lSherpaSingleEvents -lSherpaPerturbativePhysics \
+		-lSherpaSoftPhysics -lLundTools $(MCATNLOLIBS) -lSherpaTools 
+ATOOLSLIBS    =	-L@libdir@ -lToolsPhys -lToolsMath -lToolsOrg 
+ANALYSISLIBS  = -L@libdir@ -lAnalysis -lObservables
+BEAMLIBS      =	-L@libdir@ -lBeam 
+PHASICLIBS    =	-L@libdir@ -lPhasespace 
+PDFLIBS       =	-L@libdir@ -lDUPDF -lSudakov -lPDF -lMRST -lGRV -lRemnant
+MODELLIBS     =	-L@libdir@ -lModelMain -lIsajet -lHdecay 
+EXTRAXSLIBS   =	-L@libdir@ -lExtraXS -lExtraXS2_2 
+AMEGICLIBS    =	-L@libdir@ -lAmegic -lAmplitude -lAmegicPSGen \
+		-lZfunctions -lAmplTools -lModel -lString 
+APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain 
 
 
 bin_PROGRAMS  =	Cluster

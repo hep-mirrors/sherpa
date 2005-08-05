@@ -18,7 +18,6 @@ BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
 PHASICINCS    =	-I$(SHERPASYS)/PHASIC++-1.0/Main
 MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
 EXTRAXSINCS   =	-I$(EXTRAXSDIR)/Two2Two -I$(EXTRAXSDIR)/Main
-AMISICINCS    =	-I$(SHERPASYS)/AMISIC++-1.0/Main
 AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
 		-I$(AMEGICDIR)/Amplitude/AmplTools -I$(AMEGICDIR)/Amplitude \
 		-I$(AMEGICDIR)/Phasespace -I$(AMEGICDIR)/Model \
@@ -37,6 +36,7 @@ endif
 if MCATNLO_SUPPORT
 MCATNLOFLAGS  = -DUSING__MCatNLO
 endif
+
 if HADRONS_SUPPORT
 HADRONSDIR    =	$(SHERPASYS)/HADRONS++-0.0
 HADRONSINCS   = -I$(HADRONSDIR)/Main -I$(HADRONSDIR)/ME_Library -I$(HADRONSDIR)/PS_Library
@@ -50,8 +50,21 @@ endif
 if CSS_SUPPORT
 CSSDIR        = $(SHERPASYS)/CS_SHOWER++-0.0
 CSSINCS       = -I$(CSSDIR)/Tools -I$(CSSDIR)/Showers -I$(CSSDIR)/Main
-CSSFLAGS      =	-DUSING__CSS -pedantic -Wall -Winline 
+CSSFLAGS      =	-DUSING__CSS
 endif
+if AMISIC_SUPPORT
+AMISICDIR     =	$(SHERPASYS)/AMISIC++-1.0
+AMISICINCS    =	-I$(SHERPASYS)/AMISIC++-1.0/Main
+AMISICFLAGS   =	-DUSING__Amisic
+endif
+if ADICIC_SUPPORT
+ADICICDIR     =	$(SHERPASYS)/ADICIC++-0.0
+ADICICCFILES  = SimpleXS_Adicic_Interface.C 
+ADICICFLAGS   = -DUSING__Adicic
+ADICICINCS    = -I$(ADICICDIR)/Main -I$(ADICICDIR)/Structure \
+                -I$(ADICICDIR)/Handler -I$(ADICICDIR)/Tool -I$(ADICICDIR)/Input
+endif
+
 
 lib_LTLIBRARIES       =	libSherpaInitialization.la
 libSherpaInitialization_la_SOURCES    =	Initialization_Handler.C 

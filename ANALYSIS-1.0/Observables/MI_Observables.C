@@ -1,3 +1,4 @@
+#ifdef USING_Amisic
 #include "MI_Observables.H"
 
 using namespace ANALYSIS;
@@ -969,3 +970,4 @@ Primitive_Observable_Base *MIScale_vs_JetPT::Copy() const
   return obs;
 }
 
+#endif
