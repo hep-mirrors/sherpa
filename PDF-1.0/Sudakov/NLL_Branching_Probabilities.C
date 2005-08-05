@@ -100,11 +100,21 @@ double Gamma_Lambda_Base::IntGammaF(double Q0, double Q) {
 }
 
 double Gamma_Lambda_Base::Gamma(double q, double Q) {
+//   double integral(split(1.0-sqr(q/Q))-split(sqr(q/Q)));
   if ((m_mode & BP::gamma_kinlim) && (q>m_qlimit)) return 0.;
   double a   = AlphaS(sqr(q));
-  double val = 2.*m_cc* a/M_PI *(1./q * (m_f1 + m_f2*q/Q  + m_f3*sqr(q/Q)  + (1.+a/(2.*M_PI)*m_kfac)*log(Q/q))
+//   m_f2=0.0;// test !!!
+  double val = 2.*m_cc* a/M_PI *(1./q * (m_f1 + m_f2*q/Q  + m_f3*sqr(q/Q) 
+					 + (1.+a/(2.*M_PI)*m_kfac)*log(Q/q))
 				 + m_f4 * q/sqr(Q) * log(Q/q));
+//   double test(2.0*3.0*(log(Q/q)-11.0/12.0)/q*a/M_PI);
+//   PRINT_INFO("q="<<q<<", Q="<<Q<<", int="<<test<<" / "<<integral<<", is="<<(val)
+// 	     <<", cc="<<m_cc<<", f1="<<m_f1<<", f4="<<m_f4<<", f2="<<m_f2<<", f3="<<m_f3
+// 	     <<" "<<m_kfac);
   if ((m_mode & BP::gamma_cut) && (val<0.)) return 0.;
+  if (m_mode&BP::gammag && m_mode&BP::is_mode) {
+    val*=2.0;
+  }
   return val;
 }
 

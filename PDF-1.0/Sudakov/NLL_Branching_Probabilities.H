@@ -35,7 +35,8 @@ namespace SHERPA {
       gamma_kinlim  = 64,
       gammaq_kinlim = 65,
       gammag_kinlim = 66,
-      gammaf_kinlim = 67
+      gammaf_kinlim = 67,
+      is_mode = 128
     };
   };
 
