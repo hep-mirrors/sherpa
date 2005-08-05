@@ -50,7 +50,7 @@ double XS_pp_ffbar::operator()(double s,double t,double u)
 
 bool XS_pp_ffbar::SetColours(double s,double t,double u) 
 { 
-  m_scale[PHASIC::stp::as] = s;
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = s;
   return 1; 
 }
 
@@ -125,7 +125,7 @@ bool XS_q1q2_q1q2::SetColours(double s,double t,double u)
     p_colours[0][a]   = p_colours[1][p]   = Flow::Counter();
     p_colours[2+r][a] = p_colours[3-r][p] = Flow::Counter();
   }
-  m_scale[PHASIC::stp::as] = (2.*s*t*u)/(s*s+t*t+u*u);
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = (2.*s*t*u)/(s*s+t*t+u*u);
   if (swap) SwapInOrder();
   return 1; 
 }
@@ -178,7 +178,7 @@ bool XS_q1qbar1_q2qbar2::SetColours(double s,double t,double u)
   p_colours[0][a]   = p_colours[1][p]   = Flow::Counter();
   p_colours[2+r][a] = p_colours[3-r][p] = Flow::Counter();
 
-  m_scale[PHASIC::stp::as] = (2.*s*t*u)/(s*s+t*t+u*u);
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = (2.*s*t*u)/(s*s+t*t+u*u);
   if (swap) SwapInOrder();
   return 1; 
 }
@@ -228,7 +228,7 @@ bool XS_q1q1_q1q1::SetColours(double s, double t, double u)
 {
   bool swap=m_swaped;
   RestoreInOrder();
-  m_scale[PHASIC::stp::as] = (2.*s*t*u)/(s*s+t*t+u*u);
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = (2.*s*t*u)/(s*s+t*t+u*u);
   
   Mt      = 1. - 2.*(u*s) / (t*t);
   Mu      = 1. - 2.*(s*t) / (u*u);
@@ -302,7 +302,7 @@ bool XS_q1qbar1_q1qbar1::SetColours(double s, double t, double u) {
   Mt = 1. - 2.*(u*s)/(t*t); 
   Ms = 1. - 2.*(t*u)/(s*s); 
 
-  m_scale[PHASIC::stp::as] = (2.*s*t*u)/(s*s+t*t+u*u);
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = (2.*s*t*u)/(s*s+t*t+u*u);
   bool result=SetColours();
   if (swap) SwapInOrder();
   return result;
@@ -369,7 +369,7 @@ bool XS_q1qbar1_gg::SetColours(double s, double t, double u) {
   Mt    = u/t;
   Mu    = t/u;
   // *AS* set to pt2 in as set in BASE .by commenting out the next line  
-  m_scale[PHASIC::stp::as] = (2.*s*t*u)/(s*s+t*t+u*u);
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = (2.*s*t*u)/(s*s+t*t+u*u);
   bool result=SetColours();
   if (swap) SwapInOrder();
   return result;
@@ -437,7 +437,7 @@ bool XS_gg_q1qbar1::SetColours(double s, double t, double u) {
   RestoreInOrder();
   Mt      = u/t;
   Mu      = t/u;
-  m_scale[PHASIC::stp::as] = (2.*s*t*u)/(s*s+t*t+u*u);
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = (2.*s*t*u)/(s*s+t*t+u*u);
   bool result=SetColours();
   if (swap) SwapInOrder();
   return result;
@@ -535,7 +535,7 @@ bool XS_q1g_q1g::SetColours(double s, double t, double u)
     Ms      = u/s;
     Mu      = s/u;
   }
-  m_scale[PHASIC::stp::as] = (2.*s*t*u)/(s*s+t*t+u*u);
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = (2.*s*t*u)/(s*s+t*t+u*u);
   bool result=SetColours();
   if (swap) SwapInOrder();
   return result;
@@ -606,7 +606,7 @@ bool XS_gg_gg::SetColours(double s, double t, double u) {
   Ms      = 1 + s*s/(t*u) - s*t/(u*u) - u*s/(t*t);
   Mt      = 1 + u*u/(s*t) - u*s/(t*t) - t*u/(s*s);
 
-  m_scale[PHASIC::stp::as] = (2.*s*t*u)/(s*s+t*t+u*u);
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = (2.*s*t*u)/(s*s+t*t+u*u);
   bool result=SetColours();
   if (swap) SwapInOrder();
   return result;
