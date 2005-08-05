@@ -53,7 +53,7 @@ namespace SHERPA {
 #ifdef USING__Adicic    
     ADICIC::Cascade&          GetCascade();
 #endif
-#ifdef USING__Adicic    
+#ifdef USING__CSS    
     CS_SHOWER::All_Singlets * GetAllSinglets();
 #endif
     APACIC::Apacic          * GetApacic() { return p_apacic; }
