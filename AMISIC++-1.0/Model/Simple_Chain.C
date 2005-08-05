@@ -10,9 +10,7 @@
 #include "My_Limits.H"
 #include "Vegas.H"
 #include "Run_Parameter.H"
-#ifdef USING__Sherpa
 #include "Matrix_Element_Handler.H"
-#endif
 #include "Shell_Tools.H"
 #include "Remnant_Base.H"
 #include "Data_Reader.H"
@@ -94,9 +92,7 @@ Simple_Chain::~Simple_Chain()
 void Simple_Chain::CleanUp() 
 {
   if (p_fsrinterface!=NULL) delete p_fsrinterface;
-#ifndef USING__Sherpa
   if (p_processes!=NULL) delete p_processes;
-#endif
   if (!m_external) {
     if (p_environment!=NULL) delete p_environment;
     p_environment=NULL;
@@ -354,11 +350,9 @@ bool Simple_Chain::SetUpInterface()
     group->SetFSRMode(2);
     group->CreateFSRChannels();
   }
-#ifdef USING__Sherpa
   p_mehandler = new SHERPA::Matrix_Element_Handler();
   p_mehandler->SetXS(p_processes);
   p_mehandler->SetUseSudakovWeight(m_jetveto);
-#endif
   return true;
 }
 
