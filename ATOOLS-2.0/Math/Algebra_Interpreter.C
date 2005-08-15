@@ -339,7 +339,7 @@ DEFINE_INTERPRETER_FUNCTION(Resolve_Bracket)
   }
   std::string left=expr.substr(0,l);
   std::string right=expr.substr(r+1);
-  msg_Debugging()<<"Resolve_Bracket -> '"
+  msg_Tracking()<<"Resolve_Bracket -> '"
 		<<left<<"' '"<<expr.substr(l+1,r-l-1)<<"' '"<<right<<"'\n";
   std::string res=p_interpreter->
     Iterate(left+p_interpreter->
@@ -418,7 +418,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
   if (msg.LevelIsTracking()) {
     std::string out=args[0];
     for (size_t j=1;j<args.size();++j) out+=","+args[j];
-    msg_Debugging()<<"Interprete_Function -> '"<<left
+    msg_Tracking()<<"Interprete_Function -> '"<<left
 		  <<"' '"<<func->Tag()<<"("<<out
 		  <<")' '"<<right<<"'\n";
   }
@@ -477,18 +477,16 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
   if (expr.find("(")!=std::string::npos ||
       expr.find(")")!=std::string::npos) return expr;
   Operator *op=NULL;
-  size_t pos=std::string::npos, tpos=std::string::npos;
+  size_t pos=std::string::npos;
   for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
 	 oit=p_interpreter->Operators().rbegin();
        oit!=p_interpreter->Operators().rend();++oit) {
-    if (oit->second->Tag()=="!") pos=FindUnaryNot(expr,false);
-    else if (oit->second->Tag()=="-") pos=FindBinaryMinus(expr,false);
-    else if (oit->second->Tag()=="+") pos=FindBinaryPlus(expr,false);
+    if (oit->second->Tag()=="!") pos=FindUnaryNot(expr,true);
+    else if (oit->second->Tag()=="-") pos=FindBinaryMinus(expr,true);
+    else if (oit->second->Tag()=="+") pos=FindBinaryPlus(expr,true);
     else pos=expr.find(oit->second->Tag());
     if (pos!=std::string::npos) {
       if (oit->second->Binary() && pos!=0) {
-	size_t mpos=pos+oit->second->Tag().length();
-	if (mpos<expr.length() && expr[mpos]=='-') tpos=pos;
 	op=oit->second;
 	break;
       }
@@ -538,7 +536,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
   p_interpreter->SetLeaf((*leaf)->back());
   args[1]=p_interpreter->Extractor()->Interprete(args[1]);
   p_interpreter->SetLeaf(leaf);
-  msg_Debugging()<<"Interprete_Binary -> '"
+  msg_Tracking()<<"Interprete_Binary -> '"
 	    <<lrstr<<"' '"<<args[0]<<"' '"<<op->Tag()
 	    <<"' '"<<args[1]<<"' '"<<rrstr<<"'\n";
   return p_interpreter->
@@ -594,7 +592,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
   p_interpreter->SetLeaf((*leaf)->back());
   args[0]=p_interpreter->Extractor()->Interprete(args[0]);
   p_interpreter->SetLeaf(leaf);
-  msg_Debugging()<<"Interprete_Unary -> '"
+  msg_Tracking()<<"Interprete_Unary -> '"
 		<<lrstr<<"' '"<<op->Tag()<<"' '"<<args[0]<<"' '"<<rrstr<<"'\n";
   return p_interpreter->
     Iterate(lrstr+"{"+op->Evaluate(args)+","+ToString(leaf)+"}"+rrstr);
@@ -670,7 +668,7 @@ Algebra_Interpreter::~Algebra_Interpreter()
 
 std::string Algebra_Interpreter::Interprete(const std::string &expr)
 {
-  msg_Debugging()<<"Algebra_Interpreter::Interprete("<<expr<<") {\n";
+  msg_Tracking()<<"Algebra_Interpreter::Interprete("<<expr<<") {\n";
   if (p_root!=NULL) delete p_root;
   p_root=p_leaf=NULL;
   while (m_leafs.size()>0) {
@@ -682,10 +680,10 @@ std::string Algebra_Interpreter::Interprete(const std::string &expr)
   std::string result=Iterate(res);
   size_t pos=result.find(",");
   if (pos==std::string::npos) {
-    msg_Debugging()<<"} -> "<<result<<std::endl;
+    msg_Tracking()<<"} -> "<<result<<std::endl;
     return result;
   }
-  msg_Debugging()<<"} -> "<<result.substr(1,pos-1)<<std::endl;
+  msg_Tracking()<<"} -> "<<result.substr(1,pos-1)<<std::endl;
   p_root = p_leaf;
   return result.substr(1,pos-1);
 }

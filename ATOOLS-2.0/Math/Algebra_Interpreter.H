@@ -10,7 +10,9 @@
 namespace ATOOLS {
 
   struct Term {
+
     std::string m_tag;
+
   };// end of struct Term
 
   class Algebra_Interpreter;
