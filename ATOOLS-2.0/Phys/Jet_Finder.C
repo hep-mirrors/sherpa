@@ -484,12 +484,13 @@ double Jet_Finder::MTij2(Vec4D p1,Vec4D p2)
     if (IsZero(pt1_2/(pt1_2+pt2_2))) {
       mt12_2        = mt2_2;
     }
-    if (IsZero(pt2_2/(pt1_2+pt2_2))) {
+    else if (IsZero(pt2_2/(pt1_2+pt2_2))) {
       mt12_2        = mt1_2;
     }
-    else 
+    else {
       if (m_type==2) mt12_2 = 2.*Min(mt1_2,mt2_2) * (1.-DCos12(p1,p2));
                 else mt12_2 = 2.*Min(mt1_2,mt2_2) * (Coshyp(DEta12(p1,p2)) - CosDPhi12(p1,p2));
+    }
   }
   else 
     mt12_2        = 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2));
