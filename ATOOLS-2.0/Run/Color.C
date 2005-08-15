@@ -4,7 +4,6 @@
 #include <termios.h>
 #include <unistd.h>
 
-using namespace COLOR;
 using namespace ATOOLS;
 
 int main(int argc,char **argv)

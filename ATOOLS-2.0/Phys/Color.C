@@ -6,33 +6,33 @@
 
 using namespace ATOOLS;
 
-Term::Term(const ctt::type &type,Expression *const owner): 
+Color_Term::Color_Term(const ctt::type &type,Expression *const owner): 
   m_type(type),
   p_owner(owner) {}
 
-Term::~Term() 
+Color_Term::~Color_Term() 
 {
 }
 
-bool Term::Evaluate(Expression *const expression)
+bool Color_Term::Evaluate(Expression *const expression)
 {
   THROW(fatal_error,"Virtual function called.");
   return false;
 }
 
-void Term::Print() const
+void Color_Term::Print() const
 {
   THROW(fatal_error,"Virtual function called.");
 }
 
-Term *Term::GetCopy(Expression *const expression) const
+Color_Term *Color_Term::GetCopy(Expression *const expression) const
 {
   THROW(fatal_error,"Virtual function called.");
   return NULL;
 }
 
 Number::Number(Expression *const owner,const Complex &n):
-  Term(ctt::number,owner),
+  Color_Term(ctt::number,owner),
   m_n(n) {}
 
 bool Number::Evaluate(Expression *const expression)
@@ -45,20 +45,20 @@ void Number::Print() const
   msg_Info()<<"("<<this<<"): { "<<m_n<<" }";
 }
 
-Term *Number::GetCopy(Expression *const expression) const
+Color_Term *Number::GetCopy(Expression *const expression) const
 {
   return new Number(expression,m_n);
 }
 
 Delta::Delta(Expression *const owner,
 	     const size_t &i,const size_t &j):
-  Term(ctt::delta,owner),
+  Color_Term(ctt::delta,owner),
   m_i(i), m_j(j) {}
 
 bool Delta::Evaluate(Expression *const expression)
 {
   if (m_i==m_j) {
-    for (Expression::Term_Vector::iterator tit(expression->begin());
+    for (Expression::Color_Term_Vector::iterator tit(expression->begin());
 	 tit!=expression->end();++tit) {
       if (*tit==this) {
 	delete this;
@@ -67,7 +67,7 @@ bool Delta::Evaluate(Expression *const expression)
       }
     }
   }
-  for (Expression::Term_Vector::iterator tit(expression->begin());
+  for (Expression::Color_Term_Vector::iterator tit(expression->begin());
        tit!=expression->end();++tit) {
     if (*tit!=this && (*tit)->Type()==ctt::delta) {
       Delta *delta((Delta*)*tit);
@@ -93,14 +93,14 @@ void Delta::Print() const
   msg_Info()<<"("<<this<<"): { d_("<<m_i<<","<<m_j<<") }";
 }
 
-Term *Delta::GetCopy(Expression *const expression) const
+Color_Term *Delta::GetCopy(Expression *const expression) const
 {
   return new Delta(expression,m_i,m_j);
 }
 
 Fundamental::Fundamental(Expression *const owner,
 			 const size_t &a,const size_t &i,const size_t &j):
-  Term(ctt::fundamental,owner),
+  Color_Term(ctt::fundamental,owner),
   m_a(a), m_i(i), m_j(j), m_fromf(false) {}
 
 bool Fundamental::Evaluate(Expression *const expression)
@@ -140,14 +140,14 @@ void Fundamental::Print() const
   msg_Info()<<"("<<this<<"): { t_("<<m_a<<","<<m_i<<","<<m_j<<") }";
 }
 
-Term *Fundamental::GetCopy(Expression *const expression) const
+Color_Term *Fundamental::GetCopy(Expression *const expression) const
 {
   return new Fundamental(expression,m_a,m_i,m_j);
 }
 
 Adjoint::Adjoint(Expression *const owner,
 		 const size_t &a,const size_t &b,const size_t &c):
-  Term(ctt::adjoint,owner),
+  Color_Term(ctt::adjoint,owner),
   m_a(a), m_b(b), m_c(c) {}
 
 bool Adjoint::Evaluate(Expression *const expression)
@@ -186,18 +186,18 @@ void Adjoint::Print() const
   msg_Info()<<"("<<this<<"): { f_("<<m_a<<","<<m_b<<","<<m_c<<") }";
 }
 
-Term *Adjoint::GetCopy(Expression *const expression) const
+Color_Term *Adjoint::GetCopy(Expression *const expression) const
 {
   return new Adjoint(expression,m_a,m_b,m_c);
 }
 
 Expression::Expression(): 
-  Node<Term*>(NULL,true),
+  Node<Color_Term*>(NULL,true),
   m_result(0.0,0.0),
   m_findex(0), m_aindex(0), m_evaluated(0) {}
 
 Expression::Expression(const std::string &expression): 
-  Node<Term*>(NULL,true),
+  Node<Color_Term*>(NULL,true),
   m_result(0.0,0.0),
   m_findex(0), m_aindex(0), m_evaluated(0)
 {
@@ -267,7 +267,7 @@ Expression::Expression(const std::string &expression):
 
 Expression::~Expression()
 {
-  for (Term_Vector::iterator tit(begin());tit!=end();++tit) 
+  for (Color_Term_Vector::iterator tit(begin());tit!=end();++tit) 
     delete *tit;
 }
 
@@ -322,7 +322,7 @@ bool Expression::Evaluate()
   bool treat(false);
   do {
     treat=false;
-    for (Term_Vector::iterator tit(begin());tit!=end();++tit) {
+    for (Color_Term_Vector::iterator tit(begin());tit!=end();++tit) {
       size_t oldsize((*this)().size());
       if ((*tit)->Evaluate(this)) {
 	if ((*this)().size()!=oldsize) {
@@ -341,7 +341,7 @@ bool Expression::Evaluate()
     }
     if (msg.LevelIsTracking()) PrintStatus(false,false);
   } while (treat==true);
-  for (Term_Vector::iterator tit(begin());tit!=end();++tit) {
+  for (Color_Term_Vector::iterator tit(begin());tit!=end();++tit) {
     if ((*tit)->Type()!=ctt::number) {
       msg.Error()<<"Expression::Evaluate(): Result is nan."<<std::endl;
       return false;
@@ -365,7 +365,7 @@ void Expression::Print()
   msg_Info()<<"("<<this<<"): {\n";
   {
     msg_Indent();
-    for (Term_Vector::iterator tit(begin());tit!=end();++tit) {
+    for (Color_Term_Vector::iterator tit(begin());tit!=end();++tit) {
       (*tit)->Print();
       msg_Info()<<"\n";
     }

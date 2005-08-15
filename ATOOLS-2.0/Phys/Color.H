@@ -22,7 +22,7 @@ namespace ATOOLS {
 
   class Expression;
 
-  class Term {
+  class Color_Term {
   private:
 
     ctt::type m_type;
@@ -32,23 +32,23 @@ namespace ATOOLS {
   public:
     
     // constructor
-    Term(const ctt::type &type,Expression *const owner);
+    Color_Term(const ctt::type &type,Expression *const owner);
 
     // destructor
-    virtual ~Term();
+    virtual ~Color_Term();
 
     // member functions
     virtual bool Evaluate(Expression *const expression);
     virtual void Print() const;
 
-    virtual Term *GetCopy(Expression *const expression) const;
+    virtual Color_Term *GetCopy(Expression *const expression) const;
 
     // inline functions
     inline ctt::type Type() const { return m_type; }
 
-  };// end of class Term
+  };// end of class Color_Term
 
-  class Number: public Term {
+  class Number: public Color_Term {
   private:
 
     Complex m_n;
@@ -62,7 +62,7 @@ namespace ATOOLS {
     bool Evaluate(Expression *const expression);
     void Print() const;
 
-    Term *GetCopy(Expression *const expression) const;
+    Color_Term *GetCopy(Expression *const expression) const;
 
     // inline functions
     inline Complex operator()() { return m_n; }
@@ -75,7 +75,7 @@ namespace ATOOLS {
     This class represents a complex number.
   */
 
-  class Delta: public Term {
+  class Delta: public Color_Term {
   private:
 
     size_t m_i, m_j;
@@ -103,7 +103,7 @@ namespace ATOOLS {
     */
     void Print() const;
 
-    Term *GetCopy(Expression *const expression) const;
+    Color_Term *GetCopy(Expression *const expression) const;
 
   };// end of class Delta
   /*!
@@ -113,7 +113,7 @@ namespace ATOOLS {
     This class represents a delta function.
   */
 
-  class Fundamental: public Term {
+  class Fundamental: public Color_Term {
   private:
 
     size_t m_a, m_i, m_j;
@@ -149,7 +149,7 @@ namespace ATOOLS {
     */
     void Print() const;
 
-    Term *GetCopy(Expression *const expression) const;
+    Color_Term *GetCopy(Expression *const expression) const;
 
     inline void SetFromF(const bool &fromf) { m_fromf=fromf; }
 
@@ -163,7 +163,7 @@ namespace ATOOLS {
     This class represents a color matrix in the fundamental representation.
   */
 
-  class Adjoint: public Term {
+  class Adjoint: public Color_Term {
   private:
 
     size_t m_a, m_b, m_c;
@@ -201,7 +201,7 @@ namespace ATOOLS {
     */
     void Print() const;
 
-    Term *GetCopy(Expression *const expression) const;
+    Color_Term *GetCopy(Expression *const expression) const;
 
   };// end of class Adjoint
   /*!
@@ -211,12 +211,12 @@ namespace ATOOLS {
     This class represents a color matrix in the adjoint representation.
   */
 
-  class Expression: public ATOOLS::Node<Term*> {
+  class Expression: public ATOOLS::Node<Color_Term*> {
   public:
 
-    typedef std::vector<Term*> Term_Vector;
+    typedef std::vector<Color_Term*> Color_Term_Vector;
 
-    typedef std::vector<ATOOLS::Node<Term*>*> Expression_Vector;
+    typedef std::vector<ATOOLS::Node<Color_Term*>*> Expression_Vector;
 
   private:
 
