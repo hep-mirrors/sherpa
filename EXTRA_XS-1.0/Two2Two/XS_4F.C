@@ -20,6 +20,10 @@ Single_XS *Single_XS::GetProcess<XS_f1f1_f1f1>(const size_t nin,const size_t nou
   //  std::cout<<"XS_f1f1_f1f1 Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
   if (flavours[0]!=flavours[1] || 
       flavours[0]!=flavours[2] || flavours[0]!=flavours[3])  return NULL;
+  
+  if (!(flavours[0].IsFermion() && flavours[1].IsFermion() && 
+	flavours[2].IsFermion() && flavours[3].IsFermion())) return NULL;
+    
   if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) return NULL;
   if (nqcd!=0 || nqed!=2)                                    return NULL;
   if (!(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() ||
@@ -131,6 +135,10 @@ Single_XS *Single_XS::GetProcess<XS_f1f1b_f1f1b>(const size_t nin,const size_t n
   //  std::cout<<"XS_f1f1b_f1f1b Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
   if (flavours[0]!=flavours[1].Bar() || 
       flavours[0]!=flavours[2] || flavours[1]!=flavours[3])  return NULL;
+  
+  if (!(flavours[0].IsFermion() && flavours[1].IsFermion() && 
+	flavours[2].IsFermion() && flavours[3].IsFermion())) return NULL;
+  
   if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) return NULL;
   if (nqcd!=0 || nqed!=2)                                    return NULL;
   if (!(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() ||
@@ -257,7 +265,10 @@ Single_XS *Single_XS::GetProcess<XS_f1f1b_f2f2b>(const size_t nin,const size_t n
   if (flavours[0]!=flavours[1].Bar() || 
       flavours[0]==flavours[2] || flavours[0]==flavours[3] || 
       flavours[2]!=flavours[3].Bar())                        return NULL;
-  if (!flavours[0].IsFermion() || !flavours[2].IsFermion())  return NULL;
+  
+  if (!(flavours[0].IsFermion() && flavours[1].IsFermion() && 
+	flavours[2].IsFermion() && flavours[3].IsFermion())) return NULL;
+  
   if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) return NULL;
   if (nqcd!=0 || nqed!=2)                                    return NULL;
   if ((flavours[0].Charge()!=0. && flavours[2].Charge()!=0. &&
@@ -405,6 +416,10 @@ Single_XS *Single_XS::GetProcess<XS_f1f2_f1f2>(const size_t nin,const size_t nou
 	(flavours[0]==flavours[3] && flavours[1]==flavours[2])) || 
       (flavours[0].IsAnti() && !flavours[1].IsAnti()) ||
       (!flavours[0].IsAnti() && flavours[1].IsAnti()))       return NULL;
+  
+  if (!(flavours[0].IsFermion() && flavours[1].IsFermion() && 
+	flavours[2].IsFermion() && flavours[3].IsFermion())) return NULL;
+
   if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) return NULL;
   if (nqcd!=0 || nqed!=2)                                    return NULL;
   if (!(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() ||
@@ -435,8 +450,8 @@ XS_f1f2_f1f2::XS_f1f2_f1f2(const size_t nin,const size_t nout,
   m_mw2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Mass())),
   m_ww2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Width())),
   m_sin2tw(ATOOLS::rpa.gen.ScalarConstant(std::string("sin2_thetaW"))),m_cos2tw(1.-m_sin2tw),
-  m_eq1(m_anti * flavours[0].Charge()),
-  m_eq2(m_anti * flavours[1].Charge()),
+  m_eq1(std::pow(-1.,m_anti) * flavours[0].Charge()),
+  m_eq2(std::pow(-1.,m_anti) * flavours[1].Charge()),
   m_y3f1((2.*int(flavours[0].IsUptype())-1)/2.),
   m_y3f2((2.*int(flavours[1].IsUptype())-1)/2.),
   m_v1(m_y3f1-2.*m_eq1*m_sin2tw), m_a1(m_y3f1),
@@ -567,6 +582,10 @@ Single_XS *Single_XS::GetProcess<XS_f1f2b_f1f2b>(const size_t nin,const size_t n
 	(flavours[0]==flavours[3] && flavours[1]==flavours[2])) || 
       (flavours[0].IsAnti() && flavours[1].IsAnti()) ||
       (!flavours[0].IsAnti() && !flavours[1].IsAnti()))      return NULL;
+  
+  if (!(flavours[0].IsFermion() && flavours[1].IsFermion() && 
+	flavours[2].IsFermion() && flavours[3].IsFermion())) return NULL;
+  
   if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) return NULL;
   if (nqcd!=0 || nqed!=2)                                    return NULL;
   if (!(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() ||
