@@ -5,7 +5,7 @@
 #include "Node.H"
 #include "MyComplex.H"
 
-namespace COLOR {
+namespace ATOOLS {
 
   const size_t NC(3);
 
@@ -68,6 +68,12 @@ namespace COLOR {
     inline Complex operator()() { return m_n; }
 
   };// end of class Number
+  /*!
+    \class Number
+    \brief Represents a complex number.
+
+    This class represents a complex number.
+  */
 
   class Delta: public Term {
   private:
@@ -82,17 +88,41 @@ namespace COLOR {
 
     // member functions
     bool Evaluate(Expression *const expression);
+    /*!
+      \fn bool Evaluate(Expression *const expression)
+      \brief Contracts delta functions.
+
+      This method contracts delta functions according to
+      \f[
+      \delta_{ij}\delta_{jk}\,=\;\delta_{ik}
+      \f]
+      and
+      \f[
+      \delta_{ii}\,=\;N_C\;.
+      \f]
+    */
     void Print() const;
 
     Term *GetCopy(Expression *const expression) const;
 
   };// end of class Delta
+  /*!
+    \class Delta
+    \brief Represents a delta function.
+
+    This class represents a delta function.
+  */
 
   class Fundamental: public Term {
   private:
 
     size_t m_a, m_i, m_j;
     bool   m_fromf;
+    /*!
+      \var bool m_fromf
+      \brief Tags that this objects stems from the expansion of 
+      a matrix in the adjoint representation.
+    */
 
   public:
     
@@ -102,6 +132,21 @@ namespace COLOR {
 
     // member functions
     bool Evaluate(Expression *const expression);
+    /*!
+      \fn bool Evaluate(Expression *const expression)
+      \brief Expands the matrix.
+
+      This method expands a contraction of two matrices 
+      in the fundamental representation, \f$T^{a}_{ij}\f$ and 
+      \f$T^{a}_{kl}\f$ in terms of delta functions, according to
+      \f[
+      T^{a}_{ij}T^{a}_{kl}\,=\;\frac{1}{2}\,\left(\,
+      \delta_{il}\delta_{jk}-\frac{1}{N_C}\delta_{ij}\delta_{kl}
+      \,\right)\;,
+      \f]
+      If the m_fromf flag is set, the \f$1/{N_C}\f$-term is dropped,
+      since it does not contribute, see Adjoint.
+    */
     void Print() const;
 
     Term *GetCopy(Expression *const expression) const;
@@ -111,6 +156,12 @@ namespace COLOR {
     inline const bool &FromF() const { return m_fromf; }
 
   };// end of class Fundamental
+  /*!
+    \class Fundamental
+    \brief Represents a color matrix in the fundamental representation.
+
+    This class represents a color matrix in the fundamental representation.
+  */
 
   class Adjoint: public Term {
   private:
@@ -131,11 +182,34 @@ namespace COLOR {
 
     // member functions
     bool Evaluate(Expression *const expression);
+    /*!
+      \fn bool Evaluate(Expression *const expression)
+      \brief Expands the matrix.
+
+      This method expands a matrix of the adjoint representation, 
+      \f$f^{abc}\f$ in terms of matrices in the fundamental representation.
+      Since
+      \f[
+      f^{abc}\,=\;-2i\,{\rm tr}\left(\,T^a\left[T^b,T^c\right]\,\right)
+      \,=\;-2i\,{\rm tr}\left(\,\left[T^a,T^b\right]T^c\,\right)
+      \,=\;-2i\,{\rm tr}\left(\,\left[T^c,T^a\right]T^b\,\right)\;,
+      \f]
+      the generated Fundamental objects obtain a flag, which tags 
+      that they stem from the expansion of an \f$f\f$ matrix 
+      and therefore, in further evaluations terms of the form 
+      \f$T^a_{ii}\f$ may be dropped.
+    */
     void Print() const;
 
     Term *GetCopy(Expression *const expression) const;
 
   };// end of class Adjoint
+  /*!
+    \class Adjoint
+    \brief Represents a color matrix in the adjoint representation.
+
+    This class represents a color matrix in the adjoint representation.
+  */
 
   class Expression: public ATOOLS::Node<Term*> {
   public:
@@ -182,6 +256,6 @@ namespace COLOR {
 
   };// end of class Expression
 
-}// end of namespace COLOR
+}// end of namespace ATOOLS
 
 #endif

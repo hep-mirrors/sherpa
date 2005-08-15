@@ -4,7 +4,6 @@
 #include "Run_Parameter.H"
 #include "MyStrStream.H"
 
-using namespace COLOR;
 using namespace ATOOLS;
 
 Term::Term(const ctt::type &type,Expression *const owner): 
