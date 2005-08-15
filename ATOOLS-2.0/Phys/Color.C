@@ -32,7 +32,7 @@ Term *Term::GetCopy(Expression *const expression) const
   return NULL;
 }
 
-Number::Number(Expression *const owner,const Complex n):
+Number::Number(Expression *const owner,const Complex &n):
   Term(ctt::number,owner),
   m_n(n) {}
 
@@ -52,7 +52,7 @@ Term *Number::GetCopy(Expression *const expression) const
 }
 
 Delta::Delta(Expression *const owner,
-	     const size_t i,const size_t j):
+	     const size_t &i,const size_t &j):
   Term(ctt::delta,owner),
   m_i(i), m_j(j) {}
 
@@ -100,9 +100,9 @@ Term *Delta::GetCopy(Expression *const expression) const
 }
 
 Fundamental::Fundamental(Expression *const owner,
-			 const size_t a,const size_t i,const size_t j):
+			 const size_t &a,const size_t &i,const size_t &j):
   Term(ctt::fundamental,owner),
-  m_a(a), m_i(i), m_j(j) {}
+  m_a(a), m_i(i), m_j(j), m_fromf(false) {}
 
 bool Fundamental::Evaluate(Expression *const expression)
 {
@@ -113,13 +113,15 @@ bool Fundamental::Evaluate(Expression *const expression)
 	    (*expression)[i]->Type()==ctt::fundamental) {
 	  Fundamental *fundamental((Fundamental*)(*expression)[i]);
 	  if (m_a==fundamental->m_a) {
-	    Expression *copy(expression->GetCopy());
-	    expression->Add(copy);
-	    delete (*copy)[j];
-	    delete (*copy)[i];
-	    (*copy)[j] = new Delta(copy,m_i,m_j);
-	    (*copy)[i] = new Delta(copy,fundamental->m_i,fundamental->m_j);
-	    copy->push_back(new Number(copy,Complex(-0.5/NC,0.0)));
+	    if (!FromF() && !fundamental->FromF()) {
+	      Expression *copy(expression->GetCopy());
+	      expression->Add(copy);
+	      delete (*copy)[j];
+	      delete (*copy)[i];
+	      (*copy)[j] = new Delta(copy,m_i,m_j);
+	      (*copy)[i] = new Delta(copy,fundamental->m_i,fundamental->m_j);
+	      copy->push_back(new Number(copy,Complex(-0.5/NC,0.0)));
+	    }
 	    (*expression)[j] = new Delta(expression,m_i,fundamental->m_j);
 	    (*expression)[i] = new Delta(expression,fundamental->m_i,m_j);
 	    expression->push_back(new Number(expression,Complex(0.5,0.0)));
@@ -145,120 +147,12 @@ Term *Fundamental::GetCopy(Expression *const expression) const
 }
 
 Adjoint::Adjoint(Expression *const owner,
-		 const size_t a,const size_t b,const size_t c):
+		 const size_t &a,const size_t &b,const size_t &c):
   Term(ctt::adjoint,owner),
   m_a(a), m_b(b), m_c(c) {}
 
-double Adjoint::SwapIndices(Adjoint *const adjoint)
-{
-  if (m_a==adjoint->m_b) {
-    std::swap<size_t>(adjoint->m_b,adjoint->m_a);
-    return -1.0;
-  }
-  if (m_a==adjoint->m_c) {
-    std::swap<size_t>(adjoint->m_c,adjoint->m_a);
-    return -1.0;
-  }
-  if (m_b==adjoint->m_a) {
-    std::swap<size_t>(m_b,m_a);
-    return -1.0;
-  }
-  if (m_b==adjoint->m_b) {
-    std::swap<size_t>(m_b,m_a);
-    std::swap<size_t>(adjoint->m_b,adjoint->m_a);
-    return 1.0;
-  }
-  if (m_b==adjoint->m_c) {
-    std::swap<size_t>(m_b,m_a);
-    std::swap<size_t>(adjoint->m_c,adjoint->m_a);
-    return 1.0;
-  }
-  if (m_c==adjoint->m_a) {
-    std::swap<size_t>(m_c,m_a);
-    return -1.0;
-  }
-  if (m_c==adjoint->m_b) {
-    std::swap<size_t>(m_c,m_a);
-    std::swap<size_t>(adjoint->m_b,adjoint->m_a);
-    return 1.0;
-  }
-  if (m_c==adjoint->m_c) {
-    std::swap<size_t>(m_c,m_a);
-    std::swap<size_t>(adjoint->m_c,adjoint->m_a);
-    return 1.0;
-  }
-  return 1.0;
-}
-
-void Adjoint::ReplacePair(Adjoint *const adjoint,
-			  const size_t &i,const size_t &j,
-			  const double &factor,
-			  Expression *const expression)
-{
-  size_t ii(expression->FIndex());
-  size_t ij(expression->FIndex());
-  size_t ik(expression->FIndex());
-  size_t il(expression->FIndex());
-
-  Expression *copy(expression->GetCopy());
-  expression->Add(copy);
-  delete (*copy)[j];
-  delete (*copy)[i];
-  (*copy)[j] = new Fundamental(copy,m_b,ii,ij);
-  (*copy)[i] = new Fundamental(copy,m_c,ij,ik);
-  copy->push_back(new Fundamental(copy,adjoint->m_c,ik,il));
-  copy->push_back(new Fundamental(copy,adjoint->m_b,il,ii));
-  copy->push_back(new Number(copy,Complex(factor*2.0,0.0)));
-
-  copy = expression->GetCopy();
-  expression->Add(copy);
-  delete (*copy)[j];
-  delete (*copy)[i];
-  (*copy)[j] = new Fundamental(copy,m_c,ii,ij);
-  (*copy)[i] = new Fundamental(copy,m_b,ij,ik);
-  copy->push_back(new Fundamental(copy,adjoint->m_b,ik,il));
-  copy->push_back(new Fundamental(copy,adjoint->m_c,il,ii));
-  copy->push_back(new Number(copy,Complex(factor*2.0,0.0)));
-
-  copy = expression->GetCopy();
-  expression->Add(copy);
-  delete (*copy)[j];
-  delete (*copy)[i];
-  (*copy)[j] = new Fundamental(copy,m_c,ii,ij);
-  (*copy)[i] = new Fundamental(copy,m_b,ij,ik);
-  copy->push_back(new Fundamental(copy,adjoint->m_c,ik,il));
-  copy->push_back(new Fundamental(copy,adjoint->m_b,il,ii));
-  copy->push_back(new Number(copy,Complex(-factor*2.0,0.0)));
-
-  (*expression)[j] = new Fundamental(expression,m_b,ii,ij);
-  (*expression)[i] = new Fundamental(expression,m_c,ij,ik);
-  expression->
-    push_back(new Fundamental(expression,adjoint->m_b,ik,il));
-  expression->
-    push_back(new Fundamental(expression,adjoint->m_c,il,ii));
-  expression->
-    push_back(new Number(expression,Complex(-factor*2.0,0.0)));
-}
-
 bool Adjoint::Evaluate(Expression *const expression)
 {
-  for (size_t j(0);j<expression->size();++j) {
-    if ((*expression)[j]==this) {
-      for (size_t i(0);i<expression->size();++i) {
-	if ((*expression)[i]!=this && 
-	    (*expression)[i]->Type()==ctt::adjoint) {
-	  Adjoint *adjoint((Adjoint*)(*expression)[i]);
-	  double factor(SwapIndices(adjoint));
-	  if (m_a==adjoint->m_a) {
-	    ReplacePair(adjoint,i,j,factor,expression);
-	    delete adjoint;
-	    delete this;
-	    return true;
-	  }
-	}
-      }
-    }
-  }
   for (size_t j(0);j<expression->size();++j) {
     if ((*expression)[j]==this) {
       size_t ii(expression->FIndex());
@@ -268,12 +162,18 @@ bool Adjoint::Evaluate(Expression *const expression)
       expression->Add(copy);
       delete (*copy)[j];
       (*copy)[j] = new Fundamental(copy,m_a,ii,ij);
+      ((Fundamental*)(*copy)[j])->SetFromF(true);
       copy->push_back(new Fundamental(copy,m_c,ij,ik));
+      ((Fundamental*)copy->back())->SetFromF(true);
       copy->push_back(new Fundamental(copy,m_b,ik,ii));
+      ((Fundamental*)copy->back())->SetFromF(true);
       copy->push_back(new Number(copy,Complex(0.0,2.0)));
       (*expression)[j] = new Fundamental(expression,m_a,ii,ij);
+      ((Fundamental*)(*expression)[j])->SetFromF(true);
       expression->push_back(new Fundamental(expression,m_b,ij,ik));
+      ((Fundamental*)expression->back())->SetFromF(true);
       expression->push_back(new Fundamental(expression,m_c,ik,ii));
+      ((Fundamental*)expression->back())->SetFromF(true);
       expression->push_back(new Number(expression,Complex(0.0,-2.0)));
       delete this;
       return true;
@@ -324,7 +224,8 @@ Expression::Expression(const std::string &expression):
       if (c1pos==std::string::npos)
 	THROW(fatal_error,"Invalid number of indices for t.");
       size_t c2pos(factor.find(',',c1pos+1));
-      if (c2pos==std::string::npos || factor.find(',',c2pos+1)!=std::string::npos)
+      if (c2pos==std::string::npos || 
+	  factor.find(',',c2pos+1)!=std::string::npos)
 	THROW(fatal_error,"Invalid number of indices for t.");
       size_t a(ToType<int>(factor.substr(3,c1pos-3)));
       size_t b(ToType<int>(factor.substr(c1pos+1,c2pos-c1pos-1)));
@@ -337,7 +238,8 @@ Expression::Expression(const std::string &expression):
       if (c1pos==std::string::npos)
 	THROW(fatal_error,"Invalid number of indices for t.");
       size_t c2pos(factor.find(',',c1pos+1));
-      if (c2pos==std::string::npos || factor.find(',',c2pos+1)!=std::string::npos)
+      if (c2pos==std::string::npos || 
+	  factor.find(',',c2pos+1)!=std::string::npos)
 	THROW(fatal_error,"Invalid number of indices for t.");
       size_t a(ToType<int>(factor.substr(3,c1pos-3)));
       size_t i(ToType<int>(factor.substr(c1pos+1,c2pos-c1pos-1)));
@@ -348,7 +250,8 @@ Expression::Expression(const std::string &expression):
     }
     else if (factor.find("d_[")==0 && factor[factor.length()-1]==']') {
       size_t cpos(factor.find(','));
-      if (cpos==std::string::npos || factor.find(',',cpos+1)!=std::string::npos)
+      if (cpos==std::string::npos || 
+	  factor.find(',',cpos+1)!=std::string::npos)
 	THROW(fatal_error,"Invalid number of indices for \\delta.");
       std::string i(factor.substr(3,cpos-3));
       std::string j(factor.substr(cpos+1,factor.length()-cpos-2));
@@ -393,9 +296,9 @@ void Expression::PrintStatus(const bool endline,const bool print)
     oldtime=rpa.gen.Timer().UserTime();
     Expression *root(this);
     while (--*root) root=(Expression*)--*root;
-    msg.Out()<<"Terms evaluated: "<<root->Evaluated()<<"\n"
-	     <<"Terms left     : "<<root->Size()<<"\n"
-	     <<"Time  elapsed  : "<<rpa.gen.Timer().UserTime()<<" s";
+    msg.Out()<<"Terms evaluated: "<<root->Evaluated()<<"     \n"
+	     <<"Terms left     : "<<root->Size()<<"     \n"
+	     <<"Time  elapsed  : "<<rpa.gen.Timer().UserTime()<<" s     ";
     if (endline) msg.Out()<<std::endl;
     else msg.Out()<<mm(2,mm::up)<<bm::cr<<std::flush;
   }

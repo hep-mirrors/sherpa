@@ -56,7 +56,7 @@ namespace COLOR {
   public:
     
     // constructor
-    Number(Expression *const owner,const Complex n);
+    Number(Expression *const owner,const Complex &n);
 
     // member functions
     bool Evaluate(Expression *const expression);
@@ -78,7 +78,7 @@ namespace COLOR {
     
     // constructor
     Delta(Expression *const owner,
-	  const size_t i,const size_t j);
+	  const size_t &i,const size_t &j);
 
     // member functions
     bool Evaluate(Expression *const expression);
@@ -92,18 +92,23 @@ namespace COLOR {
   private:
 
     size_t m_a, m_i, m_j;
+    bool   m_fromf;
 
   public:
     
     // constructor
     Fundamental(Expression *const owner,
-		const size_t a,const size_t i,const size_t j);
+		const size_t &a,const size_t &i,const size_t &j);
 
     // member functions
     bool Evaluate(Expression *const expression);
     void Print() const;
 
     Term *GetCopy(Expression *const expression) const;
+
+    inline void SetFromF(const bool &fromf) { m_fromf=fromf; }
+
+    inline const bool &FromF() const { return m_fromf; }
 
   };// end of class Fundamental
 
@@ -122,7 +127,7 @@ namespace COLOR {
     
     // constructor
     Adjoint(Expression *const owner,
-	    const size_t a,const size_t b,const size_t c);
+	    const size_t &a,const size_t &b,const size_t &c);
 
     // member functions
     bool Evaluate(Expression *const expression);
