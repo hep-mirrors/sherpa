@@ -37,7 +37,7 @@ int main(int argc,char **argv)
     }
     std::cout<<"Calc: interpreting formula -> "<<expr<<" = "
 	     <<interpreter.Interprete(expr)<<std::endl;
-    if (msg.LevelIsDebugging()) interpreter.PrintEquation();
+    if (msg.LevelIsTracking()) interpreter.PrintEquation();
     std::cout.precision(12);
     std::cout<<"Calc: recalculating tree   -> "<<expr<<" = "
 	     <<((TDouble*)interpreter.Calculate())->m_value<<std::endl;
