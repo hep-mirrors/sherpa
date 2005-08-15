@@ -257,7 +257,7 @@ Term *Vec4D_Part::Evaluate(const std::vector<Term*> &args) const
   {									\
     if (args.size()!=1)							\
       THROW(fatal_error,std::string(TAG)+" requires 1 argument.");      \
-    Vec4D arg0=ToType<Vec4D>(args[0]);				        \
+    Vec4D arg0=ToType<Vec4D>("("+args[0]+")");			        \
     return ToString(arg0.OP());						\
   }									\
   Term *NAME::Evaluate(const std::vector<Term*> &args) const		\
@@ -279,8 +279,8 @@ DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Eta,"Eta",Eta)
   {									\
     if (args.size()!=2)							\
       THROW(fatal_error,"Operator requires 2 arguments.");		\
-    Vec4D arg0=ToType<Vec4D>(args[0]);				        \
-    Vec4D arg1=ToType<Vec4D>(args[1]);				        \
+    Vec4D arg0=ToType<Vec4D>("("+args[0]+")");			        \
+    Vec4D arg1=ToType<Vec4D>("("+args[1]+")");			        \
     return ToString(arg0.OP(arg1));					\
   }									\
   Term *NAME::Evaluate(const std::vector<Term*> &args) const		\
