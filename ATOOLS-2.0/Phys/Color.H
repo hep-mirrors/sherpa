@@ -180,12 +180,6 @@ namespace ATOOLS {
 
     size_t m_a, m_b, m_c;
 
-    double SwapIndices(Adjoint *const adjoint);
-    void   ReplacePair(Adjoint *const adjoint,
-		       const size_t &i,const size_t &j,
-		       const double &factor,
-		       Expression *const expression);
-
   public:
     
     // constructor
