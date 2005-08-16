@@ -6,10 +6,6 @@
 
 using namespace ATOOLS;
 
-Color_Term::Color_Term(const ctt::type &type,Expression *const owner): 
-  m_type(type),
-  p_owner(owner) {}
-
 Color_Term::~Color_Term() 
 {
 }
@@ -25,50 +21,42 @@ void Color_Term::Print() const
   THROW(fatal_error,"Virtual function called.");
 }
 
-Color_Term *Color_Term::GetCopy(Expression *const expression) const
+Color_Term *Color_Term::GetCopy() const
 {
   THROW(fatal_error,"Virtual function called.");
   return NULL;
 }
 
-Number::Number(Expression *const owner,const Complex &n):
-  Color_Term(ctt::number,owner),
-  m_n(n) {}
-
-bool Number::Evaluate(Expression *const expression)
+bool CNumber::Evaluate(Expression *const expression)
 {
   return false;
 }
 
-void Number::Print() const
+void CNumber::Print() const
 {
   msg_Info()<<"("<<this<<"): { "<<m_n<<" }";
 }
 
-Color_Term *Number::GetCopy(Expression *const expression) const
+Color_Term *CNumber::GetCopy() const
 {
-  return new Number(expression,m_n);
+  return new CNumber(m_n);
 }
-
-Delta::Delta(Expression *const owner,
-	     const size_t &i,const size_t &j):
-  Color_Term(ctt::delta,owner),
-  m_i(i), m_j(j) {}
 
 bool Delta::Evaluate(Expression *const expression)
 {
+  Expression::Color_Term_Vector::iterator end(expression->end());
   if (m_i==m_j) {
-    for (Expression::Color_Term_Vector::iterator tit(expression->begin());
-	 tit!=expression->end();++tit) {
+    for (Expression::Color_Term_Vector::iterator 
+	   tit(expression->begin()); tit!=end;++tit) {
       if (*tit==this) {
 	delete this;
-	*tit = new Number(expression,Complex(NC,0.0));
+	*tit = new CNumber(Complex(NC,0.0));
 	return true;
       }
     }
   }
-  for (Expression::Color_Term_Vector::iterator tit(expression->begin());
-       tit!=expression->end();++tit) {
+  for (Expression::Color_Term_Vector::iterator 
+	 tit(expression->begin()); tit!=end;++tit) {
     if (*tit!=this && (*tit)->Type()==ctt::delta) {
       Delta *delta((Delta*)*tit);
       if (m_j==delta->m_i) {
@@ -93,21 +81,17 @@ void Delta::Print() const
   msg_Info()<<"("<<this<<"): { d_("<<m_i<<","<<m_j<<") }";
 }
 
-Color_Term *Delta::GetCopy(Expression *const expression) const
+Color_Term *Delta::GetCopy() const
 {
-  return new Delta(expression,m_i,m_j);
+  return new Delta(m_i,m_j);
 }
-
-Fundamental::Fundamental(Expression *const owner,
-			 const size_t &a,const size_t &i,const size_t &j):
-  Color_Term(ctt::fundamental,owner),
-  m_a(a), m_i(i), m_j(j), m_fromf(false) {}
 
 bool Fundamental::Evaluate(Expression *const expression)
 {
-  for (size_t j(0);j<expression->size();++j) {
+  size_t size(expression->size());
+  for (size_t j(0);j<size;++j) {
     if ((*expression)[j]==this) {
-      for (size_t i(0);i<expression->size();++i) {
+      for (size_t i(0);i<size;++i) {
 	if ((*expression)[i]!=this && 
 	    (*expression)[i]->Type()==ctt::fundamental) {
 	  Fundamental *fundamental((Fundamental*)(*expression)[i]);
@@ -117,13 +101,13 @@ bool Fundamental::Evaluate(Expression *const expression)
 	      expression->Add(copy);
 	      delete (*copy)[j];
 	      delete (*copy)[i];
-	      (*copy)[j] = new Delta(copy,m_i,m_j);
-	      (*copy)[i] = new Delta(copy,fundamental->m_i,fundamental->m_j);
-	      copy->push_back(new Number(copy,Complex(-0.5/NC,0.0)));
+	      (*copy)[j] = new Delta(m_i,m_j);
+	      (*copy)[i] = new Delta(fundamental->m_i,fundamental->m_j);
+	      copy->push_back(new CNumber(Complex(-0.5/NC,0.0)));
 	    }
-	    (*expression)[j] = new Delta(expression,m_i,fundamental->m_j);
-	    (*expression)[i] = new Delta(expression,fundamental->m_i,m_j);
-	    expression->push_back(new Number(expression,Complex(0.5,0.0)));
+	    (*expression)[j] = new Delta(m_i,fundamental->m_j);
+	    (*expression)[i] = new Delta(fundamental->m_i,m_j);
+	    expression->push_back(new CNumber(Complex(0.5,0.0)));
 	    delete fundamental;
 	    delete this;
 	    return true;
@@ -140,19 +124,15 @@ void Fundamental::Print() const
   msg_Info()<<"("<<this<<"): { t_("<<m_a<<","<<m_i<<","<<m_j<<") }";
 }
 
-Color_Term *Fundamental::GetCopy(Expression *const expression) const
+Color_Term *Fundamental::GetCopy() const
 {
-  return new Fundamental(expression,m_a,m_i,m_j);
+  return new Fundamental(m_a,m_i,m_j);
 }
-
-Adjoint::Adjoint(Expression *const owner,
-		 const size_t &a,const size_t &b,const size_t &c):
-  Color_Term(ctt::adjoint,owner),
-  m_a(a), m_b(b), m_c(c) {}
 
 bool Adjoint::Evaluate(Expression *const expression)
 {
-  for (size_t j(0);j<expression->size();++j) {
+  size_t size(expression->size());
+  for (size_t j(0);j<size;++j) {
     if ((*expression)[j]==this) {
       size_t ii(expression->FIndex());
       size_t ij(expression->FIndex());
@@ -160,20 +140,14 @@ bool Adjoint::Evaluate(Expression *const expression)
       Expression *copy(expression->GetCopy());
       expression->Add(copy);
       delete (*copy)[j];
-      (*copy)[j] = new Fundamental(copy,m_a,ii,ij);
-      ((Fundamental*)(*copy)[j])->SetFromF(true);
-      copy->push_back(new Fundamental(copy,m_c,ij,ik));
-      ((Fundamental*)copy->back())->SetFromF(true);
-      copy->push_back(new Fundamental(copy,m_b,ik,ii));
-      ((Fundamental*)copy->back())->SetFromF(true);
-      copy->push_back(new Number(copy,Complex(0.0,2.0)));
-      (*expression)[j] = new Fundamental(expression,m_a,ii,ij);
-      ((Fundamental*)(*expression)[j])->SetFromF(true);
-      expression->push_back(new Fundamental(expression,m_b,ij,ik));
-      ((Fundamental*)expression->back())->SetFromF(true);
-      expression->push_back(new Fundamental(expression,m_c,ik,ii));
-      ((Fundamental*)expression->back())->SetFromF(true);
-      expression->push_back(new Number(expression,Complex(0.0,-2.0)));
+      (*copy)[j] = new Fundamental(m_a,ii,ij,true);
+      copy->push_back(new Fundamental(m_c,ij,ik,true));
+      copy->push_back(new Fundamental(m_b,ik,ii,true));
+      copy->push_back(new CNumber(Complex(0.0,2.0)));
+      (*expression)[j] = new Fundamental(m_a,ii,ij,true);
+      expression->push_back(new Fundamental(m_b,ij,ik,true));
+      expression->push_back(new Fundamental(m_c,ik,ii,true));
+      expression->push_back(new CNumber(Complex(0.0,-2.0)));
       delete this;
       return true;
     }
@@ -186,15 +160,10 @@ void Adjoint::Print() const
   msg_Info()<<"("<<this<<"): { f_("<<m_a<<","<<m_b<<","<<m_c<<") }";
 }
 
-Color_Term *Adjoint::GetCopy(Expression *const expression) const
+Color_Term *Adjoint::GetCopy() const
 {
-  return new Adjoint(expression,m_a,m_b,m_c);
+  return new Adjoint(m_a,m_b,m_c);
 }
-
-Expression::Expression(): 
-  Node<Color_Term*>(NULL,true),
-  m_result(0.0,0.0),
-  m_findex(0), m_aindex(0), m_evaluated(0) {}
 
 Expression::Expression(const std::string &expression): 
   Node<Color_Term*>(NULL,true),
@@ -229,7 +198,7 @@ Expression::Expression(const std::string &expression):
       size_t a(ToType<int>(factor.substr(3,c1pos-3)));
       size_t b(ToType<int>(factor.substr(c1pos+1,c2pos-c1pos-1)));
       size_t c(ToType<int>(factor.substr(c2pos+1,factor.length()-c2pos-2)));
-      back() = new Adjoint(this,a,b,c);
+      back() = new Adjoint(a,b,c);
       m_aindex=Max(m_aindex,Max(a,Max(b,c)));
     }
     else if (factor.find("t_[")==0 && factor[factor.length()-1]==']') {
@@ -243,7 +212,7 @@ Expression::Expression(const std::string &expression):
       size_t a(ToType<int>(factor.substr(3,c1pos-3)));
       size_t i(ToType<int>(factor.substr(c1pos+1,c2pos-c1pos-1)));
       size_t j(ToType<int>(factor.substr(c2pos+1,factor.length()-c2pos-2)));
-      back() = new Fundamental(this,a,i,j);
+      back() = new Fundamental(a,i,j);
       m_findex=Max(m_findex,Max(i,j));
       m_aindex=Max(m_aindex,a);
     }
@@ -254,28 +223,15 @@ Expression::Expression(const std::string &expression):
 	THROW(fatal_error,"Invalid number of indices for \\delta.");
       std::string i(factor.substr(3,cpos-3));
       std::string j(factor.substr(cpos+1,factor.length()-cpos-2));
-      back() = new Delta(this,ToType<int>(i),ToType<int>(j));
+      back() = new Delta(ToType<int>(i),ToType<int>(j));
     }
     else if (factor=="i_") {
-      back() = new Number(this,Complex(0.0,1.0));
+      back() = new CNumber(Complex(0.0,1.0));
     }
     else {
-      back() = new Number(this,Complex(ToType<double>(factor),0.0));
+      back() = new CNumber(Complex(ToType<double>(factor),0.0));
     }
   }
-}
-
-Expression::~Expression()
-{
-  for (Color_Term_Vector::iterator tit(begin());tit!=end();++tit) 
-    delete *tit;
-}
-
-size_t Expression::Add(Expression *const expression)
-{
-  (*this)().push_back(expression);
-  (*expression)<<this;
-  return (*this)().size();
 }
 
 size_t Expression::Size()
@@ -347,7 +303,7 @@ bool Expression::Evaluate()
       return false;
     }
     else {
-      Number *number((Number*)*tit);
+      CNumber *number((CNumber*)*tit);
       m_result*=(*number)();
     }
   }
@@ -386,9 +342,9 @@ Expression *Expression::GetCopy() const
 {
   Expression *expression(new Expression());
   expression->resize(size(),NULL);
-  for (size_t i(0);i<size();++i) {
-    (*expression)[i] = (*this)[i]->GetCopy(expression);
-  }
+  size_t size(size());
+  for (size_t i(0);i<size;++i) 
+    (*expression)[i] = (*this)[i]->GetCopy();
   expression->m_findex=m_findex;
   expression->m_aindex=m_aindex;
   return expression;

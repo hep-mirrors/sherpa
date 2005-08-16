@@ -1,5 +1,10 @@
 #ifndef Color_H
 #define Color_H
+/*!
+  \file Color.H
+  \brief Declares the classes Color_Term,
+  CNumber, Fundamental, Adjoint and Expression.
+*/
 
 #include <iostream>
 #include "Node.H"
@@ -27,12 +32,11 @@ namespace ATOOLS {
 
     ctt::type m_type;
 
-    Expression *p_owner;
-
   public:
     
     // constructor
-    Color_Term(const ctt::type &type,Expression *const owner);
+    inline Color_Term(const ctt::type &type): 
+      m_type(type) {}
 
     // destructor
     virtual ~Color_Term();
@@ -41,14 +45,21 @@ namespace ATOOLS {
     virtual bool Evaluate(Expression *const expression);
     virtual void Print() const;
 
-    virtual Color_Term *GetCopy(Expression *const expression) const;
+    virtual Color_Term *GetCopy() const;
 
     // inline functions
     inline ctt::type Type() const { return m_type; }
 
   };// end of class Color_Term
+  /*!
+    \class Color_Term
+    \brief The base class of all objects in color space.
 
-  class Number: public Color_Term {
+    This class is the base class of all classes
+    representing objects in color space.
+  */
+
+  class CNumber: public Color_Term {
   private:
 
     Complex m_n;
@@ -56,20 +67,21 @@ namespace ATOOLS {
   public:
     
     // constructor
-    Number(Expression *const owner,const Complex &n);
+    inline CNumber(const Complex &n):
+      Color_Term(ctt::number), m_n(n) {}
 
     // member functions
     bool Evaluate(Expression *const expression);
     void Print() const;
 
-    Color_Term *GetCopy(Expression *const expression) const;
+    Color_Term *GetCopy() const;
 
     // inline functions
     inline Complex operator()() { return m_n; }
 
-  };// end of class Number
+  };// end of class CNumber
   /*!
-    \class Number
+    \class CNumber
     \brief Represents a complex number.
 
     This class represents a complex number.
@@ -83,8 +95,8 @@ namespace ATOOLS {
   public:
     
     // constructor
-    Delta(Expression *const owner,
-	  const size_t &i,const size_t &j);
+    inline Delta(const size_t &i,const size_t &j):
+      Color_Term(ctt::delta), m_i(i), m_j(j) {}
 
     // member functions
     bool Evaluate(Expression *const expression);
@@ -103,7 +115,7 @@ namespace ATOOLS {
     */
     void Print() const;
 
-    Color_Term *GetCopy(Expression *const expression) const;
+    Color_Term *GetCopy() const;
 
   };// end of class Delta
   /*!
@@ -127,8 +139,10 @@ namespace ATOOLS {
   public:
     
     // constructor
-    Fundamental(Expression *const owner,
-		const size_t &a,const size_t &i,const size_t &j);
+    inline Fundamental(const size_t &a,const size_t &i,const size_t &j,
+		       const bool &fromf=false):
+      Color_Term(ctt::fundamental), m_a(a), m_i(i), m_j(j), 
+      m_fromf(fromf) {}
 
     // member functions
     bool Evaluate(Expression *const expression);
@@ -149,9 +163,7 @@ namespace ATOOLS {
     */
     void Print() const;
 
-    Color_Term *GetCopy(Expression *const expression) const;
-
-    inline void SetFromF(const bool &fromf) { m_fromf=fromf; }
+    Color_Term *GetCopy() const;
 
     inline const bool &FromF() const { return m_fromf; }
 
@@ -177,8 +189,8 @@ namespace ATOOLS {
   public:
     
     // constructor
-    Adjoint(Expression *const owner,
-	    const size_t &a,const size_t &b,const size_t &c);
+    inline Adjoint(const size_t &a,const size_t &b,const size_t &c):
+      Color_Term(ctt::adjoint), m_a(a), m_b(b), m_c(c) {}
 
     // member functions
     bool Evaluate(Expression *const expression);
@@ -201,7 +213,7 @@ namespace ATOOLS {
     */
     void Print() const;
 
-    Color_Term *GetCopy(Expression *const expression) const;
+    Color_Term *GetCopy() const;
 
   };// end of class Adjoint
   /*!
@@ -228,17 +240,28 @@ namespace ATOOLS {
   public:
     
     // constructor
-    Expression();
+    inline Expression(): 
+      Node<Color_Term*>(NULL,true), m_result(0.0,0.0),
+      m_findex(0), m_aindex(0), m_evaluated(0) {}
+
     Expression(const std::string &expression);
 
     // destructor
-    ~Expression();
+    inline ~Expression()
+    {
+      for (Color_Term_Vector::iterator tit(begin());tit!=end();++tit) 
+	delete *tit;
+    }
 
     // member functions
     bool Evaluate();
     void Print();
 
-    size_t Add(Expression *const expression);
+    inline void Add(Expression *const expression)
+    {
+      (*this)().push_back(expression);
+      (*expression)<<this;
+    }
 
     size_t Size();
     size_t Evaluated();
@@ -255,6 +278,12 @@ namespace ATOOLS {
     inline size_t AIndex() { return ++m_aindex; }
 
   };// end of class Expression
+  /*!
+    \class Expression
+    \brief Represents a single color amplitude.
+    
+    This class represents a single color amplitude.
+  */
 
 }// end of namespace ATOOLS
 
