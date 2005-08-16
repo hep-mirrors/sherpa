@@ -29,7 +29,17 @@ Color_Term *Color_Term::GetCopy() const
 
 bool CNumber::Evaluate(Expression *const expression)
 {
-  return false;
+  bool evaluated(false);
+  for (Expression::Color_Term_Vector::iterator 
+	 cit(expression->begin());cit!=expression->end();++cit) {
+    if (*cit!=this && (*cit)->Type()==ctt::number) {
+      m_n*=((CNumber*)*cit)->m_n;
+      delete *cit;
+      cit=--expression->erase(cit);
+      evaluated=true;
+    }
+  }
+  return evaluated;
 }
 
 void CNumber::Print() const
@@ -269,6 +279,16 @@ size_t Expression::Evaluated()
   return terms;
 }
 
+class Order_Type {
+public:
+
+  bool operator()(const Color_Term *a,const Color_Term *b)
+  {
+    return a->Type()<b->Type();
+  }
+
+};// end of class Order_Type
+
 bool Expression::Evaluate()
 {
   if (--*this==NULL) rpa.gen.Timer().Start();
@@ -278,6 +298,7 @@ bool Expression::Evaluate()
   bool treat(false);
   do {
     treat=false;
+    std::sort(begin(),end(),Order_Type());
     for (Color_Term_Vector::iterator tit(begin());tit!=end();++tit) {
       size_t oldsize((*this)().size());
       if ((*tit)->Evaluate(this)) {
