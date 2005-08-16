@@ -36,6 +36,18 @@ namespace ATOOLS {
     return *p_next; 
   }
   
+  template <class Node_Type>
+  void Node<Node_Type>::operator<<(Node<Node_Type> *const prev) 
+  { 
+    p_previous=prev; 
+  }
+
+  template <class Node_Type>
+  Node<Node_Type> *const Node<Node_Type>::operator--() const 
+  { 
+    return p_previous; 
+  }
+
 }// end of namespace ATOOLS
 
 #endif
