@@ -193,17 +193,18 @@ namespace ATOOLS {
       \brief Expands the matrix.
 
       This method expands a matrix of the adjoint representation, 
-      \f$f^{abc}\f$ in terms of matrices in the fundamental representation.
-      Since
+      \f$f^{abc}\f$ in terms of matrices in the fundamental representation,
+      according to
       \f[
       f^{abc}\,=\;-2i\,{\rm tr}\left(\,T^a\left[T^b,T^c\right]\,\right)
-      \,=\;-2i\,{\rm tr}\left(\,\left[T^a,T^b\right]T^c\,\right)
-      \,=\;-2i\,{\rm tr}\left(\,\left[T^c,T^a\right]T^b\,\right)\;,
+      \,=\;-2i\,{\rm tr}\left(\,T^c\left[T^a,T^b\right]\,\right)
+      \,=\;-2i\,{\rm tr}\left(\,T^b\left[T^c,T^a\right]\,\right)\;.
       \f]
-      the generated Fundamental objects obtain a flag, which tags 
-      that they stem from the expansion of an \f$f\f$ matrix 
-      and therefore, in further evaluations terms of the form 
-      \f$T^a_{ii}\f$ may be dropped.
+      The generated Fundamental objects, such as e.g. \f$T^a_{ij}\f$, 
+      obtain a flag, which tags that they stem from the expansion 
+      of an \f$f\f$ matrix and therefore, in the evaluation of 
+      \f$T^a_{ij}T^a_{kl}\f$ the \f$1/N_C\f$-term may be dropped,
+      see Fundamental.
     */
     void Print() const;
 
