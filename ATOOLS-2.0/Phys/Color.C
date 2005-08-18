@@ -31,8 +31,9 @@ bool CNumber::Evaluate(Expression *const expression)
 {
   bool evaluated(false);
   for (Expression::Color_Term_Vector::iterator 
-	 cit(expression->begin());cit!=expression->end();++cit) {
-    if (*cit!=this && (*cit)->Type()==ctt::number) {
+	 cit(expression->begin());cit!=expression->end() &&
+	 (*cit)->Type()==ctt::number;++cit) {
+    if (*cit!=this) {
       m_n*=((CNumber*)*cit)->m_n;
       delete *cit;
       cit=--expression->erase(cit);
@@ -54,36 +55,39 @@ Color_Term *CNumber::GetCopy() const
 
 bool Delta::Evaluate(Expression *const expression)
 {
-  Expression::Color_Term_Vector::iterator end(expression->end());
-  if (m_i==m_j) {
-    for (Expression::Color_Term_Vector::iterator 
-	   tit(expression->begin()); tit!=end;++tit) {
-      if (*tit==this) {
-	delete this;
-	*tit = new CNumber(Complex(NC,0.0));
-	return true;
-      }
-    }
-  }
+  bool evaluated(false);
   for (Expression::Color_Term_Vector::iterator 
-	 tit(expression->begin()); tit!=end;++tit) {
-    if (*tit!=this && (*tit)->Type()==ctt::delta) {
+	 tit(expression->begin());tit!=expression->end() &&
+	 (*tit)->Type()<=ctt::delta;++tit) {
+    if ((*tit)->Type()==ctt::delta && *tit!=this) {
       Delta *delta((Delta*)*tit);
       if (m_j==delta->m_i) {
 	m_j=delta->m_j;
 	delete delta;
-	expression->erase(tit);
-	return true;
+	if (m_i==m_j) {
+	  delete this;
+	  (*expression)[expression->CIndex()] = new CNumber(Complex(NC,0.0));
+	  expression->erase(tit);
+	  return true;
+	}
+	tit=--expression->erase(tit);
+	evaluated=true;
       }
       else if (m_i==delta->m_j) {
 	m_i=delta->m_i;
 	delete delta;
-	expression->erase(tit);
-	return true;
+	if (m_i==m_j) {
+	  delete this;
+	  (*expression)[expression->CIndex()] = new CNumber(Complex(NC,0.0));
+	  expression->erase(tit);
+	  return true;
+	}
+	tit=--expression->erase(tit);
+	evaluated=true;
       }
     }
   }
-  return false;
+  return evaluated;
 }
 
 void Delta::Print() const
@@ -98,31 +102,27 @@ Color_Term *Delta::GetCopy() const
 
 bool Fundamental::Evaluate(Expression *const expression)
 {
-  size_t size(expression->size());
-  for (size_t j(0);j<size;++j) {
-    if ((*expression)[j]==this) {
-      for (size_t i(0);i<size;++i) {
-	if ((*expression)[i]!=this && 
-	    (*expression)[i]->Type()==ctt::fundamental) {
-	  Fundamental *fundamental((Fundamental*)(*expression)[i]);
-	  if (m_a==fundamental->m_a) {
-	    if (!FromF() && !fundamental->FromF()) {
-	      Expression *copy(expression->GetCopy());
-	      expression->Add(copy);
-	      delete (*copy)[j];
-	      delete (*copy)[i];
-	      (*copy)[j] = new Delta(m_i,m_j);
-	      (*copy)[i] = new Delta(fundamental->m_i,fundamental->m_j);
-	      copy->push_back(new CNumber(Complex(-0.5/NC,0.0)));
-	    }
-	    (*expression)[j] = new Delta(m_i,fundamental->m_j);
-	    (*expression)[i] = new Delta(fundamental->m_i,m_j);
-	    expression->push_back(new CNumber(Complex(0.5,0.0)));
-	    delete fundamental;
-	    delete this;
-	    return true;
-	  }
+  size_t size(expression->size()), j(expression->CIndex());
+  for (size_t i(0);i<size;++i) {
+    if ((*expression)[i]->Type()==ctt::fundamental &&
+	(*expression)[i]!=this) {
+      Fundamental *fundamental((Fundamental*)(*expression)[i]);
+      if (m_a==fundamental->m_a) {
+	if (!FromF() && !fundamental->FromF()) {
+	  Expression *copy(expression->GetCopy());
+	  expression->Add(copy);
+	  delete (*copy)[j];
+	  delete (*copy)[i];
+	  (*copy)[j] = new Delta(m_i,m_j);
+	  (*copy)[i] = new Delta(fundamental->m_i,fundamental->m_j);
+	  copy->push_back(new CNumber(Complex(-0.5/NC,0.0)));
 	}
+	(*expression)[j] = new Delta(m_i,fundamental->m_j);
+	(*expression)[i] = new Delta(fundamental->m_i,m_j);
+	expression->push_back(new CNumber(Complex(0.5,0.0)));
+	delete fundamental;
+	delete this;
+	return true;
       }
     }
   }
@@ -136,7 +136,7 @@ void Fundamental::Print() const
 
 Color_Term *Fundamental::GetCopy() const
 {
-  return new Fundamental(m_a,m_i,m_j);
+  return new Fundamental(m_a,m_i,m_j,m_fromf);
 }
 
 bool Adjoint::Evaluate(Expression *const expression)
@@ -299,6 +299,7 @@ bool Expression::Evaluate()
   do {
     treat=false;
     std::sort(begin(),end(),Order_Type());
+    m_cindex=0;
     for (Color_Term_Vector::iterator tit(begin());tit!=end();++tit) {
       size_t oldsize((*this)().size());
       if ((*tit)->Evaluate(this)) {
@@ -315,6 +316,7 @@ bool Expression::Evaluate()
 	treat=true;
 	break;
       }
+      ++m_cindex;
     }
     if (msg.LevelIsTracking()) PrintStatus(false,false);
   } while (treat==true);

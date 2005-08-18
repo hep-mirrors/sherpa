@@ -230,14 +230,14 @@ namespace ATOOLS {
     Complex m_result;
 
     size_t m_findex, m_aindex;
-    size_t m_evaluated;
+    size_t m_evaluated, m_cindex;
 
   public:
     
     // constructor
     inline Expression(): 
       Node<Color_Term*>(NULL,true), m_result(0.0,0.0),
-      m_findex(0), m_aindex(0), m_evaluated(0) {}
+      m_findex(0), m_aindex(0), m_evaluated(0), m_cindex(0) {}
 
     Expression(const std::string &expression);
 
@@ -271,6 +271,8 @@ namespace ATOOLS {
 
     inline size_t FIndex() { return ++m_findex; }
     inline size_t AIndex() { return ++m_aindex; }
+
+    inline size_t CIndex() { return m_cindex; }
 
   };// end of class Expression
   /*!
