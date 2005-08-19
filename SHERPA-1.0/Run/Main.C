@@ -15,10 +15,18 @@
 #include "My_Root.H"
 #endif
 
+#ifdef TRACE_malloc
+#include <mcheck.h>
+#endif
+
 using namespace SHERPA;
 
 int main(int argc,char* argv[]) 
-{  
+{
+#ifdef TRACE_malloc
+  setenv("MALLOC_TRACE","malloc_trace.log",1);
+  mtrace();  
+#endif
 #ifdef ROOT_SUPPORT
   MYROOT::myroot = new MYROOT::My_Root(argc,argv);
   ATOOLS::Exception_Handler::AddTerminatorObject(MYROOT::myroot);
@@ -75,15 +83,24 @@ int main(int argc,char* argv[])
     print_profile(*output);
     delete output;
 #endif
+#ifdef TRACE_malloc
+    muntrace();  
+#endif
     return 0;
   }
   catch (ATOOLS::Exception exception) {
     exception.UpdateLogFile();
     ATOOLS::msg.Error()<<exception<<std::endl;
+#ifdef TRACE_malloc
+    muntrace();  
+#endif
     std::terminate();
   }
   catch (std::exception exception) {
     std::cout<<"Sherpa: throws std::exception "<<exception.what()<<" ..."<<std::endl;
+#ifdef TRACE_malloc
+    muntrace();  
+#endif
     std::terminate();
   }
 }
