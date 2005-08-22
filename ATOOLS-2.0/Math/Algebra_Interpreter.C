@@ -680,6 +680,13 @@ std::string Algebra_Interpreter::Interprete(const std::string &expr)
   std::string result=Iterate(res);
   size_t pos=result.find(",");
   if (pos==std::string::npos) {
+    p_root = p_leaf = new Node<Function*>(NULL,false);
+    if (result.find(",")!=std::string::npos)
+      (*p_leaf)[0] = new Vector("("+result+")",p_replacer);
+    else if (expr.find("[")!=std::string::npos)
+      (*p_leaf)[0] = new Vector(result,p_replacer);
+    else (*p_leaf)[0] = new Number(result,p_replacer);
+    result=ReplaceTags(result);
     msg_Tracking()<<"} -> "<<result<<std::endl;
     return result;
   }
