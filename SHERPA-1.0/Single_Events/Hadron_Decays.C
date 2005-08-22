@@ -1,7 +1,7 @@
 #include "Hadron_Decays.H"
 #include "Message.H"
 
-#ifdef USING_Hadrons
+#ifdef USING__Hadrons
 #include "Hadrons.H"
 #endif
 
@@ -30,7 +30,6 @@ Hadron_Decays::~Hadron_Decays()
 bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight) 
 {
   PROFILE_HERE;
-  
   if(p_dechandlers->empty()) return false;
 
   if (_bloblist->empty()) {
@@ -67,7 +66,7 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
 	for (int i=0;i<myblob->NOutP();i++) {
 	  decayed = false;
 	  // check if sherpa can cope with OutParticle and pick implemented ones
-#ifdef USING_Hadrons
+#ifdef USING__Hadrons
 	  if( p_dechandlers->find("Sherpa") != p_dechandlers->end() ) {
 	    hdhandler = (*p_dechandlers)["Sherpa"]; 
 	    if( hdhandler->GetHadrons()->FindDecay(myblob->OutParticle(i)->RefFlav()) ) 

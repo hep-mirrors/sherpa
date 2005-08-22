@@ -1,5 +1,5 @@
-#ifndef Hadron_Decays_h
-#define Hadron_Decays_h
+#ifndef Hadron_Decays_H
+#define Hadron_Decays_H
 
 #include "Event_Phase_Handler.H"
 #include "Hadron_Decay_Handler.H"
