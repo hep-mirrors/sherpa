@@ -3,11 +3,19 @@
 #include "MyStrStream.H"
 #include <termios.h>
 #include <unistd.h>
+#ifdef MALLOC_TRACE
+#error MALLOC_TRACE should not be defined
+#include <mcheck.h>
+#endif
 
 using namespace ATOOLS;
 
 int main(int argc,char **argv)
 {
+#ifdef MALLOC_TRACE
+  setenv("MALLOC_TRACE","malloc_trace_color.log",1);
+  mtrace();
+#endif
   std::set_terminate(Exception_Handler::Terminate);
   std::set_unexpected(Exception_Handler::Terminate);
   signal(SIGSEGV,Exception_Handler::SignalHandler);
@@ -36,6 +44,9 @@ int main(int argc,char **argv)
     std::cout<<"Color: calculating -> "<<expr<<" = "
 	     <<expression.Result()<<std::endl;
     return 0;
+#ifdef MALLOC_TRACE
+    muntrace();
+#endif
   }
   catch (Exception exception) {
     exception.UpdateLogFile();
