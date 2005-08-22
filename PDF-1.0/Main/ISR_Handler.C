@@ -419,11 +419,14 @@ void ISR_Handler::SetLimits()
   m_xkey[2]=m_mass2[1]==0.0?-0.5*std::numeric_limits<double>::max():
     log(m_mass2[1]/sqr(p_beam[1]->OutMomentum().PMinus()));
   double e1=p_beam[0]->OutMomentum()[0];
-  m_xkey[1]=log(ATOOLS::Min(e1/p_beam[0]->OutMomentum().PPlus()*
-			    (1.0+sqrt(1.0-m_mass2[0]/sqr(e1))),Upper1()));
+  m_xkey[1]=ATOOLS::Min(e1/p_beam[0]->OutMomentum().PPlus()*
+			(1.0+sqrt(1.0-m_mass2[0]/sqr(e1))),Upper1());
   double e2=p_beam[0]->OutMomentum()[0];
-  m_xkey[3]=log(ATOOLS::Min(e2/p_beam[1]->OutMomentum().PMinus()*
-			    (1.0+sqrt(1.0-m_mass2[1]/sqr(e2))),Upper2()));
+  m_xkey[3]=ATOOLS::Min(e2/p_beam[1]->OutMomentum().PMinus()*
+			(1.0+sqrt(1.0-m_mass2[1]/sqr(e2))),Upper2());
+  m_spkey[1]=m_splimits[1]=Min(m_splimits[1],m_splimits[2]*m_xkey[1]*m_xkey[3]);
+  m_xkey[1]=log(m_xkey[1]);
+  m_xkey[3]=log(m_xkey[3]);
 }
 
 bool ISR_Handler::CalculateWeight(const double scale) 
