@@ -239,8 +239,8 @@ void PT_Selector::SetRange(std::vector<Flavour> crit,double _min,
 
   --------------------------------------------------------------------*/
 
-IPT_Selector::IPT_Selector(int _nin,int _nout, Flavour * _fl) {
-  m_name = std::string("IPT_Selector"); 
+BFKL_PT_Selector::BFKL_PT_Selector(int _nin,int _nout, Flavour * _fl) {
+  m_name = std::string("BFKL_PT_Selector"); 
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
   m_smin = 0.;
@@ -254,26 +254,28 @@ IPT_Selector::IPT_Selector(int _nin,int _nout, Flavour * _fl) {
   m_sel_log = new Selector_Log(m_name);
 }
 
-IPT_Selector::~IPT_Selector() {
+BFKL_PT_Selector::~BFKL_PT_Selector() {
   delete [] ptmin;
   delete [] ptmax;
   delete [] value;
   delete m_sel_log;
 }
 
-bool IPT_Selector::GetValue(const std::string &name,double &value)
+bool BFKL_PT_Selector::GetValue(const std::string &name,double &value)
 {
   if (name=="qcut") value=ptmin[0];
   else return false;
   return true;
 }
 
-bool IPT_Selector::Trigger(const Vec4D * mom) 
+bool BFKL_PT_Selector::Trigger(const Vec4D * mom) 
 {
   Vec4D qt(mom[0]);
   double pti(qt.PPerp());
   if (m_sel_log->Hit( ((pti<ptmin[0]) || (pti>ptmax[0])) )) return 0;
   for (int i=m_nin;i<m_n;i++) {
+    pti = value[i] = mom[i].PPerp();
+    if (m_sel_log->Hit( ((pti<ptmin[i]) || (pti>ptmax[i])) )) return 0;
     qt-=mom[i];
     pti = value[i] = qt.PPerp();
     if (m_sel_log->Hit( ((pti<ptmin[i]) || (pti>ptmax[i])) )) return 0;
@@ -281,19 +283,19 @@ bool IPT_Selector::Trigger(const Vec4D * mom)
   return 1;
 }
 
-double * IPT_Selector::ActualValue() { return value; }
+double * BFKL_PT_Selector::ActualValue() { return value; }
 
-void IPT_Selector::BuildCuts(Cut_Data * cuts) 
+void BFKL_PT_Selector::BuildCuts(Cut_Data * cuts) 
 {
 }
 
-void IPT_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
+void BFKL_PT_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
  
-void IPT_Selector::SetRange(std::vector<Flavour> crit,double _min, 
+void BFKL_PT_Selector::SetRange(std::vector<Flavour> crit,double _min, 
 			       double _max=0.5*rpa.gen.Ecms())
 {
   if (crit.size() != 1) {
-    msg.Error()<<"Wrong number of arguments in IPT_Selector::SetRange : "
+    msg.Error()<<"Wrong number of arguments in BFKL_PT_Selector::SetRange : "
 	       <<crit.size()<<endl;
     return;
   }

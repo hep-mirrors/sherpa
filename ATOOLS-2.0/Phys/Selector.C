@@ -124,7 +124,7 @@ bool Selector_Data::ReadInData(std::string filename) {
       (dat.flavs).push_back(flav);
       data.push_back(dat);
     }
-    if (keyword == string("IPT")) {
+    if (keyword == string("BFKL_PT")) {
       dat.type = 25;
       std::string dmin, dmax;
       from>>crit1>>dmin>>dmax;

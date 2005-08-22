@@ -52,11 +52,11 @@ namespace ATOOLS {
     double * ActualValue();
   };
 
-  class IPT_Selector : public Selector_Base {
+  class BFKL_PT_Selector : public Selector_Base {
     double * ptmin, * ptmax, * value;
   public:
-    IPT_Selector(int,int,Flavour *);
-    ~IPT_Selector();
+    BFKL_PT_Selector(int,int,Flavour *);
+    ~BFKL_PT_Selector();
     void     SetRange(std::vector<Flavour>,double,double);
     bool     Trigger(const Vec4D * );
     void     BuildCuts(Cut_Data *);
