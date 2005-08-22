@@ -55,36 +55,47 @@ Color_Term *CNumber::GetCopy() const
 
 bool Delta::Evaluate(Expression *const expression)
 {
+  if (m_i==m_j) {
+    delete this;
+    (*expression)[expression->CIndex()] = new CNumber(Complex(NC,0.0));
+    return true;
+  }
   bool evaluated(false);
   for (Expression::Color_Term_Vector::iterator 
-	 tit(expression->begin());tit!=expression->end() &&
-	 (*tit)->Type()<=ctt::delta;++tit) {
-    if ((*tit)->Type()==ctt::delta && *tit!=this) {
-      Delta *delta((Delta*)*tit);
-      if (m_j==delta->m_i) {
-	m_j=delta->m_j;
-	delete delta;
-	if (m_i==m_j) {
-	  delete this;
-	  (*expression)[expression->CIndex()] = new CNumber(Complex(NC,0.0));
-	  expression->erase(tit);
-	  return true;
+	 tit(expression->begin());tit!=expression->end();++tit) {
+    if ((*tit)->Type()==ctt::delta) {
+      if (*tit!=this) {
+	Delta *delta((Delta*)*tit);
+	if (m_j==delta->m_i) {
+	  m_j=delta->m_j;
+	  delete delta;
+	  tit=--expression->erase(tit);
+	  evaluated=true;
 	}
-	tit=--expression->erase(tit);
-	evaluated=true;
-      }
-      else if (m_i==delta->m_j) {
-	m_i=delta->m_i;
-	delete delta;
-	if (m_i==m_j) {
-	  delete this;
-	  (*expression)[expression->CIndex()] = new CNumber(Complex(NC,0.0));
-	  expression->erase(tit);
-	  return true;
+	else if (m_i==delta->m_j) {
+	  m_i=delta->m_i;
+	  delete delta;
+	  tit=--expression->erase(tit);
+	  evaluated=true;
 	}
-	tit=--expression->erase(tit);
-	evaluated=true;
       }
+    }
+    else if ((*tit)->Type()==ctt::fundamental) {
+      Fundamental *fundamental((Fundamental*)*tit);
+      if (m_j==fundamental->m_i) {
+	fundamental->m_i=m_i;
+	(*expression)[expression->CIndex()]=fundamental;
+	expression->erase(tit);
+	delete this;
+	return true;
+      }	
+      if (m_i==fundamental->m_j) {
+	fundamental->m_j=m_j;
+	(*expression)[expression->CIndex()]=fundamental;
+	expression->erase(tit);
+	delete this;
+	return true;
+      }	
     }
   }
   return evaluated;
@@ -104,25 +115,49 @@ bool Fundamental::Evaluate(Expression *const expression)
 {
   size_t size(expression->size()), j(expression->CIndex());
   for (size_t i(0);i<size;++i) {
-    if ((*expression)[i]->Type()==ctt::fundamental &&
-	(*expression)[i]!=this) {
-      Fundamental *fundamental((Fundamental*)(*expression)[i]);
-      if (m_a==fundamental->m_a) {
-	if (!FromF() && !fundamental->FromF()) {
-	  Expression *copy(expression->GetCopy());
-	  expression->Add(copy);
-	  delete (*copy)[j];
-	  delete (*copy)[i];
-	  (*copy)[j] = new Delta(m_i,m_j);
-	  (*copy)[i] = new Delta(fundamental->m_i,fundamental->m_j);
-	  copy->push_back(new CNumber(Complex(-0.5/NC,0.0)));
+    if ((*expression)[i]->Type()==ctt::fundamental) {
+      if ((*expression)[i]!=this) {
+	Fundamental *fundamental((Fundamental*)(*expression)[i]);
+	if (m_a==fundamental->m_a) {
+	  if (m_j==fundamental->m_i) {
+	    if (m_i==fundamental->m_j)
+	      (*expression)[j] = new CNumber(NC);
+	    else
+	      (*expression)[j] = new Delta(m_i,fundamental->m_j);
+	    if (m_fromf || fundamental->m_fromf) 
+	      (*expression)[i] = new CNumber(Complex(0.5*NC,0.0));
+	    else
+	      (*expression)[i] = new CNumber(Complex(CF,0.0));
+	    delete fundamental;
+	    delete this;
+	    return true;
+	  }
+	  if (m_i==fundamental->m_j) {
+	    (*expression)[j] = new Delta(fundamental->m_i,m_j);
+	    if (m_fromf || fundamental->m_fromf) 
+	      (*expression)[i] = new CNumber(Complex(0.5*NC,0.0));
+	    else
+	      (*expression)[i] = new CNumber(Complex(CF,0.0));
+	    delete fundamental;
+	    delete this;
+	    return true;
+	  }
+	  if (!(m_fromf || fundamental->m_fromf)) {
+	    Expression *copy(expression->GetCopy());
+	    expression->Add(copy);
+	    delete (*copy)[j];
+	    delete (*copy)[i];
+	    (*copy)[j] = new Delta(m_i,m_j);
+	    (*copy)[i] = new Delta(fundamental->m_i,fundamental->m_j);
+	    copy->push_back(new CNumber(Complex(-0.5/NC,0.0)));
+	  }
+	  (*expression)[j] = new Delta(m_i,fundamental->m_j);
+	  (*expression)[i] = new Delta(fundamental->m_i,m_j);
+	  expression->push_back(new CNumber(Complex(0.5,0.0)));
+	  delete fundamental;
+	  delete this;
+	  return true;
 	}
-	(*expression)[j] = new Delta(m_i,fundamental->m_j);
-	(*expression)[i] = new Delta(fundamental->m_i,m_j);
-	expression->push_back(new CNumber(Complex(0.5,0.0)));
-	delete fundamental;
-	delete this;
-	return true;
       }
     }
   }
@@ -141,28 +176,54 @@ Color_Term *Fundamental::GetCopy() const
 
 bool Adjoint::Evaluate(Expression *const expression)
 {
-  size_t size(expression->size());
-  for (size_t j(0);j<size;++j) {
-    if ((*expression)[j]==this) {
-      size_t ii(expression->FIndex());
-      size_t ij(expression->FIndex());
-      size_t ik(expression->FIndex());
-      Expression *copy(expression->GetCopy());
-      expression->Add(copy);
-      delete (*copy)[j];
-      (*copy)[j] = new Fundamental(m_a,ii,ij,true);
-      copy->push_back(new Fundamental(m_c,ij,ik,true));
-      copy->push_back(new Fundamental(m_b,ik,ii,true));
-      copy->push_back(new CNumber(Complex(0.0,2.0)));
-      (*expression)[j] = new Fundamental(m_a,ii,ij,true);
-      expression->push_back(new Fundamental(m_b,ij,ik,true));
-      expression->push_back(new Fundamental(m_c,ik,ii,true));
-      expression->push_back(new CNumber(Complex(0.0,-2.0)));
-      delete this;
-      return true;
+  size_t size(expression->size()), j(expression->CIndex());
+  for (size_t i(0);i<size;++i) {
+    if ((*expression)[i]->Type()==ctt::fundamental) {
+      Fundamental *fundamental((Fundamental*)(*expression)[i]);
+      if (m_b==fundamental->m_a) {
+	std::swap<size_t>(m_b,m_c);
+	std::swap<size_t>(m_a,m_b);
+      }
+      else if (m_a==fundamental->m_a) {
+	std::swap<size_t>(m_a,m_b);
+	std::swap<size_t>(m_b,m_c);
+      }
+      if (m_c==fundamental->m_a) {
+	size_t im(expression->FIndex());
+	Expression *copy(expression->GetCopy());
+	expression->Add(copy);
+	delete (*copy)[j];
+	(*copy)[j] = new Fundamental(m_a,im,fundamental->m_j,true);
+ 	((Fundamental*)(*copy)[i])->m_fromf=true;
+	((Fundamental*)(*copy)[i])->m_a=m_b;
+	((Fundamental*)(*copy)[i])->m_j=im;
+	copy->push_back(new CNumber(Complex(0.0,1.0)));
+	(*expression)[j] = new Fundamental(m_b,im,fundamental->m_j,true);
+ 	fundamental->m_fromf=true;
+	fundamental->m_a=m_a;
+	fundamental->m_j=im;
+	expression->push_back(new CNumber(Complex(0.0,-1.0)));
+	delete this;
+	return true;
+      }
     }
   }
-  return false;
+  size_t ii(expression->FIndex());
+  size_t ij(expression->FIndex());
+  size_t ik(expression->FIndex());
+  Expression *copy(expression->GetCopy());
+  expression->Add(copy);
+  delete (*copy)[j];
+  (*copy)[j] = new Fundamental(m_a,ii,ij,true);
+  copy->push_back(new Fundamental(m_c,ij,ik,true));
+  copy->push_back(new Fundamental(m_b,ik,ii,true));
+  copy->push_back(new CNumber(Complex(0.0,2.0)));
+  (*expression)[j] = new Fundamental(m_a,ii,ij,true);
+  expression->push_back(new Fundamental(m_b,ij,ik,true));
+  expression->push_back(new Fundamental(m_c,ik,ii,true));
+  expression->push_back(new CNumber(Complex(0.0,-2.0)));
+  delete this;
+  return true;
 }
 
 void Adjoint::Print() const
@@ -306,7 +367,11 @@ bool Expression::Evaluate()
 	if ((*this)().size()!=oldsize) {
 	  while ((*this)().size()>0) {
 	    Expression *expression((Expression*)(*this)().back());
-	    if (!expression->Evaluate()) return false;
+	    if (!expression->Evaluate()) {
+	      if (--*this==NULL) expression->Print();
+	      m_result=Complex(sqrt(-1.0),sqrt(-1.0));
+	      return false;
+	    }
 	    result2+=expression->Result();
 	    m_evaluated+=expression->Evaluated();
 	    delete expression;
@@ -323,6 +388,7 @@ bool Expression::Evaluate()
   for (Color_Term_Vector::iterator tit(begin());tit!=end();++tit) {
     if ((*tit)->Type()!=ctt::number) {
       msg.Error()<<"Expression::Evaluate(): Result is nan."<<std::endl;
+      m_result=Complex(sqrt(-1.0),sqrt(-1.0));
       return false;
     }
     else {

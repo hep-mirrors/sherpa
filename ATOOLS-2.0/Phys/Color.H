@@ -12,7 +12,10 @@
 
 namespace ATOOLS {
 
-  const size_t NC(3);
+  const double NC(3.0);
+  const double CA(3.0);
+  const double CF(0.5*(NC*NC-1.0)/NC);
+  const double TR(0.5);
 
   struct ctt {
     
@@ -136,6 +139,9 @@ namespace ATOOLS {
       a matrix in the adjoint representation.
     */
 
+    friend class Delta;
+    friend class Adjoint;
+
   public:
     
     // constructor
@@ -164,8 +170,6 @@ namespace ATOOLS {
     void Print() const;
 
     Color_Term *GetCopy() const;
-
-    inline const bool &FromF() const { return m_fromf; }
 
   };// end of class Fundamental
   /*!
@@ -272,7 +276,7 @@ namespace ATOOLS {
     inline size_t FIndex() { return ++m_findex; }
     inline size_t AIndex() { return ++m_aindex; }
 
-    inline size_t CIndex() { return m_cindex; }
+    inline size_t CIndex() const { return m_cindex; }
 
   };// end of class Expression
   /*!
