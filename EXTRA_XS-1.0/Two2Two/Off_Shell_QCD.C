@@ -134,8 +134,8 @@ Off_Shell_gg_gg::Off_Shell_gg_gg(const size_t nin,const size_t nout,
 double Off_Shell_gg_gg::operator()(double s,double t,double u) 
 {
   ATOOLS::Vec4D *const p=p_momenta;
-  double colfac=(NC*NC)/(NC*NC-1)/(2.0*4.0);
-  for (size_t i=0;i<m_nout-2;++i) colfac*=NC/4.0;
+  double colfac=(NC*NC)/(NC*NC-1);
+  for (size_t i=0;i<m_nout-2;++i) colfac*=NC;
   double scale=sqrt((p[m_nin+m_nout]-p[0]).PPerp2()*
 		    (p[m_nin+m_nout+1]-p[1]).PPerp2());
   double asmean((*MODEL::as)(scale));
@@ -144,8 +144,8 @@ double Off_Shell_gg_gg::operator()(double s,double t,double u)
   Vec4D prop(p[0]);
   if (p_selector->Name()=="Combined_Selector") {
     Selector_Base *ipt = 
-      ((Combined_Selector*)p_selector)->GetSelector("IPT_Selector");
-    if (ipt==NULL) THROW(fatal_error,"BFKL ME needs internal pt selector");
+      ((Combined_Selector*)p_selector)->GetSelector("BFKL_PT_Selector");
+    if (ipt==NULL) THROW(fatal_error,"BFKL ME needs BFKL_PT selector");
     if (!ipt->GetValue("qcut",m_qtcut)) 
       THROW(fatal_error,"Selector corrupted");
   }
@@ -159,7 +159,8 @@ double Off_Shell_gg_gg::operator()(double s,double t,double u)
       if (sud>1.0) 
 	msg.Error()<<"Off_Shell_gg_gg::operator()(..):"
 		   <<"Sudakov "<<i<<" exceeds unity, \\Delta = "
-		   <<sud<<std::endl;
+		   <<sud<<" = exp(-"<<asmean<<"*("<<lasty<<"-"<<y<<")*log("
+		   <<prop.PPerp2()<<"/"<<m_qtcut<<"))"<<std::endl;
       M*=sud;
     }
     prop-=p[m_nin+i];
@@ -167,7 +168,7 @@ double Off_Shell_gg_gg::operator()(double s,double t,double u)
   }
   double y((p[m_nin+m_nout+1]-p[1]).Y());
   if (y>=lasty) return 0.0;
-  return pow(4.0*M_PI*m_alphas,m_nout)*colfac*M;
+  return pow(4.0*M_PI*m_alphas,m_nout)*colfac*M/4.0;
 }
 
 bool Off_Shell_gg_gg::SetColours(double s,double t,double u) 
