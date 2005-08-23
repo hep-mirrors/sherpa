@@ -211,9 +211,9 @@ void Amegic::ReadInProcessfile(string file)
   double      maxerror=-1.;
   bool        print_graphs=false;
   string      selectorfile;
-  for(;from;) {
+  while (from) {
     getline(from,buf);
-    if (buf[0] != '%' && buf.length()>0) {
+    if (buf.length()>0 && buf[0] != '%') {
       msg.LogFile()<<buf<<std::endl;
       position   = buf.find(string("Process :")); 
       flag       = 0;
@@ -268,7 +268,7 @@ void Amegic::ReadInProcessfile(string file)
 	    nex            = 0;
 	    do {
 	      getline(from,buf);
-	      if (buf[0] != '%' && buf.length()>0) {
+	      if (buf.length()>0 && buf[0] != '%') {
 		msg.LogFile()<<buf<<std::endl;
 		position = buf.find(string("Decay :"));
 		if (position > -1) {
@@ -639,12 +639,12 @@ int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf)
 
 void Amegic::Shorten(std::string& str) {
   //kill initial spaces
-  for (;;) {    
+  while (str.length()>0) {    
     if (int(str[0])==32 || int(str[0])==9) str = str.substr(1);
     else break;
   }
   //kill final spaces
-  for (;;) {    
+  while (str.length()>0) {    
     if (int(str[str.length()-1])==32 ||
 	//Tabulator
 	int(str[str.length()-1])==9) str = str.substr(0,str.length()-1);
