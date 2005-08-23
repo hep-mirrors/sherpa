@@ -10,14 +10,14 @@ Integration_Info::Integration_Info()
 
 Integration_Info::~Integration_Info() 
 {
-  for (String_MapPair_Map::const_iterator kmit=m_keymap.begin();
+  for (String_MapPair_Map::const_iterator kmit(m_keymap.begin());
        kmit!=m_keymap.end();++kmit) {
-    const String_KeyPair_Map &keymap=kmit->second.second;
+    const String_KeyPair_Map &keymap(kmit->second.second);
     for (String_KeyPair_Map::const_iterator kit=keymap.begin();
 	 kit!=keymap.end();++kit) {
-      const std::vector<Info_Key*> keys=kit->second.second;
+      const std::vector<Info_Key*> &keys(kit->second.second);
       for (std::vector<Info_Key*>::const_iterator it=keys.begin();
-	   it!=keys.end();++it) 
+	   it!=keys.end();++it)
 	(*it)->p_info=NULL;
     }
   }
@@ -25,13 +25,16 @@ Integration_Info::~Integration_Info()
 
 void Integration_Info::ResetAll()
 {
-  for (size_t i=0;i<m_doubles.size();++i) {
+  for (size_t i(0);i<m_doubles.size();++i) {
     m_status[i]=si::reset;
 #ifdef USING__safe_reset
-    for (size_t j=0;j<m_doubles[i].size();++j) m_doubles[i][j]=UNDEFINED_DOUBLE;
-    for (size_t j=0;j<m_vectors[i].size();++j) m_vectors[i][j]=UNDEFINED_VECTOR;
+    for (size_t j(0);j<m_doubles[i].size();++j) 
+      m_doubles[i][j]=UNDEFINED_DOUBLE;
+    for (size_t j(0);j<m_vectors[i].size();++j) 
+      m_vectors[i][j]=UNDEFINED_VECTOR;
 #endif
-    for (size_t j=0;j<m_weights[i].size();++j) m_weights[i][j]=UNDEFINED_WEIGHT;
+    for (size_t j(0);j<m_weights[i].size();++j) 
+      m_weights[i][j]=UNDEFINED_WEIGHT;
   }
 }
 
@@ -47,8 +50,8 @@ void Integration_Info::AssignKey(Info_Key &key,const size_t doubles,
     m_status.push_back(si::idle);
   }
   key.m_valuekey=m_keymap[key.m_name].first;
-  String_KeyPair_Map &keys=m_keymap[key.m_name].second;
-  String_KeyPair_Map::iterator kit=keys.find(key.m_info);
+  String_KeyPair_Map &keys(m_keymap[key.m_name].second);
+  String_KeyPair_Map::iterator kit(keys.find(key.m_info));
   if (kit==keys.end()) {
     keys[key.m_info]=SizeT_KeyVector_Pair(m_weights[key.m_valuekey].size(),
 					  Key_Vector());
@@ -61,13 +64,12 @@ void Integration_Info::AssignKey(Info_Key &key,const size_t doubles,
 
 void Integration_Info::ReleaseKey(Info_Key &key)
 {
-  String_MapPair_Map::iterator vit=m_keymap.find(key.m_name);
+  String_MapPair_Map::iterator vit(m_keymap.find(key.m_name));
   if (vit==m_keymap.end()) return;
-  String_KeyPair_Map &keys=vit->second.second;
-  String_KeyPair_Map::iterator 
-    wit=keys.find(key.m_info);
+  String_KeyPair_Map &keys(vit->second.second);
+  String_KeyPair_Map::iterator wit(keys.find(key.m_info));
   if (wit==keys.end()) return;
-  for (Key_Vector::iterator kit=wit->second.second.begin();
+  for (Key_Vector::iterator kit(wit->second.second.begin());
        kit!=wit->second.second.end();++kit) {
     if (*kit==&key) { 
       wit->second.second.erase(kit);
