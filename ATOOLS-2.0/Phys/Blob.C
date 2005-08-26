@@ -17,6 +17,7 @@ std::ostream& ATOOLS::operator<<(std::ostream& ostr, const btp::code btpc) {
   case btp::ME_PS_Interface_FS: return ostr<<"ME PS Interface FS";
   case btp::FS_Shower:          return ostr<<"FS Shower         ";
   case btp::IS_Shower:          return ostr<<"IS Shower         ";
+  case btp::Shower:             return ostr<<"Shower            ";
   case btp::Beam:               return ostr<<"Beam              ";
   case btp::Bunch:              return ostr<<"Bunch             ";
   case btp::Fragmentation:      return ostr<<"Fragmentation     ";
