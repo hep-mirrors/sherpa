@@ -613,7 +613,9 @@ void Amplitude_Handler::Kicker(int* Switch_Vector,int ngraph,std::string pID)
 }
 
 Point* Amplitude_Handler::GetPointlist(int n)
-{ return pointlist[n];}
+{ 
+  return pointlist[n];
+}
 
 void Amplitude_Handler::Reset_ProbAbs()
 {
@@ -741,8 +743,14 @@ int Amplitude_Handler::SingleCompare(Point* p1,Point* p2, double & sf)
   return 0;
 }
 
-
-
+void Amplitude_Handler::FillPointlist()
+{
+  Single_Amplitude* n = firstgraph;  
+  while (n) {
+   pointlist.push_back(n->GetPointlist()); 
+   n = n->Next;
+  }
+}
 
 
 

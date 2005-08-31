@@ -1,5 +1,6 @@
 #include "Process_Group.H"
 #include "Single_Process.H"
+#include "Single_Process_MHV.H"
 
 #include "Run_Parameter.H"
 #include "Message.H"
@@ -29,7 +30,7 @@ using namespace std;
 
 Process_Group::Process_Group() :
   Process_Base(NULL,0,0,NULL,NULL,NULL,0,0,0,0,0,-1.),
-  m_resetted(false), m_weventmode(0)
+  m_resetted(false), m_weventmode(0), m_enable_mhv(false)
 { 
   m_name  = "Empty_Group"; 
   p_pl    = 0;
@@ -41,10 +42,11 @@ Process_Group::Process_Group(Process_Info* pinfo,int _nin,int _nout,Flavour *& _
 			     PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			     int _gen_str,int _orderQCD, int _orderEW,
 			     int _kfactorscheme,int _scalescheme,double _scale,
-			     Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi,double ycut, double error,std::string e_func) :
+			     Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi,double ycut, double error,
+			     std::string e_func, bool enable_mhv) :
   Process_Base(pinfo,_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
 	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,ycut,error),
-  m_resetted(false), m_weventmode(0)
+  m_resetted(false), m_weventmode(0), m_enable_mhv(enable_mhv)
 {
   p_selected  = NULL;
 
@@ -183,8 +185,12 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
 	  }
 	}
 	if (take) {
-	  Add(new Single_Process(pi,m_nin,m_nout,_fl,p_isrhandler,p_beamhandler,_seldata,m_gen_str,m_orderQCD,m_orderEW,
-				 m_kfactorscheme,m_scalescheme,m_scale[stp::as],_pl,m_nex,p_ex_fl,m_usepi,m_ycut,m_maxerror,m_efunc));
+	  if (m_enable_mhv && CF.PureGluonic(m_nin,_fl,m_nout,&_fl[m_nin]))
+	    Add(new Single_Process_MHV(pi,m_nin,m_nout,_fl,p_isrhandler,p_beamhandler,_seldata,m_gen_str,m_orderQCD,m_orderEW,
+				       m_kfactorscheme,m_scalescheme,m_scale[stp::as],_pl,m_nex,p_ex_fl,m_usepi,m_ycut,m_maxerror,m_efunc));
+	  else
+	    Add(new Single_Process(pi,m_nin,m_nout,_fl,p_isrhandler,p_beamhandler,_seldata,m_gen_str,m_orderQCD,m_orderEW,
+				   m_kfactorscheme,m_scalescheme,m_scale[stp::as],_pl,m_nex,p_ex_fl,m_usepi,m_ycut,m_maxerror,m_efunc));
 	}
       }
     }
@@ -722,7 +728,7 @@ void Process_Group::SetAtoms(bool _atoms) { m_atoms = _atoms; }
   ----------------------------------------------------------------------------------*/
 
 int Process_Group::InitAmplitude(Interaction_Model_Base * model,Topology * top,Vec4D *& testmoms,
-				 vector<Single_Process *> & links,vector<Single_Process *> & errs,
+				 vector<Process_Base *> & links,vector<Process_Base *> & errs,
 				 int & totalsize, int & procs, int & current_atom)
 {
   int okay = 1;
@@ -807,6 +813,7 @@ bool Process_Group::SetUpIntegrator()
 {
   bool okay = 1;
   if (m_atoms) {
+    PRINT_INFO(m_procs.size());
     for (size_t i=0;i<m_procs.size();i++) {
       if (m_procs[i]->Partner()==NULL) {
 	if (!(m_procs[i]->SetUpIntegrator())) okay = 0;

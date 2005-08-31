@@ -58,6 +58,7 @@ namespace AMEGIC {
 
     Single_Amplitude* GetFirstGraph() {return firstgraph;}
     Point* GetPointlist(int);
+    void   FillPointlist();
     void   Reset_ProbAbs();
     double Get_Probab(int);
     int    FourVertex(int i) { return ExistFourVertex(GetPointlist(i)); } 

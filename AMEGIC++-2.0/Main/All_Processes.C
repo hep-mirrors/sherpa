@@ -76,7 +76,7 @@ void All_Processes::SetupEnhance() {
 
 int All_Processes::InitAllProcesses(Interaction_Model_Base * model,Topology * top,Vec4D *& moms)
 {
-  vector<Single_Process *> links,errs;
+  vector<Process_Base *> links,errs;
   bool okay     = 1;
   int totalsize = 0;
   int procs     = 0;
@@ -103,7 +103,6 @@ int All_Processes::InitAllProcesses(Interaction_Model_Base * model,Topology * to
 	       <<" No amplitude constructed for any process. Nothing to integrate."<<endl;
     return -1;
   }
-
   if (okay) {
     for (size_t i=0;i<links.size();i++) {
       msg_Tracking()<<"========================================================="<<endl

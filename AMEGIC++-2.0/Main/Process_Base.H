@@ -23,7 +23,9 @@
 
 namespace AMEGIC {
   class Process_Base;
-  class Single_Process;
+  class Amplitude_Handler;
+  class Helicity;
+//   class Single_Process;
 
   class Process_Base : public PHASIC::Integrable_Base {
   protected:
@@ -73,15 +75,18 @@ namespace AMEGIC {
     virtual ~Process_Base();
 
     virtual int    InitAmplitude(Interaction_Model_Base *,AMEGIC::Topology *,
-				 ATOOLS::Vec4D *&,std::vector<AMEGIC::Single_Process *> &,
-				 std::vector<AMEGIC::Single_Process *> &,int &,int &,int &)=0;
+				 ATOOLS::Vec4D *&,std::vector<AMEGIC::Process_Base *> &,
+				 std::vector<AMEGIC::Process_Base *> &,int &,int &,int &)=0;
     virtual int    InitAmplitude(Interaction_Model_Base *,AMEGIC::Topology *)        =0;
     virtual bool   SetUpIntegrator()                                                 =0; 
 //     virtual void   AddChannels(Process_Base *,PHASIC::Multi_Channel *,
 //     			       PHASIC::channelinfos &,PHASIC::channelinfos &);
     virtual void   AddChannels(Process_Base *);
     virtual double Result()   {return 0.;}
-    /*------------------------------------------------------------------------------
+    virtual Amplitude_Handler * GetAmplitudeHandler() =0;   
+    virtual Helicity *          GetHelicity() =0;
+    virtual bool                NewLibs() =0;
+/*------------------------------------------------------------------------------
 
       Process management
 
@@ -101,6 +106,7 @@ namespace AMEGIC {
     virtual void             WriteOutXSecs(std::ofstream &)                        =0;
     virtual size_t           Size()                                                =0;
     virtual Process_Base  *  operator[] (int idx)                                  =0;
+    virtual std::string      PSLibName()                                           =0;
 
     virtual void             SetBeam(BEAM::Beam_Spectra_Handler *);
     virtual void             SetISR(PDF::ISR_Handler *);

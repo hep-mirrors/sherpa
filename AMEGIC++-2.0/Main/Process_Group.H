@@ -6,11 +6,13 @@
 #include <string>
 
 namespace AMEGIC {
+  class Single_Process;
   class Process_Group : public Process_Base {
   protected :
     std::vector<Process_Base *> m_procs;
     bool m_resetted;
-    int m_weventmode;
+    int  m_weventmode;
+    bool m_enable_mhv;
     /*------------------------------------------------------------------------------
 
       Constructors
@@ -22,7 +24,8 @@ namespace AMEGIC {
 		  ATOOLS::Selector_Data * =NULL,
 		  int=0,int=99,int=99,int=0,int=0,double=-1.,
 		  Pol_Info* _pl=0,int _nex=0,ATOOLS::Flavour * _ex_fl=0,int usepi=0, 
-		  double ycut=-1., double error=-1.,std::string e_func="1");
+		  double ycut=-1., double error=-1.,
+		  std::string e_func="1", bool enable_mhv=false);
     Process_Group();
     ~Process_Group();
     /*------------------------------------------------------------------------------
@@ -71,11 +74,15 @@ namespace AMEGIC {
       ------------------------------------------------------------------------------*/
   public:
     int            InitAmplitude(Interaction_Model_Base *,Topology *,ATOOLS::Vec4D *&,
-				 std::vector<Single_Process *> &,
-				 std::vector<Single_Process *> &, int &, int &, int &);
+				 std::vector<Process_Base *> &,
+				 std::vector<Process_Base *> &, int &, int &, int &);
     int            InitAmplitude(Interaction_Model_Base *,Topology *) { return 1; }
     bool           SetUpIntegrator();
     void           InitWeightHistogram();
+    Amplitude_Handler * GetAmplitudeHandler() {return 0;} 
+    Helicity *          GetHelicity() {return 0;}
+    bool                NewLibs() {return 0;}
+    std::string         PSLibName() {return std::string("");}        
     /*------------------------------------------------------------------------------
 
       Calculating total cross sections and single event generation

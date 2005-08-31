@@ -17,6 +17,11 @@ namespace AMEGIC {
 
 
     Pfunc() {argnum = 0;}
+    Pfunc(int a) {
+      argnum = a;
+      arg = new int[argnum];
+      haspol = 0;
+    }
     Pfunc(const Pfunc& p) {
       argnum = 0;
       *this = p;

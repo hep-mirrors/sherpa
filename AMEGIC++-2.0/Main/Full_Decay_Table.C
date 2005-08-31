@@ -93,7 +93,7 @@ bool Full_Decay_Table::InitAllDecays(Interaction_Model_Base * _model,Topology * 
 {
   if (m_isevaluated) return 1;
   Vec4D * moms = NULL;
-  vector<Single_Process *> links,errs;
+  vector<Process_Base *> links,errs;
   int totalsize = 0;
   int procs     = 0;
   int current_atom = 0;

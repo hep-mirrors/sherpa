@@ -13,7 +13,8 @@ libZfunctions_la_SOURCES = Basic_Func.C Basic_Sfuncs.C Basic_Pfunc.C \
 			   G4_Calc.C V4_Calc.C AnomalousV4_Calc.C \
 			   VVV_Calc.C ZLED_Calc.C Loops_Calc.C\
 			   Zfunc_Calc.C \
-			   Calculator.C
+			   Calculator.C \
+                           MHV_Calculator.C
 INCLUDES = -I../../Amplitude \
 	   -I../../Amplitude/AmplTools \
 	   -I../../Amplitude/Zfunctions \
@@ -24,7 +25,7 @@ INCLUDES = -I../../Amplitude \
 	   -I../../../ATOOLS-2.0/Phys \
 	   -I../../../ATOOLS-2.0/Math \
 	   -I../../../ATOOLS-2.0/Org 
-noinst_HEADERS = Basic_Func.H  Basic_Sfuncs.H Basic_Func.icc Zfunc_Calc.H Calculator.H
+noinst_HEADERS = Basic_Func.H  Basic_Sfuncs.H Basic_Func.icc Zfunc_Calc.H Calculator.H MHV_Calculator.H
 
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(AMEGICFLAGS)

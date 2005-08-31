@@ -80,7 +80,7 @@ namespace AMEGIC {
     bool                NewLibs() {return m_newlib;}
     bool                FoundMappingFile(std::string &,std::string &);
     int                 InitAmplitude(Interaction_Model_Base *,Topology *,ATOOLS::Vec4D *&,
-				      std::vector<Single_Process *> &,std::vector<Single_Process *> &,
+				      std::vector<Process_Base *> &,std::vector<Process_Base *> &,
 				      int &,int &,int &);
     int                 InitAmplitude(Interaction_Model_Base *,Topology *);
     void                InitDecay(Topology* top); 

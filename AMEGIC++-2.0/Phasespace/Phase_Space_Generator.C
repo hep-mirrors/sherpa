@@ -44,9 +44,12 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
 
   Data_Read dr(rpa.GetPath()+string("/Integration.dat"));
   int inttype  = dr.GetValue<int>("INTEGRATOR",4);
+  if (inttype<4) return 0;
 
   if (IsFile(lmapname)) return 1-GetLibList(liblist);
 
+  unsigned int  mode_dir = 0755;
+  ATOOLS::MakeDir((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path).c_str(),mode_dir);
   int newchannels = 0;
   //int extrachannel = 0;
   ofstream lmf;

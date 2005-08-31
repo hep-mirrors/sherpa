@@ -407,6 +407,13 @@ bool Check_External_Flavours::ValidProcess(int _nin,Flavour * _in,
   return 1;
 }
 
+bool Check_External_Flavours::PureGluonic(int _nin,Flavour * _in,
+					  int _nout,Flavour * _out) {
+  for (int i=0;i<_nin;i++)  { if (!_in->IsGluon())  return 0; }
+  for (int i=0;i<_nout;i++) { if (!_out->IsGluon()) return 0; }
+  return 1;
+}
+
 
 
 class Order_FVST {

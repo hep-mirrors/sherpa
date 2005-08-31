@@ -7,6 +7,7 @@
 #include "MyStrStream.H"
 #include "Process_Info.H"
 #include <iomanip>
+#include "Single_Process_MHV.H"
 
 //#define _DECAYS_
 
@@ -210,6 +211,7 @@ void Amegic::ReadInProcessfile(string file)
   std::string enhance_function="1";
   double      maxerror=-1.;
   bool        print_graphs=false;
+  bool        enable_mhv=false;
   string      selectorfile;
   while (from) {
     getline(from,buf);
@@ -429,6 +431,10 @@ void Amegic::ReadInProcessfile(string file)
 		if (position > -1) {
 		  print_graphs=true;
 		}
+		position       = buf.find(string("Enable_MHV"));
+		if (position > -1) {
+		  enable_mhv=true;
+		}
 
 		position     = buf.find(string("N_Max :"));
 		if (position > -1) {
@@ -489,15 +495,21 @@ void Amegic::ReadInProcessfile(string file)
 	    if (summass<rpa.gen.Ecms()) {
 	      Process_Base * proc=NULL;
 	      if (single) {
-		proc = new Single_Process(pinfo,nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
-					  order_strong,order_ew,
-					  -kfactor_scheme,-scale_scheme,fixed_scale,
-					  plavs,nex,excluded,usepi,ycut,maxerror,enhance_function);
+		if (enable_mhv && CF.PureGluonic(nIS,IS,nFS,FS))
+		  proc = new Single_Process_MHV(pinfo,nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
+						order_strong,order_ew,
+						-kfactor_scheme,-scale_scheme,fixed_scale,
+						plavs,nex,excluded,usepi,ycut,maxerror,enhance_function);
+		else
+		  proc = new Single_Process(pinfo,nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
+					    order_strong,order_ew,
+					    -kfactor_scheme,-scale_scheme,fixed_scale,
+					    plavs,nex,excluded,usepi,ycut,maxerror,enhance_function);
 	      }
 	      else proc = new Process_Group(pinfo,nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
 					    order_strong,order_ew,
 					    -kfactor_scheme,-scale_scheme,fixed_scale,
-					    plavs,nex,excluded,usepi,ycut,maxerror,enhance_function);
+					    plavs,nex,excluded,usepi,ycut,maxerror,enhance_function,enable_mhv);
 	      proc->SetEnhance(enhance_factor,maxreduction_factor,maxredepsilon);
 	      if (print_graphs) proc->SetPrintGraphs();
 	      p_procs->Add(proc);
