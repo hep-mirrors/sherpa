@@ -28,7 +28,7 @@ Beam_Remnant_Handler(const std::string path,const std::string file,
   p_kperp = new Primordial_KPerp(path,file);
   for (size_t i=0;i<2;++i) {
     p_beampart[i]=p_isr->GetRemnant(i);
-    p_beampart[i]->SetBeamEnergy(beam->GetBeam(i)->Energy());
+    p_beampart[i]->SetBeam(beam->GetBeam(i));
     p_kperp->SetRemnant(p_beampart[i],i);
   }
 }

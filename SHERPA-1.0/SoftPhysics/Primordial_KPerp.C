@@ -1,6 +1,7 @@
 #include "Primordial_KPerp.H"
 
 #include "Remnant_Base.H"
+#include "Beam_Base.H"
 #include "Run_Parameter.H"
 #include "Data_Read.H"
 #include "Random.H"
@@ -59,7 +60,8 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
   p_kperp[0]->resize(blob[0]->NOutP()); 
   p_kperp[1]->resize(blob[1]->NOutP());
   p_boosted->clear();
-  double Etot=p_remnants[0]->BeamEnergy()+p_remnants[1]->BeamEnergy();
+  double Etot=p_remnants[0]->GetBeam()->Energy()
+    +p_remnants[1]->GetBeam()->Energy();
   if (m_scheme==0) {
     bool success=true;
     Vec3D sum[2];

@@ -2,6 +2,7 @@
 
 #include "My_Limits.H"
 #include "Remnant_Base.H"
+#include "Beam_Base.H"
 #include "ISR_Handler.H"
 #include "Jet_Finder.H"
 #include "Kt_Algorithm.H"
@@ -69,7 +70,7 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
       if ((*bit)->Status()!=0) return false;
   }
   for (short unsigned int i=0;i<2;++i) {
-    m_emax[i]=p_remnants[i]->BeamEnergy();
+    m_emax[i]=p_remnants[i]->GetBeam()->Energy();
     p_mihandler->ISRHandler()->Reset(i);
     p_remnants[i]->QuickClear();
   }
