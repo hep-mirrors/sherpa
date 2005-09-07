@@ -30,11 +30,20 @@ void Semihard_QCD::CreateFSRChannels()
 {
   if (m_fsrmode==0 || p_fsrinterface==NULL) {
     p_pshandler->FSRIntegrator()->DropAllChannels();
-    p_pshandler->FSRIntegrator()->
-      Add(new PHASIC::S1Channel(2,2,p_flavours,
-				ATOOLS::Flavour(ATOOLS::kf::gluon)));
-    p_pshandler->FSRIntegrator()->Add(new PHASIC::T1Channel(2,2,p_flavours));
-    p_pshandler->FSRIntegrator()->Add(new PHASIC::U1Channel(2,2,p_flavours));
+    if (p_isrhandler->KMROn()>0) {
+      p_pshandler->FSRIntegrator()->
+	Add(new PHASIC::T2Channel(m_nin,m_nout,p_flavours));
+      p_pshandler->FSRIntegrator()->
+	Add(new PHASIC::T3Channel(m_nin,m_nout,p_flavours));
+    }
+    else {
+      p_pshandler->FSRIntegrator()->
+	Add(new PHASIC::S1Channel(m_nin,m_nout,p_flavours));
+      p_pshandler->FSRIntegrator()->
+	Add(new PHASIC::T1Channel(m_nin,m_nout,p_flavours));
+      p_pshandler->FSRIntegrator()->
+	Add(new PHASIC::U1Channel(m_nin,m_nout,p_flavours));
+    }
     m_fsrmode=1;
   }
   else {
