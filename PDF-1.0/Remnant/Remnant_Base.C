@@ -4,6 +4,7 @@
 #include "Exception.H"
 #include "Momentum_Shifter.H"
 #include "MyStrStream.H"
+#include "Beam_Base.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Remnant_Base
@@ -31,6 +32,7 @@ std::ostream &PDF::operator<<(std::ostream &ostr,const rtp::code code)
 }
 
 Remnant_Base::Remnant_Base(const rtp::code type,const unsigned int beam):
+  p_beam(NULL),
   m_type(type),
   m_beam(beam),
   p_partner(NULL),
@@ -45,7 +47,7 @@ void Remnant_Base::Clear()
   m_active=true;
   p_last[1]=p_last[0]=NULL;
   p_beamblob=NULL;
-  m_erem=m_ebeam;
+  m_erem=p_beam->Energy();
   m_initialized=false;
   s_last[0].clear();
   s_last[1].clear();
@@ -53,8 +55,9 @@ void Remnant_Base::Clear()
 
 void Remnant_Base::QuickClear()
 {
+  PROFILE_HERE;
   m_extracted.clear();
-  m_erem=m_ebeam;
+  m_erem=p_beam->Energy();
   m_initialized=false;
 }
 
@@ -144,6 +147,7 @@ ATOOLS::Flavour Remnant_Base::ConstituentType(const ATOOLS::Flavour &flavour)
 
 bool Remnant_Base::Extract(ATOOLS::Particle *parton) 
 { 
+  PROFILE_HERE;
   if (TestExtract(parton)) {
     m_initialized=true;
     m_extracted.push_back(parton); 
@@ -160,26 +164,31 @@ bool Remnant_Base::TestExtract(ATOOLS::Particle *parton)
 		       <<"Called with NULL pointer."<<std::endl;
     return false;
   }
-  double E=parton->Momentum()[0];
-  if (E<0.0 || (E>m_ebeam && !ATOOLS::IsEqual(E,m_ebeam))) {
-    ATOOLS::msg.Error()<<"Remnant_Base::TestExtract("<<parton<<"): "
-		       <<"Constituent energy out of range E = "
-		       <<E<<"."<<std::endl;
+  return TestExtract(parton->Flav(),parton->Momentum());
+}
+
+bool Remnant_Base::TestExtract(const ATOOLS::Flavour &flav,
+			       const ATOOLS::Vec4D &mom) 
+{
+  PROFILE_HERE;
+  double E(mom[0]), Eb(p_beam->Energy());
+  if (E<0.0 || (E>Eb && !ATOOLS::IsEqual(E,Eb))) {
+    ATOOLS::msg.Error()<<"Remnant_Base::TestExtract("<<flav<<","<<E<<"): "
+		       <<"Constituent energy out of range E_b = "
+		       <<Eb<<"."<<std::endl;
     return false;
   }
-  double erem=m_erem-(parton->Momentum()[0]+
-    (m_lastemin=MinimalEnergy(parton->Flav())));
+  double erem=m_erem-(E+(m_lastemin=MinimalEnergy(flav)));
   if (ATOOLS::IsZero(erem)) erem=0.0;
   if (erem<0.0) {
     msg_Tracking()<<"Remnant_Base::TestExtract(..): No remaining energy for "
-		  <<parton->Flav()<<", p = "<<parton->Momentum()<<" -> E_min = "
-		  <<(parton->Momentum()[0]+m_lastemin)<<std::endl;
+		  <<flav<<", E = "<<E<<" -> E_min = "
+		  <<(E+m_lastemin)<<std::endl;
     return false;
   }
-  if (parton->Momentum()[0]<=m_emin) {
+  if (E<=m_emin) {
     msg_Tracking()<<"Remnant_Base::TestExtract(..): Energy exceeds minimum for "
-		  <<parton->Flav()<<", p = "<<parton->Momentum()<<" <- E_min = "
-		  <<m_emin<<std::endl;
+		  <<flav<<", E = "<<E<<" <- E_min = "<<m_emin<<std::endl;
     return false;
   }
   return true;

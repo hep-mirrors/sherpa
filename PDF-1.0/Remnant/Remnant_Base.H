@@ -5,6 +5,8 @@
 #include "Blob.H"
 #include <vector>
 
+namespace BEAM { class Beam_Base; }
+
 namespace PDF {
 
   struct rtp {
@@ -31,6 +33,8 @@ namespace PDF {
 
   protected:
     
+    BEAM::Beam_Base *p_beam;
+
     rtp::code    m_type;
     unsigned int m_beam, m_errors;
 
@@ -43,7 +47,7 @@ namespace PDF {
     ATOOLS::Vec4D  m_pbeam;
 
     double m_erem, m_pzrem, m_lastemin, m_deltae, m_deltap;
-    double m_ebeam, m_emin, m_scale;
+    double m_emin, m_scale;
 
     bool m_active, m_initialized;
 
@@ -72,11 +76,13 @@ namespace PDF {
 
     virtual void UnDo(); 
 
+    bool TestExtract(const ATOOLS::Flavour &flav,
+		     const ATOOLS::Vec4D &mom) ;
     bool TestExtract(ATOOLS::Particle *parton);
     bool Extract(ATOOLS::Particle *parton);
 
     // inline functions 
-    inline void SetPartner(PDF::Remnant_Base *partner)   { p_partner=partner;     }
+    inline void SetPartner(PDF::Remnant_Base *partner) { p_partner=partner; }
 
     inline ATOOLS::Particle *Last()     { m_active=false; return p_last[0]; }
     inline ATOOLS::Blob     *BeamBlob() { return p_beamblob;                }
@@ -84,15 +90,15 @@ namespace PDF {
     inline rtp::code    Type() const { return m_type; }
     inline unsigned int Beam() const { return m_beam; }
 
-    inline double BeamEnergy() const    { return m_ebeam; }
-    inline double RemnantEnergy() const { return m_erem;  }
+    inline BEAM::Beam_Base *GetBeam() const       { return p_beam; }
+    inline double           RemnantEnergy() const { return m_erem; }
 
     inline unsigned int Errors() const { return m_errors; }
 
     inline void ClearErrors() { m_errors=0; }
 
-    inline void SetBeamEnergy(const double ebeam) { m_ebeam=ebeam; }
-    inline void SetScale(const double scale)      { m_scale=scale; }
+    inline void SetBeam(BEAM::Beam_Base *const beam) { p_beam=beam;   }
+    inline void SetScale(const double scale)         { m_scale=scale; }
 
   };// end of class Remnant_Base
 

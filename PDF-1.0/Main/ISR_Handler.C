@@ -26,7 +26,7 @@
 #define NO_ANALYSIS__ISR_Handler
 #endif
 
-#ifdef PROFILE__All
+#ifdef PROFILE__all
 #include "prof.hh"
 #else
 #ifdef PROFILE__ISR_Handler
@@ -178,8 +178,8 @@ void ISR_Handler::Init(double *splimits,double *kplimits)
   double x=1./2.+(m_mass2[0]-m_mass2[1])/(2.*E*E);
   double E1=x*E;
   double E2=E-E1;
-  p_remnants[0]->SetBeamEnergy(E1);
-  p_remnants[1]->SetBeamEnergy(E2);
+  p_remnants[0]->SetBeam(p_beam[0]);
+  p_remnants[1]->SetBeam(p_beam[1]);
   m_fixvecs[0]=Vec4D(E1,0.,0.,sqrt(sqr(E1)-m_mass2[0]));
   m_fixvecs[1]=Vec4D(E2,0.,0.,-m_fixvecs[0][3]);
 }
@@ -565,20 +565,20 @@ bool ISR_Handler::BoostInLab(Vec4D* p,const size_t n)
 bool ISR_Handler::CheckRemnantKinematics(const ATOOLS::Flavour &fl,
 					 double &x,int beam,bool swaped)
 {
+  PROFILE_HERE;
   p_remnants[beam]->QuickClear();
-  double pp=beam==0?x*p_beam[0]->OutMomentum().PPlus():
-    x*p_beam[1]->OutMomentum().PMinus();
-  double pm=ATOOLS::sqr(fl.Mass());
+  double pp(beam==0?x*p_beam[0]->OutMomentum().PPlus():
+	    x*p_beam[1]->OutMomentum().PMinus());
+  double pm(sqr(fl.PSMass()));
   if (m_kmrmode>0) pm=-m_kpkey[beam][3]/(1.0-m_zkey[beam][2])+m_kpkey[beam][3];
   pm/=pp;
-  ATOOLS::Vec4D mom((pp+pm)/2.0,m_kpkey[beam](0)[1],
-		    m_kpkey[beam](0)[2],beam==0?(pp-pm)/2.0:(pm-pp)/2.0);
+  Vec4D mom((pp+pm)/2.0,m_kpkey[beam](0)[1],
+	    m_kpkey[beam](0)[2],beam==0?(pp-pm)/2.0:(pm-pp)/2.0);
   if (m_kmrmode>0) {
     mom+=p_kmrlast[swaped?1-beam:beam];
     if (mom[0]<0.0 || mom[0]>p_beam[beam]->OutMomentum()[0]) return false;
   }
-  ATOOLS::Particle p(-1,fl,mom);
-  return p_remnants[beam]->TestExtract(&p);
+  return p_remnants[beam]->TestExtract(fl,mom);
 }
 
 void ISR_Handler::Extract(const ATOOLS::Flavour flavour,const double energy,

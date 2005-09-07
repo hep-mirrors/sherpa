@@ -3,6 +3,7 @@
 #include "Running_AlphaS.H"
 #include "Run_Parameter.H"
 #include "Exception.H"
+#include "Beam_Base.H"
 #include "Random.H"
 
 #ifdef PROFILE__all
@@ -15,6 +16,7 @@
 #endif
 
 using namespace PDF;
+using namespace ATOOLS;
 
 Hadron_Remnant::Hadron_Remnant(PDF::ISR_Handler *isrhandler,
 			       const unsigned int beam):
@@ -34,10 +36,9 @@ GetConstituents(const ATOOLS::Flavour flav)
   int hadint=(flav.Kfcode()-flav.Kfcode()/10000)/10;
   if ((hadint>100)&&(hadint<1000)) {
     m_constit.resize(3);
-    m_constit[0]=ATOOLS::Flavour(ATOOLS::kf::code(hadint)/100);
-    m_constit[1]=ATOOLS::Flavour(ATOOLS::kf::code((hadint-
-						   (hadint/100)*100)/10));
-    m_constit[2]=ATOOLS::Flavour(ATOOLS::kf::code(hadint-(hadint/10)*10));
+    m_constit[0]=Flavour(kf::code(hadint)/100);
+    m_constit[1]=Flavour(kf::code((hadint-(hadint/100)*100)/10));
+    m_constit[2]=Flavour(kf::code(hadint-(hadint/10)*10));
     if (flav.IsAnti()) {
       for(int i=0;i<3;i++) m_constit[i]=m_constit[i].Bar();
     }
@@ -49,8 +50,8 @@ GetConstituents(const ATOOLS::Flavour flav)
   }
   if ((hadint>10)&&(hadint<100)) {
     m_constit.resize(2);
-    m_constit[0]=ATOOLS::Flavour(ATOOLS::kf::code(hadint)/10);
-    m_constit[1]=ATOOLS::Flavour(ATOOLS::kf::code(hadint-(hadint/10)*10));
+    m_constit[0]=Flavour(kf::code(hadint)/10);
+    m_constit[1]=Flavour(kf::code(hadint-(hadint/10)*10));
     if (flav.IsAnti()) {
       for(int i=0;i<2;i++) m_constit[i]=m_constit[i].Bar();
     }
@@ -69,7 +70,7 @@ bool Hadron_Remnant::FillBlob(ATOOLS::Blob *beamblob,
   PROFILE_HERE;
   p_beamblob=beamblob;
   m_pbeam=beamblob->InParticle(0)->Momentum();
-  m_hardpt=ATOOLS::Vec4D();
+  m_hardpt=Vec4D();
   for (size_t i=0;i<m_extracted.size();++i) {
     m_hardpt+=m_extracted[i]->Momentum();
   }
@@ -101,21 +102,21 @@ bool Hadron_Remnant::DiceKinematics()
 {
   PROFILE_HERE;
   unsigned int trials;
-  ATOOLS::Vec4D ptot=m_pbeam;
+  Vec4D ptot=m_pbeam;
   double m_xtot=1.0;
   for (unsigned int i=0;i<m_extracted.size();++i) 
     m_xtot-=m_extracted[i]->Momentum()[0]/ptot[0];
   trials=0;
   m_xscheme=1;
   double xtot;
-  std::map<ATOOLS::Particle*,double> xmap;
+  std::map<Particle*,double> xmap;
   do {
     ++trials;
     xtot=m_xtot;
     p_pdfbase->Reset();
     for(unsigned int i=0;i<m_extracted.size();++i) {
       p_pdfbase->Extract(m_extracted[i]->Flav(),
-			 m_extracted[i]->Momentum()[0]/m_ebeam);
+			 m_extracted[i]->Momentum()[0]/p_beam->Energy());
     }
     for (unsigned int i=0;i<m_companions.size();++i) {
       if (!m_companions[i]->Flav().IsDiQuark()) {
@@ -138,13 +139,13 @@ bool Hadron_Remnant::DiceKinematics()
   p_pdfbase->Reset();
   if (m_xscheme==0) {
     xtot=0.;
-    for (std::map<ATOOLS::Particle*,double>::iterator it=xmap.begin();
+    for (std::map<Particle*,double>::iterator it=xmap.begin();
 	 it!=xmap.end(); ++it) {
       double x=1.1*it->first->Flav().PSMass()/m_pbeam[0];
-      if (x==0.0) x=10.*ATOOLS::rpa.gen.Accu();
+      if (x==0.0) x=10.*rpa.gen.Accu();
       xtot+=it->second=x;
     }
-    for (std::map<ATOOLS::Particle*,double>::iterator it=xmap.begin();
+    for (std::map<Particle*,double>::iterator it=xmap.begin();
 	 it!=xmap.end(); ++it) {
       it->second*=m_xtot/xtot;
     }
@@ -156,14 +157,14 @@ bool Hadron_Remnant::DiceKinematics()
     double E=xmap[m_companions[j]]*m_pbeam[0];
     double m=m_companions[j]->Flav().PSMass();
     double pmax=(1.0-1.0e-12)*sqrt(E*E-m*m);
-    double xperp=ATOOLS::Min(xperptot,pmax/ptot.PPerp());
+    double xperp=Min(xperptot,pmax/ptot.PPerp());
     xperptot-=xperp;
-    ATOOLS::Vec4D p=xperp*ptot;
+    Vec4D p=xperp*ptot;
     p[0]=E;
-    p[3]=ATOOLS::Sign(m_pbeam[3])*sqrt(E*E-p.PPerp2()-ATOOLS::sqr(m));
+    p[3]=Sign(m_pbeam[3])*sqrt(E*E-p.PPerp2()-sqr(m));
     m_companions[j]->SetMomentum(p);
     if (!(E>0.) || (!(p[3]>0.) && !(p[3]<=0.))) {
-      ATOOLS::msg.Error()<<"Hadron_Remnant::DiceKinematics(): "
+      msg.Error()<<"Hadron_Remnant::DiceKinematics(): "
 			 <<"Parton ("<<m_companions[j]<<") "
 			 <<" has non-positive momentum: p = "
 			 <<m_companions[j]->Momentum()<<" m_{"
@@ -176,37 +177,35 @@ bool Hadron_Remnant::DiceKinematics()
   return true;
 }
 
-bool Hadron_Remnant::ValenceQuark(ATOOLS::Particle *const quark) 
+bool Hadron_Remnant::ValenceQuark(Particle *const quark) 
 {
-  double x=quark->Momentum()[0]/m_ebeam;
+  double x=quark->Momentum()[0]/p_beam->Energy();
   if (x>1.) {
-    ATOOLS::msg.Out()<<" WARNING in Hadron_Remnant::ValenceQuark \n"
+    msg.Out()<<" WARNING in Hadron_Remnant::ValenceQuark \n"
 	     <<" (x-1)="<<x-1<<std::endl;
     x = 1.;
   }
   if (x<p_pdfbase->XMin() || p_pdfbase->XMax()) return false;
   p_pdfbase->Calculate(x,0.,0.,m_scale);
   double val=p_pdfbase->GetXPDF(quark->Flav());
-  return val>(p_pdfbase->GetXPDF(quark->Flav().Bar())+val)*ATOOLS::ran.Get();
+  return val>(p_pdfbase->GetXPDF(quark->Flav().Bar())+val)*ran.Get();
 }
 
 ATOOLS::Flavour Hadron_Remnant::Opposite(ATOOLS::Flavour flav) const
 {
   bool found=false;
-  ATOOLS::kf::code rem[2];
+  kf::code rem[2];
   for (short unsigned int i=0,j=0;i<3;++i) {
     if (m_constit[i]==flav && !found) found=true;
     else rem[j++]=m_constit[i].Kfcode();
   }
-  ATOOLS::Flavour anti=ATOOLS::Flavour(ATOOLS::kf::code(abs(rem[0])*1000+
-							abs(rem[1])*100+3));
+  Flavour anti=Flavour(kf::code(abs(rem[0])*1000+abs(rem[1])*100+3));
   if (rem[0]!=rem[1]) {
-    if (ATOOLS::ran.Get()<0.25) 
-      anti=ATOOLS::Flavour(ATOOLS::kf::code(abs(rem[0])*1000+
-					    abs(rem[1])*100+1));
+    if (ran.Get()<0.25) 
+      anti=Flavour(kf::code(abs(rem[0])*1000+abs(rem[1])*100+1));
   }
   else {
-    anti=ATOOLS::Flavour(ATOOLS::kf::code(abs(rem[0])*1100+3));
+    anti=Flavour(kf::code(abs(rem[0])*1100+3));
   }
   if (flav.IsAnti()) anti=anti.Bar();
   return anti;
@@ -216,10 +215,11 @@ bool Hadron_Remnant::DecomposeHadron()
 {
   PROFILE_HERE;
   bool success=true;
-  for (ATOOLS::Particle_List::iterator pit=m_extracted.begin();
+  double Eb(p_beam->Energy());
+  for (Particle_List::iterator pit=m_extracted.begin();
        pit!=m_extracted.end();++pit) {
-    if ((*pit)->Momentum()[0]>m_ebeam || (*pit)->Momentum()[0]<0.0) {
-      ATOOLS::msg.Error()<<"Hadron_Remnant::DecomposeHadron(): "
+    if ((*pit)->Momentum()[0]>Eb || (*pit)->Momentum()[0]<0.0) {
+      msg.Error()<<"Hadron_Remnant::DecomposeHadron(): "
 			 <<"Constituent energy out of range. \n   E_"
 			 <<(*pit)->Flav()<<" = "<<(*pit)->Momentum()[0]
 			 <<"."<<std::endl;
@@ -236,9 +236,9 @@ bool Hadron_Remnant::DecomposeHadron()
       }
     }
   }
-  ATOOLS::Flavour flav=m_constit[(size_t)(ATOOLS::ran.Get()*3.)];
-  ATOOLS::Particle *part = new ATOOLS::Particle(-1,flav); 
-  part->SetFlow(COLOR((qri::type)(flav.IsAnti())),ATOOLS::Flow::Counter());
+  Flavour flav=m_constit[(size_t)(ran.Get()*3.)];
+  Particle *part = new Particle(-1,flav); 
+  part->SetFlow(COLOR((qri::type)(flav.IsAnti())),Flow::Counter());
   p_start = new Color_Dipole(part,&m_companions);  
   p_start->Begin(ANTI(flav.IsAnti()))->SetFlav(Opposite(flav));
   m_companions.push_back(part);
@@ -250,9 +250,9 @@ double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale)
   PROFILE_HERE;
   double cut, x;
   cut=2.0*(flavour.PSMass()+m_hardpt.PPerp()/
-	   ATOOLS::sqr(m_companions.size()))/sqrt(scale);
+	   sqr(m_companions.size()))/sqrt(scale);
   if (scale<p_pdfbase->Q2Min()) {
-    ATOOLS::msg.Error()<<"Hadron_Remnant::GetXPDF("<<flavour<<","<<scale<<"): "
+    msg.Error()<<"Hadron_Remnant::GetXPDF("<<flavour<<","<<scale<<"): "
 		       <<"Scale under-runs minimum given by PDF: "
 		       <<scale<<" < "<<p_pdfbase->Q2Min()<<std::endl;
     return cut;
@@ -264,87 +264,56 @@ double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale)
     xtrials=0;
     do { 
       ++xtrials;
-      x=ATOOLS::ran.Get(); 
+      x=ran.Get(); 
       if (xtrials>=m_maxtrials) x=cut;
     } while (x<cut);
     p_pdfbase->Calculate(x,0.,0.,scale);
     if (pdftrials>=m_maxtrials) { m_xscheme=0; return 0.01; }
-    if (p_pdfbase->GetXPDF(flavour)/x>ATOOLS::ran.Get()) return x;
+    if (p_pdfbase->GetXPDF(flavour)/x>ran.Get()) return x;
   } 
   return 0.0;
 }
 
 double Hadron_Remnant::MinimalEnergy(const ATOOLS::Flavour &flavour) 
 {
+  PROFILE_HERE;
   if (!m_initialized) {
-    if (flavour.IsGluon()) {
-      size_t single=(size_t)(ATOOLS::ran.Get()*3.); 
-      ATOOLS::Flavour difl, fl=m_constit[single];
-      int di[2];
-      for (unsigned int j=0, i=0;i<3;i++) 
-	if (i!=single) di[j++]=m_constit[i].Kfcode();
-      if (di[0]!=di[1]) {
-	ATOOLS::Flavour singlet=
-	  ATOOLS::Flavour(ATOOLS::kf::code(abs(di[0])*1000+abs(di[1])*100+1));
-	ATOOLS::Flavour triplet=
-	  ATOOLS::Flavour(ATOOLS::kf::code(abs(di[0])*1000+abs(di[1])*100+3));
-	if (singlet.PSMass()>triplet.PSMass()) difl=singlet;
-	else difl=triplet;
-      }
-      else {
-	difl=ATOOLS::Flavour(ATOOLS::kf::code(abs(di[0])*1100+3));
-      }
-      if (m_constit[0].IsAnti()) difl=difl.Bar();
-      return difl.PSMass()+fl.PSMass();
-    }
-    else if (flavour.IsQuark()) {
-      bool found=false;
-      int di[3];
-      for (size_t j=0,i=0;i<m_constit.size();++i) {
-	if (found||flavour!=m_constit[i]) di[j++]=m_constit[i];
+    bool found(false);
+    kf::code di[3];
+    if (flavour.IsQuark()) {
+      short unsigned int j=0;
+      for (Flavour_Vector::const_iterator flit(m_constit.begin());
+	   flit!=m_constit.end();++flit) {
+	if (found || flavour!=*flit) di[j++]=flit->Kfcode();
 	else found=true;
       }
-      if (found) {
-	ATOOLS::Flavour difl;
-	if (di[0]!=di[1]) {
-	  ATOOLS::Flavour singlet=
-	    ATOOLS::Flavour(ATOOLS::kf::code(abs(di[0])*1000+
-					     abs(di[1])*100+1));
-	  ATOOLS::Flavour triplet=
-	    ATOOLS::Flavour(ATOOLS::kf::code(abs(di[0])*1000+
-					     abs(di[1])*100+3));
-	  if (singlet.PSMass()>triplet.PSMass()) difl=singlet;
-	  else difl=triplet;
-	}
-	else {
-	  difl=ATOOLS::Flavour(ATOOLS::kf::code(abs(di[0])*1100+3));
-	}
-	if (m_constit[0].IsAnti()) difl=difl.Bar();
-	return difl.PSMass();
-      }
-      else {
-	unsigned int single=(unsigned int)(ATOOLS::ran.Get()*3.0); 
-	ATOOLS::Flavour difl, fl=m_constit[single];
-	for (unsigned int j=0,i=0;i<3;i++) {
-	  if (i!=single) di[j++]=m_constit[i].Kfcode();
-	}
-	if (di[0]!=di[1]) {
-	  ATOOLS::Flavour singlet=
-	    ATOOLS::Flavour(ATOOLS::kf::code(abs(di[0])*1000+
-					     abs(di[1])*100+1));
-	  ATOOLS::Flavour triplet=
-	    ATOOLS::Flavour(ATOOLS::kf::code(abs(di[0])*1000+
-					     abs(di[1])*100+3));
-	  if (singlet.PSMass()>triplet.PSMass()) difl=singlet;
-	  else difl=triplet;
-	}
-	else {
-	  difl=ATOOLS::Flavour(ATOOLS::kf::code(di[0]*1100+3));
-	}
-	if (m_constit[0].IsAnti()) difl=difl.Bar();
-	return difl.PSMass()+fl.PSMass()+flavour.Bar().PSMass();
-      }
     }
+    Flavour difl;
+    if (!found || flavour.IsGluon()) {
+      int single=-1;
+      for (size_t i=0;i<m_constit.size();++i) {
+	for (size_t j=i+1;j<m_constit.size();++j) {
+	  if (m_constit[i]==m_constit[j]) { 
+	    single=j; 
+	    break; 
+	  }
+	}
+	if (single>0) break;
+      }
+      Flavour fl(m_constit[single]);
+      for (short unsigned int j=0, i=0;i<3;i++) 
+	if (i!=single) di[j++]=m_constit[i].Kfcode();
+      if (di[0]>di[1]) difl=Flavour((kf::code)(di[0]*1000+di[1]*100+1));
+      else if (di[1]>di[0]) difl=Flavour((kf::code)(di[1]*1000+di[0]*100+1));
+      else difl=Flavour((kf::code)(di[0]*1100+3));
+      if (m_constit[single].IsAnti()) difl=difl.Bar();
+      return difl.PSMass()+fl.PSMass()+flavour.Bar().PSMass();
+    }
+    if (di[0]>di[1]) difl=Flavour((kf::code)(di[0]*1000+di[1]*100+1));
+    else if (di[1]>di[0]) difl=Flavour((kf::code)(di[1]*1000+di[0]*100+1));
+    else difl=Flavour((kf::code)(di[0]*1100+3));
+    if (m_constit[0].IsAnti()) difl=difl.Bar();
+    return difl.PSMass();
   }
   else {
     if (flavour.IsQuark()) return flavour.Bar().PSMass();
@@ -354,15 +323,15 @@ double Hadron_Remnant::MinimalEnergy(const ATOOLS::Flavour &flavour)
 
 ATOOLS::Flavour Hadron_Remnant::ConstituentType(const ATOOLS::Flavour &flavour) 
 {
-  if (flavour.IsGluon()) return ATOOLS::kf::gluon;
-  return ATOOLS::kf::quark;
-  if (flavour.Kfcode()==ATOOLS::kf::quark || 
-      flavour.Kfcode()==ATOOLS::kf::seaquark) return flavour.Kfcode();
+  if (flavour.IsGluon()) return kf::gluon;
+  return kf::quark;
+  if (flavour.Kfcode()==kf::quark || 
+      flavour.Kfcode()==kf::seaquark) return flavour.Kfcode();
   if (flavour.IsQuark()) {
     for (size_t i=0;i<m_constit.size();++i) 
-      if (flavour==m_constit[i]) return ATOOLS::kf::quark;
-    return ATOOLS::kf::seaquark;
+      if (flavour==m_constit[i]) return kf::quark;
+    return kf::seaquark;
   }
-  return ATOOLS::kf::none;
+  return kf::none;
 }
 
