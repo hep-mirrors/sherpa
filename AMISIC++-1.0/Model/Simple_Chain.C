@@ -263,14 +263,21 @@ bool Simple_Chain::CreateGrid()
   double min=ATOOLS::Min(m_stop[0],m_stop[4]);
   p_isr->SetFixedSprimeMin(4.0*min*min);
   p_isr->SetFixedSprimeMax(4.0*m_start[0]*m_start[0]);
+  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
+  reader->SetInputPath(InputPath());
+  reader->SetInputFile(InputFile(2));
+  std::string selectorfile;
+  if (!reader->ReadFromFile(selectorfile,"MI_SELECTOR_FILE")) 
+    selectorfile="MICuts.dat";
   p_processes = new EXTRAXS::Simple_XS(InputPath(),InputFile(1),p_model);
   if (p_processes->Size()>0) p_processes->Clear();
   p_processes->InitializeProcesses(p_beam,p_isr,false);  
+  delete p_processes->SelectorData();
+  p_processes->SetSelectorData
+    (new ATOOLS::Selector_Data(InputPath()+selectorfile));
   p_processes->SetScaleScheme(m_scalescheme);
   p_processes->SetKFactorScheme(m_kfactorscheme);
   p_processes->XSSelector()->SetOffShell(p_isr->KMROn());
-  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
-  reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
   reader->SetMatrixType(reader->MTransposed);
   reader->AddIgnore("->");

@@ -122,7 +122,7 @@ bool Simple_String::CreateMomenta()
       if (constit[j].IsQuark() && constit[j].IsAnti()==i) {
 	ATOOLS::Particle *particle = new ATOOLS::Particle(0,constit[j]);
 	do {
-	  double E=hadron->BeamEnergy()*
+	  double E=hadron->GetBeam()->Energy()*
 	    hadron->GetXPDF(constit[j],m_start[0]*m_start[0]);
 	  pz=sqrt(E*E-ATOOLS::sqr(constit[j].Mass())-m_start[1]*m_start[1]);
 	  if (i==1) pz*=-1.0;
