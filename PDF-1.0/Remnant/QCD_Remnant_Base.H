@@ -11,12 +11,13 @@ namespace PDF {
   class QCD_Remnant_Base: public Remnant_Base {
   public:
 
-    typedef std::vector<Color_Dipole*>  Dipole_Vector;
-    typedef std::set<ATOOLS::Particle*> Particle_Set;
+    typedef std::vector<Color_Dipole*>   Dipole_Vector;
+    typedef std::set<ATOOLS::Particle*>  Particle_Set;
+    typedef std::vector<ATOOLS::Flavour> Flavour_Vector;
 
   protected:
 
-    std::vector<ATOOLS::Flavour> m_constit;
+    Flavour_Vector m_constit;
 
     Color_Dipole  *p_start;
     Dipole_Vector  m_connected;

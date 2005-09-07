@@ -91,11 +91,15 @@ namespace EXTRAXS {
     void Print();
 
     // inline functions 
+    inline void SetSelectorData(ATOOLS::Selector_Data *const data) 
+    { p_selectordata=data; }
+
     inline void PushBack(XS_Base *const xsec) { m_xsecs.push_back(xsec); }
 
-    inline ATOOLS::Selector_Data *const SelectorData() { return p_selectordata; }
+    inline ATOOLS::Selector_Data *const SelectorData() const
+    { return p_selectordata; }
 
-    inline XS_Selector *const XSSelector() { return p_xsselector; }
+    inline XS_Selector *const XSSelector() const { return p_xsselector; }
 
   };// end of class XS_Group
 
