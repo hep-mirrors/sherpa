@@ -152,6 +152,7 @@ namespace ATOOLS {
     const static Vec4D ZVEC;
   };
 
+  bool operator==(const Vec3D& v1, const Vec3D& v2);
 
   inline Vec3D::Vec3D(const Vec4D& v)
   {
@@ -231,17 +232,6 @@ namespace ATOOLS {
 
   inline Vec3D operator* (const Vec3D& v, const double scal) {
     return Vec3D(v,scal,Tag::smul);
-  }
-
-  inline bool operator==(const Vec3D& v1, const Vec3D& v2) 
-  {
-    double maxp=Max(v1[1],Max(v1[2],v1[3])); 
-    double q=1.;
-    if (!IsZero(maxp)) q=1./maxp;
-    for(short int i=1;i<4;i++) {
-      if (!IsZero(q*(v1[i]-v2[i]))) return false;
-    }
-    return true;
   }
 
   inline Vec3D operator/ (const Vec3D& v, const double scal) {

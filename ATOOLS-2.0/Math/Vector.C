@@ -137,6 +137,14 @@ const double Vec4D::Eta(const Vec4D &ref) const
   return (2.0*cos>M_PI?-0.5:0.5)*log(sqr(1.0+cos)/(1.0-cos*cos));
 }
   
-  
-  
-  
+bool ATOOLS::operator==(const Vec3D& v1, const Vec3D& v2) 
+{
+  double maxp=Max(v1[1],Max(v1[2],v1[3])); 
+  double q=1.;
+  if (!IsZero(maxp)) q=1./maxp;
+  for(short int i=1;i<4;i++) {
+    if (!IsZero(q*(v1[i]-v2[i]))) return false;
+  }
+  return true;
+}
+
