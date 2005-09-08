@@ -5,6 +5,7 @@
 #include "Data_Reader.H"
 
 using namespace AMISIC;
+using namespace ATOOLS;
 
 Amisic::Amisic():
   m_hardmodel("Unknown"),
@@ -36,20 +37,19 @@ Amisic::~Amisic()
 
 bool Amisic::Initialize()
 {
-  if (!CheckInputPath()) return false;
-  if (!CheckInputFile()) return false;
-  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
+  if (InputPath()=="" || InputFile()=="") return false;
+  Data_Reader *reader = new Data_Reader("=",";","!");
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
   std::vector<std::string> model;
   if (!reader->VectorFromFile(model,"HARD_MODEL_NAME",
-			      ATOOLS::noinputtag,reader->VHorizontal)) {
+			      noinputtag,vtc::horizontal)) {
     model.push_back("Simple_Chain");
   }
   for (size_t i=1;i<model.size();++i) model[0]+=" "+model[i];
   SelectHardModel(model[0]);
   if (!reader->VectorFromFile(model,"SOFT_MODEL_NAME",
-			      ATOOLS::noinputtag,reader->VHorizontal)) {
+			      noinputtag,vtc::horizontal)) {
     model.push_back("None");
   }
   for (size_t i=1;i<model.size();++i) model[0]+=" "+model[i];
@@ -103,9 +103,9 @@ bool Amisic::GenerateHardEvent(ATOOLS::Blob_List *blobs)
 {
   p_hardbase->Reset();
   while (true) {
-    ATOOLS::Blob *newblob = new ATOOLS::Blob();
+    Blob *newblob = new Blob();
     if (GenerateHardProcess(newblob)) {
-      newblob->SetType(ATOOLS::btp::Hard_Collision);
+      newblob->SetType(btp::Hard_Collision);
       newblob->SetStatus(1);
       newblob->SetId();
       blobs->push_back(newblob);
@@ -126,9 +126,9 @@ bool Amisic::GenerateSoftEvent(ATOOLS::Blob_List *blobs)
 {
   p_softbase->Reset();
   while (true) {
-    ATOOLS::Blob *newblob = new ATOOLS::Blob();
+    Blob *newblob = new Blob();
     if (GenerateSoftProcess(newblob)) {
-      newblob->SetType(ATOOLS::btp::Soft_Collision);
+      newblob->SetType(btp::Soft_Collision);
       newblob->SetStatus(1);
       newblob->SetId();
       blobs->push_back(newblob);

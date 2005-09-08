@@ -403,7 +403,7 @@ bool Amisic_Histogram<ArgumentType>::ReadIn(const std::string &filename,
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","#");
   reader->SetInputFile(filename);
   reader->AddIgnore("!");
-  reader->SetVectorType(reader->VHorizontal);
+  reader->SetVectorType(ATOOLS::vtc::horizontal);
   if (!reader->ReadFromFile(m_xmin,"x_{min} :")) {
     msg_Tracking()<<"Amisic_Histogram::ReadIn(..): "
 		  <<"No x_{min} information in '"
@@ -500,7 +500,7 @@ WriteOut(const std::string &filename,const std::string &datatag,
   writer->WriteComment("--------------------");
   writer->SetBlank(ATOOLS::defaulttab);
   writer->MatrixToFile(m_data,datatag,true,
-		       ATOOLS::nullstring,writer->MNormal,12);
+		       ATOOLS::nullstring,ATOOLS::mtc::normal,12);
   delete writer;
   return true;
 }

@@ -37,6 +37,7 @@ const std::string normalizedfile=std::string("normalized.dat");
 static double s_epsilon=1.0e-3, s_xsnd, s_xstot;
 
 using namespace AMISIC;
+using namespace ATOOLS;
 
 Simple_Chain::Simple_Chain():
   MI_Base("Simple Chain",MI_Base::HardEvent,5,4,1),
@@ -45,7 +46,7 @@ Simple_Chain::Simple_Chain():
   p_processes(NULL), p_fsrinterface(NULL), p_environment(NULL), p_model(NULL),
   p_beam(NULL), p_isr(NULL), p_profile(NULL), m_nflavour(5), 
   m_maxtrials(1000), m_scalescheme(2), m_kfactorscheme(1), 
-  m_ecms(ATOOLS::rpa.gen.Ecms()), m_external(false), m_regulate(false)
+  m_ecms(rpa.gen.Ecms()), m_external(false), m_regulate(false)
 {
   Init();
 }
@@ -59,7 +60,7 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *const model,
   p_processes(NULL), p_fsrinterface(NULL), p_environment(NULL), 
   p_model(model), p_beam(beam), p_isr(isr), p_profile(NULL), m_nflavour(5), 
   m_maxtrials(1000), m_scalescheme(2), m_kfactorscheme(1), 
-  m_ecms(ATOOLS::rpa.gen.Ecms()), m_external(true), m_regulate(false)
+  m_ecms(rpa.gen.Ecms()), m_external(true), m_regulate(false)
 {
   Init();
   p_remnants[0]=p_isr->GetRemnant(0);
@@ -113,27 +114,27 @@ bool Simple_Chain::GeneratePathName()
 {
   std::string outputpath, help[2];
   MyStrStream converter;
-  converter<<ATOOLS::rpa.gen.Bunch(0);
+  converter<<rpa.gen.Bunch(0);
   converter>>help[0];
   converter.clear();
-  converter<<ATOOLS::rpa.gen.Bunch(1);
+  converter<<rpa.gen.Bunch(1);
   converter>>help[1];
   outputpath=std::string("MIG_")+help[0]+help[1]+
-    std::string("_")+ATOOLS::ToString(ATOOLS::rpa.gen.Ecms());
+    std::string("_")+ToString(rpa.gen.Ecms());
   if (m_regulate) {
     outputpath+=std::string("_")+m_regulator[0];
     for (size_t i=0;i<m_regulation.size();++i) {
-      outputpath+=std::string("_")+ATOOLS::ToString(m_regulation[i]);
+      outputpath+=std::string("_")+ToString(m_regulation[i]);
     }
   }
   if (p_isr->PDF(0)->Type()!=p_isr->PDF(1)->Type()) {
     outputpath+=std::string("_")+p_isr->PDF(0)->Type();
   }
   outputpath+=std::string("_")+p_isr->PDF(0)->Type()+std::string("_")+
-    ATOOLS::ToString(static_cast<MODEL::Running_AlphaS*>
+    ToString(static_cast<MODEL::Running_AlphaS*>
 		     (p_model->GetScalarFunction("alpha_S"))->Order())+
-    std::string("_")+ATOOLS::ToString(m_scalescheme)+
-    std::string("_")+ATOOLS::ToString(m_kfactorscheme)+std::string("/");
+    std::string("_")+ToString(m_scalescheme)+
+    std::string("_")+ToString(m_kfactorscheme)+std::string("/");
   SetOutputPath(OutputPath()+outputpath);
   return true;
 }
@@ -141,13 +142,13 @@ bool Simple_Chain::GeneratePathName()
 void Simple_Chain::OrderFlavours(ATOOLS::Flavour *flavs)
 {
   if ((int)flavs[0].Kfcode()>(int)flavs[1].Kfcode()) 
-    std::swap<ATOOLS::Flavour>(flavs[0],flavs[1]);
+    std::swap<Flavour>(flavs[0],flavs[1]);
   if ((int)flavs[2].Kfcode()>(int)flavs[3].Kfcode()) 
-    std::swap<ATOOLS::Flavour>(flavs[2],flavs[3]);
+    std::swap<Flavour>(flavs[2],flavs[3]);
   if (flavs[0].IsAnti()) 
-    std::swap<ATOOLS::Flavour>(flavs[0],flavs[1]);
+    std::swap<Flavour>(flavs[0],flavs[1]);
   if (flavs[2].IsAnti()) 
-    std::swap<ATOOLS::Flavour>(flavs[2],flavs[3]);
+    std::swap<Flavour>(flavs[2],flavs[3]);
 }
 
 EXTRAXS::XS_Group *Simple_Chain::FindPDFGroup(const size_t nin,const size_t nout,
@@ -156,7 +157,7 @@ EXTRAXS::XS_Group *Simple_Chain::FindPDFGroup(const size_t nin,const size_t nout
   if (p_remnants[0]==NULL || p_remnants[1]==NULL) return p_processes;
   for (size_t i=0;i<p_processes->Size();++i) {
     if (nin==2 && nout==(*p_processes)[i]->NOut()) {
-      ATOOLS::Flavour ref[2], test[2];
+      Flavour ref[2], test[2];
       for (size_t j=0;j<2;++j) {
 	ref[j]=p_remnants[j]->ConstituentType((*p_processes)[i]->Flavours()[j]);
 	test[j]=p_remnants[j]->ConstituentType(flavours[j]);
@@ -165,10 +166,10 @@ EXTRAXS::XS_Group *Simple_Chain::FindPDFGroup(const size_t nin,const size_t nout
 	return dynamic_cast<EXTRAXS::XS_Group*>((*p_processes)[i]);
     }
   }
-  ATOOLS::Flavour *copy = new ATOOLS::Flavour[nin+nout];
+  Flavour *copy = new Flavour[nin+nout];
   for (short unsigned int i=0;i<nin;++i) 
     copy[i]=p_remnants[i]->ConstituentType(flavours[i]);
-  for (short unsigned int i=nin;i<nin+nout;++i) copy[i]=ATOOLS::kf::jet;
+  for (short unsigned int i=nin;i<nin+nout;++i) copy[i]=kf::jet;
   Semihard_QCD *newgroup = 
     new Semihard_QCD(p_beam,p_isr,p_processes->SelectorData(),
 		     copy,m_scalescheme,m_kfactorscheme);
@@ -187,7 +188,7 @@ bool Simple_Chain::AddProcess(EXTRAXS::XS_Group *const group,
 			      const ATOOLS::Flavour *flavs)
 {
   bool success=false;
-  ATOOLS::Flavour help[4];
+  Flavour help[4];
   for (size_t i=0;i<(size_t)flavs[0].Size();++i) {
     for (size_t j=0;j<(size_t)flavs[1].Size();++j) {
       for (size_t k=0;k<(size_t)flavs[2].Size();++k) {
@@ -224,12 +225,12 @@ bool Simple_Chain::AddProcess(EXTRAXS::XS_Group *const group,
 bool Simple_Chain::ReadInData()
 {
   PROFILE_HERE;
-  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
+  Data_Reader *reader = new Data_Reader("=",";","!");
   reader->SetInterprete(true);
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
-  reader->SetMatrixType(reader->MTransposed);
-  reader->SetVectorType(reader->VHorizontal);
+  reader->SetMatrixType(mtc::transposed);
+  reader->SetVectorType(vtc::horizontal);
   int regulate=0;
   if (reader->ReadFromFile(regulate,"REGULATE_XS")) {
     m_regulate=regulate;
@@ -260,7 +261,7 @@ bool Simple_Chain::CreateGrid()
   PROFILE_HERE;
   bool vegas=PHASIC::Vegas::OnExternal();
   PHASIC::Vegas::SetOnExternal(m_vegas);
-  double min=ATOOLS::Min(m_stop[0],m_stop[4]);
+  double min=Min(m_stop[0],m_stop[4]);
   p_isr->SetFixedSprimeMin(4.0*min*min);
   p_isr->SetFixedSprimeMax(4.0*m_start[0]*m_start[0]);
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
@@ -279,7 +280,7 @@ bool Simple_Chain::CreateGrid()
   p_processes->SetKFactorScheme(m_kfactorscheme);
   p_processes->XSSelector()->SetOffShell(p_isr->KMROn());
   reader->SetInputFile(InputFile());
-  reader->SetMatrixType(reader->MTransposed);
+  reader->SetMatrixType(mtc::transposed);
   reader->AddIgnore("->");
   reader->AddIgnore("to");
   reader->AddIgnore("for");
@@ -288,16 +289,16 @@ bool Simple_Chain::CreateGrid()
   bool found=false;
   for (unsigned int i=0;i<temp.size();++i) {
     if (temp[i].size()>3) {
-      ATOOLS::Flavour flavour[4];
+      Flavour flavour[4];
       int current;
       bool success=true;
       for (unsigned int j=0;j<4;++j) {
-	flavour[j]=ATOOLS::Flavour(ATOOLS::kf_table.FromString(temp[i][j]));
-	if (flavour[j].Kfcode()==ATOOLS::kf::none) {
+	flavour[j]=Flavour(kf_table.FromString(temp[i][j]));
+	if (flavour[j].Kfcode()==kf::none) {
 	  reader->ReadFromString(current,"",temp[i][j]);
-	  flavour[j]=ATOOLS::Flavour((ATOOLS::kf::code)abs(current));
+	  flavour[j]=Flavour((kf::code)abs(current));
 	  if (current<0) flavour[j]=flavour[j].Bar();
-	  if (flavour[j].Kfcode()==ATOOLS::kf::none) success=false;
+	  if (flavour[j].Kfcode()==kf::none) success=false;
 	}
       }
       if (!success) continue;
@@ -306,9 +307,9 @@ bool Simple_Chain::CreateGrid()
   }
   delete reader;
   if (!found) {
-    ATOOLS::msg.Error()<<"Simple_Chain::CreateGrid(): "
-		       <<"Did not find any process in '"
-		       <<InputFile()<<"'."<<std::endl;
+    msg.Error()<<"Simple_Chain::CreateGrid(): "
+	       <<"Did not find any process in '"
+	       <<InputFile()<<"'."<<std::endl;
     PHASIC::Vegas::SetOnExternal(vegas);
     return false;
   }
@@ -319,21 +320,21 @@ bool Simple_Chain::CreateGrid()
   p_gridcreator->SetXSExtension(m_xsextension);
   p_gridcreator->SetMCExtension(m_mcextension);
   p_gridcreator->SetOutputPath(OutputPath());
-  if (ATOOLS::msg.LevelIsTracking()) {
-    ATOOLS::msg.Out()<<"Simple_Chain::CreateGrid(..): Process group {\n";
+  if (msg.LevelIsTracking()) {
+    msg.Out()<<"Simple_Chain::CreateGrid(..): Process group {\n";
     msg_Indentation(3);
     p_processes->Print();
   }
   msg_Tracking()<<"}"<<std::endl;
   if (!p_gridcreator->ReadInGrid()) {
-    if (ATOOLS::MakeDir(OutputPath().c_str(),493)==0) {
+    if (MakeDir(OutputPath().c_str(),493)==0) {
       msg_Tracking()<<"Simple_Chain::CreateGrid(..): "
 		    <<"Created output directory "
 		    <<OutputPath()<<"."<<std::endl;
     }
-    ATOOLS::Exception_Handler::AddTerminatorObject(this);
+    Exception_Handler::AddTerminatorObject(this);
     p_gridcreator->CreateGrid();
-    ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+    Exception_Handler::RemoveTerminatorObject(this);
   }
   delete p_gridcreator;
   PHASIC::Vegas::SetOnExternal(vegas);
@@ -343,8 +344,7 @@ bool Simple_Chain::CreateGrid()
 bool Simple_Chain::SetUpInterface()
 {
   p_processes->Reset();
-  ATOOLS::Flavour flavour[4]={ATOOLS::kf::jet,ATOOLS::kf::jet,
-			      ATOOLS::kf::jet,ATOOLS::kf::jet};
+  Flavour flavour[4]={kf::jet,kf::jet,kf::jet,kf::jet};
   p_fsrinterface = new FSR_Channel(2,2,flavour,
 				   p_total->XAxis()->Variable()->Name());
   for (size_t i=0;i<p_processes->Size();++i) {
@@ -369,34 +369,34 @@ bool Simple_Chain::CheckConsistency(EXTRAXS::XS_Group *const group,
 				    const double integral)
 {  
   int helpi=0, criterion=grid->XAxis()->Variable()->SelectorID();
-  std::vector<ATOOLS::Flavour> flavours(1,(ATOOLS::kf::jet));
+  std::vector<Flavour> flavours(1,(kf::jet));
   group->SelectorData()->AddData(criterion,flavours,helpi,min,max);
-  double emin=ATOOLS::Min(m_stop[0],m_stop[4]);
+  double emin=Min(m_stop[0],m_stop[4]);
   p_isr->SetFixedSprimeMin(4.0*emin*emin);
   p_isr->SetFixedSprimeMax(4.0*m_start[0]*m_start[0]);
   group->ResetSelector(group->SelectorData());
-  int level=ATOOLS::msg.Level();
-  ATOOLS::msg.SetLevel(0);
+  int level=msg.Level();
+  msg.SetLevel(0);
   double error=group->PSHandler(false)->Error();
   group->PSHandler(false)->SetError(m_error);
   group->CalculateTotalXSec("");
   group->PSHandler(false)->SetError(error);
-  ATOOLS::msg.SetLevel(level);
+  msg.SetLevel(level);
   double total=group->TotalXS();
   msg_Info()<<"Simple_Chain::CheckConsistency(): {\n"
 	    <<"   \\sigma_{hard xs}   = "
-	    <<(total*ATOOLS::rpa.Picobarn()/1.e9)<<" mb\n"
+	    <<(total*rpa.Picobarn()/1.e9)<<" mb\n"
 	    <<"   \\sigma_{hard grid} = "
-	    <<(integral*ATOOLS::rpa.Picobarn()/1.e9)<<" mb\n"
+	    <<(integral*rpa.Picobarn()/1.e9)<<" mb\n"
 	    <<"   relative error     = "
-	    <<ATOOLS::dabs((total-integral)/(total))*100.0
+	    <<dabs((total-integral)/(total))*100.0
 	    <<" %\n}"<<std::endl;
-  if (ATOOLS::dabs((total-integral)/total)>m_error) {
-    ATOOLS::msg.Error()<<"Simple_Chain::CheckConsistency(..): Warning.\n"
-		       <<"   \\Delta_{rel}\\sigma / m_error = "
-		       <<ATOOLS::dabs((total-integral)/
-				      (total*m_error))<<std::endl;
-    if (ATOOLS::dabs((total-integral)/total)>2.*m_error) 
+  if (dabs((total-integral)/total)>m_error) {
+    msg.Error()<<"Simple_Chain::CheckConsistency(..): Warning.\n"
+	       <<"   \\Delta_{rel}\\sigma / m_error = "
+	       <<dabs((total-integral)/
+		      (total*m_error))<<std::endl;
+    if (dabs((total-integral)/total)>2.*m_error) 
       THROW(fatal_error,"Grid integral and \\sigma_{tot} do not coincide.");
   }
   return true;
@@ -406,16 +406,16 @@ void Simple_Chain::CalculateSigmaND()
 {
   double eps=0.0808, eta=-0.4525, X=21.70, Y=56.08, b=2.3;
   if (p_isr->Flav(0).IsAnti()^p_isr->Flav(1).IsAnti()) Y=98.39;
-  double s=ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
-  double mp=ATOOLS::Flavour(ATOOLS::kf::p_plus).Mass();
-  double mpi=ATOOLS::Flavour(ATOOLS::kf::pi).Mass();
+  double s=sqr(rpa.gen.Ecms());
+  double mp=Flavour(kf::p_plus).Mass();
+  double mpi=Flavour(kf::pi).Mass();
   double ap=0.25, s0=8.0, y0=log(s/(mp*mp));
   double M1res=2.0, M2res=2.0, cres=2.0;
   double M1min=mp+2.0*mpi, M2min=mp+2.0*mpi;
   double ymin=4.0*log(1.0+2.0*mpi/mp);
   double MmaxAX2=0.213*s;
-  double Del0=3.2-9.0/log(s)+17.4/ATOOLS::sqr(log(s));
-  double MmaxXX2=s*(0.07-0.44/log(s)+1.36/ATOOLS::sqr(log(s)));
+  double Del0=3.2-9.0/log(s)+17.4/sqr(log(s));
+  double MmaxXX2=s*(0.07-0.44/log(s)+1.36/sqr(log(s)));
   double BAX=-0.47+150.0/s;
   double BXX=-1.05+40.0/sqrt(s)+8000.0/(s*s);
   double JAX=0.5/ap*log((b+ap*log(s/(M2min*M2min)))/(b+ap*log(s/MmaxAX2)));
@@ -443,7 +443,7 @@ void Simple_Chain::CalculateSigmaND()
 		<<"   \\sigma_{dd}  = "<<xsdd<<" mb\n"
 		<<"   \\sigma_{nd}  = "<<(xstot-xsel-2.0*xssd-xsdd)
 		<<" mb.\n}"<<std::endl;
-  SetNorm((xstot-xsel-2.0*xssd-xsdd)*1.0e9/ATOOLS::rpa.Picobarn());
+  SetNorm((xstot-xsel-2.0*xssd-xsdd)*1.0e9/rpa.Picobarn());
 }
 
 bool Simple_Chain::CalculateTotal()
@@ -452,8 +452,8 @@ bool Simple_Chain::CalculateTotal()
   if (m_differentials.size()==0) return false;
   Amisic_Histogram_Type *ref=m_differentials.begin()->second;
   p_differential = new Amisic_Histogram_Type();
-  ATOOLS::Axis<double> *xaxis=p_differential->XAxis(), *refx=ref->XAxis();
-  ATOOLS::Axis<double> *yaxis=p_differential->YAxis(), *refy=ref->YAxis();
+  Axis<double> *xaxis=p_differential->XAxis(), *refx=ref->XAxis();
+  Axis<double> *yaxis=p_differential->YAxis(), *refy=ref->YAxis();
   xaxis->SetVariable(refx->Variable()->Name());
   yaxis->SetVariable(refy->Variable()->Name());
   xaxis->SetScaling(refx->Scaling()->Name());
@@ -479,7 +479,7 @@ bool Simple_Chain::CalculateTotal()
 			   "[x,w,w2,max,n] = ",comments);
 #endif
   SetStart(p_differential->XMax(),0);
-  SetStop(ATOOLS::Max(p_differential->XMin(),m_stop[0]),0);
+  SetStop(Max(p_differential->XMin(),m_stop[0]),0);
   p_total = p_differential->GetIntegral(true);
   xaxis=p_total->XAxis();
   yaxis=p_total->YAxis();
@@ -493,21 +493,20 @@ bool Simple_Chain::CalculateTotal()
 #endif
   m_sigmahard=(*p_total)(m_stop[4]);
   msg_Info()<<"Simple_Chain::CalculateTotal(): Result is {\n   "
-	    <<"\\sigma_{hard} = "<<(m_sigmahard*ATOOLS::rpa.Picobarn()/1.e9)
+	    <<"\\sigma_{hard} = "<<(m_sigmahard*rpa.Picobarn()/1.e9)
 	    <<" mb\n   at "<<xaxis->Variable()->Name()<<"_{min} = "
 	    <<m_stop[4]<<" GeV\n}"<<std::endl;
   CalculateSigmaND();
   if (m_sigmahard<m_norm) {
-    ATOOLS::msg.Error()<<"Simple_Chain::CalculateTotal(): "<<ATOOLS::om::red
-		       <<"\\sigma_{hard} = "
-		       <<(m_sigmahard*ATOOLS::rpa.Picobarn()/1.e9)
-		       <<" mb < \\sigma_{nd} = "
-		       <<(m_norm*ATOOLS::rpa.Picobarn()/1.e9)
-		       <<" mb !"<<ATOOLS::om::reset<<std::endl;
+    msg.Error()<<"Simple_Chain::CalculateTotal(): "<<om::red
+	       <<"\\sigma_{hard} = "
+	       <<(m_sigmahard*rpa.Picobarn()/1.e9)
+	       <<" mb < \\sigma_{nd} = "
+	       <<(m_norm*rpa.Picobarn()/1.e9)
+	       <<" mb !"<<om::reset<<std::endl;
   }
   if (m_check) {
-    ATOOLS::Flavour help[4]={ATOOLS::kf::jet,ATOOLS::kf::jet,
-			     ATOOLS::kf::jet,ATOOLS::kf::jet};
+    Flavour help[4]={kf::jet,kf::jet,kf::jet,kf::jet};
     Semihard_QCD *group;
     group = new Semihard_QCD(p_beam,p_isr,p_processes->SelectorData(),help,
 			     p_processes->ScaleScheme(),
@@ -530,13 +529,13 @@ bool Simple_Chain::CalculateTotal()
     }
     delete group;
   }
-  ATOOLS::msg.Tracking()<<"Simple_Chain::CalculateTotal(): Pythia mode {"
-			<<"\n   \\sigma_{tot} = "
-			<<(m_sigmahard*ATOOLS::rpa.Picobarn()/1.e9)
-			<<" mb @ p_\\perp = "<<m_stop[4]
-			<<" GeV\n   \\sigma_{cut} = "
-			<<((*p_total)(m_stop[0])*ATOOLS::rpa.Picobarn()/1.e9)
-			<<" mb p_\\perp = "<<m_stop[0]<<" GeV\n}"<<std::endl;
+  msg.Tracking()<<"Simple_Chain::CalculateTotal(): Pythia mode {"
+		<<"\n   \\sigma_{tot} = "
+		<<(m_sigmahard*rpa.Picobarn()/1.e9)
+		<<" mb @ p_\\perp = "<<m_stop[4]
+		<<" GeV\n   \\sigma_{cut} = "
+		<<((*p_total)(m_stop[0])*rpa.Picobarn()/1.e9)
+		<<" mb p_\\perp = "<<m_stop[0]<<" GeV\n}"<<std::endl;
   p_total->Scale(1.0/m_norm);
   return true;
 }
@@ -544,16 +543,15 @@ bool Simple_Chain::CalculateTotal()
 bool Simple_Chain::Initialize()
 {
   PROFILE_HERE;
-  if (!CheckInputPath()) return false;
-  if (!CheckInputFile()) return false;
-  if (!ATOOLS::rpa.gen.Beam1().IsHadron() ||
-      !ATOOLS::rpa.gen.Beam2().IsHadron()) return false;
+  if (InputPath()=="" || InputFile()=="") return false;
+  if (!rpa.gen.Beam1().IsHadron() ||
+      !rpa.gen.Beam2().IsHadron()) return false;
   CleanUp();
-  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
+  Data_Reader *reader = new Data_Reader("=",";","!");
   reader->SetInterprete(true);
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
-  reader->SetVectorType(reader->VHorizontal);
+  reader->SetVectorType(vtc::horizontal);
   if (!m_external && p_environment==NULL) {
     std::string file;
     if (!reader->ReadFromFile(file,"ENVIRONMENT")) file="Run.dat";
@@ -564,7 +562,7 @@ bool Simple_Chain::Initialize()
     p_isr=p_environment->ISRHandler();
     if (!reader->ReadFromFile(file,"PROCESS_FILE")) file="Processes.dat";
     SetInputFile(file,1);
-    m_ecms=ATOOLS::rpa.gen.Ecms();
+    m_ecms=rpa.gen.Ecms();
     m_start[4]=m_start[0]=m_ecms/2;
     m_start[3]=m_start[2]=m_ecms/2;
     m_stop[4]=m_stop[0]=0.0;
@@ -584,7 +582,7 @@ bool Simple_Chain::Initialize()
   SetStop(stop,0);
   SetStop(stop,4); 
   if (m_regulate) {
-    SetStop(ATOOLS::rpa.gen.Accu()*stop,4);
+    SetStop(rpa.gen.Accu()*stop,4);
     // // Uncomment for cross-check vs. PYHTIA
     // SetStop(0.08*stop,0);
   }
@@ -664,7 +662,7 @@ bool Simple_Chain::CreateMomenta()
     double max=cur->BinMax(m_last[0]);
     p_fsrinterface->SetTrigger(false);
     while (++pstrials<m_maxtrials) {
-      ATOOLS::Blob_Data_Base *data=selected->
+      Blob_Data_Base *data=selected->
 	WeightedEvent(PHASIC::psm::no_lim_isr|
 		      (PHASIC::psm::code)m_pi);
       if (data!=NULL) {
@@ -672,22 +670,22 @@ bool Simple_Chain::CreateMomenta()
 	trials=data->Get<PHASIC::Weight_Info>().ntrial;
 	delete data;
 	if (weight>max) {
-	  ATOOLS::msg.Tracking()<<"Simple_Chain::CreateMomenta(): "
-				<<"Weight exceeded maximum.\n"
-				<<"   Setting new maximum "
-				<<max<<" -> "<<weight<<std::endl;
+	  msg.Tracking()<<"Simple_Chain::CreateMomenta(): "
+			<<"Weight exceeded maximum.\n"
+			<<"   Setting new maximum "
+			<<max<<" -> "<<weight<<std::endl;
 	  m_differentials[m_selected]->SetBinMax(m_last[0],weight);
 	}
 	if (p_fsrinterface->Trigger()) {
-	  double ran=ATOOLS::ran.Get();
-	  if (weight*m_maxreduction>=max*ran) {
+	  double rn=ran.Get();
+	  if (weight*m_maxreduction>=max*rn) {
 	    if (weight*m_maxreduction<max) break;
 	    double value=cur->BinExtra(m_last[0]);
 	    if (value>0.0) {
-	      if (value>=1.0 || (value<1.0 && value>ATOOLS::ran.Get())) {
-		cur->SetBinExtra(m_last[0],ATOOLS::Max(0.0,value-1.0));
+	      if (value>=1.0 || (value<1.0 && value>ran.Get())) {
+		cur->SetBinExtra(m_last[0],Max(0.0,value-1.0));
 		m_spkey[3]=
-		  ATOOLS::Max(cur->BinExtra(m_last[0],1),
+		  Max(cur->BinExtra(m_last[0],1),
 			      4.0*(1.0+s_epsilon)*m_last[0]*m_last[0]);
 		m_ykey[2]=cur->BinExtra(m_last[0],2);
 		double logtau=log(m_spkey[3]/m_spkey[2]);
@@ -739,9 +737,9 @@ bool Simple_Chain::CreateMomenta()
     for (size_t j=0;j<selected->NIn();++j) 
       m_last[2+j]-=2.0*selected->Momenta()[j][0]/m_ecms;
     selected->SetColours(selected->Momenta());
-    ATOOLS::Particle *particle;
+    Particle *particle;
     for (size_t j=0;j<selected->NIn();++j) {
-      particle = new ATOOLS::Particle(0,selected->Flavours()[j]);
+      particle = new Particle(0,selected->Flavours()[j]);
       particle->SetMomentum(selected->Momenta()[j]);
       particle->SetFlow(1,selected->Colours()[j][0]);
       particle->SetFlow(2,selected->Colours()[j][1]);
@@ -749,7 +747,7 @@ bool Simple_Chain::CreateMomenta()
       m_inparticles.push_back(particle);
     }
     for (size_t j=selected->NIn();j<selected->NIn()+selected->NOut();++j) {
-      particle = new ATOOLS::Particle(0,selected->Flavours()[j]);
+      particle = new Particle(0,selected->Flavours()[j]);
       particle->SetMomentum(selected->Momenta()[j]);
       particle->SetFlow(1,selected->Colours()[j][0]);
       particle->SetFlow(2,selected->Colours()[j][1]);
@@ -759,8 +757,8 @@ bool Simple_Chain::CreateMomenta()
     m_filledblob=true;
     return true;
   }
-  ATOOLS::msg.Error()<<"Simple_Chain::CreateMomenta(..): "
-		     <<"Cannot create momentum configuration."<<std::endl;
+  msg.Error()<<"Simple_Chain::CreateMomenta(..): "
+	     <<"Cannot create momentum configuration."<<std::endl;
   return false;
 }
 
@@ -787,7 +785,7 @@ bool Simple_Chain::DiceProcess()
     sorter.insert(Sort_Map::value_type(cur,hit->first));
     norm+=cur;
   }
-  double rannr=ATOOLS::ran.Get();
+  double rannr=ran.Get();
   cur=0.0;
   for (Sort_Map::iterator sit=sorter.begin();
        sit!=sorter.end();++sit) {
@@ -814,7 +812,7 @@ bool Simple_Chain::DiceEnhanceFactor()
   do {
     b=p_profile->DiceImpactParameter();
     m_enhance=(*p_profile)(b)/p_profile->OMean();
-  } while (exp(-m_enhance*last)<=ATOOLS::ran.Get());
+  } while (exp(-m_enhance*last)<=ran.Get());
   msg_Tracking()<<"Simple_Chain::DiceEnhanceFactor(): { profile '"
 		<<p_profile->Type()
 		<<"'\n   m_last[0]  = "<<m_last[0]<<"\n   p(k_t^2)   = "<<last
@@ -829,9 +827,9 @@ bool Simple_Chain::DiceOrderingParameter()
 { 
   PROFILE_HERE;
   if (m_last[0]<=m_stop[0]) {
-    ATOOLS::msg.Error()<<"Simple_Chain::DiceOrderingParameter(): "
-		       <<"Value exceeded minimum: last = "<<m_last[0]
-		       <<" vs. stop = "<<m_stop[0]<<std::endl;
+    msg.Error()<<"Simple_Chain::DiceOrderingParameter(): "
+	       <<"Value exceeded minimum: last = "<<m_last[0]
+	       <<" vs. stop = "<<m_stop[0]<<std::endl;
     s_stophard=true;
     return false;
   }
@@ -840,7 +838,7 @@ bool Simple_Chain::DiceOrderingParameter()
     return false;
   }
   m_last[0]=(*p_total)[(*p_total)
- 		       (m_last[0])-log(ATOOLS::ran.Get())/m_enhance]; 
+ 		       (m_last[0])-log(ran.Get())/m_enhance]; 
   s_cleaned=false;
   if (m_last[0]<=m_stop[0]) { 
     m_dicedparameter=false;
@@ -870,7 +868,7 @@ void Simple_Chain::PrepareTerminate()
 bool Simple_Chain::VetoProcess(ATOOLS::Blob *blob)
 {
   if (s_soft==NULL) return false;
-  bool veto=ATOOLS::ran.Get()>s_xsnd/s_xstot;
+  bool veto=ran.Get()>s_xsnd/s_xstot;
   if (veto) {
     s_soft->SetStart(m_stop[0],0); 
     s_soft->SetStart((*p_differential)(m_stop[0]),2); 
