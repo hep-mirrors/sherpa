@@ -52,13 +52,14 @@ libSherpaPerturbativePhysics_la_SOURCES       =	\
 						Interface_Tools.C \
 					 	Perturbative_Interface.C \
 					   	SimpleXS_Apacic_Interface.C \
-					   	$(ADICICCFILES) \
-					   	$(CSSCFILES) \
+						Tree_Filler.C \
 						Combine_Table_Base.C \
 						Combine_Table_CKKW.C \
 					   	Cluster_Partons_Base.C \
 					   	Cluster_Partons_CKKW.C \
-						Amegic_Apacic_Interface.C
+						Amegic_Apacic_Interface.C \
+					   	$(ADICICCFILES) \
+					   	$(CSSCFILES)
 noinst_HEADERS        =	\
 			Matrix_Element_Handler.H \
 			MI_Handler.H \
@@ -69,10 +70,11 @@ noinst_HEADERS        =	\
 			SimpleXS_Apacic_Interface.H \
 			SimpleXS_Adicic_Interface.H \
 			SimpleXS_CSS_Interface.H \
-			Combine_Table_Base.C \
-			Combine_Table_CKKW.C \
-		   	Cluster_Partons_Base.C \
-		   	Cluster_Partons_CKKW.C \
+			Tree_Filler.H \
+			Combine_Table_Base.H \
+			Combine_Table_CKKW.H \
+		   	Cluster_Partons_Base.H \
+		   	Cluster_Partons_CKKW.H \
 			Amegic_Apacic_Interface.H
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(SHERPAFLAGS) $(AMISICFLAGS) $(ADICICFLAGS) $(CSSFLAGS)
