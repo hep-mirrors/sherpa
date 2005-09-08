@@ -3,11 +3,6 @@
 #include "MyStrStream.H"
 #include "MathTools.H"
 
-//#define DEBUG__Read_Write_Base
-#ifdef DEBUG__Read_Write_Base
-#include <iostream>
-#endif
-
 using namespace ATOOLS;
 
 std::vector<std::string> Read_Write_Base::s_commandline;
@@ -37,26 +32,20 @@ Read_Write_Base::Read_Write_Base(const unsigned int infiles,
 
 Read_Write_Base::~Read_Write_Base() 
 {
-#ifdef DEBUG__Read_Write_Base
-  std::cout<<"~Read_Write_Base("<<m_infile.size()<<","<<m_outfile.size()<<")\n";
-#endif
-  for (unsigned int i=0;i<m_infile.size();++i) CloseInFile(i,true);
-  m_infile.clear();
-  for (unsigned int i=0;i<m_outfile.size();++i) CloseOutFile(i,true);
-  m_outfile.clear();
+  for (unsigned int i=0;i<m_infiles.size();++i) CloseInFile(i,true);
+  m_infiles.clear();
+  for (unsigned int i=0;i<m_outfiles.size();++i) CloseOutFile(i,true);
+  m_outfiles.clear();
   delete p_interpreter;
 }
 
 void Read_Write_Base::Init()
 {
-#ifdef DEBUG__Read_Write_Base
-  std::cout<<" Read_Write_Base:\n";
-#endif
   p_interpreter = new Algebra_Interpreter();
   m_blank.push_back(defaultblank);
   m_blank.push_back(defaulttab);
-  m_vectortype=VVertical;
-  m_matrixtype=MNormal; 
+  m_vectortype=vtc::vertical;
+  m_matrixtype=mtc::normal; 
   m_allownans=false;
   m_addcommandline=true;
   m_ignorecase=false;
@@ -68,14 +57,13 @@ void Read_Write_Base::Init()
   m_escape='\\';
 }
 
-size_t Read_Write_Base::Find(std::string input,std::string parameter,size_t &length) const
+size_t Read_Write_Base::Find(std::string input,std::string parameter,
+			     size_t &length) const
 {
-#ifdef DEBUG__Read_Write_Base1
-  std::cout<<"Read_Write_Base::Find("<<input<<","<<parameter<<"): "<<std::endl;
-#endif
   if (m_ignorecase) {
     for (size_t i=0;i<input.length();++i) input[i]=toupper(input[i]);
-    for (size_t i=0;i<parameter.length();++i) parameter[i]=toupper(parameter[i]);
+    for (size_t i=0;i<parameter.length();++i) 
+      parameter[i]=toupper(parameter[i]);
   }
   size_t cutinputblanks=0;
   if (m_ignoreblanks) {
@@ -101,7 +89,8 @@ size_t Read_Write_Base::Find(std::string input,std::string parameter,size_t &len
 	if (parameter[i]==Blank()[j]) {
 	  parameter[i]=Blank()[0];
 	  if (lastblank) {
-	    parameter=parameter.substr(0,i)+parameter.substr(i,parameter.length());
+	    parameter=parameter.substr(0,i)+
+	      parameter.substr(i,parameter.length());
 	  }
 	  lastblank=true;
 	}
@@ -118,11 +107,6 @@ size_t Read_Write_Base::Find(std::string input,std::string parameter,size_t &len
     for (;i<Blank().size();++i) if (input[pos-1]==Blank()[i]) break;
     if (i==Blank().size()) pos=std::string::npos;
   }
-#ifdef DEBUG__Read_Write_Base1
-  std::cout<<"   input     = '"<<input<<"'("<<cutinputblanks<<")\n"
-	   <<"   parameter = '"<<parameter<<"' at "<<(int)pos<<"\n"
-	   <<"   exact     = "<<(pos!=std::string::npos)<<std::endl;
-#endif
   if (pos==std::string::npos) length=0;
   return pos;
 }
@@ -195,22 +179,17 @@ bool Read_Write_Base::OpenInFile(const unsigned int i)
     }
     return false;
   }
-  if (InFileMode(i)==Unknown) SetInFileMode(Temporary);
-  if (m_infile[i]==NULL) {
-#ifdef DEBUG__Read_Write_Base
-    std::cout<<"Read_Write_Base::OpenInFile("<<i<<"): "
-	     <<"Opening file '"<<m_inputpath[i]+m_inputfile[i]<<"'."<<std::endl;
-#endif
-    m_infile[i]=new std::ifstream();	
-    m_infile[i]->open((m_inputpath[i]+m_inputfile[i]).c_str()); 
+  if (InFileMode(i)==fom::unknown) SetInFileMode(fom::temporary);
+  if (m_infiles[i]()==NULL) {
+    m_infiles[i].Open();	
     m_filecontent.clear();
     std::string lastline;
     bool checkbegin=(bool)(m_filebegin.size()>0);
     bool checkend=(bool)(m_fileend.size()>0);
     int filebegin=0;
     unsigned int occurrence=0;
-    if (*m_infile[i]) {
-      getline(*m_infile[i],lastline);
+    if (*m_infiles[i]) {
+      getline(*m_infiles[i],lastline);
       do {
 	if (checkbegin) {
 	  for (size_t length=0,j=0;j<m_filebegin.size();++j) {
@@ -247,86 +226,76 @@ bool Read_Write_Base::OpenInFile(const unsigned int i)
 	  Interprete(lastline);
 	  if (lastline.length()>0) m_filecontent.push_back(lastline);
 	}
-	getline(*m_infile[i],lastline);
-      } while (*m_infile[i]);
+	getline(*m_infiles[i],lastline);
+      } while (*m_infiles[i]);
     }
   }
   bool success=m_filecontent.size()>0;
   if (m_addcommandline) AddFileContent(CommandLine());
-  if (!success) m_infilemode[i]=File_IO_Base::Error;
+  if (!success) m_infiles[i].SetMode(fom::error);
   return success;
 }
 
 bool Read_Write_Base::OpenOutFile(const unsigned int i)
 {  
   if (OutputFile(i)==nullstring) return false;
-  if (OutFileMode(i)==Unknown) SetOutFileMode(Permanent);
-  if (m_outfile[i]==NULL) {
-#ifdef DEBUG__Read_Write_Base
-    std::cout<<"Read_Write_Base::OpenOutFile("<<i<<"): "
-	     <<"Opening file '"<<m_outputpath[i]+m_outputfile[i]<<"'."<<std::endl;
-#endif
-    m_outfile[i]=new std::ofstream();	
-    m_outfile[i]->open((m_outputpath[i]+m_outputfile[i]).c_str());
-    if (m_filebegin.size()>0 && !m_outfile[i]->bad()) {
-      (*m_outfile[i])<<m_filebegin[0]<<std::endl;
+  if (OutFileMode(i)==fom::unknown) SetOutFileMode(fom::permanent);
+  if (m_outfiles[i]()==NULL) {
+    m_outfiles[i].Open();	
+    if (m_filebegin.size()>0 && !m_outfiles[i]->bad()) {
+      (*m_outfiles[i])<<m_filebegin[0]<<std::endl;
     }
   }
-  return !m_outfile[i]->bad();
+  return !m_outfiles[i]->bad();
 }
 
 void Read_Write_Base::CloseInFile(const unsigned int i,const bool force)
 { 
-  if (m_infile[i]==NULL) return;
-  if ((m_infilemode[i]==Permanent)&&(!force)) return;
-#ifdef DEBUG__Read_Write_Base
-  std::cout<<"Read_Write_Base::CloseInFile("<<i<<","<<force<<"): "
-	   <<"Closing file '"<<m_inputpath[i]+m_inputfile[i]<<"'."<<m_infilemode[i]<<m_infile[i]<<std::endl;
-#endif
+  if (m_infiles[i]()==NULL) return;
+  if (m_infiles[i].Mode()==fom::permanent && !force) return;
   m_filecontent.clear();
-  m_infile[i]->close(); 
-  delete m_infile[i]; 
-  m_infile[i]=NULL;
+  m_infiles[i].Close(); 
 }
 
 void Read_Write_Base::CloseOutFile(const unsigned int i,const bool force)
 { 
-  if (m_outfile[i]==NULL) return;
-  if ((m_outfilemode[i]==Permanent)&&(!force)) return;
-#ifdef DEBUG__Read_Write_Base
-  std::cout<<"Read_Write_Base::CloseOutFile("<<i<<","<<force<<"): "
-	   <<"Closing file '"<<m_outputpath[i]+m_outputfile[i]<<"'."<<std::endl;
-#endif
-  if (m_fileend.size()>0 && !m_outfile[i]->bad()) {
-    (*m_outfile[i])<<m_fileend[0]<<std::endl;
+  if (m_outfiles[i]()==NULL) return;
+  if (m_outfiles[i].Mode()==fom::permanent && !force) return;
+  if (m_fileend.size()>0 && !m_outfiles[i]->bad()) {
+    (*m_outfiles[i])<<m_fileend[0]<<std::endl;
   }
-  m_outfile[i]->close(); 
-  delete m_outfile[i]; 
-  m_outfile[i]=NULL;
+  m_outfiles[i].Close(); 
 }
 
 std::string Read_Write_Base::ReplaceTags(std::string &expr) const
 { 
   std::string tag=expr;
-#ifdef DEBUG__Read_Write_Base
-  std::cout<<"Read_Write_Base::ReplaceTags("<<tag<<"): "<<std::endl;
-#endif
   bool success=false;
-  for (std::map<std::string,std::string>::const_iterator tit=m_tags.begin();
-       tit!=m_tags.end();++tit) {
+  for (std::map<std::string,std::string>::const_iterator 
+	 tit=m_tags.begin();tit!=m_tags.end();++tit) {
     size_t pos=tag.find(tit->first);
     if (pos!=std::string::npos) {
-#ifdef DEBUG__Read_Write_Base
-      std::cout<<"   '"<<tit->first<<"' => '"<<tag;
-#endif
       tag.replace(pos,tit->first.length(),tit->second);
-#ifdef DEBUG__Read_Write_Base
-      std::cout<<"' -> '"<<tag<<"'"<<std::endl;
-#endif
       success=true;
     }
   }
   if (success && tag!=expr) return ReplaceTags(tag);
   return tag;
+}
+
+template <class Type> Type Read_Write_Base::Default() 
+{ 
+  return std::numeric_limits<Type>::max(); 
+}
+
+template int Read_Write_Base::Default<int>();
+template unsigned int Read_Write_Base::Default<unsigned int>();
+template long int Read_Write_Base::Default<long int>();
+template float Read_Write_Base::Default<float>();
+template double Read_Write_Base::Default<double>();
+
+template <> std::string Read_Write_Base::Default<std::string>()
+{
+  return "";
 }
 

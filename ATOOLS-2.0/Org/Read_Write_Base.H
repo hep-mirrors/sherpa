@@ -6,34 +6,45 @@
 
 namespace ATOOLS {
 
-  const std::string defaultcut = std::string("=");
-  const std::string defaultsep = std::string(";");
-  const std::string defaultcom = std::string("#");
-  const std::string noinputtag = std::string("°");
+  const std::string defaultcut("=");
+  const std::string defaultsep(";");
+  const std::string defaultcom("#");
+  const std::string noinputtag("°");
 
   const int defaultblank = 32;
   const int defaulttab   = 9;
 
+  struct vtc {
+
+    enum code { 
+      vertical   =  1,
+      horizontal =  2,
+      unknown    = 99 
+    };
+
+  };// end of struct vtc
+
+  struct mtc {
+
+    enum code { 
+      normal     =  1,
+      transposed =  2,
+      unknown    = 99
+    };
+
+  };// end of struct vtc
+
   class Algebra_Interpreter;
 
   class Read_Write_Base: public File_IO_Base, public Tag_Replacer {
-  public:
-
-    enum VectorTypeID { VVertical   =  1,
-			VHorizontal =  2,
-			VUnknown    = 99 };
-
-    enum MatrixTypeID { MNormal     =  1,
-			MTransposed =  2,
-			MUnknown    = 99 };
-
   private:
 
     std::map<std::string,std::string> m_tags;
 
     static std::vector<std::string> s_commandline;
 
-    std::vector<std::string> m_comment, m_ignore, m_separator, m_filecontent;
+    std::vector<std::string> m_comment, m_ignore, m_separator;
+    std::vector<std::string> m_filecontent;
     std::vector<int>         m_blank;
 
     std::vector<std::pair<int,size_t> > m_ifresults;
@@ -43,8 +54,8 @@ namespace ATOOLS {
     
     char m_escape;
 
-    VectorTypeID m_vectortype;
-    MatrixTypeID m_matrixtype;
+    vtc::code m_vectortype;
+    mtc::code m_matrixtype;
 
     bool m_ignorecase, m_ignoreblanks, m_exactmatch, m_interprete, m_cmode;
 
@@ -56,18 +67,18 @@ namespace ATOOLS {
 
   protected:
 
-    const std::vector<std::string> &FileContent() const;
+    inline const std::vector<std::string> &FileContent() const
+    { return m_filecontent; }
 
-    static const std::vector<std::string> &CommandLine();
+    inline static const std::vector<std::string> &CommandLine()
+    { return s_commandline; }
 
     bool m_allownans, m_addcommandline;
 
-    template <class ReadWrite_Type >
-    ReadWrite_Type NotDefined();
-    template <class ReadWrite_Type >
-    ReadWrite_Type Default();
+    template <class Type> Type Default();
 
-    size_t Find(std::string input,std::string parameter,size_t &length) const;
+    size_t Find(std::string input,std::string parameter,
+		size_t &length) const;
 
     std::string ReplaceTags(std::string &expr) const;    
     std::string &Interprete(std::string &lastline);
@@ -79,9 +90,9 @@ namespace ATOOLS {
 		    const unsigned int outfiles);
     Read_Write_Base(const unsigned int infiles,
 		    const unsigned int outfiles,
-		    const std::string _m_cut,
-		    const std::string _m_separator,
-		    const std::string _m_comment);
+		    const std::string cut,
+		    const std::string separator,
+		    const std::string comment);
 
     // destructor
     ~Read_Write_Base();
@@ -94,207 +105,194 @@ namespace ATOOLS {
     void CloseOutFile(const unsigned int i=0,const bool force=false);
 
     // setters
-    inline void SetSeparator(const std::string _m_separator);
-    inline void SetSeparator(const std::vector<std::string> &_m_separator);
-    inline void AddSeparator(const std::string _m_separator);
-    inline void AddSeparator(const std::vector<std::string> &_m_separator);
+    inline void SetSeparator(const std::string separator)
+    { m_separator.clear(); m_separator.push_back(separator); }
+    inline void SetSeparator(const std::vector<std::string> &separator)
+    { m_separator=separator; }
+    inline void AddSeparator(const std::string separator)
+    { m_separator.push_back(separator); }
+    inline void AddSeparator(const std::vector<std::string> &separator)
+    { m_separator.insert(m_separator.end(),
+			 separator.begin(),separator.end()); }
 
-    inline void SetComment(const std::string _m_comment);
-    inline void SetComment(const std::vector<std::string> &_m_comment);
-    inline void AddComment(const std::string _m_comment);
-    inline void AddComment(const std::vector<std::string> &_m_comment);
+    inline void SetComment(const std::string comment)
+    { m_comment.clear(); m_comment.push_back(comment); }
+    inline void SetComment(const std::vector<std::string> &comment)
+    { m_comment=comment; }
+    inline void AddComment(const std::string comment)
+    { m_comment.push_back(comment); }
+    inline void AddComment(const std::vector<std::string> &comment)
+    { m_comment.insert(m_comment.end(),comment.begin(),comment.end()); }
 
-    inline void SetIgnore(const std::string _m_ignore);
-    inline void SetIgnore(const std::vector<std::string> &_m_ignore);
-    inline void AddIgnore(const std::string _m_ignore);
-    inline void AddIgnore(const std::vector<std::string> &_m_ignore);
+    inline void SetIgnore(const std::string ignore)
+    { m_ignore.clear(); m_ignore.push_back(ignore); }
+    inline void SetIgnore(const std::vector<std::string> &ignore)
+    { m_ignore=ignore; }
+    inline void AddIgnore(const std::string ignore)
+    { m_ignore.push_back(ignore); }
+    inline void AddIgnore(const std::vector<std::string> &ignore)
+    { m_ignore.insert(m_ignore.end(),ignore.begin(),ignore.end()); }
 
-    inline void SetBlank(const int _m_blank);
-    inline void SetBlank(const std::vector<int> &_m_blank);
-    inline void AddBlank(const int _m_blank);
-    inline void AddBlank(const std::vector<int> &_m_blank);
+    inline void SetBlank(const int blank)
+    { m_blank.clear(); m_blank.push_back(blank); }
+    inline void SetBlank(const std::vector<int> &blank)
+    { m_blank=blank; }
+    inline void AddBlank(const int blank)
+    { m_blank.push_back(blank); }
+    inline void AddBlank(const std::vector<int> &blank)
+    { m_blank.insert(m_blank.end(),blank.begin(),blank.end()); }
 
-    inline void SetFileBegin(const std::string _m_filebegin);
-    inline void SetFileBegin(const std::vector<std::string> &_m_filebegin);
-    inline void AddFileBegin(const std::string _m_filebegin);
-    inline void AddFileBegin(const std::vector<std::string> &_m_filebegin);
+    inline void SetFileBegin(const std::string filebegin)
+    { m_filebegin.clear(); m_filebegin.push_back(filebegin); }
+    inline void SetFileBegin(const std::vector<std::string> &filebegin)
+    { m_filebegin=filebegin; }
+    inline void AddFileBegin(const std::string filebegin)
+    { m_filebegin.push_back(filebegin); }
+    inline void AddFileBegin(const std::vector<std::string> &filebegin)
+    { m_filebegin.insert(m_filebegin.end(),
+			 filebegin.begin(),filebegin.end()); }
 
-    inline void SetFileEnd(const std::string _m_fileend);
-    inline void SetFileEnd(const std::vector<std::string> &_m_fileend);
-    inline void AddFileEnd(const std::string _m_fileend);
-    inline void AddFileEnd(const std::vector<std::string> &_m_fileend);
+    inline void SetFileEnd(const std::string fileend)
+    { m_fileend.clear(); m_fileend.push_back(fileend); }
+    inline void SetFileEnd(const std::vector<std::string> &fileend)
+    { m_fileend=fileend; }
+    inline void AddFileEnd(const std::string fileend)
+    { m_fileend.push_back(fileend); }
+    inline void AddFileEnd(const std::vector<std::string> &fileend)
+    { m_fileend.insert(m_fileend.end(),
+		       fileend.begin(),fileend.end()); }
 
-    inline void SetString(const std::string _m_string);
+    inline void SetString(const std::string string)
+    { m_string=string; }
 
-    inline void SetOpenMode(const OpenModeID _m_openmode);
-    inline void SetOccurrence(const size_t _m_occurrence);
+    inline void SetOccurrence(const size_t occurrence)
+    { m_occurrence=occurrence; }
 
-    inline void SetVectorType(const VectorTypeID _m_vectortype);
-    inline void SetMatrixType(const MatrixTypeID _m_matrixtype);
+    inline void SetVectorType(const vtc::code vectortype)
+    { m_vectortype=vectortype; }
+    inline void SetMatrixType(const mtc::code matrixtype)
+    { m_matrixtype=matrixtype; }
 
-    inline void SetAllowNans(const bool _m_killnans);
-    inline void SetAddCommandLine(const bool _m_commandline);
+    inline void SetAllowNans(const bool allownans)
+    { m_allownans=allownans; }
+    inline void SetAddCommandLine(const bool commandline)
+    { m_addcommandline=commandline; }
 
-    inline void SetFileContent(const std::string _m_filecontent);
-    inline void SetFileContent(const std::vector<std::string> &_m_filecontent);
+    inline void SetFileContent(const std::string filecontent)
+    { m_filecontent.clear(); m_filecontent.push_back(filecontent); }
+    inline void SetFileContent(const std::vector<std::string> &filecontent)
+    {m_filecontent=filecontent; }
+    inline void AddFileContent(const std::string filecontent)
+    { m_filecontent.clear(); m_filecontent.push_back(filecontent); }
+    inline void AddFileContent(const std::vector<std::string> &filecontent)
+    { m_filecontent.insert(m_filecontent.end(),
+			   filecontent.begin(),filecontent.end()); }
 
-    inline void AddFileContent(const std::string _m_filecontent);
-    inline void AddFileContent(const std::vector<std::string> &_m_filecontent);
+    inline static void SetCommandLine(const std::string commandline)
+    { s_commandline.clear(); s_commandline.push_back(commandline); }
 
-    inline static void SetCommandLine(const std::string _s_commandline);
-    inline static void SetCommandLine(const std::vector<std::string> &_s_commandline);
+    inline static void SetCommandLine(const std::vector<std::string> 
+				      &commandline)
+    { s_commandline=commandline; }
+      inline static void AddCommandLine(const std::string commandline)
+    { s_commandline.push_back(commandline); }
+    inline static void AddCommandLine(const std::vector<std::string> 
+				      &commandline)
+    { s_commandline.insert(s_commandline.end(),
+			   commandline.begin(),commandline.end()); }
   
-    inline static void AddCommandLine(const std::string _s_commandline);
-    inline static void AddCommandLine(const std::vector<std::string> &_s_commandline);
-  
-    inline void SetIgnoreCase(const bool ignorecase);
-    inline void SetIgnoreBlanks(const bool ignorecase);
+    inline void SetIgnoreCase(const bool ignorecase)
+    { m_ignorecase=ignorecase; }
+    inline void SetIgnoreBlanks(const bool ignoreblanks)
+    { m_ignoreblanks=ignoreblanks; }
 
-    inline void SetExactMatch(const bool exact);
-    inline void SetInterprete(const bool interprete);
-    inline void SetCMode(const bool cmode);
+    inline void SetExactMatch(const bool exact)
+    { m_exactmatch=exact; }
+    inline void SetInterprete(const bool interprete)
+    { m_interprete=interprete; }
+    inline void SetCMode(const bool cmode)
+    { m_cmode=cmode; }
 
-    inline void SetEscape(const char escape);
+    inline void SetEscape(const char escape)
+    { m_escape=escape; }
 
-    inline void SetTags(const std::map<std::string,std::string> &tags);
-    inline void AddTags(const std::map<std::string,std::string> &tags);
-    inline void SetTag(const std::string &tag,const std::string &value);
-    inline void AddTag(const std::string &tag,const std::string &value);
+    inline void SetTags(const std::map<std::string,std::string> &tags)
+    { m_tags=tags; }
+    inline void AddTags(const std::map<std::string,std::string> &tags)
+    { 
+      for (std::map<std::string,std::string>::const_iterator 
+	     tit=tags.begin();tit!=tags.end();++tit) 
+	m_tags[tit->first]=tit->second; 
+    }
+    inline void SetTag(const std::string &tag,const std::string &value)
+    { m_tags.clear(); m_tags[tag]=value; }
+    inline void AddTag(const std::string &tag,const std::string &value)
+    { m_tags[tag]=value; }
 
     // getters
-    inline const std::vector<std::string> &Comment() const;
-    inline const std::vector<std::string> &Ignore() const;
-    inline const std::vector<std::string> &Separator() const;
+    inline const std::vector<std::string> &Comment() const
+    { return m_comment; }
+    inline const std::vector<std::string> &Ignore() const
+    { return m_ignore; }
+    inline const std::vector<std::string> &Separator() const
+    { return m_separator; }
 
-    inline const std::vector<int> &Blank() const;
+    inline const std::vector<int> &Blank() const
+    { return m_blank; }
 
-    inline const std::vector<std::string> &FileBegin() const;
-    inline const std::vector<std::string> &FileEnd() const;
+    inline const std::vector<std::string> &FileBegin() const
+    { return m_filebegin; }
+    inline const std::vector<std::string> &FileEnd() const
+    { return m_fileend; }
 
-    inline const std::string String() const;
+    inline const std::string String() const
+    { return m_string; }
 
-    inline size_t Occurrence() const;
+    inline size_t Occurrence() const
+    { return m_occurrence; }
 
-    inline const VectorTypeID VectorType() const;
-    inline const MatrixTypeID MatrixType() const;
+    inline const vtc::code VectorType() const
+    { return m_vectortype; }
+    inline const mtc::code MatrixType() const
+    { return m_matrixtype; }
 
-    inline const bool AllowNans() const;
-    inline const bool AddCommandLine() const;
+    inline const bool AllowNans() const
+    { return m_allownans; }
+    inline const bool AddCommandLine() const
+    { return m_addcommandline; }
 
-    inline bool IgnoreCase() const;
-    inline bool IgnoreBlanks() const;
+    inline bool IgnoreCase() const
+    { return m_ignorecase; }
+    inline bool IgnoreBlanks() const
+    { return m_ignoreblanks; }
 
-    inline bool ExactMatch() const;
-    inline bool Interprete() const;
-    inline bool CMode() const;
+    inline bool ExactMatch() const
+    { return m_exactmatch; }
+    inline bool Interprete() const
+    { return m_interprete; }
+    inline bool CMode() const
+    { return m_cmode; }
 
-    inline char Escape() const;
+    inline char Escape() const
+    { return m_escape; }
 
-    inline bool RereadInFile(const unsigned int i=0);
+    inline bool RereadInFile(const unsigned int i=0)
+    { CloseInFile(i,true); return OpenInFile(i); }
     
-    inline Algebra_Interpreter *Interpreter() const;
+    inline Algebra_Interpreter *Interpreter() const
+    { return p_interpreter; }
 
-    inline const std::string &Tag(const std::string &tag) const;
-    inline const std::map<std::string,std::string> &Tags() const;
+    inline const std::string &Tag(const std::string &tag) const
+    { 
+      std::map<std::string,std::string>::const_iterator 
+	tit(m_tags.find(tag));
+      return tit!=m_tags.end()?nullstring:tit->second;
+    }
+    inline const std::map<std::string,std::string> &Tags() const
+    { return m_tags; }
 
   };// end of class Read_Write_Base
 
-  //////////////////
-  // Doxygen part //
-  //////////////////
-
-  /*!
-    \file Read_Write_Base.H
-    \brief Declares the class ATOOLS::Read_Write_Base
-  */
-
-  /*!
-    \class Read_Write_Base
-    \brief Reads standard data types from strings or files
-
-    The Read_Write_Base class currently supports the types 
-    int, long int, float, double, and std::string. According to the 
-    specific purpose the data may either be read from an input string
-    or from a file. It is also possible to read column vectors or line 
-    vectors, as well as matrices. The output is passed either as a 
-    std::vector<Read_Type> or as a std::vector<std::vector<Read_Type>>.
-  */
-
-  /*!
-    \fn Read_Write_Base::Read_Write_Base()
-    \brief Default constructor
-
-    Initializes the Read_Write_Base with the default cut "=", 
-    the default column separator ";" and the default comment indicator "#".
-  */
-
-  /*!
-    \fn Read_Write_Base::Read_Write_Base(std::string,std::string,std::string)
-    \brief Special constructor
-
-    Initializes the Read_Write_Base with the given cut, the given separator 
-    and the given comment indicator. 
-  */
-
-  /*!
-    \fn Read_Write_Base::SetSeparator(std::string)
-    \brief Sets the separator
-  */
-
-  /*!
-    \fn Read_Write_Base::SetComment(std::string)
-    \brief Sets the comment indicator
-  */
-
-  /*!
-    \fn Read_Write_Base::SetString(std::string)
-    \brief Sets the current input string
-  */
-
-  /*!
-    \fn Read_Write_Base::Cut()
-    \brief Returns the current cut
-  */
-
-  /*!
-    \fn Read_Write_Base::Separator()
-    \brief Returns the current separator
-  */
-
-  /*!
-    \fn Read_Write_Base::Comment()
-    \brief Returns the current comment indicator
-  */
-
-  /*!
-    \fn Read_Write_Base::String()
-    \brief Returns the current filename
-  */
-
-  /*!
-    \fn Read_Write_Base::String()
-    \brief Returns the current input string
-  */
-
-  /*!
-    \fn Read_Write_Base::NotDefined()
-    \brief Identifies unreadable input 
-
-    This template is used to decide whether the input parameter
-    is defined or not. In principle it should return the value 
-    std::stringstream returns when a null argument has been passed 
-  */
-
-  /*!
-    \fn Read_Write_Base::Default()
-    \brief Returns default values
-
-    This template passes a default value to the user routine
-    in the case that reading the input string resulted in an error. 
-  */
-
 }// end of namespace ATOOLS
-
-#include "Read_Write_Base.inl.H"
 
 #endif

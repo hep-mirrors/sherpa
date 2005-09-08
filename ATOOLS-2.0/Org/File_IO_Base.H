@@ -1,32 +1,16 @@
 #ifndef File_IO_Base_H
 #define File_IO_Base_H
 
-#include <fstream>
-#include <string>
+#include "My_File.H"
 #include <vector>
 
 namespace ATOOLS {
 
-  const std::string nullstring=std::string("");
-
   class File_IO_Base {
-  public:
-
-    enum OpenModeID { Temporary =  1,
-		      Permanent =  2,
-		      Error     =  3,
-		      Unknown   = 99 };
-    
   protected:
 
-    std::vector<std::string> m_inputpath, m_inputfile;
-    std::vector<std::string> m_outputpath, m_outputfile;
-
-    std::vector<std::ifstream*> m_infile;
-    std::vector<std::ofstream*> m_outfile;
-
-    std::vector<OpenModeID> m_infilemode;
-    std::vector<OpenModeID> m_outfilemode;
+    std::vector<My_In_File>  m_infiles;
+    std::vector<My_Out_File> m_outfiles;
 
     virtual bool OpenInFile(const unsigned int i);
     virtual bool OpenOutFile(const unsigned int i);
@@ -43,31 +27,45 @@ namespace ATOOLS {
     // destructor
     virtual ~File_IO_Base();
 
-    // member functions
-    void SetInputPath(const std::string _m_inputpath,const unsigned int i=0);
-    void SetInputFile(const std::string _m_inputfile,const unsigned int i=0);
-    void SetOutputPath(const std::string _m_outputpath,const unsigned int i=0);
-    void SetOutputFile(const std::string _m_outputfile,const unsigned int i=0);
-
-    void SetInFileMode(const OpenModeID _m_infilemode,const unsigned int i=0);
-    void SetOutFileMode(const OpenModeID _m_outfilemode,const unsigned int i=0);
-
-    const std::string InputPath(const unsigned int i=0) const;
-    const std::string InputFile(const unsigned int i=0) const;
-    const std::string OutputPath(const unsigned int i=0) const;
-    const std::string OutputFile(const unsigned int i=0) const;
-
-    bool CheckInputPath(const unsigned int i=0);
-    bool CheckInputFile(const unsigned int i=0);
-    bool CheckOutputPath(const unsigned int i=0);
-    bool CheckOutputFile(const unsigned int i=0);
-
     // inline functions
-    inline const OpenModeID InFileMode(const unsigned int i=0) const  { return m_infilemode[i];  }
-    inline const OpenModeID OutFileMode(const unsigned int i=0) const { return m_outfilemode[i]; }
+    inline void SetInputPath(const std::string inputpath,
+			     const unsigned int i=0)
+    { m_infiles.at(i).SetPath(inputpath); }
+    inline void SetInputFile(const std::string inputfile,
+			     const unsigned int i=0)
+    { m_infiles.at(i).SetFile(inputfile); }
+    inline void SetInFileMode(const fom::code infilemode,
+			      const unsigned int i=0)
+    { m_infiles.at(i).SetMode(infilemode); }
 
-    inline std::ifstream *InFile(const unsigned int i=0)  { return m_infile[i];  }
-    inline std::ofstream *OutFile(const unsigned int i=0) { return m_outfile[i]; }
+    inline void SetOutputPath(const std::string outputpath,
+			     const unsigned int i=0)
+    { m_outfiles.at(i).SetPath(outputpath); }
+    inline void SetOutputFile(const std::string outputfile,
+			     const unsigned int i=0)
+    { m_outfiles.at(i).SetFile(outputfile); }
+    inline void SetOutFileMode(const fom::code outfilemode,
+			       const unsigned int i=0)
+    { m_outfiles.at(i).SetMode(outfilemode); }
+
+    inline const std::string &InputPath(const unsigned int i=0) const
+    { return m_infiles.at(i).Path(); }
+    inline const std::string &InputFile(const unsigned int i=0) const
+    { return m_infiles.at(i).File(); }
+    inline fom::code InFileMode(const unsigned int i=0) const  
+    { return m_infiles.at(i).Mode(); }
+
+    inline const std::string &OutputPath(const unsigned int i=0) const
+    { return m_outfiles.at(i).Path(); }
+    inline const std::string &OutputFile(const unsigned int i=0) const
+    { return m_outfiles.at(i).File(); }
+    inline fom::code OutFileMode(const unsigned int i=0) const
+    { return m_outfiles.at(i).Mode(); }
+
+    inline std::ifstream *InFile(const unsigned int i=0)  
+    { return m_infiles[i]();  }
+    inline std::ofstream *OutFile(const unsigned int i=0) 
+    { return m_outfiles[i](); }
 
   }; // end of class File_IO_Base
 

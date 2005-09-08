@@ -6,84 +6,6 @@
 
 namespace ATOOLS {
 
-  inline void Read_Write_Base::SetSeparator(const std::string _m_separator) 
-  { 
-    m_separator.clear(); 
-    m_separator.push_back(_m_separator); 
-  }
-  
-  inline void Read_Write_Base::SetSeparator(const std::vector<std::string> &_m_separator) 
-  { 
-    m_separator.clear(); 
-    m_separator=_m_separator; 
-  }
-  
-  inline void Read_Write_Base::AddSeparator(const std::string _m_separator) 
-  { 
-    m_separator.push_back(_m_separator); 
-  }
-  
-  inline void Read_Write_Base::AddSeparator(const std::vector<std::string> &_m_separator) 
-  { 
-    for (unsigned int i=0;i<_m_separator.size();m_separator.push_back(_m_separator[i++])); 
-  }
-  
-  inline void Read_Write_Base::SetComment(const std::string _m_comment)       
-  { 
-    m_comment.clear(); 
-    m_comment.push_back(_m_comment); 
-  }
-
-  inline void Read_Write_Base::SetComment(const std::vector<std::string> &_m_comment)       
-  { 
-    m_comment.clear(); 
-    m_comment=_m_comment; 
-  }
-  
-  inline void Read_Write_Base::AddComment(const std::string _m_comment)       
-  { 
-    m_comment.push_back(_m_comment); 
-  }
-  
-  inline void Read_Write_Base::AddComment(const std::vector<std::string> &_m_comment)       
-  { 
-    for (unsigned int i=0;i<_m_comment.size();m_comment.push_back(_m_comment[i++])); 
-  }
-  
-  inline void Read_Write_Base::SetFileContent(const std::string _m_filecontent)
-  { 
-    m_filecontent.clear(); 
-    m_filecontent.push_back(_m_filecontent); 
-  }
-
-  inline void Read_Write_Base::SetFileContent(const std::vector<std::string> &_m_filecontent)
-  { 
-    m_filecontent.clear(); 
-    for (unsigned int i=0;i<_m_filecontent.size();m_filecontent.push_back(_m_filecontent[i++]));
-  }
-
-  inline void Read_Write_Base::AddFileContent(const std::string _m_filecontent)
-  { 
-    m_filecontent.push_back(_m_filecontent); 
-  }
-
-  inline void Read_Write_Base::AddFileContent(const std::vector<std::string> &_m_filecontent)
-  { 
-    for (unsigned int i=0;i<_m_filecontent.size();m_filecontent.push_back(_m_filecontent[i++])); 
-  }
-
-  inline void Read_Write_Base::SetCommandLine(const std::string _s_commandline)
-  { 
-    s_commandline.clear(); 
-    s_commandline.push_back(_s_commandline); 
-  }
-
-  inline void Read_Write_Base::SetCommandLine(const std::vector<std::string> &_s_commandline)
-  { 
-    s_commandline.clear(); 
-    for (unsigned int i=0;i<_s_commandline.size();s_commandline.push_back(_s_commandline[i++]));
-  }
-
   inline void Read_Write_Base::AddCommandLine(const std::string _s_commandline)
   { 
     s_commandline.push_back(_s_commandline); 
@@ -92,50 +14,6 @@ namespace ATOOLS {
   inline void Read_Write_Base::AddCommandLine(const std::vector<std::string> &_s_commandline)
   { 
     for (unsigned int i=0;i<_s_commandline.size();s_commandline.push_back(_s_commandline[i++])); 
-  }
-
-  inline void Read_Write_Base::SetIgnore(const std::string _m_ignore)       
-  { 
-    m_ignore.clear(); 
-    m_ignore.push_back(_m_ignore); 
-  }
-
-  inline void Read_Write_Base::SetIgnore(const std::vector<std::string> &_m_ignore)       
-  { 
-    m_ignore.clear(); 
-    m_ignore=_m_ignore; 
-  }
-  
-  inline void Read_Write_Base::AddIgnore(const std::string _m_ignore)       
-  { 
-    m_ignore.push_back(_m_ignore); 
-  }
-
-  inline void Read_Write_Base::AddIgnore(const std::vector<std::string> &_m_ignore)       
-  { 
-    for (unsigned int i=0;i<_m_ignore.size();m_ignore.push_back(_m_ignore[i++])); 
-  }
-
-  inline void Read_Write_Base::SetBlank(const int _m_blank)                 
-  { 
-    m_blank.clear(); 
-    m_blank.push_back(_m_blank); 
-  }
-  
-  inline void Read_Write_Base::SetBlank(const std::vector<int> &_m_blank)    
-  { 
-    m_blank.clear(); 
-    m_blank = _m_blank; 
-  }
-
-  inline void Read_Write_Base::AddBlank(const int _m_blank)                 
-  { 
-    m_blank.push_back(_m_blank); 
-  }
-
-  inline void Read_Write_Base::AddBlank(const std::vector<int> &_m_blank)    
-  { 
-    for (unsigned int i=0; i<_m_blank.size();m_blank.push_back(_m_blank[i++])); 
   }
 
   inline void Read_Write_Base::SetFileBegin(const std::string _m_filebegin)       
@@ -190,16 +68,6 @@ namespace ATOOLS {
     m_occurrence = _m_occurrence; 
   }
 
-  inline void Read_Write_Base::SetVectorType(const VectorTypeID _m_vectortype)
-  { 
-    m_vectortype=_m_vectortype; 
-  }
-
-  inline void Read_Write_Base::SetMatrixType(const MatrixTypeID _m_matrixtype)
-  { 
-    m_matrixtype=_m_matrixtype; 
-  }
-
   inline const std::vector<std::string> &Read_Write_Base::Comment() const           
   { 
     return m_comment; 
@@ -238,16 +106,6 @@ namespace ATOOLS {
   inline size_t Read_Write_Base::Occurrence() const           
   { 
     return m_occurrence; 
-  }
-  
-  inline const Read_Write_Base::VectorTypeID Read_Write_Base::VectorType() const       
-  { 
-    return m_vectortype; 
-  }
-  
-  inline const Read_Write_Base::MatrixTypeID Read_Write_Base::MatrixType() const       
-  { 
-    return m_matrixtype; 
   }
   
   inline void Read_Write_Base::SetAllowNans(const bool _m_allownans)

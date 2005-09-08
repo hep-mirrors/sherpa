@@ -27,6 +27,7 @@ libToolsOrg_la_SOURCES        = \
 				Getter_Function.C \
 				Exception.C \
 				Exception_Handler.C \
+				My_File.C \
 				File_IO_Base.C \
 				Read_Write_Base.C \
 				Data_Reader.C \
@@ -52,6 +53,7 @@ noinst_HEADERS        =	\
 			Getter_Function.H \
 			Exception.H \
 			Exception_Handler.H \
+			My_File.H \
 			File_IO_Base.H \
 			Read_Write_Base.H \
 			Read_Write_Base.inl.H \

@@ -4,35 +4,25 @@
 #include "MyStrStream.H"
 #include <typeinfo>
 #include <ctype.h>
-#ifdef DEBUG__Data_Reader
-#include <iostream>
-#endif
 
 using namespace ATOOLS;
 
 Data_Reader::Data_Reader(): 
   Read_Write_Base(1,0)
 {
-  SetInFileMode(Permanent);
+  SetInFileMode(fom::permanent);
 }
 
-Data_Reader::Data_Reader(const std::string _m_cut,
-			 const std::string _m_separator,
-			 const std::string _m_comment):
-  Read_Write_Base(1,0,_m_cut,_m_separator,_m_comment)
+Data_Reader::Data_Reader(const std::string cut,
+			 const std::string separator,
+			 const std::string comment):
+  Read_Write_Base(1,0,cut,separator,comment)
 {
-  SetInFileMode(Permanent);
+  SetInFileMode(fom::permanent);
 }
 
 void Data_Reader::KillComments(std::string& buffer)
 {
-#ifdef DEBUG__Data_Reader
-  std::cout<<"Data_Reader::KillComments("<<buffer<<")"<<std::endl<<"   comment tags are ";
-  for (unsigned int i=0;i<Comment().size();std::cout<<"'"<<Comment()[i++]<<"' ");
-  std::cout<<std::endl<<"   ignored tags are ";
-  for (unsigned int i=0;i<Ignore().size();std::cout<<"'"<<Ignore()[i++]<<"' ");
-  std::cout<<std::endl;
-#endif
   size_t pos;
   for (unsigned int i=0;i<Comment().size();++i) {
     size_t next=0;
@@ -53,16 +43,10 @@ void Data_Reader::KillComments(std::string& buffer)
       }
     }
   }
-#ifdef DEBUG__Data_Reader
-  std::cout<<"   returning '"<<buffer<<"'"<<std::endl;
-#endif
 }
 
 std::string Data_Reader::KillBlanks(std::string& buffer)
 {
-#ifdef DEBUG__Data_Reader
-  std::cout<<"Data_Reader::KillBlanks("<<buffer<<")"<<std::endl;
-#endif
   if (buffer==nullstring) return buffer;
   bool hit=true;
   while (hit && buffer.length()>0) { 
@@ -85,17 +69,11 @@ std::string Data_Reader::KillBlanks(std::string& buffer)
 	break;
       }
   }
-#ifdef DEBUG__Data_Reader
-  std::cout<<"   returning '"<<buffer<<"'"<<std::endl;
-#endif
   return buffer;
 }
 
 std::string Data_Reader::HighlightSeparator(std::string& buffer)
 {
-#ifdef DEBUG__Data_Reader
-  std::cout<<"Data_Reader::HighlightSeparator("<<buffer<<")"<<std::endl;
-#endif
   if (buffer==nullstring) return buffer;
   size_t pos=std::string::npos, next=0, min=pos;
   for (unsigned int j=0; j<Separator().size(); ++j) {
@@ -109,17 +87,11 @@ std::string Data_Reader::HighlightSeparator(std::string& buffer)
       }
     }
   }
-#ifdef DEBUG__Data_Reader
-  std::cout<<"   returning '"<<buffer<<"'"<<std::endl;
-#endif
   return buffer.substr(0,min);
 }
 
 std::string Data_Reader::StripEscapes(const std::string &buffer) const
 {
-#ifdef DEBUG__Data_Reader
-  std::cout<<"Data_Reader::StripEscapes("<<buffer<<")"<<std::endl;
-#endif
   if (buffer.length()==0) return buffer;
   std::string input=buffer;
   size_t pos, next=0;
@@ -127,27 +99,21 @@ std::string Data_Reader::StripEscapes(const std::string &buffer) const
     input.erase(pos,1);
     if (input.length()>pos && input[pos]==Escape()) next=pos+1;
   }
-#ifdef DEBUG__Data_Reader
-  std::cout<<"   returning '"<<input<<"'"<<std::endl;
-#endif
   return input;
 }
 
 template <class Read_Type>
-Read_Type Data_Reader::M_ReadFromString(std::string parameter,std::string &inputstring)
+Read_Type Data_Reader::M_ReadFromString(std::string parameter,
+					std::string &inputstring)
 {
   size_t pos;
   Read_Type value;
-#ifdef DEBUG__Data_Reader
-  std::cout<<"Data_Reader::M_ReadFromString("<<parameter<<","<<inputstring<<")"<<std::endl;
-#endif
   if (inputstring==noinputtag) {
     if (String()!=nullstring) {
       inputstring=String();
     }
     else {
-      msg_Debugging()<<"Data_Reader: No input string specified ! No default available !"<<std::endl
-		     <<"   Abort reading."<<std::endl;
+      msg_Debugging()<<"Data_Reader: No input string specified !\n";
       return Default<Read_Type>();
     }
   }
@@ -177,20 +143,14 @@ Read_Type Data_Reader::M_ReadFromString(std::string parameter,std::string &input
       if (Interprete()) cur=Interpreter()->Interprete(StripEscapes(cur));
     }
     value=ATOOLS::ToType<Read_Type>(cur);
-#ifdef DEBUG__Data_Reader
-    std::cout<<"   returning '"<<value<<"'"<<" ( type = "<<typeid(value).name()<<" )"<<std::endl;
-#endif
     return value;
   }
-#ifdef DEBUG__Data_Reader
-  std::cout<<"   returning default value '"<<Default<Read_Type>()<<"'"
-	   <<" ( type "<<typeid(value).name()<<" )"<<std::endl;
-#endif
   return Default<Read_Type>();
 }
 
 template <class Read_Type>
-Read_Type Data_Reader::M_ReadFromFile(std::string parameter,std::string filename)
+Read_Type Data_Reader::M_ReadFromFile(std::string parameter,
+				      std::string filename)
 {
   Read_Type value, temp;
   std::string buffer;
@@ -207,12 +167,14 @@ Read_Type Data_Reader::M_ReadFromFile(std::string parameter,std::string filename
     }
   }
   if(!OpenInFile()) {
-    msg.Tracking()<<"Data_Reader: File '"<<filename<<"' not found."<<std::endl;
+    msg.Tracking()<<"Data_Reader: File '"<<filename
+		  <<"' not found."<<std::endl;
     return value;
   }
   for (unsigned int i=0;i<FileContent().size();++i) {
     buffer=FileContent()[i];
-    if((temp=M_ReadFromString<Read_Type>(parameter,buffer))!=Default<Read_Type>()) value=temp;
+    if((temp=M_ReadFromString<Read_Type>(parameter,buffer))!=
+       Default<Read_Type>()) value=temp;
   }
   CloseInFile();
   if (value==Default<Read_Type>()) {
@@ -222,18 +184,15 @@ Read_Type Data_Reader::M_ReadFromFile(std::string parameter,std::string filename
   return value;
 }
 
-template <class Read_Type>
-std::vector<Read_Type> 
-Data_Reader::M_VectorFromString(std::string parameter, std::string inputstring,VectorTypeID tempvtype)
+template <class Read_Type> std::vector<Read_Type> 
+Data_Reader::M_VectorFromString(std::string parameter, 
+				std::string inputstring,vtc::code tempvtype)
 {
-  if (tempvtype==VUnknown) tempvtype=VectorType();
-  if (tempvtype==VUnknown) tempvtype=VVertical;
+  if (tempvtype==vtc::unknown) tempvtype=VectorType();
+  if (tempvtype==vtc::unknown) tempvtype=vtc::vertical;
   std::string value;
   std::vector<Read_Type> values;
   inputstring = ReplaceTags(inputstring);
-#ifdef DEBUG__Data_Reader
-  std::cout<<"Data_Reader::M_VectorFromString("<<parameter<<","<<inputstring<<","<<tempvtype<<")"<<std::endl;
-#endif
   if (inputstring==noinputtag) {
     if (String()!=nullstring) {
       inputstring=String();
@@ -247,74 +206,67 @@ Data_Reader::M_VectorFromString(std::string parameter, std::string inputstring,V
   }
   value = M_ReadFromString<std::string>(parameter,inputstring);
   while (value != Default<std::string>()) {
-#ifdef DEBUG__Data_Reader
-    std::cout<<"   newline tags are ";
-    for (unsigned int j=0;j<Separator().size();std::cout<<"'"<<Separator()[j++]<<"' ");
-    std::cout<<std::endl;
-#endif
     bool stop=false;
-    for (unsigned int j=0;j<Separator().size();++j) if (value==Separator()[j]) stop=true;
+    for (unsigned int j=0;j<Separator().size();++j) 
+      if (value==Separator()[j]) stop=true;
     if (stop) break;
     values.push_back(M_ReadFromString<Read_Type>(nullstring,value));
-    if (tempvtype==VVertical) break;
+    if (tempvtype==vtc::vertical) break;
     inputstring=inputstring.substr(inputstring.find(value)+value.length());
     value=M_ReadFromString<std::string>(nullstring,inputstring);
   }
-#ifdef DEBUG__Data_Reader
-  std::cout<<"   returned values are [ ";
-  for (unsigned int j=0;j<values.size();std::cout<<values[j++]<<" ");
-  std::cout<<"]"<<std::endl;
-#endif
   if (values.size()!=0) return values;
   return values;
 }
 
-template <class Read_Type>
-std::vector<Read_Type> 
-Data_Reader::M_VectorFromFile(std::string parameter, std::string filename,VectorTypeID tempvtype)
+template <class Read_Type> std::vector<Read_Type> 
+Data_Reader::M_VectorFromFile(std::string parameter, 
+			      std::string filename,vtc::code tempvtype)
 {
-  if (tempvtype==VUnknown) tempvtype=VectorType();
-  if (tempvtype==VUnknown) tempvtype=VVertical;
+  if (tempvtype==vtc::unknown) tempvtype=VectorType();
+  if (tempvtype==vtc::unknown) tempvtype=vtc::vertical;
   std::vector<Read_Type> values, temp;
   if (filename==noinputtag) {
     if (InputFile()!=nullstring) {
       filename=InputFile();
     }
     else {
-      msg_Debugging()<<"Data_Reader: No input file specified ! No default available !"<<std::endl
-		     <<"   Abort reading."<<std::endl;
+      msg_Debugging()<<"Data_Reader: No input file specified !\n";
       return values;
     }
   }
   if (!OpenInFile()) {
-    msg_Tracking()<<"Data_Reader: Error opening "<<filename<<" !"<<std::endl;
+    msg_Tracking()<<"Data_Reader: Error opening "<<filename
+		  <<" !"<<std::endl;
     return values;
   }
   for (unsigned int i=0;i<FileContent().size();++i) {
-    temp = M_VectorFromString<Read_Type>(parameter,FileContent()[i],tempvtype);
+    temp = M_VectorFromString<Read_Type>
+      (parameter,FileContent()[i],tempvtype);
     switch (tempvtype) {
-    case VHorizontal:
+    case vtc::horizontal:
       if (temp.size()!=0) values=temp;
       break;
-    case VUnknown:
-    case VVertical:
-      for (unsigned int j=0; j<temp.size(); ++j) values.push_back(temp[j]);
+    case vtc::unknown:
+    case vtc::vertical:
+      for (unsigned int j=0;j<temp.size();++j) values.push_back(temp[j]);
       break;
     }
   }
   CloseInFile();
   if (values.size() != 0) return values;
   msg_Debugging()<<"Data_Reader: Parameter "
-		 <<parameter<<" not specified in "<<filename<<" !"<<std::endl;
+		 <<parameter<<" not specified in "
+		 <<filename<<" !"<<std::endl;
   return values;
 }
 
-template <class Read_Type>
-std::vector< std::vector<Read_Type> > 
-Data_Reader::M_MatrixFromString(std::string parameter,std::string inputstring,MatrixTypeID tempmtype)
+template <class Read_Type> std::vector< std::vector<Read_Type> > 
+Data_Reader::M_MatrixFromString(std::string parameter,
+				std::string inputstring,mtc::code tempmtype)
 {
-  if (tempmtype==MUnknown) tempmtype=MatrixType();
-  if (tempmtype==MUnknown) tempmtype=MNormal;
+  if (tempmtype==mtc::unknown) tempmtype=MatrixType();
+  if (tempmtype==mtc::unknown) tempmtype=mtc::normal;
   std::vector<Read_Type> value;
   std::vector< std::vector<Read_Type> > transposedvalues;
   std::string name;
@@ -323,39 +275,40 @@ Data_Reader::M_MatrixFromString(std::string parameter,std::string inputstring,Ma
       inputstring=String();
     }
     else {
-      msg_Debugging()<<"Data_Reader: No input string specified ! No default available !"<<std::endl
-		     <<"   Abort reading."<<std::endl;
+      msg_Debugging()<<"Data_Reader: No input string specified !\n";
       return transposedvalues;
     }
   }
-  value=M_VectorFromString<Read_Type>(parameter,inputstring,VHorizontal);
-  unsigned int mindim=NotDefined<unsigned int>();
+  value=M_VectorFromString<Read_Type>
+    (parameter,inputstring,vtc::horizontal);
+  unsigned int mindim(0);
   for(unsigned int i=0;value.size()!=0;++i) {
     transposedvalues.push_back(value);
     if (value.size()<mindim) mindim=value.size();
     bool foundseparator=false;
     size_t sep=std::string::npos;
     for (unsigned int i=0;i<Separator().size();++i) {
-      if ((sep=inputstring.find(Separator()[i]))!=std::string::npos) foundseparator=true;
+      if ((sep=inputstring.find(Separator()[i]))!=std::string::npos) 
+	foundseparator=true;
     }
     if(foundseparator) inputstring=inputstring.substr(sep+1);
     else inputstring=nullstring;
-    value=M_VectorFromString<Read_Type>(nullstring,inputstring,VHorizontal);
+    value=M_VectorFromString<Read_Type>
+      (nullstring,inputstring,vtc::horizontal);
   }
   if (transposedvalues.size()!=0) {
-    if (tempmtype==MNormal) {
+    if (tempmtype==mtc::normal) {
       std::vector< std::vector<Read_Type> > normalvalues;     
       for (unsigned int i=0;i<transposedvalues[0].size();++i) 
-	normalvalues.push_back(std::vector<Read_Type>(transposedvalues.size()));
+	normalvalues.push_back(std::vector<Read_Type>
+			       (transposedvalues.size()));
       for (unsigned int j=0;j<transposedvalues.size();++j) {
 	for (unsigned int k=0;k<mindim;++k) {
 	  normalvalues[k][j]=transposedvalues[j][k];
-#ifdef DEBUG__Data_Reader
-	  std::cout<<"   transposed values are ["<<j<<"]["<<k<<"] = "<<transposedvalues[j][k]<<std::endl;
-#endif
 	}
       }
-      for (unsigned int i=0;i<transposedvalues.size();++i) transposedvalues[i].clear();
+      for (unsigned int i=0;i<transposedvalues.size();++i) 
+	transposedvalues[i].clear();
       transposedvalues.clear();
       return normalvalues;
     }
@@ -364,144 +317,194 @@ Data_Reader::M_MatrixFromString(std::string parameter,std::string inputstring,Ma
   return transposedvalues;
 }
 
-template <class Read_Type>
-std::vector< std::vector<Read_Type> > 
-Data_Reader::M_MatrixFromFile(std::string parameter,std::string filename,MatrixTypeID tempmtype)
+template <class Read_Type> std::vector< std::vector<Read_Type> > 
+Data_Reader::M_MatrixFromFile(std::string parameter,
+			      std::string filename,mtc::code tempmtype)
 {
-  if (tempmtype==MUnknown) tempmtype=MatrixType();
-  if (tempmtype==MUnknown) tempmtype=MNormal;
+  if (tempmtype==mtc::unknown) tempmtype=MatrixType();
+  if (tempmtype==mtc::unknown) tempmtype=mtc::normal;
   std::vector< std::vector<Read_Type> > transposedvalues, temp;
   if (filename==noinputtag) {
     if (InputFile()!=nullstring) {
       filename=InputFile();
     }
     else {
-      msg_Debugging()<<"Data_Reader: No input file specified ! No default available !"<<std::endl
-		     <<"    Abort reading."<<std::endl;
+      msg_Debugging()<<"Data_Reader: No input file specified !\n";
       return transposedvalues;
     }
   }
   if (!OpenInFile()) {
-    msg_Tracking()<<"Data_Reader: Error opening "<<filename<<" !"<<std::endl;
+    msg_Tracking()<<"Data_Reader: Error opening "<<filename
+		  <<" !"<<std::endl;
     return transposedvalues;
   }
   for (unsigned int i=0;i<FileContent().size();++i) {
-    temp = M_MatrixFromString<Read_Type>(parameter,FileContent()[i],MTransposed);
+    temp = M_MatrixFromString<Read_Type>
+      (parameter,FileContent()[i],mtc::transposed);
     for (unsigned int j=0; j<temp.size(); ++j) {
       transposedvalues.push_back(temp[j]);
     }
   }
   CloseInFile();
   if (transposedvalues.size()!=0) {
-    if (tempmtype==MNormal) {
+    if (tempmtype==mtc::normal) {
       std::vector< std::vector<Read_Type> > normalvalues;     
       for (unsigned int i=0;i<transposedvalues[0].size();++i) 
-	normalvalues.push_back(std::vector<Read_Type>(transposedvalues.size()));
+	normalvalues.push_back(std::vector<Read_Type>
+			       (transposedvalues.size()));
       for (unsigned int j=0;j<transposedvalues.size();++j) {
 	for (unsigned int k=0;k<transposedvalues[j].size();++k) {
-#ifdef DEBUG__Data_Reader
-	  std::cout<<"   transposed values are ["<<j<<"]["<<k<<"] = "<<transposedvalues[j][k]<<std::endl;
-#endif
 	  normalvalues[k][j]=transposedvalues[j][k]; 
 	}
       }
-      for (unsigned int i=0;i<transposedvalues.size();++i) transposedvalues[i].clear();
+      for (unsigned int i=0;i<transposedvalues.size();++i) 
+	transposedvalues[i].clear();
       transposedvalues.clear();
       return normalvalues;
     }
     else return transposedvalues;
   }
   msg_Debugging()<<"Data_Reader: Parameter "
-		 <<parameter<<" not specified in "<<filename<<" !"<<std::endl;
+		 <<parameter<<" not specified in "<<filename
+		 <<" !"<<std::endl;
   return transposedvalues;
 }
 
-template <class Read_Type >
-bool Data_Reader::ReadFromFile(Read_Type &result,std::string parameter,std::string filename) 
+template <class Read_Type > bool Data_Reader::
+ReadFromFile(Read_Type &result,
+	     std::string parameter,std::string filename) 
 { 
-  if ((result=M_ReadFromFile<Read_Type>(parameter,filename))!=Default<Read_Type>()) return true; 
+  if ((result=M_ReadFromFile<Read_Type>(parameter,filename))!=
+      Default<Read_Type>()) return true; 
   else return false; 
 }
 
-template bool Data_Reader::ReadFromFile<int>(int &,std::string,std::string);
-template bool Data_Reader::ReadFromFile<unsigned int>(unsigned int &,std::string,std::string);
-template bool Data_Reader::ReadFromFile<long int>(long int &,std::string,std::string);
-template bool Data_Reader::ReadFromFile<float>(float &,std::string,std::string);
-template bool Data_Reader::ReadFromFile<double>(double &,std::string,std::string);
-template bool Data_Reader::ReadFromFile<std::string>(std::string &,std::string,std::string);
+template bool Data_Reader::ReadFromFile<int>
+(int &,std::string,std::string);
+template bool Data_Reader::ReadFromFile<unsigned int>
+(unsigned int &,std::string,std::string);
+template bool Data_Reader::ReadFromFile<long int>
+(long int &,std::string,std::string);
+template bool Data_Reader::ReadFromFile<float>
+(float &,std::string,std::string);
+template bool Data_Reader::ReadFromFile<double>
+(double &,std::string,std::string);
+template bool Data_Reader::ReadFromFile<std::string>
+(std::string &,std::string,std::string);
 
-template <class Read_Type >
-bool Data_Reader::ReadFromString(Read_Type &result,std::string parameter,std::string inputstring) 
+template <class Read_Type > bool Data_Reader::
+ReadFromString(Read_Type &result,
+	       std::string parameter,std::string inputstring) 
 { 
-  if ((result=M_ReadFromString<Read_Type>(parameter,inputstring))!=Default<Read_Type>()) return true; 
+  if ((result=M_ReadFromString<Read_Type>(parameter,inputstring))!=
+      Default<Read_Type>()) return true; 
   else return false; 
 }
 
-template bool Data_Reader::ReadFromString<int>(int &,std::string,std::string);
-template bool Data_Reader::ReadFromString<unsigned int>(unsigned int &,std::string,std::string);
-template bool Data_Reader::ReadFromString<long int>(long int &,std::string,std::string);
-template bool Data_Reader::ReadFromString<float>(float &,std::string,std::string);
-template bool Data_Reader::ReadFromString<double>(double &,std::string,std::string);
-template bool Data_Reader::ReadFromString<std::string>(std::string &,std::string,std::string);
+template bool Data_Reader::ReadFromString<int>
+(int &,std::string,std::string);
+template bool Data_Reader::ReadFromString<unsigned int>
+(unsigned int &,std::string,std::string);
+template bool Data_Reader::ReadFromString<long int>
+(long int &,std::string,std::string);
+template bool Data_Reader::ReadFromString<float>
+(float &,std::string,std::string);
+template bool Data_Reader::ReadFromString<double>
+(double &,std::string,std::string);
+template bool Data_Reader::ReadFromString<std::string>
+(std::string &,std::string,std::string);
 
-template <class Read_Type >
-bool Data_Reader::VectorFromFile(std::vector<Read_Type> &result,std::string parameter,
-				 std::string filename, VectorTypeID tempvtype) 
+template <class Read_Type > bool Data_Reader::
+VectorFromFile(std::vector<Read_Type> &result,std::string parameter,
+	       std::string filename, vtc::code tempvtype) 
 { 
-  if ((result=M_VectorFromFile<Read_Type>(parameter,filename,tempvtype)).size()!=0) return true; 
+  if ((result=M_VectorFromFile<Read_Type>
+       (parameter,filename,tempvtype)).size()!=0) return true; 
   else return false; 
 }
 
-template bool Data_Reader::VectorFromFile<int>(std::vector<int> &,std::string,std::string,VectorTypeID);
-template bool Data_Reader::VectorFromFile<unsigned int>(std::vector<unsigned int> &,std::string,std::string,VectorTypeID);
-template bool Data_Reader::VectorFromFile<long int>(std::vector<long int> &,std::string,std::string,VectorTypeID);
-template bool Data_Reader::VectorFromFile<float>(std::vector<float> &,std::string,std::string,VectorTypeID);
-template bool Data_Reader::VectorFromFile<double>(std::vector<double> &,std::string,std::string,VectorTypeID);
-template bool Data_Reader::VectorFromFile<std::string>(std::vector<std::string> &,std::string,std::string,VectorTypeID);
+template bool Data_Reader::VectorFromFile<int>
+(std::vector<int> &,std::string,std::string,vtc::code);
+template bool Data_Reader::VectorFromFile<unsigned int>
+(std::vector<unsigned int> &,std::string,std::string,vtc::code);
+template bool Data_Reader::VectorFromFile<long int>
+(std::vector<long int> &,std::string,std::string,vtc::code);
+template bool Data_Reader::VectorFromFile<float>
+(std::vector<float> &,std::string,std::string,vtc::code);
+template bool Data_Reader::VectorFromFile<double>
+(std::vector<double> &,std::string,std::string,vtc::code);
+template bool Data_Reader::VectorFromFile<std::string>
+(std::vector<std::string> &,std::string,std::string,vtc::code);
 
-template <class Read_Type>
-bool Data_Reader::VectorFromString(std::vector<Read_Type> &result,std::string parameter,
-				   std::string inputstring, VectorTypeID tempvtype) 
+template <class Read_Type> bool Data_Reader::
+VectorFromString(std::vector<Read_Type> &result,std::string parameter,
+		 std::string inputstring, vtc::code tempvtype) 
 { 
-  if ((result=M_VectorFromString<Read_Type>(parameter,inputstring,tempvtype)).size()!=0) return true; 
+  if ((result=M_VectorFromString<Read_Type>
+       (parameter,inputstring,tempvtype)).size()!=0) return true; 
   else return false; 
 }
 
-template bool Data_Reader::VectorFromString<int>(std::vector<int> &,std::string,std::string,VectorTypeID);
-template bool Data_Reader::VectorFromString<unsigned int>(std::vector<unsigned int> &,std::string,std::string,VectorTypeID);
-template bool Data_Reader::VectorFromString<long int>(std::vector<long int> &,std::string,std::string,VectorTypeID);
-template bool Data_Reader::VectorFromString<float>(std::vector<float> &,std::string,std::string,VectorTypeID);
-template bool Data_Reader::VectorFromString<double>(std::vector<double> &,std::string,std::string,VectorTypeID);
-template bool Data_Reader::VectorFromString<std::string>(std::vector<std::string> &,std::string,std::string,VectorTypeID);
+template bool Data_Reader::VectorFromString<int>
+(std::vector<int> &,std::string,std::string,vtc::code);
+template bool Data_Reader::VectorFromString<unsigned int>
+(std::vector<unsigned int> &,std::string,std::string,vtc::code);
+template bool Data_Reader::VectorFromString<long int>
+(std::vector<long int> &,std::string,std::string,vtc::code);
+template bool Data_Reader::VectorFromString<float>
+(std::vector<float> &,std::string,std::string,vtc::code);
+template bool Data_Reader::VectorFromString<double>
+(std::vector<double> &,std::string,std::string,vtc::code);
+template bool Data_Reader::VectorFromString<std::string>
+(std::vector<std::string> &,std::string,std::string,vtc::code);
 
-template <class Read_Type>
-bool Data_Reader::MatrixFromFile(std::vector<std::vector<Read_Type> > &result,std::string parameter,
-				  std::string filename, MatrixTypeID tempmtype) 
+template <class Read_Type> bool Data_Reader::
+MatrixFromFile(std::vector<std::vector<Read_Type> > &result,
+	       std::string parameter,
+	       std::string filename, mtc::code tempmtype) 
 { 
-  if ((result=M_MatrixFromFile<Read_Type>(parameter,filename,tempmtype)).size()!=0) return true; 
+  if ((result=M_MatrixFromFile<Read_Type>
+       (parameter,filename,tempmtype)).size()!=0) return true; 
   else return false; 
 }
 
-template bool Data_Reader::MatrixFromFile<int>(std::vector<std::vector<int> > &,std::string,std::string,MatrixTypeID); 
-template bool Data_Reader::MatrixFromFile<unsigned int>(std::vector<std::vector<unsigned int> > &,std::string,std::string,MatrixTypeID);
-template bool Data_Reader::MatrixFromFile<long int>(std::vector<std::vector<long int> > &,std::string,std::string,MatrixTypeID);
-template bool Data_Reader::MatrixFromFile<float>(std::vector<std::vector<float> > &,std::string,std::string,MatrixTypeID);
-template bool Data_Reader::MatrixFromFile<double>(std::vector<std::vector<double> > &,std::string,std::string,MatrixTypeID);
-template bool Data_Reader::MatrixFromFile<std::string>(std::vector<std::vector<std::string> > &,std::string,std::string,MatrixTypeID);
+template bool Data_Reader::MatrixFromFile<int>
+(std::vector<std::vector<int> > &,std::string,std::string,mtc::code); 
+template bool Data_Reader::MatrixFromFile<unsigned int>
+(std::vector<std::vector<unsigned int> > &,std::string,
+ std::string,mtc::code);
+template bool Data_Reader::MatrixFromFile<long int>
+(std::vector<std::vector<long int> > &,std::string,std::string,mtc::code);
+template bool Data_Reader::MatrixFromFile<float>
+(std::vector<std::vector<float> > &,std::string,std::string,mtc::code);
+template bool Data_Reader::MatrixFromFile<double>
+(std::vector<std::vector<double> > &,std::string,std::string,mtc::code);
+template bool Data_Reader::MatrixFromFile<std::string>
+(std::vector<std::vector<std::string> > &,std::string,
+ std::string,mtc::code);
 
-template <class Read_Type>
-bool Data_Reader::MatrixFromString(std::vector<std::vector<Read_Type> > &result,std::string parameter,
-				   std::string inputstring, MatrixTypeID tempmtype) 
+template <class Read_Type> bool Data_Reader::
+MatrixFromString(std::vector<std::vector<Read_Type> > &result,
+		 std::string parameter,
+		 std::string inputstring, mtc::code tempmtype) 
 { 
-  if ((result=M_MatrixFromString<Read_Type>(parameter,inputstring,tempmtype)).size()!=0) return true; 
+  if ((result=M_MatrixFromString<Read_Type>
+       (parameter,inputstring,tempmtype)).size()!=0) return true; 
   else return false; 
 }
 
-template bool Data_Reader::MatrixFromString<int>(std::vector<std::vector<int> > &,std::string,std::string,MatrixTypeID);
-template bool Data_Reader::MatrixFromString<unsigned int>(std::vector<std::vector<unsigned int> > &,std::string,std::string,MatrixTypeID);
-template bool Data_Reader::MatrixFromString<long int>(std::vector<std::vector<long int> > &,std::string,std::string,MatrixTypeID);
-template bool Data_Reader::MatrixFromString<float>(std::vector<std::vector<float> > &,std::string,std::string,MatrixTypeID);
-template bool Data_Reader::MatrixFromString<double>(std::vector<std::vector<double> > &,std::string,std::string,MatrixTypeID);
-template bool Data_Reader::MatrixFromString<std::string>(std::vector<std::vector<std::string> > &,std::string,std::string,MatrixTypeID);
-
+template bool Data_Reader::MatrixFromString<int>
+(std::vector<std::vector<int> > &,std::string,std::string,mtc::code);
+template bool Data_Reader::MatrixFromString<unsigned int>
+(std::vector<std::vector<unsigned int> > &,std::string,
+ std::string,mtc::code);
+template bool Data_Reader::MatrixFromString<long int>
+(std::vector<std::vector<long int> > &,std::string,std::string,mtc::code);
+template bool Data_Reader::MatrixFromString<float>
+(std::vector<std::vector<float> > &,std::string,std::string,mtc::code);
+template bool Data_Reader::MatrixFromString<double>
+(std::vector<std::vector<double> > &,std::string,std::string,mtc::code);
+template bool Data_Reader::MatrixFromString<std::string>
+(std::vector<std::vector<std::string> > &,std::string,
+ std::string,mtc::code);
 

@@ -114,7 +114,7 @@ Histogram::Histogram(const std::string & pID)
   if (dummy!="") { 
     Data_Reader dr;
     std::vector<std::string> conf;
-    dr.VectorFromString(conf,"",dummy,dr.VHorizontal);
+    dr.VectorFromString(conf,"",dummy,vtc::horizontal);
     size_t k=0;
 
     if (k>=conf.size()) {
@@ -192,7 +192,7 @@ Histogram::Histogram(const std::string & pID)
   for (int i=0;i<m_nbin-1;i++) {
     getline(ifile,dummy);
     data.clear();
-    dr.VectorFromString(data,"",dummy,dr.VHorizontal);
+    dr.VectorFromString(data,"",dummy,vtc::horizontal);
 
     //    ifile>>value;
     m_yvalues[i+1] = Get<double>(data[1]);

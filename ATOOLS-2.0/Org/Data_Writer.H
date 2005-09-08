@@ -15,24 +15,30 @@ namespace ATOOLS {
 		const std::string _m_comment);
 
     // member functions
-    bool WriteComment(std::string comment=nullstring,unsigned int tagreference=0,
+    bool WriteComment(std::string comment=nullstring,
+		      unsigned int tagreference=0,
 		      bool endline=true,std::string tempfname=nullstring);
-    bool WriteComment(std::vector<std::string> comments=std::vector<std::string>(0),
+    bool WriteComment(std::vector<std::string> comments=
+		      std::vector<std::string>(0),
 		      unsigned int tagreference=0,bool endline=true,
 		      std::string tempfname=nullstring);
 
     template <class Write_Type >
-    bool WriteToFile(Write_Type value,std::string tag=nullstring,bool endline=true,
+    bool WriteToFile(Write_Type value,
+		     std::string tag=nullstring,bool endline=true,
 		     std::string tempfname=nullstring,int precision=6);
 
     template <class Write_Type >
-    bool VectorToFile(std::vector<Write_Type> &values,std::string tag=nullstring,bool endline=true,
-		      std::string tempfname=nullstring,VectorTypeID=VUnknown,int precision=6);
+    bool VectorToFile(std::vector<Write_Type> &values,
+		      std::string tag=nullstring,bool endline=true,
+		      std::string tempfname=nullstring,
+		      vtc::code=vtc::unknown,int precision=6);
 
     template <class Write_Type >
-    bool MatrixToFile(std::vector<std::vector<Write_Type> > &values,std::string tag=nullstring,
-		      bool endline=true,std::string tempfname=nullstring,
-		      MatrixTypeID=MUnknown,int precision=6);
+    bool MatrixToFile(std::vector<std::vector<Write_Type> > &values,
+		      std::string tag=nullstring,bool endline=true,
+		      std::string tempfname=nullstring,
+		      mtc::code=mtc::unknown,int precision=6);
 
     template <class Write_Type >
     inline Data_Writer &operator<<(Write_Type value) 
@@ -47,10 +53,6 @@ namespace ATOOLS {
     { MatrixToFile(value,nullstring,false); return *this; }
 
   }; // end of class Data_Writer
-
-  //////////////////
-  // Doxygen part //
-  //////////////////
 
 } // end of namespace ATOOLS
 

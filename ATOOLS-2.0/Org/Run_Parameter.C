@@ -83,7 +83,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   system("finger `whoami` > sherpa_user_test");
   Data_Reader *reader = new Data_Reader();
   reader->SetInputFile("sherpa_user_test");
-  reader->SetVectorType(reader->VHorizontal);
+  reader->SetVectorType(vtc::horizontal);
   std::vector<std::string> help;
   if (!reader->VectorFromFile(help,"Name:")) { 
     gen.m_username=std::string("<unknown user>");
@@ -154,7 +154,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 
   Data_Reader dreader;
   dreader.SetInputFile(m_path+file);
-  dreader.SetVectorType(reader->VHorizontal);
+  dreader.SetVectorType(vtc::horizontal);
   std::vector<long int> seeds;
   gen.m_seed2 = -1;
   if (dreader.VectorFromFile(seeds,"RANDOM_SEED")) {

@@ -86,13 +86,14 @@ Data_Read::Data_Read(std::string filename, bool ignoremissingfile) {
 
 void Data_Read::FillIn(std::string buffer) {
   if (buffer.length()>0 && buffer[0]!='!') {
-    int hit = buffer.find(std::string("="));
-    if (hit!=-1) {
-      std::string name = buffer.substr(0,hit);
+    size_t hit(buffer.find('='));
+    if (hit!=std::string::npos) {
+      std::string name(buffer.substr(0,hit));
       Shorten(name);
-      std::string value = buffer.substr(hit+1);
-      int hit = value.find(std::string("!"));
-      if (hit!=-1) value = value.substr(0,hit);
+      std::string value;
+      if (buffer.length()>hit+1) value=buffer.substr(hit+1);
+      hit=value.find('!');
+      if (hit!=std::string::npos) value=value.substr(0,hit);
       Shorten(value);
       m_parameters[name]=value;
     }
@@ -100,9 +101,9 @@ void Data_Read::FillIn(std::string buffer) {
 }
 
 void Data_Read::ReadIn(std::string filename, bool ignoremissingfile) {
-  std::ifstream file;
-  file.open(filename.c_str());
-  if (!file.good()) {
+  std::ifstream *file(new std::ifstream);
+  file->open(filename.c_str());
+  if (!file->good()) {
     if (ignoremissingfile) {
       msg_Tracking()<<" WARNING parameter file "<<filename<<" does not exist ! "<<std::endl;
       m_fileexists=false;
@@ -113,11 +114,12 @@ void Data_Read::ReadIn(std::string filename, bool ignoremissingfile) {
   }
   std::string dummy;
       
-  for (;file;) {
-    getline(file,dummy);
+  while (*file) {
+    getline(*file,dummy);
     FillIn(dummy); 
   }
-  file.close();
+  file->close();
+  delete file;
 
   AddCommandLine();
 }
@@ -387,12 +389,12 @@ void Data_Read::WriteOut(std::string filename,int flag) {
 
 void Data_Read::Shorten(std::string& str) {
   //kill initial spaces
-  for (;str.length()>0;) {    
+  while (str.length()>0) {    
     if (int(str[0])==32 || int(str[0])==9) str = str.substr(1);
     else break;
   }
   //kill final spaces
-  for (;str.length()>0;) {    
+  while (str.length()>0) {    
     if (int(str[str.length()-1])==32 ||
 	//Tabulator
 	int(str[str.length()-1])==9) str = str.substr(0,str.length()-1);
