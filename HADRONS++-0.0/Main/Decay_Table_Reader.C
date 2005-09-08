@@ -24,7 +24,7 @@ Decay_Table_Reader::Decay_Table_Reader(string path,string file) :
   reader.AddComment("//");
   reader.SetInputPath(path);
   reader.SetInputFile(file);
-  reader.SetMatrixType(reader.MTransposed);
+  reader.SetMatrixType(mtc::transposed);
   if(!reader.MatrixFromFile(m_helpsvv)) {
     msg.Error()<<"ERROR in Decay_Table_Reader::"
 	       <<"Decay_Table_Reader(string,string) :\n"

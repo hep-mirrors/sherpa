@@ -152,7 +152,7 @@ bool HD_PS_Base::Construct( GeneralModel & _md )
     reader.AddComment("//");
     reader.SetInputPath(m_path);
     reader.SetInputFile(m_file);
-    reader.SetMatrixType(reader.MTransposed);
+    reader.SetMatrixType(mtc::transposed);
     if(!reader.MatrixFromFile(helpsvv)) {
       msg.Error()<<"ERROR in HD_PS_Base::Construct(...) :\n"
 		 <<"   Read in failure "<<m_path<<m_file<<", will abort."<<endl;

@@ -212,7 +212,7 @@ void Hadrons::ReadInDecayTables()
   reader.SetInputFile(m_file);
 
   vector<vector<string> > Decayers;
-  reader.SetMatrixType(reader.MTransposed);
+  reader.SetMatrixType(mtc::transposed);
   if(!reader.MatrixFromFile(Decayers)) {
     msg.Error()<<"ERROR in Hadrons::ReadInDecayTables() :\n"
 	       <<"   Read in failure "<<m_path<<m_file<<", will abort."<<endl;
