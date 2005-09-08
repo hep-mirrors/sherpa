@@ -6,15 +6,13 @@
 #include "Gauss_Integrator.H"
 #include "Flavour.H"
 
-namespace ATOOLS {
-
-  class Integration_Info;
-
-}
+namespace ATOOLS { class Integration_Info; }
 
 namespace SHERPA {
+
   class Sudakov {
   public:
+
     enum code {
       dontcut     = 0,
       cutatone    = 1,
@@ -25,25 +23,37 @@ namespace SHERPA {
       analytic = 384,
       create_table  = 512
     };
+
   };
 
-  class NLL_Sudakov_Base  : public ATOOLS::Function_Base {
+  class NLL_Sudakov_Base: public ATOOLS::Function_Base {
+  protected:
+
+    double m_qmin,m_qmax;
 
   public:
-    virtual double operator()(double Q, double q) = 0;
-    virtual double operator()(double) =0;
-    virtual double Log(double,double) = 0;
-    virtual void AssignKey(ATOOLS::Integration_Info *const info) = 0;
-    virtual ~NLL_Sudakov_Base() {};
+
+    virtual ~NLL_Sudakov_Base();
+    
+    virtual double operator()(double Q, double q) = NULL;
+    virtual double operator()(double) = NULL;
+    virtual double Log(double,double) = NULL;
+
+    virtual double Qmin()          const { return m_qmin; }
+    virtual double Qmax()          const { return m_qmax; }
+    virtual void SetQmin(double q)       { m_qmin = q; }
+    virtual void SetQmax(double q)       { m_qmax = q; }
+
+    virtual void AssignKey(ATOOLS::Integration_Info *const info);
+
   };  
 
-  class NLL_Dummy_Sudakov : public NLL_Sudakov_Base {
-
+  class NLL_Dummy_Sudakov: public NLL_Sudakov_Base {
   public:
-    double operator()(double,double) { return 1.; }
-    double operator()(double) { return 1.; }
-    void   AssignKey(ATOOLS::Integration_Info *info) {};
-    double Log(double,double) { return 0; }
+
+    double operator()(double,double);
+    double operator()(double);
+    double Log(double,double);
 
   };
   
@@ -62,6 +72,5 @@ namespace SHERPA {
   */
 
 }
-
 
 #endif

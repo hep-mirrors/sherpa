@@ -2,6 +2,7 @@
 #define NLL_Branching_Probabilities_H
 
 #include "NLL_Branching_Probability_Base.H"
+//#include "PDF_Base.H"
 #include "Flavour.H"
 
 namespace MODEL {
@@ -9,149 +10,73 @@ namespace MODEL {
 }
 
 namespace SHERPA {
-  class BP {
+  class BPType {
   public:
     enum code {
-      gamma  = 0,
-      gammaq = 1,
-      gammag = 2,
-      gammaf = 3,
-      gamma_corr  = 4,
-      gammaq_corr = 5,
-      gammag_corr = 6,
-      gammaf_corr = 7,
-      gamma_powercorr  = 8,
-      gammaq_powercorr = 9,
-      gammag_powercorr = 10,
-      gammaf_powercorr = 11,
-      gamma_kfac  = 16,
-      gammaq_kfac = 17,
-      gammag_kfac = 18,
-      gammaf_kfac = 19,
-      gamma_cut  = 32,
-      gammaq_cut = 33,
-      gammag_cut = 34,
-      gammaf_cut = 35,
-      gamma_kinlim  = 64,
-      gammaq_kinlim = 65,
-      gammag_kinlim = 66,
-      gammaf_kinlim = 67,
-      is_mode = 128
+      gamma_q2qg  = 0,
+      gamma_q2gq  = 1,
+      gamma_g2gg  = 2,
+      gamma_g2qq  = 3
     };
   };
 
-  BP::code operator|(BP::code a, BP::code b);
+  class BPMode {
+  public:
+    enum code {
+      none        = 0,
+      fs          = 1,
+      is          = 2,
+      linear_term = 4,
+      power_corrs = 8,
+      soft_kfac   = 16
+    };
+  };
 
+  
   class Gamma_Lambda_Base : public NLL_Branching_Probability_Base {
   protected:
-    BP::code  m_mode;
-    double m_cc;
-    double m_f1, m_f2, m_f3, m_f4;
+    BPType::code m_type;
+    BPMode::code m_mode;
+    double m_colfac, m_dlog, m_slog, m_power;
     double m_lambda;
-    double m_qlimit;
-    int    m_powercorr;
-    int    m_nlo;
-    double m_kfac;
     MODEL::Running_AlphaS * p_runas;
-  public:
-    Gamma_Lambda_Base(BP::code mode, double lambda, MODEL::Running_AlphaS * =0, int nf=-1);
-    double AlphaS(double q2);
-    double Gamma(double q, double Q);
-    double IntGamma(double q, double Q);
-    double GammaF(double q, double Q);
-    double IntGammaF(double q, double Q);
-  };
-
-  class GammaQ_Lambda :  public Gamma_Lambda_Base {
-  public:
-    GammaQ_Lambda(BP::code mode, double lambda, MODEL::Running_AlphaS * =0);
-  };
-
-  class GammaG_Lambda :  public Gamma_Lambda_Base {
-  public:
-    GammaG_Lambda(BP::code mode, double lambda, MODEL::Running_AlphaS * =0);
-  };
-
-  class GammaF_Lambda :  public Gamma_Lambda_Base {
-  public:
-    GammaF_Lambda(BP::code mode, double lambda, MODEL::Running_AlphaS * =0, int nf=-1);
-    double Gamma(double q, double Q);
-    double IntGamma(double q, double Q);
-  };
-
-  class Gamma_AlphaS_Base : public NLL_Branching_Probability_Base {
-    BP::code  m_mode;
-    double m_cc;
-    double m_f1, m_f2, m_f3;
-
-    int    m_nlo;
+    //PDF::PDF_Base         * p_pdf;
+    //ATOOLS::Flavour         m_flav;
     double m_kfac;
-    double m_asmu, m_mu2;
   public:
-    Gamma_AlphaS_Base(BP::code mode, double asmu, double mu2, int nf=-1);
+    Gamma_Lambda_Base(BPType::code type, BPMode::code mode, double lambda, 
+		      MODEL::Running_AlphaS * =0, int nf=-1);
     double AlphaS(double q2);
     double Gamma(double q, double Q);
     double IntGamma(double q, double Q);
-    double GammaF(double q, double Q);
-    double IntGammaF(double q, double Q);
+    //void   SetPDF(PDF::PDF_Base * pdf,ATOOLS::Flavour & flav) {
+    //  p_pdf = pdf; m_flav = flav; 
+    //}
   };
-
-  class GammaQ_AlphaS :  public Gamma_AlphaS_Base {
+  
+  class GammaQ_QG_Lambda :  public Gamma_Lambda_Base {
   public:
-    GammaQ_AlphaS(BP::code mode, double asmu, double mu2);
+    GammaQ_QG_Lambda(BPMode::code mode, double lambda, MODEL::Running_AlphaS * =0);
   };
 
-  class GammaG_AlphaS :  public Gamma_AlphaS_Base {
+  class GammaQ_GQ_Lambda :  public Gamma_Lambda_Base {
   public:
-    GammaG_AlphaS(BP::code mode, double asmu, double mu2);
+    GammaQ_GQ_Lambda(BPMode::code mode, double lambda, MODEL::Running_AlphaS * =0);
   };
 
-  class GammaF_AlphaS :  public Gamma_AlphaS_Base {
+  class GammaG_GG_Lambda :  public Gamma_Lambda_Base {
   public:
-    GammaF_AlphaS(BP::code mode, double asmu, double mu2, int nf);
-    double Gamma(double q, double Q);
-    double IntGamma(double q, double Q);
+    GammaG_GG_Lambda(BPMode::code mode, double lambda, MODEL::Running_AlphaS * =0);
   };
 
-
-
-  class Gamma_Lambda_Massive : public Gamma_Lambda_Base {
-    double m_mass;
+  class GammaG_QQ_Lambda :  public Gamma_Lambda_Base {
   public:
-    Gamma_Lambda_Massive(BP::code mode, double lambda, MODEL::Running_AlphaS *, ATOOLS::Flavour fl);
-    double GammaQ(double q, double Q);
-    double IntGammaQ(double q, double Q);
-    double GammaF(double q, double Q);
-    double IntGammaF(double q, double Q);
-  };
-
-  class GammaQ_Lambda_Massive :  public Gamma_Lambda_Massive {
-  public:
-    GammaQ_Lambda_Massive(BP::code mode, double lambda, MODEL::Running_AlphaS *, ATOOLS::Flavour fl);
-    double Gamma(double q, double Q);
-    double IntGamma(double q, double Q);
-  };
-
-  class GammaG_Lambda_Massive :  public Gamma_Lambda_Massive {
-  public:
-    GammaG_Lambda_Massive(BP::code mode, double lambda, MODEL::Running_AlphaS *);
-    double Gamma(double q, double Q);
-    double IntGamma(double q, double Q);
-  };
-
-  class GammaF_Lambda_Massive :  public Gamma_Lambda_Massive {
-  public:
-    GammaF_Lambda_Massive(BP::code mode, double lambda, MODEL::Running_AlphaS * , ATOOLS::Flavour fl);
-    double Gamma(double q, double Q);
-    double IntGamma(double q, double Q);
+    GammaG_QQ_Lambda(BPMode::code mode, double lambda, MODEL::Running_AlphaS * =0);
   };
 
 
-  inline BP::code operator|(BP::code a, BP::code b) 
-  {
-    return (BP::code)(int(a)|int(b));
-  }
-
+  inline BPMode::code operator|(BPMode::code a, BPMode::code b) { return (BPMode::code)(int(a)|int(b)); }
+  inline bool         operator&(BPMode::code a, BPMode::code b) { return (int(a)&int(b)); }
 }
 
 #endif

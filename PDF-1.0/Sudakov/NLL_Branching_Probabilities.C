@@ -18,363 +18,94 @@ using namespace SHERPA;
 using namespace ATOOLS;
 using namespace MODEL;
 
-Gamma_Lambda_Base::Gamma_Lambda_Base(BP::code mode,double lambda, 
-				     MODEL::Running_AlphaS * runas, int nf): 
-  m_mode(mode), m_lambda(lambda), p_runas(runas) 
-{
-  m_powercorr=0;
-  m_f2=0.;
-  m_f3=0.;
-  m_f4=0.;
-  m_qlimit=sqrt(1./3.) * rpa.gen.Ecms();
-  
-  if (nf==-1) nf=NF;
-
-  m_nlo    = 0;
-  m_kfac = 0;
-
-  if (m_mode & BP::gamma_kfac) {
-    m_kfac=  CA*(67./18.-M_PI*M_PI/6.)-10./9.*TR*NF;
-    m_nlo =1;
-  }
-  switch (m_mode & 11) {
-  case BP::gammaq_powercorr : 
-    m_powercorr=1;
-    m_f2=1.;
-  case BP::gammaq : 
-    m_cc=CF;
-    m_f1=-3./4.;
-    break;
-  case BP::gammag_powercorr : 
-    m_powercorr=1;
-    m_f2=1.;
-  case BP::gammag : 
-    m_cc=CA;
-    m_f1=-11./12.;
-    break;
-  case BP::gammaf_powercorr : 
-    m_powercorr=1;
-  case BP::gammaf : 
-    m_cc=nf/6.;
-    m_f1=0.;
-    break;
-  default:
-    m_cc=CF;
-    m_f1=-3./4.;
-    break;
-  }
-  if ((m_mode & BP::gamma_corr) && ((m_mode & 3)==BP::gammaq)) {
-    m_f2=0.973527; // c1
-    m_f3=0.306434; // c2
-    m_f4=-2.;      // c4/2
-  }
-}
+Gamma_Lambda_Base::
+Gamma_Lambda_Base(BPType::code type,BPMode::code mode,double lambda, 
+		  MODEL::Running_AlphaS * runas, int nf): 
+  m_type(type), m_mode(mode), 
+  m_colfac(0.), m_dlog(0.), m_slog(0.), m_power(0.),
+  m_lambda(lambda), p_runas(runas), 
+  m_kfac(0.)
+{ }
 
 double Gamma_Lambda_Base::AlphaS(double t)                
 { 
-  if (t<0.) t = -t;
-
-  if (p_runas) {
-    return (*p_runas)(t);
-  }
-
-  return 4.*M_PI/(BETA0*log(t/sqr(m_lambda)));
-
-  // 2 M_PI /(BETA0* log(q/m_lambda));
+  if (p_runas) return (*p_runas)(dabs(t));
+  return 4.*M_PI/(BETA0*log(dabs(t)/sqr(m_lambda)));
 }
 
-double Gamma_Lambda_Base::GammaF(double Q0, double Q) {
-  if ((m_mode & BP::gamma_kinlim) && (Q0>m_qlimit)) return 0.;
-  //  double val =(4.*m_cc)/(BETA0*Q0*log(Q0/m_lambda));
-  double a    = AlphaS(sqr(Q0));
-  double val = 2.*m_cc/Q0 * a/M_PI;
-
-  if ((m_mode & BP::gamma_cut) && (val<0.)) return 0.;
+double Gamma_Lambda_Base::Gamma(double q, double Q) 
+{
+  double as_q(AlphaS(sqr(q)));
+  double val = 2.*m_colfac* as_q/M_PI/q * 
+    (m_dlog * (1.+m_kfac*as_q/(2.*M_PI)) * log(Q/q) + 
+     m_slog + m_power*q/Q);
+  if (val<0.) return 0.;
   return val;
 }
 
-double Gamma_Lambda_Base::IntGammaF(double Q0, double Q) {
-  double xi0 = log(Q0/m_lambda);
-  double xi1 = log(Q/m_lambda);
-  return 4.*m_cc/BETA0*log(xi1/xi0);
-}
-
-double Gamma_Lambda_Base::Gamma(double q, double Q) {
-//   double integral(split(1.0-sqr(q/Q))-split(sqr(q/Q)));
-  if ((m_mode & BP::gamma_kinlim) && (q>m_qlimit)) return 0.;
-  double a   = AlphaS(sqr(q));
-//   m_f2=0.0;// test !!!
-  double val = 2.*m_cc* a/M_PI *(1./q * (m_f1 + m_f2*q/Q  + m_f3*sqr(q/Q) 
-					 + (1.+a/(2.*M_PI)*m_kfac)*log(Q/q))
-				 + m_f4 * q/sqr(Q) * log(Q/q));
-//   double test(2.0*3.0*(log(Q/q)-11.0/12.0)/q*a/M_PI);
-//   PRINT_INFO("q="<<q<<", Q="<<Q<<", int="<<test<<" / "<<integral<<", is="<<(val)
-// 	     <<", cc="<<m_cc<<", f1="<<m_f1<<", f4="<<m_f4<<", f2="<<m_f2<<", f3="<<m_f3
-// 	     <<" "<<m_kfac);
-  if ((m_mode & BP::gamma_cut) && (val<0.)) return 0.;
-  if (m_mode&BP::gammag && m_mode&BP::is_mode) {
-    val*=2.0;
-  }
-  return val;
-}
-
-double Gamma_Lambda_Base::IntGamma(double Q0, double Q) {
-  double xi0 = log(Q0/m_lambda);
-  double xi1 = log(Q/m_lambda);
-  double fac = 4.*m_cc/BETA0;
-  
-  double part1= fac* (log(Q0/Q) + (m_f1 + xi1)*log(dabs(xi1/xi0)));
-  double part2= 0;
-  if (m_powercorr) 
-    part2=fac* m_lambda/Q *(ReIncompleteGamma0(-xi0)-ReIncompleteGamma0(-xi1));
-  
-  if (xi0<=0.) {
-    part1=1.e3;
-  }  
-  return part1+part2;
-}
-
-
-GammaQ_Lambda::GammaQ_Lambda(BP::code mode, double lambda, MODEL::Running_AlphaS * runas)
-  : Gamma_Lambda_Base(BP::gammaq|mode,lambda,runas) {}
-
-GammaG_Lambda::GammaG_Lambda(BP::code mode, double lambda, MODEL::Running_AlphaS * runas)
-  : Gamma_Lambda_Base(BP::gammag|mode,lambda,runas) {}
-
-GammaF_Lambda::GammaF_Lambda(BP::code mode, double lambda, MODEL::Running_AlphaS * runas, int nf)
-  : Gamma_Lambda_Base(BP::gammaf|mode,lambda,runas,nf) {}
-
-
-double GammaF_Lambda::Gamma(double q, double Q) {
-  return GammaF(q,Q);
-}
-double GammaF_Lambda::IntGamma(double q, double Q) {
-  return IntGammaF(q,Q);
-}
-
-
-// ==================================================
-
-Gamma_AlphaS_Base::Gamma_AlphaS_Base(BP::code mode, double asmu, double mu2, int nf) :
-  m_mode(mode), m_asmu(asmu), m_mu2(mu2)
+double Gamma_Lambda_Base::IntGamma(double Q0, double Q) 
 {
-  if (nf==-1) nf=NF;
+  if (Q0<m_lambda) {
+    msg.Error()<<"Gamma_Lambda_Base::IntGamma("<<Q0<<","<<Q<<"): \n"
+	       <<"   Lower bound below lambda_QCD = "<<m_lambda
+	       <<" GeV.\n   Return 1e6."<<std::endl;
+    return 1.e6;
+  }
+  double xi0(log(Q0/m_lambda)), xi1(log(Q/m_lambda));
+  double fac(4.*m_colfac/BETA0);  
+  double result(m_dlog * (log(Q0/Q) + xi1 * log(dabs(xi1/xi0))) + 
+		m_slog * log(dabs(xi1/xi0)));
+  if (m_power>0.) result += m_power*m_lambda/Q * 
+    (ReIncompleteGamma0(-xi0)-ReIncompleteGamma0(-xi1));  
+  return fac * result;
+}
 
-  m_nlo    = 0;
 
-  m_kfac = 0;
-  if (m_nlo) m_kfac=  CA*(67./18.-M_PI*M_PI/6.)-10./9.*TR*NF;
-
-  m_f2=0.;
-
-  switch (m_mode & 11) {
-  case BP::gammaq_powercorr : 
-  case BP::gammaq : 
-    m_cc=CF;
-    m_f1=-3./4.;
-    break;
-  case BP::gammag_powercorr : 
-  case BP::gammag : 
-    m_cc=CA;
-    m_f1=-11./12.;
-    break;
-  case BP::gammaf_powercorr : 
-  case BP::gammaf : 
-    m_cc=nf/6.;
-    m_f1=0.;
-    break;
-  default:
-    m_cc=CF;
-    m_f1=-3./4.;
-    break;
+GammaQ_QG_Lambda::GammaQ_QG_Lambda(BPMode::code mode, double lambda, 
+				   MODEL::Running_AlphaS * runas) : 
+  Gamma_Lambda_Base(BPType::gamma_q2qg,mode,lambda,runas) 
+{
+  m_colfac = CF;
+  m_dlog   = 1.;
+  if (m_mode & (BPMode::linear_term | BPMode::power_corrs)) {
+    m_slog   = -3./4.;
+    if (m_mode & BPMode::power_corrs) m_power  = 1.;
   }
 }
 
-
-double Gamma_AlphaS_Base::AlphaS(double t)                
-{ 
-  if (t<0.) t = -t;
-  // - lambda - parametrisation:
-  //  return 4.*M_PI/(beta0*log(t/lambda2));
-  // - first order:
-  double   w = 1.-BETA0*m_asmu/(4.*M_PI)*log(m_mu2/t);
-  double   a = m_asmu/w;
-  if (m_nlo) a *= (1. - (BETA1*m_asmu)/(BETA0*2.*M_PI*w)*log(w));
-  return a;
-}
-
-
-double Gamma_AlphaS_Base::Gamma(double q, double Q)
+GammaQ_GQ_Lambda::GammaQ_GQ_Lambda(BPMode::code mode, double lambda, 
+				   MODEL::Running_AlphaS * runas) : 
+  Gamma_Lambda_Base(BPType::gamma_q2gq,mode,lambda,runas) 
 {
-  double a = AlphaS(q*q);
-  return 2.*m_cc/M_PI * a/q * ((1.+a/(2.*M_PI)*m_kfac)*log(Q/q)+m_f1); 
-}
-
-double Gamma_AlphaS_Base::IntGamma(double q, double Q)
-{
-  if ((m_nlo==0) && (m_kfac==0.)) {
-    double balpi = BETA0*m_asmu/(4.*M_PI) ;
-    double eta0  = balpi * log(sqr(q)/m_mu2);
-    double eta1  = balpi * log(sqr(Q)/m_mu2);
-    return 8.*M_PI * m_cc/(sqr(BETA0)* m_asmu) *
-      ( balpi * log(sqr(q/Q)) + (1.+ balpi*(log(sqr(Q)/m_mu2) + 2.*m_f1))*log((1+eta1)/(1+eta0)));
-  } 
-  else {
-    msg.Error()<<"Error in Gamma_AlphaS_Base::IntGamma"<<std::endl
-	       <<"    Analytic version for higher orders not implemented yet."<<std::endl;
-    return -1.;
+  m_colfac = CF;
+  m_dlog   = 1.;
+  if (m_mode & (BPMode::linear_term | BPMode::power_corrs)) {
+    m_slog = -3./4.;
+    if (m_mode & BPMode::power_corrs) m_power  = 1.;
   }
 }
 
-double Gamma_AlphaS_Base::GammaF(double q, double Q)
+GammaG_GG_Lambda::GammaG_GG_Lambda(BPMode::code mode, double lambda, 
+				   MODEL::Running_AlphaS * runas) : 
+  Gamma_Lambda_Base(BPType::gamma_g2gg,mode,lambda,runas) 
 {
-  return 2.*m_cc/M_PI * AlphaS(q*q)/q;
-}
-
-double Gamma_AlphaS_Base::IntGammaF(double q, double Q)
-{
-  if ((m_nlo==0) && (m_kfac==0.)) {
-    double eta0 = BETA0*m_asmu/(4.*M_PI) * log(sqr(q)/m_mu2);
-    double eta1 = BETA0*m_asmu/(4.*M_PI) * log(sqr(Q)/m_mu2);
-    return 2.*NF/(3.*BETA0) * log((1+eta1)/(1+eta0));
-  }
-  else {
-    msg.Error()<<"ERROR in NLL_Sudakov::IntGammaQ."<<std::endl
-	       <<"    Analytic version for higher orders not implemented yet."<<std::endl;
-    return -1.;
+  m_colfac = CA;
+  m_dlog   = 1.;
+  if (m_mode & (BPMode::linear_term | BPMode::power_corrs)) {
+    m_slog = -11./12.;
+    if (m_mode & BPMode::power_corrs) m_power  = 1.;
   }
 }
 
-
-GammaQ_AlphaS::GammaQ_AlphaS(BP::code mode, double asmu,double mu2):
-  Gamma_AlphaS_Base(BP::gammaq|mode,asmu,mu2) {}
-
-GammaG_AlphaS::GammaG_AlphaS(BP::code mode, double asmu,double mu2):
-  Gamma_AlphaS_Base(BP::gammag|mode,asmu,mu2) {}
-
-GammaF_AlphaS::GammaF_AlphaS(BP::code mode, double asmu,double mu2, int nf):
-  Gamma_AlphaS_Base(BP::gammaf|mode,asmu,mu2,nf) {}
-
-
-double GammaF_AlphaS::Gamma(double q, double Q) {
-  return GammaF(q,Q);
-}
-double GammaF_AlphaS::IntGamma(double q, double Q) {
-  return IntGammaF(q,Q);
-}
-
-
-// ==================================================
-
-Gamma_Lambda_Massive::Gamma_Lambda_Massive(BP::code mode, double lambda, 
-					   MODEL::Running_AlphaS * runas, ATOOLS::Flavour fl) :
-  Gamma_Lambda_Base(mode,lambda,runas), m_mass(fl.PSMass())
+GammaG_QQ_Lambda::GammaG_QQ_Lambda(BPMode::code mode, double lambda, 
+				   MODEL::Running_AlphaS * runas) : 
+  Gamma_Lambda_Base(BPType::gamma_g2qq,mode,lambda,runas) 
 {
-
-}
-
-double Gamma_Lambda_Massive::GammaQ(double q, double Q) 
-{
-  double massless=Gamma_Lambda_Base::Gamma(q,Q);
-  if (m_mass==0.) return massless;
-
-  double massive =0;
-
-  //  double pref = 2./(BETA0*q*log(q/m_lambda)) * m_cc;
-
-  double a    = AlphaS(sqr(q));
-  double pref = m_cc/q * a/M_PI;
-  double rest=0;
-
-  if (m_mass/q<5.e-2) {
-    double x = m_mass/q;
-    double x2 = x*x;
-    double x4 = x2*x2;
-    double x6 = x2*x4;
-    double x8 = x4*x4;
-    rest = (-11.*x2)/12. + (7.*x4)/15. - (53.*x6)/168. + (43.*x8)/180.;
-    massive = pref * rest;
+  m_colfac = TR;
+  m_dlog   = 0.;
+  if (m_mode & (BPMode::linear_term | BPMode::power_corrs)) {
+    m_slog = 1./3.;
+    if (m_mode & BPMode::power_corrs) m_power  = 0.;
   }
-  else {
-    double m= m_mass;
-    double m2=m*m;
-    double q2=q*q;
-    rest = (0.5 - q/m * atan(m/q) - (2. *m2   - q2)/(2.*m2) *log((m2+q2)/q2));
-    massive = pref * rest;
-  }
-
-  return massless + massive;
-}
-
-double Gamma_Lambda_Massive::IntGammaQ(double q, double Q) 
-{
-  if (m_mass==0.) return Gamma_Lambda_Base::IntGamma(q,Q);
-  return -1.;
-}
-
-
-double Gamma_Lambda_Massive::GammaF(double q, double Q) 
-{
-  if (m_mass==0.) return Gamma_Lambda_Base::GammaF(q,Q);
-  double mfac = 1./(1.+sqr(m_mass/q));
-  double rest = mfac * (1. - 1./3.*mfac);
-  //  double pref = 2./(BETA0*q*log(q/m_lambda));
-  double a    = AlphaS(sqr(q));
-  double pref = m_cc/q * a/M_PI;
-  return pref*rest;
-}
-
-
-double Gamma_Lambda_Massive::IntGammaF(double q, double Q) 
-{
-  if (m_mass==0.) return Gamma_Lambda_Base::IntGammaF(q,Q) ;
-  return -1.;
-}
-
-
-GammaG_Lambda_Massive::GammaG_Lambda_Massive(BP::code mode, double lambda, 
-					     MODEL::Running_AlphaS * runas):
-  Gamma_Lambda_Massive(BP::gammag|mode,lambda,runas,Flavour(kf::gluon)) {}
-
-double GammaG_Lambda_Massive::Gamma(double q, double Q) 
-{
-  return Gamma_Lambda_Base::Gamma(q,Q); 
-}
-
-double GammaG_Lambda_Massive::IntGamma(double q, double Q) 
-{
-  return Gamma_Lambda_Base::IntGamma(q,Q);
-}
-
-
-GammaQ_Lambda_Massive::GammaQ_Lambda_Massive(BP::code mode, double lambda, MODEL::Running_AlphaS * runas, Flavour fl):
-  Gamma_Lambda_Massive(BP::gammaq|mode,lambda,runas,fl) {}
-
-double GammaQ_Lambda_Massive::Gamma(double q, double Q) 
-{
-  return Gamma_Lambda_Massive::GammaQ(q,Q);
-}
-
-double GammaQ_Lambda_Massive::IntGamma(double q, double Q) 
-{
-  return Gamma_Lambda_Massive::IntGammaQ(q,Q);
-}
-
-
-GammaF_Lambda_Massive::GammaF_Lambda_Massive(BP::code mode, double lambda, 
-					     MODEL::Running_AlphaS * runas, Flavour fl):
-  Gamma_Lambda_Massive(BP::gammaf|mode,lambda,runas,fl) 
-{
-  m_cc=TR;
-}
-
-double GammaF_Lambda_Massive::Gamma(double q, double Q) 
-{
-  return Gamma_Lambda_Massive::GammaF(q,Q);
-}
-
-double GammaF_Lambda_Massive::IntGamma(double q, double Q) 
-{
-  return Gamma_Lambda_Massive::IntGammaF(q,Q);
 }
 

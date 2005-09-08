@@ -5,34 +5,30 @@
 
 namespace SHERPA {
 
-  class NLL_Branching_Probability_Base : public ATOOLS::Function_Base {
-  private:
-    double      m_qmax, m_qmin;
+  class NLL_Branching_Probability_Base: public ATOOLS::Function_Base {
   protected:
+
     std::string m_name;
+    double m_qmin,m_qmax;
+
   public:
-    virtual double Gamma(double q, double Q) = 0;
-    virtual double IntGamma(double q, double Q) = 0;
-    virtual double operator()(double q, double Q);
-    virtual double operator()(double);
-    virtual double operator()() { return m_defval; }
-    double Qmax();
-    double Qmin();
-    void SetQmax(double);
-    void SetQmin(double);
-    std::string Name();
+
+    virtual double Gamma(double q, double Q) = NULL;
+    virtual double IntGamma(double q, double Q) = NULL;
+
+    virtual double operator()(double q, double Q=1000.);
+    virtual double operator()(double q);
+    virtual double operator()();
+
+    inline void SetQmin(double q) { m_qmin = q; }
+    inline void SetQmax(double q) { m_qmax = q; }
+
+    inline std::string Name() const { return m_name; }
+
+    inline double Qmin() const { return m_qmin; }
+    inline double Qmax() const { return m_qmax; }
+
   };
-
-  inline double NLL_Branching_Probability_Base::Qmax() { return m_qmax; }
-  inline double NLL_Branching_Probability_Base::Qmin() { return m_qmin; }
-  inline void NLL_Branching_Probability_Base::SetQmax(double q) {
-    m_qmax = q;
-  }
-  inline void NLL_Branching_Probability_Base::SetQmin(double q) {
-    m_qmin = q;
-  }
-
-  inline std::string NLL_Branching_Probability_Base::Name() { return m_name; }
 
   /*!
     \file 

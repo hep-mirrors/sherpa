@@ -8,50 +8,39 @@
 #include <vector>
 #include <map>
 
-namespace MODEL {
-  class Running_AlphaS;
-}
+namespace MODEL { class Running_AlphaS; }
 
 namespace SHERPA {
+
   class NLL_JetRate;
 
   typedef std::map<ATOOLS::Flavour,NLL_Sudakov_Base*> Sudakov_Map;
 
-  class NLL_Sudakov : public ATOOLS::Function_Base {
+  class NLL_Sudakov: public ATOOLS::Function_Base {
+  private:
 
-    std::vector<NLL_Sudakov_Base*> m_all_suds;
-    Sudakov_Map m_sud_map;
-
-    int m_mode;
-    double m_lambda;
-    double m_mu2,m_asmu;
-
+    int                     m_mode;
     MODEL::Running_AlphaS * p_runas;
 
-    NLL_JetRate * p_jetrate;
+    Sudakov_Map m_sudakovs;
+    double      m_lambda, m_mu2, m_asmu;
 
-    // --------------------------------------------------
-    void PrepareMap(MODEL::Running_AlphaS *);
-    void PrepareMassiveMap(MODEL::Running_AlphaS *, int);
-    double Delta(const ATOOLS::Flavour &, double ,double );
+    void   PrepareMap(MODEL::Running_AlphaS *);
     void   FixLambda2();    
 
+    inline double Delta(const ATOOLS::Flavour &fl, double Q,double q)
+    { return Delta(fl)(Q,q); }
+
   public:
-    NLL_Sudakov(int mode, double q2max, double q2min, MODEL::Running_AlphaS * =0 ,int =-1);
+
+    NLL_Sudakov(int mode, double q2max, double q2min, 
+		MODEL::Running_AlphaS * =0 ,int =-1);
+
+    ~NLL_Sudakov();
+
     NLL_Sudakov_Base & Delta(const ATOOLS::Flavour &);
 
-
-    // consitency checks
-    void CheckSudakovs(int);
-    ~NLL_Sudakov();
   };
-
-
-
-  inline double NLL_Sudakov::Delta(const ATOOLS::Flavour & fl, double Q, double q) {
-    return Delta(fl)(Q,q);
-  }
-
 
   /*!
     \file NLL_Sudakov.H
