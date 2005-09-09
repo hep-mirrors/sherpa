@@ -1,5 +1,9 @@
 
-SCRIPTS       = \
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
+
+SCRIPTFILES   = \
 		makeinstall \
 		makedist \
 		benchmark \
@@ -22,6 +26,6 @@ SCRIPTS       = \
 		plotvertices
 
 datadir       =	$(bindir)
-data_DATA     =	$(SCRIPTS)
+data_DATA     =	$(SCRIPTFILES)
 
-EXTRA_DIST    = $(CVSINCLUDE) $(SCRIPTS)
+EXTRA_DIST    = $(CVSINCLUDE) $(SCRIPTFILES)
