@@ -13,8 +13,8 @@ namespace SHERPA {
 
   public:
 
-    virtual double Gamma(double q, double Q) = NULL;
-    virtual double IntGamma(double q, double Q) = NULL;
+    virtual double Gamma(double q, double Q) = 0;
+    virtual double IntGamma(double q, double Q) = 0;
 
     virtual double operator()(double q, double Q=1000.);
     virtual double operator()(double q);

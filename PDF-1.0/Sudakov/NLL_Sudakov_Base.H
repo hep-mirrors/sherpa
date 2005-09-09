@@ -35,9 +35,9 @@ namespace SHERPA {
 
     virtual ~NLL_Sudakov_Base();
     
-    virtual double operator()(double Q, double q) = NULL;
-    virtual double operator()(double) = NULL;
-    virtual double Log(double,double) = NULL;
+    virtual double operator()(double Q, double q) = 0;
+    virtual double operator()(double) = 0;
+    virtual double Log(double,double) = 0;
 
     virtual double Qmin()          const { return m_qmin; }
     virtual double Qmax()          const { return m_qmax; }
