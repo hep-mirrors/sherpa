@@ -18,7 +18,7 @@
 #endif
 
 #if defined TEST__Sudakov || defined TEST__Weights || defined TEST__DPDF || defined TEST__IDPDF
-#ifndef ROOT_SUPPORT 
+#ifndef USING__ROOT 
 #error ROOT is disabled
 #endif
 #include "My_Root.H"

@@ -5,6 +5,7 @@
 #ifndef Hadrons_H
 #define Hadrons_H
 
+#include "CXXFLAGS.H"
 #include "Decay_Table_Reader.H"
 #include "Decay_Table.H"
 #include <string>

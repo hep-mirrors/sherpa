@@ -33,9 +33,7 @@ MI_Handler::MI_Handler(std::string path,std::string file,MODEL::Model_Base *mode
   std::string mihandler="None";
   ATOOLS::Data_Read read(path+file,true);
   if (read.FileExists()) {
-    std::cout<<"In . "<<std::endl;
     mihandler=read.GetValue<std::string>("MI_HANDLER",std::string("Amisic"));
-    std::cout<<"Handler =  "<<mihandler<<std::endl;
     m_scalescheme=read.GetValue<int>("MI_HARD_SCALE",1);
     path+=read.GetValue<std::string>("INPUT_PATH",std::string(""));
     file=read.GetValue<std::string>("INPUT_FILE",file);

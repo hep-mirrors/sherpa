@@ -283,19 +283,23 @@ std::string Read_Write_Base::ReplaceTags(std::string &expr) const
   return tag;
 }
 
-template <class Type> Type Read_Write_Base::Default() 
-{ 
-  return std::numeric_limits<Type>::max(); 
-}
+namespace ATOOLS {
 
-template int Read_Write_Base::Default<int>();
-template unsigned int Read_Write_Base::Default<unsigned int>();
-template long int Read_Write_Base::Default<long int>();
-template float Read_Write_Base::Default<float>();
-template double Read_Write_Base::Default<double>();
+	template <class Type> Type Read_Write_Base::Default() 
+	{ 
+		return std::numeric_limits<Type>::max(); 
+	}
 
-template <> std::string Read_Write_Base::Default<std::string>()
-{
-  return "";
+	template int Read_Write_Base::Default<int>();
+	template unsigned int Read_Write_Base::Default<unsigned int>();
+	template long int Read_Write_Base::Default<long int>();
+	template float Read_Write_Base::Default<float>();
+	template double Read_Write_Base::Default<double>();
+
+	template <> std::string Read_Write_Base::Default<std::string>()
+	{
+		return "";
+	}
+	
 }
 

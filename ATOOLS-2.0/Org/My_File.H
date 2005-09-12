@@ -1,6 +1,8 @@
 #ifndef My_File_H
 #define My_File_H
 
+#include "Smart_Pointer.H"
+
 #include <fstream>
 #include <string>
 
@@ -31,7 +33,7 @@ namespace ATOOLS {
 
     std::string m_path, m_file;
 
-    mutable File_Type *p_file;
+    SP(File_Type) p_file;
     
     fom::code m_mode;
 
@@ -39,9 +41,6 @@ namespace ATOOLS {
 
     // constructor
     inline My_File(): p_file(NULL), m_mode(fom::permanent) {}
-    inline My_File(const My_File &file): 
-      m_path(file.m_path), m_file(file.m_file),
-      p_file(file.p_file), m_mode(file.m_mode) { file.p_file=NULL; }
     // destructor
     inline ~My_File() { Close(); }
 
@@ -60,19 +59,9 @@ namespace ATOOLS {
 
     inline const fom::code &Mode() const { return m_mode; }
 
-    inline File_Type *operator()() const { return p_file;  }
-    inline File_Type *operator->() const { return p_file;  }
-    inline File_Type &operator*() const  { return *p_file; }
-
-    inline My_File &operator=(const My_File &file)
-    {
-      m_path=file.m_path; 
-      m_file=file.m_file;
-      p_file=file.p_file; 
-      m_mode=file.m_mode;
-      file.p_file=NULL; 
-      return *this;
-    }
+    inline File_Type *operator()() const { return --p_file; }
+    inline File_Type *operator->() const { return --p_file; }
+    inline File_Type &operator*() const  { return *p_file;  }
 
   };// end of class My_File
 

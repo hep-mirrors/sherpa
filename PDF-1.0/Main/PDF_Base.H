@@ -1,6 +1,7 @@
 #ifndef PDF_Base_H
 #define PDF_Base_H
 
+#include "CXXFLAGS.H"
 #include "Flavour.H"
 
 namespace ATOOLS {

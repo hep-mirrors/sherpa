@@ -3,8 +3,9 @@
 
 #include "Blob_List.H"
 #include "Particle.H"
+#include "CXXFLAGS.H"
 
-#ifdef CLHEP_SUPPORT
+#ifdef USING__CLHEP
 #include "CLHEP/HepMC/GenEvent.h"
 #include "CLHEP/HepPDT/ParticleDataTable.hh"
 #include "CLHEP/HepPDT/ParticleData.hh"
@@ -56,7 +57,7 @@ namespace SHERPA {
     bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs); 
 
     // inline functions 
-#ifdef CLHEP_SUPPORT
+#ifdef USING__CLHEP
     inline HepMC::GenEvent *const GenEvent() { return p_event; }
     inline void PrintHepMCEvent() { p_event->print(); }
 #endif

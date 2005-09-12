@@ -52,7 +52,7 @@ namespace ANALYSIS {
     Primitive_Observable_Base * Copy() const;
   };
 
-#ifdef ROOT_SUPPORT
+#ifdef USING__ROOT
   class Two_Particle_Angles : public Two_Particle_Observable_Base {  
     void Evaluate(const ATOOLS::Vec4D &,const ATOOLS::Vec4D &,double=1., int=1); 
   public:

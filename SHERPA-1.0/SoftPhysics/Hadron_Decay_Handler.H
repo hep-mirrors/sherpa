@@ -11,6 +11,7 @@
 #include "Particle.H"
 #include "Blob_List.H"
 #include "Blob.H"
+#include "CXXFLAGS.H"
 
 #ifdef USING__Hadrons
 #include "Hadrons.H"

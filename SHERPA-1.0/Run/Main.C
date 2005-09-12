@@ -4,14 +4,14 @@
 #include "Random.H"
 #include "Exception.H"
 #include "Run_Parameter.H"
-#ifdef CLHEP_SUPPORT
+#ifdef USING__CLHEP
 #include "IO_Handler.H"
 #endif
 
 #ifdef PROFILE__all
 #include "prof.hh"
 #endif
-#ifdef ROOT_SUPPORT
+#ifdef USING__ROOT
 #include "My_Root.H"
 #endif
 
@@ -27,7 +27,7 @@ int main(int argc,char* argv[])
   setenv("MALLOC_TRACE","malloc_trace.log",1);
   mtrace();  
 #endif
-#ifdef ROOT_SUPPORT
+#ifdef USING__ROOT
   MYROOT::myroot = new MYROOT::My_Root(argc,argv);
   ATOOLS::Exception_Handler::AddTerminatorObject(MYROOT::myroot);
 #endif
@@ -55,6 +55,7 @@ int main(int argc,char* argv[])
       Generator.InitializeTheEventHandler();
       double starttime=ATOOLS::rpa.gen.Timer().UserTime();
       for (int i=1;i<=ATOOLS::rpa.gen.NumberOfEvents();i++) {
+	//if (i==259) ATOOLS::msg.SetLevel(15); 
 	if (i%100==0) {
 	  double diff=ATOOLS::rpa.gen.Timer().UserTime()-starttime;
 	  msg_Info()<<"  Event "<<i<<" ( "
@@ -64,7 +65,7 @@ int main(int argc,char* argv[])
 		    <<" s total )   "<<ATOOLS::bm::cr<<std::flush;
 	}
 	if (Generator.GenerateOneEvent()) msg_Events()<<"Sherpa : Passed "<<i<<" events."<<std::endl;
-#ifdef CLHEP_SUPPORT
+#ifdef USING__CLHEP
 // 	Generator.GetIOHandler()->GetHepMCInterface()->PrintHepMCEvent();
 #endif
       }
@@ -75,7 +76,7 @@ int main(int argc,char* argv[])
 		     <<"Sherpa finished its simulation run with "
 		     <<Generator.NumberOfErrors()<<" errors."<<std::endl
 		     <<"=========================================================================="<<std::endl;
-#ifdef ROOT_SUPPORT
+#ifdef USING__ROOT
     delete MYROOT::myroot;
 #endif
 #ifdef PROFILE__all    

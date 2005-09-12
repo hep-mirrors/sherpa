@@ -1,7 +1,9 @@
-#ifdef ROOT_SUPPORT
-
 #ifndef My_Root_H
 #define My_Root_H
+
+#include "CXXFLAGS.H"
+
+#ifdef USING__ROOT
 
 #include "TApplication.h"
 #include "TCanvas.h"

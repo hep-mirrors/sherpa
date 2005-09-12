@@ -1,7 +1,7 @@
 #ifndef IO_Handler_H
 #define IO_Handler_H
 
-#ifdef CLHEP_SUPPORT
+#ifdef USING__CLHEP
 #include "HepMC_Interface.H"
 #endif
 
@@ -32,7 +32,7 @@ namespace SHERPA {
     iotype::code    m_outtype, m_intype;
 
     ATOOLS::Blob_List        * p_blobs;        
-#ifdef CLHEP_SUPPORT
+#ifdef USING__CLHEP
     HepMC_Interface          * p_hepmc;
 #endif
     ATOOLS::HepEvt_Interface * p_hepevt;
@@ -66,7 +66,7 @@ namespace SHERPA {
     // inline functions
     inline bool OutputOn() const { return (m_io&1 || m_io&2); }
 
-#ifdef CLHEP_SUPPORT
+#ifdef USING__CLHEP
     inline HepMC_Interface *const GetHepMCInterface() const 
     { return p_hepmc; }
 #endif

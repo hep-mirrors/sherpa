@@ -25,7 +25,7 @@ const iotype::code SHERPA::operator&(const iotype::code code1,const iotype::code
 
 IO_Handler::IO_Handler(const std::string _mode):
   m_on(true), m_io(1), m_outtype(iotype::Unknown), m_intype(iotype::Unknown), 
-#ifdef CLHEP_SUPPORT
+#ifdef USING__CLHEP
   p_hepmc(NULL), 
 #endif
   p_hepevt(NULL), 
@@ -38,7 +38,7 @@ IO_Handler::IO_Handler(const std::string _mode):
     m_outtype = iotype::HepEvt;
     p_hepevt  = new HepEvt_Interface(true,10);
   }    
-#ifdef CLHEP_SUPPORT
+#ifdef USING__CLHEP
   else if (_mode==std::string("HepMC")) {
     m_outtype = iotype::HepMC; 
     p_hepmc   = new HepMC_Interface();
@@ -58,7 +58,7 @@ IO_Handler::IO_Handler(const std::vector<std::string> & outfiles,
 		       const std::vector<std::string> & infiles,
 		       const std::string _path, const int _filesize):
   m_on(true), m_outtype(iotype::Unknown), m_intype(iotype::Unknown), 
-#ifdef CLHEP_SUPPORT
+#ifdef USING__CLHEP
   p_hepmc(NULL), 
 #endif
   p_hepevt(NULL), 
@@ -93,7 +93,7 @@ IO_Handler::IO_Handler(const std::vector<std::string> & outfiles,
       abort();
     }
     break;
-#ifdef CLHEP_SUPPORT
+#ifdef USING__CLHEP
   case iotype::HepMC: 
     p_hepmc = new HepMC_Interface();
     break;
@@ -126,7 +126,7 @@ IO_Handler::IO_Handler(const std::vector<std::string> & outfiles,
       abort();
     }
     break;
-#ifdef CLHEP_SUPPORT
+#ifdef USING__CLHEP
   case iotype::HepMC: 
     if (p_hepmc==NULL) p_hepmc  = new HepMC_Interface();
     break;
@@ -143,7 +143,7 @@ IO_Handler::IO_Handler(const std::vector<std::string> & outfiles,
 
 IO_Handler::~IO_Handler() 
 {
-#ifdef CLHEP_SUPPORT
+#ifdef USING__CLHEP
   if (p_hepmc)  { delete p_hepmc;  p_hepmc  = NULL; }
 #endif
   if (p_hepevt!=NULL) { delete p_hepevt; p_hepevt=NULL; }
@@ -172,7 +172,7 @@ void IO_Handler::PrintEvent() {
   switch (m_outtype) {
   case iotype::Sherpa:
     break;
-#ifdef CLHEP_SUPPORT
+#ifdef USING__CLHEP
   case iotype::HepMC: 
     p_hepmc->PrintHepMCEvent();
     break;
@@ -211,7 +211,7 @@ bool IO_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const double weig
       case iotype::Sherpa:
 	if (m_io&2) SherpaOutput(blobs,weight); 
 	break;
-#ifdef CLHEP_SUPPORT
+#ifdef USING__CLHEP
       case iotype::HepMC: 
 	p_hepmc->Sherpa2HepMC(blobs);
 	if (m_io&1 && msg.LevelIsDebugging()) {
@@ -242,7 +242,7 @@ bool IO_Handler::InputFromFormat(ATOOLS::Blob_List *const blobs)
   if (!(m_io&4)) return false;
   switch (m_intype) {
   case iotype::Sherpa: return SherpaInput(blobs); 
-#ifdef CLHEP_SUPPORT
+#ifdef USING__CLHEP
   case iotype::HepMC: 
     THROW(not_implemented,"Reading input from HepMC is not yet possible.");
 #endif

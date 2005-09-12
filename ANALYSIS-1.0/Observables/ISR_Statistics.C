@@ -120,7 +120,7 @@ Primitive_Observable_Base & ISR_Statistics::operator+=(const Primitive_Observabl
   return *this;
 }
 
-#ifdef ROOT_SUPPORT
+#ifdef USING__ROOT
 #include "My_Root.H"
 #include "TH2D.h"
 

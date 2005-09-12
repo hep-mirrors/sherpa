@@ -13,7 +13,7 @@ Algebra_Interpreter s_interpreter;
 
 Parameter_Map ATOOLS::Data_Read::s_commandlineparameters;
 
-bool s_nowrite=false;
+bool s_nowrite(true);
 
 template <class Type> 
 const Type Data_Read::ReturnData(const std::string &name,const Type type) 

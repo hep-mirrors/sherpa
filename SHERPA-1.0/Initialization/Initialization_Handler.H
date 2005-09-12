@@ -99,7 +99,7 @@ namespace SHERPA {
     bool InitializeTheAnalyses();
 
     int  ExtractCommandLineParameters(int argc,char * argv[]);
-    void CheckFlagConsitency();
+    void CheckFlagConsistency();
     bool CheckBeamISRConsistency();
     void SetParameter(int nr);
 

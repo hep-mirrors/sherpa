@@ -60,7 +60,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
   DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME)
 
-#ifdef ROOT_SUPPORT
+#ifdef USING__ROOT
 #include "Scaling.H"
 #include "My_Root.H"
 #include "TH2D.h"

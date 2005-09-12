@@ -5,6 +5,7 @@
   \brief Declares the class MI_Base
 */
 
+#include "CXXFLAGS.H"
 #include "File_IO_Base.H"
 #include "Particle_List.H"
 #include "Blob_List.H"
@@ -36,7 +37,7 @@ namespace AMISIC {
 
   protected:
 
-    static String_MI_Base_Map s_bases;
+    static String_MI_Base_Map *s_bases;
 
     double       *m_start, *m_stop, *m_last;
     unsigned int  m_nparameter;

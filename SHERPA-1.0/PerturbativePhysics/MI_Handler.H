@@ -3,6 +3,7 @@
 
 #include "Run_Parameter.H"
 #include "Blob_List.H"
+#include "CXXFLAGS.H"
 
 namespace BEAM   { class Beam_Spectra_Handler; }
 namespace PDF    { class ISR_Handler;          }

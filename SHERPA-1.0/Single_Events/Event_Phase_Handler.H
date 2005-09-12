@@ -3,6 +3,7 @@
 
 #include "Blob_List.H"
 #include "Blob.H"
+#include "CXXFLAGS.H"
 
 namespace SHERPA {
   struct eph {

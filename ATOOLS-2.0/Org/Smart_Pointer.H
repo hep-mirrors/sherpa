@@ -4,9 +4,8 @@
 #ifndef NULL
 #define NULL __null
 #endif
-#ifndef _CPP_IOSTREAM
+
 #include <iostream>
-#endif
 
 namespace ATOOLS {
 
@@ -189,9 +188,7 @@ namespace ATOOLS {
     inline bool operator>(const Type *ref) const  { return ref>p_this;     }
     inline bool operator<=(const Type *ref) const { return !(p_this>ref);  }
 
-#ifdef _CPP_IOSTREAM
     void PrintForward(std::ostream &str,const bool all=false) const;
-#endif
 
   };// end of class Smart_Pointer
 
@@ -237,49 +234,50 @@ namespace ATOOLS {
     the Print(..) method, respectively,
   */
 
-#ifdef _CPP_IOSTREAM
   template <class Class_Type> inline std::ostream &
   operator<<(std::ostream &str,const ATOOLS::Smart_Pointer<Class_Type> &p)
   { 
     p.PrintForward(str,true); 
     return str; 
   }
-#endif
 
 }// end of namespace ATOOLS
 
 #define SP(Class_Type)				\
-  ATOOLS::Smart_Pointer<Class_Type> 
+  ATOOLS::Smart_Pointer<Class_Type>
 
 #define INSTANTIATE_SMART_POINTER(Class_Type)				\
+  namespace ATOOLS { \
 									\
-  template <> const ATOOLS::Smart_Pointer<Class_Type> *			\
-  ATOOLS::Smart_Pointer<Class_Type>::FindOwner() const			\
-  {									\
-    if (p_owner!=this) return p_owner->FindOwner();			\
-    return this;							\
-  }									\
-									\
-  template <> void ATOOLS::Smart_Pointer<Class_Type>::			\
-  RemoveForward() const							\
-  {									\
-    if (p_copy!=NULL) p_copy->RemoveForward();				\
-    Remove();								\
-  }									\
+    template <> const Smart_Pointer<Class_Type> *			\
+    ATOOLS::Smart_Pointer<Class_Type>::FindOwner() const			\
+    {									\
+      if (p_owner!=this) return p_owner->FindOwner();			\
+				return this;							\
+		}									\
+	\
+    template <> void Smart_Pointer<Class_Type>::			\
+    RemoveForward() const							\
+    {									\
+			if (p_copy!=NULL) p_copy->RemoveForward();				\
+			Remove();								\
+		}									\
   									\
-  template <> void ATOOLS::Smart_Pointer<Class_Type>::			\
-  PrintForward(std::ostream &str,const bool all) const			\
-  {									\
-    if (all) {								\
-      str<<"("<<this<<")["<<typeid(p_this).name()<<"]: p_this = "	\
-	 <<p_this<<" {\n";						\
-      FindOwner()->PrintForward(str,false);				\
-      str<<"}";								\
-      return;								\
-    }									\
-    str<<"   ("<<this<<"): { p_owner = "<<p_owner			\
-       <<", p_copy = "<<p_copy<<" }\n";					\
-    if (p_copy!=NULL) p_copy->PrintForward(str);			\
-  }
+    template <> void Smart_Pointer<Class_Type>::			\
+    PrintForward(std::ostream &str,const bool all) const			\
+    {									\
+			if (all) {								\
+				str<<"("<<this<<")["<<typeid(p_this).name()<<"]: p_this = "	\
+				   <<p_this<<" {\n";						\
+				FindOwner()->PrintForward(str,false);				\
+			  str<<"}";								\
+				return;								\
+			}									\
+			str<<"   ("<<this<<"): { p_owner = "<<p_owner			\
+			   <<", p_copy = "<<p_copy<<" }\n";					\
+		  if (p_copy!=NULL) p_copy->PrintForward(str);			\
+		} \
+	\
+	}
 
 #endif

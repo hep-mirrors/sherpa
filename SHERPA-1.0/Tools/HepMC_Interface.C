@@ -3,7 +3,7 @@
 #include "Message.H"
 #include "Run_Parameter.H"
 
-#ifdef CLHEP_SUPPORT
+#ifdef USING__CLHEP
 #include "CLHEP/Vector/LorentzVector.h"
 #endif
 
@@ -16,7 +16,7 @@ using namespace HepMC;
 using namespace HepPDT;
 
 HepMC_Interface::HepMC_Interface():
-#ifdef CLHEP_SUPPORT
+#ifdef USING__CLHEP
   p_event(new HepMC::GenEvent())
 #else
   p_event(NULL)
@@ -27,7 +27,7 @@ HepMC_Interface::HepMC_Interface():
 
 HepMC_Interface::~HepMC_Interface()
 {
-#ifdef CLHEP_SUPPORT
+#ifdef USING__CLHEP
   delete p_event;
   delete p_particledatatable;
 #endif
@@ -35,7 +35,7 @@ HepMC_Interface::~HepMC_Interface()
 
 void HepMC_Interface::InitTheMap() 
 {
-#ifdef CLHEP_SUPPORT
+#ifdef USING__CLHEP
   p_particledatatable = new DefaultConfig::ParticleDataTable();
   ATOOLS::Fl_Iter fli;
   HepPDT::TableBuilder *build = new HepPDT::TableBuilder(*p_particledatatable);
@@ -66,7 +66,7 @@ void HepMC_Interface::InitTheMap()
 
 bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs)
 {
-#ifdef CLHEP_SUPPORT
+#ifdef USING__CLHEP
   if (blobs->empty()) {
     ATOOLS::msg.Error()<<"Error in HepMC_Interface::Sherpa2HepMC(Blob_List)."<<std::endl
 		       <<"   Empty list - nothing to translate into HepMC standard."<<std::endl
@@ -104,7 +104,7 @@ bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs)
 
 bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob * blob,HepMC::GenVertex *& vertex) 
 {
-#ifdef CLHEP_SUPPORT
+#ifdef USING__CLHEP
   if (blob->Type()==ATOOLS::btp::Bunch) return false;
   int count = m_blob2vertex.count(blob->Id());
   if (count>0) {
@@ -158,7 +158,7 @@ bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob * blob,HepMC::GenVertex *& verte
 
 bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,HepMC::GenParticle *& particle) 
 {
-#ifdef CLHEP_SUPPORT
+#ifdef USING__CLHEP
   long int number = (long int)(parton), count = m_parton2particle.count(number);
   if (count>0) {
     particle = m_parton2particle[number];

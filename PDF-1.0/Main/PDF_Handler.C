@@ -4,7 +4,7 @@
 #include "PDF_MRST01LO.H"
 #include "GRVph_Fortran_Interface.H"
 
-#ifdef LHAPDF_SUPPORT
+#ifdef USING__LHAPDF
 #include "LHAPDF_Fortran_Interface.H"
 #else
 #include "CTEQ6_Fortran_Interface.H"
@@ -63,7 +63,7 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 		set==std::string("cteq6l") ||
 		set==std::string("cteq6l1")) && grid_path.find("CTEQ6Grid") ) {
 	  
-#ifdef LHAPDF_SUPPORT
+#ifdef USING__LHAPDF
 	msg.Error()<<"ERROR : Cannot initialize CTEQ6 interface when LHAPDF is enabled ! "<<std::endl;
 #else	
 	msg_Tracking()<<"Initialize CTEQ6 : "<<version<<" from "<<grid_path<<endl;
@@ -122,11 +122,11 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 	       set==std::string("ZEUS2002_FF.LHpdf") ||
 	       set==std::string("ZEUS2002_TR.LHpdf") ||
 	       set==std::string("ZEUS2002_ZM.LHpdf")) {
-#ifdef LHAPDF_SUPPORT
+#ifdef USING__LHAPDF
 	msg_Tracking()<<"Initialize LHAPDF "<<set<<" : "<<version<<" from "<<grid_path<<endl;
 	pdfbase = new LHAPDF_Fortran_Interface(bunch_particle,set,version,grid_path,m_initlhapdf);
 #else 
-	msg.Error()<<"ERROR : LHAPDF_SUPPORT is not enabled ! "<<std::endl;
+	msg.Error()<<"ERROR : USING__LHAPDF is not enabled ! "<<std::endl;
 	pdfbase = NULL;
 #endif
       }

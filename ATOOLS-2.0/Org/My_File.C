@@ -2,6 +2,9 @@
 
 #include "Exception.H"
 
+INSTANTIATE_SMART_POINTER(std::ifstream)
+INSTANTIATE_SMART_POINTER(std::ofstream)
+
 using namespace ATOOLS;
 
 std::ostream &ATOOLS::operator<<(std::ostream &ostr,const fom::code &code)
@@ -14,23 +17,27 @@ std::ostream &ATOOLS::operator<<(std::ostream &ostr,const fom::code &code)
   }
   return ostr;
 }
+	
+namespace ATOOLS {
+	
+  template <> std::ostream &
+  operator<<<std::ifstream>(std::ostream &ostr,
+			    const My_File<std::ifstream> &file)
+  {
+    return ostr<<"("<<(&*file)<<") [input] { m_path = "<<file.Path()
+	       <<", m_file = "<<file.File()
+	       <<", m_mode = "<<file.Mode()<<" }";
+  }
 
-template <>
-std::ostream &operator<<<std::ifstream>(std::ostream &ostr,
-					const My_File<std::ifstream> &file)
-{
-  return ostr<<"("<<(&*file)<<") [input] { m_path = "<<file.Path()
-	     <<", m_file = "<<file.File()
-	     <<", m_mode = "<<file.Mode()<<" }";
-}
+  template <>	std::ostream &
+  operator<<<std::ofstream>(std::ostream &ostr,
+			    const My_File<std::ofstream> &file)
+  {
+    return ostr<<"("<<(&*file)<<") [output] { m_path = "<<file.Path()
+	       <<", m_file = "<<file.File()
+	       <<", m_mode = "<<file.Mode()<<" }";
+  }
 
-template <>
-std::ostream &operator<<<std::ofstream>(std::ostream &ostr,
-					const My_File<std::ofstream> &file)
-{
-  return ostr<<"("<<(&*file)<<") [output] { m_path = "<<file.Path()
-	     <<", m_file = "<<file.File()
-	     <<", m_mode = "<<file.Mode()<<" }";
 }
 
 template <class FileType>
@@ -49,8 +56,7 @@ bool My_File<FileType>::Close()
 {
   if (p_file==NULL) return false;
   p_file->close();
-  delete p_file;
-  p_file=NULL;
+  p_file.Delete();
   return true;
 }
 

@@ -1,13 +1,13 @@
 #include "Primitive_Integrator.H"
 #include "Exception.H"
 #include "My_Root.H"
-#ifdef ROOT_SUPPORT
+#ifdef USING__ROOT
 #include "TH2D.h"
 #endif
 
 using namespace ATOOLS;
 
-#ifdef ROOT_SUPPORT
+#ifdef USING__ROOT
 class PS_Histogram: public TH2D {
 private:
   TH2D *p_ps;
@@ -78,7 +78,7 @@ public:
 			   (point[1]-dy1)*(point[1]-dy1)))+
       exp(-w2*((point[0]-dx2)*(point[0]-dx2)+
 	       (point[1]-dy2)*(point[1]-dy2)));
-#ifdef ROOT_SUPPORT
+#ifdef USING__ROOT
     static PS_Histogram *ps=NULL;
     if (ps==NULL) {
       ps = new PS_Histogram("camel","camel",100,0.,1.,100,0.,1.);
@@ -98,7 +98,7 @@ public:
     double weight=exp(-w1*sqr(point[1]+point[0]-1.0));
     if (point[0]<mm || point[0]>1.0-mm ||
 	point[1]<mm || point[1]>1.0-mm) weight=0.0;
-#ifdef ROOT_SUPPORT
+#ifdef USING__ROOT
     static PS_Histogram *ps=NULL;
     if (ps==NULL) {
       ps = new PS_Histogram("line","line",100,0.,1.,100,0.,1.);
@@ -121,7 +121,7 @@ public:
     weight+=pow(1.0-point[1],ee)*
       exp(-w1*dabs(sqr(point[1]-1.0+dy1)+
 		   sqr(point[0]-1.0+dx1)-sqr(rr)));
-#ifdef ROOT_SUPPORT
+#ifdef USING__ROOT
     static PS_Histogram *ps=NULL;
     if (ps==NULL) {
       ps = new PS_Histogram("circle","circle",100,0.,1.,100,0.,1.);
@@ -143,7 +143,7 @@ public:
 	point[1]<mm || point[1]>1.0-mm) weight=0.0;
     if ((point[0]<cx && point[1]<cy) ||
 	(point[0]>cx && point[1]>cy)) weight=0.0;
-#ifdef ROOT_SUPPORT
+#ifdef USING__ROOT
     static PS_Histogram *ps=NULL;
     if (ps==NULL) {
       ps = new PS_Histogram("fatal","fatal",100,0.,1.,100,0.,1.);
@@ -173,7 +173,7 @@ public:
       ++iy;
     }
     if ((ix+iy)%2==0) weight=0.0;
-#ifdef ROOT_SUPPORT
+#ifdef USING__ROOT
     static PS_Histogram *ps=NULL;
     if (ps==NULL) {
       ps = new PS_Histogram("chess","chess",100,0.,1.,100,0.,1.);
@@ -187,7 +187,7 @@ public:
 
 int main(int argc,char **argv)
 {
-#ifdef ROOT_SUPPORT
+#ifdef USING__ROOT
   MYROOT::myroot = new MYROOT::My_Root(argc,argv);
   Exception_Handler::AddTerminatorObject(MYROOT::myroot);
 #endif
@@ -238,7 +238,7 @@ int main(int argc,char **argv)
     PRINT_INFO("Integrate chess");
     Chess chess;
     integrator.Integrate(&chess);
-#ifdef ROOT_SUPPORT
+#ifdef USING__ROOT
     MYROOT::myroot->SetDrawOption("lego2");
     delete MYROOT::myroot;
 #endif

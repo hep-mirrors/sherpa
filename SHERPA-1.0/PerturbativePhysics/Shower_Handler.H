@@ -21,7 +21,6 @@ namespace ADICIC { class Chain; }
 namespace SHERPA {
   class Shower_Handler {
   private :
-    std::string            m_dir,m_file;
     int                    m_maxjetnumber;
 
     std::string            m_showergenerator;
@@ -33,6 +32,7 @@ namespace SHERPA {
 #ifdef USING__CSS    
     CS_SHOWER::CS_Shower * p_css;
 #endif
+    ATOOLS::Jet_Finder   * p_jf;
     PDF::ISR_Handler     * p_isr_handler;       
   public :
     Shower_Handler(std::string,std::string,MODEL::Model_Base *,
@@ -58,8 +58,9 @@ namespace SHERPA {
 #endif
     APACIC::Apacic          * GetApacic() { return p_apacic; }
     void SetJetvetoPt2(const double q2i,const double q2f) { p_apacic->SetJetvetoPt2(q2i,q2f); }
-    void SetFactorisationScale(const double scale) { p_apacic->SetFactorisationScale(scale); }
+    void SetFactorisationScale(const double scale)        { p_apacic->SetFactorisationScale(scale); }
     inline bool ShowerMI() const { return m_showermi; }
+    inline ATOOLS::Jet_Finder *JetFinder() const          { return p_jf; }
   };
 
 

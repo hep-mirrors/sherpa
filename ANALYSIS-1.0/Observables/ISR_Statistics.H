@@ -26,7 +26,7 @@ namespace ANALYSIS {
 
   };// end of class ISR_Statistics
 
-#ifdef ROOT_SUPPORT
+#ifdef USING__ROOT
   class Sprime_Y_Distribution : public Primitive_Observable_Base {  
   private:
 

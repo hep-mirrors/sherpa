@@ -72,7 +72,6 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
   m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
 }
 
-
 Initialization_Handler::Initialization_Handler(int argc,char * argv[]) : 
   m_mode(0), p_model(NULL), p_beamspectra(NULL), 
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
@@ -101,6 +100,8 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
     return;
   }
   
+  rpa.Init(m_path,m_file,argc,argv);
+
   p_dataread         = new Data_Read(m_path+m_file);
   m_modeldat         = p_dataread->GetValue<string>("MODEL_DATA_FILE",string("Model.dat"));
   m_beamdat          = p_dataread->GetValue<string>("BEAM_DATA_FILE",string("Beam.dat"));
@@ -115,9 +116,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   m_hadrondecaysdat  = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
 
-  CheckFlagConsitency();
-
-  rpa.Init(m_path,m_file,argc,argv);
+  CheckFlagConsistency();
 
 }
 
@@ -171,63 +170,39 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   if (nr<=0) {
     ATOOLS::ParticleInit(m_path); 
   }
-  std::cout<<"Particles ....  initialised"<<std::endl;
-
   bool okay = InitializeTheIO();
-  std::cout<<"IO        ....  initialised"<<std::endl;
-
-
   if (m_mode==9999) {
     msg.Out()<<"SHERPA will read in the events."<<std::endl
 	     <<"   The full framework is not needed."<<std::endl;
     InitializeTheAnalyses();
     return true;
   }
-     
   okay = okay && InitializeTheModel();  
-  std::cout<<"Analysis  .... initialised"<<std::endl;
-
   //  set masses and widths from command line
   SetParameter(nr);
   UpdateParameters();
-    
   okay = okay && InitializeTheBeams();
-  std::cout<<"Beams     .... initialised"<<std::endl;
   okay = okay && InitializeThePDFs();
-  std::cout<<"PDFs      .... initialised"<<std::endl;
-
   okay = okay && InitializeTheAnalyses();
-  std::cout<<"Analysis  .... initialised"<<std::endl;
-
   ATOOLS::Integration_Info *info=PHASIC::Phase_Space_Handler::GetInfo();
   m_isrhandlers[isr::hard_process]->AssignKeys(info);
   if (m_isrhandlers.find(isr::hard_subprocess)!=m_isrhandlers.end()) {
     m_isrhandlers[isr::hard_subprocess]->AssignKeys(info);
   }
-
   if (!CheckBeamISRConsistency()) return 0.;
-  
   if (m_mode>8999) {
     okay &= InitializeTheExternalMC();
     return true;
   }
-
   okay = okay && InitializeTheBeamRemnants();
-  std::cout<<"Beam remnants  initialised"<<std::endl;
   okay = okay && InitializeTheHardDecays();
-  std::cout<<"Hard decays .. initialised"<<std::endl;
   okay = okay && InitializeTheMatrixElements();
-  std::cout<<"MEs       .... initialised"<<std::endl;
   //  only if events:
   if (rpa.gen.NumberOfEvents()>0) {
     okay = okay && InitializeTheShowers();
-    std::cout<<"Showers   .... initialised"<<std::endl;
     okay = okay && InitializeTheFragmentation();
-    std::cout<<"Fragmentation  initialised"<<std::endl;
     okay = okay && InitializeTheHadronDecays();
-    std::cout<<"Hadron decays  initialised"<<std::endl;
     okay = okay && InitializeTheUnderlyingEvents();
-    std::cout<<"UE        .... initialised"<<std::endl;
   }
   return okay;
 }
@@ -450,7 +425,6 @@ Matrix_Element_Handler * const Initialization_Handler::GetMatrixElementHandler(s
 
 bool Initialization_Handler::InitializeTheUnderlyingEvents()
 {
-  std::cout<<"Before MI Init."<<std::endl;
   p_mihandler = new MI_Handler(m_path,m_midat,p_model,p_beamspectra,
 			       m_isrhandlers[isr::hard_subprocess]);
   if (p_mihandler->Type()!=0)
@@ -912,7 +886,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 }
 
 
-void Initialization_Handler::CheckFlagConsitency()
+void Initialization_Handler::CheckFlagConsistency()
 {
   Data_Read dr(m_path+m_medat);
   int  sudweight = dr.GetValue<int>("SUDAKOV_WEIGHT",0);
@@ -936,9 +910,7 @@ void Initialization_Handler::CheckFlagConsitency()
 
     //  Shower.dat
     Data_Read::SetCommandLine("FSR_SHOWER","1");
-    Data_Read::SetCommandLine("FS_LOSEJETVETO","1");
     Read_Write_Base::AddCommandLine("FSR_SHOWER = 1; ");
-    Read_Write_Base::AddCommandLine("FS_LOSEJETVETO = 1; ");
   }
 
 

@@ -7,9 +7,6 @@ using namespace ATOOLS;
 MyTiming::MyTiming()
 {
   status=3; //never started or stopped 
-  //  starttms=new tms;
-  //  currenttms=new tms;
-  //  endtms=new tms;
 }
 
 void MyTiming::SetCurrent()
@@ -58,8 +55,6 @@ void MyTiming::PrintTime()
     double cstime=(currenttms.tms_cstime-starttms.tms_cstime)/clk_tck;
     msg_Info()<<" (User: "<<utime<<" s ,System: "<<stime<<" s ,Children User: "
 	      <<cutime<<" s ,Children System: "<<cstime<<")\n";
-//     msg.Out()<<" CLK_TCK="<<CLK_TCK<<endl;
-//     msg.Out()<<" CLK/s="<<CLOCKS_PER_SEC<<endl;
   }
 }
 

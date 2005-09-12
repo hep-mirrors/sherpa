@@ -7,10 +7,10 @@
 using namespace SHERPA;
 using namespace ATOOLS;
 
-Shower_Handler::Shower_Handler(std::string _dir,std::string _file,
+Shower_Handler::Shower_Handler(std::string dir,std::string file,
 			       MODEL::Model_Base * _model,
 			       PDF::ISR_Handler * _isr,int _maxjet) :
-  m_dir(_dir), m_file(_file), m_maxjetnumber(_maxjet), m_showermi(true), 
+  m_maxjetnumber(_maxjet), m_showermi(true), 
   p_apacic(NULL), 
 #ifdef USING__Adicic
   p_adicic(NULL),
@@ -18,9 +18,10 @@ Shower_Handler::Shower_Handler(std::string _dir,std::string _file,
 #ifdef USING__CSS    
   p_css(NULL),
 #endif
-  p_isr_handler(_isr)
+  p_jf(NULL), p_isr_handler(_isr)
 {
-  Data_Read dataread(m_dir+m_file);
+  PRINT_INFO("in");
+  Data_Read dataread(dir+file);
   m_showergenerator = dataread.GetValue<std::string>("SHOWER_GENERATOR",std::string("Apacic"));
   m_isrshowerswitch = 0;
   if (_isr) {
@@ -40,9 +41,16 @@ Shower_Handler::Shower_Handler(std::string _dir,std::string _file,
   }
   m_showermi = dataread.GetValue<int>("SHOWER_MI",1);
 
+  int type(4);
+  if (rpa.gen.Beam1().IsLepton() && rpa.gen.Beam2().IsLepton())          type = 1;
+  else if ((!rpa.gen.Beam1().IsLepton() && !rpa.gen.Beam2().IsLepton())) type = 4;
+  else type = 4;
+
+  p_jf = new Jet_Finder(rpa.gen.Ycut(),type,false);
+
   if (m_showergenerator==std::string("Apacic")) {
-    p_apacic = new APACIC::Apacic(_isr,_model,m_maxjetnumber,
-    				  m_isrshowerswitch,m_fsrshowerswitch,&dataread);
+    p_apacic = new APACIC::Apacic(_isr,_model,p_jf,&dataread);
+    if (p_apacic->FinShower()) p_apacic->SetMaxJetNumber(m_maxjetnumber);
   }
 #ifdef USING__Adicic    
   else if (m_showergenerator==std::string("Adicic")) {
@@ -73,11 +81,12 @@ Shower_Handler::~Shower_Handler()
 #ifdef USING__CSS    
   if (p_css)    { delete p_css;    p_css    = NULL; }
 #endif
+  if (p_jf) delete p_jf;
 }
 
 
 int Shower_Handler::PerformShowers(int jetveto,int losejv,double _x1,double _x2,double ycut) {
-  if (p_apacic) return p_apacic->PerformShowers(m_isrshowerswitch,m_fsrshowerswitch,jetveto,losejv,_x1,_x2, ycut);
+  if (p_apacic) return p_apacic->PerformShowers(jetveto,losejv,_x1,_x2, ycut);
 #ifdef USING__Adicic    
   if (p_adicic) return p_adicic->PerformShowers();
 #endif
@@ -88,7 +97,7 @@ int Shower_Handler::PerformShowers(int jetveto,int losejv,double _x1,double _x2,
 }
 
 int Shower_Handler::PerformDecayShowers(bool jetveto) {
-  if (p_apacic) return p_apacic->PerformShowers(0,m_fsrshowerswitch,jetveto,1,1.,1.,rpa.gen.Ycut());
+  if (p_apacic) return p_apacic->PerformShowers(jetveto,1,1.,1.,rpa.gen.Ycut());
   return 0;
 }
 

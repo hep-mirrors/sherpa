@@ -1,4 +1,4 @@
-#ifdef ROOT_SUPPORT
+#ifdef USING__ROOT
 
 #include "My_Root.H"
 #include "Shell_Tools.H"

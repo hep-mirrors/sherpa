@@ -60,7 +60,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
   DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME)
 
-#ifdef ROOT_SUPPORT
+#ifdef USING__ROOT
 #include "Scaling.H"
 #include "My_Root.H"
 #include "TH2D.h"
@@ -172,7 +172,7 @@ Primitive_Observable_Base * Two_Particle_Scalar_PT::Copy() const
   return new Two_Particle_Scalar_PT(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
 
-#ifdef ROOT_SUPPORT
+#ifdef USING__ROOT
 DEFINE_OBSERVABLE_GETTER(Two_Particle_Angles,
 			 Two_Particle_Angles_Getter,"Theta_2D")
 

@@ -11,7 +11,7 @@
 //#define ANALYSE__Primordial_KPerp
 
 #ifdef ANALYSE__Primordial_KPerp
-#ifndef ROOT_SUPPORT
+#ifndef USING__ROOT
 #undef ANALYSE__Primordial_KPerp
 #else
 #include "My_Root.H"

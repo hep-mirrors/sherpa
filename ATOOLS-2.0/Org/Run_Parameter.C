@@ -36,6 +36,11 @@ Run_Parameter::Run_Parameter()
   gen.SetWAnaScale(1.);
 } 
 
+std::ostream &ATOOLS::operator<<(std::ostream &str,const Run_Parameter &rp)
+{ 
+  return str<<"("<<&rp<<"): {\n}"; 
+}
+
 void Run_Parameter::AnalyseEnvironment() 
 {
   if (s_initialized) return;
@@ -104,8 +109,9 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   msg.Init(gen.m_output,logfile);
   // make path nice
   if (path.length()>0) {
-    if (path[0]!='/') path=std::string(getenv("PWD"))+std::string("/")+path;
-    while (path[path.length()-1]=='/' || path[path.length()-1]=='.') 
+    if (path[0]!='/') path=std::string(getenv("PWD"))+"/"+path;
+    while (path.length()>0 && 
+	   path[path.length()-1]=='/' || path[path.length()-1]=='.') 
       path=path.substr(0,path.length()-1);
   }
   // search for sherpa executeable

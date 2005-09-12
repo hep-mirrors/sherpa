@@ -1,6 +1,7 @@
 #ifndef Run_Parameter_H
 #define Run_Parameter_H
 
+#include "CXXFLAGS.H"
 #include <string>
 #include <map>
 #ifndef USING__ATOOLS_only
@@ -145,6 +146,8 @@ namespace ATOOLS {
   };
 
   extern Run_Parameter rpa;
+
+  std::ostream &operator<<(std::ostream &str,const Run_Parameter &rp);
 
 
 /*!

@@ -14,7 +14,7 @@
 
 using namespace AMISIC;
 
-MI_Base::String_MI_Base_Map MI_Base::s_bases;
+MI_Base::String_MI_Base_Map *MI_Base::s_bases;
 
 bool MI_Base::s_stophard=true;
 bool MI_Base::s_stopsoft=true;
@@ -34,8 +34,12 @@ MI_Base::MI_Base(std::string name,TypeID type,unsigned int nparameter,
 #endif
   p_xs(NULL)
 {
-  for (String_MI_Base_Map::iterator nbit=s_bases.begin();
-       nbit!=s_bases.end();++nbit) {
+  static bool initialized=false;
+  if (!initialized) {
+    s_bases = new String_MI_Base_Map();
+  }
+  for (String_MI_Base_Map::iterator nbit=s_bases->begin();
+       nbit!=s_bases->end();++nbit) {
     if (nbit->first==m_name) {
       THROW(fatal_error,"MI_Base already exists!");
     }
@@ -46,7 +50,7 @@ MI_Base::MI_Base(std::string name,TypeID type,unsigned int nparameter,
   m_start = new double[m_nparameter];
   m_stop = new double[m_nparameter];
   m_last = new double[m_nparameter];
-  s_bases[m_name]=this;
+  (*s_bases)[m_name]=this;
   switch (m_type) {
   case SoftEvent: 
     if (m_name!=TypeToString(type)+" None") s_soft=this; 
@@ -61,10 +65,10 @@ MI_Base::MI_Base(std::string name,TypeID type,unsigned int nparameter,
 
 MI_Base::~MI_Base()
 {
-  for (String_MI_Base_Map::iterator nbit=s_bases.begin();
-       nbit!=s_bases.end();++nbit) {
+  for (String_MI_Base_Map::iterator nbit=s_bases->begin();
+       nbit!=s_bases->end();++nbit) {
     if (nbit->first==m_name) {
-      s_bases.erase(nbit--);
+      s_bases->erase(nbit--);
       break;
     }
   }
@@ -76,8 +80,8 @@ MI_Base::~MI_Base()
 void MI_Base::UpdateAll(const MI_Base *mibase)
 {
   PROFILE_HERE;
-  for (String_MI_Base_Map::iterator nbit=s_bases.begin();
-       nbit!=s_bases.end();++nbit) {
+  for (String_MI_Base_Map::iterator nbit=s_bases->begin();
+       nbit!=s_bases->end();++nbit) {
     nbit->second->Update(mibase);
   }  
 }
@@ -105,8 +109,8 @@ void MI_Base::Reset()
 
 void MI_Base::CleanUp()
 {
-  for (String_MI_Base_Map::iterator nbit=s_bases.begin();
-       nbit!=s_bases.end();++nbit) {
+  for (String_MI_Base_Map::iterator nbit=s_bases->begin();
+       nbit!=s_bases->end();++nbit) {
     nbit->second->m_inparticles.Clear();
     nbit->second->m_outparticles.Clear();
   }
@@ -132,8 +136,8 @@ bool MI_Base::DiceProcess()
 void MI_Base::ResetAll()
 {
   PROFILE_HERE;
-  for (String_MI_Base_Map::iterator nbit=s_bases.begin();
-       nbit!=s_bases.end();++nbit) {
+  for (String_MI_Base_Map::iterator nbit=s_bases->begin();
+       nbit!=s_bases->end();++nbit) {
     nbit->second->Reset();
   }  
 }

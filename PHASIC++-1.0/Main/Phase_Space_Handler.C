@@ -4,6 +4,7 @@
 #include "Beam_Spectra_Handler.H"
 #include "ISR_Handler.H"
 
+#include "CXXFLAGS.H"
 #include "Rambo.H"
 #include "RamboKK.H"
 #include "Sarge.H"
@@ -33,7 +34,7 @@
 #define PROFILE_LOCAL(LOCALNAME)
 #endif
 
-#ifdef ROOT_SUPPORT
+#ifdef USING__ROOT
 // #define ANALYSE__Phase_Space_Handler
 #endif
 #ifdef ANALYSE__Phase_Space_Handler

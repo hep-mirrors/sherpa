@@ -4,6 +4,7 @@
 #include "Lund_Interface.H"
 #include "Particle_List.H"
 #include "Blob_List.H"
+#include "CXXFLAGS.H"
 #ifdef USING__Ahadic
 #include "Ahadic.H"
 #endif
