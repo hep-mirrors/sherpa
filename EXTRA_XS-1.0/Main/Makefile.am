@@ -1,10 +1,5 @@
 SHERPASYS     =	../..
 
-if SHERPA_SUPPORT
-SHERPAFLAGS   = -DSHERPA_SUPPORT
-SHERPAINCS    =	-I$(SHERPASYS)/SHERPA-1.0/SoftPhysics
-endif
-
 EXTRAXSFLAGS  =	-pedantic -Wall -Winline
 
 EXTRAXSINCS   =	-I../Two2Two
@@ -20,18 +15,12 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-lib_LTLIBRARIES = libExtraXS.la libExtraXSns.la
+lib_LTLIBRARIES = libExtraXS.la
 libExtraXS_la_SOURCES =	\
 			XS_Base.C \
 			Single_XS.C \
 			XS_Group.C \
 			Simple_XS.C \
-			XS_Selector.C
-libExtraXSns_la_SOURCES =	\
-			XS_Base.C \
-			Single_XS.C \
-			XS_Group.C \
-			Simple_XSns.C \
 			XS_Selector.C
 noinst_HEADERS        =	\
 			XS_Base.H \
@@ -40,6 +29,6 @@ noinst_HEADERS        =	\
 			Simple_XS.H \
 			XS_Selector.H
 EXTRA_DIST    = $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(EXTRAXSFLAGS)  $(SHERPAFLAGS)
+AM_CXXFLAGS   =	$(EXTRAXSFLAGS)
 INCLUDES      =	$(SHERPAINCS) $(EXTRAXSINCS) $(PHASICINCS) $(PDFINCS) \
 		$(BEAMINCS) $(MODELINCS) $(ATOOLSINCS)

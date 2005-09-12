@@ -1,46 +1,47 @@
+SHERPASYS     =	../..
+
+APACICFLAGS   =	-pedantic -Wall -Winline 
+
+APACICINCS    = -I../Main 
+MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
+PDFDIR        =	$(SHERPASYS)/PDF-1.0
+PDFINCS       =	-I$(PDFDIR)/Main -I$(PDFDIR)/Remnant
+BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
+ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
+ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
+
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-APACICFLAGS   =	-pedantic -Wall -Winline 
-
-PDFDIR        =	$(SHERPASYS)/PDF-1.0
-PDFINCS       =	-I$(PDFDIR)/Main -I$(PDFDIR)/Remnant
-
-SHERPASYS     =	../..
-
-if SHERPA_SUPPORT
-SHERPAFLAGS   = -DSHERPA_SUPPORT
-SHERPAINCS    =	-I$(SHERPASYS)/SHERPA-1.0/SoftPhysics
-endif
-
-lib_LTLIBRARIES = libApacicShowers.la libApacicShowersNS.la
-libApacicShowers_la_SOURCES = Sudakov_Tools.C Splitting_Function.C \
-			      Splitting_Group.C Backward_Splitting_Group.C \
-			      QED_Splitting_Functions.C QCD_Splitting_Functions.C \
-			      SUSY_QCD_Splitting_Functions.C \
-			      Timelike_Sudakov.C Timelike_Kinematics.C \
-			      Spacelike_Sudakov.C Spacelike_Kinematics.C \
-			      Final_State_Shower.C Initial_State_Shower.C
-libApacicShowersNS_la_SOURCES = Final_State_Shower.C Timelike_Sudakov.C \
-			      Timelike_Kinematics.C  Spacelike_Kinematics.C \
-			      Initial_State_Shower.C Spacelike_SudakovNS.C \
-			      Sudakov_Tools.C Splitting_Function.C \
-			      Splitting_Group.C Backward_Splitting_Group.C \
-			      QED_Splitting_Functions.C QCD_Splitting_Functions.C \
-			      SUSY_QCD_Splitting_Functions.C
-AM_CXXFLAGS   = $(APACICFLAGS) $(SHERPAFLAGS)
-INCLUDES = $(PDFINCS) -I../../APACIC++-2.0/Main \
-	   -I../../MODEL-1.0/Main \
-	   -I../../PDF-1.0/Main \
-	   -I../../ATOOLS-2.0/Phys \
-	   -I../../ATOOLS-2.0/Math \
-	   -I../../ATOOLS-2.0/Org
-noinst_HEADERS = Final_State_Shower.H Timelike_Sudakov.H \
-	         Timelike_Kinematics.H Spacelike_Kinematics.H \
-                 Initial_State_Shower.H Spacelike_Sudakov.H \
-                 Sudakov_Tools.H Splitting_Function.H \
-		 Splitting_Group.H Backward_Splitting_Group.H \
-		 QED_Splitting_Functions.H QCD_Splitting_Functions.H \
-		 SUSY_QCD_Splitting_Functions.H
+lib_LTLIBRARIES = libApacicShowers.la
+libApacicShowers_la_SOURCES   = Sudakov_Tools.C \
+				Splitting_Function.C \
+			      	Splitting_Group.C \
+				Backward_Splitting_Group.C \
+			      	QED_Splitting_Functions.C \
+				QCD_Splitting_Functions.C \
+			      	SUSY_QCD_Splitting_Functions.C \
+			      	Timelike_Sudakov.C \
+				Timelike_Kinematics.C \
+			      	Spacelike_Sudakov.C \
+				Spacelike_Kinematics.C \
+			      	Final_State_Shower.C \
+				Initial_State_Shower.C
+noinst_HEADERS        = Sudakov_Tools.H \
+			Splitting_Function.H \
+			Splitting_Group.H \
+			Backward_Splitting_Group.H \
+		 	QED_Splitting_Functions.H \
+			QCD_Splitting_Functions.H \
+		 	SUSY_QCD_Splitting_Functions.H \
+			Timelike_Sudakov.H \
+	         	Timelike_Kinematics.H \
+			Spacelike_Sudakov.H \
+			Spacelike_Kinematics.H \
+			Final_State_Shower.H \
+			Initial_State_Shower.H 
+AM_CXXFLAGS   = $(APACICFLAGS)
+INCLUDES      = $(APACICINCS) $(MODELINCS) $(PDFINCS) $(BEAMINCS) \
+		$(ATOOLSINCS)
 EXTRA_DIST    = $(CVSINCLUDE)
