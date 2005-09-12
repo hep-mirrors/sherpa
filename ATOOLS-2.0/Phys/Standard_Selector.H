@@ -25,7 +25,6 @@ namespace ATOOLS {
     bool     Trigger(const Vec4D * );
     void     BuildCuts(Cut_Data *);
     void     UpdateCuts(double,double,Cut_Data *);
-    double * ActualValue();
   };
 
   class ET_Selector : public Selector_Base {
@@ -37,7 +36,6 @@ namespace ATOOLS {
     bool     Trigger(const Vec4D * );
     void     BuildCuts(Cut_Data *);
     void     UpdateCuts(double,double,Cut_Data *);
-    double * ActualValue();
   };
 
   class PT_Selector : public Selector_Base {
@@ -49,7 +47,6 @@ namespace ATOOLS {
     bool     Trigger(const Vec4D * );
     void     BuildCuts(Cut_Data *);
     void     UpdateCuts(double,double,Cut_Data *);
-    double * ActualValue();
   };
 
   class BFKL_PT_Selector : public Selector_Base {
@@ -61,7 +58,6 @@ namespace ATOOLS {
     bool     Trigger(const Vec4D * );
     void     BuildCuts(Cut_Data *);
     void     UpdateCuts(double,double,Cut_Data *);
-    double * ActualValue();
     bool GetValue(const std::string &name,double &value);
   };
 
@@ -74,7 +70,6 @@ namespace ATOOLS {
     bool     Trigger(const Vec4D * );
     void     BuildCuts(Cut_Data *);
     void     UpdateCuts(double,double,Cut_Data *);
-    double * ActualValue();
   };
 
   class Rapidity_Selector : public Selector_Base {
@@ -87,7 +82,6 @@ namespace ATOOLS {
     void     BuildCuts(Cut_Data *);
     void     UpdateCuts(double,double,Cut_Data *);
     int      IsConditional() { return 1; }
-    double * ActualValue();
   };
 
   class PseudoRapidity_Selector : public Selector_Base {
@@ -99,7 +93,6 @@ namespace ATOOLS {
     bool     Trigger(const Vec4D * );
     void     BuildCuts(Cut_Data *);
     void     UpdateCuts(double,double,Cut_Data *);
-    double * ActualValue();
   };
 
   class Angle_Selector : public Selector_Base {
@@ -112,7 +105,6 @@ namespace ATOOLS {
     bool     Trigger(const Vec4D * );
     void     BuildCuts(Cut_Data *);
     void     UpdateCuts(double,double,Cut_Data *);
-    double * ActualValue();
   };
 
   class Mass_Selector : public Selector_Base {
@@ -124,7 +116,6 @@ namespace ATOOLS {
     bool     Trigger(const Vec4D * );
     void     BuildCuts(Cut_Data *);
     void     UpdateCuts(double,double,Cut_Data *);
-    double * ActualValue();
   };
 
   class Summed_PT_Selector : public Selector_Base {
@@ -136,7 +127,6 @@ namespace ATOOLS {
     bool     Trigger(const Vec4D * );
     void     BuildCuts(Cut_Data *);
     void     UpdateCuts(double,double,Cut_Data *);
-    double * ActualValue();
   };
 }
 

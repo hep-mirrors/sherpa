@@ -158,24 +158,7 @@ void Primitive_Analysis::CallSubAnalysis(const Blob_List * const bl, double valu
     if (mode&ANALYSIS::splitt_extra)
       mode=m_mode^ANALYSIS::splitt_extra;
     mode=mode|ANALYSIS::output_this;
-    /*
-    MyStrStream str;
-    str<<'j';
-    str<<nout;
-    str>>key;
-    */
-    switch (nout) {
-    case 0 :
-    case 1 : key="j1"; break;
-    case 2 : key="j2"; break;
-    case 3 : key="j3"; break;
-    case 4 : key="j4"; break;
-    case 5 : key="j5"; break;
-    case 6 : key="j6"; break;
-    case 7 : key="j7"; break;
-    case 8 : key="j8"; break;
-    case 9 : key="j9"; break;
-    }
+    key="j"+ToString(nout);
   }
   else {
     mode=m_mode^ANALYSIS::splitt_process;
@@ -223,7 +206,6 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
   if (m_mode&ANALYSIS::weighted && m_mode&ANALYSIS::splitt_all) {
     m_mode=m_mode^(m_mode&ANALYSIS::fill_histos);
   }
-
   Init();
   double weight=(*p_partner)["ME_Weight"]->Get<double>();
   double procweight=1.;
@@ -257,7 +239,6 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
   m_stats.sum_weight_one += weight_one;
   m_stats.nevt_one       += ncount_one;
   
-
   // do nonsplittable (helper and legacy observables) first
   if (m_mode&ANALYSIS::fill_helper) {
     for (size_t i=0;i<m_observables.size();i++) {

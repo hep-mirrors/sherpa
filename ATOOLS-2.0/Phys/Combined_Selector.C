@@ -56,7 +56,7 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
 	  rmin=ycut;
 	}
 	{
-	  Jet_Finder * jf = new Jet_Finder(_nin+_nout,_fl,rmin,1,jettype);
+	  Jet_Finder * jf = new Jet_Finder(_nin+_nout,_fl,rmin,jettype);
 	  jf->SetDeltaR(rmax);
 	  sel = jf;
 	}

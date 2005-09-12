@@ -12,18 +12,88 @@
 using namespace ATOOLS;
 
 
+/*---------------------------------------------------------------------
+
+  General form - flavours etc are unknown, will operate on a Particle_List.
+
+  --------------------------------------------------------------------- */
+
+Jet_Finder::Jet_Finder(const double _ycut,const int _type,const bool _pt_def) : 
+  m_ycut(_ycut), m_delta_r(1.), m_type(_type) , m_pt_def(_pt_def),
+  m_value(0.), p_frame(NULL)
+{
+  m_name       = std::string("Jetfinder");
+  m_ene        = rpa.gen.Ecms()/2.;
+  m_sprime     = m_s = sqr(2.*m_ene); 
+  m_smin       = m_ycut * m_s;
+  m_smax       = m_s;
+  m_shower_pt2 = m_ycut * m_s;
+
+  m_sel_log    = new Selector_Log(m_name);
+}
+
+/*---------------------------------------------------------------------
+
+  Special form - flavours etc are known, will operate on momenta only.
+
+  --------------------------------------------------------------------- */
+
+
+Jet_Finder::Jet_Finder(const int _n,Flavour * _fl,const double _ycut,const int _type,const bool _pt_def) : 
+  m_ycut(_ycut), m_delta_r(1.), m_type(_type), m_pt_def(_pt_def),
+  m_value(0.), p_frame(NULL)
+{
+  m_name = std::string("Jetfinder");
+  m_fl   = _fl;
+  m_n    = _n;
+  if (m_type==0) { m_nin = 1; m_nout = _n-1; }
+            else { m_nin = 2; m_nout = _n-2; }
+
+  
+  p_frame = new Vec4D[m_nin];
+  if (m_nin==1) {
+    m_ene       = m_fl[0].Mass();
+    m_sprime    = m_s = sqr(m_ene); 
+    p_frame[0]  = Vec4D(m_ene,0.,0.,0.);
+    m_cms_boost = Poincare(p_frame[0]);
+  }
+  else if (m_nin==2) {
+    if((m_type>=3) || (m_type==1)) {
+      m_ene      = rpa.gen.Ecms()/2.;
+      m_sprime   = m_s = sqr(2.*m_ene); 
+      p_frame[0] = Vec4D(m_ene,0.,0., sqrt(sqr(m_ene)-sqr(m_fl[0].Mass())));
+      p_frame[1] = Vec4D(m_ene,0.,0.,-sqrt(sqr(m_ene)-sqr(m_fl[1].Mass())));
+      if (m_type==3) m_cms_boost = Poincare(p_frame[0]+p_frame[1]);
+    }    
+    else if (m_type==2) {
+      m_ene      = rpa.gen.Ecms()/2.;
+      m_sprime   = m_s = sqr(2.*m_ene);
+    }
+  }
+  
+  m_smin    = m_ycut * m_s;
+  m_smax    = m_s;
+  m_sel_log = new Selector_Log(m_name);
+}
+
 Jet_Finder::~Jet_Finder() {
   if (p_frame)   delete [] p_frame;
-  if (p_value)   delete [] p_value;
 }
+
+
+/*----------------------------------------------------------------------------------
+
+  Constructing jets, mainly for phase space cuts.
+
+  ----------------------------------------------------------------------------------*/
+
 
 void Jet_Finder::Init(const Vec4D * p)
 {
   PROFILE_HERE;
   if (m_nin==2) {
     switch (m_type) {
-    case 4 : 
-      return;
+    case 4 : return;
     case 3 : {
       msg.Error()<<"Jet_Finder::Init : process-type "<<m_type
 		 <<" not implemented yet !"<<std::endl;
@@ -31,27 +101,24 @@ void Jet_Finder::Init(const Vec4D * p)
     }
     case 2 : {
       //Initialize the Breit frame
-      int lepton=0;
+      int lepton(0);
       if (m_fl[0].Strong()) lepton=1;
-      int hadron=lepton==1?0:1;
-      
-      Vec4D q=p[lepton];
+      int hadron(lepton==1?0:1);
+      Vec4D q(p[lepton]);
             
       for (int i=m_nin;i<m_nin+m_nout;i++)
 	if (m_fl[i]==m_fl[lepton]) q-=p[i];
-      Vec4D store = q;
+      Vec4D store(q);
 
-      double x = -q.Abs2()/(2.*p[hadron]*q); 
-      Vec4D pp = 2.*x*p[hadron]+q;
-
-      double gamma = pp[0]/pp.Abs();
-      Vec3D eta    = Vec3D(pp)/pp.Abs();
+      double x(-q.Abs2()/(2.*p[hadron]*q)); 
+      Vec4D pp(2.*x*p[hadron]+q);
+      double gamma(pp[0]/pp.Abs());
+      Vec3D eta(Vec3D(pp)/pp.Abs());
       
       m_cms_boost = Poincare(Vec4D(gamma,eta));
       m_cms_boost.Boost(q);
-      m_zrot = Poincare(-1.*q,Vec4D::ZVEC);
+      m_zrot      = Poincare(-1.*q,Vec4D::ZVEC);
       m_zrot.Rotate(q);
-      
       BoostBack(q);
       
       //checks
@@ -59,7 +126,7 @@ void Jet_Finder::Init(const Vec4D * p)
 	msg.Error()<<" ERROR: Jet_Finder::Init could not initialize Breit frame correctly (1) : "
 		   <<dabs(q*pp)<<std::endl;
       
-      bool check = true;
+      bool check(true);
       for (int i=0;i<3;i++) 
 	if (dabs((q[i]-store[i]))>1.e10) check = false; 
       if (!check) msg.Error()<<" ERROR: Jet_Finder::Init could not initialize Breit frame correctly (2) : "
@@ -79,38 +146,7 @@ void Jet_Finder::Init(const Vec4D * p)
   }
 }
 
-double * Jet_Finder::ActualValue() {
-  return p_value; 
-}
-
-/*---------------------------------------------------------------------
-
-  General form - flavours etc are unknown, will operate on a Particle_List.
-
-  --------------------------------------------------------------------- */
-
-Jet_Finder::Jet_Finder(double _ycut,int _type=1) : 
-  m_ycut(_ycut), m_type(_type) , m_jet_alg(1), p_value(NULL), 
-  m_delta_r(1.), p_frame(NULL)
-{
-//   rpa.gen.SetYcut(_ycut);
-  m_ycut=1.0*m_ycut;
-
-  m_name    = std::string("Jetfinder");
-
-  m_ene     = rpa.gen.Ecms()/2.;
-  m_sprime  = m_s = sqr(2.*m_ene); 
-  m_smin    = m_ycut * m_s;
-  m_smax    = m_s;
-
-  m_shower_pt2 = _ycut * m_s;
-  p_value   = new double[1];
-
-  m_sel_log = new Selector_Log(m_name);
-}
-
-bool Jet_Finder::ConstructJets(Particle_List * pl, double y_res,
-			       int number, bool final_only) 
+bool Jet_Finder::ConstructJets(Particle_List * pl, double y_res,int number, bool final_only) 
 {
   PROFILE_HERE;
   std::vector<Vec4D>   momsout;
@@ -218,16 +254,6 @@ bool Jet_Finder::ConstructJets(Particle_List * pl, double y_res,
   return true;
 }
 
-bool Jet_Finder::ConstructJets(Particle_List * pl, double y_cut, bool final_only) 
-{
-  return ConstructJets(pl,y_cut,0,final_only);
-}
-
-bool Jet_Finder::ConstructJets(Particle_List * pl, int number, bool final_only) 
-{
-  return ConstructJets(pl,1.0,number,final_only);
-}
-
 bool Jet_Finder::ConstructJets(const Particle_List * parts,
 			       const std::vector<int> & jets,std::vector<double> & lastys,bool final_only) 
 {
@@ -331,8 +357,7 @@ bool Jet_Finder::ConstructJetSystem(Vec4D * momsin,Flavour * flavsin,std::vector
   return ordered;
 }
 
-double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> momsout,
-			   int & j1,int & k1)
+double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> momsout,int & j1,int & k1)
 {
   PROFILE_HERE;
   double ymin = 2.;
@@ -387,56 +412,6 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
 }
 
 
-/*---------------------------------------------------------------------
-
-  Special form - flavours etc are known, will operate on momenta only.
-
-  --------------------------------------------------------------------- */
-
-
-Jet_Finder::Jet_Finder(int _n,Flavour * _fl,double _ycut,int _jetalg,int _type) : 
-  m_ycut(_ycut), m_type(_type), m_jet_alg(_jetalg), p_value(NULL),
-  m_delta_r(1.),  p_frame(NULL) 
-{
-//   rpa.gen.SetYcut(_ycut);
-  m_ycut=1.0*m_ycut;
-
-  m_name = std::string("Jetfinder");
-  m_fl   = _fl;
-  m_n    = _n;
-  if (m_type==0) { m_nin = 1; m_nout = _n-1; }
-          else { m_nin = 2; m_nout = _n-2; }
-
-  
-  p_frame = new Vec4D[m_nin];
-  if (m_nin==1) {
-    m_ene        = m_fl[0].Mass();
-    m_sprime = m_s = sqr(m_ene); 
-    p_frame[0] = Vec4D(m_ene,0.,0.,0.);
-    m_cms_boost = Poincare(p_frame[0]);
-  }
-  if (m_nin==2) {
-    if((m_type>=3) || (m_type==1)) {
-      m_ene      = rpa.gen.Ecms()/2.;
-      m_sprime   = m_s = sqr(2.*m_ene); 
-      p_frame[0] = Vec4D(m_ene,0.,0., sqrt(sqr(m_ene)-sqr(m_fl[0].Mass())));
-      p_frame[1] = Vec4D(m_ene,0.,0.,-sqrt(sqr(m_ene)-sqr(m_fl[1].Mass())));
-    }    
-    if (m_type==3) m_cms_boost = Poincare(p_frame[0]+p_frame[1]);
-    if (m_type==2) {
-      m_ene      = rpa.gen.Ecms()/2.;
-      m_sprime   = m_s = sqr(2.*m_ene);
-    }
-  }
-  
-  m_smin = m_ycut * m_s;
-  m_smax = m_s;
-
-  p_value   = new double[1];
-
-  m_sel_log = new Selector_Log(m_name);
-}
-
 bool Jet_Finder::Trigger(const Vec4D * p)
 {
   PROFILE_HERE;
@@ -445,123 +420,16 @@ bool Jet_Finder::Trigger(const Vec4D * p)
   for (int i=0;i<m_nin+m_nout;i++) moms[i]=p[i];
 
   Init(moms);
-
   BoostInFrame(moms);
-  
   int    j,k;
-  bool   trigger = 1;
+  bool   trigger(true);
   double ymin=0.;
-
-  switch (m_jet_alg) {
-  case 1 : 
-    ymin = YminKt(moms,j,k); 
-    if (ymin < m_ycut) {
-      trigger = 0;
-    } 
-    break;
-  default : 
-    msg.Error()<<"No jet algorithm specified in Jet_Finder. return 0."<<std::endl;
-    trigger = 0;
-    break;
-  }
-  BoostBack(moms);
-
+  ymin = YminKt(moms,j,k); 
+  if (ymin < m_ycut) trigger = false;
   delete [] moms;
   
-  p_value[0] = ymin;
+  m_value = ymin;
   return (1-m_sel_log->Hit(1-trigger));
-}
-
-double Jet_Finder::MTij2(Vec4D p1,Vec4D p2)
-{
-  double mt12_2;
-  //check for DIS situation
-  if (m_type>=2) {
-    double pt1_2  = sqr(p1[1]) + sqr(p1[2]);
-    double mt1_2  = pt1_2 + dabs(p1.Abs2()); 
-    double pt2_2  = sqr(p2[1]) + sqr(p2[2]);
-    double mt2_2  = pt2_2 + dabs(p2.Abs2()); 
-    if (IsZero(pt1_2/(pt1_2+pt2_2))) {
-      mt12_2        = mt2_2;
-    }
-    else if (IsZero(pt2_2/(pt1_2+pt2_2))) {
-      mt12_2        = mt1_2;
-    }
-    else {
-      if (m_type==2) mt12_2 = 2.*Min(mt1_2,mt2_2) * (1.-DCos12(p1,p2));
-                else mt12_2 = 2.*Min(mt1_2,mt2_2) * (Coshyp(DEta12(p1,p2)) - CosDPhi12(p1,p2));
-    }
-  }
-  else 
-    mt12_2        = 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2));
-  
-  return mt12_2;
-}
-
-bool Jet_Finder::TwoJets(const Vec4D & p1) 
-{
-  if (m_type>=2) {
-    //    if (sqr(p1[1]) + sqr(p1[2])  < m_shower_pt2 ) return 0;
-    if (p1.MPerp2()  < m_shower_pt2 ) return 0;
-  }
-  else {
-    msg.Out()<<"WARNING in Jet_Finder::TwoJets(Vec4D &) "<<std::endl
-	     <<"    Still not implemented for mode "<<m_type<<std::endl;
-  }
-  return 1;
-}
-
-bool Jet_Finder::TwoJets(const Vec4D & _p1,const Vec4D & _p2)
-{
-  Vec4D p1=_p1;
-  Vec4D p2=_p2;
-
-  BoostInFrame(p1);
-  BoostInFrame(p2);
-
-  if (m_type>=2) {
-    double pt1_2  = p1.MPerp2();//sqr(p1[1]) + sqr(p1[2]); 
-    double pt2_2  = p2.MPerp2();//sqr(p2[1]) + sqr(p2[2]); 
-    if (pt1_2  < m_shower_pt2 ) return 0;
-    if (pt2_2  < m_shower_pt2 ) return 0;
-    double pt12_2;
-    
-    if (m_type==2) pt12_2 = 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2));
-      else pt12_2 = 2.*Min(pt1_2,pt2_2) * (Coshyp(DEta12(p1,p2)) - CosDPhi12(p1,p2));
-    
-    if (m_delta_r!=0.) {
-      pt12_2/=sqr(m_delta_r);
-      if (pt12_2 < m_shower_pt2 ) return 0;
-    }
-  }
-  else {
-    double pt12_2 = 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2));
-    if (pt12_2 < m_shower_pt2 ) return 0;
-  }
-
-  BoostBack(p1);
-  BoostBack(p2);
-  return 1;
-}
-
-
-bool Jet_Finder::TwoJets(double & E2,double & z,double & costheta,bool mode)
-{
-  double pt12_2;
-  if (mode == 1) {
-    pt12_2 = -1000.;
-    msg.Out()<<"WARNING in Jet_Finder::TwoJets(Vec4D &) "<<std::endl
-	     <<"    Still not implemented for mode "<<m_type<<std::endl;
-  }
-  else {
-    pt12_2 = 2.*E2*sqr(Min(z,1.- z))*(1.-costheta);
-    if (m_delta_r!=0.) {
-      pt12_2/=sqr(m_delta_r);
-    
-      if (pt12_2 < m_shower_pt2 ) return 0;
-    }
-  }
-  return 1;
 }
 
 void Jet_Finder::BuildCuts(Cut_Data * cuts) 
@@ -654,7 +522,7 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1)
 	                       else k1 = 1;
 	} 
 	for (int k=j+1;k<m_n;k++) {
-	  if (m_fl[k].Strong() && m_delta_r!=0.) {
+	  if (m_fl[k].Strong()) {
 	    pt2k  = (sqr(p[k][1]) + sqr(p[k][2]));
 	    pt2jk = 2.*Min(pt2j,pt2k) * (Coshyp(DEta12(p[j],p[k])) - CosDPhi12(p[j],p[k]))/sqr(m_delta_r);
 	    if (pt2jk<ymin*m_s) {
@@ -686,6 +554,105 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1)
   return ymin;
 }
 
+/*----------------------------------------------------------------------------------
+
+  Jet measure, mainly for showering and merging
+
+  ----------------------------------------------------------------------------------*/
+
+double Jet_Finder::MTij2(Vec4D p1,Vec4D p2)
+{
+  double mt12_2(0.);
+  //check for DIS situation
+  if (m_type>=2) {
+    double pt1_2(p1.PPerp2()), mt1_2(pt1_2);
+    double pt2_2(p2.PPerp2()), mt2_2(pt2_2);
+    if (!m_pt_def) { 
+      mt1_2 = pt1_2+dabs(p1.Abs2());
+      mt2_2 = pt2_2+dabs(p2.Abs2());
+    }
+    if (IsZero(pt1_2/(pt1_2+pt2_2)) || IsZero(pt2_2/(pt1_2+pt2_2))) return mt1_2+mt2_2;
+    else {
+      if (m_type==2) mt12_2 = 2.*Min(mt1_2,mt2_2) * (1.-DCos12(p1,p2))/sqr(m_delta_r);
+                else mt12_2 = 2.*Min(mt1_2,mt2_2) * 
+		       (Coshyp(DEta12(p1,p2)) - CosDPhi12(p1,p2))/sqr(m_delta_r);
+    }
+  }
+  else mt12_2               = 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2));
+  return mt12_2;
+}
+
+bool Jet_Finder::TwoJets(const Vec4D & p1,const bool fix) 
+{
+  double crit = fix ? m_smin : m_shower_pt2;
+  if (m_type>=2) {
+    if (m_pt_def) { if(p1.PPerp2() < crit ) return false; }
+             else { if(p1.MPerp2() < crit ) return false; }
+  }
+  else {
+    msg.Out()<<"WARNING in Jet_Finder::TwoJets(Vec4D &) "<<std::endl
+	     <<"    Still not implemented for mode "<<m_type<<std::endl;
+  }
+  return true;
+}
+
+
+/*----------------------------------------------------------------------------------
+
+  Used in showers.
+
+  ----------------------------------------------------------------------------------*/
+
+
+
+bool Jet_Finder::TwoJets(const Vec4D & _p1,const Vec4D & _p2,const bool fix)
+{
+  Vec4D p1=_p1;
+  Vec4D p2=_p2;
+
+  BoostInFrame(p1);
+  BoostInFrame(p2);
+
+  double pt1_2(0.), pt2_2(0.), pt12_2(0.);
+  double crit = fix ? m_smin : m_shower_pt2;
+
+  if (m_type>=2) {
+    if (m_pt_def) { pt1_2  = p1.PPerp2(); pt2_2  = p2.PPerp2(); }
+             else { pt1_2  = p1.MPerp2(); pt2_2  = p2.MPerp2(); }
+    if (pt1_2  < crit || pt2_2  < crit ) return 0;
+    
+    if (m_type==2) pt12_2 = 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2))/sqr(m_delta_r);
+              else pt12_2 = 2.*Min(pt1_2,pt2_2) * (Coshyp(DEta12(p1,p2)) - CosDPhi12(p1,p2))/sqr(m_delta_r);
+  }
+  else {
+    pt12_2 = 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2));
+
+  //   std::cout<<" --- Jetfinder ee mode : "<<pt12_2<<" "<<m_shower_pt2<<" --- ";
+  }
+  if (pt12_2 < crit ) return 0;
+  return 1;
+}
+
+
+bool Jet_Finder::TwoJets(double & E2,double & z,double & costheta,bool mode)
+{
+  double pt12_2(0.);
+  if (mode == 1) {
+    pt12_2 = -1000.;
+    msg.Out()<<"WARNING in Jet_Finder::TwoJets(Vec4D &) "<<std::endl
+	     <<"    Still not implemented for mode "<<m_type<<std::endl;
+  }
+  else pt12_2 = 2.*E2*sqr(Min(z,1.- z))*(1.-costheta)/sqr(m_delta_r);
+
+  if (pt12_2 < m_shower_pt2 ) return 0;
+  return 1;
+}
+
+/*----------------------------------------------------------------------------------
+
+  Utilities
+
+  ----------------------------------------------------------------------------------*/
 double Jet_Finder::DEta12(Vec4D & p1,Vec4D & p2)
 {
   // eta1,2 = -log(tan(theta_1,2)/2)   
@@ -759,5 +726,15 @@ void Jet_Finder::BoostBack(Vec4D & p)
 
 void Jet_Finder::SetDeltaR(double dr) 
 { 
+  if (dr<=1.e-6) {
+    msg.Error()<<"ERROR in Jet_Finder::SetDeltaR("<<dr<<") : "<<std::endl
+	       <<"   delta_R to small, will ignore it and leave it at delta_R ="<<m_delta_r<<"."<<std::endl;
+    return;
+  }
   m_delta_r = dr; 
+}
+
+double Jet_Finder::ActualValue() const 
+{
+  return m_value; 
 }

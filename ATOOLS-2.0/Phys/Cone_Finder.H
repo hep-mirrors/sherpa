@@ -8,7 +8,7 @@
 namespace ATOOLS {
   class Cone_Finder : public Selector_Base {
     double m_rcone;
-    double * m_value;
+    double m_value;
         
     double Rmin(Vec4D *);
 
@@ -22,8 +22,7 @@ namespace ATOOLS {
     void   BuildCuts(Cut_Data *);
     void   UpdateCuts(double,double,Cut_Data *);
     int    IsConditional() { return 1; }
-    double * ActualValue();
-
+    double ActualValue() const { return m_value; }
   };
 }
 

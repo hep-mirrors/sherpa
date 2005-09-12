@@ -7,14 +7,13 @@
 
 namespace ATOOLS {
   class Jet_Finder : public Selector_Base {
-    double m_ycut;
-    int    m_type,m_jet_alg;
-    double * p_value;
+    double m_ycut,m_delta_r;
+    int    m_type;
+    bool   m_pt_def;
     double m_ene, m_s, m_sprime; //, m_smin, m_smax;
 
-    double m_shower_pt2;
+    double m_shower_pt2,m_value;
 
-    double m_delta_r;
 
     /*
       The vectors related to the frame
@@ -34,8 +33,8 @@ namespace ATOOLS {
 			    std::vector<int> jets,std::vector<double> & lastys);
 
     double YminKt(Vec4D *,int &,int &);
-    double YminKt(Vec4D *,Flavour *,
-		   std::vector<Vec4D>,int &,int &);
+    double YminKt(Vec4D *,Flavour *,std::vector<Vec4D>,int &,int &);
+    double Yij(Vec4D,Vec4D);
 
     double DEta12(Vec4D &,Vec4D &);
     double CosDPhi12(Vec4D &,Vec4D &);
@@ -43,42 +42,52 @@ namespace ATOOLS {
     double Coshyp(double);
     bool   ConstructJets(Particle_List *, double, int, bool );
   public:
-    Jet_Finder(double,int);
-    Jet_Finder(int,Flavour *,double,int,int);
+    Jet_Finder(const double,const int=1,const bool=true);
+    Jet_Finder(const int,Flavour *,const double,const int,const bool=true);
 
     ~Jet_Finder();
 
     void   Init(const Vec4D *);
     bool   ConstructJets(const Particle_List *,
 			 const std::vector<int> &,std::vector<double> & ,bool);
-
     bool   ConstructJets(Particle_List *, double, bool );
     bool   ConstructJets(Particle_List *, int, bool );
 
+
     bool   Trigger(const Vec4D *);
 
-    bool   TwoJets(const Vec4D &);
-    bool   TwoJets(const Vec4D &, const Vec4D &);
+    bool   TwoJets(const Vec4D &,const bool=false);
+    bool   TwoJets(const Vec4D &, const Vec4D &,const bool=false);
     bool   TwoJets(double &,double &,double &,bool);
     double MTij2(Vec4D,Vec4D);
-    double Yij(Vec4D,Vec4D);
     void   BuildCuts(Cut_Data *);
     void   UpdateCuts(double,double,Cut_Data *);
-    double * ActualValue();
 
-    int      IsConditional() { return m_type==1; }
-    int      NeedUpdate()    { return m_type==1; }
+    double   ActualValue() const;
 
-    double ShowerPt2() const { return m_shower_pt2; }
-    void SetShowerPt2(const double pt2) { m_shower_pt2=pt2; }
-    double Smin() { return m_smin; }
-    double Smax() { return m_smax; }
+    inline void SetType(const int mode) { m_type=mode;   }
+    inline int  Type() const            { return m_type; }
 
-
-    void SetDeltaR(double dr);
-    double DeltaR() { return m_delta_r; }
-    double Ycut() { return m_ycut; }
+    int      IsConditional()                const { return m_type==1; }
+    int      NeedUpdate()                   const { return m_type==1; }
+    double   ShowerPt2()                    const { return m_shower_pt2; }
+    double   Smin()                         const { return m_smin; }
+    double   Smax()                         const { return m_smax; }
+    double   DeltaR()                       const { return m_delta_r; }
+    double   Ycut()                         const { return m_ycut; }
+    void     SetShowerPt2(const double pt2)       { m_shower_pt2=pt2; }
+    void     SetDeltaR(double dr);
   };
+
+  inline bool Jet_Finder::ConstructJets(Particle_List * pl, double y_cut, bool final_only) { 
+    return ConstructJets(pl,y_cut,0,final_only); 
+  }
+  inline bool Jet_Finder::ConstructJets(Particle_List * pl, int number, bool final_only) { 
+    return ConstructJets(pl,1.0,number,final_only); 
+  }
+
+
+
 
 
 

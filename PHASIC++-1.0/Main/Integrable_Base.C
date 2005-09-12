@@ -4,6 +4,7 @@
 
 #include "Run_Parameter.H"
 #include "Combined_Selector.H"
+#include "Jet_Finder.H"
 #include "Phase_Space_Handler.H"
 #include "Regulator_Base.H"
 #include "Running_AlphaS.H"
@@ -398,20 +399,16 @@ double Integrable_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
       pt2 =  ATOOLS::Min(pt2,ATOOLS::sqr(momenta[i][1])+ATOOLS::sqr(momenta[i][2]));
     }
     break;
-  case 65:
-    {
+  case 65: {
     double ycut = ATOOLS::rpa.gen.Ycut();
     m_scale[stp::fac] = ATOOLS::rpa.gen.FactorizationScaleFactor()*ycut*ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
-//     std::cout<<"CalculateScale: "<<m_scale[stp::fac]<<std::endl;
     pt2 = m_scale[stp::fac];
-
+      
     double y=2.;
     if (p_selector->Name()=="Combined_Selector") {
-      ATOOLS::Selector_Base * jf = 
+      ATOOLS::Jet_Finder * jf = (ATOOLS::Jet_Finder *)
 	((ATOOLS::Combined_Selector*)p_selector)->GetSelector("Jetfinder");
-      if (jf) {
-	y=jf->ActualValue()[0];
-      }
+      if (jf) y=jf->ActualValue();
       else {
 	ATOOLS::msg.Out()<<"WARNING in Process_Base::Scale : "<<std::endl
 			 <<"   No jetfinder found, cannot use SCALESCHEME=="<<m_scalescheme<<"."
@@ -419,26 +416,19 @@ double Integrable_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
 	pt2 = ATOOLS::rpa.gen.FactorizationScaleFactor()*s;
       }
     }
-
+    
     // if highest number of jets
     if ((int)m_nout==m_maxjetnumber) {
-      if (y==2.) {
-	pt2 = ATOOLS::rpa.gen.FactorizationScaleFactor()*s;
-      }
-      else {
-	pt2 = ATOOLS::rpa.gen.FactorizationScaleFactor()*y*ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
-      }
+      if (y==2.) pt2 = ATOOLS::rpa.gen.FactorizationScaleFactor()*s;
+      else pt2 = ATOOLS::rpa.gen.FactorizationScaleFactor()*y*ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
     }
     else {
       // tanju two scale treatment
       pt2 = ATOOLS::rpa.gen.FactorizationScaleFactor()*y*ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
-      if (m_scale[stp::fac]<pt2) {
-	pt2 = m_scale[stp::fac];
-      }
+      if (m_scale[stp::fac]<pt2) pt2 = m_scale[stp::fac];
     }
-//    std::cout<<m_nout<<" pt2="<<pt2<<" y="<<y*ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())<<std::endl;
-     }
     break;
+  }
   case 101: {// pp->V scheme
     double M2=0.;
     if (m_resonances.size()>0) {
@@ -487,8 +477,8 @@ double Integrable_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
   case 104: {// g*g*->gg scheme
     const ATOOLS::Vec4D *p=momenta;
     ATOOLS::Vec4D p2=p[m_nin], p3=p[m_nin+m_nout-1];
-     if (p2.PMinus()/p2.PPlus()>p3.PMinus()/p3.PPlus())
-       std::swap<ATOOLS::Vec4D>(p2,p3);
+    if (p2.PMinus()/p2.PPlus()>p3.PMinus()/p3.PPlus())
+      std::swap<ATOOLS::Vec4D>(p2,p3);
     double S2=p[m_nin+m_nout]*p[m_nin+m_nout+1];
     double a1=p[m_nin+m_nout+1]*p[0]/S2;
     double b2=p[m_nin+m_nout]*p[1]/S2;
@@ -520,9 +510,9 @@ double Integrable_Base::KFactor(const double scale)
       return m_rfactor;
   case 65:
     m_scale[stp::fac]=scale;
-//     std::cout<<Name()<<" : "<<m_nstrong<<std::endl;
-//     std::cout<<"as:  Q_F^2 = "<<m_scale[stp::fac]<<std::endl;
-//     std::cout<<"as:  Q_R^2 = "<<m_scale[stp::as]<<std::endl;
+    msg_Debugging()<<Name()<<" : "<<m_nstrong<<std::endl;
+    msg_Debugging()<<"  Q_F^2 = "<<m_scale[stp::fac]<<std::endl;
+    msg_Debugging()<<"  Q_R^2 = "<<m_scale[stp::as]<<std::endl;
     if (m_nstrong>2) {
       return m_rfactor*pow(MODEL::as->AlphaS(m_scale[stp::as])/
 			   MODEL::as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),m_nstrong-2);

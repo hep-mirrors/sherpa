@@ -22,12 +22,6 @@ void Selector_Base::Add(Selector_Base *) {
   msg.Error()<<"Selector_Base::Add : Virtual method."<<std::endl;
 }
 
-double * Selector_Base::ActualValue() {
-  msg.Error()<<"Selector_Base::ActualValue :"
-	     <<m_name<<" Virtual method."<<std::endl;
-  return 0;
-}
-
 void Selector_Base::BuildCuts(Cut_Data *) { 
   msg.Error()<<"Selector_Base::BuildCuts : Virtual method."<<std::endl;
 }
@@ -49,6 +43,11 @@ bool Selector_Base::GetValue(const std::string &name,double &value)
   msg.Error()<<"Selector_Base::GetValue("<<name<<",..): "
 	     <<"Virtual method called."<<std::endl;
   return false;
+}
+
+double Selector_Base::ActualValue() const
+{ 
+  return 2.; 
 }
 
 int    Selector_Base::NeedUpdate()                         { return 0; }

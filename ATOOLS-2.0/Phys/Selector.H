@@ -50,7 +50,6 @@ namespace ATOOLS {
     virtual ~Selector_Base();
     virtual bool Trigger(const Vec4D *) = 0;
     virtual void Add(Selector_Base *);
-    virtual double * ActualValue();
     virtual void BuildCuts(Cut_Data *);
     virtual void UpdateCuts(double,double,Cut_Data *);
     virtual void   SetRange(std::vector<Flavour>,double,double);
@@ -63,6 +62,7 @@ namespace ATOOLS {
     virtual int    IsConditional();
     virtual void   SetSRange(double _smin,double _smax);
     virtual void   SetName(std::string _name);    
+    virtual double ActualValue() const;
     //virtual double Smin();
     //virtual double Smax(); 
     virtual std::string Name(); 

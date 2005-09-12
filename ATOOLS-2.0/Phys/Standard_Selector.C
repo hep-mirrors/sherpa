@@ -47,8 +47,6 @@ bool Energy_Selector::Trigger(const Vec4D * mom)
   return 1;
 }
 
-double * Energy_Selector::ActualValue() { return value; }
-
 void Energy_Selector::BuildCuts(Cut_Data * cuts) 
 {
   for (int i=0;i<m_n;i++) {
@@ -123,8 +121,6 @@ bool ET_Selector::Trigger(const Vec4D * mom)
   return 1;
 }
 
-double * ET_Selector::ActualValue() { return value; }
-
 void ET_Selector::BuildCuts(Cut_Data * cuts) 
 {
   for (int i=m_nin;i<m_n;i++) {
@@ -198,8 +194,6 @@ bool PT_Selector::Trigger(const Vec4D * mom)
   }
   return 1;
 }
-
-double * PT_Selector::ActualValue() { return value; }
 
 void PT_Selector::BuildCuts(Cut_Data * cuts) 
 {
@@ -283,8 +277,6 @@ bool BFKL_PT_Selector::Trigger(const Vec4D * mom)
   return 1;
 }
 
-double * BFKL_PT_Selector::ActualValue() { return value; }
-
 void BFKL_PT_Selector::BuildCuts(Cut_Data * cuts) 
 {
 }
@@ -356,11 +348,6 @@ bool X_Selector::Trigger(const Vec4D * mom)
   return true;
 }
 
-double *X_Selector::ActualValue() 
-{ 
-  return value; 
-}
-
 void X_Selector::BuildCuts(Cut_Data *cuts) 
 {
   cuts->energymin[0]=Max(cuts->energymin[0],
@@ -429,8 +416,6 @@ bool Rapidity_Selector::Trigger(const Vec4D * mom)
   }
   return 1;
 }
-
-double * Rapidity_Selector::ActualValue() { return value; }
 
 void Rapidity_Selector::BuildCuts(Cut_Data * cuts) 
 {
@@ -524,8 +509,6 @@ bool PseudoRapidity_Selector::Trigger(const Vec4D * mom)
   return 1;
 }
 
-double * PseudoRapidity_Selector::ActualValue() { return value; }
-
 void PseudoRapidity_Selector::BuildCuts(Cut_Data * cuts) 
 {
   for (int i=m_nin;i<m_n;i++) {
@@ -609,8 +592,6 @@ bool Angle_Selector::Trigger(const Vec4D * mom)
   }
   return 1;
 }
-
-double * Angle_Selector::ActualValue() { return value; }
 
 void Angle_Selector::BuildCuts(Cut_Data * cuts) 
 {
@@ -731,8 +712,6 @@ bool Mass_Selector::Trigger(const Vec4D * mom)
   return 1;
 }
 
-double * Mass_Selector::ActualValue() { return value; }
-
 void Mass_Selector::BuildCuts(Cut_Data * cuts) 
 {
   for (int i=0;i<m_n-1;i++) {
@@ -821,8 +800,6 @@ bool Summed_PT_Selector::Trigger(const Vec4D * mom)
   }
   return 1;
 }
-
-double * Summed_PT_Selector::ActualValue() { return NULL; }
 
 void Summed_PT_Selector::BuildCuts(Cut_Data * cuts) 
 {

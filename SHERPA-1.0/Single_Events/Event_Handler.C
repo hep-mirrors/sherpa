@@ -109,7 +109,6 @@ bool Event_Handler::GenerateEvent(int mode)
       ATOOLS::ran.SaveStatus();
       hardblob = new Blob();
       hardblob->SetType(btp::Signal_Process);
-      hardblob->SetStatus(-1);
       hardblob->SetId();
       hardblob->SetStatus(2);
       m_blobs.push_back(hardblob);

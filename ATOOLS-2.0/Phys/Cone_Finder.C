@@ -11,23 +11,16 @@ void Cone_Finder::Init(const Vec4D * p)
   //think about lepton-lepton collisions
 }
 
-double * Cone_Finder::ActualValue() { 
-  return m_value; 
-}
-
 Cone_Finder::Cone_Finder(int _n,Flavour * _fl,double _rcone) : 
-  m_rcone(_rcone)
+  m_rcone(_rcone), m_value(0.)
 {
-  m_name    = std::string("Conefinder");
+  m_name = std::string("Conefinder");
  
-  m_n       = _n;
-  m_nin     = 2; 
-  m_nout    = m_n-2; 
-
+  m_n    = _n;
+  m_nin  = 2; 
+  m_nout = m_n-2; 
   m_smin = 0.;
   m_fl   = _fl;
-  
-  m_value   = new double[1];
   
   m_sel_log = new Selector_Log(m_name);
 }
@@ -66,7 +59,7 @@ bool Cone_Finder::Trigger(const Vec4D * p)
 
   delete [] moms;
     
-  m_value[0] = rmin;
+  m_value = rmin;
   
   return (1-m_sel_log->Hit(1-trigger));
 }
