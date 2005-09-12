@@ -12,9 +12,7 @@
 #include "Model_Base.H"
 #include "XS_Selector.H"
 #include "Regulator_Base.H"
-#ifdef SHERPA_SUPPORT
 #include "Remnant_Base.H"
-#endif
 #include "Phase_Space_Handler.H"
 
 using namespace EXTRAXS;
@@ -246,7 +244,6 @@ XS_Group *Simple_XS::FindPDFGroup(const size_t nin,const size_t nout,
 				  XS_Group *const container)
 {
   if (p_remnants[0]==NULL || p_remnants[1]==NULL) return container;
-#ifdef SHERPA_SUPPORT
   for (size_t i=0;i<container->Size();++i) {
     if (nin==2 && nout==(*container)[i]->NOut()) {
       ATOOLS::Flavour ref[2], test[2];
@@ -271,9 +268,6 @@ XS_Group *Simple_XS::FindPDFGroup(const size_t nin,const size_t nout,
   container->SetAtoms(1);
   delete [] copy;
   return newgroup;
-#else 
-  return 0;
-#endif
 }
 
 int Simple_XS::ExtractFlavours(ATOOLS::Flavour *&flavours,std::string buffer)
