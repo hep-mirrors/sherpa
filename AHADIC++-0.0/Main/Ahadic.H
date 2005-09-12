@@ -1,3 +1,5 @@
+#include "CXXFLAGS.H"
+
 #ifndef USING__Ahadic
 #define USING__Ahadic
 #endif

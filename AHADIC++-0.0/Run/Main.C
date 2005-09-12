@@ -33,7 +33,8 @@ int main(int argc,char* argv[])
   PDF::ISR_Handler  * isr       = new PDF::ISR_Handler(isrbases);
 
   Data_Read         * dataread  = new Data_Read(string("./")+string("Shower.dat"));
-  APACIC::Apacic    * apacic    = new APACIC::Apacic(isr,model,2,false,true,dataread);
+  Jet_Finder jf(rpa.gen.Ycut(),1,false);
+  APACIC::Apacic    * apacic    = new APACIC::Apacic(isr,model,&jf,dataread);
   delete dataread;
 
   APACIC::Tree      * tree      = apacic->FinTree();
@@ -114,7 +115,7 @@ int main(int argc,char* argv[])
     blobs->push_back(blob);
     blob->AddToInParticles(new Particle((*mo->part)));
 
-    if (apacic->PerformShowers(false,true,0,0,1.,1.,1.)) {
+    if (apacic->PerformShowers(false,true,1.,1.,1.)) {
       apacic->ExtractPartons(false,true,blobs,particles);
       ahadic->Hadronize(blobs);
     }
