@@ -66,6 +66,7 @@ namespace ADICIC {
     };
 
     class Gate {
+			friend class Dipole;
       friend class Dipole_Particle;
       Gate() {}
       ~Gate() {}
@@ -188,8 +189,10 @@ namespace ADICIC {
 
   class Dipole_Particle {
 
-    friend std::list<Dipole*>& Dipole::AccessTopBranch() const;
-    friend std::list<Dipole*>& Dipole::AccessBotBranch() const;
+		friend class Dipole;
+		
+//    friend std::list<Dipole*>& Dipole::AccessTopBranch() const;
+//    friend std::list<Dipole*>& Dipole::AccessBotBranch() const;
 
   private:
 

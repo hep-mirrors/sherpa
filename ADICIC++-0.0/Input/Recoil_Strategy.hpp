@@ -85,7 +85,7 @@ namespace ADICIC {
 
 
 
-  };    //eo namespace Recoil_Strategy
+  }    //eo namespace Recoil_Strategy
 
 
 

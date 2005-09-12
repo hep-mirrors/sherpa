@@ -52,7 +52,7 @@ namespace ADICIC {
 
 
 
-  };    //eo namespace Chain_Evolution_Strategy
+  }    //eo namespace Chain_Evolution_Strategy
 
 
 

@@ -646,14 +646,14 @@ int main() {
     cout<<"Branch_Pointer test 1 ? 0=="<<bool(test)<<endl;
     Dipole::Particle_Pointer test2;
     cout<<"Branch_Pointer test 2 ? 1=="<<(test==test2)<<endl;
-    cout<<"Branch_Pointer test 3 ? 0=="
+/*    cout<<"Branch_Pointer test 3 ? 0=="
 	<<(test==D1.GetTopBranchPointer())<<endl;
     cout<<"Branch_Pointer test 4 ? 1=="
 	<<(D1.GetTopBranchPointer()==D2.GetTopBranchPointer())<<endl;
     cout<<"Branch_Pointer test 5 ? 0=="
-	<<(D1.GetTopBranchPointer()==D3.GetTopBranchPointer())<<endl;
+	<<(D1.GetTopBranchPointer()==D3.GetTopBranchPointer())<<endl; */
 
-    cout<<(D1.GetTopBranchPointer()==D3.GetBotBranchPointer())<<endl;
+//    cout<<(D1.GetTopBranchPointer()==D3.GetBotBranchPointer())<<endl;
 
     //Dipole::Particle_Pointer tt=D2.GetTopBranchPointer();
     //Dipole::Particle_Pointer tl=D2.GetBotBranchPointer();

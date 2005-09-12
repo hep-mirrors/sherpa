@@ -59,7 +59,7 @@ namespace ADICIC {
 
 
 
-  };    //eo namespace Sudakov_Strategy
+  }    //eo namespace Sudakov_Strategy
 
 
 

@@ -431,8 +431,8 @@ Expression *Expression::GetCopy() const
 {
   Expression *expression(new Expression());
   expression->resize(size(),NULL);
-  size_t size(size());
-  for (size_t i(0);i<size;++i) 
+  size_t esize(size());
+  for (size_t i(0);i<esize;++i) 
     (*expression)[i] = (*this)[i]->GetCopy();
   expression->m_findex=m_findex;
   expression->m_aindex=m_aindex;

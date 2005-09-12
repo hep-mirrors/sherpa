@@ -377,7 +377,7 @@ namespace ADICIC {
     double zmax=m_sgroup.Ymax();
     double corr=
       Sudakov_Calculator::AlphaSCorr(m_sgroup.Sdip()*x2t) *
-      ( sqr(xa+xb-1.0)+bool(m_split-1)*sqr(1-xb)+bool(m_split+1)*sqr(1-xa) ) *
+      ( ATOOLS::sqr(xa+xb-1.0)+bool(m_split-1)*ATOOLS::sqr(1-xb)+bool(m_split+1)*ATOOLS::sqr(1-xa) ) *
       sqrt(x2t)*(zmax-1.0/zmax);
     if(Sudakov_Calculator::Ariadne) corr/=(2.0*sqrt(m_sgroup.Sdip()));
     return corr;

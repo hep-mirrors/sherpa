@@ -43,10 +43,25 @@ template struct Sudakov_Info<Dipole::gg,Radiation::quark>;
 
 
 
-template<Dipole::Type D> const Radiation::Group
-Sudakov_Info<D,Radiation::gluon>::Radiationgroup=Radiation::gluon;
-template<Dipole::Type D> const Radiation::Group
-Sudakov_Info<D,Radiation::quark>::Radiationgroup=Radiation::quark;
+//template<Dipole::Type D> const Radiation::Group
+//Sudakov_Info<D,Radiation::gluon>::Radiationgroup=Radiation::gluon;
+//template<Dipole::Type D> const Radiation::Group
+//Sudakov_Info<D,Radiation::quark>::Radiationgroup=Radiation::quark;
+template<> const Radiation::Group
+Sudakov_Info<Dipole::qqbar,Radiation::gluon>::Radiationgroup=Radiation::gluon;
+template<> const Radiation::Group
+Sudakov_Info<Dipole::qg,Radiation::gluon>::Radiationgroup=Radiation::gluon;
+template<> const Radiation::Group
+Sudakov_Info<Dipole::gqbar,Radiation::gluon>::Radiationgroup=Radiation::gluon;
+template<> const Radiation::Group
+Sudakov_Info<Dipole::gg,Radiation::gluon>::Radiationgroup=Radiation::gluon;
+
+template<> const Radiation::Group
+Sudakov_Info<Dipole::qg,Radiation::quark>::Radiationgroup=Radiation::quark;
+template<> const Radiation::Group
+Sudakov_Info<Dipole::gqbar,Radiation::quark>::Radiationgroup=Radiation::quark;
+template<> const Radiation::Group
+Sudakov_Info<Dipole::gg,Radiation::quark>::Radiationgroup=Radiation::quark;
 
 
 
