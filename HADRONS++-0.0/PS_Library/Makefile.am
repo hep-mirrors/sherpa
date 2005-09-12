@@ -24,6 +24,6 @@ INCLUDES = \
 	-I../../PHASIC++-1.0/Main \
 	-I../../ATOOLS-2.0/Phys \
 	-I../../ATOOLS-2.0/Math \
-	-I../../ATOOLS-2.0/Org \ 
+	-I../../ATOOLS-2.0/Org \
 	-I../../MODEL-1.0/Main
 EXTRA_DIST    = $(CVSINCLUDE)
