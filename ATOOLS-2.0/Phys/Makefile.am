@@ -9,12 +9,6 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-if MODEL_INCLUDE
-MODELFLAGS    =
-else
-MODELFLAGS    = -DUSING__ATOOLS_only
-endif
-
 lib_LTLIBRARIES       =	libToolsPhys.la
 libToolsPhys_la_SOURCES       =	\
 				Flavour.C \
@@ -68,5 +62,5 @@ noinst_HEADERS        =	\
 			Event.H \
 			Color.H
 EXTRA_DIST    = $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(MODELFLAGS) $(ATOOLSFLAGS)
+AM_CXXFLAGS   =	$(ATOOLSFLAGS)
 INCLUDES      = $(MODELINCS) $(ATOOLSINCS)

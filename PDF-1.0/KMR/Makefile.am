@@ -14,7 +14,7 @@ endif
 
 if ROOT_SUPPORT
 ROOTINCS      =	-I$(ROOTSYS)/include
-ROOTFLAGS     = -DROOT_SUPPORT -Wno-long-long
+ROOTFLAGS     = -Wno-long-long
 endif
 
 lib_LTLIBRARIES       = libDUPDF.la

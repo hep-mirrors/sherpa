@@ -9,12 +9,6 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-if MODEL_INCLUDE
-MODELFLAGS    =
-else
-MODELFLAGS    = -DUSING__ATOOLS_only
-endif
-
 lib_LTLIBRARIES       =	libToolsMath.la
 libToolsMath_la_SOURCES       =	\
 				MathTools.C \
@@ -53,5 +47,5 @@ noinst_HEADERS        =	\
 			Primitive_Integrator.H \
 			Algebra_Interpreter.H
 EXTRA_DIST    = $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(MODELFLAGS) $(ATOOLSFLAGS)
+AM_CXXFLAGS   =	$(ATOOLSFLAGS)
 INCLUDES      = $(MODELINCS) $(ATOOLSINCS)

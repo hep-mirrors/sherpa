@@ -14,10 +14,6 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-if LHAPDF_SUPPORT
-LHAPDFFLAGS      = -DLHAPDF_SUPPORT
-endif
-
 lib_LTLIBRARIES       =	libPDF.la
 libPDF_la_SOURCES     =	\
 		    	PDF_Base.C \
@@ -39,7 +35,7 @@ noinst_HEADERS        =	\
 			ISR_Info.H \
 		 	ISR_Handler.H 
 EXTRA_DIST    = $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(PDFFLAGS) $(LHAPDFFLAGS)
+AM_CXXFLAGS   =	$(PDFFLAGS)
 INCLUDES      =	$(SHERPAINCS) $(APACICINCS) $(PDFINCS) \
 		$(MODELINCS) $(BEAMINCS) $(ATOOLSINCS)
 

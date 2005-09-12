@@ -9,15 +9,9 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-if MODEL_INCLUDE
-MODELFLAGS    =
-else
-MODELFLAGS    = -DUSING__ATOOLS_only
-endif
-
 if ROOT_SUPPORT
 ROOTINCS      =	-I$(ROOTSYS)/include
-ROOTFLAGS     = -DROOT_SUPPORT -Wno-long-long
+ROOTFLAGS     = -Wno-long-long
 endif
 
 lib_LTLIBRARIES = libToolsOrg.la
@@ -83,5 +77,5 @@ noinst_HEADERS        =	\
 			Node.C \
 			My_Root.H
 EXTRA_DIST    = $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(MODELFLAGS) $(ATOOLSFLAGS) $(ROOTFLAGS)
+AM_CXXFLAGS   =	$(ATOOLSFLAGS) $(ROOTFLAGS)
 INCLUDES      = $(MODELINCS) $(ATOOLSINCS) $(ROOTINCS)
