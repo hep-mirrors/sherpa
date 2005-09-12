@@ -82,29 +82,6 @@ XS_q1q2_q1q2::XS_q1q2_q1q2(const size_t nin,const size_t nout, const ATOOLS::Fla
   aS = (*as)(sqr(rpa.gen.Ecms()));
 
   m_nstrong=4;
-//   int ints[4];
-//   for (short int i=0;i<4;++i) ints[i]=ATOOLS::kf_table.ToInt(fl[i].Kfcode());
-//   std::cout<<"Flavours/ints : "<<std::endl;
-//   for (short int i=0;i<4;++i) {
-//     std::cout<<fl[i]<<" "<<ints[i]<<std::endl;
-//   }
-  
-//   m_barred[0]=fl[0].IsAnti();
-//   if (fl[0].IsDowntype()) {
-//     std::cout<<"Try to swap ints: "<<ints[0]<<" "<<ints[1]<<std::endl;
-//     std::swap(ints[0],ints[1]);
-//     std::cout<<"Swapped flavours: "<<ints[0]<<" "<<ints[1]<<std::endl;
-//   }
-//   std::cout<<"Call CKM element "<<(ints[0]/2-1)<<" "<<(ints[1]/2)<<" "<<fl[0]<<" "<<ints[0]<<" "<<fl[1]<<" "<<ints[1]<<std::endl;
-
-//   m_ckm2=std::abs(ATOOLS::csqr(ATOOLS::rpa.gen.ComplexMatrixElement("CKM",ints[0]/2-1,ints[1]/2)));
-
-//   m_mw2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Mass());
-//   m_ww2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Width());
-//   m_aqed=MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())));
-//   m_sin2tw=ATOOLS::rpa.gen.ScalarConstant(std::string("sin2_thetaW"));
-//   m_resonances.push_back(ATOOLS::Flavour(ATOOLS::kf::W));
-//   m_existw=true;
 }
 
 double XS_q1q2_q1q2::operator()(double s,double t,double u) {
@@ -368,7 +345,6 @@ bool XS_q1qbar1_gg::SetColours(double s, double t, double u) {
   RestoreInOrder();
   Mt    = u/t;
   Mu    = t/u;
-  // *AS* set to pt2 in as set in BASE .by commenting out the next line  
   m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = (2.*s*t*u)/(s*s+t*t+u*u);
   bool result=SetColours();
   if (swap) SwapInOrder();
