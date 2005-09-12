@@ -48,11 +48,6 @@ if HADRONS_SUPPORT
 HADRONSDIR    = $(SHERPASYS)/HADRONS++-0.0
 HADRONSINCS   = -I$(HADRONSDIR)/Main
 HADRONSLIBS   =	-L@libdir@ -lHadronsMain -lHadronsMEs -lHadronsPSs
-HADRONSFLAGS  = -DUSING__Hadrons
-endif
-if ADICIC_SUPPORT
-ADICICDIR     =	$(SHERPASYS)/ADICIC++-0.0
-ADICICFLAGS   = -DUSING__Adicic
 endif
 if AHADIC_SUPPORT
 AHADICDIR     =	$(SHERPASYS)/AHADIC++-0.0
@@ -60,14 +55,13 @@ AHADICINCS    =	-I$(AHADICDIR)/Main -I$(AHADICDIR)/Formation \
 		-I$(AHADICDIR)/Decays -I$(AHADICDIR)/Tools
 AHADICLIBS    =	-L@libdir@ -lAhadicMain -lAhadicFormation \
 		-lAhadicDecays -lAhadicTools
-AHADICFLAGS   = -DUSING__Ahadic
 endif
 if AMISIC_SUPPORT
 AMISICINCS    =	-I$(SHERPASYS)/AMISIC++-1.0/Main
 AMISICLIBS    =	-L@libdir@ -lAmisic -lAmisicModel -lAmisicTools
-AMISICFLAGS   =	-DUSING__Amisic
 endif
 if ADICIC_SUPPORT
+ADICICDIR     =	$(SHERPASYS)/ADICIC++-0.0
 ADICICINCS    = -I$(ADICICDIR)/Main -I$(ADICICDIR)/Structure \
                 -I$(ADICICDIR)/Handler -I$(ADICICDIR)/Tool -I$(ADICICDIR)/Input
 ADICICLIBS    =	-L@libdir@ -lAdicicMain -lAdicicHdl -lAdicicStruct \
@@ -77,28 +71,23 @@ if CSS_SUPPORT
 CSSDIR        = $(SHERPASYS)/CS_SHOWER++-0.0
 CSSINCS       = -I$(CSSDIR)/Tools -I$(CSSDIR)/Showers -I$(CSSDIR)/Main
 CSSLIBS       = -L@libdir@ -lCSSTools -lCSShowers -lCSMain
-CSSFLAGS      =	-DUSING__CSS
 endif
-
-
 
 if ROOT_SUPPORT
 ROOTINCS      =	-I$(ROOTSYS)/include
 ROOTLIBS      =	-L$(ROOTSYS)/lib -lCint -lCore -lHist -lGraf \
 		-lGraf3d -lGpad -lTree -lRint -lPostscript \
 		-lMatrix -lPhysics -lGui -ldl 
-ROOTFLAGS     = -DROOT_SUPPORT -Wno-long-long
+ROOTFLAGS     = -Wno-long-long
 endif
 
 if CLHEP_SUPPORT
 CLHEPINCS     =	-I$(CLHEPDIR)/include
 CLHEPLIBS     =	$(wildcard $(CLHEPDIR)/lib/libCLHEP-g++.*.a)
-CLHEPFLAGS    = -DCLHEP_SUPPORT
 endif
 
 if LHAPDF_SUPPORT
-LHAPDFFLAGS    = -DLHAPDF_SUPPORT
-LHAPDFLIBS     = -L@libdir@ -lLHAPDF $(LHAPDFDIR)/libLHAPDF.a 
+LHAPDFLIBS    = -L@libdir@ -lLHAPDF $(LHAPDFDIR)/libLHAPDF.a 
 else
 CTEQLIBS      = -L@libdir@ -lCTEQ 
 endif
@@ -115,12 +104,11 @@ Sherpa_LDADD  =	$(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) \
 		$(ATOOLSLIBS) $(HADRONSLIBS) $(PDFLIBS) $(LHAPDFLIBS) \
 		$(CTEQLIBS) $(SYSLIBS) $(CLHEPLIBS) $(ROOTLIBS)
 Sherpa_LDFLAGS        =	-rdynamic
-AM_CXXFLAGS   =	$(SHERPAFLAGS) $(AHADICFLAGS) $(AMISICFLAGS) $(ADICICFLAGS) \
-		$(CSSFLAGS) $(HADRONFLAGS) $(CLHEPFLAGS) $(ROOTFLAGS) $(LHAPDFFLAGS) 
+AM_CXXFLAGS   =	$(SHERPAFLAGS) $(ROOTFLAGS) 
 INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(HADRONSINCS) $(AHADICINCS) \
 		$(APACICINCS) $(ADICICINCS) $(AMISICINCS) $(AMEGICINCS) \
-		$(EXTRAXSINCS) $(PHASICINCS) $(CSSINCS) $(MODELINCS) $(PDFINCS) \
-		$(BEAMINCS) $(ATOOLSINCS) $(CLHEPINCS) $(ROOTINCS)
+		$(EXTRAXSINCS) $(PHASICINCS) $(CSSINCS) $(MODELINCS) \
+		$(PDFINCS) $(BEAMINCS) $(ATOOLSINCS) $(CLHEPINCS) $(ROOTINCS)
 EXTRA_DIST    =	\
 		$(CVSINCLUDE) \
 		Integration.dat Processes.dat Selector.dat Model.dat Beam.dat \

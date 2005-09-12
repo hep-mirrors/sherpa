@@ -11,9 +11,9 @@ ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
 
 ANALYSISINCS  = -I$(ANALYSISDIR)/Main -I$(ANALYSISDIR)/Observables
 AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
-		-I$(AMEGICDIR)/Amplitude/AmplTools -I$(AMEGICDIR)/Amplitude \
-		-I$(AMEGICDIR)/Phasespace -I$(AMEGICDIR)/Model \
-		-I$(AMEGICDIR)/String 
+		-I$(AMEGICDIR)/Amplitude/AmplTools \
+		-I$(AMEGICDIR)/Amplitude -I$(AMEGICDIR)/Phasespace \
+		-I$(AMEGICDIR)/Model -I$(AMEGICDIR)/String 
 APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
 EXTRAXSINCS   =	-I$(EXTRAXSDIR)/Two2Two -I$(EXTRAXSDIR)/Main
 SHERPAINCS    =	-I../PerturbativePhysics -I../SoftPhysics \
@@ -28,25 +28,21 @@ if HADRONS_SUPPORT
 HADRONSDIR    =	$(SHERPASYS)/HADRONS++-0.0
 HADRONSINCS   = -I$(HADRONSDIR)/Main -I$(HADRONSDIR)/ME_Library \
 		-I$(HADRONSDIR)/PS_Library
-HADRONFLAGS   = -DUSING__Hadrons
 endif
 if AHADIC_SUPPORT
 AHADICDIR     =	$(SHERPASYS)/AHADIC++-0.0
 AHADICINCS    = -I$(AHADICDIR)/Main -I$(AHADICDIR)/Formation \
 		-I$(AHADICDIR)/Decays -I$(AHADICDIR)/Tools
-AHADICFLAGS   = -DUSING__Ahadic
 endif
 if ADICIC_SUPPORT
 ADICICDIR     = $(SHERPASYS)/ADICIC++-0.0
 ADICICINCS    = -I$(ADICICDIR)/Main -I$(ADICICDIR)/Structure \
                 -I$(ADICICDIR)/Handler -I$(ADICICDIR)/Tool \
 		-I$(ADICICDIR)/Input
-ADICICFLAGS   = -DUSING__Adicic
 endif
 if AMISIC_SUPPORT
 AMISICDIR     =	$(SHERPASYS)/AMISIC++-1.0
 AMISICINCS    =	-I$(SHERPASYS)/AMISIC++-1.0/Main
-AMISICFLAGS   =	-DUSING__Amisic
 endif
 if CSS_SUPPORT
 CSSDIR        = $(SHERPASYS)/CS_SHOWER++-0.0
@@ -54,18 +50,13 @@ CSSINCS       = -I$(CSSDIR)/Tools -I$(CSSDIR)/Showers -I$(CSSDIR)/Main
 CSSFLAGS      =	-DUSING__CSS -pedantic -Wall -Winline 
 endif
 
-
 if ROOT_SUPPORT
 ROOTINCS      =	-I$(ROOTSYS)/include
-ROOTFLAGS     = -DROOT_SUPPORT -Wno-long-long
+ROOTFLAGS     = -Wno-long-long
 endif
 
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS
-endif
-
-if MCATNLO_SUPPORT
-MCATNLOFLAGS  = -DUSING__MCatNLO
 endif
 
 lib_LTLIBRARIES	      =	libSherpaSingleEvents.la
@@ -96,8 +87,7 @@ noinst_HEADERS        =	\
 			MC_Interface.H
 
 EXTRA_DIST    = $(CVSINCLUDE) 
-AM_CXXFLAGS   =	$(SHERPAFLAGS) $(HADRONFLAGS) $(ADICICFLAGS) \
-		$(MCATNLOFLAGS) $(ROOTFLAGS) $(CSSFLAGS)
+AM_CXXFLAGS   =	$(SHERPAFLAGS) $(ROOTFLAGS)
 INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(APACICINCS) \
 		$(ADICICINCS) $(CSSINCS) $(AMEGICINCS) $(AMISICINCS) \
 		$(AHADICINCS) $(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) \

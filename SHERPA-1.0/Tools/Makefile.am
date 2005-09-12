@@ -11,7 +11,6 @@ ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
 
 if CLHEP_SUPPORT
 CLHEPINCS     =	-I$(CLHEPDIR)/include
-CLHEPFLAGS    = -DCLHEP_SUPPORT
 endif
 
 if CVS_INCLUDE
@@ -20,7 +19,7 @@ endif
 
 if ROOT_SUPPORT
 ROOTINCS      =	-I$(ROOTSYS)/include
-ROOTFLAGS     = -DROOT_SUPPORT -Wno-long-long
+ROOTFLAGS     = -Wno-long-long
 endif
 
 lib_LTLIBRARIES       =	libSherpaTools.la
@@ -35,7 +34,7 @@ noinst_HEADERS        =	\
 		 	HepMC_Interface.H \
 			Event_Reader.H
 EXTRA_DIST    =	$(CVSINCLUDE)
-AM_CXXFLAGS   =	$(SHERPAFLAGS) $(CLHEPFLAGS) $(ROOTFLAGS)
+AM_CXXFLAGS   =	$(SHERPAFLAGS) $(ROOTFLAGS)
 INCLUDES      =	$(SHERPAINCS) $(AMISICINCS) $(APACICINCS) $(MODELINCS) \
 		$(PDFINCS) $(ATOOLSINCS) $(CLHEPINCS) $(ROOTINCS)
 
