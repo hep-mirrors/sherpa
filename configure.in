@@ -6,6 +6,11 @@ AC_PREFIX_DEFAULT(${PWD})
 dnl AC_TOP_SRCDIR_DEFAULT(${PWD})
 
 dnl Conditional compiling and linking
+if test -f __Flags.H__ ; then 
+  rm -f __Flags.H__ 
+fi
+echo -e "#ifndef CXXFLAGS_H\n#define CXXFLAGS_H\n" >> __Flags.H__
+
 AC_ARG_ENABLE(cvsinclude,
 [  --disable-cvsinclude    Disable CVS Synchronization ],
 [ cvsinclude=true
@@ -33,6 +38,12 @@ AC_ARG_ENABLE(clhep,
       yes) AC_MSG_ERROR(\$CLHEPDIR is not a valid path.) ;;
     esac
   fi ],[ clhep=false ])
+
+if test "$clhep" = "true" ; then
+  echo -e "#define USING__CLHEP" >> __Flags.H__
+else
+  echo -e "#ifdef USING__CLHEP\n#undef USING__CLHEP\n#endif" >> __Flags.H__
+fi
 AM_CONDITIONAL(CLHEP_SUPPORT, test $clhep = true)
 
 AC_ARG_ENABLE(root,
@@ -49,6 +60,12 @@ AC_ARG_ENABLE(root,
       yes) AC_MSG_ERROR(\$ROOTSYS is not a valid path.) ;;
     esac
   fi ],[ root=false ])
+
+if test "$root" = "true" ; then
+  echo -e "#define USING__ROOT" >> __Flags.H__
+else
+  echo -e "#ifdef USING__ROOT\n#undef USING__ROOT\n#endif" >> __Flags.H__
+fi
 AM_CONDITIONAL(ROOT_SUPPORT, test $root = true)
 
 AC_ARG_ENABLE(lhapdf,
@@ -65,6 +82,12 @@ AC_ARG_ENABLE(lhapdf,
       yes) AC_MSG_ERROR(\$LHAPDFDIR is not a valid path.) ;;
     esac
   fi ],[ lhapdf=false ])
+
+if test "$lhapdf" = "true" ; then
+  echo -e "#define USING__LHAPDF" >> __Flags.H__
+else
+  echo -e "#ifdef USING__LHAPDF\n#undef USING__LHAPDF\n#endif" >> __Flags.H__
+fi
 AM_CONDITIONAL(LHAPDF_SUPPORT, test $lhapdf = true)
 
 AC_ARG_ENABLE(modelinclude,
@@ -89,6 +112,12 @@ AC_ARG_ENABLE(modelinclude,
     echo "checking for MODEL package... yes"
     modelinclude=true 
   fi ])
+
+if test "$modelinclude" = "true" ; then
+  echo -e "#define USING__Model" >> __Flags.H__
+else
+  echo -e "#ifdef USING__Model\n#undef USING__Model\n#endif" >> __Flags.H__
+fi
 AM_CONDITIONAL(MODEL_SUPPORT, test "$modelinclude" = "true" )
 
 AC_ARG_ENABLE(adicicinclude,
@@ -113,6 +142,12 @@ AC_ARG_ENABLE(adicicinclude,
     echo "checking for ADICIC++ package... yes"
     adicicinclude=true 
   fi ])
+
+if test "$adicicinclude" = "true" ; then
+  echo -e "#define USING__Adicic" >> __Flags.H__
+else
+  echo -e "#ifdef USING__Adicic\n#undef USING__Adicic\n#endif" >> __Flags.H__
+fi
 AM_CONDITIONAL(ADICIC_SUPPORT, test "$adicicinclude" = "true" )
 
 AC_ARG_ENABLE(amisicinclude,
@@ -137,6 +172,12 @@ AC_ARG_ENABLE(amisicinclude,
     echo "checking for AMISIC++ package... yes"
     amisicinclude=true 
   fi ])
+
+if test "$amisicinclude" = "true" ; then
+  echo -e "#define USING__Amisic" >> __Flags.H__
+else
+  echo -e "#ifdef USING__Amisic\n#undef USING__Amisic\n#endif" >> __Flags.H__
+fi
 AM_CONDITIONAL(AMISIC_SUPPORT, test "$amisicinclude" = "true" )
 
 AC_ARG_ENABLE(cs_showerinclude,
@@ -161,6 +202,12 @@ AC_ARG_ENABLE(cs_showerinclude,
     echo "checking for CS_SHOWER package... yes"
     cs_showerinclude=true 
   fi ])
+
+if test "$cs_showerinclude" = "true" ; then
+  echo -e "#define USING__CSS" >> __Flags.H__
+else
+  echo -e "#ifdef USING__CSS\n#undef USING__CSS\n#endif" >> __Flags.H__
+fi
 AM_CONDITIONAL(CSS_SUPPORT, test "$cs_showerinclude" = "true" )
 
 AC_ARG_ENABLE(ahadicinclude,
@@ -185,6 +232,12 @@ AC_ARG_ENABLE(ahadicinclude,
     echo "checking for AHADIC++ package... yes"
     ahadicinclude=true 
   fi ])
+
+if test "$ahadicinclude" = "true" ; then
+  echo -e "#define USING__Ahadic" >> __Flags.H__
+else
+  echo -e "#ifdef USING__Ahadic\n#undef USING__Ahadic\n#endif" >> __Flags.H__
+fi
 AM_CONDITIONAL(AHADIC_SUPPORT, test "$ahadicinclude" = "true" )
 
 AC_ARG_ENABLE(hadronsinclude,
@@ -209,6 +262,12 @@ AC_ARG_ENABLE(hadronsinclude,
     echo "checking for HADRONS++ package... yes"
     hadronsinclude=true 
   fi ])
+
+if test "$hadronsinclude" = "true" ; then
+  echo -e "#define USING__Hadrons" >> __Flags.H__
+else
+  echo -e "#ifdef USING__Hadrons\n#undef USING__Hadrons\n#endif" >> __Flags.H__
+fi
 AM_CONDITIONAL(HADRONS_SUPPORT, test "$hadronsinclude" = "true" )
 
 AC_ARG_ENABLE(sherpainclude,
@@ -233,16 +292,31 @@ AC_ARG_ENABLE(sherpainclude,
     echo "checking for SHERPA++ package... yes"
     sherpainclude=true 
   fi ])
+
+if test "$sherpainclude" = "true" ; then
+  echo -e "#define USING__Sherpa" >> __Flags.H__
+else
+  echo -e "#ifdef USING__Sherpa\n#undef USING__Sherpa\n#endif" >> __Flags.H__
+fi
 AM_CONDITIONAL(SHERPA_SUPPORT, test "$sherpainclude" = "true" )
 
-AC_ARG_ENABLE(mcatnlo,
-[  --enable-mcatnlo        Enable MCatNLO support ],
-[ mcatnlo=false
+AC_ARG_ENABLE(mcatnloinclude,
+[  --enable-mcatnloinclude        Enable MCatNLO support ],
+[ mcatnloinclude=false
   case "${enableval}" in 
-    yes) mcatnlo=true && echo "checking for MC@NLO support... yes" ;;
+    yes) mcatnloinclude=true && echo "checking for MC@NLO support... yes" ;;
     *) echo "checking for MC@NLO support... no" ;;
-  esac ],[ mcatnlo=false ])
-AM_CONDITIONAL(MCATNLO_SUPPORT, test $mcatnlo = true)
+  esac ],[ mcatnloinclude=false ])
+
+if test "$mcatnloinclude" = "true" ; then
+  echo -e "#define USING__MCatNLO" >> __Flags.H__
+else
+  echo -e "#ifdef USING__MCatNLO\n#undef USING__MCatNLO\n#endif" >> __Flags.H__
+fi
+AM_CONDITIONAL(MCATNLO_SUPPORT, test $mcatnloinclude = true)
+
+echo -e "\n#endif" >> __Flags.H__
+mv __Flags.H__ ATOOLS-2.0/Org/CXXFLAGS.H
 
 AC_CONFIG_COMMANDS_POST([touch ATOOLS-2.0/Org/My_Root.C &&
 			 touch PDF-1.0/LHAPDF/LHAPDF_Fortran_Interface.H &&
@@ -279,6 +353,7 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  ATOOLS-2.0/Phys/Makefile \
 	  ATOOLS-2.0/Org/Makefile \
 	  ATOOLS-2.0/Run/Makefile \
+	  ATOOLS-2.0/Makefile \
 	  BEAM-1.0/Main/Makefile \
 	  BEAM-1.0/Makefile \
 	  PDF-1.0/Main/Makefile \
@@ -294,22 +369,22 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  MODEL-1.0/Hdecay/Makefile \
 	  MODEL-1.0/Isajet/Makefile \
 	  MODEL-1.0/Makefile \
-          PHASIC++-1.0/Main/Makefile \
+	  PHASIC++-1.0/Main/Makefile \
 	  PHASIC++-1.0/Makefile \
 	  EXTRA_XS-1.0/Main/Makefile \
-          EXTRA_XS-1.0/Two2Two/Makefile \
+	  EXTRA_XS-1.0/Two2Two/Makefile \
 	  EXTRA_XS-1.0/Makefile \
 	  AMEGIC++-2.0/Main/Makefile \
 	  AMEGIC++-2.0/Amplitude/Makefile \
-          AMEGIC++-2.0/Amplitude/AmplTools/Makefile \
+	  AMEGIC++-2.0/Amplitude/AmplTools/Makefile \
 	  AMEGIC++-2.0/Amplitude/Zfunctions/Makefile \
 	  AMEGIC++-2.0/Phasespace/Makefile \
 	  AMEGIC++-2.0/String/Makefile \
 	  AMEGIC++-2.0/Model/Makefile \
 	  AMEGIC++-2.0/Makefile \
 	  APACIC++-2.0/Main/Makefile \
-          APACIC++-2.0/Showers/Makefile \
-          APACIC++-2.0/Run/Makefile \
+	  APACIC++-2.0/Showers/Makefile \
+	  APACIC++-2.0/Run/Makefile \
 	  APACIC++-2.0/Makefile \
 	  AMISIC++-1.0/Tools/Makefile \
 	  AMISIC++-1.0/Model/Makefile \
@@ -325,7 +400,7 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  ADICIC++-0.0/TestIt/Makefile \
 	  ADICIC++-0.0/TestIt/data/Makefile \
 	  ADICIC++-0.0/RunIt/Makefile \
-          ADICIC++-0.0/Makefile \
+	  ADICIC++-0.0/Makefile \
 	  CS_SHOWER++-0.0/Tools/Makefile \
 	  CS_SHOWER++-0.0/Showers/Makefile \
 	  CS_SHOWER++-0.0/Main/Makefile \
@@ -346,21 +421,22 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  SHERPA-1.0/HerwigTools/Makefile \
 	  SHERPA-1.0/Tools/Makefile \
 	  SHERPA-1.0/LundTools/Makefile \
-          SHERPA-1.0/Initialization/Makefile \
-          SHERPA-1.0/PerturbativePhysics/Makefile \
-          SHERPA-1.0/SoftPhysics/Makefile \
-          SHERPA-1.0/Single_Events/Makefile \
-          SHERPA-1.0/Main/Makefile \
-          SHERPA-1.0/Run/Makefile \
+	  SHERPA-1.0/Initialization/Makefile \
+	  SHERPA-1.0/PerturbativePhysics/Makefile \
+	  SHERPA-1.0/SoftPhysics/Makefile \
+	  SHERPA-1.0/Single_Events/Makefile \
+	  SHERPA-1.0/Main/Makefile \
+	  SHERPA-1.0/Run/Makefile \
 	  SHERPA-1.0/Makefile \
 	  COMPARE-1.0/Tools/Makefile \
 	  COMPARE-1.0/Reader/Makefile \
-          COMPARE-1.0/Main/Makefile \
+	  COMPARE-1.0/Main/Makefile \
 	  COMPARE-1.0/Config/Makefile \
-          COMPARE-1.0/Booklet/Makefile \
-          COMPARE-1.0/Run/Makefile \
+	  COMPARE-1.0/Booklet/Makefile \
+	  COMPARE-1.0/Run/Makefile \
 	  COMPARE-1.0/Manual/Makefile \
 	  COMPARE-1.0/Makefile \
+	  TOOLS/Makefile \
 	  Makefile )
 
 
