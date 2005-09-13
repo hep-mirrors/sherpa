@@ -14,14 +14,13 @@
 
 using namespace SHERPA;
 using namespace ATOOLS;
-using namespace std;
 
 Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler,
 				   Hard_Decay_Handler * hdhandler) :
   p_mehandler(mehandler), p_hdhandler(hdhandler),
   m_addedxs(false)
 {
-  m_name      = string("Signal_Processes:")+p_mehandler->Name();
+  m_name      = std::string("Signal_Processes:")+p_mehandler->Name();
   m_type      = eph::Perturbative;
   p_remnants[0]=mehandler->GetISR_Handler()->GetRemnant(0);
   p_remnants[1]=mehandler->GetISR_Handler()->GetRemnant(1);
@@ -38,9 +37,9 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 {
   PROFILE_HERE;
   if (bloblist->empty()) {
-    msg.Error()<<"Potential error in Signal_Processes::Treat."<<endl
-	       <<"   Incoming blob list contains "<<bloblist->size()<<" entries."<<endl
-	       <<"   Continue and hope for the best."<<endl;
+    msg.Error()<<"Potential error in Signal_Processes::Treat."<<std::endl
+	       <<"   Incoming blob list contains no entries."<<std::endl
+	       <<"   Continue and hope for the best."<<std::endl;
     return 0;
   }
   
@@ -50,7 +49,8 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 
   while (found) {
     found = 0;
-    for (Blob_List::iterator blit=bloblist->begin();blit!=bloblist->end();++blit) {
+    for (Blob_List::iterator blit=bloblist->begin();
+	 blit!=bloblist->end();++blit) {
       if ((*blit)->Type()==btp::Signal_Process) {
 	if ((*blit)->Status()==0 && !m_addedxs) {
  	  Blob_Data_Base * message = (*(*blit))["ME_Weight"];
@@ -141,9 +141,10 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 		    isr[i]->AddToOutParticles(myblob->InParticle(i));
 		    ATOOLS::Vec4D sum=isr[i]->CheckMomentumConservation();
 		    if (!(sum==ATOOLS::Vec4D()))
-		      ATOOLS::msg.Error()<<"Signal_Processes::Treat(): "
-					 <<"4-momentum not conserved: sum = "
-					 <<sum<<"."<<std::endl;
+		      ATOOLS::msg.Error()
+			<<"Signal_Processes::Treat(): "
+			<<"4-momentum not conserved: sum = "
+			<<sum<<"."<<std::endl;
 		  }
 		  myblob->SetStatus(0);
 		  for (short unsigned int i=0;i<2;++i) {
@@ -197,7 +198,8 @@ void Signal_Processes::CleanUp()
   m_addedxs=false;
 }
 
-bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,const bool extract)
+bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,
+				const bool extract)
 {
   PROFILE_HERE; 
 
@@ -220,7 +222,9 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,const bool extr
 	ntrial_one = (*blob)["ME_NumberOfTrials"]->Get<int>();
       }
       else {
-	msg.Error()<<" ERROR missing call to OneEvent() before SameEvent() !! "<<std::endl;
+	msg.Error()<<"Signal_Processes::FillBlob(..): "
+		   <<"Missing call to OneEvent() before SameEvent() !"
+		   <<std::endl;
       }
     }
   }
@@ -229,7 +233,8 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,const bool extr
   blob->SetStatus(1);
 
   Vec4D cms = Vec4D(0.,0.,0.,0.);
-  for (size_t i=0;i<p_mehandler->NIn();i++) cms += p_mehandler->Momenta()[i];
+  for (size_t i=0;i<p_mehandler->NIn();i++) 
+    cms += p_mehandler->Momenta()[i];
   blob->SetCMS(cms);
   blob->SetBeam(-1);
   
@@ -242,7 +247,8 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,const bool extr
   Particle * particle;
   EXTRAXS::XS_Base *xs=p_mehandler->GetXS(1);
   for (unsigned int i=0;i<p_mehandler->NIn();i++) {
-    particle = new Particle(i,p_mehandler->Flavours()[i],p_mehandler->Momenta()[i]);
+    particle = new Particle(i,p_mehandler->Flavours()[i],
+			    p_mehandler->Momenta()[i]);
     particle->SetNumber(0);
     particle->SetStatus(2);
     particle->SetInfo('G');
@@ -259,8 +265,10 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,const bool extr
       else THROW(fatal_error,"No remnant found.");
   }
   bool unstable = false; 
-  for (unsigned int i=p_mehandler->NIn();i<p_mehandler->NIn()+p_mehandler->NOut();i++) {
-    particle = new Particle(i,p_mehandler->Flavours()[i],p_mehandler->Momenta()[i]);
+  for (unsigned int i=p_mehandler->NIn();
+       i<p_mehandler->NIn()+p_mehandler->NOut();i++) {
+    particle = new Particle(i,p_mehandler->Flavours()[i],
+			    p_mehandler->Momenta()[i]);
     if (!(particle->Flav().IsStable())) unstable = true;
     particle->SetNumber(0);
     particle->SetStatus(1);
@@ -280,9 +288,8 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,const bool extr
       return success;
     }
     else {
-      msg.Error()<<"Error in Signal_Processes::FillBlob."<<endl
-		 <<"   Should treat unstable particles without Hard_Decay_Handler = On."<<endl
-		 <<"   Assume no reasonable decay tables. Will abort."<<endl;
+      msg.Error()<<"Error in Signal_Processes::FillBlob."<<std::endl
+		 <<"   No decay tables yet. Abort."<<std::endl;
       abort();
     }
   }
@@ -301,10 +308,9 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,const bool extr
   blob->AddData("ME_Weight",new Blob_Data<double>(weight));
   blob->AddData("ME_NumberOfTrials",new Blob_Data<int>(ntrial));
   blob->AddData("Process_Weight",new Blob_Data<double>(procweight));
-
-//   blob->AddData("ISR_Info_cms",p_mehandler->GetISR_Handler()->Info(0));
-//   blob->AddData("ISR_Info_lab",p_mehandler->GetISR_Handler()->Info(1));
   return success;
 }
 
-void Signal_Processes::Finish(const std::string &) {}
+void Signal_Processes::Finish(const std::string &) 
+{
+}

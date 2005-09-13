@@ -176,7 +176,7 @@ int Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
   if (stat==1) {
     DefineInitialConditions(_blob,_bloblist);
     if (!decayblob) shower = interface->PerformShowers();
-               else shower = interface->PerformDecayShowers();  
+               else shower = interface->PerformDecayShowers();
     if (shower==1) {
       Blob * myblob;
       if (decayblob) _blob->InParticle(0)->SetInfo('h');
@@ -223,13 +223,14 @@ int Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
       }
       else SetDecayBlobPointers(_blob,_bloblist);
     }
-    else  if (shower==3) {
-      _blob->SetStatus(-1);
+    else  if (shower==-1) {
       p_showerhandler->CleanUp();
+      _blob->SetStatus(-1);
       // delete all meps blobs
-      //      interface->CleanBlobList(_bloblist,_blob->Type());
+      //interface->CleanBlobList(_bloblist,_blob->Type());
     }
     else {
+      msg.Error()<<"Jet_Evolution::AttachShowers(..): Shower failure."<<std::endl;
       _blob->SetStatus(2);
       p_showerhandler->CleanUp();
     }
