@@ -1,0 +1,371 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT
+AM_INIT_AUTOMAKE(SHERPA-MC,1.0)
+AM_DISABLE_STATIC
+AC_PREFIX_DEFAULT(${PWD})
+dnl AC_TOP_SRCDIR_DEFAULT(${PWD})
+
+dnl Conditional compiling and linking
+AC_ARG_ENABLE(cvsinclude,
+[  --disable-cvsinclude    Disable CVS Synchronization ],
+[ cvsinclude=true
+  case "${enableval}" in
+    no) echo "enable CVS synchronization... no" ;
+        cvsinclude=false ;;
+    yes) echo "enable CVS synchronization... yes" ;;
+    *) echo "enable CVS synchronization... yes" ;;
+  esac ],
+[ echo "enable CVS synchronization... yes" ;
+  cvsinclude=true ])
+AM_CONDITIONAL(CVS_INCLUDE, test "$cvsinclude" = "true" )
+
+AC_ARG_ENABLE(clhep,
+[  --enable-clhep          Enable CLHEP support ],
+[ clhep=false
+  if test -d "$CLHEPDIR"; then
+    echo "checking for CLHEP libraries... yes"
+    case "${enableval}" in 
+      yes) clhep=true ;;
+    esac
+  else 
+    echo "checking for CLHEP libraries... no"
+    case "${enableval}" in 
+      yes) AC_MSG_ERROR(\$CLHEPDIR is not a valid path.) ;;
+    esac
+  fi ],[ clhep=false ])
+AM_CONDITIONAL(CLHEP_SUPPORT, test $clhep = true)
+
+AC_ARG_ENABLE(root,
+[  --enable-root           Enable ROOT support ],
+[ root=false
+  if test -d "$ROOTSYS"; then
+    echo "checking for ROOT libraries... yes"
+    case "${enableval}" in 
+      yes) root=true ;;
+    esac
+  else 
+    echo "checking for ROOT libraries... no"
+    case "${enableval}" in 
+      yes) AC_MSG_ERROR(\$ROOTSYS is not a valid path.) ;;
+    esac
+  fi ],[ root=false ])
+AM_CONDITIONAL(ROOT_SUPPORT, test $root = true)
+
+AC_ARG_ENABLE(lhapdf,
+[  --enable-lhapdf          Enable LHAPDF support ],
+[ lhapdf=false
+  if test -d "$LHAPDFDIR"; then
+    echo "checking for LHAPDF libraries... yes"
+    case "${enableval}" in 
+      yes) lhapdf=true ;;
+    esac
+  else 
+    echo "checking for LHAPDF libraries... no"
+    case "${enableval}" in 
+      yes) AC_MSG_ERROR(\$LHAPDFDIR is not a valid path.) ;;
+    esac
+  fi ],[ lhapdf=false ])
+AM_CONDITIONAL(LHAPDF_SUPPORT, test $lhapdf = true)
+
+AC_ARG_ENABLE(modelinclude,
+[  --disable-modelinclude  Disable inclusion of MODEL headers ],
+[ modelinclude=true
+  MODELDIR="MODEL-1.0"
+  if test -d $MODELDIR ; then
+    echo "checking for MODEL package... yes"
+    case "${enableval}" in
+      no) echo "disable MODEL support anyway... yes";
+          modelinclude=false ;;
+    esac
+  else
+    echo "checking for MODEL package... no"
+    modelinclude=false
+  fi ],
+[ MODELDIR="MODEL-1.0"
+  if test ! -d $MODELDIR ; then
+    echo "configure: warning: $MODELDIR is not a valid path."
+    modelinclude=false
+  else 
+    echo "checking for MODEL package... yes"
+    modelinclude=true 
+  fi ])
+AM_CONDITIONAL(MODEL_SUPPORT, test "$modelinclude" = "true" )
+
+AC_ARG_ENABLE(adicicinclude,
+[  --disable-adicicinclude  Disable inclusion of ADICIC headers ],
+[ adicicinclude=true
+  ADICICDIR="ADICIC++-0.0"
+  if test -d $ADICICDIR ; then
+    echo "checking for ADICIC++ package... yes"
+    case "${enableval}" in
+      no) echo "disable ADICIC++ support anyway... yes";
+          adicicinclude=false ;;
+    esac
+  else
+    echo "checking for ADICIC++ package... no"
+    adicicinclude=false
+  fi ],
+[ ADICICDIR="ADICIC++-0.0"
+  if test ! -d $ADICICDIR ; then
+    echo "configure: warning: $ADICICDIR is not a valid path."
+    adicicinclude=false
+  else 
+    echo "checking for ADICIC++ package... yes"
+    adicicinclude=true 
+  fi ])
+AM_CONDITIONAL(ADICIC_SUPPORT, test "$adicicinclude" = "true" )
+
+AC_ARG_ENABLE(amisicinclude,
+[  --disable-amisicinclude  Disable inclusion of AMISIC headers ],
+[ amisicinclude=true
+  AMISICDIR="AMISIC++-1.0"
+  if test -d $AMISICDIR ; then
+    echo "checking for AMISIC++ package... yes"
+    case "${enableval}" in
+      no) echo "disable AMISIC++ support anyway... yes";
+          amisicinclude=false ;;
+    esac
+  else
+    echo "checking for AMISIC++ package... no"
+    amisicinclude=false
+  fi ],
+[ AMISICDIR="AMISIC++-1.0"
+  if test ! -d $AMISICDIR ; then
+    echo "configure: warning: $AMISICDIR is not a valid path."
+    amisicinclude=false
+  else 
+    echo "checking for AMISIC++ package... yes"
+    amisicinclude=true 
+  fi ])
+AM_CONDITIONAL(AMISIC_SUPPORT, test "$amisicinclude" = "true" )
+
+AC_ARG_ENABLE(cs_showerinclude,
+[  --disable-cs_showerinclude  Disable inclusion of CS_SHOWER headers ],
+[ cs_showerinclude=true
+  CS_SHOWERDIR="CS_SHOWER++-0.0"
+  if test -d $CS_SHOWERDIR ; then
+    echo "checking for CS_SHOWER++ package... yes"
+    case "${enableval}" in
+      no) echo "disable CS_SHOWER++ support anyway... yes";
+          cs_showerinclude=false ;;
+    esac
+  else
+    echo "checking for CS_SHOWER++ package... no"
+    cs_showerinclude=false
+  fi ],
+[ CS_SHOWERDIR="CS_SHOWER++-0.0"
+  if test ! -d $CS_SHOWERDIR ; then
+    echo "configure: warning: $CS_SHOWERDIR is not a valid path."
+    cs_showerinclude=false
+  else 
+    echo "checking for CS_SHOWER package... yes"
+    cs_showerinclude=true 
+  fi ])
+AM_CONDITIONAL(CSS_SUPPORT, test "$cs_showerinclude" = "true" )
+
+AC_ARG_ENABLE(ahadicinclude,
+[  --disable-ahadicinclude  Disable inclusion of AHADIC headers ],
+[ ahadicinclude=true
+  AHADICDIR="AHADIC++-0.0"
+  if test -d $AHADICDIR ; then
+    echo "checking for AHADIC++ package... yes"
+    case "${enableval}" in
+      no) echo "disable AHADIC++ support anyway... yes";
+          ahadicinclude=false ;;
+    esac
+  else
+    echo "checking for AHADIC++ package... no"
+    ahadicinclude=false
+  fi ],
+[ AHADICDIR="AHADIC++-0.0"
+  if test ! -d $AHADICDIR ; then
+    echo "configure: warning: $AHADICDIR is not a valid path."
+    ahadicinclude=false
+  else 
+    echo "checking for AHADIC++ package... yes"
+    ahadicinclude=true 
+  fi ])
+AM_CONDITIONAL(AHADIC_SUPPORT, test "$ahadicinclude" = "true" )
+
+AC_ARG_ENABLE(hadronsinclude,
+[  --disable-hadronsinclude  Disable inclusion of HADRONS headers ],
+[ hadronsinclude=true
+  HADRONSDIR="HADRONS++-0.0"
+  if test -d $HADRONSDIR ; then
+    echo "checking for HADRONS++ package... yes"
+    case "${enableval}" in
+      no) echo "disable HADRONS++ support anyway... yes";
+          hadronsinclude=false ;;
+    esac
+  else
+    echo "checking for HADRONS++ package... no"
+    hadronsinclude=false
+  fi ],
+[ HADRONSDIR="HADRONS++-0.0"
+  if test ! -d $HADRONSDIR ; then
+    echo "configure: warning: $HADRONSDIR is not a valid path."
+    hadronsinclude=false
+  else 
+    echo "checking for HADRONS++ package... yes"
+    hadronsinclude=true 
+  fi ])
+AM_CONDITIONAL(HADRONS_SUPPORT, test "$hadronsinclude" = "true" )
+
+AC_ARG_ENABLE(sherpainclude,
+[  --disable-sherpainclude  Disable inclusion of SHERPA headers ],
+[ sherpainclude=true
+  SHERPADIR="SHERPA-1.0"
+  if test -d $SHERPADIR ; then
+    echo "checking for SHERPA++ package... yes"
+    case "${enableval}" in
+      no) echo "disable SHERPA++ support anyway... yes";
+          sherpainclude=false ;;
+    esac
+  else
+    echo "checking for SHERPA++ package... no"
+    sherpainclude=false
+  fi ],
+[ SHERPADIR="SHERPA-1.0"
+  if test ! -d $SHERPADIR ; then
+    echo "configure: warning: $SHERPADIR is not a valid path."
+    sherpainclude=false
+  else 
+    echo "checking for SHERPA++ package... yes"
+    sherpainclude=true 
+  fi ])
+AM_CONDITIONAL(SHERPA_SUPPORT, test "$sherpainclude" = "true" )
+
+AC_ARG_ENABLE(mcatnlo,
+[  --enable-mcatnlo        Enable MCatNLO support ],
+[ mcatnlo=false
+  case "${enableval}" in 
+    yes) mcatnlo=true && echo "checking for MC@NLO support... yes" ;;
+    *) echo "checking for MC@NLO support... no" ;;
+  esac ],[ mcatnlo=false ])
+AM_CONDITIONAL(MCATNLO_SUPPORT, test $mcatnlo = true)
+
+AC_CONFIG_COMMANDS_POST([touch ATOOLS-2.0/Org/My_Root.C &&
+			 touch PDF-1.0/LHAPDF/LHAPDF_Fortran_Interface.H &&
+	                 touch PDF-1.0/CTEQ/CTEQ6_Fortran_Interface.H &&
+                         touch PDF-1.0/Main/PDF_Handler.C &&
+			 touch PHASIC++-1.0/Main/Phase_Space_Handler.C] &&
+			 touch SHERPA-1.0/PerturbativePhysics/Shower_Handler.H &&
+			 touch SHERPA-1.0/Tools/HepMC_Interface.H &&
+			 touch SHERPA-1.0/HerwigTools/Herwig_Wrapper.H &&
+		         touch SHERPA-1.0/Single_Events/MC_Interface.C &&
+			 touch SHERPA-1.0/SoftPhysics/Hadron_Decay_Handler.H &&
+			 touch SHERPA-1.0/Run/Main.C )
+
+dnl Checks for programs.
+AC_PROG_INSTALL
+AC_PROG_MAKE_SET
+AC_PROG_CXX
+AC_PROG_CC
+AC_PROG_F77
+AM_PROG_LIBTOOL
+
+dnl Checks for header files.
+AC_HEADER_STDC
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_TYPE_SIZE_T
+
+dnl Checks for library functions.
+AC_CHECK_FUNCS(mkdir)
+
+
+AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
+	  ATOOLS-2.0/Phys/Makefile \
+	  ATOOLS-2.0/Org/Makefile \
+	  ATOOLS-2.0/Run/Makefile \
+	  BEAM-1.0/Main/Makefile \
+	  BEAM-1.0/Makefile \
+	  PDF-1.0/Main/Makefile \
+	  PDF-1.0/LHAPDF/Makefile \
+	  PDF-1.0/MRST/Makefile \
+	  PDF-1.0/CTEQ/Makefile \
+	  PDF-1.0/GRV/Makefile \
+	  PDF-1.0/Sudakov/Makefile \
+	  PDF-1.0/KMR/Makefile \
+	  PDF-1.0/Remnant/Makefile \
+	  PDF-1.0/Makefile \
+	  MODEL-1.0/Main/Makefile \
+	  MODEL-1.0/Hdecay/Makefile \
+	  MODEL-1.0/Isajet/Makefile \
+	  MODEL-1.0/Makefile \
+          PHASIC++-1.0/Main/Makefile \
+	  PHASIC++-1.0/Makefile \
+	  EXTRA_XS-1.0/Main/Makefile \
+          EXTRA_XS-1.0/Two2Two/Makefile \
+	  EXTRA_XS-1.0/Makefile \
+	  AMEGIC++-2.0/Main/Makefile \
+	  AMEGIC++-2.0/Amplitude/Makefile \
+          AMEGIC++-2.0/Amplitude/AmplTools/Makefile \
+	  AMEGIC++-2.0/Amplitude/Zfunctions/Makefile \
+	  AMEGIC++-2.0/Phasespace/Makefile \
+	  AMEGIC++-2.0/String/Makefile \
+	  AMEGIC++-2.0/Model/Makefile \
+	  AMEGIC++-2.0/Makefile \
+	  APACIC++-2.0/Main/Makefile \
+          APACIC++-2.0/Showers/Makefile \
+          APACIC++-2.0/Run/Makefile \
+	  APACIC++-2.0/Makefile \
+	  AMISIC++-1.0/Tools/Makefile \
+	  AMISIC++-1.0/Model/Makefile \
+	  AMISIC++-1.0/Main/Makefile \
+	  AMISIC++-1.0/Run/Makefile \
+	  AMISIC++-1.0/Makefile \
+	  ADICIC++-0.0/Tool/Makefile \
+	  ADICIC++-0.0/Tool/savemaketool/Makefile \
+	  ADICIC++-0.0/Input/Makefile \
+	  ADICIC++-0.0/Structure/Makefile \
+	  ADICIC++-0.0/Handler/Makefile \
+	  ADICIC++-0.0/Main/Makefile \
+	  ADICIC++-0.0/TestIt/Makefile \
+	  ADICIC++-0.0/TestIt/data/Makefile \
+	  ADICIC++-0.0/RunIt/Makefile \
+          ADICIC++-0.0/Makefile \
+	  CS_SHOWER++-0.0/Tools/Makefile \
+	  CS_SHOWER++-0.0/Showers/Makefile \
+	  CS_SHOWER++-0.0/Main/Makefile \
+	  CS_SHOWER++-0.0/Makefile \
+	  AHADIC++-0.0/Tools/Makefile \
+	  AHADIC++-0.0/Formation/Makefile \
+	  AHADIC++-0.0/Decays/Makefile \
+	  AHADIC++-0.0/Main/Makefile \
+	  AHADIC++-0.0/Run/Makefile \
+	  AHADIC++-0.0/Makefile \
+	  HADRONS++-0.0/Main/Makefile \
+	  HADRONS++-0.0/ME_Library/Makefile \
+	  HADRONS++-0.0/PS_Library/Makefile \
+	  HADRONS++-0.0/Makefile \
+	  ANALYSIS-1.0/Makefile \
+	  ANALYSIS-1.0/Main/Makefile \
+	  ANALYSIS-1.0/Observables/Makefile \
+	  SHERPA-1.0/HerwigTools/Makefile \
+	  SHERPA-1.0/Tools/Makefile \
+	  SHERPA-1.0/LundTools/Makefile \
+          SHERPA-1.0/Initialization/Makefile \
+          SHERPA-1.0/PerturbativePhysics/Makefile \
+          SHERPA-1.0/SoftPhysics/Makefile \
+          SHERPA-1.0/Single_Events/Makefile \
+          SHERPA-1.0/Main/Makefile \
+          SHERPA-1.0/Run/Makefile \
+	  SHERPA-1.0/Makefile \
+	  COMPARE-1.0/Tools/Makefile \
+	  COMPARE-1.0/Reader/Makefile \
+          COMPARE-1.0/Main/Makefile \
+	  COMPARE-1.0/Config/Makefile \
+          COMPARE-1.0/Booklet/Makefile \
+          COMPARE-1.0/Run/Makefile \
+	  COMPARE-1.0/Manual/Makefile \
+	  COMPARE-1.0/Makefile \
+	  Makefile )
+
+
+
+
+
+
+

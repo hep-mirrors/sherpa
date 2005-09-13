@@ -1,0 +1,11 @@
+21.08.2003
+========== 
+AS:
+  deleted old ChangeLog
+  Math/Histogram.C
+	linear histograms are now divided by the binwidth, in oder 
+	to give proper normalized histograms.
+
+  Phys/Shower_Observable.C Phys/Shower_Observable.H
+	the class Multiplicity can no als be used in hadron level 
+	analyses by giving mode==2 to the constructor

@@ -1,0 +1,26 @@
+MAKE = make 
+
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
+
+SUBDIRS       = \
+		ATOOLS-2.0 \
+		BEAM-1.0 \
+		PDF-1.0 \
+		MODEL-1.0 \
+		PHASIC++-1.0 \
+		EXTRA_XS-1.0 \
+		AMEGIC++-2.0 \
+		APACIC++-2.0 \
+		AMISIC++-1.0 \
+		ADICIC++-0.0 \
+		CS_SHOWER++-0.0 \
+		AHADIC++-0.0 \
+		HADRONS++-0.0 \
+		ANALYSIS-1.0 \
+		SHERPA-1.0 \
+		COMPARE-1.0 \
+		TOOLS
+
+EXTRA_DIST    = $(CVSINCLUDE)
