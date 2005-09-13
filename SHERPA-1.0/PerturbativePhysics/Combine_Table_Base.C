@@ -48,7 +48,7 @@ bool SHERPA::operator<(const Combine_Key & a,const Combine_Key & b)
 
 std::ostream& SHERPA::operator<<(std::ostream &s,const Combine_Data &cd)
 {
-  s<<" "<<std::setw(8)<<sqrt(cd.m_pt2ij)<<" "<<std::setw(8)<<sqrt(dabs(cd.m_sij))<<" "
+  s<<" "<<std::setw(8)<<cd.m_pt2ij<<": "<<sqrt(cd.m_pt2ij)<<" "<<std::setw(8)<<sqrt(dabs(cd.m_sij))<<" "
    <<std::setw(3)<<cd.m_strong;
   s<<" ("<<std::setw(11)<<cd.m_prop<<","<<std::setw(11)<<cd.m_coupling<<") ";
   std::string graphs;
@@ -92,11 +92,12 @@ std::ostream& SHERPA::operator<< (std::ostream& s ,const Combine_Table_Base & ct
   if (&ct) {
     s<<std::endl<<" Combine_Table_Base "<<ct.m_no<<" (up=";
     if (ct.p_up) s<<ct.p_up->m_no<<")"<<std::endl; else s<<"#)"<<std::endl;
-    s<<" x1="<<ct.m_x1<<" x2="<<ct.m_x2<<" kt2_min="<<ct.m_kt2min<<std::endl;
+    s<<" x1="<<ct.m_x1<<" x2="<<ct.m_x2<<" kt2_min="<<ct.m_kt2min
+     <<" kt2_min(QCD)="<<ct.m_kt2QCD<<" kt2_min(QED)="<<ct.m_kt2QED<<std::endl;
     s<<" ==============="<<std::endl;
     s<<"moms="<<ct.p_moms<<std::endl;
     for (int l=0; l<ct.m_nlegs; ++l) 
-      s<<" "<<l<<":"<<ct.p_moms[l]<<" "<<ct.p_moms[l].Abs2()<<std::endl;
+      s<<" "<<l<<":"<<ct.p_moms[l]<<" "<<ct.p_moms[l].Abs2()<<" "<<ct.p_legs[0][l].Point()->fl<<std::endl;
     s<<" ---------------"<<std::endl;
     const CD_List & cl=ct.m_combinations;
     if (cl.size()>0) {
@@ -135,7 +136,8 @@ Combine_Table_Base::Combine_Table_Base(Jet_Finder *jf,Vec4D *moms, Combine_Table
 				       int isrmode, int isrshoweron):
   p_up(up), p_legs(0), m_graph_winner(0), 
   m_isr1on(isrmode&1), m_isr2on((isrmode&2)/2), m_isrshoweron(isrshoweron),
-  p_jf(jf), p_moms(moms), m_kt2min(std::numeric_limits<double>::max())
+  p_jf(jf), p_moms(moms), m_kt2min(std::numeric_limits<double>::max()), 
+  m_kt2QCD(m_kt2min), m_kt2QED(m_kt2min)
 {
   m_no=s_all++;
 }
@@ -234,9 +236,41 @@ double Combine_Table_Base::MinKt2() const
   return m_kt2min;
 }
 
+double Combine_Table_Base::MinKt2QCD() const
+{
+  // return lowest cluster scale, which is not necessarily 
+  // scale of first clustering
+  if (p_up) {
+    double lastkt2(p_up->MinKt2QCD());
+    return Min(lastkt2,m_kt2QCD);
+  }
+  return m_kt2QCD;
+}
+
+double Combine_Table_Base::MinKt2QED() const
+{
+  // return lowest cluster scale, which is not necessarily 
+  // scale of first clustering
+  if (p_up) {
+    double lastkt2(p_up->MinKt2QED());
+    return Min(lastkt2,m_kt2QED);
+  }
+  return m_kt2QED;
+}
+
 double Combine_Table_Base::Kt2() const
 {
   return m_kt2min;
+}
+
+double Combine_Table_Base::Kt2QCD() const
+{
+  return m_kt2QCD;
+}
+
+double Combine_Table_Base::Kt2QED() const
+{
+  return m_kt2QED;
 }
 
 double Combine_Table_Base::Sprime() const

@@ -9,6 +9,7 @@
 using namespace SHERPA;
 using namespace AMEGIC;
 using namespace ATOOLS;
+using namespace std;
 
 Combine_Table_CKKW::Combine_Table_CKKW(Jet_Finder * jf,Vec4D * moms, 
 				       Combine_Table_CKKW * up,
@@ -75,12 +76,8 @@ void Combine_Table_CKKW::FillTable(Leg **legs,const int nlegs,const int nampl)
 	// never combine "0&1" !
 	if (j==1) j=2;
 	// check if leg i is combinable with leg j in any graph
-	bool hit=false;
 	for (int k=0;k<m_nampl;++k) {
-	  if (Combinable(p_legs[k][i],p_legs[k][j])) {  
-	    AddPossibility(i,j,k);
-	    hit=true;
-	  } 
+	  if (Combinable(p_legs[k][i],p_legs[k][j])) AddPossibility(i,j,k);
 	}
       }
     }
@@ -90,9 +87,11 @@ void Combine_Table_CKKW::FillTable(Leg **legs,const int nlegs,const int nampl)
 CD_List::iterator Combine_Table_CKKW::CalcPropagator(CD_List::iterator &cit)
 {
   if (cit->first.m_flav.Kfcode()==kf::none) {
-    cit->second.m_sij=(p_moms[cit->first.m_i]+p_moms[cit->first.m_j]).Abs2();
-    cit->second.m_pt2ij=p_jf->
-      MTij2(p_moms[cit->first.m_i],p_moms[cit->first.m_j]);
+    cit->second.m_sij   = (p_moms[cit->first.m_i]+p_moms[cit->first.m_j]).Abs2();
+    cit->second.m_pt2ij = p_jf->MTij2(p_moms[cit->first.m_i],p_moms[cit->first.m_j]);
+    //std::cout<<"Calculate m_perp("<<cit->first.m_i<<cit->first.m_j<<") : "
+    //	     <<p_moms[cit->first.m_i]<<" & "<<p_moms[cit->first.m_j]
+    //	     <<" -> "<<sqrt(cit->second.m_pt2ij)<<std::endl;
     return cit;
   }
   else {
@@ -124,24 +123,20 @@ CalcJet(int nl,const double x1,const double x2,ATOOLS::Vec4D * moms)
 
 bool Combine_Table_CKKW::InitStep(ATOOLS::Vec4D *moms,const int nl)
 {
-//     PRINT_INFO("init step "<<moms);
   m_nl=nl;
   // change momenta to actual values    
-  if (moms!=0) for (size_t l=0;l<m_nl;++l) {
-//     PRINT_INFO(l<<" "<<moms[l]);
-    p_moms[l]=moms[l];
-  }
+  if (moms!=0) for (size_t l=0;l<m_nl;++l) p_moms[l]=moms[l];
   // boost in CMS frame and rotate to z-axis (store old moms)
-  p_save_moms=new Vec4D[m_nl];
-  for (size_t i=0;i<m_nl;++i) p_save_moms[i]=p_moms[i];
-  Poincare cms, zaxis;
-  bool did_boost=false;
+  p_save_moms = new Vec4D[m_nl];
+  for (size_t i=0;i<m_nl;++i) p_save_moms[i] = p_moms[i];
+  bool did_boost(false);
   if (!(Vec3D(p_moms[0])==Vec3D(-1.*p_moms[1]))) {
-    cms = Poincare(p_moms[0]+p_moms[1]);
+    Poincare cms, zaxis;
+    cms   = Poincare(p_moms[0]+p_moms[1]);
     for (size_t i=0;i<m_nl;++i) cms.Boost(p_moms[i]);
     zaxis = Poincare(p_moms[0],Vec4D::ZVEC);
     for (size_t i=0;i<m_nl;++i) zaxis.Rotate(p_moms[i]);
-    did_boost=true;
+    did_boost = true;
   }
   return did_boost;
 }
@@ -152,22 +147,21 @@ bool Combine_Table_CKKW::SelectWinner(const bool did_boost)
   if (cl.size()==0) {
     // check if boosted  (restore saved moms)
     if (did_boost) { 
-      for (size_t i=0;i<m_nl;++i) p_moms[i]=p_save_moms[i]; 
+      for (size_t i=0;i<m_nl;++i) p_moms[i] = p_save_moms[i]; 
     }
     delete [] p_save_moms;
     return false;
   }
   // calculate pt2ij and determine "best" combination
-  double pt2max(sqr(rpa.gen.Ecms())), pt2min(pt2max);
-  m_cdata_winner=cl.end();
+  double pt2max(sqr(rpa.gen.Ecms()));
+  m_cdata_winner = cl.end();
   for (CD_List::iterator cit(cl.begin()); cit!=cl.end(); ++cit) {
     CD_List::iterator tit(CalcPropagator(cit));
     double pt2ij(cit->second.m_pt2ij);
     if (cit->second.m_graphs.size()==0) continue;
-    if (pt2ij<m_kt2min) m_kt2min=pt2ij;
     if (tit==cit) {
       // Relevant initial-final clustering.
-      if (cit->first.m_i<2 && pt2ij<pt2min) {
+      if (cit->first.m_i<2 && (pt2ij<m_kt2QCD || pt2ij<m_kt2QED)) {
 	// check if this combination has right direction (clustering with correct is particle)
 	double d = p_moms[cit->first.m_i][3] * p_moms[cit->first.m_j][3];
 	if (d<0.) {
@@ -180,13 +174,10 @@ bool Combine_Table_CKKW::SelectWinner(const bool did_boost)
 	}
       }
     }
-    // make sure min search starts with the highest scale
-    if (pt2ij>pt2max && pt2min==pt2max) {
-      pt2max = pt2min = pt2ij;
-      m_cdata_winner = cit;
-    }
-    else if (pt2ij<pt2min) {
-      pt2min = pt2ij;
+    if (pt2ij<m_kt2QED && !cit->second.m_strong) m_kt2QED = pt2ij;
+    if (pt2ij<m_kt2QCD &&  cit->second.m_strong) m_kt2QCD = pt2ij;
+    if (pt2ij<m_kt2min) {
+      m_kt2min = pt2ij;
       m_cdata_winner = cit;
     }
   }
@@ -203,7 +194,7 @@ bool Combine_Table_CKKW::TestMomenta(const int i,const int j)
   test.Boost(s2);
   // do not check energies individually, but cms energy 
   // does not work out due to shower failure
-  return s1[0]>0.0 && s2[0]>0.0;
+  return ((s1[0]>0.0) && (s2[0]>0.0));
 }
 
 Combine_Table_CKKW *Combine_Table_CKKW::CreateNext(bool did_boost)
@@ -234,7 +225,7 @@ Combine_Table_CKKW *Combine_Table_CKKW::CreateNext(bool did_boost)
       CombineMoms(p_moms,m_cdata_winner->first.m_i,m_cdata_winner->first.m_j,m_nl);
   }
 
-  // update x1 (before calling CalcJet again
+  // update x1,2 (before calling CalcJet again
   Combine_Table_CKKW *tab((Combine_Table_CKKW*)m_cdata_winner->second.p_down);
   if (m_cdata_winner->first.m_i<2) {
     double z=tab->Sprime()/Sprime();

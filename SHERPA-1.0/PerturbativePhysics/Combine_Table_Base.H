@@ -74,25 +74,24 @@ namespace SHERPA {
   protected:
     static int s_all;
     int        m_no;
-    Combine_Table_Base  *p_up;
-    Leg                **p_legs;
-    int     m_nlegs, m_nampl;
-    CD_List m_combinations;
-    CD_List::iterator m_cdata_winner;
-    int               m_graph_winner;
-    int m_isr1on, m_isr2on, m_isrshoweron;
-    ATOOLS::Jet_Finder *p_jf;
-    ATOOLS::Vec4D      *p_moms;
-    double m_x1, m_x2;
-    double m_kt2min;
+    int        m_isr1on, m_isr2on, m_isrshoweron;
+    int        m_nlegs, m_nampl, m_graph_winner;
+    double     m_x1, m_x2;
+    double     m_kt2min, m_kt2QCD, m_kt2QED;
+
+    Combine_Table_Base  * p_up;
+    Leg                ** p_legs;
+    CD_List               m_combinations;
+    CD_List::iterator     m_cdata_winner;
+    ATOOLS::Jet_Finder  * p_jf;
+    ATOOLS::Vec4D       * p_moms;
+
     static Leg  CombinedLeg(Leg *legs,const int i,const int j);
     static Leg *CombineLegs(Leg *legs,const int i,const int j,const int nlegs);
-    void        CombineMoms(ATOOLS::Vec4D *moms,
-			    const int i,const int j,const int maxl);
-    static void CombineMoms(ATOOLS::Vec4D *moms,
-			    const int i,const int j,
+    void        CombineMoms(ATOOLS::Vec4D *moms,const int i,const int j,const int maxl);
+    static void CombineMoms(ATOOLS::Vec4D *moms,const int i,const int j,
 			    const int maxl,ATOOLS::Vec4D *&omoms);
-    double Sprime() const;
+    double      Sprime() const;
     friend std::ostream& operator<< (std::ostream&,const Combine_Table_Base &);
     friend std::ostream &operator<<(std::ostream&,const Combine_Data &);
   public:
@@ -102,29 +101,30 @@ namespace SHERPA {
     // destructor
     virtual ~Combine_Table_Base();
     // member functions
-    virtual CD_List::iterator   CalcPropagator(CD_List::iterator &cit) = NULL;
-    virtual Combine_Table_Base *CalcJet(int nl,const double x1,const double x2,
-					ATOOLS::Vec4D *moms=NULL) = NULL;
-    virtual void   FillTable(Leg **legs,const int nlegs,const int nampl) = NULL;
-    virtual double GetWinner(int &i, int &j) = NULL;
+    virtual CD_List::iterator    CalcPropagator(CD_List::iterator &cit) = 0;
+    virtual Combine_Table_Base * CalcJet(int nl,const double x1,const double x2,
+					 ATOOLS::Vec4D *moms=NULL) = 0;
+    virtual void                 FillTable(Leg **legs,const int nlegs,const int nampl) = 0;
+    virtual double               GetWinner(int &i, int &j) = 0;
+
     int    AddCouplings(int &nqed,int &nqcd) const;
     double MinKt2() const;
+    double MinKt2QCD() const;
+    double MinKt2QED() const;
     double Kt2() const;
+    double Kt2QCD() const;
+    double Kt2QED() const;
     // inline functions
-    inline const int NLegs() const { return m_nlegs; }
-    inline Combine_Table_Base *const Up() const { return p_up; }
-    inline ATOOLS::Vec4D   Momentum(const int i) const 
-    { return p_moms[i]; }
-    inline ATOOLS::Flavour Flav(const int i) const
-    { return p_legs[m_graph_winner][i].Flav(); }
-    inline const Leg &GetLeg(const int ngraph,const int l) const
-    { return p_legs[ngraph][l]; }
-    inline const Leg &GetLeg(const int l) const
-    { return p_legs[m_graph_winner][l]; }
-    inline ATOOLS::Vec4D *const Momenta() const { return p_moms; }
-    inline Leg **const          GetLegs() const { return p_legs; }
-    inline void GetX1X2(double & x1, double & x2) const { x1=m_x1; x2=m_x2; }
-    inline static void ResetCounter() { s_all=0; }
+    inline const int                  NLegs()                              const { return m_nlegs; }
+    inline Combine_Table_Base * const Up()                                 const { return p_up; }
+    inline ATOOLS::Vec4D              Momentum(const int i)                const { return p_moms[i]; }
+    inline ATOOLS::Flavour            Flav(const int i)                    const { return p_legs[m_graph_winner][i].Flav(); }
+    inline const Leg                & GetLeg(const int ngraph,const int l) const { return p_legs[ngraph][l]; }
+    inline const Leg                & GetLeg(const int l)                  const { return p_legs[m_graph_winner][l]; }
+    inline ATOOLS::Vec4D      * const Momenta()                            const { return p_moms; }
+    inline Leg               ** const GetLegs()                            const { return p_legs; }
+    inline void                       GetX1X2(double & x1, double & x2)    const { x1=m_x1; x2=m_x2; }
+    inline static void                ResetCounter()                             { s_all=0; }
   };// end of class Combine_Table_Base
 
 }// end of namespace SHERPA

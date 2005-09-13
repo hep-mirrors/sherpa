@@ -1,45 +1,40 @@
 #ifndef Cluster_Partons_Base_H
 #define Cluster_Partons_Base_H
 
-#include "Poincare.H"
-
 #include "Combine_Table_Base.H"
-#include "XS_Selector.H"
-#include "Matrix_Element_Handler.H"
-#include "Initial_State_Shower.H"
-#include "Final_State_Shower.H"
-#include "Running_AlphaS.H"
 #include "NLL_Sudakov.H"
+#include "Running_AlphaS.H"
+#include "Jet_Finder.H"
+#include "Matrix_Element_Handler.H"
+#include "XS_Selector.H"
 #include "Amegic.H"
-
 #include <map>
 
-namespace SHERPA {
 
+namespace SHERPA {
   typedef std::map<ATOOLS::Flavour,ATOOLS::Flavour> Flavour_Map;
 
   class Cluster_Partons_Base {
   protected:
-
-    Combine_Table_Base     * p_ct, * p_combi;
-    NLL_Sudakov            * p_sud, * p_issud;
     Matrix_Element_Handler * p_me;
-    ATOOLS::Jet_Finder     * p_jf;
-    ATOOLS::Blob           * p_blob;
     MODEL::Running_AlphaS  * p_runas;
+    ATOOLS::Jet_Finder     * p_jf;
+    NLL_Sudakov            * p_fssud, * p_issud;
+    Combine_Table_Base     * p_ct, * p_combi;
+    ATOOLS::Blob           * p_blob;
 
     int     m_njet, m_maxjetnumber;
     double  m_weight, m_ycut;
     double  m_q2_hard, m_q2_qcd, m_q2_jet, m_qmax, m_qmin_i, m_qmin_f, m_qmin;
     int     m_colors[4][2];
 
-    int     m_sud_mode, m_bp_mode, m_as_order;
     int     m_isrmode, m_isrshoweron, m_fsrshoweron;
+    int     m_sud_mode, m_bp_mode, m_as_order;
+    double  m_kfac;
+    bool    m_perpmode;
+
     int     m_hard_nqcd, m_hard_nqed, m_nstrong;
-
-    double m_kfac;
-
-    APACIC::Tree * p_local_tree; 
+    double  m_counts, m_fails;
 
     EXTRAXS::XS_Base * p_xs;
 
@@ -50,63 +45,45 @@ namespace SHERPA {
 
     Flavour_Map m_flmap;
 
-    ATOOLS::Poincare m_cms_boost;
-
-    Leg   **CreateLegs(int &nampl,const int nlegs,const bool reuse=false);
-    bool    FillLegs(Leg * alegs, AMEGIC::Point * root, int & l, int maxl);
-    void    CreateTables(Leg ** legs,const int nampl,
-			 const double x1,const double x2);
+    Leg   **CreateLegs(int &,const int,const bool=false);
+    bool    FillLegs(Leg *, AMEGIC::Point *, int &, int);
+    void    CreateTables(Leg **,const int,const double,const double);
     void    CreateFlavourMap();
 
-    bool    IsColourConnected(ATOOLS::Particle * a,ATOOLS::Particle * b);
-    double  ColourAngle(const std::vector<APACIC::Knot *> & knots, const int i);
-    void    DetermineColourAngles(const std::vector<APACIC::Knot *> & knots);
-    void    EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC::Knot * d2,
-			       int mode,double scale=0.);
-
-    APACIC::Knot  *Point2Knot(APACIC::Tree * tree,const Leg & leg,const ATOOLS::Vec4D & mom,char info);
-    ATOOLS::Vec4D  Momentum(APACIC::Knot * mo, int & number);
+    int     Set2Colours(const int,const int,ATOOLS::Vec4D *,ATOOLS::Flavour *);
+    int     Set3Colours(const int,const int,ATOOLS::Vec4D *,ATOOLS::Flavour *);
 
     void    WriteOutSudakovWeights();
-
-    virtual Combine_Table_Base *CreateTable(ATOOLS::Jet_Finder *jf,ATOOLS::Vec4D *amoms,
-					    Combine_Table_Base *ct,
-					    const int isrmode,const int isrshoweron) = NULL;
-
-    
+    virtual Combine_Table_Base *CreateTable(ATOOLS::Jet_Finder *,ATOOLS::Vec4D *,
+					    Combine_Table_Base *,const int,const int) = 0;
   public :
-
-    Cluster_Partons_Base(Matrix_Element_Handler * me, ATOOLS::Jet_Finder * jf, 
-			 int maxjetnumber, int isrmode, int isrshoweron, int fsrshoweron) ;
+    Cluster_Partons_Base(Matrix_Element_Handler *,ATOOLS::Jet_Finder * jf,const int,const int,const int,const int) ;
     virtual ~Cluster_Partons_Base();
+    
+    bool ClusterConfiguration(ATOOLS::Blob *,double=1.,double=1.);
+    int  SetColours(ATOOLS::Vec4D *,ATOOLS::Flavour *);
+    int  SetDecayColours(ATOOLS::Vec4D *,ATOOLS::Flavour *,int,int);
+    void FixJetvetoPt2(double &);
+    void JetvetoPt2(double &, double &);
+    
+    virtual EXTRAXS::XS_Base * GetXS(EXTRAXS::XS_Group *,ATOOLS::Flavour *)=NULL;
+    virtual int                SetColours(EXTRAXS::XS_Base *,ATOOLS::Vec4D *,ATOOLS::Flavour *) = 0;
+    virtual void               CalculateWeight() = 0;
 
-    bool ClusterConfiguration(ATOOLS::Blob * blob,double x1=1.,double x2=1.);
-
-    void FillTrees(APACIC::Tree ** ini_trees,APACIC::Tree * fin_tree);
-    void FillDecayTree(APACIC::Tree * fin_tree,EXTRAXS::XS_Base * xs);
-
-    int SetColours(ATOOLS::Vec4D * p, ATOOLS::Flavour * fl);
-    int SetDecayColours(ATOOLS::Vec4D * p, ATOOLS::Flavour * fl,int col1,int col2);
-
-    void FixJetvetoPt2(double &pt2);
-    void JetvetoPt2(double & q2i, double & q2f);
-
-    ATOOLS::Flavour Flav(int i);
-    ATOOLS::Vec4D   Momentum(int i); 
-
-    virtual EXTRAXS::XS_Base * GetXS(EXTRAXS::XS_Group * group, ATOOLS::Flavour * fl) = NULL;
-
-    virtual int  SetColours(EXTRAXS::XS_Base * xs, ATOOLS::Vec4D * p, ATOOLS::Flavour * fl) = NULL;
-    virtual void CalculateWeight() = NULL;
-
+    ATOOLS::Flavour            Flav(int);
+    ATOOLS::Vec4D              Momentum(int); 
+    int                        Colour(int,int);
+    Combine_Table_Base *       GetCombineTable();
+    Flavour_Map *              GetFlavourMap();
     // inline functions
     inline double Weight() const      { return m_weight;    }
     inline double HardScale() const   { return m_q2_hard;   }
     inline double QCDScale() const    { return m_q2_qcd;    }
+    inline double JetScale() const    { return m_q2_jet;    }
     inline double YCut() const        { return m_ycut;      }
     inline int    OrderStrong() const { return m_hard_nqcd; }
     inline int    OrderEWeak()  const { return m_hard_nqed; }
-
+    inline int    InSwaped() const    { return p_me->InSwaped(); }
   };
 
   /*!

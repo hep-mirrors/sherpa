@@ -2,15 +2,11 @@
 #define Amegic_Apacic_Interface_H
 
 #include "Perturbative_Interface.H"
-
 #include "Cluster_Partons_Base.H"
-
+#include "Tree_Filler.H"
 #include "XS_Group.H" 
 #include "XS_Base.H" 
-
 #include "Blob.H"
-
-#include "Jet_Finder.H"
 
 
 namespace SHERPA {
@@ -23,8 +19,8 @@ namespace SHERPA {
 
     int    m_nin, m_nout;
 
-    ATOOLS::Jet_Finder    *p_jf;
-    Cluster_Partons_Base  *p_cluster;
+    Cluster_Partons_Base  * p_cluster;
+    Tree_Filler           * p_filler;
     /*! 
       Library of 2 -> 2 processes from Extra distribution (to extract the
       initial colour structure of the hardest 2->2 process within the hard blob).
