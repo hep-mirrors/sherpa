@@ -147,7 +147,7 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 			<<sum<<"."<<std::endl;
 		  }
 		  myblob->SetStatus(0);
-		  for (short unsigned int i=0;i<2;++i) {
+		  for (short unsigned int i=0;i<xs->NOut();++i) {
 		    ATOOLS::Blob *fsr = new ATOOLS::Blob();
 		    fsr->SetType(ATOOLS::btp::FS_Shower);
 		    fsr->SetTypeSpec("KMR DUPDF");
@@ -201,6 +201,7 @@ void Signal_Processes::CleanUp()
 bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,
 				const bool extract)
 {
+
   PROFILE_HERE; 
 
   double  weight = p_mehandler->Weight();
@@ -285,6 +286,7 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,
       p_hdhandler->DefineSecondaryDecays(blob);
 
       // consider rejection by remnants !!
+
       return success;
     }
     else {
