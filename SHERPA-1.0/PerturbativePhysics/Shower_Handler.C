@@ -20,7 +20,6 @@ Shower_Handler::Shower_Handler(std::string dir,std::string file,
 #endif
   p_jf(NULL), p_isr_handler(_isr)
 {
-  PRINT_INFO("in");
   Data_Read dataread(dir+file);
   m_showergenerator = dataread.GetValue<std::string>("SHOWER_GENERATOR",std::string("Apacic"));
   m_isrshowerswitch = 0;
