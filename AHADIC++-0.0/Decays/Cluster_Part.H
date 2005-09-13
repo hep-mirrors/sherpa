@@ -10,7 +10,7 @@ namespace AHADIC {
   public:
     Cluster_Part() {}
     virtual ~Cluster_Part() {}
-    virtual bool TestDecay(Cluster *,Part_List *)=NULL;
+    virtual bool TestDecay(Cluster *,Part_List *)=0;
   };
 
   class Simple_Q_over_M : public Cluster_Part {
