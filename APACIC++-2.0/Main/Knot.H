@@ -11,14 +11,14 @@ namespace APACIC {
   public: 
     Knot * left, * right, * prev;
     ATOOLS::Particle * part;
-    int stat;
+    int    stat,kn_no;
+    bool   didkin;
     double t, tout, tmax, E2, costh, phi, z, thcrit, maxpt2, x, pt2lcm;
-    int kn_no;
     ATOOLS::Simple_Polarisation_Info polinfo;
   public :
-    Knot():left(0),right(0),prev(0),part(0),stat(0),
+    Knot():left(0),right(0),prev(0),part(0),stat(0),kn_no(-1),didkin(false),
            t(0.),tout(0.),tmax(0.),E2(0.),costh(0.),phi(0.),z(0.),thcrit(M_PI),
-	   maxpt2(1.e10),x(0.),pt2lcm(0.0),kn_no(-1),
+	   maxpt2(1.e10),x(0.),pt2lcm(0.0),
 	   polinfo(ATOOLS::Simple_Polarisation_Info()) {};
     Knot(Knot * in);
     ~Knot();
@@ -41,6 +41,8 @@ namespace APACIC {
     newp   = new ATOOLS::Particle(*ink->part);
     part   = newp;
     stat   = ink->stat;
+    kn_no  = ink->kn_no;
+    didkin = ink->didkin;
 
     t      = ink->t;
     tout   = ink->tout;
@@ -53,14 +55,15 @@ namespace APACIC {
     phi    = ink->phi;
     thcrit = ink->thcrit;
     
-    kn_no  = ink->kn_no;
     polinfo= ink->polinfo;
   }
 
   inline void Knot::CopyData(Knot * ink) {
     if (part && ink->part) part->Copy(ink->part);
     stat   = ink->stat;
-
+    kn_no  = ink->kn_no;
+    didkin = ink->didkin;
+    
     t      = ink->t;
     tout   = ink->tout;
     tmax   = ink->tmax;
@@ -72,7 +75,6 @@ namespace APACIC {
     phi    = ink->phi;
     thcrit = ink->thcrit;
     
-    kn_no  = ink->kn_no;
     polinfo= ink->polinfo;
   }
 
@@ -85,9 +87,7 @@ namespace APACIC {
   }
 
 
-  inline Knot::~Knot() {
-    if (part) delete part;
-  }
+  inline Knot::~Knot() { if (part) delete part; part=NULL; }
 
   class Tree;
 

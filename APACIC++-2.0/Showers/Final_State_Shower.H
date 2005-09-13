@@ -1,77 +1,91 @@
 #ifndef Final_State_Shower_H
 #define Final_State_Shower_H
 
-#include <vector>
+#include "Tree.H"
+#include "Timelike_Sudakov.H"
+#include "Timelike_Kinematics.H"
 
-#include "Data_Read.H"
 #include "Model_Base.H"
-#include "Vector.H"
-#include "Blob.H"
 #include "Blob_List.H"
 #include "Particle_List.H"
 #include "Simple_Polarisation_Info.H"
-
-namespace ATOOLS {
-  class Flavour;
-}
+#include "Data_Read.H"
+#include "Jet_Finder.H"
+#include <vector>
 
 namespace APACIC {
-  class Timelike_Sudakov;
-  class Timelike_Kinematics;
-  class Knot;
-  class Tree;
 
   class Final_State_Shower {
-    double                   m_pt2min;
-    Timelike_Sudakov       * p_sud;
-    Timelike_Kinematics    * p_kin;
-    std::vector<Knot*> m_ini_partons;
-    std::vector<Knot> m_save_knots;
+  private:
+
+    Timelike_Kinematics *p_kin;
+    Timelike_Sudakov    *p_sud;
+    ATOOLS::Jet_Finder  *p_jf;
+
+    double m_pt2min;
+    int    m_jetmode, m_losejetmode;
+    size_t m_maxjets;
+
+    int  InitializeJets(Tree *tree,Knot *mo,int init_rel=0);
+    bool SmearDaughters(Knot *mo);
+
+    void InitTwojetTree(Tree *tree,double scale);
+    int  EvolveJet(Tree *tree,Knot *mo);
+    int  FillBranch(Tree *tree,Knot *mo,int first);
+
+    bool ChooseDaughter(Knot *mo);
+
+    void InitDaughters(Tree *tree,Knot *mo,ATOOLS::Flavour *flavs,
+		       ATOOLS::Simple_Polarisation_Info *pols,bool diced);
+    void ResetDaughters(Knot *mo);
+    void Reset(Knot *knot);
+
+    int  CollectMomenta(Knot *const knot,std::vector<ATOOLS::Vec4D> &vecs,
+			size_t &hard);
+
     static ATOOLS::Particle * FindAuntParton(Knot *);
+
+    static bool SetColours(Knot *mo,Timelike_Kinematics *kin);
+
   public:
-    Final_State_Shower(MODEL::Model_Base * model,ATOOLS::Data_Read * const dataread);
+
+    //constructor
+    Final_State_Shower(MODEL::Model_Base *model,ATOOLS::Jet_Finder *jf,
+		       ATOOLS::Data_Read *dataread);
+    // destructor
     ~Final_State_Shower();
 
-    int PerformShower(Tree * tree, int jetvetoflag);
-    void FirstTimelikeFromSpacelike(Tree * tree,Knot * mo,bool jetveto,double sprime,double z);
-    bool SetAllColours(Knot * mo);
-    static bool SetColours(Knot * mo,Timelike_Kinematics * kin);
+    // member functions
+    int PerformShower(Tree *tree, int jetvetoflag);
+    int TimelikeFromSpacelike(Tree *tree,Knot *mo,
+			      bool jetveto,double sprime,double z);
+
+    bool SetAllColours(Knot *mo);
+
     static void EstablishRelations(Knot * mo, Knot * d1,Knot * d2);
 
+    void ExtractPartons(Knot *knot,ATOOLS::Blob *blob,
+			ATOOLS::Blob_List *blist,
+			ATOOLS::Particle_List *plist=NULL);
+ 
+    bool TestShower(Tree *tree);
+    int  TestKinematics(Tree *const tree,const int mode=0);
 
-    void ExtractPartons(Knot *,ATOOLS::Blob *,
-			ATOOLS::Blob_List *,ATOOLS::Particle_List * = NULL);
-    void ExtractPartons(Knot *,ATOOLS::Particle_List * = NULL);
+    static ATOOLS::Vec4D GetMomentum(Knot *mo,int &number);
 
-    bool TestShower(Tree * tree) ;
-    static ATOOLS::Vec4D GetMomentum(Knot * mo, int & number);
-    void OutputTree(Tree * tree);
-    bool ExtraJetCheck() const;
-    double                PT2Min()        { return m_pt2min; }
-    Timelike_Kinematics * GetKinematics() { return p_kin; }
-    void SetJetvetoPt2(const double pt2);
-  private:
-    void SavePartner(size_t no, Knot * di);
-    void ClearPartner(size_t no);
-    void RestorePartner(size_t no, Knot * di);
+    void OutputTree(Tree *tree);
 
-    int InitializeJets(Tree * tree,Knot * mo,int init_rel=0);
-    bool SmearDaughters(Knot * mo);
+    // inline functions
+    inline void SetJetvetoPt2(const double pt2)  
+    { p_jf->SetShowerPt2(pt2); }
+    inline void SetMaxJetNumber(const size_t maxjets) 
+    { m_maxjets=maxjets; }
 
-    void InitTwojetTree(Tree *,double);
-    int EvolveJet(Tree *,Knot *);
-    int FillBranch(Tree *,Knot *,int);
+    inline double PT2Min() { return m_pt2min; }
 
-    bool ChooseDaughter(Knot *);
+    inline Timelike_Kinematics *GetKinematics() { return p_kin; }
 
-    void InitDaughters(Tree *,Knot *,ATOOLS::Flavour *,ATOOLS::Simple_Polarisation_Info *,bool);
-    void ResetDaughters(Knot *);
-
-    void Reset(Knot *);
-
-    bool ExtraJetCheck(Knot * mo, Knot * d1, Knot * d2);
-  };
-
+  };// end of class Final_State_Shower
 
   /*!
     \file
@@ -286,6 +300,7 @@ namespace APACIC {
   */
 
 }
+
 #endif
 
 

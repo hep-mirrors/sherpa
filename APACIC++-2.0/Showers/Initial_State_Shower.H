@@ -13,16 +13,17 @@
 #include "Run_Parameter.H"
 
 namespace APACIC {
+
   class Initial_State_Shower {
   private:
-    Spacelike_Kinematics *  p_kin;
-    Spacelike_Sudakov    ** p_suds;
     Final_State_Shower   *  p_fin;
     Sudakov_Tools        *  p_tools;
+    Spacelike_Kinematics *  p_kin;
+    Spacelike_Sudakov    ** p_suds;
 
-    bool   m_jetveto,m_fsron;
+    double m_t0, m_tlfromsl_fac;
+    bool   m_jetveto;
     double m_sprime;
-    double m_t0;
 
     double m_pt2_1, m_pt2_2, m_th_1, m_th_2;
 
@@ -38,11 +39,17 @@ namespace APACIC {
     void SingleExtract(Knot *,int,ATOOLS::Blob *,
 			ATOOLS::Blob_List *,int &);
   public:
-    Initial_State_Shower(PDF::ISR_Handler *isr,Final_State_Shower *fin,
+    Initial_State_Shower(PDF::ISR_Handler *isr,
+			 ATOOLS::Jet_Finder *const jf,Final_State_Shower *fin,
 			 MODEL::Model_Base *model,ATOOLS::Data_Read * const dataread);
     ~Initial_State_Shower();
-    bool PerformShower(Tree ** trees, int jetvetoflag);
-    void InitShowerPT(double pt2max);
+    int  PerformShower(Tree ** trees, int jetvetoflag);
+    inline void InitShowerPT(double pt2max)
+    {
+      m_pt2_1 = m_pt2_2 = pt2max;
+      m_th_1  = m_th_2  = M_PI;
+    }
+
     void ExtractPartons(Knot * kn,int beam,ATOOLS::Blob * jet,
 			ATOOLS::Blob_List *bl,ATOOLS::Particle_List *pl = NULL);
     bool TestShower(Tree **trees) ;

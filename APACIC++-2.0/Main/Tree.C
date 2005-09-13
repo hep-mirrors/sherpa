@@ -1,4 +1,5 @@
 #include "Tree.H"
+#include "Message.H"
 
 using namespace APACIC;
 using namespace ATOOLS;
@@ -183,16 +184,13 @@ Knot * Tree::GetRoot() { return p_root; }
 
 void Tree::UpdateDaughters(Knot * mo)
 {
-  msg_Debugging()<<"Tree::UpdateDaughters("<<mo->kn_no<<")"<<std::endl;
+  msg_Debugging()<<METHOD<<"("<<mo->kn_no<<"):\n";
+  msg_Indent();
   if (mo->part->Momentum()==Vec4D(0.,0.,0.,0.)) return;
-
   mo->E2 = sqr(mo->part->Momentum()[0]);
   if (mo->left==NULL) return;
-  Knot * d1 = mo->left;
-  Knot * d2 = mo->right;
-
+  Knot *d1(mo->left), *d2(mo->right);
   if (d1->part->Momentum()==Vec4D(0.,0.,0.,0.)) return;
-  
   mo->z=d1->part->Momentum()[0]/mo->part->Momentum()[0];
   UpdateDaughters(d1);
   UpdateDaughters(d2);
@@ -213,6 +211,8 @@ void Tree::BoRo(ATOOLS::Poincare & lorenz)
 
 void Tree::BoRoDaughters(ATOOLS::Poincare & lorenz, Knot * mo) 
 {
+//   msg_Debugging()<<METHOD<<"("<<mo->kn_no<<"):\n";
+//   msg_Indent();
   if (mo->left) {
     mo->left->part->SetMomentum(lorenz*mo->left->part->Momentum());
     BoRoDaughters(lorenz,mo->left);
@@ -221,6 +221,10 @@ void Tree::BoRoDaughters(ATOOLS::Poincare & lorenz, Knot * mo)
     mo->right->part->SetMomentum(lorenz*mo->right->part->Momentum());
     BoRoDaughters(lorenz,mo->right);      
   }
+//   if (mo->left)
+//     msg_Debugging()<<"p-p_1-p_2 = "<<(mo->part->Momentum()-
+// 				      mo->left->part->Momentum()-
+// 				      mo->right->part->Momentum())<<"\n";
 }
 
 void Tree::BoRo(ATOOLS::Poincare & lorenz, Knot * mo) 
@@ -307,23 +311,25 @@ void Tree::Restore()
 bool Tree::SingleCheckStructure(Knot *mo, Knot*gr, bool fixit)
 {
   if (!mo) return true;
-  bool check0 = (mo->prev==gr);
-  if (!check0) {
-    std::cerr<<" Tree::CheckStructure Error tree of ["<<mo->kn_no<<"]\n";
-    if (fixit) {
+  if (!(mo->prev==gr)) {
+    if (!fixit) {
+      msg.Error()<<"ERROR in Tree::SingleCheckStructure :"<<std::endl
+		 <<"   Relation of "<<(*gr)<<" and "<<(*mo)<<" badly defined."<<std::endl
+		 <<"   Return false."<<std::endl;
+      return false;
+    }
+    else {
+      msg.Error()<<"WARNING in Tree::SingleCheckStructure :"<<std::endl
+		 <<"   Relation of "<<(*gr)<<" and "<<(*mo)<<" badly defined."<<std::endl
+		 <<"   Try to repair it and hope for the best."<<std::endl;
       mo->prev=gr;
     }
   }
-  bool check1 = SingleCheckStructure(mo->left,mo,fixit);
-  bool check2 = SingleCheckStructure(mo->right,mo,fixit);
-  return check0 && check1 && check2;
+  return (SingleCheckStructure(mo->left,mo,fixit) && SingleCheckStructure(mo->right,mo,fixit));
 }
 
 bool Tree::CheckStructure(bool fixit)
 {
-  Knot * mo=GetInitiator();
-  bool check1 = SingleCheckStructure(mo->left,mo,fixit);
-  bool check2 = SingleCheckStructure(mo->right,mo,fixit);
-  if(!check1 || !check2) std::cerr<<"Tree::CheckStructure failed\n";
-  return check1 && check2;
+  Knot * mo(GetInitiator());
+  return (SingleCheckStructure(mo->left,mo,fixit) && SingleCheckStructure(mo->right,mo,fixit));
 }

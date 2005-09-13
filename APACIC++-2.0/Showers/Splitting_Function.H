@@ -53,8 +53,8 @@ namespace APACIC {
 
     virtual void PrintStat(int mode=0);
     
-    inline static int KFactorScheme() { return s_kfactorscheme; }
-
+    inline static int  KFactorScheme()                    { return s_kfactorscheme; }
+    inline static void SetKFactorScheme(const int scheme) { s_kfactorscheme=scheme; }
   };
 
 

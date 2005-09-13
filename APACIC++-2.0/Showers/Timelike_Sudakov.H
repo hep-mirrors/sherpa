@@ -20,38 +20,18 @@ namespace APACIC {
     double m_pt2minQED, m_alphaQED;
 
     // switches:( get in constructor)
-    int m_cpl_scheme; 
-    int m_ordering_scheme; 
-    int m_pt_scheme; 
-    int m_mass_scheme;
-    int m_width_scheme;
-    int m_MEcorr_scheme;
-    int m_zrange_scheme;
-    int m_angle_scheme;
-    int m_direct_photons;
-    int m_azimuthal_correlation;
+    int m_cpl_scheme,m_ordering_scheme,m_pt_scheme,m_mass_scheme,m_width_scheme,m_zrange_scheme;
+    int m_MEcorr_scheme,m_direct_photons,m_azimuthal_correlation;
   
     // mother
-    double m_wa;
-    double m_ta, m_tb, m_tc, m_t0;
-    double m_z, m_phi, m_pt2;
+    double m_E2, m_t, m_tb, m_tc, m_t0, m_z, m_phi, m_pt2, m_maxpt;
     ATOOLS::Simple_Polarisation_Info m_pol_b, m_pol_c;
-    double m_maxpt;
     ATOOLS::Flavour m_inflav;
 
     // veto statistics
     int m_last_veto;
 
     void CheckSplittings();
-  public:
-    Timelike_Sudakov(Timelike_Kinematics * kin, double pt2min, 
-		     MODEL::Model_Base * model, ATOOLS::Data_Read * dataread);
-    ~Timelike_Sudakov();
-
-    bool Dice(Knot * mother,Knot * granny=0);
-    const ATOOLS::Simple_Polarisation_Info & GetPolB();
-    const ATOOLS::Simple_Polarisation_Info & GetPolC();
-  private:
     double CrudeInt(double zmin, double zmax) ;
 
     void Add(Splitting_Function * spl);
@@ -62,13 +42,27 @@ namespace APACIC {
     bool Veto(Knot * mo, double ta, double wa); 
 
     bool CplVeto();
-    bool AngleVeto(Knot * mo,double ta, double wa, double z);
+    bool OrderingVeto(Knot * mo,double ta, double wa, double z);
     bool MEVeto(Knot * mo);
     bool MassVeto(double ta, double wa);
-    bool JetVeto(double ta, double wa, double z);
 
-    void UniformPhi() { m_phi = 2.*M_PI*ATOOLS::ran.Get(); }
-//     void SetJetvetoPt2(const double pt2);
+    double UniformPhi() const { return 2.*M_PI*ATOOLS::ran.Get(); }
+  public:
+    Timelike_Sudakov(Timelike_Kinematics *,MODEL::Model_Base *, const double);
+    ~Timelike_Sudakov();
+    void Init();
+    bool Dice(Knot * mother,Knot * granny=0);
+
+    const ATOOLS::Simple_Polarisation_Info & GetPolB();
+    const ATOOLS::Simple_Polarisation_Info & GetPolC();
+
+    void SetCouplingScheme(const int scheme)     { m_cpl_scheme=scheme; }
+    void SetOrderingScheme(const int scheme)     { m_ordering_scheme=scheme; }
+    void SetMassScheme(const int scheme)         { m_mass_scheme=scheme; }
+    void SetWidthScheme(const int scheme)        { m_width_scheme=scheme; }
+    void SetMECorrectionScheme(const int scheme) { m_MEcorr_scheme=scheme; }
+    void SetQEDScheme(const int scheme)          { m_direct_photons=scheme; }
+    void SetCorrelationScheme(const int scheme)  { m_azimuthal_correlation=scheme; }
   };
 
 

@@ -26,25 +26,15 @@ APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
 
 SYSLIBS	      =	-lg2c -lm -ldl
 ATOOLSLIBS    =	-L@libdir@ -lToolsPhys -lToolsMath -lToolsOrg 
-PDFLIBS       =	-L@libdir@ -lPDF -lMRST -lGRV -lCTEQ -lDUPDF -lRemnant -lSudakov
-#-lDUPDF
+PDFLIBS       =	-L@libdir@ -lPDF -lMRST -lGRV -lCTEQ -lDUPDF \
+		-lRemnant -lSudakov
 
-
-#ANALYSISLIBS  = -L@libdir@ -lAnalysis -lObservables
 BEAMLIBS      =	-L@libdir@ -lBeam 
 PHASICLIBS    =	-L@libdir@ -lPhasespace 
 MODELLIBS     =	-L@libdir@ -lModelMain -lIsajet -lHdecay 
-EXTRAXSLIBS   =	-L@libdir@ -lExtraXSns -lExtraXS2_2 
-#AMEGICLIBS    =	-L@libdir@ -lAmegic -lAmplitude -lAmegicPSGen \
-#		-lZfunctions -lAmplTools -lModel -lString 
+EXTRAXSLIBS   =	-L@libdir@ -lExtraXS -lExtraXS2_2 
 
-APACICLIBS    =	-L@libdir@ -lApacicShowersNS -lApacicMain 
-#SHERPALIBS    =	-L@libdir@ -lSherpaMain -lSherpaInitialization \
-#		-lSherpaSingleEvents -lSherpaPerturbativePhysics \
-#		-lSherpaSoftPhysics -lLundTools $(MCATNLOLIBS) -lSherpaTools 
-#
-
-#
+APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain 
 
 CTEQLIBS      = -L@libdir@ -lCTEQ 
 

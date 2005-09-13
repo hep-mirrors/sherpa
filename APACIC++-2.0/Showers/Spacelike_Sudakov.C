@@ -7,10 +7,8 @@
 #include "QCD_Splitting_Functions.H"
 #include "QED_Splitting_Functions.H"
 #include "Run_Parameter.H"
-#ifdef SHERPA_SUPPORT
 #include "Remnant_Base.H"
-#include "MyStrStream.H"
-#endif
+#include "Beam_Base.H"
 
 #include <iomanip>
 
@@ -29,26 +27,23 @@ using namespace ATOOLS;
 
 Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * pdf,Sudakov_Tools * tools,Spacelike_Kinematics * kin,
 				     double pt2min,ATOOLS::Data_Read * dataread,const size_t beam) : 
-  Backward_Splitting_Group(0,0), p_tools(tools), p_kin(kin), m_pt2min(dabs(pt2min)), 
-  m_last_veto(0)
+  Backward_Splitting_Group(0,0), p_tools(tools), p_kin(kin), 
+  p_pdfa(pdf->GetBasicPDF()->GetCopy()),
+  m_pt2min(dabs(pt2min)), 
+  m_s_hadron(dataread->GetValue<double>("IS_MAX_SCALE",sqr(rpa.gen.Ecms()))),
+  m_t0(-m_pt2min),
+  m_emin(dataread->GetValue<double>("IS_MINIMAL_E",0.5)),
+  m_cpl_scheme(dataread->GetValue<int>("IS_COUPLINGS",1)),
+  m_pdf_scheme(dataread->GetValue<int>("IS_PDF_SCALE",1)),
+  m_ordering_scheme(dataread->GetValue<int>("IS_ORDERING",0)),
+  m_facscale(rpa.gen.Ycut()*m_s_hadron),
+  m_pdf_fac(5.),
+  m_pdf_scale_fac(dataread->GetValue<double>("IS_PDF_SCALE_FACTOR",1.)),
+  m_cpl_scale_fac(dataread->GetValue<double>("IS_CPL_SCALE_FACTOR",0.25))
 {
-  p_pdf             = pdf->GetBasicPDF()->GetCopy(); 
-  p_pdfa            = pdf->GetBasicPDF()->GetCopy();
-  m_ordering_scheme = dataread->GetValue<int>("IS_ORDERING",0);  /* Switch for ordering due to coherence:  
-                                                                     0 = none, 1 = pt^2, 2 = pt^2/E^2     */
-  m_cpl_scheme      = dataread->GetValue<int>("IS_COUPLINGS",3); /*  (0=fix, 1=pt^2, 2=t/4)              */ 
-  m_pdf_scheme      = dataread->GetValue<int>("IS_PDF_SCALE",1); /*  0 = -Q^2, 1 = -(1-z)*Q^2 */
-  m_pdf_scale_fac   = dataread->GetValue<double>("IS_PDF_SCALE_FACTOR",.25);
-  m_jetveto_scheme  = dataread->GetValue<int>("IS_JETVETOSCHEME",2);
-  s_kfactorscheme   = dataread->GetValue<int>("S_KFACTOR_SCHEME",1);        
-
-  m_emin            = .5;
-  m_pt2max          = sqr(rpa.gen.Ecms());
-  m_qjet            = rpa.gen.Ycut()*sqr(rpa.gen.Ecms());
-  m_facscale        = m_qjet;
-  m_pdf_fac         = 5.; 
-  m_lambda2         = p_tools->GetLambda2(); 
-  m_b               = p_tools->GetBnorm();   
+  s_kfactorscheme = dataread->GetValue<int>("S_KFACTOR_SCHEME",1);        
+  p_pdf           = pdf->GetBasicPDF()->GetCopy();
+  p_tools->CalculateMaxCouplings(m_cpl_scheme,m_pt2min,m_s_hadron);
 
   if (p_pdf->Bunch().IsHadron()) {
     for (int i=1;i<6;++i) {
@@ -81,27 +76,25 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,bool jetveto,int & extra_pd
 {
   PROFILE_HERE;
   mo->tmax = mo->t;  // last start t
-  m_last_veto = 0;
   m_inflav = mo->part->Flav(); 
   m_t      = mo->t;
   m_x      = mo->x;
-  m_t0     = - m_pt2min;
 
   if (!((m_t-m_t0)<rpa.gen.Accu())) {
     if (mo->prev) {
       mo->t    = mo->tout;
       mo->stat = 0;
-      return 0; 
+      return false; 
     }
   }
   
-  m_xe   = 2.*m_emin*sqrt(sprime)/sqr(rpa.gen.Ecms());  
-  m_zmin = m_x/(1.-m_xe);
-  m_zmax = m_x/(m_x+m_xe);
+  double xe(2.*m_emin*sqrt(sprime)/sqr(rpa.gen.Ecms()));  
+  m_zmin = m_x/(1.-xe);
+  m_zmax = m_x/(m_x+xe);
   if (m_zmin>m_zmax) {
     mo->t    = mo->tout;
     mo->stat = 0;
-    return 0; 
+    return false; 
   }
   
   p_pdf->Calculate(m_x,(-m_t));
@@ -112,14 +105,13 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,bool jetveto,int & extra_pd
     if (m_t>m_t0) {
       mo->t    = mo->tout;
       mo->stat = 0;
-      return 0;     
+      return false;     
     }
     SelectOne();
     m_z   = GetZ();   
     m_pt2 = -(1.-m_z)*m_t;
 
-    double uhat = -m_t - sprime* (1.-m_z)/m_z;
-    if (uhat>=0.) m_last_veto=9;
+    double uhat(-m_t - sprime* (1.-m_z)/m_z);
 
     if (uhat<0. && !Veto(mo,jetveto,extra_pdf)) {
       if (!RemnantVeto(mo)) {
@@ -128,27 +120,21 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,bool jetveto,int & extra_pd
 	mo->t      = m_t;
 	mo->phi    = m_phi;
 	mo->pt2lcm = m_pt2;
-    	if (m_ordering_scheme==2) {
-	  double th = 4.*m_z*m_z*m_t/(4.*m_z*m_z*m_t-(1.-m_z)*m_x*m_x*m_pt2max);
-	  mo->thcrit = th;
-	}
-	return 1;
+	mo->thcrit = 4.*m_z*m_z*m_t/(4.*m_z*m_z*m_t-(1.-m_z)*m_x*m_x*m_s_hadron);
+	return true;
       }
-      else {
-	m_last_veto=7;
-	break;
-      }
+      else break;
     }
   }
   mo->t    = mo->tout;
   mo->stat = 0;
-  return 0; 
+  return false; 
 }
 
 void Spacelike_Sudakov::ProduceT() {
   if (m_lastint <0.) m_t = +1.;            
   else {
-    double rn=ran.Get();
+    double rn(ran.Get());
     if (IsZero( 2.*M_PI*log(rn) / (m_lastint*m_pdf_fac) )) m_t=m_t0;
     else m_t *= exp( 2.*M_PI*log(rn) / (m_lastint*m_pdf_fac) );
   }
@@ -158,57 +144,33 @@ void Spacelike_Sudakov::ProduceT() {
 bool Spacelike_Sudakov::Veto(Knot * mo,bool jetveto,int & extra_pdf) 
 {  
   PROFILE_HERE;
-  m_last_veto=0;
+  if ((1.-m_z)*m_t>m_t0)         return true;
 
-  if ((1.-m_z)*m_t>m_t0) {
-    m_last_veto=1;
-    return 1;
-  }
   // 1. masses, z-range and splitting function
-  if (!extra_pdf) {
-    if (MassVeto(0)) {
-      m_last_veto=2;
-      return 1;
-    }
-  }
-  // 2. alphaS
-  if (CplVeto()) {
-    m_last_veto=3;
-    return 1;
-  }
-  // 3. angular ordering
-  if (PTVeto(mo)) {
-    m_last_veto=4;
-    return 1;
-  }
-  // 4. jet veto
-  if (jetveto) {      // test only!!!
-    if (JetVeto(mo)) {
-      m_last_veto=5;
-      return 1;
-    }
-   }
+  if (!extra_pdf && MassVeto(0)) return true;
 
-  // 5. extra pdf weight for first branch below  Q_jet
+  // 2. alphaS
+  if (CplVeto())                 return true;
+
+  // 3. ordering
+  if (OrderingVeto(mo))          return true;
+
+  // 4. extra pdf weight for first branch below  Q_jet
   if (extra_pdf) {
-    if (MassVeto(1)) {
-      m_last_veto=6;
-      extra_pdf=0;
-      return 1;
-    }
     extra_pdf=0;
+    if (MassVeto(1))             return true;
   }
-  return 0;
+
+  return false;
 }
 
 bool Spacelike_Sudakov::MassVeto(int extra_pdf) 
 {
   PROFILE_HERE;
-  double weight  = p_pdf->GetXPDF(GetFlB())/(p_pdf->GetXPDF(GetFlA())*m_pdf_fac); 
+  double weight(p_pdf->GetXPDF(GetFlB())/(p_pdf->GetXPDF(GetFlA())*m_pdf_fac)); 
+  double q2(-m_t), firstq2(m_facscale);
+  double wb_jet(0.);
 
-  double q2 = -m_t;
-  double firstq2 = m_facscale;
-  double wb_jet = 0.;
   switch (m_pdf_scheme) {
   case 0:
     firstq2/=(1.-m_z);
@@ -221,8 +183,6 @@ bool Spacelike_Sudakov::MassVeto(int extra_pdf)
 
 
   if (extra_pdf) {
-//     std::cout<<" extrapdf : "<<firstq2<<std::endl;
-    //    firstq2*=m_pdf_scale_fac;
     p_pdf->Calculate(m_x,0.,0.,firstq2);
     wb_jet   = p_pdf->GetXPDF(GetFlB());
   }
@@ -232,78 +192,51 @@ bool Spacelike_Sudakov::MassVeto(int extra_pdf)
   }
   p_pdfa->Calculate(m_x/m_z,q2);
   double test = p_pdfa->GetXPDF(GetFlA());
-  if (test==0.) return 1;
-  weight        *= test/wb_jet;
-  weight        *= GetWeight(m_z,-m_t,0);
+  if (IsZero(test)) return true;
+  weight     *= test/wb_jet * GetWeight(m_z,-m_t,0);
 
-  if (ran.Get() > weight) return 1;
-  return 0;
+  if (ran.Get() > weight) return true;
+  return false;
 }
 
 bool Spacelike_Sudakov::CplVeto() 
 {
   switch (m_cpl_scheme) {
-  case 0 : 
-    return 0;
-  case 2 : 
-    return (GetCoupling(0.25*m_t)/GetCoupling() > ran.Get()) ? 0 : 1;   
-  case 3 : {
-    double a3 = GetCoupling();
-    double b3 = GetCoupling(0.25*m_pt2);
-    double r3 = ran.Get();
-    double w3 = b3/a3;
-    return (w3 > r3) ? 0 : 1;
+  case 0 :  return false;
+  case 2 :  return (GetCoupling(m_cpl_scale_fac*m_t)/GetCoupling()   > ran.Get()) ? false : true;   
+  default : return (GetCoupling(m_cpl_scale_fac*m_pt2)/GetCoupling() > ran.Get()) ? false : true;   
   }
-  default : 
-    double a = GetCoupling();
-    double b = GetCoupling(m_pt2);
-    double r = ran.Get();
-    double w = b/a;
-    return (w > r) ? 0 : 1;
-    return (GetCoupling(m_pt2)/GetCoupling() > ran.Get()) ? 0 : 1;   
-  }
+  return true;
 }
 
-bool Spacelike_Sudakov::PTVeto(Knot * mo) 
+bool Spacelike_Sudakov::OrderingVeto(Knot * mo) 
 {
-  double th = 4.*m_z*m_z*m_t/(4.*m_z*m_z*m_t-(1.-m_z)*m_x*m_x*m_pt2max);
   if (!m_inflav.Strong()) {
     mo->maxpt2 = m_pt2;
-    return 0;
+    return false;
   }
-
+  double th(4.*m_z*m_z*m_t/(4.*m_z*m_z*m_t-(1.-m_z)*m_x*m_x*m_s_hadron));
   switch (m_ordering_scheme) {
-  case 0 : 
+  case 0 :
     mo->maxpt2 = m_pt2;
-    return 0;
-  case 2 : 
-    if (th > mo->thcrit) return 1;
+    return false;
+  case 2 : if (th > mo->thcrit) return true;
     mo->maxpt2 = m_pt2;
-    return 0;
+    return false;
   default :
-    if (m_pt2 > mo->maxpt2) return 1;
-    mo->thcrit = th;
+    if (m_pt2 > mo->maxpt2)     return true;
     mo->maxpt2 = m_pt2;
-    return 0;
+    return false;
   }
-}
-
-bool Spacelike_Sudakov::JetVeto(Knot * mo) 
-{
-  if (m_pt2>m_qjet) {
-    return 1;
-  }
-  return 0;
+  return false;
 }
 
 bool Spacelike_Sudakov::RemnantVeto(Knot * mo) 
 {
-#ifdef SHERPA_SUPPORT
-  double E=p_remnant->BeamEnergy()*mo->x/m_z;
+  double E(p_remnant->GetBeam()->Energy()*mo->x/m_z);
   Particle part(1,GetFlA(),Vec4D(E,0.0,0.0,E));
-  if (!p_remnant->TestExtract(&part)) return 1;
-#endif
-  return 0;
+  if (!p_remnant->TestExtract(&part)) return true;
+  return false;
 }
 
 void Spacelike_Sudakov::Add(Splitting_Function * spl) 
@@ -328,15 +261,3 @@ double Spacelike_Sudakov::CrudeInt(double _zmin, double _zmax)
   if (!iter()) { p_selected=NULL; return m_lastint = -1.; }
   return m_lastint = p_selected->CrudeInt(_zmin,_zmax);
 }     
-
-
-void Spacelike_Sudakov::SetFactorisationScale(const double scale)
-{
-  //  std::cout<<"Spacelike_Sudakov::SetFactorisationScale("<<scale<<")"<<std::endl;
-  m_facscale=scale;
-}
-
-void Spacelike_Sudakov::SelectOne() 
-{
-  p_selected->SelectOne();
-}

@@ -173,8 +173,8 @@ int main(int argc,char **argv)
   Histogram histo_thrust(0,0.,.5,50);   // (1 - thrust)
   Histogram histo_multi(0,-0.5,20.5,21);
   Thrust analysis;
-
-  Apacic * apacic = new APACIC::Apacic(isr,model,2,false,true,dataread);
+  Jet_Finder jf(rpa.gen.Ycut(),1,false);
+  Apacic * apacic = new APACIC::Apacic(isr,model,&jf,dataread);
   // end initialization
 
 
@@ -240,7 +240,7 @@ int main(int argc,char **argv)
 
     // extract parton list
     Particle_List * pl = new Particle_List();
-    apacic->FinShower()->ExtractPartons(tree->GetRoot(),pl);
+    apacic->FinShower()->ExtractPartons(tree->GetRoot(),NULL,NULL,pl);
     double thrust = analysis.CalcThrust(*pl);
     int npart = pl->size();
     delete pl;

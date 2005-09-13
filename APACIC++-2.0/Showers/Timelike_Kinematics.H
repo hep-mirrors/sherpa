@@ -4,104 +4,73 @@
 #include "Knot.H"
 #include "Jet_Finder.H"
 
-namespace ATOOLS {
-  class Data_Read;
-}
-
 namespace APACIC {
+
   class Timelike_Kinematics {
-    double m_pt2min;
-    bool   m_jetveto, m_nolosejetveto;
-    int    m_pt_scheme; 
-    int    m_zrange_scheme; 
-    int    m_mass_scheme;
-    int    m_type;
-    int    m_losejet_veto;
-
-    ATOOLS::Jet_Finder * p_jf;
-  public:
-    //-----------------------------------------------------------------------
-    //----------------------- Constructors ----------------------------------
-    //----------------------------------------------------------------------- 
-    //! Constructor to initialise the Jet_Finder
-     Timelike_Kinematics(double pt2min, ATOOLS::Data_Read * const dataread);
-    //! Destructor to delete the Jet_Finder
-    ~Timelike_Kinematics() {
-      if (p_jf)   delete p_jf;
-    };
-    //-----------------------------------------------------------------------
-    //------------------- Checks for kinematics and its evaluation ----------
-    //----------------------------------------------------------------------- 
-    // ! check if daughts fit and choose one daughter to be diced again if neccessary
-    // 1 - nothing changed
-    // 0 - selected a daughter to be diced again 
-    bool CheckZRange(Knot const * const mo, ATOOLS::Flavour const * const d1_flav, 
-		     ATOOLS::Flavour const * const d2_flav) const;
-    // check for extra jets and throw veto if neccessary
-    bool JetVeto(double t, double e2, double z, double t1, double t2);
-
-    /*!
-      Wrapper for both ShuffleZ and ShuffleMoms. ShuffleZ is called for
-      first==0 and ShuffleMoms is called for first==1 (e.g. when FillBranch is
-      in used from InitializeJets).
-    */
-    int Shuffle(Knot * const mo,const int first) const;
-    /*! 
-      Determines recursively the momenta of partons, using the linked knots
-      and the kinematical information within to reconstruct momenta.
-      We'll have to redo this for an AO Shower.
-    */
-    bool DoKinematics(Knot * const mo) const;
-
-    void SetJetVeto(bool jetveto) { m_jetveto = jetveto; }
-    void SetNoLoseJetVeto(bool nolosejetveto) { m_nolosejetveto = nolosejetveto; }
-
-    bool ExtraJetCheck(Knot const * const mo, Knot const * const d1, Knot const * const d2) const;
-
-    bool ArrangeColourPartners(ATOOLS::Particle const * const aup, Knot const * const d1, Knot const * const d2) const;
-    void SetJetvetoPt2(const double pt2) const { p_jf->SetShowerPt2(pt2); }
-
-    static bool   CheckZRange(double z, double E2, double t, double t1, double t2);
-    static double CalcZShift(double z, double t, double t1, double t2, double t01=0., double t02=0.);
-    static double CalcKt2(double z, double E2, double t, double t1, double t2);
   private:
-    //-----------------------------------------------------------------------
-    //------------------- Service for the Checks ----------------------------
-    //----------------------------------------------------------------------- 
-    /*!
-      Given the off-shell masses of the - before on-shell -  daughters,
-      the z of the mother, i.e. the energy fractions of the daughters are altered
-      in here and the kinematics is checked then.
-    */
+
+    double m_pt2min, m_pt_factor;
+    int    m_pt_scheme,m_zrange_scheme,m_angle_scheme;
+    int    m_type;
+
+    ATOOLS::Jet_Finder *p_jf;
+
     int ShuffleZ(Knot * const mo) const;
-    /*!
-      This is like ShuffleZ, only with daughters with known momenta, i.e. from a ME.
-      The same checks etc. applies anyhow
-    */
     int ShuffleMoms(Knot * const mo) const; 
-    /*! 
-      Check basic kinematic of daughters (1==OK, 0==NO):
-       -# Timelike daughters at all ?
-       -# Physical opening angle (which is then set) ?
-       -# Physical deflection angle ?
-       -# New jet from shower (test only if first==1)?
-       -# Daughters to be checked ? 
-    */
-    int KinCheck(const int first, Knot * const mo) const;
-    /*!
-      Check individual momenta :
-      nan values, negative energies ?
-    */
+
+    void ConstructTwoVectors(Knot *const mo,ATOOLS::Vec4D &p1vec,
+			     ATOOLS::Vec4D &p2vec) const;
+    void ConstructDreiBein(Knot *const mo,ATOOLS::Vec3D &n1,
+			   ATOOLS::Vec3D &n2) const;
+    bool FailedKinCheck(const int first, Knot *const mo) const;
     bool CheckVector(const ATOOLS::Vec4D mom) const;
-    /*!
-      Boost/Rotate daughters of given knot, according to difference in pold and pnew.
-     */
-    void BoostDaughters(Knot * const mo) const; 
     void BoostDaughters(ATOOLS::Vec4D pold, ATOOLS::Vec4D pnew, 
-			const ATOOLS::Vec4D & pmom, Knot * const mo) const;
+			const ATOOLS::Vec4D &pmom, Knot *const mo) const;
 
-  };
+  public:
 
+    // constructor
+    Timelike_Kinematics(ATOOLS::Jet_Finder *const jf,double pt2min);
+
+    // member functions
+    void UpdateDaughters(Knot *const mo,const bool force=false) const;
+    bool CheckZRange(Knot const *const mo, 
+		     ATOOLS::Flavour const * const d1_flav, 
+		     ATOOLS::Flavour const * const d2_flav) const;
+    bool CheckZRange(const double z, const double E2, 
+		     const double t, const double t1, 
+		     const double t2) const;
+    double CalcZShift(const double z, const double t, 
+		      const double t1, const double t2) const;
+    double CalcZShift(const double z, const double t, 
+		      const double t1, const double t2, 
+		      const double t01, const double t02) const;
+    double CalcKt2(const double z, const double E2, 
+		   const double t, const double t1, const double t2) const;
+    double CalculateAngle(const Knot *);
+    double CalculateAngle(const double,const double,const double);
+
+    bool ExtraJetCheck(Knot const * const mo, 
+		       Knot const * const d1,Knot const * const d2) const;
+
+    int  Shuffle(Knot * const mo,const int first) const;
+    void DoSingleKinematics(Knot * const mo,const bool force=false) const;
+    bool DoKinematics(Knot * const mo) const;
+    void BoostDaughters(Knot * const mo) const; 
+
+    bool ArrangeColourPartners(ATOOLS::Particle const * const aup, 
+			       Knot const * const d1, 
+			       Knot const * const d2) const;
+
+    // inline functions
+    inline void SetZRangeScheme(const int &zscheme) 
+    { m_zrange_scheme=zscheme; }
+    inline void SetPTCalcScheme(const int scheme,const double pref) 
+    { m_pt_scheme=scheme; m_pt_factor=pref; }
+    inline void SetAngleScheme(const int scheme)                    
+    { m_angle_scheme=scheme; }
+
+  };// end of class Timelike_Kinematics
 
   /*!
     \file
@@ -120,6 +89,7 @@ namespace APACIC {
   */
 
 }
+
 #endif
 
 

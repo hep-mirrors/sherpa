@@ -85,7 +85,7 @@ double q_qg::CrudeInt(double _zmin, double _zmax)
 {
   m_zmin = _zmin;
   m_zmax = _zmax;
-  return m_kfactor*2.*s_CF*m_alpha*log((1.-m_zmin)/(1.-m_zmax));                              
+  return m_kfactor*2.*s_CF*m_alpha*log((1.-m_zmin)/(1.-m_zmax));         
 }
 
 double q_qg::Integral(double zmin, double zmax) 

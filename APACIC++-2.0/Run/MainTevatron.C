@@ -203,7 +203,8 @@ int main(int argc,char **argv)
   Histogram histo_pt(0,0.,200.,50);
   Histogram histo_mass(0,60.,120.,60);
 
-  Apacic * apacic   = new APACIC::Apacic(isr,model,2,true,true,dataread);
+  Jet_Finder jf(rpa.gen.Ycut(),4,false);
+  Apacic * apacic   = new APACIC::Apacic(isr,model,&jf,dataread);
   Tree   * fintree  = apacic->FinTree();
   Tree  ** initrees = apacic->IniTrees();
 

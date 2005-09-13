@@ -23,37 +23,23 @@ namespace APACIC {
     Spacelike_Kinematics * p_kin;
     PDF::PDF_Base        * p_pdfa;
     PDF::Remnant_Base    * p_remnant;
-    double          m_pt2min, m_pt2max; 
-    double          m_alphaSmax, m_alphaSfix; 
-    double          m_lambda2, m_b, m_t0;
-    double          m_xe, m_emin, m_s;
+    double m_pt2min, m_s_hadron, m_t0, m_emin;
 
-    double          m_alphaQED;
-    double          m_pt2minQED;
+    int    m_cpl_scheme,m_pdf_scheme, m_ordering_scheme;
 
-    int             m_cpl_scheme;
-    int             m_pdf_scheme;
-    int             m_ordering_scheme;
-    int             m_jetveto_scheme;
-    int             m_last_veto;
-    double          m_qjet, m_facscale;
-    double          m_pdf_fac;
-    double          m_pdf_scale_fac;
+    double m_facscale, m_pdf_fac, m_pdf_scale_fac, m_cpl_scale_fac;
     // mother
-    double m_E2;
-    double m_x, m_z, m_t, m_phi,m_pt2;
-    double m_maxpt;
+    double m_E2, m_x, m_z, m_t, m_phi, m_pt2, m_maxpt;
     ATOOLS::Flavour m_inflav;
 
     void Add(Splitting_Function * spl) ;
-    double CrudeInt(double _zmin, double _zmax);
-    
-    void SelectOne();
+    double CrudeInt(double _zmin, double _zmax);    
+    inline void SelectOne() { p_selected->SelectOne(); }
+
     void ProduceT();  
     bool Veto(Knot *,bool,int & extra_pdf); 
     bool CplVeto();
-    bool PTVeto(Knot *);
-    bool JetVeto(Knot *);
+    bool OrderingVeto(Knot *);
     bool MassVeto(int);
     bool RemnantVeto(Knot *);
     void UniformPhi() { m_phi =  2.*M_PI*ATOOLS::ran.Get(); };
@@ -70,10 +56,8 @@ namespace APACIC {
       return ATOOLS::sqr(flav.PSMass()); 
     } //!!!mass
 
-    void SetFactorisationScale(const double scale);
-
-    inline void SetRemnant(PDF::Remnant_Base *const remnant)
-    { p_remnant=remnant; }
+    inline void SetFactorisationScale(const double scale)    { m_facscale=scale; }
+    inline void SetRemnant(PDF::Remnant_Base *const remnant) { p_remnant=remnant; }
 
   };
 
