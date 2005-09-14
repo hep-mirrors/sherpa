@@ -27,7 +27,11 @@ namespace PDF {
 
     std::vector<std::pair<ATOOLS::Flavour,double> > m_extracted;
 
-    double m_renormalization_scale_factor;
+    double m_ren_scale_factor;
+
+    void SingleExtract(const ATOOLS::Flavour flavour,const double x);
+    void SingleReset();
+
   public:
 
     // constructor
@@ -51,9 +55,6 @@ namespace PDF {
 
     virtual PDF_Base *GetBasicPDF();
 
-    void Extract(const ATOOLS::Flavour flavour,const double x);
-    void Reset();
-
     // inline functions
     inline double XMin() const  { return m_xmin;  }
     inline double XMax() const  { return m_xmax;  }
@@ -68,8 +69,16 @@ namespace PDF {
 
     inline PDF_Base *operator->() { return GetBasicPDF(); }
 
-    inline double RenormalizationScaleFactor() const { return m_renormalization_scale_factor; }
-    inline void SetRenormalizationScaleFactor(double r) { m_renormalization_scale_factor = r; }
+    inline void Extract(const ATOOLS::Flavour flavour,const double x)
+    { GetBasicPDF()->SingleExtract(flavour,x); }
+    inline void Reset()
+    { GetBasicPDF()->SingleReset(); }
+
+    inline double RenormalizationScaleFactor() const 
+    { return m_ren_scale_factor; }
+    inline void SetRenormalizationScaleFactor(double r) 
+    { m_ren_scale_factor = r; }
+
   };
   
   /*!
