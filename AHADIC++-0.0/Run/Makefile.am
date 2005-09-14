@@ -32,7 +32,6 @@ if HADRONS_SUPPORT
 HADRONSLIBS   =	-L@libdir@ -lHadronsMain -lHadronsMEs -lHadronsPSs
 HADRONSINCS   = -I$(HADRONSDIR)/Main
 HADRONSDIR    = $(SHERPASYS)/HADRONS++-0.0
-HADRONSFLAGS  = -DUSING__Hadrons
 endif
 if ADICIC_SUPPORT
 ADICICLIBS    =	-L@libdir@ -lAdicicMain -lAdicicHdl -lAdicicStruct \
@@ -40,11 +39,9 @@ ADICICLIBS    =	-L@libdir@ -lAdicicMain -lAdicicHdl -lAdicicStruct \
 ADICICINCS    = -I$(ADICICDIR)/Main -I$(ADICICDIR)/Structure \
                 -I$(ADICICDIR)/Handler -I$(ADICICDIR)/Tool -I$(ADICICDIR)/Input
 ADICICDIR     =	$(SHERPASYS)/ADICIC++-0.0
-ADICICFLAGS   = -DUSING__Adicic
 endif
 if MCATNLO_SUPPORT
 MCATNLOLIBS   = -lHerwigTools
-MCATNLOFLAGS  = -DUSING__MCatNLO
 endif
 if LHAPDF_SUPPORT
 LHAPDFFLAGS    = -DLHAPDF_SUPPORT
@@ -54,7 +51,6 @@ CTEQLIBS      = -L@libdir@ -lCTEQ
 endif
 if AMISIC_SUPPORT
 AMISICINCS    =	-I$(SHERPASYS)/AMISIC++-1.0/Main
-AMISICFLAGS   =	-DUSING__Amisic
 AMISICLIBS    =	-L@libdir@ -lAmisic -lAmisicModel -lAmisicTools
 endif
 
@@ -63,13 +59,12 @@ ROOTINCS      =	-I$(ROOTSYS)/include
 ROOTLIBS      =	-L$(ROOTSYS)/lib -lCint -lCore -lHist -lGraf \
 		-lGraf3d -lGpad -lTree -lRint -lPostscript \
 		-lMatrix -lPhysics -lGui -ldl 
-ROOTFLAGS     = -DROOT_SUPPORT -Wno-long-long
+ROOTFLAGS     = -Wno-long-long
 endif
 
 if CLHEP_SUPPORT
 CLHEPINCS     =	-I$(CLHEPDIR)/include
 CLHEPLIBS     =	$(wildcard $(CLHEPDIR)/lib/libCLHEP-g++.*.a)
-CLHEPFLAGS    = -DCLHEP_SUPPORT
 endif
 
 if CVS_INCLUDE
@@ -103,16 +98,11 @@ Cluster_LDADD  = $(AHADICLIBS) $(PHASICLIBS) $(ATOOLSLIBS) $(SYSLIBS) \
 		 $(MODELLIBS) $(PDFLIBS) $(LHAPDFLIBS) $(CTEQLIBS) \
 		 $(BEAMLIBS) $(APACICLIBS)
 Cluster_LDFLAGS        =	-rdynamic
-AM_CXXFLAGS   =	$(SHERPAFLAGS) $(AHADICFLAGS) $(AMISICFLAGS) $(ADICICFLAGS) \
-		$(CLHEPFLAGS) $(ROOTFLAGS) $(LHAPDFFLAGS) $(HADRONFLAGS)
+AM_CXXFLAGS   =	$(AHADICFLAGS) $(ROOTFLAGS)
 INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(HADRONSINCS) $(AHADICINCS) \
 		$(APACICINCS) $(ADICICINCS) $(AMISICINCS) $(AMEGICINCS) \
 		$(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) $(PDFINCS) \
 		$(BEAMINCS) $(ATOOLSINCS) $(CLHEPINCS) $(ROOTINCS)
 EXTRA_DIST    =	\
-		$(CVSINCLUDE) \
-		Integration.dat Processes.dat Selector.dat Model.dat Beam.dat \
-	     	Particle.dat Hadron.dat Run.dat ISR.dat ME.dat MI.dat \
-		Decays.dat Shower.dat Fragmentation.dat makeclean makelibs \
-		Lund.dat Cluster.dat
+		$(CVSINCLUDE)
 

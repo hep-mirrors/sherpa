@@ -30,7 +30,7 @@ ROOTINCS      =	-I$(ROOTSYS)/include
 ROOTLIBS      =	-L$(ROOTSYS)/lib -lCint -lCore -lHist -lGraf \
 		-lGraf3d -lGpad -lTree -lRint -lPostscript \
 		-lMatrix -lPhysics -lGui -ldl 
-ROOTFLAGS     = -DROOT_SUPPORT -Wno-long-long
+ROOTFLAGS     = -Wno-long-long
 endif
 
 if CVS_INCLUDE
