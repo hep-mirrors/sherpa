@@ -750,8 +750,8 @@ double Channel_Elements::DiceYUniform(const double tau,const Double_Container &x
   if (mode==2) return -logtau;
   double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
   double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
-  ymin=ATOOLS::Max(yinfo[0],ymin);
-  ymax=ATOOLS::Min(yinfo[1],ymax);
+  yinfo[0]=ymin=ATOOLS::Max(yinfo[0],ymin);
+  yinfo[1]=ymax=ATOOLS::Min(yinfo[1],ymax);
   double y=ymin+(ymax-ymin)*ran;
   if (ATOOLS::IsZero(y)) y=0.;
   if (y<ymin || y>ymax){
@@ -822,8 +822,8 @@ double Channel_Elements::DiceYCentral(const double tau,const Double_Container &x
   if (mode==2) return -logtau;
   double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
   double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
-  ymin=ATOOLS::Max(yinfo[0],ymin);
-  ymax=ATOOLS::Min(yinfo[1],ymax);
+  yinfo[0]=ymin=ATOOLS::Max(yinfo[0],ymin);
+  yinfo[1]=ymax=ATOOLS::Min(yinfo[1],ymax);
   double y=pre*tan(ran*atan(ymax/pre)+(1.-ran)*atan(ymin/pre));
   if (ATOOLS::IsZero(y)) y=0.;
   if (y<ymin || y>ymax){
@@ -889,8 +889,8 @@ double Channel_Elements::DiceYForward(const double yexponent,const double tau,
   if (mode==2) return -logtau;
   double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
   double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
-  ymin=ATOOLS::Max(yinfo[0],ymin);
-  ymax=ATOOLS::Min(yinfo[1],ymax);
+  yinfo[0]=ymin=ATOOLS::Max(yinfo[0],ymin);
+  yinfo[1]=ymax=ATOOLS::Min(yinfo[1],ymax);
   double ypeak = ymax-xinfo[3];
   if (yexponent>=1. && ATOOLS::IsEqual(ypeak,ymax)) ypeak*=1.00000001;
 
@@ -978,8 +978,8 @@ double Channel_Elements::DiceYBackward(const double yexponent,const double tau,
   if (mode==2) return -logtau;
   double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
   double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
-  ymin=ATOOLS::Max(yinfo[0],ymin);
-  ymax=ATOOLS::Min(yinfo[1],ymax);
+  yinfo[0]=ymin=ATOOLS::Max(yinfo[0],ymin);
+  yinfo[1]=ymax=ATOOLS::Min(yinfo[1],ymax);
   double y=-Channel_Basics::PeakedDist(-ymin-xinfo[1],yexponent,-ymax,-ymin,-1,ran);
   if (ATOOLS::IsZero(y)) y=0.;
   if (y<ymin || y>ymax){ 
