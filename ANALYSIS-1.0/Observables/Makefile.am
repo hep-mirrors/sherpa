@@ -12,13 +12,9 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-if AMISIC_SUPPORT
-AMISICFLAGS = -DUSING__Amisic
-endif
-
 if ROOT_SUPPORT
 ROOTINCS      =	-I$(ROOTSYS)/include
-ROOTFLAGS     = -DROOT_SUPPORT -Wno-long-long
+ROOTFLAGS     = -Wno-long-long
 endif
 
 lib_LTLIBRARIES       =	libObservables.la
@@ -81,6 +77,6 @@ noinst_HEADERS        =	\
 			Scaled_Observables.H \
 			Four_Jet_Angles.H
 EXTRA_DIST    = $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(ANALYSISFLAGS) $(ROOTFLAGS) $(AMISICFLAGS)
+AM_CXXFLAGS   =	$(ANALYSISFLAGS) $(ROOTFLAGS)
 INCLUDES      =	$(ANALYSISINCS) $(MODELINCS) $(PDFINCS) \
 		$(ATOOLSINCS) $(ROOTINCS)

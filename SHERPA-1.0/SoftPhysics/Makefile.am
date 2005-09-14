@@ -19,13 +19,11 @@ if HADRONS_SUPPORT
 HADRONSDIR    =	$(SHERPASYS)/HADRONS++-0.0
 HADRONSINCS   = -I$(HADRONSDIR)/Main -I$(HADRONSDIR)/ME_Library \
 		-I$(HADRONSDIR)/PS_Library
-HADRONSFLAGS  = -DUSING__Hadrons
 endif
 if AHADIC_SUPPORT
 AHADICDIR     =	$(SHERPASYS)/AHADIC++-0.0
 AHADICINCS    = -I$(AHADICDIR)/Main -I$(AHADICDIR)/Formation \
 		-I$(AHADICDIR)/Decays -I$(AHADICDIR)/Tools
-AHADICFLAGS   = -DUSING__Ahadic
 endif
 
 if CVS_INCLUDE
@@ -34,7 +32,7 @@ endif
 
 if ROOT_SUPPORT
 ROOTINCS      =	-I$(ROOTSYS)/include
-ROOTFLAGS     = -DROOT_SUPPORT -Wno-long-long
+ROOTFLAGS     = -Wno-long-long
 endif
 
 lib_LTLIBRARIES       =	libSherpaSoftPhysics.la
