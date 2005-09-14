@@ -12,7 +12,7 @@
 #include "Combined_Selector.H"
 #include "Standard_Selector.H"
 
-#define NC 3
+#define NC 3.0
 
 using namespace EXTRAXS;
 using namespace ATOOLS;
@@ -134,8 +134,8 @@ Off_Shell_gg_gg::Off_Shell_gg_gg(const size_t nin,const size_t nout,
 double Off_Shell_gg_gg::operator()(double s,double t,double u) 
 {
   ATOOLS::Vec4D *const p=p_momenta;
-  double colfac=(NC*NC)/(NC*NC-1);
-  for (size_t i=0;i<m_nout-2;++i) colfac*=NC;
+  double colfac=NC/(NC*NC-1.0);
+  if (m_nout>0) for (size_t i=0;i<m_nout-1;++i) colfac*=NC;
   double scale=sqrt((p[m_nin+m_nout]-p[0]).PPerp2()*
 		    (p[m_nin+m_nout+1]-p[1]).PPerp2());
   double asmean((*MODEL::as)(scale));
