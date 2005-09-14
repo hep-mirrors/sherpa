@@ -185,7 +185,8 @@ bool Cluster_Partons_Base::ClusterConfiguration(Blob * blob,double x1,double x2)
   }
   int nampl=p_me->NumberOfDiagrams();
   int nlegs=nin+nout;
-  CreateTables(CreateLegs(nampl,nlegs),nampl,x1,x2);
+  Leg **legs(CreateLegs(nampl,nlegs));
+  CreateTables(legs,nampl,x1,x2);
   CreateFlavourMap();
   return 1;
 }
