@@ -290,11 +290,18 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
     return true;
   }
   if (m_spkey[3]<m_splimits[0] || m_spkey[3]>m_splimits[1]) {
-    ATOOLS::msg.Error()<<"ISR_Handler::MakeISR(..): "<<std::endl
-		       <<om::red<<" sprime out of bounds :"<<om::reset
-		       <<" s'_{min}, s'_{max 1,2} vs. s': "<<m_splimits[0]
+    ATOOLS::msg.Error()<<METHOD<<"(..): "<<om::red
+		       <<"s' out of bounds.\n"<<om::reset
+		       <<"  s'_{min}, s'_{max 1,2} vs. s': "<<m_splimits[0]
 		       <<", "<<m_splimits[1]<<", "<<m_splimits[2]
-		       <<" vs. "<<m_spkey[3]<<endl;
+		       <<" vs. "<<m_spkey[3]<<std::endl;
+    return false;
+  }
+  if (m_ykey[2]<m_ykey[0] || m_ykey[2]>m_ykey[1]) {
+    ATOOLS::msg.Error()<<METHOD<<"(..): "<<om::red
+		       <<"y out of bounds.\n"<<om::reset
+		       <<"  y_{min}, y_{max} vs. y: "<<m_ykey[0]
+		       <<", "<<m_ykey[1]<<" vs. "<<m_ykey[2]<<std::endl;
     return false;
   }
   double Q=sqrt(m_splimits[2]), E=sqrt(m_spkey[3]);
@@ -372,7 +379,9 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
   // for on-shell kinematics only !
   //   m_flux=0.5/sqrt(sqr(m_spkey[3]-m_mass2[0]-m_mass2[1])
   // 		  -4.0*m_mass2[0]*m_mass2[1]);
-  m_flux=0.25/sqrt(sqr(p[0]*p[1])-p[0].Abs2()*p[1].Abs2());
+  m_flux=sqr(p[0]*p[1])-p[0].Abs2()*p[1].Abs2();
+  if (m_flux>0.0) m_flux=0.25/sqrt(m_flux);
+  else return false;
   for (int i=0;i<2;++i) {
     p[n-2+i]=m_fixvecs[i];
     m_kmrboost.Boost(p[n-2+i]);
