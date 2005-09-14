@@ -37,7 +37,7 @@ namespace ATOOLS {
 
     void DeleteConnected(Blob *blob,std::set<Blob*> &deleted);
 
-    void TotalFourMomentum(Blob *blob,std::set<Blob*> &summed,
+    bool TotalFourMomentum(Blob *blob,std::set<Blob*> &summed,
 			   Vec4D &inisum,Vec4D &finsum,const int mode) const;
 
   public:

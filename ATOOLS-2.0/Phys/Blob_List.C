@@ -135,24 +135,34 @@ size_t Blob_List::DeleteConnected(Particle *particle)
   return DeleteConnected(owner);
 }
 
-void Blob_List::TotalFourMomentum(Blob *blob,std::set<Blob*> &summed,
+bool Blob_List::TotalFourMomentum(Blob *blob,std::set<Blob*> &summed,
 				  Vec4D &inisum,Vec4D &finsum,
 				  const int mode) const
 {
-  if (summed.find(blob)!=summed.end()) return;
+  if (summed.find(blob)!=summed.end()) return true;
   summed.insert(blob);
+  bool success=true;
   if (mode<=0)
     for (int i=0;i<blob->NInP();++i) {
       const ATOOLS::Particle *part=blob->ConstInParticle(i);
+      double abs2=part->Momentum().Abs2();
+      if (abs2>0 && abs2<0) return false;
       if (part->ProductionBlob()==NULL) inisum+=part->Momentum(); 
-      else TotalFourMomentum(part->ProductionBlob(),summed,inisum,finsum,mode);
+      else 
+	if (!TotalFourMomentum(part->ProductionBlob(),summed,inisum,finsum,mode))
+	  success=false;
     }
   if (mode>=0)
     for (int i=0;i<blob->NOutP();++i) {
       const ATOOLS::Particle *part=blob->ConstOutParticle(i);
+      double abs2=part->Momentum().Abs2();
+      if (abs2>0 && abs2<0) return false;
       if (part->DecayBlob()==NULL) finsum+=part->Momentum(); 
-      else TotalFourMomentum(part->DecayBlob(),summed,inisum,finsum,mode);
+      else 
+	if (!TotalFourMomentum(part->DecayBlob(),summed,inisum,finsum,mode))
+	  success=false;
     }
+  return success;
 }
 
 Vec4D Blob_List::TotalFourMomentum() const
@@ -160,7 +170,8 @@ Vec4D Blob_List::TotalFourMomentum() const
   if (empty()) return Vec4D();
   Vec4D inisum,finsum;
   std::set<ATOOLS::Blob*> summed;
-  TotalFourMomentum(*begin(),summed,inisum,finsum,0);
+  if (!TotalFourMomentum(*begin(),summed,inisum,finsum,0)) 
+    return Vec4D(sqrt(-1.0),Vec3D());
   return finsum-inisum;
 }
 
@@ -169,7 +180,8 @@ Vec4D Blob_List::IncomingFourMomentum() const
   if (empty()) return Vec4D();
   Vec4D inisum,finsum;
   std::set<ATOOLS::Blob*> summed;
-  TotalFourMomentum(*begin(),summed,inisum,finsum,-1);
+  if (!TotalFourMomentum(*begin(),summed,inisum,finsum,-1))
+    return Vec4D(sqrt(-1.0),Vec3D());
   return inisum;
 }
 
@@ -178,7 +190,8 @@ Vec4D Blob_List::OutgoingFourMomentum() const
   if (empty()) return Vec4D();
   Vec4D inisum,finsum;
   std::set<ATOOLS::Blob*> summed;
-  TotalFourMomentum(*begin(),summed,inisum,finsum,1);
+  if (!TotalFourMomentum(*begin(),summed,inisum,finsum,1))
+    return Vec4D(sqrt(-1.0),Vec3D());
   return finsum;
 }
 
@@ -187,7 +200,11 @@ bool Blob_List::FourMomentumConservation() const
   if (empty()) return true;
   Vec4D inisum,finsum;
   std::set<ATOOLS::Blob*> summed;
-  TotalFourMomentum(*begin(),summed,inisum,finsum,0);
+  if (!TotalFourMomentum(*begin(),summed,inisum,finsum,0)) {
+    msg.Error()<<"Blob_List::FourMomentumConservation(): ("
+	       <<this<<") Invalid momenta."<<std::endl;
+    return false;
+  }
   bool test=inisum==finsum;
   if (!test) {
     msg.Error()<<"Blob_List::FourMomentumConservation(): ("
