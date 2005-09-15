@@ -1438,6 +1438,12 @@ bool Single_Process::CheckMapping(const Process_Base * proc)
 bool             Single_Process::SelectOne()                        { return true;          }
 bool             Single_Process::SelectOneFromList()                { return true;          }
 void             Single_Process::DeSelect()                         {                       }
-bool             Single_Process::ReSelect(int i)                    { return true;          }
+
+bool             Single_Process::ReSelect(int i)                    
+{   
+  if (i==1) return true;
+  return Parent()->SelectOne();
+}
+
 size_t           Single_Process::Size()                             { return 1;             }
 Process_Base   * Single_Process::operator[] (int idx)               { return this;          }

@@ -476,8 +476,13 @@ void Process_Group::SetEvents(const double number)
 //     PRINT_INFO(Parent()->Name()<<" "<<Name()<<" "<<m_procs[i]->Name()<<" "
 //  	       <<m_procs[i]->ExpectedEvents()<<" "<<m_expevents);
   }
-  if (Parent()==this)
-    rpa.gen.SetNumberOfEstimatedEvents(m_expevents);
+   for (size_t i=0;i<m_procs.size();++i) {
+     m_procs[i]->SetPW((double)m_procs[i]->ExpectedEvents());
+   }
+   if (Parent()==this) {
+     rpa.gen.SetNumberOfEstimatedEvents(m_expevents);
+     SetPW((double)m_expevents);
+   }
 }
 
 bool Process_Group::SelectOne()
@@ -813,7 +818,6 @@ bool Process_Group::SetUpIntegrator()
 {
   bool okay = 1;
   if (m_atoms) {
-    PRINT_INFO(m_procs.size());
     for (size_t i=0;i<m_procs.size();i++) {
       if (m_procs[i]->Partner()==NULL) {
 	if (!(m_procs[i]->SetUpIntegrator())) okay = 0;

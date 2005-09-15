@@ -691,8 +691,8 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
       }
       m_weight=value;
       m_trials=i;
-      return new Blob_Data<Weight_Info>(Weight_Info(m_weight,selected->ExpectedEvents()/
-						    (double)p_process->Parent()->ExpectedEvents(),
+      return new Blob_Data<Weight_Info>(Weight_Info(m_weight,selected->ProcWeight()/
+						    p_process->Parent()->ProcWeight(),
 						    m_trials));
     }
     // call from amisic
