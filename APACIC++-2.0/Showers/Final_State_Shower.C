@@ -20,7 +20,7 @@ Final_State_Shower(MODEL::Model_Base * model,ATOOLS::Jet_Finder * jf,
   m_maxjets(2)
 { 
   m_pt2min=dataread->GetValue<double>("FS_PT2MIN",1.0);
-  m_losejetmode=dataread->GetValue<int>("FS_LOSEJETVETO",0);
+  m_losejetmode=dataread->GetValue<int>("FS_LOSEJETVETO",2);
   p_kin=new Timelike_Kinematics(jf,m_pt2min);
   p_sud=new Timelike_Sudakov(p_kin,model,m_pt2min);
   p_kin->SetPTCalcScheme(dataread->GetValue<int>("FS_PT_DEFINITION",2),
@@ -1106,8 +1106,8 @@ int Final_State_Shower::CollectMomenta(Knot *knot,std::vector<Vec4D> &vecs,
     if (dtest==1) 
       dtest=CollectMomenta(knot->right,vecs,hard);
   }
-  if (rhard==hard && knot->part->Info()=='H'
-      && knot->part->Flav().Strong()) {
+  if (rhard==hard && knot->part->Flav().Strong() &&
+      (knot->part->Info()=='H' || knot->part->Info()=='G')) {
     msg_Debugging()<<"hard "<<knot->kn_no<<std::endl;
     ++hard;
   }
