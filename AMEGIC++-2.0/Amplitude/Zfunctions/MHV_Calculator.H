@@ -9,6 +9,7 @@ namespace AMEGIC {
     int n_part;
     int * m_arg;
     int * m_dummyarg;
+    double m_cpl;
     Basic_Sfuncs * p_BS;
     int CountSign(int* perm,int* signlist,int part,int sg);
     Complex Elementary_MHV_Amplitude(int* perm,int* signlist,int part,int psign=1);

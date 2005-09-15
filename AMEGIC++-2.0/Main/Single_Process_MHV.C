@@ -1384,6 +1384,11 @@ bool Single_Process_MHV::CheckMapping(const Process_Base * proc)
 bool             Single_Process_MHV::SelectOne()                        { return true;          }
 bool             Single_Process_MHV::SelectOneFromList()                { return true;          }
 void             Single_Process_MHV::DeSelect()                         {                       }
-bool             Single_Process_MHV::ReSelect(int i)                    { return true;          }
+bool             Single_Process_MHV::ReSelect(int i) 
+{   
+  if (i==1) return true;
+  return Parent()->SelectOne();
+}
+
 size_t           Single_Process_MHV::Size()                             { return 1;             }
 Process_Base   * Single_Process_MHV::operator[] (int idx)               { return this;          }

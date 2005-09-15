@@ -1,5 +1,6 @@
 #include "MHV_Calculator.H"
 #include "Pfunc.H"
+#include "Run_Parameter.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -36,6 +37,9 @@ MHV_Calculator::MHV_Calculator(int part, Basic_Sfuncs* BS) :
     p_BS->BuildMomlist(pl);
     for (Pfunc_Iterator it=pl.begin();it!=pl.end();it++) delete (*it);
   }
+
+  m_cpl=pow(4.*M_PI*rpa.gen.ScalarFunction(std::string("alpha_S"),sqr(rpa.gen.Ecms())),(double)n_part-2.);
+
 //   std::cout<<"MHV_Calculator: constructor finalized"<<std::endl;
 }
 
@@ -59,16 +63,16 @@ double MHV_Calculator::Differential(int* perm,int* signlist)
 //          for (int i=0;i<n_part-1;i++) std::cout<<" "<<perm[i];
 //          std::cout<<std::endl;
 
-  if (nh==2) return norm(Elementary_MHV_Amplitude(m_arg,signlist,n_part));
-  if (ph==2) return norm(Elementary_MHVbar_Amplitude(m_arg,signlist,n_part));
+  if (nh==2) return m_cpl*norm(Elementary_MHV_Amplitude(m_arg,signlist,n_part));
+  if (ph==2) return m_cpl*norm(Elementary_MHVbar_Amplitude(m_arg,signlist,n_part));
   if (nh<2 || ph<2) return 0.;
 
   if (Min(nh,ph)>3){
     std::cout<<"Error in MHV_Calculator::Differential: Amplitude not implemented!"<<std::endl;
     abort();
   }
-  if (nh<ph) return norm(MHV_Amplitude(m_arg,signlist,nh));
-  return norm(MHVbar_Amplitude(m_arg,signlist,ph));
+  if (nh<ph) return m_cpl*norm(MHV_Amplitude(m_arg,signlist,nh));
+  return m_cpl*norm(MHVbar_Amplitude(m_arg,signlist,ph));
 //    std::cout<<"norm: "<<tmv<<" "<<dc<<std::endl;
 //   return Max(tmv,dc);
 }
