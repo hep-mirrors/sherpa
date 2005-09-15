@@ -89,9 +89,9 @@ CD_List::iterator Combine_Table_CKKW::CalcPropagator(CD_List::iterator &cit)
   if (cit->first.m_flav.Kfcode()==kf::none) {
     cit->second.m_sij   = (p_moms[cit->first.m_i]+p_moms[cit->first.m_j]).Abs2();
     cit->second.m_pt2ij = p_jf->MTij2(p_moms[cit->first.m_i],p_moms[cit->first.m_j]);
-    //std::cout<<"Calculate m_perp("<<cit->first.m_i<<cit->first.m_j<<") : "
-    //	     <<p_moms[cit->first.m_i]<<" & "<<p_moms[cit->first.m_j]
-    //	     <<" -> "<<sqrt(cit->second.m_pt2ij)<<std::endl;
+//     std::cout<<"Calculate m_perp("<<cit->first.m_i<<cit->first.m_j<<") : "
+//     	     <<p_moms[cit->first.m_i]<<" & "<<p_moms[cit->first.m_j]
+//     	     <<" -> "<<sqrt(cit->second.m_pt2ij)<<std::endl;
     return cit;
   }
   else {
@@ -153,7 +153,6 @@ bool Combine_Table_CKKW::SelectWinner(const bool did_boost)
     return false;
   }
   // calculate pt2ij and determine "best" combination
-  double pt2max(sqr(rpa.gen.Ecms()));
   m_cdata_winner = cl.end();
   for (CD_List::iterator cit(cl.begin()); cit!=cl.end(); ++cit) {
     CD_List::iterator tit(CalcPropagator(cit));
@@ -170,7 +169,7 @@ bool Combine_Table_CKKW::SelectWinner(const bool did_boost)
 	  cit->second.m_pt2ij = pt2ij;
 	} 
 	if (!TestMomenta(cit->first.m_i,cit->first.m_j)) {
-	  cit->second.m_pt2ij = pt2ij = pt2max;
+	  cit->second.m_pt2ij = pt2ij = std::numeric_limits<double>::max();
 	}
       }
     }
@@ -193,8 +192,7 @@ bool Combine_Table_CKKW::TestMomenta(const int i,const int j)
   test.Boost(s1);
   test.Boost(s2);
   // do not check energies individually, but cms energy 
-  // does not work out due to shower failure
-  return ((s1[0]>0.0) && (s2[0]>0.0));
+  return (s1[0]+s2[0])>0.0;
 }
 
 Combine_Table_CKKW *Combine_Table_CKKW::CreateNext(bool did_boost)
