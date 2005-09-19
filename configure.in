@@ -7,6 +7,55 @@ subversion=0
 echo -e "checking build path ... $buildpath"
 echo -e "setting package version ... $version.$subversion"
 
+guess_architecture() {
+  echo "guess_architecture(): adapted from root version 3.10"
+  arch=`uname -s | tr '[A-Z]' '[a-z]'`
+  chip=`uname -m | tr '[A-Z]' '[a-z]'`
+  osys=`uname -r`
+  echo "architecture ... $arch"
+  echo "cpu type ... $chip"
+  echo "os version ... $osys"
+  case "$arch:$chip:$osys" in
+    linux:*:*)       arch=linux;;
+    darwin:power*:*) arch=darwin ;;
+    *)
+      echo "hosts system type $chip $arch $osys not yet supported"
+      echo "possible failure due to unknown compiler/linker characteristics"
+      echo "please inform us about build results at info@sherpa-mc.de"
+      arch=default ;;
+  esac
+}
+
+set_ldflags() {
+  case "$arch" in
+    darwin)
+      echo "setting ldflags ... darwin"
+      ldflags="-dynamic -flat_namespace" ;;
+    linux)
+      echo "setting up makefiles ... linux"
+      ldflags="-rdynamic" ;;
+    default)
+      echo "setting up makefiles ... linux" 
+      ldflags="-rdynamic";;
+  esac
+}
+
+modify_makefiles() {
+  guess_architecture
+  set_ldflags
+  echo -n "setting up makefiles "
+  rundirs="*/Run/"
+  for I in $rundirs ; do
+    if test -f $I/Makefile_.am ; then
+      echo -n "."
+      sed -e "s/SHERPA_LDFLAGS/$ldflags/g" < $I/Makefile_.am > $I/Makefile.am
+    fi
+  done
+  echo " done"
+}
+
+modify_makefiles
+
 AM_INIT_AUTOMAKE(SHERPA-MC,$version.$subversion)
 AM_DISABLE_STATIC
 AC_PREFIX_DEFAULT(${PWD})
