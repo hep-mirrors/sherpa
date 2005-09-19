@@ -46,7 +46,7 @@ modify_makefiles() {
   echo -n "setting up makefiles "
   rundirs="*/Run/"
   for I in $rundirs ; do
-    if test -f $I/Makefile_.am ; then
+    if test -f $I/Makefile.am ; then
       echo -n "."
       if ! test -f $I/Makefile_am ; then
         cp $I/Makefile.am $I/Makefile_am
