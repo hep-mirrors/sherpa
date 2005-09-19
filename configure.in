@@ -1,15 +1,24 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT
-AM_INIT_AUTOMAKE(SHERPA-MC,1.0)
+
+buildpath=$PWD
+version=1
+subversion=0
+echo -e "checking build path ... $buildpath"
+echo -e "setting package version ... $version.$subversion"
+
+AM_INIT_AUTOMAKE(SHERPA-MC,$version.$subversion)
 AM_DISABLE_STATIC
 AC_PREFIX_DEFAULT(${PWD})
-dnl AC_TOP_SRCDIR_DEFAULT(${PWD})
 
 dnl Conditional compiling and linking
 if test -f __Flags.H__ ; then 
   rm -f __Flags.H__ 
 fi
 echo -e "#ifndef CXXFLAGS_H\n#define CXXFLAGS_H\n" >> __Flags.H__
+echo -e "#define SHERPA_VERSION \"$version\"" >> __Flags.H__
+echo -e "#define SHERPA_SUBVERSION \"$subversion\"\n" >> __Flags.H__
+echo -e "#define SHERPA_BUILD_PATH \"$buildpath\"\n" >> __Flags.H__
 
 AC_ARG_ENABLE(cvsinclude,
 [  --disable-cvsinclude    Disable CVS Synchronization ],
