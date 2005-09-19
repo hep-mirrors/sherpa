@@ -1,12 +1,15 @@
 #ifndef CXXFLAGS_H
 #define CXXFLAGS_H
 
+#define SHERPA_VERSION "1"
+#define SHERPA_SUBVERSION "0"
+
+#define SHERPA_BUILD_PATH "/Users/mnedos/SHERPA"
+
 #ifdef USING__CLHEP
 #undef USING__CLHEP
 #endif
-#ifdef USING__ROOT
-#undef USING__ROOT
-#endif
+#define USING__ROOT
 #ifdef USING__LHAPDF
 #undef USING__LHAPDF
 #endif

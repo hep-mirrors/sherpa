@@ -1,6 +1,6 @@
-#ifdef USING__ROOT
-
 #include "My_Root.H"
+
+#ifdef USING__ROOT
 #include "Shell_Tools.H"
 #include "TStyle.h"
 
