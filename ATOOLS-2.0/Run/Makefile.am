@@ -15,7 +15,7 @@ else
 MODELFLAGS    = -DUSING__ATOOLS_only
 endif
 
-SYSLIBS	      =	-lg2c -lm -ldl
+SYSLIBS	      =	-lm -ldl
 ATOOLSLIBS    =	-L@libdir@ -lToolsPhys -lToolsMath -lToolsOrg 
 
 if ROOT_SUPPORT
@@ -29,13 +29,13 @@ endif
 bin_PROGRAMS  =	Integrator_Test Calc Color
 Integrator_Test_SOURCES       =	Integrator_Test.C
 Integrator_Test_LDADD         =	$(ATOOLSLIBS) $(SYSLIBS) $(ROOTLIBS) 
-Integrator_Test_LDFLAGS       =	-rdynamic
+Integrator_Test_LDFLAGS       =	SHERPA_LDFLAGS
 Color_SOURCES =	Color.C
 Color_LDADD   =	$(ATOOLSLIBS) $(SYSLIBS) $(ROOTLIBS) 
-Color_LDFLAGS =	-rdynamic
+Color_LDFLAGS =	SHERPA_LDFLAGS
 Calc_SOURCES  =	Calc.C
 Calc_LDADD    =	$(ATOOLSLIBS) $(SYSLIBS) $(ROOTLIBS)
-Calc_LDFLAGS  =	-rdynamic
+Calc_LDFLAGS  =	SHERPA_LDFLAGS
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(MODELFLAGS) $(ATOOLSFLAGS) $(ROOTFLAGS)
 INCLUDES      = $(MODELINCS) $(ATOOLSINCS) $(ROOTINCS)

@@ -35,7 +35,7 @@ Flavtest_LDADD = @libdir@/libAdicicTool.la \
                  @libdir@/libHdecay.la \
                  @libdir@/libIsajet.la \
                  -lg2c -lm -ldl $(ROOTLIBS)
-#Flavtest_LDFLAGS = -rdynamic
+#Flavtest_LDFLAGS = SHERPA_LDFLAGS
 
 
 
