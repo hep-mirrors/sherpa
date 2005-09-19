@@ -128,18 +128,18 @@ void String_Library::AddToMakefileAM(string makefilename,string pathID,string fi
     file<<"libProc_"<<subdirname<<"_la_SOURCES = "<<'\\'<<endl;
     file<<"\t"<<fileID<<".C"<<endl;
     file<<"CURRENT_SHERPASYS = "<<ATOOLS::rpa.gen.Variable("CURRENT_SHERPASYS")<<endl;
-    file<<"INCLUDES = -I$(CURRENT_SHERPASYS)/AMEGIC++-2.0/Amplitude "<<'\\'<<endl;
-    file<<"\t-I$(CURRENT_SHERPASYS)/AMEGIC++-2.0/Amplitude/AmplTools "<<'\\'<<endl; 
-    file<<"\t-I$(CURRENT_SHERPASYS)/AMEGIC++-2.0/Amplitude/Zfunctions "<<'\\'<<endl;
-    file<<"\t-I$(CURRENT_SHERPASYS)/AMEGIC++-2.0/Main "<<'\\'<<endl;
-    file<<"\t-I$(CURRENT_SHERPASYS)/AMEGIC++-2.0/Model "<<'\\'<<endl;
-    file<<"\t-I$(CURRENT_SHERPASYS)/AMEGIC++-2.0/String "<<'\\'<<endl;
-    file<<"\t-I$(CURRENT_SHERPASYS)/PHASIC++-1.0/Main "<<'\\'<<endl;
-    file<<"\t-I$(CURRENT_SHERPASYS)/PHASIC++-1.0/ISR "<<'\\'<<endl;
-    file<<"\t-I$(CURRENT_SHERPASYS)/ATOOLS-2.0/Phys "<<'\\'<<endl;
-    file<<"\t-I$(CURRENT_SHERPASYS)/ATOOLS-2.0/Math "<<'\\'<<endl;
-    file<<"\t-I$(CURRENT_SHERPASYS)/ATOOLS-2.0/Org "<<'\\'<<endl;
-    file<<"\t-I$(CURRENT_SHERPASYS)/MODEL-1.0/Main "<<endl;
+    file<<"INCLUDES = -I$(CURRENT_SHERPASYS)/AMEGIC++-2."<<SHERPA_SUBVERSION<<"/Amplitude "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/AMEGIC++-2."<<SHERPA_SUBVERSION<<"/Amplitude/AmplTools "<<'\\'<<endl; 
+    file<<"\t-I$(CURRENT_SHERPASYS)/AMEGIC++-2."<<SHERPA_SUBVERSION<<"/Amplitude/Zfunctions "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/AMEGIC++-2."<<SHERPA_SUBVERSION<<"/Main "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/AMEGIC++-2."<<SHERPA_SUBVERSION<<"/Model "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/AMEGIC++-2."<<SHERPA_SUBVERSION<<"/String "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/PHASIC++-1."<<SHERPA_SUBVERSION<<"/Main "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/PHASIC++-1."<<SHERPA_SUBVERSION<<"/ISR "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/ATOOLS-2."<<SHERPA_SUBVERSION<<"/Phys "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/ATOOLS-2."<<SHERPA_SUBVERSION<<"/Math "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/ATOOLS-2."<<SHERPA_SUBVERSION<<"/Org "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/MODEL-1."<<SHERPA_SUBVERSION<<"/Main "<<endl;
     file<<"noinst_HEADERS = V.H"<<endl;
   }
   else {
