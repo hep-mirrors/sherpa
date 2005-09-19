@@ -48,7 +48,10 @@ modify_makefiles() {
   for I in $rundirs ; do
     if test -f $I/Makefile_.am ; then
       echo -n "."
-      sed -e "s/SHERPA_LDFLAGS/$ldflags/g" < $I/Makefile_.am > $I/Makefile.am
+      if ! test -f $I/Makefile_am ; then
+        cp $I/Makefile.am $I/Makefile_am
+      fi
+      sed -e "s/SHERPA_LDFLAGS/$ldflags/g" < $I/Makefile_am > $I/Makefile.am
     fi
   done
   echo " done"
