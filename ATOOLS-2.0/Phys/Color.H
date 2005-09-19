@@ -50,6 +50,8 @@ namespace ATOOLS {
 
     virtual Color_Term *GetCopy() const;
 
+    virtual void Delete();
+
     // inline functions
     inline ctt::type Type() const { return m_type; }
 
@@ -63,7 +65,13 @@ namespace ATOOLS {
   */
 
   class CNumber: public Color_Term {
+  public:
+    
+    typedef std::vector<CNumber*> CNumber_Vector;
+
   private:
+
+    static CNumber_Vector s_cnumbers;
 
     Complex m_n;
 
@@ -79,6 +87,11 @@ namespace ATOOLS {
 
     Color_Term *GetCopy() const;
 
+    static CNumber *New(const Complex &n);
+
+    void        Delete();
+    static void DeleteAll();
+
     // inline functions
     inline Complex operator()() { return m_n; }
 
@@ -91,7 +104,13 @@ namespace ATOOLS {
   */
 
   class Delta: public Color_Term {
+  public:
+    
+    typedef std::vector<Delta*> Delta_Vector;
+
   private:
+
+    static Delta_Vector s_deltas;
 
     size_t m_i, m_j;
 
@@ -120,6 +139,11 @@ namespace ATOOLS {
 
     Color_Term *GetCopy() const;
 
+    static Delta *New(const size_t &i,const size_t &j);
+
+    void        Delete();
+    static void DeleteAll();
+
   };// end of class Delta
   /*!
     \class Delta
@@ -129,7 +153,13 @@ namespace ATOOLS {
   */
 
   class Fundamental: public Color_Term {
+  public:
+    
+    typedef std::vector<Fundamental*> Fundamental_Vector;
+
   private:
+
+    static Fundamental_Vector s_fundamentals;
 
     size_t m_a, m_i, m_j;
     bool   m_fromf;
@@ -171,6 +201,12 @@ namespace ATOOLS {
 
     Color_Term *GetCopy() const;
 
+    static Fundamental *New(const size_t &a,const size_t &i,const size_t &j,
+			    const bool &fromf=false);
+
+    void        Delete();
+    static void DeleteAll();
+
   };// end of class Fundamental
   /*!
     \class Fundamental
@@ -180,7 +216,13 @@ namespace ATOOLS {
   */
 
   class Adjoint: public Color_Term {
+  public:
+    
+    typedef std::vector<Adjoint*> Adjoint_Vector;
+
   private:
+
+    static Adjoint_Vector s_adjoints;
 
     size_t m_a, m_b, m_c;
 
@@ -214,6 +256,11 @@ namespace ATOOLS {
 
     Color_Term *GetCopy() const;
 
+    static Adjoint *New(const size_t &a,const size_t &b,const size_t &c);
+
+    void        Delete();
+    static void DeleteAll();
+
   };// end of class Adjoint
   /*!
     \class Adjoint
@@ -230,6 +277,8 @@ namespace ATOOLS {
     typedef std::vector<ATOOLS::Node<Color_Term*>*> Expression_Vector;
 
   private:
+
+    static Expression_Vector s_expressions;
 
     Complex m_result;
 
@@ -249,7 +298,7 @@ namespace ATOOLS {
     inline ~Expression()
     {
       for (Color_Term_Vector::iterator tit(begin());tit!=end();++tit) 
-	delete *tit;
+	(*tit)->Delete();
     }
 
     // member functions
@@ -266,6 +315,11 @@ namespace ATOOLS {
     size_t Evaluated();
 
     Expression *GetCopy() const;
+
+    static Expression *New(const size_t &terms);
+    
+    void        Delete();
+    static void DeleteAll();
 
     void PrintStatus(const bool endline=true,
 		     const bool print=true);
