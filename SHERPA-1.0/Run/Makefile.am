@@ -33,7 +33,7 @@ PHASICLIBS    =	-L@libdir@ -lPhasespace
 MODELLIBS     =	-L@libdir@ -lModelMain -lIsajet -lHdecay 
 EXTRAXSLIBS   =	-L@libdir@ -lExtraXS -lExtraXS2_2 
 AMEGICLIBS    =	-L@libdir@ -lAmegic -lAmplitude -lAmegicPSGen \
-		-lZfunctions -lAmplTools -lModel -lString 
+		-lZfunctions -lModel -lString 
 APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain 
 SHERPALIBS    =	-L@libdir@ -lSherpaMain -lSherpaInitialization \
 		-lSherpaSingleEvents -lSherpaPerturbativePhysics \
@@ -109,11 +109,12 @@ INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(HADRONSINCS) $(AHADICINCS) \
 		$(APACICINCS) $(ADICICINCS) $(AMISICINCS) $(AMEGICINCS) \
 		$(EXTRAXSINCS) $(PHASICINCS) $(CSSINCS) $(MODELINCS) \
 		$(PDFINCS) $(BEAMINCS) $(ATOOLSINCS) $(CLHEPINCS) $(ROOTINCS)
+dist_bin_SCRIPTS      =	makelibs
 EXTRA_DIST    =	\
 		$(CVSINCLUDE) \
 		Integration.dat Processes.dat Selector.dat Model.dat Beam.dat \
 	     	Particle.dat Hadron.dat Run.dat ISR.dat ME.dat MI.dat \
-		Decays.dat Shower.dat Fragmentation.dat makeclean makelibs \
+		Decays.dat Shower.dat Fragmentation.dat \
 		Lund.dat Cluster.dat
 
 #	     	PDFsets.tar.gz MRST99Grid.tar.gz CTEQ6Grid.tar.gz
