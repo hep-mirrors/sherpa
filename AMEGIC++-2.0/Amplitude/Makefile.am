@@ -7,7 +7,7 @@ endif
 
 AMEGICFLAGS  =	-pedantic -Wall -Winline
 
-libAmplitude_la_SOURCES = Amplitude_Base.C \
+libAmplitude_la_SOURCES = CFColor.C Amplitude_Base.C \
 			  Single_Amplitude.C Amplitude_Manipulator.C \
                           Amplitude_Generator.C Color_Generator.C \
 	                  Prop_Generator.C Zfunc_Generator.C Amplitude_Group.C \
@@ -25,7 +25,7 @@ INCLUDES = -I../Amplitude \
 	   -I../../ATOOLS-2.0/Phys \
 	   -I../../ATOOLS-2.0/Math \
 	   -I../../ATOOLS-2.0/Org 
-noinst_HEADERS = Single_Amplitude.H \
+noinst_HEADERS = CFColor.H Single_Amplitude.H \
                  Amplitude_Generator.H Amplitude_Manipulator.H \
 		 Color_Generator.H \
 	         Prop_Generator.H Zfunc_Generator.H Pfunc.H \
