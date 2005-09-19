@@ -3,11 +3,11 @@
 
 using namespace ATOOLS;
 
-Data_Collector global_data_collector;
-
 ATOOLS::String_BlobDataBase_Map Data_Collector::s_datacontainer;
 int Data_Collector::s_counter=0;
 
+Data_Collector global_data_collector;
+ 
 Data_Collector::Data_Collector()
 {
   ++s_counter;
