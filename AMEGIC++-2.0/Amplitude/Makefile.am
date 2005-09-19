@@ -1,4 +1,4 @@
-SUBDIRS = Zfunctions AmplTools
+SUBDIRS = Zfunctions
 lib_LTLIBRARIES = libAmplitude.la
 
 if CVS_INCLUDE
