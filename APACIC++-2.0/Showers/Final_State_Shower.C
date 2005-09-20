@@ -94,11 +94,6 @@ TimelikeFromSpacelike(Tree *tree,Knot *mo,bool jetveto,
 	mo->left->t=mo->left->tout;
 	mo->right->t=mo->right->tout;
 	int stat(EvolveJet(tree,mo));
-	if (stat==1) {
-	  stat=TestKinematics(tree,1);
-	  msg_Debugging()<<"}\n";
-	  return stat;
-	}
 	msg_Debugging()<<"}\n";
 	return stat;
       }
