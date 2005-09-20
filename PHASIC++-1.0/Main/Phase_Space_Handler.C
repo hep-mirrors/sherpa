@@ -426,18 +426,16 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
   if (p_process->NAddOut()>0) 
     p_process->SetAddMomenta(p_isrhandler->KMRMomenta());
   // First part : flin[0] coming from Beam[0] and flin[1] coming from Beam[1]
-  bool trigger = 0;
   if (process->Trigger(p_lab)) {
     m_result_1 = 1.;
     if (m_nin>1) {
-      trigger = 1;
       Q2 = process->CalculateScale(p_lab);
       if (p_isrhandler->KMROn()>0) {
 	m_mu2key[0][0] = process->Scale(stp::kp21);
 	m_mu2key[1][0] = process->Scale(stp::kp22);
       }
       if (p_isrhandler->On()>0 && !(mode&psm::no_dice_isr)) {
-	p_isrhandler->CalculateWeight(Q2);
+	if (!p_isrhandler->CalculateWeight(Q2)) return 0.0;
 	p_isrchannels->GenerateWeight(p_isrhandler->On());
  	m_result_1 *= p_isrchannels->Weight();
 	if (p_isrhandler->KMROn()) {
@@ -463,12 +461,12 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
       else m_result_1 *= process->Differential(p_lab);
     }
     else m_result_1 *= process->Differential(p_lab);
-  }
-  if (m_nin>1 && p_isrhandler->On()==3 && trigger==1) {
-    Rotate(p_cms);
-    p_isrhandler->CalculateWeight2(Q2);
-    if (m_result_2 != 0.) m_result_2 *= process->Differential2();
-    else m_result_2 = 0.;
+    if (m_nin>1 && p_isrhandler->On()==3) {
+      Rotate(p_cms);
+      if (!p_isrhandler->CalculateWeight2(Q2)) return 0.0;
+      if (m_result_2 != 0.) m_result_2 *= process->Differential2();
+      else m_result_2 = 0.;
+    }
   }
   if (m_nin>1 && (p_isrhandler->On()>0 || p_beamhandler->On()>0)) {
     m_psweight*=m_flux=p_isrhandler->Flux();
@@ -1581,7 +1579,7 @@ bool Phase_Space_Handler::CreatePI()
   return true;
 }
 
-typedef Single_Channel * (*Getter_Function)(int nin,int nout,ATOOLS::Flavour* fl
+typedef Single_Channel * (*Lib_Getter_Function)(int nin,int nout,ATOOLS::Flavour* fl
 					    , ATOOLS::Integration_Info * const info,Phase_Space_Handler *psh);
 
 Single_Channel * Phase_Space_Handler::SetChannel(int nin,int nout,ATOOLS::Flavour* fl,
@@ -1594,14 +1592,14 @@ Single_Channel * Phase_Space_Handler::SetChannel(int nin,int nout,ATOOLS::Flavou
 
   char * error;
   void * module;
-  Getter_Function GetterFunction;
+  Lib_Getter_Function GetterFunction;
 
   // try loading library
   module = dlopen(libname.c_str(),RTLD_LAZY);
   error  = dlerror();
   if (module==NULL) return 0;
 
-  GetterFunction = (Getter_Function)dlsym(module,gettername.c_str());
+  GetterFunction = (Lib_Getter_Function)dlsym(module,gettername.c_str());
   error  = dlerror();
   if (error!=NULL) return 0;
 

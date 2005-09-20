@@ -1226,7 +1226,7 @@ bool    Single_Process::SameEvent() {
 
 ATOOLS::Blob_Data_Base * Single_Process::WeightedEvent(const int mode)     
 { 
-  if (p_partner==this) return p_pshandler->WeightedEvent(mode); 
+  if (p_partner==this) return p_pshandler->WeightedEvent(mode);
   return p_partner->WeightedEvent(mode); 
 }
 
@@ -1442,6 +1442,7 @@ void             Single_Process::DeSelect()                         {           
 bool             Single_Process::ReSelect(int i)                    
 {   
   if (i==1) return true;
+  if (p_parent==Parent()) return false;
   return Parent()->SelectOne();
 }
 

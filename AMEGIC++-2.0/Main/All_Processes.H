@@ -23,6 +23,8 @@ namespace AMEGIC {
     bool OneEvent(double = -1.);
     bool SameEvent();
 
+    ATOOLS::Blob_Data_Base *WeightedEvent(const int mode=0);
+
     int  NIn()  { return p_selected->NIn();  }
     int  NOut() { return p_selected->NOut(); } 
 

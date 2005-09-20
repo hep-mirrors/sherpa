@@ -16,8 +16,6 @@ using namespace std;
 
   ----------------------------------------------------------------------------------*/
 
-#include "Debugger.H"
-
 void All_Processes::Add(Process_Base * _proc)
 {
   _proc->SetParent(this);
@@ -170,4 +168,16 @@ bool All_Processes::SameEvent() {
     return p_selected->SameEvent();
   msg.Error()<<"ERROR in All_Processes::SameEvent() : continue and hope for the best. "<<endl;
   return 0;
+}
+
+ATOOLS::Blob_Data_Base *All_Processes::WeightedEvent(const int mode) 
+{
+  if (m_weventmode<0) return WeightedEventNS(mode);
+  long int trials(0);
+  ATOOLS::Blob_Data_Base *res(NULL);
+  do {
+    SelectOne();
+    res=p_selected->WeightedEvent(mode);
+  } while (res==NULL && ++trials<Selected()->PSHandler()->MaxTrials());
+  return res;
 }
