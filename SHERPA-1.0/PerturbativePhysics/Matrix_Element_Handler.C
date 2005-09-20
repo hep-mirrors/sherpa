@@ -339,7 +339,6 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     delete message;
   }
   else {
-    PRINT_INFO("set weight 0");
     m_weight=0.;
     if (rpa.gen.NumberOfDicedEvents()==rpa.gen.NumberOfEvents()) return true;
   }
@@ -383,7 +382,6 @@ bool Matrix_Element_Handler::GenerateSameEvent()
     delete message;
   }
   else {
-    PRINT_INFO("set weight 0");
     m_weight=0.;
     if (rpa.gen.NumberOfDicedEvents()==rpa.gen.NumberOfEvents()) return true;
   }
