@@ -188,9 +188,9 @@ int Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
 	  // new ISR Blob
 	  myblob = new Blob();
 	  myblob->SetType(btp::IS_Shower);
-	  if (Sign(_blob->InParticle(i)->Momentum()[3])==1-2*i) myblob->SetBeam(i);
-	  else myblob->SetBeam(1-i);
 	  myblob->SetStatus(1);
+	  myblob->SetBeam( int( _blob->InParticle(1-i)->Momentum()[3] 
+ 			        > _blob->InParticle(i)->Momentum()[3]) );
 	  Particle * p = new Particle(*_blob->InParticle(i));
 	  p->SetStatus(2);
 	  myblob->AddToInParticles(p);
