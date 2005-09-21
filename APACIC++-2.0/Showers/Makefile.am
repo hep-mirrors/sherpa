@@ -26,6 +26,7 @@ libApacicShowers_la_SOURCES   = Sudakov_Tools.C \
 				Timelike_Kinematics.C \
 			      	Spacelike_Sudakov.C \
 				Spacelike_Kinematics.C \
+				Jet_Veto.C \
 			      	Final_State_Shower.C \
 				Initial_State_Shower.C
 noinst_HEADERS        = Sudakov_Tools.H \
@@ -39,6 +40,7 @@ noinst_HEADERS        = Sudakov_Tools.H \
 	         	Timelike_Kinematics.H \
 			Spacelike_Sudakov.H \
 			Spacelike_Kinematics.H \
+			Jet_Veto.H \
 			Final_State_Shower.H \
 			Initial_State_Shower.H 
 AM_CXXFLAGS   = $(APACICFLAGS)
