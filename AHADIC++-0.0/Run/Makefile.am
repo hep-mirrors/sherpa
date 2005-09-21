@@ -105,4 +105,7 @@ INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(HADRONSINCS) $(AHADICINCS) \
 		$(BEAMINCS) $(ATOOLSINCS) $(CLHEPINCS) $(ROOTINCS)
 EXTRA_DIST    =	\
 		$(CVSINCLUDE)
-
+dist-hook:
+	if test -f Makefile_am ; then \
+	  cp Makefile_am $(distdir)/Makefile.am; \
+	fi

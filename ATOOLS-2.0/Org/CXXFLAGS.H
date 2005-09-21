@@ -4,12 +4,14 @@
 #define SHERPA_VERSION "1"
 #define SHERPA_SUBVERSION "0"
 
-#define SHERPA_BUILD_PATH "/Users/mnedos/SHERPA"
+#define SHERPA_BUILD_PATH "/Users/stefan/hep/sherpa/main/SHERPA-MC-1.0"
 
 #ifdef USING__CLHEP
 #undef USING__CLHEP
 #endif
-#define USING__ROOT
+#ifdef USING__ROOT
+#undef USING__ROOT
+#endif
 #ifdef USING__LHAPDF
 #undef USING__LHAPDF
 #endif
