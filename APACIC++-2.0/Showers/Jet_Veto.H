@@ -33,8 +33,10 @@ namespace APACIC {
 
     size_t m_maxjets;
 
-    int CollectMomenta(Knot *knot,std::vector<ATOOLS::Vec4D> &vecs,
-		       size_t &hard);
+    int CollectISMomenta(Knot *knot,std::vector<ATOOLS::Vec4D> &vecs,
+			 size_t &hard);
+    int CollectFSMomenta(Knot *knot,std::vector<ATOOLS::Vec4D> &vecs,
+			 size_t &hard);
  
   public:
 

@@ -9,16 +9,17 @@ Jet_Veto::Jet_Veto(ATOOLS::Jet_Finder *const jf,
 
 int Jet_Veto::TestKinematics(const int mode)
 {
-  msg_Debugging()<<METHOD<<"(..): {"<<std::endl;
+  msg_Debugging()<<METHOD<<"(..): p_{t jet} = "<<sqrt(p_jf->ShowerPt2())
+		 <<" {"<<std::endl;
   msg_Indent();
   size_t hard(0);
   std::vector<Vec4D> jets;
   if (m_mode&jv::initial) {
-    if (!CollectMomenta(p_istrees[0]->GetInitiator(),jets,hard)) return 0;
-    if (!CollectMomenta(p_istrees[1]->GetInitiator(),jets,hard)) return 0;
+    if (!CollectISMomenta(p_istrees[0]->GetRoot(),jets,hard)) return 0;
+    if (!CollectISMomenta(p_istrees[1]->GetRoot(),jets,hard)) return 0;
   }
   if (m_mode&jv::final)
-    if (!CollectMomenta(p_fstree->GetRoot(),jets,hard)) return 0;
+    if (!CollectFSMomenta(p_fstree->GetRoot(),jets,hard)) return 0;
   bool cluster(true);
   while (cluster) {
     cluster=false;
@@ -43,7 +44,7 @@ int Jet_Veto::TestKinematics(const int mode)
       cluster=true;
     }
   }
-  if (p_jf->Type()==4) {
+  if (p_jf->Type()!=1) {
     for (std::vector<Vec4D>::iterator 
 	   jit(jets.begin());jit!=jets.end();++jit) {
       double pt2j(p_jf->MTij2(Vec4D(1.,0.,0.,1.),*jit));
@@ -71,7 +72,29 @@ int Jet_Veto::TestKinematics(const int mode)
   return 1;
 }
 
-int Jet_Veto::CollectMomenta(Knot *knot,std::vector<Vec4D> &vecs,
+int Jet_Veto::CollectISMomenta(Knot *knot,std::vector<Vec4D> &vecs,
+			       size_t &hard)
+{
+  msg_Debugging()<<METHOD<<"(["<<knot->part->Flav()<<","
+		 <<(knot->prev?knot->prev->kn_no:-1)<<"->"
+		 <<knot->kn_no<<"->("
+		 <<(knot->left?knot->left->kn_no:-1)<<","
+		 <<(knot->right?knot->right->kn_no:-1)<<"),"<<knot->stat
+		 <<","<<knot->part->Info()<<"]): {\n";
+  msg_Indent();
+  int dtest(1);
+  if (knot->left)
+    dtest=CollectFSMomenta(knot->left,vecs,hard);
+  if (knot->prev==NULL || knot->stat==3) {
+    msg_Debugging()<<"}\n";
+    return dtest;
+  }
+  dtest=CollectISMomenta(knot->prev,vecs,hard);
+  msg_Debugging()<<"}\n";
+  return dtest;
+}
+
+int Jet_Veto::CollectFSMomenta(Knot *knot,std::vector<Vec4D> &vecs,
 			     size_t &hard)
 {
   msg_Debugging()<<METHOD<<"(["<<knot->part->Flav()<<","<<knot->kn_no<<"->("
@@ -91,9 +114,9 @@ int Jet_Veto::CollectMomenta(Knot *knot,std::vector<Vec4D> &vecs,
   int dtest(1);
   size_t rhard(hard);
   if (knot->left && knot->left->stat!=3) {
-    dtest=CollectMomenta(knot->left,vecs,hard);
+    dtest=CollectFSMomenta(knot->left,vecs,hard);
     if (dtest==1) 
-      dtest=CollectMomenta(knot->right,vecs,hard);
+      dtest=CollectFSMomenta(knot->right,vecs,hard);
   }
   if (rhard==hard && knot->part->Flav().Strong() && type=='H') {
     msg_Debugging()<<"hard "<<knot->kn_no<<std::endl;
