@@ -69,9 +69,10 @@ bool Momenta_Stretcher::MassThem(const int n,Vec4D * momenta,const double * mass
     delete [] oldens2;
     delete [] ens;
     msg.Error()<<"ERROR in Momenta_Stretcher::StretchThem: "<<endl
-	       <<"   Not enough energy ("<<cms<<") for the "<<n<<" masses ("<<xmt<<"); will abort."<<endl
+	       <<"   Not enough energy ("<<cms<<") for the "<<n<<" masses ("<<xmt<<"); return false"<<endl
 	       <<"   Masses :";
     for (int i=0;i<n-1;i++) msg.Error()<<masses[i]<<", ";msg.Error()<<masses[n-1]<<"."<<endl;
+    return false;
     abort();
   }
   return false;
@@ -176,6 +177,8 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
     dataread.GetValue<double>("P_{SS}/P_{QQ}",sqr(Get("Strange_supression")));    
   m_parametermap[string("P_di_1_by_P_di_0")]   = 
     dataread.GetValue<double>("P_{QQ_1}/P_{QQ_0}",1.);
+  m_parametermap[string("FourQ")]          = 
+    dataread.GetValue<double>("Four_Q_Cluster_Treatment",1.);
   m_parametermap[string("Mass_glue")]          = 
     dataread.GetValue<double>("M_GLUE",0.75);
   m_parametermap[string("Mass_down")]          = 
@@ -185,9 +188,9 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
   m_parametermap[string("Mass_strange")]       = 
     dataread.GetValue<double>("M_STRANGE",0.45);
   m_parametermap[string("Mass_charm")]         = 
-    dataread.GetValue<double>("M_CHARM",1.55);
+    dataread.GetValue<double>("M_CHARM",1.8);
   m_parametermap[string("Mass_bottom")]        = 
-    dataread.GetValue<double>("M_BOTTOM",4.55);
+    dataread.GetValue<double>("M_BOTTOM",5.0);
   m_parametermap[string("Mass_dd1")]           = 
     dataread.GetValue<double>("M_DD_1",2.*Get("Mass_down"));
   m_parametermap[string("Mass_ud0")]           = 

@@ -44,7 +44,8 @@ namespace AHADIC {
     ~All_Single_Transitions();
 
     Single_Transition_Map * GetSingleTransitions() { return p_transitions; }
-    bool                    MustTransit(Cluster *,ATOOLS::Flavour &,const double=0.);
+    bool                    MustTransit(Cluster *,ATOOLS::Flavour &,
+					const double=0.,const bool=false);
     bool                    NextLightest(Cluster *,ATOOLS::Flavour &);
     void                    PrintSingleTransitions();
   };

@@ -16,7 +16,7 @@ namespace AHADIC {
     ATOOLS::Flavour     m_flav;
     ATOOLS::Vec4D       m_p1vec, m_p2vec;
 
-    void                Shift(Part_List * pl);
+    bool                Shift(Part_List * pl);
     bool                DecayIt(ATOOLS::Particle * part,
 				ATOOLS::Particle *& part1,ATOOLS::Particle *& part2);
     void                SelectDecay(const ATOOLS::Vec4D &);

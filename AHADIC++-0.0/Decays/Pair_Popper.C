@@ -30,10 +30,7 @@ bool Pair_Popper::Pop(Flavour & flav)
       trial = iter->first;
       if (p_constituents->Mass(trial)<refmass) actweight += iter->second->TotWeight();
     }
-    if (actweight==0.) {
-      //cout<<"   Cannot pop out a flavour :"<<flav<<" "<<refmass<<endl;
-      return false;
-    }
+    if (actweight==0.) return false;
   }
   double disc = actweight*ran.Get();
   for (FlavCCMap_Iterator iter=p_constituents->CCMap.begin();

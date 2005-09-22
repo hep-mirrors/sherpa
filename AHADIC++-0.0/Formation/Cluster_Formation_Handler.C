@@ -1,4 +1,5 @@
 #include "Cluster_Formation_Handler.H"
+#include "Hadronisation_Parameters.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -101,7 +102,9 @@ void Cluster_Formation_Handler::ExtractSinglets(Blob_List * bl)
   Particle  * part1, * part2;
   Part_List * pl = new Part_List;
   for (Blob_List::iterator blit=bl->begin();blit!=bl->end();++blit) {
-    if ((*blit)->Type()==btp::FS_Shower || (*blit)->Type()==btp::IS_Shower) {
+    if ((*blit)->Type()==btp::FS_Shower || 
+	(*blit)->Type()==btp::IS_Shower ||
+	(*blit)->Type()==btp::Shower) {
       for (int i=0;i<(*blit)->NOutP();i++) {
 	part2 = (*blit)->OutParticle(i); 
 	if (part2->Status()==1 && 
@@ -157,12 +160,61 @@ void Cluster_Formation_Handler::ExtractSinglets(Blob_List * bl)
 void Cluster_Formation_Handler::FormOriginalClusters() 
 {
   Cluster_List * clist=NULL;
+  std::vector<Part_List *>::iterator help;
+  Vec4D  totvec;
+  double totmass;
+  int k(0);
+  Flavour flav;
+  bool rearrange;
+  do {
+    rearrange = false;
+    for (std::vector<Part_List *>::iterator plit=m_partlists.begin();
+	 plit!=m_partlists.end();plit++,k++) {
+      totmass = 0.;
+      totvec  = Vec4D(0.,0.,0.,0.);
+      for (Part_Iterator pit=(*plit)->begin();pit!=(*plit)->end();++pit) {
+	flav     = (*pit)->Flav();
+	totmass += hadpars.GetConstituents()->Mass(flav);
+	totvec  += (*pit)->Momentum();
+      }
+      if (sqr(totmass)>totvec.Abs2()) {
+	rearrange = true;
+	help = plit;
+	help++;
+	if (help==m_partlists.end()) {
+	  help = plit;
+	  help--;
+	  (*help)->merge((**plit));
+	  (*plit)->clear();
+	  delete (*plit);
+	  m_partlists.pop_back();	  
+	  break;
+	}
+	else {
+	  (*plit)->merge((**help));
+	  (*help)->clear();
+	  delete (*help);
+	  for (int j=k+1;j<m_partlists.size()-1;j++) m_partlists[j]=m_partlists[j+1];
+	  m_partlists.pop_back();
+	}
+      }
+    }
+  } while(rearrange);
+  
+  
   for (std::vector<Part_List *>::iterator plit=m_partlists.begin();
-       plit!=m_partlists.end();plit++) {
+       plit!=m_partlists.end();plit++,k++) {
     clist = new Cluster_List;
-    p_gludecayer->DecayList(*plit);
-    p_cformer->ConstructClusters(*plit,clist);
-    m_clulists.push_back(clist);    
+    if (!p_gludecayer->DecayList(*plit)) {
+      msg.Error()<<"Error in Cluster_Formation_Handler::FormOriginalClusters() :"<<std::endl
+		 <<"   Not enough energy to move partons on their mass shell."<<std::endl
+		 <<"   Must try a new event ... not yet implemented, abort."<<std::endl;
+      abort();
+    }
+    else {
+      p_cformer->ConstructClusters(*plit,clist);
+      m_clulists.push_back(clist);    
+    }
   }
 
   Histogram * histomass, * histonumb;

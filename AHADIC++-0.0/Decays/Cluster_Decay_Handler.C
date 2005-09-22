@@ -8,7 +8,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Cluster_Decay_Handler::Cluster_Decay_Handler(Cluster_Transformer * transformer,bool ana) :
-  m_cdm(cdm::RunningQoverM_Retain), 
+  m_cdm(cdm::RunningQoverM_Isotropic), 
   p_decayer(NULL), p_analysis(NULL), 
   p_transformer(transformer),
   p_partlist(new Part_List)
@@ -51,7 +51,6 @@ void Cluster_Decay_Handler::DecayClusters(Cluster_List * clusters,Blob * blob)
 {
   p_partlist->clear();
   msg.Tracking()<<"Decay the clusters ------------------------------------------------"<<endl;
-  //cout<<"#################################################################################"<<endl<<(*clusters)<<endl;
   Cluster_Iterator cit;
   Vec4D clumom = Vec4D(0.,0.,0.,0.), partmom = Vec4D(0.,0.,0.,0.);
   for (cit=clusters->begin();cit!=clusters->end();) {
@@ -69,12 +68,14 @@ void Cluster_Decay_Handler::DecayClusters(Cluster_List * clusters,Blob * blob)
 
   if (dabs(blob->CheckMomentumConservation().Abs2())>1.e-9) {
     msg.Tracking()<<"Check this : "
-		  <<blob->CheckMomentumConservation()<<", "<<blob->CheckMomentumConservation().Abs2()<<endl
+		  <<blob->CheckMomentumConservation()<<", "
+		  <<blob->CheckMomentumConservation().Abs2()<<endl
 		  <<"   Compare with "<<clumom<<" -> "<<partmom<<" = "<<clumom-partmom<<endl
 		  <<(*blob)
 		  <<"----------------------------------------------------------"<<endl;
   }
   if (p_analysis) p_analysis->AnalyseThis(blob);
+  //cout<<"Blob now : "<<(*blob)<<endl;
 }
 
 
@@ -83,13 +84,13 @@ void Cluster_Decay_Handler::DecayClusters(Cluster_List * clusters,Blob * blob)
 bool Cluster_Decay_Handler::DecayIt(Cluster * cluster)
 {
   if (p_decayer->Treat(cluster,p_partlist)) {
-    //cout<<"Decay "<<endl<<(*cluster)<<endl;
-    if (cluster->GetLeft())  DecayIt(cluster->GetLeft());
-    if (cluster->GetRight()) DecayIt(cluster->GetRight());
+    //cout<<"Decay "<<cluster<<endl<<(*cluster)<<endl;
+    if (cluster->GetLeft())  { /*cout<<"Left  : "<<endl;*/ DecayIt(cluster->GetLeft()); }
+    if (cluster->GetRight()) { /*cout<<"Right : "<<endl;*/ DecayIt(cluster->GetRight());}
     return true;
   }
-  //cout<<"Treat "<<endl<<(*cluster)<<endl;
+  //cout<<"TreatSingleCluster "<<endl<<(*cluster)<<endl;
   p_transformer->TreatSingleCluster(cluster,p_partlist);
-  if (cluster->GetPrev()!=NULL) cout<<"------------- Found prev."<<endl;
+  //if (cluster->GetPrev()!=NULL) cout<<"------------- Found prev."<<endl;
   return false;
 }

@@ -29,7 +29,10 @@ bool Cluster_Transformer::TreatSingleCluster(Cluster_List * clist,ATOOLS::Blob *
       hadmass   = hadron.Mass();
       extramass = extra.Mass();
       while (clumass<hadmass+extramass) {
-	if (!p_transitions->NextLightest(cluster,hadron)) return true; 
+	if (!p_transitions->NextLightest(cluster,hadron)) {
+	  //cout<<"Potential error in Cluster_Transformer::TreatSingleCluster."<<std::endl;
+	  return true;
+	} 
       }
       DecayCluster(cluster,hadron,extra,blob);
       clist->erase(clist->begin());
@@ -49,9 +52,10 @@ bool Cluster_Transformer::TreatSingleCluster(Cluster_List * clist,ATOOLS::Blob *
 bool Cluster_Transformer::TreatSingleCluster(Cluster * cluster,Part_List * plist) {
   Flavour hadron, extra;
   double  clumass,hadmass,extramass;
-  cout<<"      Single cluster with "<<cluster->Momentum()<<" {"
-      <<cluster->GetFlav(1)<<","<<cluster->GetFlav(2)<<"} "
-      <<cluster->Momentum().Abs2()<<","<<cluster->Mass()<<"."<<endl;  
+  //cout<<"      Single cluster with "<<cluster->Momentum()<<" {"
+  //   <<cluster->GetFlav(1)<<","<<cluster->GetFlav(2)<<"} "
+  //   <<cluster->Momentum().Abs2()<<","<<cluster->Mass()<<"."<<endl;  
+
   if (p_transitions->MustTransit(cluster,hadron,m_offset)) {
     switch (m_mode) {
     case int(ctrans::pi0emission):
@@ -61,6 +65,7 @@ bool Cluster_Transformer::TreatSingleCluster(Cluster * cluster,Part_List * plist
       extramass = extra.Mass();
       while (clumass<hadmass+extramass) {
 	if (!p_transitions->NextLightest(cluster,hadron)) {
+	  //cout<<"Potential error in Cluster_Transformer::TreatSingleCluster."<<std::endl;
 	  return true;
 	} 
 	hadmass   = hadron.Mass();
@@ -90,7 +95,7 @@ void Cluster_Transformer::TreatClusterList(Cluster_List * clist,ATOOLS::Blob * b
   bool     shiftit = false;
   for (Cluster_Iterator cit=clist->begin();cit!=clist->end();cit++,i++) {
     momenta[i]   = (*cit)->Momentum(0);
-    if (p_transitions->MustTransit((*cit),hadron,m_offset)) {
+    if (p_transitions->MustTransit((*cit),hadron,m_offset,true)) {
       masses[i]  = hadron.Mass();
       hadrons[i] = hadron;;
       shiftit    = true;
@@ -128,7 +133,7 @@ void Cluster_Transformer::TreatClusterList(Cluster_List * clist,ATOOLS::Blob * b
 
 void Cluster_Transformer::DecayCluster(Cluster * cluster,Flavour & had1,Flavour & had2,Blob * blob)
 {
-  //cout<<"         Check C->HH (1): "<<cluster->Momentum()<<endl;
+  //cout<<"         Check C->HH (1): "<<cluster->Momentum()<<" -> "<<had1<<"/"<<had2<<endl;
   cluster->BoostInCMS();
   double energy   = cluster->Momentum()[0];
   double m12      = sqr(had1.Mass());
@@ -146,7 +151,8 @@ void Cluster_Transformer::DecayCluster(Cluster * cluster,Flavour & had1,Flavour 
   cluster->BoostBack(hadmom2);
   cluster->BoostBack();
 
-  //cout<<"         Check C->HH (2): "<<cluster->Momentum()<<endl<<"   -> "<<hadmom1<<" "<<hadmom2<<endl;
+  //cout<<"         Check C->HH (2): "<<cluster->Momentum()
+  //<<endl<<"   -> "<<hadmom1<<" "<<hadmom2<<endl;
   
   if (dabs((cluster->Momentum()-hadmom1-hadmom2).Abs2())>1.e-4) {
     msg.Error()<<"Error in Isotropic::TwoHadronDecay (after boost) : "<<endl

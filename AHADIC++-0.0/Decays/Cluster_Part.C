@@ -8,13 +8,26 @@ using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
 
+bool Cluster_Part::Veto(Cluster * cluster,const ATOOLS::Flavour & flav)
+{
+  switch (m_4Qmode) {
+  case 1:
+  default:
+    if (flav.IsDiQuark() && 
+	(cluster->GetFlav(1).IsDiQuark() || cluster->GetFlav(2).IsDiQuark()))
+      return true;
+  }
+  return false;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //  Simple Q over M
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Simple_Q_over_M::Simple_Q_over_M() :
-  m_popper(Pair_Popper()), m_Q(hadpars.Get(string("Q_breakup")))
+  Cluster_Part(int(hadpars.Get(string("FourQ")))),
+  m_popper(Pair_Popper()), 
+  m_Q(hadpars.Get(string("Q_breakup")))
 { }
 
 Simple_Q_over_M::~Simple_Q_over_M() { }
@@ -37,9 +50,11 @@ bool Simple_Q_over_M::TestDecay(Cluster * cluster,Part_List * pl)
   bool massflag = true;
   do {
     if (m_popper.Pop(flav)) {
-      if (m1+hadpars.GetConstituents()->Mass(flav)<E1 &&
-	  m2+hadpars.GetConstituents()->Mass(flav)<E2) {
-	massflag = false;
+      if (!Veto(cluster,flav)) {
+	if (m1+hadpars.GetConstituents()->Mass(flav)<E1 &&
+	    m2+hadpars.GetConstituents()->Mass(flav)<E2) {
+	  massflag = false;
+	}
       }
     }
     else { 
@@ -68,7 +83,9 @@ bool Simple_Q_over_M::TestDecay(Cluster * cluster,Part_List * pl)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Running_Q_over_M::Running_Q_over_M() :
-  m_popper(Pair_Popper()), m_Q(hadpars.Get(string("Q_breakup")))
+  Cluster_Part(int(hadpars.Get(string("FourQ")))),
+  m_popper(Pair_Popper()), 
+  m_Q(hadpars.Get(string("Q_breakup")))
 { }
 
 Running_Q_over_M::~Running_Q_over_M() { }
@@ -99,9 +116,11 @@ bool Running_Q_over_M::TestDecay(Cluster * cluster,Part_List * pl)
   bool massflag = true;
   do {
     if (m_popper.Pop(flav)) {
-      if (m1+hadpars.GetConstituents()->Mass(flav)<E1 &&
-	  m2+hadpars.GetConstituents()->Mass(flav)<E2) {
-	massflag = false;
+      if (!Veto(cluster,flav)) {
+	if (m1+hadpars.GetConstituents()->Mass(flav)<E1 &&
+	    m2+hadpars.GetConstituents()->Mass(flav)<E2) {
+	  massflag = false;
+	}
       }
     }
     else { 

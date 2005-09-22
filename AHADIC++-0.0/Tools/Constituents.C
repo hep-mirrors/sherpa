@@ -27,6 +27,12 @@ Constituents::Constituents(bool no_diquarks) {
   cc = new ConstituentCharacteristic(hadpars.Get("Mass_strange"),1,flwt,spwt,sm);
   CCMap[Flavour(kf::s)] = cc;
 
+  flwt = spwt = 0.;
+  cc = new ConstituentCharacteristic(hadpars.Get("Mass_charm"),1,flwt,spwt,sm);
+  CCMap[Flavour(kf::c)] = cc;
+  cc = new ConstituentCharacteristic(hadpars.Get("Mass_bottom"),1,flwt,spwt,sm);
+  CCMap[Flavour(kf::b)] = cc;
+
   if (no_diquarks) return;
 
   // Light Di-quarks, spin 0
@@ -61,11 +67,6 @@ Constituents::Constituents(bool no_diquarks) {
   if (no_heavies) return;
 
   // Heavy Quark flavours : Won't show up in cluster break up => flwt = spwt = 0.
-  flwt = spwt = 0.;
-  cc = new ConstituentCharacteristic(hadpars.Get("Mass_charm"),1,flwt,spwt,sm);
-  CCMap[Flavour(kf::c)] = cc;
-  cc = new ConstituentCharacteristic(hadpars.Get("Mass_bottom"),1,flwt,spwt,sm);
-  CCMap[Flavour(kf::b)] = cc;
   cc = new ConstituentCharacteristic(hadpars.Get("Mass_cd0"),0,flwt,spwt,sm);
   CCMap[Flavour(kf::cd_0)] = cc;
   cc = new ConstituentCharacteristic(hadpars.Get("Mass_cu0"),0,flwt,spwt,sm);

@@ -7,8 +7,11 @@
 
 namespace AHADIC {
   class Cluster_Part {
+  protected:
+    int m_4Qmode;
+    virtual bool Veto(Cluster *,const ATOOLS::Flavour &);
   public:
-    Cluster_Part() {}
+    inline Cluster_Part(const int mode=1) : m_4Qmode(mode) {}
     virtual ~Cluster_Part() {}
     virtual bool TestDecay(Cluster *,Part_List *)=0;
   };

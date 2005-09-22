@@ -40,13 +40,13 @@ bool Gluon_Decayer::DecayList(Part_List * plin)
   //    std::cout<<"   "<<(*pit)->Flav()<<" : "<<(*pit)->Momentum()<<std::endl;
   //}
 
-  Shift(plin);
+  if (!Shift(plin)) return false;
 
   //mom=Vec4D(0.,0.,0.,0.);
   //for (Part_Iterator pit=plin->begin();pit!=plin->end();pit++) mom+=(*pit)->Momentum();
   //std::cout<<"Shift  : "<<plin->size()<<" with "<<mom<<"."<<std::endl;
 
-  bool success=true;
+  bool success(true);
   Particle * part, * part1, * part2;
   Part_Iterator plit=plin->begin();
   do {
@@ -75,13 +75,14 @@ bool Gluon_Decayer::DecayList(Part_List * plin)
   return success;
 }
 
-void Gluon_Decayer::Shift(Part_List * pl)
+bool Gluon_Decayer::Shift(Part_List * pl)
 {
-  size_t number    = pl->size();
-  if (number<2) return; 
+  size_t number(pl->size());
+  bool val(true);
+  if (number<2) return val; 
   Vec4D  * momenta = new Vec4D[number];
   double * masses  = new double[number];
-  int k=0;
+  int k(0);
   Flavour flav;
   for (Part_Iterator pit=pl->begin();pit!=pl->end();++pit,++k) {
     flav       = (*pit)->Flav();
@@ -100,14 +101,15 @@ void Gluon_Decayer::Shift(Part_List * pl)
     masses[k]  = hadpars.GetConstituents()->Mass(flav);
     //std::cout<<"Gluon_Decayer : "<<k<<" : "<<flav<<" "<<masses[k]<<std::endl;
   }
-  hadpars.AdjustMomenta(number,momenta,masses);
-  k = 0;
+  if (!hadpars.AdjustMomenta(number,momenta,masses)) val=false;
 
+  k = 0;
   for (Part_Iterator pit=pl->begin();pit!=pl->end();++pit,++k) 
     (*pit)->SetMomentum(momenta[k]);
 
   delete momenta;
   delete masses;
+  return val;
 }
 
 bool Gluon_Decayer::DecayIt(ATOOLS::Particle * part,
