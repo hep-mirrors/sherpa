@@ -443,7 +443,7 @@ size_t FindBinaryPlus(const std::string &expr,const bool fwd,
   if (pos==std::string::npos || (pos==0 && !fwd)) return std::string::npos;
   if (pos==0) return FindBinaryPlus(expr,fwd,1);
   if (expr[pos-1]=='e' || expr[pos-1]=='E' ||
-      expr[pos-1]=='}' || expr[pos-1]==',' || expr[pos-1]=='(') 
+      expr[pos-1]==',' || expr[pos-1]=='(') 
     return FindBinaryPlus(expr,fwd,fwd?pos+1:pos-1);
   return pos;  
 }
@@ -456,7 +456,7 @@ size_t FindBinaryMinus(const std::string &expr,const bool fwd,
   if (pos==std::string::npos || (pos==0 && !fwd)) return std::string::npos;
   if (pos==0) return FindBinaryMinus(expr,fwd,1);
   if (expr[pos-1]=='e' || expr[pos-1]=='E' ||
-      expr[pos-1]=='}' || expr[pos-1]==',' || expr[pos-1]=='(') 
+      expr[pos-1]==',' || expr[pos-1]=='(') 
     return FindBinaryMinus(expr,fwd,fwd?pos+1:pos-1);
   return pos;  
 }
