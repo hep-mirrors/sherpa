@@ -3,8 +3,8 @@ RELEASE=#"TRUE"
 LOGFILE="sherpa_install.log"
 
 DIRS="ATOOLS-2.0 BEAM-1.0 PDF-1.0 MODEL-1.0 PHASIC++-1.0"
-DIRS=$DIRS" EXTRA_XS-1.0 AMEGIC++-2.0 ADICIC++-0.0 APACIC++-2.0 CS_SHOWER++-0.0"
-DIRS=$DIRS" AMISIC++-1.0 AHADIC++-0.0 HADRONS++-0.0"
+DIRS=$DIRS" EXTRA_XS-1.0 AMEGIC++-2.0 ADICIC++-0.0 APACIC++-2.0"
+DIRS=$DIRS"  CS_SHOWER++-0.0 AMISIC++-1.0 AHADIC++-0.0 HADRONS++-0.0"
 DIRS=$DIRS" ANALYSIS-1.0 SHERPA-1.0 COMPARE-1.0"
 
 rmr () { 
@@ -21,6 +21,30 @@ rmr () {
     rm -f $2 $i
   done
 }
+rebuild_current() {
+  if [ "$1" != "" ] ; then cd .. ; fi
+  if [ "$RELEASE" = "TRUE" ] ; then
+    libtoolize --force >> ../$LOGFILE 2>&1
+    aclocal >> ../$LOGFILE 2>&1
+    automake -a >> ../$LOGFILE 2>&1
+    autoconf >> ../$LOGFILE 2>&1
+  else
+    libtoolize --force
+    aclocal
+    automake -a
+    autoconf
+  fi
+  if [ "$1" != "" ] ; then cd $1 ; fi
+}
+configure_current() {
+  if [ "$1" != "" ] ; then cd .. ; fi
+  if [ "$RELEASE" = "TRUE" ] ; then
+    ./configure $ECOPT >> ../$LOGFILE 2>&1
+  else
+    ./configure $ECOPT
+  fi
+  if [ "$1" != "" ] ; then cd $1 ; fi
+}
 
 ECXXFLAGS=""
 EFFLAGS=""
@@ -35,13 +59,11 @@ for I in $* ; do
   elif [ "$I" = "-n" ]; then NOEXTRACT=TRUE
   elif [ "$I" = "-o" ]; then ONE=TRUE
   elif [ "$I" = "--clean" ]; then CLEAN=TRUE
-  elif [ "$I" = "--clean-run" ]; then RUNCLEAN=TRUE
   elif [ "$I" = "--no-abort" ]; then NOABORT=TRUE
   elif [ "$I" = "--copt" ]; then DCOPT=TRUE && CONFIGURE=TRUE
   elif [ "$I" = "--mopt" ]; then DMOPT=TRUE 
   elif [ "$I" = "--cxx" ]; then DCXXFLAGS=TRUE 
   elif [ "$I" = "--f" ]; then DFFLAGS=TRUE 
-  elif [ "$I" = "--force-tar" ]; then FORCE=TRUE && NOEXTRACT=""
   elif [ "$I" = "--clean-up" ]; then CLEANUP=TRUE
   elif [ "$I" = "--rm-libs" ]; then RMLIBS=TRUE
   elif [ "$I" = "--make-only" ]; then MAKEONLY=TRUE
@@ -55,13 +77,11 @@ for I in $* ; do
     echo "         -n             do not extract tar files" && \
     echo "         -o             install single module" && \
     echo "         --clean        execute 'make clean' in every module before compiling" && \
-    echo "         --clean-run    execute './SHERPA-1.0/Run/makeclean' before compiling" && \
     echo "         --no-abort     ignore exit status of 'make'" && \
     echo "         --copt         define option for 'configure'" && \
     echo "         --mopt         define option for 'make' (default is '-j2')" && \
     echo "         --cxx          define cxx flag for 'make'" && \
     echo "         --f            define fortran flag for 'make'" && \
-    echo "         --force-tar    force extraction of tar files" && \
     echo "         --clean-up     execute 'make clean' in every module" && \
     echo "         --rm-libs      remove shared libraries (does not remove '.lo' files)" && \
     echo "         --make-only    do not install shared libraries" && \
@@ -83,6 +103,7 @@ if [ "$ONE" = "TRUE" ] ; then
   echo "makeinstall: select module ( q) to quit )"
   select DIRS in $DIRS ; do
     if [ "$DIRS" != "" ] ; then 
+      SINGLE="TRUE"
       break
     else 
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]  ; then exit ; fi
@@ -96,15 +117,6 @@ if [ "$SCRIPT" = "TRUE" ] ; then
   if ! test -f $NAME ; then 
     echo -e "#!/bin/bash\n\nlibtoolize --force\naclocal\nautomake -a\nautoconf\n" > $NAME
     echo -e "./configure\nmake install" >> $NAME
-    chmod 775 $NAME
-  else
-    echo "makeinstall: error: file '$NAME' already exists"
-  fi
-  NAME=$NAME"_all"
-  if ! test -f $NAME ; then 
-    echo -e "#!/bin/bash\n\nDIRS=\"$DIRS\"\n\nfor I in \$DIRS ; do\n\n  cd \$I\n" > $NAME
-    echo -e "  libtoolize --force\n  aclocal\n  automake -a\n  autoconf\n" >> $NAME
-    echo -e "  ./configure\n  make install\n\n  cd ../\n\ndone" >> $NAME
     chmod 775 $NAME
   else
     echo "makeinstall: error: file '$NAME' already exists"
@@ -131,45 +143,6 @@ if [ "`gcc -dumpversion`" = "2.96" ] ; then
   exit 1;
 fi
 
-if [ ! "$NOEXTRACT" = "TRUE" ] ; then
-  ALL=
-  INFORM=TRUE
-  for I in $DIRS;
-  do
-    if test -s $I.tar.gz; then
-      if `test ! -d $I` || `test "$FORCE" = "TRUE"` ; then 
-        if [ "$INFORM" = "TRUE" ] ; then
-	  INFORM=
-	  CONFIGURE=TRUE
-	  if [ "$RELEASE" = "TRUE" ] ; then
-	    echo -e "\n\e[1m\e[31m******************************************************\e[0m"
-	    echo -e "\e[1m\e[31m*\e[0m\e[1m           Extracting the SHERPA package            \e[31m*\e[0m"
-	    echo -e "\e[1m\e[31m******************************************************\e[0m\n"
-	  else
-	    echo "**************************************"
-	    echo "*   Extracting the SHERPA package    *"
-	    echo "**************************************"
-	  fi
-        fi
-        if [ ! "$RELEASE" = "TRUE" ] ; then
-          echo "======================================"
-          echo " extracting $I"
-          echo "======================================"
-          tar -xzvf $I.tar.gz
-	else
-	  echo -ne "extracting module $I ...\r"
-          tar -xzf $I.tar.gz > /dev/null
-          echo -e "\e[32m\t\t\t\t\t\t  done\e[0m"
-        fi
-        ALL=$ALL" "$I.tar.gz 
-      else
-        echo "makeinstall: warning: cannot extract $I.tar.gz. directory present"
-      fi
-    fi
-  done
-  rm -f $ALL
-fi
-
 if [ "$RELEASE" = "TRUE" ] ; then
   echo -e "\n\e[32m******************************************************\e[0m"
   echo -e "\e[32m*\e[0m\e[5m\e[1m           Installing the SHERPA package            \e[0m\e[32m*\e[0m"
@@ -183,18 +156,17 @@ else
   echo "*   Installing the SHERPA package    *"
   echo "**************************************"
 fi
-if [ "$RUNCLEAN" = "TRUE" ] ; then
-  if cd SHERPA-1.0/Run ; then
-    ./makeclean
-    cd ../..
-  fi
-fi
 
 if [ "$SED" = "" ] ; then export SED="sed" ; fi
 if [ "$TOTAL" = "TRUE" ] && [ "$RELEASE" = "TRUE" ] ; then
   echo -ne "removing old setup files ...\r"
 fi
-for I in $DIRS;
+if test "$SINGLE" = "TRUE" ; then
+  PDIRS="$DIRS"
+else
+  PDIRS="."
+fi
+for I in $PDIRS;
 do
   if test -d $I; then
     cd $I
@@ -229,6 +201,12 @@ if test "$RMLIBS" = "TRUE" || test "$CLEANUP" = "TRUE" ; then
   exit 0;
 fi
 
+if test "$TOTAL" = "TRUE" ; then
+  rebuild_current
+fi
+if test "$CONFIGURE" = "TRUE" ; then
+  configure_current
+fi 
 for I in $DIRS;
 do
   if test -d $I; then
@@ -240,25 +218,11 @@ do
       echo -ne "installing module $I ...\r"
     fi
     cd $I 
-    if test ! -f Makefile.in || test "$TOTAL" = "TRUE" ; then
-      if [ "$RELEASE" = "TRUE" ] ; then
-        libtoolize --force >> ../$LOGFILE 2>&1
-        aclocal >> ../$LOGFILE 2>&1
-        automake -a >> ../$LOGFILE 2>&1
-        autoconf >> ../$LOGFILE 2>&1
-      else
-        libtoolize --force
-        aclocal
-        automake -a
-        autoconf
-      fi
+    if test ! -f Makefile.in ; then
+      rebuild_current $I
     fi
-    if test ! -f Makefile || test "$CONFIGURE" = "TRUE" ; then
-      if [ "$RELEASE" = "TRUE" ] ; then
-        ./configure $ECOPT >> ../$LOGFILE 2>&1
-      else
-        ./configure $ECOPT
-      fi
+    if test ! -f Makefile ; then
+      configure_current $I
     fi
     if `test "$CLEAN" = "TRUE"` ; then 
       if [ "$RELEASE" = "TRUE" ] ; then
@@ -323,14 +287,10 @@ do
               bash
 	      CONTINUE="r"
 	    elif [ "$CONTINUE" = "c" ] ; then
-              ./configure
+	      configure_current $I
 	      CONTINUE="r"
 	    elif [ "$CONTINUE" = "t" ] ; then
-	      libtoolize --force
-	      aclocal
-	      automake -a
-	      autoconf
-              ./configure
+	      rebuild_current $I
 	      CONTINUE="r"
 	    fi
 	  done
