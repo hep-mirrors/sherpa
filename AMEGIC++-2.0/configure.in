@@ -67,7 +67,6 @@ AC_CHECK_FUNCS(mkdir)
 
 AC_OUTPUT(Main/Makefile \
 	  Amplitude/Makefile \
-          Amplitude/AmplTools/Makefile \
 	  Amplitude/Zfunctions/Makefile \
 	  Phasespace/Makefile \
 	  String/Makefile \
