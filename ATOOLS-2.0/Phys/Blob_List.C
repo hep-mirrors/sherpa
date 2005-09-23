@@ -211,6 +211,16 @@ bool Blob_List::FourMomentumConservation() const
 	       <<this<<") Four Momentum is not conserved.\n"
 	       <<"   p_{in} = "<<inisum<<" vs. p_{out} = "
 	       <<finsum<<"."<<std::endl;
+    if (msg.LevelIsDebugging()) {
+      msg.Out()<<*this<<std::endl;
+      for (Blob_List::const_iterator bit=begin();bit!=end();++bit) {
+	Vec4D sum((*bit)->CheckMomentumConservation());
+	if (sum!=Vec4D()) {
+	  msg.Out()<<METHOD<<"(..): sum = "<<sum
+		   <<" in\n"<<**bit<<std::endl;
+	}
+      }
+    }
   }
   return test;
 }
