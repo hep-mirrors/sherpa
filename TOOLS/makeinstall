@@ -189,7 +189,7 @@ do
              depcomp install-sh libtool ltconfig ltmain.sh missing mkinstalldirs"
         rmr "autom4te.cache" -r
       fi
-    cd ..
+    if ! test "$PDIRS" = "." ; then cd .. ; fi
   else 
     echo "makeinstall: warning: directory $I not found"
   fi
