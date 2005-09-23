@@ -57263,14 +57263,14 @@ C      IDATI(5)=IMIN
 C      IDATI(6)=ISEC
  
 C...Example 4: GNU LINUX libU77, SunOS.
-      CALL IDATE(IDTEMP)
-      IDATI(1)=IDTEMP(3)
-      IDATI(2)=IDTEMP(2)
-      IDATI(3)=IDTEMP(1)
-      CALL ITIME(IDTEMP)
-      IDATI(4)=IDTEMP(1)
-      IDATI(5)=IDTEMP(2)
-      IDATI(6)=IDTEMP(3)
+C      CALL IDATE(IDTEMP)
+C      IDATI(1)=IDTEMP(3)
+C      IDATI(2)=IDTEMP(2)
+C      IDATI(3)=IDTEMP(1)
+C      CALL ITIME(IDTEMP)
+C      IDATI(4)=IDTEMP(1)
+C      IDATI(5)=IDTEMP(2)
+C      IDATI(6)=IDTEMP(3)
  
 C...Common code to ensure right century.
       IDATI(1)=2000+MOD(IDATI(1),100)

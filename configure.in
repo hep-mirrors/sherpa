@@ -181,6 +181,66 @@ else
 fi
 AM_CONDITIONAL(MODEL_SUPPORT, test "$modelinclude" = "true" )
 
+AC_ARG_ENABLE(isajetinclude,
+[  --disable-isajetinclude  Disable inclusion of Isajet stuff ],
+[ isajetinclude=true
+  ISAJETDIR="MODEL-1.0/Isajet/"
+  if test -d $ISAJETDIR ; then
+    echo "checking for Isajet stuff ... yes"
+    case "${enableval}" in
+      no) echo "disable Isajet support anyway... yes";
+          isajetinclude=false ;;
+    esac
+  else
+    echo "checking for Isajet stuff ... no"
+    isajetinclude=false
+  fi ],
+[ ISAJETDIR="MODEL-1.0/Isajet/"
+  if test ! -d $ISAJETDIR ; then
+    echo "configure: warning: $ISAJETDIR is not a valid path."
+    isajetinclude=false
+  else 
+    echo "checking for Isajet stuff... yes"
+    isajetinclude=true 
+  fi ])
+
+if test "$isajetinclude" = "true" ; then
+  echo -e "#define USING__Isajet" >> __Flags.H__
+else
+  echo -e "#ifdef USING__Isajet\n#undef USING__Isajet\n#endif" >> __Flags.H__
+fi
+AM_CONDITIONAL(ISAJET_SUPPORT, test "$isajetinclude" = "true" )
+
+AC_ARG_ENABLE(hdecayinclude,
+[  --disable-hdecayinclude  Disable inclusion of Hdecay stuff ],
+[ hdecayinclude=true
+  HDECAYDIR="MODEL-1.0/Hdecay/"
+  if test -d $HDECAYDIR ; then
+    echo "checking for Hdecay stuff ... yes"
+    case "${enableval}" in
+      no) echo "disable Hdecay support anyway... yes";
+          hdecayinclude=false ;;
+    esac
+  else
+    echo "checking for Hdecay stuff ... no"
+    hdecayinclude=false
+  fi ],
+[ HDECAYDIR="MODEL-1.0/Hdecay/"
+  if test ! -d $HDECAYDIR ; then
+    echo "configure: warning: $HDECAYDIR is not a valid path."
+    hdecayinclude=false
+  else 
+    echo "checking for Hdecay stuff... yes"
+    hdecayinclude=true 
+  fi ])
+
+if test "$hdecayinclude" = "true" ; then
+  echo -e "#define USING__Hdecay" >> __Flags.H__
+else
+  echo -e "#ifdef USING__Hdecay\n#undef USING__Hdecay\n#endif" >> __Flags.H__
+fi
+AM_CONDITIONAL(HDECAY_SUPPORT, test "$hdecayinclude" = "true" )
+
 AC_ARG_ENABLE(adicicinclude,
 [  --disable-adicicinclude  Disable inclusion of ADICIC headers ],
 [ adicicinclude=true
@@ -409,7 +469,7 @@ AC_TYPE_SIZE_T
 dnl Checks for library functions.
 AC_CHECK_FUNCS(mkdir)
 
-
+dnl Comment in/out MODEL-1.0/{Isajet, Hdecay}
 AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  ATOOLS-2.0/Phys/Makefile \
 	  ATOOLS-2.0/Org/Makefile \

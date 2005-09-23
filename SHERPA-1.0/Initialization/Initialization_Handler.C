@@ -33,13 +33,6 @@ using namespace PDF;
 using namespace ATOOLS;
 using namespace std;
 
-struct Char_Array40 {
- char  s[40];
-} ;
-
-extern "C" {
-  Char_Array40 visaje_();
-}
 
 Initialization_Handler::Initialization_Handler(string _path,string _file) : 
   m_path(_path), m_file(_file), m_mode(0),
@@ -826,8 +819,6 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 
 	  string pyver("6.214");
 	  msg.Out()<<"    * Pythia Version "<<pyver<<endl;
-	  Char_Array40 cid=visaje_();
-	  msg.Out()<<"    * IsaJet Version "<<cid.s<<endl;
 	}
 	exit(0);
       case 13:

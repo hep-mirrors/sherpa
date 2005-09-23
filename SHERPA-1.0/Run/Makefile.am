@@ -119,5 +119,7 @@ EXTRA_DIST    =	\
 
 #	     	PDFsets.tar.gz MRST99Grid.tar.gz CTEQ6Grid.tar.gz
 dist-hook:
-	sed -e "s/SHERPA_LDFLAGS/SHERPA_LDFLAGS/1" \
-	  < Makefile.am > $(distdir)/Makefile.am
+	if test -f Makefile_am ; then \
+	  cp Makefile_am $(distdir)/Makefile.am; \
+	fi
+
