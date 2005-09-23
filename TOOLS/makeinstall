@@ -291,6 +291,7 @@ do
 	      CONTINUE="r"
 	    elif [ "$CONTINUE" = "t" ] ; then
 	      rebuild_current $I
+	      configure_current $I
 	      CONTINUE="r"
 	    fi
 	  done
