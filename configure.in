@@ -51,7 +51,7 @@ modify_makefiles() {
       if ! test -f $I/Makefile_am ; then
         cp $I/Makefile.am $I/Makefile_am
       fi
-      sed -e "s/SHERPA_LDFLAGS/$ldflags/g" < $I/Makefile_am > $I/Makefile.am
+      sed -e "s/SHERPA_LDFLAGS/$ldflags/1" < $I/Makefile_am > $I/Makefile.am
     fi
   done
   echo " done"
