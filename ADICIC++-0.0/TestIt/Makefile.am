@@ -113,11 +113,7 @@ EXTRA_DIST = $(CVSINCLUDE)
 #EXTRA_DIST = Testrun/Run.dat Testrun/Integration.dat
 
 dist-hook:
-	if test -f Makefile_am ; then \
-	  cp Makefile_am $(distdir)/Makefile.am; \
-	fi
-
-
-
+	sed -e "s/SHERPA_LDFLAGS/SHERPA_LDFLAGS/1" \
+	  < Makefile.am > $(distdir)/Makefile.am
 
 

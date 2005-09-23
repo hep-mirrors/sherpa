@@ -37,9 +37,9 @@ Calc_SOURCES  =	Calc.C
 Calc_LDADD    =	$(ATOOLSLIBS) $(SYSLIBS) $(ROOTLIBS)
 Calc_LDFLAGS  =	SHERPA_LDFLAGS
 EXTRA_DIST    = $(CVSINCLUDE)
-dist-hook:
-	if test -f Makefile_am ; then \
-	  cp Makefile_am $(distdir)/Makefile.am; \
-	fi
 AM_CXXFLAGS   =	$(MODELFLAGS) $(ATOOLSFLAGS) $(ROOTFLAGS)
 INCLUDES      = $(MODELINCS) $(ATOOLSINCS) $(ROOTINCS)
+dist-hook:
+	sed -e "s/SHERPA_LDFLAGS/SHERPA_LDFLAGS/1" \
+	  < Makefile.am > $(distdir)/Makefile.am
+

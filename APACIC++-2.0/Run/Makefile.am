@@ -49,7 +49,7 @@ ApacicLEP_LDADD  =	$(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) \
 		$(PHASICLIBS) $(MODELLIBS) $(PDFLIBS)  \
 		$(BEAMLIBS) $(ATOOLSLIBS) \
 		$(SYSLIBS) $(ROOTLIBS)
-ApacicLEP_LDFLAGS             =	SHERPA_LDFLAGS
+ApacicLEP_LDFLAGS     =	SHERPA_LDFLAGS
 
 ApacicTevatron_SOURCES = MainTevatron.C 
 ApacicTevatron_LDADD  =	$(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) \
@@ -65,8 +65,7 @@ INCLUDES      = $(ANALYSISINCS)  \
 		$(APACICINCS)  \
 		$(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) $(PDFINCS) \
 		$(BEAMINCS) $(ATOOLSINCS) $(ROOTINCS)
-extra_DIST    = $(CVSINCLUDE)
+EXTRA_DIST    = $(CVSINCLUDE)
 dist-hook:
-	if test -f Makefile_am ; then \
-	  cp Makefile_am $(distdir)/Makefile.am; \
-	fi
+	sed -e "s/SHERPA_LDFLAGS/SHERPA_LDFLAGS/1" \
+	  < Makefile.am > $(distdir)/Makefile.am
