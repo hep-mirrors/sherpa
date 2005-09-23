@@ -2,7 +2,9 @@
 
 DIRS="ATOOLS-2.0 BEAM-1.0 PDF-1.0 MODEL-1.0 PHASIC++-1.0"
 DIRS=$DIRS" EXTRA_XS-1.0 ADICIC++-0.0 APACIC++-2.0 AMEGIC++-2.0 AMISIC++-1.0"
-DIRS=$DIRS" AHADIC++-0.0 HADRONS++-0.0 ANALYSIS-1.0 SHERPA-1.0 COMPARE-1.0"
+DIRS=$DIRS" CS_SHOWER++-0.0 AHADIC++-0.0 HADRONS++-0.0 ANALYSIS-1.0"
+DIRS=$DIRS" SHERPA-1.0 COMPARE-1.0 TOOLS"
+NRDIRS="."
 
 NOUPDATE="TRUE"
 NOSTATS=
@@ -45,8 +47,16 @@ done
 
 if [ "$ONE" = "TRUE" ] ; then 
   echo "makeinstall: select module ( q) to quit )"
-  select DIRS in $DIRS ; do
+  select DIRS in $DIRS $NRDIRS ; do
     if [ "$DIRS" != "" ] ; then 
+      for DIR in $NRDIRS ; do
+        if [ "$DIRS" = "$DIR" ] ; then
+          NDIRS=$DIRS; DIRS=""
+	fi
+      done
+      if [ "$DIRS" != "" ] ; then
+	NRDIRS=""
+      fi
       break
     else 
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]  ; then exit ; fi
@@ -59,6 +69,17 @@ for DIR in $DIRS ; do
   if test -d $DIR ; then
     if [ "$NOUPDATE" = "TRUE" ] ; then 
       cvs -n update $OPTIONS $DIR >> $LOGFILE 2>&1
+    else 
+      cvs update $OPTIONS $DIR >> $LOGFILE 2>&1
+    fi
+  else
+    echo "update: error: directory $DIR not found"
+  fi
+done
+for DIR in $NRDIRS ; do
+  if test -d $DIR ; then
+    if [ "$NOUPDATE" = "TRUE" ] ; then 
+      cvs -n update -l $OPTIONS $DIR >> $LOGFILE 2>&1
     else 
       cvs update $OPTIONS $DIR >> $LOGFILE 2>&1
     fi
