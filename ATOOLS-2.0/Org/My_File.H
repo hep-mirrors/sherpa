@@ -49,15 +49,15 @@ namespace ATOOLS {
     bool Close();
 
     //inline functions
-    inline void SetPath(const std::string &path) { m_path=path; }
-    inline void SetFile(const std::string &file) { m_file=file; }
+    void SetPath(const std::string &path);
+    void SetFile(const std::string &file);
 
-    inline void SetMode(const fom::code &mode) { m_mode=mode; }
+    void SetMode(const fom::code &mode);
 
-    inline const std::string &Path() const { return m_path; }
-    inline const std::string &File() const { return m_file; }
+    const std::string &Path() const;
+    const std::string &File() const;
 
-    inline const fom::code &Mode() const { return m_mode; }
+    const fom::code &Mode() const;
 
     inline File_Type *operator()() const { return --p_file; }
     inline File_Type *operator->() const { return --p_file; }

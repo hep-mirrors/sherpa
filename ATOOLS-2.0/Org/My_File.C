@@ -60,6 +60,42 @@ bool My_File<FileType>::Close()
   return true;
 }
 
+template <class FileType>
+void My_File<FileType>::SetPath(const std::string &path) 
+{
+  m_path=path; 
+}
+
+template <class FileType>
+void My_File<FileType>::SetFile(const std::string &file) 
+{ 
+  m_file=file; 
+}
+
+template <class FileType>
+void My_File<FileType>::SetMode(const fom::code &mode) 
+{
+  m_mode=mode; 
+}
+
+template <class FileType>
+const std::string &My_File<FileType>::Path() const 
+{ 
+  return m_path; 
+}
+
+template <class FileType>
+const std::string &My_File<FileType>::File() const 
+{ 
+  return m_file; 
+}
+
+template <class FileType>
+const fom::code &My_File<FileType>::Mode() const 
+{ 
+  return m_mode; 
+}
+
 template class My_File<std::ifstream>;
 template class My_File<std::ofstream>;
 
