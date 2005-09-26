@@ -3,6 +3,7 @@ SHERPASYS  = ../..
 SHERPAFLAGS   =	-pedantic -Wall -Winline 
 
 AHADICDIR     =	$(SHERPASYS)/AHADIC++-0.0
+AHADICFLAGS   = -DUSING__Ahadic
 ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
 ANALYSISDIR   =	$(SHERPASYS)/ANALYSIS-1.0
 EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
@@ -52,6 +53,14 @@ if AMISIC_SUPPORT
 AMISICINCS    =	-I$(SHERPASYS)/AMISIC++-1.0/Main
 AMISICLIBS    =	-L@libdir@ -lAmisic -lAmisicModel -lAmisicTools
 endif
+if ISAJET_SUPPORT
+ISAJETLIB     = -L@libdir@ -lIsajet
+endif
+if HDECAY_SUPPORT
+HDECAYLIB     = -L@libdir@ -lHdecay
+endif
+MODELLIBS     =	-L@libdir@ -lModelMain $(HDECAYLIB) $(ISAJETLIB)
+
 
 if ROOT_SUPPORT
 ROOTINCS      =	-I$(ROOTSYS)/include
@@ -84,7 +93,6 @@ ANALYSISLIBS  = -L@libdir@ -lAnalysis -lObservables
 BEAMLIBS      =	-L@libdir@ -lBeam 
 PHASICLIBS    =	-L@libdir@ -lPhasespace 
 PDFLIBS       =	-L@libdir@ -lDUPDF -lSudakov -lPDF -lMRST -lGRV -lRemnant
-MODELLIBS     =	-L@libdir@ -lModelMain -lIsajet -lHdecay 
 EXTRAXSLIBS   =	-L@libdir@ -lExtraXS -lExtraXS2_2 
 AMEGICLIBS    =	-L@libdir@ -lAmegic -lAmplitude -lAmegicPSGen \
 		-lZfunctions -lAmplTools -lModel -lString 
@@ -96,7 +104,7 @@ Cluster_SOURCES = Main.C
 Cluster_LDADD  = $(AHADICLIBS) $(PHASICLIBS) $(ATOOLSLIBS) $(SYSLIBS) \
 		 $(MODELLIBS) $(PDFLIBS) $(LHAPDFLIBS) $(CTEQLIBS) \
 		 $(BEAMLIBS) $(APACICLIBS)
-Cluster_LDFLAGS        =	SHERPA_LDFLAGS
+Cluster_LDFLAGS        =	-rdynamic
 AM_CXXFLAGS   =	$(AHADICFLAGS) $(ROOTFLAGS)
 INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(HADRONSINCS) $(AHADICINCS) \
 		$(APACICINCS) $(ADICICINCS) $(AMISICINCS) $(AMEGICINCS) \
@@ -105,5 +113,7 @@ INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(HADRONSINCS) $(AHADICINCS) \
 EXTRA_DIST    =	\
 		$(CVSINCLUDE)
 dist-hook:
-	sed -e "s/SHERPA_LDFLAGS/SHERPA_LDFLAGS/1" \
-	  < Makefile.am > $(distdir)/Makefile.am
+	if test -f Makefile_am ; then \
+	  cp Makefile_am $(distdir)/Makefile.am; \
+	fi
+

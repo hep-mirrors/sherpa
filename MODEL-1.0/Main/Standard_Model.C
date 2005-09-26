@@ -4,8 +4,12 @@
 #include "Running_Fermion_Mass.H"
 #include "Effective_Higgs_Coupling.H"
 #include "Message.H"
-#include "Hdecay_Fortran_Interface.H"
 #include "Data_Collector.H"
+#ifdef USING__HDECAY
+#include "Hdecay_Fortran_Interface.H"
+#else
+#include "Spectrum_Generator_Base.H"
+#endif
 
 using namespace MODEL;
 using namespace ATOOLS;
@@ -200,12 +204,13 @@ bool Standard_Model::RunSpectrumGenerator() {
   m_spectrum = p_dataread->GetValue<int>("GENERATOR_ON",0);
   if (m_spectrum) {
     m_generator = p_dataread->GetValue<std::string>("HIGGS_GENERATOR",std::string("Hdecay"));
+#ifdef USING__HDECAY
     if (m_generator==std::string("Hdecay")) {
       p_spectrumgenerator = new HDECAY::Hdecay_Fortran_Interface(p_dataread,this);
       p_spectrumgenerator->Run(std::string("SM"));
       return 1;
     }
-    
+#endif    
     msg.Error()<<"Error in Standard_Model::RunSpectrumGenerator."<<std::endl
 	       <<"   Unknown spectrum generator : "<<m_generator<<" use internal solution."<<std::endl;
     return 0;

@@ -1,8 +1,12 @@
 #include "MSSM.H"
 #include "Message.H"
 #include "Standard_Model.H"
-#include "Isajet_Fortran_Interface.H"
 #include "LesHouches_Interface.H"
+#ifdef USING__ISAJET
+#include "Isajet_Fortran_Interface.H"
+#else
+#include "Spectrum_Generator_Base.H"
+#endif
 
 using namespace MODEL;
 using namespace ATOOLS;
@@ -186,6 +190,7 @@ void MSSM::ReadInFile() {
 bool MSSM::RunSpectrumGenerator() {
   if (m_spectrum) {
     m_generator = p_dataread->GetValue<std::string>("SUSY_GENERATOR",std::string("Isajet"));
+#ifdef USING__ISAJET
     if (m_generator==std::string("Isajet")) {
       p_spectrumgenerator = new ISAJET::Isajet_Fortran_Interface(p_dataread,this);
       p_spectrumgenerator->Run(std::string(m_scenario));
@@ -193,6 +198,7 @@ bool MSSM::RunSpectrumGenerator() {
       //p_spectrumgenerator->FillDecays();
       return 1;
     }
+#endif
     if (m_generator==std::string("LesHouches")) {
       p_spectrumgenerator = new LesHouches_Interface(p_dataread,this,m_dir);
       p_spectrumgenerator->Run(std::string(m_scenario));

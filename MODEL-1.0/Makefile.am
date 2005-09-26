@@ -1,8 +1,8 @@
-MAKE = make 
+MAKE       = make 
 if CVS_INCLUDE
-CVSINCLUDE    = CVS
+CVSINCLUDE = CVS
 endif
-SUBDIRS = Main Hdecay Isajet
+SUBDIRS    = Main $(HDECAYDIR) $(ISAJETDIR) 
 EXTRA_DIST    = $(CVSINCLUDE)
 
 

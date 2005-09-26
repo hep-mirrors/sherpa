@@ -1,7 +1,11 @@
 #include "ADD.H"
 #include "Message.H"
 #include "Standard_Model.H"
+#ifdef USING__ISAJET
 #include "Isajet_Fortran_Interface.H"
+#else
+#include "Spectrum_Generator_Base.H"
+#endif
 
 using namespace MODEL;
 using namespace ATOOLS;

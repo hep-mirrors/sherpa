@@ -21,6 +21,14 @@ AM_CXXFLAGS = -pedantic -Wall -Winline -ftemplate-depth-100
 
 bin_PROGRAMS = Flavtest Emissiontest Chaintest Cascadetest
 
+if HDECAY_SUPPORT
+HDECAYLIB = -L@libdir@ -lHdecay 
+endif
+if ISAJET_SUPPORT
+ISAJETLIB = -L@libdir@ -lIsajet 
+endif
+MODELLIBS = -L@libdir@ -lModelMain $(HDECAYLIB) $(ISAJETLIB) 
+
 
 
 Flavtest_SOURCES = Flavtest.C
@@ -31,10 +39,7 @@ Flavtest_LDADD = @libdir@/libAdicicTool.la \
                  @libdir@/libToolsPhys.la \
                  @libdir@/libToolsMath.la \
                  @libdir@/libToolsOrg.la \
-                 @libdir@/libModelMain.la \
-                 @libdir@/libHdecay.la \
-                 @libdir@/libIsajet.la \
-                 -lg2c -lm -ldl $(ROOTLIBS)
+                 -lg2c -lm -ldl $(ROOTLIBS) $(MODELLIBS)
 #Flavtest_LDFLAGS = SHERPA_LDFLAGS
 
 
@@ -54,10 +59,7 @@ Emissiontest_LDADD = @libdir@/libAdicicTool.la \
                      @libdir@/libToolsPhys.la \
                      @libdir@/libToolsMath.la \
                      @libdir@/libToolsOrg.la \
-                     @libdir@/libModelMain.la \
-                     @libdir@/libHdecay.la \
-                     @libdir@/libIsajet.la \
-                     -lg2c -lm -ldl $(ROOTLIBS)
+	             -lg2c -lm -ldl $(ROOTLIBS) $(MODELLIBS)
 
 
 
@@ -70,10 +72,7 @@ Chaintest_LDADD = @libdir@/libAdicicTool.la \
                   @libdir@/libToolsPhys.la \
                   @libdir@/libToolsMath.la \
                   @libdir@/libToolsOrg.la \
-                  @libdir@/libModelMain.la \
-                  @libdir@/libHdecay.la \
-                  @libdir@/libIsajet.la \
-                  -lg2c -lm -ldl $(ROOTLIBS)
+	          -lg2c -lm -ldl $(ROOTLIBS) $(MODELLIBS)
 
 
 
@@ -86,10 +85,7 @@ Cascadetest_LDADD = @libdir@/libAdicicTool.la \
                     @libdir@/libToolsPhys.la \
                     @libdir@/libToolsMath.la \
                     @libdir@/libToolsOrg.la \
-                    @libdir@/libModelMain.la \
-                    @libdir@/libHdecay.la \
-                    @libdir@/libIsajet.la \
-                    -lg2c -lm -ldl $(ROOTLIBS)
+	            -lg2c -lm -ldl $(ROOTLIBS) $(MODELLIBS)
 
 
 

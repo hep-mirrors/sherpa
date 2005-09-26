@@ -20,7 +20,14 @@ ATOOLSLIBS    =	-L@libdir@ -lToolsPhys -lToolsMath -lToolsOrg
 PDFLIBS       =	-L@libdir@ -lPDF -lDUPDF -lSudakov -lLHAPDF -lCTEQ -lMRST -lGRV
 BEAMLIBS      =	-L@libdir@ -lBeam 
 PHASICLIBS    =	-L@libdir@ -lPhasespace -lFoam
-MODELLIBS     =	-L@libdir@ -lModelMain -lIsajet -lHdecay 
+if ISAJET_SUPPORT
+ISAJETLIB     = -L@libdir@ -lIsajet
+endif
+if HDECAY_SUPPORT
+HDECAYLIB     = -L@libdir@ -lHdecay
+endif
+MODELLIBS     =	-L@libdir@ -lModelMain $(HDECAYLIB) $(ISAJETLIB)
+
 EXTRAXSLIBS   =	-L@libdir@ -lExtraXS -lExtraXS2_2 
 AMISICLIBS    =	-L@libdir@ -lAmisic -lAmisicModel -lAmisicTools
 APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain 
@@ -45,7 +52,7 @@ Amisic_SOURCES        =	Main.C
 Amisic_LDADD  =	$(AMISICLIBS) $(APACICLIBS) $(EXTRAXSLIBS) \
 		$(PHASICLIBS) $(MODELLIBS) $(PDFLIBS) \
 		$(BEAMLIBS) $(ATOOLSLIBS) $(SYSLIBS) $(CLHEPLIBS) $(ROOTLIBS) 
-Amisic_LDFLAGS        =	SHERPA_LDFLAGS
+Amisic_LDFLAGS        =	-rdynamic
 AM_CXXFLAGS   =	$(AMISICFLAGS) $(ROOTFLAGS)
 INCLUDES      = $(AMISICINCS) $(APACICINCS) $(EXTRAXSINCS) \
 		$(PHASICINCS) $(MODELINCS) $(PDFINCS) \
@@ -57,5 +64,6 @@ EXTRA_DIST    =	\
 		Particle.dat Hadron.dat Integration.dat Model.dat Beam.dat \
 		ISR.dat MI.dat simplechain.dat Run.dat 
 dist-hook:
-	sed -e "s/SHERPA_LDFLAGS/SHERPA_LDFLAGS/1" \
-	  < Makefile.am > $(distdir)/Makefile.am
+	if test -f Makefile_am ; then \
+	  cp Makefile_am $(distdir)/Makefile.am; \
+	fi
