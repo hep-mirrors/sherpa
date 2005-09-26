@@ -208,9 +208,12 @@ AC_ARG_ENABLE(isajetinclude,
     isajetinclude=true 
   fi ])
 
+dnl comment out if isajet to be compiled
+isajetinclude=false
 if test "$isajetinclude" = "true" ; then
   echo -e "#define USING__Isajet" >> __Flags.H__
 else
+  echo "Omit all Isajet stuff ... yes"
   echo -e "#ifdef USING__Isajet\n#undef USING__Isajet\n#endif" >> __Flags.H__
 fi
 AM_CONDITIONAL(ISAJET_SUPPORT, test "$isajetinclude" = "true" )
@@ -238,9 +241,12 @@ AC_ARG_ENABLE(hdecayinclude,
     hdecayinclude=true 
   fi ])
 
+dnl comment out if hdecay to be compiled
+hdecayinclude=false
 if test "$hdecayinclude" = "true" ; then
   echo -e "#define USING__Hdecay" >> __Flags.H__
 else
+  echo "Omit all Hdecay stuff ... yes"
   echo -e "#ifdef USING__Hdecay\n#undef USING__Hdecay\n#endif" >> __Flags.H__
 fi
 AM_CONDITIONAL(HDECAY_SUPPORT, test "$hdecayinclude" = "true" )
@@ -491,8 +497,6 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  PDF-1.0/Remnant/Makefile \
 	  PDF-1.0/Makefile \
 	  MODEL-1.0/Main/Makefile \
-	  MODEL-1.0/Hdecay/Makefile \
-	  MODEL-1.0/Isajet/Makefile \
 	  MODEL-1.0/Makefile \
 	  PHASIC++-1.0/Main/Makefile \
 	  PHASIC++-1.0/Makefile \
