@@ -12,13 +12,26 @@ SYSLIBS	      =	-lg2c -lm -ldl
 
 ATOOLSLIBS    =	-L@libdir@ -lToolsPhys -lToolsMath -lToolsOrg 
 CSSLIBS       =	-L@libdir@ -lCSSTools -lCSShowers -lCSMain
-MODELLIBS     =	-L@libdir@ -lModelMain -lIsajet -lHdecay 
+if ISAJET_SUPPORT
+ISAJETLIB     = -L@libdir@ -lIsajet
+endif
+if HDECAY_SUPPORT
+HDECAYLIB     = -L@libdir@ -lHdecay
+endif
+MODELLIBS     =	-L@libdir@ -lModelMain $(HDECAYLIB) $(ISAJETLIB)
+
+if CVS_INCLUDE
+CVSINCLUDE    = CVS
+endif
 
 bin_PROGRAMS    = CSSTest
 CSSTest_SOURCES = Main.C 
 CSSTest_LDADD   = $(CSSLIBS) $(ATOOLSLIBS) $(MODELLIBS) $(SYSLIBS)
-CSSTest_LDFLAGS = -rdynamic
+CSSTest_LDFLAGS = SHERPA_LDFLAGS
 AM_CXXFLAGS   =	$(CSSFLAGS) 
 INCLUDES      = $(CSSINCS) $(ATOOLSINCS) $(MODELINCS) 
-EXTRA_DIST    =	Particle.dat 
+EXTRA_DIST    =	$(CVSINCLUDE) 
 
+dist-hook:
+	sed -e "s/SHERPA_LDFLAGS/SHERPA_LDFLAGS/1" \
+	  < Makefile.am > $(distdir)/Makefile.am
