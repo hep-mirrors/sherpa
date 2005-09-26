@@ -3,7 +3,6 @@ SHERPASYS  = ../..
 SHERPAFLAGS   =	-pedantic -Wall -Winline 
 
 AHADICDIR     =	$(SHERPASYS)/AHADIC++-0.0
-AHADICFLAGS   = -DUSING__Ahadic
 ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
 ANALYSISDIR   =	$(SHERPASYS)/ANALYSIS-1.0
 EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
@@ -106,6 +105,5 @@ INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(HADRONSINCS) $(AHADICINCS) \
 EXTRA_DIST    =	\
 		$(CVSINCLUDE)
 dist-hook:
-       sed -e "s/SHERPA_LDFLAGS/SHERPA_LDFLAGS/1" \
-         < Makefile.am > $(distdir)/Makefile.am
-
+	sed -e "s/SHERPA_LDFLAGS/SHERPA_LDFLAGS/1" \
+	  < Makefile.am > $(distdir)/Makefile.am

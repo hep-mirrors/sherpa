@@ -57,5 +57,5 @@ EXTRA_DIST    =	\
 		Particle.dat Hadron.dat Integration.dat Model.dat Beam.dat \
 		ISR.dat MI.dat simplechain.dat Run.dat 
 dist-hook:
-      sed -e "s/SHERPA_LDFLAGS/SHERPA_LDFLAGS/1" \
-        < Makefile.am > $(distdir)/Makefile.am
+	sed -e "s/SHERPA_LDFLAGS/SHERPA_LDFLAGS/1" \
+	  < Makefile.am > $(distdir)/Makefile.am
