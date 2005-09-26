@@ -31,7 +31,13 @@ PDFLIBS       =	-L@libdir@ -lPDF -lMRST -lGRV -lCTEQ -lDUPDF \
 
 BEAMLIBS      =	-L@libdir@ -lBeam 
 PHASICLIBS    =	-L@libdir@ -lPhasespace 
-MODELLIBS     =	-L@libdir@ -lModelMain -lIsajet -lHdecay 
+if ISAJET_SUPPORT
+ISAJETLIB     = -L@libdir@ -lIsajet
+endif
+if HDECAY_SUPPORT
+HDECAYLIB     = -L@libdir@ -lHdecay
+endif
+MODELLIBS     =	-L@libdir@ -lModelMain $(HDECAYLIB) $(ISAJETLIB)
 EXTRAXSLIBS   =	-L@libdir@ -lExtraXS -lExtraXS2_2 
 
 APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain 
@@ -49,7 +55,7 @@ ApacicLEP_LDADD  =	$(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) \
 		$(PHASICLIBS) $(MODELLIBS) $(PDFLIBS)  \
 		$(BEAMLIBS) $(ATOOLSLIBS) \
 		$(SYSLIBS) $(ROOTLIBS)
-ApacicLEP_LDFLAGS     =	SHERPA_LDFLAGS
+ApacicLEP_LDFLAGS     =	-rdynamic
 
 ApacicTevatron_SOURCES = MainTevatron.C 
 ApacicTevatron_LDADD  =	$(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) \
@@ -57,7 +63,7 @@ ApacicTevatron_LDADD  =	$(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS
 		$(PHASICLIBS) $(MODELLIBS) $(PDFLIBS) \
 		$(CTEQLIBS) $(BEAMLIBS) $(ATOOLSLIBS) \
 		$(SYSLIBS) $(CLHEPLIBS) $(ROOTLIBS)
-ApacicTevatron_LDFLAGS        =	SHERPA_LDFLAGS
+ApacicTevatron_LDFLAGS        =	-rdynamic
 
 AM_CXXFLAGS   =	$(SHERPAFLAGS) $(AHADICFLAGS) $(AMISICFLAGS) $(ADICICFLAGS) \
 		$(CLHEPFLAGS) $(ROOTFLAGS) $(LHAPDFFLAGS) $(HADRONFLAGS)
@@ -67,5 +73,5 @@ INCLUDES      = $(ANALYSISINCS)  \
 		$(BEAMINCS) $(ATOOLSINCS) $(ROOTINCS)
 EXTRA_DIST    = $(CVSINCLUDE)
 dist-hook:
-	sed -e "s/SHERPA_LDFLAGS/SHERPA_LDFLAGS/1" \
+	sed -e "s/-rdynamic/SHERPA_LDFLAGS/1" \
 	  < Makefile.am > $(distdir)/Makefile.am

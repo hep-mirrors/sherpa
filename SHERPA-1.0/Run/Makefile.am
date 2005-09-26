@@ -30,7 +30,13 @@ PDFLIBS       =	-L@libdir@ -lPDF -lDUPDF -lSudakov -lMRST -lGRV -lRemnant
 ANALYSISLIBS  = -L@libdir@ -lAnalysis -lObservables
 BEAMLIBS      =	-L@libdir@ -lBeam 
 PHASICLIBS    =	-L@libdir@ -lPhasespace 
-MODELLIBS     =	-L@libdir@ -lModelMain -lIsajet -lHdecay 
+if ISAJET_SUPPORT
+ISAJETLIB     = -L@libdir@ -lIsajet
+endif
+if HDECAY_SUPPORT
+HDECAYLIB     = -L@libdir@ -lHdecay
+endif
+MODELLIBS     =	-L@libdir@ -lModelMain $(HDECAYLIB) $(ISAJETLIB)
 EXTRAXSLIBS   =	-L@libdir@ -lExtraXS -lExtraXS2_2 
 AMEGICLIBS    =	-L@libdir@ -lAmegic -lAmplitude -lAmegicPSGen \
 		-lZfunctions -lModel -lString 
@@ -103,7 +109,7 @@ Sherpa_LDADD  =	$(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) \
 		$(EXTRAXSLIBS) $(PHASICLIBS) $(MODELLIBS) $(BEAMLIBS) \
 		$(ATOOLSLIBS) $(HADRONSLIBS) $(PDFLIBS) $(LHAPDFLIBS) \
 		$(CTEQLIBS) $(SYSLIBS) $(CLHEPLIBS) $(ROOTLIBS)
-Sherpa_LDFLAGS        =	SHERPA_LDFLAGS
+Sherpa_LDFLAGS        =	-rdynamic
 AM_CXXFLAGS   =	$(SHERPAFLAGS) $(ROOTFLAGS) 
 INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(HADRONSINCS) $(AHADICINCS) \
 		$(APACICINCS) $(ADICICINCS) $(AMISICINCS) $(AMEGICINCS) \
@@ -118,7 +124,7 @@ EXTRA_DIST    =	\
 		Lund.dat Cluster.dat
 
 #	     	PDFsets.tar.gz MRST99Grid.tar.gz CTEQ6Grid.tar.gz
-dist-hook:
-	sed -e "s/SHERPA_LDFLAGS/SHERPA_LDFLAGS/1" \
-	  < Makefile.am > $(distdir)/Makefile.am
 
+dist-hook:
+	sed -e "s/-rdynamic/SHERPA_LDFLAGS/1" \
+	  < Makefile.am > $(distdir)/Makefile.am
