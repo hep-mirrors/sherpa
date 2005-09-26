@@ -8,6 +8,10 @@ CSSINCS    = -I$(CSSDIR)/Tools -I$(CSSDIR)/Showers
 CSSFLAGS  =	-pedantic -Wall -Winline 
 AM_CXXFLAGS   = $(CSSFLAGS)
 
+if CVS_INCLUDE
+CVSINCLUDE    = CVS
+endif
+
 lib_LTLIBRARIES = libCSMain.la
 libCSMain_la_SOURCES = \
 		CS_Shower.C
@@ -17,3 +21,5 @@ INCLUDES = \
 
 noinst_HEADERS = \
 		CS_Shower.H
+
+EXTRA_DIST    = $(CVSINCLUDE)

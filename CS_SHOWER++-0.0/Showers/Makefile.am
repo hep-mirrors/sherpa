@@ -8,6 +8,10 @@ CSSINCS    = -I$(CSSDIR)/Tools
 CSSFLAGS  =	-pedantic -Wall -Winline 
 AM_CXXFLAGS   = $(CSSFLAGS)
 
+if CVS_INCLUDE
+CVSINCLUDE    = CVS
+endif
+
 lib_LTLIBRARIES = libCSShowers.la
 libCSShowers_la_SOURCES = \
 	Splitting_Function_Base.C Splitting_Function_Group.C \
@@ -21,3 +25,5 @@ noinst_HEADERS = \
 	Splitting_Function_Base.H Splitting_Function_Group.H \
 	QCD_Splitting_Functions.H Sudakov.H Shower.H \
 	Kinematics_Base.H
+
+EXTRA_DIST    = $(CVSINCLUDE)
