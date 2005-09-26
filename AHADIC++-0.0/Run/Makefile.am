@@ -113,7 +113,5 @@ INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(HADRONSINCS) $(AHADICINCS) \
 EXTRA_DIST    =	\
 		$(CVSINCLUDE)
 dist-hook:
-	if test -f Makefile_am ; then \
-	  cp Makefile_am $(distdir)/Makefile.am; \
-	fi
-
+	sed -e "s/-rdynamic/SHERPA_LDFLAGS/1" \
+	  < Makefile.am > $(distdir)/Makefile.am
