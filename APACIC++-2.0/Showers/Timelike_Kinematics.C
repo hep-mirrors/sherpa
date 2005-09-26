@@ -378,13 +378,19 @@ ConstructTwoVectors(Knot *const mo,Vec4D &p1vec,Vec4D &p2vec) const
 {
   double p(sqrt(mo->E2-mo->t));
   double E12(mo->left->E2), E22(mo->right->E2);
-  double p1(sqrt(E12-mo->left->t)), p2(sqrt(E22-mo->right->t));
+  double t1(mo->left->stat==0  ? mo->left->t  : mo->left->tout); 
+  double t2(mo->right->stat==0 ? mo->right->t : mo->right->tout); 
+  double p1(sqrt(E12-t1)), p2(sqrt(E22-t2));
   Vec3D n1,n2;
   ConstructDreiBein(mo,n1,n2);
   double phi(mo->phi + mo->polinfo.Angle()), bph(cos(phi)), cph(-sin(phi));
   Vec3D es(cph*n1 + bph*n2);
   double cth1((p*p-p2*p2+p1*p1)/(2.*p*p1)), sth1(sqrt(1.-sqr(cth1)));
   double cth2((p*p+p2*p2-p1*p1)/(2.*p*p2)), sth2(sqrt(1.-sqr(cth2)));
+  //   std::cout<<"Cosini : "<<cth1<<"/"<<cth2<<" -> "<<es<<std::endl
+  // 	   <<p<<"("<<mo->t<<") -> "
+  // 	   <<p1<<"("<<E12<<"-"<<mo->left->t<<" "<<mo->left->part->Flav()<<")+"
+  // 	   <<p2<<"("<<E22<<"-"<<mo->right->t<<" "<<mo->right->part->Flav()<<")"<<std::endl;
   mo->costh   = cth1*cth2-sth1*sth2;
   Vec3D nm(mo->part->Momentum());
   nm=1.0/nm.Abs()*nm;
@@ -395,6 +401,11 @@ ConstructTwoVectors(Knot *const mo,Vec4D &p1vec,Vec4D &p2vec) const
 void Timelike_Kinematics::
 ConstructDreiBein(Knot *const mo,Vec3D &n1,Vec3D &n2) const
 {
+  if (!mo->prev) {
+    n1 = Vec3D(0.,0.,1.);
+    n2 = Vec3D(0.,1.,0.);
+    return;
+  }
   Knot * au(mo->prev->left);
   int sign(0), mode(1);
   if (mo==au) {
