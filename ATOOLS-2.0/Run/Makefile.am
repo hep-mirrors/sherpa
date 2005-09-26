@@ -29,17 +29,17 @@ endif
 bin_PROGRAMS  =	Integrator_Test Calc Color
 Integrator_Test_SOURCES       =	Integrator_Test.C
 Integrator_Test_LDADD         =	$(ATOOLSLIBS) $(SYSLIBS) $(ROOTLIBS) 
-Integrator_Test_LDFLAGS       =	SHERPA_LDFLAGS
+Integrator_Test_LDFLAGS       =	-rdynamic
 Color_SOURCES =	Color.C
 Color_LDADD   =	$(ATOOLSLIBS) $(SYSLIBS) $(ROOTLIBS) 
-Color_LDFLAGS =	SHERPA_LDFLAGS
+Color_LDFLAGS =	-rdynamic
 Calc_SOURCES  =	Calc.C
 Calc_LDADD    =	$(ATOOLSLIBS) $(SYSLIBS) $(ROOTLIBS)
-Calc_LDFLAGS  =	SHERPA_LDFLAGS
+Calc_LDFLAGS  =	-rdynamic
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(MODELFLAGS) $(ATOOLSFLAGS) $(ROOTFLAGS)
 INCLUDES      = $(MODELINCS) $(ATOOLSINCS) $(ROOTINCS)
-dist-hook:
-	sed -e "s/SHERPA_LDFLAGS/SHERPA_LDFLAGS/1" \
-	  < Makefile.am > $(distdir)/Makefile.am
 
+dist-hook:
+	sed -e "s/-rdynamic/SHERPA_LDFLAGS/1" \
+	  < Makefile.am > $(distdir)/Makefile.am
