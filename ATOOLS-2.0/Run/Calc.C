@@ -27,16 +27,29 @@ int main(int argc,char **argv)
     else msg.SetModifiable(false);
     Algebra_Interpreter interpreter;
     std::string expr;
+    bool quiet(false);
     for (int i=1;i<argc;++i) {
       std::string argvs=argv[i];
+      if (argvs=="-q") {
+	quiet=true;
+	msg.SetLevel(0);
+	continue;
+      }
       size_t pos=argvs.find("=");
       if (pos!=std::string::npos && 
 	  expr.length()>pos && expr[pos+1]!='=')
 	interpreter.AddTag(argvs.substr(0,pos),argvs.substr(pos+1));
       else expr+=argv[i];
     }
-    std::cout<<"Calc: interpreting formula -> "<<expr<<" = "
-	     <<interpreter.Interprete(expr)<<std::endl;
+    std::string result(interpreter.Interprete(expr));
+    if (!quiet) {
+      std::cout<<"Calc: interpreting formula -> "<<expr<<" = "
+	       <<result<<std::endl;
+    }
+    else {
+      std::cout<<result<<std::endl;
+      return 0;
+    }
     if (msg.LevelIsTracking()) interpreter.PrintEquation();
     std::cout.precision(12);
     std::cout<<"Calc: recalculating tree   -> "<<expr<<" = "
