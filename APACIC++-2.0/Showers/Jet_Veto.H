@@ -22,12 +22,18 @@ namespace APACIC {
   { return (jv::mode)((int)a|(int)b); }
 
   class Jet_Veto {
+  public:
+
+    typedef std::vector<double> Double_Vector;
+
   private:
 
     ATOOLS::Jet_Finder  *p_jf;
     Timelike_Kinematics *p_kin;
 
     Tree **p_istrees, *p_fstree;
+
+    Double_Vector m_rates;
 
     jv::mode m_mode;
 
@@ -44,7 +50,7 @@ namespace APACIC {
     Jet_Veto(ATOOLS::Jet_Finder *const jf,Timelike_Kinematics *const kin);
 
     //member functions 
-    int  TestKinematics(const int mode=0);
+    int  TestKinematics(const int mode=0,Knot *const mo=NULL);
 
     // inline functions
     inline void SetMode(const jv::mode &mode)     { m_mode=mode;       }
@@ -54,6 +60,10 @@ namespace APACIC {
     inline void SetFSTree(Tree *const tree)    { p_fstree=tree;   }
 
     inline void SetJetPT2(const double &pt2) { p_jf->SetShowerPt2(pt2); }
+
+    inline ATOOLS::Jet_Finder *const JetFinder() const { return p_jf; }
+
+    inline const Double_Vector &JetRates() const { return m_rates; }
 
   };// end of class Jet_Veto
 
