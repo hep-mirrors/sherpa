@@ -89,7 +89,7 @@ bool Momenta_Stretcher::ZeroThem(const int n,Vec4D * momenta)
   }
   else {
     double xmt         = 0.;
-    double * oldps2   = new double[n];
+    double * oldps2    = new double[n];
     double * ens       = new double[n];
     Vec4D cms          = Vec4D(0.,0.,0.,0.);
     for (short int i=0;i<n;i++) {
@@ -144,7 +144,8 @@ void Hadronisation_Parameters::Init(string dir,string file)
   msg.Tracking()<<"In Hadronisation_Parameters::Init("<<dir<<file<<")"<<endl;
   ReadParameters(dir,file);
   p_constituents = new Constituents(false);
-  if (msg.LevelIsTracking()) p_constituents->PrintConstituents();
+  //if (msg.LevelIsTracking()) 
+  p_constituents->PrintConstituents();
 
   p_multiplets   = new All_Hadron_Multiplets();
   if (msg.LevelIsTracking()) p_multiplets->PrintWaveFunctions(); 

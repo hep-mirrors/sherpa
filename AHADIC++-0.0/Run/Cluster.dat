@@ -1,4 +1,4 @@
-STRANGE_SUPRESSION  = 0.5
+STRANGE_SUPRESSION  = 0.2
 BARYON_SUPRESSION   = 0.2
 Q_BREAKUP           = 1.
 AngularSmearing     = 0.5

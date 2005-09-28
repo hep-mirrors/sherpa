@@ -74,6 +74,7 @@ int main(int argc,char* argv[])
     *(mo->part) = Particle(1,Flavour(kf::photon),Vec4D(2.*E,0.,0.,0.));
     mo->part->SetStatus(2);
     mo->part->SetInfo('M');
+    mo->didkin  = true;
 
     //mo_flavs[0] = Flavour(kf::code(1+int(ran.Get()*3.)));   
     mo_flavs[0] = Flavour(kf::b);   
@@ -95,6 +96,7 @@ int main(int argc,char* argv[])
     mo->left->part->SetStatus(1);
     mo->left->part->SetInfo('H');
     mo->left->part->SetFlow(1,-1);
+    mo->left->didkin     = true;
  
     mo->right            = tree->NewKnot();
     mo->right->prev      = mo;
@@ -104,11 +106,12 @@ int main(int argc,char* argv[])
     mo->right->maxpt2    = 0.;
     mo->right->E2        = E*E;
     mo->right->thcrit    = mo->thcrit;
-    *(mo->right->part) = Particle(3,mo_flavs[1],Vec4D(E,-1.*pvec)); 
+    *(mo->right->part)   = Particle(3,mo_flavs[1],Vec4D(E,-1.*pvec)); 
     mo->right->part->SetStatus(1);
     mo->right->part->SetInfo('H');
     mo->right->part->SetFlow(2,mo->left->part->GetFlow(1));
-    
+    mo->right->didkin    = true;
+
     blob        = new Blob();
     blob->SetType(btp::ME_PS_Interface_FS);
     blob->SetId();
@@ -122,7 +125,6 @@ int main(int argc,char* argv[])
   }
 
   delete ahadic;
-  delete tree;
   delete apacic;
   delete isr;
   delete model;
