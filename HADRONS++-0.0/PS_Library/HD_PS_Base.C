@@ -13,6 +13,8 @@ using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
+#include "MyStrStream.H"
+
 ////////// class HD_Channel_Selector /////////
  
 bool HD_Channel_Selector::DecomposeChannel( string name, ChannelInformation & ci )
@@ -206,9 +208,12 @@ bool HD_PS_Base::Construct( GeneralModel & _md )
 		}
 	  }
 	  if ( helpsvv[i][0] == string("Parameters") ) {
-		i++;
+
+	    i++;
 		while ( helpsvv[i][0] != string("}") ) {
-		  if ( helpsvv[i][1] == string("=") ) {
+		  if ( helpsvv[i][1] == string("=")) {
+		    _md[helpsvv[i][0]]=ToType<double>(reader.Interpreter()->Interprete(helpsvv[i][2]));
+		    cout<<helpsvv[i][0]<<" "<<_md[helpsvv[i][0]]<<endl;
 			// general constants
 			if ( helpsvv[i][0] == string("V") ) _md.pm.a   = atof( string(helpsvv[i][2]).c_str() );
 			if ( helpsvv[i][0] == string("A") ) _md.pm.b   = atof( string(helpsvv[i][2]).c_str() );

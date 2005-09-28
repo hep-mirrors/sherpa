@@ -7,6 +7,8 @@
 
 namespace HADRONS {
 
+  typedef std::map<std::string,double> String_Map;
+
   struct GeneralParam {				// parameter
 	double a, b;									// V-A structure
 	double a2, b2;									// V-A structure
@@ -39,11 +41,17 @@ namespace HADRONS {
 	int i, j;
   };
 
-  struct GeneralModel {
+  struct GeneralModel: public String_Map {
 	int run;						// running coupling
 	int ff;							// form factor
 	GeneralParam pm;			 	// coupling parameters
 	GeneralVector vec[2];			// in which particles do vector resonances decay
+  public:
+    inline double operator()(const std::string &tag,const double &def) const 
+    {
+      String_Map::const_iterator fit(find(tag));
+      return fit!=end()?fit->second:def;
+    }
   }; 
 
   class HD_ME_Base {

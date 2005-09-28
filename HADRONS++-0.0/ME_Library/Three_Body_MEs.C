@@ -10,20 +10,45 @@ using namespace std;
 
 
 P_3P_Dalitz::P_3P_Dalitz(int _nout, ATOOLS::Flavour * _flavs) :
-  HD_ME_Base(_nout,_flavs), m_pseudo_1(-1), m_pseudo_2(-1), m_pseudo_3(-1)
+  HD_ME_Base(_nout,_flavs), m_pseudo_1(-1), m_pseudo_2(-1), m_pseudo_3(-1),
+  m_const(1.),m_liny(0.),m_linx(0.),m_linyphase(0.),m_linxphase(0.),
+  m_quady(0.),m_quadx(0.),m_quadyphase(0.),m_quadxphase(0.),
+  m_phaseliny(0.),m_phaselinx(0.),m_phasequady(0.),m_phasequadx(0.)
 {
   m_metype = string("P_3P_Dalitz");
   for (int i=1;i<4;i++) {
-	if( p_flavs[i].IsAnti() != p_flavs[0].IsAnti() ) m_pseudo_3 = i;
-	else if( m_pseudo_1 == -1 ) m_pseudo_1 = i;
-	else m_pseudo_2 = i;
+    if( p_flavs[i].IsAnti() != p_flavs[0].IsAnti() ) {
+      m_pseudo_3 = i;
+      m_mProd3   = p_flavs[i].Mass();
+    }
+    else if( m_pseudo_1 == -1 ) {
+      m_pseudo_1 = i;
+      m_mProd1   = p_flavs[i].Mass();
+    }
+    else {
+      m_pseudo_2 = i;
+      m_mProd2   = p_flavs[i].Mass();
+    }
   }
+  m_mDecayer = p_flavs[0].Mass();
 }
 
 void P_3P_Dalitz::SetModelParameters( GeneralModel _md )
 {
-  m_mPi = Flavour(kf::pi_plus).Mass();
-  m_mK  = Flavour(kf::K_plus).Mass();
+  m_const = _md("const",1.);
+  m_liny  = _md("liny",0.); 
+  m_linx = _md("linx",0.); 
+  m_quady = _md("quady",0.); 
+  m_quadx = _md("quadx",0.);
+  
+  m_linyphase  = _md("linyphase",0.); 
+  m_linxphase  = _md("linxphase",0.);
+  m_quadyphase = _md("quadyphase",0.); 
+  m_quadxphase = _md("quadxphase",0.);
+  m_phaseliny  = _md("phaseliny",0.); 
+  m_phaselinx  = _md("phaselinx",0.);
+  m_phasequady = _md("phaseliny",0.); 
+  m_phasequadx = _md("phaselinx",0.);
 }
 
 double P_3P_Dalitz::operator()( const Vec4D * _p )
@@ -32,32 +57,19 @@ double P_3P_Dalitz::operator()( const Vec4D * _p )
   double s1 = (_p[0]-_p[m_pseudo_1]).Abs2();
   double s2 = (_p[0]-_p[m_pseudo_2]).Abs2();
   double s3 = (_p[0]-_p[m_pseudo_3]).Abs2();
-  double s0 = sqr(m_mK)/3.+sqr(m_mPi);
-  double x = (s1-s2)/s0;
-  double y = (s3-s0)/s0;
-
-  // experimentally measured constants
-  double a1 = 9.15;
-  double a3 = 0.37;
-  double b1 = 13.4;
-  double b3 = -0.646;
-  double b23 = -2.3;
-  double c = -1.00;
-  double d = -3.39;
-
-  // phase shifts
-  double dlt21 = 0.;
-  double dltM1 = 0.;
+  double s0 = (s1+s2+s3)/3.;
+  double x  = (s1-s2)/s0;
+  double y  = (s3-s0)/s0;
 
   // amplitude
-  double ampl = 2*(a1+a3);
-  ampl -= (b1+b3)*y;
-  ampl += b23*y;
-  ampl += 2*c*(sqr(y)+sqr(x)/3);
-  ampl += d*(sqr(y)-sqr(x)/3);
+  Complex ampl = Complex(m_const,0.);
+  ampl += y*Complex(m_liny + m_linyphase*cos(m_phaseliny),m_linyphase*sin(m_phaseliny));
+  ampl += x*Complex(m_linx + m_linxphase*cos(m_phaselinx),m_linyphase*sin(m_phaselinx));
+  ampl += sqr(y)*Complex(m_quady + m_quadyphase*cos(m_phasequady),m_quadyphase*sin(m_phasequady));
+  ampl += sqr(x)*Complex(m_quadx + m_quadxphase*cos(m_phasequadx),m_quadyphase*sin(m_phasequadx));
 
   // amplitude squared
-  double ampl_sq = sqr(ampl);
+  double ampl_sq = std::abs(ampl*conj(ampl));
 
   return ampl_sq;
 }

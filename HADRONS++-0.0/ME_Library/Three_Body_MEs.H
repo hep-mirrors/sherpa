@@ -46,12 +46,15 @@ namespace HADRONS {
 //
   class P_3P_Dalitz : public HD_ME_Base {
 
-	int m_pseudo_1, m_pseudo_2, m_pseudo_3;
-	double m_mPi, m_mK;
-	public:
-	  P_3P_Dalitz(int,ATOOLS::Flavour *);
-	  double operator()(const ATOOLS::Vec4D *);
-	  void SetModelParameters( GeneralModel _md );
+    int    m_pseudo_1, m_pseudo_2, m_pseudo_3;
+    double m_mProd1, m_mProd2, m_mProd3, m_mDecayer;
+    double m_const,m_liny,m_linx,m_linyphase,m_linxphase,
+      m_quady,m_quadx,m_quadyphase,m_quadxphase,
+      m_phaseliny,m_phaselinx,m_phasequady,m_phasequadx;
+  public:
+    P_3P_Dalitz(int,ATOOLS::Flavour *);
+    double operator()(const ATOOLS::Vec4D *);
+    void SetModelParameters( GeneralModel _md );
   };
 }
 
