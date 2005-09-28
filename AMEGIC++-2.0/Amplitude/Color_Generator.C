@@ -143,7 +143,7 @@ void Color_Generator::CFBuildString(int N)
     }
     CFh2 = CFh2->Next();
   }
-  prop+=2; //Savety
+  prop+=N-3;
   FillString(N,CCFlist,prop);
 }
 
