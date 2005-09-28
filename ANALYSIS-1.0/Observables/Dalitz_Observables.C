@@ -2,12 +2,14 @@
 
 #include "Primitive_Analysis.H"
 #include "MyStrStream.H"
+#include "TH2D.h"
+#include "My_Root.H"
 
 using namespace ANALYSIS;
 using namespace ATOOLS;
 
 class Dalitz_Observable_Base: public Primitive_Observable_Base {
-private:
+protected:
 
   Flavour m_inflav, m_outflavs[3];
   size_t m_bins;
@@ -27,8 +29,8 @@ public:
     m_outflavs[2]=out3;
     m_splitt_flag=false;
     std::string id(ATOOLS::ToString(this));
-    p_histogram=new TH2D(id.c_str(),(m_inflav.IDName()+std::string("_")+m_outflav[0].IDName()+
-				     m_outflav[1].IDName()+m_outflav[2].IDName()+
+    p_histogram=new TH2D(id.c_str(),(m_inflav.IDName()+std::string("_")+m_outflavs[0].IDName()+
+				     m_outflavs[1].IDName()+m_outflavs[2].IDName()+
 				     std::string("_Dalitz")).c_str(),
 			 m_bins,m_min,m_max,m_bins,m_min,m_max);
     (*MYROOT::myroot)(p_histogram,id);
@@ -44,15 +46,15 @@ void Dalitz_Observable_Base::Evaluate(const ATOOLS::Blob_List &blobs,double valu
 {
   for (ATOOLS::Blob_List::const_iterator bit=blobs.begin();
        bit!=blobs.end();++bit) {
-    if ((*bit)-NInP()==1 && (*bit)->NOutP()==3) {
+    if ((*bit)->NInP()==1 && (*bit)->NOutP()==3) {
       if ((*bit)->ConstInParticle(0)->Flav()==m_inflav) {
 	bool cont(false);
 	Vec4D pout[3];
 	for (int i=0;i<3;++i) {
 	  const ATOOLS::Particle *cur=(*bit)->ConstOutParticle(i);
-	  if (cur->Flav()==m_outflav[0] && pout[0]==Vec4D()) pout[0]=cur->Momentum();
-	  else if (cur->Flav()==m_outflav[1] && pout[1]==Vec4D()) pout[1]=cur->Momentum();
-	  else if (cur->Flav()==m_outflav[2] && pout[2]==Vec4D()) pout[2]=cur->Momentum();
+	  if (cur->Flav()==m_outflavs[0] && pout[0]==Vec4D()) pout[0]=cur->Momentum();
+	  else if (cur->Flav()==m_outflavs[1] && pout[1]==Vec4D()) pout[1]=cur->Momentum();
+	  else if (cur->Flav()==m_outflavs[2] && pout[2]==Vec4D()) pout[2]=cur->Momentum();
 	  else {
 	    cont=true;
 	    break;
@@ -74,10 +76,10 @@ public:
   
   Primitive_Observable_Base *Copy() const 
   {
-    return new Dalitz_Observable_Base(m_inflav,m_outflavs[0],m_outflavs[1],m_outflavs[2],m_bins,m_min,m_max,m_type);
+    return new Dalitz(m_inflav,m_outflavs[0],m_outflavs[1],m_outflavs[2],m_bins,m_min,m_max,m_type);
   }
 
-  void Evaluate(const Vec4D* pout);
+  void Evaluate(const Vec4D &pin,const Vec4D* pout,const double &weight,const size_t &ncount);
 
 };// end of class
 
@@ -85,7 +87,9 @@ void Dalitz::Evaluate(const Vec4D &pin,const Vec4D* pout,const double &weight,co
 {
   double s1((pin-pout[0]).Abs2()), s2((pin-pout[1]).Abs2()), s3((pin-pout[2]).Abs2()); 
   double s0((s1+s2+s3)/3.0);
-  p_histogram->Fill((s1-s2)/s0,(s3-s0)/s0,weight);
+  double s12((pout[0]+pout[1]).Abs2()), s23((pout[1]+pout[2]).Abs2());
+//   p_histogram->Fill((s1-s2)/s0,(s3-s0)/s0,weight);
+  p_histogram->Fill(s12,s23,weight);
   for (size_t i(1);i<ncount;++i) p_histogram->Fill(m_min,m_min,0.0);
 }
 
@@ -97,11 +101,22 @@ Dalitz_Observable_Base_Getter::operator()(const String_Matrix &parameters) const
 { 
   if (parameters.size()<1) return NULL;
   if (parameters[0].size()<8) return NULL;
-  Flavour in((kf::code)ToType<int>(parameters[0][0]));
-  Flavour out1((kf::code)ToType<int>(parameters[0][1]));
-  Flavour out2((kf::code)ToType<int>(parameters[0][2]));
-  Flavour out3((kf::code)ToType<int>(parameters[0][3]));
-  return new Dalitz(in,out1,out2,out3,ToType<int>(parameters[4]),
+  int in(ToType<int>(parameters[0][0]));
+  int out1(ToType<int>(parameters[0][1]));
+  int out2(ToType<int>(parameters[0][2]));
+  int out3(ToType<int>(parameters[0][3]));
+  
+  Flavour flin(kf::code(abs(in)));
+  if (in<0) flin=flin.Bar();
+  Flavour flout1(kf::code(abs(out1)));
+  if (out1<0) flout1=flout1.Bar();
+  Flavour flout2(kf::code(abs(out2)));
+  if (out2<0) flout2=flout2.Bar();
+  Flavour flout3(kf::code(abs(out3)));
+  if (out3<0) flout3=flout3.Bar();
+  std::cout<<in<<" -> "<<out1<<" "<<out2<<" "<<out3<<"      "
+	   <<flin<<" -> "<<flout1<<" "<<flout2<<" "<<flout3<<std::endl;
+  return new Dalitz(flin,flout1,flout2,flout3,ToType<int>(parameters[0][4]),
 		    ToType<double>(parameters[0][5]),
 		    ToType<double>(parameters[0][6]),
 		    ToType<int>(parameters[0][7])); 
@@ -110,6 +125,6 @@ Dalitz_Observable_Base_Getter::operator()(const String_Matrix &parameters) const
 void Dalitz_Observable_Base_Getter::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"inflav outflav1 outflav2 outflav3 bins min max type"; 
+  str<<"inflav outflav outflav2 outflav3 bins min max type"; 
 }
 
