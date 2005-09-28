@@ -258,17 +258,6 @@ bool HD_PS_Base::Construct( GeneralModel & _md )
 			if ( helpsvv[i][0] == string("lambda0"))		_md.pm.lambda0		= atof( string(helpsvv[i][2]).c_str() );
 			if ( helpsvv[i][0] == string("gamma_rho_770"))  _md.pm.gammaR		= atof( string(helpsvv[i][2]).c_str() );
 			// further options
-			if ( helpsvv[i][0] == string("ME_MODEL") ) {
-			  if ( string(helpsvv[i][2])=="Traces" )            _md.me = 1;
-			  else if ( string(helpsvv[i][2])=="XYZ" )          _md.me = 2;
-			  else if ( string(helpsvv[i][2])=="SimpleTraces" ) _md.me = 3;
-			  else {
-				msg.Error()<<"Error in HD_PS_Base::Construct ... "<<endl
-				           <<"     There is no ME model with name "<<helpsvv[i][2]<<" implemented, yet."<<endl
-						   <<"     Take XYZ instead."<<endl;
-				_md.me = 2;
-			  }
-			}
 			if ( string(helpsvv[i][0])=="RUNNING_WIDTH" ) _md.run = atoi( string(helpsvv[i][2]).c_str() );
 			if ( string(helpsvv[i][0])=="FORM_FACTOR" )   _md.ff  = atoi( string(helpsvv[i][2]).c_str() );
 		  }
@@ -454,7 +443,6 @@ bool HD_PS_Base::WriteOut() {
 
 void HD_PS_Base::Initialize( struct GeneralModel &md )
 {
-  md.me = 2;				// xyz functions
   md.run = 3;				// running width
   md.ff = 1;				// form factor
   md.vec[0].i = 1;			// number of decay product of vector resonance 1
