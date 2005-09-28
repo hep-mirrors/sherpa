@@ -95,31 +95,17 @@ Hadron_Decay_Channel * Hadrons::ChooseDecayChannel()
   return (*p_channelmap)[dec_channel];
 }
 
-//double Hadrons::Lifetime(double tau) 
-//{
-//  double r = ran.Get();
-//  double t = -tau*log(r);
-//  return t; // in same units as tau
-//}
- 
 void Hadrons::ChooseDecayKinematics( Vec4D * _p, Hadron_Decay_Channel * _hdc )
 {
   double value(0.);
   const double max = _hdc->GetPS()->Maximum();
   int trials(0);											// number of trials
-  ofstream f_mom("momenta.out",ios::app|ios::out);
-  double val (1.);
   do {
 	value = _hdc->Differential();							// current val. of |M|^2
 	trials++;
-	f_mom<<(_hdc->Momentum(1)+_hdc->Momentum(2)+_hdc->Momentum(3)).Abs()<<" "
-	  <<(_hdc->Momentum(1)+_hdc->Momentum(2)).Abs()<<" "
-	  <<(_hdc->Momentum(1)+_hdc->Momentum(3)).Abs()<<" "
-	  <<(_hdc->Momentum(2)+_hdc->Momentum(3)).Abs()<<" "<<val<<" "<<value<<endl;
-//	f_mom<<(_hdc->Momentum(1)+_hdc->Momentum(2)).Abs()<<" "<<val<<" "<<value<<endl;
   } while( ran.Get() > value/max );
-  ofstream f("trials.out",ios::app|ios::out );
-  f<<trials<<endl;
+//  ofstream f("trials.out",ios::app|ios::out );
+//  f<<trials<<endl;
   msg_Tracking()<<"Hadrons::ChooseDecayKinematics:  # Trials "<<trials
   	        <<"   <=>  "<<100./trials<<" %"<<endl;
   for( int i=0; i < _hdc->DecayChannel()->NumberOfDecayProducts()+1; i++ ) {
@@ -151,8 +137,6 @@ void Hadrons::PerformDecay( Particle * part, Blob_List * blob_list, Particle_Lis
   // choose a kinematics that corresponds to the ME kinematic distribution
   Vec4D mom[n];
   ChooseDecayKinematics( mom, hdc ); 
-  ofstream f_data("events.out",ios::out|ios::app);
-//  f_data<<(mom[1]+mom[2]+mom[3]).Abs()<<" "<<(mom[1]+mom[2]).Abs()<<endl;
 
   // transform momentum into Lab System and create blob
   Poincare lambda(part->Momentum());
@@ -167,6 +151,7 @@ void Hadrons::PerformDecay( Particle * part, Blob_List * blob_list, Particle_Lis
   Vec3D      spatial = part->Distance( time );
   Vec4D     position = Vec4D( time*rpa.c(), spatial );
   blob->SetPosition( part->XProd() + position );
+//  blob->SetPosition(Vec4D(1.,1.,0.,0.));
   msg.Debugging()<<"created new blob: #"<<blob->Id()<<" with status 1"<<endl;
   blob->AddToInParticles( part );
   if( part->Info() == 'P' ) part->SetInfo('p');
@@ -241,7 +226,7 @@ Decay_Table * Hadrons::InitialiseOneDecayTable(vector<string> line)
   Decay_Table * dt              = new Decay_Table(Flavour(kf::code(atoi((line[0]).c_str()))));
   Decay_Table_Reader * dtreader = new Decay_Table_Reader(m_path,line[1]);
   if (dtreader->FillDecayTable(dt)>0) {
-    msg.Out()<<"Found "<<dt->NumberOfDecayChannels()<<" decay channels for "<<dt->Flav()<<endl;
+    msg.Out()<<om::blue<<"Found "<<dt->NumberOfDecayChannels()<<" decay channels for "<<dt->Flav()<<om::reset<<endl;
     dtreader->FillInMatrixElementsAndPS(dt,p_channelmap);
     msg.Out()<<"Initialised a new decay table : "<<endl;dt->Output();msg.Out()<<endl;
   }
