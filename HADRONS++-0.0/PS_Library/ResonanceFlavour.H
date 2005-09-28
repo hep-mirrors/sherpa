@@ -5,8 +5,8 @@ namespace HADRONS {
 
   class ResonanceFlavour {
 
-	std::string name;
-	double mass, width;
+	std::string m_name;
+	double m_mass, m_width;
 
 	public:
 	ResonanceFlavour() {};
@@ -16,9 +16,9 @@ namespace HADRONS {
 
 	void Set( ATOOLS::kf::code _kfc, double _mass, double width );
 	 
-	double Mass() { return mass; }
-	double Width() { return width; }
-	std::string Name() { return name; }
+	double Mass() { return m_mass; }
+	double Width() { return m_width; }
+	std::string Name() { return m_name; }
 
   };
 
