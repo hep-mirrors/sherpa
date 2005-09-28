@@ -1,0 +1,6 @@
+# outgoing part. 	 | BR 	 | ME-type 	 | DC-file
+{211,211,-211}	 | 0.05576	 | Rambo	 | K+_pi+pi+pi-.dat;
+
+! NO_FULLDECAY   ! use this option: no decay of daughters
+! NO_ANTI        ! use this option: anti-mother does not decay
+! CREATE_BOOKLET ! use this option: create a booklet about these decay modes
