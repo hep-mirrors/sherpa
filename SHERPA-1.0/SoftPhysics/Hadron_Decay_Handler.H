@@ -39,6 +39,7 @@ namespace SHERPA {
     ~Hadron_Decay_Handler();
 	void DeletePointers(); 
 
+    void PrepareDecays(ATOOLS::Blob *);
     bool FillHadronDecayBlobs(ATOOLS::Particle *,ATOOLS::Blob_List *,
 			      ATOOLS::Particle_List *part_list=NULL);
     Lund_Interface * GetLund() { return p_lund; }

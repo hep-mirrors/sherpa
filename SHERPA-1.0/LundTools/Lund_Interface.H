@@ -12,7 +12,6 @@ namespace SHERPA {
 
   class Lund_Interface {
   private:
-
     static size_t s_errors, s_maxerrors;
 
     std::string m_path, m_file, m_outfile;
@@ -32,7 +31,7 @@ namespace SHERPA {
 
     static bool s_exportas, s_exportpdf;
 
-	std::map<ATOOLS::Particle *,int> m_secondarymap;
+    std::map<ATOOLS::Particle *,int> m_secondarymap;
 	
     void NextFile(const bool newfile);
 
@@ -45,25 +44,25 @@ namespace SHERPA {
     // tools for extracting hadrons
     void AddPartonToString(ATOOLS::Particle *particle,int &nhep);
     void FillPrimaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
-								  ATOOLS::Particle_List *pl=NULL);
+				  ATOOLS::Particle_List *pl=NULL);
     void FillPrimaryTauInBlob(int,ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
-							  ATOOLS::Particle_List *pl=NULL);
+			      ATOOLS::Particle_List *pl=NULL);
     void FillSecondaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
-									int daughter1,int daughter2,
-									ATOOLS::Particle_List *pl=NULL);
-
+				    int daughter1,int daughter2,
+				    ATOOLS::Particle_List *pl=NULL);
   public:
 
     Lund_Interface(std::string _m_path,std::string _m_file,bool sherpa);
     ~Lund_Interface();
 
     bool        Hadronize(ATOOLS::Blob_List *bloblist,ATOOLS::Particle_List *pl=NULL);
-	bool        FillDecay(ATOOLS::Particle * part,
-						  ATOOLS::Blob_List *bloblist,ATOOLS::Particle_List *pl=NULL);
-	bool        FindDecay( ATOOLS::Particle * part ); 
-	void        PerformDecay( ATOOLS::Particle * part, 
-		                      ATOOLS::Blob_List * blob_list, 
-				 		      ATOOLS::Particle_List * part_list );
+    bool        FillDecay(ATOOLS::Particle * part,
+			  ATOOLS::Blob_List *bloblist,ATOOLS::Particle_List *pl=NULL);
+    bool        FindDecay( ATOOLS::Particle * part );
+    void        PerformAllDecays(ATOOLS::Blob *);
+    void        PerformDecay( ATOOLS::Particle * part, 
+			      ATOOLS::Blob_List * blob_list, 
+			      ATOOLS::Particle_List * part_list );
     static void Error(const int error);
     bool        OneEvent(ATOOLS::Blob_List *const bloblist,double &weight);
 
@@ -74,8 +73,8 @@ namespace SHERPA {
     inline static bool ExportAS()  { return s_exportas;  }
     inline static bool ExportPDF() { return s_exportpdf; }
 
-	void SwitchOfDecays(ATOOLS::kf::code);
-	void LeaveOpenOnlyDC( int idc ); 
+    void SwitchOfDecays(ATOOLS::kf::code);
+    void LeaveOpenOnlyDC( int idc ); 
   };// end of class Lund_Interface
 
 }// end of namespace SHERPA

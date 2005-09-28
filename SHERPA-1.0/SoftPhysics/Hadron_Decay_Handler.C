@@ -20,8 +20,8 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(Hadrons * _hadrons) :
   p_hadrons(_hadrons),
   p_lund(NULL)
 {
-  std::cout<<"Hadron_Decay_Handler::Hadron_Decay_Handler(Lund_Interface * _hadrons) :"<<std::endl
-	   <<"   "<<_hadrons<<" -> "<<p_hadrons<<" "<<std::endl;
+  //std::cout<<"Hadron_Decay_Handler::Hadron_Decay_Handler(Lund_Interface * _hadrons) :"<<std::endl
+  //	   <<"   "<<_hadrons<<" -> "<<p_hadrons<<" "<<std::endl;
   SwitchOfLundDecays();
 }
 #endif
@@ -34,8 +34,8 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(Lund_Interface * _lund) :
 #endif
   p_lund(_lund)
 {
-  std::cout<<"Hadron_Decay_Handler::Hadron_Decay_Handler(Lund_Interface * _lund) :"<<std::endl
-	   <<"   "<<_lund<<" -> "<<p_lund<<" "<<std::endl;
+  //std::cout<<"Hadron_Decay_Handler::Hadron_Decay_Handler(Lund_Interface * _lund) :"<<std::endl
+  //	   <<"   "<<_lund<<" -> "<<p_lund<<" "<<std::endl;
 }
 
 void Hadron_Decay_Handler::EraseTreated(std::set<int> * hadrons)
@@ -45,9 +45,9 @@ void Hadron_Decay_Handler::EraseTreated(std::set<int> * hadrons)
   if (m_mode==1) {
     map<kf::code,Decay_Table *> * cans = p_hadrons->GetDecayMap();
     for (map<kf::code,Decay_Table *>::iterator citer=cans->begin();citer!=cans->end();citer++) {
-      msg.Debugging()<<"Killing flavours: "<<citer->first<<" ("<<cans->size()<<" ) "<<hadrons->size()<<endl;
+      //msg.Debugging()<<"Killing flavours: "<<citer->first<<" ("<<cans->size()<<" ) "<<hadrons->size()<<endl;
       hadrons->erase(int(citer->first));
-      msg.Debugging()<<"                  "<<citer->first<<" ("<<cans->size()<<" ) "<<hadrons->size()<<endl;
+      //msg.Debugging()<<"                  "<<citer->first<<" ("<<cans->size()<<" ) "<<hadrons->size()<<endl;
     }
   }
 #endif
@@ -62,12 +62,25 @@ void Hadron_Decay_Handler::DeletePointers()
 {
 }
 
+void Hadron_Decay_Handler::PrepareDecays(Blob * blob) {
+  //msg_Tracking()<<"Hadron_Decay_Handler::PrepareDecays "<<endl<<(*blob)<<endl;
+  switch( m_mode ) {
+#ifdef USING__Hadrons
+  case 1: 
+    break;
+#endif
+  case 0: 
+    p_lund->PerformAllDecays(blob);
+    break;
+  }
+}
+
 bool Hadron_Decay_Handler::FillHadronDecayBlobs(Particle *part,
 						Blob_List *blob_list,
 						Particle_List *part_list )
 {
-  msg_Tracking()<<"Hadron_Decay_Handler::FillHadronDecayBlobs "<<part->Flav()<<endl;
-  msg.Debugging()<<"Momentum: "<<part->Momentum()<<endl;
+  msg_Tracking()<<"Hadron_Decay_Handler::FillHadronDecayBlobs "<<part->Flav()<<endl
+		<<"Momentum: "<<part->Momentum()<<endl;
 
   // perform decay 
   switch( m_mode ) {

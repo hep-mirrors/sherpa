@@ -30,6 +30,8 @@ Hadron_Decays::~Hadron_Decays()
 bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight) 
 {
   PROFILE_HERE;
+  //std::cout<<"Hadron_Decays::Treat"<<endl
+  //	   <<"Check if Sherpa can handle an occuring hadron decay"<<endl;
   if(p_dechandlers->empty()) return false;
 
   if (_bloblist->empty()) {
@@ -39,43 +41,40 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
     return 0;
   }
 
-  Blob     * myblob;
-  bool found = true;
-  msg_Tracking()<<"Hadron_Decays::Treat"<<endl
-	<<"Check if Sherpa can handle an occuring hadron decay"<<endl;
+  Blob * myblob(NULL);
+  bool found(true);
   Hadron_Decay_Handler * hdhandler;				// pointer on considered HD Handler
   while (found) {
     found = false;
     bool keeprunning (true);
-    for (Blob_List::iterator blit=_bloblist->begin();blit!=_bloblist->end() && keeprunning;++blit) {
-      msg.Debugging()<<"ID: "<<(*blit)->Id()<<" status: "<<(*blit)->Status()
-		     <<" type: "<<(*blit)->Type()<<" last "<<(*(_bloblist->end()-1))->Id()<<"  at "<<*blit<<endl;
-      msg.Debugging()<<"          "<<(*blit)->NInP()<<" -> "<<(*blit)->NOutP()<<endl;
-      msg.Debugging()<<"      IN  "<<endl;
-      for (int r=0; r<(*blit)->NInP(); r++) 
-	msg.Debugging()<<"          "<<(*blit)->InParticle(r)->Flav()<<endl;
-      msg.Debugging()<<"      OUT "<<endl;
-      for (int r=0; r<(*blit)->NOutP(); r++) 
-	msg.Debugging()<<"          "<<(*blit)->OutParticle(r)->Flav()<<endl;
-      if ( (*blit)->Status()==0 && (*blit)->Type()==btp::Fragmentation  ||
-	   (*blit)->Status()==0 && (*blit)->Type()==btp::Hadron_Decay      ) {
+    for (Blob_List::iterator blit=_bloblist->begin();
+	 blit!=_bloblist->end() && keeprunning;++blit) {
+      if ((*blit)->Type()==btp::Fragmentation ||
+	  (*blit)->Type()==btp::Hadron_Decay) {
 	myblob = (*blit);
-	msg.Debugging()<<"  Found a blob : "<<myblob->Id()<<" last "<<(*(_bloblist->end()-1))->Id()<<endl;
-	
-	bool decayed(false); 
-	for (int i=0;i<myblob->NOutP();i++) {
-	  decayed = false;
-	  // check if sherpa can cope with OutParticle and pick implemented ones
+	switch (myblob->Status()) {
+	case 2:
+	  if( p_dechandlers->find("Lund")!= p_dechandlers->end()) {
+	    hdhandler = (*p_dechandlers)["Lund"];
+	    //std::cout<<"Before PrepareDecays."<<std::endl;
+	    hdhandler->PrepareDecays(myblob);
+	    found = true;
+	  }
+	case 0:
+	  //std::cout<<"Try to do the decays."<<std::endl;
+	  bool decayed(false); 
+	  for (int i=0;i<myblob->NOutP();i++) {
+	    decayed = false;
+	    // check if sherpa can cope with OutParticle and pick implemented ones
 #ifdef USING__Hadrons
-	  if( p_dechandlers->find("Sherpa") != p_dechandlers->end() ) {
-	    hdhandler = (*p_dechandlers)["Sherpa"]; 
-	    if( hdhandler->GetHadrons()->FindDecay(myblob->OutParticle(i)->RefFlav()) ) 
-	      {
+	    if( p_dechandlers->find("Sherpa") != p_dechandlers->end() ) {
+	      hdhandler = (*p_dechandlers)["Sherpa"]; 
+	      if( hdhandler->GetHadrons()->FindDecay(myblob->OutParticle(i)->RefFlav()) ) {
 		if (myblob->OutParticle(i)->DecayBlob()==NULL) {
 		  msg.Debugging()<<"Hadron_Decays::Treat (Sherpa): Decay for "
 				 <<myblob->OutParticle(i)->Flav()<<std::endl;
 		  hdhandler->FillHadronDecayBlobs( myblob->OutParticle(i), _bloblist );
-		  found  = true;
+		  found       = true;
 		  keeprunning = false;		// start again !
 		}
 		else {
@@ -86,34 +85,35 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
 		}
 		decayed = true;						
 	      }
-	  }
+	    }
 #endif
-	  // check if Lund can cope with OutParticle 
-	  if( p_dechandlers->find("Lund") != p_dechandlers->end() &&
-	      !decayed ) {
-	    hdhandler = (*p_dechandlers)["Lund"];
-	    if( hdhandler->GetLund()->FindDecay(myblob->OutParticle(i)) ) {
-	      if (myblob->OutParticle(i)->DecayBlob()==NULL) {
-		msg.Debugging()<<(*(_bloblist->end()-1))->Id()<<" Hadron_Decays::Treat (Lund): Decay for "
-			       <<myblob->OutParticle(i)->Flav()
-			       <<" "<<myblob->OutParticle(i)->Flav().Kfcode()<<endl;
-		hdhandler->FillHadronDecayBlobs( myblob->OutParticle(i), _bloblist );
-		found  = true;
-		keeprunning = false;		// start again !
-	      }
-	      else {
-		msg.Error()<<"Error in Hadron_Decays::Treat (Lund): "<<endl
-			   <<"   Unstable particle has a decayblob."<<endl
-			   <<"   Terminate run."<<endl;
-		abort();
+	    // check if Lund can cope with OutParticle 
+	    if( p_dechandlers->find("Lund") != p_dechandlers->end() && !decayed ) {
+	      hdhandler = (*p_dechandlers)["Lund"];
+	      //std::cout<<"Let Lund try to cope with this particle : "<<i<<std::endl;
+	      if(hdhandler->GetLund()->FindDecay(myblob->OutParticle(i)) ) {
+		if (myblob->OutParticle(i)->DecayBlob()==NULL) {
+		  //std::cout<<(*(_bloblist->end()-1))->Id()<<" Hadron_Decays::Treat (Lund): Decay for "
+		  //	   <<myblob->OutParticle(i)->Flav()
+		  //	   <<" "<<myblob->OutParticle(i)->Flav().Kfcode()<<endl;
+		  hdhandler->FillHadronDecayBlobs( myblob->OutParticle(i), _bloblist );
+		  found       = true;
+		  keeprunning = false;		// start again !
+		}
+		else {
+		  msg.Error()<<"Error in Hadron_Decays::Treat (Lund): "<<endl
+			     <<"   Unstable particle has a decayblob."<<endl
+			     <<"   Terminate run."<<endl;
+		  abort();
+		}
 	      }
 	    }
 	  }
+	  myblob->SetStatus(1);
 	}
-	myblob->SetStatus(1);
-      }
-      if ( (*blit)->Id() == (*(_bloblist->end()-1))->Id() ) {
-	keeprunning = false;
+	if ( (*blit)->Id() == (*(_bloblist->end()-1))->Id() ) {
+	  keeprunning = false;
+	}
       }
     }
   }

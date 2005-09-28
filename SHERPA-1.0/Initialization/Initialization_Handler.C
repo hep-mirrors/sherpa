@@ -17,6 +17,7 @@
 #include "Particle_Qualifier.H"
 #include "Data_Collector.H"
 #include "Variable.H"
+#include "Lund_Interface.H"
 
 #ifdef USING__MCatNLO
 #include "MCatNLO_Wrapper.H"
@@ -32,7 +33,6 @@ using namespace BEAM;
 using namespace PDF;
 using namespace ATOOLS;
 using namespace std;
-
 
 Initialization_Handler::Initialization_Handler(string _path,string _file) : 
   m_path(_path), m_file(_file), m_mode(0),
@@ -511,8 +511,14 @@ bool Initialization_Handler::InitializeTheHadronDecays()
     m_hdhandlers["Sherpa"] = hdhandler;
   }
 #endif
-  if ((p_fragmentation->GetLundInterface()!=NULL) && (decmodel==string("Lund") || needextra) ) {
-    hdhandler              = new Hadron_Decay_Handler(p_fragmentation->GetLundInterface());
+  if ((decmodel==string("Lund") || needextra) ) {
+    Lund_Interface * lund(NULL);
+    if (p_fragmentation->GetLundInterface()==NULL) {
+      string lfile = dr.GetValue<std::string>("LUND_FILE",std::string("Lund.dat"));
+      lund         = new Lund_Interface(m_path,lfile,true);
+    }
+    else lund      = p_fragmentation->GetLundInterface();
+    hdhandler      = new Hadron_Decay_Handler(lund);
     m_hdhandlers["Lund"]   = hdhandler;
   }
   if (decmodel!=std::string("Hadrons") && decmodel!=string("Lund")) {
@@ -528,7 +534,7 @@ Hadron_Decay_Handler * const Initialization_Handler::GetHadronDecayHandler(std::
   HDHandlersIter pos = m_hdhandlers.find(_key);
   if (pos!=m_hdhandlers.end()) return pos->second;
   msg.Error()<<"Error in Initialization_Handler::GetHadronDecayHandler("<<_key<<") :"
-		     <<"   Key not found. Return Null pointer."<<endl;
+	     <<"   Key not found. Return Null pointer."<<endl;
   return NULL;
 }
 

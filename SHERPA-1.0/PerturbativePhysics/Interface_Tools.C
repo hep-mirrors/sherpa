@@ -66,6 +66,7 @@ void Interface_Tools::InitializeOutGoing(Blob *blob,const double &E)
   dummy->thcrit=M_PI;
   dummy->stat=0;
   dummy->E2=sqr(dummy->part->Momentum()[0]);
+  dummy->didkin=1;
   d1->part->SetInfo('H');
   d1->part->SetStatus(1);
   d1->t=d1->maxpt2=dummy->t;
@@ -75,6 +76,7 @@ void Interface_Tools::InitializeOutGoing(Blob *blob,const double &E)
   d1->E2=sqr(part1->Momentum()[0]);
   d1->stat=3;
   d1->part->SetProductionBlob(blob);
+  d1->didkin=true;
   d2->part->SetInfo('H');
   d2->part->SetStatus(1);
   d2->t=d2->maxpt2=dummy->t;
@@ -84,6 +86,7 @@ void Interface_Tools::InitializeOutGoing(Blob *blob,const double &E)
   d2->E2=sqr(part2->Momentum()[0]);
   d2->stat=3;
   d2->part->SetProductionBlob(blob);
+  d2->didkin=true;
   dummy->E2=sqr(sqrt(d1->E2)+sqrt(d2->E2));
   dummy->z=sqrt(d1->E2/dummy->E2);
   d1->prev=d2->prev=dummy;
