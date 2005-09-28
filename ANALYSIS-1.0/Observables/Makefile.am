@@ -15,10 +15,12 @@ endif
 if ROOT_SUPPORT
 ROOTINCS      =	-I$(ROOTSYS)/include
 ROOTFLAGS     = -Wno-long-long
+EXTRAOBS      =	Dalitz_Observables.C
 endif
 
 lib_LTLIBRARIES       =	libObservables.la
 libObservables_la_SOURCES     =	\
+				$(EXTRAOBS) \
 				HT.C \
 				PSM_Observables.C \
 				Multiplicity.C \
