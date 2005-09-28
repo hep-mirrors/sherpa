@@ -12,24 +12,34 @@ namespace HADRONS {
 	double a2, b2;									// V-A structure
 	double fpi, fK; 								// decay constants
 	double Vud, Vus; 								// CKM ME; 
+	double Go3p;      								// coupling constants for tau->4pion
 	double GF;										// Fermi constant
 	double frho, grpp;								// rho-pipi coupling
+	double grop;									// rho-omega-pi coupling
 	double alpha, beta, delta, gamma;				// weight factors for different resonances
+	double sigma;									
 	double Beta[2];									// weight factor for resonances
-	double MR, GR, MRR, GRR, MO, GO, MRRR, GRRR;	// rho, omega resonances
+	Complex Alpha[4];					
+	double MR, GR, MRR, GRR, MO, GO, MRRR, GRRR;	// rho, omega resonances 
+	double MK, GK;                                  // K* resonance
+	double MK0, GK0;                                // K0* resonance
 	double MV[2], GV[2], Mv[2], Gv[2];				// vector resonances
-	double MA, GA; 									// axial resonance a1(1260)
+	double MA, GA, MAA, GAA;						// axial resonance 
+	double Mdummy2, Mdummy1;						// mass of (e.g.) sigma, f0
+	double Gdummy2, Gdummy1;						// width of (e.g.) sigma, f0 
+	double dummy1;									// dummy for whatsoever
+	 
 	double lambda;									// parameter in KS model
 	double lambda0, exp_alpha;						// parameters in RChT parameterisation
 	double gammaR, gammaRR, gammaO, gammaRRR;		// global factor for RChT off-shell width
+	Complex Beta_opi[4], Beta_api[4], Beta_frh[4], Beta_srh[4]; // relative strength needed in tau->4pion
   }; 
 
-  struct GeneralVector {
+  struct GeneralVector {			// in which two particles does vector resonance decay
 	int i, j;
   };
 
   struct GeneralModel {
-	int me;							// model for ME
 	int run;						// running coupling
 	int ff;							// form factor
 	GeneralParam pm;			 	// coupling parameters
@@ -47,6 +57,7 @@ namespace HADRONS {
     HD_ME_Base(int,ATOOLS::Flavour *);
     virtual ~HD_ME_Base();
     void SetPath( std::string s ) { m_path=s; }
+	std::string METype() { return m_metype; }
 
     virtual double operator()(const ATOOLS::Vec4D *) { return 1.; }
     virtual void AddVector(double,double) {}

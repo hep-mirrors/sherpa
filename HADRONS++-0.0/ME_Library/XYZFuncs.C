@@ -132,7 +132,39 @@ Complex XYZFunc::X( const int t1, const int t2, const int t3,
   }
   return x;
 }  
+ 
+Complex XYZFunc::Z( 
+	const int t1, const int l1, 
+	const int t2, const int l2,
+	const int t3, const int l3,
+	const int t4, const int l4,
+	const Complex cR1, const Complex cL1, const Complex cR2, const Complex cL2 ) 
+{											// l=0 <=> -; l=1 <=> +; <---- helicity
+  const int hel_comb = ((1-l1)<<3) + ((1-l2)<<2) + ((1-l3)<<1) + (1-l4);
+  return Z(t1,t2,t3,t4,hel_comb,cR1,cL1,cR2,cL2);
+}
+ 
+Complex XYZFunc::Y( 
+	const int t1, const int l1, 
+	const int t2, const int l2,
+	const int t3, const int l3,
+	const Complex cR, const Complex cL ) 
+{											// l=0 <=> -; l=1 <=> +; <---- helicity
+  const int hel_comb = ((1-l1)<<2) + ((1-l2)<<1) + (1-l3);
+  return( Y(t1,t2,hel_comb,cR,cL) );
+}
+ 
 
+Complex XYZFunc::X( 
+	const int t1, const int l1, 
+	const int t2, const int l2,
+	const int t3, const int l3,
+	const Complex cR, const Complex cL ) 
+{											// l=0 <=> -; l=1 <=> +; <---- helicity
+  const int hel_comb = ((1-l1)<<2) + ((1-l2)<<1) + (1-l3);
+  return( X(t1,t2,t3,hel_comb,cR,cL) );
+}
+ 
 Complex XYZFunc::Q(short hel)
 {
   Complex q(0.,0.);

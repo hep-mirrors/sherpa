@@ -7,6 +7,65 @@ using namespace std;
 
 //##############################################################################
 //##############################################################################
+
+
+P_3P_Dalitz::P_3P_Dalitz(int _nout, ATOOLS::Flavour * _flavs) :
+  HD_ME_Base(_nout,_flavs), m_pseudo_1(-1), m_pseudo_2(-1), m_pseudo_3(-1)
+{
+  m_metype = string("P_3P_Dalitz");
+  for (int i=1;i<4;i++) {
+	if( p_flavs[i].IsAnti() != p_flavs[0].IsAnti() ) m_pseudo_3 = i;
+	else if( m_pseudo_1 == -1 ) m_pseudo_1 = i;
+	else m_pseudo_2 = i;
+  }
+}
+
+void P_3P_Dalitz::SetModelParameters( GeneralModel _md )
+{
+  m_mPi = Flavour(kf::pi_plus).Mass();
+  m_mK  = Flavour(kf::K_plus).Mass();
+}
+
+double P_3P_Dalitz::operator()( const Vec4D * _p )
+{
+  // kinematic variables
+  double s1 = (_p[0]-_p[m_pseudo_1]).Abs2();
+  double s2 = (_p[0]-_p[m_pseudo_2]).Abs2();
+  double s3 = (_p[0]-_p[m_pseudo_3]).Abs2();
+  double s0 = sqr(m_mK)/3.+sqr(m_mPi);
+  double x = (s1-s2)/s0;
+  double y = (s3-s0)/s0;
+
+  // experimentally measured constants
+  double a1 = 9.15;
+  double a3 = 0.37;
+  double b1 = 13.4;
+  double b3 = -0.646;
+  double b23 = -2.3;
+  double c = -1.00;
+  double d = -3.39;
+
+  // phase shifts
+  double dlt21 = 0.;
+  double dltM1 = 0.;
+
+  // amplitude
+  double ampl = 2*(a1+a3);
+  ampl -= (b1+b3)*y;
+  ampl += b23*y;
+  ampl += 2*c*(sqr(y)+sqr(x)/3);
+  ampl += d*(sqr(y)-sqr(x)/3);
+
+  // amplitude squared
+  double ampl_sq = sqr(ampl);
+
+  return ampl_sq;
+}
+
+
+//##############################################################################
+//##############################################################################
+//##############################################################################
 //##############################################################################
 
 P_GammaFF::P_GammaFF(int _nout,Flavour * _flavs) :
@@ -162,34 +221,34 @@ double P_3P_DalitzDef::operator()(const Vec4D * p)
 //##############################################################################
 //##############################################################################
 
-P_3P_Dalitz::P_3P_Dalitz(int _nout,Flavour * _flavs) :
-  HD_ME_Base(_nout,_flavs),
-  m_a1(0.), m_a2(0.), m_b1(0.), m_b2(0.), m_c(0.)
-{ 
-  m_metype = string("P_3P_Dalitz");
-  cout<<"New Dalitz "<<p_flavs[0]<<" -> "
-      <<p_flavs[1]<<" "<<p_flavs[2]<<" "<<p_flavs[3]<<endl;
-}
-
-double P_3P_Dalitz::operator()(const Vec4D * moms)
-{
-  double s_a = (moms[0]-moms[1]).Abs2();
-  double s_b = (moms[0]-moms[2]).Abs2();
-  double s_c = (moms[0]-moms[3]).Abs2();
-  double Q   = p_masses[0]-p_masses[1]-p_masses[2]-p_masses[3];
-  double x   = sqrt(3.)/(2.*p_masses[0]*Q)*(s_c-s_b);
-  double y   = 3./(2.*p_masses[0]*Q)*(sqr(p_masses[0]-p_masses[1])-s_a)-1.;
-  
-  return (1. + m_a1*y + m_a2*y*y + m_b1*x + m_b2*x*x + m_c*x*y);
-}
-
-void P_3P_Dalitz::SetDalitzParameters(std::vector<double> & _dals)
-{
-  if (_dals.size()!=5) {
-    msg.Error()<<"Error in P_3P_Dalitz::SetDalitzParameters : "<<endl
-	       <<"   Not enough parameters, only "<<_dals.size()<<","<<endl
-	       <<"   Will ignore this."<<endl;
-    m_a1=m_a2=m_b1=m_b2=m_c = 0.;
-  }
-}
-
+//P_3P_Dalitz::P_3P_Dalitz(int _nout,Flavour * _flavs) :
+//  HD_ME_Base(_nout,_flavs),
+//  m_a1(0.), m_a2(0.), m_b1(0.), m_b2(0.), m_c(0.)
+//{ 
+//  m_metype = string("P_3P_Dalitz");
+//  cout<<"New Dalitz "<<p_flavs[0]<<" -> "
+//      <<p_flavs[1]<<" "<<p_flavs[2]<<" "<<p_flavs[3]<<endl;
+//}
+//
+//double P_3P_Dalitz::operator()(const Vec4D * moms)
+//{
+//  double s_a = (moms[0]-moms[1]).Abs2();
+//  double s_b = (moms[0]-moms[2]).Abs2();
+//  double s_c = (moms[0]-moms[3]).Abs2();
+//  double Q   = p_masses[0]-p_masses[1]-p_masses[2]-p_masses[3];
+//  double x   = sqrt(3.)/(2.*p_masses[0]*Q)*(s_c-s_b);
+//  double y   = 3./(2.*p_masses[0]*Q)*(sqr(p_masses[0]-p_masses[1])-s_a)-1.;
+//  
+//  return (1. + m_a1*y + m_a2*y*y + m_b1*x + m_b2*x*x + m_c*x*y);
+//}
+//
+//void P_3P_Dalitz::SetDalitzParameters(std::vector<double> & _dals)
+//{
+//  if (_dals.size()!=5) {
+//    msg.Error()<<"Error in P_3P_Dalitz::SetDalitzParameters : "<<endl
+//	       <<"   Not enough parameters, only "<<_dals.size()<<","<<endl
+//	       <<"   Will ignore this."<<endl;
+//    m_a1=m_a2=m_b1=m_b2=m_c = 0.;
+//  }
+//}
+//

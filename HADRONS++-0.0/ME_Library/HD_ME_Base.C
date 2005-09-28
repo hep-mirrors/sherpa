@@ -14,6 +14,7 @@ HD_ME_Base::HD_ME_Base(int _nout,Flavour * _flavs) :
     p_masses[i]  = p_flavs[i].PSMass();
     p_masses2[i] = p_masses[i]*p_masses[i];
   }
+  m_metype = "not named yet";
 }
 
 HD_ME_Base::~HD_ME_Base()
@@ -27,6 +28,7 @@ HD_ME_Base::~HD_ME_Base()
 Isotropic::Isotropic(int _nout,Flavour * _flavs,string _met) :
   HD_ME_Base(_nout,_flavs) 
 {
+  m_metype = "Isotropic";
   if (msg.LevelIsDebugging()) {
     msg.Out()<<"Initialised Isotropic("<<m_nout<<") for "<<endl
 	     <<"   "<<p_flavs[0]<<" ->";

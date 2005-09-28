@@ -53,9 +53,26 @@ namespace HADRONS
 		  const int hel_comb,
 		  const Complex cR1, const Complex cL1,
 		  const Complex cR2, const Complex cL2 );
-	  Complex Y( const int t1, const int t2, const int hel_comb, const Complex cL, const Complex cR ); 
+	  Complex Y( const int t1, const int t2, const int hel_comb, const Complex cR, const Complex cL ); 
 	  Complex X( const int t1, const int t2, const int t3, 
-		  const int hel_comb, const Complex cL, const Complex cR ); 
+		  const int hel_comb, const Complex cR, const Complex cL ); 
+	  Complex Z( 
+		  const int t1, const int l1, 
+		  const int t2, const int l2,
+		  const int t3, const int l3,
+		  const int t4, const int l4,
+		  const Complex cR1, const Complex cL2, 
+		  const Complex cR2, const Complex cL2 ); 
+	  Complex Y( 
+		  const int t1, const int l1, 
+		  const int t2, const int l2,
+		  const int t3, const int l3,
+		  const Complex cR, const Complex cL ); 
+	  Complex X( 
+		  const int t1, const int l1, 
+		  const int t2, const int l2,
+		  const int t3, const int l3,
+		  const Complex cR, const Complex cL ); 
 	  Complex S( const int s, const int i, const int j );
 	  Complex Q(short hel); 
 
@@ -76,7 +93,7 @@ namespace HADRONS
 	This class contains everything that is necessery to calculate the value
 	of an X, Y, or Z function, which can be used to calculate a decay matrix
 	element.
-	<b>Note!</b> Helicity combinations are code in a binary number such that 
+	<b>Note!</b> Helicity combinations are coded in a binary number such that 
 	- ++++ = 0 
 	- +++- = 1 
 	- ++-+ = 2 

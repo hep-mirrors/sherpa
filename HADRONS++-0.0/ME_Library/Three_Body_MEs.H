@@ -35,13 +35,23 @@ namespace HADRONS {
     double operator()(const ATOOLS::Vec4D *);
   };
 
+//  class P_3P_Dalitz : public HD_ME_Base {
+//  private:
+//    double m_a1,m_a2,m_b1,m_b2,m_c;
+//  public:
+//    P_3P_Dalitz(int,ATOOLS::Flavour *);
+//    double operator()(const ATOOLS::Vec4D *);
+//    void   SetDalitzParameters(std::vector<double> &);
+//  };
+//
   class P_3P_Dalitz : public HD_ME_Base {
-  private:
-    double m_a1,m_a2,m_b1,m_b2,m_c;
-  public:
-    P_3P_Dalitz(int,ATOOLS::Flavour *);
-    double operator()(const ATOOLS::Vec4D *);
-    void   SetDalitzParameters(std::vector<double> &);
+
+	int m_pseudo_1, m_pseudo_2, m_pseudo_3;
+	double m_mPi, m_mK;
+	public:
+	  P_3P_Dalitz(int,ATOOLS::Flavour *);
+	  double operator()(const ATOOLS::Vec4D *);
+	  void SetModelParameters( GeneralModel _md );
   };
 }
 

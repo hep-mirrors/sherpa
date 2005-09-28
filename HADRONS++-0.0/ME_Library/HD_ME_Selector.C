@@ -37,6 +37,7 @@ HD_ME_Base * HD_ME_Selector::GetME(int nin,int nout,Flavour * flavs,
 	  SelectTauDecay(nout,flavs,hdme);
  	  break;
 	case (kf::pi):
+	case (kf::K_plus):
 	case (kf::eta):
 	case (kf::eta_prime_958):
 	  SelectLightPseudoScalarDecay(nout,flavs,hdme);
@@ -71,11 +72,9 @@ void HD_ME_Selector::SelectTauDecay(
 		  if( flavs[i].Kfcode() == kf::K_plus ) nKaon++;
 		}
 		if( nPion == 1 ) {
-		  msg_Tracking()<<"HD_ME_Selector::SelectTauDecay: found Tau_Pseudo (as Tau_Pion)"<<endl;
 		  hdme = new Tau_Pseudo( nout, flavs );
 		}
 		if( nKaon == 1 ) {
-		  msg_Tracking()<<"HD_ME_Selector::SelectTauDecay: found Tau_Pseudo (as Tau_Kaon)"<<endl;
 		  hdme = new Tau_Pseudo( nout, flavs );
 		}
 		break;
@@ -91,34 +90,47 @@ void HD_ME_Selector::SelectTauDecay(
 			  flavs[i].Kfcode() == kf::K ) nKaon++;
 		}
 		if( nLep == 3 ) {
-		  msg_Tracking()<<"HD_ME_Selector::SelectTauDecay: found Tau_Lepton"<<endl;
 		  hdme = new Tau_Lepton( nout, flavs ); 
 		}
 		if( nPion == 2 ) {
-		  msg_Tracking()<<"HD_ME_Selector::SelectTauDecay: found Tau_Two_Pion"<<endl;
 		  hdme = new Tau_Two_Pion( nout, flavs );
 		}
 		if( nKaon == 2 ) {
-		  msg_Tracking()<<"HD_ME_Selector::SelectTauDecay: found Tau_Two_Pion (as Tau_Two_Kaon)"<<endl;
 		  hdme = new Tau_Two_Pion( nout, flavs );
 		}
 		break;
 	  }
 	case 4:
 	  {
-		int nPseudo(0);
+		int nPseudo(0), nEta(0);
 		// count number of pseudoscalars
 		for( int i=1; i<5; i++ ) {
 		  if( flavs[i].Kfcode() == kf::pi_plus ||
 			  flavs[i].Kfcode() == kf::pi ||
 			  flavs[i].Kfcode() == kf::K_plus ||
 			  flavs[i].Kfcode() == kf::K ) nPseudo++;
+		  if( flavs[i].Kfcode() == kf::eta ) nEta++;  
 		}
-		if( nPseudo==3 ) {
-		  msg_Tracking()<<"HD_ME_Selector::SelectTauDecay: found Tau_Three_Pseudo"<<endl;
+		if( nPseudo==3 ) 
 		  hdme = new Tau_Three_Pseudo( nout, flavs );
-		}
+		if( nEta==1 && nPseudo==2 ) 
+		  hdme = new Tau_Eta_Two_Pion( nout, flavs );
 
+	  }
+	case 5:
+	  {
+		int nPion_ch (0), nPion_0 (0);
+		// count number of pions
+		for( int i=1; i<6; i++ ) {
+		  if( flavs[i].Kfcode() == kf::pi_plus ) nPion_ch++;
+		  if( flavs[i].Kfcode() == kf::pi )      nPion_0++;
+		}
+		if( nPion_ch==3 && nPion_0==1 ) {
+		  hdme = new Tau_Four_Pion_3( nout, flavs );
+		}
+		if( nPion_ch==1 && nPion_0==3 ) {
+		  hdme = new Tau_Four_Pion_1( nout, flavs );
+		}
 	  }
   }
 }
