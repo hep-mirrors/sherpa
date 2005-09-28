@@ -40,7 +40,7 @@ private:
 
   bool m_replace;
 
-  double m_svalue;
+  double m_svalue, m_sign;
 
   mutable TDouble m_value;
 
@@ -53,13 +53,18 @@ public:
 };// end of class Number
 
 Number::Number(const std::string &tag,Tag_Replacer *const replacer): 
-  Function(tag), p_replacer(replacer), m_replace(false), m_value(1.0)
+  Function(tag), p_replacer(replacer), m_replace(false), 
+  m_sign(1.0), m_value(1.0)
 {
-  m_value.m_tag=tag;
   std::string value=tag;
+  if (tag[0]=='-') {
+    m_sign=-1.0;
+    value=value.substr(1);
+  }
+  m_value.m_tag=value;
   p_replacer->ReplaceTags(value);
-  if (tag!=value) m_replace=true;
-  m_value.m_value=m_svalue=ToType<double>(value);
+  if ((tag[0]!='-'?tag:tag.substr(1))!=value) m_replace=true;
+  m_value.m_value=m_svalue=m_sign*ToType<double>(value);
 }
 
 Term *Number::Evaluate(const std::vector<Term*> &args) const
@@ -68,6 +73,7 @@ Term *Number::Evaluate(const std::vector<Term*> &args) const
   std::string tag=m_tag;
   if (m_replace) p_replacer->ReplaceTags(&m_value);
   else m_value.m_value=m_svalue;
+  m_value.m_value*=m_sign;
   return &m_value;
 }
 
