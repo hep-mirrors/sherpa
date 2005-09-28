@@ -31,6 +31,7 @@ Hadron_Decay_Channel::Hadron_Decay_Channel( Decay_Channel * _dc, string _path ) 
   HD_ME_Selector mesel;											// ME selector
   p_me = mesel.GetME(m_nin,m_nout,p_flavours,m_metype);			// get the appropr. ME
   p_me->SetPath( m_path );										// set Decaydata path 
+  msg.Out()<<"Matrix Element for "<<m_channelname<<" : "<<p_me->METype()<<"."<<endl;
 }
 
 Hadron_Decay_Channel::~Hadron_Decay_Channel()
@@ -52,7 +53,7 @@ bool Hadron_Decay_Channel::InitialisePhaseSpace(vector<string> & PStype)
 	string fn("");												// filename of DC file
 	fn += p_dc->GetDecaying().Name() + string("_");
 	for ( int i=0; i<p_dc->NumberOfDecayProducts(); i++ ) {
-	  fn += p_dc->GetDecayProduct(i).Name();
+	  fn += p_dc->GetDecayProduct(i).IDName();
 	}
 	fn += string(".dat");
 	PStype.push_back( fn );										// generate DC filename
