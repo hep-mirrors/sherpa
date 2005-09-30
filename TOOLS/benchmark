@@ -41,6 +41,7 @@ CleanUp() {
   for I in $1 ; do
     if [ -d $I ] ; then
       rm -rf $I/* > /dev/null 2>&1
+      mkdir $I
     else
       rm -f $I > /dev/null 2>&1
     fi
