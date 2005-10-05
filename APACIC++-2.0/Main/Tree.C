@@ -172,7 +172,7 @@ void Tree::ResetDaughters(Knot * in) {
 */
 
 
-Knot * Tree::GetInitiator() {
+Knot * Tree::GetInitiator() const {
   Knot * help;
   help = p_root;
   if (help)  while (help->prev) help = help->prev;
@@ -191,7 +191,8 @@ void Tree::UpdateDaughters(Knot * mo)
   if (mo->left==NULL) return;
   Knot *d1(mo->left), *d2(mo->right);
   if (d1->part->Momentum()==Vec4D(0.,0.,0.,0.)) return;
-  mo->z=d1->part->Momentum()[0]/mo->part->Momentum()[0];
+  double z=d1->part->Momentum()[0]/mo->part->Momentum()[0];
+  if (z>0.0 && z<1.0) mo->z=z;
   UpdateDaughters(d1);
   UpdateDaughters(d2);
 }
@@ -222,9 +223,13 @@ void Tree::BoRoDaughters(ATOOLS::Poincare & lorenz, Knot * mo)
     BoRoDaughters(lorenz,mo->right);      
   }
 //   if (mo->left)
-//     msg_Debugging()<<"p-p_1-p_2 = "<<(mo->part->Momentum()-
-// 				      mo->left->part->Momentum()-
-// 				      mo->right->part->Momentum())<<"\n";
+//     msg_Debugging()<<"p_"<<mo->kn_no<<"-p_"<<mo->left->kn_no
+// 		   <<"-p_"<<mo->right->kn_no<<" = "
+// 		   <<(mo->part->Momentum()-
+// 		      mo->left->part->Momentum()-
+// 		      mo->right->part->Momentum())<<" -> "
+// 		   <<mo->part->Momentum()<<", "<<mo->left->part->Momentum()
+// 		   <<mo->right->part->Momentum()<<"\n";
 }
 
 void Tree::BoRo(ATOOLS::Poincare & lorenz, Knot * mo) 
@@ -332,4 +337,26 @@ bool Tree::CheckStructure(bool fixit)
 {
   Knot * mo(GetInitiator());
   return (SingleCheckStructure(mo->left,mo,fixit) && SingleCheckStructure(mo->right,mo,fixit));
+}
+
+bool Tree::CheckMomentumConservation() const 
+{
+  return CheckMomentumConservation(GetInitiator());
+}
+
+bool Tree::CheckMomentumConservation(Knot *const knot) const 
+{
+  if (knot->left==NULL || knot->stat==3) return true;
+  bool success(true);
+  Vec4D p(knot->part->Momentum());
+  Vec4D p1(knot->left->part->Momentum()), p2(knot->right->part->Momentum());
+  if (!(p==p1+p2)) {
+    msg.Error()<<METHOD<<"(): Four momentum not conserved in knot "
+	       <<knot->kn_no<<"\n   p_miss = "<<(p-p1-p2)<<"\n   p      = "<<p
+	       <<"\n   p1     = "<<p1<<"\n   p2     = "<<p2<<std::endl;
+    success=false;
+  }
+  if (!CheckMomentumConservation(knot->left)) success=false;
+  if (!CheckMomentumConservation(knot->right)) success=false;
+  return success;
 }

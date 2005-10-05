@@ -16,6 +16,9 @@ namespace APACIC {
     static Knot_List * s_knots;
 
     Knot      * p_save_root;
+
+    bool CheckMomentumConservation(Knot *const knot) const;
+
   public:
     friend std::ostream & operator<<(std::ostream &, Tree *);
     //-----------------------------------------------------------------------
@@ -70,7 +73,7 @@ namespace APACIC {
     //! Returns the root knot of the tree (perhaps iterator)
     Knot * GetRoot();
     //! Returns the initiator knot of the tree (i.e. the most previous one)
-    Knot * GetInitiator();
+    Knot * GetInitiator() const;
     //-----------------------------------------------------------------------
     //--------------------------- Extracting partons ------------------------
     //----------------------------------------------------------------------- 
@@ -85,6 +88,7 @@ namespace APACIC {
     //! Boost the branch only
     static void BoRo(ATOOLS::Poincare &, Knot * );
     static void UpdateDaughters(Knot *);
+    bool CheckMomentumConservation() const;
   private:
     static void BoRoDaughters(ATOOLS::Poincare &, Knot *);
 
