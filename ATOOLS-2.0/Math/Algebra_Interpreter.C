@@ -64,7 +64,7 @@ Number::Number(const std::string &tag,Tag_Replacer *const replacer):
   m_value.m_tag=value;
   p_replacer->ReplaceTags(value);
   if ((tag[0]!='-'?tag:tag.substr(1))!=value) m_replace=true;
-  m_value.m_value=m_svalue=m_sign*ToType<double>(value);
+  m_value.m_value=m_svalue=ToType<double>(value);
 }
 
 Term *Number::Evaluate(const std::vector<Term*> &args) const
