@@ -10,6 +10,7 @@
 #include "Point.H"
 #include "CFColor.H"
 #include "Amplitude_Group.H"
+#include "Helicity.H"
 
 namespace AMEGIC {
   //! This is the master class for the generation and calculation of an amplitude.
@@ -48,6 +49,7 @@ namespace AMEGIC {
     Complex Zvalue(int,int*);
     Complex Zvalue(int);
     Complex Zvalue(String_Handler*,int);
+    double Zvalue(Helicity* hel);
     double Differential(int ihel,int* signlist)      { return (Zvalue(ihel,signlist)).real();}
     double Differential(int ihel)                    { return (Zvalue(ihel)).real();}
     double Differential(String_Handler * sh,int ihel)  { return (Zvalue(sh,ihel)).real(); }

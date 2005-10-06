@@ -626,7 +626,7 @@ double Amplitude_Handler::Get_Probab(int i) {return probabs[i];}
 
 
 Complex Amplitude_Handler::Zvalue(String_Handler * sh, int ihel)
-{
+{ // Called when no libraries are present (compiled)
   for (size_t i=0;i<graphs.size();i++){
     Mi[i] = graphs[i]->Zvalue(sh, ihel);
   }
@@ -640,7 +640,7 @@ Complex Amplitude_Handler::Zvalue(String_Handler * sh, int ihel)
 }
 
 Complex Amplitude_Handler::Zvalue(int ihel)
-{ 
+{ // Called for actual calculation of the CS
   for (size_t i=0;i<graphs.size();i++) {
     Mi[i] = graphs[i]->Zvalue(ihel);
   }
@@ -654,8 +654,40 @@ Complex Amplitude_Handler::Zvalue(int ihel)
   return M;
 }
 
-Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
+double Amplitude_Handler::Zvalue(Helicity* hel)
 { 
+  // 2D array for the amplitudes.
+  typedef std::vector<Complex> CVec;
+  std::vector<CVec> A;
+  A.resize(graphs.size());
+
+  /* For all graphs: Calculate all the helicity formalism´s amplitudes and transform them to
+     desired polarisation states, if nessecary. */
+  for (size_t col=0; col<graphs.size(); ++col) {
+    for (size_t ihel=0; ihel<hel->MaxPol(); ++ihel) A[col].push_back(graphs[col]->Zvalue(ihel));
+    hel->SpinorTransformation(A[col]);
+  }
+
+  /* Calculate the scattering matrix M out of the amplitudes using the color matrix. Sum up
+     the weighted Ms to obtain a pre-cross section sigma. */
+  double sigma=0;
+  for (size_t ihel=0; ihel<hel->MaxPol(); ++ihel) {
+    if (hel->On(ihel)) {
+      Complex M(0., 0.);
+      for (size_t i=0;i<graphs.size();i++) {
+	for (size_t j=0;j<graphs.size();j++) {
+	  M+= A[i][ihel]*conj(A[j][ihel])*CFCol_Matrix->Mij(i,j);  //colfactors[i][j];
+	}
+      }
+      sigma += M.real() * hel->Multiplicity(ihel) * hel->PolarizationFactor(ihel);
+    }
+  }
+  return sigma;
+}
+
+
+Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
+{ // This is called for the gauge test
   for (size_t i=0;i<graphs.size();i++) Mi[i] = graphs[i]->Zvalue(ihel,sign);
 
   Complex mcm,M(0.,0.);
