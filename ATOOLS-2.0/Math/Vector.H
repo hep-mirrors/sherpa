@@ -354,6 +354,10 @@ namespace ATOOLS {
     return Vec4D(v1,v2,Tag::diff);
   }
 
+  inline Vec4D operator/ (const Vec4D& v, const double scal) {
+    return (1./scal)*v;
+  }
+
   inline const double Vec4D::Abs2() const 
   { 
     return m_x[0]*m_x[0]-PSpat2();
