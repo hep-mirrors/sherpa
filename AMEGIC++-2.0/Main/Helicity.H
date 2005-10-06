@@ -63,7 +63,7 @@ class Helicity {
     */
     Helicity(int,int,ATOOLS::Flavour*,Pol_Info*);
     //! Returns the maximum number of helicities.
-    size_t MaxPol() {return m_nsign;}
+    size_t MaxHel() {return m_nsign;}
     //! Returns the maximum number of helicities for calculation of physical fermion helicities.
   //    int MaxFHel() {return m_fnsign;}
     //! Returns a certain helicity combination.

@@ -111,8 +111,8 @@ bool Helicity::IsContrib(int i,int* pm,int length)
 
 int Helicity::Compare(Helicity* h_cmp, int N)
 {
-  if (MaxPol() != h_cmp->MaxPol()) return 0;
-  for (size_t i=0;i<MaxPol();i++) {
+  if (MaxHel() != h_cmp->MaxHel()) return 0;
+  for (size_t i=0;i<MaxHel();i++) {
     for (size_t j=0;j<size_t(N);j++) 
       if (p_slist[i].s[j] != (*h_cmp)[i][j]) return 0;
   }
@@ -170,7 +170,7 @@ void Helicity::SpinorTransformation(std::vector<Complex>& A)
     std::vector<int>::const_iterator flav(m_trafoList.begin());
     for(int i=0; flav != m_trafoList.end(); flav++, ++i) {
       std::vector<Complex> Atemp(A);
-      for (size_t helComb=0; helComb<MaxPol(); ++helComb) {
+      for (size_t helComb=0; helComb<MaxHel(); ++helComb) {
       	int lambda;
 	int helComb2 = GetPartnerPol(helComb, *flav, lambda);  
 	A[helComb] =    m_trafoMatrices[i][lambda][lambda  ] * Atemp[helComb]

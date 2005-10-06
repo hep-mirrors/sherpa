@@ -435,7 +435,7 @@ int Single_Process::Tests() {
       gauge_test = string_test = 0;
     }
   }
-  else p_shand->Initialize(p_ampl->GetRealGraphNumber(),p_hel->MaxPol());
+  else p_shand->Initialize(p_ampl->GetRealGraphNumber(),p_hel->MaxHel());
 
   p_ampl->SetStringOff();
 
@@ -451,7 +451,7 @@ int Single_Process::Tests() {
     msg_Info()<<"Single_Process::Tests for "<<m_name<<std::endl
 	      <<"   Prepare gauge test and init helicity amplitudes. This may take some time."
 	      <<std::endl;
-    for (size_t i=0;i<p_hel->MaxPol();i++) { 
+    for (size_t i=0;i<p_hel->MaxHel();i++) { 
       if (p_hel->On(i)) {
 	helvalue = p_ampl->Differential(i,(*p_hel)[i])*p_hel->PolarizationFactor(i); 
 	M2      +=  helvalue;
@@ -485,12 +485,12 @@ int Single_Process::Tests() {
   if (!gauge_test) p_ampl->SetStringOff();  //second test without string production 
 
   double M2g = 0.;
-  double * M_doub = new double[p_hel->MaxPol()];
+  double * M_doub = new double[p_hel->MaxHel()];
 
   /* Calculate the squared amplitude of the polarisation states. If a certain external
      polarisation combination is found not to contribute for the point in phase space
      tested, it is assumed that is doesn´t contribute at all and is switched off.      */
-  for (size_t i=0;i<p_hel->MaxPol();i++) { 
+  for (size_t i=0;i<p_hel->MaxHel();i++) { 
     if (p_hel->On(i)) {
       M_doub[i]  = p_ampl->Differential(i,(*p_hel)[i])*p_hel->PolarizationFactor(i);  
       M2g       += M_doub[i];
@@ -499,7 +499,7 @@ int Single_Process::Tests() {
 
   //shorten helicities
   int switchhit = 0;
-  for (size_t i=0;i<p_hel->MaxPol();i++) {
+  for (size_t i=0;i<p_hel->MaxHel();i++) {
     if (M_doub[i]==0. || dabs(M_doub[i]/M2g)<(ATOOLS::Accu()*1.e-2)) {
       p_hel->SwitchOff(i);
       switchhit++;
@@ -538,7 +538,7 @@ int Single_Process::Tests() {
     delete[] M_doub;
     number++;
     if (p_shand->SearchValues(m_gen_str,testname,p_BS)) {
-      p_shand->Initialize(p_ampl->GetRealGraphNumber(),p_hel->MaxPol());
+      p_shand->Initialize(p_ampl->GetRealGraphNumber(),p_hel->MaxHel());
       (p_shand->Get_Generator())->Reset();
 
       // Get a cross section from the operator() method to compare with M2g later on.
@@ -604,9 +604,9 @@ int Single_Process::Tests() {
   
   if (string_test) {
     //String-Test
-    for (size_t i=0;i<p_hel->MaxPol();i++) {
+    for (size_t i=0;i<p_hel->MaxHel();i++) {
       if (p_hel->On(i)) {
-	for (size_t j=i+1;j<p_hel->MaxPol();j++) {
+	for (size_t j=i+1;j<p_hel->MaxHel();j++) {
 	  if (p_hel->On(j)) {
 	    if (ATOOLS::IsEqual(M_doub[i],M_doub[j])) {
 	      p_hel->SwitchOff(j);
@@ -625,7 +625,7 @@ int Single_Process::Tests() {
       double  M2S = 0.;
       p_shand->Calculate();
       
-      for (size_t i=0;i<p_hel->MaxPol();i++) {
+      for (size_t i=0;i<p_hel->MaxHel();i++) {
 	if (p_hel->On(i)) {
 	  M2S += p_ampl->Differential(i)*p_hel->PolarizationFactor(i)*p_hel->Multiplicity(i);
 	}
@@ -667,7 +667,7 @@ int Single_Process::CheckLibraries() {
       shand1->Calculate();
       
       M2s = 0.;
-      for (size_t i=0;i<p_hel->MaxPol();i++) {
+      for (size_t i=0;i<p_hel->MaxHel();i++) {
 	helvalue = p_ampl->Differential(shand1,i) * p_hel->PolarizationFactor(i) *
 	  p_hel->Multiplicity(i);
 	M2s     += helvalue;
@@ -702,7 +702,7 @@ int Single_Process::CheckStrings(Single_Process* tproc)
   shand1->Calculate();
 
   M2s = 0.;
-  for (size_t i=0;i<p_hel->MaxPol();i++) {
+  for (size_t i=0;i<p_hel->MaxHel();i++) {
     helvalue = p_ampl->Differential(shand1,i) * p_hel->PolarizationFactor(i) *
       p_hel->Multiplicity(i);
     M2s     += helvalue;
@@ -750,7 +750,7 @@ std::string  Single_Process::CreateLibName()
   name+="_"+ToString(p_ampl->GetGraphNumber());
   name+="_"+ToString(p_shand->NumberOfCouplings());
   name+="_"+ToString(p_shand->NumberOfZfuncs());
-  name+="_"+ToString(p_hel->MaxPol());
+  name+="_"+ToString(p_hel->MaxHel());
   name+="_"+ToString(p_BS->MomlistSize());
   return name;
 }
@@ -1205,7 +1205,7 @@ double Single_Process::operator()(const ATOOLS::Vec4D * mom)
     if (p_hel->UseTransformation()) {
       M2 = p_ampl->Zvalue(p_hel);
     } else {
-      for (size_t i=0;i<p_hel->MaxPol();i++) {
+      for (size_t i=0;i<p_hel->MaxHel();i++) {
 	if (p_hel->On(i)) {
 	  M2 += p_ampl->Differential(i) * p_hel->Multiplicity(i) 
 	             * p_hel->PolarizationFactor(i);
@@ -1216,7 +1216,7 @@ double Single_Process::operator()(const ATOOLS::Vec4D * mom)
   }
   else {
     // *** is this ever called ?
-    for (size_t i=0;i<p_hel->MaxPol();i++) {
+    for (size_t i=0;i<p_hel->MaxHel();i++) {
       if (p_hel->On(i)) {
 	helvalue = p_ampl->Differential(i,(*p_hel)[i]) * p_hel->PolarizationFactor(i);
 	M2 += helvalue;
@@ -1294,7 +1294,7 @@ void Single_Process::PrintDifferential()
 void Single_Process::InitializeHelicityWeights()
 {
   int activehels = 0, active = 0;
-  for (size_t i=0;i<p_hel->MaxPol();i++) {
+  for (size_t i=0;i<p_hel->MaxHel();i++) {
     if (p_hel->On(i)) {
       active++,
       activehels += p_hel->Multiplicity(i);
@@ -1303,7 +1303,7 @@ void Single_Process::InitializeHelicityWeights()
 
   double alpha_start = 1./activehels;
   double alpha;
-  for (size_t i=0;i<p_hel->MaxPol();i++) {
+  for (size_t i=0;i<p_hel->MaxHel();i++) {
     if (p_hel->On(i)) {
       alpha = alpha_start * p_hel->Multiplicity(i);
       m_helnumbers.push_back(i);

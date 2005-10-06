@@ -613,9 +613,7 @@ void Amplitude_Handler::Kicker(int* Switch_Vector,int ngraph,std::string pID)
 }
 
 Point* Amplitude_Handler::GetPointlist(int n)
-{ 
-  return pointlist[n];
-}
+{ return pointlist[n];}
 
 void Amplitude_Handler::Reset_ProbAbs()
 {
@@ -664,14 +662,14 @@ double Amplitude_Handler::Zvalue(Helicity* hel)
   /* For all graphs: Calculate all the helicity formalism´s amplitudes and transform them to
      desired polarisation states, if nessecary. */
   for (size_t col=0; col<graphs.size(); ++col) {
-    for (size_t ihel=0; ihel<hel->MaxPol(); ++ihel) A[col].push_back(graphs[col]->Zvalue(ihel));
+    for (size_t ihel=0; ihel<hel->MaxHel(); ++ihel) A[col].push_back(graphs[col]->Zvalue(ihel));
     hel->SpinorTransformation(A[col]);
   }
 
   /* Calculate the scattering matrix M out of the amplitudes using the color matrix. Sum up
      the weighted Ms to obtain a pre-cross section sigma. */
   double sigma=0;
-  for (size_t ihel=0; ihel<hel->MaxPol(); ++ihel) {
+  for (size_t ihel=0; ihel<hel->MaxHel(); ++ihel) {
     if (hel->On(ihel)) {
       Complex M(0., 0.);
       for (size_t i=0;i<graphs.size();i++) {
@@ -775,14 +773,8 @@ int Amplitude_Handler::SingleCompare(Point* p1,Point* p2, double & sf)
   return 0;
 }
 
-void Amplitude_Handler::FillPointlist()
-{
-  Single_Amplitude* n = firstgraph;  
-  while (n) {
-   pointlist.push_back(n->GetPointlist()); 
-   n = n->Next;
-  }
-}
+
+
 
 
 
