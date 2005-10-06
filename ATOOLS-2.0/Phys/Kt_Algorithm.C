@@ -174,12 +174,22 @@ double Kt_Algorithm::Ktmin(Vec4D * p, bool * bf, int n)
     PROFILE_LOCAL(" main loop ");
     if (ii!=jj) {
       // combine precluster
+#ifdef DEBUG_JETRATES
+      msg_Debugging()<<"jetrate Q_{"<<n<<"->"
+		     <<n-1<<"} = "<<sqrt(dmin)
+		     <<" <- "<<p[p_imap[jj]]<<" "<<p[p_imap[ii]]<<"\n";
+#endif
       p[p_imap[jj]]+=p[p_imap[ii]];
       bf[p_imap[jj]] = bf[p_imap[jj]]||bf[p_imap[ii]];      
       AddToKtlist(dmin);
     }
     else {
       // add to jet list
+#ifdef DEBUG_JETRATES
+      msg_Debugging()<<"jetrate Q_{"<<n<<"->"
+		     <<n-1<<"} = "<<sqrt(dmin)
+		     <<" <- "<<p[p_imap[jj]]<<"\n";
+#endif
       AddToJetlist(p[p_imap[jj]],bf[p_imap[jj]]);
       AddToKtlist(dmin);
     }
@@ -188,7 +198,11 @@ double Kt_Algorithm::Ktmin(Vec4D * p, bool * bf, int n)
 
     for (int i=ii;i<n;++i) p_imap[i]=p_imap[i+1];
 
-    if (n==1) break;
+    if (n==1) {
+      int jjx=p_imap[jj];
+      p_ktij[jjx][jjx] = Kt2(p[jjx]);
+      break;
+    }
     // update map (remove precluster)
     {
       PROFILE_LOCAL(" update loop ");
@@ -224,8 +238,8 @@ double Kt_Algorithm::Ktmin(Vec4D * p, bool * bf, int n)
       if (di<dmin) { dmin=di; ii=jj=i;}
       for (int j=0;j<i;++j) {
 	int jx=p_imap[j];
-	double dj  = p_ktij[jx][jx];
 #ifdef USING__rmin
+	double dj  = p_ktij[jx][jx];
 	double rij = p_ktij[ix][jx];
 	double dij = Min(di,dj)* rij/m_r2min;
 #else
@@ -243,6 +257,11 @@ double Kt_Algorithm::Ktmin(Vec4D * p, bool * bf, int n)
   // add remaining preclusters to jetlist
   for (int i=0;i<n;++i) {
     AddToJetlist(p[p_imap[i]],bf[p_imap[i]]);
+#ifdef DEBUG_JETRATES
+    msg_Debugging()<<"jetrate Q_{"<<n<<"->"
+		   <<n-1<<"} = "<<sqrt(p_ktij[p_imap[i]][p_imap[i]])
+		   <<" <- "<<p[p_imap[i]]<<"\n";
+#endif
     AddToKtlist(p_ktij[p_imap[i]][p_imap[i]]);
   }
   return dmin;
