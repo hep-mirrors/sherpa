@@ -2,6 +2,10 @@
 #define Helicity_h
 
 #include "Flavour.H"
+#include <iostream>
+#include "MyComplex.H"
+#include "Basic_Sfuncs.H"
+#include "Matrix.H"
 
 namespace AMEGIC {
 
@@ -9,7 +13,7 @@ namespace AMEGIC {
 
   //! A list of signs, i.e. helicities.(ready)
   struct Sign_List {
-    //! The list og signs
+    //! The list of signs
     int *s;
     //! Switching certain combinations on/off.
     int on;
@@ -18,28 +22,36 @@ namespace AMEGIC {
     double polfactor;
     int    partner;
 
-    Sign_List(): s(NULL),on(1),multi(1),polfactor(1.),partner(-1) {}
+    Sign_List(): s(0),on(1),multi(1),polfactor(1.),partner(-1) {}
     ~Sign_List() {
-      if (s) delete [] s;
+      //      if (s) delete [] s;
     }
   };
   
-  //! Determines all helicity combinations. (ready)
-  class Helicity {
-    //! The list of helicity combinations.
-    Sign_List* p_slist;    
-    //! The number of helicities
-    int m_nsign;
-    //! List of helicity combinations, neccessary to calculate physical fermion helicities
-    Sign_List* p_fslist;
-    int m_fnsign;
+ 
+class Helicity {
+    std::vector<ATOOLS::Flavour> m_flavours; // list of the external particles
+    std::vector<int> m_nPols;  // the number of possible polarisation states for each flavour
 
-    int m_fermion_hels;
+ 
+    Sign_List* p_slist;    
+    size_t m_nsign;               // the number of polarisation combinations
+  //    size_t m_nPhysHel;            // the relevant number of helicity combinations
+
+
+  //    Sign_List* p_fslist;
+  //    int m_fnsign;
 
     //! type of polarisation: 'c'=circular, 'l'=linear, 'h'=helicity state and '+'/'-'  for polarised particles
     char   * p_pol_types;
     //! angle for linear polarisation
     double * p_angles;
+
+    bool m_allowTrafo;
+    bool m_needsTrafo;            // is a trafo to the helicity base nessecary
+    std::vector<int> m_trafoList; // list of the flavours that are polarized spinors
+    std::vector<ATOOLS::CMatrix> m_trafoMatrices; // trafo matrices for pol->hel
+
   public:
     //! The constructor determines all helicity combinations
     /*!
@@ -51,32 +63,40 @@ namespace AMEGIC {
     */
     Helicity(int,int,ATOOLS::Flavour*,Pol_Info*);
     //! Returns the maximum number of helicities.
-    int MaxHel() {return m_nsign;}
+    size_t MaxPol() {return m_nsign;}
     //! Returns the maximum number of helicities for calculation of physical fermion helicities.
-    int MaxFHel() {return m_fnsign;}
+  //    int MaxFHel() {return m_fnsign;}
     //! Returns a certain helicity combination.
-    int* operator[] (int i) {return p_fslist[i].s;}
+  int* operator[] (int i) {return p_slist[i].s;} // was fslist!!
     //! Switches a certain helicity combination off.
-    void SwitchOff(int i) {p_slist[i].on = 0;}
-    void SetPartner(int i,int j) {p_slist[j].partner = i;}
+    void SwitchOff(int i) { if (m_trafoList.size()==0) p_slist[i].on = 0;}
+    int  GetPartnerPol(const int heli,const int flav, int& lambda);
+    void SetPartner(int i,int j) {if (m_trafoList.size()==0) p_slist[j].partner = i;}
     inline const int&  Partner(const int i) const {return p_slist[i].partner;}
     //! Returns the status of a certain helicity combination.
     int  On(int i) {return p_slist[i].on;}
     //! Increases the multiplicity of a combination by one.
-    void IncMultiplicity(int i) {(p_slist[i].multi)++;}  
+    void IncMultiplicity(int i) {if (m_trafoList.size()==0) (p_slist[i].multi)++;}  
     //! Returns the multiplicity of a certain helicity combination.
     int  Multiplicity(int i) {return p_slist[i].multi;}  
     //! Polarization factors
     double PolarizationFactor(int i) {return p_slist[i].polfactor;}  
     //! Returns true when physical fermion helicities should be calculated
-    int IsCalcFerm() {return m_fermion_hels;}
+    //  int IsCalcFerm() {return m_fermion_hels;}
 
     char   * PolTypes()  { return p_pol_types; }
     double * PolAngles() { return p_angles; }
     bool IsContrib(int,int*,int);
     int  Compare(Helicity*,int);
 
+    void SpinorTransformation(std::vector<Complex>& helAmpls);
+    void InitializeSpinorTransformation(Basic_Sfuncs * BS);
+
+    inline void ForceNoTransformation() { m_allowTrafo = false; }
+    inline void AllowTransformation() { m_allowTrafo = true; }
+    inline bool UseTransformation() { return  m_needsTrafo && m_allowTrafo; }
     ~Helicity();
+
   };
 }
 #endif
