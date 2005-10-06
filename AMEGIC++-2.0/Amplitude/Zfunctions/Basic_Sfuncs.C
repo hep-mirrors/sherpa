@@ -526,14 +526,14 @@ int Basic_Sfuncs::CalcEtaMu(Vec4D* _p)
   int etachk=1;
   double zchk;
 
-  if (m_precalc) k0_n = 1;
+  if (m_precalc) k0_n = 1; 
   for(size_t i=0;i<Momlist.size();i++) {
     m=&Momlist[i];
 
     switch(k0_n){
     case 1:
       if(!IsComplex(i)) 
-	_eta[i] = csqrt(2.*(m->mom[0]-(m->mom[2]+m->mom[3])*SQRT_05));
+	_eta[i] = csqrt(2. * (m->mom[0] - (m->mom[2]+m->mom[3])*SQRT_05 ));
       else _eta[i] = sqrt(Complex(2.*(m->mom[0]-(m->mom[2]+m->mom[3])*SQRT_05),
 				  2.*(m->mom_img[0]-(m->mom_img[2]+m->mom_img[3])*SQRT_05)));
       break;
@@ -614,7 +614,7 @@ void Basic_Sfuncs::PrecalcS()
 	}
 	_S0[j][i] = - _S0[i][j];
 	_S1[j][i] = - _S1[i][j];	
-      }
+      } 
 }
 
 void Basic_Sfuncs::CalcS(int i, int j)
@@ -682,6 +682,59 @@ void Basic_Sfuncs::CalcS(int i, int j)
   calc_st[i][j]=calc_st[j][i]=1;
 }
 
+ 
+std::pair<Complex, Complex> Basic_Sfuncs::GetS(ATOOLS::Vec4D v, int j) 
+{
+  // This calculation is directly taken from CalcS; only minor difference is that
+  // v is non-complex by definition so it´s complexity doesn´t have to be checked.
+
+  std::pair<Complex, Complex> S;
+  
+  Complex etav(csqrt(2. * Getk0() * v));
+  if (ATOOLS::IsZero(etav)) {
+    msg.Error()<<"An error occured in Basic_Sfunc::GetS(). The variable 'etav' was zero."
+	       <<endl<<"This will cause a division by zero"<<endl;
+  }
+
+    Momfunc* m1 = &Momlist[j];
+    Complex A= _eta[j]/etav;
+
+    switch(k0_n){
+    case 1:
+      S.first   = Complex(v[1],(v[2]-v[3])*SQRT_05)*A; 
+      S.second  = Complex(-v[1],(v[2]-v[3])*SQRT_05)*A;
+      S.first  -= Complex(m1->mom[1],(m1->mom[2]-m1->mom[3])*SQRT_05)/A;
+      S.second -= Complex(-m1->mom[1],(m1->mom[2]-m1->mom[3])*SQRT_05)/A;
+      if (IsComplex(j)){
+	S.first  -= Complex(-(m1->mom_img[2]-m1->mom_img[3])*SQRT_05,m1->mom_img[1])/A;
+	S.second -= Complex(-(m1->mom_img[2]-m1->mom_img[3])*SQRT_05,-m1->mom_img[1])/A;
+      }
+      break;
+    case 2:
+      S.first  = Complex(v[3],(v[1]-v[2])*SQRT_05)*A; 
+      S.second = Complex(-v[3],(v[1]-v[2])*SQRT_05)*A;
+      S.first  -= Complex(m1->mom[3],(m1->mom[1]-m1->mom[2])*SQRT_05)/A;
+      S.second -= Complex(-m1->mom[3],(m1->mom[1]-m1->mom[2])*SQRT_05)/A;
+      if (IsComplex(j)){
+	S.first  -= Complex(-(m1->mom_img[1]-m1->mom_img[2])*SQRT_05,m1->mom_img[3])/A;
+	S.second -= Complex(-(m1->mom_img[1]-m1->mom_img[2])*SQRT_05,-m1->mom_img[3])/A;
+      }
+      break;
+    default:
+      S.first  = Complex(v[2],(v[3]-v[1])*SQRT_05)*A; 
+      S.second = Complex(-v[2],(v[3]-v[1])*SQRT_05)*A;
+      S.first  -= Complex(m1->mom[2],(m1->mom[3]-m1->mom[1])*SQRT_05)/A;
+      S.second -= Complex(-m1->mom[2],(m1->mom[3]-m1->mom[1])*SQRT_05)/A;
+      if (IsComplex(j)){
+	S.first  -= Complex(-(m1->mom_img[3]-m1->mom_img[1])*SQRT_05,m1->mom_img[2])/A;
+	S.second -= Complex(-(m1->mom_img[3]-m1->mom_img[1])*SQRT_05,-m1->mom_img[2])/A;
+      }
+    }
+    if (IsZero(S.first))  S.first  = Complex(0.,0.);
+    if (IsZero(S.second)) S.second = Complex(0.,0.);
+    return S;
+}
+
 void Basic_Sfuncs::Setk0(int i)
 {
   k0_n=i;
@@ -731,4 +784,12 @@ bool Basic_Sfuncs::IsMomSum(int x,int y,int z)
   if (Momlist[z].type==mt::mom) sum += b[z]*Momlist[z].mom;
   else sum += Momlist[z].mom;
   return (sum==Momlist[x].mom);
+}
+
+ATOOLS::Vec4D Basic_Sfuncs::Getk0() {
+  switch(k0_n) {
+     case 1: return ATOOLS::Vec4D(1., 0, SQRT_05, SQRT_05);
+     case 2: return ATOOLS::Vec4D(1., SQRT_05, SQRT_05, 0);
+     default: return ATOOLS::Vec4D(1., SQRT_05, 0, SQRT_05);
+  }
 }

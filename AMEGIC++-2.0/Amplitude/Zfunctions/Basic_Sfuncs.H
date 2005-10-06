@@ -104,6 +104,7 @@ namespace AMEGIC {
     int    GetPolNumber(int,int,double,int check=0);
 
     void   Setk0(int);
+    ATOOLS::Vec4D Getk0();
     void   Initialize();
     int    CalcEtaMu(ATOOLS::Vec4D*);//setS
     void   InitGaugeTest(double);//ResetS_GT
@@ -122,6 +123,8 @@ namespace AMEGIC {
       if (!calc_st[i][j] && !m_precalc) CalcS(i,j); 
       return _S1[i][j];
     }
+    std::pair<Complex, Complex> GetS(ATOOLS::Vec4D v, int i);
+
     double Norm(int,int);//N
 
     inline int  GetNmomenta() { return nmom; }
@@ -372,6 +375,10 @@ namespace AMEGIC {
     This function can be used for internal tests.
   */
   /*!
+    \fn ATOOLS::Vec4D Getk0()
+    Returns the currently set k0 as a 4-vector.
+  */
+  /*!
     \fn void   Basic_Sfuncs::Initialize()
     Memory allocation for Basic_Sfuncs::_mu, Basic_Sfuncs::_eta, Basic_Sfuncs::_S0,
     Basic_Sfuncs::_S1 and Basic_Sfuncs::calc_st.
@@ -474,6 +481,12 @@ namespace AMEGIC {
   /*!
     \fn inline Complex Basic_Sfuncs::S1d(int i,int j) 
     Returns \f$S(-,p_i,p_j)\f$. Basic_Sfuncs::StartPrecalc must be performed first.
+  */
+  /*!
+    \fn std::pair<Complex, Complex> Basic_Sfunc::GetS(ATOOLS::Vec4D v, int i)
+    Returns the results of both S-functions S+ and S- of the vectors v and the i-th
+    vector in the momlist. S+ is stored in the first entry of the pair, S- is stored
+    in the second entry.
   */
   /*!
     \fn double Basic_Sfuncs::Norm(int,int)
