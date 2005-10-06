@@ -773,6 +773,15 @@ int Amplitude_Handler::SingleCompare(Point* p1,Point* p2, double & sf)
   return 0;
 }
 
+void Amplitude_Handler::FillPointlist()
+{
+  Single_Amplitude* n = firstgraph;  
+  while (n) {
+   pointlist.push_back(n->GetPointlist()); 
+   n = n->Next;
+  }
+}
+
 
 
 
