@@ -62,7 +62,7 @@ void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& 
 	Flavour flav1 = Flavour(kf::code(k));
 	for (short int i=51;i<57;i++) {
 	  Flavour flav2 = Flavour(kf::code(i));
-	  if (flav1.IsOn() && flav2.IsOn()) {
+	  if (flav1.IsOn() && flav2.IsOn() && gen_sUp(flav1)==gen_sUp(flav2)) {
 	    vertex[vanz].in[0] = flav1;
 	    vertex[vanz].in[1] = flav2;
 	    vertex[vanz].in[2] = flneu;
@@ -106,7 +106,7 @@ void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& 
 	  Flavour flav1 = Flavour(kf::code(k));
 	  for (short int i=61;i<67;i++) {
 	    Flavour flav2 = Flavour(kf::code(i));
-	    if (flav1.IsOn() && flav2.IsOn()) {
+	    if (flav1.IsOn() && flav2.IsOn() && gen_sDown(flav1)==gen_sDown(flav2)) {
 	      vertex[vanz].in[0] = flav1;
 	      vertex[vanz].in[1] = flav2;
 	      vertex[vanz].in[2] = flneu;
