@@ -116,7 +116,7 @@ void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& 
 	      
 	      kcpl0 = M_I*((-(g1*root2)/
 			    (costW*num_3))*K_Z_D((k-1)/2+3,i-61)*K_Z_N(0,j-43)+
-			   (K_dI*K_Z_D(gen_sDown(flav2),i-61)));
+			   (K_dI*K_Z_D(gen_sDown(flav2),i-61)*K_Z_N(2,j-43)));
 	      
 	      kcpl1 = M_I*(-g2/(costW*root2)*K_Z_D((k-1)/2,i-61)*
 			   (K_Z_N(0,j-43)*(sintW/num_3)-K_Z_N(1,j-43)*costW)+
@@ -505,22 +505,23 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
 	  vertex[vanz].in[1] = flA0;
 	  vertex[vanz].in[2] = flav2;
 	  
-	  kcpl0 = -(K_dI*K_Z_H(1,0)*(conj_mu*K_Z_D(gen_sDown(flav1),i-61)*
-				     K_Z_D(gen_sDown(flav1)+3,j-61)-
-				     mu*K_Z_D(gen_sDown(flav1),i-61)*
-				     K_Z_D(gen_sDown(flav1)+3,j-61))+
-		    K_Z_H(0,0)*(K_d_S(gen_sDown(flav1),gen_sDown(flav2))*
-				K_Z_D(gen_sDown(flav1),j-61)*
-				K_Z_D(gen_sDown(flav2)+3,i-61)-
-				K_d_S(gen_sDown(flav1),gen_sDown(flav2))*
-				K_Z_D(gen_sDown(flav1),i-61)*
-				K_Z_D(gen_sDown(flav2)+3,j-61))+
-		    K_Z_H(1,0)*(K_e_S(gen_sDown(flav1),gen_sDown(flav2))*
-				K_Z_D(gen_sDown(flav1),j-61)*
-				K_Z_D(gen_sDown(flav2)+3,i-61)-
-				K_e_S(gen_sDown(flav1),gen_sDown(flav2))*
-				K_Z_D(gen_sDown(flav1),i-61)*
-				K_Z_D(gen_sDown(flav2)+3,j-61)))*invroot2;
+	  //check sign
+	  kcpl0 = (K_dI*K_Z_H(1,0)*(conj_mu*K_Z_D(gen_sDown(flav1),i-61)*
+				     K_Z_D(gen_sDown(flav1)+3,j-61)
+				     -mu*K_Z_D(gen_sDown(flav1),j-61)*
+				     K_Z_D(gen_sDown(flav1)+3,i-61))
+		    + K_Z_H(0,0)*(K_d_S(gen_sDown(flav1),gen_sDown(flav2))*
+				  K_Z_D(gen_sDown(flav1),j-61)*
+				  K_Z_D(gen_sDown(flav2)+3,i-61)-
+				  K_d_S(gen_sDown(flav1),gen_sDown(flav2))*
+				  K_Z_D(gen_sDown(flav1),i-61)*
+				  K_Z_D(gen_sDown(flav2)+3,j-61))
+		    +K_Z_H(1,0)*(K_e_S(gen_sDown(flav1),gen_sDown(flav2))*
+				 K_Z_D(gen_sDown(flav1),j-61)*
+				 K_Z_D(gen_sDown(flav2)+3,i-61)-
+				 K_e_S(gen_sDown(flav1),gen_sDown(flav2))*
+				 K_Z_D(gen_sDown(flav1),i-61)*
+				 K_Z_D(gen_sDown(flav2)+3,j-61)))*invroot2;
 	  
 	  kcpl1 = kcpl0;
 	  
@@ -688,8 +689,7 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
 	Kabbala K_uJ = Kabbala(string("u^I"),Flavour(kf::code(2*gen_sDown(flav2)+2)).Yuk()/
 			       (v2).Value()*sqrt(2.));
 	
-	Kabbala K_massW = Kabbala(string("M_W"),g1.Value()/2.*sqrt(v1.Value()*v1.Value()+
-								   v2.Value()*v2.Value()));
+	Kabbala K_massW = Kabbala(string("M_W"),Flavour(kf::W).Mass());
 	
 	kcpl0 = M_I*((-(g2*g2)/num_2*(v1*K_Z_H(0,0)+v2*K_Z_H(1,0))+
 		      v1*K_dI*K_dI*K_Z_H(0,0)+v2*K_uJ*K_uJ*K_Z_H(1,0))*invroot2*
@@ -708,13 +708,13 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
 		      K_CKM(gen_sUp(flav1),2))*
 		     K_Z_U(gen_sUp(flav1)+3,i-51)*K_Z_D(gen_sDown(flav2),j-61)+
 		     
-		     ((K_Z_H(0,0)*K_d_S(0,gen_sUp(flav1))+K_Z_H(1,0)*K_e_S(0,gen_sUp(flav1)))*
-		      conj_K_CKM(0,gen_sDown(flav2))+
-		      (K_Z_H(0,0)*K_d_S(1,gen_sUp(flav1))+K_Z_H(1,0)*K_e_S(1,gen_sUp(flav1)))*
-		      conj_K_CKM(1,gen_sDown(flav2))+
-		      (K_Z_H(0,0)*K_d_S(2,gen_sUp(flav1))+K_Z_H(1,0)*K_e_S(2,gen_sUp(flav1)))*
-		      conj_K_CKM(2,gen_sDown(flav2))*
-		      K_Z_H(1,0)*mu*K_dI*conj_K_CKM(gen_sUp(flav1),gen_sDown(flav2)))*
+		     + ((K_Z_H(0,0)*K_d_S(0,gen_sUp(flav1))+K_Z_H(1,0)*K_e_S(0,gen_sUp(flav1)))*
+			conj_K_CKM(0,gen_sDown(flav2))+
+			(K_Z_H(0,0)*K_d_S(1,gen_sUp(flav1))+K_Z_H(1,0)*K_e_S(1,gen_sUp(flav1)))*
+			conj_K_CKM(1,gen_sDown(flav2))+
+			(K_Z_H(0,0)*K_d_S(2,gen_sUp(flav1))+K_Z_H(1,0)*K_e_S(2,gen_sUp(flav1)))*
+			conj_K_CKM(2,gen_sDown(flav2))-
+			K_Z_H(1,0)*mu*K_dI*conj_K_CKM(gen_sUp(flav1),gen_sDown(flav2)))*
 		     K_Z_U(gen_sDown(flav2),i-51)*K_Z_D(gen_sUp(flav1)+3,j-61));
 	
 	kcpl1 = kcpl0;
@@ -941,9 +941,9 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	  
 	  kcpl0 = num_2*M_I*g1*g1/(num_3*costW*costW)*
 	    (num_1/num_3*help*sintW*sintW + (num_3 - num_4*sintW*sintW)/(num_4*sintW*sintW)*
-	     (K_Z_D(0,i-61)*K_Z_U(0,j-61) + 
-	      K_Z_D(1,i-61)*K_Z_U(1,j-61) + 
-	      K_Z_D(2,i-61)*K_Z_U(2,j-61)));
+	     (K_Z_D(0,i-61)*K_Z_D(0,j-61) + 
+	      K_Z_D(1,i-61)*K_Z_D(1,j-61) + 
+	      K_Z_D(2,i-61)*K_Z_D(2,j-61)));
 	  kcpl1 = kcpl0;
 	  
 	  vertex[vanz].cpl[0]  = kcpl0.Value();
