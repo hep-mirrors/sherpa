@@ -172,6 +172,13 @@ void LesHouches_Interface::SetHiggsParameters() {
   msg_Tracking()<<std::endl<<"  Reading Block alpha and Block hmix: "<<std::endl;
   double alpha=0.,mu=0.,tanb=0.,vev=0.;
   std::vector<std::vector<double> >   vd;
+  std::vector<std::vector<double> >   vd2;
+  
+  p_reader->SetFileBegin(std::string("Block MINPAR"));
+  p_reader->RereadInFile();
+  if (!p_reader->MatrixFromFile(vd2,"")) 
+    msg.Error()<<std::endl<<"Could not read Block MINPAR from SLHA file: "
+	       <<m_dir+m_inputfile<<std::endl;  
   
   p_reader->SetFileBegin(std::string("Block alpha"));
   p_reader->RereadInFile();
@@ -184,16 +191,25 @@ void LesHouches_Interface::SetHiggsParameters() {
   if (!p_reader->MatrixFromFile(vd,"")) 
     msg.Error()<<std::endl<<"Could not read Block hmix from SLHA file: "
 	       <<m_dir+m_inputfile<<std::endl;
-  
+
+  for (unsigned int i=0;i<vd2.size();++i) {
+    if (vd2[i][0]==3) {
+      tanb=vd2[i][1];
+      msg_Tracking()<<"   tanb : "<<tanb<<std::endl;
+    }
+  }
+
   for (unsigned int i=0;i<vd.size();++i) {
     if (vd[i][0]==1) {
       mu    =vd[i][1];
       msg_Tracking()<<"   Mu   : "<<mu<<std::endl; 
     }
+    /*
     if (vd[i][0]==2) {
       tanb=vd[i][1];
       msg_Tracking()<<"   tanb : "<<tanb<<std::endl;
     }
+    */
     if (vd[i][0]==3) vev =vd[i][1];
   }    
  
