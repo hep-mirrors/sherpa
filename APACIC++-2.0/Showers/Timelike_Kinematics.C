@@ -276,7 +276,7 @@ bool Timelike_Kinematics::CheckKinematics(Knot *const mo,
     msg_Debugging()<<"three momentum\n";
     return false;
   }
-  double costh((2.0*mo->z*(1.0-mo->z)*mo->E2-mo->t+t1+t2)/(2.*p1p2)); 
+  double costh((2.0*mo->z*(1.0-mo->z)*mo->E2-mo->t+t1+t2)/(2.0*p1p2)); 
   // physical opening angle
   if (dabs(costh)>1.0 && !first) {
     msg_Debugging()<<"|cos| > 1\n";
@@ -290,7 +290,7 @@ bool Timelike_Kinematics::CheckKinematics(Knot *const mo,
   if (!IsZero(mo->E2-mo->t)) {
     costh1=(2.0*mo->z*mo->E2-mo->t-t1+t2)/(2.0*sqrt((mo->E2-mo->t)*(E12-t1)));
   }
-  if (dabs(costh1)>1.+rpa.gen.Accu()) {
+  if (dabs(costh1)>1.0+rpa.gen.Accu()) {
     msg_Debugging()<<" |cos_1| = "<<costh1<<"\n";
     return false;
   }
@@ -337,8 +337,7 @@ bool Timelike_Kinematics::DoKinematics(Knot * const mo) const
   if (!(mo->left->part->Momentum()+mo->right->part->Momentum()==
 	mo->part->Momentum())) error=2;
   Vec4D::ResetAccu();
-  if (!(mo->left->part->Momentum()[2]<0) && 
-      !(mo->left->part->Momentum()[2]>0)) error=3;
+  if (mo->left->part->Momentum().Nan()) error=3;
   if (error>0) {
     int op(msg.Error().precision(6));
     msg.Error()<<"Timelike_Kinematics::DoKinematics("<<mo->kn_no<<"): "
