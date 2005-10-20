@@ -172,7 +172,7 @@ std::ostream &Message::Out() const
 
 std::ostream &Message::Error() const     
 { 
-  if (m_level >= 0) return *p_output<<Indent(); 
+  if (m_level >= 0) return *p_output; 
   return *p_no; 
 }
 
