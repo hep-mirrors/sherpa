@@ -16,7 +16,7 @@ namespace MODEL {
     double beta0;
   };
   //! coefficients of the Beta functions for QCD
-  // cf. T. van Ritbergen, J. Varmaseren, S. Larin PLB 400 (1997) 379
+  // cf. T. van Ritbergen, J. Vermaseren, S. Larin PLB 400 (1997) 379
   // up to factor 4^(i+1)
 
   class Running_AlphaS : public ATOOLS::Function_Base {

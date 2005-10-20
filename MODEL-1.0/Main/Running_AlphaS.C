@@ -42,14 +42,14 @@ Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,const int o
   m_nth = 0;
   Fl_Iter fli;
   for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) 
-    if (flav.Strong() && flav.IsOn() && flav.Kfcode()<=kf::gluon) m_nth++;
+    if (flav.Strong() && flav.Kfcode()<=kf::gluon) m_nth++;
 
   p_thresh        = new AsDataSet[m_nth+1]; 
   double * masses = new double[m_nth];
   
   short int count = 0;
   for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
-    if (flav.Strong() && flav.IsOn() && flav.Kfcode()<=kf::gluon) {
+    if (flav.Strong() && flav.Kfcode()<=kf::gluon) {
       masses[count] = sqr(flav.PSMass());
       count++;
     }
@@ -282,8 +282,7 @@ void Running_AlphaS::ContinueAlphaS(int & nr) {
   // shrink actual domain
   //  * to given t0        or
   //  * to alphaS=alphaCut
-  double alpha_cut = .999999;   // make parameter
-  // double alpha_cut = M_PI;   // make parameter
+  double alpha_cut = 4.*M_PI;   // make parameter
   double & beta0   = p_thresh[nr].beta0;
   double & lambda2 = p_thresh[nr].lambda2;
   double t0        = lambda2 * ::exp(M_PI/(alpha_cut*beta0));
