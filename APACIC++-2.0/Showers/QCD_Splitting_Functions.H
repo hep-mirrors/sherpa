@@ -11,10 +11,10 @@ namespace APACIC {
   // quark to quark + gluon  splitting function
   class q_qg : public Splitting_Function {
     Sudakov_Tools * p_tools;
-    double          m_alpha, m_kfactor;
+    double          m_alpha, m_kfactor, m_fmed;
   public:
-    q_qg(ATOOLS::Flavour quarkflavour);
-    q_qg(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
+    q_qg(ATOOLS::Flavour quarkflavour,double fmed=0.);
+    q_qg(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools,double fmed=0.);
     double operator()(double z);
     double GetZ();
     double GetPhi(double z);
@@ -31,10 +31,10 @@ namespace APACIC {
   // gluon to gluon + gluon splitting function (needed twice for initial state shower)
   class g_gg : public Splitting_Function {
     Sudakov_Tools * p_tools;
-    double          m_alpha, m_kfactor;
+    double          m_alpha, m_kfactor, m_fmed;
   public:
-    g_gg();
-    g_gg(Sudakov_Tools * _tools);
+    g_gg(double fmed=0.);
+    g_gg(Sudakov_Tools * _tools,double fmed=0.);
     double operator()(double z);
     double GetZ();
     double GetPhi(double z);
@@ -50,10 +50,10 @@ namespace APACIC {
   // gluon to quark + anti-quark splitting function
   class g_qq : public Splitting_Function {
     Sudakov_Tools * p_tools;
-    double          m_alpha;
+    double          m_alpha, m_fmed;
   public:
-    g_qq(ATOOLS::Flavour quarkflavour);
-    g_qq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
+    g_qq(ATOOLS::Flavour quarkflavour,double fmed=0.);
+    g_qq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools,double fmed=0.);
     double operator()(double z);
     double GetZ();
     double GetPhi(double z);
@@ -70,10 +70,10 @@ namespace APACIC {
   // quark to qluon + quark splitting function (only used in Initial State Shower)
   class q_gq : public Splitting_Function {
     Sudakov_Tools * p_tools;
-    double          m_alpha;
+    double          m_alpha, m_kfactor, m_fmed;
   public:
-    q_gq(ATOOLS::Flavour quarkflavour);
-    q_gq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
+    q_gq(ATOOLS::Flavour quarkflavour,double fmed=0.);
+    q_gq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools,double fmed=0.);
     double operator()(double z);
     double GetZ();
     double GetPhi(double z);

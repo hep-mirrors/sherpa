@@ -9,8 +9,8 @@ using namespace APACIC;
 using namespace std;
 
 // quark to quark + gluon  splitting function
-q_qg::q_qg(ATOOLS::Flavour quarkflavour) : 
-  p_tools(0), m_kfactor(1.0) 
+q_qg::q_qg(ATOOLS::Flavour quarkflavour,double fmed) : 
+  p_tools(0), m_kfactor(1.0), m_fmed(fmed) 
 {
   m_flavs[0] = quarkflavour; 
   m_flavs[1] = quarkflavour; 
@@ -18,20 +18,19 @@ q_qg::q_qg(ATOOLS::Flavour quarkflavour) :
   m_alpha    = 1.;
 }
 
-q_qg::q_qg(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools) :
-  p_tools(_tools), m_kfactor(1.0) 
+q_qg::q_qg(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools,double fmed) :
+  p_tools(_tools), m_kfactor(1.0), m_fmed(fmed)  
 {
   m_flavs[0] = quarkflavour; 
   m_flavs[1] = quarkflavour; 
   m_flavs[2] = ATOOLS::Flavour(ATOOLS::kf::gluon);
   m_alpha    = p_tools->GetASmax();
-  if (s_kfactorscheme==1) 
-    m_kfactor  = 1.0+m_alpha/(2.0*M_PI)*s_kappa;
+  if (s_kfactorscheme==1) m_kfactor  = 1.0+m_alpha/(2.0*M_PI)*s_kappa;
 }
 
-double q_qg::operator()(double z) {return m_kfactor*s_CF*(1.+z*z)/(1.-z);}    
+double q_qg::operator()(double z) { return m_kfactor*s_CF*(2.*(1.+m_fmed)/(1.-z)-(1.+z));}    
 
-double q_qg::GetZ()
+double q_qg::GetZ() 
 {
   return 1.-(1.-m_zmin)*pow((1.-m_zmax)/(1.-m_zmin),ATOOLS::ran.Get());   
 }
@@ -66,16 +65,20 @@ double q_qg::GetCoupling(double t) { return p_tools->AlphaS(t);}
 
 double q_qg::GetWeight(double z,double pt2,bool massterm) 
 { 
-  if (!massterm) 
+  if (!massterm) {
     if (s_kfactorscheme==1) {
       double kappa=s_CA*(67.0/18.0-ATOOLS::sqr(M_PI)/6.0)-
 	s_TR*p_tools->Nf(pt2)*10.0/9.0;
-      return 0.5*(1.+z*z)*
+      double weight = (1.-(1.-z*z)/(2.*(1.+m_fmed)))*
 	(1.+kappa/(2.*M_PI)*p_tools->AlphaS(pt2))/m_kfactor;
+      //std::cout<<"   GetWeight : "<<z<<" "<<pt2
+      //		 <<" ("<<massterm<<","<<s_kfactorscheme<<") => "<<weight<<std::endl;
+      return weight;
     }
     else {
-      return 0.5*(1.+z*z);
+      return 1.-(1.-z*z)/(2.*(1.+m_fmed));
     }
+  }
   return ( (1.+z*z)/2. - 
 	   z*ATOOLS::sqr((1.-z)*m_flavs[0].PSMass())/
 	   (pt2+ATOOLS::sqr((1.-z)*m_flavs[0].PSMass())) );
@@ -85,7 +88,7 @@ double q_qg::CrudeInt(double _zmin, double _zmax)
 {
   m_zmin = _zmin;
   m_zmax = _zmax;
-  return m_kfactor*2.*s_CF*m_alpha*log((1.-m_zmin)/(1.-m_zmax));         
+  return m_kfactor*2.*(1.+m_fmed)*s_CF*m_alpha*log((1.-m_zmin)/(1.-m_zmax));         
 }
 
 double q_qg::Integral(double zmin, double zmax) 
@@ -94,8 +97,8 @@ double q_qg::Integral(double zmin, double zmax)
 }
 
 // gluon to gluon + gluon splitting function (needed twice for initial state shower)
-g_gg::g_gg() : 
-  p_tools(0), m_kfactor(1.0) 
+g_gg::g_gg(double fmed) : 
+  p_tools(0), m_kfactor(1.0), m_fmed(fmed)  
 {
   m_flavs[0] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
   m_flavs[1] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
@@ -103,8 +106,8 @@ g_gg::g_gg() :
   m_alpha    = 1.;
 }
 
-g_gg::g_gg(Sudakov_Tools * _tools) : 
-  p_tools(_tools), m_kfactor(1.0) 
+g_gg::g_gg(Sudakov_Tools * _tools,double fmed) : 
+  p_tools(_tools), m_kfactor(1.0), m_fmed(fmed)  
 { 
   m_flavs[0] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
   m_flavs[1] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
@@ -116,7 +119,7 @@ g_gg::g_gg(Sudakov_Tools * _tools) :
 
 double g_gg::operator()(double z) 
 {
-  return m_kfactor*s_CA*ATOOLS::sqr(1.-z*(1.-z))/(z*(1.-z));
+  return m_kfactor*s_CA*( (1.+m_fmed)/(z*(1.-z)) + z*(1.-z)-2 );
 }
 
 double g_gg::GetZ() 
@@ -196,17 +199,17 @@ double g_gg::GetWeight(double z,double pt2,bool masses)
   if (s_kfactorscheme==1) {
     double kappa=s_CA*(67.0/18.0-ATOOLS::sqr(M_PI)/6.0)-
       s_TR*p_tools->Nf(pt2)*10.0/9.0;
-    return ATOOLS::sqr(1.-z*(1.-z))*
+    return (ATOOLS::sqr(1.-z*(1.-z))+m_fmed)/(1.+m_fmed) *
       (1.+kappa/(2.*M_PI)*p_tools->AlphaS(pt2))/m_kfactor;
   }
-  return ATOOLS::sqr(1.-z*(1.-z));
+  return (ATOOLS::sqr(1.-z*(1.-z))+m_fmed)/(1.+m_fmed);
 }
     
 double g_gg::CrudeInt(double _zmin, double _zmax) 
 {
   m_zmin = _zmin;
   m_zmax = _zmax;
-  return m_kfactor*s_CA*m_alpha*log((1.-m_zmin)*m_zmax/(m_zmin*(1.-m_zmax)));                    
+  return m_kfactor*s_CA*m_alpha*log((1.-m_zmin)*m_zmax/(m_zmin*(1.-m_zmax)))*(1.+m_fmed);                    
 } 
 
 double g_gg::Integral(double zmin, double zmax) 
@@ -216,7 +219,8 @@ double g_gg::Integral(double zmin, double zmax)
 }
 
 //! gluon to quark + anti-quark splitting function
-g_qq::g_qq(ATOOLS::Flavour quarkflavour): p_tools(0) 
+g_qq::g_qq(ATOOLS::Flavour quarkflavour,double fmed) : 
+  p_tools(0), m_fmed(fmed)  
 {
   m_flavs[0] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
   m_flavs[1] = quarkflavour; 
@@ -224,8 +228,8 @@ g_qq::g_qq(ATOOLS::Flavour quarkflavour): p_tools(0)
   m_alpha    = 1.;
 }
 
-g_qq::g_qq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools) :
-  p_tools (_tools) 
+g_qq::g_qq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools,double fmed) :
+  p_tools (_tools), m_fmed(fmed)  
 {
   m_flavs[0] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
   m_flavs[1] = quarkflavour; 
@@ -292,7 +296,8 @@ double g_qq::Integral(double zmin, double zmax)
 }
 
 // quark to qluon + quark splitting function (only used in Initial State Shower)
-q_gq::q_gq(ATOOLS::Flavour quarkflavour) 
+q_gq::q_gq(ATOOLS::Flavour quarkflavour,double fmed) :
+  m_kfactor(1.0), m_fmed(fmed) 
 {
   m_flavs[0] = quarkflavour; 
   m_flavs[1] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
@@ -300,16 +305,17 @@ q_gq::q_gq(ATOOLS::Flavour quarkflavour)
   m_alpha    = 1.;
 }
 
-q_gq::q_gq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools) : 
-  p_tools(_tools) 
+q_gq::q_gq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools,double fmed) : 
+  p_tools(_tools), m_fmed(fmed)  
 {
   m_flavs[0] = quarkflavour; 
   m_flavs[1] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
   m_flavs[2] = quarkflavour; 
   m_alpha    = p_tools->GetASmax();
+  if (s_kfactorscheme==1) m_kfactor  = 1.0+m_alpha/(2.0*M_PI)*s_kappa;
 }
 
-double q_gq::operator()(double z) {return s_CF*(1.+(1.-z)*(1.-z))/z;} 
+double q_gq::operator()(double z) {return s_CF*(2.*(1.+m_fmed))/z-(2.-z);} 
 double q_gq::GetZ()      
 {
   return m_zmin*pow(m_zmax/m_zmin,ATOOLS::ran.Get());
@@ -344,7 +350,20 @@ double q_gq::GetCoupling()         { return m_alpha;}
 double q_gq::GetCoupling(double t) { return p_tools->AlphaS(t);}
 double q_gq::GetWeight(double z,double pt2,bool massterm) 
 { 
-  if (!massterm) return 0.5*(1.+ATOOLS::sqr(1.-z));
+  if (!massterm) {
+    if (s_kfactorscheme==1) {
+      double kappa=s_CA*(67.0/18.0-ATOOLS::sqr(M_PI)/6.0)-
+	s_TR*p_tools->Nf(pt2)*10.0/9.0;
+      double weight = (1.-(2.-z)*z/(2.*(1.+m_fmed)))*
+	(1.+kappa/(2.*M_PI)*p_tools->AlphaS(pt2))/m_kfactor;
+      //std::cout<<"   GetWeight : "<<z<<" "<<pt2
+      //		 <<" ("<<massterm<<","<<s_kfactorscheme<<") => "<<weight<<std::endl;
+      return weight;
+    }
+    else {
+      return 1.-(2.-z)*z/(2.*(1.+m_fmed));
+    }
+  }
   return ( (1.+ATOOLS::sqr(1.-z))/2. - 
 	   (1.-z)*ATOOLS::sqr(z*m_flavs[0].PSMass())/
 	   (pt2+ATOOLS::sqr(z*m_flavs[0].PSMass())) );
@@ -353,7 +372,7 @@ double q_gq::GetWeight(double z,double pt2,bool massterm)
 double q_gq::CrudeInt(double _zmin, double _zmax) {
   m_zmin = _zmin;
   m_zmax = _zmax;
-  return 2.*s_CF*m_alpha*log(m_zmax/m_zmin);
+  return 2.*(1.+m_fmed)*s_CF*m_alpha*log(m_zmax/m_zmin);
 }
 
 double q_gq::Integral(double zmin, double zmax) 
