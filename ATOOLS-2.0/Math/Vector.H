@@ -96,7 +96,7 @@ namespace ATOOLS {
     //! Computational constructor
     Vec4D(const Vec4D& v1 ,const double scal, const Tag::Tsmul); 
   
-    bool Nan();
+    bool Nan() const;
 
     static void ResetAccu();
 

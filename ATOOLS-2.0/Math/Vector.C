@@ -92,7 +92,7 @@ bool ATOOLS::operator==(const Vec4D& v1, const Vec4D& v2)
   return true;
 }
 
-bool Vec4D::Nan()
+bool Vec4D::Nan() const
 {
   for(short unsigned int i(0);i<4;++i) 
     if (!(m_x[i]>=0.0) && !(m_x[i]<=0.0)) return true;
