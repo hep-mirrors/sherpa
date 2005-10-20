@@ -201,6 +201,7 @@ int Timelike_Kinematics::ShuffleMomenta(Knot *const mo) const
     r2=(t-t2+t1-lambda)/(2.0*t);
     mo->z=z-r1*z+r2*(1.0-z);
   } 
+
   if (dabs(mo->z-z) < rpa.gen.Accu()) {
     msg_Debugging()<<"shift unnecessary\n";
     // boost daughters
@@ -238,9 +239,6 @@ int Timelike_Kinematics::ShuffleMomenta(Knot *const mo) const
 int Timelike_Kinematics::UpdateDaughters(Knot *const mo,
 					  const bool force) const
 {
-//   msg_Debugging()<<METHOD<<"("<<mo->kn_no<<","<<force<<"): "
-// 		 <<mo->part->Momentum()<<"\n";
-//   msg_Indent();
   if (mo->left) {
     mo->left->E2=sqr(mo->z)*mo->E2;
     mo->right->E2=sqr((1.-mo->z))*mo->E2;
@@ -378,18 +376,17 @@ ConstructVectors(Knot *const mo,Vec4D &p1vec,Vec4D &p2vec) const
   double t1(mo->left->stat!=3?mo->left->t:mo->left->tout); 
   double t2(mo->right->stat!=3?mo->right->t:mo->right->tout); 
   double p1(sqrt(E12-t1)), p2(sqrt(E22-t2));
-//   PRINT_INFO(t1<<" "<<t2<<" "<<p1<<" "<<p2<<" "<<p);
   Vec3D n1,n2;
   ConstructDreiBein(mo,n1,n2);
   double phi(mo->phi + mo->polinfo.Angle()), bph(cos(phi)), cph(-sin(phi));
   Vec3D es(cph*n1 + bph*n2);
   double cth1((p*p-p2*p2+p1*p1)/(2.*p*p1)), sth1(sqrt(1.-sqr(cth1)));
   double cth2((p*p+p2*p2-p1*p1)/(2.*p*p2)), sth2(sqrt(1.-sqr(cth2)));
-  mo->costh   = cth1*cth2-sth1*sth2;
+  mo->costh=cth1*cth2-sth1*sth2;
   Vec3D nm(mo->part->Momentum());
   nm=1.0/nm.Abs()*nm;
-  p1vec = Vec4D(sqrt(E12),p1*(cth1*nm - sth1*es));
-  p2vec = Vec4D(sqrt(E22),p2*(cth2*nm + sth2*es));
+  p1vec=Vec4D(sqrt(E12),p1*(cth1*nm - sth1*es));
+  p2vec=Vec4D(sqrt(E22),p2*(cth2*nm + sth2*es));
   if (p1vec.Nan() || p2vec.Nan()) {
     msg.Error()<<METHOD<<"("<<mo->kn_no<<"): Error."<<std::endl;
     msg_Debugging()<<"mo = "<<*mo;
@@ -403,33 +400,33 @@ void Timelike_Kinematics::
 ConstructDreiBein(Knot *const mo,Vec3D &n1,Vec3D &n2) const
 {
   if (mo->prev==NULL) {
-    n1 = Vec3D(0.,0.,1.);
-    n2 = Vec3D(0.,1.,0.);
+    n1=Vec3D(0.,0.,1.);
+    n2=Vec3D(0.,1.,0.);
     return;
   }
-  Knot * au(mo->prev->left);
+  Knot *au(mo->prev->left);
   int sign(0), mode(1);
   if (mo==au) {
-    au      = mo->prev->right;
-    sign    = 1;
-    mode    = 3;
+    au=mo->prev->right;
+    sign=1;
+    mode=3;
   }
   Vec3D na(au->part->Momentum()); // aunt
   Vec3D nm(mo->part->Momentum()); // mother
-  n1 = cross(na,nm);
+  n1=cross(na,nm);
   double n1abs(n1.Abs());
   if (n1abs<1.e-5) {
-    n1   = cross(Vec3D(0.,0.,1.),nm);
-    mode = mode|4;
+    n1=cross(Vec3D(0.,0.,1.),nm);
+    mode=mode|4;
   }
   if (n1abs<1.e-5) {
-    n1   = cross(Vec3D(0.,1.,0.),nm);
-    mode = mode|8;
+    n1=cross(Vec3D(0.,1.,0.),nm);
+    mode=mode|8;
   }  
-  if (sign) n1 = -1.*n1; 
-  n2 = cross(nm,n1);
-  n1 = n1/n1.Abs();
-  n2 = n2/n2.Abs();
+  if (sign) n1=-1.*n1; 
+  n2=cross(nm,n1);
+  n1=n1/n1.Abs();
+  n2=n2/n2.Abs();
 }
 
 bool Timelike_Kinematics::CheckVector(const Vec4D &mom) const 
@@ -507,7 +504,6 @@ GetOpeningAngle(const double &z,const double &E2,const double &ta,
   double E12(z*z*E2), E22((1.0-z)*(1.0-z)*E2);
   double costh((2.0*z*(1.0-z)*E2-ta+tb+tc)/(2.0*sqrt((E12-tb)*(E22-tc))));
   if (dabs(costh)>1.0) {
-//     msg.Error()<<METHOD<<"(..): cos_{theta} = "<<costh<<std::endl;
     return M_PI;
   }
   return acos(costh);
@@ -526,7 +522,6 @@ GetDeflectionAngle(const double &z,const double &E2,const double &ta,
   // deflection angle of first daughter parton in current frame
   double costh((2.0*z*E2-ta-tb+tc)/(2.0*sqrt((E2-ta)*(z*z*E2-tb))));
   if (dabs(costh)>1.0) {
-//     msg.Error()<<METHOD<<"(..): cos_{theta} = "<<costh<<std::endl;
     return M_PI;
   }
   return acos(costh);
@@ -553,9 +548,6 @@ double Timelike_Kinematics::LightConeZ(const double &z,const double &E2,
   // light cone momentum fraction of first daughter in light cone kinematics
   double pph(1.0+sqrt(1.0-ta/E2));
   double zlc(((ta+tb-tc)-2.0*z*E2*pph)/(ta-pph*pph*E2));
-//   if (zlc<0.0 || zlc>1.0) {
-//     msg.Error()<<METHOD<<"(..): z = "<<zlc<<std::endl;
-//   }
   return zlc;
 }
 
