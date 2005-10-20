@@ -242,6 +242,7 @@ int Timelike_Kinematics::UpdateDaughters(Knot *const mo,
   if (mo->left) {
     mo->left->E2=sqr(mo->z)*mo->E2;
     mo->right->E2=sqr((1.-mo->z))*mo->E2;
+    DoSingleKinematics(mo,force);
     int stat(1);
     if (mo->left->left!=NULL && mo->left->stat>0) stat=Shuffle(mo->left,0);
     if (stat==1 && 
@@ -250,7 +251,6 @@ int Timelike_Kinematics::UpdateDaughters(Knot *const mo,
       msg_Debugging()<<METHOD<<"(..): shuffle failed\n";
       return stat;
     }
-    DoSingleKinematics(mo,force);
     UpdateDaughters(mo->left);
     UpdateDaughters(mo->right);
   }
