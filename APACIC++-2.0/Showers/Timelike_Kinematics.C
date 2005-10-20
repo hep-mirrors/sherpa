@@ -76,7 +76,10 @@ CheckZRange(const double &z, const double &E2, const double &t,
     break;
   }
   
+  //std::cout<<"    "<<t<<"("<<E2<<","<<z<<") -> "<<t1<<" + "<<t2
+  //	   <<"("<<m_zrange_scheme<<" : "<<mean_z<<" +- "<<delta_z<<")"<<std::endl;
   if ((z<mean_z-delta_z) || (z>mean_z+delta_z)) {
+    //PRINT_INFO("hit");
     return false;
   }
   

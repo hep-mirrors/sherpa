@@ -32,7 +32,8 @@ Final_State_Shower(MODEL::Model_Base * model,ATOOLS::Jet_Finder * jf,
     SetMECorrectionScheme(dataread->GetValue<int>("FS_ME_CORRECTIONS",0)); 
   p_sud->SetQEDScheme(dataread->GetValue<int>("FS_PHOTONS",0));        
   p_sud->SetCorrelationScheme(dataread->GetValue<int>("FS_ANGLE_CORR",0));
-  p_sud->Init();
+  double fmed=dataread->GetValue<double>("F_MEDIUM",0.0);
+  p_sud->Init(fmed);
 }
 
 Final_State_Shower::~Final_State_Shower() 
@@ -165,10 +166,11 @@ int Final_State_Shower::InitializeJets(Tree *tree,Knot *mo,int init)
       return 0;
     }
   }
-  msg_Debugging()<<"end initialize jets, knot "<<mo->kn_no<<"\n";
-  msg_Debugging()<<"}\n";
+  msg_Debugging()<<"end initialize jets, knot "<<mo->kn_no<<"\n"<<"}\n";
   return 1;
 }
+
+double success(0.), failure(0.);
 
 int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
 {
@@ -240,6 +242,10 @@ int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
 	  msg_Debugging()<<"kinematics check passed"<<std::endl;
 	  mo->stat=0;
 	  msg_Debugging()<<"}\n";
+	  if (first) {
+	    //	    std::cout<<"Success !"<<std::endl;
+	    success+=1.;
+	  }
 	  return 1;
 	}
 	msg_Debugging()<<"kinematics vetoed\n";

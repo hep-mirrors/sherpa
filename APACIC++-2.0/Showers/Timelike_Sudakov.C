@@ -24,21 +24,22 @@ Timelike_Sudakov::~Timelike_Sudakov()
   if (p_tools) delete p_tools;
 }
 
-void Timelike_Sudakov::Init()
+void Timelike_Sudakov::Init(const double fmed)
 {
   // for static couplings, set first argument to 0.
   p_tools->CalculateMaxCouplings(m_cpl_scheme,m_pt2min,m_pt2max);
-  // initialise QCD / QED splitting functions
+  //std::cout<<"Fmed = "<<fmed<<", cpl : "<<m_cpl_scheme<<std::endl;
+  // --- initialise QCD (& QED) splitting functions ---
   for (int i=1;i<17;++i) {
     if (i==7) i=11;
     Flavour fl = Flavour(kf::code(i));
     if (fl.IsOn()) {
       if (fl.Strong()) {
-	Add(new q_qg(fl,p_tools));
-	Add(new q_gq(fl,p_tools));
-	Add(new q_qg(fl.Bar(),p_tools));
- 	Add(new q_gq(fl.Bar(),p_tools));
-	if (fl.PSMass()<100.) Add(new g_qq(fl,p_tools));
+	Add(new q_qg(fl,p_tools,fmed));
+	Add(new q_qg(fl.Bar(),p_tools,fmed));
+	Add(new q_gq(fl,p_tools,fmed));
+	Add(new q_gq(fl.Bar(),p_tools,fmed));
+	if (fl.PSMass()<100.) Add(new g_qq(fl,p_tools,fmed));
       }
       if (!(fl.Charge()==0) && (m_direct_photons)) {
 	Add(new f_fp(fl,p_tools));
@@ -47,7 +48,7 @@ void Timelike_Sudakov::Init()
       }
     }
   }
-  Add(new g_gg(p_tools));
+  Add(new g_gg(p_tools,fmed));
   PrintStat();
 }
 
@@ -103,10 +104,10 @@ bool Timelike_Sudakov::Dice(Knot *const mother, Knot *const granny)
       m_z   = GetZ();
       if (!Veto(mother,m_t,m_E2)) {
 	if (m_azimuthal_correlation) m_phi = p_selected->GetPhi(m_z);
-	else m_phi = UniformPhi();
-	mother->z=m_z;
-	mother->t=m_t;
-	mother->phi=m_phi;
+	else m_phi  = UniformPhi();
+	mother->z   = m_z;
+	mother->t   = m_t;
+	mother->phi = m_phi;
 	return true;
       }
     }
@@ -158,8 +159,7 @@ bool Timelike_Sudakov::Veto(Knot *const mo,double t,double E2)
 bool Timelike_Sudakov::MassVeto(double t, double E2) 
 {
   //  if (!p_kin->CheckZRange(m_z,E2,t,m_tb,m_tc)) return true;
-  if (GetWeight(m_z,m_pt2,(m_mass_scheme==1||m_mass_scheme==3))
-      <ran.Get()) return true;
+  if (GetWeight(m_z,m_pt2,(m_mass_scheme==1||m_mass_scheme==3))<ran.Get()) return true;
   if ((m_width_scheme>0) && (sqr(m_inflav.Width())>0.)) {
     if (m_width_scheme==1 && m_pt2<sqr(m_inflav.Width())) return true;
     else if (m_pt2/(m_pt2+sqr(m_inflav.Width()))<ran.Get()) return true;

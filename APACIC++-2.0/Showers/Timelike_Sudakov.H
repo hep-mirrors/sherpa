@@ -60,9 +60,7 @@ namespace APACIC {
 
     // destructor
     ~Timelike_Sudakov();
-
-    // member functions
-    void Init();
+    void Init(const double=0.);
     bool Dice(Knot *const mother,Knot *const granny=NULL);
 
     const ATOOLS::Simple_Polarisation_Info &GetPolB();
