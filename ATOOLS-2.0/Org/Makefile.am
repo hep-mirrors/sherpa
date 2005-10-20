@@ -43,7 +43,6 @@ noinst_HEADERS        =	\
 			Smart_Pointer.H \
 			Shell_Tools.H \
 			Object.H \
-			Pool.H \
 			Getter_Function.H \
 			Exception.H \
 			Exception_Handler.H \
