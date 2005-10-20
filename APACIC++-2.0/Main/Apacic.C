@@ -19,12 +19,12 @@ Apacic::Apacic(ISR_Handler *const isr,MODEL::Model_Base *const model,
     (dataread->GetValue<int>("S_KFACTOR_SCHEME",1));        
   m_fsron = bool(dataread->GetValue<int>("FSR_SHOWER",1));
   m_isron = bool(dataread->GetValue<int>("ISR_SHOWER",1));
-  jv::mode mlm(dataread->GetValue<int>("MLM",0)==1?jv::mlm:jv::none);
+  jv::mode jvm((jv::mode)dataread->GetValue<int>("JET_VETO_SCHEME",3));
   if (m_fsron) {
     p_fintree   = new Tree();
     p_finshower = new Final_State_Shower(model,jf,dataread);
     p_jetveto = new Jet_Veto(jf,p_finshower->Kinematics());
-    p_jetveto->SetMode(mlm|jv::final);
+    p_jetveto->SetMode(jvm);
     p_jetveto->SetFSTree(p_fintree);
     p_finshower->SetJetVeto(p_jetveto);
     m_showers=true;
@@ -39,7 +39,6 @@ Apacic::Apacic(ISR_Handler *const isr,MODEL::Model_Base *const model,
     p_inishower = new Initial_State_Shower(isr,jf,p_finshower,model,dataread);
     m_showers=true;
     if (m_fsron) {
-      p_jetveto->SetMode(p_jetveto->Mode()|jv::initial);
       p_jetveto->SetISTrees(p_initrees);
     }
   }
@@ -67,8 +66,6 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
   }
   if (m_fsron) {
     Vec4D cms(PrepareFSR());
-    if (!m_isron) p_jetveto->SetMode(jv::final);
-    else p_jetveto->SetMode(jv::initial|jv::final);
     int fsrstatus(p_finshower->PerformShower(p_fintree,jetveto));
     switch (fsrstatus) {
     case -1:
