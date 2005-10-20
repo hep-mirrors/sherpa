@@ -4,9 +4,6 @@
 #include "Model_Base.H"
 #include "ISR_Handler.H"
 #include "Apacic.H"
-#ifdef USING__ApacicVT    
-#include "ApacicT.H"
-#endif
 #ifdef USING__Adicic    
 #include "Adicic.H"
 #endif
@@ -29,9 +26,6 @@ namespace SHERPA {
     std::string            m_showergenerator;
     bool                   m_isrshowerswitch,m_fsrshowerswitch,m_showermi;
     APACIC::Apacic       * p_apacic;
-#ifdef USING__ApacicVT    
-    APACIC::ApacicT      * p_apacict;
-#endif
 #ifdef USING__Adicic    
     ADICIC::Adicic       * p_adicic;
 #endif
@@ -56,9 +50,6 @@ namespace SHERPA {
     PDF::ISR_Handler        * GetISRHandler()   { return p_isr_handler; }
     APACIC::Tree            * GetFinTree(); 
     APACIC::Tree           ** GetIniTrees();
-#ifdef USING__ApacicVT    
-    APACIC::ApacicT    *const GetApacicT() { return p_apacict; } ;
-#endif
 #ifdef USING__Adicic    
     ADICIC::Cascade&          GetCascade();
 #endif

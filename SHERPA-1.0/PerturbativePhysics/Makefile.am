@@ -20,13 +20,6 @@ AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
 		-I$(AMEGICDIR)/String 
 APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
 
-if APACICVT_SUPPORT
-APACICVTDIR   =	$(SHERPASYS)/APACIC++-3.0
-APACICVTCC    = SimpleXS_ApacicT_Interface.C \
-		Amegic_ApacicT_Interface.C 
-APACICVTINCS  = -I$(APACICVTDIR)/Main -I$(APACICVTDIR)/Shower \
-                -I$(APACICVTDIR)/Tools
-endif
 if ADICIC_SUPPORT
 ADICICDIR     =	$(SHERPASYS)/ADICIC++-0.0
 ADICICCFILES  = SimpleXS_Adicic_Interface.C 
@@ -62,7 +55,6 @@ libSherpaPerturbativePhysics_la_SOURCES       =	\
 					   	Cluster_Partons_Base.C \
 					   	Cluster_Partons_CKKW.C \
 						Amegic_Apacic_Interface.C \
-						$(APACICVTCC) \
 					   	$(ADICICCFILES) \
 					   	$(CSSCFILES)
 noinst_HEADERS        =	\
@@ -72,8 +64,6 @@ noinst_HEADERS        =	\
 			Hard_Decay_Handler.H \
 		 	Perturbative_Interface.H \
 		 	Interface_Tools.H \
-			SimpleXS_ApacicT_Interface.H \
-			Amegic_ApacicT_Interface.H \
 			SimpleXS_Apacic_Interface.H \
 			SimpleXS_Adicic_Interface.H \
 			SimpleXS_CSS_Interface.H \
@@ -85,9 +75,8 @@ noinst_HEADERS        =	\
 			Amegic_Apacic_Interface.H
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(SHERPAFLAGS) 
-INCLUDES      = $(SHERPAINCS) $(ADICICINCS) $(APACICINCS) $(AMEGICINCS) \
-		$(APACICVTINCS) $(AMISICINCS) $(EXTRAXSINCS) $(PHASICINCS) \
-		$(MODELINCS) $(PDFINCS) $(CSSINCS) \
+INCLUDES      = $(SHERPAINCS) $(ADICICINCS) $(APACICINCS) $(AMEGICINCS) $(AMISICINCS) \
+		$(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) $(PDFINCS) $(CSSINCS) \
 		$(BEAMINCS) $(ATOOLSINCS)
 
 
