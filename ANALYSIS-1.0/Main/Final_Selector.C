@@ -92,6 +92,49 @@ Final_Selector_Getter::operator()(const String_Matrix &parameters) const
   return selector;
 }
 
+DECLARE_GETTER(Leading_Particle_Getter,"LeadingParticle",
+ 	       Primitive_Observable_Base,String_Matrix);
+
+void Leading_Particle_Getter::PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"{\n"
+     <<std::setw(width+7)<<" "<<"InList  list\n"
+     <<std::setw(width+7)<<" "<<"OutList list\n"
+     <<std::setw(width+7)<<" "<<"Keep    kf\n"
+     <<std::setw(width+7)<<" "<<"Qual    qualifier\n"
+     <<std::setw(width+4)<<" "<<"}";
+}
+
+Primitive_Observable_Base * 
+Leading_Particle_Getter::operator()(const String_Matrix &parameters) const
+{
+  std::string inlist("FinalState"), outlist("Analysed");
+  int mode(0);
+  ATOOLS::Particle_Qualifier_Base *qualifier(NULL);
+  for (size_t i=0;i<parameters.size();++i) {
+    const std::vector<std::string> &cur=parameters[i];
+    if      (cur[0]=="InList"  && cur.size()>1) inlist=cur[1];
+    else if (cur[0]=="OutList" && cur.size()>1) outlist=cur[1];
+    else if (cur[0]=="Mode"    && cur.size()>1) {
+      if (cur[1]=="PT") mode = 1;
+    }
+    else if (cur[0]=="Qual"    && cur.size()>1) {
+      qualifier = ATOOLS::Particle_Qualifier_Getter::GetObject(cur[1],cur[1]);
+    }
+  }
+  if (!qualifier) qualifier = new ATOOLS::Is_Hadron(); 
+  Leading_Particle *selector = new Leading_Particle(inlist,outlist,mode,qualifier);
+  selector->SetAnalysis(parameters());
+  return selector;
+}
+
+//##############################################################################
+//##############################################################################
+//##############################################################################
+
+
+
+
 #include "Primitive_Analysis.H"
 #include "Message.H"
 #include "Durham_Algorithm.H"
@@ -111,7 +154,7 @@ namespace ANALYSIS {
   }
 }
 
-Final_Selector::Final_Selector(const std::string & inlistname,
+ Final_Selector::Final_Selector(const std::string & inlistname,
 			       const std::string & outlistname) :
   m_inlistname(inlistname),m_outlistname(outlistname),m_ownlist(false), m_extract(false),
   m_mode(-1), p_jetalg(NULL)
@@ -126,7 +169,8 @@ Final_Selector::Final_Selector(const std::string & inlistname,
   p_qualifier(qualifier), m_inlistname(inlistname), m_outlistname(outlistname),
   m_ownlist(false), m_extract(false), m_mode(mode), p_jetalg(NULL)
 {
-  msg_Tracking()<<" init Final_Selector("<<inlistname<<","<<outlistname<<","<<mode<<","<<qualifier<<")"<<std::endl;
+  msg_Tracking()<<" init Final_Selector("<<inlistname<<","<<outlistname<<","
+		<<mode<<","<<qualifier<<")"<<std::endl;
   m_splitt_flag = false;
   m_name="Trigger";
   switch (mode) {
@@ -500,3 +544,72 @@ Primitive_Observable_Base * Final_Selector::Copy() const
 Final_Selector::~Final_Selector() {
   if (p_jetalg) { delete p_jetalg; p_jetalg = NULL; }
 }
+
+
+
+//##############################################################################
+//##############################################################################
+//##############################################################################
+
+Leading_Particle::Leading_Particle(const std::string & inlistname,
+				   const std::string & outlistname) :
+  p_qualifier(NULL), m_inlistname(inlistname), m_outlistname(outlistname), m_mode(0)
+{
+  m_name="Leading_Particle(E)";
+}
+
+Leading_Particle::Leading_Particle(const std::string & inlistname,
+				   const std::string & outlistname,
+				   int mode, ATOOLS::Particle_Qualifier_Base * const qualifier) :
+  p_qualifier(qualifier), m_inlistname(inlistname), m_outlistname(outlistname), m_mode(mode)
+{
+  msg.Out()<<" Init Leading_Particle("<<inlistname<<","<<outlistname<<","
+	   <<mode<<","<<qualifier<<")"<<std::endl;
+  m_name="Leading_Particle";
+  switch (mode) {
+  case 1:  m_name+="(PT)"; break;
+  default: m_name+="(E)"; break;
+  }
+}
+
+Leading_Particle::~Leading_Particle() {}
+
+Primitive_Observable_Base * Leading_Particle::Copy() const 
+{
+  Leading_Particle * lp = new Leading_Particle(m_inlistname,m_outlistname,m_mode,p_qualifier);
+  lp->SetAnalysis(p_ana);
+  return lp;
+}    
+
+void Leading_Particle::Evaluate(const Blob_List &,double value, int ncount) {
+  Particle_List * pl_in = p_ana->GetParticleList(m_inlistname);
+  if (pl_in==NULL) {
+    msg.Out()<<"WARNING in Leading_Particle::Evaluate : particle list "
+	     <<m_inlistname<<" not found "<<std::endl;
+    return;
+  }
+  Particle * winner(NULL);
+  double crit(0.),test(0.);
+  //std::cout<<"-----------------------------------------------------------"<<std::endl;
+  for (Particle_List::iterator pit=pl_in->begin();pit!=pl_in->end();++pit) {
+    if ((*p_qualifier)(*pit)) {
+      //std::cout<<"Test "<<(*pit)->Flav()<<" successful."<<std::endl;
+      switch (m_mode) {
+      case 1:  test =(*pit)->Momentum().PPerp2();
+      default: test =(*pit)->Momentum()[0];
+      }
+      if (test>crit) { winner=(*pit); test=crit; }
+    }
+  }    
+
+  Particle_List * pl_out = new Particle_List;
+  if (winner!=NULL) pl_out->push_back(new Particle(*winner));
+  p_ana->AddParticleList(m_outlistname,pl_out);
+}
+
+void Leading_Particle::Output()
+{
+  if (!msg.LevelIsTracking()) return;
+  msg.Out()<<m_name<<"."<<std::endl;
+}
+

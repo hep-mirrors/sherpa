@@ -34,14 +34,12 @@ namespace ANALYSIS {
   class Final_Selector : public Primitive_Observable_Base {
   protected:
     ATOOLS::Particle_Qualifier_Base * p_qualifier;
-    std::string                  m_inlistname, m_outlistname;
-    bool                         m_ownlist, m_extract;
-    int                          m_mode;
-    ATOOLS::Jet_Algorithm_Base * p_jetalg;
-    Final_Data_Map               m_fmap;
-    Final_Correlator_Map         m_cmap;
-
-
+    std::string                       m_inlistname, m_outlistname;
+    bool                              m_ownlist, m_extract;
+    int                               m_mode;
+    ATOOLS::Jet_Algorithm_Base      * p_jetalg;
+    Final_Data_Map                    m_fmap;
+    Final_Correlator_Map              m_cmap;
 
     bool   PtSelect(const ATOOLS::Vec4D &, double);
     bool   EtSelect(const ATOOLS::Vec4D &, double); 
@@ -73,6 +71,21 @@ namespace ANALYSIS {
 
     Primitive_Observable_Base * Copy() const;    
     ~Final_Selector();
+  };
+
+  class Leading_Particle : public Primitive_Observable_Base {
+  private:
+    ATOOLS::Particle_Qualifier_Base * p_qualifier;
+    std::string                       m_inlistname, m_outlistname;
+    int                               m_mode;
+  public:
+    Leading_Particle(const std::string &,const std::string &);
+    Leading_Particle(const std::string &,const std::string &, int mode, 
+		     ATOOLS::Particle_Qualifier_Base * const qualifier=NULL);
+    ~Leading_Particle();
+    Primitive_Observable_Base * Copy() const;    
+    void Evaluate(const ATOOLS::Blob_List &,double, int);
+    void Output();
   };
 }
 

@@ -555,9 +555,11 @@ void Primitive_Analysis::ClearAllData()
 {
   for (PL_Container::iterator it=m_pls.begin();
        it!=m_pls.end(); ++it) {
-    for (Particle_List::iterator pit=it->second->begin(); 
-	 pit!=it->second->end();++pit) delete (*pit);
-    delete it->second;
+    if (it->second->size()>0) {
+      for (Particle_List::iterator pit=it->second->begin(); 
+	   pit!=it->second->end();++pit) delete (*pit);
+      delete it->second;
+    }
   }
   m_pls.clear();
 
