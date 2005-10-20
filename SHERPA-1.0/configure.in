@@ -13,6 +13,8 @@ AC_ARG_ENABLE(mcatnlo,
     *) echo "checking for MC@NLO support... no" ;;
   esac ],[ mcatnlo=false ])
 AM_CONDITIONAL(MCATNLO_SUPPORT, test $mcatnlo = true)
+AM_CONDITIONAL(ISAJET_SUPPORT, false)
+AM_CONDITIONAL(HDECAY_SUPPORT, false)
 AC_ARG_ENABLE(adicic,
 [  --enable-adicic        Enable Adicic support ],
 [ adicic=true
