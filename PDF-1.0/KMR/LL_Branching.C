@@ -4,6 +4,7 @@
 #include "Running_AlphaS.H"
 #include "MyStrStream.H"
 #include "Exception.H"
+#include "MathTools.H"
 
 using namespace PDF;
 

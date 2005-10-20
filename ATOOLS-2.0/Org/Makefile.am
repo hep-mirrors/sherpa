@@ -30,7 +30,6 @@ libToolsOrg_la_SOURCES        = \
 				Data_Read.C \
 				Data_Collector.C \
 				Run_Parameter.C \
-				FastList.C \
 				MyTiming.C \
 				Message.C \
 		 		Sort.C \
@@ -44,6 +43,7 @@ noinst_HEADERS        =	\
 			Smart_Pointer.H \
 			Shell_Tools.H \
 			Object.H \
+			Pool.H \
 			Getter_Function.H \
 			Exception.H \
 			Exception_Handler.H \
@@ -59,7 +59,6 @@ noinst_HEADERS        =	\
 			Data_Collector.H \
 			Run_Parameter.H \
 			Message.H \
-			FastList.H \
 			List_Algorithms.H \
 			Sort.H \
 			MyTiming.H \

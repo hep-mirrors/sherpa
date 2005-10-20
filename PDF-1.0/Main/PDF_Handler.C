@@ -14,6 +14,7 @@
 #include "Running_AlphaS.H"
 #include "Doubly_Unintegrated_PDF.H"
 #include "Continued_PDF.H"
+#include "Run_Parameter.H"
 #include <stdio.h>
 
 using namespace PDF;

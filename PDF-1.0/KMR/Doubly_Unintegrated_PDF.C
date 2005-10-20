@@ -6,6 +6,7 @@
 #include "MathTools.H"
 #include "Random.H"
 #include "Exception.H"
+#include "Run_Parameter.H"
 
 #ifdef PROFILE__All
 #include "prof.hh"
