@@ -1,4 +1,5 @@
 #include "Final_State_Shower.H"
+#include "Initial_State_Shower.H"
 #include "Run_Parameter.H"
 #include "Random.H"
 
@@ -15,20 +16,16 @@ using namespace ATOOLS;
 Final_State_Shower::
 Final_State_Shower(MODEL::Model_Base * model,ATOOLS::Jet_Finder * jf,
 		   Data_Read *dataread) :
-  p_kin(NULL), p_sud(NULL), p_jf(jf),
-  m_jetmode(1), m_losejetmode(2), 
-  m_maxjets(2)
+  p_kin(NULL), p_sud(NULL), p_jv(NULL)
 { 
   m_pt2min=dataread->GetValue<double>("FS_PT2MIN",1.0);
-  m_losejetmode=dataread->GetValue<int>("FS_LOSEJETVETO",2);
-  p_kin=new Timelike_Kinematics(jf,m_pt2min);
-  p_sud=new Timelike_Sudakov(p_kin,model,m_pt2min);
-  p_kin->SetPTCalcScheme(dataread->GetValue<int>("FS_PT_DEFINITION",2),
-			 dataread->GetValue<double>("FS_PT_FACTOR",0.25)); 
-  p_kin->SetZRangeScheme(dataread->GetValue<int>("FS_Z_RANGES",1));      
-  p_kin->SetAngleScheme(dataread->GetValue<int>("FS_ANGLE_DEF",1));  
+  p_kin = new Timelike_Kinematics(jf);
+  p_sud = new Timelike_Sudakov(p_kin,model,m_pt2min);
+  p_kin->SetZScheme(dataread->GetValue<int>("FS_Z_SCHEME",1));      
+  p_kin->SetAngleScheme(dataread->GetValue<int>("FS_ANGLE_SCHEME",1));  
+  p_sud->SetScaleFactor(dataread->GetValue<double>("FS_SCALE_FACTOR",0.25));
   p_sud->SetOrderingScheme(dataread->GetValue<int>("FS_ORDERING",1));  
-  p_sud->SetCouplingScheme(dataread->GetValue<int>("FS_COUPLINGS",1));
+  p_sud->SetCouplingScheme(dataread->GetValue<int>("FS_COUPLING_SCHEME",1));
   p_sud->SetMassScheme(dataread->GetValue<int>("FS_MASS_SCHEME",1));   
   p_sud->SetWidthScheme(dataread->GetValue<int>("FS_WIDTH_SCHEME",0));   
   p_sud->
@@ -47,20 +44,14 @@ Final_State_Shower::~Final_State_Shower()
 int Final_State_Shower::PerformShower(Tree *tree,int jetveto) 
 {
   PROFILE_HERE;
-  // m_jetmode=jetveto>0
-  switch(InitializeJets(tree,tree->GetRoot())) {
-  case -1:
-    return -1;
-  case 1: {
-    int jetcheck(TestKinematics(tree,1));
-    if (jetcheck!=1) return jetcheck;
+  if (InitializeJets(tree,tree->GetRoot())) {
     if (p_kin->DoKinematics(tree->GetRoot())) return 1;
-    msg.Error()<<METHOD<<"(..,"<<jetveto<<"): "
+    msg.Error()<<METHOD<<"("<<jetveto<<"): "
 	       <<"Kinematics failed."<<std::endl;
     return 0;
   }
-  case 0:
-    msg.Error()<<METHOD<<"(..,"<<jetveto<<"): "
+  else {
+    msg.Error()<<METHOD<<"("<<jetveto<<"): "
 	       <<"Shower evolution failed."<<std::endl;
     return 0;
   }
@@ -68,225 +59,201 @@ int Final_State_Shower::PerformShower(Tree *tree,int jetveto)
 }
 
 int Final_State_Shower::
-TimelikeFromSpacelike(Tree *tree,Knot *mo,bool jetveto,
-		      double sprime,double z)
+TimelikeFromSpacelike(Initial_State_Shower *ini,Tree *tree,Knot *mo,
+		      bool jetveto,double sprime,double z)
 {
-  msg_Debugging()<<METHOD<<"(..,"<<mo->kn_no<<","<<jetveto<<","
-		 <<sprime<<","<<z<<"): {\n";
+  msg_Debugging()<<METHOD<<"(["<<mo->kn_no<<","<<mo->part->Info()<<"],"
+		 <<jetveto<<","<<sprime<<","<<z<<"): {\n";
   msg_Indent();
-  m_jetmode=2;
-  if (mo->left && mo->right) {
+  if (mo->thcrit!=M_PI) {
+    Knot *si(mo->prev->right);
+    mo->thcrit=sqrt(dabs(si->t)/((1.0-si->z)*si->E2));
+  }
+  if (mo->part->Info()=='H' && mo->left && mo->right) {
     EstablishRelations(mo,mo->left,mo->right);
     return InitializeJets(tree,mo,1);
   }
   else {
     Flavour flavs[2];
     Simple_Polarisation_Info polinfos[2];
-    if (p_sud->Dice(mo)) {
-      // set temporary kinematics, real kinematics set in is shower
-      mo->E2 = sqr(((1./z-1.)*sprime - mo->t)/(2.*sqrt(sprime)));
+    while (p_sud->Dice(mo)) {
+      mo->E2 = sqr(((1.0/z-1.0)*sprime-mo->t)/(2.0*sqrt(sprime)));
       mo->part->SetMomentum(Vec4D(sqrt(mo->E2),0.,0.,sqrt(mo->E2-mo->t)));
-      switch(TestKinematics(tree)) {
-      case 1: {
-	flavs[0] = p_sud->GetFlB();
-	flavs[1] = p_sud->GetFlC();
-	InitDaughters(tree,mo,flavs,polinfos,1);
-	mo->left->t=mo->left->tout;
-	mo->right->t=mo->right->tout;
-	int stat(EvolveJet(tree,mo));
+      flavs[0] = p_sud->GetFlB();
+      flavs[1] = p_sud->GetFlC();
+      msg_Debugging()<<"tlfsl test emission at t = "<<mo->t
+		     <<", z = "<<mo->z<<"\n";
+      if (!ini->DoKinematics()) return -1;
+      int stat(p_jv->TestISKinematics(mo->prev));
+      if (stat!=1) return stat;
+      mo->stat=3;
+      InitDaughters(tree,mo,flavs,polinfos,1);
+      stat=EvolveJet(tree,mo);
+      msg_Debugging()<<"tlfsl stat = "<<stat<<"\n";
+      if (stat==1) {
+	p_kin->DoKinematics(mo);
 	msg_Debugging()<<"}\n";
-	return stat;
+	return 1;
       }
-      case -1: 
-	msg_Debugging()<<"}\n";
-	return -1;
-      }
-    } 
+    }
     msg_Debugging()<<"reset knot "<<mo->kn_no<<"\n";
     Reset(mo);
+    if (!ini->DoKinematics()) return -1;
+    int stat(p_jv->TestISKinematics(mo->prev));
+    if (stat!=1) return stat;
     msg_Debugging()<<"}\n";
     return 1;
   }
+  msg_Debugging()<<"fs shower failure\n";
+  msg_Debugging()<<"}\n";
+  return -1;
 }
 
-int Final_State_Shower::InitializeJets(Tree *tree,Knot *mo,int init_rel)
+int Final_State_Shower::InitializeJets(Tree *tree,Knot *mo,int init)
 {
-  msg_Debugging()<<METHOD<<"(["<<mo->kn_no<<"],"<<init_rel<<"): {\n";
-  msg_Indent();
-  m_jetmode=1;
-  if (!mo || !mo->left || !mo->right) {
+  if (mo==NULL || mo->left==NULL || mo->right==NULL) {
     msg.Error()<<METHOD<<"(..): Error. No knots."<<std::endl;
     return 0;
   }
+  msg_Debugging()<<METHOD<<"("<<mo->kn_no<<","<<init<<"): {\n";
+  msg_Indent();
   Knot *d1(mo->left), *d2(mo->right);
-  // store old values
-  double z_tmp(mo->z);
-  Vec4D p1_tmp(d1->part->Momentum()), p2_tmp(d2->part->Momentum());
-  // decide, whether to branch 
-  bool mustbranch1(d1->stat>0), mustbranch2(d2->stat>0), cont(true);
   int first(1);
-  if (mo==tree->GetRoot() && mustbranch1 && mustbranch2) first=2; 
-  if (mustbranch1 || mustbranch2) {
+  bool dice1(d1->stat>0), dice2(d2->stat>0);
+  if (dice1 || dice2) {
     SmearDaughters(mo);
-    int accept1(1), accept2(1);
-    do {
-      // dice
-      switch (FillBranch(tree,mo,first)) {
-      case 1:
-	// evolve daughters
-	if (d1->t > d2->t) {
-	  if (mustbranch1) accept1=EvolveJet(tree,d1);
-	  if (mustbranch2 && accept1!=-1) accept2=EvolveJet(tree,d2);
+    if (mo==tree->GetRoot() && dice1 && dice2) first=2; 
+    while (true) {
+      int accept1(1), accept2(1);
+      if (FillBranch(tree,mo,first)) {
+	if (d1->t>d2->t) {
+	  if (dice1) accept1=EvolveJet(tree,d1);
+	  if (dice2 && accept1==1) accept2=EvolveJet(tree,d2);
 	}
 	else {
-	  if (mustbranch2) accept2=EvolveJet(tree,d2);
-	  if (mustbranch1 && accept2!=-1) accept1=EvolveJet(tree,d1);
+	  if (dice2) accept2=EvolveJet(tree,d2);
+	  if (dice1 && accept2==1) accept1=EvolveJet(tree,d1);
 	}
 	if (accept1==1 && accept2==1) {
-	  // finished branching
 	  msg_Debugging()<<"accept jets\n";
-	  cont = false;
 	  break;
 	} 
-	else if (accept1==-1 || accept2==-1) {
-	  // caught losejet veto
-	  return -1;
-	}
-	else {
-	  // caught jet veto
-	  mo->z  = z_tmp;
-	  d1->E2 = mo->z*mo->z*mo->E2;
-	  d2->E2 = (1.-mo->z)*(1.-mo->z)*mo->E2;
-	  d1->part->SetMomentum( p1_tmp );
-	  d2->part->SetMomentum( p2_tmp );
-	  msg_Debugging()<<"restore jets "<<d1->kn_no
-			 <<" and "<<d2->kn_no<<"\n";
-	  msg_Debugging()<<"  p_d1 = "<<p1_tmp<<" "<<p1_tmp.Abs2()
-			 <<" vs. "<<d1->t<<"\n";
-	  msg_Debugging()<<"  p_d2 = "<<p2_tmp<<" "<<p2_tmp.Abs2()
-			 <<" vs. "<<d2->t<<"\n";
-	}
-      case 0:
-	if (d1->stat==0 && d2->stat==0) {
-	  // reset branching
-	  p_kin->Shuffle(mo,1);
-	  p_kin->UpdateDaughters(mo);
-	  cont = false;
-	}
-	break;
-      case -1:
-	msg_Debugging()<<"}\n";
-	return -1;
       }
-    } while(cont);
+      if (d1->stat==0 && d2->stat==0) {
+	msg_Debugging()<<"reset knot "<<mo->kn_no<<"\n";
+	p_kin->Shuffle(mo,first);
+	break;
+      }
+    }
   }
   msg_Debugging()<<"out ("<<d1->kn_no<<","<<d1->stat<<") "
-		 <<mustbranch1<<", ("<<d2->kn_no<<","<<d2->stat<<") "
-		 <<mustbranch2<<std::endl;
-  if (!mustbranch1) {
-    if (init_rel) EstablishRelations(d1,d1->left,d1->right);
-    switch(InitializeJets(tree,d1)) {
-    case -1: 
-      msg_Debugging()<<"}\n";
-      return -1;
-    case 0:  
+		 <<dice1<<", ("<<d2->kn_no<<","<<d2->stat<<") "
+		 <<dice2<<std::endl;
+  if (!dice1) {
+    msg_Debugging()<<"init jets knot "<<d1->kn_no<<"\n";
+    if (init) EstablishRelations(d1,d1->left,d1->right);
+    if (!InitializeJets(tree,d1)) {
       msg_Debugging()<<"}\n";
       return 0;
     }
   }
-  if (!mustbranch2) {
-    if (init_rel) EstablishRelations(d2,d2->left,d2->right);
-    switch(InitializeJets(tree,d2)) {
-    case -1: 
-      msg_Debugging()<<"}\n";
-      return -1;
-    case 0:  
+  if (!dice2) {
+    msg_Debugging()<<"init jets knot "<<d2->kn_no<<"\n";
+    if (init) EstablishRelations(d2,d2->left,d2->right);
+    if (!InitializeJets(tree,d2)) {
       msg_Debugging()<<"}\n";
       return 0;
     }
   }
+  msg_Debugging()<<"end initialize jets, knot "<<mo->kn_no<<"\n";
   msg_Debugging()<<"}\n";
   return 1;
 }
 
 int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
 {
-  msg_Debugging()<<METHOD<<"(["<<mo->kn_no<<","<<mo->stat<<"],"
-		 <<first<<"): p_mo = "<<mo->part->Momentum()<<" {\n";
+  msg_Debugging()<<METHOD<<"(["<<mo->kn_no<<","<<mo->stat<<","
+		 <<mo->part->Info()<<"],"<<first<<"): p_mo = "
+		 <<mo->part->Momentum()<<" {\n";
   msg_Indent();
   if (!first && mo->t<=mo->tout) {
     msg_Debugging()<<"!first & "<<mo->t<<"<"<<mo->tout<<std::endl; 
     return 0; 
   }
   Knot *d1(mo->left), *d2(mo->right);
-  msg_Debugging()<<"p_d1 = "<<d1->part->Momentum()<<std::endl;
-  msg_Debugging()<<"p_d2 = "<<d2->part->Momentum()<<std::endl;
+  msg_Debugging()<<"p_d1 = "<<d1->part->Momentum()
+		 <<", t_d1 = "<<d1->t<<std::endl;
+  msg_Debugging()<<"p_d2 = "<<d2->part->Momentum()
+		 <<", t_d2 = "<<d2->t<<std::endl;
   Flavour d1_flavs[2], d2_flavs[2];
   Simple_Polarisation_Info d1_polinfos[2], d2_polinfos[2];
-  bool do12, diced1(false), diced2(false);
+  int selected;
+  bool diced1(false), diced2(false);
   Vec4D p1(d1->part->Momentum()), p2(d2->part->Momentum());
   Knot *g(NULL);
   while (true) {
     g=NULL;
-    do12=ChooseDaughter(mo);
-    msg_Debugging()<<"selected daughter "<<(do12?"2":"1")<<": "
-		   <<(do12?d2->part->Flav():d1->part->Flav())<<std::endl;
+    selected=ChooseDaughter(mo);
+    msg_Debugging()<<"selected daughter "<<(selected?"2":"1")<<": "
+		   <<(selected?d2->part->Flav():d1->part->Flav())
+		   <<" "<<d1->stat<<" "<<d2->stat<<std::endl;
     if (first==2) g=mo;
-    if (!do12) {
+    if (selected==0) {
       ResetDaughters(d1);
       if (p_sud->Dice(d1,g)) { 
-	d1_flavs[0]    = p_sud->GetFlB();
-	d1_flavs[1]    = p_sud->GetFlC();
-	d1_polinfos[0] = p_sud->GetPolB();
-	d1_polinfos[1] = p_sud->GetPolC();
-	d1->stat       = 1;
-	diced1         = true;
+	msg_Debugging()<<"test emission at ("<<d1->t
+		       <<","<<d1->z<<") knot "<<d1->kn_no<<"\n";
+	d1_flavs[0]=p_sud->GetFlB();
+	d1_flavs[1]=p_sud->GetFlC();
+	d1_polinfos[0]=p_sud->GetPolB();
+	d1_polinfos[1]=p_sud->GetPolC();
+	d1->stat=1;
+	diced1=true;
       }   
       else Reset(d1);
     }
     else {
       ResetDaughters(d2);  
       if (p_sud->Dice(d2,g)) {
-	d2_flavs[0]    = p_sud->GetFlB();
-	d2_flavs[1]    = p_sud->GetFlC();
-	d2_polinfos[0] = p_sud->GetPolB();
-	d2_polinfos[1] = p_sud->GetPolC();
-	d2->stat       = 1;
-	diced2         = true;
+	msg_Debugging()<<"test emission at ("<<d2->t
+		       <<","<<d2->z<<") knot "<<d2->kn_no<<"\n";
+	d2_flavs[0]=p_sud->GetFlB();
+	d2_flavs[1]=p_sud->GetFlC();
+	d2_polinfos[0]=p_sud->GetPolB();
+	d2_polinfos[1]=p_sud->GetPolC();
+	d2->stat=1;
+	diced2=true;
       }    
       else Reset(d2);
     }
-    msg_Debugging()<<"test emission at ("<<(do12?d2->t:d1->t)
-		   <<","<<(do12?d2->z:d1->z)<<")\n";
-    p_kin->CheckZRange(mo,d1_flavs,d2_flavs);
+    if (!p_kin->CheckZRange(mo,d1_flavs,d2_flavs)) {
+      msg_Debugging()<<"z value vetoed\n";
+      if (d1->stat==0 && d2->stat==0) break;
+      continue;
+    }
     if (d1->stat!=3 && d2->stat!=3) {
+      if (d1->stat>0) InitDaughters(tree,d1,d1_flavs,d1_polinfos,diced1);
+      if (d2->stat>0) InitDaughters(tree,d2,d2_flavs,d2_polinfos,diced2);
       if (p_kin->Shuffle(mo,first)) {
-	switch (TestKinematics(tree)) { 
-	case 1:
+	if ((d1->stat==0 || p_jv->TestFSKinematics(d1)==1) &&
+	    (d2->stat==0 || p_jv->TestFSKinematics(d2)==1)) { 
 	  msg_Debugging()<<"kinematics check passed"<<std::endl;
-	  if (d1->stat>0)
-	    InitDaughters(tree,d1,d1_flavs,d1_polinfos,diced1);
-	  if (d2->stat>0) 
-	    InitDaughters(tree,d2,d2_flavs,d2_polinfos,diced2);	  
 	  mo->stat=0;
 	  msg_Debugging()<<"}\n";
 	  return 1;
-	case -1: 
-	  msg_Debugging()<<"kinematics check failed\n";
-	  msg_Debugging()<<"}\n";
-	  return -1;
 	}
 	msg_Debugging()<<"kinematics vetoed\n";
       }
-      if (d1->didkin) d1->part->SetMomentum(p1);
-      if (d2->didkin) d2->part->SetMomentum(p2);
+      else msg_Debugging()<<"shuffle failed\n";
+      if (d1->left && d1->left->part->Info()!='H') ResetDaughters(d1);
+      if (d2->left && d2->left->part->Info()!='H') ResetDaughters(d2);
     }
     if (d1->stat==0 && d2->stat==0) break;
   }
   msg_Debugging()<<"found no possible branch\n";
-  msg_Debugging()<<"}\n";
   p_kin->Shuffle(mo,first);
-  p_kin->UpdateDaughters(mo);
+  if (d1->stat==0 && d2->stat==0) return 1;
+  msg_Debugging()<<"}\n";
   return 0;
 }
 
@@ -302,46 +269,39 @@ int Final_State_Shower::EvolveJet(Tree *tree,Knot *mo)
     msg_Debugging()<<"}\n";
     return true;
   }
-  double z_tmp(mo->z);
+  double zs(mo->z);
   Knot *d1(mo->left), *d2(mo->right);
-  int evolve1, evolve2;
+  int evolve1(1), evolve2(1), stat;
   while (true) {
-    switch (FillBranch(tree,mo,0)) {
-    case 1:
-      if (d1->t > d2->t) { 
-	evolve1 = EvolveJet(tree,d1);
-	evolve2 = EvolveJet(tree,d2);
-      }
-      else { 
-	evolve1 = EvolveJet(tree,d2);
-	evolve2 = EvolveJet(tree,d1);
-      }
-      if (evolve1==1 && evolve2==1) {
-	msg_Debugging()<<"}\n";
-	return 1; 
-      }
-      else if (evolve1==-1 || evolve2==-1) {
-	msg_Debugging()<<"}\n";
-	return -1;
-      } 
-      // reset to original (massless) kinematics
-      mo->z  = z_tmp;
-      d1->E2 = mo->z*mo->z*mo->E2;
-      d2->E2 = (1.-mo->z)*(1.-mo->z)*mo->E2;
-      break;
-    case 0:
-      Reset(mo);
-      msg_Debugging()<<"reset knot "<<mo->kn_no<<std::endl;
+    stat=FillBranch(tree,mo,0);
+    if (mo->left->t==mo->left->tout &&
+	mo->right->t==mo->right->tout) break;
+    if (stat!=1) continue;
+    if (d1->t > d2->t) { 
+      evolve1 = EvolveJet(tree,d1);
+      if (evolve1==1) evolve2 = EvolveJet(tree,d2);
+    }
+    else { 
+      evolve1 = EvolveJet(tree,d2);
+      if (evolve1==1) evolve2 = EvolveJet(tree,d1);
+    }
+    if (evolve1==1 && evolve2==1) {
       msg_Debugging()<<"}\n";
-      return 0;
-    case -1:
-      msg_Debugging()<<"terminate EvolveJets."<<std::endl;
-      msg_Debugging()<<"}\n";
-      return -1;
+      return 1; 
     }
   }
+  // reset to original (massless) kinematics
+  mo->z  = zs;
+  d1->E2 = mo->z*mo->z*mo->E2;
+  d2->E2 = (1.-mo->z)*(1.-mo->z)*mo->E2;
+  if (!stat) {
+    Reset(mo);
+    msg_Debugging()<<"reset knot "<<mo->kn_no<<", t = "<<mo->t<<"\n";
+    msg_Debugging()<<"}\n";
+    return 0;
+  }
   msg_Debugging()<<"}\n";
-  return 0;
+  return 1;
 }
 
 bool Final_State_Shower::SetAllColours(Knot *mo) 
@@ -762,8 +722,9 @@ void Final_State_Shower::EstablishRelations(Knot *mo, Knot *d1,Knot *d2)
   mo->t = t_mo; 
 }
 
-bool Final_State_Shower::ChooseDaughter(Knot * mo)
+int Final_State_Shower::ChooseDaughter(Knot * mo)
 {
+
   if (mo->left->stat==3)  return 0;
   if (mo->right->stat==3) return 1;
 
@@ -810,10 +771,10 @@ InitDaughters(Tree * tree,Knot * mo,Flavour * mo_flavs,
   double th, maxpt2;
   if ((mo->left->part->Flav().Strong()) && 
       (mo->right->part->Flav().Strong())) {
-    th     = mo->thcrit = p_kin->CalculateAngle(mo);
-    maxpt2 = p_kin->CalcKt2(mo->z,mo->E2,mo->t,
-			    mo->left->part->Flav().PSMass(),
-			    mo->right->part->Flav().PSMass());
+    th     = mo->thcrit = p_kin->GetOpeningAngle(mo);
+    maxpt2 = p_kin->GetRelativeKT2(mo->z,mo->E2,mo->t,
+				   sqr(mo->left->part->Flav().PSMass()),
+				   sqr(mo->right->part->Flav().PSMass()));
   }
   else {
     if (mo->prev) {
@@ -948,7 +909,10 @@ void Final_State_Shower::Reset(Knot * mo)
   mo->t     = mo->tout;
   mo->stat  = 0;
   mo->part->SetStatus(1);
-  if (mo->part->Info()!='H') mo->part->SetInfo('F');
+  if (mo->part->Info()!='H') {
+    mo->part->SetInfo('F');
+    mo->part->SetMomentum(Vec4D());
+  }
 }
 
 void Final_State_Shower::OutputTree(Tree * tree) 
@@ -958,7 +922,7 @@ void Final_State_Shower::OutputTree(Tree * tree)
   }
   else {
     int number(0);
-    msg.Out()<<"Final Tree:\n"<<tree<<std::endl
+    msg.Out()<<"Final Tree:\n"<<*tree<<std::endl
 	     <<"Total 4 Mom = "<<GetMomentum(tree->GetRoot(),number);
     msg.Out()<<"   for "<<number<<" FS particles.\n";
   }
@@ -1021,97 +985,5 @@ Particle * Final_State_Shower::FindAuntParton(Knot * mo)
   msg_Tracking()<<METHOD<<"(..): No blob for mother "<<mo->kn_no
 		<<"\n   Return normal aunt."<<std::endl;
   return au->part;
-}
-
-int Final_State_Shower::TestKinematics(Tree *const tree,const int mode)
-{
-  msg_Debugging()<<METHOD<<"(..): {"<<std::endl;
-  msg_Indent();
-  size_t hard(0);
-  std::vector<Vec4D> jets;
-  if (!CollectMomenta(tree->GetRoot(),jets,hard)) return 0;
-  int jfmode(p_jf->Type());
-  p_jf->SetType(1);
-  bool cluster(true);
-  while (cluster) {
-    cluster=false;
-    double pt2min(p_jf->ShowerPt2());
-    std::vector<Vec4D>::iterator jwin(jets.end()), kwin(jets.end());
-    for (std::vector<Vec4D>::iterator 
-	   jit(jets.begin());jit!=jets.end();++jit) {
-      for (std::vector<Vec4D>::iterator kit(jit);kit!=jets.end();++kit) {
-	if (kit==jit) ++kit;
-	if (kit==jets.end()) break;
-	double pt2jk(p_jf->MTij2(*jit,*kit));
-	if (pt2jk<pt2min) {
-	  pt2min=pt2jk;
-	  jwin=jit;
-	  kwin=kit;
-	}
-      }
-    }
-    if (jwin!=jets.end() && kwin!=jets.end()) {
-      *jwin+=*kwin;
-      jets.erase(kwin);
-      cluster=true;
-    }
-  }
-  if (m_jetmode==2) {
-    for (std::vector<Vec4D>::iterator 
-	   jit(jets.begin());jit!=jets.end();++jit) {
-      double pt2j(p_jf->MTij2(Vec4D(1.,0.,0.,1.),*jit));
-      if (pt2j<p_jf->ShowerPt2()) jit=--jets.erase(jit);
-    }
-  }
-  p_jf->SetType(jfmode);
-  msg_Debugging()<<"produced "<<jets.size()
-		 <<" jets out of "<<hard<<" losejetmode = "
-		 <<m_losejetmode<<std::endl;
-  if (jets.size()>hard) {
-    if (hard<=m_maxjets) {
-      msg_Debugging()<<"produced "<<(jets.size()-hard)
-		     <<" additional jets"<<std::endl;
-      msg_Debugging()<<"}\n";
-      if (mode) return -1;
-      return 0;
-    }
-  }
-  else if (jets.size()<hard && mode && m_losejetmode>1) {
-    msg_Debugging()<<"lost "<<(hard-jets.size())
-		   <<" jets"<<std::endl;
-    msg_Debugging()<<"}\n";
-    return -1;
-  }
-  msg_Debugging()<<"}\n";
-  return 1;
-}
-
-int Final_State_Shower::CollectMomenta(Knot *knot,std::vector<Vec4D> &vecs,
-				       size_t &hard)
-{
-  msg_Debugging()<<"Final_State_Shower::CollectMomenta("
-		 <<knot->kn_no<<"): {\n";
-  msg_Indent();
-  if (knot->left) p_kin->DoSingleKinematics(knot);
-  if ((knot->left==NULL || knot->left->stat==3)
-      &&knot->part->Flav().Strong()) {
-    msg_Debugging()<<"take mom "<<knot->kn_no<<" -> "
-		   <<knot->part->Momentum()<<"\n";
-    vecs.push_back(knot->part->Momentum());
-  }
-  int dtest(1);
-  size_t rhard(hard);
-  if (knot->left && knot->left->stat!=3) {
-    dtest=CollectMomenta(knot->left,vecs,hard);
-    if (dtest==1) 
-      dtest=CollectMomenta(knot->right,vecs,hard);
-  }
-  if (rhard==hard && knot->part->Flav().Strong() &&
-      (knot->part->Info()=='H' || knot->part->Info()=='G')) {
-    msg_Debugging()<<"hard "<<knot->kn_no<<std::endl;
-    ++hard;
-  }
-  msg_Debugging()<<"}\n";
-  return dtest;
 }
 

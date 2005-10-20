@@ -6,92 +6,67 @@
 #include "Simple_Polarisation_Info.H"
 
 namespace APACIC {
-  // defines one parton splitting (basic element of a Tree)
+
   class Knot {
   public: 
-    Knot * left, * right, * prev;
-    ATOOLS::Particle * part;
+
+    Knot *prev, *left, *right;
+
+    ATOOLS::Particle *part;
     int    stat,kn_no;
     bool   didkin;
-    double t, tout, tmax, E2, costh, phi, z, thcrit, maxpt2, x, pt2lcm;
+    double t, tout, tmax, z, E2, costh, phi, thcrit, maxpt2, x, pt2lcm;
     ATOOLS::Simple_Polarisation_Info polinfo;
+
   public :
-    Knot():left(0),right(0),prev(0),part(0),stat(0),kn_no(-1),didkin(false),
-           t(0.),tout(0.),tmax(0.),E2(0.),costh(0.),phi(0.),z(0.),thcrit(M_PI),
-	   maxpt2(1.e10),x(0.),pt2lcm(0.0),
-	   polinfo(ATOOLS::Simple_Polarisation_Info()) {};
-    Knot(Knot * in);
-    ~Knot();
 
-    //! copy only the interior (not the links)
-    void CopyData(Knot * in);
-    //! copy the knot properties
-    void Copy(Knot * in);
-  };
-
-  //----------------------------------------------------------------------
-  //    inline functions
-  //----------------------------------------------------------------------
-  inline Knot::Knot(Knot * ink) {
-    prev   = ink->prev;
-    left   = ink->left;
-    right  = ink->right;
-
-    ATOOLS::Particle * newp;
-    newp   = new ATOOLS::Particle(*ink->part);
-    part   = newp;
-    stat   = ink->stat;
-    kn_no  = ink->kn_no;
-    didkin = ink->didkin;
-
-    t      = ink->t;
-    tout   = ink->tout;
-    tmax   = ink->tmax;
-    E2     = ink->E2;
-    z      = ink->z;
-    x      = ink->x;
-    maxpt2 = ink->maxpt2;
-    costh  = ink->costh;
-    phi    = ink->phi;
-    thcrit = ink->thcrit;
+    // constructors
+    inline Knot():
+      prev(NULL), left(NULL),right(NULL), part(NULL), stat(0), kn_no(-1), 
+      didkin(false), t(0.0), tout(0.0), tmax(0.0), z(0.0), 
+      E2(0.0), costh(0.0), phi(0.0), thcrit(M_PI),
+      maxpt2(1.0e10), x(0.), pt2lcm(0.0) {}
+    inline Knot(Knot * k):
+      prev(k->prev), left(k->left), right(k->right),
+      part(new ATOOLS::Particle(*k->part)), stat(k->stat), kn_no(k->kn_no), 
+      didkin(k->didkin), t(k->t), tout(k->tout), tmax(k->tmax), z(k->z), 
+      E2(k->E2), costh(k->costh), phi(k->phi), thcrit(k->thcrit), 
+      maxpt2(k->maxpt2), x(k->x), pt2lcm(0.0), polinfo(k->polinfo) {}
     
-    polinfo= ink->polinfo;
-  }
+    // destructor
+    inline ~Knot() { if (part!=NULL) delete part; }
 
-  inline void Knot::CopyData(Knot * ink) {
-    if (part && ink->part) part->Copy(ink->part);
-    stat   = ink->stat;
-    kn_no  = ink->kn_no;
-    didkin = ink->didkin;
-    
-    t      = ink->t;
-    tout   = ink->tout;
-    tmax   = ink->tmax;
-    E2     = ink->E2;
-    z      = ink->z;
-    x      = ink->x;
-    maxpt2 = ink->maxpt2;
-    costh  = ink->costh;
-    phi    = ink->phi;
-    thcrit = ink->thcrit;
-    
-    polinfo= ink->polinfo;
-  }
+    // inline functions
+    inline void CopyData(const Knot *const k) 
+    {
+      if (part!=NULL && k->part) part->Copy(k->part);
+      stat=k->stat;
+      kn_no=k->kn_no;
+      didkin=k->didkin;
+      t=k->t;
+      tout=k->tout;
+      tmax=k->tmax;
+      E2=k->E2;
+      z=k->z;
+      x=k->x;
+      maxpt2=k->maxpt2;
+      costh=k->costh;
+      phi=k->phi;
+      thcrit=k->thcrit;
+      polinfo=k->polinfo;
+    }
 
-  inline void Knot::Copy(Knot * ink) {
-    prev   = ink->prev;
-    left   = ink->left;
-    right  = ink->right;
+    inline void Copy(const Knot *const k) 
+    {
+      prev=k->prev;
+      left=k->left;
+      right=k->right;
+      CopyData(k);
+    }
 
-    CopyData(ink);
-  }
+  };// end of class Knot
 
-
-  inline Knot::~Knot() { if (part) delete part; part=NULL; }
-
-  class Tree;
-
-  std::ostream& operator<< (std::ostream&,Knot&);
+  std::ostream &operator<<(std::ostream&,const Knot &knot);
 
   /*!
     \file
@@ -102,7 +77,8 @@ namespace APACIC {
     \class Knot 
     \brief Defines one parton splitting (basic element of a Tree)
   */
-}
+
+}// end of namespace APACIC
 
 #endif
 

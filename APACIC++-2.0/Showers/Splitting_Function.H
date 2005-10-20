@@ -6,40 +6,48 @@
 #include <iostream>
 
 namespace APACIC {
+
   class Splitting_Function {
   protected:
+
     const static double s_Nc;
     const static double s_CF;
     const static double s_CA;
     const static double s_TR;
     const static double s_Tf;
     const static double s_kappa;
+
     static int s_kfactorscheme;
-    // Flavours of this particular splitting function
-    ATOOLS::Flavour m_flavs[3]; // a -> b c
-    // Domain of last intergral
-    double m_zmin,m_zmax;
-    // Last integral
-    double m_lastint;
+
+    ATOOLS::Flavour m_flavs[3];
+    double m_zmin, m_zmax, m_lastint;
+
   public:
 
+    // constructor
     Splitting_Function();
 
+    // destructor
     virtual ~Splitting_Function();
 
-    virtual double operator() (double) = 0;
-    virtual double GetZ()=0;         
+    // member functions
+    virtual double operator()(double z) = 0;
+    virtual double GetZ() = 0;
+         
     virtual double GetPhi(double z);
-    virtual const ATOOLS::Simple_Polarisation_Info GetPolB(double z, double phi);
-    virtual const ATOOLS::Simple_Polarisation_Info GetPolC(double z, double phi, double phi_b);
 
-    virtual double GetWeight(double,double,bool)=0;
+    virtual const ATOOLS::Simple_Polarisation_Info 
+    GetPolB(double z, double phi);
+    virtual const ATOOLS::Simple_Polarisation_Info 
+    GetPolC(double z, double phi, double phib);
 
-    virtual double GetCoupling()=0;             
-    virtual double GetCoupling(double t)=0;             
+    virtual double GetWeight(double z,double pt2,bool mterm) = 0;
+
+    virtual double GetCoupling() = 0;
+    virtual double GetCoupling(double t) = 0;
 
     virtual double CrudeInt(double z0);
-    virtual double CrudeInt(double,double) = 0;        
+    virtual double CrudeInt(double zmin,double zmax) = 0;        
     virtual double GetLastInt();
 
     virtual double Integral(double zmin,double zmax);        
@@ -47,9 +55,9 @@ namespace APACIC {
     virtual void Add(Splitting_Function *);
     virtual void SelectOne();
   
-    virtual ATOOLS::Flavour & GetFlA();
-    virtual ATOOLS::Flavour & GetFlB();
-    virtual ATOOLS::Flavour & GetFlC();
+    virtual const ATOOLS::Flavour &GetFlA() const;
+    virtual const ATOOLS::Flavour &GetFlB() const;
+    virtual const ATOOLS::Flavour &GetFlC() const;
 
     virtual void PrintStat(int mode=0);
     

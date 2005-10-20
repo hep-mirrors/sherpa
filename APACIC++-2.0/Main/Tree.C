@@ -14,10 +14,10 @@ void StreamTree(std::ostream & s, Knot * mo)
   if (mo->right) StreamTree(s, mo->right);
 }
 
-std::ostream & operator<<(std::ostream & s, Tree * tree)
+std::ostream &operator<<(std::ostream & s,const Tree &tree)
 {
   s<<"-------------------"<<endl;
-  Knot * mo = tree->GetRoot();
+  Knot * mo = tree.GetRoot();
   if (mo) while (mo->prev) mo=mo->prev;
   if (mo) StreamTree(s, mo);
   s<<"-------------------"<<endl;
@@ -179,9 +179,6 @@ Knot * Tree::GetInitiator() const {
   return help;
 }
 
-Knot * Tree::GetRoot() { return p_root; } 
-  
-
 void Tree::UpdateDaughters(Knot * mo)
 {
   msg_Debugging()<<METHOD<<"("<<mo->kn_no<<"):\n";
@@ -341,7 +338,11 @@ bool Tree::CheckStructure(bool fixit)
 
 bool Tree::CheckMomentumConservation() const 
 {
-  return CheckMomentumConservation(GetInitiator());
+  static double accu(sqrt(rpa.gen.Accu()));
+  Vec4D::SetAccu(accu);
+  bool success(CheckMomentumConservation(GetInitiator()));
+  Vec4D::ResetAccu();
+  return success;
 }
 
 bool Tree::CheckMomentumConservation(Knot *const knot) const 
@@ -352,11 +353,12 @@ bool Tree::CheckMomentumConservation(Knot *const knot) const
   Vec4D p1(knot->left->part->Momentum()), p2(knot->right->part->Momentum());
   if (!(p==p1+p2)) {
     msg.Error()<<METHOD<<"(): Four momentum not conserved in knot "
-	       <<knot->kn_no<<"\n   p_miss = "<<(p-p1-p2)<<"\n   p      = "<<p
+	       <<knot->kn_no<<"\n   p      = "<<p<<"\n   p_miss = "<<(p-p1-p2)
 	       <<"\n   p1     = "<<p1<<"\n   p2     = "<<p2<<std::endl;
     success=false;
   }
   if (!CheckMomentumConservation(knot->left)) success=false;
   if (!CheckMomentumConservation(knot->right)) success=false;
+//   if (!success && knot==GetInitiator()) msg_Debugging()<<(Tree*)this;
   return success;
 }

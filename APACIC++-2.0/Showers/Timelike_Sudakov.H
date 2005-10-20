@@ -3,68 +3,91 @@
 
 #include "Splitting_Group.H"
 #include "Model_Base.H"
-#include "Random.H"
 
 namespace APACIC {
+
+  class Knot;
   class Sudakov_Tools;
   class Timelike_Kinematics;
-  class Knot;
 
   class Timelike_Sudakov : public Splitting_Group {
-    // global parameters
-    Sudakov_Tools       * p_tools;
-    Timelike_Kinematics * p_kin;
+  private:
 
-    double m_pt2min,    m_pt2max; 
-    double m_alphaSmax, m_alphaSfix; 
-    double m_pt2minQED, m_alphaQED;
+    Sudakov_Tools       *p_tools;
+    Timelike_Kinematics *p_kin;
 
-    // switches:( get in constructor)
-    int m_cpl_scheme,m_ordering_scheme,m_pt_scheme,m_mass_scheme,m_width_scheme,m_zrange_scheme;
-    int m_MEcorr_scheme,m_direct_photons,m_azimuthal_correlation;
+    double m_pt2min, m_pt2max; 
+    double m_alphasmax, m_alphasfix; 
+    double m_pt2min_qed, m_alpha_qed;
+
+    int m_cpl_scheme, m_ordering_scheme, m_pt_scheme;
+    int m_mass_scheme, m_width_scheme, m_zrange_scheme;
+    int m_mecorr_scheme,m_direct_photons,m_azimuthal_correlation;
+    int m_last_veto;
   
-    // mother
-    double m_E2, m_t, m_tb, m_tc, m_t0, m_z, m_phi, m_pt2, m_maxpt;
+    double m_E2, m_t, m_tb, m_tc, m_t0, m_z, m_phi, m_pt2;
+    double m_maxpt, m_rscalefac;
+
     ATOOLS::Simple_Polarisation_Info m_pol_b, m_pol_c;
+
     ATOOLS::Flavour m_inflav;
 
-    // veto statistics
-    int m_last_veto;
+    double CrudeInt(double zmin,double zmax) ;
 
-    void CheckSplittings();
-    double CrudeInt(double zmin, double zmax) ;
-
-    void Add(Splitting_Function * spl);
+    void Add(Splitting_Function *spl);
     void SelectOne();
 
     void ProduceT(double ta, double m2);  
 
-    bool Veto(Knot * mo, double ta, double wa); 
+    bool Veto(Knot *const mo, double ta, double wa); 
 
     bool CplVeto();
-    bool OrderingVeto(Knot * mo,double ta, double wa, double z);
-    bool MEVeto(Knot * mo);
-    bool MassVeto(double ta, double wa);
+    bool OrderingVeto(Knot *const mo,double ta,double wa,double z);
+    bool MEVeto(Knot *const mo);
+    bool MassVeto(double ta,double wa);
 
-    double UniformPhi() const { return 2.*M_PI*ATOOLS::ran.Get(); }
+    double UniformPhi() const;
+
+#ifdef CHECK_SPLITTINGS
+    void CheckSplittings();
+#endif
+
   public:
-    Timelike_Sudakov(Timelike_Kinematics *,MODEL::Model_Base *, const double);
+
+    // constructor
+    Timelike_Sudakov(Timelike_Kinematics *const kin,
+		     MODEL::Model_Base *const model,const double &pt2min);
+
+    // destructor
     ~Timelike_Sudakov();
+
+    // member functions
     void Init();
-    bool Dice(Knot * mother,Knot * granny=0);
+    bool Dice(Knot *const mother,Knot *const granny=NULL);
 
-    const ATOOLS::Simple_Polarisation_Info & GetPolB();
-    const ATOOLS::Simple_Polarisation_Info & GetPolC();
+    const ATOOLS::Simple_Polarisation_Info &GetPolB();
+    const ATOOLS::Simple_Polarisation_Info &GetPolC();
 
-    void SetCouplingScheme(const int scheme)     { m_cpl_scheme=scheme; }
-    void SetOrderingScheme(const int scheme)     { m_ordering_scheme=scheme; }
-    void SetMassScheme(const int scheme)         { m_mass_scheme=scheme; }
-    void SetWidthScheme(const int scheme)        { m_width_scheme=scheme; }
-    void SetMECorrectionScheme(const int scheme) { m_MEcorr_scheme=scheme; }
-    void SetQEDScheme(const int scheme)          { m_direct_photons=scheme; }
-    void SetCorrelationScheme(const int scheme)  { m_azimuthal_correlation=scheme; }
-  };
+    // inline functions
+    inline void SetCouplingScheme(const int scheme)     
+    { m_cpl_scheme=scheme; }
+    inline void SetOrderingScheme(const int scheme)     
+    { m_ordering_scheme=scheme; }
+    inline void SetMassScheme(const int scheme)         
+    { m_mass_scheme=scheme; }
+    inline void SetWidthScheme(const int scheme)        
+    { m_width_scheme=scheme; }
+    inline void SetMECorrectionScheme(const int scheme) 
+    { m_mecorr_scheme=scheme; }
+    inline void SetQEDScheme(const int scheme)          
+    { m_direct_photons=scheme; }
+    inline void SetCorrelationScheme(const int scheme)  
+    { m_azimuthal_correlation=scheme; }
 
+    inline void SetScaleFactor(const double &fac) { m_rscalefac=fac; }
+
+
+  };// end of class Timelike_Sudakov
 
   /*!
     \file
@@ -76,9 +99,6 @@ namespace APACIC {
     \brief Class for dicing z and t for timelike (final state) shower evolution
   */
 
-  //-----------------------------------------------------------------------
-  //-------------------- Constructors -------------------------------------
-  //----------------------------------------------------------------------- 
   /*! 
     \fn Timelike_Sudakov::Timelike_Sudakov(Timelike_Kinematics *);
     \brief Standard Constructor -
@@ -90,18 +110,12 @@ namespace APACIC {
     \brief Destructor
   */
 
-  //-----------------------------------------------------------------------
-  //-------------------- Dicing the next branch ---------------------------
-  //----------------------------------------------------------------------- 
   /*! 
     \fn bool Timelike_Sudakov::Dice(Knot * mother,Knot * granny=0);
     \brief Tries to generate t and z for a mother ( returns "1" if successful),
        needs virtuality of granny and energy and flavour of mother
   */
   
-  //-----------------------------------------------------------------------
-  //-------------------- Handling pf splitting functions ------------------
-  //----------------------------------------------------------------------- 
   /*! 
     \fn    void Timelike_Sudakov::Add(Splitting_Function * spl);
     \brief Initialises lists of splitting functions grouped by the flavour of the
@@ -119,9 +133,6 @@ namespace APACIC {
     \brief Selects one specific mode for the splitting (to be called after CrudeInt)
   */
 
-  //-----------------------------------------------------------------------
-  //-------------------- Methods for dicing -------------------------------
-  //----------------------------------------------------------------------- 
   /*! 
     \fn void Timelike_Sudakov::ProduceT();  
     \brief Starting with a t a new, a lower t will be produced and set.
@@ -188,5 +199,6 @@ namespace APACIC {
     \brief Perfroming consistency checks; for Internal use only
   */
 
-} // namespace APACIC
+}// end of namespace APACIC
+
 #endif

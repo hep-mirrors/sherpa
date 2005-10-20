@@ -11,74 +11,63 @@
 #include "Particle_List.H"
 #include "Blob_List.H"
 #include "Data_Read.H"
-#include "Jet_Finder.H"
+#include "Jet_Veto.H"
 
 namespace APACIC {
-  //! The Interface between Matrix element and Parton Shower
+
   class Apacic {
-    bool                   m_isron,m_fsron,m_showers;
-    Initial_State_Shower * p_inishower;
-    Final_State_Shower   * p_finshower;
-    Tree                ** p_initrees;
-    Tree                 * p_fintree;
+  private:
+
+    bool m_isron,m_fsron,m_showers;
+
+    Initial_State_Shower *p_inishower;
+    Final_State_Shower   *p_finshower;
+
+    Jet_Veto *p_jetveto;
+
+    Tree **p_initrees;
+    Tree  *p_fintree;
+
+    ATOOLS::Vec4D PrepareFSR();
+    void BoostInLab();
+
   public :
-    Apacic(PDF::ISR_Handler * isr,MODEL::Model_Base * model,ATOOLS::Jet_Finder *jf,ATOOLS::Data_Read * dataread);
+    
+    // constructor
+    Apacic(PDF::ISR_Handler *const isr,MODEL::Model_Base *const model,
+	   ATOOLS::Jet_Finder *const jf,ATOOLS::Data_Read *const dataread);
+
+    // destructor
     ~Apacic(); 
-    int  PerformShowers(int=0,int=0,double=1.,double=1.,double ycut=1.e-2);
-    bool ExtractPartons(bool,bool,ATOOLS::Blob_List *,ATOOLS::Particle_List * = NULL);
-    bool FinalFSJetCheck(const double);
-    void BoostInCorrectSystem();
 
-    inline void PrepareTrees();
-    inline void SetJetvetoPt2(const double q2i, const double q2f);
-    inline void SetFactorisationScale(const double scale);
-    inline void OutputTrees();
-    inline ATOOLS::Vec4D PrepareFSR();
+    // member functions
+    int  PerformShowers(const int &jv=0,const int &ljv=0,
+			const double &x1=1.0,const double &x2=1.0,
+			const double &ycut=1.0e-2);
+    bool ExtractPartons(const bool ini,const bool fin,
+			ATOOLS::Blob_List *const blist,
+			ATOOLS::Particle_List *const plist=NULL);
 
-    Tree                 * const FinTree()   const { return p_fintree;   }
-    Tree                ** const IniTrees()  const { return p_initrees;  }
-    Final_State_Shower   * const FinShower() const { return p_finshower; }
-    Initial_State_Shower * const IniShower() const { return p_inishower; }
+    void PrepareTrees();
+    void OutputTrees();
 
-    inline void SetMaxJetNumber(const size_t maxjets) 
-    { 
-      p_finshower->SetMaxJetNumber(maxjets); 
-    }
-  
-  };
+    void SetJetvetoPt2(const double &q2i,const double &q2f);
+    void SetMaxJetNumber(const size_t &maxjets);
 
-  void Apacic::PrepareTrees() {
-    if (m_fsron) { p_fintree->Reset(); } 
-    if (m_isron) for (int i=0;i<2;i++) p_initrees[i]->Reset();
-  }
+    // inline functions
+    inline void SetFactorisationScale(const double &scale)
+    { if (m_isron) p_inishower->SetFactorisationScale(scale); }
 
-  void Apacic::SetJetvetoPt2(const double q2i, const double q2f)
-  { 
-    if (m_fsron) p_finshower->SetJetvetoPt2(q2f); 
-    if (m_isron) p_inishower->SetJetvetoPt2(q2i,q2i); 
-  }
+    inline Tree  *FinTree() const  { return p_fintree;  }
+    inline Tree **IniTrees() const { return p_initrees; }
 
-  void Apacic::SetFactorisationScale(const double scale)
-  {
-    if (m_isron) p_inishower->SetFactorisationScale(scale);
-  }
+    inline Final_State_Shower   *FinShower() const { return p_finshower; }
+    inline Initial_State_Shower *IniShower() const { return p_inishower; }
 
-  void Apacic::OutputTrees() {
-    if (m_fsron) 
-      p_finshower->OutputTree(p_fintree);
-    if (m_isron) {
-      p_inishower->OutputTree(p_initrees[0]);
-      p_inishower->OutputTree(p_initrees[1]);
-    }
-  }
+  };// end of class Apacic
 
-  ATOOLS::Vec4D Apacic::PrepareFSR() {
-    ATOOLS::Vec4D cms(p_fintree->GetRoot()->part->Momentum());
-    ATOOLS::Poincare cmsb(cms);
-    p_fintree->BoRo(cmsb);
-    return cms;
-  }
-}
+}// end of namespace APACIC
+
 #endif
 
 

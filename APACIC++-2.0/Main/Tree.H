@@ -11,23 +11,25 @@
 //using namespace ATOOLS;
 
 namespace APACIC {
-  class Tree {
-    Knot      * p_root; 
-    static Knot_List * s_knots;
 
-    Knot      * p_save_root;
+  class Tree {
+  private:
+
+    Knot *p_root, *p_save_root; 
+
+    static Knot_List *s_knots;
 
     bool CheckMomentumConservation(Knot *const knot) const;
 
+    friend std::ostream &operator<<(std::ostream &,const Tree &tree);
+
   public:
-    friend std::ostream & operator<<(std::ostream &, Tree *);
-    //-----------------------------------------------------------------------
-    //--------------------------- Constructors ------------------------------
-    //----------------------------------------------------------------------- 
-    //! constructors
+
+    // constructors
     Tree();
-    Tree(Tree *);
+    Tree(Tree *tree);
     ~Tree();
+
     //-----------------------------------------------------------------------
     //--------------------------- Initialize New knots ----------------------
     //----------------------------------------------------------------------- 
@@ -71,7 +73,7 @@ namespace APACIC {
     //--------------------------- Specific knots ----------------------------
     //----------------------------------------------------------------------- 
     //! Returns the root knot of the tree (perhaps iterator)
-    Knot * GetRoot();
+    inline Knot * GetRoot() const { return p_root; }
     //! Returns the initiator knot of the tree (i.e. the most previous one)
     Knot * GetInitiator() const;
     //-----------------------------------------------------------------------

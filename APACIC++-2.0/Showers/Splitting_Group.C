@@ -4,46 +4,33 @@
 
 using namespace APACIC;
 
-Splitting_Group::Splitting_Group(Splitting_Function * spl):p_partsums(0) 
+Splitting_Group::Splitting_Group(Splitting_Function *const spl):
+  m_partsums(0) 
 {
-  if (spl) m_group.Append(spl);
+  if (spl!=NULL) m_splittings.push_back(spl);
   p_selected = spl;
 }
 
 Splitting_Group::~Splitting_Group() 
 {
-  if (p_partsums) delete [] p_partsums;
 }
 
-double Splitting_Group::CrudeInt(double _zmin, double _zmax) 
+double Splitting_Group::CrudeInt(double zmin, double zmax) 
 {
-  if (!p_partsums) p_partsums = new double[m_group.GetLength()];
-  m_lastint = 0;
-  int i   = 0;
-  for (SplFunIter iter(m_group);iter();++iter,++i)
-    p_partsums[i] = m_lastint += iter()->CrudeInt(_zmin,_zmax);
+  if (m_partsums.empty()) m_partsums.resize(m_splittings.size());
+  m_lastint=0.0;
+  for (size_t size(m_splittings.size()), i(0);i<size;++i)
+    m_partsums[i]=m_lastint+=m_splittings[i]->CrudeInt(zmin,zmax);
   return m_lastint;
 }        
 
-
-void Splitting_Group::SelectOne() {
-  double rr = m_lastint*ATOOLS::ran.Get();
-  int i;
-  for (i=0;p_partsums[i]<rr;++i) {  
-  }
-  p_selected = m_group[i];
+void Splitting_Group::SelectOne() 
+{
+  double rr(m_lastint*ATOOLS::ran.Get());
+  size_t i(0);
+  while (m_partsums[i++]<=rr);
+  p_selected=m_splittings[--i];
 }
-
-
-void Splitting_Group::PrintStat(int mode) {
-  if (mode>0) for(int i=0;i<mode;++i) msg_Debugging()<<' ';
-  msg_Debugging()<<"Splitting Group:"<<GetFlA()<<" -> "<<GetFlB()<<" + "<<GetFlC()<<std::endl<<std::endl;
-  for (SplFunIter iter(m_group);iter();++iter) {
-    iter()->PrintStat(mode+4);
-  }
-    
-}
-
 
 double Splitting_Group::operator()(double z)                        
 { 
@@ -60,12 +47,14 @@ double Splitting_Group::GetPhi(double z)
  return p_selected->GetPhi(z);
 }
 
-const ATOOLS::Simple_Polarisation_Info Splitting_Group::GetPolB(double z, double phi)
+const ATOOLS::Simple_Polarisation_Info 
+Splitting_Group::GetPolB(double z, double phi)
 {
   return p_selected->GetPolB(z,phi);
 }
 
-const ATOOLS::Simple_Polarisation_Info Splitting_Group::GetPolC(double z, double phi, double phi_b)
+const ATOOLS::Simple_Polarisation_Info 
+Splitting_Group::GetPolC(double z, double phi, double phi_b)
 {
   return p_selected->GetPolC(z,phi,phi_b);
 }
@@ -85,32 +74,42 @@ double Splitting_Group::GetWeight(double z,double pt2,bool masses)
   return p_selected->GetWeight(z,pt2,masses);
 }
 
-ATOOLS::Flavour & Splitting_Group::GetFlA()                      
+const ATOOLS::Flavour & Splitting_Group::GetFlA() const
 { 
   return p_selected->GetFlA();
 }
 
-ATOOLS::Flavour & Splitting_Group::GetFlB() 
+const ATOOLS::Flavour & Splitting_Group::GetFlB() const
 { 
   return p_selected->GetFlB();
 }
 
-ATOOLS::Flavour & Splitting_Group::GetFlC() 
+const ATOOLS::Flavour & Splitting_Group::GetFlC() const
 { 
   return p_selected->GetFlC();
 }  
 
 void Splitting_Group::Add(Splitting_Function * spl) 
 {
-  m_group.Append(spl);
+  m_splittings.push_back(spl);
   p_selected = spl;
 }
 
 double Splitting_Group::Integral(double zmin,double zmax)
 {
   double value=0.; 
-  for (SplFunIter iter(m_group);iter();++iter) {
-    value+=iter()->Integral(zmin,zmax);
-  }
+  for (Splitting_Vector::iterator sit(m_splittings.begin());
+       sit!=m_splittings.end();++sit) 
+    value+=(*sit)->Integral(zmin,zmax);
   return value;
+}
+
+void Splitting_Group::PrintStat(int mode) 
+{
+  if (mode>0) for(int i(0);i<mode;++i) msg_Debugging()<<' ';
+  msg_Debugging()<<"Splitting Group: "<<GetFlA()<<" -> "
+		 <<GetFlB()<<" + "<<GetFlC()<<std::endl<<std::endl;
+  for (size_t i(0);i<m_splittings.size();++i) {
+    m_splittings[i]->PrintStat(mode+4);
+  }
 }

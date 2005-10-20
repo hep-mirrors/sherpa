@@ -4,7 +4,7 @@
 #include "Backward_Splitting_Group.H"
 #include "Random.H"
 
-namespace ATOOLS { class Object; }
+namespace ATOOLS { class Data_Read; }
 
 namespace PDF {
   class PDF_Base;
@@ -37,7 +37,7 @@ namespace APACIC {
     inline void SelectOne() { p_selected->SelectOne(); }
 
     void ProduceT();  
-    bool Veto(Knot *,bool,int & extra_pdf); 
+    bool Veto(Knot *,int & extra_pdf); 
     bool CplVeto();
     bool OrderingVeto(Knot *);
     bool MassVeto(int);
@@ -47,7 +47,7 @@ namespace APACIC {
     Spacelike_Sudakov(PDF::PDF_Base *,Sudakov_Tools *, Spacelike_Kinematics *,
 		      double,ATOOLS::Data_Read *,const size_t); 
     ~Spacelike_Sudakov() {};
-    bool Dice(Knot * mother,double sprime,bool jetveto, int & extra_pdf);
+    bool Dice(Knot * mother,double sprime,int & extra_pdf);
 
     static double Q02(ATOOLS::Flavour const & flav) { 
       return ATOOLS::sqr(flav.PSMass()); 

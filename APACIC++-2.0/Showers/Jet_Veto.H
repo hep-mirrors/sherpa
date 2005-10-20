@@ -13,13 +13,15 @@ namespace APACIC {
       none    = 0,
       final   = 1,
       initial = 2,
-      losejet = 4
+      mlm     = 4
     };
 
   };// end of struct jv
 
   inline jv::mode operator|(const jv::mode &a,const jv::mode &b)
   { return (jv::mode)((int)a|(int)b); }
+  inline jv::mode operator&(const jv::mode &a,const jv::mode &b)
+  { return (jv::mode)((int)a&(int)b); }
 
   class Jet_Veto {
   public:
@@ -43,7 +45,7 @@ namespace APACIC {
 			 size_t &hard);
     int CollectFSMomenta(Knot *knot,std::vector<ATOOLS::Vec4D> &vecs,
 			 size_t &hard);
- 
+
   public:
 
     // constructor
@@ -51,6 +53,9 @@ namespace APACIC {
 
     //member functions 
     int  TestKinematics(const int mode=0,Knot *const mo=NULL);
+
+    int TestFSKinematics(Knot *const mo);
+    int TestISKinematics(Knot *const mo);
 
     // inline functions
     inline void SetMode(const jv::mode &mode)     { m_mode=mode;       }
@@ -60,6 +65,8 @@ namespace APACIC {
     inline void SetFSTree(Tree *const tree)    { p_fstree=tree;   }
 
     inline void SetJetPT2(const double &pt2) { p_jf->SetShowerPt2(pt2); }
+
+    inline jv::mode Mode() const { return m_mode; }
 
     inline ATOOLS::Jet_Finder *const JetFinder() const { return p_jf; }
 

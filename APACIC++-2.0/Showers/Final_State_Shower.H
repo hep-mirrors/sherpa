@@ -10,38 +10,33 @@
 #include "Particle_List.H"
 #include "Simple_Polarisation_Info.H"
 #include "Data_Read.H"
-#include "Jet_Finder.H"
-#include <vector>
+#include "Jet_Veto.H"
 
 namespace APACIC {
+
+  class Initial_State_Shower;
 
   class Final_State_Shower {
   private:
 
     Timelike_Kinematics *p_kin;
     Timelike_Sudakov    *p_sud;
-    ATOOLS::Jet_Finder  *p_jf;
+    Jet_Veto            *p_jv;
 
     double m_pt2min;
-    int    m_jetmode, m_losejetmode;
-    size_t m_maxjets;
 
     int  InitializeJets(Tree *tree,Knot *mo,int init_rel=0);
     bool SmearDaughters(Knot *mo);
 
     void InitTwojetTree(Tree *tree,double scale);
     int  EvolveJet(Tree *tree,Knot *mo);
+    int  ChooseDaughter(Knot *mo);
     int  FillBranch(Tree *tree,Knot *mo,int first);
-
-    bool ChooseDaughter(Knot *mo);
 
     void InitDaughters(Tree *tree,Knot *mo,ATOOLS::Flavour *flavs,
 		       ATOOLS::Simple_Polarisation_Info *pols,bool diced);
     void ResetDaughters(Knot *mo);
     void Reset(Knot *knot);
-
-    int  CollectMomenta(Knot *const knot,std::vector<ATOOLS::Vec4D> &vecs,
-			size_t &hard);
 
     static ATOOLS::Particle * FindAuntParton(Knot *);
 
@@ -57,7 +52,7 @@ namespace APACIC {
 
     // member functions
     int PerformShower(Tree *tree, int jetvetoflag);
-    int TimelikeFromSpacelike(Tree *tree,Knot *mo,
+    int TimelikeFromSpacelike(Initial_State_Shower *ini,Tree *tree,Knot *mo,
 			      bool jetveto,double sprime,double z);
 
     bool SetAllColours(Knot *mo);
@@ -69,21 +64,17 @@ namespace APACIC {
 			ATOOLS::Particle_List *plist=NULL);
  
     bool TestShower(Tree *tree);
-    int  TestKinematics(Tree *const tree,const int mode=0);
 
     static ATOOLS::Vec4D GetMomentum(Knot *mo,int &number);
 
     void OutputTree(Tree *tree);
 
     // inline functions
-    inline void SetJetvetoPt2(const double pt2)  
-    { p_jf->SetShowerPt2(pt2); }
-    inline void SetMaxJetNumber(const size_t maxjets) 
-    { m_maxjets=maxjets; }
-
     inline double PT2Min() { return m_pt2min; }
 
-    inline Timelike_Kinematics *GetKinematics() { return p_kin; }
+    inline Timelike_Kinematics *Kinematics() { return p_kin; }
+
+    inline void SetJetVeto(Jet_Veto *const jv) { p_jv=jv; }
 
   };// end of class Final_State_Shower
 

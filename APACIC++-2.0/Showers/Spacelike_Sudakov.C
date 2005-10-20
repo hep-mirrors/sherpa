@@ -72,7 +72,7 @@ Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * pdf,Sudakov_Tools * tools,Spacel
 }
 
 
-bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,bool jetveto,int & extra_pdf) 
+bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,int & extra_pdf) 
 {
   PROFILE_HERE;
   mo->tmax = mo->t;  // last start t
@@ -113,7 +113,7 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,bool jetveto,int & extra_pd
 
     double uhat(-m_t - sprime* (1.-m_z)/m_z);
 
-    if (uhat<0. && !Veto(mo,jetveto,extra_pdf)) {
+    if (uhat<0. && !Veto(mo,extra_pdf)) {
       if (!RemnantVeto(mo)) {
 	UniformPhi();
 	mo->z      = m_z;
@@ -141,7 +141,7 @@ void Spacelike_Sudakov::ProduceT() {
   return;
 }
 
-bool Spacelike_Sudakov::Veto(Knot * mo,bool jetveto,int & extra_pdf) 
+bool Spacelike_Sudakov::Veto(Knot * mo,int & extra_pdf) 
 {  
   PROFILE_HERE;
   if ((1.-m_z)*m_t>m_t0)         return true;
@@ -241,23 +241,30 @@ bool Spacelike_Sudakov::RemnantVeto(Knot * mo)
 
 void Spacelike_Sudakov::Add(Splitting_Function * spl) 
 {
-  for (SplFunIter iter(m_group);iter();++iter) {
-    if (iter()->GetFlB()==spl->GetFlB()) {
-      iter()->Add(spl);
-      return ;
+  for (Splitting_Vector::iterator sit(m_splittings.begin());
+       sit!=m_splittings.end();++sit) {
+    if ((*sit)->GetFlB()==spl->GetFlB()) {
+      (*sit)->Add(spl);
+      return;
     }
   }
-  m_group.Append(new Backward_Splitting_Group(spl,p_pdf));
+  m_splittings.push_back(new Backward_Splitting_Group(spl,p_pdf));
   p_selected=spl;
 }
 
 
-double Spacelike_Sudakov::CrudeInt(double _zmin, double _zmax) 
+double Spacelike_Sudakov::CrudeInt(double zmin,double zmax) 
 {
   PROFILE_HERE;
-  SplFunIter iter(m_group);
-  for (;iter();++iter)
-    if (iter()->GetFlB()==m_inflav) { p_selected=iter(); break; }
-  if (!iter()) { p_selected=NULL; return m_lastint = -1.; }
-  return m_lastint = p_selected->CrudeInt(_zmin,_zmax);
+  Splitting_Vector::iterator sit(m_splittings.begin());
+  for (;sit!=m_splittings.end();++sit)
+    if ((*sit)->GetFlB()==m_inflav) { 
+      p_selected=*sit; 
+      break; 
+    }
+  if (sit==m_splittings.end()) { 
+    p_selected=NULL; 
+    return m_lastint=-1.0; 
+  }
+  return m_lastint = p_selected->CrudeInt(zmin,zmax);
 }     

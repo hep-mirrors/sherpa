@@ -6,6 +6,14 @@ using namespace APACIC;
 using namespace ATOOLS;
 using namespace std;
 
+Spacelike_Kinematics::Spacelike_Kinematics(ATOOLS::Jet_Finder *const jf): 
+  p_jf(jf), p_kin(new Timelike_Kinematics(p_jf)) {}
+
+Spacelike_Kinematics::~Spacelike_Kinematics() 
+{ 
+  if (p_kin) delete p_kin;
+}
+
 void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, 
 					  Knot * k2, int first) 
 {
@@ -22,7 +30,8 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1,
   double E1((sprime + k1->t - k2->t)/sqrt(4.*sprime)), E2((sprime - k1->t + k2->t)/sqrt(4.*sprime));
   double pz(sqrt((sqr(sprime - k1->t - k2->t)-4.*k1->t*k2->t)/(4.*sprime)));
   Vec4D  v1(E1,0.,0.,pz), v2(E2,0.,0.,-pz);
-
+  static double accu(sqrt(rpa.gen.Accu()));
+  Vec4D::SetAccu(accu);
   bool error(false);
   if (first==1 && (!IsEqual(k1->t,t1)||!IsEqual(k2->t,t2))) {
     if (IsEqual(k1->t,t1)) {
@@ -36,16 +45,12 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1,
       m_boost.Boost(o1);
       if (!(o1==v1)) {
 	error=true;
-	msg.Out()<<"WARNING in  Spacelike_Kinematics::InitKinematics : Mismatch."<<std::endl;
-	msg.Out().precision(12);
+	msg.Error()<<METHOD<<"(..): Four momentum not conserved. Case B\n"
+		   <<"   Vec1 : "<<o1<<" : "<<o1.Abs2()<<" / "<<k1->t<<"\n"
+		   <<"   vs.  : "<<v1<<" : "<<v1.Abs2()<<" / "<<k1->t<<"\n"
+		   <<"   Boo1 : "<<b1<<" : "<<b1.Abs2()<<std::endl;
       }
       trees[0]->BoRo(m_boost);
-      if (error) {
-	msg.Out() <<"Spacelike_Kinematics::InitKinematics : B "<<std::endl
-		  <<"   Vec1 : "<<o1<<" : "<<o1.Abs2()<<" / "<<k1->t<<std::endl
-		  <<"   vs.  : "<<v1<<" : "<<v1.Abs2()<<" / "<<k1->t<<std::endl
-		  <<"   Boo1 : "<<b1<<" : "<<b1.Abs2()<<std::endl;
-      }
     }
     if (IsEqual(k2->t,t2)) {
       double s2(4.*sqr(o2[0])), t2(k2->t), sgnt(1.), sgn2(1.);
@@ -59,17 +64,14 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1,
       trees[1]->BoRo(m_boost);
       if (!(o2==v2)) {
 	error=1;
-	msg.Out()<<"WARNING in Spacelike_Kinematics::InitKinematics : Mismatch."<<std::endl;
-	msg.Out().precision(12);
-      }
-      if (error) {
-	msg.Out() <<"Spacelike_Kinematics::InitKinematics : B "<<std::endl
-		  <<"   Vec2 : "<<o2<<" : "<<o2.Abs2()<<" / "<<k2->t<<std::endl
-		  <<"   vs.  : "<<v2<<" : "<<v2.Abs2()<<" / "<<k2->t<<std::endl
-		  <<"   Boo2 : "<<b2<<" : "<<b2.Abs2()<<std::endl;
+	msg.Error()<<METHOD<<"(..): Four momentum not conserved. Case B.\n"
+		   <<"   Vec2 : "<<o2<<" : "<<o2.Abs2()<<" / "<<k2->t<<"\n"
+		   <<"   vs.  : "<<v2<<" : "<<v2.Abs2()<<" / "<<k2->t<<"\n"
+		   <<"   Boo2 : "<<b2<<" : "<<b2.Abs2()<<std::endl;
       }
     }
   }
+  Vec4D::ResetAccu();
   k1->part->SetMomentum(v1);
   k2->part->SetMomentum(v2);  
   if (error) {
@@ -115,6 +117,10 @@ bool Spacelike_Kinematics::DoKinematics(Tree **trees,Knot *active,Knot *partner,
     msg_Debugging()<<"}\n";
     return true;
   }
+  msg_Debugging()<<mother->part->Info()<<","
+		 <<(mother->prev?mother->prev->part->Info():'-')<<","
+		 <<(sister->left?sister->left->part->Momentum()[1]:1.e37)
+		 <<" -> mode = "<<mode<<"\n";
 
   BoostInCMS(trees,active, partner);
 
@@ -208,6 +214,7 @@ void Spacelike_Kinematics::BoostPartial(const int mode,Knot *si,const Vec4D &v_s
   m_boost.Boost(p_si);
 
   // apply rotation and boost on tree rest (sequence depending on mode)
+  msg_Debugging()<<"mode = "<<mode<<"\n";
   if (mode==3) RoBoIni(si,rot,m_boost);
   else if (mode==5) RoBoFin(si,rot,m_boost);
   else msg.Error()<<METHOD<<"(..): Error."<<std::endl;
@@ -218,6 +225,7 @@ void Spacelike_Kinematics::BoostPartial(const int mode,Knot *si,const Vec4D &v_s
 void Spacelike_Kinematics::RoBoIni(Knot * k, Poincare & rot, Poincare & boost) 
 {
   if (k==NULL) return;
+  msg_Debugging()<<METHOD<<"("<<k->kn_no<<"):\n";
   Vec4D  p(k->part->Momentum());
   rot.Rotate(p);
   boost.Boost(p);
@@ -231,6 +239,7 @@ void Spacelike_Kinematics::RoBoIni(Knot * k, Poincare & rot, Poincare & boost)
 void Spacelike_Kinematics::RoBoFin(Knot * k, Poincare & rot, Poincare & boost) 
 {
   if (k==NULL) return;
+  msg_Debugging()<<METHOD<<"("<<k->kn_no<<"):\n";
   Vec4D  p(k->part->Momentum());
   rot.Rotate(p);
   boost.Boost(p);
@@ -245,6 +254,7 @@ void Spacelike_Kinematics::BoostPartial(const int mode,Knot *mo,Knot *si,
   msg_Debugging()<<METHOD<<"("<<mode<<","<<mo->kn_no<<","
 		 <<si->kn_no<<","<<v_mo<<","<<v_si<<"): {\n";
   msg_Indent();
+  msg_Debugging()<<"mode = "<<mode<<"\n";
   if (mode==3) {
     // boost mother and the rest
     BoostPartial(mode,mo,v_mo);

@@ -2,51 +2,52 @@
 #define Splitting_Group_H
 
 #include "Splitting_Function.H"
-#include "FastList.H"
-
 
 namespace APACIC {
-  // to be replaced with STL vector
-  typedef ATOOLS::FastList<Splitting_Function> SplFunList; 
-  typedef ATOOLS::FastList<Splitting_Function>::Iterator SplFunIter;
+
+  typedef std::vector<double>              Double_Vector; 
+  typedef std::vector<Splitting_Function*> Splitting_Vector; 
 
   class Splitting_Group : public Splitting_Function {
   protected:
-    SplFunList  m_group;
-    Splitting_Function * p_selected;
-    // partial sums
-    double * p_partsums;
+
+    Splitting_Vector m_splittings;
+    Double_Vector    m_partsums;
+
+    Splitting_Function *p_selected;
+
   public:
-    /*! 
-      Standard Constructor, if a Splitting_Function is specified it will
-      be appended to the list of this particular group.
-    */
-    Splitting_Group(Splitting_Function * spl=0);
-    //! Standard Destructor
+
+    // constructor
+    Splitting_Group(Splitting_Function *const spl=NULL);
+
+    // destructor
     virtual ~Splitting_Group();
-    //! Summing over all splittings, filling individual values and total sum
-    virtual double CrudeInt(double _zmin, double _zmax);
-    /*!
-      A load of various functions to return values of the particular
-      selected function out of the group, see Splitting_Function.H
-      for more details.
-    */
+
+    // inline functions
+    virtual double CrudeInt(double zmin, double zmax);
+
     double operator()(double z);
     double Integral(double zmin,double zmax);
     double GetZ();
     double GetPhi(double z);
-    const ATOOLS::Simple_Polarisation_Info GetPolB(double z, double phi);
-    const ATOOLS::Simple_Polarisation_Info GetPolC(double z, double phi, double phi_b);
+
+    const ATOOLS::Simple_Polarisation_Info 
+    GetPolB(double z, double phi);
+    const ATOOLS::Simple_Polarisation_Info 
+    GetPolC(double z, double phi, double phib);
+
     double GetCoupling();
     double GetCoupling(double t);
     double GetWeight(double z,double pt2,bool masses);
-    ATOOLS::Flavour & GetFlA();
-    ATOOLS::Flavour & GetFlB();
-    ATOOLS::Flavour & GetFlC();
-    //! Adds a splitting function to some exisiting group.
+
+    const ATOOLS::Flavour &GetFlA() const;
+    const ATOOLS::Flavour &GetFlB() const;
+    const ATOOLS::Flavour &GetFlC() const;
+
     virtual void Add(Splitting_Function * spl);
-    //! Selects one splitting function out of the group.
     virtual void SelectOne();
+
     void PrintStat(int mode=0);
     
   };
@@ -131,7 +132,9 @@ namespace APACIC {
     \brief prints all splitting functions contained in this 
            group to the screen.
   */
+
 }
+
 #endif
 
 

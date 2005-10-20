@@ -59,17 +59,17 @@ void Splitting_Function::Add(Splitting_Function *) {
 
 void Splitting_Function::SelectOne() {}
 
-ATOOLS::Flavour & Splitting_Function::GetFlA() 
+const ATOOLS::Flavour &Splitting_Function::GetFlA() const 
 { 
   return m_flavs[0];
 }
 
-ATOOLS::Flavour & Splitting_Function::GetFlB() 
+const ATOOLS::Flavour &Splitting_Function::GetFlB() const 
 { 
   return m_flavs[1];
 }
 
-ATOOLS::Flavour & Splitting_Function::GetFlC() 
+const ATOOLS::Flavour &Splitting_Function::GetFlC() const
 { 
   return m_flavs[2];
 }

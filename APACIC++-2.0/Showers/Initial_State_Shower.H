@@ -11,15 +11,21 @@
 #include "Particle_List.H"
 #include "Tree.H"
 #include "Run_Parameter.H"
+#include "Jet_Veto.H"
 
 namespace APACIC {
 
   class Initial_State_Shower {
   private:
+
     Final_State_Shower   *  p_fin;
     Sudakov_Tools        *  p_tools;
     Spacelike_Kinematics *  p_kin;
     Spacelike_Sudakov    ** p_suds;
+
+    Tree **p_istrees, *p_fstree;
+    Knot * p_k1, *p_k2;
+    int    m_ntree0, m_first;
 
     double m_t0, m_tlfromsl_fac;
     bool   m_jetveto;
@@ -27,23 +33,30 @@ namespace APACIC {
 
     double m_pt2_1, m_pt2_2, m_th_1, m_th_2;
 
-    int    m_jetveto_scheme;
     int    m_allowed;
     int    m_extra_pdf[2];
     int    m_to_be_diced[2];
 
-    ATOOLS::Vec4D m_lab;
+    ATOOLS::Vec4D    m_lab;
+    ATOOLS::Poincare m_cmsrot, m_labboost;
 
     ATOOLS::Blob * m_bl_meps_is, * m_bl_meps_fs;
 
     void SingleExtract(Knot *,int,ATOOLS::Blob *,
 			ATOOLS::Blob_List *,int &);
+
   public:
-    Initial_State_Shower(PDF::ISR_Handler *isr,
+
+    Initial_State_Shower(PDF::ISR_Handler *isr, 
 			 ATOOLS::Jet_Finder *const jf,Final_State_Shower *fin,
 			 MODEL::Model_Base *model,ATOOLS::Data_Read * const dataread);
     ~Initial_State_Shower();
-    int  PerformShower(Tree ** trees, int jetvetoflag);
+    void BoostFS();
+    void BoostBackFS();
+    int DoKinematics();
+
+    int  PerformShower(Tree **const initrees,Tree *const fintree, 
+		       int jetvetoflag);
     inline void InitShowerPT(double pt2max)
     {
       m_pt2_1 = m_pt2_2 = pt2max;
@@ -64,9 +77,6 @@ namespace APACIC {
 
     void OutputTree(Tree * tree);
     static void SetColours(Knot * k);
-    void SetJetvetoPt2(const double q2i, const double q2f) {
-      p_kin->SetJetvetoPt2(q2i,q2f); 
-    }
     void SetFactorisationScale(const double scale) {
       p_suds[0]->SetFactorisationScale(scale);
       p_suds[1]->SetFactorisationScale(scale);
