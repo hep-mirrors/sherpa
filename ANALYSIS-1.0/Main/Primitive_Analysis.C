@@ -325,7 +325,8 @@ bool Primitive_Analysis::SelectBlob(const ATOOLS::Blob *blob)
 {
   if (m_mode&ANALYSIS::do_hadron) return true;
   if (m_mode&ANALYSIS::do_shower && 
-      (blob->Type()==btp::IS_Shower || blob->Type()==btp::FS_Shower)) return true;
+      (blob->Type()==btp::IS_Shower || blob->Type()==btp::FS_Shower ||
+       blob->Type()==btp::Shower)) return true;
   if (m_mode&ANALYSIS::do_mi && 
       (blob->Type()==btp::Hard_Collision ||
        blob->Type()==btp::Signal_Process)) return true;
