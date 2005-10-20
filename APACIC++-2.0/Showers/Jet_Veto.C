@@ -169,7 +169,7 @@ int Jet_Veto::CollectFSMomenta(Knot *knot,std::vector<Vec4D> &vecs,
 
 int Jet_Veto::TestISKinematics(Knot *const knot)
 {
-  if (m_mode&jv::mlm) return 1;
+  if (m_mode&jv::mlm || !(m_mode&jv::initial)) return 1;
   msg_Debugging()<<METHOD<<"("<<knot->kn_no<<","<<knot->part->Info()
 		 <<"): p_{t jet} = "<<sqrt(p_jf->ShowerPt2())<<"\n";
   double E2(sqr(sqrt(knot->left->E2)+sqrt(knot->right->E2)));
@@ -185,7 +185,7 @@ int Jet_Veto::TestISKinematics(Knot *const knot)
 
 int Jet_Veto::TestFSKinematics(Knot *const knot)
 {
-  if (m_mode&jv::mlm) return 1;
+  if (m_mode&jv::mlm || !(m_mode&jv::final)) return 1;
   msg_Debugging()<<METHOD<<"("<<knot->kn_no<<","<<knot->part->Info()
 		 <<"): p_{t jet} = "<<sqrt(p_jf->ShowerPt2())<<"\n";
   msg_Indent();
