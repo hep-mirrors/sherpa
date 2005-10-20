@@ -100,6 +100,8 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
   //we have a virtuality ordered shower, therefore:
   mo->t = mo->part->Momentum().Abs2();
   double scale(p_cluster->HardScale());
+  mo->pt2lcm = scale;
+  for (int i(0);i<4;++i) knots[i]->pt2lcm=scale;
   if(!(p_cluster->OrderStrong()>0 && njet==m_maxjetnumber)) scale = Max(scale,4.*p_cluster->JetScale());
 
   EstablishRelations(mo,knots[0],knots[1],0,scale);
@@ -123,7 +125,7 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
   int k,l;
   while (ct_test) {
     knots.push_back(0);ini_knots.push_back(0); ++nlegs;
-    ct_test->GetWinner(k,l);
+    double scale(sqr(ct_test->GetWinner(k,l)));
     for (int i=knots.size()-1;i>l;--i)     knots[i]     = knots[i-1];
     for (int i=ini_knots.size()-1;i>l;--i) ini_knots[i] = ini_knots[i-1];
     if (k>=2) tree = fin_tree; 
@@ -133,6 +135,8 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
       d2 = Point2Knot(blob,tree,ct_test->GetLeg(l),ct_test->Momentum(l),'H');
       d1->part->SetProductionBlob(blob);
       d2->part->SetProductionBlob(blob);
+      d1->pt2lcm=scale;
+      d2->pt2lcm=scale;
       EstablishRelations(knots[k],d1,d2,1);      
     } 
     else {
@@ -140,6 +144,8 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
       d2 = Point2Knot(blob,tree,ct_test->GetLeg(l),ct_test->Momentum(l),'H');
       d1->part->SetDecayBlob(blob);  
       d2->part->SetDecayBlob(blob);
+      d1->pt2lcm=scale;
+      d2->pt2lcm=scale;
       EstablishRelations(d1,knots[k],d2,2+k);      
     }
     knots[k] = d1;
@@ -164,10 +170,10 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
     msg.Out()<<" in Tree_Filler::FillTrees("<<m_isrshoweron<<","
 	     <<m_fsrshoweron<<")"<<std::endl;
     if (ini_trees) {
-      msg.Out()<<"initree[0]:"<<std::endl<<ini_trees[0]
-	       <<"initree[1]:"<<std::endl<<ini_trees[1];
+      msg.Out()<<"initree[0]:"<<std::endl<<*ini_trees[0]
+	       <<"initree[1]:"<<std::endl<<*ini_trees[1];
     }
-    msg.Out()<<"fin_tree:"<<std::endl<<fin_tree
+    msg.Out()<<"fin_tree:"<<std::endl<<*fin_tree
 	     <<"****************************************"<<std::endl;
   }
 }

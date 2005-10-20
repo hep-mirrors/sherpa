@@ -48,7 +48,7 @@ bool SHERPA::operator<(const Combine_Key & a,const Combine_Key & b)
 
 std::ostream& SHERPA::operator<<(std::ostream &s,const Combine_Data &cd)
 {
-  s<<" "<<std::setw(8)<<cd.m_pt2ij<<": "<<sqrt(cd.m_pt2ij)<<" "<<std::setw(8)<<sqrt(dabs(cd.m_sij))<<" "
+  s<<" "<<std::setw(8)<<sqrt(cd.m_pt2ij)<<" "<<std::setw(8)<<sqrt(dabs(cd.m_sij))<<" "
    <<std::setw(3)<<cd.m_strong;
   s<<" ("<<std::setw(11)<<cd.m_prop<<","<<std::setw(11)<<cd.m_coupling<<") ";
   std::string graphs;

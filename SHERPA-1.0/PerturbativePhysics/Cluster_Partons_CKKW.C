@@ -150,7 +150,8 @@ bool Cluster_Partons_CKKW::
 ApplyCombinedInternalWeight(const bool is,const Flavour & fl,
 			    const double upper,const double actual)
 {
-  double qmin(0.), DeltaNum(0.), DeltaDenom(1.), DeltaRatio(0.), as_ptij(0.), asRatio(0.);
+  double qmin(0.), DeltaNum(0.), DeltaDenom(1.), DeltaRatio(0.);
+  double as_ptij(0.), asRatio(0.);
   as_ptij = (*p_runas)(sqr(actual)/m_asfactor);
   if (m_kfac!=0.) as_ptij *= 1. + as_ptij/(2.*M_PI)*m_kfac;
   asRatio = as_ptij/m_as_jet;
@@ -251,6 +252,7 @@ void Cluster_Partons_CKKW::CalculateWeight()
     if (strong_vertex || singlet_clustered) StoreOldValues(i,j,si,ptij);
     if (m_count_startscale==2) OverwriteScales(j);
   }
+  msg_Debugging()<<METHOD<<"(..): combine tables {\n"<<*ct_tmp<<"\n}\n";
 
   // External legs
   for (int l=0; l<m_nlegs; ++l) {

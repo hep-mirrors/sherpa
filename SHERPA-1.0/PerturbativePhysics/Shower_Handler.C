@@ -12,6 +12,9 @@ Shower_Handler::Shower_Handler(std::string dir,std::string file,
 			       PDF::ISR_Handler * _isr,int _maxjet) :
   m_maxjetnumber(_maxjet), m_showermi(true), 
   p_apacic(NULL), 
+#ifdef USING__ApacicVT    
+  p_apacict(NULL),
+#endif
 #ifdef USING__Adicic
   p_adicic(NULL),
 #endif
@@ -25,6 +28,9 @@ Shower_Handler::Shower_Handler(std::string dir,std::string file,
   m_isrshowerswitch = 0;
   if (_isr) {
     if (_isr->On()>0) m_isrshowerswitch = dataread.GetValue<int>("ISR_SHOWER",1);
+#ifdef USING__ApacicVT    
+    if (m_showergenerator==std::string("Apacic3")) m_isrshowerswitch = false;
+#endif
 #ifdef USING__Adicic    
     if (m_showergenerator==std::string("Adicic")) m_isrshowerswitch = false;
 #endif
@@ -51,6 +57,12 @@ Shower_Handler::Shower_Handler(std::string dir,std::string file,
     p_apacic = new APACIC::Apacic(_isr,_model,p_jf,&dataread);
     if (p_apacic->FinShower()) p_apacic->SetMaxJetNumber(m_maxjetnumber);
   }
+#ifdef USING__ApacicVT    
+  else if (m_showergenerator==std::string("Apacic3")) {
+    p_apacict = new APACIC::ApacicT(p_jf);
+    p_apacict->Initialize(MODEL::as,dir,file);
+  }
+#endif
 #ifdef USING__Adicic    
   else if (m_showergenerator==std::string("Adicic")) {
     p_adicic = new ADICIC::Adicic(_model);
@@ -74,6 +86,9 @@ Shower_Handler::Shower_Handler(std::string dir,std::string file,
 Shower_Handler::~Shower_Handler() 
 {
   if (p_apacic) { delete p_apacic; p_apacic = NULL; }
+#ifdef USING__ApacicVT
+  if (p_apacict) { delete p_apacict; p_apacict = NULL; }
+#endif
 #ifdef USING__Adicic    
   if (p_adicic) { delete p_adicic; p_adicic = NULL; }
 #endif
@@ -86,6 +101,9 @@ Shower_Handler::~Shower_Handler()
 
 int Shower_Handler::PerformShowers(int jetveto,int losejv,double _x1,double _x2,double ycut) {
   if (p_apacic) return p_apacic->PerformShowers(jetveto,losejv,_x1,_x2, ycut);
+#ifdef USING__ApacicVT
+  if (p_apacict) return p_apacict->PerformShowers();
+#endif
 #ifdef USING__Adicic    
   if (p_adicic) return p_adicic->PerformShowers();
 #endif
@@ -108,6 +126,14 @@ void Shower_Handler::FillBlobs(ATOOLS::Blob_List * _bloblist)
 		 <<"   Did not succeed to fill bloblist any further."<<std::endl;
     }
   }
+#ifdef USING__ApacicVT    
+  if (p_apacict) {
+    if (!(p_apacict->ExtractPartons(_bloblist))) {
+      msg.Error()<<"Error in Shower_Handler::FillBlobs()."<<std::endl
+               <<"   Did not succeed to fill bloblist any further."<<std::endl;
+    }
+  }
+#endif
 #ifdef USING__Adicic    
   if (p_adicic) {
     if (!(p_adicic->ExtractPartons(_bloblist))) {
@@ -138,6 +164,9 @@ void Shower_Handler::FillDecayBlobs(ATOOLS::Blob_List * _bloblist)
 
 void Shower_Handler::CleanUp() {
   if (p_apacic) p_apacic->PrepareTrees();
+#ifdef USING__ApacicVT
+  if (p_apacict) p_apacict->Reset();
+#endif
 #ifdef USING__Adicic    
   if (p_adicic) p_adicic->PrepareCascade();
 #endif

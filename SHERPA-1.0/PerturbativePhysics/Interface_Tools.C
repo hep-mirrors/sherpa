@@ -66,7 +66,7 @@ void Interface_Tools::InitializeOutGoing(Blob *blob,const double &E)
   dummy->thcrit=M_PI;
   dummy->stat=0;
   dummy->E2=sqr(dummy->part->Momentum()[0]);
-  dummy->didkin=1;
+  dummy->didkin=true;
   d1->part->SetInfo('H');
   d1->part->SetStatus(1);
   d1->t=d1->maxpt2=dummy->t;
