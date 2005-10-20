@@ -1,6 +1,7 @@
 #include "Particle_List.H"
 
 #include "Particle_Qualifier.H"
+#include "Poincare.H"
 
 using namespace ATOOLS;
 
@@ -54,3 +55,40 @@ void Particle_List::Erase(Particle_Qualifier_Base *const qual)
     if ((*qual)(*pit)) pit=erase(pit);
     else ++pit;
 }
+
+void Particle_List::Boost(Poincare *const boost) const
+{
+  for (const_iterator pit=begin();pit!=end();++pit) {
+    Vec4D mom((*pit)->Momentum());
+    boost->Boost(mom);
+    (*pit)->SetMomentum(mom);
+  }
+}
+
+void Particle_List::BoostBack(Poincare *const boost) const
+{
+  for (const_iterator pit=begin();pit!=end();++pit) {
+    Vec4D mom((*pit)->Momentum());
+    boost->BoostBack(mom);
+    (*pit)->SetMomentum(mom);
+  }
+}
+
+void Particle_List::Rotate(Poincare *const rot) const
+{
+  for (const_iterator pit=begin();pit!=end();++pit) {
+    Vec4D mom((*pit)->Momentum());
+    rot->Rotate(mom);
+    (*pit)->SetMomentum(mom);
+  }
+}
+
+void Particle_List::RotateBack(Poincare *const rot) const
+{
+  for (const_iterator pit=begin();pit!=end();++pit) {
+    Vec4D mom((*pit)->Momentum());
+    rot->RotateBack(mom);
+    (*pit)->SetMomentum(mom);
+  }
+}
+

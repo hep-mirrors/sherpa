@@ -9,6 +9,7 @@
 namespace ATOOLS {
 
   class Particle_Qualifier_Base;
+  class Poincare;
 
   class Particle_List: public std::deque<Particle*> {
   private:
@@ -43,6 +44,12 @@ namespace ATOOLS {
     void Keep(Particle_Qualifier_Base *const qual);
     void Erase(Particle_Qualifier_Base *const qual);
     
+    void Boost(Poincare *const boost) const;
+    void BoostBack(Poincare *const boost) const;
+
+    void Rotate(Poincare *const rot) const;
+    void RotateBack(Poincare *const rot) const;
+
   };// end of class Particle_List
 
   std::ostream &operator<<(std::ostream &str,const Particle_List &list);
