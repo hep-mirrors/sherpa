@@ -56,11 +56,13 @@ namespace APACIC {
 
     // constructor
     Timelike_Sudakov(Timelike_Kinematics *const kin,
-		     MODEL::Model_Base *const model,const double &pt2min);
+		     MODEL::Model_Base *const model);
 
     // destructor
     ~Timelike_Sudakov();
-    void Init(const double=0.);
+
+    // member functions
+    void Init(const double fmed=0.0);
     bool Dice(Knot *const mother,Knot *const granny=NULL);
 
     const ATOOLS::Simple_Polarisation_Info &GetPolB();
@@ -82,8 +84,11 @@ namespace APACIC {
     inline void SetCorrelationScheme(const int scheme)  
     { m_azimuthal_correlation=scheme; }
 
-    inline void SetScaleFactor(const double &fac) { m_rscalefac=fac; }
+    inline void SetScaleFactor(const double &fac) { m_rscalefac=fac;         }
+    inline void SetPT2Min(const double &pt2)      { m_t0=4.0*(m_pt2min=pt2); }
 
+    inline double ScaleFactor() const { return m_rscalefac; }
+    inline double PT2Min() const      { return m_pt2min;    }
 
   };// end of class Timelike_Sudakov
 

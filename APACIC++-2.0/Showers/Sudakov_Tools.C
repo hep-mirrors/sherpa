@@ -63,11 +63,7 @@ double Sudakov_Tools::CrudeAlphaS(const double t) const
 
 double Sudakov_Tools::AlphaS(double t) const 
 {
-  double tmp((*p_as)(dabs(t)*rpa.gen.RenormalizationScaleFactor()));
-  //std::cout<<"   AlphaS("<<t<<") = "<<tmp<<" vs. "
-  //	   <<m_alphaSmax<<"("<<(static_cast<Running_AlphaS*>(p_as)->CutQ2())<<") -> "
-  //	   <<(*p_as)(static_cast<Running_AlphaS*>(p_as)->CutQ2())<<std::endl;
-  return tmp;
+  return (*p_as)(dabs(t)*rpa.gen.RenormalizationScaleFactor());
 }
 
 double Sudakov_Tools::Alpha(double t) const 

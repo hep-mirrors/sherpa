@@ -13,11 +13,10 @@ using namespace APACIC;
 using namespace ATOOLS;
 
 Timelike_Sudakov::Timelike_Sudakov(Timelike_Kinematics *const kin,
-				   MODEL::Model_Base *const model,
-				   const double &pt2min) :
+				   MODEL::Model_Base *const model) :
   p_tools(new Sudakov_Tools(model)), 
   p_kin(kin), 
-  m_pt2min(pt2min), m_pt2max(sqr(rpa.gen.Ecms())), m_t0(4.0*m_pt2min) {}
+  m_pt2min(1.0), m_pt2max(sqr(rpa.gen.Ecms())), m_t0(4.0) {}
 
 Timelike_Sudakov::~Timelike_Sudakov()
 {
@@ -28,8 +27,6 @@ void Timelike_Sudakov::Init(const double fmed)
 {
   // for static couplings, set first argument to 0.
   p_tools->CalculateMaxCouplings(m_cpl_scheme,m_pt2min,m_pt2max);
-  //std::cout<<"Fmed = "<<fmed<<", cpl : "<<m_cpl_scheme<<std::endl;
-  // --- initialise QCD (& QED) splitting functions ---
   for (int i=1;i<17;++i) {
     if (i==7) i=11;
     Flavour fl = Flavour(kf::code(i));
@@ -37,8 +34,6 @@ void Timelike_Sudakov::Init(const double fmed)
       if (fl.Strong()) {
 	Add(new q_qg(fl,p_tools,fmed));
 	Add(new q_qg(fl.Bar(),p_tools,fmed));
-	Add(new q_gq(fl,p_tools,fmed));
-	Add(new q_gq(fl.Bar(),p_tools,fmed));
 	if (fl.PSMass()<100.) Add(new g_qq(fl,p_tools,fmed));
       }
       if (!(fl.Charge()==0) && (m_direct_photons)) {
@@ -101,13 +96,13 @@ bool Timelike_Sudakov::Dice(Knot *const mother, Knot *const granny)
     if (granny) m_E2=0.25*sqr(m_t+granny->E2)/granny->E2;
     if (m_t<m_E2) {
       SelectOne();
-      m_z   = GetZ();
+      m_z=GetZ();
       if (!Veto(mother,m_t,m_E2)) {
-	if (m_azimuthal_correlation) m_phi = p_selected->GetPhi(m_z);
-	else m_phi  = UniformPhi();
-	mother->z   = m_z;
-	mother->t   = m_t;
-	mother->phi = m_phi;
+	if (m_azimuthal_correlation) m_phi=p_selected->GetPhi(m_z);
+	else m_phi=UniformPhi();
+	mother->z=m_z;
+	mother->t=m_t;
+	mother->phi=m_phi;
 	return true;
       }
     }
@@ -134,7 +129,7 @@ bool Timelike_Sudakov::Veto(Knot *const mo,double t,double E2)
   if (t<sqr(GetFlB().PSMass()+GetFlC().PSMass())) return true;
   double z(p_kin->GetZShift(m_z,t,m_tb,m_tc));
   if (z<0) return true;
-  m_pt2 = p_kin->GetRelativeKT2(z,m_E2,m_t,m_tb,m_tc);
+  m_pt2=p_kin->GetRelativeKT2(z,m_E2,m_t,m_tb,m_tc);
   if (m_pt2<m_pt2min) return true;
   // timelike daughters
   m_last_veto=2;
@@ -159,7 +154,8 @@ bool Timelike_Sudakov::Veto(Knot *const mo,double t,double E2)
 bool Timelike_Sudakov::MassVeto(double t, double E2) 
 {
   //  if (!p_kin->CheckZRange(m_z,E2,t,m_tb,m_tc)) return true;
-  if (GetWeight(m_z,m_pt2,(m_mass_scheme==1||m_mass_scheme==3))<ran.Get()) return true;
+  if (GetWeight(m_z,m_pt2,(m_mass_scheme==1||m_mass_scheme==3))<ran.Get()) 
+    return true;
   if ((m_width_scheme>0) && (sqr(m_inflav.Width())>0.)) {
     if (m_width_scheme==1 && m_pt2<sqr(m_inflav.Width())) return true;
     else if (m_pt2/(m_pt2+sqr(m_inflav.Width()))<ran.Get()) return true;
@@ -282,10 +278,10 @@ void Timelike_Sudakov::CheckSplittings()
     for (size_t i=1; i<data.size();++i) {
       for (size_t j=0;j<data[0].values.size();++j) {
 	double z=data[0].values[j];
-	int masses= data[i].masses;
-	double ta = data[i].ta;
-	m_tb  = sqr(sf->GetFlB().PSMass());
-	m_tc  = sqr(sf->GetFlC().PSMass());
+	int masses=data[i].masses;
+	double ta=data[i].ta;
+	m_tb=sqr(sf->GetFlB().PSMass());
+	m_tc=sqr(sf->GetFlC().PSMass());
 	data[i].values[j]=sf->GetWeight(m_z,m_pt2,masses);
       }
     }

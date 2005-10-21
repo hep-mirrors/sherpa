@@ -1,14 +1,12 @@
 #ifndef Final_State_Shower_H
 #define Final_State_Shower_H
 
-#include "Tree.H"
 #include "Timelike_Sudakov.H"
-#include "Timelike_Kinematics.H"
 
+#include "Simple_Polarisation_Info.H"
 #include "Model_Base.H"
 #include "Blob_List.H"
 #include "Particle_List.H"
-#include "Simple_Polarisation_Info.H"
 #include "Data_Read.H"
 #include "Jet_Veto.H"
 
@@ -45,8 +43,9 @@ namespace APACIC {
   public:
 
     //constructor
-    Final_State_Shower(MODEL::Model_Base *model,ATOOLS::Jet_Finder *jf,
-		       ATOOLS::Data_Read *dataread);
+    Final_State_Shower(MODEL::Model_Base *const model,
+		       ATOOLS::Jet_Finder *const jf,
+		       ATOOLS::Data_Read *const dataread);
     // destructor
     ~Final_State_Shower();
 
@@ -70,9 +69,8 @@ namespace APACIC {
     void OutputTree(Tree *tree);
 
     // inline functions
-    inline double PT2Min() { return m_pt2min; }
-
-    inline Timelike_Kinematics *Kinematics() { return p_kin; }
+    inline Timelike_Kinematics *Kinematics() const { return p_kin; }
+    inline Timelike_Sudakov    *Sudakov() const    { return p_sud; }
 
     inline void SetJetVeto(Jet_Veto *const jv) { p_jv=jv; }
 
