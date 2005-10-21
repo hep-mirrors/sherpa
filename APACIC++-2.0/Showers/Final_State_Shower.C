@@ -13,14 +13,13 @@
 using namespace APACIC;
 using namespace ATOOLS;
 
-Final_State_Shower::
-Final_State_Shower(MODEL::Model_Base * model,ATOOLS::Jet_Finder * jf,
-		   Data_Read *dataread) :
-  p_kin(NULL), p_sud(NULL), p_jv(NULL)
+Final_State_Shower::Final_State_Shower(MODEL::Model_Base *const model,
+				       ATOOLS::Jet_Finder *const jf,
+				       Data_Read *const dataread):
+  p_kin(new Timelike_Kinematics(jf)), 
+  p_sud(new Timelike_Sudakov(p_kin,model)), 
+  p_jv(NULL)
 { 
-  m_pt2min=dataread->GetValue<double>("FS_PT2MIN",1.0);
-  p_kin = new Timelike_Kinematics(jf);
-  p_sud = new Timelike_Sudakov(p_kin,model,m_pt2min);
   p_kin->SetZScheme(dataread->GetValue<int>("FS_Z_SCHEME",1));      
   p_kin->SetAngleScheme(dataread->GetValue<int>("FS_ANGLE_SCHEME",1));  
   p_sud->SetScaleFactor(dataread->GetValue<double>("FS_SCALE_FACTOR",0.25));
@@ -28,12 +27,11 @@ Final_State_Shower(MODEL::Model_Base * model,ATOOLS::Jet_Finder * jf,
   p_sud->SetCouplingScheme(dataread->GetValue<int>("FS_COUPLING_SCHEME",1));
   p_sud->SetMassScheme(dataread->GetValue<int>("FS_MASS_SCHEME",1));   
   p_sud->SetWidthScheme(dataread->GetValue<int>("FS_WIDTH_SCHEME",0));   
-  p_sud->
-    SetMECorrectionScheme(dataread->GetValue<int>("FS_ME_CORRECTIONS",0)); 
+  p_sud->SetMECorrectionScheme(dataread->GetValue<int>("FS_ME_CORRECTIONS",0)); 
   p_sud->SetQEDScheme(dataread->GetValue<int>("FS_PHOTONS",0));        
   p_sud->SetCorrelationScheme(dataread->GetValue<int>("FS_ANGLE_CORR",0));
-  double fmed=dataread->GetValue<double>("F_MEDIUM",0.0);
-  p_sud->Init(fmed);
+  p_sud->SetPT2Min(dataread->GetValue<double>("FS_PT2MIN",1.0));
+  p_sud->Init(dataread->GetValue<double>("F_MEDIUM",0.0));
 }
 
 Final_State_Shower::~Final_State_Shower() 
@@ -170,8 +168,6 @@ int Final_State_Shower::InitializeJets(Tree *tree,Knot *mo,int init)
   return 1;
 }
 
-double success(0.), failure(0.);
-
 int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
 {
   msg_Debugging()<<METHOD<<"(["<<mo->kn_no<<","<<mo->stat<<","
@@ -242,10 +238,6 @@ int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
 	  msg_Debugging()<<"kinematics check passed"<<std::endl;
 	  mo->stat=0;
 	  msg_Debugging()<<"}\n";
-	  if (first) {
-	    //	    std::cout<<"Success !"<<std::endl;
-	    success+=1.;
-	  }
 	  return 1;
 	}
 	msg_Debugging()<<"kinematics vetoed\n";
@@ -297,9 +289,9 @@ int Final_State_Shower::EvolveJet(Tree *tree,Knot *mo)
     }
   }
   // reset to original (massless) kinematics
-  mo->z  = zs;
-  d1->E2 = mo->z*mo->z*mo->E2;
-  d2->E2 = (1.-mo->z)*(1.-mo->z)*mo->E2;
+  mo->z=zs;
+  d1->E2=mo->z*mo->z*mo->E2;
+  d2->E2=(1.-mo->z)*(1.-mo->z)*mo->E2;
   if (!stat) {
     Reset(mo);
     msg_Debugging()<<"reset knot "<<mo->kn_no<<", t = "<<mo->t<<"\n";
@@ -317,22 +309,22 @@ bool Final_State_Shower::SetAllColours(Knot *mo)
 
 bool Final_State_Shower::SetColours(Knot *mo,Timelike_Kinematics *kin)
 {
-  if (!mo) {
+  if (mo==NULL) {
     msg.Error()<<METHOD<<"(..): Error. Void mother knot."<<std::endl;
     return false;
   }
-  if ( (!mo->left) && (!mo->right) ) return true;
-  if ( !mo->left ) {
+  if (mo->left==NULL) {
+    if (mo->right==NULL) return true;
     mo->right->part->SetFlow(1,mo->part->GetFlow(1));
     mo->right->part->SetFlow(2,mo->part->GetFlow(2));
     return true;
   }
-  if ( !mo->right ) {
+  if (mo->right==NULL) {
     mo->left->part->SetFlow(1,mo->part->GetFlow(1));
     mo->left->part->SetFlow(2,mo->part->GetFlow(2));
     return true;
   }
-  //  check if already enough colours
+  // check if already enough colours
   Knot *test(NULL);
   int all_colors_known(1);
   for (int i=0;i<3;++i) {
