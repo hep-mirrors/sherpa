@@ -185,11 +185,11 @@ int Jet_Veto::TestISKinematics(Knot *const knot)
 
 int Jet_Veto::TestFSKinematics(Knot *const knot)
 {
-  if (m_mode&jv::mlm || !(m_mode&jv::final)) return 1;
+  if (knot->stat==0 ||
+      m_mode&jv::mlm || !(m_mode&jv::final)) return 1;
   msg_Debugging()<<METHOD<<"("<<knot->kn_no<<","<<knot->part->Info()
 		 <<"): p_{t jet} = "<<sqrt(p_jf->ShowerPt2())<<"\n";
   msg_Indent();
-  p_kin->DoSingleKinematics(knot);
   double pt2(p_jf->MTij2(knot->left->part->Momentum(),
 			 knot->right->part->Momentum()));
   msg_Debugging()<<" pt = "<<sqrt(pt2)<<", pt_old = "
@@ -198,6 +198,9 @@ int Jet_Veto::TestFSKinematics(Knot *const knot)
 	knot->right->part->Info()=='H')) {
     knot->left->pt2lcm=knot->right->pt2lcm=pt2;
     if (knot->pt2lcm<=pt2 || pt2>p_jf->ShowerPt2()) return 0;
+  }
+  else {
+    if (knot->pt2lcm>pt2 || pt2<=p_jf->ShowerPt2()) return 0;
   }
   return 1;
 }

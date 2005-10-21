@@ -23,13 +23,13 @@ Final_State_Shower::Final_State_Shower(MODEL::Model_Base *const model,
   p_kin->SetZScheme(dataread->GetValue<int>("FS_Z_SCHEME",1));      
   p_kin->SetAngleScheme(dataread->GetValue<int>("FS_ANGLE_SCHEME",1));  
   p_sud->SetScaleFactor(dataread->GetValue<double>("FS_SCALE_FACTOR",0.25));
-  p_sud->SetOrderingScheme(dataread->GetValue<int>("FS_ORDERING",1));  
+  p_sud->SetOrderingScheme(dataread->GetValue<int>("FS_ORDERING_SCHEME",1));  
   p_sud->SetCouplingScheme(dataread->GetValue<int>("FS_COUPLING_SCHEME",1));
   p_sud->SetMassScheme(dataread->GetValue<int>("FS_MASS_SCHEME",1));   
   p_sud->SetWidthScheme(dataread->GetValue<int>("FS_WIDTH_SCHEME",0));   
-  p_sud->SetMECorrectionScheme(dataread->GetValue<int>("FS_ME_CORRECTIONS",0)); 
-  p_sud->SetQEDScheme(dataread->GetValue<int>("FS_PHOTONS",0));        
-  p_sud->SetCorrelationScheme(dataread->GetValue<int>("FS_ANGLE_CORR",0));
+  p_sud->SetMECorrectionScheme(dataread->GetValue<int>("FS_ME_SCHEME",0)); 
+  p_sud->SetCorrelationScheme(dataread->GetValue<int>("FS_CORR_SCHEME",0));
+  p_sud->SetQEDScheme(dataread->GetValue<int>("FS_QED_SCHEME",0));        
   p_sud->SetPT2Min(dataread->GetValue<double>("FS_PT2MIN",1.0));
   p_sud->Init(dataread->GetValue<double>("F_MEDIUM",0.0));
 }
@@ -85,7 +85,7 @@ TimelikeFromSpacelike(Initial_State_Shower *ini,Tree *tree,Knot *mo,
       if (!ini->DoKinematics()) return -1;
       int stat(p_jv->TestISKinematics(mo->prev));
       if (stat!=1) return stat;
-      mo->stat=3;
+      mo->stat=1;
       InitDaughters(tree,mo,flavs,polinfos,1);
       stat=EvolveJet(tree,mo);
       msg_Debugging()<<"tlfsl stat = "<<stat<<"\n";
@@ -233,8 +233,8 @@ int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
       if (d1->stat>0) InitDaughters(tree,d1,d1_flavs,d1_polinfos,diced1);
       if (d2->stat>0) InitDaughters(tree,d2,d2_flavs,d2_polinfos,diced2);
       if (p_kin->Shuffle(mo,first)) {
-	if ((d1->stat==0 || p_jv->TestFSKinematics(d1)==1) &&
-	    (d2->stat==0 || p_jv->TestFSKinematics(d2)==1)) { 
+	if (p_jv->TestFSKinematics(d1)==1 &&
+	    p_jv->TestFSKinematics(d2)==1) { 
 	  msg_Debugging()<<"kinematics check passed"<<std::endl;
 	  mo->stat=0;
 	  msg_Debugging()<<"}\n";
@@ -249,7 +249,11 @@ int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
     if (d1->stat==0 && d2->stat==0) break;
   }
   msg_Debugging()<<"found no possible branch\n";
-  p_kin->Shuffle(mo,first);
+  if (!p_kin->Shuffle(mo,first)) {
+    msg_Debugging()<<"shuffle failed\n";
+    msg_Debugging()<<"}\n";
+    return 0;
+  }
   if (d1->stat==0 && d2->stat==0) return 1;
   msg_Debugging()<<"}\n";
   return 0;
@@ -272,16 +276,14 @@ int Final_State_Shower::EvolveJet(Tree *tree,Knot *mo)
   int evolve1(1), evolve2(1), stat;
   while (true) {
     stat=FillBranch(tree,mo,0);
-    if (mo->left->t==mo->left->tout &&
-	mo->right->t==mo->right->tout) break;
-    if (stat!=1) continue;
-    if (d1->t > d2->t) { 
-      evolve1 = EvolveJet(tree,d1);
-      if (evolve1==1) evolve2 = EvolveJet(tree,d2);
+    if (d1->stat==0 && d2->stat==0) break;
+    if (d1->t>d2->t) { 
+      evolve1=EvolveJet(tree,d1);
+      if (evolve1==1) evolve2=EvolveJet(tree,d2);
     }
     else { 
-      evolve1 = EvolveJet(tree,d2);
-      if (evolve1==1) evolve2 = EvolveJet(tree,d1);
+      evolve1=EvolveJet(tree,d2);
+      if (evolve1==1) evolve2=EvolveJet(tree,d1);
     }
     if (evolve1==1 && evolve2==1) {
       msg_Debugging()<<"}\n";
