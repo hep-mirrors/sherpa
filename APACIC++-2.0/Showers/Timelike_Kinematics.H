@@ -37,11 +37,11 @@ namespace APACIC {
     bool CheckZRange(const double &z,const double &E2,const double &ta, 
 		     const double &tb,const double &tc) const;
 
-    double GetZShift(const double &z, const double &ta, 
-		     const double &tb, const double &tc) const;
-    double GetZShift(const double &z, const double &ta, 
-		     const double &tb, const double &tc, 
-		     const double &t01, const double &t02) const;
+    double GetZ(const double &zp, const double &ta, 
+		const double &tb, const double &tc) const;
+    double GetZ(const double &zp, const double &ta, 
+		const double &tb, const double &tc, 
+		const double &t01, const double &t02) const;
 
     double GetRelativeKT2(const double &z,const double &E2,const double &ta, 
 			  const double &t1,const double &t2) const;
