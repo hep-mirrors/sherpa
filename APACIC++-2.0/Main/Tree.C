@@ -359,6 +359,5 @@ bool Tree::CheckMomentumConservation(Knot *const knot) const
   }
   if (!CheckMomentumConservation(knot->left)) success=false;
   if (!CheckMomentumConservation(knot->right)) success=false;
-//   if (!success && knot==GetInitiator()) msg_Debugging()<<(Tree*)this;
   return success;
 }
