@@ -100,7 +100,7 @@ bool Timelike_Sudakov::Dice(Knot *const mother, Knot *const granny)
       if (!Veto(mother,m_t,m_E2)) {
 	if (m_azimuthal_correlation) m_phi=p_selected->GetPhi(m_z);
 	else m_phi=UniformPhi();
-	mother->z=m_z;
+	mother->zs=mother->z=m_z;
 	mother->t=m_t;
 	mother->phi=m_phi;
 	return true;
@@ -127,8 +127,8 @@ bool Timelike_Sudakov::Veto(Knot *const mo,double t,double E2)
   m_tc=sqr(GetFlC().PSMass());
   m_last_veto=1;
   if (t<sqr(GetFlB().PSMass()+GetFlC().PSMass())) return true;
-  double z(p_kin->GetZShift(m_z,t,m_tb,m_tc));
-  if (z<0) return true;
+  double z(p_kin->GetZ(m_z,t,m_tb,m_tc));
+  if (z<0.0 || z>1.0) return true;
   m_pt2=p_kin->GetRelativeKT2(z,m_E2,m_t,m_tb,m_tc);
   if (m_pt2<m_pt2min) return true;
   // timelike daughters

@@ -38,7 +38,7 @@ bool Timelike_Kinematics::CheckZRange(Knot * const  mo,
 
   double t01(d1->tout), t02(d2->tout);
 
-  double z(GetZShift(mo->z,t,t1,t2,t01,t02)), 
+  double z(GetZ(mo->zs,t,t1,t2,t01,t02)), 
     e12(z*z*mo->E2), e22((1.-z)*(1.-z)*mo->E2);
   bool do1(false), do2(false);
   if (d1->stat>0 && !CheckZRange(d1->z,e12,t1,sqr(d1flav[0].PSMass()),
@@ -60,63 +60,58 @@ CheckZRange(const double &z, const double &E2, const double &t,
 {
   double x_p_mom(sqrt(1.-t/E2));   
   double mean_z(0.),delta_z(1.);              
-  
   switch (m_zscheme) {
   case 0 : 
     mean_z  = 0.5;
     delta_z = 0.5*x_p_mom;
     break;
   case 1 :
-    mean_z  = 0.5 *( 1. + (t1-t2)/t); 
-    delta_z = 0.5 * x_p_mom * sqrt( sqr(t-t1-t2) - 4.*t1*t2)/t;
+    mean_z  = 0.5*(1.+(t1-t2)/t); 
+    delta_z = 0.5*x_p_mom*sqrt( sqr(t-t1-t2) - 4.*t1*t2)/t;
     break;
   case 2 :
-    mean_z  = 0.5 * (1. + (t1-t2)/t); 
-    delta_z = 0.5 * sqrt( sqr(t-t1-t2) - 4.*t1*t2)/t;    
+    mean_z  = 0.5*(1.+(t1-t2)/t); 
+    delta_z = 0.5*sqrt( sqr(t-t1-t2) - 4.*t1*t2)/t;    
     break;
   }
   if (z<mean_z-delta_z || z>mean_z+delta_z) return false;
   return true;
 }
 
-double Timelike_Kinematics::
-GetZShift(const double &z, const double &t, 
-	  const double &t1, const double &t2, 
-	  const double &t01, const double &t02) const
+double Timelike_Kinematics::GetZ(const double &zp, const double &t, 
+				 const double &t1, const double &t2, 
+				 const double &t01, const double &t02) const
 {
   double lambda1(sqr(t-t1-t2)-4.*t1*t2); 
-  if (lambda1<0) {
-    msg_Tracking()<<"Timelike_Kinematics::CalcZShift(..): "
-		  <<"kinematics does not fit : "
-		  <<t<<" -> "<<t1<<"+"<<t2<<std::endl;
-    return -1.;
+  if (lambda1<0.0) {
+    msg_Tracking()<<METHOD<<"(..): Bad kinematics. t = "
+		  <<t<<", t_1 = "<<t1<<", t_2 = "<<t2<<std::endl;
+    return -1.0;
   }
   switch (m_zscheme) {
   case 1:
-    return ((2.*z-1.)*sqrt(lambda1) + (t+t1-t2))/(2.*t);
+    return ((2.*zp-1.)*sqrt(lambda1)+(t+t1-t2))/(2.*t);
   case 0:
     double lambda0(sqr(t-t01-t02)-4.*t01*t02); 
-    return  (z-(t+t01-t02)/(2.*t))*sqrt(lambda1/lambda0) + (t+t1-t2)/(2.*t);
+    return  (zp-(t+t01-t02)/(2.*t))*sqrt(lambda1/lambda0)+(t+t1-t2)/(2.*t);
   }
   return -1.0;
 }
 
-double Timelike_Kinematics::
-GetZShift(const double &z, const double &t, 
-	  const double &t1, const double &t2) const
+double Timelike_Kinematics::GetZ(const double &zp, const double &t, 
+				 const double &t1, const double &t2) const
 {
   switch (m_zscheme) {
   case 0:
-    return z;
+    return zp;
   case 1:
-    double lambda1 = sqr(t-t1-t2)-4.*t1*t2; 
-    if (lambda1<0) {
-      msg_Tracking()<<"Timelike_Kinematics::CalcZShift(..) "
-		    <<"kinematics does not fit : "
-		    <<t<<" -> "<<t1<<"+"<<t2<<std::endl;
-      return -1.;
+    double lambda1(sqr(t-t1-t2)-4.*t1*t2); 
+    if (lambda1<0.0) {
+      msg_Tracking()<<METHOD<<"(..): Bad kinematics. t = "
+		    <<t<<", t_1 = "<<t1<<", t_2 = "<<t2<<std::endl;
+      return -1.0;
     }
-    return ((2.*z-1.)*sqrt(lambda1) + (t+t1-t2))/(2.*t);
+    return ((2.*zp-1.)*sqrt(lambda1)+(t+t1-t2))/(2.*t);
   }
   return -1.0;
 }
@@ -140,21 +135,22 @@ int Timelike_Kinematics::ShuffleZ(Knot * const mo) const
   double t1(mo->left->stat!=3?mo->left->t:mo->left->tout); 
   double t2(mo->right->stat!=3?mo->right->t:mo->right->tout); 
   msg_Debugging()<<"t = "<<t<<", t_1 = "<<t1<<", t_2 = "<<t2<<"\n";
-  if (t1+t2+2.*sqrt(t1*t2)-t>rpa.gen.Accu()) {
+  if (t1+t2+2.0*sqrt(t1*t2)-t>rpa.gen.Accu()) {
     msg_Debugging()<<METHOD<<"(..): Missing mass. m_a = "<<sqrt(t)
 		   <<", m_b "<<sqrt(t1)<<", m_c = "<<sqrt(t2)<<std::endl;
     return 0; 
   }
-  double t01(mo->left->tout), t02(mo->right->tout), z(mo->z);
-  mo->z=GetZShift(z,t,t1,t2,t01,t02);
+  double t01(mo->left->tout), t02(mo->right->tout);
+  msg_Debugging()<<"z = "<<mo->zs<<", t0_1 = "<<t1<<", t0_2 = "<<t2<<"\n";
+  mo->z=GetZ(mo->zs,t,t1,t2,t01,t02);
   if (!CheckKinematics(mo,0)) {
-    mo->z = z;
+    mo->z=mo->zs;
     msg_Debugging()<<"failed: z = "<<mo->z<<", E_1 = "<<sqrt(mo->left->E2)
 		   <<", E_2 = "<<sqrt(mo->right->E2)<<"\n";
     return 0;
   }
-  mo->left->E2  = mo->z*mo->z*mo->E2;
-  mo->right->E2 = (1.-mo->z)*(1.-mo->z)*mo->E2;
+  mo->left->E2=sqr(mo->z)*mo->E2;
+  mo->right->E2=sqr(1.0-mo->z)*mo->E2;
   if (mo->z<=0.0 || mo->z>=1.0 ||
       mo->left->E2<mo->left->tout || mo->right->E2<mo->right->tout) return 0;
   msg_Debugging()<<"z = "<<mo->z<<", E_1 = "<<sqrt(mo->left->E2)
@@ -340,15 +336,16 @@ bool Timelike_Kinematics::DoKinematics(Knot * const mo) const
 	       <<"Error "<<error<<": Momentum conservation violated.\n"
 	       <<"   p      = "<<mo->part->Momentum()<<" -> "
 	       <<mo->part->Momentum().Abs2()<<" vs. "<<mo->t
-	       <<" ("<<mo->part->Flav()<<","<<mo->part->Info()<<")\n"
+	       <<" ("<<mo->part->Flav()<<","
+	       <<mo->part->Info()<<","<<mo->stat<<")\n"
 	       <<"   p_1    = "<<mo->left->part->Momentum()<<" -> "
 	       <<mo->left->part->Momentum().Abs2()<<" vs. "
 	       <<mo->left->t<<" ("<<mo->left->part->Flav()<<","
-	       <<mo->left->part->Info()<<")\n"
+	       <<mo->left->part->Info()<<","<<mo->left->stat<<")\n"
 	       <<"   p_2    = "<<mo->right->part->Momentum()<<" -> "
 	       <<mo->right->part->Momentum().Abs2()<<" vs. "
 	       <<mo->right->t<<" ("<<mo->right->part->Flav()<<","
-	       <<mo->right->part->Info()<<")\n"
+	       <<mo->right->part->Info()<<","<<mo->right->stat<<")\n"
 	       <<"   p_miss = "<<(mo->part->Momentum()-
 				  mo->left->part->Momentum()-
 				  mo->right->part->Momentum())<<std::endl;
