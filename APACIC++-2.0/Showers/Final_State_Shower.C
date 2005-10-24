@@ -58,8 +58,9 @@ int Final_State_Shower::PerformShower(Tree *tree,int jetveto)
 }
 
 int Final_State_Shower::
-TimelikeFromSpacelike(Initial_State_Shower *ini,Tree *tree,Knot *mo,
-		      bool jetveto,double sprime,double z)
+TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
+		      Knot *const mo,const bool jetveto,
+		      const double &sprime,const double &z)
 {
   msg_Debugging()<<METHOD<<"(["<<mo->kn_no<<","<<mo->part->Info()<<"],"
 		 <<jetveto<<","<<sprime<<","<<z<<"): {\n";
@@ -83,7 +84,7 @@ TimelikeFromSpacelike(Initial_State_Shower *ini,Tree *tree,Knot *mo,
       msg_Debugging()<<"tlfsl test emission at t = "<<mo->t
 		     <<", z = "<<mo->z<<"\n";
       if (!ini->DoKinematics()) return -1;
-      int stat(p_jv->TestISKinematics(mo->prev));
+      int stat(jetveto?p_jv->TestISKinematics(mo->prev):1);
       if (stat!=1) return stat;
       mo->stat=1;
       InitDaughters(tree,mo,flavs,polinfos,1);
@@ -98,7 +99,7 @@ TimelikeFromSpacelike(Initial_State_Shower *ini,Tree *tree,Knot *mo,
     msg_Debugging()<<"reset knot "<<mo->kn_no<<"\n";
     Reset(mo);
     if (!ini->DoKinematics()) return -1;
-    int stat(p_jv->TestISKinematics(mo->prev));
+    int stat(jetveto?p_jv->TestISKinematics(mo->prev):1);
     if (stat!=1) return stat;
     msg_Debugging()<<"}\n";
     return 1;
@@ -254,8 +255,8 @@ int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
     msg_Debugging()<<"}\n";
     return 0;
   }
-  if (d1->stat==0 && d2->stat==0) return 1;
   msg_Debugging()<<"}\n";
+  if (d1->stat==0 && d2->stat==0) return 1;
   return 0;
 }
 
@@ -265,7 +266,7 @@ int Final_State_Shower::EvolveJet(Tree *tree,Knot *mo)
 		 <<"p_mo = "<<mo->part->Momentum()<<" "
 		 <<mo->part->Momentum().Abs2()<<", t_mo = "<<mo->t<<" {\n";
   msg_Indent();
-  if (!mo->stat) {
+  if (mo->stat==0) {
     msg_Debugging()<<"stat = 0\n";
     ResetDaughters(mo);
     msg_Debugging()<<"}\n";
@@ -282,15 +283,15 @@ int Final_State_Shower::EvolveJet(Tree *tree,Knot *mo)
       if (evolve1==1) evolve2=EvolveJet(tree,d2);
     }
     else { 
-      evolve1=EvolveJet(tree,d2);
-      if (evolve1==1) evolve2=EvolveJet(tree,d1);
+      evolve2=EvolveJet(tree,d2);
+      if (evolve2==1) evolve1=EvolveJet(tree,d1);
     }
     if (evolve1==1 && evolve2==1) {
       msg_Debugging()<<"}\n";
       return 1; 
     }
   }
-  if (!stat) {
+  if (stat==0) {
     Reset(mo);
     msg_Debugging()<<"reset knot "<<mo->kn_no<<", t = "<<mo->t<<"\n";
     msg_Debugging()<<"}\n";
@@ -720,10 +721,8 @@ void Final_State_Shower::EstablishRelations(Knot *mo, Knot *d1,Knot *d2)
 
 int Final_State_Shower::ChooseDaughter(Knot * mo)
 {
-
   if (mo->left->stat==3)  return 0;
   if (mo->right->stat==3) return 1;
-
   if (mo->left->stat && 
       (!mo->right->stat || mo->right->t<mo->right->tout)) return 0;// left
   if (mo->right->stat && 

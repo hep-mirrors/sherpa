@@ -51,8 +51,9 @@ namespace APACIC {
 
     // member functions
     int PerformShower(Tree *tree, int jetvetoflag);
-    int TimelikeFromSpacelike(Initial_State_Shower *ini,Tree *tree,Knot *mo,
-			      bool jetveto,double sprime,double z);
+    int TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
+			      Knot *const mo,const bool jetveto,
+			      const double &sprime,const double &z);
 
     bool SetAllColours(Knot *mo);
 
