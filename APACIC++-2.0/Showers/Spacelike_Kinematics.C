@@ -14,88 +14,71 @@ Spacelike_Kinematics::~Spacelike_Kinematics()
   if (p_kin) delete p_kin;
 }
 
-void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, 
-					  Knot * k2, int first) 
+void Spacelike_Kinematics::InitKinematics(Tree **const trees,Knot *const k1, 
+					  Knot *const  k2,const int &first) 
 {
-  if (!k1 || !k2) {
-    msg.Error()<<"ERROR in Spacelike_Kinematics::InitKinematics : No knots."<<std::endl;
+  if (k1==NULL || k2==NULL) {
+    msg.Error()<<METHOD<<"(..): No knots. Abort."<<std::endl;
     return;
   }  
-  if (first) BoostInCMS(trees,k1, k2);
-
+  if (first) BoostInCMS(trees,k1,k2);
   double t1(k1->part->Momentum().Abs2()), t2(k2->part->Momentum().Abs2());
   Vec4D  o1(k1->part->Momentum()), o2(k2->part->Momentum()), cms(o1+o2);
-
-  double sprime(cms.Abs2());
-  double E1((sprime + k1->t - k2->t)/sqrt(4.*sprime)), E2((sprime - k1->t + k2->t)/sqrt(4.*sprime));
-  double pz(sqrt((sqr(sprime - k1->t - k2->t)-4.*k1->t*k2->t)/(4.*sprime)));
-  Vec4D  v1(E1,0.,0.,pz), v2(E2,0.,0.,-pz);
+  double sprime(cms.Abs2()), rtsprime(sqrt(sprime));
+  double E1((sprime+k1->t-k2->t)/(2.0*rtsprime)), E2(rtsprime-E1);
+  double pz(sqrt(E1*E1-k1->t));
+  Vec4D  v1(E1,0.0,0.0,pz), v2(E2,0.0,0.0,-pz);
   static double accu(sqrt(rpa.gen.Accu()));
   Vec4D::SetAccu(accu);
-  bool error(false);
   if (first==1 && (!IsEqual(k1->t,t1)||!IsEqual(k2->t,t2))) {
     if (IsEqual(k1->t,t1)) {
-      double s1(4.*sqr(o1[0])), t1(k1->t), sgnt(1.), sgn1(1.);
-      if (t1<0.)    sgnt = -1.;
-      if (o1[0]<0.) sgn1 = -1.;
-      double eboo1(sgnt * (E1 * s1 * sgn1 - pz*sqrt(s1*(s1-4.*t1))));
-      double pboo1(-sgnt* (pz * s1 * sgn1 - E1*sqrt(s1*(s1-4.*t1))));
-      Vec4D b1(eboo1,0.,0.,pboo1);
-      m_boost = Poincare(b1);
+      double sgnt(k1->t<0.0?-1.0:1.0), p1(sqrt(o1[0]*o1[0]-k1->t));
+      Vec4D b1(sgnt*(E1*o1[0]-pz*p1),0.0,0.0,-sgnt*(pz*o1[0]-E1*p1));
+      m_boost=Poincare(b1);
       m_boost.Boost(o1);
       if (!(o1==v1)) {
-	error=true;
-	msg.Error()<<METHOD<<"(..): Four momentum not conserved. Case B\n"
-		   <<"   Vec1 : "<<o1<<" : "<<o1.Abs2()<<" / "<<k1->t<<"\n"
-		   <<"   vs.  : "<<v1<<" : "<<v1.Abs2()<<" / "<<k1->t<<"\n"
-		   <<"   Boo1 : "<<b1<<" : "<<b1.Abs2()<<std::endl;
+	msg.Error()<<METHOD<<"(..): Four momentum not conserved.\n"
+		   <<"  p_miss  = "<<(v1-o1)<<"\n"
+		   <<"  p_old   = "<<o1<<" "<<o1.Abs2()<<" <- "<<k1->t<<"\n"
+		   <<"  p_new   = "<<v1<<" "<<v1.Abs2()<<" <- "<<k1->t<<"\n"
+		   <<"  p_boost = "<<b1<<" "<<b1.Abs2()<<std::endl;
       }
       trees[0]->BoRo(m_boost);
     }
     if (IsEqual(k2->t,t2)) {
-      double s2(4.*sqr(o2[0])), t2(k2->t), sgnt(1.), sgn2(1.);
-      if (t2<0.) sgnt = -1.;
-      if (o2[0]<0.) sgn2 = -1.;
-      double eboo2(sgnt * (E2 * s2 * sgn2 - pz*sqrt(s2*(s2-4.*t2))));
-      double pboo2(sgnt * (pz * s2 * sgn2 - E2*sqrt(s2*(s2-4.*t2))));
-      Vec4D b2(eboo2,0.,0.,pboo2);
-      m_boost = Poincare(b2);
+      double sgnt(k2->t<0.0?-1.0:1.0), p2(sqrt(o2[0]*o2[0]-k2->t));
+      Vec4D b2(sgnt*(E2*o2[0]-pz*p2),0.0,0.0,sgnt*(pz*o2[0]-E2*p2));
+      m_boost=Poincare(b2);
       m_boost.Boost(o2);
-      trees[1]->BoRo(m_boost);
       if (!(o2==v2)) {
-	error=1;
-	msg.Error()<<METHOD<<"(..): Four momentum not conserved. Case B.\n"
-		   <<"   Vec2 : "<<o2<<" : "<<o2.Abs2()<<" / "<<k2->t<<"\n"
-		   <<"   vs.  : "<<v2<<" : "<<v2.Abs2()<<" / "<<k2->t<<"\n"
-		   <<"   Boo2 : "<<b2<<" : "<<b2.Abs2()<<std::endl;
+	msg.Error()<<METHOD<<"(..): Four momentum not conserved.\n"
+		   <<"  p_miss  = "<<(v2-o2)<<"\n"
+		   <<"  p_old   = "<<o2<<" "<<o2.Abs2()<<" <- "<<k2->t<<"\n"
+		   <<"  p_new   = "<<v2<<" "<<v2.Abs2()<<" <- "<<k2->t<<"\n"
+		   <<"  p_boost = "<<b2<<" "<<b2.Abs2()<<std::endl;
       }
+      trees[1]->BoRo(m_boost);
     }
   }
   Vec4D::ResetAccu();
   k1->part->SetMomentum(v1);
   k2->part->SetMomentum(v2);  
-  if (error) {
-    msg.Out()<<"Spacelike_Kinematics::InitKinematics : C"<<std::endl
-	     <<"   Vec1 : "<<v1<<" : "<<v1.Abs2()<<" / "<<k1->t<<std::endl
-	     <<"   Vec2 : "<<v2<<" : "<<v2.Abs2()<<" / "<<k2->t<<std::endl
-	     <<"   S    : "<<(v1+v2).Abs2()<<" / "<<sprime<<std::endl;
-  }
 }
 
-bool Spacelike_Kinematics::DoKinematics(Tree **trees,Knot *active,Knot *partner,
-					int leg,int first,bool test) 
+bool Spacelike_Kinematics::DoKinematics(Tree **const trees,Knot *const active,
+					Knot *const partner,const int &leg,
+					const int &first,const bool test) 
 {
   msg_Debugging()<<METHOD<<"("<<active->kn_no<<","<<partner->kn_no
 		 <<","<<leg<<"): {\n";
   msg_Indent();
-  if (!active->prev) {
-    msg_Tracking()<<"Error Spacelike_Kinematics::DoKinematics : "
-	          <<"     No mother for active knot, no kinematics to be constructed"<<std::endl;
+  if (active->prev==NULL) {
+    msg.Error()<<METHOD<<"(..): No mother. Abort."<<std::endl;
     msg_Debugging()<<"}\n";
-    return 0;
+    return false;
   }
-  Knot * mother(active->prev), * sister(mother->left);
-  int mode=0;
+  Knot *mother(active->prev), *sister(mother->left);
+  int mode(0);
   if (mother->part->Info()=='H') {
     // momenta known (keep phi)   "B"
     mode=1;
@@ -112,7 +95,6 @@ bool Spacelike_Kinematics::DoKinematics(Tree **trees,Knot *active,Knot *partner,
   if (sister->left && mode==0) if (sister->left->part->Momentum()[1]!=0.) {
     mode=5;
   }
-
   if (test && mode!=5) {
     msg_Debugging()<<"}\n";
     return true;
@@ -121,21 +103,15 @@ bool Spacelike_Kinematics::DoKinematics(Tree **trees,Knot *active,Knot *partner,
 		 <<(mother->prev?mother->prev->part->Info():'-')<<","
 		 <<(sister->left?sister->left->part->Momentum()[1]:1.e37)
 		 <<" -> mode = "<<mode<<"\n";
-
   BoostInCMS(trees,active, partner);
-
   if (mode!=7) {
-
     Vec4D o1(active->part->Momentum()), o2(partner->part->Momentum()), cms(o1+o2);
-    double sprime(cms.Abs2()), s3(sprime/active->z - (partner->t) - (mother->t));
+    double sprime(cms.Abs2()), s3(sprime/active->z-partner->t-mother->t);
     double maxt_d2(CalculateMaxT(active,partner));
-
-    if (maxt_d2 < sister->t) return false;
-  
-    double E_mo(1./(2.*sqrt(sprime))*(sprime/active->z-partner->t + active->t-sister->t));
-    double pz_mo(1./(2.*active->part->Momentum()[3])*(s3 - 2.*partner->part->E()*E_mo));
+    if (maxt_d2<sister->t) return false;
+    double E_mo(1./(2.*sqrt(sprime))*(sprime/active->z-partner->t+active->t-sister->t));
+    double pz_mo(1./(2.*active->part->Momentum()[3])*(s3-2.*partner->part->E()*E_mo));
     double pt_mo(sqrt(sqr(E_mo)-sqr(pz_mo)-mother->t)), cph(cos(active->phi)), sph(sin(active->phi));
-
     if (mode>0) {
       // determine phi
       Vec4D p_mo= mother->part->Momentum();
@@ -150,12 +126,10 @@ bool Spacelike_Kinematics::DoKinematics(Tree **trees,Knot *active,Knot *partner,
       }
       active->phi=acos(cph);
     }
-
     Vec4D v_mo(E_mo,sph*pt_mo,cph*pt_mo,pz_mo);
     Vec4D v_si(v_mo + (-1.)*active->part->Momentum());
-
-    if (CheckVector(active->part->Momentum()) || CheckVector(partner->part->Momentum()) ||
-	CheckVector(v_mo) || CheckVector(v_si)) {
+    if (active->part->Momentum().Nan() || partner->part->Momentum().Nan() ||
+	v_mo.Nan() || v_si.Nan()) {
       msg.Error()<<METHOD<<"(..): Error. Bad vectors.\n"
 		 <<"  Act: "<<active->part->Momentum()<<" "
 		 <<active->part->Momentum().Abs2()<<" / "<<active->t<<"\n"
@@ -186,13 +160,15 @@ bool Spacelike_Kinematics::DoKinematics(Tree **trees,Knot *active,Knot *partner,
 }
 
 
-void Spacelike_Kinematics::BoostPartial(const int mode,Knot *si,const Vec4D &v_si) 
+void Spacelike_Kinematics::BoostPartial(const int mode,Knot *si,
+					const Vec4D &v_si) 
 {
   msg_Debugging()<<METHOD<<"("<<mode<<","<<si->kn_no<<","<<v_si<<"): {\n";
   msg_Indent();
   Vec4D p_si(si->part->Momentum());
-  double s1(4.*sqr(p_si[0])), t1(p_si.Abs2());
-  if (dabs((t1-v_si.Abs2())/t1)>1.e-7) {
+  double E11(p_si[0]), t1(p_si.Abs2());
+  static double accu(sqrt(rpa.gen.Accu()));
+  if (dabs((t1-v_si.Abs2())/t1)>accu) {
     msg.Error()<<METHOD<<"(..): Mass deviation. t1 = "<<t1
 	       <<" t1-t1' = "<<t1-v_si.Abs2()<<std::endl;
   }
@@ -201,18 +177,12 @@ void Spacelike_Kinematics::BoostPartial(const int mode,Knot *si,const Vec4D &v_s
   rot.Rotate(p_si);
   Vec3D  np_si(p_si/p_si.PSpat()), nv_si(v_si/v_si.PSpat());
   double E1(v_si[0]), pz(v_si.PSpat());
-
-  double sgnt(1.), sgn1(1.);
-  if (t1<0.) sgnt = -1.;
-  if (p_si[0]<0.) sgn1 = -1.;
-  double eboo1(sgnt * (E1 * s1 * sgn1 - pz*sqrt(s1*(s1-4.*t1))));
-  double pboo1(-sgnt* (pz * s1 * sgn1 - E1*sqrt(s1*(s1-4.*t1))));
-
+  double sgnt(t1<0.0?-1.0:1.0);
   // boost
-  Vec4D b1(eboo1,pboo1*np_si);
-  m_boost = Poincare(b1);
+  Vec4D b1(sgnt*(E1*E11-pz*sqrt(E11*E11-t1)),
+	   -sgnt*(pz*E11-E1*sqrt(E11*E11-t1))*np_si);
+  m_boost=Poincare(b1);
   m_boost.Boost(p_si);
-
   // apply rotation and boost on tree rest (sequence depending on mode)
   msg_Debugging()<<"mode = "<<mode<<"\n";
   if (mode==3) RoBoIni(si,rot,m_boost);
@@ -271,8 +241,10 @@ void Spacelike_Kinematics::BoostPartial(const int mode,Knot *mo,Knot *si,
   else {
     if (si->t!=si->tout) {
       double tnew(v_si.Abs2());
-      if (dabs(tnew/si->t-1.)>1.e-7)  
-	msg.Out()<<"WARNING in Spacelike_Kinematics::BoostPartial t="<<si->t<<" diff="<<si->t-tnew<<std::endl;
+      static double accu(sqrt(rpa.gen.Accu()));
+      if (dabs(tnew/si->t-1.0)>accu)  
+	msg.Error()<<METHOD<<"(..): Relative mass deviation "
+		   <<(tnew/si->t-1.0)<<". Reset t."<<std::endl;
       si->t=tnew;
     }
     mo->part->SetMomentum(v_mo);
@@ -282,19 +254,20 @@ void Spacelike_Kinematics::BoostPartial(const int mode,Knot *mo,Knot *si,
   msg_Debugging()<<"}\n";
 }
 
-double Spacelike_Kinematics::BoostInCMS(Tree ** trees,Knot * active, Knot * partner) 
+double Spacelike_Kinematics::BoostInCMS(Tree **const trees,
+					Knot *const k1,Knot *const k2) 
 {
-  Vec4D cms = active->part->Momentum()+partner->part->Momentum();
-  m_boost     = Poincare(cms);
+  Vec4D cms(k1->part->Momentum()+k2->part->Momentum());
+  m_boost=Poincare(cms);
   trees[0]->BoRo(m_boost);
   trees[1]->BoRo(m_boost);
-  m_rot = Poincare(active->part->Momentum(),Vec4D::ZVEC);
+  m_rot=Poincare(k1->part->Momentum(),Vec4D::ZVEC);
   trees[0]->BoRo(m_rot);
   trees[1]->BoRo(m_rot);
   return cms.Abs2();
 }
 
-double Spacelike_Kinematics::BoostFromCMS(Tree ** trees) 
+double Spacelike_Kinematics::BoostFromCMS(Tree **const trees) 
 {
   m_rot.Invert();
   trees[0]->BoRo(m_rot);
@@ -307,7 +280,7 @@ double Spacelike_Kinematics::BoostFromCMS(Tree ** trees)
   return 0.;
 }
 
-Vec4D Spacelike_Kinematics::BoostInLab(Tree ** trees) 
+Vec4D Spacelike_Kinematics::BoostInLab(Tree **const trees) 
 {
   double x1(trees[0]->GetInitiator()->x), x2(trees[1]->GetInitiator()->x);
   // Only for massless initiators.
@@ -315,10 +288,11 @@ Vec4D Spacelike_Kinematics::BoostInLab(Tree ** trees)
   m_boost = Poincare(lab);
   trees[0]->BoRo(m_boost);
   trees[1]->BoRo(m_boost);
-  return trees[0]->GetRoot()->part->Momentum() + trees[1]->GetRoot()->part->Momentum();
+  return trees[0]->GetRoot()->part->Momentum()+ 
+    trees[1]->GetRoot()->part->Momentum();
 }
 
-bool Spacelike_Kinematics::ResetEnergies(Knot * in) 
+bool Spacelike_Kinematics::ResetEnergies(Knot *const in) 
 {
   if (in->E2 < in->t) return 0;
   if (in->left) {
@@ -334,26 +308,8 @@ bool Spacelike_Kinematics::ResetEnergies(Knot * in)
   return 1;
 }
 
-bool Spacelike_Kinematics::JetVeto(Knot * k1, Knot * k2) 
-{
-  Vec4D p4(k1->prev->left->part->Momentum()), p3(k1->prev->part->Momentum());
-  Poincare boost(p3+k2->part->Momentum());
-  boost.Boost(p3);
-  boost.Boost(p4);
-  Poincare rot(p3,Vec4D::ZVEC);
-  rot.Rotate(p3);
-  rot.Rotate(p4);
-  if (!IsZero(p3.PPerp2())) {
-    msg.Error()<<METHOD<<"(..): Lorentz transformation failed.\n"
-	       <<"   p_3 = "<<p3<<"."<<std::endl;
-  }
-  if (p_jf->TwoJets(p4)) return true;
-  return false;
-}
-
-
-
-double Spacelike_Kinematics::CalculateMaxT(Knot * active,Knot * partner) 
+double Spacelike_Kinematics::CalculateMaxT(Knot *const active,
+					   Knot *const partner) 
 {
   if (active==NULL || partner==NULL || active->prev==NULL) {
     msg.Error()<<"ERROR: in Spacelike_Kinematics."<<std::endl
@@ -383,7 +339,8 @@ double Spacelike_Kinematics::CalculateMaxT(Knot * active,Knot * partner)
   return maxt0;
 }
 
-void Spacelike_Kinematics::ResetMomenta(Knot* k, Tree* tree, int mode) 
+void Spacelike_Kinematics::ResetMomenta(Knot *const k, Tree *const tree, 
+					const int &mode) 
 {
   if (mode==0) {
     Knot *mo(k->prev), *si(mo->left);

@@ -14,9 +14,7 @@ namespace APACIC {
 
     ATOOLS::Poincare m_boost, m_rot;
 
-    bool   ResetEnergies(Knot *);
-    inline bool CheckVector(const ATOOLS::Vec4D &vec) 
-    { return (vec.Abs2()>0 && vec.Abs2()<0)?true:false; }
+    bool ResetEnergies(Knot *);
 
     void RoBoIni(Knot * k, ATOOLS::Poincare & rot, ATOOLS::Poincare & boost);
     void RoBoFin(Knot * k, ATOOLS::Poincare & rot, ATOOLS::Poincare & boost);
@@ -33,15 +31,19 @@ namespace APACIC {
     ~Spacelike_Kinematics();
 
     // member functions
-    void InitKinematics(Tree ** trees, Knot * k1, Knot * k2,int first);
-    bool DoKinematics(Tree **,Knot *, Knot *,int,int first,bool test);
-    bool JetVeto(Knot *, Knot *);
-    static double CalculateMaxT(Knot * k1,Knot * k2);
-    double BoostInCMS(Tree **,Knot *, Knot *);
-    double BoostFromCMS(Tree **);
-    ATOOLS::Vec4D BoostInLab(Tree **);
+    void InitKinematics(Tree **const trees,Knot *const k1, Knot *const k2,
+			const int &first);
+    bool DoKinematics(Tree **const trees,Knot *const act,Knot *const part,
+		      const int &leg,const int &first,const bool test);
 
-    void ResetMomenta(Knot*,Tree*,int=0);
+    double BoostInCMS(Tree **const trees,Knot *const k1, Knot *const k2);
+    double BoostFromCMS(Tree **const trees);
+
+    ATOOLS::Vec4D BoostInLab(Tree **const trees);
+
+    void ResetMomenta(Knot *const knot,Tree *const tree,const int &mode=0);
+
+    static double CalculateMaxT(Knot *const k1,Knot *const k2);
 
   };// end of class Spacelike_Kinematics
 
