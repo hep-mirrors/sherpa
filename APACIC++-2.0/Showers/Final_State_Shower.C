@@ -234,7 +234,7 @@ int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
       if (d2->stat>0) InitDaughters(tree,d2,d2_flavs,d2_polinfos,diced2);
       if (p_kin->Shuffle(mo,first)) {
 	if (p_jv->TestFSKinematics(d1)==1 &&
-	    p_jv->TestFSKinematics(d2)==1) { 
+	    p_jv->TestFSKinematics(d2)==1) {
 	  msg_Debugging()<<"kinematics check passed"<<std::endl;
 	  mo->stat=0;
 	  msg_Debugging()<<"}\n";
@@ -271,11 +271,11 @@ int Final_State_Shower::EvolveJet(Tree *tree,Knot *mo)
     msg_Debugging()<<"}\n";
     return true;
   }
-  double zs(mo->z);
   Knot *d1(mo->left), *d2(mo->right);
   int evolve1(1), evolve2(1), stat;
   while (true) {
     stat=FillBranch(tree,mo,0);
+    msg_Debugging()<<"status' "<<d1->stat<<" "<<d2->stat<<"\n";
     if (d1->stat==0 && d2->stat==0) break;
     if (d1->t>d2->t) { 
       evolve1=EvolveJet(tree,d1);
@@ -290,10 +290,6 @@ int Final_State_Shower::EvolveJet(Tree *tree,Knot *mo)
       return 1; 
     }
   }
-  // reset to original (massless) kinematics
-  mo->z=zs;
-  d1->E2=mo->z*mo->z*mo->E2;
-  d2->E2=(1.-mo->z)*(1.-mo->z)*mo->E2;
   if (!stat) {
     Reset(mo);
     msg_Debugging()<<"reset knot "<<mo->kn_no<<", t = "<<mo->t<<"\n";
@@ -929,21 +925,23 @@ void Final_State_Shower::OutputTree(Tree * tree)
 }
 
 
-Vec4D  Final_State_Shower::GetMomentum(Knot * mo, int & number) {
+Vec4D  Final_State_Shower::GetMomentum(Knot * mo, int & number) 
+{
   if (mo->left) {
     Vec4D p     = GetMomentum(mo->left,number) + GetMomentum(mo->right,number);
     Vec4D ptest = mo->left->part->Momentum() + mo->right->part->Momentum();
     if (!(ptest==mo->part->Momentum())) {
       number -= 10000;
-      msg.Error()<<"--------------------------------------------------------"<<std::endl
-		 <<"WARNING in Final_State_Shower ("<<number<<") :\n"
-		 <<"   Momentum conservation violation in Knot :"<<mo->kn_no<<std::endl
-		 <<"          is: "<<ptest<<"  "<<p.Abs2()<<std::endl
-		 <<"   should be:"<<mo->part->Momentum()<<"  "<<mo->part->Momentum().Abs2()
-		 <<std::endl<<std::endl
-		 <<GetMomentum(mo->left,number)<<" + "<<GetMomentum(mo->right,number)<<" vs. "<<std::endl
-		 <<mo->left->part->Momentum()<<" + "<<mo->right->part->Momentum()<<std::endl
-		 <<"   from : "<<mo->left->part->Flav()<<" / "<<mo->right->part->Flav()<<std::endl;
+      msg.Error()<<METHOD<<"(..):  Four momentum not conserved "
+		 <<"in knot "<<mo->kn_no<<"\n"
+		 <<"  p_miss = "<<(ptest-mo->part->Momentum())<<"\n"
+		 <<"  p_old  = "<<mo->part->Momentum()<<"  "
+		 <<mo->part->Momentum().Abs2()<<"\n"
+		 <<"  p_new  = "<<ptest<<"  "<<p.Abs2()<<std::endl;
+      msg_Debugging()<<GetMomentum(mo->left,number)<<" + "
+		     <<GetMomentum(mo->right,number)<<" vs. "<<std::endl
+		     <<mo->left->part->Momentum()<<" + "
+		     <<mo->right->part->Momentum()<<std::endl;
     }
     return p;
   }
