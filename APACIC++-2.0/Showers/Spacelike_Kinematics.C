@@ -160,7 +160,7 @@ bool Spacelike_Kinematics::DoKinematics(Tree **const trees,Knot *const active,
 }
 
 
-void Spacelike_Kinematics::BoostPartial(const int mode,Knot *si,
+void Spacelike_Kinematics::BoostPartial(const int mode,Knot *const si,
 					const Vec4D &v_si) 
 {
   msg_Debugging()<<METHOD<<"("<<mode<<","<<si->kn_no<<","<<v_si<<"): {\n";
@@ -192,7 +192,7 @@ void Spacelike_Kinematics::BoostPartial(const int mode,Knot *si,
 }
 
 
-void Spacelike_Kinematics::RoBoIni(Knot * k, Poincare & rot, Poincare & boost) 
+void Spacelike_Kinematics::RoBoIni(Knot *const k,Poincare &rot,Poincare &boost) 
 {
   if (k==NULL) return;
   msg_Debugging()<<METHOD<<"("<<k->kn_no<<"):\n";
@@ -206,7 +206,7 @@ void Spacelike_Kinematics::RoBoIni(Knot * k, Poincare & rot, Poincare & boost)
   }
 }
 
-void Spacelike_Kinematics::RoBoFin(Knot * k, Poincare & rot, Poincare & boost) 
+void Spacelike_Kinematics::RoBoFin(Knot *const k,Poincare &rot,Poincare &boost) 
 {
   if (k==NULL) return;
   msg_Debugging()<<METHOD<<"("<<k->kn_no<<"):\n";
@@ -218,7 +218,8 @@ void Spacelike_Kinematics::RoBoFin(Knot * k, Poincare & rot, Poincare & boost)
   RoBoFin(k->right,rot,boost);
 }
 
-void Spacelike_Kinematics::BoostPartial(const int mode,Knot *mo,Knot *si,
+void Spacelike_Kinematics::BoostPartial(const int mode,
+					Knot *const mo,Knot *const si,
 					const Vec4D &v_mo,const Vec4D &v_si) 
 {
   msg_Debugging()<<METHOD<<"("<<mode<<","<<mo->kn_no<<","

@@ -927,10 +927,12 @@ void Final_State_Shower::OutputTree(Tree * tree)
 Vec4D  Final_State_Shower::GetMomentum(Knot * mo, int & number) 
 {
   if (mo->left) {
-    Vec4D p     = GetMomentum(mo->left,number) + GetMomentum(mo->right,number);
-    Vec4D ptest = mo->left->part->Momentum() + mo->right->part->Momentum();
+    Vec4D p(GetMomentum(mo->left,number)+GetMomentum(mo->right,number));
+    Vec4D ptest(mo->left->part->Momentum()+mo->right->part->Momentum());
+    static double accu(sqrt(rpa.gen.Accu()));
+    Vec4D::SetAccu(accu);
     if (!(ptest==mo->part->Momentum())) {
-      number -= 10000;
+      number-=10000;
       msg.Error()<<METHOD<<"(..):  Four momentum not conserved "
 		 <<"in knot "<<mo->kn_no<<"\n"
 		 <<"  p_miss = "<<(ptest-mo->part->Momentum())<<"\n"
@@ -942,6 +944,7 @@ Vec4D  Final_State_Shower::GetMomentum(Knot * mo, int & number)
 		     <<mo->left->part->Momentum()<<" + "
 		     <<mo->right->part->Momentum()<<std::endl;
     }
+    Vec4D::ResetAccu();
     return p;
   }
   number++;

@@ -37,11 +37,9 @@ namespace APACIC {
     bool CheckZRange(const double &z,const double &E2,const double &ta, 
 		     const double &tb,const double &tc) const;
 
-    double GetZ(const double &zp, const double &ta, 
-		const double &tb, const double &tc) const;
-    double GetZ(const double &zp, const double &ta, 
-		const double &tb, const double &tc, 
-		const double &t01, const double &t02) const;
+    double GetZ(const double &zp,const double &ta, 
+		const double &tb,const double &tc, 
+		const double &t01=0.0,const double &t02=0.0) const;
 
     double GetRelativeKT2(const double &z,const double &E2,const double &ta, 
 			  const double &t1,const double &t2) const;
@@ -49,11 +47,11 @@ namespace APACIC {
     double GetOpeningAngle(Knot *const mo) const;
     double GetOpeningAngle(const double &z,const double &E2,
 			   const double &ta,
-			   const double &tb, const double &tc) const;
+			   const double &tb,const double &tc) const;
     double GetDeflectionAngle(Knot *const mo) const;
     double GetDeflectionAngle(const double &z,const double &E2,
 			      const double &ta,
-			      const double &tb, const double &tc) const;
+			      const double &tb,const double &tc) const;
 
     int  Shuffle(Knot * const mo,const int first) const;
 

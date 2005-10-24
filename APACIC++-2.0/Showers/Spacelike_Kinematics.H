@@ -14,13 +14,14 @@ namespace APACIC {
 
     ATOOLS::Poincare m_boost, m_rot;
 
-    bool ResetEnergies(Knot *);
+    bool ResetEnergies(Knot *const knot);
 
-    void RoBoIni(Knot * k, ATOOLS::Poincare & rot, ATOOLS::Poincare & boost);
-    void RoBoFin(Knot * k, ATOOLS::Poincare & rot, ATOOLS::Poincare & boost);
-    void BoostPartial(const int mode, Knot * si, const ATOOLS::Vec4D & v_si);
-    void BoostPartial(const int mode, Knot * mo, Knot * si, 
-		      const ATOOLS::Vec4D & v_mo, const ATOOLS::Vec4D & v_si);
+    void RoBoIni(Knot *const k,ATOOLS::Poincare &rot,ATOOLS::Poincare &boost);
+    void RoBoFin(Knot *const k,ATOOLS::Poincare &rot,ATOOLS::Poincare &boost);
+
+    void BoostPartial(const int mode,Knot *const si,const ATOOLS::Vec4D &v_si);
+    void BoostPartial(const int mode,Knot *const mo,Knot *const si, 
+		      const ATOOLS::Vec4D &v_mo,const ATOOLS::Vec4D &v_si);
 
   public:
 

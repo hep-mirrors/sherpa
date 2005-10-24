@@ -18,101 +18,86 @@ namespace APACIC {
   class Initial_State_Shower {
   private:
 
-    Final_State_Shower   *  p_fin;
-    Sudakov_Tools        *  p_tools;
-    Spacelike_Kinematics *  p_kin;
-    Spacelike_Sudakov    ** p_suds;
+    Final_State_Shower    *p_fin;
+    Sudakov_Tools         *p_tools;
+    Spacelike_Kinematics  *p_kin;
+    Spacelike_Sudakov    **p_suds;
 
     Tree **p_istrees, *p_fstree;
-    Knot * p_k1, *p_k2;
-    int    m_ntree0, m_first;
+    Knot  *p_k1, *p_k2;
 
-    double m_t0, m_tlfromsl_fac;
+    double m_t0, m_sprime, m_pt2_1, m_pt2_2, m_th_1, m_th_2;
+    int    m_allowed, m_extra_pdf[2], m_to_be_diced[2], m_ntree0, m_first;
     bool   m_jetveto;
-    double m_sprime;
-
-    double m_pt2_1, m_pt2_2, m_th_1, m_th_2;
-
-    int    m_allowed;
-    int    m_extra_pdf[2];
-    int    m_to_be_diced[2];
 
     ATOOLS::Vec4D    m_lab;
     ATOOLS::Poincare m_cmsrot, m_labboost;
 
-    ATOOLS::Blob * m_bl_meps_is, * m_bl_meps_fs;
+    ATOOLS::Blob *m_bl_meps_is, *m_bl_meps_fs;
 
-    void SingleExtract(Knot *,int,ATOOLS::Blob *,
-			ATOOLS::Blob_List *,int &);
+    void SingleExtract(Knot *const knot,const int &beam,ATOOLS::Blob *jet,
+		       ATOOLS::Blob_List *const list,int &nr);
 
-  public:
+    void ChooseMother(int &ntree0,int &ntree1,Knot *&k1,Knot *&k2);
 
-    Initial_State_Shower(PDF::ISR_Handler *isr, 
-			 ATOOLS::Jet_Finder *const jf,Final_State_Shower *fin,
-			 MODEL::Model_Base *model,ATOOLS::Data_Read * const dataread);
-    ~Initial_State_Shower();
-    void BoostFS();
-    void BoostBackFS();
-    int DoKinematics();
-
-    int  PerformShower(Tree **const initrees,Tree *const fintree, 
-		       int jetvetoflag);
-    inline void InitShowerPT(double pt2max)
-    {
-      m_pt2_1 = m_pt2_2 = pt2max;
-      m_th_1  = m_th_2  = M_PI;
-    }
-
-    void ExtractPartons(Knot * kn,int beam,ATOOLS::Blob * jet,
-			ATOOLS::Blob_List *bl,ATOOLS::Particle_List *pl = NULL);
-    bool TestShower(Tree **trees) ;
-
-    ATOOLS::Vec4D GetLab();
-    ATOOLS::Vec4D GetMomentum(Knot * mo,int & number);
-
-    double CutOff();
-
-    //    Knot * GetInitiator(int no);
-    Knot * GetInitiator(Tree * tree);
-
-    void OutputTree(Tree * tree);
-    static void SetColours(Knot * k);
-    void SetFactorisationScale(const double scale) {
-      p_suds[0]->SetFactorisationScale(scale);
-      p_suds[1]->SetFactorisationScale(scale);
-    }
-  private:
-    void ChooseMother(int & ntree0, int & ntree1, Knot * & k1, Knot * & k2);
     bool InitializeSystem(Tree **trees,Knot *k1,Knot *k2);
     void InitTwoTrees(Tree ** trees,double E2);
-    int  EvolveSystem(Tree ** trees,Knot *k1,Knot *k2);
+    int  EvolveSystem(Tree **const trees,Knot *k1,Knot *k2);
     int  FillBranch(Tree ** trees,Knot * active,Knot * partner,int leg);
 
     void FillMotherAndSister(Tree * tree,Knot * k,ATOOLS::Flavour * k_flavs);
     void SetStartingConditions(double k1,double k2,int flag);
+
+  public:
+
+    // constructor
+    Initial_State_Shower(PDF::ISR_Handler *const isr, 
+			 ATOOLS::Jet_Finder *const jf,
+			 Final_State_Shower *const fin,
+			 MODEL::Model_Base *const model,
+			 ATOOLS::Data_Read *const read);
+
+    // destructor
+    ~Initial_State_Shower();
+
+    // member functions
+    void BoostFS();
+    void BoostBackFS();
+    int  DoKinematics();
+
+    int  PerformShower(Tree **const initrees,Tree *const fintree,
+		       const int jetvetoflag);
+
+    void ExtractPartons(Knot *const kn,const int &beam,
+			ATOOLS::Blob *const jet,ATOOLS::Blob_List *const bl,
+			ATOOLS::Particle_List *const pl=NULL);
+
+    bool TestShower(Tree **trees) ;
+
+    ATOOLS::Vec4D GetMomentum(Knot *const mo,int &number);
+
+    void OutputTree(Tree * tree);
+
+    static void SetColours(Knot * k);
+
+    // inline functions
+    inline double CutOff() { return m_t0; }
+
+    inline ATOOLS::Vec4D GetLab() { return m_lab; }
+
+    inline void InitShowerPT(const double &pt2max)
+    {
+      m_pt2_1=m_pt2_2=pt2max;
+      m_th_1=m_th_2=M_PI;
+    }
+
+    inline void SetFactorisationScale(const double &scale) 
+    {
+      p_suds[0]->SetFactorisationScale(scale);
+      p_suds[1]->SetFactorisationScale(scale);
+    }
+
   };
-
-  //----------------------------------------------------------------------
-  //    inline functions
-  //----------------------------------------------------------------------
-
-  inline double Initial_State_Shower::CutOff() { return m_t0; }
-
-  inline void Initial_State_Shower::SetStartingConditions(double k1,double k2,int flag) 
-  {
-    switch (flag) {
-    case  1 :  m_th_1  = k1; m_th_2  = k2; break;
-    default :  m_pt2_1 = k1; m_pt2_2 = k2; break;
-    };
-  }
-
-  inline ATOOLS::Vec4D Initial_State_Shower::GetLab() { return m_lab; }
-
-  inline Knot * Initial_State_Shower::GetInitiator(Tree * tree) 
-  {
-    return tree->GetInitiator();
-  }
-
 
   /*!
     \file 
@@ -283,7 +268,8 @@ namespace APACIC {
   */
 
 } // namespace APACIC
-#endif // Initial_State_Shower.H
+
+#endif
 
 
 

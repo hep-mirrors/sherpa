@@ -82,7 +82,7 @@ double Timelike_Kinematics::GetZ(const double &zp, const double &t,
 				 const double &t1, const double &t2, 
 				 const double &t01, const double &t02) const
 {
-  double lambda1(sqr(t-t1-t2)-4.*t1*t2); 
+  double lambda1(sqr(t-t1-t2)-4.0*t1*t2); 
   if (lambda1<0.0) {
     msg_Tracking()<<METHOD<<"(..): Bad kinematics. t = "
 		  <<t<<", t_1 = "<<t1<<", t_2 = "<<t2<<std::endl;
@@ -90,28 +90,10 @@ double Timelike_Kinematics::GetZ(const double &zp, const double &t,
   }
   switch (m_zscheme) {
   case 1:
-    return ((2.*zp-1.)*sqrt(lambda1)+(t+t1-t2))/(2.*t);
+    return ((2.0*zp-1.0)*sqrt(lambda1)+(t+t1-t2))/(2.0*t);
   case 0:
-    double lambda0(sqr(t-t01-t02)-4.*t01*t02); 
-    return  (zp-(t+t01-t02)/(2.*t))*sqrt(lambda1/lambda0)+(t+t1-t2)/(2.*t);
-  }
-  return -1.0;
-}
-
-double Timelike_Kinematics::GetZ(const double &zp, const double &t, 
-				 const double &t1, const double &t2) const
-{
-  switch (m_zscheme) {
-  case 0:
-    return zp;
-  case 1:
-    double lambda1(sqr(t-t1-t2)-4.*t1*t2); 
-    if (lambda1<0.0) {
-      msg_Tracking()<<METHOD<<"(..): Bad kinematics. t = "
-		    <<t<<", t_1 = "<<t1<<", t_2 = "<<t2<<std::endl;
-      return -1.0;
-    }
-    return ((2.*zp-1.)*sqrt(lambda1)+(t+t1-t2))/(2.*t);
+    double lambda0(sqr(t-t01-t02)-4.0*t01*t02); 
+    return (zp-(t+t01-t02)/(2.0*t))*sqrt(lambda1/lambda0)+(t+t1-t2)/(2.0*t);
   }
   return -1.0;
 }
