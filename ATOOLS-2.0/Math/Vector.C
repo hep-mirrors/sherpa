@@ -83,12 +83,10 @@ std::istream& ATOOLS::operator>>(std::istream& s,Vec3D& vec)
 
 bool ATOOLS::operator==(const Vec4D& v1, const Vec4D& v2) 
 {
-  double maxp=Max(v1[0],Max(v1[1],Max(v1[2],v1[3]))); 
-  double q=1.;
-  if (!IsZero(maxp)) q=1./maxp;
-  for(short int i=0;i<4;i++) {
+  double maxp=Max(dabs(v1[0]),Max(dabs(v1[1]),Max(dabs(v1[2]),dabs(v1[3])))); 
+  double q(IsZero(maxp)?1.0:1.0/maxp);
+  for(short int i=0;i<4;i++) 
     if (dabs(q*(v1[i]-v2[i]))>Vec4D::Accu()) return false;
-  }
   return true;
 }
 
