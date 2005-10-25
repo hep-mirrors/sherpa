@@ -225,8 +225,6 @@ int Timelike_Kinematics::UpdateDaughters(Knot *const mo,
       msg_Debugging()<<METHOD<<"(..): shuffle failed\n";
       return stat;
     }
-    UpdateDaughters(mo->left);
-    UpdateDaughters(mo->right);
   }
   return 1;
 }
