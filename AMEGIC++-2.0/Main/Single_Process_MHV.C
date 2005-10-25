@@ -51,9 +51,7 @@ Single_Process_MHV::Single_Process_MHV(int _nin,int _nout,Flavour * _fl,
 
   string newpath=rpa.gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath.c_str(),493);
-  if (system((string("test -d ")+newpath+string("/Process")).c_str())) {
-//     system((string("cp -r ")+rpa.gen.Variable("SHERPA_BIN_PATH")+
-// 	    string("/Process/Dummy ")+newpath+string("/Process")).c_str());
+  if (system((string("test -f ")+newpath+string("/makelibs")).c_str())) {
     system((string("cp ")+rpa.gen.Variable("SHERPA_BIN_PATH")+
 	    string("/makelibs ")+newpath).c_str());
   }
