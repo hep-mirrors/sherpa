@@ -76,5 +76,6 @@ include_HEADERS        =	\
 			My_Root.H
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(ATOOLSFLAGS) $(ROOTFLAGS) \
-		-DSHERPA_INCLUDE_PATH=\"$(includedir)\"
+		-DSHERPA_INCLUDE_PATH=\"$(includedir)\" \
+		-DSHERPA_BINARY_PATH=\"$(bindir)\"
 INCLUDES      = $(MODELINCS) $(ATOOLSINCS) $(ROOTINCS)
