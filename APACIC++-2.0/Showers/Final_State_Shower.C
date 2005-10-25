@@ -125,7 +125,7 @@ int Final_State_Shower::InitializeJets(Tree *tree,Knot *mo,int init)
     if (mo==tree->GetRoot() && dice1 && dice2) first=2; 
     while (true) {
       int accept1(1), accept2(1);
-      if (FillBranch(tree,mo,first)) {
+      if (FillBranch(tree,mo,first)==1) {
 	if (d1->t>d2->t) {
 	  if (dice1) accept1=EvolveJet(tree,d1);
 	  if (dice2 && accept1==1) accept2=EvolveJet(tree,d2);
@@ -234,8 +234,8 @@ int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
       if (d1->stat>0) InitDaughters(tree,d1,d1_flavs,d1_polinfos,diced1);
       if (d2->stat>0) InitDaughters(tree,d2,d2_flavs,d2_polinfos,diced2);
       if (p_kin->Shuffle(mo,first)) {
- 	if (p_jv->TestFSKinematics(d1)==1 &&
- 	    p_jv->TestFSKinematics(d2)==1) {
+  	if (p_jv->TestFSKinematics(d1)==1 &&
+  	    p_jv->TestFSKinematics(d2)==1) {
 	  msg_Debugging()<<"kinematics check passed"<<std::endl;
 	  mo->stat=0;
 	  msg_Debugging()<<"}\n";
@@ -258,7 +258,7 @@ int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
   if (p_jv->TestFSKinematics(mo)!=1) {
     msg_Debugging()<<"kinmatics vetoed\n";
     msg_Debugging()<<"}\n";
-    return 0;
+    return -1;
   }
   msg_Debugging()<<"}\n";
   if (d1->stat==0 && d2->stat==0) return 1;
@@ -296,7 +296,11 @@ int Final_State_Shower::EvolveJet(Tree *tree,Knot *mo)
       return 1; 
     }
   }
-  if (stat==0) {
+  switch (stat) {
+  case -1:
+    msg_Debugging()<<"}\n";
+    return 0;
+  case 0:
     Reset(mo);
     msg_Debugging()<<"reset knot "<<mo->kn_no<<", t = "<<mo->t<<"\n";
     msg_Debugging()<<"}\n";
