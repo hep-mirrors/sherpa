@@ -234,8 +234,8 @@ int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
       if (d1->stat>0) InitDaughters(tree,d1,d1_flavs,d1_polinfos,diced1);
       if (d2->stat>0) InitDaughters(tree,d2,d2_flavs,d2_polinfos,diced2);
       if (p_kin->Shuffle(mo,first)) {
-	if (p_jv->TestFSKinematics(d1)==1 &&
-	    p_jv->TestFSKinematics(d2)==1) {
+ 	if (p_jv->TestFSKinematics(d1)==1 &&
+ 	    p_jv->TestFSKinematics(d2)==1) {
 	  msg_Debugging()<<"kinematics check passed"<<std::endl;
 	  mo->stat=0;
 	  msg_Debugging()<<"}\n";
@@ -252,6 +252,11 @@ int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
   msg_Debugging()<<"found no possible branch\n";
   if (!p_kin->Shuffle(mo,first)) {
     msg_Debugging()<<"shuffle failed\n";
+    msg_Debugging()<<"}\n";
+    return 0;
+  }
+  if (p_jv->TestFSKinematics(mo)!=1) {
+    msg_Debugging()<<"kinmatics vetoed\n";
     msg_Debugging()<<"}\n";
     return 0;
   }
