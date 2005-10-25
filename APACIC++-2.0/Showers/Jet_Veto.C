@@ -143,9 +143,6 @@ int Jet_Veto::TestISKinematics(Knot *const knot)
   if (knot->part->Info()!='H') {
     if (pt2<0.0 || pt2>p_jf->ShowerPt2()) return 0;
   }
-  else {
-    if (pt2<=p_jf->ShowerPt2()) return 0;
-  }
   return 1;
 }
 
