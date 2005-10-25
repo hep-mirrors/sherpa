@@ -19,7 +19,7 @@ libCSMain_la_SOURCES = \
 INCLUDES = \
 	$(ATOOLSINCS) $(MODELINCS) $(CSSINCS)
 
-noinst_HEADERS = \
+include_HEADERS = \
 		CS_Shower.H
 
 EXTRA_DIST    = $(CVSINCLUDE)

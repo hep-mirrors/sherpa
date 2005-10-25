@@ -23,7 +23,7 @@ libExtraXS2_2_la_SOURCES      =	\
 				Off_Shell_QCD.C \
 				QED_Processes.C \
 				QCD_Processes.C
-noinst_HEADERS        =	\
+include_HEADERS        =	\
 			XS_QCD.H \
 			XS_Drell_Yan.H \
 			XS_4F.H \

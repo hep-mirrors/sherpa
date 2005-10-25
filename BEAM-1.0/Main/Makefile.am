@@ -11,7 +11,7 @@ libBeam_la_SOURCES    =	Beam_Base.C \
 			Laser_Backscattering.C \
 			Spectrum_Reader.C \
 			Beam_Spectra_Handler.C
-noinst_HEADERS        =	Beam_Base.H \
+include_HEADERS        =	Beam_Base.H \
 		 	Monochromatic.H \
 			Laser_Backscattering.H \
 		 	Spectrum_Reader.H \

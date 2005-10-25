@@ -35,7 +35,7 @@ libToolsPhys_la_SOURCES       =	\
 				HepEvt_Interface.C \
 				Flow.C \
 				Color.C
-noinst_HEADERS        =	\
+include_HEADERS        =	\
 			Flavour.H \
 			Particle.H \
 			Particle_Qualifier.H \

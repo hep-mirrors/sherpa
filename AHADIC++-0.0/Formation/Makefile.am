@@ -13,7 +13,7 @@ INCLUDES = -I../../ATOOLS-2.0/Phys \
 	   -I../../ATOOLS-2.0/Org \
 	   -I../Tools \
 	   -I../Main
-noinst_HEADERS = \
+include_HEADERS = \
 		Cluster_Formation_Handler.H \
 		Gluon_Decayer.H \
 		Cluster_Former.H \

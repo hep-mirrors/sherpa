@@ -20,7 +20,7 @@ libCTEQ_la_SOURCES     =	\
 			Cteq61Pdf.f \
 			cteq6_inter.f \
 		    	CTEQ6_Fortran_Interface.C 
-noinst_HEADERS        =	\
+include_HEADERS        =	\
 			CTEQ6_Fortran_Interface.H 
 endif
 EXTRA_DIST    = $(CVSINCLUDE)

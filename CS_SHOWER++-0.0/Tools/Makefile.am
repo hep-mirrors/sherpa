@@ -16,7 +16,7 @@ libCSSTools_la_SOURCES = \
 INCLUDES = \
 	$(ATOOLSINCS)
 
-noinst_HEADERS = \
+include_HEADERS = \
 	Parton.H Singlet.H
 
 EXTRA_DIST    = $(CVSINCLUDE)

@@ -23,7 +23,7 @@ libRemnant_la_SOURCES =	\
 			Hadron_Remnant.C \
 			Electron_Remnant.C \
 			Photon_Remnant.C 
-noinst_HEADERS        =	\
+include_HEADERS        =	\
 			Remnant_Base.H \
 			No_Remnant.H \
 			Color_Dipole.H \

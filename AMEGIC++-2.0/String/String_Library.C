@@ -128,18 +128,7 @@ void String_Library::AddToMakefileAM(string makefilename,string pathID,string fi
     file<<"libProc_"<<subdirname<<"_la_SOURCES = "<<'\\'<<endl;
     file<<"\t"<<fileID<<".C"<<endl;
     file<<"CURRENT_SHERPASYS = "<<ATOOLS::rpa.gen.Variable("SHERPA_INC_PATH")<<endl;
-    file<<"INCLUDES = -I$(CURRENT_SHERPASYS)/AMEGIC++-2."<<SHERPA_SUBVERSION<<"/Amplitude "<<'\\'<<endl;
-    file<<"\t-I$(CURRENT_SHERPASYS)/AMEGIC++-2."<<SHERPA_SUBVERSION<<"/Amplitude/AmplTools "<<'\\'<<endl; 
-    file<<"\t-I$(CURRENT_SHERPASYS)/AMEGIC++-2."<<SHERPA_SUBVERSION<<"/Amplitude/Zfunctions "<<'\\'<<endl;
-    file<<"\t-I$(CURRENT_SHERPASYS)/AMEGIC++-2."<<SHERPA_SUBVERSION<<"/Main "<<'\\'<<endl;
-    file<<"\t-I$(CURRENT_SHERPASYS)/AMEGIC++-2."<<SHERPA_SUBVERSION<<"/Model "<<'\\'<<endl;
-    file<<"\t-I$(CURRENT_SHERPASYS)/AMEGIC++-2."<<SHERPA_SUBVERSION<<"/String "<<'\\'<<endl;
-    file<<"\t-I$(CURRENT_SHERPASYS)/PHASIC++-1."<<SHERPA_SUBVERSION<<"/Main "<<'\\'<<endl;
-    file<<"\t-I$(CURRENT_SHERPASYS)/PHASIC++-1."<<SHERPA_SUBVERSION<<"/ISR "<<'\\'<<endl;
-    file<<"\t-I$(CURRENT_SHERPASYS)/ATOOLS-2."<<SHERPA_SUBVERSION<<"/Phys "<<'\\'<<endl;
-    file<<"\t-I$(CURRENT_SHERPASYS)/ATOOLS-2."<<SHERPA_SUBVERSION<<"/Math "<<'\\'<<endl;
-    file<<"\t-I$(CURRENT_SHERPASYS)/ATOOLS-2."<<SHERPA_SUBVERSION<<"/Org "<<'\\'<<endl;
-    file<<"\t-I$(CURRENT_SHERPASYS)/MODEL-1."<<SHERPA_SUBVERSION<<"/Main "<<endl;
+    file<<"INCLUDES = -I$(CURRENT_SHERPASYS)"<<endl;
     file<<"noinst_HEADERS = V.H"<<endl;
   }
   else {

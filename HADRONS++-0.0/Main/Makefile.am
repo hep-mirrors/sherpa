@@ -8,7 +8,7 @@ libHadronsMain_la_SOURCES = \
 		Hadrons.C \
 		Decay_Table_Reader.C \
 		Hadron_Decay_Channel.C 
-noinst_HEADERS = \
+include_HEADERS = \
 		Hadrons.H \
 		Decay_Table_Reader.H \
 		Hadron_Decay_Channel.H 

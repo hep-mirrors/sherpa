@@ -36,7 +36,7 @@ INCLUDES = -I../Tool \
 
 
 
-noinst_HEADERS = Dipole.H Chain.H Cascade.H
+include_HEADERS = Dipole.H Chain.H Cascade.H
 
 
 

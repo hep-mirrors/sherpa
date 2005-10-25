@@ -22,7 +22,7 @@ libExtraXS_la_SOURCES =	\
 			XS_Group.C \
 			Simple_XS.C \
 			XS_Selector.C
-noinst_HEADERS        =	\
+include_HEADERS        =	\
 			XS_Base.H \
 			Single_XS.H \
 			XS_Group.H \

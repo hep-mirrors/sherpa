@@ -41,7 +41,7 @@ libSherpaSoftPhysics_la_SOURCES	      =	\
 					Beam_Remnant_Handler.C \
 				   	Fragmentation_Handler.C \
 					Hadron_Decay_Handler.C
-noinst_HEADERS        =	\
+include_HEADERS        =	\
 			Primordial_KPerp.H \
 			Beam_Remnant_Handler.H \
 		 	Fragmentation_Handler.H \

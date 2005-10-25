@@ -38,7 +38,7 @@ INCLUDES = -I../Tool \
 
 
 
-noinst_HEADERS = Dipole_Handler.H \
+include_HEADERS = Dipole_Handler.H \
                  Chain_Handler.H \
                  Cascade_Handler.H
 

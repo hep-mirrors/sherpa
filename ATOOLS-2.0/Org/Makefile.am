@@ -39,7 +39,8 @@ libToolsOrg_la_SOURCES        = \
 				Integration_Info.C \
 				Debugger.C \
 				My_Root.C
-include_HEADERS        =	\
+include_HEADERS       =	\
+			CXXFLAGS.H \
 			Smart_Pointer.H \
 			Shell_Tools.H \
 			Object.H \

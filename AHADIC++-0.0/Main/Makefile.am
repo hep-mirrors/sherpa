@@ -11,6 +11,6 @@ INCLUDES = -I../../ATOOLS-2.0/Phys \
 	   -I../Tools \
 	   -I../Formation \
 	   -I../Decays
-noinst_HEADERS = \
+include_HEADERS = \
 		Ahadic.H 
 EXTRA_DIST    = $(CVSINCLUDE)

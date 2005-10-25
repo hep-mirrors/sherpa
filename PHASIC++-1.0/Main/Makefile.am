@@ -43,7 +43,7 @@ libPhasespace_la_SOURCES      =	\
 				PI_Interface.C \
 				Phase_Space_Handler.C \
 				Phase_Space_Integrator.C 
-noinst_HEADERS        =	\
+include_HEADERS        =	\
 			Regulator_Base.H \
 			Regulator.H \
 		 	Channel_Basics.H \

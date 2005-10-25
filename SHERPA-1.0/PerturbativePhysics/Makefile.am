@@ -57,7 +57,7 @@ libSherpaPerturbativePhysics_la_SOURCES       =	\
 						Amegic_Apacic_Interface.C \
 					   	$(ADICICCFILES) \
 					   	$(CSSCFILES)
-noinst_HEADERS        =	\
+include_HEADERS        =	\
 			Matrix_Element_Handler.H \
 			MI_Handler.H \
 		 	Shower_Handler.H \
@@ -75,8 +75,9 @@ noinst_HEADERS        =	\
 			Amegic_Apacic_Interface.H
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(SHERPAFLAGS) 
-INCLUDES      = $(SHERPAINCS) $(ADICICINCS) $(APACICINCS) $(AMEGICINCS) $(AMISICINCS) \
-		$(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) $(PDFINCS) $(CSSINCS) \
+INCLUDES      = $(SHERPAINCS) $(ADICICINCS) $(APACICINCS) $(AMEGICINCS) \
+		$(AMISICINCS) $(EXTRAXSINCS) $(PHASICINCS) \
+		$(MODELINCS) $(PDFINCS) $(CSSINCS) \
 		$(BEAMINCS) $(ATOOLSINCS)
 
 

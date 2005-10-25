@@ -17,7 +17,7 @@ INCLUDES = -I../../ATOOLS-2.0/Phys \
 	   -I../../MODEL-1.0/Main \
 	   -I../Tools \
 	   -I../Main
-noinst_HEADERS = \
+include_HEADERS = \
 		Cluster_Decay_Handler.H \
 		Cluster_Decay_Analysis.H \
 		Cluster_Decayer_Base.H \

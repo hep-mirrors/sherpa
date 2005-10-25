@@ -11,7 +11,7 @@ libHadronsPSs_la_SOURCES = \
 		Four_Body_PSs.C \
 		ResonanceFlavour.C
 
-noinst_HEADERS = \
+include_HEADERS = \
 		HD_PS_Base.H \
 		Three_Body_PSs.H \
 		Two_Body_PSs.H  \

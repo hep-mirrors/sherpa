@@ -14,5 +14,5 @@ INCLUDES = -I../../APACIC++-2.0/Showers \
 	   -I../../ATOOLS-2.0/Phys \
 	   -I../../ATOOLS-2.0/Math \
 	   -I../../ATOOLS-2.0/Org 
-noinst_HEADERS = Apacic.H Knot.H Knot_List.H Tree.H
+include_HEADERS = Apacic.H Knot.H Knot_List.H Tree.H
 EXTRA_DIST    = $(CVSINCLUDE)

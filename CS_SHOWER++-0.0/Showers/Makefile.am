@@ -21,7 +21,7 @@ libCSShowers_la_SOURCES = \
 INCLUDES = \
 	$(ATOOLSINCS) $(MODELINCS) $(CSSINCS)
 
-noinst_HEADERS = \
+include_HEADERS = \
 	Splitting_Function_Base.H Splitting_Function_Group.H \
 	QCD_Splitting_Functions.H Sudakov.H Shower.H \
 	Kinematics_Base.H

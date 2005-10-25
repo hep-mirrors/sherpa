@@ -14,7 +14,7 @@ libHadronsMEs_la_SOURCES = \
 		XYZFuncs.C \
 		Tools.C
 
-noinst_HEADERS = \
+include_HEADERS = \
 		HD_ME_Base.H \
 		HD_ME_Selector.H \
 		Three_Body_MEs.H \

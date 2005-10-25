@@ -41,7 +41,7 @@ INCLUDES = -I../Input \
 
 
   
-noinst_HEADERS = Xenum.H Xio.H Xmath.H defextra enumextra ioextra mathextra \
+include_HEADERS = Xenum.H Xio.H Xmath.H defextra enumextra ioextra mathextra \
                  Sudakov_Result.hpp Sudakov_Calculator.H Recoil_Calculator.H
 
 

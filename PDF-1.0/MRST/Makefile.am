@@ -17,7 +17,7 @@ libMRST_la_SOURCES   =	\
 			mrst2001lo.f \
 			PDF_MRST99.C \
 			PDF_MRST01LO.C
-noinst_HEADERS        = \
+include_HEADERS        = \
 			mrst99.h \
 			PDF_MRST99.H \
 			PDF_MRST01LO.H

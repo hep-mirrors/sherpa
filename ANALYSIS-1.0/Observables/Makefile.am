@@ -50,7 +50,7 @@ libObservables_la_SOURCES     =	\
 				Four_Jet_Angles.C \
 				Field_Stuart_Cone_Finder.C \
 				Blob_Selector.C 
-noinst_HEADERS        =	\
+include_HEADERS        =	\
 			HT.H \
 			PSM_Observables.H \
 			Multiplicity.H \

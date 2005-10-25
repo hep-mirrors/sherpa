@@ -35,7 +35,7 @@ INCLUDES = -I../Tool \
 
 
   
-noinst_HEADERS = Dipole_Flavour.H Information.hpp \
+include_HEADERS = Dipole_Flavour.H Information.hpp \
                  Sudakov_Strategy.hpp Recoil_Strategy.hpp \
                  Evolution_Strategy.hpp \
                  Dipole_Parameter.H

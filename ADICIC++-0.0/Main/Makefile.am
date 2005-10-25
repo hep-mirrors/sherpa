@@ -37,7 +37,7 @@ INCLUDES = -I../Tool \
 
 
 
-noinst_HEADERS = Paraminit.H Adicic.H
+include_HEADERS = Paraminit.H Adicic.H
 
 
 

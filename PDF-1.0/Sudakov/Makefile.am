@@ -21,7 +21,7 @@ libSudakov_la_SOURCES =	\
 			NLL_Combined_Sudakov.C \
 			NLL_Sudakov.C \
 			NLL_JetRate.C
-noinst_HEADERS        =	\
+include_HEADERS        =	\
 			NLL_Branching_Probability_Base.H \
 			NLL_Branching_Probabilities.H \
 			NLL_Sudakov_Base.H \

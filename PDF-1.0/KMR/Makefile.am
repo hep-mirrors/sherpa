@@ -23,7 +23,7 @@ libDUPDF_la_SOURCES   =	\
 			LL_Single_Sudakov.C \
 			LL_Sudakov.C \
 			Doubly_Unintegrated_PDF.C
-noinst_HEADERS        = \
+include_HEADERS        = \
 			LL_Branching.H \
 			LL_Single_Sudakov.H \
 			LL_Sudakov.H \

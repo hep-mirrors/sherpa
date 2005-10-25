@@ -15,7 +15,7 @@ INCLUDES = -I../../MODEL-1.0/Hdecay \
 	   -I../../ATOOLS-2.0/Phys \
 	   -I../../ATOOLS-2.0/Org \
 	   -I../../ATOOLS-2.0/Math
-noinst_HEADERS = Model_Handler.H Model_Base.H \
+include_HEADERS = Model_Handler.H Model_Base.H \
 		 Standard_Model.H MSSM.H ADD.H \
 		 Running_AlphaS.H Running_AlphaQED.H  Running_Fermion_Mass.H \
 	         Effective_Higgs_Coupling.H LesHouches_Interface.H \

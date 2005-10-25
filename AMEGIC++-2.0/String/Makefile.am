@@ -19,7 +19,7 @@ INCLUDES = -I../Amplitude \
 	   -I../../ATOOLS-2.0/Math \
 	   -I../../ATOOLS-2.0/Org \
 	   -I../../MODEL-1.0/Main 
-noinst_HEADERS = String_Handler.H String_Generator.H \
+include_HEADERS = String_Handler.H String_Generator.H \
                  String_Tree.H String_Output.H \
 	         MyString.H Kabbala.H Values.H String_Library.H
 
