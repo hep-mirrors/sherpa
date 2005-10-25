@@ -142,14 +142,14 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   else if (s_variables["SHERPA_LIB_PATH"].length()==0) 
     s_variables["SHERPA_LIB_PATH"]=s_variables["SHERPA_CPP_PATH"]
       +std::string("/Process/lib");
+  s_variables["SHERPA_INC_PATH"]=SHERPA_INCLUDE_PATH;
   msg_Tracking()<<"Run_Parameter::Init(..): Paths are {\n"
 		<<"   SHERPA_BIN_PATH = "<<s_variables["SHERPA_BIN_PATH"]<<"\n"
 		<<"   SHERPA_PDF_PATH = "<<s_variables["SHERPA_PDF_PATH"]<<"\n"
 		<<"   SHERPA_CPP_PATH = "<<s_variables["SHERPA_CPP_PATH"]<<"\n"
 		<<"   SHERPA_LIB_PATH = "<<s_variables["SHERPA_LIB_PATH"]<<"\n"
+		<<"   SHERPA_INC_PATH = "<<s_variables["SHERPA_INC_PATH"]<<"\n"
 		<<"}"<<std::endl;
-  s_variables["CURRENT_SHERPASYS"]=SHERPA_BUILD_PATH;
-
 #ifndef __sgi
   setenv("LD_LIBRARY_PATH",(s_variables["LD_LIBRARY_PATH"]+std::string(":")+
 			    s_variables["SHERPA_LIB_PATH"]).c_str(),1);

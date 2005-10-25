@@ -1,7 +1,7 @@
 #include <time.h>
 #include "Initialization_Handler.H"
 
-#include "IO_Handler.H"
+#include "Input_Output_Handler.H"
 #include "Model_Handler.H"
 #include "Structure_Function.H"
 #include "Intact.H"
@@ -265,12 +265,12 @@ bool Initialization_Handler::InitializeTheIO()
   int filesize        = p_dataread->GetValue<int>("FILE_SIZE",1000);
   for (int i=0;i<3;i++) {
     if (infiles[i]!=string("") || outfiles[i]!=string("")) {
-      p_iohandler     = new IO_Handler(outfiles,infiles,evtpath,filesize);
+      p_iohandler = new Input_Output_Handler(outfiles,infiles,evtpath,filesize);
       return true;
     }
   }
   std::string outmode = p_dataread->GetValue<string>("EVENT_MODE",string("Sherpa"));
-  p_iohandler         = new IO_Handler(outmode);
+  p_iohandler = new Input_Output_Handler(outmode);
   return true;
 }
 

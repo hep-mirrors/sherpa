@@ -1,5 +1,5 @@
 #include "EvtReadin_Phase.H"
-#include "IO_Handler.H"
+#include "Input_Output_Handler.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -7,7 +7,7 @@ using namespace std;
 
 
 
-EvtReadin_Phase::EvtReadin_Phase(IO_Handler * _iohandler) :
+EvtReadin_Phase::EvtReadin_Phase(Input_Output_Handler * _iohandler) :
   p_iohandler(_iohandler), p_evtreader(NULL), m_path(".")
 {
   m_type = eph::Read_In;

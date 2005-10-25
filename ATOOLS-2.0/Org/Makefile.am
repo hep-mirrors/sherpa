@@ -39,7 +39,7 @@ libToolsOrg_la_SOURCES        = \
 				Integration_Info.C \
 				Debugger.C \
 				My_Root.C
-noinst_HEADERS        =	\
+include_HEADERS        =	\
 			Smart_Pointer.H \
 			Shell_Tools.H \
 			Object.H \
@@ -75,5 +75,6 @@ noinst_HEADERS        =	\
 			Node.C \
 			My_Root.H
 EXTRA_DIST    = $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(ATOOLSFLAGS) $(ROOTFLAGS)
+AM_CXXFLAGS   =	$(ATOOLSFLAGS) $(ROOTFLAGS) \
+		-DSHERPA_INCLUDE_PATH=\"$(includedir)\"
 INCLUDES      = $(MODELINCS) $(ATOOLSINCS) $(ROOTINCS)

@@ -73,7 +73,7 @@ libSherpaSingleEvents_la_SOURCES      =	\
 					EvtReadin_Phase.C \
 					MC_Interface.C
 
-noinst_HEADERS        =	\
+include_HEADERS        =	\
 			Event_Handler.H \
 			Event_Phase_Handler.H \
 		 	Signal_Processes.H \

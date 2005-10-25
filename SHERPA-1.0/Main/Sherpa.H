@@ -6,7 +6,7 @@
 namespace SHERPA {
   class Initialization_Handler;
   class Event_Handler;
-  class IO_Handler;
+  class Input_Output_Handler;
 
   class Sherpa {
   private:
@@ -15,7 +15,7 @@ namespace SHERPA {
 
     Initialization_Handler * p_inithandler;
     Event_Handler          * p_eventhandler;
-    IO_Handler             * p_iohandler;
+    Input_Output_Handler             * p_iohandler;
 
     void DrawLogo();  
   public:
@@ -31,7 +31,8 @@ namespace SHERPA {
     
     bool     PerformScan();
 
-    inline IO_Handler *const GetIOHandler() const { return p_iohandler; }
+    inline Input_Output_Handler *const GetIOHandler() const 
+    { return p_iohandler; }
   };
 
   /*!
@@ -93,7 +94,7 @@ namespace SHERPA {
     A pointer to the handler of single event production.
   */
   /*!
-    \var IO_Handler * Sherpa::p_iohandler
+    \var Input_Output_Handler * Sherpa::p_iohandler
     A pointer to the handler of the global output. This module is not very evolved so far, 
     actual input by our clients is needed.
     \todo List all publications that should be cited when running Sherpa.

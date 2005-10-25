@@ -25,12 +25,12 @@ endif
 lib_LTLIBRARIES       =	libSherpaTools.la
 libSherpaTools_la_SOURCES     =	\
 				Kinematics.C \
-				IO_Handler.C \
+				Input_Output_Handler.C \
 			    	HepMC_Interface.C \
                                 Event_Reader.C
-noinst_HEADERS        =	\
+include_HEADERS        =	\
 			Kinematics.H \
-			IO_Handler.H \
+			Input_Output_Handler.H \
 		 	HepMC_Interface.H \
 			Event_Reader.H
 EXTRA_DIST    =	$(CVSINCLUDE)

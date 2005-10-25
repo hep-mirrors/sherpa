@@ -42,7 +42,7 @@ namespace SHERPA {
 
   typedef std::map<isr::id,PDF::ISR_Handler*> ISR_Handler_Map;
 
-  class IO_Handler;
+  class Input_Output_Handler;
 
   class Initialization_Handler {
   private :
@@ -72,7 +72,7 @@ namespace SHERPA {
     Fragmentation_Handler      * p_fragmentation;
     HDHandlersMap                m_hdhandlers;
     MI_Handler                 * p_mihandler; 
-    IO_Handler                 * p_iohandler;
+    Input_Output_Handler       * p_iohandler;
     Lund_Interface             * p_pythia;
     Event_Reader               * p_evtreader;
 #ifdef USING__MCatNLO
@@ -134,7 +134,7 @@ namespace SHERPA {
     HDHandlersMap               * const GetHadronDecayHandlers()         { return &m_hdhandlers;     }
     ATOOLS::Flavour             * const GetBunches()                     { return m_bunch_particles; }
     MI_Handler                  * const GetMIHandler()             const { return p_mihandler;       }
-    IO_Handler                  * const GetIOHandler()             const { return p_iohandler;       }
+    Input_Output_Handler        * const GetIOHandler()             const { return p_iohandler;       }
     Lund_Interface              * const GetPythiaInterface()       const { return p_pythia;          }
     Event_Reader                * const GetEventReader()           const { return p_evtreader;       }
 #ifdef USING__MCatNLO
