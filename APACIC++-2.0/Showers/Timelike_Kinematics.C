@@ -334,7 +334,6 @@ bool Timelike_Kinematics::DoKinematics(Knot * const mo) const
   }
   if (!DoKinematics(mo->left)) return false;
   if (!DoKinematics(mo->right)) return false;
-  BoostDaughters(mo);
   msg_Debugging()<<"}\n";
   return true;
 }
@@ -401,14 +400,6 @@ ConstructDreiBein(Knot *const mo,Vec3D &n1,Vec3D &n2) const
   n2=n2/n2.Abs();
 }
 
-bool Timelike_Kinematics::CheckVector(const Vec4D &mom) const 
-{
-  double abs2(mom.Abs2());
-  if (abs2>0 && abs2<0) return false;
-  if (mom[0]<0) return false;
-  return true;
-}
- 
 void Timelike_Kinematics::BoostDaughters(Knot * const mo) const
 {
   msg_Debugging()<<METHOD<<"("<<mo->kn_no<<"):\n";
@@ -429,7 +420,7 @@ void Timelike_Kinematics::BoostDaughters(Knot * const mo) const
     Tree::BoRo(cmsp,d1->right);
     if (!(d1->part->Momentum()==
 	  d1->left->part->Momentum()+d1->right->part->Momentum())) {
-      msg.Error()<<METHOD<<"(..): Four momentum not conserved."
+      msg.Error()<<METHOD<<"("<<mo->kn_no<<"): Four momentum not conserved."
 		 <<"\n p_miss = "<<(d1->part->Momentum()-
 				    d1->left->part->Momentum()-
 				    d1->right->part->Momentum())
@@ -449,7 +440,7 @@ void Timelike_Kinematics::BoostDaughters(Knot * const mo) const
     Tree::BoRo(cmsp,d2->right);
     if (!(d2->part->Momentum()==
 	  d2->left->part->Momentum()+d2->right->part->Momentum())) {
-      msg.Error()<<METHOD<<"(..): Four momentum not conserved."
+      msg.Error()<<METHOD<<"("<<mo->kn_no<<"): Four momentum not conserved."
 		 <<"\n p_miss = "<<(d2->part->Momentum()-
 				    d2->left->part->Momentum()-
 				    d2->right->part->Momentum())

@@ -23,7 +23,9 @@ namespace APACIC {
 			   ATOOLS::Vec3D &n1,ATOOLS::Vec3D &n2) const;
 
     bool CheckKinematics(Knot *const mo,const int &first) const;
-    bool CheckVector(const ATOOLS::Vec4D &mom) const;
+
+    inline bool CheckVector(const ATOOLS::Vec4D &mom) const
+    { return (mom.Nan() || mom[0]<0.0)?false:true; }
 
   public:
 
