@@ -18,8 +18,6 @@ namespace APACIC {
   class Apacic {
   private:
 
-    bool m_isron,m_fsron,m_showers;
-
     Initial_State_Shower *p_inishower;
     Final_State_Shower   *p_finshower;
 
@@ -27,6 +25,8 @@ namespace APACIC {
 
     Tree **p_initrees;
     Tree  *p_fintree;
+
+    bool m_isron, m_fsron, m_showers;
 
     ATOOLS::Vec4D PrepareFSR();
     void BoostInLab();
