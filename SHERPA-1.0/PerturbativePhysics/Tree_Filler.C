@@ -93,7 +93,7 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
   mo->part->SetStatus(2);
   mo->didkin = true;
   mo->stat   = 0;
-  mo->z      = p2[0]/p1[0];
+  mo->zs     = mo->z = p2[0]/p1[0];
   mo->E2     = sqr(p1[0]);
   mo->thcrit = M_PI;
 
@@ -426,7 +426,7 @@ void Tree_Filler::EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC:
 
     mo->left  = d1;
     mo->right = d2;
-    mo->z     = p2[0]/p1[0];
+    mo->zs    = mo->z = p2[0]/p1[0];
     mo->stat  = 0;
     mo->part->SetStatus(2);
     if (mo->part->Info() != 'H') mo->part->SetInfo('f');
