@@ -1,18 +1,28 @@
+SHERPASYS     = ../..
+
+SHERPAFLAGS   =	-pedantic -Wall 
+
+ATOOLSDIR     = $(SHERPASYS)/ATOOLS-2.0
+ATOOLSINCS    = -I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org 
+PDFINCS       =	-I$(SHERPASYS)/MODEL-1.0/Main
+MODELINCS     =	-I$(SHERPASYS)/PDF-1.0/Main
+APACICINCS    =	-I../Showers
+
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-SHERPAFLAGS   =	-pedantic -Wall 
-#-Winline 
-
 lib_LTLIBRARIES = libApacicMain.la
-libApacicMain_la_SOURCES = Apacic.C Knot.C Knot_List.C Tree.C
+libApacicMain_la_SOURCES      = \
+				Knot.C \
+				Knot_List.C \
+				Tree.C \
+				Apacic.C
+include_HEADERS       =	\
+			Knot.H \
+			Knot_List.H \
+			Tree.H \
+			Apacic.H
 AM_CXXFLAGS   = $(SHERPAFLAGS)
-INCLUDES = -I../../APACIC++-2.0/Showers \
-	   -I../../PDF-1.0/Main \
-	   -I../../MODEL-1.0/Main \
-	   -I../../ATOOLS-2.0/Phys \
-	   -I../../ATOOLS-2.0/Math \
-	   -I../../ATOOLS-2.0/Org 
-include_HEADERS = Apacic.H Knot.H Knot_List.H Tree.H
+INCLUDES = $(APACICINCS) $(PDFINCS) $(MODELINCS) $(ATOOLSINCS)
 EXTRA_DIST    = $(CVSINCLUDE)
