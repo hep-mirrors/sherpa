@@ -102,14 +102,32 @@ int Timelike_Kinematics::Shuffle(Knot * const mo, const int first) const
 {
   msg_Debugging()<<METHOD<<"("<<mo->kn_no<<","<<first<<"): {\n";
   msg_Indent();
-  int stat(1);
-  if (first) stat=ShuffleMomenta(mo);
-  else stat=ShuffleZ(mo);
-  msg_Debugging()<<"z = "<<mo->z<<"\n";
+  if (mo->t==mo->left->t || mo->t==mo->right->t) return 1;
+  int stat(first?ShuffleMomenta(mo):ShuffleZ(mo));
+  msg_Debugging()<<"z = "<<mo->z<<", stat = "<<stat<<"\n";
   if (stat==1) stat=UpdateDaughters(mo);
   msg_Debugging()<<"}\n";
   return stat;
 } 
+
+int Timelike_Kinematics::UpdateDaughters(Knot *const mo,
+					  const bool force) const
+{
+  if (mo->left) {
+    mo->left->E2=sqr(mo->z)*mo->E2;
+    mo->right->E2=sqr((1.-mo->z))*mo->E2;
+    DoSingleKinematics(mo,force);
+    int stat(1);
+    if (mo->left->left!=NULL && mo->left->stat!=3) stat=Shuffle(mo->left,0);
+    if (stat==1 && 
+	mo->right->left!=NULL && mo->right->stat!=3) stat=Shuffle(mo->right,0);
+    if (stat!=1) {
+      msg_Debugging()<<METHOD<<"(..): shuffle failed\n";
+      return stat;
+    }
+  }
+  return 1;
+}
 
 int Timelike_Kinematics::ShuffleZ(Knot * const mo) const
 {
@@ -154,7 +172,7 @@ int Timelike_Kinematics::ShuffleMomenta(Knot *const mo) const
     msg_Debugging()<<"missing mass\n";
     return 0;
   }
-  double r1(0.0), r2(0.0), z(mo->z);
+  double r1(0.0), r2(0.0), z(mo->zs);
   Vec4D p1(d1->part->Momentum()), p2(d2->part->Momentum());
   if (p1.Abs2()/d1->E2>rpa.gen.Accu() || p2.Abs2()/d2->E2>rpa.gen.Accu()) {
     double t1n(p1.Abs2()), t2n(p2.Abs2());
@@ -175,12 +193,9 @@ int Timelike_Kinematics::ShuffleMomenta(Knot *const mo) const
     r2=(t-t2+t1-lambda)/(2.0*t);
     mo->z=z-r1*z+r2*(1.0-z);
   } 
-
   if (dabs(mo->z-z) < rpa.gen.Accu()) {
     msg_Debugging()<<"shift unnecessary\n";
-    // boost daughters
     BoostDaughters(mo);
-    // update daughters 
     Tree::UpdateDaughters(mo);
     return 1;
   }
@@ -203,29 +218,8 @@ int Timelike_Kinematics::ShuffleMomenta(Knot *const mo) const
 					 d2->part->Momentum())<<"\n";
   msg_Debugging()<<"z = "<<mo->z<<", p_1 = "<<d1->part->Momentum()
 		 <<", p_2 = "<<d2->part->Momentum()<<"\n";
-  // boost daughters
   BoostDaughters(mo);
-  // update daughters 
   Tree::UpdateDaughters(mo);
-  return 1;
-}
-
-int Timelike_Kinematics::UpdateDaughters(Knot *const mo,
-					  const bool force) const
-{
-  if (mo->left) {
-    mo->left->E2=sqr(mo->z)*mo->E2;
-    mo->right->E2=sqr((1.-mo->z))*mo->E2;
-    DoSingleKinematics(mo,force);
-    int stat(1);
-    if (mo->left->left!=NULL && mo->left->stat>0) stat=Shuffle(mo->left,0);
-    if (stat==1 && 
-	mo->right->left!=NULL && mo->right->stat>0) stat=Shuffle(mo->right,0);
-    if (stat!=1) {
-      msg_Debugging()<<METHOD<<"(..): shuffle failed\n";
-      return stat;
-    }
-  }
   return 1;
 }
 
