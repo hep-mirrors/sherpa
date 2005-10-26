@@ -35,12 +35,13 @@ namespace APACIC {
     Timelike_Kinematics *p_kin;
 
     Tree **p_istrees, *p_fstree;
+    Knot  *p_cur;
 
     Double_Vector m_rates;
 
     jv::mode m_mode;
 
-    size_t m_maxjets;
+    size_t m_maxjets, m_cmode;
 
     int CollectISMomenta(Knot *knot,std::vector<ATOOLS::Vec4D> &vecs,
 			 size_t &hard);

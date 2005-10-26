@@ -6,11 +6,14 @@ using namespace ATOOLS;
 Jet_Veto::Jet_Veto(ATOOLS::Jet_Finder *const jf,
 		   Timelike_Kinematics *const kin):
   p_jf(jf), p_kin(kin), p_istrees(NULL), p_fstree(NULL), 
-  m_mode(jv::none), m_maxjets(2) {}
+  m_mode(jv::none), m_maxjets(2), m_cmode(0) {}
 
 int Jet_Veto::TestKinematics(const int mode,Knot *const mo)
 {
-  if (mode==1 && !(m_mode&jv::mlm)) return 1;
+  if (mode==1 && !(m_mode&jv::mlm)) {
+    p_cur=NULL;
+    m_cmode=1;
+  }
   if (mode==0 && !(m_mode&jv::final) && !(m_mode&jv::initial)) return 1;
   msg_Debugging()<<METHOD<<"("<<mode<<"): p_{t jet} = "
 		 <<sqrt(p_jf->ShowerPt2())<<" {"<<std::endl;
@@ -29,6 +32,7 @@ int Jet_Veto::TestKinematics(const int mode,Knot *const mo)
   else {
     if (!CollectFSMomenta(mo,jets,hard)) return 0;
   }
+  m_cmode=0;
   std::vector<ATOOLS::Vec4D> savejets(jets);
   m_rates.resize(jets.size());
   size_t nmin(p_jf->Type()==1?1:0);
@@ -80,14 +84,13 @@ int Jet_Veto::TestKinematics(const int mode,Knot *const mo)
 		   <<" additional jets"<<std::endl;
     msg_Debugging()<<"}\n";
     if (mode==0) return 0;
-    else return -1;
+    if (m_mode&jv::mlm) return -1;
   }
   else if (nljets<hard) {
     msg_Debugging()<<"lost "<<(hard-nljets)
 		   <<" jets"<<std::endl;
     msg_Debugging()<<"}\n";
-    if (mode==0) return 0;
-    return -1;
+    if (mode==1) return -1;
   }
   msg_Debugging()<<"}\n";
   return 1;
@@ -108,11 +111,21 @@ int Jet_Veto::CollectISMomenta(Knot *knot,std::vector<Vec4D> &vecs,
 int Jet_Veto::CollectFSMomenta(Knot *knot,std::vector<Vec4D> &vecs,
 			       size_t &hard)
 {
-  if ((knot->left==NULL || knot->left->stat==3) &&
-      knot->part->Flav().Strong()) {
-    msg_Debugging()<<"take knot "<<knot->kn_no
-		   <<", mom "<<knot->part->Momentum()<<"\n";
-    vecs.push_back(knot->part->Momentum());
+  if (knot->part->Flav().Strong()) {
+    switch (m_cmode) {
+    case 0:
+      if (knot->left==NULL || knot->left->stat==3) {
+	msg_Debugging()<<"take knot "<<knot->kn_no
+		       <<", mom "<<knot->part->Momentum()<<"\n";
+	vecs.push_back(knot->part->Momentum());
+      }
+      break;
+    case 1:
+      if (knot!=p_cur && knot->part->Info()=='H' &&
+	  (knot->left==NULL || knot->left->part->Info()!='H')) 
+	vecs.push_back(knot->part->Momentum());
+      break;
+    }
   }
   int dtest(1);
   size_t rhard(hard);
@@ -154,19 +167,22 @@ int Jet_Veto::TestFSKinematics(Knot *const knot)
 	knot->right->part->Info()=='H')) {
     double pt2(p_jf->MTij2(knot->left->part->Momentum(),
  			   knot->right->part->Momentum()));
-    msg_Debugging()<<" pt = "<<sqrt(pt2)<<", pt_old = "
+    msg_Debugging()<<" jv  pt = "<<sqrt(pt2)<<", pt_old = "
 		   <<sqrt(knot->pt2lcm)<<"\n";
     knot->left->pt2lcm=knot->right->pt2lcm=pt2;
     if (pt2>p_jf->ShowerPt2()) return 0;
   }
+  /*
   if (knot->part->Info()=='H' && knot->prev!=NULL) {
     Knot *si(knot->prev->left);
     if (si==knot) si=knot->prev->right;
     double pt2(p_jf->MTij2(knot->part->Momentum(),
-			   si->part->Momentum()));
-    msg_Debugging()<<" pt = "<<sqrt(pt2)<<", pt_old = "
-		   <<sqrt(knot->pt2lcm)<<"\n";
+ 			   si->part->Momentum()));
+    msg_Debugging()<<" ljv pt = "<<sqrt(pt2)<<", pt_old = "
+ 		   <<sqrt(knot->pt2lcm)<<"\n";
     if (pt2<=p_jf->ShowerPt2()) return 0;
   }
+  */
   return 1;
 }
+
