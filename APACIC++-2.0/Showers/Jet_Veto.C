@@ -170,7 +170,7 @@ int Jet_Veto::TestFSKinematics(Knot *const knot)
     msg_Debugging()<<" jv  pt = "<<sqrt(pt2)<<", pt_old = "
 		   <<sqrt(knot->pt2lcm)<<"\n";
     knot->left->pt2lcm=knot->right->pt2lcm=pt2;
-    if (pt2>p_jf->ShowerPt2()) return 0;
+    if (pt2>knot->pt2lcm || pt2>p_jf->ShowerPt2()) return 0;
   }
   /*
   if (knot->part->Info()=='H' && knot->prev!=NULL) {
