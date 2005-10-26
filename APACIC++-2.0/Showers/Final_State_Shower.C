@@ -22,7 +22,7 @@ Final_State_Shower::Final_State_Shower(MODEL::Model_Base *const model,
 { 
   p_kin->SetZScheme(dataread->GetValue<int>("FS_Z_SCHEME",1));      
   p_kin->SetAngleScheme(dataread->GetValue<int>("FS_ANGLE_SCHEME",1));  
-  p_sud->SetScaleFactor(dataread->GetValue<double>("FS_SCALE_FACTOR",0.25));
+  p_sud->SetScaleFactor(dataread->GetValue<double>("FS_SCALE_FACTOR",1.0));
   p_sud->SetOrderingScheme(dataread->GetValue<int>("FS_ORDERING_SCHEME",1));  
   p_sud->SetCouplingScheme(dataread->GetValue<int>("FS_COUPLING_SCHEME",1));
   p_sud->SetMassScheme(dataread->GetValue<int>("FS_MASS_SCHEME",1));   
@@ -181,9 +181,11 @@ int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
   }
   Knot *d1(mo->left), *d2(mo->right);
   msg_Debugging()<<"p_d1 = "<<d1->part->Momentum()
-		 <<", t_d1 = "<<d1->t<<std::endl;
+		 <<", t_d1 = "<<d1->t<<", ("
+		 <<d1->kn_no<<","<<d1->stat<<")"<<std::endl;
   msg_Debugging()<<"p_d2 = "<<d2->part->Momentum()
-		 <<", t_d2 = "<<d2->t<<std::endl;
+		 <<", t_d2 = "<<d2->t<<", ("
+		 <<d2->kn_no<<","<<d2->stat<<")"<<std::endl;
   Flavour d1_flavs[2], d2_flavs[2];
   Simple_Polarisation_Info d1_polinfos[2], d2_polinfos[2];
   int selected;
@@ -234,8 +236,7 @@ int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
       if (d1->stat>0) InitDaughters(tree,d1,d1_flavs,d1_polinfos,diced1);
       if (d2->stat>0) InitDaughters(tree,d2,d2_flavs,d2_polinfos,diced2);
       if (p_kin->Shuffle(mo,first)) {
-  	if (p_jv->TestFSKinematics(d1)==1 &&
-  	    p_jv->TestFSKinematics(d2)==1) {
+   	if (p_jv->TestFSKinematics(mo)==1) {
 	  msg_Debugging()<<"kinematics check passed"<<std::endl;
 	  mo->stat=0;
 	  msg_Debugging()<<"}\n";
@@ -244,8 +245,14 @@ int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
 	msg_Debugging()<<"kinematics vetoed\n";
       }
       else msg_Debugging()<<"shuffle failed\n";
-      if (d1->left && d1->left->part->Info()!='H') ResetDaughters(d1);
-      if (d2->left && d2->left->part->Info()!='H') ResetDaughters(d2);
+      if (d1->left && d1->left->part->Info()!='H') {
+	ResetDaughters(d1);
+	d1->stat=3;
+      }
+      if (d2->left && d2->left->part->Info()!='H') {
+	ResetDaughters(d2);
+	d2->stat=3;
+      }
     }
     if (d1->stat==0 && d2->stat==0) break;
   }
@@ -272,8 +279,9 @@ int Final_State_Shower::EvolveJet(Tree *tree,Knot *mo)
 		 <<mo->part->Momentum().Abs2()<<", t_mo = "<<mo->t<<" {\n";
   msg_Indent();
   if (mo->stat==0) {
-    msg_Debugging()<<"stat = 0\n";
+    msg_Debugging()<<"stat = 0, reset daughters\n";
     ResetDaughters(mo);
+    mo->left=mo->right=NULL;
     msg_Debugging()<<"}\n";
     return true;
   }
@@ -298,6 +306,7 @@ int Final_State_Shower::EvolveJet(Tree *tree,Knot *mo)
   }
   switch (stat) {
   case -1:
+    mo->left->stat=mo->right->stat=3;
     msg_Debugging()<<"}\n";
     return 0;
   case 0:
@@ -801,12 +810,6 @@ InitDaughters(Tree * tree,Knot * mo,Flavour * mo_flavs,
   mo->right->thcrit = th;
   mo->right->maxpt2 = maxpt2; 
 }
-
-//#####################################################################
-//
-// Tester methods
-//
-//#####################################################################
 
 bool Final_State_Shower::TestShower(Tree * tree) 
 {
