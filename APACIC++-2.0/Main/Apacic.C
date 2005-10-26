@@ -12,7 +12,8 @@ Apacic::Apacic(ISR_Handler *const isr,MODEL::Model_Base *const model,
 	       ATOOLS::Jet_Finder *const jf,Data_Read *const dataread):
   p_inishower(NULL), p_finshower(NULL), 
   p_jetveto(NULL),
-  p_initrees(NULL), p_fintree(NULL)
+  p_initrees(NULL), p_fintree(NULL),
+  m_showers(false)
 {
   Splitting_Function::SetKFactorScheme
     (dataread->GetValue<int>("S_KFACTOR_SCHEME",1));        
@@ -113,8 +114,7 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
 void Apacic::PrepareTrees() 
 {
   if (m_fsron) p_fintree->Reset();
-  if (m_isron) 
-    for (int i=0;i<2;i++) p_initrees[i]->Reset();
+  if (m_isron) for (int i=0;i<2;i++) p_initrees[i]->Reset();
 }
 
 void Apacic::BoostInLab() 
@@ -132,7 +132,8 @@ void Apacic::BoostInLab()
 }
 
 bool Apacic::ExtractPartons(const bool ini,const bool fin,
-			    Blob_List *const bl,Particle_List *const pl) {
+			    Blob_List *const bl,Particle_List *const pl) 
+{
   if (fin) {
     if (p_fintree->CheckStructure(true)) 
       p_finshower->ExtractPartons(p_fintree->GetRoot(),0,bl,pl);
