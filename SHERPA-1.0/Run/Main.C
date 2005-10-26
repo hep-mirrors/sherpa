@@ -5,7 +5,7 @@
 #include "Exception.H"
 #include "Run_Parameter.H"
 #ifdef USING__CLHEP
-#include "IO_Handler.H"
+#include "Input_Output_Handler.H"
 #endif
 
 #ifdef PROFILE__all
