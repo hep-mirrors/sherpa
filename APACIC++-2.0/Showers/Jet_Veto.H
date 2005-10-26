@@ -13,7 +13,8 @@ namespace APACIC {
       none    = 0,
       final   = 1,
       initial = 2,
-      mlm     = 4
+      global  = 4,
+      mlm     = 8
     };
 
   };// end of struct jv
@@ -52,7 +53,7 @@ namespace APACIC {
     Jet_Veto(ATOOLS::Jet_Finder *const jf,Timelike_Kinematics *const kin);
 
     //member functions 
-    int  TestKinematics(const int mode=0,Knot *const mo=NULL);
+    int TestKinematics(const int mode=0,Knot *const mo=NULL);
 
     int TestFSKinematics(Knot *const mo);
     int TestISKinematics(Knot *const mo);

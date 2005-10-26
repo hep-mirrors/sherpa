@@ -11,6 +11,7 @@ Jet_Veto::Jet_Veto(ATOOLS::Jet_Finder *const jf,
 int Jet_Veto::TestKinematics(const int mode,Knot *const mo)
 {
   if (mode==1 && !(m_mode&jv::mlm)) return 1;
+  if (mode==0 && !(m_mode&jv::final) && !(m_mode&jv::initial)) return 1;
   msg_Debugging()<<METHOD<<"("<<mode<<"): p_{t jet} = "
 		 <<sqrt(p_jf->ShowerPt2())<<" {"<<std::endl;
   msg_Indent();
@@ -68,30 +69,21 @@ int Jet_Veto::TestKinematics(const int mode,Knot *const mo)
       return 0;
     }
   }
-  size_t njets(nmin), maxjets(m_maxjets);
-  double crit(rpa.gen.Ycut()*sqr(rpa.gen.Ecms()));
-  for (;njets<m_rates.size();++njets) if (m_rates[njets]<crit) break;
+  size_t njets(nmin), nljets(nmin);
+  double jcrit(p_jf->ShowerPt2()), ljcrit(rpa.gen.Ycut()*sqr(rpa.gen.Ecms()));
+  for (;njets<m_rates.size();++njets) if (m_rates[njets]<jcrit) break;
+  for (;nljets<m_rates.size();++nljets) if (m_rates[nljets]<ljcrit) break;
   msg_Debugging()<<"produced "<<njets
-		 <<" jets out of "<<hard<<", nmax = "<<maxjets<<"\n";
+		 <<" jets out of "<<hard<<", nmax = "<<m_maxjets<<"\n";
   if (njets>hard) {
     msg_Debugging()<<"produced "<<(njets-hard)
 		   <<" additional jets"<<std::endl;
     msg_Debugging()<<"}\n";
-    if (hard<maxjets) {
-      if (mode==0) return 0;
-      else return -1;
-    }
-    else {
-      crit=p_jf->ShowerPt2();
-      for (njets=nmin;njets<m_rates.size();++njets) 
-	if (m_rates[njets]<crit) break;
-      if (njets>hard)
-	if (mode==0) return 0;
-	else return -1;
-    }
+    if (mode==0) return 0;
+    else return -1;
   }
-  else if (njets<hard) {
-    msg_Debugging()<<"lost "<<(hard-njets)
+  else if (nljets<hard) {
+    msg_Debugging()<<"lost "<<(hard-nljets)
 		   <<" jets"<<std::endl;
     msg_Debugging()<<"}\n";
     if (mode==0) return 0;
@@ -117,10 +109,14 @@ int Jet_Veto::CollectFSMomenta(Knot *knot,std::vector<Vec4D> &vecs,
 			       size_t &hard)
 {
   if ((knot->left==NULL || knot->left->stat==3) &&
-      knot->part->Flav().Strong()) vecs.push_back(knot->part->Momentum());
+      knot->part->Flav().Strong()) {
+    msg_Debugging()<<"take knot "<<knot->kn_no
+		   <<", mom "<<knot->part->Momentum()<<"\n";
+    vecs.push_back(knot->part->Momentum());
+  }
   int dtest(1);
   size_t rhard(hard);
-  if (knot->left && knot->left->stat!=3) {
+  if (knot->left!=NULL && knot->left->stat!=3) {
     dtest=CollectFSMomenta(knot->left,vecs,hard);
     if (dtest==1) 
       dtest=CollectFSMomenta(knot->right,vecs,hard);
@@ -148,7 +144,8 @@ int Jet_Veto::TestISKinematics(Knot *const knot)
 
 int Jet_Veto::TestFSKinematics(Knot *const knot)
 {
-  if (knot->stat==0 ||
+  if (m_mode&jv::global) return TestKinematics(0,NULL);
+  if (knot->left==NULL ||
       m_mode&jv::mlm || !(m_mode&jv::final)) return 1;
   msg_Debugging()<<METHOD<<"("<<knot->kn_no<<","<<knot->part->Info()
 		 <<"): p_{t jet} = "<<sqrt(p_jf->ShowerPt2())<<"\n";
