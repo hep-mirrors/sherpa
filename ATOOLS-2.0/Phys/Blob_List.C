@@ -3,6 +3,7 @@
 #include "Blob.H"
 #include "Particle.H"
 #include "Message.H"
+#include "Run_Parameter.H"
 
 using namespace ATOOLS;
 
@@ -205,7 +206,10 @@ bool Blob_List::FourMomentumConservation() const
 	       <<this<<") Invalid momenta."<<std::endl;
     return false;
   }
+  static double accu(sqrt(rpa.gen.Accu()));
+  Vec4D::SetAccu(accu);
   bool test=inisum==finsum;
+  Vec4D::ResetAccu();
   if (!test) {
     msg.Error()<<"Blob_List::FourMomentumConservation(): ("
 	       <<this<<") Four Momentum is not conserved.\n"
