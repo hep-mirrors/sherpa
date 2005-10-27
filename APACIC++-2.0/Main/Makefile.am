@@ -15,12 +15,10 @@ endif
 lib_LTLIBRARIES = libApacicMain.la
 libApacicMain_la_SOURCES      = \
 				Knot.C \
-				Knot_List.C \
 				Tree.C \
 				Apacic.C
 include_HEADERS       =	\
 			Knot.H \
-			Knot_List.H \
 			Tree.H \
 			Apacic.H
 AM_CXXFLAGS   = $(SHERPAFLAGS)

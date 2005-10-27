@@ -5,12 +5,14 @@
 
 #include "Knot.H"
 #include "Poincare.H"
-#include "Knot_List.H"
 #include "Particle_List.H"
+#include <deque>
 
 //using namespace ATOOLS;
 
 namespace APACIC {
+
+  typedef std::deque<Knot*> Knot_List;
 
   class Tree {
   private:

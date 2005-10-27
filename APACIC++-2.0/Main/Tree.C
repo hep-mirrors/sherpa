@@ -48,7 +48,7 @@ Tree::Tree(Tree * tree) {
 
 void Tree::ResetKnots() {
   if (!s_knots) return;
-  for (Knot_Iterator kit=s_knots->begin(); kit!=s_knots->end(); ++kit) {
+  for (Knot_List::iterator kit=s_knots->begin(); kit!=s_knots->end(); ++kit) {
     delete (*kit); 
   }
   s_knots->erase(s_knots->begin(),s_knots->end());
