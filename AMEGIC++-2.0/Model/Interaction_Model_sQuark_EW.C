@@ -51,8 +51,8 @@ Interaction_Model_sQuark_EW::Interaction_Model_sQuark_EW(MODEL::Model_Base * _mo
 
 void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz) {  
   Kabbala kcpl0,kcpl1; 
+
   //quark - squark - neutralino
-  
   for (short int j=43;j<47;j++) {
     Flavour flneu = Flavour(kf::code(j));
     if (flneu.IsOn()) {
@@ -454,11 +454,11 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
 	  Kabbala K_uI = Kabbala(string("u^I"),Flavour(kf::code(2*gen_sUp(flav1)+2)).Yuk()/
 				 (v2).Value()*sqrt(2.));
 	  
-	  vertex[vanz].in[0] = flav1;
+	  vertex[vanz].in[0] = flav1.Bar();
 	  vertex[vanz].in[1] = flA0;
-	  vertex[vanz].in[2] = flav2;
+	  vertex[vanz].in[2] = flav2.Bar();
 	  
-	  kcpl0 = (K_uI*K_Z_H(0,0)*(mu*K_Z_U(gen_sUp(flav1),i-51)*K_Z_U(gen_sUp(flav1)+3,j-51)-
+	  kcpl0 = -(K_uI*K_Z_H(0,0)*(mu*K_Z_U(gen_sUp(flav1),i-51)*K_Z_U(gen_sUp(flav1)+3,j-51)-
 				    conj_mu*K_Z_U(gen_sUp(flav1),j-51)*
 				    K_Z_U(gen_sUp(flav1)+3,i-51))+
 		   K_Z_H(1,0)*(K_u_S(gen_sUp(flav1),gen_sUp(flav2))*K_Z_U(gen_sUp(flav1),j-51)*
