@@ -10,10 +10,7 @@ Jet_Veto::Jet_Veto(ATOOLS::Jet_Finder *const jf,
 
 int Jet_Veto::TestKinematics(const int mode,Knot *const mo)
 {
-  if (mode==1 && !(m_mode&jv::mlm)) {
-    p_cur=NULL;
-    m_cmode=1;
-  }
+  if (mode==1 && !(m_mode&jv::mlm)) return 1;
   if (mode==0 && !(m_mode&jv::final) && !(m_mode&jv::initial)) return 1;
   msg_Debugging()<<METHOD<<"("<<mode<<"): p_{t jet} = "
 		 <<sqrt(p_jf->ShowerPt2())<<" {"<<std::endl;
@@ -32,7 +29,6 @@ int Jet_Veto::TestKinematics(const int mode,Knot *const mo)
   else {
     if (!CollectFSMomenta(mo,jets,hard)) return 0;
   }
-  m_cmode=0;
   std::vector<ATOOLS::Vec4D> savejets(jets);
   m_rates.resize(jets.size());
   size_t nmin(p_jf->Type()==1?1:0);
@@ -150,6 +146,7 @@ int Jet_Veto::TestISKinematics(Knot *const knot)
   double pt2(z*(1.0-z)*knot->tout-(1.0-z)*knot->right->t-z*knot->left->t);
   msg_Debugging()<<" pt = "<<sqrt(pt2)<<"\n";
   if (knot->part->Info()!='H') {
+    knot->pt2lcm=pt2;
     if (pt2<0.0 || pt2>p_jf->ShowerPt2()) return 0;
   }
   return 1;
@@ -172,17 +169,25 @@ int Jet_Veto::TestFSKinematics(Knot *const knot)
     knot->left->pt2lcm=knot->right->pt2lcm=pt2;
     if (pt2>knot->pt2lcm || pt2>p_jf->ShowerPt2()) return 0;
   }
-  /*
   if (knot->part->Info()=='H' && knot->prev!=NULL) {
-    Knot *si(knot->prev->left);
-    if (si==knot) si=knot->prev->right;
-    double pt2(p_jf->MTij2(knot->part->Momentum(),
- 			   si->part->Momentum()));
-    msg_Debugging()<<" ljv pt = "<<sqrt(pt2)<<", pt_old = "
- 		   <<sqrt(knot->pt2lcm)<<"\n";
-    if (pt2<=p_jf->ShowerPt2()) return 0;
+    size_t hard(0);
+    std::vector<Vec4D> jets;
+    p_cur=knot;
+    m_cmode=1;
+    if (m_mode&jv::initial && p_istrees!=NULL) {
+      if (!CollectISMomenta(p_istrees[0]->GetRoot(),jets,hard)) return 0;
+      if (!CollectISMomenta(p_istrees[1]->GetRoot(),jets,hard)) return 0;
+    }
+    if (m_mode&jv::final) {
+      if (!CollectFSMomenta(p_fstree->GetRoot(),jets,hard)) return 0;
+    }
+    m_cmode=0;
+    for (size_t i(0);i<jets.size();++i) {
+      double pt2(p_jf->MTij2(knot->part->Momentum(),jets[i]));
+      msg_Debugging()<<" ljv pt = "<<sqrt(pt2)<<"\n";
+      if (pt2<=p_jf->ShowerPt2()) return 0;
+    }
   }
-  */
   return 1;
 }
 
