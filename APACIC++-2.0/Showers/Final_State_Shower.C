@@ -83,18 +83,19 @@ TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
       flavs[1] = p_sud->GetFlC();
       msg_Debugging()<<"tlfsl test emission at t = "<<mo->t
 		     <<", z = "<<mo->z<<"\n";
-      if (!ini->DoKinematics()) return -1;
+      if (!ini->DoKinematics()) continue;
       int stat(jetveto?p_jv->TestISKinematics(mo->prev):1);
-      if (stat!=1) return stat;
+      if (stat!=1) continue;
       mo->stat=1;
       InitDaughters(tree,mo,flavs,polinfos,1);
       stat=EvolveJet(tree,mo);
       msg_Debugging()<<"tlfsl stat = "<<stat<<"\n";
       if (stat==1) {
-	p_kin->DoKinematics(mo);
+	if (!p_kin->DoKinematics(mo)) return -1;
 	msg_Debugging()<<"}\n";
 	return 1;
       }
+      Reset(mo);
     }
     msg_Debugging()<<"reset knot "<<mo->kn_no<<"\n";
     Reset(mo);
@@ -767,6 +768,7 @@ InitDaughters(Tree * tree,Knot * mo,Flavour * mo_flavs,
     mo->left->part->SetStatus(1);
     mo->left->tout     = sqr(mo_flavs[0].PSMass());
     mo->left->stat     = 3;  
+    mo->left->didkin   = false;
 
     mo->right->prev    = mo;
     mo->right->polinfo = mo_pols[1];
@@ -775,6 +777,7 @@ InitDaughters(Tree * tree,Knot * mo,Flavour * mo_flavs,
     mo->right->part->SetStatus(1);
     mo->right->tout    = sqr(mo_flavs[1].PSMass());
     mo->right->stat    = 3;  
+    mo->right->didkin  = false;
 
     if (mo->part->Info()!='H') mo->part->SetInfo('f');
     mo->part->SetStatus(2);
