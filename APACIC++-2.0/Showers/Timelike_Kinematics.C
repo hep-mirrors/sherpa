@@ -155,6 +155,7 @@ int Timelike_Kinematics::ShuffleZ(Knot * const mo) const
       mo->left->E2<mo->left->tout || mo->right->E2<mo->right->tout) return 0;
   msg_Debugging()<<"z = "<<mo->z<<", E_1 = "<<sqrt(mo->left->E2)
 		 <<", E_2 = "<<sqrt(mo->right->E2)<<"\n";
+  mo->right->didkin=mo->left->didkin=false;
   return 1;
 }
 
@@ -269,7 +270,7 @@ void Timelike_Kinematics::DoSingleKinematics(Knot * const mo,
   msg_Debugging()<<METHOD<<"("<<mo->kn_no<<","<<force<<"): "
 		 <<mo->left->didkin<<"\n";
   if (!mo->left->didkin || force) {
-    Vec4D p1(Vec4D(0.,0.,0.,0.)), p2(Vec4D(0.,0.,0.,0.));
+    Vec4D p1, p2;
     ConstructVectors(mo,p1,p2);
     mo->left->part->SetMomentum(p1);
     mo->right->part->SetMomentum(p2);
@@ -340,7 +341,10 @@ ConstructVectors(Knot *const mo,Vec4D &p1vec,Vec4D &p2vec) const
   double E12(mo->left->E2), E22(mo->right->E2);
   double t1(mo->left->stat!=3?mo->left->t:mo->left->tout); 
   double t2(mo->right->stat!=3?mo->right->t:mo->right->tout); 
+  msg_Debugging()<<"construct, t_1 = "<<t1<<" <- "<<mo->left->t
+		 <<", t_2 = "<<t2<<" <- "<<mo->right->t<<"\n";
   double p1(sqrt(E12-t1)), p2(sqrt(E22-t2));
+  msg_Debugging()<<"construct, p_1 = "<<p1<<", t_2 = "<<p2<<", p = "<<p<<"\n";
   Vec3D n1,n2;
   ConstructDreiBein(mo,n1,n2);
   double phi(mo->phi + mo->polinfo.Angle()), bph(cos(phi)), cph(-sin(phi));
