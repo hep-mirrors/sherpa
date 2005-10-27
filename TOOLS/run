@@ -16,6 +16,7 @@ rmr () {
 
 RUNPATH=""
 BINPATH=""
+PDFPATH=""
 RESULTS=""
 ANALYSIS=""
 LIBPATH="#"
@@ -27,6 +28,7 @@ NICE=""
 for I in $* ; do
   if [ "$I" = "-p" ]; then DRUNPATH=TRUE 
   elif [ "$I" = "-b" ]; then DBINPATH=TRUE 
+  elif [ "$I" = "-s" ]; then DPDFPATH=TRUE 
   elif [ "$I" = "-r" ]; then DRESULTS=TRUE 
   elif [ "$I" = "-a" ]; then DANALYSIS=TRUE 
   elif [ "$I" = "-e" ]; then DEVENTS=TRUE 
@@ -44,6 +46,7 @@ for I in $* ; do
     echo "run version 1.0" && echo && \
     echo "options: -p <path>      read configuration from path <path>" && \
     echo "         -b <binpath>   take executeable from path <binpath>" && \
+    echo "         -s <pdfpath>   take pdfs from path <pdfpath>" && \
     echo "         -r <results>   write results to path <path>/<results>" && \
     echo "         -a <analysis>  write analysis output to path <path>/<analysis>" && \
     echo "         -e <events>    generate <events> events" && \
@@ -61,6 +64,7 @@ for I in $* ; do
     exit 0
   elif [ "$DRUNPATH" = "TRUE" ]; then DRUNPATH="" && RUNPATH=$I
   elif [ "$DBINPATH" = "TRUE" ]; then DBINPATH="" && BINPATH=$I
+  elif [ "$DPDFPATH" = "TRUE" ]; then DPDFPATH="" && PDFPATH=$I
   elif [ "$DRESULTS" = "TRUE" ]; then DRESULTS="" && RESULTS=$I
   elif [ "$DANALYSIS" = "TRUE" ]; then DANALYSIS="" && ANALYSIS=$I
   elif [ "$DEVENTS" = "TRUE" ]; then DEVENTS="" && EVENTS=$I
@@ -171,6 +175,9 @@ else
   echo "" >> $FILE
   echo "cd \$RUNPATH" >> $FILE
   echo "" >> $FILE
+fi
+if [ "$PDFPATH" != "" ] ; then
+  echo -e "export SHERPA_PDF_PATH=$PDFPATH\n" >> $FILE
 fi
 echo "export PATH=$BINPATH:\$PATH" >> $FILE
 echo "" >> $FILE
