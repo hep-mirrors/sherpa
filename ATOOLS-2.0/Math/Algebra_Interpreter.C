@@ -1,9 +1,13 @@
 #include "Algebra_Interpreter.H"
 
-#include "MyStrStream.H"
+#ifdef USING__Calc_only
+#include "Tools.H"
+#else
 #include "MathTools.H"
+#include "MyStrStream.H"
 #include "Exception.H"
 #include "Message.H"
+#endif
 #include "Vector.H"
 
 using namespace ATOOLS;
@@ -246,7 +250,7 @@ DEFINE_UNARY_DOUBLE_FUNCTION(Square_Root,"sqrt",sqrt)
 DEFINE_FUNCTION(Vec4D_Part,"Part")
 {
   if (args.size()!=2) THROW(fatal_error,"Part requires 2 arguments.");
-  Vec4D arg0=ToType<Vec4D>("("+args[0]+")");
+  Vec4D arg0=ToType<Vec4D>(args[0]);
   int arg1=ToType<int>(args[1]);
   return ToString(arg0[arg1]);
 }
@@ -263,7 +267,7 @@ Term *Vec4D_Part::Evaluate(const std::vector<Term*> &args) const
   {									\
     if (args.size()!=1)							\
       THROW(fatal_error,std::string(TAG)+" requires 1 argument.");      \
-    Vec4D arg0=ToType<Vec4D>("("+args[0]+")");			        \
+    Vec4D arg0=ToType<Vec4D>(args[0]);  			        \
     return ToString(arg0.OP());						\
   }									\
   Term *NAME::Evaluate(const std::vector<Term*> &args) const		\
@@ -285,8 +289,8 @@ DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Phi,"Phi",Phi)
   {									\
     if (args.size()!=2)							\
       THROW(fatal_error,"Operator requires 2 arguments.");		\
-    Vec4D arg0=ToType<Vec4D>("("+args[0]+")");			        \
-    Vec4D arg1=ToType<Vec4D>("("+args[1]+")");			        \
+    Vec4D arg0=ToType<Vec4D>(args[0]);  			        \
+    Vec4D arg1=ToType<Vec4D>(args[1]);	        		        \
     return ToString(arg0.OP(arg1));					\
   }									\
   Term *NAME::Evaluate(const std::vector<Term*> &args) const		\
@@ -421,6 +425,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
   }
   std::string left=expr.substr(0,pos);
   std::string right=expr.substr(i+1);
+#ifndef USING__Calc_only
   if (msg.LevelIsTracking()) {
     std::string out=args[0];
     for (size_t j=1;j<args.size();++j) out+=","+args[j];
@@ -428,6 +433,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
 		  <<"' '"<<func->Tag()<<"("<<out
 		  <<")' '"<<right<<"'\n";
   }
+#endif
   Node<Function*> *leaf = new Node<Function*>(func,true);
   for (size_t j=0;j<args.size();++j) {
     (*leaf)->push_back(new Node<Function*>(NULL,true));
@@ -681,6 +687,7 @@ std::string Algebra_Interpreter::Interprete(const std::string &expr)
     delete m_leafs.begin()->second;
     m_leafs.erase(m_leafs.begin());
   }
+  if (expr.length()==0) return "0";
   std::string res=expr;
   KillBlanks(res);
   std::string result=Iterate(res);
@@ -789,7 +796,7 @@ Term *Algebra_Interpreter::ReplaceTags(Term *expr) const
   for (String_Map::const_reverse_iterator sit=m_tags.rbegin();
        sit!=m_tags.rend();++sit) {
     if ((pos=expr->m_tag.find(sit->first))!=std::string::npos) {
-      if (expr->m_tag[0]=='(' && expr->m_tag[expr->m_tag.length()-1]==')') 
+      if (sit->second[0]=='(' && sit->second[sit->second.length()-1]==')') 
 	((TVec4D*)expr)->m_value=ToType<Vec4D>(sit->second);      
       else 
 	((TDouble*)expr)->m_value=ToType<double>(sit->second);      
