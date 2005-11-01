@@ -99,7 +99,7 @@ double DGLAP_PDF::Integrate(const double &x,const double &z,const double &kp2)
   bound[0]=log10(ATOOLS::rpa.gen.Ecms()/2.0);
   bound[1]=2.0*M_PI;
   integrator.SetMax(bound);
-  integrator.SetMode(0);
+  integrator.SetMode(ATOOLS::imc::varopt);
   integrator.SetShuffleMode(0);
   integrator.SetNOpt(1000);
   integrator.SetNCells(1000);
