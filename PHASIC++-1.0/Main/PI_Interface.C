@@ -36,7 +36,7 @@ bool PI_Interface::Initialize()
 {
   PROFILE_HERE;
   p_integrator->SetError(p_pshandler->Error());
-  p_integrator->SetMode(0);
+  p_integrator->SetMode(ATOOLS::imc::varopt);
   p_integrator->SetShuffleMode(1);
   p_integrator->SetNOpt(m_nopt);
   p_integrator->SetNMax(m_nmax);
