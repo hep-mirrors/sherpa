@@ -52,26 +52,46 @@ namespace ATOOLS {
     at the given point.
   */
 
+  struct rmc {
+    
+    enum code {
+      none      = 0,
+      construct = 1,
+      shuffle   = 2,
+      run       = 4
+    };
+
+  };// end of struct rmc
+
+  class Primitive_Integrator;
+
   class Primitive_Channel {
   private:
     
-    double m_alpha, m_oldalpha, m_weight, p_split[2];
-    double m_sum, m_sum2, m_max, m_np, m_ssum2, m_snp;
+    Primitive_Integrator *p_integrator;
+
+    double m_alpha, m_oldalpha, m_weight, m_splitpos;
+    double m_sum, m_sum2, m_max, m_np, m_ssum, m_ssum2, m_snp;
 
     std::vector<double>             m_this;
     std::vector<Primitive_Channel*> m_next;
 
+    std::vector<std::pair<std::vector<double>,double> > m_points;
+
     size_t m_pos, m_split;
+
+    static long unsigned int s_npoints;
 
     friend std::ostream &
     operator<<(std::ostream &str,const Primitive_Channel &channel);
 
-    Primitive_Channel();
+    Primitive_Channel(Primitive_Integrator *const integrator);
     
   public:
     
     // constructor
-    Primitive_Channel(Primitive_Channel *const prev,const size_t i,
+    Primitive_Channel(Primitive_Integrator *const integrator,
+		      Primitive_Channel *const prev,const size_t i,
 		      const double &pos=std::numeric_limits<double>::max());
     /*!
       \fn Primitive_Channel(Primitive_Channel *const prev,const size_t i,
@@ -93,16 +113,6 @@ namespace ATOOLS {
       \brief Generates one point inside the integration domain
       employing a uniform weight distrbution.
     */
-    double Point(Primitive_Integrand *const function,
-		 std::vector<double> &point,std::vector<double> &opt);
-    /*!
-      \fn double Point(const Primitive_Integrand *function,
-      std::vector<double> &point,std::vector<double> &opt)
-      \brief Generates one point inside the integration domain
-      employing a uniform weight distrbution.
-      Additionally information on the position of the point inside 
-      the channel is stored into the parameter opt.
-    */
 
     bool Find(const std::vector<double> &point) const;
     /*!
@@ -115,6 +125,11 @@ namespace ATOOLS {
     /*!
       \fn void Reset()
       \brief Resets the weight, the squared weight and the number of points.
+    */
+    void DeletePoints();
+    /*!
+      \fn void DeletePoints()
+      \brief Deletes the stored phase space points.
     */
     void SetWeight();
     /*!
@@ -133,6 +148,22 @@ namespace ATOOLS {
       \brief Adds the the squared weight, and the number of points 
       to the stored data employing the weight of the channel.
     */
+    void SelectSplitDimension();
+    /*!
+      \fn void SelectSplitDimension(Primitive_Channel *const current)
+      \brief Selectes a dimesion for the splitting of the active
+      integration channel. 
+      
+      This method determines the dimesion for the splitting 
+      of the active integration channel. During the previous 
+      integration step 
+      the corresponding channel has stored information about the weight 
+      distribution inside itself into a double container. This information
+      is evaluated and the dimesion where the splitting results 
+      in the largest 
+      reduction of the variance or the maximum (according to the given 
+      integration mode) is selected.
+    */
 
     bool WriteOut(std::fstream *const file,
 		  std::map<Primitive_Channel*,size_t> &pmap) const;
@@ -149,7 +180,8 @@ namespace ATOOLS {
       \brief Reads in the channel from the given file.
     */
 
-    static void CreateRoot(const std::vector<double> &min,
+    static void CreateRoot(Primitive_Integrator *const integrator,
+			   const std::vector<double> &min,
 			   const std::vector<double> &max,
 			   std::vector<Primitive_Channel*> &channels);
     /*!
@@ -162,7 +194,7 @@ namespace ATOOLS {
     */
 
     // inline functions
-    inline void SetPosition(const size_t pos)         { m_pos=pos;     }
+    inline void SetPosition(const size_t pos) { m_pos=pos; }
     /*!
       \fn inline void SetPosition(const size_t pos)
       \brief Sets the position of the channel in the 
@@ -175,14 +207,8 @@ namespace ATOOLS {
       \brief Sets the splitting dimension for the next splitting 
       of the channel.
     */
-    inline void SetSplitWeight(const double weight,const size_t i)
-    { if (i<2) p_split[i]=weight; }
-    /*!
-      \fn inline void SetSplitWeight(const double weight,const size_t i)
-      \brief Sets the weight for the next splitting of the channel.
-    */
 
-    inline double Alpha() const    { return m_alpha;    }
+    inline double Alpha() const { return m_alpha; }
     /*!
       \fn inline double Alpha() const
       \brief Returns the weight of the channel.
@@ -192,13 +218,13 @@ namespace ATOOLS {
       \fn inline double OldAlpha() const
       \brief Returns the previous weight of the channel.
     */
-    inline double Weight() const   { return m_weight;   }
+    inline double Weight() const { return m_weight; }
     /*!
       \fn inline double Weight() const
       \brief Returns the volume of the integration domain.
     */
 
-    inline size_t Position() const       { return m_pos;   }
+    inline size_t Position() const { return m_pos; }
     /*!
       \fn inline size_t Position() const
       \brief Returns the position of the channel in the 
@@ -211,48 +237,52 @@ namespace ATOOLS {
       \brief Returns the dimension for the next splitting 
       of the channel.
     */
-    inline double SplitWeight(const size_t i) const 
-    { if (i<2) return p_split[i]; }
-    /*!
-      \fn inline size_t SplitWeight(const size_t i) const
-      \brief Returns the weight for the next splitting of the channel.
-    */
 
-    inline double Sum() const     { return m_sum;   }
+    inline double Sum() const { return m_sum; }
     /*!
       \fn inline double Sum() const
       \brief Returns \f$\sum w\f$.
     */
-    inline double Sum2() const    { return m_sum2;  }
+    inline double SSum() const { return m_ssum; }
+    /*!
+      \fn inline double SSum() const
+      \brief Returns \f$\sum_{stored} \frac{w}{\alpha}\f$.
+    */
+    inline double Sum2() const { return m_sum2; }
     /*!
       \fn inline double Sum2() const
       \brief Returns \f$\sum w^2\f$.
     */
-    inline double SSum2() const   { return m_ssum2; }
+    inline double SSum2() const { return m_ssum2; }
     /*!
       \fn inline double SSum2() const
-      \brief Returns \f$\sum_{stored} w^2\f$.
+      \brief Returns \f$\sum_{stored} \frac{w^2}{\alpha^2}\f$.
     */
-    inline double Max() const     { return m_max;   }
+    inline double Max() const { return m_max; }
     /*!
       \fn inline double Max() const
       \brief Returns \f$max\{w\}\f$.
     */
-    inline double Points() const  { return m_np;    }
+    inline double Points() const { return m_np; }
     /*!
       \fn inline double Points() const
       \brief Returns \f$n\f$.
     */
-    inline double SPoints() const { return m_snp;   }
+    inline double SPoints() const { return m_snp; }
     /*!
       \fn inline double SPoints() const
       \brief Returns \f$n_{stored}\f$.
     */
 
-    inline double Mean() const     { return m_sum/m_np;   }
+    inline double Mean() const { return m_sum/m_np; }
     /*!
       \fn inline double Mean() const
       \brief Returns \f$\frac{\sum w}{n}\f$.
+    */
+    inline double SMean() const { return m_ssum/m_snp; }
+    /*!
+      \fn inline double SMean() const
+      \brief Returns \f$\frac{\sum_{stored} \frac{w}{\alpha}}{n_{stored}}\f$.
     */
     inline double Variance() const    
     { return (m_sum2-m_sum*m_sum/m_np)/(m_np-1.0); }
@@ -260,11 +290,25 @@ namespace ATOOLS {
       \fn inline double Variance() const
       \brief Returns \f$\frac{\sum (w^2-\left<w\right>^2)}{n-1}\f$.
     */
+    inline double SVariance() const    
+    { return (m_ssum2-m_ssum*m_ssum/m_snp)/(m_snp-1.0); }
+    /*!
+      \fn inline double SVariance() const
+      \brief Returns \f$\frac{\sum_{stored} 
+      (\frac{w^2}{\alpha^2}-\left<\frac{w}{\alpha}\right>^2)}
+      {n_{stored}-1}\f$.
+    */
     inline double Sigma() const  
     { return sqrt(Variance()/m_np); }
     /*!
       \fn inline double Sigma() const
       \brief Returns \f$\sqrt{\frac{Variance()}{n}}\f$
+    */
+    inline double SSigma() const  
+    { return sqrt(SVariance()/m_snp); }
+    /*!
+      \fn inline double SSigma() const
+      \brief Returns \f$\sqrt{\frac{SVariance()}{n_{stored}}}\f$
     */
 
     inline bool Boundary() const { return m_next[0]==NULL; }
@@ -273,7 +317,7 @@ namespace ATOOLS {
       \brief Determines whether the channel is a boundary of the 
       integration domain.
     */
-    inline void SaveAlpha()      { m_oldalpha=m_alpha;     }
+    inline void SaveAlpha() { m_oldalpha=m_alpha; }
     /*!
       \fn inline void SaveAlpha()
       \brief Stores the weight.
@@ -298,6 +342,15 @@ namespace ATOOLS {
   std::ostream &
   operator<<(std::ostream &str,const Primitive_Channel &channel);
 
+  struct imc {
+    
+    enum code {
+      varopt = 0,
+      maxopt = 1
+    };
+
+  };// end of struct imc
+
   class Primitive_Integrator {
   public:
 
@@ -306,48 +359,28 @@ namespace ATOOLS {
 
   private:
 
-    long unsigned int m_nopt, m_nmax;
+    long unsigned int m_nopt, m_nmax, m_ndiced;
 
     double m_error, m_scale, m_apweight;
-    double m_sum, m_sum2, m_max, m_np;
+    double m_sum, m_sum2, m_max, m_np, m_nrealp;
 
     std::deque<double> m_smax;
 
-    std::vector<double>   m_rmin, m_rmax, m_point, m_opt;
+    std::vector<double>   m_rmin, m_rmax, m_point, m_asum;
     std::map<size_t,bool> m_nosplit;
 
     std::vector<Primitive_Channel*> m_channels;
 
     Primitive_Integrand *p_function;
 
-    size_t m_ncells, m_mode, m_split, m_shuffle, m_last;
+    size_t m_ncells, m_split, m_shuffle, m_last;
+
+    imc::code m_mode;
+    rmc::code m_rmode;
 
     std::string  m_vname, m_uname;
     Position_Map m_reserved;
 
-    double*            m_asum; 
-
-    void SelectDimension(Primitive_Channel *const current);
-    /*!
-      \fn void SelectDimension(Primitive_Channel *const current)
-      \brief Selectes a dimesion for the splitting of the active
-      integration channel. 
-      
-      This method determines the dimesion for the splitting 
-      of the active integration channel. During the previous integration step 
-      the corresponding channel has stored information about the weight 
-      distribution inside itself into a double container. This information
-      is evaluated and the dimesion where the splitting results in the largest 
-      reduction of the variance or the maximum (according to the given 
-      integration mode) is selected.
-    */
-
-    void Point();
-    /*!
-      \fn void Point()
-      \brief Generates one point inside the integration domain according 
-      to the weights of the single channels.
-    */
     void Split();
     /*!
       \fn void Split()
@@ -436,6 +469,12 @@ namespace ATOOLS {
       or the maximum number of integration points has been reached. 
     */
 
+    void Point();
+    /*!
+      \fn void Point()
+      \brief Generates one point inside the integration domain according 
+      to the weights of the single channels.
+    */
     void   Point(std::vector<double> &x);
     /*!
       \fn void   Point(std::vector<double> &x)
@@ -524,9 +563,9 @@ namespace ATOOLS {
       \fn inline void SetScale(const double &scale)
       \brief Sets a possible scale the result is multiplied with.
     */
-    inline void SetMode(const size_t mode)    { m_mode=mode;   }
+    inline void SetMode(const imc::code mode) { m_mode=mode; }
     /*!
-      \fn inline void SetMode(const size_t mode)
+      \fn inline void SetMode(const imc::code mode)
       \brief Sets the integration mode.
 
       This method sets the integration mode. Mode 0 corresponds to variance 
@@ -538,13 +577,13 @@ namespace ATOOLS {
       \fn inline void SetVariableName(const std::string &vname)
       \brief Sets the name of the variable the the integral is identified with.
     */
-    inline void SetUnitName(const std::string &uname)     { m_uname=uname; } 
+    inline void SetUnitName(const std::string &uname) { m_uname=uname; } 
     /*!
       \fn inline void SetUnitName(const std::string &uname)
       \brief Sets the unit of the variable the the integral is identified with.
     */
 
-    inline void SetSplitMode(const size_t split)     { m_split=split;     }
+    inline void SetSplitMode(const size_t split) { m_split=split; }
     /*!
       \fn inline void SetSplitMode(const size_t split)
       \brief Sets the split mode. If set to 0 no channel will be split.
@@ -562,17 +601,27 @@ namespace ATOOLS {
       \brief Sets the integrand.
     */
 
-    inline double Mean() const     { return m_sum/m_np; }
+    inline imc::code Mode() const { return m_mode; }
+    /*!
+      \fn inline double Mode() const
+      \brief Returns the current mode.
+    */
+    inline rmc::code RunMode() const { return m_rmode; }
+    /*!
+      \fn inline double RunMode() const
+      \brief Returns the current integration mode.
+    */
+    inline double Mean() const { return m_sum/m_np; }
     /*!
       \fn inline double Mean() const
       \brief Returns \f$\frac{\sum w}{n}\f$.
     */
-    inline double Max() const      { return m_max;      }
+    inline double Max() const { return m_max; }
     /*!
       \fn inline double Max() const
       \brief Returns \f$max\{w\}\f$.
     */
-    inline double Points() const   { return m_np;       }
+    inline double Points() const { return m_np; }
     /*!
       \fn inline double Points() const
       \brief Returns \f$n\f$.
