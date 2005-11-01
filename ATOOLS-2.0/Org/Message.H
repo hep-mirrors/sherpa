@@ -186,6 +186,8 @@ namespace ATOOLS {
   */
 }
 
+#define msg_Error() ATOOLS::msg.Error()
+#define msg_Out() ATOOLS::msg.Out()
 #define msg_Events() if (ATOOLS::msg.LevelIsEvents()) ATOOLS::msg.Out()
 #define msg_Info() if (ATOOLS::msg.LevelIsInfo()) ATOOLS::msg.Out()
 #define msg_Tracking() if (ATOOLS::msg.LevelIsTracking()) ATOOLS::msg.Out()
@@ -193,6 +195,15 @@ namespace ATOOLS {
 
 #define msg_Indent() ATOOLS::Indentation indent
 #define msg_Indentation(COL) ATOOLS::Indentation indent(COL)
+
+#define bm_back ATOOLS::bm::back
+#define bm_cr ATOOLS::bm::cr
+#define bm_bell ATOOLS::bm::bell
+
+#define mm_up(LINES) ATOOLS::mm(LINES,mm::up)
+#define mm_down(LINES) ATOOLS::mm(LINES,mm::down)
+#define mm_left(COLUMNS) ATOOLS::mm(COLUMNS,mm::left)
+#define mm_right(COLUMNS) ATOOLS::mm(COLUMNS,mm::right)
 
 #define METHOD \
   ATOOLS::msg.ExtractMethodName(__PRETTY_FUNCTION__)
