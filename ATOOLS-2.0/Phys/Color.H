@@ -7,8 +7,13 @@
 */
 
 #include <iostream>
-#include "Node.H"
+#ifndef USING__Color_only
 #include "MyComplex.H"
+#else
+#include <complex>
+typedef std::complex<double> Complex;
+#endif
+#include "Node.H"
 
 namespace ATOOLS {
 

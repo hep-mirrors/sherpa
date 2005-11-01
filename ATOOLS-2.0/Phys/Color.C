@@ -1,8 +1,12 @@
 #include "Color.H"
 
+#ifndef USING__Color_only
 #include "Exception.H"
 #include "Run_Parameter.H"
 #include "MyStrStream.H"
+#else
+#include "Tools.H"
+#endif
 
 using namespace ATOOLS;
 
@@ -358,6 +362,7 @@ Expression::Expression(const std::string &expression):
   m_result(0.0,0.0),
   m_findex(0), m_aindex(0), m_evaluated(0)
 {
+  if (expression.length()==0) THROW(fatal_error,"No input.");
   if (expression.find('+')!=std::string::npos) 
     THROW(not_implemented,"No read in routine for sums yet.");
   std::string expr(expression);
@@ -432,20 +437,28 @@ size_t Expression::Size()
   return terms;
 }
 
+#ifndef USING__Color_only
 static double oldtime(rpa.gen.Timer().UserTime());
+#else  
+static double oldtime(UserTime());
+#endif
 
 void Expression::PrintStatus(const bool endline,const bool print)
 {
+#ifndef USING__Color_only
   double usertime(rpa.gen.Timer().UserTime());
-  if (usertime-oldtime>0.5 || print) {
+#else
+  double usertime(UserTime());
+#endif
+  if (print) {
     oldtime=usertime;
     Expression *root(this);
     while (--*root) root=(Expression*)--*root;
-    msg.Out()<<"Terms evaluated: "<<root->Evaluated()<<"     \n"
+    msg_Out()<<"Terms evaluated: "<<root->Evaluated()<<"     \n"
 	     <<"Terms left     : "<<root->Size()<<"     \n"
 	     <<"Time  elapsed  : "<<usertime<<" s     ";
-    if (endline) msg.Out()<<std::endl;
-    else msg.Out()<<mm(2,mm::up)<<bm::cr<<std::flush;
+    if (endline) msg_Out()<<std::endl;
+    else msg_Out()<<mm_up(2)<<bm_cr<<std::flush;
   }
 }
 
@@ -471,7 +484,9 @@ public:
 
 bool Expression::Evaluate()
 {
+#ifndef USING__Color_only
   if (--*this==NULL) rpa.gen.Timer().Start();
+#endif
   m_result=Complex(1.0,0.0);
   if (size()<1 || (*this)[0]==NULL) return false;
   Complex result2(0.0,0.0);
@@ -502,11 +517,15 @@ bool Expression::Evaluate()
       }
       ++m_cindex;
     }
+#ifndef USING__Color_only
     if (msg.LevelIsTracking()) PrintStatus(false,false);
+#else
+    PrintStatus(false,false);
+#endif
   } while (treat==true);
   for (Color_Term_Vector::iterator tit(begin());tit!=end();++tit) {
     if ((*tit)->Type()!=ctt::number) {
-      msg.Error()<<"Expression::Evaluate(): Result is nan."<<std::endl;
+      msg_Error()<<"Expression::Evaluate(): Result is nan."<<std::endl;
       m_result=Complex(sqrt(-1.0),sqrt(-1.0));
       return false;
     }
@@ -518,8 +537,12 @@ bool Expression::Evaluate()
   m_result+=result2;
   m_evaluated+=1;
   if (--*this==NULL) {
+#ifndef USING__Color_only
     rpa.gen.Timer().Stop();
     if (msg.LevelIsTracking()) PrintStatus();
+#else
+    PrintStatus();
+#endif
   }
   return true;
 }
@@ -528,7 +551,9 @@ void Expression::Print()
 {
   msg_Info()<<"("<<this<<"): {\n";
   {
+#ifndef USING__Color_only
     msg_Indent();
+#endif
     for (Color_Term_Vector::iterator tit(begin());tit!=end();++tit) {
       (*tit)->Print();
       msg_Info()<<"\n";
@@ -536,7 +561,9 @@ void Expression::Print()
   }
   msg_Info()<<"}\n";
   {
+#ifndef USING__Color_only
     msg_Indent();
+#endif
     if (operator->()!=NULL) {
       for (size_t i(0);i<(*this)().size();++i) {
 	Expression *expression((Expression*)(*this)()[i]);
