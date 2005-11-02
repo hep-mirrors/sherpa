@@ -28,9 +28,11 @@ namespace ATOOLS {
       \fn virtual double operator()(const std::vector<double> &point) const
       \brief Evaluates the integrand at the given point
     */
-    virtual void AddPoint(const double weight);
+    virtual void AddPoint(const double value,const double weight,
+			  const int mode=0);
     /*!
-      \fn virtual void AddPoint(const double weight)
+      \fn virtual void AddPoint(const double value,const double weight,
+                                const int mode=0)
       \brief Updates the integrand with the approved phasespace points.
     */
     virtual void FinishConstruction(const double apweight);
@@ -126,9 +128,9 @@ namespace ATOOLS {
       \fn void Reset()
       \brief Resets the weight, the squared weight and the number of points.
     */
-    void DeletePoints();
+    void DeletePoints(const int mode=0);
     /*!
-      \fn void DeletePoints()
+      \fn void DeletePoints(const int mode=0)
       \brief Deletes the stored phase space points.
     */
     void SetWeight();
@@ -311,7 +313,7 @@ namespace ATOOLS {
       \brief Returns \f$\sqrt{\frac{SVariance()}{n_{stored}}}\f$
     */
 
-    inline bool Boundary() const { return m_next[0]==NULL; }
+    inline bool Boundary() const { return m_next.front()==NULL; }
     /*!
       \fn inline bool Boundary() const
       \brief Determines whether the channel is a boundary of the 
@@ -599,6 +601,12 @@ namespace ATOOLS {
     /*!
       \fn inline void SetFunction(Primitive_Integrand *const function)
       \brief Sets the integrand.
+    */
+    inline Primitive_Integrand *const Function() const
+    { return p_function; }
+    /*!
+      \fn inline Primitive_Integrand *const Function() const
+      \brief Returns the integrand.
     */
 
     inline imc::code Mode() const { return m_mode; }
