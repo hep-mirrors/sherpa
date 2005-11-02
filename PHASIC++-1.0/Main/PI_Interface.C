@@ -70,10 +70,12 @@ double PI_Interface::operator()(const std::vector<double> &x)
   return m_value;
 }
 
-void PI_Interface::AddPoint(const double weight)
+void PI_Interface::AddPoint(const double value,const double weight,
+			    const int mode)
 {
   if (!m_initialize) return;
-  m_stop=m_stop|p_pshandler->Integrator()->AddPoint(m_value*weight);
+  if (mode==0) m_stop=m_stop|p_pshandler->Integrator()->
+		 AddPoint(value*weight);
 }
 
 void PI_Interface::FinishConstruction(const double apweight)

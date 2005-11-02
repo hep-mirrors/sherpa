@@ -38,7 +38,8 @@ namespace PHASIC {
     double GenerateWeight();
 
     double operator()(const std::vector<double> &x);
-    void   AddPoint(const double weight);
+    void   AddPoint(const double value,const double weight,
+		    const int mode);
     void   FinishConstruction(const double apweight);
 
     bool WriteOut(const std::string &path) const;
