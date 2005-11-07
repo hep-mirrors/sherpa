@@ -365,6 +365,10 @@ double Primitive_Integrator::Integrate(Primitive_Integrand *const function)
   for (size_t i(0);i<m_channels.size();++i) msg_Debugging()<<*m_channels[i];
   msg_Debugging()<<"}"<<std::endl;
   m_apweight=m_channels[0]->Alpha();
+  m_rmode=rmc::construct;
+  long unsigned int nfirst((m_channels.size()-m_point.size())*m_nopt/2);
+  for (long unsigned int n(0);n<nfirst;++n) Point();
+  Split();
 #ifndef USING__PI_only
   msg_Info()<<tm::curoff;
 #endif
@@ -594,10 +598,9 @@ bool Primitive_Integrator::Shuffle()
  	oldnorm+=alpha;
 	switch (m_mode) {
 	case imc::maxopt:
-	  break;
 	case imc::varopt:
 	default:
- 	  alpha=sqrt(alpha*m_channels[i]->SSum2()/m_channels[i]->SPoints());
+ 	  alpha=m_channels[i]->SSum2()/m_channels[i]->SSum();
  	}
 	if (!(alpha>0.0)) 
 	  THROW(fatal_error,"Invalid weight.");
