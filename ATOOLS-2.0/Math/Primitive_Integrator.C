@@ -372,7 +372,6 @@ double Primitive_Integrator::Integrate(Primitive_Integrand *const function)
 #ifndef USING__PI_only
   msg_Info()<<tm::curoff;
 #endif
-  m_rmode=rmc::construct;
   while (((long unsigned int)m_np)<m_nmax/2 &&
 	 m_channels.size()-m_point.size()<m_ncells) {
     for (;m_ndiced<m_nopt;++m_ndiced) Point();
@@ -781,6 +780,7 @@ Split(const std::string &key,const size_t nprev,
   for (size_t i(0);i<m_channels.size();++i) {
     m_channels[i]->SetAlpha(alpha);
     m_channels[i]->SaveAlpha();
+    m_channels[i]->SetPosition(1);
   }
 }
 
