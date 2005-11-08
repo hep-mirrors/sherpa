@@ -599,7 +599,7 @@ bool Primitive_Integrator::Shuffle()
 	case imc::maxopt:
 	case imc::varopt:
 	default:
- 	  alpha=m_channels[i]->SSum2()/m_channels[i]->SSum();
+ 	  alpha=sqrt(alpha*m_channels[i]->SSum2()/m_channels[i]->SSum());
  	}
 	if (!(alpha>0.0)) 
 	  THROW(fatal_error,"Invalid weight.");
