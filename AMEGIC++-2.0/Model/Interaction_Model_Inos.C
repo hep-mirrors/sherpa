@@ -48,14 +48,14 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 	  vertex[vanz].in[1] = flav3;
 	  vertex[vanz].in[2] = flav1;
 	
-	  kcpl1 = -M_I/root2*g2*
-	    (K_Z_R(0,k-31)*K_Z_PL(0,i-41)*K_Z_MI(1,j-41)+
-	     K_Z_R(1,k-31)*K_Z_PL(1,i-41)*K_Z_MI(0,j-41));
-	    
 	  kcpl0 = -M_I/root2*g2*
 	    (K_Z_R(0,k-31)*K_Z_PL(0,j-41)*K_Z_MI(1,i-41)+
 	     K_Z_R(1,k-31)*K_Z_PL(1,j-41)*K_Z_MI(0,i-41));
 	  
+	  kcpl1 = -M_I/root2*g2*
+	    (K_Z_R(0,k-31)*K_Z_PL(0,i-41)*K_Z_MI(1,j-41)+
+	     K_Z_R(1,k-31)*K_Z_PL(1,i-41)*K_Z_MI(0,j-41));
+	
 	  vertex[vanz].cpl[0] = kcpl0.Value();
 	  vertex[vanz].cpl[1] = kcpl1.Value();
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
@@ -77,12 +77,12 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 	  vertex[vanz].in[2] = flav1;
 
 	  kcpl0 = g2/root2*
-	    (K_Z_H(0,0)*K_Z_PL(0,i-41)*K_Z_MI(1,j-41)+
-	     K_Z_H(1,0)*K_Z_PL(1,i-41)*K_Z_MI(0,j-41));
-	    
-	  kcpl1 = -g2/root2*
 	    (K_Z_H(0,0)*K_Z_PL(0,j-41)*K_Z_MI(1,i-41)+
 	     K_Z_H(1,0)*K_Z_PL(1,j-41)*K_Z_MI(0,i-41));
+
+	  kcpl1 = -g2/root2*
+	    (K_Z_H(0,0)*K_Z_PL(0,i-41)*K_Z_MI(1,j-41)+
+	     K_Z_H(1,0)*K_Z_PL(1,i-41)*K_Z_MI(0,j-41));
 	  
 	  vertex[vanz].cpl[0] = kcpl0.Value();
 	  vertex[vanz].cpl[1] = kcpl1.Value();
@@ -123,7 +123,7 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 	     (K_Z_N(0,j-43)*sintW-K_Z_N(1,j-43)*costW)+
 	     (K_Z_R(0,k-31)*K_Z_N(2,j-43)-K_Z_R(1,k-31)*K_Z_N(3,j-43))*
 	     (K_Z_N(0,i-43)*sintW-K_Z_N(1,i-43)*costW));
-	  		  	  
+
 	  vertex[vanz].cpl[0] = kcpl0.Value();
 	  vertex[vanz].cpl[1] = kcpl1.Value();
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
@@ -144,6 +144,7 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 	  vertex[vanz].in[2] = flav2;
 	  vertex[vanz].in[1] = flav3;
 	  // Z_N have to be complex conjugated for cpl[0]
+
 
 	  kcpl0 = -g2/(costW*num_2)*
 	    ((K_Z_H(0,k-33)*K_Z_N(2,j-43)-K_Z_H(1,k-33)*K_Z_N(3,j-43))*
@@ -184,8 +185,8 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 	Flavour flav2 = Flavour(kf::code(j));
 	if (flav1.IsOn() && flav2.IsOn()) {
 	  vertex[vanz].in[0] = flav2;
-	  vertex[vanz].in[1] = flHm.Bar();
-	  vertex[vanz].in[2] = flav1;
+	  vertex[vanz].in[1] = flHm;
+	  vertex[vanz].in[2] = flav1.Bar();
 	  
 	  kcpl0 = -M_I*g2/costW*
 	    K_Z_H(1,0)*(K_Z_PL(1,i-41)/root2*
@@ -196,7 +197,7 @@ void Interaction_Model_Inos::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 	    K_Z_H(0,0)*(K_Z_MI(1,i-41)/root2*
 			(K_Z_N(0,j-43)*sintW+K_Z_N(1,j-43)*costW)-
 			K_Z_MI(0,i-41)*K_Z_N(2,j-43)*costW);
-	  
+
 	  vertex[vanz].cpl[0] = kcpl0.Value(); 
 	  vertex[vanz].cpl[1] = kcpl1.Value();
 	  vertex[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
@@ -297,11 +298,11 @@ void Interaction_Model_Inos::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
 	 vertex[vanz].in[1] = Flavour(kf::W).Bar();
 	 vertex[vanz].in[2] = flav2;
 
-	 kcpl0 = M_I*g2*(K_Z_N(1,i-43)*K_Z_MI(0,j-41)+
-			 K_Z_N(2,i-43)*K_Z_MI(1,j-41)/root2);
-	 
-	 kcpl1 = M_I*g2*(K_Z_N(1,i-43)*K_Z_PL(0,j-41)-
+	 kcpl0 = M_I*g2*(K_Z_N(1,i-43)*K_Z_PL(0,j-41)-
 			 K_Z_N(3,i-43)*K_Z_PL(1,j-41)/root2);
+
+	 kcpl1 = M_I*g2*(K_Z_N(1,i-43)*K_Z_MI(0,j-41)+
+			 K_Z_N(2,i-43)*K_Z_MI(1,j-41)/root2);
 
 	 vertex[vanz].cpl[0] = kcpl0.Value();
 	 vertex[vanz].cpl[1] = kcpl1.Value(); 
