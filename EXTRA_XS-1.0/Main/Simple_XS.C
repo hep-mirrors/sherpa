@@ -14,6 +14,7 @@
 #include "Regulator_Base.H"
 #include "Remnant_Base.H"
 #include "Phase_Space_Handler.H"
+#include "Ladder.H"
 
 using namespace EXTRAXS;
 using namespace MODEL;
@@ -160,8 +161,17 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	    for (int i=0;i<nIS;i++) inisum+=flavs[i].Mass();
 	    for (int i=0;i<nFS;i++) finsum+=flavs[i+nIS].Mass();
 	    if (inisum<rpa.gen.Ecms() && finsum<rpa.gen.Ecms()) {
-	      InitializeProcess(flavs,efunc,inisum,finsum,
-				order_ew,order_strong,nIS,nFS,0);
+	      if (nFS==0) {
+		Ladder *ladder(new Ladder(nIS,nFS,flavs,m_scalescheme,
+					  m_kfactorscheme,p_beamhandler,
+					  p_isrhandler,p_selectordata));
+		m_xsecs.push_back(ladder);
+		ladder->Initialize();
+	      }
+	      else {
+		InitializeProcess(flavs,efunc,inisum,finsum,
+				  order_ew,order_strong,nIS,nFS,0);
+	      }
 	      if (m_xsecs.size()>0) p_selected=m_xsecs.back();
 	    }
 	    delete [] flavs;
@@ -193,7 +203,7 @@ void Simple_XS::InitializeProcess(ATOOLS::Flavour *flavs,std::string &efunc,
 			order_ew,order_strong,nin,nout,i+1);
     }
     else {
-      OrderFlavours(help);
+      if (nin+nout==4) OrderFlavours(help);
       MyStrStream converter;
       for (size_t m=0;m<nin+nout;++m) converter<<help[m];
       std::string name;
@@ -342,9 +352,12 @@ bool Simple_XS::CalculateTotalXSec(const std::string &resultpath)
   return okay;
 }
 
-bool  Simple_XS::SelectOne() {
+bool  Simple_XS::SelectOne() 
+{
   DeSelect();
-  if (m_totalxs==0) p_selected = m_xsecs[int(ran.Get()*m_xsecs.size())];
+  if (m_totalxs==0) 
+    p_selected = m_xsecs[ATOOLS::Min(size_t(ran.Get()*m_xsecs.size()),
+				     m_xsecs.size())];
   else {
     double disc = m_totalxs * ran.Get(); 
     for (size_t i=0;i<m_xsecs.size();++i) {

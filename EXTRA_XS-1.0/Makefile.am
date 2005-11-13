@@ -2,7 +2,7 @@ MAKE = make
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
-SUBDIRS       =	Main Two2Two
+SUBDIRS       =	Main Two2Two BFKL
 EXTRA_DIST    = $(CVSINCLUDE)
 
 
