@@ -2,7 +2,7 @@ SHERPASYS     =	../..
 
 EXTRAXSFLAGS  =	-pedantic -Wall -Winline
 
-EXTRAXSINCS   =	-I../Two2Two
+EXTRAXSINCS   =	-I../Two2Two -I../BFKL
 PHASICINCS    =	-I$(SHERPASYS)/PHASIC++-1.0/Main
 MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
 BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
