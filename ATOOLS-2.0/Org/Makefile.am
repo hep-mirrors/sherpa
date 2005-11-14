@@ -78,5 +78,6 @@ include_HEADERS       =	\
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(ATOOLSFLAGS) $(ROOTFLAGS) \
 		-DSHERPA_INCLUDE_PATH=\"$(includedir)\" \
-		-DSHERPA_BINARY_PATH=\"$(bindir)\"
+		-DSHERPA_BINARY_PATH=\"$(bindir)\" \
+		-DSHERPA_PDFS_PATH=\"$(datadir)\"
 INCLUDES      = $(MODELINCS) $(ATOOLSINCS) $(ROOTINCS)
