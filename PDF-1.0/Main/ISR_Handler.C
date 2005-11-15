@@ -578,7 +578,7 @@ bool ISR_Handler::CheckRemnantKinematics(const ATOOLS::Flavour &fl,
   p_remnants[beam]->QuickClear();
   double pp(beam==0?x*p_beam[0]->OutMomentum().PPlus():
 	    x*p_beam[1]->OutMomentum().PMinus());
-  double pm(sqr(fl.PSMass()));
+  double pm(sqr(fl.Mass()));
   if (m_kmrmode>0) pm=-m_kpkey[beam][3]/(1.0-m_zkey[beam][2])+m_kpkey[beam][3];
   pm/=pp;
   Vec4D mom((pp+pm)/2.0,m_kpkey[beam](0)[1],
