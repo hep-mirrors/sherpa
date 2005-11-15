@@ -50,3 +50,9 @@ void LEV_Base::SetKT2Max(const double &kt2max)
 {
   m_kt2max=kt2max; 
 }
+
+LEV_Base *LEV_Base::Selected() const
+{
+  return p_selected;
+}
+

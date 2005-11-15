@@ -2,11 +2,16 @@
 
 #include "Phase_Space_Handler.H"
 #include "Beam_Spectra_Handler.H"
+#include "Doubly_Unintegrated_PDF.H"
 #include "Run_Parameter.H"
 #include "Random.H"
+#include "Flow.H"
+
+#define NC 3.0
 
 using namespace EXTRAXS;
 using namespace PHASIC;
+using namespace PDF;
 using namespace ATOOLS;
 
 Ladder::Ladder(const size_t nin,const size_t nout,
@@ -17,7 +22,8 @@ Ladder::Ladder(const size_t nin,const size_t nout,
 	       ATOOLS::Selector_Data *const selectordata):
   XS_Group(nin,nout,flavours,scalescheme,kfactorscheme,
 	   beamhandler,isrhandler,selectordata),
-  p_sudakov(new BFKL_Sudakov()) 
+  p_sudakov(new BFKL_Sudakov()),
+  m_ncols(0)
 { 
   m_name="BFKL_ME";
 }
@@ -33,11 +39,11 @@ bool Ladder::Initialize()
   m_kt2min=0.0;
   for (short unsigned int i(0);i<m_nin;++i) {
     m_flavs.push_back(p_flavours[i]);
-    p_pdfs[i]=p_isrhandler->PDF(i);
-    m_kt2min=ATOOLS::Max(m_kt2min,p_pdfs[i]->Cut("kp"));// is kt2 in fact :(
+    p_pdfs[i]=dynamic_cast<Doubly_Unintegrated_PDF*>(p_isrhandler->PDF(i));
     if (p_pdfs[i]==NULL || 
 	p_pdfs[i]->Type().find("DUPDF")==std::string::npos)
       THROW(fatal_error,"BFKL ME needs UPDF.");
+    m_kt2min=ATOOLS::Max(m_kt2min,p_pdfs[i]->Cut("kp"));// is kt2 in fact :(
   }
   p_sudakov->SetKT2Min(m_kt2min);
   delete [] p_momenta;
@@ -64,45 +70,52 @@ void Ladder::CreateISRChannels()
   p_pshandler->KMRZIntegrator()->DropAllChannels();
 }
 
-double Ladder::Jacobian()
+double Ladder::Jacobian() const
 {
-  double jacobian(1.0);
-  jacobian*=sqrt(m_z1/(1.0-m_z1)*m_kt21/m_q2);
-  jacobian*=m_k2[0]*m_k2[3]/(m_a2*m_z2*(1.0-m_z2));
+  double jacobian(m_a1);
+  jacobian*=(m_a2*m_z2*(1.0-m_z2))/(m_k2[0]*m_k2[3])/(2.0*M_PI);
   return jacobian;
 }
 
-bool Ladder::GeneratePSJet()
+double Ladder::Flux() const
 {
-  double rn[4], Q(sqrt(m_q2));
+  double flux(2.0*m_q2);
+  double b1(m_kt21/(m_a1*m_pa.PPlus())), b2(m_kt22/(m_a2*m_pb.PMinus()));
+  flux*=m_a1*m_a2-b1*b2;
+  return flux;
+}
+
+bool Ladder::GeneratePDFJet()
+{
+  double rn[4];
+  double Q(sqrt(m_q2)), lnt(0.5*log(4.0*m_kt2min/m_q2));
   while (true) {
     for (short unsigned int i(0);i<4;++i) rn[i]=ran.Get();
-    double ymin(Min(m_yb,0.5*log(4.0*m_kt2min/m_q2)));
-    double ymax(ATOOLS::Max(m_ya,-0.5*log(4.0*m_kt2min/m_q2)));
+    double ymin(ATOOLS::Max(m_yb,lnt)), ymax(ATOOLS::Min(m_ya,-lnt));
+    if (ymin>=ymax) THROW(fatal_error,"No allowed y range.");
     // dice y
     m_y1=ymin+rn[0]*(ymax-ymin);
+    m_weight=ymax-ymin;
     double kt2max(sqrt(m_kt2min*m_q2)*exp(-dabs(m_y1)));
-    kt2max=ATOOLS::Min(m_q2*exp(-2.0*dabs(m_y1)),kt2max);
     if (m_kt2min>=kt2max) continue;
     // dice kt2
     m_kt21=m_kt2min*pow(kt2max/m_kt2min,rn[1]);
-    // dice phi
+    m_weight*=log(kt2max/m_kt2min)*m_kt21;
+     // dice phi
     m_phi1=2.0*M_PI*rn[2];
+    m_weight*=2.0*M_PI;
     double kt1(sqrt(m_kt21));
     double a(kt1/Q*exp(m_y1));
-//     PRINT_INFO(kt1<<" "<<m_y1<<" -> "<<a);
     // construct emission
     double pp(a*m_pa.PPlus()), pm(m_kt21/pp);
     m_k1=Vec4D(0.5*(pp+pm),kt1*cos(m_phi1),kt1*sin(m_phi1),0.5*(pp-pm));
     // dice z
     m_z1=rn[3]*(1.0-a);
+    m_weight*=1.0-a;
     m_a1=m_z1/(1.0-m_z1)*a;
     pp=m_a1*m_pa.PPlus();
     pm=m_pa.PMinus()-pm;
     m_moms[0]=m_q=Vec4D(0.5*(pp+pm),-m_k1[1],-m_k1[2],0.5*(pp-pm));
-//     PRINT_INFO(m_kt21/m_k1.PPerp2()<<" & "<<m_y1/m_k1.Y());
-//     PRINT_INFO(a<<" "<<m_a1<<" "<<m_z1<<" "<<m_k1<<" "<<m_k1.Abs2());
-//     PRINT_INFO(a<<" "<<m_a1<<" "<<m_z1<<" "<<m_q<<" "<<m_q.Abs2());
     if (a>1.0 || m_a1>1.0 || m_z1>1.0) {
       msg.Error()<<METHOD<<"(): LCM out of range."<<std::endl;
       return false;
@@ -115,6 +128,18 @@ bool Ladder::GeneratePSJet()
 
 bool Ladder::ConstructRung()
 {
+  double y(p_sudakov->GetY());
+  double qt2(p_sudakov->GetQT2()), phi(p_sudakov->GetPhi());
+  double qt(sqrt(qt2));
+  Vec4D k(0.0,qt*cos(phi),qt*sin(phi),0.0);
+  k=m_q.Perp()-k;
+  double kt(k.PPerp());
+  k[0]=kt*cosh(y);
+  k[3]=kt*sinh(y);
+  m_oldq=m_q;
+  m_q=m_q-k;
+  m_moms.push_back(k);
+  m_flavs.push_back(p_sudakov->Selected()->GetB());
   return true;
 }
 
@@ -124,30 +149,33 @@ bool Ladder::GenerateLadder()
     m_moms.resize(m_nin);
     m_flavs.resize(m_nin);
     p_sudakov->Initialize();
-    if (!GeneratePSJet()) return false;
-    p_sudakov->SetKT2Max(sqr(rpa.gen.Ecms()));// subtract pdf jet kt
+    if (!GeneratePDFJet()) return false;
+    p_sudakov->SetKT2Min(m_kt2min);
+    p_sudakov->SetKT2Max(m_q2);
     while (p_sudakov->Dice()) {
-      ConstructRung();
-      //   if (!p_sudakov->CalculateWeight(m_moms)) {
-      //     m_moms.pop_back();
-      //     continue;
-      //   }
-      // m_weight*=p_sudakov->Weight();
-      // p_sudakov->SetKT2Max(sqr(rpa.gen.Ecms()));// subtract pdf jet kt
+      if (ConstructRung()) {
+	if (p_sudakov->CalculateWeight(m_moms)) {
+	  m_weight*=p_sudakov->Weight();
+	}
+	else {
+	  m_moms.pop_back();
+	  m_flavs.pop_back();
+	  m_q=m_oldq;
+	}
+      }
     }
-    double pp(m_q.PPlus()), pm(m_q.PPerp2()/pp);
+    double pp(m_q.PPlus()-m_pb.PPlus()), pm(m_q.PPerp2()/pp);
     m_k2=Vec4D(0.5*(pp+pm),m_q[1],m_q[2],0.5*(pp-pm));
     m_a2=-m_q.PMinus()/m_pb.PMinus();
     m_kt22=m_k2.PPerp2();
     m_moms[1]=-1.0*m_q;
     m_q=m_q-m_k2;
-    if (!m_q.Nan() && m_q[0]<0.0 && m_q[0]>-m_pb[0]) {
-//       PRINT_INFO(pp<<" "<<pm<<" "<<m_k2<<" "<<m_k2.Abs2());
-//       PRINT_INFO(pp<<" "<<pm<<" "<<m_moms[1]<<" "<<m_moms[1].Abs2());
+    m_z2=-m_moms[1].PMinus()/m_q.PMinus();
+    if (!m_q.Nan() && m_k2.Y()<m_y1 && 
+	m_q[0]<0.0 && m_q[0]>-m_pb[0]) {
       break; 
     }
   }
-  m_z2=1.0+m_k2.PMinus()/m_q.PMinus();
   m_weight*=Jacobian();
   return true;
 }
@@ -155,13 +183,15 @@ bool Ladder::GenerateLadder()
 bool Ladder::SetScales()
 {
   double fac(ATOOLS::rpa.gen.FactorizationScaleFactor());
-  if (m_moms.size()>2) {
-    m_mu21=fac*sqr(m_a1)*m_q2*m_moms[2].PMinus()/m_moms[2].PPlus();
-    m_mu22=fac*sqr(m_a2)*m_q2*m_moms.back().PPlus()/m_moms.back().PMinus();
+  if (m_moms.size()>m_nin) {
+    m_mu21=fac*m_moms[2].PPerp2()*
+      sqr(m_moms.front().PPlus()/m_moms[2].PPlus());
+    m_mu22=fac*m_moms.back().PPerp2()*
+      sqr(m_moms[1].PMinus()/m_moms.back().PMinus());
   }
   else {
-    m_mu21=fac*sqr(m_a1)*m_q2*m_k2.PMinus()/m_k2.PPlus();
-    m_mu22=fac*sqr(m_a2)*m_q2*m_k1.PPlus()/m_k1.PMinus();
+    m_mu21=fac*m_kt22/sqr(1.0-m_z2);
+    m_mu22=fac*m_kt21/sqr(1.0-m_z1);
   }
   return true;
 }
@@ -182,20 +212,33 @@ double Ladder::Differential(const ATOOLS::Vec4D *momenta)
     msg.Error()<<METHOD<<"(..): Invalid scales. Set weight 0."<<std::endl;
     return 0.0;
   }
+  p_pdfs[1]->SetSudakovMode(1-(int)(m_moms.size()==m_nin));
   p_pdfs[0]->Calculate(m_a1,m_z1,m_kt21,m_mu21);
   p_pdfs[1]->Calculate(m_a2,m_z2,m_kt22,m_mu22);
-  m_weight*=p_pdfs[0]->GetXPDF(m_flavs[0]);
-  m_weight*=p_pdfs[1]->GetXPDF(m_flavs[1]);
-//   if (rpa.gen.NumberOfDicedEvents()>1) PRINT_INFO(m_k1<<" "<<m_k2);
+  m_weight*=p_pdfs[0]->GetXPDF(m_flavs[0])/m_a1;
+  m_weight*=p_pdfs[1]->GetXPDF(m_flavs[1])/m_a2;
+  m_weight*=4.0*sqr(m_q2)/(NC*NC-1.0)/Flux();
+  if (m_ncols<m_moms.size()) {
+    for (size_t i(0);i<m_ncols;++i) delete [] p_colours[i]; 
+    if (m_ncols>0) delete [] p_colours;
+    m_ncols=m_moms.size();
+    p_colours = new int*[m_ncols];
+    for (size_t i(0);i<m_ncols;++i) p_colours[i] = new int[2];
+  }
+  p_colours[0][0]=p_colours[1][1]=Flow::Counter();
+  for (size_t i(1);i<m_moms.size();++i)
+    p_colours[i][0]=p_colours[i-1][1]=Flow::Counter();
+  p_colours[m_moms.size()-1][1]=p_colours[0][0];
+  std::swap<int>(p_colours[0][0],p_colours[0][1]);
+  std::swap<int>(p_colours[1][0],p_colours[1][1]);
   m_nvector=m_moms.size();
-  m_nout=m_nvector-m_nin;
+  m_maxjetnumber=m_nout=m_nvector-m_nin;
   p_momenta=&m_moms.front();
-//   PRINT_INFO(p_momenta[0]<<p_momenta[1]);
   p_flavours=&m_flavs.front();
   m_nstrong=m_nin+m_nout;
   p_addmomenta[0]=m_k1;
   p_addmomenta[1]=m_k2;
-  return m_weight;
+  return dabs(m_weight);
 }
 
 double Ladder::Differential2()

@@ -48,13 +48,13 @@ namespace EXTRAXS {
     virtual void SetKT2Min(const double &kt2min);
     virtual void SetKT2Max(const double &kt2max);
 
+    virtual LEV_Base *Selected() const;
+
     // inline functions
     inline ATOOLS::Flavour GetA() const { return m_fla; }
     inline ATOOLS::Flavour GetB() const { return m_flb; }
     inline ATOOLS::Flavour GetC() const { return m_flc; }
       
-    inline LEV_Base *Selected() const { return p_selected; }
-
   };// end of class LEV_Base
 
 }// end of namespace EXTRAXS

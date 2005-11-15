@@ -29,14 +29,15 @@ bool BFKL_Sudakov::Initialize()
 {
   m_asbarmax=AlphaSBar(m_kt2min);
   m_y=m_ya;
+  return true;
 }
 
 bool BFKL_Sudakov::Dice()
 {
   double rn[4];
   for (short unsigned int i(0);i<4;++i) rn[i]=ran.Get();
-  // set limits here
-  p_levs->SetKT2Max(m_kt2max);
+  // set naive kt limit
+  p_levs->SetKT2Max(m_kt2max/4.0);
   // get last integral
   m_integral=p_levs->MajorIntegral();
   // dice new y
@@ -47,18 +48,21 @@ bool BFKL_Sudakov::Dice()
   // dice new phi
   m_phi=2.0*M_PI*rn[2];
   // select splitting
-  p_levs->SelectSplitting(rn[3]);
-//   PRINT_INFO(m_y<<" "<<m_qt2<<" "<<m_phi<<" "<<m_asbarmax<<" "<<m_kt2min<<" "<<" "<<qt2max<<" "<<m_integral);
+  p_levs->SelectLEV(rn[3]);
   return m_y>m_yb;
 }
 
 bool BFKL_Sudakov::CalculateWeight(const Vector_Vector &moms)
 {
   m_weight=1.0;
+  double kt2(moms.back().PPerp2());
+  // kt limits
+  if (kt2<m_kt2min) return false;
   // coupling weight
   if (AlphaSBar(m_qt2)<m_asbarmax*ran.Get()) return false;
+  // angular ordering weight
+  if (sqrt(m_kt2min*m_kt2max)*exp(-dabs(m_y))<kt2) return false;
   // splitting weight
-  double kt2(moms.back().PPerp2());
   if (p_levs->Selected()->Value(m_y,kt2)<
       p_levs->Selected()->Value(m_y,kt2)*ran.Get()) return false;
   return true;

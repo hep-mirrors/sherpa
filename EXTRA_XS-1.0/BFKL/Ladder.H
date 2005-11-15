@@ -5,6 +5,8 @@
 #include "ISR_Handler.H"
 #include "XS_Group.H"
 
+namespace PDF { class Doubly_Unintegrated_PDF; }
+
 namespace EXTRAXS {
 
   class Ladder: public XS_Group {
@@ -17,22 +19,25 @@ namespace EXTRAXS {
 
     BFKL_Sudakov *p_sudakov;
 
-    PDF::PDF_Base *p_pdfs[2];
+    PDF::Doubly_Unintegrated_PDF *p_pdfs[2];
 
     Vector_Vector  m_moms;
     Flavour_Vector m_flavs;
 
-    ATOOLS::Vec4D m_pa, m_pb, m_k1, m_k2, m_q;
+    ATOOLS::Vec4D m_pa, m_pb, m_k1, m_k2, m_q, m_oldq;
 
     double m_weight, m_ya, m_yb, m_kt2min, m_q2;
     double m_y1, m_kt21, m_phi1, m_z1;
     double m_a1, m_a2, m_z2, m_kt22, m_mu21, m_mu22;
 
-    bool GeneratePSJet();
+    size_t m_ncols;
+
+    bool GeneratePDFJet();
     bool ConstructRung();
     bool GenerateLadder();
 
-    double Jacobian();
+    double Jacobian() const;
+    double Flux() const;
     bool   SetScales();
 
   public:

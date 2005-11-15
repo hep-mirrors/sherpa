@@ -46,6 +46,8 @@ namespace EXTRAXS {
 
     inline double Weight() const { return m_weight; }
 
+    inline LEV_Base *Selected() const { return p_levs->Selected(); }
+
   };// end of class BFKL_Sudakov
 
 }// end of namespace EXTRAXS

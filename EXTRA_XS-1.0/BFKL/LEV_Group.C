@@ -46,7 +46,7 @@ double LEV_Group::MajorIntegral()
   return value;
 }
 
-bool LEV_Group::SelectSplitting(const double &rn)
+bool LEV_Group::SelectLEV(const double &rn)
 {
   for (size_t i(0);i<m_levs.size();++i) {
     if (m_integrals[i]/m_integrals.back()>=rn) {
@@ -84,3 +84,9 @@ void LEV_Group::SetKT2Max(const double &kt2max)
     m_levs[i]->SetKT2Max(kt2max);
   m_kt2max=kt2max; 
 }
+
+LEV_Base *LEV_Group::Selected() const
+{
+  return p_selected->Selected();
+}
+

@@ -38,7 +38,9 @@ namespace EXTRAXS {
 
     void Add(LEV_Base *const lev);
 
-    bool SelectSplitting(const double &rn);
+    bool SelectLEV(const double &rn);
+
+    LEV_Base *Selected() const;
 
   };// end of class LEV_Group
 
