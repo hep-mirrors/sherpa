@@ -1,11 +1,6 @@
 #ifndef CXXFLAGS_H
 #define CXXFLAGS_H
 
-#define SHERPA_VERSION "1"
-#define SHERPA_SUBVERSION "0"
-
-#define SHERPA_BUILD_PATH "/home/stefan/hep/sherpa/main/SHERPA-MC-1.0"
-
 #ifdef USING__CLHEP
 #undef USING__CLHEP
 #endif
@@ -16,14 +11,7 @@
 #undef USING__LHAPDF
 #endif
 #define USING__Model
-#ifdef USING__Isajet
-#undef USING__Isajet
-#endif
-#ifdef USING__Hdecay
-#undef USING__Hdecay
-#endif
 #define USING__Adicic
-#define USING__ApacicVT
 #define USING__Amisic
 #define USING__CSS
 #define USING__Ahadic
