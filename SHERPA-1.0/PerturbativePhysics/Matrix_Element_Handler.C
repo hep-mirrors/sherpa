@@ -125,6 +125,7 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
       m_eventmode=-31;
     else m_eventmode=0;
   }
+  m_nmoms = MaxJets();
   p_flavs = new Flavour[MaxJets()+2];
   p_moms  = new Vec4D[MaxJets()+2];
   if (m_apply_hhmf) SetupHHMF();
@@ -399,7 +400,14 @@ bool Matrix_Element_Handler::GetMomentaNFlavours() {
     }
     break;
   case 2: 
+    int nmoms(m_nmoms);
     m_nmoms = p_simplexs->NIn()+p_simplexs->NOut();
+    if (m_nmoms>nmoms) {
+      delete [] p_flavs;
+      delete [] p_moms;
+      p_flavs = new Flavour[m_nmoms];
+      p_moms = new Vec4D[m_nmoms];
+    }
     if (p_simplexs->Flavours() && p_simplexs->Momenta()) {
       for (int i=0;i<m_nmoms;++i) p_flavs[i] = p_simplexs->Flavours()[i];
       for (int i=0;i<m_nmoms;++i) p_moms[i]  = p_simplexs->Momenta()[i];
