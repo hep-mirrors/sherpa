@@ -40,9 +40,9 @@ namespace ATOOLS {
   public:
 
     // constructor
-    inline My_File(): p_file(NULL), m_mode(fom::permanent) {}
+    My_File();
     // destructor
-    inline ~My_File() { Close(); }
+    ~My_File();
 
     // member functions
     bool Open();
@@ -59,9 +59,9 @@ namespace ATOOLS {
 
     const fom::code &Mode() const;
 
-    inline File_Type *operator()() const { return --p_file; }
-    inline File_Type *operator->() const { return --p_file; }
-    inline File_Type &operator*() const  { return *p_file;  }
+    File_Type *operator()() const;
+    File_Type *operator->() const;
+    File_Type &operator*() const;
 
   };// end of class My_File
 

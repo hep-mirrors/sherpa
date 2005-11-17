@@ -41,6 +41,34 @@ namespace ATOOLS {
 }
 
 template <class FileType>
+inline My_File<FileType>::My_File(): 
+  p_file(NULL), m_mode(fom::permanent) {}
+
+template <class FileType>
+inline My_File<FileType>::~My_File() 
+{ 
+  Close(); 
+}
+
+template <class FileType>
+FileType *My_File<FileType>::operator()() const 
+{ 
+  return --p_file; 
+}
+
+template <class FileType>
+FileType *My_File<FileType>::operator->() const 
+{ 
+  return --p_file; 
+}
+
+template <class FileType>
+FileType &My_File<FileType>::operator*() const  
+{ 
+  return *p_file;  
+}
+
+template <class FileType>
 bool My_File<FileType>::Open() 
 { 
   if (m_path=="" && m_file=="") return false;
