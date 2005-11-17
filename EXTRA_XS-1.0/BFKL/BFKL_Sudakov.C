@@ -4,8 +4,6 @@
 #include "Random.H"
 #include "Running_AlphaS.H"
 
-#define N_C 3.0
-
 using namespace EXTRAXS;
 using namespace ATOOLS;
 
@@ -20,15 +18,10 @@ BFKL_Sudakov::~BFKL_Sudakov()
   delete p_levs;
 }
 
-double BFKL_Sudakov::AlphaSBar(const double &kt2) const
-{
-  return (*MODEL::as)(kt2)*N_C/M_PI;
-}
-
 bool BFKL_Sudakov::Initialize()
 {
-  m_asbarmax=AlphaSBar(m_kt2min);
-  m_y=m_ya;
+  m_asmax=(*MODEL::as)(m_kt2min);
+  m_oldy=m_y=m_ya;
   return true;
 }
 
@@ -41,10 +34,10 @@ bool BFKL_Sudakov::Dice()
   // get last integral
   m_integral=p_levs->MajorIntegral();
   // dice new y
-  double qt2max(m_qt2+m_kt2max+2.0*sqrt(m_qt2*m_kt2max));
-  m_y+=log(rn[0])/(m_asbarmax*log(qt2max/m_kt2min)*m_integral);
-  // dice new qt2
-  m_qt2=m_kt2min*pow(qt2max/m_kt2min,rn[1]);
+  double kt2max(Min(m_kt2min*exp(dabs(m_oldy-m_yb)),m_kt2max));
+  m_y+=log(rn[0])/(m_asmax/(2.0*M_PI)*log(m_kt2max/m_kt2min)*m_integral);
+  // dice new kt2
+  m_kt2=m_kt2min*pow(m_kt2max/m_kt2min,rn[1]);
   // dice new phi
   m_phi=2.0*M_PI*rn[2];
   // select splitting
@@ -52,18 +45,23 @@ bool BFKL_Sudakov::Dice()
   return m_y>m_yb;
 }
 
-bool BFKL_Sudakov::CalculateWeight(const Vector_Vector &moms)
+bool BFKL_Sudakov::CalculateWeight(const Vector_Vector &k,
+				   const ATOOLS::Vec4D &q)
 {
   m_weight=1.0;
-  double kt2(moms.back().PPerp2());
-  // kt limits
-  if (kt2<m_kt2min) return false;
+  double qt2(q.PPerp2());
+  // qt limits
+  if (qt2<m_kt2min) return false;
   // coupling weight
-  if (AlphaSBar(m_qt2)<m_asbarmax*ran.Get()) return false;
-  // angular ordering weight
-  if (sqrt(m_kt2min*m_kt2max)*exp(-dabs(m_y))<kt2) return false;
+  if ((*MODEL::as)(m_kt2)<m_asmax*ran.Get()) return false;
+  // kt limits
+  double kt2max(Min(m_kt2min*exp(dabs(m_oldy-m_y)),m_kt2max));
+  if (m_kt2>kt2max) return false;
+//   // qt weight
+//   if (log(qt2/m_kt2min)<log(m_kt2max/m_kt2min)*ran.Get()) return false;
   // splitting weight
-  if (p_levs->Selected()->Value(m_y,kt2)<
-      p_levs->Selected()->Value(m_y,kt2)*ran.Get()) return false;
+  if (p_levs->Selected()->Value(m_y,m_kt2)<
+      p_levs->Selected()->Value(m_y,m_kt2)*ran.Get()) return false;
+  m_oldy=m_y;
   return true;
 }

@@ -80,38 +80,38 @@ double Ladder::Jacobian() const
 double Ladder::Flux() const
 {
   double flux(2.0*m_q2);
-  double b1(m_kt21/(m_a1*m_pa.PPlus())), b2(m_kt22/(m_a2*m_pb.PMinus()));
+  double b1(m_kt21/(m_a1*m_q2)), b2(m_kt22/(m_a2*m_q2));
   flux*=m_a1*m_a2-b1*b2;
   return flux;
 }
 
 bool Ladder::GeneratePDFJet()
 {
-  double rn[4];
-  double Q(sqrt(m_q2)), lnt(0.5*log(4.0*m_kt2min/m_q2));
+  double rn[4], Q(sqrt(m_q2)), mu(sqrt(m_kt2min));
   while (true) {
     for (short unsigned int i(0);i<4;++i) rn[i]=ran.Get();
-    double ymin(ATOOLS::Max(m_yb,lnt)), ymax(ATOOLS::Min(m_ya,-lnt));
+    double ymin(m_yb), ymax(m_ya);
     if (ymin>=ymax) THROW(fatal_error,"No allowed y range.");
     // dice y
     m_y1=ymin+rn[0]*(ymax-ymin);
     m_weight=ymax-ymin;
-    double kt2max(sqrt(m_kt2min*m_q2)*exp(-dabs(m_y1)));
+    double kt2max(ATOOLS::Min(m_kt2min*exp(ymax-ymin),m_q2/4.0));
     if (m_kt2min>=kt2max) continue;
     // dice kt2
     m_kt21=m_kt2min*pow(kt2max/m_kt2min,rn[1]);
     m_weight*=log(kt2max/m_kt2min)*m_kt21;
-     // dice phi
+    // dice phi
     m_phi1=2.0*M_PI*rn[2];
-    m_weight*=2.0*M_PI;
-    double kt1(sqrt(m_kt21));
-    double a(kt1/Q*exp(m_y1));
+    // no weight, averaging
+    double kt1(sqrt(m_kt21)), a(kt1/Q*exp(m_y1));
+    if (a>1.0) continue;
     // construct emission
-    double pp(a*m_pa.PPlus()), pm(m_kt21/pp);
+    double pp(a*m_pa.PPlus()), pm(m_kt21/pp+m_pa.PMinus());
     m_k1=Vec4D(0.5*(pp+pm),kt1*cos(m_phi1),kt1*sin(m_phi1),0.5*(pp-pm));
+    double zmin(mu/(mu+kt1)), zmax(Min(kt1/(mu+kt1),1.0-a));
     // dice z
-    m_z1=rn[3]*(1.0-a);
-    m_weight*=1.0-a;
+    m_z1=zmin+rn[3]*(zmax-zmin);
+    m_weight*=zmax-zmin;
     m_a1=m_z1/(1.0-m_z1)*a;
     pp=m_a1*m_pa.PPlus();
     pm=m_pa.PMinus()-pm;
@@ -129,13 +129,8 @@ bool Ladder::GeneratePDFJet()
 bool Ladder::ConstructRung()
 {
   double y(p_sudakov->GetY());
-  double qt2(p_sudakov->GetQT2()), phi(p_sudakov->GetPhi());
-  double qt(sqrt(qt2));
-  Vec4D k(0.0,qt*cos(phi),qt*sin(phi),0.0);
-  k=m_q.Perp()-k;
-  double kt(k.PPerp());
-  k[0]=kt*cosh(y);
-  k[3]=kt*sinh(y);
+  double kt(sqrt(p_sudakov->GetKT2())), phi(p_sudakov->GetPhi());
+  Vec4D k(kt*cosh(y),kt*cos(phi),kt*sin(phi),kt*sinh(y));
   m_oldq=m_q;
   m_q=m_q-k;
   m_moms.push_back(k);
@@ -150,11 +145,12 @@ bool Ladder::GenerateLadder()
     m_flavs.resize(m_nin);
     p_sudakov->Initialize();
     if (!GeneratePDFJet()) return false;
-    p_sudakov->SetKT2Min(m_kt2min);
-    p_sudakov->SetKT2Max(m_q2);
-    while (p_sudakov->Dice()) {
+    p_sudakov->SetKT2Max(m_q2/4.0);
+    p_sudakov->SetYMax(m_y1);
+    while (false) {
+//     while (p_sudakov->Dice()) {
       if (ConstructRung()) {
-	if (p_sudakov->CalculateWeight(m_moms)) {
+	if (p_sudakov->CalculateWeight(m_moms,m_q)) {
 	  m_weight*=p_sudakov->Weight();
 	}
 	else {
@@ -164,17 +160,22 @@ bool Ladder::GenerateLadder()
 	}
       }
     }
-    double pp(m_q.PPlus()-m_pb.PPlus()), pm(m_q.PPerp2()/pp);
+    double pp(m_q.PPlus()+m_pb.PPlus()), pm(m_q.PPerp2()/pp);
     m_k2=Vec4D(0.5*(pp+pm),m_q[1],m_q[2],0.5*(pp-pm));
     m_a2=-m_q.PMinus()/m_pb.PMinus();
     m_kt22=m_k2.PPerp2();
     m_moms[1]=-1.0*m_q;
     m_q=m_q-m_k2;
     m_z2=-m_moms[1].PMinus()/m_q.PMinus();
-    if (!m_q.Nan() && m_k2.Y()<m_y1 && 
-	m_q[0]<0.0 && m_q[0]>-m_pb[0]) {
-      break; 
+    double mu(sqrt(m_kt2min)), kt2(sqrt(m_kt22));
+    if (m_z2<mu/(mu+kt2) || m_z2>kt2/(mu+kt2)) continue;
+    if (m_moms.size()>m_nin) {
+      if (m_moms.back().Y()<=m_k2.Y()) continue;
     }
+    else {
+      if (m_y1<=m_k2.Y()) continue;
+    }
+    if (!m_q.Nan() && m_q[0]<0.0 && m_q[0]>-m_pb[0]) break; 
   }
   m_weight*=Jacobian();
   return true;
@@ -212,12 +213,13 @@ double Ladder::Differential(const ATOOLS::Vec4D *momenta)
     msg.Error()<<METHOD<<"(..): Invalid scales. Set weight 0."<<std::endl;
     return 0.0;
   }
-  p_pdfs[1]->SetSudakovMode(1-(int)(m_moms.size()==m_nin));
+  p_pdfs[1]->SetSudakovMode(0);
   p_pdfs[0]->Calculate(m_a1,m_z1,m_kt21,m_mu21);
   p_pdfs[1]->Calculate(m_a2,m_z2,m_kt22,m_mu22);
   m_weight*=p_pdfs[0]->GetXPDF(m_flavs[0])/m_a1;
   m_weight*=p_pdfs[1]->GetXPDF(m_flavs[1])/m_a2;
-  m_weight*=4.0*sqr(m_q2)/(NC*NC-1.0)/Flux();
+  m_weight*=4.0*sqr((m_moms[0]+m_moms[1]+m_k1+m_k2).Abs2())/(NC*NC-1.0);
+  m_weight/=Flux();
   if (m_ncols<m_moms.size()) {
     for (size_t i(0);i<m_ncols;++i) delete [] p_colours[i]; 
     if (m_ncols>0) delete [] p_colours;

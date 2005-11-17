@@ -1,5 +1,7 @@
 #include "LO_LEV.H"
 
+#define N_C 3.0
+
 using namespace EXTRAXS;
 using namespace ATOOLS;
 
@@ -8,16 +10,16 @@ G_GG::G_GG():
 
 double G_GG::Value(const double &y,const double &kt) const
 {
-  return 1.0;
+  return 2.0*N_C;
 }
 
 double G_GG::MajorValue(const double &y,const double &kt) const
 {
-  return 1.0;
+  return 2.0*N_C;
 }
 
 double G_GG::MajorIntegral()
 {
-  return 1.0;
+  return 2.0*N_C;
 }
 
