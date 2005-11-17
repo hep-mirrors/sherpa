@@ -32,10 +32,10 @@ set_ldflags() {
       echo "setting ldflags ... darwin"
       ldflags="-dynamic -flat_namespace" ;;
     linux)
-      echo "setting up makefiles ... linux"
+      echo "setting ldflags ... linux"
       ldflags="-rdynamic" ;;
     default)
-      echo "setting up makefiles ... linux" 
+      echo "setting ldflags ... unix" 
       ldflags="-rdynamic";;
   esac
 }
@@ -67,11 +67,26 @@ AM_INIT_AUTOMAKE(SHERPA-MC,$version.$subversion)
 AM_DISABLE_STATIC
 AC_PREFIX_DEFAULT(${PWD})
 
+set_gccflags() {
+  case "$arch" in
+    darwin)
+      echo "setting up pp flags ... darwin"
+      echo -e "#define ARCHITECTURE \"DARWIN\"\n" >> __Flags.H__ ;;
+    linux)
+      echo "setting up pp flags ... linux"
+      echo -e "#define ARCHITECTURE \"LINUX\"\n" >> __Flags.H__ ;;
+    default)
+      echo "setting up pp flags ... unix" 
+      echo -e "#define ARCHITECTURE \"UNIX\"\n" >> __Flags.H__ ;;
+  esac
+}
+
 dnl Conditional compiling and linking
 if test -f __Flags.H__ ; then 
   rm -f __Flags.H__ 
 fi
 echo -e "#ifndef CXXFLAGS_H\n#define CXXFLAGS_H\n" >> __Flags.H__
+set_gccflags
 echo -e "#define SHERPA_VERSION \"$version\"" >> __Flags.H__
 echo -e "#define SHERPA_SUBVERSION \"$subversion\"\n" >> __Flags.H__
 echo -e "#define SHERPA_BUILD_PATH \"$buildpath\"\n" >> __Flags.H__
