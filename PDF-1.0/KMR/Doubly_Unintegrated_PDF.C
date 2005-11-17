@@ -122,7 +122,7 @@ Doubly_Unintegrated_PDF(PDF_Base *_p_pdf,MODEL::Running_AlphaS *_p_alphas,
   m_epsilon(1.e-2),
   m_kperpscheme(kps::function),
   m_fixedktexponent(0.125),
-  m_mode(0),
+  m_mode(0), m_sudmode(1),
   p_integral(new ATOOLS::Grid(3,m_gridpoints))
 {
   m_type=std::string("DUPDF(")+p_pdf->Type()+std::string(")");
@@ -451,7 +451,8 @@ bool Doubly_Unintegrated_PDF::Unintegrate(ATOOLS::Flavour flavour)
   }
   }
   m_unintegrated*=(*p_alphas)(m_kperp2)/(2.0*M_PI);
-  m_unintegrated*=p_sudakov->Delta(flavour)(sqrt(m_mu2),sqrt(m_kperp2));
+  if (m_sudmode>0) 
+    m_unintegrated*=p_sudakov->Delta(flavour)(sqrt(m_mu2),sqrt(m_kperp2));
 #ifdef TEST__Doubly_Unintegrated_PDF
   std::cout<<flavour<<" sud / pdf : "<<p_sudakov->
     Delta(flavour)(sqrt(m_mu2),sqrt(m_kperp2))
