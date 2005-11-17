@@ -19,22 +19,20 @@ SYSLIBS	      =	-lm -ldl
 ATOOLSLIBS    =	-L@libdir@ -lToolsPhys -lToolsMath -lToolsOrg 
 
 if ROOT_SUPPORT
-ROOTINCS      =	-I$(ROOTSYS)/include
-ROOTLIBS      =	-L$(ROOTSYS)/lib -lCint -lCore -lHist -lGraf \
-		-lGraf3d -lGpad -lTree -lRint -lPostscript \
-		-lMatrix -lPhysics -lGui -ldl 
+ROOTINCS      =	-I@ROOTINCDIR@
+ROOTLDADD     =	-L@ROOTLIBDIR@ @ROOTGLIBS@ @ROOTAUXLIBS@
 ROOTFLAGS     = -DROOT_SUPPORT -Wno-long-long
 endif
 
 bin_PROGRAMS  =	PI_Demo Calc Color
 PI_Demo_SOURCES       =	PI_Demo.C
-PI_Demo_LDADD         =	$(ATOOLSLIBS) $(SYSLIBS) $(ROOTLIBS) 
+PI_Demo_LDADD         =	$(ATOOLSLIBS) $(SYSLIBS) $(ROOTLDADD) 
 PI_Demo_LDFLAGS       =	-rdynamic
 Color_SOURCES =	Color.C
-Color_LDADD   =	$(ATOOLSLIBS) $(SYSLIBS) $(ROOTLIBS) 
+Color_LDADD   =	$(ATOOLSLIBS) $(SYSLIBS) $(ROOTLDADD) 
 Color_LDFLAGS =	-rdynamic
 Calc_SOURCES  =	Calc.C
-Calc_LDADD    =	$(ATOOLSLIBS) $(SYSLIBS) $(ROOTLIBS)
+Calc_LDADD    =	$(ATOOLSLIBS) $(SYSLIBS) $(ROOTLDADD)
 Calc_LDFLAGS  =	-rdynamic
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(MODELFLAGS) $(ATOOLSFLAGS) $(ROOTFLAGS)

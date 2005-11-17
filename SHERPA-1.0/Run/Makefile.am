@@ -74,10 +74,8 @@ CSSLIBS       = -lCSSTools -lCSShowers -lCSMain
 endif
 
 if ROOT_SUPPORT
-ROOTINCS      =	-I$(ROOTSYS)/include
-ROOTLIBS      =	-L$(ROOTSYS)/lib -lCint -lCore -lHist -lGraf \
-		-lGraf3d -lGpad -lTree -lRint -lPostscript \
-		-lMatrix -lPhysics -lGui -ldl 
+ROOTINCS      =	-I@ROOTINCDIR@
+ROOTLDADD     =	-L@ROOTLIBDIR@ @ROOTGLIBS@ @ROOTAUXLIBS@
 ROOTFLAGS     = -Wno-long-long
 endif
 
@@ -103,7 +101,7 @@ Sherpa_LDADD  =	-L@libdir@ $(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) \
 		$(AHADICLIBS) $(EXTRAXSLIBS) $(PHASICLIBS) $(MODELLIBS) \
 		$(BEAMLIBS) $(ATOOLSLIBS) $(HADRONSLIBS) $(PDFLIBS) \
 		$(LHAPDFLIBS) $(CTEQLIBS) $(SYSLIBS) $(CLHEPLIBS) \
-		$(ROOTLIBS)
+		$(ROOTLDADD)
 Sherpa_LDFLAGS        =	-rdynamic
 AM_CXXFLAGS   =	$(SHERPAFLAGS) $(ROOTFLAGS) 
 INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(HADRONSINCS) $(AHADICINCS) \

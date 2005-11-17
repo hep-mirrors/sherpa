@@ -33,10 +33,8 @@ AMISICLIBS    =	-L@libdir@ -lAmisic -lAmisicModel -lAmisicTools
 APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain 
 
 if ROOT_SUPPORT
-ROOTINCS      =	-I$(ROOTSYS)/include
-ROOTLIBS      =	-L$(ROOTSYS)/lib -lCint -lCore -lHist -lGraf \
-		-lGraf3d -lGpad -lTree -lRint -lPostscript \
-		-lMatrix -lPhysics -lGui -ldl 
+ROOTINCS      =	-I@ROOTINCDIR@
+ROOTLDADD     =	-L@ROOTLIBDIR@ @ROOTGLIBS@ @ROOTAUXLIBS@
 ROOTFLAGS     = -Wno-long-long
 endif
 
@@ -51,7 +49,7 @@ bin_PROGRAMS  =	Amisic
 Amisic_SOURCES        =	Main.C 
 Amisic_LDADD  =	$(AMISICLIBS) $(APACICLIBS) $(EXTRAXSLIBS) \
 		$(PHASICLIBS) $(MODELLIBS) $(PDFLIBS) \
-		$(BEAMLIBS) $(ATOOLSLIBS) $(SYSLIBS) $(CLHEPLIBS) $(ROOTLIBS) 
+		$(BEAMLIBS) $(ATOOLSLIBS) $(SYSLIBS) $(CLHEPLIBS) $(ROOTLDADD) 
 Amisic_LDFLAGS        =	-rdynamic
 AM_CXXFLAGS   =	$(AMISICFLAGS) $(ROOTFLAGS)
 INCLUDES      = $(AMISICINCS) $(APACICINCS) $(EXTRAXSINCS) \

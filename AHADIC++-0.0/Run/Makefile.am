@@ -62,10 +62,8 @@ MODELLIBS     =	-L@libdir@ -lModelMain $(HDECAYLIB) $(ISAJETLIB)
 
 
 if ROOT_SUPPORT
-ROOTINCS      =	-I$(ROOTSYS)/include
-ROOTLIBS      =	-L$(ROOTSYS)/lib -lCint -lCore -lHist -lGraf \
-		-lGraf3d -lGpad -lTree -lRint -lPostscript \
-		-lMatrix -lPhysics -lGui -ldl 
+ROOTINCS      =	-I@ROOTINCDIR@
+ROOTLDADD     =	-L@ROOTLIBDIR@ @ROOTGLIBS@ @ROOTAUXLIBS@
 ROOTFLAGS     = -Wno-long-long
 endif
 
@@ -102,7 +100,7 @@ bin_PROGRAMS  =	Cluster
 Cluster_SOURCES = Main.C 
 Cluster_LDADD  = $(AHADICLIBS) $(PHASICLIBS) $(ATOOLSLIBS) $(SYSLIBS) \
 		 $(MODELLIBS) $(PDFLIBS) $(LHAPDFLIBS) $(CTEQLIBS) \
-		 $(BEAMLIBS) $(APACICLIBS)
+		 $(BEAMLIBS) $(APACICLIBS) $(ROOTLDADD)
 Cluster_LDFLAGS        =	-rdynamic
 AM_CXXFLAGS   =	$(AHADICFLAGS) $(ROOTFLAGS)
 INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(HADRONSINCS) $(AHADICINCS) \

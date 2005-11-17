@@ -13,7 +13,7 @@ CVSINCLUDE    =	CVS
 endif
 
 if ROOT_SUPPORT
-ROOTINCS      =	-I$(ROOTSYS)/include
+ROOTINCS      =	-I@ROOTINCDIR@
 ROOTFLAGS     = -Wno-long-long
 EXTRAOBS      =	Dalitz_Observables.C
 endif

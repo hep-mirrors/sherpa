@@ -2,10 +2,8 @@ MAKE    = make
 SUBDIRS = data
 
 if ROOT_SUPPORT
-ROOTINCS      =	-I$(ROOTSYS)/include
-ROOTLIBS      =	-L$(ROOTSYS)/lib -lCint -lCore -lHist -lGraf \
-		-lGraf3d -lGpad -lTree -lRint -lPostscript \
-		-lMatrix -lPhysics -lGui -ldl 
+ROOTINCS      =	-I@ROOTINCDIR@
+ROOTLDADD     =	-L@ROOTLIBDIR@ @ROOTGLIBS@ @ROOTAUXLIBS@
 ROOTFLAGS     = -DROOT_SUPPORT -Wno-long-long
 endif
 
@@ -39,7 +37,7 @@ Flavtest_LDADD = @libdir@/libAdicicTool.la \
                  @libdir@/libToolsPhys.la \
                  @libdir@/libToolsMath.la \
                  @libdir@/libToolsOrg.la \
-                 -lg2c -lm -ldl $(ROOTLIBS) $(MODELLIBS)
+                 -lg2c -lm -ldl $(ROOTLDADD) $(MODELLIBS)
 #Flavtest_LDFLAGS = SHERPA_LDFLAGS
 
 
@@ -59,7 +57,7 @@ Emissiontest_LDADD = @libdir@/libAdicicTool.la \
                      @libdir@/libToolsPhys.la \
                      @libdir@/libToolsMath.la \
                      @libdir@/libToolsOrg.la \
-	             -lg2c -lm -ldl $(ROOTLIBS) $(MODELLIBS)
+	             -lg2c -lm -ldl $(ROOTLDADD) $(MODELLIBS)
 
 
 
@@ -72,7 +70,7 @@ Chaintest_LDADD = @libdir@/libAdicicTool.la \
                   @libdir@/libToolsPhys.la \
                   @libdir@/libToolsMath.la \
                   @libdir@/libToolsOrg.la \
-	          -lg2c -lm -ldl $(ROOTLIBS) $(MODELLIBS)
+	          -lg2c -lm -ldl $(ROOTLDADD) $(MODELLIBS)
 
 
 
@@ -85,7 +83,7 @@ Cascadetest_LDADD = @libdir@/libAdicicTool.la \
                     @libdir@/libToolsPhys.la \
                     @libdir@/libToolsMath.la \
                     @libdir@/libToolsOrg.la \
-	            -lg2c -lm -ldl $(ROOTLIBS) $(MODELLIBS)
+	            -lg2c -lm -ldl $(ROOTLDADD) $(MODELLIBS)
 
 
 

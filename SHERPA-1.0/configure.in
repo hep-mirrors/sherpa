@@ -80,19 +80,21 @@ AC_ARG_ENABLE(clhep,
     esac
   fi ],[ clhep=false ])
 AM_CONDITIONAL(CLHEP_SUPPORT, test $clhep = true)
+ROOT_PATH(, have_root=yes, have_root=no)
 AC_ARG_ENABLE(root,
 [  --enable-root           Enable ROOT support ],
-[ root=false
-  if test -d "$ROOTSYS"; then
-    echo "checking for ROOT libraries... yes"
-    case "${enableval}" in 
-      yes) root=true ;;
+[ AC_MSG_CHECKING(whether to enable ROOT support)
+  if test "$have_root" = "yes"; then
+    case "${enableval}" in
+      yes) AC_MSG_RESULT(yes); root=true ;;
+      no)  AC_MSG_RESULT(no); root=false;;
     esac
   else 
-    echo "checking for ROOT libraries... no"
-    case "${enableval}" in 
-      yes) AC_MSG_ERROR(\$ROOTSYS is not a valid path.) ;;
-    esac
+		case "${enableval}" in
+      yes) AC_MSG_RESULT(not possible);
+           AC_MSG_ERROR([ROOT not found on your system, cannot compile ROOT support. If ROOT is installed, please provide the installation path using e.g. --with-rootsys=/usr/local/]); root=false;;
+      no)  AC_MSG_RESULT(no); root=false;;
+		esac
   fi ],[ root=false ])
 AM_CONDITIONAL(ROOT_SUPPORT, test $root = true)
 AC_ARG_ENABLE(lhapdf,
