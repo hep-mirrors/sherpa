@@ -13,7 +13,7 @@ libAmplitude_la_SOURCES = CFColor.C Amplitude_Base.C \
 	                  Prop_Generator.C Zfunc_Generator.C Amplitude_Group.C \
 		          Amplitude_Handler.C \
 			  Single_Amplitude_Base.C Super_Amplitude.C Zfunc.C \
-                          Amplitude_Output.C
+                          Amplitude_Output.C Mom.C MHV_Calculator.C Color.C
 INCLUDES = -I../Amplitude \
 	   -I../Amplitude/AmplTools \
 	   -I../Amplitude/Zfunctions \
@@ -32,7 +32,8 @@ include_HEADERS = CFColor.H Single_Amplitude.H \
 		 Zfunc.H Amplitude_Handler.H Amplitude_Base.H \
 		 Amplitude_Group.H \
 		 Color_Group.H Super_Amplitude.H Single_Amplitude_Base.H \
-		 Super_Amplitude.H Amplitude_Output.H
+		 Super_Amplitude.H Amplitude_Output.H Mom.H MHV_Calculator.H \
+		 Color.H
 
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(AMEGICFLAGS)
