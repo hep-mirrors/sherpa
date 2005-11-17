@@ -13,8 +13,22 @@ AC_ARG_ENABLE(mcatnlo,
     *) echo "checking for MC@NLO support... no" ;;
   esac ],[ mcatnlo=false ])
 AM_CONDITIONAL(MCATNLO_SUPPORT, test $mcatnlo = true)
-AM_CONDITIONAL(ISAJET_SUPPORT, false)
-AM_CONDITIONAL(HDECAY_SUPPORT, false)
+AC_ARG_ENABLE(hdecay,
+[  --enable-hdecay         Enable HDECAY support ],
+[ AC_MSG_CHECKING(whether to enable HDECAY support);AC_MSG_RESULT(${enableval});
+	case "${enableval}" in
+		yes) hdecay=true ;;
+		no)  hdecay=false;;
+	esac ],[ hdecay=false ])
+AM_CONDITIONAL(HDECAY_SUPPORT, test $hdecay = true)
+AC_ARG_ENABLE(isajet,
+[  --enable-isajet         Enable ISAJET support ],
+[ AC_MSG_CHECKING(whether to enable ISAJET support);AC_MSG_RESULT(${enableval});
+	case "${enableval}" in
+		yes) isajet=true ;;
+		no)  isajet=false;;
+	esac ],[ isajet=false ])
+AM_CONDITIONAL(ISAJET_SUPPORT, test $isajet = true)
 AC_ARG_ENABLE(adicic,
 [  --enable-adicic        Enable Adicic support ],
 [ adicic=true
