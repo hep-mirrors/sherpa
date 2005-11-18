@@ -2,7 +2,7 @@
 #include "Exception.H"
 #include "Run_Parameter.H"
 #include "MyStrStream.H"
-#include <iostream.h>
+#include <iostream>
 
 using namespace ATOOLS;
 using namespace AMEGIC;
@@ -390,13 +390,13 @@ bool Trace::Evaluate(Expression *const expression)
 
 void Trace::Print() const
 {
-  cout<<"("<<this<<"): { tr_("<<ma[1];
+  msg.Out()<<"("<<this<<"): { tr_("<<ma[1];
   for (size_t i=2;i<ma[0]+1;i++) {
-    cout<<","<<ma[i];
+    msg.Out()<<","<<ma[i];
   }
-  cout<<")";
-  if (m_i!=0 || m_j!=0) cout<<"_("<<m_i<<","<<m_j<<")";
-  cout << " }";
+  msg.Out()<<")";
+  if (m_i!=0 || m_j!=0) msg.Out()<<"_("<<m_i<<","<<m_j<<")";
+  msg.Out() << " }";
 }
 
 Color_Term *Trace::GetCopy() const
@@ -435,7 +435,7 @@ void Trace::DeleteAll()
 
 //constructor
 
-FullAmplitude_MHV::FullAmplitude_MHV(size_t *a,size_t *f,MHV_Calculator *ca,int con,int pr):
+FullAmplitude_MHV::FullAmplitude_MHV(size_t *a,size_t *f,MHV__Calculator *ca,int con,int pr):
   Color_Term(ctt::amplitude), calc(ca), conjugate(con), print(pr) {
   part=a[0]+f[0];
   ma = new size_t [a[0]+1];
@@ -491,7 +491,7 @@ void FullAmplitude_MHV::Permutation_pureg(int p_number,int** p_adr,Expression *c
     for (int i=1;i<part;i++)  msg_Info()<<","<<perm[i];         //print 
     msg_Info()<<")"  ;                                          //print
     //msg_Info()<<"  "<<amp<<"  ";                              //print
-    msg_Info()<<endl;                                           //print 
+    msg_Info()<<std::endl;                                           //print 
 
 
     delete [] mact;
@@ -542,7 +542,7 @@ void FullAmplitude_MHV::Permutation_quark2(int p_number,int** p_adr,Expression *
     for (int i=1;i<part;i++)  msg_Info()<<","<<perm[i];         //print
     msg_Info()<<")"  ;                                          //print
     //msg_Info()<<"  "<<amp<<"  ";                              //print
-    msg_Info()<<endl;                                           //print
+    msg_Info()<<std::endl;                                           //print
 
     delete [] mact;
     return;
@@ -560,7 +560,7 @@ void FullAmplitude_MHV::Permutation_quark4(int p_number,int** p_adr,Expression *
     }
   }
   else {
-    (*p_adr[0])=ma[1]-1;  cout<<endl; for(int z=0;z<6;z++) cout<<perm[z]<<",";cout<<endl;
+    (*p_adr[0])=ma[1]-1;  msg.Out()<<std::endl; for(int z=0;z<6;z++) msg.Out()<<perm[z]<<",";msg.Out()<<std::endl;
 
     size_t j(expression->CIndex());  
     Complex amp=calc->Differential(perm);
@@ -608,7 +608,7 @@ void FullAmplitude_MHV::Permutation_quark4(int p_number,int** p_adr,Expression *
     for (int i=1;i<part;i++)  msg_Info()<<","<<perm[i];         //print
     msg_Info()<<")"  ;                                          //print
     //msg_Info()<<"  "<<amp<<"  ";                              //print
-    msg_Info()<<endl;                                           //print
+    msg_Info()<<std::endl;                                           //print
 
     delete [] mact1;
     delete [] mact2;
@@ -679,7 +679,7 @@ Color_Term *FullAmplitude_MHV::GetCopy() const
   return New(ma,mf,calc,conjugate,print);
 }
 
-FullAmplitude_MHV *FullAmplitude_MHV::New(size_t *a,size_t *f,MHV_Calculator *ca,int con,int pr)
+FullAmplitude_MHV *FullAmplitude_MHV::New(size_t *a,size_t *f,MHV__Calculator *ca,int con,int pr)
 {
   if (s_amplitudes.empty()) return new FullAmplitude_MHV(a,f,ca,con,pr);
   FullAmplitude_MHV *amplitude(s_amplitudes.back());
@@ -818,7 +818,7 @@ Expression::Expression(int part,Basic_Sfuncs *p_BS,int *hlist,int *plist,int pri
   Node<Color_Term*>(NULL,true),
   m_result(0.0,0.0), m_evaluated(0)
 { 
-  calc = new MHV_Calculator(part,p_BS,hlist,plist,print);
+  calc = new MHV__Calculator(part,p_BS,hlist,plist,print);
   int* qlist(calc->GetQlist());
   m_findex=part+1; 
   m_aindex=part+1;
@@ -835,7 +835,7 @@ Expression::Expression(int part,Basic_Sfuncs *p_BS,int *hlist,int *plist,int pri
     }
     else ma[i+1-qpos]=i;
   } 
-  if (mf[1]==1 && mf[mf[0]]==part) {
+  if (mf[1]==1 && mf[mf[0]]==(size_t)part) {
     for (size_t i=1;i<mf[0];i++) mf[i]=mf[i+1];
     mf[mf[0]]=1;
   }

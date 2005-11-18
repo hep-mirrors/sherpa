@@ -1,11 +1,7 @@
 #ifndef Mom_H
 #define Mom_H
-/*!
-  \file Color.H
-  \brief Declares the classes Color_Term,
-  CNumber, Fundamental, Adjoint and Expression.
-*/
-#include <iostream.h>
+
+#include <iostream>
 #include "Node.H"
 #include "Vector.H"
 #include "MyComplex.H"
@@ -16,7 +12,7 @@ using namespace ATOOLS;
 
 namespace AMEGIC {
 
-  class MHV_Calculator;
+  class MHV__Calculator;
 
   
   class Mom: public Vec4D {
@@ -83,7 +79,7 @@ namespace AMEGIC {
     MomentumList* momentumlist;
     int *hlist, *plist, *perm;
     Complex amp;
-    MHV_Calculator* calc;
+    MHV__Calculator* calc;
     size_t* ma;
     void Permutation_pureg(int,int**);
     void Permutation_quark(int,int**);

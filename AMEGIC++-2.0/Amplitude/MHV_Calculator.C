@@ -8,7 +8,7 @@ using namespace std;
 
 
 
-MHV_Calculator::MHV_Calculator(int part, Basic_Sfuncs* BS,int* signlist,int* plist,int p) :
+MHV__Calculator::MHV__Calculator(int part, Basic_Sfuncs* BS,int* signlist,int* plist,int p) :
 n_part(part), p_BS(BS) ,print(p)
 {
   m_dummyarg = new int[2*part];
@@ -49,7 +49,7 @@ n_part(part), p_BS(BS) ,print(p)
 #endif
 }
 
-MHV_Calculator::~MHV_Calculator() 
+MHV__Calculator::~MHV__Calculator() 
 { 
   delete[] m_arg;
   delete[] m_signlist;
@@ -57,7 +57,7 @@ MHV_Calculator::~MHV_Calculator()
 }
 
 
-Complex MHV_Calculator::Differential(int* perm)
+Complex MHV__Calculator::Differential(int* perm)
 {
   int* signlist   = new int[n_part];
   for (int i=0;i<n_part;i++) signlist[i]=m_signlist[perm[i]];
@@ -71,7 +71,7 @@ Complex MHV_Calculator::Differential(int* perm)
   //if ((nh<2 || ph<2) && (n_part!=3 || nh==0 || ph ==0)) return 0.;
 
   if (Min(nh,ph)>3){
-    std::cout<<"Error in MHV_Calculator::Differential: Amplitude not implemented!"<<std::endl;
+    std::cout<<"Error in MHV__Calculator::Differential: Amplitude not implemented!"<<std::endl;
     abort();
   }
 
@@ -90,11 +90,11 @@ Complex MHV_Calculator::Differential(int* perm)
  
  // amplitudes with quarks
   if (qlist[0]==1 || qlist[0]==3) {
-    std::cout<<"Error in MHV_Calculator::Differential: Odd number of quarks"<<std::endl;
+    std::cout<<"Error in MHV__Calculator::Differential: Odd number of quarks"<<std::endl;
     abort();
   }
   if (!Check_Qlist(perm,signlist,m_plist,qlist)) {
-    std::cout<<"Error in MHV_Calculator::Differential: Wrong flavors or helicities for quarks"<<std::endl;
+    std::cout<<"Error in MHV__Calculator::Differential: Wrong flavors or helicities for quarks"<<std::endl;
     abort();
   }
 
@@ -147,17 +147,17 @@ Complex MHV_Calculator::Differential(int* perm)
 }
 
 
-int* MHV_Calculator::GetQlist() {
+int* MHV__Calculator::GetQlist() {
   return m_qlist;
 }
 
-int* MHV_Calculator::GetPlist() {
+int* MHV__Calculator::GetPlist() {
   return m_plist;
 }
 
 
 
-Complex MHV_Calculator::Elementary_MHV_Amplitude(int* perm,int* signlist,int part)
+Complex MHV__Calculator::Elementary_MHV_Amplitude(int* perm,int* signlist,int part)
 {
   int l;
   int v1=-1,v2=-1;
@@ -191,7 +191,7 @@ Complex MHV_Calculator::Elementary_MHV_Amplitude(int* perm,int* signlist,int par
 }
 
 
-Complex MHV_Calculator::Elementary_MHVbar_Amplitude(int* perm,int* signlist,int part)
+Complex MHV__Calculator::Elementary_MHVbar_Amplitude(int* perm,int* signlist,int part)
 {
   int l;
   int v1=-1,v2=-1;
@@ -224,7 +224,7 @@ Complex MHV_Calculator::Elementary_MHVbar_Amplitude(int* perm,int* signlist,int 
   return sm;
 }
 
-int MHV_Calculator::CountSign(int* signlist,int start,int end,int sg)
+int MHV__Calculator::CountSign(int* signlist,int start,int end,int sg)
 {
   int sum = 0;
   for (int i=start;i<end;i++) sum+=signlist[i];
@@ -232,7 +232,7 @@ int MHV_Calculator::CountSign(int* signlist,int start,int end,int sg)
   return (end-start+sum)/2;
 }
 
-Complex MHV_Calculator::MHV_Amplitude(int* perm,int* signlist,int vhel)
+Complex MHV__Calculator::MHV_Amplitude(int* perm,int* signlist,int vhel)
 {
   if (vhel==2) return Elementary_MHV_Amplitude(perm,signlist,n_part);
   Complex amp(0.,0.);
@@ -277,7 +277,7 @@ Complex MHV_Calculator::MHV_Amplitude(int* perm,int* signlist,int vhel)
 }
 
 
-Complex MHV_Calculator::MHVbar_Amplitude(int* perm,int* signlist,int vhel)
+Complex MHV__Calculator::MHVbar_Amplitude(int* perm,int* signlist,int vhel)
 {
   if (vhel==2) return Elementary_MHVbar_Amplitude(perm,signlist,n_part);  
   Complex amp(0.,0.);
@@ -322,7 +322,7 @@ Complex MHV_Calculator::MHVbar_Amplitude(int* perm,int* signlist,int vhel)
 }
 
 
-void MHV_Calculator::Make_Qlist(int* perm,int* plist,int* qlist,int part) 
+void MHV__Calculator::Make_Qlist(int* perm,int* plist,int* qlist,int part) 
 {
   int nq=0; 
   for (int i=0;i<part;i++) {
@@ -332,12 +332,12 @@ void MHV_Calculator::Make_Qlist(int* perm,int* plist,int* qlist,int part)
     }
     else  {
       if ((plist[perm[i]]-21)*(plist[perm[i]]+21))  {
-	std::cout<<"Error in MHV_Calculator::Make_Qlist: Amplitude not implemented!"<<std::endl;
+	std::cout<<"Error in MHV__Calculator::Make_Qlist: Amplitude not implemented!"<<std::endl;
 	abort();  
 	}
     } 
     if (nq==5) {
-      std::cout<<"Error in MHV_Calculator::Make_Qlist: Too many quarks"<<std::endl;
+      std::cout<<"Error in MHV__Calculator::Make_Qlist: Too many quarks"<<std::endl;
       abort();
     }
   }
@@ -345,7 +345,7 @@ void MHV_Calculator::Make_Qlist(int* perm,int* plist,int* qlist,int part)
   return;
 }
 
-bool MHV_Calculator::Check_Qlist(int* perm,int* signlist,int* plist,int* qlist) 
+bool MHV__Calculator::Check_Qlist(int* perm,int* signlist,int* plist,int* qlist) 
 {
   if (qlist[0]==2) {
     if ((signlist[qlist[1]]==-signlist[qlist[2]]) && (plist[perm[qlist[1]]]==-plist[perm[qlist[2]]])) return 1;
@@ -365,7 +365,7 @@ bool MHV_Calculator::Check_Qlist(int* perm,int* signlist,int* plist,int* qlist)
 }
 
 
-Complex MHV_Calculator::Elementary_MHVQ2_Amplitude(int* perm,int* signlist,int* qlist,int part)
+Complex MHV__Calculator::Elementary_MHVQ2_Amplitude(int* perm,int* signlist,int* qlist,int part)
 {
   int l;
   int v1=-1;  
@@ -412,7 +412,7 @@ Complex MHV_Calculator::Elementary_MHVQ2_Amplitude(int* perm,int* signlist,int* 
 
 
 
-Complex MHV_Calculator::Elementary_MHVQ2bar_Amplitude(int* perm,int* signlist,int* qlist,int part)
+Complex MHV__Calculator::Elementary_MHVQ2bar_Amplitude(int* perm,int* signlist,int* qlist,int part)
 { 
   int l;
   int v1=-1;  
@@ -458,7 +458,7 @@ Complex MHV_Calculator::Elementary_MHVQ2bar_Amplitude(int* perm,int* signlist,in
 }
 
 
-Complex MHV_Calculator::Elementary_MHVQ4_Amplitude(int* perm,int* signlist,int* qlist,int part)
+Complex MHV__Calculator::Elementary_MHVQ4_Amplitude(int* perm,int* signlist,int* qlist,int part)
 {
   int l;
   int v1=-1, v2=-1;
@@ -514,7 +514,7 @@ Complex MHV_Calculator::Elementary_MHVQ4_Amplitude(int* perm,int* signlist,int* 
 
 
 
-Complex MHV_Calculator::Elementary_MHVQ4bar_Amplitude(int* perm,int* signlist,int* qlist,int part)
+Complex MHV__Calculator::Elementary_MHVQ4bar_Amplitude(int* perm,int* signlist,int* qlist,int part)
 {
   int l;
   int v1=-1, v2=-1;
@@ -569,7 +569,7 @@ Complex MHV_Calculator::Elementary_MHVQ4bar_Amplitude(int* perm,int* signlist,in
 }
 
 
-Complex MHV_Calculator::MHVQ2_Amplitude(int* perm,int* signlist,int vhel)
+Complex MHV__Calculator::MHVQ2_Amplitude(int* perm,int* signlist,int vhel)
 {
   Complex amp(0.,0.);  
   for (int i=0;i<n_part;i++) m_dummyarg[i+n_part] = m_dummyarg[i] = perm[i];
@@ -653,7 +653,7 @@ Complex MHV_Calculator::MHVQ2_Amplitude(int* perm,int* signlist,int vhel)
 }
  
 
-Complex MHV_Calculator::MHVQ2bar_Amplitude(int* perm,int* signlist,int vhel)
+Complex MHV__Calculator::MHVQ2bar_Amplitude(int* perm,int* signlist,int vhel)
 {
   Complex amp(0.,0.);
   for (int i=0;i<n_part;i++) m_dummyarg[i+n_part] = m_dummyarg[i] = perm[i];
@@ -736,7 +736,7 @@ Complex MHV_Calculator::MHVQ2bar_Amplitude(int* perm,int* signlist,int vhel)
   return amp;
 }
  
-Complex MHV_Calculator::MHVQ4_Amplitude(int* perm,int* signlist,int vhel)
+Complex MHV__Calculator::MHVQ4_Amplitude(int* perm,int* signlist,int vhel)
 {
   Complex amp(0.,0.);  
   for (int i=0;i<n_part;i++) m_dummyarg[i+n_part] = m_dummyarg[i] = perm[i];
@@ -837,7 +837,7 @@ Complex MHV_Calculator::MHVQ4_Amplitude(int* perm,int* signlist,int vhel)
 }
  
 
-Complex MHV_Calculator::MHVQ4bar_Amplitude(int* perm,int* signlist,int vhel)
+Complex MHV__Calculator::MHVQ4bar_Amplitude(int* perm,int* signlist,int vhel)
 {
   Complex amp(0.,0.);  
   for (int i=0;i<n_part;i++) m_dummyarg[i+n_part] = m_dummyarg[i] = perm[i];

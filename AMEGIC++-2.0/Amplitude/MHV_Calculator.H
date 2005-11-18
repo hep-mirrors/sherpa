@@ -1,5 +1,5 @@
-#ifndef MHV_Calculator_h
-#define MHV_Calculator_h
+#ifndef MHV__Calculator_h
+#define MHV__Calculator_h
 
 #include "Mom.H"
 
@@ -16,7 +16,7 @@ class MomentumList;
 typedef MomentumList Basic_Sfuncs;
 #endif
 
-  class MHV_Calculator {
+  class MHV__Calculator {
     int n_part;
     int * m_arg;
     int * m_dummyarg;
@@ -49,11 +49,11 @@ typedef MomentumList Basic_Sfuncs;
       
   public:
 
-    inline MHV_Calculator() {}
+    inline MHV__Calculator() {}
 
-    MHV_Calculator(int part,Basic_Sfuncs *BS,int* signlist,int* plist,int print=0);
+    MHV__Calculator(int part,Basic_Sfuncs *BS,int* signlist,int* plist,int print=0);
 
-    ~MHV_Calculator();
+    ~MHV__Calculator();
 
     Complex Differential(int* perm);
     int* GetQlist();

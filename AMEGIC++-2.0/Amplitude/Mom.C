@@ -3,8 +3,8 @@
 #include "Run_Parameter.H"
 #include "MyStrStream.H"
 #include "MHV_Calculator.H"
-#include <fstream.h>
-#include <iostream.h>
+#include <fstream>
+#include <iostream>
 #include "MathTools.H"
 
 using namespace ATOOLS;
@@ -35,7 +35,7 @@ void Mom::Print() {
   msg_Info()<<(*this)<<"    p^2=";
   if (IsZero(Abs2())) {msg_Info()<<0;}
   else msg_Info()<<Abs2(); 
-  msg_Info()<<"    helicity="<<hel<<"    particle ("<<part<<")"<<endl;
+  msg_Info()<<"    helicity="<<hel<<"    particle ("<<part<<")"<<std::endl;
   }
 
 
@@ -55,7 +55,7 @@ MomentumList::MomentumList(const char*  file) {
     etha[0]=1; 
     etha[1]=1;
   }
-  cout<<"etha = ("<<etha[0]<<","<<etha[1]<<")"<<endl; //print
+  msg.Out()<<"etha = ("<<etha[0]<<","<<etha[1]<<")"<<std::endl; //print
 } 
 
 //destructor
@@ -67,7 +67,7 @@ MomentumList::~MomentumList() {
 
 bool MomentumList::Get(const char* file) {
   std::string  line;
-  ifstream dat(file);
+  std::ifstream dat(file);
   if (dat==NULL)
     THROW(fatal_error,"Error in opening a data file");
   while (getline(dat,line)) {
@@ -95,7 +95,7 @@ bool MomentumList::Get(const char* file) {
       if (line.substr(endpos+1,2)=="_t") m[0]=m.PSpat();
       if (line.substr(endpos+1,2)=="_s") {
 	double sp(m.PSpat());
-	for (int i=1;i<4;i++) m[i]=m[i]*abs(m[0])/sp;
+	for (int i=1;i<4;i++) m[i]=m[i]*dabs(m[0])/sp;
       }
       if (line.find("h")==std::string::npos)	
 	THROW(fatal_error,"No helicity specified");
@@ -160,7 +160,7 @@ int* MomentumList::GetPList() {
 
 Complex MomentumList::S0(int i, int j) {
   Complex li[2],lj[2];
-  if (i<Size()) {
+  if (i<(int)Size()) {
     if ((*(*this)[i])[0]+(*(*this)[i])[3]) {
       li[0]=csqrt((*(*this)[i])[0]+(*(*this)[i])[3]);
       li[1]=Complex((*(*this)[i])[1],(*(*this)[i])[2])/csqrt((*(*this)[i])[0]+(*(*this)[i])[3]);
@@ -177,7 +177,7 @@ Complex MomentumList::S0(int i, int j) {
     li[1]+=((*(*this)[i])[0]-(*(*this)[i])[3])*etha[1];
   }
 
-  if (j<Size()) {
+  if (j<(int)Size()) {
     if ((*(*this)[j])[0]+(*(*this)[j])[3]) {
       lj[0]=csqrt((*(*this)[j])[0]+(*(*this)[j])[3]);
       lj[1]=Complex((*(*this)[j])[1],(*(*this)[j])[2])/csqrt((*(*this)[j])[0]+(*(*this)[j])[3]);
@@ -199,7 +199,7 @@ Complex MomentumList::S0(int i, int j) {
 
 Complex MomentumList::S1(int i, int j) { 
   Complex li[2],lj[2];
-  if (i<Size()) {
+  if (i<(int)Size()) {
     if ((*(*this)[i])[0]+(*(*this)[i])[3]) {
       li[0]=csqrt((*(*this)[i])[0]+(*(*this)[i])[3]);
       li[1]=Complex((*(*this)[i])[1],-(*(*this)[i])[2])/csqrt((*(*this)[i])[0]+(*(*this)[i])[3]);
@@ -216,7 +216,7 @@ Complex MomentumList::S1(int i, int j) {
     li[1]+=((*(*this)[i])[0]-(*(*this)[i])[3])*etha[1];
   }
 
-  if (j<Size()) {
+  if (j<(int)Size()) {
     if ((*(*this)[j])[0]+(*(*this)[j])[3]) {
       lj[0]=csqrt((*(*this)[j])[0]+(*(*this)[j])[3]);
       lj[1]=Complex((*(*this)[j])[1],-(*(*this)[j])[2])/csqrt((*(*this)[j])[0]+(*(*this)[j])[3]);
@@ -259,15 +259,15 @@ Vec4D MomentumList::Momentum(size_t mindex) {
 
 void MomentumList::Print() {
   for (size_t i=0;i<Size();i++) (*this)[i]->Print();
-  msg_Info()<<endl<<"helicity list: ("<<hlist[0];
+  msg_Info()<<std::endl<<"helicity list: ("<<hlist[0];
   for (size_t i=1;i<Size();i++)  msg_Info()<<","<<hlist[i]; 
-  msg_Info()<<")"<<endl; 
+  msg_Info()<<")"<<std::endl; 
   msg_Info()<<"particle list: ("<<plist[0];
   for (size_t i=1;i<Size();i++)  msg_Info()<<","<<plist[i]; 
-  msg_Info()<<")"<<endl<<endl; 
+  msg_Info()<<")"<<std::endl<<std::endl; 
   //for (size_t i=0;i<Size();i++) for (size_t j=i+1;j<Size();j++) { 
   //  msg_Info()<<"<"<<i<<","<<j<<"> = "<<S0(i,j); //print
-  //  msg_Info()<<"     ["<<i<<","<<j<<"] = "<<S1(i,j)<<endl; //print
+  //  msg_Info()<<"     ["<<i<<","<<j<<"] = "<<S1(i,j)<<std::endl; //print
   //}
 }
 
@@ -288,7 +288,7 @@ Complex Fullamplitude_MHV::Calculate(int pr) {
   int qpos=1;
   amp=Complex(0.0,0.0);
   int part(momentumlist->Size());
-  calc = new MHV_Calculator(part,momentumlist,hlist,plist,print);
+  calc = new MHV__Calculator(part,momentumlist,hlist,plist,print);
   int* qlist(calc->GetQlist());
   perm = new int[part];
   int** perm_adr  = new int*[part-qlist[0]+1];
@@ -364,7 +364,7 @@ void Fullamplitude_MHV::Permutation_pureg(int p_number,int** p_adr) {
       for (size_t i=1;i<momentumlist->Size();i++)  msg_Info()<<","<<perm[i];  //print 
       msg_Info()<<")"  ;                                                      //print
     }                                                                         //print
-    if (print) msg_Info()<<"     "<<am<<endl;                                 //print 
+    if (print) msg_Info()<<"     "<<am<<std::endl;                                 //print 
     return;
   }
 }
@@ -381,7 +381,7 @@ void Fullamplitude_MHV::Permutation_quark(int p_number,int** p_adr) {
    else {
     if (ma[0]) (*p_adr[0])=ma[1]-1;
     Complex am=calc->Differential(perm); 
-    if (print) msg_Info()<<"     "<<am<<endl;                                 //print 
+    if (print) msg_Info()<<"     "<<am<<std::endl;                                 //print 
     
     // start 2 gluons + 2 quarks TEST    
     if ((momentumlist->Size()-ma[0])==2) {

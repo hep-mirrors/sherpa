@@ -6,7 +6,6 @@
   CNumber, Fundamental, Adjoint and Expression.
 */
 
-#include <iostream.h>
 #include "Node.H"
 #include "MyComplex.H"
 #include "Mom.H"
@@ -347,7 +346,7 @@ namespace ATOOLS {
     int part;
    
     int *perm;
-    MHV_Calculator *calc;
+    MHV__Calculator *calc;
     int conjugate, print;
     void Permutation_pureg(int,int**,Expression *const expression);
     void Permutation_quark2(int,int**,Expression *const expression);
@@ -358,7 +357,7 @@ namespace ATOOLS {
     // constructor
 
 
-    FullAmplitude_MHV(size_t *ma,size_t *mf,MHV_Calculator* cal,int conjugate,int print);
+    FullAmplitude_MHV(size_t *ma,size_t *mf,MHV__Calculator* cal,int conjugate,int print);
 
     // destructor
     ~FullAmplitude_MHV();
@@ -379,7 +378,7 @@ namespace ATOOLS {
     Color_Term *GetCopy() const;
 
 
-    static FullAmplitude_MHV *New(size_t *ma,size_t *mf,MHV_Calculator* cal,int conjugate,int print);
+    static FullAmplitude_MHV *New(size_t *ma,size_t *mf,MHV__Calculator* cal,int conjugate,int print);
 
     void        Delete();
     static void DeleteAll();
@@ -413,7 +412,7 @@ namespace ATOOLS {
 
     size_t m_findex, m_aindex;
     size_t m_evaluated, m_cindex;
-    MHV_Calculator *calc;
+    MHV__Calculator *calc;
 
   public:
     
