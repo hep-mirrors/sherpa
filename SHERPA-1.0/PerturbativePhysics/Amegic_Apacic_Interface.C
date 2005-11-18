@@ -6,6 +6,7 @@
 #include "Message.H"
 #include "Running_AlphaS.H"
 #include "Run_Parameter.H"
+#include "Amegic.H"
 #include "Cluster_Partons_CKKW.H"
 
 using namespace SHERPA;
@@ -221,6 +222,8 @@ int Amegic_Apacic_Interface::PerformShowers()
     double qmin2i,qmin2f; 
     double scale(p_mehandler->FactorisationScale());
     double ycut(p_cluster->YCut());
+    double yp(((Process_Base*)p_mehandler->GetAmegic()->GetProcess())->Ycut());
+    if (yp!=-1.0) ycut=yp; 
     if (ycut==rpa.gen.Ycut()) p_cluster->JetvetoPt2(qmin2i,qmin2f);
                          else qmin2i=qmin2f=scale;
     p_shower->SetJetvetoPt2(qmin2i,qmin2f);
