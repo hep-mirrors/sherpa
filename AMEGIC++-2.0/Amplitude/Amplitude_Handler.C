@@ -16,11 +16,6 @@ using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace std;
 
-void out_pfunc(Pfunc & pf) {
-  pf.operator<<(cout);
-}
-
-
 Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Info* pinfo,
 				     Interaction_Model_Base * model,Topology* top,
 				     int & _orderQCD,int & _orderEW,Basic_Sfuncs* BS,
