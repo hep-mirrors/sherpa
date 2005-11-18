@@ -43,6 +43,8 @@ namespace APACIC {
 
     size_t m_maxjets, m_cmode;
 
+    double m_ycut;
+
     int CollectISMomenta(Knot *knot,std::vector<ATOOLS::Vec4D> &vecs,
 			 size_t &hard);
     int CollectFSMomenta(Knot *knot,std::vector<ATOOLS::Vec4D> &vecs,
@@ -60,6 +62,8 @@ namespace APACIC {
     int TestISKinematics(Knot *const mo);
 
     // inline functions
+    inline void SetYCut(const double &ycut) { m_ycut=ycut; }
+
     inline void SetMode(const jv::mode &mode)     { m_mode=mode;       }
     inline void SetMaxJets(const size_t &maxjets) { m_maxjets=maxjets; }
     

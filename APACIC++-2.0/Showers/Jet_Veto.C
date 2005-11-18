@@ -1,5 +1,12 @@
 #include "Jet_Veto.H"
 
+#ifdef PROFILE__all
+#include "prof.hh"
+#else 
+#define PROFILE_HERE 
+#define PROFILE_LOCAL(LOCALNAME) 
+#endif
+
 using namespace APACIC;
 using namespace ATOOLS;
 
@@ -10,6 +17,7 @@ Jet_Veto::Jet_Veto(ATOOLS::Jet_Finder *const jf,
 
 int Jet_Veto::TestKinematics(const int mode,Knot *const mo)
 {
+  PROFILE_HERE;
   if (mode==1 && !(m_mode&jv::mlm)) {
     p_cur=NULL;
     m_cmode=1;
@@ -74,7 +82,7 @@ int Jet_Veto::TestKinematics(const int mode,Knot *const mo)
     }
   }
   size_t njets(nmin), nljets(nmin);
-  double jcrit(p_jf->ShowerPt2()), ljcrit(rpa.gen.Ycut()*sqr(rpa.gen.Ecms()));
+  double jcrit(p_jf->ShowerPt2()), ljcrit(m_ycut*sqr(rpa.gen.Ecms()));
   for (;njets<m_rates.size();++njets) if (m_rates[njets]<jcrit) break;
   for (;nljets<m_rates.size();++nljets) if (m_rates[nljets]<ljcrit) break;
   msg_Debugging()<<"produced "<<njets
@@ -141,6 +149,7 @@ int Jet_Veto::CollectFSMomenta(Knot *knot,std::vector<Vec4D> &vecs,
 
 int Jet_Veto::TestISKinematics(Knot *const knot)
 {
+  PROFILE_HERE;
   if (m_mode&jv::mlm || !(m_mode&jv::initial)) return 1;
   msg_Debugging()<<METHOD<<"("<<knot->kn_no<<","<<knot->part->Info()
 		 <<"): p_{t jet} = "<<sqrt(p_jf->ShowerPt2())<<"\n";
@@ -158,6 +167,7 @@ int Jet_Veto::TestISKinematics(Knot *const knot)
 
 int Jet_Veto::TestFSKinematics(Knot *const knot)
 {
+  PROFILE_HERE;
   if (m_mode&jv::global) return TestKinematics(0,NULL);
   if (knot->left==NULL ||
       m_mode&jv::mlm || !(m_mode&jv::final)) return 1;
