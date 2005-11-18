@@ -48,14 +48,15 @@ namespace AMEGIC {
       return *this;
     }
 
-    std::ostream& operator<<(std::ostream& os) {
-      os<<" mn:"<<momnum<<"   argn:"<<argnum<<"   on:"<<on<<"   hp:"<<haspol<<"   fl:"<<fl<<std::endl;
+    friend std::ostream& operator<<(std::ostream& os, Pfunc& pf) {
+      os<<" mn:"<<pf.momnum<<"   argn:"<<pf.argnum<<"   on:"<<pf.on<<"   hp:"<<pf.haspol
+	<<"   fl:"<<pf.fl<<std::endl;
       os<<" arg(";
-      for (int i=0; i<argnum; ++i) 
-	os<<" "<<arg[i];
-      os<<" )"<<std::endl;
-      return os;
+      for (int i=0; i<pf.argnum; ++i) 
+	os<<" "<<pf.arg[i];
+      return os<<" )"<<std::endl;
     }
+
   };
   typedef std::vector<Pfunc*> Pfunc_List;
   typedef Pfunc_List::iterator Pfunc_Iterator;
