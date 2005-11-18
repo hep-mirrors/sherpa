@@ -4,6 +4,16 @@
 #include "Random.H"
 #include "Run_Parameter.H"
 
+#ifdef PROFILE__all
+#define PROFILE__Apacic
+#endif
+#ifdef PROFILE__Apacic
+#include "prof.hh"
+#else 
+#define PROFILE_HERE
+#define PROFILE_LOCAL(LOCALNAME)
+#endif
+
 using namespace APACIC;
 using namespace PDF;
 using namespace ATOOLS;
@@ -54,6 +64,8 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
 			   const double &x1,const double &x2,
 			   const double &ycut) 
 {
+  PROFILE_HERE;
+  p_jetveto->SetYCut(ycut);
   if (!m_showers) return 1;
   if (msg.LevelIsDebugging()) {
     msg.Out()<<"Apacic::PerformShowers : Before showering."<<std::endl;
