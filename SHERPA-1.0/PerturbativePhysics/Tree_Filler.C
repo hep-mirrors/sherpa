@@ -102,8 +102,8 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
   double scale(p_cluster->HardScale());
   mo->pt2lcm = scale;
   for (int i(0);i<4;++i) knots[i]->pt2lcm=scale;
-  if(!(p_cluster->OrderStrong()>0 && njet==m_maxjetnumber)) scale = Max(scale,4.*p_cluster->JetScale());
-
+  if(p_cluster->OrderStrong()==0 && njet==m_maxjetnumber) 
+    scale = Max(scale,4.*p_cluster->JetScale());
   EstablishRelations(mo,knots[0],knots[1],0,scale);
   EstablishRelations(mo,knots[2],knots[3],1);      
 
@@ -453,7 +453,6 @@ void Tree_Filler::EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC:
     p_cluster->GetCombineTable()->GetX1X2(x1,x2);
     d1->x = x1;
     d2->x = x2;
-
     // set start t
     d1->t = -scale;
     d2->t = -scale;
