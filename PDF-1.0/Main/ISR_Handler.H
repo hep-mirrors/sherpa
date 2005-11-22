@@ -24,7 +24,7 @@ namespace PDF {
 
     std::string m_name, m_type;
 
-    int m_mode, m_kmrmode, m_kperpscheme; 
+    int m_mode, m_kmrmode, m_kperpscheme, m_rmode; 
 
     double m_mass2[2], m_exponent[2], m_x[2], m_mu2[2];
     double m_splimits[3],m_ylimits[2], m_kplimits[3], m_zlimits[2];
@@ -129,6 +129,8 @@ namespace PDF {
 
     inline Remnant_Base *const GetRemnant(const size_t i) const
     { return i<2?p_remnants[i]:NULL; }
+
+    inline void SetRunMode(const int &rmode) { m_rmode=rmode; }
 
   };// end of class ISR_Handler
   

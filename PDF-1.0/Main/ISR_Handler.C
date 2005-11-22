@@ -67,6 +67,7 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase):
   p_isrbase(isrbase),
   p_info(new ATOOLS::Integration_Info()),
   m_kperpscheme((int)kps::constant),
+  m_rmode(0),
   m_weight(1.),
   m_info_lab(8),
   m_info_cms(8)
@@ -575,6 +576,7 @@ bool ISR_Handler::CheckRemnantKinematics(const ATOOLS::Flavour &fl,
 					 double &x,int beam,bool swaped)
 {
   PROFILE_HERE;
+  if (m_rmode==0) return true;
   p_remnants[beam]->QuickClear();
   double pp(beam==0?x*p_beam[0]->OutMomentum().PPlus():
 	    x*p_beam[1]->OutMomentum().PMinus());
