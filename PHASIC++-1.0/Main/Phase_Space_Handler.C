@@ -585,6 +585,7 @@ bool Phase_Space_Handler::OneEvent(const double mass,const int mode)
     double max = p_process->Selected()->Max();
     if (p_process->Selected()->Overflow()==0.) {
       p_process->Selected()->RestoreInOrder(); // use last order for overflow events
+      p_isrhandler->SetRunMode(1);
       value = Differential(p_process->Selected());
     }
     else {
@@ -673,6 +674,7 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
     }
     Integrable_Base *selected=p_process->Selected();
     selected->RestoreInOrder();
+    p_isrhandler->SetRunMode(1);
     value = Differential(selected,(psm::code)mode);
     if (value > 0.) {
       m_sumtrials+=i;
