@@ -501,7 +501,7 @@ Particle_List * Primitive_Analysis::GetParticleList(const std::string & key)
   }
 
   if (ps==0 && us==0) {
-    ps = new Particle_Selector("FinalState","IntermediateHadrons",key);
+    ps = new Particle_Selector("FinalState","IntermediateHadrons",key,0);
     AddObservable(ps);
   }
   if (ps) ps->CreateParticleList();
