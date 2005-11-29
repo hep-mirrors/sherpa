@@ -319,7 +319,6 @@ int Cluster_Partons_Base::Set2Colours(const int nquark,const int ngluon,Vec4D * 
 {
   m_hard_nqed = 2;
   m_hard_nqcd = 0;
-
   if (nquark+ngluon>2) {
     msg.Error()<<"ERROR in Cluster_Partons_Base::Set2Colours("<<nquark<<","<<ngluon<<")"<<std::endl
 	       <<"   Wrong number of colours, abort."<<std::endl;
@@ -333,7 +332,7 @@ int Cluster_Partons_Base::Set2Colours(const int nquark,const int ngluon,Vec4D * 
       m_colors[i][0+int(fl[i].IsAnti())] = 500;
     }
     else if (fl[i].IsGluon()) {
-      m_colors[i][1+j] = 500; m_colors[i][2-j] = 501;
+      m_colors[i][j] = 500; m_colors[i][1-j] = 501;
     }
     connected[j++]=i;
   }    
@@ -364,9 +363,9 @@ int Cluster_Partons_Base::Set3Colours(const int nquark,const int ngluon,Vec4D * 
       }
       if (fl[i].IsGluon()) {
 	connected[j] = i;
-	m_colors[i][1] = 500+j; 
+	m_colors[i][0+(i>1)] = 500+j; 
 	if (j==2) j=-1;
-	m_colors[i][2] = 501+j;
+	m_colors[i][1-(i>1)] = 501+j;
 	j++;
       }    
     }
@@ -431,8 +430,15 @@ void Cluster_Partons_Base::FixJetvetoPt2(double & jetveto_pt2)
   double pt2min = p_ct->MinKt2QCD();
   if (pt2min>0.0 && pt2min<std::numeric_limits<double>::max()) jetveto_pt2=pt2min;
   else {
-    msg.Error()<<"Cluster_Partons_Base::FixJetvetoPt2(..): No minimum scale found : "<<pt2min<<std::endl
-	       <<*p_ct<<std::endl<<"-----------------------------------------------------------"<<std::endl;
+    pt2min = p_ct->MinKt2QED();
+    if (pt2min>0.0 && pt2min<std::numeric_limits<double>::max()) {
+      jetveto_pt2=pt2min;
+      msg.Error()<<METHOD<<"(): Warning. Using QED scale for weight calculation."<<std::endl;
+    }
+    else {
+      msg.Error()<<"Cluster_Partons_Base::FixJetvetoPt2(..): No minimum scale found : "<<pt2min<<std::endl
+		 <<*p_ct<<std::endl<<"-----------------------------------------------------------"<<std::endl;
+    }
   }
 }
 
