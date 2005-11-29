@@ -14,6 +14,7 @@ CNumber::CNumber_Vector CNumber::s_cnumbers;
 Delta::Delta_Vector Delta::s_deltas;
 Fundamental::Fundamental_Vector Fundamental::s_fundamentals;
 Adjoint::Adjoint_Vector Adjoint::s_adjoints;
+Trace::Trace_Vector Trace::s_traces;
 
 Expression::Expression_Vector Expression::s_expressions;
 
@@ -357,6 +358,88 @@ void Adjoint::DeleteAll()
   }
 }
 
+
+Trace::Trace(size_t *a,const size_t &i,const size_t &j):
+      Color_Term(ctt::trace), m_i(i), m_j(j) {
+  ma = new size_t[a[0]+1];
+  for (size_t i=0;i<a[0]+1;i++) ma[i]=a[i];
+}
+
+Trace::~Trace() { 
+  delete [] ma;    
+}
+
+bool Trace::Evaluate(Expression *const expression)
+{ 
+  size_t j(expression->CIndex());
+  if (!ma[0]) (*expression)[j] = Delta::New(m_i,m_j);
+  else if (ma[0]==1) (*expression)[j] = Fundamental::New(ma[1],m_i,m_j,false);
+  else {
+    size_t ii;
+    if (m_i==0 && m_j==0) ii=expression->FIndex();
+    else ii=m_i;
+    size_t ij(expression->FIndex());
+    size_t ik;
+    (*expression)[j] = Fundamental::New(ma[1],ii,ij,false);
+    size_t n;
+    for (n=2;n<ma[0];n++) {
+      ik=ij;
+      ij=expression->FIndex();
+      expression->push_back(Fundamental::New(ma[n],ik,ij,false));
+    }
+    if (m_i!=0 || m_j!=0) ii=m_j;
+    expression->push_back(Fundamental::New(ma[n],ij,ii,false));
+  }
+  Delete();
+  return true;
+}
+
+void Trace::Print() const
+{
+  msg_Info()<<"("<<this<<"): { tr_("<<ma[1];
+  for (size_t i=2;i<ma[0]+1;i++) {
+    msg_Info()<<","<<ma[i];
+  }
+  msg_Info()<<")";
+  if (m_i!=0 || m_j!=0) msg_Info()<<"_("<<m_i<<","<<m_j<<")";
+  msg_Info()<< " }";
+}
+
+Color_Term *Trace::GetCopy() const
+{
+  return New(ma,m_i,m_j);
+}
+
+Trace *Trace::New(size_t *a,const size_t &i,const size_t &j)
+{
+  if (s_traces.empty()) return new Trace(a,i,j);
+  Trace *trace(s_traces.back());
+  s_traces.pop_back();
+  delete [] trace->ma;
+  trace->ma = new size_t[a[0]+1];
+  for (size_t l=0;l<a[0]+1;l++) trace->ma[l]=a[l];
+  trace->m_i=i;
+  trace->m_j=j;
+  return trace;
+}
+
+void Trace::Delete() 
+{
+  s_traces.push_back(this);
+}
+
+void Trace::DeleteAll()
+{
+  while (!s_traces.empty()) {
+    delete s_traces.back();
+    s_traces.pop_back();
+  }
+}
+
+
+
+
+
 Expression::Expression(const std::string &expression): 
   Node<Color_Term*>(NULL,true),
   m_result(0.0,0.0),
@@ -409,6 +492,39 @@ Expression::Expression(const std::string &expression):
       m_findex=Max(m_findex,Max(i,j));
       m_aindex=Max(m_aindex,a);
     }
+    else if (factor.find("tr_[")==0 && factor[factor.length()-1]==']') {
+      size_t c1pos(factor.find(','));
+      size_t c2pos;
+      size_t fpos(factor.find(']'));
+      size_t i=0, j=0;
+      if (c1pos==std::string::npos || c1pos>fpos)
+	THROW(fatal_error,"Invalid number of color indices for tr.");
+      size_t l;
+      for (l=1;(c1pos!=std::string::npos && c1pos<fpos);l++) {
+	c1pos=factor.find(',',c1pos+1);
+      }
+      size_t *a = new size_t[l+1];
+      a[0]=l;
+      c1pos=factor.find(',');
+      a[1]=ToType<int>(factor.substr(4,c1pos-4));
+      for(l=2;l<a[0];l++) {
+	c2pos=factor.find(',',c1pos+1);
+	a[l]=ToType<int>(factor.substr(c1pos+1,c2pos-c1pos-1));
+	c1pos=c2pos;
+      }
+      a[l]=ToType<int>(factor.substr(c1pos+1,fpos-c1pos-1));
+      if (factor.find("]_[")!=std::string::npos) {
+	fpos=factor.find(',',fpos+3);
+	if (fpos==std::string::npos || 
+	    factor.find(',',fpos+1)!=std::string::npos)
+	  THROW(fatal_error,"Invalid number of fundamental indices in tr.");
+	i = ToType<int>(factor.substr(factor.find("]_[")+3,fpos-3-factor.find("]_[")));
+	j = ToType<int>(factor.substr(fpos+1,factor.length()-fpos-2));
+      }
+      back() = Trace::New(a,i,j);
+      m_findex=Max(m_findex,Max(i,j));
+      for (l=1;l<a[0]+1;l++) m_aindex=Max(m_aindex,a[l]);
+    }
     else if (factor.find("d_[")==0 && factor[factor.length()-1]==']') {
       size_t cpos(factor.find(','));
       if (cpos==std::string::npos || 
@@ -426,6 +542,16 @@ Expression::Expression(const std::string &expression):
     }
   }
 }
+
+
+
+Expression::~Expression()
+{
+  for (Color_Term_Vector::iterator tit(begin());tit!=end();++tit) 
+    (*tit)->Delete(); 
+}
+
+
 
 size_t Expression::Size()
 {
@@ -550,25 +676,15 @@ bool Expression::Evaluate()
 void Expression::Print()
 {
   msg_Info()<<"("<<this<<"): {\n";
-  {
-#ifndef USING__Color_only
-    msg_Indent();
-#endif
-    for (Color_Term_Vector::iterator tit(begin());tit!=end();++tit) {
-      (*tit)->Print();
-      msg_Info()<<"\n";
-    }
+  for (Color_Term_Vector::iterator tit(begin());tit!=end();++tit) {
+    (*tit)->Print();
+    msg_Info()<<"\n";
   }
   msg_Info()<<"}\n";
-  {
-#ifndef USING__Color_only
-    msg_Indent();
-#endif
-    if (operator->()!=NULL) {
-      for (size_t i(0);i<(*this)().size();++i) {
-	Expression *expression((Expression*)(*this)()[i]);
-	expression->Print();
-      }
+  if (operator->()!=NULL) {
+    for (size_t i(0);i<(*this)().size();++i) {
+      Expression *expression((Expression*)(*this)()[i]);
+      expression->Print();
     }
   }
 }
@@ -616,5 +732,6 @@ void Expression::DeleteAll()
   Delta::DeleteAll();
   Fundamental::DeleteAll();
   Adjoint::DeleteAll();
+  Trace::DeleteAll();
 }
 

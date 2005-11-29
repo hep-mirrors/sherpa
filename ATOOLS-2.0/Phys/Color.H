@@ -3,7 +3,7 @@
 /*!
   \file Color.H
   \brief Declares the classes Color_Term,
-  CNumber, Fundamental, Adjoint and Expression.
+  CNumber, Fundamental, Adjoint, Trace and Expression.
 */
 
 #include <iostream>
@@ -14,6 +14,8 @@
 typedef std::complex<double> Complex;
 #endif
 #include "Node.H"
+
+
 
 namespace ATOOLS {
 
@@ -28,12 +30,14 @@ namespace ATOOLS {
       number      = 0,
       delta       = 1,
       fundamental = 2,
-      adjoint     = 4
+      adjoint     = 4,
+      trace       = 8
     };
 
   };// end of struct ctt
 
   class Expression;
+  
 
   class Color_Term {
   private:
@@ -175,7 +179,7 @@ namespace ATOOLS {
     */
 
     friend class Delta;
-    friend class Adjoint;
+    friend class Adjoint; 
 
   public:
     
@@ -274,6 +278,60 @@ namespace ATOOLS {
     This class represents a color matrix in the adjoint representation.
   */
 
+
+  class Trace: public Color_Term {
+  public:
+    
+    typedef std::vector<Trace*> Trace_Vector;
+
+  private:
+
+    static Trace_Vector s_traces;
+
+    size_t *ma, m_i, m_j;
+
+    public:
+    
+    // constructor
+    Trace(size_t *a,const size_t &i,const size_t &j);
+
+    //destructor
+    ~Trace();
+
+    // member functions
+    bool Evaluate(Expression *const expression);
+    /*!
+      \fn bool Evaluate(Expression *const expression)
+      \brief Expands the trace.
+
+      This method expands a trace, 
+      \f$tr(T^a T^b ... T^n)\f$ in terms of matrices in the fundamental representation,
+      according to
+      \f[
+      tr(T^a T^b T^c ...)\,=\;T^a_{ij}T^b_{jk} ... T^n_{li} 
+      \f].
+    */
+    void Print() const;
+
+    Color_Term *GetCopy() const;
+
+    static Trace *New(size_t *a,const size_t &i,const size_t &j);
+
+    void        Delete();
+    static void DeleteAll();
+
+  };// end of class Trace
+  /*!
+    \class Trace
+    \brief Represents a trace of the product of matrices in the fundamental representation.
+
+    This class represents a trace of the product of matrices in the fundamental representation.
+  */
+
+
+
+
+
   class Expression: public ATOOLS::Node<Color_Term*> {
   public:
 
@@ -297,14 +355,16 @@ namespace ATOOLS {
       Node<Color_Term*>(NULL,true), m_result(0.0,0.0),
       m_findex(0), m_aindex(0), m_evaluated(0), m_cindex(0) {}
 
-    Expression(const std::string &expression);
+    inline Expression(int ma,int mf): 
+      Node<Color_Term*>(NULL,true), m_result(0.0,0.0),
+      m_findex(mf+1), m_aindex(ma+1), m_evaluated(0), m_cindex(0) {}
+
+    Expression(const std::string &expression); 
+    
 
     // destructor
-    inline ~Expression()
-    {
-      for (Color_Term_Vector::iterator tit(begin());tit!=end();++tit) 
-	(*tit)->Delete();
-    }
+    ~Expression();
+    
 
     // member functions
     bool Evaluate();
