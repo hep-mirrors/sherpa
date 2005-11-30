@@ -11,9 +11,13 @@
 namespace ATOOLS {
 
   class Blob_Data_Base {
+  private:
+    static long int s_number;
   public:
     template <class Type> Type Get();
     template <class Type> void Set(const Type &data);
+    Blob_Data_Base();
+    Blob_Data_Base(const Blob_Data_Base &base);
     virtual ~Blob_Data_Base();
     virtual std::ostream & operator>>(std::ostream &) const =0;
   };

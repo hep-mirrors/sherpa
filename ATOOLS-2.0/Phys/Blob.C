@@ -424,12 +424,22 @@ std::ostream& ATOOLS::operator<<( std::ostream& s, const Blob_Data_Base & bd)
   return s;
 }
 
+long int Blob_Data_Base::s_number(0);
 
+Blob_Data_Base::Blob_Data_Base()
+{
+  ++s_number;
+}
+
+Blob_Data_Base::Blob_Data_Base(const Blob_Data_Base &base)
+{
+  ++s_number;
+}
 
 Blob_Data_Base::~Blob_Data_Base()
 {
+  --s_number;
 }
-
 
 template <class Type>
 Blob_Data<Type>::~Blob_Data() 
