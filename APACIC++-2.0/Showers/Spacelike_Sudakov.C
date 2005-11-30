@@ -35,7 +35,7 @@ Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * pdf,Sudakov_Tools * tools,Spacel
   m_emin(dataread->GetValue<double>("IS_MINIMAL_E",0.5)),
   m_cpl_scheme(dataread->GetValue<int>("IS_COUPLINGS",1)),
   m_pdf_scheme(dataread->GetValue<int>("IS_PDF_SCALE",1)),
-  m_ordering_scheme(dataread->GetValue<int>("IS_ORDERING",0)),
+  m_ordering_scheme(dataread->GetValue<int>("IS_ORDERING",1)),
   m_facscale(rpa.gen.Ycut()*m_s_hadron),
   m_pdf_fac(5.),
   m_pdf_scale_fac(dataread->GetValue<double>("IS_PDF_SCALE_FACTOR",1.)),
@@ -234,8 +234,7 @@ bool Spacelike_Sudakov::OrderingVeto(Knot * mo)
 bool Spacelike_Sudakov::RemnantVeto(Knot * mo) 
 {
   double E(p_remnant->GetBeam()->Energy()*mo->x/m_z);
-  Particle part(1,GetFlA(),Vec4D(E,0.0,0.0,E));
-  if (!p_remnant->TestExtract(&part)) return true;
+  if (!p_remnant->TestExtract(GetFlA(),Vec4D(E,0.0,0.0,E))) return true;
   return false;
 }
 
