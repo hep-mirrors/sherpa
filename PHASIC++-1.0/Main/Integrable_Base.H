@@ -19,12 +19,14 @@ namespace PHASIC {
   struct stp {
 
     enum id {
+      unknown =  0,
       ren     =  1,
       fac     =  2,
       kp21    =  3,
       kp22    =  4,
-      as      = 10,
-      unknown = 99
+      sfs     =  8,
+      sis     = 16,
+      as      = 32
     };
 
   };// end of struct stp
