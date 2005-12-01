@@ -16,6 +16,7 @@ XS_Base::XS_Base():
   p_colours(NULL), m_order_ew(0), m_order_strong(0)
 {
   m_name="Empty XS";
+  m_scale[PHASIC::stp::sfs]=m_scale[PHASIC::stp::sis]=std::numeric_limits<double>::max();
 } 
 
 XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
@@ -31,6 +32,7 @@ XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavo
   ResetSelector(selectordata);
   p_pshandler = new PHASIC::Phase_Space_Handler(this,isrhandler,beamhandler);
   p_activepshandler=p_pshandler;
+  m_scale[PHASIC::stp::sfs]=m_scale[PHASIC::stp::sis]=std::numeric_limits<double>::max();
 }
 
 XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours):
@@ -39,6 +41,7 @@ XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavo
 {
   Init(flavours);
   p_selector = new ATOOLS::No_Selector();
+  m_scale[PHASIC::stp::sfs]=m_scale[PHASIC::stp::sis]=std::numeric_limits<double>::max();
 }
 
 XS_Base::~XS_Base() 
