@@ -477,6 +477,7 @@ Fullamplitude_MHV::Fullamplitude_MHV(int np,int *pl,int pr):
 Fullamplitude_MHV::~Fullamplitude_MHV() 
 {
   delete [] perm;
+  if (colorstore) delete permstore;  
 }
 
 
@@ -727,11 +728,6 @@ void Fullamplitude_MHV::Permutation_quark4(int p_number, int** p_adr,bool conjfl
       int* plist(calc->GetPlist());
       int fq=0;
       if (plist[qlist[1]]>0) fq=1;
-     
-      msg_Info()<<endl<<endl<<"     perm: ("<<perm[0];                        //print
-      for (int i=1;i<n_part;i++)  msg_Info()<<","<<perm[i];                   //print 
-      msg_Info()<<")"<<endl;                                                  //print
-
       ampnc = calc->Differential(perm);
 
       msg_Info()<<endl<<"     amp="<<ampnc<<endl<<endl;                       //print
@@ -757,7 +753,7 @@ void Fullamplitude_MHV::Permutation_quark4(int p_number, int** p_adr,bool conjfl
       int st=perm[m_qpos-1];
       perm[m_qpos-1]=perm[n_part-2];
       perm[n_part-2]=st;
-      ampnc = calc->Differential(perm);
+      ampnc = calc->Differential(perm); msg_Info()<<endl<<"     amp="<<ampnc<<endl<<endl;                       //print
       ampnc/= (-NC);
       for (m_qposconj=1;m_qposconj<n_part-2;m_qposconj++) {
 	permconj[m_qposconj-1]=qlist[3-fq];
@@ -859,7 +855,6 @@ Complex Fullamplitude_MHV::MSquare(MomentumList *p_BS,int *hlist)
  
   // pure gluons
   if (qlist[0]==0) {
-    permstore = new PermStore(n_part-1);
     permconj = new int[n_part];
     int** perm_adr = new int*[n_part-1];
 
@@ -867,6 +862,7 @@ Complex Fullamplitude_MHV::MSquare(MomentumList *p_BS,int *hlist)
     permconj[n_part-1] = n_part-1;
     for (int i=0;i<n_part-1;i++) perm_adr[i]=&perm[i];
     if (!colorstore){
+      permstore = new PermStore(n_part-1);
       PermutationStoreColor_pureg(n_part-2,perm_adr);
       colorstore=true;
     }
@@ -875,12 +871,10 @@ Complex Fullamplitude_MHV::MSquare(MomentumList *p_BS,int *hlist)
 
     delete [] perm_adr; 
     delete [] permconj;
-    delete permstore;
   }
 
   // 2 quarks
   else if (qlist[0]==2) {  
-    permstore = new PermStore(n_part-2);
     permgl = new int[n_part-2];
     permtb = new std::vector<int>[n_part];
     std::vector<int>** permtb_adr = new std::vector<int>*[n_part-2];
@@ -908,6 +902,7 @@ Complex Fullamplitude_MHV::MSquare(MomentumList *p_BS,int *hlist)
       }
     }
     if (!colorstore){
+      permstore = new PermStore(n_part-2);
       PermutationStoreColor_quark2(n_part-3,permtb_adr);
       colorstore=true;
     }
@@ -924,7 +919,6 @@ Complex Fullamplitude_MHV::MSquare(MomentumList *p_BS,int *hlist)
 
     delete [] perm_adr; 
     delete [] permconj;
-    delete permstore;  
   }
   
   // 4 quarks
