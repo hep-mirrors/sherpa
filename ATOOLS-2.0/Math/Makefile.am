@@ -45,7 +45,9 @@ include_HEADERS        =	\
 			Permutation.H \
 			Grid.H \
 			Primitive_Integrator.H \
-			Algebra_Interpreter.H
+			Algebra_Interpreter.H \
+			Cluster_Algorithm.H \
+			Cluster_Algorithm.C
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(ATOOLSFLAGS)
 INCLUDES      = $(MODELINCS) $(ATOOLSINCS)
