@@ -20,7 +20,6 @@ SUBDIRS       = \
 		HADRONS++-0.0 \
 		ANALYSIS-1.0 \
 		SHERPA-1.0 \
-		COMPARE-1.0 \
 		TOOLS
 
 EXTRA_DIST    = $(CVSINCLUDE)
