@@ -449,13 +449,19 @@ std::string Flavour::IDName() const
       Kfcode()==kf::mu ||
       Kfcode()==kf::tau ||
       Kfcode()==kf::Hmin ||
-      Kfcode()==kf::W) {
+      Kfcode()==kf::W ) {
     name.erase(name.length()-1,1);
     if (IsAnti()) name += string("+");
     else name += string("-");      
   }
   else {
-    if (IsAnti()) name += string("b"); 
+    if( Kfcode()==kf::pi_plus ||
+        Kfcode()==kf::K_plus ) {
+      name.erase(name.length()-1,1);
+      if (IsAnti()) name += string("-");
+      else name += string("+");      
+    }
+    else if (IsAnti()) name += string("b"); 
   }
   if (Kfcode()==kf::photon) name= string("P");
   if (Kfcode()==kf::gluon)  name= string("G");
