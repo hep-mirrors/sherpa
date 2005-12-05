@@ -574,14 +574,6 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  SHERPA-1.0/Main/Makefile \
 	  SHERPA-1.0/Run/Makefile \
 	  SHERPA-1.0/Makefile \
-	  COMPARE-1.0/Tools/Makefile \
-	  COMPARE-1.0/Reader/Makefile \
-	  COMPARE-1.0/Main/Makefile \
-	  COMPARE-1.0/Config/Makefile \
-	  COMPARE-1.0/Booklet/Makefile \
-	  COMPARE-1.0/Run/Makefile \
-	  COMPARE-1.0/Manual/Makefile \
-	  COMPARE-1.0/Makefile \
 	  TOOLS/Makefile \
 	  Makefile )
 
