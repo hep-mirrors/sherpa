@@ -32,6 +32,7 @@ Final_State_Shower::Final_State_Shower(MODEL::Model_Base *const model,
   p_sud->SetQEDScheme(dataread->GetValue<int>("FS_QED_SCHEME",0));        
   p_sud->SetPT2Min(dataread->GetValue<double>("FS_PT2MIN",1.0));
   p_sud->Init(dataread->GetValue<double>("F_MEDIUM",0.0));
+  p_sud->SetKFactorScheme(dataread->GetValue<int>("S_KFACTOR_SCHEME",1));
 }
 
 Final_State_Shower::~Final_State_Shower() 
