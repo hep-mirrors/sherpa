@@ -91,7 +91,10 @@ namespace ATOOLS {
       inline void   SetNumberOfDicedEvents(const long diced) { m_ndicedevents=diced; }
       inline void   SetNumberOfEstimatedEvents(const long N) { m_estimatedevents=N; }
       inline const std::string &UserName() { return m_username; }
-      inline const std::string &Variable(const std::string &key) { return s_variables[key]; }
+      inline const std::string &Variable(const std::string &key) 
+      { return s_variables[key]; }
+      inline void SetVariable(const std::string &key,const std::string &value) 
+      { s_variables[key]=value; }
       inline double WAnaScale()                          { return m_wana_scale;}
       inline void   SetWAnaScale(double ws)              { m_wana_scale=ws; }
 #ifndef USING__ATOOLS_only
