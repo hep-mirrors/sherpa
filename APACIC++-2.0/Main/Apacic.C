@@ -65,8 +65,10 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
 			   const double &ycut) 
 {
   PROFILE_HERE;
-  p_jetveto->SetYCut(ycut);
   if (!m_showers) return 1;
+  p_jetveto->SetYCut(ycut);
+  p_jetveto->SetJetVeto(jetveto);
+  p_jetveto->SetLoseJetVeto(losejv);
   if (msg.LevelIsDebugging()) {
     msg.Out()<<"Apacic::PerformShowers : Before showering."<<std::endl;
     OutputTrees();
@@ -102,10 +104,10 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
   }
   switch (p_jetveto->TestKinematics(1)) {
   case 0:
-    msg_Debugging()<<"mlm jet veto\n";
+    msg_Debugging()<<"MLM jet veto\n";
     return 0;
   case -1: 
-    msg_Debugging()<<"mlm lose jet veto\n";
+    msg_Debugging()<<"Lose jet veto\n";
     return -1;
   }
   msg_Debugging()<<"kinematics check passed"<<std::endl;
