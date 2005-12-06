@@ -2,6 +2,7 @@
 #include "HD_ME_Selector.H"
 #include "Message.H"
 
+#include "K_Meson_Decay_MEs.H"
 #include "B_Meson_Decay_MEs.H"
 #include "Tau_Decay_MEs.H"
 #include "Two_Body_MEs.H"
@@ -33,29 +34,31 @@ HD_ME_Base * HD_ME_Selector::GetME(int nin,int nout,Flavour * flavs,
 
   // Select ME depending on decaying particle
   switch (flavs[0]) {
-  case (kf::mu):
-  case (kf::tau):
-    SelectTauDecay(nout,flavs,hdme);
-    break;
-  case (kf::pi):
-  case (kf::K_plus):
-  case (kf::eta):
-  case (kf::eta_prime_958):
-    SelectLightPseudoScalarDecay(nout,flavs,hdme);
-    break;
-  case (kf::rho_770):
-  case (kf::rho_770_plus):
-  case (kf::omega_782):
-    //  case (kf::Kstar_892):
-    //  case (kf::Kstar_892_plus):
-  case (kf::phi_1020):
-    //SelectLightVectorDecay(nout,flavs,hdme);
-    break;
-  case (kf::B):
-  case (kf::B_plus):
-  case (kf::B_s):
-    SelectBMesonDecay(nout,flavs,hdme);
-    break;
+    case (kf::mu):
+    case (kf::tau):
+      SelectTauDecay(nout,flavs,hdme);
+      break;
+    case (kf::pi):
+    case (kf::K_plus):
+      SelectKMesonDecay(nout,flavs,hdme);
+      break;
+    case (kf::eta):
+    case (kf::eta_prime_958):
+      SelectLightPseudoScalarDecay(nout,flavs,hdme);
+      break;
+    case (kf::rho_770):
+    case (kf::rho_770_plus):
+    case (kf::omega_782):
+      //  case (kf::Kstar_892):
+      //  case (kf::Kstar_892_plus):
+    case (kf::phi_1020):
+      //SelectLightVectorDecay(nout,flavs,hdme);
+      break;
+    case (kf::B):
+    case (kf::B_plus):
+    case (kf::B_s):
+      SelectBMesonDecay(nout,flavs,hdme);
+      break;
   }
 
   if (hdme==NULL) hdme = new Isotropic(nout,flavs);
@@ -81,6 +84,24 @@ void HD_ME_Selector::SelectBMesonDecay(int nout,Flavour * flavs,
   default: 
     msg.Error()<<nout<<"-body decays of B's do not have any ME yet."<<std::endl;
     abort();
+  }
+}
+
+// Select the corresponding K meson decay ME
+void HD_ME_Selector::SelectKMesonDecay(int nout,Flavour * flavs,
+                                       HD_ME_Base *& hdme )
+{
+  std::cout<<"HD_ME_Selector::SelectKMesonDecay 1->"<<nout<<endl;
+  switch( nout ) {
+    case 2: {
+      if( flavs[1].IsLepton() && flavs[2].IsLepton() ) {
+        hdme = new K_Meson_Lepton( nout, flavs );
+      }
+      break;
+    }
+    default: 
+      msg.Error()<<nout<<"-body decays of K+'s do not have any ME yet."<<std::endl;
+      //abort();
   }
 }
 

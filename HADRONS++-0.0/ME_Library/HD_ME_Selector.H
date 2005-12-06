@@ -12,6 +12,7 @@ namespace HADRONS {
 
     int  m_mode;
     void SelectBMesonDecay(int nout,ATOOLS::Flavour * flavs,HD_ME_Base *& hdme );
+    void SelectKMesonDecay(int nout,ATOOLS::Flavour * flavs,HD_ME_Base *& hdme );
     void SelectTauDecay(int nout,ATOOLS::Flavour * flavs, HD_ME_Base *& hdme ); 
     void SelectLightPseudoScalarDecay( int nout, ATOOLS::Flavour *flavs, HD_ME_Base *& hdme );
     void SetVector_For_2PS(int,int,int,ATOOLS::Flavour *,HD_ME_Base *);
