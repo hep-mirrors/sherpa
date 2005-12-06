@@ -315,7 +315,7 @@ if [ "$RELEASE" = "TRUE" ] ; then
     echo -e "*\e[0m                                                     \e[34m*"
     echo -e "*\e[0m  Please check our web page for recent developments  \e[34m*"
     echo -e "*\e[0m                                                     \e[34m*"
-    echo -e "*\e[0m    http://www.physik.tu-dresden.de/~krauss/hep/     \e[34m*"
+    echo -e "*\e[0m               http://www.sherpa-mc.de               \e[34m*"
     echo -e "*\e[0m                                                     \e[34m*"
     echo -e "*******************************************************\e[0m"
     echo -e "\nhave a nice day `whoami`\n"
