@@ -36,9 +36,11 @@ namespace EXTRAXS {
     bool ConstructRung();
     bool GenerateLadder();
 
-    double Jacobian() const;
     double Flux() const;
-    bool   SetScales();
+    double Jacobian() const;
+
+    bool CheckEnergy() const;
+    bool SetScales();
 
   public:
 
