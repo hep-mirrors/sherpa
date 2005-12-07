@@ -44,7 +44,7 @@ int Jet_Veto::TestKinematics(const int mode,Knot *const mo)
   PROFILE_HERE;
   if (mode==1 && !(m_mode&jv::mlm)) {
     p_cur=NULL;
-    m_cmode=1;
+    m_cmode=0;
   }
   if (mode==0 && !(m_mode&jv::final) && !(m_mode&jv::initial)) return 1;
   msg_Debugging()<<METHOD<<"("<<mode<<"): p_{t jet} = "
@@ -154,11 +154,12 @@ int Jet_Veto::TestISKinematics(Knot *const knot)
   msg_Debugging()<<METHOD<<"("<<knot->kn_no<<","<<knot->part->Info()
 		 <<"): p_{t jet} = "<<sqrt(p_jf->ShowerPt2())<<"\n";
   double E2(sqr(sqrt(knot->left->E2)+sqrt(knot->right->E2)));
-  double z(p_kin->LightConeZ(knot->right->z,E2,knot->tout,
-			       knot->right->t,knot->left->t));
-  double pt2(z*(1.0-z)*knot->tout-(1.0-z)*knot->right->t-z*knot->left->t);
-  msg_Debugging()<<"pt_old = "<<sqrt(knot->right->pt2lcm)
-		 <<" pt = "<<sqrt(pt2)<<"\n";
+  double z(p_kin->LightConeZ(knot->right->z,E2,knot->t,
+			     knot->right->t,knot->left->t));
+  double pt2(z*(1.0-z)*knot->t-(1.0-z)*knot->right->t-z*knot->left->t);
+  msg_Debugging()<<"pt2_old = "<<sqrt(knot->right->pt2lcm)
+ 		 <<" pt2 = "<<sqrt(pt2)<<", z/\\tilde z-1 = "
+		 <<z/knot->right->z-1.0<<"\n";
   if (knot->part->Info()!='H') {
     if (pt2<0.0 || pt2>p_jf->ShowerPt2()) return 0;
     knot->left->pt2lcm=knot->pt2lcm=pt2;
