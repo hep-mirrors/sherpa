@@ -7,6 +7,7 @@ MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
 PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main
 ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
+APACICINCS    = -I$(SHERPASYS)/APACIC++-2.0/Main
 
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS
@@ -32,6 +33,7 @@ libObservables_la_SOURCES     =	\
 			    	MI_Observables.C \
 			    	ISR_Statistics.C \
 			    	Shower_Statistics.C \
+			    	SV_Statistics.C \
 			    	One_Particle_Observables.C \
 			    	Two_Particle_Observables.C \
                                 Three_Particle_Observables.C \
@@ -81,4 +83,4 @@ include_HEADERS        =	\
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(ANALYSISFLAGS) $(ROOTFLAGS)
 INCLUDES      =	$(ANALYSISINCS) $(MODELINCS) $(PDFINCS) \
-		$(ATOOLSINCS) $(ROOTINCS)
+		$(APACICINCS) $(ATOOLSINCS) $(ROOTINCS)
