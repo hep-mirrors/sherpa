@@ -105,7 +105,7 @@ bool Ladder::CheckEnergy() const
 bool Ladder::GeneratePDFJet()
 {
   m_weight=1.0;
-  double rn[4], Q(sqrt(m_q2)), mu(sqrt(m_kt2min)), kt2max(0.25*m_q2);
+  double rn[4], Q(sqrt(m_q2)), kt2max(0.25*m_q2);
   double kt2min(0.25*m_q2*p_pdfs[0]->XMin()*p_pdfs[1]->XMin());
   kt2min=ATOOLS::Max(m_kt2min,kt2min);
   for (short unsigned int i(0);i<4;++i) rn[i]=ran.Get();
@@ -129,7 +129,8 @@ bool Ladder::GeneratePDFJet()
   // construct emission
   double kt1(sqrt(m_kt21)), E1(Qhat/2.0);
   m_k1=Vec4D(E1,kt1*cos(m_phi1),kt1*sin(m_phi1),sqrt(E1*E1-m_kt21));
-  Poincare cms(Vec4D(cosh(y),0.0,0.0,sinh(y)));
+  Vec4D cm(cosh(y),0.0,0.0,sinh(y));
+  Poincare cms(cm);
   cms.BoostBack(m_k1);
   m_y1=m_k1.Y();
   // construct propagator
