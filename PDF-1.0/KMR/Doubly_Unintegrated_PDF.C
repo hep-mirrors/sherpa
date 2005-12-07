@@ -122,11 +122,11 @@ Doubly_Unintegrated_PDF(PDF_Base *_p_pdf,MODEL::Running_AlphaS *_p_alphas,
   m_epsilon(1.e-2),
   m_kperpscheme(kps::function),
   m_fixedktexponent(0.125),
-  m_mode(0), m_sudmode(1),
+  m_mode(0), m_sudmode(1), m_splitmode(0),
   p_integral(new ATOOLS::Grid(3,m_gridpoints))
 {
   m_type=std::string("DUPDF(")+p_pdf->Type()+std::string(")");
-  m_xmin=m_xmax=0.0;
+  m_xmin=p_pdf->XMin();
   m_xmax=p_pdf->XMax();
   m_q2min=0.0;
   m_q2max=ATOOLS::sqr(p_pdf->Q2Max());
@@ -440,8 +440,10 @@ bool Doubly_Unintegrated_PDF::Unintegrate(ATOOLS::Flavour flavour)
       LL_Branching::AllSplittings().begin();
     for (;sfit!=LL_Branching::AllSplittings().end();++sfit) {
       if ((*sfit)->GetFlB()==flavour) {
-	if ((*sfit)->GetFlC().IsGluon() && 
-	    m_z*(1.+sqrt(m_kperp2/m_mu2))>1.) continue;
+  	if ((*sfit)->GetFlC().IsGluon() && 
+  	    m_z*(1.+sqrt(m_kperp2/m_mu2))>1.) continue;
+  	if (m_splitmode==1 &&
+	    !(*sfit)->GetFlA().IsGluon()) continue;
 	m_unintegrated+=(*(*sfit))(m_z)*p_pdf->GetXPDF((*sfit)->GetFlA());
 	if (flavour.IsGluon() && (*sfit)->GetFlA().IsGluon())
 	  m_unintegrated+=(*(*sfit))(m_z)*p_pdf->GetXPDF((*sfit)->GetFlA());

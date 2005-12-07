@@ -34,7 +34,7 @@ namespace PDF {
     kps::type m_kperpscheme;
     double    m_fixedktexponent;
     bool      m_calculate;
-    int       m_mode, m_sudmode;
+    int       m_mode, m_sudmode, m_splitmode;
 
     ATOOLS::Grid *p_integral;
 
@@ -73,6 +73,7 @@ namespace PDF {
     inline double    FixedKtExponent() const { return m_fixedktexponent; }
     inline int       Mode() const            { return m_mode;            }
     inline int       SudakovMode() const     { return m_sudmode;         }
+    inline int       SplitMode() const       { return m_splitmode;       }
 
     inline LL_Sudakov *Sudakov() const { return p_sudakov; }
 
@@ -84,6 +85,8 @@ namespace PDF {
     { m_mode=mode; }
     inline void SetSudakovMode(const int mode) 
     { m_sudmode=mode; }
+    inline void SetSplitMode(const int mode) 
+    { m_splitmode=mode; }
 
   };// end of class Doubly_Unintegrated_PDF
 
