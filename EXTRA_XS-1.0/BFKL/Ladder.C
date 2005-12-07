@@ -10,6 +10,7 @@
 #define NC 3.0
 
 // #define USING__Collinear_Factorization
+#define USING__Gluon_Kernel_Only
 #define USING__Two_To_Zero_ME
 
 using namespace EXTRAXS;
@@ -47,7 +48,12 @@ bool Ladder::Initialize()
 	p_pdfs[i]->Type().find("DUPDF")==std::string::npos)
       THROW(fatal_error,"BFKL ME needs UPDF.");
     m_kt2min=ATOOLS::Max(m_kt2min,p_pdfs[i]->Cut("kp"));
+#ifdef USING__Gluon_Kernel_Only
+    p_pdfs[i]->SetSplitMode(1);
+#endif
   }
+  p_pdfs[0]->SetSudakovMode(1);
+  p_pdfs[1]->SetSudakovMode(0);
   p_sudakov->SetKT2Min(m_kt2min);
   delete [] p_momenta;
   delete [] p_flavours;
@@ -77,24 +83,16 @@ double Ladder::Jacobian() const
 {
 #ifdef USING__Collinear_Factorization
   // jacobian for ds' dct -> dkt2 dz 
-  return 2.0/(m_z1*(1.0-m_z1));
+  return 2.0*sqr(m_kt21)/(m_z1*(1.0-m_z1));
 #else
   // jacobian for ds' -> dz 
-  return 2.0/(m_z1*(1.0-m_z1));
+  return 2.0*sqr(m_kt21)/(m_z1*(1.0-m_z1));
 #endif
 }
 
 double Ladder::Flux() const
 {
-#ifdef USING__Collinear_Factorization
   return 2.0*m_q2*m_a1*m_a2/(m_z1*m_z2);
-#else
-  // // naive flux is zero for 2->0, since a1=b2 and a2=b1
-  // double b1(m_moms[0].PMinus()/m_pb.PMinus());
-  // double b2(m_moms[1].PPlus()/m_pa.PPlus());
-  // return 2.0*m_q2*sqr(m_q2)*(m_a1*m_a2-b1*b2);
-  return 2.0*m_q2*m_a1*m_a2/(m_z1*m_z2);
-#endif
 }
 
 bool Ladder::CheckEnergy() const
@@ -236,11 +234,11 @@ double Ladder::Differential(const ATOOLS::Vec4D *momenta)
     m_weight*=p_pdfs[0]->GetBasicPDF()->GetXPDF(m_flavs[0])/m_a1*m_z1;
     m_weight*=p_pdfs[1]->GetBasicPDF()->GetXPDF(m_flavs[1])/m_a2*m_z2;
     double Ms(1.0-t*u/(s*s)), Mt(1.0-s*u/(t*t)), Mu(1.0-s*t/(u*u));
-    m_weight*=sqr(4.0*M_PI*(*MODEL::as)(Q2))*9.0/4.0*(Mt+Mu+Ms);
+    m_weight*=sqr(4.0*M_PI*(*MODEL::as)(Q2))*9.0/4.0*(Mt+Mu+Ms)/sqr(m_kt21);
   */
   // ll approximation of gg->gg me
   /*
-    m_weight*=4.0*sqr(M_PI)*sqr(M_PI)*
+    m_weight*=4.0*sqr(M_PI)*sqr(M_PI)/sqr(m_kt21)*
       sqr((*MODEL::as)(Q2)/(2.0*M_PI*m_kt21)*2.0*3.0/(m_z1*(1.0-m_z1)))*
         4.0*sqr((m_moms[0]+m_moms[1]+m_k1+m_k2).Abs2())/(NC*NC-1.0)*
         sqr(m_z1*(1.0-m_z1));
@@ -250,18 +248,16 @@ double Ladder::Differential(const ATOOLS::Vec4D *momenta)
   p_pdfs[1]->GetBasicPDF()->Calculate(m_a2/m_z1,0.0,0.0,m_kt22);
   m_weight*=p_pdfs[0]->GetBasicPDF()->GetXPDF(m_flavs[0])/m_a1*m_z1;
   m_weight*=p_pdfs[1]->GetBasicPDF()->GetXPDF(m_flavs[1])/m_a2*m_z2;
-  m_weight*=4.0*pow(M_PI,4.0)*sqr(m_kt21)*
+  m_weight*=4.0*pow(M_PI,4.0)*
     sqr((*MODEL::as)(m_kt21)/(2.0*M_PI*m_kt21)*
 	2.0*3.0*sqr(1.0-m_z1*(1.0-m_z1))/(m_z1*(1.0-m_z1)));
 #else
-  p_pdfs[0]->SetSudakovMode(1);
-  p_pdfs[1]->SetSudakovMode(0);
   p_pdfs[0]->Calculate(m_a1,m_z1,m_kt21,m_mu21);
   p_pdfs[1]->Calculate(m_a2,m_z2,m_kt22,m_mu22);
   m_weight*=p_pdfs[0]->GetXPDF(m_flavs[0])/m_a1*m_z1;
   m_weight*=p_pdfs[1]->GetXPDF(m_flavs[1])/m_a2*m_z2;
   // ll approximation of gg->gg me
-  m_weight*=4.0*pow(M_PI,4.0)*sqr(m_kt21);
+  m_weight*=4.0*pow(M_PI,4.0);
 #endif  
   m_weight*=Jacobian();
   m_weight/=Flux();
