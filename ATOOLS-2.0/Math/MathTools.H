@@ -78,6 +78,8 @@ namespace ATOOLS {
 
   double ReIncompleteGamma0(double x,double prec=1.e-6);
 
+  double DiLog(double x);
+
   /*!
     \file
     \brief contains a collection of simple mathematical functions
@@ -156,6 +158,11 @@ namespace ATOOLS {
   /*!
     \fn    double ReIncomplietGamma0(double xx)
     \brief calculates the real part of the incomplete Gammafunction.
+  */
+
+  /*!
+    \fn    double DiLog(double x)
+    \brief calculates the real part of Li_2(x).
   */
 
 }
