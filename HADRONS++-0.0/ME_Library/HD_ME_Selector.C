@@ -78,7 +78,7 @@ void HD_ME_Selector::SelectBMesonDecay(int nout,Flavour * flavs,
       if( flavs[i].IsLepton() ) nLep++;
     }
     std::cout<<"Semileptonic"<<std::endl;
-    if (nLep==2) hdme = new Semileptonic_B_Meson( nout, flavs ); 
+    if (nLep==2) hdme = new Semileptonic_B_Meson( nout, flavs );
     break;
   }
   default: 
@@ -96,6 +96,17 @@ void HD_ME_Selector::SelectKMesonDecay(int nout,Flavour * flavs,
     case 2: {
       if( flavs[1].IsLepton() && flavs[2].IsLepton() ) {
         hdme = new K_Meson_Lepton( nout, flavs );
+      }
+      break;
+    }
+    case 3: {
+      int nLep(0), nPi(0);
+      for( int i=1; i<4; i++ ) {
+        if( flavs[i].IsLepton() ) nLep++;
+        if( flavs[i].Kfcode() == kf::pi ) nPi++;
+      }
+      if (nLep==2 && nPi==1) {
+        hdme = new K_Meson_SemiLeptonic( nout, flavs );
       }
       break;
     }

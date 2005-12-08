@@ -22,9 +22,10 @@ namespace HADRONS {
   };
 
   class K_Meson_SemiLeptonic : public HD_ME_Base {
-    int m_lep, m_nulep;
+    int m_lep, m_nulep, m_pi;
     double m_GF2;
-    Complex m_cR, m_cL;         // couplings for X function
+    Complex m_cR_K, m_cL_K;         // couplings for X-function with mom. of K
+    Complex m_cR_pi, m_cL_pi;         // couplings for X-function with mom. of pi
     public:
       K_Meson_SemiLeptonic( int nout, ATOOLS::Flavour *fl );
       double operator()(const ATOOLS::Vec4D *_p );
