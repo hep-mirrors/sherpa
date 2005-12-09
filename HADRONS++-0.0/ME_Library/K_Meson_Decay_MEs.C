@@ -18,17 +18,11 @@ K_Meson_Lepton::K_Meson_Lepton( int _nout, Flavour *_fl ) :
   m_nulep(-1)
 {
   m_metype = string("K_Meson_Lepton");
-  std::cout<<"Particle masses: ["<<p_masses[0]<<", "<<p_masses[1]<<", "<<p_masses[2]<<"]"<<std::endl;
-  // find the lepton
-  for( int i=1; i<3; i++ ) {
-    if( p_flavs[i].Kfcode() == kf::e || p_flavs[i].Kfcode() == kf::mu )
-      { m_lep = i; break; }
+  if( p_flavs[1].Kfcode() == kf::e || p_flavs[1].Kfcode() == kf::mu ) { 
+    m_lep=1;
+    m_nulep=2; 
   }
-  // find the corresponding neutrino
-  for( int i=1; i<3; i++ ) {
-    if( p_flavs[i].Kfcode() == p_flavs[m_lep].Kfcode()+1 ) 
-      { m_nulep = i; break; }
-  }
+  else { m_lep=2; m_nulep=1; }
 }
 
 void K_Meson_Lepton::SetModelParameters( GeneralModel _md )
@@ -82,8 +76,8 @@ void K_Meson_SemiLeptonic::SetModelParameters( GeneralModel _md )
   m_GF2 = sqr(_md("GF",1.16639e-5));
   double f_plus = _md("f_plus",1.0); //only temporarily.
   double f_minus = _md("f_minus",1.0); //only temporarily.
-  m_cL_K = (0.0,(f_plus+f_minus)/sqrt(2.0));  m_cR_K = (0.0,0.0);
-  m_cL_pi = (0.0,(f_plus-f_minus)/sqrt(2.0));  m_cR_pi = (0.0,0.0);
+  m_cL_K = (0.0,(f_plus+f_minus));  m_cR_K = (0.0,0.0);
+  m_cL_pi = (0.0,(f_plus-f_minus));  m_cR_pi = (0.0,0.0);
 }
 
 double K_Meson_SemiLeptonic::Using_Hels( const Vec4D * _p )
@@ -91,8 +85,8 @@ double K_Meson_SemiLeptonic::Using_Hels( const Vec4D * _p )
   XYZFunc F(m_nout,_p,p_flavs);
   double ret = 0.;
   for( int h=0; h<8; h++ ) {
-    ret += norm( F.X(m_nulep, 0, m_lep, h, m_cR_K, m_cL_K) );
-    ret += norm( F.X(m_nulep, m_pi, m_lep, h, m_cR_pi, m_cL_pi) );
+    ret += norm( F.X(m_nulep, 0, m_lep, h, m_cR_K, m_cL_K) 
+               + F.X(m_nulep, m_pi, m_lep, h, m_cR_pi, m_cL_pi) );
   }
   F.Delete();
   return ret*0.5;
@@ -102,6 +96,6 @@ double K_Meson_SemiLeptonic::operator()( const Vec4D *_p )
 {
   double T (1.);
   T = Using_Hels(_p);
-  return T*m_GF2/sqrt(2.0);
+  return T*m_GF2*0.25;
 }
 
