@@ -12,7 +12,7 @@ namespace HADRONS {
 
   class K_Meson_Lepton : public HD_ME_Base {
     int m_lep, m_nulep;
-    double m_GF2;
+    double m_GF2, m_F_K, m_Vus;
     Complex m_cR, m_cL;         // couplings for X function
    public:
      K_Meson_Lepton( int nout, ATOOLS::Flavour *fl );
