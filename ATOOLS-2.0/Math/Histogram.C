@@ -317,7 +317,7 @@ void Histogram::Output() {
 void Histogram::Output(const std::string name) 
 {
   msg.LogFile()<<"! Histogram::Output(..): "
-	       <<"Writing ("<<this<<") to '"<<name<<"'"<<std::endl;
+	       <<"Writing ("<<this<<") to '"<<name<<"'\n";
   std::ofstream ofile;
   ofile.open(name.c_str());
 
@@ -326,13 +326,13 @@ void Histogram::Output(const std::string name)
   if (m_depth>1) ofile<<m_y2values[0]<<"  ";
   ofile<<m_yvalues[m_nbin-1]<<"  ";
   if (m_depth>1) ofile<<m_y2values[m_nbin-1]<<"  ";
-  ofile<<m_fills<<std::endl;
+  ofile<<m_fills<<"\n";
   for (int i=0;i<m_nbin-1;i++) {
     ofile<<m_lower+i*m_binsize<<"  ";
     ofile<<m_yvalues[i+1]<<"  ";
     if (m_depth>1) ofile<<sqrt(m_y2values[i+1])<<"  ";
     if (m_depth>2) ofile<<m_psvalues[i+1]<<"  ";
-    ofile<<std::endl;
+    ofile<<"\n";
   }
   ofile.close();
 }
