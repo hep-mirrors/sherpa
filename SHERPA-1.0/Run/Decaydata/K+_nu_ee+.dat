@@ -1,13 +1,14 @@
 # Decay: K+ --> nu_e e+ 
 #        0  --> 1    2  
 Channels {
-	AlwaysIntegrate = 1;   ! 0...read results and skip integration
-	                       ! 1...don't read results and integrate
-	Isotropic 1;
+  AlwaysIntegrate = 1;   ! 0...read results and skip integration
+                         ! 1...don't read results and integrate
+  Isotropic 1;
 }
 Parameters {
-  F_K = 0.1
+  F_K = 0.11
+  Vus = 0.22
 }
 Result {
-   7.66231e-47 2.34331e-47 1.08739e-43;
+   1.2843e-14 0 1.2843e-14;
 }
