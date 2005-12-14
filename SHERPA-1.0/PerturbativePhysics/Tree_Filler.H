@@ -17,6 +17,8 @@ namespace SHERPA {
     ATOOLS::Poincare       m_cms_boost;
     Flavour_Map          * p_flmap;
 
+    double m_iss_scale_fac, m_fss_scale_fac;
+
     APACIC::Knot * Point2Knot(ATOOLS::Blob *,APACIC::Tree *,const Leg &,const ATOOLS::Vec4D &,char);
     double         ColourAngle(const std::vector<APACIC::Knot *> & knots, const int i);
     bool           IsColourConnected(ATOOLS::Particle *,ATOOLS::Particle *);

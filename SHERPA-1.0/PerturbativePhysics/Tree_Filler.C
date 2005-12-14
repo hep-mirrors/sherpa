@@ -1,7 +1,6 @@
 #include "Tree_Filler.H"
 #include "Combine_Table_Base.H"
 
-
 using namespace SHERPA;
 using namespace APACIC;
 using namespace ATOOLS;
@@ -11,7 +10,10 @@ Tree_Filler::Tree_Filler(Cluster_Partons_Base * cluster,int maxjetno,int isron, 
   p_cluster(cluster), m_maxjetnumber(maxjetno), 
   m_isrshoweron(isron), m_fsrshoweron(fsron),
   p_local_tree(NULL)
-{}
+{
+  m_iss_scale_fac=1.0;
+  m_fss_scale_fac=1.0;
+}
 
 Tree_Filler::~Tree_Filler() { 
   if (p_local_tree) { delete p_local_tree; p_local_tree = NULL;}
@@ -98,14 +100,20 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
   mo->thcrit = M_PI;
 
   //we have a virtuality ordered shower, therefore:
-  mo->t = mo->part->Momentum().Abs2();
-  double scale(p_cluster->HardScale());
-  mo->pt2lcm = scale;
-  for (int i(0);i<4;++i) knots[i]->pt2lcm=scale;
+  mo->t = p_cluster->FSShowerScale();
+  // set jet veto scale for each emission
+  double q2j(p_cluster->JetScale());
+  if (p_cluster->OrderStrong()>0) p_cluster->FixJetvetoPt2(q2j);
+  mo->pt2lcm = mo->maxpt2 = q2j/m_fss_scale_fac;
+  double scale(p_cluster->ISShowerScale());
   if(p_cluster->OrderStrong()==0 && njet==m_maxjetnumber) 
     scale = Max(scale,4.*p_cluster->JetScale());
   EstablishRelations(mo,knots[0],knots[1],0,scale);
   EstablishRelations(mo,knots[2],knots[3],1);      
+  for (int i(0);i<2;++i) 
+    knots[i]->pt2lcm=knots[i]->maxpt2=q2j/m_iss_scale_fac;
+  for (int i(2);i<4;++i) 
+    knots[i]->pt2lcm=knots[i]->maxpt2=q2j/m_fss_scale_fac;
 
   // determine starting conditions for showers
   // note, that starting conditions for subsequent branches have to be 
@@ -135,8 +143,6 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
       d2 = Point2Knot(blob,tree,ct_test->GetLeg(l),ct_test->Momentum(l),'H');
       d1->part->SetProductionBlob(blob);
       d2->part->SetProductionBlob(blob);
-      d1->pt2lcm=scale;
-      d2->pt2lcm=scale;
       EstablishRelations(knots[k],d1,d2,1);      
     } 
     else {
@@ -144,9 +150,21 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
       d2 = Point2Knot(blob,tree,ct_test->GetLeg(l),ct_test->Momentum(l),'H');
       d1->part->SetDecayBlob(blob);  
       d2->part->SetDecayBlob(blob);
-      d1->pt2lcm=scale;
-      d2->pt2lcm=scale;
       EstablishRelations(d1,knots[k],d2,2+k);      
+    }
+    // set max kt2 scale for each emission
+    d1->pt2lcm=d1->maxpt2=knots[k]->maxpt2;
+    d2->pt2lcm=d2->maxpt2=knots[k]->maxpt2;
+    double asfac(k<2?m_iss_scale_fac:m_fss_scale_fac);
+    if (scale/asfac<knots[k]->maxpt2 && 
+	!IsEqual(scale/asfac,knots[k]->maxpt2) &&
+	d1->part->Flav().Strong() && d2->part->Flav().Strong() &&
+	mo->part->Flav().Strong()) {
+      msg.Error()<<METHOD<<"(): scale ordering violated in knot "<<k<<".\n"
+		 <<"   last scale = "<<knots[k]->maxpt2
+		 <<", new scale = "<<scale<<std::endl;
+      d1->pt2lcm=d1->maxpt2=scale/asfac;
+      d2->pt2lcm=d2->maxpt2=scale/asfac;
     }
     knots[k] = d1;
     knots[l] = d2;
@@ -405,7 +423,6 @@ void Tree_Filler::DetermineColourAngles(const std::vector<APACIC::Knot *> & knot
   for (int i=0;i<n;++i) knots[i]->part->SetMomentum(cms*knots[i]->part->Momentum());
   Poincare zaxis(knots[0]->part->Momentum(),Vec4D::ZVEC);
   for (int i=0;i<n;++i) knots[i]->part->SetMomentum(zaxis*knots[i]->part->Momentum());
-
   for (int i=0;i<n;++i) {
     double th = ColourAngle(knots,i);
     knots[i]->thcrit=th;
@@ -485,5 +502,27 @@ void Tree_Filler::EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC:
             else mo->x = x2;
 
     APACIC::Initial_State_Shower::SetColours(d1);
+    
+    double th12(d1->part->Momentum().Theta(d2->part->Momentum()));
+    double th1((-1.*mo->part->Momentum()).Theta(d1->part->Momentum()));
+    double th2((-1.*mo->part->Momentum()).Theta(d2->part->Momentum()));
+    if (mo->part->Flav().IsGluon()) {
+      mo->thcrit=Max(th1,th2);
+      if (d1->part->Flav().IsGluon()) d2->thcrit=Max(th12,th2);
+      else d2->thcrit=th2;
+    }
+    else {
+      if (d1->part->Flav().IsGluon()) {
+	mo->thcrit=th1;
+	d2->thcrit=th12;
+      }
+      else {
+	mo->thcrit=th2;
+	d2->thcrit=Max(th12,th2);
+      }
+    }
+    msg_Debugging()<<mo->part->Flav()<<"->"<<d1->part->Flav()<<","
+		   <<d2->part->Flav()<<" ("<<th1<<","<<th2<<","
+		   <<th12<<") -> "<<mo->thcrit<<","<<d2->thcrit<<std::endl;
   }
 }
