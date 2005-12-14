@@ -23,7 +23,7 @@ using namespace std;
 
 Amegic::Amegic(std::string _path,std::string _file,
 	       MODEL::Model_Base * _model) :
-  m_path(_path), m_file(_file), m_nmax(0),m_maxjet(0), 
+  m_path(_path), m_file(_file), m_nmax(0),m_minqcdjet(99),m_maxjet(0), 
   p_procs(NULL), p_decs(NULL), p_model(NULL), p_top(NULL), p_fifo(NULL),
   p_dataread(NULL), p_seldata(NULL), p_beam(NULL), p_isr(NULL)
 {
@@ -487,11 +487,13 @@ void Amegic::ReadInProcessfile(string file)
 	      if (plavs[i].DoFNumber()>1 && beam_is_poled[i]) { single = 0; break; }
 	    } 
 	    
-
+	    int qcdjets(0);
 	    double summass = 0.;
-	    for (int i=0;i<nFS;i++)
+	    for (int i=0;i<nFS;i++) {
 	      summass += flavs[i+nIS].Mass();
-
+	      if (flavs[i+nIS].Strong()) ++qcdjets;
+	    }
+	    m_minqcdjet=Min(m_minqcdjet,qcdjets);
 	    if (summass<rpa.gen.Ecms()) {
 	      Process_Base * proc=NULL;
 	      if (single) {
