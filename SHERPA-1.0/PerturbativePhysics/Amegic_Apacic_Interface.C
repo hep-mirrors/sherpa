@@ -224,13 +224,16 @@ int Amegic_Apacic_Interface::PerformShowers()
     double ycut(p_cluster->YCut());
     double yp(((Process_Base*)p_mehandler->GetAmegic()->GetProcess())->Ycut());
     if (yp!=-1.0) ycut=yp; 
-    if (ycut==rpa.gen.Ycut()) p_cluster->JetvetoPt2(qmin2i,qmin2f);
-                         else qmin2i=qmin2f=scale;
+    p_cluster->JetvetoPt2(qmin2i,qmin2f);
     p_shower->SetJetvetoPt2(qmin2i,qmin2f);
     p_shower->SetFactorisationScale(scale);
     jetveto=1;
     if (m_maxjetnumber==m_nout && p_mehandler->OrderStrong()==0) jetveto = 0;
-    if (m_nout==2) losejv  = 0;
+    size_t qcdjets(0);
+    Process_Base *proc((Process_Base*)p_mehandler->GetAmegic()->GetProcess());
+    for (size_t i(0);i<proc->NOut();++i)
+      if (proc->Flavours()[proc->NIn()+i].Strong()) ++qcdjets;
+    if (p_mehandler->MinQCDJets()==qcdjets) losejv=0;
   }
   m_lastshowerveto = 
     p_shower->PerformShowers(jetveto,losejv,
