@@ -96,7 +96,7 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 		  isr[i]->SetBeam(i);
 		  if (p_remnants[i]!=NULL) {
 		    p_remnants[i]->QuickClear();
-		    if (!p_remnants[i]->Extract(parton2)) success=false;
+		    if (!p_remnants[i]->TestExtract(parton2)) success=false;
 		  }
 		  else THROW(fatal_error,"No remnant found.");
 		  if (xs->Flavours()[i].IsQuark()) {
@@ -131,7 +131,7 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 		blit=bloblist->begin();
 	      }
 	      if (success) {
-		if (!FillBlob(myblob,false,false)) success=false;
+		if (!FillBlob(myblob,false,true)) success=false;
 		// moved to Beam_Remnant_Handler
 		// else p_mehandler->ResetNumberOfTrials();
 		weight = p_mehandler->Weight();
@@ -181,7 +181,7 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 	  while (!success) {
 	    success=true;
 	    if (p_mehandler->GenerateSameEvent()) {
-	      if (!FillBlob(myblob,true)) success=false;
+	      if (!FillBlob(myblob,true,true)) success=false;
 	      weight = p_mehandler->Weight();
 	      hit = 1;
 	    }
@@ -261,7 +261,7 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,
     if (extract)
       if (p_remnants[i]!=NULL) {
 	p_remnants[i]->QuickClear();
-	if (!p_remnants[i]->Extract(particle)) success=false;
+	if (!p_remnants[i]->TestExtract(particle)) success=false;
       }
       else THROW(fatal_error,"No remnant found.");
   }
