@@ -21,7 +21,7 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
 					   const int isron,const int fsron) :
   p_me(me), p_runas(NULL), p_jf(jf), p_fssud(NULL), p_issud(NULL), p_ct(NULL), p_combi(NULL), 
   m_maxjetnumber(maxjet),m_isrmode(isrmode), m_isrshoweron(isron),m_fsrshoweron(fsron), 
-  m_sud_mode(0), m_kfac(0.), m_perpmode(false), m_counts(0.), m_fails(0.)
+  m_sud_mode(0), m_kfac(0.), m_counts(0.), m_fails(0.)
 {
   // read in some parameters
   Data_Read dr(rpa.GetPath()+"Shower.dat");     // !!!!!!!! SHOWER_DATA_FILE
@@ -33,26 +33,28 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
     m_bp_mode=12;
   }
   if (m_bp_mode&16) m_kfac = CA*(67./18.-M_PI*M_PI/6.)-10./9.*TR*Nf;
-  m_as_order = dr.GetValue<int>("SUDAKOVASORDER",0);
-  double as_fac   = dr.GetValue<double>("SUDAKOVASFAC",1.);
+  m_is_as_factor=ToType<double>(rpa.gen.Variable("IS_CPL_SCALE_FACTOR"));
+  m_fs_as_factor=ToType<double>(rpa.gen.Variable("FS_CPL_SCALE_FACTOR"));
   int jetratemode = dr.GetValue<int>("CALCJETRATE",-1);
-  msg_Info()<<"Initalize Cluster_Partons_Base, runs in mode : \n"
-	    <<"   SUDAKOVTYPE      = "<<m_bp_mode<<"\n"
-	    <<"   SUDAKOVASORDER   = "<<m_as_order<<"\n"
-	    <<"   SUDAKOVASFAC(s)  = "<<as_fac<<"/"<<as->ScaleFactor()<<"\n"
-	    <<"   REN.SCALE FACTOR = "<<rpa.gen.RenormalizationScaleFactor()<<"\n" 
-	    <<"   CALCJETRATE      = "<<jetratemode<<"\n"
-	    <<"   kfac             = "<<m_kfac<<"."<<std::endl;
+  msg_Info()<<"Initalize Cluster_Partons_Base with {\n"
+	    <<"   Sudakov type            = "<<m_bp_mode<<"\n"
+	    <<"   ren. scale factor       = "<<rpa.gen.RenormalizationScaleFactor()<<"\n" 
+	    <<"   is PS ren. scale factor = "<<m_is_as_factor<<"\n"
+	    <<"   fs PS ren. scale factor = "<<m_fs_as_factor<<"\n"
+	    <<"   K factor                = "<<m_kfac<<"\n"
+	    <<"   calc jetrate            = "<<jetratemode<<"\n}"<<std::endl;
   p_runas = MODEL::as; 
   
   /* 0 no sudakow weights, 1 alphas only, 2 full sudakov weight  (but for highest jet number) */
   /* cf. also begin of Cluster_Partons_Base::CalculateWeight() */
   if (m_fsrshoweron!=0) {
-    p_fssud = new NLL_Sudakov((BPMode::code)(m_bp_mode+1),p_jf->Smax(),p_jf->Smin(),p_runas,jetratemode);
+    p_fssud = new NLL_Sudakov((BPMode::code)(m_bp_mode+1),
+			      p_jf->Smax(),p_jf->Smin(),p_runas,jetratemode,m_fs_as_factor);
     m_sud_mode += 1;
   }
   if (m_isrshoweron!=0) {
-    p_issud = new NLL_Sudakov((BPMode::code)(m_bp_mode+2),p_jf->Smax(),p_jf->Smin(),p_runas,jetratemode);
+    p_issud = new NLL_Sudakov((BPMode::code)(m_bp_mode+2),
+			      p_jf->Smax(),p_jf->Smin(),p_runas,jetratemode,m_is_as_factor);
     m_sud_mode += 2;
   }
   p_events         = new long[m_maxjetnumber];
@@ -227,7 +229,7 @@ int Cluster_Partons_Base::SetDecayColours(Vec4D * p, Flavour * fl,int col1,int c
   }  
   m_colors[0][0] = col1; m_colors[0][1] = col2; 
   for (int i=1; i<3; ++i) m_colors[i][0] = m_colors[i][1] = 0;
-  m_q2_qcd = m_q2_hard = p[0].Abs2();
+  m_q2_qcd = m_q2_hard = m_q2_fss = m_q2_iss = p[0].Abs2();
   switch (ncol) {
   case 0: 
     // no colours at all.
@@ -307,7 +309,7 @@ int Cluster_Partons_Base::SetColours(Vec4D * p,Flavour * fl)
     for (int i=0; i<4; ++i) msg.Out()<<i<<" : "<<fl[i]<<std::endl;
     abort();
   case 0:
-    m_q2_qcd    = m_q2_hard = (p[0]+p[1]).Abs2();
+    m_q2_qcd    = m_q2_hard = m_q2_fss = m_q2_iss = (p[0]+p[1]).Abs2();
     m_hard_nqed = 2;
     m_hard_nqcd = 0;
     return 0;
@@ -338,11 +340,11 @@ int Cluster_Partons_Base::Set2Colours(const int nquark,const int ngluon,Vec4D * 
   }    
   if (connected[0]<2 ^ connected[1]<2) {
     // t/u channel.
-    m_q2_qcd = m_q2_hard = dabs((p[connected[0]]-p[connected[1]]).Abs2());
+    m_q2_qcd = m_q2_hard = m_q2_fss = m_q2_iss = dabs((p[connected[0]]-p[connected[1]]).Abs2());
   }
   else {
     // s channel.
-    m_q2_qcd = m_q2_hard = dabs((p[connected[0]]+p[connected[1]]).Abs2());
+    m_q2_qcd = m_q2_hard = m_q2_fss = m_q2_iss = dabs((p[connected[0]]+p[connected[1]]).Abs2());
   }
   return 0;
 }
@@ -383,6 +385,33 @@ int Cluster_Partons_Base::Set3Colours(const int nquark,const int ngluon,Vec4D * 
       }
     }
     bool tmode = (connected[0]<2 ^ connected[1]<2);
+    if (tmode) {
+      /*
+	0-------=====2
+	       |
+	       |  t
+	       |
+        1      +-----3
+
+        shower scale is s/t
+      */
+      m_q2_fss = (p[0]+p[1]).Abs2();
+      m_q2_iss = dabs((p[0]-p[2]).Abs2());
+    }
+    else {
+      /*
+	0=====-------2
+	      |
+	      |  t
+	      |
+	1-----+      3
+
+        shower scale is t/s
+      */
+      m_q2_fss = dabs((p[0]-p[2]).Abs2());
+      m_q2_iss = (p[0]+p[1]).Abs2();
+    }
+    m_q2_hard = m_q2_qcd = Max(m_q2_iss,m_q2_fss);
     for (int i=0;i<4;i++) {
       if (fl[i].IsGluon()) {
 	if (tmode) {
@@ -391,36 +420,21 @@ int Cluster_Partons_Base::Set3Colours(const int nquark,const int ngluon,Vec4D * 
 	    m_colors[i][0+int(fl[connected[0]].IsAnti())] = 501;
 	  }
 	  else {
-	    m_colors[i][0+int(fl[connected[0]].IsAnti())] = 501;
-	    m_colors[i][1-int(fl[connected[1]].IsAnti())] = 500;
+	    m_colors[i][1-int(fl[connected[0]].IsAnti())] = 501;
+	    m_colors[i][0+int(fl[connected[1]].IsAnti())] = 500;
 	  }
 	}
 	else {
-	  for (int j=0;j<2;j++) 
+	  for (int j=0;j<2;j++) {
 	    m_colors[i][j] += m_colors[connected[0]][j] + m_colors[connected[1]][j];
+	  }
 	}
       }
     }    
   }
-
-  
-  Vec4D q[4];
-  for (int i=0;i<4;++i) q[i]=p[i];
-  Poincare cms(q[0]+q[1]);
-  for (int i=0;i<4;++i) cms.Boost(q[i]);
-  Poincare rot(q[0],Vec4D::ZVEC);
-  for (int i=0;i<4;++i) rot.Rotate(q[i]);
-  
-  if (singlet>=2) {
-    m_q2_qcd = m_q2_hard  = 0.5*(sqr(q[2][1])+sqr(q[2][2])+sqr(q[3][1])+sqr(q[3][2]));
-    m_q2_hard += q[2].Abs2()+q[3].Abs2();
-    if (!m_perpmode) {
-      double qz = 0;
-      if (fl[2].Strong()) qz = q[2][3];
-      else qz = q[3][3];
-      if (q[0][3]*qz>0.) m_q2_qcd += dabs(q[0].Abs2());
-      if (q[1][3]*qz>0.) m_q2_qcd += dabs(q[1].Abs2());    
-    }
+  for (int i=0;i<4;i++) {
+    msg_Debugging()<<METHOD<<" "<<i<<" "<<p_ct->GetLeg(i).Point()->fl<<" "
+		   <<m_colors[i][0]<<" "<<m_colors[i][1]<<std::endl;
   }
   return 0;
 }
@@ -428,18 +442,30 @@ int Cluster_Partons_Base::Set3Colours(const int nquark,const int ngluon,Vec4D * 
 void Cluster_Partons_Base::FixJetvetoPt2(double & jetveto_pt2)
 {
   double pt2min = p_ct->MinKt2QCD();
-  if (pt2min>0.0 && pt2min<std::numeric_limits<double>::max()) jetveto_pt2=pt2min;
+  if (pt2min>0.0 && pt2min<std::numeric_limits<double>::max()) {
+    jetveto_pt2=pt2min;
+  }
   else {
-    pt2min = p_ct->MinKt2QED();
-    if (pt2min>0.0 && pt2min<std::numeric_limits<double>::max()) {
-      jetveto_pt2=pt2min;
-      msg.Error()<<METHOD<<"(): Warning. Using QED scale for weight calculation."<<std::endl;
+    if (p_ct->GetLeg(2).Point()->fl.Strong() || 
+	p_ct->GetLeg(3).Point()->fl.Strong()) {
+      Vec4D p3(p_ct->Momentum(2));
+      Poincare cms(p3+p_ct->Momentum(3));
+      cms.Boost(p3);
+      jetveto_pt2 = p3.PPerp2();
     }
     else {
-      msg.Error()<<"Cluster_Partons_Base::FixJetvetoPt2(..): No minimum scale found : "<<pt2min<<std::endl
-		 <<*p_ct<<std::endl<<"-----------------------------------------------------------"<<std::endl;
+      pt2min = p_ct->MinKt2QED();
+      if (pt2min>0.0 && pt2min<std::numeric_limits<double>::max()) {
+	jetveto_pt2=pt2min;
+	msg.Error()<<METHOD<<"(): Warning. Using QED scale for weight calculation."<<std::endl;
+      }
+      else {
+	msg.Error()<<METHOD<<"(..): No minimum scale found : "<<pt2min<<std::endl
+		   <<*p_ct<<std::endl;
+      }
     }
   }
+  msg_Debugging()<<"fixed min kt2 "<<jetveto_pt2<<"\n";
 }
 
 
@@ -517,8 +543,10 @@ void Cluster_Partons_Base::CreateFlavourMap()
 void   Cluster_Partons_Base::JetvetoPt2(double & q2i, double & q2f) 
 { 
   double qmin2(m_q2_jet);
-  if (m_njet==m_maxjetnumber && m_njet>2)  FixJetvetoPt2(qmin2);
-  if (m_njet==m_maxjetnumber && m_njet==2) qmin2 = m_q2_hard;
+  if (m_njet==m_maxjetnumber) {
+    if (m_njet>2)  FixJetvetoPt2(qmin2);
+    else qmin2 = m_q2_qcd;
+  }
   q2i = Max(qmin2,sqr(m_qmin_i));
   q2f = Max(qmin2,sqr(m_qmin_f)); 
   p_jf->SetShowerPt2(qmin2);

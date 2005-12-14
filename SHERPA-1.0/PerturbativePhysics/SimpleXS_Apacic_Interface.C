@@ -18,7 +18,7 @@ namespace ATOOLS {
 
 }
 
-template XS_Base *Blob_Data_Base::Get<XS_Base*>();
+template XS_Base *&Blob_Data_Base::Get<XS_Base*>();
 
 template <> Blob_Data<XS_Base*>::~Blob_Data() {}
 

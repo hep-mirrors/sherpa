@@ -14,7 +14,7 @@ Cluster_Partons_CKKW(Matrix_Element_Handler * me,ATOOLS::Jet_Finder * jf,
 		     const int maxjet,const int isrmode,const int isron,
 		     const int fsron) :
   Cluster_Partons_Base(me,jf,maxjet,isrmode,isron,fsron),
-  m_asfactor(1.), m_AcceptMisClusters(1.), m_LowestFromME(true)
+  m_AcceptMisClusters(1.), m_LowestFromME(true)
 {
 }
 
@@ -84,8 +84,16 @@ int Cluster_Partons_CKKW::SetColours(EXTRAXS::XS_Base * xs,
     m_colors[i][0] = p_xs->Colours()[i][0];
     m_colors[i][1] = p_xs->Colours()[i][1];
   }
-
-  m_q2_hard = p_xs->Scale(stp::fac);
+  m_q2_fss  = dabs(p_xs->Scale(stp::sfs));
+  m_q2_iss  = dabs(p_xs->Scale(stp::sis));
+  msg_Debugging()<<"cp: found xs, fss "<<m_q2_fss<<", iss "<<m_q2_iss<<"\n";
+  if (m_q2_fss==std::numeric_limits<double>::max() || 
+      m_q2_iss==std::numeric_limits<double>::max()) {
+    m_q2_hard = m_q2_fss = m_q2_iss = p_xs->Scale(stp::fac);
+  }
+  else {
+    m_q2_hard = Max(m_q2_fss,m_q2_iss);
+  }
   m_q2_qcd  = p_xs->Scale(stp::as);
   return test;
 }
@@ -115,9 +123,16 @@ void Cluster_Partons_CKKW::InitWeightCalculation()
   m_last_i.resize(m_nlegs,0);
   // scales for alpha_s and correction weight for hard interaction
   m_as_amegic  = (*as)(sqr(rpa.gen.Ecms()));
-  m_as_hard    = (*p_runas)(m_q2_hard/m_asfactor);
-  m_as_qcd     = (*p_runas)(m_q2_qcd/m_asfactor);
-  m_as_jet     = (*p_runas)(m_q2_jet/m_asfactor);
+  double asfac(sqrt(m_is_as_factor*m_fs_as_factor));
+  m_as_hard    = (*p_runas)(m_q2_hard/asfac);
+  m_as_qcd     = (*p_runas)(m_q2_qcd/asfac);
+  m_as_jet     = (*p_runas)(m_q2_jet/asfac);
+  msg_Debugging()<<"ct: scales: amegic "<<rpa.gen.Ecms()<<" ("<<m_as_amegic<<")"
+		 <<", hard "<<sqrt(m_q2_hard)<<" ("<<m_as_hard<<")"
+		 <<", qcd "<<sqrt(m_q2_qcd)<<" ("<<m_as_qcd<<")"
+		 <<", jet "<<sqrt(m_q2_jet)<<" ("<<m_as_jet<<"), fac "
+		 <<m_is_as_factor<<"/"<<m_fs_as_factor<<", fss "<<sqrt(m_q2_fss)
+		 <<", iss "<<sqrt(m_q2_iss)<<"\n";
   if (m_kfac!=0.) {
     m_as_hard *= 1. + m_as_hard/(2.*M_PI)*m_kfac;
     m_as_qcd  *= 1. + m_as_qcd/(2.*M_PI)*m_kfac;
@@ -127,6 +142,8 @@ void Cluster_Partons_CKKW::InitWeightCalculation()
     m_as_jet   = 1.;
     m_as_hard  = 1.;
   }
+  msg_Debugging()<<"ct: weight me : hard qcd "<<m_hard_nqcd<<" weight "
+		 <<pow(m_as_qcd/m_as_jet,m_hard_nqcd)<<std::endl;
   if (m_hard_nqcd>0) m_weight *= pow(m_as_qcd/m_as_jet,m_hard_nqcd);
 
   m_count_startscale=-100;
@@ -143,6 +160,8 @@ void Cluster_Partons_CKKW::InitWeightCalculation()
 		 <<"No minimum scale found."<<std::endl;
     m_qmin=sqrt(qmin2);
   }
+  msg_Debugging()<<"ct: qmin "<<m_qmin<<", qmin_i "<<m_qmin_i
+		 <<", qmin_f "<<m_qmin_f<<"\n";
 }
 
 
@@ -152,11 +171,17 @@ ApplyCombinedInternalWeight(const bool is,const Flavour & fl,
 {
   double qmin(0.), DeltaNum(0.), DeltaDenom(1.), DeltaRatio(0.);
   double as_ptij(0.), asRatio(0.);
-  as_ptij = (*p_runas)(sqr(actual)/m_asfactor);
+
+  if (is) {
+      as_ptij = (*p_runas)(sqr(actual)/m_is_as_factor);
+      qmin = Max(m_qmin,m_qmin_i);
+  }
+  else {
+    as_ptij = (*p_runas)(sqr(actual)/m_fs_as_factor);
+    qmin = Max(m_qmin,m_qmin_f);
+  }
   if (m_kfac!=0.) as_ptij *= 1. + as_ptij/(2.*M_PI)*m_kfac;
   asRatio = as_ptij/m_as_jet;
-  if (is) qmin = Max(m_qmin,m_qmin_i);
-     else qmin = Max(m_qmin,m_qmin_f);
   if (upper<actual || actual<qmin || asRatio>1.0) {
     ++m_fails;
     if (asRatio>1.0)                 asRatio    = m_AcceptMisClusters;
@@ -173,6 +198,11 @@ ApplyCombinedInternalWeight(const bool is,const Flavour & fl,
     }
     DeltaRatio = DeltaNum/DeltaDenom;
   }
+  msg_Debugging()<<"ct: internal weight: "<<is<<" "<<fl<<" "
+		 <<upper<<" -> "<<actual<<" / "<<qmin
+		 <<" => delta-> "<<DeltaRatio
+		 <<" ("<<DeltaNum<<"/"<<DeltaDenom<<") as-> "
+		 <<asRatio<<std::endl;
   m_weight *= DeltaRatio * asRatio;
   ++m_hard_nqcd;
   return true;
@@ -193,6 +223,8 @@ ApplyExternalWeight(const bool is,const Flavour & fl,
     if (is) DeltaNum = p_issud->Delta(fl)(actual,qmin);
        else DeltaNum = p_fssud->Delta(fl)(actual,qmin);
   }
+  msg_Debugging()<<"ct: external weight: "<<is<<" "<<fl<<" "
+		 <<actual<<" -> "<<qmin<<" => delta-> "<<DeltaNum<<std::endl;
   m_weight *= DeltaNum;
   return true;
 }    
@@ -252,7 +284,6 @@ void Cluster_Partons_CKKW::CalculateWeight()
     if (strong_vertex || singlet_clustered) StoreOldValues(i,j,si,ptij);
     if (m_count_startscale==2) OverwriteScales(j);
   }
-  msg_Debugging()<<METHOD<<"(..): combine tables {\n"<<*ct_tmp<<"\n}\n";
 
   // External legs
   for (int l=0; l<m_nlegs; ++l) {
@@ -266,7 +297,9 @@ void Cluster_Partons_CKKW::CalculateWeight()
     }
     if (m_count_startscale==2) OverwriteScales(l);
   }
-  m_hard_nqed = m_nstrong-m_hard_nqcd-2;    
+  msg_Debugging()<<METHOD<<"(..): combine tables {\n"<<*ct_tmp<<"\n}\n";
+
+  m_hard_nqed = m_nstrong-m_hard_nqcd-2;
   if (m_nstrong-m_hard_nqcd>2) 
     m_weight *= pow(m_as_amegic/m_as_jet,m_hard_nqed);
   p_events[m_njet-1]         += 1;

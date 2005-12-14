@@ -7,7 +7,7 @@ namespace SHERPA {
 
   class Cluster_Partons_CKKW: public Cluster_Partons_Base {
   private:
-    double m_asfactor,m_AcceptMisClusters;
+    double m_AcceptMisClusters;
     bool   m_LowestFromME;
 
     std::vector<double> m_last_q;

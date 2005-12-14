@@ -24,14 +24,13 @@ namespace SHERPA {
     ATOOLS::Blob           * p_blob;
 
     int     m_njet, m_maxjetnumber;
-    double  m_weight, m_ycut;
-    double  m_q2_hard, m_q2_qcd, m_q2_jet, m_qmax, m_qmin_i, m_qmin_f, m_qmin;
+    double  m_weight, m_ycut, m_qmax, m_qmin_i, m_qmin_f, m_qmin;
+    double  m_q2_hard, m_q2_fss, m_q2_iss, m_q2_qcd, m_q2_jet;
     int     m_colors[4][2];
 
     int     m_isrmode, m_isrshoweron, m_fsrshoweron;
-    int     m_sud_mode, m_bp_mode, m_as_order;
-    double  m_kfac;
-    bool    m_perpmode;
+    int     m_sud_mode, m_bp_mode;
+    double  m_kfac, m_is_as_factor, m_fs_as_factor;
 
     int     m_hard_nqcd, m_hard_nqed, m_nstrong;
     double  m_counts, m_fails;
@@ -84,6 +83,9 @@ namespace SHERPA {
     inline int    OrderStrong() const { return m_hard_nqcd; }
     inline int    OrderEWeak()  const { return m_hard_nqed; }
     inline int    InSwaped() const    { return p_me->InSwaped(); }
+
+    inline double FSShowerScale() const { return m_q2_fss;   }
+    inline double ISShowerScale() const { return m_q2_iss;   }
   };
 
   /*!

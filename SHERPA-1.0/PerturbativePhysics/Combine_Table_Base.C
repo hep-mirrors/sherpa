@@ -87,7 +87,7 @@ Combine_Data::~Combine_Data()
 //    class Combine_Table_Base
 // ============================================================
 
-std::ostream& SHERPA::operator<< (std::ostream& s ,const Combine_Table_Base & ct) 
+std::ostream& SHERPA::operator<<(std::ostream& s ,const Combine_Table_Base & ct) 
 {
   if (&ct) {
     s<<std::endl<<" Combine_Table_Base "<<ct.m_no<<" (up=";
@@ -103,8 +103,9 @@ std::ostream& SHERPA::operator<< (std::ostream& s ,const Combine_Table_Base & ct
     if (cl.size()>0) {
       s<<"     with "<<cl.size()<<" combinations"<<std::endl;
       for (CD_List::const_iterator cit=cl.begin(); cit!=cl.end(); ++cit) {
- 	s<<cit->first;
-	s<<cit->second<<std::endl; 
+ 	s<<cit->first<<" "<<std::setw(8)
+	 <<ct.p_moms[cit->first.m_i].
+	  Theta(ct.p_moms[cit->first.m_j])<<cit->second<<std::endl; 
       }
       for (CD_List::const_iterator cit=cl.begin(); cit!=cl.end(); ++cit) {
 	if (cit->second.p_down) {
