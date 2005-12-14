@@ -157,8 +157,8 @@ int Jet_Veto::TestISKinematics(Knot *const knot)
   double z(p_kin->LightConeZ(knot->right->z,E2,knot->t,
 			     knot->right->t,knot->left->t));
   double pt2(z*(1.0-z)*knot->t-(1.0-z)*knot->right->t-z*knot->left->t);
-  msg_Debugging()<<"pt2_old = "<<sqrt(knot->right->pt2lcm)
- 		 <<" pt2 = "<<sqrt(pt2)<<", z/\\tilde z-1 = "
+  msg_Debugging()<<"pt_old = "<<sqrt(knot->right->pt2lcm)
+ 		 <<" pt = "<<sqrt(pt2)<<", z/\\tilde z-1 = "
 		 <<z/knot->right->z-1.0<<"\n";
   if (knot->part->Info()!='H') {
     if (pt2<0.0 || pt2>p_jf->ShowerPt2()) return 0;
