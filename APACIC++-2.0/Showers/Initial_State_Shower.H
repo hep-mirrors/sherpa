@@ -11,7 +11,6 @@
 #include "Particle_List.H"
 #include "Tree.H"
 #include "Run_Parameter.H"
-#include "Jet_Veto.H"
 
 namespace APACIC {
 
@@ -27,7 +26,7 @@ namespace APACIC {
     Knot  *p_k1, *p_k2;
 
     double m_t0, m_sprime, m_pt2_1, m_pt2_2, m_th_1, m_th_2;
-    int    m_allowed, m_extra_pdf[2], m_to_be_diced[2], m_ntree0, m_first;
+    int    m_allowed, m_extra_pdf[2], m_to_be_diced[2], m_ntree0;
     bool   m_jetveto;
 
     ATOOLS::Vec4D    m_lab;
