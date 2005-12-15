@@ -28,8 +28,6 @@ void Spacelike_Kinematics::InitKinematics(Tree **const trees,Knot *const k1,
   double E1((sprime+k1->t-k2->t)/(2.0*rtsprime)), E2(rtsprime-E1);
   double pz(sqrt(E1*E1-k1->t));
   Vec4D  v1(E1,0.0,0.0,pz), v2(E2,0.0,0.0,-pz);
-  static double accu(sqrt(rpa.gen.Accu()));
-  Vec4D::SetAccu(accu);
   if (first==1 && (!IsEqual(k1->t,t1)||!IsEqual(k2->t,t2))) {
     if (IsEqual(k1->t,t1)) {
       double sgnt(k1->t<0.0?-1.0:1.0), p1(sqrt(o1[0]*o1[0]-k1->t));
@@ -60,14 +58,13 @@ void Spacelike_Kinematics::InitKinematics(Tree **const trees,Knot *const k1,
       trees[1]->BoRo(m_boost);
     }
   }
-  Vec4D::ResetAccu();
   k1->part->SetMomentum(v1);
   k2->part->SetMomentum(v2);  
 }
 
 bool Spacelike_Kinematics::DoKinematics(Tree **const trees,Knot *const active,
 					Knot *const partner,const int &leg,
-					const int &first,const bool test) 
+					const bool test) 
 {
   msg_Debugging()<<METHOD<<"("<<active->kn_no<<","<<partner->kn_no
 		 <<","<<leg<<"): {\n";
@@ -203,6 +200,14 @@ void Spacelike_Kinematics::RoBoIni(Knot *const k,Poincare &rot,Poincare &boost)
   if (k->prev) {
     RoBoIni(k->prev,rot,boost);
     RoBoFin(k->prev->left,rot,boost);
+    Vec4D pm(k->prev->part->Momentum());
+    Vec4D pd(k->part->Momentum()+k->prev->left->part->Momentum());
+    if (!(pm==pd)) {
+      msg.Error()<<METHOD<<"(..): Four momentum not conserved.\n"
+		 <<"  p_miss  = "<<(pm-pd)<<"\n"
+		 <<"  p_old   = "<<pm<<" "<<pm.Abs2()<<"\n"
+		 <<"  p_new   = "<<pd<<" "<<pd.Abs2()<<std::endl;
+    }
   }
 }
 
@@ -216,6 +221,16 @@ void Spacelike_Kinematics::RoBoFin(Knot *const k,Poincare &rot,Poincare &boost)
   k->part->SetMomentum(p);
   RoBoFin(k->left,rot,boost);
   RoBoFin(k->right,rot,boost);
+  if (k->left) {
+    Vec4D pm(k->part->Momentum());
+    Vec4D pd(k->left->part->Momentum()+k->right->part->Momentum());
+    if (!(pm==pd)) {
+      msg.Error()<<METHOD<<"(..): Four momentum not conserved.\n"
+		 <<"  p_miss  = "<<(pm-pd)<<"\n"
+		 <<"  p_old   = "<<pm<<" "<<pm.Abs2()<<"\n"
+		 <<"  p_new   = "<<pd<<" "<<pd.Abs2()<<std::endl;
+    }
+  }
 }
 
 void Spacelike_Kinematics::BoostPartial(const int mode,

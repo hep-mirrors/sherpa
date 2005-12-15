@@ -35,7 +35,7 @@ namespace APACIC {
     void InitKinematics(Tree **const trees,Knot *const k1, Knot *const k2,
 			const int &first);
     bool DoKinematics(Tree **const trees,Knot *const act,Knot *const part,
-		      const int &leg,const int &first,const bool test);
+		      const int &leg,const bool test);
 
     double BoostInCMS(Tree **const trees,Knot *const k1, Knot *const k2);
     double BoostFromCMS(Tree **const trees);
@@ -45,6 +45,8 @@ namespace APACIC {
     void ResetMomenta(Knot *const knot,Tree *const tree,const int &mode=0);
 
     static double CalculateMaxT(Knot *const k1,Knot *const k2);
+
+    inline Timelike_Kinematics *Kinematics() const { return p_kin; }
 
   };// end of class Spacelike_Kinematics
 
