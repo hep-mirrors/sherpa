@@ -3,7 +3,7 @@
 !-------------------------------------------------------
 MODEL                 = SM       ! Model 
 !
-GENERATOR_ON          = 1        ! use external spectrum generator
+GENERATOR_ON          = 0        ! use external spectrum generator
 !
 ! SM parameters
 !
