@@ -269,7 +269,7 @@ void Jet_Cone_Dependence::Fill(double weight, int ncount)
     if (NofJets<m_njetmax) {
       m_histos[NofJets-m_njetmin]->Insert(m_cones[i]->Radius(),weight,ncount);
       for (size_t j=1; j<m_histos.size();++j) {
-	if (j!=(NofJets-m_njetmin)) m_histos[j]->Insert(0.,0.,ncount);
+	if ((int)j != (NofJets-m_njetmin)) m_histos[j]->Insert(0.,0.,ncount);
       }
     }
     else {

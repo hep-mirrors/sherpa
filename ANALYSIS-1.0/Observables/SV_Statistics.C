@@ -98,7 +98,7 @@ void SV_Statistics::Evaluate(const Blob_List &  blobs,double weight,int ncount)
       if (sinfo.size()>m_observables.size()) {
 	for (size_t i(m_observables.size());i<sinfo.size();++i) {
 	  m_observables.push_back(new ATOOLS::Histogram(0,0.0,10.0,10));
-	  m_observables[i]->SetFills(m_observables[0]->Fills());
+	  m_observables[i]->SetFills((long int)m_observables[0]->Fills());
 	}
       }
       for (size_t i(0);i<sinfo.size();++i) {
@@ -141,12 +141,13 @@ SV_Statistics::operator+=(const Primitive_Observable_Base & ob)
   SV_Statistics * job = ((SV_Statistics*)(&ob));
   for (size_t i(m_observables.size());i<job->m_observables.size();++i) {
     m_observables.push_back(new ATOOLS::Histogram(0,0.0,10.0,10));
-    m_observables[i]->SetFills(m_observables[0]->Fills());
+    m_observables[i]->SetFills((long int)m_observables[0]->Fills());
   }
   for (size_t i(0);i<job->m_observables.size();++i) {
     (*m_observables[i])+=(*job->m_observables[i]);
   }
-  size_t fills(job->m_observables.size()>0?job->m_observables[0]->Fills():0);
+  size_t fills(job->m_observables.size()>0 ? 
+	       (long int)job->m_observables[0]->Fills() : 0);
   for (size_t i(job->m_observables.size());i<m_observables.size();++i) {
     m_observables[i]->SetFills(fills);
   }

@@ -30,8 +30,8 @@ Process_Base::Process_Base():
   Integrable_Base(0,0),
   m_gen_str(3),p_b(0),p_flin(0),p_flout(0),
   p_pl(0),p_plin(0),p_plout(0), 
-  m_enhancefac(1.), m_maxfac(1.), p_psgen(0),
-  m_print_graphs(false), m_ycut(-1.), m_maxerror(-1.), p_pinfo(0)
+  m_enhancefac(1.), m_maxfac(1.), m_ycut(-1.),
+  m_maxerror(-1.), p_psgen(0), m_print_graphs(false), p_pinfo(0)
 {
   m_atoms=1;
   m_analyse=m_tables=0;
@@ -56,12 +56,13 @@ Process_Base::Process_Base(Process_Info* pinfo,int _nin,int _nout,ATOOLS::Flavou
 			   Pol_Info * _pl,
 			   int _nex,ATOOLS::Flavour * _ex_fl,double ycut,double error) :
   Integrable_Base(_nin,_nout,_scalescheme,_kfactorscheme,_beam,_isr),
-  p_pinfo(pinfo),m_gen_str(_gen_str),m_nex(_nex),
+  m_gen_str(_gen_str), m_nex(_nex),
   p_ex_fl(_ex_fl),
   m_atoms(0), m_analyse(0), m_tables(0), 
   m_enhancefac(1.), m_maxfac(1.),
   m_orderQCD(_orderQCD), m_orderEW(_orderEW),
-  p_psgen(0), m_print_graphs(false), m_ycut(ycut),m_maxerror(error)
+  m_ycut(ycut),m_maxerror(error), 
+  p_psgen(0), m_print_graphs(false), p_pinfo(pinfo)
 {
 
   m_scale[stp::as]=m_scale[stp::fac]=_scale;
@@ -420,9 +421,9 @@ void Process_Base::SetScales(double q2_fac, double q2_ren)
 void Process_Base::AddToDataCollector(int i)
 {
   std::string name;
-  for (int j=0; j<m_nin; ++j) name+=p_flavours[j].TexName()+"\\,";
+  for (size_t j=0; j<m_nin; ++j) name+=p_flavours[j].TexName()+"\\,";
   name+="\\to\\,";
-  for (int j=m_nin; j<m_nin+m_nout; ++j) name+=p_flavours[j].TexName()+"\\,";
+  for (size_t j=m_nin; j<m_nin+m_nout; ++j) name+=p_flavours[j].TexName()+"\\,";
   ATOOLS::Process_Info pi(name,m_totalxs*rpa.Picobarn(),m_totalerr*rpa.Picobarn());
   Data_Collector::AddData("PROCESS"+ToString(i),new Blob_Data<ATOOLS::Process_Info>(pi));
 }

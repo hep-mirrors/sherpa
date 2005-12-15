@@ -451,7 +451,7 @@ int Single_Process_MHV::Tests() {
     for (int j=0;j<cfn;j++) {
       int* pm = p_perm->Get(j);
       if (pm[0]<pm[m_nin+m_nout-2]) {
-	for (int i=0;i<p_hel->MaxHel();i++) { 
+	for (size_t i=0;i<p_hel->MaxHel();i++) { 
 	  if (p_hel->On(i)) {
 	    helvalue = p_MHVcalc->Differential(pm,(*p_hel)[i])*p_hel->PolarizationFactor(i); 
 	    M2      +=  helvalue;
@@ -479,13 +479,13 @@ int Single_Process_MHV::Tests() {
 
   double M2g = 0.;
   double * M_doub = new double[p_hel->MaxHel()];
-  for (int i=0;i<p_hel->MaxHel();i++) M_doub[i]=0.;
+  for (size_t i=0; i<p_hel->MaxHel(); ++i) M_doub[i]=0.;
 
     int cfn=p_perm->MaxNumber();
     for (int j=0;j<cfn;j++) {
       int* pm = p_perm->Get(j);
       if (pm[0]<pm[m_nin+m_nout-2]) {
-	for (int i=0;i<p_hel->MaxHel();i++) { 
+	for (size_t i=0; i<p_hel->MaxHel(); ++i) { 
 	  if (p_hel->On(i)) {
 	    M_doub[i] += helvalue = p_MHVcalc->Differential(pm,(*p_hel)[i])*p_hel->PolarizationFactor(i); 
 	    M2g       += helvalue;
@@ -496,7 +496,7 @@ int Single_Process_MHV::Tests() {
 
   //shorten helicities
   int switchhit = 0;
-  for (short int i=0;i<p_hel->MaxHel();i++) {
+  for (size_t i=0; i<p_hel->MaxHel(); ++i) {
     if (M_doub[i]==0. || dabs(M_doub[i]/M2g)<(ATOOLS::Accu()*1.e-2)) {
       p_hel->SwitchOff(i);
       switchhit++;
@@ -540,9 +540,9 @@ int Single_Process_MHV::Tests() {
      --------------------------------------------------- */
   
   int cc=0;
-  for (short int i=0;i<p_hel->MaxHel();i++) {
+  for (size_t i=0; i<p_hel->MaxHel(); ++i) {
     if (p_hel->On(i)) {
-      for (short int j=i+1;j<p_hel->MaxHel();j++) {
+      for (size_t j=i+1; j<p_hel->MaxHel(); ++j) {
 	if (p_hel->On(j)) {
 	  if (ATOOLS::IsEqual(M_doub[i],M_doub[j])) {
 	    p_hel->SwitchOff(j);
@@ -580,7 +580,7 @@ int Single_Process_MHV::CheckLibraries() {
       shand1->Calculate();
       
       M2s = 0.;
-      for (short int i=0;i<p_hel->MaxHel();i++) {
+      for (size_t i=0; i<p_hel->MaxHel(); ++i) {
 	helvalue = p_ampl->Differential(shand1,i) * p_hel->PolarizationFactor(i) *
 	  p_hel->Multiplicity(i);
 	M2s     += helvalue;
@@ -616,7 +616,7 @@ int Single_Process_MHV::CheckStrings(Single_Process_MHV* tproc)
   shand1->Calculate();
 
   M2s = 0.;
-  for (short int i=0;i<p_hel->MaxHel();i++) {
+  for (size_t i=0; i<p_hel->MaxHel(); ++i) {
     helvalue = p_ampl->Differential(shand1,i) * p_hel->PolarizationFactor(i) *
       p_hel->Multiplicity(i);
     M2s     += helvalue;
@@ -1109,7 +1109,7 @@ double Single_Process_MHV::operator()(const ATOOLS::Vec4D * mom)
     for (int j=0;j<cfn;j++) {
       int* pm = p_perm->Get(j);
       if (pm[0]<pm[m_nin+m_nout-2]) {
-	for (int i=0;i<p_hel->MaxHel();i++) { 
+	for (size_t i=0; i<p_hel->MaxHel(); ++i) { 
 	  if (p_hel->On(i)) {
 	    helvalue = p_MHVcalc->Differential(pm,(*p_hel)[i]) * p_hel->Multiplicity(i) * p_hel->PolarizationFactor(i); 
 // 	    p_hcres[i][j]+=   helvalue;
@@ -1223,7 +1223,7 @@ void Single_Process_MHV::PrintDifferential()
 void Single_Process_MHV::InitializeHelicityWeights()
 {
   int activehels = 0, active = 0;
-  for (int i=0;i<p_hel->MaxHel();i++) {
+  for (size_t i=0;i<p_hel->MaxHel(); ++i) {
     if (p_hel->On(i)) {
       active++,
       activehels += p_hel->Multiplicity(i);
@@ -1232,7 +1232,7 @@ void Single_Process_MHV::InitializeHelicityWeights()
 
   double alpha_start = 1./activehels;
   double alpha;
-  for (int i=0;i<p_hel->MaxHel();i++) {
+  for (size_t i=0; i<p_hel->MaxHel(); ++i) {
     if (p_hel->On(i)) {
       alpha = alpha_start * p_hel->Multiplicity(i);
       m_helnumbers.push_back(i);

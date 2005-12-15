@@ -41,7 +41,7 @@ void Process_Info::AddSubList(int n,ATOOLS::Flavour* fl,Pol_Info* pl)
 
 void Process_Info::ResetSubList(int n,ATOOLS::Flavour* fl,Pol_Info* pl)
 {
-  if (m_sublist[0].size()!=n) {
+  if (m_sublist[0].size()!= (size_t) n) {
     cout<<" Process_Info::ResetSubList : wrong particle number: "<<n<<" vs. "<<m_sublist[0].size()<<endl;
     abort();
   }
@@ -344,7 +344,7 @@ Point* Process_Info::MergePointList(Point** plist,Point* np,int &nd, int nin, in
   for (size_t i=0;i<m_sublist[0].size();i++) {
     for (size_t j=0;j<2*(m_sublist[0].size()+nin)-3;j++) {
       if (np[j].b==1 && np[j].number<99) {
-	if (i==np[j].number-nin) {
+	if ((int)i == np[j].number-nin) {
 	  if (m_sublist[0][i]->m_sublist[0].size()>0) {
 	    Point* hhp = m_sublist[0][i]->MergePointList(plist,hp+1,nd,1,ep);
 	    np[j] = hp[1];

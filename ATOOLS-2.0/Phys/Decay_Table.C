@@ -6,8 +6,9 @@ using namespace ATOOLS;
 using namespace std;
 
 Decay_Channel::Decay_Channel(const Flavour & _flin) :
-  m_width(0.), m_minmass(0.), m_flin(_flin), 
-  m_metype(string("")), m_psfile(string("")) { }
+  m_metype(string("")), m_psfile(string("")), 
+  m_width(0.), m_minmass(0.), m_flin(_flin)
+ { }
 
 Decay_Channel::Decay_Channel(const Decay_Channel & _dec) :
   m_processname(_dec.m_processname),

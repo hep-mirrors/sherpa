@@ -74,7 +74,7 @@ void Color_Generator::FillString(int N, Color_Function* cflist,int& prop)
     for (short int i=0;i<3;i++) {
       if ((CFh->Type()==cf::D || CFh->Type()==cf::G) && i==2) break;
       if ((CFh->StringArg(i)>=48 && CFh->StringArg(i)<=52)) {
-	char chelp;
+	char chelp(0);
 	int arg = CFh->ParticleArg(i);
 	switch (CFh->Type()) {
 	case cf::F: {
@@ -105,6 +105,8 @@ void Color_Generator::FillString(int N, Color_Function* cflist,int& prop)
 	                     else chelp = ca+(prop++)+N;
 	  
 	  break;
+
+	default: break;
 	}
 	
 	Color_Function* CFh2 = CFh;
