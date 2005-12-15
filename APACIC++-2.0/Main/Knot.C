@@ -16,8 +16,9 @@ std::ostream &APACIC::operator<<(std::ostream& s,const Knot &k)
     else s<<k.right->kn_no<<")";
     s<<":"<<k.part->Flav()<<":"<<k.part->Info()<<":"<<(&k)<<"\n"
      <<"t="<<k.t<<",tout="<<k.tout<<",tmax="<<k.tmax<<",E2="<<k.E2<<",x="
-     <<k.x<<",z="<<k.z<<",zs="<<k.zs<<",maxpt2="<<k.maxpt2
-     <<",thcrit="<<k.thcrit<<",\n"<<k.part->Momentum()<<","
+     <<k.x<<",z="<<k.z<<",zs="<<k.zs<<",maxpt2="<<k.maxpt2<<",smaxpt2="
+     <<k.smaxpt2<<",pt2lcm="<<k.pt2lcm
+     <<",thcrit="<<k.thcrit<<",sthcrit="<<k.sthcrit<<",\n"<<k.part->Momentum()<<","
      <<(k.part->Momentum()).Abs2()
      <<": ("<<k.part->GetFlow(1)<<", "<<k.part->GetFlow(2)<<")\n";
     s<<" phi="<<k.phi<<" pol="<<k.polinfo<<"\n";
