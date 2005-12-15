@@ -387,3 +387,16 @@ bool Is_There::operator() (const Particle * p) const {
   return 0;
 }
 
+
+class Is_Strong : public Particle_Qualifier_Base {
+public:
+  bool operator()(const Particle *) const;
+};
+
+bool Is_Strong::operator() (const Particle * p) const {
+  if ( p && p->Flav().Strong() ) return 1;
+  return 0;
+}
+
+DEFINE_QUALIFIER_GETTER(Is_Strong,Is_Strong_Getter,
+			"Strong","strong")
