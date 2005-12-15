@@ -2,6 +2,8 @@
 
 #include "PDF_Handler.H"
 #include "Data_Read.H"
+#include "MyStrStream.H"
+#include "Veto_Info.H"
 #include <iomanip>
 
 #ifdef PROFILE__all
@@ -25,11 +27,31 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr,
   p_suds(new Spacelike_Sudakov*[2]),
   m_allowed(200)
 {
+  double cplscalefac(dataread->GetValue<double>("IS_CPL_SCALE_FACTOR",0.25));
+  rpa.gen.SetVariable("IS_CPL_SCALE_FACTOR",ToString(cplscalefac));
   m_t0=dabs(dataread->GetValue<double>("IS_PT2MIN",1.0));
+  double shadron(dataread->GetValue<double>("IS_MAX_SCALE",
+					    sqr(rpa.gen.Ecms())));
+  double emin(dataread->GetValue<double>("IS_MINIMAL_E",0.5));
+  int cplscheme(dataread->GetValue<int>("IS_COUPLING_SCHEME",1));
+  int pdfscheme(dataread->GetValue<int>("IS_PDF_SCALE_SCHEME",1));
+  int orderingscheme(dataread->GetValue<int>("IS_ORDERING_SCHEME",1));
+  Splitting_Function::SetKFactorScheme
+    (dataread->GetValue<int>("S_KFACTOR_SCHEME",1));
   for (short unsigned int i(0);i<2;++i) {
-    p_suds[i] = new Spacelike_Sudakov(isr->PDF(i),p_tools,p_kin,m_t0,dataread,i);
+    p_suds[i] = new Spacelike_Sudakov
+      (isr->PDF(i),p_tools,p_kin,m_t0,dataread,i);
     p_suds[i]->SetRemnant(isr->GetRemnant(i));
+    p_suds[i]->SetMaxScale(shadron);
+    p_suds[i]->SetMinEnergy(emin);
+    p_suds[i]->SetPDFScaleFactor(cplscalefac);
+    p_suds[i]->SetCouplingScaleFactor(cplscalefac);
+    p_suds[i]->SetCouplingScheme(cplscheme);
+    p_suds[i]->SetPDFScheme(pdfscheme);
+    p_suds[i]->SetOrderingScheme(orderingscheme);
     m_extra_pdf[i]=m_to_be_diced[i]=1;
+    if (!p_suds[i]->Initialize()) 
+      THROW(fatal_error,"failed to intialize is sudakov");
   }
   m_t0 = - dabs(m_t0);
 }
@@ -49,6 +71,10 @@ int Initial_State_Shower::PerformShower(Tree **const trees,Tree *const fintree,
   p_fstree=fintree;
   p_istrees=trees;
   m_jetveto=jetvetoflag>0;
+#ifdef USING__Veto_Info
+  p_suds[0]->ClearVetos();
+  p_suds[1]->ClearVetos();
+#endif
   if (jetvetoflag<0 || jetvetoflag>1) m_extra_pdf[0]=m_extra_pdf[1]=0;
   else m_extra_pdf[0]=m_extra_pdf[1]=1;
   if (InitializeSystem(trees,trees[0]->GetRoot(),trees[1]->GetRoot())) {
@@ -68,7 +94,7 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2)
   if (k1==NULL || k2==NULL) THROW(fatal_error,"No trees.");
   bool decay1(k1->stat>=1), decay2(k2->stat>=1);
   int first(0);
-  if ((!decay1 && decay2) || (decay1 && !decay2)) first=1;
+  if (decay1^decay2) first=1;
   if (!decay1 && !decay2) first=2;
   trees[0]->Store();
   trees[1]->Store();
@@ -105,6 +131,8 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2)
       p_kin->InitKinematics(trees,k1,k2,first);
       if (!decay1) SetColours(k1);
       if (!decay2) SetColours(k2);
+      p_suds[0]->AcceptBranch(k1);
+      p_suds[1]->AcceptBranch(k2);
       int stat(EvolveSystem(trees,k1,k2));
       if (stat==1) {
 	trees[0]->ClearStore();
@@ -148,7 +176,8 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2)
 
 int Initial_State_Shower::DoKinematics()
 {
-  return p_kin->DoKinematics(p_istrees,p_k1,p_k2,m_ntree0,m_first,false);
+  if (!p_kin->DoKinematics(p_istrees,p_k1,p_k2,m_ntree0,false)) return -1;
+  return 1-p_suds[m_ntree0]->PTVeto(p_k1->prev);
 }
 
 int Initial_State_Shower::EvolveSystem(Tree **const trees,Knot *k1,Knot *k2)
@@ -156,13 +185,6 @@ int Initial_State_Shower::EvolveSystem(Tree **const trees,Knot *k1,Knot *k2)
   msg_Debugging()<<METHOD<<"("<<k1->kn_no<<","<<k2->kn_no<<"): {\n";
   msg_Indent();
   if (k1->t==k1->tout && k2->t==k2->tout) return 1;  
-  bool decay1(k1->stat>=1), decay2(k2->stat>=1);
-  int first(0);
-  if ((!decay1 && decay2 && k1->t!=k1->tout) ||
-      (decay1 && !decay2 && k2->t==k2->tout)) first=1;
-  if (!decay1 && !decay2 && 
-      (k1->t==k1->tout || k2->t==k2->tout)) first=1;
-  if (!decay1 && !decay2) first=2;
   int ntree0(0), ntree1(1);
   ChooseMother(ntree0,ntree1,k1,k2);
   int caught_jetveto(0);
@@ -209,16 +231,20 @@ int Initial_State_Shower::EvolveSystem(Tree **const trees,Knot *k1,Knot *k2)
       if (p_fin) {
 	double sprime_a = (k1->part->Momentum()+k2->part->Momentum()).Abs2();
 
-	if (!p_kin->DoKinematics(trees,k1,k2,ntree0,first,true)) return 0;
-
-	p_k1=k1; p_k2=k2; m_ntree0=ntree0; m_first=first;
-
+	if (!p_kin->DoKinematics(trees,k1,k2,ntree0,true)) return 0;
+	p_k1=k1; 
+	p_k2=k2; 
+	m_ntree0=ntree0;
 	switch (p_fin->TimelikeFromSpacelike(this,trees[ntree0],k1->prev->left,
 					     m_jetveto,sprime_a,k1->z)) {
 	case -1:
+	  msg.Error()<<METHOD<<"(..): FS Shower failure."<<std::endl;
 	  return 0;
-	case 0:
+	case 0: 
 	  caught_jetveto=-10;
+#ifdef USING__Veto_Info
+	  p_suds[ntree0]->SetVeto(svc::jet_veto);
+#endif
 	  break;
 	case 1:
 	  break;
@@ -229,11 +255,11 @@ int Initial_State_Shower::EvolveSystem(Tree **const trees,Knot *k1,Knot *k2)
 	mo->t     = mo->tout;
 	mo->stat  = 0;
 	mo->part->SetStatus(1);
-	if (!p_kin->DoKinematics(trees,k1,k2,ntree0,first,false)) return 0;
+	if (!p_kin->DoKinematics(trees,k1,k2,ntree0,false)) return 0;
       }
     }
     else {
-      if (!p_kin->DoKinematics(trees,k1,k2,ntree0,first,false)) return 0;
+      if (!p_kin->DoKinematics(trees,k1,k2,ntree0,false)) return 0;
     }
 
     if (caught_jetveto==-10) {
@@ -244,6 +270,7 @@ int Initial_State_Shower::EvolveSystem(Tree **const trees,Knot *k1,Knot *k2)
     }
     
     if (p_fin) p_fin->SetAllColours(k1->prev->left);
+    p_suds[ntree0]->AcceptBranch(k1->prev);
   
     if (k1->prev->z>0.) m_sprime = m_sprime/k1->prev->z;
     
@@ -275,23 +302,26 @@ int Initial_State_Shower::EvolveSystem(Tree **const trees,Knot *k1,Knot *k2)
 int Initial_State_Shower::FillBranch(Tree ** trees,Knot * active,
 				     Knot * partner,int leg) {
   msg_Debugging()<<METHOD<<"("<<active->kn_no<<","<<partner->kn_no<<","
-		 <<leg<<"): {\n";
+ 		 <<leg<<"): {\n";
   msg_Indent();
   Flavour flavs[2];
+#ifdef USING__Veto_Info
+  p_suds[leg]->AddVeto();
+#endif
   if (p_suds[leg]->Dice(active,m_sprime,m_extra_pdf[leg])) {
     flavs[0] = p_suds[leg]->GetFlA();
     flavs[1] = p_suds[leg]->GetFlC();    
     FillMotherAndSister(trees[leg],active,flavs);
     msg_Debugging()<<"test emission at t = "<<active->t
-		   <<", z = "<<active->z<<"\n";
+ 		   <<", z = "<<active->z<<"\n";
     msg_Debugging()<<"}\n";
     return 1;
   }
   active->prev   = 0;
   active->stat   = 0;
   active->t      = active->tout;
-  active->thcrit = 0.;
-  active->maxpt2 = 0.;
+  // active->thcrit = 0.;
+  // active->maxpt2 = 0.;
   active->part->SetStatus(1);
   msg_Debugging()<<"no branch";
   msg_Debugging()<<"}\n";
@@ -734,6 +764,9 @@ void Initial_State_Shower::SingleExtract(Knot *const kn,const int &beam,
     jet = new Blob();
     jet->SetStatus(1);
     jet->SetId();
+#ifdef USING__Veto_Info
+    jet->AddData("IS_VS",new Blob_Data<std::vector<int> >(p_suds[beam]->Vetos()));
+#endif
     if (is_is) {
       jet->SetType(btp::IS_Shower);
       jet->SetTypeSpec("APACIC++2.0");

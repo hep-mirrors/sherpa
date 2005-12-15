@@ -9,6 +9,7 @@
 #include "Run_Parameter.H"
 #include "Remnant_Base.H"
 #include "Beam_Base.H"
+#include "Veto_Info.H"
 
 #include <iomanip>
 
@@ -30,19 +31,20 @@ Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * pdf,Sudakov_Tools * tools,Spacel
   Backward_Splitting_Group(0,0), p_tools(tools), p_kin(kin), 
   p_pdfa(pdf->GetBasicPDF()->GetCopy()),
   m_pt2min(dabs(pt2min)), 
-  m_s_hadron(dataread->GetValue<double>("IS_MAX_SCALE",sqr(rpa.gen.Ecms()))),
   m_t0(-m_pt2min),
-  m_emin(dataread->GetValue<double>("IS_MINIMAL_E",0.5)),
-  m_cpl_scheme(dataread->GetValue<int>("IS_COUPLINGS",1)),
-  m_pdf_scheme(dataread->GetValue<int>("IS_PDF_SCALE",1)),
-  m_ordering_scheme(dataread->GetValue<int>("IS_ORDERING",1)),
-  m_facscale(rpa.gen.Ycut()*m_s_hadron),
-  m_pdf_fac(5.),
-  m_pdf_scale_fac(dataread->GetValue<double>("IS_PDF_SCALE_FACTOR",1.)),
-  m_cpl_scale_fac(dataread->GetValue<double>("IS_CPL_SCALE_FACTOR",0.25))
+  m_pdf_fac(5.) 
 {
-  s_kfactorscheme = dataread->GetValue<int>("S_KFACTOR_SCHEME",1);        
-  p_pdf           = pdf->GetBasicPDF()->GetCopy();
+  p_pdf = pdf->GetBasicPDF()->GetCopy();
+}
+
+Spacelike_Sudakov::~Spacelike_Sudakov() 
+{
+  delete p_pdf;
+}
+
+bool Spacelike_Sudakov::Initialize()
+{
+  m_facscale = rpa.gen.Ycut()*m_s_hadron;
   p_tools->CalculateMaxCouplings(m_cpl_scheme,m_pt2min,m_s_hadron);
 
   if (p_pdf->Bunch().IsHadron()) {
@@ -69,8 +71,28 @@ Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * pdf,Sudakov_Tools * tools,Spacel
   }
 
   PrintStat();
+  return true;
 }
 
+void Spacelike_Sudakov::AcceptBranch(const Knot *const mo) 
+{
+  msg_Debugging()<<METHOD<<"("<<mo->kn_no<<"):"<<std::endl;
+  if (mo->prev==NULL) return;
+  Knot *mother(mo->prev), *sister(mo->prev->left);
+  if (!mother->part->Flav().Strong()) {
+    mother->maxpt2 = sister->maxpt2 = mo->maxpt2;
+    mother->thcrit = sister->thcrit = mo->thcrit;
+    return;
+  }
+  mother->maxpt2 = sister->maxpt2 = Min(mo->smaxpt2,mo->maxpt2);
+  mother->thcrit = sister->thcrit = mo->sthcrit;
+  msg_Debugging()<<"  accept mother = "<<mother->kn_no
+		 <<", set maxpt = "<<sqrt(mother->maxpt2)
+		 <<", thcrit = "<<mother->thcrit<<"\n";
+  msg_Debugging()<<"  accept sister = "<<sister->kn_no
+		 <<", set maxpt = "<<sqrt(sister->maxpt2)
+		 <<", thcrit = "<<sister->thcrit<<"\n";
+}
 
 bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,int & extra_pdf) 
 {
@@ -119,8 +141,6 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,int & extra_pdf)
 	mo->z      = m_z;
 	mo->t      = m_t;
 	mo->phi    = m_phi;
-	mo->pt2lcm = m_pt2;
-	mo->thcrit = 4.*m_z*m_z*m_t/(4.*m_z*m_z*m_t-(1.-m_z)*m_x*m_x*m_s_hadron);
 	return true;
       }
       else break;
@@ -211,22 +231,58 @@ bool Spacelike_Sudakov::CplVeto()
 
 bool Spacelike_Sudakov::OrderingVeto(Knot * mo) 
 {
-  if (!m_inflav.Strong()) {
-    mo->maxpt2 = m_pt2;
-    return false;
-  }
+  msg_Debugging()<<METHOD<<"("<<mo->kn_no<<")\n";
+  msg_Indent();
   double th(4.*m_z*m_z*m_t/(4.*m_z*m_z*m_t-(1.-m_z)*m_x*m_x*m_s_hadron));
+  mo->sthcrit=th;
+  msg_Debugging()<<"ss: thcrit = "<<mo->thcrit<<", th = "<<th<<std::endl;
+  msg_Debugging()<<"ss: maxpt2 = "<<mo->maxpt2<<", pt2 = "<<m_pt2<<std::endl;
+  if (!m_inflav.Strong()) return false;
   switch (m_ordering_scheme) {
   case 0 :
-    mo->maxpt2 = m_pt2;
+    if (m_pt2 > mo->maxpt2) {
+      msg_Debugging()<<"ss: would veto pt "<<m_pt2<<"\n";
+    }
     return false;
-  case 2 : if (th > mo->thcrit) return true;
-    mo->maxpt2 = m_pt2;
+  case 2 : 
+    if (th > mo->thcrit) {
+#ifdef USING__Veto_Info
+      m_vetos.back()=m_vetos.back()|svc::ang_veto;
+#endif
+      msg_Debugging()<<"ss: th veto\n";
+      return true;
+    }
     return false;
   default :
-    if (m_pt2 > mo->maxpt2)     return true;
-    mo->maxpt2 = m_pt2;
     return false;
+  }
+  return false;
+}
+
+bool Spacelike_Sudakov::PTVeto(Knot *knot)
+{
+  if (!knot->part->Flav().Strong()) {
+    knot->smaxpt2=knot->right->maxpt2;
+    msg_Debugging()<<"ss: ew knot "<<knot->kn_no<<", maxpt = "
+		   <<sqrt(knot->right->maxpt2)<<std::endl;
+    return false;
+  }
+  double E2(sqr(sqrt(knot->left->E2)+sqrt(knot->right->E2)));
+  double z(p_kin->Kinematics()->
+	   LightConeZ(knot->right->z,E2,knot->t,
+		      knot->right->t,knot->left->t));
+  double pt2(z*(1.0-z)*knot->t-(1.0-z)*knot->right->t-z*knot->left->t);
+  knot->smaxpt2=pt2;
+  msg_Debugging()<<"ss: knot "<<knot->kn_no<<", maxpt = "
+		 <<sqrt(knot->maxpt2)<<", pt = "<<sqrt(pt2)<<std::endl;
+  if (m_ordering_scheme==1 &&
+      knot->part->Info()!='H' && 
+      (pt2<0.0 || pt2>knot->maxpt2)) {
+#ifdef USING__Veto_Info
+    m_vetos.back()=m_vetos.back()|svc::kt_veto;
+#endif
+    msg_Debugging()<<"ss: pt veto\n";
+    return true;
   }
   return false;
 }
@@ -234,8 +290,8 @@ bool Spacelike_Sudakov::OrderingVeto(Knot * mo)
 bool Spacelike_Sudakov::RemnantVeto(Knot * mo) 
 {
   double E(p_remnant->GetBeam()->Energy()*mo->x/m_z);
-  if (!p_remnant->TestExtract(GetFlA(),Vec4D(E,0.0,0.0,E))) return true;
-  return false;
+  return !p_remnant->TestExtract
+    (GetFlA(),Vec4D(E,0.0,0.0,sqrt(E*E-sqr(GetFlA().PSMass()))));
 }
 
 void Spacelike_Sudakov::Add(Splitting_Function * spl) 

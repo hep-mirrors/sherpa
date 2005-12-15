@@ -3,6 +3,7 @@
 
 #include "Backward_Splitting_Group.H"
 #include "Random.H"
+#include "Veto_Info.H"
 
 namespace ATOOLS { class Data_Read; }
 
@@ -29,8 +30,10 @@ namespace APACIC {
 
     double m_facscale, m_pdf_fac, m_pdf_scale_fac, m_cpl_scale_fac;
     // mother
-    double m_E2, m_x, m_z, m_t, m_phi, m_pt2, m_maxpt;
+    double m_E2, m_x, m_z, m_t, m_phi, m_pt2;
     ATOOLS::Flavour m_inflav;
+
+    std::vector<int> m_vetos;
 
     void Add(Splitting_Function * spl) ;
     double CrudeInt(double _zmin, double _zmax);    
@@ -46,8 +49,11 @@ namespace APACIC {
   public:
     Spacelike_Sudakov(PDF::PDF_Base *,Sudakov_Tools *, Spacelike_Kinematics *,
 		      double,ATOOLS::Data_Read *,const size_t); 
-    ~Spacelike_Sudakov() {};
+    ~Spacelike_Sudakov();
+    bool Initialize();
     bool Dice(Knot * mother,double sprime,int & extra_pdf);
+    void AcceptBranch(const Knot *const mo);
+    bool PTVeto(Knot *);
 
     static double Q02(ATOOLS::Flavour const & flav) { 
       return ATOOLS::sqr(flav.PSMass()); 
@@ -58,6 +64,27 @@ namespace APACIC {
 
     inline void SetFactorisationScale(const double scale)    { m_facscale=scale; }
     inline void SetRemnant(PDF::Remnant_Base *const remnant) { p_remnant=remnant; }
+
+    inline void SetMaxScale(const double &scale) { m_s_hadron=scale; }
+    inline void SetMinEnergy(const double &emin) { m_emin=emin;      }
+
+    inline void SetPDFScaleFactor(const double &fac)      { m_pdf_scale_fac=fac; }
+    inline void SetCouplingScaleFactor(const double &fac) { m_cpl_scale_fac=fac; }
+
+    inline void SetCouplingScheme(const int &scheme) { m_cpl_scheme=scheme;      }
+    inline void SetPDFScheme(const int &scheme)      { m_pdf_scheme=scheme;      }
+    inline void SetOrderingScheme(const int &scheme) { m_ordering_scheme=scheme; }
+
+#ifdef USING__Veto_Info
+    inline std::vector<int> &Vetos() { return m_vetos; }
+
+    inline void ClearVetos() 
+    { m_vetos.clear(); }
+    inline void AddVeto(const svc::code &veto=svc::no_veto) 
+    { m_vetos.push_back(veto); }
+    inline void SetVeto(const svc::code &veto)
+    { m_vetos.back()=veto; }
+#endif
 
   };
 
