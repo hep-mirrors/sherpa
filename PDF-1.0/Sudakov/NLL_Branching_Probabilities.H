@@ -38,14 +38,14 @@ namespace SHERPA {
     BPType::code m_type;
     BPMode::code m_mode;
     double m_colfac, m_dlog, m_slog, m_power;
-    double m_lambda;
+    double m_lambda, m_as_factor;
     MODEL::Running_AlphaS * p_runas;
     //PDF::PDF_Base         * p_pdf;
     //ATOOLS::Flavour         m_flav;
     double m_kfac;
   public:
     Gamma_Lambda_Base(BPType::code type, BPMode::code mode, double lambda, 
-		      MODEL::Running_AlphaS * =0, int nf=-1);
+		      MODEL::Running_AlphaS * =0, int nf=-1,double asfac=1.0);
     double AlphaS(double q2);
     double Gamma(double q, double Q);
     double IntGamma(double q, double Q);
@@ -56,22 +56,26 @@ namespace SHERPA {
   
   class GammaQ_QG_Lambda :  public Gamma_Lambda_Base {
   public:
-    GammaQ_QG_Lambda(BPMode::code mode, double lambda, MODEL::Running_AlphaS * =0);
+    GammaQ_QG_Lambda(BPMode::code mode, double lambda, 
+		     MODEL::Running_AlphaS * =0,double asfac=1.0);
   };
 
   class GammaQ_GQ_Lambda :  public Gamma_Lambda_Base {
   public:
-    GammaQ_GQ_Lambda(BPMode::code mode, double lambda, MODEL::Running_AlphaS * =0);
+    GammaQ_GQ_Lambda(BPMode::code mode, double lambda, 
+		     MODEL::Running_AlphaS * =0,double asfac=1.0);
   };
 
   class GammaG_GG_Lambda :  public Gamma_Lambda_Base {
   public:
-    GammaG_GG_Lambda(BPMode::code mode, double lambda, MODEL::Running_AlphaS * =0);
+    GammaG_GG_Lambda(BPMode::code mode, double lambda, 
+		     MODEL::Running_AlphaS * =0,double asfac=1.0);
   };
 
   class GammaG_QQ_Lambda :  public Gamma_Lambda_Base {
   public:
-    GammaG_QQ_Lambda(BPMode::code mode, double lambda, MODEL::Running_AlphaS * =0);
+    GammaG_QQ_Lambda(BPMode::code mode, double lambda, 
+		     MODEL::Running_AlphaS * =0,double asfac=1.0);
   };
 
 

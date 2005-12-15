@@ -20,16 +20,16 @@ using namespace MODEL;
 
 Gamma_Lambda_Base::
 Gamma_Lambda_Base(BPType::code type,BPMode::code mode,double lambda, 
-		  MODEL::Running_AlphaS * runas, int nf): 
+		  MODEL::Running_AlphaS * runas, int nf,double asfac): 
   m_type(type), m_mode(mode), 
   m_colfac(0.), m_dlog(0.), m_slog(0.), m_power(0.),
-  m_lambda(lambda), p_runas(runas), 
+  m_lambda(lambda), m_as_factor(asfac), p_runas(runas), 
   m_kfac(0.)
 { }
 
 double Gamma_Lambda_Base::AlphaS(double t)                
 { 
-  if (p_runas) return (*p_runas)(dabs(t));
+  if (p_runas) return (*p_runas)(dabs(t)/m_as_factor);
   return 4.*M_PI/(BETA0*log(dabs(t)/sqr(m_lambda)));
 }
 
@@ -62,8 +62,8 @@ double Gamma_Lambda_Base::IntGamma(double Q0, double Q)
 
 
 GammaQ_QG_Lambda::GammaQ_QG_Lambda(BPMode::code mode, double lambda, 
-				   MODEL::Running_AlphaS * runas) : 
-  Gamma_Lambda_Base(BPType::gamma_q2qg,mode,lambda,runas) 
+				   MODEL::Running_AlphaS * runas,double asfac) : 
+  Gamma_Lambda_Base(BPType::gamma_q2qg,mode,lambda,runas,-1,asfac) 
 {
   m_colfac = CF;
   m_dlog   = 1.;
@@ -74,8 +74,8 @@ GammaQ_QG_Lambda::GammaQ_QG_Lambda(BPMode::code mode, double lambda,
 }
 
 GammaQ_GQ_Lambda::GammaQ_GQ_Lambda(BPMode::code mode, double lambda, 
-				   MODEL::Running_AlphaS * runas) : 
-  Gamma_Lambda_Base(BPType::gamma_q2gq,mode,lambda,runas) 
+				   MODEL::Running_AlphaS * runas,double asfac) : 
+  Gamma_Lambda_Base(BPType::gamma_q2gq,mode,lambda,runas,-1,asfac) 
 {
   m_colfac = CF;
   m_dlog   = 1.;
@@ -86,8 +86,8 @@ GammaQ_GQ_Lambda::GammaQ_GQ_Lambda(BPMode::code mode, double lambda,
 }
 
 GammaG_GG_Lambda::GammaG_GG_Lambda(BPMode::code mode, double lambda, 
-				   MODEL::Running_AlphaS * runas) : 
-  Gamma_Lambda_Base(BPType::gamma_g2gg,mode,lambda,runas) 
+				   MODEL::Running_AlphaS * runas,double asfac) : 
+  Gamma_Lambda_Base(BPType::gamma_g2gg,mode,lambda,runas,-1,asfac) 
 {
   m_colfac = CA;
   m_dlog   = 1.;
@@ -98,8 +98,8 @@ GammaG_GG_Lambda::GammaG_GG_Lambda(BPMode::code mode, double lambda,
 }
 
 GammaG_QQ_Lambda::GammaG_QQ_Lambda(BPMode::code mode, double lambda, 
-				   MODEL::Running_AlphaS * runas) : 
-  Gamma_Lambda_Base(BPType::gamma_g2qq,mode,lambda,runas) 
+				   MODEL::Running_AlphaS * runas,double asfac) : 
+  Gamma_Lambda_Base(BPType::gamma_g2qq,mode,lambda,runas,-1,asfac) 
 {
   m_colfac = TR;
   m_dlog   = 0.;

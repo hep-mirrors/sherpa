@@ -23,9 +23,9 @@ namespace SHERPA {
     MODEL::Running_AlphaS * p_runas;
 
     Sudakov_Map m_sudakovs;
-    double      m_lambda, m_mu2, m_asmu;
+    double      m_lambda, m_mu2, m_asmu, m_as_factor;
 
-    void   PrepareMap(MODEL::Running_AlphaS *);
+    void   PrepareMap();
     void   FixLambda2();    
 
     inline double Delta(const ATOOLS::Flavour &fl, double Q,double q)
@@ -34,7 +34,7 @@ namespace SHERPA {
   public:
 
     NLL_Sudakov(int mode, double q2max, double q2min, 
-		MODEL::Running_AlphaS * =0 ,int =-1);
+		MODEL::Running_AlphaS * =0 ,int =-1,double asfac=1.);
 
     ~NLL_Sudakov();
 

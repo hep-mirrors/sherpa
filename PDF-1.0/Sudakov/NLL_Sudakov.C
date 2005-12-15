@@ -28,11 +28,11 @@ using namespace MODEL;
 using namespace std;
 
 NLL_Sudakov::NLL_Sudakov(int mode, double _tmax,double _tmin,
-			 MODEL::Running_AlphaS * runas,int jetmode) : 
-  m_mode(mode), p_runas(runas)
+			 MODEL::Running_AlphaS * runas,int jetmode,double asfac) : 
+  m_mode(mode), p_runas(runas), m_as_factor(asfac)
 {
   FixLambda2();
-  PrepareMap(runas);
+  PrepareMap();
 }
 
 NLL_Sudakov::~NLL_Sudakov()
@@ -51,7 +51,7 @@ NLL_Sudakov::~NLL_Sudakov()
   m_sudakovs.clear();
 }
 
-void NLL_Sudakov::PrepareMap(MODEL::Running_AlphaS * runas) 
+void NLL_Sudakov::PrepareMap() 
 {
   int  smode=Sudakov::numeric;
   NLL_Dummy_Sudakov * dsud(new NLL_Dummy_Sudakov());
@@ -63,10 +63,10 @@ void NLL_Sudakov::PrepareMap(MODEL::Running_AlphaS * runas)
   if (bpmode & BPMode::fs) {
     csud = new NLL_Combined_Sudakov(smode);
     ssud = new NLL_Single_Sudakov
-      (new GammaQ_QG_Lambda(bpmode,m_lambda,runas),smode);
+      (new GammaQ_QG_Lambda(bpmode,m_lambda,p_runas,m_as_factor),smode);
     csud->Add(ssud);
 //     ssud = new NLL_Single_Sudakov
-//       (new GammaQ_GQ_Lambda(bpmode,m_lambda,runas),smode);
+//       (new GammaQ_GQ_Lambda(bpmode,m_lambda,p_runas,m_as_factor),smode);
 //     csud->Add(ssud);
     for (int k=1;k<=5;++k) {
       flav                   = Flavour(kf::code(k));
@@ -75,20 +75,20 @@ void NLL_Sudakov::PrepareMap(MODEL::Running_AlphaS * runas)
     }
     csud = new NLL_Combined_Sudakov(smode);
     ssud = new NLL_Single_Sudakov
-      (new GammaG_GG_Lambda(bpmode,m_lambda,runas),smode);
+      (new GammaG_GG_Lambda(bpmode,m_lambda,p_runas,m_as_factor),smode);
     csud->Add(ssud);
 //     ssud = new NLL_Single_Sudakov
-//       (new GammaG_QQ_Lambda(bpmode,m_lambda,runas),smode);
+//       (new GammaG_QQ_Lambda(bpmode,m_lambda,p_runas,m_as_factor),smode);
 //     for (int k=1;k<=5;++k) csud->Add(ssud);
     m_sudakovs[Flavour(kf::gluon)] = csud;
   }
   if (bpmode & BPMode::is) {
     csud = new NLL_Combined_Sudakov(smode);
     ssud = new NLL_Single_Sudakov
-      (new GammaQ_QG_Lambda(bpmode,m_lambda,runas),smode);
+      (new GammaQ_QG_Lambda(bpmode,m_lambda,p_runas,m_as_factor),smode);
     csud->Add(ssud);
 //     ssud = new NLL_Single_Sudakov
-//       (new GammaG_QQ_Lambda(bpmode,m_lambda,runas),smode);
+//       (new GammaG_QQ_Lambda(bpmode,m_lambda,p_runas,m_as_factor),smode);
 //     csud->Add(ssud);
     for (int k=1;k<=5;++k) {
       flav                   = Flavour(kf::code(k));
@@ -97,11 +97,11 @@ void NLL_Sudakov::PrepareMap(MODEL::Running_AlphaS * runas)
     }
     csud = new NLL_Combined_Sudakov(smode);
     ssud = new NLL_Single_Sudakov
-      (new GammaG_GG_Lambda(bpmode,m_lambda,runas),smode);
+      (new GammaG_GG_Lambda(bpmode,m_lambda,p_runas,m_as_factor),smode);
     csud->Add(ssud);
     csud->Add(ssud);
 //     ssud = new NLL_Single_Sudakov
-//       (new GammaQ_GQ_Lambda(bpmode,m_lambda,runas),smode);
+//       (new GammaQ_GQ_Lambda(bpmode,m_lambda,p_runas,m_as_factor),smode);
 //     for (int k=1;k<=5;++k) csud->Add(ssud);
     m_sudakovs[Flavour(kf::gluon)] = csud;
   }
