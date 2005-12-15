@@ -2,6 +2,8 @@
 #include "Initial_State_Shower.H"
 #include "Run_Parameter.H"
 #include "Random.H"
+#include "MyStrStream.H"
+#include "Veto_Info.H"
 
 #ifdef PROFILE__all
 #include "prof.hh"
@@ -20,9 +22,11 @@ Final_State_Shower::Final_State_Shower(MODEL::Model_Base *const model,
   p_sud(new Timelike_Sudakov(p_kin,model)), 
   p_jv(NULL)
 { 
+  double cplscalefac(dataread->GetValue<double>("FS_CPL_SCALE_FACTOR",1.0));
+  rpa.gen.SetVariable("FS_CPL_SCALE_FACTOR",ToString(cplscalefac));
+  p_sud->SetScaleFactor(cplscalefac);
   p_kin->SetZScheme(dataread->GetValue<int>("FS_Z_SCHEME",1));      
   p_kin->SetAngleScheme(dataread->GetValue<int>("FS_ANGLE_SCHEME",1));  
-  p_sud->SetScaleFactor(dataread->GetValue<double>("FS_SCALE_FACTOR",1.0));
   p_sud->SetOrderingScheme(dataread->GetValue<int>("FS_ORDERING_SCHEME",1));  
   p_sud->SetCouplingScheme(dataread->GetValue<int>("FS_COUPLING_SCHEME",1));
   p_sud->SetMassScheme(dataread->GetValue<int>("FS_MASS_SCHEME",1));   
@@ -44,6 +48,10 @@ Final_State_Shower::~Final_State_Shower()
 int Final_State_Shower::PerformShower(Tree *tree,int jetveto) 
 {
   PROFILE_HERE;
+#ifdef USING__Veto_Info
+  p_sud->ClearVetos();
+  p_sud->SetMode(0);
+#endif
   if (InitializeJets(tree,tree->GetRoot())) {
     if (p_kin->DoKinematics(tree->GetRoot())) return 1;
     msg.Error()<<METHOD<<"("<<jetveto<<"): "
@@ -66,6 +74,9 @@ TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
   msg_Debugging()<<METHOD<<"(["<<mo->kn_no<<","<<mo->part->Info()<<"],"
 		 <<jetveto<<","<<sprime<<","<<z<<"): {\n";
   msg_Indent();
+#ifdef USING__Veto_Info
+  p_sud->SetMode(1);
+#endif
   if (mo->thcrit!=M_PI) {
     Knot *si(mo->prev->right);
     mo->thcrit=sqrt(dabs(si->t)/((1.0-si->z)*si->E2));
@@ -77,6 +88,9 @@ TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
   else {
     Flavour flavs[2];
     Simple_Polarisation_Info polinfos[2];
+#ifdef USING__Veto_Info
+    p_sud->AddVeto();
+#endif
     while (p_sud->Dice(mo)) {
       mo->E2 = sqr(((1.0/z-1.0)*sprime-mo->t)/(2.0*sqrt(sprime)));
       mo->part->SetMomentum(Vec4D(sqrt(mo->E2),0.,0.,sqrt(mo->E2-mo->t)));
@@ -100,8 +114,9 @@ TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
     }
     msg_Debugging()<<"reset knot "<<mo->kn_no<<"\n";
     Reset(mo);
-    if (!ini->DoKinematics()) return -1;
-    int stat(jetveto?p_jv->TestISKinematics(mo->prev):1);
+    int stat(ini->DoKinematics());
+    if (stat!=1) return stat;
+    stat=jetveto?p_jv->TestISKinematics(mo->prev):1;
     if (stat!=1) return stat;
     msg_Debugging()<<"}\n";
     return 1;
@@ -194,6 +209,9 @@ int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
   bool diced1(false), diced2(false);
   Vec4D p1(d1->part->Momentum()), p2(d2->part->Momentum());
   Knot *g(NULL);
+#ifdef USING__Veto_Info
+  p_sud->AddVeto();
+#endif
   while (true) {
     g=NULL;
     selected=ChooseDaughter(mo);
@@ -239,12 +257,16 @@ int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
       if (d2->stat>0) InitDaughters(tree,d2,d2_flavs,d2_polinfos,diced2);
       if (p_kin->Shuffle(mo,first)) {
    	if (p_jv->TestFSKinematics(mo)==1) {
+	  p_sud->AcceptBranch(mo);
 	  msg_Debugging()<<"kinematics check passed"<<std::endl;
 	  mo->stat=0;
 	  msg_Debugging()<<"}\n";
 	  return 1;
 	}
 	msg_Debugging()<<"kinematics vetoed\n";
+#ifdef USING__Veto_Info
+	p_sud->SetVeto(svc::jet_veto);
+#endif
       }
       else msg_Debugging()<<"shuffle failed\n";
       if (d1->left && d1->left->part->Info()!='H') {
@@ -548,6 +570,10 @@ void Final_State_Shower::ExtractPartons(Knot *kn,Blob *jet,
       if (pl) pl->push_back(kn->part);
       jet = new Blob();
       jet->SetStatus(1);
+#ifdef USING__Veto_Info
+      jet->AddData("FS_VS",new Blob_Data<std::vector<int> >(p_sud->Vetos(0)));
+      jet->AddData("IFS_VS",new Blob_Data<std::vector<int> >(p_sud->Vetos(1)));
+#endif
       p = new Particle(*kn->part);
       jet->AddToInParticles(p);
       if (bl_meps) {
@@ -571,6 +597,10 @@ void Final_State_Shower::ExtractPartons(Knot *kn,Blob *jet,
       if ((kn->left->part->Info() != 'H') || (kn->right->part->Info() != 'H')) {
 	jet = new Blob();
 	jet->SetStatus(1);
+#ifdef USING__Veto_Info
+	jet->AddData("FS_VS",new Blob_Data<std::vector<int> >(p_sud->Vetos(0)));
+	jet->AddData("IFS_VS",new Blob_Data<std::vector<int> >(p_sud->Vetos(1)));
+#endif
 	p = new Particle(*kn->part);
       	p->SetStatus(2);
 	if (pl) pl->push_back(p);
@@ -945,8 +975,6 @@ Vec4D  Final_State_Shower::GetMomentum(Knot * mo, int & number)
   if (mo->left) {
     Vec4D p(GetMomentum(mo->left,number)+GetMomentum(mo->right,number));
     Vec4D ptest(mo->left->part->Momentum()+mo->right->part->Momentum());
-    static double accu(sqrt(rpa.gen.Accu()));
-    Vec4D::SetAccu(accu);
     if (!(ptest==mo->part->Momentum())) {
       number-=10000;
       msg.Error()<<METHOD<<"(..):  Four momentum not conserved "
@@ -960,7 +988,6 @@ Vec4D  Final_State_Shower::GetMomentum(Knot * mo, int & number)
 		     <<mo->left->part->Momentum()<<" + "
 		     <<mo->right->part->Momentum()<<std::endl;
     }
-    Vec4D::ResetAccu();
     return p;
   }
   number++;
