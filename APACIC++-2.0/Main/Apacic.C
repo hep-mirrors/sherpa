@@ -3,6 +3,7 @@
 #include "Blob.H"
 #include "Random.H"
 #include "Run_Parameter.H"
+#include "Veto_Info.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Apacic
@@ -60,6 +61,8 @@ Apacic::~Apacic()
   if (p_finshower) delete p_finshower;
 }
 
+bool m_last_ljv(false);
+
 int Apacic::PerformShowers(const int &jetveto,const int &losejv,
 			   const double &x1,const double &x2,
 			   const double &ycut) 
@@ -73,14 +76,19 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
     msg.Out()<<"Apacic::PerformShowers : Before showering."<<std::endl;
     OutputTrees();
   }
+  static double accu(sqrt(rpa.gen.Accu()));
+  Vec4D::SetAccu(accu);
   if (m_fsron) {
     Vec4D cms(PrepareFSR());
     switch (p_finshower->PerformShower(p_fintree,jetveto)) {
     case -1:
       msg.Debugging()<<"Lose jet veto in FSR Shower.\n";
+      m_last_ljv=true;
+      Vec4D::ResetAccu();
       return -1;
     case 0:
       msg.Error()<<METHOD<<"(..): FSR shower failure. Abort."<<std::endl;
+      Vec4D::ResetAccu();
       return 0;
     }
     p_finshower->SetAllColours(p_fintree->GetRoot());
@@ -90,9 +98,12 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
     switch (p_inishower->PerformShower(p_initrees,p_fintree,jetveto)) {
     case -1:
       msg.Debugging()<<"Lose jet veto in ISR Shower.\n";
+      m_last_ljv=true;
+      Vec4D::ResetAccu();
       return -1;
     case 0:
       msg.Error()<<METHOD<<"(..): ISR shower failure. Abort."<<std::endl;
+      Vec4D::ResetAccu();
       return 0;
     }
   }
@@ -102,12 +113,14 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
     p_initrees[0]->CheckMomentumConservation();
     p_initrees[1]->CheckMomentumConservation();
   }
+  Vec4D::ResetAccu();
   switch (p_jetveto->TestKinematics(1)) {
   case 0:
     msg_Debugging()<<"MLM jet veto\n";
     return 0;
   case -1: 
     msg_Debugging()<<"Lose jet veto\n";
+    m_last_ljv=true;
     return -1;
   }
   msg_Debugging()<<"kinematics check passed"<<std::endl;
@@ -118,6 +131,12 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
 	       <<std::endl;
     return 0;
   }
+#ifdef USING__Veto_Info
+  if (m_last_ljv) 
+    p_finshower->Sudakov()->Vetos(0).front()=
+      p_finshower->Sudakov()->Vetos(0).front()|svc::lj_veto;
+#endif
+  m_last_ljv=false;
   if (msg.LevelIsDebugging()) {
     msg.Out()<<"Apacic::PerformShowers : After showering."<<std::endl;
     OutputTrees();
