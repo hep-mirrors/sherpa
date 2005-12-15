@@ -30,19 +30,14 @@ std::ostream& ATOOLS::operator<<(std::ostream& ostr, const btp::code btpc) {
   }
 }
 
-/*
-std::ostream &ATOOLS::operator<<(std::ostream &str,const std::vector<double> &info)
+std::ostream &ATOOLS::operator<<(std::ostream &str,const std::vector<int> &info)
 {
-//   str<<"std::vector<double>: this = "<<&info<<" {\n";
-//   for (size_t i=0;i<info.size();++i) str<<"   (*this)["<<i<<"] = "<<info[i]<<"\n";
-//   return str<<"}";
   str<<"(";
   if (info.size()>0) str<<info[0];
   else str<<"<no entry>";
   for (size_t i=1;i<info.size();++i) str<<","<<info[i];
   return str<<")";
 }
-*/
 
 namespace ATOOLS {
   int Blob::s_totalnumber=0;
@@ -447,12 +442,13 @@ Blob_Data<Type>::~Blob_Data()
 }
 
 
-template int Blob_Data_Base::Get<int>();
-template size_t Blob_Data_Base::Get<size_t>();
-template long Blob_Data_Base::Get<long>();
-template double Blob_Data_Base::Get<double>();
-template std::string Blob_Data_Base::Get<std::string>();
-template std::vector<double> Blob_Data_Base::Get<std::vector<double> >();
+template int &Blob_Data_Base::Get<int>();
+template size_t &Blob_Data_Base::Get<size_t>();
+template long &Blob_Data_Base::Get<long>();
+template double &Blob_Data_Base::Get<double>();
+template std::string &Blob_Data_Base::Get<std::string>();
+template std::vector<double> &Blob_Data_Base::Get<std::vector<double> >();
+template std::vector<int> &Blob_Data_Base::Get<std::vector<int> >();
 
 template void Blob_Data_Base::Set<int>(const int &data);
 template void Blob_Data_Base::Set<size_t>(const size_t &data);
@@ -460,6 +456,7 @@ template void Blob_Data_Base::Set<long>(const long &data);
 template void Blob_Data_Base::Set<double>(const double &data);
 template void Blob_Data_Base::Set<std::string>(const std::string &data);
 template void Blob_Data_Base::Set<std::vector<double> >(const std::vector<double> &data);
+template void Blob_Data_Base::Set<std::vector<int> >(const std::vector<int> &data);
 
 template class Blob_Data<int>;
 template class Blob_Data<size_t>;
@@ -467,6 +464,7 @@ template class Blob_Data<long>;
 template class Blob_Data<double>;
 template class Blob_Data<std::string>;
 template class Blob_Data<std::vector<double> >;
+template class Blob_Data<std::vector<int> >;
 
 void Blob::SwapInParticles(const size_t i, const size_t j) 
 {

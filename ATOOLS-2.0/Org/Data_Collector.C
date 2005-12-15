@@ -53,7 +53,7 @@ Data_Collector::~Data_Collector()
 
 // ======================================================================
 
-template Process_Info ATOOLS::Blob_Data_Base::Get<Process_Info>();
+template Process_Info &ATOOLS::Blob_Data_Base::Get<Process_Info>();
 
 
 std::ostream & ATOOLS::operator<<(std::ostream & s, const Process_Info & wi)

@@ -14,7 +14,7 @@ namespace ATOOLS {
   private:
     static long int s_number;
   public:
-    template <class Type> Type Get();
+    template <class Type> Type &Get();
     template <class Type> void Set(const Type &data);
     Blob_Data_Base();
     Blob_Data_Base(const Blob_Data_Base &base);
@@ -26,7 +26,7 @@ namespace ATOOLS {
     Type m_data;
   public:
     Blob_Data(const Type & d);
-    Type Get() { return m_data; }
+    Type &Get() { return m_data; }
     void Set(const Type & d) { m_data=d; }
     std::ostream & operator>>(std::ostream &) const;
     ~Blob_Data();
@@ -178,7 +178,7 @@ namespace ATOOLS {
   }
 
   template <class Type>
-  Type Blob_Data_Base::Get() 
+  Type &Blob_Data_Base::Get() 
   {
     return ((Blob_Data<Type>*)this)->Get();
   }
@@ -190,6 +190,7 @@ namespace ATOOLS {
   }
 
   std::ostream &operator<<(std::ostream &str,const std::vector<double> &info);
+  std::ostream &operator<<(std::ostream &str,const std::vector<int> &info);
 
   /*!
     \file 
