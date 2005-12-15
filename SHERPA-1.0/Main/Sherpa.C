@@ -179,10 +179,10 @@ void Sherpa::DrawLogo()
 	    <<"................................... ## | | /    / + +      + + /      +      "<<std::endl
 	    <<"....................... /TT\\ .....  ##/ ///  / + + + + + + +/       +        "<<std::endl
 	    <<"......................./TTT/T\\ ... /TT\\/\\\\\\ / + + + + + + +/   \\         +   "<<std::endl
-	    <<"version 1.0.5 ......../TTT/TTTT\\...|TT/T\\\\\\/   +    ++  + /                  "<<std::endl
+	    <<"version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<" ......../TTT/TTTT\\...|TT/T\\\\\\/   +    ++  + /                  "<<std::endl
 	    <<"-----------------------------------------------------------------------------"<<std::endl
 	    <<std::endl
-	    <<"          SHERPA version 1.0.5.                                              "<<std::endl
+	    <<"          SHERPA version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<"                                              "<<std::endl
 	    <<"                                                                             "<<std::endl
 	    <<"          AUTHORS: Tanju Gleisberg, Stefan Hoeche, Frank Krauss,             "<<std::endl
 	    <<"               Andreas Schaelicke, Steffen Schumann, Jan Winter              "<<std::endl
@@ -196,7 +196,7 @@ void Sherpa::DrawLogo()
 	    <<"          published under JHEP 0402 (2004) 056.                              "<<std::endl
 	    <<"                                                                             "<<std::endl
 	    <<"          Please visit also our homepage                                     "<<std::endl
-	    <<"          http://www.physik.tu-dresden.de/~krauss/hep/index.html             "<<std::endl
+	    <<"          http://www.sherpa-mc.de                                            "<<std::endl
 	    <<"          for news, bugreports, updates and new releases.                    "<<std::endl
 	    <<"                                                                             "<<std::endl
 	    <<"-----------------------------------------------------------------------------"<<std::endl
