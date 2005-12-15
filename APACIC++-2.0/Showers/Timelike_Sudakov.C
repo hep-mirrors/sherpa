@@ -77,6 +77,25 @@ void Timelike_Sudakov::SelectOne()
   p_selected->SelectOne(); 
 }
 
+void Timelike_Sudakov::AcceptBranch(const Knot *const mo) 
+{
+  msg_Debugging()<<METHOD<<"("<<mo->kn_no<<"):"<<std::endl;
+  Knot *d1(mo->left), *d2(mo->right);
+  if (!mo->part->Flav().Strong()) {
+    d1->maxpt2 = d2->maxpt2 = mo->maxpt2;
+    d1->thcrit = d2->thcrit = mo->thcrit;
+    msg_Debugging()<<"  accept ew daughter = "<<d1->kn_no
+		   <<", set maxpt2 = "<<d1->maxpt2
+		   <<", thcrit = "<<d1->thcrit<<"\n";
+    return;
+  }
+  d1->maxpt2 = d2->maxpt2 = mo->smaxpt2;
+  d1->thcrit = d2->thcrit = mo->sthcrit;
+  msg_Debugging()<<"  accept daughter = "<<d1->kn_no
+		 <<", set maxpt2 = "<<d1->maxpt2
+		 <<", thcrit = "<<d1->thcrit<<"\n";
+}
+
 bool Timelike_Sudakov::Dice(Knot *const mother, Knot *const granny) 
 {
   m_inflav=mother->part->Flav(); 
@@ -178,17 +197,27 @@ bool Timelike_Sudakov::CplVeto()
 
 bool Timelike_Sudakov::OrderingVeto(Knot * mo,double t, double E2, double z) 
 {
+  double th(p_kin->GetOpeningAngle(z,E2,t,m_tb,m_tc));
+  mo->sthcrit=th;
+  mo->smaxpt2=m_pt2;
+  msg_Debugging()<<"ts: thcrit = "<<mo->thcrit<<", th = "<<th<<std::endl;
+  msg_Debugging()<<"ts: maxpt2 = "<<mo->maxpt2<<", pt2 = "<<m_pt2<<std::endl;
   if (!m_inflav.Strong()) return false;
   switch (m_ordering_scheme) {
   case 0 : return false;
-  case 2 : if (m_pt2<mo->maxpt2) return false;
+  case 2 : 
+    if (m_pt2<mo->maxpt2) return false;
+#ifdef USING__Veto_Info
+    m_vetos[m_mode].back()=m_vetos[m_mode].back()|svc::kt_veto;
+#endif
+    return true;
   case 1 :
   default :
-    double th(p_kin->GetOpeningAngle(z,E2,t,m_tb,m_tc));
-    if (th<mo->thcrit || 3.14<mo->thcrit) {
-      mo->costh=th;
-      return false;
-    }
+    if (th<mo->thcrit || 3.14<mo->thcrit) return false;
+#ifdef USING__Veto_Info
+    m_vetos[m_mode].back()=m_vetos[m_mode].back()|svc::ang_veto;
+#endif
+    return true;
   }
   return true;
 }

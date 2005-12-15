@@ -3,6 +3,7 @@
 
 #include "Splitting_Group.H"
 #include "Model_Base.H"
+#include "Veto_Info.H"
 
 namespace APACIC {
 
@@ -23,10 +24,12 @@ namespace APACIC {
     int m_cpl_scheme, m_ordering_scheme, m_pt_scheme;
     int m_mass_scheme, m_width_scheme, m_zrange_scheme;
     int m_mecorr_scheme,m_direct_photons,m_azimuthal_correlation;
-    int m_last_veto;
+    int m_last_veto, m_mode;
   
     double m_E2, m_t, m_tb, m_tc, m_t0, m_z, m_phi, m_pt2;
     double m_maxpt, m_rscalefac;
+
+    std::vector<int> m_vetos[2];
 
     ATOOLS::Simple_Polarisation_Info m_pol_b, m_pol_c;
 
@@ -64,6 +67,7 @@ namespace APACIC {
     // member functions
     void Init(const double fmed=0.0);
     bool Dice(Knot *const mother,Knot *const granny=NULL);
+    void AcceptBranch(const Knot *const mo);
 
     const ATOOLS::Simple_Polarisation_Info &GetPolB();
     const ATOOLS::Simple_Polarisation_Info &GetPolC();
@@ -89,6 +93,20 @@ namespace APACIC {
 
     inline double ScaleFactor() const { return m_rscalefac; }
     inline double PT2Min() const      { return m_pt2min;    }
+
+#ifdef USING__Veto_Info
+    inline std::vector<int> &Vetos(const int &mode=-1) 
+    { return m_vetos[mode>=0?mode:m_mode];   }
+
+    inline void ClearVetos() 
+    { m_vetos[0].clear(); m_vetos[1].clear(); }
+    inline void AddVeto(const svc::code &veto=svc::no_veto)
+    { m_vetos[m_mode].push_back(veto); }
+    inline void SetVeto(const svc::code &veto)
+    { m_vetos[m_mode].back()=m_vetos[m_mode].back()|veto; }
+
+    inline void SetMode(const int &mode) { m_mode=mode; }
+#endif
 
   };// end of class Timelike_Sudakov
 
