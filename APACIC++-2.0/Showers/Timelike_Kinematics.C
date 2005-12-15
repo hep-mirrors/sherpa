@@ -299,11 +299,8 @@ bool Timelike_Kinematics::DoKinematics(Knot * const mo) const
   if (!CheckVector(mo->part->Momentum()) || 
       !CheckVector(mo->left->part->Momentum()) || 
       !CheckVector(mo->right->part->Momentum())) error=1;
-  static double accu(sqrt(rpa.gen.Accu()));
-  Vec4D::SetAccu(accu);
   if (!(mo->left->part->Momentum()+mo->right->part->Momentum()==
 	mo->part->Momentum())) error=2;
-  Vec4D::ResetAccu();
   if (mo->left->part->Momentum().Nan()) error=3;
   if (error>0) {
     int op(msg.Error().precision(6));
@@ -403,8 +400,6 @@ void Timelike_Kinematics::BoostDaughters(Knot * const mo) const
   msg_Debugging()<<METHOD<<"("<<mo->kn_no<<"):\n";
   msg_Indent();
   Knot *d1(mo->left), *d2(mo->right);
-  static double accu(sqrt(rpa.gen.Accu()));
-  Vec4D::SetAccu(accu);
   if (d1->left && d1->left->part->Momentum()!=Vec4D()) {
     Poincare cms(d1->left->part->Momentum()+d1->right->part->Momentum());
     Poincare cmsp(d1->part->Momentum());
@@ -448,7 +443,6 @@ void Timelike_Kinematics::BoostDaughters(Knot * const mo) const
 		 <<"."<<std::endl;
     }
   }
-  Vec4D::ResetAccu();
 }
 
 double Timelike_Kinematics::GetOpeningAngle(Knot *const knot) const
