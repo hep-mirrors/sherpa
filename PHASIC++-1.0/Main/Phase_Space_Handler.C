@@ -1614,7 +1614,7 @@ Single_Channel * Phase_Space_Handler::SetChannel(int nin,int nout,ATOOLS::Flavou
   return GetterFunction(nin,nout,fl,info,this);
 }
 
-template Weight_Info ATOOLS::Blob_Data_Base::Get<Weight_Info>();
+template Weight_Info &ATOOLS::Blob_Data_Base::Get<Weight_Info>();
 
 namespace ATOOLS {
   std::ostream & operator<<(std::ostream & s, const PHASIC::Weight_Info & wi)
