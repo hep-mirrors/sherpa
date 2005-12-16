@@ -1,0 +1,69 @@
+#!/bin/bash
+
+FILE1=#___xs_comparison___#
+
+while read LINE; do
+
+ FILENAME1=`echo $LINE | awk '{ print $1; }'`
+ FILENAME2=`echo $LINE | awk '{ print $2; }'`
+
+ TEST=${FILENAME1%"xs_tot"} 
+ if [ "$FILENAME1" == "$TEST" ]; then continue; fi
+
+ cat $FILENAME1 > $FILE1
+ echo "end" >> $FILE1
+ cat $FILENAME2 >> $FILE1
+ echo "end" >> $FILE1
+
+awk '\
+BEGIN { i=0; j=0; pb=3.89e8; end1=0; warnings=0; errors=0 } \
+{\
+  if ($1=="end") end1=1; \
+  else { \
+    if (end1==0) { \
+      proc1[i]=$1; \
+      xs1[i]=$2;  \
+      max1[i]=$3;  \
+      err1[i]=$4;  \
+      relerr1[i]=$4/$2;  \
+#      printf "1st file: process: "$1", xs = "xs1[i]*pb" pb, err = "err1[i]*pb" ( "relerr1[i]*100"% ), max = "max1[i]*pb" pb\n"; \
+      ++i; \
+    } \
+    else { \
+      proc2[j]=$1; \
+      xs2[j]=$2;  \
+      max2[j]=$3;  \
+      err2[j]=$4;  \
+      relerr2[j]=$4/$2;  \
+#      printf "2nd file: process: "$1", xs = "xs2[j]*pb" pb, err = "err2[j]*pb" ( "relerr2[j]*100"% ), max = "max2[j]*pb" pb\n"; \
+      ++j; \
+    } \
+  } \
+} \
+END { \
+  for (ii=0;ii<i;++ii) { \
+    reldev=(xs2[ii]/xs1[ii]-1.0);
+    if (reldev<0) reldev=-reldev;
+    printf "test process: "proc1[ii]", rel deviation = "reldev*100"% vs. rel errors = "relerr1[ii]*100"%, "relerr2[ii]*100"%\n"; \
+    if (reldev>relerr1[ii]) { \
+      if (reldev>2.0*relerr1[ii]) { \
+        printf "==================================================\n";
+        printf "ERROR: rel deviation > 2 sigma in "proc1[ii]"\n";
+        printf "==================================================\n";
+	++errors;
+      }\
+      else {\
+        printf "--------------------------------------------------\n";
+        printf "WARNING: relative deviation > 1 sigma in "proc1[ii]"\n";
+        printf "--------------------------------------------------\n";
+	++warnings;
+      }\
+    }\
+  }\
+  printf "finished test with "errors" errors and "warnings" warnings\n"; \
+} \
+' < $FILE1
+
+rm $FILE1
+
+done
