@@ -280,19 +280,21 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,
     }
     blob->AddToOutParticles(particle);
   }
-  if (unstable) {
-    if (p_hdhandler->On()) {
-      p_hdhandler->ResetTables();
-      p_hdhandler->DefineSecondaryDecays(blob);
+  if( particle->Flav().Kfcode() != kf::tau ) {
+    if (unstable) {
+      if (p_hdhandler->On()) {
+        p_hdhandler->ResetTables();
+        p_hdhandler->DefineSecondaryDecays(blob);
 
-      // consider rejection by remnants !!
+        // consider rejection by remnants !!
 
-      return success;
-    }
-    else {
-      msg.Error()<<"Error in Signal_Processes::FillBlob."<<std::endl
-		 <<"   No decay tables yet. Abort."<<std::endl;
-      abort();
+        return success;
+      }
+      else {
+        msg.Error()<<"Error in Signal_Processes::FillBlob."<<std::endl
+          <<"   No hard decay tables for "<<particle->Flav()<<". Abort."<<std::endl;
+        abort();
+      }
     }
   }
 
@@ -310,6 +312,9 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,
   blob->AddData("ME_Weight",new Blob_Data<double>(weight));
   blob->AddData("ME_NumberOfTrials",new Blob_Data<int>(ntrial));
   blob->AddData("Process_Weight",new Blob_Data<double>(procweight));
+//  blob->AddData("Spin_Density_Matrix",
+//				new Blob_Data<Spin_Density_Matrix>
+//				(p_mehandler->GetSpinDensityMatrix()));
   return success;
 }
 
