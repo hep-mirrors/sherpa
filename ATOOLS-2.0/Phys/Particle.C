@@ -166,7 +166,8 @@ double Particle::ProperTime() {
   double q2    = m_momentum.Abs2();
   double m2    = sqr(m_fl.Mass());
   double tau2  = 1.e96;
-  if (!( (q2-m2 < rpa.gen.Accu()) && (m_fl.Width() < rpa.gen.Accu()))) { 
+  if (!( (q2-m2 < rpa.gen.Accu()) && 
+         (m_fl.Width() < rpa.gen.Accu()) )) { // off-shell or big width
     if (m2>rpa.gen.Accu()) { 
       tau2 = q2/(sqr(q2-m2)+sqr(q2*m_fl.Width())/m2);
     }
@@ -176,6 +177,7 @@ double Particle::ProperTime() {
   }
   else {
     if (m_fl.Strong()) tau2 = 1./sqr(0.2); 
+    else if (!m_fl.IsStable()) tau2 = 1./sqr(m_fl.Width());
   }
   return rpa.hBar() * sqrt(tau2);
 }
