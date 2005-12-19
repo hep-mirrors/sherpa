@@ -35,7 +35,7 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr,
   double emin(dataread->GetValue<double>("IS_MINIMAL_E",0.5));
   int cplscheme(dataread->GetValue<int>("IS_COUPLING_SCHEME",1));
   int pdfscheme(dataread->GetValue<int>("IS_PDF_SCALE_SCHEME",1));
-  int orderingscheme(dataread->GetValue<int>("IS_ORDERING_SCHEME",1));
+  int orderingscheme(dataread->GetValue<int>("IS_ORDERING_SCHEME",2));
   Splitting_Function::SetKFactorScheme
     (dataread->GetValue<int>("S_KFACTOR_SCHEME",1));
   for (short unsigned int i(0);i<2;++i) {
