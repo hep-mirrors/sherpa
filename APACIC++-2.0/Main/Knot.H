@@ -70,6 +70,8 @@ namespace APACIC {
       CopyData(k);
     }
 
+    bool CheckMomentumConservation() const;
+
   };// end of class Knot
 
   std::ostream &operator<<(std::ostream&,const Knot &knot);

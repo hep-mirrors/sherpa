@@ -1,5 +1,8 @@
 #include "Knot.H"
 
+#include "Message.H"
+
+using namespace ATOOLS;
 using namespace APACIC;
 
 std::ostream &APACIC::operator<<(std::ostream& s,const Knot &k)
@@ -29,3 +32,17 @@ std::ostream &APACIC::operator<<(std::ostream& s,const Knot &k)
   return s;
 }
 
+bool Knot::CheckMomentumConservation() const 
+{
+  if (left==NULL || stat==3) return true;
+  bool success(true);
+  Vec4D p(part->Momentum());
+  Vec4D p1(left->part->Momentum()), p2(right->part->Momentum());
+  if (!(p==p1+p2)) {
+    msg.Error()<<METHOD<<"(): Four momentum not conserved in knot "
+	       <<kn_no<<"\n   p      = "<<p<<"\n   p_miss = "<<(p-p1-p2)
+	       <<"\n   p1     = "<<p1<<"\n   p2     = "<<p2<<std::endl;
+    success=false;
+  }
+  return success;
+}
