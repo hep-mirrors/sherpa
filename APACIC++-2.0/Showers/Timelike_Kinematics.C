@@ -155,7 +155,7 @@ int Timelike_Kinematics::ShuffleZ(Knot * const mo) const
       mo->left->E2<mo->left->tout || mo->right->E2<mo->right->tout) return 0;
   msg_Debugging()<<"z = "<<mo->z<<", E_1 = "<<sqrt(mo->left->E2)
 		 <<", E_2 = "<<sqrt(mo->right->E2)<<"\n";
-  mo->right->didkin=mo->left->didkin=false;
+  if (mo->left->part->Info()!='H') mo->right->didkin=mo->left->didkin=false;
   return 1;
 }
 
@@ -404,24 +404,11 @@ void Timelike_Kinematics::BoostDaughters(Knot * const mo) const
     Poincare cms(d1->left->part->Momentum()+d1->right->part->Momentum());
     Poincare cmsp(d1->part->Momentum());
     cmsp.Invert();
-    Vec4D tp(d1->left->part->Momentum()+d1->right->part->Momentum());
-    cms.Boost(tp);
-    cmsp.Boost(tp);
     Tree::BoRo(cms,d1->left);
     Tree::BoRo(cms,d1->right);
     Tree::BoRo(cmsp,d1->left);
     Tree::BoRo(cmsp,d1->right);
-    if (!(d1->part->Momentum()==
-	  d1->left->part->Momentum()+d1->right->part->Momentum())) {
-      msg.Error()<<METHOD<<"("<<mo->kn_no<<"): Four momentum not conserved."
-		 <<"\n p_miss = "<<(d1->part->Momentum()-
-				    d1->left->part->Momentum()-
-				    d1->right->part->Momentum())
-		 <<"\n p      = "<<d1->part->Momentum()
-		 <<"\n p_1    = "<<d1->left->part->Momentum()
-		 <<"\n p_2    = "<<d1->right->part->Momentum()
-		 <<"."<<std::endl;
-    }
+    d1->CheckMomentumConservation();
   }
   if (d2->left && d2->left->part->Momentum()!=Vec4D()) {
     Poincare cms(d2->left->part->Momentum()+d2->right->part->Momentum());
@@ -431,17 +418,7 @@ void Timelike_Kinematics::BoostDaughters(Knot * const mo) const
     Tree::BoRo(cms,d2->right);
     Tree::BoRo(cmsp,d2->left);
     Tree::BoRo(cmsp,d2->right);
-    if (!(d2->part->Momentum()==
-	  d2->left->part->Momentum()+d2->right->part->Momentum())) {
-      msg.Error()<<METHOD<<"("<<mo->kn_no<<"): Four momentum not conserved."
-		 <<"\n p_miss = "<<(d2->part->Momentum()-
-				    d2->left->part->Momentum()-
-				    d2->right->part->Momentum())
-		 <<"\n p      = "<<d2->part->Momentum()
-		 <<"\n p_1    = "<<d2->left->part->Momentum()
-		 <<"\n p_2    = "<<d2->right->part->Momentum()
-		 <<"."<<std::endl;
-    }
+    d2->CheckMomentumConservation();
   }
 }
 
