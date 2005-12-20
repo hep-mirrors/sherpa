@@ -1172,7 +1172,7 @@ double Process_Group::DSigma2()
 }
 
 
-bool Process_Group::OneEvent(double _mass) {
+ATOOLS::Blob_Data_Base *Process_Group::OneEvent(double _mass) {
   if (m_atoms) {
     SelectOne();
     return dynamic_cast<Process_Base*>(p_selected)->OneEvent(_mass);
@@ -1180,7 +1180,7 @@ bool Process_Group::OneEvent(double _mass) {
   return p_pshandler->OneEvent(_mass);
 }
 
-bool Process_Group::SameEvent() {
+ATOOLS::Blob_Data_Base *Process_Group::SameEvent() {
   if (m_atoms) {
     if (p_selected)
       return p_selected->SameEvent();

@@ -81,8 +81,7 @@ namespace EXTRAXS {
     void AddEvent(const double xs,const double validxs,const int ncounts);
     void ResetEvents();
 
-    bool OneEvent();
-
+    ATOOLS::Blob_Data_Base *OneEvent();
     ATOOLS::Blob_Data_Base *WeightedEvent(const int mode=0);
 
     void SetPSHandler(PHASIC::Phase_Space_Handler *const pshandler); 

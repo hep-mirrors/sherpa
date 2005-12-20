@@ -129,8 +129,8 @@ namespace AMEGIC {
     double         DSigma(const ATOOLS::Vec4D *,bool);
     double         DSigma2();
     double         operator()(const ATOOLS::Vec4D *);
-    bool           OneEvent(double = -1.);
-    bool           SameEvent();
+    ATOOLS::Blob_Data_Base * OneEvent(double = -1.);
+    ATOOLS::Blob_Data_Base * SameEvent();
     ATOOLS::Blob_Data_Base * WeightedEvent(const int mode=0);
     ATOOLS::Blob_Data_Base * WeightedEventNS(const int mode=0);
     ATOOLS::Blob_Data_Base * SameWeightedEvent();

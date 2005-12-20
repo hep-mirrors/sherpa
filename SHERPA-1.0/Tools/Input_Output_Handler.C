@@ -219,12 +219,22 @@ bool Input_Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const d
 	}
 	break;
 #endif 
-      case iotype::HepEvt: 
+      case iotype::HepEvt: {
+ 	Blob *signal(blobs->FindFirst(btp::Signal_Process));
+ 	if (signal) {
+ 	  Blob_Data_Base *message((*signal)["Process_Weight"]);
+ 	  if (message) {
+ 	    msg_Debugging()<<"HEI::OTF: proc weight: "
+ 			   <<message->Get<double>()<<"\n";
+ 	    p_hepevt->SetWeight(message->Get<double>());
+ 	  } else THROW(fatal_error,"No weight information.");
+ 	} else THROW(fatal_error,"No signal process.");
 	p_hepevt->Sherpa2HepEvt(blobs); 
 	if (m_io&1 && msg.LevelIsDebugging()) {
 	  p_hepevt->PrintHepEvtEvent(p_hepevt->Nhep());
 	}
 	break;
+      }
       default:
 	msg.Error()<<"Error in Input_Output_Handler::OutputToFormat."<<std::endl
 		   <<"   Unknown Output format : "<<m_outtype<<std::endl

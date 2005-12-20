@@ -321,11 +321,20 @@ bool Matrix_Element_Handler::LookUpXSec(double,bool,std::string) { return true; 
 bool Matrix_Element_Handler::GenerateOneEvent() 
 {
   if (m_eventmode==1) {
-    bool stat = UnweightedEvent();
-    if (!stat) return stat;
+    Blob_Data_Base * message = UnweightedEvent();
+    if (message) {
+      PHASIC::Weight_Info winfo = message->Get<PHASIC::Weight_Info>();
+      m_weight =  winfo.weight;
+      m_procweight = winfo.procweight;
+      m_ntrial =  winfo.ntrial;
+      msg_Debugging()<<"MEH::GOE: "<<m_procweight<<" "
+		     <<m_weight<<" "<<m_ntrial<<"\n";
+      delete message;
+    }
+    else THROW(fatal_error,"No weight information.");
     GetMomentaNFlavours();
     ApplyHHMF();
-    return stat;
+    return m_weight>0.0;
   }
   Blob_Data_Base * message = WeightedEvent();
   if (GetMomentaNFlavours()) {
@@ -366,11 +375,18 @@ double Matrix_Element_Handler::FactorisationScale()
 bool Matrix_Element_Handler::GenerateSameEvent() 
 {
   if (m_eventmode==1) {
-    bool stat = UnweightedSameEvent();
-    if (!stat) return stat;
+    Blob_Data_Base * message = UnweightedSameEvent();
+    if (message) {
+      PHASIC::Weight_Info winfo = message->Get<PHASIC::Weight_Info>();
+      m_weight     =  winfo.weight;
+      m_procweight = winfo.procweight;
+      m_ntrial     =  winfo.ntrial;
+      delete message;
+    }
+    else THROW(fatal_error,"No weight information.");
     GetMomentaNFlavours();
     ApplyHHMF();
-    return stat;
+    return m_weight>0.0;
   }
   Blob_Data_Base * message = WeightedSameEvent();
   if (GetMomentaNFlavours()) {
@@ -422,7 +438,7 @@ bool Matrix_Element_Handler::GetMomentaNFlavours() {
 }
 
 
-bool Matrix_Element_Handler::UnweightedSameEvent() 
+ATOOLS::Blob_Data_Base *Matrix_Element_Handler::UnweightedSameEvent() 
 {
   switch (m_mode) {
   case 1: return p_amegic->SameEvent();
@@ -441,7 +457,7 @@ Blob_Data_Base * Matrix_Element_Handler::WeightedSameEvent()
   return 0;
 }
 
-bool Matrix_Element_Handler::UnweightedEvent() 
+Blob_Data_Base *Matrix_Element_Handler::UnweightedEvent() 
 {
   switch (m_mode) {
   case 1: return p_amegic->UnweightedEvent();

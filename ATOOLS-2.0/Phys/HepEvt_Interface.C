@@ -167,7 +167,7 @@ void HepEvt_Interface::PrintHepEvtEvent(int nhep)
 
 void HepEvt_Interface::WriteFullHepEvt(int nhep)
 {
-  (*p_outstream)<<"  "<<m_evtnumber<<" "<<nhep<<" \n";
+  (*p_outstream)<<"  "<<m_evtnumber<<" "<<nhep<<" "<<m_weight<<"\n";
   for (int i=0;i<nhep;++i) {
     (*p_outstream)<<i+1<<"  "<<p_isthep[i]<<" "<<p_idhep[i]<<" "<<p_jmohep[2*i]<<" "<<p_jmohep[2*i+1]
 		  <<" "<<p_jdahep[2*i]<<" "<<p_jdahep[2*i+1]<<" \n ";
@@ -180,7 +180,7 @@ void HepEvt_Interface::WriteFullHepEvt(int nhep)
 
 void HepEvt_Interface::WriteReducedHepEvt(int nhep)
 {
-  (*p_outstream)<<"  "<<m_evtnumber<<" "<<nhep<<" \n";
+  (*p_outstream)<<"  "<<m_evtnumber<<" "<<nhep<<" "<<m_weight<<"\n";
   for (int i=0;i<nhep;++i) {
     (*p_outstream)<<i+1<<"  "<<p_isthep[i]<<" "<<p_idhep[i]<<" "<<p_jmohep[2*i]<<" "<<p_jmohep[2*i+1]
 	       <<" "<<p_jdahep[2*i]<<" "<<p_jdahep[2*i+1]<<" \n ";

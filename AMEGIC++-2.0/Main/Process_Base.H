@@ -38,7 +38,7 @@ namespace AMEGIC {
     AMEGIC::Pol_Info               * p_pl,   * p_plin, * p_plout;
 
     bool    m_atoms, m_analyse, m_tables;
-    double  m_enhancefac, m_maxfac, m_maxeps;
+    double  m_maxfac, m_maxeps;
     int     m_orderQCD, m_orderEW;
     double  m_ycut,m_maxerror;
 
@@ -149,8 +149,7 @@ namespace AMEGIC {
     virtual double DSigma2()                                                       =0;
     virtual double operator()(const ATOOLS::Vec4D *) { return 0.; }
     virtual double FactorisationScale();
-    virtual bool   OneEvent(double = -1.)                                          =0;
-    virtual bool   SameEvent()                                                     =0;
+    virtual ATOOLS::Blob_Data_Base *OneEvent(double = -1.)                                          =0;
 
     virtual void SwapInOrder();
     virtual void RestoreInOrder();
@@ -167,7 +166,6 @@ namespace AMEGIC {
     inline bool         Tables();
     inline std::string  Name();
 
-    inline double       EnhanceFactor();
     inline double       MaxReduction();
     inline double       Ycut();
     virtual void        SetPrintGraphs(bool print_graphs=true);
@@ -211,7 +209,6 @@ namespace AMEGIC {
   inline bool        Process_Base::Tables()  { return m_tables; }
   inline std::string Process_Base::Name()    { return m_name; }
 
-  inline double      Process_Base::EnhanceFactor() { return m_enhancefac; }
   inline double      Process_Base::MaxReduction()  { return m_maxfac; }
   inline double      Process_Base::Ycut()  { return m_ycut; }
 

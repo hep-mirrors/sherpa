@@ -90,6 +90,7 @@ namespace ATOOLS {
     void SetJdahep(int  * _jdahep) { p_jdahep = _jdahep; }
     void SetIsthep(int  * _isthep) { p_isthep = _isthep; }
     void SetIdhep(int   * _idhep)  { p_idhep = _idhep; }
+    void SetWeight(double _weight) { m_weight = _weight; }
 
     std::ofstream * GetOutStream() { return p_outstream; }
     void ChangeOutStream(std::string &,long int=-1);

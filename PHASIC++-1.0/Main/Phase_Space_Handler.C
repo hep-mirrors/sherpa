@@ -552,7 +552,7 @@ bool Phase_Space_Handler::Check4Momentum(const ATOOLS::Vec4D *p)
   return true;
 }
 
-bool Phase_Space_Handler::SameEvent() 
+ATOOLS::Blob_Data_Base *Phase_Space_Handler::SameEvent() 
 {
   return OneEvent(-1.,1);
 }
@@ -562,7 +562,7 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::SameWeightedEvent()
   return WeightedEvent(1);
 }
 
-bool Phase_Space_Handler::OneEvent(const double mass,const int mode)
+ATOOLS::Blob_Data_Base *Phase_Space_Handler::OneEvent(const double mass,const int mode)
 {
   PROFILE_HERE;
   bool use_overflow=true;
@@ -579,7 +579,7 @@ bool Phase_Space_Handler::OneEvent(const double mass,const int mode)
     else {
       if (!(p_process->Selected())) {
 	msg.Error()<<" ERROR: in Phase_Space_Handler::OneEvent() "<<std::endl;
-	return false;
+	return NULL;
       }
     }
     double max = p_process->Selected()->Max();
@@ -644,7 +644,8 @@ bool Phase_Space_Handler::OneEvent(const double mass,const int mode)
 	else {
 	  p_process->Selected()->SetMomenta(p_lab);
 	}
-	return true;
+	return new Blob_Data<Weight_Info>
+	  (Weight_Info(1.0,p_process->EnhanceFactor(),1));
       }
     }
   }
@@ -652,7 +653,7 @@ bool Phase_Space_Handler::OneEvent(const double mass,const int mode)
   msg.Out()<<"WARNING in Phase_Space_Handler::OneEvent() : "
 	   <<" too many trials for "<<p_process->Selected()->Name()<<std::endl
 	   <<"   Efficiency = "<<double(m_events)/double(m_sumtrials)*100.<<" %."<<std::endl;
-  return false;
+  return NULL;
 }
 
 ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)

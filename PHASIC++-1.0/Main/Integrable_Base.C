@@ -22,7 +22,7 @@ Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,
   p_momenta(new ATOOLS::Vec4D[ATOOLS::Max(nin+nout,(size_t)1)]), p_addmomenta(NULL), 
   m_scalescheme(scalescheme), m_kfactorscheme(kfactorscheme), 
   m_nstrong(0), m_neweak(0), m_usepi(0),
-  m_threshold(0.), m_overflow(0.), m_rfactor(1.0), m_xinfo(std::vector<double>(4)),
+  m_threshold(0.), m_overflow(0.), m_rfactor(1.0), m_enhancefac(1.0), m_xinfo(std::vector<double>(4)),
   m_n(0), m_expevents(1), m_dicedevents(0), m_accevents(0), m_last(0.), m_lastlumi(0.), m_lastdxs(0.), 
   m_max(0.), m_totalxs(0.),m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), 
   m_ssum(0.), m_ssumsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.), 
@@ -207,7 +207,7 @@ void Integrable_Base::ResetMax(int)
   ATOOLS::msg.Error()<<"Integrable_Base::ResetMax(): Virtual function called !"<<std::endl;
 } 
 
-bool Integrable_Base::OneEvent() 
+ATOOLS::Blob_Data_Base *Integrable_Base::OneEvent() 
 {
   ATOOLS::msg.Error()<<"Integrable_Base::OneEvent(): Virtual function called !"<<std::endl;
   return false;
@@ -275,12 +275,12 @@ bool Integrable_Base::Trigger(const ATOOLS::Vec4D *const momenta)
   return p_selector->Trigger(momenta);
 } 
 
-bool Integrable_Base::OneEvent(const double mass,const int mode) 
+ATOOLS::Blob_Data_Base *Integrable_Base::OneEvent(const double mass,const int mode) 
 {
   return p_activepshandler->OneEvent(mass,mode);
 } 
 
-bool Integrable_Base::SameEvent() 
+ATOOLS::Blob_Data_Base *Integrable_Base::SameEvent() 
 {
   return p_activepshandler->SameEvent();
   ATOOLS::msg.Error()<<"Integrable_Base::SameEvent(): Virtual function called !"<<std::endl;

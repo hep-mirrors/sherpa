@@ -360,7 +360,7 @@ void XS_Group::SetTotal()
 	    <<ATOOLS::om::reset<<std::endl;
 }
 
-bool XS_Group::OneEvent() 
+ATOOLS::Blob_Data_Base *XS_Group::OneEvent() 
 {
   if (m_atoms) {
     SelectOne();

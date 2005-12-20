@@ -49,7 +49,7 @@ namespace EXTRAXS {
     bool CalculateTotalXSec(const std::string &resultpath);
 
     bool SelectOne();
-    bool OneEvent(const int mode=0);
+    ATOOLS::Blob_Data_Base *OneEvent(const int mode=0);
 
     void SingleEvents();
     bool PrepareXSecTables();

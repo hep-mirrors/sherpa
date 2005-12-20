@@ -158,12 +158,12 @@ bool All_Processes::CalculateTotalXSec(string _resdir)
   return okay;
 }
 
-bool All_Processes::OneEvent(double _mass) {
+ATOOLS::Blob_Data_Base *All_Processes::OneEvent(double _mass) {
   SelectOne();
   return dynamic_cast<Process_Base*>(p_selected)->OneEvent(_mass);
 }
 
-bool All_Processes::SameEvent() {
+ATOOLS::Blob_Data_Base *All_Processes::SameEvent() {
   if (p_selected) 
     return p_selected->SameEvent();
   msg.Error()<<"ERROR in All_Processes::SameEvent() : continue and hope for the best. "<<endl;

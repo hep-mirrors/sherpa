@@ -382,11 +382,10 @@ bool  Simple_XS::SelectOne()
   return true;
 }
 
-bool Simple_XS::OneEvent(const int mode)
+ATOOLS::Blob_Data_Base *Simple_XS::OneEvent(const int mode)
 {
   SelectOne();
-  if (p_selected->OneEvent()) return 1;
-  return 0;
+  return p_selected->OneEvent();
 }
 
 bool Simple_XS::PrepareXSecTables() 

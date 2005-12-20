@@ -209,7 +209,9 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
   Init();
   double weight=(*p_partner)["ME_Weight"]->Get<double>();
   double procweight=1.;
-  if (m_mode&ANALYSIS::weighted_ns) procweight=(*p_partner)["Process_Weight"]->Get<double>();
+  if (m_mode&ANALYSIS::weighted_ns || 
+      !(m_mode&ANALYSIS::weighted)) 
+    procweight=(*p_partner)["Process_Weight"]->Get<double>();
   weight/=procweight;
   int    ncount=(*p_partner)["ME_NumberOfTrials"]->Get<int>();
   if (!IsEqual(value/procweight,weight)) {

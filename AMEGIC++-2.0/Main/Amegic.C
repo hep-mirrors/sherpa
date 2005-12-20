@@ -740,16 +740,15 @@ void Amegic::FifoOutput(double wt)
   // "conti" or "endss"
 }
 
-bool Amegic::SameEvent()
+ATOOLS::Blob_Data_Base *Amegic::SameEvent()
 {
   return p_procs->SameEvent();
 }
 
 
-bool Amegic::UnweightedEvent()
+ATOOLS::Blob_Data_Base *Amegic::UnweightedEvent()
 {
-  if (p_procs->OneEvent()) return 1;
-  return 0;
+  return p_procs->OneEvent();
 }
 
 

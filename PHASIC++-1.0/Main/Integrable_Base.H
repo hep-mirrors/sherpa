@@ -45,7 +45,7 @@ namespace PHASIC {
 
     int    m_scalescheme, m_kfactorscheme, m_maxjetnumber;
     int    m_nstrong, m_neweak, m_usepi;
-    double m_threshold, m_overflow, m_rfactor;
+    double m_threshold, m_overflow, m_rfactor, m_enhancefac;
     bool   m_updatescales;
 
     std::map<stp::id,double>     m_scale;
@@ -110,7 +110,7 @@ namespace PHASIC {
     void SetAddFlavours(const ATOOLS::Flavour *flavours); 
     void SetAddMomenta(const ATOOLS::Vec4D *momenta); 
 
-    bool OneEvent(const double mass,const int mode);
+    ATOOLS::Blob_Data_Base *OneEvent(const double mass,const int mode);
 
     virtual bool Trigger(const ATOOLS::Vec4D *const momenta);
 
@@ -136,9 +136,10 @@ namespace PHASIC {
     virtual void SetMax(const double max, int depth=0);
     virtual void SetMax();  
     virtual void ResetMax(int);  
-    virtual bool OneEvent();
-    virtual bool SameEvent();
     virtual void OptimizeResult();
+
+    virtual ATOOLS::Blob_Data_Base *OneEvent();
+    virtual ATOOLS::Blob_Data_Base *SameEvent();
 
     virtual ATOOLS::Blob_Data_Base *WeightedEvent(const int mode=0);
     virtual ATOOLS::Blob_Data_Base *WeightedEventNS(const int mode=0);
@@ -238,6 +239,7 @@ namespace PHASIC {
     inline double Overflow() const   { return m_overflow; }
 
     inline double ISRThreshold() const      { return m_threshold;   }
+    inline double EnhanceFactor() const     { return m_enhancefac;  }
 
     inline int KFactorScheme() const { return m_kfactorscheme; }
     inline int ScaleScheme() const   { return m_scalescheme;   }

@@ -71,8 +71,9 @@ namespace SHERPA {
     void  SetupHHMF();
     bool  ApplyHHMF();
     bool  GetMomentaNFlavours();
-    bool  UnweightedEvent();
-    bool  UnweightedSameEvent();
+
+    ATOOLS::Blob_Data_Base * UnweightedEvent();
+    ATOOLS::Blob_Data_Base * UnweightedSameEvent();
 
     ATOOLS::Blob_Data_Base * WeightedEvent();
     ATOOLS::Blob_Data_Base * WeightedSameEvent();

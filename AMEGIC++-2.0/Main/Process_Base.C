@@ -30,7 +30,7 @@ Process_Base::Process_Base():
   Integrable_Base(0,0),
   m_gen_str(3),p_b(0),p_flin(0),p_flout(0),
   p_pl(0),p_plin(0),p_plout(0), 
-  m_enhancefac(1.), m_maxfac(1.), m_ycut(-1.),
+  m_maxfac(1.), m_ycut(-1.),
   m_maxerror(-1.), p_psgen(0), m_print_graphs(false), p_pinfo(0)
 {
   m_atoms=1;
@@ -59,7 +59,7 @@ Process_Base::Process_Base(Process_Info* pinfo,int _nin,int _nout,ATOOLS::Flavou
   m_gen_str(_gen_str), m_nex(_nex),
   p_ex_fl(_ex_fl),
   m_atoms(0), m_analyse(0), m_tables(0), 
-  m_enhancefac(1.), m_maxfac(1.),
+  m_maxfac(1.),
   m_orderQCD(_orderQCD), m_orderEW(_orderEW),
   m_ycut(ycut),m_maxerror(error), 
   p_psgen(0), m_print_graphs(false), p_pinfo(pinfo)

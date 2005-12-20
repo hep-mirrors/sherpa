@@ -135,8 +135,8 @@ namespace PHASIC {
     double Differential(Integrable_Base *const process,
 			const psm::code mode=psm::normal_call);
 
-    bool OneEvent(const double mass=-1.,const int mode=0);
-    bool SameEvent();
+    ATOOLS::Blob_Data_Base *OneEvent(const double mass=-1.,const int mode=0);
+    ATOOLS::Blob_Data_Base *SameEvent();
 
     ATOOLS::Blob_Data_Base *WeightedEvent(const int mode=0);
     ATOOLS::Blob_Data_Base *SameWeightedEvent();

@@ -1158,12 +1158,12 @@ double Single_Process_MHV::operator()(const ATOOLS::Vec4D * mom)
 }
 
 
-bool    Single_Process_MHV::OneEvent(double _mass) { 
+ATOOLS::Blob_Data_Base *Single_Process_MHV::OneEvent(double _mass) { 
   if (p_partner==this) return p_pshandler->OneEvent(_mass,1); 
   return p_partner->OneEvent(_mass);
 }
 
-bool    Single_Process_MHV::SameEvent() { 
+ATOOLS::Blob_Data_Base *Single_Process_MHV::SameEvent() { 
   if (p_partner==this) return p_pshandler->SameEvent(); 
   return p_partner->SameEvent(); 
 }

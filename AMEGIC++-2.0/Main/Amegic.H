@@ -50,9 +50,9 @@ namespace AMEGIC {
     bool        CalculateBranchingWidths(std::string _resdir=std::string(""));
     void        SetResDir(std::string);
 
-    bool              UnweightedEvent();
+    ATOOLS::Blob_Data_Base * UnweightedEvent();
     ATOOLS::Blob_Data_Base * WeightedEvent();
-    bool              SameEvent();
+    ATOOLS::Blob_Data_Base * SameEvent();
     ATOOLS::Blob_Data_Base * SameWeightedEvent();
     PHASIC::Integrable_Base  *const GetProcess() const { return p_procs->Selected(); }
     Process_Base    * Processes();

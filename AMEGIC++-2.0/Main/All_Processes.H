@@ -20,8 +20,8 @@ namespace AMEGIC {
     void SetupEnhance();
 
     bool CalculateTotalXSec(std::string _resdir=std::string(""));
-    bool OneEvent(double = -1.);
-    bool SameEvent();
+    ATOOLS::Blob_Data_Base *OneEvent(double = -1.);
+    ATOOLS::Blob_Data_Base *SameEvent();
 
     ATOOLS::Blob_Data_Base *WeightedEvent(const int mode=0);
 

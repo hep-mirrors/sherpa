@@ -55,7 +55,7 @@ bool Single_XS::CalculateTotalXSec(const std::string &resultpath,
   return false;
 }
 
-bool Single_XS::OneEvent() 
+ATOOLS::Blob_Data_Base *Single_XS::OneEvent() 
 { 
   return p_activepshandler->OneEvent(); 
 }
