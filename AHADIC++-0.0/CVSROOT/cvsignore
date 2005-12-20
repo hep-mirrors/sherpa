@@ -1,8 +1,0 @@
-*.la *.lo *.loT .deps .libs autom4te.cache Makefile Makefile.in
-P2_2 P2_3 P2_4 P2_5 P2_6 P2_7 P2_8 P2_9 P2_10
-config.log config.status config.cache libtool 
-Amegic Apacic Amisic Sherpa
-*.log *.out
-wzandjets.aux
-wzandjets.dvi
-wzandjets.ps

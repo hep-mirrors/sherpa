@@ -1,7 +1,0 @@
-Author(s) of the PDF package.
-
-version 1.0 Written by Frank Krauss, Steffen Schumann, and Andreas Sch"alicke
-            Interfaces to (and including) the C++ version of MRST99 by Jeppe Andersen,
-            the LHAPDF package by Walter Giele, to the Fortran CTEQ6 version by
-            the CTEQ collaboration, and to the electron structure function
-            according to 
