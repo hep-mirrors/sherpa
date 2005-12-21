@@ -1,0 +1,11 @@
+# outgoing part. 	 | BR 	 | DC-file
+{211,-211}	 | 0.998889	 | rho(770)_pi+pi-.dat;
+{111,22}	 | 0.0006	 | rho(770)_piP.dat;
+{221,22}	 | 0.0003	 | rho(770)_etaP.dat;
+{11,-11}	 | 0.000047	 | rho(770)_e-e+.dat;
+{13,-13}	 | 0.000046	 | rho(770)_mu-mu+.dat;
+{211,-211,111}	 | 0.0001	 | rho(770)_pi+pi-pi.dat;
+{211,-211,211,-211}	 | 0.000018	 | rho(770)_pi+pi+pi-pi-.dat;
+
+! NO_FULLDECAY   ! use this option: no decay of daughters
+! NO_ANTI        ! use this option: anti-mother does not decay

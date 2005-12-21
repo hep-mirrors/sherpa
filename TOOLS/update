@@ -1,0 +1,185 @@
+#!/bin/bash
+
+DIRS="ATOOLS-2.0 BEAM-1.0 PDF-1.0 MODEL-1.0 PHASIC++-1.0"
+DIRS=$DIRS" EXTRA_XS-1.0 ADICIC++-0.0 APACIC++-2.0 AMEGIC++-2.0 AMISIC++-1.0"
+DIRS=$DIRS" CS_SHOWER++-0.0 AHADIC++-0.0 HADRONS++-0.0 ANALYSIS-1.0"
+DIRS=$DIRS" SHERPA-1.0 TOOLS"
+NRDIRS="."
+
+NOUPDATE="TRUE"
+NOSTATS=
+TEMPFILE="#update#"
+
+EXTENSIONS="\.C \.cpp \.cc \.f"
+EXTENSIONS=$EXTENSIONS" \.H \.hpp \.hh"
+EXTENSIONS=$EXTENSIONS" \.am configure\.in" 
+EXTENSIONS=$EXTENSIONS" \.trf \.man \.texi \.info"
+DESCRIPTIONS="C-Files cpp-Files cc-Files f-Files"
+DESCRIPTIONS=$DESCRIPTIONS" H-Files hpp-Files hh-Files"
+DESCRIPTIONS=$DESCRIPTIONS" Makefiles configures"
+DESCRIPTIONS=$DESCRIPTIONS" Manpages Manpages TeXinfos TeXinfos"
+COLOURS="4 4 4 4 2 2 2 1 1 6 6 6 6"
+
+OPTIONS=
+LOGFILE="#updated-source#"
+for I in $* ; do
+  if [ "$I" = "-f" ]; then NOUPDATE=
+  elif [ "$I" = "-s" ]; then NOSTATS=
+  elif [ "$I" = "-o" ]; then ONE=TRUE
+  elif [ "$I" = "-l" ]; then DLOGFILE=TRUE && CLOGFILE=TRUE
+  elif [ "$I" = "--no-update" ]; then NOUPDATE=TRUE
+  elif [ "$I" = "--no-stats" ]; then NOSTATS=TRUE
+  elif [ "$I" = "-h" ]; then echo && \
+    echo "update version 1.0" && echo && \
+    echo "options: -f             run 'cvs update <options>'" && \
+    echo "         -s             show statistics" && \
+    echo "         -o             update single module" && \
+    echo "         -l <logfile>   create logfile <logfile>" && \
+    echo "         --no-update    run 'cvs -n update <options>'" && \
+    echo "         --no-stats     do not show statistics" && \
+    echo "         -h             display this help and exit" && \
+    echo "         <any other>    passed directly to 'cvs update'" && echo && \
+    exit 0
+  elif [ "$DLOGFILE" = "TRUE" ]; then DLOGFILE="" && LOGFILE=$I
+  else OPTIONS=$OPTIONS" "$I
+  fi
+done
+
+if [ "$ONE" = "TRUE" ] ; then 
+  echo "makeinstall: select module ( q) to quit )"
+  select DIRS in $DIRS $NRDIRS ; do
+    if [ "$DIRS" != "" ] ; then 
+      for DIR in $NRDIRS ; do
+        if [ "$DIRS" = "$DIR" ] ; then
+          NDIRS=$DIRS; DIRS=""
+	fi
+      done
+      if [ "$DIRS" != "" ] ; then
+	NRDIRS=""
+      fi
+      break
+    else 
+      if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]  ; then exit ; fi
+    fi
+  done
+fi
+
+echo "" > $LOGFILE
+for DIR in $DIRS ; do
+  if test -d $DIR ; then
+    if [ "$NOUPDATE" = "TRUE" ] ; then 
+      cvs -n update $OPTIONS $DIR >> $LOGFILE 2>&1
+    else 
+      cvs update $OPTIONS $DIR >> $LOGFILE 2>&1
+    fi
+  else
+    echo "update: error: directory $DIR not found"
+  fi
+done
+for DIR in $NRDIRS ; do
+  if test -d $DIR ; then
+    if [ "$NOUPDATE" = "TRUE" ] ; then 
+      cvs -n update -l $OPTIONS $DIR >> $LOGFILE 2>&1
+    else 
+      cvs update $OPTIONS $DIR >> $LOGFILE 2>&1
+    fi
+  else
+    echo "update: error: directory $DIR not found"
+  fi
+done
+
+CHANGES=
+EXTCNT=0
+TUCOUNT=0
+TMCOUNT=0
+TCCOUNT=0
+TNCOUNT=0
+TACOUNT=0
+TRCOUNT=0
+for EXTENSION in $EXTENSIONS ; do
+  (( ++EXTCNT ))
+  cat $LOGFILE | grep -q $EXTENSION 
+  if (( $? != 0 )) ; then continue ; fi
+  CHANGES="TRUE"
+  DESCCNT=0
+  for DESCRIPTION in $DESCRIPTIONS ; do
+    (( ++DESCCNT ))
+    if (( $DESCCNT == $EXTCNT )) ; then break ; fi
+  done
+  COLCNT=0
+  for COLOUR in $COLOURS ; do
+    (( ++COLCNT ))
+    if (( $COLCNT == $EXTCNT )) ; then break ; fi
+  done
+  echo -en "\e[1m==================================================\e[0m"
+  echo -e "\r\e[1m=\e[3"$COLOUR"m $DESCRIPTION \e[0m"
+  cat $LOGFILE | grep "U " | grep $EXTENSION
+  cat $LOGFILE | grep "P " | grep $EXTENSION
+  cat $LOGFILE | grep "C " | grep $EXTENSION > $TEMPFILE
+  if (( $? == 0 )) ; then
+    echo -e "\e[1m- Conflicts --------------------------------------\e[0m" 
+    cat $TEMPFILE
+  fi
+  COUNT=`cat $LOGFILE | grep "U " | grep $EXTENSION | wc -l`
+  (( TUCOUNT = TUCOUNT + COUNT )); COUNT=0
+  COUNT=`cat $LOGFILE | grep "P " | grep $EXTENSION | wc -l`
+  (( TUCOUNT = TUCOUNT + COUNT )); COUNT=0
+  COUNT=`cat $LOGFILE | grep "C " | grep $EXTENSION | wc -l`
+  (( TCCOUNT = TCCOUNT + COUNT )); COUNT=0
+  cat $LOGFILE | grep "M " | grep $EXTENSION > $TEMPFILE
+  if (( $? == 0 )) ; then
+    echo -e "\e[1m- Changes ----------------------------------------\e[0m" 
+    cat $TEMPFILE
+  fi
+  COUNT=`cat $LOGFILE | grep "M " | grep $EXTENSION | wc -l`
+  (( TMCOUNT = TMCOUNT + COUNT )); COUNT=0
+  cat $LOGFILE | grep "erging " | grep $EXTENSION > $TEMPFILE
+  if (( $? == 0 )) ; then
+    echo -e "\e[1m- Merged -----------------------------------------\e[0m" 
+    cat $TEMPFILE
+  fi
+  COUNT=`cat $LOGFILE | grep "erging " | grep $EXTENSION | wc -l`
+  (( TMCOUNT = TMCOUNT + COUNT )); COUNT=0
+  cat $LOGFILE | grep "? " | grep $EXTENSION > $TEMPFILE
+  TEST1=$?
+  cat $LOGFILE | grep "A " | grep $EXTENSION >> $TEMPFILE
+  TEST2=$?
+  if (( $TEST1 == 0 )) || (( $TEST2 == 0 )) ; then
+    echo -e "\e[1m- New files --------------------------------------\e[0m" 
+    cat $TEMPFILE
+  fi
+  COUNT=`cat $LOGFILE | grep "? " | grep $EXTENSION | wc -l`
+  (( TNCOUNT = TNCOUNT + COUNT )); COUNT=0
+  COUNT=`cat $LOGFILE | grep "A " | grep $EXTENSION | wc -l`
+  (( TACOUNT = TACOUNT + COUNT )); COUNT=0
+  cat $LOGFILE | grep "R " | grep $EXTENSION > $TEMPFILE
+  if (( $? == 0 )) ; then
+    echo -e "\e[1m- Removed files ----------------------------------\e[0m" 
+    cat $TEMPFILE
+  fi
+  COUNT=`cat $LOGFILE | grep "R " | grep $EXTENSION | wc -l`
+  (( TRCOUNT = TRCOUNT + COUNT )); COUNT=0
+done
+if [ ! "$CHANGES" = "TRUE" ] ; then
+  echo -e "\e[1m==================================================\e[0m"
+  echo -e "update: no recognized changes"
+else 
+  if [ ! "$NOSTATS" = "TRUE" ] ; then
+    echo -e "\e[1m==================================================\e[0m"
+    if (( $TUCOUNT != 0 )) ; then echo "Updated   : $TUCOUNT" ; fi
+    if (( $TMCOUNT != 0 )) ; then echo "Modified  : $TMCOUNT" ; fi
+    if (( $TCCOUNT != 0 )) ; then echo "Conflicts : $TCCOUNT" ; fi
+    if (( $TNCOUNT != 0 )) ; then echo "New       : $TNCOUNT" ; fi
+    if (( $TACOUNT != 0 )) ; then echo "Added     : $TACOUNT" ; fi
+    if (( $TRCOUNT != 0 )) ; then echo "Removed   : $TRCOUNT" ; fi
+  fi
+fi
+echo -e "\e[1m==================================================\e[0m"
+
+if test -f $TEMPFILE ; then rm $TEMPFILE ; fi
+if [ ! "$CLOGFILE" = "TRUE" ] ; then
+  rm $LOGFILE
+fi
+
+# mode:shell-script
+# sh-indentation:2

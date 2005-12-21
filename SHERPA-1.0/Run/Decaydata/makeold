@@ -1,0 +1,6 @@
+FILES=`find -maxdepth 2 -name "*.dat.old"`  # find files ./<name>.dat.old    
+for I in $FILES; do                         # for all files
+  NEWNAME=`echo $I | cut -d "." -f 1,2,3`   # new name = ./<name>.dat
+  echo "rename $I in $NEWNAME"
+  mv $I $NEWNAME                            # rename file
+done  
