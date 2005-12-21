@@ -235,6 +235,7 @@ bool Spacelike_Sudakov::OrderingVeto(Knot * mo)
   msg_Indent();
   double th(4.*m_z*m_z*m_t/(4.*m_z*m_z*m_t-(1.-m_z)*m_x*m_x*m_s_hadron));
   mo->sthcrit=asin(sqrt(th));
+  if (mo->sthcrit<0.0) mo->sthcrit=M_PI-mo->sthcrit;
   msg_Debugging()<<"ss: thcrit = "<<mo->thcrit<<", th = "<<th<<std::endl;
   msg_Debugging()<<"ss: maxpt2 = "<<mo->maxpt2<<", pt2 = "<<m_pt2<<std::endl;
   if (!m_inflav.Strong()) return false;
