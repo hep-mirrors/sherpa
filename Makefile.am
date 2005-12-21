@@ -14,9 +14,6 @@ SUBDIRS       = \
 		AMEGIC++-2.0 \
 		APACIC++-2.0 \
 		AMISIC++-1.0 \
-		ADICIC++-0.0 \
-		CS_SHOWER++-0.0 \
-		AHADIC++-0.0 \
 		HADRONS++-0.0 \
 		ANALYSIS-1.0 \
 		SHERPA-1.0 \

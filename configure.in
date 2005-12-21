@@ -268,36 +268,6 @@ else
 fi
 AM_CONDITIONAL(HDECAY_SUPPORT, test "$hdecayinclude" = "true" )
 
-AC_ARG_ENABLE(adicicinclude,
-[  --disable-adicicinclude  Disable inclusion of ADICIC headers ],
-[ adicicinclude=true
-  ADICICDIR="ADICIC++-0.0"
-  if test -d $ADICICDIR ; then
-    echo "checking for ADICIC++ package... yes"
-    case "${enableval}" in
-      no) echo "disable ADICIC++ support anyway... yes";
-          adicicinclude=false ;;
-    esac
-  else
-    echo "checking for ADICIC++ package... no"
-    adicicinclude=false
-  fi ],
-[ ADICICDIR="ADICIC++-0.0"
-  if test ! -d $ADICICDIR ; then
-    echo "configure: warning: $ADICICDIR is not a valid path."
-    adicicinclude=false
-  else 
-    echo "checking for ADICIC++ package... yes"
-    adicicinclude=true 
-  fi ])
-
-if test "$adicicinclude" = "true" ; then
-  echo -e "#define USING__Adicic" >> __Flags.H__
-else
-  echo -e "#ifdef USING__Adicic\n#undef USING__Adicic\n#endif" >> __Flags.H__
-fi
-AM_CONDITIONAL(ADICIC_SUPPORT, test "$adicicinclude" = "true" )
-
 AC_ARG_ENABLE(amisicinclude,
 [  --disable-amisicinclude  Disable inclusion of AMISIC headers ],
 [ amisicinclude=true
@@ -327,66 +297,6 @@ else
   echo -e "#ifdef USING__Amisic\n#undef USING__Amisic\n#endif" >> __Flags.H__
 fi
 AM_CONDITIONAL(AMISIC_SUPPORT, test "$amisicinclude" = "true" )
-
-AC_ARG_ENABLE(cs_showerinclude,
-[  --disable-cs_showerinclude  Disable inclusion of CS_SHOWER headers ],
-[ cs_showerinclude=true
-  CS_SHOWERDIR="CS_SHOWER++-0.0"
-  if test -d $CS_SHOWERDIR ; then
-    echo "checking for CS_SHOWER++ package... yes"
-    case "${enableval}" in
-      no) echo "disable CS_SHOWER++ support anyway... yes";
-          cs_showerinclude=false ;;
-    esac
-  else
-    echo "checking for CS_SHOWER++ package... no"
-    cs_showerinclude=false
-  fi ],
-[ CS_SHOWERDIR="CS_SHOWER++-0.0"
-  if test ! -d $CS_SHOWERDIR ; then
-    echo "configure: warning: $CS_SHOWERDIR is not a valid path."
-    cs_showerinclude=false
-  else 
-    echo "checking for CS_SHOWER package... yes"
-    cs_showerinclude=true 
-  fi ])
-
-if test "$cs_showerinclude" = "true" ; then
-  echo -e "#define USING__CSS" >> __Flags.H__
-else
-  echo -e "#ifdef USING__CSS\n#undef USING__CSS\n#endif" >> __Flags.H__
-fi
-AM_CONDITIONAL(CSS_SUPPORT, test "$cs_showerinclude" = "true" )
-
-AC_ARG_ENABLE(ahadicinclude,
-[  --disable-ahadicinclude  Disable inclusion of AHADIC headers ],
-[ ahadicinclude=true
-  AHADICDIR="AHADIC++-0.0"
-  if test -d $AHADICDIR ; then
-    echo "checking for AHADIC++ package... yes"
-    case "${enableval}" in
-      no) echo "disable AHADIC++ support anyway... yes";
-          ahadicinclude=false ;;
-    esac
-  else
-    echo "checking for AHADIC++ package... no"
-    ahadicinclude=false
-  fi ],
-[ AHADICDIR="AHADIC++-0.0"
-  if test ! -d $AHADICDIR ; then
-    echo "configure: warning: $AHADICDIR is not a valid path."
-    ahadicinclude=false
-  else 
-    echo "checking for AHADIC++ package... yes"
-    ahadicinclude=true 
-  fi ])
-
-if test "$ahadicinclude" = "true" ; then
-  echo -e "#define USING__Ahadic" >> __Flags.H__
-else
-  echo -e "#ifdef USING__Ahadic\n#undef USING__Ahadic\n#endif" >> __Flags.H__
-fi
-AM_CONDITIONAL(AHADIC_SUPPORT, test "$ahadicinclude" = "true" )
 
 AC_ARG_ENABLE(hadronsinclude,
 [  --disable-hadronsinclude  Disable inclusion of HADRONS headers ],
@@ -448,24 +358,6 @@ else
 fi
 AM_CONDITIONAL(SHERPA_SUPPORT, test "$sherpainclude" = "true" )
 
-AC_ARG_ENABLE(mcatnloinclude,
-[  --enable-mcatnloinclude        Enable MCatNLO support ],
-[ mcatnloinclude=false
-  case "${enableval}" in 
-    yes) mcatnloinclude=true && echo "checking for MC@NLO support... yes" ;;
-    *) echo "checking for MC@NLO support... no" ;;
-  esac ],[ mcatnloinclude=false ])
-
-if test "$mcatnloinclude" = "true" ; then
-  echo -e "#define USING__MCatNLO" >> __Flags.H__
-else
-  echo -e "#ifdef USING__MCatNLO\n#undef USING__MCatNLO\n#endif" >> __Flags.H__
-fi
-AM_CONDITIONAL(MCATNLO_SUPPORT, test $mcatnloinclude = true)
-
-echo -e "\n#endif" >> __Flags.H__
-mv __Flags.H__ ATOOLS-2.0/Org/CXXFLAGS.H
-
 AC_CONFIG_COMMANDS_POST([touch ATOOLS-2.0/Org/My_Root.C &&
 			 touch PDF-1.0/LHAPDF/LHAPDF_Fortran_Interface.H &&
 	                 touch PDF-1.0/CTEQ/CTEQ6_Fortran_Interface.H &&
@@ -500,7 +392,6 @@ dnl Comment in/out MODEL-1.0/{Isajet, Hdecay}
 AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  ATOOLS-2.0/Phys/Makefile \
 	  ATOOLS-2.0/Org/Makefile \
-	  ATOOLS-2.0/Run/Makefile \
 	  ATOOLS-2.0/Makefile \
 	  BEAM-1.0/Main/Makefile \
 	  BEAM-1.0/Makefile \
@@ -519,7 +410,6 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  PHASIC++-1.0/Makefile \
 	  EXTRA_XS-1.0/Main/Makefile \
 	  EXTRA_XS-1.0/Two2Two/Makefile \
-	  EXTRA_XS-1.0/BFKL/Makefile \
 	  EXTRA_XS-1.0/Makefile \
 	  AMEGIC++-2.0/Main/Makefile \
 	  AMEGIC++-2.0/Amplitude/Makefile \
@@ -537,26 +427,6 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  AMISIC++-1.0/Main/Makefile \
 	  AMISIC++-1.0/Run/Makefile \
 	  AMISIC++-1.0/Makefile \
-	  ADICIC++-0.0/Tool/Makefile \
-	  ADICIC++-0.0/Tool/savemaketool/Makefile \
-	  ADICIC++-0.0/Input/Makefile \
-	  ADICIC++-0.0/Structure/Makefile \
-	  ADICIC++-0.0/Handler/Makefile \
-	  ADICIC++-0.0/Main/Makefile \
-	  ADICIC++-0.0/TestIt/Makefile \
-	  ADICIC++-0.0/TestIt/data/Makefile \
-	  ADICIC++-0.0/RunIt/Makefile \
-	  ADICIC++-0.0/Makefile \
-	  CS_SHOWER++-0.0/Tools/Makefile \
-	  CS_SHOWER++-0.0/Showers/Makefile \
-	  CS_SHOWER++-0.0/Main/Makefile \
-	  CS_SHOWER++-0.0/Makefile \
-	  AHADIC++-0.0/Tools/Makefile \
-	  AHADIC++-0.0/Formation/Makefile \
-	  AHADIC++-0.0/Decays/Makefile \
-	  AHADIC++-0.0/Main/Makefile \
-	  AHADIC++-0.0/Run/Makefile \
-	  AHADIC++-0.0/Makefile \
 	  HADRONS++-0.0/Main/Makefile \
 	  HADRONS++-0.0/ME_Library/Makefile \
 	  HADRONS++-0.0/PS_Library/Makefile \
