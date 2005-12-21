@@ -96,6 +96,8 @@ namespace ATOOLS {
     static Parameter_Map s_commandlineparameters;
 
     bool m_fileexists;
+    
+    std::string m_filename;
 
     void FillIn(std::string buffer) ;
     static void Shorten(std::string& str);
@@ -123,6 +125,7 @@ namespace ATOOLS {
     std::string GenerateKey();
     
     bool FileExists() { return m_fileexists; }
+    inline std::string FileName() const { return m_filename; }
   };  
 
   // specialisation

@@ -80,6 +80,7 @@ Type  Data_Read::GetValue(std::string name) {
 
 Data_Read::Data_Read(std::string filename, bool ignoremissingfile) { 
   m_fileexists=true;
+  m_filename=filename;
   ReadIn(filename,ignoremissingfile); 
 }
 
