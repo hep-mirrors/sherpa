@@ -1,0 +1,9 @@
+# outgoing part. 	 | BR 	 | DC-file
+{321,-211}	 | 0.66513	 | K*(892)_K+pi-.dat;
+{130,111}	 | 0.166285	 | K*(892)_K(L)pi.dat;
+{310,111}	 | 0.166285	 | K*(892)_K(S)pi.dat;
+{130,22}	 | 0.00115	 | K*(892)_K(L)P.dat;
+{310,22}	 | 0.00115	 | K*(892)_K(S)P.dat;
+
+! NO_FULLDECAY   ! use this option: no decay of daughters
+! NO_ANTI        ! use this option: anti-mother does not decay
