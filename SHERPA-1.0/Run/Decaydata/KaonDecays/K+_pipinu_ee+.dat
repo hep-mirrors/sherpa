@@ -1,0 +1,7 @@
+# Decay: K+ --> pi pi nu_e e+ 
+#        0  --> 1  2  3    4  
+Channels {
+	AlwaysIntegrate = 0;   ! 0...read results and skip integration
+	                       ! 1...don't read results and integrate
+	Isotropic 1;
+}
