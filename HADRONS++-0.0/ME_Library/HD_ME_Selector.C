@@ -40,7 +40,7 @@ HD_ME_Base * HD_ME_Selector::GetME(int nin,int nout,Flavour * flavs,
       break;
     case (kf::pi):
     case (kf::K_plus):
-      SelectKMesonDecay(nout,flavs,hdme);
+      //SelectKMesonDecay(nout,flavs,hdme);
       break;
     case (kf::eta):
     case (kf::eta_prime_958):
@@ -236,8 +236,7 @@ void HD_ME_Selector::SelectLightPseudoScalarDecay(
     if (IsPseudoScalar(flavs[1]) &&
 	IsPseudoScalar(flavs[2]) &&
 	IsPseudoScalar(flavs[3])) {
-      hdme = new P_3P_Dalitz(nout,flavs);
-      SetDalitz_For_3P(nout,flavs,hdme);
+      //hdme = new P_3P_Dalitz(nout,flavs);
     }
     break;
   }
@@ -266,7 +265,3 @@ void HD_ME_Selector::SetVector_For_2PS(int nout,int PS1, int PS2,
   }
 }
 
-void HD_ME_Selector::SetDalitz_For_3P(int nout,Flavour * flavs,
-				      HD_ME_Base * hdme)
-{
-}
