@@ -44,6 +44,9 @@ HIGGS_NF_LIGHT_Q_IN_G = 5        ! Number of light flavours in higgs
 !
 ! SUSY parameters
 !
+SUSY_GENERATOR        = LesHouches
+LESHOUCHESINPUT       = LesHouches_SPS1A.dat
+!
 SUSY_SCENARIO         = mSUGRA   ! also available : AMSB, mGMSB,non-minimal GMSB, 
                                  !                  SUGRA with enforced unification, 
                                  !                  non-universal SUGRA
