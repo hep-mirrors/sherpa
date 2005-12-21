@@ -1,10 +1,24 @@
 !-------------------------------------------------------
 !-- Files for hadron decay tables ----------------------
 !-------------------------------------------------------
-!15    ->  TauDecays.dat;
-!111   ->  Pi0Decays.dat;
-!221   ->  EtaDecays.dat;
-!331   ->  Eta'Decays.dat;
-!113   ->  Rho0Decays.dat;
-!223   -> Omega782Decays.dat;
-!321   -> K+Decays.dat;
+
+! particle -> directory/ name.dat (do not forget the / and space)
+15    -> TauDecays/         TauDecays.dat;
+111   -> Pi0Decays/         Pi0Decays.dat;
+211   -> PiDecays/          PiDecays.dat;
+221   -> EtaDecays/         EtaDecays.dat;
+331   -> Eta'Decays/        Eta'Decays.dat;
+113   -> Rho0Decays/        Rho0Decays.dat;
+213   -> RhoDecays/         RhoDecays.dat;
+223   -> Omega(782)Decays/  Omega(782)Decays.dat;
+321   -> KaonDecays/        KaonDecays.dat;
+115   -> A2(1320)0Decays/   A2(1320)0Decays.dat;
+215   -> A2(1320)Decays/    A2(1320)Decays.dat;
+225   -> F2(1270)Decays/    F2(1270)Decays.dat;
+335   -> F2P(1525)Decays/   F2P(1525)Decays.dat;
+311   -> K0Decays/          K0Decays.dat;
+313   -> KStar(892)0Decays/    KStar(892)0Decays.dat;
+323   -> KStar(892)Decays/     KStar(892)Decays.dat;
+315   -> K2Star(1430)0Decays/   K2Star(1430)0Decays.dat;
+325   -> K2Star(1430)Decays/    K2Star(1430)Decays.dat;
+333   -> PhiDecays/         PhiDecays.dat;
