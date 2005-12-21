@@ -8,8 +8,6 @@ Channels {
 Parameters {
   v      =  1.		 	! V-A structure of tau-nutau
   a      =  1.	
-  Vud    =  0.9752   	! CKM
-  fpi    =  0.0924	 	! decay constant
   RUNNING_WIDTH = 1    	! running width of resonances (On/Off)
   FORM_FACTOR   = 1    	! 1=Kuhn-Santamaria
 
@@ -17,11 +15,11 @@ Parameters {
   beta = 0.0
   
   ! parameters for resonances
-  Mass_K*_892 		= 0.891.66
+  Mass_K*_892 		= 0.89166
   Width_K*_892 	    = 0.0508
   Mass_K*_1410   	= 1.414
   Width_K*_1410  	= 0.232
 }
 Result {
-   nan 0 -0.281373;
+   6.64328e-15 6.18157e-17 1.59133e-13;
 }

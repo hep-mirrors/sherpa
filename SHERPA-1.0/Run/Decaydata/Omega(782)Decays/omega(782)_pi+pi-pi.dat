@@ -5,3 +5,6 @@ Channels {
 	                       ! 1...don't read results and integrate
 	Isotropic 1;
 }
+Result {
+   1.97538e-05 5.409e-08 2.55003e-05;
+}

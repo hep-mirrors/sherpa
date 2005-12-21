@@ -9,8 +9,6 @@ Channels {
 Parameters {
   v      =  1.		 	! V-A structure of tau-nutau
   a      =  1.	
-  Vud    =  0.9752   	! CKM
-  fpi    =  0.0924	 	! decay constant
   RUNNING_WIDTH = 1    	! running width of resonances (On/Off)
   FORM_FACTOR   = 1    	! 1=Kuhn-Santamaria, 2=Res Chiral Theory
 
@@ -35,5 +33,5 @@ Parameters {
   gamma_rho_1700 	= 0.09			! global factor for RChT rho''
 }
 Result {
-   4.87568e-13 4.80754e-15 6.10914e-12;
+   4.86769e-13 4.79965e-15 6.09912e-12;
 }

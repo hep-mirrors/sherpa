@@ -6,3 +6,6 @@ for I in $FILES; do                 # for all files
   mv xx00 $I                        # rename file
   rm xx01                           # delete last 3 lines
 done 
+
+PSF=`find -name "PhaseSpaceFunctions"`  # find Phase Space Functions dir
+rm $PSF/*.dat

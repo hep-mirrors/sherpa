@@ -14,8 +14,6 @@ Resonances {
 Parameters {
   v      =  1.          ! V-A structure of tau-nutau
   a      =  1.  
-  Vus    =  0.2205      ! CKM
-  fpi    =  0.0924      ! decay constant
   FORM_FACTOR   = 1     ! 1=KuehnSantamaria
   RUNNING_WIDTH = 2     ! 0=Off, 1=axial, 2=vector, 3=both resonances
    
@@ -41,4 +39,7 @@ Parameters {
    
   # off-shell width parameters
   lambda            = 1.            ! exponent in KS
+}
+Result {
+   1.89389e-14 6.51534e-18 8.0529e-14;
 }
