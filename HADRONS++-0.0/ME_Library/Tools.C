@@ -1,3 +1,4 @@
+#include "Message.H"
 #include "Tools.H"
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -7,6 +8,7 @@
 using namespace HADRONS;
 using namespace ATOOLS;
 
+// 3 particle phase space function lambda
 double Tools::Lambda( double a, double b, double c )
 {
   double L = sqr(a-b-c)-4.*b*c;
@@ -14,40 +16,40 @@ double Tools::Lambda( double a, double b, double c )
   return 0.;
 }
 
+// standard Breit Wigner with given Mass * Width
 Complex Tools::BreitWigner( double s, double Mass2, double MassWidth )
 {
   return Mass2/Complex(Mass2-s,-1.*MassWidth );
 }
+
+// Breit Wigner with running width (2 particle final state with same mass) 
 Complex Tools::BreitWigner( double s, double Mass2, double Width, double ms, double lambda )
 {
   double MassWidth = OffShellMassWidth( s, Mass2, Width, ms, lambda );
   return BreitWigner( s, Mass2, MassWidth );
 }
 
+// Breit Wigner with running width (2 particle final state with differenent masses)
 Complex Tools::BreitWigner( double s, double Mass2, double Width, double ms1, double ms2, double lambda )
 {
   double MassWidth = OffShellMassWidth( s, Mass2, Width, ms1, ms2, lambda );
   return BreitWigner( s, Mass2, MassWidth );
 }
 
+// off shell mass * width (2 particle final state with same mass)
 double Tools::OffShellMassWidth( double s, double Mass2, double Width, double ms, double lambda )
 {
-  if (s>4.*ms) {
-	if (Mass2>4.*ms)
-	  return( sqrt(s)*Width*pow(Mass2/s,lambda) * pow( (s-4.*ms)/(Mass2-4.*ms), 1.5 ) );
-	return sqrt(Mass2)*Width;
-  }
+  if (s>4.*ms && Mass2>4.*ms)
+    return( sqrt(s)*Width*pow(Mass2/s,lambda) * pow( (s-4.*ms)/(Mass2-4.*ms), 1.5 ) );
   return 0.;	
 }
 
+// off shell mass * width (2 particle final state with different masses)
 double Tools::OffShellMassWidth( double s, double Mass2, double Width, double ms1, double ms2, double lambda )
 {
   double threshold = ms1+ms2+2.*sqrt(ms1*ms2);
-  if (s>threshold) {
-	if (Mass2>threshold)
+  if (Mass2>threshold && s>threshold)
 	  return( sqrt(s)*Width*pow(Mass2/s,lambda) * pow( Mass2/s*Lambda(s,ms1,ms2)/Lambda(Mass2,ms1,ms2), 1.5 ) );
-	return sqrt(Mass2)*Width;
-  }
-  return 0.;
+  return 0;
 }
 

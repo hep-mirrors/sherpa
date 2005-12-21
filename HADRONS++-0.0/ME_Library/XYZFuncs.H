@@ -23,7 +23,7 @@ namespace HADRONS
 		{
 		  pi = p_mom[i];
 		  eta.push_back( csqrt( 2.*(pi[0]-SQRT_05*(pi[2]+pi[3])) ) );
-		  Complex help( p_flav[i].Mass(), 0. );
+		  Complex help( p_flav[i].PSMass(), 0. );
 		  mu.push_back( help/eta[i] );
 		  if( p_flav[i].IsAnti() ) mu[i] *= -1.;
 		}

@@ -170,5 +170,5 @@ Complex XYZFunc::Q(short hel)
   Complex q(0.,0.);
   q  = Y(0,0,hel,Complex(1.,0.),Complex(1.,0.)); 
   q -= X(0,N,0,hel,Complex(1.,0.),Complex(-1.,0.));	
-  return q/sqrt(p_flav[0].Mass()-SQRT_05*mu[0]*eta[0])/2./mu[0];
+  return q/sqrt(p_flav[0].PSMass()-SQRT_05*mu[0]*eta[0])/2./mu[0];
 }

@@ -9,43 +9,7 @@ namespace HADRONS {
 
   typedef std::map<std::string,double> String_Map;
 
-  struct GeneralParam {				// parameter
-	double a, b;									// V-A structure
-	double a2, b2;									// V-A structure
-	double fpi, fK; 								// decay constants
-	double Vud, Vus; 								// CKM ME; 
-	double Go3p;      								// coupling constants for tau->4pion
-	double GF;										// Fermi constant
-	double frho, grpp;								// rho-pipi coupling
-	double grop;									// rho-omega-pi coupling
-	double alpha, beta, delta, gamma;				// weight factors for different resonances
-	double sigma;									
-	double Beta[2];									// weight factor for resonances
-	Complex Alpha[4];					
-	double MR, GR, MRR, GRR, MO, GO, MRRR, GRRR;	// rho, omega resonances 
-	double MK, GK;                                  // K* resonance
-	double MK0, GK0;                                // K0* resonance
-	double MV[2], GV[2], Mv[2], Gv[2];				// vector resonances
-	double MA, GA, MAA, GAA;						// axial resonance 
-	double Mdummy2, Mdummy1;						// mass of (e.g.) sigma, f0
-	double Gdummy2, Gdummy1;						// width of (e.g.) sigma, f0 
-	double dummy1;									// dummy for whatsoever
-	 
-	double lambda;									// parameter in KS model
-	double lambda0, exp_alpha;						// parameters in RChT parameterisation
-	double gammaR, gammaRR, gammaO, gammaRRR;		// global factor for RChT off-shell width
-	Complex Beta_opi[4], Beta_api[4], Beta_frh[4], Beta_srh[4]; // relative strength needed in tau->4pion
-  }; 
-
-  struct GeneralVector {			// in which two particles does vector resonance decay
-	int i, j;
-  };
-
   struct GeneralModel: public String_Map {
-	int run;						// running coupling
-	int ff;							// form factor
-	GeneralParam pm;			 	// coupling parameters
-	GeneralVector vec[2];			// in which particles do vector resonances decay
   public:
     inline double operator()(const std::string &tag,const double &def) const 
     {
