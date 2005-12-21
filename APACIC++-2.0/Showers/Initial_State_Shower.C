@@ -29,7 +29,7 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr,
 {
   double cplscalefac(dataread->GetValue<double>("IS_CPL_SCALE_FACTOR",0.25));
   rpa.gen.SetVariable("IS_CPL_SCALE_FACTOR",ToString(cplscalefac));
-  m_t0=dabs(dataread->GetValue<double>("IS_PT2MIN",1.0));
+  m_t0=dabs(dataread->GetValue<double>("IS_PT2MIN",4.0));
   double shadron(dataread->GetValue<double>("IS_MAX_SCALE",
 					    sqr(rpa.gen.Ecms())));
   double emin(dataread->GetValue<double>("IS_MINIMAL_E",0.5));
@@ -39,6 +39,13 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr,
   Splitting_Function::SetKFactorScheme
     (dataread->GetValue<int>("S_KFACTOR_SCHEME",1));
   for (short unsigned int i(0);i<2;++i) {
+    if (isr->PDF(i)->Q2Min()>m_t0*cplscalefac) {
+      msg.Error()<<METHOD<<"(..):\n   IS_PT2MIN*IS_CPL_SCALE_FACTOR "
+		 <<"smaller than minimum scale as given by PDF.\n"
+		 <<"   Please change your settings in "
+		 <<dataread->FileName()<<"\n";
+      THROW(fatal_error,"Minimal PDF scale too low.");
+    }
     p_suds[i] = new Spacelike_Sudakov
       (isr->PDF(i),p_tools,p_kin,m_t0,dataread,i);
     p_suds[i]->SetRemnant(isr->GetRemnant(i));
