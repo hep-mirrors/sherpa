@@ -1,0 +1,6 @@
+# outgoing part. 	 | BR 	 | DC-file
+{22,22}	 | 0.988	 | pi_PP.dat;
+{11,-11,22}	 | 0.012	 | pi_Pe-e+.dat;
+
+! NO_FULLDECAY   ! use this option: no decay of daughters
+! NO_ANTI        ! use this option: anti-mother does not decay
