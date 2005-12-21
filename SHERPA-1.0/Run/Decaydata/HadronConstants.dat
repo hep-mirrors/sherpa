@@ -1,0 +1,6 @@
+! Frequently used constants for hadron decays
+
+Vud = 0.9744
+Vus = 0.2204
+fpi = 0.0924
+fK  = 0.113
