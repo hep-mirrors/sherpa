@@ -120,6 +120,17 @@ void Process_Info::GetFlavList(ATOOLS::Flavour* fl, int n)
   for (size_t i=0;i<m_sublist[n].size();i++) fl[i]=*(m_sublist[n][i]->p_fl);
 }
 
+size_t Process_Info::GetStableFlavList(ATOOLS::Flavour* fl, int n)
+{
+  size_t cnt=0;
+  for (size_t i=0;i<m_sublist[n].size();i++) 
+    if (m_sublist[n][i]->Nout()==0) {  
+      fl[cnt]=*(m_sublist[n][i]->p_fl);
+      cnt++;
+    }
+  return cnt;
+}
+
 void Process_Info::GetPolList(Pol_Info* pl)
 {
   for (size_t i=0;i<m_sublist[0].size();i++) pl[i]=*(m_sublist[0][i]->p_pl);

@@ -206,6 +206,21 @@ void Single_Process::PolarizationNorm() {
 
 double Single_Process::SymmetryFactors()
 {
+  Flavour* flav  = new Flavour[m_nvector];
+  double sym = 1.;
+  int ndecays=p_pinfo->Ndecays();
+  for (int i=0;i<=ndecays;i++) {
+    int j=i;
+    Process_Info* pi=p_pinfo->GetDecay(j);
+    size_t nout=pi->GetStableFlavList(flav);
+    sym*=SBSymmetryFactor(flav,nout);
+  }
+  delete[] flav;
+  return sym;
+}
+
+double Single_Process::SBSymmetryFactor(Flavour* flout,size_t nout)
+{
   double sym = 1.;
   Fl_Iter fli;
   for (Flavour hflav=fli.first();hflav!=Flavour(kf::none);hflav = fli.next()) {
@@ -213,10 +228,10 @@ double Single_Process::SymmetryFactors()
     if (hflav==Flavour(kf::pi)) break; 
     int cp  = 0;
     int cap = 0;
-    for (size_t j=0;j<m_nout;j++) {
-      if (p_flout[j]==hflav)                                      cp++;
+    for (size_t j=0;j<nout;j++) {
+      if (flout[j]==hflav)                                      cp++;
       else {
-	if ((p_flout[j]==hflav.Bar()) && (hflav != hflav.Bar()))  cap++;
+	if ((flout[j]==hflav.Bar()) && (hflav != hflav.Bar()))  cap++;
       }
     }
     if (cp>1)  sym *= double(fak(cp));

@@ -60,6 +60,7 @@ namespace AMEGIC {
   private:
     void           PolarizationNorm();
     double         SymmetryFactors();
+    double         SBSymmetryFactor(ATOOLS::Flavour* flout,size_t nout);
     void           PrepareTerminate();
     bool           CheckMapping(const Process_Base * proc);
 
