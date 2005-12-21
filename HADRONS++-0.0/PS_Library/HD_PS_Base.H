@@ -31,7 +31,6 @@ namespace HADRONS {
   }; // end of class
   
   class HD_PS_Base : public PHASIC::Multi_Channel {
-	void Initialize( GeneralModel& );
   private:
     HD_Channel_Selector  * p_channelselector;
     Hadron_Decay_Channel * p_hdc;
@@ -55,11 +54,12 @@ namespace HADRONS {
 		struct GeneralModel &,
 		bool );
     virtual ~HD_PS_Base();
-    void     Initialise();
-	inline double Maximum() { return m_max; }
+    void           Initialise();
+	inline double  Result() { return m_res; }
+    inline double  RelError() { return m_error/m_res*100.; }    // in %
+	inline double  Maximum() { return m_max; }
 	virtual void   CreatePointerOnVegas() {};
 	virtual void   DeletePointerOnVegas() {};
-	double         Result() { return m_res; }
   }; // end of class
 
   /*!

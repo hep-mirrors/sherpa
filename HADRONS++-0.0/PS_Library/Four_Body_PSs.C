@@ -62,6 +62,7 @@ TwoResonances::TwoResonances(
 
 void TwoResonances::GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * cuts,double * _ran)
 {
+  /*
   double *ran = p_vegas->GeneratePoint(_ran);
   for(int i=0;i<rannum;i++) rans[i]=ran[i];
   Vec4D  p1234 = p[0];
@@ -73,7 +74,7 @@ void TwoResonances::GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * cuts,doub
   Flavour fl123 = Flavour(kf::code(20113));
   Vec4D  p123;
   double s123;
-  s123 = CE.MassivePropMomenta(fl123.Mass(),fl123.Width(),1,s123_min,s123_max,ran[0]);
+  s123 = CE.MassivePropMomenta(fl123.PSMass(),fl123.Width(),1,s123_min,s123_max,ran[0]);
   CE.Isotropic2Momenta(p1234,s123,s4,p123,p[4],ran[1],ran[2]);
   double s12_min = cuts->Getscut(std::string("12"));
   double s3 = ms[3];
@@ -82,11 +83,39 @@ void TwoResonances::GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * cuts,doub
   Flavour fl12 = Flavour(kf::code(113));
   Vec4D  p12;
   double s12;
-  s12 = CE.MassivePropMomenta(fl12.Mass(),fl12.Width(),1,s12_min,s12_max,ran[3]);
+  s12 = CE.MassivePropMomenta(fl12.PSMass(),fl12.Width(),1,s12_min,s12_max,ran[3]);
   CE.Isotropic2Momenta(p123,s12,s3,p12,p[3],ran[4],ran[5]);
   double s1 = ms[1];
   double s2 = ms[2];
   CE.Isotropic2Momenta(p12,s1,s2,p[1],p[2],ran[6],ran[7]);
+  */
+  double *ran = p_vegas->GeneratePoint(_ran);
+  for(int i=0;i<rannum;i++) rans[i]=ran[i];
+  Vec4D  p1234 = p[0];
+  // kinematic variables
+  double s1234_min = ms[0];
+  double s1_min = ms[m_i];
+  double s2_min = ms[m_j];
+  double s3_min = ms[m_k];
+  double s4_min = ms[m_dir];
+  double s12_min = sqr( sqrt(s1_min) + sqrt(s2_min) );
+  double s123_min = sqr( sqrt(s12_min) + sqrt(s3_min) );
+  double s1234 = dabs(p1234.Abs2());
+  double s1 = ms[m_i];
+  double s2 = ms[m_j];
+  double s3 = ms[m_k];
+  double s4 = ms[m_dir];
+  double s123_max = sqr(sqrt(s1234)-sqrt(s4));
+  Vec4D  p123;
+  double s123;
+  s123 = CE.MassivePropMomenta(m_prop1.Mass(),m_prop1.Width(),1,s123_min,s123_max,ran[0]);
+  CE.Isotropic2Momenta(p1234,s123,s4,p123,p[m_dir],ran[1],ran[2]);
+  double s12_max = sqr(sqrt(s123)-sqrt(s3));
+  Vec4D  p12;
+  double s12;
+  s12 = CE.MassivePropMomenta(m_prop2.Mass(),m_prop2.Width(),1,s12_min,s12_max,ran[3]);
+  CE.Isotropic2Momenta(p123,s12,s3,p12,p[m_k],ran[4],ran[5]);
+  CE.Isotropic2Momenta(p12,s1,s2,p[m_i],p[m_j],ran[6],ran[7]);
 }
 
 void TwoResonances::GeneratePoint(ATOOLS::Vec4D * p,double * _ran)
@@ -108,18 +137,14 @@ void TwoResonances::GeneratePoint(ATOOLS::Vec4D * p,double * _ran)
   double s3 = ms[m_k];
   double s4 = ms[m_dir];
   double s123_max = sqr(sqrt(s1234)-sqrt(s4));
-  Flavour fl123 = Flavour(kf::code(20113));
-//  cout<<"GeneratePoints: "<<fl123<<" "<<fl123.Mass()<<" "<<fl123.Width()<<endl;
   Vec4D  p123;
   double s123;
-  s123 = CE.MassivePropMomenta(fl123.Mass(),fl123.Width(),1,s123_min,s123_max,ran[0]);
+  s123 = CE.MassivePropMomenta(m_prop1.Mass(),m_prop1.Width(),1,s123_min,s123_max,ran[0]);
   CE.Isotropic2Momenta(p1234,s123,s4,p123,p[m_dir],ran[1],ran[2]);
   double s12_max = sqr(sqrt(s123)-sqrt(s3));
-  Flavour fl12 = Flavour(kf::code(113));
-//  cout<<"                "<<fl12<<" "<<fl12.Mass()<<" "<<fl12.Width()<<endl;
   Vec4D  p12;
   double s12;
-  s12 = CE.MassivePropMomenta(fl12.Mass(),fl12.Width(),1,s12_min,s12_max,ran[3]);
+  s12 = CE.MassivePropMomenta(m_prop2.Mass(),m_prop2.Width(),1,s12_min,s12_max,ran[3]);
   CE.Isotropic2Momenta(p123,s12,s3,p12,p[m_k],ran[4],ran[5]);
   CE.Isotropic2Momenta(p12,s1,s2,p[m_i],p[m_j],ran[6],ran[7]);
 }
@@ -127,6 +152,7 @@ void TwoResonances::GeneratePoint(ATOOLS::Vec4D * p,double * _ran)
 
 void TwoResonances::GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * cuts)
 {
+  /*
   double wt = 1.;
   Vec4D  p1234 = p[0];
   double s1234 = dabs(p1234.Abs2());
@@ -136,7 +162,7 @@ void TwoResonances::GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * cuts)
   Flavour fl123 = Flavour(kf::code(20113));
   Vec4D  p123 = p[1]+p[2]+p[3];
   double s123 = dabs(p123.Abs2());
-  wt *= CE.MassivePropWeight(fl123.Mass(),fl123.Width(),1,s123_min,s123_max,s123,rans[0]);
+  wt *= CE.MassivePropWeight(fl123.PSMass(),fl123.Width(),1,s123_min,s123_max,s123,rans[0]);
   if (m_kI_123_4.Weight()==ATOOLS::UNDEFINED_WEIGHT)
     m_kI_123_4<<CE.Isotropic2Weight(p123,p[4],m_kI_123_4[0],m_kI_123_4[1]);
   wt *= m_kI_123_4.Weight();
@@ -149,7 +175,7 @@ void TwoResonances::GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * cuts)
   Flavour fl12 = Flavour(kf::code(113));
   Vec4D  p12 = p[1]+p[2];
   double s12 = dabs(p12.Abs2());
-  wt *= CE.MassivePropWeight(fl12.Mass(),fl12.Width(),1,s12_min,s12_max,s12,rans[3]);
+  wt *= CE.MassivePropWeight(fl12.PSMass(),fl12.Width(),1,s12_min,s12_max,s12,rans[3]);
   if (m_kI_12_3.Weight()==ATOOLS::UNDEFINED_WEIGHT)
     m_kI_12_3<<CE.Isotropic2Weight(p12,p[3],m_kI_12_3[0],m_kI_12_3[1]);
   wt *= m_kI_12_3.Weight();
@@ -160,6 +186,49 @@ void TwoResonances::GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * cuts)
     m_kI_1_2<<CE.Isotropic2Weight(p[1],p[2],m_kI_1_2[0],m_kI_1_2[1]);
   wt *= m_kI_1_2.Weight();
 
+  rans[6]= m_kI_1_2[0];
+  rans[7]= m_kI_1_2[1];
+  double vw = p_vegas->GenerateWeight(rans);
+  if (wt!=0.) wt = vw/wt/pow(2.*M_PI,4*3.-4.);
+
+  weight = wt;
+  */
+  double wt = 1.;
+  Vec4D  p1234 = p[0];
+  // kinematic variables
+  double s1234_min = ms[0];
+  double s1_min = ms[m_i];
+  double s2_min = ms[m_j];
+  double s3_min = ms[m_k];
+  double s4_min = ms[m_dir];
+  double s12_min = sqr( sqrt(s1_min) + sqrt(s2_min) );
+  double s123_min = sqr( sqrt(s12_min) + sqrt(s3_min) );
+  double s1234 = dabs(p1234.Abs2());
+  double s1 = ms[m_i];
+  double s2 = ms[m_j];
+  double s3 = ms[m_k];
+  double s4 = ms[m_dir];
+  double s123_max = sqr(sqrt(s1234)-sqrt(s4));
+  Vec4D  p123 = p[m_i]+p[m_j]+p[m_k];
+  double s123 = dabs(p123.Abs2());
+  wt *= CE.MassivePropWeight(m_prop1.Mass(),m_prop1.Width(),1,s123_min,s123_max,s123,rans[0]);
+  m_kI_123_4<<CE.Isotropic2Weight(p123,p[m_dir],m_kI_123_4[0],m_kI_123_4[1]);
+  wt *= m_kI_123_4.Weight();
+
+  rans[1]= m_kI_123_4[0];
+  rans[2]= m_kI_123_4[1];
+  double s12_max = sqr(sqrt(s123)-sqrt(s3));
+  Vec4D  p12 = p[m_i]+p[m_j];
+  double s12 = dabs(p12.Abs2());
+  wt *= CE.MassivePropWeight(m_prop2.Mass(),m_prop2.Width(),1,s12_min,s12_max,s12,rans[3]);
+  m_kI_12_3<<CE.Isotropic2Weight(p12,p[m_k],m_kI_12_3[0],m_kI_12_3[1]);
+  wt *= m_kI_12_3.Weight();
+ 
+  rans[4]= m_kI_12_3[0];
+  rans[5]= m_kI_12_3[1];
+  m_kI_1_2<<CE.Isotropic2Weight(p[m_i],p[m_j],m_kI_1_2[0],m_kI_1_2[1]);
+  wt *= m_kI_1_2.Weight();
+ 
   rans[6]= m_kI_1_2[0];
   rans[7]= m_kI_1_2[1];
   double vw = p_vegas->GenerateWeight(rans);
@@ -187,20 +256,18 @@ void TwoResonances::GenerateWeight(ATOOLS::Vec4D * p)
   double s3 = ms[m_k];
   double s4 = ms[m_dir];
   double s123_max = sqr(sqrt(s1234)-sqrt(s4));
-  Flavour fl123 = Flavour(kf::code(20113));
   Vec4D  p123 = p[m_i]+p[m_j]+p[m_k];
   double s123 = dabs(p123.Abs2());
-  wt *= CE.MassivePropWeight(fl123.Mass(),fl123.Width(),1,s123_min,s123_max,s123,rans[0]);
+  wt *= CE.MassivePropWeight(m_prop1.Mass(),m_prop1.Width(),1,s123_min,s123_max,s123,rans[0]);
   m_kI_123_4<<CE.Isotropic2Weight(p123,p[m_dir],m_kI_123_4[0],m_kI_123_4[1]);
   wt *= m_kI_123_4.Weight();
 
   rans[1]= m_kI_123_4[0];
   rans[2]= m_kI_123_4[1];
   double s12_max = sqr(sqrt(s123)-sqrt(s3));
-  Flavour fl12 = Flavour(kf::code(113));
   Vec4D  p12 = p[m_i]+p[m_j];
   double s12 = dabs(p12.Abs2());
-  wt *= CE.MassivePropWeight(fl12.Mass(),fl12.Width(),1,s12_min,s12_max,s12,rans[3]);
+  wt *= CE.MassivePropWeight(m_prop2.Mass(),m_prop2.Width(),1,s12_min,s12_max,s12,rans[3]);
   m_kI_12_3<<CE.Isotropic2Weight(p12,p[m_k],m_kI_12_3[0],m_kI_12_3[1]);
   wt *= m_kI_12_3.Weight();
  

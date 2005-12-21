@@ -16,7 +16,7 @@ Dalitz::Dalitz(
 	const int p1, 
 	const int p2 ) :
   Single_Channel(1,3,fl),
-  m_decvec(Vec4D(fl[0].Mass(),0.,0.,0.)),
+  m_decvec(Vec4D(fl[0].PSMass(),0.,0.,0.)),
   m_pmass(res.Mass()), m_pwidth(res.Width()), 
   m_p1(p1), m_p2(p2), m_mode(0),
   m_sexp(.5)
@@ -32,7 +32,7 @@ Dalitz::Dalitz(
     if (m_p1!=i && m_p2!=i) { m_dir=i; break; }
   }				// get the one with no resonance
   m_smin = ATOOLS::sqr(fl[m_p1].PSMass()+fl[m_p2].PSMass());
-  m_smax = ATOOLS::sqr(fl[0].Mass()-fl[m_dir].PSMass());
+  m_smax = ATOOLS::sqr(fl[0].PSMass()-fl[m_dir].PSMass());
   if (sqrt(m_smin)<m_pmass*10.) m_mode = 1;
 
   rannum = 5;
@@ -42,6 +42,13 @@ Dalitz::Dalitz(
 
 void Dalitz::GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *,double * _ran)
 {
+  /*
+  double sprop;
+  if (m_mode==1) sprop = CE.MassivePropMomenta(m_pmass,m_pwidth,1,m_smin,m_smax,_ran[0]);
+  else sprop = CE.MasslessPropMomenta(m_sexp,m_smin,m_smax,_ran[0]);     
+  CE.Isotropic2Momenta(p[0],ms[m_dir],sprop,p[m_dir],m_pvec,_ran[1],_ran[2]);
+  CE.Isotropic2Momenta(m_pvec,ms[m_p1],ms[m_p2],p[m_p1],p[m_p2],_ran[3],_ran[4]);
+  */
   double sprop;
   if (m_mode==1) sprop = CE.MassivePropMomenta(m_pmass,m_pwidth,1,m_smin,m_smax,_ran[0]);
   else sprop = CE.MasslessPropMomenta(m_sexp,m_smin,m_smax,_ran[0]);     
@@ -62,6 +69,17 @@ void Dalitz::GeneratePoint(ATOOLS::Vec4D * p,double * _ran)
 
 void Dalitz::GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *)
 {
+  /*
+  weight = 1.;
+  double sprop  = (p[m_p1]+p[m_p2]).Abs2();
+  if (m_mode==1) 
+    weight *= CE.MassivePropWeight(m_pmass,m_pwidth,1,m_smin,m_smax,sprop);
+  else 
+    weight *= CE.MasslessPropWeight(m_sexp,m_smin,m_smax,sprop);     
+  weight   *= CE.Isotropic2Weight(p[m_dir],p[m_p1]+p[m_p2]);
+  weight   *= CE.Isotropic2Weight(p[m_p1],p[m_p2]);
+  weight    =  1./(weight * pow(2.*M_PI,3.*3.-4.));  
+  */
   weight = 1.;
   double sprop  = (p[m_p1]+p[m_p2]).Abs2();
   if (m_mode==1) 
