@@ -222,9 +222,7 @@ void LesHouches_Interface::SetHiggsParameters() {
   ZR[0][1]    = Complex(cosa,0.);
   ZR[1][0]    = Complex(cosa,0.);
   ZR[1][1]    = Complex(sina,0.);
-  //reset tanb to the input value
-  tanb = (*p_model->GetScalarConstants())["tan(beta)"];
-  
+
   double cosb = sqrt(1./(1.+sqr(tanb)));
   double sinb = cosb*tanb;  
 
@@ -254,18 +252,11 @@ void LesHouches_Interface::SetHiggsParameters() {
   p_model->GetComplexMatrices()->insert(std::make_pair(std::string("Z_H"),ZH));
   
   //mu for Rosiek has changed sign with respect to SLHA
-  (*p_model->GetScalarConstants())["mu"]=-mu;
-  //better leave out setting the vev and tanb, 
-  //it is determined by MZ and the susy input already
-  //(*p_model->GetScalarConstants())["tan(beta)"]=tanb;
+  (*p_model->GetScalarConstants())["mu"]=mu;
+  (*p_model->GetScalarConstants())["tan(beta)"]=tanb;
+  //better leave out setting the vev, 
+  //it is determined by MZ already
   //(*p_model->GetScalarConstants())["vev"]=vev;
-  
-  /*
-  ScalarConstantsMap::iterator it=p_model->GetScalarConstants()->begin();
-  for (;it!=p_model->GetScalarConstants()->end();++it) {
-    msg_Tracking()<<it->first<<" : "<<it->second<<" \n";
-  }
-  */
 }
 
 void LesHouches_Interface::SetInoParameters() {
@@ -284,7 +275,6 @@ void LesHouches_Interface::SetInoParameters() {
   }
   CMatrix ZN = CMatrix(4);
   //transposed with respect to SLHA
-  //check sign problem
   for (unsigned int i=0;i<4;i++) 
     for (unsigned int j=0;j<4;j++) ZN[i][j] = NMix[j][i];
   
@@ -371,12 +361,12 @@ void LesHouches_Interface::SetSquarkParameters() {
   
   for (unsigned int i=0;i<vd.size();++i) {
     if (vd[i][0]==1) {
-      if (vd[i][1]==1) Zu[5][2]=vd[i][2];
-      if (vd[i][1]==2) Zu[2][2]=vd[i][2];
+      if (vd[i][1]==1) Zu[2][2]=vd[i][2];
+      if (vd[i][1]==2) Zu[5][2]=vd[i][2];
     }
     if (vd[i][0]==2) {
-      if (vd[i][1]==1) Zu[5][5]=vd[i][2];
-      if (vd[i][1]==2) Zu[2][5]=vd[i][2];
+      if (vd[i][1]==1) Zu[2][5]=vd[i][2];
+      if (vd[i][1]==2) Zu[5][5]=vd[i][2];
     }
   }
   
@@ -409,7 +399,7 @@ void LesHouches_Interface::SetSquarkParameters() {
 
   if (p_reader->MatrixFromFile(vd,"")) {
     for (unsigned int i=0;i<vd.size();++i) {
-      if (vd[i][0]==3 && vd[i][1]==3) us[2][2]=vd[i][2]*YU;
+      if (vd[i][0]==3 && vd[i][1]==3) us[2][2]=-vd[i][2]*YU;
     }
   }
   else msg.Error()<<std::endl<<"Could not read Block au from SLHA file: "
@@ -449,12 +439,12 @@ void LesHouches_Interface::SetSquarkParameters() {
   
   for (unsigned int i=0;i<vd.size();++i) {
     if (vd[i][0]==1) {
-      if (vd[i][1]==1)  Zd[5][2]=vd[i][2];
-      if (vd[i][1]==2)  Zd[2][2]=vd[i][2];
+      if (vd[i][1]==1) Zd[2][2]=vd[i][2];
+      if (vd[i][1]==2) Zd[5][2]=vd[i][2];
     }
     if (vd[i][0]==2) {
-      if (vd[i][1]==1)  Zd[5][5]=vd[i][2];
-      if (vd[i][1]==2)  Zd[2][5]=vd[i][2];
+      if (vd[i][1]==1) Zd[2][5]=vd[i][2];
+      if (vd[i][1]==2) Zd[5][5]=vd[i][2];
     }
   }
   
@@ -485,7 +475,7 @@ void LesHouches_Interface::SetSquarkParameters() {
   
   if (p_reader->MatrixFromFile(vd,"")) {
     for (unsigned int i=0;i<vd.size();++i) {
-      if (vd[i][0]==3 && vd[i][1]==3) ds[2][2] = vd[i][2]*YD;  
+      if (vd[i][0]==3 && vd[i][1]==3) ds[2][2] = -vd[i][2]*YD;  
     }
   }
   else msg.Error()<<std::endl<<"Could not read Block ad from SLHA file: "
@@ -532,12 +522,12 @@ void LesHouches_Interface::SetSleptonParameters() {
   //new case
   for (unsigned int i=0;i<vd.size();++i) {
     if (vd[i][0]==1) {
-      if (vd[i][1]==1) Zl[5][2]=vd[i][2];
-      if (vd[i][1]==2) Zl[2][2]=vd[i][2];
-      }
+      if (vd[i][1]==1) Zl[2][2]=vd[i][2];
+      if (vd[i][1]==2) Zl[5][2]=vd[i][2];
+    }
     if (vd[i][0]==2) {
-      if (vd[i][1]==1) Zl[5][5]=vd[i][2];
-      if (vd[i][1]==2) Zl[2][5]=vd[i][2];
+      if (vd[i][1]==1) Zl[2][5]=vd[i][2];
+      if (vd[i][1]==2) Zl[5][5]=vd[i][2];
     }
   }
 
@@ -568,7 +558,7 @@ void LesHouches_Interface::SetSleptonParameters() {
   
   if (p_reader->MatrixFromFile(vd,"")) {
     for (unsigned int i=0;i<vd.size();++i) {
-      if (vd[i][0]==3 && vd[i][1]==3) ls[2][2] = vd[i][2]*YE;  
+      if (vd[i][0]==3 && vd[i][1]==3) ls[2][2] = -vd[i][2]*YE;  
     }
   }
   else msg.Error()<<std::endl<<"Could not read Block ae from SLHA file: "
