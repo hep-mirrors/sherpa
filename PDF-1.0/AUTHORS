@@ -1,7 +1,15 @@
-Author(s) of the PDF package.
+Authors of the PDF package:
 
-version 1.0 Written by Frank Krauss, Steffen Schumann, and Andreas Sch"alicke
-            Interfaces to (and including) the C++ version of MRST99 by Jeppe Andersen,
-            the LHAPDF package by Walter Giele, to the Fortran CTEQ6 version by
-            the CTEQ collaboration, and to the electron structure function
-            according to 
+Version 1.0 written and maintained by 
+
+Stefan Hoeche,
+Frank Krauss, 
+Steffen Schumann
+
+
+Further authors:
+
+Andreas Schaelicke.
+
+
+Contact: E-Mail to info@sherpa-mc.de or visit our homepage www.sherpa-mc.de
