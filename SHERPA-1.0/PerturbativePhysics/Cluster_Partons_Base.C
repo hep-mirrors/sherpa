@@ -25,7 +25,7 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
 {
   // read in some parameters
   Data_Read dr(rpa.GetPath()+"Shower.dat");     // !!!!!!!! SHOWER_DATA_FILE
-  m_bp_mode  = dr.GetValue<int>("SUDAKOVTYPE",0);
+  m_bp_mode  = dr.GetValue<int>("SUDAKOVTYPE",8);
   if ((m_bp_mode&(28))!=m_bp_mode) {
     msg.Error()<<"WARNING in Cluster_Partons_Base :"<<std::endl
 	       <<"   Wrong mode for NLL_Sudakovs: "<<m_bp_mode<<" vs "<<(m_bp_mode&127)<<std::endl
