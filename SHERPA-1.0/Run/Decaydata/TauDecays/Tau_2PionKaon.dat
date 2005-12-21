@@ -1,0 +1,43 @@
+# Decay: tau- --> K- pi+ pi- nu_tau 
+#        0    --> 1  2   3   4      
+Channels {
+  	AlwaysIntegrate = 0;	! 0...read results and skip integration
+	  						! 1...don't read results and integrate
+    TwoResonances_axial_3_vector1_12 0.5;
+    TwoResonances_axial_1_vector2_23 0.5;
+    !Isotropic 1;
+}
+Resonances {
+  vector1 -> 1 2;
+  vector2 -> 2 3;
+}
+Parameters {
+  v      =  1.		 	! V-A structure of tau-nutau
+  a      =  1.	
+  Vud    =  0.9744   	! CKM
+  fpi    =  0.0924	 	! decay constant
+  FORM_FACTOR   = 1    	! 1=KuehnSantamaria
+  RUNNING_WIDTH = 2     ! 0=Off, 1=axial, 2=vector, 3=both resonances
+   
+  # relative weightfactors for resonances
+  beta_1 = +0.			! vector'_1
+  beta_2 = 0. 	  		! vector'_2
+  alpha  = 0.           ! axial'
+   
+  # parameters for resonances
+  Mass_vector   1	= 0.8961
+  Width_vector  1	= 0.0507
+  Mass_vector'  1 	= 1.412 
+  Width_vector' 1 	= 0.294
+  Mass_vector   2	= 0.775
+  Width_vector  2	= 0.14
+  Mass_vector'  2 	= 1.363
+  Width_vector' 2 	= 0.31
+  Mass_axial		= 1.270
+  Width_axial		= 0.090
+  Mass_axial'		= 1.402
+  Width_axial'		= 0.174
+   
+  # off-shell width parameters
+  lambda 			= 1.			! exponent in KS
+}

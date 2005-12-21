@@ -1,0 +1,16 @@
+# Decay: tau- --> K- nu_tau 
+#        0    --> 1  2      
+Channels {
+  	AlwaysIntegrate = 0;	! 0...read results and skip integration
+	  						! 1...don't read results and integrate
+    Isotropic 1;
+}
+Parameters {
+  v      =  1.		 	! V-A structure of tau-nutau
+  a      =  1.	
+  Vus    =  0.2205   	! CKM
+  fK     =  0.113	 	! decay constant
+}
+Result {
+   1.82823e-17 7.46e-18 1.52353e-14;
+}
