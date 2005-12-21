@@ -588,7 +588,9 @@ void Integrable_Base::ResetEvents(double gmin)
   if (!(m_expevents>=expevents)) m_expevents=expevents;
 #ifdef EVENT_STATISTICS  
   mem[Name()][5]=m_expevents-expevents;
-  PRINT_INFO(Name()<<" -> extra events "<<expevents<<" "<<m_expevents<<" "<<mem[Name()][5]<<" "<<m_anasum/m_validanasum<<" "<<gmin);
+  msg_Tracking()<<Name()<<" -> extra events "<<expevents<<" "
+		<<m_expevents<<" "<<mem[Name()][5]<<" "
+		<<m_anasum/m_validanasum<<" "<<gmin<<std::endl;
 #endif
 }
 
