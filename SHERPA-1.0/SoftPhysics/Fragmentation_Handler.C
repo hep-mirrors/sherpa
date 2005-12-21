@@ -33,7 +33,7 @@ Fragmentation_Handler::Fragmentation_Handler(std::string _dir,std::string _file)
 #ifdef USING__Ahadic
   else if (m_fragmentationmodel==std::string("Ahadic")) {
     std::string clusterfile=dr.GetValue<std::string>("AHADIC_FILE",std::string("Cluster.dat"));
-    p_ahadic = new AHADIC::Ahadic(m_dir,clusterfile,false);
+    p_ahadic = new AHADIC::Ahadic(m_dir,clusterfile,true);
     m_mode=2;
     return;
   }

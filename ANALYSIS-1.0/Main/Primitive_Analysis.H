@@ -83,6 +83,7 @@ namespace ANALYSIS {
     bool SelectBlob(const ATOOLS::Blob *blob); 
     void CreateFinalStateParticleList(bool markb=false);
     void CreateChargedParticleList();
+    void CreatePrimordialHadronsList();
     void CreateIntermediateHadronsList();
 
     Primitive_Analysis * GetSubAnalysis(const std::string & key, int mode);
