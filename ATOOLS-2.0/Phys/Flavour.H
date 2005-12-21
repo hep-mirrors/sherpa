@@ -87,24 +87,25 @@ namespace ATOOLS {
       
       sUpL                   = 51,
       sCharmL                = 52,
-      sTop2                  = 53,
+      sTop1                  = 53,
       sUpR                   = 54,
       sCharmR                = 55,
-      sTop1                  = 56,
+      sTop2                  = 56,
       
       sDownL                 = 61,
       sStrangeL              = 62,
-      sBottom2               = 63,
+      sBottom1               = 63,
       sDownR                 = 64,
       sStrangeR              = 65,
-      sBottom1               = 66,
+      sBottom2               = 66,
+
       
       sElectronL             = 71,
       sMuL                   = 72,
-      sTau2                  = 73,
+      sTau1                  = 73,
       sElectronR             = 74,
       sMuR                   = 75,
-      sTau1                  = 76,
+      sTau2                  = 76,
       
       sNu1                   = 81,
       sNu2                   = 82,
