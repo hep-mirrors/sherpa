@@ -280,6 +280,7 @@ bool Simple_Chain::CreateGrid()
   p_processes->SetKFactorScheme(m_kfactorscheme);
   p_processes->XSSelector()->SetOffShell(p_isr->KMROn());
   reader->SetInputFile(InputFile());
+  reader->RereadInFile();
   reader->SetMatrixType(mtc::transposed);
   reader->AddIgnore("->");
   reader->AddIgnore("to");

@@ -41,15 +41,14 @@ bool Amisic::Initialize()
   Data_Reader *reader = new Data_Reader("=",";","!");
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
+  reader->SetVectorType(vtc::horizontal);
   std::vector<std::string> model;
-  if (!reader->VectorFromFile(model,"HARD_MODEL_NAME",
-			      noinputtag,vtc::horizontal)) {
+  if (!reader->VectorFromFile(model,"HARD_MODEL_NAME")) {
     model.push_back("Simple_Chain");
   }
   for (size_t i=1;i<model.size();++i) model[0]+=" "+model[i];
   SelectHardModel(model[0]);
-  if (!reader->VectorFromFile(model,"SOFT_MODEL_NAME",
-			      noinputtag,vtc::horizontal)) {
+  if (!reader->VectorFromFile(model,"SOFT_MODEL_NAME")) {
     model.push_back("None");
   }
   for (size_t i=1;i<model.size();++i) model[0]+=" "+model[i];

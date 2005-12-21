@@ -28,6 +28,7 @@ MI_Base::MI_Base(std::string name,TypeID type,unsigned int nparameter,
   File_IO_Base(infiles,outfiles),
   m_name(name),
   m_type(type),
+  m_start(NULL), m_stop(NULL), m_last(NULL),
   m_nparameter(nparameter),
 #ifdef USING__Sherpa
   p_mehandler(NULL),
@@ -37,6 +38,7 @@ MI_Base::MI_Base(std::string name,TypeID type,unsigned int nparameter,
   static bool initialized=false;
   if (!initialized) {
     s_bases = new String_MI_Base_Map();
+    initialized=true;
   }
   for (String_MI_Base_Map::iterator nbit=s_bases->begin();
        nbit!=s_bases->end();++nbit) {
@@ -47,9 +49,11 @@ MI_Base::MI_Base(std::string name,TypeID type,unsigned int nparameter,
   if (m_type==Unknown) {
     THROW(fatal_error,"MI base has no type!");
   }
-  m_start = new double[m_nparameter];
-  m_stop = new double[m_nparameter];
-  m_last = new double[m_nparameter];
+  if (m_nparameter>0) {
+    m_start = new double[m_nparameter];
+    m_stop = new double[m_nparameter];
+    m_last = new double[m_nparameter];
+  }
   (*s_bases)[m_name]=this;
   switch (m_type) {
   case SoftEvent: 
@@ -72,9 +76,11 @@ MI_Base::~MI_Base()
       break;
     }
   }
-  delete [] m_start;
-  delete [] m_stop;
-  delete [] m_last;
+  if (m_nparameter>0) {
+    delete [] m_start;
+    delete [] m_stop;
+    delete [] m_last;
+  }
 }
 
 void MI_Base::UpdateAll(const MI_Base *mibase)
