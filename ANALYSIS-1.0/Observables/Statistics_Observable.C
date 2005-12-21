@@ -53,12 +53,12 @@ void Statistics_Observable::Evaluate(const Blob_List &  blobs,double value, int 
     cit=m_signal_process_statistics.find(key);
   }
 
-  double xsecweight=(*p_ana)["XS_Weight"]->Get<double>()*rpa.Picobarn();
+  double xsecweight=(*p_ana)["XS_Weight"]->Get<double>();
   double sudweight=(*p_ana)["Sud_Weight"]->Get<double>();
   int xsecntrials=(*p_ana)["XS_NumberOfTrials"]->Get<int>();
   m_nevt+=ncount;
   cit->second.nevt+=ncount;
-  cit->second.xsnevt+=xsecntrials;
+  cit->second.xsnevt+=1;
   cit->second.nblobssum+=blcount;
   cit->second.nplsum+=pl->size();
   cit->second.weightsum+=value;

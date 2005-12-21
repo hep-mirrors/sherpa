@@ -80,7 +80,7 @@ Matrix_Element_Handler::Matrix_Element_Handler() :
   Object("ME_Handler"),
   m_dir("./"), m_file(""), p_amegic(NULL), p_simplexs(NULL),
   p_isr(NULL), m_mode(0), m_weight(1.), m_ntrial(1), m_xsecntrial(0),
-  m_sntrial(0), m_xsecsntrial(0), m_name(""), m_eventmode(1), 
+  m_sntrial(0), m_name(""), m_eventmode(1), 
   m_sudakovon(0), m_apply_hhmf(0), m_ini_swaped(0), p_dataread(NULL), p_flavs(NULL), p_moms(NULL) {}
 
 Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _file,
@@ -89,7 +89,7 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
   Object("ME_Handler"),
   m_dir(_dir), m_file(_file), p_amegic(NULL), p_simplexs(NULL),
   p_isr(NULL), m_mode(0), m_weight(1.), m_ntrial(1), m_xsecntrial(0), 
-  m_sntrial(0), m_xsecsntrial(0), m_name(""), m_eventmode(1),
+  m_sntrial(0), m_name(""), m_eventmode(1),
   m_sudakovon(0), m_apply_hhmf(0), m_ini_swaped(0), p_dataread(NULL), p_flavs(NULL), p_moms(NULL) 
 {
   if (_me) p_amegic = _me->GetAmegic(); 
@@ -107,7 +107,7 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
   Object("ME_Handler"),
   m_dir(_dir), m_file(_file), p_amegic(NULL), p_simplexs(NULL),
   p_isr(_isr), m_mode(0), m_weight(1.), m_ntrial(1), m_xsecntrial(0),
-  m_sntrial(0), m_xsecsntrial(0), m_sudakovon(0), m_apply_hhmf(0),
+  m_sntrial(0), m_sudakovon(0), m_apply_hhmf(0),
   m_ini_swaped(0), p_flavs(NULL), p_moms(NULL)
 {
   p_dataread        = new Data_Read(m_dir+m_file);
@@ -669,7 +669,7 @@ unsigned long Matrix_Element_Handler::NumberOfTrials()
 
 unsigned long Matrix_Element_Handler::NumberOfXSecTrials()
 {
-  return m_xsecntrial+m_xsecsntrial;
+  return m_xsecntrial;
 }
 
 int Matrix_Element_Handler::OrderStrong()
