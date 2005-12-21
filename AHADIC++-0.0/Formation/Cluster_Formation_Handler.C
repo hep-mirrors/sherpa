@@ -15,6 +15,7 @@ Cluster_Formation_Handler::Cluster_Formation_Handler(bool ana) :
   m_analyse(ana)
 { 
   if (m_analyse) {
+    std::cout<<"Init histos"<<std::endl;
     m_histograms[string("Cluster_Mass_Formation")]     = new Histogram(0,0.,50.,100);
     m_histograms[string("Cluster_Mass_Reconnections")] = new Histogram(0,0.,50.,100);
     m_histograms[string("Cluster_Mass_Transformed")]   = new Histogram(0,0.,50.,100);
@@ -205,6 +206,7 @@ void Cluster_Formation_Handler::FormOriginalClusters()
   for (std::vector<Part_List *>::iterator plit=m_partlists.begin();
        plit!=m_partlists.end();plit++,k++) {
     clist = new Cluster_List;
+    //std::cout<<"Part list with "<<(*plit)->size()<<"."<<std::endl;
     if (!p_gludecayer->DecayList(*plit)) {
       msg.Error()<<"Error in Cluster_Formation_Handler::FormOriginalClusters() :"<<std::endl
 		 <<"   Not enough energy to move partons on their mass shell."<<std::endl
@@ -221,8 +223,10 @@ void Cluster_Formation_Handler::FormOriginalClusters()
   if (m_analyse) {
     histomass = (m_histograms.find(string("Cluster_Mass_Formation")))->second;
     histonumb = (m_histograms.find(string("Cluster_Number_Formation")))->second;
+    //std::cout<<"Insert cluster number : "<<clist->size()<<"."<<std::endl;
     histonumb->Insert(clist->size());
     for (Cluster_Iterator cit=clist->begin();cit!=clist->end();cit++) {
+      //std::cout<<"   Insert cluster mass : "<<(*cit)->Mass()<<"."<<std::endl;
       histomass->Insert((*cit)->Mass());
     }
   }

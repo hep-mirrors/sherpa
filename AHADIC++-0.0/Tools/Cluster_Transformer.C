@@ -22,6 +22,7 @@ bool Cluster_Transformer::TreatSingleCluster(Cluster_List * clist,ATOOLS::Blob *
   double  clumass,hadmass,extramass;
   //if (clist->size()==1) cout<<"      Single cluster with "<<cluster->Momentum()<<"."<<endl;  
   if (p_transitions->MustTransit(cluster,hadron,m_offset)) {
+    //cout<<"      First cluster with "<<cluster->Momentum()<<"."<<endl;  
     switch (m_mode) {
     case int(ctrans::pi0emission):
       extra     = Flavour(kf::pi);
@@ -53,8 +54,8 @@ bool Cluster_Transformer::TreatSingleCluster(Cluster * cluster,Part_List * plist
   Flavour hadron, extra;
   double  clumass,hadmass,extramass;
   //cout<<"      Single cluster with "<<cluster->Momentum()<<" {"
-  //   <<cluster->GetFlav(1)<<","<<cluster->GetFlav(2)<<"} "
-  //   <<cluster->Momentum().Abs2()<<","<<cluster->Mass()<<"."<<endl;  
+  //    <<cluster->GetFlav(1)<<","<<cluster->GetFlav(2)<<"} "
+  //    <<cluster->Momentum().Abs2()<<","<<cluster->Mass()<<"."<<endl;  
 
   if (p_transitions->MustTransit(cluster,hadron,m_offset)) {
     switch (m_mode) {
@@ -93,11 +94,13 @@ void Cluster_Transformer::TreatClusterList(Cluster_List * clist,ATOOLS::Blob * b
   Vec4D  * momenta = new Vec4D[number];
   double * masses  = new double[number];
   bool     shiftit = false;
+  //cout<<"Test clusterlist for forced transitions."<<endl;
   for (Cluster_Iterator cit=clist->begin();cit!=clist->end();cit++,i++) {
     momenta[i]   = (*cit)->Momentum(0);
     if (p_transitions->MustTransit((*cit),hadron,m_offset,true)) {
       masses[i]  = hadron.Mass();
       hadrons[i] = hadron;;
+      //cout<<"      Cluster in list with "<<(*cit)->Momentum()<<":"<<hadron.Mass()<<endl;  
       shiftit    = true;
     }
     else

@@ -191,7 +191,7 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
   m_parametermap[string("Mass_charm")]         = 
     dataread.GetValue<double>("M_CHARM",1.8);
   m_parametermap[string("Mass_bottom")]        = 
-    dataread.GetValue<double>("M_BOTTOM",5.0);
+    dataread.GetValue<double>("M_BOTTOM",5.2);
   m_parametermap[string("Mass_dd1")]           = 
     dataread.GetValue<double>("M_DD_1",2.*Get("Mass_down"));
   m_parametermap[string("Mass_ud0")]           = 

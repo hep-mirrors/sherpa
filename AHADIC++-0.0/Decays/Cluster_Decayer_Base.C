@@ -42,8 +42,11 @@ bool Cluster_Decayer_Base::Treat(Cluster * cluster,Part_List * pl)
 
 void Cluster_Decayer_Base::TestOffSprings(Cluster * cluster)
 {
+  //cout<<"Test decays of cluster : "<<cluster->Mass()
+  //    <<" ("<<cluster->GetFlav(1)<<", "<<cluster->GetFlav(2)<<")"<<endl;
   m_test  =   int(p_stransitions->MustTransit(cluster->GetLeft(),m_had1,m_offset));
   m_test += 2*int(p_stransitions->MustTransit(cluster->GetRight(),m_had2,m_offset));
+
   /*
     if (m_test>0) {
     cout<<"+++ Must decay("<<m_test<<") : Masses : "<<cluster->Mass()<<" -> "
