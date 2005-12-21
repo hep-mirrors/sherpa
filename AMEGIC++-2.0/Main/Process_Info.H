@@ -27,6 +27,7 @@ namespace AMEGIC {
     int Nout();
     int TotalNout();
     void GetFlavList(ATOOLS::Flavour*,int n=0);
+    size_t GetStableFlavList(ATOOLS::Flavour* fl, int n=0);
     void GetPolList(Pol_Info*);
     int  GetTotalFlavList(ATOOLS::Flavour*,int n=-1);
     void GetTotalPolList(Pol_Info*);
