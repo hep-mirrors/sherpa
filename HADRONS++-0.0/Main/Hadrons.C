@@ -7,7 +7,6 @@
 #include "Hadron_Decay_Channel.H"
 #include <fstream>
 #include "Run_Parameter.H"
-//#include "Spin_Density_Matrix.H"
 #include "MyStrStream.H"
 
 using namespace HADRONS;
@@ -131,13 +130,8 @@ void Hadrons::PerformDecay( Particle * part, Blob_List * blob_list, Particle_Lis
 	abort();
   }
 
+  if (part->Flav().IsStable()) return;
   bool anti = part->Flav().IsAnti();					// antiparticle ?
-
-  // spin density matrix
-//  Blob_Data_Base *info=(*blob_list->FindFirst(btp::Signal_Process))
-//	["Spin_Density_Matrix"];
-//  Spin_Density_Matrix matrix;
-//  if (info) matrix=info->Get<Spin_Density_Matrix>();
 
   // choose decay channel acc. to BR
   Hadron_Decay_Channel * hdc = ChooseDecayChannel();
