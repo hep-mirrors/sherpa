@@ -422,29 +422,25 @@ void Random::SetSeed(int ij, int kl)
 
 double Random::Ran4()
 {
-  PROFILE_HERE;
-   double uni;
-
-   uni = status.u[status.i97-1] - status.u[status.j97-1];
-   if (uni <= 0.0)
-      ++uni;
-   status.u[status.i97-1] = uni;
-   //   --status.i97;
+  double uni;
+  
+  uni = status.u[status.i97-1] - status.u[status.j97-1];
+  if (uni <= 0.0)
+    ++uni;
+  status.u[status.i97-1] = uni;
+  //   --status.i97;
    if (--status.i97 == 0)
-      status.i97 = 97;
+     status.i97 = 97;
    // --status.j97;
    if (--status.j97 == 0)
-      status.j97 = 97;
+     status.j97 = 97;
    status.c -= status.cd;
    if (status.c < 0.0)
-      status.c += status.cm;
+     status.c += status.cm;
    uni -= status.c;
    if (uni < 0.0)
-      ++uni;
-
-   // ** the following check is for debug purposes only
-   if ((uni<0.)||(uni>1.0))
-       { PRINT_INFO("ERROR in Random Generator; number created is"); cout << uni << endl;} 
+     ++uni;
+   
    return(uni);
 }
 
@@ -457,7 +453,8 @@ int Random::WriteOutStatus4(const char * filename)
     p_outstream = 0;
   }
   if (p_outstream == 0){
-    msg_Tracking()<<"Random::WriteOutStatus4 : Saving Random Number Generator Status to "<<filename<<endl;
+    msg_Tracking()<<"Random::WriteOutStatus4 : Saving Random Number Generator Status to "
+		  <<filename<<endl;
 
     // open file and append status of Random Generator at the end if possible
     std::ofstream file(filename, ios::binary | ios::app);
