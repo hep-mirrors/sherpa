@@ -209,24 +209,12 @@ void Tree::BoRo(ATOOLS::Poincare & lorenz)
 
 void Tree::BoRoDaughters(ATOOLS::Poincare & lorenz, Knot * mo) 
 {
-//   msg_Debugging()<<METHOD<<"("<<mo->kn_no<<"):\n";
-//   msg_Indent();
   if (mo->left) {
     mo->left->part->SetMomentum(lorenz*mo->left->part->Momentum());
     BoRoDaughters(lorenz,mo->left);
-  }
-  if (mo->right) {
     mo->right->part->SetMomentum(lorenz*mo->right->part->Momentum());
     BoRoDaughters(lorenz,mo->right);      
   }
-//   if (mo->left)
-//     msg_Debugging()<<"p_"<<mo->kn_no<<"-p_"<<mo->left->kn_no
-// 		   <<"-p_"<<mo->right->kn_no<<" = "
-// 		   <<(mo->part->Momentum()-
-// 		      mo->left->part->Momentum()-
-// 		      mo->right->part->Momentum())<<" -> "
-// 		   <<mo->part->Momentum()<<", "<<mo->left->part->Momentum()
-// 		   <<mo->right->part->Momentum()<<"\n";
 }
 
 void Tree::BoRo(ATOOLS::Poincare & lorenz, Knot * mo) 
