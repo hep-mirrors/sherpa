@@ -499,13 +499,14 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   bool needextra = true;
   Hadron_Decay_Handler * hdhandler = NULL;
   string decmodel = dr.GetValue<string>("DECAYMODEL",string("Lund"));
-  std::cout<<"Decaymodel = "<<decmodel<<std::endl;
+  msg.Out()<<"Decaymodel = "<<decmodel<<std::endl;
 #ifdef USING__Hadrons
-  std::cout<<"             ... USING__HADRONS enabled"<<std::endl;
+  msg.Out()<<"             ... USING__HADRONS enabled"<<std::endl;
   if (decmodel==std::string("Hadrons")) {
     string decaypath       = dr.GetValue<string>("DECAYPATH",string("Decaydata/"));
     string decayfile       = dr.GetValue<string>("DECAYFILE",string("HadronDecays.dat"));
-    hdhandler              = new Hadron_Decay_Handler(new HADRONS::Hadrons(decaypath,decayfile));
+    string decayconstfile  = dr.GetValue<string>("DECAYCONSTFILE",string("HadronConstants.dat"));
+    hdhandler              = new Hadron_Decay_Handler(new HADRONS::Hadrons(decaypath,decayfile,decayconstfile));
     hdhandler->EraseTreated(UnstableHadrons);
     if (UnstableHadrons->empty()) needextra = false;
     m_hdhandlers["Sherpa"] = hdhandler;
