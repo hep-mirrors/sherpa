@@ -1,0 +1,8 @@
+FILES=`grep Result */*.dat -l`      # find files with Result
+for I in $FILES; do                 # for all files
+  echo "clean $I and save old version in $I.old"
+  cp $I $I.old
+  csplit $I /Result/                # split at line above Result
+  mv xx00 $I                        # rename file
+  rm xx01                           # delete last 3 lines
+done 
