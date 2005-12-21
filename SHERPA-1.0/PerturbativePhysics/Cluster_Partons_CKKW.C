@@ -145,6 +145,37 @@ void Cluster_Partons_CKKW::InitWeightCalculation()
   msg_Debugging()<<"ct: weight me : hard qcd "<<m_hard_nqcd<<" weight "
 		 <<pow(m_as_qcd/m_as_jet,m_hard_nqcd)<<std::endl;
   if (m_hard_nqcd>0) m_weight *= pow(m_as_qcd/m_as_jet,m_hard_nqcd);
+  // special treatment for effective higgs vertex
+  bool found(false);
+  for (int i(0);i<p_ct->NAmplitudes();++i) {
+    for (int j(0);j<2;++j) {
+      switch (p_ct->GetHardLegs()[i][j].Type()) {
+      case lf::Triangle:
+      case lf::Box:
+      case lf::C4GS: {
+	double mth2(0.0);
+	for (int k(0);k<4;++k) {
+	  if (p_ct->GetLegs()[i][k].Point()->fl==kf::h) {
+	    mth2=p_ct->Momenta()[k].MPerp2();
+	    found=true;
+	  }
+	  if (p_ct->GetLegs()[i][k].Point()->fl==kf::t) found=false;
+	}
+	if (!found) break;
+	static double asmh2((*MODEL::as)(sqr(Flavour(kf::h).Mass())));
+ 	m_weight*=pow((*MODEL::as)(mth2)/asmh2,
+		      p_ct->GetHardLegs()[i][j].OrderQCD());
+	msg_Debugging()<<METHOD<<"(): found higgs vertex: as = "<<(*MODEL::as)(mth2)
+		       <<" vs. asf = "<<asmh2<<", nqcd = "<<p_ct->GetHardLegs()[i][j].OrderQCD()<<"\n";
+	break;
+      }
+      default:
+	break;
+      }
+      if (found) break;
+    }
+    if (found) break;
+  }
 
   m_count_startscale=-100;
   if (m_q2_hard!=m_q2_qcd && m_nstrong==3) m_count_startscale=0;
@@ -167,7 +198,8 @@ void Cluster_Partons_CKKW::InitWeightCalculation()
 
 bool Cluster_Partons_CKKW::
 ApplyCombinedInternalWeight(const bool is,const Flavour & fl,
-			    const double upper,const double actual)
+			    const double upper,const double actual,
+			    const double asref,const int order)
 {
   double qmin(0.), DeltaNum(0.), DeltaDenom(1.), DeltaRatio(0.);
   double as_ptij(0.), asRatio(0.);
@@ -181,7 +213,7 @@ ApplyCombinedInternalWeight(const bool is,const Flavour & fl,
     qmin = Max(m_qmin,m_qmin_f);
   }
   if (m_kfac!=0.) as_ptij *= 1. + as_ptij/(2.*M_PI)*m_kfac;
-  asRatio = as_ptij/m_as_jet;
+  asRatio = as_ptij/asref;
   if (upper<actual || actual<qmin || asRatio>1.0) {
     ++m_fails;
     if (asRatio>1.0)                 asRatio    = m_AcceptMisClusters;
@@ -202,7 +234,7 @@ ApplyCombinedInternalWeight(const bool is,const Flavour & fl,
 		 <<upper<<" -> "<<actual<<" / "<<qmin
 		 <<" => delta-> "<<DeltaRatio
 		 <<" ("<<DeltaNum<<"/"<<DeltaDenom<<") as-> "
-		 <<asRatio<<std::endl;
+		 <<asRatio<<" from "<<asref<<" "<<order<<std::endl;
   m_weight *= DeltaRatio * asRatio;
   ++m_hard_nqcd;
   return true;
@@ -267,20 +299,29 @@ void Cluster_Partons_CKKW::CalculateWeight()
     m_last_q.push_back(m_qmax);
     m_last_i.push_back(si);
     ptij = ct_tmp->GetWinner(i,j);
-    strong_vertex = 
-      ct_down->GetLeg(i).Point()->fl.Strong() && 
-      ct_tmp->GetLeg(i).Point()->fl.Strong() && 
-      ct_tmp->GetLeg(j).Point()->fl.Strong();
+    strong_vertex = ct_down->GetLeg(i).OrderQCD()>0;
     singlet_clustered = 
       !(ct_down->GetLeg(i).Point()->fl.Strong() && 
       ct_tmp->GetLeg(i).Point()->fl.Strong() && 
       ct_tmp->GetLeg(j).Point()->fl.Strong());
     if (strong_vertex) {
       ++m_count_startscale;
-      if (!ApplyCombinedInternalWeight(i<2,ct_down->GetLeg(i).Point()->fl,
-				       m_last_q[i],ptij)) {
+      double asref(m_as_jet);
+      switch (ct_down->GetLeg(i).Type()) {
+      case lf::Triangle:
+      case lf::Box:
+      case lf::C4GS: 
+	msg_Debugging()<<"found higgs vertex\n";
+	static double asmh2((*MODEL::as)(sqr(Flavour(kf::h).Mass())));
+	asref=asmh2;
+	break;
+      default: 
+	break;
       }
-    }
+      ApplyCombinedInternalWeight
+	(i<2,ct_down->GetLeg(i).Point()->fl,m_last_q[i],ptij,asref,
+	 ct_down->GetLeg(i).OrderQCD());
+  }
     if (strong_vertex || singlet_clustered) StoreOldValues(i,j,si,ptij);
     if (m_count_startscale==2) OverwriteScales(j);
   }

@@ -13,7 +13,8 @@ namespace SHERPA {
   class Leg {
   private:
     AMEGIC::Point *p_point;
-    int m_anti;
+    int m_anti, m_nqcd, m_nqed;
+    AMEGIC::lf::code m_type;
     friend std::ostream &operator<<(std::ostream &ostr,const Leg &leg);
   public:
     // constructors
@@ -21,6 +22,8 @@ namespace SHERPA {
       p_point(point), m_anti(anti) {}
     inline Leg(const Leg &leg): 
       p_point(leg.p_point), m_anti(leg.m_anti) {}
+    // member functions
+    void DetermineCouplings(const int type);
     // inline functions
     inline void SetAnti(int a)                       { m_anti=a;      }
     inline void SetPoint(AMEGIC::Point *const point) { p_point=point; }
@@ -28,6 +31,9 @@ namespace SHERPA {
     inline const AMEGIC::Point *Point() const { return p_point; }
     inline ATOOLS::Flavour Flav() 
     { return m_anti==-1?p_point->fl.Bar():p_point->fl; }
+    inline const int OrderQCD() const { return m_nqcd; }
+    inline const int OrderQED() const { return m_nqed; }
+    inline const AMEGIC::lf::code Type() const { return m_type; }
   };// end of class Leg
 
   std::ostream &operator<<(std::ostream &ostr,const Leg &leg);
@@ -79,18 +85,23 @@ namespace SHERPA {
     double     m_x1, m_x2;
     double     m_kt2min, m_kt2QCD, m_kt2QED;
 
-    Combine_Table_Base  * p_up;
-    Leg                ** p_legs;
     CD_List               m_combinations;
     CD_List::iterator     m_cdata_winner;
+
+    Combine_Table_Base  * p_up;
+    Leg                ** p_legs;
     ATOOLS::Jet_Finder  * p_jf;
     ATOOLS::Vec4D       * p_moms;
 
-    static Leg  CombinedLeg(Leg *legs,const int i,const int j);
-    static Leg *CombineLegs(Leg *legs,const int i,const int j,const int nlegs);
-    void        CombineMoms(ATOOLS::Vec4D *moms,const int i,const int j,const int maxl);
-    static void CombineMoms(ATOOLS::Vec4D *moms,const int i,const int j,
-			    const int maxl,ATOOLS::Vec4D *&omoms);
+    Leg **p_hard;
+
+    Leg  CombinedLeg(Leg *legs,const int i,const int j);
+    Leg *CombineLegs(Leg *legs,const int i,const int j,
+		     const int nlegs,const double pt2ij);
+    void CombineMoms(ATOOLS::Vec4D *moms,const int i,const int j,
+		     const int maxl);
+    void CombineMoms(ATOOLS::Vec4D *moms,const int i,const int j,
+		     const int maxl,ATOOLS::Vec4D *&omoms);
     double      Sprime() const;
     friend std::ostream& operator<< (std::ostream&,const Combine_Table_Base &);
     friend std::ostream &operator<<(std::ostream&,const Combine_Data &);
@@ -107,6 +118,9 @@ namespace SHERPA {
     virtual void                 FillTable(Leg **legs,const int nlegs,const int nampl) = 0;
     virtual double               GetWinner(int &i, int &j) = 0;
 
+    bool Combinable(const Leg &a,const Leg &b) const ;
+
+    void   IdentifyHardProcess();
     int    AddCouplings(int &nqed,int &nqcd) const;
     double MinKt2() const;
     double MinKt2QCD() const;
@@ -116,6 +130,7 @@ namespace SHERPA {
     double Kt2QED() const;
     // inline functions
     inline const int                  NLegs()                              const { return m_nlegs; }
+    inline const int                  NAmplitudes()                        const { return m_nampl; }
     inline Combine_Table_Base * const Up()                                 const { return p_up; }
     inline ATOOLS::Vec4D              Momentum(const int i)                const { return p_moms[i]; }
     inline ATOOLS::Flavour            Flav(const int i)                    const { return p_legs[m_graph_winner][i].Flav(); }
@@ -123,6 +138,7 @@ namespace SHERPA {
     inline const Leg                & GetLeg(const int l)                  const { return p_legs[m_graph_winner][l]; }
     inline ATOOLS::Vec4D      * const Momenta()                            const { return p_moms; }
     inline Leg               ** const GetLegs()                            const { return p_legs; }
+    inline Leg               ** const GetHardLegs()                        const { return p_hard; }
     inline void                       GetX1X2(double & x1, double & x2)    const { x1=m_x1; x2=m_x2; }
     inline static void                ResetCounter()                             { s_all=0; }
   };// end of class Combine_Table_Base

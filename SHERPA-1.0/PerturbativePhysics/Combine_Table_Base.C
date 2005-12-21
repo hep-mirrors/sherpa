@@ -7,7 +7,7 @@ using namespace SHERPA;
 using namespace AMEGIC;
 using namespace ATOOLS;
 
-int Combine_Table_Base::s_all=0;
+int Combine_Table_Base::s_all(0);
 
 std::ostream &SHERPA::operator<<(std::ostream &ostr,const Leg &leg)
 {
@@ -135,44 +135,86 @@ std::ostream& SHERPA::operator<<(std::ostream& s ,const Combine_Table_Base & ct)
 
 Combine_Table_Base::Combine_Table_Base(Jet_Finder *jf,Vec4D *moms, Combine_Table_Base *up,
 				       int isrmode, int isrshoweron):
-  p_up(up), p_legs(0), m_graph_winner(0), 
-  m_isr1on(isrmode&1), m_isr2on((isrmode&2)/2), m_isrshoweron(isrshoweron),
-  p_jf(jf), p_moms(moms), m_kt2min(std::numeric_limits<double>::max()), 
-  m_kt2QCD(m_kt2min), m_kt2QED(m_kt2min)
+  m_isr1on(isrmode&1), m_isr2on((isrmode&2)/2), m_isrshoweron(isrshoweron), 
+  m_graph_winner(0), m_kt2min(std::numeric_limits<double>::max()), 
+  m_kt2QCD(m_kt2min), m_kt2QED(m_kt2min),
+  p_up(up), p_legs(0), p_jf(jf), p_moms(moms), p_hard(NULL)
 {
-  m_no=s_all++;
+  m_no=++s_all;
 }
 
 Combine_Table_Base::~Combine_Table_Base()
 {
   delete [] p_moms;
-  for (int k=0;k<m_nampl;++k) delete [] p_legs[k];
+  for (int k=0;k<m_nampl;++k) {
+    delete [] p_legs[k];
+    if (p_hard) delete [] p_hard[k];
+  }
   delete [] p_legs;
+  if (p_hard) delete [] p_hard;
+  --s_all;
 }
 
+void Leg::DetermineCouplings(const int type) 
+{
+  m_nqed=m_nqcd=0;
+  AMEGIC::Point *p(p_point);
+  if (type==1) p=p->prev;
+  if (p->fl.Strong() &&
+      p->left->fl.Strong() && 
+      p->right->fl.Strong()) ++m_nqcd;
+  else ++m_nqed;
+  switch (p->Lorentz->Type()) {
+  case lf::Triangle:
+  case lf::Box:
+  case lf::C4GS:
+    m_nqcd+=2;
+    break;
+  default:
+    break;
+  }
+  m_type=p->Lorentz->Type();
+  msg_Debugging()<<METHOD<<"("<<type<<"): "<<p->fl<<"->"
+		 <<p->left->fl<<","<<p->right->fl
+		 <<" => n_qcd = "<<m_nqcd<<", m_nqed = "<<m_nqed<<"\n";
+}
 
 Leg Combine_Table_Base::CombinedLeg(Leg *legs,const int i,const int j)
 {
   Leg & a=legs[i], & b=legs[j], mo;
+  msg_Debugging()<<METHOD<<" "<<(a.Point()->prev?
+				 a.Point()->prev->fl:Flavour(kf::p_plus))
+		 <<" ("<<(b.Point()->prev?
+			 b.Point()->prev->fl:Flavour(kf::p_plus))
+		 <<" "<<(b.Point()->prev->left?
+			 b.Point()->prev->left->fl:Flavour(kf::p_plus))
+		 <<" "<<(b.Point()->prev->right?
+			 b.Point()->prev->right->fl:Flavour(kf::p_plus))
+		 <<"), a="<<a.Point()->fl<<", b="<<b.Point()->fl<<"\n";
   if ( (a.Point()->prev == b.Point()->prev) && (a.Point()->prev != 0) ) {
     // combinable-type: common mother
     mo.SetPoint(a.Point()->prev);
+    mo.DetermineCouplings(0);
   } 
   else if (a.Point() == b.Point()->left) {
     // combinable-type: a daughter of b
     mo.SetPoint(b.Point()->right);
+    mo.DetermineCouplings(1);
   } 
   else if (a.Point() == b.Point()->right) {
     // combinable-type: a daughter of b
     mo.SetPoint(b.Point()->left);
+    mo.DetermineCouplings(1);
   } 
   else  if (b.Point() == a.Point()->left) {
     // combinable-type: b daughter of a
     mo.SetPoint(a.Point()->right);
+    mo.DetermineCouplings(1);
   } 
   else  if (b.Point() == a.Point()->right) {
     // combinable-type: b daughter of a
     mo.SetPoint(a.Point()->left);
+    mo.DetermineCouplings(1);
   } 
   else THROW(fatal_error,"   Cannot combine legs.");
 
@@ -185,12 +227,17 @@ Leg Combine_Table_Base::CombinedLeg(Leg *legs,const int i,const int j)
   return mo;
 }
   
-Leg * Combine_Table_Base::CombineLegs(Leg *legs,const int i,const int j,const int nlegs) 
+Leg * Combine_Table_Base::CombineLegs
+(Leg *legs,const int i,const int j,const int nlegs,const double pt2ij) 
 {
   Leg * alegs = new Leg[nlegs];
   // assume i < j 
   for (int l=0; l<j; ++l) {
-    if (l==i) alegs[i] = CombinedLeg(legs,i,j);
+    if (l==i) {
+      alegs[i] = CombinedLeg(legs,i,j);
+      if (alegs[i].OrderQCD()>0) m_kt2QCD=Min(m_kt2QCD,pt2ij);
+      if (alegs[i].OrderQED()>0) m_kt2QED=Min(m_kt2QED,pt2ij);
+    }
     else      alegs[l] = legs[l];
   }
   for (int l=j+1; l<=nlegs; ++l) alegs[l-1] = legs[l];
@@ -282,6 +329,37 @@ double Combine_Table_Base::Sprime() const
   return (p_moms[0]+p_moms[1]).Abs2();
 }
 
+void Combine_Table_Base::IdentifyHardProcess()
+{
+  msg_Debugging()<<METHOD<<"():\n";
+  msg_Indent();
+  if (p_hard==NULL) {
+    p_hard = new Leg*[m_nampl];
+    for (int i(0);i<m_nampl;++i) p_hard[i] = new Leg[2];
+  }
+  for (int i(0);i<m_nampl;++i) {
+    if (Combinable(p_legs[i][0],p_legs[i][1]) &&
+	Combinable(p_legs[i][2],p_legs[i][3])) {
+      msg_Debugging()<<"s-channel\n";
+      p_hard[i][0]=CombinedLeg(p_legs[i],0,1);
+      p_hard[i][1]=CombinedLeg(p_legs[i],2,3);
+    }
+    else if (Combinable(p_legs[i][0],p_legs[i][2]) &&
+	     Combinable(p_legs[i][1],p_legs[i][3])) {
+      msg_Debugging()<<"t-channel\n";
+      p_hard[i][0]=CombinedLeg(p_legs[i],0,2);
+      p_hard[i][1]=CombinedLeg(p_legs[i],1,3);
+    }
+    else if (Combinable(p_legs[i][0],p_legs[i][3]) &&
+	     Combinable(p_legs[i][1],p_legs[i][2])) {
+      msg_Debugging()<<"u-channel\n";
+      p_hard[i][0]=CombinedLeg(p_legs[i],0,3);
+      p_hard[i][1]=CombinedLeg(p_legs[i],1,2);
+    }
+    else THROW(fatal_error,"No match for hard process.");
+  }
+}
+
 int Combine_Table_Base::AddCouplings(int &nqed,int &nqcd) const
 {
   if (p_up) {
@@ -293,6 +371,13 @@ int Combine_Table_Base::AddCouplings(int &nqed,int &nqcd) const
   return NLegs();
 }
 
-
-
+bool Combine_Table_Base::Combinable(const Leg &a,const Leg &b) const
+{
+  if ((a.Point()->prev!=NULL && a.Point()->prev==b.Point()->prev) ||
+      a.Point()->prev==b.Point() ||
+      b.Point()->prev==a.Point()) {
+    return true;
+  }
+  return false;
+}
 

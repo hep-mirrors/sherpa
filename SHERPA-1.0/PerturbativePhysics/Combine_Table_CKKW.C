@@ -27,16 +27,6 @@ double Combine_Table_CKKW::GetWinner(int &i,int &j)
   return sqrt(m_cdata_winner->second.m_pt2ij);
 }
 
-bool Combine_Table_CKKW::Combinable(const Leg &a,const Leg &b) const
-{
-  if ((a.Point()->prev!=NULL && a.Point()->prev==b.Point()->prev) ||
-      a.Point()->prev==b.Point() ||
-      b.Point()->prev==a.Point()) {
-    return true;
-  }
-  return false;
-}
-
 void Combine_Table_CKKW::AddPossibility(const int i,const int j,
 					const int ngraph) 
 {
@@ -206,8 +196,10 @@ Combine_Table_CKKW *Combine_Table_CKKW::CreateNext(bool did_boost)
   if (!m_cdata_winner->second.p_down) {
     Leg ** alegs = new Leg*[m_cdata_winner->second.m_graphs.size()];
     for (size_t k=0;k<m_cdata_winner->second.m_graphs.size();++k) {
-      alegs[k] = CombineLegs(p_legs[m_cdata_winner->second.m_graphs[k]],
-			     m_cdata_winner->first.m_i,m_cdata_winner->first.m_j,m_nl);
+      alegs[k] = CombineLegs
+	(p_legs[m_cdata_winner->second.m_graphs[k]],
+	 m_cdata_winner->first.m_i,m_cdata_winner->first.m_j,m_nl,
+	 m_cdata_winner->second.m_pt2ij);
     }
     Vec4D * amoms;
     // generate new momenta

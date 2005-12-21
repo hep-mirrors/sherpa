@@ -11,7 +11,6 @@ namespace SHERPA {
     ATOOLS::Vec4D *p_save_moms;
     size_t         m_nl;
 
-    bool Combinable(const Leg &a,const Leg &b) const ;
     void AddPossibility(const int i,const int j,const int ngraph);
     bool InitStep(ATOOLS::Vec4D *moms,const int nl);
     bool SelectWinner(const bool did_boost);

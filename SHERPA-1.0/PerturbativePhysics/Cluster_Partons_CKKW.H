@@ -18,7 +18,8 @@ namespace SHERPA {
     
     void InitWeightCalculation();
     bool ApplyCombinedInternalWeight(const bool is,const ATOOLS::Flavour & fl,
-				     const double upper,const double actual);
+				     const double upper,const double actual,
+				     const double asref,const int order);
     bool ApplyExternalWeight(const bool is,const ATOOLS::Flavour & fl,const double actual);
     void StoreOldValues(const int i,const int j,
 			const int si,const double ptij);

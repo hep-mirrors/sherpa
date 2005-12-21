@@ -170,6 +170,7 @@ void Cluster_Partons_Base::CreateTables(Leg ** legs,const int nampl,
     // use the existing combination table and determine best combination sheme
     p_ct = p_combi->CalcJet(nlegs,x1,x2,amoms);
   }
+  p_ct->IdentifyHardProcess();
   //  delete [] amoms;
 }
 

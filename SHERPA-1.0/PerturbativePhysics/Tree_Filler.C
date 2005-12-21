@@ -106,8 +106,7 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
   if (p_cluster->OrderStrong()>0) p_cluster->FixJetvetoPt2(q2j);
   mo->pt2lcm = mo->maxpt2 = q2j/m_fss_scale_fac;
   double scale(p_cluster->ISShowerScale());
-  if(p_cluster->OrderStrong()==0 && njet==m_maxjetnumber) 
-    scale = Max(scale,4.*p_cluster->JetScale());
+  if (p_cluster->OrderStrong()==0) scale=Max(scale,4.*p_cluster->JetScale());
   EstablishRelations(mo,knots[0],knots[1],0,scale);
   EstablishRelations(mo,knots[2],knots[3],1);      
   for (int i(0);i<2;++i) 
