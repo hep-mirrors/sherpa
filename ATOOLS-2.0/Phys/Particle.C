@@ -162,7 +162,9 @@ void Particle::Copy(Particle * in)  {
   p_flow->SetCode(2,in->GetFlow(2));
 }
 
-double Particle::ProperTime() {
+double Particle::ProperTime() 
+{
+  if (m_fl.Kfcode() == kf::K) return 0.;
   double q2    = m_momentum.Abs2();
   double m2    = sqr(m_fl.Mass());
   double tau2  = 1.e96;
