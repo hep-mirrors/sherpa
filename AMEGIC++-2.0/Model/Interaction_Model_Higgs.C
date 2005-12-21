@@ -213,10 +213,10 @@ void Interaction_Model_Higgs::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz
 	Flavour fl2 = Flavour(kf::code(i=i+1));
 	if(fl2.IsOn() && fl2.IsLepton() && fl2.IsUptype() ) {
 	  
-	  vertex[vanz].in[0] = fl1;   
-	  vertex[vanz].in[1] = flHmin;
-	  vertex[vanz].in[2] = fl2;   
-
+	  vertex[vanz].in[0] = fl2;   
+	  vertex[vanz].in[1] = flHmin.Bar();
+	  vertex[vanz].in[2] = fl1;   
+	  
 	  kcpl1 = M_I/v1*root2*K_yuk(fl1)*K_Z_H(0,0);
 	  kcpl0 = K_zero;	 	  
 
@@ -253,9 +253,9 @@ void Interaction_Model_Higgs::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz
             int geni=(fl1.Kfcode()-1)/2; //downtype
 	    int genj=(fl2.Kfcode()-2)/2; //uptype
 	   
-	    vertex[vanz].in[0] = fl1;
-	    vertex[vanz].in[1] = flHmin;
-	    vertex[vanz].in[2] = fl2;
+	    vertex[vanz].in[0] = fl2;
+	    vertex[vanz].in[1] = flHmin.Bar();
+	    vertex[vanz].in[2] = fl1;
 	   
 	    kcpl0 = M_I/v2*root2*K_yuk(fl2)*K_Z_H(1,0)*K_CKM(geni,genj);
 	    kcpl1 = M_I/v1*root2*K_yuk(fl1)*K_Z_H(0,0)*K_CKM(geni,genj);
