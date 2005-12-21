@@ -133,6 +133,7 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
 	p_shower->CleanUp();
 	p_filler->FillTrees(blob,p_shower->GetIniTrees(),
 			    p_shower->GetFinTree());
+	blob->AddData("Sud_Weight",new Blob_Data<double>(m_weight));
 	m_weight=1.;
 	return 1;
       }

@@ -21,6 +21,7 @@ void Statistics_Observable_Getter::PrintInfo(std::ostream &str,
 
 #include "Primitive_Analysis.H"
 #include "Shell_Tools.H"
+#include "Run_Parameter.H"
 
 #include <fstream>
 
@@ -52,11 +53,17 @@ void Statistics_Observable::Evaluate(const Blob_List &  blobs,double value, int 
     cit=m_signal_process_statistics.find(key);
   }
 
+  double xsecweight=(*p_ana)["XS_Weight"]->Get<double>()*rpa.Picobarn();
+  double sudweight=(*p_ana)["Sud_Weight"]->Get<double>();
+  int xsecntrials=(*p_ana)["XS_NumberOfTrials"]->Get<int>();
   m_nevt+=ncount;
   cit->second.nevt+=ncount;
+  cit->second.xsnevt+=xsecntrials;
   cit->second.nblobssum+=blcount;
   cit->second.nplsum+=pl->size();
   cit->second.weightsum+=value;
+  cit->second.xssum+=xsecweight;
+  cit->second.sudsum+=sudweight;
 
   if (pl_cut) {
     if (pl_cut->size()>0) {
@@ -76,10 +83,12 @@ void Statistics_Observable::Output(const std::string & pname) {
   ATOOLS::MakeDir((pname).c_str(),mode_dir); 
   std::ofstream file((pname+std::string("/")+m_name).c_str());
 
-
+  double  sum(0.0);
   for (Statistics_Map::const_iterator cit=m_signal_process_statistics.begin();cit!=m_signal_process_statistics.end();++cit) {
     file<<cit->first<<" : "<<cit->second<<std::endl;
+    sum+=cit->second.xssum*cit->second.sudsum/sqr(double(cit->second.xsnevt));
   }
+  file<<"total xs: "<<sum<<"\n";
   file.close();
 }
 
@@ -91,7 +100,8 @@ Primitive_Observable_Base * Statistics_Observable::Copy() const
 std::ostream & ANALYSIS::operator<<(std::ostream & str, const Statistics_Data & sd) {
   str<<sd.nevt<<","<<double(sd.nblobssum)/double(sd.nevt)<<","
      <<double(sd.nplsum)/double(sd.nevt)<<","
-     <<sd.weightsum/double(sd.nevt)<<",    ";
+     <<sd.weightsum/double(sd.nevt)<<", "<<sd.xssum/double(sd.xsnevt)
+     <<","<<sd.sudsum/double(sd.xsnevt)<<",    ";
   str<<sd.nevt_cut<<","<<double(sd.nblobssum_cut)/double(sd.nevt_cut)<<","
      <<double(sd.nplsum_cut)/double(sd.nevt_cut)<<","
      <<sd.weightsum/double(sd.nevt_cut);

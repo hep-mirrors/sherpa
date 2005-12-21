@@ -14,7 +14,6 @@
 #include "Regulator_Base.H"
 #include "Remnant_Base.H"
 #include "Phase_Space_Handler.H"
-#include "Ladder.H"
 
 using namespace EXTRAXS;
 using namespace MODEL;
@@ -166,17 +165,8 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	    }
 	    m_minqcdjet=Min(m_minqcdjet,qcdjets);
 	    if (inisum<rpa.gen.Ecms() && finsum<rpa.gen.Ecms()) {
-	      if (nFS==0) {
-		Ladder *ladder(new Ladder(nIS,nFS,flavs,m_scalescheme,
-					  m_kfactorscheme,p_beamhandler,
-					  p_isrhandler,p_selectordata));
-		m_xsecs.push_back(ladder);
-		ladder->Initialize();
-	      }
-	      else {
-		InitializeProcess(flavs,efunc,inisum,finsum,
-				  order_ew,order_strong,nIS,nFS,0);
-	      }
+	      InitializeProcess(flavs,efunc,inisum,finsum,
+				order_ew,order_strong,nIS,nFS,0);
 	      if (m_xsecs.size()>0) p_selected=m_xsecs.back();
 	    }
 	    delete [] flavs;

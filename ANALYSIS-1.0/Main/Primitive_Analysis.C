@@ -359,6 +359,18 @@ void Primitive_Analysis::CreateFinalStateParticleList(bool markb)
 	  if (info) {
 	    m_datacontainer["Process_Weight"]=new Blob_Data<double>(info->Get<double>());
 	  }
+	  info=(*(*blit))["XS_Weight"];
+	  if (info) {
+	    m_datacontainer["XS_Weight"]=new Blob_Data<double>(info->Get<double>());
+	  }
+	  info=(*(*blit))["Sud_Weight"];
+	  if (info) {
+	    m_datacontainer["Sud_Weight"]=new Blob_Data<double>(info->Get<double>());
+	  }
+	  info=(*(*blit))["XS_NumberOfTrials"];
+	  if (info) {
+	    m_datacontainer["XS_NumberOfTrials"]=new Blob_Data<int>(info->Get<int>());
+	  }
 	  info=(*(*blit))["ME_NumberOfTrials"];
 	  if (info) {
 	    m_datacontainer["ME_NumberOfTrials"]=new Blob_Data<int>(info->Get<int>());

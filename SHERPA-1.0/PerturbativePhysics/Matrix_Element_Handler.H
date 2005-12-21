@@ -44,8 +44,8 @@ namespace SHERPA {
     EXTRAXS::Simple_XS * p_simplexs;
     PDF::ISR_Handler   * p_isr;
     int                  m_mode;
-    double               m_weight, m_procweight;
-    unsigned long          m_ntrial, m_sntrial;
+    double               m_weight, m_procweight, m_xsecweight;
+    unsigned long          m_ntrial, m_xsecntrial, m_sntrial, m_xsecsntrial;
 
     std::string            m_name,m_signalgenerator,m_readin;
  
@@ -132,7 +132,9 @@ namespace SHERPA {
     EXTRAXS::XS_Base   * GetXS(const int mode=0);
     double               Weight();
     double               ProcessWeight();
+    double               XSecWeight();
     unsigned long        NumberOfTrials();
+    unsigned long        NumberOfXSecTrials();
 
     PDF::ISR_Handler   * GetISR_Handler()   { return p_isr; }
     int                  UseSudakovWeight() { return m_sudakovon; }
@@ -140,8 +142,8 @@ namespace SHERPA {
 
     inline void SetUseSudakovWeight(const int on) { m_sudakovon=on; }
     inline int  EventGenerationMode() const { return m_eventmode; }
-    inline void SaveNumberOfTrials() { m_sntrial+=m_ntrial; }
-    inline void ResetNumberOfTrials() { m_sntrial=0; }
+    inline void SaveNumberOfTrials() { m_sntrial+=m_ntrial; m_xsecsntrial+=m_xsecntrial; }
+    inline void ResetNumberOfTrials() { m_xsecsntrial=m_sntrial=0; }
   };
 
   typedef std::map<std::string,Matrix_Element_Handler *> MEHandlersMap;

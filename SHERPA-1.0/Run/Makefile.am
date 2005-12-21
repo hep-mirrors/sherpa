@@ -31,7 +31,7 @@ ANALYSISLIBS  = -lAnalysis -lObservables
 BEAMLIBS      =	-lBeam 
 PHASICLIBS    =	-lPhasespace 
 MODELLIBS     =	-lModelMain
-EXTRAXSLIBS   =	-lExtraXS -lExtraXS2_2 -lExtraXSBFKL
+EXTRAXSLIBS   =	-lExtraXS -lExtraXS2_2
 AMEGICLIBS    =	-lAmegic -lAmplitude -lAmegicPSGen \
 		-lZfunctions -lModel -lString 
 APACICLIBS    =	-lApacicShowers -lApacicMain 
@@ -39,38 +39,14 @@ SHERPALIBS    =	-lSherpaMain -lSherpaInitialization \
 		-lSherpaSingleEvents -lSherpaPerturbativePhysics \
 		-lSherpaSoftPhysics -lLundTools -lSherpaTools 
 
-if MCATNLO_SUPPORT
-MCATNLOLIBS   = -lHerwigTools
-MCATNLOFLAGS  = -DUSING__MCatNLO
-endif
-
 if HADRONS_SUPPORT
 HADRONSDIR    = $(SHERPASYS)/HADRONS++-0.0
 HADRONSINCS   = -I$(HADRONSDIR)/Main
 HADRONSLIBS   =	-lHadronsMain -lHadronsMEs -lHadronsPSs
 endif
-if AHADIC_SUPPORT
-AHADICDIR     =	$(SHERPASYS)/AHADIC++-0.0
-AHADICINCS    =	-I$(AHADICDIR)/Main -I$(AHADICDIR)/Formation \
-		-I$(AHADICDIR)/Decays -I$(AHADICDIR)/Tools
-AHADICLIBS    =	-lAhadicMain -lAhadicFormation \
-		-lAhadicDecays -lAhadicTools
-endif
 if AMISIC_SUPPORT
 AMISICINCS    =	-I$(SHERPASYS)/AMISIC++-1.0/Main
 AMISICLIBS    =	-lAmisic -lAmisicModel -lAmisicTools
-endif
-if ADICIC_SUPPORT
-ADICICDIR     =	$(SHERPASYS)/ADICIC++-0.0
-ADICICINCS    = -I$(ADICICDIR)/Main -I$(ADICICDIR)/Structure \
-                -I$(ADICICDIR)/Handler -I$(ADICICDIR)/Tool -I$(ADICICDIR)/Input
-ADICICLIBS    =	-lAdicicMain -lAdicicHdl -lAdicicStruct \
-		-lAdicicTool -lAdicicInput
-endif
-if CSS_SUPPORT
-CSSDIR        = $(SHERPASYS)/CS_SHOWER++-0.0
-CSSINCS       = -I$(CSSDIR)/Tools -I$(CSSDIR)/Showers -I$(CSSDIR)/Main
-CSSLIBS       = -lCSSTools -lCSShowers -lCSMain
 endif
 
 if ROOT_SUPPORT
@@ -105,16 +81,16 @@ endif
 bin_PROGRAMS  =	Sherpa
 Sherpa_SOURCES        =	Main.C 
 Sherpa_LDADD  =	-L@libdir@ $(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) \
-		$(APACICLIBS) $(ADICICLIBS) $(CSSLIBS) $(AMISICLIBS) \
-		$(AHADICLIBS) $(EXTRAXSLIBS) $(PHASICLIBS) $(MODELLIBS) \
+		$(APACICLIBS) $(AMISICLIBS) \
+		$(EXTRAXSLIBS) $(PHASICLIBS) $(MODELLIBS) \
 		$(BEAMLIBS) $(ATOOLSLIBS) $(HADRONSLIBS) $(PDFLIBS) \
 		$(LHAPDFLIBS) $(CTEQLIBS) $(SYSLIBS) $(CLHEPLIBS) \
 		$(ROOTLDADD) $(ISAJETLIB) $(HDECAYLIB)
 Sherpa_LDFLAGS        =	-rdynamic
 AM_CXXFLAGS   =	$(SHERPAFLAGS) $(ROOTFLAGS) 
-INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(HADRONSINCS) $(AHADICINCS) \
-		$(APACICINCS) $(ADICICINCS) $(AMISICINCS) $(AMEGICINCS) \
-		$(EXTRAXSINCS) $(PHASICINCS) $(CSSINCS) $(MODELINCS) \
+INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(HADRONSINCS) \
+		$(APACICINCS) $(AMISICINCS) $(AMEGICINCS) \
+		$(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) \
 		$(PDFINCS) $(BEAMINCS) $(ATOOLSINCS) $(CLHEPINCS) $(ROOTINCS)
 dist_bin_SCRIPTS      =	makelibs
 nobase_data_DATA      = \

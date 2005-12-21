@@ -44,7 +44,7 @@ if HDECAY_SUPPORT
 HDECAYLIB     = -L@libdir@ -lHdecay
 endif
 MODELLIBS     =	-L@libdir@ -lModelMain $(HDECAYLIB) $(ISAJETLIB)
-EXTRAXSLIBS   =	-L@libdir@ -lExtraXS -lExtraXS2_2 -lExtraXSBFKL
+EXTRAXSLIBS   =	-L@libdir@ -lExtraXS -lExtraXS2_2
 
 APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain 
 

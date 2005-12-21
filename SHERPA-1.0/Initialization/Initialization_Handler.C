@@ -19,14 +19,6 @@
 #include "Variable.H"
 #include "Lund_Interface.H"
 
-#ifdef USING__MCatNLO
-#include "MCatNLO_Wrapper.H"
-#endif
-#ifdef USING__Hadrons
-#include "Hadrons.H"
-#endif
-
-
 using namespace SHERPA;
 using namespace MODEL;
 using namespace BEAM;
@@ -40,12 +32,6 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
   p_showerhandler(NULL), p_beamremnants(NULL), p_fragmentation(NULL), 
   p_mihandler(NULL), p_iohandler(NULL), p_pythia(NULL), 
   p_evtreader(NULL),
-#ifdef USING__MCatNLO
-  p_herwig(NULL), p_mcatnlo(NULL),
-#endif
-#ifdef USING__Ahadic
-  p_ahadic(NULL),
-#endif
   p_analysis(NULL) 
 {
   m_scan_istep=-1;  
@@ -70,12 +56,6 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
   p_fragmentation(NULL), p_mihandler(NULL),
   p_iohandler(NULL), p_pythia(NULL), p_evtreader(NULL), 
-#ifdef USING__MCatNLO
-  p_herwig(NULL), p_mcatnlo(NULL),
-#endif
-#ifdef USING__Ahadic
-  p_ahadic(NULL),
-#endif
   p_analysis(NULL)
 {
   m_path=std::string("./");
@@ -126,13 +106,6 @@ Initialization_Handler::~Initialization_Handler()
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
   if (p_model)         { delete p_model;         p_model         = NULL; }
   if (p_pythia)        { delete p_pythia;        p_pythia        = NULL; }
-#ifdef USING__MCatNLO
-  if (p_herwig)        { delete p_herwig;        p_herwig        = NULL; }
-  if (p_mcatnlo)       { delete p_mcatnlo;       p_mcatnlo       = NULL; }
-#endif
-#ifdef USING__Ahadic
-  if (p_ahadic)        { delete p_ahadic;        p_ahadic        = NULL; }
-#endif
   if (p_analysis)      { delete p_analysis;      p_analysis      = NULL; }
   if (p_dataread)      { delete p_dataread;      p_dataread      = NULL; }
   std::set<Matrix_Element_Handler*> deletedme;
@@ -281,14 +254,6 @@ bool Initialization_Handler::InitializeTheExternalMC()
   case 9000: 
     p_pythia  = new Lund_Interface(m_path,m_evtfile,false);
     return true;
-#ifdef USING__MCatNLO
-  case 9001: 
-    p_herwig  = new Herwig_Interface(m_path,m_evtfile,false);
-    return true;
-  case 9002: 
-    p_mcatnlo = new MCatNLO_Interface(m_path,m_evtfile,false);
-    return true;
-#endif
   default: 
     m_mode = 9999;
     msg_Info()<<"Initialization_Handler::InitializeTheExternalMC :"<<std::endl
@@ -580,17 +545,6 @@ bool Initialization_Handler::CalculateTheHardProcesses()
       msg.Out()<<"SHERPA will generate the events through Pythia."<<std::endl
 	       <<"   No cross sections for hard processes to be calculated."<<std::endl;
       return true;
-#ifdef USING__MCatNLO
-    case 9001:
-      msg.Out()<<"SHERPA will generate the events through Herwig."<<std::endl
-             <<"   No cross sections for hard processes to be calculated."<<std::endl;
-      p_herwig->Initialize();
-      return true;
-    case 9002:
-      msg.Out()<<"SHERPA will generate the events through MCatNLO."<<std::endl;
-      p_mcatnlo->Initialize();
-      return true;
-#endif
     case 9999:
       msg.Out()<<"SHERPA will read in the events."<<std::endl
 	       <<"   No cross sections for hard processes to be calculated."<<std::endl;
@@ -733,10 +687,6 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
   special_options["ECMS"]=103;
   special_options["PYTHIA"]=9000;
   special_options["EVTDATA"]=9999;
-#ifdef USING__MCatNLO
-  special_options["HERWIG"]=9001;
-  special_options["MCatNLO"]=9002;
-#endif
   
 
   

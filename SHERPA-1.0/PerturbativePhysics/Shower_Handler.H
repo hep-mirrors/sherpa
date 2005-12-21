@@ -4,13 +4,6 @@
 #include "Model_Base.H"
 #include "ISR_Handler.H"
 #include "Apacic.H"
-#ifdef USING__Adicic    
-#include "Adicic.H"
-#endif
-#ifdef USING__CSS    
-#include "CS_Shower.H"
-#include "Singlet.H"
-#endif
 
 #include <string>
 #include <iostream> 
@@ -26,12 +19,6 @@ namespace SHERPA {
     std::string            m_showergenerator;
     bool                   m_isrshowerswitch,m_fsrshowerswitch,m_showermi;
     APACIC::Apacic       * p_apacic;
-#ifdef USING__Adicic    
-    ADICIC::Adicic       * p_adicic;
-#endif
-#ifdef USING__CSS    
-    CS_SHOWER::CS_Shower * p_css;
-#endif
     ATOOLS::Jet_Finder   * p_jf;
     PDF::ISR_Handler     * p_isr_handler;       
   public :
@@ -50,12 +37,6 @@ namespace SHERPA {
     PDF::ISR_Handler        * GetISRHandler()   { return p_isr_handler; }
     APACIC::Tree            * GetFinTree(); 
     APACIC::Tree           ** GetIniTrees();
-#ifdef USING__Adicic    
-    ADICIC::Cascade&          GetCascade();
-#endif
-#ifdef USING__CSS    
-    CS_SHOWER::All_Singlets * GetAllSinglets();
-#endif
     APACIC::Apacic          * GetApacic() { return p_apacic; }
     void SetJetvetoPt2(const double q2i,const double q2f) { p_apacic->SetJetvetoPt2(q2i,q2f); }
     void SetFactorisationScale(const double scale)        { p_apacic->SetFactorisationScale(scale); }

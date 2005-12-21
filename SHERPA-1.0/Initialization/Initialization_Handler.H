@@ -15,13 +15,6 @@
 #include "Lund_Interface.H"
 #include "Event_Reader.H"
 #include "Data_Read.H"
-#ifdef USING__MCatNLO
-#include "Herwig_Interface.H"
-#include "MCatNLO_Interface.H"
-#endif
-#ifdef USING__Ahadic
-#include "Ahadic.H"
-#endif
 
 #include <map>
 #include <string>
@@ -75,13 +68,6 @@ namespace SHERPA {
     Input_Output_Handler       * p_iohandler;
     Lund_Interface             * p_pythia;
     Event_Reader               * p_evtreader;
-#ifdef USING__MCatNLO
-    Herwig_Interface           * p_herwig;
-    MCatNLO_Interface          * p_mcatnlo;
-#endif
-#ifdef USING__Ahadic
-    AHADIC::Ahadic             * p_ahadic;
-#endif
     ANALYSIS::Analysis_Handler * p_analysis;
   private :
     bool InitializeTheIO();
@@ -137,13 +123,6 @@ namespace SHERPA {
     Input_Output_Handler        * const GetIOHandler()             const { return p_iohandler;       }
     Lund_Interface              * const GetPythiaInterface()       const { return p_pythia;          }
     Event_Reader                * const GetEventReader()           const { return p_evtreader;       }
-#ifdef USING__MCatNLO
-    Herwig_Interface            * const GetHerwigInterface()       const { return p_herwig;          }
-    MCatNLO_Interface           * const GetMCatNLOInterface()      const { return p_mcatnlo;         }
-#endif
-#ifdef USING__Ahadic
-    AHADIC::Ahadic              * const GetAhadic()                const { return p_ahadic;          }
-#endif
 
     int    const Mode()           const { return m_mode; };
     int    const NumberOfSteps()  const { return m_scan_nsteps; }

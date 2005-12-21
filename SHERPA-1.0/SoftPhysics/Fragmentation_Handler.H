@@ -5,9 +5,6 @@
 #include "Particle_List.H"
 #include "Blob_List.H"
 #include "CXXFLAGS.H"
-#ifdef USING__Ahadic
-#include "Ahadic.H"
-#endif
 
 namespace SHERPA {
 
@@ -18,9 +15,6 @@ namespace SHERPA {
     std::string m_fragmentationmodel;
     int         m_mode;
 
-#ifdef USING__Ahadic
-    AHADIC::Ahadic * p_ahadic;
-#endif
     Lund_Interface * p_lund;
   public:
     Fragmentation_Handler(std::string,std::string);
@@ -30,9 +24,6 @@ namespace SHERPA {
     
     const std::string &           FragmentationModel() const { return m_fragmentationmodel; }
     inline Lund_Interface * const GetLundInterface()   const { return p_lund; }
-#ifdef USING__Ahadic
-    inline AHADIC::Ahadic * const GetAhadic()          const { return p_ahadic; }
-#endif
   };// end of class Fragmentation_Handler
 
   /*!

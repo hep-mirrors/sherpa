@@ -571,7 +571,8 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::OneEvent(const double mass,const in
   if ((mass>0) && (m_nin==1)) InitIncoming(mass);
   m_weight=1.;
   double value;
-  for (int i=1;i<m_maxtrials+1;i++) {
+  bool rot(false);
+  for (int j=1, i=1;i<m_maxtrials+1;i++) {
     if (mode==0) {
       p_process->DeSelect();
       p_process->SelectOne();
@@ -587,6 +588,7 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::OneEvent(const double mass,const in
       p_process->Selected()->RestoreInOrder(); // use last order for overflow events
       p_isrhandler->SetRunMode(1);
       value = Differential(p_process->Selected());
+      rot=false;
     }
     else {
       value = p_process->Selected()->Overflow();
@@ -607,7 +609,10 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::OneEvent(const double mass,const in
       m_result_1=value;
       m_result_2=0.;
     }
-    if (value > 0.) {
+    if (value == 0.) {
+      ++j;
+    }
+    else {
       double disc = 0.;
       if (value > max) {
 	if (!use_overflow) {
@@ -640,13 +645,15 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::OneEvent(const double mass,const in
 	  }
 	  p_process->Selected()->SetMomenta(p_lab);
 	  p_process->Selected()->SwapInOrder();
+	  rot=true;
 	}
 	else {
 	  p_process->Selected()->SetMomenta(p_lab);
 	}
 	return new Blob_Data<Weight_Info>
-	  (Weight_Info(1.0,p_process->EnhanceFactor(),1));
+	  (Weight_Info(1.0,p_process->EnhanceFactor(),value,1,j));
       }
+      else j=1;
     }
   }
   m_sumtrials += m_maxtrials;
@@ -696,9 +703,11 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
       }
       m_weight=value;
       m_trials=i;
-      return new Blob_Data<Weight_Info>(Weight_Info(m_weight,selected->ProcWeight()/
-						    p_process->Parent()->ProcWeight(),
-						    m_trials));
+      return new Blob_Data<Weight_Info>
+	(Weight_Info(m_weight,selected->ProcWeight()/
+		     p_process->Parent()->ProcWeight(),
+		     m_weight,
+		     m_trials,m_trials));
     }
     // call from amisic
     if ((psm::code)mode&psm::no_lim_isr ||

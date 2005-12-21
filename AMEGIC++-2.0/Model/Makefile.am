@@ -46,7 +46,6 @@ include_HEADERS = Lorentz_Function.H Color_Function.H \
 	         Interaction_Model_EHC.H Interaction_Model_SMEHC.H \
 		 Interaction_Model_AEW.H Interaction_Model_SM_AGC.H \
 	         Interaction_Model_SM_ZPrime.H
-AM_CXXFLAGS   =	$(AMEGICFLAGS)
-CXXFLAGS=-g $(AMEGICFLAGS)
+AM_CXXFLAGS   =	-g $(AMEGICFLAGS)
 
 EXTRA_DIST    = $(CVSINCLUDE)
