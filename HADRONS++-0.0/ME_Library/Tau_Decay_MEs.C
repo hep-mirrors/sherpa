@@ -264,11 +264,10 @@ void Tau_Pion_Kaon::SetModelParameters( GeneralModel _md )
   m_cL       = Complex(0.,_md("a",1.)+_md("b",1.));
   m_Delta_KP = m_ms[m_kaon] - m_ms[m_pion];
   switch( int(_md("FORM_FACTOR", 1)) ) {
-    case 1 :
-    case 2 : p_ff = new RChT();
-             break;         // there is still no KS implemented
-//    case 1 : p_ff = new KS();
-//             break;
+    case 2 : /*p_ff = new RChT();
+             break;        */       // use RChT on own risk: not tested sufficiently
+    case 1 : p_ff = new KS();
+             break;
   }
   p_ff->SetModelParameters( _md );
   p_ff->SetMasses2( m_ms[m_pion], m_ms[m_kaon], sqr(Flavour(kf::eta).PSMass()) );
@@ -383,18 +382,41 @@ Complex Tau_Pion_Kaon::RChT::ScalarFormFactor( double s )
 
 void Tau_Pion_Kaon::KS::SetModelParameters( GeneralModel _md ) 
 {
+  m_MR      = _md("Mass_K*_892", Flavour(kf::K_star_892_plus).PSMass());
+  m_MRR     = _md("Mass_K*_1410", Flavour(kf::K_star_1410).PSMass());
+
+  m_GR      = _md("Width_K*_892", Flavour(kf::K_star_892_plus).Width());
+  m_GRR     = _md("Width_K*_1410", Flavour(kf::K_star_1410_plus).Width());
+
+  m_MR2     = sqr(m_MR);
+  m_MRR2    = sqr(m_MRR);
+
+  m_m2      = sqr( Flavour(kf::pi_plus).Mass() );
+  m_mK2     = sqr( Flavour(kf::K_plus).Mass() );
+
+  m_beta    = _md("beta", 0.);
+  m_running = int( _md("RUNNING_WIDTH", 1 ) );
 }
  
 
 Complex Tau_Pion_Kaon::KS::VectorFormFactor( double s )
 {
   Complex ret(1.,0.);
+  double MG_R   = m_MR*m_GR;            // mass * width of K*
+  double MG_RR  = m_MRR*m_GRR;
+  if (m_running) {
+    MG_R   = Tools::OffShellMassWidth( s, m_MR2, m_GR, m_m2, m_mK2, 1. );
+    MG_RR  = Tools::OffShellMassWidth( s, m_MRR2, m_GRR, m_m2, m_mK2, 1. );
+  }
+  Complex BWr   = Tools::BreitWigner( s, m_MR2, MG_R );
+  Complex BWrr  = Tools::BreitWigner( s, m_MRR2, MG_RR );
+  ret = ( BWr + m_beta*BWrr )/( 1.+m_beta );
   return ret;
 }
 
 Complex Tau_Pion_Kaon::KS::ScalarFormFactor( double s )
 {
-  Complex ret(1.,0.);
+  Complex ret(0.,0.);
   return ret;
 }
 

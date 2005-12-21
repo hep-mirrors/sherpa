@@ -105,6 +105,12 @@ namespace HADRONS {
     class KS : public FF_Base {     // Guerrero, Tesis Doctoral
        
       int *  m_part;                // internal numbers for particles
+      double m_MR, m_MRR;
+      double m_MR2, m_MRR2;
+      double m_GR, m_GRR;
+      double m_m2, m_mK2;           // pion, kaon mass
+      double m_beta;
+      int    m_running;
       public:
       KS() {};
       ~KS() {};
