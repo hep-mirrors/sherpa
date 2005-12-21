@@ -116,12 +116,15 @@ Tau_Two_Pion::Tau_Two_Pion( int _nout, Flavour *_fl ) :
   m_pion_ch(-1),
   m_pion0(-1)
 {
-  m_metype = string("Tau_TwoPion");
+  m_metype = string("Tau_TwoPion/TwoKaon");
   for( int i=1; i<4; i++ ) {
-    if( p_flavs[i].Kfcode() == p_flavs[0].Kfcode()+1 ) m_nutau = i;
+    if( p_flavs[i].Kfcode() == p_flavs[0].Kfcode()+1 )  m_nutau = i;
     else {
-      if( p_flavs[i] == kf::pi || p_flavs[i] == kf::K ) m_pion0 = i;
-      else m_pion_ch = i;
+      if( p_flavs[i].Kfcode() == kf::pi || 
+          p_flavs[i].Kfcode() == kf::K ||
+          p_flavs[i].Kfcode() == kf::K_S ||
+          p_flavs[i].Kfcode() == kf::K_L )                       m_pion0 = i;
+      else                                              m_pion_ch = i;
     }
   }
   m_pionmode = (p_flavs[m_pion_ch].Kfcode() == kf::pi_plus) ? 1 : 0;
@@ -246,10 +249,11 @@ Tau_Pion_Kaon::Tau_Pion_Kaon( int _nout, Flavour *_fl ) :
   m_ms[0] = sqr(p_flavs[0].PSMass());
   for( int i=1; i<4; i++ ) {
     m_ms[i] = sqr(p_flavs[i].PSMass());
-    if( p_flavs[i].Kfcode() == p_flavs[0].Kfcode()+1 ) m_nutau = i;           // neutrino
+    if( p_flavs[i].Kfcode() == p_flavs[0].Kfcode()+1 )          m_nutau = i;    // neutrino
     else {
-      if( p_flavs[i] == kf::pi || p_flavs[i] == kf::pi_plus ) m_pion = i;     // pion
-      else m_kaon = i;                                                        // kaon
+      if( p_flavs[i].Kfcode() == kf::pi || 
+          p_flavs[i].Kfcode() == kf::pi_plus )   m_pion = i;     // pion
+      else if (m_kaon<0)                                        m_kaon = i;     // kaon
     }
   }
   m_chpionmode = (p_flavs[m_pion].Kfcode() == kf::pi_plus) ? 1 : 0;
@@ -516,13 +520,21 @@ Tau_Three_Pseudo::Tau_Three_Pseudo( int _nout, Flavour *_fl ) :
                   }
                 }
                 break;
-    case 1002 : /* KL pi- KS */
+    case 1002 : /* KS pi- KL */ 
+                /* KS KS pi- */ 
+                /* pi- KL KL */
                 for( int i=1; i<5; i++ ) {
                   if( p_flavs[i].Kfcode() == p_flavs[0].Kfcode()+1 )    m_nutau = i;
                   else {
-                    if( p_flavs[i].Kfcode() == kf::K_L )                m_pseudo_1 = i;
+                    if( p_flavs[i].Kfcode() == kf::K_S ) {
+                      if (m_pseudo_1 < 0)                               m_pseudo_1 = i;
+                      else                                              m_pseudo_3 = i;
+                    }
                     if( p_flavs[i].Kfcode() == kf::pi_plus )            m_pseudo_2 = i;
-                    if( p_flavs[i].Kfcode() == kf::K_S )                m_pseudo_3 = i;
+                    if( p_flavs[i].Kfcode() == kf::K_L ) {
+                      if (m_pseudo_3<0)                                 m_pseudo_3 = i;
+                      else                                              m_pseudo_1 = i;
+                    }
                   }
                 }
                 break;

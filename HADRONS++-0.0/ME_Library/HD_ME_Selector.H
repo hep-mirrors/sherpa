@@ -16,7 +16,6 @@ namespace HADRONS {
     void SelectTauDecay(int nout,ATOOLS::Flavour * flavs, HD_ME_Base *& hdme ); 
     void SelectLightPseudoScalarDecay( int nout, ATOOLS::Flavour *flavs, HD_ME_Base *& hdme );
     void SetVector_For_2PS(int,int,int,ATOOLS::Flavour *,HD_ME_Base *);
-    void SetDalitz_For_3P(int,ATOOLS::Flavour *,HD_ME_Base *);
 
     bool IsPseudoScalar(ATOOLS::Flavour &);
 	
