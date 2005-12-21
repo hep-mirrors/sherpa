@@ -318,12 +318,12 @@ void HD_PS_Base::CalculateNormalisedWidth() {
     opt++;
     Optimize(0.01);
 
+    if (simple) break;          // this way error=0
     n      = opt*iter;
     result = sum/n;
     disc   = sqr(sum/n)/((sum2/n - sqr(sum/n))/(n-1));
     if (disc>0) m_error  = result/sqrt(disc);
     msg.Info()<<"     result (w/o flux): "<<result<<" +/- "<<m_error<<" ("<<m_error/result*100.<<" %)"<<endl;
-    if (simple) break;
     if (isotropic_me && m_error/result < 0.01) break;
   } 
   m_res  = m_flux*sum/n;
