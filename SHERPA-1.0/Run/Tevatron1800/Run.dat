@@ -19,3 +19,4 @@ ANALYSIS         = 1      ! Analysis : 0=Off, 1=On
 !
 BATCH_MODE	 = 1      ! interative=0, batch=1
 LOG_FILE	 = sherpa_run_tevatron.log
+RANDOM_SEED      = 400 80

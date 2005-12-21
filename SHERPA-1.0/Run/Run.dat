@@ -21,3 +21,4 @@ ANALYSIS       = 0     		! Analysis :
 BATCH_MODE	= 1		! interative=0, batch=1
 !
 LOG_FILE	= sherpa_log.log	! log file
+RANDOM_SEED     = 5123 2

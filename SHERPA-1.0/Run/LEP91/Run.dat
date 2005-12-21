@@ -17,3 +17,4 @@ ANALYSIS       = 0     ! Analysis :
 !                      ! 0=none, 1=parton-level only, 
 !                      ! 2=hadron-level only, 3=both
 LOG_FILE = sherpa_ee_jet.log
+RANDOM_SEED    =08 15
