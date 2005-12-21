@@ -24,24 +24,28 @@ namespace HADRONS {
   class Hadrons {
 
   private:
-    std::string           m_path, m_file;
+    std::string           m_path, m_file, m_constfile;
 	Channel_Map         * p_channelmap;
 	ATOOLS::Decay_Table * p_table;                 
 	std::map<ATOOLS::kf::code,ATOOLS::Decay_Table *> 
 	                    * p_decaymap;
+    GeneralModel          m_md0;                // starter model
 	
+    void ReadInConstants();
     void ReadInDecayTables();
     ATOOLS::Decay_Table * InitialiseOneDecayTable(std::vector<std::string>);
 
 	bool				  m_createbooklet;
 
   public: 
-    Hadrons(std::string _path=std::string("./"), std::string _file=std::string("HadronDecays.dat") );
+    Hadrons(
+        std::string _path=std::string("./"), 
+        std::string _file=std::string("HadronDecays.dat"),
+        std::string _constfile=std::string("HadronConstants.dat") );
 	
 	bool                   FindDecay( const Flavour & );
 	Hadron_Decay_Channel * ChooseDecayChannel();
 	void                   ChooseDecayKinematics( Vec4D * _p, Hadron_Decay_Channel * _hdc );
-//	double                 Lifetime( double tau );
 	void                   PerformDecay( Particle * part, 
 		                                 Blob_List * blob_list, 
 		                                 Particle_List * part_list );

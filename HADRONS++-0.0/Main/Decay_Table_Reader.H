@@ -21,7 +21,7 @@ namespace HADRONS {
 						std::string file=std::string(""));
     int  FillDecayTable(ATOOLS::Decay_Table * dt=NULL);
     void FillInMatrixElementsAndPS( ATOOLS::Decay_Table *dt, 
-		Channel_Map *chmap );
+		Channel_Map *chmap, GeneralModel );
   }; // end of class Decay_Table_Reader
   
   /*!

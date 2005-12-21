@@ -25,7 +25,8 @@ namespace HADRONS {
   public: 
     Hadron_Decay_Channel( ATOOLS::Decay_Channel * _dc, std::string _path );
     ~Hadron_Decay_Channel();
-    bool   InitialisePhaseSpace(std::vector<std::string> & PStype );
+    bool   InitialisePhaseSpace(std::vector<std::string> & PStype, GeneralModel startmd );
+    void   WriteModelOnScreen( GeneralModel _locmd );
     void   SwapInOrder()    {}
     void   RestoreInOrder() {}
     void   DeSelect()       {}
