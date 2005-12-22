@@ -12,7 +12,8 @@ using namespace ATOOLS;
 
 double PT_Measure::operator()(const ATOOLS::Vec4D &p1) 
 { 
-  return p_jf->MTij2(Vec4D(1.,0.,0.,1.),p1); 
+  if (p_jf->Type()>1) return p_jf->MTij2(Vec4D(1.,0.,0.,1.),p1); 
+  return std::numeric_limits<double>::max();
 }
 
 double PT_Measure::operator()
