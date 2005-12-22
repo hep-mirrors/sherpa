@@ -62,6 +62,8 @@ namespace ATOOLS {
     Blob_List FindConnected(const Blob *blob);
     Blob_List FindConnected(const Particle *blob);
 
+    Blob *AddBlob(const btp::code &type);
+
     bool Delete(Blob *blob);
 
     size_t DeleteConnected(Blob *blob);
