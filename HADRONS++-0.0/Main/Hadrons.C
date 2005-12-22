@@ -161,7 +161,6 @@ void Hadrons::PerformDecay( Particle * part, Blob_List * blob_list, Particle_Lis
   Vec3D      spatial = part->Distance( time );
   Vec4D     position = Vec4D( time*rpa.c(), spatial );
   blob->SetPosition( part->XProd() + position );
-//  blob->SetPosition(Vec4D(1.,1.,0.,0.));
   msg.Debugging()<<"created new blob: #"<<blob->Id()<<" with status 1"<<endl;
   blob->AddToInParticles( part );
   if( part->Info() == 'P' ) part->SetInfo('p');
