@@ -838,6 +838,7 @@ void Initialization_Handler::CheckFlagConsistency()
 {
   Data_Read dr(m_path+m_medat);
   int  sudweight = dr.GetValue<int>("SUDAKOV_WEIGHT",0);
+  rpa.gen.SetVariable("SUDAKOV_WEIGHT",ToString(sudweight));
 
   // if SUDAKOV_WEIGHT=On
   if (sudweight>0) {
