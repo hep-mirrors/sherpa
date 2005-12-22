@@ -269,6 +269,8 @@ namespace PHASIC {
     
     inline std::string EnhanceFunction() const { return m_efunc; }
 
+    inline double GMin() const { return m_gmin; }
+
   };// end of class Integrable_Base
 
 }// end of namespace PHASIC
