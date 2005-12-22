@@ -37,7 +37,7 @@ void MSSM::ReadInFile() {
 
   m_scales     = m_unification = 0;
   m_benchmark  = p_dataread->GetValue<std::string>("BENCHMARK",std::string(""));
-  m_spectrum   = p_dataread->GetValue<int>("GENERATOR_ON",0);
+  m_spectrum   = p_dataread->GetValue<int>("GENERATOR_ON",1);
 
   if (m_benchmark.length()!=0) InitializeBenchmarkPoint();
   else {
@@ -189,7 +189,7 @@ void MSSM::ReadInFile() {
 
 bool MSSM::RunSpectrumGenerator() {
   if (m_spectrum) {
-    m_generator = p_dataread->GetValue<std::string>("SUSY_GENERATOR",std::string("Isajet"));
+    m_generator = p_dataread->GetValue<std::string>("SUSY_GENERATOR",std::string("LesHouches"));
 #ifdef USING__ISAJET
     if (m_generator==std::string("Isajet")) {
       p_spectrumgenerator = new ISAJET::Isajet_Fortran_Interface(p_dataread,this);
