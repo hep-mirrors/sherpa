@@ -282,7 +282,7 @@ void Running_AlphaS::ContinueAlphaS(int & nr) {
   // shrink actual domain
   //  * to given t0        or
   //  * to alphaS=alphaCut
-  double alpha_cut = 4.*M_PI;   // make parameter
+  double alpha_cut = 1.;
   double & beta0   = p_thresh[nr].beta0;
   double & lambda2 = p_thresh[nr].lambda2;
   double t0        = lambda2 * ::exp(M_PI/(alpha_cut*beta0));
