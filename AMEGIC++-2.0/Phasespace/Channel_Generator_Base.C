@@ -1,6 +1,11 @@
 #include "Channel_Generator_Base.H"
 #include "Topology.H"
 #include "Point.H"
+#ifdef __GNUC__
+#if __GNUC__ < 3
+#include <stdio.h>
+#endif
+#endif
 
 using namespace AMEGIC;
 using namespace ATOOLS;
