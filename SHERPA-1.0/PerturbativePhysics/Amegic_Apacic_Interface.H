@@ -12,7 +12,7 @@
 namespace SHERPA {
   class Amegic_Apacic_Interface : public Perturbative_Interface {
   private :
-    bool   m_isdecay;
+    bool   m_isdecay, m_ckkwon;
     int    m_type, m_lastshowerveto;
     double m_ycut,m_jetscale;
     double m_qmin_i, m_qmin_f, m_scale;
