@@ -26,6 +26,10 @@ namespace APACIC {
     Tree **p_initrees;
     Tree  *p_fintree;
 
+    bool m_last_ljv;
+    
+    ATOOLS::Vec4D m_cms;
+
     bool m_isron, m_fsron, m_showers;
 
     ATOOLS::Vec4D PrepareFSR();

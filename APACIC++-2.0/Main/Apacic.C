@@ -30,6 +30,9 @@ Apacic::Apacic(ISR_Handler *const isr,MODEL::Model_Base *const model,
     (dataread->GetValue<int>("S_KFACTOR_SCHEME",1));        
   m_fsron=bool(dataread->GetValue<int>("FSR_SHOWER",1));
   m_isron=bool(dataread->GetValue<int>("ISR_SHOWER",1));
+  if ((rpa.gen.Beam1().IsHadron() || rpa.gen.Beam2().IsHadron())
+      && (m_fsron^m_isron)) 
+    THROW(fatal_error,"Shower must be enabled for hadronic initial state.");
   jv::mode jvm((jv::mode)dataread->GetValue<int>("JET_VETO_SCHEME",3));
   if (m_fsron) {
     p_fintree   = new Tree();
@@ -61,8 +64,6 @@ Apacic::~Apacic()
   if (p_finshower) delete p_finshower;
 }
 
-bool m_last_ljv(false);
-
 int Apacic::PerformShowers(const int &jetveto,const int &losejv,
 			   const double &x1,const double &x2,
 			   const double &ycut) 
@@ -79,7 +80,7 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
   static double accu(sqrt(rpa.gen.Accu()));
   Vec4D::SetAccu(accu);
   if (m_fsron) {
-    Vec4D cms(PrepareFSR());
+    m_cms=PrepareFSR();
     switch (p_finshower->PerformShower(p_fintree,jetveto)) {
     case -1:
       msg.Debugging()<<"Lose jet veto in FSR Shower.\n";
@@ -157,9 +158,8 @@ void Apacic::BoostInLab()
     p_inishower->BoostFS();
   }
   else {
-    Vec4D cms(p_fintree->GetRoot()->part->Momentum());
-    cms=Vec4D(cms[0],-1.*Vec3D(cms));
-    Poincare lab(cms);
+    Poincare lab(m_cms);
+    lab.Invert();
     p_fintree->BoRo(lab);
   }
 }
