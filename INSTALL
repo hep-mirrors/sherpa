@@ -9,9 +9,10 @@ INSTALLING:
  - Open a console.
  - Change to the top-level directory of Sherpa. That´s the directory
    where this file lies in. 
- - From there, type "TOOLS/makeinstall"
+ - From there, type "TOOLS/makeinstall -t -r"
  - Wait for the compilation to finish. 
  - If you encounter a problem with the installation, refer to the SHERPA
    mini documentation which is available from the Sherpa homepage
    www.sherpa-mc.de. If this does not help contact the authors at 
-   support@sherpa-mc.de.
+   support@sherpa-mc.de and attach the installation log 
+   "sherpa_install.log" to your mail.
