@@ -543,7 +543,8 @@ void Cluster_Partons_Base::CreateFlavourMap()
 
 void   Cluster_Partons_Base::JetvetoPt2(double & q2i, double & q2f) 
 { 
-  double qmin2(m_q2_jet);
+  double qmin2(Max(m_qmin_i,m_qmin_f));
+  qmin2*=qmin2;
   if ((m_njet==m_maxjetnumber && m_njet>2) ||
       (m_njet==2 && p_ct->OrderStrong()>0)) FixJetvetoPt2(qmin2);
   q2i = Max(qmin2,sqr(m_qmin_i));
