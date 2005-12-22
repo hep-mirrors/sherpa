@@ -12,6 +12,6 @@ ME_DATA_FILE     = ME.dat
 MODEL_DATA_FILE  = Model.dat
 SHOWER_DATA_FILE = Shower.dat
 !
-ANALYSIS       = 0     		! Analysis: 0=off, 1=on
+ANALYSIS        = 0     		! Analysis: 0=off, 1=on
 !
 LOG_FILE	= sherpa_log.log	! log file

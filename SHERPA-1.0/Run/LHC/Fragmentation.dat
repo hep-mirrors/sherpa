@@ -1,0 +1,8 @@
+!-------------------------------------------------------
+!-- Fragmentation parameters----------------------------
+!-------------------------------------------------------
+FRAGMENTATION = Lund       ! Off, Lund(Pythia string fragmentation)
+LUND_FILE     = Lund.dat   ! Pythia parameter file
+DECAYMODEL    = Lund       ! Lund or Hadrons
+DECAYPATH     = Decaydata/ ! directory of decay data files (note: / at the end)
+DECAYFILE     = HadronDecays.dat

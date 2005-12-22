@@ -1,0 +1,17 @@
+!-------------------------------------------------------
+!-- Phase space setup ----------------------------------
+!-------------------------------------------------------
+ERROR =  1.e-2   ! Error by calculating matrix-elements 
+!      
+FINISH_OPTIMIZATION = On ! Integrate until optimization is completed      
+!
+INTEGRATOR = 6   ! Phasespace : Rambo=0, Sarge=1,
+                 !              Rambo + Sarge=2,
+	         !              Rambo + Multichannel=3,
+		 !              Multichannel:
+		 !              =4 (Original channel generator)
+		 !              =5 (Original+extra channels for competing peaks
+		 !                  like in ->Higgs->ZZ->q qb q qb) 
+		 !              =6 (New channel generator) 
+		 ! Choice 4-6 only affects channel generation!
+VEGAS = On

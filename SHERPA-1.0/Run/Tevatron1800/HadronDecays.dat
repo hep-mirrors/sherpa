@@ -1,8 +1,0 @@
-!-------------------------------------------------------
-!-- Files for hadron decay tables ----------------------
-!-------------------------------------------------------
-111   ->  Pi0Decays.dat;
-221   ->  EtaDecays.dat;
-331   ->  Eta'Decays.dat;
-113   ->  Rho0Decays.dat;
-15    ->  TauDecays.dat;

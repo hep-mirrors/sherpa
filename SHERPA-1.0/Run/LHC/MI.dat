@@ -1,0 +1,31 @@
+!=================================================!
+!          Underlying Event Setup file            !
+!=================================================!
+!
+! general parameters
+!
+MI_HANDLER	= None ! Amisic       	        ! Amisic / None
+!
+! hard underlying event parameters
+!
+CREATE_GRID 93 93 -> 93 93		! processes to generate
+MI_SCALE_SCHEME	    = 21			! scale scheme
+MI_K_FACTOR_SCHEME  = 1			! k factor scheme
+MI_HARD_SCALE       = 1  		! hard scale for mi
+PS_ERROR	    = 1.0e-2 		! error for integration
+VEGAS_MI	    = 0			! vegas channels 0 / 1
+PI_MI		    = 0 		! use pi for mi generation
+MI_MAX_REDUCTION    = 10 		! max reduction for mi
+REGULATE_XS	    = 0			! regulate cross section
+XS_REGULATOR	    = QCD_Trivial	! regulation scheme
+					! QCD_Trivial
+XS_REGULATION	    = 2.45		! regulation parameter
+SCALE_MIN	    = 2.45 		! minimum scale
+JET_VETO	    = 1			! jet veto
+RESCALE_EXPONENT    = 0.16		! rescaling exponent
+REFERENCE_SCALE	    = 1800.0		! reference energy scale
+PROFILE_FUNCTION    = Gaussian		! Double_Gaussian
+PROFILE_PARAMETERS  = 1.0 0.5 0.5	! size (must be 1), coresize, 
+					! matter fraction
+GRID_CREATOR_OUTPUT = 2			! output level
+CHECK_CONSISTENCY   = 0			! check consistency
