@@ -26,7 +26,8 @@ Timelike_Sudakov::~Timelike_Sudakov()
 void Timelike_Sudakov::Init(const double fmed)
 {
   // for static couplings, set first argument to 0.
-  p_tools->CalculateMaxCouplings(m_cpl_scheme,m_pt2min,m_pt2max);
+  p_tools->CalculateMaxCouplings
+    (m_cpl_scheme,m_pt2min*m_rscalefac,m_pt2max*m_rscalefac);
   for (int i=1;i<17;++i) {
     if (i==7) i=11;
     Flavour fl = Flavour(kf::code(i));
