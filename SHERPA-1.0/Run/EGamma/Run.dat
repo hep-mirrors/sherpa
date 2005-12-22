@@ -15,3 +15,5 @@ SHOWER_DATA_FILE = Shower.dat
 ANALYSIS       = 0     		! Analysis: 0=off, 1=on
 !
 LOG_FILE	= sherpa_log.log	! log file
+!
+RANDOM_SEED    = 08 15

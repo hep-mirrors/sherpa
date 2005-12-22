@@ -9,7 +9,6 @@ SIGNAL_MODEL          = SM          ! subset of a physical model
 !
 COUPLING_SCHEME       = Fixed       ! Fixed   (default value) or 
                                     ! Running (s for ME generators, pt for 2->2)
-COUPLING_SCALE_FACTOR = 1.          ! Additional prefactor for ME's scale.
 YUKAWA_MASSES         = Fixed       ! Fixed   (polemass) or 
                                     ! Running (higgs mass)
 YUKAWA_MASSES_FACTOR  = 1.          ! Additional prefactor for yukawas
