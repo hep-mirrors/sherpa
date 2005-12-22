@@ -358,6 +358,9 @@ else
 fi
 AM_CONDITIONAL(SHERPA_SUPPORT, test "$sherpainclude" = "true" )
 
+echo -e "\n#endif" >> __Flags.H__
+mv __Flags.H__ ATOOLS-2.0/Org/CXXFLAGS.H
+
 AC_CONFIG_COMMANDS_POST([touch ATOOLS-2.0/Org/My_Root.C &&
 			 touch PDF-1.0/LHAPDF/LHAPDF_Fortran_Interface.H &&
 	                 touch PDF-1.0/CTEQ/CTEQ6_Fortran_Interface.H &&
