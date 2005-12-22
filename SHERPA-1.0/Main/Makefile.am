@@ -1,6 +1,6 @@
 SHERPASYS     =	../..
 
-SHERPAFLAGS   =	-pedantic -Wall # -Winline 
+SHERPAFLAGS   =	# -pedantic -Wall # -Winline 
 
 ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
 PDFDIR        =	$(SHERPASYS)/PDF-1.0

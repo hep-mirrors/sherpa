@@ -1,6 +1,6 @@
 SHERPASYS = ../..
 
-ATOOLSFLAGS   =	-pedantic -Wall -Winline
+ATOOLSFLAGS   =	# -pedantic -Wall -Winline
 
 ATOOLSINCS    =	-I../Org -I../Phys -I../Math
 MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main 

@@ -1,6 +1,6 @@
 SHERPASYS     =	../..
 
-SHERPAFLAGS   =	-pedantic -Wall #-Winline
+SHERPAFLAGS   =	# -pedantic -Wall #-Winline
 
 SHERPAINCS    =	-I../Single_Events 
 APACICINCS    =	-I$(SHERPASYS)/APACIC++-2.0/Main

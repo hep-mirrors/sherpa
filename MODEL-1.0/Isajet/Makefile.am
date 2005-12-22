@@ -2,7 +2,7 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-MODELFLAGS  =	-pedantic -Wall #-Winline
+MODELFLAGS  =	# -pedantic -Wall #-Winline
 
 lib_LTLIBRARIES = libIsajet.la
 libIsajet_la_SOURCES = sugrun.f aldata.f ssalfs.f ssb0.f ssb1.f ssdhll.f ssdint.f \

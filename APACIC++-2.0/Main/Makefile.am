@@ -1,6 +1,6 @@
 SHERPASYS     = ../..
 
-SHERPAFLAGS   =	-pedantic -Wall 
+SHERPAFLAGS   =	# -pedantic -Wall 
 
 ATOOLSDIR     = $(SHERPASYS)/ATOOLS-2.0
 ATOOLSINCS    = -I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org 

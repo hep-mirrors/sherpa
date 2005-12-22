@@ -4,7 +4,7 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-AMEGICFLAGS  =	-pedantic -Wall -Winline
+AMEGICFLAGS  =	# -pedantic -Wall -Winline
 
 libString_la_SOURCES = String_Handler.C String_Generator.C \
                        String_Tree.C String_Output.C \

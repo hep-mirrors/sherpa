@@ -3,7 +3,7 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-BEAMFLAGS  =	-pedantic -Wall -Winline
+BEAMFLAGS  =	# -pedantic -Wall -Winline
 
 lib_LTLIBRARIES = libBeam.la
 libBeam_la_SOURCES    =	Beam_Base.C \

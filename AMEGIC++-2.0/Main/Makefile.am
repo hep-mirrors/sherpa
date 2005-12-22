@@ -4,7 +4,7 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-AMEGICFLAGS  =	-pedantic -Wall -Winline
+AMEGICFLAGS  =	# -pedantic -Wall -Winline
 
 libAmegic_la_SOURCES = Helicity.C Topology.C Polarisation.C Pol_Info.C Point.C \
 		       Process_Info.C Process_Base.C Single_Process.C \

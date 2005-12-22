@@ -4,7 +4,7 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-AMEGICFLAGS  =	-pedantic -Wall #-Winline
+AMEGICFLAGS  =	# -pedantic -Wall #-Winline
 
 libModel_la_SOURCES = Lorentz_Function.C Color_Function.C \
 		      Single_Vertex.C Vertex.C \

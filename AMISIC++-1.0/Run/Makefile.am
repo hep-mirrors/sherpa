@@ -1,6 +1,6 @@
 SHERPASYS  = ../..
 
-AMISICFLAGS   =	-pedantic -Wall -Winline 
+AMISICFLAGS   =	# -pedantic -Wall -Winline 
 
 ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
 EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0

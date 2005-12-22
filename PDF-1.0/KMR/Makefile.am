@@ -1,6 +1,6 @@
 SHERPASYS     =	../..
 
-PDFFLAGS      =	-pedantic -Wall -Winline
+PDFFLAGS      =	# -pedantic -Wall -Winline
 
 PDFINCS       =	-I../Main -I../Sudakov
 ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0

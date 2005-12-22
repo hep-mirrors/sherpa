@@ -4,7 +4,7 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-AMEGICFLAGS  =	-pedantic -Wall #-Winline
+AMEGICFLAGS  =	# -pedantic -Wall #-Winline
 
 libZfunctions_la_SOURCES = Basic_Func.C Basic_Sfuncs.C Basic_Pfunc.C \
 			   Basic_Mfunc.C Basic_MassTermfunc.C \
