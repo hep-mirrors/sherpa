@@ -79,7 +79,7 @@ namespace SHERPA {
   class Combine_Table_Base {
   protected:
     static int s_all;
-    int        m_no;
+    int        m_no, m_nstrong;
     int        m_isr1on, m_isr2on, m_isrshoweron;
     int        m_nlegs, m_nampl, m_graph_winner;
     double     m_x1, m_x2;
@@ -130,6 +130,7 @@ namespace SHERPA {
     double Kt2QED() const;
     // inline functions
     inline const int                  NLegs()                              const { return m_nlegs; }
+    inline const int                  OrderStrong()                        const { return m_nstrong; }
     inline const int                  NAmplitudes()                        const { return m_nampl; }
     inline Combine_Table_Base * const Up()                                 const { return p_up; }
     inline ATOOLS::Vec4D              Momentum(const int i)                const { return p_moms[i]; }

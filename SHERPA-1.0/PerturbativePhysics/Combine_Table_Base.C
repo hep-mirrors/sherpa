@@ -135,6 +135,7 @@ std::ostream& SHERPA::operator<<(std::ostream& s ,const Combine_Table_Base & ct)
 
 Combine_Table_Base::Combine_Table_Base(Jet_Finder *jf,Vec4D *moms, Combine_Table_Base *up,
 				       int isrmode, int isrshoweron):
+  m_nstrong(0),
   m_isr1on(isrmode&1), m_isr2on((isrmode&2)/2), m_isrshoweron(isrshoweron), 
   m_graph_winner(0), m_kt2min(std::numeric_limits<double>::max()), 
   m_kt2QCD(m_kt2min), m_kt2QED(m_kt2min),
@@ -333,6 +334,7 @@ void Combine_Table_Base::IdentifyHardProcess()
 {
   msg_Debugging()<<METHOD<<"():\n";
   msg_Indent();
+  m_nstrong=0;
   if (p_hard==NULL) {
     p_hard = new Leg*[m_nampl];
     for (int i(0);i<m_nampl;++i) p_hard[i] = new Leg[2];
@@ -357,6 +359,7 @@ void Combine_Table_Base::IdentifyHardProcess()
       p_hard[i][1]=CombinedLeg(p_legs[i],1,2);
     }
     else THROW(fatal_error,"No match for hard process.");
+    m_nstrong=Max(m_nstrong,p_hard[i][0].OrderQCD()+p_hard[i][1].OrderQCD());
   }
 }
 

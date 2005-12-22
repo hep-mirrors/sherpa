@@ -26,7 +26,7 @@ void Interface_Tools::InitializeIncoming(const Blob *blob,const double &E)
   *(m1->part)=*blob->ConstInParticle(0);
   m1->part->SetInfo('G');
   m1->part->SetStatus(1);
-  m1->t=-(m1->maxpt2=scale);
+  m1->t=-scale;
   m1->costh=-1.;
   m1->thcrit=Angle(blob->ConstInParticle(0),blob);
   m1->tout=sqr(m1->part->Flav().PSMass());
@@ -38,7 +38,7 @@ void Interface_Tools::InitializeIncoming(const Blob *blob,const double &E)
   *(m2->part)=*blob->ConstInParticle(1);
   m2->part->SetInfo('G');
   m2->part->SetStatus(1);
-  m2->t=-(m2->maxpt2=scale);
+  m2->t=-scale;
   m2->costh=-1.; 
   m2->thcrit=Angle(blob->ConstInParticle(0),blob);
   m2->tout=sqr(m2->part->Flav().PSMass());
@@ -47,6 +47,8 @@ void Interface_Tools::InitializeIncoming(const Blob *blob,const double &E)
   m2->stat=1;
   m2->part->SetDecayBlob((ATOOLS::Blob*)blob);
   m_inipt2=part1->Momentum().PPerp2();
+  m1->maxpt2=m1->pt2lcm=m_finpt2;
+  m2->maxpt2=m2->pt2lcm=m_finpt2;
 }
 
 void Interface_Tools::InitializeOutGoing(Blob *blob,const double &E)
@@ -59,17 +61,18 @@ void Interface_Tools::InitializeOutGoing(Blob *blob,const double &E)
   Knot *d2=p_fintree->NewKnot(part2);
   blob->SetCMS();
   blob->BoostInCMS();
-  dummy->part->SetInfo('M');
+  dummy->part->SetInfo('f');
   dummy->part->SetStatus(2);
   dummy->t=dummy->maxpt2=dummy->tout=dummy->part->Momentum().Abs2();
   dummy->costh=-1;
   dummy->thcrit=M_PI;
   dummy->stat=0;
   dummy->E2=sqr(dummy->part->Momentum()[0]);
+  dummy->zs=dummy->z=part1->Momentum()[0]/dummy->part->Momentum()[0];
   dummy->didkin=true;
   d1->part->SetInfo('H');
   d1->part->SetStatus(1);
-  d1->t=d1->maxpt2=dummy->t;
+  d1->t=dummy->t;
   d1->costh=-1.; 
   d1->thcrit=Angle(blob->InParticle(0),blob);
   d1->tout=sqr(part1->Flav().PSMass());
@@ -79,7 +82,7 @@ void Interface_Tools::InitializeOutGoing(Blob *blob,const double &E)
   d1->didkin=true;
   d2->part->SetInfo('H');
   d2->part->SetStatus(1);
-  d2->t=d2->maxpt2=dummy->t;
+  d2->t=dummy->t;
   d2->costh=-1.; 
   d2->thcrit=Angle(blob->InParticle(1),blob);
   d2->tout=sqr(part2->Flav().PSMass());
@@ -87,13 +90,13 @@ void Interface_Tools::InitializeOutGoing(Blob *blob,const double &E)
   d2->stat=3;
   d2->part->SetProductionBlob(blob);
   d2->didkin=true;
-  dummy->E2=sqr(sqrt(d1->E2)+sqrt(d2->E2));
-  dummy->z=sqrt(d1->E2/dummy->E2);
   d1->prev=d2->prev=dummy;
   dummy->left=d1;
   dummy->right=d2;
   blob->BoostInLab();
   m_finpt2=part1->Momentum().PPerp2();
+  d1->maxpt2=d1->pt2lcm=m_finpt2;
+  d2->maxpt2=d2->pt2lcm=m_finpt2;
 }
 
 bool Interface_Tools::Connected(const Particle *a,const Particle *b) 

@@ -62,8 +62,8 @@ int SimpleXS_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob *blob)
     p_momenta[i+blob->NInP()]=blob->OutParticle(i)->Momentum();
   }
   p_xs=NULL;
-  if (p_twototwo->XSSelector()->
-      FindInGroup(p_twototwo,p_xs,blob->NInP(),2,p_flavours)==std::string::npos) {
+  if (p_twototwo->XSSelector()->FindInGroup
+      (p_twototwo,p_xs,blob->NInP(),2,p_flavours)==std::string::npos) {
     p_xs = p_twototwo->XSSelector()->GetXS(blob->NInP(),2,p_flavours);
     if (p_xs) p_twototwo->Add(p_xs);
   }
@@ -141,7 +141,7 @@ int SimpleXS_Apacic_Interface::PerformShowers()
   msg_Debugging()<<"SimpleXS_Apacic_Interface::PerformShowers(): {\n"
 		 <<"   initial = "<<m_ini<<", final = "<<m_fin<<"\n"
 		 <<"   sudakov weight = "<<p_mehandler->UseSudakovWeight()<<"\n"
-		 <<"    maxpt ini = "<<qmin2i<<" maxpt fin = "<<qmin2f
+		 <<"   maxpt ini = "<<qmin2i<<" maxpt fin = "<<qmin2f
 		 <<" vs. "<<p_hard->OutParticle(0)->Momentum().PPerp2()
 		 <<"\n}"<<std::endl;
   return p_shower->PerformShowers(jetveto,0,p_mehandler->GetISR_Handler()->X1(),

@@ -182,7 +182,8 @@ void Cluster_Partons_CKKW::InitWeightCalculation()
 
   // determine lowest scale for highest multi treatment
   m_qmin = 0.;
-  if (m_njet==m_maxjetnumber && m_njet>2) {
+  if ((m_njet==m_maxjetnumber && m_njet>2) ||
+      (m_njet==2 && p_ct->OrderStrong()>0)) {
     double qmin2(0.0);
     FixJetvetoPt2(qmin2);
     if (m_LowestFromME && m_q2_qcd<qmin2) qmin2 = m_q2_qcd;
@@ -206,11 +207,11 @@ ApplyCombinedInternalWeight(const bool is,const Flavour & fl,
 
   if (is) {
       as_ptij = (*p_runas)(sqr(actual)/m_is_as_factor);
-      qmin = Max(m_qmin,m_qmin_i);
+      qmin = m_qmin!=0.0?m_qmin:m_qmin_i;
   }
   else {
     as_ptij = (*p_runas)(sqr(actual)/m_fs_as_factor);
-    qmin = Max(m_qmin,m_qmin_f);
+    qmin = m_qmin!=0.0?m_qmin:m_qmin_f;
   }
   if (m_kfac!=0.) as_ptij *= 1. + as_ptij/(2.*M_PI)*m_kfac;
   asRatio = as_ptij/asref;
@@ -245,8 +246,8 @@ ApplyExternalWeight(const bool is,const Flavour & fl,
 		    const double actual)
 {
   double qmin(0.), DeltaNum(0.);
-  if (is) qmin = Max(m_qmin,m_qmin_i);
-     else qmin = Max(m_qmin,m_qmin_f);
+  if (is) qmin = m_qmin!=0.0?m_qmin:m_qmin_i;
+     else qmin = m_qmin!=0.0?m_qmin:m_qmin_f;
   if (actual<qmin) {
     ++m_fails;
     DeltaNum = m_AcceptMisClusters;

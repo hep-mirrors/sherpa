@@ -226,7 +226,6 @@ int Amegic_Apacic_Interface::PerformShowers()
     double yp(((Process_Base*)p_mehandler->GetAmegic()->GetProcess())->Ycut());
     if (yp!=-1.0) ycut=yp; 
     p_cluster->JetvetoPt2(qmin2i,qmin2f);
-    p_shower->SetJetvetoPt2(qmin2i,qmin2f);
     p_shower->SetFactorisationScale(scale);
     jetveto=1;
     if (m_maxjetnumber==m_nout && p_mehandler->OrderStrong()==0) jetveto = 0;
