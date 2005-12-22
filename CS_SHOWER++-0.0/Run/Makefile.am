@@ -1,5 +1,5 @@
 SHERPASYS  = ../..
-CSSFLAGS   =	-pedantic -Wall -Winline 
+CSSFLAGS   =	# -pedantic -Wall -Winline 
 
 CSSDIR        =	$(SHERPASYS)/CS_SHOWER++-0.0
 ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
@@ -27,11 +27,11 @@ endif
 bin_PROGRAMS    = CSSTest
 CSSTest_SOURCES = Main.C 
 CSSTest_LDADD   = $(CSSLIBS) $(ATOOLSLIBS) $(MODELLIBS) $(SYSLIBS)
-CSSTest_LDFLAGS = SHERPA_LDFLAGS
+CSSTest_LDFLAGS = -rdynamic
 AM_CXXFLAGS   =	$(CSSFLAGS) 
 INCLUDES      = $(CSSINCS) $(ATOOLSINCS) $(MODELINCS) 
 EXTRA_DIST    =	$(CVSINCLUDE) 
 
 dist-hook:
-	sed -e "s/SHERPA_LDFLAGS/SHERPA_LDFLAGS/1" \
+	sed -e "s/-rdynamic/SHERPA_LDFLAGS/1" \
 	  < Makefile.am > $(distdir)/Makefile.am
