@@ -185,5 +185,8 @@ ATOOLS::Blob_Data_Base *All_Processes::WeightedEvent(const int mode)
     SelectOne();
     res=p_selected->WeightedEvent(mode);
   } while (res==NULL && ++trials<Selected()->PSHandler()->MaxTrials());
+  Weight_Info info(res->Get<Weight_Info>());
+  info.xsecweight*=rpa.Picobarn();
+  res->Set(info);
   return res;
 }

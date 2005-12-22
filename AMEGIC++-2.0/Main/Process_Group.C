@@ -1175,12 +1175,7 @@ double Process_Group::DSigma2()
 ATOOLS::Blob_Data_Base *Process_Group::OneEvent(double _mass) {
   if (m_atoms) {
     SelectOne();
-    Blob_Data_Base *data(dynamic_cast<Process_Base*>(p_selected)->OneEvent(_mass));
-//     Weight_Info info(data->Get<Weight_Info>());
-//     info.xsecweight=Max()*rpa.Picobarn();
-//     data->Set(info);
-//     PRINT_INFO(info.xsecweight);
-    return data;
+    return dynamic_cast<Process_Base*>(p_selected)->OneEvent(_mass);
   }
   return p_pshandler->OneEvent(_mass);
 }
