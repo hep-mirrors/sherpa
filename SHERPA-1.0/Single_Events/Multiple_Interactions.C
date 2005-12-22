@@ -269,6 +269,7 @@ bool Multiple_Interactions::VetoHardProcess(ATOOLS::Blob *const blob)
     m_weight=(*blob)["ME_Weight"]->Get<double>();
     m_ntrials=(*blob)["ME_NumberOfTrials"]->Get<int>();
     p_bloblist->DeleteConnected(blob);
+    p_bloblist->AddBlob(btp::Signal_Process);
     return m_vetoed=true;
   }
   return false;

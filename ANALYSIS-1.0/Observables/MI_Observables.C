@@ -1,5 +1,6 @@
-#ifdef USING_Amisic
 #include "MI_Observables.H"
+
+#ifdef USING__Amisic
 
 using namespace ANALYSIS;
 

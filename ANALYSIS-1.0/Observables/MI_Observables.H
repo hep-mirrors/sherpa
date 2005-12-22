@@ -1,7 +1,9 @@
 #ifndef MI_Observables_H
 #define MI_Observables_H
 
-#ifdef USING_Amisic
+#include "CXXFLAGS.H"
+
+#ifdef USING__Amisic
 
 #include "Primitive_Observable_Base.H"
 #include "../../AMISIC++-1.0/Tools/Amisic_Histogram.H"
