@@ -1,13 +1,6 @@
 INSTALLING SHERPA 1.0.7
 -----------------------
 
-REQUIREMENTS:
- - Linux or Mac OS. The program is developed under SUSE Linux and
-   tested under Mac OS.
- - You need the gnu-compiler gcc. The recommended version of gcc is
-   gcc 3.3.1. Newer versions should work, though.
-   
-
 INSTALLING:
  - Unpack the Sherpa-1.0.7.tar.gz file obtained from www.sherpa-mc.de
    to the folder where you want Sherpa to reside in ( for example to
@@ -17,16 +10,8 @@ INSTALLING:
  - Change to the top-level directory of Sherpa. That´s the directory
    where this file lies in. 
  - From there, type "TOOLS/makeinstall"
- - Wait for the compilation to finish. If you encounter a problem with
-   the compilation, try "TOOLS/makeinstall -t". If Sherpa still does not
-   compile properly, contact the authors at support@sherpa-mc.de for
-   help.
-  
-
-COMPATIBILITY:
-Above installation has been tested and verified to work with the following
-setups:
-- gcc 3.3.1 and SUSE Linux (Kernel 2.4.21)
-- gcc 4.0.0 and Power PC Darwin 8 (Mac OS)
-The installation did not work with the following setups:
-- gcc 2.95.3 and SUSE Linux (Kernel 2.4.18)
+ - Wait for the compilation to finish. 
+ - If you encounter a problem with the installation, refer to the SHERPA
+   mini documentation which is available from the Sherpa homepage
+   www.sherpa-mc.de. If this does not help contact the authors at 
+   support@sherpa-mc.de.
