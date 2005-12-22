@@ -31,7 +31,10 @@ Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,
   p_regulator(Regulator_Base::GetRegulator(this,"Identity",std::vector<double>())),
   p_beamhandler(beamhandler), p_isrhandler(isrhandler), 
   p_pshandler(NULL), p_activepshandler(NULL), p_selector(NULL), 
-  p_cuts(NULL), p_whisto(NULL), m_ownselector(true), m_efunc("1") {}
+  p_cuts(NULL), p_whisto(NULL), m_ownselector(true), m_efunc("1") 
+{
+  m_gmin=-1.0;
+}
 
 Integrable_Base::~Integrable_Base()
 {
