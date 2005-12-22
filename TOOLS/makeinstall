@@ -279,7 +279,7 @@ do
                 `echo clear`
 	        echo -e "\nIt seems that you have problems setting up the package $I"
 	        echo -e "If they persist please contact us under\n"
-	        echo -e "  krauss@theory.phy.tu-dresden.de\n"
+	        echo -e "  support@sherpa-mc.de\n"
 		echo -e "Please send us the complete installation logfile '$LOGFILE'\n"
 	      fi
               exit 1
@@ -315,7 +315,7 @@ if [ "$RELEASE" = "TRUE" ] ; then
     echo -e "*\e[0m                                                     \e[34m*"
     echo -e "*\e[0m  Please check our web page for recent developments  \e[34m*"
     echo -e "*\e[0m                                                     \e[34m*"
-    echo -e "*\e[0m               http://www.sherpa-mc.de               \e[34m*"
+    echo -e "*\e[0m              http://www.sherpa-mc.de                \e[34m*"
     echo -e "*\e[0m                                                     \e[34m*"
     echo -e "*******************************************************\e[0m"
     echo -e "\nhave a nice day `whoami`\n"
