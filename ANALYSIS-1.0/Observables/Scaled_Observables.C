@@ -109,7 +109,7 @@ Primitive_Observable_Base * Scaled_Momentum::Copy() const
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DEFINE_OBSERVABLE_GETTER(Log_Scaled_Momentum,Log_Scaled_Momentum_Getter,"Log10XP")
+DEFINE_OBSERVABLE_GETTER(Log_Scaled_Momentum,Log_Scaled_Momentum_Getter,"LogXP")
 
 Log_Scaled_Momentum::Log_Scaled_Momentum(int type,double xmin,double xmax,int nbins,
 					 const std::string & listname, double ecms) :
@@ -119,7 +119,7 @@ Log_Scaled_Momentum::Log_Scaled_Momentum(int type,double xmin,double xmax,int nb
 void Log_Scaled_Momentum::Evaluate(const Vec4D & mom,double weight,int ncount) 
 {
   double xp = 2.*Vec3D(mom).Abs()/m_ecms;
-  double xi = - log10(xp);
+  double xi = - log(xp);
 
   p_histo->Insert(xi,weight,ncount); 
 } 
