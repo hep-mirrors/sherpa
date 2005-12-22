@@ -45,7 +45,8 @@ Spacelike_Sudakov::~Spacelike_Sudakov()
 bool Spacelike_Sudakov::Initialize()
 {
   m_facscale = rpa.gen.Ycut()*m_s_hadron;
-  p_tools->CalculateMaxCouplings(m_cpl_scheme,m_pt2min,m_s_hadron);
+  p_tools->CalculateMaxCouplings
+    (m_cpl_scheme,m_pt2min*m_cpl_scale_fac,m_s_hadron*m_cpl_scale_fac);
 
   if (p_pdf->Bunch().IsHadron()) {
     for (int i=1;i<6;++i) {
@@ -241,9 +242,6 @@ bool Spacelike_Sudakov::OrderingVeto(Knot * mo)
   if (!m_inflav.Strong()) return false;
   switch (m_ordering_scheme) {
   case 0 :
-    if (m_pt2 > mo->maxpt2) {
-      msg_Debugging()<<"ss: would veto pt "<<m_pt2<<"\n";
-    }
     return false;
   case 2 : 
     if (th > mo->thcrit) {
