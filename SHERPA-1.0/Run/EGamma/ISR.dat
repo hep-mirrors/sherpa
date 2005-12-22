@@ -1,0 +1,49 @@
+!-------------------------------------------------------
+!-- ISR parameters ------------------------------------
+!-------------------------------------------------------
+BUNCH_1         = 22        ! possible beam particles:  P+, P-, e+, e-
+ISR_1           = Off       ! On/Off
+! 
+BUNCH_2         = 11        ! possible beam particles:  P+, P-, e+, e- 
+ISR_2           = On        ! On/Off
+!
+ISR_SMIN        = 0.01    ! Minimal fraction of nominal s for parton after ISR
+ISR_SMAX        = 1.0     ! Maximal fraction of nominal s for parton after ISR
+!
+ISR_E_ORDER     = 1         ! Perturbative order of electron structure function
+ISR_E_SCHEME    = 2         ! Beta-scheme : 0,1,2 , default = 2 
+!
+PDF_SET         = cteq6l1   ! For LHAPDF use the following PDFs in
+                            ! in combination with PDFsets
+                            ! a02_lo_v.LHgrid, a02_nlo_v.LHgrid, 
+                            ! a02_nnlo_v.LHgrid
+                            ! Alekhin_1000.LHpdf, Alekhin_100.LHpdf
+			    ! Botje_1000.LHpdf, Botje_100.LHpdf
+                            ! cteq4d.LHgrid, cteq4l.LHgrid, cteq4m.LHgrid
+                            ! cteq5d.LHgrid, cteq5l.LHgrid, cteq5m1.LHgrid
+                            ! cteq5m.LHgrid, cteq61.LHgrid, cteq61.LHpdf
+                            ! cteq6.LHpdf, cteq6l.LHpdf, cteq6ll.LHpdf
+                            ! cteq6mE.LHgrid, cteq6m.LHpdf 
+                            ! Fermi2002_1000.LHpdf, Fermi2002_100.LHpdf 
+                            ! GRV98lo.LHgrid, GRV98nlo.LHgrid
+                            ! H12000disE.LHgrid, H12000dis.LHgrid 
+	                    ! H12000lo2E.LHgrid, H12000lo2.LHgrid
+                            ! H12000loE.LHgrid, H12000lo.LHgrid
+                            ! H12000msE.LHgrid, H12000ms.LHgrid
+                            ! MRST2001E.LHgrid, MRST2001E.LHpdf 
+			    ! MRST2001.LHpdf, MRST2001lo.LHgrid
+                            ! MRST2001nlo.LHgrid. MRST2001nlo.LHpdf
+                            ! MRST2001nnlo.LHgrid, MRST2002nlo.LHgrid 
+                            ! MRST2002nlo.LHpdf, MRST2002nnlo.LHgrid
+			    ! MRST2003cnlo.LHgrid, MRST2003cnlo.LHpdf
+                            ! MRST2003cnnlo.LHgrid, MRST98.LHpdf
+                            ! ZEUS2002_FF.LHpdf, ZEUS2002_TR.LHpdf
+			    ! ZEUS2002_ZM.LHpdf
+                            !
+                            ! alternatively use cteq6 via CTEQ6Grid
+                            ! cteq6m,cteq6d,cteq6l,cteq6l1
+                            !
+                            ! Or use interface to MRST99 via MRST99Grid
+                            ! MRST99
+PDF_SET_VERSION = 1
+PDF_GRID_PATH   = CTEQ6Grid ! PDFsets,MRST99Grid,CTEQ6Grid
