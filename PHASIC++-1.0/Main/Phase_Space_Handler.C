@@ -704,10 +704,10 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
       m_weight=value;
       m_trials=i;
       return new Blob_Data<Weight_Info>
-	(Weight_Info(m_weight,selected->ProcWeight()/
-		     p_process->Parent()->ProcWeight(),
-		     m_weight,
-		     m_trials,m_trials));
+	(Weight_Info(m_weight,p_process->GMin()>=0.0?
+		     selected->ProcWeight()/p_process->Parent()->ProcWeight():
+		     p_process->EnhanceFactor(),
+		     m_weight,m_trials,m_trials));
     }
     // call from amisic
     if ((psm::code)mode&psm::no_lim_isr ||
