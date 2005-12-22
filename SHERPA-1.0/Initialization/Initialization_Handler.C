@@ -464,9 +464,8 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   bool needextra = true;
   Hadron_Decay_Handler * hdhandler = NULL;
   string decmodel = dr.GetValue<string>("DECAYMODEL",string("Lund"));
-  msg.Out()<<"Decaymodel = "<<decmodel<<std::endl;
+  msg.Info()<<"Decaymodel = "<<decmodel<<std::endl;
 #ifdef USING__Hadrons
-  msg.Out()<<"             ... USING__HADRONS enabled"<<std::endl;
   if (decmodel==std::string("Hadrons")) {
     string decaypath       = dr.GetValue<string>("DECAYPATH",string("Decaydata/"));
     string decayfile       = dr.GetValue<string>("DECAYFILE",string("HadronDecays.dat"));
