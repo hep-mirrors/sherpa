@@ -113,10 +113,9 @@ nobase_data_DATA      = \
 			MRST99Grid/cor12.dat \
 			MRST01Grid/lo2002.dat
 EXTRA_DIST    =	\
-		$(CVSINCLUDE) 
-
-#	     	PDFsets.tar.gz MRST99Grid.tar.gz CTEQ6Grid.tar.gz
+		$(CVSINCLUDE) \
+		MRST01Grid MRST99Grid CTEQ6Grid
 
 dist-hook:
-	sed -e "s/-dynamic -flat_namespace/SHERPA_LDFLAGS/1" \
+	sed -e "s/-rdynamic/SHERPA_LDFLAGS/1" \
 	  < Makefile.am > $(distdir)/Makefile.am
