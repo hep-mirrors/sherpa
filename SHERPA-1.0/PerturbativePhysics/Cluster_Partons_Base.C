@@ -33,8 +33,8 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
     m_bp_mode=12;
   }
   if (m_bp_mode&16) m_kfac = CA*(67./18.-M_PI*M_PI/6.)-10./9.*TR*Nf;
-  m_is_as_factor=ToType<double>(rpa.gen.Variable("IS_CPL_SCALE_FACTOR"));
-  m_fs_as_factor=ToType<double>(rpa.gen.Variable("FS_CPL_SCALE_FACTOR"));
+  m_is_as_factor=ToType<double>(rpa.gen.Variable("IS_CPL_SCALE_FACTOR","1"));
+  m_fs_as_factor=ToType<double>(rpa.gen.Variable("FS_CPL_SCALE_FACTOR","1"));
   int jetratemode = dr.GetValue<int>("CALCJETRATE",-1);
   msg_Info()<<"Initalize Cluster_Partons_Base with {\n"
 	    <<"   Sudakov type            = "<<m_bp_mode<<"\n"
