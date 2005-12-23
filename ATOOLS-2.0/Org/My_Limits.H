@@ -16,11 +16,10 @@
 #else
 namespace std {
 
-  template <class Type>
-  class numeric_limits {
-  public:
+  template <typename _Tp>
+  struct numeric_limits {
 
-    static Type max() { return (Type)0; }
+    static _Tp max() { return static_cast<_Tp>(0); }
 
   };// end of class numeric_limits
 

@@ -5,6 +5,7 @@
 #include "Message.H"
 #include "Pol_Info.H"
 #include "Run_Parameter.H"
+#include <algorithm>
 
 using namespace ATOOLS;
 using namespace AMEGIC;
@@ -96,7 +97,7 @@ int Helicity::GetPartnerPol(const int heli,const int flav, int& lambda) // inlin
   
   // get the sign and the oppsite sign of the polarisation
   lambda = (heli/div) % m_nPols[flav];
-  int lambda2= lambda xor 1;
+  int lambda2= 1-lambda;
   
   // obtain the corresponding helComb
   return heli + div*(lambda2 - lambda);

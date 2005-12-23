@@ -1,6 +1,7 @@
 #include "Process_Info.H"
 #include "MathTools.H"
 #include "Point.H"
+#include <algorithm>
 
 using namespace AMEGIC;
 using namespace ATOOLS;

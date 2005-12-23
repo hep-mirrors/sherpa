@@ -2,6 +2,8 @@
 
 #include "Exception.H"
 
+#include <typeinfo>
+
 INSTANTIATE_SMART_POINTER(std::ifstream)
 INSTANTIATE_SMART_POINTER(std::ofstream)
 

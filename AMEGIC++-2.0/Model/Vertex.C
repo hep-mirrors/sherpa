@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <stdlib.h>
 #include <stdio.h>
+#include <algorithm>
 
 using namespace AMEGIC;
 using namespace ATOOLS;
