@@ -114,19 +114,21 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
     p_initrees[0]->CheckMomentumConservation();
     p_initrees[1]->CheckMomentumConservation();
   }
-  Vec4D::ResetAccu();
   switch (p_jetveto->TestKinematics(1)) {
   case 0:
     msg_Debugging()<<"MLM jet veto\n";
+    Vec4D::ResetAccu();
     return 0;
   case -1: 
     msg_Debugging()<<"Lose jet veto\n";
     m_last_ljv=true;
+    Vec4D::ResetAccu();
     return -1;
   }
   msg_Debugging()<<"kinematics check passed"<<std::endl;
   int number(0);
   Vec4D sum_fs(p_finshower->GetMomentum(p_fintree->GetRoot(),number));
+  Vec4D::ResetAccu();
   if (number<0) {
     msg.Error()<<METHOD<<"(..): Four Momentum not conserved. Abort."
 	       <<std::endl;
