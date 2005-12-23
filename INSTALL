@@ -28,7 +28,7 @@ INSTALLATION:
 
  - From there, type 
  
-     TOOLS/makeinstall
+     TOOLS/makeinstall -c
      
    If Sherpa is to be installed into a different directory, the 
    installation prefix can be changed via
