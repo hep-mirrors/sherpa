@@ -3,7 +3,7 @@
 !-------------------------------------------------------
 EVENTS          = 2      	! Number of Events
 Num. Accuracy   = 1.e-10 	!
-OUTPUT          = 2      	! Output level:
+OUTPUT          = 3      	! Output level:
 !                        	! 0=errors,1=events,2=run info,
 !			 	! 3=events+information
 BEAM_DATA_FILE   = Beam.dat
