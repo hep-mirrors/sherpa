@@ -34,8 +34,7 @@ libToolsPhys_la_SOURCES       =	\
 				Color_Tester.C \
 				Momentum_Shifter.C \
 				HepEvt_Interface.C \
-				Flow.C \
-				Color.C
+				Flow.C
 include_HEADERS        =	\
 			Flavour.H \
 			Particle.H \
@@ -60,8 +59,7 @@ include_HEADERS        =	\
 			Color_Tester.H \
 			Momentum_Shifter.H \
 			HepEvt_Interface.H \
-			Event.H \
-			Color.H
+			Event.H
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(ATOOLSFLAGS)
 INCLUDES      = $(MODELINCS) $(ATOOLSINCS)
