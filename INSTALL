@@ -1,18 +1,56 @@
 INSTALLING SHERPA 1.0.7
 -----------------------
 
-INSTALLING:
+Sherpa 1.0.7 provides the standard GNU installation procedure.
+The default prefix is $PWD. If not specified differently, the 
+directory structure after installation is organized as follows
+
++---------------------+---------------------------------------------+
+|     Directory       |                Content                      |
++=====================+=============================================+
+|                     |                                             |
+|  $(prefix)/bin      |  Sherpa executeable and scripts             |
+|  $(prefix)/include  |  headers for process library compilation    |
+|  $(prefix)/lib      |  basic libraries                            |
+|  $(prefix)/share    |  PDFs                                       |
+|                     |                                             |
++---------------------+---------------------------------------------+
+
+INSTALLATION:
+
  - Unpack the Sherpa-1.0.7.tar.gz file obtained from www.sherpa-mc.de
-   to the folder where you want Sherpa to reside in ( for example to
-   ~/MySherpa/ ). When you read this file you will probably have done
-   this already.
+   to the folder where you want Sherpa to reside in (e.g. ~/MySherpa/). 
+   When you read this file you will probably have done this already.
+
  - Open a console.
- - Change to the top-level directory of Sherpa. That´s the directory
-   where this file lies in. 
- - From there, type "TOOLS/makeinstall -t -r"
+
+ - Change to the top-level directory of Sherpa (e.g. ~/MySherpa/). 
+
+ - From there, type 
+ 
+     TOOLS/makeinstall
+     
+   If Sherpa is to be installed into a different directory, the 
+   installation prefix can be changed via
+
+     TOOLS/makeinstall --copt --prefix=<your prefix>
+
+   Similarly any configure option may be specified.
+
  - Wait for the compilation to finish. 
- - If you encounter a problem with the installation, refer to the SHERPA
-   mini documentation which is available from the Sherpa homepage
-   www.sherpa-mc.de. If this does not help contact the authors at 
-   support@sherpa-mc.de and attach the installation log 
-   "sherpa_install.log" to your mail.
+
+If you encounter a problem with the installation, try
+ 
+  TOOLS/makeinstall -t
+    
+and / or refer to the SHERPA mini documentation, which is available 
+from the Sherpa homepage
+
+  http://www.sherpa-mc.de 
+
+If this does not help, contact the authors at 
+   
+  support@sherpa-mc.de 
+
+and attach the installation log "sherpa_install.log" to your mail.
+
