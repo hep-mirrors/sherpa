@@ -174,22 +174,25 @@ void Sherpa::DrawLogo()
 	    <<"version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<" ......../TTT/TTTT\\...|TT/T\\\\\\/   +    ++  + /                  "<<std::endl
 	    <<"-----------------------------------------------------------------------------"<<std::endl
 	    <<std::endl
-	    <<"          SHERPA version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<"                                              "<<std::endl
+	    <<"     SHERPA version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION
+	    <<"                                              "<<std::endl
 	    <<"                                                                             "<<std::endl
-	    <<"          AUTHORS: Tanju Gleisberg, Stefan Hoeche, Frank Krauss,             "<<std::endl
-	    <<"               Andreas Schaelicke, Steffen Schumann, Jan Winter              "<<std::endl
+	    <<"     Authors: Timo Fischer, Tanju Gleisberg, Stefan Hoeche,                  "<<std::endl
+	    <<"              Frank Krauss, Thomas Laubrich, Andreas Schaelicke,             "<<std::endl
+	    <<"              Steffen Schumann, Jan Winter                                   "<<std::endl
 	    <<"                                                                             "<<std::endl
+	    <<"     This program uses a lot of genuine and original research work           "<<std::endl
+	    <<"     by other people. Users are encouraged to refer to                       "<<std::endl
+	    <<"     the various original publications.                                      "<<std::endl
 	    <<"                                                                             "<<std::endl
-	    <<"          This program uses a lot of genuine and original research           "<<std::endl
-	    <<"          work by other people. Users are encouraged to refer to             "<<std::endl
-	    <<"          the various original publications.                                 "<<std::endl
+	    <<"     Users are kindly asked to refer to the documentation                    "<<std::endl
+	    <<"     published under JHEP 0402 (2004) 056.                                   "<<std::endl
 	    <<"                                                                             "<<std::endl
-	    <<"          Users are kindly asked to refer to the documentation               "<<std::endl
-	    <<"          published under JHEP 0402 (2004) 056.                              "<<std::endl
+	    <<"     Please visit also our homepage                                          "<<std::endl
 	    <<"                                                                             "<<std::endl
-	    <<"          Please visit also our homepage                                     "<<std::endl
-	    <<"          http://www.sherpa-mc.de                                            "<<std::endl
-	    <<"          for news, bugreports, updates and new releases.                    "<<std::endl
+	    <<"       http://www.sherpa-mc.de                                               "<<std::endl
+	    <<"                                                                             "<<std::endl
+	    <<"     for news, bugreports, updates and new releases.                         "<<std::endl
 	    <<"                                                                             "<<std::endl
 	    <<"-----------------------------------------------------------------------------"<<std::endl
 	    <<std::endl;
