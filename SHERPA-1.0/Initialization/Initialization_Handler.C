@@ -770,8 +770,8 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 	  // should call a version roution
 	  msg.Out()<<" Sherpa Version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<endl;
 	  msg.Out()<<"   employing: "<<endl;
-	  msg.Out()<<"    * AMEGIC++ Version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<endl;
-	  msg.Out()<<"    * APACIC++ Version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<endl;
+	  msg.Out()<<"    * AMEGIC++ Version 2."<<SHERPA_SUBVERSION<<endl;
+	  msg.Out()<<"    * APACIC++ Version 2."<<SHERPA_SUBVERSION<<endl;
 
 	  string pyver("6.214");
 	  msg.Out()<<"    * Pythia Version "<<pyver<<endl;
