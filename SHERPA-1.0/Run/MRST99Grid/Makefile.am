@@ -4,7 +4,7 @@ endif
 
 bindir        = $(datadir)/MRST99Grid
 
-bin_DATA      =	\
+bin_SCRIPTS   =	\
 		cor01.dat \
 		cor02.dat \
 		cor03.dat \

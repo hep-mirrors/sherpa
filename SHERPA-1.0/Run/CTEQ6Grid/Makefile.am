@@ -4,7 +4,7 @@ endif
 
 bindir        = $(datadir)/CTEQ6Grid
 
-bin_DATA      =	\
+bin_SCRIPTS   =	\
 		cteq6l1.tbl \
 		cteq6l.tbl \
 		cteq6m.tbl \
