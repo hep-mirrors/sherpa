@@ -220,7 +220,7 @@ bool Amegic_Apacic_Interface::FillBlobs(ATOOLS::Blob_List * bl)
 
 int Amegic_Apacic_Interface::PerformShowers()
 {
-  int jetveto(-1), losejv(1);
+  int jetveto(0), losejv(1);
   if (p_mehandler->UseSudakovWeight()) {
     double qmin2i,qmin2f; 
     double scale(p_mehandler->FactorisationScale());
