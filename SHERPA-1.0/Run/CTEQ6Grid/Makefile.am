@@ -2,7 +2,9 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-data_DATA     =	\
+bindir        = $(datadir)/CTEQ6Grid
+
+bin_DATA      =	\
 		cteq6l1.tbl \
 		cteq6l.tbl \
 		cteq6m.tbl \

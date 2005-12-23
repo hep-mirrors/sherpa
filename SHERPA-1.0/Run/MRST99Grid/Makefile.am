@@ -2,7 +2,9 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-data_DATA     =	\
+bindir        = $(datadir)/MRST99Grid
+
+bin_DATA      =	\
 		cor01.dat \
 		cor02.dat \
 		cor03.dat \
