@@ -112,6 +112,24 @@ nobase_data_DATA      = \
 			MRST99Grid/cor11.dat \
 			MRST99Grid/cor12.dat \
 			MRST01Grid/lo2002.dat
+data_DATA     =	\
+		CTEQ6Grid/cteq6l1.tbl \
+		CTEQ6Grid/cteq6l.tbl \
+		CTEQ6Grid/cteq6m.tbl \
+		CTEQ6Grid/cteq6d.tbl \
+		MRST99Grid/cor01.dat \
+		MRST99Grid/cor02.dat \
+		MRST99Grid/cor03.dat \
+		MRST99Grid/cor04.dat \
+		MRST99Grid/cor05.dat \
+		MRST99Grid/cor06.dat \
+		MRST99Grid/cor07.dat \
+		MRST99Grid/cor08.dat \
+		MRST99Grid/cor09.dat \
+		MRST99Grid/cor10.dat \
+		MRST99Grid/cor11.dat \
+		MRST99Grid/cor12.dat \
+		MRST01Grid/lo2002.dat
 EXTRA_DIST    =	\
 		$(CVSINCLUDE) \
 		MRST01Grid MRST99Grid CTEQ6Grid
