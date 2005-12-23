@@ -4,7 +4,8 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-AMEGICFLAGS  =	# -pedantic -Wall #-Winline
+AMEGICFLAGS   =	# -pedantic -Wall #-Winline
+DEFS          =
 
 libAmegicPSGen_la_SOURCES = Phase_Space_Generator.C Channel_Generator_Base.C \
 			    Channel_Generator.C Channel_Generator_NPV.C \

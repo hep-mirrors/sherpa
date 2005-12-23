@@ -1,6 +1,7 @@
 SHERPASYS     =	../..
 
 PHASICFLAGS   =	# -pedantic -Wall -Winline
+DEFS          =
 
 MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
 PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main

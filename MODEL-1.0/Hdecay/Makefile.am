@@ -4,7 +4,8 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-MODELFLAGS  =	# -pedantic -Wall #-Winline
+MODELFLAGS    =	# -pedantic -Wall #-Winline
+DEFS          =
 
 libHdecay_la_SOURCES = Hdecay_Fortran_Interface.C hdecay.f \
 		       haber.f feynhiggs.f hdecay_inter.f 

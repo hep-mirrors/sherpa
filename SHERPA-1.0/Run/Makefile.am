@@ -1,6 +1,7 @@
 SHERPASYS  = ../..
 
 SHERPAFLAGS   =	# -pedantic -Wall -Winline 
+DEFS          =
 
 ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
 ANALYSISDIR   =	$(SHERPASYS)/ANALYSIS-1.0
@@ -86,7 +87,7 @@ Sherpa_LDADD  =	-L@libdir@ $(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) \
 		$(BEAMLIBS) $(ATOOLSLIBS) $(HADRONSLIBS) $(PDFLIBS) \
 		$(LHAPDFLIBS) $(CTEQLIBS) $(SYSLIBS) $(CLHEPLIBS) \
 		$(ROOTLDADD) $(ISAJETLIB) $(HDECAYLIB)
-Sherpa_LDFLAGS        =	-rdynamic
+Sherpa_LDFLAGS        =	-dynamic -flat_namespace
 AM_CXXFLAGS   =	$(SHERPAFLAGS) $(ROOTFLAGS) 
 INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(HADRONSINCS) \
 		$(APACICINCS) $(AMISICINCS) $(AMEGICINCS) \
@@ -121,5 +122,5 @@ EXTRA_DIST    =	\
 #	     	PDFsets.tar.gz MRST99Grid.tar.gz CTEQ6Grid.tar.gz
 
 dist-hook:
-	sed -e "s/-rdynamic/SHERPA_LDFLAGS/1" \
+	sed -e "s/-dynamic -flat_namespace/SHERPA_LDFLAGS/1" \
 	  < Makefile.am > $(distdir)/Makefile.am

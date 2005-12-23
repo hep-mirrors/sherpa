@@ -1,6 +1,7 @@
 SHERPASYS  = ../..
 
 SHERPAFLAGS   =	# -pedantic -Wall -Winline 
+DEFS          =
 
 ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
 ANALYSISDIR   =	$(SHERPASYS)/ANALYSIS-1.0
@@ -61,7 +62,7 @@ ApacicLEP_LDADD  =	$(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) \
 		$(PHASICLIBS) $(MODELLIBS) $(PDFLIBS)  \
 		$(BEAMLIBS) $(ATOOLSLIBS) $(ROOTLDADD) \
 		$(SYSLIBS)
-ApacicLEP_LDFLAGS     =	-rdynamic
+ApacicLEP_LDFLAGS     =	-dynamic -flat_namespace
 
 ApacicTevatron_SOURCES = MainTevatron.C 
 ApacicTevatron_LDADD  =	$(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) \
@@ -69,7 +70,7 @@ ApacicTevatron_LDADD  =	$(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS
 		$(PHASICLIBS) $(MODELLIBS) $(PDFLIBS) \
 		$(CTEQLIBS) $(BEAMLIBS) $(ATOOLSLIBS) $(ROOTLDADD) \
 		$(SYSLIBS) $(CLHEPLIBS)
-ApacicTevatron_LDFLAGS        =	-rdynamic
+ApacicTevatron_LDFLAGS        =	-dynamic -flat_namespace
 
 AM_CXXFLAGS   =	$(SHERPAFLAGS) $(AHADICFLAGS) $(AMISICFLAGS) $(ADICICFLAGS) \
 		$(CLHEPFLAGS) $(LHAPDFFLAGS) $(HADRONFLAGS) $(ROOTFLAGS)
@@ -79,5 +80,5 @@ INCLUDES      = $(ANALYSISINCS)  \
 		$(BEAMINCS) $(ATOOLSINCS) $(ROOTINCS)
 EXTRA_DIST    = $(CVSINCLUDE)
 dist-hook:
-	sed -e "s/-rdynamic/SHERPA_LDFLAGS/1" \
+	sed -e "s/-dynamic -flat_namespace/SHERPA_LDFLAGS/1" \
 	  < Makefile.am > $(distdir)/Makefile.am

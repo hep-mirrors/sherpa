@@ -2,7 +2,8 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-MODELFLAGS  =	# -pedantic -Wall -Winline
+MODELFLAGS    =	# -pedantic -Wall -Winline
+DEFS          =
 
 lib_LTLIBRARIES = libModelMain.la
 libModelMain_la_SOURCES = Model_Handler.C Model_Base.C \

@@ -1,6 +1,7 @@
 SHERPASYS  = ../..
 
 AMISICFLAGS   =	# -pedantic -Wall -Winline 
+DEFS          =
 
 ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
 EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
@@ -62,5 +63,5 @@ EXTRA_DIST    =	\
 		Particle.dat Hadron.dat Integration.dat Model.dat Beam.dat \
 		ISR.dat MI.dat simplechain.dat Run.dat 
 dist-hook:
-	sed -e "s/-rdynamic/SHERPA_LDFLAGS/1" \
+	sed -e "s/-dynamic -flat_namespace/SHERPA_LDFLAGS/1" \
 	  < Makefile.am > $(distdir)/Makefile.am

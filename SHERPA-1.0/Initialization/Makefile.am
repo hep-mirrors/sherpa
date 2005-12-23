@@ -1,6 +1,7 @@
 SHERPASYS     =	../..
 
 SHERPAFLAGS   =	# -pedantic -Wall #-Winline
+DEFS          =
 
 ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
 ANALYSISDIR   =	$(SHERPASYS)/ANALYSIS-1.0

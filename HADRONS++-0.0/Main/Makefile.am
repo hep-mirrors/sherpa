@@ -2,6 +2,8 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
+DEFS          =
+
 lib_LTLIBRARIES = libHadronsMain.la
 
 libHadronsMain_la_SOURCES = \

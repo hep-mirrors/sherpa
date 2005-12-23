@@ -1,6 +1,7 @@
 SHERPASYS     =	../..
 
 EXTRAXSFLAGS  =	# -pedantic -Wall -Winline
+DEFS          =
 
 EXTRAXSINCS   =	-I../Two2Two -I../BFKL
 PHASICINCS    =	-I$(SHERPASYS)/PHASIC++-1.0/Main

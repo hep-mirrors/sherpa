@@ -1,6 +1,7 @@
 SHERPASYS     =	../..
 
 AMISICFLAGS   =	# -pedantic -Wall -Winline
+DEFS          =
 
 ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org

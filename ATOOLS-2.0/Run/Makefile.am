@@ -1,6 +1,7 @@
 SHERPASYS = ../..
 
 ATOOLSFLAGS   =	-DUSING__COLOUR # -pedantic -Wall -Winline
+DEFS          =
 
 ATOOLSINCS    =	-I../Org -I../Math -I../Phys
 MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main 
@@ -39,5 +40,5 @@ AM_CXXFLAGS   =	$(MODELFLAGS) $(ATOOLSFLAGS) $(ROOTFLAGS)
 INCLUDES      = $(MODELINCS) $(ATOOLSINCS) $(ROOTINCS)
 
 dist-hook:
-	sed -e "s/-rdynamic/SHERPA_LDFLAGS/1" \
+	sed -e "s/-dynamic -flat_namespace/SHERPA_LDFLAGS/1" \
 	  < Makefile.am > $(distdir)/Makefile.am

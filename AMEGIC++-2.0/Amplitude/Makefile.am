@@ -5,7 +5,8 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-AMEGICFLAGS  =	# -pedantic -Wall -Winline
+AMEGICFLAGS   =	# -pedantic -Wall -Winline
+DEFS          =
 
 libAmplitude_la_SOURCES = CFColor.C Amplitude_Base.C \
 			  Single_Amplitude.C Amplitude_Manipulator.C \

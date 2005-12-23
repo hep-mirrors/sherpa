@@ -1,6 +1,7 @@
 SHERPASYS     =	../..
 
 APACICFLAGS   =	# -pedantic -Wall -Winline 
+DEFS          =
 
 APACICINCS    = -I../Main 
 MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
