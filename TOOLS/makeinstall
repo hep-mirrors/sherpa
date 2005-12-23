@@ -276,7 +276,7 @@ do
 	      if [ "$RELEASE" = "TRUE" ] ; then
                 `echo clear`
 	        echo -e "\nIt seems that you have problems setting up the package $I"
-	        echo -e "If they persist please contact us under\n"
+	        echo -e "If they persist please contact the Sherpa group at\n"
 	        echo -e "  support@sherpa-mc.de\n"
 		echo -e "Please send us the complete installation logfile '$LOGFILE'\n"
 	      fi
