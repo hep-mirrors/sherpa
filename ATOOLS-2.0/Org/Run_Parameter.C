@@ -203,3 +203,7 @@ void  Run_Parameter::Gen::SetBeam2(const Flavour b) {
   Data_Collector::AddData("BEAM2",new Blob_Data<std::string>(m_beam2.TexName()));
 }
 
+std::string Run_Parameter::Gen::Variable(const std::string &key,const std::string &def) 
+{ 
+  return s_variables.find(key)!=s_variables.end()?s_variables[key]:def; 
+}
