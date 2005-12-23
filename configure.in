@@ -447,6 +447,8 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  SHERPA-1.0/Single_Events/Makefile \
 	  SHERPA-1.0/Main/Makefile \
 	  SHERPA-1.0/Run/Makefile \
+	  SHERPA-1.0/Run/CTEQ6Grid/Makefile \
+	  SHERPA-1.0/Run/MRST99Grid/Makefile \
 	  SHERPA-1.0/Makefile \
 	  TOOLS/Makefile \
 	  Makefile )
