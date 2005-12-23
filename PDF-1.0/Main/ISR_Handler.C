@@ -431,7 +431,7 @@ void ISR_Handler::SetLimits()
   double e1=p_beam[0]->OutMomentum()[0];
   m_xkey[1]=ATOOLS::Min(e1/p_beam[0]->OutMomentum().PPlus()*
 			(1.0+sqrt(1.0-m_mass2[0]/sqr(e1))),Upper1());
-  double e2=p_beam[0]->OutMomentum()[0];
+  double e2=p_beam[1]->OutMomentum()[0];
   m_xkey[3]=ATOOLS::Min(e2/p_beam[1]->OutMomentum().PMinus()*
 			(1.0+sqrt(1.0-m_mass2[1]/sqr(e2))),Upper2());
   m_spkey[1]=m_splimits[1]=Min(m_splimits[1],m_splimits[2]*m_xkey[1]*m_xkey[3]);
@@ -517,7 +517,7 @@ bool ISR_Handler::CalculateWeight2(const double scale)
 double ISR_Handler::Weight(const Flavour *const flin)
 {
   if (m_mode!=3 || (CheckRemnantKinematics(flin[0],m_x[0],0,false) &&
-		    CheckRemnantKinematics(flin[1],m_x[1],1,false))) 
+		    CheckRemnantKinematics(flin[1],m_x[1],1,false)))
     return p_isrbase[0]->Weight(flin[0])*p_isrbase[1]->Weight(flin[1])
       /m_weight;
   return 0.;
