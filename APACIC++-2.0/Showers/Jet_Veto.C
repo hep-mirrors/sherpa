@@ -162,7 +162,7 @@ int Jet_Veto::TestISKinematics(Knot *const knot)
  		 <<" pt = "<<sqrt(pt2)<<", z/\\tilde z-1 = "
 		 <<z/knot->right->z-1.0<<"\n";
   if (knot->part->Info()!='H') {
-    if (pt2<0.0 || pt2>p_jf->ShowerPt2()) return 0;
+    if (m_jmode && (pt2<0.0 || pt2>p_jf->ShowerPt2())) return 0;
     knot->left->pt2lcm=knot->pt2lcm=pt2;
   }
   return 1;
@@ -185,7 +185,7 @@ int Jet_Veto::TestFSKinematics(Knot *const knot)
 		   <<sqrt(knot->pt2lcm)<<" <- "
 		   <<knot->left->part->Momentum()<<" "
 		   <<knot->right->part->Momentum()<<"\n";
-    if (pt2>p_jf->ShowerPt2()) return 0;
+    if (m_jmode && pt2>p_jf->ShowerPt2()) return 0;
     knot->left->pt2lcm=knot->right->pt2lcm=pt2;
   }
   return 1;
