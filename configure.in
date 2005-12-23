@@ -407,6 +407,8 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  PDF-1.0/KMR/Makefile \
 	  PDF-1.0/Remnant/Makefile \
 	  PDF-1.0/Makefile \
+	  MODEL-1.0/Hdecay/Makefile \
+	  MODEL-1.0/Isajet/Makefile \
 	  MODEL-1.0/Main/Makefile \
 	  MODEL-1.0/Makefile \
 	  PHASIC++-1.0/Main/Makefile \
@@ -437,7 +439,6 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  ANALYSIS-1.0/Makefile \
 	  ANALYSIS-1.0/Main/Makefile \
 	  ANALYSIS-1.0/Observables/Makefile \
-	  SHERPA-1.0/HerwigTools/Makefile \
 	  SHERPA-1.0/Tools/Makefile \
 	  SHERPA-1.0/LundTools/Makefile \
 	  SHERPA-1.0/Initialization/Makefile \
