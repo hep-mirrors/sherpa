@@ -2,8 +2,6 @@
 #include "XS_4F.H"
 #include "XS_QCD.H"
 #include "XS_Drell_Yan.H"
-#include "Off_Shell_EW.H"
-#include "Off_Shell_QCD.H"
 #include "Run_Parameter.H"
 
 using namespace EXTRAXS;
@@ -104,16 +102,6 @@ Single_XS *XS_Selector::GetSingleXS(const size_t nin,const size_t nout,
     return xs;
   }
   if (m_offshell) { 
-    if ((xs=Single_XS::GetProcess<Off_Shell_qqb_llb>(nin,nout,flavours,nqed,nqcd))!=NULL);
-    else if ((xs=Single_XS::GetProcess<Off_Shell_q1q2b_lnulb>(nin,nout,flavours,nqed,nqcd))!=NULL);
-    else if ((xs=Single_XS::GetProcess<Off_Shell_q1q2b_q3q4b>(nin,nout,flavours,nqed,nqcd))!=NULL);
-    else if ((xs=Single_XS::GetProcess<Off_Shell_gg_qqb>(nin,nout,flavours,nqed,nqcd))!=NULL);
-    else if ((xs=Single_XS::GetProcess<Off_Shell_gg_gg>(nin,nout,flavours,nqed,nqcd))!=NULL);
-    else;
-    if (xs!=NULL) {
-      xs->SetScaleScheme(p_owner->ScaleScheme());
-      xs->SetKFactorScheme(p_owner->KFactorScheme());
-    }
     return xs;
   }
   Flavour_Container flc(flavours,nqed,nqcd);
