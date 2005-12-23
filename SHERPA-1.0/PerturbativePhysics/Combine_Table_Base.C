@@ -1,6 +1,7 @@
 #include "Combine_Table_Base.H"
 
 #include "Exception.H"
+#include "My_Limits.H"
 #include <iomanip>
 
 using namespace SHERPA;
