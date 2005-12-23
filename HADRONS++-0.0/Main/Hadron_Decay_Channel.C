@@ -1,5 +1,6 @@
 #include "Hadron_Decay_Channel.H"
 #include "HD_ME_Selector.H"
+#include <stdio.h>
 
 using namespace HADRONS;
 using namespace ATOOLS;

@@ -8,6 +8,7 @@
 #include "Tools.H"
 #endif
 #include <iomanip>
+#include <algorithm>
 #include <unistd.h>
 
 // #define USING__IMMEDIATE_DELETE

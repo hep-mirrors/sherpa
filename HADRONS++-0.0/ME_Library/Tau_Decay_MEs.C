@@ -3,6 +3,7 @@
 #include "XYZFuncs.H"
 #include "Histogram.H"
 #include "Run_Parameter.H"
+#include <stdio.h>
 
 using namespace HADRONS;
 using namespace ATOOLS;
