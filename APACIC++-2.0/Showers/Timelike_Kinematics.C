@@ -461,11 +461,12 @@ GetDeflectionAngle(const double &z,const double &E2,const double &ta,
 
 double Timelike_Kinematics::
 GetRelativeKT2(const double &z,const double &E2,
-	       const double &ta,const double &tb,const double &tc) const
+	       const double &t,const double &t1,const double &t2) const
 {
-  // kt2 of daughter partons w.r.t. mother in light cone kinematics
-  double zlc(LightConeZ(z,E2,ta,tb,tc));
-  return zlc*(1.0-zlc)*ta-(1.0-zlc)*tb-zlc*tc;
+  double w1(z*z*E2), w2((1.-z)*(1.-z)*E2);
+  double p1p2(sqrt((w1-t1)*(w2-t2))), cosreal((2.*z*(1.-z)*E2 - t+t1+t2)/(2.*p1p2)); 
+  double kt2(2.*ATOOLS::Min(w1,w2)*(1. - cosreal));
+  return kt2;
 }
 
 double Timelike_Kinematics::LightConeZ(Knot *const knot) const

@@ -88,8 +88,8 @@ namespace APACIC {
     inline void SetCorrelationScheme(const int scheme)  
     { m_azimuthal_correlation=scheme; }
 
-    inline void SetScaleFactor(const double &fac) { m_rscalefac=fac;         }
-    inline void SetPT2Min(const double &pt2)      { m_t0=4.0*(m_pt2min=pt2); }
+    inline void SetScaleFactor(const double &fac) { m_rscalefac=fac;   }
+    inline void SetPT2Min(const double &pt2)      { m_t0=m_pt2min=pt2; }
 
     inline double ScaleFactor() const { return m_rscalefac; }
     inline double PT2Min() const      { return m_pt2min;    }
