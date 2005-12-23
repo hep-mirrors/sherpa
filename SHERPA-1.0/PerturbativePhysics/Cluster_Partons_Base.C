@@ -36,13 +36,13 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
   m_is_as_factor=ToType<double>(rpa.gen.Variable("IS_CPL_SCALE_FACTOR","1"));
   m_fs_as_factor=ToType<double>(rpa.gen.Variable("FS_CPL_SCALE_FACTOR","1"));
   int jetratemode = dr.GetValue<int>("CALCJETRATE",-1);
-  msg_Info()<<"Initalize Cluster_Partons_Base with {\n"
-	    <<"   Sudakov type            = "<<m_bp_mode<<"\n"
-	    <<"   ren. scale factor       = "<<rpa.gen.RenormalizationScaleFactor()<<"\n" 
-	    <<"   is PS ren. scale factor = "<<m_is_as_factor<<"\n"
-	    <<"   fs PS ren. scale factor = "<<m_fs_as_factor<<"\n"
-	    <<"   K factor                = "<<m_kfac<<"\n"
-	    <<"   calc jetrate            = "<<jetratemode<<"\n}"<<std::endl;
+  msg_Tracking()<<"Initalize Cluster_Partons_Base with {\n"
+		<<"   Sudakov type            = "<<m_bp_mode<<"\n"
+		<<"   ren. scale factor       = "<<rpa.gen.RenormalizationScaleFactor()<<"\n" 
+		<<"   is PS ren. scale factor = "<<m_is_as_factor<<"\n"
+		<<"   fs PS ren. scale factor = "<<m_fs_as_factor<<"\n"
+		<<"   K factor                = "<<m_kfac<<"\n"
+		<<"   calc jetrate            = "<<jetratemode<<"\n}"<<std::endl;
   p_runas = MODEL::as; 
   
   /* 0 no sudakow weights, 1 alphas only, 2 full sudakov weight  (but for highest jet number) */
