@@ -35,9 +35,9 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
   if(p_dechandlers->empty()) return false;
 
   if (_bloblist->empty()) {
-    msg.Error()<<"Potential error in Hadron_Decays::Treat."<<endl
-	       <<"   Incoming blob list contains "<<_bloblist->size()<<" entries."<<endl
-	       <<"   Continue and hope for the best."<<endl;
+    msg.Tracking()<<"Potential error in Hadron_Decays::Treat."<<endl
+		  <<"   Incoming blob list contains "<<_bloblist->size()<<" entries."<<endl
+		  <<"   Continue and hope for the best."<<endl;
     return 0;
   }
 
