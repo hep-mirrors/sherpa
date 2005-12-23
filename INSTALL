@@ -19,12 +19,14 @@ directory structure after installation is organized as follows
 INSTALLATION:
 
  - Unpack the Sherpa-1.0.7.tar.gz file obtained from www.sherpa-mc.de
-   to the folder where you want Sherpa to reside in (e.g. ~/MySherpa/). 
+   to the folder where you want Sherpa to reside in (for example 
+   ~/MySherpa/). 
    When you read this file you will probably have done this already.
 
  - Open a console.
 
- - Change to the top-level directory of Sherpa (e.g. ~/MySherpa/). 
+ - Change to the top-level directory of Sherpa (~/MySherpa/ in above
+   example). 
 
  - From there, type 
  
@@ -39,14 +41,16 @@ INSTALLATION:
 
  - Wait for the compilation to finish. 
 
+
 If you encounter a problem with the installation, try
  
   TOOLS/makeinstall -t
     
-and / or refer to the SHERPA mini documentation, which is available 
-from the Sherpa homepage
+and / or refer to the SHERPA mini documentation and the SHERPA
+Wiki, which are available from the Sherpa homepage
 
   http://www.sherpa-mc.de 
+
 
 If this does not help, contact the authors at 
    
