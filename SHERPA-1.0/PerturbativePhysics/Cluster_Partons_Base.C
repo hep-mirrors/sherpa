@@ -76,7 +76,7 @@ Cluster_Partons_Base::~Cluster_Partons_Base()
   if (p_combi)               { delete p_combi;      p_combi      = NULL; }
   if (p_fssud)               { delete p_fssud;    p_fssud        = NULL; }
   
-  WriteOutSudakovWeights();
+  if (m_counts!=0) WriteOutSudakovWeights();
   
   if (p_events)         delete [] p_events;
   if (p_weight_sum)     delete [] p_weight_sum;
