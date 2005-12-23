@@ -56,7 +56,6 @@ for I in $* ; do
   elif [ "$I" = "-f" ]; then RELEASE=FALSE
   elif [ "$I" = "-r" ]; then RELEASE=TRUE
   elif [ "$I" = "-s" ]; then SCRIPT=TRUE
-  elif [ "$I" = "-n" ]; then NOEXTRACT=TRUE
   elif [ "$I" = "-o" ]; then ONE=TRUE
   elif [ "$I" = "--clean" ]; then CLEAN=TRUE
   elif [ "$I" = "--no-abort" ]; then NOABORT=TRUE
@@ -73,8 +72,7 @@ for I in $* ; do
     echo "         -t             rebuild 'Makefile.in's and 'configure' before compiling" && \
     echo "         -f             display the full information on the setup" && \
     echo "         -r             display minimal information but write a logfile instead" && \
-    echo "         -s             create simple install scripts to be customized by the user" && \
-    echo "         -n             do not extract tar files" && \
+    echo "         -s             create a simple install script to be customized by the user" && \
     echo "         -o             install single module" && \
     echo "         --clean        execute 'make clean' in every module before compiling" && \
     echo "         --no-abort     ignore exit status of 'make'" && \
@@ -82,9 +80,9 @@ for I in $* ; do
     echo "         --mopt         define option for 'make' (default is '-j2')" && \
     echo "         --cxx          define cxx flag for 'make'" && \
     echo "         --f            define fortran flag for 'make'" && \
-    echo "         --clean-up     execute 'make clean' in every module" && \
+    echo "         --clean-up     execute 'make clean' in every module and exit" && \
     echo "         --rm-libs      remove shared libraries (does not remove '.lo' files)" && \
-    echo "         --make-only    do not install shared libraries" && \
+    echo "         --make-only    do not install" && \
     echo "         -h             display this help and exit" && echo && \
     exit 0
   elif [ "$DCXXFLAGS" = "TRUE" ]; then DCXXFLAGS="" && ECXXFLAGS=$I" "$ECXXFLAGS
