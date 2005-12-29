@@ -10,7 +10,11 @@ const double Splitting_Function::s_CF = (s_Nc*s_Nc-1.)/(2.*s_Nc);
 const double Splitting_Function::s_CA = s_Nc;
 const double Splitting_Function::s_TR = 1./2.;
 const double Splitting_Function::s_Tf = s_TR*3.0;
-const double Splitting_Function::s_kappa = s_CA*(67.0/18.0-ATOOLS::sqr(M_PI)/6.0)-s_Tf*10.0/9.0;
+const double Splitting_Function::s_kappa  = s_CA*(67.0/18.0-ATOOLS::sqr(M_PI)/6.0) -
+                                            s_Tf*10.0/9.0;
+const double Splitting_Function::s_kappaG = s_CA*(67.0/18.0-ATOOLS::sqr(M_PI)/6.0);
+const double Splitting_Function::s_kappaQ = s_TR*10.0/9.0;
+
 int Splitting_Function::s_kfactorscheme = 0;
 
 // some virtual functions

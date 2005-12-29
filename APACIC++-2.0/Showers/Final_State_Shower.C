@@ -36,7 +36,22 @@ Final_State_Shower::Final_State_Shower(MODEL::Model_Base *const model,
   p_sud->SetQEDScheme(dataread->GetValue<int>("FS_QED_SCHEME",0));        
   p_sud->SetPT2Min(dataread->GetValue<double>("FS_PT2MIN",1.0));
   p_sud->Init(dataread->GetValue<double>("F_MEDIUM",0.0));
-  p_sud->SetKFactorScheme(dataread->GetValue<int>("S_KFACTOR_SCHEME",1));
+  p_sud->SetKFactorScheme(dataread->GetValue<int>("S_KFACTOR_SCHEME",0));
+
+  std::cout<<"Initialisation : "<<std::endl
+	   <<"   cplscale      = "<<cplscalefac<<std::endl
+	   <<"   z-scheme      = "<<dataread->GetValue<int>("FS_Z_SCHEME",1)<<" ("<<1<<")"<<std::endl
+	   <<"   angle-scheme  = "<<dataread->GetValue<int>("FS_ANGLE_SCHEME",1)<<" ("<<1<<")"<<std::endl  
+	   <<"   order-scheme  = "<<dataread->GetValue<int>("FS_ORDERING_SCHEME",1)<<" ("<<1<<")"<<std::endl  
+	   <<"   cpl-scheme    = "<<dataread->GetValue<int>("FS_COUPLING_SCHEME",1)<<" ("<<1<<")"<<std::endl
+	   <<"   mass-scheme   = "<<dataread->GetValue<int>("FS_MASS_SCHEME",1)<<" ("<<1<<")"<<std::endl   
+	   <<"   width-scheme  = "<<dataread->GetValue<int>("FS_WIDTH_SCHEME",0)<<" ("<<0<<")"<<std::endl   
+	   <<"   MEcorr-scheme = "<<dataread->GetValue<int>("FS_ME_SCHEME",0)<<" ("<<0<<")"<<std::endl 
+	   <<"   correl-scheme = "<<dataread->GetValue<int>("FS_CORR_SCHEME",0)<<" ("<<0<<")"<<std::endl
+	   <<"   QED-effects   = "<<dataread->GetValue<int>("FS_QED_SCHEME",0)<<" ("<<0<<")"<<std::endl        
+	   <<"   PT^2(MIN)     = "<<dataread->GetValue<double>("FS_PT2MIN",1.0)<<" ("<<1.0<<")"<<std::endl
+	   <<"   Med.-effects  = "<<dataread->GetValue<double>("F_MEDIUM",0.0)<<" ("<<0.0<<")"<<std::endl
+	   <<"   kfac          = "<<dataread->GetValue<int>("S_KFACTOR_SCHEME",0)<<" ("<<0<<")"<<std::endl;
 }
 
 Final_State_Shower::~Final_State_Shower() 

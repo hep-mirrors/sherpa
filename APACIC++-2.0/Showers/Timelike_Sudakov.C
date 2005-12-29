@@ -25,6 +25,7 @@ Timelike_Sudakov::~Timelike_Sudakov()
 
 void Timelike_Sudakov::Init(const double fmed)
 {
+  // std::cout<<"Init Sudakov : "<<fmed<<std::endl;
   // for static couplings, set first argument to 0.
   p_tools->CalculateMaxCouplings
     (m_cpl_scheme,m_pt2min*m_rscalefac,m_pt2max*m_rscalefac);
@@ -70,6 +71,8 @@ double Timelike_Sudakov::CrudeInt(double zmin, double zmax)
       break;
     }
   if (sit==m_splittings.end()) return m_lastint=-1.0;
+  //std::cout<<" Int "<<m_inflav<<" ("<<zmin<<", "<<zmax<<" ) "
+  //	   <<" = "<<p_selected->CrudeInt(zmin,zmax)<<std::endl;
   return m_lastint=p_selected->CrudeInt(zmin,zmax);
 }        
 
@@ -92,9 +95,9 @@ void Timelike_Sudakov::AcceptBranch(const Knot *const mo)
   }
   d1->maxpt2 = d2->maxpt2 = mo->smaxpt2;
   d1->thcrit = d2->thcrit = mo->sthcrit;
-  msg_Debugging()<<"  accept daughter = "<<d1->kn_no
-		 <<", set maxpt2 = "<<d1->maxpt2
-		 <<", thcrit = "<<d1->thcrit<<"\n";
+  //std::cout<<"  accept daughter = "<<d1->kn_no
+  //	   <<", set maxpt2 = "<<d1->maxpt2
+  //	   <<", thcrit = "<<d1->thcrit<<" from "<<mo->sthcrit<<"\n";
 }
 
 bool Timelike_Sudakov::Dice(Knot *const mother, Knot *const granny) 
@@ -142,28 +145,36 @@ bool Timelike_Sudakov::Veto(Knot *const mo,double t,double E2)
   // kincheck for first timelike from spacelike
   if (mo->tmax!=0 && m_t>mo->tmax) return true;
   if (E2<t) return true;
-  //  sum m1 + m2 < sqrt(ta)
+ 
+ //  sum m1 + m2 < sqrt(ta)
   m_tb=sqr(GetFlB().PSMass());
   m_tc=sqr(GetFlC().PSMass());
   m_last_veto=1;
   if (t<sqr(GetFlB().PSMass()+GetFlC().PSMass())) return true;
+
   double z(p_kin->GetZ(m_z,t,m_tb,m_tc));
   if (z<0.0 || z>1.0) return true;
+
   m_pt2=p_kin->GetRelativeKT2(z,m_E2,m_t,m_tb,m_tc);
   if (m_pt2<m_pt2min) return true;
+
   // timelike daughters
   m_last_veto=2;
   double wb(z*z*E2), wc((1.-z)*(1.-z)*E2);
   if (m_tb>wb || m_tc>wc) return true;
+
   // z-range and splitting function
   m_last_veto=3;
   if (MassVeto(t,E2)) return true;
+
   // 2. alphaS
   m_last_veto=4;
   if (CplVeto()) return true;
+
   // 3. angular ordering
   m_last_veto=5;
   if (OrderingVeto(mo,t,E2,z)) return true; 
+
   // 5. ME
   m_last_veto=7;
   if (MEVeto(mo)) return true;
@@ -185,6 +196,9 @@ bool Timelike_Sudakov::MassVeto(double t, double E2)
 
 bool Timelike_Sudakov::CplVeto() 
 {
+  //std::cout<<"CplVeto : "<<m_cpl_scheme<<" -> "
+  //   <<"alpha("<<sqrt(m_pt2)<<") = "<<GetCoupling(m_rscalefac*m_pt2)
+  //	   <<" / alpha_max = "<<GetCoupling()<<std::endl;
   switch (m_cpl_scheme) {
   case 0 : return false;
   case 2 : 
@@ -202,7 +216,7 @@ bool Timelike_Sudakov::OrderingVeto(Knot * mo,double t, double E2, double z)
   mo->sthcrit=th;
   mo->smaxpt2=m_pt2;
   msg_Debugging()<<"ts: thcrit = "<<mo->thcrit<<", th = "<<th<<std::endl;
-  msg_Debugging()<<"ts: maxpt2 = "<<mo->maxpt2<<", pt2 = "<<m_pt2<<std::endl;
+  //std::cout<<"ts: maxpt2 = "<<mo->maxpt2<<", pt2 = "<<m_pt2<<std::endl;
   if (!m_inflav.Strong()) return false;
   switch (m_ordering_scheme) {
   case 0 : return false;
@@ -214,7 +228,7 @@ bool Timelike_Sudakov::OrderingVeto(Knot * mo,double t, double E2, double z)
     return true;
   case 1 :
   default :
-    if (th<mo->thcrit || 3.14<mo->thcrit) return false;
+    if (th<mo->thcrit || 3.14<mo->thcrit) return false; 
 #ifdef USING__Veto_Info
     m_vetos[m_mode].back()=m_vetos[m_mode].back()|svc::ang_veto;
 #endif
