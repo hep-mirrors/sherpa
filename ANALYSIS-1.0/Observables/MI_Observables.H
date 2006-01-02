@@ -6,7 +6,7 @@
 #ifdef USING__Amisic
 
 #include "Primitive_Observable_Base.H"
-#include "../../AMISIC++-1.0.7/Tools/Amisic_Histogram.H"
+#include "../../AMISIC++-1.0/Tools/Amisic_Histogram.H"
 
 namespace ANALYSIS {
   class MI_Statistics: public Primitive_Observable_Base {  
