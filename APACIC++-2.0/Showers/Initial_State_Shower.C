@@ -36,8 +36,6 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr,
   int cplscheme(dataread->GetValue<int>("IS_COUPLING_SCHEME",1));
   int pdfscheme(dataread->GetValue<int>("IS_PDF_SCALE_SCHEME",1));
   int orderingscheme(dataread->GetValue<int>("IS_ORDERING_SCHEME",2));
-  Splitting_Function::SetKFactorScheme
-    (dataread->GetValue<int>("S_KFACTOR_SCHEME",1));
   for (short unsigned int i(0);i<2;++i) {
     if (isr->PDF(i)->Q2Min()>m_t0*cplscalefac) {
       msg.Error()<<METHOD<<"(..):\n   IS_PT2MIN*IS_CPL_SCALE_FACTOR "

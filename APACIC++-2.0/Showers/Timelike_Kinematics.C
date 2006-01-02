@@ -10,7 +10,7 @@ using namespace ATOOLS;
 
 Timelike_Kinematics::Timelike_Kinematics(ATOOLS::Jet_Finder *const jf): 
   p_jf(jf),
-  m_zscheme(1), m_anglescheme(0) {}
+  m_zscheme(1) {}
 
 bool Timelike_Kinematics::CheckZRange(Knot * const  mo,
 				      const Flavour *const d1flav,
@@ -464,18 +464,8 @@ GetDeflectionAngle(const double &z,const double &E2,const double &ta,
 
 double Timelike_Kinematics::
 GetRelativeKT2(const double &z,const double &E2,
-	       const double &t,const double &t1,const double &t2) const
+	       const double &ta,const double &tb,const double &tc) const
 {
-  //double pt2(Min(z/(1.-z),(1.-z)/z)*ta);
-  //std::cout<<"   pt2 = "<<pt2<<" from z = "<<z<<", t = "<<ta<<std::endl;
-  //return pt2;
-
-
-  //double w1(z*z*E2), w2((1.-z)*(1.-z)*E2);
-  //double p1p2(sqrt((w1-t1)*(w2-t2))), cosreal((2.*z*(1.-z)*E2 - t+t1+t2)/(2.*p1p2)); 
-  //double kt2(2.*ATOOLS::Min(w1,w2)*(1. - cosreal));
-  //return kt2;
-
   // kt2 of daughter partons w.r.t. mother in light cone kinematics
   double zlc(LightConeZ(z,E2,ta,tb,tc));
   return zlc*(1.0-zlc)*ta-(1.0-zlc)*tb-zlc*tc;

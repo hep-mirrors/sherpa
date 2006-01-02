@@ -12,7 +12,7 @@ namespace APACIC {
 
     ATOOLS::Jet_Finder *p_jf;
 
-    int m_zscheme, m_anglescheme;
+    int m_zscheme;
 
     int ShuffleZ(Knot * const mo) const;
     int ShuffleMomenta(Knot * const mo) const; 
@@ -75,10 +75,8 @@ namespace APACIC {
 
     // inline functions
     inline void SetZScheme(const int &zscheme)    { m_zscheme=zscheme;    }
-    inline void SetAngleScheme(const int &scheme) { m_anglescheme=scheme; }
 
     inline int ZScheme() const     { return m_zscheme;     }
-    inline int AngleScheme() const { return m_anglescheme; }
 
   };// end of class Timelike_Kinematics
 
