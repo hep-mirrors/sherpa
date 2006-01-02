@@ -11,7 +11,7 @@ BEGIN {i=0; sum=0.; integral=0.; binwidth=0.; underflow=0.; overflow=0. }
   }
   ++i; 
 } 
-END {printf "mean=" sum " integral=" integral+(underflow*binwidthh*2.) "  binwidth=" binwidthh*2. "\n";}
+END {printf "mean=" sum/integral " integral=" integral+(underflow*binwidthh*2.) "  binwidth=" binwidthh*2. "\n";}
 
 
 # FILES=`find . -name jet_1_1_pt_1.dat`; for I in $FILES; do echo $I; ../calc_mean < $I; done
