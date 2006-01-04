@@ -1,59 +1,58 @@
-# outgoing part.     | BR    | ME-type   | DC-file
+# outgoing part. 	 | BR 	 | DC-file
 
-# leptonic modes
-{16,11,-12}  | 0.1784    | Tau_Electron.dat;
-{16,13,-14}  | 0.1736    | Tau_Muon.dat;
+# leptonic
+{16,11,-12}	 | 0.1784	 | Tau_Electron.dat;
+{16,13,-14}	 | 0.1736	 | Tau_Muon.dat;
 
-# 1 pseudoscalar modes
-{16,-211}        | 0.1106    | Tau_Pion.dat;
-{16,-321}        | 0.00686   | Tau_Kaon.dat;
- 
-# 2 pseudoscalar modes
-{16,-211,111}    | 0.2542    | Tau_2Pion.dat;
-{16,-321,310}    | 0.00077   | Tau_KaonKS.dat;
-{16,-321,130}    | 0.00077   | Tau_KaonKL.dat;
-{16,-211,310}    | 0.00445   | Tau_PionKS.dat;
-{16,-211,130}    | 0.00445   | Tau_PionKL.dat;
-{16,-321,111}    | 0.0045    | Tau_Pion0Kaon.dat;
- 
-# 3 pseudoscaler modes
-{16,-211,111,111}       | 0.0917    | Tau_3Pion(1charged).dat;
-{16,211,-211,-211}      | 0.0916    | Tau_3Pion(3charged).dat;
-{16,-211,310,111}       | 0.00185   | Tau_2PionKS.dat;
-{16,-211,130,111}       | 0.00185   | Tau_2PionKL.dat;
-{16,-321,211,-211}      | 0.0033    | Tau_2PionKaon.dat;
-{16,111,111,-321}       | 5.8e-4    | Tau_2Pion0Kaon.dat
-{16,-321,321,-211}      | 0.00155   | Tau_Pion2Kaon.dat;
-{16,-321,310,111}       | 0.000775  | Tau_Pion0KaonKS.dat;
-{16,-321,130,111}       | 0.000775  | Tau_Pion0KaonKL.dat;
-{16,-211,310,130}       | 0.00055   | Tau_PionKSKL.dat;
-{16,-211,310,310}       | 0.00024   | Tau_PionKSKS.dat;
-{16,-211,130,130}       | 0.00024   | Tau_PionKLKL.dat;
-{16,-321,-321,321}      | 3.7e-5    | Tau_3Kaon(3charged).dat;
+# modes with 1 pseudoscalar
+{16,-211}	 | 0.1106	 | Tau_Pion.dat;
+{16,-321}	 | 0.00686	 | Tau_Kaon.dat;
 
-# 4 pseudoscalar modes
-{16,211,-211,-211,111}  | 0.0425    | Tau_4Pion(3charged).dat;
-{16,211,111,111,111}    | 0.0108    | Tau_4Pion(1charged).dat;  
-{16,-321,111,111,111}   | 0.00038
-{16,310,-211,111,111}   | 0.000151
-{16,130,-211,111,111}   | 0.000151
-{16,-321,321,-211,111}  | 0.00042
+# modes with 2 pseudoscalar
+{16,-211,111}	 | 0.2542	 | Tau_2Pion.dat;
+{16,-321,310}	 | 0.00077	 | Tau_KaonKS.dat;
+{16,-321,130}	 | 0.00077	 | Tau_KaonKL.dat;
+{16,-211,310}	 | 0.00445	 | Tau_PionKS.dat;
+{16,-211,130}	 | 0.00445	 | Tau_PionKL.dat;
+{16,-321,111}	 | 0.0045	 | Tau_Pion0Kaon.dat;
 
+# modes with 3 pseudoscalars
+{16,-211,111,111}	 | 0.0917	 | Tau_3Pion(1charged).dat;
+{16,211,-211,-211}	 | 0.0916	 | Tau_3Pion(3charged).dat;
+{16,-211,310,111}	 | 0.00185	 | Tau_2PionKS.dat;
+{16,-211,130,111}	 | 0.00185	 | Tau_2PionKL.dat;
+{16,-321,211,-211}	 | 0.0033	 | Tau_2PionKaon.dat;
+{16,111,111,-321}	 | 0.00058   | Tau_2Pion0Kaon.dat;
+{16,-321,321,-211}	 | 0.00155	 | Tau_Pion2Kaon.dat;
+{16,-321,310,111}	 | 0.000755	 | Tau_Pion0KaonKS.dat;
+{16,-321,130,111}	 | 0.000755	 | Tau_Pion0KaonKL.dat;
+{16,-211,310,130}	 | 0.00055	 | Tau_PionKSKL.dat;
+{16,-211,310,310}	 | 0.00024	 | Tau_PionKSKS.dat;
+{16,-211,130,130}	 | 0.00024	 | Tau_PionKLKL.dat;
+{16,-321,-321,321}	 | 3.7e-5	 | Tau_3Kaon(3charged).dat;
+
+# modes with 4 pseudoscalars
+{16,211,-211,-211,111}	 | 0.0425	 | Tau_4Pion(3charged).dat;
+{16,211,111,111,111}	 | 0.0108	 | Tau_4Pion(1charged).dat;
+{16,-321,111,111,111}	 | 0.00038	 | tau-_K-pipipinu_tau.dat;
+{16,310,-211,111,111}	 | 0.000312	 | tau-_K(S)pi-pipinu_tau.dat;
+{16,130,-211,111,111}	 | 0.000312	 | tau-_pi-K(L)pipinu_tau.dat;
+{16,-321,321,-211,111}	 | 0.00042	 | tau-_K+K-pi-pinu_tau.dat;
 
 # modes with eta
-{16,-211,221}           | 0.00013
-{16,-321,221}           | 0.00027
-{16,-211,221,221}       | 0.0001
-{16,221,-211,111}       | 0.00174  | Tau_Eta2Pion.dat; 
+{16,-211,221}	 | 0.00013	 | tau-_etapi-nu_tau.dat;
+{16,-321,221}	 | 0.00027	 | tau-_K-etanu_tau.dat;
+{16,-211,221,221}	 | 0.0001	 | tau-_etaetapi-nu_tau.dat;
+{16,221,-211,111}	 | 0.00174	 | Tau_Eta2Pion.dat;
 
-# 5 pseudoscalar modes
-{16,-211,-211,211,111,111} | 0.0055
-{16,-211,111,111,111,111}  | 0.00095
-{16,-321,111,111,111,111}  | 0.00005
-
-# 6 pseudoscalar modes
-{16,-211,-211,211,111,111,111} | 0.00133
-{16,-211,-211,-211,211,211,111}    | 0.000181
+# modes with 5 pseudoscalars
+{16,-211,-211,211,111,111}	 | 0.0055	 | tau-_pi+pi-pi-pipinu_tau.dat;
+{16,-211,111,111,111,111}	 | 0.00095	 | tau-_pi-pipipipinu_tau.dat;
+{16,-321,111,111,111,111}	 | 0.00005	 | tau-_K-pipipipinu_tau.dat;
+ 
+# modes with 6 pseudoscalars
+{16,-211,-211,211,111,111,111}	 | 0.002748  | tau-_pi+pi-pi-pipipinu_tau.dat;
+{16,-211,-211,-211,211,211,111}	 | 0.000181	 | tau-_pi+pi+pi-pi-pi-pinu_tau.dat;
 
 ! NO_FULLDECAY   ! use this option: no decay of daughters
 ! NO_ANTI        ! use this option: anti-mother does not decay

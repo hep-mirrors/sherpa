@@ -8,9 +8,7 @@ Channels {
 Parameters {
   v      =  1.		 	! V-A structure of tau-nutau
   a      =  1.	
-  Vus    =  0.2205   	! CKM
-  fK     =  0.113	 	! decay constant
 }
 Result {
-   1.82823e-17 7.46e-18 1.52353e-14;
+   1.52215e-14 0 1.52215e-14;
 }
