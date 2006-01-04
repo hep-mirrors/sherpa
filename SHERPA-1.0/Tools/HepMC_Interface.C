@@ -79,7 +79,7 @@ bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs)
   m_parton2particle.clear();
   GenVertex * vertex;
   std::string type;
-  for (ATOOLS::Blob_Iterator blit=blobs->begin();blit!=blobs->end();++blit) {
+  for (ATOOLS::Blob_List::iterator blit=blobs->begin();blit!=blobs->end();++blit) {
     if (Sherpa2HepMC(*(blit),vertex)) {
       p_event->add_vertex(vertex);
       type = (*blit)->Type();
