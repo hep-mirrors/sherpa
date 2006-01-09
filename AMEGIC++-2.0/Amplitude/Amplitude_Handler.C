@@ -57,6 +57,10 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Info* pinf
     pi->GetFlavList(sfl+1);
     gen = new Amplitude_Generator(1+pi->Nout(),sfl,b_dec,model,top,99,99,BS,shand);
     subgraphlist[i] = gen->Matching();
+    if (subgraphlist[i]==NULL) {
+      ndecays = 0;
+      subgraphlist[0] = NULL;
+    }
     int ew,qcd;
     gen->GetOrders(ew,qcd);
     _orderEW  += ew;
