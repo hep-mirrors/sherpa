@@ -1,0 +1,10 @@
+# Decay: omega(782) --> eta P 
+#        0          --> 1   2 
+Channels {
+	AlwaysIntegrate = 0;   ! 0...read results and skip integration
+	                       ! 1...don't read results and integrate
+	Isotropic 1;
+}
+Result {
+   0.0129782 1.64636e-10 0.0129782;
+}

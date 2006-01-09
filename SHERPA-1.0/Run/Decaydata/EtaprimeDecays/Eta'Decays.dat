@@ -1,0 +1,11 @@
+# outgoing part. 	 | BR 	 | DC-file
+{22,22}	 | 0.0212	 | eta'(958)_PP.dat;
+{13,-13,22}	 | 0.0001	 | eta'(958)_Pmu-mu+.dat;
+{111,111,111}	 | 0.0016	 | eta'(958)_pipipi.dat;
+{111,111,221}	 | 0.209	 | eta'(958)_etapipi.dat;
+{211,-211,221}	 | 0.443	 | eta'(958)_etapi+pi-.dat;
+{211,-211,22}	 | 0.295	 | eta'(958)_pi+pi-P.dat;
+{223,22}	 | 0.0303	 | eta'(958)_omega(782)P.dat;
+
+! NO_FULLDECAY   ! use this option: no decay of daughters
+! NO_ANTI        ! use this option: anti-mother does not decay
