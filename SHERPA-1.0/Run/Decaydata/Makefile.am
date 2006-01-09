@@ -13,7 +13,6 @@ SUBDIRS       = \
 		A21320Decays \
 		EtaDecays \
 		EtaprimeDecays \
-		Etaprime_Decays \
 		F21270Decays \
 		F2P1525Decays \
 		K0Decays \
