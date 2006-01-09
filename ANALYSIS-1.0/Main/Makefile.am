@@ -21,7 +21,7 @@ libAnalysis_la_SOURCES        =	\
 			 	Primitive_Detector.C \
 			 	Primitive_Analysis.C \
 				Analysis_Handler.C
-include_HEADERS        =	\
+pkginclude_HEADERS        =	\
 			Final_Selector.H \
 	 		Particle_Selector.H \
 			Primitive_Observable_Base.H \

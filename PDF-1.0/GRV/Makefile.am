@@ -18,7 +18,7 @@ lib_LTLIBRARIES       =	libGRV.la
 libGRV_la_SOURCES     =	\
 			grvphoton.f \
 			GRVph_Fortran_Interface.C 
-include_HEADERS        =	\
+pkginclude_HEADERS        =	\
 			GRVph_Fortran_Interface.H 
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(PDFFLAGS)

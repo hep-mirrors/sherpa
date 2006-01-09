@@ -40,7 +40,7 @@ libToolsOrg_la_SOURCES        = \
 				Integration_Info.C \
 				Debugger.C \
 				My_Root.C
-include_HEADERS       =	\
+pkginclude_HEADERS       =	\
 			CXXFLAGS.H \
 			Smart_Pointer.H \
 			Shell_Tools.H \
@@ -78,7 +78,7 @@ include_HEADERS       =	\
 			My_Root.H
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(ATOOLSFLAGS) $(ROOTFLAGS) \
-		-DSHERPA_INCLUDE_PATH=\"$(includedir)\" \
+		-DSHERPA_INCLUDE_PATH=\"$(pkgincludedir)\" \
 		-DSHERPA_BINARY_PATH=\"$(bindir)\" \
 		-DSHERPA_PDFS_PATH=\"$(datadir)\"
 INCLUDES      = $(MODELINCS) $(ATOOLSINCS) $(ROOTINCS)

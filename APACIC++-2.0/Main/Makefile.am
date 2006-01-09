@@ -18,7 +18,7 @@ libApacicMain_la_SOURCES      = \
 				Knot.C \
 				Tree.C \
 				Apacic.C
-include_HEADERS       =	\
+pkginclude_HEADERS       =	\
 			Knot.H \
 			Tree.H \
 			Veto_Info.H \

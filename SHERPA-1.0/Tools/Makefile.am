@@ -29,7 +29,7 @@ libSherpaTools_la_SOURCES     =	\
 				Input_Output_Handler.C \
 			    	HepMC_Interface.C \
                                 Event_Reader.C
-include_HEADERS        =	\
+pkginclude_HEADERS    =	\
 			Kinematics.H \
 			Input_Output_Handler.H \
 		 	HepMC_Interface.H \

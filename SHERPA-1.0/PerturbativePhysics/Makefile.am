@@ -47,7 +47,7 @@ libSherpaPerturbativePhysics_la_SOURCES       =	\
 						Amegic_Apacic_Interface.C \
 					   	$(ADICICCFILES) \
 					   	$(CSSCFILES)
-include_HEADERS        =	\
+pkginclude_HEADERS        =	\
 			Matrix_Element_Handler.H \
 			MI_Handler.H \
 		 	Shower_Handler.H \

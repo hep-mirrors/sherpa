@@ -28,7 +28,7 @@ INCLUDES = -I../Main \
 	   -I../../ATOOLS-2.0/Phys \
 	   -I../../ATOOLS-2.0/Math \
 	   -I../../ATOOLS-2.0/Org 
-include_HEADERS = Phase_Space_Generator.H Channel_Generator_Base.H \
+pkginclude_HEADERS = Phase_Space_Generator.H Channel_Generator_Base.H \
 		 Channel_Generator.H Channel_Generator_NPV.H \
 		 Channel_Generator3V.H Channel_Generator3_NPV.H \
 		 Channel_Generator_Decays.H Channel_Generator_KK.H

@@ -23,7 +23,7 @@ libLundTools_la_SOURCES       =	\
 				pyplst.f \
 				pymult.f \
 				Lund_Interface.C 
-include_HEADERS        =	\
+pkginclude_HEADERS        =	\
 		 	Lund_Wrapper.H \
 			Lund_Interface.H 
 EXTRA_DIST    = $(CVSINCLUDE)

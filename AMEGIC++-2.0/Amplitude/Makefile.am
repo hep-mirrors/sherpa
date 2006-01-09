@@ -26,7 +26,7 @@ INCLUDES = -I../Amplitude \
 	   -I../../ATOOLS-2.0/Phys \
 	   -I../../ATOOLS-2.0/Math \
 	   -I../../ATOOLS-2.0/Org 
-include_HEADERS = CFColor.H Single_Amplitude.H \
+pkginclude_HEADERS = CFColor.H Single_Amplitude.H \
                  Amplitude_Generator.H Amplitude_Manipulator.H \
 		 Color_Generator.H \
 	         Prop_Generator.H Zfunc_Generator.H Pfunc.H \

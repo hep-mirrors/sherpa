@@ -28,7 +28,7 @@ libToolsMath_la_SOURCES       =	\
 				Grid.C \
 				Primitive_Integrator.C \
 				Algebra_Interpreter.C
-include_HEADERS        =	\
+pkginclude_HEADERS        =	\
 			MathTools.H \
 			Random.H \
 			Function_Base.H \

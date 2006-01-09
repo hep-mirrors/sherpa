@@ -15,7 +15,7 @@ libToolsMHV_la_SOURCES        =	\
 				Mom.C \
 				MHV_Calculator.C \
 				PermStore.C
-include_HEADERS       =	\
+pkginclude_HEADERS       =	\
 			Mom.H \
 			MHV_Calculator.H \
 			PermStore.H

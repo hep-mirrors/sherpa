@@ -31,7 +31,7 @@ libApacicShowers_la_SOURCES   = \
 				Jet_Veto.C \
 			      	Final_State_Shower.C \
 				Initial_State_Shower.C
-include_HEADERS        = \
+pkginclude_HEADERS        = \
 			Sudakov_Tools.H \
 			Splitting_Function.H \
 			Splitting_Group.H \

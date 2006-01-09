@@ -31,7 +31,7 @@ libAmisicModel_la_SOURCES     = \
 				Simple_Chain.C \
 				Reggeon_Trajectory.C \
 				Simple_String.C 
-include_HEADERS        = \
+pkginclude_HEADERS        = \
 			Grid_Creator.H \
 			Profile_Function_Base.H \
 			Profile_Function.H \

@@ -27,7 +27,7 @@ INCLUDES = -I../Amplitude \
 	   -I../../ATOOLS-2.0/Phys \
 	   -I../../ATOOLS-2.0/Math \
 	   -I../../ATOOLS-2.0/Org 
-include_HEADERS = Helicity.H Topology.H Polarisation.H Pol_Info.H Point.H \
+pkginclude_HEADERS = Helicity.H Topology.H Polarisation.H Pol_Info.H Point.H \
 		 Process_Info.H Process_Base.H Single_Process.H \
 		 Single_Process_MHV.H Process_Group.H \
 		 All_Processes.H Full_Decay_Table.H All_Decays.H Amegic.H 

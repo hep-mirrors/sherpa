@@ -43,7 +43,7 @@ endif
 
 lib_LTLIBRARIES       =	libSherpaMain.la
 libSherpaMain_la_SOURCES      =	Sherpa.C 
-include_HEADERS        =	Sherpa.H 
+pkginclude_HEADERS    =	Sherpa.H 
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(SHERPAFLAGS) 
 INCLUDES      = $(SHERPAINCS) $(APACICINCS) $(AMEGICINCS) \

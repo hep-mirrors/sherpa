@@ -35,7 +35,7 @@ libToolsPhys_la_SOURCES       =	\
 				Momentum_Shifter.C \
 				HepEvt_Interface.C \
 				Flow.C
-include_HEADERS        =	\
+pkginclude_HEADERS        =	\
 			Flavour.H \
 			Particle.H \
 			Particle_Qualifier.H \

@@ -22,7 +22,7 @@ libExtraXS2_2_la_SOURCES      =	\
 				XS_4F.C \
 				QED_Processes.C \
 				QCD_Processes.C
-include_HEADERS        =	\
+pkginclude_HEADERS        =	\
 			XS_QCD.H \
 			XS_Drell_Yan.H \
 			XS_4F.H \

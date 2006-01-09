@@ -27,7 +27,7 @@ libAmisicTools_la_SOURCES     = \
 				Fixed_Variable_Channel.C \
 				Environment.C \
 				Semihard_QCD.C 
-include_HEADERS        = \
+pkginclude_HEADERS        = \
 			Amisic_Histogram.H \
 			Fixed_Variable_Channel.H \
 			Environment.H \

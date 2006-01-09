@@ -25,7 +25,7 @@ libPDF_la_SOURCES     =	\
 		    	Intact.C \
 			Structure_Function.C \
 			ISR_Handler.C 
-include_HEADERS       =	\
+pkginclude_HEADERS       =	\
 	         	PDF_Base.H \
 		 	PDF_Electron.H \
 			Continued_PDF.H \

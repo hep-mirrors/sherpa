@@ -44,7 +44,7 @@ endif
 
 lib_LTLIBRARIES       =	libSherpaInitialization.la
 libSherpaInitialization_la_SOURCES    =	Initialization_Handler.C 
-include_HEADERS        =	Initialization_Handler.H 
+pkginclude_HEADERS    =	Initialization_Handler.H 
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(SHERPAFLAGS) 
 INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(APACICINCS) \

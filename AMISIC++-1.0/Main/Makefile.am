@@ -26,7 +26,7 @@ lib_LTLIBRARIES       = libAmisic.la
 libAmisic_la_SOURCES  = \
 			MI_Base.C \
 			Amisic.C 
-include_HEADERS        = \
+pkginclude_HEADERS        = \
 			MI_Base.H \
 			Amisic.H 
 EXTRA_DIST    = $(CVSINCLUDE)
