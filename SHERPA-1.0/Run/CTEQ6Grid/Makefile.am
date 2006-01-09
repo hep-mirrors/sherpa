@@ -2,7 +2,7 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-pdfdir        = $(datadir)/CTEQ6Grid
+pdfdir        = $(pkgdatadir)/CTEQ6Grid
 
 dist_pdf_DATA         =	\
 			cteq6l1.tbl \

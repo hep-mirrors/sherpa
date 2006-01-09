@@ -2,7 +2,7 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-pdfdir        = $(datadir)/MRST99Grid
+pdfdir        = $(pkgdatadir)/MRST99Grid
 
 dist_pdf_DATA         =	\
 			cor01.dat \
