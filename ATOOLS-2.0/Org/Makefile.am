@@ -80,5 +80,5 @@ EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(ATOOLSFLAGS) $(ROOTFLAGS) \
 		-DSHERPA_INCLUDE_PATH=\"$(pkgincludedir)\" \
 		-DSHERPA_BINARY_PATH=\"$(bindir)\" \
-		-DSHERPA_PDFS_PATH=\"$(datadir)\"
+		-DSHERPA_PDFS_PATH=\"$(pkgdatadir)\"
 INCLUDES      = $(MODELINCS) $(ATOOLSINCS) $(ROOTINCS)
