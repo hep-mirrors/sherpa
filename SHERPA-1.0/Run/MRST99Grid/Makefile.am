@@ -2,9 +2,9 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-bindir        = $(datadir)/MRST99Grid
+pdfdir        = $(datadir)/MRST99Grid
 
-dist_bin_SCRIPTS      =	\
+dist_pdf_DATA         =	\
 			cor01.dat \
 			cor02.dat \
 			cor03.dat \

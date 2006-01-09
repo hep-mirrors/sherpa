@@ -2,9 +2,9 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-bindir        = $(datadir)/CTEQ6Grid
+pdfdir        = $(datadir)/CTEQ6Grid
 
-dist_bin_SCRIPTS      =	\
+dist_pdf_DATA         =	\
 			cteq6l1.tbl \
 			cteq6l.tbl \
 			cteq6m.tbl \
