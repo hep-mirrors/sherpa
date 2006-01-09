@@ -1,0 +1,53 @@
+#!/bin/bash
+
+DIRS=*Decays
+
+rm configure.in.decays
+
+echo -e "if CVS_INCLUDE\nCVSINCLUDE    =	CVS\nendif\n" > Makefile.am
+echo -e "decaydir      = \$(pkgdatadir)/Decaydata/$I\n" >> Makefile.am
+echo -e "dist_decay_DATA       =	\\" >> Makefile.am
+echo -e "			HadronConstants.dat \\" >> Makefile.am
+echo -e "			HadronDecays.dat\n" >> Makefile.am
+echo -e "SUBDIRS       = \\" >> Makefile.am
+
+NDIRS=0
+for I in $DIRS; do
+  (( ++NDIRS ))
+done
+ND=0
+for I in $DIRS; do
+  if ! test -d $I ; then continue; fi
+  (( ++ND ))
+  if (( NDIRS > ND )) ; then 
+    echo "		$I \\" >> Makefile.am
+  else
+    echo -e "		$I\n" >> Makefile.am
+  fi
+  echo "create Makefile.am in $I"
+  cd $I
+    echo -e "if CVS_INCLUDE\nCVSINCLUDE    =	CVS\nendif\n" > Makefile.am
+    echo -e "decaydir      = \$(pkgdatadir)/Decaydata/$I\n" >> Makefile.am
+    echo -e "dist_decay_DATA       =	\\" >> Makefile.am
+    FILES=*.dat
+    NFILES=0
+    for J in $FILES; do
+      (( ++NFILES ))
+    done
+    NF=0
+    for J in $FILES; do
+      (( ++NF ))
+      echo "adding file $J"
+      if (( NFILES > NF )) ; then 
+        echo "			$J \\" >> Makefile.am
+      else
+        echo -e "			$J\n" >> Makefile.am
+      fi
+    done
+    echo -e "EXTRA_DIST    =	\$(CVSINCLUDE)\n" >> Makefile.am
+  cd ..
+  echo "	  SHERPA-1.0/Run/Decaydata/$I/Makefile \\" >> configure.in.decays
+done
+
+echo -e "EXTRA_DIST    =	\$(CVSINCLUDE)\n" >> Makefile.am
+
