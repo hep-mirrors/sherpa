@@ -1,9 +1,9 @@
 # outgoing part. 	 | BR 	 | DC-file
-{321,-321}	 | 0.4443	 | f(2)'(1525)_K+K-.dat;
-{310,130}	 | 0.4443	 | f(2)'(1525)_K(S)K(L).dat;
-{221,221}	 | 0.1032	 | f(2)'(1525)_etaeta.dat;
-{211,-211}	 | 0.00547	 | f(2)'(1525)_pi+pi-.dat;
-{111,111}	 | 0.00273	 | f(2)'(1525)_pipi.dat;
+{321,-321}	 | 0.4443	 | f2prime1525_K+K-.dat;
+{310,130}	 | 0.4443	 | f2prime1525_KSKL.dat;
+{221,221}	 | 0.1032	 | f2prime1525_etaeta.dat;
+{211,-211}	 | 0.00547	 | f2prime1525_pi+pi-.dat;
+{111,111}	 | 0.00273	 | f2prime1525_pipi.dat;
 
 ! NO_FULLDECAY   ! use this option: no decay of daughters
 ! NO_ANTI        ! use this option: anti-mother does not decay

@@ -1,13 +1,13 @@
 # outgoing part. 	 | BR 	 | DC-file
-{211,-211,111}	 | 0.89242	 | omega(782)_pi+pi-pi.dat;
-{111,22}	 | 0.0892	 | omega(782)_piP.dat;
-{111,111,22}	 | 0.00007	 | omega(782)_pipiP.dat;
-{221,22}	 | 0.00049	 | omega(782)_etaP.dat;
-{111,11,-11}	 | 0.0006	 | omega(782)_pie-e+.dat;
-{111,13,-13}	 | 0.00096	 | omega(782)_pimu-mu+.dat;
-{211,-211}	 | 0.017	 | omega(782)_pi+pi-.dat;
-{11,-11}	 | 0.00007	 | omega(782)_e-e+.dat;
-{13,-13}	 | 0.00009	 | omega(782)_mu-mu+.dat;
+{211,-211,111}	 | 0.89242	 | omega782_pi+pi-pi.dat;
+{111,22}	 | 0.0892	 | omega782_piP.dat;
+{111,111,22}	 | 0.00007	 | omega782_pipiP.dat;
+{221,22}	 | 0.00049	 | omega782_etaP.dat;
+{111,11,-11}	 | 0.0006	 | omega782_pie-e+.dat;
+{111,13,-13}	 | 0.00096	 | omega782_pimu-mu+.dat;
+{211,-211}	 | 0.017	 | omega782_pi+pi-.dat;
+{11,-11}	 | 0.00007	 | omega782_e-e+.dat;
+{13,-13}	 | 0.00009	 | omega782_mu-mu+.dat;
 
 ! NO_FULLDECAY   ! use this option: no decay of daughters
 ! NO_ANTI        ! use this option: anti-mother does not decay

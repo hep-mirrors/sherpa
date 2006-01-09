@@ -1,6 +1,6 @@
 # outgoing part. 	 | BR 	 | DC-file
-{211,111}	 | 0.99955	 | rho(770)+_pi+pi.dat;
-{211,22}	 | 0.00045	 | rho(770)+_pi+P.dat;
+{211,111}	 | 0.99955	 | rho770+_pi+pi.dat;
+{211,22}	 | 0.00045	 | rho770+_pi+P.dat;
 
 ! NO_FULLDECAY   ! use this option: no decay of daughters
 ! NO_ANTI        ! use this option: anti-mother does not decay
