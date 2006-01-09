@@ -468,6 +468,8 @@ bool Initialization_Handler::InitializeTheHadronDecays()
 #ifdef USING__Hadrons
   if (decmodel==std::string("Hadrons")) {
     string decaypath       = dr.GetValue<string>("DECAYPATH",string("Decaydata/"));
+    if (system(("test -d "+decaypath).c_str())) 
+      decaypath=rpa.gen.Variable("SHERPA_DECAY_PATH")+"/Decaydata/";
     string decayfile       = dr.GetValue<string>("DECAYFILE",string("HadronDecays.dat"));
     string decayconstfile  = dr.GetValue<string>("DECAYCONSTFILE",string("HadronConstants.dat"));
     hdhandler              = new Hadron_Decay_Handler(new HADRONS::Hadrons(decaypath,decayfile,decayconstfile));
