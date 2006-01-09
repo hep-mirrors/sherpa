@@ -442,6 +442,17 @@ std::string Flavour::TexName() const
   return name;
 }
 
+std::string Flavour::ShellName() const 
+{
+  std::string name(IDName());
+  size_t pos(0);
+  while ((pos=name.find("("))!=std::string::npos) name.replace(pos,1,"");
+  while ((pos=name.find(")"))!=std::string::npos) name.replace(pos,1,"");
+  while ((pos=name.find("'"))!=std::string::npos) name.replace(pos,1,"prime");
+  while ((pos=name.find("*"))!=std::string::npos) name.replace(pos,1,"star");
+  return name;
+}
+
 std::string Flavour::IDName() const 
 {
   std::string name = string(Name());
