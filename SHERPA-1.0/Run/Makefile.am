@@ -95,7 +95,7 @@ INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(HADRONSINCS) \
 		$(PDFINCS) $(BEAMINCS) $(ATOOLSINCS) $(CLHEPINCS) $(ROOTINCS)
 dist_bin_SCRIPTS      =	makelibs
 EXTRA_DIST    =	$(CVSINCLUDE)
-SUBDIRS       =	CTEQ6Grid MRST99Grid
+SUBDIRS       =	CTEQ6Grid MRST99Grid Decaydata
 
 dist-hook:
 	sed -e "s/-rdynamic/SHERPA_LDFLAGS/1" \
