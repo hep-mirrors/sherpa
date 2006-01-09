@@ -1,0 +1,8 @@
+# outgoing part. 	 | BR 	 | DC-file
+{310,211}	 | 0.333005	 | Kstar892+_KSpi+.dat;
+{130,211}	 | 0.333005	 | Kstar892+_pi+KL.dat;
+{321,111}	 | 0.33300	 | Kstar892+_K+pi.dat;
+{321,22}	 | 0.00099	 | Kstar892+_K+P.dat;
+
+! NO_FULLDECAY   ! use this option: no decay of daughters
+! NO_ANTI        ! use this option: anti-mother does not decay
