@@ -62,7 +62,7 @@ ApacicLEP_LDADD  =	$(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) \
 		$(PHASICLIBS) $(MODELLIBS) $(PDFLIBS)  \
 		$(BEAMLIBS) $(ATOOLSLIBS) $(ROOTLDADD) \
 		$(SYSLIBS)
-ApacicLEP_LDFLAGS     =	-dynamic -flat_namespace
+ApacicLEP_LDFLAGS     =	-rdynamic
 
 ApacicTevatron_SOURCES = MainTevatron.C 
 ApacicTevatron_LDADD  =	$(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) \
@@ -70,7 +70,7 @@ ApacicTevatron_LDADD  =	$(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS
 		$(PHASICLIBS) $(MODELLIBS) $(PDFLIBS) \
 		$(CTEQLIBS) $(BEAMLIBS) $(ATOOLSLIBS) $(ROOTLDADD) \
 		$(SYSLIBS) $(CLHEPLIBS)
-ApacicTevatron_LDFLAGS        =	-dynamic -flat_namespace
+ApacicTevatron_LDFLAGS        =	-rdynamic
 
 AM_CXXFLAGS   =	$(SHERPAFLAGS) $(AHADICFLAGS) $(AMISICFLAGS) $(ADICICFLAGS) \
 		$(CLHEPFLAGS) $(LHAPDFFLAGS) $(HADRONFLAGS) $(ROOTFLAGS)
@@ -80,5 +80,5 @@ INCLUDES      = $(ANALYSISINCS)  \
 		$(BEAMINCS) $(ATOOLSINCS) $(ROOTINCS)
 EXTRA_DIST    = $(CVSINCLUDE)
 dist-hook:
-	sed -e "s/-dynamic -flat_namespace/SHERPA_LDFLAGS/1" \
+	sed -e "s/-rdynamic/SHERPA_LDFLAGS/1" \
 	  < Makefile.am > $(distdir)/Makefile.am
