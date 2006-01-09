@@ -727,7 +727,7 @@ Histogram * Tau_Three_Pseudo::RChT::CreatePhiHistogram()
 {
   // create file name
   char fn[256];
-  sprintf(fn, "%sPhaseSpaceFunctions/Phi(Q2)_MV13=%.3f_MV23=%.3f_fpi=%.4f_gR=%.2f_GV13=%.3f_GV23=%.3f_run=%i.dat",
+  sprintf(fn, "%sPhaseSpaceFunctions/PhiQ2_MV13=%.3f_MV23=%.3f_fpi=%.4f_gR=%.2f_GV13=%.3f_GV23=%.3f_run=%i.dat",
       m_path.c_str(),
       sqrt(m_msV[0]),
       sqrt(m_msV[1]),
@@ -1085,7 +1085,7 @@ Histogram * Tau_Three_Pseudo::KS::CreateGHistogram()
   // create file name
   char fn[512];
   if (m_G123) {
-    sprintf(fn, "%s/PhaseSpaceFunctions/G(Q2)_MV13=%.3f_Mv13=%.3f_beta13=%.3f_MV23=%.3f_Mv23=%.3f_beta23=%.3f_run=%i.dat",
+    sprintf(fn, "%s/PhaseSpaceFunctions/GQ2_MV13=%.3f_Mv13=%.3f_beta13=%.3f_MV23=%.3f_Mv23=%.3f_beta23=%.3f_run=%i.dat",
         m_path.c_str(),
         sqrt(m_msV[0]), sqrt(m_msv[0]), m_Beta[0],
         sqrt(m_msV[1]), sqrt(m_msv[1]), m_Beta[1], (m_running&2) );
