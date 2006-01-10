@@ -33,6 +33,7 @@ Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
      p_shower->ISROn(),p_shower->FSROn());
   p_filler  = new Tree_Filler
     (p_cluster,m_maxjetnumber,p_shower->ISROn(),p_shower->FSROn());
+  p_filler->SetCKKWOn(m_ckkwon);
   m_ckkwon=ToType<int>(rpa.gen.Variable("SUDAKOV_WEIGHT"));
 }  
 

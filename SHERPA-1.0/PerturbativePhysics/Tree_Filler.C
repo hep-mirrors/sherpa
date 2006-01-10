@@ -104,15 +104,15 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
   // set jet veto scale for each emission
   double q2j(p_cluster->JetScale());
   if (p_cluster->OrderStrong()>0) p_cluster->FixJetvetoPt2(q2j);
-  mo->pt2lcm = mo->maxpt2 = q2j/m_fss_scale_fac;
+  mo->pt2lcm = mo->maxpt2 = m_ckkwon?q2j/m_fss_scale_fac:mo->t;
   double scale(p_cluster->ISShowerScale());
   if (p_cluster->OrderStrong()==0) scale=Max(scale,4.*p_cluster->JetScale());
   EstablishRelations(mo,knots[0],knots[1],0,scale);
   EstablishRelations(mo,knots[2],knots[3],1);      
   for (int i(0);i<2;++i) 
-    knots[i]->pt2lcm=knots[i]->maxpt2=q2j/m_iss_scale_fac;
+    knots[i]->pt2lcm=knots[i]->maxpt2=m_ckkwon?q2j/m_iss_scale_fac:mo->t;
   for (int i(2);i<4;++i) 
-    knots[i]->pt2lcm=knots[i]->maxpt2=q2j/m_fss_scale_fac;
+    knots[i]->pt2lcm=knots[i]->maxpt2=m_ckkwon?q2j/m_fss_scale_fac:mo->t;
 
   // determine starting conditions for showers
   // note, that starting conditions for subsequent branches have to be 
@@ -329,7 +329,6 @@ Knot * Tree_Filler::Point2Knot(Blob * blob,Tree * tree,const Leg & po,const Vec4
     k = tree->NewKnot();
     *k->part = Particle(0,flav,mom);
   }
-
   // preliminary parton status!!!
   k->part->SetInfo(info);
   k->part->SetStatus(1);  //final

@@ -11,7 +11,7 @@ namespace SHERPA {
   class Tree_Filler {
   private:
     Cluster_Partons_Base * p_cluster;
-    int                    m_maxjetnumber, m_isrshoweron, m_fsrshoweron;
+    int                    m_maxjetnumber, m_isrshoweron, m_fsrshoweron, m_ckkwon;
     APACIC::Tree         * p_local_tree;
  
     ATOOLS::Poincare       m_cms_boost;
@@ -32,6 +32,9 @@ namespace SHERPA {
     ~Tree_Filler();
     void FillTrees(ATOOLS::Blob *,APACIC::Tree ** ini_trees,APACIC::Tree * fin_tree);
     void FillDecayTree(APACIC::Tree * fin_tree);
+    inline int    CKKWOn() const        { return m_ckkwon;   }
+
+    inline void   SetCKKWOn(const int &on) { m_ckkwon=on;   }
   };
 }
 
