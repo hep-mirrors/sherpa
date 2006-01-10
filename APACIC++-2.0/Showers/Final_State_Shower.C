@@ -156,7 +156,6 @@ int Final_State_Shower::InitializeJets(Tree *tree,Knot *mo,int init)
       }
       if (d1->stat==0 && d2->stat==0) {
 	msg_Debugging()<<"reset knot "<<mo->kn_no<<"\n";
-	p_kin->Shuffle(mo,first);
 	break;
       }
     }
@@ -253,6 +252,14 @@ int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
     if (d1->stat!=3 && d2->stat!=3) {
       if (d1->stat>0) InitDaughters(tree,d1,d1_flavs,d1_polinfos,diced1);
       if (d2->stat>0) InitDaughters(tree,d2,d2_flavs,d2_polinfos,diced2);
+      if (first) {
+ 	msg_Debugging()<<"set mom 1 "<<p1<<" vs. "
+ 		       <<d1->part->Momentum()<<"\n";
+ 	msg_Debugging()<<"set mom 2 "<<p2<<" vs. "
+ 		       <<d2->part->Momentum()<<"\n";
+ 	d1->part->SetMomentum(p1); 
+ 	d2->part->SetMomentum(p2);
+      }
       if (p_kin->Shuffle(mo,first)) {
    	if (p_jv->TestFSKinematics(mo)==1) {
 	  p_sud->AcceptBranch(mo);
@@ -287,7 +294,7 @@ int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
   if (p_jv->TestFSKinematics(mo)!=1) {
     msg_Debugging()<<"kinmatics vetoed\n";
     msg_Debugging()<<"}\n";
-    return -1;
+    return 0;
   }
   msg_Debugging()<<"}\n";
   if (d1->stat==0 && d2->stat==0) return 1;
@@ -326,12 +333,7 @@ int Final_State_Shower::EvolveJet(Tree *tree,Knot *mo)
       return 1; 
     }
   }
-  switch (stat) {
-  case -1:
-    mo->left->stat=mo->right->stat=3;
-    msg_Debugging()<<"}\n";
-    return 0;
-  case 0:
+  if (stat==0) {
     Reset(mo);
     msg_Debugging()<<"reset knot "<<mo->kn_no<<", t = "<<mo->t<<"\n";
     msg_Debugging()<<"}\n";
@@ -564,7 +566,7 @@ void Final_State_Shower::ExtractPartons(Knot *kn,Blob *jet,
                  and kn outgoing
 		 or kn->left or kn->right not from ME
     */
-    if (!(kn->left)) {
+    if (!kn->left) {
       if (pl) pl->push_back(kn->part);
       jet = new Blob();
       jet->SetStatus(1);
@@ -633,7 +635,7 @@ void Final_State_Shower::ExtractPartons(Knot *kn,Blob *jet,
     }
   }
   ExtractPartons(kn->left,jet,bl,pl); 
-  ExtractPartons(kn->right,jet,bl,pl); 
+  ExtractPartons(kn->right,jet,bl,pl);
 }
 
 
