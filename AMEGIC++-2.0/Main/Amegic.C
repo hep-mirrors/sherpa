@@ -23,7 +23,8 @@ using namespace std;
 
 Amegic::Amegic(std::string _path,std::string _file,
 	       MODEL::Model_Base * _model) :
-  m_path(_path), m_file(_file), m_nmax(0),m_minqcdjet(99),m_maxjet(0), 
+  m_path(_path), m_file(_file), m_nmax(0),m_minqcdjet(99), m_maxqcdjet(0), 
+  m_maxjet(0), 
   p_procs(NULL), p_decs(NULL), p_model(NULL), p_top(NULL), p_fifo(NULL),
   p_dataread(NULL), p_seldata(NULL), p_beam(NULL), p_isr(NULL)
 {
@@ -494,6 +495,7 @@ void Amegic::ReadInProcessfile(string file)
 	      if (flavs[i+nIS].Strong()) ++qcdjets;
 	    }
 	    m_minqcdjet=Min(m_minqcdjet,qcdjets);
+	    m_maxqcdjet=ATOOLS::Max(m_maxqcdjet,qcdjets);
 	    if (summass<rpa.gen.Ecms()) {
 	      Process_Base * proc=NULL;
 	      if (single) {

@@ -119,6 +119,7 @@ namespace SHERPA {
     unsigned int         NDecOut();
     unsigned int         MaxJets();
     unsigned int         MinQCDJets();
+    unsigned int         MaxQCDJets();
     const ATOOLS::Vec4D      * Momenta();
     const ATOOLS::Vec4D      * DecMomenta();
     const ATOOLS::Flavour    * Flavours();

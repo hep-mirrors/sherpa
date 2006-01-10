@@ -502,6 +502,14 @@ unsigned int Matrix_Element_Handler::MinQCDJets() {
   return 0;
 }
 
+unsigned int Matrix_Element_Handler::MaxQCDJets() {
+  switch (m_mode) {
+  case 1: return p_amegic->MaxQCDJets();
+  case 2: return p_simplexs->MaxQCDJets();
+  }
+  return 0;
+}
+
 
 std::string Matrix_Element_Handler::Name() { return m_name; }
 
