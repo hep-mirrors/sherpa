@@ -15,7 +15,7 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-lib_LTLIBRARIES       =	libRemnant.la
+pkglib_LTLIBRARIES       =	libRemnant.la
 libRemnant_la_SOURCES =	\
 			Remnant_Base.C \
 			No_Remnant.C \

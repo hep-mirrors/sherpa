@@ -10,7 +10,7 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-lib_LTLIBRARIES       =	libToolsPhys.la
+pkglib_LTLIBRARIES       =	libToolsPhys.la
 libToolsPhys_la_SOURCES       =	\
 				Flavour.C \
 				Particle.C \

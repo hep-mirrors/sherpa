@@ -21,7 +21,7 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-lib_LTLIBRARIES       = libAmisicTools.la
+pkglib_LTLIBRARIES       = libAmisicTools.la
 libAmisicTools_la_SOURCES     = \
 				Amisic_Histogram.C \
 				Fixed_Variable_Channel.C \

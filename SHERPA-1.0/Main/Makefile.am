@@ -41,7 +41,7 @@ AMISICDIR     =	-I$(SHERPASYS)/AMISIC++-1.0/
 AMISICINCS    =	-I$(AMISICDIR)/Main
 endif
 
-lib_LTLIBRARIES       =	libSherpaMain.la
+pkglib_LTLIBRARIES       =	libSherpaMain.la
 libSherpaMain_la_SOURCES      =	Sherpa.C 
 pkginclude_HEADERS    =	Sherpa.H 
 EXTRA_DIST    = $(CVSINCLUDE)

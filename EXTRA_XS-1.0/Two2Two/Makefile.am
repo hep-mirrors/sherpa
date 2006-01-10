@@ -15,7 +15,7 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-lib_LTLIBRARIES       =	libExtraXS2_2.la
+pkglib_LTLIBRARIES       =	libExtraXS2_2.la
 libExtraXS2_2_la_SOURCES      =	\
 				XS_QCD.C \
 				XS_Drell_Yan.C \

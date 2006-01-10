@@ -4,7 +4,7 @@ endif
 
 DEFS          =
 
-lib_LTLIBRARIES = libHadronsMEs.la
+pkglib_LTLIBRARIES = libHadronsMEs.la
 
 libHadronsMEs_la_SOURCES = \
 		HD_ME_Base.C \

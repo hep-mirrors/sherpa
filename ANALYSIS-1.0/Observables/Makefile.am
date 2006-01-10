@@ -20,7 +20,7 @@ ROOTFLAGS     = -Wno-long-long
 EXTRAOBS      =	Dalitz_Observables.C
 endif
 
-lib_LTLIBRARIES       =	libObservables.la
+pkglib_LTLIBRARIES       =	libObservables.la
 libObservables_la_SOURCES     =	\
 				$(EXTRAOBS) \
 				HT.C \

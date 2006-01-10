@@ -15,7 +15,7 @@ ROOTINCS      =	-I@ROOTINCDIR@
 ROOTFLAGS     = -Wno-long-long
 endif
 
-lib_LTLIBRARIES = libToolsOrg.la
+pkglib_LTLIBRARIES = libToolsOrg.la
 libToolsOrg_la_SOURCES        = \
 				Shell_Tools.C \
 				Object.C \

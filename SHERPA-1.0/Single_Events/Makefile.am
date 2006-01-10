@@ -48,7 +48,7 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-lib_LTLIBRARIES	      =	libSherpaSingleEvents.la
+pkglib_LTLIBRARIES	      =	libSherpaSingleEvents.la
 libSherpaSingleEvents_la_SOURCES      =	\
 					Event_Handler.C \
 					Event_Phase_Handler.C \

@@ -23,7 +23,7 @@ ROOTINCS      =	-I$(ROOTSYS)/include
 ROOTFLAGS     = -Wno-long-long
 endif
 
-lib_LTLIBRARIES       =	libSherpaTools.la
+pkglib_LTLIBRARIES       =	libSherpaTools.la
 libSherpaTools_la_SOURCES     =	\
 				Kinematics.C \
 				Input_Output_Handler.C \

@@ -23,7 +23,7 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-lib_LTLIBRARIES       = libAmisicModel.la
+pkglib_LTLIBRARIES       = libAmisicModel.la
 libAmisicModel_la_SOURCES     = \
 			       	Grid_Creator.C \
 				Profile_Function_Base.C \

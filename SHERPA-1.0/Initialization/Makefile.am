@@ -42,7 +42,7 @@ AMISICDIR     =	$(SHERPASYS)/AMISIC++-1.0
 AMISICINCS    =	-I$(SHERPASYS)/AMISIC++-1.0/Main
 endif
 
-lib_LTLIBRARIES       =	libSherpaInitialization.la
+pkglib_LTLIBRARIES       =	libSherpaInitialization.la
 libSherpaInitialization_la_SOURCES    =	Initialization_Handler.C 
 pkginclude_HEADERS    =	Initialization_Handler.H 
 EXTRA_DIST    = $(CVSINCLUDE)

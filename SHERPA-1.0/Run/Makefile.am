@@ -68,11 +68,11 @@ CTEQLIBS      = -lCTEQ
 endif
 
 if ISAJET_SUPPORT
-ISAJETLIB     = -L@libdir@ -lIsajet
+ISAJETLIB     = -L@libdir@/SHERPA-MC -lIsajet
 endif
 
 if HDECAY_SUPPORT
-HDECAYLIB     = -L@libdir@ -lHdecay
+HDECAYLIB     = -L@libdir@/SHERPA-MC -lHdecay
 endif
 
 if CVS_INCLUDE
@@ -81,7 +81,8 @@ endif
 
 bin_PROGRAMS  =	Sherpa
 Sherpa_SOURCES        =	Main.C 
-Sherpa_LDADD  =	-L@libdir@ $(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) \
+Sherpa_LDADD  =	-L@libdir@/SHERPA-MC \
+		$(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) \
 		$(APACICLIBS) $(AMISICLIBS) \
 		$(EXTRAXSLIBS) $(PHASICLIBS) $(MODELLIBS) \
 		$(BEAMLIBS) $(ATOOLSLIBS) $(HADRONSLIBS) $(PDFLIBS) \
@@ -93,7 +94,7 @@ INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(HADRONSINCS) \
 		$(APACICINCS) $(AMISICINCS) $(AMEGICINCS) \
 		$(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) \
 		$(PDFINCS) $(BEAMINCS) $(ATOOLSINCS) $(CLHEPINCS) $(ROOTINCS)
-dist_bin_SCRIPTS      =	makelibs
+dist_pkgdata_SCRIPTS  =	makelibs
 EXTRA_DIST    =	$(CVSINCLUDE)
 SUBDIRS       =	CTEQ6Grid MRST99Grid Decaydata
 

@@ -1,5 +1,5 @@
 SUBDIRS = Zfunctions
-lib_LTLIBRARIES = libAmplitude.la
+pkglib_LTLIBRARIES = libAmplitude.la
 
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS

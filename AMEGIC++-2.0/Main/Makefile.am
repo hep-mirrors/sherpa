@@ -1,4 +1,4 @@
-lib_LTLIBRARIES = libAmegic.la
+pkglib_LTLIBRARIES = libAmegic.la
 
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS

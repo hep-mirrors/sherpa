@@ -107,7 +107,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   if (pdfpath.length()>0 && pdfpath[0]=='/') s_variables["SHERPA_PDF_PATH"]=pdfpath;
   else if (s_variables["SHERPA_PDF_PATH"].length()==0) 
     s_variables["SHERPA_PDF_PATH"]=SHERPA_SHARE_PATH;
-  s_variables["SHERPA_DECAY_PATH"]=SHERPA_SHARE_PATH;
+  s_variables["SHERPA_SHARE_PATH"]=SHERPA_SHARE_PATH;
   // set cpp path
   std::string cpppath=dr.GetValue<std::string>("SHERPA_CPP_PATH",std::string(""));
   if (cpppath.length()>0 && cpppath[0]=='/') s_variables["SHERPA_CPP_PATH"]=cpppath;

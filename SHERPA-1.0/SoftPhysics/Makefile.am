@@ -31,7 +31,7 @@ ROOTINCS      =	-I$(ROOTSYS)/include
 ROOTFLAGS     = -Wno-long-long
 endif
 
-lib_LTLIBRARIES       =	libSherpaSoftPhysics.la
+pkglib_LTLIBRARIES       =	libSherpaSoftPhysics.la
 libSherpaSoftPhysics_la_SOURCES	      =	\
 					Primordial_KPerp.C \
 					Beam_Remnant_Handler.C \

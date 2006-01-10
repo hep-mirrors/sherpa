@@ -1,4 +1,4 @@
-lib_LTLIBRARIES = libZfunctions.la
+pkglib_LTLIBRARIES = libZfunctions.la
 
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS

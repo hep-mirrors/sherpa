@@ -1,4 +1,4 @@
-lib_LTLIBRARIES = libString.la
+pkglib_LTLIBRARIES = libString.la
 
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS

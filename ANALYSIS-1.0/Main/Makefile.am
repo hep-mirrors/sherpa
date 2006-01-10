@@ -12,7 +12,7 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-lib_LTLIBRARIES       =	libAnalysis.la
+pkglib_LTLIBRARIES       =	libAnalysis.la
 libAnalysis_la_SOURCES        =	\
 			 	Final_Selector.C \
 	 		 	Particle_Selector.C \

@@ -13,7 +13,7 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-lib_LTLIBRARIES       =	libSudakov.la
+pkglib_LTLIBRARIES       =	libSudakov.la
 libSudakov_la_SOURCES =	\
 			NLL_Branching_Probability_Base.C \
 			NLL_Branching_Probabilities.C \

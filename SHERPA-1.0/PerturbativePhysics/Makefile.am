@@ -30,7 +30,7 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-lib_LTLIBRARIES       =	libSherpaPerturbativePhysics.la
+pkglib_LTLIBRARIES       =	libSherpaPerturbativePhysics.la
 libSherpaPerturbativePhysics_la_SOURCES       =	\
 						Matrix_Element_Handler.C \
 						MI_Handler.C \

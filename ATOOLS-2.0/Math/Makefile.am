@@ -10,7 +10,7 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-lib_LTLIBRARIES       =	libToolsMath.la
+pkglib_LTLIBRARIES       =	libToolsMath.la
 libToolsMath_la_SOURCES       =	\
 				MathTools.C \
 				Random.C \

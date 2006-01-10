@@ -5,7 +5,7 @@ endif
 MODELFLAGS    =	# -pedantic -Wall -Winline
 DEFS          =
 
-lib_LTLIBRARIES = libModelMain.la
+pkglib_LTLIBRARIES = libModelMain.la
 libModelMain_la_SOURCES = Model_Handler.C Model_Base.C \
 			  Standard_Model.C MSSM.C ADD.C\
 			  Running_AlphaS.C Running_AlphaQED.C Running_Fermion_Mass.C \

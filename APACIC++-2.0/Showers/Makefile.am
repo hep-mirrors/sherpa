@@ -15,7 +15,7 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-lib_LTLIBRARIES = libApacicShowers.la
+pkglib_LTLIBRARIES = libApacicShowers.la
 libApacicShowers_la_SOURCES   = \
 				Sudakov_Tools.C \
 				Splitting_Function.C \

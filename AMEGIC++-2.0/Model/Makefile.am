@@ -1,4 +1,4 @@
-lib_LTLIBRARIES = libModel.la
+pkglib_LTLIBRARIES = libModel.la
 
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS

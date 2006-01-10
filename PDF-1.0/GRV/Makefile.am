@@ -14,7 +14,7 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-lib_LTLIBRARIES       =	libGRV.la
+pkglib_LTLIBRARIES       =	libGRV.la
 libGRV_la_SOURCES     =	\
 			grvphoton.f \
 			GRVph_Fortran_Interface.C 

@@ -26,8 +26,8 @@ AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
 APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
 
 SYSLIBS	      =	-lg2c -lm -ldl
-ATOOLSLIBS    =	-L@libdir@ -lToolsPhys -lToolsMath -lToolsOrg 
-PDFLIBS       =	-L@libdir@ -lPDF -lMRST -lGRV -lCTEQ -lDUPDF \
+ATOOLSLIBS    =	-L@libdir@/SHERPA-MC -lToolsPhys -lToolsMath -lToolsOrg 
+PDFLIBS       =	-L@libdir@/SHERPA-MC -lPDF -lMRST -lGRV -lCTEQ -lDUPDF \
 		-lRemnant -lSudakov
 
 if ROOT_SUPPORT
@@ -36,20 +36,20 @@ ROOTLDADD     =	-L@ROOTLIBDIR@ @ROOTGLIBS@ @ROOTAUXLIBS@
 ROOTFLAGS     = -DROOT_SUPPORT -Wno-long-long
 endif
 
-BEAMLIBS      =	-L@libdir@ -lBeam 
-PHASICLIBS    =	-L@libdir@ -lPhasespace 
+BEAMLIBS      =	-L@libdir@/SHERPA-MC -lBeam 
+PHASICLIBS    =	-L@libdir@/SHERPA-MC -lPhasespace 
 if ISAJET_SUPPORT
-ISAJETLIB     = -L@libdir@ -lIsajet
+ISAJETLIB     = -L@libdir@/SHERPA-MC -lIsajet
 endif
 if HDECAY_SUPPORT
-HDECAYLIB     = -L@libdir@ -lHdecay
+HDECAYLIB     = -L@libdir@/SHERPA-MC -lHdecay
 endif
-MODELLIBS     =	-L@libdir@ -lModelMain $(HDECAYLIB) $(ISAJETLIB)
-EXTRAXSLIBS   =	-L@libdir@ -lExtraXS -lExtraXS2_2
+MODELLIBS     =	-L@libdir@/SHERPA-MC -lModelMain $(HDECAYLIB) $(ISAJETLIB)
+EXTRAXSLIBS   =	-L@libdir@/SHERPA-MC -lExtraXS -lExtraXS2_2
 
-APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain 
+APACICLIBS    =	-L@libdir@/SHERPA-MC -lApacicShowers -lApacicMain 
 
-CTEQLIBS      = -L@libdir@ -lCTEQ 
+CTEQLIBS      = -L@libdir@/SHERPA-MC -lCTEQ 
 
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS

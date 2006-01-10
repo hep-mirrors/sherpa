@@ -18,7 +18,7 @@ ROOTINCS      =	-I@ROOTINCDIR@
 ROOTFLAGS     = -Wno-long-long
 endif
 
-lib_LTLIBRARIES       = libDUPDF.la
+pkglib_LTLIBRARIES       = libDUPDF.la
 libDUPDF_la_SOURCES   =	\
 			LL_Branching.C \
 			LL_Single_Sudakov.C \

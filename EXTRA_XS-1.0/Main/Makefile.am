@@ -16,7 +16,7 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-lib_LTLIBRARIES = libExtraXS.la
+pkglib_LTLIBRARIES = libExtraXS.la
 libExtraXS_la_SOURCES =	\
 			XS_Base.C \
 			Single_XS.C \

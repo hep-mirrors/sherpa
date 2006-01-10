@@ -22,7 +22,7 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-lib_LTLIBRARIES       = libAmisic.la
+pkglib_LTLIBRARIES       = libAmisic.la
 libAmisic_la_SOURCES  = \
 			MI_Base.C \
 			Amisic.C 

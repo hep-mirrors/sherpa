@@ -17,21 +17,21 @@ EXTRAXSINCS   =	-I$(EXTRAXSDIR)/Two2Two -I$(EXTRAXSDIR)/Main
 APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
 
 SYSLIBS	      =	-lg2c -lm -ldl
-ATOOLSLIBS    =	-L@libdir@ -lToolsPhys -lToolsMath -lToolsOrg 
-PDFLIBS       =	-L@libdir@ -lPDF -lDUPDF -lSudakov -lLHAPDF -lCTEQ -lMRST -lGRV
-BEAMLIBS      =	-L@libdir@ -lBeam 
-PHASICLIBS    =	-L@libdir@ -lPhasespace -lFoam
+ATOOLSLIBS    =	-L@libdir@/SHERPA-MC -lToolsPhys -lToolsMath -lToolsOrg 
+PDFLIBS       =	-L@libdir@/SHERPA-MC -lPDF -lDUPDF -lSudakov -lLHAPDF -lCTEQ -lMRST -lGRV
+BEAMLIBS      =	-L@libdir@/SHERPA-MC -lBeam 
+PHASICLIBS    =	-L@libdir@/SHERPA-MC -lPhasespace -lFoam
 if ISAJET_SUPPORT
-ISAJETLIB     = -L@libdir@ -lIsajet
+ISAJETLIB     = -L@libdir@/SHERPA-MC -lIsajet
 endif
 if HDECAY_SUPPORT
-HDECAYLIB     = -L@libdir@ -lHdecay
+HDECAYLIB     = -L@libdir@/SHERPA-MC -lHdecay
 endif
-MODELLIBS     =	-L@libdir@ -lModelMain $(HDECAYLIB) $(ISAJETLIB)
+MODELLIBS     =	-L@libdir@/SHERPA-MC -lModelMain $(HDECAYLIB) $(ISAJETLIB)
 
-EXTRAXSLIBS   =	-L@libdir@ -lExtraXS -lExtraXS2_2 
-AMISICLIBS    =	-L@libdir@ -lAmisic -lAmisicModel -lAmisicTools
-APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain 
+EXTRAXSLIBS   =	-L@libdir@/SHERPA-MC -lExtraXS -lExtraXS2_2 
+AMISICLIBS    =	-L@libdir@/SHERPA-MC -lAmisic -lAmisicModel -lAmisicTools
+APACICLIBS    =	-L@libdir@/SHERPA-MC -lApacicShowers -lApacicMain 
 
 if ROOT_SUPPORT
 ROOTINCS      =	-I@ROOTINCDIR@

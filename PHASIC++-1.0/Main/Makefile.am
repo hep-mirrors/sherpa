@@ -18,7 +18,7 @@ ROOTINCS      =	-I@ROOTINCDIR@
 ROOTFLAGS     = -DROOT_SUPPORT -Wno-long-long
 endif
 
-lib_LTLIBRARIES       =	libPhasespace.la
+pkglib_LTLIBRARIES       =	libPhasespace.la
 libPhasespace_la_SOURCES      =	\
 				Regulator_Base.C \
 				Regulator.C \

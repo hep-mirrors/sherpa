@@ -5,7 +5,7 @@ endif
 MODELFLAGS    =	# -pedantic -Wall #-Winline
 DEFS          =
 
-lib_LTLIBRARIES = libIsajet.la
+pkglib_LTLIBRARIES = libIsajet.la
 libIsajet_la_SOURCES = sugrun.f aldata.f ssalfs.f ssb0.f ssb1.f ssdhll.f ssdint.f \
 		       ssdlam.f ssf0.f ssglbf.f ssgst.f ssgt.f ssgwq1.f ssgwq2.f ssgwt1.f \
 		       ssgwt2.f ssgwt3.f ssgwt4.f ssgwt5.f ssgwt6.f ssgwt7.f ssgwt8.f ssgx1.f \

@@ -16,7 +16,7 @@ endif
 
 if LHAPDF_SUPPORT
 else
-lib_LTLIBRARIES       =	libCTEQ.la
+pkglib_LTLIBRARIES       =	libCTEQ.la
 libCTEQ_la_SOURCES     =	\
 			Cteq61Pdf.f \
 			cteq6_inter.f \

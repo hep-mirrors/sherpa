@@ -6,7 +6,7 @@ endif
 BEAMFLAGS     =	# -pedantic -Wall -Winline
 DEFS          =
 
-lib_LTLIBRARIES = libBeam.la
+pkglib_LTLIBRARIES = libBeam.la
 libBeam_la_SOURCES    =	Beam_Base.C \
 			Monochromatic.C \
 			Laser_Backscattering.C \

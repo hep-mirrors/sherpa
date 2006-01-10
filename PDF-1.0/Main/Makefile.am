@@ -15,7 +15,7 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-lib_LTLIBRARIES       =	libPDF.la
+pkglib_LTLIBRARIES       =	libPDF.la
 libPDF_la_SOURCES     =	\
 		    	PDF_Base.C \
 		    	PDF_Electron.C \

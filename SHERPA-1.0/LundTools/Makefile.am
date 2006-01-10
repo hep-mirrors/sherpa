@@ -14,7 +14,7 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-lib_LTLIBRARIES       =	libLundTools.la
+pkglib_LTLIBRARIES       =	libLundTools.la
 libLundTools_la_SOURCES       =	\
 				pythia6214.f \
 				pydata.f \

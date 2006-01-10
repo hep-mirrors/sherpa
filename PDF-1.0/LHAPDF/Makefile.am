@@ -13,7 +13,7 @@ CVSINCLUDE    =	CVS
 endif
 
 if LHAPDF_SUPPORT
-lib_LTLIBRARIES       = libLHAPDF.la 
+pkglib_LTLIBRARIES       = libLHAPDF.la 
 libLHAPDF_la_SOURCES  =	\
 			LHAPDF_Fortran_Interface.C \
 			lhapdf_inter.f 

@@ -13,7 +13,7 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-lib_LTLIBRARIES = libApacicMain.la
+pkglib_LTLIBRARIES = libApacicMain.la
 libApacicMain_la_SOURCES      = \
 				Knot.C \
 				Tree.C \
