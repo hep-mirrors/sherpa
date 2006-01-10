@@ -3,12 +3,14 @@
 #include "Flow.H"
 #include "Poincare.H"
 #include "Message.H"
+#include "Splitting_Function.H"
 #include "MyStrStream.H"
 #include <iomanip>
 
 using namespace SHERPA;
 using namespace EXTRAXS;
 using namespace AMEGIC;
+using namespace APACIC;
 using namespace ATOOLS;
 using namespace MODEL;
 
@@ -32,6 +34,7 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
 	       <<"   Set it to 12 = ordinary NLL_Sudakovs."<<std::endl;
     m_bp_mode=12;
   }
+  if (Splitting_Function::KFactorScheme()==1) m_bp_mode=m_bp_mode|16;
   if (m_bp_mode&16) m_kfac = CA*(67./18.-M_PI*M_PI/6.)-10./9.*TR*Nf;
   m_is_as_factor=ToType<double>(rpa.gen.Variable("IS_CPL_SCALE_FACTOR","1"));
   m_fs_as_factor=ToType<double>(rpa.gen.Variable("FS_CPL_SCALE_FACTOR","1"));

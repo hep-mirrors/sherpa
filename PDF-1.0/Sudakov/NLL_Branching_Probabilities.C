@@ -12,6 +12,7 @@ namespace SHERPA {
   const double   TR    =  1./2.;
   const double   BETA0 = (11.*CA-2.*NF)/3.;
   const double   BETA1 = (17.*CA*CA- 3.*CF*NF-5.*CA*NF)/3.;
+  const double   KAPPA = CA*(67.0/18.0-ATOOLS::sqr(M_PI)/6.0)-NF*TR*10.0/9.0;
 }
 
 using namespace SHERPA;
@@ -71,6 +72,7 @@ GammaQ_QG_Lambda::GammaQ_QG_Lambda(BPMode::code mode, double lambda,
     m_slog   = -3./4.;
     if (m_mode & BPMode::power_corrs) m_power  = 1.;
   }
+  if (m_mode & BPMode::soft_kfac) m_kfac=KAPPA;
 }
 
 GammaQ_GQ_Lambda::GammaQ_GQ_Lambda(BPMode::code mode, double lambda, 
@@ -83,6 +85,7 @@ GammaQ_GQ_Lambda::GammaQ_GQ_Lambda(BPMode::code mode, double lambda,
     m_slog = -3./4.;
     if (m_mode & BPMode::power_corrs) m_power  = 1.;
   }
+  if (m_mode & BPMode::soft_kfac) m_kfac=KAPPA;
 }
 
 GammaG_GG_Lambda::GammaG_GG_Lambda(BPMode::code mode, double lambda, 
@@ -95,6 +98,7 @@ GammaG_GG_Lambda::GammaG_GG_Lambda(BPMode::code mode, double lambda,
     m_slog = -11./12.;
     if (m_mode & BPMode::power_corrs) m_power  = 1.;
   }
+  if (m_mode & BPMode::soft_kfac) m_kfac=KAPPA;
 }
 
 GammaG_QQ_Lambda::GammaG_QQ_Lambda(BPMode::code mode, double lambda, 
@@ -107,5 +111,6 @@ GammaG_QQ_Lambda::GammaG_QQ_Lambda(BPMode::code mode, double lambda,
     m_slog = 1./3.;
     if (m_mode & BPMode::power_corrs) m_power  = 0.;
   }
+  if (m_mode & BPMode::soft_kfac) m_kfac=KAPPA;
 }
 
