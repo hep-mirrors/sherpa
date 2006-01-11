@@ -196,9 +196,6 @@ bool Timelike_Sudakov::MassVeto(double t, double E2)
 
 bool Timelike_Sudakov::CplVeto() 
 {
-  //std::cout<<"CplVeto : "<<m_cpl_scheme<<" -> "
-  //   <<"alpha("<<sqrt(m_pt2)<<") = "<<GetCoupling(m_rscalefac*m_pt2)
-  //	   <<" / alpha_max = "<<GetCoupling()<<std::endl;
   switch (m_cpl_scheme) {
   case 0 : return false;
   case 2 : 
@@ -290,6 +287,12 @@ double Timelike_Sudakov::UniformPhi() const
   return 2.0*M_PI*ATOOLS::ran.Get(); 
 }
 
+void Timelike_Sudakov::SetPT2Min(const double &pt2)      
+{
+  m_pt2min=pt2; 
+  m_t0=4.0*m_pt2min;
+}
+
 #ifdef CHECK_SPLITTINGS
 struct Spl_Data {
   int masses;
@@ -334,3 +337,4 @@ void Timelike_Sudakov::CheckSplittings()
   THROW(normal_exit,"Finished check.");
 }
 #endif
+
