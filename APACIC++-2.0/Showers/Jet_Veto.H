@@ -5,6 +5,10 @@
 #include "Cluster_Algorithm.H"
 #include "Timelike_Kinematics.H"
 #include "Tree.H"
+/*!
+  \file Jet_Veto.H
+  \brief Declares the class Jet_Veto
+*/
 
 namespace APACIC {
 
@@ -21,6 +25,12 @@ namespace APACIC {
     inline void SetJetFinder(ATOOLS::Jet_Finder *const jf) { p_jf=jf; }
 
   };// end of class PT_Measure
+  /*!
+    \class PT_Measure
+    \brief Distance measure for the Cluster_Algorithm of the Jet_Veto
+
+    Defines the distance between two momenta according to the Jet_Finder.
+  */
 
   class E_Scheme {
   public:
@@ -28,6 +38,12 @@ namespace APACIC {
     ATOOLS::Vec4D operator()(const ATOOLS::Vec4D &p1,const ATOOLS::Vec4D &p2);
 
   };// end of class E_Scheme
+  /*!
+    \class E_Scheme
+    \brief Recombination scheme for the Cluster_Algorithm of the Jet_Veto
+
+    Combines two momenta \f$p_1\f$ and \f$p_2\f$ by 4-vector addition.
+  */
 
   struct jv {
 
@@ -40,6 +56,22 @@ namespace APACIC {
     };
 
   };// end of struct jv
+  /*!
+    \struct jv
+    \brief Declares abbreviations for jet veto schemes.
+    
+    There are essentially three different methods to do the jet veto.
+    The first one is a local jet veto, specified by the final and 
+    initial flag, but without the global flag. It means taking into 
+    account only the distance between two daughter partons, when 
+    testing an emission. The global jet veto, specified by the initial 
+    and final and the global flag means redetermining the distances 
+    between all partons and rejecting an emission, if the jet number 
+    is modified by the current emission. The mlm flag means that the
+    jet configuration is tested only once, after the whole shower 
+    evolution and the event is rejected as a whole, if the jet number 
+    is modified.
+  */
 
   inline jv::mode operator|(const jv::mode &a,const jv::mode &b)
   { return (jv::mode)((int)a|(int)b); }
@@ -83,9 +115,35 @@ namespace APACIC {
 
     //member functions 
     int TestKinematics(const int mode=0,Knot *const mo=NULL);
+    /*!
+      \fn int TestKinematics(const int mode=0,Knot *const mo=NULL)
+      \brief Implements the global jet veto procedure
+
+      This procedure is called, to veto parton configurations according 
+      to the number of jets, which they define. First the current final state 
+      partons are extracted from p_istrees and p_fstree, then p_cluster is 
+      applied to define jets and finally the configuration is rejected 
+      according to the settings in m_mode.
+    */
 
     int TestFSKinematics(Knot *const mo);
+    /*!
+      \fn int TestFSKinematics(Knot *const mo)
+      \brief Implements the jet veto for final state splittings.
+      
+      This method implements the jet veto for final state splittings.
+      According to the settings in m_mode, either a local or a global 
+      jet veto is applied.
+    */
     int TestISKinematics(Knot *const mo);
+    /*!
+      \fn int TestISKinematics(Knot *const mo)
+      \brief Implements the jet veto for initial state splittings.
+      
+      This method implements the jet veto for initial state splittings.
+      According to the settings in m_mode, either a local or a global 
+      jet veto is applied.
+    */
 
     // inline functions
     inline void SetYCut(const double &ycut) { m_ycut=ycut; }
@@ -111,6 +169,20 @@ namespace APACIC {
     inline const Double_Vector &JetRates() const { return m_rates; }
 
   };// end of class Jet_Veto
+  /*!
+    \class Jet_Veto
+    \brief Implements the jet veto procedure.
+
+    This class implements the jet veto procedure. It is called by the
+    Final_State_Shower, any time a new emission is constructed with the 
+    full kinematics and tests the jet measure of this emission w.r.t.
+    other partons. The emission is rejected, if a new jet has been created. 
+    Likewise, the parton configuration is vetoed, if the number of jets
+    drops below the number of initial jets, i.e. this which has been set by 
+    the hard matrix element. This is a final check, which is performed 
+    only once, after the complete shower evolution. Jet_Veto is then 
+    called by Apacic.
+  */
 
 }//end of namespace APACIC
 
