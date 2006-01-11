@@ -448,6 +448,7 @@ void Amegic::ReadInProcessfile(string file)
 		  if (nmax>m_maxjet) {
 		    msg.Out()<<" WARNING: setting max n to "<<nmax<<std::endl;
 		    m_maxjet = nmax;
+		    m_maxqcdjet = nmax;
 		  }		  
 		}
 
