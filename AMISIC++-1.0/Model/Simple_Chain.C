@@ -93,7 +93,7 @@ Simple_Chain::~Simple_Chain()
 void Simple_Chain::CleanUp() 
 {
   if (p_fsrinterface!=NULL) delete p_fsrinterface;
-  if (p_processes!=NULL) delete p_processes;
+  //if (p_processes!=NULL)    delete p_processes;
   if (!m_external) {
     if (p_environment!=NULL) delete p_environment;
     p_environment=NULL;
