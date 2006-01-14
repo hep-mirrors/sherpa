@@ -40,8 +40,7 @@ double Gamma_Lambda_Base::Gamma(double q, double Q)
   double val = 2.*m_colfac* as_q/M_PI/q * 
     (m_dlog * (1.+m_kfac*as_q/(2.*M_PI)) * log(Q/q) + 
      m_slog + m_power*q/Q);
-  if (val<0.) return 0.;
-  return val;
+  return Max(val,0.0);
 }
 
 double Gamma_Lambda_Base::IntGamma(double Q0, double Q) 
@@ -53,12 +52,11 @@ double Gamma_Lambda_Base::IntGamma(double Q0, double Q)
     return 1.e6;
   }
   double xi0(log(Q0/m_lambda)), xi1(log(Q/m_lambda));
-  double fac(4.*m_colfac/BETA0);  
-  double result(m_dlog * (log(Q0/Q) + xi1 * log(dabs(xi1/xi0))) + 
-		m_slog * log(dabs(xi1/xi0)));
+  double xic(Max(xi1+m_slog/m_dlog,xi0));
+  double result((m_dlog*xi1+m_slog)*log(dabs(xic/xi0))+m_dlog*(xi0-xic));
   if (m_power>0.) result += m_power*m_lambda/Q * 
     (ReIncompleteGamma0(-xi0)-ReIncompleteGamma0(-xi1));  
-  return fac * result;
+  return 4.*m_colfac/BETA0*result;
 }
 
 
