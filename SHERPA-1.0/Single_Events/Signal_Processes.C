@@ -270,7 +270,8 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,
        i<p_mehandler->NIn()+p_mehandler->NOut();i++) {
     particle = new Particle(i,p_mehandler->Flavours()[i],
 			    p_mehandler->Momenta()[i]);
-    if (!(particle->Flav().IsStable())) unstable = true;
+    if( particle->Flav().Kfcode() != kf::tau ) 
+      if (!(particle->Flav().IsStable())) unstable = true;
     particle->SetNumber(0);
     particle->SetStatus(1);
     particle->SetInfo('H');
@@ -280,21 +281,19 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,
     }
     blob->AddToOutParticles(particle);
   }
-  if( particle->Flav().Kfcode() != kf::tau ) {
-    if (unstable) {
-      if (p_hdhandler->On()) {
-        p_hdhandler->ResetTables();
-        p_hdhandler->DefineSecondaryDecays(blob);
+  if (unstable) {
+    if (p_hdhandler->On()) {
+      p_hdhandler->ResetTables();
+      p_hdhandler->DefineSecondaryDecays(blob);
 
-        // consider rejection by remnants !!
+      // consider rejection by remnants !!
 
-        return success;
-      }
-      else {
-        msg.Error()<<"Error in Signal_Processes::FillBlob."<<std::endl
-          <<"   No hard decay tables for "<<particle->Flav()<<". Abort."<<std::endl;
-        abort();
-      }
+      return success;
+    }
+    else {
+      msg.Error()<<"Error in Signal_Processes::FillBlob."<<std::endl
+        <<"   No hard decay tables for "<<particle->Flav()<<". Abort."<<std::endl;
+      abort();
     }
   }
 
