@@ -184,7 +184,6 @@ bool Timelike_Sudakov::Veto(Knot *const mo,double t,double E2)
 
 bool Timelike_Sudakov::MassVeto(double t, double E2) 
 {
-  //  if (!p_kin->CheckZRange(m_z,E2,t,m_tb,m_tc)) return true;
   if (GetWeight(m_z,m_pt2,(m_mass_scheme==1||m_mass_scheme==3))<ran.Get()) 
     return true;
   if ((m_width_scheme>0) && (sqr(m_inflav.Width())>0.)) {
