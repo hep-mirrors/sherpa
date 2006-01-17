@@ -1,6 +1,8 @@
 #include "Cluster_Partons_CKKW.H"
 
 #include "Combine_Table_CKKW.H"
+#include "Data_Reader.H"
+#include <fstream> 
 
 using namespace SHERPA;
 using namespace EXTRAXS;
@@ -20,6 +22,23 @@ Cluster_Partons_CKKW(Matrix_Element_Handler * me,ATOOLS::Jet_Finder * jf,
 
 Cluster_Partons_CKKW::~Cluster_Partons_CKKW()
 {
+  int helpi(0);
+  Data_Reader reader;
+  if (reader.ReadFromFile(helpi,"PRINT_SUDAKOV","") && helpi==1) {
+    msg_Info()<<METHOD<<"(): Generating sudakov tables."<<std::endl;
+    std::ofstream r2out("r2_nll_107.dat");
+    for (double Q(91.2);Q>1.0;Q/=1.1) {
+      r2out<<2.0*log10(Q/91.2)<<" "<<sqr(p_fssud->Delta(kf::u)(91.2,Q))<<"\n";
+    }
+    std::ofstream dqout("sud_q_107.dat");
+    for (double Q(91.2);Q>6.3;Q/=1.1) {
+      dqout<<Q<<" "<<(p_fssud->Delta(kf::u))(Q,6.3)<<"\n";
+    }
+    std::ofstream dgout("sud_g_107.dat");
+    for (double Q(91.2);Q>6.3;Q/=1.1) {
+      dgout<<Q<<" "<<(p_fssud->Delta(kf::gluon))(Q,6.3)<<"\n";
+    }
+  }
 }
 
 Combine_Table_Base *Cluster_Partons_CKKW::
@@ -126,7 +145,7 @@ void Cluster_Partons_CKKW::InitWeightCalculation()
   double asfac(sqrt(m_is_as_factor*m_fs_as_factor));
   m_as_hard    = (*p_runas)(m_q2_hard/asfac);
   m_as_qcd     = (*p_runas)(m_q2_qcd/asfac);
-  m_as_jet     = (*p_runas)(m_q2_jet/asfac);
+  m_as_jet     = (*p_runas)(m_me_as_factor*m_q2_jet/asfac);
   msg_Debugging()<<"ct: scales: amegic "<<rpa.gen.Ecms()<<" ("<<m_as_amegic<<")"
 		 <<", hard "<<sqrt(m_q2_hard)<<" ("<<m_as_hard<<")"
 		 <<", qcd "<<sqrt(m_q2_qcd)<<" ("<<m_as_qcd<<")"
@@ -204,13 +223,12 @@ ApplyCombinedInternalWeight(const bool is,const Flavour & fl,
 {
   double qmin(0.), DeltaNum(0.), DeltaDenom(1.), DeltaRatio(0.);
   double as_ptij(0.), asRatio(0.);
-
   if (is) {
       as_ptij = (*p_runas)(sqr(actual)/m_is_as_factor);
       qmin = m_qmin!=0.0?m_qmin:m_qmin_i;
   }
   else {
-    as_ptij = (*p_runas)(sqr(actual)/m_fs_as_factor);
+    as_ptij = (*p_runas)(m_me_as_factor*sqr(actual)/m_fs_as_factor);
     qmin = m_qmin!=0.0?m_qmin:m_qmin_f;
   }
   if (m_kfac!=0.) as_ptij *= 1. + as_ptij/(2.*M_PI)*m_kfac;

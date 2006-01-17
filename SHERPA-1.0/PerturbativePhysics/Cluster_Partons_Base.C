@@ -27,7 +27,7 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
 {
   // read in some parameters
   Data_Read dr(rpa.GetPath()+"Shower.dat");     // !!!!!!!! SHOWER_DATA_FILE
-  m_bp_mode  = dr.GetValue<int>("SUDAKOVTYPE",8);
+  m_bp_mode  = dr.GetValue<int>("SUDAKOVTYPE",4);
   if ((m_bp_mode&(28))!=m_bp_mode) {
     msg.Error()<<"WARNING in Cluster_Partons_Base :"<<std::endl
 	       <<"   Wrong mode for NLL_Sudakovs: "<<m_bp_mode<<" vs "<<(m_bp_mode&127)<<std::endl
@@ -38,6 +38,7 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
   if (m_bp_mode&16) m_kfac = CA*(67./18.-M_PI*M_PI/6.)-10./9.*TR*Nf;
   m_is_as_factor=ToType<double>(rpa.gen.Variable("IS_CPL_SCALE_FACTOR","1"));
   m_fs_as_factor=ToType<double>(rpa.gen.Variable("FS_CPL_SCALE_FACTOR","1"));
+  m_me_as_factor=p_jf->Type()>1?1.0:0.25;
   int jetratemode = dr.GetValue<int>("CALCJETRATE",-1);
   msg_Tracking()<<"Initalize Cluster_Partons_Base with {\n"
 		<<"   Sudakov type            = "<<m_bp_mode<<"\n"

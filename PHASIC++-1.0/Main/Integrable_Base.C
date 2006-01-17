@@ -11,6 +11,7 @@
 #include "Message.H"
 
 using namespace PHASIC;
+using namespace ATOOLS;
 
 Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,
 				 const int scalescheme,const int kfactorscheme,
@@ -25,13 +26,13 @@ Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,
   m_threshold(0.), m_overflow(0.), m_rfactor(1.0), m_enhancefac(1.0), m_xinfo(std::vector<double>(4)),
   m_n(0), m_expevents(1), m_dicedevents(0), m_accevents(0), m_last(0.), m_lastlumi(0.), m_lastdxs(0.), 
   m_max(0.), m_totalxs(0.),m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), 
-  m_ssum(0.), m_ssumsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.), 
+  m_ssum(0.), m_ssumsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.), m_me_as_factor(1.0), 
   m_sn(0), m_son(1), m_swaped(false), 
   p_selected(this), p_parent(this), 
   p_regulator(Regulator_Base::GetRegulator(this,"Identity",std::vector<double>())),
   p_beamhandler(beamhandler), p_isrhandler(isrhandler), 
   p_pshandler(NULL), p_activepshandler(NULL), p_selector(NULL), 
-  p_cuts(NULL), p_whisto(NULL), m_ownselector(true), m_efunc("1") 
+  p_cuts(NULL), p_whisto(NULL), p_jf(NULL), m_ownselector(true), m_efunc("1") 
 {
   m_gmin=-1.0;
 }
@@ -408,16 +409,16 @@ double Integrable_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
     pt2 = m_scale[stp::fac];
       
     double y=2.;
-    if (p_selector->Name()=="Combined_Selector") {
-      ATOOLS::Jet_Finder * jf = (ATOOLS::Jet_Finder *)
+    if (p_jf==NULL && p_selector->Name()=="Combined_Selector") {
+      p_jf = (ATOOLS::Jet_Finder *)
 	((ATOOLS::Combined_Selector*)p_selector)->GetSelector("Jetfinder");
-      if (jf) y=jf->ActualValue();
-      else {
-	ATOOLS::msg.Out()<<"WARNING in Process_Base::Scale : "<<std::endl
-			 <<"   No jetfinder found, cannot use SCALESCHEME=="<<m_scalescheme<<"."
-			 <<" Return s as scale."<<std::endl;
-	pt2 = ATOOLS::rpa.gen.FactorizationScaleFactor()*s;
-      }
+      if (p_jf!=NULL) m_me_as_factor=p_jf->Type()>1?1.0:0.25;
+    }
+    if (p_jf) y=p_jf->ActualValue();
+    else {
+      msg.Error()<<METHOD<<"(): SCALE_SCHEME = 65 implies "
+		 <<"'JetFinder <ycut> <deltar>' in 'Selector.dat'. Return s."<<std::endl;
+      pt2 = ATOOLS::rpa.gen.FactorizationScaleFactor()*s;
     }
     
     // if highest number of jets
@@ -517,7 +518,7 @@ double Integrable_Base::KFactor(const double scale)
     msg_Debugging()<<"  Q_F^2 = "<<m_scale[stp::fac]<<std::endl;
     msg_Debugging()<<"  Q_R^2 = "<<m_scale[stp::as]<<std::endl;
     if (m_nstrong>2) {
-      return m_rfactor*pow(MODEL::as->AlphaS(m_scale[stp::as])/
+      return m_rfactor*pow(MODEL::as->AlphaS(m_me_as_factor*m_scale[stp::as])/
 			   MODEL::as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),m_nstrong-2);
     } 
     else 

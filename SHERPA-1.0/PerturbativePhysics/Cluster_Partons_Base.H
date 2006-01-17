@@ -30,7 +30,7 @@ namespace SHERPA {
 
     int     m_isrmode, m_isrshoweron, m_fsrshoweron;
     int     m_sud_mode, m_bp_mode;
-    double  m_kfac, m_is_as_factor, m_fs_as_factor;
+    double  m_kfac, m_is_as_factor, m_fs_as_factor, m_me_as_factor;
 
     int     m_hard_nqcd, m_hard_nqed, m_nstrong;
     double  m_counts, m_fails;
