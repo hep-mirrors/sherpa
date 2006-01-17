@@ -1228,7 +1228,6 @@ double Single_Process::operator()(const ATOOLS::Vec4D * mom)
     }
   }
   else {
-    // *** is this ever called ?
     for (size_t i=0;i<p_hel->MaxHel();i++) {
       if (p_hel->On(i)) {
 	helvalue = p_ampl->Differential(i,(*p_hel)[i]) * p_hel->PolarizationFactor(i);
@@ -1241,6 +1240,10 @@ double Single_Process::operator()(const ATOOLS::Vec4D * mom)
   return M2 * sqr(m_pol.Massless_Norm(m_nin+m_nout,p_flavours,p_BS));
 }
 
+ATOOLS::Spin_Correlation_Tensor* Single_Process::GetSpinCorrelations()
+{
+  return p_ampl->GetSpinCorrelations(p_hel);
+}
 
 ATOOLS::Blob_Data_Base *Single_Process::OneEvent(double _mass) { 
   if (p_partner==this) return p_pshandler->OneEvent(_mass,1); 
