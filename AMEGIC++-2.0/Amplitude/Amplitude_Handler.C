@@ -680,7 +680,7 @@ double Amplitude_Handler::Zvalue(Helicity* hel)
 
 
 Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
-{ // This is called for the gauge test
+{
   for (size_t i=0;i<graphs.size();i++) Mi[i] = graphs[i]->Zvalue(ihel,sign);
 
   Complex mcm,M(0.,0.);
@@ -694,6 +694,23 @@ Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
   }
   if (abs(M)/max<(ATOOLS::Accu()*1.e-2)) return Complex(0.,0.); 
   return M;
+}
+
+ATOOLS::Spin_Correlation_Tensor* Amplitude_Handler::GetSpinCorrelations(Helicity* hel)
+{ 
+  // Reserve memory for the amplitudes.
+  std::vector< std::vector<Complex> > A;
+  A.resize(hel->MaxHel());
+  for (size_t i=0; i<A.size(); ++i)
+    A[i].resize(graphs.size());
+
+  // Get the amplitudes
+  for (size_t ihel=0; ihel<hel->MaxHel(); ++ihel)
+    for(size_t col=0; col<graphs.size(); ++col)
+      A[ihel][col] = graphs[col]->Zvalue(ihel);
+
+  // Create the spin-correlation tensor and return a pointer to it.
+  return new AMEGIC_SCT(&A, CFCol_Matrix, hel);
 }
 
 int Amplitude_Handler::TOrder(Single_Amplitude* a)
