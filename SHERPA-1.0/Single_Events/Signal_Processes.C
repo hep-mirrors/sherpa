@@ -311,9 +311,10 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,
   blob->AddData("ME_Weight",new Blob_Data<double>(weight));
   blob->AddData("ME_NumberOfTrials",new Blob_Data<int>(ntrial));
   blob->AddData("Process_Weight",new Blob_Data<double>(procweight));
-//  blob->AddData("Spin_Density_Matrix",
-//				new Blob_Data<Spin_Density_Matrix>
-//				(p_mehandler->GetSpinDensityMatrix()));
+  Spin_Correlation_Tensor* SCT = p_mehandler->GetSpinCorrelations();
+  if (SCT!=NULL)
+  blob->AddData("Spin_Correlation_Tensor",
+		new Blob_Data<SP(Spin_Correlation_Tensor) >(SCT));
   return success;
 }
 
