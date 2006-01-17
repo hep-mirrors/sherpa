@@ -13,6 +13,7 @@
 #include "Object.H"
 #include "Blob_List.H"
 #include "Blob.H"
+#include "Spin_Correlation_Tensor.H"
 
 namespace AMEGIC { class Amegic; 
                    class Point;  }
@@ -48,7 +49,7 @@ namespace SHERPA {
     unsigned long          m_ntrial, m_sntrial;
 
     std::string            m_name,m_signalgenerator,m_readin;
- 
+    ATOOLS::Switch::code         m_spincorrelations;
     int  m_eventmode;
     int  m_sudakovon;
     bool m_apply_hhmf;
@@ -130,6 +131,7 @@ namespace SHERPA {
     AMEGIC::Amegic     * GetAmegic();
     AMEGIC::Point      * GetDiagram(int);
     EXTRAXS::XS_Base   * GetXS(const int mode=0);
+    ATOOLS::Spin_Correlation_Tensor* GetSpinCorrelations();
     double               Weight();
     double               ProcessWeight();
     unsigned long        NumberOfTrials();
