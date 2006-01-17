@@ -179,3 +179,18 @@ void Helicity::SpinorTransformation(std::vector<Complex>& A)
     }
   }
 }
+
+size_t Helicity::MaxHel(size_t i) {
+  return (size_t) m_nPols[i];
+}
+
+size_t Helicity::GetAmplitudeNumber(std::vector<int> *Helis)
+{
+  int mult(1);
+  size_t num(0);
+  for (size_t i=0; i < Helis->size(); ++i) {
+    num += mult * (*Helis)[i];
+    mult *= m_nPols[i];
+  }
+  return num;
+}

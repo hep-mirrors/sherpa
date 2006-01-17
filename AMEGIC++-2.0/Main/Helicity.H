@@ -22,7 +22,7 @@ namespace AMEGIC {
     double polfactor;
     int    partner;
 
-    Sign_List(): s(0),on(1),multi(1),polfactor(1.),partner(-1) {}
+    Sign_List(): s(NULL),on(1),multi(1),polfactor(1.),partner(-1) {}
     ~Sign_List() {
       //      if (s) delete [] s;
     }
@@ -64,6 +64,8 @@ class Helicity {
     Helicity(int,int,ATOOLS::Flavour*,Pol_Info*);
     //! Returns the maximum number of helicities.
     size_t MaxHel() {return m_nsign;}
+    //! Returns the number of possible spin-orientations for particle i.
+    size_t MaxHel(size_t i);
     //! Returns the maximum number of helicities for calculation of physical fermion helicities.
   //    int MaxFHel() {return m_fnsign;}
     //! Returns a certain helicity combination.
@@ -95,6 +97,10 @@ class Helicity {
     inline void ForceNoTransformation() { m_allowTrafo = false; }
     inline void AllowTransformation() { m_allowTrafo = true; }
     inline bool UseTransformation() { return  m_needsTrafo && m_allowTrafo; }
+
+    //! Return the amplitude number for the given helicity combination
+    size_t GetAmplitudeNumber(std::vector<int> *Helis);
+    size_t Nflavs() { return m_flavours.size(); }
     ~Helicity();
 
   };
