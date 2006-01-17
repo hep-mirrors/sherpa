@@ -31,8 +31,7 @@ Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
     (p_mehandler,shower->JetFinder(),m_maxjetnumber,
      p_shower->GetISRHandler()->On(),
      p_shower->ISROn(),p_shower->FSROn());
-  p_filler  = new Tree_Filler
-    (p_cluster,m_maxjetnumber,p_shower->ISROn(),p_shower->FSROn());
+  p_filler  = new Tree_Filler(p_cluster,p_shower,m_maxjetnumber);
   if (p_mehandler->MinQCDJets()==p_mehandler->MaxQCDJets()) 
     rpa.gen.SetVariable("SUDAKOV_WEIGHT",ToString("0"));
   m_ckkwon=ToType<int>(rpa.gen.Variable("SUDAKOV_WEIGHT"));

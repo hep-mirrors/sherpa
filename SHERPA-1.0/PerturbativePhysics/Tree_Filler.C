@@ -6,10 +6,11 @@ using namespace APACIC;
 using namespace ATOOLS;
 using namespace std;
 
-Tree_Filler::Tree_Filler(Cluster_Partons_Base * cluster,int maxjetno,int isron, int fsron) : 
+Tree_Filler::Tree_Filler(Cluster_Partons_Base * cluster,
+			 Shower_Handler *shower,int maxjetno) : 
   p_cluster(cluster), m_maxjetnumber(maxjetno), 
-  m_isrshoweron(isron), m_fsrshoweron(fsron),
-  p_local_tree(NULL)
+  m_isrshoweron(shower->ISROn()), m_fsrshoweron(shower->FSROn()),
+  p_local_tree(NULL), p_fsrshower(shower->GetApacic()->FinShower())
 {
   m_iss_scale_fac=1.0;
   m_fss_scale_fac=1.0;
@@ -451,7 +452,7 @@ void Tree_Filler::EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC:
     d1->E2    = sqr(p2[0]);
     d2->E2    = sqr(p3[0]);
 
-    APACIC::Final_State_Shower::EstablishRelations(mo,d1,d2);
+    p_fsrshower->EstablishRelations(mo,d1,d2);
 
     mo->tout = mo->t;
     return;

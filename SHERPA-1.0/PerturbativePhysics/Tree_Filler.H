@@ -1,7 +1,7 @@
 #ifndef Tree_Filler_H
 #define Tree_Filler_H
 
-#include "Initial_State_Shower.H"
+#include "Shower_Handler.H"
 #include "Final_State_Shower.H"
 #include "Cluster_Partons_Base.H"
 #include "Blob.H"
@@ -13,6 +13,8 @@ namespace SHERPA {
     Cluster_Partons_Base * p_cluster;
     int                    m_maxjetnumber, m_isrshoweron, m_fsrshoweron, m_ckkwon;
     APACIC::Tree         * p_local_tree;
+
+    APACIC::Final_State_Shower * p_fsrshower;
  
     ATOOLS::Poincare       m_cms_boost;
     Flavour_Map          * p_flmap;
@@ -28,7 +30,7 @@ namespace SHERPA {
 
     ATOOLS::Vec4D  Momentum(APACIC::Knot * mo, int & number);
   public:
-    Tree_Filler(Cluster_Partons_Base *,int,int,int);
+    Tree_Filler(Cluster_Partons_Base *,Shower_Handler *shower,int);
     ~Tree_Filler();
     void FillTrees(ATOOLS::Blob *,APACIC::Tree ** ini_trees,APACIC::Tree * fin_tree);
     void FillDecayTree(APACIC::Tree * fin_tree);
