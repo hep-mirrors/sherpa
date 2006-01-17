@@ -154,7 +154,7 @@ namespace ATOOLS {
       is not equal to p_this. 
       Assigns p_this to ref and returns p_this.
     */
-    inline Type *const operator=(Smart_Pointer &ref) 
+    inline Type *const operator=(const Smart_Pointer &ref) 
     { 
       if (ref==p_this) return p_this;
       Remove(); 
