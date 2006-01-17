@@ -26,13 +26,16 @@ namespace APACIC {
     int  InitializeJets(Tree *tree,Knot *mo,int init_rel=0);
     bool SmearDaughters(Knot *mo);
 
+    Knot *ChooseDaughter(Knot *mo);
+
     void InitTwojetTree(Tree *tree,double scale);
     int  EvolveJet(Tree *tree,Knot *mo);
-    int  ChooseDaughter(Knot *mo);
     int  FillBranch(Tree *tree,Knot *mo,int first);
 
-    void InitDaughters(Tree *tree,Knot *mo,ATOOLS::Flavour *flavs,
-		       ATOOLS::Simple_Polarisation_Info *pols,bool diced);
+    void InitDaughters(Tree *tree,Knot *mo,
+		       ATOOLS::Flavour flb,ATOOLS::Flavour flc,
+		       ATOOLS::Simple_Polarisation_Info polb,
+		       ATOOLS::Simple_Polarisation_Info polc,bool diced);
     void ResetDaughters(Knot *mo);
     void Reset(Knot *knot);
 
@@ -57,7 +60,7 @@ namespace APACIC {
 
     bool SetAllColours(Knot *mo);
 
-    static void EstablishRelations(Knot * mo, Knot * d1,Knot * d2);
+    void EstablishRelations(Knot * mo, Knot * d1,Knot * d2);
 
     void ExtractPartons(Knot *knot,ATOOLS::Blob *blob,
 			ATOOLS::Blob_List *blist,

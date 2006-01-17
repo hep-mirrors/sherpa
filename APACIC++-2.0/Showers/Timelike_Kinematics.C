@@ -12,72 +12,6 @@ Timelike_Kinematics::Timelike_Kinematics(ATOOLS::Jet_Finder *const jf):
   p_jf(jf),
   m_zscheme(1) {}
 
-bool Timelike_Kinematics::CheckZRange(Knot * const  mo,
-				      const Flavour *const d1flav,
-				      const Flavour *const d2flav) const
-{
-  Knot * d1(mo->left), * d2(mo->right);
-  if ((d1->stat==3) || (d2->stat==3)) return true; 
-
-  double t(mo->t), t1(d1->t), t2(d2->t);
-
-  if (t<t1+t2+2.*sqrt(t1*t2)) {
-    if (d1->stat==0 && d2->stat==0)   return false;
-    if (d1->stat==0 && d2->stat!=0) {
-      d2->stat = 3;
-      return true;
-    }
-    if (d1->stat!=0 && d2->stat==0) {
-      d1->stat = 3;
-      return true;
-    }
-    if (d1->t>d2->t) d1->stat = 3;
-                else d2->stat = 3;
-    return true;
-  }
-
-  double t01(d1->tout), t02(d2->tout);
-
-  double z(GetZ(mo->zs,t,t1,t2,t01,t02)), 
-    e12(z*z*mo->E2), e22((1.-z)*(1.-z)*mo->E2);
-  bool do1(false), do2(false);
-  if (d1->stat>0 && !CheckZRange(d1->z,e12,t1,sqr(d1flav[0].PSMass()),
-				 sqr(d1flav[1].PSMass()))) do1=true;
-  if (d2->stat>0 && !CheckZRange(d2->z,e22,t2,sqr(d2flav[0].PSMass()),
-				 sqr(d2flav[1].PSMass()))) do2=true;
-
-  if (!do1 && !do2) return true;
-  else if (!do1 && do2) d2->stat=3;
-  else if (do1 && !do2) d1->stat=3;
-  else if (d1->t>d2->t) d1->stat=3;
-                   else d2->stat=3;
-  return false;
-}
-
-bool Timelike_Kinematics::
-CheckZRange(const double &z, const double &E2, const double &t, 
-	    const double &t1, const double &t2) const
-{
-  double x_p_mom(sqrt(1.-t/E2));   
-  double mean_z(0.),delta_z(1.);              
-  switch (m_zscheme) {
-  case 0 : 
-    mean_z  = 0.5;
-    delta_z = 0.5*x_p_mom;
-    break;
-  case 1 :
-    mean_z  = 0.5*(1.+(t1-t2)/t); 
-    delta_z = 0.5*x_p_mom*sqrt( sqr(t-t1-t2) - 4.*t1*t2)/t;
-    break;
-  case 2 :
-    mean_z  = 0.5*(1.+(t1-t2)/t); 
-    delta_z = 0.5*sqrt( sqr(t-t1-t2) - 4.*t1*t2)/t;    
-    break;
-  }
-  if (z<mean_z-delta_z || z>mean_z+delta_z) return false;
-  return true;
-}
-
 double Timelike_Kinematics::GetZ(const double &zp, const double &t, 
 				 const double &t1, const double &t2, 
 				 const double &t01, const double &t02) const
@@ -102,7 +36,6 @@ int Timelike_Kinematics::Shuffle(Knot * const mo, const int first) const
 {
   msg_Debugging()<<METHOD<<"("<<mo->kn_no<<","<<first<<"): {\n";
   msg_Indent();
-  if (mo->t==mo->left->t || mo->t==mo->right->t) return 1;
   int stat(first?ShuffleMomenta(mo):ShuffleZ(mo));
   msg_Debugging()<<"z = "<<mo->z<<", stat = "<<stat<<"\n";
   if (stat==1) stat=UpdateDaughters(mo);
@@ -341,7 +274,7 @@ ConstructVectors(Knot *const mo,Vec4D &p1vec,Vec4D &p2vec) const
   msg_Debugging()<<"construct, t_1 = "<<t1<<" <- "<<mo->left->t
 		 <<", t_2 = "<<t2<<" <- "<<mo->right->t<<"\n";
   double p1(sqrt(E12-t1)), p2(sqrt(E22-t2));
-  msg_Debugging()<<"construct, p_1 = "<<p1<<", t_2 = "<<p2<<", p = "<<p<<"\n";
+  msg_Debugging()<<"construct, p_1 = "<<p1<<", p_2 = "<<p2<<", p = "<<p<<"\n";
   Vec3D n1,n2;
   ConstructDreiBein(mo,n1,n2);
   double phi(mo->phi + mo->polinfo.Angle()), bph(cos(phi)), cph(-sin(phi));

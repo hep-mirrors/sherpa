@@ -183,7 +183,7 @@ int Jet_Veto::TestFSKinematics(Knot *const knot)
 	d[i]->left->part->Info()=='H' || 
 	d[i]->right->part->Info()=='H') continue;
     double pt2(p_jf->MTij2(d[i]->left->part->Momentum(),
- 			   d[i]->right->part->Momentum()));
+  			   d[i]->right->part->Momentum()));
     msg_Debugging()<<" jv  pt = "<<sqrt(pt2)<<", pt_old = "
 		   <<sqrt(d[i]->pt2lcm)<<" <- "
 		   <<d[i]->left->part->Momentum()<<" "
