@@ -135,16 +135,18 @@ string * Process_Base::GenerateNames(int _nin, Flavour * _flin, Pol_Info * _plin
   if (ppi==NULL) ppi=p_pinfo;
   Reshuffle(_nin, _flin, _plin);
 
-  if (_flin[0].IsAnti() && !_flin[1].IsAnti()) {
-    Flavour flhelp  = _flin[0];
-    _flin[0] = _flin[1];
-    _flin[1] = flhelp;
-    Pol_Info plhelp  = _plin[0];
-    _plin[0] = _plin[1];
-    _plin[1] = plhelp;    
+  if (_nin==2) {
+    if (_flin[0].IsAnti() && !_flin[1].IsAnti()) {
+      Flavour flhelp  = _flin[0];
+      _flin[0] = _flin[1];
+      _flin[1] = flhelp;
+      Pol_Info plhelp  = _plin[0];
+      _plin[0] = _plin[1];
+      _plin[1] = plhelp;    
+    }
   }
   int _nout=ppi->TotalNout();
-  
+ 
   _name=ToString(_nin)+"_"+ToString(_nout);
   if (m_gen_str>1) _ptype      = string("P")+_name;
   else _ptype      = string("N")+_name;
