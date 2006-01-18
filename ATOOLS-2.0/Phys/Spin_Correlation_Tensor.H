@@ -3,12 +3,12 @@
 
 #include <vector>
 #include <MyComplex.H>
+#include <utility>
 #include "Node.H"
 #include "Spin_Density_Matrix.H"
 
 namespace ATOOLS {
 
-  
   class Spin_Correlation_Tensor
   {
   protected:
@@ -34,8 +34,12 @@ namespace ATOOLS {
     Spin_Correlation_Tensor(double x, std::vector<int>* creation_list, size_t pos);
 
     //! Yet aniother dummy
-    Spin_Correlation_Tensor(std::vector<int>* particles, std::vector<Complex>* Amplitudes,
-			    size_t pPos=0, size_t aPos1=0, size_t aPos2=0);
+    Spin_Correlation_Tensor(
+        std::vector<std::pair<int,int> >* particles, 
+        std::vector<Complex>* Amplitudes,
+        size_t pPos=0, 
+        size_t aPos1=0, 
+        size_t aPos2=0 );
 
     //! Returns the trace; equivalent to soft-contracting with unit-matrices.
     Complex Trace();

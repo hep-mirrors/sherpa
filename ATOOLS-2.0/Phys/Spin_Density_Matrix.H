@@ -21,6 +21,7 @@ namespace ATOOLS {
     //Spin_Density_Matrix( size_t total_size );
     ~Spin_Density_Matrix() {};
 
+    int     Spin()      { return m_size-1; }        // return 2*spin
     size_t  Size()      { return m_size; }
     size_t  NrEntries() { return m_entries.size(); }
     void    SetNoCorrelation();

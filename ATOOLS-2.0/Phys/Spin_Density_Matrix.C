@@ -21,6 +21,8 @@ Spin_Density_Matrix::Spin_Density_Matrix( std::vector<Complex> entr )
     case 1 : m_size = 1; break;
     case 4 : m_size = 2; break;
     case 9 : m_size = 3; break;
+    case 16: m_size = 4; break;
+    case 25: m_size = 5; break;
     default: m_size = 0;
   }
 }
@@ -28,6 +30,8 @@ Spin_Density_Matrix::Spin_Density_Matrix( std::vector<Complex> entr )
 
 void Spin_Density_Matrix::SetNoCorrelation()
 {
+  for( size_t i=0; i<m_entries.size(); i++ ) 
+    m_entries[i] = Complex(0.,0.);
   for( size_t i=0; i<m_size; i++ ) 
     m_entries[ (m_size+1) * i ] = Complex( 1./m_size, 0. );
   return;
@@ -35,6 +39,8 @@ void Spin_Density_Matrix::SetNoCorrelation()
 
 void Spin_Density_Matrix::SetUnitMatrix()
 {
+  for( size_t i=0; i<m_entries.size(); i++ ) 
+    m_entries[i] = Complex(0.,0.);
   for( size_t i=0; i<m_size; i++ ) 
     m_entries[ (m_size+1) * i ] = Complex( 1., 0. );
   return;
