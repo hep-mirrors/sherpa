@@ -358,7 +358,7 @@ void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,in
 	    if (flav[1].IsFermion() && p->left->b==0)  p->left->b  = p->b;
 	    if (flav[2].IsFermion() && p->right->b==0) p->right->b = p->b;
 	  }
-	  sw1 = CheckEnd(p->left,flav[1]);	    
+	  sw1 = CheckEnd(p->left,flav[1]);
 	  if (sw1) {
 	    sw1 = CheckEnd(p->right,flav[2]);
 	  }
@@ -419,7 +419,6 @@ void Amplitude_Generator::CreateSingleAmplitudes(Single_Amplitude * & first) {
   n = first;
   if (n) while (n->Next) n = n->Next;
   Single_Amplitude* gra;
-  
   for (size_t i=0;i<prea_table.size();i++) {
     int sw1 = 1;
     if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) {
@@ -1525,7 +1524,6 @@ int Amplitude_Generator::CountRealAmplitudes(Single_Amplitude* first)
   return ra;
 }
 
-
 Single_Amplitude* Amplitude_Generator::Matching()
 {
   int nloop = N-1;
@@ -1534,7 +1532,7 @@ Single_Amplitude* Amplitude_Generator::Matching()
   for (i=0;i<nloop;i++) ii[i] = 0;
   int* perm = new int[N];
   int sw1;
-  int qsum,l1sum,l2sum,l3sum; 
+  int qsum,lsum; 
   //int chsum,neusum;           
   Single_Amplitude* first_amp;
   int over = 0;
@@ -1592,13 +1590,14 @@ Single_Amplitude* Amplitude_Generator::Matching()
 	      (b[perm[N-1]]==1  && (!(fl[perm[N-1]].IsAnti()) || fl[perm[N-1]].Majorana())) )) sw1 = 0;
       }
       if (fl[0].IsLepton() && fl[0].IsAnti()) {
-	if (!(fl[perm[N-1]].IsLepton() && 
-	      (b[perm[N-1]]==-1 && (!fl[perm[N-1]].IsAnti() || fl[perm[N-1]].Majorana())) ||
-	      (b[perm[N-1]]==1  && ((fl[perm[N-1]].IsAnti()) || fl[perm[N-1]].Majorana())) )) sw1 = 0;
+   	if (!(fl[perm[1]].IsLepton() && 
+   	      (b[perm[1]]==-1 && (!fl[perm[1]].IsAnti() || fl[perm[1]].Majorana())) ||
+   	      (b[perm[1]]==1  && ((fl[perm[1]].IsAnti()) || fl[perm[1]].Majorana())) )) sw1 = 0;
       }
     }
+
     if (sw1) {
-      qsum=l1sum=l2sum=l3sum=0;
+      qsum=lsum=0;
       for (j=0;j<N-1;j++) {
 	if (fl[perm[j]].IsQuark()) {
 	  if (fl[perm[j]].IsAnti()) {
@@ -1623,41 +1622,22 @@ Single_Amplitude* Amplitude_Generator::Matching()
 	  }
 	}
 	if (fl[perm[j]].IsLepton()) {
-	  if ( (fl[perm[j]]==Flavour(kf::e)) || 
-	       (fl[perm[j]]==Flavour(kf::nue)) ) {
-	    if (b[perm[j]]==1) l1sum++;
-	    else l1sum--;
-	  }
-	  if ( (fl[perm[j]]==Flavour(kf::e).Bar()) || 
-	       (fl[perm[j]]==Flavour(kf::nue).Bar()) ) {
-	    if (b[perm[j]]==1) l1sum--;
-	    else l1sum++;
-	  }
-	  if ( (fl[perm[j]]==Flavour(kf::mu)) || 
-	       (fl[perm[j]]==Flavour(kf::numu)) ) {
-	    if (b[perm[j]]==1) l2sum++;
-	    else l2sum--;
-	  }
-	  if ( (fl[perm[j]]==Flavour(kf::mu).Bar()) || 
-	       (fl[perm[j]]==Flavour(kf::numu).Bar()) )  {
-	    if (b[perm[j]]==1) l2sum--;
-	    else l2sum++;
-	  }
-	  if ( (fl[perm[j]]==Flavour(kf::tau)) || 
-	       (fl[perm[j]]==Flavour(kf::nutau)) ) {
-	    if (b[perm[j]]==1) l3sum++;
-	    else l3sum--;
-	  }
-	  if ( (fl[perm[j]]==Flavour(kf::tau).Bar()) || 
-	       (fl[perm[j]]==Flavour(kf::nutau).Bar()) )  {
-	    if (b[perm[j]]==1) l3sum--;
-	    else l3sum++;
-	  }
+ 	    if (b[perm[j]]==1) lsum+=fl[perm[j]].LeptonNumber();
+ 	    else lsum-=fl[perm[j]].LeptonNumber();
 	}
-	if ( (b[perm[N-1]]==-1) && (fl[perm[N-1]].IsAnti()) && 
-	     ( (l1sum>0) || (l2sum>0) || (l3sum>0))  ) {sw1=0;break;} // s-channel, e+e-.
-	if ( (b[perm[N-1]]==1) && !(fl[perm[N-1]].IsAnti()) &&
-	     ( (l1sum>0) || (l2sum>0) || (l3sum>0)) )  {sw1=0;break;} // t-channel, e+e-.
+
+	if (!fl[0].IsAnti()) {
+	  if ( b[perm[N-1]]==-1 && fl[perm[N-1]].IsAnti() && lsum>0 ) 
+	      {sw1=0;break;} // s-channel
+	  if ( b[perm[N-1]]==1 && !(fl[perm[N-1]].IsAnti()) && lsum>0 )
+	    {sw1=0;break;} // t-channel,
+	}
+	else {
+	  if ( b[perm[1]]==-1 && fl[perm[1]].IsAnti() && lsum<0 ) 
+	    {sw1=0;break;} // s-channel
+	  if ( b[perm[1]]==1 && !(fl[perm[1]].IsAnti()) && lsum<0 )
+	    {sw1=0;break;} // t-channel,	    
+	}
       }
     }
     if (sw1) {
@@ -1672,7 +1652,7 @@ Single_Amplitude* Amplitude_Generator::Matching()
 
 	SetProps(single_top->p[j],2*N-3,first_amp,perm,j,count);
 	
-	//Print_P(&single_top->p[j][0]);
+// 	Print_P(&single_top->p[j][0]);
       }
     }     
     for (j=nloop-1;j>=0;j--) {
@@ -1726,7 +1706,7 @@ Single_Amplitude* Amplitude_Generator::Matching()
 #endif
 
   Amplitude_Manipulator(N,fl,b).FixSign(first_amp);
-  
+
   return first_amp;
 }
 
