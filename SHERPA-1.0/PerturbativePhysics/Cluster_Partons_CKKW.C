@@ -26,17 +26,18 @@ Cluster_Partons_CKKW::~Cluster_Partons_CKKW()
   Data_Reader reader;
   if (reader.ReadFromFile(helpi,"PRINT_SUDAKOV","") && helpi==1) {
     msg_Info()<<METHOD<<"(): Generating sudakov tables."<<std::endl;
+    double ecms(rpa.gen.Ecms()), qmin(sqrt(rpa.gen.Ycut())*ecms);
     std::ofstream r2out("r2_nll_107.dat");
-    for (double Q(91.2);Q>1.0;Q/=1.1) {
-      r2out<<2.0*log10(Q/91.2)<<" "<<sqr(p_fssud->Delta(kf::u)(91.2,Q))<<"\n";
+    for (double Q(ecms);Q>1.0;Q/=1.1) {
+      r2out<<2.0*log10(Q/ecms)<<" "<<sqr(p_fssud->Delta(kf::u)(ecms,Q))<<"\n";
     }
     std::ofstream dqout("sud_q_107.dat");
-    for (double Q(91.2);Q>6.3;Q/=1.1) {
-      dqout<<Q<<" "<<(p_fssud->Delta(kf::u))(Q,6.3)<<"\n";
+    for (double Q(ecms);Q>qmin;Q/=1.1) {
+      dqout<<Q<<" "<<(p_fssud->Delta(kf::u))(Q,qmin)<<"\n";
     }
     std::ofstream dgout("sud_g_107.dat");
-    for (double Q(91.2);Q>6.3;Q/=1.1) {
-      dgout<<Q<<" "<<(p_fssud->Delta(kf::gluon))(Q,6.3)<<"\n";
+    for (double Q(ecms);Q>qmin;Q/=1.1) {
+      dgout<<Q<<" "<<(p_fssud->Delta(kf::gluon))(Q,qmin)<<"\n";
     }
   }
 }
