@@ -9,6 +9,8 @@ INSTANTIATE_SMART_POINTER(Spin_Correlation_Tensor);
 
 namespace ATOOLS{
 
+  int Spin_Correlation_Tensor::m_k0_n(-1);
+
   Spin_Correlation_Tensor::~Spin_Correlation_Tensor() 
   {   
     if (p_next!=NULL) {
