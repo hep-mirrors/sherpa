@@ -1242,7 +1242,10 @@ double Single_Process::operator()(const ATOOLS::Vec4D * mom)
 
 ATOOLS::Spin_Correlation_Tensor* Single_Process::GetSpinCorrelations()
 {
-  return p_ampl->GetSpinCorrelations(p_hel);
+  Spin_Correlation_Tensor* SCT = p_ampl->GetSpinCorrelations(p_hel);
+  SCT->Set_k0(p_BS->Getk0_n());
+  return SCT;
+  //  return p_ampl->GetSpinCorrelations(p_hel);
 }
 
 ATOOLS::Blob_Data_Base *Single_Process::OneEvent(double _mass) { 
