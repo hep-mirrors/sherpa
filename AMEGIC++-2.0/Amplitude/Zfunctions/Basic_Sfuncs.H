@@ -104,7 +104,9 @@ namespace AMEGIC {
     int    GetPolNumber(int,int,double,int check=0);
 
     void   Setk0(int);
+    int    Getk0_n();
     ATOOLS::Vec4D Getk0();
+
     void   Initialize();
     int    CalcEtaMu(ATOOLS::Vec4D*);//setS
     void   InitGaugeTest(double);//ResetS_GT
