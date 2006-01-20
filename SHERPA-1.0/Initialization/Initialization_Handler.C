@@ -63,6 +63,11 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
   m_fragmentationdat = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_hadrondecaysdat  = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
+
+  ATOOLS::Switch::code 
+    spincorrelations = p_dataread->GetValue<Switch::code>("SPIN_CORRELATIONS",Switch::Off);
+  if( spincorrelations ) Data_Read::SetCommandLine("SPIN_CORRELATIONS","On");
+  else                   Data_Read::SetCommandLine("SPIN_CORRELATIONS","Off");
 }
 
 Initialization_Handler::Initialization_Handler(int argc,char * argv[]) : 
@@ -111,6 +116,10 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 
   CheckFlagConsistency();
 
+  ATOOLS::Switch::code 
+    spincorrelations = p_dataread->GetValue<Switch::code>("SPIN_CORRELATIONS",Switch::Off);
+  if( spincorrelations ) Data_Read::SetCommandLine("SPIN_CORRELATIONS","On");
+  else                   Data_Read::SetCommandLine("SPIN_CORRELATIONS","Off");
 }
 
 
@@ -510,6 +519,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
     hdhandler->EraseTreated(UnstableHadrons);
     if (UnstableHadrons->empty()) needextra = false;
     m_hdhandlers["Sherpa"] = hdhandler;
+    hdhandler->GetHadrons()->SetSpinCorrelations( dr.GetValue<Switch::code>("SPIN_CORRELATIONS",Switch::Off) );
   }
 #endif
   if ((decmodel==string("Lund") || needextra) ) {
