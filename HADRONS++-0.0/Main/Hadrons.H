@@ -36,6 +36,7 @@ namespace HADRONS {
     ATOOLS::Decay_Table * InitialiseOneDecayTable(std::vector<std::string>);
 
 	bool				  m_createbooklet;
+    bool				  m_spincorr;
 
   public: 
     Hadrons(
@@ -53,6 +54,7 @@ namespace HADRONS {
 	std::map<ATOOLS::kf::code,ATOOLS::Decay_Table *> * GetDecayMap() { return p_decaymap; }
 
 	void CreateBookletNow();
+    void SetSpinCorrelations( bool sc ) { m_spincorr = sc; }
   }; // end of class Hadrons
   
   /*!
