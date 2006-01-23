@@ -7,7 +7,7 @@ using namespace ATOOLS;
 
 template <class PointType,class MeasureType,class RecombinationType>
 Cluster_Algorithm<PointType,MeasureType,RecombinationType>::
-Cluster_Algorithm() {}
+Cluster_Algorithm(): m_recalc(false) {}
 
 template <class PointType,class MeasureType,class RecombinationType>
 bool Cluster_Algorithm<PointType,MeasureType,RecombinationType>::
@@ -33,8 +33,8 @@ Cluster(const double &crit,const cs::code &code)
   }
   m_j.resize(m_n);
   m_dmin=std::numeric_limits<double>::max();
+  for (size_t i(0);i<m_n;++i) m_j[i]=m_i[i]=i;
   for (size_t i(0);i<m_n;++i) {
-    m_j[i]=m_i[i]=i;
     SetDMin(i,i,m_d[i][i]=m_measure(m_p[i]));
     for (size_t j(i+1);j<m_n;++j) 
       SetDMin(i,j,m_d[i][j]=m_measure(m_p[i],m_p[j]));
@@ -58,11 +58,19 @@ Cluster(const double &crit,const cs::code &code)
     --m_n;
     if (code==cs::num && m_n<=crit || m_n==0)  return ArrangePoints();
     if (iimin!=ijmin) {
-      for (size_t i(0);i<m_imin;++i) 
-	m_d[m_i[i]][iimin]=m_measure(m_p[m_i[i]],m_p[iimin]);
-      m_d[iimin][iimin]=m_measure(m_p[iimin]);
-      for (size_t j(m_imin+1);j<m_n;++j) 
-	m_d[iimin][m_i[j]]=m_measure(m_p[iimin],m_p[m_i[j]]);
+      if (!m_recalc) {
+	for (size_t i(0);i<m_imin;++i) 
+	  m_d[m_i[i]][iimin]=m_measure(m_p[m_i[i]],m_p[iimin]);
+	m_d[iimin][iimin]=m_measure(m_p[iimin]);
+	for (size_t j(m_imin+1);j<m_n;++j) 
+	  m_d[iimin][m_i[j]]=m_measure(m_p[iimin],m_p[m_i[j]]);
+      } 
+      else {
+	for (size_t i(0);i<m_n;++i) {
+	  for (size_t j(i+1);j<m_n;++j) 
+	    m_d[m_i[i]][m_i[j]]=m_measure(m_p[m_i[i]],m_p[m_i[j]]);
+	}
+      }
     }
     m_dmin=std::numeric_limits<double>::max();
     for (size_t i(0);i<m_n;++i) {
