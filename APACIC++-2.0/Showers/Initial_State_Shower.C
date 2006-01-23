@@ -38,8 +38,10 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr,
   int orderingscheme(dataread->GetValue<int>("IS_ORDERING_SCHEME",2));
   for (short unsigned int i(0);i<2;++i) {
     if (isr->PDF(i)->Q2Min()>m_t0*cplscalefac) {
-      msg.Error()<<METHOD<<"(..):\n   IS_PT2MIN*IS_CPL_SCALE_FACTOR "
-		 <<"smaller than minimum scale as given by PDF.\n"
+      msg.Error()<<METHOD<<"(..):\n   IS_PT2MIN("<<m_t0
+		 <<")*IS_CPL_SCALE_FACTOR("<<cplscalefac<<") "
+		 <<"smaller than minimum scale given by PDF ("
+		 <<isr->PDF(i)->Q2Min()<<").\n"
 		 <<"   Please change your settings in "
 		 <<dataread->FileName()<<"\n";
       THROW(fatal_error,"Minimal PDF scale too low.");
