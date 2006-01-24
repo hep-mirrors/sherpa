@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/09/01
+//Version: 3 ADICIC++-0.0/2006/01/24    //!! Check gcc4.0 changes!
 
 //Flavtest.C - testing the dipole-flavour structure.
 
@@ -49,10 +49,7 @@ int main() {
 
   //Initialization.
   msg.SetModifiable(true);
-  cout<<Dipole_Flavour_Init::Status()<<endl;
-  cout<<Dipole_Flavour_Init::DoIt(true)<<endl;
-  cout<<Dipole_Flavour_Init::DoIt()<<endl;
-  cout<<Dipole_Flavour_Init::Status()<<endl;
+  Dipole_Flavour_Init dfi(true);
 
   cout<<endl;
   cout<<"=============================================================="<<endl;
@@ -256,15 +253,15 @@ int main() {
   {
 
     Dipole_Particle utest;
-    cout<<(&(*utest))<<endl;
+    cout<<(*utest)<<endl;
     utest.Quarkize(info.quark.t);
-    cout<<(&(*utest))<<endl;
+    cout<<(*utest)<<endl;
     utest.Antiquarkize(info.antiq.u);
-    cout<<(&(*utest))<<endl;
+    cout<<(*utest)<<endl;
     utest.Gluonize();
-    cout<<(&(*utest))<<endl;
+    cout<<(*utest)<<endl;
     utest.Antiquarkize(info.antiq.b);
-    cout<<(&(*utest))<<endl;
+    cout<<(*utest)<<endl;
 
     cout<<"------------------------------------------------------------"<<endl;
 
@@ -276,12 +273,13 @@ int main() {
     Dipole::Branch b1;    //d-quark
     b1.WhatIsIt();
     b1.SetMomentum(pl);
+    cout<<"Branch "<<b1.Name<<" is ISP        "<<b1.Incoming()<<endl;
     cout<<"Branch "<<b1.Name<<" has type      "<<b1.OrgType()<<endl;
     cout<<"Branch "<<b1.Name<<" has tag       "<<b1.Tag()<<endl;
     cout<<"Branch "<<b1.Name<<" has flavour   "<<b1.Flav()<<endl;
     cout<<"Branch "<<b1.Name<<" has vector    "<<b1.Momentum()<<endl;
     cout<<"Branch "<<b1.Name<<" has particle:"<<endl;
-    cout<<(&(*b1))<<endl;
+    cout<<(*b1)<<endl;
     cout<<"Branch "<<b1.Name<<": Show the particle:";
     b1.ShowParticle();
     b1.ShowDipoles();
@@ -293,7 +291,7 @@ int main() {
     cout<<"Branch "<<b1.Name<<" has flavour   "<<b1.Flav()<<endl;
     cout<<"Branch "<<b1.Name<<" has vector    "<<b1.Momentum()<<endl;
     cout<<"Branch "<<b1.Name<<" has particle:"<<endl;
-    cout<<(&(*b1))<<endl;
+    cout<<(*b1)<<endl;
 
     Dipole::Glubranch g1;
     cout<<"Branch "<<g1.Name<<" has type      "<<g1.OrgType()<<endl;
@@ -305,7 +303,7 @@ int main() {
     cout<<"Branch "<<g1.Name<<" has flavour   "<<g1.Flav()<<endl;
     cout<<"Branch "<<g1.Name<<" has vector    "<<g1.Momentum()<<endl;
     cout<<"Branch "<<g1.Name<<" has particle:"<<endl;
-    cout<<(&newpa)<<endl;
+    cout<<newpa<<endl;
     g1.ShowDipoles();
 
     //Dipole::Branch b7(info.antiq.b,pr);    //exits as wished
@@ -316,7 +314,7 @@ int main() {
     cout<<"Branch "<<b2.Name<<" has flavour   "<<b2.Flav()<<endl;
     cout<<"Branch "<<b2.Name<<" has vector    "<<b2.Momentum()<<endl;
     cout<<"Branch "<<b2.Name<<" has particle:"<<endl;
-    cout<<(&(*b2))<<endl;
+    cout<<(*b2)<<endl;
     cout<<"Branch "<<b2.Name<<": Show the particle:";
     b2.ShowParticle();
     b2.ShowDipoles();
@@ -327,7 +325,7 @@ int main() {
     cout<<"Branch "<<b3.Name<<" has flavour   "<<b3.Flav()<<endl;
     cout<<"Branch "<<b3.Name<<" has vector    "<<b3.Momentum()<<endl;
     cout<<"Branch "<<b3.Name<<" has particle:"<<endl;
-    cout<<(&(*b3))<<endl;
+    cout<<(*b3)<<endl;
     b3.ShowDipoles();
 
     b3=b1;
@@ -336,7 +334,7 @@ int main() {
     cout<<"Branch "<<b3.Name<<" has flavour   "<<b3.Flav()<<endl;
     cout<<"Branch "<<b3.Name<<" has vector    "<<b3.Momentum()<<endl;
     cout<<"Branch "<<b3.Name<<" has particle:"<<endl;
-    cout<<(&(*b3))<<endl;
+    cout<<(*b3)<<endl;
 
     //Dipole::Antibranch a1(b1);    //gives error as wished - no mixing allowed
     //b1==b2;
@@ -348,7 +346,7 @@ int main() {
     cout<<"Antibranch "<<a1.Name<<" has flavour   "<<a1.Flav()<<endl;
     cout<<"Antibranch "<<a1.Name<<" has vector    "<<a1.Momentum()<<endl;
     cout<<"Antibranch "<<a1.Name<<" has particle:"<<endl;
-    cout<<(&(*a1))<<endl;
+    cout<<(*a1)<<endl;
     cout<<"Antibranch "<<a1.Name<<": Show the particle:";
     a1.ShowParticle();
     a1.ShowDipoles();
@@ -358,7 +356,7 @@ int main() {
     cout<<"Antibranch "<<a2.Name<<" has flavour   "<<a2.Flav()<<endl;
     cout<<"Antibranch "<<a2.Name<<" has vector    "<<a2.Momentum()<<endl;
     cout<<"Antibranch "<<a2.Name<<" has particle:"<<endl;
-    cout<<(&(*a2))<<endl;
+    cout<<(*a2)<<endl;
     //a2.Quarkize(info.quark.s);
     //a2.Antiquarkize(info.antiq.s);
     //cout<<"Antibranch "<<a2.Name<<" has type      "<<a2.OrgType()<<endl;
@@ -370,7 +368,7 @@ int main() {
     cout<<"Antibranch "<<a2.Name<<" has flavour   "<<a2.Flav()<<endl;
     cout<<"Antibranch "<<a2.Name<<" has vector    "<<a2.Momentum()<<endl;
     cout<<"Antibranch "<<a2.Name<<" has particle:"<<endl;
-    cout<<(&(*a2))<<endl;
+    cout<<(*a2)<<endl;
 
     Dipole Dip(b1,a2,99);
     cout<<Dip<<endl;
@@ -646,14 +644,16 @@ int main() {
     cout<<"Branch_Pointer test 1 ? 0=="<<bool(test)<<endl;
     Dipole::Particle_Pointer test2;
     cout<<"Branch_Pointer test 2 ? 1=="<<(test==test2)<<endl;
-/*    cout<<"Branch_Pointer test 3 ? 0=="
-	<<(test==D1.GetTopBranchPointer())<<endl;
-    cout<<"Branch_Pointer test 4 ? 1=="
-	<<(D1.GetTopBranchPointer()==D2.GetTopBranchPointer())<<endl;
-    cout<<"Branch_Pointer test 5 ? 0=="
-	<<(D1.GetTopBranchPointer()==D3.GetTopBranchPointer())<<endl; */
 
-//    cout<<(D1.GetTopBranchPointer()==D3.GetBotBranchPointer())<<endl;
+    //!!!!!!! gcc4.0: Check what is wrong with these tests!
+    //cout<<"Branch_Pointer test 3 ? 0=="
+    //	<<(test==D1.GetTopBranchPointer())<<endl;
+    //cout<<"Branch_Pointer test 4 ? 1=="
+    //	<<(D1.GetTopBranchPointer()==D2.GetTopBranchPointer())<<endl;
+    //cout<<"Branch_Pointer test 5 ? 0=="
+    //	<<(D1.GetTopBranchPointer()==D3.GetTopBranchPointer())<<endl;
+    //cout<<(D1.GetTopBranchPointer()==D3.GetBotBranchPointer())<<endl;
+    //!!!!!!! the_end!
 
     //Dipole::Particle_Pointer tt=D2.GetTopBranchPointer();
     //Dipole::Particle_Pointer tl=D2.GetBotBranchPointer();
