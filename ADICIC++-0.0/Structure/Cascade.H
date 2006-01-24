@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/09/10
+//Version: 3 ADICIC++-0.0/2005/07/30
 
 //This structure supports the cascading - the evolution of a list of Chains.
 
@@ -163,16 +163,17 @@ namespace ADICIC {
 
     //Public methods:
     //===============
-    const Type CascadeType() const;
-    const bool CheckMomentumConservation(ATOOLS::Vec4D&) const;
-    const bool ExtractPartons(std::list<ATOOLS::Particle_List>&) const;
+    const Type     CascadeType() const;
+    const unsigned INumber() const;
+    const bool     CheckMomentumConservation(ATOOLS::Vec4D&) const;
+    const bool     ExtractPartons(std::list<ATOOLS::Particle_List>&) const;
 
     const bool Clear();
     //Since chains are independent from each other (no colour reconnection!):
     const bool AddChain(const Dipole::Branch&, const Dipole::Antibranch&,
-			bool ontop=false);
+			double scale=false, bool ontop=false);
     //const bool AddChain(const Dipole::Glubranch&, const Dipole::Glubranch&,
-    //                    bool ontop);
+    //                    double scale, bool ontop);
     //const bool StartAddingChain(const Dipole::Branch&);
     //const bool ContinueAddingChain(const Dipole::Glubranch&);
     //const bool StopAddingChain(const Dipole::Antibranch&);

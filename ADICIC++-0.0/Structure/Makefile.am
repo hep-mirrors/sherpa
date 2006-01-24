@@ -32,7 +32,8 @@ INCLUDES = -I../Tool \
            -I$(ATOOLSINC)/Phys \
            -I$(ATOOLSINC)/Math \
            -I$(ATOOLSINC)/Org \
-           -I$(MODELINC)/Main
+           -I$(MODELINC)/Main \
+           -I$(PDFINC)/Main
 
 
 
@@ -43,7 +44,6 @@ include_HEADERS = Dipole.H Chain.H Cascade.H
 EXTRA_DIST = $(CVSINCLUDE) \
              Dipole.inl.hh Dipole.exa.cc \
              Chain.inl.hh Cascade.inl.hh
-
 
 
 

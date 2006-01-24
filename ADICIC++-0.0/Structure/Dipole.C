@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2005/01/31
+//Version: 3 ADICIC++-0.0/2005/09/08
 
 //Implementation of Dipole.H.
 
@@ -40,11 +40,13 @@ using namespace ADICIC;
 ostream& ADICIC::operator<<(ostream& ost, const ADICIC::Dipole& dip) {
   ost<<om::bold<<"Dipole "<<dip.m_name<<": "
      <<dip.p_top->Flav()<<" | "
-     <<dip.p_bot->Flav()<<om::reset<<"   type:";
+     <<dip.p_bot->Flav()<<om::reset<<"   type=";
   switch(dip.m_type) {
   case -9999: ost<<"incorrect"; break;
   default   : ost<<dip.m_type;
   }
+  if(dip.p_top->Incoming()) ost<<"   i"; else ost<<"   f";
+  if(dip.p_bot->Incoming()) ost<<"i"; else ost<<"f";
   ost<<"   origs:"<<dip.p_top->OrgType()<<"|"<<dip.p_bot->OrgType();
   ost<<"   hdl:"<<bool(dip.p_hdl);
   ost<<"   state:";
@@ -53,6 +55,7 @@ ostream& ADICIC::operator<<(ostream& ost, const ADICIC::Dipole& dip) {
   case 0  : ost<<"off,"<<dip.m_nchg; break;
   default : ost<<"on,"<<dip.m_nchg;
   }
+  ost<<"   spico:"<<dip.f_spico;
   ost<<endl<<setiosflags(ios::left)<<"  "
      <<"mass :"<<setw(12)<<dip.m_mass
      <<"sqrm :"<<setw(12)<<dip.m_invmass
@@ -65,7 +68,7 @@ ostream& ADICIC::operator<<(ostream& ost, const ADICIC::Dipole& dip) {
   st2="[copy:"+st2+"]";
   st3+="]"; st4+="]";
   ost<<endl<<"  pscal:"<<setw(12)<<dip.m_p2t
-     <<"sscal:"<<setw(12)<<dip.m_k2t
+     <<"bscal:"<<setw(12)<<dip.m_k2t
      <<"escal:"<<setw(12)<<dip.m_l2t
      <<"p="<<dip.p_top->Momentum()<<"\t"<<dip.p_top->Momentum().Abs2();
   ost<<endl<<"  "<<setw(18)<<st1<<setw(18)<<st2
@@ -129,7 +132,7 @@ Dipole::Dipole()
     m_name(++s_maxcount), m_copy(0), m_nchg(0),
     m_memory(0), f_active(Blocked),
     p_top(NULL), p_bot(NULL), p_hdl(NULL),
-    m_type(incorrect), m_p2t(0.0), m_k2t(0.0), m_l2t(0.0),
+    m_type(incorrect), f_spico(false), m_p2t(0.0), m_k2t(0.0), m_l2t(0.0),
     m_mass(0.0), m_invmass(0.0), m_momentum(Vec4D()),
     Name(m_name), CopyOf(m_copy), StateNumber(m_nchg) {
 
@@ -154,7 +157,8 @@ Dipole::Dipole(const Dipole& dip, bool phdl)
     m_name(++s_maxcount), m_copy(dip.m_name), m_nchg(1),
     m_memory(dip.m_memory), f_active(dip.f_active),
     p_top(NULL), p_bot(NULL), p_hdl(NULL),
-    m_type(dip.m_type), m_p2t(dip.m_p2t), m_k2t(dip.m_k2t), m_l2t(dip.m_l2t),
+    m_type(dip.m_type), f_spico(dip.f_spico),
+    m_p2t(dip.m_p2t), m_k2t(dip.m_k2t), m_l2t(dip.m_l2t),
     m_mass(dip.m_mass), m_invmass(dip.m_invmass), m_momentum(dip.m_momentum),
     Name(m_name), CopyOf(m_copy), StateNumber(m_nchg) {
 
@@ -214,7 +218,7 @@ Dipole::Dipole(Dipole::Branch& ban, Dipole::Antibranch& ati,
   UpdateType();
   UpdateMass();    //Increments the StateNumber by two altogether.
 
-  m_p2t=m_k2t=m_l2t=m_invmass;
+  f_spico=true; m_p2t=m_k2t=m_l2t=m_invmass;
 
   AddDipoleToTowers();
 
@@ -248,7 +252,7 @@ Dipole::Dipole(Dipole::Branch& ban, Dipole::Glubranch& glu,
   UpdateType();
   UpdateMass();
 
-  m_p2t=m_k2t=m_l2t=m_invmass;
+  f_spico=true; m_p2t=m_k2t=m_l2t=m_invmass;
 
   AddDipoleToTowers();
 
@@ -282,7 +286,7 @@ Dipole::Dipole(Dipole::Glubranch& glu, Dipole::Antibranch& ati,
   UpdateType();
   UpdateMass();
 
-  m_p2t=m_k2t=m_l2t=m_invmass;
+  f_spico=true; m_p2t=m_k2t=m_l2t=m_invmass;
 
   AddDipoleToTowers();
 
@@ -321,7 +325,7 @@ Dipole::Dipole(Dipole::Glubranch& glut, Dipole::Glubranch& glub,
   UpdateType();
   UpdateMass();
 
-  m_p2t=m_k2t=m_l2t=m_invmass;
+  f_spico=true; m_p2t=m_k2t=m_l2t=m_invmass;
 
   AddDipoleToTowers();
 
@@ -395,6 +399,7 @@ Dipole& Dipole::operator=(const Dipole& dip) {
   f_active=dip.f_active;
 
   m_type=dip.m_type;
+  f_spico=dip.f_spico; 
   m_p2t=dip.m_p2t;
   m_k2t=dip.m_k2t;
   m_l2t=dip.m_l2t;
@@ -480,20 +485,20 @@ const Dipole::Type Dipole::UpdateType() {
     assert( (p_top->OrgType()==-1 || p_bot->OrgType()==1) == false );
   }
   ++m_nchg;
-#ifdef DIPOLE_STRICT_VERSION
-  m_type=Type( (10*p_top->Tag()+p_bot->Tag()) );
-  return m_type;
+  short t = 10*p_top->Tag() + p_bot->Tag();
   //Does that sufficiently work? No.
   //Only if invalid Dipoles are really excluded.
-#else
-  short t = 10*p_top->Tag() + p_bot->Tag();
+#ifndef DIPOLE_STRICT_VERSION
   if(t==9 || t==10 || t==-1 || t==0); else {
     cerr<<"\nError: Algorithm used produces invalid Dipole type!\n";
     assert(t==9 || t==10 || t==-1 || t==0);
   }
+  //#error
+#endif
+  if(t<0) t-=(1000*p_top->Incoming() + 100*p_bot->Incoming());
+  else    t+=(1000*p_top->Incoming() + 100*p_bot->Incoming());
   m_type=Type(t);
   return m_type;
-#endif
 }
 
 
@@ -502,12 +507,21 @@ const Dipole::Type Dipole::UpdateType() {
 
 const double Dipole::UpdateMass() {
   ++m_nchg;
-  m_momentum=p_top->Momentum()+p_bot->Momentum();
+  if(p_top->Incoming()) m_momentum=(-1)*p_top->Momentum();
+  else m_momentum=p_top->Momentum();
+  if(p_bot->Incoming()) m_momentum+=(-1)*p_bot->Momentum();
+  else m_momentum+=p_bot->Momentum();
+  //switch(2*p_top->Incoming()+p_bot->Incoming()) {
+  //case  2: m_momentum=p_top->Momentum()-p_bot->Momentum(); break;
+  //case  1: m_momentum=p_bot->Momentum()-p_top->Momentum(); break;
+  //default: m_momentum=p_top->Momentum()+p_bot->Momentum();
+  //}
   m_invmass=m_momentum.Abs2();
   if(m_invmass<0.0) {
-    cerr<<"\nMethod: const double ADICIC::Dipole::UpdateMass(): "
-	<<"Warning: Negative invariant mass!\n"<<endl;
+    //cerr<<"\nMethod: const double ADICIC::Dipole::UpdateMass(): "
+    //    <<"Warning: Negative invariant mass!\n"<<endl;
     m_mass=-1*sqrt(-1*m_invmass);
+    //The minus sign functions only as a flag.
   }
   else m_mass=sqrt(m_invmass);
   return m_mass;
@@ -521,7 +535,7 @@ void Dipole::RenewBranch(Branch& ban) {
 
   //This method is only concerned with p_top.
 
-  if(p_top==&ban && !f_top) return;
+  if(p_top==&ban) return;
 
   list<Dipole*>& oldtow=AccessTopBranch();
   oldtow.remove(this);
@@ -555,7 +569,7 @@ void Dipole::RenewBranch(Antibranch& ati) {
 
   //This method is only concerned with p_bot.
 
-  if(p_bot==&ati && !f_bot) return;
+  if(p_bot==&ati) return;
 
   list<Dipole*>& oldtow=AccessBotBranch();
   oldtow.remove(this);
@@ -589,7 +603,7 @@ void Dipole::RenewBranch(bool top, Glubranch& glu) {
 
   if(top) {    //Then method is concerned with p_top.
 
-    if(p_top==&glu && !f_top) return;
+    if(p_top==&glu) return;
 
     list<Dipole*>& oldtow=AccessTopBranch();
     oldtow.remove(this);
@@ -612,7 +626,7 @@ void Dipole::RenewBranch(bool top, Glubranch& glu) {
 
   } else {    //Then method is concerned with p_bot.
 
-    if(p_bot==&glu && !f_bot) return;
+    if(p_bot==&glu) return;
 
     list<Dipole*>& oldtow=AccessBotBranch();
     oldtow.remove(this);

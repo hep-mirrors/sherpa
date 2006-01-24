@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/09/09
+//Version: 3 ADICIC++-0.0/2005/07/30
 
 //This structure supports the evolution of a Chain of Dipoles.
 
@@ -74,7 +74,6 @@ namespace ADICIC {
     private:
       friend class Chain;
 
-      bool          f_clear;
       Bool          f_active;
       double        m_k2tlast;
       double        m_mass;
@@ -91,8 +90,15 @@ namespace ADICIC {
       std::list<Dipole::Glubranch*> l_glub;
       std::list<Dipole*>            l_dip;
 
+      const bool IsInit() const {
+	return (f_active==Blocked && m_k2tlast==0.0 &&
+		p_root==NULL && p_hdl==NULL &&
+		p_quab==NULL && p_atib==NULL && p_1glu==NULL &&
+		m_momentum[0]==0.0 && m_momentum[1]==0.0 &&
+		m_momentum[2]==0.0 && m_momentum[3]==0.0 &&
+		l_glub.empty() && l_dip.empty());
+      }
       void Init() {
-	f_clear=true;
 	f_active=Blocked;
 	m_k2tlast=m_mass=m_invmass=0.0;	m_momentum=ATOOLS::Vec4D();
 	p_root=NULL;
@@ -175,13 +181,15 @@ namespace ADICIC {
 
     //Public methods:
     //===============
-    const Type ChainType() const;
-    const bool CheckMomentumConservation(ATOOLS::Vec4D&) const;
-    const bool ExtractPartons(ATOOLS::Particle_List&) const;
+    const Type     ChainType() const;
+    const unsigned INumber() const;
+    const bool     CheckMomentumConservation(ATOOLS::Vec4D&) const;
+    const bool     ExtractPartons(ATOOLS::Particle_List&) const;
 
     const bool Clear();
 
-    const bool Initialize(const Dipole::Branch&, const Dipole::Antibranch&);
+    const bool Initialize(const Dipole::Branch&, const Dipole::Antibranch&,
+			  double scale=false);
     //const bool Initialize(const Dipole::Glubranch&,const Dipole::Glubranch&);
 
     const bool StartInit(const Dipole::Branch&);///////////////////////////////

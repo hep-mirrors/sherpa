@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/04
+//Version: 3 ADICIC++-0.0/2005/09/08
 
 //Inline methods of Dipole.H.
 
@@ -38,6 +38,28 @@ namespace ADICIC {
   }
 
 
+  inline const Dipole::Type Dipole::IsType() const {
+    return m_type;
+  }
+  inline const bool Dipole::IsFF() const {
+    return !p_top->Incoming() && !p_bot->Incoming();
+  }
+  inline const bool Dipole::IsFI() const {
+    return !p_top->Incoming() && p_bot->Incoming();
+  }
+  inline const bool Dipole::IsIF() const {
+    return p_top->Incoming() && !p_bot->Incoming();
+  }
+  inline const bool Dipole::IsII() const {
+    return p_top->Incoming() && p_bot->Incoming();
+  }
+
+
+  inline const bool Dipole::SpinCorr() const {
+    return f_spico;
+  }
+
+
   inline const double Dipole::ProdScale() const {
     return m_p2t;
   }
@@ -46,11 +68,6 @@ namespace ADICIC {
   }
   inline const double Dipole::EmitScale() const {
     return m_l2t;
-  }
-
-
-  inline const Dipole::Type Dipole::IsType() const {
-    return m_type;
   }
 
 
@@ -92,11 +109,15 @@ namespace ADICIC {
     ++m_nchg;
     return m_memory;
   }
-
-
   inline Bool& Dipole::SetStatus() {
     ++m_nchg;
     return f_active;
+  }
+
+
+  inline bool& Dipole::SetSpinCorr() {
+    ++m_nchg;
+    return f_spico;
   }
 
 
@@ -188,14 +209,52 @@ namespace ADICIC {
     assert(0);
   }
 
-
-
   //===========================================================================
 
 
 
   inline void Dipole_Particle::SetPacNum() {
     m_pac.SetNumber(-m_num);
+  }
+
+
+
+  //===========================================================================
+
+
+
+  inline bool& Dipole_Particle::SetIncoming() {
+    return m_inp;
+  }
+  inline void Dipole_Particle::SetAnti() {
+    m_pac.SetFlav(m_pac.RefFlav().Bar());
+  }
+
+
+
+  //===========================================================================
+
+
+
+  inline Dipole_Particle::Dipole_Particle(Trio i, const ATOOLS::Particle& par)
+    : m_num(++s_maxcount),
+      m_inp(false), m_typ(i), m_tag(i), m_pac(par),
+      m_tow(std::list<Dipole*>()),
+      Name(m_num), Parton(m_pac) {
+
+    ++s_count; this->SetPacNum(); m_pac.SetInfo('a'); this->if_info();
+  }
+
+
+  inline short& Dipole_Particle::SetTag() {
+    return m_tag;
+  }
+
+
+  inline void Dipole_Particle::if_info() const {
+#ifdef DIPOLE_OUTPUT
+    std::cout<<"    construct Dipole_Particle ["<<m_num<<"] from interface\n";
+#endif
   }
 
 
@@ -239,44 +298,17 @@ namespace ADICIC {
 
 
 
-  inline Dipole_Particle::Dipole_Particle(Trio i, const ATOOLS::Particle& par)
-    : m_num(++s_maxcount),
-      m_typ(i), m_tag(i), m_pac(par),
-      m_tow(std::list<Dipole*>()),
-      Name(m_num), Parton(m_pac) {
-
-    ++s_count; this->SetPacNum(); m_pac.SetInfo('a'); this->if_info();
-  }
-
-
-  inline short& Dipole_Particle::SetTag() {
-    return m_tag;
-  }
-
-
-  inline void Dipole_Particle::if_info() const {
-#ifdef DIPOLE_OUTPUT
-    std::cout<<"    construct Dipole_Particle ["<<m_num<<"] from interface\n";
-#endif
-  }
-
-
-
-  //===========================================================================
-
-
-
-  inline void Dipole_Particle::WhatIsIt() const {
-    std::cout<<"Dipole_Particle."<<std::endl;
-  }
-
-
   inline void Dipole_Particle::ShowParticle() const {
-    std::cout<<std::endl<<&m_pac<<std::endl;
+    std::cout<<std::endl<<m_pac<<std::endl;
   }
 
 
 
+
+
+  inline const bool Dipole_Particle::Incoming() const {
+    return m_inp;
+  }
 
 
   inline const Trio Dipole_Particle::OrgType() const {
@@ -301,6 +333,11 @@ namespace ADICIC {
 
   inline const ATOOLS::Vec4D& Dipole_Particle::Momentum() const {
     return m_pac.Momentum();
+  }
+
+
+  inline std::size_t Dipole_Particle::DipNum() const {
+    return m_tow.size();
   }
 
 

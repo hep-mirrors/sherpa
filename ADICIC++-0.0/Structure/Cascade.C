@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2005/01/31
+//Version: 3 ADICIC++-0.0/2005/08/05
 
 //Implementation of Cascade.H.
 
@@ -10,6 +10,7 @@
 #include <ios>
 #endif
 #endif
+#include <iostream>
 #include <iomanip>
 #include <string>
 #include <sstream>
@@ -39,6 +40,7 @@ using namespace ADICIC;
 
 
 ostream& ADICIC::operator<<(ostream& ost, const ADICIC::Cascade& cas) {
+  int pcs=ost.precision(6);
   ost<<"\n"<<om::bold<<string(140,'O')<<om::reset<<"\n";
   ost<<"Cascade type: ";
   switch(cas.CascadeType()) {
@@ -87,6 +89,7 @@ ostream& ADICIC::operator<<(ostream& ost, const ADICIC::Cascade& cas) {
     ++mit;
   }
   ost<<om::bold<<string(140,'O')<<om::reset;
+  ost.precision(pcs);
   return ost;
 }
 
@@ -215,6 +218,18 @@ const Cascade::Type Cascade::CascadeType() const {
 
 
 
+const unsigned Cascade::INumber() const {
+  unsigned in=0;
+  for(list<Chain*>::const_iterator cit=caset.l_cha.begin();
+      cit!=caset.l_cha.end(); ++cit)
+    in+=(*cit)->INumber();
+  return in;
+}
+
+
+
+
+
 const bool Cascade::CheckMomentumConservation(ATOOLS::Vec4D& sum) const {
   sum=Vec4D();
   Vec4D temp;
@@ -224,7 +239,9 @@ const bool Cascade::CheckMomentumConservation(ATOOLS::Vec4D& sum) const {
     sum+=temp;
   }
   if(sum==caset.m_momentum) return true;
-  return false;
+  Vec4D test=sum-caset.m_momentum;
+  for(char i=0; i<4; ++i) if(dabs(test[i])>1.0e-10) return false;
+  return true;
 }
 
 
@@ -288,11 +305,11 @@ const bool Cascade::Clear() {
 
 const bool Cascade::AddChain(const Dipole::Branch& ban,
 			     const Dipole::Antibranch& ati,
-			     bool ontop) {
+			     double scale, bool ontop) {
   if(caset.p_add) return false;
 
   caset.p_add=new Chain(); assert(caset.p_add);
-  if(caset.p_add->Initialize(ban,ati)==false) {
+  if(caset.p_add->Initialize(ban,ati,scale)==false) {
     delete caset.p_add;
     caset.p_add=NULL;
     return false;
@@ -313,7 +330,9 @@ const bool Cascade::AddChain(const Dipole::Branch& ban,
   } else {
     caset.f_active=caset.p_add->Status();
   }
-  if(caset.m_invmass<0.0 || caset.m_momentum[0]<0.0) caset.f_active=Blocked;
+
+  //???????????????????????????????????????????????????????????????????????????
+  //if(caset.m_invmass<0.0 || caset.m_momentum[0]<0.0) caset.f_active=Blocked;
 
   ++caset.m_nroot;
   caset.p_add=NULL;
@@ -418,6 +437,8 @@ void Cascade::Copy(const Cascade& cac, const Type type) {
     caset.m_invmass=cac.caset.m_invmass;
   } else {
     caset.f_active=Blocked;
+    cerr<<"\nMethod: "<<__PRETTY_FUNCTION__<<": "
+	<<"Warning: Momentum conservation check failed!\n"<<endl;
     if(caset.m_momentum[0]<0.0)
       cerr<<"\nMethod: "<<__PRETTY_FUNCTION__<<": "
 	  <<"Warning: Total energy is negative!\n"<<endl;
@@ -440,11 +461,12 @@ const ATOOLS::Vec4D&
 Cascade::UpdateMomentum(double k, const ATOOLS::Vec4D& p) {
   caset.m_momentum+=k*p;
   caset.m_invmass=caset.m_momentum.Abs2();
-  if(caset.m_invmass<-1.0e-10) {
+  if(caset.m_invmass<0.0) {
     cerr<<"\nMethod: "<<__PRETTY_FUNCTION__<<": Warning: "
 	<<"Negative invariant mass ("<<caset.m_invmass<<") !\n"<<endl;
-    //caset.f_active=Blocked;
+    //caset.f_active=Blocked;//????????????????????????????????????????????????
     caset.m_mass=-1*sqrt(-1*caset.m_invmass);
+    //The minus sign functions only as a flag.
   }
   else caset.m_mass=sqrt(caset.m_invmass);
   return caset.m_momentum;

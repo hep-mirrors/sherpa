@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/07/05
+//Version: 3 ADICIC++-0.0/2005/08/20
 
 //Implementation of the Dipole_Particle structure of Dipole.H.
 
@@ -34,7 +34,7 @@ const int& Dipole_Particle::InStore=Dipole_Particle::s_count;
 
 Dipole_Particle::Dipole_Particle()
   : m_num(++s_maxcount),
-    m_typ(Nil), m_tag(info.gluon.g.Tag()),
+    m_inp(false), m_typ(Nil), m_tag(info.gluon.g.Tag()),
     m_pac( ATOOLS::Particle(m_num,info.gluon.g()) ),
     m_tow(std::list<Dipole*>()),
     Name(m_num), Parton(m_pac) {
@@ -48,7 +48,7 @@ Dipole_Particle::Dipole_Particle()
 
 Dipole_Particle::Dipole_Particle(const Dipole_Particle& dipa)
   : m_num(++s_maxcount),
-    m_typ(dipa.m_typ), m_tag(dipa.m_tag), m_pac(dipa.m_pac),
+    m_inp(dipa.m_inp), m_typ(dipa.m_typ), m_tag(dipa.m_tag), m_pac(dipa.m_pac),
     m_tow(list<Dipole*>()),
     Name(m_num), Parton(m_pac) {
 
@@ -64,7 +64,8 @@ Dipole_Particle::Dipole_Particle(const Dipole_Particle& dipa)
 
 Dipole_Particle::Dipole_Particle(const Dipole_Quark_Base& Q, const Vec4D& P)
   : m_num(++s_maxcount),
-    m_typ(Positive), m_tag(Q.Tag()), m_pac( Particle(m_num,Q(),P) ),
+    m_inp(false), m_typ(Positive),
+    m_tag(Q.Tag()), m_pac( Particle(m_num,Q(),P) ),
     m_tow(std::list<Dipole*>()),
     Name(m_num), Parton(m_pac) {
 
@@ -78,7 +79,8 @@ Dipole_Particle::Dipole_Particle(const Dipole_Quark_Base& Q, const Vec4D& P)
 Dipole_Particle::Dipole_Particle(const Dipole_Antiquark_Base& A,
 				 const Vec4D& P)
   : m_num(++s_maxcount),
-    m_typ(Negative), m_tag(A.Tag()), m_pac( Particle(m_num,A(),P) ),
+    m_inp(false), m_typ(Negative),
+    m_tag(A.Tag()), m_pac( Particle(m_num,A(),P) ),
     m_tow(std::list<Dipole*>()),
     Name(m_num), Parton(m_pac) {
 
@@ -91,7 +93,8 @@ Dipole_Particle::Dipole_Particle(const Dipole_Antiquark_Base& A,
 
 Dipole_Particle::Dipole_Particle(const Dipole_Gluon_Base& G, const Vec4D& P)
   : m_num(++s_maxcount),
-    m_typ(Nil), m_tag(G.Tag()), m_pac( Particle(m_num,G(),P) ),
+    m_inp(false), m_typ(Nil),
+    m_tag(G.Tag()), m_pac( Particle(m_num,G(),P) ),
     m_tow(std::list<Dipole*>()),
     Name(m_num), Parton(m_pac) {
 
@@ -142,6 +145,11 @@ Dipole_Particle& Dipole_Particle::operator=(const Dipole_Particle& dipa) {
 
   if(this==&dipa) return *this;
 
+  m_inp=dipa.m_inp;
+
+  //The original type is kept, thus the following line is commented out.
+  //m_typ=dipa.m_typ;
+
   m_tag=dipa.m_tag;
   m_pac=dipa.m_pac;
   this->SetPacNum();
@@ -162,6 +170,14 @@ Dipole_Particle& Dipole_Particle::operator=(const Dipole_Particle& dipa) {
 const bool Dipole_Particle::operator==(const Dipole_Particle& dp) const {
   cerr<<"\nSorry :o( Method has not been implemented yet.\n";
   assert(0); exit(1);
+}
+
+
+
+
+
+void Dipole_Particle::WhatIsIt() const {
+  std::cout<<"Dipole_Particle."<<std::endl;
 }
 
 
@@ -197,11 +213,14 @@ const Particle& Dipole_Particle::Quarkize(const Dipole_Quark_Base& Q) {
   //(g,Pos)->(q,Pos)
   if( m_tag==0 && (m_typ==Nil || m_typ==Positive) ) {    //SM gluons!
     if(Q.Tag()==1) {    //SM quarks!
+      m_inp=false;
       m_tag=Q.Tag();
       m_pac.SetFlav(Q());
       //Towering!
-      for(list<Dipole*>::iterator it=m_tow.begin(); it!=m_tow.end(); ++it)
+      for(list<Dipole*>::iterator it=m_tow.begin(); it!=m_tow.end(); ++it) {
 	(*it)->UpdateType();    //updates and checks the corresponding dipoles.
+	(*it)->UpdateMass();    //Due to possible m_inp change.
+      }
     }
   }
   return m_pac;
@@ -216,11 +235,14 @@ const Particle& Dipole_Particle::Antiquarkize(const Dipole_Antiquark_Base& A) {
   //(g,Neg)->(qbar,Neg)
   if( m_tag==0 && (m_typ==Nil || m_typ==Positive) ) {    //SM gluons!
     if(A.Tag()==-1) {    //SM antiquarks!
+      m_inp=false;
       m_tag=A.Tag();
       m_pac.SetFlav(A());
       //Towering!
-      for(list<Dipole*>::iterator it=m_tow.begin(); it!=m_tow.end(); ++it)
+      for(list<Dipole*>::iterator it=m_tow.begin(); it!=m_tow.end(); ++it) {
 	(*it)->UpdateType();
+	(*it)->UpdateMass();
+      }
     }
   }
   return m_pac;
@@ -307,6 +329,108 @@ Dipole_Particle* Dipole_Particle::Copy() const {
 
 
 
+Dipole_Branch::Dipole_Branch()
+  : Dipole_Particle(info.quark.d,ATOOLS::Vec4D()) {
+  cb_info();
+}
+Dipole_Branch::Dipole_Branch(const Dipole_Branch& DB)
+  : Dipole_Particle(DB) {
+  cb_info();
+}
+Dipole_Branch::Dipole_Branch(const Dipole_Quark_Base& Q, const Vec4D& P)
+  : Dipole_Particle(Q,P) {
+  cb_info();
+}
+Dipole_Branch::Dipole_Branch(const Dipole_Antiquark_Base& A, const Vec4D& P)
+  : Dipole_Particle(*info.quark.pkf[A().Kfcode()],P) {
+  this->SetIncoming()=true;
+  this->SetAnti();
+  cb_info();
+}
+Dipole_Branch::~Dipole_Branch() {
+  db_info();
+}
+Dipole_Branch& Dipole_Branch::operator=(const Dipole_Branch& DB) {
+  this->Dipole_Particle::operator=(DB);
+  return *this;
+}
+void Dipole_Branch::WhatIsIt() const {
+  cout<<"Dipole_Branch."<<endl;
+}
+
+
+
+
+
+Dipole_Antibranch::Dipole_Antibranch()
+  : Dipole_Particle(info.antiq.d,ATOOLS::Vec4D()) {
+  ca_info();
+}
+Dipole_Antibranch::Dipole_Antibranch(const Dipole_Antibranch& DA)
+  : Dipole_Particle(DA) {
+  ca_info();
+}
+Dipole_Antibranch::Dipole_Antibranch(const Dipole_Antiquark_Base& A,
+				     const Vec4D& P)
+  : Dipole_Particle(A,P) {
+  ca_info();
+}
+Dipole_Antibranch::Dipole_Antibranch(const Dipole_Quark_Base& Q,
+				     const Vec4D& P)
+  : Dipole_Particle(*info.antiq.pkf[Q().Kfcode()],P) {
+  this->SetIncoming()=true;
+  this->SetAnti();
+  ca_info();
+}
+Dipole_Antibranch::~Dipole_Antibranch() {
+  da_info();
+}
+Dipole_Antibranch& Dipole_Antibranch::operator=(const Dipole_Antibranch& DA) {
+  this->Dipole_Particle::operator=(DA);
+  return *this;
+}
+void Dipole_Antibranch::WhatIsIt() const {
+  cout<<"Dipole_Antibranch."<<endl;
+}
+
+
+
+
+
+Dipole_Glubranch::Dipole_Glubranch()
+  : Dipole_Particle() {
+  cg_info();
+}
+//Dipole_Glubranch::Dipole_Glubranch()    //Later?
+//  : Dipole_Particle(info.gluon.g,ATOOLS::Vec4D()) {
+//  cg_info();}
+Dipole_Glubranch::Dipole_Glubranch(const Dipole_Glubranch& DG)
+  : Dipole_Particle(DG) {
+  cg_info();
+}
+Dipole_Glubranch::Dipole_Glubranch(const ATOOLS::Vec4D& P, bool inp)
+  : Dipole_Particle(info.gluon.g,P) {
+  this->SetIncoming()=inp;
+  cg_info();
+}
+//Dipole_Glubranch::Dipole_Glubranch(const Dipole_Gluon_Base& G,
+//                                   const Vec4D& P)
+//  : Dipole_Particle(G,P) { cg_info();}    //Later.
+Dipole_Glubranch::~Dipole_Glubranch() {
+  dg_info();
+}
+Dipole_Glubranch& Dipole_Glubranch::operator=(const Dipole_Glubranch& DG) {
+  this->Dipole_Particle::operator=(DG);
+  return *this;
+}
+void Dipole_Glubranch::WhatIsIt() const {
+  cout<<"Dipole_Glubranch."<<endl;
+}
+
+
+
+
+
 //The interface structures.
 //=========================
 
@@ -314,19 +438,22 @@ Dipole_Particle* Dipole_Particle::Copy() const {
 
 Dipole_Branch::Dipole_Branch(const Particle& par)
   : Dipole_Particle(Positive,par) {
-  assert(par.Flav().IsQuark() && !par.Flav().IsAnti());
+  assert(par.Flav().IsQuark());
+  this->SetIncoming()=par.Flav().IsAnti();
   //later: this->SetTag()=...;
   //test: this->SetTag()=9; -> Dipole::Type assertion failed
 }
 Dipole_Antibranch::Dipole_Antibranch(const Particle& par)
   : Dipole_Particle(Negative,par) {
-  assert(par.Flav().IsQuark() && par.Flav().IsAnti());
+  assert(par.Flav().IsQuark());
+  this->SetIncoming()=!par.Flav().IsAnti();
   //later: this->SetTag()=...;
 }
-Dipole_Glubranch::Dipole_Glubranch(const Particle& par)
+Dipole_Glubranch::Dipole_Glubranch(const Particle& par, bool inp)
   : Dipole_Particle(Nil,par) {
   assert(par.Flav().IsGluon());
   //later: this->SetTag()=...;
+  this->SetIncoming()=inp;
 }
 
 

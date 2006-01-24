@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/09/10
+//Version: 3 ADICIC++-0.0/2005/07/30
 
 //Inline methods of Chain.H.
 
@@ -27,10 +27,7 @@ namespace ADICIC {
     return varset.f_active;
   }
   inline const bool Chain::IsClear() const {
-    if(!varset.f_clear) return false;
-    assert(varset.l_dip.empty() && !varset.p_quab && !varset.p_1glu &&
-	   !varset.p_hdl);    //Checking.
-    return true;
+    return varset.IsInit();
   }
   inline const bool Chain::IsEmpty() const {
     return (varset.l_dip.empty() && !varset.p_quab && !varset.p_1glu);
@@ -123,16 +120,12 @@ namespace ADICIC {
 
   inline Bool& Chain::SetStatus() {
     //if(varset.p_hdl) varset.p_hdl->"Reset()";????????????????????????????????
-    //else varset.f_clear=false;???????????????????????????????????????????????
-    varset.f_clear=false;
     return varset.f_active;
   }
 
 
   inline double& Chain::SetLastScale() {
     //if(varset.p_hdl) varset.p_hdl->"Reset()";????????????????????????????????
-    //else varset.f_clear=false;???????????????????????????????????????????????
-    varset.f_clear=false;
     return varset.m_k2tlast;
   }
 
@@ -145,7 +138,7 @@ namespace ADICIC {
   inline const bool Chain::operator|(Chain_Handler& CH) {
     if(varset.p_hdl || CH.IsDocked()) return false;
     varset.p_hdl=&CH;
-    if(varset.p_hdl->AttachChain(this)) { varset.f_clear=false; return true;}
+    if(varset.p_hdl->AttachChain(this)) return true;
     varset.p_hdl=NULL; return false;
   }
 
@@ -180,32 +173,27 @@ namespace ADICIC {
 
 
   inline const Dipole*& Chain::RootPointer() {
-    varset.f_clear=false;
     return varset.p_root;
   }
   inline Dipole::Branch*& Chain::BranchPointer() {
-    varset.f_clear=false;
     return varset.p_quab;
   }
   inline const Dipole::Branch* Chain::BranchPointer() const {
     return varset.p_quab;
   }
   inline Dipole::Antibranch*& Chain::AntibranchPointer() {
-    varset.f_clear=false;
     return varset.p_atib;
   }
   inline const Dipole::Antibranch* Chain::AntibranchPointer() const {
     return varset.p_atib;
   }
   inline const Dipole::Glubranch*& Chain::FirstGlubranchPointer() {
-    varset.f_clear=false;
     return varset.p_1glu;
   }
   inline const Dipole::Glubranch* Chain::FirstGlubranchPointer() const {
     return varset.p_1glu;
   }
   inline std::list<Dipole::Glubranch*>& Chain::GlubranchPointerList() {
-    varset.f_clear=false;
     return varset.l_glub;
   }
   inline
@@ -213,7 +201,6 @@ namespace ADICIC {
     return varset.l_glub;
   }
   inline std::list<Dipole*>& Chain::DipolePointerList() {
-    varset.f_clear=false;
     return varset.l_dip;
   }
   inline const std::list<Dipole*>& Chain::DipolePointerList() const {

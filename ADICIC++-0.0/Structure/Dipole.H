@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/09/01
+//Version: 3 ADICIC++-0.0/2005/09/08
 
 //The Dipole structure is a carrier of information.
 
@@ -41,6 +41,8 @@ namespace ADICIC {
 
 
 
+  //===========================================================================
+
 
 
   std::ostream& operator<<(std::ostream&, const Dipole&);
@@ -58,15 +60,32 @@ namespace ADICIC {
     typedef Dipole_Glubranch  Glubranch;
 
     enum Type {    //Blocked: qq=11, qbarq=-9, qbarqbar=-11, qbarg=-10, gq=1.
-      qqbar    = 9,
-      qg       = 10,
-      gqbar    =-1,
-      gg       = 0,
-      incorrect=-9999
+      qqbar      =  9,
+      qg         =  10,
+      gqbar      = -1,
+      gg         =  0,
+      //----------
+      iqq        =  109,
+      iqg        =  110,
+      igq        = -101,
+      igg        =  100,
+      //----------
+      ifqbarqbar =  1009,
+      ifqbarg    =  1010,
+      ifgqbar    = -1001,
+      ifgg       =  1000,
+      //----------
+      iiqbarq    =  1109,
+      iiqbarg    =  1110,
+      iigq       = -1101,
+      iigg       =  1100,
+      //----------
+      incorrect = -9999
+      //Meaningful code. Do not change numbers!
     };
 
     class Gate {
-			friend class Dipole;
+      friend class Dipole;    //!!!!!!! gcc4.0: Check if really necessary!
       friend class Dipole_Particle;
       Gate() {}
       ~Gate() {}
@@ -102,6 +121,7 @@ namespace ADICIC {
     Dipole_Handler*  p_hdl;
 
     Type          m_type;
+    bool          f_spico;
     double        m_p2t;
     double        m_k2t;
     double        m_l2t;
@@ -147,6 +167,11 @@ namespace ADICIC {
     inline const int            Source() const;
     inline const Bool           Status() const;
     inline const Type           IsType() const;
+    inline const bool           IsFF() const;
+    inline const bool           IsFI() const;
+    inline const bool           IsIF() const;
+    inline const bool           IsII() const;
+    inline const bool           SpinCorr() const;
     inline const double         ProdScale() const;
     inline const double         BootScale() const;
     inline const double         EmitScale() const;
@@ -160,6 +185,7 @@ namespace ADICIC {
 
     inline int&    SetSource();
     inline Bool&   SetStatus();
+    inline bool&   SetSpinCorr();
     inline double& SetProdScale();
     inline double& SetBootScale();
     inline double& SetEmitScale();
@@ -185,14 +211,16 @@ namespace ADICIC {
 
 
 
+  //===========================================================================
+
 
 
   class Dipole_Particle {
 
-		friend class Dipole;
-		
-//    friend std::list<Dipole*>& Dipole::AccessTopBranch() const;
-//    friend std::list<Dipole*>& Dipole::AccessBotBranch() const;
+    //!!!!!!! gcc4.0: Look for other solution!
+    friend class Dipole;
+    //friend std::list<Dipole*>& Dipole::AccessTopBranch() const;
+    //friend std::list<Dipole*>& Dipole::AccessBotBranch() const;
 
   private:
 
@@ -201,6 +229,7 @@ namespace ADICIC {
 
     int m_num;
 
+    bool               m_inp;    //Only set through derived class constructors.
     Trio               m_typ;
     short              m_tag;
     ATOOLS::Particle   m_pac;
@@ -216,6 +245,9 @@ namespace ADICIC {
     Dipole_Particle* Copy() const;
 
   protected:
+
+    inline bool& SetIncoming();
+    inline void  SetAnti();
 
     //Interfacing ATOOLS::Particle with ADICIC::Dipole_Particle
     //=========================================================
@@ -234,7 +266,7 @@ namespace ADICIC {
 
   public:
 
-    Dipole_Particle();    //Standard particle is the SM gluon!
+    Dipole_Particle();    //Standard particle is the SM final state gluon!
     Dipole_Particle(const Dipole_Particle&);
     Dipole_Particle(const Dipole_Quark_Base&, const ATOOLS::Vec4D&);
     Dipole_Particle(const Dipole_Antiquark_Base&, const ATOOLS::Vec4D&);
@@ -253,20 +285,22 @@ namespace ADICIC {
 
     //Public inline methods:
     //======================
-    virtual void WhatIsIt() const;
-    inline  void ShowParticle() const;
-
+    inline       void              ShowParticle() const;
+    inline const bool              Incoming() const;
     inline const Trio              OrgType() const;
     inline const short             Tag() const;
     inline const ATOOLS::Particle& operator*() const;
     inline const ATOOLS::Flavour&  Flav() const;
     inline const ATOOLS::Vec4D&    Momentum() const;
+    inline       std::size_t       DipNum() const;
 
     inline void SetMomentum(const ATOOLS::Vec4D&);    //Form is constrained :o(
 
     //Public methods:
     //===============
     void ShowDipoles() const;
+
+    virtual void WhatIsIt() const;
 
     virtual const ATOOLS::Particle& Quarkize(const Dipole_Quark_Base&);
     virtual const ATOOLS::Particle& Antiquarkize(const Dipole_Antiquark_Base&);
@@ -277,6 +311,8 @@ namespace ADICIC {
   };
 
 
+
+  //===========================================================================
 
 
 
@@ -296,7 +332,6 @@ namespace ADICIC {
     inline void db_info() const;
     inline void nm_info() const;
 
-    Dipole_Branch(const Dipole_Antiquark_Base&, const ATOOLS::Vec4D&);
     Dipole_Branch(const Dipole_Gluon_Base&, const ATOOLS::Vec4D&);
     Dipole_Branch& operator=(const Dipole_Particle&);
     Dipole_Branch& operator=(const Dipole_Antibranch&);
@@ -313,21 +348,15 @@ namespace ADICIC {
 
   public:
 
-    Dipole_Branch()
-      : Dipole_Particle(info.quark.d,ATOOLS::Vec4D()) { cb_info();}
-    Dipole_Branch(const Dipole_Branch& DB)
-      : Dipole_Particle(DB) { cb_info();}
-
+    Dipole_Branch();
+    Dipole_Branch(const Dipole_Branch&);
     Dipole_Branch(const ATOOLS::Particle&);
-    Dipole_Branch(const Dipole_Quark_Base& Q, const ATOOLS::Vec4D& P)
-      : Dipole_Particle(Q,P) { cb_info();}
+    Dipole_Branch(const Dipole_Quark_Base&, const ATOOLS::Vec4D&);
+    Dipole_Branch(const Dipole_Antiquark_Base&, const ATOOLS::Vec4D&);
+    ~Dipole_Branch();
+    Dipole_Branch& operator=(const Dipole_Branch&);
 
-    ~Dipole_Branch() { db_info();}
-
-    Dipole_Branch& operator=(const Dipole_Branch& DB) {
-      this->Dipole_Particle::operator=(DB); return *this;
-    }
-    void WhatIsIt() const { std::cout<<"Dipole_Branch."<<std::endl;}
+    void WhatIsIt() const;
 
   };
 
@@ -343,7 +372,6 @@ namespace ADICIC {
     inline void da_info() const;
     inline void nm_info() const;
 
-    Dipole_Antibranch(const Dipole_Quark_Base&, const ATOOLS::Vec4D&);
     Dipole_Antibranch(const Dipole_Gluon_Base&, const ATOOLS::Vec4D&);
     Dipole_Antibranch& operator=(const Dipole_Particle&);
     Dipole_Antibranch& operator=(const Dipole_Branch&);
@@ -360,21 +388,15 @@ namespace ADICIC {
 
   public:
 
-    Dipole_Antibranch()
-      : Dipole_Particle(info.antiq.d,ATOOLS::Vec4D()) { ca_info();}
-    Dipole_Antibranch(const Dipole_Antibranch& DA)
-      : Dipole_Particle(DA) { ca_info();}
-
+    Dipole_Antibranch();
+    Dipole_Antibranch(const Dipole_Antibranch&);
     Dipole_Antibranch(const ATOOLS::Particle&);
-    Dipole_Antibranch(const Dipole_Antiquark_Base& A, const ATOOLS::Vec4D& P)
-      : Dipole_Particle(A,P) { ca_info();}
+    Dipole_Antibranch(const Dipole_Antiquark_Base&, const ATOOLS::Vec4D& P);
+    Dipole_Antibranch(const Dipole_Quark_Base&, const ATOOLS::Vec4D&);
+    ~Dipole_Antibranch();
+    Dipole_Antibranch& operator=(const Dipole_Antibranch&);
 
-    ~Dipole_Antibranch() { da_info();}
-
-    Dipole_Antibranch& operator=(const Dipole_Antibranch& DA) {
-      this->Dipole_Particle::operator=(DA); return *this;
-    }
-    void WhatIsIt() const { std::cout<<"Dipole_Antibranch."<<std::endl;}
+    void WhatIsIt() const;
 
   };
 
@@ -407,29 +429,21 @@ namespace ADICIC {
 
   public:
 
-    Dipole_Glubranch()
-      : Dipole_Particle() { cg_info();}
-    //Dipole_Glubranch()    //Later?
-    //  : Dipole_Particle(info.gluon.g,ATOOLS::Vec4D()) { cg_info();}
-    Dipole_Glubranch(const Dipole_Glubranch& DG)
-      : Dipole_Particle(DG) { cg_info();}
+    Dipole_Glubranch();
+    Dipole_Glubranch(const Dipole_Glubranch& DG);
+    Dipole_Glubranch(const ATOOLS::Particle&, bool inp=false);
+    Dipole_Glubranch(/*const Dipole_Gluon_Base& G, */
+		     const ATOOLS::Vec4D& P, bool inp=false);
+    ~Dipole_Glubranch();
+    Dipole_Glubranch& operator=(const Dipole_Glubranch& DG);
 
-    Dipole_Glubranch(const ATOOLS::Particle&);
-    Dipole_Glubranch(const ATOOLS::Vec4D& P)
-      : Dipole_Particle(info.gluon.g,P) { cg_info();}
-    //Dipole_Glubranch(const Dipole_Gluon_Base& G, const ATOOLS::Vec4D& P)
-    //  : Dipole_Particle(G,P) { cg_info();}    //Later.
-
-    ~Dipole_Glubranch() { dg_info();}
-
-    Dipole_Glubranch& operator=(const Dipole_Glubranch& DG) {
-      this->Dipole_Particle::operator=(DG); return *this;
-    }
-    void WhatIsIt() const { std::cout<<"Dipole_Glubranch."<<std::endl;}
+    void WhatIsIt() const;
 
   };
 
 
+
+  //===========================================================================
 
 
 

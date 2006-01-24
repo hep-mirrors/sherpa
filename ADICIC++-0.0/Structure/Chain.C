@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2005/01/31
+//Version: 3 ADICIC++-0.0/2005/08/22
 
 //Implementation of Chain.H.
 
@@ -143,7 +143,7 @@ Chain::Chain(const Chain& cha)
   if(type==incorrect) return;//////////////////////////////////////////////////
   //Chain is not empty here!
   this->Copy(cha,type);
-  m_memo=m_name;
+  m_memo=m_name;//?????????????????????????????????????????????????????????????
 }
 
 
@@ -154,9 +154,11 @@ Chain::Chain(const Dipole::Branch& ban, const Dipole::Antibranch& ati,
 	     const Initiator::Simple_EpEm)
   : m_name(++s_maxcount), m_memo(m_name), Name(m_name), Memo(m_memo) {
 
+  //Simple_EpEm -> FF chain!
+  assert(ban.Incoming()==false && ati.Incoming()==false);
+
   ++s_count;
 
-  varset.f_clear=false;
   varset.p_hdl=NULL;
   varset.p_1glu=NULL;
   varset.l_glub.clear();
@@ -191,6 +193,9 @@ Chain::Chain(const Dipole::Glubranch& glut, const Dipole::Glubranch& glub,
 	     const Initiator::Simple_EpEm)
   : m_name(++s_maxcount), m_memo(m_name), Name(m_name), Memo(m_memo) {
 
+  //Simple_EpEm -> FF chain!
+  assert(glut.Incoming()==false && glub.Incoming()==false);
+
   ++s_count;
 
   if(&glut==&glub) {
@@ -199,7 +204,6 @@ Chain::Chain(const Dipole::Glubranch& glut, const Dipole::Glubranch& glub,
     //exit(1);
   }
 
-  varset.f_clear=false;
   varset.p_hdl=NULL;
   varset.p_quab=NULL;
   varset.p_atib=NULL;
@@ -285,7 +289,7 @@ Chain& Chain::operator=(const Chain& cha) {
   if(type==incorrect) return *this;////////////////////////////////////////////
   if(this->Clear()==false) return *this;
   this->Copy(cha,type);
-  m_memo=m_name;
+  m_memo=m_name;//?????????????????????????????????????????????????????????????
   return *this;
 }
 
@@ -321,15 +325,44 @@ const Chain::Type Chain::ChainType() const {
 
 
 
+const unsigned Chain::INumber() const {
+  if(this->IsEmpty()) return 0;
+  unsigned in=0;
+  if(varset.p_quab) if(varset.p_quab->Incoming()) ++in;
+  if(varset.p_atib) if(varset.p_atib->Incoming()) ++in;
+  for(list<Dipole::Glubranch*>::const_iterator gut=varset.l_glub.begin();
+      gut!=varset.l_glub.end(); ++gut) {
+    assert(*gut);
+    if((*gut)->Incoming()) ++in;
+  }
+  assert(in<3);
+  return in;
+}
+
+
+
+
+
 const bool Chain::CheckMomentumConservation(ATOOLS::Vec4D& sum) const {
   sum=Vec4D();
-  if(varset.p_quab) sum+=varset.p_quab->Momentum();
-  if(varset.p_atib) sum+=varset.p_atib->Momentum();
+  if(varset.p_quab) {
+    if(varset.p_quab->Incoming()) sum-=varset.p_quab->Momentum();
+    else sum+=varset.p_quab->Momentum();
+  }
+  if(varset.p_atib) {
+    if(varset.p_atib->Incoming()) sum-=varset.p_atib->Momentum();
+    else sum+=varset.p_atib->Momentum();
+  }
   for(list<Dipole::Glubranch*>::const_iterator gut=varset.l_glub.begin();
-      gut!=varset.l_glub.end(); ++gut)
-    sum+=(*gut)->Momentum();
+      gut!=varset.l_glub.end(); ++gut) {
+    assert(*gut);
+    if((*gut)->Incoming()) sum-=(*gut)->Momentum();
+    else sum+=(*gut)->Momentum();
+  }
   if(sum==varset.m_momentum) return true;
-  return false;
+  Vec4D test=sum-varset.m_momentum;
+  for(char i=0; i<4; ++i) if(dabs(test[i])>1.0e-10) return false;
+  return true;
 }
 
 
@@ -345,37 +378,72 @@ const bool Chain::ExtractPartons(Particle_List& parlist) const {
 
   list<Dipole*>::const_iterator dit=varset.l_dip.begin();
   Particle* par=new Particle( (*dit)->GetTopBranchPointer()->Parton );
+  if((*dit)->GetTopBranchPointer()->Incoming()) par->SetInfo('i');
   parlist.push_back(par);
   Particle_List::iterator pit=parlist.end(); --pit;
   ++dit;
   for(; dit!=varset.l_dip.end(); ++dit) {
     par=new Particle( (*dit)->GetTopBranchPointer()->Parton );
+    if((*dit)->GetTopBranchPointer()->Incoming()) par->SetInfo('i');
     parlist.push_back(par);
   }
 
   if(type==line) {
     --dit;
     Particle* par=new Particle( (*dit)->GetBotBranchPointer()->Parton );
+    if((*dit)->GetBotBranchPointer()->Incoming()) par->SetInfo('i');
     parlist.push_back(par);
 
     const size_t num=parlist.size(); assert(num>1);
     if(parlist.size()>2) {
-      unsigned upflow=(*pit)->GetFlow(1);
-      if(upflow==0) { (*pit)->SetFlow(1,-1); upflow=(*pit)->GetFlow(1);}
-      ++pit;
-      Particle_List::iterator pot=parlist.end();
-      --pot;
-      for(; pit!=pot; ++pit) {
-	(*pit)->SetFlow(2,upflow);
-	(*pit)->SetFlow(1,-1);
-	upflow=(*pit)->GetFlow(1);
+      switch(this->INumber()%2) {
+      case  0: {
+	bool z=(*pit)->Info()=='i';
+	unsigned flow=(*pit)->GetFlow(1+z); assert((*pit)->GetFlow(2-z)==0);
+	if(flow==0) { (*pit)->SetFlow(1+z,-1); flow=(*pit)->GetFlow(1+z);}
+	++pit;
+	Particle_List::iterator pot=parlist.end();
+	--pot;
+	for(; pit!=pot; ++pit) {
+	  z=(*pit)->Info()=='i';
+	  (*pit)->SetFlow(2-z,flow);
+	  (*pit)->SetFlow(1+z,-1);
+	  flow=(*pit)->GetFlow(1+z);
+	}
+	z=(*pit)->Info()=='i';
+	(*pit)->SetFlow(2-z,flow); assert((*pot)->GetFlow(1+z)==0);
+      } break;
+      case  2: {
+	unsigned doflow=(*pit)->GetFlow(2); assert((*pit)->GetFlow(1)==0);
+	if(doflow==0) { (*pit)->SetFlow(2,-1); doflow=(*pit)->GetFlow(2);}
+	++pit;
+	Particle_List::iterator pot=parlist.end();
+	--pot;
+	for(; pit!=pot; ++pit) {
+	  (*pit)->SetFlow(2,doflow);
+	  (*pit)->SetFlow(1,-1);
+	  doflow=(*pit)->GetFlow(1);
+	}
+	(*pit)->SetFlow(1,doflow); assert((*pot)->GetFlow(2)==0);
+      } break;
+      default: assert(0);
       }
-      (*pit)->SetFlow(2,upflow);
     } else {
-      unsigned upflow=(*pit)->GetFlow(1);
-      if(upflow==0) { (*pit)->SetFlow(1,-1); upflow=(*pit)->GetFlow(1);}
-      ++pit;
-      if((*pit)->GetFlow(2)!=upflow) (*pit)->SetFlow(2,upflow);
+      switch(this->INumber()) {
+      case  0: {
+	unsigned upflow=(*pit)->GetFlow(1); assert((*pit)->GetFlow(2)==0);
+	if(upflow==0) { (*pit)->SetFlow(1,-1); upflow=(*pit)->GetFlow(1);}
+	++pit; assert((*pit)->GetFlow(1)==0);
+	if((*pit)->GetFlow(2)!=upflow) (*pit)->SetFlow(2,upflow);
+      } break;
+      case  2: {
+	unsigned doflow=(*pit)->GetFlow(2); assert((*pit)->GetFlow(1)==0);
+	if(doflow==0) { (*pit)->SetFlow(2,-1); doflow=(*pit)->GetFlow(2);}
+	++pit; assert((*pit)->GetFlow(2)==0);
+	if((*pit)->GetFlow(1)!=doflow) (*pit)->SetFlow(1,doflow);
+      } break;
+      default: assert(0);
+      }
     }
 
 #ifdef CHAIN_OUTPUT
@@ -425,10 +493,10 @@ const bool Chain::Clear() {
 
 
 const bool Chain::Initialize(const Dipole::Branch& ban,
-			     const Dipole::Antibranch& ati) {
+			     const Dipole::Antibranch& ati,
+			     double scale) {
 
-  //if(!IsClear()) return false;
-  if(varset.f_clear==false) return false;
+  if(!IsClear()) return false;
 
   varset.p_quab=new Dipole::Branch(ban);    //Copying!!
   varset.p_atib=new Dipole::Antibranch(ati);
@@ -440,16 +508,22 @@ const bool Chain::Initialize(const Dipole::Branch& ban,
   varset.l_dip.push_front(root);
   varset.p_root=root;
 
+  if(scale)
+    root->SetProdScale()=root->SetBootScale()=root->SetEmitScale()=scale;
+
   varset.m_k2tlast=root->ProdScale();
   varset.m_mass=root->Mass();
   varset.m_invmass=root->InvMass();
   varset.m_momentum=root->TotP();
 
   varset.f_active=root->Status();
-  if(varset.m_invmass<0.0 || varset.m_momentum[0]<0.0)
-    varset.f_active=Blocked;
-
-  varset.f_clear=false;
+  if(root->IsFF()) {
+    if(varset.m_invmass<0.0 || varset.m_momentum[0]<0.0)
+      varset.f_active=Blocked;
+  } else {
+    //??????? More to change later (FI/IF inclusion).
+    if(varset.m_invmass<0.0) varset.f_active=Blocked;
+  }
 
   m_memo=m_name;
 
@@ -498,7 +572,6 @@ void Chain::Copy(const Chain& cha, const Type type) {
   //A ring has two dipoles at least and the root gluon always resides at the
   //first place of the Glubranch list.
 
-  varset.f_clear=false;
   varset.f_active=cha.varset.f_active;
   varset.m_k2tlast=cha.varset.m_k2tlast;
 
@@ -532,6 +605,9 @@ void Chain::Copy(const Chain& cha, const Type type) {
     else           dip=new Dipole(*varset.l_glub.front(),*botg);
     assert(dip);
     varset.l_dip.push_back(dip);
+    dip->SetProdScale()=(*dit)->ProdScale();
+    dip->SetBootScale()=(*dit)->BootScale();
+    dip->SetEmitScale()=(*dit)->EmitScale();
     if(*dit==cha.varset.p_root) varset.p_root=dip;
     ++dit;
   }
@@ -544,6 +620,9 @@ void Chain::Copy(const Chain& cha, const Type type) {
     varset.l_glub.push_back(botg);
     dip=new Dipole(*preg,*botg); assert(dip);
     varset.l_dip.push_back(dip);
+    dip->SetProdScale()=(*dit)->ProdScale();
+    dip->SetBootScale()=(*dit)->BootScale();
+    dip->SetEmitScale()=(*dit)->EmitScale();
     if(*dit==cha.varset.p_root) varset.p_root=dip;
     preg=botg;
   }
@@ -551,12 +630,18 @@ void Chain::Copy(const Chain& cha, const Type type) {
   if(!dip) {
     dip=new Dipole(*varset.p_quab,*varset.p_atib); assert(dip);
     varset.l_dip.push_back(dip);
+    dip->SetProdScale()=(*dit)->ProdScale();
+    dip->SetBootScale()=(*dit)->BootScale();
+    dip->SetEmitScale()=(*dit)->EmitScale();
     varset.p_root=dip;
   } else {
     if(type==line) dip=new Dipole(*preg,*varset.p_atib);
     else           dip=new Dipole(*preg,*varset.l_glub.front());
     assert(dip);
     varset.l_dip.push_back(dip);
+    dip->SetProdScale()=(*dit)->ProdScale();
+    dip->SetBootScale()=(*dit)->BootScale();
+    dip->SetEmitScale()=(*dit)->EmitScale();
     if(*dot==cha.varset.p_root) varset.p_root=dip;
   }
 
@@ -565,6 +650,8 @@ void Chain::Copy(const Chain& cha, const Type type) {
     varset.m_invmass=cha.varset.m_invmass;
   } else {
     varset.f_active=Blocked;
+    cerr<<"\nMethod: "<<__PRETTY_FUNCTION__<<": "
+	<<"Warning: Momentum conservation check failed!\n"<<endl;
     if(varset.m_momentum[0]<0.0)
       cerr<<"\nMethod: "<<__PRETTY_FUNCTION__<<": "
 	  <<"Warning: Total energy is negative!\n"<<endl;
@@ -584,14 +671,14 @@ void Chain::Copy(const Chain& cha, const Type type) {
 
 
 const ATOOLS::Vec4D& Chain::UpdateMomentum(double k, const ATOOLS::Vec4D& p) {
-  varset.f_clear=false;
   varset.m_momentum+=k*p;
   varset.m_invmass=varset.m_momentum.Abs2();
-  if(varset.m_invmass<-1.0e-10/*0.0*/) {
-    cerr<<"\nMethod: "<<__PRETTY_FUNCTION__<<": Warning: "
-	<<"Negative invariant mass ("<<varset.m_invmass<<") !\n"<<endl;
-    //varset.f_active=Blocked;
+  if(varset.m_invmass<0.0) {
+    //cerr<<"\nMethod: "<<__PRETTY_FUNCTION__<<": Warning: "
+    //    <<"Negative invariant mass ("<<varset.m_invmass<<") !\n"<<endl;
+    //varset.f_active=Blocked;//???????????????????????????????????????????????
     varset.m_mass=-1*sqrt(-1*varset.m_invmass);
+    //The minus sign functions only as a flag.
   }
   else varset.m_mass=sqrt(varset.m_invmass);
   return varset.m_momentum;
