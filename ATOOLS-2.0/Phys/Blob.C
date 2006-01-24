@@ -15,6 +15,7 @@ std::ostream& ATOOLS::operator<<(std::ostream& ostr, const btp::code btpc) {
   case btp::Soft_Collision:     return ostr<<"Soft Collision    "; 
   case btp::ME_PS_Interface_IS: return ostr<<"ME PS Interface IS";
   case btp::ME_PS_Interface_FS: return ostr<<"ME PS Interface FS";
+  case btp::ME_PS_Interface:    return ostr<<"ME PS Interface   ";
   case btp::FS_Shower:          return ostr<<"FS Shower         ";
   case btp::IS_Shower:          return ostr<<"IS Shower         ";
   case btp::Shower:             return ostr<<"Shower            ";
