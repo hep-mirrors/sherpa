@@ -18,7 +18,9 @@ endif
 
 lib_LTLIBRARIES = libAdicicInput.la
 libAdicicInput_la_SOURCES = Dipole_Flavour.C Information.cpp \
-                            Recoil_Strategy.cpp Dipole_Parameter.C
+                            Sudakov_Utils.cpp Recoil_Strategy.cpp \
+                            Evolution_Strategy.cpp \
+                            Dipole_Parameter.C
 
 
 
@@ -36,14 +38,12 @@ INCLUDES = -I../Tool \
 
   
 include_HEADERS = Dipole_Flavour.H Information.hpp \
-                 Sudakov_Strategy.hpp Recoil_Strategy.hpp \
-                 Evolution_Strategy.hpp \
-                 Dipole_Parameter.H
+                  Sudakov_Strategy.hpp Recoil_Strategy.hpp \
+                  Evolution_Strategy.hpp \
+                  Dipole_Parameter.H
 
 
 
 EXTRA_DIST = $(CVSINCLUDE) \
+             Recoil_Strategy.inl.hh \
              Dipole_Parameter.inl.hh Dipole_Parameter.prm.cc
-
-
-
