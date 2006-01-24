@@ -260,7 +260,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f1b_f2f2b>(const size_t nin,const size_t n
 						 const ATOOLS::Flavour *flavours,
 						 const size_t nqed, const size_t nqcd)
 {
-  //  std::cout<<"XS_f1f1b_f2f2b Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<"\n";
+//   std::cout<<"XS_f1f1b_f2f2b Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<" "<<nqed<<" "<<nqcd<<"\n";
   int  kfc1  = abs(flavours[0].Kfcode()), kfc2  = abs(flavours[2].Kfcode());
   if (flavours[0]!=flavours[1].Bar() || 
       flavours[0]==flavours[2] || flavours[0]==flavours[3] || 
@@ -279,7 +279,9 @@ Single_XS *Single_XS::GetProcess<XS_f1f1b_f2f2b>(const size_t nin,const size_t n
 	 abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2))>0) ||
 	(kfc1%2!=0 && kfc2%2==0 && 
 	 abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2))>0))) ||
-        ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() )                return new XS_f1f1b_f2f2b(nin,nout,flavours); 
+        ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() )  {
+    return new XS_f1f1b_f2f2b(nin,nout,flavours); 
+  }
   return NULL;
 }
 
