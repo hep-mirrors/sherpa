@@ -65,7 +65,8 @@ Single_Channel * HD_Channel_Selector::GetChannel(
     string name,
     GeneralModel & md )
 {
-  if (nin>1 || nout<2) {
+  if (flavs[0].Kfcode() == kf::K ) return NULL;
+  if ( nin>1 || nout<2 ) {
     msg.Error()<<"Error in HD_Channel_Selector::GetChannel : "<<endl
            <<"   No PS for channel ("<<nin<<" -> "<<nout<<" )"<<endl
            <<"   Return nothing and hope for the best."<<endl;
@@ -305,7 +306,7 @@ void HD_PS_Base::CalculateNormalisedWidth() {
   while(opt<maxopt || (result>0. && m_error/result>0.01) ) {
     maxincrease = false;
     for (n=1;n<iter+1;n++) {
-      value = p_hdc->Differential();
+      value = p_hdc->Differential(NULL,NULL);
       sum  += value;
       sum2 += ATOOLS::sqr(value);
       AddPoint(value);
@@ -327,11 +328,11 @@ void HD_PS_Base::CalculateNormalisedWidth() {
     if (isotropic_me && m_error/result < 0.01) break;
   } 
   m_res  = m_flux*sum/n;
-  m_max *= m_flux;
   m_error *= m_flux;
   disc   = sqr(m_res)/((sum2*sqr(m_flux)/n - sqr(m_res))/(n-1));
   if (disc>0) m_error  = m_res/sqrt(disc);
   msg.Info()<<"     result (incl. flux): "<<m_res<<" +/- "<<m_error<<" ("<<m_error/m_res*100.<<" %)"<<endl;
+  // note: the m_max is w/o flux factor
 } 
 
 
