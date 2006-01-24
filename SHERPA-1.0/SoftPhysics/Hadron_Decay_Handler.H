@@ -16,6 +16,7 @@
 #ifdef USING__Hadrons
 #include "Hadrons.H"
 #endif
+#include "Spin_Density_Matrix.H"
 
 namespace SHERPA {
   class Hadron_Decay_Handler {
@@ -42,6 +43,10 @@ namespace SHERPA {
     void PrepareDecays(ATOOLS::Blob *);
     bool FillHadronDecayBlobs(ATOOLS::Particle *,ATOOLS::Blob_List *,
 			      ATOOLS::Particle_List *part_list=NULL);
+    bool FillHadronDecayBlobs(ATOOLS::Particle *,ATOOLS::Blob_List *,
+                  ATOOLS::Spin_Density_Matrix * sigma, 
+                  ATOOLS::Spin_Density_Matrix * decmatr,
+			      ATOOLS::Particle_List *part_list=NULL );
     Lund_Interface * GetLund() { return p_lund; }
     void EraseTreated(std::set<int> *);
   };

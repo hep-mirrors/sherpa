@@ -96,6 +96,33 @@ bool Hadron_Decay_Handler::FillHadronDecayBlobs(Particle *part,
   return 1;
 }
 
+// with spin correlation 
+bool Hadron_Decay_Handler::FillHadronDecayBlobs(Particle *part,
+						Blob_List *blob_list,
+                        Spin_Density_Matrix * sigma, 
+                        Spin_Density_Matrix * decmatr, 
+						Particle_List *part_list )
+{
+  msg_Tracking()<<"Hadron_Decay_Handler::FillHadronDecayBlobs "<<part->Flav()<<endl
+    <<"     with spin correlations."<<endl
+    <<"     Momentum: "<<part->Momentum()<<endl;
+
+  // perform decay 
+  switch( m_mode ) {
+#ifdef USING__Hadrons
+  case 1: 
+    if( decmatr ) (*decmatr) = p_hadrons->PerformDecay( part, blob_list, part_list, sigma );
+    else p_hadrons->PerformDecay( part, blob_list, part_list, NULL );
+    break;
+#endif
+  case 0: 
+    p_lund->PerformDecay( part, blob_list, part_list );
+    break;
+  }
+  
+  return 1;
+}
+
 void Hadron_Decay_Handler::SwitchOfLundDecays()
 {
 #ifdef USING__Hadrons
