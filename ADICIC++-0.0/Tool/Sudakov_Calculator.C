@@ -1,12 +1,13 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/10/28
+//Version: 3 ADICIC++-0.0/2005/09/12
 
 //Implementation of Sudakov_Calculator.H.
 
 
 
 #include "Running_AlphaS.H"////////////////////////////////////////////////////
-#include "Dipole_Parameter.H"
+#include "Data_Read.H"
+#include "PDF_Handler.H"
 #include "Sudakov_Calculator.H"
 
 
@@ -15,13 +16,14 @@
 
 using namespace std;
 using namespace ATOOLS;
+using namespace PDF;
 using namespace ADICIC;
 
 
 
 
 
-#include "Sudakov_Calculator.tpt.cc"
+//#include "Sudakov_Calculator.tpt.cc"
 
 
 
@@ -30,135 +32,34 @@ using namespace ADICIC;
 //=============================================================================
 
 
-
-template struct Sudakov_Info<Dipole::qqbar,Radiation::gluon>;
-template struct Sudakov_Info<Dipole::qg,Radiation::gluon>;
-template struct Sudakov_Info<Dipole::gqbar,Radiation::gluon>;
-template struct Sudakov_Info<Dipole::gg,Radiation::gluon>;
-
-template struct Sudakov_Info<Dipole::qg,Radiation::quark>;
-template struct Sudakov_Info<Dipole::gqbar,Radiation::quark>;
-template struct Sudakov_Info<Dipole::gg,Radiation::quark>;
-
-
-
-
-//template<Dipole::Type D> const Radiation::Group
-//Sudakov_Info<D,Radiation::gluon>::Radiationgroup=Radiation::gluon;
-//template<Dipole::Type D> const Radiation::Group
-//Sudakov_Info<D,Radiation::quark>::Radiationgroup=Radiation::quark;
-template<> const Radiation::Group
-Sudakov_Info<Dipole::qqbar,Radiation::gluon>::Radiationgroup=Radiation::gluon;
-template<> const Radiation::Group
-Sudakov_Info<Dipole::qg,Radiation::gluon>::Radiationgroup=Radiation::gluon;
-template<> const Radiation::Group
-Sudakov_Info<Dipole::gqbar,Radiation::gluon>::Radiationgroup=Radiation::gluon;
-template<> const Radiation::Group
-Sudakov_Info<Dipole::gg,Radiation::gluon>::Radiationgroup=Radiation::gluon;
-
-template<> const Radiation::Group
-Sudakov_Info<Dipole::qg,Radiation::quark>::Radiationgroup=Radiation::quark;
-template<> const Radiation::Group
-Sudakov_Info<Dipole::gqbar,Radiation::quark>::Radiationgroup=Radiation::quark;
-template<> const Radiation::Group
-Sudakov_Info<Dipole::gg,Radiation::quark>::Radiationgroup=Radiation::quark;
-
-
-
-
-template<> const Dipole::Type
-Sudakov_Info<Dipole::qqbar,Radiation::gluon>::Dipoletype=Dipole::qqbar;
-template<> const short
-Sudakov_Info<Dipole::qqbar,Radiation::gluon>::X1power=2;
-template<> const short
-Sudakov_Info<Dipole::qqbar,Radiation::gluon>::X3power=2;
-template<> const double
-Sudakov_Info<Dipole::qqbar,Radiation::gluon>::Colourfactor=1.5*M_PI;
-
-
-template<> const Dipole::Type
-Sudakov_Info<Dipole::qg,Radiation::gluon>::Dipoletype=Dipole::qg;
-template<> const short
-Sudakov_Info<Dipole::qg,Radiation::gluon>::X1power=2;
-template<> const short
-Sudakov_Info<Dipole::qg,Radiation::gluon>::X3power=3;
-template<> const double
-Sudakov_Info<Dipole::qg,Radiation::gluon>::Colourfactor=4.0*M_PI/3.0;
-
-
-template<> const Dipole::Type
-Sudakov_Info<Dipole::gqbar,Radiation::gluon>::Dipoletype=Dipole::gqbar;
-template<> const short
-Sudakov_Info<Dipole::gqbar,Radiation::gluon>::X1power=3;
-template<> const short
-Sudakov_Info<Dipole::gqbar,Radiation::gluon>::X3power=2;
-template<> const double
-Sudakov_Info<Dipole::gqbar,Radiation::gluon>::Colourfactor=4.0*M_PI/3.0;
-
-
-template<> const Dipole::Type
-Sudakov_Info<Dipole::gg,Radiation::gluon>::Dipoletype=Dipole::gg;
-template<> const short
-Sudakov_Info<Dipole::gg,Radiation::gluon>::X1power=3;
-template<> const short
-Sudakov_Info<Dipole::gg,Radiation::gluon>::X3power=3;
-template<> const double
-Sudakov_Info<Dipole::gg,Radiation::gluon>::Colourfactor=4.0*M_PI/3.0;
-
-
-
-
-template<> const Dipole::Type
-Sudakov_Info<Dipole::qg,Radiation::quark>::Dipoletype=Dipole::qg;
-template<> const double
-Sudakov_Info<Dipole::qg,Radiation::quark>::Colourfactor=8.0*M_PI;
-
-
-template<> const Dipole::Type
-Sudakov_Info<Dipole::gqbar,Radiation::quark>::Dipoletype=Dipole::gqbar;
-template<> const double
-Sudakov_Info<Dipole::gqbar,Radiation::quark>::Colourfactor=8.0*M_PI;
-
-
-template<> const Dipole::Type
-Sudakov_Info<Dipole::gg,Radiation::quark>::Dipoletype=Dipole::gg;
-template<> const double
-Sudakov_Info<Dipole::gg,Radiation::quark>::Colourfactor=4.0*M_PI;
-
-
-
-//=============================================================================
-
-
-
-const bool Sudakov_Calculator::sf_start=Dipole_Parameter::ForceFirstInit();
 
 //Mimic Ariadne.
 const bool Sudakov_Calculator::sf_ariadne=false;//true;//false;
 const bool& Sudakov_Calculator::Ariadne=Sudakov_Calculator::sf_ariadne;
 
+//Temporary PDF switch.
+const bool Sudakov_Calculator::sf_pdf=true;//false;
+
 //So far there is no static Sudakov_Calculator.
 int Sudakov_Calculator::s_count=0;
 const int& Sudakov_Calculator::InStore=Sudakov_Calculator::s_count;
 
-//AlphaS treatment flag and fixed coupling.
-bool   Sudakov_Calculator::s_isalphasrun=Dipole_Parameter::IsAlphaSRunning();
-double Sudakov_Calculator::s_alphasfix=Dipole_Parameter::AlphaSFix();
-double Sudakov_Calculator::s_k2tmin=Dipole_Parameter::MinOfK2t();    //GeV^2
-double Sudakov_Calculator::s_k2tmax=Dipole_Parameter::MaxOfK2t();    //GeV^2
-
-double Sudakov_Calculator::s_approx=Sudakov_Calculator::s_alphasfix;
+//Approximation variables.
+double Sudakov_Calculator::s_asapprox=dpa.sud.AlphaSFix();
 
 //
-const int Sudakov_Calculator::s_nffix=5;
+Sudakov_Calculator::Toolbox Sudakov_Calculator::s_box
+=Sudakov_Calculator::Toolbox();
 
 //
-Function_Base* Sudakov_Calculator::s_pas=NULL;
-
 Sudakov_Calculator::Double_Double_Func
 Sudakov_Calculator::GetAlphaSCorr=&Sudakov_Calculator::FixAlphaSCorr;
 Sudakov_Calculator::Int_Double_Func
 Sudakov_Calculator::GetNf=&Sudakov_Calculator::FixNf;
+
+//
+Sudakov_Calculator::PDF_Corr_Func
+Sudakov_Calculator::GetPDFCorr=&Sudakov_Calculator::NoPDFCorr;
 
 
 
@@ -169,6 +70,9 @@ Sudakov_Calculator::GetNf=&Sudakov_Calculator::FixNf;
 int Sudakov_Base::s_count=0;
 const int& Sudakov_Base::InStore=Sudakov_Base::s_count;
 
+//
+const double Sudakov_Base::s_average=2.0;
+
 
 
 //=============================================================================
@@ -176,6 +80,8 @@ const int& Sudakov_Base::InStore=Sudakov_Base::s_count;
 
 
 Sudakov_Calculator::~Sudakov_Calculator() {    //Virtual.
+  assert(p_dip==NULL);
+  assert(p_sur==NULL);
   --s_count;
 #ifdef TEMP_OUTPUT
   cout<<"~Sudakov_Calculator"<<endl;///////////////////////////////////////////
@@ -186,61 +92,174 @@ Sudakov_Calculator::~Sudakov_Calculator() {    //Virtual.
 
 
 
-void Sudakov_Calculator::ShowParameters() {    //Static.
+void Sudakov_Calculator::ShowEnvironment() {    //Static.
   cout<<endl;
-  cout<<"==========================================="<<endl;
-  cout<<"    Valid Sudakov_Calculator parameters"<<endl;
-  cout<<"-------------------------------------------"<<endl;
-  cout<<"Running AlphaS is allowed for....."<<s_isalphasrun<<".\n";
-  cout<<"Running AlphaS is initialized....."<<(s_isalphasrun && s_pas)<<".\n";
-  cout<<"Fixed AlphaS is set to............"<<s_alphasfix<<"."<<endl;
-  cout<<"AlphaS approximation is set to...."<<s_approx<<"."<<endl;
-  cout<<"Dipole shower cut-off scale is set to...."<<s_k2tmin<<" GeV^2."<<endl;
-  cout<<"Dipole shower maximum scale is set to...."<<s_k2tmax<<" GeV^2."<<endl;
-  cout<<"==========================================="<<endl;
+  cout<<"====================================================="<<endl;
+  cout<<"         Valid Sudakov_Calculator parameters"<<endl;
+  cout<<"-----------------------------------------------------"<<endl;
+  cout<<"Running AlphaS is wished for........."
+      <<dpa.sud.RunAlphaS()<<".\n";
+  cout<<"Running AlphaS is initialized........"
+      <<bool(s_box.m_ras[0])<<".\n";
+  cout<<"Fixed AlphaS is set to..............."
+      <<dpa.sud.AlphaSFix()<<".\n";
+  cout<<"Fixed Nf is set to..................."
+      <<dpa.sud.NfFix()<<".\n";
+  cout<<"AlphaS approximation is set to......."
+      <<s_asapprox<<".\n";
+  cout<<"PDF treatment is wished for.........."
+      <<bool(sf_pdf)<<".\n";
+  cout<<"PDFs are initialized................."
+      <<bool(s_box.m_pdf[0] && s_box.m_pdf[1])<<".\n";
+  cout<<"Radiation type is set to............."
+      <<dpa.sud.RadiationType()<<".\n";
+  cout<<"FF dipole shower cut-off scale is set to...."
+      <<dpa.sud.MinK2t()<<" GeV^2.\n";
+  cout<<"FF dipole shower maximum scale is set to...."
+      <<dpa.sud.MaxK2t()<<" GeV^2.\n";
+  cout<<"II dipole shower cut-off scale is set to...."
+      <<dpa.sud.MinIIK2t()<<" GeV^2.\n";
+  cout<<"II dipole shower maximum scale is set to...."
+      <<dpa.sud.MaxIIK2t()<<" GeV^2.\n";
+  cout<<"II eff. enhancement exponent is............."
+      <<dpa.sud.IIEffExp()<<".\n";
+  cout<<"====================================================="<<endl;
 }
 
 
 
 
 
-const bool Sudakov_Calculator::AdjustParameters() {    //Static.
-  s_alphasfix=Dipole_Parameter::AlphaSFix();
-  s_approx=s_alphasfix;
-  s_k2tmin=Dipole_Parameter::MinOfK2t();
-  s_k2tmax=Dipole_Parameter::MaxOfK2t();
-  if(s_isalphasrun != Dipole_Parameter::IsAlphaSRunning()) {
-    if(s_isalphasrun) {
-      s_pas=NULL;
-      GetAlphaSCorr=&FixAlphaSCorr;
-      GetNf=&FixNf;
+const Trio Sudakov_Calculator::AdjustEnvironment(const string& path,
+						 MODEL::Model_Base* pmod) {
+
+  //Static method.
+
+  //static MODEL::Running_AlphaS locras(0.1188,8315.25,1);
+  static MODEL::Running_AlphaS locras(0.118,8315.0,1);
+
+  Trio ret;
+
+#ifdef DIPOLE_PARAMETER_OUTPUT
+  cout<<"{ "<<__PRETTY_FUNCTION__<<" ...\n";
+#endif
+
+  if(dpa.sud.RunAlphaS()==false) {
+    s_box.m_ras[0]=NULL;
+    s_asapprox=dpa.sud.AlphaSFix();
+    GetAlphaSCorr=&FixAlphaSCorr;
+    GetNf=&FixNf;
+    ret=Nil;
+  } else {
+    if(s_box.m_ras[0]) {
+      if(pmod) {
+#ifdef DIPOLE_PARAMETER_OUTPUT
+	cout<<"  Re-initialize alphaS treatment as global.\n";
+#endif
+	s_box.m_ras[0]=pmod->GetScalarFunction("alpha_S");
+	ret=Positive;
+      } else {
+	string s;
+	if(s_box.m_ras[0]==&locras) { ret=Negative; s="local";}
+	else { ret=Positive; s="global";}
+#ifdef DIPOLE_PARAMETER_OUTPUT
+	cout<<"  Keep the alphaS treatment "<<s<<".\n";
+#endif
+      }
+    } else {
+      if(pmod) {
+	//The Running_AlphaS object physically resides in the initialized
+	//Model ==> global treatment.
+	//So the following is simply an assignment (no new-operator is needed).
+#ifdef DIPOLE_PARAMETER_OUTPUT
+	cout<<"  Initialize alphaS treatment as global.\n";
+#endif
+	s_box.m_ras[0]=pmod->GetScalarFunction("alpha_S");
+	ret=Positive;
+      } else {
+	//Local treatment, see on top of this method.
+#ifdef DIPOLE_PARAMETER_OUTPUT
+	cout<<"  Initialize alphaS treatment as local.\n";
+#endif
+	s_box.m_ras[0]=&locras;
+	ret=Negative;
+      }
     }
-    s_isalphasrun=Dipole_Parameter::IsAlphaSRunning();
+    assert(s_box.m_ras[0]);
+    double scmin=Min(dpa.sud.MinK2t(),dpa.sud.MinIIK2t());
+    double cutq2=static_cast<MODEL::Running_AlphaS*>(s_box.m_ras[0])->CutQ2();
+    if(scmin<cutq2) s_asapprox=(*s_box.m_ras[0])(cutq2)+0.0001;
+    else            s_asapprox=(*s_box.m_ras[0])(scmin)+0.0001;
+    //s_asapprox=(*s_box.m_ras[0])(cutq2)+0.0001;//////////////////////////////
+    //cout<<cutq2<<" : "<<scmin<<" :: "<<s_asapprox<<endl;
+    assert(s_asapprox>(*s_box.m_ras[0])(scmin) &&
+	   s_asapprox>(*s_box.m_ras[0])(dpa.sud.MinK2t()) &&
+	   s_asapprox>(*s_box.m_ras[0])(dpa.sud.MinIIK2t()));
+    GetAlphaSCorr=&RunAlphaSCorr;
+    GetNf=&RunNf;
   }
-  return true;
-}
 
-
-
-
-
-const bool Sudakov_Calculator::Init(MODEL::Model_Base* pmod) {    //Static.
-  if(s_isalphasrun==false) return false;
-  if(pmod) {
-    //The Running_AlphaS object physically resides in the initialized Model.
-    //So the following is simply an assignment (no new-operator is needed).
-    s_pas=pmod->GetScalarFunction("alpha_S");
+  if(sf_pdf==false) {
+    if(s_box.m_pdf[0]) { delete s_box.m_pdf[0]; s_box.m_pdf[0]=NULL;} 
+    if(s_box.m_pdf[1]) { delete s_box.m_pdf[1]; s_box.m_pdf[1]=NULL;}
+    GetPDFCorr=&NoPDFCorr;
+#ifdef DIPOLE_PARAMETER_OUTPUT
+    cout<<"  PDFs are not initialized.\n";
+#endif
+  } else {
+    bool h=true;
+    if(s_box.m_pdf[0] && s_box.m_pdf[1]) {
+#ifdef DIPOLE_PARAMETER_OUTPUT
+      cout<<"  PDFs are already initialized.\n";
+#endif
+    } else {
+      assert(!s_box.m_pdf[0] && !s_box.m_pdf[1]);
+      Flavour fl0, fl1;
+      string thepath;
+      if(path=="default") thepath="../TestIt/data/ISR.dat";
+      else thepath=path+"ISR.dat";
+      Data_Read dataread(thepath,true);
+      if(dataread.FileExists()) {
+	if(dataread.GetValue<Switch::code>("ISR_1")==Switch::On &&
+	   dataread.GetValue<Switch::code>("ISR_2")==Switch::On) {
+	  PDF_Handler pdfhandler;
+	  s_box.m_pdf[0]=pdfhandler.GetPDFLib(&dataread,fl0,0);
+	  s_box.m_pdf[1]=pdfhandler.GetPDFLib(&dataread,fl1,1);
+	  s_box.m_pdf[0]->SetRenormalizationScaleFactor(1.0);    //To be sure.
+	  s_box.m_pdf[1]->SetRenormalizationScaleFactor(1.0);    //To be sure.
+	  assert(fl0==Flavour(kf::p_plus));
+	  assert(fl1==Flavour(kf::p_plus,1));
+#ifdef DIPOLE_PARAMETER_OUTPUT
+	  cout<<"  PDFs have been initialized.\n";
+#endif
+	} else {
+	  h=false;
+#ifdef DIPOLE_PARAMETER_OUTPUT
+	  cout<<"  PDFs could not be initialized. ISR switched off!\n";
+#endif
+	}
+      } else {
+	h=false;
+#ifdef DIPOLE_PARAMETER_OUTPUT
+	cout<<"  PDFs could not be initialized. File not found!\n";
+#endif
+      }
+    }
+    if(h) {
+      assert(s_box.m_pdf[0] && s_box.m_pdf[1]);
+      GetPDFCorr=&IsPDFCorr;
+    } else {
+      assert(!s_box.m_pdf[0] && !s_box.m_pdf[1]);
+      GetPDFCorr=&NoPDFCorr;
+    }
   }
-  else {
-    //static MODEL::Running_AlphaS as(0.1188,8315.25,1);
-    static MODEL::Running_AlphaS as(0.118,8315.0,1);
-    s_pas=&as;
-  }
-  assert(s_pas);
-  s_approx=(*s_pas)(s_k2tmin);
-  GetAlphaSCorr=&RunAlphaSCorr;
-  GetNf=&RunNf;
-  return true;
+
+#ifdef DIPOLE_PARAMETER_OUTPUT
+  cout<<"}\n";    //assert(0);
+#endif
+
+  return ret;
+
 }
 
 
@@ -249,6 +268,84 @@ const bool Sudakov_Calculator::Init(MODEL::Model_Base* pmod) {    //Static.
 
 void Sudakov_Calculator::Which() const {    //Virtual.
   cout<<"Incomplete Sudakov_Group object!"<<endl;
+}
+
+
+
+//-----------------------------------------------------------------------------
+
+
+
+const double Sudakov_Calculator::IsPDFCorr(bool z, const Multiflavour& mufl,
+					   const Multidouble& mudo) {
+
+  //Static method.
+  //cout<<sf::plusini+z<<","<<sf::plusfin+z<<endl;/////////////////////////////
+  //cout<<sr::xpini+z<<","<<sr::xpfin+z<<endl;/////////////////////////////////
+
+  static bool speedup=true;    //Allow for speedup or not.
+  static PDF_Base* pdf[2]={NULL,NULL};
+  static Flavour fla[2]={Flavour(),Flavour()};
+  static double xin[2]={0.0,0.0};
+  static double q2i[2]={0.0,0.0};
+  static double wden[2];
+
+  bool same=false;
+
+  s_box.m_pdf[z]->Calculate(mudo[sr::xpfin+z],mudo[sr::shat]);    //Or mperp^2?
+  double wnum=s_box.m_pdf[z]->GetXPDF(mufl[sf::plusfin+z])/mudo[sr::xpfin+z];
+
+  if( !speedup || pdf[z]!=s_box.m_pdf[z] ||
+      xin[z]!=mudo[sr::xpini+z] || q2i[z]!=sqr(mudo[sr::mdip]) ) {
+    s_box.m_pdf[z]->Calculate(mudo[sr::xpini+z],sqr(mudo[sr::mdip]));
+    wden[z]=s_box.m_pdf[z]->GetXPDF(mufl[sf::plusini+z])/mudo[sr::xpini+z];
+    pdf[z]=s_box.m_pdf[z];
+    fla[z]=mufl[sf::plusini+z];
+    xin[z]=mudo[sr::xpini+z];
+    q2i[z]=sqr(mudo[sr::mdip]);
+  } else {
+    if(fla[z]!=mufl[sf::plusini+z]) {
+      wden[z]=s_box.m_pdf[z]->GetXPDF(mufl[sf::plusini+z])/mudo[sr::xpini+z];
+      fla[z]=mufl[sf::plusini+z];
+    } else {
+      same=true;
+      //Then take the kept value of wden[z].
+    }
+  }
+
+  /////////////////////////////////////////////////////////////////////////////
+  //cout<<"       "<<same<<"   "
+  //    <<mufl[sf::plusfin+z]<<", "<<mufl[sf::plusini+z]<<"    "
+  //    <<mudo[sr::xpfin+z]<<", "<<mudo[sr::xpini+z]<<"    "
+  //    <<mudo[sr::shat]<<", "<<sqr(mudo[sr::mdip])<<"   |   "
+  //    <<wnum<<", "<<wden[z]<<"  =>  "<<(wnum/wden[z])<<"\n";
+  /////////////////////////////////////////////////////////////////////////////
+
+  wnum/=wden[z];
+  assert(wnum>=0.0);
+  //assert(wnum<=value);
+  return wnum;
+
+}
+
+
+
+//=============================================================================
+
+
+
+Sudakov_Calculator::Toolbox::Toolbox() : m_ras(1,NULL), m_pdf(2,NULL) {}
+
+
+Sudakov_Calculator::Toolbox::~Toolbox() {
+#ifdef TEMP_OUTPUT
+  cout<<"~Sudakov_Calculator::Toolbox(Funcs:"<<s_box.m_ras[0]
+      <<";Pdfs:"<<s_box.m_pdf[0]<<","<<s_box.m_pdf[1]<<")\n";
+#endif
+  //Responsibility of deleting running alphaS is elsewhere!
+  //for(size_t i=0; i<m_ras.size(); ++i) if(m_ras[i]) delete m_ras[i];
+  //Responsibility of deleting the PDFs is here!
+  for(size_t i=0; i<m_pdf.size(); ++i) if(m_pdf[i]) delete m_pdf[i];
 }
 
 
@@ -271,32 +368,6 @@ Sudakov_Base::~Sudakov_Base() {    //Virtual.
 void Sudakov_Base::Which() const {    //Virtual.
   cout<<"Incomplete Sudakov object!"<<endl;
 }
-
-
-
-//=============================================================================
-
-
-
-template class Sudakov_Group<Dipole::qqbar>;
-template class Sudakov_Group<Dipole::qg>;
-template class Sudakov_Group<Dipole::gqbar>;
-template class Sudakov_Group<Dipole::gg>;
-
-
-
-//=============================================================================
-
-
-
-template class Sudakov<Dipole::qqbar,Radiation::gluon>;
-template class Sudakov<Dipole::qg,Radiation::gluon>;
-template class Sudakov<Dipole::gqbar,Radiation::gluon>;
-template class Sudakov<Dipole::gg,Radiation::gluon>;
-
-template class Sudakov<Dipole::qg,Radiation::quark>;
-template class Sudakov<Dipole::gqbar,Radiation::quark>;
-template class Sudakov<Dipole::gg,Radiation::quark>;
 
 
 
