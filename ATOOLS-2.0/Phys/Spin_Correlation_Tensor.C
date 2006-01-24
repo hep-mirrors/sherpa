@@ -106,7 +106,7 @@ namespace ATOOLS{
   Spin_Density_Matrix Spin_Correlation_Tensor::GetSigma(int i, Spin_Density_Matrix * sigma0 ) 
   {
     if (m_particle==-1 ) {
-      PRINT_INFO("A terrible accident happened. The requested index couldn't be found."
+      PRINT_INFO("A terrible accident happened. The requested index "<<i<<" couldn't be found."
           <<"Let's return nothing, then.");
       return Spin_Density_Matrix();
     }
@@ -135,9 +135,11 @@ namespace ATOOLS{
 #endif
         Spin_Density_Matrix loc_sdm(max);
         for (size_t idx=0; idx<p_next->size(); ++idx) {
+          PRINT_INFO(idx);
           loc_sdm = (*p_next)[idx]->GetSigma(i);
           loc_sdm *= (*sigma0)[idx];
-          anSDM += loc_sdm;
+          anSDM += loc_sdm; 
+//          idx+=max;
         }
       }
     }
@@ -162,7 +164,7 @@ namespace ATOOLS{
   Spin_Density_Matrix Spin_Correlation_Tensor::GetSigma(int i) 
   {
     if (m_particle==-1) {
-      PRINT_INFO("A terrible accident happened. The requested index couldn't be found."
+      PRINT_INFO("A terrible accident happened. The requested index "<<i<<" couldn't be found."
           <<"Let's return nothing, then.");
       return Spin_Density_Matrix();
     }
@@ -170,8 +172,10 @@ namespace ATOOLS{
     Spin_Density_Matrix anSDM(max);
 
     if (m_particle == i) {
-      for (size_t idx=0; idx<p_next->size(); ++idx)
+      for (size_t idx=0; idx<p_next->size(); ++idx) {
         anSDM[idx] = (*p_next)[idx]->Trace();
+//        idx+=max;
+      }
       return anSDM;
     }
 
@@ -188,8 +192,16 @@ namespace ATOOLS{
     }
     if (m_particle == i) {
       // Do matrix multiplication
-      for (size_t idx=0; idx<p_next->size(); ++idx)
-        *(*p_next)[idx] *= (*SDM)[idx];      
+      if( SDM ) for (size_t idx=0; idx<p_next->size(); ++idx) 
+          *(*p_next)[idx] *= (*SDM)[idx];      
+      else {    // contract with unity matrix
+        Spin_Density_Matrix * unitmatrix = new Spin_Density_Matrix(GetIdxRange());
+        unitmatrix->SetUnitMatrix();
+        for (size_t idx=0; idx<p_next->size(); ++idx) {
+          *(*p_next)[idx] *= (*unitmatrix)[idx];      
+         }
+        delete unitmatrix;
+      }
 
       // An sum it up and delete obsolete branches
       for (size_t idx=1; idx<p_next->size();++idx) {

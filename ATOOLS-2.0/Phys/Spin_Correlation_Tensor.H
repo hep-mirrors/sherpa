@@ -29,17 +29,17 @@ namespace ATOOLS {
     //! Default constructor; sets p_next to NULL to avoid crashes.
     Spin_Correlation_Tensor():p_next(NULL){};
     virtual ~Spin_Correlation_Tensor();
-
-    //! Test-constructor; creates a product of delta(i,j).
-    Spin_Correlation_Tensor(double x, std::vector<int>* creation_list, size_t pos);
-
-    //! Yet aniother dummy
+     
+    //! constructor
     Spin_Correlation_Tensor(
         std::vector<std::pair<int,int> >* particles, 
         std::vector<Complex>* Amplitudes,
         size_t pPos=0, 
         size_t aPos1=0, 
         size_t aPos2=0 );
+
+    //! Test-constructor; creates a product of delta(i,j).
+    Spin_Correlation_Tensor(double x, std::vector<int>* creation_list, size_t pos);
 
     //! Returns the trace; equivalent to soft-contracting with unit-matrices.
     Complex Trace();
@@ -49,7 +49,7 @@ namespace ATOOLS {
     Spin_Density_Matrix GetSigma(int i);
     Spin_Density_Matrix GetSigma(int i, Spin_Density_Matrix * sigma0 ); 
 
-    //! Contract particle i with SDM
+    //! Contract particle i with SDM/DM
     void Contract(int i, Spin_Density_Matrix* SDM);
 
     //! Return a pointer to entry "number".

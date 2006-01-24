@@ -26,6 +26,8 @@ namespace ATOOLS {
     size_t  NrEntries() { return m_entries.size(); }
     void    SetNoCorrelation();
     void    SetUnitMatrix();
+    Complex Trace();
+    void    Normalise(); 
     double  Contract( std::vector<Complex> * ampls, std::vector<int> * ind ); 
      
     Spin_Density_Matrix& operator+=(Spin_Density_Matrix SDM);

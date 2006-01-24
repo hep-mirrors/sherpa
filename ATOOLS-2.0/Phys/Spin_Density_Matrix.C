@@ -46,6 +46,22 @@ void Spin_Density_Matrix::SetUnitMatrix()
   return;
 }
 
+Complex Spin_Density_Matrix::Trace()
+{
+  Complex sum(0.,0.);
+  for( size_t i=0; i<m_size; i++ ) 
+    sum += m_entries[ (m_size+1) * i ];
+  return sum;
+}
+
+void Spin_Density_Matrix::Normalise()
+{
+  Complex tr = Trace();
+  for( size_t i=0; i<m_entries.size(); i++ ) 
+    m_entries[i] /= tr;
+}
+
+// not used
 double Spin_Density_Matrix::Contract( vector<Complex> * ampls, vector<int> * ind )
 {
   // find the position of the mother
@@ -103,8 +119,8 @@ Complex& Spin_Density_Matrix::operator[](size_t entry)
   if (entry<m_entries.size()) {
     return m_entries[entry];
   } else {
-    msg.Error()<<"Error in Spin_Density_Matrix::operator[]:"<<endl
-	       <<"Rquest for entry exceeds length of data."<<endl;
+    msg.Error()<<"ERROR in Spin_Density_Matrix::operator[]:"<<endl
+	       <<"Rquest for entry "<<entry<<" exceeds length of data."<<endl;
     abort();
   }
 }
