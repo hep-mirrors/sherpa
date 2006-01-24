@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/09/08
+//Version: 3 ADICIC++-0.0/2006/01/24    //!! Check gcc4.0 changes!
 
 //The Dipole structure is a carrier of information.
 
