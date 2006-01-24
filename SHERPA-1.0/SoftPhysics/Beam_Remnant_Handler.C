@@ -105,7 +105,8 @@ FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
     p_beampart[i]->ClearErrors();
     for (Blob_List::iterator bit=bloblist->begin();
 	 bit!=bloblist->end();++bit) {
-      if ((*bit)->Beam()==i && (*bit)->Type()==btp::IS_Shower) { 
+      if ((*bit)->Beam()==i && (*bit)->Type()==btp::IS_Shower &&
+	  (*bit)->TypeSpec()!="ADICIC++0.0") {
 	ATOOLS::Particle *in=(*bit)->InParticle(0);
 	if (in->Flav().Strong() &&
 	    in->GetFlow(1)==0 && in->GetFlow(2)==0) continue;
@@ -130,6 +131,38 @@ FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
 	  msg_Tracking()<<*bloblist<<std::endl;
 	  bloblist->Clear();
 	  if (p_mehandler->Weight()!=1.0) p_mehandler->SaveNumberOfTrials();
+	  return false;
+	}
+	(*bit)->SetStatus(2);
+      }
+      if((*bit)->Beam()==0 &&
+	 (*bit)->Type()==btp::IS_Shower &&
+	 (*bit)->TypeSpec()=="ADICIC++0.0") {
+	//Special treatment for ADICIC IS Blobs!
+	Particle* in=(*bit)->InParticle(i);
+	//if(in->Flav().Strong() &&
+	//   in->GetFlow(1)==0 && in->GetFlow(2)==0) continue;
+	if(p_beamblob[i]==NULL) {
+	  p_beamblob[i]=new Blob();
+	  p_beamblob[i]->SetType(btp::Beam);
+	  bloblist->push_front(p_beamblob[i]);
+	  p_beamblob[i]->SetId();
+	  p_beamblob[i]->SetBeam(i);
+	  p_beamblob[i]->SetStatus(1);
+	  Particle* p=new Particle(-1,p_isr->Flav(i),
+				   p_beam->GetBeam(i)->OutMomentum());
+	  p->SetNumber(0);
+	  p->SetStatus(2);
+	  p_beamblob[i]->AddToInParticles(p);
+	}
+	if(!p_beampart[i]->Extract(in)) {
+	  msg.Error()<<"Beam_Remnant_Handler::FillBeamBlobs(..): "
+		     <<"Extract parton failed for\n   "
+		     <<*(*bit)->InParticle(i)<<".\n   Retry event "
+		     <<rpa.gen.NumberOfDicedEvents()<<"."<<std::endl;
+	  msg_Tracking()<<*bloblist<<std::endl;
+	  bloblist->Clear();
+	  if(p_mehandler->Weight()!=1.0) p_mehandler->SaveNumberOfTrials();
 	  return false;
 	}
 	(*bit)->SetStatus(2);
