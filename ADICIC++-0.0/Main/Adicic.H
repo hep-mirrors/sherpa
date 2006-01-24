@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/09/10
+//Version: 3 ADICIC++-0.0/2005/08/12
 
 //The main Adicic object.
 
@@ -9,6 +9,9 @@
 #define _Adicic_H_ _Adicic_H_
 
 
+#include <cassert>
+#include <string>
+#include "Run_Parameter.H"
 #include "Blob_List.H"
 #include "Particle_List.H"
 #include "Model_Base.H"    //Will give running alpha_S etc.
@@ -27,27 +30,50 @@ namespace ADICIC {
 
 
   class Adicic {
+
   private:
-    std::size_t      m_total;
-    std::size_t      m_fail;
-    Cascade_Handler* p_handler;
-    Cascade          m_cascade;
+
+    int                 m_parcountcorr;    //Particle counter correction.
+    std::size_t         m_total;
+    std::size_t         m_fail;
+    std::size_t         m_noem;
+    Cascade_Handler*    p_handler;
+    Cascade             m_cascade;
+
+    ATOOLS::Blob_List*               p_blist;
+    std::list<ATOOLS::Particle_List> l_paic;
+
+    bool FExtract(ATOOLS::Blob* pfs);
+    bool IExtract(ATOOLS::Blob* pis, ATOOLS::Blob* pisme, ATOOLS::Blob* pfs);
+
   public:
+
     Adicic();
-    Adicic(MODEL::Model_Base*);
+    Adicic(const std::string&, MODEL::Model_Base*);
     ~Adicic();
 
-    void     PrepareCascade();
-    Cascade& GetCascade();
+    inline void     PrepareCascade();
+    inline Cascade& GetCascade();
 
     int  PerformShowers();
-    bool ExtractPartons(ATOOLS::Blob_List*, ATOOLS::Particle_List* =NULL);
+    bool ExtractPartons(ATOOLS::Blob_List*);
+
   };
 
 
 
-  inline void     Adicic::PrepareCascade() { assert(m_cascade.Clear());}
-  inline Cascade& Adicic::GetCascade()     { return m_cascade;}
+  //===========================================================================
+
+
+
+  inline void     Adicic::PrepareCascade() {
+    assert(m_cascade.Clear());
+    p_blist=NULL;
+    l_paic.clear();
+  }
+  inline Cascade& Adicic::GetCascade()     {
+    return m_cascade;
+  }
 
 
 

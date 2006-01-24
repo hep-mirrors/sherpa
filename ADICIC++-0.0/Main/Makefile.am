@@ -33,7 +33,8 @@ INCLUDES = -I../Tool \
            -I$(ATOOLSINC)/Phys \
            -I$(ATOOLSINC)/Math \
            -I$(ATOOLSINC)/Org \
-           -I$(MODELINC)/Main
+           -I$(MODELINC)/Main \
+           -I$(PDFINC)/Main
 
 
 
@@ -42,7 +43,6 @@ include_HEADERS = Paraminit.H Adicic.H
 
 
 EXTRA_DIST = $(CVSINCLUDE) 
-
 
 
 
