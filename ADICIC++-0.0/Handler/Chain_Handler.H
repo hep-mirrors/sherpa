@@ -1,11 +1,13 @@
 //bof
-//Version: 2 ADICIC++-0.0/2005/01/31    (surely preliminarily)
+//Version: 3 ADICIC++-0.0/2005/09/21    (surely preliminarily)
 
 //Only the Chain_Handler structure can reasonably modify the state of a Chain.
 
 
 
+#include <vector>
 #include "Chain.H"
+#include "Evolution_Strategy.hpp"
 
 
 #ifndef _Chain_Handler_H_
@@ -65,12 +67,12 @@ namespace ADICIC {
 
   private:
 
-    static int s_count;
-    static int s_param;
+    static int         s_count;
 
     bool             f_below;
-    ATOOLS::kf::code m_code;
+    ATOOLS::Flavour  m_code;
     Chain*           p_cix;
+    Recoil_Tool*     p_rec;
 
     double m_k2tcomp;
     Chain* p_cha;
@@ -87,13 +89,13 @@ namespace ADICIC {
 
 #ifdef __GNUC__
 #if __GNUC__ >2
-    FindDipole_Func fp_finddip[4];
+    std::vector<FindDipole_Func> v_finddip;
 #endif
 #endif
 
     //========================
     bool                f_bot;
-    Trio                m_rec;
+    xbool               m_rec;
     Chain::Type         m_typ;
     Dipole*             p_dw;
     Dipole::Glubranch*  p_gw;
@@ -102,6 +104,8 @@ namespace ADICIC {
     Dipole*             p_win;
     ATOOLS::Vec4D       m_vec;
     ATOOLS::Vec4D       m_old;
+    int                 m_nii;
+    ATOOLS::Vec4D       m_vii;
     //========================
 
     //Private static methods:
@@ -111,22 +115,26 @@ namespace ADICIC {
     //Private inline methods:
     //=======================
     inline void       PresetCompScale();
-    inline void       CleanUp();
     inline const bool FindDipole();
 
     //Private methods:
     //================
+    void InitStrategies();
+    void CleanUp();
     void FreeChain();    //Needed since here we may have handlers acting.
 
-    template<class _Strategy> const bool FindTheDipole();
+    template<Chain_Evolution_Strategy::Type _Strategy>
+    const bool FindTheDipole();
 
     const bool ModifyChain();
 
+    void DistributeIIRecoil(const ATOOLS::Vec4D&);
     void EmitGluon();
-    void TopSplitLine();
-    void BotSplitLine();
-    void TopSplitRing();
-    void BotSplitRing();
+    void EmitQuark();
+    void TopSplitLine();    //Still as in version 2!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    void BotSplitLine();    //Still as in version 2!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    void TopSplitRing();    //Still as in version 2!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    void BotSplitRing();    //Still as in version 2!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   public:
 
@@ -136,14 +144,7 @@ namespace ADICIC {
 
     //References: just return values
     //==============================
-    static const int& InStore;
-
-    //Public static methods:
-    //======================
-    static inline const int ChainEvolutionStrategy();
-
-    static void      ShowParameters();
-    static const int AdjustParameters();
+    static const int&   InStore;
 
     //Public inline methods:
     //======================
@@ -156,13 +157,14 @@ namespace ADICIC {
     inline const bool AttachChain(Chain*);
     inline const bool DetachChain(const Chain*);
 
-    inline void DecoupleNew(Chain*&, ATOOLS::kf::code&, bool&);
+    inline void DecoupleNew(Recoil_Tool*&, Chain*&, ATOOLS::Flavour&, bool&);
     inline void RemoveNewProducts();
 
     //Public methods:
     //===============
     const bool EvolveChainByOneStep();
     const bool EvolveChain();//////////////////////////////////////////////////
+    const bool CorrectChain(const Recoil_Tool&);
 
   };
 

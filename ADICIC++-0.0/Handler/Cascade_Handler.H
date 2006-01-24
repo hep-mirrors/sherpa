@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/09/09    (surely preliminarily)
+//Version: 3 ADICIC++-0.0/2005/09/22    (surely preliminarily)
 
 //Only the Cascade_Handler structure can reasonably modify
 //the state of a Cascade.
@@ -44,15 +44,26 @@ namespace ADICIC {
       enum code {
 	start    =0,
 	total    =0,
-	emission =1,
-	splitting=2,
-	gluon    =3,
-	dquark   =4,
-	uquark   =5,
-	squark   =6,
-	cquark   =7,
-	bquark   =8,
-	stop     =9
+	emission =10,
+	gluon    =7,
+	dquark   =1,
+	uquark   =2,
+	squark   =3,
+	cquark   =4,
+	bquark   =5,
+	antid    =11,
+	antiu    =12,
+	antis    =13,
+	antic    =14,
+	antib    =15,
+	splitting=20,
+	dad      =21,
+	uau      =22,
+	sas      =23,
+	cac      =24,
+	bab      =25,
+	stop     =26
+	//Meaningful code. Do not change numbers!
       };
     };
 
@@ -81,9 +92,11 @@ namespace ADICIC {
     std::list<std::list<Chain*>::iterator>          l_itt;
 
     //========================
-    bool                f_bot;
-    ATOOLS::kf::code    m_kfc;
+    unsigned            m_nin;
     Cascade::Type       m_typ;
+    bool                f_bot;
+    ATOOLS::Flavour     m_fla;
+    Recoil_Tool*        p_ret;
     Chain*              p_nec;    //New and current chain.
     Chain*              p_cuc;    //Independent chains -> no winner.
     ATOOLS::Vec4D       m_vec;

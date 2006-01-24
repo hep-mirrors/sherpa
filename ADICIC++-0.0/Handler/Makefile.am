@@ -34,13 +34,14 @@ INCLUDES = -I../Tool \
            -I$(ATOOLSINC)/Phys \
            -I$(ATOOLSINC)/Math \
            -I$(ATOOLSINC)/Org \
-           -I$(MODELINC)/Main
+           -I$(MODELINC)/Main \
+           -I$(PDFINC)/Main
 
 
 
 include_HEADERS = Dipole_Handler.H \
-                 Chain_Handler.H \
-                 Cascade_Handler.H
+                  Chain_Handler.H \
+                  Cascade_Handler.H
 
 
 
@@ -48,7 +49,6 @@ EXTRA_DIST = $(CVSINCLUDE) \
              Dipole_Handler.inl.hh \
              Chain_Handler.inl.hh \
              Cascade_Handler.inl.hh
-
 
 
 

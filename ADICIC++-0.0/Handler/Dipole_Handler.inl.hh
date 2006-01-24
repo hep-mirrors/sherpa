@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/09/03
+//Version: 3 ADICIC++-0.0/2005/08/22
 
 //Inline methods of Dipole_Handler.H.
 
@@ -22,11 +22,12 @@ namespace ADICIC {
 
 
 
-  inline const bool4::level Dipole_Handler::Status() const {
-    if(!p_dix && !p_ban && !p_ati && !p_glu) return bool4::zero;
-    if( p_dix && !p_ban && !p_ati &&  p_glu) return bool4::one;
-    if(!p_dix &&  p_ban &&  p_ati &&  p_glu) return bool4::two;
-    return bool4::three;
+  inline const char Dipole_Handler::Status() const {
+    if(!p_dix && !p_ban && !p_ati && !p_glu) return 'n';
+    if( p_dix && !p_ban && !p_ati &&  p_glu) return 'g';
+    if(!p_dix &&  p_ban &&  p_ati &&  p_glu) return 's';
+    if( p_dix &&  p_ban &&  p_ati &&  p_glu) return 'q';
+    return '?';
   }
 
 
@@ -59,7 +60,6 @@ namespace ADICIC {
       p_sudakov=s_sumap[m_key.first];
       p_recoil=s_remap[m_key];
       f_below=false;
-      f_recoil=Nil;
       f_gate=0;
       return true;
     }
@@ -91,14 +91,14 @@ namespace ADICIC {
 					  Dipole::Antibranch*& pA,
 					  Dipole::Branch*& pB,
 					  bool& below,
-					  Trio& recoil) {
+					  xbool& recoil) {
     if(pD || pG || pA || pB) return;
     pD=p_dix; p_dix=NULL;
     pG=p_glu; p_glu=NULL;
     pA=p_ati; p_ati=NULL;
     pB=p_ban; p_ban=NULL;
     below=f_below; f_below=false;
-    recoil=f_recoil; f_recoil=Nil;
+    recoil=m_rer.Poc; m_rer.Poc=both;
   }
 
 

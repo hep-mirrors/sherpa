@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2005/01/31
+//Version: 3 ADICIC++-0.0/2005/09/21
 
 //Inline methods of Chain_Handler.H.
 
@@ -17,16 +17,6 @@
 
 
 namespace ADICIC {
-
-
-
-  //===========================================================================
-
-
-
-  inline const int Chain_Handler::ChainEvolutionStrategy() {    //Static.
-    return s_param;
-  }
 
 
 
@@ -63,7 +53,7 @@ namespace ADICIC {
     if(p_cix) return false;
     if(p_cha==NULL && pC->IsHandledBy(*this)) {
       p_cha=pC;
-      m_code=ATOOLS::kf::none;
+      m_code=ATOOLS::Flavour();
       f_below=false;
       this->PresetCompScale();
       this->CleanUp();
@@ -88,20 +78,21 @@ namespace ADICIC {
 
 
 
-  inline void Chain_Handler::DecoupleNew(Chain*& pC, ATOOLS::kf::code& code,
-					 bool& below) {
-    if(pC) return;
+  inline void Chain_Handler::DecoupleNew(Recoil_Tool*& pR, Chain*& pC,
+					 ATOOLS::Flavour& code, bool& below) {
+    if(pR || pC) return;
+    pR=p_rec; p_rec=NULL;
     pC=p_cix; p_cix=NULL;
-    code=m_code; m_code=ATOOLS::kf::none;
+    code=m_code; m_code=ATOOLS::Flavour();
     below=f_below; f_below=false;
   }
 
 
-  inline void Chain_Handler::RemoveNewProducts() {
-    //Resets the news.
+  inline void Chain_Handler::RemoveNewProducts() {    //Resets the news.
     f_below=false;
-    m_code=ATOOLS::kf::none;
+    m_code=ATOOLS::Flavour();
     if(p_cix) { delete p_cix; p_cix=NULL;}
+    if(p_rec) { delete p_rec; p_rec=NULL;}
   }
 
 
@@ -124,19 +115,8 @@ namespace ADICIC {
 
 
   inline void Chain_Handler::PresetCompScale() {
-    m_k2tcomp=Sudakov_Calculator::MinOfK2t();
-  }
-
-
-  inline void Chain_Handler::CleanUp() {
-    assert(!m_dh1.IsDocked() && !m_dh2.IsDocked());
-    m_dh1.RemoveNewProducts();
-    m_dh2.RemoveNewProducts();
-    p_dhwait=&m_dh1;
-    p_dhaciv=&m_dh2;
-    p_dhtemp=NULL;
-    i_fix=NULL;
-    i_run=NULL;
+    m_k2tcomp=ATOOLS::Min(dpa.sud.MinK2t(),
+			  dpa.sud.MinIIK2t());
   }
 
 
@@ -153,17 +133,18 @@ namespace ADICIC {
 
 
   inline const bool Chain_Handler::FindDipole() {
-    //return FindDecDipole<Chain_Evolution_Strategy::Ret>();
+    //return FindTheDipole<Chain_Evolution_Strategy::Ret>();
 #ifdef __GNUC__
 #if __GNUC__ >2
-    return (this->*fp_finddip[s_param])();
+    return (this->*v_finddip[dpa.evo.ChainEvolutionStrategy()[cel::def]])();
 #else
-    switch(s_param) {
-    case 1:
+#error
+    switch(dpa.evo.ChainEvolutionStrategy()[cel::def]) {
+    case Chain_Evolution_Strategy::Production:
       return (this->FindTheDipole<Chain_Evolution_Strategy::Production>());
-    case 2:
+    case Chain_Evolution_Strategy::Emission:
       return (this->FindTheDipole<Chain_Evolution_Strategy::Emission>());
-    case 3:
+    case Chain_Evolution_Strategy::Mass:
       return (this->FindTheDipole<Chain_Evolution_Strategy::Mass>());
     default:
       return (this->FindTheDipole<Chain_Evolution_Strategy::Unknown>());

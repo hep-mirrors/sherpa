@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/09/03    (surely preliminarily)
+//Version: 3 ADICIC++-0.0/2005/08/22    (surely preliminarily)
 
 //The Dipole_Handler structure has the task of a Dipole modifier.
 
@@ -14,12 +14,15 @@
 
 #include <map>
 #include <utility>
-#include "Sudakov_Strategy.hpp"
-#include "Sudakov_Result.hpp"
+#include "Sudakov_Utils.hpp"
+#include "Recoil_Strategy.hpp"
 
 
 #define DIPOLE_HANDLER_OUTPUT DIPOLE_HANDLER_OUTPUT
 #undef  DIPOLE_HANDLER_OUTPUT
+//Dipole::PointerHandling() restriction:
+#define STRICT_DIPOLE_HANDLER STRICT_DIPOLE_HANDLER
+//#undef  STRICT_DIPOLE_HANDLER
 
 
 
@@ -57,8 +60,8 @@ namespace ADICIC {
 
     class Calcbox {
       friend class Dipole_Handler;
-      Sudakov_Calculator* p_sud[4];
-      Recoil_Calculator*  p_rec[8];
+      std::vector<Sudakov_Calculator*> v_psud;
+      std::vector<Recoil_Calculator*>  v_prec;
       Calcbox();
       ~Calcbox();
     };
@@ -71,9 +74,8 @@ namespace ADICIC {
 
   private:
 
-    static const bool sf_init;
-
-    static int s_count;
+    static bool sf_1stadjust;
+    static int  s_count;
 
     static Sudakovbox s_sumap;
     static Recoilbox  s_remap;
@@ -91,27 +93,20 @@ namespace ADICIC {
     Dipole::Glubranch*  p_glu;
 
     bool f_below;    //g emit: new dip's place, g split: place of splitting
-    Trio f_recoil;    //Positive = top branch, Negative = bottom branch, Nil
     int  f_gate;
 
     Sudakov_Result m_sur;
-
-    ATOOLS::Vec4D m_p1;
-    ATOOLS::Vec4D m_p2;
-    ATOOLS::Vec4D m_p3;
+    Recoil_Result  m_rer;
 
     //Private static methods:
     //=======================
-    static Recoil_Calculator* ReadjustRecoilStrategy(const int);
 
     //Private inline methods:
     //=======================
 
     //Private methods:
     //================
-    const bool GenerateMomenta();
     const bool GenerateSplitting();
-    void CrossProductTest(const ATOOLS::Vec4D&) const;
 
   public:
 
@@ -125,15 +120,16 @@ namespace ADICIC {
 
     //Public static methods:
     //======================
+    static       void ListCalcBox();
     static       void ShowCalcBox();
     static const bool AdjustCalcBox();
 
     //Public inline methods:
     //======================
-    inline const bool4::level Status() const;
-    inline const int          IsDocked() const;
-    inline const bool         IsDockedAt(const Dipole&) const;
-    inline const bool         IsWaiting() const;
+    inline const char Status() const;
+    inline const int  IsDocked() const;
+    inline const bool IsDockedAt(const Dipole&) const;
+    inline const bool IsWaiting() const;
 
     //Only useful in interplay with the Dipole::operator|'s.
     inline const bool AttachDipole(Dipole*);
@@ -141,16 +137,15 @@ namespace ADICIC {
 
     inline void DecoupleNew(Dipole*&, Dipole::Glubranch*&,
 			    Dipole::Antibranch*&, Dipole::Branch*&,
-			    bool&, Trio&);
+			    bool&, xbool&);
 
     //Public methods:
     //===============
     void RemoveNewProducts();
     void ShowSudakov() const;
     void ShowRecoil() const;
-    const bool InduceDipoleRadiation();
+    const bool InduceDipoleRadiation(bool t=false, bool o=false, bool f=false);
     const bool FinishDipoleRadiation();
-    const bool ManageDipoleRadiation();
 
   };
 

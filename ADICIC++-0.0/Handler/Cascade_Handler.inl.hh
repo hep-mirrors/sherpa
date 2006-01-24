@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/09/09
+//Version: 3 ADICIC++-0.0/2005/08/22
 
 //Inline methods of Cascade_Handler.H.
 

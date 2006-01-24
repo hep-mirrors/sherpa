@@ -1,11 +1,14 @@
 //bof
-//Version: 2 ADICIC++-0.0/2005/01/31
+//Version: 3 ADICIC++-0.0/2005/09/21
 
 //Implementation of Chain_Handler.H.
 
 
 
+#include <stdlib.h>
+#include <iomanip>
 #include <ioextra>
+#include "Poincare.H"
 #include "Chain_Handler.H"
 #include "Dipole_Parameter.H"
 
@@ -44,8 +47,6 @@ using namespace ADICIC;
 int Chain_Handler::s_count=0;
 const int& Chain_Handler::InStore=Chain_Handler::s_count;
 
-int Chain_Handler::s_param=Chain_Handler::AdjustParameters();
-
 
 
 //=============================================================================
@@ -68,7 +69,7 @@ const bool Chain_Handler::FindTheDipole<Chain_Evolution_Strategy::Mass>();
 
 
 Chain_Handler::Chain_Handler()
-  : f_below(false), m_code(kf::none), p_cix(NULL),
+  : f_below(false), m_code(), p_cix(NULL), p_rec(NULL),
     m_k2tcomp(0.0), p_cha(NULL),
     m_dh1(), m_dh2(),
     p_dhwait(&m_dh1), p_dhaciv(&m_dh2), p_dhtemp(NULL),
@@ -80,14 +81,14 @@ Chain_Handler::Chain_Handler()
 
 #ifdef __GNUC__
 #if __GNUC__ >2
-  fp_finddip[0]=&ADICIC::Chain_Handler::
-    FindTheDipole<Chain_Evolution_Strategy::Unknown>;
-  fp_finddip[1]=&ADICIC::Chain_Handler::
-    FindTheDipole<Chain_Evolution_Strategy::Production>;
-  fp_finddip[2]=&ADICIC::Chain_Handler::
-    FindTheDipole<Chain_Evolution_Strategy::Emission>;
-  fp_finddip[3]=&ADICIC::Chain_Handler::
-    FindTheDipole<Chain_Evolution_Strategy::Mass>;
+  for(size_t i=0; ; ++i) {
+    if(Chain_Evolution_Strategy::List[i]==Chain_Evolution_Strategy::stop)
+      break;
+    assert(Chain_Evolution_Strategy::List[i]>=0);
+    if(v_finddip.size()<size_t(Chain_Evolution_Strategy::List[i])+1)
+      v_finddip.resize(size_t(Chain_Evolution_Strategy::List[i])+1,NULL);
+  }
+  this->InitStrategies();
 #endif
 #endif
 
@@ -98,7 +99,7 @@ Chain_Handler::Chain_Handler()
 
 
 Chain_Handler::Chain_Handler(Chain& cha)
-  : f_below(false), m_code(kf::none), p_cix(NULL),
+  : f_below(false), m_code(), p_cix(NULL), p_rec(NULL),
     m_k2tcomp(0.0), p_cha(NULL),
     m_dh1(), m_dh2(),
     p_dhwait(&m_dh1), p_dhaciv(&m_dh2), p_dhtemp(NULL),
@@ -110,14 +111,14 @@ Chain_Handler::Chain_Handler(Chain& cha)
 
 #ifdef __GNUC__
 #if __GNUC__ >2
-  fp_finddip[0]=&ADICIC::Chain_Handler::
-    FindTheDipole<Chain_Evolution_Strategy::Unknown>;
-  fp_finddip[1]=&ADICIC::Chain_Handler::
-    FindTheDipole<Chain_Evolution_Strategy::Production>;
-  fp_finddip[2]=&ADICIC::Chain_Handler::
-    FindTheDipole<Chain_Evolution_Strategy::Emission>;
-  fp_finddip[3]=&ADICIC::Chain_Handler::
-    FindTheDipole<Chain_Evolution_Strategy::Mass>;
+  for(size_t i=0; ; ++i) {
+    if(Chain_Evolution_Strategy::List[i]==Chain_Evolution_Strategy::stop)
+      break;
+    assert(Chain_Evolution_Strategy::List[i]>=0);
+    if(v_finddip.size()<size_t(Chain_Evolution_Strategy::List[i])+1)
+      v_finddip.resize(size_t(Chain_Evolution_Strategy::List[i])+1,NULL);
+  }
+  this->InitStrategies();
 #endif
 #endif
 
@@ -142,6 +143,7 @@ Chain_Handler::~Chain_Handler() {
 
   --s_count;
 
+  if(p_rec) delete p_rec;
   if(p_cix) delete p_cix;
 
   if(!p_cha) return;
@@ -161,43 +163,6 @@ Chain_Handler::~Chain_Handler() {
 
 
 
-void Chain_Handler::ShowParameters() {    //Static.
-  cout<<endl;
-  cout<<"======================================"<<endl;
-  cout<<"    Valid Chain_Handler parameters"<<endl;
-  cout<<"--------------------------------------"<<endl;
-  cout<<"Chain evolution strategy is set to "<<s_param<<".\n";
-  cout<<"======================================"<<endl;
-}
-
-
-
-
-
-const int Chain_Handler::AdjustParameters() {    //Static.
-  //No restriction whether Chain_Handler's are in store or not.
-  static bool firsttime=true;
-  if(firsttime) {
-    firsttime=false;
-    Dipole_Parameter::ForceFirstInit();
-#ifdef CHAIN_HANDLER_OUTPUT
-    cout<<__PRETTY_FUNCTION__<<": Initialize parameter for the 1st time.\n";
-#endif
-  }
-  if(0 < Dipole_Parameter::ChainEvolutionStrategy() &&
-     Dipole_Parameter::ChainEvolutionStrategy() < 4)
-    s_param=Dipole_Parameter::ChainEvolutionStrategy();
-  else
-    s_param=0;
-  return s_param;
-}
-
-
-
-//=============================================================================
-
-
-
 const bool Chain_Handler::EvolveChainByOneStep() {
 
   if(!p_cha) return false;
@@ -206,17 +171,16 @@ const bool Chain_Handler::EvolveChainByOneStep() {
   m_typ=p_cha->ChainType();
   this->PresetCompScale();
 
-  if(p_cha->Status()==On && m_typ!=Chain::incorrect &&
-     p_cha->LastScale()>m_k2tcomp);
+  if(p_cha->Status()==On &&
+     m_typ!=Chain::incorrect &&
+     p_cha->LastScale()>m_k2tcomp &&
+     p_cha->ParticleNumber()<dpa.evo.ChainParticleLimit());//!!!!!!!!!!!!!!!!!!
   else return false;
 
   this->CleanUp();
   this->RemoveNewProducts();    //No testing of global parameters.
 
-  if(this->FindDipole()) {
-    this->ModifyChain();
-    return true;
-  }
+  if(this->FindDipole()) return this->ModifyChain();
 
   return false;
 
@@ -232,7 +196,75 @@ const bool Chain_Handler::EvolveChain() {//////////////////////////////////////
 
 
 
+
+
+const bool Chain_Handler::CorrectChain(const Recoil_Tool& reto) {
+  if(!p_cha) return false;
+  if(!p_cha->IsLine()) return false;
+  if(reto.Mode()!=rdt::iirecoil) return false;
+  Poincare& fly=reto.GetBoost();
+  Poincare& flyprime=reto.GetBackBoost();
+  list<Dipole_Particle*> fins;
+  assert(p_cha->BranchPointer()->Incoming()==false);
+  fins.push_back(p_cha->BranchPointer());
+  assert(p_cha->AntibranchPointer()->Incoming()==false);
+  fins.push_back(p_cha->AntibranchPointer());
+  for(list<Dipole::Glubranch*>::const_iterator
+	it=p_cha->GlubranchPointerList().begin();
+      it!=p_cha->GlubranchPointerList().end(); ++it) {
+    assert((*it)->Incoming()==false);
+    fins.push_back(*it);
+  }
+  for(list<Dipole_Particle*>::iterator it=fins.begin(); it!=fins.end(); ++it) {
+    Vec4D temp=(*it)->Momentum();
+    fly.Boost(temp);
+    flyprime.BoostBack(temp);
+    (*it)->SetMomentum(temp);    //Updates dipole mass!
+  }
+  return false;////////////////////////////////////////////////////////////////
+}
+
+
+
 //=============================================================================
+
+
+
+void Chain_Handler::InitStrategies() {
+  //This must correspond to the settings made in Evolution_Strategy.hpp.
+  assert(v_finddip.size()>Chain_Evolution_Strategy::Unknown);
+  v_finddip[Chain_Evolution_Strategy::Unknown]=&ADICIC::Chain_Handler::
+    FindTheDipole<Chain_Evolution_Strategy::Unknown>;
+  assert(v_finddip.size()>Chain_Evolution_Strategy::Production);
+  v_finddip[Chain_Evolution_Strategy::Production]=&ADICIC::Chain_Handler::
+    FindTheDipole<Chain_Evolution_Strategy::Production>;
+  assert(v_finddip.size()>Chain_Evolution_Strategy::Emission);
+  v_finddip[Chain_Evolution_Strategy::Emission]=&ADICIC::Chain_Handler::
+    FindTheDipole<Chain_Evolution_Strategy::Emission>;
+  assert(v_finddip.size()>Chain_Evolution_Strategy::Mass);
+  v_finddip[Chain_Evolution_Strategy::Mass]=&ADICIC::Chain_Handler::
+    FindTheDipole<Chain_Evolution_Strategy::Mass>;
+  //for(size_t i=0; i<v_finddip.size(); ++i)
+  //  cout<<setw(7)<<i<<" : "<<v_finddip[i]<<endl;
+  //abort();
+}
+
+
+
+
+
+void Chain_Handler::CleanUp() {
+  assert(!m_dh1.IsDocked() && !m_dh2.IsDocked());
+  m_dh1.RemoveNewProducts();
+  m_dh2.RemoveNewProducts();
+  p_dhwait=&m_dh1;
+  p_dhaciv=&m_dh2;
+  p_dhtemp=NULL;
+  i_fix=NULL;
+  i_run=NULL;
+}
+
+
 
 
 
@@ -251,10 +283,10 @@ void Chain_Handler::FreeChain() {
 
 
 
-template<class _Strategy>
+template<Chain_Evolution_Strategy::Type _Strategy>
 const bool Chain_Handler::FindTheDipole() {
   cerr<<"\nMethod: "<<__PRETTY_FUNCTION__<<": "
-      <<"Warning: Method has not been specified!\n"<<endl;
+      <<"Warning: Method has not been implemented yet!\n"<<endl;
   return false;
 }
 
@@ -268,10 +300,12 @@ Chain_Handler::FindTheDipole<Chain_Evolution_Strategy::Production>() {
   static const bool isfalse=ProductionStrategyInfo();    //Gives warning.
 
   i_run=p_cha->DipolePointerList().begin();
+  bool spico=p_cha->ParticleNumber()<dpa.evo.ChainCorrelationLimit();
 
   for(; i_run!=p_cha->DipolePointerList().end(); ++i_run) {
 
     Dipole& dip=**i_run;
+    dip.SetSpinCorr()=spico;
     assert(dip|*p_dhaciv);
 
     if(p_dhaciv->InduceDipoleRadiation()==isfalse) {    //Removes the warning.
@@ -325,11 +359,23 @@ const bool Chain_Handler::ModifyChain() {
   p_dw=NULL; p_gw=NULL; p_aw=NULL; p_bw=NULL;
 
   p_win=*i_fix;
+  m_nii=-7;
 
-  m_vec=p_win->GetTopBranchPointer()->Momentum();
-  m_vec+=p_win->GetBotBranchPointer()->Momentum();
+  if(p_win->GetTopBranchPointer()->Incoming()) {
+    m_nii=0;
+    m_vec=-1*p_win->GetTopBranchPointer()->Momentum();
+  } else {
+    m_vec=p_win->GetTopBranchPointer()->Momentum();
+  }
+  if(p_win->GetBotBranchPointer()->Incoming()) {
+    m_vec-=p_win->GetBotBranchPointer()->Momentum();
+  } else {
+    m_nii=-7;
+    m_vec+=p_win->GetBotBranchPointer()->Momentum();
+  }
   m_old=p_cha->Momentum();
   p_cha->UpdateMomentum(-1.0,m_vec);
+  if(m_nii>=0) m_vii=-1*m_vec;
 
 #ifdef CHAIN_HANDLER_OUTPUT
   cout<<m_old<<"\t"<<m_old.Abs2()<<"\n";
@@ -343,14 +389,22 @@ const bool Chain_Handler::ModifyChain() {
 
   p_dhwait->DecoupleNew(p_dw,p_gw,p_aw,p_bw,f_bot,m_rec);
   if(p_dw) {
-    assert(!p_aw && !p_bw && p_gw);
-    m_code=kf::gluon;
-    (*p_win)|0;
-    EmitGluon();
+    if(p_bw) {
+      assert(p_aw && p_gw);
+      if(f_bot) m_code=p_aw->Flav();
+      else      m_code=p_bw->Flav();
+      (*p_win)|0;
+      EmitQuark();
+    } else {
+      assert(!p_aw && p_gw);
+      m_code=Flavour(kf::gluon);
+      (*p_win)|0;
+      EmitGluon();
+    }
   } else {
     assert(p_aw && p_bw && p_gw);
-    m_code=p_bw->Flav().Kfcode();
-    assert(p_aw->Flav().Kfcode()==m_code);
+    m_code=p_bw->Flav();
+    assert(p_aw->Flav().Bar()==m_code);
     (*p_win)|0;
     if(m_typ==Chain::line) {
       if(f_bot){
@@ -387,35 +441,132 @@ const bool Chain_Handler::ModifyChain() {
 
 
 
+void Chain_Handler::DistributeIIRecoil(const Vec4D& viiw) {
+  //Must be executed before new particles are introduced to the chain.
+  assert(m_nii==0 && p_rec==NULL);
+  p_rec=new Recoil_Tool(rdt::iirecoil);
+  assert(dabs(m_vii.Abs2()-viiw.Abs2())<1.0e-7);
+  assert(m_vii.Abs2()>1.0e-12);
+  Poincare* pfly=new Poincare(m_vii); assert(pfly);
+  assert(p_rec->KeepThisBoost(*pfly));
+  Poincare* pflyprime=new Poincare(viiw); assert(pflyprime);
+  assert(p_rec->KeepThisBackBoost(*pflyprime));
+  list<Dipole_Particle*> fins;
+  if(p_cha->BranchPointer()->Incoming()==false) {
+    ++m_nii; fins.push_back(p_cha->BranchPointer());}
+  if(p_cha->AntibranchPointer()->Incoming()==false) {
+    ++m_nii; fins.push_back(p_cha->AntibranchPointer());}
+  for(list<Dipole::Glubranch*>::const_iterator
+	it=p_cha->GlubranchPointerList().begin();
+      it!=p_cha->GlubranchPointerList().end(); ++it)
+    if((*it)->Incoming()==false) { ++m_nii; fins.push_back(*it);}
+  if(m_nii==0) return;
+  for(list<Dipole_Particle*>::iterator it=fins.begin(); it!=fins.end(); ++it) {
+    Vec4D temp=(*it)->Momentum();
+    m_vec-=temp;
+    pfly->Boost(temp);
+    pflyprime->BoostBack(temp);
+    (*it)->SetMomentum(temp);    //Updates dipole mass!
+    m_vec+=temp;
+  }
+}
+
+
+
+
+
 void Chain_Handler::EmitGluon() {
 
-  m_vec=p_gw->Momentum();
-  p_cha->GlubranchPointerList().push_back(p_gw);
+  m_vec=p_gw->Momentum();    //This is emitted, so clearly it's an F gluon.
 
   if(f_bot) {
     i_run=i_fix;
     ++i_run;
     i_run=p_cha->DipolePointerList().insert(i_run,p_dw);
-    m_vec+=p_win->GetTopBranchPointer()->Momentum();
-    m_vec+=p_dw->GetBotBranchPointer()->Momentum();
+    //if(p_win->GetTopBranchPointer()->Incoming())
+    //if(p_dw->GetBotBranchPointer()->Incoming())
+    if(m_nii>=0) {
+      m_vec-=p_win->GetTopBranchPointer()->Momentum();
+      m_vec-=p_dw->GetBotBranchPointer()->Momentum();
+      DistributeIIRecoil(-1*m_vec);    //-1*m_vec corresponds to an m_viinew!
+    } else {
+      m_vec+=p_win->GetTopBranchPointer()->Momentum();
+      m_vec+=p_dw->GetBotBranchPointer()->Momentum();
+    }
   } else {
     i_run=p_cha->DipolePointerList().insert(i_fix,p_dw);
     ++i_run;
     i_fix=i_run;
-    m_vec+=p_dw->GetTopBranchPointer()->Momentum();
-    m_vec+=p_win->GetBotBranchPointer()->Momentum();
+    //if(p_dw->GetTopBranchPointer()->Incoming())
+    //if(p_win->GetBotBranchPointer()->Incoming())
+    if(m_nii>=0) {
+      m_vec-=p_dw->GetTopBranchPointer()->Momentum();
+      m_vec-=p_win->GetBotBranchPointer()->Momentum();
+      DistributeIIRecoil(-1*m_vec);    //-1*m_vec corresponds to an m_viinew!
+    } else {
+      m_vec+=p_dw->GetTopBranchPointer()->Momentum();
+      m_vec+=p_win->GetBotBranchPointer()->Momentum();
+    }
   }
 
+  p_cha->GlubranchPointerList().push_back(p_gw);
   p_cha->UpdateMomentum(1.0,m_vec);
   p_cha->SetLastScale()=m_k2tcomp;
 
   //Check 4-momenta.
-  Vec4D testcha, testall;
-  p_cha->CheckMomentumConservation(testcha);
-  testall=testcha+(-1)*m_old;
-  testcha+=(-1)*p_cha->Momentum();
-  for(char i=0; i<4; ++i) assert(dabs(testcha[i])<1.0e-9 &&
-				 dabs(testall[i])<1.0e-9);
+  Vec4D testcha;
+  assert(p_cha->CheckMomentumConservation(testcha));
+  if(p_cha->INumber()==0) {
+    testcha-=m_old;
+    for(char i=0; i<4; ++i) assert(dabs(testcha[i])<1.0e-9);
+  } else {
+    assert(dabs(testcha.Abs2()-m_old.Abs2())<1.0e-7);
+  }
+
+}
+
+
+
+
+
+void Chain_Handler::EmitQuark() {
+
+  assert(m_nii>=0);
+  m_vec=-1*p_gw->Momentum();    //This is the new initial(=I) gluon.
+  //p_cha->GlubranchPointerList().push_back(p_gw);
+
+  if(f_bot) {
+    i_run=i_fix;
+    ++i_run;
+    i_run=p_cha->DipolePointerList().insert(i_run,p_dw);
+    assert(p_win->GetTopBranchPointer()->Incoming());
+    m_vec-=p_win->GetTopBranchPointer()->Momentum();
+    assert(p_dw->GetBotBranchPointer()->Incoming()==false);
+    m_vec+=p_dw->GetBotBranchPointer()->Momentum();
+    DistributeIIRecoil(-1*m_vec);
+    p_cha->AntibranchPointer()=p_aw;    //The new Antibranch of the chain.
+    delete p_bw; p_bw=NULL;    //Remove the old one.
+  } else {
+    i_run=p_cha->DipolePointerList().insert(i_fix,p_dw);
+    ++i_run;
+    i_fix=i_run;
+    assert(p_dw->GetTopBranchPointer()->Incoming()==false);
+    m_vec+=p_dw->GetTopBranchPointer()->Momentum();
+    assert(p_win->GetBotBranchPointer()->Incoming());
+    m_vec-=p_win->GetBotBranchPointer()->Momentum();
+    DistributeIIRecoil(-1*m_vec);
+    p_cha->BranchPointer()=p_bw;    //The new Branch of the chain.
+    delete p_aw; p_aw=NULL;    //Remove the old one.
+  }
+
+  p_cha->GlubranchPointerList().push_back(p_gw);
+  p_cha->UpdateMomentum(1.0,m_vec);
+  p_cha->SetLastScale()=m_k2tcomp;
+
+  //Check 4-momenta.
+  Vec4D testcha;
+  assert(p_cha->CheckMomentumConservation(testcha));
+  assert(dabs(testcha.Abs2()-m_old.Abs2())<1.0e-7);
 
 }
 
