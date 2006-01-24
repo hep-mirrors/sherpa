@@ -15,6 +15,8 @@
 #include "Particle.H"
 #include "Particle_List.H"
 #include "Blob_List.H"
+#include "Spin_Density_Matrix.H"
+#include "Spin_Correlation_Tensor.H"
 
 
 using namespace ATOOLS;
@@ -47,9 +49,16 @@ namespace HADRONS {
 	bool                   FindDecay( const Flavour & );
 	Hadron_Decay_Channel * ChooseDecayChannel();
 	void                   ChooseDecayKinematics( Vec4D * _p, Hadron_Decay_Channel * _hdc );
+	void                   ChooseDecayKinematics( Vec4D * _p, 
+                                                  Hadron_Decay_Channel * _hdc,
+                                                  ATOOLS::Spin_Density_Matrix * sigma );
 	void                   PerformDecay( Particle * part, 
 		                                 Blob_List * blob_list, 
 		                                 Particle_List * part_list );
+	Spin_Density_Matrix    PerformDecay( Particle * part, 
+		                                 Blob_List * blob_list, 
+		                                 Particle_List * part_list,
+                                         ATOOLS::Spin_Density_Matrix * sigma );
 
 	std::map<ATOOLS::kf::code,ATOOLS::Decay_Table *> * GetDecayMap() { return p_decaymap; }
 

@@ -5,6 +5,7 @@
 #include "K_Meson_Decay_MEs.H"
 #include "B_Meson_Decay_MEs.H"
 #include "Tau_Decay_MEs.H"
+#include "Top_Decay_MEs.H"
 #include "Two_Body_MEs.H"
 #include "Three_Body_MEs.H"
 
@@ -59,6 +60,9 @@ HD_ME_Base * HD_ME_Selector::GetME(int nin,int nout,Flavour * flavs,
     case (kf::B_s):
       SelectBMesonDecay(nout,flavs,hdme);
       break;
+    case (kf::t):    // TOP test
+//             hdme = new Top_Lepton( nout, flavs );
+             break;
   }
 
   if (hdme==NULL) hdme = new Isotropic(nout,flavs);

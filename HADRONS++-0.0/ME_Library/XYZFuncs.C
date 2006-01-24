@@ -4,6 +4,54 @@
 
 using namespace HADRONS;
 
+XYZFunc::XYZFunc( int nout, const Vec4D *p, const Flavour *fl )
+{
+  N = nout+1;
+  m_k0_n = 1;
+  p_mom = new Vec4D[N];
+  p_flav = new Flavour[N];
+  for( int i=0; i<N; i++ ) {
+    p_mom[i] = p[i];
+    p_flav[i] = fl[i];
+  }
+  CalcEtaMu();
+}
+ 
+XYZFunc::XYZFunc( int nout, const Vec4D *p, const Flavour *fl, int k0_n )
+{
+  m_k0_n = k0_n;
+  N = nout+1;
+  p_mom = new Vec4D[N];
+  p_flav = new Flavour[N];
+  for( int i=0; i<N; i++ ) {
+    p_mom[i] = p[i];
+    p_flav[i] = fl[i];
+  }
+  CalcEtaMu();
+}
+
+void XYZFunc::CalcEtaMu() 
+{
+  Vec4D pi;
+  mu.clear(); eta.clear();
+  for( int i=0; i<N; i++ )
+  {
+    pi = p_mom[i];
+    Complex _eta (0.,0.);
+    switch( m_k0_n ) {
+      case 1  : _eta = csqrt( 2.*(pi[0]-(pi[2]+pi[3])*SQRT_05) );
+                break;
+      case 2  : _eta = csqrt( 2.*(pi[0]-(pi[1]+pi[2])*SQRT_05) );
+                break;
+      default : _eta = csqrt( 2.*(pi[0]-(pi[1]+pi[3])*SQRT_05) );
+    }
+    eta.push_back( _eta );
+    Complex help( p_flav[i].PSMass(), 0. );
+    mu.push_back( help/eta[i] );
+    if( p_flav[i].IsAnti() ) mu[i] *= -1.;
+  }
+}
+
 Complex XYZFunc::S( const int s, const int i, const int j )
 {
   Complex A = eta[j]/eta[i];

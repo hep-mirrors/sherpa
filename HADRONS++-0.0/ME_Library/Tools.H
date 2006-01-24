@@ -9,13 +9,13 @@ namespace HADRONS
     static double   Lambda(double,double,double);
     static Complex  BreitWigner( double s, double Mass2, double MassWidth );
     static Complex  BreitWigner( double s, double Mass2, 
-				 double Width, double ms, double lambda );
+				 double Width, double ms );
     static Complex  BreitWigner( double s, double Mass2, 
-				 double Width, double ms1, double ms2, double lambda );
+				 double Width, double ms1, double ms2 );
     static double   OffShellMassWidth( double s, double Mass2, 
-				       double Width, double ms, double lambda );
+				       double Width, double ms );
     static double   OffShellMassWidth( double s, double Mass2, 
-				       double Width, double ms1, double ms2, double lambda );
+				       double Width, double ms1, double ms2 );
   }; 
 
 }

@@ -12,36 +12,17 @@ namespace HADRONS
   {
 	  Vec4D  	* p_mom;
 	  Flavour   * p_flav;
-	  int N;
+	  int         N;
+      Vec4D       m_k0, m_k1;
+      int         m_k0_n;
 	  vector<Complex> eta, mu;
 
-	  void CalcEtaMu() 
-	  {
-		Vec4D pi;
-		mu.clear(); eta.clear();
-		for( int i=0; i<N; i++ )
-		{
-		  pi = p_mom[i];
-		  eta.push_back( csqrt( 2.*(pi[0]-SQRT_05*(pi[2]+pi[3])) ) );
-		  Complex help( p_flav[i].PSMass(), 0. );
-		  mu.push_back( help/eta[i] );
-		  if( p_flav[i].IsAnti() ) mu[i] *= -1.;
-		}
-	  }
+	  void CalcEtaMu();
 	  
 	public:
 
-	  XYZFunc( int nout, const Vec4D *p, const Flavour *fl )
-	  {
-		N = nout+1;
-		p_mom = new Vec4D[N];
-		p_flav = new Flavour[N];
-		for( int i=0; i<N; i++ ) {
-		  p_mom[i] = p[i];
-		  p_flav[i] = fl[i];
-		}
-		CalcEtaMu();
-	  }
+	  XYZFunc( int nout, const Vec4D *p, const Flavour *fl );
+	  XYZFunc( int nout, const Vec4D *p, const Flavour *fl, int k0_n );
 
 	  void Delete()
 	  {

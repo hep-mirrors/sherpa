@@ -14,7 +14,7 @@ libHadronsMEs_la_SOURCES = \
 		Tau_Decay_MEs.C  \
 		Traces.C \
 		XYZFuncs.C \
-		Tools.C
+		Tools.C 
 
 include_HEADERS = \
 		HD_ME_Base.H \

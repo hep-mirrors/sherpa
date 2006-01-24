@@ -4,6 +4,7 @@
 #include "Flavour.H"
 #include "Vector.H"
 #include <string>
+#include <utility>
 
 namespace HADRONS {
 
@@ -32,8 +33,17 @@ namespace HADRONS {
 	std::string METype() { return m_metype; }
 
     virtual double operator()(const ATOOLS::Vec4D *) { return 1.; }
-    virtual void AddVector(double,double) {}
-	virtual void SetModelParameters( struct GeneralModel _md ) {};
+    virtual void   operator()( 
+        const ATOOLS::Vec4D      * _p, 
+        std::vector<Complex>     * _ampls_tensor, 
+        std::vector<std::pair<int,int> > * _indices,
+        int                        k0_n )
+    {
+      _ampls_tensor->clear();
+      _indices->clear();
+    }
+    virtual void   AddVector(double,double) {}
+	virtual void   SetModelParameters( struct GeneralModel _md ) {};
   }; // end of class HD_ME_Base
 
   class Isotropic : public HD_ME_Base {

@@ -7,6 +7,11 @@ namespace HADRONS {
   class P_2Gamma : public HD_ME_Base {
   public:
     P_2Gamma(int,ATOOLS::Flavour *);
+    void   operator()( 
+        const ATOOLS::Vec4D  * _p, 
+        std::vector<Complex> * _ampls_tensor, 
+        std::vector<std::pair<int,int> > * _indices,
+        int                    k0_n );
     double operator()(const ATOOLS::Vec4D *);
   }; // end of class
 
