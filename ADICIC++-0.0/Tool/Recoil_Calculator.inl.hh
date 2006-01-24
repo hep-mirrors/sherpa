@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/10/28
+//Version: 3 ADICIC++-0.0/2005/09/13
 
 //Inline methods of Recoil_Calculator.H.
 
@@ -11,7 +11,6 @@
 #include <cstdlib>
 #include "Random.H"
 #include "Poincare.H"
-#include "Recoil_Strategy.hpp"
 
 
 
@@ -26,22 +25,8 @@ namespace ADICIC {
 
 
   inline Recoil_Calculator::Recoil_Calculator()
-    : f_recoil(Nil), m_p1(ATOOLS::Vec4D()), m_p3(ATOOLS::Vec4D()) {
+    : p_dip(NULL), p_sur(NULL), p_rer(NULL) {
     ++s_count;
-  }
-
-
-
-  //---------------------------------------------------------------------------
-
-
-
-  inline void Recoil_Calculator::GetResult(Trio& recoilparticle,
-					   ATOOLS::Vec4D& p1,
-					   ATOOLS::Vec4D& p3) const {
-    recoilparticle = f_recoil;
-    p1             = m_p1;
-    p3             = m_p3;
   }
 
 
@@ -50,9 +35,18 @@ namespace ADICIC {
 
 
 
-  template<class ST> inline void Recoil<ST>::Which() const {
-    std::cout<<"This is a non-specified Recoil_Calculator!\n";
+  template<Recoil_Strategy::Type ST>
+  inline const Recoil_Strategy::Type Recoil<ST>::IsType() const {
+    return ST;
   }
+
+
+
+
+
+  template<Recoil_Strategy::Type ST> inline void Recoil<ST>::Which() const {
+    std::cout<<"This is a non-specified Recoil_Calculator!\n";}
+
   template<> inline void Recoil<Recoil_Strategy::Kleiss>::Which() const {
     std::cout<<"Recoil_Calculator implementing the Kleiss prescription.\n";
   }
@@ -75,38 +69,124 @@ namespace ADICIC {
   template<> inline void Recoil<Recoil_Strategy::Test>::Which() const {
     std::cout<<"Recoil_Calculator implementing a test strategy.\n";
   }
-
-
-
-
-
-  template<class ST>
-  inline const bool Recoil<ST>::GenerateCmsMomenta(const Recoil_Setup& ini,
-						   const ATOOLS::Vec4D& cax) {
-    p_ini=&ini;
-    m_cmsaxis=cax;
-
-    if(Initialize()); else { p_ini=NULL; return false;}
-
-    bool result=Calculate();
-
-    p_ini=NULL;
-    return result;
-
+  template<> inline void Recoil<Recoil_Strategy::Ktii>::Which() const {
+    std::cout<<"Recoil_Calculator implementing the hadronic lab frame gluon "
+	     <<"kt strategy.\n";
   }
 
 
 
-  //===========================================================================
+
+
+  template<Recoil_Strategy::Type ST>
+  inline void Recoil<ST>::TestKey(Dipole_Handler::Key) const {}
+
+  template<> inline void
+  Recoil<Recoil_Strategy::Kleiss>::TestKey(Dipole_Handler::Key k) const {
+    //std::cout<<k.first<<" "<<k.first/100<<"\n";
+    assert(k.first/100==0);
+  }
+  template<> inline void
+  Recoil<Recoil_Strategy::FixDir1>::TestKey(Dipole_Handler::Key k) const {
+    assert(k.first/100==0);
+  }
+  template<> inline void
+  Recoil<Recoil_Strategy::FixDir3>::TestKey(Dipole_Handler::Key k) const {
+    assert(k.first/100==0);
+  }
+  template<> inline void
+  Recoil<Recoil_Strategy::MinimizePt>::TestKey(Dipole_Handler::Key k) const {
+    assert(k.first/100==0);
+  }
+  template<> inline void
+  Recoil<Recoil_Strategy::Lonnblad>::TestKey(Dipole_Handler::Key k) const {
+    assert(k.first/100==0);
+  }
+  template<> inline void
+  Recoil<Recoil_Strategy::OldAdicic>::TestKey(Dipole_Handler::Key k) const {
+    assert(k.first/100==0);
+  }
+  template<> inline void
+  Recoil<Recoil_Strategy::Test>::TestKey(Dipole_Handler::Key k) const {
+    assert(k.first/100==0);
+  }
+  template<> inline void
+  Recoil<Recoil_Strategy::Ktii>::TestKey(Dipole_Handler::Key k) const {
+    assert((k.first==Dipole::iiqbarq &&
+	    (k.second==Radiation::gluon || k.second==Radiation::qfront ||
+	     k.second==Radiation::qbarend))
+	   ||
+	   (k.first==Dipole::iiqbarg &&
+	    (k.second==Radiation::gluon || k.second==Radiation::qfront))
+	   ||
+	   (k.first==Dipole::iigq &&
+	    (k.second==Radiation::gluon || k.second==Radiation::qbarend))
+	   ||
+	   (k.first==Dipole::iigg && k.second==Radiation::gluon));
+  }
 
 
 
-  inline const double Recoil_Setup::GetE1() const { return E1;}
-  inline const double Recoil_Setup::GetE2() const { return E2;}
-  inline const double Recoil_Setup::GetE3() const { return E3;}
-  inline const double Recoil_Setup::GetQ1() const { return Q1;}
-  inline const double Recoil_Setup::GetQ2() const { return Q2;}
-  inline const double Recoil_Setup::GetQ3() const { return Q3;}
+
+
+  template<Recoil_Strategy::Type ST>
+  inline const bool Recoil<ST>::GenerateMomenta(const Dipole& D,
+						const Sudakov_Result& S,
+						Recoil_Result& R) {
+    p_dip=&D;
+    p_sur=&S;
+    p_rer=&R; assert(p_rer->Poc==both && p_rer->Vec.size()==rr::stop);
+    m_e.clear();///////////////////////////////////////////////////////////////
+    bool result=Generate();
+    p_dip=NULL; p_sur=NULL; p_rer=NULL;
+    return result;
+  }
+
+
+
+  //---------------------------------------------------------------------------
+
+
+
+  template<Recoil_Strategy::Type ST>
+  inline const bool Recoil<ST>::Generate() {
+    cerr<<"\nMethod: "<<__PRETTY_FUNCTION__<<": "
+	<<"Warning: Recoil strategy is unspecified!\n"<<endl;
+    return false;
+  }
+
+  template<>
+  inline const bool Recoil<Recoil_Strategy::Kleiss>::Generate() {
+    return CmsMomenta();
+  }
+  template<>
+  inline const bool Recoil<Recoil_Strategy::FixDir1>::Generate() {
+    return CmsMomenta();
+  }
+  template<>
+  inline const bool Recoil<Recoil_Strategy::FixDir3>::Generate() {
+    return CmsMomenta();
+  }
+  template<>
+  inline const bool Recoil<Recoil_Strategy::MinimizePt>::Generate() {
+    return CmsMomenta();
+  }
+  template<>
+  inline const bool Recoil<Recoil_Strategy::Lonnblad>::Generate() {
+    return CmsMomenta();
+  }
+  template<>
+  inline const bool Recoil<Recoil_Strategy::OldAdicic>::Generate() {
+    return CmsMomenta();
+  }
+  template<>
+  inline const bool Recoil<Recoil_Strategy::Test>::Generate() {
+    return CmsMomenta();
+  }
+  template<>
+  inline const bool Recoil<Recoil_Strategy::Ktii>::Generate() {
+    return LabMomenta();
+  }
 
 
 

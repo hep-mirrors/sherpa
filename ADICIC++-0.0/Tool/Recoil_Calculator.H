@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/09    (surely preliminarily)
+//Version: 3 ADICIC++-0.0/2005/07/25    (surely preliminarily)
 
 //Classes are provided, which manage the calculation of the kinematics
 //according to given recoil strategies.
@@ -10,8 +10,11 @@
 #define _Recoil_Calculator_H_ _Recoil_Calculator_H_
 
 
+#include <vector>
 #include <enumextra>
 #include "Vector.H"
+#include "Recoil_Strategy.hpp"
+#include "Dipole_Handler.H"
 
 
 #define RECOIL_CALCULATOR_OUTPUT RECOIL_CALCULATOR_OUTPUT
@@ -46,10 +49,10 @@ namespace ADICIC {
 
   protected:
 
-    Trio f_recoil;
+    const Dipole*         p_dip;
+    const Sudakov_Result* p_sur;
 
-    ATOOLS::Vec4D m_p1;
-    ATOOLS::Vec4D m_p3;
+    Recoil_Result* p_rer;
 
  public:
 
@@ -59,11 +62,11 @@ namespace ADICIC {
     static const int&           InStore;
     static const ATOOLS::Vec4D& ZAxis;
 
-    inline void GetResult(Trio&, ATOOLS::Vec4D&, ATOOLS::Vec4D&) const;
-
+    virtual const Recoil_Strategy::Type IsType() const=0;
     virtual void Which() const=0;
-    virtual const bool GenerateCmsMomenta(const Recoil_Setup&,
-					  const ATOOLS::Vec4D&)=0;
+    virtual void TestKey(Dipole_Handler::Key) const=0;
+    virtual const bool GenerateMomenta(const Dipole&, const Sudakov_Result&,
+				       Recoil_Result&)=0;
 
   };
 
@@ -71,33 +74,38 @@ namespace ADICIC {
 
 
 
-  template<class _Strategy> class Recoil : public Recoil_Calculator {
+  template<Recoil_Strategy::Type _Strategy>
+  class Recoil : public Recoil_Calculator {
 
   private:
 
     //Blocked methods:
-
     Recoil(const Recoil<_Strategy>&);
     Recoil<_Strategy>& operator=(const Recoil<_Strategy>&);
     const bool operator==(const Recoil<_Strategy>&) const;
 
   private:
 
+    //The following works, but is not needed.
+    //static const Recoil_Strategy::Type s_type=_Strategy;
+
     double m_costheta;
     double m_sintheta;
     double m_phi;
 
-    const Recoil_Setup* p_ini;
-
-    ATOOLS::Vec4D m_cmsaxis;
+    Multidouble m_e;
 
     //Private methods:
+    inline const bool Generate();    //Specific!
 
-    const bool Initialize();
+    void CrossProductTest(const ATOOLS::Vec4D&) const;
     void RotateOnto(const ATOOLS::Vec4D&);
     void Rotate(const ATOOLS::Vec4D&, const ATOOLS::Vec4D&);
 
-    const bool Calculate();
+    const bool CmsMomenta();
+    const bool LabMomenta();
+
+    const bool Calculate();    //Specific!
 
   public:
 
@@ -105,10 +113,11 @@ namespace ADICIC {
     ~Recoil();
 
     //Public (inline) methods:
-
-    inline void Which() const;
-    inline const bool GenerateCmsMomenta(const Recoil_Setup&,
-					 const ATOOLS::Vec4D&);
+    inline const Recoil_Strategy::Type IsType() const;
+    inline void Which() const;    //Specific!
+    inline void TestKey(Dipole_Handler::Key) const;    //Specific!
+    inline const bool GenerateMomenta(const Dipole&, const Sudakov_Result&,
+				      Recoil_Result&);
 
   };
 
@@ -116,30 +125,8 @@ namespace ADICIC {
 
 
 
-  class Dipole_Handler;
-
-
-
-
-
-  struct Recoil_Setup {
-  private:
-    friend class Dipole_Handler;
-    //friend class Recoil_Calculator;
-    //Derived classes are not instantly set to be friends as well.
-  private:
-    double E1, E2, E3;
-    double Q1, Q2, Q3;
-    //The Q numbers will be needed as recently as the massive case
-    //has been implemented.
-  public:
-    inline const double GetE1() const;
-    inline const double GetE2() const;
-    inline const double GetE3() const;
-    inline const double GetQ1() const;
-    inline const double GetQ2() const;
-    inline const double GetQ3() const;
-  };
+  //Function
+  void MakeRecos(const std::vector<bool>&, std::vector<Recoil_Calculator*>&);
 
 
 
