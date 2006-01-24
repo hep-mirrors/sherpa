@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/07/05
+//Version: 3 ADICIC++-0.0/2005/06/07
 
 //Purpose is to have defined dipole-flavour structures throughout the model.
 
@@ -13,6 +13,10 @@
 #include "Flavour.H"
 
 
+#define DIPOLE_FLAVOUR_OUTPUT DIPOLE_FLAVOUR_OUTPUT
+//#undef  DIPOLE_FLAVOUR_OUTPUT
+
+
 
 
 
@@ -22,18 +26,11 @@ namespace ADICIC {
 
   class Dipole_Flavour_Init {
   private:
-    static bool s_status;
+    static const bool Do(bool local=false);
   public:
-    Dipole_Flavour_Init() {}
+    Dipole_Flavour_Init(bool local=false);
     ~Dipole_Flavour_Init() {}
-  public:
-    static inline const bool Status();
-    static const bool DoIt(bool level=false);
   };
-
-  inline const bool Dipole_Flavour_Init::Status() {    //Static.
-    return s_status;
-  }
 
 
 

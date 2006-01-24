@@ -1,10 +1,12 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/07/05
+//Version: 3 ADICIC++-0.0/2005/06/07
 
 //Implementation of Dipole_Flavour.H.
 
 
 
+#include <cassert>
+#include <cstdlib>
 #include "Dipole_Flavour.H"
 
 
@@ -22,13 +24,9 @@ using namespace ADICIC;
 
 
 
-bool Dipole_Flavour_Init::s_status=false;
+const bool Dipole_Flavour_Init::Do(bool local) {    //Static.
 
-
-const bool Dipole_Flavour_Init::DoIt(bool level) {    //Static.
-
-  if(s_status) return false;
-  if(level) ATOOLS::ParticleInit("../TestIt/data");
+  if(local) ATOOLS::ParticleInit("../TestIt/data");
 
   static const Flavour gn(kf::gluon); Dipole_Gluon_Base::GN=&gn;
 
@@ -46,9 +44,23 @@ const bool Dipole_Flavour_Init::DoIt(bool level) {    //Static.
   static const Flavour ba(kf::b,1); Dipole_Antiquark_Base::BA=&ba;
   static const Flavour ta(kf::t,1); Dipole_Antiquark_Base::TA=&ta;
 
-  s_status=true;
+#ifdef DIPOLE_FLAVOUR_OUTPUT
+  std::cout<<"{ Executing ... "<<__PRETTY_FUNCTION__;
+  if(local) std::cout<<" ... local }\n";
+  else std::cout<<" ... global }\n";
+#endif
+
   return true;
 
+}
+
+
+
+
+
+Dipole_Flavour_Init::Dipole_Flavour_Init(bool local) {
+  static bool init=Do(local);
+  assert(init);
 }
 
 
