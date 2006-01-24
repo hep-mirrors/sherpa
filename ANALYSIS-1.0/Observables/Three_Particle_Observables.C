@@ -189,3 +189,51 @@ Primitive_Observable_Base * Three_Particle_DR::Copy() const
 }
 
 
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DEFINE_OBSERVABLE_GETTER(Three_Particle_3Mass2,Three_Particle_3Mass2_Getter,"3Mass2")
+
+Three_Particle_3Mass2::Three_Particle_3Mass2(const Flavour & flav1,const Flavour & flav2,
+					 const Flavour & flav3,int type,double xmin,
+					 double xmax,int nbins,const std::string & listname) :
+  Three_Particle_Observable_Base(flav1,flav2,flav3,type,xmin,xmax,nbins,listname,"3Mass2") 
+{ 
+}
+
+
+void Three_Particle_3Mass2::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const Vec4D & mom3,double weight, int ncount) 
+{ 
+  
+  double mass = (mom1+mom2+mom3).Abs2();
+  p_histo->Insert(mass,weight,ncount); 
+} 
+
+Primitive_Observable_Base * Three_Particle_3Mass2::Copy() const 
+{
+    return new Three_Particle_3Mass2(m_flav1,m_flav2,m_flav3,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DEFINE_OBSERVABLE_GETTER(Three_Particle_3Mass,Three_Particle_3Mass_Getter,"3Mass")
+
+Three_Particle_3Mass::Three_Particle_3Mass(const Flavour & flav1,const Flavour & flav2,
+					 const Flavour & flav3,int type,double xmin,
+					 double xmax,int nbins,const std::string & listname) :
+  Three_Particle_Observable_Base(flav1,flav2,flav3,type,xmin,xmax,nbins,listname,"3Mass") 
+{ 
+}
+
+
+void Three_Particle_3Mass::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const Vec4D & mom3,double weight, int ncount) 
+{ 
+  
+  double mass = sqrt( (mom1+mom2+mom3).Abs2() );
+  p_histo->Insert(mass,weight,ncount); 
+} 
+
+Primitive_Observable_Base * Three_Particle_3Mass::Copy() const 
+{
+    return new Three_Particle_3Mass(m_flav1,m_flav2,m_flav3,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+

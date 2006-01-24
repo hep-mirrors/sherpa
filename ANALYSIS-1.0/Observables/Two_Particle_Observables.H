@@ -121,6 +121,17 @@ namespace ANALYSIS {
 			   const std::string & listname);
     Primitive_Observable_Base * Copy() const;
   };
+   
+  class Two_Particle_Mass2 : public Two_Particle_Observable_Base {  
+    void Evaluate(const ATOOLS::Vec4D & mom1, const ATOOLS::Vec4D & mom2, 
+		  double weight, int ncount); 
+  public:
+    Two_Particle_Mass2(const ATOOLS::Flavour & flav1, const ATOOLS::Flavour & flav2,
+		      int type, double xmin, double xmax, int nbins, 
+		      const std::string & listname);
+    Primitive_Observable_Base * Copy() const;
+  };
+
 }
 
 #endif

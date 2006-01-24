@@ -251,3 +251,67 @@ Primitive_Observable_Base * One_Particle_EVis::Copy() const
 {
   return new One_Particle_EVis(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
+ 
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DEFINE_OBSERVABLE_GETTER(One_Particle_Px,One_Particle_Px_Getter,"Px")
+
+One_Particle_Px::One_Particle_Px(const Flavour & flav,
+					       int type,double xmin,double xmax,int nbins,
+					       const std::string & listname) :
+  One_Particle_Observable_Base(flav,type,xmin,xmax,nbins,listname,"Px") { }
+
+
+void One_Particle_Px::Evaluate(const Vec4D & mom,double weight, int ncount) 
+{
+  double px = mom[1];
+  p_histo->Insert(px,weight,ncount); 
+} 
+
+Primitive_Observable_Base * One_Particle_Px::Copy() const
+{
+  return new One_Particle_Px(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DEFINE_OBSERVABLE_GETTER(One_Particle_Py,One_Particle_Py_Getter,"Py")
+
+One_Particle_Py::One_Particle_Py(const Flavour & flav,
+					       int type,double xmin,double xmax,int nbins,
+					       const std::string & listname) :
+  One_Particle_Observable_Base(flav,type,xmin,xmax,nbins,listname,"Py") { }
+
+
+void One_Particle_Py::Evaluate(const Vec4D & mom,double weight, int ncount) 
+{
+  double py = mom[2];
+  p_histo->Insert(py,weight,ncount); 
+} 
+
+Primitive_Observable_Base * One_Particle_Py::Copy() const
+{
+  return new One_Particle_Py(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DEFINE_OBSERVABLE_GETTER(One_Particle_Pz,One_Particle_Pz_Getter,"Pz")
+
+One_Particle_Pz::One_Particle_Pz(const Flavour & flav,
+					       int type,double xmin,double xmax,int nbins,
+					       const std::string & listname) :
+  One_Particle_Observable_Base(flav,type,xmin,xmax,nbins,listname,"Pz") { }
+
+
+void One_Particle_Pz::Evaluate(const Vec4D & mom,double weight, int ncount) 
+{
+  double pz = mom[3];
+  p_histo->Insert(pz,weight,ncount); 
+} 
+
+Primitive_Observable_Base * One_Particle_Pz::Copy() const
+{
+  return new One_Particle_Pz(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+

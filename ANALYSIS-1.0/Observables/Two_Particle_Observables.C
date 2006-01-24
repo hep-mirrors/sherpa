@@ -361,3 +361,28 @@ Primitive_Observable_Base * Two_Particle_CMS_Angle::Copy() const
 {
   return new Two_Particle_CMS_Angle(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
+ 
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DEFINE_OBSERVABLE_GETTER(Two_Particle_Mass2,Two_Particle_Mass2_Getter,"Mass2")
+
+Two_Particle_Mass2::Two_Particle_Mass2(const Flavour & flav1, const Flavour & flav2,
+				     int type, double xmin, double xmax, int nbins,
+				     const std::string & listname) :
+  Two_Particle_Observable_Base(flav1,flav2,type,xmin,xmax,nbins,listname,"Mass2") { }
+
+
+void Two_Particle_Mass2::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, int ncount) 
+{
+  double mass = (mom1+mom2).Abs2();
+  p_histo->Insert(mass,weight,ncount); 
+  if (weight!=0) {
+    p_ana->AddData(m_name,new Blob_Data<double>(mass));
+  }
+} 
+
+Primitive_Observable_Base * Two_Particle_Mass2::Copy() const
+{
+  return new Two_Particle_Mass2(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+
