@@ -36,7 +36,7 @@ namespace EXTRAXS {
   class XS_ee_ffbar : public Single_XS {  // == XS_ffbar_ee but not XS_ffbar_f'fbar' !
   private:
 
-    bool   barred;
+    bool   barred, gammaon;
     double qe,qf,ae,af,ve,vf,mass;
     double kappa,sin2tw,MZ2,GZ2,alpha;
     double chi1,chi2,term1,term2;

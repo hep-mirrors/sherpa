@@ -273,7 +273,12 @@ XS_Group *Simple_XS::FindPDFGroup(const size_t nin,const size_t nout,
   ATOOLS::Flavour *copy = new ATOOLS::Flavour[nin+nout];
   for (short unsigned int i=0;i<nin;++i) 
     copy[i]=p_remnants[i]->ConstituentType(flavours[i]);
-  for (short unsigned int i=nin;i<nin+nout;++i) copy[i]=ATOOLS::kf::jet;
+  ////////////////////////////////////////////////////////
+  for (short unsigned int i=nin;i<nin+nout;++i) {
+   if (flavours[i].Strong()) copy[i]=ATOOLS::kf::jet;
+   else copy[i]=flavours[i];
+  }
+  ////////////////////////////////////////////////////////
   XS_Group *newgroup = 
     new XS_Group(nin,nout,copy,m_scalescheme,m_kfactorscheme,
 		 p_beamhandler,p_isrhandler,p_selectordata);
