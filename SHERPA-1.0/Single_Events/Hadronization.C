@@ -34,9 +34,22 @@ bool Hadronization::Treat(ATOOLS::Blob_List *bloblist,double &weight)
 	       <<"   Continue and hope for the best."<<endl;
     return false;
   }
-  p_beamremnanthandler->FillBeamBlobs(bloblist);
-  p_beamremnanthandler->FillBunchBlobs(bloblist);
+  /////////////////////////////////////////////////////////////////////////////
+  //std::cout<<" => before FillBeamBlobs(bloblist)\n";
+  //for(ATOOLS::Blob_List::const_iterator blit=bloblist->begin();
+  //    blit!=bloblist->end(); ++blit)
+  //  std::cout<<**blit<<"\n";
+  /////////////////////////////////////////////////////////////////////////////
+  bool result;
+  result=p_beamremnanthandler->FillBeamBlobs(bloblist);
+  result=p_beamremnanthandler->FillBunchBlobs(bloblist);
   p_fragmentationhandler->PerformFragmentation(bloblist);
+  /////////////////////////////////////////////////////////////////////////////
+  //std::cout<<" => after PerformFragmentation(bloblist)\n";
+  //for(ATOOLS::Blob_List::const_iterator blit=bloblist->begin();
+  //    blit!=bloblist->end(); ++blit)
+  //  std::cout<<**blit<<"\n";
+  /////////////////////////////////////////////////////////////////////////////
   return false;
 }
 
