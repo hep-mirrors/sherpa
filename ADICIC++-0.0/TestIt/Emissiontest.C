@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/09/01
+//Version: 3 ADICIC++-0.0/2005/08/04
 
 //Emissiontest.C - testing the first emission.
 
@@ -11,6 +11,7 @@
 #include <ioextra>
 #include <enumextra>
 #include <mathextra>
+#include <histoextra>
 #include "Message.H"
 #include "Run_Parameter.H"
 #include "Dipole.H"
@@ -80,10 +81,7 @@ int main() {
   //abort();
 
   msg.SetModifiable(true);
-  cout<<Dipole_Flavour_Init::Status()<<endl;
-  cout<<Dipole_Flavour_Init::DoIt(true)<<endl;
-  cout<<Dipole_Flavour_Init::DoIt()<<endl;
-  cout<<Dipole_Flavour_Init::Status()<<endl;
+  Dipole_Flavour_Init dfi(true);
 
   cout<<endl;
 
@@ -106,7 +104,7 @@ int main() {
   cout<<"=============================================================="<<endl;
 
   Dipole_Parameter::Show();
-  Sudakov_Calculator::ShowParameters();
+  Sudakov_Calculator::ShowEnvironment();
   Dipole_Handler::ShowCalcBox();
 
   cout<<endl; cin>>enter; cout<<endl;
@@ -240,28 +238,21 @@ int main() {
     extern Run_Parameter ATOOLS::rpa;
     rpa.gen.SetEcms(90.0);
 
-    Sudakov_Calculator::ShowParameters();
+    Sudakov_Calculator::ShowEnvironment();
     Dipole_Handler::ShowCalcBox();
-    cout<<"\nDip Param Init?: "<<Dipole_Parameter_Init::Status()<<endl;
-    cout<<"\nDo Init: "<<Dipole_Parameter_Init::DoIt()<<endl;////////////////
-    cout<<"Do Init: "<<Dipole_Parameter_Init::DoIt()<<endl;//////////////////
-    cout<<"Dip Param Init?: "<<Dipole_Parameter_Init::Status()<<endl;
+    Dipole_Parameter_Init dpi;
 
     cout<<"\nRunning?="<<Sudakov_Calculator::IsAlphaSRunning()<<endl;
-    cout<<"MinScale="<<Sudakov_Calculator::MinOfK2t()<<endl;
-    cout<<"MaxScale="<<Sudakov_Calculator::MaxOfK2t()<<endl;
-    cout<<"NfFix="<<Sudakov_Calculator::NfFix()<<endl;
-    cout<<"ASFix="<<Sudakov_Calculator::AlphaSFix()<<endl;
+    cout<<"NfFix="<<dpa.sud.NfFix()<<endl;
     cout<<"ASApp="<<Sudakov_Calculator::AlphaSApprox()<<endl;
     cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(700.0)<<endl;
     cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(8100.0)<<endl;
     cout<<"Nf(1.20)="<<Sudakov_Calculator::Nf(1.2)<<endl;
     cout<<"Nf(8100)="<<Sudakov_Calculator::Nf(8100.0)<<endl;
 
-    cout<<"SudakovInit="<<Sudakov_Calculator::Init(NULL)<<endl;////////////////
+    cout<<"SudakovInit="<<Sudakov_Calculator::AdjustEnvironment()<<endl;
 
     cout<<"Running?="<<Sudakov_Calculator::IsAlphaSRunning()<<endl;
-    cout<<"ASFix="<<Sudakov_Calculator::AlphaSFix()<<endl;
     cout<<"ASApp="<<Sudakov_Calculator::AlphaSApprox()<<endl;
     cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(700.0)<<endl;
     cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(8100.0)<<endl;
@@ -287,16 +278,16 @@ int main() {
 
       unsigned trials=1;
       bool below;
-      Trio recoil;
+      xbool recoil;
       Dipole Dip(b1,a1);
       Dipole_Handler H(Dip);
 
       H.ShowSudakov(); H.ShowRecoil();
       cout<<Dip<<endl; Dip.PrintTowers();
 
-      //assert(H.ManageGluonEmission());// && H.ManageGluonEmission());
-      while(H.ManageDipoleRadiation()==false) ++trials;
+      while(H.InduceDipoleRadiation()==false) ++trials;
       cout<<"Trials for a successful radiation="<<trials<<endl;
+      assert(H.FinishDipoleRadiation());
 
       H.DecoupleNew(pDin,pGlu,pAti,pBan,below,recoil);
 
@@ -386,10 +377,45 @@ int main() {
   cout<<om::reset<<endl;
 
   {
+
+    //The Non STRICT_DIPOLE_HANDLER test.
+    //It is helpful to use the DIPOLE_OUTPUT.
+
+    Vec4D pl(45.0, 20.0,-5.0, 40.0);
+    Vec4D pr(45.0,-20.0, 5.0,-40.0);
+    //Dipole::Branch     b1(info.quark.u,pl);
+    Dipole::Glubranch  b1(pl);
+    //Dipole::Antibranch a1(info.antiq.u,pr);
+    Dipole::Glubranch  a1(pr);
+
+    Dipole Dip(b1,a1);
+    {
+      Dipole_Handler H(Dip);
+      cout<<Dip<<endl<<endl;
+      while(H.InduceDipoleRadiation()) {
+	H.FinishDipoleRadiation();
+	cout<<Dip<<endl;
+      }
+    }
+    cout<<"ENDE: "<<Dip<<endl<<endl;
+  }
+
+  cout<<om::greenbg;
+  cout<<"====================================================================";
+  cout<<om::reset<<endl;
+  cout<<endl; cin>>enter; cout<<endl;
+  cout<<om::greenbg;
+  cout<<"====================================================================";
+  cout<<om::reset<<endl;
+
+  {
+    bool     xtest=false;
     unsigned total=4000000; //total=0;
     unsigned count=0;
     unsigned gluons=0;
     unsigned quarks=0, cd=0, cu=0, cs=0, cc=0, cb=0;
+
+    Xhisto histo(40000);
 
     for(unsigned i=1; i<=total; ++i) {
 
@@ -412,15 +438,16 @@ int main() {
       {
 
 	bool below;
-	Trio recoil;
+	xbool recoil;
 	Dipole Dip(b1,a1);
 	Dipole_Handler H(Dip);
 
 #ifdef EMISSIONTEST_OUTPUT
-	cout<<Dip<<endl;
+	cout<<Dip<<endl<<endl;
 #endif
 
-	if( H.InduceDipoleRadiation() && H.FinishDipoleRadiation() );
+	if( H.InduceDipoleRadiation(1,control,i==total) &&
+	    H.FinishDipoleRadiation() );
 	else {
 	  ++count;
 	  H.DecoupleNew(pDin,pGlu,pAti,pBan,below,recoil);
@@ -438,6 +465,20 @@ int main() {
 	if(pDin) {
 	  assert(!pAti && !pBan && pGlu);
 	  kfc=kf::gluon;
+	  if(xtest) {
+	    //x1x3 Test:
+	    Multidouble m(2,0.0);
+	    if(below) {
+	      m[0]=Dip.GetTopBranchPointer()->Momentum()[0];
+	      m[1]=pDin->GetBotBranchPointer()->Momentum()[0];
+	    } else {
+	      m[1]=Dip.GetBotBranchPointer()->Momentum()[0];
+	      m[0]=pDin->GetTopBranchPointer()->Momentum()[0];
+	    }
+	    m[0]*=2/(pl[0]+pr[0]);
+	    m[1]*=2/(pl[0]+pr[0]);
+	    histo.Insert(m);
+	  }
 	} else {
 	  assert(pAti && pBan && pGlu);
 	  kfc=pBan->Flav().Kfcode();
@@ -474,6 +515,19 @@ int main() {
       if(pDin) { delete pDin; if(pGlu) delete pGlu;}
       else { if(pBan) delete pBan; if(pAti) delete pAti;}
 
+    }
+
+    //cout<<histo.Entries()<<endl;
+    //histo.Reset();
+    //Multidouble a(7,1.1);
+    //Multidouble b(4,3.2);
+    //histo.Insert(a);
+    //histo.Insert(b);
+    if(xtest) {
+      string name("x1x3_emitest.dat");
+      cout<<"Outputting "<<histo.Entries()
+	  <<" Multidoubles to file "<<name<<".\n";
+      histo.Output(name);
     }
 
     quarks=cd+cu+cs+cc+cb;

@@ -7,6 +7,9 @@ ROOTLDADD     =	-L@ROOTLIBDIR@ @ROOTGLIBS@ @ROOTAUXLIBS@
 ROOTFLAGS     = -DROOT_SUPPORT -Wno-long-long
 endif
 
+PDFLIBS    = -L@libdir@ -lPDF -lDUPDF -lSudakov -lMRST -lGRV -lRemnant -lCTEQ
+APACICLIBS = -L@libdir@ -lApacicShowers -lApacicMain
+
 if CVS_INCLUDE
 CVSINCLUDE = CVS
 endif
@@ -17,7 +20,9 @@ AM_CXXFLAGS = -pedantic -Wall -Winline -ftemplate-depth-100
 
 
 
-bin_PROGRAMS = Flavtest Emissiontest Chaintest Cascadetest
+bin_PROGRAMS = Flavtest Emissiontest Imissiontest Chaintest Cascadetest ICascadetest
+
+
 
 if HDECAY_SUPPORT
 HDECAYLIB = -L@libdir@ -lHdecay 
@@ -37,6 +42,8 @@ Flavtest_LDADD = @libdir@/libAdicicTool.la \
                  @libdir@/libToolsPhys.la \
                  @libdir@/libToolsMath.la \
                  @libdir@/libToolsOrg.la \
+                 $(PDFLIBS) \
+                 $(APACICLIBS) \
                  -lg2c -lm -ldl $(ROOTLDADD) $(MODELLIBS)
 #Flavtest_LDFLAGS = SHERPA_LDFLAGS
 
@@ -57,7 +64,24 @@ Emissiontest_LDADD = @libdir@/libAdicicTool.la \
                      @libdir@/libToolsPhys.la \
                      @libdir@/libToolsMath.la \
                      @libdir@/libToolsOrg.la \
-	             -lg2c -lm -ldl $(ROOTLDADD) $(MODELLIBS)
+                     $(PDFLIBS) \
+                     $(APACICLIBS) \
+                     -lg2c -lm -ldl $(ROOTLDADD) $(MODELLIBS)
+
+
+
+Imissiontest_SOURCES = Imissiontest.C
+Imissiontest_LDADD = @libdir@/libAdicicTool.la \
+                     @libdir@/libAdicicInput.la \
+                     @libdir@/libAdicicStruct.la \
+                     @libdir@/libAdicicHdl.la \
+                     @libdir@/libAdicicMain.la \
+                     @libdir@/libToolsPhys.la \
+                     @libdir@/libToolsMath.la \
+                     @libdir@/libToolsOrg.la \
+                     $(PDFLIBS) \
+                     $(APACICLIBS) \
+                     -lg2c -lm -ldl $(ROOTLDADD) $(MODELLIBS)
 
 
 
@@ -70,7 +94,9 @@ Chaintest_LDADD = @libdir@/libAdicicTool.la \
                   @libdir@/libToolsPhys.la \
                   @libdir@/libToolsMath.la \
                   @libdir@/libToolsOrg.la \
-	          -lg2c -lm -ldl $(ROOTLDADD) $(MODELLIBS)
+                  $(PDFLIBS) \
+                  $(APACICLIBS) \
+                  -lg2c -lm -ldl $(ROOTLDADD) $(MODELLIBS)
 
 
 
@@ -83,7 +109,24 @@ Cascadetest_LDADD = @libdir@/libAdicicTool.la \
                     @libdir@/libToolsPhys.la \
                     @libdir@/libToolsMath.la \
                     @libdir@/libToolsOrg.la \
-	            -lg2c -lm -ldl $(ROOTLDADD) $(MODELLIBS)
+                    $(PDFLIBS) \
+                    $(APACICLIBS) \
+                    -lg2c -lm -ldl $(ROOTLDADD) $(MODELLIBS)
+
+
+
+ICascadetest_SOURCES = ICascadetest.C
+ICascadetest_LDADD = @libdir@/libAdicicTool.la \
+                     @libdir@/libAdicicInput.la \
+                     @libdir@/libAdicicStruct.la \
+                     @libdir@/libAdicicHdl.la \
+                     @libdir@/libAdicicMain.la \
+                     @libdir@/libToolsPhys.la \
+                     @libdir@/libToolsMath.la \
+                     @libdir@/libToolsOrg.la \
+                     $(PDFLIBS) \
+                     $(APACICLIBS) \
+                     -lg2c -lm -ldl $(ROOTLDADD) $(MODELLIBS)
 
 
 
@@ -95,7 +138,8 @@ INCLUDES = -I../Tool \
            -I../../ATOOLS-2.0/Phys \
            -I../../ATOOLS-2.0/Math \
            -I../../ATOOLS-2.0/Org \
-           -I../../MODEL-1.0/Main
+           -I../../MODEL-1.0/Main \
+           -I../../PDF-1.0/Main
 
 
 
@@ -105,6 +149,8 @@ INCLUDES = -I../Tool \
 
 EXTRA_DIST = $(CVSINCLUDE)
 #EXTRA_DIST = Testrun/Run.dat Testrun/Integration.dat
+
+
 
 dist-hook:
 	sed -e "s/SHERPA_LDFLAGS/SHERPA_LDFLAGS/1" \

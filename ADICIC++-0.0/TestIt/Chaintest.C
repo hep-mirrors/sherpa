@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/09/10
+//Version: 3 ADICIC++-0.0/2005/09/21
 
 //Chaintest.C - testing the first chaining.
 
@@ -11,6 +11,7 @@
 #include <iomanip>
 #include <ioextra>
 #include <enumextra>
+#include <mathextra>
 #include "Message.H"
 #include "Dipole_Parameter.H"
 #include "Paraminit.H"
@@ -66,10 +67,7 @@ public:
 int main() {
 
   msg.SetModifiable(true);
-  cout<<Dipole_Flavour_Init::Status()<<endl;
-  cout<<Dipole_Flavour_Init::DoIt(true)<<endl;
-  cout<<Dipole_Flavour_Init::DoIt()<<endl;
-  cout<<Dipole_Flavour_Init::Status()<<endl;
+  Dipole_Flavour_Init dfi(true);
 
   cout<<endl;
   cout<<cout.precision(6)<<endl;
@@ -85,17 +83,16 @@ int main() {
 
   cout<<endl;
 
+  Dipole_Handler::ListCalcBox();
+
   Dipole_Parameter::Show();
-  Sudakov_Calculator::ShowParameters();
-  Sudakov_Calculator::AdjustParameters();
-  Sudakov_Calculator::ShowParameters();
+  Sudakov_Calculator::ShowEnvironment();
+  //Sudakov_Calculator::AdjustEnvironment();
+  //Sudakov_Calculator::ShowEnvironment();
   Dipole_Handler::ShowCalcBox();
-  Dipole_Handler::AdjustCalcBox();
-  Dipole_Handler::AdjustCalcBox();
-  Dipole_Handler::ShowCalcBox();
-  Chain_Handler::ShowParameters();
-  Chain_Handler::AdjustParameters();
-  Chain_Handler::ShowParameters();
+  //Dipole_Handler::AdjustCalcBox();
+  //Dipole_Handler::AdjustCalcBox();
+  //Dipole_Handler::ShowCalcBox();
 
   cout<<endl; cin>>enter; cout<<endl;
   cout<<"=============================================================="<<endl;
@@ -260,48 +257,31 @@ int main() {
   {
 
     cout<<"Running?="<<Sudakov_Calculator::IsAlphaSRunning()<<endl;
-    cout<<"MinScale="<<Sudakov_Calculator::MinOfK2t()<<endl;
-    cout<<"MaxScale="<<Sudakov_Calculator::MaxOfK2t()<<endl;
-    cout<<"ASFix="<<Sudakov_Calculator::AlphaSFix()<<endl;
     cout<<"ASApp="<<Sudakov_Calculator::AlphaSApprox()<<endl;
     cout<<"ASCor(700)="<<Sudakov_Calculator::AlphaSCorr(700.0)<<endl;
     cout<<"ASCor(8100)="<<Sudakov_Calculator::AlphaSCorr(8100.0)<<endl;
-    cout<<"SudakovInit="<<Sudakov_Calculator::Init(NULL)<<endl;
-    cout<<"SudakovInit="<<Sudakov_Calculator::Init(NULL)<<endl;
+    cout<<"SudakovInit="<<Sudakov_Calculator::AdjustEnvironment()<<endl;
+    cout<<"SudakovInit="<<Sudakov_Calculator::AdjustEnvironment()<<endl;
     cout<<"Running?="<<Sudakov_Calculator::IsAlphaSRunning()<<endl;
-    cout<<"ASFix="<<Sudakov_Calculator::AlphaSFix()<<endl;
     cout<<"ASApp="<<Sudakov_Calculator::AlphaSApprox()<<endl;
     cout<<"ASCor(700)="<<Sudakov_Calculator::AlphaSCorr(700.0)<<endl;
     cout<<"ASCor(8100)="<<Sudakov_Calculator::AlphaSCorr(8100.0)<<endl;
 
-    Sudakov_Calculator::ShowParameters();
+    Sudakov_Calculator::ShowEnvironment();
     Dipole_Handler::ShowCalcBox();
-    Chain_Handler::ShowParameters();
-    cout<<"\nDip Param Init?: "<<Dipole_Parameter_Init::Status()<<endl;
-    //cout<<"\nDo Init: "<<Dipole_Parameter_Init::DoIt()<<endl;////////////////
-    //cout<<"Do Init: "<<Dipole_Parameter_Init::DoIt()<<endl;//////////////////
-    cout<<"Dip Param Init?: "<<Dipole_Parameter_Init::Status()<<endl;
+
+    //Dipole_Parameter_Init dpi;
 
     cout<<"\nRunning?="<<Sudakov_Calculator::IsAlphaSRunning()<<endl;
-    cout<<"MinScale="<<Sudakov_Calculator::MinOfK2t()<<endl;
-    cout<<"MaxScale="<<Sudakov_Calculator::MaxOfK2t()<<endl;
-    cout<<"ASFix="<<Sudakov_Calculator::AlphaSFix()<<endl;
     cout<<"ASApp="<<Sudakov_Calculator::AlphaSApprox()<<endl;
     cout<<"ASCor(700)="<<Sudakov_Calculator::AlphaSCorr(700.0)<<endl;
     cout<<"ASCor(8100)="<<Sudakov_Calculator::AlphaSCorr(8100.0)<<endl;
-    cout<<"SudakovInit="<<Sudakov_Calculator::Init(NULL)<<endl;
-    cout<<"SudakovInit="<<Sudakov_Calculator::Init(NULL)<<endl;
+    cout<<"SudakovInit="<<Sudakov_Calculator::AdjustEnvironment()<<endl;
+    cout<<"SudakovInit="<<Sudakov_Calculator::AdjustEnvironment()<<endl;
     cout<<"Running?="<<Sudakov_Calculator::IsAlphaSRunning()<<endl;
-    cout<<"ASFix="<<Sudakov_Calculator::AlphaSFix()<<endl;
     cout<<"ASApp="<<Sudakov_Calculator::AlphaSApprox()<<endl;
     cout<<"ASCor(700)="<<Sudakov_Calculator::AlphaSCorr(700.0)<<endl;
     cout<<"ASCor(8100)="<<Sudakov_Calculator::AlphaSCorr(8100.0)<<endl;
-
-    cout<<"\n"<<Dipole_Parameter::ForceFirstInit()<<endl;
-    //Dipole_Parameter::Reset();
-    //Sudakov_Calculator::AdjustParameters();
-    //Dipole_Handler::AdjustCalcBox();
-    //Chain_Handler::AdjustParameters();
 
     cout<<endl; cin>>enter; cout<<endl;
     //abort();
@@ -339,9 +319,10 @@ int main() {
 
 	while(H.EvolveChainByOneStep()) {
 	  bool below;
-	  kf::code kfc;
+	  Flavour fla;
 	  Chain* pCha=NULL;
-	  H.DecoupleNew(pCha,kfc,below);
+	  Recoil_Tool* pRct=NULL;
+	  H.DecoupleNew(pRct,pCha,fla,below); assert(pRct==NULL);
 	  if(pCha) {
 	    ++qcount;
 	    if(below) { ++itcha; itcha=chainlist.insert(itcha,pCha); --itcha;}
@@ -349,14 +330,14 @@ int main() {
 	  } else {
 	    ++gcount;
 	  }
-	  switch(kfc) {
+	  switch(fla.Kfcode()) {
 	  case kf::gluon: ++gluons; break;
 	  case kf::d    : ++cd; break;
 	  case kf::u    : ++cu; break;
 	  case kf::s    : ++cs; break;
 	  case kf::c    : ++cc; break;
 	  case kf::b    : ++cb; break;
-	  default       : cout<<kfc<<endl; assert(0);
+	  default       : cout<<fla<<endl; assert(0);
 	  }
 	  cout<<cha<<endl;
 	  Vec4D test;
@@ -433,10 +414,9 @@ int main() {
   cout<<"Test: 4.573^3="<<power<3>(4.573)<<endl;
   cout<<"Test: 7.000^2="<<power<2>(7.000);
   Dipole_Parameter::Show();
-  Sudakov_Calculator::ShowParameters();
+  Sudakov_Calculator::ShowEnvironment();
   Dipole_Handler::ShowCalcBox();
   cout<<"Number of Dipole_Handler's = "<<Dipole_Handler::InStore<<endl;
-  Chain_Handler::ShowParameters();
   cout<<om::greenbg;
   cout<<"====================================================================";
   cout<<om::reset<<endl;
@@ -463,8 +443,8 @@ int main() {
 
       {
 
-	bool bel;
-	Trio rec;
+	bool  bel;
+	xbool rec;
 	Dipole Dip(b1,a1);
 	Dipole_Handler H(Dip);
 
