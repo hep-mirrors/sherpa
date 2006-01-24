@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/10    (surely preliminarily)
+//Version: 3 ADICIC++-0.0/2005/09/08    (surely preliminarily)
 
 //A class is provided, which globally manages the Adicic parameters.
 
@@ -9,8 +9,10 @@
 #define _Dipole_Parameter_H_ _Dipole_Parameter_H_
 
 
-//#include <...>
-//#include "..."
+#include <vector>
+#include "Sudakov_Utils.hpp"
+#include "Recoil_Strategy.hpp"
+#include "Evolution_Strategy.hpp"
 
 
 #define DIPOLE_PARAMETER_OUTPUT DIPOLE_PARAMETER_OUTPUT
@@ -38,42 +40,88 @@ namespace ADICIC {
 
     static const bool sf_start;
 
-    static bool   s_isalphasrun;
-    static double s_alphasfix;
-    static double s_k2tmin;
-    static double s_k2tmax;
-
-    static int s_restratqqbar;
-    static int s_restratqg;
-    static int s_restratgqbar;
-    static int s_restratgg;
-
-    static int s_chevolstrat;
-
-    static const bool Reset();
+    static const bool SetWithStatics();
 
   public:
 
     Dipole_Parameter();
     ~Dipole_Parameter();
 
-    static inline const bool   IsAlphaSRunning();
-    static inline const double AlphaSFix();
-    static inline const double MinOfK2t();
-    static inline const double MaxOfK2t();
 
-    static inline const int RecoilStrategyQQbar();
-    static inline const int RecoilStrategyQG();
-    static inline const int RecoilStrategyGQbar();
-    static inline const int RecoilStrategyGG();
+    class Sud {
+      friend class Dipole_Parameter;
+      friend class Dipole_Parameter_Init;
+    private:
+      static bool            s_runalphas;
+      static double          s_alphasfix;
+      static unsigned short  s_nffix;    //No effect if AlphaS is running.
+      static Radiation::Type s_radiatype;
+      static double          s_k2tmin;    //FF dipoles.
+      static double          s_k2tmax;
+      static double          s_k2tiimin;    //II dipoles.
+      static double          s_k2tiimax;
+      static double          s_iieffexp;
+      //-------------------------------------
+      static double          s_k2tiifac;
+      static double          s_k2tiifixscale;
+      static double          s_k2tiivarscale;
+    public:
+      inline const bool            RunAlphaS() const;
+      inline const double          AlphaSFix() const;
+      inline const unsigned short  NfFix() const;
+      inline const Radiation::Type RadiationType() const;
+      inline const double          MinK2t() const;
+      inline const double          MaxK2t() const;
+      inline const double          MinIIK2t() const;
+      inline const double          MaxIIK2t() const;
+      inline const double          IIEffExp() const;
+      //-------------------------------------------------
+      inline void                  SetMaxIIScale(double d=-1.0);
+    } sud;
 
-    static inline const int ChainEvolutionStrategy();
+
+    class Kin {
+      friend class Dipole_Parameter;
+      friend class Dipole_Parameter_Init;
+    private:
+      static int                                s_dsmode;
+      static std::vector<Recoil_Strategy::Type> v_recostrat;
+    public:
+      inline const int                                 ShowerMode() const;
+      inline const std::vector<Recoil_Strategy::Type>& RecoilStrategy() const;
+    } kin;
+
+
+    class Evo {
+      friend class Dipole_Parameter;
+      friend class Dipole_Parameter_Init;
+    private:
+      static std::vector<Chain_Evolution_Strategy::Type> v_chevostrat;
+      //--------------------------------------------------------------
+      static std::size_t                                 s_chpartlim;
+      static std::size_t                                 s_chcorrlim;
+    public:
+      inline const std::vector<Chain_Evolution_Strategy::Type>&
+      ChainEvolutionStrategy() const;
+      //-------------------------------------------------------
+      inline void              SetChainParticleLimit(std::size_t n=7777777);
+      inline void              SetChainCorrelationLimit(std::size_t n=7777777);
+      inline const std::size_t ChainParticleLimit() const;
+      inline const std::size_t ChainCorrelationLimit() const;
+    } evo;
+
 
     static       void Show();
     static const bool Check(const double cmsenergy);
-    static const bool ForceFirstInit();
+
+    inline const double MaxIISHat(double s) const;
+    inline const double MaxIIInvScale(double s) const;
+    inline const double HighestIIInvScale(double s) const;
 
   };
+
+  extern const Dipole_Parameter dpa;
+  extern       Dipole_Parameter dpv;
 
 
 

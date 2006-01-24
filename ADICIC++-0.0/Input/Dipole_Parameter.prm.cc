@@ -6,24 +6,63 @@
 
 
 //AlphaS treatment flag
-s_isalphasrun = true;
+Sud::s_runalphas = true;
 
-//coupling
-s_alphasfix = 0.12;
+//Coupling
+Sud::s_alphasfix = 0.12;
 
-//GeV^2
-s_k2tmin = 1.0;
-s_k2tmax = 8100.0;
+//Number of quark flavours
+Sud::s_nffix = 3;
 
-//recoil strategies (compare with Recoil_Strategy.hpp)
-s_restratqqbar = Recoil_Strategy::Label_qgqbar;
-s_restratqg    = Recoil_Strategy::Label_qgg;
-s_restratgqbar = Recoil_Strategy::Label_ggqbar;
-s_restratgg    = Recoil_Strategy::Label_ggg;
+//Radiation type to build up the Sudakov groups
+Sud::s_radiatype = Radiation::g;
 
-//chain evolution strategy (compare with Evolution_Strategy.hpp)
-s_chevolstrat = Chain_Evolution_Strategy::Label;
+//FF dipoles, GeV^2
+Sud::s_k2tmin = 1.0;
+Sud::s_k2tmax = 8100.0;
+
+//II dipoles, GeV^2 except for the factor
+Sud::s_k2tiimin = 1.0;
+Sud::s_k2tiifac = 1.0;
+Sud::s_k2tiifixscale = 8100.0;
+Sud::s_k2tiivarscale = -1.0;
+Sud::s_k2tiimax = Sud::s_k2tiifac*Sud::s_k2tiifixscale;
+
+//Efficiency factor to speed up the II dipole radiation calculation
+Sud::s_iieffexp = 0.0;
 
 
 
+//Dipole shower mode
+Kin::s_dsmode = dsm::jff;
+//Recoil strategies (compare with Recoil_Strategy.hpp)
+//qqbar, qg, gqbar, gg radiating g
+Kin::v_recostrat[rl::qag] = Recoil_Strategy::Kleiss;
+Kin::v_recostrat[rl::qgg] = Recoil_Strategy::FixDir3;
+Kin::v_recostrat[rl::gag] = Recoil_Strategy::FixDir1;
+Kin::v_recostrat[rl::ggg] = Recoil_Strategy::Test;    //MinimizePt;
+//iiqbarq, iiqbarg, iigq, iigg radiating g
+Kin::v_recostrat[rl::iiaqg] = Recoil_Strategy::Unknown;
+Kin::v_recostrat[rl::iiagg] = Recoil_Strategy::Unknown;
+Kin::v_recostrat[rl::iigqg] = Recoil_Strategy::Unknown;
+Kin::v_recostrat[rl::iiggg] = Recoil_Strategy::Unknown;
+//qg radiating qbarbot, gqbar radiating qtop, gg radiating qbarbot, qtop
+Kin::v_recostrat[rl::qga] = Recoil_Strategy::FixDir1;
+Kin::v_recostrat[rl::gaq] = Recoil_Strategy::FixDir3;
+Kin::v_recostrat[rl::gga] = Recoil_Strategy::FixDir1;
+Kin::v_recostrat[rl::ggq] = Recoil_Strategy::FixDir3;
+//iiqbarq radiating qbarend, qfront,
+//iiqbarg radiating qfront, iigq radiating qbarend
+Kin::v_recostrat[rl::iiaqa] = Recoil_Strategy::stop;
+Kin::v_recostrat[rl::iiaqq] = Recoil_Strategy::stop;
+Kin::v_recostrat[rl::iiagq] = Recoil_Strategy::stop;
+Kin::v_recostrat[rl::iigqa] = Recoil_Strategy::stop;
 
+
+
+//Chain evolution strategy (compare with Evolution_Strategy.hpp)
+Evo::v_chevostrat[cel::def] = Chain_Evolution_Strategy::Production;//Emission;
+//Chain particle limit
+Evo::s_chpartlim = 7777777;
+//Chain correlation limit
+Evo::s_chcorrlim = 7777777;
