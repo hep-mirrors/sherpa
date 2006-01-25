@@ -39,26 +39,26 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
   m_is_as_factor=ToType<double>(rpa.gen.Variable("IS_CPL_SCALE_FACTOR","1"));
   m_fs_as_factor=ToType<double>(rpa.gen.Variable("FS_CPL_SCALE_FACTOR","1"));
   m_me_as_factor=p_jf->Type()>1?1.0:0.25;
-  int jetratemode = dr.GetValue<int>("CALCJETRATE",-1);
   msg_Tracking()<<"Initalize Cluster_Partons_Base with {\n"
 		<<"   Sudakov type            = "<<m_bp_mode<<"\n"
 		<<"   ren. scale factor       = "<<rpa.gen.RenormalizationScaleFactor()<<"\n" 
 		<<"   is PS ren. scale factor = "<<m_is_as_factor<<"\n"
 		<<"   fs PS ren. scale factor = "<<m_fs_as_factor<<"\n"
-		<<"   K factor                = "<<m_kfac<<"\n"
-		<<"   calc jetrate            = "<<jetratemode<<"\n}"<<std::endl;
+		<<"   K factor                = "<<m_kfac<<"\n}"<<std::endl;
   p_runas = MODEL::as; 
   
   /* 0 no sudakow weights, 1 alphas only, 2 full sudakov weight  (but for highest jet number) */
   /* cf. also begin of Cluster_Partons_Base::CalculateWeight() */
   if (m_fsrshoweron!=0) {
-    p_fssud = new NLL_Sudakov((BPMode::code)(m_bp_mode+1),
-			      p_jf->Smax(),p_jf->Smin(),p_runas,jetratemode,m_fs_as_factor);
+    p_fssud = new NLL_Sudakov
+      ((BPMode::code)(m_bp_mode+1),p_jf->Smax(),p_jf->Smin(),
+       p_runas,m_fs_as_factor);
     m_sud_mode += 1;
   }
   if (m_isrshoweron!=0) {
-    p_issud = new NLL_Sudakov((BPMode::code)(m_bp_mode+2),
-			      p_jf->Smax(),p_jf->Smin(),p_runas,jetratemode,m_is_as_factor);
+    p_issud = new NLL_Sudakov
+      ((BPMode::code)(m_bp_mode+2),p_jf->Smax(),p_jf->Smin(),
+       p_runas,m_is_as_factor);
     m_sud_mode += 2;
   }
   p_events         = new long[m_maxjetnumber];
@@ -416,7 +416,7 @@ int Cluster_Partons_Base::Set3Colours(const int nquark,const int ngluon,Vec4D * 
       m_q2_fss = dabs((p[0]-p[2]).Abs2());
       m_q2_iss = (p[0]+p[1]).Abs2();
     }
-    m_q2_hard = m_q2_qcd = Max(m_q2_iss,m_q2_fss);
+    m_q2_hard = m_q2_qcd = p[singlet].MPerp2();
     for (int i=0;i<4;i++) {
       if (fl[i].IsGluon()) {
 	if (tmode) {
