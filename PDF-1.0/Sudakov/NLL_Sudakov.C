@@ -28,7 +28,7 @@ using namespace MODEL;
 using namespace std;
 
 NLL_Sudakov::NLL_Sudakov(int mode, double _tmax,double _tmin,
-			 MODEL::Running_AlphaS * runas,int jetmode,double asfac) : 
+			 MODEL::Running_AlphaS * runas,double asfac) : 
   m_mode(mode), p_runas(runas), m_as_factor(asfac)
 {
   FixLambda2();

@@ -34,7 +34,7 @@ namespace SHERPA {
   public:
 
     NLL_Sudakov(int mode, double q2max, double q2min, 
-		MODEL::Running_AlphaS * =0 ,int =-1,double asfac=1.);
+		MODEL::Running_AlphaS *as=0,double asfac=1.);
 
     ~NLL_Sudakov();
 
