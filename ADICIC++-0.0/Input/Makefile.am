@@ -38,7 +38,7 @@ INCLUDES = -I../Tool \
 
   
 include_HEADERS = Dipole_Flavour.H Information.hpp \
-                  Sudakov_Strategy.hpp Recoil_Strategy.hpp \
+                  Sudakov_Utils.hpp Recoil_Strategy.hpp \
                   Evolution_Strategy.hpp \
                   Dipole_Parameter.H
 
