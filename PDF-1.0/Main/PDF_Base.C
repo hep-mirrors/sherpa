@@ -1,5 +1,6 @@
 #include "PDF_Base.H"
 
+#include "Message.H"
 #include "Info_Key.H"
 #include "Run_Parameter.H"
 
@@ -11,9 +12,20 @@ PDF_Base::PDF_Base():
   m_ren_scale_factor(1.)
 {
   m_ren_scale_factor = ATOOLS::rpa.gen.RenormalizationScaleFactor();
+  if(m_ren_scale_factor<=0.0) {
+    m_ren_scale_factor=1.0;
+    ATOOLS::msg.Error()<<"{ "<<__PRETTY_FUNCTION__<<": Confused about the "
+		       <<"!Renormalization! scale factor setting: "
+		       <<"Set it to 1.0 and go on.}\n";
+  }
 }
 
-PDF_Base::~PDF_Base() {}
+PDF_Base::~PDF_Base() {
+  for(size_t i=0; i<m_copies.size(); ++i) {
+    if(m_copies[i]) delete m_copies[i];
+  }
+  //std::cout<<"          PDF_BASE DESTRUCT "<<m_copies.size()<<std::endl;///////
+}
 
 bool PDF_Base::Collinear(const double kp2) const
 {
