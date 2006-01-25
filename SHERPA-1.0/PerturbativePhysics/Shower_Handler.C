@@ -53,7 +53,7 @@ Shower_Handler::Shower_Handler(std::string dir,std::string file,
   }
 #ifdef USING__Adicic    
   else if (m_showergenerator==std::string("Adicic")) {
-    p_adicic = new ADICIC::Adicic(m_dir,_model);
+    p_adicic = new ADICIC::Adicic(dir,_model);
   }
 #endif
 #ifdef USING__CSS    
