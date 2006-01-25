@@ -46,7 +46,7 @@ namespace SHERPA {
     std::string               ShowerGenerator() { return m_showergenerator; }
     bool                      ISROn()           { return m_isrshowerswitch; }
     bool                      FSROn()           { return m_fsrshowerswitch; }
-    unsigned int              MaxJetNumber()    { return m_maxjetnumber;    }
+    unsigned int              MaxJetNumber()    { return m_maxjetnumber; }
     PDF::ISR_Handler        * GetISRHandler()   { return p_isr_handler; }
     APACIC::Tree            * GetFinTree(); 
     APACIC::Tree           ** GetIniTrees();
