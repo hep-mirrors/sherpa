@@ -468,6 +468,7 @@ void Process_Group::WriteOutHistogram(std::string filename)
 
 void Process_Group::SetEvents(const double number) 
 {
+  m_gmin=1.;
   m_expevents=m_dicedevents=0;
   m_anasum=m_validanasum=0.0;
   for (size_t i=0;i<m_procs.size();++i) {
