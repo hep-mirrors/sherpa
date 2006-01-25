@@ -11,7 +11,7 @@ class Point {
 public:
   int             number;
   int             b;
-  int             t;
+  int             t;  // t=10: intermediate particle in decay treatment
   int             m;
   ATOOLS::Flavour   fl;
   ATOOLS::Flavour * extrafl;
@@ -40,6 +40,7 @@ public:
   void Print();
   void ResetExternalNumbers(int);
   void ResetProps();
+  void ResetFlag();
   Point* CopyList(Point* p);
 };
 

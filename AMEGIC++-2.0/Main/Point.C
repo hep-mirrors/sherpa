@@ -70,6 +70,16 @@ void Point::ResetExternalNumbers(int os)
   }
 }
 
+void Point::ResetFlag()
+{
+  t = 0;
+  if (left) {
+    left->ResetFlag();
+    right->ResetFlag();
+    if (middle) middle->ResetFlag();
+  }
+}
+
 void Point::ResetProps()
 {
   int st = 0;

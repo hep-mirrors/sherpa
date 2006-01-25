@@ -1707,6 +1707,12 @@ Single_Amplitude* Amplitude_Generator::Matching()
 
   Amplitude_Manipulator(N,fl,b).FixSign(first_amp);
 
+  Single_Amplitude*  f1 = first_amp;
+  while (f1) { 
+    (f1->GetPointlist())->ResetFlag();
+    f1 = f1->Next;
+  }
+
   return first_amp;
 }
 
