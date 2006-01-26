@@ -55,6 +55,8 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
     sct=info->Get<SP(Spin_Correlation_Tensor)>();
     sct->Contract(0,NULL);
     sct->Contract(1,NULL);
+//    sct->Contract(4,NULL);
+//    sct->Contract(5,NULL);
   }
 
   // treat blob
@@ -99,7 +101,7 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
 //            abort();
             for (size_t j=0;j<nout;j++) {
               int i = permutation[j];
-              int index = i+2;                      // index for this particle in SCT
+              int index = myblob->OutParticle(i)->Number();                 // index for this particle in SCT
               if( myblob->OutParticle(i)->Flav().IsStable() ) continue;
               decayed = false;
               // check if sherpa can cope with OutParticle and pick implemented ones
