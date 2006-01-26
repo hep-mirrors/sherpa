@@ -28,14 +28,13 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
   // read in some parameters
   Data_Read dr(rpa.GetPath()+"Shower.dat");     // !!!!!!!! SHOWER_DATA_FILE
   m_bp_mode  = dr.GetValue<int>("SUDAKOVTYPE",4);
-  if ((m_bp_mode&(28))!=m_bp_mode) {
-    msg.Error()<<"WARNING in Cluster_Partons_Base :"<<std::endl
-	       <<"   Wrong mode for NLL_Sudakovs: "<<m_bp_mode<<" vs "<<(m_bp_mode&127)<<std::endl
-	       <<"   Set it to 12 = ordinary NLL_Sudakovs."<<std::endl;
-    m_bp_mode=12;
+  if (Splitting_Function::KFactorScheme()==1) {
+    m_bp_mode=m_bp_mode|bpm::soft_kfac;
+    m_kfac=CA*(67./18.-M_PI*M_PI/6.)-10./9.*TR*Nf;
   }
-  if (Splitting_Function::KFactorScheme()==1) m_bp_mode=m_bp_mode|16;
-  if (m_bp_mode&16) m_kfac = CA*(67./18.-M_PI*M_PI/6.)-10./9.*TR*Nf;
+  else {
+    if (m_bp_mode&bpm::soft_kfac) m_bp_mode-=bpm::soft_kfac; 
+  }
   m_is_as_factor=ToType<double>(rpa.gen.Variable("IS_CPL_SCALE_FACTOR","1"));
   m_fs_as_factor=ToType<double>(rpa.gen.Variable("FS_CPL_SCALE_FACTOR","1"));
   m_me_as_factor=p_jf->Type()>1?1.0:0.25;
@@ -50,15 +49,15 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
   /* 0 no sudakow weights, 1 alphas only, 2 full sudakov weight  (but for highest jet number) */
   /* cf. also begin of Cluster_Partons_Base::CalculateWeight() */
   if (m_fsrshoweron!=0) {
-    p_fssud = new NLL_Sudakov
-      ((BPMode::code)(m_bp_mode+1),p_jf->Smax(),p_jf->Smin(),
-       p_runas,m_fs_as_factor);
+    p_fssud = new NLL_Sudakov((bpm::code)(m_bp_mode+1),
+			      p_jf->Smax(),p_jf->Smin(),
+			      p_runas,m_fs_as_factor);
     m_sud_mode += 1;
   }
   if (m_isrshoweron!=0) {
-    p_issud = new NLL_Sudakov
-      ((BPMode::code)(m_bp_mode+2),p_jf->Smax(),p_jf->Smin(),
-       p_runas,m_is_as_factor);
+    p_issud = new NLL_Sudakov((bpm::code)(m_bp_mode+2),
+			      p_jf->Smax(),p_jf->Smin(),
+			      p_runas,m_is_as_factor);
     m_sud_mode += 2;
   }
   p_events         = new long[m_maxjetnumber];
