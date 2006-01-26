@@ -28,6 +28,7 @@ namespace SHERPA {
     Combine_Table_Base *CreateTable(ATOOLS::Jet_Finder *jf,ATOOLS::Vec4D *amoms,Combine_Table_Base *ct,
 				    const int isrmode,const int isrshoweron);
 
+    void GenerateTables(const std::string &path);
     
   public :
     Cluster_Partons_CKKW(Matrix_Element_Handler *,ATOOLS::Jet_Finder * jf,const int,const int,const int,const int);

@@ -1,7 +1,9 @@
 #include "Cluster_Partons_CKKW.H"
 
 #include "Combine_Table_CKKW.H"
+#include "NLL_Branching_Probabilities.H"
 #include "Data_Reader.H"
+#include "Shell_Tools.H"
 #include <fstream> 
 
 using namespace SHERPA;
@@ -11,6 +13,31 @@ using namespace ATOOLS;
 using namespace PHASIC;
 using namespace MODEL;
 
+class Three_Jet_Calc: public ATOOLS::Function_Base {
+private:
+  NLL_Sudakov *p_sud;
+  NLL_Branching_Probability_Base *p_bp;
+  double m_q, m_q0;
+public:
+  Three_Jet_Calc(NLL_Sudakov *const sud,const Flavour &f): 
+    p_sud(sud),
+    p_bp(new GammaQ_QG_Lambda
+	 ((bpm::code)p_sud->Mode(),0.0,MODEL::as,f.Mass(),1.0)) {}
+  ~Three_Jet_Calc() { delete p_bp; }
+  virtual double operator()(double q);
+  virtual double operator()();
+  inline void SetQ(const double q)   { m_q=q;   }
+  inline void SetQ0(const double q0) { m_q0=q0; }
+};// end of class Three_Jet_Rate
+double Three_Jet_Calc::operator()(double q) 
+{
+  return p_bp->Gamma(q,m_q)*p_sud->Delta(kf::gluon)(q,m_q0);
+}
+double Three_Jet_Calc::operator()()
+{
+  return m_defval; 
+} 
+
 Cluster_Partons_CKKW::
 Cluster_Partons_CKKW(Matrix_Element_Handler * me,ATOOLS::Jet_Finder * jf,
 		     const int maxjet,const int isrmode,const int isron,
@@ -18,28 +45,71 @@ Cluster_Partons_CKKW(Matrix_Element_Handler * me,ATOOLS::Jet_Finder * jf,
   Cluster_Partons_Base(me,jf,maxjet,isrmode,isron,fsron),
   m_AcceptMisClusters(1.), m_LowestFromME(true)
 {
+  std::string helps;
+  Data_Reader reader;
+  if (reader.ReadFromFile(helps,"PRINT_SUDAKOV","") && helps.length()>0) 
+    GenerateTables(helps);
 }
 
 Cluster_Partons_CKKW::~Cluster_Partons_CKKW()
 {
-  int helpi(0);
-  Data_Reader reader;
-  if (reader.ReadFromFile(helpi,"PRINT_SUDAKOV","") && helpi==1) {
-    msg_Info()<<METHOD<<"(): Generating sudakov tables."<<std::endl;
+}
+
+void Cluster_Partons_CKKW::GenerateTables(const std::string &path)
+{
+  msg_Info()<<METHOD<<"("<<path<<"): Generating sudakov tables {"<<std::endl;
+  {
+    MakeDir(path,448,true);
+    msg_Indent();
     double ecms(rpa.gen.Ecms()), qmin(sqrt(rpa.gen.Ycut())*ecms);
-    std::ofstream r2out("r2_nll_107.dat");
-    for (double Q(ecms);Q>1.0;Q/=1.1) {
-      r2out<<2.0*log10(Q/ecms)<<" "<<sqr(p_fssud->Delta(kf::u)(ecms,Q))<<"\n";
+    msg_Info()<<"gluon sudakov ..."<<std::flush;
+    {
+      std::ofstream dgout((path+"/delta_g_"+ToString(ecms)+".dat").c_str());
+      for (double Q(ecms);Q>qmin;Q/=1.1) {
+	dgout<<Q<<" "<<(p_fssud->Delta(kf::gluon))(Q,qmin)<<"\n";
+      }
     }
-    std::ofstream dqout("sud_q_107.dat");
-    for (double Q(ecms);Q>qmin;Q/=1.1) {
-      dqout<<Q<<" "<<(p_fssud->Delta(kf::u))(Q,qmin)<<"\n";
-    }
-    std::ofstream dgout("sud_g_107.dat");
-    for (double Q(ecms);Q>qmin;Q/=1.1) {
-      dgout<<Q<<" "<<(p_fssud->Delta(kf::gluon))(Q,qmin)<<"\n";
+    msg_Info()<<"done"<<std::endl;
+    for (size_t i(1);i<=6;++i) {
+      Flavour f((kf::code)i);
+      if (ecms>2.0*f.Mass()) {
+	msg_Info()<<f<<" quark sudakov ..."<<std::flush;
+	std::ofstream dqout((path+"/delta_"+ToString(f)+"_"+
+			     ToString(ecms)+".dat").c_str());
+	for (double Q(ecms);Q>qmin;Q/=1.1) {
+	  dqout<<Q<<" "<<(p_fssud->Delta(f))(Q,qmin)<<"\n";
+	}
+	msg_Info()<<"done"<<std::endl;
+	msg_Info()<<"2-"<<f<<" rate ..."<<std::flush;
+	{
+	  std::ofstream r2out((path+"/r2_"+ToString(f)+"_"+
+			       ToString(ecms)+".dat").c_str());
+	  for (double Q(ecms);Q>1.0;Q/=1.1) {
+	    r2out<<2.0*log10(Q/ecms)<<" "
+		 <<sqr(p_fssud->Delta(f)(ecms,Q))<<"\n";
+	  }
+	}
+	msg_Info()<<"done"<<std::endl;
+	msg_Info()<<"2-"<<f<<"+1-gluon rate ..."<<std::flush;
+	{
+	  std::ofstream r3out((path+"/r3_"+ToString(f)+"_"+
+			       ToString(ecms)+".dat").c_str());
+	  Three_Jet_Calc *r3test(new Three_Jet_Calc(p_fssud,f));
+	  Gauss_Integrator gauss(r3test);
+	  r3test->SetQ(ecms);
+	  for (double Q(ecms);Q>1.0;Q/=1.1) {
+	    r3test->SetQ0(Q);
+	    r3out<<2.0*log10(Q/ecms)<<" "
+		 <<2.0*sqr(p_fssud->Delta(f)(ecms,Q))*
+	      gauss.Integrate(Q,ecms,1.0e-3)<<"\n";
+	  }
+	  delete r3test;
+	}
+	msg_Info()<<"done"<<std::endl;
+      }
     }
   }
+  msg_Info()<<"}"<<std::endl;
 }
 
 Combine_Table_Base *Cluster_Partons_CKKW::
