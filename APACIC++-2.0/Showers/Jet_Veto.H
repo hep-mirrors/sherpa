@@ -10,6 +10,9 @@
   \brief Declares the class Jet_Veto
 */
 
+#define JET_MEASURE PT_Measure
+#define RECOMBINATION_SCHEME P_Scheme
+
 namespace APACIC {
 
   class PT_Measure {
@@ -42,7 +45,26 @@ namespace APACIC {
     \class E_Scheme
     \brief Recombination scheme for the Cluster_Algorithm of the Jet_Veto
 
-    Combines two momenta \f$p_1\f$ and \f$p_2\f$ by 4-vector addition.
+    Combines two momenta \f$p_i\f$ and \f$p_j\f$ by 4-vector addition.
+  */
+
+  class P_Scheme {
+  public:
+    
+    ATOOLS::Vec4D operator()(const ATOOLS::Vec4D &p1,const ATOOLS::Vec4D &p2);
+
+  };// end of class P_Scheme
+  /*!
+    \class P_Scheme
+    \brief Recombination scheme for the Cluster_Algorithm of the Jet_Veto
+
+    Combines two momenta \f$p_i\f$ and \f$p_j\f$ via
+    \f[
+    \vec{p}_{ij} = \vec{p}_i+\vec{p}_j\;,
+    \f]
+    \f[
+    E_{ij} = |\vec{p}_i+\vec{p}_j|\;.
+    \f]
   */
 
   struct jv {
@@ -82,7 +104,7 @@ namespace APACIC {
   public:
 
     typedef ATOOLS::Cluster_Algorithm
-    <ATOOLS::Vec4D,PT_Measure,E_Scheme> Cluster_Type;
+    <ATOOLS::Vec4D,JET_MEASURE,RECOMBINATION_SCHEME> Cluster_Type;
 
     typedef std::vector<double> Double_Vector;
 

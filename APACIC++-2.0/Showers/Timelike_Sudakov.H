@@ -21,7 +21,7 @@ namespace APACIC {
     double m_alphasmax, m_alphasfix; 
     double m_pt2min_qed, m_alpha_qed;
 
-    int m_cpl_scheme, m_ordering_scheme;
+    int m_cpl_scheme, m_evolution_scheme, m_ordering_scheme;
     int m_mass_scheme, m_width_scheme, m_zrange_scheme;
     int m_mecorr_scheme,m_direct_photons,m_azimuthal_correlation;
     int m_last_veto, m_mode;
@@ -51,6 +51,9 @@ namespace APACIC {
 
     double UniformPhi() const;
 
+    bool DiceT(Knot *const mother,Knot *const granny);
+    bool DiceKT2(Knot *const mother,Knot *const granny);
+
 #ifdef CHECK_SPLITTINGS
     void CheckSplittings();
 #endif
@@ -77,6 +80,8 @@ namespace APACIC {
     // inline functions
     inline void SetCouplingScheme(const int scheme)     
     { m_cpl_scheme=scheme; }
+    inline void SetEvolutionScheme(const int scheme)     
+    { m_evolution_scheme=scheme; }
     inline void SetOrderingScheme(const int scheme)     
     { m_ordering_scheme=scheme; }
     inline void SetMassScheme(const int scheme)         

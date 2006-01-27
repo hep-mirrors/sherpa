@@ -25,6 +25,8 @@ Final_State_Shower::Final_State_Shower(MODEL::Model_Base *const model,
   double cplscalefac(dataread->GetValue<double>("FS_CPL_SCALE_FACTOR",1.0));
   rpa.gen.SetVariable("FS_CPL_SCALE_FACTOR",ToString(cplscalefac));
   p_sud->SetScaleFactor(cplscalefac);
+  p_sud->SetEvolutionScheme
+    (dataread->GetValue<int>("FS_EVOLUTION_SCHEME",0));  
   p_kin->SetZScheme(dataread->GetValue<int>("FS_Z_SCHEME",1));      
   p_sud->SetOrderingScheme(dataread->GetValue<int>("FS_ORDERING_SCHEME",1));  
   p_sud->SetCouplingScheme(dataread->GetValue<int>("FS_COUPLING_SCHEME",1));
@@ -788,11 +790,13 @@ InitDaughters(Tree * tree,Knot * mo,ATOOLS::Flavour flb,ATOOLS::Flavour flc,
   }
 
   mo->left->t       = mo->t; 
+  mo->left->pt2lcm  = mo->pt2lcm; 
   mo->left->E2      = (mo->z)*(mo->z)*(mo->E2); 
   mo->left->thcrit  = th;
   mo->left->maxpt2  = maxpt2;
 
   mo->right->t      = mo->t; 
+  mo->right->pt2lcm = mo->pt2lcm; 
   mo->right->E2     = (1. - mo->z)*(1. - mo->z)*(mo->E2);
   mo->right->thcrit = th;
   mo->right->maxpt2 = maxpt2; 

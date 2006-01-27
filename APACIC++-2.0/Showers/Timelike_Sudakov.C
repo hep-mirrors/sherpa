@@ -102,13 +102,24 @@ void Timelike_Sudakov::AcceptBranch(const Knot *const mo)
 
 bool Timelike_Sudakov::Dice(Knot *const mother, Knot *const granny) 
 {
+  switch (m_evolution_scheme) {
+  case 0: return DiceT(mother,granny);
+  case 1: return DiceKT2(mother,granny);
+  }
+  THROW(fatal_error,"Invalid evolution scheme.");
+  return false;
+}
+
+bool Timelike_Sudakov::DiceT(Knot *const mother, Knot *const granny) 
+{
   m_inflav=mother->part->Flav(); 
   m_t=mother->t;                  
   m_E2=mother->E2;
   if (m_t-m_t0<rpa.gen.Accu()) return false;
   double z0;
   while (m_t>m_t0) {
-    z0=Max(0.5*(1.-sqrt(1.-m_t0/m_t)),1.e-6);
+    z0=0.5*(1.-sqrt(1.-m_t0/m_t));
+    z0=Max(z0,1.e-6);
     CrudeInt(z0,1.-z0);
     if (m_lastint<0.0) return false;
     if (m_mass_scheme>=2) m_t-=mother->tout;
@@ -128,6 +139,40 @@ bool Timelike_Sudakov::Dice(Knot *const mother, Knot *const granny)
 	mother->phi=m_phi;
 	return true;
       }
+    }
+  }
+  return false; 
+}
+
+bool Timelike_Sudakov::DiceKT2(Knot *const mother, Knot *const granny) 
+{
+  m_inflav=mother->part->Flav(); 
+  m_t=mother->pt2lcm;                  
+  m_E2=mother->E2;
+  if (m_t-m_t0<rpa.gen.Accu()) return false;
+  double z0;
+  while (m_t>m_t0) {
+    z0=0.5*(1.-sqrt(1.-m_t0/m_t));
+    z0=Max(z0,1.e-6);
+    CrudeInt(z0,1.-z0);
+    if (m_lastint<0.0) return false;
+    ProduceT(m_t,mother->tout);
+    if (m_t<m_pt2min) return 0;
+    if (m_t<m_E2) {
+      SelectOne();
+      m_z=GetZ();
+      double tb(sqr(GetFlB().PSMass())), tc(sqr(GetFlC().PSMass())), kt2(m_t);
+      m_t=(tb+kt2/4.0)/m_z+(tc+kt2/4.0)/(1.0-m_z);
+      if (!Veto(mother,m_t,m_E2)) {
+	if (m_azimuthal_correlation) m_phi=p_selected->GetPhi(m_z);
+	else m_phi=UniformPhi();
+	mother->zs=mother->z=m_z;
+	mother->t=m_t;
+	mother->pt2lcm=kt2;
+	mother->phi=m_phi;
+	return true;
+      }
+      m_t=kt2;
     }
   }
   return false; 
@@ -184,6 +229,12 @@ bool Timelike_Sudakov::Veto(Knot *const mo,double t,double E2)
 
 bool Timelike_Sudakov::MassVeto(double t, double E2) 
 {
+//   double t1(sqr(GetFlB().PSMass())), t2(sqr(GetFlC().PSMass()));
+//   double p12(sqr(m_z)*E2-t1), p22(sqr(1.0-m_z)*E2-t2);
+//   double p1p2(0.5*(t-t1-t2)-m_z*(1.0-m_z)*E2);
+//   double kt2((p12*p22-sqr(p1p2))/(p12+p22-2.0*p1p2));
+//   PRINT_INFO(kt2);
+//   if (kt2<0.0 || kt2>0.25*(t-t1-t2)) return true;
   if (GetWeight(m_z,m_pt2,(m_mass_scheme==1||m_mass_scheme==3))<ran.Get()) 
     return true;
   if ((m_width_scheme>0) && (sqr(m_inflav.Width())>0.)) {
