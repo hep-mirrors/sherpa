@@ -27,6 +27,13 @@ Vec4D E_Scheme::operator()(const ATOOLS::Vec4D &p1,const ATOOLS::Vec4D &p2)
   return p1+p2; 
 }
 
+Vec4D P_Scheme::operator()(const ATOOLS::Vec4D &p1,const ATOOLS::Vec4D &p2) 
+{ 
+  Vec4D p12(p1+p2);
+  p12[0]=p12.PSpat();
+  return p12;
+}
+
 #include "Cluster_Algorithm.C"
 
 template class Cluster_Algorithm<Vec4D,PT_Measure,E_Scheme>;
@@ -158,12 +165,11 @@ int Jet_Veto::TestISKinematics(Knot *const knot)
   double z(p_kin->LightConeZ(knot->right->z,E2,knot->t,
 			     knot->right->t,knot->left->t));
   double pt2(z*(1.0-z)*knot->t-(1.0-z)*knot->right->t-z*knot->left->t);
-  msg_Debugging()<<"pt_old = "<<sqrt(knot->right->pt2lcm)
+  msg_Debugging()<<"kt = "<<sqrt(knot->right->pt2lcm)
  		 <<" pt = "<<sqrt(pt2)<<", z/\\tilde z-1 = "
 		 <<z/knot->right->z-1.0<<"\n";
   if (knot->part->Info()!='H') {
     if (m_jmode && (pt2<0.0 || pt2>p_jf->ShowerPt2())) return 0;
-    knot->left->pt2lcm=knot->pt2lcm=pt2;
   }
   return 1;
 }
@@ -183,14 +189,13 @@ int Jet_Veto::TestFSKinematics(Knot *const knot)
 	d[i]->left->part->Info()=='H' || 
 	d[i]->right->part->Info()=='H') continue;
     double pt2(p_jf->MTij2(d[i]->left->part->Momentum(),
-  			   d[i]->right->part->Momentum()));
-    msg_Debugging()<<" jv  pt = "<<sqrt(pt2)<<", pt_old = "
+   			   d[i]->right->part->Momentum()));
+    msg_Debugging()<<" jv  pt = "<<sqrt(pt2)<<", kt = "
 		   <<sqrt(d[i]->pt2lcm)<<" <- "
 		   <<d[i]->left->part->Momentum()<<" "
 		   <<d[i]->right->part->Momentum()<<", knot "
 		   <<d[i]->kn_no<<"\n";
     if (m_jmode && pt2>p_jf->ShowerPt2()) return 0;
-    d[i]->left->pt2lcm=d[i]->right->pt2lcm=pt2;
   }
   return 1;
 }
