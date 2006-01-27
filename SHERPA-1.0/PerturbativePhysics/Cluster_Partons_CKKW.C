@@ -61,11 +61,11 @@ void Cluster_Partons_CKKW::GenerateTables(const std::string &path)
   {
     MakeDir(path,448,true);
     msg_Indent();
-    double ecms(rpa.gen.Ecms()), qmin(sqrt(rpa.gen.Ycut())*ecms);
+    double ecms(rpa.gen.Ecms()), qmin(1.0), step(pow(ecms/qmin,1.0/25.0));
     msg_Info()<<"gluon sudakov ..."<<std::flush;
     {
       std::ofstream dgout((path+"/delta_g_"+ToString(ecms)+".dat").c_str());
-      for (double Q(ecms);Q>qmin;Q/=1.1) {
+      for (double Q(ecms);Q>qmin;Q/=step) {
 	dgout<<Q<<" "<<(p_fssud->Delta(kf::gluon))(Q,qmin)<<"\n";
       }
     }
@@ -76,7 +76,7 @@ void Cluster_Partons_CKKW::GenerateTables(const std::string &path)
 	msg_Info()<<f<<" quark sudakov ..."<<std::flush;
 	std::ofstream dqout((path+"/delta_"+ToString(f)+"_"+
 			     ToString(ecms)+".dat").c_str());
-	for (double Q(ecms);Q>qmin;Q/=1.1) {
+	for (double Q(ecms);Q>qmin;Q/=step) {
 	  dqout<<Q<<" "<<(p_fssud->Delta(f))(Q,qmin)<<"\n";
 	}
 	msg_Info()<<"done"<<std::endl;
@@ -84,7 +84,7 @@ void Cluster_Partons_CKKW::GenerateTables(const std::string &path)
 	{
 	  std::ofstream r2out((path+"/r2_"+ToString(f)+"_"+
 			       ToString(ecms)+".dat").c_str());
-	  for (double Q(ecms);Q>1.0;Q/=1.1) {
+	  for (double Q(ecms);Q>qmin;Q/=step) {
 	    r2out<<2.0*log10(Q/ecms)<<" "
 		 <<sqr(p_fssud->Delta(f)(ecms,Q))<<"\n";
 	  }
@@ -97,7 +97,7 @@ void Cluster_Partons_CKKW::GenerateTables(const std::string &path)
 	  Three_Jet_Calc *r3test(new Three_Jet_Calc(p_fssud,f));
 	  Gauss_Integrator gauss(r3test);
 	  r3test->SetQ(ecms);
-	  for (double Q(ecms);Q>1.0;Q/=1.1) {
+	  for (double Q(ecms);Q>qmin;Q/=step) {
 	    r3test->SetQ0(Q);
 	    r3out<<2.0*log10(Q/ecms)<<" "
 		 <<2.0*sqr(p_fssud->Delta(f)(ecms,Q))*
