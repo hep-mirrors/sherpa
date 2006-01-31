@@ -3,7 +3,7 @@
 #include "Blob.H"
 #include "Smart_Pointer.H"
 
-INSTANTIATE_SMART_POINTER(Spin_Correlation_Tensor);
+INSTANTIATE_SMART_POINTER(Spin_Correlation_Tensor)
 
 #define SCT_Debug
 

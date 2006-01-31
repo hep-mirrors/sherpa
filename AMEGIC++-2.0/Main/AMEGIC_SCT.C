@@ -68,9 +68,9 @@ namespace AMEGIC {
 	 }
        }
      }
-   };
+   }
 
-  AMEGIC_SCT::~AMEGIC_SCT() {};
+  AMEGIC_SCT::~AMEGIC_SCT() {}
 
 
   int AMEGIC_SCT::HADRONS_to_AMEGIC(size_t pol, size_t maxPol) 
