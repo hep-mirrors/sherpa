@@ -15,10 +15,12 @@
 #define PROFILE_HERE {}
 #define PROFILE_LOCAL(LOCALNAME) {}
 #endif
+#include <algorithm>
 
 using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
+
 
 Hadron_Decays::Hadron_Decays(HDHandlersMap * _dechandlers) :
   p_dechandlers(_dechandlers)
@@ -34,8 +36,6 @@ Hadron_Decays::~Hadron_Decays()
 bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight) 
 {
   PROFILE_HERE;
-  vector<pair<int,int> > * outlist     = new vector<pair<int,int> >;
-  vector<Complex>        * dummy_ampls = new vector<Complex>;
   if(p_dechandlers->empty()) return false;
 
   if (_bloblist->empty()) {
@@ -53,16 +53,17 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
   if (info) {
     spincorr = true;
     sct=info->Get<SP(Spin_Correlation_Tensor)>();
-    sct->Contract(0,NULL);
-    sct->Contract(1,NULL);
-//    sct->Contract(4,NULL);
-//    sct->Contract(5,NULL);
   }
 
   // treat blob
   Blob * myblob(NULL);
   bool found(true);
   Hadron_Decay_Handler * hdhandler;				// pointer on considered HD Handler
+  Particle * myout(NULL);
+  int index (0);
+  Spin_Density_Matrix * sigma   = NULL;         // SDM for decaying particle
+  Spin_Density_Matrix * decmatr = NULL;         // decay matrix
+  Spin_Correlation_Tensor * dummy = NULL;
   while (found) {
     found = false;
     bool keeprunning (true);
@@ -80,56 +81,40 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
             }
           case 0: {
             bool decayed(false); 
-
-            const size_t nout = myblob->NOutP();
-            vector<int> permutation;
-            int nr;
-            bool exists;
-            for (size_t j=0;j<nout;j++) {
-              nr = int(ran.Get()*nout);
-              exists = false;
-              for( size_t k=0; k<permutation.size(); ++k )
-                if( permutation[k]==nr ) {
-                  exists=true;
-                  break;
-                }
-              if( !exists ) permutation.push_back( nr );
-              else j--;
-            }
-//            for (size_t j=0;j<nout;j++) cout<<permutation[j]<<" ";
-//            cout<<endl;
-//            abort();
-            for (size_t j=0;j<nout;j++) {
-              int i = permutation[j];
-              int index = myblob->OutParticle(i)->Number();                 // index for this particle in SCT
-              if( myblob->OutParticle(i)->Flav().IsStable() ) continue;
+             
+            // get vector of out particles and shuffle randomly (if applicable)
+            Particle_Vector outparticles = myblob->GetOutParticles();
+            random_shuffle( outparticles.begin(), outparticles.end() );
+             
+            // go through all out particles
+            for( Particle_Vector::iterator outit = outparticles.begin();
+                outit!=outparticles.end(); ++outit ) {
+              myout = (*outit);                         // pointer on out particle
+              index = myout->Number();                  // index for this particle in SCT
+              if( myout->Flav().IsStable() ) continue;
               decayed = false;
               // check if sherpa can cope with OutParticle and pick implemented ones
-              int spin  = myblob->OutParticle(i)->Flav().IntSpin();
+              int spin  = myout->Flav().IntSpin();
 #ifdef USING__Hadrons
               if( p_dechandlers->find("Sherpa") != p_dechandlers->end() ) {
                 hdhandler = (*p_dechandlers)["Sherpa"]; 
-                if( hdhandler->GetHadrons()->FindDecay(myblob->OutParticle(i)->RefFlav()) ) {
-                  if (myblob->OutParticle(i)->DecayBlob()==NULL) {
+                if( hdhandler->GetHadrons()->FindDecay(myout->RefFlav()) ) {
+                  if (myout->DecayBlob()==NULL) {
                     msg.Debugging()<<"Hadron_Decays::Treat (Sherpa): Decay for "
-                      <<myblob->OutParticle(i)->Flav()<<std::endl;
-                    Spin_Density_Matrix * sigma   = NULL; 
-                    Spin_Density_Matrix * decmatr = NULL; 
+                      <<myout->Flav()<<std::endl;
+                    sigma   = NULL; 
+                    decmatr = NULL; 
                     if( spin && spincorr ) {
-                      sigma = 
-                        new Spin_Density_Matrix( sct->GetSigma(index) );
+                      sigma = new Spin_Density_Matrix( sct->GetSigma(index) );
                       sigma->Normalise();
-//                      sigma->Print();
-                      decmatr = new Spin_Density_Matrix();                  // decay matrix
+                      decmatr = new Spin_Density_Matrix();      // decay matrix
                     }
-                    hdhandler->FillHadronDecayBlobs( myblob->OutParticle(i), _bloblist, sigma, decmatr );
+                    hdhandler->FillHadronDecayBlobs( myout, _bloblist, sigma, decmatr );
                     if( decmatr && spincorr ) {
                       decmatr->Normalise();
-//                      PRINT_INFO( *sct );
-                      sct->Contract(index,decmatr); // contract over decay matrix
-//                      PRINT_INFO( *sct );
+                      sct->Contract(index,decmatr);             // contract over decay matrix
                     }
-                    //hdhandler->FillHadronDecayBlobs( myblob->OutParticle(i), _bloblist );
+                    //hdhandler->FillHadronDecayBlobs( myout, _bloblist );
                     found       = true;
                     keeprunning = false;		// start again !
                     if( sigma )   delete sigma; 
@@ -148,9 +133,9 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
               // check if Lund can cope with OutParticle 
               if( p_dechandlers->find("Lund") != p_dechandlers->end() && !decayed ) {
                 hdhandler = (*p_dechandlers)["Lund"];
-                if(hdhandler->GetLund()->FindDecay(myblob->OutParticle(i)) ) {
-                  if (myblob->OutParticle(i)->DecayBlob()==NULL) {
-                    hdhandler->FillHadronDecayBlobs( myblob->OutParticle(i), _bloblist );
+                if(hdhandler->GetLund()->FindDecay(myout) ) {
+                  if (myout->DecayBlob()==NULL) {
+                    hdhandler->FillHadronDecayBlobs( myout, _bloblist );
                     // contract over unit decay matrix to reduce size of sct
                     if( spin && spincorr ) sct->Contract(index,NULL );
                     found       = true;
@@ -167,7 +152,7 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
             }
             if( spincorr )
             if( sct->GetDepth() ) {
-              for ( size_t i=0;i<nout;i++) {
+              for ( size_t i=0;i<myblob->NOutP();i++) {
                 PRINT_INFO(myblob->OutParticle(i)->Number()<<" "<<myblob->OutParticle(i)->Flav() );
               }
               PRINT_INFO("Not eth. was contracted. "<<sct );
@@ -185,8 +170,6 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
   }
 //  PRINT_INFO("---------------");
   msg_Tracking()<<"--------- Hadron_Decays::Treat - FINISH -------------"<<endl; 
-  delete outlist;
-  delete dummy_ampls;
   return false;							// can't do anything more
 }
 
