@@ -1319,8 +1319,8 @@ Complex Tau_Three_Pseudo::KS::Tvector2( int a, int b, double x )
 Complex Tau_Three_Pseudo::KS::TSvector( int a, int b, int c, double Q2, double s, double t )
 {
   Complex ret =
-                BW_V(a,b,s) * (   Q2-2.*t-s+2.*Mass2(a)+Mass2(c) 
-                                - (Mass2(a)-Mass2(b))/m_msV[a]*( Q2+t-Mass2(c)-Q2*(t-m_msV[a]) ) )
+                BW_V(a,b,s) * (   m_ms123*( Q2-2.*t-s+2.*Mass2(a)+Mass2(c) )
+                                - (Mass2(a)-Mass2(b))/m_msV[a]*( m_ms123*(Q2+t-Mass2(c))-Q2*(t-m_msV[a]) ) )
     + m_Beta[a]*BW_v(a,b,s) * (   Q2-2.*t-s+2.*Mass2(a)+Mass2(c) 
                                 - (Mass2(a)-Mass2(b))/m_msv[a]*( Q2+t-Mass2(c)-Q2*(t-m_msv[a]) ) );
   return ret/(1.+m_Beta[a]);    
@@ -1364,7 +1364,7 @@ Complex Tau_Three_Pseudo::KS::FormFactor( int j, double Q2, double s, double t )
 //               BW_A(Q2)*BW_V(2-1,3-1,t)*(1.-1./3.*(Mass2(1)-Mass2(2))/m_msV[1]);
 //             PRINT_INFO(FF/ref);  
              break; }
-    case 3 : { FF = m_X123 + BW_A(Q2)*(Q2-m_MA2)*m_ms123/(m_MA2*Q2) 
+    case 3 : { FF = m_X123 + BW_A(Q2)*(Q2-m_MA2)*(m_MA2*Q2) 
                          *( TSvector(1-1,3-1,2-1,Q2,s,t) + TSvector(2-1,3-1,1-1,Q2,t,s) );
              FF /= 2.*(Q2-m_ms123);          
 //             Complex ref =
