@@ -27,9 +27,9 @@ namespace ATOOLS{
 
   // ACCESS METHODS FOR THE STATIC MEMBERS
 
-  void Spin_Correlation_Tensor::AddPossibleParticles( std::set<ATOOLS::kf::code> flavs )
+  void Spin_Correlation_Tensor::AddPossibleParticles( std::set<ATOOLS::kf::code> * flavs )
   {
-    for (std::set<ATOOLS::kf::code>::iterator iter=flavs.begin(); iter!=flavs.end(); ++iter)
+    for (std::set<ATOOLS::kf::code>::iterator iter=flavs->begin(); iter!=flavs->end(); ++iter)
       m_possible_particles.insert(int(*iter));  
   }
 
@@ -305,7 +305,7 @@ namespace ATOOLS{
   {
     PROFILE_HERE;
     if (m_particle == -1) {
-      PRINT_INFO("The index to be contracted could not be found!");
+      PRINT_INFO("The index ("<<i<<") could not be found!");
       return;
     }
     if (m_particle == i) {

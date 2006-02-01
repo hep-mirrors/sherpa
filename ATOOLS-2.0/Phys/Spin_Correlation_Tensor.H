@@ -51,16 +51,16 @@ namespace ATOOLS {
     // Methods for accessing the global spin-correlation settings.
   public:
 
-    void AddPossibleParticles( std::set<ATOOLS::kf::code> flavs  );
-    void AddPossibleParticle( ATOOLS::kf::code flav );
-    bool PossibleParticle( ATOOLS::kf::code flav );
-    void PrintPossibleParticles();
+    static void AddPossibleParticles( std::set<ATOOLS::kf::code> * flavs  );
+    static void AddPossibleParticle( ATOOLS::kf::code flav );
+    static bool PossibleParticle( ATOOLS::kf::code flav );
+    static void PrintPossibleParticles();
 
-    void SetMode(scmode::code mode);
-    scmode::code Mode();
+    static void SetMode(scmode::code mode);
+    static scmode::code Mode();
 
-    void Set_k0(int n) {m_k0_n = n;}
-    int Get_k0_n() { return m_k0_n; }
+    static void Set_k0(int n) {m_k0_n = n;}
+    static int Get_k0_n() { return m_k0_n; }
 
 
     // Methods for accessing an individual Spin_Correlation_Tensor.
