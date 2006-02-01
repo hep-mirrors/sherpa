@@ -5,6 +5,7 @@
 #include "Message.H"
 #include "Pol_Info.H"
 #include "Run_Parameter.H"
+#include "prof.hh"
 
 using namespace ATOOLS;
 using namespace AMEGIC;
@@ -14,6 +15,7 @@ Helicity::Helicity(int Nin,int Nout,Flavour* fl,Pol_Info* pl) :
   m_flavours(Nin+Nout, kf::none), m_nPols(Nin+Nout),
   m_allowTrafo(true), m_needsTrafo(false)  
 {
+ 
   int N=Nin+Nout;
   p_pol_types = new char[N+1];
   p_angles    = new double[N];
@@ -193,4 +195,10 @@ size_t Helicity::GetAmplitudeNumber(std::vector<int> *Helis)
     mult *= m_nPols[i];
   }
   return num;
+}
+
+int Helicity::GetPol(const int& flav, const int& hNumber)
+{ 
+  /* Return the polarisation state of flavour "flav" in helicity combination "hNumber" */
+  return p_slist[hNumber].s[flav];
 }
