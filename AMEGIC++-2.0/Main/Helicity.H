@@ -98,9 +98,12 @@ class Helicity {
     inline void AllowTransformation() { m_allowTrafo = true; }
     inline bool UseTransformation() { return  m_needsTrafo && m_allowTrafo; }
 
+  //! Returns the polarisation state of particle "flav" in the helicity combination "hNumber"
+  int GetPol(const int& flav, const int& hNumber);
     //! Return the amplitude number for the given helicity combination
     size_t GetAmplitudeNumber(std::vector<int> *Helis);
     size_t Nflavs() { return m_flavours.size(); }
+    ATOOLS::Flavour GetFlav(size_t i) { return m_flavours[i]; }
     ~Helicity();
 
   };
