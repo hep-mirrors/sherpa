@@ -49,7 +49,6 @@ namespace SHERPA {
     unsigned long          m_ntrial, m_sntrial;
 
     std::string            m_name,m_signalgenerator,m_readin;
-    ATOOLS::Switch::code         m_spincorrelations;
     int  m_eventmode;
     int  m_sudakovon;
     bool m_apply_hhmf;

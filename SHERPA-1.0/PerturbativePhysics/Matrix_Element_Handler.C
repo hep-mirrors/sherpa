@@ -109,7 +109,6 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
 {
   p_dataread        = new Data_Read(m_dir+m_file);
   m_signalgenerator = p_dataread->GetValue<string>("ME_SIGNAL_GENERATOR",std::string("Amegic"));
-  m_spincorrelations= p_dataread->GetValue<Switch::code>("SPIN_CORRELATIONS",Switch::Off);
   m_sudakovon       = p_dataread->GetValue<int>("SUDAKOV WEIGHT",0);
   m_apply_hhmf      = p_dataread->GetValue<int>("TEVATRON_WpWm",0);
   if (m_signalgenerator==string("Amegic")) {
@@ -623,7 +622,7 @@ AMEGIC::Point * Matrix_Element_Handler::GetDiagram(int _diag)
 }
 ATOOLS::Spin_Correlation_Tensor * Matrix_Element_Handler::GetSpinCorrelations() 
 {
-  if (m_spincorrelations  == Switch::Off) return NULL;
+  if (Spin_Correlation_Tensor::Mode()==scmode::None) return NULL;
   if (m_mode==1) return p_amegic->GetProcess()->GetSpinCorrelations();
   msg.Error()<<"Error in Matrix_Element_Handler::GetSpinCorrelations()."<<endl
 	     <<"   Wrong mode for "<<m_signalgenerator<<", abort."<<endl;
