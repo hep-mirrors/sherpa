@@ -1,7 +1,15 @@
+/* CHANGES:
+   - fixed bug in Trace(sigma0) for particle 0
+   - fixed bug in GetSigma(i) and GetSigma(i, sigma0) where particle-indices <i where
+     contracted with ones, instead of unit-matrix.
+   - operator+= now knows more than only 4 entries.
+*/
+
 #include "Spin_Correlation_Tensor.H"
 #include "Message.H"
 #include "Blob.H"
 #include "Smart_Pointer.H"
+#include "prof.hh"
 
 INSTANTIATE_SMART_POINTER(Spin_Correlation_Tensor)
 
@@ -9,18 +17,58 @@ INSTANTIATE_SMART_POINTER(Spin_Correlation_Tensor)
 
 namespace ATOOLS{
 
-  int Spin_Correlation_Tensor::m_k0_n(-1);
+  // INITIALIZATION OF THE STATIC MEMBERS OF SPIN_CORRELATION_TENSOR
 
-  Spin_Correlation_Tensor::~Spin_Correlation_Tensor() 
-  {   
-    if (p_next!=NULL) {
-      for (std::vector<Spin_Correlation_Tensor*>::iterator sit=p_next->begin();
-          sit!=p_next->end();++sit) {
-        delete (*sit);
-      }
-      delete p_next;
-    }
+  int Spin_Correlation_Tensor::m_k0_n(-1);
+  std::set<int> Spin_Correlation_Tensor::m_possible_particles;
+  scmode::code Spin_Correlation_Tensor::m_mode(scmode::None);
+  bool Spin_Correlation_Tensor::m_created(false);
+
+
+  // ACCESS METHODS FOR THE STATIC MEMBERS
+
+  void Spin_Correlation_Tensor::AddPossibleParticles( std::set<ATOOLS::kf::code> flavs )
+  {
+    for (std::set<ATOOLS::kf::code>::iterator iter=flavs.begin(); iter!=flavs.end(); ++iter)
+      m_possible_particles.insert(int(*iter));  
   }
+
+  void Spin_Correlation_Tensor::AddPossibleParticle( ATOOLS::kf::code flav )
+  {
+    m_possible_particles.insert(int(flav));
+  }
+  
+  bool Spin_Correlation_Tensor::PossibleParticle( ATOOLS::kf::code flav)
+  {
+    for (std::set<int>::iterator iter=m_possible_particles.begin(); 
+	 iter!=m_possible_particles.end(); ++iter)
+      if (int(flav) == (*iter)) return true;
+    return false;
+  }
+   
+  void Spin_Correlation_Tensor::PrintPossibleParticles()
+  {
+    for (std::set<int>::iterator iter=m_possible_particles.begin(); 
+	 iter!=m_possible_particles.end(); ++iter)
+      std::cout<<(*iter)<<" ";  
+    std::cout<<std::endl;
+  }
+  
+  void Spin_Correlation_Tensor::SetMode(scmode::code i)
+  {
+    if ( m_created && (i != m_mode) ) {
+      msg.Error()<<"Warning in Spin_Correlation_Tensor::SetMode:"<<std::endl;
+      msg.Error()<<" New spin-correlation mode "<<i<<" was selected but"<<std::endl;
+      msg.Error()<<" some Spin_Correlation_Tensor objects were already created."<<std::endl;
+      msg.Error()<<" Old mode was "<<m_mode<<std::endl;
+    }
+    m_mode = i;
+  }
+
+  scmode::code Spin_Correlation_Tensor::Mode()  { return m_mode; }
+
+
+  // CONSTRUCTOR AND DESTRUCTOR FOR AN SCT-TREE STRUCTURE
 
   Spin_Correlation_Tensor::Spin_Correlation_Tensor(
       std::vector<std::pair<int,int> >* particles, 
@@ -28,19 +76,42 @@ namespace ATOOLS{
       size_t pPos, size_t aPos1, size_t aPos2):
     p_next(NULL)
   {
+    PROFILE_HERE;
+#ifdef SCT_Debug
+    if (m_mode == scmode::None) {
+      PRINT_INFO("m_mode == None; why do you want to create an SCT structure ?");
+    }
+#endif
+    m_created = true;
+
     if( particles->size() ) {
       if (pPos<particles->size()) {
         // Store particle index and create follow-up nodes.
         m_particle  = (*particles)[pPos].first;
         int nrspins = (*particles)[pPos].second + 1;      // 2*spin + 1
-        p_next = new std::vector<Spin_Correlation_Tensor*>(nrspins*nrspins);
-        size_t add = pow( nrspins, pPos );
-        for( int leg1=0; leg1<nrspins; ++leg1 ) {
-          for( int leg2=0; leg2<nrspins; ++leg2 ) {
-            (*p_next)[nrspins*leg1+leg2] = 
-              new Spin_Correlation_Tensor(particles,Amplitudes,pPos+1,aPos1+add*leg1, aPos2+add*leg2);
-          }
-        }
+
+	if (m_mode == scmode::Diagonal) {
+	  // only store diagonals
+	  p_next = new std::vector<Spin_Correlation_Tensor*>(nrspins);
+	  size_t add = (size_t) pow( nrspins, pPos );
+	  for( int leg=0; leg<nrspins; ++leg ) {
+	    (*p_next)[leg] = 
+	      new Spin_Correlation_Tensor(particles,Amplitudes,pPos+1,
+					  aPos1+add*leg, aPos2+add*leg);
+	  }	 
+	}
+	if (m_mode == scmode::Full) { 
+	  // store off-diagonals, too
+	  p_next = new std::vector<Spin_Correlation_Tensor*>(nrspins*nrspins);
+	  size_t add = (size_t) pow( nrspins, pPos );
+	  for( int leg1=0; leg1<nrspins; ++leg1 ) {
+	    for( int leg2=0; leg2<nrspins; ++leg2 ) {
+	      (*p_next)[nrspins*leg1+leg2] = 
+		new Spin_Correlation_Tensor(particles,Amplitudes,pPos+1,
+					  aPos1+add*leg1, aPos2+add*leg2);
+	    }
+	  }
+	}
       } else {
         // Set the values MM*
         m_particle = -1;
@@ -53,43 +124,51 @@ namespace ATOOLS{
     }
   }
 
-  Spin_Correlation_Tensor::Spin_Correlation_Tensor(double x, std::vector<int>* creation_list, 
-						   size_t pos) :
-    p_next(NULL)
-  {
-    if (pos<creation_list->size()) {
-      m_particle=(*creation_list)[pos];
-      
-      // Create the follow-up nodes
-      p_next = new std::vector<Spin_Correlation_Tensor*>(4);
-      (*p_next)[0] = new Spin_Correlation_Tensor(x/2, creation_list, pos+1);
-      (*p_next)[1] = new Spin_Correlation_Tensor(0., creation_list, pos+1);
-      (*p_next)[2] = new Spin_Correlation_Tensor(0., creation_list, pos+1);
-      (*p_next)[3] = new Spin_Correlation_Tensor(x/2, creation_list, pos+1);
+  Spin_Correlation_Tensor::~Spin_Correlation_Tensor() 
+  {   
+    if (p_next!=NULL) {
+      for (std::vector<Spin_Correlation_Tensor*>::iterator sit=p_next->begin();
+          sit!=p_next->end();++sit) {
+        delete (*sit);
+      }
+      delete p_next;
     }
-    else {
-      m_particle = -1;
-      m_value    =Complex(x, 0.);
-    };
   }
+
+
+  // ACCESS METHODS FOR THE SCT-TREE STRUCTURE
 
   Complex Spin_Correlation_Tensor::Trace( Spin_Density_Matrix * sigma0 )
   {
+    PROFILE_HERE;
+#ifdef SCT_DEBUG
+    if (m_mode == scmode::None) {
+      PRINT_INFO("Warning! Spin_Correlation_Tensor::Trace(Spin_Density_Matrix) was called"
+		 <<" but m_mode == None");
+    }
+#endif
     if (m_particle==-1) return m_value;
-    if (m_particle != 0) {
-      size_t max(GetIdxRange());
-      size_t pos(0);
+
+    if (m_particle != 0) { 
       Complex val(0., 0.);
-      for (size_t i=0; i<max; ++i) {
-	val += (*p_next)[pos]->Trace();
-	pos += max+1;
+      if (m_mode == scmode::Diagonal) {
+	for (size_t i=0; i<p_next->size(); ++i) val += (*p_next)[i]->Trace();
+      }
+      else if (m_mode == scmode::Full) {
+	size_t max(GetIdxRange());
+	size_t pos(0);
+	Complex val(0., 0.);
+	for (size_t i=0; i<max; ++i) {
+	    val += (*p_next)[pos]->Trace();
+	    pos += max+1;
+	}
       }
       return val;
-    } // return (*p_next)[0]->Trace(sigma0) + (*p_next)[3]->Trace(sigma0); 
-
+    } 
+    
     // soft-contraction with sigma0.
 #ifdef SCT_Debug
-    if (p_next->size() != sigma0->NrEntries()) {
+    if ((m_mode == scmode::Full) && (p_next->size() != sigma0->NrEntries())) {
       PRINT_INFO("Error in Spin_Correlation_Tensor::Trace():");
       PRINT_INFO("The size of legs does not coincide with the size of the given "
 		 <<"spin-density matrix. Abort the run.");
@@ -97,31 +176,69 @@ namespace ATOOLS{
     }
 #endif
     Complex sum (0.,0.);
-    for (size_t i=0; i<p_next->size(); ++i)
-      sum += (*sigma0)[i] * (*p_next)[0]->Trace();
+    if (m_mode == scmode::Diagonal)
+      for (size_t i=0; i<p_next->size(); ++i)
+	sum += (*sigma0)[i*p_next->size()+i] * (*p_next)[i]->Trace();
+    else if (m_mode == scmode::Full)
+      for (size_t i=0; i<p_next->size(); ++i)
+	sum += (*sigma0)[i] * (*p_next)[i]->Trace();
     return sum;  
   }
 
-  // return SDM by using a "soft contraction" over mother SDM
-  Spin_Density_Matrix Spin_Correlation_Tensor::GetSigma(int i, Spin_Density_Matrix * sigma0 ) 
+  Complex Spin_Correlation_Tensor::Trace()
   {
+    PROFILE_HERE;
+    if (m_particle==-1) return m_value;
+    else {
+      size_t max(GetIdxRange());
+      size_t pos(0);
+
+      Complex val(0., 0.);
+      if (m_mode == scmode::Full)
+	for (size_t i=0; i<max; ++i) {
+	  val += (*p_next)[pos]->Trace();
+	  pos += max+1;
+	}
+      if (m_mode == scmode::Diagonal)
+	for (size_t i=0; i<p_next->size(); ++i) val += (*p_next)[i]->Trace();
+	  
+      return val;
+    }
+  }
+
+  // return SDM by using a "soft contraction" over mother SDM
+  Spin_Density_Matrix Spin_Correlation_Tensor::GetSigma(int i, Spin_Density_Matrix * sigma0 )
+  {
+    PROFILE_HERE;
+#ifdef SCT_Debug
+    if (m_mode == 0)
+      PRINT_INFO("And how do you want to GetSigma from nothing? m_mode==0 !");
     if (m_particle==-1 ) {
       PRINT_INFO("A terrible accident happened. The requested index "<<i<<" couldn't be found."
           <<"Let's return nothing, then.");
       return Spin_Density_Matrix();
     }
+#endif
     size_t max(GetIdxRange());
     Spin_Density_Matrix anSDM(max);
 
     if (m_particle == i) {
-      for (size_t idx=0; idx<p_next->size(); ++idx)
-        anSDM[idx] = (*p_next)[idx]->Trace();
+      if (m_mode == scmode::Diagonal)
+	for (size_t idx=0; idx<p_next->size(); ++idx)
+	  anSDM[idx*p_next->size()+idx] = (*p_next)[idx]->Trace();
+      if (m_mode == scmode::Full)
+	for (size_t idx=0; idx<p_next->size(); ++idx)
+	  anSDM[idx] = (*p_next)[idx]->Trace();
       return anSDM;
     } 
     else {
       if( m_particle != 0 ) {
-        for (size_t idx=0; idx<p_next->size(); ++idx)
-          anSDM += (*p_next)[idx]->GetSigma(i);
+	if (m_mode == scmode::Diagonal)
+	  for (size_t idx=0; idx<p_next->size(); ++idx)
+	    anSDM += (*p_next)[idx]->GetSigma(i);
+	if (m_mode == scmode::Full)
+	  for (size_t idx=0; idx<max; ++idx)
+	    anSDM += (*p_next)[idx*max+idx]->GetSigma(i);
         return anSDM;
       }
       else {
@@ -134,35 +251,26 @@ namespace ATOOLS{
         }
 #endif
         Spin_Density_Matrix loc_sdm(max);
-        for (size_t idx=0; idx<p_next->size(); ++idx) {
-          PRINT_INFO(idx);
-          loc_sdm = (*p_next)[idx]->GetSigma(i);
-          loc_sdm *= (*sigma0)[idx];
-          anSDM += loc_sdm; 
-//          idx+=max;
-        }
+	if (m_mode == scmode::Full)
+	  for (size_t idx=0; idx<p_next->size(); ++idx) {
+	    loc_sdm = (*p_next)[idx]->GetSigma(i);
+	    loc_sdm *= (*sigma0)[idx];
+	    anSDM += loc_sdm; 
+	  }
+	if (m_mode == scmode::Diagonal)
+	  for (size_t idx=0; idx<p_next->size(); ++idx) {
+	    loc_sdm = (*p_next)[idx]->GetSigma(i);
+	    loc_sdm *= (*sigma0)[idx*p_next->size()+idx];
+	    anSDM += loc_sdm;
+	  }
       }
     }
     return anSDM;
-  } // returns same SDM as using "hard" contraction over mother sigma
-
-  Complex Spin_Correlation_Tensor::Trace()
-  {
-    if (m_particle==-1) return m_value;
-    else {
-      size_t max(GetIdxRange());
-      size_t pos(0);
-      Complex val(0., 0.);
-      for (size_t i=0; i<max; ++i) {
-	val += (*p_next)[pos]->Trace();
-	pos += max+1;
-      }
-      return val;
-    } //return (*p_next)[0]->Trace() + (*p_next)[3]->Trace();		     
   }
-
+  
   Spin_Density_Matrix Spin_Correlation_Tensor::GetSigma(int i) 
   {
+    PROFILE_HERE;
     if (m_particle==-1) {
       PRINT_INFO("A terrible accident happened. The requested index "<<i<<" couldn't be found."
           <<"Let's return nothing, then.");
@@ -172,35 +280,53 @@ namespace ATOOLS{
     Spin_Density_Matrix anSDM(max);
 
     if (m_particle == i) {
-      for (size_t idx=0; idx<p_next->size(); ++idx) {
-        anSDM[idx] = (*p_next)[idx]->Trace();
-//        idx+=max;
-      }
+
+      if (m_mode==scmode::Diagonal)
+	for (size_t idx=0; idx<p_next->size(); ++idx)
+	  anSDM[idx*p_next->size()+idx] = (*p_next)[idx]->Trace();
+
+      if (m_mode==scmode::Full)
+	for (size_t idx=0; idx<p_next->size(); ++idx) anSDM[idx] = (*p_next)[idx]->Trace();
+      
       return anSDM;
     }
 
-    for (size_t idx=0; idx<p_next->size(); ++idx)
-      anSDM += (*p_next)[idx]->GetSigma(i);
+    if (m_mode == scmode::Diagonal)
+      for (size_t idx=0; idx<p_next->size(); ++idx)
+	anSDM += (*p_next)[idx]->GetSigma(i);
+    if (m_mode == scmode::Full)
+      for (size_t idx=0; idx<max; ++idx)
+	anSDM += (*p_next)[idx*max+idx]->GetSigma(i);
+
     return anSDM;
   }
 
   void Spin_Correlation_Tensor::Contract(int i, Spin_Density_Matrix* SDM) 
   {
+    PROFILE_HERE;
     if (m_particle == -1) {
       PRINT_INFO("The index to be contracted could not be found!");
       return;
     }
     if (m_particle == i) {
       // Do matrix multiplication
-      if( SDM ) for (size_t idx=0; idx<p_next->size(); ++idx) 
-          *(*p_next)[idx] *= (*SDM)[idx];      
-      else {    // contract with unity matrix
-        Spin_Density_Matrix * unitmatrix = new Spin_Density_Matrix(GetIdxRange());
-        unitmatrix->SetUnitMatrix();
-        for (size_t idx=0; idx<p_next->size(); ++idx) {
-          *(*p_next)[idx] *= (*unitmatrix)[idx];      
-         }
-        delete unitmatrix;
+      if( SDM ) {
+	if (m_mode == scmode::Full)
+	  for (size_t idx=0; idx<p_next->size(); ++idx) 
+	    *(*p_next)[idx] *= (*SDM)[idx];      
+	if (m_mode == scmode::Diagonal)
+	  for (size_t idx=0; idx<p_next->size(); ++idx)
+	    *(*p_next)[idx] *= (*SDM)[idx*p_next->size()+idx];
+      }
+      else { // multiply with unit-matrix; this is obsolete for m_mode == scmode::Diagonal
+	if (m_mode == scmode::Full) {
+	  Spin_Density_Matrix * unitmatrix = new Spin_Density_Matrix(GetIdxRange());
+	  unitmatrix->SetUnitMatrix();
+	  for (size_t idx=0; idx<p_next->size(); ++idx) {
+	    *(*p_next)[idx] *= (*unitmatrix)[idx];      
+	  }
+	  delete unitmatrix;
+	}
       }
 
       // An sum it up and delete obsolete branches
@@ -222,6 +348,9 @@ namespace ATOOLS{
     }
   }
 
+
+  // INTERNAL HELPER METHODS
+
   void Spin_Correlation_Tensor::Soft_Delete()
   {
     p_next = NULL;
@@ -230,27 +359,19 @@ namespace ATOOLS{
 	            
   Spin_Correlation_Tensor& Spin_Correlation_Tensor::operator+=(Spin_Correlation_Tensor& SCT) 
   {
-    if (m_particle==-1) {
+    PROFILE_HERE;
+    if (m_particle==-1) 
       m_value+=SCT.m_value;
-    } else {
-      *(*p_next)[0] += *SCT(0);    
-      *(*p_next)[1] += *SCT(1);  
-      *(*p_next)[2] += *SCT(2);  
-      *(*p_next)[3] += *SCT(3);
-    } 
+    else 
+      for (size_t idx=0; idx<p_next->size(); ++idx) *(*p_next)[idx] += *SCT(idx);
     return *this;
-  }
+  } 
   
   Spin_Correlation_Tensor& Spin_Correlation_Tensor::operator*=(Complex& c)
   {
-    if (m_particle==-1) {
-      m_value*=c;
-    } else {
-      *(*p_next)[0] *= c;   
-      *(*p_next)[1] *= c;    
-      *(*p_next)[2] *= c;    
-      *(*p_next)[3] *= c;
-    }
+    PROFILE_HERE;
+    if (m_particle==-1)  m_value*=c;
+    else for (size_t idx=0; idx<p_next->size(); ++idx) *(*p_next)[idx] *= c;
     return *this;
   }
 
@@ -274,12 +395,13 @@ namespace ATOOLS{
 
   size_t Spin_Correlation_Tensor::GetDepth( size_t i )
   {
+    PROFILE_HERE;
     if( m_particle == -1 ) return i;
     else return (*p_next)[0]->GetDepth(i+1);
   }
 
   size_t Spin_Correlation_Tensor::GetIdxRange()
-  {
+  { if (m_mode == scmode::Diagonal) return p_next->size();
     if (p_next == NULL) return 0;
     switch (p_next->size()) 
       {
@@ -296,6 +418,7 @@ namespace ATOOLS{
 	return 0;}
       }
   }
+
 
 template class Blob_Data<SP(Spin_Correlation_Tensor) >;
 template SP(Spin_Correlation_Tensor) &Blob_Data_Base::Get<SP(Spin_Correlation_Tensor) >();
