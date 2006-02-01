@@ -1214,7 +1214,6 @@ double Single_Process::operator()(const ATOOLS::Vec4D * mom)
   double helvalue;
   if (p_shand->Is_String()) {
     p_shand->Calculate();
-
     if (p_hel->UseTransformation()) {
       M2 = p_ampl->Zvalue(p_hel);
     } else {
@@ -1242,10 +1241,9 @@ double Single_Process::operator()(const ATOOLS::Vec4D * mom)
 
 ATOOLS::Spin_Correlation_Tensor* Single_Process::GetSpinCorrelations()
 {
-  Spin_Correlation_Tensor* SCT = p_ampl->GetSpinCorrelations(p_hel);
-  SCT->Set_k0(p_BS->Getk0_n());
+  Spin_Correlation_Tensor* SCT = p_ampl->GetSpinCorrelations(p_hel, m_nin);
+  if (SCT != NULL) SCT->Set_k0(p_BS->Getk0_n());
   return SCT;
-  //  return p_ampl->GetSpinCorrelations(p_hel);
 }
 
 ATOOLS::Blob_Data_Base *Single_Process::OneEvent(double _mass) { 
