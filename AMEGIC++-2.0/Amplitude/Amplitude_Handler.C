@@ -20,7 +20,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Info* pinf
 				     Interaction_Model_Base * model,Topology* top,
 				     int & _orderQCD,int & _orderEW,Basic_Sfuncs* BS,
 				     String_Handler* _shand, bool print_graph) 
-  : shand(_shand),CFCol_Matrix(0),probabs(0),Mi(0), m_print_graph(print_graph)
+  : shand(_shand),CFCol_Matrix(0),probabs(0),Mi(0), m_print_graph(print_graph), p_SCT(NULL)
 {
   int ndecays=pinfo->Ndecays();
   int nm = pinfo->Nmax(0);
@@ -267,6 +267,7 @@ Amplitude_Handler::~Amplitude_Handler()
       firstgraph = n;
     }
   }
+  if (p_SCT!=NULL) delete p_SCT;
 }
 
 int Amplitude_Handler::PropProject(Amplitude_Base* f,int zarg)
@@ -696,21 +697,31 @@ Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
   return M;
 }
 
-ATOOLS::Spin_Correlation_Tensor* Amplitude_Handler::GetSpinCorrelations(Helicity* hel)
+ATOOLS::Spin_Correlation_Tensor* Amplitude_Handler::GetSpinCorrelations(Helicity* hel, 
+									size_t nIn)
 { 
-  // Reserve memory for the amplitudes.
-  std::vector< std::vector<Complex> > A;
-  A.resize(hel->MaxHel());
-  for (size_t i=0; i<A.size(); ++i)
-    A[i].resize(graphs.size());
+  PROFILE_HERE;
 
-  // Get the amplitudes
-  for (size_t ihel=0; ihel<hel->MaxHel(); ++ihel)
-    for(size_t col=0; col<graphs.size(); ++col)
-      A[ihel][col] = graphs[col]->Zvalue(ihel);
+  // If there is no pre-SCT constructed, then do this now
+  if (p_SCT==NULL) {
+    Spin_Correlation_Tensor SCTmethods;
 
-  // Create the spin-correlation tensor and return a pointer to it.
-  return new AMEGIC_SCT(&A, CFCol_Matrix, hel);
+    // construct the list of all particles which are not contracted over
+    std::vector<int> pList;
+    for (size_t i=nIn; i<hel->Nflavs(); ++i)
+      if ( SCTmethods.PossibleParticle( hel->GetFlav(i).Kfcode() ) )
+	pList.push_back(i);
+
+    // create an initial list of all amplitudes
+    std::vector<int> AmplNrs;
+    for (size_t i=0; i<hel->MaxHel(); ++i) AmplNrs.push_back(i);
+
+    // Create the pre-sct
+    p_SCT = new AMEGIC_SCT(AmplNrs, AmplNrs, hel, &pList);
+  }
+
+  // Create an SCT from the pre-SCT
+  return p_SCT->CreateSCT(&graphs, CFCol_Matrix, hel);
 }
 
 int Amplitude_Handler::TOrder(Single_Amplitude* a)
