@@ -25,6 +25,7 @@
 #ifdef USING__Hadrons
 #include "Hadrons.H"
 #endif
+#include "Spin_Correlation_Tensor.H"
 
 
 using namespace SHERPA;
@@ -64,10 +65,8 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
   m_hadrondecaysdat  = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
 
-  ATOOLS::Switch::code 
-    spincorrelations = p_dataread->GetValue<Switch::code>("SPIN_CORRELATIONS",Switch::Off);
-  if( spincorrelations ) Data_Read::SetCommandLine("SPIN_CORRELATIONS","On");
-  else                   Data_Read::SetCommandLine("SPIN_CORRELATIONS","Off");
+  int spincorrelations = p_dataread->GetValue<int>("SPIN_CORRELATIONS",0);
+  Spin_Correlation_Tensor::SetMode( (ATOOLS::scmode::code)spincorrelations );
 }
 
 Initialization_Handler::Initialization_Handler(int argc,char * argv[]) : 
@@ -116,10 +115,8 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 
   CheckFlagConsistency();
 
-  ATOOLS::Switch::code 
-    spincorrelations = p_dataread->GetValue<Switch::code>("SPIN_CORRELATIONS",Switch::Off);
-  if( spincorrelations ) Data_Read::SetCommandLine("SPIN_CORRELATIONS","On");
-  else                   Data_Read::SetCommandLine("SPIN_CORRELATIONS","Off");
+  int spincorrelations = p_dataread->GetValue<int>("SPIN_CORRELATIONS",0);
+  Spin_Correlation_Tensor::SetMode( (ATOOLS::scmode::code)spincorrelations );
 }
 
 
