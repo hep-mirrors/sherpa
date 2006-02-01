@@ -2,44 +2,79 @@
 #define Spin_Correlation_Tensor_h
 
 #include <vector>
+#include <set>
 #include <MyComplex.H>
 #include <utility>
 #include "Node.H"
 #include "Spin_Density_Matrix.H"
 
+
 namespace ATOOLS {
+  
+  class scmode {
+  public:
+    enum code {
+      None     = 0,
+      Diagonal = 1,
+      Full     = 2 };
+  };
 
   class Spin_Correlation_Tensor
   {
+    // Statics; global parameters.
   protected:
-
     static int m_k0_n;
+    static std::set<int> m_possible_particles;
+    static scmode::code m_mode;
+    static bool m_created;
 
-    //! For an endnode: The complex value stored for this spin-combination
+    // Member-variables for each node.
+  protected:
     Complex m_value;
-    //! The particle the indices this node stores; -1 for endnodes which are only a complex number.
     int m_particle;
-
-    //! pointers the follow-up nodes each corresponding to a different spin-combination for the current particle.
     std::vector<Spin_Correlation_Tensor*> *p_next;
 
-    //! Returns the index-range for the current node (for example two for spin-1/2 particles).
+    // Internal helper-methods.
+  protected:
+    //! Return the maximum spin; usefull if m_mode == scmode::Full.
     size_t GetIdxRange();
+    //! Removes a node without removing the follow-up nodes
+    void Soft_Delete();
+    //! Adds corresponding entries from SCT to current object.
+    Spin_Correlation_Tensor& operator+=(Spin_Correlation_Tensor& SCT);
+    //! Return a pointer to entry "number".
+    Spin_Correlation_Tensor* operator()(const size_t &number);
+    //! Multiplies all follow-up elements by a Number
+    Spin_Correlation_Tensor& operator*=(Complex& c);
+
+
+    // Methods for accessing the global spin-correlation settings.
+  public:
+
+    void AddPossibleParticles( std::set<ATOOLS::kf::code> flavs  );
+    void AddPossibleParticle( ATOOLS::kf::code flav );
+    bool PossibleParticle( ATOOLS::kf::code flav );
+    void PrintPossibleParticles();
+
+    void SetMode(scmode::code mode);
+    scmode::code Mode();
+
+    void Set_k0(int n) {m_k0_n = n;}
+    int Get_k0_n() { return m_k0_n; }
+
+
+    // Methods for accessing an individual Spin_Correlation_Tensor.
   public:
     //! Default constructor; sets p_next to NULL to avoid crashes.
     Spin_Correlation_Tensor():p_next(NULL){};
-    virtual ~Spin_Correlation_Tensor();
-     
-    //! constructor
+    //! constructor for HADRONS
     Spin_Correlation_Tensor(
         std::vector<std::pair<int,int> >* particles, 
         std::vector<Complex>* Amplitudes,
         size_t pPos=0, 
         size_t aPos1=0, 
         size_t aPos2=0 );
-
-    //! Test-constructor; creates a product of delta(i,j).
-    Spin_Correlation_Tensor(double x, std::vector<int>* creation_list, size_t pos);
+    virtual ~Spin_Correlation_Tensor();
 
     //! Returns the trace; equivalent to soft-contracting with unit-matrices.
     Complex Trace();
@@ -51,22 +86,6 @@ namespace ATOOLS {
 
     //! Contract particle i with SDM/DM
     void Contract(int i, Spin_Density_Matrix* SDM);
-
-    //! Return a pointer to entry "number".
-    Spin_Correlation_Tensor* operator()(const size_t &number);
-
-    //! Removes a node without removing the follow-up nodes
-    void Soft_Delete();
-
-    //! Adds corresponding entries from SCT to current object.
-    Spin_Correlation_Tensor& operator+=(Spin_Correlation_Tensor& SCT);
-
-    //! Multiplies all follow-up elements by a Number
-    Spin_Correlation_Tensor& operator*=(Complex& c);
-
-
-    void Set_k0(int n) {m_k0_n = n;}
-    int Get_k0_n() { return m_k0_n; }
 
     friend std::ostream &operator<<
       (std::ostream &ostr, Spin_Correlation_Tensor &sct);
