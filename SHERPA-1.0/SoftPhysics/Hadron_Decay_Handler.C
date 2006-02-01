@@ -47,6 +47,7 @@ void Hadron_Decay_Handler::EraseTreated(std::set<int> * hadrons)
     for (map<kf::code,Decay_Table *>::iterator citer=cans->begin();citer!=cans->end();citer++) {
       //msg.Debugging()<<"Killing flavours: "<<citer->first<<" ("<<cans->size()<<" ) "<<hadrons->size()<<endl;
       hadrons->erase(int(citer->first));
+      Spin_Correlation_Tensor::AddPossibleParticle( citer->first );
       //msg.Debugging()<<"                  "<<citer->first<<" ("<<cans->size()<<" ) "<<hadrons->size()<<endl;
     }
   }
