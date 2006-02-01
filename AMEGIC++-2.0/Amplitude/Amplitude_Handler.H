@@ -28,6 +28,7 @@ namespace AMEGIC {
     Single_Amplitude* firstgraph;
     std::vector<Point*> pointlist;
     bool m_print_graph;
+    AMEGIC_SCT* p_SCT;
     int  PropProject(Amplitude_Base*,int);
     int  CompareZfunc(Amplitude_Base*,Zfunc*,Amplitude_Base*,Zfunc*);
     void CheckEqual(Single_Amplitude*);
@@ -55,7 +56,8 @@ namespace AMEGIC {
     double Differential(int ihel,int* signlist)      { return (Zvalue(ihel,signlist)).real();}
     double Differential(int ihel)                    { return (Zvalue(ihel)).real();}
     double Differential(String_Handler * sh,int ihel)  { return (Zvalue(sh,ihel)).real(); }
-    ATOOLS::Spin_Correlation_Tensor* GetSpinCorrelations(Helicity* hel);
+    //! Returns an SCT; hel=ptr to the Helicity class; nIn=Number of incoming particles.
+    ATOOLS::Spin_Correlation_Tensor* GetSpinCorrelations(Helicity* hel, size_t nIn);
     inline int GetGraphNumber() {return ngraph;}  
     inline int GetRealGraphNumber() {return namplitude;}  
     inline int GetTotalGraphNumber() {return ntotal;}
