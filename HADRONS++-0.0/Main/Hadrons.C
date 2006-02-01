@@ -9,6 +9,7 @@
 #include "Run_Parameter.H"
 #include "MyStrStream.H"
 #include <utility>
+#include <algorithm>
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -286,20 +287,28 @@ Spin_Density_Matrix Hadrons::PerformDecay(
   Flavour flav;											// daughter flav.
   FlSetConstIter dit;									// Iterator
   int i(0);
+  vector<pair<Flavour,int> > daughters_pair;
+  for( dit = daughters.begin(); dit != daughters.end(); dit++ ) {
+    i++;
+    daughters_pair.push_back( pair<Flavour,int>( (*dit), i ) );
+  }
 
-  // create new spin correlation tensor
+  // create new spin correlation tensor and shuffle randomly daughters
   Spin_Correlation_Tensor * SCT (NULL);
-  if( m_spincorr && hdc->GetIndexList()->size() ) 
+  if( Spin_Correlation_Tensor::Mode()!=scmode::None && hdc->GetIndexList()->size() ) {
     SCT = 
       new Spin_Correlation_Tensor( hdc->GetIndexList(), hdc->GetAmplitudeTensor() );
-   
+    random_shuffle( daughters_pair.begin(), daughters_pair.end() );
+  }
+
   // treat every daughter
-  for( dit = daughters.begin(); dit != daughters.end(); dit++ ) {
-	i++;
-	momentum = mom[i];							
-	flav = (*dit);
+  vector<pair<Flavour,int> >::iterator dpit;
+  for( dpit = daughters_pair.begin(); dpit != daughters_pair.end(); dpit++ ) {
+    i = dpit->second;
+	momentum = mom[i];
+	flav = dpit->first;
 	if( anti ) flav = flav.Bar();
-	msg.Debugging()<<"Daughters: "<<i<<"   "<<flav<<"  "<<momentum<<endl;
+	msg.Debugging()<<"Daughter: "<<flav<<"  "<<momentum<<endl;
 	particle = new Particle( -1, flav, momentum );
 	if( part_list ) particle->SetNumber( part_list->size() );
 	else particle->SetNumber( 0 );
