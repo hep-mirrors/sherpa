@@ -239,7 +239,7 @@ Two_Particle_DEta::Two_Particle_DEta(const Flavour & flav1,const Flavour & flav2
 
 void Two_Particle_DEta::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, int ncount) 
 {    
-    double deta = mom1.Eta()-mom2.Eta();
+    double deta = abs(mom1.Eta()-mom2.Eta());
     p_histo->Insert(deta,weight,ncount); 
 } 
 
