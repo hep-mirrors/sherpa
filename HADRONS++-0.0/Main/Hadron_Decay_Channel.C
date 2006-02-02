@@ -156,7 +156,7 @@ double Hadron_Decay_Channel::Differential( Vec4D * mom, Spin_Density_Matrix * si
             1 );                                                // basis for amplitudes
   double value;
   if( p_ampls->size()==0 ) {                                    // no ampls <=> isotropic
-    CreateTrivial(sigma);
+    CreateTrivial(sigma);                                       // create trivial amplitude tensor
     value = 1.;
 //    return weight;
   }
@@ -189,7 +189,7 @@ void Hadron_Decay_Channel::CreateTrivial( Spin_Density_Matrix * sigma )
     spin = p_flavours[i+1].IntSpin();                         // 2*spin of daughter
     if( spin ) {                                              // if spin > 0
       p_indices->push_back(pair<int,int>(i+1,spin));          // order of ind. does not matter
-      for( int j=0; j<spin+1; ++j ) 
+      for( int j=0; j<sqr(spin+1); ++j ) 
         p_ampls->push_back(1.);                               // M=1 <=> isotropic
     }
   }
