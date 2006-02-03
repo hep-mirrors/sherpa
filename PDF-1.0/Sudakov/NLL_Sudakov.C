@@ -10,7 +10,6 @@
 #include "NLL_Branching_Probabilities.H"
 #include "NLL_JetRate.H"
 #include "MyStrStream.H"
-#include "Splitting_Function.H"
 
 namespace SHERPA {
   const double   Nc    = 3;
