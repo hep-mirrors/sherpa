@@ -24,10 +24,12 @@ Gamma_Lambda_Base::
 Gamma_Lambda_Base(bpt::code type,bpm::code mode,double lambda, 
 		  MODEL::Running_AlphaS * runas,double qmass,double asfac): 
   m_type(type), m_mode(mode), 
-  m_colfac(0.), m_dlog(0.), m_slog(0.), m_power(0.), m_qmass(qmass),
+  m_colfac(0.), m_dlog(0.), m_slog(0.), m_qmass(qmass),
   m_lambda(lambda), m_as_factor(asfac), p_runas(runas), 
   m_kfac(0.)
-{ }
+{ 
+  m_power[2]=m_power[1]=m_power[0]=0.0;
+}
 
 double Gamma_Lambda_Base::AlphaS(double t)                
 { 
@@ -39,9 +41,15 @@ double Gamma_Lambda_Base::Gamma(double q, double Q)
 {
   if (Q<m_qmass) return 0.0;
   m_lastas=AlphaS(sqr(q));
-  double val = 2.*m_colfac* m_lastas/M_PI/q * 
-    (m_dlog * (1.+m_kfac*m_lastas/(2.*M_PI)) * log(Q/q) + 
-     m_slog + m_power*q/Q);
+  double val(2.*m_colfac*m_lastas/M_PI/q);
+  if (m_mode & bpm::power_corrs) {
+    double qr(q/Q);
+    val*=m_dlog*(1.+m_kfac*m_lastas/(2.*M_PI))*log(1.0/qr-1.0)+m_slog
+      +qr*(m_power[0]+qr*(m_power[1]+qr*m_power[2]));
+  }
+  else {
+    val*=m_dlog*(1.+m_kfac*m_lastas/(2.*M_PI))*log(Q/q)+m_slog;
+  }
   return Max(val,0.0);
 }
 
@@ -56,7 +64,7 @@ double Gamma_Lambda_Base::IntGamma(double Q0, double Q)
   double xi0(log(Q0/m_lambda)), xi1(log(Q/m_lambda));
   double xic(Max(xi1+m_slog/m_dlog,xi0));
   double result((m_dlog*xi1+m_slog)*log(dabs(xic/xi0))+m_dlog*(xi0-xic));
-  if (m_power>0.) result += m_power*m_lambda/Q * 
+  if (m_power[0]>0.) result += m_power[0]*m_lambda/Q * 
     (ReIncompleteGamma0(-xi0)-ReIncompleteGamma0(-xi1));  
   if (m_qmass!=0.0) THROW(fatal_error,"No massive sudakov in analytic mode.");
   return 4.*m_colfac/BETA0*result;
@@ -72,7 +80,7 @@ GammaQ_QG_Lambda::GammaQ_QG_Lambda(bpm::code mode, double lambda,
   m_dlog   = 1.;
   if (m_mode & (bpm::linear_term | bpm::power_corrs)) {
     m_slog   = -3./4.;
-    if (m_mode & bpm::power_corrs) m_power  = 1.;
+    if (m_mode & bpm::power_corrs) m_power[0] = 1.5;
   }
   if (m_mode & bpm::soft_kfac) m_kfac=KAPPA;
 }
@@ -101,7 +109,7 @@ GammaQ_GQ_Lambda::GammaQ_GQ_Lambda(bpm::code mode, double lambda,
   m_dlog   = 1.;
   if (m_mode & (bpm::linear_term | bpm::power_corrs)) {
     m_slog = -3./4.;
-    if (m_mode & bpm::power_corrs) m_power  = 1.;
+    if (m_mode & bpm::power_corrs) m_power[0] = 1.5;
   }
   if (m_mode & bpm::soft_kfac) m_kfac=KAPPA;
 }
@@ -130,7 +138,11 @@ GammaG_GG_Lambda::GammaG_GG_Lambda(bpm::code mode, double lambda,
   m_dlog   = 1.;
   if (m_mode & (bpm::linear_term | bpm::power_corrs)) {
     m_slog = -11./12.;
-    if (m_mode & bpm::power_corrs) m_power  = 1.;
+    if (m_mode & bpm::power_corrs) {
+      m_power[0] = 2.0;
+      m_power[1] = -0.5;
+      m_power[2] = 1.0/3.0;
+    }
   }
   if (m_mode & bpm::soft_kfac) m_kfac=KAPPA;
 }
@@ -144,7 +156,11 @@ GammaG_QQ_Lambda::GammaG_QQ_Lambda(bpm::code mode, double lambda,
   m_dlog   = 0.;
   if (m_mode & (bpm::linear_term | bpm::power_corrs)) {
     m_slog = 1./3.;
-    if (m_mode & bpm::power_corrs) m_power  = 0.;
+    if (m_mode & bpm::power_corrs) {
+      m_power[0] = -1.0;
+      m_power[1] = 1.0;
+      m_power[2] = -2.0/3.0;
+    }
   }
   if (m_mode & bpm::soft_kfac) m_kfac=KAPPA;
 }
