@@ -190,7 +190,6 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
   p_blobs = bl;
 
   // if (value!=1.) m_mode=m_mode|ANALYSIS::weighted;
-
   if (p_partner==this) {
     m_mode=m_mode|ANALYSIS::fill_helper;
     m_mode=m_mode|ANALYSIS::output_this;
@@ -210,8 +209,10 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
   double weight=(*p_partner)["ME_Weight"]->Get<double>();
   double procweight=1.;
   if (m_mode&ANALYSIS::weighted_ns || 
-      !(m_mode&ANALYSIS::weighted)) 
-    procweight=(*p_partner)["Process_Weight"]->Get<double>();
+      !(m_mode&ANALYSIS::weighted)) {
+    Blob_Data_Base *info((*p_partner)["Process_Weight"]);
+    if (info!=NULL) procweight=info->Get<double>();
+  }
   weight/=procweight;
   int    ncount=(*p_partner)["ME_NumberOfTrials"]->Get<int>();
   if (!IsEqual(value/procweight,weight)) {
