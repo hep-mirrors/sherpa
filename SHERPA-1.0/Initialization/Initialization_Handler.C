@@ -49,6 +49,7 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
   m_fragmentationdat = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_hadrondecaysdat  = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
+  rpa.gen.SetVariable("SHOWER_DATA_FILE",m_showerdat);
 }
 
 Initialization_Handler::Initialization_Handler(int argc,char * argv[]) : 
