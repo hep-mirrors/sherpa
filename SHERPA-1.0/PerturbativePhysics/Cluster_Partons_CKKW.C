@@ -19,10 +19,10 @@ private:
   NLL_Branching_Probability_Base *p_bp;
   double m_q, m_q0;
 public:
-  Three_Jet_Calc(NLL_Sudakov *const sud,const Flavour &f): 
+  Three_Jet_Calc(NLL_Sudakov *const sud,const Flavour &f,const double &asfac): 
     p_sud(sud),
     p_bp(new GammaQ_QG_Lambda
-	 ((bpm::code)p_sud->Mode(),0.0,MODEL::as,f.Mass(),1.0)) {}
+	 ((bpm::code)p_sud->Mode(),0.0,MODEL::as,f.Mass(),asfac)) {}
   ~Three_Jet_Calc() { delete p_bp; }
   virtual double operator()(double q);
   virtual double operator()();
@@ -62,49 +62,47 @@ void Cluster_Partons_CKKW::GenerateTables(const std::string &path)
     MakeDir(path,448,true);
     msg_Indent();
     double ecms(rpa.gen.Ecms()), qmin(1.0), step(pow(ecms/qmin,1.0/25.0));
-    msg_Info()<<"gluon sudakov ..."<<std::flush;
-    {
-      std::ofstream dgout((path+"/delta_g_"+ToString(ecms)+".dat").c_str());
-      for (double Q(ecms);Q>qmin;Q/=step) {
-	dgout<<Q<<" "<<(p_fssud->Delta(kf::gluon))(Q,qmin)<<"\n";
+    for (size_t i(1);i<=7;++i) {
+      if (i==7) i=21;
+      Flavour f((kf::code)i);
+      if (ecms>2.0*f.Mass()) {
+	msg_Info()<<f<<(i<7?" quark":"")<<" sudakov ..."<<std::flush;
+	std::ofstream dqout((path+"/delta_"+ToString(f)+"_"+
+			     ToString(ecms)+".dat").c_str());
+	for (double Q(ecms);Q>qmin;Q/=step) 
+	  dqout<<Q<<" "<<(p_fssud->Delta(f))(Q,qmin)<<"\n";
+	msg_Info()<<"done"<<std::endl;
       }
     }
-    msg_Info()<<"done"<<std::endl;
+    for (size_t i(1);i<=7;++i) {
+      if (i==7) i=21;
+      Flavour f((kf::code)i);
+      if (ecms>2.0*f.Mass()) {
+	msg_Info()<<"2-"<<f<<" rate ..."<<std::flush;
+	std::ofstream r2out((path+"/r2_"+ToString(f)+"_"+
+			     ToString(ecms)+".dat").c_str());
+	for (double Q(ecms);Q>qmin;Q/=step) 
+	  r2out<<2.0*log10(Q/ecms)<<" "
+	       <<sqr(p_fssud->Delta(f)(ecms,Q))<<"\n";
+	msg_Info()<<"done"<<std::endl;
+      }
+    }
     for (size_t i(1);i<=6;++i) {
       Flavour f((kf::code)i);
       if (ecms>2.0*f.Mass()) {
-	msg_Info()<<f<<" quark sudakov ..."<<std::flush;
-	std::ofstream dqout((path+"/delta_"+ToString(f)+"_"+
-			     ToString(ecms)+".dat").c_str());
-	for (double Q(ecms);Q>qmin;Q/=step) {
-	  dqout<<Q<<" "<<(p_fssud->Delta(f))(Q,qmin)<<"\n";
-	}
-	msg_Info()<<"done"<<std::endl;
-	msg_Info()<<"2-"<<f<<" rate ..."<<std::flush;
-	{
-	  std::ofstream r2out((path+"/r2_"+ToString(f)+"_"+
-			       ToString(ecms)+".dat").c_str());
-	  for (double Q(ecms);Q>qmin;Q/=step) {
-	    r2out<<2.0*log10(Q/ecms)<<" "
-		 <<sqr(p_fssud->Delta(f)(ecms,Q))<<"\n";
-	  }
-	}
-	msg_Info()<<"done"<<std::endl;
 	msg_Info()<<"2-"<<f<<"+1-gluon rate ..."<<std::flush;
-	{
-	  std::ofstream r3out((path+"/r3_"+ToString(f)+"_"+
-			       ToString(ecms)+".dat").c_str());
-	  Three_Jet_Calc *r3test(new Three_Jet_Calc(p_fssud,f));
-	  Gauss_Integrator gauss(r3test);
-	  r3test->SetQ(ecms);
-	  for (double Q(ecms);Q>qmin;Q/=step) {
-	    r3test->SetQ0(Q);
-	    r3out<<2.0*log10(Q/ecms)<<" "
-		 <<2.0*sqr(p_fssud->Delta(f)(ecms,Q))*
-	      gauss.Integrate(Q,ecms,1.0e-3)<<"\n";
-	  }
-	  delete r3test;
+	std::ofstream r3out((path+"/r3_"+ToString(f)+"_"+
+			     ToString(ecms)+".dat").c_str());
+	Three_Jet_Calc *r3test(new Three_Jet_Calc(p_fssud,f,m_fs_as_factor));
+	Gauss_Integrator gauss(r3test);
+	r3test->SetQ(ecms);
+	for (double Q(ecms);Q>qmin;Q/=step) {
+	  r3test->SetQ0(Q);
+	  r3out<<2.0*log10(Q/ecms)<<" "
+	       <<2.0*sqr(p_fssud->Delta(f)(ecms,Q))*
+	    gauss.Integrate(Q,ecms,1.0e-3)<<"\n";
 	}
+	delete r3test;
 	msg_Info()<<"done"<<std::endl;
       }
     }
