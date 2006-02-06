@@ -52,7 +52,6 @@ namespace APACIC {
     double UniformPhi() const;
 
     bool DiceT(Knot *const mother,Knot *const granny);
-    bool DiceKT2(Knot *const mother,Knot *const granny);
 
 #ifdef CHECK_SPLITTINGS
     void CheckSplittings();
