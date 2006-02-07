@@ -1398,9 +1398,9 @@ void Tau_Four_Pion_3::SetModelParameters( GeneralModel _md )
   p_lorenz->SetModelParameters( _md );
 }
  
-void Tau_Four_Pion_3::LorenzBase::SetPrivates( Complex * _X, ATOOLS::Vec4D * _p ) 
+void Tau_Four_Pion_3::LorenzBase::SetPrivates( Complex * _x, ATOOLS::Vec4D * _p ) 
 {
-  p_X  = _X;
+  p_X  = _x;
   p_p  = _p;
   p_p[0] = p_p[1]+p_p[2]+p_p[3]+p_p[4];         // = q
   m_q2 = p_p[0].Abs2();
