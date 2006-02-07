@@ -327,11 +327,11 @@ void HD_PS_Base::CalculateNormalisedWidth() {
     if (isotropic_me && m_error/result < 0.01) break;
   } 
   m_res  = m_flux*sum/n;
-  m_max *= m_flux;
   m_error *= m_flux;
   disc   = sqr(m_res)/((sum2*sqr(m_flux)/n - sqr(m_res))/(n-1));
   if (disc>0) m_error  = m_res/sqrt(disc);
   msg.Info()<<"     result (incl. flux): "<<m_res<<" +/- "<<m_error<<" ("<<m_error/m_res*100.<<" %)"<<endl;
+  // note: the maximum does noy contain the flux factor
 } 
 
 
