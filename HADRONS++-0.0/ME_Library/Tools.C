@@ -53,3 +53,93 @@ double Tools::OffShellMassWidth( double s, double Mass2, double Width, double ms
   return 0;
 }
 
+
+Vec4D Tools::RealBosonPolarizationVector( Vec4D p, int lambda, double M2, bool & iszero )
+{
+  iszero = false;
+  Vec4D eps;
+  double ct (p.CosTheta()), st (p.SinTheta()), cp (p.CosPhi()), sp (p.SinPhi());
+  if (IsEqual(p.PSpat(), 0.)) {      // decay from rest
+    ct = 0.; st = 1.;
+    cp = 1.; sp = 0.;
+  }
+  PRINT_INFO(ct<<" "<<st<<"    "<<cp<<" "<<sp);
+  switch( lambda ) {
+    case 1  : if ( !IsEqual(p.PSpat(),0.) ) 
+                eps = Vec4D( p.PSpat(), p[0]/p.PSpat()*Vec3D(p) );
+              else {
+                eps = Vec4D( 0.,0.,0.,0. );
+                iszero = true;
+              }
+              break;
+    case 2  : eps = Vec4D( 0., ct*cp, ct*sp, -1.*st );
+              break;
+    case 3  : eps = Vec4D( 0., -1.*sp, cp, 0. );
+              break;
+    default : if( !IsEqual(p.Abs2(),M2) ) {
+                eps = Vec4D( p );
+                eps *= sqrt( (p.Abs2()-M2)/(p.Abs2()*M2) );
+              }
+              else {
+                eps = Vec4D( 0.,0.,0.,0. );
+              }
+              break;
+  }
+  return eps;
+}
+
+
+void Tools::ComplexBosonPolarizationVector(  Vec4D p, int lambda, double M2, Vec4D * eps)
+{
+  double ct (p.CosTheta()), st (p.SinTheta()), cp (p.CosPhi()), sp (p.SinPhi());
+  if (IsEqual(p.PSpat(), 0.)) {      // decay from rest
+    ct = 0.; st = 1.;
+    cp = 1.; sp = 0.;
+  }
+  switch( lambda ) {
+    case 0: 
+      eps[0] = 1.0/p.Mass() * Vec4D(p.PSpat(),p[0]*Vec3D(p)/p.PSpat());
+      eps[1] = Vec4D(0.0,0.0,0.0,0.0);
+      break;
+    case 1:
+      eps[0] = 1.0/sqrt(2.0) * Vec4D(0.0,ct*cp,ct*sp,-st);
+      eps[1] = 1.0/sqrt(2.0) * Vec4D(0.0,-sp,cp,0.0);
+      break;
+    case 2:
+      eps[0] = 1.0/sqrt(2.0) * Vec4D(0.0,ct*cp,ct*sp,-st);
+      eps[1] = 1.0/sqrt(2.0) * Vec4D(0.0,sp,-cp,0.0);
+      break; 
+    case 3:
+      eps[0] = sqrt( (p.Abs2()-M2)/(p.Abs2()*M2) ) * Vec4D(p);
+      eps[1] = Vec4D(0.0,0.0,0.0,0.0);
+      break;
+  }
+}
+
+
+void Tools::ComplexBosonPolarizationVector( Vec4D p, int lambda, Vec4D * eps )
+{
+  double ct (p.CosTheta()), st (p.SinTheta()), cp (p.CosPhi()), sp (p.SinPhi());
+  if (IsEqual(p.PSpat(), 0.)) {      // decay from rest
+    ct = 0.; st = 1.;
+    cp = 1.; sp = 0.;
+  }
+  switch( lambda ) {
+    case 0: 
+      eps[0] = 1.0/p.Mass() * Vec4D(p.PSpat(),p[0]*Vec3D(p)/p.PSpat());
+      eps[1] = Vec4D(0.0,0.0,0.0,0.0);
+      break;
+    case 1:
+      eps[0] = 1.0/sqrt(2.0) * Vec4D(0.0,ct*cp,ct*sp,-st);
+      eps[1] = 1.0/sqrt(2.0) * Vec4D(0.0,-sp,cp,0.0);
+      break;
+    case 2:
+      eps[0] = 1.0/sqrt(2.0) * Vec4D(0.0,ct*cp,ct*sp,-st);
+      eps[1] = 1.0/sqrt(2.0) * Vec4D(0.0,sp,-cp,0.0);
+      break; 
+    case 3:
+      eps[0] = Vec4D(0.0,0.0,0.0,0.0);
+      eps[1] = Vec4D(0.0,0.0,0.0,0.0);
+      break;
+  }
+}
