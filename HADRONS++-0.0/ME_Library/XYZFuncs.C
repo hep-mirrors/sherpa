@@ -6,7 +6,21 @@ using namespace HADRONS;
 using namespace ATOOLS;
 
 // constructor
-XYZFunc::XYZFunc( int nout, const Vec4D *p, const Flavour *fl )
+XYZFunc::XYZFunc( int nout, const Vec4D *p, const Flavour *fl, int k0n )
+{
+  m_N = nout+1;
+  p_mom = new Vec4D[m_N];
+  p_flav = new Flavour[m_N];
+  for( int i=0; i<m_N; i++ ) {
+    p_mom[i] = p[i];
+    p_flav[i] = fl[i];
+  }
+  m_k0n = k0n;
+  CalcEtaMu();
+}
+ 
+ 
+XYZFunc::XYZFunc( int nout, const Vec4D *p, const Flavour *fl)
 {
   m_N = nout+1;
   p_mom = new Vec4D[m_N];
@@ -18,7 +32,8 @@ XYZFunc::XYZFunc( int nout, const Vec4D *p, const Flavour *fl )
   m_k0n = 1;
   CalcEtaMu();
 }
- 
+
+
 void XYZFunc::CalcEtaMu() 
 {
   Vec4D pi;

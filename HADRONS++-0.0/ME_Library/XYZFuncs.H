@@ -24,8 +24,8 @@ namespace HADRONS
 	  void CalcEtaMu();
 	  
 	public:
-
-	  XYZFunc( int nout, const ATOOLS::Vec4D *p, const ATOOLS::Flavour *fl );
+      XYZFunc( int nout, const ATOOLS::Vec4D *p, const ATOOLS::Flavour *fl);
+	  XYZFunc( int nout, const ATOOLS::Vec4D *p, const ATOOLS::Flavour *fl, int k0n );
 
 	  void Delete()
 	  {
