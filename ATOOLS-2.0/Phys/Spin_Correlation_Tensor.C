@@ -73,7 +73,8 @@ namespace ATOOLS{
   Spin_Correlation_Tensor::Spin_Correlation_Tensor(
       std::vector<std::pair<int,int> >* particles, 
       std::vector<Complex>* Amplitudes, 
-      size_t pPos, size_t aPos1, size_t aPos2):
+      size_t pPos, size_t aPos1, size_t aPos2,
+      size_t add):
     p_next(NULL)
   {
     PROFILE_HERE;
@@ -90,31 +91,37 @@ namespace ATOOLS{
         m_particle  = (*particles)[pPos].first;
         int nrspins = (*particles)[pPos].second + 1;      // 2*spin + 1
 
-	if (m_mode == scmode::Diagonal) {
-	  // only store diagonals
-	  p_next = new std::vector<Spin_Correlation_Tensor*>(nrspins);
-	  size_t add = (size_t) pow( nrspins, pPos );
-	  for( int leg=0; leg<nrspins; ++leg ) {
-	    (*p_next)[leg] = 
-	      new Spin_Correlation_Tensor(particles,Amplitudes,pPos+1,
-					  aPos1+add*leg, aPos2+add*leg);
-	  }	 
-	}
-	if (m_mode == scmode::Full) { 
-	  // store off-diagonals, too
-	  p_next = new std::vector<Spin_Correlation_Tensor*>(nrspins*nrspins);
-	  size_t add = (size_t) pow( nrspins, pPos );
-	  for( int leg1=0; leg1<nrspins; ++leg1 ) {
-	    for( int leg2=0; leg2<nrspins; ++leg2 ) {
-	      (*p_next)[nrspins*leg1+leg2] = 
-		new Spin_Correlation_Tensor(particles,Amplitudes,pPos+1,
-					  aPos1+add*leg1, aPos2+add*leg2);
-	    }
-	  }
-	}
+        if (m_mode == scmode::Diagonal) {
+          // only store diagonals
+          p_next = new std::vector<Spin_Correlation_Tensor*>(nrspins);
+          for( int leg=0; leg<nrspins; ++leg ) {
+            (*p_next)[leg] = 
+              new Spin_Correlation_Tensor(particles,Amplitudes,pPos+1,
+                  aPos1+add*leg, aPos2+add*leg,add*nrspins);
+          }	 
+        }
+        if (m_mode == scmode::Full) { 
+          // store off-diagonals, too
+          p_next = new std::vector<Spin_Correlation_Tensor*>(nrspins*nrspins);
+          for( int leg1=0; leg1<nrspins; ++leg1 ) {
+            for( int leg2=0; leg2<nrspins; ++leg2 ) {
+//              std::cout<<om::blue<<m_particle<<" ("<<nrspins<<") : "<<aPos1+add*leg1<<" "<<aPos2+add*leg2<<"    "<<old_add<<" "<<add<<om::reset<<std::endl;
+              (*p_next)[nrspins*leg1+leg2] = 
+                new Spin_Correlation_Tensor(particles,Amplitudes,pPos+1,
+                    aPos1+add*leg1, aPos2+add*leg2,add*nrspins);
+            }
+          }
+        }
       } else {
         // Set the values MM*
         m_particle = -1;
+//        std::cout<<aPos1<<" "<<aPos2<<"   "<<Amplitudes->size()<<std::endl;
+        if( aPos1>=Amplitudes->size() || aPos2>=Amplitudes->size() ) {
+          msg.Error()<<"ERROR in Spin_Correlation_Tensor constructor : "<<std::endl
+            <<"     Tried to access an element of the amplitude tensor that does not exist."<<std::endl
+            <<"     Don't know, what to do. Will abort."<<std::endl;
+          abort();
+        }
         m_value = (*Amplitudes)[aPos1] * conj((*Amplitudes)[aPos2]);
       }
     }
@@ -311,22 +318,22 @@ namespace ATOOLS{
     if (m_particle == i) {
       // Do matrix multiplication
       if( SDM ) {
-	if (m_mode == scmode::Full)
-	  for (size_t idx=0; idx<p_next->size(); ++idx) 
-	    *(*p_next)[idx] *= (*SDM)[idx];      
-	if (m_mode == scmode::Diagonal)
-	  for (size_t idx=0; idx<p_next->size(); ++idx)
-	    *(*p_next)[idx] *= (*SDM)[idx*p_next->size()+idx];
+        if (m_mode == scmode::Full)
+          for (size_t idx=0; idx<p_next->size(); ++idx) 
+            *(*p_next)[idx] *= (*SDM)[idx];      
+        if (m_mode == scmode::Diagonal)
+          for (size_t idx=0; idx<p_next->size(); ++idx)
+            *(*p_next)[idx] *= (*SDM)[idx*p_next->size()+idx];
       }
       else { // multiply with unit-matrix; this is obsolete for m_mode == scmode::Diagonal
-	if (m_mode == scmode::Full) {
-	  Spin_Density_Matrix * unitmatrix = new Spin_Density_Matrix(GetIdxRange());
-	  unitmatrix->SetUnitMatrix();
-	  for (size_t idx=0; idx<p_next->size(); ++idx) {
-	    *(*p_next)[idx] *= (*unitmatrix)[idx];      
-	  }
-	  delete unitmatrix;
-	}
+        if (m_mode == scmode::Full) {
+          Spin_Density_Matrix * unitmatrix = new Spin_Density_Matrix(GetIdxRange());
+          unitmatrix->SetUnitMatrix();
+          for (size_t idx=0; idx<p_next->size(); ++idx) {
+            *(*p_next)[idx] *= (*unitmatrix)[idx];      
+          }
+          delete unitmatrix;
+        }
       }
 
       // An sum it up and delete obsolete branches
@@ -385,10 +392,9 @@ namespace ATOOLS{
     if (sct.m_particle==-1) ostr<<sct.m_value;
     else {
       ostr<<sct.m_particle<<":{";
-      ostr<<*sct(0)<<",";   
-      ostr<<*sct(1)<<",";      
-      ostr<<*sct(2)<<",";   
-      ostr<<*sct(3)<<"}";
+      for (size_t idx=0; idx<sct.p_next->size()-1; ++idx)
+        ostr<<*sct(idx)<<",";   
+      ostr<<*sct(sct.p_next->size()-1)<<"}";   
     }
     return ostr;
   }

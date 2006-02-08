@@ -73,7 +73,8 @@ namespace ATOOLS {
         std::vector<Complex>* Amplitudes,
         size_t pPos=0, 
         size_t aPos1=0, 
-        size_t aPos2=0 );
+        size_t aPos2=0,
+        size_t add=1 );
     virtual ~Spin_Correlation_Tensor();
 
     //! Returns the trace; equivalent to soft-contracting with unit-matrices.
