@@ -334,7 +334,13 @@ const double Sudakov_Calculator::IsPDFCorr(bool z, const Multiflavour& mufl,
 
 
 
-Sudakov_Calculator::Toolbox::Toolbox() : m_ras(1,NULL), m_pdf(2,NULL) {}
+//Sudakov_Calculator::Toolbox::Toolbox() : m_ras(1,NULL), m_pdf(2,NULL) {}
+Sudakov_Calculator::Toolbox::Toolbox() 
+{
+  m_ras.push_back(NULL);
+  m_pdf.push_back(NULL);
+  m_pdf.push_back(NULL);
+}
 
 
 Sudakov_Calculator::Toolbox::~Toolbox() {
