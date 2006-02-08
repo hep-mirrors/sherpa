@@ -26,9 +26,9 @@ Gamma_Lambda_Base(bpt::code type,bpm::code mode,double lambda,
   m_type(type), m_mode(mode), 
   m_colfac(0.), m_dlog(0.), m_slog(0.), m_qmass(qmass),
   m_lambda(lambda), m_as_factor(asfac), p_runas(runas), 
-  m_kfac(0.)
+  m_kfac(0.), m_pca(0)
 { 
-  m_power[2]=m_power[1]=m_power[0]=0.0;
+  m_power[4]=m_power[3]=m_power[2]=m_power[1]=m_power[0]=0.0;
 }
 
 double Gamma_Lambda_Base::AlphaS(double t)                
@@ -43,9 +43,9 @@ double Gamma_Lambda_Base::Gamma(double q, double Q)
   m_lastas=AlphaS(sqr(q));
   double val(2.*m_colfac*m_lastas/M_PI/q);
   if (m_mode & bpm::power_corrs) {
-    double qr(q/Q);
-    val*=m_dlog*(1.+m_kfac*m_lastas/(2.*M_PI))*log(1.0/qr-1.0)+m_slog
-      +qr*(m_power[0]+qr*(m_power[1]+qr*m_power[2]));
+    double qr(q/Q), lf(m_pca==0?log(1.0/qr-1.0):log(1.0/qr));
+    val*=m_dlog*(1.+m_kfac*m_lastas/(2.*M_PI))*lf+m_slog
+      +qr*(m_power[0]+qr*(m_power[1]+qr*(m_power[2]+qr*(m_power[3]+qr*qr*m_power[4]))));
   }
   else {
     val*=m_dlog*(1.+m_kfac*m_lastas/(2.*M_PI))*log(Q/q)+m_slog;
@@ -77,10 +77,19 @@ GammaQ_QG_Lambda::GammaQ_QG_Lambda(bpm::code mode, double lambda,
   Gamma_Lambda_Base(bpt::gamma_q2qg,mode,lambda,runas,qmass,asfac) 
 {
   m_colfac = CF;
-  m_dlog   = 1.;
+  if (m_mode & bpm::fs) m_dlog = 1.0;
+  else m_dlog = 2.0;
   if (m_mode & (bpm::linear_term | bpm::power_corrs)) {
     m_slog   = -3./4.;
-    if (m_mode & bpm::power_corrs) m_power[0] = 1.5;
+    if (m_mode & bpm::power_corrs) 
+      if (m_mode & bpm::fs) {
+	m_power[0] = 1.5;
+      }
+      else {
+	m_power[1] = 1.0;
+	m_power[3] = -0.25;
+	m_pca=1;
+      }
   }
   if (m_mode & bpm::soft_kfac) m_kfac=KAPPA;
 }
@@ -106,10 +115,19 @@ GammaQ_GQ_Lambda::GammaQ_GQ_Lambda(bpm::code mode, double lambda,
   Gamma_Lambda_Base(bpt::gamma_q2gq,mode,lambda,runas,qmass,asfac) 
 {
   m_colfac = CF;
-  m_dlog   = 1.;
+  if (m_mode & bpm::fs) m_dlog = 1.0;
+  else m_dlog = 2.0;
   if (m_mode & (bpm::linear_term | bpm::power_corrs)) {
     m_slog = -3./4.;
-    if (m_mode & bpm::power_corrs) m_power[0] = 1.5;
+    if (m_mode & bpm::power_corrs)
+      if (m_mode & bpm::fs) {
+	m_power[0] = 1.5;
+      }
+      else {
+	m_power[1] = 1.0;
+	m_power[3] = -0.25;
+	m_pca=1;
+      }
   }
   if (m_mode & bpm::soft_kfac) m_kfac=KAPPA;
 }
@@ -135,13 +153,21 @@ GammaG_GG_Lambda::GammaG_GG_Lambda(bpm::code mode, double lambda,
   Gamma_Lambda_Base(bpt::gamma_g2gg,mode,lambda,runas,0.0,asfac) 
 {
   m_colfac = CA;
-  m_dlog   = 1.;
+  if (m_mode & bpm::fs) m_dlog = 1.0;
+  else m_dlog = 2.0;
   if (m_mode & (bpm::linear_term | bpm::power_corrs)) {
     m_slog = -11./12.;
     if (m_mode & bpm::power_corrs) {
-      m_power[0] = 2.0;
-      m_power[1] = -0.5;
-      m_power[2] = 1.0/3.0;
+      if (m_mode & bpm::fs) {
+	m_power[0] = 2.0;
+	m_power[1] = -0.5;
+	m_power[2] = 1.0/3.0;
+      }
+      else {
+	m_power[1] = 2.0;
+	m_power[3] = -0.5;
+	m_power[4] = 1.0/3.0;
+      }
     }
   }
   if (m_mode & bpm::soft_kfac) m_kfac=KAPPA;
@@ -157,9 +183,17 @@ GammaG_QQ_Lambda::GammaG_QQ_Lambda(bpm::code mode, double lambda,
   if (m_mode & (bpm::linear_term | bpm::power_corrs)) {
     m_slog = 1./3.;
     if (m_mode & bpm::power_corrs) {
-      m_power[0] = -1.0;
-      m_power[1] = 1.0;
-      m_power[2] = -2.0/3.0;
+      if (m_mode & bpm::fs) {
+	m_power[0] = -1.0;
+	m_power[1] = 1.0;
+	m_power[2] = -2.0/3.0;
+      }
+      else {
+	m_power[1] = -0.5;
+	m_power[3] = 0.5;
+	m_power[4] = -1.0/3.0;
+	m_pca=1;
+      }
     }
   }
   if (m_mode & bpm::soft_kfac) m_kfac=KAPPA;

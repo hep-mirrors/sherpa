@@ -40,8 +40,10 @@ namespace SHERPA {
     bpt::code m_type;
     bpm::code m_mode;
 
-    double m_colfac, m_dlog, m_slog, m_power[3], m_qmass;
+    double m_colfac, m_dlog, m_slog, m_power[5], m_qmass;
     double m_lambda, m_as_factor, m_kfac, m_lastas;
+
+    int m_pca;
 
   public:
 
