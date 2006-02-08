@@ -625,7 +625,7 @@ ATOOLS::Spin_Correlation_Tensor * Matrix_Element_Handler::GetSpinCorrelations()
   if (Spin_Correlation_Tensor::Mode()==scmode::None) return NULL;
   if (m_mode==1) return p_amegic->GetProcess()->GetSpinCorrelations();
   msg.Error()<<"Error in Matrix_Element_Handler::GetSpinCorrelations()."<<endl
-	     <<"   Wrong mode for "<<m_signalgenerator<<", abort."<<endl;
+	     <<"   Wrong mode for ME generator "<<m_signalgenerator<<", abort."<<endl;
   abort();
 }
 
