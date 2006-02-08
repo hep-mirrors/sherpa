@@ -9,10 +9,11 @@ BEAMINCS      = -I$(SHERPASYS)/BEAM-1.0/Main
 MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
 PDFINCS       =	-I../LHAPDF -I../MRST -I../CTEQ -I../GRV -I../Sudakov \
 		-I../KMR -I../Remnant
-APACICINCS    =	-I$(SHERPASYS)/APACIC++-2.0/Showers
+APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
+APACICINCS    =	-I$(APACICDIR)/Main -I$(APACICDIR)/Showers
 
 if CVS_INCLUDE
-CVSINCLUDE    =	CVS
+CVSINCLUDE    =	.svn
 endif
 
 pkglib_LTLIBRARIES       =	libPDF.la

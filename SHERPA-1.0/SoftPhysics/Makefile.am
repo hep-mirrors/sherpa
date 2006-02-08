@@ -23,7 +23,7 @@ HADRONSINCS   = -I$(HADRONSDIR)/Main -I$(HADRONSDIR)/ME_Library \
 endif
 
 if CVS_INCLUDE
-CVSINCLUDE    =	CVS
+CVSINCLUDE    =	.svn
 endif
 
 if ROOT_SUPPORT

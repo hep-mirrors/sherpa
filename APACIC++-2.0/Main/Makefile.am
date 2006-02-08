@@ -10,7 +10,7 @@ MODELINCS     =	-I$(SHERPASYS)/PDF-1.0/Main
 APACICINCS    =	-I../Showers
 
 if CVS_INCLUDE
-CVSINCLUDE    =	CVS
+CVSINCLUDE    =	.svn
 endif
 
 pkglib_LTLIBRARIES = libApacicMain.la

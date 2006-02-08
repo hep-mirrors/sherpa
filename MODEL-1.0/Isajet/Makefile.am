@@ -1,5 +1,5 @@
 if CVS_INCLUDE
-CVSINCLUDE    =	CVS
+CVSINCLUDE    =	.svn
 endif
 
 MODELFLAGS    =	# -pedantic -Wall #-Winline

@@ -1,6 +1,6 @@
 MAKE = make 
 if CVS_INCLUDE
-CVSINCLUDE    =	CVS
+CVSINCLUDE    =	.svn
 endif
-SUBDIRS       =	Showers Main Run
+SUBDIRS       =	Showers Main
 EXTRA_DIST    = $(CVSINCLUDE)

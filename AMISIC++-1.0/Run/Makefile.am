@@ -40,7 +40,7 @@ ROOTFLAGS     = -Wno-long-long
 endif
 
 if CVS_INCLUDE
-CVSINCLUDE    =	CVS
+CVSINCLUDE    =	.svn
 endif
 
 if SHERPA_SUPPORT

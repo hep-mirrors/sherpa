@@ -18,7 +18,7 @@ SHERPAINCS    =	-I$(SHERPADIR)/PerturbativePhysics -I$(SHERPADIR)/SoftPhysics
 endif
 
 if CVS_INCLUDE
-CVSINCLUDE    =	CVS
+CVSINCLUDE    =	.svn
 endif
 
 pkglib_LTLIBRARIES       = libAmisicTools.la

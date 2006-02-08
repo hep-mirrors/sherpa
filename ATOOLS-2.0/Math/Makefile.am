@@ -7,7 +7,7 @@ ATOOLSINCS    =	-I../Org -I../Phys
 MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main 
 
 if CVS_INCLUDE
-CVSINCLUDE    =	CVS
+CVSINCLUDE    =	.svn
 endif
 
 pkglib_LTLIBRARIES       =	libToolsMath.la

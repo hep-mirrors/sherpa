@@ -9,7 +9,7 @@ MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
 PDFINCS       =	-I../Main
 
 if CVS_INCLUDE
-CVSINCLUDE    =	CVS
+CVSINCLUDE    =	.svn
 endif
 
 if LHAPDF_SUPPORT

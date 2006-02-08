@@ -12,7 +12,7 @@ MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
 EXTRAXSINCS   =	-I../Main
 
 if CVS_INCLUDE
-CVSINCLUDE    =	CVS
+CVSINCLUDE    =	.svn
 endif
 
 pkglib_LTLIBRARIES       =	libExtraXS2_2.la

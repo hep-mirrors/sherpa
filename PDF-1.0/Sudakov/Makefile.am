@@ -10,7 +10,7 @@ APACICINCS    =	-I$(SHERPASYS)/APACIC++-2.0/Showers
 PDFINCS       =	-I../LHAPDF -I../Main
 
 if CVS_INCLUDE
-CVSINCLUDE    =	CVS
+CVSINCLUDE    =	.svn
 endif
 
 pkglib_LTLIBRARIES       =	libSudakov.la

@@ -1,6 +1,6 @@
 MAKE = make 
 if CVS_INCLUDE
-CVSINCLUDE    =	CVS
+CVSINCLUDE    =	.svn
 endif
 SUBDIRS = Main Observables
 EXTRA_DIST    = docit Doxyfile $(CVSINCLUDE)

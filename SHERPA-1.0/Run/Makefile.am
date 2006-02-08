@@ -76,7 +76,7 @@ HDECAYLIB     = -L@libdir@/SHERPA-MC -lHdecay
 endif
 
 if CVS_INCLUDE
-CVSINCLUDE    =	CVS
+CVSINCLUDE    =	.svn
 endif
 
 bin_PROGRAMS  =	Sherpa

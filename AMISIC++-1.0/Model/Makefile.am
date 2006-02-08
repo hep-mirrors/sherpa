@@ -20,7 +20,7 @@ SHERPAINCS    =	-I$(SHERPADIR)/PerturbativePhysics
 endif
 
 if CVS_INCLUDE
-CVSINCLUDE    =	CVS
+CVSINCLUDE    =	.svn
 endif
 
 pkglib_LTLIBRARIES       = libAmisicModel.la

@@ -27,7 +27,7 @@ AMISICINCS    =	-I$(SHERPASYS)/AMISIC++-1.0/Main
 endif
 
 if CVS_INCLUDE
-CVSINCLUDE    =	CVS
+CVSINCLUDE    =	.svn
 endif
 
 pkglib_LTLIBRARIES       =	libSherpaPerturbativePhysics.la

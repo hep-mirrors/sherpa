@@ -11,7 +11,7 @@ PDFINCS	      =	-I$(PDFDIR)/Main -I$(PDFDIR)/LHAPDF -I$(PDFDIR)/KMR
 MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
 
 if CVS_INCLUDE
-CVSINCLUDE    =	CVS
+CVSINCLUDE    =	.svn
 endif
 
 pkglib_LTLIBRARIES       =	libLundTools.la

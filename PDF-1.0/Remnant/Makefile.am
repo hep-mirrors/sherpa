@@ -12,7 +12,7 @@ PDFINCS       =	-I../LHAPDF -I../MRST -I../CTEQ -I../GRV -I../Sudakov \
 APACICINCS    =	-I$(SHERPASYS)/APACIC++-2.0/Showers
 
 if CVS_INCLUDE
-CVSINCLUDE    =	CVS
+CVSINCLUDE    =	.svn
 endif
 
 pkglib_LTLIBRARIES       =	libRemnant.la

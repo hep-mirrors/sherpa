@@ -1,7 +1,7 @@
 pkglib_LTLIBRARIES = libAmegicPSGen.la
 
 if CVS_INCLUDE
-CVSINCLUDE    =	CVS
+CVSINCLUDE    =	.svn
 endif
 
 AMEGICFLAGS   =	# -pedantic -Wall #-Winline

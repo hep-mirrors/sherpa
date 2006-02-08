@@ -1,6 +1,6 @@
 MAKE       = make 
 if CVS_INCLUDE
-CVSINCLUDE = CVS
+CVSINCLUDE = .svn
 endif
 if ISAJET_SUPPORT
 ISAJETDIR     =	Isajet

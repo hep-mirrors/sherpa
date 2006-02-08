@@ -45,7 +45,7 @@ CLHEPINCS     =	-I$(CLHEPDIR)/include
 endif
 
 if CVS_INCLUDE
-CVSINCLUDE    =	CVS
+CVSINCLUDE    =	.svn
 endif
 
 pkglib_LTLIBRARIES	      =	libSherpaSingleEvents.la

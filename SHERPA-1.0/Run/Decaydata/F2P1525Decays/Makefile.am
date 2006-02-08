@@ -1,5 +1,5 @@
 if CVS_INCLUDE
-CVSINCLUDE    =	CVS
+CVSINCLUDE    =	.svn
 endif
 
 decaydir      = $(pkgdatadir)/Decaydata/F2P1525Decays

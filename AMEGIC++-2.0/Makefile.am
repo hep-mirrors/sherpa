@@ -1,7 +1,7 @@
 MAKE = make 
 
 if CVS_INCLUDE
-CVSINCLUDE    =	CVS
+CVSINCLUDE    =	.svn
 endif
 
 SUBDIRS = Main Amplitude Phasespace String Model 
