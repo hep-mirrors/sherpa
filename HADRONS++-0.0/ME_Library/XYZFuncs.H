@@ -1,4 +1,6 @@
-using namespace ATOOLS;
+#ifndef XYZFuncs_h
+#define XYZFuncs_h
+
 using namespace std;
 
 #ifndef SQRT_05
@@ -10,19 +12,20 @@ namespace HADRONS
 
   class XYZFunc
   {
-	  Vec4D  	* p_mom;
-	  Flavour   * p_flav;
-	  int         N;
-      Vec4D       m_k0, m_k1;
-      int         m_k0_n;
-	  vector<Complex> eta, mu;
+
+    protected:    
+       
+      int                 m_k0n;
+      ATOOLS::Vec4D  	* p_mom;
+      ATOOLS::Flavour   * p_flav;
+	  int                 m_N;
+	  vector<Complex>     m_eta, m_mu;
 
 	  void CalcEtaMu();
 	  
 	public:
 
-	  XYZFunc( int nout, const Vec4D *p, const Flavour *fl );
-	  XYZFunc( int nout, const Vec4D *p, const Flavour *fl, int k0_n );
+	  XYZFunc( int nout, const ATOOLS::Vec4D *p, const ATOOLS::Flavour *fl );
 
 	  void Delete()
 	  {
@@ -36,6 +39,8 @@ namespace HADRONS
 		  const Complex cR2, const Complex cL2 );
 	  Complex Y( const int t1, const int t2, const int hel_comb, const Complex cR, const Complex cL ); 
 	  Complex X( const int t1, const int t2, const int t3, 
+		  const int hel_comb, const Complex cR, const Complex cL ); 
+	  Complex X( const int t1, const ATOOLS::Vec4D p2, const int t3, 
 		  const int hel_comb, const Complex cR, const Complex cL ); 
 	  Complex Z( 
 		  const int t1, const int l1, 
@@ -55,6 +60,8 @@ namespace HADRONS
 		  const int t3, const int l3,
 		  const Complex cR, const Complex cL ); 
 	  Complex S( const int s, const int i, const int j );
+      Complex S( const int s, const int i, const ATOOLS::Vec4D p, Complex eta );
+      Complex S( const int s, const ATOOLS::Vec4D p, Complex eta, const int j );
 	  Complex Q(short hel); 
 
   };
@@ -120,3 +127,6 @@ namespace HADRONS
 	
   
 } 
+
+#endif
+
