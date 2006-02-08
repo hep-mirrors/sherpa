@@ -14,7 +14,7 @@
 
 
 
-
+using namespace ATOOLS;
 
 namespace ADICIC {
 
@@ -208,7 +208,9 @@ namespace ADICIC {
     return
       Sudakov_Calculator::AlphaSCorr(m_sgroup.Sdip()*x2t) *    //0.5 *
       ( -m_sgroup.Ymax()/std::log(x2t) ) *    //Old: exchange this by 0.5.
-      ( power<s_x1pow>(x[0]) + power<s_x3pow>(x[1]) );
+      ( power(x[0],s_x1pow) + power(x[1],s_x3pow) );
+      //( power<s_x1pow>(x[0]) + power<s_x3pow>(x[1]) );
+
   }
 
 

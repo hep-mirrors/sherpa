@@ -150,8 +150,8 @@ namespace ADICIC {
 
   template<Recoil_Strategy::Type ST>
   inline const bool Recoil<ST>::Generate() {
-    cerr<<"\nMethod: "<<__PRETTY_FUNCTION__<<": "
-	<<"Warning: Recoil strategy is unspecified!\n"<<endl;
+    std::cerr<<"\nMethod: "<<__PRETTY_FUNCTION__<<": "
+	     <<"Warning: Recoil strategy is unspecified!\n"<<std::endl;
     return false;
   }
 
