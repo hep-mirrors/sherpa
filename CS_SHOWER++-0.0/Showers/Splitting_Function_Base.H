@@ -31,11 +31,14 @@ namespace CS_SHOWER {
     Splitting_Function_Base() : m_type(cstp::none) {}
     virtual ~Splitting_Function_Base() {}
 
-    virtual double operator() (const double,const double)                 = 0;
-    virtual double OverIntegrated(const double,const double,const double) = 0;
-    virtual double Overestimated(const double,const double)               = 0;
-    virtual double RejectionWeight(const double,const double)             = 0;
-    virtual double Z()                                                    = 0;         
+    virtual double operator() (const double,const double,
+			       const double,const double)      = 0;
+    virtual double OverIntegrated(const double,const double,
+				  const double,const double)   = 0;
+    virtual double Overestimated(const double,const double)    = 0;
+    virtual double RejectionWeight(const double,const double,
+				   const double,const double)  = 0;
+    virtual double Z()                                         = 0;         
     virtual double Phi(double z)            const { return 2.*M_PI*ATOOLS::ran.Get(); }
     virtual double Last()                   const { return m_lastint; } 
     virtual void   SetLast(const double last)     { m_lastint = last; }

@@ -6,7 +6,6 @@
 
 namespace CS_SHOWER {
   class Kinematics_Base {
-  public:
     const static ATOOLS::Vec3D s_ex, s_ey, s_ez;
   public:
     Kinematics_Base() {}
@@ -18,6 +17,20 @@ namespace CS_SHOWER {
   public:
     Kinematics_FF() {}
     virtual ~Kinematics_FF() {}
+    Parton * MakeKinematics(Parton *, ATOOLS::Flavour &);
+  };
+  
+  class Kinematics_FI : public Kinematics_Base {
+  public:
+    Kinematics_FI() {}
+    virtual ~Kinematics_FI() {}
+    Parton * MakeKinematics(Parton *, ATOOLS::Flavour &);
+  };
+
+  class Kinematics_IF : public Kinematics_Base {
+  public:
+    Kinematics_IF() {}
+    virtual ~Kinematics_IF() {}
     Parton * MakeKinematics(Parton *, ATOOLS::Flavour &);
   };
 }

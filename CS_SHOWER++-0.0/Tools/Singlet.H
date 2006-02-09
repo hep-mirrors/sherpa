@@ -16,7 +16,7 @@ namespace CS_SHOWER {
     Singlet * SplitList(PLiter);
     void      ReshuffleList(PLiter);
     void      Swap(PLiter,PLiter);
-    void      ExtractFSPartons(ATOOLS::Blob *);
+    void      ExtractPartons(ATOOLS::Blob *,ATOOLS::Blob *);
 
     inline bool const IsActive()  const;
     inline void SetActive();

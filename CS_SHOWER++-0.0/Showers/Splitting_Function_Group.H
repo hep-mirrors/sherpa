@@ -17,10 +17,11 @@ namespace CS_SHOWER {
     virtual void Add(Splitting_Function_Base *);
     virtual void SelectOne();
 
-    virtual double operator() (const double,const double);
-    virtual double OverIntegrated(const double,const double,const double);
+    virtual double operator() (const double,const double,const double,const double);
+    virtual double OverIntegrated(const double,const double,const double,const double);
     virtual double Overestimated(const double,const double);
-    virtual double RejectionWeight(const double,const double);
+    virtual double RejectionWeight(const double,const double,
+				   const double eta=1.,const double scale=0.);
     virtual double Z();
 
     virtual ATOOLS::Flavour & GetFlavourA() { return p_selected->GetFlavourA(); }

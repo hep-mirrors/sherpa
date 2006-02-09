@@ -1,6 +1,7 @@
 SHERPASYS  = ../..
 ATOOLSDIR  = $(SHERPASYS)/ATOOLS-2.0
 ATOOLSINCS = -I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
+PDFINCS    = -I$(SHERPASYS)/PDF-1.0/Main
 MODELINCS  = -I$(SHERPASYS)/MODEL-1.0/Main
 CSSDIR     = $(SHERPASYS)/CS_SHOWER++-0.0
 CSSINCS    = -I$(CSSDIR)/Tools -I$(CSSDIR)/Showers
@@ -8,18 +9,12 @@ CSSINCS    = -I$(CSSDIR)/Tools -I$(CSSDIR)/Showers
 CSSFLAGS  =	-pedantic -Wall -Winline 
 AM_CXXFLAGS   = $(CSSFLAGS)
 
-if CVS_INCLUDE
-CVSINCLUDE    = CVS
-endif
-
 lib_LTLIBRARIES = libCSMain.la
 libCSMain_la_SOURCES = \
 		CS_Shower.C
 
 INCLUDES = \
-	$(ATOOLSINCS) $(MODELINCS) $(CSSINCS)
+	$(ATOOLSINCS) $(MODELINCS) $(PDFINCS) $(CSSINCS)
 
-include_HEADERS = \
+noinst_HEADERS = \
 		CS_Shower.H
-
-EXTRA_DIST    = $(CVSINCLUDE)

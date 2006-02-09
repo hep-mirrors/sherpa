@@ -47,25 +47,27 @@ void Splitting_Function_Group::SelectOne() {
 }
 
 double Splitting_Function_Group::OverIntegrated(const double zmin,const double zmax,
-						const double scale) {
+						const double scale,const double xbj) {
   m_lastint = 0.;
   for (m_splitter=m_splittings.begin();m_splitter!=m_splittings.end();m_splitter++) {
-    m_lastint += (*m_splitter)->OverIntegrated(zmin,zmax,scale);
+    m_lastint += (*m_splitter)->OverIntegrated(zmin,zmax,scale,xbj);
   }
   return m_lastint;
 }
 
 
-double Splitting_Function_Group::operator() (const double z,const double y) { 
-  return (*p_selected)(z,y); 
+double Splitting_Function_Group::operator() (const double z,const double y,
+					     const double eta = 1.,const double scale=0.) { 
+  return (*p_selected)(z,y,eta,scale); 
 }
 
 double Splitting_Function_Group::Overestimated(const double z,const double y) { 
   return p_selected->Overestimated(z,y); 
 }
 
-double Splitting_Function_Group::RejectionWeight(const double z,const double y) { 
-  return p_selected->RejectionWeight(z,y); 
+double Splitting_Function_Group::RejectionWeight(const double z,const double y,
+						 const double eta,const double scale) { 
+  return p_selected->RejectionWeight(z,y,eta,scale); 
 }
 
 double Splitting_Function_Group::Z() { 

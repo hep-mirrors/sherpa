@@ -9,7 +9,7 @@ using namespace ATOOLS;
 using namespace std;
 
 std::ostream& CS_SHOWER::operator<<(std::ostream& str, Singlet & singlet) {
-  str<<"Singlet parton list from CS_Shower : "<<endl;
+  str<<"Singlet parton list from CS_Shower : "<<&singlet<<endl;
   Parton * part;
   for (PLiter plit=singlet.begin();plit!=singlet.end();plit++) {
     part = (*plit);
@@ -35,11 +35,14 @@ Singlet::~Singlet() {
   if (!empty()) {
     PLiter plit = begin();
     do {
-      if ((*plit)) { delete (*plit); (*plit) = NULL; }
+      if ((*plit)) { 
+	delete (*plit); (*plit) = NULL; 
+      }
       plit = erase(plit);
     } while (plit!=end());
     clear();
   }
+  
 }
 
 int Singlet::SplitParton(PLiter & plit, Parton * part1, Parton * part2) 
@@ -104,10 +107,10 @@ Singlet * Singlet::SplitList(PLiter plit)
 void Singlet::ReshuffleList(PLiter plit) 
 {}
 
-void Singlet::ExtractFSPartons(ATOOLS::Blob * blob) 
+void Singlet::ExtractPartons(ATOOLS::Blob * fs,ATOOLS::Blob * is) 
 {
   Particle * part;
-  int flow1, flow2;
+  int flow1=0, flow2=0;
   PLiter plit1;
   for (PLiter plit=begin();plit!=end();plit++) {
     if ((*plit)->GetType()==pst::FS) {
@@ -136,7 +139,11 @@ void Singlet::ExtractFSPartons(ATOOLS::Blob * blob)
 	      part->SetFlow(1,-1);
 	      flow1 = part->GetFlow(1);
 	    }
-	    else abort();
+	    else {
+	      part->SetFlow(2,flow2);
+	      part->SetFlow(1,-1);
+	      flow1 = part->GetFlow(1);
+	    }
 	  }
 	}
 	else {
@@ -146,11 +153,61 @@ void Singlet::ExtractFSPartons(ATOOLS::Blob * blob)
 	      part->SetFlow(1,0);
 	    }
 	  }
+	  else {
+	    if (flow2!=0) {
+	      if ((*plit)->GetFlavour().IsQuark() && (*plit)->GetFlavour().IsAnti()) {
+		part->SetFlow(2,flow2);
+		part->SetFlow(0,1);
+	      }
+	    }
+	  }
 	}
       }
-      blob->AddToOutParticles(part);
+      fs->AddToOutParticles(part);
     }
-    else abort();
+    else if ((*plit)->GetType()==pst::IS) {
+      //save
+      part = new Particle(-1,(*plit)->GetFlavour(),(*plit)->Momentum(),'I');
+      part->SetNumber(0);
+      part->SetStatus(1);
+      if (plit==begin()) {
+	if ((*plit)->GetFlavour().IsQuark()) {
+	  if (!(*plit)->GetFlavour().IsAnti()) abort();
+	  else {
+	    flow1 = 0;
+	    flow2 = m_col;
+	    part->SetFlow(2,flow2);
+	    flow2 = part->GetFlow(2);
+	  }
+	}
+      }
+      else {
+	plit1 = plit;
+	plit1++;
+	if (plit1!=end()) {
+	  if ((*plit)->GetFlavour().IsQuark()) abort();
+	  else {
+	    if (flow1!=0) {
+	      part->SetFlow(2,flow1);
+	      part->SetFlow(1,-1);
+	      flow1 = part->GetFlow(1);
+	    }
+	    else {
+	      abort();
+	    }
+	  }
+	}
+	else {
+	  if (flow1!=0) {
+	    if ((*plit)->GetFlavour().IsQuark() && !(*plit)->GetFlavour().IsAnti()) {
+	      part->SetFlow(1,flow1);
+	      part->SetFlow(2,0);
+	    }
+	  }
+	}
+      }
+      is->AddToInParticles(part);
+    }
   }
 }
 

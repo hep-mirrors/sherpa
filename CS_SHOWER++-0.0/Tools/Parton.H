@@ -41,7 +41,8 @@ namespace CS_SHOWER {
     inline double            const ZTest()       const;
     inline double            const YTest()       const;
     inline double            const Xbj()         const;
-    inline Parton *          const GetSpect()    const;
+    //inline Parton *          const GetSpect()    const;
+    inline Parton *                GetSpect();
     inline void SetMomentum(const ATOOLS::Vec4D &);
     inline void SetStart(const double);
     inline void SetVeto(const double);
@@ -68,8 +69,14 @@ namespace CS_SHOWER {
     m_z_test(1.), m_y_test(1.), m_xBj(1.), p_spect(NULL)
   {
     if (m_flav.IsQuark()) {
+      if (m_pst==pst::FS) {
       if (m_flav.IsAnti()) m_cpartner = -1;
                       else m_cpartner =  1;
+      }
+      if (m_pst==pst::IS) {
+	if (m_flav.IsAnti()) m_cpartner = 1;
+	else m_cpartner =  -1;
+      }
     }
   }
 
@@ -80,11 +87,16 @@ namespace CS_SHOWER {
     m_z_test(1.), m_y_test(1.), m_xBj(1.), p_spect(NULL)
   {
     if (m_flav.IsQuark()) {
-      if (m_flav.IsAnti()) m_cpartner = -1;
-                      else m_cpartner =  1;
+       if (m_pst==pst::FS) {
+	 if (m_flav.IsAnti()) m_cpartner = -1;
+	 else m_cpartner =  1;
+       }
+       if (m_pst==pst::IS) {
+	 if (m_flav.IsAnti()) m_cpartner = 1;
+	 else m_cpartner =  -1;
+       }    
     }
   }
-
 
   ATOOLS::Flavour   const Parton::GetFlavour()  const { return m_flav; }
   ATOOLS::Vec4D     const Parton::Momentum()    const { return m_mom; }
@@ -97,7 +109,8 @@ namespace CS_SHOWER {
   double            const Parton::ZTest()       const { return m_z_test; }
   double            const Parton::YTest()       const { return m_y_test; }
   double            const Parton::Xbj()         const { return m_xBj; }
-  Parton *          const Parton::GetSpect()    const { return p_spect; }
+  //Parton *          const Parton::GetSpect()    const { return p_spect; }
+  Parton *                Parton::GetSpect()          { return p_spect; }
   void Parton::SetMomentum(const ATOOLS::Vec4D & mom) { m_mom      = mom; }
   void Parton::SetStart(const double kt)              { m_kt_start = kt; }
   void Parton::SetVeto(const double kt)               { m_kt_veto  = kt; }
