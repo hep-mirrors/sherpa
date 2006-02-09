@@ -21,6 +21,7 @@ namespace ADICIC { class Chain; }
 namespace SHERPA {
   class Shower_Handler {
   private :
+    std::string            m_dir,m_file;
     int                    m_maxjetnumber;
 
     std::string            m_showergenerator;
@@ -32,8 +33,8 @@ namespace SHERPA {
 #ifdef USING__CSS    
     CS_SHOWER::CS_Shower * p_css;
 #endif
-    ATOOLS::Jet_Finder   * p_jf;
     PDF::ISR_Handler     * p_isr_handler;       
+    ATOOLS::Jet_Finder   * p_jf;
   public :
     Shower_Handler(std::string,std::string,MODEL::Model_Base *,
 		   PDF::ISR_Handler *,int);
@@ -46,7 +47,7 @@ namespace SHERPA {
     std::string               ShowerGenerator() { return m_showergenerator; }
     bool                      ISROn()           { return m_isrshowerswitch; }
     bool                      FSROn()           { return m_fsrshowerswitch; }
-    unsigned int              MaxJetNumber()    { return m_maxjetnumber; }
+    unsigned int              MaxJetNumber()    { return m_maxjetnumber;    }
     PDF::ISR_Handler        * GetISRHandler()   { return p_isr_handler; }
     APACIC::Tree            * GetFinTree(); 
     APACIC::Tree           ** GetIniTrees();

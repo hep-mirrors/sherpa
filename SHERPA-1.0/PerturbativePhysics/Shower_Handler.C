@@ -28,9 +28,6 @@ Shower_Handler::Shower_Handler(std::string dir,std::string file,
 #ifdef USING__Adicic    
     if (m_showergenerator==std::string("Adicic")) m_isrshowerswitch = false;
 #endif
-#ifdef USING__CSS    
-    if (m_showergenerator==std::string("CSS")) m_isrshowerswitch = false;
-#endif
   }
   m_fsrshowerswitch = dataread.GetValue<int>("FSR_SHOWER",1);
   if (m_isrshowerswitch && !m_fsrshowerswitch) {
@@ -58,7 +55,7 @@ Shower_Handler::Shower_Handler(std::string dir,std::string file,
 #endif
 #ifdef USING__CSS    
   else if (m_showergenerator==std::string("CSS")) {
-    p_css = new CS_SHOWER::CS_Shower();
+    p_css = new CS_SHOWER::CS_Shower(_isr,m_isrshowerswitch,m_fsrshowerswitch);
   }
 #endif
   else {
@@ -90,7 +87,8 @@ int Shower_Handler::PerformShowers(int jetveto,int losejv,double _x1,double _x2,
   if (p_adicic) return p_adicic->PerformShowers();
 #endif
 #ifdef USING__CSS    
-  if (p_css) return p_css->PerformShowers();
+  if (p_css) /*return*/ p_css->PerformShowers();
+  abort();
 #endif
   return 0;
 }
