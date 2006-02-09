@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/09/30    (surely preliminarily)
+//Version: 4 ADICIC++-0.0/2006/02/03    (surely preliminarily)
 
 //The Sudakov classes are provided, which manage the Sudakov calculation needed
 //for the gluon emission or splitting of a specific FF dipole.
@@ -59,7 +59,7 @@ namespace ADICIC {
     inline       void Reset();
 
     const bool InitRadiation() const;
-    void       InitWithCurrentDipole();
+    const bool InitWithCurrentDipole();
 
   public:
 

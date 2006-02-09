@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/09/30
+//Version: 4 ADICIC++-0.0/2006/02/03
 
 //Implementation of the template structures of IISudakov_Group.H.
 
@@ -175,7 +175,9 @@ const bool IISudakov_Group<DT>::GenerateVariablesFor(const Dipole& dip,
   p_sur=new Sudakov_Result; assert(p_sur);
   p_sur->Isr.resize(sr::stop,0.0);
   sur.Isr.resize(sr::stop,0.0);
-  InitWithCurrentDipole();    //assert(InitWithCurrentDipole());
+  if(InitWithCurrentDipole()==false) {
+    p_dip=NULL; delete p_sur; p_sur=NULL; sur.Reset(); return false;
+  }
 
   xbool            kspl=between;
   Radiation::Group kgrp=Radiation::gluon;
@@ -319,7 +321,7 @@ const bool IISudakov_Group<DT>::GenerateVariablesFor(const Dipole& dip,
 
 template<Dipole::Type DT>
 const bool IISudakov_Group<DT>::InitRadiation() const {
-  std::cout<<"IIRADINIT"<<std::endl;///////////////////////////////////////////
+  cout<<__PRETTY_FUNCTION__<<endl;/////////////////////////////////////////////
   for(list<Sudakov_Base*>::const_iterator cit=l_sud.begin();
       cit!=l_sud.end(); ++cit)
     if(*cit) (*cit)->InitRadParticle();
@@ -381,6 +383,7 @@ const bool IISudakov_Group<DT>::InitWithCurrentDipole() {
   m_x2tmin=dpa.sud.MinIIK2t()/m_s;    //Use the direct treatment.
   m_x2tmax=Min(0.25,p_dip->BootScale()/m_s);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   //m_x2tmax=0.25;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
   assert(m_x2tmin<m_x2tmax);
 
   //cout<<"-/shatmax="<<sqrt(p_sur->Isr[sr::shatmax])//////////////////////////
@@ -388,7 +391,8 @@ const bool IISudakov_Group<DT>::InitWithCurrentDipole() {
   //if(m_x2tmax<0.249999) cout<<"m_x2tmax="<<m_x2tmax<<"\n"<<*p_dip<<endl;/////
   //cout<<"p_dip->BootScale()/m_s="<<p_dip->BootScale()/m_s<<endl;/////////////
 
-  return true;
+  if(m_x2tmin<m_x2tmax) return true;
+  return false;
 
 }
 

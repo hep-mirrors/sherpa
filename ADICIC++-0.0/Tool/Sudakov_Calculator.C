@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/09/12
+//Version: 4 ADICIC++-0.0/2006/02/09
 
 //Implementation of Sudakov_Calculator.H.
 
@@ -192,6 +192,8 @@ const Trio Sudakov_Calculator::AdjustEnvironment(const string& path,
     else            s_asapprox=(*s_box.m_ras[0])(scmin)+0.0001;
     //s_asapprox=(*s_box.m_ras[0])(cutq2)+0.0001;//////////////////////////////
     //cout<<cutq2<<" : "<<scmin<<" :: "<<s_asapprox<<endl;
+    //for(int i=0; i<100; ++i)
+    //  cout<<(1.0-i/100.0)<<"\t"<<(*s_box.m_ras[0])(1.0-i/100.0)<<endl;
     assert(s_asapprox>(*s_box.m_ras[0])(scmin) &&
 	   s_asapprox>(*s_box.m_ras[0])(dpa.sud.MinK2t()) &&
 	   s_asapprox>(*s_box.m_ras[0])(dpa.sud.MinIIK2t()));
@@ -334,13 +336,10 @@ const double Sudakov_Calculator::IsPDFCorr(bool z, const Multiflavour& mufl,
 
 
 
-//Sudakov_Calculator::Toolbox::Toolbox() : m_ras(1,NULL), m_pdf(2,NULL) {}
-Sudakov_Calculator::Toolbox::Toolbox() 
-{
-  m_ras.push_back(NULL);
-  m_pdf.push_back(NULL);
-  m_pdf.push_back(NULL);
+Sudakov_Calculator::Toolbox::Toolbox() : m_ras(1), m_pdf(2) {
+  assert(m_ras[0]==NULL && m_pdf[0]==NULL && m_pdf[1]==NULL);
 }
+
 
 
 Sudakov_Calculator::Toolbox::~Toolbox() {

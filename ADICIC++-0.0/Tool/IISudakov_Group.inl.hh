@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/09/30
+//Version: 4 ADICIC++-0.0/2005/02/09
 
 //Inline methods of IISudakov_Group.H.
 
@@ -14,7 +14,11 @@
 
 
 
-using namespace ATOOLS;
+
+
+using ATOOLS::sqr;
+
+
 
 namespace ADICIC {
 
@@ -304,6 +308,7 @@ namespace ADICIC {
     double fac;
     double x2t=m_sgroup.X2t();
     if(m_sgroup.CurrentDipole().SpinCorr()==false) fac=2/s_average;
+    //else fac=(power<s_x1pow>(x1) + power<s_x3pow>(x3)) *
     else fac=(power(x1,s_x1pow) + power(x3,s_x3pow)) *
 	   ATOOLS::sqr(ATOOLS::sqr(isrx[sr::mdip])/isrx[sr::shat])
 	   //This is the additional flux correction.

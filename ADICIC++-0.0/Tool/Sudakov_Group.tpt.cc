@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/09/30
+//Version: 4 ADICIC++-0.0/2006/02/03
 
 //Implementation of the template structures of Sudakov_Group.H.
 
@@ -104,7 +104,8 @@ const bool Sudakov_Group<DT>::GenerateVariablesFor(const Dipole& dip,
   assert(p_sur==NULL);
   p_sur=&sur;
 
-  InitWithCurrentDipole();
+  if(InitWithCurrentDipole());
+  else { p_dip=NULL; p_sur=NULL; return false;}
 
   xbool ksplt=between;
   Multidouble x(2);
@@ -125,6 +126,7 @@ const bool Sudakov_Group<DT>::GenerateVariablesFor(const Dipole& dip,
       cout<<" -> "<<m_x2t<<"\n";
 #endif
       if(m_x2t<0.0) break;
+      assert(m_s*m_x2t>dpa.sud.MinK2t());
       m_ymax=suda.CalculateRapLimit();
       m_rap=suda.GenerateRap();
       x[1]=sqrt(m_x2t);
@@ -150,7 +152,7 @@ const bool Sudakov_Group<DT>::GenerateVariablesFor(const Dipole& dip,
 
 #ifdef SUDAKOV_CALCULATOR_OUTPUT
   cout<<"==========\n";
-  cout<<" = "<<m_p2t<<"\n";
+  cout<<" = "<<p_sur->P2t<<"\n";
   cout<<"=========="<<endl;
 #endif
 
@@ -188,7 +190,7 @@ const bool Sudakov_Group<DT>::GenerateVariablesFor(const Dipole& dip,
 
 template<Dipole::Type DT>
 const bool Sudakov_Group<DT>::InitRadiation() const {
-  std::cout<<"RADINIT"<<std::endl;/////////////////////////////////////////////
+  cout<<__PRETTY_FUNCTION__<<endl;/////////////////////////////////////////////
   for(list<Sudakov_Base*>::const_iterator cit=l_sud.begin();
       cit!=l_sud.end(); ++cit)
     if(*cit) (*cit)->InitRadParticle();
@@ -199,7 +201,8 @@ const bool Sudakov_Group<DT>::InitRadiation() const {
 
 
 
-template<Dipole::Type DT> void Sudakov_Group<DT>::InitWithCurrentDipole() {
+template<Dipole::Type DT>
+const bool Sudakov_Group<DT>::InitWithCurrentDipole() {
 
   static bool check=InitRadiation();    //Warning removal trick.
 
@@ -214,6 +217,10 @@ template<Dipole::Type DT> void Sudakov_Group<DT>::InitWithCurrentDipole() {
 
   m_x2tmax=Min(0.25,dpa.sud.MaxK2t()/m_s);
   m_x2tmax=Min(m_x2tmax,p_dip->BootScale()/m_s);
+
+  if(m_x2tmin<m_x2tmax) return true;
+  //cout<<m_s<<" : "<<m_x2tmin<<" > "<<m_x2tmax<<" -> block evolution"<<endl;
+  return false;
 
 }
 

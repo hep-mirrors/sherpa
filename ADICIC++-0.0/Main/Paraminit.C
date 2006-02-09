@@ -44,7 +44,7 @@ const bool Dipole_Parameter_Init::Do() {    //Static.
   //Radiation type to build up the Sudakov groups
   Dipole_Parameter::Sud::s_radiatype=Radiation::gduscb;
   //GeV^2
-  Dipole_Parameter::Sud::s_k2tmin=1.0;
+  Dipole_Parameter::Sud::s_k2tmin=0.64;//1.0;
   Dipole_Parameter::Sud::s_k2tmax=8100.0;
   //GeV^2
   Dipole_Parameter::Sud::s_k2tiimin=1.0;//0.25;

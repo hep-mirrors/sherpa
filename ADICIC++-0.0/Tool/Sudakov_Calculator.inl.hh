@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/09/30
+//Version: 4 ADICIC++-0.0/2006/02/03
 
 //Inline methods of Sudakov_Calculator.H.
 
@@ -91,6 +91,7 @@ namespace ADICIC {
     //Static method.
     //return (*s_box.m_ras[0])(p2t);    //Testing.
     //return (*s_box.m_ras[0])(p2t)/s_asapprox;
+    assert(p2t>dpa.sud.MinK2t() || p2t>dpa.sud.MinIIK2t());
     double ret=(*s_box.m_ras[0])(p2t)/s_asapprox; assert(ret<=1.0);
     return ret;
   }

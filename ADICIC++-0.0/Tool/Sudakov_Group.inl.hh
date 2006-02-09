@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/09/09
+//Version: 4 ADICIC++-0.0/2006/02/09
 
 //Inline methods of Sudakov_Group.H.
 
@@ -14,7 +14,11 @@
 
 
 
-using namespace ATOOLS;
+
+
+using ATOOLS::sqr;
+
+
 
 namespace ADICIC {
 
@@ -210,7 +214,6 @@ namespace ADICIC {
       ( -m_sgroup.Ymax()/std::log(x2t) ) *    //Old: exchange this by 0.5.
       ( power(x[0],s_x1pow) + power(x[1],s_x3pow) );
       //( power<s_x1pow>(x[0]) + power<s_x3pow>(x[1]) );
-
   }
 
 
