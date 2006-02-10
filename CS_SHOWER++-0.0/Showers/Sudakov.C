@@ -19,19 +19,20 @@ Sudakov::Sudakov(PDF::ISR_Handler *isr) :
       Add(new q_qg_FF(fl.Bar()));
       Add(new q_gq_FF(fl.Bar()));
       if (fl.PSMass()<100.) Add(new g_qq_FF(fl));
+      //initial state splittings
       if (isr->On()) {
 	//the FI case
 	Add(new q_qg_FI(fl,isr->PDF(hadron)));
 	Add(new q_qg_FI(fl.Bar(),isr->PDF(hadron)));
 	Add(new q_gq_FI(fl,isr->PDF(hadron)));
 	Add(new q_gq_FI(fl.Bar(),isr->PDF(hadron)));
-	Add(new g_qq_FI(fl,isr->PDF(hadron)));
+	if (fl.PSMass()<100.) Add(new g_qq_FI(fl,isr->PDF(hadron)));
 	//the IF case
 	Add(new q_qg_IF(fl,isr->PDF(hadron)));
 	Add(new q_qg_IF(fl.Bar(),isr->PDF(hadron)));
 	Add(new q_gq_IF(fl,isr->PDF(hadron)));
 	Add(new q_gq_IF(fl.Bar(),isr->PDF(hadron)));
-	Add(new g_qq_IF(fl,isr->PDF(hadron)));
+	if (fl.PSMass()<100.) Add(new g_qq_IF(fl,isr->PDF(hadron)));
       }
     }
   }
@@ -56,6 +57,7 @@ bool Sudakov::Dice(Parton * split,Parton * spect,const double kt_ext) {
   
   double s=0,t=0;
   cout<<"####################### In  Sudakov::Dice ###########################"<<endl;
+  
   if (split->GetType()==pst::FS && spect->GetType()==pst::FS) {
 
     s = (split->Momentum()+spect->Momentum()).Abs2();    
@@ -72,36 +74,32 @@ bool Sudakov::Dice(Parton * split,Parton * spect,const double kt_ext) {
   }
   
   if (split->GetType()==pst::FS && spect->GetType()==pst::IS) { 
-    //for test purposes
-    //if (m_flavs[0]==Flavour(kf::gluon)) return false;
     
-    t = 2.*(1-spect->Xbj())/spect->Xbj()*split->Momentum()*spect->Momentum();  
-    //    std::cout<<"FI ---------------------------------------------------------------"<<std::endl;
-    //	     <<"Try this : k0sq = "<<4.*m_k0sq<<", t = "<<t<<" from "<<spect->Xbj()<<endl;
+    //t = 2.*(1-spect->Xbj())/spect->Xbj()*split->Momentum()*spect->Momentum();  
+    t = 2.*split->Momentum()*spect->Momentum();
+    //std::cout<<"FI ---------------------------------------------------------------"<<std::endl
+    //     <<"Try this : k0sq = "<<4.*m_k0sq<<", t = "<<t<<" from "<<spect->Xbj()<<endl;
 
     if (4.*m_k0sq>t) return false;
     
     m_type=cstp::FI;
-    m_deltaz = sqrt(1.-4.*m_k0sq/t);
+    m_deltaz = sqrt(1.-4.*m_k0sq*spect->Xbj()/(t*(1.-spect->Xbj())));
     m_zmin   = 0.5*(1.-m_deltaz);
     m_zmax   = 0.5*(1.+m_deltaz);
     m_scale  = t/4.;
   }
   
   if (split->GetType()==pst::IS && spect->GetType()==pst::FS) { 
-    //for test purposes
-    //if (m_flavs[0]==Flavour(kf::gluon)) return false;
-    
-    t = 2.*(1-spect->Xbj())/spect->Xbj()*split->Momentum()*spect->Momentum();  
-    //    std::cout<<"FI ---------------------------------------------------------------"<<std::endl;
-    //	     <<"Try this : k0sq = "<<4.*m_k0sq<<", t = "<<t<<" from "<<spect->Xbj()<<endl;
+  
+    t = 2.*split->Momentum()*spect->Momentum();
+    //std::cout<<"IF ---------------------------------------------------------------"<<std::endl
+    //     <<"Try this : k0sq = "<<4.*m_k0sq<<", t = "<<t<<" from "<<split->Xbj()<<endl;
 
     if (4.*m_k0sq>t) return false;
     
     m_type=cstp::IF;
-    m_deltaz = sqrt(1.-4.*m_k0sq/t);
-    m_zmin   = 0.5*(1.-m_deltaz);
-    m_zmax   = 0.5*(1.+m_deltaz);
+    m_zmin   = split->Xbj();
+    m_zmax   = 1./(1.+(4.*m_k0sq/t));
     m_scale  = t/4.;
   }
   
@@ -125,12 +123,6 @@ bool Sudakov::Dice(Parton * split,Parton * spect,const double kt_ext) {
     if (split->GetType()==pst::FS && spect->GetType()==pst::FS) {
       //std::cout<<"FF ---------------------------------------------------------------"<<std::endl;
       m_y = m_kperp2/(s*m_z*(1.-m_z));
-      /*
-	cout<<m_flavs[0]<<" -> "<<GetFlavourB()<<" + "<<GetFlavourC()
-	<<" : { kt^2 = "<<m_kperp2<<", z = "<<m_z<<"} "
-	<<m_z*(1.-m_z)<<" > "<<m_kperp2/s<<endl;
-	cout<<"Test : "<<m_kperp2<<" "<<ktveto2<<endl;
-      */
       if (m_kperp2<Max(m_k0sq,kt_ext))  return false;
       if (Veto(s,0.,ktveto2)) break;
      }
@@ -139,14 +131,20 @@ bool Sudakov::Dice(Parton * split,Parton * spect,const double kt_ext) {
       //std::cout<<"FI ---------------------------------------------------------------"<<std::endl;
       double ta = 2.*split->Momentum()*spect->Momentum(); 
       m_y = 1./(1.+ta*m_z*(1.-m_z)/m_kperp2);
-      /*
-	cout<<m_flavs[0]<<" -> "<<GetFlavourB()<<" + "<<GetFlavourC()
-        <<" : { kt^2 = "<<m_kperp2<<", z = "<<m_z<<"} "
-        <<m_z*(1.-m_z)<<" > "<<m_kperp2/t<<endl;
-	cout<<"Test : "<<m_kperp2<<" "<<ktveto2<<endl;
-      */
       if (m_kperp2<Max(m_k0sq,kt_ext))  return false;
       if (Veto(t,spect->Xbj(),ktveto2)) break;
+    }
+    //IF
+    if (split->GetType()==pst::IS && spect->GetType()==pst::FS) {
+      //std::cout<<"IF ---------------------------------------------------------------"<<std::endl;
+      double ta = 2.*split->Momentum()*spect->Momentum(); 
+      //std::cout<<m_kperp2<<" "<<m_z<<" "<<ta<<" "<<m_kperp2*m_z/(ta*m_z*(1.-m_z))<<std::endl;
+      m_y = 0.5 + sqrt(0.25-m_kperp2*m_z/(ta*m_z*(1.-m_z)));
+      //std::cout<<" big y "<<m_y<<std::endl;
+      m_y = 0.5 - sqrt(0.25-m_kperp2*m_z/(ta*m_z*(1.-m_z)));
+      //std::cout<<" small y "<<m_y<<std::endl;
+      if (m_kperp2<Max(m_k0sq,kt_ext))  return false;
+      if (Veto(t,split->Xbj(),ktveto2)) break;
     }
   }
   split->SetTest(m_kperp2,m_z,m_y);
@@ -189,8 +187,14 @@ bool Sudakov::KinCheck(double s,double x, double ktveto2) {
   }
   if (m_type==cstp::FI) {
     if (m_kperp2>s || m_y<0. || m_y>1.)       return false;
-    if (x>1.)                               return false;
-    if (m_z*(1.-m_z) < m_kperp2/(s*(1.-x))) return false;
+    if (x>1. || x/(1.-m_y)>1.)                return false;
+    if (m_z*(1.-m_z) < m_kperp2*x/(s*(1.-x))) return false;
+  }
+  if (m_type==cstp::IF) {
+    if (m_kperp2>s || m_y<0. || m_y>1.)       return false;
+    if (x>1. || x<0. || x/m_z>1.)             return false;
+    //kinematic veto to add
+    return false;
   }
   if (m_kperp2>ktveto2)                       return false;
   
@@ -203,6 +207,7 @@ bool Sudakov::Splitting(double x) {
   
   if (m_type==cstp::FF) wt = RejectionWeight(m_z,m_y);
   if (m_type==cstp::FI) wt = RejectionWeight(m_z,m_y,x,m_scale);
+  if (m_type==cstp::IF) wt = RejectionWeight(m_z,m_y,x,m_scale);
   if (wt>1.) std::cout<<" ERROR : In Sudakov::Splitting, weight is larger than 1: "<<wt<<std::endl;
   //cout<<"   Spl-Weight("<<sqrt(m_kperp2)<<","<<m_z<<","<<m_y<<") = "<<wt<<endl;
   if (ran.Get()>wt) return false; 

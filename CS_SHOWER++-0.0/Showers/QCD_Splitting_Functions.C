@@ -30,7 +30,6 @@ double q_qg_FF::operator() (const double z,const double y,
 
 double q_qg_FF::OverIntegrated(const double zmin,const double zmax,const double scale,const double xbj) {
   m_lastint = m_zmin = m_zmax = 0.; 
-  //if (scale<m_flavs[0].PSMass()) return m_lastint;
   m_zmin = zmin; m_zmax = zmax;
   m_lastint = 2.*s_CF*log((1.-zmin)/(1.-zmax)) * m_Jmax;
   return m_lastint;
@@ -69,7 +68,6 @@ double q_gq_FF::operator() (const double z,const double y,const double eta,const
 
 double q_gq_FF::OverIntegrated(const double zmin,const double zmax,const double scale,const double xbj) {
   m_lastint = m_zmin = m_zmax = 0.; 
-  //if (scale<m_flavs[0].PSMass()) return m_lastint;
   m_zmin = zmin; m_zmax = zmax;
   m_lastint = 2.*s_CF*log(zmax/zmin) * m_Jmax;
   return m_lastint;
@@ -242,7 +240,6 @@ double q_gq_FI::operator() (const double z,const double y,
 
 double q_gq_FI::OverIntegrated(const double zmin,const double zmax,const double scale,const double xbj) {
   m_lastint = m_zmin = m_zmax = 0.; 
-  //if (scale<m_flavs[0].PSMass()) return m_lastint;
   m_zmin = zmin; m_zmax = zmax;
   m_Jmax = 1./(2.*xbj); 
   m_lastint = 2.*s_CF*log(zmax/zmin) * m_Jmax;
@@ -263,6 +260,7 @@ double q_gq_FI::Z() {
 }
 
 double q_gq_FI::J(const double y,const double eta,const double scale) {   
+  
   p_pdf->Calculate(eta/(1.-y),scale);
   double fresh = p_pdf->GetXPDF(m_flavs[0]);
   
@@ -445,7 +443,6 @@ double q_gq_IF::operator() (const double z,const double y,
 
 double q_gq_IF::OverIntegrated(const double zmin,const double zmax,const double scale,const double xbj) {
   m_lastint = m_zmin = m_zmax = 0.; 
-  //if (scale<m_flavs[0].PSMass()) return m_lastint;
   m_zmin = zmin; m_zmax = zmax;
   m_Jmax = 1./xbj; 
   m_lastint = 2.*s_CF*log(zmax/zmin) * m_Jmax;

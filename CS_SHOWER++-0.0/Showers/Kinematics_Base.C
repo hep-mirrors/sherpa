@@ -81,22 +81,28 @@ Parton * Kinematics_FI::MakeKinematics(Parton * split, ATOOLS::Flavour & newfl)
     }
   }
   Vec4D n_perp = Vec4D(0.,n3/n3.Abs());
-
+  
   double kt = sqrt(split->KtTest()), z = split->ZTest(), y = split->YTest();
-
+  
+  std::cout<<" New momenta for FI splitting : "<<z<<" "<<y<<std::endl;
+  
   //sign of p2 terms changed!!!!
   Vec4D 
     q1 = z*p1      - (1.-z)*y/(1.-y)*p2 + kt*n_perp, 
-    q2 =                   1./(1.-y)*p2,
+    q2 =           +       1./(1.-y)*p2,
     q3 = (1.-z)*p1 -      z*y/(1.-y)*p2 - kt*n_perp;
-    
+
+  std::cout<<q1<<std::endl;
+  std::cout<<q2<<std::endl;
+  std::cout<<q3<<std::endl;
+  
   if ((IsZero(q1[0]) && IsZero(q1.Abs2())) ||
       (IsZero(q2[0]) && IsZero(q2.Abs2())) ||
       (IsZero(q3[0]) && IsZero(q3.Abs2()))) {
     cout<<"Error in  Kinematics_FI::MakeKinematics("<<kt<<","<<z<<","<<y<<"):"<<endl
 	<<"Splitter : "<<split<<":"<<(*split)<<"Spectator :"<<(*spect);
   }
-
+  
   split->SetMomentum(q1);
   spect->SetMomentum(q2);
   double xp = spect->Xbj()/(1.-y);
