@@ -87,8 +87,7 @@ int Shower_Handler::PerformShowers(int jetveto,int losejv,double _x1,double _x2,
   if (p_adicic) return p_adicic->PerformShowers();
 #endif
 #ifdef USING__CSS    
-  if (p_css) /*return*/ p_css->PerformShowers();
-  abort();
+  if (p_css) return p_css->PerformShowers();
 #endif
   return 0;
 }
