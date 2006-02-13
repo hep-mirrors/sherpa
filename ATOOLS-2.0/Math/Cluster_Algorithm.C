@@ -51,6 +51,7 @@ Cluster(const double &crit,const cs::code &code)
     }
     else {
       m_lp.push_back(m_p[iimin]);
+      m_recom(m_p[iimin]);
       int pos(-m_lp.size());
       for (size_t i(0);i<m_j.size();++i) if (m_j[i]==(int)ijmin) m_j[i]=pos;
     }

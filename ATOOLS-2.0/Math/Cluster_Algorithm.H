@@ -65,7 +65,8 @@ namespace ATOOLS {
     bool Cluster(const double &crit,const cs::code &code=cs::dist);
 
     // inline functions
-    inline void SetPoints(const Point_Vector &p) { m_sp=m_p=p; }
+    inline void SetPoints(const Point_Vector &p)   { m_sp=m_p=p; }
+    inline void SetClusters(const Point_Vector &p) { m_p=p;      }
 
     inline void SetRecalc(const bool &recalc) { m_recalc=recalc; }
 
