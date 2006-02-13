@@ -41,5 +41,5 @@ Parameters {
   lambda            = 1.            ! exponent in KS
 }
 Result {
-   1.89332e-14 6.51832e-18 7.94128e-14;
+   1.91719e-14 6.86406e-18 4.82777e-13;
 }
