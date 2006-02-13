@@ -62,6 +62,7 @@ Apacic::~Apacic()
   }  
   if (p_inishower) delete p_inishower;
   if (p_finshower) delete p_finshower;
+  delete p_jetveto;
 }
 
 int Apacic::PerformShowers(const int &jetveto,const int &losejv,
