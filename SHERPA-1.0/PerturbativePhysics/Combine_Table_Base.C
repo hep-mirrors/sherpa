@@ -159,12 +159,16 @@ Combine_Table_Base::~Combine_Table_Base()
 
 void Leg::DetermineCouplings(const int type) 
 {
-  m_nqed=m_nqcd=0;
+  m_nqed=m_nqcd=m_pqcd=m_pqed=0;
   AMEGIC::Point *p(p_point);
   if (type==1) p=p->prev;
-  if (p->fl.Strong() &&
-      p->left->fl.Strong() && 
-      p->right->fl.Strong()) ++m_nqcd;
+  if (p->fl.Strong()) ++m_pqcd;
+  else ++m_pqed;
+  if (p->left->fl.Strong()) ++m_pqcd;
+  else ++m_pqed;
+  if (p->right->fl.Strong()) ++m_pqcd;
+  else ++m_pqed;
+  if (m_pqcd==3) ++m_nqcd;
   else ++m_nqed;
   switch (p->Lorentz->Type()) {
   case lf::Triangle:
@@ -237,8 +241,10 @@ Leg * Combine_Table_Base::CombineLegs
   for (int l=0; l<j; ++l) {
     if (l==i) {
       alegs[i] = CombinedLeg(legs,i,j);
-      if (alegs[i].OrderQCD()>0) m_kt2QCD=Min(m_kt2QCD,pt2ij);
-      if (alegs[i].OrderQED()>0) m_kt2QED=Min(m_kt2QED,pt2ij);
+      if (alegs[i].OrderQCD()>0 || alegs[i].NQCD()>0) 
+	m_kt2QCD=Min(m_kt2QCD,pt2ij);
+      if (alegs[i].OrderQED()>0 || alegs[i].NQED()>0) 
+	m_kt2QED=Min(m_kt2QED,pt2ij);
     }
     else      alegs[l] = legs[l];
   }

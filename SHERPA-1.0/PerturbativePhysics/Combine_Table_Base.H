@@ -13,7 +13,7 @@ namespace SHERPA {
   class Leg {
   private:
     AMEGIC::Point *p_point;
-    int m_anti, m_nqcd, m_nqed;
+    int m_anti, m_nqcd, m_nqed, m_pqcd, m_pqed;
     AMEGIC::lf::code m_type;
     friend std::ostream &operator<<(std::ostream &ostr,const Leg &leg);
   public:
@@ -33,6 +33,8 @@ namespace SHERPA {
     { return m_anti==-1?p_point->fl.Bar():p_point->fl; }
     inline const int OrderQCD() const { return m_nqcd; }
     inline const int OrderQED() const { return m_nqed; }
+    inline const int NQCD() const { return m_pqcd; }
+    inline const int NQED() const { return m_pqed; }
     inline const AMEGIC::lf::code Type() const { return m_type; }
   };// end of class Leg
 
