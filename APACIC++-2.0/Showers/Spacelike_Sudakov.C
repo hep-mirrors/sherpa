@@ -120,7 +120,13 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,int & extra_pdf)
     return false; 
   }
   
-  p_pdf->Calculate(m_x,(-m_t));
+  switch (m_pdf_scheme) {
+  case 0:
+    p_pdf->Calculate(m_x,-m_t);
+    break;
+  default:
+    p_pdf->Calculate(m_x,mo->pt2lcm);
+  }
   
   while (m_t<m_t0) {
     CrudeInt(m_zmin,m_zmax);

@@ -83,7 +83,7 @@ TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
   }
   if (mo->part->Info()=='H' && mo->left && mo->right) {
     EstablishRelations(mo,mo->left,mo->right);
-    return InitializeJets(tree,mo,1);
+    return InitializeJets(tree,mo,0);
   }
   else {
 #ifdef USING__Veto_Info

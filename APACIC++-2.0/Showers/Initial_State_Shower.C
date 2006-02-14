@@ -327,8 +327,6 @@ int Initial_State_Shower::FillBranch(Tree ** trees,Knot * active,
   active->prev   = 0;
   active->stat   = 0;
   active->t      = active->tout;
-  // active->thcrit = 0.;
-  // active->maxpt2 = 0.;
   active->part->SetStatus(1);
   msg_Debugging()<<"no branch";
   msg_Debugging()<<"}\n";
@@ -396,6 +394,7 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,
   mother->stat   = 1;
   mother->E2     = 0.;
   mother->thcrit = th;
+  mother->pt2lcm = k->pt2lcm;
 
   Knot * sister = 0;
   if (mother->left) {
