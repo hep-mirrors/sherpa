@@ -126,7 +126,8 @@ TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
 int Final_State_Shower::InitializeJets(Tree *tree,Knot *mo,int init)
 {
   if (mo==NULL || mo->left==NULL || mo->right==NULL) {
-    msg.Error()<<METHOD<<"(..): Error. No knots."<<std::endl;
+    msg.Error()<<METHOD<<"(..): Error. No daughters in knot "
+	       <<mo->kn_no<<"."<<std::endl;
     return 0;
   }
   msg_Debugging()<<METHOD<<"("<<mo->kn_no<<","<<init<<"): {\n";
@@ -217,7 +218,10 @@ int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
     msg_Debugging()<<"selected daughter "<<d->kn_no<<", "
 		   <<d->part->Flav()<<", t="<<d->t<<", stats "
 		   <<d1->stat<<" "<<d2->stat<<std::endl;
-    ResetDaughters(d);
+    if (!((d->left && d->left->part->Info()=='H') ||
+	  (d->right && d->right->part->Info()=='H'))) { 
+      ResetDaughters(d);
+    }
     if (p_sud->Dice(d,first==2?mo:NULL)) { 
       msg_Debugging()<<"test emission at ("<<d->t
 		     <<","<<d->z<<") knot "<<d->kn_no<<"\n";
@@ -894,9 +898,9 @@ void Final_State_Shower::ResetDaughters(Knot * mo)
 
 void Final_State_Shower::Reset(Knot * mo) 
 { 
-  if (!mo) return;
-  mo->left  = NULL;  
-  mo->right = NULL;
+  if (mo==NULL) return;
+  if (mo->left!=NULL && mo->left->part->Info()!='H') mo->left=NULL;  
+  if (mo->right!=NULL && mo->right->part->Info()!='H') mo->right=NULL;  
   mo->t     = mo->tout;
   mo->stat  = 0;
   mo->part->SetStatus(1);
