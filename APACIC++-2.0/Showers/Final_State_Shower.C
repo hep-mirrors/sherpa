@@ -83,7 +83,7 @@ TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
   }
   if (mo->part->Info()=='H' && mo->left && mo->right) {
     EstablishRelations(mo,mo->left,mo->right);
-    return InitializeJets(tree,mo,0);
+    return InitializeJets(tree,mo,1);
   }
   else {
 #ifdef USING__Veto_Info
@@ -186,8 +186,14 @@ int Final_State_Shower::InitializeJets(Tree *tree,Knot *mo,int init)
 Knot *Final_State_Shower::ChooseDaughter(Knot * mo)
 {
   Knot *d1(mo->left), *d2(mo->right);
-  if ((d1->t>d1->tout && d1->t>=d2->t) || d2->t<=d2->tout) return d1;
-  if ((d2->t>d2->tout && d2->t>=d1->t) || d1->t<=d1->tout) return d2;
+  if ((d1->t>d1->tout && d1->t>=d2->t) || d2->t<=d2->tout) {
+    if (d1->stat!=0) return d1;
+    return d2;
+  }
+  if ((d2->t>d2->tout && d2->t>=d1->t) || d1->t<=d1->tout) {
+    if (d2->stat!=0) return d2;
+    return d1;
+  }
   THROW(fatal_error,"Selection failed.");
   return NULL;
 }
@@ -218,10 +224,7 @@ int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
     msg_Debugging()<<"selected daughter "<<d->kn_no<<", "
 		   <<d->part->Flav()<<", t="<<d->t<<", stats "
 		   <<d1->stat<<" "<<d2->stat<<std::endl;
-    if (!((d->left && d->left->part->Info()=='H') ||
-	  (d->right && d->right->part->Info()=='H'))) { 
-      ResetDaughters(d);
-    }
+    ResetDaughters(d);
     if (p_sud->Dice(d,first==2?mo:NULL)) { 
       msg_Debugging()<<"test emission at ("<<d->t
 		     <<","<<d->z<<") knot "<<d->kn_no<<"\n";
