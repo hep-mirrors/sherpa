@@ -353,6 +353,7 @@ void Timelike_Kinematics::BoostDaughters(Knot * const mo) const
     Tree::BoRo(cmsp,d2->right);
     d2->CheckMomentumConservation();
   }
+  mo->CheckMomentumConservation();
 }
 
 double Timelike_Kinematics::GetOpeningAngle(Knot *const knot) const

@@ -739,10 +739,7 @@ void Initial_State_Shower::SingleExtract(Knot *const kn,const int &beam,
 					 Blob *jet,Blob_List *const bl,
 					 int &nr) 
 {
-  msg_Debugging()<<METHOD<<"("<<(kn?kn->kn_no:-1)<<"): \n";
-  msg_Indent();
   if (kn==NULL) {
-    msg_Debugging()<<"}\n";
     return;
   }
   Particle *p(NULL);
@@ -812,14 +809,12 @@ void Initial_State_Shower::SingleExtract(Knot *const kn,const int &beam,
   // --- add final state particle ---
   if (lastknot && !is_is) {
     p = new Particle(*kn->part);
-    msg_Debugging()<<"take knot "<<kn->kn_no<<"\n";
     p->SetStatus(1);
     jet->AddToOutParticles(p);
   }
 
   SingleExtract(kn->left,beam,jet,bl,nr); 
   SingleExtract(kn->right,beam,jet,bl,nr); 
-  msg_Debugging()<<"}\n";
 }
 
 bool Initial_State_Shower::TestShower(Tree ** trees) 

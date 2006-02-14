@@ -181,7 +181,6 @@ void Spacelike_Kinematics::BoostPartial(const int mode,Knot *const si,
   m_boost=Poincare(b1);
   m_boost.Boost(p_si);
   // apply rotation and boost on tree rest (sequence depending on mode)
-  msg_Debugging()<<"mode = "<<mode<<"\n";
   if (mode==3) RoBoIni(si,rot,m_boost);
   else if (mode==5) RoBoFin(si,rot,m_boost);
   else msg.Error()<<METHOD<<"(..): Error."<<std::endl;
@@ -214,23 +213,13 @@ void Spacelike_Kinematics::RoBoIni(Knot *const k,Poincare &rot,Poincare &boost)
 void Spacelike_Kinematics::RoBoFin(Knot *const k,Poincare &rot,Poincare &boost) 
 {
   if (k==NULL) return;
-  msg_Debugging()<<METHOD<<"("<<k->kn_no<<"):\n";
   Vec4D  p(k->part->Momentum());
   rot.Rotate(p);
   boost.Boost(p);
   k->part->SetMomentum(p);
   RoBoFin(k->left,rot,boost);
   RoBoFin(k->right,rot,boost);
-  if (k->left) {
-    Vec4D pm(k->part->Momentum());
-    Vec4D pd(k->left->part->Momentum()+k->right->part->Momentum());
-    if (!(pm==pd)) {
-      msg.Error()<<METHOD<<"(..): Four momentum not conserved.\n"
-		 <<"  p_miss  = "<<(pm-pd)<<"\n"
-		 <<"  p_old   = "<<pm<<" "<<pm.Abs2()<<"\n"
-		 <<"  p_new   = "<<pd<<" "<<pd.Abs2()<<std::endl;
-    }
-  }
+  k->CheckMomentumConservation();
 }
 
 void Spacelike_Kinematics::BoostPartial(const int mode,
