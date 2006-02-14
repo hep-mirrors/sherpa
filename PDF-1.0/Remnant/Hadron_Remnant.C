@@ -164,7 +164,7 @@ bool Hadron_Remnant::DiceKinematics()
     p[3]=Sign(m_pbeam[3])*sqrt(E*E-p.PPerp2()-sqr(m));
     m_companions[j]->SetMomentum(p);
     if (!(E>0.) || (!(p[3]>0.) && !(p[3]<=0.))) {
-      msg.Error()<<"Hadron_Remnant::DiceKinematics(): "
+      msg_Tracking()<<"Hadron_Remnant::DiceKinematics(): "
 			 <<"Parton ("<<m_companions[j]<<") "
 			 <<" has non-positive momentum: p = "
 			 <<m_companions[j]->Momentum()<<" m_{"
