@@ -58,8 +58,10 @@ Cluster_Partons_CKKW::~Cluster_Partons_CKKW()
 void Cluster_Partons_CKKW::GenerateTables(const std::string &path)
 {
   msg_Info()<<METHOD<<"("<<path<<"): Generating sudakov tables {"<<std::endl;
-  {
     MakeDir(path,448,true);
+  for (short unsigned int l(0);l<2;++l) {
+    NLL_Sudakov *sud(l==0?p_fssud:p_issud);
+    if (sud==NULL) break;
     msg_Indent();
     double ecms(rpa.gen.Ecms()), qmin(1.0), step(pow(ecms/qmin,1.0/25.0));
     for (size_t i(1);i<=7;++i) {
@@ -67,10 +69,10 @@ void Cluster_Partons_CKKW::GenerateTables(const std::string &path)
       Flavour f((kf::code)i);
       if (ecms>2.0*f.Mass()) {
 	msg_Info()<<f<<(i<7?" quark":"")<<" sudakov ..."<<std::flush;
-	std::ofstream dqout((path+"/delta_"+ToString(f)+"_"+
-			     ToString(ecms)+".dat").c_str());
+	std::ofstream dqout((path+"/delta_"+std::string(l==0?"":"is_")+
+			     ToString(f)+"_"+ToString(ecms)+".dat").c_str());
 	for (double Q(ecms);Q>qmin;Q/=step) 
-	  dqout<<Q<<" "<<(p_fssud->Delta(f))(Q,qmin)<<"\n";
+	  dqout<<Q<<" "<<(sud->Delta(f))(Q,qmin)<<"\n";
 	msg_Info()<<"done"<<std::endl;
       }
     }
@@ -79,27 +81,27 @@ void Cluster_Partons_CKKW::GenerateTables(const std::string &path)
       Flavour f((kf::code)i);
       if (ecms>2.0*f.Mass()) {
 	msg_Info()<<"2-"<<f<<" rate ..."<<std::flush;
-	std::ofstream r2out((path+"/r2_"+ToString(f)+"_"+
-			     ToString(ecms)+".dat").c_str());
+	std::ofstream r2out((path+"/r2_"+std::string(l==0?"":"is_")+
+			     ToString(f)+"_"+ToString(ecms)+".dat").c_str());
 	for (double Q(ecms);Q>qmin;Q/=step) 
 	  r2out<<2.0*log10(Q/ecms)<<" "
-	       <<sqr(p_fssud->Delta(f)(ecms,Q))<<"\n";
+	       <<sqr(sud->Delta(f)(ecms,Q))<<"\n";
 	msg_Info()<<"done"<<std::endl;
       }
     }
-    for (size_t i(1);i<=6;++i) {
+    for (size_t i(6);i>0;--i) {
       Flavour f((kf::code)i);
       if (ecms>2.0*f.Mass()) {
 	msg_Info()<<"2-"<<f<<"+1-gluon rate ..."<<std::flush;
-	std::ofstream r3out((path+"/r3_"+ToString(f)+"_"+
-			     ToString(ecms)+".dat").c_str());
-	Three_Jet_Calc *r3test(new Three_Jet_Calc(p_fssud,f,m_fs_as_factor));
+	std::ofstream r3out((path+"/r3_"+std::string(l==0?"":"is_")+
+			     ToString(f)+"_"+ToString(ecms)+".dat").c_str());
+	Three_Jet_Calc *r3test(new Three_Jet_Calc(sud,f,m_fs_as_factor));
 	Gauss_Integrator gauss(r3test);
 	r3test->SetQ(ecms);
 	for (double Q(ecms);Q>qmin;Q/=step) {
 	  r3test->SetQ0(Q);
 	  r3out<<2.0*log10(Q/ecms)<<" "
-	       <<2.0*sqr(p_fssud->Delta(f)(ecms,Q))*
+	       <<2.0*sqr(sud->Delta(f)(ecms,Q))*
 	    gauss.Integrate(Q,ecms,1.0e-3)<<"\n";
 	}
 	delete r3test;

@@ -28,7 +28,7 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
   // read in some parameters
   Data_Read dr(rpa.GetPath()+
 	       rpa.gen.Variable("SHOWER_DATA_FILE","Shower.dat"));
-  m_bp_mode  = dr.GetValue<int>("SUDAKOV_TYPE",36);
+  m_bp_mode  = dr.GetValue<int>("SUDAKOV_TYPE",8);
   if (Splitting_Function::KFactorScheme()==1) {
     m_bp_mode=m_bp_mode|bpm::soft_kfac;
     m_kfac=CA*(67./18.-M_PI*M_PI/6.)-10./9.*TR*Nf;
