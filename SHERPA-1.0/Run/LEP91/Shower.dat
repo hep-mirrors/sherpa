@@ -6,4 +6,6 @@ SHOWER_GENERATOR  = Apacic   !
 FSR_SHOWER        = 1        !  1=On,0=Off
 ISR_SHOWER        = 0        !  1=On,0=Off
 !
-FS_PT2MIN         = 0.414    !  
+JET_VETO_SCHEME	  = 11       !
+!
+FS_PT2MIN         = 0.6      !  

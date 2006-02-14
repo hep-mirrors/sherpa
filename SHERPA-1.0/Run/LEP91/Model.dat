@@ -8,9 +8,9 @@ GENERATOR_ON          = 0        ! use external spectrum generator
 ! SM parameters
 !
 EW_SCHEME             = 0        ! which parameters define the ew sector.
-ALPHAS(MZ)            = 0.1276   ! strong coupling at scale M_Z 
+ALPHAS(MZ)            = 0.129    ! strong coupling at scale M_Z 
 ALPHAS(default)       = 0.0800   ! strong coupling
-ORDER_ALPHAS          = 1        ! NLO
+ORDER_ALPHAS          = 0        ! LO
 1/ALPHAQED(0)         = 137.036  ! inverse of alpha QED in the Thomson limit
 1/ALPHAQED(default)   = 132.51   ! inverse of alpha QED
 SIN2THETAW            = 0.2222   ! Weinberg angle at scale M_Z
