@@ -1,5 +1,9 @@
 #include "Jet_Veto.H"
 
+#include "MyStrStream.H"
+#include "Shell_Tools.H"
+#include "Data_Reader.H"
+
 #ifdef PROFILE__all
 #include "prof.hh"
 #else 
@@ -12,7 +16,10 @@ using namespace ATOOLS;
 
 double PT_Measure::operator()(const ATOOLS::Vec4D &p1) 
 { 
-  if (p_jf->Type()>1) return p_jf->MTij2(Vec4D(1.,0.,0.,1.),p1); 
+  if (p_jf->Type()>1) {
+    if (IsZero(p1.PPerp2())) return std::numeric_limits<double>::max();
+    return p_jf->MTij2(Vec4D(1.,0.,0.,1.),p1); 
+  }
   return std::numeric_limits<double>::max();
 }
 
@@ -27,11 +34,19 @@ Vec4D E_Scheme::operator()(const ATOOLS::Vec4D &p1,const ATOOLS::Vec4D &p2)
   return p1+p2; 
 }
 
+void E_Scheme::operator()(const ATOOLS::Vec4D &p1) 
+{ 
+}
+
 Vec4D P_Scheme::operator()(const ATOOLS::Vec4D &p1,const ATOOLS::Vec4D &p2) 
 { 
   Vec4D p12(p1+p2);
   p12[0]=p12.PSpat();
   return p12;
+}
+
+void P_Scheme::operator()(const ATOOLS::Vec4D &p1) 
+{ 
 }
 
 #include "Cluster_Algorithm.C"
@@ -45,6 +60,32 @@ Jet_Veto::Jet_Veto(ATOOLS::Jet_Finder *const jf,
   m_mode(jv::none), m_maxjets(2), m_cmode(0), m_jmode(1), m_ljmode(1) 
 {
   p_cluster->Measure().SetJetFinder(p_jf);
+  std::string helps;
+  Data_Reader reader;
+  if (reader.ReadFromFile(helps,"PRINT_PS_RATES","") && helps.length()>0) {
+    m_histos.resize(5);
+    for (size_t i(0);i<m_histos.size();++i)
+      m_histos[i] = new Histogram(10,1.0e-5,1.0,100);
+  }
+  Exception_Handler::AddTerminatorObject(this);
+}
+
+Jet_Veto::~Jet_Veto()
+{
+  PrepareTerminate();
+  Exception_Handler::RemoveTerminatorObject(this);
+}
+
+void Jet_Veto::PrepareTerminate()
+{
+  if (m_histos.empty()) return;
+  std::string pname("ps_rates_"+ToString(rpa.gen.Ecms())+"/");
+  if (MakeDir(pname.c_str(),448)) {
+    for (size_t i(0);i<m_histos.size();++i) {
+      m_histos[i]->Finalize();
+      m_histos[i]->Output((pname+"r_"+ToString(i)+".dat").c_str());     
+    }
+  }
 }
 
 int Jet_Veto::TestKinematics(const int mode,Knot *const mo)
@@ -54,6 +95,7 @@ int Jet_Veto::TestKinematics(const int mode,Knot *const mo)
     p_cur=NULL;
     m_cmode=0;
   }
+  m_q2hard=0.0;
   if (mode==0 && !(m_mode&jv::final) && !(m_mode&jv::initial)) return 1;
   msg_Debugging()<<METHOD<<"("<<mode<<"): p_{t jet} = "
 		 <<sqrt(p_jf->ShowerPt2())<<" / "
@@ -75,24 +117,31 @@ int Jet_Veto::TestKinematics(const int mode,Knot *const mo)
   }
   m_cmode=0;
   std::vector<ATOOLS::Vec4D> savejets(jets);
-  m_rates.resize(jets.size());
-  size_t nmin(p_jf->Type()==1?1:0);
+  size_t nmin(p_jf->Type()==1?1:2);
+  m_rates.resize(jets.size()-nmin);
   p_cluster->SetPoints(jets);
   p_cluster->Cluster(nmin,cs::num);
-  for (size_t i(0);i<jets.size();++i) {
-    m_rates[jets.size()-i-1]=p_cluster->DMins()[i];
-    msg_Debugging()<<"jetrate Q_{"<<(jets.size()-i)<<"->"
-		   <<(jets.size()-i-1)<<"} = "
+  msg_Debugging()<<"hard scale Q_h = "<<sqrt(m_q2hard)<<"\n";
+  for (size_t i(0);i<m_rates.size();++i) {
+    m_rates[m_rates.size()-i-1]=p_cluster->DMins()[i];
+    msg_Debugging()<<"jetrate Q_{"<<(jets.size()-i-nmin)<<"->"
+		   <<(jets.size()-i-1-nmin)<<"} = "
 		   <<sqrt(p_cluster->DMins()[i])<<"\n";
   }
-  size_t njets(nmin), nljets(nmin);
+  for (size_t i(0);i<m_histos.size() && i<m_rates.size();++i)
+    m_histos[i]->Insert(m_rates[i]/m_q2hard);
   double jcrit(p_jf->ShowerPt2()), ljcrit(m_ycut*sqr(rpa.gen.Ecms()));
   if (m_jmode==0) jcrit=std::numeric_limits<double>::max();
   if (m_ljmode==0) ljcrit=0.0;
   msg_Debugging()<<"jet veto ("<<m_jmode<<") "<<sqrt(jcrit)
 		 <<", lose jet veto ("<<m_ljmode<<") "<<sqrt(ljcrit)<<"\n";
+  size_t njets(0), nljets(0);
   for (;njets<m_rates.size();++njets) if (m_rates[njets]<jcrit) break;
   for (;nljets<m_rates.size();++nljets) if (m_rates[nljets]<ljcrit) break;
+  if (p_jf->Type()==1) {
+    ++njets;
+    ++nljets;
+  }
   msg_Debugging()<<"produced "<<njets<<" / "<<nljets
 		 <<" jets out of "<<hard<<", nmax = "<<m_maxjets<<"\n";
   if (njets>hard) {
@@ -119,7 +168,13 @@ int Jet_Veto::CollectISMomenta(Knot *knot,std::vector<Vec4D> &vecs,
   if (knot->left && knot->left->t<dabs(knot->right->t) &&
       knot->left->E2>0.0)
     dtest=CollectFSMomenta(knot->left,vecs,hard);
-  if (knot->prev==NULL || knot->stat==3) return dtest;
+  if (knot->prev==NULL || knot->stat==3) {
+    msg_Debugging()<<"take knot "<<knot->kn_no
+		   <<", mom "<<knot->part->Momentum()<<"\n";    
+    vecs.push_back(knot->part->Momentum());
+    return dtest;
+  }
+  m_q2hard=Max(m_q2hard,dabs(knot->tmax));
   dtest=CollectISMomenta(knot->prev,vecs,hard);
   return dtest;
 }
@@ -146,6 +201,7 @@ int Jet_Veto::CollectFSMomenta(Knot *knot,std::vector<Vec4D> &vecs,
   int dtest(1);
   size_t rhard(hard);
   if (knot->left!=NULL) {
+    if (knot->left->part->Flav().Strong()) m_q2hard=Max(m_q2hard,knot->tmax);
     dtest=CollectFSMomenta(knot->left,vecs,hard);
     if (dtest==1) 
       dtest=CollectFSMomenta(knot->right,vecs,hard);

@@ -4,6 +4,8 @@
 #include "Jet_Finder.H"
 #include "Cluster_Algorithm.H"
 #include "Timelike_Kinematics.H"
+#include "Histogram.H"
+#include "Exception.H"
 #include "Tree.H"
 /*!
   \file Jet_Veto.H
@@ -40,6 +42,8 @@ namespace APACIC {
     
     ATOOLS::Vec4D operator()(const ATOOLS::Vec4D &p1,const ATOOLS::Vec4D &p2);
 
+    void operator()(const ATOOLS::Vec4D &p1);
+
   };// end of class E_Scheme
   /*!
     \class E_Scheme
@@ -52,6 +56,8 @@ namespace APACIC {
   public:
     
     ATOOLS::Vec4D operator()(const ATOOLS::Vec4D &p1,const ATOOLS::Vec4D &p2);
+
+    void operator()(const ATOOLS::Vec4D &p1);
 
   };// end of class P_Scheme
   /*!
@@ -100,13 +106,15 @@ namespace APACIC {
   inline jv::mode operator&(const jv::mode &a,const jv::mode &b)
   { return (jv::mode)((int)a&(int)b); }
 
-  class Jet_Veto {
+  class Jet_Veto: public ATOOLS::Terminator_Object {
   public:
 
     typedef ATOOLS::Cluster_Algorithm
     <ATOOLS::Vec4D,JET_MEASURE,RECOMBINATION_SCHEME> Cluster_Type;
 
     typedef std::vector<double> Double_Vector;
+
+    typedef std::vector<ATOOLS::Histogram*> Histogram_Vector;
 
   private:
 
@@ -123,7 +131,9 @@ namespace APACIC {
 
     size_t m_maxjets, m_cmode, m_jmode, m_ljmode;
 
-    double m_ycut;
+    double m_ycut, m_q2hard;
+
+    Histogram_Vector m_histos;
 
     int CollectISMomenta(Knot *knot,std::vector<ATOOLS::Vec4D> &vecs,
 			 size_t &hard);
@@ -135,7 +145,12 @@ namespace APACIC {
     // constructor
     Jet_Veto(ATOOLS::Jet_Finder *const jf,Timelike_Kinematics *const kin);
 
+    // destructor
+    ~Jet_Veto();
+
     //member functions 
+    void PrepareTerminate();
+
     int TestKinematics(const int mode=0,Knot *const mo=NULL);
     /*!
       \fn int TestKinematics(const int mode=0,Knot *const mo=NULL)
