@@ -20,7 +20,8 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Info* pinf
 				     Interaction_Model_Base * model,Topology* top,
 				     int & _orderQCD,int & _orderEW,Basic_Sfuncs* BS,
 				     String_Handler* _shand, bool print_graph) 
-  : shand(_shand),CFCol_Matrix(0),probabs(0),Mi(0), m_print_graph(print_graph)
+  : shand(_shand),CFCol_Matrix(0),probabs(0),Mi(0), m_print_graph(print_graph),
+    p_SCT(NULL)
 {
   int ndecays=pinfo->Ndecays();
   int nm = pinfo->Nmax(0);
@@ -271,6 +272,7 @@ Amplitude_Handler::~Amplitude_Handler()
       firstgraph = n;
     }
   }
+  if (p_SCT!=NULL) delete p_SCT;
 }
 
 int Amplitude_Handler::PropProject(Amplitude_Base* f,int zarg)
@@ -698,6 +700,27 @@ Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
   }
   if (abs(M)/max<(ATOOLS::Accu()*1.e-2)) return Complex(0.,0.); 
   return M;
+}
+ATOOLS::Spin_Correlation_Tensor* Amplitude_Handler::GetSpinCorrelations(Helicity* hel, 
+									size_t nIn)
+{ 
+  // If there is no pre-SCT constructed, then do this now
+  if (p_SCT==NULL) {
+    Spin_Correlation_Tensor SCTmethods;
+  
+    std::vector<int> pList;
+    for (size_t i=nIn; i<hel->Nflavs(); ++i)
+      if ( SCTmethods.PossibleParticle( hel->GetFlav(i).Kfcode() ) )
+	pList.push_back(i);
+
+    std::vector<int> AmplNrs;
+    for (size_t i=0; i<hel->MaxHel(); ++i) AmplNrs.push_back(i);
+
+    p_SCT = new AMEGIC_SCT(AmplNrs, AmplNrs, hel, &pList);
+  }
+
+  // Create an SCT from the pre-SCT
+  return p_SCT->CreateSCT(&graphs, CFCol_Matrix, hel);
 }
 
 int Amplitude_Handler::TOrder(Single_Amplitude* a)
