@@ -5,7 +5,7 @@
 #include "Message.H"
 #include "Pol_Info.H"
 #include "Run_Parameter.H"
-#include <algorithm>
+#include "prof.hh"
 
 using namespace ATOOLS;
 using namespace AMEGIC;
@@ -15,6 +15,7 @@ Helicity::Helicity(int Nin,int Nout,Flavour* fl,Pol_Info* pl) :
   m_flavours(Nin+Nout, kf::none), m_nPols(Nin+Nout),
   m_allowTrafo(true), m_needsTrafo(false)  
 {
+ 
   int N=Nin+Nout;
   p_pol_types = new char[N+1];
   p_angles    = new double[N];
@@ -97,7 +98,7 @@ int Helicity::GetPartnerPol(const int heli,const int flav, int& lambda) // inlin
   
   // get the sign and the oppsite sign of the polarisation
   lambda = (heli/div) % m_nPols[flav];
-  int lambda2= 1-lambda;
+  int lambda2= lambda xor 1;
   
   // obtain the corresponding helComb
   return heli + div*(lambda2 - lambda);
@@ -179,4 +180,25 @@ void Helicity::SpinorTransformation(std::vector<Complex>& A)
       }
     }
   }
+}
+
+size_t Helicity::MaxHel(size_t i) {
+  return (size_t) m_nPols[i];
+}
+
+size_t Helicity::GetAmplitudeNumber(std::vector<int> *Helis)
+{
+  int mult(1);
+  size_t num(0);
+  for (size_t i=0; i < Helis->size(); ++i) {
+    num += mult * (*Helis)[i];
+    mult *= m_nPols[i];
+  }
+  return num;
+}
+
+int Helicity::GetPol(const int& flav, const int& hNumber)
+{ 
+  /* Return the polarisation state of flavour "flav" in helicity combination "hNumber" */
+  return p_slist[hNumber].s[flav];
 }
