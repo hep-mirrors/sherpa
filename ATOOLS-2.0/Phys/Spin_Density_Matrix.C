@@ -61,52 +61,10 @@ Complex Spin_Density_Matrix::Trace()
 void Spin_Density_Matrix::Normalise()
 {
   Complex tr = Trace();
-//  vector<Complex> diag;
-//  for( size_t i=0; i<m_size; i++ ) 
-//    diag.push_back( m_entries[(m_size+1)*i]/tr );
-//  for( size_t i=0; i<m_entries.size(); i++ ) 
-//    m_entries[i] = 0.;
-//  for( size_t i=0; i<m_size; i++ ) 
-//    m_entries[(m_size+1)*i] = diag[i];
   for( size_t i=0; i<m_entries.size(); i++ ) 
     m_entries[i] /= tr;
 }
 
-// not used
-double Spin_Density_Matrix::Contract( vector<Complex> * ampls, vector<int> * ind )
-{
-  abort();
-  PROFILE_HERE;
-  // find the position of the mother
-  int pos_mother (0);           // position of the decayer
-  for( unsigned int i=0; i<ind->size(); ++i ) {
-    if( (*ind)[i]==0 ) { pos_mother = i; break; }
-  }
-  // contract with SDM
-  int n = (1<<ind->size());        // = 2^{number of indices}
-  Complex ret (0., 0.);
-  Complex contr_da (0.,0.);         // value over contracted daughters
-  int l0  (0);                      // lambda_0
-  int l0p (0);                      // lambda_0'
-  int h1_a (0);                     // helicity combination for M
-  int h1_b (0);                     // helicity combination for M*
-  int ref (0);                      // a reference for calculating h1_a,b
-  for( int h0=0; h0<4; ++h0 ) {     // for all combinations (lambda_0,lambda_0')
-    l0  = h0>>1;
-    l0p = h0 & 1;
-    contr_da = Complex(0.,0.);        
-    for( int h1=0; h1<(n>>1); ++h1 ) { // for all daughters helicity comb.
-      // "insert" mother helicity
-      ref = n - (1<<pos_mother);    
-      h1_a = ((h1 & ref)<<1) + (l0<<pos_mother)  + (h1 & (~ref));
-      h1_b = ((h1 & ref)<<1) + (l0p<<pos_mother) + (h1 & (~ref));
-      // sum up
-      contr_da += (*ampls)[h1_a] * conj( (*ampls)[h1_b] );
-    }
-    ret += m_entries[h0] * contr_da;
-  }
-  return ret.real();
-} // the result is exactly the same as using SCT Contract Methods
 
 Spin_Density_Matrix& Spin_Density_Matrix::operator+=(Spin_Density_Matrix SDM)
 {
@@ -158,16 +116,6 @@ void Spin_Density_Matrix::Print()
   cout<<endl;
 }
  
-std::ostream& operator<<(std::ostream &ostr, Spin_Density_Matrix &sdm)
-{
-    ostr<<"{";
-    ostr<<sdm[0]<<",";   
-    ostr<<sdm[1]<<",";      
-    ostr<<sdm[2]<<",";   
-    ostr<<sdm[3]<<"}";
-  return ostr;
-}
-
 bool Spin_Density_Matrix::operator== (const Spin_Density_Matrix & sdm )
 {
   if( m_entries.size() != sdm.m_entries.size() ) return false;

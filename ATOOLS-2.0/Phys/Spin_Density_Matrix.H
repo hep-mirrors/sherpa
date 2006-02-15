@@ -28,7 +28,6 @@ namespace ATOOLS {
     void    SetUnitMatrix();
     Complex Trace();
     void    Normalise(); 
-    double  Contract( std::vector<Complex> * ampls, std::vector<int> * ind ); 
      
     Spin_Density_Matrix& operator+=(Spin_Density_Matrix SDM);
     Spin_Density_Matrix& operator*=(Complex factor );
@@ -36,13 +35,8 @@ namespace ATOOLS {
     Complex& operator()(size_t a, size_t b);
     void Print(); 
     bool operator== (const Spin_Density_Matrix & sdm );
-    friend std::ostream &operator<<
-      (std::ostream &ostr, Spin_Density_Matrix &sdm);
      
   };
-  
-  std::ostream &operator<<(std::ostream &ostr,
-      Spin_Density_Matrix &sdm);
   
 }
 
