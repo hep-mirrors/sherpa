@@ -8,6 +8,7 @@
 #include "Vector.H"
 #include "Exception.H"
 #include "Histogram.H"
+#include "Spin_Correlation_Tensor.H"
 
 #include <string>
 
@@ -123,6 +124,7 @@ namespace PHASIC {
     virtual double Differential(const ATOOLS::Vec4D *momenta) = 0;
     virtual double Differential2() = 0;
     virtual void   AddPoint(const double xs);
+    virtual ATOOLS::Spin_Correlation_Tensor* Get_SpinCorrelations();
 
     virtual double CalculateScale(const ATOOLS::Vec4D *momenta);
     virtual double KFactor(const double scale);
