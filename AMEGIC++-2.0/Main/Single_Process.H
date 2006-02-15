@@ -7,6 +7,7 @@
 #include "Helicity.H"
 #include "Amplitude_Handler.H"
 #include "Standard_Selector.H"
+#include "Spin_Correlation_Tensor.H"
 #include <vector>
 
 namespace AMEGIC {
@@ -130,6 +131,8 @@ namespace AMEGIC {
     double         DSigma(const ATOOLS::Vec4D *,bool);
     double         DSigma2();
     double         operator()(const ATOOLS::Vec4D *);
+    //! Return the spin correlations for the current process.
+    virtual ATOOLS::Spin_Correlation_Tensor* GetSpinCorrelations();
     ATOOLS::Blob_Data_Base * OneEvent(double = -1.);
     ATOOLS::Blob_Data_Base * SameEvent();
     ATOOLS::Blob_Data_Base * WeightedEvent(const int mode=0);
