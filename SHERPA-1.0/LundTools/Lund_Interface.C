@@ -613,8 +613,9 @@ void Lund_Interface::FillPrimaryTauInBlob(int pos,ATOOLS::Blob *blob,
   position=Vec4D(hepevt.vhep[pos][3],hepevt.vhep[pos][0],
 		 hepevt.vhep[pos][1],hepevt.vhep[pos][2]);
   particle = new Particle(-1,flav,momentum);
-  if (pl) particle->SetNumber(pl->size());
-  else particle->SetNumber(0);
+  // if (pl) particle->SetNumber(pl->size());
+  // else particle->SetNumber(0);
+  particle->SetNumber(-1*blob->InParticle(pos)->Number()); // set outgoing number = incoming number
   particle->SetStatus(1);
   particle->SetInfo('P');
   blob->SetPosition(position);

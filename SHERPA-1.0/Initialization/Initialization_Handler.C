@@ -19,6 +19,9 @@
 #include "Variable.H"
 #include "Lund_Interface.H"
 
+#include "Spin_Correlation_Tensor.H"
+
+
 using namespace SHERPA;
 using namespace MODEL;
 using namespace BEAM;
@@ -50,6 +53,8 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
   m_hadrondecaysdat  = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
   rpa.gen.SetVariable("SHOWER_DATA_FILE",m_showerdat);
+  int spincorrelations = p_dataread->GetValue<int>("SPIN_CORRELATIONS",0);
+  Spin_Correlation_Tensor::SetMode( (ATOOLS::scmode::code)spincorrelations );
 }
 
 Initialization_Handler::Initialization_Handler(int argc,char * argv[]) : 
@@ -92,6 +97,8 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 
   CheckFlagConsistency();
 
+  int spincorrelations = p_dataread->GetValue<int>("SPIN_CORRELATIONS",0);
+  Spin_Correlation_Tensor::SetMode( (ATOOLS::scmode::code)spincorrelations );
 }
 
 
@@ -454,13 +461,8 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
     if (flav.IsOn() && flav.IsHadron() && !flav.IsStable()) {
       UnstableHadrons->insert(int(flav.Kfcode()));
-      //	  cout<<"Insert "<<int(flav.Kfcode())<<" into set : "<<UnstableHadrons->size()<<endl;
     }
-    //	if (flav.IsOn()) cout<<"Test this : "<<flav.IsHadron()<<" "<<flav.IsStable()<<" "<<flav.Kfcode()<<endl;
   }
-  //  for (std::set<int>::iterator tester=UnstableHadrons->begin();tester!=UnstableHadrons->end();tester++)
-  //	cout<<(*tester)<<" ";
-  //  cout<<endl;
   
   bool needextra = true;
   Hadron_Decay_Handler * hdhandler = NULL;

@@ -47,6 +47,7 @@ void Hadron_Decay_Handler::EraseTreated(std::set<int> * hadrons)
     for (map<kf::code,Decay_Table *>::iterator citer=cans->begin();citer!=cans->end();citer++) {
       //msg.Debugging()<<"Killing flavours: "<<citer->first<<" ("<<cans->size()<<" ) "<<hadrons->size()<<endl;
       hadrons->erase(int(citer->first));
+      Spin_Correlation_Tensor::AddPossibleParticle( citer->first );
       //msg.Debugging()<<"                  "<<citer->first<<" ("<<cans->size()<<" ) "<<hadrons->size()<<endl;
     }
   }
@@ -75,17 +76,23 @@ void Hadron_Decay_Handler::PrepareDecays(Blob * blob) {
   }
 }
 
+// with spin correlation 
 bool Hadron_Decay_Handler::FillHadronDecayBlobs(Particle *part,
 						Blob_List *blob_list,
+                        Spin_Density_Matrix * sigma, 
+                        Spin_Density_Matrix * decmatr, 
 						Particle_List *part_list )
 {
   msg_Tracking()<<"Hadron_Decay_Handler::FillHadronDecayBlobs "<<part->Flav()<<endl
-		<<"Momentum: "<<part->Momentum()<<endl;
+    <<"     with spin correlations."<<endl
+    <<"     Momentum: "<<part->Momentum()<<endl;
 
   // perform decay 
   switch( m_mode ) {
 #ifdef USING__Hadrons
-  case 1: p_hadrons->PerformDecay( part, blob_list, part_list );
+  case 1: 
+    if( decmatr ) (*decmatr) = p_hadrons->PerformDecay( part, blob_list, part_list, sigma );
+    else p_hadrons->PerformDecay( part, blob_list, part_list, NULL );
     break;
 #endif
   case 0: 
