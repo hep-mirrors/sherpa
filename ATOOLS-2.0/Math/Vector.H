@@ -97,6 +97,7 @@ namespace ATOOLS {
     Vec4D(const Vec4D& v1 ,const double scal, const Tag::Tsmul); 
   
     bool Nan() const;
+    bool IsZero() const;
 
     static void ResetAccu();
 

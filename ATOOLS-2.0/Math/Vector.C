@@ -97,6 +97,12 @@ bool Vec4D::Nan() const
   return false;
 }
 
+bool Vec4D::IsZero() const
+{
+  for(short unsigned int i(0);i<4;++i) 
+    if (!ATOOLS::IsZero(m_x[i])) return false;
+  return true;
+}
 void Vec4D::ResetAccu()                
 { 
   s_accu=rpa.gen.Accu(); 
