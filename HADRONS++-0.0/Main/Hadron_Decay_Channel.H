@@ -7,10 +7,13 @@
 #include "Decay_Table.H"
 #include <string>
 #include "Vector.H"
+#include "Spin_Density_Matrix.H"
+#include <utility>
 
 #define HBAR_C 197.326968e-15	// in [GeV mm] used for decay position
 
 namespace HADRONS {
+
   class Hadron_Decay_Channel : public PHASIC::Integrable_Base {
   private:
     ATOOLS::Decay_Channel * p_dc;
@@ -22,6 +25,8 @@ namespace HADRONS {
 	short					m_fulldecay;	
 	bool					m_createbooklet;
 	std::string				m_channelname, m_chnamenumbers;
+    std::vector<std::pair<int,int> > * p_indices;
+    std::vector<Complex>  * p_ampls;
   public: 
     Hadron_Decay_Channel( ATOOLS::Decay_Channel * _dc, std::string _path );
     ~Hadron_Decay_Channel();
@@ -34,7 +39,8 @@ namespace HADRONS {
 	bool   ReSelect( int )  { return 1; }
 	bool   SelectOneFromList() { return 1; }
     double Differential();
-    double Differential(double&);
+    double Differential( ATOOLS::Vec4D * mom, ATOOLS::Spin_Density_Matrix * );
+//    double Differential(double&);
     double Differential(const ATOOLS::Vec4D *momenta) { return 0.; }
     double Differential2()                            { return 0.; }
 
@@ -42,6 +48,7 @@ namespace HADRONS {
 	short  FullDecay() { return m_fulldecay; }
 	void   SetCreateBooklet( bool a ) { m_createbooklet = a; }
 	bool   CreateBooklet() { return m_createbooklet; }
+    void   CreateTrivial( ATOOLS::Spin_Density_Matrix * sigma );
 
     HD_ME_Base            * GetME() { return p_me; }
     HD_PS_Base            * GetPS() { return p_ps; }
@@ -53,8 +60,12 @@ namespace HADRONS {
 	std::string				ChannelNameNumbers() { return m_chnamenumbers; }
 	double                  MeanLifetime()    { return HBAR_C/p_ps->Result(); } // in [mm]
 	double                  InMass()          { return (p_dc->GetDecaying()).Mass(); }
+
+    std::vector<std::pair<int,int> > * GetIndexList() { return p_indices; }
+    std::vector<Complex>  * GetAmplitudeTensor()      { return p_ampls; }
 	
   }; // end of class
+   
 
   /*!
 	\file Hadron_Decay_Channel.H
