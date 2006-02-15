@@ -34,6 +34,8 @@ libToolsPhys_la_SOURCES       =	\
 				Color_Tester.C \
 				Momentum_Shifter.C \
 				HepEvt_Interface.C \
+                Spin_Correlation_Tensor.C \
+                Spin_Density_Matrix.C \
 				Flow.C
 pkginclude_HEADERS        =	\
 			Flavour.H \
@@ -59,6 +61,8 @@ pkginclude_HEADERS        =	\
 			Color_Tester.H \
 			Momentum_Shifter.H \
 			HepEvt_Interface.H \
+            Spin_Correlation_Tensor.C \
+            Spin_Density_Matrix.C \
 			Event.H
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(ATOOLSFLAGS)
