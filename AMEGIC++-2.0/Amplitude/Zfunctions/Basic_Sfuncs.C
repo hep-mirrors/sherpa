@@ -793,3 +793,5 @@ ATOOLS::Vec4D Basic_Sfuncs::Getk0() {
      default: return ATOOLS::Vec4D(1., SQRT_05, 0, SQRT_05);
   }
 }
+
+int Basic_Sfuncs::Getk0_n() { return k0_n; }
