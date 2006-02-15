@@ -51,6 +51,18 @@ void P_3P_Dalitz::SetModelParameters( GeneralModel _md )
   m_phasequadx = _md("phaselinx",0.);
 }
 
+void   P_3P_Dalitz::operator()( 
+    const ATOOLS::Vec4D  * _p, 
+    std::vector<Complex> * _ampls_tensor, 
+    std::vector<std::pair<int,int> > * _indices,
+    int                    k0_n )
+{
+  _ampls_tensor->clear();
+  Complex ampl = csqrt( (*this)(_p) );        // call uncorrelated
+  _ampls_tensor->push_back( ampl );
+  _indices->clear();
+}
+
 double P_3P_Dalitz::operator()( const Vec4D * _p )
 {
   // kinematic variables
@@ -92,6 +104,19 @@ P_GammaFF::P_GammaFF(int _nout,Flavour * _flavs) :
     } 
   }
 }
+ 
+void   P_GammaFF::operator()( 
+    const ATOOLS::Vec4D  * _p, 
+    std::vector<Complex> * _ampls_tensor, 
+    std::vector<std::pair<int,int> > * _indices,
+    int                    k0_n )
+{
+  _ampls_tensor->clear();
+  Complex ampl = csqrt( (*this)(_p) );        // call uncorrelated
+  _ampls_tensor->push_back( ampl );
+  _indices->clear();
+}
+
 
 double P_GammaFF::operator()(const Vec4D * p)
 {
@@ -125,6 +150,18 @@ P_2PGamma::P_2PGamma(int _nout,Flavour * _flavs) :
   }
 }
 
+void   P_2PGamma::operator()( 
+    const ATOOLS::Vec4D  * _p, 
+    std::vector<Complex> * _ampls_tensor, 
+    std::vector<std::pair<int,int> > * _indices,
+    int                    k0_n )
+{
+  _ampls_tensor->clear();
+  Complex ampl = csqrt( (*this)(_p) );        // call uncorrelated
+  _ampls_tensor->push_back( ampl );
+  _indices->clear();
+}
+
 double P_2PGamma::operator()(const Vec4D * p)
 {
   double kp1  = p[m_phot]*p[m_p1];
@@ -152,9 +189,21 @@ P_P2Gamma::P_P2Gamma(int _nout,Flavour * _flavs) :
   m_mrho2 = sqr(Flavour(kf::rho_770).Mass());
   m_grho2 = sqr(Flavour(kf::rho_770).Width());
 
-  cout<<"New P2Gamma "<<p_flavs[0]<<" -> "
-      <<p_flavs[1]<<" "<<p_flavs[2]<<" "<<p_flavs[3]
-      <<" "<<m_phot1<<m_phot2<<m_p<<endl; 
+//  cout<<"New P2Gamma "<<p_flavs[0]<<" -> "
+//      <<p_flavs[1]<<" "<<p_flavs[2]<<" "<<p_flavs[3]
+//      <<" "<<m_phot1<<m_phot2<<m_p<<endl; 
+}
+
+void   P_P2Gamma::operator()( 
+    const ATOOLS::Vec4D  * _p, 
+    std::vector<Complex> * _ampls_tensor, 
+    std::vector<std::pair<int,int> > * _indices,
+    int                    k0_n )
+{
+  _ampls_tensor->clear();
+  Complex ampl = csqrt( (*this)(_p) );        // call uncorrelated
+  _ampls_tensor->push_back( ampl );
+  _indices->clear();
 }
 
 double P_P2Gamma::operator()(const Vec4D * p)
@@ -177,10 +226,10 @@ double P_P2Gamma::operator()(const Vec4D * p)
   double kkp   = p[m_phot1]*p[m_phot2];
   double pk    = p[0]*p[m_phot1];
   double pkp   = p[0]*p[m_phot2];
-  return
+  return abs(
     (sqr(kkp)) * real(aV*conj(aV)) +
     (-4.*kkp*pk*pkp-sqr(kkp)*p_masses2[0]) * 2.* real(aV*conj(bV)) +
-    (2.*sqr(pk)*sqr(pkp)-2.*kkp*p_masses2[0]*pk*pkp+sqr(kkp)*sqr(p_masses2[0])) * real(bV*conj(bV));
+    (2.*sqr(pk)*sqr(pkp)-2.*kkp*p_masses2[0]*pk*pkp+sqr(kkp)*sqr(p_masses2[0])) * real(bV*conj(bV)) );
 }
 
 //##############################################################################
@@ -209,9 +258,9 @@ P_3P_DalitzDef::P_3P_DalitzDef(int _nout,Flavour * _flavs) :
       if (p_flavs[i]==Flavour(kf::pi_plus) &&  p_flavs[i].IsAnti()) m_pim = i;
     }
   }
-  cout<<"New DalitzDef "<<p_flavs[0]<<" -> "
-      <<p_flavs[1]<<" "<<p_flavs[2]<<" "<<p_flavs[3]
-      <<" "<<m_allpions<<m_allsame<<" "<<m_pi0<<m_pip<<m_pim<<endl; 
+//  cout<<"New DalitzDef "<<p_flavs[0]<<" -> "
+//      <<p_flavs[1]<<" "<<p_flavs[2]<<" "<<p_flavs[3]
+//      <<" "<<m_allpions<<m_allsame<<" "<<m_pi0<<m_pip<<m_pim<<endl; 
 }
 
 double P_3P_DalitzDef::operator()(const Vec4D * p)

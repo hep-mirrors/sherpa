@@ -1,3 +1,6 @@
+#ifndef Tau_Decays_h
+#define Tau_Decays_h
+ 
 #include "HD_ME_Base.H"
 #include "Flavour.H"
 #include "Vector.H"
@@ -5,6 +8,7 @@
 #include "Histogram.H"
 #include "Message.H"
 #include "Tools.H"
+#include <utility>
 
 namespace HADRONS {
 
@@ -12,13 +16,16 @@ namespace HADRONS {
  
   class Tau_Lepton : public HD_ME_Base {
     int m_nutau, m_nulep, m_lep;
-    double m_GF2;                           // Fermi constant
+    double m_global;                        // GF/sqrt(2)
     Complex m_cR1, m_cL1, m_cR2, m_cL2;     // couplings for Z function
     public:
       Tau_Lepton( int nout, ATOOLS::Flavour *fl );
-      double operator()(const ATOOLS::Vec4D *_p );
-      double Using_Hels( const ATOOLS::Vec4D *_p ); 
-      void SetModelParameters( GeneralModel _md );
+      void   operator()( 
+          const ATOOLS::Vec4D  * _p, 
+          std::vector<Complex> * _ampls_tensor, 
+          std::vector<std::pair<int,int> > * _indices,
+          int                    k0_n );
+      void   SetModelParameters( GeneralModel _md );
   };
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -26,14 +33,15 @@ namespace HADRONS {
   class Tau_Pseudo : public HD_ME_Base {
     int     m_nutau, m_pion;
     bool    m_pionmode;             // either tau->pi or tau->kaon
-    double  m_fxx2;                 // decay constants (f_pi, f_K)
-    double  m_Vxx2;                 // CKM ME (Vud, Vus)
-    double  m_GF2;                  // Fermi constant
+    double  m_global;               // GF * f_had * V_CKM
     Complex m_cR, m_cL;             // coupling for X function
     public:
       Tau_Pseudo( int nout, ATOOLS::Flavour *fl );
-      double operator()(const ATOOLS::Vec4D *_p );
-      double Using_Hels( const ATOOLS::Vec4D *_p );
+      void   operator()( 
+          const ATOOLS::Vec4D  * _p, 
+          std::vector<Complex> * _ampls_tensor, 
+          std::vector<std::pair<int,int> > * _indices,
+          int                    k0_n );
       inline void SetModelParameters( GeneralModel _md );
   };
 
@@ -42,12 +50,10 @@ namespace HADRONS {
   class Tau_Two_Pion : public HD_ME_Base {
     int    m_nutau, m_pion_ch, m_pion0;
     bool   m_pionmode;              // either tau->2pi or tau->2kaon
-    int    m_running, m_ff;     // running width, ff model
-    double m_Vud2;                  // CKM ME
-    double m_fxx;                   // decay constant
-    double m_GF2;                   // Fermi constant
+    int    m_running, m_ff;         // running width, ff model
+    double m_global;                // GF * V_CKM * Clebsch Gordon
+    double m_fpi;                   // pion decay constant
     double m_frho, m_grpp;          // rho-pipi coupling
-    double m_CG;                    // Clebsch-Gordon-coefficient
     Complex m_cR, m_cL;             // coupling for X function
     double m_MR, m_GR, m_MR2;
     double m_beta, m_lambda, m_delta, m_gamma;
@@ -57,10 +63,13 @@ namespace HADRONS {
     double m_m2_pi, m_m2_K;         // mass pf pion, kaon
     public:
       Tau_Two_Pion( int nout, ATOOLS::Flavour *fl );
-      double operator()(const ATOOLS::Vec4D *_p );
+      void   operator()( 
+          const ATOOLS::Vec4D  * _p, 
+          std::vector<Complex> * _ampls_tensor, 
+          std::vector<std::pair<int,int> > * _indices,
+          int                    k0_n );
       Complex A( double x, double y );
       Complex FormFactor( double s ); 
-      double Using_Hels( const ATOOLS::Vec4D *_p );
       void SetModelParameters( GeneralModel _md );
   };
 
@@ -122,8 +131,7 @@ namespace HADRONS {
     int      m_nutau, m_pion, m_kaon;
     bool     m_chpionmode;      // pion = pi+ or pi0 
     double   m_Vus2;            // CKM ME
-    double   m_fpi2;            // decay constant
-    double   m_GF2;             // Fermi constant
+    double   m_global;          // GF * Vus / 2.;
     Complex  m_cR, m_cL;        // coupling for X function
     double   m_ms[4];           // masses^2 
     double   m_Delta_KP;        // difference of masses^2
@@ -133,8 +141,11 @@ namespace HADRONS {
     public:
       Tau_Pion_Kaon( int nout, ATOOLS::Flavour *fl );
       ~Tau_Pion_Kaon() { if (p_ff!=NULL) delete p_ff; }
-      double operator()(const ATOOLS::Vec4D *_p );
-      double Using_Hels( const ATOOLS::Vec4D *_p );
+      void   operator()( 
+          const ATOOLS::Vec4D  * _p, 
+          std::vector<Complex> * _ampls_tensor, 
+          std::vector<std::pair<int,int> > * _indices,
+          int                    k0_n );
       void SetModelParameters( GeneralModel _md );
   };
 
@@ -188,6 +199,7 @@ namespace HADRONS {
       std::string m_path;               // path of Decaydata files
 
       int    m_mode;                    // internal mode representation
+      bool   m_deltas;                  // Delta S 
       bool   m_twoident;                // true if two vector resonances are identical
       int    m_running;                 // running width
 
@@ -209,8 +221,9 @@ namespace HADRONS {
       // order of Pseudos: see table 1 of the paper
        
       inline Complex BW_V( int a, int b, double s ) {
+        if( !m_G123 && a==1 ) return Complex(0.,0.);
         if (m_running & 2 ) {
-          return Tools::BreitWigner( s, m_msV[a],  m_widthV[a], Mass2(a), Mass2(b), 1. );
+          return Tools::BreitWigner( s, m_msV[a],  m_widthV[a], Mass2(a), Mass2(b) );
         }
         else {
           return Tools::BreitWigner( s, m_msV[a], sqrt(m_msV[a])*m_widthV[a] );
@@ -218,8 +231,9 @@ namespace HADRONS {
       }
       
       inline Complex BW_v( int a, int b, double s ) {
+        if( !m_G123 && a==1 ) return Complex(0.,0.);
         if (m_running & 1 )
-          return Tools::BreitWigner( s, m_msv[a],  m_widthv[a], Mass2(a), Mass2(b), 1. );
+          return Tools::BreitWigner( s, m_msv[a],  m_widthv[a], Mass2(a), Mass2(b) );
         else
           return Tools::BreitWigner( s, m_msv[a], sqrt(m_msv[a])*m_widthv[a] );
       }
@@ -252,6 +266,7 @@ namespace HADRONS {
       std::string m_path;           // path of Decaydata files
 
       int    m_mode;                // internal mode representation
+      bool   m_deltas;              // Delta S 
       bool   m_twoident;            // true if two vector resonances are identical
       bool   m_G123;                // false if there is only one amplitude
       double m_X123, m_ms123;
@@ -268,14 +283,11 @@ namespace HADRONS {
     int    m_nutau, m_pseudo_3, m_pseudo_1, m_pseudo_2;
     int    m_part[4];
     double m_Vud, m_Vus;        // CKM ME
-    double m_fpi2;              // decay constant
-    double m_GF2;               // Fermi constant
     Complex m_cR, m_cL;         // X function couplings
     double m_ms[5];             // masses^2
     int    m_mode;              // code for decay mode
-    double m_A123;              // coupling constant
     double m_global;            // global constant
-    void   SetA123();
+    double GetA123();
     FF_Base * p_ff;
     public:
        
@@ -284,8 +296,11 @@ namespace HADRONS {
         if (p_ff!=NULL) delete p_ff;
       }
      
-      double operator()(const ATOOLS::Vec4D *_p );
-      double Using_Hels( const ATOOLS::Vec4D *_p );
+      void   operator()( 
+          const ATOOLS::Vec4D  * _p, 
+          std::vector<Complex> * _ampls_tensor, 
+          std::vector<std::pair<int,int> > * _indices,
+          int                    k0_n );
       Complex FormFactor( int j, double Q2, double s, double t ); 
       void SetModelParameters( GeneralModel _md );
   };
@@ -349,9 +364,8 @@ namespace HADRONS {
     double       m_ms[6];
     int          m_inter[6];            // internal numbering
      
-    double       m_Vud2,m_Vus2;         // CKM ME
-    double       m_GF2;                 // Fermi constant
-    Complex      m_cR, m_cL;                // couplings in X functions
+    double       m_global;              // GF/sqrt(2)*Vud
+    Complex      m_cR, m_cL;            // couplings in X functions
     LorenzBase * p_lorenz;              // pointer to current contributions
     Complex      m_Alpha[m_ncontrib];   // weight of each contribution
     Complex      m_SumAlpha;            // sum of all weights
@@ -366,8 +380,11 @@ namespace HADRONS {
       if (p_lorenz!=NULL) delete p_lorenz;
     }
    
-    double operator()(const ATOOLS::Vec4D *_p );
-    double Using_Hels( const ATOOLS::Vec4D *_p );
+    void   operator()( 
+        const ATOOLS::Vec4D  * _p, 
+        std::vector<Complex> * _ampls_tensor, 
+        std::vector<std::pair<int,int> > * _indices,
+        int                    k0_n );
     void   SetModelParameters( GeneralModel _md );
 
   };
@@ -416,8 +433,7 @@ namespace HADRONS {
     double       m_ms[6];
     int          m_inter[6];            // internal numbering
      
-    double       m_Vud2,m_Vus2;             // CKM ME
-    double       m_GF2;                 // Fermi constant
+    double       m_global;              // GF/sqrt(2)*Vud
     Complex      m_cR, m_cL;                // couplings in X functions
     LorenzBase * p_lorenz;              // pointer to current contributions
      
@@ -431,8 +447,11 @@ namespace HADRONS {
       if (p_lorenz!=NULL) delete p_lorenz;
     }
    
-    double operator()(const ATOOLS::Vec4D *_p );
-    double Using_Hels( const ATOOLS::Vec4D *_p );
+    void   operator()( 
+        const ATOOLS::Vec4D  * _p, 
+        std::vector<Complex> * _ampls_tensor, 
+        std::vector<std::pair<int,int> > * _indices,
+        int                    k0_n );
     void SetModelParameters( GeneralModel _md );
 
   };
@@ -442,10 +461,7 @@ namespace HADRONS {
   class Tau_Eta_Two_Pion : public HD_ME_Base {
      
     int    m_nutau, m_eta, m_pion, m_pion0;
-    double m_Vud2;                  // CKM ME
-    double m_fpi2;                  // decay constant
-    double m_GF2;                   // Fermi constant
-    double m_global;
+    double m_global;                // 2/3*GF*Vud/fpi
     Complex m_cR, m_cL;             // X function couplings
     double m_ms[5];                 // masses^2
      
@@ -453,8 +469,11 @@ namespace HADRONS {
        
       Tau_Eta_Two_Pion( int nout, ATOOLS::Flavour *fl );
      
-      double operator()(const ATOOLS::Vec4D *_p );
-      double Using_Hels( const ATOOLS::Vec4D *_p );
+      void   operator()( 
+          const ATOOLS::Vec4D  * _p, 
+          std::vector<Complex> * _ampls_tensor, 
+          std::vector<std::pair<int,int> > * _indices,
+          int                    k0_n );
       void   SetModelParameters( GeneralModel _md );
   };
 
@@ -490,3 +509,5 @@ namespace HADRONS {
     \brief Tools to calculate the ME for \f$\tau \to \nu_\tau 4 \pi \f$
    */   
 }
+
+#endif

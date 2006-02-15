@@ -4,6 +4,7 @@
 #include "Flavour.H"
 #include "Vector.H"
 #include <string>
+#include <utility>
 
 namespace HADRONS {
 
@@ -31,9 +32,17 @@ namespace HADRONS {
     void SetPath( std::string s ) { m_path=s; }
 	std::string METype() { return m_metype; }
 
-    virtual double operator()(const ATOOLS::Vec4D *) { return 1.; }
-    virtual void AddVector(double,double) {}
-	virtual void SetModelParameters( struct GeneralModel _md ) {};
+    virtual void   operator()( 
+        const ATOOLS::Vec4D      * _p, 
+        std::vector<Complex>     * _ampls_tensor, 
+        std::vector<std::pair<int,int> > * _indices,
+        int                        k0_n )
+    {
+      _ampls_tensor->clear();
+      _indices->clear();
+    }
+    virtual void   AddVector(double,double) {}
+	virtual void   SetModelParameters( struct GeneralModel _md ) {};
   }; // end of class HD_ME_Base
 
   class Isotropic : public HD_ME_Base {
@@ -77,18 +86,6 @@ namespace HADRONS {
 	\var HD_ME_Base::m_metype
 	Type of ME.
   */
-  /*!
-	\var HD_ME_Base::m_md
-	Contains information which model has to be used for calculating a matrix element (only valid for tau decays).
-	- Matrix element:
-		- traces: polarization of tau by \f$S_\tau=(0,0,0,1)\f$
-		- simple traces: no polarization
-		- XYZ functions: no polarization
-		.
-	- Running width: the width of intermediate resonance particles is either fixed or depends on the momentum transfer
-	- Parameter: V-A structur for electroweak currents (tau and other current in case of leptonic decay seperately).
-	.
-   */
 
   /*!
 	\class Isotropic

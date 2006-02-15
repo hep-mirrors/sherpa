@@ -9,12 +9,22 @@ namespace HADRONS {
   public:
     P_GammaFF(int,ATOOLS::Flavour *);
     double operator()(const ATOOLS::Vec4D *);
+    void   operator()( 
+        const ATOOLS::Vec4D  * _p, 
+        std::vector<Complex> * _ampls_tensor, 
+        std::vector<std::pair<int,int> > * _indices,
+        int                    k0_n );
   };
 
   class P_2PGamma : public HD_ME_Base {
     int m_phot,m_p1,m_p2;
   public:
     P_2PGamma(int,ATOOLS::Flavour *);
+    void   operator()( 
+        const ATOOLS::Vec4D  * _p, 
+        std::vector<Complex> * _ampls_tensor, 
+        std::vector<std::pair<int,int> > * _indices,
+        int                    k0_n );
     double operator()(const ATOOLS::Vec4D *);
   };
 
@@ -23,6 +33,11 @@ namespace HADRONS {
     double m_mrho2, m_grho2;
   public:
     P_P2Gamma(int,ATOOLS::Flavour *);
+    void   operator()( 
+        const ATOOLS::Vec4D  * _p, 
+        std::vector<Complex> * _ampls_tensor, 
+        std::vector<std::pair<int,int> > * _indices,
+        int                    k0_n );
     double operator()(const ATOOLS::Vec4D *);
   };
 
@@ -54,6 +69,11 @@ namespace HADRONS {
   public:
     P_3P_Dalitz(int,ATOOLS::Flavour *);
     double operator()(const ATOOLS::Vec4D *);
+    void   operator()( 
+        const ATOOLS::Vec4D  * _p, 
+        std::vector<Complex> * _ampls_tensor, 
+        std::vector<std::pair<int,int> > * _indices,
+        int                    k0_n );
     void SetModelParameters( GeneralModel _md );
   };
 }

@@ -2,7 +2,6 @@
 #include "Message.H"
 #include "XYZFuncs.H"
 #include "Histogram.H"
-#include "Traces.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -34,26 +33,26 @@ void Semileptonic_B_Meson::SetModelParameters( GeneralModel _md )
 { 
 }
  
-double Semileptonic_B_Meson::operator()( const Vec4D *_p )
-{
-  double  T  = Using_Hels(_p);
-  return T;
-}
-
-double Semileptonic_B_Meson::Using_Hels( const Vec4D * _p )
+void   Semileptonic_B_Meson::operator()( 
+    const ATOOLS::Vec4D      * _p, 
+    std::vector<Complex>     * _ampls_tensor, 
+    std::vector<std::pair<int,int> > * _indices,
+    int                        k0_n )
 {
   Complex FFplus  = Formfactor_plus(_p);
   Complex FFminus = Formfactor_minus(_p);
-  XYZFunc F(m_nout,_p,p_flavs);
+  XYZFunc F(m_nout,_p,p_flavs,k0_n);
   double ret = 0.;
   for( int h=0; h<4; h++ ) {				// only nulep and lep have a helicity !
-    ret += norm(( F.X(m_lep,0,m_nu,h,0.,1.)/m_Bmass +
+    _ampls_tensor->push_back( ( F.X(m_lep,0,m_nu,h,0.,1.)/m_Bmass +
 		  F.X(m_lep,m_had,m_nu,h,0.,1.)/m_hadmass)*FFplus +
 		( F.X(m_lep,0,m_nu,h,0.,1.)/m_Bmass - 
-		  F.X(m_lep,m_had,m_nu,h,0.,1.)/m_hadmass)*FFminus);
+		  F.X(m_lep,m_had,m_nu,h,0.,1.)/m_hadmass)*FFminus
+        );
   }
   F.Delete();
-  return ret;
+  _indices->clear();
+  // a clear indices tensors => no spin correlations
 } 
  
 Complex Semileptonic_B_Meson::Formfactor_plus( const Vec4D *_p )
@@ -66,21 +65,6 @@ Complex Semileptonic_B_Meson::Formfactor_minus( const Vec4D *_p )
   double vvprime = _p[0]*_p[m_had]/(m_Bmass*m_hadmass);
   double xi      = 1.-0.7*(vvprime-1.);
   return Complex(xi,0.);
-}
-
-double Semileptonic_B_Meson::Using_Traces_Simple( const Vec4D *_p )
-{
-  return 0.;
-}
-
-double Semileptonic_B_Meson::Using_Traces( const Vec4D *_p )
-{
-  return 0.;
-}
-
-double Semileptonic_B_Meson::Using_Traces_2( const Vec4D *_p )
-{
-  return 0.;
 }
 
 

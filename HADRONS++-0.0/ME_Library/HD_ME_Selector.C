@@ -2,7 +2,6 @@
 #include "HD_ME_Selector.H"
 #include "Message.H"
 
-#include "K_Meson_Decay_MEs.H"
 #include "B_Meson_Decay_MEs.H"
 #include "Tau_Decay_MEs.H"
 #include "Two_Body_MEs.H"
@@ -95,7 +94,7 @@ void HD_ME_Selector::SelectKMesonDecay(int nout,Flavour * flavs,
   switch( nout ) {
     case 2: {
       if( flavs[1].IsLepton() && flavs[2].IsLepton() ) {
-        hdme = new K_Meson_Lepton( nout, flavs );
+//        hdme = new K_Meson_Lepton( nout, flavs );
       }
       else {
         msg.Error()<<nout<<"No ME for hadronic 2-body decays of K+ yet."<<std::endl;
@@ -109,7 +108,7 @@ void HD_ME_Selector::SelectKMesonDecay(int nout,Flavour * flavs,
         if( flavs[i].Kfcode() == kf::pi ) nPi++;
       }
       if (nLep==2 && nPi==1) {
-        hdme = new K_Meson_SemiLeptonic( nout, flavs );
+//        hdme = new K_Meson_SemiLeptonic( nout, flavs );
       }
       else {
         msg.Error()<<nout<<"No ME for hadronic 3-body decays of K+ yet."<<std::endl;

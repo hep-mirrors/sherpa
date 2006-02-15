@@ -17,11 +17,11 @@ namespace HADRONS {
     Complex Formfactor_minus(const ATOOLS::Vec4D *_p);
   public:
     Semileptonic_B_Meson( int nout, ATOOLS::Flavour *fl );
-    double operator()(const ATOOLS::Vec4D *_p );
-    double Using_Hels( const ATOOLS::Vec4D *_p ); 
-    double Using_Traces_Simple( const ATOOLS::Vec4D *_p );
-    double Using_Traces( const ATOOLS::Vec4D *_p );
-    double Using_Traces_2( const ATOOLS::Vec4D *_p );
+    void   operator()( 
+        const ATOOLS::Vec4D      * _p, 
+        std::vector<Complex>     * _ampls_tensor, 
+        std::vector<std::pair<int,int> > * _indices,
+        int                        k0_n );
     void SetModelParameters( GeneralModel _md );
   };
   

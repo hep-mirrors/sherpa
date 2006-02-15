@@ -1,4 +1,6 @@
-using namespace ATOOLS;
+#ifndef XYZFuncs_h
+#define XYZFuncs_h
+
 using namespace std;
 
 #ifndef SQRT_05
@@ -10,38 +12,20 @@ namespace HADRONS
 
   class XYZFunc
   {
-	  Vec4D  	* p_mom;
-	  Flavour   * p_flav;
-	  int N;
-	  vector<Complex> eta, mu;
 
-	  void CalcEtaMu() 
-	  {
-		Vec4D pi;
-		mu.clear(); eta.clear();
-		for( int i=0; i<N; i++ )
-		{
-		  pi = p_mom[i];
-		  eta.push_back( csqrt( 2.*(pi[0]-SQRT_05*(pi[2]+pi[3])) ) );
-		  Complex help( p_flav[i].PSMass(), 0. );
-		  mu.push_back( help/eta[i] );
-		  if( p_flav[i].IsAnti() ) mu[i] *= -1.;
-		}
-	  }
+    protected:    
+       
+      int                 m_k0n;
+      ATOOLS::Vec4D  	* p_mom;
+      ATOOLS::Flavour   * p_flav;
+	  int                 m_N;
+	  vector<Complex>     m_eta, m_mu;
+
+	  void CalcEtaMu();
 	  
 	public:
 
-	  XYZFunc( int nout, const Vec4D *p, const Flavour *fl )
-	  {
-		N = nout+1;
-		p_mom = new Vec4D[N];
-		p_flav = new Flavour[N];
-		for( int i=0; i<N; i++ ) {
-		  p_mom[i] = p[i];
-		  p_flav[i] = fl[i];
-		}
-		CalcEtaMu();
-	  }
+	  XYZFunc( int nout, const ATOOLS::Vec4D *p, const ATOOLS::Flavour *fl, int k0_n );
 
 	  void Delete()
 	  {
@@ -55,6 +39,8 @@ namespace HADRONS
 		  const Complex cR2, const Complex cL2 );
 	  Complex Y( const int t1, const int t2, const int hel_comb, const Complex cR, const Complex cL ); 
 	  Complex X( const int t1, const int t2, const int t3, 
+		  const int hel_comb, const Complex cR, const Complex cL ); 
+	  Complex X( const int t1, const ATOOLS::Vec4D p2, const int t3, 
 		  const int hel_comb, const Complex cR, const Complex cL ); 
 	  Complex Z( 
 		  const int t1, const int l1, 
@@ -74,6 +60,8 @@ namespace HADRONS
 		  const int t3, const int l3,
 		  const Complex cR, const Complex cL ); 
 	  Complex S( const int s, const int i, const int j );
+      Complex S( const int s, const int i, const ATOOLS::Vec4D p, Complex eta );
+      Complex S( const int s, const ATOOLS::Vec4D p, Complex eta, const int j );
 	  Complex Q(short hel); 
 
   };
@@ -139,3 +127,6 @@ namespace HADRONS
 	
   
 } 
+
+#endif
+

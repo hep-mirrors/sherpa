@@ -12,9 +12,7 @@ libHadronsMEs_la_SOURCES = \
 		Three_Body_MEs.C \
 		Two_Body_MEs.C \
 		B_Meson_Decay_MEs.C \
-		K_Meson_Decay_MEs.C \
 		Tau_Decay_MEs.C  \
-		Traces.C \
 		XYZFuncs.C \
 		Tools.C
 
@@ -24,9 +22,7 @@ pkginclude_HEADERS = \
 		Three_Body_MEs.H \
 		Two_Body_MEs.H  \
 		B_Meson_Decay_MEs.H \
-		K_Meson_Decay_MEs.H \
 		Tau_Decay_MEs.H \
-		Traces.H \
 		XYZFuncs.H \
 		Tools.H
 

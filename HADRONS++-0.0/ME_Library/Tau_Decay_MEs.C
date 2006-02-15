@@ -3,7 +3,6 @@
 #include "XYZFuncs.H"
 #include "Histogram.H"
 #include "Run_Parameter.H"
-#include <stdio.h>
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -33,32 +32,38 @@ Tau_Lepton::Tau_Lepton( int _nout, Flavour *_fl ) :
  
 void Tau_Lepton::SetModelParameters( GeneralModel _md ) 
 { 
-  m_GF2 = sqr( _md("GF", rpa.gen.ScalarConstant(string("GF")) ) ); 
+  double GF = _md("GF", rpa.gen.ScalarConstant(string("GF")) ); 
+  m_global  = GF*SQRT_05;
   m_cR1 = Complex(0.,_md("a",1.)-_md("b",1.));
   m_cL1 = Complex(0.,_md("a",1.)+_md("b",1.));
   m_cR2 = Complex(0.,_md("a2",1.)-_md("b2",1.));
   m_cL2 = Complex(0.,_md("a2",1.)+_md("b2",1.));
 }
  
-double Tau_Lepton::Using_Hels( const Vec4D * _p )
+void Tau_Lepton::operator()( 
+    const Vec4D         * _p, 
+    vector<Complex>     * _ampls_tensor, 
+    vector<pair<int,int> > * _indices,
+    int                    k0_n)
 {
-  XYZFunc F(m_nout,_p,p_flavs);
-  double ret = 0.;
-  for( int h1=0; h1<4; h1++ ) for( int h2=0; h2<4; h2++ ) {
-    int h = (h1<<2)+h2;     // helicity combination (nutau,tau,lep,nulep)
-    ret += norm( F.Z( m_nutau, 0, m_lep, m_nulep, h, m_cR1, m_cL1, m_cR2, m_cL2 ) );
+  XYZFunc F(m_nout,_p,p_flavs,k0_n);
+  // create amplitudes tensor
+  _ampls_tensor->clear();
+  for( int h=0; h<16; h++ ) {      // for all helicity combinations
+      _ampls_tensor->push_back( 
+          F.Z( m_nutau, 0, m_lep, m_nulep, h, m_cR1, m_cL1, m_cR2, m_cL2 ) * m_global 
+      );
   }
   F.Delete();
-  return ret*0.25;
-} // its value is 100% identical to traces calculation
- 
-double Tau_Lepton::operator()( const Vec4D *_p )
-{
-  double T (1.);
-  T = Using_Hels(_p);
-  return T*m_GF2;
+  // create index bookkeeping (using internal numbers 0 -> 1 2 3)
+  // with pair (number, 2*spin); note: reversed order
+  _indices->clear();
+  _indices->push_back( pair<int,int>(m_nulep,1) );
+  _indices->push_back( pair<int,int>(m_lep,1) );
+  _indices->push_back( pair<int,int>(0,1) );
+  _indices->push_back( pair<int,int>(m_nutau,1) );
 }
-
+ 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //  1 pion/kaon mode  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -79,34 +84,39 @@ Tau_Pseudo::Tau_Pseudo( int _nout, Flavour *_fl ) :
  
 void Tau_Pseudo::SetModelParameters( GeneralModel _md ) 
 { 
-  m_Vxx2 = sqr( m_pionmode ? 
+  double Vxx  = m_pionmode ? 
       _md("Vud", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 0).real()) : 
-      _md("Vus", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 1).real()) );
-  m_fxx2 = sqr( m_pionmode ? _md("fpi", 0.0924) : _md("fK", 0.113) );
-  m_GF2  = sqr( _md("GF", rpa.gen.ScalarConstant(string("GF")) ) ); 
+      _md("Vus", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 1).real());
+  double fxx  = m_pionmode ? _md("fpi", 0.0924) : _md("fK", 0.113);
+  double GF   = _md("GF", rpa.gen.ScalarConstant(string("GF")) ); 
+  m_global = fxx * GF * Vxx;
   m_cR   = Complex(0.,_md("a",1.)-_md("b",1.));
   m_cL   = Complex(0.,_md("a",1.)+_md("b",1.));
 }
   
-double Tau_Pseudo::Using_Hels( const Vec4D *_p )
+void Tau_Pseudo::operator()( 
+    const Vec4D         * _p, 
+    vector<Complex>     * _ampls_tensor, 
+    vector<pair<int,int> > * _indices,
+    int                   k0_n )
 {
-  XYZFunc F(m_nout,_p,p_flavs);
-  double ret = 0.;
+  XYZFunc F(m_nout,_p,p_flavs,k0_n);
+  // create amplitudes tensor
+  _ampls_tensor->clear();
   for( int h=0; h<4; h++ ) {
-    ret += norm( F.X(m_nutau,m_pion,0,h,m_cR,m_cL) );
+      _ampls_tensor->push_back( 
+          F.X(m_nutau,m_pion,0,h,m_cR,m_cL) * m_global
+      );
   }
   F.Delete();
-  return ret;
-} // its value is 100% identical traces calculation
-
-double Tau_Pseudo::operator()( const Vec4D *_p )
-{
-  double T(1.);
-  double q2 = _p[m_pion].Abs2(); 
-  T = Using_Hels(_p); 
-  return T*0.5*m_GF2*m_Vxx2*m_fxx2; 
+  // create index bookkeeping (using internal numbers 0 -> 1 2)
+  // with pair (number, 2*spin); note: reversed order
+  _indices->clear();
+  _indices->push_back( pair<int,int>(0,1) );
+  _indices->push_back( pair<int,int>(m_nutau,1) );
+  // note: pion does not have spin index
 }
-
+ 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //  2 pion/kaon mode  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -138,10 +148,11 @@ void Tau_Two_Pion::SetModelParameters( GeneralModel _md )
   m_m2       = m_m*m_m;
   m_running  = int( _md("RUNNING_WIDTH", 1 ) );
   m_ff       = int( _md("FORM_FACTOR", 1 ) );
-  m_Vud2     = sqr( _md("Vud", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 0).real() ) );
-  m_fxx      = m_pionmode ? _md("fpi", 0.0924) : _md("fK", 0.113 );
-  m_GF2      = sqr( _md("GF", rpa.gen.ScalarConstant(string("GF")) ) ); 
-  m_CG       = m_pionmode ? 1. : 0.5;   // Clebsch-Gordon
+  m_fpi      = _md("fpi", 0.0924 );
+  double Vud = _md("Vud", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 0).real() );
+  double GF  = _md("GF", rpa.gen.ScalarConstant(string("GF")) ); 
+  double CG  = m_pionmode ? 1. : SQRT_05;   // Clebsch-Gordon
+  m_global   = GF * CG * Vud;           // GF * V_CKM * CG
   m_cR       = Complex(0.,_md("a",1.)-_md("b",1.));
   m_cL       = Complex(0.,_md("a",1.)+_md("b",1.));
 
@@ -189,9 +200,9 @@ Complex Tau_Two_Pion::FormFactor( double s )
   double MG_RRR = m_MRRR*m_GRRR;
   if( m_ff == 1 ) {         // Breit-Wigner-rho
     if (m_running) {
-      MG_R   = Tools::OffShellMassWidth( s, m_MR2, m_GR, m_m2, 1. );
-      MG_RR  = Tools::OffShellMassWidth( s, m_MRR2, m_GRR, m_m2, 1. );
-      MG_RRR = Tools::OffShellMassWidth( s, m_MRRR2, m_GRRR, m_m2, 1. );
+      MG_R   = Tools::OffShellMassWidth( s, m_MR2, m_GR, m_m2 );
+      MG_RR  = Tools::OffShellMassWidth( s, m_MRR2, m_GRR, m_m2 );
+      MG_RRR = Tools::OffShellMassWidth( s, m_MRRR2, m_GRRR, m_m2 );
     }
     Complex BWr   = Tools::BreitWigner( s, m_MR2, MG_R );
     Complex BWrr  = Tools::BreitWigner( s, m_MRR2, MG_RR );
@@ -200,12 +211,12 @@ Complex Tau_Two_Pion::FormFactor( double s )
   }
   if( m_ff == 2 ) {         // Resonance Chiral Theory
     Complex AA = A( m_m2_pi/s, m_m2_pi/m_MR2 ) + 0.5*A( m_m2_K/s, m_m2_K/m_MR2 );
-    double expon = -1.*s/(96.*sqr(M_PI*m_fxx))*AA.real();
+    double expon = -1.*s/(96.*sqr(M_PI*m_fpi))*AA.real();
     double MG_R, MG_RR, MG_RRR;
     if (m_running) {
-      MG_R   = -m_gammaR  *1.*m_MR2  *s/(96.*sqr(M_PI*m_fxx)) * AA.imag();
-      MG_RR  = -m_gammaRR *1.*m_MRR2 *s/(96.*sqr(M_PI*m_fxx)) * AA.imag();
-      MG_RRR = -m_gammaRRR*1.*m_MRRR2*s/(96.*sqr(M_PI*m_fxx)) * AA.imag();
+      MG_R   = -m_gammaR  *1.*m_MR2  *s/(96.*sqr(M_PI*m_fpi)) * AA.imag();
+      MG_RR  = -m_gammaRR *1.*m_MRR2 *s/(96.*sqr(M_PI*m_fpi)) * AA.imag();
+      MG_RRR = -m_gammaRRR*1.*m_MRRR2*s/(96.*sqr(M_PI*m_fpi)) * AA.imag();
     }
     Complex BW_1 = Tools::BreitWigner( s, m_MR2, MG_R );
     Complex BW_2 = Tools::BreitWigner( s, m_MRR2, MG_RR );
@@ -215,26 +226,32 @@ Complex Tau_Two_Pion::FormFactor( double s )
   return ret;
 }
 
-double Tau_Two_Pion::Using_Hels( const Vec4D *_p )
+void Tau_Two_Pion::operator()( 
+    const Vec4D         * _p, 
+    vector<Complex>     * _ampls_tensor, 
+    vector<pair<int,int> > * _indices,
+    int                   k0_n)
 {
-  XYZFunc F(m_nout,_p,p_flavs);
-  double ret = 0.;
-  for( int h=0; h<4; h++ ) {                // only nutau and tau have a helicity !
-    ret += norm( F.X(m_nutau,m_pion_ch,0,h,m_cR,m_cL)
-                 - F.X(m_nutau,m_pion0,0,h,m_cR,m_cL) );
+  XYZFunc F(m_nout,_p,p_flavs,k0_n);
+  // create amplitudes tensor
+  _ampls_tensor->clear();
+  double  q2 = (_p[m_pion_ch] + _p[m_pion0] ).Abs2();
+  Complex FF = FormFactor(q2);
+  for( int h=0; h<4; h++ ) {        // helicity comb. (nutau,tau)
+      _ampls_tensor->push_back( 
+          ( F.X(m_nutau,m_pion_ch,0,h,m_cR,m_cL)
+          - F.X(m_nutau,m_pion0,0,h,m_cR,m_cL) ) * m_global*FF
+      );
   }
   F.Delete();
-  return ret;
-} // its value is 100% identical to traces calculation
-
-double Tau_Two_Pion::operator()( const Vec4D *_p )
-{
-  double T = Using_Hels(_p);
-  double q2 = (_p[m_pion_ch] + _p[m_pion0] ).Abs2();
-  Complex FF = FormFactor(q2);
-  return T*0.5*m_GF2*m_Vud2*norm(FF)*m_CG;
+  // create index bookkeeping (using internal numbers 0 -> 1 2)
+  // with pair (number, 2*spin); note: reversed order
+  _indices->clear();
+  _indices->push_back( pair<int,int>(0,1) );
+  _indices->push_back( pair<int,int>(m_nutau,1) );
+  // note: pion does not have spin index
 }
-
+ 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //   pion-kaon mode  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -262,9 +279,9 @@ Tau_Pion_Kaon::Tau_Pion_Kaon( int _nout, Flavour *_fl ) :
 
 void Tau_Pion_Kaon::SetModelParameters( GeneralModel _md ) 
 { 
-  m_Vus2     = sqr( _md("Vus", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 1).real() ) );
-  m_fpi2     = sqr( _md("fpi", 0.0924 ) );
-  m_GF2      = sqr( _md("GF", rpa.gen.ScalarConstant(string("GF")) ) ); 
+  double Vus  =_md("Vus", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 1).real() );
+  double GF  = _md("GF", rpa.gen.ScalarConstant(string("GF")) ); 
+  m_global   = GF*Vus/2.;
   m_cR       = Complex(0.,_md("a",1.)-_md("b",1.));
   m_cL       = Complex(0.,_md("a",1.)+_md("b",1.));
   m_Delta_KP = m_ms[m_kaon] - m_ms[m_pion];
@@ -410,8 +427,8 @@ Complex Tau_Pion_Kaon::KS::VectorFormFactor( double s )
   double MG_R   = m_MR*m_GR;            // mass * width of K*
   double MG_RR  = m_MRR*m_GRR;
   if (m_running) {
-    MG_R   = Tools::OffShellMassWidth( s, m_MR2, m_GR, m_m2, m_mK2, 1. );
-    MG_RR  = Tools::OffShellMassWidth( s, m_MRR2, m_GRR, m_m2, m_mK2, 1. );
+    MG_R   = Tools::OffShellMassWidth( s, m_MR2, m_GR, m_m2, m_mK2 );
+    MG_RR  = Tools::OffShellMassWidth( s, m_MRR2, m_GRR, m_m2, m_mK2 );
   }
   Complex BWr   = Tools::BreitWigner( s, m_MR2, MG_R );
   Complex BWrr  = Tools::BreitWigner( s, m_MRR2, MG_RR );
@@ -427,31 +444,35 @@ Complex Tau_Pion_Kaon::KS::ScalarFormFactor( double s )
 
 // general framework
 
-double Tau_Pion_Kaon::Using_Hels( const Vec4D *_p )
+void Tau_Pion_Kaon::operator()( 
+    const Vec4D         * _p, 
+    vector<Complex>     * _ampls_tensor, 
+    vector<pair<int,int> > * _indices,
+    int                   k0_n)
 {
-  XYZFunc F(m_nout,_p,p_flavs);
-  double ret = 0.;
-  double q2 = (_p[m_pion]+_p[m_kaon]).Abs2();
+  XYZFunc F(m_nout,_p,p_flavs,k0_n);
+  // create amplitudes tensor
+  _ampls_tensor->clear();
+  double  q2 = (_p[m_pion]+_p[m_kaon]).Abs2();
   Complex FS = p_ff->ScalarFormFactor(q2);
   Complex FV = p_ff->VectorFormFactor(q2);
   Complex termK = m_Delta_KP/q2*(FS-FV)+FV;
   Complex termP = m_Delta_KP/q2*(FS-FV)-FV;
-  for( int h=0; h<4; h++ ) {                // only nutau and tau have a helicity !
-    ret += norm( 
-          F.X(m_nutau,m_kaon,0,h,m_cR,m_cL) * termK
-        + F.X(m_nutau,m_pion,0,h,m_cR,m_cL) * termP
-        );
+  for( int h=0; h<4; h++ ) {        // helicity comb. (nutau,tau)
+      _ampls_tensor->push_back( 
+          ( F.X(m_nutau,m_kaon,0,h,m_cR,m_cL) * termK
+          + F.X(m_nutau,m_pion,0,h,m_cR,m_cL) * termP ) * m_global
+      );
   }
   F.Delete();
-  return ret/4.;
-} 
-
-double Tau_Pion_Kaon::operator()( const Vec4D *_p )
-{
-  double T = Using_Hels(_p);
-  return T*0.5*m_GF2*m_Vus2;
+  // create index bookkeeping (using internal numbers 0 -> 1 2)
+  // with pair (number, 2*spin); note: reversed order
+  _indices->clear();
+  _indices->push_back( pair<int,int>(0,1) );
+  _indices->push_back( pair<int,int>(m_nutau,1) );
+  // note: pion/kaon do not have spin index
 }
-
+ 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //  3 pseudo mode  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -573,13 +594,13 @@ Tau_Three_Pseudo::Tau_Three_Pseudo( int _nout, Flavour *_fl ) :
  
 void Tau_Three_Pseudo::SetModelParameters( GeneralModel _md ) 
 { 
-  m_Vud     = _md("Vud", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 0).real() );
-  m_Vus     = _md("Vus", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 1).real() );
-  m_fpi2    = sqr(_md("fpi", 0.0924 ));
-  m_GF2     = sqr( _md("GF", rpa.gen.ScalarConstant(string("GF")) )); 
-  m_cR      = Complex(0.,_md("a",1.)-_md("b",1.));
-  m_cL      = Complex(0.,_md("a",1.)+_md("b",1.));
-  SetA123();
+  m_Vud      = _md("Vud", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 0).real() );
+  m_Vus      = _md("Vus", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 1).real() );
+  m_cR       = Complex(0.,_md("a",1.)-_md("b",1.));
+  m_cL       = Complex(0.,_md("a",1.)+_md("b",1.));
+  double fpi = _md("fpi", 0.0924 );
+  double GF  = _md("GF", rpa.gen.ScalarConstant(string("GF")) ); 
+  m_global   = 2.*GF/(3.*fpi)*GetA123();        // also sets m_deltas
   switch( int(_md("FORM_FACTOR", 1)) ) {
     case 2 : p_ff = new RChT();
              break;
@@ -593,44 +614,33 @@ void Tau_Three_Pseudo::SetModelParameters( GeneralModel _md )
   p_ff->SetModelParameters( _md );
 }
  
-void Tau_Three_Pseudo::SetA123()
+double Tau_Three_Pseudo::GetA123()
 {
   switch( m_mode ) {
     case 1200 : /* pi0 pi0 pi- mode */
-                m_A123 = m_Vud;
-                break;
+                return m_Vud;
     case   30 : /* K- K- K+ */
-                m_A123 = m_Vus;
-                break;
+                return m_Vus;
     case 2010 : /* K- pi- pi+ */
-                m_A123 = -0.5*m_Vus;
-                break;
+                return -0.5*m_Vus;
     case 1020 : /* K- pi- K+ */
-                m_A123 = -0.5*m_Vud;
-                break;
+                return -0.5*m_Vud;
     case 3000 : /* pi- pi- pi+ mode */
-                m_A123 = m_Vud;
-                break;
+                return m_Vud;
     case 1002 : /* K0 pi- K0b */
-                m_A123 = -0.5*m_Vud;
-                break;
+                return -0.5*m_Vud;
     case  111 : /* K- pi0 K0 */
-                m_A123 = 1.5*m_Vud*SQRT_05;
-                break;
+                return 1.5*m_Vud*SQRT_05;
     case  210 : /* pi0 pi0 K- mode */
-                m_A123 = m_Vus/4.;
-                break;
+                return m_Vus/4.;
     case 1101 : /* pi- K0b pi0 */
-                m_A123 = 1.5*m_Vus*SQRT_05;
-                break;
-    default   : msg.Error()<<"Warning in HADRONS::Tau_Decay_MEs.C in Tau_Three_Pseudo::SetA123() :"
+                return 1.5*m_Vus*SQRT_05;
+    default   : msg.Error()<<"Warning in HADRONS::Tau_Decay_MEs.C in Tau_Three_Pseudo::GetA123() :\n"
                            <<"     Obviously this three pseudoscalar channel (code "<<m_mode<<")\n"
                            <<"     doesn't have a global A123. Maybe it is not implemented yet.\n"
                            <<"     Take A123=1., will continue and hope for the best."<<endl;
-                m_A123 = 1.;
-                break;
+                return 1.;
   }
-  m_global = sqr(2.*m_A123/3.);
 }
 
 // Parameterisation
@@ -715,6 +725,7 @@ void Tau_Three_Pseudo::RChT::SetModelParameters( GeneralModel _md )
 void Tau_Three_Pseudo::RChT::SetMode( int m ) 
 { 
   m_mode = m;
+  m_deltas = 0;                                     // up to now only Delta S=0 implemented
   m_twoident = false;
   if (m_mode==1200 ||
       m_mode==210 ||
@@ -843,7 +854,7 @@ double Tau_Three_Pseudo::RChT::MassWidthVector( double s )
 
 double Tau_Three_Pseudo::RChT::MassWidthAxial( double Q2 )
 {
-  if( m_running & 1 )
+  if( !m_deltas && (m_running & 1) )
     return(  m_MA * m_GA_at_MA2 * Phi(Q2) / m_Phi_at_MA2 
            * pow( m_MA2/Q2, m_exp_alpha ) );
   return m_MA*m_GA_at_MA2;
@@ -852,7 +863,7 @@ double Tau_Three_Pseudo::RChT::MassWidthAxial( double Q2 )
 Complex Tau_Three_Pseudo::RChT::FormFactor( int j, double Q2, double s, double t )
 {
   switch( m_mode ) {
-    case 1200:
+    case 1200: 
     case 3000: { // 3pion mode
                  if (j==1 || j==2) {        // axial contributions
                    double u = Q2-s-t+Mass2(1-1)+Mass2(2-1)+Mass2(3-1);
@@ -984,7 +995,7 @@ void Tau_Three_Pseudo::KS::SetModelParameters( GeneralModel _md )
   // set correct parameters (using corresponding settings under "Resonances" in DC file)
    
   m_MA       = _md("Mass_axial", Flavour(kf::a_1_1260_plus).PSMass());     // mass of axial resonance
-  m_MAA2     = _md("Mass_axial'", Flavour(kf::a_1_1260_plus).Width());   // mass of axial resonance'
+  m_MAA      = _md("Mass_axial'", Flavour(kf::a_1_1260_plus).PSMass());   // mass of axial resonance'
   m_MA2      = sqr( m_MA );                         // mass^2 of axial resonance
   m_MAA2     = sqr( m_MAA );                        // mass^2 of axial resonance'
   m_msV[0]   = sqr( MV[c[0]-1] );                   // mass^2 of vector resonance 13
@@ -1026,6 +1037,7 @@ void Tau_Three_Pseudo::KS::SetMode( int m )
       m_mode==30 ||
       m_mode==3000 ||
       m_mode==12) m_twoident = true;
+  m_deltas = 0;
   switch( m_mode ) {
     case 1200 : /* pi0 pi0 pi- mode */
       m_X123  = Mass2(2);
@@ -1036,11 +1048,13 @@ void Tau_Three_Pseudo::KS::SetMode( int m )
       m_X123  = 2.*Mass2(2);
       m_ms123 = Mass2(2);
       m_G123  = 1;
+      m_deltas= 1;
       break;
     case 2010 : /* K- pi- pi+ */
       m_X123  = 2.*Mass2(0);
       m_ms123 = Mass2(0);
       m_G123  = 1;
+      m_deltas= 1;
       break;
     case 1020 : /* K- pi- K+ */
       m_X123  = Mass2(1) + Mass2(0);
@@ -1066,16 +1080,19 @@ void Tau_Three_Pseudo::KS::SetMode( int m )
       m_X123  = -2.*(Mass2(1)+Mass2(2));
       m_ms123 = Mass2(2);
       m_G123  = 1;
+      m_deltas= 1;
       break;
     case 1101 : /* pi- K0b pi0 */
       m_X123  = 0.;
       m_ms123 = Mass2(1);
       m_G123  = 0;
+      m_deltas= 1;
       break;
     case   12 : /* K- K0b K0 */
       m_X123  = 2.*Mass2(0);
       m_ms123 = Mass2(0);
       m_G123  = 1;
+      m_deltas= 1;
       break;
   }
 }
@@ -1085,15 +1102,15 @@ Histogram * Tau_Three_Pseudo::KS::CreateGHistogram()
   // create file name
   char fn[512];
   if (m_G123) {
-    sprintf(fn, "%s/PhaseSpaceFunctions/GQ2_MV13=%.3f_Mv13=%.3f_beta13=%.3f_MV23=%.3f_Mv23=%.3f_beta23=%.3f_run=%i.dat",
+    sprintf(fn, "%sPhaseSpaceFunctions/GQ2_MV13=%.3f_Mv13=%.3f_beta13=%.3f_MV23=%.3f_Mv23=%.3f_beta23=%.3f_run=%i.dat",
         m_path.c_str(),
         sqrt(m_msV[0]), sqrt(m_msv[0]), m_Beta[0],
         sqrt(m_msV[1]), sqrt(m_msv[1]), m_Beta[1], (m_running&2) );
   }
   else {
-    sprintf(fn, "%s/PhaseSpaceFunctions/G(Q2)_noV13_MV23=%.3f_Mv23=%.3f_beta23=%.3f_run=%i.dat",
+    sprintf(fn, "%sPhaseSpaceFunctions/GQ2_noV23_MV13=%.3f_Mv13=%.3f_beta13=%.3f_run=%i.dat",
         m_path.c_str(),
-        sqrt(m_msV[1]), sqrt(m_msv[1]), m_Beta[1], (m_running&2) );
+        sqrt(m_msV[0]), sqrt(m_msv[0]), m_Beta[0], (m_running&2) );
   }
 
   // look if file already exists
@@ -1188,22 +1205,22 @@ double Tau_Three_Pseudo::KS::IntegralG( double Q2 )
  
 Complex Tau_Three_Pseudo::KS::BW_A( double s )
 {
-  double MG_A (1.);
-  double MG_AA (1.);
-  if (m_running & 1) {      // axial width running?
-    MG_A  = m_MA *m_GA  * G(s)/m_G_at_MA2 * pow( m_MA2/s, m_exp_alpha );
-    MG_AA = m_MAA*m_GAA * G(s)/m_G_at_MAA2* pow( m_MAA2/s,m_exp_alpha );
+  double MG_A  (m_MA *m_GA );
+  double MG_AA (m_MAA*m_GAA);
+  if (!m_deltas) {              // a1 resonance
+    if (m_running & 1)         // axial width running?
+      MG_A  *= G(s)/m_G_at_MA2 * pow( m_MA2/s, m_exp_alpha );
+    return Tools::BreitWigner(s,m_MA2,MG_A);
   }
-  else {                    // no axial width running
-    MG_A  = m_MA *m_GA;
-    MG_AA = m_MAA*m_GAA;
+  else {                        // K1 resonance
+    if (m_alpha!=0.) 
+      return( 
+          ( Complex(m_MA2,-1.*MG_A)/Complex(m_MA2-s,-1.*MG_A)
+            + m_alpha * Complex(m_MAA2,-1.*MG_AA)/Complex(m_MAA2-s,-1.*MG_AA)
+          ) / (1.+m_alpha) 
+          );
+    return Complex(m_MA2,-1.*MG_A)/Complex(m_MA2-s,-1.*MG_A);
   }
-  if (m_alpha!=0.) 
-    return( 
-        (           Tools::BreitWigner(s,m_MA2,MG_A) 
-        + m_alpha * Tools::BreitWigner(s,m_MAA2,MG_AA) ) / (1.+m_alpha) 
-    );
-  return Tools::BreitWigner(s,m_MA2,MG_A);
 }
 
 
@@ -1226,8 +1243,8 @@ Complex Tau_Three_Pseudo::KS::Tvector2( int a, int b, double x )
 Complex Tau_Three_Pseudo::KS::TSvector( int a, int b, int c, double Q2, double s, double t )
 {
   Complex ret =
-                BW_V(a,b,s) * (   Q2-2.*t-s+2.*Mass2(a)+Mass2(c) 
-                                - (Mass2(a)-Mass2(b))/m_msV[a]*( Q2+t-Mass2(c)-Q2*(t-m_msV[a]) ) )
+                BW_V(a,b,s) * (   m_ms123*( Q2-2.*t-s+2.*Mass2(a)+Mass2(c) )
+                                - (Mass2(a)-Mass2(b))/m_msV[a]*( m_ms123*(Q2+t-Mass2(c))-Q2*(t-m_msV[a]) ) )
     + m_Beta[a]*BW_v(a,b,s) * (   Q2-2.*t-s+2.*Mass2(a)+Mass2(c) 
                                 - (Mass2(a)-Mass2(b))/m_msv[a]*( Q2+t-Mass2(c)-Q2*(t-m_msv[a]) ) );
   return ret/(1.+m_Beta[a]);    
@@ -1235,9 +1252,10 @@ Complex Tau_Three_Pseudo::KS::TSvector( int a, int b, int c, double Q2, double s
 
 Complex Tau_Three_Pseudo::KS::Tgen( int a, int b, int c, double s, double t)
 {
+  return( Tvector1(a-1,c-1,s) + Tvector2(b-1,c-1,t) );
   if (m_G123) return( Tvector1(a-1,c-1,s) + Tvector2(b-1,c-1,t) );
-  if (a==1) return Tvector2(b-1,c-1,t);
-  if (a==2) return Tvector1(a-1,c-1,s);
+  if (a==1) return Tvector1(a-1,c-1,t);
+  if (a==2) return Tvector2(b-1,c-1,s);
   msg.Error()<<"ERROR in HADRONS::Tau_Three_Pseudo::KS::Tgen(a,b,c,s,t) : \n"
              <<"    Method was called with m_G123==0 and a != 1,2.\n"
              <<"    This must not happen, will abort."<<endl;
@@ -1261,30 +1279,12 @@ Complex Tau_Three_Pseudo::KS::FormFactor( int j, double Q2, double s, double t )
   Complex FF(0.,0.);
   switch( j ) {
     case 1 : { FF = BW_A(Q2)*Tgen(1,2,3,s,t);
-//               Complex ref = 
-//               BW_A(Q2)*(Trho(s)+2./3.*(Mass2(1)-Mass2(2))/m_msV[1]*TKstar(t));
-//               BW_A(Q2)*(Trho(s)+2./3.*(Mass2(1)-Mass2(2))/m_msV[1]*BW_V(2-1,3-1,t));
-//               PRINT_INFO(FF/ref);  
              break; }
     case 2 : { FF = BW_A(Q2)*Tgen(2,1,3,t,s); 
-//             Complex ref =  
-//               BW_A(Q2)*BW_V(2-1,3-1,t)*(1.-1./3.*(Mass2(1)-Mass2(2))/m_msV[1]);
-//             PRINT_INFO(FF/ref);  
              break; }
-    case 3 : { FF = m_X123 + BW_A(Q2)*(Q2-m_MA2)*m_ms123/(m_MA2*Q2) 
+    case 3 : { FF = m_X123 + BW_A(Q2)*(Q2-m_MA2)*(m_MA2*Q2) 
                          *( TSvector(1-1,3-1,2-1,Q2,s,t) + TSvector(2-1,3-1,1-1,Q2,t,s) );
              FF /= 2.*(Q2-m_ms123);          
-//             Complex ref =
-//               1./(2.*(Q2-Mass2(1)))*(
-//                   Mass2(1)+Mass2(2) + BW_A(Q2)*(Q2-m_MA2)/(m_MA2*Q2)*(
-//                     Trho(s)*Mass2(1)*(Q2-2.*t-s+2.*Mass2(2)+Mass2(1)) +
-//                     BW_V(2-1,3-1,t)*(
-//                       Mass2(1)*(Q2-2.*s-t+2.*Mass2(1)+Mass2(2)) -
-//                       (Mass2(1)-Mass2(2))/m_msV[1] * (Mass2(1)*(Q2+t-Mass2(2))-Q2*(t-m_msV[1]))
-//                       )
-//                     )
-//                   );
-//             PRINT_INFO(FF/ref);
              break; }
   }
   return FF;
@@ -1299,9 +1299,15 @@ Complex Tau_Three_Pseudo::FormFactor( int j, double Q2, double s, double t )
   return( p_ff->FormFactor(j,Q2,s,t) );     
 }
 
-double Tau_Three_Pseudo::Using_Hels( const Vec4D *_p )
+void Tau_Three_Pseudo::operator()( 
+    const Vec4D         * _p, 
+    vector<Complex>     * _ampls_tensor, 
+    vector<pair<int,int> > * _indices,
+    int                   k0_n )
 {
-  XYZFunc F(m_nout,_p,p_flavs);
+  XYZFunc F(m_nout,_p,p_flavs,k0_n);
+  // create amplitudes tensor
+  _ampls_tensor->clear();
   Vec4D p1( _p[m_pseudo_1] ),
         p2( _p[m_pseudo_2] ),
         p3( _p[m_pseudo_3] );
@@ -1316,24 +1322,22 @@ double Tau_Three_Pseudo::Using_Hels( const Vec4D *_p )
   Complex F1 = FormFactor( 1, Q2, s, t );        
   Complex F2 = FormFactor( 2, Q2, s, t );        
   Complex FS = FormFactor( 3, Q2, s, t );
-  double ampl (0.);
-  for( int h=0; h<4; h++ ) {    // helicity combination (nu,tau)
-    ampl += norm(
-             F.X( m_nutau, m_pseudo_1, 0, h, m_cR, m_cL ) * ( FS + F1*(1.-d1) - F2*d2 )
-           + F.X( m_nutau, m_pseudo_2, 0, h, m_cR, m_cL ) * ( FS - F1*d1 + F2*(1.-d2) )
-           + F.X( m_nutau, m_pseudo_3, 0, h, m_cR, m_cL ) * ( FS - F1*(1.+d1) - F2*(1.+d2) )
-             ); 
+  for( int h=0; h<4; h++ ) {        // helicity comb. (nutau,tau)
+      _ampls_tensor->push_back( 
+          ( F.X( m_nutau, m_pseudo_1, 0, h, m_cR, m_cL ) * ( FS + F1*(1.-d1) - F2*d2 )
+          + F.X( m_nutau, m_pseudo_2, 0, h, m_cR, m_cL ) * ( FS - F1*d1 + F2*(1.-d2) )
+          + F.X( m_nutau, m_pseudo_3, 0, h, m_cR, m_cL ) * ( FS - F1*(1.+d1) - F2*(1.+d2) ) ) * m_global
+      );
   }
   F.Delete();
-  return ampl/2.;
-} // ME is invariant under exchange of two identical pseudos !
-
-
-double Tau_Three_Pseudo::operator()( const Vec4D *_p )
-{
-  double T = Using_Hels( _p );
-  return T*m_global*m_GF2/m_fpi2; 
+  // create index bookkeeping (using internal numbers 0 -> 1 2)
+  // with pair (number, 2*spin); note: reversed order
+  _indices->clear();
+  _indices->push_back( pair<int,int>(0,1) );
+  _indices->push_back( pair<int,int>(m_nutau,1) );
+  // note: pseudos do not have spin index
 }
+ 
  
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //  4 pion mode (3prong)  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1375,11 +1379,11 @@ Tau_Four_Pion_3::Tau_Four_Pion_3( int _nout, Flavour *_fl ) :
  
 void Tau_Four_Pion_3::SetModelParameters( GeneralModel _md ) 
 { 
-  m_Vud2   = sqr(_md("Vud", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 0).real()));
-  m_Vus2   = sqr(_md("Vus", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 1).real()) );
-  m_GF2    = sqr(_md("GF", rpa.gen.ScalarConstant(string("GF"))) );
   m_cR     = Complex(0.,_md("a",1.)-_md("b",1.));
   m_cL     = Complex(0.,_md("a",1.)+_md("b",1.));
+  double Vud = _md("Vud", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 0).real());
+  double GF  = _md("GF", rpa.gen.ScalarConstant(string("GF")));
+  m_global   = GF*SQRT_05*Vud;
 
   Complex sum (0.,0.);
   char helps[20];
@@ -1392,7 +1396,6 @@ void Tau_Four_Pion_3::SetModelParameters( GeneralModel _md )
     sum += m_Alpha[i];
   }
   m_SumAlpha = sum;
-
 
   p_lorenz = new KS();
   p_lorenz->SetModelParameters( _md );
@@ -1497,9 +1500,9 @@ Complex Tau_Four_Pion_3::KS::Fk( double x, Complex * _beta )
 
 Complex Tau_Four_Pion_3::KS::Trho( double x )
 {
-  Complex BW_R   = Tools::BreitWigner( x, m_MR2, m_GR, m_mpi2, 1. );
-  Complex BW_RR  = Tools::BreitWigner( x, m_MRR2, m_GRR, m_mpi2, 1. );
-  Complex BW_RRR = Tools::BreitWigner( x, m_MRRR2, m_GRRR, m_mpi2, 1. );
+  Complex BW_R   = Tools::BreitWigner( x, m_MR2, m_GR, m_mpi2 );
+  Complex BW_RR  = Tools::BreitWigner( x, m_MRR2, m_GRR, m_mpi2 );
+  Complex BW_RRR = Tools::BreitWigner( x, m_MRRR2, m_GRRR, m_mpi2 );
   return( (BW_R + m_beta*BW_RR + m_gamma*BW_RRR)/(1.+m_beta+m_gamma) );
 }
 
@@ -1564,9 +1567,9 @@ Complex Tau_Four_Pion_3::KS::AonePi()
   P = p_p[1]-p_p[3];
   Q = p_p[1]-p_p[4];
   R = m_r[2];
-  A = Tools::BreitWigner(m_s[3],m_MR2,m_GR,m_mpi2,1.);
-  B = Tools::BreitWigner(m_s[4],m_MR2,m_GR,m_mpi2,1.);
-  C = Tools::BreitWigner(R.Abs2(),m_MA2,m_GA,m_mpi2,1.);
+  A = Tools::BreitWigner(m_s[3],m_MR2,m_GR,m_mpi2);
+  B = Tools::BreitWigner(m_s[4],m_MR2,m_GR,m_mpi2);
+  C = Tools::BreitWigner(R.Abs2(),m_MA2,m_GA,m_mpi2);
   term1  = A*(p_X[1]-p_X[3]) 
          + B*(p_X[1]-p_X[4]) 
          - (p_X[0]-p_X[2])*( A*(R*P) + B*(R*Q) )/R.Abs2() 
@@ -1584,9 +1587,9 @@ Complex Tau_Four_Pion_3::KS::AonePi()
     P = p_p[1]-p_p[2];
     Q = p_p[ind]-p_p[2];
     R = m_r[k];
-    A = Tools::BreitWigner(m_s[2],m_MR2,m_GR,m_mpi02,m_mpi2,1.);
-    B = Tools::BreitWigner(m_s[ind-3],m_MR2,m_GR,m_mpi02,m_mpi2,1.);  //s[0,1]=t[3,4]
-    C = Tools::BreitWigner(R.Abs2(),m_MA2,m_GA,m_mpi2,1.);
+    A = Tools::BreitWigner(m_s[2],m_MR2,m_GR,m_mpi02,m_mpi2);
+    B = Tools::BreitWigner(m_s[ind-3],m_MR2,m_GR,m_mpi02,m_mpi2);  //s[0,1]=t[3,4]
+    C = Tools::BreitWigner(R.Abs2(),m_MA2,m_GA,m_mpi2);
     help   = A*(p_X[1]-p_X[2]) 
            + B*(p_X[2]-p_X[ind]) 
            - (p_X[0]-p_X[k])*( A*(R*P) + B*(R*Q) )/R.Abs2() 
@@ -1608,8 +1611,8 @@ Complex Tau_Four_Pion_3::KS::SigmaRho()
   Complex BW_S, BW_R;
   for (int k=3; k<=4; k++) {
     ind = (k==3)? 4 : 3;
-    BW_S = Tools::BreitWigner(m_s[k],m_MS2,m_GS,m_mpi2,1.);
-    BW_R = Tools::BreitWigner(m_s[ind-3],m_MR2,m_GR,m_mpi02,m_mpi2,1.); //s[0,1]=t[3,4]
+    BW_S = Tools::BreitWigner(m_s[k],m_MS2,m_GS,m_mpi2);
+    BW_R = Tools::BreitWigner(m_s[ind-3],m_MR2,m_GR,m_mpi02,m_mpi2); //s[0,1]=t[3,4]
     term += BW_S*BW_R * ( p_X[2] - p_X[ind] + p_X[0]*(p_p[0]*(p_p[ind]-p_p[2])) );
   }
   return term*Fk(m_q2,m_Beta_srh);
@@ -1622,8 +1625,8 @@ Complex Tau_Four_Pion_3::KS::FzeroRho()
   Complex BW_S, BW_R;
   for (int k=3; k<=4; k++) {
     ind = (k==3)? 4 : 3;
-    BW_S = Tools::BreitWigner(m_s[k],m_MF2,m_GR,m_mpi2,1.);
-    BW_R = Tools::BreitWigner(m_s[ind-3],m_MR2,m_GR,m_mpi02,m_mpi2,1.);
+    BW_S = Tools::BreitWigner(m_s[k],m_MF2,m_GR,m_mpi2);
+    BW_R = Tools::BreitWigner(m_s[ind-3],m_MR2,m_GR,m_mpi02,m_mpi2);
     term += BW_S*BW_R * ( p_X[2] - p_X[ind] + p_X[0]*(p_p[0]*(p_p[ind]-p_p[2])) );
   }
   return term*Fk(m_q2,m_Beta_frh);
@@ -1641,34 +1644,38 @@ Complex Tau_Four_Pion_3::KS::operator()( int number )
 
 // General framework
 
-double Tau_Four_Pion_3::Using_Hels( const Vec4D * _p )
+void Tau_Four_Pion_3::operator()( 
+    const Vec4D         * _p, 
+    vector<Complex>     * _ampls_tensor, 
+    vector<pair<int,int> > * _indices,
+    int                   k0_n)
 {
+  XYZFunc F(m_nout,_p,p_flavs,k0_n);
   // internal numeration and convenient variables
   for (int i=1; i<=5; i++ ) m_p[i] = _p[m_inter[i]];
-
-  // summation over helicities
-  XYZFunc F(m_nout,_p,p_flavs);
-  double ampl (0.);
+  // create amplitudes tensor
+  _ampls_tensor->clear();
   Complex help(0.,0.);
-    for (int h=0; h<4; h++) {           // helicity combination (nutau, tau)
-      for (int k=1; k<=4; k++) 
-        m_X[k] = F.X( m_nutau, m_inter[k], 0, h, m_cR, m_cL );
-      m_X[0] = m_X[1] + m_X[2] + m_X[3] + m_X[4];
-      p_lorenz->SetPrivates( m_X, m_p );
-      help = Complex(0.,0.);
-      for (int k=0; k<m_ncontrib; k++) {
-        help += m_Alpha[k] * (*p_lorenz)(k) / m_SumAlpha;
-      }
-      ampl += norm( help );
+  for( int h=0; h<4; h++ ) {        // helicity comb. (nutau,tau)
+    // pre-calculate X-funcs
+    for (int k=1; k<=4; k++) 
+      m_X[k] = F.X( m_nutau, m_inter[k], 0, h, m_cR, m_cL );
+    m_X[0] = m_X[1] + m_X[2] + m_X[3] + m_X[4];
+    // sum over all contributions
+    p_lorenz->SetPrivates( m_X, m_p );
+    help = Complex(0.,0.);
+    for (int k=0; k<m_ncontrib; k++) {
+      help += m_Alpha[k] * (*p_lorenz)(k) / m_SumAlpha;
     }
+    _ampls_tensor->push_back( help*m_global );
+  }
   F.Delete();
-  return ampl/2.;
-}
-
-double Tau_Four_Pion_3::operator()( const Vec4D * _p )
-{
-  double T = Using_Hels( _p );
-  return m_GF2/2.*m_Vud2 * T;
+  // create index bookkeeping (using internal numbers 0 -> 1 2)
+  // with pair (number, 2*spin); note: reversed order
+  _indices->clear();
+  _indices->push_back( pair<int,int>(0,1) );
+  _indices->push_back( pair<int,int>(m_nutau,1) );
+  // note: pions do not have spin index
 }
  
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1711,9 +1718,9 @@ Tau_Four_Pion_1::Tau_Four_Pion_1( int _nout, Flavour *_fl ) :
  
 void Tau_Four_Pion_1::SetModelParameters( GeneralModel _md ) 
 { 
-  m_Vud2   = sqr(_md("Vud", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 0).real()) );
-  m_Vus2   = sqr(_md("Vus", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 1).real()) );
-  m_GF2    = sqr(_md("GF", rpa.gen.ScalarConstant(string("GF"))) );
+  double Vud = _md("Vud", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 0).real());
+  double GF  = _md("GF", rpa.gen.ScalarConstant(string("GF")));
+  m_global   = GF*SQRT_05*Vud;
   m_cR     = Complex(0.,_md("a",1.)-_md("b",1.));
   m_cL     = Complex(0.,_md("a",1.)+_md("b",1.));
 
@@ -1767,9 +1774,9 @@ void Tau_Four_Pion_1::KS::SetModelParameters( GeneralModel _md )
 
 Complex Tau_Four_Pion_1::KS::Trho( double x )
 {
-  Complex BW_R   = Tools::BreitWigner( x, m_MR2, m_GR, m_mpi2, 1. );
-  Complex BW_RR  = Tools::BreitWigner( x, m_MRR2, m_GRR, m_mpi2, 1. );
-  Complex BW_RRR = Tools::BreitWigner( x, m_MRRR2, m_GRRR, m_mpi2, 1. );
+  Complex BW_R   = Tools::BreitWigner( x, m_MR2, m_GR, m_mpi2 );
+  Complex BW_RR  = Tools::BreitWigner( x, m_MRR2, m_GRR, m_mpi2 );
+  Complex BW_RRR = Tools::BreitWigner( x, m_MRRR2, m_GRRR, m_mpi2 );
   return( (BW_R + m_beta*BW_RR + m_gamma*BW_RRR)/(1.+m_beta+m_gamma) );
 }
 
@@ -1793,34 +1800,39 @@ Complex Tau_Four_Pion_1::KS::operator()()
 
 // General framework
 
-double Tau_Four_Pion_1::Using_Hels( const Vec4D * _p )
+void Tau_Four_Pion_1::operator()( 
+    const Vec4D         * _p, 
+    vector<Complex>     * _ampls_tensor, 
+    vector<pair<int,int> > * _indices,
+    int                   k0_n )
 {
+  XYZFunc F(m_nout,_p,p_flavs,k0_n);
   // internal numeration and convenient variables
   for (int i=1; i<=5; i++ ) {
     m_p[i] = _p[m_inter[i]];
   }
-
-  // summation over helicities
-  XYZFunc F(m_nout,_p,p_flavs);
-  double ampl (0.);
+  // create amplitudes tensor
+  _ampls_tensor->clear();
   Complex help(0.,0.);
-    for (int h=0; h<4; h++) {           // helicity combination (nutau, tau)
-      for (int k=1; k<=4; k++) m_X[k] = F.X( m_nutau, m_inter[k], 0, h, m_cR, m_cL );
-      m_X[0] = m_X[1] + m_X[2] + m_X[3] + m_X[4];
-      p_lorenz->SetPrivates( m_X, m_p );
-      help = Complex(0.,0.);
-      help = (*p_lorenz)();
-      ampl += norm( help );
-    }
+  for( int h=0; h<4; h++ ) {        // helicity comb. (nutau,tau)
+    // pre-calculate X-funcs
+    for (int k=1; k<=4; k++) 
+      m_X[k] = F.X( m_nutau, m_inter[k], 0, h, m_cR, m_cL );
+    m_X[0] = m_X[1] + m_X[2] + m_X[3] + m_X[4];
+    // get Lorentz structure
+    p_lorenz->SetPrivates( m_X, m_p );
+    help = (*p_lorenz)();
+    _ampls_tensor->push_back( help*m_global );
+  }
   F.Delete();
-  return ampl/2.;
+  // create index bookkeeping (using internal numbers 0 -> 1 2)
+  // with pair (number, 2*spin); note: reversed order
+  _indices->clear();
+  _indices->push_back( pair<int,int>(0,1) );
+  _indices->push_back( pair<int,int>(m_nutau,1) );
+  // note: pions do not have spin index
 }
-
-double Tau_Four_Pion_1::operator()( const Vec4D * _p )
-{
-  double T = Using_Hels( _p );
-  return m_GF2/2.*m_Vud2 * T;
-}
+ 
  
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //  no formfactor  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1858,17 +1870,23 @@ Tau_Eta_Two_Pion::Tau_Eta_Two_Pion( int _nout, Flavour *_fl ) :
  
 void Tau_Eta_Two_Pion::SetModelParameters( GeneralModel _md ) 
 { 
-  m_Vud2   = sqr(_md("Vud", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 0).real()) );
-  m_GF2    = sqr(_md("GF", rpa.gen.ScalarConstant(string("GF"))) );
-  m_cR     = Complex(0.,_md("a",1.)-_md("b",1.));
-  m_cL     = Complex(0.,_md("a",1.)+_md("b",1.));
-  m_fpi2   = sqr( _md("fpi", 0.0924));
-  m_global =  sqr(2./3.);                           // global factor
+  m_cR       = Complex(0.,_md("a",1.)-_md("b",1.));
+  m_cL       = Complex(0.,_md("a",1.)+_md("b",1.));
+  double fpi = _md("fpi", 0.0924);
+  double GF  = _md("GF", rpa.gen.ScalarConstant(string("GF")));
+  double Vud = _md("Vud", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 0).real());
+  m_global =  2./3.*GF*Vud/fpi;  
 }
 
-double Tau_Eta_Two_Pion::Using_Hels( const Vec4D *_p )
+void Tau_Eta_Two_Pion::operator()( 
+    const Vec4D         * _p, 
+    vector<Complex>     * _ampls_tensor, 
+    vector<pair<int,int> > * _indices,
+    int                   k0_n)
 {
-  XYZFunc F(m_nout,_p,p_flavs);
+  XYZFunc F(m_nout,_p,p_flavs,k0_n);
+  // create amplitudes tensor
+  _ampls_tensor->clear();
   Vec4D p1( _p[m_pion] ),
         p2( _p[m_pion0] ),
         p3( _p[m_eta] );
@@ -1880,25 +1898,23 @@ double Tau_Eta_Two_Pion::Using_Hels( const Vec4D *_p )
          dot2 = Q*(p2-p3);
   double d1 = dot1/Q2,
          d2 = dot2/Q2;
-  Complex F1 (1.,0.);
-  Complex F2 (1.,0.);
-  Complex FS (0.,0.);
-  double ampl (0.);
-  for( int h=0; h<4; h++ ) {    // helicity combination (nu,tau)
-    ampl += norm(
-             F.X( m_nutau, m_pion, 0, h, m_cR, m_cL )   * ( FS + F1*(1.-d1) - F2*d2 )
-           + F.X( m_nutau, m_pion0, 0, h, m_cR, m_cL )  * ( FS - F1*d1 + F2*(1.-d2) )
-           + F.X( m_nutau, m_eta, 0, h, m_cR, m_cL )    * ( FS - F1*(1.+d1) - F2*(1.+d2) )
-             ); 
+  Complex F1 = Complex(1.,0.);
+  Complex F2 = Complex(1.,0.);
+  Complex FS = Complex(0.,0.);
+  for( int h=0; h<4; h++ ) {        // helicity comb. (nutau,tau)
+      _ampls_tensor->push_back( 
+          ( F.X( m_nutau, m_pion, 0, h, m_cR, m_cL ) * ( FS + F1*(1.-d1) - F2*d2 )
+          + F.X( m_nutau, m_pion0, 0, h, m_cR, m_cL ) * ( FS - F1*d1 + F2*(1.-d2) )
+          + F.X( m_nutau, m_eta, 0, h, m_cR, m_cL ) * ( FS - F1*(1.+d1) - F2*(1.+d2) ) ) * m_global
+      );
   }
   F.Delete();
-  return ampl/2.;
-} // ME is invariant under exchange of pi <-> pi0
-
-
-double Tau_Eta_Two_Pion::operator()( const Vec4D *_p )
-{
-  double T = Using_Hels( _p );
-  return T*m_GF2*m_Vud2/m_fpi2*m_global; 
+  // create index bookkeeping (using internal numbers 0 -> 1 2)
+  // with pair (number, 2*spin); note: reversed order
+  _indices->clear();
+  _indices->push_back( pair<int,int>(0,1) );
+  _indices->push_back( pair<int,int>(m_nutau,1) );
+  // note: pseudos do not have spin index
 }
+ 
  
