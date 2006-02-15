@@ -622,7 +622,7 @@ void Integrable_Base::CreateMomenta(const size_t n)
   m_nvector=n; 
 }
 
-ATOOLS::Spin_Correlation_Tensor* Integrable_Base::Get_SpinCorrelations()
+ATOOLS::Spin_Correlation_Tensor* Integrable_Base::GetSpinCorrelations()
 {
   return NULL;
 }
