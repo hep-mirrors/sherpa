@@ -637,6 +637,14 @@ AMEGIC::Point * Matrix_Element_Handler::GetDiagram(int _diag)
 	     <<"   Wrong mode for "<<m_signalgenerator<<", abort."<<endl;
   abort();
 }
+ATOOLS::Spin_Correlation_Tensor * Matrix_Element_Handler::GetSpinCorrelations() 
+{
+  if (Spin_Correlation_Tensor::Mode()==scmode::None) return NULL;
+  if (m_mode==1) return p_amegic->GetProcess()->GetSpinCorrelations();
+  msg.Error()<<"Error in Matrix_Element_Handler::GetSpinCorrelations()."<<endl
+	     <<"   Wrong mode for ME generator "<<m_signalgenerator<<", abort."<<endl;
+  abort();
+}
 
 
 EXTRAXS::XS_Base * Matrix_Element_Handler::GetXS(const int mode) 

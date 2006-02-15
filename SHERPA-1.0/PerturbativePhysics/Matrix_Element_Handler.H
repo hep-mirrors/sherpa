@@ -13,6 +13,7 @@
 #include "Object.H"
 #include "Blob_List.H"
 #include "Blob.H"
+#include "Spin_Correlation_Tensor.H"
 
 namespace AMEGIC { class Amegic; 
                    class Point;  }
@@ -131,6 +132,7 @@ namespace SHERPA {
     AMEGIC::Amegic     * GetAmegic();
     AMEGIC::Point      * GetDiagram(int);
     EXTRAXS::XS_Base   * GetXS(const int mode=0);
+    ATOOLS::Spin_Correlation_Tensor* GetSpinCorrelations();
     double               Weight();
     double               ProcessWeight();
     double               XSecWeight();
