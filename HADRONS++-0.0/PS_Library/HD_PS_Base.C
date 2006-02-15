@@ -65,7 +65,8 @@ Single_Channel * HD_Channel_Selector::GetChannel(
     string name,
     GeneralModel & md )
 {
-  if (nin>1 || nout<2) {
+  if (flavs[0].Kfcode() == kf::K ) return NULL;
+  if ( nin>1 || nout<2 ) {
     msg.Error()<<"Error in HD_Channel_Selector::GetChannel : "<<endl
            <<"   No PS for channel ("<<nin<<" -> "<<nout<<" )"<<endl
            <<"   Return nothing and hope for the best."<<endl;
@@ -88,6 +89,11 @@ Single_Channel * HD_Channel_Selector::GetChannel(
             kf::rho_770, 
             md("Mass_Rho_770",  Flavour(kf::rho_770_plus).PSMass()), 
             md("Width_Rho_770", Flavour(kf::rho_770_plus).Width()) );
+      if( ci.res1==string("W") )  
+        res.Set( 
+            kf::W, 
+            md("Mass_W",  Flavour(kf::W).PSMass()), 
+            md("Width_W", Flavour(kf::W).Width()) );
       return new Dalitz(flavs,res,ci.a,ci.b);
     }
   }
@@ -97,7 +103,7 @@ Single_Channel * HD_Channel_Selector::GetChannel(
           ci.res1, 
           md("Mass_"+ci.res1, Flavour(kf::a_1_1260_plus).PSMass()),
           md("Width_"+ci.res1,Flavour(kf::a_1_1260_plus).Width())); 
-      string helpname;                      // name of resonanance as it appears in md
+      string helpname;                      // name of vector resonanance as it appears in md
       helpname = ci.res2;                   // take name unchanged
       if( (int)helpname[helpname.size()-1] >= 48 &&
           (int)helpname[helpname.size()-1] <= 57 ) {    // if last char is a number
@@ -305,7 +311,7 @@ void HD_PS_Base::CalculateNormalisedWidth() {
   while(opt<maxopt || (result>0. && m_error/result>0.01) ) {
     maxincrease = false;
     for (n=1;n<iter+1;n++) {
-      value = p_hdc->Differential();
+      value = p_hdc->Differential(NULL,NULL);
       sum  += value;
       sum2 += ATOOLS::sqr(value);
       AddPoint(value);
@@ -331,7 +337,7 @@ void HD_PS_Base::CalculateNormalisedWidth() {
   disc   = sqr(m_res)/((sum2*sqr(m_flux)/n - sqr(m_res))/(n-1));
   if (disc>0) m_error  = m_res/sqrt(disc);
   msg.Info()<<"     result (incl. flux): "<<m_res<<" +/- "<<m_error<<" ("<<m_error/m_res*100.<<" %)"<<endl;
-  // note: the maximum does noy contain the flux factor
+  // note: the m_max is w/o flux factor
 } 
 
 
