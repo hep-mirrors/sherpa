@@ -272,6 +272,31 @@ Primitive_Observable_Base * Two_Particle_DY::Copy() const
     
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+DEFINE_OBSERVABLE_GETTER(Two_Particle_Angle,Two_Particle_Angle_Getter,"Angle")
+
+Two_Particle_Angle::Two_Particle_Angle(const Flavour & flav1,const Flavour & flav2,
+				     int type,double xmin,double xmax,int nbins,
+				     const std::string & listname) :
+    Two_Particle_Observable_Base(flav1,flav2,type,xmin,xmax,nbins,listname,"Angle") 
+{ 
+}
+
+
+void Two_Particle_Angle::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, int ncount) 
+{ 
+    double pt1=sqrt(mom1[1]*mom1[1]+mom1[2]*mom1[2]+mom1[3]*mom1[3]);
+    double pt2=sqrt(mom2[1]*mom2[1]+mom2[2]*mom2[2]+mom2[3]*mom2[3]);
+    double phi=acos((mom1[1]*mom2[1]+mom1[2]*mom2[2]+mom1[3]*mom2[3])/(pt1*pt2));
+    p_histo->Insert(phi,weight,ncount); 
+} 
+
+Primitive_Observable_Base * Two_Particle_Angle::Copy() const 
+{
+    return new Two_Particle_Angle(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 DEFINE_OBSERVABLE_GETTER(Two_Particle_DPhi,Two_Particle_DPhi_Getter,"DPhi")
 
 Two_Particle_DPhi::Two_Particle_DPhi(const Flavour & flav1,const Flavour & flav2,
@@ -361,3 +386,28 @@ Primitive_Observable_Base * Two_Particle_CMS_Angle::Copy() const
 {
   return new Two_Particle_CMS_Angle(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
+ 
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DEFINE_OBSERVABLE_GETTER(Two_Particle_Mass2,Two_Particle_Mass2_Getter,"Mass2")
+
+Two_Particle_Mass2::Two_Particle_Mass2(const Flavour & flav1, const Flavour & flav2,
+				     int type, double xmin, double xmax, int nbins,
+				     const std::string & listname) :
+  Two_Particle_Observable_Base(flav1,flav2,type,xmin,xmax,nbins,listname,"Mass2") { }
+
+
+void Two_Particle_Mass2::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, int ncount) 
+{
+  double mass = (mom1+mom2).Abs2();
+  p_histo->Insert(mass,weight,ncount); 
+  if (weight!=0) {
+    p_ana->AddData(m_name,new Blob_Data<double>(mass));
+  }
+} 
+
+Primitive_Observable_Base * Two_Particle_Mass2::Copy() const
+{
+  return new Two_Particle_Mass2(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+

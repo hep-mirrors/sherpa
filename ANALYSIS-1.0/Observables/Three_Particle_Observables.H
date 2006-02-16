@@ -50,5 +50,25 @@ namespace ANALYSIS {
     Primitive_Observable_Base * Copy() const;
   };
 
+  class Three_Particle_3Mass2 : public Three_Particle_Observable_Base {  
+    void Evaluate(const ATOOLS::Vec4D & mom1, const ATOOLS::Vec4D & mom2, 
+		  const ATOOLS::Vec4D & mom3, double weight, int ncount); 
+  public:
+    Three_Particle_3Mass2(const ATOOLS::Flavour & flav1, const ATOOLS::Flavour & flav2,
+			const ATOOLS::Flavour & flav3, int type, double xmin, 
+			double xmax, int nbins, const std::string & listname);
+    Primitive_Observable_Base * Copy() const;
+  };
+
+  class Three_Particle_3Mass : public Three_Particle_Observable_Base {  
+    void Evaluate(const ATOOLS::Vec4D & mom1, const ATOOLS::Vec4D & mom2, 
+		  const ATOOLS::Vec4D & mom3, double weight, int ncount); 
+  public:
+    Three_Particle_3Mass(const ATOOLS::Flavour & flav1, const ATOOLS::Flavour & flav2,
+			const ATOOLS::Flavour & flav3, int type, double xmin, 
+			double xmax, int nbins, const std::string & listname);
+    Primitive_Observable_Base * Copy() const;
+  };
+   
 }
 #endif
