@@ -672,7 +672,7 @@ void Final_State_Shower::EstablishRelations(Knot *mo, Knot *d1,Knot *d2)
   }
   // set color connections (if not yet known)
   APACIC::Final_State_Shower::SetColours(mo,0);
-  
+
   double t_mo(mo->part->Momentum().Abs2());
   double tb(d1->part->Momentum().Abs2()), tc(d2->part->Momentum().Abs2());
   double E_mo(mo->part->Momentum()[0]), z_mo(d1->part->Momentum()[0]/E_mo); 
@@ -741,7 +741,13 @@ void Final_State_Shower::EstablishRelations(Knot *mo, Knot *d1,Knot *d2)
       d1->maxpt2 = d2->maxpt2 = t_mo;
     }
   }
-  mo->t = t_mo; 
+  mo->t = t_mo;
+  if (d1->part->Info()=='H' && d1->left && 
+      d1->left->part->Info()=='H') 
+    d1->t=d1->part->Momentum().Abs2();
+  if (d2->part->Info()=='H' && d2->left && 
+      d2->left->part->Info()=='H') 
+    d2->t=d2->part->Momentum().Abs2();
 }
 
 void Final_State_Shower::

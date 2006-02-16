@@ -122,10 +122,10 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,int & extra_pdf)
   
   switch (m_pdf_scheme) {
   case 0:
-    p_pdf->Calculate(m_x,-m_t);
+    p_pdf->Calculate(m_x,Max(-m_t,-m_t0));
     break;
   default:
-    p_pdf->Calculate(m_x,mo->pt2lcm);
+    p_pdf->Calculate(m_x,Max(mo->pt2lcm,-m_t0));
   }
   
   while (m_t<m_t0) {
@@ -208,6 +208,7 @@ bool Spacelike_Sudakov::MassVeto(int extra_pdf)
 
   q2 *= m_pdf_scale_fac;
 
+  if (q2<p_pdf->Q2Min()) return true;
 
   if (extra_pdf) {
     p_pdf->Calculate(m_x,0.,0.,firstq2);

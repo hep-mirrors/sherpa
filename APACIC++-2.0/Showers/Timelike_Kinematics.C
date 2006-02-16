@@ -51,9 +51,13 @@ int Timelike_Kinematics::UpdateDaughters(Knot *const mo,
     mo->right->E2=sqr((1.-mo->z))*mo->E2;
     DoSingleKinematics(mo,force);
     int stat(1);
-    if (mo->left->left!=NULL && mo->left->stat!=3) stat=Shuffle(mo->left,0);
+    if (mo->left->left!=NULL && mo->left->stat!=3)
+      stat=Shuffle(mo->left,mo->left->left->part->Info()=='H' ||
+		   mo->left->right->part->Info()=='H');
     if (stat==1 && 
-	mo->right->left!=NULL && mo->right->stat!=3) stat=Shuffle(mo->right,0);
+	mo->right->left!=NULL && mo->right->stat!=3) 
+      stat=Shuffle(mo->right,mo->right->left->part->Info()=='H' ||
+		   mo->right->right->part->Info()=='H');
     if (stat!=1) {
       msg_Debugging()<<METHOD<<"(..): shuffle failed\n";
       return stat;
@@ -197,7 +201,7 @@ bool Timelike_Kinematics::CheckKinematics(Knot *const mo,
   return true;
 }
 
-void Timelike_Kinematics::DoSingleKinematics(Knot * const mo,
+bool Timelike_Kinematics::DoSingleKinematics(Knot * const mo,
 					     const bool force) const
 {
   msg_Debugging()<<METHOD<<"("<<mo->kn_no<<","<<force<<"): "
@@ -208,26 +212,6 @@ void Timelike_Kinematics::DoSingleKinematics(Knot * const mo,
     mo->left->part->SetMomentum(p1);
     mo->right->part->SetMomentum(p2);
   }
-}
-
-bool Timelike_Kinematics::DoKinematics(Knot * const mo) const
-{
-  msg_Debugging()<<"Timelike_Kinematics::DoKinematics("
-		 <<mo->kn_no<<"): {"<<std::endl;
-  msg_Indent();
-  if (!mo) return true;
-  if (!mo->left) {
-    if (mo->part->Info()==' ') {
-      mo->part->SetStatus(1);
-      mo->part->SetInfo('F');
-    }
-    msg_Debugging()<<"}\n";
-    return true;
-  }
-  DoSingleKinematics(mo);
-  mo->part->SetStatus(2);
-  mo->left->didkin=true;
-  mo->right->didkin=true;
   int error(0);
   if (!CheckVector(mo->part->Momentum()) || 
       !CheckVector(mo->left->part->Momentum()) || 
@@ -257,6 +241,27 @@ bool Timelike_Kinematics::DoKinematics(Knot * const mo) const
     msg.Error().precision(op);
     return false;
   }
+  return true;
+}
+
+bool Timelike_Kinematics::DoKinematics(Knot * const mo) const
+{
+  msg_Debugging()<<"Timelike_Kinematics::DoKinematics("
+		 <<mo->kn_no<<"): {"<<std::endl;
+  msg_Indent();
+  if (!mo) return true;
+  if (!mo->left) {
+    if (mo->part->Info()==' ') {
+      mo->part->SetStatus(1);
+      mo->part->SetInfo('F');
+    }
+    msg_Debugging()<<"}\n";
+    return true;
+  }
+  if (!DoSingleKinematics(mo)) return false;
+  mo->part->SetStatus(2);
+  mo->left->didkin=true;
+  mo->right->didkin=true;
   if (!DoKinematics(mo->left)) return false;
   if (!DoKinematics(mo->right)) return false;
   msg_Debugging()<<"}\n";

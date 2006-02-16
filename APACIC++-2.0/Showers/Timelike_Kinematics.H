@@ -55,7 +55,7 @@ namespace APACIC {
 
     int  Shuffle(Knot * const mo,const int first) const;
 
-    void DoSingleKinematics(Knot * const mo,const bool force=false) const;
+    bool DoSingleKinematics(Knot * const mo,const bool force=false) const;
 
     bool DoKinematics(Knot * const mo) const;
     void BoostDaughters(Knot * const mo) const; 
