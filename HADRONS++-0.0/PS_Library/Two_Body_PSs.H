@@ -24,7 +24,7 @@ namespace HADRONS {
 	\file Two_Body_PSs.H
 	\brief Declares the class HADRONS::Iso2Channel
 	
-	This file can be found in directory \c PS_Library.
+	This file can be found in the directory \c PS_Library.
   */
 
   /*!

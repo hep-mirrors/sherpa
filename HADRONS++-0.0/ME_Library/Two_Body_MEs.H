@@ -45,9 +45,15 @@ namespace HADRONS {
   };
   /*!
 	\file Two_Body_MEs.H
-	\brief Declares the class HADRONS::P_2Gamma
+	\brief Declares the ME classes for two-body decays
 
-	This code can be found in directory \c ME_Library.
+	This code can be found in the directory \c ME_Library.
+
+    Implemented classes are
+    - HADRONS::P_2Gamma
+    - HADRONS::V_FF
+    - HADRONS::F_VF
+    .
   */
 
   /*!

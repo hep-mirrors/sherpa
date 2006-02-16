@@ -31,24 +31,20 @@ namespace HADRONS {
 	\file Three_Body_PSs.H
 	\brief Declares the class HADRONS::Dalitz
 
-	This file can be found in directory <tt>PS_Library</tt>.
+	This file can be found in the directory <tt>PS_Library</tt>.
   */	
   /*!
 	\class Dalitz
 	\brief Tool to handle 3-particle PS
 
-      This channel is meant to be the default 2-body integrator.
-      There is no specific angular dependence, i.e. cos(theta) in the rest 
-      frame is distributed uniformly.
-
-	  This clas is a subclass of PHASIC::Single_Channel.
-
-	  However, its member methods call PHASIC::Channel_Elements methods in order to deliver a point in
-	  PS or the PS element (weight factor)
+    This class is a subclass of PHASIC::Single_Channel.
+     
+    It is the default integrator for decays of the form
+    \f[ M \to k + res; \: res \to i+j. \f]
   */	  
   /*!
-	\fn Dalitz::Dalitz(const ATOOLS::Flavour *,const ATOOLS::Flavour,const int,const int)
-	\brief Constructor for Dalitz 1 to 3 decay integration channel
+	\fn Dalitz::Dalitz( const ATOOLS::Flavour * fl, ResonanceFlavour res, const int p1, const int p2 )
+	\brief Constructor for the Dalitz 1 to 3 decay integration channel
 
 	The required information is in which two of the three final particles the
 	propagator decays \f$(i,j)\f$ and of what kind the propagator is. 

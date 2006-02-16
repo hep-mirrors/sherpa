@@ -35,7 +35,7 @@ Hadron_Decay_Channel::Hadron_Decay_Channel( Decay_Channel * _dc, string _path ) 
   p_indices = new vector<pair<int,int> >;                        // index bookkeeping
   p_ampls   = new vector<Complex>;                              // new amplitude tensor
   HD_ME_Selector mesel;                                         // ME selector
-  p_me = mesel.GetME(m_nin,m_nout,p_flavours,m_metype);         // get the appropr. ME
+  p_me = mesel.GetME(m_nin,m_nout,p_flavours);                  // get the appropr. ME
   p_me->SetPath( m_path );                                      // set Decaydata path 
   msg.Out()<<"Matrix Element for "<<m_channelname<<" : "<<p_me->METype()<<"."<<endl;
 }
@@ -64,7 +64,7 @@ bool Hadron_Decay_Channel::InitialisePhaseSpace(vector<string> & PStype, General
     }
     fn += string(".dat");
     PStype.push_back( fn );                                     // generate DC filename
-    rewriteH = true;                                            // rewrite hadron decay file
+    rewriteH = true;                                            // rewrite decay table file
   }
   // check if dc file exists
   string dcfilename = PStype[2];
@@ -74,7 +74,7 @@ bool Hadron_Decay_Channel::InitialisePhaseSpace(vector<string> & PStype, General
   WriteModelOnScreen(locmd);                        // show model parameters on screen
   p_me->SetModelParameters( locmd );                // set parameters for ME
   if (mustinit) p_ps->Initialise();                 // if in need => ini
-  return rewriteH;                                  // rewrite H file ?
+  return rewriteH;                                  // rewrite decay table file ?
 }
 
 void Hadron_Decay_Channel::WriteModelOnScreen( GeneralModel _locmd )

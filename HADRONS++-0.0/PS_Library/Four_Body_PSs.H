@@ -55,25 +55,26 @@ namespace HADRONS {
   }; // end of class
 
   /*!
-	\file Three_Body_PSs.H
+	\file Four_Body_PSs.H
 	\brief Declares the class HADRONS::TwoResonances
 
-	This file can be found in directory <tt>PS_Library</tt>.
+	This file can be found in the directory <tt>PS_Library</tt>.
   */	
   /*!
 	\class TwoResonances
 	\brief Tool to handle 4-particle PS with 2 resonances
 
-      This channel is meant to be the default 4-body integrator.
-
-	  This clas is a subclass of PHASIC::Single_Channel.
+	This class is a subclass of PHASIC::Single_Channel.
+     
+    It is the default integrator for decays of the form with two resonances (internal propagators)
+    \f[ M \to l + res_1; \: res_1 \to k+res_2; \: res_2 \to i+j. \f]
   */	  
   /*!
-	\fn TwoResonances::TwoResonances( const Flavour * fl, const Flavour prop1, const int _k, const Flavour prop2, const int _i, const int _j )
-	\brief Constructor for TwoResonances 1 to 4 decay integration channel
+	\fn TwoResonances::TwoResonances ( const ATOOLS::Flavour * fl, ResonanceFlavour prop1, const int _k, ResonanceFlavour prop2, const int _i, const int _j )
+	\brief Constructor for the TwoResonances 1 to 4 decay integration channel
 
 	The required information is the structure of the decay, i.e.
-	\f$0 \to l + prop_1 \to l + k + prop_2 \to l + k + i + j\f$.
+	\f$M \to l + res_1 \to l + k + res_2 \to l + k + i + j\f$.
   */	
   /*!
 	\var TwoResonances::m_P
@@ -100,7 +101,7 @@ namespace HADRONS {
   /*! 
 	\fn TwoResonances::ChID()
 	Returns value in PHASIC::Single_Channel::name containing the keyword \c "TwoResonances"
-	followed by information about propagator.
+	followed by information about the propagators.
   */	
 
 

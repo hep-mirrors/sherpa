@@ -482,31 +482,54 @@ namespace HADRONS {
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
   /*!
-    \file Tau_Decays_MEs.H
-    \brief Declares the classes HADRONS::Tau_Lepton, HADRONS::Tau_Pion, and HADRONS::Tau_Two_Pion
+    \file Tau_Decay_MEs.H
+    \brief Declares the ME classes for tau decays
 
-    This file can be found in directory \c ME_Library
+    This file can be found in the directory \c ME_Library
+
+    The implemted classes are
+    - HADRONS::Tau_Lepton
+    - HADRONS::Tau_Pseudo
+    - HADRONS::Tau_Two_Pion
+    - HADRONS::Tau_Pion_Kaon
+    - HADRONS::Tau_Three_Pseudo
+    - HADRONS::Tau_Four_Pion_1
+    - HADRONS::Tau_Four_Pion_3
+    - HADRONS::Tau_Eta_Two_Pion
+    .
    */
 
+  /*!
+    \class Tau_Eta_Two_Pion
+    \brief Tools to calculate the ME for eta-two-pion decay channel
+   */   
   /*!
     \class Tau_Lepton
     \brief Tools to calculate the ME for leptonic decay channel
    */   
   /*!
-    \class Tau_Pion
+    \class Tau_Pseudo
     \brief Tools to calculate the ME for \f$\tau \to \nu_\tau \pi/K\f$
    */
   /*!
     \class Tau_Two_Pion
-    \brief Tools to calculate the ME for \f$\tau \to \nu_\tau \pi \pi^0\f$
+    \brief Tools to calculate the ME for \f$\tau \to \nu_\tau \pi \pi^0\f$, \f$\tau \to \nu_\tau K K^0\f$
+   */   
+  /*!
+    \class Tau_Pion_Kaon
+    \brief Tools to calculate the ME for \f$\tau \to \nu_\tau K\pi\f$
    */   
   /*!
     \class Tau_Three_Pseudo
     \brief Tools to calculate the ME for \f$\tau \to \nu_\tau \Pi \Pi \Pi\f$
    */   
   /*!
-    \class Tau_Four_Pion
-    \brief Tools to calculate the ME for \f$\tau \to \nu_\tau 4 \pi \f$
+    \class Tau_Four_Pion_1
+    \brief Tools to calculate the ME for \f$\tau \to \nu_\tau 4 \pi \f$ (one-prong)
+   */   
+  /*!
+    \class Tau_Four_Pion_3
+    \brief Tools to calculate the ME for \f$\tau \to \nu_\tau 4 \pi \f$ (three-prong)
    */   
 }
 

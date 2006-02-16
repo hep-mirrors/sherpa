@@ -71,7 +71,7 @@ namespace HADRONS
 	\file XYZFuncs.H
 	\brief Declares the class HADRONS::XYZFunc
 
-	This file can be found in directory \c ME_Library.
+	This file can be found in the directory \c ME_Library.
    */  
 
   /*!
@@ -81,12 +81,12 @@ namespace HADRONS
 	This class contains everything that is necessery to calculate the value
 	of an X, Y, or Z function, which can be used to calculate a decay matrix
 	element.
-	<b>Note!</b> Helicity combinations are coded in a binary number such that 
-	- ++++ = 0 
-	- +++- = 1 
-	- ++-+ = 2 
+	<b>Note!</b> Helicity combinations are coded in like a binary number such that 
+	- \f$++++ \equiv 0\f$ 
+	- \f$+++- \equiv 1\f$ 
+	- \f$++-+ \equiv 2\f$ 
 	- ...
-	- ---- = 15 
+	- \f$---- \equiv 15\f$ 
 	.
    */  
 
@@ -103,27 +103,31 @@ namespace HADRONS
 	\brief Calculates \f$\eta_i\f$ and \f$\mu_i\f$ for each particle
 
 	Eta's and Mu's are calcuted and stored in private attributes. For Eta's \f$k_0\f$ is set to
-	\f$k_0=(1,0,\frac{1}{\sqrt{2}},\frac{1}{\sqrt{2}})\f$.
+	\f$k_0=(1,0,\frac{1}{\sqrt{2}},\frac{1}{\sqrt{2}})\f$ if XYZFunc::m_k0n is 1 (default).
    */
 
   /*!
 	\var XYZFunc::p_mom
-
 	Pointer on involved 4-momenta.
    */
 
   /*!
 	\var XYZFunc::p_flav
-
 	Pointer on involved flavours.
    */
 
   /*!
 	\var XYZFunc::N
-
 	Number of involved particles (in- and out-particles)
    */	
-
+  /*!
+    \var XYZFunc::m_k0n
+    It is either 0, 1 or 2. The used vector \f$k_0\f$ is then either 
+    \f$k_0=(1,\frac{1}{\sqrt{2}},0,\frac{1}{\sqrt{2}})\f$,
+    \f$k_0=(1,0,\frac{1}{\sqrt{2}},\frac{1}{\sqrt{2}})\f$ or
+    \f$k_0=(1,\frac{1}{\sqrt{2}},\frac{1}{\sqrt{2}},0)\f$, respectively.
+    */
+  
 	
   
 } 

@@ -12,8 +12,7 @@ using namespace HADRONS;
 using namespace ATOOLS;
 using namespace std;
 
-HD_ME_Base * HD_ME_Selector::GetME(int nin,int nout,Flavour * flavs,
-				   std::string met )
+HD_ME_Base * HD_ME_Selector::GetME(int nin,int nout,Flavour * flavs)
 {
   HD_ME_Base * hdme = NULL;							// pointer on ME_Base
   double mass = flavs[0].Mass();					// mass of decaying particle
