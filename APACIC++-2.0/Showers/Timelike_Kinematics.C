@@ -99,7 +99,8 @@ int Timelike_Kinematics::ShuffleZ(Knot * const mo) const
 int Timelike_Kinematics::ShuffleMomenta(Knot *const mo) const
 { 
   Knot *d1(mo->left), *d2(mo->right);
-  double t1(d1->t), t2(d2->t);
+  double t1(mo->left->stat!=3?mo->left->t:mo->left->tout); 
+  double t2(mo->right->stat!=3?mo->right->t:mo->right->tout); 
   double ta(mo->part->Momentum().Abs2());
   if (dabs((mo->t-ta)/mo->t)>1.e-7) {
     msg.Error()<<METHOD<<"(..): Inconsistent masses. t = "<<mo->t
