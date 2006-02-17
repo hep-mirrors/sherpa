@@ -200,6 +200,7 @@ Complex XYZFunc::X( const int t1, const int t2, const int t3,
 Complex XYZFunc::X( const int t1, const Vec4D p2, const int t3, 
 	const int hel_comb, const Complex cR, const Complex cL )
 {
+  if( p2.IsZero() ) return Complex(0.,0.);
   Complex x(0., 0.);
   Complex eta2 (0.,0.);
   switch( m_k0n ) {
