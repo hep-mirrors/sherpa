@@ -113,7 +113,8 @@ int Timelike_Kinematics::ShuffleMomenta(Knot *const mo) const
   }
   double r1(0.0), r2(0.0), z(mo->zs);
   Vec4D p1(d1->part->Momentum()), p2(d2->part->Momentum());
-  if (p1.Abs2()/d1->E2>rpa.gen.Accu() || p2.Abs2()/d2->E2>rpa.gen.Accu()) {
+  if ((t1+p1.Abs2())/d1->E2>rpa.gen.Accu() || 
+      (t2+p2.Abs2())/d2->E2>rpa.gen.Accu()) {
     double t1n(p1.Abs2()), t2n(p2.Abs2());
     double A(((t2-t2n)-(t1-t1n))/(t+t1n-t2n));
     double B((t+t2n-t1n)/(t+t1n-t2n));
