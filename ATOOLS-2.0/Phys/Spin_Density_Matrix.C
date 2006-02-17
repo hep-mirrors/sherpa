@@ -73,7 +73,6 @@ Spin_Density_Matrix& Spin_Density_Matrix::operator+=(Spin_Density_Matrix SDM)
     msg.Error()<<"ERROR in Spin_Density_Matrix::operator+=:"<<endl
 	       <<"SDMs with unequal numbers ("<<m_entries.size()<<","<<SDM.m_entries.size()<<") of entries passed over."<<endl
 	       <<"Operation will be ignored."<<endl;
-    abort();
     return *this;
   }
     
