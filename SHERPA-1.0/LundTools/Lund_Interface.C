@@ -198,22 +198,12 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file,bool sher
     }
   }
   delete reader;
-  // print decay channel list
-  //   pylist(12);
-  // for test purposes - leave only one tau decay channel open
-  //  LeaveOpenOnlyDC(93);
 }
 
 void Lund_Interface::SwitchOfDecays(ATOOLS::kf::code kfc)
 {
   pydat3.mdcy[1-1][pycomp(int(kfc))-1]=0;
   msg_Tracking()<<"Lund_Interface::SwitchOfDecays: "<<kfc<<std::endl;
-}
-
-void Lund_Interface::LeaveOpenOnlyDC( int idc )
-{
-  for( int i=89; i<=142; i++ ) pydat3.mdme[1-1][i-1] = 0; 
-  pydat3.mdme[1-1][idc-1] = 1;
 }
 
 Lund_Interface::~Lund_Interface()

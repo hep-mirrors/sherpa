@@ -53,11 +53,35 @@ namespace SHERPA {
   typedef HDHandlersMap::iterator                      HDHandlersIter;
  
   /*!
+    \file Hadron_Decay_Handler.H
+    \brief Declares the class SHERPA::Hadron_Decay_Handler
+    */
+  /*!
     \class Hadron_Decay_Handler
-    \brief So far not being used.
+    \brief Redirects a decay to the corresponding module (Pythia, Hadrons, ...)
     
-    This class so far is not being used. Work is ongoing.
+    This class knows the implemented hadron decay modules and tells them to make
+    an unstable hadron decay if the Hadron_Decays::Treat method tells them to do so.
   */
+  /*!
+    \fn Hadron_Decay_Handler::FillHadronDecayBlobs(ATOOLS::Particle *,ATOOLS::Blob_List *, ATOOLS::Spin_Density_Matrix * sigma = NULL, ATOOLS::Spin_Density_Matrix * decmatr = NULL, ATOOLS::Particle_List *part_list=NULL )
+    \brief Calls the method that actually performs the decay (chain)
+
+    This method calls either the PerformDecay method of Pythia or the Hadrons module.
+    */
+  /*!
+    \fn Hadron_Decay_Handler::EraseTreated(std::set<int> *)
+    This method goes through all known hadron decay handlers (HADRONS) and check with which
+    unstable hadrons they can cope with. These are erased from the list, so that at the end
+    the Initialization_Handler::InitializeTheHadronDecays knows which particles Sherpa can make decay
+    and which it cannot. Furthermore, it tells the Spin Correlation Tensor which particles needs to
+    be considered (only the Sherpa hadron decay handler, HADRONS, has an implemented spin correlation algorithm).
+    */
+  /*!
+    \fn Hadron_Decay_Handler::SwitchOfLundDecays()
+    This methods tells Pythia to set those hadrons stable which HADRONS can cope with.
+    */
+
 }
 #endif
 
