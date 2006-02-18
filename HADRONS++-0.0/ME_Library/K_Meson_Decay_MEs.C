@@ -88,7 +88,7 @@ double K_Meson_SemiLeptonic::Using_Hels( const Vec4D * _p )
 {
   XYZFunc F(m_nout,_p,p_flavs);
   double ret = 0.;
-  for( int h=0; h<8; h++ ) {
+  for( int h=0; h<4; h++ ) {
     ret += norm( F.X(m_nulep, 0, m_lep, h, m_cR_K, m_cL_K) 
                + F.X(m_nulep, m_pi, m_lep, h, m_cR_pi, m_cL_pi) );
   }
