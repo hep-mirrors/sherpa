@@ -6,6 +6,7 @@
 
 namespace CS_SHOWER {
   class Kinematics_Base {
+  public:
     const static ATOOLS::Vec3D s_ex, s_ey, s_ez;
   public:
     Kinematics_Base() {}
