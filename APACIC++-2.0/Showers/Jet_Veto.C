@@ -93,7 +93,7 @@ int Jet_Veto::TestKinematics(const int mode,Knot *const mo)
   PROFILE_HERE;
   if (mode==1 && !(m_mode&jv::mlm)) {
     p_cur=NULL;
-    m_cmode=0;
+    m_cmode=1;
   }
   m_q2hard=0.0;
   if (mode==0 && !(m_mode&jv::final) && !(m_mode&jv::initial)) return 1;
@@ -120,7 +120,7 @@ int Jet_Veto::TestKinematics(const int mode,Knot *const mo)
   size_t nmin(p_jf->Type()==1?1:2);
   m_rates.resize(jets.size()-nmin);
   p_cluster->SetPoints(jets);
-  p_cluster->Cluster(nmin,cs::num);
+  if (jets.size()>2) p_cluster->Cluster(nmin,cs::num);
   msg_Debugging()<<"hard scale Q_h = "<<sqrt(m_q2hard)<<"\n";
   for (size_t i(0);i<m_rates.size();++i) {
     m_rates[m_rates.size()-i-1]=p_cluster->DMins()[i];
