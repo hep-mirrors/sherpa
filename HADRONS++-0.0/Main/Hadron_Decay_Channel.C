@@ -57,9 +57,9 @@ bool Hadron_Decay_Channel::InitialisePhaseSpace(vector<string> & PStype, General
   bool rewriteH (false);
   if ( PStype.size() == 2 ) {                                   // in case no DC file given
     string fn("");                                              // filename of DC file
-    fn += p_dc->GetDecaying().Name() + string("_");
+    fn += p_dc->GetDecaying().ShellName() + string("_");
     for ( int i=0; i<p_dc->NumberOfDecayProducts(); i++ ) {
-      fn += p_dc->GetDecayProduct(i).IDName();
+      fn += p_dc->GetDecayProduct(i).ShellName();
     }
     fn += string(".dat");
     PStype.push_back( fn );                                     // generate DC filename
