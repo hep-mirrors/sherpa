@@ -499,6 +499,7 @@ namespace ATOOLS {
     void FromCtq(int code);
     std::string TexName() const;
     std::string IDName() const;
+    std::string ShellName() const;
 
     const int  Size() const {
       return particles[ Index() ].Size();
