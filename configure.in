@@ -413,7 +413,6 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  AMEGIC++-2.0/Makefile \
 	  APACIC++-2.0/Main/Makefile \
 	  APACIC++-2.0/Showers/Makefile \
-	  APACIC++-2.0/Run/Makefile \
 	  APACIC++-2.0/Makefile \
 	  AMISIC++-1.0/Tools/Makefile \
 	  AMISIC++-1.0/Model/Makefile \
