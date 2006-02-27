@@ -1282,7 +1282,7 @@ Complex Tau_Three_Pseudo::KS::FormFactor( int j, double Q2, double s, double t )
              break; }
     case 2 : { FF = BW_A(Q2)*Tgen(2,1,3,t,s); 
              break; }
-    case 3 : { FF = m_X123 + BW_A(Q2)*(Q2-m_MA2)*(m_MA2*Q2) 
+    case 3 : { FF = m_X123 + BW_A(Q2)*(Q2-m_MA2)/(m_MA2*Q2) 
                          *( TSvector(1-1,3-1,2-1,Q2,s,t) + TSvector(2-1,3-1,1-1,Q2,t,s) );
              FF /= 2.*(Q2-m_ms123);          
              break; }
