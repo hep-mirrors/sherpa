@@ -51,7 +51,7 @@ Amisic_SOURCES        =	Main.C
 Amisic_LDADD  =	$(AMISICLIBS) $(APACICLIBS) $(EXTRAXSLIBS) \
 		$(PHASICLIBS) $(MODELLIBS) $(PDFLIBS) \
 		$(BEAMLIBS) $(ATOOLSLIBS) $(SYSLIBS) $(CLHEPLIBS) $(ROOTLDADD) 
-Amisic_LDFLAGS        =	-rdynamic
+Amisic_LDFLAGS        =	@ldflags@
 AM_CXXFLAGS   =	$(AMISICFLAGS) $(ROOTFLAGS)
 INCLUDES      = $(AMISICINCS) $(APACICINCS) $(EXTRAXSINCS) \
 		$(PHASICINCS) $(MODELINCS) $(PDFINCS) \
@@ -62,6 +62,3 @@ EXTRA_DIST    =	\
 		$(CVSINCLUDE) $(SOURCE) \
 		Particle.dat Hadron.dat Integration.dat Model.dat Beam.dat \
 		ISR.dat MI.dat simplechain.dat Run.dat 
-dist-hook:
-	sed -e "s/-rdynamic/SHERPA_LDFLAGS/1" \
-	  < Makefile.am > $(distdir)/Makefile.am

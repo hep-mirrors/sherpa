@@ -27,7 +27,7 @@ Amegic_LDADD = @libdir@/libProcess.la \
 	       @libdir@/libBeam.la \
 	       -lg2c -lm 
 #	       -L$(rootlibdir) -lCint -lCore -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lGui -ldl
-Amegic_LDFLAGS =  -rdynamic
+Amegic_LDFLAGS = @ldflags@
 
 INCLUDES = -I../Main \
 	   -I../Amplitude \
@@ -50,6 +50,3 @@ INCLUDES = -I../Main \
 
 
 
-dist-hook:
-	sed -e "s/-dynamic -flat_namespace/SHERPA_LDFLAGS/1" \
-	  < Makefile.am > $(distdir)/Makefile.am

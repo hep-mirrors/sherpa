@@ -88,7 +88,7 @@ Sherpa_LDADD  =	-L@libdir@/SHERPA-MC \
 		$(BEAMLIBS) $(ATOOLSLIBS) $(HADRONSLIBS) $(PDFLIBS) \
 		$(LHAPDFLIBS) $(CTEQLIBS) $(SYSLIBS) $(CLHEPLIBS) \
 		$(ROOTLDADD) $(ISAJETLIB) $(HDECAYLIB)
-Sherpa_LDFLAGS        =	-rdynamic
+Sherpa_LDFLAGS        =	@ldflags@
 AM_CXXFLAGS   =	$(SHERPAFLAGS) $(ROOTFLAGS) 
 INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(HADRONSINCS) \
 		$(APACICINCS) $(AMISICINCS) $(AMEGICINCS) \
@@ -98,6 +98,3 @@ dist_pkgdata_SCRIPTS  =	makelibs
 EXTRA_DIST    =	$(CVSINCLUDE)
 SUBDIRS       =	CTEQ6Grid MRST99Grid Decaydata
 
-dist-hook:
-	sed -e "s/-rdynamic/SHERPA_LDFLAGS/1" \
-	  < Makefile.am > $(distdir)/Makefile.am

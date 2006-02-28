@@ -40,28 +40,9 @@ set_ldflags() {
   esac
 }
 
-modify_makefiles() {
-  guess_architecture
-  set_ldflags
-  echo -n "setting up makefiles "
-  rundirs="*/Run/"
-  for I in $rundirs ; do
-    if test -f $I/Makefile.am ; then
-      echo -n "."
-      sed -e "s/SHERPA_LDFLAGS/$ldflags/1" \
-	< $I/Makefile.am > $I/__Makefile.am__
-      sed -e "\Adist-hook:A,\A\/Makefile.amAd" \
-	< $I/__Makefile.am__ > $I/Makefile.am
-      echo "dist-hook:" >> $I/Makefile.am
-      echo "	sed -e \"s/$ldflags/SHERPA_LDFLAGS/1\" \\" >> $I/Makefile.am
-      echo "	  < Makefile.am > \$(distdir)/Makefile.am" >> $I/Makefile.am
-      rm $I/__Makefile.am__
-    fi
-  done
-  echo " done"
-}
-
-modify_makefiles
+guess_architecture
+set_ldflags
+AC_SUBST(ldflags)
 
 AM_INIT_AUTOMAKE(SHERPA-MC,$version.$subversion)
 AM_DISABLE_STATIC
