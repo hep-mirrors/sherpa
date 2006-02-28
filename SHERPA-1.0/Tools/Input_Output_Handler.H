@@ -1,6 +1,8 @@
 #ifndef Input_Output_Handler_H
 #define Input_Output_Handler_H
 
+#include "CXXFLAGS.H"
+
 #ifdef USING__CLHEP
 #include "HepMC_Interface.H"
 #endif
