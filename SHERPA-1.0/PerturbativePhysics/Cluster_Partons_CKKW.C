@@ -123,17 +123,12 @@ EXTRAXS::XS_Base *Cluster_Partons_CKKW::GetXS(EXTRAXS::XS_Group * group,
 					      ATOOLS::Flavour * fl)
 {
   XS_Base * xs(NULL);  
-  const size_t nin(2), nout(2), n(nin+nout);
+  const size_t nin(2), nout(2);
   if (group->XSSelector()->
       FindInGroup(group,xs,nin,nout,fl)==std::string::npos) {
-    int nstrong(0),nqed(0),nqcd(0);
-    for (size_t i=0;i<n;++i) nstrong+=fl[i].Strong();
+    int nqed(0),nqcd(0);
     p_ct->AddCouplings(nqed,nqcd);
-    Process_Base *proc=
-      static_cast<Process_Base*>(p_me->GetAmegic()->GetProcess());
-    int nrqed(proc->OrderEWeak() - nqed);
-    int nrqcd(proc->OrderStrong() - nqcd);
-    xs = group->XSSelector()->GetXS(nin,nout,fl,false,nrqed,nrqcd);
+    xs = group->XSSelector()->GetXS(nin,nout,fl,false,nqed,nqcd);
     if (xs) group->Add(xs);
   }
   p_xs = xs;
@@ -176,15 +171,19 @@ int Cluster_Partons_CKKW::SetColours(EXTRAXS::XS_Base * xs,
   }
   m_q2_fss  = dabs(p_xs->Scale(stp::sfs));
   m_q2_iss  = dabs(p_xs->Scale(stp::sis));
-  msg_Debugging()<<"cp: found xs, fss "<<m_q2_fss<<", iss "<<m_q2_iss<<"\n";
+//   Alternative choice for PS-scale
+//    m_q2_fss  = dabs(p_xs->Scale(stp::as));
+//    m_q2_iss  = dabs(p_xs->Scale(stp::as));
+  msg_Debugging()<<"cp: found xs, fss "<<m_q2_fss<<", iss "<<m_q2_iss
+		 <<", qcd "<<p_xs->Scale(stp::as)<<"\n";
   if (m_q2_fss==std::numeric_limits<double>::max() || 
       m_q2_iss==std::numeric_limits<double>::max()) {
     m_q2_hard = m_q2_fss = m_q2_iss = p_xs->Scale(stp::fac);
   }
   else {
-    m_q2_hard = Max(m_q2_fss,m_q2_iss);
+    m_q2_hard = dabs(p_xs->Scale(stp::as));
   }
-  m_q2_qcd  = p_xs->Scale(stp::as);
+  m_q2_qcd  = dabs(p_xs->Scale(stp::as));
   return test;
 }
 
@@ -271,19 +270,23 @@ void Cluster_Partons_CKKW::InitWeightCalculation()
   if (m_q2_hard!=m_q2_qcd && m_nstrong==3) m_count_startscale=0;
 
   // determine lowest scale for highest multi treatment
-  m_qmin = 0.;
+  m_qmin_ci = m_qmin_cf = 0.;
   if ((m_njet==m_maxjetnumber && m_njet>2) ||
       (m_njet==2 && p_ct->OrderStrong()>0)) {
-    double qmin2(0.0);
-    FixJetvetoPt2(qmin2);
-    if (m_LowestFromME && m_q2_qcd<qmin2) qmin2 = m_q2_qcd;
-    if (qmin2==0.0)
+    double qmin2i(0.0), qmin2f(0.0);
+    JetvetoPt2(qmin2i,qmin2f);
+    if (m_LowestFromME) {
+      if (m_q2_qcd<qmin2i) qmin2i = m_q2_qcd;
+      if (m_q2_qcd<qmin2f) qmin2f = m_q2_qcd;
+    }
+    if (qmin2i==0.0 || qmin2f==0.0)
       msg.Error()<<"Cluster_Partons_CKKW::InitWeightCalculation(..): "
 		 <<"No minimum scale found."<<std::endl;
-    m_qmin=sqrt(qmin2);
+    m_qmin_ci=sqrt(qmin2i);
+    m_qmin_cf=sqrt(qmin2f);
   }
-  msg_Debugging()<<"ct: qmin "<<m_qmin<<", qmin_i "<<m_qmin_i
-		 <<", qmin_f "<<m_qmin_f<<"\n";
+  msg_Debugging()<<"ct: qmini "<<m_qmin_ci<<", qminf "<<m_qmin_cf
+		 <<", qmin_i "<<m_qmin_i<<", qmin_f "<<m_qmin_f<<"\n";
 }
 
 
@@ -296,11 +299,11 @@ ApplyCombinedInternalWeight(const bool is,const Flavour & fl,
   double as_ptij(0.), asRatio(0.);
   if (is) {
       as_ptij = (*p_runas)(sqr(actual)/m_is_as_factor);
-      qmin = m_qmin!=0.0?m_qmin:m_qmin_i;
+      qmin = m_qmin_ci!=0.0?m_qmin_ci:m_qmin_i;
   }
   else {
     as_ptij = (*p_runas)(m_me_as_factor*sqr(actual)/m_fs_as_factor);
-    qmin = m_qmin!=0.0?m_qmin:m_qmin_f;
+    qmin = m_qmin_cf!=0.0?m_qmin_cf:m_qmin_f;
   }
   if (m_kfac!=0.) as_ptij *= 1. + as_ptij/(2.*M_PI)*m_kfac;
   asRatio = as_ptij/asref;
@@ -335,8 +338,8 @@ ApplyExternalWeight(const bool is,const Flavour & fl,
 		    const double actual)
 {
   double qmin(0.), DeltaNum(0.);
-  if (is) qmin = m_qmin!=0.0?m_qmin:m_qmin_i;
-     else qmin = m_qmin!=0.0?m_qmin:m_qmin_f;
+  if (is) qmin = m_qmin_ci!=0.0?m_qmin_ci:m_qmin_i;
+     else qmin = m_qmin_cf!=0.0?m_qmin_cf:m_qmin_f;
   if (actual<qmin) {
     ++m_fails;
     DeltaNum = m_AcceptMisClusters;

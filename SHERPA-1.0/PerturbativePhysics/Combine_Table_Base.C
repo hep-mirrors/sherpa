@@ -372,12 +372,21 @@ void Combine_Table_Base::IdentifyHardProcess()
 
 int Combine_Table_Base::AddCouplings(int &nqed,int &nqcd) const
 {
-  if (p_up) {
-    int nstrong = p_up->m_cdata_winner->second.m_strong;
-    nqed+=1-nstrong;
-    nqcd+=nstrong;
-    return p_up->AddCouplings(nqed,nqcd);
+  int nqedt(-1), nqcdt(-1);
+  for (int i(0);i<m_nampl;++i) {
+    int nqedtt(p_hard[i][0].OrderQED()+p_hard[i][1].OrderQED());
+    int nqcdtt(p_hard[i][0].OrderQCD()+p_hard[i][1].OrderQCD());
+    if (nqedt<0 && nqcdt<0) {
+      nqedt=nqedtt;
+      nqcdt=nqcdtt;
+    }
+    else {
+      if (nqedt!=nqedtt || nqcdt!=nqcdtt) 
+	msg.Error()<<METHOD<<"(): Warning. Ambiguous couplings."<<std::endl;
+    }
   }
+  nqed=nqedt;
+  nqcd=nqcdt;
   return NLegs();
 }
 

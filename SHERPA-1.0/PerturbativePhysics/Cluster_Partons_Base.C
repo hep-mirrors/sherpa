@@ -72,7 +72,6 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
   double ycut   = rpa.gen.Ycut();
   m_qmin_i = sqrt(ycut)*rpa.gen.Ecms();
   m_qmin_f = sqrt(ycut)*deltar*rpa.gen.Ecms();
-  m_q2_jet = sqr(Min(m_qmin_i,m_qmin_f));
 }
 
 Cluster_Partons_Base::~Cluster_Partons_Base()
@@ -416,7 +415,7 @@ int Cluster_Partons_Base::Set3Colours(const int nquark,const int ngluon,Vec4D * 
       m_q2_fss = dabs((p[0]-p[2]).Abs2());
       m_q2_iss = (p[0]+p[1]).Abs2();
     }
-    m_q2_hard = m_q2_qcd = p[singlet].MPerp2();
+    m_q2_hard = m_q2_qcd = Min(m_q2_iss,m_q2_fss);
     for (int i=0;i<4;i++) {
       if (fl[i].IsGluon()) {
 	if (tmode) {
@@ -515,6 +514,7 @@ void Cluster_Partons_Base::CreateFlavourMap()
   else {
     m_ycut=ATOOLS::rpa.gen.Ycut();
   }
+  m_q2_jet = Min(1.0,rpa.gen.DeltaR())*m_ycut*sqr(rpa.gen.Ecms());
 
   const Flavour * partner_flavs=partner->Flavours();
 

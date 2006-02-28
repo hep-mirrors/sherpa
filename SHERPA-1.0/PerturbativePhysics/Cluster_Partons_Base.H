@@ -24,7 +24,7 @@ namespace SHERPA {
     ATOOLS::Blob           * p_blob;
 
     int     m_njet, m_maxjetnumber;
-    double  m_weight, m_ycut, m_qmax, m_qmin_i, m_qmin_f, m_qmin;
+    double  m_weight, m_ycut, m_qmax, m_qmin_i, m_qmin_f, m_qmin_ci, m_qmin_cf;
     double  m_q2_hard, m_q2_fss, m_q2_iss, m_q2_qcd, m_q2_jet;
     int     m_colors[4][2];
 

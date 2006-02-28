@@ -88,10 +88,12 @@ int Timelike_Kinematics::ShuffleZ(Knot * const mo) const
   }
   mo->left->E2=sqr(mo->z)*mo->E2;
   mo->right->E2=sqr(1.0-mo->z)*mo->E2;
-  if (mo->z<=0.0 || mo->z>=1.0 ||
+  static double accu(sqrt(rpa.gen.Accu())); 
+  if (mo->z<accu || 1.0-mo->z<accu || 
       mo->left->E2<mo->left->tout || mo->right->E2<mo->right->tout) return 0;
-  msg_Debugging()<<"z = "<<mo->z<<", E_1 = "<<sqrt(mo->left->E2)
-		 <<", E_2 = "<<sqrt(mo->right->E2)<<"\n";
+  msg_Debugging()<<"z = "<<mo->z<<", 1-z = "<<1.0-mo->z
+		 <<", E_1 = "<<sqrt(mo->left->E2)<<", E_2 = "
+		 <<sqrt(mo->right->E2)<<", E = "<<sqrt(mo->E2)<<"\n";
   if (mo->left->part->Info()!='H') mo->right->didkin=mo->left->didkin=false;
   return 1;
 }
@@ -133,7 +135,7 @@ int Timelike_Kinematics::ShuffleMomenta(Knot *const mo) const
     r2=(t-t2+t1-lambda)/(2.0*t);
     mo->z=z-r1*z+r2*(1.0-z);
   } 
-  if (dabs(mo->z-z) < rpa.gen.Accu()) {
+  if (dabs(mo->z/z-1.0) < rpa.gen.Accu()) {
     msg_Debugging()<<"shift unnecessary\n";
     BoostDaughters(mo);
     Tree::UpdateDaughters(mo);
