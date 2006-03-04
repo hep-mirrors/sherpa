@@ -25,4 +25,4 @@ PDF_SET         = cteq6l    ! For LHAPDF use the following PDFs in
                             ! Or use interface to MRST99 via MRST99Grid
                             ! MRST99
 PDF_SET_VERSION = 1
-PDF_GRID_PATH   = /home/ptpp92/jan/MyDevp92/Dipole/SherpaAdicic-3/ADICIC++-0.0/TestIt/CTEQ6Grid     !PDFsets,MRST99Grid,CTEQ6Grid
+PDF_GRID_PATH   = /home/halo/jwinter/MyDevp/Dipole/SherpaAdicic-4/SHERPA/SHERPA-1.0/Run/CTEQ6Grid     !PDFsets,MRST99Grid,CTEQ6Grid

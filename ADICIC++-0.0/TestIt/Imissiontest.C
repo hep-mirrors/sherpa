@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/09/13
+//Version: 3 ADICIC++-0.0/2006/03/03
 
 //Imissiontest.C - testing the first emission for the IS case.
 
@@ -219,7 +219,7 @@ int main() {
   cout<<om::reset<<endl;
 
   {
-    unsigned total=0;//20000;
+    unsigned total=2000;
     unsigned count=0;
     unsigned gluons=0;
     unsigned quarks=0, cd=0, cu=0, cs=0, cc=0, cb=0;

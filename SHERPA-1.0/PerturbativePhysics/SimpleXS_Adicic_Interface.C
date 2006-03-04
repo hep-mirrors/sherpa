@@ -179,6 +179,11 @@ bool SimpleXS_Adicic_Interface::FillBlobs(Blob_List * blobs) {
     p_is->SetTypeSpec("ADICIC++0.0");
     p_is->SetId();
     blobs->push_front(p_is);
+    //std::cout<<" => after interface:\n";
+    //for(ATOOLS::Blob_List::const_iterator blit=blobs->begin();
+    //	blit!=blobs->end(); ++blit)
+    //    std::cout<<**blit<<"\n";
+    //std::cout<<" => now leaving.\n";
     return true;
   }
   default: return false;

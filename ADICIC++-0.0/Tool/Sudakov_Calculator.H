@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/09/30    (surely preliminarily)
+//Version: 4 ADICIC++-0.0/2006/03/03    (surely preliminarily)
 
 //Base classes are provided, which manage the Sudakov calculations.
 
@@ -83,6 +83,8 @@ namespace ADICIC {
 					 const Multidouble&);
 
   protected:
+
+    static const bool sf_gsplit;    //Temporary entry.
 
     const Dipole*   p_dip;
     Sudakov_Result* p_sur;

@@ -1,5 +1,5 @@
 //bof
-//Version: 4 ADICIC++-0.0/2006/02/03
+//Version: 4 ADICIC++-0.0/2006/03/03
 
 //Implementation of the template structures of IISudakov_Group.H.
 
@@ -56,6 +56,8 @@ IISudakov_Group<DT>::IISudakov_Group(const Radiation::Type ratyp)
       l_sud.push_back(qsud);
     }
   }
+
+  if(sf_gsplit==false) return;
 
   Sudakov_Flavour sfc[6];
   sfc[1].Qua=&info.quark.d; sfc[1].Aqu=&info.antiq.d;
@@ -210,7 +212,7 @@ const bool IISudakov_Group<DT>::GenerateVariablesFor(const Dipole& dip,
       }
     }
 
-    suda.RadCode().Print(); cout<<endl;
+    //suda.RadCode().Print(); cout<<endl;
     this->Reset();
     suda.SetGenX2tFac();
 

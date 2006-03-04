@@ -18,16 +18,13 @@ Shower_Handler::Shower_Handler(std::string dir,std::string file,
 #ifdef USING__CSS    
   p_css(NULL),
 #endif
-  p_jf(NULL), p_isr_handler(_isr)
+  p_isr_handler(_isr), p_jf(NULL)
 {
   Data_Read dataread(dir+file);
   m_showergenerator = dataread.GetValue<std::string>("SHOWER_GENERATOR",std::string("Apacic"));
   m_isrshowerswitch = 0;
   if (_isr) {
     if (_isr->On()>0) m_isrshowerswitch = dataread.GetValue<int>("ISR_SHOWER",1);
-#ifdef USING__Adicic    
-    if (m_showergenerator==std::string("Adicic")) m_isrshowerswitch = false;
-#endif
   }
   m_fsrshowerswitch = dataread.GetValue<int>("FSR_SHOWER",1);
   if (m_isrshowerswitch && !m_fsrshowerswitch) {

@@ -1,5 +1,5 @@
 //bof
-//Version: 4 ADICIC++-0.0/2006/02/03
+//Version: 4 ADICIC++-0.0/2006/03/03
 
 //Implementation of the template structures of Sudakov_Group.H.
 
@@ -37,6 +37,8 @@ Sudakov_Group<DT>::Sudakov_Group(const Radiation::Type ratyp)
     assert(gsud);
     l_sud.push_back(gsud);
   }
+
+  if(sf_gsplit==false) return;
 
   Sudakov_Flavour sfc[6];
   sfc[1].Qua=&info.quark.d; sfc[1].Aqu=&info.antiq.d;

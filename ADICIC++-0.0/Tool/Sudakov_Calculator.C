@@ -1,5 +1,5 @@
 //bof
-//Version: 4 ADICIC++-0.0/2006/02/09
+//Version: 4 ADICIC++-0.0/2006/03/03
 
 //Implementation of Sudakov_Calculator.H.
 
@@ -37,8 +37,9 @@ using namespace ADICIC;
 const bool Sudakov_Calculator::sf_ariadne=false;//true;//false;
 const bool& Sudakov_Calculator::Ariadne=Sudakov_Calculator::sf_ariadne;
 
-//Temporary PDF switch.
+//Temporary PDF and gluonsplit switch.
 const bool Sudakov_Calculator::sf_pdf=true;//false;
+const bool Sudakov_Calculator::sf_gsplit=false;//true;
 
 //So far there is no static Sudakov_Calculator.
 int Sudakov_Calculator::s_count=0;
