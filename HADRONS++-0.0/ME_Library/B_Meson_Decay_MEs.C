@@ -67,20 +67,3 @@ Complex Semileptonic_B_Meson::Formfactor_minus( const Vec4D *_p )
   double xi      = 1.-0.7*(vvprime-1.);
   return Complex(xi,0.);
 }
-
-double Semileptonic_B_Meson::Using_Traces_Simple( const Vec4D *_p )
-{
-  return 0.;
-}
-
-double Semileptonic_B_Meson::Using_Traces( const Vec4D *_p )
-{
-  return 0.;
-}
-
-double Semileptonic_B_Meson::Using_Traces_2( const Vec4D *_p )
-{
-  return 0.;
-}
-
-

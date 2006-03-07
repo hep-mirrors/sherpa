@@ -22,37 +22,11 @@ Complex Tools::BreitWigner( double s, double Mass2, double MassWidth )
   return Mass2/Complex(Mass2-s,-1.*MassWidth );
 }
 
-// Breit Wigner with running width (2 particle final state with same mass) 
-Complex Tools::BreitWigner( double s, double Mass2, double Width, double ms )
+// standard Breit Wigner with given Mass * Width
+Complex Tools::BreitWignerFix( double s, double Mass2, double MassWidth )
 {
-  double MassWidth = OffShellMassWidth( s, Mass2, Width, ms );
-  return BreitWigner( s, Mass2, MassWidth );
+  return Complex(Mass2,-1.*MassWidth)/Complex(Mass2-s,-1.*MassWidth );
 }
-
-// Breit Wigner with running width (2 particle final state with differenent masses)
-Complex Tools::BreitWigner( double s, double Mass2, double Width, double ms1, double ms2 )
-{
-  double MassWidth = OffShellMassWidth( s, Mass2, Width, ms1, ms2 );
-  return BreitWigner( s, Mass2, MassWidth );
-}
-
-// off shell mass * width (2 particle final state with same mass)
-double Tools::OffShellMassWidth( double s, double Mass2, double Width, double ms )
-{
-  if (s>4.*ms && Mass2>4.*ms)
-    return( sqrt(s)*Width*Mass2/s * pow( (s-4.*ms)/(Mass2-4.*ms), 1.5 ) );
-  return 0.;	
-}
-
-// off shell mass * width (2 particle final state with different masses)
-double Tools::OffShellMassWidth( double s, double Mass2, double Width, double ms1, double ms2 )
-{
-  double threshold = ms1+ms2+2.*sqrt(ms1*ms2);
-  if (Mass2>threshold && s>threshold)
-	  return( sqrt(s)*Width*Mass2/s * pow( Mass2/s*Lambda(s,ms1,ms2)/Lambda(Mass2,ms1,ms2), 1.5 ) );
-  return 0;
-}
-
 
 Vec4D Tools::RealBosonPolarizationVector( Vec4D p, int lambda, double M2, bool & iszero )
 {
@@ -142,4 +116,29 @@ void Tools::ComplexBosonPolarizationVector( Vec4D p, int lambda, Vec4D * eps )
       eps[1] = Vec4D(0.0,0.0,0.0,0.0);
       break;
   }
+}
+ 
+Vec4D Tools::Cross( Vec4D a, Vec4D b, Vec4D c )
+{
+  return cross(a,b,c);
+} // tested: same result as contraction with epsilon tensor
+
+double Tools::Epsilon( short a, short b, short c, short d )
+{
+  if( a==b || a==c || a==d || b==c || b==d || c==d ) return 0.;
+  short ind[4] = {a,b,c,d};
+  short help;
+  double ret=1.;
+  // sort
+  for( short r=1; r<4; r++ )
+	for( short s=0; s<r; s++ )
+	{
+	  if( ind[s]>ind[r] ) {
+		  help = ind[r];
+		  ind[r] = ind[s];
+		  ind[s] = help;
+		  ret *= -1.;
+	  }
+	}
+  return ret;
 }

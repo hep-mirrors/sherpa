@@ -5,7 +5,7 @@
 #include "K_Meson_Decay_MEs.H"
 #include "B_Meson_Decay_MEs.H"
 #include "Tau_Decay_MEs.H"
-//#include "Top_Decay_MEs.H"
+#include "Top_Decay_MEs.H"
 #include "Two_Body_MEs.H"
 #include "Three_Body_MEs.H"
 
@@ -14,8 +14,7 @@ using namespace HADRONS;
 using namespace ATOOLS;
 using namespace std;
 
-HD_ME_Base * HD_ME_Selector::GetME(int nin,int nout,Flavour * flavs,
-				   std::string met )
+HD_ME_Base * HD_ME_Selector::GetME(int nin,int nout,Flavour * flavs)
 {
   HD_ME_Base * hdme = NULL;							// pointer on ME_Base
   double mass = flavs[0].Mass();					// mass of decaying particle
@@ -61,8 +60,16 @@ HD_ME_Base * HD_ME_Selector::GetME(int nin,int nout,Flavour * flavs,
       SelectBMesonDecay(nout,flavs,hdme);
       break;
     case (kf::t):    // TOP test
-//             hdme = new Top_Lepton( nout, flavs );
-             break;
+      switch( nout ) {
+        case 2 : hdme = new F_VF( nout, flavs );
+                 break;
+        case 3 : hdme = new Top_Lepton( nout, flavs );
+                 break;
+      }
+      break;
+    case (kf::W):
+      hdme = new V_FF( nout, flavs );
+      break;
   }
 
   if (hdme==NULL) hdme = new Isotropic(nout,flavs);

@@ -215,6 +215,7 @@ Complex XYZFunc::X( const int t1, const int t2, const int t3,
 Complex XYZFunc::X( const int t1, const Vec4D p2, const int t3, 
 	const int hel_comb, const Complex cR, const Complex cL )
 {
+  if( p2.IsZero() ) return Complex(0.,0.);
   Complex x(0., 0.);
   Complex eta2 (0.,0.);
   switch( m_k0n ) {
@@ -225,7 +226,6 @@ Complex XYZFunc::X( const int t1, const Vec4D p2, const int t3,
     default : eta2 = csqrt( 2.*(p2[0]-(p2[1]+p2[3])*SQRT_05) );
   }
   Complex mu2 = csqrt(p2.Abs2())/eta2;
-  cout<<p2<<"   eta2 "<<eta2<<"    mu2 "<<mu2<<endl;
   switch( hel_comb ) {
 	case 0:	x  = m_mu[t1]*m_mu[t3]*eta2*eta2*cL;
 			x += mu2*mu2*m_eta[t1]*m_eta[t3]*cR;
