@@ -34,7 +34,6 @@ namespace HADRONS {
     std::vector<std::pair<int,int> > * p_indices;
     std::vector<Complex>  * p_ampls;
     double                  m_symmetry; 
-    int                     m_k0n;
   public: 
     Hadron_Decay_Channel( ATOOLS::Decay_Channel * _dc, std::string _path );
     ~Hadron_Decay_Channel();

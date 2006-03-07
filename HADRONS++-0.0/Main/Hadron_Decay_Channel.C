@@ -12,8 +12,7 @@ Hadron_Decay_Channel::Hadron_Decay_Channel( Decay_Channel * _dc, string _path ) 
   p_dc(_dc), p_me(NULL), m_metype(p_dc->METype()),
   Integrable_Base(1,_dc->NumberOfDecayProducts()),
   m_path(_path), m_fulldecay(3), m_createbooklet(0),
-  p_indices(NULL), p_ampls(NULL),
-  m_k0n (Spin_Correlation_Tensor::Get_k0_n())
+  p_indices(NULL), p_ampls(NULL)
 {
   m_resultpath      = string("./");                             // where to write results
   m_resultfile      = m_histofile = string("");                 // filename
@@ -122,7 +121,7 @@ double Hadron_Decay_Channel::Differential()
   // get amplitude tensor
   (*p_me)(  p_momenta,                                          // phase space point
             p_ampls, p_indices,                                 // ampl. tensor and indices       
-            m_k0n );                                            // spinor base
+            1 );                                            // spinor base
   double value (0.);
   if( p_ampls->size() ) {
     for( size_t i=0; i<p_ampls->size(); ++i ) {
@@ -167,7 +166,7 @@ double Hadron_Decay_Channel::Differential( Vec4D * mom, Spin_Density_Matrix * si
   // get amplitude tensor
   (*p_me)(  p_momenta,                                          // phase space point
             p_ampls, p_indices,                                 // ampl. tensor and indices
-            m_k0n );                                            // spinor base
+            Spin_Correlation_Tensor::Get_k0_n() );              // spinor base
   double value;
   if( p_ampls->size()==0 ) {                                    // no ampls <=> isotropic
     CreateTrivial(sigma);                                       // create trivial amplitude tensor
