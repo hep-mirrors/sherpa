@@ -69,15 +69,15 @@ void F_VF::operator()(
   // create amplitudes tensor
   Vec4D  p  = _p[m_boson];
   double p2 = p.Abs2();
-  Vec4D eps[2];  
   _ampls_tensor->clear();
   Complex ampl (0.,0.);
   for( int h=0; h<4; h++ ) {        // for all hel. comb. (b,t)
     for( int l=0; l<4; l++ ) {      // sum over lambda (s,l,t1,t2)
-      Tools::ComplexBosonPolarizationVector(p,l,sqr(80.419),eps);
+      ATOOLS::Vec4D* eps = Tools::ComplexBosonPolarizationVector(p,l,sqr(80.419));
       ampl = Complex(0.,0.);
       if( !eps[0].IsZero() && !eps[0].Nan() ) ampl += F.X(m_fermion, eps[0], 0, h, m_cR, m_cL);
       if( !eps[1].IsZero() && !eps[1].Nan() ) ampl += Complex(0.,1.)*F.X(m_fermion, eps[1], 0, h, m_cR, m_cL);
+      delete[] eps;
       ampl *= m_global;
       _ampls_tensor->push_back( ampl );
     }
@@ -129,16 +129,16 @@ void V_FF::operator()(
   // create amplitudes tensor
   Vec4D  p  = _p[0];
   double p2 = p.Abs2();
-  Vec4D eps[2];  
   _ampls_tensor->clear();
   bool zero_eps;
   Complex ampl(0.,0.);
   for( int h=0; h<4; h++ ) {        // for all hel. comb. (b,t)
     for( int l=0; l<4; l++ ) {      // sum over lambda (s,l,t1,t2)
-      Tools::ComplexBosonPolarizationVector(p,l,sqr(80.419),eps);
+      ATOOLS::Vec4D* eps = Tools::ComplexBosonPolarizationVector(p,l,sqr(80.419));
       ampl = Complex(0.,0.);
       if( !eps[0].IsZero() && !eps[0].Nan() ) ampl += F.X(m_ferm1, eps[0], m_ferm2, h, m_cR, m_cL);
       if( !eps[1].IsZero() && !eps[1].Nan() ) ampl += Complex(0.,1.)*F.X(m_ferm1, eps[1], m_ferm2, h, m_cR, m_cL);
+      delete[] eps;
       ampl *= m_global;
       _ampls_tensor->push_back( ampl );
     }

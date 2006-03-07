@@ -37,7 +37,7 @@ Vec4D Tools::RealBosonPolarizationVector( Vec4D p, int lambda, double M2, bool &
     ct = 0.; st = 1.;
     cp = 1.; sp = 0.;
   }
-  PRINT_INFO(ct<<" "<<st<<"    "<<cp<<" "<<sp);
+//   PRINT_INFO(ct<<" "<<st<<"    "<<cp<<" "<<sp);
   switch( lambda ) {
     case 1  : if ( !IsEqual(p.PSpat(),0.) ) 
                 eps = Vec4D( p.PSpat(), p[0]/p.PSpat()*Vec3D(p) );
@@ -63,8 +63,9 @@ Vec4D Tools::RealBosonPolarizationVector( Vec4D p, int lambda, double M2, bool &
 }
 
 
-void Tools::ComplexBosonPolarizationVector(  Vec4D p, int lambda, double M2, Vec4D * eps)
+ATOOLS::Vec4D* Tools::ComplexBosonPolarizationVector(  Vec4D p, int lambda, double M2 )
 {
+  ATOOLS::Vec4D* eps = new ATOOLS::Vec4D[2];
   double ct (p.CosTheta()), st (p.SinTheta()), cp (p.CosPhi()), sp (p.SinPhi());
   if (IsEqual(p.PSpat(), 0.)) {      // decay from rest
     ct = 0.; st = 1.;
@@ -88,11 +89,13 @@ void Tools::ComplexBosonPolarizationVector(  Vec4D p, int lambda, double M2, Vec
       eps[1] = Vec4D(0.0,0.0,0.0,0.0);
       break;
   }
+  return eps;
 }
 
 
-void Tools::ComplexBosonPolarizationVector( Vec4D p, int lambda, Vec4D * eps )
+ATOOLS::Vec4D* Tools::ComplexBosonPolarizationVector( Vec4D p, int lambda )
 {
+  ATOOLS::Vec4D* eps = new ATOOLS::Vec4D[2];
   double ct (p.CosTheta()), st (p.SinTheta()), cp (p.CosPhi()), sp (p.SinPhi());
   if (IsEqual(p.PSpat(), 0.)) {      // decay from rest
     ct = 0.; st = 1.;
@@ -116,6 +119,7 @@ void Tools::ComplexBosonPolarizationVector( Vec4D p, int lambda, Vec4D * eps )
       eps[1] = Vec4D(0.0,0.0,0.0,0.0);
       break;
   }
+  return eps;
 }
  
 Vec4D Tools::Cross( Vec4D a, Vec4D b, Vec4D c )

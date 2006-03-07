@@ -12,10 +12,8 @@ namespace HADRONS
     static Complex  BreitWignerFix( double s, double Mass2, double MassWidth );
     static ATOOLS::Vec4D RealBosonPolarizationVector(
         ATOOLS::Vec4D p, int lambda, double M2, bool & iszero );
-    static void ComplexBosonPolarizationVector(
-        ATOOLS::Vec4D p, int lambda, double M2, ATOOLS::Vec4D* eps);
-    static void  ComplexBosonPolarizationVector(
-        ATOOLS::Vec4D p, int lambda, ATOOLS::Vec4D* eps);
+    static ATOOLS::Vec4D* ComplexBosonPolarizationVector(ATOOLS::Vec4D p, int lambda, double M2);
+    static ATOOLS::Vec4D*  ComplexBosonPolarizationVector(ATOOLS::Vec4D p, int lambda);
 
     static ATOOLS::Vec4D Cross( ATOOLS::Vec4D a, ATOOLS::Vec4D b, ATOOLS::Vec4D c );
     static double Epsilon( short a, short b, short c, short d );
