@@ -63,7 +63,6 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
   int index (0);
   Spin_Density_Matrix * sigma   = NULL;         // SDM for decaying particle
   Spin_Density_Matrix * decmatr = NULL;         // decay matrix
-  Spin_Correlation_Tensor * dummy = NULL;
   while (found) {
     found = false;
     bool keeprunning (true);
@@ -114,7 +113,6 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
                       decmatr->Normalise();
                       sct->Contract(index,decmatr);             // contract over decay matrix
                     }
-                    //hdhandler->FillHadronDecayBlobs( myout, _bloblist );
                     found       = true;
                     keeprunning = false;		// start again !
                     if( sigma )   delete sigma; 
@@ -152,7 +150,7 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
             }
             if( spincorr )
             if( sct->GetDepth() ) {
-              for ( size_t i=0;i<myblob->NOutP();i++) {
+              for ( int i=0;i<myblob->NOutP();i++) {
                 PRINT_INFO(myblob->OutParticle(i)->Number()<<" "<<myblob->OutParticle(i)->Flav() );
               }
               PRINT_INFO("Not eth. was contracted. "<<sct );
