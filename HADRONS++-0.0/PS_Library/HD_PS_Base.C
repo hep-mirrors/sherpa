@@ -82,34 +82,27 @@ Single_Channel * HD_Channel_Selector::GetChannel(
   if (ci.name==string("Iso2") || nout==2 ) return new Iso2Channel(flavs);
   if (nout==3) {
     if (ci.name==string("Dalitz")) {
-      ResonanceFlavour res;
-      if( ci.res1==string("photon") )    res.Set( kf::photon, 0., 0. );
-      if( ci.res1==string("rho(770)") )  
-        res.Set( 
-            kf::rho_770, 
-            md("Mass_Rho_770",  Flavour(kf::rho_770_plus).PSMass()), 
-            md("Width_Rho_770", Flavour(kf::rho_770_plus).Width()) );
-      if( ci.res1==string("W") )  
-        res.Set( 
-            kf::W, 
-            md("Mass_W",  Flavour(kf::W).PSMass()), 
-            md("Width_W", Flavour(kf::W).Width()) );
+      kf::code kfres (kf::rho_770_plus);
+      if( ci.res1==string("photon") ) kfres = kf::photon;
+      if( ci.res1==string("rho(770)+") ) kfres = kf::rho_770_plus;
+      if( ci.res1==string("K*(892)+") ) kfres = kf::K_star_892_plus;
+      if( ci.res1==string("W") ) kfres = kf::W;
+      SimpleResonanceFlavour res(
+          Flavour(kfres).IDName(),
+          md("Mass_"+Flavour(kfres).IDName(), Flavour(kfres).PSMass() ),
+          md("Width_"+Flavour(kfres).IDName(), Flavour(kfres).Width() ) );
       return new Dalitz(flavs,res,ci.a,ci.b);
     }
   }
   if (nout==4) {
     if( ci.name==string("TwoResonances") ) {
-      ResonanceFlavour res_a( 
+      SimpleResonanceFlavour res_a( 
           ci.res1, 
           md("Mass_"+ci.res1, Flavour(kf::a_1_1260_plus).PSMass()),
           md("Width_"+ci.res1,Flavour(kf::a_1_1260_plus).Width())); 
-      string helpname;                      // name of resonanance as it appears in md
+      string helpname;                      // name of vector resonanance as it appears in md
       helpname = ci.res2;                   // take name unchanged
-      if( (int)helpname[helpname.size()-1] >= 48 &&
-          (int)helpname[helpname.size()-1] <= 57 ) {    // if last char is a number
-        helpname.insert( helpname.size()-1, "_" );      // insert _ inbetween
-      }
-      ResonanceFlavour res_v( 
+      SimpleResonanceFlavour res_v( 
           ci.res2,
           md("Mass_"+helpname, Flavour(kf::rho_770_plus).PSMass()),
           md("Width_"+helpname,Flavour(kf::rho_770_plus).Width()) ); 
@@ -216,22 +209,6 @@ bool HD_PS_Base::Construct( GeneralModel & _md )
           m_foundPS = 0;                
         }
       }
-      if ( helpsvv[i][0] == string("Resonances") ) {
-        i++;
-        while (helpsvv[i][0]!=string("}")) {
-          if ( helpsvv[i][1] == string("->") ) {
-            if ( helpsvv[i][0] == string("vector1") ) {         // particles into which V1 decays
-              _md["vector1_i"] = ToType<double>(reader.Interpreter()->Interprete(helpsvv[i][2]));
-              _md["vector1_j"] = ToType<double>(reader.Interpreter()->Interprete(helpsvv[i][3]));
-            }
-            if ( helpsvv[i][0] == string("vector2") ) {         // particles into which V2 decays
-              _md["vector2_i"] = ToType<double>(reader.Interpreter()->Interprete(helpsvv[i][2]));
-              _md["vector2_j"] = ToType<double>(reader.Interpreter()->Interprete(helpsvv[i][3]));
-            }
-            i++;
-          }
-        }
-      }
       if ( helpsvv[i][0] == string("Parameters") ) {
 
         // in DC file: complex values are to be given in "abs" "phase"
@@ -331,6 +308,7 @@ void HD_PS_Base::CalculateNormalisedWidth() {
     if (disc>0) m_error  = result/sqrt(disc);
     msg.Info()<<"     result (w/o flux): "<<result<<" +/- "<<m_error<<" ("<<m_error/result*100.<<" %)"<<endl;
     if (isotropic_me && m_error/result < 0.01) break;
+    if(m_error/result < 0.0007) break;
   } 
   m_res  = m_flux*sum/n;
   m_error *= m_flux;
@@ -345,8 +323,7 @@ bool HD_PS_Base::WriteOut() {
   if ( m_read_dcfile ) {                // if DC file should be read
     system((string("mv \"")+m_path+m_file+string("\" \"")+m_path+m_file+string(".old\"")).c_str());
 
-    ofstream to;
-    to.open((m_path+m_file).c_str(),ios::out);
+    ofstream to((m_path+m_file).c_str(),ios::out);
 
     // writes header
     to<<"# Decay: "<<p_hdc->ChannelName()<<endl;
@@ -373,13 +350,6 @@ bool HD_PS_Base::WriteOut() {
           }
         }
         to<<"}"<<endl;
-      }
-      if (buffer==string("Resonances {")) {
-        to<<"Resonances {"<<endl;
-        while (buffer!=string("}")) {
-          from.getline(buffer,100);
-          to<<buffer<<endl;
-        }
       }
       if (buffer==string("Parameters {")) {
         to<<"Parameters {"<<endl;
@@ -430,4 +400,5 @@ bool HD_PS_Base::WriteOut() {
     to<<"}"<<endl;
     to.close();
   }
+  return 1;
 }

@@ -13,13 +13,13 @@ using namespace std;
 
 TwoResonances::TwoResonances(
 	const Flavour * fl,
-	ResonanceFlavour prop1, 
+	SimpleResonanceFlavour prop1, 
 	const int _k,
-	ResonanceFlavour prop2,
+	SimpleResonanceFlavour prop2,
 	const int _i,
-	const int _j ) :
-  Single_Channel(1,4,fl),
-  m_P(Vec4D(fl[0].Mass(),0.,0.,0.)),
+	const int _j )
+: Single_Channel(1,4,fl), 
+  m_P(Vec4D(fl[0].Mass(),0.,0.,0.)), 
   m_prop1 (prop1), m_prop2 (prop2),
   m_i (_i), m_j (_j), m_k (_k)
 {

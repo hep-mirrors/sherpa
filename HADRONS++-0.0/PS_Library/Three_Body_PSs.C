@@ -12,7 +12,7 @@ using namespace std;
 
 Dalitz::Dalitz(
 	const ATOOLS::Flavour * fl,
-	ResonanceFlavour res,
+	SimpleResonanceFlavour res,
 	const int p1, 
 	const int p2 ) :
   Single_Channel(1,3,fl),
