@@ -25,6 +25,7 @@ namespace ATOOLS {
     friend Vec4D operator+ (const Vec4D&, const Vec4D&);
     friend Vec4D operator- (const Vec4D&, const Vec4D&);
     friend Vec4D operator* (const double, const Vec4D&);
+    friend Vec4D cross (const Vec4D&, const Vec4D&, const Vec4D& );
 
     friend class Vec3D;
     friend Vec3D operator+ (const Vec3D&, const Vec3D&);
@@ -95,6 +96,8 @@ namespace ATOOLS {
     Vec4D(const Vec4D& v1 ,const Vec4D& v2, const Tag::Tdiff);
     //! Computational constructor
     Vec4D(const Vec4D& v1 ,const double scal, const Tag::Tsmul); 
+    //! Computational constructor "generalised cross product"
+    Vec4D(const Vec4D& v1 ,const Vec4D& v2, const Vec4D& v3, const Tag::Tcross);
   
     bool Nan() const;
     bool IsZero() const;
@@ -340,6 +343,14 @@ namespace ATOOLS {
     m_x[3] = scal*v1[3];
   }
 
+  inline Vec4D::Vec4D(const Vec4D& v1 ,const Vec4D& v2, const Vec4D& v3, const Tag::Tcross) 
+  {
+    m_x[0] = v1[1]*v2[2]*v3[3] +v1[2]*v2[3]*v3[1] +v1[3]*v2[1]*v3[2] -v1[1]*v2[3]*v3[2] -v1[3]*v2[2]*v3[1] -v1[2]*v2[1]*v3[3];
+    m_x[1] = -v1[0]*v2[2]*v3[3] -v1[2]*v2[3]*v3[0] -v1[3]*v2[0]*v3[2] +v1[0]*v2[3]*v3[2] +v1[3]*v2[2]*v3[0] +v1[2]*v2[0]*v3[3];
+    m_x[2] =  v1[0]*v2[1]*v3[3] +v1[1]*v2[3]*v3[0] +v1[3]*v2[0]*v3[1] -v1[0]*v2[3]*v3[1] -v1[3]*v2[1]*v3[0] -v1[1]*v2[0]*v3[3];
+    m_x[3] = -v1[0]*v2[1]*v3[2] -v1[1]*v2[2]*v3[0] -v1[2]*v2[0]*v3[1] +v1[0]*v2[2]*v3[1] +v1[2]*v2[1]*v3[0] +v1[1]*v2[0]*v3[2];
+  }
+
   // new operator definitions:
   inline Vec4D operator* (const double scal, const Vec4D& v1) {
     return Vec4D(v1,scal,Tag::smul);
@@ -357,6 +368,11 @@ namespace ATOOLS {
 
   inline Vec4D operator/ (const Vec4D& v, const double scal) {
     return (1./scal)*v;
+  }
+   
+  inline Vec4D cross(const Vec4D& a, const  Vec4D& b, const  Vec4D& c)
+  {
+    return Vec4D(a,b,c,Tag::cross);
   }
 
   inline const double Vec4D::Abs2() const 
