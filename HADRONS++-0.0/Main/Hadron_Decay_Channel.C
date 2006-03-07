@@ -2,6 +2,7 @@
 #include "HD_ME_Selector.H"
 #include "Spin_Correlation_Tensor.H"
 #include "Poincare.H"
+#include "Random.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -11,7 +12,8 @@ Hadron_Decay_Channel::Hadron_Decay_Channel( Decay_Channel * _dc, string _path ) 
   p_dc(_dc), p_me(NULL), m_metype(p_dc->METype()),
   Integrable_Base(1,_dc->NumberOfDecayProducts()),
   m_path(_path), m_fulldecay(3), m_createbooklet(0),
-  p_indices(NULL), p_ampls(NULL)
+  p_indices(NULL), p_ampls(NULL),
+  m_k0n (Spin_Correlation_Tensor::Get_k0_n())
 {
   m_resultpath      = string("./");                             // where to write results
   m_resultfile      = m_histofile = string("");                 // filename
@@ -24,7 +26,8 @@ Hadron_Decay_Channel::Hadron_Decay_Channel( Decay_Channel * _dc, string _path ) 
   m_chnamenumbers.append( (p_flavours[0].IDName()).length()-1, ' ' );
   m_chnamenumbers.append(" --> ");
   char helpch[2];
-  for (int i=0;i<p_dc->NumberOfDecayProducts();i++) {           // decay products
+  int nout = p_dc->NumberOfDecayProducts();
+  for (int i=0;i<nout;i++) {           // decay products
     p_flavours[i+1] = p_dc->GetDecayProduct(i);         
     m_channelname  += p_flavours[i+1].IDName() + string(" ");
     sprintf( helpch, "%i%", i+1 );
@@ -34,9 +37,26 @@ Hadron_Decay_Channel::Hadron_Decay_Channel( Decay_Channel * _dc, string _path ) 
   p_indices = new vector<pair<int,int> >;                        // index bookkeeping
   p_ampls   = new vector<Complex>;                              // new amplitude tensor
   HD_ME_Selector mesel;                                         // ME selector
-  p_me = mesel.GetME(m_nin,m_nout,p_flavours,m_metype);         // get the appropr. ME
+  p_me = mesel.GetME(m_nin,m_nout,p_flavours);                  // get the appropr. ME
   p_me->SetPath( m_path );                                      // set Decaydata path 
   msg.Out()<<"Matrix Element for "<<m_channelname<<" : "<<p_me->METype()<<"."<<endl;
+  // check for identical particles
+  Flavour refflav;
+  double symfactor (1);         
+  int l(0), lfac (1);              
+  for( int i=0; i<nout; ++i ) {
+    refflav = p_flavours[i+1];
+    l = 0;
+    lfac = 1;
+    for( int j=0; j<nout; ++j ) {
+      if( p_flavours[j+1]==refflav ) {
+        l++;
+        lfac *= l;
+      }
+    }
+    symfactor *= lfac;
+  }
+  m_symmetry = 1./sqrt(symfactor);
 }
 
 Hadron_Decay_Channel::~Hadron_Decay_Channel()
@@ -78,17 +98,18 @@ bool Hadron_Decay_Channel::InitialisePhaseSpace(vector<string> & PStype, General
 
 void Hadron_Decay_Channel::WriteModelOnScreen( GeneralModel _locmd )
 {
-  msg.Debugging()
+  if( msg.LevelIsDebugging() ) {
+  msg.Out()
     <<"-----------------------------------------------------\n"
     <<"Modelparameters for channel: "<<m_channelname<<"\n"<<endl;
   GeneralModel::iterator md_it;
   for ( md_it = _locmd.begin(); md_it != _locmd.end(); ++md_it ) {
-    msg.Debugging()<<"   "<<md_it->first<<":\t"<<md_it->second<<endl;
+    msg.Out()<<"   "<<md_it->first<<":\t"<<md_it->second<<endl;
   }
-  msg.Debugging()
+  msg.Out()
     <<"-----------------------------------------------------"<<endl;
+  }
 }
-
 
 // w/o spin correlation
 
@@ -100,23 +121,17 @@ double Hadron_Decay_Channel::Differential()
   double weight = p_ps->Weight();                               // get weight factor
   // get amplitude tensor
   (*p_me)(  p_momenta,                                          // phase space point
-            p_ampls, p_indices,                                 // ampl. tensor and indices
-            1 );                                                // basis for amplitudes
+            p_ampls, p_indices,                                 // ampl. tensor and indices       
+            m_k0n );                                            // spinor base
   double value (0.);
   if( p_ampls->size() ) {
-    for( size_t i=0; i<p_ampls->size(); ++i )
+    for( size_t i=0; i<p_ampls->size(); ++i ) {
       value += norm( (*p_ampls)[i] );
+    }
     value /= (p_dc->GetDecaying().IntSpin()+1);
   }
   else value = 1.;                                              // isotropic
-  // reference
-  double ref = (*p_me)(p_momenta);
-  if( !IsEqual(value,ref) ) {
-    PRINT_INFO("could not reproduce uncorrelated results");
-    cout<<value<<" <-> "<<ref<<"     factor 1+"<<value/ref-1.<<endl;
-    PRINT_INFO(om::red<<"will abort."<<om::reset); abort();
-  }
-  return value*weight;
+  return value*weight*m_symmetry;
 }
 
 
@@ -142,7 +157,6 @@ double Hadron_Decay_Channel::Differential( Vec4D * mom, Spin_Density_Matrix * si
   p_ps->GeneratePoint(p_momenta);                               // generate a PS point
   p_ps->GenerateWeight(p_momenta);                              // calculate its weight factor
   double weight = p_ps->Weight();                               // weight factor
-  double ref0 = (*p_me)(p_momenta);
   // boost into Lab system 
   Poincare lambda(mom[0]);
   lambda.Invert();
@@ -153,12 +167,11 @@ double Hadron_Decay_Channel::Differential( Vec4D * mom, Spin_Density_Matrix * si
   // get amplitude tensor
   (*p_me)(  p_momenta,                                          // phase space point
             p_ampls, p_indices,                                 // ampl. tensor and indices
-            1 );                                                // basis for amplitudes
+            m_k0n );                                            // spinor base
   double value;
   if( p_ampls->size()==0 ) {                                    // no ampls <=> isotropic
     CreateTrivial(sigma);                                       // create trivial amplitude tensor
     value = 1.;
-//    return weight;
   }
   else {                                                        // not isotropic
     if( p_indices->size() ) {                                   // if there are indices
@@ -170,8 +183,7 @@ double Hadron_Decay_Channel::Differential( Vec4D * mom, Spin_Density_Matrix * si
       value = norm( (*p_ampls)[0] );                            // only one amplitude
     }
   }
-  
-  return value*weight;
+  return value*weight*m_symmetry;
 }
 
 void Hadron_Decay_Channel::CreateTrivial( Spin_Density_Matrix * sigma )
@@ -194,3 +206,4 @@ void Hadron_Decay_Channel::CreateTrivial( Spin_Density_Matrix * sigma )
     }
   }
 }
+ 

@@ -10,14 +10,14 @@
 #include "MyStrStream.H"
 #include <utility>
 #include <algorithm>
+#include "XYZFuncs.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
 using namespace std;
 
 Hadrons::Hadrons( string _path, string _file, string _constfile ) : 
-  m_path(_path), m_file(_file), m_constfile(_constfile), m_createbooklet(0),
-  m_spincorr(false)
+  m_path(_path), m_file(_file), m_constfile(_constfile), m_createbooklet(0)
 { 
   msg_Tracking()<<"In Hadrons: ("<<_path<<") "<<_file<<std::endl;
   msg_Tracking()<<"In Hadrons: ("<<_path<<") "<<_constfile<<std::endl;
@@ -73,15 +73,17 @@ Hadron_Decay_Channel * Hadrons::ChooseDecayChannel()
     int k (0);
 
     // dice decay channel acc. to BR
-    while( !channel_chosen ) {
-      k = int( ran.Get() * nchan );					// dice decay channel
-      double r = ran.Get();							// random number for rejection
-      if( r < p_table->Width(k) / TotalWidth ) {
-        dec_channel = p_table->GetDecayChannel(k);
-        channel_chosen = 1;
-      }
-    }	
-    msg_Tracking()<<"     chosen channel: "<<k<<endl;
+    if( nchan>1 ) {
+      while( !channel_chosen ) {
+        k = int( ran.Get() * nchan );					// dice decay channel
+        double r = ran.Get();							// random number for rejection
+        if( r < p_table->Width(k) / TotalWidth ) {
+          dec_channel = p_table->GetDecayChannel(k);
+          channel_chosen = 1;
+        }
+      }	
+    }
+    else dec_channel = p_table->GetDecayChannel(0);
   }
   else {                                            // treatment for K0's
     if (nchan!=2) {
@@ -104,101 +106,6 @@ Hadron_Decay_Channel * Hadrons::ChooseDecayChannel()
   return (*p_channelmap)[dec_channel];
 }
 
-void Hadrons::ChooseDecayKinematics( Vec4D * _p, Hadron_Decay_Channel * _hdc )
-{
-  double value(0.);
-  const double max = _hdc->GetPS()->Maximum();
-  int trials(0);											// number of trials
-  do {
-    value = _hdc->Differential(NULL,NULL);							// current val. of |M|^2
-    //trials++;
-  } while( ran.Get() > value/max );
-  //  ofstream f("trials.out",ios::app|ios::out );
-  //  f<<trials<<endl;
-  for( int i=0; i < _hdc->DecayChannel()->NumberOfDecayProducts()+1; i++ ) {
-    _p[i] = _hdc->Momentum(i);
-   }
-}
- 
-void Hadrons::PerformDecay( Particle * part, Blob_List * blob_list, Particle_List * part_list )
-{
-  msg_Tracking()<<"Hadrons::PerformDecay() for "<<part->Flav()<<endl;
-  msg.Debugging()<<"Momentum: "<<part->Momentum()<<endl;
-  if( part->Flav().Kfcode() != p_table->Flav().Kfcode() ) {
-	msg.Error()<<"ERROR in Hadrons::PerformDecay() : Particle in selected decay table is not \n"
-	           <<"        identical to the decayer.\n"
-			   <<"        >>>   "<<p_table->Flav()<<" <-> "<<part->Flav()<<"   <<<"<<endl
-			   <<"        Don't know which to take, will abort."<<endl;
-	abort();
-  }
-
-  if (part->Flav().IsStable()) return;
-  bool anti = part->Flav().IsAnti();					// antiparticle ?
-
-  // choose decay channel acc. to BR
-  Hadron_Decay_Channel * hdc = ChooseDecayChannel();
-  FlavourSet       daughters = hdc->DecayChannel()->GetDecayProducts();
-  const int                n = hdc->DecayChannel()->NumberOfDecayProducts()+1;
-   
-  if ( !(hdc->FullDecay()&1) && anti ) return;
-
-  // choose a kinematics that corresponds to the ME kinematic distribution
-  Vec4D mom[n];
-  if( n>2 ) ChooseDecayKinematics( mom, hdc ); 
-  else      {
-    mom[0] = Vec4D( part->Flav().Mass(), 0., 0., 0. );
-    mom[1] = mom[0];
-  }
-
-  // transform momentum into Lab System and create blob
-  Poincare lambda(part->Momentum());
-  lambda.Invert();
-  Blob * blob;											// decay blob
-  blob = new Blob();
-  blob->SetStatus(1);
-  blob->SetType( btp::Hadron_Decay );
-  blob->SetTypeSpec("Sherpa");
-  blob->SetId();
-  double        time = part->LifeTime();
-  Vec3D      spatial = part->Distance( time );
-  Vec4D     position = Vec4D( time*rpa.c(), spatial );
-  blob->SetPosition( part->XProd() + position );
-//  blob->SetPosition(Vec4D(1.,1.,0.,0.));
-  msg.Debugging()<<"created new blob: #"<<blob->Id()<<" with status 1"<<endl;
-  blob->AddToInParticles( part );
-  if( part->Info() == 'P' ) part->SetInfo('p');
-  if( part->Info() == 'D' ) part->SetInfo('d');
-  blob_list->push_back( blob );
-   
-  Particle * particle;									// daughter part.
-  Vec4D momentum;										// daughter mom.
-  Flavour flav;											// daughter flav.
-  FlSetConstIter dit;									// Iterator
-  int i(0);
-
-  // treat every daughter
-  for( dit = daughters.begin(); dit != daughters.end(); dit++ ) {
-	i++;
-	momentum = lambda * mom[i];							// Lorentz trafo
-	flav = (*dit);
-	if( anti ) flav = flav.Bar();
-	msg.Debugging()<<"Daughters: "<<i<<"   "<<flav<<"  "<<momentum<<endl;
-	particle = new Particle( -1, flav, momentum );
-	if( part_list ) particle->SetNumber( part_list->size() );
-	else particle->SetNumber( 0 );
-	particle->SetStatus(1);
-	particle->SetInfo('D');
-	if( part_list ) part_list->push_back( particle ); 
-	blob->AddToOutParticles( particle );
-	// check if daughter can be treated as well
-	if (hdc->FullDecay() & 2) {
-	  if( FindDecay(particle->RefFlav()) ) {
-		PerformDecay( particle, blob_list, part_list );
-	  }
-	}
-  }
-}
- 
 // implementation with spin correlation
 // hep-ph/0110108
 
@@ -249,9 +156,12 @@ Spin_Density_Matrix Hadrons::PerformDecay(
   FlavourSet       daughters = hdc->DecayChannel()->GetDecayProducts();
   const int                n = hdc->DecayChannel()->NumberOfDecayProducts()+1;
   if( (anti) && !(hdc->FullDecay() & 1) ) {             // if NO_ANTI
-    if( sigma ) 
-      Spin_Density_Matrix unitmatrix = Spin_Density_Matrix(sigma->NrEntries());
-    return Spin_Density_Matrix(mother_spin);                      // return empty decay matrix
+    if( sigma ) {
+      Spin_Density_Matrix unitmatrix = Spin_Density_Matrix(mother_spin);
+      unitmatrix.SetUnitMatrix();
+      return unitmatrix;                                // return unit matrix
+    }
+    return Spin_Density_Matrix();                       // return empty decay matrix
   }
 //  cout<<om::red<<hdc->ChannelName()<<om::reset<<endl;
 //  if( sigma ) sigma->Print();
