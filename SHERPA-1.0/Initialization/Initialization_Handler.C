@@ -516,7 +516,6 @@ bool Initialization_Handler::InitializeTheHadronDecays()
     hdhandler->EraseTreated(UnstableHadrons);
     if (UnstableHadrons->empty()) needextra = false;
     m_hdhandlers["Sherpa"] = hdhandler;
-    hdhandler->GetHadrons()->SetSpinCorrelations( dr.GetValue<Switch::code>("SPIN_CORRELATIONS",Switch::Off) );
   }
 #endif
   if ((decmodel==string("Lund") || needextra) ) {
