@@ -82,7 +82,7 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
 
                     // get vector of out particles and shuffle randomly (if applicable)
                     Particle_Vector outparticles = myblob->GetOutParticles();
-                    random_shuffle( outparticles.begin(), outparticles.end() );
+                    if (spincorr) random_shuffle( outparticles.begin(), outparticles.end() );
 
                     // go through all out particles
                     for( Particle_Vector::iterator outit = outparticles.begin();
@@ -147,15 +147,6 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
                         }
                       }
                     }
-                    if( spincorr )
-                      if( sct->GetDepth() ) {
-                        for ( int i=0;i<myblob->NOutP();i++) {
-                          PRINT_INFO(myblob->OutParticle(i)->Number()<<" "<<myblob->OutParticle(i)->Flav() );
-                        }
-                        PRINT_INFO("Not eth. was contracted. "<<sct );
-                        PRINT_INFO(om::red<<"Will abort."<<om::reset);
-                        abort();
-                      }
                     myblob->SetStatus(1);
                   }
         }
