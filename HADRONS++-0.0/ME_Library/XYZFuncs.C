@@ -191,7 +191,7 @@ Complex XYZFunc::X( const int t1, const int t2, const int t3,
 			break; 
 	case 3:	x  = m_mu[t1]*m_mu[t3]*m_eta[t2]*m_eta[t2]*cR;
 			x += m_mu[t2]*m_mu[t2]*m_eta[t1]*m_eta[t3]*cL;
-			x += cL*S(+1,t1,t2)*S(-1,t2,t3); 
+			x += cL*S(-1,t1,t2)*S(+1,t2,t3); 
 			break;  
   }
   return x;
@@ -224,7 +224,7 @@ Complex XYZFunc::X( const int t1, const Vec4D p2, const int t3,
 			break; 
 	case 3:	x  = m_mu[t1]*m_mu[t3]*eta2*eta2*cR;
 			x += mu2*mu2*m_eta[t1]*m_eta[t3]*cL;
-			x += cL*S(+1,t1,p2,eta2)*S(-1,p2,eta2,t3); 
+			x += cL*S(-1,t1,p2,eta2)*S(+1,p2,eta2,t3); 
 			break;  
   }
   return x;
