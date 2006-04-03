@@ -35,7 +35,7 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr,
   double emin(dataread->GetValue<double>("IS_MINIMAL_E",0.5));
   int cplscheme(dataread->GetValue<int>("IS_COUPLING_SCHEME",1));
   int pdfscheme(dataread->GetValue<int>("IS_PDF_SCALE_SCHEME",1));
-  int orderingscheme(dataread->GetValue<int>("IS_ORDERING_SCHEME",2));
+  int orderingscheme(dataread->GetValue<int>("IS_ORDERING_SCHEME",0));
   for (short unsigned int i(0);i<2;++i) {
     if (isr->PDF(i)->Q2Min()>m_t0*cplscalefac) {
       msg.Error()<<METHOD<<"(..):\n   IS_PT2MIN("<<m_t0
@@ -103,8 +103,6 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2)
   int first(0);
   if (decay1^decay2) first=1;
   if (!decay1 && !decay2) first=2;
-  trees[0]->Store();
-  trees[1]->Store();
   int mismatch(0), caught_jetveto(0);
   bool accepted(true); 
   while (true) {
@@ -142,8 +140,6 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2)
       p_suds[1]->AcceptBranch(k2);
       int stat(EvolveSystem(trees,k1,k2));
       if (stat==1) {
-	trees[0]->ClearStore();
-	trees[1]->ClearStore();
 	msg_Debugging()<<"}\n";
 	return true;
       }
@@ -165,8 +161,6 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2)
       if (mismatch>m_allowed) {
 	msg.Error()<<METHOD<<"(..): Shower failure, "
 		   <<mismatch<<" trials."<<std::endl;
-	trees[0]->ClearStore();
-	trees[1]->ClearStore();
 	msg_Debugging()<<"}\n";
 	return false;
       }
@@ -174,8 +168,6 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2)
       trees[1]->Restore();
     }
   }
-  trees[0]->ClearStore();
-  trees[1]->ClearStore();
   msg_Debugging()<<"iss reset";
   msg_Debugging()<<"}\n";
   return false;

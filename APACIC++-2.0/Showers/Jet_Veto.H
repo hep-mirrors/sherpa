@@ -129,7 +129,7 @@ namespace APACIC {
 
     jv::mode m_mode;
 
-    size_t m_maxjets, m_cmode, m_jmode, m_ljmode;
+    size_t m_maxjets, m_cmode, m_jmode, m_ljmode, m_lmode;
 
     double m_ycut, m_q2hard;
 
@@ -186,6 +186,7 @@ namespace APACIC {
     inline void SetYCut(const double &ycut) { m_ycut=ycut; }
 
     inline void SetMode(const jv::mode &mode)     { m_mode=mode;       }
+    inline void SetLoseJetMode(const int &mode)   { m_lmode=mode;      }
     inline void SetMaxJets(const size_t &maxjets) { m_maxjets=maxjets; }
 
     inline void SetJetVeto(const size_t &mode)     { m_jmode=mode;  }

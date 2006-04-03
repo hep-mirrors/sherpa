@@ -33,11 +33,12 @@ Apacic::Apacic(ISR_Handler *const isr,MODEL::Model_Base *const model,
   if ((rpa.gen.Beam1().IsHadron() || rpa.gen.Beam2().IsHadron())
       && (m_fsron^m_isron)) 
     THROW(fatal_error,"Shower must be enabled for hadronic initial state.");
-  jv::mode jvm((jv::mode)dataread->GetValue<int>("JET_VETO_SCHEME",3));
+  jv::mode jvm((jv::mode)dataread->GetValue<int>("JET_VETO_SCHEME",11));
   if (m_fsron) {
     p_fintree   = new Tree();
     p_finshower = new Final_State_Shower(model,jf,dataread);
     p_jetveto = new Jet_Veto(jf,p_finshower->Kinematics());
+    p_jetveto->SetLoseJetMode(dataread->GetValue<int>("LOSE_JET_MODE",0));
     p_jetveto->SetMode(jvm);
     p_jetveto->SetFSTree(p_fintree);
     p_finshower->SetJetVeto(p_jetveto);
@@ -74,6 +75,16 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
   p_jetveto->SetYCut(ycut);
   p_jetveto->SetJetVeto(jetveto);
   p_jetveto->SetLoseJetVeto(losejv);
+  if (m_isron) {
+    p_initrees[0]->Store();
+    p_initrees[1]->Store();
+  }
+  if (m_fsron) p_fintree->Store();
+  static size_t m_maxtrials(100);
+  static double rej(0.0), cnt(0.0);
+  ++cnt;
+  size_t trials(0);
+  for (;trials<m_maxtrials;++trials) {
   if (msg.LevelIsDebugging()) {
     msg.Out()<<"Apacic::PerformShowers : Before showering."<<std::endl;
     OutputTrees();
@@ -109,22 +120,49 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
       return 0;
     }
   }
+  switch (p_jetveto->TestKinematics(2)) {
+  case 1:
+    msg_Debugging()<<"passed\n";
+    trials=2*m_maxtrials;
+    break;
+  case 0:
+    msg_Debugging()<<"Jet veto\n";
+    if (m_isron) {
+      p_initrees[0]->Restore();
+      p_initrees[1]->Restore();
+    }
+    if (m_fsron) p_fintree->Restore();
+    break;
+  case -1: 
+    msg_Debugging()<<"Lose jet veto\n";
+    if (m_isron) {
+      p_initrees[0]->ClearStore();
+      p_initrees[1]->ClearStore();
+    }
+    if (m_fsron) p_fintree->ClearStore();
+    m_last_ljv=true;
+    Vec4D::ResetAccu();
+    return -1;
+  }
+  }
+  if (m_isron) {
+    p_initrees[0]->ClearStore();
+    p_initrees[1]->ClearStore();
+  }
+  if (m_fsron) p_fintree->ClearStore();
+  Vec4D::ResetAccu();
+  if (trials==m_maxtrials) {
+    ++rej;
+    if (rej/cnt>0.1) 
+      msg.Error()<<METHOD<<"(): rej. rate = "<<rej/cnt<<".\n";
+    // m_maxtrials*=2;
+    return -1;
+  }
   BoostInLab();
   p_fintree->CheckMomentumConservation();
   if (m_isron) {
     p_initrees[0]->CheckMomentumConservation();
     p_initrees[1]->CheckMomentumConservation();
-  }
-  switch (p_jetveto->TestKinematics(1)) {
-  case 0:
-    msg_Debugging()<<"MLM jet veto\n";
-    Vec4D::ResetAccu();
-    return 0;
-  case -1: 
-    msg_Debugging()<<"Lose jet veto\n";
-    m_last_ljv=true;
-    Vec4D::ResetAccu();
-    return -1;
   }
   msg_Debugging()<<"kinematics check passed"<<std::endl;
   int number(0);

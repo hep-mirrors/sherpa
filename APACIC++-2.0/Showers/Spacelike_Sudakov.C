@@ -101,7 +101,6 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,int & extra_pdf)
   mo->tmax = mo->t;  // last start t
   m_inflav = mo->part->Flav(); 
   m_t      = mo->t;
-//   if (mo->right) m_t=Max(m_t,mo->right->t);
   m_x      = mo->x;
 
   if (!((m_t-m_t0)<rpa.gen.Accu())) {
@@ -141,6 +140,7 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,int & extra_pdf)
     SelectOne();
     m_z   = GetZ();   
     m_pt2 = -(1.-m_z)*m_t;
+    if (m_pt2<m_pt2min) continue;
 
     double uhat(-m_t - sprime* (1.-m_z)/m_z);
 
@@ -152,7 +152,6 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,int & extra_pdf)
 	mo->phi    = m_phi;
 	return true;
       }
-      else break;
     }
   }
   mo->t    = mo->tout;

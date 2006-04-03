@@ -202,7 +202,7 @@ void Cluster_Partons_CKKW::InitWeightCalculation()
   while (ct_test->Up()) {
     ct_test=ct_test->Up();
     ++m_njet;
-    if (qmaxt<ct_test->Kt2()) qmaxt=ct_test->Kt2();
+    //    if (qmaxt<ct_test->Kt2()) qmaxt=ct_test->Kt2();
   }
   if (qmaxt>m_q2_hard) m_q2_hard = qmaxt;
   m_qmax=sqrt(m_q2_hard);
@@ -292,9 +292,15 @@ void Cluster_Partons_CKKW::InitWeightCalculation()
 
 bool Cluster_Partons_CKKW::
 ApplyCombinedInternalWeight(const bool is,const Flavour & fl,
-			    const double upper,const double actual,
+			    const double iupper,const double iactual,
 			    const double asref,const int order)
 {
+  double upper(iupper), actual(iactual);
+  if (upper<actual) {
+    msg_Tracking()<<METHOD<<"(): q = "<<actual<<", Q = "
+		  <<upper<<". Swap."<<std::endl;
+    std::swap<double>(upper,actual);
+  }
   double qmin(0.), DeltaNum(0.), DeltaDenom(1.), DeltaRatio(0.);
   double as_ptij(0.), asRatio(0.);
   if (is) {

@@ -23,52 +23,16 @@ namespace APACIC {
   public :
 
     // constructors
-    inline Knot():
-      prev(NULL), left(NULL),right(NULL), part(NULL), stat(0), kn_no(-1),
-      didkin(false), t(0.0), tout(0.0), tmax(0.0), z(0.0), zs(0.0),
-      E2(0.0), costh(0.0), phi(0.0), thcrit(M_PI),
-      maxpt2(1.0e10), x(0.), pt2lcm(0.0), smaxpt2(1.0e10), sthcrit(M_PI) {}
-    inline Knot(Knot * k):
-      prev(k->prev), left(k->left), right(k->right),
-      part(new ATOOLS::Particle(*k->part)), stat(k->stat), kn_no(k->kn_no),
-      didkin(k->didkin), t(k->t), tout(k->tout), tmax(k->tmax), z(k->z), zs(0.0),
-      E2(k->E2), costh(k->costh), phi(k->phi), thcrit(k->thcrit), 
-      maxpt2(k->maxpt2), x(k->x), pt2lcm(0.0), smaxpt2(k->smaxpt2), 
-      sthcrit(k->sthcrit), polinfo(k->polinfo) {}
+    Knot();
+    Knot(Knot * k);
     
     // destructor
     inline ~Knot() { if (part!=NULL) delete part; }
 
     // inline functions
-    inline void CopyData(const Knot *const k) 
-    {
-      if (part!=NULL && k->part) part->Copy(k->part);
-      stat=k->stat;
-      kn_no=k->kn_no;
-      didkin=k->didkin;
-      t=k->t;
-      tout=k->tout;
-      tmax=k->tmax;
-      E2=k->E2;
-      z=k->z;
-      zs=k->zs;
-      x=k->x;
-      maxpt2=k->maxpt2;
-      costh=k->costh;
-      phi=k->phi;
-      thcrit=k->thcrit;
-      sthcrit=k->sthcrit;
-      smaxpt2=k->smaxpt2;
-      polinfo=k->polinfo;
-    }
+    void CopyData(const Knot *const k);
 
-    inline void Copy(const Knot *const k) 
-    {
-      prev=k->prev;
-      left=k->left;
-      right=k->right;
-      CopyData(k);
-    }
+    void Copy(const Knot *const k);
 
     bool CheckMomentumConservation() const;
 

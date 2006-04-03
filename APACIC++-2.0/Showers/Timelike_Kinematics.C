@@ -289,7 +289,9 @@ ConstructVectors(Knot *const mo,Vec4D &p1vec,Vec4D &p2vec) const
   double phi(mo->phi + mo->polinfo.Angle()), bph(cos(phi)), cph(-sin(phi));
   Vec3D es(cph*n1 + bph*n2);
   double cth1((p*p-p2*p2+p1*p1)/(2.*p*p1)), sth1(sqrt(1.-sqr(cth1)));
+  if (!(sth1>0.0) && IsZero(cth1-1.0)) sth1=0.0;
   double cth2((p*p+p2*p2-p1*p1)/(2.*p*p2)), sth2(sqrt(1.-sqr(cth2)));
+  if (!(sth2>0.0) && IsZero(cth2-1.0)) sth2=0.0;
   mo->costh=cth1*cth2-sth1*sth2;
   Vec3D nm(mo->part->Momentum());
   nm=1.0/nm.Abs()*nm;
@@ -300,7 +302,9 @@ ConstructVectors(Knot *const mo,Vec4D &p1vec,Vec4D &p2vec) const
     msg_Debugging()<<"mo = "<<*mo;
     msg_Debugging()<<"d1 = "<<*mo->left;
     msg_Debugging()<<"d2 = "<<*mo->right;
-    msg_Debugging()<<nm<<" "<<es<<" "<<phi<<" "<<cth1<<" "<<cth2<<std::endl;
+    msg_Debugging()<<nm<<" "<<es<<" "<<phi<<" "
+		   <<cth1-1.0<<" "<<cth2-1.0<<" "
+		   <<sth1<<" "<<sth2<<std::endl;
   }
 }
 

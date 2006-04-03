@@ -57,7 +57,8 @@ Jet_Veto::Jet_Veto(ATOOLS::Jet_Finder *const jf,
 		   Timelike_Kinematics *const kin):
   p_jf(jf), p_cluster(new Cluster_Type()), 
   p_kin(kin), p_istrees(NULL), p_fstree(NULL), 
-  m_mode(jv::none), m_maxjets(2), m_cmode(0), m_jmode(1), m_ljmode(1) 
+  m_mode(jv::none), m_maxjets(2), 
+  m_cmode(0), m_jmode(1), m_ljmode(1), m_lmode(1) 
 {
   p_cluster->Measure().SetJetFinder(p_jf);
   std::string helps;
@@ -91,12 +92,12 @@ void Jet_Veto::PrepareTerminate()
 int Jet_Veto::TestKinematics(const int mode,Knot *const mo)
 {
   PROFILE_HERE;
-  if (mode==1 && !(m_mode&jv::mlm)) {
+  if (mode>0 && !(m_mode&jv::mlm)) {
     p_cur=NULL;
-    m_cmode=1;
+    m_cmode=m_lmode;
   }
   m_q2hard=0.0;
-  if (mode==0 && !(m_mode&jv::final) && !(m_mode&jv::initial)) return 1;
+  if (!(m_mode&jv::final) && !(m_mode&jv::initial)) return 1;
   msg_Debugging()<<METHOD<<"("<<mode<<"): p_{t jet} = "
 		 <<sqrt(p_jf->ShowerPt2())<<" / "
 		 <<sqrt(m_ycut)*rpa.gen.Ecms()<<" {"<<std::endl;
@@ -149,13 +150,13 @@ int Jet_Veto::TestKinematics(const int mode,Knot *const mo)
 		   <<" additional jets"<<std::endl;
     msg_Debugging()<<"}\n";
     if (mode==0) return 0;
-    if (m_mode&jv::mlm) return -1;
+    if (m_mode&jv::mlm) return 0;
   }
   else if (nljets<hard) {
     msg_Debugging()<<"lost "<<(hard-nljets)
 		   <<" jets"<<std::endl;
     msg_Debugging()<<"}\n";
-    if (mode==1) return -1;
+    if (mode>0) return -1;
   }
   msg_Debugging()<<"}\n";
   return 1;

@@ -251,9 +251,15 @@ void Tree::CopyBackKnot(Knot * a, Knot * b)
 
   a->CopyData(b);
   if (b->left) CopyBackKnot(a->left,b->left);
-  else a->left=0;
+  else {
+    DeleteKnot(a->left);
+    a->left=0;
+  }
   if (b->right) CopyBackKnot(a->right,b->right);
-  else a->right=0;
+  else {
+    DeleteKnot(a->right);
+    a->right=0;
+  }
   if (!(b->prev)) a->prev=0;
 }
 
@@ -261,6 +267,13 @@ void Tree::DeleteKnot(Knot * b) {
   if (!b) return;
   DeleteKnot(b->left);
   DeleteKnot(b->right);
+  for (Knot_List::iterator kit(s_knots->begin());
+       kit!=s_knots->end();++kit) {
+    if (*kit==b) {
+      s_knots->erase(kit);
+      kit=s_knots->begin();
+    }
+  }
   delete b;
 }
 
@@ -282,7 +295,8 @@ void Tree::Store()
 
   p_save_root = CopyKnot(GetInitiator(),0);
 
-  while (p_save_root->right) p_save_root = p_save_root->right;
+  if (p_root!=GetInitiator())
+    while (p_save_root->right) p_save_root = p_save_root->right;
 }
 
 void Tree::Restore()
@@ -293,6 +307,13 @@ void Tree::Restore()
     while (b->prev) {
       b = b->prev;
       a = a->prev;
+    }
+    if (a->prev) {
+      Knot *ini(a->prev);
+      if (ini->left==a) ini->left=NULL;
+      else ini->right=NULL;
+      DeleteKnot(ini);
+      a->prev=NULL;
     }
   }
   CopyBackKnot(a,b);
