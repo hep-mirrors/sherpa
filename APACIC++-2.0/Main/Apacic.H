@@ -30,6 +30,8 @@ namespace APACIC {
 
     bool m_isron, m_fsron, m_showers, m_last_ljv;
 
+    jv::mode m_jvm;
+
     ATOOLS::Vec4D PrepareFSR();
     void BoostInLab();
 

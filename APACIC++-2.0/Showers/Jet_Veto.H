@@ -151,7 +151,7 @@ namespace APACIC {
     //member functions 
     void PrepareTerminate();
 
-    int TestKinematics(const int mode=0,Knot *const mo=NULL);
+    int TestKinematics(const int mode=0,Knot *const mo=NULL, double* vm=NULL);
     /*!
       \fn int TestKinematics(const int mode=0,Knot *const mo=NULL)
       \brief Implements the global jet veto procedure

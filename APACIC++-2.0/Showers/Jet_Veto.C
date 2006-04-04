@@ -89,7 +89,7 @@ void Jet_Veto::PrepareTerminate()
   }
 }
 
-int Jet_Veto::TestKinematics(const int mode,Knot *const mo)
+int Jet_Veto::TestKinematics(const int mode,Knot *const mo,double* vm)
 {
   PROFILE_HERE;
   if (mode>0 && !(m_mode&jv::mlm)) {
@@ -107,7 +107,9 @@ int Jet_Veto::TestKinematics(const int mode,Knot *const mo)
   if (mo==NULL) {
     if (m_mode&jv::initial && p_istrees!=NULL) {
       if (!CollectISMomenta(p_istrees[0]->GetRoot(),jets,hard)) return 0;
+      jets.pop_back();
       if (!CollectISMomenta(p_istrees[1]->GetRoot(),jets,hard)) return 0;
+      jets.pop_back();
     }
     if (m_mode&jv::final) {
       if (!CollectFSMomenta(p_fstree->GetRoot(),jets,hard)) return 0;
@@ -118,15 +120,14 @@ int Jet_Veto::TestKinematics(const int mode,Knot *const mo)
   }
   m_cmode=0;
   std::vector<ATOOLS::Vec4D> savejets(jets);
-  size_t nmin(p_jf->Type()==1?1:2);
-  m_rates.resize(jets.size()-nmin);
+  m_rates.resize(jets.size());
   p_cluster->SetPoints(jets);
-  if (jets.size()>2) p_cluster->Cluster(nmin,cs::num);
+  if (jets.size()>0) p_cluster->Cluster(0,cs::num);
   msg_Debugging()<<"hard scale Q_h = "<<sqrt(m_q2hard)<<"\n";
   for (size_t i(0);i<m_rates.size();++i) {
     m_rates[m_rates.size()-i-1]=p_cluster->DMins()[i];
-    msg_Debugging()<<"jetrate Q_{"<<(jets.size()-i-nmin)<<"->"
-		   <<(jets.size()-i-1-nmin)<<"} = "
+    msg_Debugging()<<"jetrate Q_{"<<(jets.size()-i)<<"->"
+		   <<(jets.size()-i-1)<<"} = "
 		   <<sqrt(p_cluster->DMins()[i])<<"\n";
   }
   for (size_t i(0);i<m_histos.size() && i<m_rates.size();++i)
@@ -145,17 +146,21 @@ int Jet_Veto::TestKinematics(const int mode,Knot *const mo)
   }
   msg_Debugging()<<"produced "<<njets<<" / "<<nljets
 		 <<" jets out of "<<hard<<", nmax = "<<m_maxjets<<"\n";
+  if (vm) *vm = 1.0;
   if (njets>hard) {
     msg_Debugging()<<"produced "<<(njets-hard)
 		   <<" additional jets"<<std::endl;
     msg_Debugging()<<"}\n";
+    if ((m_mode&jv::mlm) && hard==m_maxjets) return 1;
     if (mode==0) return 0;
+    if (vm) *vm = m_rates[hard]/jcrit;
     if (m_mode&jv::mlm) return 0;
   }
   else if (nljets<hard) {
     msg_Debugging()<<"lost "<<(hard-nljets)
 		   <<" jets"<<std::endl;
     msg_Debugging()<<"}\n";
+    if (vm) *vm = m_rates[hard-1]/ljcrit;
     if (mode>0) return -1;
   }
   msg_Debugging()<<"}\n";
