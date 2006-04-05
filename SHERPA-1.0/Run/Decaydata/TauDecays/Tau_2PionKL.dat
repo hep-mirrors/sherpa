@@ -3,43 +3,41 @@
 Channels {
     AlwaysIntegrate = 0;    ! 0...read results and skip integration
                             ! 1...don't read results and integrate
-    TwoResonances_axial_1_vector1_23 0.5;
-    TwoResonances_axial_2_vector2_13 0.5;
+    TwoResonances_K(1)(1400)+_2_rho(770)+_13 0.5;
     !Isotropic 1;
-}
-Resonances {
-  vector1 -> 2 3;
-  vector2 -> 1 3;
 }
 Parameters {
   v      =  1.          ! V-A structure of tau-nutau
   a      =  1.  
   FORM_FACTOR   = 1     ! 1=KuehnSantamaria
-  RUNNING_WIDTH = 2     ! 0=Off, 1=axial, 2=vector, 3=both resonances
+  RUNNING_WIDTH = 3     ! 0=Off, 1=axial, 2=vector, 3=both resonances
    
   # relative weightfactors for resonances
-  alpha  = 1.1          ! axial'
-  beta_1 = +0.          ! vector'_1
-  beta_2 = 0.           ! vector'_2
+  beta_rho(1450)+           = -0.145
+  alpha_K(1)(1270)+         = 0.
+
+  alpha_anomaly_K*(892)     = -0.2 
+  beta_anomaly_K*(1410)+   = -0.25
+  gamma_anomaly_K*(1680)+  = -0.0385
    
   # parameters for resonances
-  Mass_vector   1   = 0.8961
-  Width_vector  1   = 0.0507
-  Mass_vector'  1   = 1.412 
-  Width_vector' 1   = 0.294
-  Mass_vector   2   = 0.775
-  Width_vector  2   = 0.14
-  Mass_vector'  2   = 1.363
-  Width_vector' 2   = 0.31
-  Mass_axial        = 1.290
-  Width_axial       = 0.090
-  Mass_axial'       = 1.410
-  Width_axial'      = 0.140
-  
-   
-  # off-shell width parameters
-  lambda            = 1.            ! exponent in KS
+  Mass_rho(770)+    = 0.773
+  Width_rho(770)+   = 0.145
+  Mass_rho(1450)+   = 1.370
+  Width_rho(1450)+  = 0.510
+
+  Mass_K(1)(1400)+  = 1.402
+  Width_K(1)(1400)+ = 0.174
+  Mass_K(1)(1270)+  = 1.273
+  Width_K(1)(1270)+ = 0.090
+
+  Mass_anomaly_K*(892)+     = 0.892
+  Width_anomaly_K*(892)+    = 0.051
+  Mass_anomaly_K*(1410)+    = 1.412
+  Width_anomaly_K*(1410)+   = 0.227
+  Mass_anomaly_K*(1680)+    = 1.714
+  Width_anomaly_K*(1680)+   = 0.323
 }
 Result {
-   1.91719e-14 6.86406e-18 4.82777e-13;
+   1.39503e-14 1.57449e-17 1.47671e-13;
 }

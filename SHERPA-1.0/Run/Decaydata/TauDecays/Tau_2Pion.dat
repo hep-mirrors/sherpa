@@ -3,8 +3,8 @@
 Channels {
   	AlwaysIntegrate = 0;	! 0...read results and skip integration
 	  						! 1...don't read results and integrate
-    Isotropic 1;
-	!Dalitz_rho(770)_12 1;
+    !Isotropic 1;
+	Dalitz_rho(770)+_12 1;
 }
 Parameters {
   v      =  1.		 	! V-A structure of tau-nutau
@@ -13,25 +13,24 @@ Parameters {
   FORM_FACTOR   = 1    	! 1=Kuhn-Santamaria, 2=Res Chiral Theory
 
   ! relative weightfactors for resonances
-  beta = -0.15			! rho1450 
+  beta = -0.108			! rho1450 
   beta = 0.0
-  gamma = +0.02			! rho1700
+  !gamma = +0.02			! rho1700
   gamma = 0.0
   
   ! parameters for resonances
-  Mass_rho_770 		= 0.77
-  Width_rho_770 	= 0.113
-  Mass_rho_1450 	= 1.363
-  Width_rho_1450 	= 0.31
-  Mass_rho_1700 	= 1.7
-  Width_rho_1700 	= 0.235
+  Mass_rho(770)+    = 0.7769
+  Width_rho(770)+ 	= 0.149
+  Mass_rho(1450)+ 	= 1.363
+  Width_rho(1450)+ 	= 0.31
+  Mass_rho(1700)+ 	= 1.7
+  Width_rho(1700)+ 	= 0.235
    
   ! off-shell width parameters
-  lambda 			= 1.			! exponent in KS
   gamma_rho_770		= 1.04			! global factor for RChT rho
   gamma_rho_1450	= 0.41			! global factor for RChT rho'
   gamma_rho_1700 	= 0.09			! global factor for RChT rho''
 }
 Result {
-   4.84526e-13 4.75342e-15 2.16959e-11;
+   3.63558e-13 1.09812e-15 3.92685e-12;
 }
