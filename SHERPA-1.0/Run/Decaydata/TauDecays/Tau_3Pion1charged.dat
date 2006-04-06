@@ -1,7 +1,7 @@
 # Decay: tau- --> pi- pi pi nu_tau 
 #        0    --> 1   2  3  4      
 Channels {
-  	AlwaysIntegrate = 1;	! 0...read results and skip integration
+  	AlwaysIntegrate = 0;	! 0...read results and skip integration
 	  						! 1...don't read results and integrate
     TwoResonances_a(1)(1260)+_2_rho(770)+_13 0.5;
     TwoResonances_a(1)(1260)+_3_rho(770)+_12 0.5;
