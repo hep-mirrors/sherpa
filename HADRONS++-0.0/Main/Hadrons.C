@@ -171,7 +171,6 @@ Spin_Density_Matrix Hadrons::PerformDecay(
   mom[0] = part->Momentum();
   if( n>2 ) ChooseDecayKinematics( mom, hdc, sigma ); 
   else      {
-    mom[0] = Vec4D( part->Flav().Mass(), 0., 0., 0. );
     mom[1] = mom[0];
   }
 
