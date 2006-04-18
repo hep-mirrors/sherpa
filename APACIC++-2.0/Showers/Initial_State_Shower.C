@@ -27,15 +27,15 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr,
   p_suds(new Spacelike_Sudakov*[2]),
   m_allowed(200)
 {
-  double cplscalefac(dataread->GetValue<double>("IS_CPL_SCALE_FACTOR",1.0));
-  rpa.gen.SetVariable("IS_CPL_SCALE_FACTOR",ToString(cplscalefac));
+  double cplscalefac(dataread->GetValue<double>("IS_CPL_SCALE_FACTOR",.25));
+//   rpa.gen.SetVariable("IS_CPL_SCALE_FACTOR",ToString(1.));
   m_t0=dabs(dataread->GetValue<double>("IS_PT2MIN",4.0));
   double shadron(dataread->GetValue<double>("IS_MAX_SCALE",
 					    sqr(rpa.gen.Ecms())));
   double emin(dataread->GetValue<double>("IS_MINIMAL_E",0.5));
   int cplscheme(dataread->GetValue<int>("IS_COUPLING_SCHEME",1));
   int pdfscheme(dataread->GetValue<int>("IS_PDF_SCALE_SCHEME",1));
-  int orderingscheme(dataread->GetValue<int>("IS_ORDERING_SCHEME",0));
+  int orderingscheme(dataread->GetValue<int>("IS_ORDERING_SCHEME",2));
   for (short unsigned int i(0);i<2;++i) {
     if (isr->PDF(i)->Q2Min()>m_t0*cplscalefac) {
       msg.Error()<<METHOD<<"(..):\n   IS_PT2MIN("<<m_t0

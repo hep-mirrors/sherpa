@@ -21,7 +21,7 @@ namespace SHERPA {
 
     double m_iss_scale_fac, m_fss_scale_fac;
 
-    APACIC::Knot * Point2Knot(ATOOLS::Blob *,APACIC::Tree *,const Leg &,const ATOOLS::Vec4D &,char);
+    APACIC::Knot * Point2Knot(ATOOLS::Blob *,APACIC::Tree *,const Leg &,const ATOOLS::Vec4D &,char,Particle *&mep);
     double         ColourAngle(const std::vector<APACIC::Knot *> & knots, const int i);
     bool           IsColourConnected(ATOOLS::Particle *,ATOOLS::Particle *);
     void           DetermineColourAngles(const std::vector<APACIC::Knot *> & knots);
