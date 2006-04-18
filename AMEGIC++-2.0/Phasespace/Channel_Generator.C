@@ -204,14 +204,11 @@ void Channel_Generator::Step0(int flag,Point* p,int& rannum,ofstream& sf,
     switch (tcount) {
       case 0 : {
 	if (flag==-11) {
-	  char hs[8];
 	  if (!IsZero(ph->fl.Mass())) {
-	    sprintf(hs,"%i",ph->fl.Kfcode());
-	    help+=string("ZR")+string(hs)+string("_");
+	    help+=string("ZR")+ToString(ph->fl.Kfcode())+string("_");
 	  }
 	  else help+=string("ZS_");	
-	  sprintf(hs,"%i",(int)PMassSum(ph,0));
-	  help+=string(hs);
+	  help+=ToString((int)PMassSum(ph,0));
 	  m_idc.push_back(help);
 	}
 	if (flag<2) {
@@ -426,9 +423,7 @@ void Channel_Generator::StepNT(int flag,int tcount,Point* p,int& rannum,ofstream
   if (flag==-1||flag==-11) {
     double sms=0.;
     for (int i=0;i<tcount+1;i++) sms+=PMassSum(props[i],0);
-    char hs[8];
-    sprintf(hs,"%i",(int)sms);
-    string help=string("ZT_")+string(hs);
+    string help=string("ZT_")+ToString((int)sms);
     m_idc.push_back(help);
   }
 
@@ -475,9 +470,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
   int hi = propt[count]->fl.Kfcode();
   string tmstr;
   if (flag>=0 && !IsZero(propt[count]->fl.Mass())) {
-    char hs[3];
-    sprintf(hs,"%i",count);
-    tmstr = string("tmass")+string(hs);
+    tmstr = string("tmass")+ToString(count);
     sf<<"  double "<<tmstr<<" = Flavour(kf::code("<<hi<<")).Mass();"<<endl;
   }
   else tmstr = string("0.");
@@ -632,12 +625,11 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
     }
   }
 
-  char hs[4];
+  string his("");
   switch (flag) {
   case -11:
-    if(!IsZero(propt[count]->fl.Mass())) sprintf(hs,"%i",hi);
-    else sprintf(hs,"");
-    m_idc.push_back(string("TC")+string(hs)+
+    if(!IsZero(propt[count]->fl.Mass())) his = ToString(hi);
+    m_idc.push_back(string("TC")+his+
 		    string("_")+Order(pin0sum)+string("_")+Order(pin1sum)+
 		    string("_")+Order(pout0sum)+string("_")+Order(pout1sum));
     break;
@@ -652,9 +644,8 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
     sf<<rannum++<<"]);"<<endl;
     break;
   default:
-     if(!IsZero(propt[count]->fl.Mass())) sprintf(hs,"%i",hi);
-     else sprintf(hs,"");
-     string idh = string("TC")+string(hs)+
+     if(!IsZero(propt[count]->fl.Mass())) his = ToString(hi);
+     string idh = string("TC")+his+
                   string("_")+Order(pin0sum)+string("_")+Order(pin1sum)+
                   string("_")+Order(pout0sum)+string("_")+Order(pout1sum);
      //sf<<"  std::cout<<\""<<idh<<"\";"<<endl;
@@ -821,9 +812,7 @@ void Channel_Generator::GenerateMasses(int flag,Point** _plist,int pcount,
     switch (flag) {
     case -11: case -1:
       if (maxpole>0.) {
-	char hs[4];
-	sprintf(hs,"%i",hi);
-	m_idc.push_back(string("MP")+string(hs)+string("_")+Order(lm[hit]));
+	m_idc.push_back(string("MP")+ToString(hi)+string("_")+Order(lm[hit]));
       }
       else m_idc.push_back(string("MlP_")+Order(lm[hit]));
       break;

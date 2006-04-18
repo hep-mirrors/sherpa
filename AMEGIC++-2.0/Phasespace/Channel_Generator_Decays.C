@@ -394,9 +394,7 @@ void Channel_Generator_Decays::GenerateMasses(int flag,Point** _plist,int pcount
     switch (flag) {
     case -11: case -1:
       if (maxpole>0.) {
-	char hs[4];
-	sprintf(hs,"%i",hi);
-	m_idc.push_back(string("MP")+string(hs)+string("_")+Order(lm[hit]));
+	m_idc.push_back(string("MP")+ToString(hi)+string("_")+Order(lm[hit]));
       }
       else m_idc.push_back(string("MlP_")+Order(lm[hit]));
       break;
