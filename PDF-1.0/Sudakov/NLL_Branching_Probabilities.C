@@ -33,7 +33,7 @@ Gamma_Lambda_Base(bpt::code type,bpm::code mode,double lambda,
 
 double Gamma_Lambda_Base::AlphaS(double t)                
 { 
-  if (p_runas) return (*p_runas)(dabs(t)/m_as_factor);
+  if (p_runas) return (*p_runas)(dabs(t)*m_as_factor);
   return 4.*M_PI/(BETA0*log(dabs(t)/sqr(m_lambda)));
 }
 

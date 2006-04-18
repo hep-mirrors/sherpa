@@ -38,12 +38,14 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
   }
   m_is_as_factor=ToType<double>(rpa.gen.Variable("IS_CPL_SCALE_FACTOR","1"));
   m_fs_as_factor=ToType<double>(rpa.gen.Variable("FS_CPL_SCALE_FACTOR","1"));
-  m_me_as_factor=p_jf->Type()>1?1.0:0.25;
+  m_me_as_factor=dr.GetValue<double>("ME_AS_FACTOR",1.0);
+  if (p_jf->Type()<2) m_me_as_factor=0.25;
   msg_Tracking()<<"Initalize Cluster_Partons_Base with {\n"
 		<<"   Sudakov type            = "<<m_bp_mode<<"\n"
 		<<"   ren. scale factor       = "<<rpa.gen.RenormalizationScaleFactor()<<"\n" 
 		<<"   is PS ren. scale factor = "<<m_is_as_factor<<"\n"
 		<<"   fs PS ren. scale factor = "<<m_fs_as_factor<<"\n"
+		<<"   ME ren. scale factor    = "<<m_me_as_factor<<"\n"
 		<<"   K factor                = "<<m_kfac<<"\n}"<<std::endl;
   p_runas = MODEL::as; 
   

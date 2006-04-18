@@ -304,8 +304,8 @@ ApplyCombinedInternalWeight(const bool is,const Flavour & fl,
   double qmin(0.), DeltaNum(0.), DeltaDenom(1.), DeltaRatio(0.);
   double as_ptij(0.), asRatio(0.);
   if (is) {
-      as_ptij = (*p_runas)(sqr(actual)/m_is_as_factor);
-      qmin = m_qmin_ci!=0.0?m_qmin_ci:m_qmin_i;
+    as_ptij = (*p_runas)(m_me_as_factor*sqr(actual)/m_is_as_factor);
+    qmin = m_qmin_ci!=0.0?m_qmin_ci:m_qmin_i;
   }
   else {
     as_ptij = (*p_runas)(m_me_as_factor*sqr(actual)/m_fs_as_factor);
