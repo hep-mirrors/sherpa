@@ -216,6 +216,7 @@ void Amegic::ReadInProcessfile(string file)
   string      selectorfile;
   while (from) {
     getline(from,buf);
+    position = -1;
     if (buf.length()>0 && buf[0] != '%') {
       msg.LogFile()<<buf<<std::endl;
       position   = buf.find(string("Process :")); 
@@ -271,6 +272,7 @@ void Amegic::ReadInProcessfile(string file)
 	    nex            = 0;
 	    do {
 	      getline(from,buf);
+	      position = -1;
 	      if (buf.length()>0 && buf[0] != '%') {
 		msg.LogFile()<<buf<<std::endl;
 		position = buf.find(string("Decay :"));
