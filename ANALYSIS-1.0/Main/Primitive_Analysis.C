@@ -501,6 +501,56 @@ void Primitive_Analysis::CreateChargedParticleList()
 }
 
 
+void Primitive_Analysis::CreateUEParticleList()
+{
+  PL_Container::const_iterator cit=m_pls.find("UEPartons");
+  if (cit!=m_pls.end()) return;
+  Particle_List * pl = new Particle_List;
+  if (m_mode&ANALYSIS::do_me) {
+    m_pls["UEPartons"]=pl;
+    return;
+  }
+
+  std::map<int,Blob*> bmap;
+  for (Blob_List::const_iterator blit=p_blobs->begin();blit!=p_blobs->end();++blit) {
+    if ((*blit)->Type()==btp::Hard_Collision) {
+      bmap[(*blit)->Id()]=(*blit);
+    }
+  }
+  if (m_mode&ANALYSIS::do_shower||m_mode&ANALYSIS::do_hadron) {
+    int cnt;
+    do {
+      cnt=0;
+      for (std::map<int,Blob*>::iterator mit=bmap.begin();mit!=bmap.end();++mit) {
+	Blob* blb=mit->second;
+        if (blb->Type()!=btp::FS_Shower) {
+	  for (int i=0;i<blb->NOutP();++i) {
+	    std::map<int,Blob*>::iterator src=bmap.find(blb->OutParticle(i)->DecayBlob()->Id());
+	    if (src==bmap.end()) {
+	      cnt++;
+	      bmap[blb->OutParticle(i)->DecayBlob()->Id()]=blb->OutParticle(i)->DecayBlob();
+	    }
+	  }
+	  bmap.erase(blb->Id());
+	}
+	if (cnt>0) break;
+      }
+    } while(cnt>0);   
+  }
+
+  for (std::map<int,Blob*>::iterator mit=bmap.begin();mit!=bmap.end();++mit) {
+    Blob* blb=mit->second;
+    for (int i=0;i<blb->NOutP();++i) {
+      Particle * p = blb->OutParticle(i);
+      pl->push_back(new Particle(*p));	
+    }
+  }
+
+
+  m_pls["UEPartons"]=pl;
+}
+
+
 Particle_List * Primitive_Analysis::GetParticleList(const std::string & key) 
 {
   if (!m_active) {
@@ -514,6 +564,7 @@ Particle_List * Primitive_Analysis::GetParticleList(const std::string & key)
   else if (key=="FinalStateB")         CreateFinalStateParticleList(true);
   else if (key=="IntermediateHadrons") CreateIntermediateHadronsList();
   else if (key=="PrimordialHadrons")   CreatePrimordialHadronsList();
+  else if (key=="UEPartons")           CreateUEParticleList();
   //  else if (key=="ChargedParticle") CreateChargedParticleList();
   if (key=="Analysed") return 0;
 
