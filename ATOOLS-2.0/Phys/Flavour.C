@@ -398,14 +398,92 @@ std::string Flavour::TexName() const
   case kf::lepton :{name=std::string("l");break;}
   case kf::neutrino :{name=std::string("\\nu");break;}
   case kf::quark :{name=std::string("q");break;}
-  default : break;
+  case kf::pi : {name=std::string("\\pi^0");break;}
+  case kf::pi_plus : {name=std::string("\\pi^\\p");break;}
+  case kf::K : {name=std::string("K^0");break;}
+  case kf::K_plus : {name=std::string("K^\\p");break;}
+  case kf::K_L : {name=std::string("K_L");break;}
+  case kf::K_S : {name=std::string("K_S");break;}
+  case kf::eta : {name=std::string("\\eta");break;}
+  case kf::rho_770 : {name=std::string("\\rho_{(770)}"); break;}
+  case kf::rho_770_plus : {name=std::string("\\rho_{(770)}^+"); break;}
+  case kf::rho_1450 : {name=std::string("\\rho_{(1450)}"); break;}
+  case kf::rho_1450_plus : {name=std::string("\\rho_{(1450)}^+"); break;}
+  case kf::rho_1700 : {name=std::string("\\rho_{(1700)}"); break;}
+  case kf::rho_1700_plus : {name=std::string("\\rho_{(1700)}^+"); break;}
+  case kf::D : {name=std::string("D^0"); break;}
+  case kf::D_plus : {name=std::string("D^+"); break;}
+                     
+  case kf::pi_1300 : {name=std::string("\\pi_{(1300)}^0");break;}
+  case kf::pi_1300_plus : {name=std::string("\\pi_{(1300)}^+");break;}
+  case kf::eta_1295 : {name=std::string("\\eta_{(1295)}"); break;}
+  case kf::eta_1475 : {name=std::string("\\eta_{(1475)}"); break;}
+  case kf::eta_prime_958 : {name=std::string("\\eta_{(958)}'"); break;}
+  case kf::omega_782 : {name=std::string("\\omega_{(782)}"); break;}
+  case kf::omega_1420 : {name=std::string("\\omega_{(1420)}"); break;}
+  case kf::a_1_1260 : {name=std::string("a_{1(1260)}^0"); break;}
+  case kf::a_1_1260_plus : {name=std::string("a_{1(1260)}^+"); break;}
+  case kf::a_0_980 : {name=std::string("a_{0(980)}^0"); break;}
+  case kf::a_0_980_plus : {name=std::string("a_{0(980)}^+"); break;}
+  case kf::a_0_1450 : {name=std::string("a_{0(1350)}^0"); break;}
+  case kf::a_0_1450_plus : {name=std::string("a_{0(1450)}^+"); break;}
+  case kf::a_2_1320 : {name=std::string("a_{2(1320)}^0"); break;}
+  case kf::a_2_1320_plus : {name=std::string("a_{2(1320)}^+"); break;}
+  case kf::f_0_600 : {name=std::string("f_{0(600)}"); break;}                     
+  case kf::f_0_980 : {name=std::string("f_{0(980)}"); break;}                     
+  case kf::f_0_1370 : {name=std::string("f_{0(1370)}"); break;}                     
+  case kf::f_0_1710 : {name=std::string("f_{0(1710)}"); break;}                     
+  case kf::f_1_1285 : {name=std::string("f_{1(1285)}"); break;}                     
+  case kf::f_1_1420 : {name=std::string("f_{1(1420)}"); break;}                     
+  case kf::f_2_1270 : {name=std::string("f_{2(1270)}"); break;}
+  case kf::f_2_prime_1525 : {name=std::string("f_{2(1525)}'"); break;}
+  case kf::K_1460 : {name=std::string("K_{(1460)}^0"); break;}
+  case kf::K_1460_plus : {name=std::string("K_{(1460)}^+"); break;}
+  case kf::K_star_892 : {name=std::string("K_{(892)}^{*0}"); break;}
+  case kf::K_star_892_plus : {name=std::string("K_{(892)}^{*+}"); break;}
+  case kf::K_star_1410 : {name=std::string("K_{(1410)}^*"); break;}
+  case kf::K_star_1410_plus : {name=std::string("K_{(1410)}^{*+}"); break;}
+  case kf::K_0_star_1430 : {name=std::string("K_{0(1430)}^{*0}"); break;}
+  case kf::K_0_star_1430_plus : {name=std::string("K_{0(1430)}^{*+}"); break;}
+  case kf::K_1_1270 : {name=std::string("K_{1(1270)}^0"); break;}
+  case kf::K_1_1270_plus : {name=std::string("K_{2(1270)}^{+}"); break;}
+  case kf::K_1_1400 : {name=std::string("K_{1(1400)}^0"); break;}
+  case kf::K_1_1400_plus : {name=std::string("K_{2(1400)}^{+}"); break;}
+  case kf::K_2_star_1430 : {name=std::string("K_{2(1430)}^{*0}"); break;}
+  case kf::K_2_star_1430_plus : {name=std::string("K_{2(1430)}^{*+}"); break;}
+  case kf::phi_1020 : {name=std::string("\\phi_{(1020)}"); break;}
+  case kf::phi_1680 : {name=std::string("\\phi_{(1680)}"); break;}
+  case kf::Delta_1232_plus_plus : {name=std::string("\\Delta_{(1232)}^{++}"); break;}
+  case kf::Delta_1232_plus : {name=std::string("\\Delta_{(1232)}^{+}"); break;}
+  case kf::Delta_1232 : {name=std::string("\\Delta_{(1232)}^0"); break;}
+  case kf::Delta_1232_minus : {name=std::string("\\Delta_{(1232)}^{-}"); break;}
+  case kf::Sigma_minus : {name=std::string("\\Sigma^-"); break;}
+  case kf::Sigma : {name=std::string("\\Sigma^0"); break;}
+  case kf::Sigma_plus : {name=std::string("\\Sigma^+"); break;}
+  case kf::Sigma_1385_minus : {name=std::string("\\Sigma_{(1385)}^-"); break;}
+  case kf::Sigma_1385 : {name=std::string("\\Sigma_{(1385)}^0"); break;}
+  case kf::Sigma_1385_plus : {name=std::string("\\Sigma_{(1385)}^+"); break;}
+  case kf::Lambda : {name=std::string("\\Lambda"); break;}
+  case kf::Xi_minus : {name=std::string("\\Xi^-"); break;}
+  case kf::Xi : {name=std::string("\\Xi^0"); break;}
+  case kf::Xi_1530_minus : {name=std::string("\\Xi_{(1530)}^-"); break;}
+  case kf::Xi_1530 : {name=std::string("\\Xi_{(1530)}^0"); break;}
+  case kf::Omega_minus : {name=std::string("\\Omega^-"); break;}
+  case kf::b_1_1235 : {name=std::string("b_{1(1235)}"); break;}
+  case kf::b_1_1235_plus : {name=std::string("b_{1(1235)}^+"); break;}
+  case kf::h_1_1170 : {name=std::string("h_{1(1170)}"); break;}
+  case kf::h_1_1380 : {name=std::string("h_{1(1380)}"); break;}
+  default : name=IDName(); break;
   }
 
   if (anti) {
   switch(kfc) {
   case kf::e: {name=std::string("e^\\p");break;}
+  case kf::nue: {name = std::string("\\bar\\nu_e");break;}
   case kf::mu: {name=std::string("\\mu^\\p");break;}
+  case kf::numu: {name = std::string("\\bar\\nu_\\mu");break;}
   case kf::tau: {name= std::string("\\tau^\\p");break;}
+  case kf::nutau: {name = std::string("\\bar\\nu_\\tau");break;}
   case kf::W: {name=std::string("W^\\p");break;}
   case kf::Hmin: {name=std::string("H^\\p");break;}
   case kf::Chargino1 :{name=std::string("\\chi^\\p_1");break;}
@@ -436,9 +514,24 @@ std::string Flavour::TexName() const
   case kf::sNu1 :{name=std::string("\\tilde\\nu_1^\\ti");break;}
   case kf::sNu2 :{name=std::string("\\tilde\\nu_2^\\ti");break;}
   case kf::sNu3 :{name=std::string("\\tilde\\nu_3^\\ti");break;}  
-  default : break;}
+  case kf::pi : {name=std::string("\\pi^0");break;}
+  case kf::pi_plus : {name=std::string("\\pi^\\m");break;}
+  case kf::K : {name=std::string("\\bar K^0");break;}
+  case kf::K_plus : {name=std::string("K^\\m");break;}
+  case kf::K_L : {name=std::string("K_L");break;}
+  case kf::K_S : {name=std::string("K_S");break;}
+  case kf::eta : {name=std::string("\\eta");break;}
+  case kf::D : {name=std::string("\bar D^0"); break;}
+  case kf::D_plus : {name=std::string("D^-"); break;}
+  case kf::rho_770      : {name=std::string("\\rho_{(770)}"); break;}
+  case kf::rho_770_plus : {name=std::string("\\rho_{(770)}^-"); break;}
+  case kf::rho_1450 : {name=std::string("\\rho_{(1450)}"); break;}
+  case kf::rho_1450_plus : {name=std::string("\\rho_{(1450)}^-"); break;}
+  case kf::rho_1700 : {name=std::string("\\rho_{(1700)}"); break;}
+  case kf::rho_1700_plus : {name=std::string("\\rho_{(1700)}^-"); break;}
+  default : name=IDName(); break; }
   }
-  
+   
   return name;
 }
 
