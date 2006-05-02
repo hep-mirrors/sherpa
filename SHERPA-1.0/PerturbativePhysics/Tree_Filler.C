@@ -69,7 +69,6 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
       mep->SetFlow(1,p_cluster->Colour(0,0));
       mep->SetFlow(2,p_cluster->Colour(0,1));
     }
-    mep=NULL;
     knots.push_back(Point2Knot(blob,ini_trees[n[1]],ctb->GetLeg(1),ctb->Momentum(1),'G',mep));
     if (mep!=NULL) {
       mep->SetFlow(1,p_cluster->Colour(1,0));
@@ -78,18 +77,15 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
   }
   else {
     knots.push_back(Point2Knot(blob,p_local_tree,ctb->GetLeg(0),ctb->Momentum(0),'G',mep));
-    mep=NULL;
     knots.push_back(Point2Knot(blob,p_local_tree,ctb->GetLeg(1),ctb->Momentum(1),'G',mep));
   }
   
-  mep=NULL;
   Knot * mo(fin_tree->NewKnot());
   knots.push_back(Point2Knot(blob,fin_tree,ctb->GetLeg(2),ctb->Momentum(2),'H',mep));
   if (mep!=NULL) {
     mep->SetFlow(1,p_cluster->Colour(2,0));
     mep->SetFlow(2,p_cluster->Colour(2,1));
   }
-  mep=NULL;
   knots.push_back(Point2Knot(blob,fin_tree,ctb->GetLeg(3),ctb->Momentum(3),'H',mep));
   if (mep!=NULL) {
     mep->SetFlow(1,p_cluster->Colour(3,0));
@@ -325,6 +321,7 @@ void Tree_Filler::FillDecayTree(Tree * fin_tree)
 
 Knot * Tree_Filler::Point2Knot(Blob * blob,Tree * tree,const Leg & po,const Vec4D & mom,char info,Particle *&mep) 
 {
+  mep=NULL;
   Flavour flav(po.MapFlavour());
 
   if (po.Anti() == -1) flav = flav.Bar();
