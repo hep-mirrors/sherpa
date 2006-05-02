@@ -17,16 +17,12 @@ namespace SHERPA {
     APACIC::Final_State_Shower * p_fsrshower;
  
     ATOOLS::Poincare       m_cms_boost;
-    Flavour_Map          * p_flmap;
 
     double m_iss_scale_fac, m_fss_scale_fac;
 
     APACIC::Knot * Point2Knot(ATOOLS::Blob *,APACIC::Tree *,const Leg &,const ATOOLS::Vec4D &,char,Particle *&mep);
     double         ColourAngle(const std::vector<APACIC::Knot *> & knots, const int i);
     bool           IsColourConnected(ATOOLS::Particle *,ATOOLS::Particle *);
-    void           DetermineColourAngles(const std::vector<APACIC::Knot *> & knots);
-    void           EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC::Knot * d2,
-				      int mode,double scale=0.);
 
     ATOOLS::Vec4D  Momentum(APACIC::Knot * mo, int & number);
   public:
@@ -36,7 +32,12 @@ namespace SHERPA {
     void FillDecayTree(APACIC::Tree * fin_tree);
     inline int    CKKWOn() const        { return m_ckkwon;   }
 
+    void           DetermineColourAngles(const std::vector<APACIC::Knot *> & knots);
+    void           EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC::Knot * d2,
+				      int mode,double x1,double x2,double scale=0.);
     inline void   SetCKKWOn(const int &on) { m_ckkwon=on;   }
+    inline void   SetCMSBoost(const Vec4D &cms) { m_cms_boost=Poincare(cms); }
+    inline Poincare &CMSBoost() { return m_cms_boost; }
   };
 }
 

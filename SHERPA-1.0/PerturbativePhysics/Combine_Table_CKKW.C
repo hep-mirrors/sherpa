@@ -67,6 +67,8 @@ void Combine_Table_CKKW::FillTable(Leg **legs,const int nlegs,const int nampl)
 	if (j==1) j=2;
 	// check if leg i is combinable with leg j in any graph
 	for (int k=0;k<m_nampl;++k) {
+// 	  msg_Debugging()<<"start w/ "<<k<<", "
+// 			 <<i<<": "<<p_legs[k][i].MapFlavour()<<"\n";
 	  if (Combinable(p_legs[k][i],p_legs[k][j])) AddPossibility(i,j,k);
 	}
       }

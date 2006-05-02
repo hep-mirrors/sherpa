@@ -42,8 +42,6 @@ namespace SHERPA {
     double  * p_weight_sum;
     double  * p_weight_sum_sqr;
 
-    Flavour_Map m_flmap;
-
     Leg   **CreateLegs(int &,const int,const bool=false);
     bool    FillLegs(Leg *, AMEGIC::Point *, int &, int);
     void    CreateTables(Leg **,const int,const double,const double);

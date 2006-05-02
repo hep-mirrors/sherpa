@@ -185,6 +185,43 @@ void Leg::DetermineCouplings(const int type)
 		 <<" => n_qcd = "<<m_nqcd<<", m_nqed = "<<m_nqed<<"\n";
 }
 
+ATOOLS::Flavour Combine_Table_Base::IsoFlip(const ATOOLS::Flavour &fl)
+{
+  switch (fl.Kfcode()) {
+  case kf::u: return fl.IsAnti()?Flavour(kf::d).Bar():kf::d;
+  case kf::d: return fl.IsAnti()?Flavour(kf::u).Bar():kf::u;
+  case kf::c: return fl.IsAnti()?Flavour(kf::s).Bar():kf::s;
+  case kf::s: return fl.IsAnti()?Flavour(kf::c).Bar():kf::c;
+  case kf::t: return fl.IsAnti()?Flavour(kf::b).Bar():kf::b;
+  case kf::b: return fl.IsAnti()?Flavour(kf::t).Bar():kf::t;
+  default: break;
+  }
+  return fl;
+}
+
+Flavour Combine_Table_Base::MatchFlavour(Leg &a,Leg &b,Leg &c,int mode)
+{
+  Flavour fla(a.Point()->fl), flb(b.Point()->fl), flc(c.Point()->fl);
+  msg_Debugging()<<"have bm="<<b.MapFlavour()<<", cm="<<c.MapFlavour()
+		 <<" mode "<<mode<<" -> ";
+  Flavour fl(fla);
+  if (fla.IsQuark() && !(flb.Strong() && flc.Strong())) {
+    if (flb.Kfcode()==kf::W || flc.Kfcode()==kf::W) 
+      fl=IsoFlip((flb.IsQuark()?b:c).MapFlavour());
+    else fl=Flavour((flb.IsQuark()?b:c).MapFlavour());
+  }
+  else if (fla.Kfcode()==flb.Kfcode()) {
+    fl=b.MapFlavour();
+  }
+  else if (fla.Kfcode()==flc.Kfcode()) {
+    fl=c.MapFlavour();
+  }
+  if (fl.IsAnti()^fla.IsAnti()) fl=fl.Bar();
+  msg_Debugging()<<"match "<<fla<<" "<<flb<<" "
+		 <<flc<<" -> "<<fl<<"\n";
+  return fl;
+}
+
 Leg Combine_Table_Base::CombinedLeg(Leg *legs,const int i,const int j)
 {
   Leg & a=legs[i], & b=legs[j], mo;
@@ -201,29 +238,38 @@ Leg Combine_Table_Base::CombinedLeg(Leg *legs,const int i,const int j)
     // combinable-type: common mother
     mo.SetPoint(a.Point()->prev);
     mo.DetermineCouplings(0);
+    mo.SetMapFlavour(MatchFlavour(mo,a,b,0));
   } 
   else if (a.Point() == b.Point()->left) {
     // combinable-type: a daughter of b
     mo.SetPoint(b.Point()->right);
     mo.DetermineCouplings(1);
+    mo.SetMapFlavour(MatchFlavour(mo,b,a,1));
   } 
   else if (a.Point() == b.Point()->right) {
     // combinable-type: a daughter of b
     mo.SetPoint(b.Point()->left);
     mo.DetermineCouplings(1);
+    mo.SetMapFlavour(MatchFlavour(mo,b,a,1));
   } 
   else  if (b.Point() == a.Point()->left) {
     // combinable-type: b daughter of a
     mo.SetPoint(a.Point()->right);
     mo.DetermineCouplings(1);
+    mo.SetMapFlavour(MatchFlavour(mo,a,b,1));
   } 
   else  if (b.Point() == a.Point()->right) {
     // combinable-type: b daughter of a
     mo.SetPoint(a.Point()->left);
     mo.DetermineCouplings(1);
+    mo.SetMapFlavour(MatchFlavour(mo,a,b,1));
   } 
   else THROW(fatal_error,"   Cannot combine legs.");
 
+  msg_Debugging()<<"mapped flavours: a="
+		 <<a.Point()->fl<<"("<<a.MapFlavour()<<"), b="
+		 <<b.Point()->fl<<"("<<b.MapFlavour()<<"), c="
+		 <<mo.Point()->fl<<"("<<mo.MapFlavour()<<")\n";
   // fix charge incase initial state has wrong
   int icharge;
   if (i<2)  icharge = a.Anti()*a.Point()->fl.IntCharge() - 

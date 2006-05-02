@@ -221,7 +221,7 @@ void Cluster_Partons_CKKW::InitWeightCalculation()
 		 <<", qcd "<<sqrt(m_q2_qcd)<<" ("<<m_as_qcd<<")"
 		 <<", jet "<<sqrt(m_q2_jet)<<" ("<<m_as_jet<<"), fac "
 		 <<m_is_as_factor<<"/"<<m_fs_as_factor<<", fss "<<sqrt(m_q2_fss)
-		 <<", iss "<<sqrt(m_q2_iss)<<"\n";
+		 <<", iss "<<sqrt(m_q2_iss)<<" mefac "<<m_me_as_factor<<"\n";
   if (m_kfac!=0.) {
     m_as_hard *= 1. + m_as_hard/(2.*M_PI)*m_kfac;
     m_as_qcd  *= 1. + m_as_qcd/(2.*M_PI)*m_kfac;

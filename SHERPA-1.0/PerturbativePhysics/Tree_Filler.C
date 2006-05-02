@@ -58,7 +58,6 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
     ct_test=ct_test->Up();
     ++njet;
   }
-  p_flmap = p_cluster->GetFlavourMap();
   
   // generate knotlist from pointlist in Combine_Table
   
@@ -70,6 +69,7 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
       mep->SetFlow(1,p_cluster->Colour(0,0));
       mep->SetFlow(2,p_cluster->Colour(0,1));
     }
+    mep=NULL;
     knots.push_back(Point2Knot(blob,ini_trees[n[1]],ctb->GetLeg(1),ctb->Momentum(1),'G',mep));
     if (mep!=NULL) {
       mep->SetFlow(1,p_cluster->Colour(1,0));
@@ -78,15 +78,18 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
   }
   else {
     knots.push_back(Point2Knot(blob,p_local_tree,ctb->GetLeg(0),ctb->Momentum(0),'G',mep));
+    mep=NULL;
     knots.push_back(Point2Knot(blob,p_local_tree,ctb->GetLeg(1),ctb->Momentum(1),'G',mep));
   }
   
+  mep=NULL;
   Knot * mo(fin_tree->NewKnot());
   knots.push_back(Point2Knot(blob,fin_tree,ctb->GetLeg(2),ctb->Momentum(2),'H',mep));
   if (mep!=NULL) {
     mep->SetFlow(1,p_cluster->Colour(2,0));
     mep->SetFlow(2,p_cluster->Colour(2,1));
   }
+  mep=NULL;
   knots.push_back(Point2Knot(blob,fin_tree,ctb->GetLeg(3),ctb->Momentum(3),'H',mep));
   if (mep!=NULL) {
     mep->SetFlow(1,p_cluster->Colour(3,0));
@@ -127,8 +130,10 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
     sqr(sqrt(mo->t)-sqrt(knots[2]->tout)-sqrt(knots[3]->tout));
   double scale(p_cluster->ISShowerScale());
   if (p_cluster->OrderStrong()==0) scale=Max(scale,4.*p_cluster->JetScale());
-  EstablishRelations(mo,knots[0],knots[1],0,scale);
-  EstablishRelations(mo,knots[2],knots[3],1);      
+  double x1,x2;
+  p_cluster->GetCombineTable()->GetX1X2(x1,x2);
+  EstablishRelations(mo,knots[0],knots[1],0,x1,x2,scale);
+  EstablishRelations(mo,knots[2],knots[3],1,x1,x2);      
   for (int i(0);i<2;++i) 
     knots[i]->pt2lcm=knots[i]->maxpt2=m_ckkwon?q2j/m_iss_scale_fac:mo->t;
   for (int i(2);i<4;++i) 
@@ -164,14 +169,18 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
       d2 = Point2Knot(blob,tree,ct_test->GetLeg(l),ct_test->Momentum(l),'H',mepl);
       d1->part->SetProductionBlob(blob);
       d2->part->SetProductionBlob(blob);
-      EstablishRelations(knots[k],d1,d2,1);      
+      double x1,x2;
+      p_cluster->GetCombineTable()->GetX1X2(x1,x2);
+      EstablishRelations(knots[k],d1,d2,1,x1,x2);      
     } 
     else {
       d1 = Point2Knot(blob,tree,ct_test->GetLeg(k),ct_test->Momentum(k),'H',mepk);
       d2 = Point2Knot(blob,tree,ct_test->GetLeg(l),ct_test->Momentum(l),'H',mepl);
       d1->part->SetDecayBlob(blob);  
       d2->part->SetDecayBlob(blob);
-      EstablishRelations(d1,knots[k],d2,2+k);      
+      double x1,x2;
+      p_cluster->GetCombineTable()->GetX1X2(x1,x2);
+      EstablishRelations(d1,knots[k],d2,2+k,x1,x2);      
     }
     // set max kt2 scale for each emission
     d1->pt2lcm=d1->maxpt2=knots[k]->maxpt2;
@@ -307,18 +316,16 @@ void Tree_Filler::FillDecayTree(Tree * fin_tree)
     }
     i++;
 
-    EstablishRelations(knots[0],knots[1],knots[2],1);
+    double x1,x2;
+    p_cluster->GetCombineTable()->GetX1X2(x1,x2);
+    EstablishRelations(knots[0],knots[1],knots[2],1,x1,x2);
   */
 }
 
 
 Knot * Tree_Filler::Point2Knot(Blob * blob,Tree * tree,const Leg & po,const Vec4D & mom,char info,Particle *&mep) 
 {
-  mep=NULL;
-  Flavour flav(po.Point()->fl);
-  // check in map
-  Flavour_Map::const_iterator cit = p_flmap->find(flav);
-  if (cit!=p_flmap->end()) flav = cit->second;
+  Flavour flav(po.MapFlavour());
 
   if (po.Anti() == -1) flav = flav.Bar();
 
@@ -449,7 +456,7 @@ void Tree_Filler::DetermineColourAngles(const std::vector<APACIC::Knot *> & knot
 
 
 void Tree_Filler::EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC::Knot * d2,
-				     int mode,double scale)
+				     int mode,double x1,double x2,double scale)
 {
   if (mode==1) {
     Vec4D p1(m_cms_boost*mo->part->Momentum());
@@ -481,8 +488,6 @@ void Tree_Filler::EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC:
     //  blob->InParticle(0)->Momentum() - in CMS system
 
     // set x1 and x2
-    double x1,x2;
-    p_cluster->GetCombineTable()->GetX1X2(x1,x2);
     d1->x = x1;
     d2->x = x2;
     // set start t
@@ -511,8 +516,6 @@ void Tree_Filler::EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC:
     d1->tmax  = t1;
     d2->t     = -t1;
     d1->stat  = 0;
-    double x1,x2;
-    p_cluster->GetCombineTable()->GetX1X2(x1,x2);
     if (mode==2) mo->x = x1;
             else mo->x = x2;
 

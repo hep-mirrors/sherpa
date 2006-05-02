@@ -3,6 +3,7 @@
 #include "Flow.H"
 #include "Poincare.H"
 #include "Message.H"
+#include "Process_Base.H"
 #include "Splitting_Function.H"
 #include "MyStrStream.H"
 #include <iomanip>
@@ -132,6 +133,7 @@ Leg **Cluster_Partons_Base::CreateLegs(int &nampl,const int nlegs,const bool reu
     p_combi = 0;
     // generate a list of "legs" for each amplitude
     legs = new Leg *[nampl];
+    PHASIC::Integrable_Base *proc(p_me->GetAmegic()->GetProcess());
     for (int k=0;k<nampl;) {
       legs[k] = new Leg[nlegs];
       int l   = 0;
@@ -141,6 +143,18 @@ Leg **Cluster_Partons_Base::CreateLegs(int &nampl,const int nlegs,const bool reu
 	--nampl;
       }
     }
+    for (int k=0;k<nampl;++k) {
+      for (int i(0);i<nlegs;++i) {
+	Flavour fl(proc->Flavours()[i]);
+	if (i<2 && proc->InSwaped()) fl=proc->Flavours()[1-i];
+	legs[k][i].SetMapFlavour(fl);
+// 	msg_Debugging()<<"set mapfl: "<<k<<", "<<i<<": "<<fl<<" "
+// 		       <<proc->InSwaped()<<"\n";
+      }
+    }
+    msg_Debugging()<<"map process: "<<proc->Name()
+		   <<" -> "<<static_cast<AMEGIC::Process_Base*>(proc)->
+      Partner()->Name()<<"\n";
   }  
   return legs;
 }
@@ -477,10 +491,7 @@ void Cluster_Partons_Base::FixJetvetoPt2(double & jetveto_pt2)
 
 Flavour Cluster_Partons_Base::Flav(int i) {
   if (p_ct) {
-    Flavour fl(p_ct->Flav(i));
-    Flavour_Map::const_iterator cit=m_flmap.find(fl);
-    if (cit!=m_flmap.end()) fl=cit->second;
-    return fl;
+    return p_ct->Flav(i);
   }
   msg.Error()<<"ERROR in Cluster_Partons_Base::Flav. No ct."<<std::endl;
   return 0;
@@ -501,14 +512,9 @@ int Cluster_Partons_Base::Colour(const int part,const int ind) {
 
 Combine_Table_Base * Cluster_Partons_Base::GetCombineTable() { return p_ct; }
 
-Flavour_Map * Cluster_Partons_Base::GetFlavourMap() { return &m_flmap; }
-
 void Cluster_Partons_Base::CreateFlavourMap() 
 {
   Process_Base * proc=static_cast<Process_Base*>(p_me->GetAmegic()->GetProcess());
-  Process_Base * partner=proc->Partner();
-  //m_nstrong   = proc->NStrong();
-  const Flavour * flavs=proc->Flavours();
   double ycut = proc->Ycut();
   if (ycut!=-1.) {
     m_ycut=ycut;
@@ -517,34 +523,6 @@ void Cluster_Partons_Base::CreateFlavourMap()
     m_ycut=ATOOLS::rpa.gen.Ycut();
   }
   m_q2_jet = Min(1.0,rpa.gen.DeltaR())*m_ycut*sqr(rpa.gen.Ecms());
-
-  const Flavour * partner_flavs=partner->Flavours();
-
-  int n[2]={0,1};
-  //    if (proc->InSwaped()^partner->InSwaped()) {
-  if (p_me->InSwaped()^partner->InSwaped()) {
-    n[0]=1;
-    n[1]=0;
-  }
-
-  // create new map
-  m_flmap.clear();
-  for (size_t i=0;i<proc->NIn();++i) {
-    if (partner_flavs[i]!=flavs[n[i]]) {
-      m_flmap[partner_flavs[i]]=flavs[n[i]];
-      if (partner_flavs[i]!=(Flavour(partner_flavs[i])).Bar()) {
-	m_flmap[(Flavour(partner_flavs[i])).Bar()]=(Flavour(flavs[n[i]])).Bar();
-      }
-    }
-  }
-  for (size_t i=proc->NIn();i<proc->NIn()+proc->NOut();++i) {
-    if (partner_flavs[i]!=flavs[i]) {
-      m_flmap[partner_flavs[i]]=flavs[i];
-      if (partner_flavs[i]!=(Flavour(partner_flavs[i])).Bar()) {
-	m_flmap[(Flavour(partner_flavs[i])).Bar()]=(Flavour(flavs[i])).Bar();	  
-      }
-    }
-  }
 }
 
 void   Cluster_Partons_Base::JetvetoPt2(double & q2i, double & q2f) 
