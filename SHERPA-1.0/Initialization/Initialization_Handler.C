@@ -239,12 +239,14 @@ bool Initialization_Handler::InitializeTheIO()
   infiles.push_back(p_dataread->GetValue<string>("SHERPA_INPUT",string("")));
   infiles.push_back(p_dataread->GetValue<string>("HEPMC_INPUT",string("")));
   infiles.push_back(p_dataread->GetValue<string>("HEPEVT_INPUT",string("")));
+  infiles.push_back(p_dataread->GetValue<string>("D0_HEPEVT_INPUT",string("")));
   outfiles.push_back(p_dataread->GetValue<string>("SHERPA_OUTPUT",string("")));
   outfiles.push_back(p_dataread->GetValue<string>("HEPMC_OUTPUT",string("")));
   outfiles.push_back(p_dataread->GetValue<string>("HEPEVT_OUTPUT",string("")));
+  outfiles.push_back(p_dataread->GetValue<string>("D0_HEPEVT_OUTPUT",string("")));
   std::string evtpath = p_dataread->GetValue<string>("EVT_FILE_PATH",m_path);
   int filesize        = p_dataread->GetValue<int>("FILE_SIZE",1000);
-  for (int i=0;i<3;i++) {
+  for (int i=0;i<4;i++) {
     if (infiles[i]!=string("") || outfiles[i]!=string("")) {
       p_iohandler = new Input_Output_Handler(outfiles,infiles,evtpath,filesize);
       return true;

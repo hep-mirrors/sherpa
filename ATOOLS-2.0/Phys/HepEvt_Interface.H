@@ -37,11 +37,13 @@ namespace ATOOLS {
     static const int s_maxentries = 4000;
     double * p_phep,   * p_vhep;
     int    * p_jmohep, * p_jdahep,  * p_isthep, * p_idhep;
-    double   m_weight;
+    double   m_weight, m_Q2, m_x1, m_x2;
+    int      m_fl1, m_fl2;
     
     void WriteFullHepEvt(int nevt);
     void WriteFormatedHepEvt(int nevt);
     void WriteReducedHepEvt(int nevt);
+    void WriteD0HepEvt(int nevt);
     void ISBlobs2HepEvt(ATOOLS::Blob_List * const,int &);
     void HardBlob2HepEvt(ATOOLS::Blob_List * const,int &);
     void FSBlobs2HepEvt(ATOOLS::Blob_List * const,int &);
@@ -91,6 +93,11 @@ namespace ATOOLS {
     void SetIsthep(int  * _isthep) { p_isthep = _isthep; }
     void SetIdhep(int   * _idhep)  { p_idhep = _idhep; }
     void SetWeight(double _weight) { m_weight = _weight; }
+    void SetQ2(double _Q2) { m_Q2 = _Q2; }
+    void Setx1(double _x1) { m_x1 = _x1; }
+    void Setx2(double _x2) { m_x2 = _x2; }
+    void SetFl1(int   _fl1) { m_fl1 = _fl1; }
+    void SetFl2(int   _fl2) { m_fl2 = _fl2; }
 
     std::ofstream * GetOutStream() { return p_outstream; }
     void ChangeOutStream(std::string &,long int=-1);

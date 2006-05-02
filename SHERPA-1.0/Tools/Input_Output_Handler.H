@@ -19,7 +19,8 @@ namespace SHERPA {
 	Sherpa  = 1,
 	HepMC   = 2,
 	HepEvt  = 4,
-	size    = 8
+	D0HepEvt  = 8,
+	size    = 16
       };
 
     };// end of struct iotype
@@ -38,6 +39,7 @@ namespace SHERPA {
     HepMC_Interface          * p_hepmc;
 #endif
     ATOOLS::HepEvt_Interface * p_hepevt;
+    ATOOLS::HepEvt_Interface * p_D0_hepevt;
     std::ofstream              m_outstream;
     std::ifstream            * p_instream;
     std::string                m_path, m_filename, m_file;
