@@ -1,0 +1,6 @@
+# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
+{211,-211}	 | 0.90 [FK]	 | f0980_pi+pi-.dat;
+{22,22}	 | 0.10 [FK]	 | f0980_PP.dat;
+
+! NO_FULLDECAY   ! use this option: no decay of daughters
+! NO_ANTI        ! use this option: anti-mother does not decay

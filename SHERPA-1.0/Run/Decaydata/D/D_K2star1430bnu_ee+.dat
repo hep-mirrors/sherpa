@@ -1,0 +1,10 @@
+# Decay: D --> K(2)*(1430)b nu_e e+ 
+#        0 --> 1            2    3  
+Channels {
+	AlwaysIntegrate = 0;   ! 0...read results and skip integration
+	                       ! 1...don't read results and integrate
+	Isotropic 1;
+}
+Result {
+   3.42264e-06 2.28159e-08 3.01522e-05;
+}

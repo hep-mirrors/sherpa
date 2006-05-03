@@ -1,0 +1,10 @@
+# Decay: f(2)'(1525) --> K(L) K(L) 
+#        0           --> 1    2    
+Channels {
+	AlwaysIntegrate = 0;   ! 0...read results and skip integration
+	                       ! 1...don't read results and integrate
+	Isotropic 1;
+}
+Result {
+   0.00494182 8.23181e-11 0.0150726;
+}

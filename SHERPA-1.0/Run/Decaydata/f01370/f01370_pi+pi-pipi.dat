@@ -1,0 +1,10 @@
+# Decay: f(0)(1370) --> pi+ pi- pi pi 
+#        0          --> 1   2   3  4  
+Channels {
+	AlwaysIntegrate = 0;   ! 0...read results and skip integration
+	                       ! 1...don't read results and integrate
+	Isotropic 1;
+}
+Result {
+   2.95893e-08 7.15592e-11 1.17212e-07;
+}

@@ -1,0 +1,10 @@
+# Decay: D --> K*(892)+b pi+ rho(770) 
+#        0 --> 1         2   3        
+Channels {
+	AlwaysIntegrate = 0;   ! 0...read results and skip integration
+	                       ! 1...don't read results and integrate
+	Isotropic 1;
+}
+Result {
+   2.21809e-07 2.06297e-09 2.53884e-06;
+}

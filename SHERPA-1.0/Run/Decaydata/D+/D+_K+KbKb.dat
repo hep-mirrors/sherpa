@@ -1,0 +1,10 @@
+# Decay: D+ --> K+ Kb Kb 
+#        0  --> 1  2  3  
+Channels {
+	AlwaysIntegrate = 0;   ! 0...read results and skip integration
+	                       ! 1...don't read results and integrate
+	Isotropic 1;
+}
+Result {
+   5.26761e-06 1.84444e-08 2.94001e-05;
+}

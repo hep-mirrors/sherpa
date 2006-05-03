@@ -575,11 +575,62 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  SHERPA-1.0/Run/Makefile \
 	  SHERPA-1.0/Makefile \
 	  TOOLS/Makefile \
-	  Makefile )
-
-
-
-
-
-
-
+	  Makefile \
+	  SHERPA-1.0/Run/Decaydata/a01450/Makefile \
+	  SHERPA-1.0/Run/Decaydata/a01450+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/a0980/Makefile \
+	  SHERPA-1.0/Run/Decaydata/a0980+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/a11260/Makefile \
+	  SHERPA-1.0/Run/Decaydata/a11260+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/a21320/Makefile \
+	  SHERPA-1.0/Run/Decaydata/a21320+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/B+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/b11235/Makefile \
+	  SHERPA-1.0/Run/Decaydata/b11235+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/D/Makefile \
+	  SHERPA-1.0/Run/Decaydata/D+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/eta/Makefile \
+	  SHERPA-1.0/Run/Decaydata/eta1295/Makefile \
+	  SHERPA-1.0/Run/Decaydata/eta1475/Makefile \
+	  SHERPA-1.0/Run/Decaydata/etaprime/Makefile \
+	  SHERPA-1.0/Run/Decaydata/f01370/Makefile \
+	  SHERPA-1.0/Run/Decaydata/f01710/Makefile \
+	  SHERPA-1.0/Run/Decaydata/f0600/Makefile \
+	  SHERPA-1.0/Run/Decaydata/f0980/Makefile \
+	  SHERPA-1.0/Run/Decaydata/f11285/Makefile \
+	  SHERPA-1.0/Run/Decaydata/f11420/Makefile \
+	  SHERPA-1.0/Run/Decaydata/f21270/Makefile \
+	  SHERPA-1.0/Run/Decaydata/f2prime1525/Makefile \
+	  SHERPA-1.0/Run/Decaydata/h11170/Makefile \
+	  SHERPA-1.0/Run/Decaydata/h11370/Makefile \
+	  SHERPA-1.0/Run/Decaydata/K/Makefile \
+	  SHERPA-1.0/Run/Decaydata/K+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/K0star1430/Makefile \
+	  SHERPA-1.0/Run/Decaydata/K0star1430+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/K11270/Makefile \
+	  SHERPA-1.0/Run/Decaydata/K11270+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/K11400/Makefile \
+	  SHERPA-1.0/Run/Decaydata/K11400+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/K1460/Makefile \
+	  SHERPA-1.0/Run/Decaydata/K1460+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/K2star1430/Makefile \
+	  SHERPA-1.0/Run/Decaydata/K2star1430+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/KL/Makefile \
+	  SHERPA-1.0/Run/Decaydata/KS/Makefile \
+	  SHERPA-1.0/Run/Decaydata/Kstar1410/Makefile \
+	  SHERPA-1.0/Run/Decaydata/Kstar1410+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/Kstar892/Makefile \
+	  SHERPA-1.0/Run/Decaydata/Kstar892+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/omega1420/Makefile \
+	  SHERPA-1.0/Run/Decaydata/omega782/Makefile \
+	  SHERPA-1.0/Run/Decaydata/phi1020/Makefile \
+	  SHERPA-1.0/Run/Decaydata/phi1680/Makefile \
+	  SHERPA-1.0/Run/Decaydata/pi/Makefile \
+	  SHERPA-1.0/Run/Decaydata/pi+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/pi1300/Makefile \
+	  SHERPA-1.0/Run/Decaydata/pi1300+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/rho1450/Makefile \
+	  SHERPA-1.0/Run/Decaydata/rho1450+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/rho770/Makefile \
+	  SHERPA-1.0/Run/Decaydata/rho770+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/tau-/Makefile )

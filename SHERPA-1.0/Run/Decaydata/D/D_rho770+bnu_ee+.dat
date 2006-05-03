@@ -1,0 +1,10 @@
+# Decay: D --> rho(770)+b nu_e e+ 
+#        0 --> 1          2    3  
+Channels {
+	AlwaysIntegrate = 0;   ! 0...read results and skip integration
+	                       ! 1...don't read results and integrate
+	Isotropic 1;
+}
+Result {
+   4.31333e-05 1.77755e-07 0.000249946;
+}

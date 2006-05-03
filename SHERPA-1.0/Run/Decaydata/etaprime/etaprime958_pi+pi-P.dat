@@ -1,0 +1,10 @@
+# Decay: eta'(958) --> pi+ pi- P 
+#        0         --> 1   2   3 
+Channels {
+	AlwaysIntegrate = 0;   ! 0...read results and skip integration
+	                       ! 1...don't read results and integrate
+	Isotropic 1;
+}
+Result {
+   4.10742e-05 4.71105e-08 0.000101101;
+}

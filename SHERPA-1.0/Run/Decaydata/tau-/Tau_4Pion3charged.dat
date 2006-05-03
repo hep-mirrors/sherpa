@@ -1,0 +1,70 @@
+# Decay: tau- --> pi+ pi- pi- pi nu_tau 
+#        0    --> 1   2   3   4  5      
+Channels {
+    AlwaysIntegrate = 0; ! 0...read results and skip integration
+                         ! 1...don't read results and integrate
+    Isotropic 1;
+}
+Parameters {
+    v      =  1.		 	! V-A structure of tau-nutau
+    a      =  1.	
+    FORM_FACTOR   = 1    	! 1=KuehnSantamaria
+
+    # properties of resonances
+    Mass_rho_770		= 0.79
+    Width_rho_770		= 0.151
+    Width_rho_770		= 0.16
+    Mass_rho_1450		= 1.523
+    Width_rho_1450	    = 0.4
+    Mass_rho_1700		= 1.7
+    Width_rho_1700	    = 0.235
+    Mass_omega_782	    = 0.79
+    Width_omega_782	    = 0.0085
+    Mass_a1_1260		= 1.23
+    Width_a1_1260		= 0.6
+    Mass_sigma		    = 0.86
+    Width_sigma		    = 0.99
+    Mass_f0_980		    = 0.98
+    Width_f0_980		= 0.07
+
+    # relative strength of rho resonances
+    # for omega-pi contribution
+    # for chiral part
+    beta 	= -0.25  		! rho_1450
+    gamma = -0.00			! rho_1700
+    # for anomalous part
+    sigma = -0.2			! rho_1450
+
+    # coupling constants 
+    # for anomalous part of omega-pi current
+    frho	= 0.266			! in [Mrho^2]
+    grop	= 12.924  		! rho-omega-pi coupling in [GeV^-1]
+    Go3p	= 1476.			! omega-3pi coupling in [GeV^-3]
+
+    # amplitudes for partial waves (magnitude, phase)
+    alpha 0 = 1. 0.		        ! omega_pi contribution
+    alpha 1 = 90 M_PI/2.		! a1_pi contribution
+    alpha 2 = 90 0		        ! sigma_rho contribution
+    alpha 3 = 90 M_PI/2. 		! f0_rho contribution
+
+    # weighted rho resonances for partial waves (magnitude, phase)
+    beta_omega_pi	0 = 1. 0.
+    beta_omega_pi	1 = 0. 0.
+    beta_omega_pi	2 = 0. 0.
+    beta_omega_pi	3 = 0. 0.
+    beta_a1_pi	    0 = 1. 0.
+    beta_a1_pi	    1 = 0. 0.
+    beta_a1_pi	    2 = 0. 0.
+    beta_a1_pi	    3 = 0. 0.
+    beta_sigma_rho	0 = 1. 0.
+    beta_sigma_rho	1 = 0. 0.
+    beta_sigma_rho	2 = 0. 0.
+    beta_sigma_rho	3 = 0. 0.
+    beta_f0_rho	    0 = 1. 0.
+    beta_f0_rho	    1 = 0. 0.
+    beta_f0_rho	    2 = 0. 0.
+    beta_f0_rho	    3 = 0. 0.
+}
+Result {
+   2.95541e-18 3.45842e-21 1.9316e-15;
+}

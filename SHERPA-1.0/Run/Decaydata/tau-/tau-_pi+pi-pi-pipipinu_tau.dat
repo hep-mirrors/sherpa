@@ -1,0 +1,10 @@
+# Decay: tau- --> pi+ pi- pi- pi pi pi nu_tau 
+#        0    --> 1   2   3   4  5  6  7      
+Channels {
+	AlwaysIntegrate = 0;   ! 0...read results and skip integration
+	                       ! 1...don't read results and integrate
+	Isotropic 1;
+}
+Result {
+   1.4735e-17 2.86026e-20 2.25611e-16;
+}

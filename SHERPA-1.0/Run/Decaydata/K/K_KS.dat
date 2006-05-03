@@ -1,0 +1,9 @@
+# Decay: K --> K(S) 
+#        0 --> 1    
+Channels {
+	AlwaysIntegrate = 0;   ! 0...read results and skip integration
+	                       ! 1...don't read results and integrate
+}
+Result {
+   0 0 -1;
+}

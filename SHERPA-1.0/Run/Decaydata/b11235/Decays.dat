@@ -1,0 +1,5 @@
+# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
+{223,111}	 | 1.00 [FK]	 | b11235_omega782pi.dat;
+
+! NO_FULLDECAY   ! use this option: no decay of daughters
+! NO_ANTI        ! use this option: anti-mother does not decay

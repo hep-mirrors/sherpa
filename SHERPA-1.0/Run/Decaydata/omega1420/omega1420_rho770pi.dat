@@ -1,0 +1,10 @@
+# Decay: omega(1420) --> rho(770) pi 
+#        0           --> 1        2  
+Channels {
+	AlwaysIntegrate = 0;   ! 0...read results and skip integration
+	                       ! 1...don't read results and integrate
+	Isotropic 1;
+}
+Result {
+   0.00965705 0 0.0274067;
+}

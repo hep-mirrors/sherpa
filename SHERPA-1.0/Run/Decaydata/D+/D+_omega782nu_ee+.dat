@@ -1,0 +1,10 @@
+# Decay: D+ --> omega(782) nu_e e+ 
+#        0  --> 1          2    3  
+Channels {
+	AlwaysIntegrate = 0;   ! 0...read results and skip integration
+	                       ! 1...don't read results and integrate
+	Isotropic 1;
+}
+Result {
+   4.21983e-05 1.76523e-07 0.000247207;
+}

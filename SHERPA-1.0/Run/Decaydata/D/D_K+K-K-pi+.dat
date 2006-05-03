@@ -1,0 +1,10 @@
+# Decay: D --> K+ K- K- pi+ 
+#        0 --> 1  2  3  4   
+Channels {
+	AlwaysIntegrate = 0;   ! 0...read results and skip integration
+	                       ! 1...don't read results and integrate
+	Isotropic 1;
+}
+Result {
+   5.33537e-10 3.0546e-12 6.44785e-09;
+}
