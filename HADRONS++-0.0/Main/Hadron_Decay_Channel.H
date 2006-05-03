@@ -13,12 +13,6 @@
 #define HBAR_C 197.326968e-15	// in [GeV mm] used for decay position
 
 namespace HADRONS {
-  class Momenta_Stretcher {
-  public:
-    Momenta_Stretcher() {}
-    bool MassThem(const int,ATOOLS::Vec4D *,const double *);
-    bool ZeroThem(const int,ATOOLS::Vec4D *);
-  };
 
   class Hadron_Decay_Channel : public PHASIC::Integrable_Base {
   private:
@@ -28,7 +22,8 @@ namespace HADRONS {
     std::string             m_metype;
     void                    CalculateNormalisedWidth();
 	std::string				m_path;
-	short					m_fulldecay;	
+    short					m_fulldecay;
+    bool                    m_mass_smearing;
 	bool					m_createbooklet;
 	std::string				m_channelname, m_chnamenumbers;
     std::vector<std::pair<int,int> > * p_indices;
@@ -52,7 +47,9 @@ namespace HADRONS {
     double Differential2()                            { return 0.; }
 
 	void   SetFullDecay( short a ) { m_fulldecay = a; }
-	short  FullDecay() { return m_fulldecay; }
+    short  FullDecay() { return m_fulldecay; }
+    void   SetMassSmearing( bool a ) { m_mass_smearing = a; }
+    bool   MassSmearing() { return m_mass_smearing; }
 	void   SetCreateBooklet( bool a ) { m_createbooklet = a; }
 	bool   CreateBooklet() { return m_createbooklet; }
     void   CreateTrivial( ATOOLS::Spin_Density_Matrix * sigma );
@@ -220,6 +217,10 @@ namespace HADRONS {
     "anti particle does not decay" means that the anti-particle is
     seen to be stable.
   */	
+  /*!
+    \var Hadron_Decay_Channel::m_mass_smearing
+      Stores whether MassSmearing was set to 0 or 1 in the decay channel file.
+   */
   /*!
     \var Hadron_Decay_Channel::p_ampls
     Pointer on the amplitude tensor.

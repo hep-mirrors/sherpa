@@ -31,6 +31,8 @@ namespace HADRONS {
 	ATOOLS::Decay_Table * p_table;                 
 	std::map<ATOOLS::kf::code,ATOOLS::Decay_Table *> 
 	                    * p_decaymap;
+    std::map<int,Hadron_Decay_Channel*> 
+                          m_blob_hdc_map;       // to save the decay channel for every hadron decay blob
     GeneralModel          m_md0;                // starter model
 	
     void ReadInConstants();
@@ -43,19 +45,31 @@ namespace HADRONS {
     Hadrons(
         std::string _path=std::string("./"), 
         std::string _file=std::string("HadronDecays.dat"),
-        std::string _constfile=std::string("HadronConstants.dat") );
+        std::string _constfile=std::string("HadronConstants.dat")
+           );
 	
 	bool                   FindDecay( const Flavour & );
 	Hadron_Decay_Channel * ChooseDecayChannel();
 	void                   ChooseDecayKinematics( Vec4D * _p, 
                                                   Hadron_Decay_Channel * _hdc,
-                                                  ATOOLS::Spin_Density_Matrix * sigma );
-	Spin_Density_Matrix    PerformDecay( Particle * part, 
+                                                  ATOOLS::Spin_Density_Matrix * sigma);
+    ATOOLS::Blob* CreateDecayBlobSkeleton(
+        Particle            * particle, 
+        Blob_List           * blob_list, 
+        Particle_List       * part_list );
+	Spin_Density_Matrix    PerformDecay( Blob * blob, 
 		                                 Blob_List * blob_list, 
 		                                 Particle_List * part_list,
                                          ATOOLS::Spin_Density_Matrix * sigma );
 
 	std::map<ATOOLS::kf::code,ATOOLS::Decay_Table *> * GetDecayMap() { return p_decaymap; }
+    
+    void InsertIntoBlobHdcMap( std::pair<int,Hadron_Decay_Channel*> p ) {
+      m_blob_hdc_map.insert( p );
+    }
+    void CleanBlobHdcMap() {
+      m_blob_hdc_map.clear();
+    }
 
 	void CreateBookletNow();
   }; // end of class Hadrons

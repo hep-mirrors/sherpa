@@ -1,0 +1,129 @@
+#include "Momenta_Stretcher.H"
+#include "Vector.H"
+#include "Flavour.H"
+#include "MathTools.H"
+#include "Poincare.H"
+#include "Message.H"
+
+using namespace ATOOLS;
+using namespace std;
+
+bool Momenta_Stretcher::MassThem(const int n0,const int n,Vec4D * momenta,const double * masses)
+{
+  if ((n-n0)==2) {
+    Vec4D cms         = momenta[n0]+momenta[n-1];
+    Poincare boost(cms);
+    for (int i=n0;i<n;i++) boost.Boost(momenta[i]);
+    double energy     = momenta[n0][0]+momenta[n-1][0];
+    if (masses[n0]+masses[n-1]<energy) {
+      double m12      = sqr(masses[n0]);
+      double m22      = sqr(masses[n-1]);
+      double energy0  = (sqr(energy)+m12-m22)/(2.*energy);
+      double energy1  = (sqr(energy)-m12+m22)/(2.*energy);
+      Vec3D direction = Vec3D(momenta[n0])/(Vec3D(momenta[n0]).Abs());
+      Vec3D p0        = direction*sqrt(sqr(energy0)-m12);
+      Vec3D p1        = (-1.)*p0;
+      momenta[n0]      = Vec4D(energy0,p0);
+      momenta[n-1]      = Vec4D(energy1,p1);
+      for (int i=n0;i<n;i++) boost.BoostBack(momenta[i]);
+      return true; 
+    }
+    else {
+      for (int i=n0;i<n;i++) boost.BoostBack(momenta[i]);
+      return false; 
+    }
+  }
+  else {
+    double xmt         = 0.;
+    double * oldens2   = new double[n];
+    double * ens       = new double[n];
+    Vec4D cms          = Vec4D(0.,0.,0.,0.);
+    for (short int k=n0;k<n;k++) {
+//       std::cout<<METHOD<<" momenta["<<k<<"]="<<momenta[k]<<std::endl;
+      xmt       += masses[k];
+      cms       += momenta[k];
+      oldens2[k] = sqr(momenta[k][0]);
+    }
+    if (cms[0]>xmt) {
+      double ET  = sqrt(cms.Abs2()); 
+      double x   = sqrt(1.-sqr(xmt/ET));
+      double acc = ET*1.e-14;
+      
+      double f0,g0,x2;
+      for (int i=0;i<10;i++) {
+        f0 = -ET;g0 = 0.;x2 = x*x;
+        for (short int k=n0;k<n;k++) {
+          ens[k] = sqrt(sqr(masses[k])+x2*oldens2[k]);
+          f0    += ens[k];
+          g0    += oldens2[k]/ens[k];
+        }
+        if (dabs(f0)<acc) break; 
+        x -= f0/(x*g0);  
+      }
+      for (short int k=n0;k<n;k++) {
+//         std::cout<<"ens["<<k<<"]="<<ens[k]<<" x="<<x<<std::endl;
+        momenta[k] = Vec4D(ens[k],x*Vec3D(momenta[k]));
+//         std::cout<<METHOD<<" momenta["<<k<<"]="<<momenta[k]<<std::endl;
+      }
+      delete [] oldens2;
+      delete [] ens;
+      return true;
+    }
+    delete [] oldens2;
+    delete [] ens;
+    msg.Error()<<"ERROR in Momenta_Stretcher::StretchThem: "<<endl
+        <<"   Not enough energy ("<<cms<<") for the "<<(n-n0)<<" masses ("<<xmt<<"); return false"<<endl
+        <<"   Masses :";
+    for (int i=n0;i<n-1;i++) msg.Error()<<masses[i]<<", ";msg.Error()<<masses[n-1]<<"."<<endl;
+    return false;
+    abort();
+  }
+  return false;
+}
+
+bool Momenta_Stretcher::ZeroThem(const int n0, const int n, Vec4D * momenta)
+{
+  if ((n-n0)==2) {
+    double energy   = momenta[n0][0]+momenta[n-1][0];
+    Vec3D direction = Vec3D(momenta[n0])/(Vec3D(momenta[n0]).Abs());
+    momenta[n0]      = energy/2.*Vec4D(1.,direction);
+    momenta[n-1]      = energy/2.*Vec4D(1.,-1.*direction);
+    return true; 
+  }
+  else {
+    double xmt         = 0.;
+    double * oldps2    = new double[n];
+    double * ens       = new double[n];
+    Vec4D cms          = Vec4D(0.,0.,0.,0.);
+    for (short int i=n0;i<n;i++) {
+      xmt      += sqrt(Max(0.,momenta[i].Abs2()));
+      oldps2[i] = sqr(Vec3D(momenta[i]).Abs());
+      cms       += momenta[i];
+    }
+    double ET  = sqrt(cms.Abs2()); 
+    double x   = 1./sqrt(1.-sqr(xmt/ET));
+    double acc = ET*1.e-14;
+    xmt        = 0.;
+
+    double f0,g0,x2;
+    for (int i=0;i<10;i++) {
+      f0 = -ET;g0 = 0.;x2 = x*x;
+      for (short int i=n0;i<n;i++) {
+        ens[i] = sqrt(x2*oldps2[i]);
+        f0    += ens[i];
+        g0    += oldps2[i]/ens[i];
+      }
+      if (dabs(f0)<acc) break; 
+      x -= f0/(x*g0);  
+    }
+    for (short int k=n0;k<n;k++) {
+//       std::cout<<"ens["<<k<<"]="<<ens[k]<<" x="<<x<<std::endl;
+      momenta[k] = Vec4D(ens[k],x*Vec3D(momenta[k]));
+//       std::cout<<"momenta["<<k<<"]="<<momenta[k]<<std::endl;
+    }
+    delete [] oldps2;
+    delete [] ens;
+    return true;
+  }
+  return false;
+}

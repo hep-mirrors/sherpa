@@ -11,7 +11,7 @@ using namespace std;
 Hadron_Decay_Channel::Hadron_Decay_Channel( Decay_Channel * _dc, string _path ) :
   p_dc(_dc), p_me(NULL), m_metype(p_dc->METype()),
   Integrable_Base(1,_dc->NumberOfDecayProducts()),
-  m_path(_path), m_fulldecay(3), m_createbooklet(0),
+  m_path(_path), m_fulldecay(3), m_mass_smearing(true), m_createbooklet(0),
   p_indices(NULL), p_ampls(NULL)
 {
   m_resultpath      = string("./");                             // where to write results
@@ -25,8 +25,7 @@ Hadron_Decay_Channel::Hadron_Decay_Channel( Decay_Channel * _dc, string _path ) 
   m_chnamenumbers.append( (p_flavours[0].IDName()).length()-1, ' ' );
   m_chnamenumbers.append(" --> ");
   char helpch[2];
-  int nout = p_dc->NumberOfDecayProducts();
-  for (int i=0;i<nout;i++) {           // decay products
+  for (int i=0;i<m_nout;i++) {           // decay products
     p_flavours[i+1] = p_dc->GetDecayProduct(i);         
     m_channelname  += p_flavours[i+1].IDName() + string(" ");
     sprintf( helpch, "%i%", i+1 );
@@ -43,11 +42,11 @@ Hadron_Decay_Channel::Hadron_Decay_Channel( Decay_Channel * _dc, string _path ) 
   Flavour refflav;
   double symfactor (1);         
   int l(0), lfac (1);              
-  for( int i=0; i<nout; ++i ) {
+  for( int i=0; i<m_nout; ++i ) {
     refflav = p_flavours[i+1];
     l = 0;
     lfac = 1;
-    for( int j=0; j<nout; ++j ) {
+    for( int j=0; j<m_nout; ++j ) {
       if( p_flavours[j+1]==refflav ) {
         l++;
         lfac *= l;
@@ -114,7 +113,7 @@ void Hadron_Decay_Channel::WriteModelOnScreen( GeneralModel _locmd )
 
 double Hadron_Decay_Channel::Differential()
 {
-  p_momenta[0] = Vec4D(p_flavours[0].PSMass(),0.,0.,0.);        // decay from rest
+  p_momenta[0] = Vec4D(p_flavours[0].PSMass(),0.,0.,0.);   // decay from rest
   p_ps->GeneratePoint(p_momenta);                               // generate a PS point
   p_ps->GenerateWeight(p_momenta);                              // calculate its weight factor
   double weight = p_ps->Weight();                               // get weight factor
@@ -205,4 +204,3 @@ void Hadron_Decay_Channel::CreateTrivial( Spin_Density_Matrix * sigma )
     }
   }
 }
- 

@@ -36,7 +36,8 @@ libToolsPhys_la_SOURCES       =	\
 				Flow.C \
 				Color.C \
 				Spin_Density_Matrix.C \
-				Spin_Correlation_Tensor.C
+				Spin_Correlation_Tensor.C \
+				Momenta_Stretcher.C
 include_HEADERS        =	\
 			Flavour.H \
 			Particle.H \
@@ -64,7 +65,8 @@ include_HEADERS        =	\
 			Event.H \
 			Color.H \
 			Spin_Density_Matrix.H \
-			Spin_Correlation_Tensor.H
+			Spin_Correlation_Tensor.H \
+			Momenta_Stretcher.H
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(ATOOLSFLAGS)
 INCLUDES      = $(MODELINCS) $(ATOOLSINCS)

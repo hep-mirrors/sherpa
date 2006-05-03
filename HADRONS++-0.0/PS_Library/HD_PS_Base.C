@@ -190,6 +190,9 @@ bool HD_PS_Base::Construct( GeneralModel & _md )
           if (helpsvv[i][0]==string("AlwaysIntegrate")) {
             skipresult = atoi( helpsvv[i][2].c_str() );
           }
+          else if(helpsvv[i][0]==string("MassSmearing")) {
+            p_hdc->SetMassSmearing( atoi(helpsvv[i][2].c_str()) );
+          }
           else {
             if (helpsvv[i].size()>1) {                  // if factor is given
               weight=atof(helpsvv[i][1].c_str());
@@ -384,8 +387,10 @@ bool HD_PS_Base::WriteOut() {
     to<<"#        "<<p_hdc->ChannelNameNumbers()<<endl;
     // write out channels
     to<<"Channels {\n"
-      <<"\tAlwaysIntegrate = 0;   ! 0...read results and skip integration\n"
-      <<"\t                       ! 1...don't read results and integrate\n";
+      <<"\tAlwaysIntegrate = 0;   # 0...read results and skip integration\n"
+      <<"\t                       # 1...don't read results and integrate\n";
+    to<<"\tMassSmearing    = 1;   # 0...turn off mass smearing for this decay's products\n"
+      <<"\t                       # 1...turn on mass smearing for this decay's products\n";
     for (int i=0;i<channels.size();i++) {
       if (channels[i]->Name()==string("Rambo") ||
           channels[i]->ChID()==string("Iso2"))

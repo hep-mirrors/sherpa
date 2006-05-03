@@ -90,14 +90,21 @@ bool Hadron_Decay_Handler::FillHadronDecayBlobs(Particle *part,
   // perform decay 
   switch( m_mode ) {
 #ifdef USING__Hadrons
-  case 1: 
-    if( decmatr ) (*decmatr) = p_hadrons->PerformDecay( part, blob_list, part_list, sigma );
-    else p_hadrons->PerformDecay( part, blob_list, part_list, NULL );
-    break;
+    case 1: {
+      // create first decay blobs to start the recursion with a head start for mass smearing
+      Blob* blob=p_hadrons->CreateDecayBlobSkeleton(part,blob_list,part_list);
+      
+      if(blob) {
+        if( decmatr ) (*decmatr) = p_hadrons->PerformDecay( blob, blob_list, part_list, sigma );
+        else p_hadrons->PerformDecay( blob, blob_list, part_list, NULL );
+      }
+      break;
+    }
 #endif
-  case 0: 
-    p_lund->PerformDecay( part, blob_list, part_list );
-    break;
+    case 0: {
+      p_lund->PerformDecay( part, blob_list, part_list );
+      break;
+    }
   }
   
   return 1;
