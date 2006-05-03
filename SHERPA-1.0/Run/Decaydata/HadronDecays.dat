@@ -1,26 +1,107 @@
-!-------------------------------------------------------
-!-- Files for hadron decay tables ----------------------
-!-------------------------------------------------------
-
-! particle -> directory/ name.dat do not forget the / and space
-15    -> TauDecays/         TauDecays.dat;
-111   -> Pi0Decays/         Pi0Decays.dat;
-211   -> PiDecays/          PiDecays.dat;
-221   -> EtaDecays/         EtaDecays.dat;
-331   -> EtaprimeDecays/        EtaprimeDecays.dat;
-113   -> Rho0Decays/        Rho0Decays.dat;
-213   -> RhoDecays/         RhoDecays.dat;
-223   -> Omega782Decays/  Omega782Decays.dat;
-321   -> KaonDecays/        KaonDecays.dat;
-310   -> KSDecays/        KSDecays.dat;
-130   -> KLDecays/        KLDecays.dat;
-115   -> A213200Decays/   A213200Decays.dat;
-215   -> A21320Decays/    A21320Decays.dat;
-225   -> F21270Decays/    F21270Decays.dat;
-335   -> F2P1525Decays/   F2P1525Decays.dat;
-311   -> K0Decays/          K0Decays.dat;
-313   -> KStar8920Decays/    KStar8920Decays.dat;
-323   -> KStar892Decays/     KStar892Decays.dat;
-315   -> K2Star14300Decays/   K2Star14300Decays.dat;
-325   -> K2Star1430Decays/    K2Star1430Decays.dat;
-333   -> PhiDecays/         PhiDecays.dat;
+#-------------------------------------------------------
+#-- Files for hadron decay tables ----------------------
+#-------------------------------------------------------
+# particle -> directory/ name.dat do not forget the / and space
+#
+# Taus
+#
+15      -> tau-/              Decays.dat;
+#
+# Pseudoscalars
+#
+111     -> pi/                Decays.dat;
+211     -> pi+/               Decays.dat;
+221     -> eta/               Decays.dat;
+331     -> etaprime/          Decays.dat;
+311     -> K/                 Decays.dat;
+321     -> K+/                Decays.dat;
+310     -> KS/                Decays.dat;
+130     -> KL/                Decays.dat;
+411     -> D+/                Decays.dat;
+421     -> D/                 Decays.dat;
+#431     -> D_s/             DsDecays.dat;
+#441     -> Eta_c/           EtacDecays.dat;
+#511     -> B/               BDecays.dat;
+!521     -> B+/                Decays.dat;
+#531     -> B_s/             BsDecays.dat;
+#541     -> B_c/             BcDecays.dat;
+#551     -> Eta_b/           EtabDecays.dat;
+#
+# Vectors
+#
+113     -> rho770/            Decays.dat;
+213     -> rho770+/           Decays.dat;
+223     -> omega782/          Decays.dat;
+313     -> Kstar892/          Decays.dat;
+323     -> Kstar892+/         Decays.dat;
+333     -> phi1020/           Decays.dat;
+#413     -> D_Star/          DStarDecays.dat;
+#423     -> D_Sta_0/         DStar0Decays.dat;
+#433     -> D_s_Star/        DsStarDecays.dat;
+#443     -> J_Psi/           JPsiDecays.dat;
+#513     -> B_0_Star/        BStar0Decays.dat;
+#523     -> B_Star/          BStarDecays.dat;
+#533     -> B_s_Star/        BsStarDecays.dat;
+#543     -> B_c_Star/        BcStarDecays.dat;
+#553     -> Upsilon_1S/      Upsilon1SDecays.dat;
+#
+# Tensors
+#
+115     -> a21320/            Decays.dat;
+215     -> a21320+/           Decays.dat;
+225     -> f21270/            Decays.dat;
+315     -> K2star1430/        Decays.dat;
+325     -> K2star1430+/       Decays.dat;
+335     -> f2prime1525/       Decays.dat;
+#
+# J-Excited(L=1,s=0) Pseudoscalars
+#
+10111	-> a01450/            Decays.dat;
+10211	-> a01450+/           Decays.dat;
+10221	-> f01370/            Decays.dat;
+10311	-> K0star1430/        Decays.dat;
+10321	-> K0star1430+/       Decays.dat;
+10331	-> f01710/            Decays.dat;
+#
+# J-Excited(L=1,S=0) Vectors
+#
+10113	-> b11235/            Decays.dat;
+10213	-> b11235+/           Decays.dat;
+10223	-> h11170/            Decays.dat;
+10313	-> K11270/            Decays.dat;
+10323	-> K11270+/           Decays.dat;
+10333	-> h11370/            Decays.dat;
+#
+# J-Excited(L=1,S=1) Vectors
+#
+20113	-> a11260/            Decays.dat;
+20213	-> a11260+/           Decays.dat;
+20223	-> f11285/            Decays.dat;
+20313	-> K11400/            Decays.dat;
+20323	-> K11400+/           Decays.dat;
+20333	-> f11420/            Decays.dat;
+#
+# Radially Excited Pseudoscalars
+#
+100111  -> pi1300/            Decays.dat;
+100211  -> pi1300+/           Decays.dat;
+100221  -> eta1295/           Decays.dat;
+100311  -> K1460/             Decays.dat;
+100321  -> K1460+/            Decays.dat;
+100331  -> eta1475/           Decays.dat;
+#
+# Radially Excited Vectors
+#
+100113  -> rho1450/           Decays.dat;
+100213  -> rho1450+/          Decays.dat;
+100223  -> omega1420/         Decays.dat;
+100313  -> Kstar1410/         Decays.dat;
+100323  -> Kstar1410+/        Decays.dat;
+100333	-> phi1680/           Decays.dat;
+#
+# Miscellanea
+#
+9000111 -> a0980/             Decays.dat;
+9000211 -> a0980+/            Decays.dat;
+9000221 -> f0600/             Decays.dat;
+9010221 -> f0980/             Decays.dat;
