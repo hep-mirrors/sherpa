@@ -23,6 +23,11 @@ using namespace ATOOLS;
 
 namespace HADRONS {
   
+  typedef std::pair<std::string,std::pair<double,double> >  BRPairString;
+  typedef std::pair<FlavourSet,std::pair<double,double> >   BRPairFlavourSet;
+  typedef std::map<std::string,std::pair<double,double> >   BRMapString;
+  typedef std::pair<double,double> DoublePair;
+
   class Hadrons {
 
   private:
@@ -36,8 +41,14 @@ namespace HADRONS {
     GeneralModel          m_md0;                // starter model
 	
     void ReadInConstants();
-    void ReadInDecayTables();
+    void ReadInDecayTables(bool & createbooklet);
     ATOOLS::Decay_Table * InitialiseOneDecayTable(std::vector<std::string>);
+    std::vector<BRPairFlavourSet> GetInclusives( 
+        Decay_Table * dt, 
+        BRMapString & brmap, 
+        FlavourSet flset=FlavourSet(), 
+        DoublePair br=DoublePair(1.,1.), 
+        bool eoi=true ); 
 
 	bool				  m_createbooklet;
 

@@ -14,6 +14,7 @@ namespace HADRONS {
   private:
     std::vector<std::vector<std::string> > m_helpsvv;
     bool ExtractFlavours(std::vector<int> &,std::string);
+    void ExtractBRInfo( std::string entry, std::string & sbr, std::string & sdbr, std::string & sorigin );
 	std::string m_path, m_file;
 	bool m_fulldecay, m_antidecays, m_createbooklet;
   public: 

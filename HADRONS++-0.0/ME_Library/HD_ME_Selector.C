@@ -19,16 +19,25 @@ HD_ME_Base * HD_ME_Selector::GetME(int nin,int nout,Flavour * flavs)
   double mass = flavs[0].Mass();					// mass of decaying particle
 
   // sanity check if sum of outgoing masses > incoming mass
+  int outcharge(0);
   for (int i=1;i<1+nout;i++) {
-    mass-=flavs[i].Mass();
-    if (mass<0.) {
+    mass-=flavs[i].Mass()-3.*flavs[i].Width();
+    outcharge += flavs[i].IntCharge();
+    if (mass<0) {
       msg.Error()<<"Error in HD_ME_Selector::GetME("<<nin<<"->"<<nout<<") : "
 		 <<"   Masses do not match : "<<flavs[0].Mass()<<" -> ";
       for (int j=1;j<nout;j++) msg.Error()<<flavs[j].Mass()<<"+";
-      msg.Error()<<flavs[nout].Mass()<<endl
+      msg.Error()<<flavs[nout].Mass()<<" @ "<<flavs[0]<<" -> ";
+      for (int j=1;j<nout;j++) msg.Error()<<flavs[j]<<" ";
+      msg.Error()<<flavs[nout]<<endl
 		 <<"   Will return NULL and hope for the best."<<endl;
       return hdme;
     }
+  }
+  if( outcharge != flavs[0].IntCharge() ) {
+    msg.Error()<<" WARNING: Check Charges @ "<<flavs[0]<<" -> ";
+    for (int j=1;j<nout;j++) msg.Error()<<flavs[j]<<" ";
+    msg.Error()<<flavs[nout]<<endl;
   }
 
   // Select ME depending on decaying particle

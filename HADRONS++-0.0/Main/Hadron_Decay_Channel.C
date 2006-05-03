@@ -72,7 +72,7 @@ bool Hadron_Decay_Channel::InitialisePhaseSpace(vector<string> & PStype, General
 {
   bool mustinit;
   struct GeneralModel locmd (startmd);
-  bool rewriteH (false);
+  bool rewriteDT (false);
   if ( PStype.size() == 2 ) {                                   // in case no DC file given
     string fn("");                                              // filename of DC file
     fn += p_dc->GetDecaying().ShellName() + string("_");
@@ -81,7 +81,7 @@ bool Hadron_Decay_Channel::InitialisePhaseSpace(vector<string> & PStype, General
     }
     fn += string(".dat");
     PStype.push_back( fn );                                     // generate DC filename
-    rewriteH = true;                                            // rewrite hadron decay file
+    rewriteDT = true;                                            // rewrite hadron decay file
   }
   // check if dc file exists
   string dcfilename = PStype[2];
@@ -91,7 +91,7 @@ bool Hadron_Decay_Channel::InitialisePhaseSpace(vector<string> & PStype, General
   WriteModelOnScreen(locmd);                        // show model parameters on screen
   p_me->SetModelParameters( locmd );                // set parameters for ME
   if (mustinit) p_ps->Initialise();                 // if in need => ini
-  return rewriteH;                                  // rewrite H file ?
+  return rewriteDT;                                  // rewrite decay table file ?
 }
 
 void Hadron_Decay_Channel::WriteModelOnScreen( GeneralModel _locmd )
@@ -126,7 +126,7 @@ double Hadron_Decay_Channel::Differential()
     for( size_t i=0; i<p_ampls->size(); ++i ) {
       value += norm( (*p_ampls)[i] );
     }
-    value /= (p_dc->GetDecaying().IntSpin()+1);
+    value /= (p_dc->GetDecaying().IntSpin()+1.);
   }
   else value = 1.;                                              // isotropic
   return value*weight*m_symmetry;
