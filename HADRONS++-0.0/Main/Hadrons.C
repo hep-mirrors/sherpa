@@ -54,12 +54,12 @@ void Hadrons::CreateBookletNow()
 	kf::code      kfc (pos->first);
 	Decay_Table * dt  (pos->second);
 	f<<"\\section{Decaying Particle: $"<<dt->Flav().TexName()<<"$}"<<endl;
-	f<<"\\begin{center} \n\\begin{tabular}{ll}"<<endl;
+	f<<"\\begin{tabular}{ll}"<<endl;
 	f<<" number of decay channels:	& "<<dt->NumberOfDecayChannels()<<"\\\\ "<<endl;
 	f<<" total width:               & "<<dt->TotalWidth()<<" GeV \\\\ "<<endl;
     f<<" experimental width:        & "<<dt->Flav().Width()<<" GeV \\\\ "<<endl;
-	f<<"\\end{tabular} \n\\end{center}"<<endl;
-    f<<"\\begin{center} \n\\begin{longtable}{lll}"<<endl;
+	f<<"\\end{tabular}"<<endl;
+    f<<"\\begin{longtable}[l]{lll}"<<endl;
     f<<"\\multicolumn{3}{c}{\\bf Exclusive Decays}\\\\"<<endl;
     f<<"\\hline"<<endl;
     f<<"Decay Channel & Branching Ratio & Origin \\\\"<<endl;
@@ -79,11 +79,10 @@ void Hadrons::CreateBookletNow()
       f<<" \\% & \\verb;"<<dc->Origin()<<";\\\\"<<endl;
     }
     f<<"\\hline"<<endl;
-    f<<"\\end{longtable} \n\\end{center}"<<endl;
     map<string,pair<double,double> > brmap;
     GetInclusives(dt,brmap);
-    f<<"\\begin{center} \n\\begin{longtable}{ll}"<<endl;
-    f<<"\\multicolumn{2}{c}{\\bf Inclusive Decays with $BR>10^{-6}$}\\\\"<<endl;
+    f<<"\\multicolumn{3}{c}{\\hfill}\\\\"<<endl;
+    f<<"\\multicolumn{3}{c}{\\bf Inclusive Decays with $BR>10^{-6}$}\\\\"<<endl;
     f<<"\\hline"<<endl;
     f<<"Decay Channel & Branching Ratio \\\\"<<endl;
     f<<"\\hline\n\\hline"<<endl;
@@ -102,7 +101,7 @@ void Hadrons::CreateBookletNow()
       }
     }
     f<<"\\hline"<<endl;
-    f<<"\\end{longtable} \n\\end{center}"<<endl;
+    f<<"\\end{longtable}"<<endl;
   }
    
   // end 
