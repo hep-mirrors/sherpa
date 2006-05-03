@@ -61,7 +61,7 @@
 {-311,211,-211}	 | 0.00053(0.00053) [PDG]	 | D_Kbpi+pi-.dat;
 {-311,111,111}	 | 0.0085(0.0022) [PDG]	 | D_Kbpipi.dat;
 {-311,113,211,-211}	 | 0.0023(0.0015) [PDG]	 | D_Kbpi+pi-rho770.dat;
-{-311,211,-211,111}	 | 0.023(0.023) [PDG]	 | D_Kbpi+pi-piFatal error: particle type does not exist!.dat;
+{-311,211,-211,111}	 | 0.023(0.023) [PDG]	 | D_Kbpi+pi-pi.dat;
 {-313,211,-211,111}	 | 0.018(0.009) [PDG]	 | D_Kstar892bpi+pi-pi.dat;
 #
 # Hadronic decays, 2 K's
