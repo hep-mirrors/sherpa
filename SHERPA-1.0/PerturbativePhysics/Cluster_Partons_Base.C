@@ -37,7 +37,8 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
   else {
     if (m_bp_mode&bpm::soft_kfac) m_bp_mode-=bpm::soft_kfac; 
   }
-  m_is_as_factor=ToType<double>(rpa.gen.Variable("IS_CPL_SCALE_FACTOR","1"));
+  //m_is_as_factor=ToType<double>(rpa.gen.Variable("IS_CPL_SCALE_FACTOR","1"));
+  m_is_as_factor=1.0;    //We want this to be unchangeable.
   m_fs_as_factor=ToType<double>(rpa.gen.Variable("FS_CPL_SCALE_FACTOR","1"));
   m_me_as_factor=dr.GetValue<double>("ME_AS_FACTOR",1.0);
   if (p_jf->Type()<2) m_me_as_factor=0.25;

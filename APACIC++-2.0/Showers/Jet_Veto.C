@@ -107,9 +107,7 @@ int Jet_Veto::TestKinematics(const int mode,Knot *const mo,double* vm)
   if (mo==NULL) {
     if (m_mode&jv::initial && p_istrees!=NULL) {
       if (!CollectISMomenta(p_istrees[0]->GetRoot(),jets,hard)) return 0;
-      jets.pop_back();
       if (!CollectISMomenta(p_istrees[1]->GetRoot(),jets,hard)) return 0;
-      jets.pop_back();
     }
     if (m_mode&jv::final) {
       if (!CollectFSMomenta(p_fstree->GetRoot(),jets,hard)) return 0;
@@ -120,14 +118,15 @@ int Jet_Veto::TestKinematics(const int mode,Knot *const mo,double* vm)
   }
   m_cmode=0;
   std::vector<ATOOLS::Vec4D> savejets(jets);
-  m_rates.resize(jets.size());
+  int nmin(p_jf->Type()==1?1:0);
+  m_rates.resize(Max(int(jets.size())-nmin,0),0.0);
   p_cluster->SetPoints(jets);
-  if (jets.size()>0) p_cluster->Cluster(0,cs::num);
+  p_cluster->Cluster(nmin,cs::num);
   msg_Debugging()<<"hard scale Q_h = "<<sqrt(m_q2hard)<<"\n";
   for (size_t i(0);i<m_rates.size();++i) {
     m_rates[m_rates.size()-i-1]=p_cluster->DMins()[i];
-    msg_Debugging()<<"jetrate Q_{"<<(jets.size()-i)<<"->"
-		   <<(jets.size()-i-1)<<"} = "
+    msg_Debugging()<<"jetrate Q_{"<<(jets.size()-i-nmin)<<"->"
+		   <<(jets.size()-i-1-nmin)<<"} = "
 		   <<sqrt(p_cluster->DMins()[i])<<"\n";
   }
   for (size_t i(0);i<m_histos.size() && i<m_rates.size();++i)
@@ -174,14 +173,8 @@ int Jet_Veto::CollectISMomenta(Knot *knot,std::vector<Vec4D> &vecs,
   if (knot->left && knot->left->t<dabs(knot->right->t) &&
       knot->left->E2>0.0)
     dtest=CollectFSMomenta(knot->left,vecs,hard);
-  if (knot->prev==NULL || knot->stat==3) {
-    msg_Debugging()<<"take knot "<<knot->kn_no
-		   <<", mom "<<knot->part->Momentum()<<"\n";    
-    vecs.push_back(knot->part->Momentum());
-    return dtest;
-  }
   m_q2hard=Max(m_q2hard,dabs(knot->tmax));
-  dtest=CollectISMomenta(knot->prev,vecs,hard);
+  if (knot->prev!=NULL) dtest=CollectISMomenta(knot->prev,vecs,hard);
   return dtest;
 }
 

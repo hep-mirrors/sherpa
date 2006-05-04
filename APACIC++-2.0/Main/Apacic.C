@@ -89,9 +89,16 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
       msg.Out()<<"Apacic::PerformShowers : Before showering."<<std::endl;
       OutputTrees();
     }
-    jv::mode jvm=jv::mode(int(m_jvm)&3);
-    p_jetveto->SetMode(jvm);
-    
+    bool flag=false;
+    if (p_jetveto->JetFinder()->Type()>1) {
+      jv::mode jvm=jv::mode(int(m_jvm)&3);
+      p_jetveto->SetMode(jvm);
+    }
+    else {
+      flag=true;
+      m_maxtrials=100;
+    }
+
     static double accu(sqrt(rpa.gen.Accu()));
     Vec4D::SetAccu(accu);
     if (m_fsron) {
@@ -141,12 +148,23 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
       break;
     case -1: 
       msg_Debugging()<<"Lose jet veto \n";
-      if (m_isron) {
-	p_initrees[0]->Restore();
-	p_initrees[1]->Restore();
+      if (flag && trials) {    //new ME now
+	if (m_isron) {
+	  p_initrees[0]->ClearStore();
+	  p_initrees[1]->ClearStore();
+	}
+	if (m_fsron) p_fintree->ClearStore();
+	m_last_ljv=true;
+	Vec4D::ResetAccu();
+	return -1;
+      } else {
+	if (m_isron) {
+	  p_initrees[0]->Restore();
+	  p_initrees[1]->Restore();
+	}
+	if (m_fsron) p_fintree->Restore();
+	m_last_ljv=true;
       }
-      if (m_fsron) p_fintree->Restore();
-      m_last_ljv=true;
     }
   }
   if (m_isron) {
