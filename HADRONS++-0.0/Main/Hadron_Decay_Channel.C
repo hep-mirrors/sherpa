@@ -3,6 +3,7 @@
 #include "Spin_Correlation_Tensor.H"
 #include "Poincare.H"
 #include "Random.H"
+#include <stdio.h>
 
 using namespace HADRONS;
 using namespace ATOOLS;

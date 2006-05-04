@@ -10,6 +10,7 @@
 #include "Blob.H"
 #include "Smart_Pointer.H"
 #include "prof.hh"
+#include <typeinfo>
 
 INSTANTIATE_SMART_POINTER(Spin_Correlation_Tensor)
 
@@ -426,8 +427,8 @@ namespace ATOOLS{
   }
 
 
-template class Blob_Data<SP(Spin_Correlation_Tensor) >;
 template SP(Spin_Correlation_Tensor) &Blob_Data_Base::Get<SP(Spin_Correlation_Tensor) >();
 template <> Blob_Data<SP(Spin_Correlation_Tensor) >::~Blob_Data() { }
+template class Blob_Data<SP(Spin_Correlation_Tensor) >;
 
 } //end of namespace ATOOLS
