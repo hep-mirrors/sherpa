@@ -262,14 +262,18 @@ void Amegic::ReadInProcessfile(string file)
 	  }
 	  else {
 	    order_ew = order_strong = -1;
-	    ycut           = -1.;
-	    selectorfile   = string("");
-	    scale_scheme   = _scale_scheme;
-	    kfactor_scheme = _kfactor_scheme;
-	    fixed_scale    = _scale;
-	    order_ew       = 99;
-	    order_strong   = 99;
-	    nex            = 0;
+	    ycut                = -1.;
+	    selectorfile        = string("");
+	    scale_scheme        = _scale_scheme;
+	    kfactor_scheme      = _kfactor_scheme;
+	    fixed_scale         = _scale;
+	    order_ew            = 99;
+	    order_strong        = 99;
+	    nex                 = 0;
+	    enhance_factor      = 1.;
+	    maxreduction_factor = 1.;
+	    maxredepsilon       = 0.;
+	    enhance_function    = "1";
 	    do {
 	      getline(from,buf);
 	      position = -1;
