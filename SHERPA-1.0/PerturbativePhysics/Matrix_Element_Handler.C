@@ -306,7 +306,7 @@ bool Matrix_Element_Handler::PrintTotalXSec()
     rfile<<setw(10)<<ycut<<" ";
 
     for (size_t i=0; i<procs->Size();++i) {
-      double xstot = (*procs)[i]->TotalXS()*rpa.Picobarn();
+      double xstot = (*procs)[i]->TotalXS()/((*procs)[i]->EnhanceFactor())*rpa.Picobarn();
       double xserr = (*procs)[i]->TotalError()*rpa.Picobarn();
       //      double njet  = (*procs)[i]->Nout();
       rfile<<setw(10)<<xstot<<" "<<setw(10)<<xserr<<" ";
@@ -352,7 +352,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     m_xsecweight = winfo.xsecweight;
     m_xsecntrial = winfo.xsecntrial;
     m_ntrial =  winfo.ntrial;
-//     PRINT_INFO(m_procweight<<" "<<m_weight<<" "<<m_ntrial);
+    //PRINT_INFO(m_procweight<<" "<<m_weight<<" "<<m_ntrial);
     delete message;
   }
   else {
