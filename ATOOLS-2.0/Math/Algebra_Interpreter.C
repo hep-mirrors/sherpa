@@ -380,10 +380,8 @@ DEFINE_INTERPRETER_FUNCTION(Extract_Leaf)
     for (size_t i=0;i<(*mother)->size();++i)
       if ((*mother)()[i]==leaf) {
 	delete (*mother)()[i];
-	unsigned long add;
-	MyStrStream sstr;
-	sstr<<std::hex<<expr.substr(pos+1,expr.length()-pos-2);
-	sstr>>add;
+	unsigned int add(ToType<unsigned int>
+			 (expr.substr(pos+1,expr.length()-pos-2)));
 	(*mother)()[i]=dynamic_cast<Node<Function*>*>
 	  ((Node<Function*>*)add);
 	if ((*mother)()[i]==NULL) 
@@ -444,7 +442,8 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
   }
   p_interpreter->SetLeaf(leaf);
   return p_interpreter->
-    Iterate(left+"{"+func->Evaluate(args)+","+ToString(leaf)+"}"+right);
+    Iterate(left+"{"+func->Evaluate(args)+","+
+	    ToString((unsigned int)leaf)+"}"+right);
 }
 
 size_t FindBinaryPlus(const std::string &expr,const bool fwd,
@@ -552,7 +551,8 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
 	    <<lrstr<<"' '"<<args[0]<<"' '"<<op->Tag()
 	    <<"' '"<<args[1]<<"' '"<<rrstr<<"'\n";
   return p_interpreter->
-    Iterate(lrstr+"{"+op->Evaluate(args)+","+ToString(leaf)+"}"+rrstr);
+    Iterate(lrstr+"{"+op->Evaluate(args)+","+
+	    ToString((unsigned int)leaf)+"}"+rrstr);
 }
 
 DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
@@ -607,7 +607,8 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
   msg_Tracking()<<"Interprete_Unary -> '"
 		<<lrstr<<"' '"<<op->Tag()<<"' '"<<args[0]<<"' '"<<rrstr<<"'\n";
   return p_interpreter->
-    Iterate(lrstr+"{"+op->Evaluate(args)+","+ToString(leaf)+"}"+rrstr);
+    Iterate(lrstr+"{"+op->Evaluate(args)+","+
+	    ToString((unsigned int)leaf)+"}"+rrstr);
 }
 
 Algebra_Interpreter::Algebra_Interpreter(const bool standard):
