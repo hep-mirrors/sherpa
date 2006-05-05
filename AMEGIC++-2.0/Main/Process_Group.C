@@ -265,16 +265,16 @@ void Process_Group::GroupProcesses() {
   double   sum_massout = 0.;
   Flavour* flout = new Flavour[m_nout];
   p_pinfo->GetTotalFlavList(flout);
-
+  
   for (size_t i=0;i<m_nin;i++)  {
     massin[i]   = p_flin[i].Mass();
     sum_massin += massin[i];
   }
   for (size_t i=0;i<m_nout;i++) {
-    massout[i]   = p_flout[i].Mass();
+    massout[i]   = flout[i].Mass();
     sum_massout += massout[i];
   }
-
+  
   bool massok = 1;
   for (size_t i=0;i<m_procs.size();i++) {
     for (size_t j=0;j<m_procs[i]->NIn();j++) {
