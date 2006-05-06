@@ -23,7 +23,7 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
 					   const int maxjet, const int isrmode,
 					   const int isron,const int fsron) :
   p_me(me), p_runas(NULL), p_jf(jf), p_fssud(NULL), p_issud(NULL), p_ct(NULL), p_combi(NULL), 
-  m_maxjetnumber(maxjet),m_isrmode(isrmode), m_isrshoweron(isron),m_fsrshoweron(fsron), 
+  m_njet(0), m_maxjetnumber(maxjet),m_isrmode(isrmode), m_isrshoweron(isron),m_fsrshoweron(fsron), 
   m_sud_mode(0), m_kfac(0.), m_counts(0.), m_fails(0.)
 {
   // read in some parameters
