@@ -2,13 +2,11 @@ if CVS_INCLUDE
 CVSINCLUDE    =	.svn
 endif
 
-decaydir      = $(pkgdatadir)/Decaydata/f0980
+decaydir      = $(pkgdatadir)/Decaydata/Dstar0
 
 dist_decay_DATA       =	\
 			Decays.dat \
-			f0980_K+K-.dat \
-			f0980_pi+pi-.dat \
-			f0980_PP.dat
+			Dstar0_D+pi-.dat
 
 EXTRA_DIST    =	$(CVSINCLUDE)
 

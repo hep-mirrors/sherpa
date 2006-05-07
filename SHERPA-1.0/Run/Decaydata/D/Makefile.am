@@ -35,6 +35,7 @@ dist_decay_DATA       =	\
 			D_Kbpi.dat \
 			D_Kbpi+pi-.dat \
 			D_Kbpipi.dat \
+			D_Kbpi+pi-pi.dat \
 			D_Kbpi+pi-rho770.dat \
 			D_Kbrho770.dat \
 			D_KKb.dat \

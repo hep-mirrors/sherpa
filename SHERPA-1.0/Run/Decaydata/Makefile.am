@@ -22,6 +22,15 @@ SUBDIRS       = \
 		b11235+ \
 		D \
 		D+ \
+		D12420 \
+		D12420+ \
+		D2star2460 \
+		D2star2460+ \
+		Ds+ \
+		Dstar0 \
+		Dstar0+ \
+		Dstar2007 \
+		Dstar2010+ \
 		eta \
 		eta1295 \
 		eta1475 \
