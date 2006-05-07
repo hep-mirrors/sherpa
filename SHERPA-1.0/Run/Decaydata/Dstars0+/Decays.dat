@@ -1,0 +1,8 @@
+# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
+{431,111}	 | 0.9(0.9) [FS]	 | Dstars0+_Ds+pi.dat;
+{431,22}	 | 0.02(0.02) [FS]	 | Dstars0+_Ds+P.dat;
+{433,111}	 | 0.06(0.06) [FS]	 | Dstars0+_Dsstar+pi.dat;
+{433,22}	 | 0.02(0.02) [FS]	 | Dstars0+_Dsstar+P.dat;
+
+! NO_FULLDECAY   ! use this option: no decay of daughters
+! NO_ANTI        ! use this option: anti-mother does not decay

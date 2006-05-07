@@ -2,12 +2,12 @@ if CVS_INCLUDE
 CVSINCLUDE    =	.svn
 endif
 
-decaydir      = $(pkgdatadir)/Decaydata/Dstar2007
+decaydir      = $(pkgdatadir)/Decaydata/Dsstar+
 
 dist_decay_DATA       =	\
 			Decays.dat \
-			Dstar2007_DP.dat \
-			Dstar2007_Dpi.dat
+			Dsstar+_Ds+P.dat \
+			Dsstar+_Ds+pi.dat
 
 EXTRA_DIST    =	$(CVSINCLUDE)
 

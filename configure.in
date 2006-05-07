@@ -597,10 +597,15 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  SHERPA-1.0/Run/Decaydata/D2star2460/Makefile \
 	  SHERPA-1.0/Run/Decaydata/D2star2460+/Makefile \
 	  SHERPA-1.0/Run/Decaydata/Ds+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/Ds12536+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/Dsstar+/Makefile \
 	  SHERPA-1.0/Run/Decaydata/Dstar0/Makefile \
 	  SHERPA-1.0/Run/Decaydata/Dstar0+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/Dstar_1s+/Makefile \
 	  SHERPA-1.0/Run/Decaydata/Dstar2007/Makefile \
 	  SHERPA-1.0/Run/Decaydata/Dstar2010+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/Dstars0+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/Dstars2+/Makefile \
 	  SHERPA-1.0/Run/Decaydata/eta/Makefile \
 	  SHERPA-1.0/Run/Decaydata/eta1295/Makefile \
 	  SHERPA-1.0/Run/Decaydata/eta1475/Makefile \
@@ -645,5 +650,6 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  SHERPA-1.0/Run/Decaydata/rho1450+/Makefile \
 	  SHERPA-1.0/Run/Decaydata/rho770/Makefile \
 	  SHERPA-1.0/Run/Decaydata/rho770+/Makefile \
-	  SHERPA-1.0/Run/Decaydata/tau-/Makefile
+	  SHERPA-1.0/Run/Decaydata/tau-/Makefile \
     )
+

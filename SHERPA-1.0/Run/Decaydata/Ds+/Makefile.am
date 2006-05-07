@@ -20,7 +20,7 @@ dist_decay_DATA       =	\
 			Ds+_K0star1430pi+.dat \
 			Ds+_K+Kb.dat \
 			Ds+_K+Kbpi+pi-.dat \
-			Ds+_K+K-K-.dat \
+			Ds+_K+K+K-.dat \
 			Ds+_K-Kpi+pi+.dat \
 			Ds+_K+K-pi+pi.dat \
 			Ds+_K+K-pi+pi+pi-.dat \

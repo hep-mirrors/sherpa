@@ -1,6 +1,6 @@
 # outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-{421,111}	 | 0.619(0.029) [PDG]	 | Dstar2007_Dpi.dat;
-{421,22}	 | 0.381(0.029) [PDG]	 | Dstar2007_DP.dat;
+{431,22}	 | 0.942(0.025) [PDG]	 | Dsstar+_Ds+P.dat;
+{431,111}	 | 0.058(0.025) [PDG]	 | Dsstar+_Ds+pi.dat;
 
 ! NO_FULLDECAY   ! use this option: no decay of daughters
 ! NO_ANTI        ! use this option: anti-mother does not decay

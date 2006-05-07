@@ -37,7 +37,7 @@
 333     -> phi1020/           Decays.dat;
 413     -> Dstar2010+/        Decays.dat;
 423     -> Dstar2007/         Decays.dat;
-#433     -> D_s_Star/        DsStarDecays.dat;
+433     -> Dsstar+/           Decays.dat;
 #443     -> J_Psi/           JPsiDecays.dat;
 #513     -> B_0_Star/        BStar0Decays.dat;
 #523     -> B_Star/          BStarDecays.dat;
@@ -106,9 +106,16 @@
 9000221 -> f0600/             Decays.dat;
 9010221 -> f0980/             Decays.dat;
 
+# higher D's
 10421   -> Dstar0/            Decays.dat;
 10411   -> Dstar0+/           Decays.dat;
 10423   -> D12420/            Decays.dat;
 10413   -> D12420+/           Decays.dat;
 425     -> D2star2460/        Decays.dat;
 415     -> D2star2460+/       Decays.dat;
+
+# higher strange D's
+10431   -> Dstars0+/          Decays.dat;
+20433   -> Dstar_1s+/         Decays.dat;
+10433   -> Ds12536+/          Decays.dat;
+435     -> Dstars2+/          Decays.dat;

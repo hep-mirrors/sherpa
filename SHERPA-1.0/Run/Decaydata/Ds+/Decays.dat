@@ -37,7 +37,7 @@
 {100313,211}	 | 0.015(0.006) [PDG]	 | Ds+_Kstar1410pi+.dat;
 {10311,211}	 | 0.00041(0.00031) [PDG]	 | Ds+_K0star1430pi+.dat;
 {321,211,-211}	 | 0.0009(0.0004) [PDG]	 | Ds+_K+pi+pi-.dat;
-{321,-321,-321}	 | 0.00038(0.00017) [PDG]	 | Ds+_K+K-K-.dat;
+{321,321,-321}	 | 0.00038(0.00017) [PDG]	 | Ds+_K+K+K-.dat;
 
 ! NO_FULLDECAY   ! use this option: no decay of daughters
 ! NO_ANTI        ! use this option: anti-mother does not decay

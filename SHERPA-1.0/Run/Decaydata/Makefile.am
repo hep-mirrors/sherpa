@@ -27,10 +27,15 @@ SUBDIRS       = \
 		D2star2460 \
 		D2star2460+ \
 		Ds+ \
+		Ds12536+ \
+		Dsstar+ \
 		Dstar0 \
 		Dstar0+ \
+		Dstar_1s+ \
 		Dstar2007 \
 		Dstar2010+ \
+		Dstars0+ \
+		Dstars2+ \
 		eta \
 		eta1295 \
 		eta1475 \
