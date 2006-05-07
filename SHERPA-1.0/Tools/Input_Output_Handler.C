@@ -101,6 +101,9 @@ Input_Output_Handler::Input_Output_Handler(const std::vector<std::string> & outf
   case iotype::HepEvt:
     p_hepevt = new HepEvt_Interface(true,1,m_path,outfiles[2],m_filesize);
     break;
+  case iotype::D0HepEvt:
+    p_D0_hepevt = new HepEvt_Interface(true,4,m_path,outfiles[3],m_filesize);
+    break;
   default :
     msg.LogFile()<<"Potential Error in Input_Output_Handler::Input_Output_Handler("<<m_outtype<<")"<<std::endl
 		 <<"   No output format specified. Continue run."<<std::endl;
@@ -135,6 +138,10 @@ Input_Output_Handler::Input_Output_Handler(const std::vector<std::string> & outf
     // Obacht !!!!!
     if (p_hepevt==NULL) p_hepevt = new HepEvt_Interface(false,1,m_path,infiles[2]);
     else abort();  // Schlamassel !!!!
+    break;
+  case iotype::D0HepEvt:
+    msg.Error()<<"D0_HEPEVT_INPUT not implemented yet. Aborting."<<std::endl;
+    abort();
     break;
   default :
     break;
@@ -234,6 +241,37 @@ bool Input_Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const d
 	  p_hepevt->PrintHepEvtEvent(p_hepevt->Nhep());
 	}
 	break;
+      }
+      case iotype::D0HepEvt: {
+        Blob *signal(blobs->FindFirst(btp::Signal_Process));
+        if (signal) {
+          Blob_Data_Base *message((*signal)["Process_Weight"]);
+          if (message) {
+            msg_Debugging()<<"HEI::OTF: proc weight: "
+                <<message->Get<double>()<<"\n";
+            p_D0_hepevt->SetWeight(message->Get<double>());
+          } else THROW(fatal_error,"No weight information.");
+          Blob_Data_Base *facscale((*signal)["Factorisation_Scale"]);
+          if (facscale) {
+            p_D0_hepevt->SetQ2(facscale->Get<double>());
+          } else THROW(fatal_error,"No factorisation scale information.");
+          Particle_Vector inparts = signal->GetInParticles();
+          if(inparts.size()==2) {
+            p_D0_hepevt->SetFl1(inparts[0]->Flav().Kfcode());
+            double E1 = inparts[0]->Momentum()[0];
+            double Ebeam1 = rpa.gen.PBeam(0)[0];
+            p_D0_hepevt->Setx1(E1/Ebeam1);
+            p_D0_hepevt->SetFl2(inparts[1]->Flav().Kfcode());
+            double E2 = inparts[1]->Momentum()[0];
+            double Ebeam2 = rpa.gen.PBeam(1)[0];
+            p_D0_hepevt->Setx2(E2/Ebeam2);
+          } else THROW(fatal_error,"Not two signal particles.");
+        } else THROW(fatal_error,"No signal process.");
+        p_D0_hepevt->Sherpa2HepEvt(blobs);
+        if (m_io&1 && msg.LevelIsDebugging()) {
+          p_D0_hepevt->PrintHepEvtEvent(p_D0_hepevt->Nhep());
+        }
+        break;
       }
       default:
 	msg.Error()<<"Error in Input_Output_Handler::OutputToFormat."<<std::endl

@@ -148,6 +148,7 @@ bool HepEvt_Interface::Sherpa2HepEvt(Blob_List * const _blobs) {
   case 0 :  break;
   case 2 :  WriteReducedHepEvt(nhep); break;
   case 3 :  WriteFormatedHepEvt(nhep); break;
+  case 4 :  WriteD0HepEvt(nhep); break;
   default:  WriteFullHepEvt(nhep);
   }
   return true;
@@ -167,10 +168,24 @@ void HepEvt_Interface::PrintHepEvtEvent(int nhep)
 
 void HepEvt_Interface::WriteFullHepEvt(int nhep)
 {
-  (*p_outstream)<<"  "<<m_evtnumber<<" "<<nhep<<" "<<m_weight<<"\n";
+  (*p_outstream)<<"  "<<m_evtnumber<<" "<<nhep<<"\n";
   for (int i=0;i<nhep;++i) {
     (*p_outstream)<<i+1<<"  "<<p_isthep[i]<<" "<<p_idhep[i]<<" "<<p_jmohep[2*i]<<" "<<p_jmohep[2*i+1]
 		  <<" "<<p_jdahep[2*i]<<" "<<p_jdahep[2*i+1]<<" \n ";
+    for (int j=0;j<5;++j) (*p_outstream)<<p_phep[5*i+j]<<" ";
+    (*p_outstream)<<"\n ";
+    for (int j=0;j<4;++j) (*p_outstream)<<p_vhep[4*i+j]<<" ";
+    (*p_outstream)<<"\n";
+  }
+}
+
+void HepEvt_Interface::WriteD0HepEvt(int nhep)
+{
+  (*p_outstream)<<"  "<<m_evtnumber<<" "<<nhep<<" "<<"\n";
+  (*p_outstream)<<"    "<<m_weight<<" "<<m_Q2<<" "<<m_x1<<" "<<m_x2<<" "<<m_fl1<<" "<<m_fl2<<"\n";
+  for (int i=0;i<nhep;++i) {
+    (*p_outstream)<<i+1<<"  "<<p_isthep[i]<<" "<<p_idhep[i]<<" "<<p_jmohep[2*i]<<" "<<p_jmohep[2*i+1]
+        <<" "<<p_jdahep[2*i]<<" "<<p_jdahep[2*i+1]<<" \n ";
     for (int j=0;j<5;++j) (*p_outstream)<<p_phep[5*i+j]<<" ";
     (*p_outstream)<<"\n ";
     for (int j=0;j<4;++j) (*p_outstream)<<p_vhep[4*i+j]<<" ";
