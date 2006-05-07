@@ -206,6 +206,7 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,
 
   double  weight = p_mehandler->Weight();
   double  procweight = p_mehandler->ProcessWeight();
+  double  facscale = p_mehandler->FactorisationScale();
   int  ntrial = p_mehandler->NumberOfTrials();
 
   double weight_one=0.;
@@ -311,6 +312,7 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,
   blob->AddData("ME_Weight",new Blob_Data<double>(weight));
   blob->AddData("ME_NumberOfTrials",new Blob_Data<int>(ntrial));
   blob->AddData("Process_Weight",new Blob_Data<double>(procweight));
+  blob->AddData("Factorisation_Scale",new Blob_Data<double>(facscale));
   Spin_Correlation_Tensor* SCT = p_mehandler->GetSpinCorrelations();
   if (SCT!=NULL)
   blob->AddData("Spin_Correlation_Tensor",
