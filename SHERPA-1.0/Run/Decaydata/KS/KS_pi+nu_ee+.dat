@@ -1,10 +1,10 @@
-# Decay: K(S) --> pi+ nu_e e+ 
-#        0    --> 1   2    3  
+# Decay: K(S) --> pi+ nu_eb e- 
+#        0    --> 1   2     3  
 Channels {
 	AlwaysIntegrate = 0;   ! 0...read results and skip integration
 	                       ! 1...don't read results and integrate
 	Isotropic 1;
 }
 Result {
-   1.86674e-05 5.56344e-08 2.44045e-05;
+   1.86069e-05 5.5836e-08 2.44039e-05;
 }

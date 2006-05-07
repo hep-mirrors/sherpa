@@ -6,5 +6,5 @@ Channels {
 	Isotropic 1;
 }
 Result {
-   1.44042e-10 0 3.66443e-10;
+   inf 0 inf;
 }

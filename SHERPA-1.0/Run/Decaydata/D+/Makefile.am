@@ -29,14 +29,12 @@ dist_decay_DATA       =	\
 			D+_Kba21320+.dat \
 			D+_Kbnu_ee+.dat \
 			D+_Kbnu_mumu+.dat \
-			D+_Kbomega782.dat \
 			D+_Kbpi+.dat \
 			D+_Kbpi+pi.dat \
 			D+_Kbrho770+.dat \
 			D+_K+Kb.dat \
 			D+_K+KbKb.dat \
 			D+_K+KbKbpi.dat \
-			D+_KKbKbpi+.dat \
 			D+_K+K-Kbpi+.dat \
 			D+_K+Kstar892b.dat \
 			D+_Kstar1410bK+.dat \
@@ -44,7 +42,6 @@ dist_decay_DATA       =	\
 			D+_Kstar1410+Kb.dat \
 			D+_Kstar892bnu_ee+.dat \
 			D+_Kstar892bnu_mumu+.dat \
-			D+_Kstar892bomega782.dat \
 			D+_Kstar892bpi+.dat \
 			D+_Kstar892brho770+.dat \
 			D+_Kstar892+Kb.dat \

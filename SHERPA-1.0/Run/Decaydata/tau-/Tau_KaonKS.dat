@@ -33,5 +33,5 @@ Parameters {
   gamma_rho_1700 	= 0.09			! global factor for RChT rho''
 }
 Result {
-   1.8877e-15 5.60719e-18 2.40739e-14;
+   1.88508e-15 5.56783e-18 2.40414e-14;
 }

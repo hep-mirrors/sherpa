@@ -7,10 +7,6 @@ Channels {
     TwoResonances_axial_1_vector2_23 0.5;
     !Isotropic 1;
 }
-Resonances {
-  vector1 -> 1 2;
-  vector2 -> 2 3;
-}
 Parameters {
   v      =  1.		 	! V-A structure of tau-nutau
   a      =  1.	
@@ -37,5 +33,5 @@ Parameters {
   lambda 			= 1.			! exponent in KS
 }
 Result {
-   3.62999e-15 3.2343e-18 3.41311e-13;
+   1.34535e-15 1.74955e-18 1.96835e-13;
 }

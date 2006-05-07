@@ -34,5 +34,5 @@ Parameters {
   lambda0			= 11.9			! fitted coupling parameter
 }
 Result {
-   2.13026e-13 1.14652e-16 7.9915e-12;
+   2.84835e-13 1.93983e-16 1.20331e-11;
 }

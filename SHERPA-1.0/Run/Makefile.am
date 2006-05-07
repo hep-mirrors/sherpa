@@ -135,14 +135,9 @@ nobase_data_DATA      = \
 			MRST99Grid/cor11.dat \
 			MRST99Grid/cor12.dat \
 			MRST01Grid/lo2002.dat
-EXTRA_DIST    =	\
-		$(CVSINCLUDE) \
-		Integration.dat Processes.dat Selector.dat Model.dat Beam.dat \
-	     	Particle.dat Hadron.dat Run.dat ISR.dat ME.dat MI.dat \
-		Decays.dat Shower.dat Fragmentation.dat \
-		Lund.dat Cluster.dat
+EXTRA_DIST    =	$(CVSINCLUDE)
 
-#	     	PDFsets.tar.gz MRST99Grid.tar.gz CTEQ6Grid.tar.gz
+SUBDIRS = Decaydata CTEQ6Grid MRST99Grid
 
 dist-hook:
 	sed -e "s/-rdynamic/SHERPA_LDFLAGS/1" \

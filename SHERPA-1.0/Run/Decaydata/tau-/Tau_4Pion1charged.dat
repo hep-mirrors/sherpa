@@ -1,4 +1,4 @@
-# Decay: tau- --> pi+ pi pi pi nu_tau 
+# Decay: tau- --> pi- pi pi pi nu_tau 
 #        0    --> 1   2  3  4  5      
 Channels {
   	AlwaysIntegrate = 0;	! 0...read results and skip integration
@@ -24,5 +24,5 @@ Parameters {
   gamma = -0.00			! rho_1700
 }
 Result {
-   4.81609e-14 4.29913e-17 3.69499e-12;
+   3.83574e-15 3.75068e-18 3.47487e-13;
 }

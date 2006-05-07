@@ -573,9 +573,12 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  SHERPA-1.0/Single_Events/Makefile \
 	  SHERPA-1.0/Main/Makefile \
 	  SHERPA-1.0/Run/Makefile \
+    SHERPA-1.0/Run/CTEQ6Grid/Makefile \
+    SHERPA-1.0/Run/MRST99Grid/Makefile\
 	  SHERPA-1.0/Makefile \
 	  TOOLS/Makefile \
 	  Makefile \
+    SHERPA-1.0/Run/Decaydata/Makefile \
 	  SHERPA-1.0/Run/Decaydata/a01450/Makefile \
 	  SHERPA-1.0/Run/Decaydata/a01450+/Makefile \
 	  SHERPA-1.0/Run/Decaydata/a0980/Makefile \
@@ -589,6 +592,15 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  SHERPA-1.0/Run/Decaydata/b11235+/Makefile \
 	  SHERPA-1.0/Run/Decaydata/D/Makefile \
 	  SHERPA-1.0/Run/Decaydata/D+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/D12420/Makefile \
+	  SHERPA-1.0/Run/Decaydata/D12420+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/D2star2460/Makefile \
+	  SHERPA-1.0/Run/Decaydata/D2star2460+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/Ds+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/Dstar0/Makefile \
+	  SHERPA-1.0/Run/Decaydata/Dstar0+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/Dstar2007/Makefile \
+	  SHERPA-1.0/Run/Decaydata/Dstar2010+/Makefile \
 	  SHERPA-1.0/Run/Decaydata/eta/Makefile \
 	  SHERPA-1.0/Run/Decaydata/eta1295/Makefile \
 	  SHERPA-1.0/Run/Decaydata/eta1475/Makefile \
@@ -633,4 +645,5 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  SHERPA-1.0/Run/Decaydata/rho1450+/Makefile \
 	  SHERPA-1.0/Run/Decaydata/rho770/Makefile \
 	  SHERPA-1.0/Run/Decaydata/rho770+/Makefile \
-	  SHERPA-1.0/Run/Decaydata/tau-/Makefile )
+	  SHERPA-1.0/Run/Decaydata/tau-/Makefile
+    )
