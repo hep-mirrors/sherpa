@@ -37,7 +37,7 @@ Hadron_Decay_Channel::Hadron_Decay_Channel( Decay_Channel * _dc, string _path ) 
   HD_ME_Selector mesel;                                         // ME selector
   p_me = mesel.GetME(m_nin,m_nout,p_flavours);                  // get the appropr. ME
   p_me->SetPath( m_path );                                      // set Decaydata path 
-  msg.Out()<<"Matrix Element for "<<m_channelname<<" : "<<p_me->METype()<<"."<<endl;
+  msg.Info()<<"Matrix Element for "<<m_channelname<<" : "<<p_me->METype()<<"."<<endl;
   // check for identical particles
   Flavour refflav;
   double symfactor (1);         

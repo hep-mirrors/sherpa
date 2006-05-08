@@ -376,17 +376,21 @@ Spin_Density_Matrix Hadrons::PerformDecay(
     ChooseDecayKinematics( mom, hdc, sigma );
     if(hdc->MassSmearing()) {  // if mass smearing is turned on
       // sort daughter particle indices by width
-      int by_width[n-1];
-      for(int i=0;i<n-1;i++) {
-        by_width[i]=i;
-      }
-      for(int i=1; i<n-1; ++i) {
-        int j;
-        int value = by_width[i];
-        for (j=i-1; j>=0 && daughters[by_width[j]]->Flav().Width() > daughters[i]->Flav().Width(); --j) {
-          by_width[j+1] = by_width[j];
+      int by_width[n];
+      if(n>2) {
+        for(int i=0;i<n;i++) {
+          by_width[i]=i;
         }
-        by_width[j+1] = value;
+        for(int i=2; i<n; ++i) {
+          int j;
+          int value = by_width[i];
+          for (j=i-1; 
+               j>=1 && daughters[by_width[j]-1]->Flav().Width() > daughters[i-1]->Flav().Width();
+               --j) {
+            by_width[j+1] = by_width[j];
+          }
+          by_width[j+1] = value;
+        }
       }
       double masses[n];
       double min_masses[n];
@@ -396,8 +400,9 @@ Spin_Density_Matrix Hadrons::PerformDecay(
       msg.Debugging()<<"          masses before smearing:"<<endl;
       msg.Debugging()<<"            masses[0]="<<masses[0]<<" for "<<part->Flav()<<endl;
       // get minimum mass as min_daughter = sum ( min_daughter_daughters )
-      for(int ii=0;ii<n-1;ii++) {
-        int i=by_width[ii]+1;
+      for(int ii=1;ii<n;ii++) {
+        int i=by_width[ii];
+//       for(int i=1;i<n;i++) {
         widths[i]=daughters[i-1]->Flav().Width();
         masses[i]=daughters[i-1]->Flav().Mass(); // temporary storage of peak mass
         min_masses[i]=0.0;
@@ -409,13 +414,16 @@ Spin_Density_Matrix Hadrons::PerformDecay(
         }
       }
       // get maximum masses and smear masses
-      for(int ii=0;ii<n-1;ii++) {
-        int i=by_width[ii]+1;
+      for(int ii=1;ii<n;ii++) {
+        int i=by_width[ii];
+//       for(int i=1;i<n;i++) {
         max_masses[i]=masses[0];
-        for(int k=1;k<i;k++) {
+        for(int kk=0;kk<i;kk++) {
+          int k=by_width[kk];
           max_masses[i]-=masses[k];
         }
-        for(int j=i+1;j<n;j++) {
+        for(int jj=i+1;jj<n;jj++) {
+          int j=by_width[jj];
           max_masses[i]-=min_masses[j];
         }
         msg.Debugging()<<"            masses["<<i<<"]="<<masses[i]<<" for "<<daughters[i-1]->Flav()<<endl;
@@ -441,7 +449,15 @@ Spin_Density_Matrix Hadrons::PerformDecay(
         boost.Boost(mom[i]);
       }
       Momenta_Stretcher stretch;
-      stretch.MassThem(1,hdc->NOut()+1, mom, masses);
+      if(!stretch.MassThem(1,hdc->NOut()+1, mom, masses)) {
+        msg.Error()<<METHOD<<": Momenta_Stretcher delivered an error for stretching "<<hdc->ChannelName()<<std::endl;
+        msg.Error()<<METHOD<<":  "<<"min_masses["<<0<<"]="<<min_masses[0]<<" masses["<<0<<"]="<<masses[0]<<" max_masses["<<0<<"]="<<max_masses[0]<<std::endl;
+        for(int ii=1;ii<n;ii++) {
+          int i=by_width[ii];
+//         for(int i=1;i<n;i++) {
+          msg.Error()<<METHOD<<":  "<<"min_masses["<<i<<"]="<<min_masses[i]<<" masses["<<i<<"]="<<masses[i]<<" max_masses["<<i<<"]="<<max_masses[i]<<std::endl;
+        }
+      }
       for(int i=1;i<hdc->NOut()+1;i++) {
         boost.BoostBack(mom[i]);
       }
@@ -601,7 +617,7 @@ Decay_Table * Hadrons::InitialiseOneDecayTable(vector<string> line)
   string lcpath (line[1]);      // path of decay files
   Decay_Table_Reader * dtreader = new Decay_Table_Reader(m_path+lcpath,line[2]);
   if (dtreader->FillDecayTable(dt)>0) {     // if at least one channel defined
-    msg.Out()<<om::blue<<"Found "<<dt->NumberOfDecayChannels()<<" decay channels for "<<dt->Flav()<<om::reset<<endl;
+    msg.Info()<<om::blue<<"Found "<<dt->NumberOfDecayChannels()<<" decay channels for "<<dt->Flav()<<om::reset<<endl;
     dtreader->FillInMatrixElementsAndPS(dt,p_channelmap,m_md0);
     if( msg.LevelIsInfo() ) {
       msg.Info()<<"Initialised a new decay table : "<<endl;

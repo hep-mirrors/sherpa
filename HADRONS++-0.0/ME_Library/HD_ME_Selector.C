@@ -16,12 +16,12 @@ using namespace std;
 HD_ME_Base * HD_ME_Selector::GetME(int nin,int nout,Flavour * flavs)
 {
   HD_ME_Base * hdme = NULL;							// pointer on ME_Base
-  double mass = flavs[0].Mass()+3.*flavs[0].Width();  // mass of decaying particle
+  double mass = flavs[0].Mass()/*+3.*flavs[0].Width()*/;  // mass of decaying particle
 
   // sanity check if sum of outgoing masses > incoming mass
   int outcharge(0);
   for (int i=1;i<1+nout;i++) {
-    mass-=flavs[i].Mass()-3.*flavs[i].Width();
+    mass-=flavs[i].Mass()/*-3.*flavs[i].Width()*/;
     outcharge += flavs[i].IntCharge();
     if (mass<0) {
       msg.Error()<<"Error in HD_ME_Selector::GetME("<<nin<<"->"<<nout<<") : "
