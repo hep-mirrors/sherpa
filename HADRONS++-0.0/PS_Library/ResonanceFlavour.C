@@ -58,7 +58,7 @@ Histogram * ResonanceFlavour::CreateGHistogram( ResonanceFlavour res1, Resonance
 {
   // create file name
   char fn[512];
-  sprintf(fn, "%s/PhaseSpaceFunctions/GQ2_Mres=%.3f_Gres=%.3f_Mres'=%.3f_Gres'=%.3f_Mout=%.3f.dat",
+  sprintf(fn, "%s/PhaseSpaceFunctions/GQ2_Mres=%.3f_Gres=%.3f_MresP=%.3f_GresP=%.3f_beta=%.3f_Mout=%.3f.dat",
       m_path.c_str(), res1.Mass(), res1.Width(), res2.Mass(), res2.Width(), beta, Flavour(out).PSMass() );
 
   // look if file already exists
