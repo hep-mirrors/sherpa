@@ -418,7 +418,7 @@ Spin_Density_Matrix Hadrons::PerformDecay(
         int i=by_width[ii];
 //       for(int i=1;i<n;i++) {
         max_masses[i]=masses[0];
-        for(int kk=0;kk<i;kk++) {
+        for(int kk=1;kk<i;kk++) {
           int k=by_width[kk];
           max_masses[i]-=masses[k];
         }
