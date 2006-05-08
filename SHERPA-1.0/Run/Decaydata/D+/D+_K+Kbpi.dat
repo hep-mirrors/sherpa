@@ -1,5 +1,5 @@
-# Decay: D+ --> K(0)*(1430)b K+ 
-#        0  --> 1            2  
+# Decay: D+ --> K+ Kb pi 
+#        0  --> 1  2  3  
 Channels {
 	AlwaysIntegrate = 0;   # 0...read results and skip integration
 	                       # 1...don't read results and integrate
@@ -8,5 +8,5 @@ Channels {
 	Isotropic 1;
 }
 Result {
-   4.49061e-11 3.54704e-19 1.67886e-10;
+   3.2482e-05 1.24026e-07 0.000187258;
 }

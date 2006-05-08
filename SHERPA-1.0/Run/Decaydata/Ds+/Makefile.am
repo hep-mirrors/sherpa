@@ -6,7 +6,6 @@ decaydir      = $(pkgdatadir)/Decaydata/Ds+
 
 dist_decay_DATA       =	\
 			Decays.dat \
-			Ds+_a11260+phi1020.dat \
 			Ds+_etanu_ee+.dat \
 			Ds+_etanu_mumu+.dat \
 			Ds+_etapi+.dat \
@@ -42,6 +41,7 @@ dist_decay_DATA       =	\
 			Ds+_phi1020pi+pi+pi-.dat \
 			Ds+_phi1020pi+rho770.dat \
 			Ds+_phi1020rho770+.dat \
+			Ds+_phi1020rho770+pi.dat \
 			Ds+_pi+pi+pi-.dat \
 			Ds+_pi+pi+pi+pi-pi-.dat \
 			Ds+_rho1450K+.dat

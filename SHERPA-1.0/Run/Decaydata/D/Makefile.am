@@ -70,7 +70,6 @@ dist_decay_DATA       =	\
 			D_pi+pi-.dat \
 			D_pipi.dat \
 			D_pi+pi+pi-pi-.dat \
-			D_rho1450+K-.dat \
 			D_rho770+bnu_ee+.dat \
 			D_rho770+bnu_mumu+.dat \
 			D_rho770+bpi+.dat \
