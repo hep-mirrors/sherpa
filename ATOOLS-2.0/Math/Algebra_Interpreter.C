@@ -280,6 +280,8 @@ Term *Vec4D_Part::Evaluate(const std::vector<Term*> &args) const
 DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Abs2,"Abs2",Abs2)
 DEFINE_ONE_VECTOR_OPERATOR(Vec4D_PPerp,"PPerp",PPerp)
 DEFINE_ONE_VECTOR_OPERATOR(Vec4D_PPerp2,"PPerp2",PPerp2)
+DEFINE_ONE_VECTOR_OPERATOR(Vec4D_PPlus,"PPlus",PPlus)
+DEFINE_ONE_VECTOR_OPERATOR(Vec4D_PMinus,"PMinus",PMinus)
 DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Theta,"Theta",Theta)
 DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Eta,"Eta",Eta)
 DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Phi,"Phi",Phi)
@@ -331,8 +333,14 @@ DEFINE_INTERPRETER_FUNCTION(Resolve_Bracket)
 	      pos+fit->second->Tag().length()==i) break;
 	}
 	if (fit==p_interpreter->Functions().rend()) {
-	  l=i;
-	  take=open;
+	  for (size_t j(i+1);j<expr.length();++j) {
+	    if (expr[j]==',') break;
+	    else if (expr[j]==')') {
+	      l=i;
+	      take=open;
+	      break;
+	    }
+	  }
 	}
       }    
     }  
@@ -380,10 +388,8 @@ DEFINE_INTERPRETER_FUNCTION(Extract_Leaf)
     for (size_t i=0;i<(*mother)->size();++i)
       if ((*mother)()[i]==leaf) {
 	delete (*mother)()[i];
-	unsigned long add;
-	MyStrStream sstr;
-	sstr<<std::hex<<expr.substr(pos+1,expr.length()-pos-2);
-	sstr>>add;
+	unsigned int add(ToType<unsigned int>
+			 (expr.substr(pos+1,expr.length()-pos-2)));
 	(*mother)()[i]=dynamic_cast<Node<Function*>*>
 	  ((Node<Function*>*)add);
 	if ((*mother)()[i]==NULL) 
@@ -444,7 +450,8 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
   }
   p_interpreter->SetLeaf(leaf);
   return p_interpreter->
-    Iterate(left+"{"+func->Evaluate(args)+","+ToString(leaf)+"}"+right);
+    Iterate(left+"{"+func->Evaluate(args)+","
+	    +ToString((unsigned int)leaf)+"}"+right);
 }
 
 size_t FindBinaryPlus(const std::string &expr,const bool fwd,
@@ -552,7 +559,8 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
 	    <<lrstr<<"' '"<<args[0]<<"' '"<<op->Tag()
 	    <<"' '"<<args[1]<<"' '"<<rrstr<<"'\n";
   return p_interpreter->
-    Iterate(lrstr+"{"+op->Evaluate(args)+","+ToString(leaf)+"}"+rrstr);
+    Iterate(lrstr+"{"+op->Evaluate(args)+","
+	    +ToString((unsigned int)leaf)+"}"+rrstr);
 }
 
 DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
@@ -607,7 +615,8 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
   msg_Tracking()<<"Interprete_Unary -> '"
 		<<lrstr<<"' '"<<op->Tag()<<"' '"<<args[0]<<"' '"<<rrstr<<"'\n";
   return p_interpreter->
-    Iterate(lrstr+"{"+op->Evaluate(args)+","+ToString(leaf)+"}"+rrstr);
+    Iterate(lrstr+"{"+op->Evaluate(args)+","
+	    +ToString((unsigned int)leaf)+"}"+rrstr);
 }
 
 Algebra_Interpreter::Algebra_Interpreter(const bool standard):
@@ -648,6 +657,8 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   AddFunction(new Vec4D_Abs2());
   AddFunction(new Vec4D_PPerp());
   AddFunction(new Vec4D_PPerp2());
+  AddFunction(new Vec4D_PPlus());
+  AddFunction(new Vec4D_PMinus());
   AddFunction(new Vec4D_Theta());
   AddFunction(new Vec4D_Eta());
   AddFunction(new Vec4D_Phi());
