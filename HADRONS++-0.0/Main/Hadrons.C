@@ -381,12 +381,12 @@ Spin_Density_Matrix Hadrons::PerformDecay(
         for(int i=0;i<n;i++) {
           by_width[i]=i;
         }
+        // sort "by_width"-array by the width of daughters (insertion sort)
         for(int i=2; i<n; ++i) {
           int j;
           int value = by_width[i];
-          for (j=i-1; 
-               j>=1 && daughters[by_width[j]-1]->Flav().Width() > daughters[i-1]->Flav().Width();
-               --j) {
+          for (j=i-1; j>=1 && daughters[by_width[j]-1]->Flav().Width() > 
+                              daughters[i-1]->Flav().Width(); --j) {
             by_width[j+1] = by_width[j];
           }
           by_width[j+1] = value;
@@ -416,7 +416,6 @@ Spin_Density_Matrix Hadrons::PerformDecay(
       // get maximum masses and smear masses
       for(int ii=1;ii<n;ii++) {
         int i=by_width[ii];
-//       for(int i=1;i<n;i++) {
         max_masses[i]=masses[0];
         for(int kk=1;kk<i;kk++) {
           int k=by_width[kk];
@@ -426,19 +425,25 @@ Spin_Density_Matrix Hadrons::PerformDecay(
           int j=by_width[jj];
           max_masses[i]-=min_masses[j];
         }
-        msg.Debugging()<<"            masses["<<i<<"]="<<masses[i]<<" for "<<daughters[i-1]->Flav()<<endl;
+        msg.Debugging()<<"            masses["<<i<<"]="<<masses[i]
+                       <<" for "<<daughters[i-1]->Flav()<<endl;
         // BreitWigner with mass, width, min_mass, max_mass
         if( masses[i] > 1e-5 && widths[i] > 1e-5 ) {
           double myrandom = ran.Get();
-          msg.Debugging()<<"            "<<daughters[i-1]->Flav()<<": smearing with mass="<<masses[i]<<" width="<<widths[i]<<" min="<<min_masses[i]<<" max="<<max_masses[i]<<" random="<<myrandom<<endl;
-          masses[i] = sqrt(
-              PHASIC::CE.MassivePropMomenta(masses[i],widths[i],1,sqr(min_masses[i]),sqr(max_masses[i]),myrandom)
-                          );
+          msg.Debugging()<<"            "<<daughters[i-1]->Flav()
+                         <<": smearing with mass="<<masses[i]
+                         <<" width="<<widths[i]
+                         <<" min="<<min_masses[i]
+                         <<" max="<<max_masses[i]
+                         <<" random="<<myrandom<<endl;
+          masses[i] = sqrt( PHASIC::CE.MassivePropMomenta(masses[i],widths[i],
+                            1,sqr(min_masses[i]),sqr(max_masses[i]),myrandom) );
         }
       }
-      msg.Debugging()<<"          target masses after smearing:"<<endl;
+      msg.Debugging()<<"          diced target masses:"<<endl;
       for(int i=1;i<n;i++) {
-        msg.Debugging()<<"            masses["<<i<<"]="<<masses[i]<<" for "<<daughters[i-1]->Flav()<<endl;
+        msg.Debugging()<<"            masses["<<i<<"]="<<masses[i]
+                       <<" for "<<daughters[i-1]->Flav()<<endl;
       }
       Vec4D cms = Vec4D(0.,0.,0.,0.);
       for(int i=1;i<hdc->NOut()+1;i++) {
@@ -449,13 +454,19 @@ Spin_Density_Matrix Hadrons::PerformDecay(
         boost.Boost(mom[i]);
       }
       Momenta_Stretcher stretch;
-      if(!stretch.MassThem(1,hdc->NOut()+1, mom, masses)) {
-        msg.Error()<<METHOD<<": Momenta_Stretcher delivered an error for stretching "<<hdc->ChannelName()<<std::endl;
-        msg.Error()<<METHOD<<":  "<<"min_masses["<<0<<"]="<<min_masses[0]<<" masses["<<0<<"]="<<masses[0]<<" max_masses["<<0<<"]="<<max_masses[0]<<std::endl;
+      bool okay = stretch.ZeroThem(1,hdc->NOut()+1, mom);
+      okay = okay && stretch.MassThem(1,hdc->NOut()+1, mom, masses);
+      if(!okay) {
+        msg.Error()<<METHOD<<": Momenta_Stretcher delivered an error for stretching "
+                   <<hdc->ChannelName()<<std::endl;
+        msg.Error()<<METHOD<<":  "<<"min_masses["<<0<<"]="<<min_masses[0]
+                   <<" masses["<<0<<"]="<<masses[0]<<" max_masses["<<0<<"]="
+                   <<max_masses[0]<<std::endl;
         for(int ii=1;ii<n;ii++) {
           int i=by_width[ii];
-//         for(int i=1;i<n;i++) {
-          msg.Error()<<METHOD<<":  "<<"min_masses["<<i<<"]="<<min_masses[i]<<" masses["<<i<<"]="<<masses[i]<<" max_masses["<<i<<"]="<<max_masses[i]<<std::endl;
+          msg.Error()<<METHOD<<":  "<<"min_masses["<<i<<"]="<<min_masses[i]
+                     <<" masses["<<i<<"]="<<masses[i]<<" max_masses["<<i<<"]="
+                     <<max_masses[i]<<std::endl;
         }
       }
       for(int i=1;i<hdc->NOut()+1;i++) {
@@ -463,7 +474,8 @@ Spin_Density_Matrix Hadrons::PerformDecay(
       }
       msg.Debugging()<<"          Decay kinematics after mass smearing:"<<endl;
       for(int i=0;i<hdc->NOut()+1;i++) {
-        msg.Debugging()<<"            p["<<i<<"]="<<mom[i]<<": ["<<mom[i].Mass()<<"]"<<endl;
+        msg.Debugging()<<"            p["<<i<<"]="<<mom[i]
+                       <<": ["<<mom[i].Mass()<<"]"<<endl;
       }
     }
   }
