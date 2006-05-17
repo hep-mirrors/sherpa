@@ -107,6 +107,23 @@ void Standard_Model::ReadInFile() {
 				     p_dataread->GetValue<double>("ALPHA_4_G_4",0.)));
   p_constants->insert(std::make_pair(std::string("Alpha_5"),
 				     p_dataread->GetValue<double>("ALPHA_5",0.)));
+  //Anomalous gauge couplings (Nucl. Phys. B282 (1987) 253-307)
+  p_constants->insert(std::make_pair(std::string("g1_gamma"),
+				     p_dataread->GetValue<double>("G1_GAMMA",1.)));
+  p_constants->insert(std::make_pair(std::string("kappa_gamma"),
+				     p_dataread->GetValue<double>("KAPPA_GAMMA",1.)));
+  p_constants->insert(std::make_pair(std::string("lambda_gamma"),
+				     p_dataread->GetValue<double>("LAMBDA_GAMMA",0.)));
+  p_constants->insert(std::make_pair(std::string("g4_gamma"),
+				     p_dataread->GetValue<double>("G4_GAMMA",0.)));
+  p_constants->insert(std::make_pair(std::string("g1_Z"),
+				     p_dataread->GetValue<double>("G1_Z",1.)));
+  p_constants->insert(std::make_pair(std::string("kappa_Z"),
+				     p_dataread->GetValue<double>("KAPPA_Z",1.)));
+  p_constants->insert(std::make_pair(std::string("lambda_Z"),
+				     p_dataread->GetValue<double>("LAMBDA_Z",0.)));
+  p_constants->insert(std::make_pair(std::string("g4_Z"),
+				     p_dataread->GetValue<double>("G4_Z",0.)));
 }
 
 
