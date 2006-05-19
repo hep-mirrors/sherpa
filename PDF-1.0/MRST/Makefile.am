@@ -1,27 +1,18 @@
-SHERPASYS     =	../..
-
-PDFFLAGS      =	# -pedantic -Wall -Winline
-DEFS          =
-
-ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
-ATOOLSINCS    = -I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
-PDFINCS       =	-I../Main 
-MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
-
-if CVS_INCLUDE
-CVSINCLUDE    =	.svn
-endif
-
 pkglib_LTLIBRARIES       = libMRST.la
+
 libMRST_la_SOURCES   =	\
 			mrst99.cc \
 			mrst2001lo.f \
 			PDF_MRST99.C \
 			PDF_MRST01LO.C
+
 pkginclude_HEADERS        = \
 			mrst99.h \
 			PDF_MRST99.H \
 			PDF_MRST01LO.H
-EXTRA_DIST    = $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(PDFFLAGS)
-INCLUDES      =	$(APACICINCS) $(PDFINCS) $(MODELINCS) $(ATOOLSINCS)
+
+EXTRA_DIST    = @SVNINCLUDE@
+
+AM_CXXFLAGS   =	@SHERPAFLAGS@
+
+INCLUDES      =	@APACICINCS@ @PDFINCS@ @MODELINCS@ @ATOOLSINCS@

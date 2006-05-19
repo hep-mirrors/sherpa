@@ -61,7 +61,7 @@ void Herwig_Interface::ReadInTheParameters()
   int pdfset;
   std::vector<std::vector<double> > help;
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
-  reader->SetMatrixType(reader->MTransposed);
+  reader->SetMatrixType(mtc::transposed);
   reader->SetInputPath(m_path);
   reader->SetInputFile(m_file);
   reader->AddIgnore("(");

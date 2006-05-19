@@ -1,7 +1,3 @@
-if CVS_INCLUDE
-CVSINCLUDE    =	.svn
-endif
-
 decaydir      = $(pkgdatadir)/Decaydata/TauDecays
 
 dist_decay_DATA       =	\
@@ -10,6 +6,7 @@ dist_decay_DATA       =	\
 			Tau_2PionKaon.dat \
 			Tau_2PionKL.dat \
 			Tau_2PionKS.dat \
+			Tau_3Kaon(3charged).dat \
 			Tau_3Kaon3charged.dat \
 			Tau_3Pion1charged.dat \
 			Tau_3Pion3charged.dat \
@@ -45,7 +42,5 @@ dist_decay_DATA       =	\
 			tau-_pi+pi-pi-pipipinu_tau.dat \
 			tau-_pi+pi+pi-pi-pi-pinu_tau.dat
 
-SUBDIRS       = PhaseSpaceFunctions
-
-EXTRA_DIST    =	$(CVSINCLUDE)
+EXTRA_DIST    =	@SVNINCLUDE@
 

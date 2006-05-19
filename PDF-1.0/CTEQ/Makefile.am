@@ -1,19 +1,3 @@
-SHERPASYS     =	../..
-
-PDFFLAGS      =	# -pedantic -Wall -Winline
-DEFS          =
-
-ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
-ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
-MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
-PDFINCS       =	-I../Main
-APACICINCS    =	-I$(SHERPASYS)/APACIC++-2.0/Showers
-
-
-if CVS_INCLUDE
-CVSINCLUDE    =	.svn
-endif
-
 if LHAPDF_SUPPORT
 else
 pkglib_LTLIBRARIES       =	libCTEQ.la
@@ -24,7 +8,9 @@ libCTEQ_la_SOURCES     =	\
 pkginclude_HEADERS        =	\
 			CTEQ6_Fortran_Interface.H 
 endif
-EXTRA_DIST    = $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(PDFFLAGS)
-INCLUDES      =	$(APACICINCS) $(PDFINCS) $(MODELINCS) $(ATOOLSINCS)
 
+INCLUDES      =	@APACICINCS@ @PDFINCS@ @MODELINCS@ @ATOOLSINCS@
+
+EXTRA_DIST    = @SVNINCLUDE@
+
+AM_CXXFLAGS   =	@SHERPAFLAGS@

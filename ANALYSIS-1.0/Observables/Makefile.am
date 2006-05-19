@@ -1,26 +1,9 @@
-SHERPASYS     =	../..
-
-ANALYSISFLAGS =	# -pedantic -Wall #-Winline
-DEFS          =
-
-ANALYSISINCS  =	-I../Main
-MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
-PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main
-ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
-ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
-APACICINCS    = -I$(SHERPASYS)/APACIC++-2.0/Main
-
-if CVS_INCLUDE
-CVSINCLUDE    =	.svn
-endif
-
 if ROOT_SUPPORT
-ROOTINCS      =	-I@ROOTINCDIR@
-ROOTFLAGS     = -Wno-long-long
 EXTRAOBS      =	Dalitz_Observables.C
 endif
 
 pkglib_LTLIBRARIES       =	libObservables.la
+
 libObservables_la_SOURCES     =	\
 				$(EXTRAOBS) \
 				HT.C \
@@ -81,7 +64,9 @@ pkginclude_HEADERS        =	\
 			Jet_Mass_and_Broadening.H \
 			Scaled_Observables.H \
 			Four_Jet_Angles.H
-EXTRA_DIST    = $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(ANALYSISFLAGS) $(ROOTFLAGS)
-INCLUDES      =	$(ANALYSISINCS) $(MODELINCS) $(PDFINCS) \
-		$(APACICINCS) $(ATOOLSINCS) $(ROOTINCS)
+EXTRA_DIST    = @SVNINCLUDE@
+
+AM_CXXFLAGS   =	@SHERPAFLAGS@ @CONDITIONAL_ROOTFLAGS@
+
+INCLUDES      =	@ANALYSISINCS@ @MODELINCS@ @PDFINCS@ \
+		@APACICINCS@ @ATOOLSINCS@ @CONDITIONAL_ROOTINCS@

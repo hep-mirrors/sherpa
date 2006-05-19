@@ -1,9 +1,5 @@
 MAKE = make 
 
-if CVS_INCLUDE
-CVSINCLUDE    =	.svn
-endif
-
 SUBDIRS       =	\
 		Tools \
 		LundTools \
@@ -13,5 +9,5 @@ SUBDIRS       =	\
 		Single_Events \
 		Main \
 		Run
-EXTRA_DIST    =	$(CVSINCLUDE)
 
+EXTRA_DIST    =	@SVNINCLUDE@

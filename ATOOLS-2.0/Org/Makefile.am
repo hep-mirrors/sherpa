@@ -1,21 +1,5 @@
-SHERPASYS = ../..
-
-ATOOLSFLAGS   =	-DUSING__COLOUR # -pedantic -Wall -Winline
-DEFS          =
-
-ATOOLSINCS    =	-I../Math -I../Phys
-MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main 
-
-if CVS_INCLUDE
-CVSINCLUDE    =	.svn
-endif
-
-if ROOT_SUPPORT
-ROOTINCS      =	-I@ROOTINCDIR@
-ROOTFLAGS     = -Wno-long-long
-endif
-
 pkglib_LTLIBRARIES = libToolsOrg.la
+
 libToolsOrg_la_SOURCES        = \
 				Shell_Tools.C \
 				Object.C \
@@ -40,6 +24,7 @@ libToolsOrg_la_SOURCES        = \
 				Integration_Info.C \
 				Debugger.C \
 				My_Root.C
+
 pkginclude_HEADERS       =	\
 			CXXFLAGS.H \
 			Smart_Pointer.H \
@@ -76,9 +61,9 @@ pkginclude_HEADERS       =	\
 			Node.H \
 			Node.C \
 			My_Root.H
-EXTRA_DIST    = $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(ATOOLSFLAGS) $(ROOTFLAGS) \
-		-DSHERPA_INCLUDE_PATH=\"$(pkgincludedir)\" \
-		-DSHERPA_BINARY_PATH=\"$(bindir)\" \
-		-DSHERPA_SHARE_PATH=\"$(pkgdatadir)\"
-INCLUDES      = $(MODELINCS) $(ATOOLSINCS) $(ROOTINCS)
+
+EXTRA_DIST    = @SVNINCLUDE@
+
+AM_CXXFLAGS   =	@SHERPAFLAGS@ @CONDITIONAL_ROOTFLAGS@
+
+INCLUDES      = @MODELINCS@ @ATOOLSINCS@ @CONDITIONAL_ROOTINCS@

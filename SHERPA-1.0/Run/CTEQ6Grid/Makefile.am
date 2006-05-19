@@ -1,7 +1,3 @@
-if CVS_INCLUDE
-CVSINCLUDE    =	.svn
-endif
-
 pdfdir        = $(pkgdatadir)/CTEQ6Grid
 
 dist_pdf_DATA         =	\
@@ -10,4 +6,4 @@ dist_pdf_DATA         =	\
 			cteq6m.tbl \
 			cteq6d.tbl 
 
-EXTRA_DIST    =	$(CVSINCLUDE) 
+EXTRA_DIST    =	@SVNINCLUDE@

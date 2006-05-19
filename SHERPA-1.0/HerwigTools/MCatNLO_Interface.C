@@ -46,7 +46,7 @@ MCatNLO_Interface::~MCatNLO_Interface()
 bool MCatNLO_Interface::ReadInTheParameters()
 {
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
-  reader->SetMatrixType(reader->MTransposed);
+  reader->SetMatrixType(mtc::transposed);
   reader->SetInputPath(m_path);
   reader->SetInputFile(m_file);
   reader->AddIgnore("(");

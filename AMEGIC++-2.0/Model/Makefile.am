@@ -1,12 +1,5 @@
 pkglib_LTLIBRARIES = libModel.la
 
-if CVS_INCLUDE
-CVSINCLUDE    =	.svn
-endif
-
-AMEGICFLAGS   =	# -pedantic -Wall #-Winline
-DEFS          =
-
 libModel_la_SOURCES = Lorentz_Function.C Color_Function.C \
 		      Single_Vertex.C Vertex.C \
                       Interaction_Model_Base.C \
@@ -23,15 +16,7 @@ libModel_la_SOURCES = Lorentz_Function.C Color_Function.C \
 		      Interaction_Model_SM_ZPrime.C Interaction_Model_MSSM_EHC.C \
 		      Interaction_Model_AEW.C Interaction_Model_SM_AGC.C \
 		      Interaction_Model_Handler.C
-INCLUDES = -I../Amplitude \
-	   -I../Amplitude/AmplTools \
-	   -I../Amplitude/Zfunctions \
-	   -I../Model \
-	   -I../String \
-           -I../../MODEL-1.0/Main \
-           -I../../ATOOLS-2.0/Phys \
-	   -I../../ATOOLS-2.0/Math \
-	   -I../../ATOOLS-2.0/Org 
+
 pkginclude_HEADERS = Lorentz_Function.H Color_Function.H \
 		 Single_Vertex.H Vertex.H \
 		 Interaction_Model_Base.H Interaction_Model_Handler.H \
@@ -47,6 +32,9 @@ pkginclude_HEADERS = Lorentz_Function.H Color_Function.H \
 	         Interaction_Model_EHC.H Interaction_Model_SMEHC.H \
 		 Interaction_Model_AEW.H Interaction_Model_SM_AGC.H \
 	         Interaction_Model_SM_ZPrime.H
-CXXFLAGS      =	-g $(AMEGICFLAGS)
 
-EXTRA_DIST    = $(CVSINCLUDE)
+INCLUDES = @AMEGICINCS@ @MODELINCS@ @ATOOLSINCS@
+
+CXXFLAGS   =-g @SHERPAFLAGS@
+
+EXTRA_DIST    = @SVNINCLUDE@

@@ -1,7 +1,3 @@
-if CVS_INCLUDE
-CVSINCLUDE    =	.svn
-endif
-
 decaydir      = $(pkgdatadir)/Decaydata/Omega782Decays
 
 dist_decay_DATA       =	\
@@ -16,5 +12,5 @@ dist_decay_DATA       =	\
 			omega782_pipiP.dat \
 			omega782_pi+pi-pi.dat
 
-EXTRA_DIST    =	$(CVSINCLUDE)
+EXTRA_DIST    =	@SVNINCLUDE@
 

@@ -1,6 +1,8 @@
 #ifndef Initialization_Handler_h
 #define Initialization_Handler_h
 
+#include "CXXFLAGS.H"
+
 #include "Model_Base.H"
 #include "Beam_Spectra_Handler.H"
 #include "ISR_Handler.H"

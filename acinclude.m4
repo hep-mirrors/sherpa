@@ -1,61 +1,470 @@
-AC_DEFUN([ROOT_PATH],
+dnl set flags according to build environment
+
+AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
 [
-  AC_ARG_WITH(rootsys,
-  [  --with-rootsys          top of the ROOT installation directory],
-    user_rootsys=$withval,
-    user_rootsys="none")
-  if test ! x"$user_rootsys" = xnone; then
-    rootbin="$user_rootsys/bin"
-  elif test ! x"$ROOTSYS" = x ; then 
-    rootbin="$ROOTSYS/bin"
-  else 
-   rootbin=$PATH
-  fi
-  AC_PATH_PROG(ROOTCONF, root-config , no, $rootbin)
-  AC_PATH_PROG(ROOTEXEC, root , no, $rootbin)
-  AC_PATH_PROG(ROOTCINT, rootcint , no, $rootbin)
-	
-  if test ! x"$ROOTCONF" = "xno" && \
-     test ! x"$ROOTCINT" = "xno" ; then 
+  case "$build_os:$build_cpu:$build_vendor" in
+    *darwin*:*power*:*)
+      echo "checking for architecture... Darwin (MacOS)"
+      ldflags="-dynamic -flat_namespace"
+      AC_DEFINE(ARCH_DARWIN, "1", "Architecture identified as Darwin (MacOS)") ;;
+    *linux*:*:*)
+      echo "checking for architecture...  Linux"
+      ldflags="-rdynamic"
+      AC_DEFINE(ARCH_LINUX, "1", "Architecture identified as Linux") ;;
+    *)
+      echo "checking for architecture...  unknown"
+      echo "hosts system type $build not yet supported, assuming unix behaviour."
+      echo "possible failure due to unknown compiler/linker characteristics."
+      echo "please inform us about build results at info@sherpa-mc.de"
+      echo "(will continue in 10 seconds)"
+      sleep 10
+      ldflags="-rdynamic"
+      AC_DEFINE(ARCH_UNIX, "1", "Architecture identified as Unix") ;;
+  esac
+  AC_SUBST(ldflags)
+])
 
-    # define some variables 
-    ROOTLIBDIR=`$ROOTCONF --libdir`
-    ROOTINCDIR=`$ROOTCONF --incdir`
-    ROOTCFLAGS=`$ROOTCONF --noauxcflags --cflags` 
-    ROOTLIBS=`$ROOTCONF --noauxlibs --noldflags --libs`
-    ROOTGLIBS=`$ROOTCONF --noauxlibs --noldflags --glibs`
-    ROOTAUXCFLAGS=`$ROOTCONF --auxcflags`
-    ROOTAUXLIBS=`$ROOTCONF --auxlibs`
-    ROOTRPATH=$ROOTLIBDIR
-	
-    if test $1 ; then 
-      AC_MSG_CHECKING(whether ROOT version >= [$1])
-      vers=`$ROOTCONF --version | tr './' ' ' | awk 'BEGIN { FS = " "; } { printf "%d", ($''1 * 1000 + $''2) * 1000 + $''3;}'`
-      requ=`echo $1 | tr './' ' ' | awk 'BEGIN { FS = " "; } { printf "%d", ($''1 * 1000 + $''2) * 1000 + $''3;}'`
-      if test $vers -lt $requ ; then 
-        AC_MSG_RESULT(no)
-	no_root="yes"
-      else 
-        AC_MSG_RESULT(yes)
-      fi
+
+dnl setup all variables for substitution in Makefile.am's and some additional DEFINEs
+dnl
+dnl Additionally some variables are defined automatically:
+dnl @bindir@  executables' directory
+dnl @datadir@  specified data directory e. g. /usr/local/share
+dnl @includedir@  directory where header files are being installed
+dnl @libdir@  directory where libraries are being installed
+dnl @prefix@  the common installation prefix, e. g. /usr/local
+dnl @top_builddir@  relative path to the top-level of build tree
+
+
+AC_DEFUN([SHERPA_SETUP_VARIABLES],
+[
+  AMEGICDIR="\${top_builddir}/AMEGIC++-2.0"
+  AMEGICINCS="-I\${AMEGICDIR}/Main -I\${AMEGICDIR}/Amplitude -I\${AMEGICDIR}/Phasespace \
+              -I\${AMEGICDIR}/String -I\${AMEGICDIR}/Model \
+              -I\${AMEGICDIR}/Amplitude/Zfunctions -I\${AMEGICDIR}/Amplitude/AmplTools"
+  AMEGICLIBS="-lAmegic -lAmplitude -lAmegicPSGen \
+              -lZfunctions -lModel -lString"
+  AC_SUBST(AMEGICDIR)
+  AC_SUBST(AMEGICINCS)
+  AC_SUBST(AMEGICLIBS)
+
+  AMISICDIR="\${top_builddir}/AMISIC++-1.0"
+  AMISICINCS="-I\${AMISICDIR}/Main -I\${AMISICDIR}/Tools -I\${AMISICDIR}/Model"
+  AMISICLIBS="-lAmisic -lAmisicModel -lAmisicTools"
+  AC_SUBST(AMISICDIR)
+  AC_SUBST(AMISICINCS)
+  AC_SUBST(AMISICLIBS)
+  
+  ANALYSISDIR="\${top_builddir}/ANALYSIS-1.0"
+  ANALYSISINCS="-I\${ANALYSISDIR}/Main -I\${ANALYSISDIR}/Observables"
+  ANALYSISLIBS="-lAnalysis -lObservables"
+  AC_SUBST(ANALYSISDIR)
+  AC_SUBST(ANALYSISINCS)
+  AC_SUBST(ANALYSISLIBS)
+  
+  APACICDIR="\${top_builddir}/APACIC++-2.0"
+  APACICINCS="-I\${APACICDIR}/Main -I\${APACICDIR}/Showers"
+  APACICLIBS="-lApacicShowers -lApacicMain"
+  AC_SUBST(APACICDIR)
+  AC_SUBST(APACICINCS)
+  AC_SUBST(APACICLIBS)
+  
+  ATOOLSDIR="\${top_builddir}/ATOOLS-2.0"
+  ATOOLSINCS="-I\${ATOOLSDIR}/Phys -I\${ATOOLSDIR}/Math -I\${ATOOLSDIR}/Org"
+  ATOOLSLIBS="-lToolsPhys -lToolsMath -lToolsOrg"
+  AC_SUBST(ATOOLSDIR)
+  AC_SUBST(ATOOLSINCS)
+  AC_SUBST(ATOOLSLIBS)
+  
+  BEAMDIR="\${top_builddir}/BEAM-1.0"
+  BEAMINCS="-I\${BEAMDIR}/Main"
+  BEAMLIBS="-lBeam"
+  AC_SUBST(BEAMDIR)
+  AC_SUBST(BEAMINCS)
+  AC_SUBST(BEAMLIBS)
+  
+  EXTRAXSDIR="\${top_builddir}/EXTRA_XS-1.0"
+  EXTRAXSINCS="-I\${EXTRAXSDIR}/Two2Two -I\${EXTRAXSDIR}/Main -I\${EXTRAXSDIR}/BFKL"
+  EXTRAXSLIBS="-lExtraXS -lExtraXS2_2 -lExtraXSBFKL"
+  AC_SUBST(EXTRAXSDIR)
+  AC_SUBST(EXTRAXSINCS)
+  AC_SUBST(EXTRAXSLIBS)
+  
+  HADRONSDIR="\${top_builddir}/HADRONS++-0.0"
+  HADRONSINCS="-I\${HADRONSDIR}/Main -I\${HADRONSDIR}/ME_Library -I\${HADRONSDIR}/PS_Library"
+  HADRONSLIBS="-lHadronsMain -lHadronsMEs -lHadronsPSs"
+  AC_SUBST(HADRONSDIR)
+  AC_SUBST(HADRONSINCS)
+  AC_SUBST(HADRONSLIBS)
+  
+  MODELDIR="\${top_builddir}/MODEL-1.0"
+  MODELINCS="-I\${MODELDIR}/Main"
+  MODELLIBS="-lModelMain"
+  AC_SUBST(MODELDIR)
+  AC_SUBST(MODELINCS)
+  AC_SUBST(MODELLIBS)
+  
+  HDECAYINCS="-I\${MODELDIR}/Hdecay"
+  HDECAYLIBS="-lHdecay"
+  AC_SUBST(HDECAYINCS)
+  AC_SUBST(HDECAYLIBS)
+  
+  ISAJETINCS="-I\${MODELDIR}/Isajet"
+  ISAJETLIBS="-lIsajet"
+  AC_SUBST(ISAJETINCS)
+  AC_SUBST(ISAJETLIBS)
+  
+  PDFDIR="\${top_builddir}/PDF-1.0"
+  PDFINCS="-I\${PDFDIR}/Main -I\${PDFDIR}/Remnant -I\${PDFDIR}/LHAPDF -I\${PDFDIR}/MRST \
+           -I\${PDFDIR}/GRV -I\${PDFDIR}/Sudakov -I\${PDFDIR}/KMR -I\${PDFDIR}/Remnant"
+  PDFLIBS="-lPDF -lDUPDF -lSudakov -lMRST -lGRV -lRemnant"
+  AC_SUBST(PDFDIR)
+  AC_SUBST(PDFINCS)
+  AC_SUBST(PDFLIBS)
+  
+  CTEQINCS="-I\${PDFDIR}/CTEQ"
+  CTEQLIBS="-lCTEQ"
+  AC_SUBST(CTEQINCS)
+  AC_SUBST(CTEQLIBS)
+  
+  PHASICDIR="\${top_builddir}/PHASIC++-1.0"
+  PHASICINCS="-I\${PHASICDIR}/Main -I\${PHASICDIR}/Foam"
+  PHASICLIBS="-lPhasespace"
+  AC_SUBST(PHASICDIR)
+  AC_SUBST(PHASICINCS)
+  AC_SUBST(PHASICLIBS)
+  
+  SHERPADIR="\${top_builddir}/SHERPA-1.0"
+  SHERPAINCS="-I\${SHERPADIR}/Single_Events -I\${SHERPADIR}/PerturbativePhysics \
+              -I\${SHERPADIR}/LundTools -I\${SHERPADIR}/Tools -I\${SHERPADIR}/Main \
+              -I\${SHERPADIR}/Initialization -I\${SHERPADIR}/SoftPhysics -I\${SHERPADIR}/HerwigTools"
+  SHERPALIBS="-lSherpaMain -lSherpaInitialization -lSherpaSingleEvents \
+              -lSherpaPerturbativePhysics -lSherpaSoftPhysics -lLundTools -lSherpaTools"
+  SHERPAFLAGS="-pedantic -Wall #-Winline"
+  AC_SUBST(SHERPADIR)
+  AC_SUBST(SHERPAINCS)
+  AC_SUBST(SHERPALIBS)
+  AC_SUBST(SHERPAFLAGS)
+
+  final_prefix=$prefix
+  if test "x$final_prefix" = "xNONE"; then
+      final_prefix=$ac_default_prefix
+  fi
+  AC_DEFINE_UNQUOTED(SHERPA_VERSION, ["`echo AC_PACKAGE_VERSION | cut -d. -f1`"], "Sherpa version")
+  AC_DEFINE_UNQUOTED(SHERPA_SUBVERSION, ["`echo AC_PACKAGE_VERSION | cut -d. -f2,3`"], "Sherpa subversion")
+  AC_DEFINE_UNQUOTED(SHERPA_BUILD_PATH, "$PWD", "Sherpa build path")
+  AC_DEFINE_UNQUOTED(SHERPA_INCLUDE_PATH, "$final_prefix/include/SHERPA-MC", "Sherpa include directory")
+  AC_DEFINE_UNQUOTED(SHERPA_BINARY_PATH, "$final_prefix/bin", "Sherpa binary directory")
+  AC_DEFINE_UNQUOTED(SHERPA_PDFS_PATH, "$final_prefix/share/SHERPA-MC", "Sherpa data directory")
+  AC_DEFINE_UNQUOTED(SHERPA_SHARE_PATH, "$final_prefix/share/SHERPA-MC", "Sherpa data directory")
+  AC_DEFINE(USING__COLOUR, "1", "Using colour")
+])
+
+
+
+dnl Conditional compiling and linking
+
+AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
+[
+  AC_ARG_ENABLE(
+    svninclude,
+    AC_HELP_STRING([--disable-svninclude], [Don't distribute SVN synchronization directories.]),
+    [ AC_MSG_CHECKING(whether to enable SVN synchronization)
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(no);
+              SVNINCLUDE="";;
+        yes) AC_MSG_RESULT(yes);
+              SVNINCLUDE=".svn";;
+      esac ],
+    [ AC_MSG_CHECKING(whether to enable SVN synchronization); AC_MSG_RESULT(yes); SVNINCLUDE=".svn" ] 
+  )
+  AC_SUBST(SVNINCLUDE)
+
+  AC_ARG_ENABLE(
+    mcatnloinclude,
+    AC_HELP_STRING([--enable-mcatnloinclude], [Enable MC@NLO support]),
+    [ AC_MSG_CHECKING(for MC@NLO support)
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(no); mcatnloinclude=false ;;
+        yes) AC_MSG_RESULT(yes); mcatnloinclude=true ;;
+      esac ],
+    [ AC_MSG_CHECKING(for MC@NLO support); AC_MSG_RESULT(no); mcatnloinclude=false ] 
+  )
+  if test "$mcatnloinclude" = "true" ; then
+    AC_DEFINE(USING__MCatNLO, "1", "using MC@NLO")
+    CONDITIONAL_MCATNLOLIBS="\${MCATNLOLIBS}"
+  fi
+  AC_SUBST(CONDITIONAL_MCATNLOLIBS)
+  AM_CONDITIONAL(MCATNLO_SUPPORT, test "$mcatnloinclude" = "true" )
+  
+  AC_ARG_ENABLE(
+    clhep,
+    AC_HELP_STRING([--enable-clhep], [Enable CLHEP support]),
+    [ AC_MSG_CHECKING(for CLHEP installation directory);
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(CLHEP not enabled); clhep=false ;;
+        yes) if test -d "$CLHEPDIR"; then
+                CONDITIONAL_CLHEPDIR=$CLHEPDIR
+                if test -x "$CLHEPDIR/bin/clhep-config" && test -d "`$CLHEPDIR/bin/clhep-config --prefix`"; then
+                  CONDITIONAL_CLHEPLIBS=`$CLHEPDIR/bin/clhep-config --libs`
+                  CONDITIONAL_CLHEPINCS=`$CLHEPDIR/bin/clhep-config --include`
+                else
+                  CONDITIONAL_CLHEPINCS=-I$CLHEPDIR/include
+                  possible_libs="libCLHEP-g++.*.so libCLHEP-g++.*.a libCLHEP.so libCLHEP.a libCLHEP-1*.so libCLHEP-1*.a libCLHEP-2*.so libCLHEP-2*.a"
+                  for J in $possible_libs; do
+                    result=`find $CLHEPDIR/lib -name "$J" | head -n 1`;
+                    if test "$result" != ""; then
+                      break;
+                    fi
+                  done;
+                  if test "$result" != ""; then
+                    CONDITIONAL_CLHEPLIBS=$result;
+                  else
+                    AC_MSG_ERROR(Did not find any library of the following type in $CLHEPDIR/lib: $possible_libs and clhep-config was not available in \$PATH.);
+                  fi
+                fi
+              elif test -x "`which clhep-config`"; then
+                CONDITIONAL_CLHEPDIR=`clhep-config --prefix`;
+                CONDITIONAL_CLHEPLIBS=`clhep-config --libs`
+                CONDITIONAL_CLHEPINCS=`clhep-config --include`
+                if ! test -d "$CONDITIONAL_CLHEPDIR"; then
+                  AC_MSG_ERROR(clhep-config --prefix returned a path that is not available. Please check your CLHEP installation and set \$CLHEPDIR manually.);
+                fi
+              else 
+                AC_MSG_ERROR(\$CLHEPDIR is not a valid path and clhep-config was not found.);
+              fi;
+              AC_MSG_RESULT([${CONDITIONAL_CLHEPDIR}]); clhep=true;;
+      esac ],
+    [ clhep=false ]
+  )
+  if test "$clhep" = "true" ; then
+    AC_DEFINE(USING__CLHEP, "1", "using CLHEP")
+  fi
+  AC_SUBST(CONDITIONAL_CLHEPDIR)
+  AC_SUBST(CONDITIONAL_CLHEPINCS)
+  AC_SUBST(CONDITIONAL_CLHEPLIBS)
+  AM_CONDITIONAL(CLHEP_SUPPORT, test "$clhep" = "true")
+
+  AC_ARG_ENABLE(
+    root,
+    AC_HELP_STRING([--enable-root], [Enable ROOT support]),
+    [ AC_MSG_CHECKING(for ROOT installation directory)
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(ROOT not enabled); root=false;;
+        yes) if test -d "$ROOTSYS"; then
+               CONDITIONAL_ROOTDIR=$ROOTSYS
+               CONDITIONAL_ROOTINCS=-I`$ROOTSYS/bin/root-config --incdir`;
+               CONDITIONAL_ROOTLIBS=`$ROOTSYS/bin/root-config --noldflags --glibs`
+               CONDITIONAL_ROOTFLAGS=-Wno-long-long
+             elif test -x "`which root-config`"; then
+               CONDITIONAL_ROOTDIR=`root-config --prefix`;
+               CONDITIONAL_ROOTINCS=-I`root-config --incdir`;
+               CONDITIONAL_ROOTLIBS=`root-config --noauxlibs --glibs`;
+               CONDITIONAL_ROOTFLAGS=-Wno-long-long
+             else
+               AC_MSG_ERROR(\$ROOTSYS is not a valid path and root-config was not found.);
+             fi;
+             AC_MSG_RESULT([${CONDITIONAL_ROOTDIR}]); root=true;;
+      esac ],
+    [ root=false ]
+  )
+  if test "$root" = "true" ; then
+    AC_DEFINE(USING__ROOT, "1", "using ROOT")
     fi
+  AC_SUBST(CONDITIONAL_ROOTDIR)
+  AC_SUBST(CONDITIONAL_ROOTINCS)
+  AC_SUBST(CONDITIONAL_ROOTLIBS)
+  AC_SUBST(CONDITIONAL_ROOTFLAGS)
+  AM_CONDITIONAL(ROOT_SUPPORT, test "$root" = "true")
+  
+  AC_ARG_ENABLE(
+    lhapdf,
+    AC_HELP_STRING([--enable-lhapdf], [Enable LHAPDF support]),
+    [ AC_MSG_CHECKING(for LHAPDF installation directory);
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(LHAPDF not enabled); lhapdf=false ;;
+        yes) if test -d "$LHAPDFDIR"; then
+              CONDITIONAL_LHAPDFDIR==$LHAPDFDIR;
+              CONDITIONAL_LHAPDFLIBS="-lLHAPDF \${LHAPDFDIR}/lib/libLHAPDF.a"
+            elif test -x "`which lhapdf-config`"; then
+              CONDITIONAL_LHAPDFDIR==`lhapdf-config --prefix`;
+              CONDITIONAL_LHAPDFLIBS="-lLHAPDF `lhapdf-config --prefix`/lib/libLHAPDF.a"
   else
-    # otherwise, we say no_root
-    no_root="yes"
+              AC_MSG_ERROR(\$LHAPDFDIR is not a valid path and lhapdf-config was not found.);
+            fi;
+            AC_MSG_RESULT([${CONDITIONAL_LHAPDFDIR}]); lhapdf=true;;
+      esac ],
+    [ lhapdf=false ]
+  )
+  if test "$lhapdf" = "true" ; then
+    AC_DEFINE(USING__LHAPDF, "1", "using LHAPDF")
   fi
+  AC_SUBST(CONDITIONAL_LHAPDFDIR)
+  AC_SUBST(CONDITIONAL_LHAPDFLIBS)
+  AM_CONDITIONAL(LHAPDF_SUPPORT, test "$lhapdf" = "true")
 
-  AC_SUBST(ROOTLIBDIR)
-  AC_SUBST(ROOTINCDIR)
-  AC_SUBST(ROOTCFLAGS)
-  AC_SUBST(ROOTLIBS)
-  AC_SUBST(ROOTGLIBS) 
-  AC_SUBST(ROOTAUXLIBS)
-  AC_SUBST(ROOTAUXCFLAGS)
-  AC_SUBST(ROOTRPATH)
-
-  if test "x$no_root" = "x" ; then 
-    ifelse([$2], , :, [$2])     
-  else 
-    ifelse([$3], , :, [$3])     
+  AC_ARG_ENABLE(modelinclude,
+    AC_HELP_STRING([--disable-modelinclude], [Disable inclusion of MODEL headers]),
+    [ AC_MSG_CHECKING(whether to include MODEL headers);
+      case "${enableval}" in
+        yes) AC_MSG_RESULT(yes); modelinclude=true;;
+        no)  AC_MSG_RESULT(no); modelinclude=false;;
+      esac ],
+    [ AC_MSG_CHECKING(whether to include MODEL headers); AC_MSG_RESULT(yes); modelinclude=true; ]
+  )
+  if test "$modelinclude" = "true" ; then
+    AC_DEFINE(USING__Model, "1", "using Model")
+  else
+    AC_DEFINE(USING__ATOOLS_only, "1", "not using Model, using ATOOLS_only")
   fi
+  AM_CONDITIONAL(MODEL_SUPPORT, test "$modelinclude" = "true" )
+
+  AC_ARG_ENABLE(isajetinclude,
+    AC_HELP_STRING([--disable-isajetinclude], [Disable inclusion of Isajet stuff]),
+    [ AC_MSG_CHECKING(whether to include Isajet stuff);
+      case "${enableval}" in
+        yes) AC_MSG_RESULT(yes); isajetinclude=true;;
+        no)  AC_MSG_RESULT(no); isajetinclude=false;;
+      esac ],
+    [ AC_MSG_CHECKING(whether to include Isajet stuff); AC_MSG_RESULT(yes); isajetinclude=true; ]
+  )
+  dnl comment out if isajet to be compiled
+  echo "Hardwired: Omitting all Isajet stuff"; isajetinclude=false;
+  if test "$isajetinclude" = "true" ; then
+    AC_DEFINE(USING__Isajet, "1", "using Isajet")
+    CONDITIONAL_ISAJETINCS="\${ISAJETINCS}"
+    CONDITIONAL_ISAJETLIBS="\${ISAJETLIBS}"
+  fi
+  AC_SUBST(CONDITIONAL_ISAJETINCS)
+  AC_SUBST(CONDITIONAL_ISAJETLIBS)
+  AM_CONDITIONAL(ISAJET_SUPPORT, test "$isajetinclude" = "true" )
+  
+  AC_ARG_ENABLE(hdecayinclude,
+    AC_HELP_STRING([--disable-hdecayinclude], [Disable inclusion of Hdecay stuff]),
+    [ AC_MSG_CHECKING(whether to include Hdecay stuff);
+      case "${enableval}" in
+        yes) AC_MSG_RESULT(yes); hdecayinclude=true;;
+        no)  AC_MSG_RESULT(no); hdecayinclude=false;;
+      esac ],
+    [ AC_MSG_CHECKING(whether to include Hdecay stuff); AC_MSG_RESULT(yes); hdecayinclude=true; ]
+  )
+  dnl comment out if hdecay to be compiled
+  echo "Hardwired: Omitting all Hdecay stuff"; hdecayinclude=false;
+  if test "$hdecayinclude" = "true" ; then
+    AC_DEFINE(USING__Hdecay, "1", "using Hdecay")
+    CONDITIONAL_HDECAYLIBS="\${HDECAYLIBS}"
+    CONDITIONAL_HDECAYINCS="\${HDECAYINCS}"
+  fi
+  AC_SUBST(CONDITIONAL_HDECAYLIBS)
+  AC_SUBST(CONDITIONAL_HDECAYINCS)
+  AM_CONDITIONAL(HDECAY_SUPPORT, test "$hdecayinclude" = "true" )
+  
+  AC_ARG_ENABLE(adicicinclude,
+    AC_HELP_STRING([--disable-adicicinclude], [Disable inclusion of ADICIC headers]),
+    [ AC_MSG_CHECKING(whether to include ADICIC headers);
+      case "${enableval}" in
+        yes) AC_MSG_RESULT(yes); adicicinclude=true;;
+        no)  AC_MSG_RESULT(no); adicicinclude=false;;
+      esac ],
+    [ AC_MSG_CHECKING(whether to include ADICIC stuff); AC_MSG_RESULT(yes); adicicinclude=true; ]
+  )
+  if test "$adicicinclude" = "true" ; then
+    AC_DEFINE(USING__Adicic, "1", "using ADICIC")
+    CONDITIONAL_ADICICLIBS="\${ADICICLIBS}"
+    CONDITIONAL_ADICICINCS="\${ADICICINCS}"
+  fi
+  AC_SUBST(CONDITIONAL_ADICICLIBS)
+  AC_SUBST(CONDITIONAL_ADICICINCS)
+  AM_CONDITIONAL(ADICIC_SUPPORT, test "$adicicinclude" = "true" )
+  
+  AC_ARG_ENABLE(amisicinclude,
+    AC_HELP_STRING([--disable-amisicinclude], [Disable inclusion of AMISIC headers]),
+    [ AC_MSG_CHECKING(whether to include AMISIC headers);
+      case "${enableval}" in
+        yes) AC_MSG_RESULT(yes); amisicinclude=true;;
+        no)  AC_MSG_RESULT(no); amisicinclude=false;;
+      esac ],
+    [ AC_MSG_CHECKING(whether to include AMISIC stuff); AC_MSG_RESULT(yes); amisicinclude=true; ]
+  )
+  if test "$amisicinclude" = "true" ; then
+    AC_DEFINE(USING__Amisic, "1", "using AMISIC")
+    CONDITIONAL_AMISICLIBS="\${AMISICLIBS}"
+    CONDITIONAL_AMISICINCS="\${AMISICINCS}"
+  fi
+  AC_SUBST(CONDITIONAL_AMISICLIBS)
+  AC_SUBST(CONDITIONAL_AMISICINCS)
+  AM_CONDITIONAL(AMISIC_SUPPORT, test "$amisicinclude" = "true" )
+  
+  AC_ARG_ENABLE(cs_showerinclude,
+    AC_HELP_STRING([--disable-cs_showerinclude], [Disable inclusion of CS_SHOWER headers]),
+    [ AC_MSG_CHECKING(whether to include CS_SHOWER headers);
+      case "${enableval}" in
+        yes) AC_MSG_RESULT(yes); cs_showerinclude=true;;
+        no)  AC_MSG_RESULT(no); cs_showerinclude=false;;
+      esac ],
+    [ AC_MSG_CHECKING(whether to include CS_SHOWER stuff); AC_MSG_RESULT(yes); cs_showerinclude=true; ]
+  )
+  if test "$cs_showerinclude" = "true" ; then
+    AC_DEFINE(USING__CSS, "1", "using CS_SHOWER")
+    CONDITIONAL_CSSLIBS="\${CSSLIBS}"
+    CONDITIONAL_CSSINCS="\${CSSINCS}"
+  fi
+  AC_SUBST(CONDITIONAL_CSSLIBS)
+  AC_SUBST(CONDITIONAL_CSSINCS)
+  AM_CONDITIONAL(CSS_SUPPORT, test "$cs_showerinclude" = "true" )
+  
+  AC_ARG_ENABLE(ahadicinclude,
+    AC_HELP_STRING([--disable-ahadicinclude], [Disable inclusion of AHADIC headers]),
+    [ AC_MSG_CHECKING(whether to include AHADIC headers);
+      case "${enableval}" in
+        yes) AC_MSG_RESULT(yes); ahadicinclude=true;;
+        no)  AC_MSG_RESULT(no); ahadicinclude=false;;
+      esac ],
+    [ AC_MSG_CHECKING(whether to include AHADIC stuff); AC_MSG_RESULT(yes); ahadicinclude=true; ]
+  )
+  if test "$ahadicinclude" = "true" ; then
+    AC_DEFINE(USING__Ahadic, "1", "using AHADIC")
+    CONDITIONAL_AHADICLIBS="\${AHADICLIBS}"
+    CONDITIONAL_AHADICINCS="\${AHADICINCS}"
+  fi
+  AC_SUBST(CONDITIONAL_AHADICLIBS)
+  AC_SUBST(CONDITIONAL_AHADICINCS)
+  AM_CONDITIONAL(AHADIC_SUPPORT, test "$ahadicinclude" = "true" )
+  
+  AC_ARG_ENABLE(hadronsinclude,
+    AC_HELP_STRING([--disable-hadronsinclude], [Disable inclusion of HADRONS headers]),
+    [ AC_MSG_CHECKING(whether to include HADRONS headers);
+      case "${enableval}" in
+        yes) AC_MSG_RESULT(yes); hadronsinclude=true;;
+        no)  AC_MSG_RESULT(no); hadronsinclude=false;;
+      esac ],
+    [ AC_MSG_CHECKING(whether to include HADRONS stuff); AC_MSG_RESULT(yes); hadronsinclude=true; ]
+  )
+  if test "$hadronsinclude" = "true" ; then
+    AC_DEFINE(USING__Hadrons, "1", "using HADRONS")
+    CONDITIONAL_HADRONSLIBS="\${HADRONSLIBS}"
+    CONDITIONAL_HADRONSINCS="\${HADRONSINCS}"
+  fi
+  AC_SUBST(CONDITIONAL_HADRONSLIBS)
+  AC_SUBST(CONDITIONAL_HADRONSINCS)
+  AM_CONDITIONAL(HADRONS_SUPPORT, test "$hadronsinclude" = "true" )
+  
+  SHERPASUBDIR="SHERPA-1.0"
+  AC_ARG_ENABLE(sherpainclude,
+    AC_HELP_STRING([--disable-sherpainclude], [Disable inclusion of SHERPA headers]),
+    [ AC_MSG_CHECKING(whether to include SHERPA headers);
+      case "${enableval}" in
+        yes) AC_MSG_RESULT(yes); sherpainclude=true;;
+        no)  AC_MSG_RESULT(no); sherpainclude=false;;
+      esac ],
+    [ AC_MSG_CHECKING(whether to include SHERPA stuff); AC_MSG_RESULT(yes); sherpainclude=true; ]
+  )
+  if test "$sherpainclude" = "true" ; then
+    AC_DEFINE(USING__Sherpa, "1", "using SHERPA")
+    CONDITIONAL_SHERPAINCS="\${SHERPAINCS}"
+    CONDITIONAL_SHERPALIBS="\${SHERPALIBS}"
+  fi
+  AC_SUBST(CONDITIONAL_SHERPALIBS)
+  AC_SUBST(CONDITIONAL_SHERPAINCS)
+  AM_CONDITIONAL(SHERPA_SUPPORT, test "$sherpainclude" = "true" )
 ])

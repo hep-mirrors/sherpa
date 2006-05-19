@@ -1,346 +1,13 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT
 
-buildpath=$PWD
-version=1
-subversion=0
-echo -e "checking build path ... $buildpath"
-echo -e "setting package version ... $version.$subversion"
-
-guess_architecture() {
-  echo "guess_architecture(): adapted from root version 3.10"
-  arch=`uname -s | tr '[A-Z]' '[a-z]'`
-  chip=`uname -m | tr '[A-Z]' '[a-z]'`
-  osys=`uname -r`
-  echo "architecture ... $arch"
-  echo "cpu type ... $chip"
-  echo "os version ... $osys"
-  case "$arch:$chip:$osys" in
-    linux:*:*)       arch=linux;;
-    darwin:power*:*) arch=darwin ;;
-    *)
-      echo "hosts system type $chip $arch $osys not yet supported"
-      echo "possible failure due to unknown compiler/linker characteristics"
-      echo "please inform us about build results at info@sherpa-mc.de"
-      arch=default ;;
-  esac
-}
-
-set_ldflags() {
-  case "$arch" in
-    darwin)
-      echo "setting ldflags ... darwin"
-      ldflags="-dynamic -flat_namespace" ;;
-    linux)
-      echo "setting ldflags ... linux"
-      ldflags="-rdynamic" ;;
-    default)
-      echo "setting ldflags ... unix" 
-      ldflags="-rdynamic";;
-  esac
-}
-
-guess_architecture
-set_ldflags
-AC_SUBST(ldflags)
-
-AM_INIT_AUTOMAKE(SHERPA-MC,$version.$subversion)
+AC_INIT(SHERPA MC, 1.0.9, support@sherpa-mc.de, SHERPA-MC)
+AC_CONFIG_HEADERS([ATOOLS-2.0/Org/CXXFLAGS.H])
+AM_INIT_AUTOMAKE
 AM_DISABLE_STATIC
 AC_PREFIX_DEFAULT(${PWD})
 
-set_gccflags() {
-  case "$arch" in
-    darwin)
-      echo "setting up pp flags ... darwin"
-      echo -e "#define ARCH_DARWIN\n" >> __Flags.H__ ;;
-    linux)
-      echo "setting up pp flags ... linux"
-      echo -e "#define ARCH_LINUX\n" >> __Flags.H__ ;;
-    default)
-      echo "setting up pp flags ... unix" 
-      echo -e "#define ARCH_UNIX\n" >> __Flags.H__ ;;
-  esac
-}
-
-dnl Conditional compiling and linking
-if test -f __Flags.H__ ; then 
-  rm -f __Flags.H__ 
-fi
-echo -e "#ifndef CXXFLAGS_H\n#define CXXFLAGS_H\n" >> __Flags.H__
-set_gccflags
-echo -e "#define SHERPA_VERSION \"$version\"" >> __Flags.H__
-echo -e "#define SHERPA_SUBVERSION \"$subversion\"\n" >> __Flags.H__
-echo -e "#define SHERPA_BUILD_PATH \"$buildpath\"\n" >> __Flags.H__
-
-AC_ARG_ENABLE(cvsinclude,
-[  --disable-cvsinclude    Disable CVS Synchronization ],
-[ cvsinclude=true
-  case "${enableval}" in
-    no) echo "enable CVS synchronization... no" ;
-        cvsinclude=false ;;
-    yes) echo "enable CVS synchronization... yes" ;;
-    *) echo "enable CVS synchronization... yes" ;;
-  esac ],
-[ echo "enable CVS synchronization... yes" ;
-  cvsinclude=true ])
-AM_CONDITIONAL(CVS_INCLUDE, test "$cvsinclude" = "true" )
-
-AC_ARG_ENABLE(clhep,
-[  --enable-clhep          Enable CLHEP support ],
-[ clhep=false
-  if test -d "$CLHEPDIR"; then
-    echo "checking for CLHEP libraries... yes"
-    case "${enableval}" in 
-      yes) clhep=true ;;
-    esac
-  else 
-    echo "checking for CLHEP libraries... no"
-    case "${enableval}" in 
-      yes) AC_MSG_ERROR(\$CLHEPDIR is not a valid path.) ;;
-    esac
-  fi ],[ clhep=false ])
-
-if test "$clhep" = "true" ; then
-  echo -e "#define USING__CLHEP" >> __Flags.H__
-else
-  echo -e "#ifdef USING__CLHEP\n#undef USING__CLHEP\n#endif" >> __Flags.H__
-fi
-AM_CONDITIONAL(CLHEP_SUPPORT, test $clhep = true)
-
-ROOT_PATH(, have_root=yes, have_root=no)
-AC_ARG_ENABLE(root,
-[  --enable-root           Enable ROOT support ],
-[ AC_MSG_CHECKING(whether to enable ROOT support)
-  if test "$have_root" = "yes"; then
-    case "${enableval}" in
-      yes) AC_MSG_RESULT(yes); root=true ;;
-      no)  AC_MSG_RESULT(no); root=false;;
-    esac
-  else 
-		case "${enableval}" in
-      yes) AC_MSG_RESULT(not possible);
-           AC_MSG_ERROR([ROOT not found on your system, cannot compile ROOT support. If ROOT is installed, please provide the installation path using e.g. --with-rootsys=/usr/local/]); root=false;;
-      no)  AC_MSG_RESULT(no); root=false;;
-		esac
-  fi ],[ root=false ])
-
-if test "$root" = "true" ; then
-  echo -e "#define USING__ROOT" >> __Flags.H__
-else
-  echo -e "#ifdef USING__ROOT\n#undef USING__ROOT\n#endif" >> __Flags.H__
-fi
-AM_CONDITIONAL(ROOT_SUPPORT, test $root = true)
-
-AC_ARG_ENABLE(lhapdf,
-[  --enable-lhapdf          Enable LHAPDF support ],
-[ lhapdf=false
-  if test -d "$LHAPDFDIR"; then
-    echo "checking for LHAPDF libraries... yes"
-    case "${enableval}" in 
-      yes) lhapdf=true ;;
-    esac
-  else 
-    echo "checking for LHAPDF libraries... no"
-    case "${enableval}" in 
-      yes) AC_MSG_ERROR(\$LHAPDFDIR is not a valid path.) ;;
-    esac
-  fi ],[ lhapdf=false ])
-
-if test "$lhapdf" = "true" ; then
-  echo -e "#define USING__LHAPDF" >> __Flags.H__
-else
-  echo -e "#ifdef USING__LHAPDF\n#undef USING__LHAPDF\n#endif" >> __Flags.H__
-fi
-AM_CONDITIONAL(LHAPDF_SUPPORT, test $lhapdf = true)
-
-AC_ARG_ENABLE(modelinclude,
-[  --disable-modelinclude  Disable inclusion of MODEL headers ],
-[ modelinclude=true
-  MODELDIR="MODEL-1.0"
-  if test -d $MODELDIR ; then
-    echo "checking for MODEL package... yes"
-    case "${enableval}" in
-      no) echo "disable MODEL support anyway... yes";
-          modelinclude=false ;;
-    esac
-  else
-    echo "checking for MODEL package... no"
-    modelinclude=false
-  fi ],
-[ MODELDIR="MODEL-1.0"
-  if test ! -d $MODELDIR ; then
-    echo "configure: warning: $MODELDIR is not a valid path."
-    modelinclude=false
-  else 
-    echo "checking for MODEL package... yes"
-    modelinclude=true 
-  fi ])
-
-if test "$modelinclude" = "true" ; then
-  echo -e "#define USING__Model" >> __Flags.H__
-else
-  echo -e "#ifdef USING__Model\n#undef USING__Model\n#endif" >> __Flags.H__
-fi
-AM_CONDITIONAL(MODEL_SUPPORT, test "$modelinclude" = "true" )
-
-AC_ARG_ENABLE(isajetinclude,
-[  --disable-isajetinclude  Disable inclusion of Isajet stuff ],
-[ isajetinclude=true
-  ISAJETDIR="MODEL-1.0/Isajet/"
-  if test -d $ISAJETDIR ; then
-    echo "checking for Isajet stuff ... yes"
-    case "${enableval}" in
-      no) echo "disable Isajet support anyway... yes";
-          isajetinclude=false ;;
-    esac
-  else
-    echo "checking for Isajet stuff ... no"
-    isajetinclude=false
-  fi ],
-[ ISAJETDIR="MODEL-1.0/Isajet/"
-  if test ! -d $ISAJETDIR ; then
-    echo "configure: warning: $ISAJETDIR is not a valid path."
-    isajetinclude=false
-  else 
-    echo "checking for Isajet stuff... yes"
-    isajetinclude=true 
-  fi ])
-
-dnl comment out if isajet to be compiled
-isajetinclude=false
-if test "$isajetinclude" = "true" ; then
-  echo -e "#define USING__Isajet" >> __Flags.H__
-else
-  echo "Omit all Isajet stuff ... yes"
-  echo -e "#ifdef USING__Isajet\n#undef USING__Isajet\n#endif" >> __Flags.H__
-fi
-AM_CONDITIONAL(ISAJET_SUPPORT, test "$isajetinclude" = "true" )
-
-AC_ARG_ENABLE(hdecayinclude,
-[  --disable-hdecayinclude  Disable inclusion of Hdecay stuff ],
-[ hdecayinclude=true
-  HDECAYDIR="MODEL-1.0/Hdecay/"
-  if test -d $HDECAYDIR ; then
-    echo "checking for Hdecay stuff ... yes"
-    case "${enableval}" in
-      no) echo "disable Hdecay support anyway... yes";
-          hdecayinclude=false ;;
-    esac
-  else
-    echo "checking for Hdecay stuff ... no"
-    hdecayinclude=false
-  fi ],
-[ HDECAYDIR="MODEL-1.0/Hdecay/"
-  if test ! -d $HDECAYDIR ; then
-    echo "configure: warning: $HDECAYDIR is not a valid path."
-    hdecayinclude=false
-  else 
-    echo "checking for Hdecay stuff... yes"
-    hdecayinclude=true 
-  fi ])
-
-dnl comment out if hdecay to be compiled
-hdecayinclude=false
-if test "$hdecayinclude" = "true" ; then
-  echo -e "#define USING__Hdecay" >> __Flags.H__
-else
-  echo "Omit all Hdecay stuff ... yes"
-  echo -e "#ifdef USING__Hdecay\n#undef USING__Hdecay\n#endif" >> __Flags.H__
-fi
-AM_CONDITIONAL(HDECAY_SUPPORT, test "$hdecayinclude" = "true" )
-
-AC_ARG_ENABLE(amisicinclude,
-[  --disable-amisicinclude  Disable inclusion of AMISIC headers ],
-[ amisicinclude=true
-  AMISICDIR="AMISIC++-1.0"
-  if test -d $AMISICDIR ; then
-    echo "checking for AMISIC++ package... yes"
-    case "${enableval}" in
-      no) echo "disable AMISIC++ support anyway... yes";
-          amisicinclude=false ;;
-    esac
-  else
-    echo "checking for AMISIC++ package... no"
-    amisicinclude=false
-  fi ],
-[ AMISICDIR="AMISIC++-1.0"
-  if test ! -d $AMISICDIR ; then
-    echo "configure: warning: $AMISICDIR is not a valid path."
-    amisicinclude=false
-  else 
-    echo "checking for AMISIC++ package... yes"
-    amisicinclude=true 
-  fi ])
-
-if test "$amisicinclude" = "true" ; then
-  echo -e "#define USING__Amisic" >> __Flags.H__
-else
-  echo -e "#ifdef USING__Amisic\n#undef USING__Amisic\n#endif" >> __Flags.H__
-fi
-AM_CONDITIONAL(AMISIC_SUPPORT, test "$amisicinclude" = "true" )
-
-AC_ARG_ENABLE(hadronsinclude,
-[  --disable-hadronsinclude  Disable inclusion of HADRONS headers ],
-[ hadronsinclude=true
-  HADRONSDIR="HADRONS++-0.0"
-  if test -d $HADRONSDIR ; then
-    echo "checking for HADRONS++ package... yes"
-    case "${enableval}" in
-      no) echo "disable HADRONS++ support anyway... yes";
-          hadronsinclude=false ;;
-    esac
-  else
-    echo "checking for HADRONS++ package... no"
-    hadronsinclude=false
-  fi ],
-[ HADRONSDIR="HADRONS++-0.0"
-  if test ! -d $HADRONSDIR ; then
-    echo "configure: warning: $HADRONSDIR is not a valid path."
-    hadronsinclude=false
-  else 
-    echo "checking for HADRONS++ package... yes"
-    hadronsinclude=true 
-  fi ])
-
-if test "$hadronsinclude" = "true" ; then
-  echo -e "#define USING__Hadrons" >> __Flags.H__
-else
-  echo -e "#ifdef USING__Hadrons\n#undef USING__Hadrons\n#endif" >> __Flags.H__
-fi
-AM_CONDITIONAL(HADRONS_SUPPORT, test "$hadronsinclude" = "true" )
-
-AC_ARG_ENABLE(sherpainclude,
-[  --disable-sherpainclude  Disable inclusion of SHERPA headers ],
-[ sherpainclude=true
-  SHERPADIR="SHERPA-1.0"
-  if test -d $SHERPADIR ; then
-    echo "checking for SHERPA++ package... yes"
-    case "${enableval}" in
-      no) echo "disable SHERPA++ support anyway... yes";
-          sherpainclude=false ;;
-    esac
-  else
-    echo "checking for SHERPA++ package... no"
-    sherpainclude=false
-  fi ],
-[ SHERPADIR="SHERPA-1.0"
-  if test ! -d $SHERPADIR ; then
-    echo "configure: warning: $SHERPADIR is not a valid path."
-    sherpainclude=false
-  else 
-    echo "checking for SHERPA++ package... yes"
-    sherpainclude=true 
-  fi ])
-
-if test "$sherpainclude" = "true" ; then
-  echo -e "#define USING__Sherpa" >> __Flags.H__
-else
-  echo -e "#ifdef USING__Sherpa\n#undef USING__Sherpa\n#endif" >> __Flags.H__
-fi
-AM_CONDITIONAL(SHERPA_SUPPORT, test "$sherpainclude" = "true" )
-
-echo -e "\n#endif" >> __Flags.H__
-mv __Flags.H__ ATOOLS-2.0/Org/CXXFLAGS.H
+AC_CANONICAL_BUILD
+SHERPA_SETUP_BUILDSYSTEM
 
 dnl Checks for programs.
 AC_PROG_INSTALL
@@ -349,16 +16,30 @@ AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_F77
 AM_PROG_LIBTOOL
-
 dnl Checks for header files.
 AC_HEADER_STDC
-
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_TYPE_SIZE_T
-
 dnl Checks for library functions.
 AC_CHECK_FUNCS(mkdir)
+
+SHERPA_SETUP_VARIABLES
+
+SHERPA_SETUP_CONFIGURE_OPTIONS
+
+AC_CONFIG_COMMANDS_POST([touch ATOOLS-2.0/Org/My_Root.C &&
+                         touch PDF-1.0/LHAPDF/LHAPDF_Fortran_Interface.H &&
+                         touch PDF-1.0/CTEQ/CTEQ6_Fortran_Interface.H &&
+                         touch PDF-1.0/Main/PDF_Handler.C &&
+                         touch PHASIC++-1.0/Main/Phase_Space_Handler.C] &&
+                         touch SHERPA-1.0/PerturbativePhysics/Shower_Handler.H &&
+                         touch SHERPA-1.0/Tools/HepMC_Interface.H &&
+                         touch SHERPA-1.0/HerwigTools/Herwig_Wrapper.H &&
+                         touch SHERPA-1.0/Single_Events/MC_Interface.C &&
+                         touch SHERPA-1.0/SoftPhysics/Hadron_Decay_Handler.H &&
+                         touch SHERPA-1.0/Run/Main.C )
+
 
 dnl Comment in/out MODEL-1.0/{Isajet, Hdecay}
 AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
@@ -384,6 +65,7 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  PHASIC++-1.0/Makefile \
 	  EXTRA_XS-1.0/Main/Makefile \
 	  EXTRA_XS-1.0/Two2Two/Makefile \
+          EXTRA_XS-1.0/BFKL/Makefile \
 	  EXTRA_XS-1.0/Makefile \
 	  AMEGIC++-2.0/Main/Makefile \
 	  AMEGIC++-2.0/Amplitude/Makefile \

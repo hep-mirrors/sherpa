@@ -1,22 +1,5 @@
-SHERPASYS     =	../..
-
-PDFFLAGS      =	# -pedantic -Wall -Winline
-DEFS          =
-
-ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
-ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
-BEAMINCS      = -I$(SHERPASYS)/BEAM-1.0/Main
-MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
-PDFINCS       =	-I../LHAPDF -I../MRST -I../CTEQ -I../GRV -I../Sudakov \
-		-I../KMR -I../Remnant
-APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
-APACICINCS    =	-I$(APACICDIR)/Main -I$(APACICDIR)/Showers
-
-if CVS_INCLUDE
-CVSINCLUDE    =	.svn
-endif
-
 pkglib_LTLIBRARIES       =	libPDF.la
+
 libPDF_la_SOURCES     =	\
 		    	PDF_Base.C \
 		    	PDF_Electron.C \
@@ -26,6 +9,7 @@ libPDF_la_SOURCES     =	\
 		    	Intact.C \
 			Structure_Function.C \
 			ISR_Handler.C 
+
 pkginclude_HEADERS       =	\
 	         	PDF_Base.H \
 		 	PDF_Electron.H \
@@ -36,8 +20,10 @@ pkginclude_HEADERS       =	\
 			Structure_Function.H\
 			ISR_Info.H \
 		 	ISR_Handler.H 
-EXTRA_DIST    = $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(PDFFLAGS)
-INCLUDES      =	$(SHERPAINCS) $(APACICINCS) $(PDFINCS) \
-		$(MODELINCS) $(BEAMINCS) $(ATOOLSINCS)
 
+INCLUDES      =	@SHERPAINCS@ @APACICINCS@ @PDFINCS@ @CTEQINCS@ \
+		@MODELINCS@ @BEAMINCS@ @ATOOLSINCS@
+
+EXTRA_DIST    = @SVNINCLUDE@
+
+AM_CXXFLAGS   =	@SHERPAFLAGS@

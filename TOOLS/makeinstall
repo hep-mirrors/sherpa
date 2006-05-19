@@ -27,11 +27,13 @@ rebuild_current() {
   if [ "$RELEASE" = "TRUE" ] ; then
     libtoolize --force >> $GPATH/$LOGFILE 2>&1
     aclocal >> $GPATH/$LOGFILE 2>&1
+    autoheader --force >> ../$LOGFILE 2>&1
     automake -a >> $GPATH/$LOGFILE 2>&1
     autoconf >> $GPATH/$LOGFILE 2>&1
   else
     libtoolize --force
     aclocal
+    autoheader --force
     automake -a
     autoconf
   fi

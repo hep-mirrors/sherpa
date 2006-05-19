@@ -1,11 +1,5 @@
-if CVS_INCLUDE
-CVSINCLUDE    =	.svn
-endif
-
-MODELFLAGS    =	# -pedantic -Wall #-Winline
-DEFS          =
-
 pkglib_LTLIBRARIES = libIsajet.la
+
 libIsajet_la_SOURCES = sugrun.f aldata.f ssalfs.f ssb0.f ssb1.f ssdhll.f ssdint.f \
 		       ssdlam.f ssf0.f ssglbf.f ssgst.f ssgt.f ssgwq1.f ssgwq2.f ssgwt1.f \
 		       ssgwt2.f ssgwt3.f ssgwt4.f ssgwt5.f ssgwt6.f ssgwt7.f ssgwt8.f ssgx1.f \
@@ -27,22 +21,11 @@ libIsajet_la_SOURCES = sugrun.f aldata.f ssalfs.f ssb0.f ssb1.f ssdhll.f ssdint.
 		       pierer.f pielel.f pinene.f pillll.f pilllr.f pilrlr.f \
 		       ssg.f ssa0.f ssf.f \
 		       isasusyinter.f Isajet_Fortran_Interface.C 
-INCLUDES = -I../../MODEL-1.0/Main \
-           -I../../ATOOLS-2.0/Phys \
-	   -I../../ATOOLS-2.0/Math \
-	   -I../../ATOOLS-2.0/Org 
+
+INCLUDES = @MODELINCS@ @ATOOLSINCS@
+
 noinst_HEADERS = Isajet_Fortran_Interface.H 
-AM_CXXFLAGS   =	$(MODELFLAGS)
-EXTRA_DIST    = $(CVSINCLUDE)
 
+AM_CXXFLAGS   =	@SHERPAFLAGS@
 
-
-
-
-
-
-
-
-
-
-
+EXTRA_DIST    = @SVNINCLUDE@

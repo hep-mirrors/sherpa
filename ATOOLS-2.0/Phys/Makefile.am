@@ -1,16 +1,5 @@
-SHERPASYS = ../..
-
-ATOOLSFLAGS   =	# -pedantic -Wall -Winline
-DEFS          =
-
-ATOOLSINCS    =	-I../Math -I../Org
-MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main 
-
-if CVS_INCLUDE
-CVSINCLUDE    =	.svn
-endif
-
 pkglib_LTLIBRARIES       =	libToolsPhys.la
+
 libToolsPhys_la_SOURCES       =	\
 				Flavour.C \
 				Particle.C \
@@ -37,6 +26,7 @@ libToolsPhys_la_SOURCES       =	\
 				Spin_Correlation_Tensor.C \
 				Spin_Density_Matrix.C \
 				Flow.C
+
 pkginclude_HEADERS        =	\
 			Flavour.H \
 			Particle.H \
@@ -64,6 +54,9 @@ pkginclude_HEADERS        =	\
 			Spin_Correlation_Tensor.H \
 			Spin_Density_Matrix.H \
 			Event.H
-EXTRA_DIST    = $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(ATOOLSFLAGS)
-INCLUDES      = $(MODELINCS) $(ATOOLSINCS)
+
+EXTRA_DIST    = @SVNINCLUDE@
+
+AM_CXXFLAGS   =	@SHERPAFLAGS@
+
+INCLUDES      = @MODELINCS@ @ATOOLSINCS@

@@ -1,7 +1,0 @@
-# Decay: a(2)(1320)+ --> K+ K(L)b 
-#        0           --> 1  2     
-Channels {
-	AlwaysIntegrate = 0;   ! 0...read results and skip integration
-	                       ! 1...don't read results and integrate
-	Isotropic 1;
-}

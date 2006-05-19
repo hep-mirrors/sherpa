@@ -1,6 +1,8 @@
 #ifndef MC_Interface_h
 #define MC_Interface_h
 
+#include "CXXFLAGS.H"
+
 #include "Event_Phase_Handler.H"
 #include "Lund_Interface.H"
 

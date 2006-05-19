@@ -1,23 +1,3 @@
-SHERPASYS     =	../..
-
-PHASICFLAGS   =	# -pedantic -Wall -Winline
-DEFS          =
-
-MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
-PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main
-BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
-ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
-ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
-
-if CVS_INCLUDE
-CVSINCLUDE    =	.svn
-endif
-
-if ROOT_SUPPORT
-ROOTINCS      =	-I@ROOTINCDIR@
-ROOTFLAGS     = -DROOT_SUPPORT -Wno-long-long
-endif
-
 pkglib_LTLIBRARIES       =	libPhasespace.la
 libPhasespace_la_SOURCES      =	\
 				Regulator_Base.C \
@@ -69,7 +49,10 @@ pkginclude_HEADERS        =	\
 			PI_Interface.H \
 			Phase_Space_Handler.H \
 			Phase_Space_Integrator.H 
-AM_CXXFLAGS   =	$(PHASICFLAGS) $(ROOTFLAGS)
-INCLUDES      =	$(PHASICINCS) $(MODELINCS) $(PDFINCS) $(BEAMINCS) \
-		$(ATOOLSINCS) $(ROOTINCS)
-EXTRA_DIST    = $(CVSINCLUDE)
+
+AM_CXXFLAGS   =	@SHERPAFLAGS@ @CONDITIONAL_ROOTFLAGS@
+
+INCLUDES      =	@PHASICINCS@ @MODELINCS@ @PDFINCS@ @BEAMINCS@ \
+		@ATOOLSINCS@ @CONDITIONAL_ROOTINCS@
+
+EXTRA_DIST    = @SVNINCLUDE@

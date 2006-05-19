@@ -1,36 +1,5 @@
-SHERPASYS     =	../..
-
-SHERPAFLAGS   =	# -pedantic -Wall -Winline 
-DEFS          =
-
-ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
-EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
-AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
-APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
-SHERPAINCS    =	-I../SingleEvents -I../SoftPhysics -I../Tools
-ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
-PDFDIR        =	-I$(SHERPASYS)/PDF-1.0
-PDFINCS       = $(PDFDIR)/Main $(PDFDIR)/Sudakov
-BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
-PHASICINCS    =	-I$(SHERPASYS)/PHASIC++-1.0/Main
-MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
-EXTRAXSINCS   =	-I$(EXTRAXSDIR)/Two2Two -I$(EXTRAXSDIR)/Main
-AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
-		-I$(AMEGICDIR)/Amplitude/AmplTools -I$(AMEGICDIR)/Amplitude \
-		-I$(AMEGICDIR)/Phasespace -I$(AMEGICDIR)/Model \
-		-I$(AMEGICDIR)/String 
-APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
-
-if AMISIC_SUPPORT
-AMISICDIR     =	$(SHERPASYS)/AMISIC++-1.0
-AMISICINCS    =	-I$(SHERPASYS)/AMISIC++-1.0/Main
-endif
-
-if CVS_INCLUDE
-CVSINCLUDE    =	.svn
-endif
-
 pkglib_LTLIBRARIES       =	libSherpaPerturbativePhysics.la
+
 libSherpaPerturbativePhysics_la_SOURCES       =	\
 						Matrix_Element_Handler.C \
 						MI_Handler.C \
@@ -44,9 +13,8 @@ libSherpaPerturbativePhysics_la_SOURCES       =	\
 						Combine_Table_CKKW.C \
 					   	Cluster_Partons_Base.C \
 					   	Cluster_Partons_CKKW.C \
-						Amegic_Apacic_Interface.C \
-					   	$(ADICICCFILES) \
-					   	$(CSSCFILES)
+						Amegic_Apacic_Interface.C
+
 pkginclude_HEADERS        =	\
 			Matrix_Element_Handler.H \
 			MI_Handler.H \
@@ -63,11 +31,12 @@ pkginclude_HEADERS        =	\
 		   	Cluster_Partons_Base.H \
 		   	Cluster_Partons_CKKW.H \
 			Amegic_Apacic_Interface.H
-EXTRA_DIST    = $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(SHERPAFLAGS) 
-INCLUDES      = $(SHERPAINCS) $(APACICINCS) $(AMEGICINCS) \
-		$(AMISICINCS) $(EXTRAXSINCS) $(PHASICINCS) \
-		$(MODELINCS) $(PDFINCS) \
-		$(BEAMINCS) $(ATOOLSINCS)
 
+EXTRA_DIST    = @SVNINCLUDE@
 
+AM_CXXFLAGS   =	@SHERPAFLAGS@
+
+INCLUDES      = @SHERPAINCS@ @APACICINCS@ @AMEGICINCS@ \
+		@CONDITIONAL_AMISICINCS@ @EXTRAXSINCS@ @PHASICINCS@ \
+		@MODELINCS@ @PDFINCS@ \
+		@BEAMINCS@ @ATOOLSINCS@

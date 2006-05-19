@@ -1,7 +1,3 @@
-if CVS_INCLUDE
-CVSINCLUDE    =	.svn
-endif
-
 decaydir      = $(pkgdatadir)/Decaydata/EtaprimeDecays
 
 dist_decay_DATA       =	\
@@ -14,5 +10,5 @@ dist_decay_DATA       =	\
 			etaprime958_PP.dat \
 			EtaprimeDecays.dat
 
-EXTRA_DIST    =	$(CVSINCLUDE)
+EXTRA_DIST    =	@SVNINCLUDE@
 
