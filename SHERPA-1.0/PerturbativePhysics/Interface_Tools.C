@@ -47,8 +47,8 @@ void Interface_Tools::InitializeIncoming(const Blob *blob,const double &E)
   m2->stat=1;
   m2->part->SetDecayBlob((ATOOLS::Blob*)blob);
   m_inipt2=part1->Momentum().PPerp2();
-  m1->maxpt2=m1->pt2lcm=m_finpt2;
-  m2->maxpt2=m2->pt2lcm=m_finpt2;
+  m1->maxpt2=m1->pt2lcm=m_inipt2;
+  m2->maxpt2=m2->pt2lcm=m_inipt2;
 }
 
 void Interface_Tools::InitializeOutGoing(Blob *blob,const double &E)

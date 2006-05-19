@@ -65,7 +65,8 @@ void Perturbative_Interface::CleanBlobList(ATOOLS::Blob_List *const bloblist,
 					   const ATOOLS::btp::code type)
 {
   for (ATOOLS::Blob_List::iterator blit=bloblist->begin();blit!=bloblist->end();++blit) {
-    if ((*blit)->Type()==type) {
+    if ((*blit)->Type()==type && (*blit)->Status()==-1) {
+      msg_Debugging()<<METHOD<<"(): deleting blob\n"<<**blit;
       ATOOLS::Blob *blob=*blit;
       RemoveForward(blob,bloblist);
       RemoveBackward(blob,bloblist);

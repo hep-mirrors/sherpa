@@ -141,7 +141,8 @@ bool Event_Handler::GenerateEvent(int mode)
 	}
       }
       flag=true;
-    } while (m_blobs.empty());
+    } while (m_blobs.empty() || 
+	     m_blobs.FindFirst(btp::Signal_Process)->NOutP()==0);
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       if ((*pit)->Type()==eph::Analysis) (*pit)->Treat(&m_blobs,weight);
     }

@@ -208,7 +208,8 @@ int Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
       p_showerhandler->CleanUp();
       _blob->SetStatus(-1);
       // delete all meps blobs
-      //interface->CleanBlobList(_bloblist,_blob->Type());
+      if (_blob->Type()!=btp::Signal_Process) 
+	interface->CleanBlobList(_bloblist,_blob->Type());
     }
     else {
       msg.Error()<<"Jet_Evolution::AttachShowers(..): Shower failure."<<std::endl;

@@ -163,6 +163,7 @@ FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
   }
   if (!adjusted) {
     bloblist->Clear();
+    bloblist->AddBlob(btp::Signal_Process);
     if (p_mehandler->Weight()!=1.0) p_mehandler->SaveNumberOfTrials();
     return false;
   }

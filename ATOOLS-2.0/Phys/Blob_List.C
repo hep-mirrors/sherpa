@@ -323,5 +323,6 @@ Blob *Blob_List::AddBlob(const btp::code &type)
   blob->SetType(type);
   blob->SetId();
   blob->SetStatus(2);
+  push_back(blob);
   return blob;
 }
