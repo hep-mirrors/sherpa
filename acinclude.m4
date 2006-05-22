@@ -1,16 +1,16 @@
 dnl set flags according to build environment
 
-AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
+AC_DEFUN(SHERPA_SETUP_BUILDSYSTEM,
 [
   case "$build_os:$build_cpu:$build_vendor" in
     *darwin*:*power*:*)
-      echo "checking for architecture... Darwin (MacOS)"
+      echo "checking for architecture... Darwin MacOS"
       ldflags="-dynamic -flat_namespace"
-      AC_DEFINE(ARCH_DARWIN, "1", "Architecture identified as Darwin (MacOS)") ;;
+      AC_DEFINE([ARCH_DARWIN], "1", [Architecture identified as Darwin MacOS]) ;;
     *linux*:*:*)
       echo "checking for architecture...  Linux"
       ldflags="-rdynamic"
-      AC_DEFINE(ARCH_LINUX, "1", "Architecture identified as Linux") ;;
+      AC_DEFINE([ARCH_LINUX], "1", [Architecture identified as Linux]) ;;
     *)
       echo "checking for architecture...  unknown"
       echo "hosts system type $build not yet supported, assuming unix behaviour."
@@ -19,7 +19,7 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
       echo "(will continue in 10 seconds)"
       sleep 10
       ldflags="-rdynamic"
-      AC_DEFINE(ARCH_UNIX, "1", "Architecture identified as Unix") ;;
+      AC_DEFINE([ARCH_UNIX], "1", [Architecture identified as Unix]) ;;
   esac
   AC_SUBST(ldflags)
 ])
@@ -150,14 +150,14 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   if test "x$final_prefix" = "xNONE"; then
       final_prefix=$ac_default_prefix
   fi
-  AC_DEFINE_UNQUOTED(SHERPA_VERSION, ["`echo AC_PACKAGE_VERSION | cut -d. -f1`"], "Sherpa version")
-  AC_DEFINE_UNQUOTED(SHERPA_SUBVERSION, ["`echo AC_PACKAGE_VERSION | cut -d. -f2,3`"], "Sherpa subversion")
-  AC_DEFINE_UNQUOTED(SHERPA_BUILD_PATH, "$PWD", "Sherpa build path")
-  AC_DEFINE_UNQUOTED(SHERPA_INCLUDE_PATH, "$final_prefix/include/SHERPA-MC", "Sherpa include directory")
-  AC_DEFINE_UNQUOTED(SHERPA_BINARY_PATH, "$final_prefix/bin", "Sherpa binary directory")
-  AC_DEFINE_UNQUOTED(SHERPA_PDFS_PATH, "$final_prefix/share/SHERPA-MC", "Sherpa data directory")
-  AC_DEFINE_UNQUOTED(SHERPA_SHARE_PATH, "$final_prefix/share/SHERPA-MC", "Sherpa data directory")
-  AC_DEFINE(USING__COLOUR, "1", "Using colour")
+  AC_DEFINE_UNQUOTED([SHERPA_VERSION], ["`echo AC_PACKAGE_VERSION | cut -d. -f1`"], [Sherpa version])
+  AC_DEFINE_UNQUOTED([SHERPA_SUBVERSION], ["`echo AC_PACKAGE_VERSION | cut -d. -f2,3`"], [Sherpa subversion])
+  AC_DEFINE_UNQUOTED([SHERPA_BUILD_PATH], "$PWD", [Sherpa build path])
+  AC_DEFINE_UNQUOTED([SHERPA_INCLUDE_PATH], "$final_prefix/include/SHERPA-MC", [Sherpa include directory])
+  AC_DEFINE_UNQUOTED([SHERPA_BINARY_PATH], "$final_prefix/bin", [Sherpa binary directory])
+  AC_DEFINE_UNQUOTED([SHERPA_PDFS_PATH], "$final_prefix/share/SHERPA-MC", [Sherpa data directory])
+  AC_DEFINE_UNQUOTED([SHERPA_SHARE_PATH], "$final_prefix/share/SHERPA-MC", [Sherpa data directory])
+  AC_DEFINE([USING__COLOUR], "1", [Using colour])
 ])
 
 
@@ -191,7 +191,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     [ AC_MSG_CHECKING(for MC@NLO support); AC_MSG_RESULT(no); mcatnloinclude=false ] 
   )
   if test "$mcatnloinclude" = "true" ; then
-    AC_DEFINE(USING__MCatNLO, "1", "using MC@NLO")
+    AC_DEFINE([USING__MCatNLO], "1", [using MC@NLO])
     CONDITIONAL_MCATNLOLIBS="\${MCATNLOLIBS}"
   fi
   AC_SUBST(CONDITIONAL_MCATNLOLIBS)
@@ -238,7 +238,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     [ clhep=false ]
   )
   if test "$clhep" = "true" ; then
-    AC_DEFINE(USING__CLHEP, "1", "using CLHEP")
+    AC_DEFINE([USING__CLHEP], "1", [Using CLHEP])
   fi
   AC_SUBST(CONDITIONAL_CLHEPDIR)
   AC_SUBST(CONDITIONAL_CLHEPINCS)
@@ -269,7 +269,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     [ root=false ]
   )
   if test "$root" = "true" ; then
-    AC_DEFINE(USING__ROOT, "1", "using ROOT")
+    AC_DEFINE([USING__ROOT], "1", [using ROOT])
     fi
   AC_SUBST(CONDITIONAL_ROOTDIR)
   AC_SUBST(CONDITIONAL_ROOTINCS)
@@ -297,7 +297,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     [ lhapdf=false ]
   )
   if test "$lhapdf" = "true" ; then
-    AC_DEFINE(USING__LHAPDF, "1", "using LHAPDF")
+    AC_DEFINE(USING__LHAPDF, "1", [using LHAPDF])
   fi
   AC_SUBST(CONDITIONAL_LHAPDFDIR)
   AC_SUBST(CONDITIONAL_LHAPDFLIBS)
@@ -313,9 +313,9 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     [ AC_MSG_CHECKING(whether to include MODEL headers); AC_MSG_RESULT(yes); modelinclude=true; ]
   )
   if test "$modelinclude" = "true" ; then
-    AC_DEFINE(USING__Model, "1", "using Model")
+    AC_DEFINE(USING__Model, "1", [using Model])
   else
-    AC_DEFINE(USING__ATOOLS_only, "1", "not using Model, using ATOOLS_only")
+    AC_DEFINE(USING__ATOOLS_only, "1", [not using Model, using ATOOLS_only])
   fi
   AM_CONDITIONAL(MODEL_SUPPORT, test "$modelinclude" = "true" )
 
@@ -331,7 +331,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   dnl comment out if isajet to be compiled
   echo "Hardwired: Omitting all Isajet stuff"; isajetinclude=false;
   if test "$isajetinclude" = "true" ; then
-    AC_DEFINE(USING__Isajet, "1", "using Isajet")
+    AC_DEFINE(USING__Isajet, "1", [using Isajet])
     CONDITIONAL_ISAJETINCS="\${ISAJETINCS}"
     CONDITIONAL_ISAJETLIBS="\${ISAJETLIBS}"
   fi
@@ -351,7 +351,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   dnl comment out if hdecay to be compiled
   echo "Hardwired: Omitting all Hdecay stuff"; hdecayinclude=false;
   if test "$hdecayinclude" = "true" ; then
-    AC_DEFINE(USING__Hdecay, "1", "using Hdecay")
+    AC_DEFINE(USING__Hdecay, "1", [using Hdecay])
     CONDITIONAL_HDECAYLIBS="\${HDECAYLIBS}"
     CONDITIONAL_HDECAYINCS="\${HDECAYINCS}"
   fi
@@ -369,7 +369,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     [ AC_MSG_CHECKING(whether to include ADICIC stuff); AC_MSG_RESULT(yes); adicicinclude=true; ]
   )
   if test "$adicicinclude" = "true" ; then
-    AC_DEFINE(USING__Adicic, "1", "using ADICIC")
+    AC_DEFINE(USING__Adicic, "1", [using ADICIC])
     CONDITIONAL_ADICICLIBS="\${ADICICLIBS}"
     CONDITIONAL_ADICICINCS="\${ADICICINCS}"
   fi
@@ -387,7 +387,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     [ AC_MSG_CHECKING(whether to include AMISIC stuff); AC_MSG_RESULT(yes); amisicinclude=true; ]
   )
   if test "$amisicinclude" = "true" ; then
-    AC_DEFINE(USING__Amisic, "1", "using AMISIC")
+    AC_DEFINE(USING__Amisic, "1", [using AMISIC])
     CONDITIONAL_AMISICLIBS="\${AMISICLIBS}"
     CONDITIONAL_AMISICINCS="\${AMISICINCS}"
   fi
@@ -405,7 +405,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     [ AC_MSG_CHECKING(whether to include CS_SHOWER stuff); AC_MSG_RESULT(yes); cs_showerinclude=true; ]
   )
   if test "$cs_showerinclude" = "true" ; then
-    AC_DEFINE(USING__CSS, "1", "using CS_SHOWER")
+    AC_DEFINE(USING__CSS, "1", [using CS_SHOWER])
     CONDITIONAL_CSSLIBS="\${CSSLIBS}"
     CONDITIONAL_CSSINCS="\${CSSINCS}"
   fi
@@ -423,7 +423,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     [ AC_MSG_CHECKING(whether to include AHADIC stuff); AC_MSG_RESULT(yes); ahadicinclude=true; ]
   )
   if test "$ahadicinclude" = "true" ; then
-    AC_DEFINE(USING__Ahadic, "1", "using AHADIC")
+    AC_DEFINE(USING__Ahadic, "1", [using AHADIC])
     CONDITIONAL_AHADICLIBS="\${AHADICLIBS}"
     CONDITIONAL_AHADICINCS="\${AHADICINCS}"
   fi
@@ -441,7 +441,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     [ AC_MSG_CHECKING(whether to include HADRONS stuff); AC_MSG_RESULT(yes); hadronsinclude=true; ]
   )
   if test "$hadronsinclude" = "true" ; then
-    AC_DEFINE(USING__Hadrons, "1", "using HADRONS")
+    AC_DEFINE(USING__Hadrons, "1", [using HADRONS])
     CONDITIONAL_HADRONSLIBS="\${HADRONSLIBS}"
     CONDITIONAL_HADRONSINCS="\${HADRONSINCS}"
   fi
@@ -460,7 +460,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     [ AC_MSG_CHECKING(whether to include SHERPA stuff); AC_MSG_RESULT(yes); sherpainclude=true; ]
   )
   if test "$sherpainclude" = "true" ; then
-    AC_DEFINE(USING__Sherpa, "1", "using SHERPA")
+    AC_DEFINE(USING__Sherpa, "1", [using SHERPA])
     CONDITIONAL_SHERPAINCS="\${SHERPAINCS}"
     CONDITIONAL_SHERPALIBS="\${SHERPALIBS}"
   fi
