@@ -1,6 +1,7 @@
 #include "LesHouches_Interface.H"
 #include "Run_Parameter.H"
 #include "Message.H"
+#include "MyStrStream.H"
 #include "MathTools.H"
 #include "Running_AlphaQED.H"
 #include "Running_AlphaS.H"
@@ -54,6 +55,7 @@ void LesHouches_Interface::Run(std::string _model) {
   
   //SetSMInput();
   SetMasses();
+  SetWidths();
   SetHiggsParameters();
   SetInoParameters();
   SetSquarkParameters();
@@ -166,6 +168,37 @@ void LesHouches_Interface::SetMasses() {
   else msg.Error()<<std::endl<<"Could not read Block MASS from SLHA file: "
 		  <<m_dir+m_inputfile<<std::endl;
 }
+
+void LesHouches_Interface::SetWidths() {
+  
+  msg_Tracking()<<std::endl<<"  Reading decay data: "<<std::endl;
+  p_reader->SetFileEnd("dummy");
+  std::vector<std::vector<std::string> >   vds;
+  
+  //
+  p_reader->SetFileBegin(std::string("DECAY"));
+  p_reader->RereadInFile();
+  //
+  p_reader->MatrixFromFile(vds,"");
+  
+  for (size_t k=0;k<vds.size();++k) {
+    if (vds[k].size()>0) {
+      if (vds[k][0]=="DECAY") {
+       Flavour flav;    
+       flav.FromHepEvt(ATOOLS::ToType<int>(vds[k][1]));
+       if (flav!=Flavour(kf::W) || flav!=Flavour(kf::Z)) {
+         flav.SetWidth(ATOOLS::ToType<double>(vds[k][2]));
+         msg_Tracking()<<"   Set width of "<<flav<<" to "<<flav.Width()<<std::endl;
+         else {
+           msg_Tracking()<<"   Do not change width of EW gauge bosons : "<<flav<<" at "<<flav.Width()<<std::endl;
+         }
+       }
+      }
+    }
+  }
+  p_reader->AddFileEnd("Block"); 
+}
+
 
 void LesHouches_Interface::SetHiggsParameters() {
 
