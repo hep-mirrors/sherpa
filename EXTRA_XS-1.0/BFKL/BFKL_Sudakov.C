@@ -29,13 +29,14 @@ bool BFKL_Sudakov::Dice()
 {
   double rn[4];
   for (short unsigned int i(0);i<4;++i) rn[i]=ran.Get();
-  // set naive kt limit
-  p_levs->SetKT2Max(m_kt2max/4.0);
+  // kt limit
+  p_levs->SetKT2Max(m_kt2max);
   // get last integral
   m_integral=p_levs->MajorIntegral();
+  // set branching probability
+  m_gamma=m_asmax/(2.0*M_PI)*log(m_kt2max/m_kt2min)*m_integral;
   // dice new y
-  double kt2max(Min(m_kt2min*exp(dabs(m_oldy-m_yb)),m_kt2max));
-  m_y+=log(rn[0])/(m_asmax/(2.0*M_PI)*log(m_kt2max/m_kt2min)*m_integral);
+  m_y+=log(rn[0])/m_gamma;
   // dice new kt2
   m_kt2=m_kt2min*pow(m_kt2max/m_kt2min,rn[1]);
   // dice new phi
@@ -45,23 +46,25 @@ bool BFKL_Sudakov::Dice()
   return m_y>m_yb;
 }
 
-bool BFKL_Sudakov::CalculateWeight(const Vector_Vector &k,
-				   const ATOOLS::Vec4D &q)
+bool BFKL_Sudakov::Approve(const Vector_Vector &k,
+			   const ATOOLS::Vec4D &q1,
+			   const ATOOLS::Vec4D &q2)
 {
-  m_weight=1.0;
-  double qt2(q.PPerp2());
-  // qt limits
-  if (qt2<m_kt2min) return false;
+  double qt22(q2.PPerp2()), kt2(k.back().PPerp2());
+  // lower qt and kt limits
+  if (qt22<m_kt2min || kt2<m_kt2min) return false;
+  double weight(1.0);
   // coupling weight
-  if ((*MODEL::as)(m_kt2)<m_asmax*ran.Get()) return false;
-  // kt limits
-  double kt2max(Min(m_kt2min*exp(dabs(m_oldy-m_y)),m_kt2max));
-  if (m_kt2>kt2max) return false;
-//   // qt weight
-//   if (log(qt2/m_kt2min)<log(m_kt2max/m_kt2min)*ran.Get()) return false;
+  weight*=(*MODEL::as)(kt2)/m_asmax;
   // splitting weight
-  if (p_levs->Selected()->Value(m_y,m_kt2)<
-      p_levs->Selected()->Value(m_y,m_kt2)*ran.Get()) return false;
+  weight*=p_levs->Selected()->Value(m_y,m_kt2)/
+    p_levs->Selected()->MajorValue(m_y,m_kt2);
+  // propagator weight
+  weight*=kt2/qt22;
+  // veto emission
+  if (weight<ran.Get()) return false;
+  // store old y
   m_oldy=m_y;
   return true;
 }
+
