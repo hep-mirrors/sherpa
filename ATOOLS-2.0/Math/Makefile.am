@@ -1,15 +1,5 @@
-SHERPASYS = ../..
+pkglib_LTLIBRARIES       =	libToolsMath.la
 
-ATOOLSFLAGS   =	-pedantic -Wall -Winline
-
-ATOOLSINCS    =	-I../Org -I../Phys
-MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main 
-
-if CVS_INCLUDE
-CVSINCLUDE    =	CVS
-endif
-
-lib_LTLIBRARIES       =	libToolsMath.la
 libToolsMath_la_SOURCES       =	\
 				MathTools.C \
 				Random.C \
@@ -27,7 +17,8 @@ libToolsMath_la_SOURCES       =	\
 				Grid.C \
 				Primitive_Integrator.C \
 				Algebra_Interpreter.C
-include_HEADERS        =	\
+
+pkginclude_HEADERS        =	\
 			MathTools.H \
 			Random.H \
 			Function_Base.H \
@@ -48,6 +39,9 @@ include_HEADERS        =	\
 			Algebra_Interpreter.H \
 			Cluster_Algorithm.H \
 			Cluster_Algorithm.C
-EXTRA_DIST    = $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(ATOOLSFLAGS)
-INCLUDES      = $(MODELINCS) $(ATOOLSINCS)
+
+AM_CXXFLAGS   =	@SHERPAFLAGS@
+
+INCLUDES      = @MODELINCS@ @ATOOLSINCS@
+
+EXTRA_DIST    = @SVNINCLUDE@

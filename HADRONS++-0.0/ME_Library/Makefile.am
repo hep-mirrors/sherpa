@@ -1,8 +1,4 @@
-if CVS_INCLUDE
-CVSINCLUDE    =	CVS
-endif
-
-lib_LTLIBRARIES = libHadronsMEs.la
+pkglib_LTLIBRARIES = libHadronsMEs.la
 
 libHadronsMEs_la_SOURCES = \
 		HD_ME_Base.C \
@@ -16,7 +12,7 @@ libHadronsMEs_la_SOURCES = \
 		XYZFuncs.C \
 		Tools.C 
 
-include_HEADERS = \
+pkginclude_HEADERS = \
 		HD_ME_Base.H \
 		HD_ME_Selector.H \
 		Three_Body_MEs.H \
@@ -28,11 +24,6 @@ include_HEADERS = \
 		XYZFuncs.H \
 		Tools.H
 
-INCLUDES = \
-	-I../../HADRONS++-0.0/PS_Library \
-	-I../../PHASIC++-1.0/Main \
-	-I../../ATOOLS-2.0/Phys \
-	-I../../ATOOLS-2.0/Math \
-	-I../../ATOOLS-2.0/Org \
-    -I../../MODEL-1.0/Main
-EXTRA_DIST    = $(CVSINCLUDE)
+INCLUDES = @HADRONSINCS@ @PHASICINCS@ @ATOOLSINCS@ @MODELINCS@
+
+EXTRA_DIST    = @SVNINCLUDE@

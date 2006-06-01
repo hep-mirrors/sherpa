@@ -1,7 +1,3 @@
-if CVS_INCLUDE
-CVSINCLUDE    =	.svn
-endif
-
 decaydir      = $(pkgdatadir)/Decaydata/Kstar1410+
 
 dist_decay_DATA       =	\
@@ -11,5 +7,5 @@ dist_decay_DATA       =	\
 			Kstar1410+_Kstar892+pi.dat \
 			Kstar1410+_Kstar892pi+.dat
 
-EXTRA_DIST    =	$(CVSINCLUDE)
+EXTRA_DIST    =	@SVNINCLUDE@
 

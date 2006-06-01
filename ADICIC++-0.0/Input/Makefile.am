@@ -1,49 +1,19 @@
-SHERPASYS  = ../..
+pkglib_LTLIBRARIES = libAdicicInput.la
 
-ATOOLSINC  = $(SHERPASYS)/ATOOLS-2.0
-PDFINC     = $(SHERPASYS)/PDF-1.0
-BEAMINC    = $(SHERPASYS)/BEAM-1.0
-PHASICINC  = $(SHERPASYS)/PHASIC++-1.0
-MODELINC   = $(SHERPASYS)/MODEL-1.0
-EXTRAXSINC = $(SHERPASYS)/EXTRA_XS-1.0
-SHERPAINC  = $(SHERPASYS)/SHERPA-1.0
-
-
-
-if CVS_INCLUDE
-CVSINCLUDE = CVS
-endif
-
-
-
-lib_LTLIBRARIES = libAdicicInput.la
 libAdicicInput_la_SOURCES = Dipole_Flavour.C Information.cpp \
                             Sudakov_Utils.cpp Recoil_Strategy.cpp \
                             Evolution_Strategy.cpp \
                             Dipole_Parameter.C
 
+pkginclude_HEADERS = Dipole_Flavour.H Information.hpp \
+                     Sudakov_Utils.hpp Recoil_Strategy.hpp \
+                     Evolution_Strategy.hpp \
+                     Dipole_Parameter.H
 
+AM_CXXFLAGS = @SHERPAFLAGS@
 
-#AM_CXXFLAGS = -pedantic -Wall -Winline -DUSING_SHERPA
-AM_CXXFLAGS = -pedantic -Wall -Winline
+INCLUDES = @ADICICINCS@ @ATOOLSINCS@ @MODELINCS@
 
-
-
-INCLUDES = -I../Tool \
-           -I$(ATOOLSINC)/Phys \
-           -I$(ATOOLSINC)/Math \
-           -I$(ATOOLSINC)/Org \
-           -I$(MODELINC)/Main
-
-
-  
-include_HEADERS = Dipole_Flavour.H Information.hpp \
-                  Sudakov_Utils.hpp Recoil_Strategy.hpp \
-                  Evolution_Strategy.hpp \
-                  Dipole_Parameter.H
-
-
-
-EXTRA_DIST = $(CVSINCLUDE) \
+EXTRA_DIST = @SVNINCLUDE@ \
              Recoil_Strategy.inl.hh \
              Dipole_Parameter.inl.hh Dipole_Parameter.prm.cc

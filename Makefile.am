@@ -1,9 +1,5 @@
 MAKE = make 
 
-if CVS_INCLUDE
-CVSINCLUDE    =	CVS
-endif
-
 SUBDIRS       = \
 		ATOOLS-2.0 \
 		BEAM-1.0 \
@@ -22,4 +18,4 @@ SUBDIRS       = \
 		SHERPA-1.0 \
 		TOOLS
 
-EXTRA_DIST    = $(CVSINCLUDE)
+EXTRA_DIST    = @SVNINCLUDE@

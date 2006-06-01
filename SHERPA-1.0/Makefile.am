@@ -1,9 +1,5 @@
 MAKE = make 
 
-if CVS_INCLUDE
-CVSINCLUDE    =	CVS
-endif
-
 if MCATNLO_SUPPORT
 MCATNLOMAKE   = HerwigTools
 endif
@@ -18,5 +14,5 @@ SUBDIRS       =	\
 		Single_Events \
 		Main \
 		Run
-EXTRA_DIST    =	$(CVSINCLUDE)
 
+EXTRA_DIST    =	@SVNINCLUDE@

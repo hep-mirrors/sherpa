@@ -1,11 +1,12 @@
-#ifndef USING__Hadrons
-#define USING__Hadrons
-#endif
-
 #ifndef Hadrons_H
 #define Hadrons_H
 
 #include "CXXFLAGS.H"
+#ifndef USING__Hadrons
+#define USING__Hadrons
+#endif
+
+
 #include "Decay_Table_Reader.H"
 #include "Decay_Table.H"
 #include <string>

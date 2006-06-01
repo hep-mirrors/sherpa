@@ -1,6 +1,5 @@
-MAKE    = make 
-if CVS_INCLUDE
-CVSINCLUDE    = CVS
-endif
+MAKE    = make
+
 SUBDIRS = Tools Showers Main
-EXTRA_DIST    = $(CVSINCLUDE)
+
+EXTRA_DIST    = @SVNINCLUDE@

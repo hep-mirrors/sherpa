@@ -4,8 +4,7 @@ DIRS=*
 
 rm configure.in.decays
 
-echo -e "if CVS_INCLUDE\nCVSINCLUDE    =	.svn\nendif\n" > Makefile.am
-echo -e "decaydir      = \$(pkgdatadir)/Decaydata/$I\n" >> Makefile.am
+echo -e "decaydir      = \$(pkgdatadir)/Decaydata/$I\n" > Makefile.am
 echo -e "dist_decay_DATA       =	\\" >> Makefile.am
 echo -e "			HadronConstants.dat \\" >> Makefile.am
 echo -e "			HadronDecays.dat\n" >> Makefile.am
@@ -26,8 +25,7 @@ for I in $DIRS; do
   fi
   echo "create Makefile.am in $I"
   cd $I
-    echo -e "if CVS_INCLUDE\nCVSINCLUDE    =	.svn\nendif\n" > Makefile.am
-    echo -e "decaydir      = \$(pkgdatadir)/Decaydata/$I\n" >> Makefile.am
+    echo -e "decaydir      = \$(pkgdatadir)/Decaydata/$I\n" > Makefile.am
     echo -e "dist_decay_DATA       =	\\" >> Makefile.am
     FILES=*.dat
     NFILES=0
@@ -44,10 +42,10 @@ for I in $DIRS; do
         echo -e "			$J\n" >> Makefile.am
       fi
     done
-    echo -e "EXTRA_DIST    =	\$(CVSINCLUDE)\n" >> Makefile.am
+    echo -e "EXTRA_DIST    =	@SVNINCLUDE@\n" >> Makefile.am
   cd ..
   echo "	  SHERPA-1.0/Run/Decaydata/$I/Makefile \\" >> configure.in.decays
 done
 
-echo -e "EXTRA_DIST    =	\$(CVSINCLUDE)\n" >> Makefile.am
+echo -e "EXTRA_DIST    =	@SVNINCLUDE@\n" >> Makefile.am
 

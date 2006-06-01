@@ -11,6 +11,7 @@
 #include "MyStrStream.H"
 
 using namespace SHERPA;
+using namespace ATOOLS;
 
 bool Herwig_Interface::s_exportas=false;
 bool Herwig_Interface::s_exportpdf=false;
@@ -61,7 +62,7 @@ void Herwig_Interface::ReadInTheParameters()
   int pdfset;
   std::vector<std::vector<double> > help;
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
-  reader->SetMatrixType(reader->MTransposed);
+  reader->SetMatrixType(mtc::transposed);
   reader->SetInputPath(m_path);
   reader->SetInputFile(m_file);
   reader->AddIgnore("(");

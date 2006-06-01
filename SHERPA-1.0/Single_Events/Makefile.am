@@ -1,65 +1,5 @@
-SHERPASYS     =	../..
+pkglib_LTLIBRARIES	      =	libSherpaSingleEvents.la
 
-SHERPAFLAGS   =	-pedantic -Wall -Winline
-
-ANALYSISDIR   =	$(SHERPASYS)/ANALYSIS-1.0
-AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
-APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
-EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
-PDFDIR        =	$(SHERPASYS)/PDF-1.0
-ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
-
-ANALYSISINCS  = -I$(ANALYSISDIR)/Main -I$(ANALYSISDIR)/Observables
-AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
-		-I$(AMEGICDIR)/Amplitude/AmplTools \
-		-I$(AMEGICDIR)/Amplitude -I$(AMEGICDIR)/Phasespace \
-		-I$(AMEGICDIR)/Model -I$(AMEGICDIR)/String 
-APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
-EXTRAXSINCS   =	-I$(EXTRAXSDIR)/Two2Two -I$(EXTRAXSDIR)/Main
-SHERPAINCS    =	-I../PerturbativePhysics -I../SoftPhysics \
-		-I../LundTools -I../HerwigTools -I../Tools 
-PHASICINCS    =	-I$(SHERPASYS)/PHASIC++-1.0/Main
-MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
-PDFINCS       =	-I$(PDFDIR)/Main -I$(PDFDIR)/Remnant -I$(PDFDIR)/Sudakov
-BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
-ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
-
-if HADRONS_SUPPORT
-HADRONSDIR    =	$(SHERPASYS)/HADRONS++-0.0
-HADRONSINCS   = -I$(HADRONSDIR)/Main -I$(HADRONSDIR)/ME_Library \
-		-I$(HADRONSDIR)/PS_Library
-endif
-if AHADIC_SUPPORT
-AHADICDIR     =	$(SHERPASYS)/AHADIC++-0.0
-AHADICINCS    = -I$(AHADICDIR)/Main -I$(AHADICDIR)/Formation \
-		-I$(AHADICDIR)/Decays -I$(AHADICDIR)/Tools
-endif
-if ADICIC_SUPPORT
-ADICICDIR     = $(SHERPASYS)/ADICIC++-0.0
-ADICICINCS    = -I$(ADICICDIR)/Main -I$(ADICICDIR)/Structure \
-                -I$(ADICICDIR)/Handler -I$(ADICICDIR)/Tool \
-		-I$(ADICICDIR)/Input
-endif
-if AMISIC_SUPPORT
-AMISICDIR     =	$(SHERPASYS)/AMISIC++-1.0
-AMISICINCS    =	-I$(SHERPASYS)/AMISIC++-1.0/Main
-endif
-if CSS_SUPPORT
-CSSDIR        = $(SHERPASYS)/CS_SHOWER++-0.0
-CSSINCS       = -I$(CSSDIR)/Tools -I$(CSSDIR)/Showers -I$(CSSDIR)/Main
-CSSFLAGS      =	-DUSING__CSS -pedantic -Wall -Winline 
-endif
-
-if ROOT_SUPPORT
-ROOTINCS      =	-I$(ROOTSYS)/include
-ROOTFLAGS     = -Wno-long-long
-endif
-
-if CVS_INCLUDE
-CVSINCLUDE    =	CVS
-endif
-
-lib_LTLIBRARIES	      =	libSherpaSingleEvents.la
 libSherpaSingleEvents_la_SOURCES      =	\
 					Event_Handler.C \
 					Event_Phase_Handler.C \
@@ -73,7 +13,7 @@ libSherpaSingleEvents_la_SOURCES      =	\
 					EvtReadin_Phase.C \
 					MC_Interface.C
 
-include_HEADERS        =	\
+pkginclude_HEADERS        =	\
 			Event_Handler.H \
 			Event_Phase_Handler.H \
 		 	Signal_Processes.H \
@@ -86,14 +26,12 @@ include_HEADERS        =	\
 			EvtReadin_Phase.H \
 			MC_Interface.H
 
-EXTRA_DIST    = $(CVSINCLUDE) 
-AM_CXXFLAGS   =	$(SHERPAFLAGS) $(ROOTFLAGS)
-INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(APACICINCS) \
-		$(ADICICINCS) $(CSSINCS) $(AMEGICINCS) $(AMISICINCS) \
-		$(AHADICINCS) $(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) \
-		$(PDFINCS) $(BEAMINCS) $(HADRONSINCS) $(ATOOLSINCS) \
-		$(ROOTINCS)
+AM_CXXFLAGS   =	@SHERPAFLAGS@ @CONDITIONAL_ROOTFLAGS@
 
+INCLUDES      = @SHERPAINCS@ @ANALYSISINCS@ @APACICINCS@ \
+		@CONDITIONAL_ADICICINCS@ @CONDITIONAL_CSSINCS@ @AMEGICINCS@ @CONDITIONAL_AMISICINCS@ \
+		@CONDITIONAL_AHADICINCS@ @EXTRAXSINCS@ @PHASICINCS@ @MODELINCS@ \
+		@PDFINCS@ @BEAMINCS@ @CONDITIONAL_HADRONSINCS@ @ATOOLSINCS@ \
+		@CONDITIONAL_ROOTINCS@ @CONDITIONAL_CLHEPINCS@
 
-
-
+EXTRA_DIST    = @SVNINCLUDE@ 

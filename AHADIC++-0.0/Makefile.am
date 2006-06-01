@@ -1,6 +1,5 @@
-MAKE = make 
-if CVS_INCLUDE
-CVSINCLUDE    =	CVS
-endif
-SUBDIRS       =	Tools Formation Decays Main Run
-EXTRA_DIST    = $(CVSINCLUDE)
+MAKE = make
+
+SUBDIRS       = Tools Formation Decays Main Run
+
+EXTRA_DIST    = @SVNINCLUDE@

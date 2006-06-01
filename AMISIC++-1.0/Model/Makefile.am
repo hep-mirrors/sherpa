@@ -1,43 +1,24 @@
-SHERPASYS     =	../..
+pkglib_LTLIBRARIES       = libAmisicModel.la
 
-AMISICFLAGS   =	-pedantic -Wall -Winline
+libAmisicModel_la_SOURCES = \
+                            Grid_Creator.C \
+                            Profile_Function_Base.C \
+                            Profile_Function.C \
+                            Simple_Chain.C \
+                            Reggeon_Trajectory.C \
+                            Simple_String.C
 
-ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
-ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
-PDFDIR        =	$(SHERPASYS)/PDF-1.0
-PDFINCS       =	-I$(PDFDIR)/Main -I$(PDFDIR)/Remnant
-BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
-PHASICINCS    =	-I$(SHERPASYS)/PHASIC++-1.0/Main
-MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
-EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
-EXTRAXSINCS   =	-I$(EXTRAXSDIR)/Main -I$(EXTRAXSDIR)/Two2Two
-AMISICINCS    = -I../Tools -I../Main
+pkginclude_HEADERS        = \
+                            Grid_Creator.H \
+                            Profile_Function_Base.H \
+                            Profile_Function.H \
+                            Simple_Chain.H \
+                            Reggeon_Trajectory.H \
+                            Simple_String.H
 
-if SHERPA_SUPPORT
-SHERPADIR     = $(SHERPASYS)/SHERPA-1.0
-SHERPAINCS    =	-I$(SHERPADIR)/PerturbativePhysics
-endif
+AM_CXXFLAGS   = @SHERPAFLAGS@
 
-if CVS_INCLUDE
-CVSINCLUDE    =	CVS
-endif
+INCLUDES      = @CONDITIONAL_SHERPAINCS@ @AMISICINCS@ @EXTRAXSINCS@ @PHASICINCS@ \
+                @PDFINCS@ @BEAMINCS@ @MODELINCS@ @ATOOLSINCS@
 
-lib_LTLIBRARIES       = libAmisicModel.la
-libAmisicModel_la_SOURCES     = \
-			       	Grid_Creator.C \
-				Profile_Function_Base.C \
-				Profile_Function.C \
-				Simple_Chain.C \
-				Reggeon_Trajectory.C \
-				Simple_String.C 
-include_HEADERS        = \
-			Grid_Creator.H \
-			Profile_Function_Base.H \
-			Profile_Function.H \
-			Simple_Chain.H \
-			Reggeon_Trajectory.H \
-			Simple_String.H 
-EXTRA_DIST    = $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(AMISICFLAGS)
-INCLUDES      =	$(SHERPAINCS) $(AMISICINCS) $(EXTRAXSINCS) $(PHASICINCS) \
-		$(PDFINCS) $(BEAMINCS) $(MODELINCS) $(ATOOLSINCS)
+EXTRA_DIST    = @SVNINCLUDE@

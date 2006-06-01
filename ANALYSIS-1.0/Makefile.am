@@ -1,6 +1,5 @@
-MAKE = make 
-if CVS_INCLUDE
-CVSINCLUDE    =	CVS
-endif
+MAKE = make
+
 SUBDIRS = Main Observables
-EXTRA_DIST    = docit Doxyfile $(CVSINCLUDE)
+
+EXTRA_DIST    = docit Doxyfile @SVNINCLUDE@

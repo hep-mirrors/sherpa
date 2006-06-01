@@ -1,46 +1,12 @@
-SHERPASYS     =	../..
-
-SHERPAFLAGS   =	-pedantic -Wall -Winline 
-
-ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
-EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
-AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
-APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
-SHERPAINCS    =	-I../SingleEvents -I../SoftPhysics -I../Tools
-ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
-PDFDIR        =	-I$(SHERPASYS)/PDF-1.0
-PDFINCS       = $(PDFDIR)/Main $(PDFDIR)/Sudakov
-BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
-PHASICINCS    =	-I$(SHERPASYS)/PHASIC++-1.0/Main
-MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
-EXTRAXSINCS   =	-I$(EXTRAXSDIR)/Two2Two -I$(EXTRAXSDIR)/Main
-AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
-		-I$(AMEGICDIR)/Amplitude/AmplTools -I$(AMEGICDIR)/Amplitude \
-		-I$(AMEGICDIR)/Phasespace -I$(AMEGICDIR)/Model \
-		-I$(AMEGICDIR)/String 
-APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
-
 if ADICIC_SUPPORT
-ADICICDIR     =	$(SHERPASYS)/ADICIC++-0.0
 ADICICCFILES  = SimpleXS_Adicic_Interface.C 
-ADICICINCS    = -I$(ADICICDIR)/Main -I$(ADICICDIR)/Structure \
-                -I$(ADICICDIR)/Handler -I$(ADICICDIR)/Tool -I$(ADICICDIR)/Input
 endif
 if CSS_SUPPORT
-CSSDIR        = $(SHERPASYS)/CS_SHOWER++-0.0
 CSSCFILES     = SimpleXS_CSS_Interface.C 
-CSSINCS       = -I$(CSSDIR)/Tools -I$(CSSDIR)/Showers -I$(CSSDIR)/Main
-endif
-if AMISIC_SUPPORT
-AMISICDIR     =	$(SHERPASYS)/AMISIC++-1.0
-AMISICINCS    =	-I$(SHERPASYS)/AMISIC++-1.0/Main
 endif
 
-if CVS_INCLUDE
-CVSINCLUDE    =	CVS
-endif
+pkglib_LTLIBRARIES       =	libSherpaPerturbativePhysics.la
 
-lib_LTLIBRARIES       =	libSherpaPerturbativePhysics.la
 libSherpaPerturbativePhysics_la_SOURCES       =	\
 						Matrix_Element_Handler.C \
 						MI_Handler.C \
@@ -57,7 +23,8 @@ libSherpaPerturbativePhysics_la_SOURCES       =	\
 						Amegic_Apacic_Interface.C \
 					   	$(ADICICCFILES) \
 					   	$(CSSCFILES)
-include_HEADERS        =	\
+
+pkginclude_HEADERS        =	\
 			Matrix_Element_Handler.H \
 			MI_Handler.H \
 		 	Shower_Handler.H \
@@ -73,11 +40,12 @@ include_HEADERS        =	\
 		   	Cluster_Partons_Base.H \
 		   	Cluster_Partons_CKKW.H \
 			Amegic_Apacic_Interface.H
-EXTRA_DIST    = $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(SHERPAFLAGS) 
-INCLUDES      = $(SHERPAINCS) $(ADICICINCS) $(APACICINCS) $(AMEGICINCS) \
-		$(AMISICINCS) $(EXTRAXSINCS) $(PHASICINCS) \
-		$(MODELINCS) $(PDFINCS) $(CSSINCS) \
-		$(BEAMINCS) $(ATOOLSINCS)
 
+AM_CXXFLAGS   =	@SHERPAFLAGS@
 
+INCLUDES      = @SHERPAINCS@ @CONDITIONAL_ADICICINCS@ @APACICINCS@ @AMEGICINCS@ \
+		@CONDITIONAL_AMISICINCS@ @EXTRAXSINCS@ @PHASICINCS@ \
+		@MODELINCS@ @PDFINCS@ @CONDITIONAL_CSSINCS@ \
+		@BEAMINCS@ @ATOOLSINCS@
+
+EXTRA_DIST    = @SVNINCLUDE@

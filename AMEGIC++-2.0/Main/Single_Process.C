@@ -48,7 +48,7 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
   string newpath=rpa.gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath.c_str(),493);
   if (system((string("test -f ")+newpath+string("/makelibs")).c_str())) {
-    system((string("cp ")+rpa.gen.Variable("SHERPA_BIN_PATH")+
+    system((string("cp ")+rpa.gen.Variable("SHERPA_SHARE_PATH")+
 	    string("/makelibs ")+newpath).c_str());
   }
   m_usepi    = usepi;
@@ -109,7 +109,7 @@ Single_Process::Single_Process(Process_Info* pinfo,int _nin,int _nout,Flavour * 
   if (system((string("test -d ")+newpath+string("/Process")).c_str())) {
 //     system((string("cp -r ")+rpa.gen.Variable("SHERPA_BIN_PATH")+
 // 	    string("/Process/Dummy ")+newpath+string("/Process")).c_str());
-    system((string("cp ")+rpa.gen.Variable("SHERPA_BIN_PATH")+
+    system((string("cp ")+rpa.gen.Variable("SHERPA_SHARE_PATH")+
 	    string("/makelibs ")+newpath).c_str());
   }
   m_usepi    = usepi;
@@ -502,7 +502,7 @@ int Single_Process::Tests() {
 
   /* Calculate the squared amplitude of the polarisation states. If a certain external
      polarisation combination is found not to contribute for the point in phase space
-     tested, it is assumed that is doesn´t contribute at all and is switched off.      */
+     tested, it is assumed that is doesnt contribute at all and is switched off.      */
   for (size_t i=0;i<p_hel->MaxHel();i++) { 
     if (p_hel->On(i)) {
       M_doub[i]  = p_ampl->Differential(i,(*p_hel)[i])*p_hel->PolarizationFactor(i);  
@@ -569,7 +569,7 @@ int Single_Process::Tests() {
 			   <<om::bold<<"   Interrupt run and execute \"makelibs\" in '"
 			   <<rpa.gen.Variable("SHERPA_CPP_PATH")<<"'."
 			   <<om::reset<<std::endl;
-	system((string("cp ")+rpa.gen.Variable("SHERPA_BIN_PATH")+
+	system((string("cp ")+rpa.gen.Variable("SHERPA_SHARE_PATH")+
 		string("/makelibs ")+rpa.gen.Variable("SHERPA_CPP_PATH")).c_str());
 	THROW(normal_exit,"Failed to load library.");
       }

@@ -1,7 +1,3 @@
-if CVS_INCLUDE
-CVSINCLUDE    =	.svn
-endif
-
 pdfdir        = $(pkgdatadir)/MRST99Grid
 
 dist_pdf_DATA         =	\
@@ -18,4 +14,4 @@ dist_pdf_DATA         =	\
 			cor11.dat \
 			cor12.dat 
 
-EXTRA_DIST    =	$(CVSINCLUDE) 
+EXTRA_DIST    =	@SVNINCLUDE@

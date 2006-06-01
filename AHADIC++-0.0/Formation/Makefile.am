@@ -1,21 +1,17 @@
-if CVS_INCLUDE
-CVSINCLUDE    =	CVS
-endif
+pkglib_LTLIBRARIES = libAhadicFormation.la
 
-lib_LTLIBRARIES = libAhadicFormation.la
 libAhadicFormation_la_SOURCES = \
-			Cluster_Formation_Handler.C \
-			Gluon_Decayer.C \
-			Cluster_Former.C \
-			Colour_Reconnections.C
-INCLUDES = -I../../ATOOLS-2.0/Phys \
-	   -I../../ATOOLS-2.0/Math \
-	   -I../../ATOOLS-2.0/Org \
-	   -I../Tools \
-	   -I../Main
-include_HEADERS = \
-		Cluster_Formation_Handler.H \
-		Gluon_Decayer.H \
-		Cluster_Former.H \
-		Colour_Reconnections.H
-EXTRA_DIST    = $(CVSINCLUDE)
+                                Cluster_Formation_Handler.C \
+                                Gluon_Decayer.C \
+                                Cluster_Former.C \
+                                Colour_Reconnections.C
+
+pkginclude_HEADERS = \
+                     Cluster_Formation_Handler.H \
+                     Gluon_Decayer.H \
+                     Cluster_Former.H \
+                     Colour_Reconnections.H
+
+INCLUDES = @ATOOLSINCS@ @AHADICINCS@
+
+EXTRA_DIST    = @SVNINCLUDE@

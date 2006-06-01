@@ -1,7 +1,10 @@
 #include "MI_Handler.H"
 #include "Data_Read.H"
 
+#ifndef USING__Sherpa
 #define USING__Sherpa
+#endif
+
 #ifdef USING__Amisic
 #include "Amisic.H"
 #endif

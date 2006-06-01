@@ -1,18 +1,17 @@
 MAKE       = make 
-if CVS_INCLUDE
-CVSINCLUDE = CVS
-endif
+
 if ISAJET_SUPPORT
-ISAJETDIR     =	Isajet
+ISAJETSUBDIR     =	Isajet
 else
-ISAJETDIR     =
+ISAJETSUBDIR     =
 endif
+
 if HDECAY_SUPPORT
-HDECAYDIR     =	Hdecay
+HDECAYSUBDIR     =	Hdecay
 else
-HDECAYDIR     =
+HDECAYSUBDIR     =
 endif
-SUBDIRS    = Main $(HDECAYDIR) $(ISAJETDIR) 
-EXTRA_DIST    = $(CVSINCLUDE)
 
+SUBDIRS    = Main $(HDECAYSUBDIR) $(ISAJETSUBDIR) 
 
+EXTRA_DIST    = @SVNINCLUDE@
