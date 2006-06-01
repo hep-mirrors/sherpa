@@ -426,8 +426,8 @@ namespace ATOOLS{
   }
 
 
-template class Blob_Data<SP(Spin_Correlation_Tensor) >;
 template SP(Spin_Correlation_Tensor) &Blob_Data_Base::Get<SP(Spin_Correlation_Tensor) >();
 template <> Blob_Data<SP(Spin_Correlation_Tensor) >::~Blob_Data() { }
+template class Blob_Data<SP(Spin_Correlation_Tensor) >;
 
 } //end of namespace ATOOLS
