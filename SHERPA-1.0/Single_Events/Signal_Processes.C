@@ -131,7 +131,7 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 		blit=bloblist->begin();
 	      }
 	      if (success) {
-		if (!FillBlob(myblob,false,true)) success=false;
+		if (!FillBlob(myblob,false,false)) success=false;
 		// moved to Beam_Remnant_Handler
 		// else p_mehandler->ResetNumberOfTrials();
 		weight = p_mehandler->Weight();
