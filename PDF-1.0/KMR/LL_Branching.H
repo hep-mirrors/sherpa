@@ -3,7 +3,13 @@
 
 #include "NLL_Branching_Probability_Base.H"
 #include "Running_AlphaS.H"
-#include "Splitting_Group.H"
+
+namespace APACIC { 
+
+  class Splitting_Function;
+  class Splitting_Group;
+
+}
 
 namespace PDF {
 
