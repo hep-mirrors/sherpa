@@ -19,6 +19,7 @@
 #endif
 
 using namespace EXTRAXS;
+using namespace ATOOLS;
 
 XS_Group::XS_Group(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
 		   const int scalescheme,const int kfactorscheme,
@@ -145,7 +146,12 @@ void XS_Group::Clear()
 bool XS_Group::SelectOne()
 {
   DeSelect();
-  if (m_totalxs==0.) p_selected=m_xsecs[int(ATOOLS::ran.Get()*m_xsecs.size())];
+  if (m_totalxs==0.) {
+    p_selected=m_xsecs[Min(size_t(ATOOLS::ran.Get()*m_xsecs.size()),
+			   m_xsecs.size()-1)];
+    p_selected->SetPSHandler(p_pshandler);
+    p_selected->SelectOne();
+  }
   else {
     double disc;
     if (m_atoms) disc=m_totalxs*ATOOLS::ran.Get();

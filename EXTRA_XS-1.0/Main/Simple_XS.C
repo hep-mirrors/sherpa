@@ -365,9 +365,11 @@ bool Simple_XS::CalculateTotalXSec(const std::string &resultpath)
 bool  Simple_XS::SelectOne() 
 {
   DeSelect();
-  if (m_totalxs==0) 
+  if (m_totalxs==0) {
     p_selected = m_xsecs[ATOOLS::Min(size_t(ran.Get()*m_xsecs.size()),
-				     m_xsecs.size())];
+				     m_xsecs.size()-1)];
+    p_selected->DeSelect();
+  }
   else {
     double disc = m_totalxs * ran.Get(); 
     for (size_t i=0;i<m_xsecs.size();++i) {
