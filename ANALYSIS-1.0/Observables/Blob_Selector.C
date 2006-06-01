@@ -26,12 +26,37 @@ public:
   {
     ATOOLS::Particle_List *outlist = new ATOOLS::Particle_List();
     p_ana->AddParticleList(m_outlist,outlist);
-    for (ATOOLS::Blob_List::const_iterator bit=blobs.begin();
-	 bit!=blobs.end();++bit) {
-      if ((*bit)->Type()==m_type) {
-	if (m_mode>1) {
-	  for (int i=0;i<(*bit)->NInP();++i) {
-	    const ATOOLS::Particle *cur=(*bit)->ConstInParticle(i);
+    for (int beam, b=0;b<3;++b) {
+      switch (b) {
+      case 0: 
+	beam=0; 
+	break;
+      case 1: 
+	beam=-1; 
+	break;
+      case 2: 
+	beam=1; 
+	break;
+      }
+      for (ATOOLS::Blob_List::const_iterator bit=blobs.begin();
+	   bit!=blobs.end();++bit) {
+	if ((*bit)->Beam()==beam && (*bit)->Type()&m_type) {
+	  if (m_mode>1) {
+	    for (int i=0;i<(*bit)->NInP();++i) {
+	      const ATOOLS::Particle *cur=(*bit)->ConstInParticle(i);
+	      bool present=false;
+	      for (ATOOLS::Particle_List::const_iterator pit=outlist->begin();
+		   pit!=outlist->end();++pit) 
+		if (cur==*pit) {
+		  present=true;
+		  break;
+		}
+	      if (!present) outlist->push_back(new ATOOLS::Particle(*cur));
+	    }
+	  }
+	  for (int i=0;i<(*bit)->NOutP();++i) {
+	    const ATOOLS::Particle *cur=(*bit)->ConstOutParticle(i);
+	    if (cur->DecayBlob()!=NULL) if (m_mode<1) continue;
 	    bool present=false;
 	    for (ATOOLS::Particle_List::const_iterator pit=outlist->begin();
 		 pit!=outlist->end();++pit) 
@@ -42,22 +67,9 @@ public:
 	    if (!present) outlist->push_back(new ATOOLS::Particle(*cur));
 	  }
 	}
-	for (int i=0;i<(*bit)->NOutP();++i) {
-	  const ATOOLS::Particle *cur=(*bit)->ConstOutParticle(i);
-	  if (cur->DecayBlob()!=NULL) if (m_mode<1) continue;
-	  bool present=false;
-	  for (ATOOLS::Particle_List::const_iterator pit=outlist->begin();
-	       pit!=outlist->end();++pit) 
-	    if (cur==*pit) {
-	      present=true;
-	      break;
-	    }
-	  if (!present) outlist->push_back(new ATOOLS::Particle(*cur));
-	}
       }
     }
   }
-
 };
 
 DECLARE_GETTER(Blob_Selector_Getter,"BlobSel",
