@@ -63,7 +63,7 @@ Primitive_Observable_Base::Primitive_Observable_Base(const std::string filename,
   m_xmax  = p_histo->Xmax(); 
 #else
     msg.Error()<<"ERROR in Primitive_Observable_Base::Primitive_Observable_Base:"<<std::endl
-	       <<"   Asked for root-histogram (type = "<<histo->Type()
+	       <<"   Asked for root-histogram (type = "<<p_histo->Type()
 	       <<") without Root being enabled."<<std::endl
 	       <<"   Reconfigure with '--enable-root' and run again."<<std::endl;
     abort();
