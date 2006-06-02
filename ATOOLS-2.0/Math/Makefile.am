@@ -5,7 +5,6 @@ Root_Histo_Source  = Root_Histogram.C
 Root_Histo_Include = Root_Histogram.H 
 endif
 
-lib_LTLIBRARIES       =	libToolsMath.la
 libToolsMath_la_SOURCES       =	\
 				MathTools.C \
 				Random.C \
