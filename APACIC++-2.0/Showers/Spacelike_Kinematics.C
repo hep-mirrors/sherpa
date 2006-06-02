@@ -266,7 +266,12 @@ double Spacelike_Kinematics::BoostInCMS(Tree **const trees,
   m_boost=Poincare(cms);
   trees[0]->BoRo(m_boost);
   trees[1]->BoRo(m_boost);
-  m_rot=Poincare(k1->part->Momentum(),Vec4D::ZVEC);
+  
+  if(Vec3D(k1->part->Momentum()).Abs()==(-1.)*k1->part->Momentum()[3]) {
+    m_rot=Poincare(k1->part->Momentum(),Vec4D(1.,0.,0.,-1.));
+  }
+  else m_rot=Poincare(k1->part->Momentum(),Vec4D::ZVEC);
+  
   trees[0]->BoRo(m_rot);
   trees[1]->BoRo(m_rot);
   return cms.Abs2();
