@@ -43,7 +43,7 @@ void Sudakov_Tools::CalculateMaxCouplings(const int scheme,
     m_beta0 = m_lambda2 = 0.;          
     m_scalefac          = 1.;          
   }
-  Output();
+  if (msg.LevelIsTracking()) Output();
 }
 
 void Sudakov_Tools::Output() {

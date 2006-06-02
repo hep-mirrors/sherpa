@@ -85,7 +85,7 @@ Sudakov_Calculator::~Sudakov_Calculator() {    //Virtual.
   assert(p_sur==NULL);
   --s_count;
 #ifdef TEMP_OUTPUT
-  cout<<"~Sudakov_Calculator"<<endl;///////////////////////////////////////////
+  //cout<<"~Sudakov_Calculator"<<endl;///////////////////////////////////////////
 #endif
 }
 
@@ -345,8 +345,8 @@ Sudakov_Calculator::Toolbox::Toolbox() : m_ras(1), m_pdf(2) {
 
 Sudakov_Calculator::Toolbox::~Toolbox() {
 #ifdef TEMP_OUTPUT
-  cout<<"~Sudakov_Calculator::Toolbox(Funcs:"<<s_box.m_ras[0]
-      <<";Pdfs:"<<s_box.m_pdf[0]<<","<<s_box.m_pdf[1]<<")\n";
+  //cout<<"~Sudakov_Calculator::Toolbox(Funcs:"<<s_box.m_ras[0]
+  //    <<";Pdfs:"<<s_box.m_pdf[0]<<","<<s_box.m_pdf[1]<<")\n";
 #endif
   //Responsibility of deleting running alphaS is elsewhere!
   //for(size_t i=0; i<m_ras.size(); ++i) if(m_ras[i]) delete m_ras[i];

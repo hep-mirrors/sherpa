@@ -34,5 +34,6 @@ void Analysis_Phase::CleanUp()
 
 void Analysis_Phase::Finish(const std::string &path)
 {
+  std::cout<<METHOD<<std::endl;
   p_analysis->Finish(path);
 }

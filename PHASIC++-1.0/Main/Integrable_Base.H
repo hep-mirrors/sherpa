@@ -81,7 +81,7 @@ namespace PHASIC {
     PHASIC::Phase_Space_Handler *p_pshandler, *p_activepshandler; 
     ATOOLS::Selector_Base       *p_selector;
     ATOOLS::Cut_Data            *p_cuts;
-    ATOOLS::Histogram           *p_whisto;
+    ATOOLS::Histogram     *p_whisto;
 
     bool m_ownselector;
 

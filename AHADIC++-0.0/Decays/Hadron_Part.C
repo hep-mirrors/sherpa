@@ -15,7 +15,8 @@ Hadron_Part::Hadron_Part() :
   p_dtransitions(hadpars.GetDoubleTransitions())   
 { }
 
-void Hadron_Part::RedoDecay(Cluster * cluster,Part_List * pl,int mode,Flavour & had1,Flavour & had2)
+void Hadron_Part::RedoDecay(Cluster * cluster,Part_List * pl,
+			    int mode,Flavour & had1,Flavour & had2)
 {
   if (m_cht==chtrans::HH_only) {
     if (p_dtransitions->IsoDecay(cluster,had1,had2)) { 

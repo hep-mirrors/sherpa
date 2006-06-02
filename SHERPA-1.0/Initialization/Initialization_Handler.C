@@ -171,8 +171,8 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   }
   bool okay = InitializeTheIO();
   if (m_mode==9999) {
-    msg.Out()<<"SHERPA will read in the events."<<std::endl
-	     <<"   The full framework is not needed."<<std::endl;
+    msg.Events()<<"SHERPA will read in the events."<<std::endl
+		<<"   The full framework is not needed."<<std::endl;
     InitializeTheAnalyses();
     return true;
   }
@@ -211,8 +211,8 @@ bool Initialization_Handler::CheckBeamISRConsistency()
   if (p_model->Name()==std::string("ADD")) {
     double ms = p_model->ScalarConstant("M_s");
     if (ms<rpa.gen.Ecms()) {
-      msg.Out()<<"WARNING in Initialization_Handler::CheckBeamISRConsistency :"<<std::endl
-	       <<"   You are using the ADD model beyond its valid range ! "<<endl;
+      msg.Error()<<"WARNING in Initialization_Handler::CheckBeamISRConsistency :"<<std::endl
+		 <<"   You are using the ADD model beyond its valid range ! "<<endl;
     }
   }
 
@@ -507,9 +507,9 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   bool needextra = true;
   Hadron_Decay_Handler * hdhandler = NULL;
   string decmodel = dr.GetValue<string>("DECAYMODEL",string("Lund"));
-  msg.Out()<<"Decaymodel = "<<decmodel<<std::endl;
+  msg.Tracking()<<"Decaymodel = "<<decmodel<<std::endl;
 #ifdef USING__Hadrons
-  msg.Out()<<"             ... USING__HADRONS enabled"<<std::endl;
+  msg.Tracking()<<"             ... USING__HADRONS enabled"<<std::endl;
   if (decmodel==std::string("Hadrons")) {
     string decaypath       = dr.GetValue<string>("DECAYPATH",string("Decaydata/"));
     string decayfile       = dr.GetValue<string>("DECAYFILE",string("HadronDecays.dat"));
@@ -611,8 +611,8 @@ bool Initialization_Handler::CalculateTheHardProcesses()
     if (p_showerhandler->FSROn()) scalechoice += 2;
   }
   Matrix_Element_Handler * me = GetMatrixElementHandler(std::string("SignalMEs"));
-  msg.Out()<<"=========================================================================="<<std::endl
-	   <<"Start calculating the hard cross sections. This may take some time.       "<<std::endl;
+  msg.Events()<<"==================================================================="<<std::endl
+	      <<"Start calculating the hard cross sections. This may take some time."<<std::endl;
   int ok = me->CalculateTotalXSecs(scalechoice);
   if (ok && m_scan_istep!=-1) {
     AMEGIC::Process_Base * procs= me->GetAmegic()->Processes();
@@ -627,11 +627,11 @@ bool Initialization_Handler::CalculateTheHardProcesses()
     msg.Out()<<endl;
   }
   if (ok) 
-    msg.Out()<<"Calculating the hard cross sections has been successful.                  "<<std::endl
-	     <<"=========================================================================="<<std::endl;
+    msg.Events()<<"Calculating the hard cross sections has been successful.           "<<std::endl
+		<<"==================================================================="<<std::endl;
   else
-    msg.Out()<<"Calculating the hard cross sections failed. Check this carefully.         "<<std::endl
-	     <<"=========================================================================="<<std::endl;
+    msg.Events()<<"Calculating the hard cross sections failed. Check this carefully.  "<<std::endl
+		<<"==================================================================="<<std::endl;
   return ok;
 }
 
@@ -639,7 +639,8 @@ void Initialization_Handler::SetParameter(int nr) {
   if (nr<0) return;
 
   if (nr!=m_scan_istep) 
-    msg.Out()<<"WARNING: internal and external scan counter do not coincide "<<nr<<" vs. "<<m_scan_istep<<endl;
+    msg.Error()<<"WARNING: internal and external scan counter do not coincide "
+	       <<nr<<" vs. "<<m_scan_istep<<endl;
 
   bool logmode=false;
   if (m_scan_variable==string("YCUT")) {

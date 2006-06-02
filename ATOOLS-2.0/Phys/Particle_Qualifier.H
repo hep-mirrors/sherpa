@@ -95,6 +95,29 @@ namespace ATOOLS {
     bool operator()(const Particle *) const;
   };
 
+  class Is_Not_Lepton : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+
+  class Is_Not_Neutrino : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+
+  class Is_There : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+
+  class Is_Strong : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+
+  // Specific hadrons
+  // pseudoscalars
+
   class Is_Charged_Pion : public Particle_Qualifier_Base {
   public:
     bool operator()(const Particle *) const;
@@ -115,27 +138,34 @@ namespace ATOOLS {
     bool operator()(const Particle *) const;
   };
 
-  class Is_Charged_KStar : public Particle_Qualifier_Base {
-  public:
-    bool operator()(const Particle *) const;
-  };
-
-  class Is_Neutral_KStar : public Particle_Qualifier_Base {
-  public:
-    bool operator()(const Particle *) const;
-  };
-
-  class Is_Rho0 : public Particle_Qualifier_Base {
-  public:
-    bool operator()(const Particle *) const;
-  };
-
   class Is_Eta : public Particle_Qualifier_Base {
   public:
     bool operator()(const Particle *) const;
   };
 
   class Is_EtaPrime : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+
+  // vectors
+
+  class Is_Rho0 : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+
+  class Is_Rho : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+
+  class Is_Charged_KStar : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+
+  class Is_Neutral_KStar : public Particle_Qualifier_Base {
   public:
     bool operator()(const Particle *) const;
   };
@@ -150,17 +180,14 @@ namespace ATOOLS {
     bool operator()(const Particle *) const;
   };
 
+  // octet baryons
+
   class Is_Lambda : public Particle_Qualifier_Base {
   public:
     bool operator()(const Particle *) const;
   };
 
-  class Is_Charged_Sigma : public Particle_Qualifier_Base {
-  public:
-    bool operator()(const Particle *) const;
-  };
-
-  class Is_Charged_Xi : public Particle_Qualifier_Base {
+  class Is_Xi_Minus : public Particle_Qualifier_Base {
   public:
     bool operator()(const Particle *) const;
   };
@@ -175,17 +202,59 @@ namespace ATOOLS {
     bool operator()(const Particle *) const;
   };
 
-  class Is_Not_Lepton : public Particle_Qualifier_Base {
+  class Is_Charged_Xi : public Particle_Qualifier_Base {
   public:
     bool operator()(const Particle *) const;
   };
 
-  class Is_Not_Neutrino : public Particle_Qualifier_Base {
+  class Is_Sigma_Minus : public Particle_Qualifier_Base {
   public:
     bool operator()(const Particle *) const;
   };
 
-  class Is_There : public Particle_Qualifier_Base {
+  class Is_Sigma_0 : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+
+  class Is_Sigma_Plus : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+
+  // decuplet baryons
+
+  class Is_Delta_PlusPlus : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+
+  class Is_Delta_Plus : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+
+  class Is_Delta_Minus : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+
+  class Is_Sigma_1385_Minus : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+
+  class Is_Sigma_1385_0 : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+
+  class Is_Sigma_1385_Plus : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+
+  class Is_Omega_Minus : public Particle_Qualifier_Base {
   public:
     bool operator()(const Particle *) const;
   };

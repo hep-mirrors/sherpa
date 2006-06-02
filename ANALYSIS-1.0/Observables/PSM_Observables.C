@@ -61,9 +61,9 @@ using namespace ATOOLS;
 DEFINE_OBSERVABLE_GETTER(PSM_Observable,PSM_Observable_Getter,"PSM")
 
 PSM_Observable::PSM_Observable(unsigned int type,double xmin,double xmax,int nbins,
-						 int p0,int p1,int p2, int p3,
-						 const std::string & lname) :
-  Primitive_Observable_Base(type,xmin,xmax,nbins,NULL)
+			       int p0,int p1,int p2, int p3,
+			       const std::string & lname) :
+  Primitive_Observable_Base(type,xmin,xmax,nbins)
 {
   m_pnb.clear();
   m_pnb.push_back(p0);
@@ -79,9 +79,27 @@ PSM_Observable::PSM_Observable(unsigned int type,double xmin,double xmax,int nbi
     for (size_t i=0;i<m_pnb.size();i++) str<<m_pnb[i];
     str>>m_name;
   }
+}
 
-  p_histo = new Histogram(type,m_xmin,m_xmax,m_nbins);
-
+PSM_Observable::PSM_Observable(Histogram_Base * histo,
+			       int p0,int p1,int p2, int p3,
+			       const std::string & lname) :
+  Primitive_Observable_Base(histo)
+{
+  m_pnb.clear();
+  m_pnb.push_back(p0);
+  m_pnb.push_back(p1);
+  m_pnb.push_back(p2);
+  m_pnb.push_back(p3);
+  m_listname = lname;
+  m_name     = std::string("psm_");
+  if (lname!="Analysed") m_name=lname+std::string("_")+m_name;
+  if (m_pnb.size()==0) {
+    MyStrStream str;
+    str<<m_name<<"_";
+    for (size_t i=0;i<m_pnb.size();i++) str<<m_pnb[i];
+    str>>m_name;
+  }
 }
 
 void PSM_Observable::Evaluate(const Particle_List & pl,double weight, int ncount)
@@ -141,7 +159,10 @@ Primitive_Observable_Base & PSM_Observable::operator+=(const Primitive_Observabl
 {
  PSM_Observable * cob = ((PSM_Observable*)(&ob));
  if (p_histo) {
-    (*p_histo)+=(cob->p_histo);
+   //    if (cob->p_histo->Type()>99) (*p_histo)+=(*(static_cast<Histogram *>(cob->p_histo)));
+   //                            else (*p_histo)+=(*(static_cast<Root_Histogram *>(cob->p_histo)));
+    
+    //(*p_histo)+=(cob->p_histo);
   }
   else {
     msg.Out()<<" warning "<<Name()<<" has not overloaded the operator+="<<std::endl;
@@ -158,7 +179,6 @@ void PSM_Observable::Reset()
 
 Primitive_Observable_Base * PSM_Observable::Copy() const 
 {
-  return new PSM_Observable(m_type,m_xmin,m_xmax,m_nbins,
-			    m_pnb[0],m_pnb[1],m_pnb[2],m_pnb[3],
+  return new PSM_Observable(p_histo,m_pnb[0],m_pnb[1],m_pnb[2],m_pnb[3],
 			    m_listname);
 }

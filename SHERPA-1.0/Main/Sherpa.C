@@ -146,6 +146,7 @@ bool Sherpa::GenerateOneEvent()
 
 bool Sherpa::SummarizeRun() 
 { 
+  std::cout<<METHOD<<std::endl;
   p_eventhandler->Finish(); 
   return true; 
 }
@@ -153,7 +154,7 @@ bool Sherpa::SummarizeRun()
 void Sherpa::DrawLogo() 
 { 
   msg_Info()<<"-----------------------------------------------------------------------------"<<std::endl;
-  msg.Out()<<"-----------    Event generation run with SHERPA started .......   -----------"<<std::endl;
+  if (msg.Level()>0) msg.Out()<<"-----------    Event generation run with SHERPA started .......   -----------"<<std::endl;
   msg_Info()<<"-----------------------------------------------------------------------------"<<std::endl
 	    <<"................................................ |       +                   "<<std::endl
 	    <<"................................................ ||  |       +  +            "<<std::endl

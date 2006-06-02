@@ -34,7 +34,8 @@ void Universal_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) 
 
 
 
-Universal_Selector::Universal_Selector(const std::string & obskey, const double keymin, const double keymax, 
+Universal_Selector::Universal_Selector(const std::string & obskey, 
+				       const double keymin, const double keymax, 
 				       const std::string & inlistname, const std::string & outlistname) :
   m_outlist(outlistname),m_key(obskey),m_keymin(keymin),m_keymax(keymax)
 {
@@ -47,7 +48,8 @@ void Universal_Selector::CreateParticleList(bool force)
 {
   Particle_List * pl_in = p_ana->GetParticleList(m_listname);
   if (pl_in==NULL) {
-    msg.Out()<<"WARNING in Universal_Selector::Evaluate : particle list "<<m_listname<<" not found "<<std::endl;
+    msg.Out()<<"WARNING in Universal_Selector::Evaluate : particle list "
+	     <<m_listname<<" not found "<<std::endl;
   }
   Blob_Data_Base * key=(*p_ana)[m_key];
 
@@ -101,9 +103,14 @@ void General_Observable_Getter::PrintInfo(std::ostream &str,const size_t width) 
 
 General_Observable::General_Observable(int type,double xmin,double xmax,int nbins,
 			   const std::string & key) :
-  Primitive_Observable_Base(type,xmin,xmax,nbins,NULL), m_key(key)
+  Primitive_Observable_Base(type,xmin,xmax,nbins), m_key(key)
+{ 
+  m_name = m_key+".dat";
+}
+ 
+General_Observable::General_Observable(Histogram_Base * histo,const std::string & key) :
+  Primitive_Observable_Base(histo), m_key(key)
 {
-  
   m_name = m_key+".dat";
 }
  
@@ -123,7 +130,7 @@ void General_Observable::Evaluate(const ATOOLS::Particle_List & pl,
 
 
 Primitive_Observable_Base * General_Observable::Copy() const {
-  return new General_Observable(m_type,m_xmin,m_xmax,m_nbins,m_key);
+  return new General_Observable(p_histo,m_key);
 }
 
 

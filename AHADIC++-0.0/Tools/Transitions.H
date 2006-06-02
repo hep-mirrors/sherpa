@@ -27,8 +27,10 @@ namespace AHADIC {
 
   struct stm {
     enum code {
-      simplemass = 1,
-      massXwaves = 2
+      simplemass      = 1,
+      massXwaves      = 2,
+      masswidth       = 11,
+      masswidthXwaves = 12
     };
   };
 
@@ -39,6 +41,8 @@ namespace AHADIC {
     Single_Transition_Map * p_transitions;
     void SimpleMassCriterion(Cluster *,Single_Transition_List *,ATOOLS::Flavour &);
     void MassTimesWavefunction(Cluster *,Single_Transition_List *,ATOOLS::Flavour &);
+    void MWCriterion(Cluster *,Single_Transition_List *,ATOOLS::Flavour &);
+    void MWTimesWavefunction(Cluster *,Single_Transition_List *,ATOOLS::Flavour &);
   public:
     All_Single_Transitions(All_Hadron_Multiplets *);
     ~All_Single_Transitions();

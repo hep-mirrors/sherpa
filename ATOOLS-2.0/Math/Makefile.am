@@ -1,5 +1,11 @@
 pkglib_LTLIBRARIES       =	libToolsMath.la
 
+if ROOT_SUPPORT
+Root_Histo_Source  = Root_Histogram.C 
+Root_Histo_Include = Root_Histogram.H 
+endif
+
+lib_LTLIBRARIES       =	libToolsMath.la
 libToolsMath_la_SOURCES       =	\
 				MathTools.C \
 				Random.C \
@@ -11,12 +17,13 @@ libToolsMath_la_SOURCES       =	\
 				Gauss_Integrator.C \
 				Scaling.C \
 				Axis.C \
-				Histogram.C \
 				Variable.C \
 				Permutation.C \
 				Grid.C \
 				Primitive_Integrator.C \
-				Algebra_Interpreter.C
+				Algebra_Interpreter.C \
+				Histogram.C \
+				$(Root_Histo_Source) 
 
 pkginclude_HEADERS        =	\
 			MathTools.H \
@@ -28,20 +35,21 @@ pkginclude_HEADERS        =	\
 			Matrix.H \
 			Fast_Function.H \
 			Gauss_Integrator.H \
-			Histogram.H \
 			Variable.H \
 			Scaling.H \
 			Axis.H \
-			Histogram.H \
 			Permutation.H \
 			Grid.H \
 			Primitive_Integrator.H \
 			Algebra_Interpreter.H \
 			Cluster_Algorithm.H \
-			Cluster_Algorithm.C
+			Cluster_Algorithm.C \
+			Histogram_Base.H \
+			Histogram.H \
+			$(Root_Histo_Include) 
 
-AM_CXXFLAGS   =	@SHERPAFLAGS@
+AM_CXXFLAGS   =	@SHERPAFLAGS@ @CONDITIONAL_ROOTFLAGS@
 
-INCLUDES      = @MODELINCS@ @ATOOLSINCS@
+INCLUDES      = @MODELINCS@ @ATOOLSINCS@ @CONDITIONAL_ROOTINCS@
 
 EXTRA_DIST    = @SVNINCLUDE@

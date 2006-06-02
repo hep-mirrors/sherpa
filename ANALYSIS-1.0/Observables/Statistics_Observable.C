@@ -29,7 +29,7 @@ using namespace ATOOLS;
 Statistics_Observable::Statistics_Observable(const std::string & listname, int mode)
 {
   m_name  = "Statistics_Observable";
-  m_type  = mode;
+  m_mode  = mode;
   m_listname    = listname;
   m_splitt_flag = false;
 }
@@ -85,7 +85,7 @@ void Statistics_Observable::Output(const std::string & pname) {
 
 Primitive_Observable_Base * Statistics_Observable::Copy() const 
 {
-  return new Statistics_Observable(m_listname,m_type);
+  return new Statistics_Observable(m_listname,m_mode);
 }
 
 std::ostream & ANALYSIS::operator<<(std::ostream & str, const Statistics_Data & sd) {

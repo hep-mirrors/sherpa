@@ -1,6 +1,11 @@
 #include "Primitive_Observable_Base.H"
 
 #include "Primitive_Analysis.H"
+#include "Histogram.H"
+#include "CXXFLAGS.H"
+#ifdef USING__ROOT
+#include "Root_Histogram.H"
+#endif
 #include "Shell_Tools.H"
 
 using namespace ANALYSIS;
@@ -14,16 +19,19 @@ using namespace ATOOLS;
 
 int ANALYSIS::HistogramType(const std::string &scale)
 {
-  if (scale=="Log") return 10;
+  if (scale=="Log")    return 10;
+  if (scale=="Lin")    return 0;
   if (scale=="LogErr") return 11;
   if (scale=="LinErr") return 1;
-  if (scale=="LogPS") return 12;
-  if (scale=="LinPS") return 2;
+  if (scale=="LogPS")  return 12;
+  if (scale=="LinPS")  return 2;
+  msg.Error()<<"ERROR in ANALYSIS::HistogramType:"<<std::endl
+	     <<"   Do not know this scale option : "<<scale<<"."<<std::endl
+	     <<"   Pretend, it's linear ('Lin')."<<std::endl;
   return 0;
 }
 
 Primitive_Observable_Base::Primitive_Observable_Base() :
-  m_type(0), m_nbins(0), m_xmin(0.), m_xmax(0.),
   m_name(std::string("noname")), m_listname(std::string("Analysed")),
   p_histo(NULL), m_nout(0), p_flavs(NULL), p_moms(NULL), 
   m_splitt_flag(true) ,p_ana(NULL), p_sel(NULL), m_copied(false)
@@ -31,23 +39,78 @@ Primitive_Observable_Base::Primitive_Observable_Base() :
   m_blobdisc = false;
 }
 
-Primitive_Observable_Base::Primitive_Observable_Base(int type,double xmin,double xmax,int nbins,
-						     Selector_Base * sel) :
-  m_type(type), m_nbins(nbins), m_xmin(xmin), m_xmax(xmax),
-  m_listname(std::string("Analysed")), m_splitt_flag(true), p_ana(NULL), p_sel(sel), m_copied(false)
+Primitive_Observable_Base::Primitive_Observable_Base(const int type,
+						     const double xmin,const double xmax,
+						     const int nbins) :
+  m_type(type), m_xmin(xmin), m_xmax(xmax),
+  m_listname(std::string("Analysed")), m_splitt_flag(true), 
+  p_ana(NULL), p_sel(NULL), m_copied(false)
 { 
-  p_histo = new Histogram(m_type,m_xmin,m_xmax,m_nbins);
+  msg.Out()<<METHOD<<" "<<type<<std::endl;
+  p_histo = new Histogram(type,xmin,xmax,nbins);
 }
 
 
+Primitive_Observable_Base::Primitive_Observable_Base(const std::string filename,
+						     const std::string dataname) :
+  m_type(100), 
+  m_listname(std::string("Analysed")), m_splitt_flag(true), 
+  p_ana(NULL), p_sel(NULL), m_copied(false)
+{
+#ifdef USING__ROOT
+  p_histo = new Root_Histogram(filename,dataname);
+  m_xmin  = p_histo->Xmin(); 
+  m_xmax  = p_histo->Xmax(); 
+#else
+    msg.Error()<<"ERROR in Primitive_Observable_Base::Primitive_Observable_Base:"<<std::endl
+	       <<"   Asked for root-histogram (type = "<<histo->Type()
+	       <<") without Root being enabled."<<std::endl
+	       <<"   Reconfigure with '--enable-root' and run again."<<std::endl;
+    abort();
+#endif
+}
+
+
+Primitive_Observable_Base::Primitive_Observable_Base(Histogram_Base * histo) :
+  m_type(histo->Type()), m_xmin(histo->Xmin()), m_xmax(histo->Xmax()),
+  m_listname(std::string("Analysed")), m_splitt_flag(true), 
+  p_ana(NULL), p_sel(NULL), m_copied(false)
+{ 
+  if (histo->Type()<100) {
+    p_histo = new Histogram(static_cast<Histogram *>(histo));
+  }
+  else {
+#ifdef USING__ROOT
+    p_histo = new Root_Histogram(static_cast<Root_Histogram *>(histo));
+#else
+    msg.Error()<<"ERROR in Primitive_Observable_Base::Primitive_Observable_Base:"<<std::endl
+	       <<"   Asked for root-histogram (type = "<<histo->Type()
+	       <<") without Root being enabled."<<std::endl
+	       <<"   Reconfigure with '--enable-root' and run again."<<std::endl;
+    abort();
+#endif
+  }
+}
+
 Primitive_Observable_Base::Primitive_Observable_Base(const Primitive_Observable_Base & old) :
-  m_type(old.m_type), m_nbins(old.m_nbins), m_xmin(old.m_xmin), m_xmax(old.m_xmax),
   m_name(old.m_name), m_listname(old.m_listname), p_sel(old.p_sel), m_copied(false)
 { 
-  msg.Out()<<"LEGACY WARNING:  copy constructor Primitive_Observable_Base::Primitive_Observable_Base called"<<std::endl
+  msg.Out()<<"LEGACY WARNING:  "
+	   <<"copy constructor Primitive_Observable_Base::Primitive_Observable_Base called"<<std::endl
 	   <<"                 use Copy() method instead!"<<std::endl;
   if (old.p_histo) {
-    p_histo = new Histogram(old.p_histo);
+    if (old.p_histo->Type()<100) p_histo = new Histogram(static_cast<Histogram*>(old.p_histo));
+    else {
+#ifdef USING__ROOT
+      p_histo = new Root_Histogram(static_cast<Root_Histogram*>(old.p_histo));
+#else
+      msg.Error()<<"ERROR in copy constructor of Primitive_Observable_Base:"<<std::endl
+		 <<"   Asked for root-histogram (type = "<<old.p_histo->Type()
+		 <<") without Root being enabled."<<std::endl
+		 <<"   Reconfigure with '--enable-root' and run again."<<std::endl;
+      abort();
+#endif
+    }
   }
   p_histo=NULL;
 }
@@ -123,7 +186,18 @@ void Primitive_Observable_Base::Reset()
 Primitive_Observable_Base & Primitive_Observable_Base::operator+=(const Primitive_Observable_Base & ob)
 {
   if (p_histo) {
-    (*p_histo)+=(*ob.p_histo);
+    if (ob.p_histo->Type()<100) (*p_histo)+=(*(static_cast<Histogram *>(ob.p_histo)));
+    else {
+#ifdef USING__ROOT
+      (*p_histo)+=(*(static_cast<Root_Histogram *>(ob.p_histo)));
+#else
+      msg.Error()<<"ERROR in Primitive_Observable_Base::operator+="<<std::endl
+		 <<"   Asked for root-histogram (type = "<<ob.p_histo->Type()
+		 <<") without Root being enabled."<<std::endl
+		 <<"   Reconfigure with '--enable-root' and run again."<<std::endl;
+      abort();
+#endif    
+    }
   }
   else {
     msg.Out()<<"Warning in Primitive_Observable_Base::operator+= :"<<std::endl<<"   "

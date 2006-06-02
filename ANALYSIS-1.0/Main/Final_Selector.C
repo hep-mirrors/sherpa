@@ -200,9 +200,9 @@ void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data &
   
   if (fl==kf::jet) {
     switch(m_mode) {
-    case 2: p_jetalg = new Calorimeter_Cone(fs.pt_min,p_ana);break;
-    case 10: p_jetalg = new Midpoint_Cone(p_qualifier,0,fs.f); break;
-    case 11: p_jetalg = new Midpoint_Cone(p_qualifier,1,fs.f); break;
+      //case 2: p_jetalg = new Calorimeter_Cone(fs.pt_min,p_ana);break;
+      //case 10: p_jetalg = new Midpoint_Cone(p_qualifier,0,fs.f); break;
+      //case 11: p_jetalg = new Midpoint_Cone(p_qualifier,1,fs.f); break;
     }
   }
   if (p_jetalg) p_jetalg->Setbflag(fs.bf);

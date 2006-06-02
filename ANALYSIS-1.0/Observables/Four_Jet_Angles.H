@@ -10,6 +10,8 @@ namespace ANALYSIS {
 
     Four_Jet_Angle_Base(unsigned int type,double xmin,double xmax,int nbins,
 			const std::string & =std::string("Jets"));
+    Four_Jet_Angle_Base(ATOOLS::Histogram_Base *,
+			const std::string & =std::string("Jets"));
 
     virtual double Calc(const std::vector<ATOOLS::Vec3D> & moms) = 0;
     void Evaluate(const ATOOLS::Blob_List & blobs,double value, int);
@@ -24,6 +26,8 @@ namespace ANALYSIS {
   public:
     Bengtsson_Zerwas_Angle(unsigned int type,double xmin,double xmax,int nbins,
 			   const std::string & =std::string("Jets"));
+    Bengtsson_Zerwas_Angle(ATOOLS::Histogram_Base *,
+			   const std::string & =std::string("Jets"));
 
     double Calc(const std::vector<ATOOLS::Vec3D> & moms);
     Primitive_Observable_Base * Copy() const ;
@@ -32,6 +36,8 @@ namespace ANALYSIS {
   class Nachtmann_Reiter_Angle : public Four_Jet_Angle_Base {
   public:
     Nachtmann_Reiter_Angle(unsigned int type,double xmin,double xmax,int nbins,
+			   const std::string & =std::string("Jets"));
+    Nachtmann_Reiter_Angle(ATOOLS::Histogram_Base *,
 			   const std::string & =std::string("Jets"));
 
     double Calc(const std::vector<ATOOLS::Vec3D> & moms);
@@ -42,6 +48,8 @@ namespace ANALYSIS {
   public:
     Koerner_Schierholz_Willrodt_Angle(unsigned int type,double xmin,double xmax,int nbins,
 				      const std::string & =std::string("Jets"));
+    Koerner_Schierholz_Willrodt_Angle(ATOOLS::Histogram_Base *,
+				      const std::string & =std::string("Jets"));
 
     double Calc(const std::vector<ATOOLS::Vec3D> & moms);
     Primitive_Observable_Base * Copy() const ;
@@ -50,6 +58,8 @@ namespace ANALYSIS {
   class Alpha34_Angle : public Four_Jet_Angle_Base {
   public:
     Alpha34_Angle(unsigned int type,double xmin,double xmax,int nbins,
+		  const std::string & =std::string("Jets"));
+    Alpha34_Angle(ATOOLS::Histogram_Base *,
 		  const std::string & =std::string("Jets"));
 
     double Calc(const std::vector<ATOOLS::Vec3D> & moms);

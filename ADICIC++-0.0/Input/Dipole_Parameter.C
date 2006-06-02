@@ -206,7 +206,7 @@ const bool Dipole_Parameter::Check(const double cmsen) {    //Static.
 
 const bool Dipole_Parameter::SetWithStatics() {    //Static.
 #ifdef DIPOLE_PARAMETER_OUTPUT
-  cout<<"{ Executing ... "<<__PRETTY_FUNCTION__<<" }\n";
+  //  cout<<"{ Executing ... "<<__PRETTY_FUNCTION__<<" }\n";
 #endif
 #include "Dipole_Parameter.prm.cc"
   return Check(2*sqrt(Sud::s_k2tmax));

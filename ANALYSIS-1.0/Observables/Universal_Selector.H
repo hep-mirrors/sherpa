@@ -22,9 +22,10 @@ namespace ANALYSIS {
   class General_Observable : public Primitive_Observable_Base {  
     std::string m_key;
   public:
-
     General_Observable(int type,double xmin,double xmax,int nbins,
-		 const std::string & key);
+		       const std::string & key);
+    General_Observable(ATOOLS::Histogram_Base *,
+		       const std::string & key);
 
     void Evaluate(const ATOOLS::Particle_List & pl, double weight, int ncount);
     Primitive_Observable_Base * Copy() const;

@@ -123,11 +123,11 @@ bool Amegic::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,PDF::ISR_Han
 
   ATOOLS::Vec4D * moms  = 0;
 
-  msg.Out()<<"Amegic::InitializeProcesses : \n"
-	   <<"   Process initialization started; new libraries may be created."<<std::endl;
+  msg.Events()<<"Amegic::InitializeProcesses : \n"
+	      <<"   Process initialization started; new libraries may be created."<<std::endl;
   switch (p_procs->InitAllProcesses(p_model,p_top,moms)) { 
   case 1  : 
-    msg.Out()<<"   No new libraries have been created."<<std::endl;
+    msg.Events()<<"   No new libraries have been created."<<std::endl;
     return 1;
   case 0  : 
     msg.Error()<<"Amegic::InitializeProcesses : "<<std::endl

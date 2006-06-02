@@ -144,8 +144,7 @@ void Hadronisation_Parameters::Init(string dir,string file)
   msg.Tracking()<<"In Hadronisation_Parameters::Init("<<dir<<file<<")"<<endl;
   ReadParameters(dir,file);
   p_constituents = new Constituents(false);
-  //if (msg.LevelIsTracking()) 
-  p_constituents->PrintConstituents();
+  if (msg.LevelIsTracking()) p_constituents->PrintConstituents();
 
   p_multiplets   = new All_Hadron_Multiplets();
   if (msg.LevelIsTracking()) p_multiplets->PrintWaveFunctions(); 

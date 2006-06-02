@@ -15,7 +15,7 @@ libObservables_la_SOURCES     =	\
 				All_Particle_Selector.C \
 				Universal_Selector.C \
 			    	MI_Observables.C \
-			    	ISR_Statistics.C \
+			    	#ISR_Statistics.C \
 			    	Shower_Statistics.C \
 			    	SV_Statistics.C \
 			    	One_Particle_Observables.C \
@@ -48,7 +48,7 @@ pkginclude_HEADERS        =	\
 			All_Particle_Selector.H \
 			Universal_Selector.H \
 			MI_Observables.H \
-			ISR_Statistics.H \
+			#ISR_Statistics.H \
 			Shower_Statistics.H \
 			One_Particle_Observables.H \
 			Two_Particle_Observables.H \

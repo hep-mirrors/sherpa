@@ -12,7 +12,7 @@ using namespace std;
 
 
 LesHouches_Interface::LesHouches_Interface(Data_Read * _dataread,
-						   Model_Base * _model, std::string _dir) :
+					   Model_Base * _model, std::string _dir) :
   Spectrum_Generator_Base(_dataread,_model),m_dir(_dir) { }
 
 

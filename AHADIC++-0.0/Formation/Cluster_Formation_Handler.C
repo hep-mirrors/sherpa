@@ -15,7 +15,6 @@ Cluster_Formation_Handler::Cluster_Formation_Handler(bool ana) :
   m_analyse(ana)
 { 
   if (m_analyse) {
-    std::cout<<"Init histos"<<std::endl;
     m_histograms[string("Cluster_Mass_Formation")]     = new Histogram(0,0.,50.,100);
     m_histograms[string("Cluster_Mass_Reconnections")] = new Histogram(0,0.,50.,100);
     m_histograms[string("Cluster_Mass_Transformed")]   = new Histogram(0,0.,50.,100);

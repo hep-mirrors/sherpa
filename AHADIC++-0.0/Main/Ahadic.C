@@ -10,7 +10,7 @@ using namespace std;
 Ahadic::Ahadic(string path,string file,bool ana) 
 {
   hadpars.Init(path,file);
-  ana=true;
+  ana=false;
 
   p_cformhandler = new Cluster_Formation_Handler(ana);
   p_cdechandler  = new Cluster_Decay_Handler(p_cformhandler->GetClusterTransformer(),ana);

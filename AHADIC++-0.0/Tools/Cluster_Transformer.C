@@ -54,8 +54,8 @@ bool Cluster_Transformer::TreatSingleCluster(Cluster * cluster,Part_List * plist
   Flavour hadron, extra;
   double  clumass,hadmass,extramass;
   //cout<<"      Single cluster with "<<cluster->Momentum()<<" {"
-  //    <<cluster->GetFlav(1)<<","<<cluster->GetFlav(2)<<"} "
-  //    <<cluster->Momentum().Abs2()<<","<<cluster->Mass()<<"."<<endl;  
+  //  <<cluster->GetFlav(1)<<","<<cluster->GetFlav(2)<<"} "
+  //  <<cluster->Momentum().Abs2()<<","<<cluster->Mass()<<"."<<endl;  
 
   if (p_transitions->MustTransit(cluster,hadron,m_offset)) {
     switch (m_mode) {
@@ -97,6 +97,7 @@ void Cluster_Transformer::TreatClusterList(Cluster_List * clist,ATOOLS::Blob * b
   //cout<<"Test clusterlist for forced transitions."<<endl;
   for (Cluster_Iterator cit=clist->begin();cit!=clist->end();cit++,i++) {
     momenta[i]   = (*cit)->Momentum(0);
+    //cout<<"Perform check : "<<(*cit)->Mass(0)<<std::endl;
     if (p_transitions->MustTransit((*cit),hadron,m_offset,true)) {
       masses[i]  = hadron.Mass();
       hadrons[i] = hadron;;
@@ -105,8 +106,8 @@ void Cluster_Transformer::TreatClusterList(Cluster_List * clist,ATOOLS::Blob * b
     }
     else
       masses[i] = (*cit)->Mass(0);
-    //std::cout<<"Check this : "<<masses[i]<<" "<<(*cit)->Mass(0)<<" "
-    //	 <<sqrt(momenta[i].Abs2())<<" "<<sqrt(((*cit)->Momentum(0)).Abs2())<<endl;
+    //std::cout<<"      Check this : "<<masses[i]<<" "<<(*cit)->Mass(0)<<" "
+    //	     <<sqrt(momenta[i].Abs2())<<" "<<sqrt(((*cit)->Momentum(0)).Abs2())<<endl;
   }
   if (shiftit) {
     if (!hadpars.AdjustMomenta(number,momenta,masses)) {
@@ -128,13 +129,14 @@ void Cluster_Transformer::TreatClusterList(Cluster_List * clist,ATOOLS::Blob * b
 	cit = clist->erase(cit);
       }
     }
-    //msg.Out()<<"After : "<<endl<<(*(*clit))<<endl<<(*p_partlist)<<endl;
+    //msg.Out()<<"After : "<<endl<<(*(*clit))<<endl;
   }
   delete masses;
   delete momenta;
 }
 
-void Cluster_Transformer::DecayCluster(Cluster * cluster,Flavour & had1,Flavour & had2,Blob * blob)
+void Cluster_Transformer::DecayCluster(Cluster * cluster,Flavour & had1,Flavour & had2,
+				       Blob * blob)
 {
   //cout<<"         Check C->HH (1): "<<cluster->Momentum()<<" -> "<<had1<<"/"<<had2<<endl;
   cluster->BoostInCMS();

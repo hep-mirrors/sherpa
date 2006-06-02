@@ -27,6 +27,7 @@ Analysis_Handler::Analysis_Handler():
 
 Analysis_Handler::~Analysis_Handler()
 {
+  // std::cout<<METHOD<<std::endl;
   Clean();
   Exception_Handler::RemoveTerminatorObject(this);
 }
@@ -164,8 +165,10 @@ bool Analysis_Handler::ReadIn()
       }
       size_t col=1;
       String_Matrix mat=FindArguments(arguments,k,col);
+      // std::cout<<"In "<<METHOD<<":"<<k<<" 1 "<<arguments[k][0]<<std::endl;
       ANALYSIS::Primitive_Observable_Base *observable = 
 	Getter_Function::GetObject(arguments[k][0],mat(m_analyses.back()));
+      // std::cout<<"Out "<<METHOD<<":"<<k<<" 1 "<<arguments[k][0]<<std::endl;
       if (observable!=NULL) {
 	m_analyses.back()->AddObservable(observable);
 	if (arguments[k][0]=="Trigger") trigger=true;
@@ -202,6 +205,7 @@ bool Analysis_Handler::ReadIn()
 void Analysis_Handler::DoAnalysis(const ATOOLS::Blob_List *bloblist,
 				  const double weight)
 {
+  // std::cout<<METHOD<<" : "<<bloblist->size()<<" "<<weight<<std::endl;
   if (!m_initialized) {
     ReadIn();
   }
@@ -235,6 +239,7 @@ void Analysis_Handler::PrepareTerminate()
 
 void Analysis_Handler::Finish(const std::string &path)
 {
+  // std::cout<<METHOD<<": "<<path<<std::endl;
   if (OutputPath()[OutputPath().length()-1]=='/') {
     if (!MakeDir(OutputPath(),448)) {
       msg.Error()<<"Analysis_Handler::Finish(..): "

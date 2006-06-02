@@ -938,7 +938,7 @@ bool Single_Process_MHV::LookUpXSec(double ycut,bool calc,string obs) {
   string filename = (m_resdir+string("/Tab")+m_name+string("/")+obs).c_str();
   if (IsFile(filename)) {
     Histogram * histo = new Histogram(filename);
-    double    * res   = new double[histo->Depth()];
+    double          * res   = new double[histo->Depth()];
     histo->Extrapolate(ycut,res,1);
     m_totalxs = res[0];
     m_max     = res[1];

@@ -22,7 +22,8 @@ Type Get(const std::string & in)
 
 Histogram::Histogram(int _type,double _lower,double _upper,int _nbin) :
   m_type(_type), m_nbin(_nbin), m_lower(_lower), m_upper(_upper), 
-  m_yvalues(0),m_y2values(0), m_psvalues(0), m_fills(0), m_psfills(0), m_finished(false), m_initialized(false)
+  m_yvalues(0),m_y2values(0), m_psvalues(0), m_fills(0), m_psfills(0), 
+  m_finished(false), m_initialized(false)
 {
   m_logarithmic = int(m_type/10);
   m_depth       = m_type-m_logarithmic*10+1;
@@ -40,7 +41,8 @@ Histogram::Histogram(int _type,double _lower,double _upper,int _nbin) :
   m_binsize     = (m_upper-m_lower)/(double(m_nbin));
 
   if (m_binsize<=0.) {
-    msg.Error()<<"Error in Histogram : Tried to initialize a histogram with  binsize <= 0 !"<<std::endl;
+    msg.Error()<<"Error in Histogram :"<<std::endl
+	       <<"   Tried to initialize a histogram with  binsize <= 0 !"<<std::endl;
     m_active = 0;
     return;
   }
@@ -68,23 +70,24 @@ Histogram::Histogram(int _type,double _lower,double _upper,int _nbin) :
   }
 }
 
-Histogram::Histogram(const Histogram * histo)
-: m_yvalues(0), m_y2values(0), m_psvalues(0) {
-  m_lower   = histo->m_lower;
-  m_upper   = histo->m_upper;
-  m_logbase = histo->m_logbase;
+Histogram::Histogram(const Histogram * histo) : 
+  m_yvalues(0), m_y2values(0), m_psvalues(0) 
+{
+  m_lower       = histo->m_lower;
+  m_upper       = histo->m_upper;
+  m_logbase     = histo->m_logbase;
   m_logarithmic = histo->m_logarithmic;
-  m_nbin   = histo->m_nbin;
-  m_depth   = histo->m_depth;
-  m_type    = histo->m_type;
-  m_fills   = histo->m_fills;
-  m_psfills = histo->m_psfills;
+  m_nbin        = histo->m_nbin;
+  m_depth       = histo->m_depth;
+  m_type        = histo->m_type;
+  m_fills       = histo->m_fills;
+  m_psfills     = histo->m_psfills;
 
-  m_binsize = histo->m_binsize;
-  m_active  = 1;
-  m_finished = histo->m_finished;
+  m_binsize     = histo->m_binsize;
+  m_active      = 1;
+  m_finished    = histo->m_finished;
 
-  m_yvalues   = new double[m_nbin];
+  m_yvalues     = new double[m_nbin];
   for (int i=0;i<m_nbin;i++) {
     m_yvalues[i]  = histo->m_yvalues[i]; 
   }
@@ -102,9 +105,17 @@ Histogram::Histogram(const Histogram * histo)
   }
 }
 
+Histogram::Histogram(const Root_Histogram *) 
+{ 
+  msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+	     <<"   Tried to compare apples and oranges.  Abort."<<std::endl;
+  abort();
+}
 
-Histogram::Histogram(const std::string & pID)
-  :  m_yvalues(0), m_y2values(0), m_psvalues(0)  {
+
+Histogram::Histogram(const std::string & pID) :  
+  m_yvalues(0), m_y2values(0), m_psvalues(0)  
+{
   m_finished=false;
   std::ifstream ifile(pID.c_str());
 
@@ -636,12 +647,13 @@ double Histogram::LogCoeff() const
 
 Histogram & Histogram::operator+=(const Histogram & histo)
 {
-  if (histo.m_nbin!=m_nbin) {
-    msg.Error()<<"Error in Histogram : can not add histograms with different number of bins"<<std::endl;
+  if (histo.Nbins()!=m_nbin) {
+    msg.Error()<<"Error in Histogram :"<<std::endl
+	       <<"   can not add histograms with different number of bins"<<std::endl;
     return *this;
   }
   for (int i=0;i<m_nbin;i++) { 
-    m_yvalues[i]+= histo.m_yvalues[i]; 
+    m_yvalues[i]+= histo.Value(i); 
   }
   if (m_depth>1) {
     for (int i=0;i<m_nbin;i++) { 
@@ -654,7 +666,13 @@ Histogram & Histogram::operator+=(const Histogram & histo)
     }
   }
   
-  m_fills+=histo.m_fills;
-  m_psfills+=histo.m_psfills;
+  m_fills   += histo.m_fills;
+  m_psfills += histo.m_psfills;
   return *this;
+}
+
+Histogram & Histogram::operator+=(const Root_Histogram & histo) {
+  msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+	     <<"   Tried to add apples and oranges.  Abort."<<std::endl;
+  abort();
 }

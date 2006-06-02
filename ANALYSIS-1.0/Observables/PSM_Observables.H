@@ -14,6 +14,9 @@ namespace ANALYSIS {
     PSM_Observable(unsigned int type,double xmin,double xmax,int nbins,
 		   int p0, int p1, int p2, int p3, 
 		   const std::string & =std::string("PSM"));
+    PSM_Observable(ATOOLS::Histogram_Base *,
+		   int p0, int p1, int p2, int p3, 
+		   const std::string & =std::string("PSM"));
 
     void Evaluate(const ATOOLS::Particle_List &,double, int);
     void Evaluate(const ATOOLS::Blob_List & blobs,double value, int);

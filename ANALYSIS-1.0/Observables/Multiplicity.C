@@ -1,8 +1,9 @@
 #include "Multiplicity.H"
+#include "Message.H"
+#include "MyStrStream.H"
+
 
 using namespace ANALYSIS;
-
-#include "MyStrStream.H"
 
 template <class Class>
 Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
@@ -11,24 +12,30 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
   if (parameters.size()==1) {
     if (parameters[0].size()<4) return NULL;
     std::string list=parameters[0].size()>4?parameters[0][4]:"Analysed";
-    return new Class(HistogramType(parameters[0][3]),
-		     ATOOLS::ToType<double>(parameters[0][0]),
-		     ATOOLS::ToType<double>(parameters[0][1]),
-		     ATOOLS::ToType<int>(parameters[0][2]),list);
+    Primitive_Observable_Base * obs(NULL);
+    obs = new Class(HistogramType(parameters[0][3]),
+		    ATOOLS::ToType<double>(parameters[0][0]),
+		    ATOOLS::ToType<double>(parameters[0][1]),
+		    ATOOLS::ToType<int>(parameters[0][2]),list);
+    return obs;
   }
-  else if (parameters.size()<4) return NULL;
-  double min=0.0, max=1.0;
-  size_t bins=100;
-  std::string list="Analysed", scale="Lin";
+  else {
+    std::string inputfile(""),list("Analysed"), dataname("Data");
+    for (size_t i=0;i<parameters.size();++i) {
+      if (parameters[i][0]=="INPUTFILE")     inputfile = parameters[i][1];
+      else if (parameters[i][0]=="DATANAME") dataname  = parameters[i][1];
+      else if (parameters[i][0]=="LIST")     list      = parameters[i][1];
+    }
+    if (inputfile!=("")) return new Class(inputfile,dataname,list);
+  }
+
+  ATOOLS::msg.Error()<<"ERROR in GetObservable for Multis:"<<std::endl
+		     <<"   Did not understand the analyses input:"<<std::endl;
   for (size_t i=0;i<parameters.size();++i) {
-    if (parameters[i].size()<2) continue;
-    if (parameters[i][0]=="MIN") min=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="MAX") max=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="BINS") bins=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="SCALE") scale=parameters[i][1];
-    else if (parameters[i][0]=="LIST") list=parameters[i][1];
-  }
-  return new Class(HistogramType(scale),min,max,bins,list);
+    for (size_t j=0;j<parameters[i].size();++j) ATOOLS::msg.Error()<<parameters[i][j]<<" ";
+    ATOOLS::msg.Error()<<std::endl;
+  }						  
+  return NULL;
 }									
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
@@ -56,27 +63,52 @@ DEFINE_OBSERVABLE_GETTER(Hadron_Multiplicities,Hadron_Multiplicities_Getter,"Had
 
 
 
+Multiplicity::Multiplicity(const std::string & infilename,
+			   const std::string & dataname,
+			   const std::string & listname) :
+  Primitive_Observable_Base(infilename,dataname)
+{
+  m_listname = listname;
+  m_name     = listname+"_multi.root";
+}
+
 Multiplicity::Multiplicity(int type,double xmin,double xmax,int nbins,
 			   const std::string & listname) :
-  Primitive_Observable_Base(type,xmin,xmax,nbins,NULL)
+  Primitive_Observable_Base(type,xmin,xmax,nbins)
 {
+  m_listname = listname;
+  if (listname!="") m_name = listname+"_multi.dat";
+               else m_name = "multi.dat";
+}
+
+Multiplicity::Multiplicity(Histogram_Base * histo,
+			   const std::string & listname) :
+  Primitive_Observable_Base(histo)
+{
+  // std::cout<<METHOD<<" 4"<<std::endl;
   if (listname!="") {
     m_listname = listname;
-    m_name = listname+"_multi.dat";
+    if (p_histo->Type()<100) m_name = listname+"_multi.dat";
+                        else m_name = listname+"_multi.root";
   }
-  else
-    m_name = "multi.dat";
+  else {
+    if (p_histo->Type()<100) m_name = "multi.dat";
+                        else m_name = "multi.root";
+  }
 }
  
 void Multiplicity::Evaluate(const ATOOLS::Particle_List & pl,
 			    double weight, int ncount)
 {
+  // std::cout<<"In "<<METHOD<<std::endl;
   p_histo->Insert(pl.size(),weight,ncount); 
+  // std::cout<<"out of "<<METHOD<<std::endl;
 }
 
 
 Primitive_Observable_Base * Multiplicity::Copy() const {
-  return new Multiplicity(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  // std::cout<<"In "<<METHOD<<std::endl;
+  return new Multiplicity(p_histo,m_listname);
 }
 
 
@@ -85,18 +117,33 @@ Primitive_Observable_Base * Multiplicity::Copy() const {
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+Hadron_Multiplicities::Hadron_Multiplicities(const std::string & infilename,
+					     const std::string & dataname,
+					     const std::string & listname) :
+  Primitive_Observable_Base(infilename,dataname)
+{
+  // std::cout<<METHOD<<std::endl;
+  abort();
+}
+
 Hadron_Multiplicities::Hadron_Multiplicities(int type,double xmin,double xmax,int nbins,
 					     const std::string & listname) :
-  Primitive_Observable_Base(1,0.,100.,100,NULL)
+  Primitive_Observable_Base(1,0.,100.,100)
 {
   m_listname = listname; 
   m_name     = m_listname+"_Multis.dat";
-  std::cout<<"Init Hadron_Multiplicities: listname = |"<<m_listname<<"|"<<std::endl;
+}
+
+Hadron_Multiplicities::Hadron_Multiplicities(Histogram_Base * histo,
+					     const std::string & listname) :
+  Primitive_Observable_Base(histo)
+{
+  m_listname = listname; 
+  m_name     = m_listname+"_Multis.dat";
 }
 
 void Hadron_Multiplicities::Evaluate(const ATOOLS::Particle_List & pl, double weight, int ncount)
 {
-  //Particle_List * pl = p_ana->GetParticleList(m_listname);
   Flavour flav;
   kf::code kfc;
 
@@ -108,7 +155,7 @@ void Hadron_Multiplicities::Evaluate(const ATOOLS::Particle_List & pl, double we
     if (kfc==kf::pi)                  p_histo->Insert(1,weight,ncount);
     if (kfc==kf::pi_plus)             p_histo->Insert(2,weight,ncount);
     if (kfc==kf::eta)                 p_histo->Insert(3,weight,ncount);
-    if (m_listname=="PrimordialHadrons") {
+    if (m_listname=="PrimordialHadrons" || m_listname=="IntermediateHadrons") {
       if (kfc==kf::K)                 p_histo->Insert(4,weight,ncount);
     }
     else {
@@ -156,6 +203,6 @@ void Hadron_Multiplicities::Evaluate(const ATOOLS::Particle_List & pl, double we
 
 Primitive_Observable_Base * Hadron_Multiplicities::Copy() const
 {
-  return new Hadron_Multiplicities(1,0.,100.,100,m_listname);
+  return new Hadron_Multiplicities(p_histo,m_listname);
 }
 

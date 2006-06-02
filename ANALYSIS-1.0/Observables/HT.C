@@ -51,7 +51,18 @@ DEFINE_OBSERVABLE_GETTER(HT,HT_Getter,"HT")
  
 HT::HT(int type,double xmin,double xmax,int nbins,
        const std::string & listname) :
-  Primitive_Observable_Base(type,xmin,xmax,nbins,NULL)
+  Primitive_Observable_Base(type,xmin,xmax,nbins)
+{
+  if (listname!="") {
+    m_listname = listname;
+    m_name = listname+"_HT.dat";
+  }
+  else
+    m_name = "HT.dat";
+}
+
+HT::HT(ATOOLS::Histogram_Base * histo,const std::string & listname) :
+  Primitive_Observable_Base(histo)
 {
   if (listname!="") {
     m_listname = listname;
@@ -80,5 +91,5 @@ void HT::Evaluate(const ATOOLS::Particle_List& pl,
 
 Primitive_Observable_Base * HT::Copy() const 
 {
-  return new HT(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new HT(p_histo,m_listname);
 }

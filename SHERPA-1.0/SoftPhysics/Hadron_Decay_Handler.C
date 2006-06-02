@@ -45,10 +45,8 @@ void Hadron_Decay_Handler::EraseTreated(std::set<int> * hadrons)
   if (m_mode==1) {
     map<kf::code,Decay_Table *> * cans = p_hadrons->GetDecayMap();
     for (map<kf::code,Decay_Table *>::iterator citer=cans->begin();citer!=cans->end();citer++) {
-      //msg.Debugging()<<"Killing flavours: "<<citer->first<<" ("<<cans->size()<<" ) "<<hadrons->size()<<endl;
       hadrons->erase(int(citer->first));
       Spin_Correlation_Tensor::AddPossibleParticle( citer->first );
-      //msg.Debugging()<<"                  "<<citer->first<<" ("<<cans->size()<<" ) "<<hadrons->size()<<endl;
     }
   }
 #endif
@@ -64,7 +62,6 @@ void Hadron_Decay_Handler::DeletePointers()
 }
 
 void Hadron_Decay_Handler::PrepareDecays(Blob * blob) {
-  //msg_Tracking()<<"Hadron_Decay_Handler::PrepareDecays "<<endl<<(*blob)<<endl;
   switch( m_mode ) {
 #ifdef USING__Hadrons
   case 1: 
@@ -91,7 +88,6 @@ bool Hadron_Decay_Handler::FillHadronDecayBlobs(Particle *part,
   switch( m_mode ) {
 #ifdef USING__Hadrons
     case 1: {
-      // create first decay blobs to start the recursion with a head start for mass smearing
       Blob* blob=p_hadrons->CreateDecayBlobSkeleton(part,blob_list,part_list);
       
       if(blob) {
