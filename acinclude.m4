@@ -1,6 +1,6 @@
 dnl set flags according to build environment
 
-AC_DEFUN(SHERPA_SETUP_BUILDSYSTEM,
+AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
 [
   case "$build_os:$build_cpu:$build_vendor" in
     *darwin*:*power*:*)
@@ -140,7 +140,7 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
               -I\${SHERPADIR}/Initialization -I\${SHERPADIR}/SoftPhysics -I\${SHERPADIR}/HerwigTools"
   SHERPALIBS="-lSherpaMain -lSherpaInitialization -lSherpaSingleEvents \
               -lSherpaPerturbativePhysics -lSherpaSoftPhysics -lLundTools -lSherpaTools"
-  SHERPAFLAGS="-pedantic -Wall #-Winline"
+  SHERPAFLAGS="-pedantic -Wall"
   AC_SUBST(SHERPADIR)
   AC_SUBST(SHERPAINCS)
   AC_SUBST(SHERPALIBS)
