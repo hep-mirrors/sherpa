@@ -18,8 +18,8 @@ pkginclude_HEADERS        =	\
 			Primitive_Analysis.H \
 			Analysis_Handler.H
 
+AM_CXXFLAGS   =	@SHERPAFLAGS@
+
 INCLUDES      =	@ANALYSISINCS@ @MODELINCS@ @ATOOLSINCS@
 
 EXTRA_DIST    = @SVNINCLUDE@
-
-AM_CXXFLAGS   =	@SHERPAFLAGS@

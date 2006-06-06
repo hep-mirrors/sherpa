@@ -13,7 +13,8 @@ libZfunctions_la_SOURCES = Basic_Func.C Basic_Sfuncs.C Basic_Pfunc.C \
 
 pkginclude_HEADERS = Basic_Func.H  Basic_Sfuncs.H Basic_Func.icc Zfunc_Calc.H Calculator.H MHV_Calculator.H
 
+AM_CXXFLAGS   =	@SHERPAFLAGS@
+
 INCLUDES = @AMEGICINCS@ @MODELINCS@ @ATOOLSINCS@
 
 EXTRA_DIST    = @SVNINCLUDE@
-AM_CXXFLAGS   =	@SHERPAFLAGS@

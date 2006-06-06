@@ -6,9 +6,9 @@ libLHAPDF_la_SOURCES  =	\
 pkginclude_HEADERS        =	LHAPDF_Fortran_Interface.H
 endif
 
-EXTRA_DIST    = @SVNINCLUDE@ LHAPDF_Fortran_Interface.C \
-		LHAPDF_Fortran_Interface.H lhapdf_inter.f
-
 AM_CXXFLAGS   =	@SHERPAFLAGS@
 
 INCLUDES      =	@PDFINCS@ @MODELINCS@ @ATOOLSINCS@
+
+EXTRA_DIST    = @SVNINCLUDE@ LHAPDF_Fortran_Interface.C \
+		LHAPDF_Fortran_Interface.H lhapdf_inter.f

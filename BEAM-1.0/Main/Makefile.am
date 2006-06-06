@@ -14,8 +14,8 @@ pkginclude_HEADERS        =	Beam_Base.H \
 		 	Spectrum_Reader.H \
 			Beam_Spectra_Handler.H
 
+AM_CXXFLAGS   =	@SHERPAFLAGS@
+
 INCLUDES = @ATOOLSINCS@ @MODELINCS@
 
 EXTRA_DIST    = @SVNINCLUDE@
-
-AM_CXXFLAGS   =	@SHERPAFLAGS@

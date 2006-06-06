@@ -1,6 +1,6 @@
 dnl set flags according to build environment
 
-AC_DEFUN(SHERPA_SETUP_BUILDSYSTEM,
+AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
 [
   case "$build_os:$build_cpu:$build_vendor" in
     *darwin*:*power*:*)
@@ -140,7 +140,7 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
               -I\${SHERPADIR}/Initialization -I\${SHERPADIR}/SoftPhysics -I\${SHERPADIR}/HerwigTools"
   SHERPALIBS="-lSherpaMain -lSherpaInitialization -lSherpaSingleEvents \
               -lSherpaPerturbativePhysics -lSherpaSoftPhysics -lLundTools -lSherpaTools"
-  SHERPAFLAGS="-pedantic -Wall #-Winline"
+  SHERPAFLAGS="-pedantic -Wall"
   AC_SUBST(SHERPADIR)
   AC_SUBST(SHERPAINCS)
   AC_SUBST(SHERPALIBS)
@@ -297,7 +297,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     [ lhapdf=false ]
   )
   if test "$lhapdf" = "true" ; then
-    AC_DEFINE(USING__LHAPDF, "1", [using LHAPDF])
+    AC_DEFINE([USING__LHAPDF], "1", [using LHAPDF])
   fi
   AC_SUBST(CONDITIONAL_LHAPDFDIR)
   AC_SUBST(CONDITIONAL_LHAPDFLIBS)
@@ -313,9 +313,9 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     [ AC_MSG_CHECKING(whether to include MODEL headers); AC_MSG_RESULT(yes); modelinclude=true; ]
   )
   if test "$modelinclude" = "true" ; then
-    AC_DEFINE(USING__Model, "1", [using Model])
+    AC_DEFINE([USING__Model], "1", [using Model])
   else
-    AC_DEFINE(USING__ATOOLS_only, "1", [not using Model, using ATOOLS_only])
+    AC_DEFINE([USING__ATOOLS_only], "1", [not using Model, using ATOOLS_only])
   fi
   AM_CONDITIONAL(MODEL_SUPPORT, test "$modelinclude" = "true" )
 
@@ -331,7 +331,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   dnl comment out if isajet to be compiled
   echo "Hardwired: Omitting all Isajet stuff"; isajetinclude=false;
   if test "$isajetinclude" = "true" ; then
-    AC_DEFINE(USING__Isajet, "1", [using Isajet])
+    AC_DEFINE([USING__Isajet], "1", [using Isajet])
     CONDITIONAL_ISAJETINCS="\${ISAJETINCS}"
     CONDITIONAL_ISAJETLIBS="\${ISAJETLIBS}"
   fi
@@ -351,31 +351,13 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   dnl comment out if hdecay to be compiled
   echo "Hardwired: Omitting all Hdecay stuff"; hdecayinclude=false;
   if test "$hdecayinclude" = "true" ; then
-    AC_DEFINE(USING__Hdecay, "1", [using Hdecay])
+    AC_DEFINE([USING__Hdecay], "1", [using Hdecay])
     CONDITIONAL_HDECAYLIBS="\${HDECAYLIBS}"
     CONDITIONAL_HDECAYINCS="\${HDECAYINCS}"
   fi
   AC_SUBST(CONDITIONAL_HDECAYLIBS)
   AC_SUBST(CONDITIONAL_HDECAYINCS)
   AM_CONDITIONAL(HDECAY_SUPPORT, test "$hdecayinclude" = "true" )
-  
-  AC_ARG_ENABLE(adicicinclude,
-    AC_HELP_STRING([--disable-adicicinclude], [Disable inclusion of ADICIC headers]),
-    [ AC_MSG_CHECKING(whether to include ADICIC headers);
-      case "${enableval}" in
-        yes) AC_MSG_RESULT(yes); adicicinclude=true;;
-        no)  AC_MSG_RESULT(no); adicicinclude=false;;
-      esac ],
-    [ AC_MSG_CHECKING(whether to include ADICIC stuff); AC_MSG_RESULT(yes); adicicinclude=true; ]
-  )
-  if test "$adicicinclude" = "true" ; then
-    AC_DEFINE(USING__Adicic, "1", [using ADICIC])
-    CONDITIONAL_ADICICLIBS="\${ADICICLIBS}"
-    CONDITIONAL_ADICICINCS="\${ADICICINCS}"
-  fi
-  AC_SUBST(CONDITIONAL_ADICICLIBS)
-  AC_SUBST(CONDITIONAL_ADICICINCS)
-  AM_CONDITIONAL(ADICIC_SUPPORT, test "$adicicinclude" = "true" )
   
   AC_ARG_ENABLE(amisicinclude,
     AC_HELP_STRING([--disable-amisicinclude], [Disable inclusion of AMISIC headers]),
@@ -387,49 +369,13 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     [ AC_MSG_CHECKING(whether to include AMISIC stuff); AC_MSG_RESULT(yes); amisicinclude=true; ]
   )
   if test "$amisicinclude" = "true" ; then
-    AC_DEFINE(USING__Amisic, "1", [using AMISIC])
+    AC_DEFINE([USING__Amisic], "1", [using AMISIC])
     CONDITIONAL_AMISICLIBS="\${AMISICLIBS}"
     CONDITIONAL_AMISICINCS="\${AMISICINCS}"
   fi
   AC_SUBST(CONDITIONAL_AMISICLIBS)
   AC_SUBST(CONDITIONAL_AMISICINCS)
   AM_CONDITIONAL(AMISIC_SUPPORT, test "$amisicinclude" = "true" )
-  
-  AC_ARG_ENABLE(cs_showerinclude,
-    AC_HELP_STRING([--disable-cs_showerinclude], [Disable inclusion of CS_SHOWER headers]),
-    [ AC_MSG_CHECKING(whether to include CS_SHOWER headers);
-      case "${enableval}" in
-        yes) AC_MSG_RESULT(yes); cs_showerinclude=true;;
-        no)  AC_MSG_RESULT(no); cs_showerinclude=false;;
-      esac ],
-    [ AC_MSG_CHECKING(whether to include CS_SHOWER stuff); AC_MSG_RESULT(yes); cs_showerinclude=true; ]
-  )
-  if test "$cs_showerinclude" = "true" ; then
-    AC_DEFINE(USING__CSS, "1", [using CS_SHOWER])
-    CONDITIONAL_CSSLIBS="\${CSSLIBS}"
-    CONDITIONAL_CSSINCS="\${CSSINCS}"
-  fi
-  AC_SUBST(CONDITIONAL_CSSLIBS)
-  AC_SUBST(CONDITIONAL_CSSINCS)
-  AM_CONDITIONAL(CSS_SUPPORT, test "$cs_showerinclude" = "true" )
-  
-  AC_ARG_ENABLE(ahadicinclude,
-    AC_HELP_STRING([--disable-ahadicinclude], [Disable inclusion of AHADIC headers]),
-    [ AC_MSG_CHECKING(whether to include AHADIC headers);
-      case "${enableval}" in
-        yes) AC_MSG_RESULT(yes); ahadicinclude=true;;
-        no)  AC_MSG_RESULT(no); ahadicinclude=false;;
-      esac ],
-    [ AC_MSG_CHECKING(whether to include AHADIC stuff); AC_MSG_RESULT(yes); ahadicinclude=true; ]
-  )
-  if test "$ahadicinclude" = "true" ; then
-    AC_DEFINE(USING__Ahadic, "1", [using AHADIC])
-    CONDITIONAL_AHADICLIBS="\${AHADICLIBS}"
-    CONDITIONAL_AHADICINCS="\${AHADICINCS}"
-  fi
-  AC_SUBST(CONDITIONAL_AHADICLIBS)
-  AC_SUBST(CONDITIONAL_AHADICINCS)
-  AM_CONDITIONAL(AHADIC_SUPPORT, test "$ahadicinclude" = "true" )
   
   AC_ARG_ENABLE(hadronsinclude,
     AC_HELP_STRING([--disable-hadronsinclude], [Disable inclusion of HADRONS headers]),
@@ -441,7 +387,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     [ AC_MSG_CHECKING(whether to include HADRONS stuff); AC_MSG_RESULT(yes); hadronsinclude=true; ]
   )
   if test "$hadronsinclude" = "true" ; then
-    AC_DEFINE(USING__Hadrons, "1", [using HADRONS])
+    AC_DEFINE([USING__Hadrons], "1", [using HADRONS])
     CONDITIONAL_HADRONSLIBS="\${HADRONSLIBS}"
     CONDITIONAL_HADRONSINCS="\${HADRONSINCS}"
   fi
@@ -460,7 +406,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     [ AC_MSG_CHECKING(whether to include SHERPA stuff); AC_MSG_RESULT(yes); sherpainclude=true; ]
   )
   if test "$sherpainclude" = "true" ; then
-    AC_DEFINE(USING__Sherpa, "1", [using SHERPA])
+    AC_DEFINE([USING__Sherpa], "1", [using SHERPA])
     CONDITIONAL_SHERPAINCS="\${SHERPAINCS}"
     CONDITIONAL_SHERPALIBS="\${SHERPALIBS}"
   fi

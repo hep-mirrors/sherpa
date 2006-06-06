@@ -10,7 +10,8 @@ pkginclude_HEADERS = Phase_Space_Generator.H Channel_Generator_Base.H \
 		 Channel_Generator3V.H Channel_Generator3_NPV.H \
 		 Channel_Generator_Decays.H Channel_Generator_KK.H
 
+AM_CXXFLAGS   =	@SHERPAFLAGS@
+
 INCLUDES = @AMEGICINCS@ @PHASICINCS@ @MODELINCS@ @BEAMINCS@ @PDFINCS@ @EXTRAXSINCS@ @ATOOLSINCS@
 
 EXTRA_DIST    = @SVNINCLUDE@
-AM_CXXFLAGS   =	@SHERPAFLAGS@

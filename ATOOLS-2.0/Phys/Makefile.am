@@ -55,8 +55,8 @@ pkginclude_HEADERS        =	\
 			Spin_Density_Matrix.H \
 			Event.H
 
-EXTRA_DIST    = @SVNINCLUDE@
-
 AM_CXXFLAGS   =	@SHERPAFLAGS@
 
 INCLUDES      = @MODELINCS@ @ATOOLSINCS@
+
+EXTRA_DIST    = @SVNINCLUDE@

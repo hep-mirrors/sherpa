@@ -87,7 +87,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
     }
   }
   delete reader;
-  msg.Out()<<"Welcome to Sherpa, "<<gen.m_username
+  if (msg.Level()>0) msg.Out()<<"Welcome to Sherpa, "<<gen.m_username
 	   <<". Initialization of framework underway."<<std::endl;
   system("if test -f sherpa_user_test; then rm sherpa_user_test; fi");
   m_path = path;

@@ -22,10 +22,10 @@ libIsajet_la_SOURCES = sugrun.f aldata.f ssalfs.f ssb0.f ssb1.f ssdhll.f ssdint.
 		       ssg.f ssa0.f ssf.f \
 		       isasusyinter.f Isajet_Fortran_Interface.C 
 
-INCLUDES = @MODELINCS@ @ATOOLSINCS@
-
-noinst_HEADERS = Isajet_Fortran_Interface.H 
+noinst_HEADERS = Isajet_Fortran_Interface.H
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@
+
+INCLUDES = @MODELINCS@ @ATOOLSINCS@
 
 EXTRA_DIST    = @SVNINCLUDE@

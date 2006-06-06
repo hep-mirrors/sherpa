@@ -40,8 +40,8 @@ pkginclude_HEADERS        =	\
 			Cluster_Algorithm.H \
 			Cluster_Algorithm.C
 
-EXTRA_DIST    = @SVNINCLUDE@
-
 AM_CXXFLAGS   =	@SHERPAFLAGS@
 
 INCLUDES      = @MODELINCS@ @ATOOLSINCS@
+
+EXTRA_DIST    = @SVNINCLUDE@

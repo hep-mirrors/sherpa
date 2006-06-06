@@ -7,8 +7,8 @@ libGRV_la_SOURCES     =	\
 pkginclude_HEADERS        =	\
 			GRVph_Fortran_Interface.H 
 
-EXTRA_DIST    = @SVNINCLUDE@
-
 AM_CXXFLAGS   =	@SHERPAFLAGS@
 
 INCLUDES      =	@APACICINCS@ @PDFINCS@ @MODELINCS@ @ATOOLSINCS@
+
+EXTRA_DIST    = @SVNINCLUDE@

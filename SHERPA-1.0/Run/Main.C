@@ -48,7 +48,7 @@ int main(int argc,char* argv[])
     Generator.InitializeTheRun(argc,argv);
     int nevt=ATOOLS::rpa.gen.NumberOfEvents();
     if (nevt>0) {
-      ATOOLS::msg.Out()<<"=========================================================================="<<std::endl
+      ATOOLS::msg.Events()<<"=========================================================================="<<std::endl
 		       <<"Sherpa will start event generation now : "
 		       <<nevt<<" events"<<std::endl
 		       <<"=========================================================================="<<std::endl;
@@ -72,7 +72,7 @@ int main(int argc,char* argv[])
       msg_Info()<<std::endl;      
       Generator.SummarizeRun();
     }
-    ATOOLS::msg.Out()<<"=========================================================================="<<std::endl
+    ATOOLS::msg.Events()<<"=========================================================================="<<std::endl
 		     <<"Sherpa finished its simulation run with "
 		     <<Generator.NumberOfErrors()<<" errors."<<std::endl
 		     <<"=========================================================================="<<std::endl;

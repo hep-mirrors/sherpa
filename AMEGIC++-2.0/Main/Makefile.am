@@ -12,7 +12,8 @@ pkginclude_HEADERS = AMEGIC_SCT.H \
 		 Single_Process_MHV.H Process_Group.H \
 		 All_Processes.H Full_Decay_Table.H All_Decays.H Amegic.H 
 
+AM_CXXFLAGS   =	@SHERPAFLAGS@
+
 INCLUDES = @AMEGICINCS@ @EXTRAXSINCS@ @PHASICINCS@ @MODELINCS@ @BEAMINCS@ @PDFINCS@ @ATOOLSINCS@
 
 EXTRA_DIST    = @SVNINCLUDE@ 
-AM_CXXFLAGS   =	@SHERPAFLAGS@

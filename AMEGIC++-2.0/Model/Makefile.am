@@ -33,8 +33,8 @@ pkginclude_HEADERS = Lorentz_Function.H Color_Function.H \
 		 Interaction_Model_AEW.H Interaction_Model_SM_AGC.H \
 	         Interaction_Model_SM_ZPrime.H
 
-INCLUDES = @AMEGICINCS@ @MODELINCS@ @ATOOLSINCS@
-
 CXXFLAGS   =-g @SHERPAFLAGS@
+
+INCLUDES = @AMEGICINCS@ @MODELINCS@ @ATOOLSINCS@
 
 EXTRA_DIST    = @SVNINCLUDE@

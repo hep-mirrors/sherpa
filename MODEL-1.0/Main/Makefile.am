@@ -12,8 +12,8 @@ pkginclude_HEADERS = Model_Handler.H Model_Base.H \
 	         Effective_Higgs_Coupling.H LesHouches_Interface.H \
 		 Spectrum_Generator_Base.H
 
+AM_CXXFLAGS   =	@SHERPAFLAGS@
+
 INCLUDES = @MODELINCS@ @ATOOLSINCS@
 
 EXTRA_DIST    = @SVNINCLUDE@
-
-AM_CXXFLAGS   =	@SHERPAFLAGS@

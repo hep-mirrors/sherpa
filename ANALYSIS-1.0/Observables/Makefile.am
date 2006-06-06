@@ -64,9 +64,10 @@ pkginclude_HEADERS        =	\
 			Jet_Mass_and_Broadening.H \
 			Scaled_Observables.H \
 			Four_Jet_Angles.H
-EXTRA_DIST    = @SVNINCLUDE@
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@ @CONDITIONAL_ROOTFLAGS@
 
 INCLUDES      =	@ANALYSISINCS@ @MODELINCS@ @PDFINCS@ \
 		@APACICINCS@ @ATOOLSINCS@ @CONDITIONAL_ROOTINCS@
+
+EXTRA_DIST    = @SVNINCLUDE@

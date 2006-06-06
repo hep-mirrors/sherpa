@@ -1,4 +1,5 @@
 SUBDIRS = Zfunctions
+
 pkglib_LTLIBRARIES = libAmplitude.la
 
 libAmplitude_la_SOURCES = CFColor.C Amplitude_Base.C \
@@ -18,8 +19,8 @@ pkginclude_HEADERS = CFColor.H Single_Amplitude.H \
 		 Color_Group.H Super_Amplitude.H Single_Amplitude_Base.H \
 		 Super_Amplitude.H Amplitude_Output.H
                           
+AM_CXXFLAGS   =	@SHERPAFLAGS@
+
 INCLUDES = @AMEGICINCS@ @MODELINCS@ @ATOOLSINCS@
 
 EXTRA_DIST    = @SVNINCLUDE@
-
-AM_CXXFLAGS   =	@SHERPAFLAGS@

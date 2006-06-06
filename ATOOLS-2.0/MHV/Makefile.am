@@ -10,8 +10,8 @@ pkginclude_HEADERS       =	\
 			MHV_Calculator.H \
 			PermStore.H
 
-EXTRA_DIST    = @SVNINCLUDE@
-
 AM_CXXFLAGS   =	@SHERPAFLAGS@
 
 INCLUDES      = @MODELINCS@ @ATOOLSINCS@
+
+EXTRA_DIST    = @SVNINCLUDE@
