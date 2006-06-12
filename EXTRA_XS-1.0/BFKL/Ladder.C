@@ -9,6 +9,7 @@
 
 // #define USING__Two_To_Zero_ME
 #define USING__Gluon_Kernel_Only
+#define USING__Forward_Backward_Symmetrisation
 
 using namespace EXTRAXS;
 using namespace PHASIC;
@@ -172,7 +173,7 @@ bool Ladder::GenerateLadder()
   p_sudakov->SetYMax(m_y1);
   p_sudakov->SetYMin(m_yn);
   p_sudakov->SetKT2Min(m_kt2min);
-  p_sudakov->SetKT2Max(0.25*m_q2);
+  p_sudakov->SetKT2Max((m_pa+m_pb-m_q).Abs2());
   msg_Debugging()<<"set ymin = "<<m_yn<<", ymax = "<<m_y1<<"\n";
   p_sudakov->Initialize();
   int cnt(0);
@@ -277,6 +278,22 @@ double Ladder::Differential(const ATOOLS::Vec4D *momenta)
   p_colours[m_moms.size()-1][1]=p_colours[0][0];
   std::swap<int>(p_colours[0][0],p_colours[0][1]);
   std::swap<int>(p_colours[1][0],p_colours[1][1]);
+#ifdef USING__Forward_Backward_Symmetrisation
+  // symmetrise ladder
+  if (ran.Get()>0.5) {
+    std::vector<Vec4D> moms(m_moms);
+    for (size_t i(2);i<m_moms.size();++i) {
+      m_moms[i]=moms[m_moms.size()-i+1];
+      m_moms[i][3]=-m_moms[i][3];
+    }
+    std::swap<Vec4D>(m_moms[0],m_moms[1]);
+    m_moms[0][3]=-m_moms[0][3];
+    m_moms[1][3]=-m_moms[1][3];
+    std::swap<Vec4D>(m_k1,m_k2);
+    m_k1[3]=-m_k1[3];
+    m_k2[3]=-m_k2[3];
+  }
+#endif
   // set momenta
   m_nvector=m_moms.size();
   m_maxjetnumber=m_nout=m_nvector-m_nin;
