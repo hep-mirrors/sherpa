@@ -61,6 +61,7 @@ void Zfunc_Generator::BuildZlist(Virtual_String_Generator* _sgen,Basic_Sfuncs* _
       zcalc.push_back(new FFVGS_Calc(_sgen,_BS));  
     }
     if(rpa.gen.Model()==ATOOLS::Model_Type::SM_AGC){
+      zcalc.push_back(new AnomalousV3_Calc(_sgen,_BS));
       zcalc.push_back(new AnomalousV4_Calc(_sgen,_BS));
     }     
   }
@@ -278,7 +279,7 @@ int Zfunc_Generator::LFDetermine_Zfunc(Zfunc* Zh,Point* p,Point* pf,Point* pb)
       lflist.push_back(lf);
     }
   }
-  //LFPrint(lflist);  
+  //LFPrint(lflist);
 
   for (size_t i=0;i<zcalc.size();i++) {
     if (lflist.size()==(zcalc[i]->lorentzlist).size()) {
@@ -294,7 +295,7 @@ int Zfunc_Generator::LFDetermine_Zfunc(Zfunc* Zh,Point* p,Point* pf,Point* pb)
 	  }
 	}
 	if (hit2) {
-	  //counting 
+	  //counting
 	  int type1 = 0;
 	  for (size_t k=j;k<lflist.size();k++) {
 	    if (LFEff(lflist[j].Type())==LFEff(lflist[k].Type())) type1++;
