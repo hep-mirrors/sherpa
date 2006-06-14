@@ -28,19 +28,6 @@ SHERPA_SETUP_VARIABLES
 
 SHERPA_SETUP_CONFIGURE_OPTIONS
 
-AC_CONFIG_COMMANDS_POST([touch ATOOLS-2.0/Org/My_Root.C &&
-                         touch PDF-1.0/LHAPDF/LHAPDF_Fortran_Interface.H &&
-                         touch PDF-1.0/CTEQ/CTEQ6_Fortran_Interface.H &&
-                         touch PDF-1.0/Main/PDF_Handler.C &&
-                         touch PHASIC++-1.0/Main/Phase_Space_Handler.C] &&
-                         touch SHERPA-1.0/PerturbativePhysics/Shower_Handler.H &&
-                         touch SHERPA-1.0/Tools/HepMC_Interface.H &&
-                         touch SHERPA-1.0/HerwigTools/Herwig_Wrapper.H &&
-                         touch SHERPA-1.0/Single_Events/MC_Interface.C &&
-                         touch SHERPA-1.0/SoftPhysics/Hadron_Decay_Handler.H &&
-                         touch SHERPA-1.0/Run/Main.C )
-
-
 dnl Comment in/out MODEL-1.0/{Isajet, Hdecay}
 AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  ATOOLS-2.0/Phys/Makefile \
@@ -124,6 +111,7 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  SHERPA-1.0/Run/Decaydata/TauDecays/PhaseSpaceFunctions/Makefile \
 	  SHERPA-1.0/Makefile \
 	  TOOLS/Makefile \
+          TOOLS/Sherpa-config \
 	  Makefile )
 
 
