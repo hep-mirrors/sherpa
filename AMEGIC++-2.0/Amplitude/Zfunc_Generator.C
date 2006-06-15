@@ -558,8 +558,15 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,
   case zl::VVGS:
   case zl::AV4:
     Zh->p_couplings[icoupl] = pb->cpl[0];icoupl++;
+  case zl::AV3:
+    if (Zh->m_type==zl::AV3) {
+      Zh->p_couplings[icoupl] = pb->cpl[0];icoupl++;
+      Zh->p_couplings[icoupl] = pb->cpl[1];icoupl++;
+      Zh->p_couplings[icoupl] = pb->cpl[2];icoupl++;
+      Zh->p_couplings[icoupl] = pb->cpl[3];icoupl++;
+    }
   default:
-    Zh->p_couplings[icoupl] = pb->cpl[1];icoupl++;
+    if (Zh->m_type!=zl::AV3) Zh->p_couplings[icoupl] = pb->cpl[1];icoupl++;
     SetArgs(Zh,lfnumb,canumb,pb->left,p,icoupl);
     SetArgs(Zh,lfnumb,canumb,pb->right,p,icoupl);
     SetArgs(Zh,lfnumb,canumb,pb->middle,p,icoupl);
