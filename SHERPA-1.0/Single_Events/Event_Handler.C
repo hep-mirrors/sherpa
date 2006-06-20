@@ -218,7 +218,6 @@ void Event_Handler::CleanUpEvent()
 
 
 void Event_Handler::Finish() {
-  std::cout<<METHOD<<std::endl;
   msg_Info()<<"In Event_Handler::Finish : Summarizing the run may take some time."<<std::endl;
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) 
     (*pit)->Finish(std::string("Results"));

@@ -2,22 +2,30 @@
 #include "Message.H"
 #include "TFile.h"
 #include "TCanvas.h"
+#include "TLegend.h"
 
 using namespace ATOOLS;
 
 Root_Histogram::Root_Histogram() :
   Histogram_Base(), 
-  m_finished(false), m_type(100), p_roothisto(NULL), p_rootcomp(NULL)
+  m_finished(false), m_written(false), 
+  m_type(100), p_roothisto(NULL), m_mustdeletecomps(false),
+  m_legend("Off"), m_lxmin(-1.), m_lymin(-1.), m_lxmax(-1.), m_lymax(-1.)
 {
   // std::cout<<"In Root_Histogram."<<std::endl;
   abort();
 }
 
-Root_Histogram::Root_Histogram(const std::string filename,
-			       const std::string dataname) :
-  m_finished(false), m_type(100), p_roothisto(NULL), p_rootcomp(NULL)
+Root_Histogram::Root_Histogram(const std::string filename,const std::string outfile,
+			       std::vector<std::string> & data) :
+  m_finished(false), m_written(false), 
+  m_outfile(outfile), m_type(100), p_roothisto(NULL), m_mustdeletecomps(true),
+  m_legend("Off"), m_lxmin(-1.), m_lymin(-1.), m_lxmax(-1.), m_lymax(-1.)
 {
-  std::cout<<"In Root_Histogram: "<<filename<<"/"<<dataname<<std::endl;
+  for (std::vector<std::string>::iterator dit=data.begin(); 
+       dit!=data.end();dit++) {
+    m_data.push_back((*dit));
+  }
   bool found(false);
   ifstream test((filename).c_str());
   if (test.good()) found=true;
@@ -25,10 +33,16 @@ Root_Histogram::Root_Histogram(const std::string filename,
   if (found) {
     // std::cout<<"Look for the file."<<std::endl;
     TFile file((filename).c_str());
-    p_rootcomp  = (TH1D*)(file.Get(dataname.c_str()));
-    p_rootcomp->SetDirectory(0);
+    TH1D * th1d(NULL);
+    for (std::vector<std::string>::iterator dit=m_data.begin(); 
+	 dit!=m_data.end();dit++) {
+      th1d = (TH1D*)(file.Get((*dit).c_str()));
+      th1d->SetDirectory(0);
+      th1d->SetTitle((*dit).c_str());
+      m_rootcomps.push_back(th1d);
+    }
     file.Close();
-    p_roothisto = (TH1D*)(p_rootcomp->Clone("SHERPA"));
+    p_roothisto = (TH1D*)((*m_rootcomps.begin())->Clone("SHERPA"));
     p_roothisto->Reset();
     return;
   }
@@ -39,19 +53,36 @@ Root_Histogram::Root_Histogram(const std::string filename,
   }
 }
 
-Root_Histogram::Root_Histogram(const Root_Histogram * rhisto) :
-  m_finished(false), m_type(100), p_roothisto(NULL), p_rootcomp(NULL)
+Root_Histogram::Root_Histogram(Root_Histogram * rhisto) :
+  m_finished(false), m_written(false), 
+  m_outfile(rhisto->m_outfile), m_type(100), p_roothisto(NULL), m_mustdeletecomps(false),
+  m_legend(rhisto->m_legend), 
+  m_lxmin(rhisto->m_lxmin), m_lymin(rhisto->m_lymin),
+  m_lxmax(rhisto->m_lxmax), m_lymax(rhisto->m_lymax)
+
 {
-  p_rootcomp  = new TH1D(*rhisto->p_rootcomp);
-  p_roothisto = new TH1D(*rhisto->p_roothisto);
+  for (std::vector<std::string>::iterator dit=rhisto->m_data.begin(); 
+       dit!=rhisto->m_data.end();dit++) m_data.push_back((*dit));
+  for (std::vector<TH1D*>::iterator th1dit=rhisto->m_rootcomps.begin(); 
+       th1dit!=rhisto->m_rootcomps.end();th1dit++) m_rootcomps.push_back((*th1dit));
+  p_roothisto = (TH1D*)((*m_rootcomps.begin())->Clone("SHERPA"));
+  p_roothisto->Reset();
 }
 
 Root_Histogram::~Root_Histogram()
 {
   if (p_roothisto) { delete p_roothisto; p_roothisto = NULL; }
-  if (p_rootcomp)  { delete p_rootcomp;  p_rootcomp  = NULL; }
-  // std::cout<<"Deleted the root-histogram."<<std::endl;
+  if (!m_rootcomps.empty()) {
+    if (m_mustdeletecomps) {
+      for (std::vector<TH1D*>::iterator th1dit=m_rootcomps.begin(); 
+	   th1dit!=m_rootcomps.end();th1dit++) {
+	if ((*th1dit)) { delete (*th1dit); (*th1dit)=NULL; }
+      }
+    }
+    m_rootcomps.clear();
+  }
 }
+
 
 
 Root_Histogram & Root_Histogram::operator+=(const Root_Histogram & histo)
@@ -62,37 +93,48 @@ Root_Histogram & Root_Histogram::operator+=(const Root_Histogram & histo)
 
 void Root_Histogram::Output() {
   if (!msg.LevelIsDebugging()) return;
-  p_roothisto->Print("all");
 }
 
 
-void Root_Histogram::Output(const std::string name) 
+void Root_Histogram::Output(const std::string name)
 {
-  // std::cout<<"Output root file : "<<name<<std::endl;
-  TFile file(name.c_str(),"NEW","test");
-  p_roothisto->Write();
-  file.Close();
-  if (m_finished) {
-    // std::cout<<"roothisto->Nbinsx: "<<p_roothisto->GetNbinsX()<<std::endl
-    //	     <<"comphisto->Nbinsx: "<<p_rootcomp->GetNbinsX()<<std::endl;
-    TCanvas * canvas = new TCanvas();
-    p_roothisto->SetLineColor(kRed);
-    p_roothisto->Draw();
-    p_rootcomp->Draw("same");
-    canvas->Print("test.eps","eps");
-    delete canvas;
+  if (!m_written) {
+    TFile file1((name+".root").c_str(),"NEW","test");
+    p_roothisto->Write();
+    file1.Close();
+
+    TFile file((name+".total.root").c_str(),"NEW","test");
+    if (m_finished) {
+      TCanvas canvas((name).c_str());
+      p_roothisto->SetTitle(m_title.c_str());
+      p_roothisto->SetLineColor(kRed);
+      TLegend legend(m_lxmin,m_lymin,m_lxmax,m_lymax);
+      p_roothisto->Draw("E1");
+      legend.AddEntry(p_roothisto,"Sherpa");
+      for (std::vector<TH1D*>::iterator th1dit=m_rootcomps.begin(); 
+	   th1dit!=m_rootcomps.end();th1dit++) {
+	(*th1dit)->Draw("same E1");
+        legend.AddEntry((*th1dit),(*th1dit)->GetTitle());
+	(*th1dit)->Write();
+      }
+      p_roothisto->Write();
+      if (m_legend=="On") {legend.Draw();legend.Write();}
+      canvas.Write();
+      canvas.Print((name+".eps").c_str(),"eps");
+      canvas.Close();
+    }
+    file.Close();
+    m_written=true;
   }
 }
 
 void Root_Histogram::Insert(double x)
 {
-  // std::cout<<METHOD<<": Insert "<<x<<std::endl;
   p_roothisto->Fill(x); 
 }
 
 void Root_Histogram::Insert(double x, double weight, int ntimes) 
 {
-  // std::cout<<METHOD<<": Insert "<<x<<"("<<weight<<")."<<std::endl;
   p_roothisto->Fill(x,weight); 
 }
 
@@ -103,6 +145,5 @@ void Root_Histogram::Finalize()
     p_roothisto->Sumw2();
     double sum(1./p_roothisto->Integral(""));
     p_roothisto->Scale(sum);    
-    // std::cout<<METHOD<<":"<<sum<<std::endl;
   }
 }

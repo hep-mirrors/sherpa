@@ -38,6 +38,10 @@ namespace ATOOLS {
     virtual void   Restore()                                           =0;
     virtual void   SetBin(int i, double x)                             =0;
     virtual void   Extrapolate(double x, double * ys,int mode)         =0;
+    virtual void   SetTitle(const std::string)                         =0;
+    virtual void   SetLegend(const std::string,
+			     const double,const double,
+			     const double,const double)                =0;
 
     // basic access methods
     virtual int    Type()           const=0;

@@ -157,7 +157,7 @@ DEFINE_OBSERVABLE_GETTER(Heavy_Jet_Mass,Heavy_Jet_Mass_Getter,"MH")
 
 
 Heavy_Jet_Mass::Heavy_Jet_Mass(int type, double xmin, double xmax, int nbin, std::string listname)
-  : Primitive_Observable_Base(type,xmin,xmax,nbin,NULL), m_key(listname+"_JetMass_Broadening")
+  : Primitive_Observable_Base(type,xmin,xmax,nbin), m_key(listname+"_JetMass_Broadening")
 {
   m_listname = listname;
   m_name = std::string("Heavy_Jet_Mass.dat");
@@ -173,7 +173,7 @@ void Heavy_Jet_Mass::Evaluate(const ATOOLS::Blob_List & bl, double weight, int n
  
 Primitive_Observable_Base * Heavy_Jet_Mass::Copy() const
 {
-  return new Heavy_Jet_Mass(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Heavy_Jet_Mass(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 
@@ -181,7 +181,7 @@ DEFINE_OBSERVABLE_GETTER(Light_Jet_Mass,Light_Jet_Mass_Getter,"ML")
 
 
 Light_Jet_Mass::Light_Jet_Mass(int type, double xmin, double xmax, int nbin, std::string listname)
-  : Primitive_Observable_Base(type,xmin,xmax,nbin,NULL), m_key(listname+"_JetMass_Broadening")
+  : Primitive_Observable_Base(type,xmin,xmax,nbin), m_key(listname+"_JetMass_Broadening")
 {
   m_listname = listname;
   m_name = std::string("Light_Jet_Mass.dat");
@@ -197,7 +197,7 @@ void Light_Jet_Mass::Evaluate(const ATOOLS::Blob_List & bl, double weight, int n
  
 Primitive_Observable_Base * Light_Jet_Mass::Copy() const
 {
-  return new Light_Jet_Mass(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Light_Jet_Mass(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 
@@ -206,7 +206,7 @@ DEFINE_OBSERVABLE_GETTER(Jet_Mass_Difference,
 
 
 Jet_Mass_Difference::Jet_Mass_Difference(int type, double xmin, double xmax, int nbin, std::string listname)
-  : Primitive_Observable_Base(type,xmin,xmax,nbin,NULL), m_key(listname+"_JetMass_Broadening")
+  : Primitive_Observable_Base(type,xmin,xmax,nbin), m_key(listname+"_JetMass_Broadening")
 {
   m_listname = listname;
   m_name = std::string("Jet_Mass_Difference.dat");
@@ -224,7 +224,7 @@ void Jet_Mass_Difference::Evaluate(const ATOOLS::Blob_List & bl, double weight, 
  
 Primitive_Observable_Base * Jet_Mass_Difference::Copy() const
 {
-  return new Jet_Mass_Difference(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Jet_Mass_Difference(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 
@@ -233,7 +233,7 @@ DEFINE_OBSERVABLE_GETTER(Single_Inclusive_Jet_Mass,
 
 
 Single_Inclusive_Jet_Mass::Single_Inclusive_Jet_Mass(int type, double xmin, double xmax, int nbin, std::string listname)
-  : Primitive_Observable_Base(type,xmin,xmax,nbin,NULL), m_key(listname+"_JetMass_Broadening")
+  : Primitive_Observable_Base(type,xmin,xmax,nbin), m_key(listname+"_JetMass_Broadening")
 {
   m_listname = listname;
   m_name = std::string("Single_Inclusive_Jet_Mass.dat");
@@ -250,7 +250,7 @@ void Single_Inclusive_Jet_Mass::Evaluate(const ATOOLS::Blob_List & bl, double we
  
 Primitive_Observable_Base * Single_Inclusive_Jet_Mass::Copy() const
 {
-  return new Single_Inclusive_Jet_Mass(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Single_Inclusive_Jet_Mass(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 
@@ -259,7 +259,7 @@ Primitive_Observable_Base * Single_Inclusive_Jet_Mass::Copy() const
 DEFINE_OBSERVABLE_GETTER(Wide_Jet_Broadening,Wide_Jet_Broadening_Getter,"BW")
 
 Wide_Jet_Broadening::Wide_Jet_Broadening(int type, double xmin, double xmax, int nbin, std::string listname)
-  : Primitive_Observable_Base(type,xmin,xmax,nbin,NULL), m_key(listname+"_JetMass_Broadening")
+  : Primitive_Observable_Base(type,xmin,xmax,nbin), m_key(listname+"_JetMass_Broadening")
 {
   m_listname = listname;
   m_name = std::string("Wide_Jet_Broadening.dat");
@@ -275,14 +275,14 @@ void Wide_Jet_Broadening::Evaluate(const ATOOLS::Blob_List & bl, double weight, 
  
 Primitive_Observable_Base * Wide_Jet_Broadening::Copy() const
 {
-  return new Wide_Jet_Broadening(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Wide_Jet_Broadening(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 
 DEFINE_OBSERVABLE_GETTER(Narrow_Jet_Broadening,Narrow_Jet_Broadening_Getter,"BN")
 
 Narrow_Jet_Broadening::Narrow_Jet_Broadening(int type, double xmin, double xmax, int nbin, std::string listname)
-  : Primitive_Observable_Base(type,xmin,xmax,nbin,NULL), m_key(listname+"_JetMass_Broadening")
+  : Primitive_Observable_Base(type,xmin,xmax,nbin), m_key(listname+"_JetMass_Broadening")
 {
   m_listname = listname;
   m_name = std::string("Narrow_Jet_Broadening.dat");
@@ -298,14 +298,14 @@ void Narrow_Jet_Broadening::Evaluate(const ATOOLS::Blob_List & bl, double weight
  
 Primitive_Observable_Base * Narrow_Jet_Broadening::Copy() const
 {
-  return new Narrow_Jet_Broadening(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Narrow_Jet_Broadening(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 
 DEFINE_OBSERVABLE_GETTER(Total_Jet_Broadening,Total_Jet_Broadening_Getter,"BT")
 
 Total_Jet_Broadening::Total_Jet_Broadening(int type, double xmin, double xmax, int nbin, std::string listname)
-  : Primitive_Observable_Base(type,xmin,xmax,nbin,NULL), m_key(listname+"_JetMass_Broadening")
+  : Primitive_Observable_Base(type,xmin,xmax,nbin), m_key(listname+"_JetMass_Broadening")
 {
   m_listname = listname;
   m_name = std::string("Total_Jet_Broadening.dat");
@@ -323,14 +323,14 @@ void Total_Jet_Broadening::Evaluate(const ATOOLS::Blob_List & bl, double weight,
  
 Primitive_Observable_Base * Total_Jet_Broadening::Copy() const
 {
-  return new Total_Jet_Broadening(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Total_Jet_Broadening(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 
 DEFINE_OBSERVABLE_GETTER(Jet_Broadening_Difference,Jet_Broadening_Difference_Getter,"BD")
 
 Jet_Broadening_Difference::Jet_Broadening_Difference(int type, double xmin, double xmax, int nbin, std::string listname)
-  : Primitive_Observable_Base(type,xmin,xmax,nbin,NULL), m_key(listname+"_JetMass_Broadening")
+  : Primitive_Observable_Base(type,xmin,xmax,nbin), m_key(listname+"_JetMass_Broadening")
 {
   m_listname = listname;
   m_name = std::string("Jet_Broadening_Difference.dat");
@@ -348,14 +348,14 @@ void Jet_Broadening_Difference::Evaluate(const ATOOLS::Blob_List & bl, double we
  
 Primitive_Observable_Base * Jet_Broadening_Difference::Copy() const
 {
-  return new Jet_Broadening_Difference(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Jet_Broadening_Difference(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 DEFINE_OBSERVABLE_GETTER(Single_Inclusive_Jet_Broadening,Single_Inclusive_Jet_Broadening_Getter,"BS")
 
 
 Single_Inclusive_Jet_Broadening::Single_Inclusive_Jet_Broadening(int type, double xmin, double xmax, int nbin, std::string listname)
-  : Primitive_Observable_Base(type,xmin,xmax,nbin,NULL), m_key(listname+"_JetMass_Broadening")
+  : Primitive_Observable_Base(type,xmin,xmax,nbin), m_key(listname+"_JetMass_Broadening")
 {
   m_listname = listname;
   m_name = std::string("Single_Inclusive_Jet_Broadening.dat");
@@ -372,7 +372,7 @@ void Single_Inclusive_Jet_Broadening::Evaluate(const ATOOLS::Blob_List & bl, dou
  
 Primitive_Observable_Base * Single_Inclusive_Jet_Broadening::Copy() const
 {
-  return new Single_Inclusive_Jet_Broadening(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Single_Inclusive_Jet_Broadening(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 

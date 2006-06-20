@@ -61,7 +61,7 @@ using namespace std;
 One_Particle_Observable_Base::One_Particle_Observable_Base(const Flavour & flav,
 							   int type,double xmin,double xmax,int nbins,
 							   const std::string & listname, const std::string & name) :
-  Primitive_Observable_Base(type,xmin,xmax,nbins,NULL), 
+  Primitive_Observable_Base(type,xmin,xmax,nbins), 
   m_flav(flav)
 {
   MyStrStream str;
@@ -121,7 +121,7 @@ void One_Particle_ET::Evaluate(const Vec4D & mom,double weight,int ncount)
 
 Primitive_Observable_Base * One_Particle_ET::Copy() const
 {
-  return new One_Particle_ET(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new One_Particle_ET(m_flav,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -142,7 +142,7 @@ void One_Particle_PT::Evaluate(const Vec4D & mom,double weight, int ncount)
 
 Primitive_Observable_Base * One_Particle_PT::Copy() const 
 {
-  return new One_Particle_PT(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new One_Particle_PT(m_flav,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -170,7 +170,7 @@ void One_Particle_Eta::Evaluate(const Vec4D & mom,double weight, int ncount)
 
 Primitive_Observable_Base * One_Particle_Eta::Copy() const
 {
-  return new One_Particle_Eta(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new One_Particle_Eta(m_flav,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -191,7 +191,7 @@ void One_Particle_E::Evaluate(const Vec4D & mom,double weight, int ncount)
 
 Primitive_Observable_Base * One_Particle_E::Copy() const
 {
-  return new One_Particle_E(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new One_Particle_E(m_flav,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -212,7 +212,7 @@ void One_Particle_BeamAngle::Evaluate(const Vec4D & mom,double weight, int ncoun
 
 Primitive_Observable_Base * One_Particle_BeamAngle::Copy() const
 {
-  return new One_Particle_BeamAngle(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new One_Particle_BeamAngle(m_flav,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -249,7 +249,7 @@ void One_Particle_EVis::Evaluate(const Particle_List & plist,double weight,int n
 }
 Primitive_Observable_Base * One_Particle_EVis::Copy() const
 {
-  return new One_Particle_EVis(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new One_Particle_EVis(m_flav,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
  
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -270,7 +270,7 @@ void One_Particle_Px::Evaluate(const Vec4D & mom,double weight, int ncount)
 
 Primitive_Observable_Base * One_Particle_Px::Copy() const
 {
-  return new One_Particle_Px(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new One_Particle_Px(m_flav,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -291,7 +291,7 @@ void One_Particle_Py::Evaluate(const Vec4D & mom,double weight, int ncount)
 
 Primitive_Observable_Base * One_Particle_Py::Copy() const
 {
-  return new One_Particle_Py(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new One_Particle_Py(m_flav,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -312,6 +312,6 @@ void One_Particle_Pz::Evaluate(const Vec4D & mom,double weight, int ncount)
 
 Primitive_Observable_Base * One_Particle_Pz::Copy() const
 {
-  return new One_Particle_Pz(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new One_Particle_Pz(m_flav,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 

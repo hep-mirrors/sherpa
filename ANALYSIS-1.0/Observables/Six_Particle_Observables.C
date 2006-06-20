@@ -66,7 +66,7 @@ using namespace std;
 Six_Particle_Observable_Base::Six_Particle_Observable_Base
 (const std::vector<Flavour>& flavs, int type, double xmin, double xmax,
  int nbins, const std::string& listname, const std::string& name)
-  : Primitive_Observable_Base(type,xmin,xmax,nbins,NULL), f_special(false) {
+  : Primitive_Observable_Base(type,xmin,xmax,nbins), f_special(false) {
 
   if(flavs.size()<4) {
     msg.Error()<<"Error in Six_Particle_Observable_Base:"<<std::endl
@@ -199,7 +199,7 @@ Six_Particle_PlaneAngle::Six_Particle_PlaneAngle(const std::vector<Flavour> & fl
 
 Primitive_Observable_Base * Six_Particle_PlaneAngle::Copy() const
 {
-  return new Six_Particle_PlaneAngle(m_flavs,m_type,m_xmin,m_xmax,m_nbins,
+  return new Six_Particle_PlaneAngle(m_flavs,m_type,m_xmin,m_xmax,Nbins(),
 				      m_listname);
 }
 

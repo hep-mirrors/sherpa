@@ -73,7 +73,7 @@ Three_Particle_Observable_Base::Three_Particle_Observable_Base(const Flavour & f
 							       const Flavour & flav3,int type,double xmin,
 							       double xmax,int nbins,const std::string & listname,
 							       const std::string & name) :
-  Primitive_Observable_Base(type,xmin,xmax,nbins,NULL), 
+  Primitive_Observable_Base(type,xmin,xmax,nbins), 
   m_flav1(flav1), m_flav2(flav2), m_flav3(flav3)
 {
   m_listname=listname;
@@ -124,7 +124,7 @@ void Three_Particle_Y::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const Vec4
 
 Primitive_Observable_Base * Three_Particle_Y::Copy() const 
 {
-    return new Three_Particle_Y(m_flav1,m_flav2,m_flav3,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+    return new Three_Particle_Y(m_flav1,m_flav2,m_flav3,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
     
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -149,7 +149,7 @@ void Three_Particle_DEta::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const V
 
 Primitive_Observable_Base * Three_Particle_DEta::Copy() const 
 {
-    return new Three_Particle_DEta(m_flav1,m_flav2,m_flav3,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+    return new Three_Particle_DEta(m_flav1,m_flav2,m_flav3,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
     
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -177,7 +177,7 @@ void Three_Particle_DPhi::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const V
 
 Primitive_Observable_Base * Three_Particle_DPhi::Copy() const 
 {
-    return new Three_Particle_DPhi(m_flav1,m_flav2,m_flav3,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+    return new Three_Particle_DPhi(m_flav1,m_flav2,m_flav3,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -209,7 +209,7 @@ void Three_Particle_DR::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const Vec
 
 Primitive_Observable_Base * Three_Particle_DR::Copy() const 
 {
-  return new Three_Particle_DR(m_flav1,m_flav2,m_flav3,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Three_Particle_DR(m_flav1,m_flav2,m_flav3,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 
@@ -234,7 +234,7 @@ void Three_Particle_3Mass2::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const
 
 Primitive_Observable_Base * Three_Particle_3Mass2::Copy() const 
 {
-    return new Three_Particle_3Mass2(m_flav1,m_flav2,m_flav3,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+    return new Three_Particle_3Mass2(m_flav1,m_flav2,m_flav3,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -258,6 +258,6 @@ void Three_Particle_3Mass::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const 
 
 Primitive_Observable_Base * Three_Particle_3Mass::Copy() const 
 {
-    return new Three_Particle_3Mass(m_flav1,m_flav2,m_flav3,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+    return new Three_Particle_3Mass(m_flav1,m_flav2,m_flav3,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 

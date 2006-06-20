@@ -267,7 +267,7 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
 
 void Primitive_Analysis::FinishAnalysis(const std::string & resdir,long ntotal, double xs) 
 {
-  std::cout<<METHOD<<": "<<resdir+OutputPath()<<std::endl;
+  //std::cout<<METHOD<<": "<<resdir<<" + "<<OutputPath()<<std::endl;
   if (ntotal==0) ntotal=m_nevt;
   if (m_mode&ANALYSIS::output_this) 
     ATOOLS::MakeDir(resdir+OutputPath(),448); 
@@ -275,6 +275,7 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,long ntotal, 
   for (Analysis_List::iterator it=m_subanalyses.begin();
        it!=m_subanalyses.end();++it) {
     std::string dir=resdir+OutputPath()+std::string("/")+it->first;
+    //std::cout<<"Subanalysis: ";
     it->second->FinishAnalysis(dir,ntotal,xs);
   }
 

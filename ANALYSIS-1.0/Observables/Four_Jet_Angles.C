@@ -50,7 +50,7 @@ using namespace ATOOLS;
 
 Four_Jet_Angle_Base::Four_Jet_Angle_Base(unsigned int type,double xmin,double xmax,int nbins,
 					 const std::string & lname) :
-  Primitive_Observable_Base(type,xmin,xmax,nbins,NULL)
+  Primitive_Observable_Base(type,xmin,xmax,nbins)
 {
   m_listname=lname;
   m_name  = std::string("4jet_");
@@ -105,7 +105,7 @@ double Bengtsson_Zerwas_Angle::Calc(const std::vector<ATOOLS::Vec3D> & moms)
 
 Primitive_Observable_Base * Bengtsson_Zerwas_Angle::Copy() const 
 {
-  return new Bengtsson_Zerwas_Angle(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Bengtsson_Zerwas_Angle(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 // ======================================================================
@@ -130,7 +130,7 @@ double Nachtmann_Reiter_Angle::Calc(const std::vector<ATOOLS::Vec3D> & moms)
 
 Primitive_Observable_Base * Nachtmann_Reiter_Angle::Copy() const 
 {
-  return new Nachtmann_Reiter_Angle(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Nachtmann_Reiter_Angle(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 // ======================================================================
@@ -161,7 +161,7 @@ double Koerner_Schierholz_Willrodt_Angle::Calc(const std::vector<ATOOLS::Vec3D> 
 
 Primitive_Observable_Base * Koerner_Schierholz_Willrodt_Angle::Copy() const 
 {
-  return new Koerner_Schierholz_Willrodt_Angle(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Koerner_Schierholz_Willrodt_Angle(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 // ======================================================================
@@ -182,5 +182,5 @@ double Alpha34_Angle::Calc(const std::vector<ATOOLS::Vec3D> & moms)
 
 Primitive_Observable_Base * Alpha34_Angle::Copy() const 
 {
-  return new Alpha34_Angle(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Alpha34_Angle(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }

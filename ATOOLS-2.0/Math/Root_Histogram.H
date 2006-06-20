@@ -8,14 +8,22 @@
 namespace ATOOLS {
 
   class Root_Histogram : public Histogram_Base {
-    bool   m_finished;
-    int    m_type, m_depth, m_fills;
-    TH1D * p_roothisto, * p_rootcomp;
+    bool                     m_finished, m_written;
+    std::string              m_outfile;
+    std::vector<std::string> m_data;
+
+    int                      m_type, m_depth, m_fills;
+    TH1D                   * p_roothisto;
+    std::vector<TH1D *>      m_rootcomps;
+    bool                     m_mustdeletecomps;
+    std::string              m_title,m_legend;
+    double                   m_lxmin,m_lymin,m_lxmax,m_lymax;
   public :
     Root_Histogram();
-    Root_Histogram(const std::string,const std::string=std::string("Data")); 
-    Root_Histogram(const Root_Histogram *);
-    Root_Histogram(const Histogram *)            { std::cout<<METHOD<<std::endl; abort(); }
+    Root_Histogram(const std::string,const std::string,
+		   std::vector<std::string> &);
+    Root_Histogram(Root_Histogram *);
+    Root_Histogram(const Histogram *)                  { std::cout<<METHOD<<std::endl; abort(); }
     ~Root_Histogram();
 
     void   Reset()                                     { p_roothisto->Reset(); }
@@ -46,6 +54,14 @@ namespace ATOOLS {
     double Value(int i)     const { return p_roothisto->GetBinContent(i); }
     double Fills()          const { return m_fills; }
     double BinSize(int i=1) const { return p_roothisto->GetBinWidth(i); }
+
+    inline void SetTitle(const std::string title) { m_title=title; }
+    inline void SetLegend(const std::string legend,
+			  const double xmin,const double ymin,
+			  const double xmax,const double ymax) 
+    {
+      m_legend=legend;m_lxmin=xmin;m_lymin=ymin;m_lxmax=xmax;m_lymax=ymax;
+    }
 
     Root_Histogram & operator+=(const Root_Histogram & histo);
     Root_Histogram & operator+=(const Histogram & histo) { std::cout<<METHOD<<std::endl; abort(); }

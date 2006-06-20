@@ -325,7 +325,7 @@ void Histogram::Output() {
 }
 
 
-void Histogram::Output(const std::string name) 
+void Histogram::Output(const std::string name)
 {
   msg.LogFile()<<"! Histogram::Output(..): "
 	       <<"Writing ("<<this<<") to '"<<name<<"'\n";

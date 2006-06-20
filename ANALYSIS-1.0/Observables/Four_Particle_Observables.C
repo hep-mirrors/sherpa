@@ -66,7 +66,7 @@ using namespace std;
 Four_Particle_Observable_Base::Four_Particle_Observable_Base
 (const std::vector<Flavour>& flavs, int type, double xmin, double xmax,
  int nbins, const std::string& listname, const std::string& name)
-  : Primitive_Observable_Base(type,xmin,xmax,nbins,NULL), f_special(false) {
+  : Primitive_Observable_Base(type,xmin,xmax,nbins), f_special(false) {
 
   if(flavs.size()<4) {
     msg.Error()<<"Error in Four_Particle_Observable_Base:"<<std::endl
@@ -170,7 +170,7 @@ Four_Particle_PlaneAngle::Four_Particle_PlaneAngle(const std::vector<Flavour> & 
 
 Primitive_Observable_Base * Four_Particle_PlaneAngle::Copy() const
 {
-  return new Four_Particle_PlaneAngle(m_flavs,m_type,m_xmin,m_xmax,m_nbins,
+  return new Four_Particle_PlaneAngle(m_flavs,m_type,m_xmin,m_xmax,Nbins(),
 				      m_listname);
 }
 
@@ -195,7 +195,7 @@ Four_Particle_PT::Four_Particle_PT(const std::vector<Flavour>& flavs,
 
 Primitive_Observable_Base* Four_Particle_PT::Copy() const
 {
-  return new Four_Particle_PT(m_flavs,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Four_Particle_PT(m_flavs,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 //=============================================================================
@@ -226,7 +226,7 @@ Two_Partonpair_PTdiff::Two_Partonpair_PTdiff(const std::vector<Flavour>& flavs,
 
 Primitive_Observable_Base* Two_Partonpair_PTdiff::Copy() const {
   return new Two_Partonpair_PTdiff(m_flavs, m_type, m_xmin, m_xmax,
-				   m_nbins, m_listname);
+				   Nbins(), m_listname);
 }
 
 //=============================================================================
@@ -280,7 +280,7 @@ Two_Partonpair_Theta::Two_Partonpair_Theta(const std::vector<Flavour>& flavs,
 
 Primitive_Observable_Base* Two_Partonpair_Theta::Copy() const {
   return new Two_Partonpair_Theta(m_flavs, m_type, m_xmin, m_xmax,
-				  m_nbins, m_listname);
+				  Nbins(), m_listname);
 }
 
 // ============================================================================
@@ -332,7 +332,7 @@ DEFINE_OBSERVABLE_GETTER2(Di_Mass,
 
 Di_Mass::Di_Mass(unsigned int type,double xmin,double xmax,int nbins,
 	       const std::string & lname) :
-  Primitive_Observable_Base(type,xmin,xmax,nbins,NULL)
+  Primitive_Observable_Base(type,xmin,xmax,nbins)
 {
   m_listname=lname;
   m_name  = std::string("4jet_");
@@ -382,5 +382,5 @@ void Di_Mass::Evaluate(const ATOOLS::Blob_List & blobs,double weight, int ncount
 
 Primitive_Observable_Base * Di_Mass::Copy() const 
 {
-  return new Di_Mass(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Di_Mass(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }

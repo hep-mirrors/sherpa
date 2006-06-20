@@ -104,7 +104,7 @@ void Shower_Statistics::Output(const std::string & pname) {
 
 Primitive_Observable_Base & Shower_Statistics::operator+=(const Primitive_Observable_Base & ob)
 {
-  if (m_xmin!=ob.Xmin() || m_xmax!=ob.Xmax() || m_nbins!=ob.Nbins()) {
+  if (m_xmin!=ob.Xmin() || m_xmax!=ob.Xmax() || Nbins()!=ob.Nbins()) {
     msg.Error()<<"ERROR: in Shower_Statistics::operator+=  in"<<m_name<<std::endl
 	       <<"   Continue and hope for the best."<<std::endl;
     return *this;
@@ -114,7 +114,7 @@ Primitive_Observable_Base & Shower_Statistics::operator+=(const Primitive_Observ
 
   if (m_observables.size()==job->m_observables.size()) {
     for (size_t i=0; i<m_observables.size();++i) {
-      (*m_observables[i])+=(*job->m_observables[i]);
+      (*m_observables[i])+=/*static_cast<ATOOLS::Histogram>*/(*job->m_observables[i]);
     }
   }
   return *this;

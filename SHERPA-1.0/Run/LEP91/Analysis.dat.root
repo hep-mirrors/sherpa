@@ -1,0 +1,13 @@
+BEGIN_ANALYSIS {
+  LEVEL Hadron
+  PATH_PIECE Analysis
+  Multi {
+	INPUTFILE      = Histos/LEP91/ChargedMultiplicity.root
+	DATANAME       = Aleph Opal L3 
+	LIST           = Charged
+	TITLE          = Charged Hadron Multiplicity
+	OUTPUTFILE     = Charged_Multi
+	LEGEND         = On 
+	LEGENDPOSITION = 0.65 0.65 0.85 0.85
+	} 
+} END_ANALYSIS

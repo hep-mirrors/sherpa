@@ -114,7 +114,7 @@ DEFINE_OBSERVABLE_GETTER(Sphericity,
 
 
 Sphericity::Sphericity(int type, double xmin, double xmax, int nbin, std::string listname)
-  : Primitive_Observable_Base(type,xmin,xmax,nbin,NULL), m_key(listname+"_Sphericity_Data")
+  : Primitive_Observable_Base(type,xmin,xmax,nbin), m_key(listname+"_Sphericity_Data")
 {
   m_listname = listname;
   m_name = std::string("Sphericity.dat");
@@ -130,7 +130,7 @@ void Sphericity::Evaluate(const ATOOLS::Blob_List & bl, double weight, int ncoun
  
 Primitive_Observable_Base * Sphericity::Copy() const
 {
-  return new Sphericity(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Sphericity(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 
@@ -143,7 +143,7 @@ DEFINE_OBSERVABLE_GETTER(Aplanarity,
 
 
 Aplanarity::Aplanarity(int type, double xmin, double xmax, int nbin, std::string listname)
-  : Primitive_Observable_Base(type,xmin,xmax,nbin,NULL), m_key(listname+"_Sphericity_Data")
+  : Primitive_Observable_Base(type,xmin,xmax,nbin), m_key(listname+"_Sphericity_Data")
 {
   m_listname = listname;
   m_name = std::string("Aplanarity.dat");
@@ -159,7 +159,7 @@ void Aplanarity::Evaluate(const ATOOLS::Blob_List & bl, double weight, int ncoun
  
 Primitive_Observable_Base * Aplanarity::Copy() const
 {
-  return new Aplanarity(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Aplanarity(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 
@@ -171,7 +171,7 @@ DEFINE_OBSERVABLE_GETTER(Planarity,
 
 
 Planarity::Planarity(int type, double xmin, double xmax, int nbin, std::string listname)
-  : Primitive_Observable_Base(type,xmin,xmax,nbin,NULL), m_key(listname+"_Sphericity_Data")
+  : Primitive_Observable_Base(type,xmin,xmax,nbin), m_key(listname+"_Sphericity_Data")
 {
   m_listname = listname;
   m_name = std::string("Planarity.dat");
@@ -187,7 +187,7 @@ void Planarity::Evaluate(const ATOOLS::Blob_List & bl, double weight, int ncount
  
 Primitive_Observable_Base * Planarity::Copy() const
 {
-  return new Planarity(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Planarity(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 

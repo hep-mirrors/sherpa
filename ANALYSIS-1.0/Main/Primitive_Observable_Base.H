@@ -34,11 +34,21 @@ namespace ANALYSIS {
   };// end of class String_Matrix
 
 
+  struct POBType {
+    enum code {
+      ROOT    = 1,
+      ASCII   = 2,
+      Unknown = 99
+    };
+  };
+
+
   class Primitive_Observable_Base {  
   public:
     typedef ATOOLS::Getter_Function<Primitive_Observable_Base,String_Matrix> 
     Getter_Function;
   protected:
+    POBType::code            m_pobtype;
     int                      m_type;
     double                   m_xmin, m_xmax;
     std::string              m_name, m_listname;
@@ -52,13 +62,11 @@ namespace ANALYSIS {
     Primitive_Analysis     * p_ana;
     ATOOLS::Selector_Base  * p_sel;
     mutable bool             m_copied;
-
   public:
     // constructors
     Primitive_Observable_Base();
     Primitive_Observable_Base(const int,const double,const double,const int);
-    Primitive_Observable_Base(std::string filename,
-			      std::string dataname=std::string("Data"));
+    Primitive_Observable_Base(const std::string,const std::string,std::vector<std::string> &);
     Primitive_Observable_Base(ATOOLS::Histogram_Base *);
     Primitive_Observable_Base(const Primitive_Observable_Base & old);
 
@@ -90,6 +98,10 @@ namespace ANALYSIS {
     ATOOLS::Selector_Base  * Sel()   const;
     bool                     Splittable() const;
 
+    void                     SetTitle(const std::string title);
+    void                     SetLegend(const std::string legend,
+				       const double xmin,const double ymin,
+				       const double xmax,const double ymax);
   };// end of class Primitive_Observable_Base
 
   // --- inline functions ---
@@ -104,6 +116,16 @@ namespace ANALYSIS {
   inline ATOOLS::Histogram_Base * Primitive_Observable_Base::Histo()      const { return p_histo; }
   inline ATOOLS::Selector_Base  * Primitive_Observable_Base::Sel()        const { return p_sel; }
   inline bool                     Primitive_Observable_Base::Splittable() const { return m_splitt_flag; }
+
+
+  inline void Primitive_Observable_Base::SetTitle(const std::string title) { 
+    if (m_pobtype==POBType::ROOT) p_histo->SetTitle(title);
+  }
+  inline void Primitive_Observable_Base::SetLegend(const std::string legend,
+						   const double xmin,const double ymin,
+						   const double xmax,const double ymax) {
+    if (m_pobtype==POBType::ROOT) p_histo->SetLegend(legend,xmin,ymin,xmax,ymax);
+  }
 }// end of namespace ANALYSIS
 
 #endif

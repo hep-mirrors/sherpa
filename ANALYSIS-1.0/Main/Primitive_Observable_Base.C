@@ -32,6 +32,7 @@ int ANALYSIS::HistogramType(const std::string &scale)
 }
 
 Primitive_Observable_Base::Primitive_Observable_Base() :
+  m_pobtype(POBType::Unknown),
   m_name(std::string("noname")), m_listname(std::string("Analysed")),
   p_histo(NULL), m_nout(0), p_flavs(NULL), p_moms(NULL), 
   m_splitt_flag(true) ,p_ana(NULL), p_sel(NULL), m_copied(false)
@@ -42,29 +43,30 @@ Primitive_Observable_Base::Primitive_Observable_Base() :
 Primitive_Observable_Base::Primitive_Observable_Base(const int type,
 						     const double xmin,const double xmax,
 						     const int nbins) :
+  m_pobtype(POBType::ASCII),
   m_type(type), m_xmin(xmin), m_xmax(xmax),
   m_listname(std::string("Analysed")), m_splitt_flag(true), 
   p_ana(NULL), p_sel(NULL), m_copied(false)
 { 
-  msg.Out()<<METHOD<<" "<<type<<std::endl;
   p_histo = new Histogram(type,xmin,xmax,nbins);
 }
 
 
-Primitive_Observable_Base::Primitive_Observable_Base(const std::string filename,
-						     const std::string dataname) :
+Primitive_Observable_Base::Primitive_Observable_Base(const std::string infile,
+						     const std::string outfile,
+						     std::vector<std::string> & datanames) :
+  m_pobtype(POBType::ROOT),
   m_type(100), 
   m_listname(std::string("Analysed")), m_splitt_flag(true), 
   p_ana(NULL), p_sel(NULL), m_copied(false)
 {
 #ifdef USING__ROOT
-  p_histo = new Root_Histogram(filename,dataname);
+  p_histo = new Root_Histogram(infile,outfile,datanames);
   m_xmin  = p_histo->Xmin(); 
   m_xmax  = p_histo->Xmax(); 
 #else
     msg.Error()<<"ERROR in Primitive_Observable_Base::Primitive_Observable_Base:"<<std::endl
-	       <<"   Asked for root-histogram (type = "<<p_histo->Type()
-	       <<") without Root being enabled."<<std::endl
+	       <<"   Asked for root-histogram without Root being enabled."<<std::endl
 	       <<"   Reconfigure with '--enable-root' and run again."<<std::endl;
     abort();
 #endif
@@ -77,11 +79,13 @@ Primitive_Observable_Base::Primitive_Observable_Base(Histogram_Base * histo) :
   p_ana(NULL), p_sel(NULL), m_copied(false)
 { 
   if (histo->Type()<100) {
-    p_histo = new Histogram(static_cast<Histogram *>(histo));
+    p_histo   = new Histogram(static_cast<Histogram *>(histo));
+    m_pobtype = POBType::ASCII;
   }
   else {
 #ifdef USING__ROOT
-    p_histo = new Root_Histogram(static_cast<Root_Histogram *>(histo));
+    p_histo   = new Root_Histogram(static_cast<Root_Histogram *>(histo));
+    m_pobtype = POBType::ROOT;
 #else
     msg.Error()<<"ERROR in Primitive_Observable_Base::Primitive_Observable_Base:"<<std::endl
 	       <<"   Asked for root-histogram (type = "<<histo->Type()
@@ -93,16 +97,22 @@ Primitive_Observable_Base::Primitive_Observable_Base(Histogram_Base * histo) :
 }
 
 Primitive_Observable_Base::Primitive_Observable_Base(const Primitive_Observable_Base & old) :
-  m_name(old.m_name), m_listname(old.m_listname), p_sel(old.p_sel), m_copied(false)
+  m_pobtype(old.m_pobtype),
+  m_name(old.m_name), m_listname(old.m_listname), 
+  p_sel(old.p_sel), m_copied(false)
 { 
   msg.Out()<<"LEGACY WARNING:  "
 	   <<"copy constructor Primitive_Observable_Base::Primitive_Observable_Base called"<<std::endl
 	   <<"                 use Copy() method instead!"<<std::endl;
   if (old.p_histo) {
-    if (old.p_histo->Type()<100) p_histo = new Histogram(static_cast<Histogram*>(old.p_histo));
-    else {
+    if (m_pobtype==POBType::ASCII) {
+      p_histo = new Histogram(static_cast<Histogram*>(old.p_histo));
+      return;
+    }
+    else if (m_pobtype==POBType::ROOT) {
 #ifdef USING__ROOT
       p_histo = new Root_Histogram(static_cast<Root_Histogram*>(old.p_histo));
+      return;
 #else
       msg.Error()<<"ERROR in copy constructor of Primitive_Observable_Base:"<<std::endl
 		 <<"   Asked for root-histogram (type = "<<old.p_histo->Type()
@@ -152,6 +162,7 @@ void Primitive_Observable_Base::Evaluate(const Blob_List & blobs, double value, 
 
 
 void Primitive_Observable_Base::EndEvaluation(double scale) {
+  //std::cout<<METHOD<<" "<<m_name<<std::endl;
   if (p_histo) {
     p_histo->Finalize();
     if (scale!=1.) p_histo->Scale(scale);
@@ -166,9 +177,10 @@ void Primitive_Observable_Base::SetFlavInfo(int _nout,const Vec4D * _moms,const 
 */
 
 void Primitive_Observable_Base::Output(const std::string & pname) {
+  //std::cout<<METHOD<<":"<<pname<<" + "<<m_name<<std::endl;
   if (p_histo) {
     int  mode_dir = 448;
-    ATOOLS::MakeDir((pname).c_str(),mode_dir); 
+    ATOOLS::MakeDir((pname).c_str(),mode_dir);
     p_histo->Output((pname+std::string("/")+m_name).c_str());
   }
 }
@@ -186,8 +198,8 @@ void Primitive_Observable_Base::Reset()
 Primitive_Observable_Base & Primitive_Observable_Base::operator+=(const Primitive_Observable_Base & ob)
 {
   if (p_histo) {
-    if (ob.p_histo->Type()<100) (*p_histo)+=(*(static_cast<Histogram *>(ob.p_histo)));
-    else {
+    if (ob.m_pobtype==POBType::ASCII) (*p_histo)+=(*(static_cast<Histogram *>(ob.p_histo)));
+    else if (ob.m_pobtype==POBType::ROOT) {
 #ifdef USING__ROOT
       (*p_histo)+=(*(static_cast<Root_Histogram *>(ob.p_histo)));
 #else

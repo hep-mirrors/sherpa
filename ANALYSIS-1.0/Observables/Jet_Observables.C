@@ -97,7 +97,7 @@ using namespace ATOOLS;
 Jet_Observable_Base::Jet_Observable_Base(unsigned int type,double xmin,double xmax,int nbins,
 					 unsigned int mode,unsigned int minn,unsigned int maxn, 
 					 const std::string & listname) :
-  Primitive_Observable_Base(type,xmin,xmax,nbins,NULL), m_mode(mode), m_minn(minn), m_maxn(maxn)
+  Primitive_Observable_Base(type,xmin,xmax,nbins), m_mode(mode), m_minn(minn), m_maxn(maxn)
 {
   m_listname=listname;
   m_name  = std::string("jet_");
@@ -110,7 +110,7 @@ Jet_Observable_Base::Jet_Observable_Base(unsigned int type,double xmin,double xm
 
   p_histo =  0;
   for (unsigned int i=0;i<m_maxn+1;++i)
-    m_histos.push_back(new Histogram(type,m_xmin,m_xmax,m_nbins));
+    m_histos.push_back(new Histogram(type,m_xmin,m_xmax,Nbins()));
 }
 
 void Jet_Observable_Base::Evaluate(const Particle_List & pl,double weight, int ncount)
@@ -167,7 +167,7 @@ void Jet_Observable_Base::Output(const std::string & pname) {
 
 Primitive_Observable_Base & Jet_Observable_Base::operator+=(const Primitive_Observable_Base & ob)
 {
-  if (m_xmin!=ob.Xmin() || m_xmax!=ob.Xmax() || m_nbins!=ob.Nbins()) {
+  if (m_xmin!=ob.Xmin() || m_xmax!=ob.Xmax() || Nbins()!=ob.Nbins()) {
     msg.Error()<<"ERROR: in Jet_Observable_Base::operator+=  in"<<m_name<<std::endl
 	       <<"   Continue and hope for the best."<<std::endl;
     return *this;
@@ -195,7 +195,7 @@ void Jet_Observable_Base::Reset()
 Two_Jet_Observable_Base::Two_Jet_Observable_Base(unsigned int type,double xmin,double xmax,int nbins,
 						 unsigned int mode,unsigned int minn,unsigned int maxn, 
 						 const std::string & lname) :
-  Primitive_Observable_Base(type,xmin,xmax,nbins,NULL), m_mode(mode), m_minn(minn), m_maxn(maxn)
+  Primitive_Observable_Base(type,xmin,xmax,nbins), m_mode(mode), m_minn(minn), m_maxn(maxn)
 {
   m_listname = lname;
   m_name     = std::string("jet_");
@@ -209,7 +209,7 @@ Two_Jet_Observable_Base::Two_Jet_Observable_Base(unsigned int type,double xmin,d
   p_histo =  0;
   unsigned int num = (m_maxn*m_maxn-m_maxn)/2;
   for (unsigned int i=0;i<num+1;++i)
-    m_histos.push_back(new Histogram(type,m_xmin,m_xmax,m_nbins));
+    m_histos.push_back(new Histogram(type,m_xmin,m_xmax,Nbins()));
 
   p_minpts = new double[maxn]; p_maxpts = new double[maxn];
   for (unsigned int i=0;i<maxn;i++) { p_minpts[i]=0.; p_maxpts[i]=1.e12; }
@@ -274,7 +274,7 @@ void Two_Jet_Observable_Base::Output(const std::string & pname) {
 
 Primitive_Observable_Base & Two_Jet_Observable_Base::operator+=(const Primitive_Observable_Base & ob)
 {
-  if (m_xmin!=ob.Xmin() || m_xmax!=ob.Xmax() || m_nbins!=ob.Nbins()) {
+  if (m_xmin!=ob.Xmin() || m_xmax!=ob.Xmax() || Nbins()!=ob.Nbins()) {
     std::cout<<" ERROR: in Two_Jet_Observable_Base::operator+=  in"<<m_name<<std::endl;
     return *this;
   }
@@ -333,7 +333,7 @@ double Jet_Rapidity_Distribution::Calc(const Particle * p)
 
 Primitive_Observable_Base * Jet_Rapidity_Distribution::Copy() const 
 {
-  return new Jet_Rapidity_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+  return new Jet_Rapidity_Distribution(m_type,m_xmin,m_xmax,Nbins(),m_mode,m_minn,m_maxn,m_listname);
 }
 
 //########################################################################################
@@ -367,7 +367,7 @@ double Jet_Eta_Distribution::Calc(const Particle * p)
 
 Primitive_Observable_Base * Jet_Eta_Distribution::Copy() const 
 {
-  return new Jet_Eta_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+  return new Jet_Eta_Distribution(m_type,m_xmin,m_xmax,Nbins(),m_mode,m_minn,m_maxn,m_listname);
 }
 
 DEFINE_OBSERVABLE_GETTER(Jet_PT_Distribution,Jet_PT_Distribution_Getter,"JetPT")
@@ -389,7 +389,7 @@ double Jet_PT_Distribution::Calc(const Particle * p)
 
 Primitive_Observable_Base * Jet_PT_Distribution::Copy() const 
 {
-  return new Jet_PT_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+  return new Jet_PT_Distribution(m_type,m_xmin,m_xmax,Nbins(),m_mode,m_minn,m_maxn,m_listname);
 }
 
 DEFINE_OBSERVABLE_GETTER(Jet_IPT2_Distribution,Jet_IPT2_Distribution_Getter,"JetIPT2")
@@ -410,7 +410,7 @@ double Jet_IPT2_Distribution::Calc(const Particle * p)
 
 Primitive_Observable_Base * Jet_IPT2_Distribution::Copy() const 
 {
-  return new Jet_IPT2_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+  return new Jet_IPT2_Distribution(m_type,m_xmin,m_xmax,Nbins(),m_mode,m_minn,m_maxn,m_listname);
 }
 
 DEFINE_OBSERVABLE_GETTER(Jet_ET_Distribution,Jet_ET_Distribution_Getter,"JetET")
@@ -434,7 +434,7 @@ double Jet_ET_Distribution::Calc(const Particle * p)
 
 Primitive_Observable_Base * Jet_ET_Distribution::Copy() const 
 {
-  return new Jet_ET_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+  return new Jet_ET_Distribution(m_type,m_xmin,m_xmax,Nbins(),m_mode,m_minn,m_maxn,m_listname);
 }
 
 DEFINE_OBSERVABLE_GETTER(Jet_E_Distribution,Jet_E_Distribution_Getter,"JetE")
@@ -456,7 +456,7 @@ double Jet_E_Distribution::Calc(const Particle * p)
 
 Primitive_Observable_Base * Jet_E_Distribution::Copy() const 
 {
-  return new Jet_E_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+  return new Jet_E_Distribution(m_type,m_xmin,m_xmax,Nbins(),m_mode,m_minn,m_maxn,m_listname);
 }
 
 DECLARE_GETTER(Jet_Differential_Rates_Getter,"JetDRate",
@@ -546,10 +546,10 @@ double Jet_Differential_Rates::Calc(const Particle *)
 Primitive_Observable_Base * Jet_Differential_Rates::Copy() const 
 {
   if (m_listname==m_reflistname)
-    return new Jet_Differential_Rates(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,
+    return new Jet_Differential_Rates(m_type,m_xmin,m_xmax,Nbins(),m_mode,m_minn,m_maxn,
 				      m_listname);
   else
-    return new Jet_Differential_Rates(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,
+    return new Jet_Differential_Rates(m_type,m_xmin,m_xmax,Nbins(),m_mode,m_minn,m_maxn,
 				      m_listname,m_reflistname);
 }
 
@@ -577,7 +577,7 @@ Jet_DeltaR_Distribution::Jet_DeltaR_Distribution(unsigned int type,double xmin,d
 Primitive_Observable_Base * Jet_DeltaR_Distribution::Copy() const 
 {
   Jet_DeltaR_Distribution * jdr =
-    new Jet_DeltaR_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+    new Jet_DeltaR_Distribution(m_type,m_xmin,m_xmax,Nbins(),m_mode,m_minn,m_maxn,m_listname);
   for (unsigned int i=0;i<m_maxn;i++) jdr->SetPTRange(i+1,p_minpts[i],p_maxpts[i]);
   return jdr;
 }
@@ -613,7 +613,7 @@ Jet_DeltaEta_Distribution::Jet_DeltaEta_Distribution(unsigned int type,double xm
 Primitive_Observable_Base * Jet_DeltaEta_Distribution::Copy() const 
 {
   Jet_DeltaEta_Distribution * jde =
-    new Jet_DeltaEta_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+    new Jet_DeltaEta_Distribution(m_type,m_xmin,m_xmax,Nbins(),m_mode,m_minn,m_maxn,m_listname);
   for (unsigned int i=0;i<m_maxn;i++) jde->SetPTRange(i+1,p_minpts[i],p_maxpts[i]);
   return jde;
 }
@@ -645,7 +645,7 @@ Jet_DeltaY_Distribution::Jet_DeltaY_Distribution(unsigned int type,double xmin,d
 Primitive_Observable_Base * Jet_DeltaY_Distribution::Copy() const 
 {
   Jet_DeltaY_Distribution * jde =
-    new Jet_DeltaY_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+    new Jet_DeltaY_Distribution(m_type,m_xmin,m_xmax,Nbins(),m_mode,m_minn,m_maxn,m_listname);
   return jde;
 }
 
@@ -676,7 +676,7 @@ Jet_DeltaPhi_Distribution::Jet_DeltaPhi_Distribution(unsigned int type,double xm
 Primitive_Observable_Base * Jet_DeltaPhi_Distribution::Copy() const 
 {
   Jet_DeltaPhi_Distribution * jdp =
-    new Jet_DeltaPhi_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+    new Jet_DeltaPhi_Distribution(m_type,m_xmin,m_xmax,Nbins(),m_mode,m_minn,m_maxn,m_listname);
   for (unsigned int i=0;i<m_maxn;i++) jdp->SetPTRange(i+1,p_minpts[i],p_maxpts[i]);
   return jdp;
 }
@@ -708,7 +708,7 @@ Jet_DiMass_Distribution::Jet_DiMass_Distribution(unsigned int type,double xmin,d
 Primitive_Observable_Base * Jet_DiMass_Distribution::Copy() const 
 {
   Jet_DiMass_Distribution * jdp =
-    new Jet_DiMass_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+    new Jet_DiMass_Distribution(m_type,m_xmin,m_xmax,Nbins(),m_mode,m_minn,m_maxn,m_listname);
   for (unsigned int i=0;i<m_maxn;i++) jdp->SetPTRange(i+1,p_minpts[i],p_maxpts[i]);
   return jdp;
 }

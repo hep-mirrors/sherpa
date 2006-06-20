@@ -53,7 +53,7 @@ using namespace std;
 
 Event_Shapes_Observable_Base::Event_Shapes_Observable_Base(int _type,double _min,double _max,int _nbins,
 							   const string & _name) :
-  Primitive_Observable_Base(_type,_min,_max,_nbins,NULL),
+  Primitive_Observable_Base(_type,_min,_max,_nbins),
   m_key(std::string("EvtShapeData"))
 {
   m_name = _name+string(".dat");
@@ -83,7 +83,7 @@ void Thrust::Evaluate(const Blob_List &,double weight,int ncount)
 
 Primitive_Observable_Base * Thrust::Copy() const 
 {
-  return new Thrust(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Thrust(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 //================================================================================
@@ -109,7 +109,7 @@ void Major::Evaluate(const Blob_List &,double weight,int ncount)
 
 Primitive_Observable_Base * Major::Copy() const 
 {
-  return new Major(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Major(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 //================================================================================
@@ -135,7 +135,7 @@ void Minor::Evaluate(const Blob_List &,double weight,int ncount)
 
 Primitive_Observable_Base * Minor::Copy() const 
 {
-  return new Minor(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Minor(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 //================================================================================
@@ -161,7 +161,7 @@ void Oblateness::Evaluate(const Blob_List &,double weight,int ncount)
 
 Primitive_Observable_Base * Oblateness::Copy() const 
 {
-  return new Oblateness(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Oblateness(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 //================================================================================
@@ -191,7 +191,7 @@ void PT_In_Thrust::Evaluate(const Particle_List & pl,double weight,int ncount)
 
 Primitive_Observable_Base * PT_In_Thrust::Copy() const 
 {
-  return new PT_In_Thrust(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new PT_In_Thrust(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 //================================================================================
@@ -222,7 +222,7 @@ void PT_Out_Thrust::Evaluate(const Particle_List & pl,double weight,int ncount)
 
 Primitive_Observable_Base * PT_Out_Thrust::Copy() const 
 {
-  return new PT_Out_Thrust(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new PT_Out_Thrust(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 //================================================================================
@@ -252,6 +252,6 @@ void Eta_Thrust::Evaluate(const ATOOLS::Blob_List & ,double weight, int ncount)
 
 Primitive_Observable_Base * Eta_Thrust::Copy() const 
 {
-  return new Eta_Thrust(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Eta_Thrust(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 

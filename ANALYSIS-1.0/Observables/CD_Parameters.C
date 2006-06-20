@@ -113,7 +113,7 @@ DEFINE_OBSERVABLE_GETTER(C_Parameter,
 
 
 C_Parameter::C_Parameter(int type, double xmin, double xmax, int nbin, std::string listname)
-  : Primitive_Observable_Base(type,xmin,xmax,nbin,NULL), m_key(listname+"_CD_Parameters")
+  : Primitive_Observable_Base(type,xmin,xmax,nbin), m_key(listname+"_CD_Parameters")
 {
   m_listname = listname;
   m_name = std::string("C_Parameter.dat");
@@ -129,7 +129,7 @@ void C_Parameter::Evaluate(const ATOOLS::Blob_List & bl, double weight, int ncou
  
 Primitive_Observable_Base * C_Parameter::Copy() const
 {
-  return new C_Parameter(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new C_Parameter(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 
@@ -142,7 +142,7 @@ DEFINE_OBSERVABLE_GETTER(D_Parameter,
 
 
 D_Parameter::D_Parameter(int type, double xmin, double xmax, int nbin, std::string listname)
-  : Primitive_Observable_Base(type,xmin,xmax,nbin,NULL), m_key(listname+"_CD_Parameters")
+  : Primitive_Observable_Base(type,xmin,xmax,nbin), m_key(listname+"_CD_Parameters")
 {
   m_listname = listname;
   m_name = std::string("D_Parameter.dat");
@@ -158,7 +158,7 @@ void D_Parameter::Evaluate(const ATOOLS::Blob_List & bl, double weight, int ncou
  
 Primitive_Observable_Base * D_Parameter::Copy() const
 {
-  return new D_Parameter(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new D_Parameter(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 

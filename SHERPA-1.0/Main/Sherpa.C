@@ -146,7 +146,6 @@ bool Sherpa::GenerateOneEvent()
 
 bool Sherpa::SummarizeRun() 
 { 
-  std::cout<<METHOD<<std::endl;
   p_eventhandler->Finish(); 
   return true; 
 }

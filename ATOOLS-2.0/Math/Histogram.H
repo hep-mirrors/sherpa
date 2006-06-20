@@ -53,6 +53,10 @@ namespace ATOOLS {
     double Ymin() const;
     double LogCoeff() const;
 
+    inline void   SetTitle(const std::string) {}
+    inline void   SetLegend(const std::string,
+			    const double,const double,
+			    const double,const double) {}
 
     Histogram & operator+=(const Histogram & histo);
     Histogram & operator+=(const Root_Histogram & histo);

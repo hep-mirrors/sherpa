@@ -55,7 +55,7 @@ using namespace std;
 Scaled_Observable_Base::Scaled_Observable_Base(int type,double xmin,double xmax,int nbins,
 					       const std::string & listname, const std::string & name,
 					       double ecms) :
-  Primitive_Observable_Base(type,xmin,xmax,nbins,NULL), m_ecms(ecms)
+  Primitive_Observable_Base(type,xmin,xmax,nbins), m_ecms(ecms)
 {
   m_name=listname+"_"+name+".dat";
 
@@ -104,7 +104,7 @@ void Scaled_Momentum::Evaluate(const Vec4D & mom,double weight,int ncount)
 
 Primitive_Observable_Base * Scaled_Momentum::Copy() const
 {
-  return new Scaled_Momentum(m_type,m_xmin,m_xmax,m_nbins,m_listname,m_ecms);
+  return new Scaled_Momentum(m_type,m_xmin,m_xmax,Nbins(),m_listname,m_ecms);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -126,7 +126,7 @@ void Log_Scaled_Momentum::Evaluate(const Vec4D & mom,double weight,int ncount)
 
 Primitive_Observable_Base * Log_Scaled_Momentum::Copy() const
 {
-  return new Log_Scaled_Momentum(m_type,m_xmin,m_xmax,m_nbins,m_listname,m_ecms);
+  return new Log_Scaled_Momentum(m_type,m_xmin,m_xmax,Nbins(),m_listname,m_ecms);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -146,6 +146,6 @@ void Scaled_Energy::Evaluate(const Vec4D & mom,double weight, int ncount)
 
 Primitive_Observable_Base * Scaled_Energy::Copy() const
 {
-  return new Scaled_Energy(m_type,m_xmin,m_xmax,m_nbins,m_listname,m_ecms);
+  return new Scaled_Energy(m_type,m_xmin,m_xmax,Nbins(),m_listname,m_ecms);
 }
 

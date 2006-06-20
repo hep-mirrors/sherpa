@@ -2,6 +2,7 @@
 #define Jet_Observables_H
 
 #include "Primitive_Observable_Base.H"
+#include "Histogram.H"
 
 namespace ANALYSIS {
 

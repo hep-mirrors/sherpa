@@ -109,6 +109,7 @@ void Analysis_Handler::ShowSyntax(const size_t i)
 
 bool Analysis_Handler::ReadIn()
 {
+  //std::cout<<METHOD<<std::endl;
   msg_Info()<<"Analysis_Handler::ReadIn(): {\n";
   bool success=false;
   std::vector<std::string> helpsv;
@@ -127,7 +128,7 @@ bool Analysis_Handler::ReadIn()
     reader.RereadInFile();
     if (!reader.VectorFromFile(helpsv,"LEVEL")) break;
     bool split=false, trigger=false;
-    int mode=ANALYSIS::fill_all|ANALYSIS::splitt_jetseeds;
+    int mode=ANALYSIS::fill_all; //|ANALYSIS::splitt_jetseeds;
     for (size_t j=0;j<helpsv.size();++j) {
       if (split) mode=mode|ANALYSIS::splitt_phase;
       else split=true;
@@ -149,6 +150,9 @@ bool Analysis_Handler::ReadIn()
     msg_Info()<<"   new Primitive_Analysis(\""<<helpsv[0];
     for (size_t j=1;j<helpsv.size();++j) msg_Info()<<","<<helpsv[j];
     msg_Info()<<"\")\n";
+    //std::cout<<"   new Primitive_Analysis(\""<<helpsv[0];
+    //for (size_t j=1;j<helpsv.size();++j) std::cout<<","<<helpsv[j];
+    //std::cout<<"\")\n";
     msg_Tracking()<<"   new Primitive_Analysis(..) {\n";
     mode=mode|m_weighted;
     if(m_weighted==ANALYSIS::weighted_ns) 
@@ -165,10 +169,11 @@ bool Analysis_Handler::ReadIn()
       }
       size_t col=1;
       String_Matrix mat=FindArguments(arguments,k,col);
-      // std::cout<<"In "<<METHOD<<":"<<k<<" 1 "<<arguments[k][0]<<std::endl;
+      //std::cout<<"In "<<METHOD<<":"<<k<<" 1 "<<arguments[k][0]<<" "
+      //	       <<arguments[k].size()<<std::endl;
       ANALYSIS::Primitive_Observable_Base *observable = 
 	Getter_Function::GetObject(arguments[k][0],mat(m_analyses.back()));
-      // std::cout<<"Out "<<METHOD<<":"<<k<<" 1 "<<arguments[k][0]<<std::endl;
+      //std::cout<<"Out "<<METHOD<<":"<<k<<" 1 "<<arguments[k][0]<<std::endl;
       if (observable!=NULL) {
 	m_analyses.back()->AddObservable(observable);
 	if (arguments[k][0]=="Trigger") trigger=true;
@@ -239,7 +244,7 @@ void Analysis_Handler::PrepareTerminate()
 
 void Analysis_Handler::Finish(const std::string &path)
 {
-  // std::cout<<METHOD<<": "<<path<<std::endl;
+  //std::cout<<METHOD<<": "<<path<<"|"<<OutputPath()<<std::endl;
   if (OutputPath()[OutputPath().length()-1]=='/') {
     if (!MakeDir(OutputPath(),448)) {
       msg.Error()<<"Analysis_Handler::Finish(..): "
@@ -255,11 +260,14 @@ void Analysis_Handler::Finish(const std::string &path)
     }
   }
   msg_Info()<<"Analysis_Handler::Finish(..): {\n";
+  //std::cout<<METHOD<<" Analysis_Handler::Finish(..): {\n";
   double ws=rpa.gen.WAnaScale();
   for (Analyses_Vector::const_iterator ait=m_analyses.begin();
        ait!=m_analyses.end();++ait) {
     msg_Info()<<"   Writing to '"<<OutputPath()<<(*ait)->OutputPath()
 	      <<"'."<<std::endl; 
+    //std::cout<<METHOD<<"   Writing to '"<<OutputPath()<<(*ait)->OutputPath()
+    //	     <<"'."<<std::endl; 
     (*ait)->FinishAnalysis(OutputPath(),(long int)m_scalefactor,ws); 
   }
   msg_Info()<<"}"<<std::endl;

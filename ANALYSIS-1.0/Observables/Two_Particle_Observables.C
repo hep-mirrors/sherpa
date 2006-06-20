@@ -72,7 +72,7 @@ using namespace std;
 Two_Particle_Observable_Base::Two_Particle_Observable_Base(const Flavour & flav1,const Flavour & flav2,
 							   int type,double xmin,double xmax,int nbins,
 							   const std::string & listname,const std::string & name) :
-  Primitive_Observable_Base(type,xmin,xmax,nbins,NULL), 
+  Primitive_Observable_Base(type,xmin,xmax,nbins), 
   m_flav1(flav1), m_flav2(flav2)
 {
   m_listname=listname;
@@ -130,7 +130,7 @@ void Two_Particle_Mass::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double we
 
 Primitive_Observable_Base * Two_Particle_Mass::Copy() const
 {
-  return new Two_Particle_Mass(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Two_Particle_Mass(m_flav1,m_flav2,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -151,7 +151,7 @@ void Two_Particle_PT::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weig
 
 Primitive_Observable_Base * Two_Particle_PT::Copy() const 
 {
-  return new Two_Particle_PT(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Two_Particle_PT(m_flav1,m_flav2,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 DEFINE_OBSERVABLE_GETTER(Two_Particle_Scalar_PT,
@@ -169,7 +169,7 @@ void Two_Particle_Scalar_PT::Evaluate(const Vec4D & mom1,const Vec4D & mom2,doub
 
 Primitive_Observable_Base * Two_Particle_Scalar_PT::Copy() const 
 {
-  return new Two_Particle_Scalar_PT(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Two_Particle_Scalar_PT(m_flav1,m_flav2,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 #ifdef USING__ROOT
@@ -197,7 +197,7 @@ void Two_Particle_Angles::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double 
 
 Primitive_Observable_Base * Two_Particle_Angles::Copy() const 
 {
-  return new Two_Particle_Angles(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_name,m_listname);
+  return new Two_Particle_Angles(m_flav1,m_flav2,m_type,m_xmin,m_xmax,Nbins(),m_name,m_listname);
 }
 #endif
 
@@ -221,7 +221,7 @@ void Two_Particle_Eta::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double wei
 
 Primitive_Observable_Base * Two_Particle_Eta::Copy() const 
 {
-  return new Two_Particle_Eta(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Two_Particle_Eta(m_flav1,m_flav2,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -245,7 +245,7 @@ void Two_Particle_DEta::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double we
 
 Primitive_Observable_Base * Two_Particle_DEta::Copy() const 
 {
-    return new Two_Particle_DEta(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+    return new Two_Particle_DEta(m_flav1,m_flav2,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
     
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -267,7 +267,7 @@ void Two_Particle_Y::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weigh
 
 Primitive_Observable_Base * Two_Particle_Y::Copy() const 
 {
-  return new Two_Particle_Y(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Two_Particle_Y(m_flav1,m_flav2,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -291,7 +291,7 @@ void Two_Particle_DY::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weig
 
 Primitive_Observable_Base * Two_Particle_DY::Copy() const 
 {
-    return new Two_Particle_DY(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+    return new Two_Particle_DY(m_flav1,m_flav2,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
     
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -316,7 +316,7 @@ void Two_Particle_Angle::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double w
 
 Primitive_Observable_Base * Two_Particle_Angle::Copy() const 
 {
-    return new Two_Particle_Angle(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+    return new Two_Particle_Angle(m_flav1,m_flav2,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -341,7 +341,7 @@ void Two_Particle_DPhi::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double we
 
 Primitive_Observable_Base * Two_Particle_DPhi::Copy() const 
 {
-    return new Two_Particle_DPhi(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+    return new Two_Particle_DPhi(m_flav1,m_flav2,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -376,7 +376,7 @@ void Two_Particle_DR::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weig
 
 Primitive_Observable_Base * Two_Particle_DR::Copy() const 
 {
-    return new Two_Particle_DR(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+    return new Two_Particle_DR(m_flav1,m_flav2,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
 
@@ -408,7 +408,7 @@ void Two_Particle_CMS_Angle::Evaluate(const Vec4D & mom1,const Vec4D & mom2,doub
 
 Primitive_Observable_Base * Two_Particle_CMS_Angle::Copy() const
 {
-  return new Two_Particle_CMS_Angle(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Two_Particle_CMS_Angle(m_flav1,m_flav2,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
  
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -432,6 +432,6 @@ void Two_Particle_Mass2::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double w
 
 Primitive_Observable_Base * Two_Particle_Mass2::Copy() const
 {
-  return new Two_Particle_Mass2(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Two_Particle_Mass2(m_flav1,m_flav2,m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 

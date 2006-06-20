@@ -3,13 +3,14 @@
 
 #include "Primitive_Observable_Base.H"
 #include <iostream>
+#include "Histogram.H"
 
 namespace ANALYSIS {
 
   class Shower_Statistics : public Primitive_Observable_Base {  
   protected:
 
-    std::vector<ATOOLS::Histogram*> m_observables;
+    std::vector<ATOOLS::Histogram *> m_observables;
 
   public:
 
