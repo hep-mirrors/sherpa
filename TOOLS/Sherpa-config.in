@@ -1,6 +1,8 @@
 #!/bin/sh
 
 case $1 in
+  --version)
+    echo @PACKAGE_VERSION@;;
   --prefix)
     echo @prefix@;;
   --libs)
@@ -13,6 +15,7 @@ case $1 in
     echo "Sherpa-config: configuration tool for the Monte Carlo";
     echo "               event generator Sherpa: http://sherpa-mc.de";
     echo "Options:";
+    echo "  Sherpa-config --version : returns Sherpa version";
     echo "  Sherpa-config --prefix  : returns the installation path";
     echo "  Sherpa-config --incdir  : returns the path of Sherpa headers";
     echo "  Sherpa-config --libs    : returns the linker line to link with Sherpa";

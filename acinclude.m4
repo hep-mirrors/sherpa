@@ -284,10 +284,10 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
       case "${enableval}" in
         no)  AC_MSG_RESULT(LHAPDF not enabled); lhapdf=false ;;
         yes) if test -d "$LHAPDFDIR"; then
-              CONDITIONAL_LHAPDFDIR==$LHAPDFDIR;
+              CONDITIONAL_LHAPDFDIR=$LHAPDFDIR;
               CONDITIONAL_LHAPDFLIBS="-lLHAPDF \${LHAPDFDIR}/lib/libLHAPDF.a"
             elif test -x "`which lhapdf-config`"; then
-              CONDITIONAL_LHAPDFDIR==`lhapdf-config --prefix`;
+              CONDITIONAL_LHAPDFDIR=`lhapdf-config --prefix`;
               CONDITIONAL_LHAPDFLIBS="-lLHAPDF `lhapdf-config --prefix`/lib/libLHAPDF.a"
   else
               AC_MSG_ERROR(\$LHAPDFDIR is not a valid path and lhapdf-config was not found.);
