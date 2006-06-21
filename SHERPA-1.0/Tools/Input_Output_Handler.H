@@ -3,6 +3,10 @@
 
 #include "CXXFLAGS.H"
 
+#ifdef USING__GZIP
+#include "Gzip_Stream.H"
+#endif
+
 #ifdef USING__CLHEP
 #include "HepMC_Interface.H"
 #endif
@@ -40,7 +44,11 @@ namespace SHERPA {
 #endif
     ATOOLS::HepEvt_Interface * p_hepevt;
     ATOOLS::HepEvt_Interface * p_D0_hepevt;
+#ifdef USING__GZIP
+    ATOOLS::ogzstream          m_outstream;
+#else
     std::ofstream              m_outstream;
+#endif
     std::ifstream            * p_instream;
     std::string                m_path, m_filename, m_file;
     long int                   m_filesize, m_evtnumber, m_evtcount;

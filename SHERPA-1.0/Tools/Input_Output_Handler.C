@@ -84,7 +84,11 @@ Input_Output_Handler::Input_Output_Handler(const std::vector<std::string> & outf
   switch (m_outtype) {
   case iotype::Sherpa:
     m_file     = outfiles[0];
+#ifdef USING__GZIP
+    m_filename = m_path+std::string("/")+m_file+std::string(".evts.gz");
+#else
     m_filename = m_path+std::string("/")+m_file+std::string(".evts");
+#endif
     m_outstream.open(m_filename.c_str());
     if (!m_outstream.good()) { 
       msg.Error()<<"ERROR in Input_Output_Handler."<<std::endl
@@ -350,7 +354,11 @@ void Input_Output_Handler::SherpaOutput(ATOOLS::Blob_List *const blobs,const dou
     m_filename = m_file+ToString(int(m_evtnumber/m_filesize));
     m_outstream<<m_filename<<" \n";
     m_outstream.close();
+#ifdef USING__GZIP
+    m_filename = m_path+std::string("/")+m_filename+std::string(".evts.gz");
+#else
     m_filename = m_path+std::string("/")+m_filename+std::string(".evts");
+#endif
     m_outstream.open(m_filename.c_str());
     if (!m_outstream.good()) { 
       msg.Error()<<"ERROR in Input_Output_Handler."<<std::endl

@@ -312,10 +312,10 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
       case "${enableval}" in
         no)  AC_MSG_RESULT(LHAPDF not enabled); lhapdf=false ;;
         yes) if test -d "$LHAPDFDIR"; then
-              CONDITIONAL_LHAPDFDIR==$LHAPDFDIR;
+              CONDITIONAL_LHAPDFDIR=$LHAPDFDIR;
               CONDITIONAL_LHAPDFLIBS="-lLHAPDF \${LHAPDFDIR}/lib/libLHAPDF.a"
             elif test -x "`which lhapdf-config`"; then
-              CONDITIONAL_LHAPDFDIR==`lhapdf-config --prefix`;
+              CONDITIONAL_LHAPDFDIR=`lhapdf-config --prefix`;
               CONDITIONAL_LHAPDFLIBS="-lLHAPDF `lhapdf-config --prefix`/lib/libLHAPDF.a"
   else
               AC_MSG_ERROR(\$LHAPDFDIR is not a valid path and lhapdf-config was not found.);
@@ -330,6 +330,28 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(CONDITIONAL_LHAPDFDIR)
   AC_SUBST(CONDITIONAL_LHAPDFLIBS)
   AM_CONDITIONAL(LHAPDF_SUPPORT, test "$lhapdf" = "true")
+
+  AC_ARG_ENABLE(
+    gzip,
+    AC_HELP_STRING([--enable-gzip], [Enable gzip support (for compressed event output)]),
+    [ case "${enableval}" in
+        no)   AC_MSG_RESULT(gzip not enabled); zlib=false ;;
+        yes)  AC_CHECK_LIB(z, inflateEnd, [libz_found=yes], [libz_found=no])
+              AC_CHECK_HEADER(zlib.h, [zlibh_found=yes], [zlibh_found=no])
+              if test "$libz_found" = "yes" -a "$zlibh_found" = "yes"; then
+                zlib=true;
+                CONDITIONAL_GZIPLIBS="-lz";
+              else
+                AC_MSG_ERROR(Header zlib.h and/or library libz not found. Configure without --disable-gzip or install zlib if you want compressed output.);
+              fi;;
+      esac ],
+    [ zlib=false ]
+  )
+  if test "$zlib" = "true" ; then
+    AC_DEFINE([USING__GZIP], "1", [using gzip])
+  fi
+  AM_CONDITIONAL(GZIP_SUPPORT, test "$zlib" = "true")
+  AC_SUBST(CONDITIONAL_GZIPLIBS)
 
   AC_ARG_ENABLE(modelinclude,
     AC_HELP_STRING([--disable-modelinclude], [Disable inclusion of MODEL headers]),
