@@ -13,53 +13,78 @@
 
 #include "HepEvt_Interface.H"
 #include "Blob_List.H"
+#include "Message.H"
 
 namespace SHERPA {
 
-    struct iotype {
+  struct iotype {
+    enum code {
+      Unknown  = 0,
+      Sherpa   = 1,
+      HepMC    = 2,
+      OldHepMC = 4,
+      HepEvt   = 8,
+      D0HepEvt = 16,
+      size     = 32
+    };
+  };// end of struct iotype
+  
+  const iotype::code operator|(const iotype::code code1,const iotype::code code2);  
+  const iotype::code operator&(const iotype::code code1,const iotype::code code2);  
 
-      enum code {
-	Unknown = 0,
-	Sherpa  = 1,
-	HepMC   = 2,
-	HepEvt  = 4,
-        D0HepEvt  = 8,
-	size    = 16
-      };
-
-    };// end of struct iotype
-
-    const iotype::code operator|(const iotype::code code1,const iotype::code code2);  
-    const iotype::code operator&(const iotype::code code1,const iotype::code code2);  
+  class NameStream {
+  public:
+    std::string basicfilename, fileextension;
+#ifdef USING__GZIP
+    ATOOLS::ogzstream outstream;
+#else
+    std::ofstream     outstream;
+#endif
+    NameStream(std::string bfname,std::string fext) :
+      basicfilename(bfname), fileextension(fext)
+    {
+#ifdef USING__GZIP
+      fileextension += ".gz";
+#endif
+      outstream.open((basicfilename+fileextension).c_str());
+      outstream.precision(10);
+      if (!outstream.good()) { 
+	ATOOLS::msg.Error()<<"ERROR in Input_Output_Handler."<<std::endl
+		   <<"   Could not open event file "<<(basicfilename+fileextension)<<"."<<std::endl
+		   <<"   Will abort the run."<<std::endl;
+	abort();
+      }
+    }
+  };
 
   class Input_Output_Handler {
   private :
     bool            m_on;
     int             m_io;
-    iotype::code    m_outtype, m_intype;
+    iotype::code    m_outtype, m_screenout, m_intype;
 
     ATOOLS::Blob_List        * p_blobs;        
 #ifdef USING__CLHEP
     HepMC_Interface          * p_hepmc;
 #endif
     ATOOLS::HepEvt_Interface * p_hepevt;
-    ATOOLS::HepEvt_Interface * p_D0_hepevt;
-#ifdef USING__GZIP
-    ATOOLS::ogzstream          m_outstream;
-#else
-    std::ofstream              m_outstream;
-#endif
     std::ifstream            * p_instream;
     std::string                m_path, m_filename, m_file;
     long int                   m_filesize, m_evtnumber, m_evtcount;
 
-    void SherpaOutput(ATOOLS::Blob_List *const blobs,const double=1.);
+    std::map<iotype::code,NameStream *> m_outmap;
+
+    bool InitialiseInput(const std::vector<std::string> &);
+    bool InitialiseOutput(const std::string, const std::vector<std::string> &);
+
+    void ResetInterfaces();
+    void SherpaOutput(std::ostream & outstream,ATOOLS::Blob_List *const blobs,const double=1.);
     bool SherpaInput(ATOOLS::Blob_List *const blobs);
   public :
 
     // constructors
-    Input_Output_Handler(const std::string=std::string("Sherpa"));
-    Input_Output_Handler(const std::vector<std::string> &outfiles,
+    Input_Output_Handler(const std::string,
+			 const std::vector<std::string> &outfiles,
 			 const std::vector<std::string> &infiles,
 			 const std::string _path=std::string("./"), 
 			 const int _filesize=1000);
@@ -74,15 +99,13 @@ namespace SHERPA {
     bool OutputToFormat(ATOOLS::Blob_List * const,const double=1.);
     bool InputFromFormat(ATOOLS::Blob_List * const);
 
-    void PrintEvent();
+    void PrintEvent(ATOOLS::Blob_List *const);
     // inline functions
     inline bool OutputOn() const { return (m_io&1 || m_io&2); }
 
 #ifdef USING__CLHEP
-    inline HepMC_Interface *const GetHepMCInterface() const 
-    { return p_hepmc; }
+    inline HepMC_Interface *const GetHepMCInterface() const { return p_hepmc; }
 #endif
-
   };
 
   /*!

@@ -1,13 +1,11 @@
 #include "HepMC_Interface.H"
 #include "Vector.H"
-#include "Message.H"
 #include "Run_Parameter.H"
 
-#ifdef USING__CLHEP
 #include "CLHEP/Vector/LorentzVector.h"
-#endif
+#include "CLHEP/HepMC/WriteHepMC.h"
 
-namespace CLHEP { class Dummy {}; }
+// namespace CLHEP { class Dummy {}; }
 
 using namespace CLHEP;
 
@@ -16,26 +14,34 @@ using namespace HepMC;
 using namespace HepPDT;
 
 HepMC_Interface::HepMC_Interface():
-#ifdef USING__CLHEP
-  p_event(new HepMC::GenEvent())
-#else
-  p_event(NULL)
-#endif
+  p_event(new HepMC::GenEvent()), m_converted(false)
 {
   InitTheMap();
 }
 
 HepMC_Interface::~HepMC_Interface()
 {
-#ifdef USING__CLHEP
   delete p_event;
   delete p_particledatatable;
-#endif
 }
 
-void HepMC_Interface::InitTheMap() 
+void HepMC_Interface::PrintEvent(int mode, std::ostream& ostr)
 {
-#ifdef USING__CLHEP
+  switch(mode) {
+  case 1:
+    HepMC::writeGenEvent(ostr, p_event);
+    break;
+  case 2:
+    p_event->print(ostr);
+    break;
+  default:
+    ATOOLS::msg.Error()<<"Error in "<<METHOD<<": Don't know mode "<<mode<<std::endl;
+    abort();
+  }
+}
+
+void HepMC_Interface::InitTheMap()
+{
   p_particledatatable = new DefaultConfig::ParticleDataTable();
   ATOOLS::Fl_Iter fli;
   HepPDT::TableBuilder *build = new HepPDT::TableBuilder(*p_particledatatable);
@@ -61,12 +67,11 @@ void HepMC_Interface::InitTheMap()
   delete build;
   p_particledatatable->writeParticleData(ATOOLS::msg.Debugging());
   ATOOLS::msg.Debugging()<<std::endl;
-#endif
 }
 
 bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs)
 {
-#ifdef USING__CLHEP
+  if(m_converted) return true;
   if (blobs->empty()) {
     ATOOLS::msg.Error()<<"Error in HepMC_Interface::Sherpa2HepMC(Blob_List)."<<std::endl
 		       <<"   Empty list - nothing to translate into HepMC standard."<<std::endl
@@ -98,13 +103,12 @@ bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs)
 			 <<"   Charge not conserved. Continue."<<std::endl;
     }
   }
-#endif
+  m_converted=true;
   return true;
 }
 
 bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob * blob,HepMC::GenVertex *& vertex) 
 {
-#ifdef USING__CLHEP
   if (blob->Type()==ATOOLS::btp::Bunch) return false;
   int count = m_blob2vertex.count(blob->Id());
   if (count>0) {
@@ -152,13 +156,10 @@ bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob * blob,HepMC::GenVertex *& verte
       }
   }
   return okay;
-#endif
-  return true;
 }
 
 bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,HepMC::GenParticle *& particle) 
 {
-#ifdef USING__CLHEP
   long int number = (long int)(parton), count = m_parton2particle.count(number);
   if (count>0) {
     particle = m_parton2particle[number];
@@ -179,7 +180,6 @@ bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,HepMC::GenParticle 
     if (parton->GetFlow(i)>0) particle->set_flow(i,parton->GetFlow(i));
   }
   m_parton2particle.insert(std::make_pair(number,particle));
-#endif
   return true;
 }
 

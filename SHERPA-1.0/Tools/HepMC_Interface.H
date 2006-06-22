@@ -1,11 +1,11 @@
 #ifndef HepMC_Interface_H
 #define HepMC_Interface_H
 
+#include "CXXFLAGS.H"
 #include "Blob_List.H"
 #include "Particle.H"
-#include "CXXFLAGS.H"
+#include "Message.H"
 
-#ifdef USING__CLHEP
 #include "CLHEP/HepMC/GenEvent.h"
 #include "CLHEP/HepPDT/ParticleDataTable.hh"
 #include "CLHEP/HepPDT/ParticleData.hh"
@@ -13,15 +13,15 @@
 #include "CLHEP/HepPDT/TableBuilder.hh"
 #include "CLHEP/HepPDT/ParticleDataTableT.hh"
 #include "CLHEP/HepPDT/TempParticleData.hh"
-#else
-namespace HepMC {
-  class GenEvent;
-  class GenVertex;
-  class GenParticle;
-}
-namespace DefaultConfig { class ParticleDataTable; }
-namespace HepPDT        { class ParticleData;      }
-#endif
+
+// namespace HepMC {
+//   class GenEvent;
+//   class GenVertex;
+//   class GenParticle;
+// }
+// namespace DefaultConfig { class ParticleDataTable; }
+// namespace HepPDT        { class ParticleData;      }
+
 
 #include <map>
 #include <set>
@@ -40,6 +40,7 @@ namespace SHERPA {
     Parton2Particle  m_parton2particle;
 
     HepMC::GenEvent *p_event;
+    bool             m_converted;
 
     void InitTheMap();
     bool Sherpa2HepMC(ATOOLS::Blob *,HepMC::GenVertex *&);
@@ -54,13 +55,12 @@ namespace SHERPA {
     ~HepMC_Interface();
 
     // member functions
-    bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs); 
+    void PrintEvent(int mode=1, std::ostream& ostr=ATOOLS::msg.Out());
+    bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs);
+    inline void Reset() { m_converted = false; }
 
-    // inline functions 
-#ifdef USING__CLHEP
+    // inline functions
     inline HepMC::GenEvent *const GenEvent() { return p_event; }
-    inline void PrintHepMCEvent() { p_event->print(); }
-#endif
 
   };// end of class HepMC_Interface
 

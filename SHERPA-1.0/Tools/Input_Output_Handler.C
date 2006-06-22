@@ -23,270 +23,284 @@ const iotype::code SHERPA::operator&(const iotype::code code1,const iotype::code
   return (iotype::code)((int)code1&(int)code2);
 }  
 
-Input_Output_Handler::Input_Output_Handler(const std::string _mode):
-  m_on(true), m_io(1), m_outtype(iotype::Unknown), m_intype(iotype::Unknown), 
-#ifdef USING__CLHEP
-  p_hepmc(NULL), 
-#endif
-  p_hepevt(NULL), 
-  p_instream(NULL) 
-{
-  if (_mode==std::string("Sherpa")) {
-    m_outtype = iotype::Sherpa;
-  }
-  else if (_mode==std::string("HepEvt")) {
-    m_outtype = iotype::HepEvt;
-    p_hepevt  = new HepEvt_Interface(true,10);
-  }    
-#ifdef USING__CLHEP
-  else if (_mode==std::string("HepMC")) {
-    m_outtype = iotype::HepMC; 
-    p_hepmc   = new HepMC_Interface();
-  }
-#endif
-  else {
-    msg.Events()<<"Potential Error in Input_Output_Handler::Input_Output_Handler("<<m_outtype<<")"<<std::endl
-		<<"   No output format specified. Continue run."<<std::endl;
-    msg.LogFile()<<"Potential Error in Input_Output_Handler::Input_Output_Handler("<<m_outtype<<")"<<std::endl
-		 <<"   No output format specified. Continue run."<<std::endl;
-    m_on = false;
-    m_io = 0;
-  }
-}
 
-Input_Output_Handler::Input_Output_Handler(const std::vector<std::string> & outfiles,
-		       const std::vector<std::string> & infiles,
-		       const std::string _path, const int _filesize):
-  m_on(true), m_outtype(iotype::Unknown), m_intype(iotype::Unknown), 
+Input_Output_Handler::Input_Output_Handler(const std::string mode,
+                                           const std::vector<std::string> & outfiles,
+                                           const std::vector<std::string> & infiles,
+                                           const std::string _path, const int _filesize):
+  m_on(true), m_io(1), 
+  m_outtype(iotype::Unknown), m_screenout(iotype::Unknown), m_intype(iotype::Unknown), 
 #ifdef USING__CLHEP
   p_hepmc(NULL), 
 #endif
-  p_hepevt(NULL), 
+  p_hepevt(NULL),
   p_instream(NULL),
   m_path(_path), 
   m_filesize(_filesize), 
   m_evtnumber(0), 
   m_evtcount(0)
 {
-  for (size_t i=0;i<infiles.size();++i) {
-    m_intype=m_intype|(iotype::code)(pow(2.,int(i))*(infiles[i]!=std::string("")));
-  }
-  for (size_t i=0;i<outfiles.size();++i) {
-    m_outtype=m_outtype|(iotype::code)(pow(2.,int(i))*(outfiles[i]!=std::string("")));
-  }
-
-  if (m_outtype!=iotype::Unknown && m_intype!=iotype::Unknown) {
-    m_on=false;
-    return; 
-  }
-
-  m_io=2*(m_outtype>0)+4*(m_intype>0);
-  switch (m_outtype) {
-  case iotype::Sherpa:
-    m_file     = outfiles[0];
-#ifdef USING__GZIP
-    m_filename = m_path+std::string("/")+m_file+std::string(".evts.gz");
-#else
-    m_filename = m_path+std::string("/")+m_file+std::string(".evts");
-#endif
-    m_outstream.open(m_filename.c_str());
-    if (!m_outstream.good()) { 
-      msg.Error()<<"ERROR in Input_Output_Handler."<<std::endl
-		 <<"   Could not open event file "<<m_filename<<"."<<std::endl
-		 <<"   Will abort the run."<<std::endl;
-      abort();
-    }
-    break;
-#ifdef USING__CLHEP
-  case iotype::HepMC: 
-    p_hepmc = new HepMC_Interface();
-    break;
-#endif
-  case iotype::HepEvt:
-    p_hepevt = new HepEvt_Interface(true,1,m_path,outfiles[2],m_filesize);
-    break;
-  case iotype::D0HepEvt:
-    p_D0_hepevt = new HepEvt_Interface(true,4,m_path,outfiles[3],m_filesize);
-    break;
-  default :
-    msg.LogFile()<<"Potential Error in Input_Output_Handler::Input_Output_Handler("<<m_outtype<<")"<<std::endl
-		 <<"   No output format specified. Continue run."<<std::endl;
-    break;
-  }
-
-  std::string gentype;
-  switch (m_intype) {
-  case iotype::Sherpa:
-    m_filename = m_path+std::string("/")+infiles[0]+std::string(".evts"); 
-    p_instream = new std::ifstream(m_filename.c_str()); 
-    if (!p_instream->good()) {
-      msg.Error()<<"ERROR in Input_Output_Handler."<<std::endl
-		 <<"   Event file "<<m_filename<<" not found."<<std::endl
-		 <<"   Will abort the run."<<std::endl;
-      abort();
-    }
-    (*p_instream)>>gentype>>m_filesize;
-    if (gentype!=std::string("Sherpa")) {
-      msg.Error()<<"ERROR in HepEvt_Interface."<<std::endl
-		 <<"   Generator type:"<<gentype<<" not SHERPA."<<std::endl
-		 <<"   Cannot guarantee i/o operations. Will abort the run."<<std::endl;
-      abort();
-    }
-    break;
-#ifdef USING__CLHEP
-  case iotype::HepMC: 
-    if (p_hepmc==NULL) p_hepmc  = new HepMC_Interface();
-    break;
-#endif
-  case iotype::HepEvt:
-    // Obacht !!!!!
-    if (p_hepevt==NULL) p_hepevt = new HepEvt_Interface(false,1,m_path,infiles[2]);
-    else abort();  // Schlamassel !!!!
-    break;
-  case iotype::D0HepEvt:
-    msg.Error()<<"D0_HEPEVT_INPUT not implemented yet. Aborting."<<std::endl;
-    abort();
-    break;
-  default :
-    break;
-  }
+  if (InitialiseOutput(mode,outfiles)) m_io += 2;
+  if (InitialiseInput(infiles))   m_io += 4;
 }
 
 Input_Output_Handler::~Input_Output_Handler() 
 {
 #ifdef USING__CLHEP
-  if (p_hepmc)  { delete p_hepmc;  p_hepmc  = NULL; }
+  if (p_hepmc)        { delete p_hepmc;  p_hepmc  = NULL; }
 #endif
   if (p_hepevt!=NULL) { delete p_hepevt; p_hepevt=NULL; }
+  if (!m_outmap.empty()) {
+    for (std::map<iotype::code,NameStream *>::iterator oit=m_outmap.begin();
+         oit!=m_outmap.end();oit++) {
+      if (oit->second!=NULL) { 
+        if (oit->second->outstream.good()) oit->second->outstream.close();
+        delete oit->second;
+        oit->second=NULL;
+      }
+    }
+    m_outmap.clear();
+  }
   if (p_instream) {
     p_instream->close();
     delete p_instream; p_instream=NULL;
   }
 }
 
+bool Input_Output_Handler::InitialiseInput(const std::vector<std::string> & infiles) {
+  return false;
+
+//   for (size_t i=0;i<infiles.size();++i) {
+//     m_intype=m_intype|(iotype::code)(pow(2.,int(i))*(infiles[i]!=std::string("")));
+//   }
+//   std::string gentype;
+//   switch (m_intype) {
+//   case iotype::Sherpa:
+//     m_filename = m_path+std::string("/")+infiles[0]+std::string(".evts"); 
+//     p_instream = new std::ifstream(m_filename.c_str()); 
+//     if (!p_instream->good()) {
+//       msg.Error()<<"ERROR in Input_Output_Handler."<<std::endl
+//                  <<"   Event file "<<m_filename<<" not found."<<std::endl
+//                  <<"   Will abort the run."<<std::endl;
+//       abort();
+//     }
+//     (*p_instream)>>gentype>>m_filesize;
+//     if (gentype!=std::string("Sherpa")) {
+//       msg.Error()<<"ERROR in HepEvt_Interface."<<std::endl
+//                  <<"   Generator type:"<<gentype<<" not SHERPA."<<std::endl
+//                  <<"   Cannot guarantee i/o operations. Will abort the run."<<std::endl;
+//       abort();
+//     }
+//     break;
+// #ifdef USING__CLHEP
+//   case iotype::HepMC: 
+//     if (p_hepmc==NULL) p_hepmc  = new HepMC_Interface();
+//     break;
+// #endif
+//   case iotype::HepEvt:
+//     // Obacht !!!!!
+//     if (p_hepevt==NULL) p_hepevt = new HepEvt_Interface(false,1,m_path,infiles[2]);
+//     else abort();  // Schlamassel !!!!
+//     break;
+//   case iotype::D0HepEvt:
+//     msg.Error()<<"D0_HEPEVT_INPUT not implemented yet. Aborting."<<std::endl;
+//     abort();
+//     break;
+//   default :
+//     break;
+//   }
+}
+
+
+bool Input_Output_Handler::InitialiseOutput(const std::string mode, 
+                                            const std::vector<std::string> & outfiles) {
+  iotype::code test;
+  NameStream * ns;
+  for (size_t i=0;i<outfiles.size();++i) {
+    if (outfiles[i]!="") {
+      test = (iotype::code)(pow(2.,int(i)));
+      switch(test) {
+      case 1:
+        m_outtype   = m_outtype|test;
+        ns          = new NameStream(m_path+"/"+outfiles[0],".evts");
+        m_outmap[iotype::Sherpa] = ns;
+        break;
+#ifdef USING__CLHEP
+      case 2:
+        m_outtype   = m_outtype|test;
+        ns          = new NameStream(m_path+"/"+outfiles[1],".hepmc");
+        m_outmap[iotype::HepMC] = ns;
+        if (p_hepmc==NULL) p_hepmc = new HepMC_Interface();
+        break;
+      case 4:
+        m_outtype   = m_outtype|test;
+        ns          = new NameStream(m_path+"/"+outfiles[2],".old.hepmc");
+        ns->outstream.precision(8);
+        m_outmap[iotype::OldHepMC] = ns;
+        if (p_hepmc==NULL) p_hepmc = new HepMC_Interface();
+        break;
+#endif
+      case 8:
+        m_outtype   = m_outtype|test;
+        ns          = new NameStream(m_path+"/"+outfiles[3],".hepevt");
+        m_outmap[iotype::HepEvt]     = ns;
+        if (p_hepevt==NULL) p_hepevt = new HepEvt_Interface();
+        break;
+      case 16:
+        m_outtype   = m_outtype|test;
+        ns          = new NameStream(m_path+"/"+outfiles[4],".d0.hepevt");
+        m_outmap[iotype::D0HepEvt]   = ns;
+        if (p_hepevt==NULL) p_hepevt = new HepEvt_Interface();
+        break;
+      default :
+        msg.LogFile()<<"ERROR in Input_Output_Handler::Input_Output_Handler("<<test<<")"<<std::endl
+                     <<"   No valid output format specified. Continue run."<<std::endl;
+        break;
+      }
+    }
+  }
+
+  if (mode=="Sherpa") m_screenout=iotype::Sherpa;
+#ifdef USING__CLHEP
+  else if (mode=="HepMC") {
+    m_screenout=iotype::HepMC;
+    if (p_hepmc==NULL) p_hepmc   = new HepMC_Interface(); 
+  }
+#endif
+  else if (mode=="HepEvt") {
+    m_screenout=iotype::HepEvt;
+    if (p_hepevt==NULL) p_hepevt = new HepEvt_Interface(  );
+  }
+  else m_io-=1;
+
+  if (m_outtype==iotype::Unknown) return false;
+  return true;
+}
+
 void Input_Output_Handler::AddOutputMode(const iotype::code c1) 
 {
   if (m_on==false) return;
   msg.Error()<<"Error in Input_Output_Handler::AddOutputMode("<<c1<<")"<<std::endl
-	     <<"   Method not yet implemented. Continue run."<<std::endl;
+             <<"   Method not yet implemented. Continue run."<<std::endl;
 }
 
 void Input_Output_Handler::AddInputMode(const iotype::code c1) 
 {
   if (m_on==false) return;
   msg.Error()<<"Error in Input_Output_Handler::AddInputMode("<<c1<<")"<<std::endl
-	     <<"   Method not yet implemented. Continue run."<<std::endl;
+             <<"   Method not yet implemented. Continue run."<<std::endl;
 }
 
-void Input_Output_Handler::PrintEvent() {
-  if (m_on==false) return;
-  switch (m_outtype) {
+void Input_Output_Handler::PrintEvent(ATOOLS::Blob_List *const blobs) {
+  if (m_on==false || !(m_io&1) || !msg.LevelIsEvents()) return;
+  switch (m_screenout) {
   case iotype::Sherpa:
-    break;
-#ifdef USING__CLHEP
-  case iotype::HepMC: 
-    p_hepmc->PrintHepMCEvent();
-    break;
-#endif 
-  case iotype::HepEvt: 
-    break;
-  default:
-    msg.Error()<<"Error in Input_Output_Handler::OutputToFormat."<<std::endl
-	       <<"   Unknown Output format : "<<m_outtype<<std::endl
-	       <<"   No output, continue run ..."<<std::endl;
-    break;
-  }
-}
-
-bool Input_Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const double weight) 
-{
-  //std::cout<<"Output : "<<m_io<<" : "<<m_outtype<<std::endl;
-  if (m_on==false)          return false;
-  if (!(m_io&1)&&!(m_io&2)) return false;
-  if (m_io&1 && msg.LevelIsEvents()) {
     if (!blobs->empty()) {
       msg.Out()<<"  -------------------------------------------------  "<<std::endl;
       for (Blob_List::iterator blit=blobs->begin();blit!=blobs->end();++blit) 
-	msg.Out()<<*(*blit)<<std::endl;
+        msg.Out()<<*(*blit)<<std::endl;
       msg.Out()<<"  -------------------------------------------------  "<<std::endl;
     }
-    else {
-      msg.Out()<<"  ******** Empty event ********  "<<std::endl;
-      return false;
-    }
-  }
-
-  for (int i=1;i<(int)iotype::size;i*=2) {
-    if (m_outtype&i) {
-      switch (m_outtype) {
-      case iotype::Sherpa:
-	if (m_io&2) SherpaOutput(blobs,weight); 
-	break;
+    else msg.Out()<<"  ******** Empty event ********  "<<std::endl;
+    break;
 #ifdef USING__CLHEP
-      case iotype::HepMC: 
-	p_hepmc->Sherpa2HepMC(blobs);
-	if (m_io&1 && msg.LevelIsDebugging()) {
-	  p_hepmc->PrintHepMCEvent();
-	}
-	break;
+  case iotype::HepMC: 
+    p_hepmc->Sherpa2HepMC(blobs);
+    p_hepmc->PrintEvent(1,msg.Out());
+    break;
 #endif 
-      case iotype::HepEvt: {
- 	Blob *signal(blobs->FindFirst(btp::Signal_Process));
- 	if (signal) {
- 	  Blob_Data_Base *message((*signal)["Process_Weight"]);
- 	  if (message) {
- 	    msg_Debugging()<<"HEI::OTF: proc weight: "
- 			   <<message->Get<double>()<<"\n";
- 	    p_hepevt->SetWeight(message->Get<double>());
- 	  } else THROW(fatal_error,"No weight information.");
- 	} else THROW(fatal_error,"No signal process.");
-	p_hepevt->Sherpa2HepEvt(blobs); 
-	if (m_io&1 && msg.LevelIsDebugging()) {
-	  p_hepevt->PrintHepEvtEvent(p_hepevt->Nhep());
-	}
-	break;
-      }
-      case iotype::D0HepEvt: {
-        Blob *signal(blobs->FindFirst(btp::Signal_Process));
-        if (signal) {
-          Blob_Data_Base *message((*signal)["Process_Weight"]);
-          if (message) {
-            msg_Debugging()<<"HEI::OTF: proc weight: "
-                <<message->Get<double>()<<"\n";
-            p_D0_hepevt->SetWeight(message->Get<double>());
-          } else THROW(fatal_error,"No weight information.");
-          Blob_Data_Base *facscale((*signal)["Factorisation_Scale"]);
-          if (facscale) {
-            p_D0_hepevt->SetQ2(facscale->Get<double>());
-          } else THROW(fatal_error,"No factorisation scale information.");
-          Particle_Vector inparts = signal->GetInParticles();
-          if(inparts.size()==2) {
-            p_D0_hepevt->SetFl1(inparts[0]->Flav().Kfcode());
-            double E1 = inparts[0]->Momentum()[0];
-            double Ebeam1 = rpa.gen.PBeam(0)[0];
-            p_D0_hepevt->Setx1(E1/Ebeam1);
-            p_D0_hepevt->SetFl2(inparts[1]->Flav().Kfcode());
-            double E2 = inparts[1]->Momentum()[0];
-            double Ebeam2 = rpa.gen.PBeam(1)[0];
-            p_D0_hepevt->Setx2(E2/Ebeam2);
-          } else THROW(fatal_error,"Not two signal particles.");
-        } else THROW(fatal_error,"No signal process.");
-        p_D0_hepevt->Sherpa2HepEvt(blobs);
-        if (m_io&1 && msg.LevelIsDebugging()) {
-          p_D0_hepevt->PrintHepEvtEvent(p_D0_hepevt->Nhep());
+  case iotype::HepEvt: 
+    p_hepevt->Sherpa2HepEvt(blobs);
+    p_hepevt->PrintEvent(3,msg.Out(),p_hepevt->Nhep());
+    break;
+  default:
+    msg.Error()<<"Error in Input_Output_Handler::OutputToFormat."<<std::endl
+               <<"   Unknown Output format : "<<m_outtype<<std::endl
+               <<"   No output, continue run ..."<<std::endl;
+    break;
+  }
+}
+
+void Input_Output_Handler::ResetInterfaces() {
+#ifdef USING__CLHEP
+  if (p_hepmc) p_hepmc->Reset();
+#endif 
+  if (p_hepevt) p_hepevt->Reset();
+}
+
+
+bool Input_Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const double weight) 
+{
+  if (m_on==false)          return false;
+  if (!(m_io&1)&&!(m_io&2)) return false;
+  
+  ResetInterfaces();
+
+  if (!m_outmap.empty()) {
+    for (std::map<iotype::code,NameStream *>::iterator oit=m_outmap.begin();
+         oit!=m_outmap.end();oit++) {
+      if (oit->second!=NULL) {
+        switch (oit->first) {
+        case iotype::Sherpa:
+          SherpaOutput(oit->second->outstream,blobs);
+          break;
+#ifdef USING__CLHEP
+        case iotype::HepMC:
+          p_hepmc->Sherpa2HepMC(blobs);
+          p_hepmc->PrintEvent(1,oit->second->outstream);
+          break;
+        case iotype::OldHepMC:
+          p_hepmc->Sherpa2HepMC(blobs);
+          p_hepmc->PrintEvent(2,oit->second->outstream);
+          break;
+#endif 
+        case iotype::HepEvt:
+          p_hepevt->Sherpa2HepEvt(blobs);
+          p_hepevt->PrintEvent(1,oit->second->outstream,p_hepevt->Nhep());
+          break;
+        case iotype::D0HepEvt:
+          p_hepevt->Sherpa2HepEvt(blobs);
+          p_hepevt->PrintEvent(2,oit->second->outstream,p_hepevt->Nhep());
+          break;
+       
+        default:
+          msg.Error()<<"Error in Input_Output_Handler::OutputToFormat."<<std::endl
+                     <<"   Unknown Output format : "<<oit->first<<std::endl
+                   <<"   No output, continue run ..."<<std::endl;
+          break;
         }
-        break;
-      }
-      default:
-	msg.Error()<<"Error in Input_Output_Handler::OutputToFormat."<<std::endl
-		   <<"   Unknown Output format : "<<m_outtype<<std::endl
-		   <<"   No output, continue run ..."<<std::endl;
-	break;
       }
     }
   }
-  return false;
+  
+  m_evtnumber++;
+  m_evtcount++;
+  
+  if (m_evtcount%m_filesize==0) {
+    m_evtcount = 0;
+    std::string number(ToString(int(m_evtnumber/m_filesize)));
+    if (!m_outmap.empty()) {
+      for (std::map<iotype::code,NameStream *>::iterator oit=m_outmap.begin();
+           oit!=m_outmap.end();oit++) {
+        if (oit->second!=NULL) {
+          oit->second->outstream.close();
+          oit->second->outstream.open((oit->second->basicfilename+"."+
+                                       number+oit->second->fileextension).c_str());
+          if (!oit->second->outstream.good()) { 
+            msg.Error()<<"ERROR in Input_Output_Handler."<<std::endl
+                       <<"   Could not open event file "
+                       <<(oit->second->basicfilename+"."+number+oit->second->fileextension)
+                       <<"."<<std::endl
+                       <<"   Will abort the run."<<std::endl;
+            abort();
+          }
+        }
+      }
+    }
+  }
+  return true;
 }
+
 
 bool Input_Output_Handler::InputFromFormat(ATOOLS::Blob_List *const blobs) 
 {
@@ -312,7 +326,8 @@ bool Input_Output_Handler::InputFromFormat(ATOOLS::Blob_List *const blobs)
   Sherpa-specific I/O methods : Output is ASCII-format
   ------------------------------------------------------------------*/
 
-void Input_Output_Handler::SherpaOutput(ATOOLS::Blob_List *const blobs,const double weight) 
+void Input_Output_Handler::SherpaOutput(std::ostream & outstream,
+					ATOOLS::Blob_List *const blobs,const double weight) 
 { 
   if (m_on==false) return;
   ATOOLS::Particle_Int_Map           P2I;
@@ -328,141 +343,123 @@ void Input_Output_Handler::SherpaOutput(ATOOLS::Blob_List *const blobs,const dou
 	P2I.insert(std::make_pair((*blit)->OutParticle(i),P2I.size()+1));
     }
   }
-  m_evtnumber++;
-  m_evtcount++;
-  m_outstream<<m_evtnumber<<" "<<P2I.size()<<" "<<blobs->size()<<" "<<weight<<std::endl;
+  outstream<<m_evtnumber<<" "<<P2I.size()<<" "<<blobs->size()<<" "<<weight<<std::endl;
   Particle * part;
   int kfc;
   for (P2Iiter=P2I.begin();P2Iiter!=P2I.end();P2Iiter++) {
     part = P2Iiter->first;
     kfc  = part->Flav().Kfcode(); if (part->Flav().IsAnti()) kfc=-kfc;
-    m_outstream<<P2Iiter->second<<" "<<part->Status()<<" "<<part->Info()<<" "<<kfc<<" "
+    outstream<<P2Iiter->second<<" "<<part->Status()<<" "<<part->Info()<<" "<<kfc<<" "
 	       <<" "<<part->Momentum()[0]<<" "<<part->Momentum()[1]
 	       <<" "<<part->Momentum()[2]<<" "<<part->Momentum()[3]<<" \n";
   }
   for (Blob_List::iterator blit=blobs->begin();blit!=blobs->end();++blit) {
-    m_outstream<<(*blit)->Id()<<" "<<(*blit)->Status()<<" "<<(int)(*blit)->Type()<<" "<<(*blit)->TypeSpec()
+    outstream<<(*blit)->Id()<<" "<<(*blit)->Status()<<" "<<(int)(*blit)->Type()<<" "<<(*blit)->TypeSpec()
 	       <<" "<<(*blit)->NInP()<<" "<<(*blit)->NOutP()<<" \n"
 	       <<" "<<(*blit)->Position()[0]<<" "<<(*blit)->Position()[1]
 	       <<" "<<(*blit)->Position()[2]<<" "<<(*blit)->Position()[3]<<" \n";
-    for (int i=0;i<(*blit)->NInP();i++)  m_outstream<<P2I.find((*blit)->InParticle(i))->second<<" ";
-    for (int i=0;i<(*blit)->NOutP();i++) m_outstream<<P2I.find((*blit)->OutParticle(i))->second<<" ";
-    m_outstream<<" \n";
-  }
-  if (m_evtcount%m_filesize==0) {
-    m_evtcount = 0;
-    m_filename = m_file+ToString(int(m_evtnumber/m_filesize));
-    m_outstream<<m_filename<<" \n";
-    m_outstream.close();
-#ifdef USING__GZIP
-    m_filename = m_path+std::string("/")+m_filename+std::string(".evts.gz");
-#else
-    m_filename = m_path+std::string("/")+m_filename+std::string(".evts");
-#endif
-    m_outstream.open(m_filename.c_str());
-    if (!m_outstream.good()) { 
-      msg.Error()<<"ERROR in Input_Output_Handler."<<std::endl
-		 <<"   Could not open event file "<<m_filename<<"."<<std::endl
-		 <<"   Will abort the run."<<std::endl;
-      abort();
-    }
+    for (int i=0;i<(*blit)->NInP();i++)  outstream<<P2I.find((*blit)->InParticle(i))->second<<" ";
+    for (int i=0;i<(*blit)->NOutP();i++) outstream<<P2I.find((*blit)->OutParticle(i))->second<<" ";
+    outstream<<" \n";
   }
 }
 
 bool Input_Output_Handler::SherpaInput(ATOOLS::Blob_List *const blobs) 
 { 
-  if (m_on==false) return false;
-  blobs->clear();
+  return false;
 
-  m_evtcount++;
-  int panumber, blnumber, weight;
-  (*p_instream)>>m_evtnumber>>panumber>>blnumber>>weight;
+//   if (m_on==false) return false;
+//   blobs->clear();
 
-  ATOOLS::Int_Particle_Map           I2P;
-  ATOOLS::Int_Particle_Map::iterator I2Piter;
+//   m_evtcount++;
+//   int panumber, blnumber, weight;
+//   (*p_instream)>>m_evtnumber>>panumber>>blnumber>>weight;
 
-  int        paid, status, kfc;
-  double     mom[4];
-  Vec4D      momentum;
-  char       info;
-  Flavour    flav;
-  Particle * part;
+//   ATOOLS::Int_Particle_Map           I2P;
+//   ATOOLS::Int_Particle_Map::iterator I2Piter;
+
+//   int        paid, status, kfc;
+//   double     mom[4];
+//   Vec4D      momentum;
+//   char       info;
+//   Flavour    flav;
+//   Particle * part;
   
-  for (int i=0;i<panumber;i++) {
-    (*p_instream)>>paid>>status>>info>>kfc>>mom[0]>>mom[1]>>mom[2]>>mom[3];
-    flav     = Flavour(kf::code(abs(kfc))); if (kfc<0) flav=flav.Bar();
-    momentum = Vec4D(mom[0],mom[1],mom[2],mom[3]);
-    part     = new Particle(paid,flav,momentum);
-    part->SetStatus(status);
-    part->SetInfo(info);
-    I2P.insert(std::make_pair(paid,part));
-  }
+//   for (int i=0;i<panumber;i++) {
+//     (*p_instream)>>paid>>status>>info>>kfc>>mom[0]>>mom[1]>>mom[2]>>mom[3];
+//     flav     = Flavour(kf::code(abs(kfc))); if (kfc<0) flav=flav.Bar();
+//     momentum = Vec4D(mom[0],mom[1],mom[2],mom[3]);
+//     part     = new Particle(paid,flav,momentum);
+//     part->SetStatus(status);
+//     part->SetInfo(info);
+//     I2P.insert(std::make_pair(paid,part));
+//   }
 
-  int         type, ninp, noutp, blid;
-  std::string typespec;
-  double      pos[4];
-  Vec4D       position;
-  Blob      * blob;
+//   int         type, ninp, noutp, blid;
+//   std::string typespec;
+//   double      pos[4];
+//   Vec4D       position;
+//   Blob      * blob;
 
-  for (int i=0;i<blnumber;i++) {
-    (*p_instream)>>blid>>status>>type>>typespec>>ninp>>noutp;
-    (*p_instream)>>pos[0]>>pos[1]>>pos[2]>>pos[3];
+//   for (int i=0;i<blnumber;i++) {
+//     (*p_instream)>>blid>>status>>type>>typespec>>ninp>>noutp;
+//     (*p_instream)>>pos[0]>>pos[1]>>pos[2]>>pos[3];
 
-    position = Vec4D(pos[0],pos[1],pos[2],pos[3]);
-    blob     = new Blob(position,blid);
-    blob->SetStatus(status);
-    blob->SetType((btp::code)type);
-    blob->SetTypeSpec(typespec);
-    for (int i=0;i<ninp;i++) {
-      (*p_instream)>>paid;
-      I2Piter = I2P.find(paid);
-      if (I2Piter==I2P.end()) {
-	msg.Error()<<"Error in Input_Output_Handler::SherpaInput."<<std::endl
-		   <<"   Particle with number "<<paid<<" not found in event."<<std::endl
-		   <<"   Will return false, continue & hope for the best."<<std::endl;
-	blobs->clear();
-	return false;
-      }
-      blob->AddToInParticles(I2Piter->second);
-    }
-    for (int i=0;i<noutp;i++) {
-      (*p_instream)>>paid;
-      I2Piter = I2P.find(paid);
-      if (I2Piter==I2P.end()) {
-	msg.Error()<<"Error in Input_Output_Handler::SherpaInput."<<std::endl
-		   <<"   Particle with number "<<paid<<" not found in event."<<std::endl
-		   <<"   Will return false, continue & hope for the best."<<std::endl;
-	blobs->clear();
-	return false;
-      }
-      blob->AddToOutParticles(I2Piter->second);
-    }
+//     position = Vec4D(pos[0],pos[1],pos[2],pos[3]);
+//     blob     = new Blob(position,blid);
+//     blob->SetStatus(status);
+//     blob->SetType((btp::code)type);
+//     blob->SetTypeSpec(typespec);
+//     for (int i=0;i<ninp;i++) {
+//       (*p_instream)>>paid;
+//       I2Piter = I2P.find(paid);
+//       if (I2Piter==I2P.end()) {
+// 	msg.Error()<<"Error in Input_Output_Handler::SherpaInput."<<std::endl
+// 		   <<"   Particle with number "<<paid<<" not found in event."<<std::endl
+// 		   <<"   Will return false, continue & hope for the best."<<std::endl;
+// 	blobs->clear();
+// 	return false;
+//       }
+//       blob->AddToInParticles(I2Piter->second);
+//     }
+//     for (int i=0;i<noutp;i++) {
+//       (*p_instream)>>paid;
+//       I2Piter = I2P.find(paid);
+//       if (I2Piter==I2P.end()) {
+// 	msg.Error()<<"Error in Input_Output_Handler::SherpaInput."<<std::endl
+// 		   <<"   Particle with number "<<paid<<" not found in event."<<std::endl
+// 		   <<"   Will return false, continue & hope for the best."<<std::endl;
+// 	blobs->clear();
+// 	return false;
+//       }
+//       blob->AddToOutParticles(I2Piter->second);
+//     }
 
-    blobs->push_back(blob);
-  }
+//     blobs->push_back(blob);
+//   }
 
-  if (m_evtcount%m_filesize==0) {
-    std::string file, filename;
-    (*p_instream)>>file;
-    p_instream->close();
-    filename =  m_path+std::string("/")+file+std::string(".evts"); 
-    delete p_instream;
-    p_instream = new std::ifstream(filename.c_str()); 
-    if (!p_instream->good()) {
-      msg.Error()<<"ERROR in HepEvt_Interface."<<std::endl
-		 <<"   Event file "<<filename<<" not found."<<std::endl
-		 <<"   Will abort the run."<<std::endl;
-      abort();
-    }
-    std::string gentype;
-    (*p_instream)>>gentype>>m_filesize;
-    if (gentype!=std::string("Sherpa")) {
-      msg.Error()<<"ERROR in HepEvt_Interface."<<std::endl
-		 <<"   Generator type:"<<gentype<<" not SHERPA."<<std::endl
-		 <<"   Cannot guarantee i/o operations. Will abort the run."<<std::endl;
-      abort();
-    }
-    m_evtcount=0;
-  }
-  return true;
+//   if (m_evtcount%m_filesize==0) {
+//     std::string file, filename;
+//     (*p_instream)>>file;
+//     p_instream->close();
+//     filename =  m_path+std::string("/")+file+std::string(".evts"); 
+//     delete p_instream;
+//     p_instream = new std::ifstream(filename.c_str()); 
+//     if (!p_instream->good()) {
+//       msg.Error()<<"ERROR in HepEvt_Interface."<<std::endl
+// 		 <<"   Event file "<<filename<<" not found."<<std::endl
+// 		 <<"   Will abort the run."<<std::endl;
+//       abort();
+//     }
+//     std::string gentype;
+//     (*p_instream)>>gentype>>m_filesize;
+//     if (gentype!=std::string("Sherpa")) {
+//       msg.Error()<<"ERROR in HepEvt_Interface."<<std::endl
+// 		 <<"   Generator type:"<<gentype<<" not SHERPA."<<std::endl
+// 		 <<"   Cannot guarantee i/o operations. Will abort the run."<<std::endl;
+//       abort();
+//     }
+//     m_evtcount=0;
+//   }
+//   return true;
 }

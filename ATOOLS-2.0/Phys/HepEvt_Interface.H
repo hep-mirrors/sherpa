@@ -7,6 +7,7 @@
 #include "Blob.H"
 #include "Flavour.H"
 #include "Vector.H"
+#include "Message.H"
 
 namespace ATOOLS {
   struct gtp {
@@ -22,6 +23,7 @@ namespace ATOOLS {
   class HepEvt_Interface {
     bool            m_hadronized;
     bool            m_io;
+    bool            m_converted;
     int             m_mode;
     std::string     m_path, m_file;
     std::ifstream * p_instream;
@@ -40,10 +42,10 @@ namespace ATOOLS {
     double   m_weight, m_Q2, m_x1, m_x2;
     int      m_fl1, m_fl2;
     
-    void WriteFullHepEvt(int nevt);
-    void WriteFormatedHepEvt(int nevt);
-    void WriteReducedHepEvt(int nevt);
-    void WriteD0HepEvt(int nevt);
+    void WriteFullHepEvt(std::ostream& ostr,int nevt);
+    void WriteFormatedHepEvt(std::ostream& ostr,int nevt);
+//     void WriteReducedHepEvt(int nevt);
+    void WriteD0HepEvt(std::ostream& ostr,int nevt);
     void ISBlobs2HepEvt(ATOOLS::Blob_List * const,int &);
     void HardBlob2HepEvt(ATOOLS::Blob_List * const,int &);
     void FSBlobs2HepEvt(ATOOLS::Blob_List * const,int &);
@@ -68,12 +70,12 @@ namespace ATOOLS {
     bool IdentifyBlobs(ATOOLS::Blob_List * const);
     void DeleteObsolete(const int mode);
   public:
-    HepEvt_Interface(int=0);
-    HepEvt_Interface(gtp::code=gtp::Unspecified);
-    HepEvt_Interface(bool=true,int=11,
+    HepEvt_Interface(int/*=0*/);
+    HepEvt_Interface(gtp::code/*=gtp::Unspecified*/);
+    HepEvt_Interface(/*bool=true,int=11,
 		     const std::string & =std::string(""),
 		     const std::string & =std::string(""),
-		     const int _filesize=1000);
+        const int _filesize=1000*/);
     ~HepEvt_Interface();
     
     int                  Nhep() const   { return m_nhep;   }
@@ -101,10 +103,12 @@ namespace ATOOLS {
 
     std::ofstream * GetOutStream() { return p_outstream; }
     void ChangeOutStream(std::string &,long int=-1);
-    void PrintHepEvtEvent(const int=0);
+    void PrintEvent(const int mode=1, std::ostream& ostr=msg.Out(),
+                    const int nhep=0);
 
     bool Sherpa2HepEvt(ATOOLS::Blob_List * const);
     bool HepEvt2Sherpa(ATOOLS::Blob_List * const);
+    inline void Reset() { m_converted = false; }
     inline void SetHadronized(const bool hadronized) { m_hadronized=hadronized; }
     inline bool Hadronized() const                   { return m_hadronized;     }
   };
