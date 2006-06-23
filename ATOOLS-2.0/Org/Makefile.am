@@ -1,5 +1,10 @@
 pkglib_LTLIBRARIES = libToolsOrg.la
 
+if GZIP_SUPPORT
+GZIPSTREAMSOURCES = Gzip_Stream.C
+GZIPSTREAMHEADERS = Gzip_Stream.H
+endif
+
 libToolsOrg_la_SOURCES        = \
 				Shell_Tools.C \
 				Object.C \
@@ -23,6 +28,7 @@ libToolsOrg_la_SOURCES        = \
 				Info_Key.C \
 				Integration_Info.C \
 				Debugger.C \
+				$(GZIPSTREAMSOURCES) \
 				My_Root.C
 
 pkginclude_HEADERS       =	\
@@ -60,7 +66,10 @@ pkginclude_HEADERS       =	\
 			Debugger.inl.H \
 			Node.H \
 			Node.C \
+			$(GZIPSTREAMHEADERS) \
 			My_Root.H
+
+libToolsOrg_la_LIBADD = @CONDITIONAL_GZIPLIBS@
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@ @CONDITIONAL_ROOTFLAGS@
 

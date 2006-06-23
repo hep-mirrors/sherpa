@@ -125,7 +125,8 @@ bool Sherpa::GenerateOneEvent()
   for (int i=0;i<m_trials;i++) {
     if (p_eventhandler->GenerateEvent(p_inithandler->Mode())) {
       if (p_iohandler->OutputOn()) {
-		p_iohandler->OutputToFormat(p_eventhandler->GetBlobs());
+        p_iohandler->OutputToFormat(p_eventhandler->GetBlobs());
+        p_iohandler->PrintEvent(p_eventhandler->GetBlobs());
       }
       return 1;
     }

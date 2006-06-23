@@ -242,18 +242,16 @@ bool Initialization_Handler::InitializeTheIO()
   infiles.push_back(p_dataread->GetValue<string>("D0_HEPEVT_INPUT",string("")));
   outfiles.push_back(p_dataread->GetValue<string>("SHERPA_OUTPUT",string("")));
   outfiles.push_back(p_dataread->GetValue<string>("HEPMC_OUTPUT",string("")));
+  outfiles.push_back(p_dataread->GetValue<string>("OLD_HEPMC_OUTPUT",string("")));
   outfiles.push_back(p_dataread->GetValue<string>("HEPEVT_OUTPUT",string("")));
   outfiles.push_back(p_dataread->GetValue<string>("D0_HEPEVT_OUTPUT",string("")));
   std::string evtpath = p_dataread->GetValue<string>("EVT_FILE_PATH",m_path);
   int filesize        = p_dataread->GetValue<int>("FILE_SIZE",1000);
-  for (int i=0;i<4;i++) {
-    if (infiles[i]!=string("") || outfiles[i]!=string("")) {
-      p_iohandler = new Input_Output_Handler(outfiles,infiles,evtpath,filesize);
-      return true;
-    }
-  }
+  int precision        = p_dataread->GetValue<int>("OUTPUT_PRECISION",6);
   std::string outmode = p_dataread->GetValue<string>("EVENT_MODE",string("Sherpa"));
-  p_iohandler = new Input_Output_Handler(outmode);
+
+  p_iohandler = new Input_Output_Handler(outmode,outfiles,infiles,evtpath,filesize,precision);
+
   return true;
 }
 

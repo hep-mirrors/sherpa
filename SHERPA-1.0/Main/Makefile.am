@@ -18,7 +18,7 @@ libSherpaMain_la_LIBADD = -L$(pkglibdir) @APACICLIBS@ @AMEGICLIBS@ \
 		@CONDITIONAL_AMISICLIBS@ @EXTRAXSLIBS@ @PHASICLIBS@ \
 		@MODELLIBS@ @PDFLIBS@ @BEAMLIBS@ @ATOOLSLIBS@ \
 		@ANALYSISLIBS@ @CONDITIONAL_HADRONSLIBS@ \
-		@CONDITIONAL_CLHEPLIBS@ \
+		@CONDITIONAL_CLHEPLIBS@ @CONDITIONAL_GZIPLIBS@ \
 		-lSherpaInitialization -lSherpaSingleEvents \
                 -lSherpaPerturbativePhysics -lSherpaSoftPhysics -lLundTools -lSherpaTools \
                 $(SYSLIBS) $(PDFEXTRALIBS) \

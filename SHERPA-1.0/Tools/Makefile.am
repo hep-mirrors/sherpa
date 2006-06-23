@@ -1,15 +1,22 @@
 pkglib_LTLIBRARIES       =	libSherpaTools.la
 
+if CLHEP_SUPPORT
+HEPMCSOURCES=HepMC_Interface.C
+HEPMCHEADERS=HepMC_Interface.H
+endif
+
 libSherpaTools_la_SOURCES     =	\
 				Kinematics.C \
 				Input_Output_Handler.C \
-			    	HepMC_Interface.C \
+			    	$(HEPMCSOURCES) \
+			    	HepEvt_Interface.C \
                                 Event_Reader.C
 
 pkginclude_HEADERS    =	\
 			Kinematics.H \
 			Input_Output_Handler.H \
-		 	HepMC_Interface.H \
+		 	$(HEPMCHEADERS) \
+			HepEvt_Interface.H \
 			Event_Reader.H
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@ @CONDITIONAL_ROOTFLAGS@

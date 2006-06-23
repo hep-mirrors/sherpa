@@ -1,8 +1,9 @@
 #include "HepEvt_Interface.H"
 
 #include "Run_Parameter.H"
-#include "Message.H"
 #include "MyStrStream.H"
+#include "Exception.H"
+
 
 #include <iomanip>
 #include <stdio.h>
@@ -11,61 +12,56 @@ using namespace ATOOLS;
 using namespace std;
 
 HepEvt_Interface::HepEvt_Interface(int _generator) : 
-  p_instream(NULL), p_outstream(NULL), 
+  m_converted(false), p_instream(NULL), p_outstream(NULL),
   m_evtnumber(0), m_nhep(-1), m_filesize(0), m_evtcount(0), 
   m_generator(gtp::code(_generator)), p_phep(NULL), p_vhep(NULL),
   p_jmohep(NULL), p_jdahep(NULL), p_isthep(NULL), p_idhep(NULL)
 { }
 
 HepEvt_Interface::HepEvt_Interface(gtp::code _generator) : 
-  p_instream(NULL), p_outstream(NULL), 
+  m_converted(false), p_instream(NULL), p_outstream(NULL),
   m_evtnumber(0), m_nhep(-1), m_filesize(0), m_evtcount(0), 
   m_generator(_generator), p_phep(NULL), p_vhep(NULL),
   p_jmohep(NULL), p_jdahep(NULL), p_isthep(NULL), p_idhep(NULL)
 { }
 
-HepEvt_Interface::HepEvt_Interface(bool _io,int _mode,
-				   const std::string & _path, 
-				   const std::string & _file,
-				   const int _filesize) : 
-  m_io(_io), m_mode(_mode), m_path(_path), m_file(_file), 
-  p_instream(NULL), p_outstream(NULL), 
-  m_evtnumber(0), m_nhep(-1), m_filesize(_filesize), m_evtcount(0), 
-  m_generator(gtp::Unspecified)
+HepEvt_Interface::HepEvt_Interface() :
+  m_converted(false), p_instream(NULL), p_outstream(NULL),
+  m_evtnumber(0), m_nhep(-1), m_evtcount(0), m_generator(gtp::Unspecified)
 {
   // io = true : Output mode, Sherpa2HepEvt
-  std::string filename = m_path+std::string("/")+m_file;
-  if (m_io) {
-    if (m_mode>=10) {
-      m_mode      -= 10;
-    }
-    else {
-      filename += std::string(".0.evts"); 
-      p_outstream = new std::ofstream(filename.c_str(),std::ios::out);
-      if (!p_outstream->good()) { 
-	msg.Error()<<"ERROR in HepEvt_Interface."<<std::endl
-		   <<"   Could not open event file "<<filename<<"."<<std::endl
-		   <<"   Will abort the run."<<std::endl;
-	abort();
-      }
-      p_outstream->precision(10);
-    }
-  }
-  else {
-    p_instream = new std::ifstream(filename.c_str()); 
-    if (!p_instream->good()) {
-      msg.Error()<<"ERROR in HepEvt_Interface."<<std::endl
-		 <<"   Event file "<<filename<<" not found."<<std::endl
-		 <<"   Will abort the run."<<std::endl;
-      abort();
-    }
-    std::string gentype;
-    (*p_instream)>>gentype>>m_filesize;
-    if (gentype==std::string("Sherpa")) m_generator = gtp::Sherpa;
-    if (gentype==std::string("Herwig")) m_generator = gtp::Herwig;
-    if (gentype==std::string("Pythia")) m_generator = gtp::Pythia;
-    m_evtcount=0;
-  }
+//   std::string filename = m_path+std::string("/")+m_file;
+//   if (m_io) {
+//     if (m_mode>=10) {
+//       m_mode      -= 10;
+//     }
+//     else {
+//       filename += std::string(".0.evts"); 
+//       p_outstream = new std::ofstream(filename.c_str(),std::ios::out);
+//       if (!p_outstream->good()) { 
+// 	msg.Error()<<"ERROR in HepEvt_Interface."<<std::endl
+// 		   <<"   Could not open event file "<<filename<<"."<<std::endl
+// 		   <<"   Will abort the run."<<std::endl;
+// 	abort();
+//       }
+//       p_outstream->precision(10);
+//     }
+//   }
+//   else {
+//     p_instream = new std::ifstream(filename.c_str()); 
+//     if (!p_instream->good()) {
+//       msg.Error()<<"ERROR in HepEvt_Interface."<<std::endl
+// 		 <<"   Event file "<<filename<<" not found."<<std::endl
+// 		 <<"   Will abort the run."<<std::endl;
+//       abort();
+//     }
+//     std::string gentype;
+//     (*p_instream)>>gentype>>m_filesize;
+//     if (gentype==std::string("Sherpa")) m_generator = gtp::Sherpa;
+//     if (gentype==std::string("Herwig")) m_generator = gtp::Herwig;
+//     if (gentype==std::string("Pythia")) m_generator = gtp::Pythia;
+//     m_evtcount=0;
+//   }
   p_phep     = new double[5*s_maxentries];
   p_vhep     = new double[4*s_maxentries];
   p_jmohep   = new int[2*s_maxentries];
@@ -129,10 +125,11 @@ void HepEvt_Interface::ChangeOutStream()
 
 
 bool HepEvt_Interface::Sherpa2HepEvt(Blob_List * const _blobs) {
+  if(m_converted) return true;
   m_convertS2H.clear();
 
   m_evtnumber++;
-  if ((m_evtnumber-1)%m_filesize==0 && p_outstream!=NULL) ChangeOutStream();
+//   if ((m_evtnumber-1)%m_filesize==0 && p_outstream!=NULL) ChangeOutStream();
 
   int nhep = 0;
 
@@ -144,82 +141,130 @@ bool HepEvt_Interface::Sherpa2HepEvt(Blob_List * const _blobs) {
   
   m_nhep=nhep;
 
-  switch (m_mode) {
-  case 0 :  break;
-  case 2 :  WriteReducedHepEvt(nhep); break;
-  case 3 :  WriteFormatedHepEvt(nhep); break;
-  case 4 :  WriteD0HepEvt(nhep); break;
-  default:  WriteFullHepEvt(nhep);
+  Blob *signal(_blobs->FindFirst(btp::Signal_Process));
+  if (signal) {
+    Blob_Data_Base *message((*signal)["Process_Weight"]);
+    if (message) {
+      msg_Debugging()<<"HEI::OTF: proc weight: "
+          <<message->Get<double>()<<"\n";
+      SetWeight(message->Get<double>());
+    }
+    else THROW(fatal_error,"No weight information.");
+    
+    Blob_Data_Base *facscale((*signal)["Factorisation_Scale"]);
+    if (facscale) {
+      SetQ2(facscale->Get<double>());
+    }
+    else THROW(fatal_error,"No factorisation scale information.");
+    
+    Particle_Vector inparts = signal->GetInParticles();
+    if(inparts.size()==2) {
+      SetFl1(inparts[0]->Flav().Kfcode());
+      double E1 = inparts[0]->Momentum()[0];
+      double Ebeam1 = rpa.gen.PBeam(0)[0];
+      Setx1(E1/Ebeam1);
+      SetFl2(inparts[1]->Flav().Kfcode());
+      double E2 = inparts[1]->Momentum()[0];
+      double Ebeam2 = rpa.gen.PBeam(1)[0];
+      Setx2(E2/Ebeam2);
+    }
+    else THROW(fatal_error,"Not two signal particles.");
+    
   }
+  else THROW(fatal_error,"No signal process.");
+
+
+//   switch (m_mode) {
+//   case 0 :  break;
+//   case 2 :  WriteReducedHepEvt(nhep); break;
+//   case 3 :  WriteFormatedHepEvt(nhep); break;
+//   case 4 :  WriteD0HepEvt(nhep); break;
+//   default:  WriteFullHepEvt(nhep);
+//   }
+  m_converted=true;
   return true;
 }
 
-void HepEvt_Interface::PrintHepEvtEvent(int nhep) 
+void HepEvt_Interface::PrintEvent(const int mode, std::ostream& ostr, const int nhep)
 {
-  for (int i=0;i<nhep;++i) {
-    msg.Out()<<i+1<<"  "<<p_isthep[i]<<" "<<p_idhep[i]<<" "<<p_jmohep[2*i]<<" "<<p_jmohep[2*i+1]
-	     <<" "<<p_jdahep[2*i]<<" "<<p_jdahep[2*i+1]<<" \n ";
-    for (int j=0;j<5;++j) msg.Out()<<p_phep[5*i+j]<<" ";
-    msg.Out()<<"\n ";
-    for (int j=0;j<4;++j) msg.Out()<<p_vhep[4*i+j]<<" ";
-    msg.Out()<<"\n";
-  }  
+  switch(mode) {
+  case 1:
+    WriteFullHepEvt(ostr,nhep);
+    break;
+  case 2:
+    WriteD0HepEvt(ostr,nhep);
+    break;
+  case 3:
+    WriteFormatedHepEvt(ostr,nhep);
+    break;
+  default:
+    msg.Error()<<"Error in "<<METHOD<<": Don't know mode "<<mode<<std::endl;
+    abort();
+  }
+//   for (int i=0;i<nhep;++i) {
+//     msg.Out()<<i+1<<"  "<<p_isthep[i]<<" "<<p_idhep[i]<<" "<<p_jmohep[2*i]<<" "<<p_jmohep[2*i+1]
+// 	     <<" "<<p_jdahep[2*i]<<" "<<p_jdahep[2*i+1]<<" \n ";
+//     for (int j=0;j<5;++j) msg.Out()<<p_phep[5*i+j]<<" ";
+//     msg.Out()<<"\n ";
+//     for (int j=0;j<4;++j) msg.Out()<<p_vhep[4*i+j]<<" ";
+//     msg.Out()<<"\n";
+//   }  
 }
 
-void HepEvt_Interface::WriteFullHepEvt(int nhep)
+void HepEvt_Interface::WriteFullHepEvt(std::ostream& ostr, int nhep)
 {
-  (*p_outstream)<<"  "<<m_evtnumber<<" "<<nhep<<"\n";
+  ostr<<"  "<<m_evtnumber<<" "<<nhep<<"\n";
   for (int i=0;i<nhep;++i) {
-    (*p_outstream)<<i+1<<"  "<<p_isthep[i]<<" "<<p_idhep[i]<<" "<<p_jmohep[2*i]<<" "<<p_jmohep[2*i+1]
+    ostr<<i+1<<"  "<<p_isthep[i]<<" "<<p_idhep[i]<<" "<<p_jmohep[2*i]<<" "<<p_jmohep[2*i+1]
 		  <<" "<<p_jdahep[2*i]<<" "<<p_jdahep[2*i+1]<<" \n ";
-    for (int j=0;j<5;++j) (*p_outstream)<<p_phep[5*i+j]<<" ";
-    (*p_outstream)<<"\n ";
-    for (int j=0;j<4;++j) (*p_outstream)<<p_vhep[4*i+j]<<" ";
-    (*p_outstream)<<"\n";
+    for (int j=0;j<5;++j) ostr<<p_phep[5*i+j]<<" ";
+    ostr<<"\n ";
+    for (int j=0;j<4;++j) ostr<<p_vhep[4*i+j]<<" ";
+    ostr<<"\n";
   }
 }
 
-void HepEvt_Interface::WriteD0HepEvt(int nhep)
+void HepEvt_Interface::WriteD0HepEvt(std::ostream& ostr, int nhep)
 {
-  (*p_outstream)<<"  "<<m_evtnumber<<" "<<nhep<<" "<<"\n";
-  (*p_outstream)<<"    "<<m_weight<<" "<<m_Q2<<" "<<m_x1<<" "<<m_x2<<" "<<m_fl1<<" "<<m_fl2<<"\n";
+  ostr<<"  "<<m_evtnumber<<" "<<nhep<<" "<<"\n";
+  ostr<<"    "<<m_weight<<" "<<m_Q2<<" "<<m_x1<<" "<<m_x2<<" "<<m_fl1<<" "<<m_fl2<<"\n";
   for (int i=0;i<nhep;++i) {
-    (*p_outstream)<<i+1<<"  "<<p_isthep[i]<<" "<<p_idhep[i]<<" "<<p_jmohep[2*i]<<" "<<p_jmohep[2*i+1]
+    ostr<<i+1<<"  "<<p_isthep[i]<<" "<<p_idhep[i]<<" "<<p_jmohep[2*i]<<" "<<p_jmohep[2*i+1]
         <<" "<<p_jdahep[2*i]<<" "<<p_jdahep[2*i+1]<<" \n ";
-    for (int j=0;j<5;++j) (*p_outstream)<<p_phep[5*i+j]<<" ";
-    (*p_outstream)<<"\n ";
-    for (int j=0;j<4;++j) (*p_outstream)<<p_vhep[4*i+j]<<" ";
-    (*p_outstream)<<"\n";
+    for (int j=0;j<5;++j) ostr<<p_phep[5*i+j]<<" ";
+    ostr<<"\n ";
+    for (int j=0;j<4;++j) ostr<<p_vhep[4*i+j]<<" ";
+    ostr<<"\n";
   }
 }
 
-void HepEvt_Interface::WriteReducedHepEvt(int nhep)
-{
-  (*p_outstream)<<"  "<<m_evtnumber<<" "<<nhep<<" "<<m_weight<<"\n";
-  for (int i=0;i<nhep;++i) {
-    (*p_outstream)<<i+1<<"  "<<p_isthep[i]<<" "<<p_idhep[i]<<" "<<p_jmohep[2*i]<<" "<<p_jmohep[2*i+1]
-	       <<" "<<p_jdahep[2*i]<<" "<<p_jdahep[2*i+1]<<" \n ";
-    for (int j=0;j<5;++j) (*p_outstream)<<p_phep[5*i+j]<<" ";
-    (*p_outstream)<<"\n ";
-    for (int j=0;j<4;++j) (*p_outstream)<<p_vhep[4*i+j]<<" ";
-    (*p_outstream)<<"\n";
-  }
-}
+// void HepEvt_Interface::WriteReducedHepEvt(int nhep)
+// {
+//   ostr<<"  "<<m_evtnumber<<" "<<nhep<<" "<<m_weight<<"\n";
+//   for (int i=0;i<nhep;++i) {
+//     ostr<<i+1<<"  "<<p_isthep[i]<<" "<<p_idhep[i]<<" "<<p_jmohep[2*i]<<" "<<p_jmohep[2*i+1]
+// 	       <<" "<<p_jdahep[2*i]<<" "<<p_jdahep[2*i+1]<<" \n ";
+//     for (int j=0;j<5;++j) ostr<<p_phep[5*i+j]<<" ";
+//     ostr<<"\n ";
+//     for (int j=0;j<4;++j) ostr<<p_vhep[4*i+j]<<" ";
+//     ostr<<"\n";
+//   }
+// }
 
-void HepEvt_Interface::WriteFormatedHepEvt(int nhep)
+void HepEvt_Interface::WriteFormatedHepEvt(std::ostream& ostr, int nhep)
 {
-  (*p_outstream)<<" "<<std::setw(4)<<nhep<<" \n";
+  ostr<<" "<<std::setw(4)<<nhep<<" \n";
   for (int i=0;i<nhep;++i) {
-    (*p_outstream)<<" "<<std::setw(8)<<p_isthep[i]<<" "<<std::setw(8)<<p_idhep[i]
+    ostr<<" "<<std::setw(8)<<p_isthep[i]<<" "<<std::setw(8)<<p_idhep[i]
 		  <<" "<<std::setw(4)<<p_jmohep[2*i]<<" "<<std::setw(4)<<p_jmohep[2*i+1]
 		  <<" "<<std::setw(4)<<p_jdahep[2*i]<<" "<<std::setw(4)<<p_jdahep[2*i+1]<<" \n ";
-    (*p_outstream)<<std::setprecision(10);
-    (*p_outstream)<<std::setiosflags(std::ios::fixed);
-    for (int j=0;j<5;++j) (*p_outstream)<<std::setw(16)<<p_phep[5*i+j]<<" ";
-    (*p_outstream)<<"\n ";
-    for (int j=0;j<4;++j) (*p_outstream)<<std::setw(16)<<p_vhep[4*i+j]<<" ";
-    (*p_outstream)<<"\n";
-    (*p_outstream)<<std::resetiosflags(std::ios::fixed);
+    ostr<<std::setprecision(10);
+    ostr<<std::setiosflags(std::ios::fixed);
+    for (int j=0;j<5;++j) ostr<<std::setw(16)<<p_phep[5*i+j]<<" ";
+    ostr<<"\n ";
+    for (int j=0;j<4;++j) ostr<<std::setw(16)<<p_vhep[4*i+j]<<" ";
+    ostr<<"\n";
+    ostr<<std::resetiosflags(std::ios::fixed);
   }
 }
 

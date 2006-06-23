@@ -254,12 +254,12 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         yes) if test -d "$ROOTSYS"; then
                CONDITIONAL_ROOTDIR=$ROOTSYS
                CONDITIONAL_ROOTINCS=-I`$ROOTSYS/bin/root-config --incdir`;
-               CONDITIONAL_ROOTLIBS=`$ROOTSYS/bin/root-config --noldflags --glibs`
+               CONDITIONAL_ROOTLIBS=`$ROOTSYS/bin/root-config --glibs`
                CONDITIONAL_ROOTFLAGS=-Wno-long-long
              elif test -x "`which root-config`"; then
                CONDITIONAL_ROOTDIR=`root-config --prefix`;
                CONDITIONAL_ROOTINCS=-I`root-config --incdir`;
-               CONDITIONAL_ROOTLIBS=`root-config --noauxlibs --glibs`;
+               CONDITIONAL_ROOTLIBS=`root-config --glibs`;
                CONDITIONAL_ROOTFLAGS=-Wno-long-long
              else
                AC_MSG_ERROR(\$ROOTSYS is not a valid path and root-config was not found.);
@@ -302,6 +302,28 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(CONDITIONAL_LHAPDFDIR)
   AC_SUBST(CONDITIONAL_LHAPDFLIBS)
   AM_CONDITIONAL(LHAPDF_SUPPORT, test "$lhapdf" = "true")
+
+  AC_ARG_ENABLE(
+    gzip,
+    AC_HELP_STRING([--enable-gzip], [Enable gzip support (for compressed event output)]),
+    [ case "${enableval}" in
+        no)   AC_MSG_RESULT(gzip not enabled); zlib=false ;;
+        yes)  AC_CHECK_LIB(z, inflateEnd, [libz_found=yes], [libz_found=no])
+              AC_CHECK_HEADER(zlib.h, [zlibh_found=yes], [zlibh_found=no])
+              if test "$libz_found" = "yes" -a "$zlibh_found" = "yes"; then
+                zlib=true;
+                CONDITIONAL_GZIPLIBS="-lz";
+              else
+                AC_MSG_ERROR(Header zlib.h and/or library libz not found. Configure without --disable-gzip or install zlib (and its devel package, e.g. zlib-devel, zlib-dev or zlib1g-dev) if you want compressed output.);
+              fi;;
+      esac ],
+    [ zlib=false ]
+  )
+  if test "$zlib" = "true" ; then
+    AC_DEFINE([USING__GZIP], "1", [using gzip])
+  fi
+  AM_CONDITIONAL(GZIP_SUPPORT, test "$zlib" = "true")
+  AC_SUBST(CONDITIONAL_GZIPLIBS)
 
   AC_ARG_ENABLE(modelinclude,
     AC_HELP_STRING([--disable-modelinclude], [Disable inclusion of MODEL headers]),
