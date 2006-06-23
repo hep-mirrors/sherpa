@@ -40,14 +40,14 @@ namespace SHERPA {
 #else
     std::ofstream     outstream;
 #endif
-    NameStream(std::string bfname,std::string fext) :
+    NameStream(std::string bfname,std::string fext,int precision) :
       basicfilename(bfname), fileextension(fext)
     {
 #ifdef USING__GZIP
       fileextension += ".gz";
 #endif
       outstream.open((basicfilename+fileextension).c_str());
-      outstream.precision(10);
+      outstream.precision(precision);
       if (!outstream.good()) { 
 	ATOOLS::msg.Error()<<"ERROR in Input_Output_Handler."<<std::endl
 		   <<"   Could not open event file "<<(basicfilename+fileextension)<<"."<<std::endl
@@ -62,6 +62,7 @@ namespace SHERPA {
     bool            m_on;
     int             m_io;
     iotype::code    m_outtype, m_screenout, m_intype;
+    int             m_precision;
 
     ATOOLS::Blob_List        * p_blobs;        
 #ifdef USING__CLHEP
@@ -87,7 +88,7 @@ namespace SHERPA {
 			 const std::vector<std::string> &outfiles,
 			 const std::vector<std::string> &infiles,
 			 const std::string _path=std::string("./"), 
-			 const int _filesize=1000);
+			 const int _filesize=1000, const int precision=6);
 
     // destructor
     ~Input_Output_Handler();

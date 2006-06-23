@@ -282,12 +282,12 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         yes) if test -d "$ROOTSYS"; then
                CONDITIONAL_ROOTDIR=$ROOTSYS
                CONDITIONAL_ROOTINCS=-I`$ROOTSYS/bin/root-config --incdir`;
-               CONDITIONAL_ROOTLIBS=`$ROOTSYS/bin/root-config --noldflags --glibs`
+               CONDITIONAL_ROOTLIBS=`$ROOTSYS/bin/root-config --glibs`
                CONDITIONAL_ROOTFLAGS=-Wno-long-long
              elif test -x "`which root-config`"; then
                CONDITIONAL_ROOTDIR=`root-config --prefix`;
                CONDITIONAL_ROOTINCS=-I`root-config --incdir`;
-               CONDITIONAL_ROOTLIBS=`root-config --noauxlibs --glibs`;
+               CONDITIONAL_ROOTLIBS=`root-config --glibs`;
                CONDITIONAL_ROOTFLAGS=-Wno-long-long
              else
                AC_MSG_ERROR(\$ROOTSYS is not a valid path and root-config was not found.);
@@ -342,7 +342,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
                 zlib=true;
                 CONDITIONAL_GZIPLIBS="-lz";
               else
-                AC_MSG_ERROR(Header zlib.h and/or library libz not found. Configure without --disable-gzip or install zlib if you want compressed output.);
+                AC_MSG_ERROR(Header zlib.h and/or library libz not found. Configure without --disable-gzip or install zlib (and its devel package, e.g. zlib-devel, zlib-dev or zlib1g-dev) if you want compressed output.);
               fi;;
       esac ],
     [ zlib=false ]

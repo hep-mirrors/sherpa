@@ -22,7 +22,6 @@ libToolsPhys_la_SOURCES       =	\
 				Parton_Finder.C \
 				Color_Tester.C \
 				Momentum_Shifter.C \
-				HepEvt_Interface.C \
 				Flow.C \
 				Color.C \
 				Spin_Density_Matrix.C \
@@ -52,7 +51,6 @@ pkginclude_HEADERS        =	\
 			Parton_Finder.H \
 			Color_Tester.H \
 			Momentum_Shifter.H \
-			HepEvt_Interface.H \
 			Event.H \
 			Color.H \
 			Spin_Density_Matrix.H \

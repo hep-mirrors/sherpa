@@ -27,8 +27,9 @@ const iotype::code SHERPA::operator&(const iotype::code code1,const iotype::code
 Input_Output_Handler::Input_Output_Handler(const std::string mode,
                                            const std::vector<std::string> & outfiles,
                                            const std::vector<std::string> & infiles,
-                                           const std::string _path, const int _filesize):
-  m_on(true), m_io(1), 
+                                           const std::string _path, const int _filesize,
+                                           const int precision):
+  m_on(true), m_io(1), m_precision(precision),
   m_outtype(iotype::Unknown), m_screenout(iotype::Unknown), m_intype(iotype::Unknown), 
 #ifdef USING__CLHEP
   p_hepmc(NULL), 
@@ -122,33 +123,32 @@ bool Input_Output_Handler::InitialiseOutput(const std::string mode,
       switch(test) {
       case 1:
         m_outtype   = m_outtype|test;
-        ns          = new NameStream(m_path+"/"+outfiles[0],".evts");
+        ns          = new NameStream(m_path+"/"+outfiles[0],".evts",m_precision);
         m_outmap[iotype::Sherpa] = ns;
         break;
 #ifdef USING__CLHEP
       case 2:
         m_outtype   = m_outtype|test;
-        ns          = new NameStream(m_path+"/"+outfiles[1],".hepmc");
+        ns          = new NameStream(m_path+"/"+outfiles[1],".hepmc",m_precision);
         m_outmap[iotype::HepMC] = ns;
         if (p_hepmc==NULL) p_hepmc = new HepMC_Interface();
         break;
       case 4:
         m_outtype   = m_outtype|test;
-        ns          = new NameStream(m_path+"/"+outfiles[2],".old.hepmc");
-        ns->outstream.precision(8);
+        ns          = new NameStream(m_path+"/"+outfiles[2],".old.hepmc",m_precision);
         m_outmap[iotype::OldHepMC] = ns;
         if (p_hepmc==NULL) p_hepmc = new HepMC_Interface();
         break;
 #endif
       case 8:
         m_outtype   = m_outtype|test;
-        ns          = new NameStream(m_path+"/"+outfiles[3],".hepevt");
+        ns          = new NameStream(m_path+"/"+outfiles[3],".hepevt",m_precision);
         m_outmap[iotype::HepEvt]     = ns;
         if (p_hepevt==NULL) p_hepevt = new HepEvt_Interface();
         break;
       case 16:
         m_outtype   = m_outtype|test;
-        ns          = new NameStream(m_path+"/"+outfiles[4],".d0.hepevt");
+        ns          = new NameStream(m_path+"/"+outfiles[4],".d0.hepevt",m_precision);
         m_outmap[iotype::D0HepEvt]   = ns;
         if (p_hepevt==NULL) p_hepevt = new HepEvt_Interface();
         break;
