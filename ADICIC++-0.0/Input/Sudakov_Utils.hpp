@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/09/29
+//Version: 4 ADICIC++-0.0/2006/06/02
 
 //Possibility of having information at compile time.
 //Carriers or interface structures.
@@ -81,16 +81,17 @@ namespace ADICIC {
     enum code {
       xpini   = 0,
       xmini   = 1,
-      mdip    = 2,
-      shatmax = 3,
-      expydip = 4,
-      shat    = 5,
-      kt      = 6,
-      mt      = 7,
-      expy    = 8,
-      xpfin   = 9,
-      xmfin   = 10,
-      stop    = 11
+      fasc    = 2,
+      mdip    = 3,
+      shatmax = 4,
+      expydip = 5,
+      shat    = 6,
+      kt      = 7,
+      mt      = 8,
+      expy    = 9,
+      xpfin   = 10,
+      xmfin   = 11,
+      stop    = 12
     };
     class stringmap {
       std::map<code,std::string> m_map;

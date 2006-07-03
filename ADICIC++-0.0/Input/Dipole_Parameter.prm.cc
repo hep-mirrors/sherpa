@@ -14,6 +14,12 @@ Sud::s_alphasfix = 0.12;
 //Number of quark flavours
 Sud::s_nffix = 3;
 
+//Rule how to deal with gluon splittings:
+//negative...all g-split procs are off,
+//nil........no extra effect,
+//positive...only and only g-split procs are allowed.
+Sud::s_gsplit = nil;
+
 //Radiation type to build up the Sudakov groups
 Sud::s_radiatype = Radiation::g;
 
@@ -60,6 +66,10 @@ Kin::v_recostrat[rl::iigqa] = Recoil_Strategy::stop;
 
 
 
+//Factorization scale type (compare with Evolution_Strategy.hpp)
+Evo::s_fascatype = fascat::p2t;
+Evo::s_fmuf=Evo::s_fmur=1.0;
+Evo::s_scaoffset = 0.0;
 //Chain evolution strategy (compare with Evolution_Strategy.hpp)
 Evo::v_chevostrat[cel::def] = Chain_Evolution_Strategy::Production;//Emission;
 //Chain particle limit

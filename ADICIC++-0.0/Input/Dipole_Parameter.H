@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/09/08    (surely preliminarily)
+//Version: 4 ADICIC++-0.0/2006/06/30    (surely preliminarily)
 
 //A class is provided, which globally manages the Adicic parameters.
 
@@ -12,6 +12,7 @@
 #include <vector>
 #include "Sudakov_Utils.hpp"
 #include "Recoil_Strategy.hpp"
+#include "Recoil_Utils.hpp"
 #include "Evolution_Strategy.hpp"
 
 
@@ -55,6 +56,7 @@ namespace ADICIC {
       static bool            s_runalphas;
       static double          s_alphasfix;
       static unsigned short  s_nffix;    //No effect if AlphaS is running.
+      static xbool           s_gsplit;
       static Radiation::Type s_radiatype;
       static double          s_k2tmin;    //FF dipoles.
       static double          s_k2tmax;
@@ -69,6 +71,7 @@ namespace ADICIC {
       inline const bool            RunAlphaS() const;
       inline const double          AlphaSFix() const;
       inline const unsigned short  NfFix() const;
+      inline const xbool           GsplitRule() const;
       inline const Radiation::Type RadiationType() const;
       inline const double          MinK2t() const;
       inline const double          MaxK2t() const;
@@ -96,18 +99,28 @@ namespace ADICIC {
       friend class Dipole_Parameter;
       friend class Dipole_Parameter_Init;
     private:
+      static fascat::code                                s_fascatype;
+      static double                                      s_fmuf;
+      static double                                      s_fmur;
       static std::vector<Chain_Evolution_Strategy::Type> v_chevostrat;
       //--------------------------------------------------------------
       static std::size_t                                 s_chpartlim;
       static std::size_t                                 s_chcorrlim;
+      static double                                      s_scaoffset;
     public:
+      inline const fascat::code FactScaleType() const;
+      inline const double GetFactScaleFrom(const Multidouble&) const;
+      inline const double GetFactScaleFrom(const Sudakov_Result&) const;
+      inline const double FactScaleFactor() const;
+      inline const double RenoScaleFactor() const;
       inline const std::vector<Chain_Evolution_Strategy::Type>&
       ChainEvolutionStrategy() const;
-      //-------------------------------------------------------
-      inline void              SetChainParticleLimit(std::size_t n=7777777);
-      inline void              SetChainCorrelationLimit(std::size_t n=7777777);
       inline const std::size_t ChainParticleLimit() const;
       inline const std::size_t ChainCorrelationLimit() const;
+      //-------------------------------------------------------
+      inline void SetChainParticleLimit(std::size_t n=7777777);
+      inline void SetChainCorrelationLimit(std::size_t n=7777777);
+      inline void SetFactScaleOffset(double d);
     } evo;
 
 

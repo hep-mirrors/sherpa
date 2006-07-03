@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/09/13
+//Version: 4 ADICIC++-0.0/2006/06/01
 
 //Implementation of Dipole_Parameter.H.
 
@@ -33,6 +33,7 @@ using namespace ADICIC;
 bool            Dipole_Parameter::Sud::s_runalphas=false;
 double          Dipole_Parameter::Sud::s_alphasfix=0.0;
 unsigned short  Dipole_Parameter::Sud::s_nffix=0;
+xbool           Dipole_Parameter::Sud::s_gsplit=nil;
 Radiation::Type Dipole_Parameter::Sud::s_radiatype=Radiation::g;
 double          Dipole_Parameter::Sud::s_k2tmin=0.0;
 double          Dipole_Parameter::Sud::s_k2tmax=0.0;
@@ -53,6 +54,9 @@ vector<Recoil_Strategy::Type> Dipole_Parameter::Kin::v_recostrat
 
 
 
+fascat::code Dipole_Parameter::Evo::s_fascatype=fascat::p2t;
+double Dipole_Parameter::Evo::s_fmuf=1.0;
+double Dipole_Parameter::Evo::s_fmur=1.0;
 //Explicit setup.
 vector<Chain_Evolution_Strategy::Type> Dipole_Parameter::Evo::v_chevostrat
 =vector<Chain_Evolution_Strategy::Type>(cel::stop,
@@ -60,6 +64,7 @@ vector<Chain_Evolution_Strategy::Type> Dipole_Parameter::Evo::v_chevostrat
 //------------------------------------------------------------------------
 size_t Dipole_Parameter::Evo::s_chpartlim=0;
 size_t Dipole_Parameter::Evo::s_chcorrlim=0;
+double Dipole_Parameter::Evo::s_scaoffset=0.0;
 
 
 
@@ -89,10 +94,11 @@ void Dipole_Parameter::Show() {    //Static.
   cout<<"======================================================="<<endl;
   cout<<"         Current ADICIC parameter adjustments."<<endl;
   cout<<"-------------------------------------------------------"<<endl;
-  cout<<"Enable running AlphaS   = "<<Sud::s_runalphas<<".\n";
-  cout<<"Value for fixed AlphaS  = "<<Sud::s_alphasfix<<".\n";
-  cout<<"Value for fixed Nf      = "<<Sud::s_nffix<<".\n";
-  cout<<"Overall radiation type  = "<<Sud::s_radiatype<<".\n";
+  cout<<"Enable running AlphaS    = "<<Sud::s_runalphas<<".\n";
+  cout<<"Value for fixed AlphaS   = "<<Sud::s_alphasfix<<".\n";
+  cout<<"Value for fixed Nf       = "<<Sud::s_nffix<<".\n";
+  cout<<"Overall g-split handling = "<<Sud::s_gsplit<<".\n";
+  cout<<"Overall radiation type   = "<<Sud::s_radiatype<<".\n";
   cout<<"FF dipole shower cut-off scale = "<<Sud::s_k2tmin<<" GeV^2"
       <<"\t ["<<sqrt(Sud::s_k2tmin)<<"].\n";
   cout<<"FF dipole shower maximum scale = "<<Sud::s_k2tmax<<" GeV^2"
@@ -141,6 +147,10 @@ void Dipole_Parameter::Show() {    //Static.
   cout<<"Recoil strategy for ii g-q dipoles radiating qbarend    = "
       <<Kin::v_recostrat[rl::iigqa]<<".\n";
   cout<<"------------------------------------------------------"<<endl;
+  cout<<"Factorization scale type = "
+      <<Evo::s_fascatype
+      <<"\t [offset:"<<Evo::s_scaoffset
+      <<"\t fmuF="<<Evo::s_fmuf<<"\t fmuR="<<Evo::s_fmur<<"].\n";
   cout<<"Chain evolution strategy = "
       <<Evo::v_chevostrat[cel::def]<<".\n";
   cout<<"Chain particle limit     = "
@@ -183,6 +193,17 @@ const bool Dipole_Parameter::Check(const double cmsen) {    //Static.
   }
 
 
+  if(Evo::s_fascatype>=0 && Evo::s_fascatype<fascat::stop); else {
+    cerr<<"\nParameter out of range: factorization scale type!\n";
+    assert(Evo::s_fascatype>=0 && Evo::s_fascatype<fascat::stop);
+  }
+  if(Evo::s_fmuf>0&&Evo::s_fmuf<=100.0 && Evo::s_fmur>0&&Evo::s_fmur<=100.0);
+  else {
+    cerr<<"\nParameter out of range: "
+	<<"factorization/renormalization scale factor!\n";
+    assert(Evo::s_fmuf>0&&Evo::s_fmuf<=100.0 &&
+	   Evo::s_fmur>0&&Evo::s_fmur<=100.0);
+  }
   if(Evo::v_chevostrat[cel::def]>=0); else {
     cerr<<"\nParameter out of range: chain evolution strategy!\n";
     assert(Evo::v_chevostrat[1]>=0);

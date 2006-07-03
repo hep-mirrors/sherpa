@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/08/18
+//Version: 4 ADICIC++-0.0/2006/06/02
 
 //Implementation of Sudakov_Utils.hpp.
 
@@ -22,6 +22,7 @@
 ADICIC::sr::stringmap::stringmap() : m_map() {
   m_map[xpini]  = "x+ini=";
   m_map[xmini]  = "x-ini=";
+  m_map[fasc]   = "inimuf=";
   m_map[mdip]   = "mdip=";
   m_map[shatmax]= "-/shatmax=";
   m_map[expydip]= "e^ydip=";
@@ -77,12 +78,12 @@ void ADICIC::Sudakov_Result::Print() const {
   if(stop2<stop1) stop1=stop2;
   for(size_t i=0; i<stop1; ++i) {
     if(i==sr::shatmax || i==sr::shat)
-      std::cout<<sr::name[sr::code(i)]<<std::setw(12)<<sqrt(Isr[i]);
+      std::cout<<sr::name[sr::code(i)]<<std::setw(18)<<sqrt(Isr[i]);
     else
-      std::cout<<sr::name[sr::code(i)]<<std::setw(12)<<Isr[i];
+      std::cout<<sr::name[sr::code(i)]<<std::setw(18)<<Isr[i];
   }
   for(size_t i=stop1; i<stop2; ++i)
-    std::cout<<std::setw(12)<<Isr[i];
+    std::cout<<std::setw(18)<<Isr[i];
   std::cout<<"       Dir="<<std::setw(1)<<Dir
 	   <<"\n"<<resetiosflags(std::ios::left);
 }

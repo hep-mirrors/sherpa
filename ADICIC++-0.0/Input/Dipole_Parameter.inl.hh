@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/09/08
+//Version: 4 ADICIC++-0.0/2006/06/30
 
 //Inline methods of Dipole_Parameter.H.
 
@@ -9,6 +9,7 @@
 
 #include <cassert>
 #include <cstdlib>
+#include "MathTools.H"
 #include "Run_Parameter.H"
 
 
@@ -31,6 +32,9 @@ namespace ADICIC {
   }
   inline const unsigned short Dipole_Parameter::Sud::NfFix() const {
     return s_nffix;
+  }
+  inline const xbool Dipole_Parameter::Sud::GsplitRule() const {
+    return s_gsplit;
   }
   inline const Radiation::Type Dipole_Parameter::Sud::RadiationType() const {
     return s_radiatype;
@@ -84,9 +88,56 @@ namespace ADICIC {
 
 
 
+  inline const fascat::code Dipole_Parameter::Evo::FactScaleType() const {
+    return s_fascatype;
+  }
+  inline const double
+  Dipole_Parameter::Evo::GetFactScaleFrom(const Multidouble& mudo) const {
+    if(mudo.size()>=fascat::stop) return mudo[s_fascatype]+s_scaoffset;
+    else return s_scaoffset;
+  }
+  inline const double
+  Dipole_Parameter::Evo::GetFactScaleFrom(const Sudakov_Result& sure) const {
+    switch(s_fascatype) {
+    case fascat::p2t : return sure.P2t+s_scaoffset;
+    case fascat::k2t : if(sure.Isr.empty()) return s_scaoffset;
+      return ATOOLS::sqr(sure.Isr[sr::kt])+s_scaoffset;
+    case fascat::m2t : if(sure.Isr.empty()) return s_scaoffset;
+      return ATOOLS::sqr(sure.Isr[sr::mt])+s_scaoffset;
+    case fascat::shat: if(sure.Isr.empty()) return s_scaoffset;
+      return sure.Isr[sr::shat]+s_scaoffset;
+    default: assert(s_fascatype==fascat::p2t ||
+		    s_fascatype==fascat::k2t ||
+		    s_fascatype==fascat::m2t ||
+		    s_fascatype==fascat::shat);
+    }
+  }
+
+
+
+  inline const double Dipole_Parameter::Evo::FactScaleFactor() const {
+    return s_fmuf;
+  }
+  inline const double Dipole_Parameter::Evo::RenoScaleFactor() const {
+    return s_fmur;
+  }
+
+
+
   inline const std::vector<Chain_Evolution_Strategy::Type>&
   Dipole_Parameter::Evo::ChainEvolutionStrategy() const {
     return v_chevostrat;
+  }
+
+
+
+  inline const std::size_t
+  Dipole_Parameter::Evo::ChainParticleLimit() const {
+    return s_chpartlim;
+  }
+  inline const std::size_t
+  Dipole_Parameter::Evo::ChainCorrelationLimit() const {
+    return s_chcorrlim;
   }
 
 
@@ -105,13 +156,15 @@ namespace ADICIC {
     assert(n>=2);
     s_chcorrlim=n;
   }
-  inline const std::size_t
-  Dipole_Parameter::Evo::ChainParticleLimit() const {
-    return s_chpartlim;
-  }
-  inline const std::size_t
-  Dipole_Parameter::Evo::ChainCorrelationLimit() const {
-    return s_chcorrlim;
+
+
+
+  inline void Dipole_Parameter::Evo::SetFactScaleOffset(double offset) {
+    //Once explicitly set to zero, no chance to turn it on again.
+    static bool active=true;
+    if(!active) return;
+    if(offset<=0.0) active=false;
+    s_scaoffset=offset;
   }
 
 
