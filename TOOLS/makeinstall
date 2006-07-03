@@ -46,6 +46,12 @@ configure_current() {
   else
     ./configure $ECOPT
   fi
+  if [ "$?" != "0" ] && [ "$NOABORT" != "TRUE" ] ; then
+    clear;
+    echo "ERROR:";
+    echo "./configure returned an error, please have a look at $LOGFILE for the reason.";
+    exit 1; 
+  fi;
   if [ "$1" != "" ] ; then cd $1 ; fi
 }
 
