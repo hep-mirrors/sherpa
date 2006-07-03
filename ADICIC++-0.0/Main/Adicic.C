@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/08/05
+//Version: 4 ADICIC++-0.0/2005/06/15
 
 //Implementation of Adicic.H.
 
@@ -27,9 +27,9 @@ using namespace ADICIC;
 
 
 Adicic::Adicic()
-  : m_parcountcorr(2),
+  : m_parcountcorr(2), m_startnum(32767),
     m_total(0), m_fail(0), m_noem(0), p_handler(NULL), m_cascade(),
-    p_blist(NULL), l_paic() {
+    p_blist(NULL), l_paic(),v_conn(), v_resi() {
   cout<<om::brown;/////////////////////////////////////////////////////////////
   cout<<"Dipole Flavour Initialization .......\n  ";///////////////////////////
   Dipole_Flavour_Init dfi;
@@ -54,9 +54,9 @@ Adicic::Adicic()
 
 
 Adicic::Adicic(const string& path, MODEL::Model_Base* pmod)
-  : m_parcountcorr(2),
+  : m_parcountcorr(2), m_startnum(32767),
     m_total(0), m_fail(0), m_noem(0), p_handler(NULL), m_cascade(),
-    p_blist(NULL), l_paic() {
+    p_blist(NULL), l_paic(), v_conn(), v_resi() {
   cout<<om::green;/////////////////////////////////////////////////////////////
   cout<<"Dipole Flavour Initialization .......\n  ";///////////////////////////
   Dipole_Flavour_Init dfi;
@@ -130,11 +130,13 @@ bool Adicic::ExtractPartons(ATOOLS::Blob_List* blobs) {
   if(m_total==1 || m_total%1000==0)
     cout<<"                "<<om::red<<om::blackbg<<m_total<<om::reset<<"\n";
 
-  if(!m_cascade.ExtractPartons(l_paic)) {
+  boolint res=m_cascade.ExtractPartons(l_paic);
+  if(res.flag==false) {
     msg.Error()<<__PRETTY_FUNCTION__<<": Error: "
 	       <<"Cannot extract partons from cascade!\n"<<endl;
     return false;
   }
+  m_startnum=res.numr;
   assert(l_paic.size()==1);////////////////////////////////////////////////////
 
 #ifdef ADICIC_OUTPUT
@@ -158,14 +160,7 @@ bool Adicic::ExtractPartons(ATOOLS::Blob_List* blobs) {
   assert(pfs);
 
 #ifdef ADICIC_OUTPUT
-  cout<<om::brownbg<<"Initial 1st blob:"<<om::reset<<" \n"<<*blob<<endl;///////
-#endif
-  for(int i=0; i<blob->NInP(); ++i)
-    blob->InParticle(i)->SetNumber(-(1+i));
-  for(int i=0; i<blob->NOutP(); ++i)
-    blob->OutParticle(i)->SetNumber(-(blob->NInP()+1+i));
-#ifdef ADICIC_OUTPUT
-  cout<<om::brownbg<<"Final 1st blob:"<<om::reset<<" \n"<<*blob<<endl;/////////
+  cout<<om::brownbg<<"1st blob:"<<om::reset<<" \n"<<*blob<<endl;///////////////
 #endif
 
   bool result=false;
@@ -208,9 +203,10 @@ bool Adicic::FExtract(Blob* pfs) {
 #endif
   for(int i=0; i<pfs->NInP(); ++i) pfs->InParticle(i)->SetStatus(2);
   int num=Max(pfs->InParticle(0)->Number(),pfs->InParticle(1)->Number());
-  num=num+1-plist.front()->Number();
+  num=num+1-m_startnum;    //-plist.front()->Number();
   for(Particle_List::iterator piter=plist.begin(); piter!=plist.end();
       ++piter) {
+    assert((*piter)->Info()=='f');
     pfs->AddToOutParticles(*piter);
     (*piter)->SetInfo('F');
     (*piter)->SetNumber(-((*piter)->Number()+num-m_parcountcorr));
@@ -238,51 +234,119 @@ bool Adicic::IExtract(Blob* pis, Blob* pisme, Blob* pfs) {
 
   for(int i=0; i<pfs->NInP(); ++i) pfs->InParticle(i)->SetStatus(2);
   int num=Max(pfs->InParticle(0)->Number(),pfs->InParticle(1)->Number());
-  num=num+1-plist.front()->Number();
+  //cout<<num<<":"<<plist.front()->Number()<<":"<<m_startnum<<":";
+  num=num+3-m_startnum;    //cout<<num<<endl;
+
   for(Particle_List::iterator piter=plist.begin(); piter!=plist.end();
       ++piter) {
-    if((*piter)->Info()=='i') {
-      pis->AddToInParticles(*piter);
-      (*piter)->SetInfo('I');
-      (*piter)->SetNumber(-((*piter)->Number()+num-2*m_parcountcorr));
-    } else {
+    switch((*piter)->Info()) {
+    case 'f':
+      //cout<<(*piter)->Number()<<endl;
       pis->AddToOutParticles(*piter);
       (*piter)->SetInfo('F');
       (*piter)->SetNumber(-((*piter)->Number()+num-m_parcountcorr));
+      break;
+    case 'i':
+      //cout<<(*piter)->Number()<<endl;
+      pis->AddToInParticles(*piter);
+      (*piter)->SetInfo('I');
+      (*piter)->SetNumber(-((*piter)->Number()+num-m_parcountcorr));
+      break;
+    case 'c':
+      v_conn.push_back(*piter);
+      //cout<<(**piter)<<endl;
+      break;
+    case 'r':
+      v_resi.push_back(*piter);
+      //cout<<(**piter)<<endl;
+      break;
+    default :
+      cerr<<"\nMethod: "<<__PRETTY_FUNCTION__<<": "
+	  <<"Warning: Particle carries non-expected information!\n"<<endl;
     }
   }
+  assert(v_conn.empty() ^ v_resi.empty());
   if(pis->InParticle(0)->Momentum()[3]<pis->InParticle(1)->Momentum()[3])
     pis->SwapInParticles(0,1);
 
   Particle* par=new Particle(*pisme->OutParticle(0));
   Particle* per=new Particle(*pisme->OutParticle(1));
-  pis->AddToOutParticles(par);
-  pis->AddToOutParticles(per);
-  pisme->AddToInParticles(par);
-  pisme->AddToInParticles(per);
-
-  Particle* pic=new Particle(*pfs->InParticle(0));
-  Particle* poc=new Particle(*pfs->InParticle(1));
-  pfs->AddToOutParticles(pic);
-  pfs->AddToOutParticles(poc);
-  pic->SetStatus(1);
-  poc->SetStatus(1);
-
-  const Vec4D PZ=par->Momentum()+per->Momentum();
-  assert(PZ==pic->Momentum()+poc->Momentum());
+  pis->AddToOutParticles(par); pis->AddToOutParticles(per);
+  pisme->AddToInParticles(par); pisme->AddToInParticles(per);
+  const Vec4D  PZ=par->Momentum()+per->Momentum();
   const Vec4D& PZprime=-1*m_cascade.Momentum();
   assert(dabs(PZ.Abs2()-PZprime.Abs2())<1.0e-7);
-  Poincare fly(PZ);
-  Poincare flyprime(PZprime);
-  Vec4D p[4]={
-    par->Momentum(), per->Momentum(), pic->Momentum(), poc->Momentum()};
-  for(size_t i=0; i<4; ++i) {
-    fly.Boost(p[i]); flyprime.BoostBack(p[i]);
+  Poincare fly(PZ); Poincare flyprime(PZprime);
+  Vec4D addup, eddup;
+  addup=par->Momentum(); fly.Boost(addup); flyprime.BoostBack(addup);
+  par->SetMomentum(addup);
+  addup=per->Momentum(); fly.Boost(addup); flyprime.BoostBack(addup);
+  per->SetMomentum(addup);
+
+  addup=eddup=Vec4D(0.0,0.0,0.0,0.0);
+  if(v_resi.empty()) {    //The correlated-particle treatment.
+    assert(pfs->NInP()==int(v_conn.size()));
+    const size_t num=v_conn.size();
+    if(pfs->InParticle(0)->RefFlav()!=v_conn[0]->RefFlav()) {
+      assert(pfs->InParticle(0)->RefFlav()==v_conn[num-1]->RefFlav());
+      assert(pfs->InParticle(num-1)->RefFlav()==v_conn[0]->RefFlav());
+      assert(pfs->InParticle(0)->Number()==v_conn[num-1]->Number());
+      assert(pfs->InParticle(num-1)->Number()==v_conn[0]->Number());
+      for(size_t i=0; i<num; ++i) {
+	v_conn[num-1-i]->SetInfo(pfs->InParticle(i)->Info());
+	v_conn[num-1-i]->SetStatus(1);
+	pfs->AddToOutParticles(v_conn[num-1-i]);
+	addup+=pfs->InParticle(i)->Momentum();
+	eddup+=v_conn[num-1-i]->Momentum();
+      }
+    } else {
+      assert(pfs->InParticle(num-1)->RefFlav()==v_conn[num-1]->RefFlav());
+      assert(pfs->InParticle(0)->Number()==v_conn[0]->Number());
+      assert(pfs->InParticle(num-1)->Number()==v_conn[num-1]->Number());
+      for(size_t i=0; i<num; ++i) {
+	v_conn[i]->SetInfo(pfs->InParticle(i)->Info());
+	v_conn[i]->SetStatus(1);
+	pfs->AddToOutParticles(v_conn[i]);
+	addup+=pfs->InParticle(i)->Momentum();
+	eddup+=v_conn[i]->Momentum();
+      }
+    }
+    v_conn.clear();
+    /*
+    for(int i=0; i<pfs->NInP(); ++i) {    //For the purpose of comparison.
+      Particle help(*pfs->InParticle(i));
+      Vec4D temp=help.Momentum();
+      fly.Boost(temp); flyprime.BoostBack(temp);
+      help.SetMomentum(temp);
+      help.SetStatus(1);
+      cout<<help<<endl;
+    }
+    */
   }
-  par->SetMomentum(p[0]);
-  per->SetMomentum(p[1]);
-  pic->SetMomentum(p[2]);
-  poc->SetMomentum(p[3]);
+  else {    //The residual-particle treatment.
+    assert(v_resi.size()==1);
+    assert(PZprime==v_resi[0]->Momentum());
+    delete v_resi[0];
+    v_resi.clear();
+    for(int i=0; i<pfs->NInP(); ++i) {
+      Particle* help=new Particle(*pfs->InParticle(i));
+      pfs->AddToOutParticles(help);
+      help->SetStatus(1);
+      Vec4D temp=help->Momentum();
+      addup+=temp;
+      fly.Boost(temp); flyprime.BoostBack(temp);
+      eddup+=temp;
+      help->SetMomentum(temp);
+      help->SetStatus(1);
+      //cout<<*help<<endl;
+    }
+  }
+
+  //addup-=PZ; eddup-=PZprime;
+  //for(char i=0; i<4; ++i)
+  //  assert(dabs(addup[i])<1.0e-10 && dabs(eddup[i])<1.0e-10);
+  assert(PZ==addup);
+  assert(PZprime==eddup);
 
   pis->SetBeam(0);
   pisme->SetStatus(0);

@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/08/12
+//Version: 4 ADICIC++-0.0/2006/05/24
 
 //The main Adicic object.
 
@@ -34,6 +34,7 @@ namespace ADICIC {
   private:
 
     int                 m_parcountcorr;    //Particle counter correction.
+    int                 m_startnum;
     std::size_t         m_total;
     std::size_t         m_fail;
     std::size_t         m_noem;
@@ -42,6 +43,8 @@ namespace ADICIC {
 
     ATOOLS::Blob_List*               p_blist;
     std::list<ATOOLS::Particle_List> l_paic;
+    std::vector<ATOOLS::Particle*>   v_conn;
+    std::vector<ATOOLS::Particle*>   v_resi;
 
     bool FExtract(ATOOLS::Blob* pfs);
     bool IExtract(ATOOLS::Blob* pis, ATOOLS::Blob* pisme, ATOOLS::Blob* pfs);

@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/09/13
+//Version: 4 ADICIC++-0.0/2006/06/30
 
 //Implementation of Paraminit.H.
 
@@ -36,24 +36,27 @@ const bool Dipole_Parameter_Init::Do() {    //Static.
 
   //###########################################################################
   //AlphaS treatment flag
-  Dipole_Parameter::Sud::s_runalphas=true;//false;//true;
-  //Coupling
-  Dipole_Parameter::Sud::s_alphasfix=0.15;//0.12;
+  Dipole_Parameter::Sud::s_runalphas=true;//false;
+  //Fixed coupling
+  Dipole_Parameter::Sud::s_alphasfix=0.118;//0.12;
   //Number of quark flavours
-  Dipole_Parameter::Sud::s_nffix=2;
+  Dipole_Parameter::Sud::s_nffix=6;
+  //Rule how to deal with gluon splittings,
+  //neg..all g-splits off, nil..no extra effect, pos..only&only g-split procs
+  Dipole_Parameter::Sud::s_gsplit=negative;//nil;
   //Radiation type to build up the Sudakov groups
   Dipole_Parameter::Sud::s_radiatype=Radiation::gduscb;
   //GeV^2
   Dipole_Parameter::Sud::s_k2tmin=0.64;//1.0;
   Dipole_Parameter::Sud::s_k2tmax=8100.0;
   //GeV^2
-  Dipole_Parameter::Sud::s_k2tiimin=1.0;//0.25;
-  Dipole_Parameter::Sud::s_k2tiifac=12.005;//4.0;
+  Dipole_Parameter::Sud::s_k2tiimin=1.0;//0.05;//0.25;
+  Dipole_Parameter::Sud::s_k2tiifac=474.2716;//12.005;//4.0;
   Dipole_Parameter::Sud::s_k2tiifixscale=8100.0;
   //II dipole efficiency factor
   Dipole_Parameter::Sud::s_iieffexp=1.0;
   //Dipole shower mode
-  Dipole_Parameter::Kin::s_dsmode = dsm::iiff;
+  Dipole_Parameter::Kin::s_dsmode = dsm::iiff;//jff;
   //Recoil strategies (compare with Recoil_Strategy.hpp)
   //    qqbar, qg, gqbar, gg radiating g
   Dipole_Parameter::Kin::v_recostrat[rl::qag] = Recoil_Strategy::Kleiss;
@@ -61,7 +64,7 @@ const bool Dipole_Parameter_Init::Do() {    //Static.
   Dipole_Parameter::Kin::v_recostrat[rl::gag] = Recoil_Strategy::FixDir1;
   Dipole_Parameter::Kin::v_recostrat[rl::ggg] = Recoil_Strategy::MinimizePt;
   //    iiqbarq, iiqbarg, iigq, iigg radiating g
-  Dipole_Parameter::Kin::v_recostrat[rl::iiaqg] = Recoil_Strategy::Ktii;
+  Dipole_Parameter::Kin::v_recostrat[rl::iiaqg] = Recoil_Strategy::Kleissii;
   Dipole_Parameter::Kin::v_recostrat[rl::iiagg] = Recoil_Strategy::Ktii;
   Dipole_Parameter::Kin::v_recostrat[rl::iigqg] = Recoil_Strategy::Ktii;
   Dipole_Parameter::Kin::v_recostrat[rl::iiggg] = Recoil_Strategy::Ktii;
@@ -72,13 +75,18 @@ const bool Dipole_Parameter_Init::Do() {    //Static.
   Dipole_Parameter::Kin::v_recostrat[rl::ggq] = Recoil_Strategy::FixDir3;
   //    iiqbarq radiating qbarend, qfront,
   //    iiqbarg radiating qfront, iigq radiating qbarend
-  Dipole_Parameter::Kin::v_recostrat[rl::iiaqa] = Recoil_Strategy::Ktii;//stop;
-  Dipole_Parameter::Kin::v_recostrat[rl::iiaqq] = Recoil_Strategy::Ktii;//stop;
+  Dipole_Parameter::Kin::v_recostrat[rl::iiaqa] = Recoil_Strategy::Kleissii;
+  Dipole_Parameter::Kin::v_recostrat[rl::iiaqq] = Recoil_Strategy::Kleissii;
   Dipole_Parameter::Kin::v_recostrat[rl::iiagq] = Recoil_Strategy::Ktii;//stop;
   Dipole_Parameter::Kin::v_recostrat[rl::iigqa] = Recoil_Strategy::Ktii;//Unknown;
+  //Factorization scale type (sqr values) (compare with Evolution_Strategy.hpp)
+  Dipole_Parameter::Evo::s_fascatype = fascat::k2t;
+  Dipole_Parameter::Evo::s_fmuf = 1.0;
+  Dipole_Parameter::Evo::s_fmur = 1.0;
+  dpv.evo.SetFactScaleOffset(0.3);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   //Chain evolution strategy (compare with Evolution_Strategy.hpp)
   Dipole_Parameter::Evo::v_chevostrat[cel::def] =
-    Chain_Evolution_Strategy::Production;
+    Chain_Evolution_Strategy::Emission;//Production;
   //###########################################################################
 
   //Re-calculate the maximum k2t for II dipoles.
