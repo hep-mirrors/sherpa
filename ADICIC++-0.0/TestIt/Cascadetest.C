@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/08/04
+//Version: 4 ADICIC++-0.0/2006/05/23
 
 //Cascadetest.C - testing the first cascading.
 
@@ -82,17 +82,17 @@ int main() {
     Dipole::Glubranch  g2(pr);
 
     {
-      Chain ch1(b1,a1,Chain::Initiator::simple_epem);
+      Chain ch1(b1,a1,Chain::Initiator::epem);
       ch1.Print();
       cout<<ch1.MaxParticleNumber()<<endl;
       cout<<ch1.MaxDipoleNumber()<<endl;
 
-      Chain ch2(g1,g1,Chain::Initiator::simple_epem);
+      Chain ch2(g1,g1,Chain::Initiator::epem);
       ch2.Print();
       cout<<ch2.MaxParticleNumber()<<endl;
       cout<<ch2.MaxDipoleNumber()<<endl;
 
-      Chain ch3(g1,g2,Chain::Initiator::simple_epem);
+      Chain ch3(g1,g2,Chain::Initiator::epem);
       ch3.Print();
       cout<<ch3.MaxParticleNumber()<<endl;
       cout<<ch3.MaxDipoleNumber()<<endl;
@@ -122,7 +122,7 @@ int main() {
 
     cout<<endl; cin>>enter; cout<<endl;
 
-    Chain ch1(b1,a1,Chain::Initiator::simple_epem);
+    Chain ch1(b1,a1,Chain::Initiator::epem);
     cout<<ch1<<endl;
     cout<<"cha handling(0)="<<cha.IsHandled()<<endl;
     cout<<"ch1 handling(0)="<<ch1.IsHandled()<<endl;
@@ -153,7 +153,7 @@ int main() {
 
       Chain_Handler H3;
       {
-	Chain E(g1,g2,Chain::Initiator::simple_epem);
+	Chain E(g1,g2,Chain::Initiator::epem);
 	E|H3;
 	cout<<"H3 docking(1)="<<H3.IsDocked()<<endl;
 	cout<<E.IsRing()<<endl;
@@ -237,7 +237,7 @@ int main() {
     Sudakov_Calculator::ShowEnvironment();
     Dipole_Handler::ShowCalcBox();
 
-    //Dipole_Parameter_Init dpi;
+    if(0) Dipole_Parameter_Init dpi;
 
     cout<<"\nRunning?="<<Sudakov_Calculator::IsAlphaSRunning()<<endl;
     cout<<"ASApp="<<Sudakov_Calculator::AlphaSApprox()<<endl;
@@ -254,7 +254,7 @@ int main() {
     //abort();
 
     {
-      unsigned total=3;//20000;
+      unsigned total=1;//20000;
       unsigned fail=0;
 
       Cascade_Handler H;
@@ -311,7 +311,7 @@ int main() {
 	  cascopy.Print();
 	  cout<<endl<<om::greenbg<<"Extracting test:"<<om::reset<<endl;
 	  list<Particle_List> lists;
-	  assert(cas.ExtractPartons(lists));
+	  assert(cas.ExtractPartons(lists).flag);
 	  for(list<Particle_List>::iterator loc=lists.begin();
 	      loc!=lists.end(); ++loc) {
 	    cout<<(*loc);
@@ -351,54 +351,6 @@ int main() {
   cout<<om::greenbg;
   cout<<"====================================================================";
   cout<<om::reset<<endl;
-
-  {
-    unsigned total=0; //total=0;
-    unsigned count=0;
-
-    for(unsigned i=1; i<=total; ++i) {
-
-      bool control=!(i%50000);
-
-      Vec4D pl(45.0, 20.0,-5.0, 40.0);
-      Vec4D pr(45.0,-20.0, 5.0,-40.0);
-      //Dipole::Branch     b1(info.quark.u,pl);
-      Dipole::Glubranch  b1(pl);
-      //Dipole::Antibranch a1(info.antiquark.u,pr);
-      Dipole::Glubranch  a1(pr);
-
-      Dipole* pDin=NULL;
-      Dipole::Glubranch*  pGlu=NULL;
-      Dipole::Branch*     pBan=NULL;
-      Dipole::Antibranch* pAti=NULL;
-
-      {
-
-	bool  bel;
-	xbool rec;
-	Dipole Dip(b1,a1);
-	Dipole_Handler H(Dip);
-
-	if(!H.InduceDipoleRadiation()) {
-	  ++count;
-	  if(control) cout<<i<<"\t\t"<<count<<"\t\t"<<Dip.ProdScale()<<endl;
-	  continue;
-	}
-
-	if(control) cout<<i<<"\t\t"<<count<<"\t\t"<<Dip.ProdScale()<<endl;
-
-	H.DecoupleNew(pDin,pGlu,pAti,pBan,bel,rec);
-
-      }
-
-      if(pDin) { delete pDin; if(pGlu) delete pGlu;}
-      else { if(pBan) delete pBan; if(pAti) delete pAti;}
-
-    }
-
-    cout<<endl<<"Total number of failures="<<count;
-    cout<<"   ("<<1.0*count/total<<")."<<endl;
-  }
 
   cout<<"=============================================================="<<endl;
 

@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/09/21
+//Version: 4 ADICIC++-0.0/2006/06/29
 
 //Chaintest.C - testing the first chaining.
 
@@ -117,17 +117,17 @@ int main() {
     Dipole::Glubranch  g2(pr);
 
     {
-      Chain ch1(b1,a1,Chain::Initiator::simple_epem);
+      Chain ch1(b1,a1,Chain::Initiator::epem);
       ch1.Print();
       cout<<ch1.MaxParticleNumber()<<endl;
       cout<<ch1.MaxDipoleNumber()<<endl;
 
-      Chain ch2(g1,g1,Chain::Initiator::simple_epem);
+      Chain ch2(g1,g1,Chain::Initiator::epem);
       ch2.Print();
       cout<<ch2.MaxParticleNumber()<<endl;
       cout<<ch2.MaxDipoleNumber()<<endl;
 
-      Chain ch3(g1,g2,Chain::Initiator::simple_epem);
+      Chain ch3(g1,g2,Chain::Initiator::epem);
       ch3.Print();
       cout<<ch3.MaxParticleNumber()<<endl;
       cout<<ch3.MaxDipoleNumber()<<endl;
@@ -157,7 +157,7 @@ int main() {
 
     cout<<endl; cin>>enter; cout<<endl;
 
-    Chain ch1(b1,a1,Chain::Initiator::simple_epem);
+    Chain ch1(b1,a1,Chain::Initiator::epem);
     cout<<ch1<<endl;
     cout<<"cha handling(0)="<<cha.IsHandled()<<endl;
     cout<<"ch1 handling(0)="<<ch1.IsHandled()<<endl;
@@ -188,7 +188,7 @@ int main() {
 
       Chain_Handler H3;
       {
-	Chain E(g1,g2,Chain::Initiator::simple_epem);
+	Chain E(g1,g2,Chain::Initiator::epem);
 	E|H3;
 	cout<<"H3 docking(1)="<<H3.IsDocked()<<endl;
 	cout<<E.IsRing()<<endl;
@@ -287,7 +287,7 @@ int main() {
     //abort();
 
     {
-      unsigned total=13;//20000;
+      unsigned total=8;//20000;
       unsigned qcount=0, gcount=0, gluons=0, cd=0, cu=0, cs=0, cc=0, cb=0;
 
       for(unsigned i=1; i<=total; ++i) {
@@ -299,8 +299,8 @@ int main() {
 	Dipole::Antibranch a1(info.antiq.u,pr);
 	Dipole::Glubranch  g2(pr);
 
-	Chain cha(b1,a1,Chain::Initiator::simple_epem);
-	//Chain cha(g1,g2,Chain::Initiator::simple_epem);
+	Chain cha(b1,a1,Chain::Initiator::epem);
+	//Chain cha(g1,g2,Chain::Initiator::epem);
 	Chain chtest(cha);
 	Chain_Handler H(cha);
 
@@ -318,26 +318,25 @@ int main() {
 	cout<<"\e[7m\e[31m                    \e[0m"<<endl;
 
 	while(H.EvolveChainByOneStep()) {
-	  bool below;
-	  Flavour fla;
-	  Chain* pCha=NULL;
-	  Recoil_Tool* pRct=NULL;
-	  H.DecoupleNew(pRct,pCha,fla,below); assert(pRct==NULL);
-	  if(pCha) {
+	  Chain_Handler::Carrier car;
+	  H.DecoupleNew(car); assert(car.Mup.GetItsVec().empty());
+	  if(car.pCha) {
 	    ++qcount;
-	    if(below) { ++itcha; itcha=chainlist.insert(itcha,pCha); --itcha;}
-	    else      { itcha=chainlist.insert(itcha,pCha); ++itcha;}
+	    if(car.ChaOrder) {
+	      ++itcha; itcha=chainlist.insert(itcha,car.pCha); --itcha;}
+	    else {
+	      itcha=chainlist.insert(itcha,car.pCha); ++itcha;}
 	  } else {
 	    ++gcount;
 	  }
-	  switch(fla.Kfcode()) {
+	  switch(car.EmitFlav.Kfcode()) {
 	  case kf::gluon: ++gluons; break;
 	  case kf::d    : ++cd; break;
 	  case kf::u    : ++cu; break;
 	  case kf::s    : ++cs; break;
 	  case kf::c    : ++cc; break;
 	  case kf::b    : ++cb; break;
-	  default       : cout<<fla<<endl; assert(0);
+	  default       : cout<<car.EmitFlav<<endl; assert(0);
 	  }
 	  cout<<cha<<endl;
 	  Vec4D test;
@@ -420,56 +419,6 @@ int main() {
   cout<<om::greenbg;
   cout<<"====================================================================";
   cout<<om::reset<<endl;
-
-  {
-    unsigned total=0; //total=0;
-    unsigned count=0;
-
-    for(unsigned i=1; i<=total; ++i) {
-
-      bool control=!(i%50000);
-
-      Vec4D pl(45.0, 20.0,-5.0, 40.0);
-      Vec4D pr(45.0,-20.0, 5.0,-40.0);
-      //Dipole::Branch     b1(info.quark.u,pl);
-      Dipole::Glubranch  b1(pl);
-      //Dipole::Antibranch a1(info.antiquark.u,pr);
-      Dipole::Glubranch  a1(pr);
-
-      Dipole* pDin=NULL;
-      Dipole::Glubranch*  pGlu=NULL;
-      Dipole::Branch*     pBan=NULL;
-      Dipole::Antibranch* pAti=NULL;
-
-      {
-
-	bool  bel;
-	xbool rec;
-	Dipole Dip(b1,a1);
-	Dipole_Handler H(Dip);
-
-	if(!H.InduceDipoleRadiation()) {
-	  ++count;
-	  if(control) cout<<i<<"\t\t"<<count<<"\t\t"<<Dip.ProdScale()<<endl;
-	  continue;
-	}
-
-	if(control) cout<<i<<"\t\t"<<count<<"\t\t"<<Dip.ProdScale()<<endl;
-
-	H.DecoupleNew(pDin,pGlu,pAti,pBan,bel,rec);
-
-      }
-
-      if(pDin) { delete pDin; if(pGlu) delete pGlu;}
-      else { if(pBan) delete pBan; if(pAti) delete pAti;}
-
-    }
-
-    cout<<endl<<"Total number of failures="<<count;
-    cout<<"   ("<<1.0*count/total<<")."<<endl;
-  }
-
-  cout<<"=============================================================="<<endl;
 
   cout<<endl;
 

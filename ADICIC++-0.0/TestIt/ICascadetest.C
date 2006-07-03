@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/09/14
+//Version: 4 ADICIC++-0.0/2006/05/23
 
 //ICascadetest.C - testing the first cascading for the IS case.
 
@@ -88,7 +88,7 @@ int main() {
 
   if(1) {
 
-    unsigned total=33;//1000;//20000;
+    unsigned total=33;//0000;//1000;//20000;
     unsigned noem=0;
     unsigned fail=0;
 
@@ -123,7 +123,7 @@ int main() {
       //dpv.sud.SetMaxIIScale();///////////////////////////////////////////////
       double iscale=dpa.MaxIIInvScale(Dip.InvMass());
 
-      cas.AddChain(b1,a1,iscale);
+      cas.AddChain(b1,a1,NULL,iscale);
       //cas.AddChain(b1,a1);
       //cas.AddChain(g1,g2);
       //cas.AddChain(g1,g2);
@@ -132,6 +132,8 @@ int main() {
       Cascade cascop(cas);
 
       cas|H;
+      //If you would like to shorten a bit, comment in:
+      //if(H.EvolveCascade()); else ++fail; cas|0; continue;
 
       cout<<"HardScale="<<dpa.sud.MaxIIK2t()
 	  <<"  "<<sqrt(dpa.sud.MaxIIK2t())<<endl;
@@ -169,7 +171,7 @@ int main() {
 	cascopy.Print();
 	cout<<endl<<om::greenbg<<"Extracting test:"<<om::reset<<endl;
 	list<Particle_List> lists;
-	assert(cas.ExtractPartons(lists));
+	assert(cas.ExtractPartons(lists).flag);
 	for(list<Particle_List>::iterator loc=lists.begin();
 	    loc!=lists.end(); ++loc) {
 	  cout<<(*loc);

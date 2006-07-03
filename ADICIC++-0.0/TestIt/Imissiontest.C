@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2006/03/03
+//Version: 4 ADICIC++-0.0/2006/06/29
 
 //Imissiontest.C - testing the first emission for the IS case.
 
@@ -104,21 +104,15 @@ int main() {
     //Dipole::Branch     b1(info.antiq.d,pr);
     Dipole::Glubranch  b1(pr,true);
 
-    bool  below;
-    xbool recoil;
-    Dipole* pDin=NULL;
-    Dipole::Glubranch* pGlu=NULL;
-    Dipole::Antibranch* pAti=NULL;
-    Dipole::Branch* pBan=NULL;
+    Dipole_Handler::Carrier box;
 
     {
 
       unsigned trials=1;
       Dipole Dip(b1,a1);
       dpv.sud.SetMaxIIScale(Dip.InvMass());////////////////////////////////////
-      Dip.SetProdScale()=Dip.SetBootScale()=Dip.SetEmitScale()=
-	//dpa.MaxIIInvScale(Dip.InvMass());
-        dpa.HighestIIInvScale(Dip.InvMass());
+      //Dip.SetEvolScales(dpa.MaxIIInvScale(Dip.InvMass()));
+      Dip.SetEvolScales(dpa.HighestIIInvScale(Dip.InvMass()));
       Dipole Cop(Dip,true);
       Dipole_Handler H(Dip);
       H.ShowSudakov(); cout<<Dip<<endl; Dip.PrintTowers();
@@ -132,30 +126,31 @@ int main() {
       //assert(H.FinishDipoleRadiation());    //as wanted, leads to abort.
 
       char stat=H.Status();
-      H.DecoupleNew(pDin,pGlu,pAti,pBan,below,recoil);
+      H.DecoupleNew(box);
 
       if(stat=='g') {
-	assert(!pAti && !pBan && pGlu);
+	assert(!box.pAqu && !box.pQua && box.pGlu);
+	Dip.SetFactScale()=box.pDip->SetFactScale()=Dip.EmitScale();
 	cout<<  "\t        p1="
 	    <<b1.Momentum()<<" \t "<<b1.Momentum().Abs2();
 	cout<<"\n\t        p2="
-	    <<pGlu->Momentum()<<" \t "<<pGlu->Momentum().Abs2();
+	    <<box.pGlu->Momentum()<<" \t "<<box.pGlu->Momentum().Abs2();
 	cout<<"\n\t        p3="
 	    <<a1.Momentum()<<" \t "<<a1.Momentum().Abs2();
-	Vec4D sum=b1.Momentum()-pGlu->Momentum()+a1.Momentum();
+	Vec4D sum=b1.Momentum()-box.pGlu->Momentum()+a1.Momentum();
 	cout<<"\n\tZ=p1-p2+p3="<<sum<<" \t "<<sum.Abs2();
 	//cout<<"\n\t       ";
 	//for(char i=0; i<4; ++i) cout<<b1.Momentum()[i]/pl[i]<<" \t ";
 	//cout<<endl<<"\t       ";
-	//for(char i=0; i<4; ++i) cout<<pGlu->Momentum()[i]/pl[i]<<" \t ";
+	//for(char i=0; i<4; ++i) cout<<box.pGlu->Momentum()[i]/pl[i]<<" \t ";
 	//cout<<endl<<"\t       ";
 	//for(char i=0; i<4; ++i) cout<<a1.Momentum()[i]/pl[i]<<" \t ";
 	cout<<endl;
-	const Dipole& Din=*pDin;
-	cout<<"Recoil is "<<recoil
-	    <<"; and, is order given as olddip newdip? "<<below<<endl;
+	const Dipole& Din=*box.pDip;
+	cout<<"Recoil is "<<box.RecoComp<<"; and, "
+	    <<"is order given as olddip newdip? "<<box.DipOrder<<endl;
 	cout<<Cop<<endl;
-	if(below) {
+	if(box.DipOrder) {
 	  cout<<Dip<<endl<<Din<<endl;
 	  Dip.PrintTowers(); Din.PrintTowers();
 	} else {
@@ -163,32 +158,33 @@ int main() {
 	  Din.PrintTowers(); Dip.PrintTowers();
 	}
       } else if(stat=='q') {
-	assert(pDin && pAti && pBan && pGlu);
-	cout<<"Is q(0) or qbar(1) emission? "<<below<<endl;
-	if(below==false) {
+	assert(box.pDip && box.pAqu && box.pQua && box.pGlu);
+	Dip.SetFactScale()=box.pDip->SetFactScale()=Dip.EmitScale();
+	cout<<"Is q(0) or qbar(1) emission? "<<box.DipOrder<<endl;
+	if(box.DipOrder==false) {
 	  cout<<  "\t        p2="
-	      <<pBan->Momentum()<<" \t "<<pBan->Momentum().Abs2();
+	      <<box.pQua->Momentum()<<" \t "<<box.pQua->Momentum().Abs2();
 	  cout<<"\n\t        p1="
-	      <<pGlu->Momentum()<<" \t "<<pGlu->Momentum().Abs2();
+	      <<box.pGlu->Momentum()<<" \t "<<box.pGlu->Momentum().Abs2();
 	  cout<<"\n\t        p3="
 	      <<a1.Momentum()<<" \t "<<a1.Momentum().Abs2();
-	  Vec4D sum=pGlu->Momentum()-pBan->Momentum()+a1.Momentum();
+	  Vec4D sum=box.pGlu->Momentum()-box.pQua->Momentum()+a1.Momentum();
 	  cout<<"\n\tZ=p1-p2+p3="<<sum<<" \t "<<sum.Abs2();
 	} else {
 	  cout<<  "\t        p1="
 	      <<b1.Momentum()<<" \t "<<b1.Momentum().Abs2();
 	  cout<<"\n\t        p3="
-	      <<pGlu->Momentum()<<" \t "<<pGlu->Momentum().Abs2();
+	      <<box.pGlu->Momentum()<<" \t "<<box.pGlu->Momentum().Abs2();
 	  cout<<"\n\t        p2="
-	      <<pAti->Momentum()<<" \t "<<pAti->Momentum().Abs2();
-	  Vec4D sum=pGlu->Momentum()-pAti->Momentum()+b1.Momentum();
+	      <<box.pAqu->Momentum()<<" \t "<<box.pAqu->Momentum().Abs2();
+	  Vec4D sum=box.pGlu->Momentum()-box.pAqu->Momentum()+b1.Momentum();
 	  cout<<"\n\tZ=p1-p2+p3="<<sum<<" \t "<<sum.Abs2();
 	}
 	cout<<endl;
-	const Dipole& Din=*pDin;
-	cout<<"Recoil is "<<recoil<<endl;
+	const Dipole& Din=*box.pDip;
+	cout<<"Recoil is "<<box.RecoComp<<endl;
 	cout<<Cop<<endl;
-	if(below) {
+	if(box.DipOrder) {
 	  cout<<Dip<<endl<<Din<<endl;
 	  Dip.PrintTowers(); Din.PrintTowers();
 	} else {
@@ -201,10 +197,10 @@ int main() {
 
     }
 
-    if(pDin) delete pDin;
-    if(pGlu) delete pGlu;
-    if(pBan && !below) delete pBan;
-    if(pAti &&  below) delete pAti;
+    if(box.pDip) delete box.pDip;
+    if(box.pGlu) delete box.pGlu;
+    if(box.pQua && !box.DipOrder) delete box.pQua;
+    if(box.pAqu &&  box.DipOrder) delete box.pAqu;
 
     TEMP::CPTEST=false;
 
@@ -219,24 +215,26 @@ int main() {
   cout<<om::reset<<endl;
 
   {
-    unsigned total=2000;
+    unsigned total=2000;//000;
     unsigned count=0;
     unsigned gluons=0;
     unsigned quarks=0, cd=0, cu=0, cs=0, cc=0, cb=0;
     unsigned anti=0;
 
-    Multiflavour mufl(sf::stop,Flavour());
-    Multidouble mudo(sr::stop,0.0);
+    Multiflavour   mufl(sf::stop,Flavour());
+    Sudakov_Result sure; sure.Isr.resize(sr::stop,0.0);
     mufl[sf::plusini]=mufl[sf::plusfin]=Flavour(kf::u);
     mufl[sf::miusini]=mufl[sf::miusfin]=Flavour(kf::u,1);
-    mudo[sr::mdip]=90.0;
-    mudo[sr::xpini]=0.04;
-    mudo[sr::xmini]=0.052712411;
-    mudo[sr::shat]=sqr(370.992);
-    mudo[sr::xpfin]=0.09;
-    mudo[sr::xmfin]=0.398083738;
-    double pwgt=Sudakov_Calculator::PlusPDFCorr(mufl,mudo);
-    double mwgt=Sudakov_Calculator::MinusPDFCorr(mufl,mudo);
+    sure.Isr[sr::mdip]=90.0;
+    sure.Isr[sr::fasc]=sqr(90.0);
+    sure.Isr[sr::xpini]=0.04;
+    sure.Isr[sr::xmini]=0.052712411;
+    sure.Isr[sr::shat]=sqr(370.992);
+    sure.Isr[sr::xpfin]=0.09;
+    sure.Isr[sr::xmfin]=0.398083738;
+    sure.Isr[sr::kt]=17.23;
+    double pwgt=Sudakov_Calculator::PlusPDFCorr(mufl,sure);
+    double mwgt=Sudakov_Calculator::MinusPDFCorr(mufl,sure);
     cout<<pwgt<<" : "<<mwgt<<endl;
 
     //abort();
@@ -263,12 +261,7 @@ int main() {
       Dipole::Branch     b1(info.antiq.u,pr);    //To get an II dipole.
       //Dipole::Glubranch  b1(pl,true);
 
-      bool  below;
-      xbool recoil;
-      Dipole* pDin=NULL;
-      Dipole::Branch*     pBan=NULL;
-      Dipole::Antibranch* pAti=NULL;
-      Dipole::Glubranch*  pGlu=NULL;
+      Dipole_Handler::Carrier box;
 
       {
 
@@ -279,9 +272,8 @@ int main() {
 	//H.ShowSudakov(); H.ShowRecoil();
 	dpv.sud.SetMaxIIScale(Dip.InvMass());//////////////////////////////////
 	//dpv.sud.SetMaxIIScale();/////////////////////////////////////////////
-	Dip.SetProdScale()=Dip.SetBootScale()=Dip.SetEmitScale()=
-	  dpa.MaxIIInvScale(Dip.InvMass());
-	  //dpa.HighestIIInvScale(Dip.InvMass());
+	Dip.SetEvolScales(dpa.MaxIIInvScale(Dip.InvMass()));
+	//Dip.SetEvolScales(dpa.HighestIIInvScale(Dip.InvMass()));
 
 #ifdef IMISSIONTEST_OUTPUT
 	cout<<Dip<<endl;
@@ -300,27 +292,31 @@ int main() {
 	    H.FinishDipoleRadiation() );
 	else {
 	  ++count;
-	  H.DecoupleNew(pDin,pGlu,pAti,pBan,below,recoil);
-	  assert(pBan==NULL); assert(pAti==NULL); assert(pGlu==NULL);
+	  H.DecoupleNew(box);
+	  assert(box.pQua==NULL);
+	  assert(box.pAqu==NULL);
+	  assert(box.pGlu==NULL);
 	  if(control) {//||1
 	    cout<<" "<<i<<":  "<<count<<"\t\t"<<Dip.ProdScale()<<"\t\t";
-	    cout<<pGlu; cout<<",";
-	    cout<<pBan; cout<<",";
-	    cout<<pAti; cout<<endl;
+	    cout<<box.pGlu; cout<<",";
+	    cout<<box.pQua; cout<<",";
+	    cout<<box.pAqu; cout<<endl;
 	  }
 	  continue;
 	}
 	char stat=H.Status();
-	H.DecoupleNew(pDin,pGlu,pAti,pBan,below,recoil);
+	H.DecoupleNew(box);
 	kf::code kfc;
 	if(stat=='g') {
-	  assert(!pAti && !pBan && pGlu && pDin);
+	  assert(!box.pAqu && !box.pQua && box.pGlu && box.pDip);
+	  Dip.SetFactScale()=box.pDip->SetFactScale()=Dip.EmitScale();
 	  kfc=kf::gluon;
 	} else if(stat=='q') {
-	  assert(pDin && pAti && pBan && pGlu);
-	  kfc=pBan->Flav().Kfcode();
-	  assert(pAti->Flav().Kfcode()==kfc);
-	  if(below) ++anti;
+	  assert(box.pDip && box.pAqu && box.pQua && box.pGlu);
+	  Dip.SetFactScale()=box.pDip->SetFactScale()=Dip.EmitScale();
+	  kfc=box.pQua->Flav().Kfcode();
+	  assert(box.pAqu->Flav().Kfcode()==kfc);
+	  if(box.DipOrder) ++anti;
 	} else abort();
 	switch(kfc) {
 	case kf::gluon: ++gluons; break;
@@ -334,25 +330,30 @@ int main() {
 
 	if(control) {//||1
 	  cout<<" "<<i<<":  "<<count<<"\t\t"<<Dip.ProdScale()<<"\t\t";
-	  if(pGlu) cout<<pGlu->Flav(); else cout<<pGlu; cout<<",";
-	  if(pBan) cout<<pBan->Flav(); else cout<<pBan; cout<<",";
-	  if(pAti) cout<<pAti->Flav(); else cout<<pAti; cout<<"\t\t";
-	  cout<<Flavour(kfc,below)<<","<<below<<","<<recoil<<endl;
+	  if(box.pGlu) cout<<box.pGlu->Flav();
+	  else cout<<box.pGlu; cout<<",";
+	  if(box.pQua) cout<<box.pQua->Flav();
+	  else cout<<box.pQua; cout<<",";
+	  if(box.pAqu) cout<<box.pAqu->Flav();
+	  else cout<<box.pAqu; cout<<"\t\t";
+	  cout<<Flavour(kfc,box.DipOrder)<<","
+	      <<box.DipOrder<<","
+	      <<box.RecoComp<<endl;
 	}
 
 #ifdef IMISSIONTEST_OUTPUT
-	if(pDin) {
-	  const Dipole& Din=*pDin;
+	if(box.pDip) {
+	  const Dipole& Din=*box.pDip;
 	  cout<<Dip<<endl<<Din<<endl;
 	}
 #endif
 
       }
 
-      if(pDin) delete pDin;
-      if(pGlu) delete pGlu;
-      if(pBan && !below) delete pBan;
-      if(pAti &&  below) delete pAti;
+      if(box.pDip) delete box.pDip;
+      if(box.pGlu) delete box.pGlu;
+      if(box.pQua && !box.DipOrder) delete box.pQua;
+      if(box.pAqu &&  box.DipOrder) delete box.pAqu;
 
     }
 
