@@ -1,5 +1,5 @@
 //bof
-//Version: 4 ADICIC++-0.0/2006/03/03
+//Version: 4 ADICIC++-0.0/2006/06/02
 
 //Inline methods of Sudakov_Group.H.
 
@@ -201,10 +201,11 @@ namespace ADICIC {
 
 
   template<Dipole::Type DT>
-  inline const double Sudakov<DT,Radiation::gluon>::
-  GenerateCorr(const Multidouble& x) {
+  inline const double Sudakov<DT,Radiation::gluon>::GenerateCorr() {
     assert(m_step==2); ++m_step;
     double x2t=m_sgroup.X2t();
+    const Multidouble& x=m_sgroup.CurrentSudakovResult().Isr;
+    assert(x.size()==2);
     //Test the overestimation.
     //double mev=0.5*( power<s_x1pow>(x[0]) + power<s_x3pow>(x[1]) );
     //if(mev>0.97) std::cout<<"  -->  "<<mev<<std::endl;
@@ -250,11 +251,12 @@ namespace ADICIC {
 
 
   template<Dipole::Type DT>
-  inline const double Sudakov<DT,Radiation::quark>::
-  GenerateCorr(const Multidouble& x) {
+  inline const double Sudakov<DT,Radiation::quark>::GenerateCorr() {
     assert(m_step==2); ++m_step;
     double x2t=m_sgroup.X2t();
     double zmax=m_sgroup.Ymax();
+    const Multidouble& x=m_sgroup.CurrentSudakovResult().Isr;
+    assert(x.size()==2);
     double corr=
       Sudakov_Calculator::AlphaSCorr(m_sgroup.Sdip()*x2t) *
       ( sqr(x[0]+x[1]-1.0)+

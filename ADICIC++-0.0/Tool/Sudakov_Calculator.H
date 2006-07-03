@@ -1,5 +1,5 @@
 //bof
-//Version: 4 ADICIC++-0.0/2006/03/03    (surely preliminarily)
+//Version: 4 ADICIC++-0.0/2006/06/02    (surely preliminarily)
 
 //Base classes are provided, which manage the Sudakov calculations.
 
@@ -41,7 +41,7 @@ namespace ADICIC {
     typedef const double (*Double_Double_Func)(const double);
     typedef const int    (*Int_Double_Func)(const double);
     typedef const double (*PDF_Corr_Func)(bool, const Multiflavour&,
-					  const Multidouble&);
+					  const Sudakov_Result&);
 
     class Toolbox {
       friend class Sudakov_Calculator;
@@ -76,15 +76,13 @@ namespace ADICIC {
     static inline const int FixNf(const double);
     static inline const int RunNf(const double);
 
-    static PDF_Corr_Func       GetPDFCorr;
-    static inline const double NoPDFCorr(bool, const Multiflavour&,
-					 const Multidouble&);
-    static        const double IsPDFCorr(bool, const Multiflavour&,
-					 const Multidouble&);
+    static PDF_Corr_Func GetPDFCorr;
+    static const double  NoPDFCorr(bool, const Multiflavour&,
+				   const Sudakov_Result&);
+    static const double  IsPDFCorr(bool, const Multiflavour&,
+				   const Sudakov_Result&);
 
   protected:
-
-    static const bool sf_gsplit;    //Temporary entry.
 
     const Dipole*   p_dip;
     Sudakov_Result* p_sur;
@@ -103,16 +101,20 @@ namespace ADICIC {
     static inline const int    Nf(const double);
     static inline const bool   ArePDFsInitialized();
     static inline const double PlusPDFCorr(const Multiflavour&,
-					   const Multidouble&);
+					   const Sudakov_Result&);
     static inline const double MinusPDFCorr(const Multiflavour&,
-					    const Multidouble&);
+					    const Sudakov_Result&);
 
     static       void ShowEnvironment();
     static const Trio AdjustEnvironment(const std::string& path="default",
 					MODEL::Model_Base* pmb=NULL);
 
-    inline const Dipole& CurrentDipole() const;
-    virtual void         Which() const;
+    inline const Dipole&         CurrentDipole() const;
+    inline const Sudakov_Result& CurrentSudakovResult() const;
+    inline const double PlusPDFCorr(const Multiflavour&) const;
+    inline const double MinusPDFCorr(const Multiflavour&) const;
+
+    virtual void Which() const;
 
     virtual       void ShowSpecification() const=0;
     virtual const bool GenerateVariablesFor(const Dipole&, Sudakov_Result&)=0;
@@ -166,11 +168,11 @@ namespace ADICIC {
     virtual bool   NfVeto(const double) const { return false;}
     virtual void   SetPDFFlavs(bool) {}
     virtual void   SetGenX2tFac() {}
-    virtual double GeneratePDFCorr(const Multidouble&) { return 1.0;}
+    virtual double GeneratePDFCorr() { return 1.0;}
 
     virtual const double CalculateRapLimit()=0;
     virtual const double GenerateRap()=0;
-    virtual const double GenerateCorr(const Multidouble&)=0;
+    virtual const double GenerateCorr()=0;
     virtual const double GenerateX2t()=0;
 
   };

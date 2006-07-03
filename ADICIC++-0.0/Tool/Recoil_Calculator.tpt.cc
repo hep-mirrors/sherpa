@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/08/22
+//Version: 4 ADICIC++-0.0/2006/05/31
 
 //Implementation of template structures of Recoil_Calculator.H.
 
@@ -154,6 +154,99 @@ const bool Recoil<ST>::CmsMomenta() {
 
 
 template<Recoil_Strategy::Type ST>
+const bool Recoil<ST>::CiiMomenta() {
+
+  //cout<<__PRETTY_FUNCTION__<<endl;
+
+  assert(p_sur->Isr.size()==sr::stop);
+  assert(p_sur->Isr[sr::kt]>0.0);
+  assert(p_sur->Isr[sr::expy]>0.0);
+  assert(p_sur->Isr[sr::xpfin]>0.0 && p_sur->Isr[sr::xmfin]>0.0);
+
+  //p_sur->Print(); p_rer->Print(); cout<<"-------"<<endl;
+
+  Poincare* pfly=new Poincare(-1.0*p_dip->TotP()); assert(pfly);
+  p_rer->Mup.Keep(*pfly,0,0);    //Keep boost.
+
+  extern Run_Parameter ATOOLS::rpa;
+  double sqrtS=rpa.gen.Ecms();
+  m_phi=2.0*M_PI*ATOOLS::ran.Get();
+  //The dipole's root (needed for the final longitudinal boost):
+  p_rer->Vec[rr::p2]=Vec4D(p_sur->Isr[sr::mdip],0.0,0.0,0.0);
+
+  //Annihilation: 3..quark,        2..gluon,        1..antiquark.
+  //Compton     : 3..quark(gluon), 2..f(anti)quark, 1..gluon(antiquark).
+
+  m_e.resize(4,0.0);
+  char sig;
+  if(p_sur->Dir) sig=1; else sig=-1;
+  switch(p_sur->Rad) {
+  case Radiation::gluon  : CiiGlu(sig); break;
+  case Radiation::qfront : CiiQua(sig); break;
+  case Radiation::qbarend: CiiAqu(sig); break;
+  default:
+    assert(p_sur->Rad==Radiation::gluon  ||
+	   p_sur->Rad==Radiation::qfront || p_sur->Rad==Radiation::qbarend);
+  }
+
+  //p_rer->Print(); cout<<"-------kin done"<<endl;
+
+  Poincare* palign=new Poincare(p_rer->Vec[rr::p3]+p_rer->Vec[rr::p1]);
+  p_rer->Mup.Keep(*palign,0,0);    //Keep boost.
+  palign->Boost(p_rer->Vec[rr::p3]);
+  palign->Boost(p_rer->Vec[rr::p1]);
+  palign->Boost(p_rer->Vec[rr::p2]);
+  Poincare* prot=new Poincare(p_rer->Vec[rr::p3],sig*Recoil_Calculator::ZAxis);
+  p_rer->Mup.Keep(*prot,1,0);    //Keep rotation.
+  prot->Rotate(p_rer->Vec[rr::p3]);
+  prot->Rotate(p_rer->Vec[rr::p1]);
+  prot->Rotate(p_rer->Vec[rr::p2]);
+  double beta=(p_rer->Vec[rr::p2]).PPlus()-
+    (p_rer->Vec[rr::p2]).PMinus()*sqr(p_sur->Isr[sr::expydip]);
+  beta/=(p_rer->Vec[rr::p2]).PPlus()+
+    (p_rer->Vec[rr::p2]).PMinus()*sqr(p_sur->Isr[sr::expydip]);
+  Poincare* plobo=new Poincare(Vec4D(1.0,0.0,0.0,beta));
+  p_rer->Mup.Keep(*plobo,0,0);    //Keep boost.
+  plobo->Boost(p_rer->Vec[rr::p3]);
+  plobo->Boost(p_rer->Vec[rr::p1]);
+  plobo->Boost(p_rer->Vec[rr::p2]);
+  //The emitted parton:
+  p_rer->Vec[rr::p2]=p_rer->Vec[rr::p1]+p_rer->Vec[rr::p3]-
+    p_rer->Vec[rr::p2];
+  //Checking and finalizing:
+  double E1, E3;
+  if(p_sur->Dir) {
+    E3=p_sur->Isr[sr::xpfin]*sqrtS/2.0; E1=p_sur->Isr[sr::xmfin]*sqrtS/2.0;}
+  else {
+    E1=p_sur->Isr[sr::xpfin]*sqrtS/2.0; E3=p_sur->Isr[sr::xmfin]*sqrtS/2.0;}
+  assert(dabs(p_rer->Vec[rr::p3][0]-E3)<1.0e-8 &&
+	 dabs(p_rer->Vec[rr::p3][3]-sig*E3)<1.0e-8 &&
+	 dabs(p_rer->Vec[rr::p3][1])<1.0e-10 &&
+	 dabs(p_rer->Vec[rr::p3][2])<1.0e-10);
+  assert(dabs(p_rer->Vec[rr::p1][0]-E1)<1.0e-8 &&
+	 dabs(p_rer->Vec[rr::p1][3]+sig*E1)<1.0e-8 &&
+	 dabs(p_rer->Vec[rr::p1][1])<1.0e-10 &&
+	 dabs(p_rer->Vec[rr::p1][2])<1.0e-10);
+  p_rer->Vec[rr::p3]=Vec4D(E3,0.0,0.0,sig*E3);
+  p_rer->Vec[rr::p1]=Vec4D(E1,0.0,0.0,-sig*E1);
+  double g=p_sur->Isr[sr::expy]/2.0;
+  double h=0.25/g;
+  assert(dabs(p_rer->Vec[rr::p2][0]-(g+h)*p_sur->Isr[sr::kt])<1.0e-8 &&
+	 dabs(p_rer->Vec[rr::p2][3]-(g-h)*p_sur->Isr[sr::kt])<1.0e-8);
+  h=sqrt(sqr(p_rer->Vec[rr::p2][1])+sqr(p_rer->Vec[rr::p2][2]));
+  assert(dabs(p_sur->Isr[sr::kt]-h)<1.0e-8);
+
+  //p_rer->Print();
+
+  return true;
+
+}
+
+
+
+
+
+template<Recoil_Strategy::Type ST>
 const bool Recoil<ST>::LabMomenta() {
 
   assert(p_sur->Isr.size()==sr::stop);
@@ -162,8 +255,8 @@ const bool Recoil<ST>::LabMomenta() {
   assert(p_sur->Isr[sr::xpfin]>0.0 && p_sur->Isr[sr::xmfin]>0.0);
 
   //cout<<p_sur->Dir<<endl;
-  //cout<<p_rer->Vec[rr::p1]<<endl;
-  //cout<<p_rer->Vec[rr::p3]<<endl;
+  //p_rer->Print();
+  //cout<<"While recoiling: "<<p_rer->Vec[rr::p1]+p_rer->Vec[rr::p3]<<" : ";
 
   extern Run_Parameter ATOOLS::rpa;
   double sqrtS=rpa.gen.Ecms();
@@ -197,7 +290,17 @@ const bool Recoil<ST>::LabMomenta() {
   p_rer->Vec[rr::p2]=Vec4D(g+h,cos(m_phi),sin(m_phi),g-h);
   p_rer->Vec[rr::p2]*=p_sur->Isr[sr::kt];
 
+  Vec4D prime(p_rer->Vec[rr::p1]+p_rer->Vec[rr::p3]-p_rer->Vec[rr::p2]);
+  assert(dabs(p_dip->InvMass()-prime.Abs2())<1.0e-7);
+  assert(p_dip->InvMass()>1.0e-12);
+  Poincare* pfly=new Poincare(-1.0*p_dip->TotP()); assert(pfly);
+  p_rer->Mup.Keep(*pfly,0,0);    //Keep boost.
+  Poincare* pflyprime=new Poincare(prime); assert(pflyprime);
+  p_rer->Mup.Keep(*pflyprime,0,1);    //Keep back boost.
+
   p_rer->Poc=both;
+
+  //p_rer->Print();
 
   return true;
 
@@ -212,7 +315,7 @@ const bool Recoil<ST>::LabMomenta() {
 template<Recoil_Strategy::Type ST>
 const bool Recoil<ST>::Calculate() {
   cerr<<"\nMethod: "<<__PRETTY_FUNCTION__<<": "
-      <<"Warning: Recoil strategy has not been specified!\n"<<endl;
+      <<"Warning: Recoil strategy has not entirely been specified!\n"<<endl;
   return false;
 }
 
@@ -513,6 +616,102 @@ const bool Recoil<Recoil_Strategy::Test>::Calculate() {
   RotateOnto(p_rer->Vec[rr::axis]);
 
   return true;
+
+}
+
+
+
+//=============================================================================
+
+
+
+template<Recoil_Strategy::Type ST>
+void Recoil<ST>::CiiGlu(char sig) {
+
+  //Annihilation: 3..quark, 2..gluon, 1..antiquark.
+
+  m_e[3]=(p_sur->Isr[sr::mdip])*(p_sur->X3)/2.0;
+  m_e[1]=(p_sur->Isr[sr::mdip])*(p_sur->X1)/2.0;
+
+  if( ATOOLS::ran.Get() < sqr(m_e[3])/(sqr(m_e[3])+sqr(m_e[1])) ) {
+    p_rer->Poc=front;
+    p_rer->Vec[rr::p3]=Vec4D(m_e[3],0.0,0.0,sig*m_e[3]);
+    double qlong=sig*(m_e[1]-(p_sur->Isr[sr::shat])/(2.0*m_e[3]));
+    double qperp=sqr(m_e[1])-sqr(qlong);
+    assert(qperp>0.0); qperp=sqrt(qperp);
+    p_rer->Vec[rr::p1]=Vec4D(m_e[1],qperp*cos(m_phi),qperp*sin(m_phi),qlong);
+  } else {
+    p_rer->Poc=end;
+    p_rer->Vec[rr::p1]=Vec4D(m_e[1],0.0,0.0,-sig*m_e[1]);
+    double qlong=sig*(-m_e[3]+(p_sur->Isr[sr::shat])/(2.0*m_e[1]));
+    double qperp=sqr(m_e[3])-sqr(qlong);
+    assert(qperp>0.0); qperp=sqrt(qperp);
+    p_rer->Vec[rr::p3]=Vec4D(m_e[3],qperp*cos(m_phi),qperp*sin(m_phi),qlong);
+  }
+
+}
+
+
+
+
+
+template<Recoil_Strategy::Type ST>
+void Recoil<ST>::CiiQua(char sig) {
+
+  //Compton: 3..quark, 2..fquark, 1..gluon.
+
+  m_e[3]=(p_sur->Isr[sr::mdip])*(p_sur->X3)/2.0;
+  m_e[1]=(p_sur->Isr[sr::mdip])*(p_sur->X1)/2.0;
+  double I=m_e[3]+m_e[1]-p_sur->Isr[sr::mdip];
+
+  if( ATOOLS::ran.Get() < sqr(m_e[3])/(sqr(m_e[3])+sqr(I)) ) {
+    p_rer->Poc=front;
+    p_rer->Vec[rr::p3]=Vec4D(m_e[3],0.0,0.0,sig*m_e[3]);
+    double zg=sig*(m_e[1]-p_sur->Isr[sr::shat]/(2.0*m_e[3]));
+    double qperp=sqr(m_e[1])-sqr(zg);
+    assert(qperp>0.0); qperp=sqrt(qperp);
+    p_rer->Vec[rr::p1]=Vec4D(m_e[1],qperp*cos(m_phi),qperp*sin(m_phi),zg);
+  } else {
+    p_rer->Poc=both;
+    double qlong=-sig*((m_e[3]+m_e[1])*m_e[3]/I-p_sur->Isr[sr::shat]/(2.0*I));
+    double qperp=sqr(m_e[3])-sqr(qlong);
+    assert(qperp>0.0); qperp=sqrt(qperp);
+    p_rer->Vec[rr::p3]=Vec4D(m_e[3],-qperp*cos(m_phi),-qperp*sin(m_phi),qlong);
+    p_rer->Vec[rr::p1]=Vec4D(m_e[1],qperp*cos(m_phi),qperp*sin(m_phi),
+			     -sig*I-qlong);
+  }
+
+}
+
+
+
+
+
+template<Recoil_Strategy::Type ST>
+void Recoil<ST>::CiiAqu(char sig) {
+
+  //Compton: 3..gluon, 2..fantiquark, 1..antiquark.
+
+  m_e[3]=(p_sur->Isr[sr::mdip])*(p_sur->X1)/2.0;
+  m_e[1]=(p_sur->Isr[sr::mdip])*(p_sur->X3)/2.0;
+  double E=m_e[3]+m_e[1]-p_sur->Isr[sr::mdip];
+
+  if( ATOOLS::ran.Get() < sqr(m_e[1])/(sqr(m_e[1])+sqr(E)) ) {
+    p_rer->Poc=end;
+    p_rer->Vec[rr::p1]=Vec4D(m_e[1],0.0,0.0,-sig*m_e[1]);
+    double zg=-sig*(m_e[3]-p_sur->Isr[sr::shat]/(2.0*m_e[1]));
+    double qperp=sqr(m_e[3])-sqr(zg);
+    assert(qperp>0.0); qperp=sqrt(qperp);
+    p_rer->Vec[rr::p3]=Vec4D(m_e[3],qperp*cos(m_phi),qperp*sin(m_phi),zg);
+  } else {
+    p_rer->Poc=both;
+    double qlong=sig*((m_e[3]+m_e[1])*m_e[1]/E-p_sur->Isr[sr::shat]/(2.0*E));
+    double qperp=sqr(m_e[1])-sqr(qlong);
+    assert(qperp>0.0); qperp=sqrt(qperp);
+    p_rer->Vec[rr::p1]=Vec4D(m_e[1],-qperp*cos(m_phi),-qperp*sin(m_phi),qlong);
+    p_rer->Vec[rr::p3]=Vec4D(m_e[3],qperp*cos(m_phi),qperp*sin(m_phi),
+			     sig*E-qlong);
+  }
 
 }
 

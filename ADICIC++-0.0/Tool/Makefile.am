@@ -10,9 +10,9 @@ libAdicicTool_la_SOURCES = Xio.C Xmath.C Xhisto.C \
                            Recoil_Calculator.C
 
 pkginclude_HEADERS = Xenum.H Xio.H Xmath.H Xhisto.H defextra enumextra ioextra mathextra histoextra \
-                  Sudakov_Calculator.H \
-                  Sudakov_Group.H IISudakov_Group.H \
-                  Recoil_Calculator.H
+                     Sudakov_Calculator.H \
+                     Sudakov_Group.H IISudakov_Group.H \
+                     Recoil_Calculator.H
 
 AM_CXXFLAGS = @SHERPAFLAGS@ -ftemplate-depth-100
 

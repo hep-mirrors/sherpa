@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/07/25    (surely preliminarily)
+//Version: 4 ADICIC++-0.0/2006/05/30    (surely preliminarily)
 
 //Classes are provided, which manage the calculation of the kinematics
 //according to given recoil strategies.
@@ -13,7 +13,6 @@
 #include <vector>
 #include <enumextra>
 #include "Vector.H"
-#include "Recoil_Strategy.hpp"
 #include "Dipole_Handler.H"
 
 
@@ -25,12 +24,6 @@
 
 
 namespace ADICIC {
-
-
-
-  struct Recoil_Setup;
-
-
 
 
 
@@ -103,9 +96,14 @@ namespace ADICIC {
     void Rotate(const ATOOLS::Vec4D&, const ATOOLS::Vec4D&);
 
     const bool CmsMomenta();
+    const bool CiiMomenta();
     const bool LabMomenta();
 
     const bool Calculate();    //Specific!
+
+    void CiiGlu(char);
+    void CiiQua(char);
+    void CiiAqu(char);
 
   public:
 

@@ -1,5 +1,5 @@
 //bof
-//Version: 4 ADICIC++-0.0/2006/02/03
+//Version: 4 ADICIC++-0.0/2006/06/30
 
 //Inline methods of Sudakov_Calculator.H.
 
@@ -59,21 +59,40 @@ namespace ADICIC {
   }
   inline const double
   Sudakov_Calculator::PlusPDFCorr(const Multiflavour& mufl,
-				  const Multidouble& mudo) {
+				  const Sudakov_Result& sure) {
     //Static method.
-    return GetPDFCorr(0,mufl,mudo);
+    return GetPDFCorr(0,mufl,sure);
   }
   inline const double
   Sudakov_Calculator::MinusPDFCorr(const Multiflavour& mufl,
-				   const Multidouble& mudo) {
+				   const Sudakov_Result& sure) {
     //Static method.
-    return GetPDFCorr(1,mufl,mudo);
+    return GetPDFCorr(1,mufl,sure);
   }
+
+
 
 
 
   inline const Dipole& Sudakov_Calculator::CurrentDipole() const {
     assert(p_dip); return *p_dip;
+  }
+  inline
+  const Sudakov_Result& Sudakov_Calculator::CurrentSudakovResult() const {
+    assert(p_sur); return *p_sur;
+  }
+
+
+
+  inline const double
+  Sudakov_Calculator::PlusPDFCorr(const Multiflavour& mufl) const {
+    assert(p_sur); assert(p_sur->Isr.size()>=sr::stop);
+    return GetPDFCorr(0,mufl,*p_sur);
+  }
+  inline const double
+  Sudakov_Calculator::MinusPDFCorr(const Multiflavour& mufl) const {
+    assert(p_sur); assert(p_sur->Isr.size()>=sr::stop);
+    return GetPDFCorr(1,mufl,*p_sur);
   }
 
 
@@ -92,7 +111,8 @@ namespace ADICIC {
     //return (*s_box.m_ras[0])(p2t);    //Testing.
     //return (*s_box.m_ras[0])(p2t)/s_asapprox;
     assert(p2t>dpa.sud.MinK2t() || p2t>dpa.sud.MinIIK2t());
-    double ret=(*s_box.m_ras[0])(p2t)/s_asapprox; assert(ret<=1.0);
+    double ret=(*s_box.m_ras[0])(dpa.evo.RenoScaleFactor()*p2t)/s_asapprox;
+    assert(ret<=1.0);
     return ret;
   }
   inline const int Sudakov_Calculator::FixNf(const double p2t) {
@@ -101,14 +121,10 @@ namespace ADICIC {
   }
   inline const int Sudakov_Calculator::RunNf(const double p2t) {
     //Static method.
-    int ret=static_cast<MODEL::Running_AlphaS*>(s_box.m_ras[0])->Nf(p2t);
+    int ret=static_cast<MODEL::Running_AlphaS*>(s_box.m_ras[0])
+      ->Nf(dpa.evo.RenoScaleFactor()*p2t);
     assert(ret>=-1);
     return ret;
-  }
-  inline const double Sudakov_Calculator::NoPDFCorr(bool, const Multiflavour&,
-						    const Multidouble&) {
-    //Static method.
-    return 1.0;
   }
 
 

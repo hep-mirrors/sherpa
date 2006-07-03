@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2005/01/31
+//Version: 4 ADICIC++-0.0/2006/05/23
 
 //A collection of specific enum structures.
 
@@ -133,18 +133,24 @@ namespace bool5 {
 
 
 
+//======================
+//  The Boolint struct
+//======================
+
+
+struct boolint {
+  bool flag;
+  int  numr;
+  boolint() : flag(false), numr(0) {}
+  boolint(bool b, int i) : flag(b), numr(i) {}
+};
+
+
+
+
+
 #endif    //eo _Xenum_H_
 
 
 
 //eof
-
-
-
-
-
-
-
-
-
-

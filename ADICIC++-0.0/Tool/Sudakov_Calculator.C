@@ -1,5 +1,5 @@
 //bof
-//Version: 4 ADICIC++-0.0/2006/03/03
+//Version: 4 ADICIC++-0.0/2006/06/30
 
 //Implementation of Sudakov_Calculator.H.
 
@@ -37,9 +37,8 @@ using namespace ADICIC;
 const bool Sudakov_Calculator::sf_ariadne=false;//true;//false;
 const bool& Sudakov_Calculator::Ariadne=Sudakov_Calculator::sf_ariadne;
 
-//Temporary PDF and gluonsplit switch.
+//Temporary PDF switch.
 const bool Sudakov_Calculator::sf_pdf=true;//false;
-const bool Sudakov_Calculator::sf_gsplit=false;//true;
 
 //So far there is no static Sudakov_Calculator.
 int Sudakov_Calculator::s_count=0;
@@ -112,6 +111,8 @@ void Sudakov_Calculator::ShowEnvironment() {    //Static.
       <<bool(sf_pdf)<<".\n";
   cout<<"PDFs are initialized................."
       <<bool(s_box.m_pdf[0] && s_box.m_pdf[1])<<".\n";
+  cout<<"Gluon split handling is set to......."
+      <<dpa.sud.GsplitRule()<<".\n";
   cout<<"Radiation type is set to............."
       <<dpa.sud.RadiationType()<<".\n";
   cout<<"FF dipole shower cut-off scale is set to...."
@@ -135,6 +136,7 @@ const Trio Sudakov_Calculator::AdjustEnvironment(const string& path,
 						 MODEL::Model_Base* pmod) {
 
   //Static method.
+  //Prepares the alphaS and PDF treatment that governes ADICIC's evolution.
 
   //static MODEL::Running_AlphaS locras(0.1188,8315.25,1);
   static MODEL::Running_AlphaS locras(0.118,8315.0,1);
@@ -187,7 +189,8 @@ const Trio Sudakov_Calculator::AdjustEnvironment(const string& path,
       }
     }
     assert(s_box.m_ras[0]);
-    double scmin=Min(dpa.sud.MinK2t(),dpa.sud.MinIIK2t());
+    double scmin=dpa.evo.RenoScaleFactor()*
+      Min(dpa.sud.MinK2t(),dpa.sud.MinIIK2t());
     double cutq2=static_cast<MODEL::Running_AlphaS*>(s_box.m_ras[0])->CutQ2();
     if(scmin<cutq2) s_asapprox=(*s_box.m_ras[0])(cutq2)+0.0001;
     else            s_asapprox=(*s_box.m_ras[0])(scmin)+0.0001;
@@ -196,8 +199,10 @@ const Trio Sudakov_Calculator::AdjustEnvironment(const string& path,
     //for(int i=0; i<100; ++i)
     //  cout<<(1.0-i/100.0)<<"\t"<<(*s_box.m_ras[0])(1.0-i/100.0)<<endl;
     assert(s_asapprox>(*s_box.m_ras[0])(scmin) &&
-	   s_asapprox>(*s_box.m_ras[0])(dpa.sud.MinK2t()) &&
-	   s_asapprox>(*s_box.m_ras[0])(dpa.sud.MinIIK2t()));
+	   s_asapprox>(*s_box.m_ras[0])(dpa.evo.RenoScaleFactor()*
+					dpa.sud.MinK2t()) &&
+	   s_asapprox>(*s_box.m_ras[0])(dpa.evo.RenoScaleFactor()*
+					dpa.sud.MinIIK2t()));
     GetAlphaSCorr=&RunAlphaSCorr;
     GetNf=&RunNf;
   }
@@ -279,8 +284,18 @@ void Sudakov_Calculator::Which() const {    //Virtual.
 
 
 
+const double Sudakov_Calculator::NoPDFCorr(bool, const Multiflavour&,
+					   const Sudakov_Result&) {
+  //Static method.
+  return 1.0;
+}
+
+
+
+
+
 const double Sudakov_Calculator::IsPDFCorr(bool z, const Multiflavour& mufl,
-					   const Multidouble& mudo) {
+					   const Sudakov_Result& su) {
 
   //Static method.
   //cout<<sf::plusini+z<<","<<sf::plusfin+z<<endl;/////////////////////////////
@@ -294,21 +309,31 @@ const double Sudakov_Calculator::IsPDFCorr(bool z, const Multiflavour& mufl,
   static double wden[2];
 
   bool same=false;
+  double newscale=dpa.evo.FactScaleFactor();
+  double oldscale=newscale;
+  //newscale*=su.Isr[sr::shat];
+  //oldscale*=sqr(su.Isr[sr::mdip]);
+  //su.Sfc.Print();
+  //cout<<" (1) "<<newscale<<":"<<oldscale;
+  newscale*=dpa.evo.GetFactScaleFrom(su);
+  oldscale*=su.Isr[sr::fasc];
+  //cout<<" (2) "<<newscale<<":"<<oldscale<<"       ";
+  //su.Print();
 
-  s_box.m_pdf[z]->Calculate(mudo[sr::xpfin+z],mudo[sr::shat]);    //Or mperp^2?
-  double wnum=s_box.m_pdf[z]->GetXPDF(mufl[sf::plusfin+z])/mudo[sr::xpfin+z];
+  s_box.m_pdf[z]->Calculate(su.Isr[sr::xpfin+z],newscale);
+  double wnum=s_box.m_pdf[z]->GetXPDF(mufl[sf::plusfin+z])/su.Isr[sr::xpfin+z];
 
   if( !speedup || pdf[z]!=s_box.m_pdf[z] ||
-      xin[z]!=mudo[sr::xpini+z] || q2i[z]!=sqr(mudo[sr::mdip]) ) {
-    s_box.m_pdf[z]->Calculate(mudo[sr::xpini+z],sqr(mudo[sr::mdip]));
-    wden[z]=s_box.m_pdf[z]->GetXPDF(mufl[sf::plusini+z])/mudo[sr::xpini+z];
+      xin[z]!=su.Isr[sr::xpini+z] || q2i[z]!=oldscale ) {
+    s_box.m_pdf[z]->Calculate(su.Isr[sr::xpini+z],oldscale);
+    wden[z]=s_box.m_pdf[z]->GetXPDF(mufl[sf::plusini+z])/su.Isr[sr::xpini+z];
     pdf[z]=s_box.m_pdf[z];
     fla[z]=mufl[sf::plusini+z];
-    xin[z]=mudo[sr::xpini+z];
-    q2i[z]=sqr(mudo[sr::mdip]);
+    xin[z]=su.Isr[sr::xpini+z];
+    q2i[z]=oldscale;
   } else {
     if(fla[z]!=mufl[sf::plusini+z]) {
-      wden[z]=s_box.m_pdf[z]->GetXPDF(mufl[sf::plusini+z])/mudo[sr::xpini+z];
+      wden[z]=s_box.m_pdf[z]->GetXPDF(mufl[sf::plusini+z])/su.Isr[sr::xpini+z];
       fla[z]=mufl[sf::plusini+z];
     } else {
       same=true;
@@ -319,8 +344,8 @@ const double Sudakov_Calculator::IsPDFCorr(bool z, const Multiflavour& mufl,
   /////////////////////////////////////////////////////////////////////////////
   //cout<<"       "<<same<<"   "
   //    <<mufl[sf::plusfin+z]<<", "<<mufl[sf::plusini+z]<<"    "
-  //    <<mudo[sr::xpfin+z]<<", "<<mudo[sr::xpini+z]<<"    "
-  //    <<mudo[sr::shat]<<", "<<sqr(mudo[sr::mdip])<<"   |   "
+  //    <<su.Isr[sr::xpfin+z]<<", "<<su.Isr[sr::xpini+z]<<"    "
+  //    <<newscale<<", "<<oldscale<<"   |   "
   //    <<wnum<<", "<<wden[z]<<"  =>  "<<(wnum/wden[z])<<"\n";
   /////////////////////////////////////////////////////////////////////////////
 

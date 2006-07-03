@@ -1,5 +1,5 @@
 //bof
-//Version: 4 ADICIC++-0.0/2006/02/03    (surely preliminarily)
+//Version: 4 ADICIC++-0.0/2006/06/02    (surely preliminarily)
 
 //The Sudakov classes are provided, which manage the Sudakov calculation needed
 //for the gluon emission or splitting of a specific FF dipole.
@@ -94,7 +94,7 @@ namespace ADICIC {
     void ShowSpecification() const;
     const double CalculateRapLimit();
     const double GenerateRap();
-    const double GenerateCorr(const Multidouble&);
+    const double GenerateCorr();
     const double GenerateX2t();
   };
   template<>
@@ -103,7 +103,7 @@ namespace ADICIC {
     void ShowSpecification() const;
     const double CalculateRapLimit();
     const double GenerateRap();
-    const double GenerateCorr(const Multidouble&);
+    const double GenerateCorr();
     const double GenerateX2t();
   };
 
@@ -145,7 +145,7 @@ namespace ADICIC {
 
     inline const double CalculateRapLimit();
     inline const double GenerateRap();
-    inline const double GenerateCorr(const Multidouble&);
+    inline const double GenerateCorr();
     const double GenerateX2t();
 
   };
@@ -190,7 +190,7 @@ namespace ADICIC {
 
     inline const double CalculateRapLimit();
     inline const double GenerateRap();
-    inline const double GenerateCorr(const Multidouble&);
+    inline const double GenerateCorr();
     const double GenerateX2t();
 
   };

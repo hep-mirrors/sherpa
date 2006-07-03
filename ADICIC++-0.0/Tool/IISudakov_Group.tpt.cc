@@ -1,5 +1,5 @@
 //bof
-//Version: 4 ADICIC++-0.0/2006/03/03
+//Version: 4 ADICIC++-0.0/2006/06/11
 
 //Implementation of the template structures of IISudakov_Group.H.
 
@@ -33,14 +33,14 @@ IISudakov_Group<DT>::IISudakov_Group(const Radiation::Type ratyp)
     m_x2t(1.0), m_ymax(0.0), m_rap(0.0), m_corr(1.0),
     l_sud() {
 
-  if(ratyp>Radiation::duscb) {
+  if(ratyp>Radiation::duscb && dpa.sud.GsplitRule()!=positive) {
     Sudakov_Flavour sfc; sfc.Glu=&info.gluon.g;
     Sudakov_Base* gsud=new IISudakov<DT,Radiation::gluon>(*this,sfc);
     assert(gsud);
     l_sud.push_back(gsud);
   }
 
-  if(ratyp!=Radiation::g) {
+  if(ratyp!=Radiation::g && dpa.sud.GsplitRule()!=positive) {
     Sudakov_Flavour sfc;
     Sudakov_Base* qsud;
     if(DT==Dipole::iiqbarg) {
@@ -57,7 +57,7 @@ IISudakov_Group<DT>::IISudakov_Group(const Radiation::Type ratyp)
     }
   }
 
-  if(sf_gsplit==false) return;
+  if(dpa.sud.GsplitRule()==negative) return;
 
   Sudakov_Flavour sfc[6];
   sfc[1].Qua=&info.quark.d; sfc[1].Aqu=&info.antiq.d;
@@ -88,7 +88,7 @@ IISudakov_Group<Dipole::iiqbarq>::IISudakov_Group(const Radiation::Type ratyp)
     m_x2t(1.0), m_ymax(0.0), m_rap(0.0), m_corr(1.0),
     l_sud() {
 
-  if(ratyp>Radiation::duscb) {
+  if(ratyp>Radiation::duscb && dpa.sud.GsplitRule()!=positive) {
     Sudakov_Flavour sfc; sfc.Glu=&info.gluon.g;
     Sudakov_Base* gsud=
       new IISudakov<Dipole::iiqbarq,Radiation::gluon>(*this,sfc);
@@ -96,7 +96,7 @@ IISudakov_Group<Dipole::iiqbarq>::IISudakov_Group(const Radiation::Type ratyp)
     l_sud.push_back(gsud);
   }
 
-  if(ratyp!=Radiation::g) {
+  if(ratyp!=Radiation::g && dpa.sud.GsplitRule()!=positive) {
     Sudakov_Flavour sfc;
     Sudakov_Base* qsud;
     sfc.Qua=&info.quark.d;
@@ -128,7 +128,7 @@ IISudakov_Group<Dipole::iigg>::IISudakov_Group(const Radiation::Type ratyp)
     m_x2t(1.0), m_ymax(0.0), m_rap(0.0), m_corr(1.0),
     l_sud() {
 
-  if(ratyp>Radiation::duscb) {
+  if(ratyp>Radiation::duscb && dpa.sud.GsplitRule()!=positive) {
     Sudakov_Flavour sfc; sfc.Glu=&info.gluon.g;
     Sudakov_Base* gsud=new IISudakov<Dipole::iigg,Radiation::gluon>(*this,sfc);
     assert(gsud);
@@ -185,10 +185,6 @@ const bool IISudakov_Group<DT>::GenerateVariablesFor(const Dipole& dip,
   Radiation::Group kgrp=Radiation::gluon;
   extern Run_Parameter ATOOLS::rpa;
   double Ecm=rpa.gen.Ecms();
-  p_sur->Isr.push_back(0.0);    //Trick to have easy carriage.
-  double& x1=p_sur->Isr.back();
-  p_sur->Isr.push_back(0.0);
-  double& x3=p_sur->Isr.back();
 
   for(list<Sudakov_Base*>::const_iterator bit=l_sud.begin();
       bit!=l_sud.end(); ++bit) {
@@ -212,7 +208,8 @@ const bool IISudakov_Group<DT>::GenerateVariablesFor(const Dipole& dip,
       }
     }
 
-    //suda.RadCode().Print(); cout<<endl;
+    p_sur->Sfc=suda.RadCode(); //cout<<endl;suda.RadCode().Print();cout<<endl;
+    assert(emi==0 || emi==1);
     this->Reset();
     suda.SetGenX2tFac();
 
@@ -222,22 +219,23 @@ const bool IISudakov_Group<DT>::GenerateVariablesFor(const Dipole& dip,
       m_ymax=suda.CalculateRapLimit();
       m_rap=suda.GenerateRap();
       double h[2]; h[0]=std::exp(m_rap); h[1]=1.0/h[0];    //=std::exp(-m_rap);
-      x3=m_sdip*m_x2t*m_s;    //This is m2D*p2t.
-      p_sur->Isr[sr::shat]=m_sdip+sqrt(x3)*(h[0]+h[1]);
+      p_sur->P2t=m_s*m_x2t;
+      p_sur->X3=m_sdip*p_sur->P2t;
+      p_sur->Isr[sr::shat]=m_sdip+sqrt(p_sur->X3)*(h[0]+h[1]);
       if(p_sur->Isr[sr::shat]>sqr(Ecm)) continue;
-      p_sur->Isr[sr::kt]=x3/p_sur->Isr[sr::shat];    //This is k2t!
+      p_sur->Isr[sr::kt]=p_sur->X3/p_sur->Isr[sr::shat];    //This is k2t!
       //If wished for, the explicit k2t cutoff must be commented in here:
       //if(p_sur->Isr[sr::kt] < dpa.sud.MinIIK2t()) break;
       p_sur->Isr[sr::mt]=sqrt(m_sdip+p_sur->Isr[sr::kt]);
       p_sur->Isr[sr::kt]=sqrt(p_sur->Isr[sr::kt]);    //Make it now linear.
       //Scales can be p2t, k2t or m2t, that determines the place of the veto!
       //Subsequent scales will be descending!
-      if(suda.NfVeto(m_s*m_x2t)) { nfstat.Include(0.77); break;}
+      if(suda.NfVeto(p_sur->P2t)) { nfstat.Include(0.77); break;}
       //Dipole direction dependence if g emit type emission:
       //-+dir: h[1] & p_sur->Dir=1, +-dir: h[0] & p_sur->Dir=0
       p_sur->Isr[sr::expy]=
 	p_sur->Isr[sr::expydip] *
-	(sqrt(x3)*h[/*1*/emi]-sqr(p_sur->Isr[sr::kt])) /
+	(sqrt(p_sur->X3)*h[/*1*/bool(emi)]-sqr(p_sur->Isr[sr::kt])) /
 	(p_sur->Isr[sr::kt]*p_sur->Isr[sr::mt]);
       assert(p_sur->Isr[sr::expy]>0.0);
       p_sur->Isr[sr::xpfin]=
@@ -248,22 +246,22 @@ const bool IISudakov_Group<DT>::GenerateVariablesFor(const Dipole& dip,
       xpstat.Include(p_sur->Isr[sr::xpfin]);/////////////////////////////////
       xmstat.Include(p_sur->Isr[sr::xmfin]);/////////////////////////////////
       if(p_sur->Isr[sr::xpfin]>1.0 || p_sur->Isr[sr::xmfin]>1.0) continue;
-      x3=sqrt(x3/sqr(m_sdip));
-      //anni:xq(xg)  //comp:xq(b) (always remaining flav)  //split:x_i_keep
-      x1=1.0+x3*h[1];
-      //anni:xqb(xg)  //comp:xg (always new gluon)  //split:x_i_new
-      x3=1.0+x3*h[0];
+      p_sur->X3=sqrt(p_sur->X3/sqr(m_sdip));
+      p_sur->X1=1.0+p_sur->X3*h[0];
+      //anni:xqb(xg) //comp:xg (always new gluon)         //split:x_i_new
+      p_sur->X3=1.0+p_sur->X3*h[1];
+      //anni:xq(xg)  //comp:xq(b) (always remaining flav) //split:x_i_keep
       //p_sur->Print();//////////////////////////////////////////////////////
-      m_corr=suda.GenerateCorr(p_sur->Isr);
+      m_corr=suda.GenerateCorr();
       double ran=ATOOLS::ran.Get();
       if(ran > m_corr) continue;
-      double pfcorr=suda.GeneratePDFCorr(p_sur->Isr);
+      double pfcorr=suda.GeneratePDFCorr();
       m_corr*=pfcorr;
-      //Without analysing: m_corr*=suda.GeneratePDFCorr(p_sur->Isr);
+      //Without analysing: m_corr*=suda.GeneratePDFCorr();
       pfstat.Include(pfcorr);////////////////////////////////////////////////
       costat.Include(m_corr);////////////////////////////////////////////////
       if(ran > m_corr) continue;
-      if(TestEfracs(x1,x3)) {
+      if(TestEfracs(p_sur->X1,p_sur->X3)) {
 	if(sur.P2t > m_x2t) break;    //Keep the old values.
 	//Otherwise: Temporarily keeping the new values.
 	kspl=suda.RadPart();
@@ -273,8 +271,10 @@ const bool IISudakov_Group<DT>::GenerateVariablesFor(const Dipole& dip,
 	sur.Sfc=suda.RadCode();
 	sur.P2t=m_x2t;
 	sur.Y=m_rap;
-	sur.X1=x1;    //ann:xq  //comp:xq(b) (always remaining flav) //split:xk
-	sur.X3=x3;    //ann:xqb //comp:xg (always new gluon)         //split:xn
+	sur.X1=p_sur->X1;
+	//ann:xqb //comp:xg (always new gluon)         //split:xn
+	sur.X3=p_sur->X3;
+	//ann:xq  //comp:xq(b) (always remaining flav) //split:xk
 	break;
       }
       efstat.Include(7.77);///////////////////////////////////////////////////
@@ -362,6 +362,7 @@ const bool IISudakov_Group<DT>::InitWithCurrentDipole() {
   static IISudakov_Stats dipstat(DT,"DipoleMass",false,40.0,270.0);
   static IISudakov_Stats saxstat(DT,"-/SHatMax",false,70.0,sqrtS);
 
+  p_sur->Isr[sr::fasc]=p_dip->FactScale();
   m_s=m_sdip=p_dip->InvMass();
   p_sur->Isr[sr::mdip]=sqrt(m_sdip);
   p_sur->Isr[sr::expydip]=pplus/p_sur->Isr[sr::mdip];

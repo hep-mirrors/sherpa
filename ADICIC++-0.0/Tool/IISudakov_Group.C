@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/09/29
+//Version: 4 ADICIC++-0.0/2006/05/28
 
 //Implementation of IISudakov_Group.H.
 
@@ -62,8 +62,8 @@ template class IISudakov<Dipole::iiqbarq,Radiation::igluon>;
 
 
 
-template<> const short IISudakov<Dipole::iiqbarg,Radiation::gluon>::s_x1pow=3;
-template<> const short IISudakov<Dipole::iiqbarg,Radiation::gluon>::s_x3pow=2;
+template<> const short IISudakov<Dipole::iiqbarg,Radiation::gluon>::s_x1pow=2;
+template<> const short IISudakov<Dipole::iiqbarg,Radiation::gluon>::s_x3pow=3;
 template<>
 const double IISudakov<Dipole::iiqbarg,Radiation::gluon>::s_colfac=4.0*M_PI/3.;
 template<>
@@ -92,8 +92,8 @@ template class IISudakov<Dipole::iiqbarg,Radiation::quark>;
 
 
 
-template<> const short IISudakov<Dipole::iigq,Radiation::gluon>::s_x1pow=2;
-template<> const short IISudakov<Dipole::iigq,Radiation::gluon>::s_x3pow=3;
+template<> const short IISudakov<Dipole::iigq,Radiation::gluon>::s_x1pow=3;
+template<> const short IISudakov<Dipole::iigq,Radiation::gluon>::s_x3pow=2;
 template<>
 const double IISudakov<Dipole::iigq,Radiation::gluon>::s_colfac=4.0*M_PI/3.0;
 template<>

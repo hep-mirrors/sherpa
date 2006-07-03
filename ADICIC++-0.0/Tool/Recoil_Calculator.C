@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/07/25
+//Version: 3 ADICIC++-0.0/2005/07/26
 
 //Implementation of Recoil_Calculator.H.
 
@@ -66,6 +66,7 @@ template class Recoil<Recoil_Strategy::OldAdicic>;
 template class Recoil<Recoil_Strategy::Test>;
 
 template class Recoil<Recoil_Strategy::Ktii>;
+template class Recoil<Recoil_Strategy::Kleissii>;
 
 
 
@@ -78,16 +79,17 @@ void ADICIC::MakeRecos(const std::vector<bool>& gate,
   //Has to have the same order as Recoil_Strategy::List.
   assert(gate.size()==reco.size() &&
 	 gate.size()>=Recoil_Strategy::NumberOfTypes-1);
-  if(gate[0]) assert(reco[0]=new Recoil<Recoil_Strategy::Unknown>);
-  if(gate[1]) assert(reco[1]=new Recoil<Recoil_Strategy::Kleiss>);
-  if(gate[2]) assert(reco[2]=new Recoil<Recoil_Strategy::FixDir1>);
-  if(gate[3]) assert(reco[3]=new Recoil<Recoil_Strategy::FixDir3>);
-  if(gate[4]) assert(reco[4]=new Recoil<Recoil_Strategy::MinimizePt>);
-  if(gate[5]) assert(reco[5]=new Recoil<Recoil_Strategy::Lonnblad>);
-  if(gate[6]) assert(reco[6]=new Recoil<Recoil_Strategy::OldAdicic>);
-  if(gate[7]) assert(reco[7]=new Recoil<Recoil_Strategy::Test>);
-  if(gate[8]) assert(reco[8]=new Recoil<Recoil_Strategy::Ktii>);
-  if(gate[9]) assert(reco[9]=new Recoil<Recoil_Strategy::stop>);
+  if(gate[0])  assert(reco[0] =new Recoil<Recoil_Strategy::Unknown>);
+  if(gate[1])  assert(reco[1] =new Recoil<Recoil_Strategy::Kleiss>);
+  if(gate[2])  assert(reco[2] =new Recoil<Recoil_Strategy::FixDir1>);
+  if(gate[3])  assert(reco[3] =new Recoil<Recoil_Strategy::FixDir3>);
+  if(gate[4])  assert(reco[4] =new Recoil<Recoil_Strategy::MinimizePt>);
+  if(gate[5])  assert(reco[5] =new Recoil<Recoil_Strategy::Lonnblad>);
+  if(gate[6])  assert(reco[6] =new Recoil<Recoil_Strategy::OldAdicic>);
+  if(gate[7])  assert(reco[7] =new Recoil<Recoil_Strategy::Test>);
+  if(gate[8])  assert(reco[8] =new Recoil<Recoil_Strategy::Ktii>);
+  if(gate[9])  assert(reco[9] =new Recoil<Recoil_Strategy::Kleissii>);
+  if(gate[10]) assert(reco[10]=new Recoil<Recoil_Strategy::stop>);
 }
 
 

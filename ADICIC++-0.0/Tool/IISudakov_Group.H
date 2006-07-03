@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/09/30    (surely preliminarily)
+//Version: 4 ADICIC++-0.0/2006/06/02    (surely preliminarily)
 
 //The Sudakov classes are provided, which manage the Sudakov calculation needed
 //for emissions of II dipoles.
@@ -94,7 +94,7 @@ namespace ADICIC {
     void ShowSpecification() const;
     const double CalculateRapLimit();
     const double GenerateRap();
-    const double GenerateCorr(const Multidouble&);
+    const double GenerateCorr();
     const double GenerateX2t();
   };
   template<>
@@ -103,7 +103,7 @@ namespace ADICIC {
     void ShowSpecification() const;
     const double CalculateRapLimit();
     const double GenerateRap();
-    const double GenerateCorr(const Multidouble&);
+    const double GenerateCorr();
     const double GenerateX2t();
   };
   template<>
@@ -112,7 +112,7 @@ namespace ADICIC {
     void ShowSpecification() const;
     const double CalculateRapLimit();
     const double GenerateRap();
-    const double GenerateCorr(const Multidouble&);
+    const double GenerateCorr();
     const double GenerateX2t();
   };
 
@@ -158,11 +158,11 @@ namespace ADICIC {
 
     inline void   SetPDFFlavs(bool);
     inline void   SetGenX2tFac();
-    inline double GeneratePDFCorr(const Multidouble&);
+    inline double GeneratePDFCorr();
 
     inline const double CalculateRapLimit();
     inline const double GenerateRap();
-    inline const double GenerateCorr(const Multidouble&);
+    inline const double GenerateCorr();
     const double GenerateX2t();
 
   };
@@ -208,11 +208,11 @@ namespace ADICIC {
     inline bool   NfVeto(const double) const;
     inline void   SetPDFFlavs(bool);
     inline void   SetGenX2tFac();
-    inline double GeneratePDFCorr(const Multidouble&);
+    inline double GeneratePDFCorr();
 
     inline const double CalculateRapLimit();
     inline const double GenerateRap();
-    inline const double GenerateCorr(const Multidouble&);
+    inline const double GenerateCorr();
     const double GenerateX2t();
 
   };
@@ -259,11 +259,11 @@ namespace ADICIC {
     inline bool   NfVeto(const double) const;
     inline void   SetPDFFlavs(bool);
     inline void   SetGenX2tFac();
-    inline double GeneratePDFCorr(const Multidouble&);
+    inline double GeneratePDFCorr();
 
     inline const double CalculateRapLimit();
     inline const double GenerateRap();
-    inline const double GenerateCorr(const Multidouble&);
+    inline const double GenerateCorr();
     const double GenerateX2t();
 
   };

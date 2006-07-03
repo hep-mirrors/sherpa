@@ -1,5 +1,5 @@
 //bof
-//Version: 4 ADICIC++-0.0/2006/03/03
+//Version: 4 ADICIC++-0.0/2006/06/11
 
 //Implementation of the template structures of Sudakov_Group.H.
 
@@ -31,14 +31,14 @@ Sudakov_Group<DT>::Sudakov_Group(const Radiation::Type ratyp)
     m_x2t(1.0), m_ymax(0.0), m_rap(0.0), m_corr(1.0),
     l_sud() {
 
-  if(ratyp>Radiation::duscb) {
+  if(ratyp>Radiation::duscb && dpa.sud.GsplitRule()!=positive) {
     Sudakov_Flavour sfc; sfc.Glu=&info.gluon.g;
     Sudakov_Base* gsud=new Sudakov<DT,Radiation::gluon>(*this, sfc);
     assert(gsud);
     l_sud.push_back(gsud);
   }
 
-  if(sf_gsplit==false) return;
+  if(dpa.sud.GsplitRule()==negative) return;
 
   Sudakov_Flavour sfc[6];
   sfc[1].Qua=&info.quark.d; sfc[1].Aqu=&info.antiq.d;
@@ -66,7 +66,7 @@ Sudakov_Group<Dipole::qqbar>::Sudakov_Group(const Radiation::Type ratyp)
     m_x2t(1.0), m_ymax(0.0), m_rap(0.0), m_corr(1.0),
     l_sud() {
 
-  if(ratyp>Radiation::duscb) {
+  if(ratyp>Radiation::duscb && dpa.sud.GsplitRule()!=positive) {
     Sudakov_Flavour sfc; sfc.Glu=&info.gluon.g;
     Sudakov_Base* gsud=new Sudakov<Dipole::qqbar,Radiation::gluon>(*this, sfc);
     assert(gsud);
@@ -110,7 +110,13 @@ const bool Sudakov_Group<DT>::GenerateVariablesFor(const Dipole& dip,
   else { p_dip=NULL; p_sur=NULL; return false;}
 
   xbool ksplt=between;
-  Multidouble x(2);
+  //p_sur->Isr.push_back(0.0); double& x1=p_sur->Isr.back();
+  //p_sur->Isr.push_back(0.0); double& x3=p_sur->Isr.back();
+  //The above construct yields a bug, since the 2nd entry to the vector can
+  //completely change its memory place, making the x1 reference ambigous.
+  p_sur->Isr.resize(2,0.0);
+  double& x1=p_sur->Isr[0];
+  double& x3=p_sur->Isr[1]; 
 
   for(list<Sudakov_Base*>::const_iterator bit=l_sud.begin();
       bit!=l_sud.end(); ++bit) {
@@ -131,19 +137,19 @@ const bool Sudakov_Group<DT>::GenerateVariablesFor(const Dipole& dip,
       assert(m_s*m_x2t>dpa.sud.MinK2t());
       m_ymax=suda.CalculateRapLimit();
       m_rap=suda.GenerateRap();
-      x[1]=sqrt(m_x2t);
-      x[0]=1.0-x[1]*std::exp(m_rap);
-      x[1]=1.0-x[1]*std::exp(-m_rap);
-      m_corr=suda.GenerateCorr(x);
+      x3=sqrt(m_x2t);
+      x1=1.0-x3*std::exp(m_rap);
+      x3=1.0-x3*std::exp(-m_rap);
+      m_corr=suda.GenerateCorr();
       if(ATOOLS::ran.Get() < m_corr) {
-	if(TestEfracs(x[0],x[1])) {
+	if(TestEfracs(x1,x3)) {
 	  if(p_sur->P2t > m_x2t) break;    //Keep the old values.
 	  ksplt=suda.RadPart();
 	  p_sur->Sfc=suda.RadCode();
 	  p_sur->P2t=m_x2t;    //Temporarily keeping the new values.
 	  p_sur->Y=m_rap;
-	  p_sur->X1=x[0];
-	  p_sur->X3=x[1];
+	  p_sur->X1=x1;
+	  p_sur->X3=x3;
 	  break;
 	}
 	//break;//?????????????????????????????????????????????????????????????
@@ -151,6 +157,8 @@ const bool Sudakov_Group<DT>::GenerateVariablesFor(const Dipole& dip,
     }
 
   }
+
+  p_sur->Isr.clear();
 
 #ifdef SUDAKOV_CALCULATOR_OUTPUT
   cout<<"==========\n";

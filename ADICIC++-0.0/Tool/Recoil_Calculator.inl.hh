@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/09/13
+//Version: 4 ADICIC++-0.0/2006/05/26
 
 //Inline methods of Recoil_Calculator.H.
 
@@ -73,6 +73,10 @@ namespace ADICIC {
     std::cout<<"Recoil_Calculator implementing the hadronic lab frame gluon "
 	     <<"kt strategy.\n";
   }
+  template<> inline void Recoil<Recoil_Strategy::Kleissii>::Which() const {
+    std::cout<<"Recoil_Calculator implementing the Kleiss trick for DY-type "
+	     <<"processes.\n";
+  }
 
 
 
@@ -124,6 +128,12 @@ namespace ADICIC {
 	   ||
 	   (k.first==Dipole::iigg && k.second==Radiation::gluon));
   }
+  template<> inline void
+  Recoil<Recoil_Strategy::Kleissii>::TestKey(Dipole_Handler::Key k) const {
+    assert((k.first==Dipole::iiqbarq &&
+	    (k.second==Radiation::gluon || k.second==Radiation::qfront ||
+	     k.second==Radiation::qbarend)));
+  }
 
 
 
@@ -135,7 +145,9 @@ namespace ADICIC {
 						Recoil_Result& R) {
     p_dip=&D;
     p_sur=&S;
-    p_rer=&R; assert(p_rer->Poc==both && p_rer->Vec.size()==rr::stop);
+    p_rer=&R;
+    assert(p_rer->Poc==both &&
+	   p_rer->Vec.size()==rr::stop && p_rer->Mup.GetItsVec().empty());
     m_e.clear();///////////////////////////////////////////////////////////////
     bool result=Generate();
     p_dip=NULL; p_sur=NULL; p_rer=NULL;
@@ -186,6 +198,10 @@ namespace ADICIC {
   template<>
   inline const bool Recoil<Recoil_Strategy::Ktii>::Generate() {
     return LabMomenta();
+  }
+  template<>
+  inline const bool Recoil<Recoil_Strategy::Kleissii>::Generate() {
+    return CiiMomenta();
   }
 
 

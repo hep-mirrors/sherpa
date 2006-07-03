@@ -1,5 +1,5 @@
 //bof
-//Version: 4 ADICIC++-0.0/2005/03/03
+//Version: 4 ADICIC++-0.0/2006/06/15
 
 //Inline methods of IISudakov_Group.H.
 
@@ -11,6 +11,10 @@
 #include <cstdlib>
 #include <mathextra>
 #include "Random.H"
+
+
+#define IISUDAKOV_K2T_RSCALE IISUDAKOV_K2T_RSCALE
+#undef  IISUDAKOV_K2T_RSCALE
 
 
 
@@ -246,22 +250,22 @@ namespace ADICIC {
 
 
   template<> inline double IISudakov<Dipole::iiqbarq,Radiation::gluon>
-  ::GeneratePDFCorr(const Multidouble& isrx) {
+  ::GeneratePDFCorr() {
     static IISudakov_Stats
       pdfstat(Dipole::iiqbarq,"PDFQQAnn",true,0.0,sqrt(s_pdfapprox));
     assert(m_step==3); ++m_step;
-    double pwgt=Sudakov_Calculator::PlusPDFCorr(m_mfl,isrx);
-    double mwgt=Sudakov_Calculator::MinusPDFCorr(m_mfl,isrx);
+    double pwgt=m_sgroup.PlusPDFCorr(m_mfl);
+    double mwgt=m_sgroup.MinusPDFCorr(m_mfl);
     pdfstat.Include(pwgt); pdfstat.Include(mwgt);
     return (pwgt*mwgt/s_pdfapprox);
   }
   template<Dipole::Type DT> inline double IISudakov<DT,Radiation::gluon>
-  ::GeneratePDFCorr(const Multidouble& isrx) {
+  ::GeneratePDFCorr() {
     static IISudakov_Stats pdf2stat(DT,"PDFGGAnn",true,0.0,s_pdfapprox/2);
     static IISudakov_Stats pdf1stat(DT,"PDFQQAnn",true,0.0,s_pdfapprox/5);
     assert(m_step==3); ++m_step;
-    double pwgt=Sudakov_Calculator::PlusPDFCorr(m_mfl,isrx);
-    double mwgt=Sudakov_Calculator::MinusPDFCorr(m_mfl,isrx);
+    double pwgt=m_sgroup.PlusPDFCorr(m_mfl);
+    double mwgt=m_sgroup.MinusPDFCorr(m_mfl);
     if(m_mfl[sf::plusfin].Kfcode()==ATOOLS::kf::gluon) {
       pdf2stat.Include(pwgt); pdf1stat.Include(mwgt);
     } else {
@@ -270,12 +274,12 @@ namespace ADICIC {
     return (pwgt*mwgt/s_pdfapprox);
   }
   template<> inline double IISudakov<Dipole::iigg,Radiation::gluon>
-  ::GeneratePDFCorr(const Multidouble& isrx) {
+  ::GeneratePDFCorr() {
     static IISudakov_Stats
       pdfstat(Dipole::iigg,"PDFGGAnn",true,0.0,sqrt(s_pdfapprox));
     assert(m_step==3); ++m_step;
-    double pwgt=Sudakov_Calculator::PlusPDFCorr(m_mfl,isrx);
-    double mwgt=Sudakov_Calculator::MinusPDFCorr(m_mfl,isrx);
+    double pwgt=m_sgroup.PlusPDFCorr(m_mfl);
+    double mwgt=m_sgroup.MinusPDFCorr(m_mfl);
     pdfstat.Include(pwgt); pdfstat.Include(mwgt);
     return (pwgt*mwgt/s_pdfapprox);
   }
@@ -299,14 +303,16 @@ namespace ADICIC {
 
 
 
-  template<Dipole::Type DT> inline const double
-  IISudakov<DT,Radiation::gluon>::GenerateCorr(const Multidouble& isrx) {
+  template<Dipole::Type DT>
+  inline const double IISudakov<DT,Radiation::gluon>::GenerateCorr() {
     static IISudakov_Stats mestat(DT,"MEgWeight",false);
     assert(m_step==2); ++m_step;
-    const double& x1=isrx[isrx.size()-2];    //xq(xg).
-    const double& x3=isrx.back();            //xqb(xg).
+    const double& x1=m_sgroup.CurrentSudakovResult().X1;    //xqb(xg).
+    const double& x3=m_sgroup.CurrentSudakovResult().X3;    //xq(xg).
     double fac;
     double x2t=m_sgroup.X2t();
+    const Multidouble& isrx=m_sgroup.CurrentSudakovResult().Isr;
+    assert(isrx.size()==sr::stop);
     if(m_sgroup.CurrentDipole().SpinCorr()==false) fac=2/s_average;
     //else fac=(power<s_x1pow>(x1) + power<s_x3pow>(x3)) *    //gcc4.0 dislike.
     else fac=(power(x1,s_x1pow) + power(x3,s_x3pow)) *
@@ -314,8 +320,11 @@ namespace ADICIC {
 	   //This is the additional flux correction.
 	   ;
     x2t=
+#ifdef IISUDAKOV_K2T_RSCALE
+      Sudakov_Calculator::AlphaSCorr(ATOOLS::sqr(isrx[sr::kt])) *
+#else
       Sudakov_Calculator::AlphaSCorr(m_sgroup.Scale()*x2t) *
-      //Sudakov_Calculator::AlphaSCorr(ATOOLS::sqr(isrx[sr::kt])) *
+#endif
       (-m_sgroup.Ymax()/std::log(x2t)) *
       //The missing "2" is either compensated by the missing "1/2" of the
       //power correction or directly introduced.
@@ -397,14 +406,14 @@ namespace ADICIC {
 
 
   template<> inline double IISudakov<Dipole::iiqbarq,Radiation::igluon>
-  ::GeneratePDFCorr(const Multidouble& isrx) {
+  ::GeneratePDFCorr() {
     static IISudakov_Stats
       pdfglustat(Dipole::iiqbarq,"PDFGQCom",true,0.0,s_pdfapprox/2);
     static IISudakov_Stats
       pdfquastat(Dipole::iiqbarq,"PDFQQCom",true,0.0,s_pdfapprox/20);
     assert(m_step==3); ++m_step;
-    double pwgt=Sudakov_Calculator::PlusPDFCorr(m_mfl,isrx);
-    double mwgt=Sudakov_Calculator::MinusPDFCorr(m_mfl,isrx);
+    double pwgt=m_sgroup.PlusPDFCorr(m_mfl);
+    double mwgt=m_sgroup.MinusPDFCorr(m_mfl);
     if(m_mfl[sf::plusfin].Kfcode()==ATOOLS::kf::gluon) {
       pdfglustat.Include(pwgt); pdfquastat.Include(mwgt);
     } else {
@@ -413,12 +422,12 @@ namespace ADICIC {
     return (pwgt*mwgt/s_pdfapprox);
   }
   template<Dipole::Type DT> inline double IISudakov<DT,Radiation::igluon>
-  ::GeneratePDFCorr(const Multidouble& isrx) {
+  ::GeneratePDFCorr() {
     static IISudakov_Stats pdfchstat(DT,"PDFGQCom",true,0.0,s_pdfapprox/5);
     static IISudakov_Stats pdfkpstat(DT,"PDFGGCom",true,0.0,s_pdfapprox/20);
     assert(m_step==3); ++m_step;
-    double pwgt=Sudakov_Calculator::PlusPDFCorr(m_mfl,isrx);
-    double mwgt=Sudakov_Calculator::MinusPDFCorr(m_mfl,isrx);
+    double pwgt=m_sgroup.PlusPDFCorr(m_mfl);
+    double mwgt=m_sgroup.MinusPDFCorr(m_mfl);
     if(m_mfl[sf::plusini].Kfcode()==ATOOLS::kf::gluon) {
       pdfkpstat.Include(pwgt); pdfchstat.Include(mwgt);
     } else {
@@ -446,24 +455,30 @@ namespace ADICIC {
 
 
 
-  template<Dipole::Type DT> inline const double
-  IISudakov<DT,Radiation::igluon>::GenerateCorr(const Multidouble& isrx) {
+  template<Dipole::Type DT>
+  inline const double IISudakov<DT,Radiation::igluon>::GenerateCorr() {
     static IISudakov_Stats mestat(DT,"MEqWeight",false);
     assert(m_step==2); ++m_step;
-    const double& x1=isrx[isrx.size()-2];    //xq(b).
-    const double& x3=isrx.back();            //xg.
+    const double& x1=m_sgroup.CurrentSudakovResult().X1;    //xg.
+    const double& x3=m_sgroup.CurrentSudakovResult().X3;    //xq(b).
     double fac;
     double x2t=m_sgroup.X2t();
+    const Multidouble& isrx=m_sgroup.CurrentSudakovResult().Isr;
+    assert(isrx.size()==sr::stop);
     if(m_sgroup.CurrentDipole().SpinCorr()==false)
-      fac=2*(x3-1.)/(x1+x3-1.)/s_average;
+      fac=2*(x1-1.)/(x1+x3-1.)/s_average;
     else
-      fac=((power<2>(x1)+power<2>(x1+x3-2.))*(x3-1.)/(x1+x3-1.)) *
+      fac=((power<2>(x3)+power<2>(x1+x3-2.))*(x1-1.)/(x1+x3-1.)) *
 	ATOOLS::sqr(ATOOLS::sqr(isrx[sr::mdip])/isrx[sr::shat])
 	//This is the additional flux correction.
 	;
     x2t=
+#ifdef IISUDAKOV_K2T_RSCALE
+      Sudakov_Calculator::AlphaSCorr(ATOOLS::sqr(isrx[sr::kt])) *
+      //#error
+#else
       Sudakov_Calculator::AlphaSCorr(m_sgroup.Scale()*x2t) *
-      //Sudakov_Calculator::AlphaSCorr(ATOOLS::sqr(isrx[sr::kt])) *
+#endif
       (-m_sgroup.Ymax()/std::log(x2t)) *
       //The missing "2" is either compensated by the missing "1/2" of the
       //power correction or directly introduced.
@@ -534,17 +549,17 @@ namespace ADICIC {
 
 
   template<Dipole::Type DT> inline double IISudakov<DT,Radiation::quark>
-  ::GeneratePDFCorr(const Multidouble& isrx) {
+  ::GeneratePDFCorr() {
     static IISudakov_Stats pdfchstat(DT,"PDFQGSpl",true,0.0,s_pdfapprox/2);
     static IISudakov_Stats pdfkpstat(DT,"PDFQQSpl",true,0.0,s_pdfapprox/8);
     assert(m_step==3); ++m_step;
     size_t i; double pwgt[2], mwgt[2], wgt;
     if(m_split==front) i=0; else i=2;
-    pwgt[0]=Sudakov_Calculator::PlusPDFCorr(v_mfl[i],isrx);
-    mwgt[0]=Sudakov_Calculator::MinusPDFCorr(v_mfl[i],isrx);
+    pwgt[0]=m_sgroup.PlusPDFCorr(v_mfl[i]);
+    mwgt[0]=m_sgroup.MinusPDFCorr(v_mfl[i]);
     wgt=pwgt[0]*mwgt[0];
-    pwgt[1]=Sudakov_Calculator::PlusPDFCorr(v_mfl[i+1],isrx);
-    mwgt[1]=Sudakov_Calculator::MinusPDFCorr(v_mfl[i+1],isrx);
+    pwgt[1]=m_sgroup.PlusPDFCorr(v_mfl[i+1]);
+    mwgt[1]=m_sgroup.MinusPDFCorr(v_mfl[i+1]);
     bool win=wgt<(wgt+pwgt[1]*mwgt[1])*ATOOLS::ran.Get();
     m_code=m_inicode;
     if(win==1) m_code.Qua=NULL; else m_code.Aqu=NULL;
@@ -556,14 +571,14 @@ namespace ADICIC {
     return (pwgt[win]*mwgt[win]/s_pdfapprox);
   }
   template<> inline double IISudakov<Dipole::iigg,Radiation::quark>
-  ::GeneratePDFCorr(const Multidouble& isrx) {
+  ::GeneratePDFCorr() {
     static IISudakov_Stats
       pdfchstat(Dipole::iigg,"PDFQGSpl",true,0.0,s_pdfapprox/5);
     static IISudakov_Stats
       pdfkpstat(Dipole::iigg,"PDFGGSpl",true,0.0,s_pdfapprox/20);
     assert(m_step==3); ++m_step;
-    //double pwgt=Sudakov_Calculator::PlusPDFCorr(m_mfl,isrx);
-    //double mwgt=Sudakov_Calculator::MinusPDFCorr(m_mfl,isrx);
+    //double pwgt=m_sgroup.PlusPDFCorr(m_mfl);
+    //double mwgt=m_sgroup.MinusPDFCorr(m_mfl);
     //if(m_mfl[sf::plusfin].Kfcode()==ATOOLS::kf::gluon) {
     //  pdfglustat.Include(pwgt); pdfquastat.Include(mwgt);
     //} else {
@@ -593,19 +608,24 @@ namespace ADICIC {
 
 
 
-  template<Dipole::Type DT> inline const double
-  IISudakov<DT,Radiation::quark>::GenerateCorr(const Multidouble& isrx) {
+  template<Dipole::Type DT>
+  inline const double IISudakov<DT,Radiation::quark>::GenerateCorr() {
     static IISudakov_Stats mestat(DT,"MEgsplitWeight",false);
     assert(m_step==2); ++m_step;
-    const double& x1=isrx[isrx.size()-2];    //x_i_keep.
-    const double& x3=isrx.back();            //x_i_new.
-    double fac=1.0+sqr((1.0-x3)/(1.0-x3-x1));
+    const double& x1=m_sgroup.CurrentSudakovResult().X1;    //x_i_new.
+    const double& x3=m_sgroup.CurrentSudakovResult().X3;    //x_i_keep.
+    double fac=1.0+sqr((1.0-x1)/(1.0-x1-x3));
     double x2t=m_sgroup.Scale()*m_sgroup.X2t();
     double zmax=m_sgroup.Ymax();    //
+    const Multidouble& isrx=m_sgroup.CurrentSudakovResult().Isr;
+    assert(isrx.size()==sr::stop);
     //if(m_sgroup.CurrentDipole().SpinCorr()==false); else;
     x2t=
+#ifdef IISUDAKOV_K2T_RSCALE
+      Sudakov_Calculator::AlphaSCorr(ATOOLS::sqr(isrx[sr::kt])) *
+#else
       Sudakov_Calculator::AlphaSCorr(x2t) *
-      //Sudakov_Calculator::AlphaSCorr(ATOOLS::sqr(isrx[sr::kt])) *
+#endif
       (sqrt(x2t)/isrx[sr::mdip])*(zmax-1.0/zmax) *
       //This is the rapidity weight.
       (m_genx2tfac*s_pdfapprox) * fac;
