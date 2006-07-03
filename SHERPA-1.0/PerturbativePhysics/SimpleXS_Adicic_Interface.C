@@ -11,20 +11,45 @@ using namespace EXTRAXS;
 using namespace ATOOLS;
 
 
+
+//============================================================================
+
+
+
+const bool        SimpleXS_Adicic_Interface::s_static=true;
+const bool        SimpleXS_Adicic_Interface::s_corrpa=true;
+const std::size_t SimpleXS_Adicic_Interface::s_chapartlim=5;//3;//5;
+const std::size_t SimpleXS_Adicic_Interface::s_chacorrlim=5;//3;//5;
+
+
+
+//============================================================================
+
+
+
 SimpleXS_Adicic_Interface::
 SimpleXS_Adicic_Interface(Matrix_Element_Handler* _p_mehandler,
 			  Shower_Handler* _p_shower) :
   Perturbative_Interface(_p_mehandler,_p_shower),
-  m_2to2id(0), m_scale(0.0), p_hard(NULL),
-  p_isme(NULL), p_mefs(NULL), p_is(NULL), p_fs(NULL) {}
+  m_2to2id(0), m_scale(0.0),
+  pl_pal(NULL), p_hard(NULL),
+  p_isme(NULL), p_mefs(NULL), p_is(NULL), p_fs(NULL) {
+
+  if(s_corrpa) {
+    pl_pal=new ATOOLS::Particle_List();
+    assert(pl_pal);
+  }
+}
 
 
 
-SimpleXS_Adicic_Interface::~SimpleXS_Adicic_Interface() {}
+SimpleXS_Adicic_Interface::~SimpleXS_Adicic_Interface() {
+  if(pl_pal) delete pl_pal;
+}
 
 
 
-int SimpleXS_Adicic_Interface::DefineInitialConditions(Blob * blob) {
+int SimpleXS_Adicic_Interface::DefineInitialConditions(Blob* blob) {
   if (blob==NULL) return 0;
   if ((blob->NInP()!=2) || (blob->NOutP()!=2)) {
     THROW(fatal_error,"Cannot handle blobs with more than 4 legs.");
@@ -36,7 +61,7 @@ int SimpleXS_Adicic_Interface::DefineInitialConditions(Blob * blob) {
 
 
 
-bool SimpleXS_Adicic_Interface::InitColours(Blob * blob) {
+bool SimpleXS_Adicic_Interface::InitColours(Blob* blob) {
   XS_Base* xs=p_mehandler->GetXS();
   if(!(xs->SetColours(p_mehandler->Momenta()))) return false;
   if(blob->InParticle(0)->Momentum()[3]<blob->InParticle(1)->Momentum()[3]) {
@@ -44,11 +69,15 @@ bool SimpleXS_Adicic_Interface::InitColours(Blob * blob) {
     blob->SwapOutParticles(0,1);
   }
   for(int j=0; j<2; ++j) {
-    for (int i=0; i<blob->NInP(); ++i)
+    for(int i=0; i<blob->NInP(); ++i)
       blob->InParticle(i)->SetFlow(j+1,xs->Colours()[i][j]);
-    for (int i=0; i<blob->NOutP(); ++i)
+    for(int i=0; i<blob->NOutP(); ++i)
       blob->OutParticle(i)->SetFlow(j+1,xs->Colours()[i+blob->NInP()][j]);
   }
+  for(int i=0; i<blob->NInP(); ++i)
+    blob->InParticle(i)->SetNumber(-(1+i));
+  for(int i=0; i<blob->NOutP(); ++i)
+    blob->OutParticle(i)->SetNumber(-(blob->NInP()+1+i));
   m_2to2id=Valid(blob);
   //std::cout<<"VALID="<<m_2to2id<<std::endl;//////////////////////////////////
   switch(m_2to2id) {
@@ -62,12 +91,17 @@ bool SimpleXS_Adicic_Interface::InitColours(Blob * blob) {
     m_scale=xs->Scale(PHASIC::stp::as);
     Dipole::Antibranch q(*blob->InParticle(0));    //Incoming quark!
     Dipole::Branch     qbar(*blob->InParticle(1));    //Incoming antiquark!
-    dpv.evo.SetChainParticleLimit(5);
-    dpv.evo.SetChainCorrelationLimit(5);
-    dpv.sud.SetMaxIIScale(m_scale);
-    //dpv.sud.SetMaxIIScale();/////////////////////////////////////////////////
+    if(pl_pal) {
+      pl_pal->clear();
+      pl_pal->push_back(blob->OutParticle(0));
+      pl_pal->push_back(blob->OutParticle(1));
+    }
+    dpv.evo.SetChainParticleLimit(s_chapartlim);
+    dpv.evo.SetChainCorrelationLimit(s_chacorrlim);
+    if(s_static) dpv.sud.SetMaxIIScale();
+    else dpv.sud.SetMaxIIScale(m_scale);
     //std::cout<<sqrt(dpa.sud.MaxIIK2t())<<std::endl;//////////////////////////
-    assert(p_shower->GetCascade().AddChain(qbar,q,
+    assert(p_shower->GetCascade().AddChain(qbar,q,pl_pal,
 					   dpa.HighestIIInvScale(m_scale)));
     //assert(p_shower->GetCascade().AddChain(q,qbar,
     //                                       dpa.MaxIIInvScale(m_scale)));
@@ -77,12 +111,17 @@ bool SimpleXS_Adicic_Interface::InitColours(Blob * blob) {
     m_scale=xs->Scale(PHASIC::stp::as);
     Dipole::Antibranch q(*blob->InParticle(1));    //Incoming quark!
     Dipole::Branch     qbar(*blob->InParticle(0));    //Incoming antiquark!
-    dpv.evo.SetChainParticleLimit(5);
-    dpv.evo.SetChainCorrelationLimit(5);
-    dpv.sud.SetMaxIIScale(m_scale);
-    //dpv.sud.SetMaxIIScale();/////////////////////////////////////////////////
+    if(pl_pal) {
+      pl_pal->clear();
+      pl_pal->push_back(blob->OutParticle(0));
+      pl_pal->push_back(blob->OutParticle(1));
+    }
+    dpv.evo.SetChainParticleLimit(s_chapartlim);
+    dpv.evo.SetChainCorrelationLimit(s_chacorrlim);
+    if(s_static) dpv.sud.SetMaxIIScale();
+    else dpv.sud.SetMaxIIScale(m_scale);
     //std::cout<<sqrt(dpa.sud.MaxIIK2t())<<std::endl;//////////////////////////
-    assert(p_shower->GetCascade().AddChain(qbar,q,
+    assert(p_shower->GetCascade().AddChain(qbar,q,pl_pal,
 					   dpa.HighestIIInvScale(m_scale)));
     //assert(p_shower->GetCascade().AddChain(q,qbar,
     //                                       dpa.MaxIIInvScale(m_scale)));
