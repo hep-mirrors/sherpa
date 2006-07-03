@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/08/20
+//Version: 4 ADICIC++-0.0/2006/04/21
 
 //Implementation of the Dipole_Particle structure of Dipole.H.
 
@@ -49,7 +49,7 @@ Dipole_Particle::Dipole_Particle()
 Dipole_Particle::Dipole_Particle(const Dipole_Particle& dipa)
   : m_num(++s_maxcount),
     m_inp(dipa.m_inp), m_typ(dipa.m_typ), m_tag(dipa.m_tag), m_pac(dipa.m_pac),
-    m_tow(list<Dipole*>()),
+    m_tow(std::list<Dipole*>()),
     Name(m_num), Parton(m_pac) {
 
   //It cannot belong to any dipole since it is just created, right now.

@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/09/09
+//Version: 4 ADICIC++-0.0/2005/05/07
 
 //Inline methods of Cascade.H.
 
@@ -130,6 +130,13 @@ namespace ADICIC {
     for(std::list<Chain*>::const_iterator cat=caset.l_cha.begin();
 	cat!=caset.l_cha.end(); ++cat)
       num+=(*cat)->ParticleNumber();
+    return num;
+  }
+  inline std::size_t Cascade::RelatedParticleNumber() const {
+    std::size_t num=0;
+    for(std::list<Chain*>::const_iterator cat=caset.l_cha.begin();
+	cat!=caset.l_cha.end(); ++cat)
+      num+=(*cat)->CorrParticleNumber();
     return num;
   }
 

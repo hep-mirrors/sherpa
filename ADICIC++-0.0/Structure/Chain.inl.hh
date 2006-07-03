@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/07/30
+//Version: 4 ADICIC++-0.0/2006/06/11
 
 //Inline methods of Chain.H.
 
@@ -30,7 +30,8 @@ namespace ADICIC {
     return varset.IsInit();
   }
   inline const bool Chain::IsEmpty() const {
-    return (varset.l_dip.empty() && !varset.p_quab && !varset.p_1glu);
+    return (varset.l_dip.empty() && varset.l_corr.empty() &&
+	    !varset.p_quab && !varset.p_1glu);
   }
 
 
@@ -39,6 +40,9 @@ namespace ADICIC {
 
   inline const double Chain::LastScale() const {
     return varset.m_k2tlast;
+  }
+  inline const double Chain::FactScale() const {
+    return dpa.evo.GetFactScaleFrom(varset.m_mufac);
   }
 
 
@@ -111,11 +115,19 @@ namespace ADICIC {
   inline std::size_t Chain::MaxDipoleNumber() const {
     return varset.l_dip.max_size();
   }
+  inline std::size_t Chain::CorrParticleNumber() const {
+    return varset.l_corr.size();
+  }
 
 
 
   //===========================================================================
 
+
+
+  inline std::size_t& Chain::SetSource() {
+    return m_memo;
+  }
 
 
   inline Bool& Chain::SetStatus() {
@@ -172,6 +184,9 @@ namespace ADICIC {
 
 
 
+  inline Multidouble& Chain::FactScaleBox() {
+    return varset.m_mufac;
+  }
   inline const Dipole*& Chain::RootPointer() {
     return varset.p_root;
   }
@@ -205,6 +220,13 @@ namespace ADICIC {
   }
   inline const std::list<Dipole*>& Chain::DipolePointerList() const {
     return varset.l_dip;
+  }
+  inline std::list<ATOOLS::Particle*>& Chain::CorrParticlePointerList() {
+    return varset.l_corr;
+  }
+  inline const
+  std::list<ATOOLS::Particle*>& Chain::CorrParticlePointerList() const {
+    return varset.l_corr;
   }
 
 

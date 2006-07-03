@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2006/01/24    //!! Check gcc4.0 changes!
+//Version: 4 ADICIC++-0.0/2006/06/01    //!! Check gcc4.0 changes!
 
 //The Dipole structure is a carrier of information.
 
@@ -122,9 +122,10 @@ namespace ADICIC {
 
     Type          m_type;
     bool          f_spico;
-    double        m_p2t;
-    double        m_k2t;
-    double        m_l2t;
+    double        m_p2t;    //Production scale.
+    double        m_k2t;    //Boot scale.
+    double        m_l2t;    //Emission scale.
+    double        m_fc2;    //Factorization scale.
     double        m_mass;
     double        m_invmass;
     ATOOLS::Vec4D m_momentum;
@@ -175,6 +176,7 @@ namespace ADICIC {
     inline const double         ProdScale() const;
     inline const double         BootScale() const;
     inline const double         EmitScale() const;
+    inline const double         FactScale() const;
     inline const double         Mass() const;
     inline const double         InvMass() const;
     inline const ATOOLS::Vec4D& TotP() const;
@@ -186,9 +188,12 @@ namespace ADICIC {
     inline int&    SetSource();
     inline Bool&   SetStatus();
     inline bool&   SetSpinCorr();
+    inline void    SetEvolScales(const double&);
     inline double& SetProdScale();
     inline double& SetBootScale();
     inline double& SetEmitScale();
+    inline double& SetFactScale();
+    inline void    ApplySettingsOf(const Dipole&);
     inline const bool operator|(Dipole_Handler&);
     inline void       operator|(bool);
 

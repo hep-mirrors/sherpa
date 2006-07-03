@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/09/08
+//Version: 4 ADICIC++-0.0/2006/06/01
 
 //Inline methods of Dipole.H.
 
@@ -69,6 +69,9 @@ namespace ADICIC {
   inline const double Dipole::EmitScale() const {
     return m_l2t;
   }
+  inline const double Dipole::FactScale() const {
+    return m_fc2;
+  }
 
 
   inline const double Dipole::Mass() const {
@@ -121,6 +124,10 @@ namespace ADICIC {
   }
 
 
+  inline void Dipole::SetEvolScales(const double& uscale) {
+    ++m_nchg;
+    m_p2t=m_k2t=m_l2t=uscale;
+  }
   inline double& Dipole::SetProdScale() {
     ++m_nchg;
     return m_p2t;
@@ -133,6 +140,22 @@ namespace ADICIC {
     ++m_nchg;
     return m_l2t;
   }
+  inline double& Dipole::SetFactScale() {
+    ++m_nchg;
+    return m_fc2;
+  }
+
+
+
+  inline void Dipole::ApplySettingsOf(const Dipole& dip) {
+    ++m_nchg;
+    m_memory=dip.m_memory;
+    f_active=dip.f_active;
+    f_spico=dip.f_spico;
+    m_p2t=dip.m_p2t; m_k2t=dip.m_k2t; m_l2t=dip.m_l2t;
+    m_fc2=dip.m_fc2;
+  }
+
 
 
   inline const bool Dipole::operator|(Dipole_Handler& DH) {

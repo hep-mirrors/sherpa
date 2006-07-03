@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/08/05
+//Version: 4 ADICIC++-0.0/2006/05/23
 
 //Implementation of Cascade.H.
 
@@ -41,7 +41,7 @@ using namespace ADICIC;
 
 ostream& ADICIC::operator<<(ostream& ost, const ADICIC::Cascade& cas) {
   int pcs=ost.precision(6);
-  ost<<"\n"<<om::bold<<string(140,'O')<<om::reset<<"\n";
+  ost<<"\n"<<om::bold<<string(130,'O')<<om::reset<<"\n";
   ost<<"Cascade type: ";
   switch(cas.CascadeType()) {
   case 10: ost<<"lines"; break;
@@ -63,19 +63,22 @@ ostream& ADICIC::operator<<(ostream& ost, const ADICIC::Cascade& cas) {
      <<"Momentum="<<cas.Momentum();
   ost<<resetiosflags(ios::left)<<"\n";
   if(Cascade::s_print) {
-    ost<<om::bold<<string(140,'~')<<om::reset<<"\n";
-    ost<<"Number of root chains       = "<<cas.RootChainNumber()<<"\n";
-    ost<<"Number of chains in cascade = "<<cas.ChainNumber()<<"\n";
-    ost<<"Total number of branches    = "<<cas.ParticleNumber()<<"\n";
-    ost<<"Total number of  dipoles    = "<<cas.DipoleNumber()<<"\n";
+    ost<<om::bold<<string(130,'~')<<om::reset<<"\n";
+    ost<<setiosflags(ios::left);
+    ost<<"Number of      : root chains = "<<setw(10)<<cas.RootChainNumber();
+    ost<<"chains   = "<<setw(10)<<cas.ChainNumber()<<"\n";
+    ost<<"Total number of: dipoles     = "<<setw(10)<<cas.DipoleNumber();
+    ost<<"branches = "<<setw(10)<<cas.ParticleNumber();
+    ost<<"related particles = "<<setw(10)<<cas.RelatedParticleNumber()<<"\n";
+    ost<<resetiosflags(ios::left);
   }
-  ost<<om::bold<<string(140,'~')<<om::reset<<"\n";
+  ost<<om::bold<<string(130,'~')<<om::reset<<"\n";
   list<Cascade::Mirror>::const_iterator mit=cas.MirrorList().begin();
   for(list<Chain*>::const_iterator cit=cas.ChainPointerList().begin();
       cit!=cas.ChainPointerList().end(); ++cit) {
-    if((*mit).first==0) ost<<om::bold<<om::red;
+    if((*mit).first==(*cit)->Name) ost<<om::bold<<om::red;
     else ost<<om::bold<<om::blue;
-    ost<<setiosflags(ios::left)<<"Mother chain = "
+    ost<<setiosflags(ios::left)<<"Root chain = "
        <<setw(10)<<(*mit).first<<"Number of splittings of this chain = "
        <<setw(10)<<(*mit).second
        <<om::reset<<resetiosflags(ios::left);
@@ -88,7 +91,7 @@ ostream& ADICIC::operator<<(ostream& ost, const ADICIC::Cascade& cas) {
     else ost<<(**cit)<<endl;
     ++mit;
   }
-  ost<<om::bold<<string(140,'O')<<om::reset;
+  ost<<om::bold<<string(130,'O')<<om::reset;
   ost.precision(pcs);
   return ost;
 }
@@ -99,7 +102,7 @@ ostream& ADICIC::operator<<(ostream& ost, const ADICIC::Cascade& cas) {
 
 
 
-//const Cascade::Initiator::Simple_EpEm Cascade::Initiator::simple_epem={};
+//const Cascade::Initiator::EpEm Cascade::Initiator::epem={};
 
 
 
@@ -133,8 +136,8 @@ Cascade::Cascade(const Cascade& cas) {
   //Later: Additional Chain and Cascade initialization methods will cause
   //further modifications here!
   Type type=cas.CascadeType();
-  if(type==incorrect) return;//////////////////////////////////////////////////
-  this->Copy(cas,type);
+  if(type==incorrect) return;
+  this->Copy(cas);
 }
 
 
@@ -142,7 +145,6 @@ Cascade::Cascade(const Cascade& cas) {
 
 
 Cascade::~Cascade() {
-
   if(caset.p_hdl) {    //Check for Cascade_Handler.
     cerr<<"\nMethod: "<<__PRETTY_FUNCTION__<<": "
 	<<"Warning: Detaching Cascade_Handler from Cascade!\n"<<endl;
@@ -154,17 +156,8 @@ Cascade::~Cascade() {
     caset.p_hdl=NULL;
     phand->DetachCascade(this);
   }
-
-  if(caset.p_add) delete caset.p_add;
-  for(list<Chain*>::iterator cit=caset.l_cha.begin();
-      cit!=caset.l_cha.end(); ++cit)
-    if(*cit) delete (*cit);
-
-  caset.l_ifo.clear();
-  caset.l_cha.clear();
-
+  this->Destruct();
   --s_count;
-
 }
 
 
@@ -180,7 +173,8 @@ Cascade& Cascade::operator=(const Cascade& cas) {
   Type type=cas.CascadeType();
   if(type==incorrect) return *this;////////////////////////////////////////////
   if(this->Clear()==false) return *this;
-  this->Copy(cas,type);
+  //The message will come from Clear() itself.
+  this->Copy(cas);
   return *this;
 }
 
@@ -230,16 +224,16 @@ const unsigned Cascade::INumber() const {
 
 
 
-const bool Cascade::CheckMomentumConservation(ATOOLS::Vec4D& sum) const {
+const bool Cascade::CheckMomentumConservation(Vec4D& sum) const {
   sum=Vec4D();
-  Vec4D temp;
+  Vec4D test;
   for(list<Chain*>::const_iterator cit=caset.l_cha.begin();
       cit!=caset.l_cha.end(); ++cit) {
-    (*cit)->CheckMomentumConservation(temp);
-    sum+=temp;
+    (*cit)->CheckMomentumConservation(test);
+    sum+=test;
   }
   if(sum==caset.m_momentum) return true;
-  Vec4D test=sum-caset.m_momentum;
+  test=sum-caset.m_momentum;
   for(char i=0; i<4; ++i) if(dabs(test[i])>1.0e-10) return false;
   return true;
 }
@@ -248,10 +242,10 @@ const bool Cascade::CheckMomentumConservation(ATOOLS::Vec4D& sum) const {
 
 
 
-const bool Cascade::ExtractPartons(list<Particle_List>& lists) const {
+const boolint Cascade::ExtractPartons(list<Particle_List>& lists) const {
 
   Type type=this->CascadeType();
-  if(type==incorrect) return false;
+  if(type==incorrect) return boolint();    //(false,0)!
 
   if(lists.empty());
   else {
@@ -259,16 +253,25 @@ const bool Cascade::ExtractPartons(list<Particle_List>& lists) const {
 	<<"List of particle pointer lists has already an entry!\n"<<endl;
   }
 
+  //Assume evolutions are separated in subsequent root-chain blocks.
+  //One particle list per root chain including its correlated particles
+  //plus its daughters.
   size_t root=0;
+  int num=32767;
+  list<Mirror>::const_iterator mit=caset.l_ifo.begin();
+  list<Chain*>::const_iterator cit=caset.l_cha.begin();
   list<Particle_List>::iterator lit;
-  list<Chain*>::const_iterator cit;
-  for(cit=caset.l_cha.begin(); cit!=caset.l_cha.end(); ++cit) {
+  for(; cit!=caset.l_cha.end(); ++cit) {
     const Chain& cha=**cit;
-    if(cha.Memo!=root) {
-      root=cha.Memo;
+    size_t aroot=(*mit).first; assert(aroot!=0);
+    if(aroot!=root) {    //In the first time this is always fulfilled.
+      root=aroot;
       lit=lists.insert(lists.end(),Particle_List());
     }
-    assert(cha.ExtractPartons(*lit));
+    boolint res=cha.ExtractPartons(*lit);
+    assert(res.flag);
+    if(res.numr<num) num=res.numr;
+    ++mit;
   }
 
 #ifdef CASCADE_OUTPUT
@@ -277,7 +280,7 @@ const bool Cascade::ExtractPartons(list<Particle_List>& lists) const {
     cout<<(*loc)<<endl;
 #endif
 
-  return true;
+  return boolint(true,num);
 
 }
 
@@ -291,10 +294,7 @@ const bool Cascade::Clear() {
 	<<"manipulated by a Cascade_Handler is not permitted!\n"<<endl;
     return false;
   }
-  if(caset.p_add) delete caset.p_add;
-  for(list<Chain*>::iterator cit=caset.l_cha.begin();
-      cit!=caset.l_cha.end(); ++cit)
-    if(*cit) delete (*cit);
+  this->Destruct();
   caset.Init();    //This is a clear cascade right now.
   return true;
 }
@@ -305,10 +305,16 @@ const bool Cascade::Clear() {
 
 const bool Cascade::AddChain(const Dipole::Branch& ban,
 			     const Dipole::Antibranch& ati,
+			     const Particle_List* pleps,
 			     double scale, bool ontop) {
   if(caset.p_add) return false;
 
   caset.p_add=new Chain(); assert(caset.p_add);
+  if(pleps) {
+    for(Particle_List::const_iterator pit=pleps->begin();
+	pit!=pleps->end(); ++pit)
+      assert(caset.p_add->AddCorrParticleToInit(**pit));
+  }
   if(caset.p_add->Initialize(ban,ati,scale)==false) {
     delete caset.p_add;
     caset.p_add=NULL;
@@ -316,10 +322,10 @@ const bool Cascade::AddChain(const Dipole::Branch& ban,
   }
 
   if(ontop) {
-    caset.l_ifo.push_front(Mirror(0,0));
+    caset.l_ifo.push_front(Mirror(caset.p_add->Name,0));
     caset.l_cha.push_front(caset.p_add);
   } else {
-    caset.l_ifo.push_back(Mirror(0,0));
+    caset.l_ifo.push_back(Mirror(caset.p_add->Name,0));
     caset.l_cha.push_back(caset.p_add);
   }
 
@@ -331,8 +337,7 @@ const bool Cascade::AddChain(const Dipole::Branch& ban,
     caset.f_active=caset.p_add->Status();
   }
 
-  //???????????????????????????????????????????????????????????????????????????
-  //if(caset.m_invmass<0.0 || caset.m_momentum[0]<0.0) caset.f_active=Blocked;
+  //if(caset.m_invmass<0.0||caset.m_momentum[0]<0.0) caset.f_active=Blocked;???
 
   ++caset.m_nroot;
   caset.p_add=NULL;
@@ -345,7 +350,9 @@ const bool Cascade::AddChain(const Dipole::Branch& ban,
 
 /*
 const bool Cascade::AddChain(const Dipole::Glubranch& glut,
-			     const Dipole::Glubranch& glub) {
+                             const Dipole::Glubranch& glub,
+                             const Particle_List* pleps,
+                             double scale, bool ontop) {
 
   ++s_count;
 
@@ -397,29 +404,32 @@ const bool Cascade::AddChain(const Dipole::Glubranch& glut,
 
 
 
-void Cascade::Copy(const Cascade& cac, const Type type) {
+void Cascade::Destruct() {
+  if(caset.p_add) delete caset.p_add;
+  for(std::list<Chain*>::iterator cit=caset.l_cha.begin();
+      cit!=caset.l_cha.end(); ++cit)
+    if(*cit) delete (*cit);
+  caset.l_ifo.clear(); caset.l_cha.clear();
+}
 
-  //Later: Additional Chain and Cascade initialization methods will cause
-  //further modifications here!
 
-  //Only two types are now possible: line and ring.
-  //A line has one dipole at least.
-  //A ring has two dipoles at least and the root gluon always resides at the
-  //first place of the Glubranch list.
 
-  //The variable type is not needed yet.
+
+
+void Cascade::Copy(const Cascade& cac) {
+
+  //Later: Additional Cascade initialization methods might cause further
+  //modifications here!
 
   caset.f_active=cac.caset.f_active;
   caset.m_nroot=cac.caset.m_nroot;
 
   caset.l_ifo=cac.caset.l_ifo;
-  caset.l_cha=cac.caset.l_cha;
+  caset.l_cha=cac.caset.l_cha;    //Only pointers are copied.
   //caset.l_ifo.assign(cac.caset.l_ifo.begin(),cac.caset.l_ifo.end());
   //caset.l_cha.assign(cac.caset.l_cha.begin(),cac.caset.l_cha.end());
 
-  ////////////////////////////////////testing was//////////////////////////////
-
-  //Real copies and mother chain name correction.
+  //Real copy creation and root/source chain name corrections.
   map<size_t,size_t> link; link[0]=0;
   list<Chain*>::iterator cit=caset.l_cha.begin();
   for(; cit!=caset.l_cha.end(); ++cit) {
@@ -427,15 +437,17 @@ void Cascade::Copy(const Cascade& cac, const Type type) {
     *cit=new Chain(**cit); assert(*cit);
     link[oldname]=(*cit)->Name;
   }
+  for(cit=caset.l_cha.begin(); cit!=caset.l_cha.end(); ++cit)
+    (*cit)->SetSource()=link[(*cit)->Source];
   list<Mirror>::iterator mit=caset.l_ifo.begin();
   for(; mit!=caset.l_ifo.end(); ++mit) (*mit).first=link[(*mit).first];
 
-  /////////////////////////////////////////////////////////////////////////////
-
+  //Test 4-momenta.
   if(cac.CheckMomentumConservation(caset.m_momentum)) {
     caset.m_mass=cac.caset.m_mass;
     caset.m_invmass=cac.caset.m_invmass;
   } else {
+    //Probably, this part is not really needed.
     caset.f_active=Blocked;
     cerr<<"\nMethod: "<<__PRETTY_FUNCTION__<<": "
 	<<"Warning: Momentum conservation check failed!\n"<<endl;
@@ -457,13 +469,12 @@ void Cascade::Copy(const Cascade& cac, const Type type) {
 
 
 
-const ATOOLS::Vec4D&
-Cascade::UpdateMomentum(double k, const ATOOLS::Vec4D& p) {
+const Vec4D& Cascade::UpdateMomentum(double k, const Vec4D& p) {
   caset.m_momentum+=k*p;
   caset.m_invmass=caset.m_momentum.Abs2();
   if(caset.m_invmass<0.0) {
-    cerr<<"\nMethod: "<<__PRETTY_FUNCTION__<<": Warning: "
-	<<"Negative invariant mass ("<<caset.m_invmass<<") !\n"<<endl;
+    //cerr<<"\nMethod: "<<__PRETTY_FUNCTION__<<": Warning: "
+    //    <<"Negative invariant mass ("<<caset.m_invmass<<") !\n"<<endl;
     //caset.f_active=Blocked;//????????????????????????????????????????????????
     caset.m_mass=-1*sqrt(-1*caset.m_invmass);
     //The minus sign functions only as a flag.

@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/07/30
+//Version: 4 ADICIC++-0.0/2006/05/23
 
 //This structure supports the cascading - the evolution of a list of Chains.
 
@@ -51,17 +51,15 @@ namespace ADICIC {
       incorrect=-9999
     };
 
-    //struct Initiator {
-    //  static const struct Simple_EpEm {} simple_epem;
-    //};
+    //struct Initiator { static const struct EpEm {} epem;};
 
   private:
 
     friend class Cascade_Handler;
     friend std::ostream& operator<<(std::ostream&, const Cascade&);
 
-    //First : name of the mother chain.
-    //Second: number of splittings of the corresponding chain.
+    //1st: name of the initiating root chain.
+    //2nd: number of splittings of this chain.
     typedef std::pair<std::size_t,std::size_t> Mirror;
 
     //enum,class
@@ -85,21 +83,18 @@ namespace ADICIC {
 
       Chain* p_add;
 
-      std::list<Mirror> l_ifo;    //Root chains are indicated by "first=0".
+      std::list<Mirror> l_ifo;    //Root chains are indicated by 1st=chainname.
       std::list<Chain*> l_cha;
 
       const bool IsInit() const {
 	return (f_active==Blocked && m_nroot==0 &&
-		p_hdl==NULL && p_add==NULL &&
-		m_momentum[0]==0.0 && m_momentum[1]==0.0 &&
-		m_momentum[2]==0.0 && m_momentum[3]==0.0 &&
+		m_momentum==ATOOLS::Vec4D() && p_hdl==NULL && p_add==NULL &&
 		l_ifo.empty() && l_cha.empty());
       }
       void Init() {
 	f_active=Blocked; m_nroot=0;
 	m_mass=m_invmass=0.0; m_momentum=ATOOLS::Vec4D();
-	p_hdl=NULL; p_add=NULL;
-	l_ifo.clear(); l_cha.clear();
+	p_hdl=NULL; p_add=NULL;	l_ifo.clear(); l_cha.clear();
       }
     } caset;
 
@@ -117,7 +112,8 @@ namespace ADICIC {
 
     //Private methods:
     //================
-    void                 Copy(const Cascade&, const Type);
+    void                 Destruct();
+    void                 Copy(const Cascade&);
     const ATOOLS::Vec4D& UpdateMomentum(double, const ATOOLS::Vec4D&);
 
   public:
@@ -153,6 +149,7 @@ namespace ADICIC {
     inline std::size_t MaxChainNumber() const;
     inline std::size_t DipoleNumber() const;
     inline std::size_t ParticleNumber() const;
+    inline std::size_t RelatedParticleNumber() const;
 
     inline Bool& SetStatus();
 
@@ -166,13 +163,15 @@ namespace ADICIC {
     const Type     CascadeType() const;
     const unsigned INumber() const;
     const bool     CheckMomentumConservation(ATOOLS::Vec4D&) const;
-    const bool     ExtractPartons(std::list<ATOOLS::Particle_List>&) const;
+    const boolint  ExtractPartons(std::list<ATOOLS::Particle_List>&) const;
 
     const bool Clear();
-    //Since chains are independent from each other (no colour reconnection!):
+
     const bool AddChain(const Dipole::Branch&, const Dipole::Antibranch&,
+			const ATOOLS::Particle_List* pcorrs=NULL,
 			double scale=false, bool ontop=false);
     //const bool AddChain(const Dipole::Glubranch&, const Dipole::Glubranch&,
+    //                    const ATOOLS::Particle_List*,
     //                    double scale, bool ontop);
     //const bool StartAddingChain(const Dipole::Branch&);
     //const bool ContinueAddingChain(const Dipole::Glubranch&);

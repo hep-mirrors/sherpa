@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/07/30
+//Version: 4 ADICIC++-0.0/2006/06/11
 
 //This structure supports the evolution of a Chain of Dipoles.
 
@@ -51,7 +51,7 @@ namespace ADICIC {
     };
 
     struct Initiator {
-      static const struct Simple_EpEm {} simple_epem;
+      static const struct EpEm {} epem;    //Simple & ordinary e+e- collision.
     };
 
   private:
@@ -59,18 +59,10 @@ namespace ADICIC {
     friend class Chain_Handler;
     friend std::ostream& operator<<(std::ostream&, const Chain&);
 
-    //typedef,enum,class
+    //typedef,enum
 
-    static bool        s_print;
-    static std::size_t s_count;
-    static std::size_t s_maxcount;
-
-    std::size_t m_name;
-    std::size_t m_memo;
-
-    //In-struct:
-    //==========
-    struct {
+    struct Kernel {
+      //An intra-struct!
     private:
       friend class Chain;
 
@@ -79,6 +71,7 @@ namespace ADICIC {
       double        m_mass;
       double        m_invmass;
       ATOOLS::Vec4D m_momentum;
+      Multidouble   m_mufac;
 
       const Dipole* p_root;
 
@@ -89,24 +82,27 @@ namespace ADICIC {
       const Dipole::Glubranch*      p_1glu;
       std::list<Dipole::Glubranch*> l_glub;
       std::list<Dipole*>            l_dip;
+      std::list<ATOOLS::Particle*>  l_corr;
 
-      const bool IsInit() const {
-	return (f_active==Blocked && m_k2tlast==0.0 &&
-		p_root==NULL && p_hdl==NULL &&
-		p_quab==NULL && p_atib==NULL && p_1glu==NULL &&
-		m_momentum[0]==0.0 && m_momentum[1]==0.0 &&
-		m_momentum[2]==0.0 && m_momentum[3]==0.0 &&
-		l_glub.empty() && l_dip.empty());
-      }
-      void Init() {
-	f_active=Blocked;
-	m_k2tlast=m_mass=m_invmass=0.0;	m_momentum=ATOOLS::Vec4D();
-	p_root=NULL;
-	p_hdl=NULL;
-	p_quab=NULL; p_atib=NULL; p_1glu=NULL;
-	l_glub.clear();	l_dip.clear();
-      }
-    } varset;
+      Kernel();
+      ~Kernel() {}
+      const bool IsInit() const;
+      //Of course, the proper construction and destruction has to be
+      //controlled by the chain itself.
+      void Init();
+      void Destruct();
+    };
+
+    static bool        s_print;
+    static std::size_t s_count;
+    static std::size_t s_maxcount;
+
+    std::size_t m_name;
+    std::size_t m_memo;
+
+    //Responsibility for all particles related to chain is with the chain.
+    Kernel                        varset;
+    std::list<ATOOLS::Particle*>  l_fill;
 
     //Blocked methods:
     //================
@@ -114,17 +110,20 @@ namespace ADICIC {
 
     //Private inline methods:
     //=======================
+    inline       Multidouble&                   FactScaleBox();
     inline const Dipole*&                       RootPointer();
     inline       Dipole::Branch*&               BranchPointer();
-    inline const Dipole::Branch*                BranchPointer() const;
+    inline const Dipole::Branch*                BranchPointer()const;
     inline       Dipole::Antibranch*&           AntibranchPointer();
-    inline const Dipole::Antibranch*            AntibranchPointer() const;
+    inline const Dipole::Antibranch*            AntibranchPointer()const;
     inline const Dipole::Glubranch*&            FirstGlubranchPointer();
-    inline const Dipole::Glubranch*             FirstGlubranchPointer() const;
+    inline const Dipole::Glubranch*             FirstGlubranchPointer()const;
     inline       std::list<Dipole::Glubranch*>& GlubranchPointerList();
-    inline const std::list<Dipole::Glubranch*>& GlubranchPointerList() const;
+    inline const std::list<Dipole::Glubranch*>& GlubranchPointerList()const;
     inline       std::list<Dipole*>&            DipolePointerList();
-    inline const std::list<Dipole*>&            DipolePointerList() const;
+    inline const std::list<Dipole*>&            DipolePointerList()const;
+    inline       std::list<ATOOLS::Particle*>&  CorrParticlePointerList();
+    inline const std::list<ATOOLS::Particle*>&  CorrParticlePointerList()const;
 
     //Private methods:
     //================
@@ -136,9 +135,9 @@ namespace ADICIC {
     Chain();
     Chain(const Chain&);
     Chain(const Dipole::Branch&, const Dipole::Antibranch&,
-	  const Initiator::Simple_EpEm);
+	  const Initiator::EpEm);
     Chain(const Dipole::Glubranch&, const Dipole::Glubranch&,
-	  const Initiator::Simple_EpEm);
+	  const Initiator::EpEm);
     ~Chain();
 
     Chain& operator=(const Chain&);
@@ -149,7 +148,7 @@ namespace ADICIC {
     static const std::size_t& InStore;
     static const std::size_t& MaxCount;
     const std::size_t&        Name;
-    const std::size_t&        Memo;
+    const std::size_t&        Source;
 
     //Public inline methods:
     //======================
@@ -157,6 +156,7 @@ namespace ADICIC {
     inline const bool           IsClear() const;
     inline const bool           IsEmpty() const;
     inline const double         LastScale() const;
+    inline const double         FactScale() const;
     inline const double         Mass() const;
     inline const double         InvMass() const;
     inline const ATOOLS::Vec4D& Momentum() const;
@@ -170,9 +170,11 @@ namespace ADICIC {
     inline std::size_t MaxParticleNumber() const;
     inline std::size_t DipoleNumber() const;
     inline std::size_t MaxDipoleNumber() const;
+    inline std::size_t CorrParticleNumber() const;
 
-    inline Bool&   SetStatus();
-    inline double& SetLastScale();
+    inline std::size_t& SetSource();
+    inline Bool&        SetStatus();
+    inline double&      SetLastScale();
 
     inline const bool operator|(Chain_Handler&);
     inline void       operator|(bool);
@@ -184,13 +186,15 @@ namespace ADICIC {
     const Type     ChainType() const;
     const unsigned INumber() const;
     const bool     CheckMomentumConservation(ATOOLS::Vec4D&) const;
-    const bool     ExtractPartons(ATOOLS::Particle_List&) const;
+    const boolint  ExtractPartons(ATOOLS::Particle_List&) const;
 
     const bool Clear();
 
+    const bool AddCorrParticleToInit(const ATOOLS::Particle&);
     const bool Initialize(const Dipole::Branch&, const Dipole::Antibranch&,
 			  double scale=false);
-    //const bool Initialize(const Dipole::Glubranch&,const Dipole::Glubranch&);
+    //const bool Initialize(const Dipole::Glubranch&, const Dipole::Glubranch&,
+    //                      double scale=false);
 
     const bool StartInit(const Dipole::Branch&);///////////////////////////////
     const bool StartInit(const Dipole::Glubranch&);////////////////////////////
