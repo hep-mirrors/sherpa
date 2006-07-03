@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/09/13
+//Version: 4 ADICIC++-0.0/2006/06/14
 
 //Implementation of Dipole_Handler.H.
 
@@ -56,6 +56,8 @@ bool Dipole_Handler::sf_1stadjust=false;
 int Dipole_Handler::s_count=0;
 const int& Dipole_Handler::InStore=Dipole_Handler::s_count;
 
+const rdt::code Dipole_Handler::s_mpcode=rdt::iirecoil;
+
 Dipole_Handler::Sudakovbox
 Dipole_Handler::s_sumap=Dipole_Handler::Sudakovbox();
 Dipole_Handler::Recoilbox
@@ -73,7 +75,7 @@ Dipole_Handler::Dipole_Handler()
     p_sudakov(NULL), p_recoil(NULL),
     p_dip(NULL),
     p_dix(NULL), p_ban(NULL), p_ati(NULL), p_glu(NULL),
-    f_below(false), f_gate(0), m_sur(), m_rer() {
+    f_below(false), f_gate(0), m_sur(), m_rer(s_mpcode) {
 
   static int ini=sf_1stadjust || AdjustCalcBox();
   assert(ini==1);//////////////////////////////////////////////////////////////
@@ -90,20 +92,20 @@ Dipole_Handler::Dipole_Handler(Dipole& dip)
     p_sudakov(NULL), p_recoil(NULL),
     p_dip(NULL),
     p_dix(NULL), p_ban(NULL), p_ati(NULL), p_glu(NULL),
-    f_below(false) {
+    f_below(false), f_gate(0), m_sur(), m_rer(s_mpcode) {
 
   //Since there is no static DH, the very first DH can only be obtained from
   //the standard constructor!
 
   ++s_count;
 
-  if(dip|*this) {    //While processing f_gate is set.
+  if(dip|*this) {    //While processing, f_gate is set.
     if(dip.IsHandledBy(*this)); else {
       cerr<<"\nBug: Wrong Dipole-Dipole_Handler connection emerged!\n";
       assert(dip.IsHandledBy(*this));
     }
   } else {
-    cerr<<"\nMethod: ADICIC::Dipole_Handler::Dipole_Handler(ADICIC::Dipole&): "
+    cerr<<"\nMethod: "<<__PRETTY_FUNCTION__<<": "
 	<<"Warning: Attaching Dipole failed!\n"<<endl;
   }
 
@@ -210,6 +212,7 @@ void Dipole_Handler::ShowCalcBox() {    //Static.
     s_sumap[Dipole::iigg]->Which();
     s_sumap[Dipole::iigg]->ShowSpecification();}
   cout<<"---------------------------------------"<<endl;
+  cout<<" -  -  FF g emit   -  -  -  -  -  -  - "<<endl;
   if(s_remap[Key(Dipole::qqbar,Radiation::gluon)])
     s_remap[Key(Dipole::qqbar,Radiation::gluon)]->Which();
   else cout<<"  --\n";
@@ -222,7 +225,7 @@ void Dipole_Handler::ShowCalcBox() {    //Static.
   if(s_remap[Key(Dipole::gg,Radiation::gluon)])
     s_remap[Key(Dipole::gg,Radiation::gluon)]->Which();
   else cout<<"  --\n";
-  cout<<" -  -  -  -  -  -  -  -  -  -  -  -  - "<<endl;
+  cout<<" -  -  II g emit   -  -  -  -  -  -  - "<<endl;
   if(s_remap[Key(Dipole::iiqbarq,Radiation::gluon)])
     s_remap[Key(Dipole::iiqbarq,Radiation::gluon)]->Which();
   else cout<<"  --\n";
@@ -235,7 +238,7 @@ void Dipole_Handler::ShowCalcBox() {    //Static.
   if(s_remap[Key(Dipole::iigg,Radiation::gluon)])
     s_remap[Key(Dipole::iigg,Radiation::gluon)]->Which();
   else cout<<"  --\n";
-  cout<<" -  -  -  -  -  -  -  -  -  -  -  -  - "<<endl;
+  cout<<" -  -  FF g split  -  -  -  -  -  -  - "<<endl;
   if(s_remap[Key(Dipole::qg,Radiation::qbarbot)])
     s_remap[Key(Dipole::qg,Radiation::qbarbot)]->Which();
   else cout<<"  --\n";
@@ -248,7 +251,7 @@ void Dipole_Handler::ShowCalcBox() {    //Static.
   if(s_remap[Key(Dipole::gg,Radiation::qtop)])
     s_remap[Key(Dipole::gg,Radiation::qtop)]->Which();
   else cout<<"  --\n";
-  cout<<" -  -  -  -  -  -  -  -  -  -  -  -  - "<<endl;
+  cout<<" -  -  II ig emit  -  -  -  -  -  -  - "<<endl;
   if(s_remap[Key(Dipole::iiqbarq,Radiation::qbarend)])
     s_remap[Key(Dipole::iiqbarq,Radiation::qbarend)]->Which();
   else cout<<"  --\n";
@@ -283,6 +286,7 @@ const bool Dipole_Handler::AdjustCalcBox() {    //Static.
   }
 
   const int             mode=dpa.kin.ShowerMode();
+  const xbool           gspl=dpa.sud.GsplitRule();
   const Radiation::Type raty=dpa.sud.RadiationType();
 
   //Arrange the Sudakov_Group's.
@@ -331,6 +335,10 @@ const bool Dipole_Handler::AdjustCalcBox() {    //Static.
       mpp[rl::qag]=mpp[rl::qgg]=mpp[rl::gag]=mpp[rl::ggg]=999;
     else if(raty==Radiation::g)
       mpp[rl::qga]=mpp[rl::gaq]=mpp[rl::gga]=mpp[rl::ggq]=999;
+    if(gspl==negative)
+      mpp[rl::qga]=mpp[rl::gaq]=mpp[rl::gga]=mpp[rl::ggq]=999;
+    else if(gspl==positive)
+      mpp[rl::qag]=mpp[rl::qgg]=mpp[rl::gag]=mpp[rl::ggg]=999;
   }
   if(mode & dsm::jii) {
     mpp[rl::iiaqg]=mpp[rl::iiaqa]=mpp[rl::iiaqq]=777;
@@ -341,6 +349,12 @@ const bool Dipole_Handler::AdjustCalcBox() {    //Static.
       mpp[rl::iiaqg]=mpp[rl::iiagg]=mpp[rl::iigqg]=mpp[rl::iiggg]=999;
     else if(raty==Radiation::g)
       mpp[rl::iiaqa]=mpp[rl::iiaqq]=mpp[rl::iiagq]=mpp[rl::iigqa]=999;
+    if(gspl==negative);
+    else if(gspl==positive)
+      mpp[rl::iiaqg]=mpp[rl::iiaqa]=mpp[rl::iiaqq]=
+	mpp[rl::iiagg]=mpp[rl::iiagq]=
+	mpp[rl::iigqg]=mpp[rl::iigqa]=
+	mpp[rl::iiggg]=999;
   }
   std::vector<bool> gate;
   for(size_t i=0; ; ++i) {
@@ -441,9 +455,27 @@ const bool Dipole_Handler::AdjustCalcBox() {    //Static.
 
 
 
+void Dipole_Handler::DecoupleNew(Carrier& car) {
+  assert(!(car.pDip || car.pGlu || car.pAqu || car.pQua));
+  assert(car.Mup.GetItsVec().empty());
+  car.pDip=p_dix; p_dix=NULL;
+  car.pGlu=p_glu; p_glu=NULL;
+  car.pAqu=p_ati; p_ati=NULL;
+  car.pQua=p_ban; p_ban=NULL;
+  car.DipOrder=f_below; f_below=false;
+  car.RecoComp=m_rer.Poc; m_rer.Poc=both;
+  if(m_rer.Mup.GetItsVec().empty());
+  else car.Mup.Swap(m_rer.Mup);
+}
+
+
+
+
+
 void Dipole_Handler::RemoveNewProducts() {
   //Resets the news.
   f_below=false;
+  m_rer.Reset(s_mpcode);
   //In case decoupling has not yet carried out, see Note1!
   if(p_dix) {
     delete p_dix; p_dix=NULL;
@@ -506,10 +538,7 @@ const bool Dipole_Handler::InduceDipoleRadiation(bool t, bool o, bool f) {
   if(!p_dip) return false;
 
   if(p_dip->Status()==On && p_dip->IsType()!=Dipole::incorrect);
-  else {
-    p_dip->SetEmitScale()=0.0;
-    return false;
-  }
+  else { p_dip->SetEmitScale()=0.0; return false;}
 
   //Note1:
   //In case decoupling has not yet taken place, the following may lead the
@@ -529,20 +558,14 @@ const bool Dipole_Handler::InduceDipoleRadiation(bool t, bool o, bool f) {
   assert(p_dix==NULL && p_glu==NULL && p_ban==NULL && p_ati==NULL);
 
 #ifdef STRICT_DIPOLE_HANDLER
-  if(p_dip->PointerHandling()!=0) {
-    p_dip->SetEmitScale()=0.0;
-    return false;
-  }
+  if(p_dip->PointerHandling()!=0) { p_dip->SetEmitScale()=0.0; return false;}
 #endif
 
   //No testing of global parameters.
   //assert( p_dip->InvMass() > dpa.sud.MinK2t() );
   //assert( p_dip->ProdScale() > dpa.sud.MinK2t() );
 
-  if(p_sudakov==NULL) {
-    p_dip->SetEmitScale()=0.0;
-    return false;
-  }
+  if(p_sudakov==NULL) { p_dip->SetEmitScale()=0.0; return false;}
   //assert(p_sudakov);
 
   //Kt Local-Analysis Sherpa-Analysis Comparison.
@@ -580,6 +603,7 @@ const bool Dipole_Handler::InduceDipoleRadiation(bool t, bool o, bool f) {
 #endif
     p_recoil=s_remap[m_key];
     p_dip->SetEmitScale()=m_sur.P2t;
+    p_dip->SetFactScale()=dpa.evo.GetFactScaleFrom(m_sur);    //Suggestion.
     f_gate=p_dip->StateNumber;
   }
   else {
@@ -634,6 +658,7 @@ const bool Dipole_Handler::FinishDipoleRadiation() {
 
   //assert((p_dip->TotP())[0] > 0.0);//////////////////////////////////////////
 
+  m_rer.Reset(s_mpcode);
   m_rer.Vec.resize(3,Vec4D());
   m_rer.Vec[rr::p1]=p_dip->GetTopBranchPointer()->Momentum();
   m_rer.Vec[rr::p3]=p_dip->GetBotBranchPointer()->Momentum();
@@ -670,6 +695,12 @@ const bool Dipole_Handler::FinishDipoleRadiation() {
 
 const bool Dipole_Handler::GenerateSplitting() {
 
+  //dpv.evo.SetFactScaleOffset(sqr(1.0));
+
+  //So far, only the emission scale of p_dip has changed.
+  //cout<<__PRETTY_FUNCTION__<<":\n"<<*p_dip<<endl;
+  //m_sur.Print();
+
   switch(m_sur.Rad) {
 
   case Radiation::gluon: {
@@ -677,7 +708,7 @@ const bool Dipole_Handler::GenerateSplitting() {
     p_dip->GetBotBranchPointer()->SetMomentum(m_rer.Vec[rr::p3]);
     //That updates the dipole as well as the neighbouring ones.
     p_glu=new Dipole::Glubranch(m_rer.Vec[rr::p2]); assert(p_glu);
-    p_dix=new Dipole(*p_dip); assert(p_dix);
+    p_dix=new Dipole(*p_dip); assert(p_dix);    //Gives entry in copy memory.
     if(m_rer.Poc==front) {
       f_below=false;
       p_dix->RenewBranch(false,*p_glu);    //dixbot
@@ -688,9 +719,9 @@ const bool Dipole_Handler::GenerateSplitting() {
       p_dix->RenewBranch(true,*p_glu);    //dixtop
     }
     p_dix->SetSource()=p_dip->Name;
-    p_dix->SetProdScale()=m_sur.P2t;
-    p_dix->SetBootScale()=m_sur.P2t;
-    p_dix->SetEmitScale()=m_sur.P2t;
+    p_dix->SetSpinCorr()=p_dip->SpinCorr();
+    p_dix->SetEvolScales(m_sur.P2t);
+    p_dix->SetFactScale()=dpa.evo.GetFactScaleFrom(m_sur);
     break;
   }
 
@@ -742,9 +773,9 @@ const bool Dipole_Handler::GenerateSplitting() {
     p_dip->RenewBranch(true,*p_glu);    //diptop
     p_dix=new Dipole(*p_ban,*p_glu); assert(p_dix);
     p_dix->SetSource()=p_dip->Name;
-    p_dix->SetProdScale()=m_sur.P2t;
-    p_dix->SetBootScale()=m_sur.P2t;
-    p_dix->SetEmitScale()=m_sur.P2t;
+    p_dix->SetSpinCorr()=p_dip->SpinCorr();
+    p_dix->SetEvolScales(m_sur.P2t);
+    p_dix->SetFactScale()=dpa.evo.GetFactScaleFrom(m_sur);
     break;
   }
 
@@ -766,21 +797,21 @@ const bool Dipole_Handler::GenerateSplitting() {
     p_dip->RenewBranch(false,*p_glu);    //dipbot
     p_dix=new Dipole(*p_glu,*p_ati); assert(p_dix);
     p_dix->SetSource()=p_dip->Name;
-    p_dix->SetProdScale()=m_sur.P2t;
-    p_dix->SetBootScale()=m_sur.P2t;
-    p_dix->SetEmitScale()=m_sur.P2t;
+    p_dix->SetSpinCorr()=p_dip->SpinCorr();
+    p_dix->SetEvolScales(m_sur.P2t);
+    p_dix->SetFactScale()=dpa.evo.GetFactScaleFrom(m_sur);
     break;
   }
 
   default:
-    assert(m_sur.Rad==Radiation::gluon || m_sur.Rad==Radiation::qtop ||
-	   m_sur.Rad==Radiation::qbarbot);
+    assert(m_sur.Rad==Radiation::gluon ||
+	   m_sur.Rad==Radiation::qtop || m_sur.Rad==Radiation::qbarbot ||
+	   m_sur.Rad==Radiation::qfront || m_sur.Rad==Radiation::qbarend);
 
   }
 
-  p_dip->SetProdScale()=m_sur.P2t;
-  p_dip->SetBootScale()=m_sur.P2t;
-  p_dip->SetEmitScale()=m_sur.P2t;
+  p_dip->SetEvolScales(m_sur.P2t);
+  p_dip->SetFactScale()=dpa.evo.GetFactScaleFrom(m_sur);    //Restatement.
 
   m_key.first=p_dip->IsType();
   m_key.second=Radiation::incorrect;

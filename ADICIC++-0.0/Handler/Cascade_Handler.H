@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/09/22    (surely preliminarily)
+//Version: 4 ADICIC++-0.0/2006/05/25    (surely preliminarily)
 
 //Only the Cascade_Handler structure can reasonably modify
 //the state of a Cascade.
@@ -38,7 +38,7 @@ namespace ADICIC {
 
   public:
 
-    //typedef,enum,class
+    //typedef,enum
 
     struct Counter {
       enum code {
@@ -85,29 +85,24 @@ namespace ADICIC {
 
     Chain_Handler m_chh;
 
-    //Each Cascade_Handler counts on its own.
+    //Each Cascade_Handler has its own counting tool.
     std::vector<std::size_t> v_count;
 
     std::list<std::list<Cascade::Mirror>::iterator> l_mit;
     std::list<std::list<Chain*>::iterator>          l_itt;
 
+    Chain_Handler::Carrier m_car;
+
     //========================
     unsigned            m_nin;
     Cascade::Type       m_typ;
-    bool                f_bot;
-    ATOOLS::Flavour     m_fla;
-    Recoil_Tool*        p_ret;
-    Chain*              p_nec;    //New and current chain.
-    Chain*              p_cuc;    //Independent chains -> no winner.
+    Chain*              p_cuc;    //The current chain.
     ATOOLS::Vec4D       m_vec;
     ATOOLS::Vec4D       m_old;
     //========================
 
-    //Private static methods:
-    //=======================
-
-    //Private inline methods:
-    //=======================
+    //Private static/inline methods:
+    //==============================
 
     //Private methods:
     //================

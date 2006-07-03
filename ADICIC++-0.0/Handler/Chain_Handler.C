@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/09/21
+//Version: 4 ADICIC++-0.0/2006/07/02
 
 //Implementation of Chain_Handler.H.
 
@@ -57,8 +57,8 @@ template
 const bool Chain_Handler::FindTheDipole<Chain_Evolution_Strategy::Unknown>();
 //template const bool
 //Chain_Handler::FindTheDipole<Chain_Evolution_Strategy::Production>();
-template
-const bool Chain_Handler::FindTheDipole<Chain_Evolution_Strategy::Emission>();
+//template const bool
+//Chain_Handler::FindTheDipole<Chain_Evolution_Strategy::Emission>();
 template
 const bool Chain_Handler::FindTheDipole<Chain_Evolution_Strategy::Mass>();
 
@@ -69,8 +69,8 @@ const bool Chain_Handler::FindTheDipole<Chain_Evolution_Strategy::Mass>();
 
 
 Chain_Handler::Chain_Handler()
-  : f_below(false), m_code(), p_cix(NULL), p_rec(NULL),
-    m_k2tcomp(0.0), p_cha(NULL),
+  : f_below(false), m_code(), p_cix(NULL), m_box(),
+    m_nii(-7), m_k2tcomp(0.0), p_cha(NULL),
     m_dh1(), m_dh2(),
     p_dhwait(&m_dh1), p_dhaciv(&m_dh2), p_dhtemp(NULL),
     i_fix(NULL), i_run(NULL) {
@@ -99,8 +99,8 @@ Chain_Handler::Chain_Handler()
 
 
 Chain_Handler::Chain_Handler(Chain& cha)
-  : f_below(false), m_code(), p_cix(NULL), p_rec(NULL),
-    m_k2tcomp(0.0), p_cha(NULL),
+  : f_below(false), m_code(), p_cix(NULL), m_box(),
+    m_nii(-7), m_k2tcomp(0.0), p_cha(NULL),
     m_dh1(), m_dh2(),
     p_dhwait(&m_dh1), p_dhaciv(&m_dh2), p_dhtemp(NULL),
     i_fix(NULL), i_run(NULL) {
@@ -143,7 +143,6 @@ Chain_Handler::~Chain_Handler() {
 
   --s_count;
 
-  if(p_rec) delete p_rec;
   if(p_cix) delete p_cix;
 
   if(!p_cha) return;
@@ -163,6 +162,30 @@ Chain_Handler::~Chain_Handler() {
 
 
 
+void Chain_Handler::DecoupleNew(Carrier& car) {
+  assert(car.pCha==NULL);
+  assert(car.Mup.GetItsVec().empty());
+  car.ChaOrder=f_below; f_below=false;
+  car.EmitFlav=m_code; m_code=ATOOLS::Flavour();
+  car.pCha=p_cix; p_cix=NULL;
+  if(m_box.Mup.GetItsVec().empty());
+  else car.Mup.Swap(m_box.Mup);
+}
+
+
+void Chain_Handler::RemoveNewProducts() {    //Resets the news.
+  f_below=false;
+  m_code=ATOOLS::Flavour();
+  if(p_cix) { delete p_cix; p_cix=NULL;}
+  //m_box.Mup isn't really new, it was a condition, so here it's not changed.
+  //It is handed over (to the cascade) in case other chains also have to be
+  //corrected by applying the same transformations saved in the m_box.Mup.
+}
+
+
+
+
+
 const bool Chain_Handler::EvolveChainByOneStep() {
 
   if(!p_cha) return false;
@@ -177,8 +200,12 @@ const bool Chain_Handler::EvolveChainByOneStep() {
      p_cha->ParticleNumber()<dpa.evo.ChainParticleLimit());//!!!!!!!!!!!!!!!!!!
   else return false;
 
-  this->CleanUp();
+  this->CleanUpDHs();
   this->RemoveNewProducts();    //No testing of global parameters.
+
+  m_box.Reset();    //Note!
+  //All the preceding results must have found their way into a carrying list or
+  //been deleted before, otherwise this would be a potential memory leak.
 
   if(this->FindDipole()) return this->ModifyChain();
 
@@ -198,12 +225,16 @@ const bool Chain_Handler::EvolveChain() {//////////////////////////////////////
 
 
 
-const bool Chain_Handler::CorrectChain(const Recoil_Tool& reto) {
+const bool Chain_Handler::CorrectChain(const Multipoincare& lmup) {
   if(!p_cha) return false;
   if(!p_cha->IsLine()) return false;
-  if(reto.Mode()!=rdt::iirecoil) return false;
-  Poincare& fly=reto.GetBoost();
-  Poincare& flyprime=reto.GetBackBoost();
+  if(lmup.Mode()!=rdt::iirecoil) return false;
+  for(list<Particle*>::iterator it=p_cha->CorrParticlePointerList().begin();
+      it!=p_cha->CorrParticlePointerList().end(); ++it) {
+    Vec4D temp((*it)->Momentum());
+    assert(lmup.Apply(temp));
+    (*it)->SetMomentum(temp);
+  }
   list<Dipole_Particle*> fins;
   assert(p_cha->BranchPointer()->Incoming()==false);
   fins.push_back(p_cha->BranchPointer());
@@ -217,11 +248,11 @@ const bool Chain_Handler::CorrectChain(const Recoil_Tool& reto) {
   }
   for(list<Dipole_Particle*>::iterator it=fins.begin(); it!=fins.end(); ++it) {
     Vec4D temp=(*it)->Momentum();
-    fly.Boost(temp);
-    flyprime.BoostBack(temp);
+    assert(lmup.Apply(temp));
     (*it)->SetMomentum(temp);    //Updates dipole mass!
+    //But the chain momentum is still not up to date, I would guess!!!!!!!!!!!!
   }
-  return false;////////////////////////////////////////////////////////////////
+  return false;//so long to see that it does nothing///////////////////////////
 }
 
 
@@ -253,7 +284,7 @@ void Chain_Handler::InitStrategies() {
 
 
 
-void Chain_Handler::CleanUp() {
+void Chain_Handler::CleanUpDHs() {
   assert(!m_dh1.IsDocked() && !m_dh2.IsDocked());
   m_dh1.RemoveNewProducts();
   m_dh2.RemoveNewProducts();
@@ -305,7 +336,8 @@ Chain_Handler::FindTheDipole<Chain_Evolution_Strategy::Production>() {
   for(; i_run!=p_cha->DipolePointerList().end(); ++i_run) {
 
     Dipole& dip=**i_run;
-    dip.SetSpinCorr()=spico;
+    dip.SetFactScale()=p_cha->FactScale();    //Updates it to the current muF.
+    if(dip.SpinCorr() && !spico) dip.SetSpinCorr()=false;
     assert(dip|*p_dhaciv);
 
     if(p_dhaciv->InduceDipoleRadiation()==isfalse) {    //Removes the warning.
@@ -316,6 +348,7 @@ Chain_Handler::FindTheDipole<Chain_Evolution_Strategy::Production>() {
       bool result;
       do {
 	dip.SetBootScale()=dip.EmitScale();
+	dip.SetFactScale()=p_cha->FactScale();
 	result=p_dhaciv->InduceDipoleRadiation();
 	if(result==false) break;
       }
@@ -328,6 +361,7 @@ Chain_Handler::FindTheDipole<Chain_Evolution_Strategy::Production>() {
 
     if(dip.EmitScale()<m_k2tcomp) {
       dip.SetBootScale()=dip.ProdScale();
+      //Correct muF is set at the beginning of the next emission round!
       dip|0; continue;
     }
 
@@ -338,10 +372,55 @@ Chain_Handler::FindTheDipole<Chain_Evolution_Strategy::Production>() {
     if(p_dhtemp->IsDocked()) {
       Dipole& loser=**i_fix;
       loser.SetBootScale()=loser.ProdScale();
+      //Correct muF is set at the beginning of the next emission round!
       loser|0;
     }
     i_fix=i_run;
 
+  }
+
+  return bool(i_fix!=NULL);
+
+}
+
+
+
+
+
+template<> const bool
+Chain_Handler::FindTheDipole<Chain_Evolution_Strategy::Emission>() {
+
+  static const bool isfalse=EmissionStrategyInfo();    //Gives warning.
+
+  i_run=p_cha->DipolePointerList().begin();
+  bool spico=p_cha->ParticleNumber()<dpa.evo.ChainCorrelationLimit();
+
+  for(; i_run!=p_cha->DipolePointerList().end(); ++i_run) {
+
+    Dipole& dip=**i_run;
+    dip.SetFactScale()=p_cha->FactScale();    //Updates it to the current muF.
+    if(dip.SpinCorr() && !spico) dip.SetSpinCorr()=false;
+    assert(dip|*p_dhaciv);
+
+    if(p_dhaciv->InduceDipoleRadiation()==isfalse) {    //Removes the warning.
+      dip|0; continue;
+    }
+
+    assert(dip.EmitScale()<p_cha->LastScale());
+    if(dip.EmitScale()<m_k2tcomp) { dip|0; continue;}
+
+    m_k2tcomp=dip.EmitScale();
+    p_dhtemp=p_dhwait; p_dhwait=p_dhaciv; p_dhaciv=p_dhtemp;
+    if(p_dhtemp->IsDocked()) { Dipole& loser=**i_fix; loser|0;}
+    i_fix=i_run;
+
+  }
+
+  if(i_fix==NULL) m_k2tcomp=0.0;
+  i_run=p_cha->DipolePointerList().begin();
+  for(; i_run!=p_cha->DipolePointerList().end(); ++i_run) {
+    Dipole& dip=**i_run;
+    if(i_run!=i_fix) dip.SetBootScale()=m_k2tcomp;
   }
 
   return bool(i_fix!=NULL);
@@ -356,10 +435,10 @@ Chain_Handler::FindTheDipole<Chain_Evolution_Strategy::Production>() {
 
 const bool Chain_Handler::ModifyChain() {
 
-  p_dw=NULL; p_gw=NULL; p_aw=NULL; p_bw=NULL;
-
-  p_win=*i_fix;
+  p_win=*i_fix;    //cout<<*p_win<<endl;
   m_nii=-7;
+  m_dm2=p_win->InvMass();
+  m_emi=Vec4D();
 
   if(p_win->GetTopBranchPointer()->Incoming()) {
     m_nii=0;
@@ -375,7 +454,6 @@ const bool Chain_Handler::ModifyChain() {
   }
   m_old=p_cha->Momentum();
   p_cha->UpdateMomentum(-1.0,m_vec);
-  if(m_nii>=0) m_vii=-1*m_vec;
 
 #ifdef CHAIN_HANDLER_OUTPUT
   cout<<m_old<<"\t"<<m_old.Abs2()<<"\n";
@@ -387,51 +465,70 @@ const bool Chain_Handler::ModifyChain() {
 
   assert(p_dhwait->FinishDipoleRadiation());
 
-  p_dhwait->DecoupleNew(p_dw,p_gw,p_aw,p_bw,f_bot,m_rec);
-  if(p_dw) {
-    if(p_bw) {
-      assert(p_aw && p_gw);
-      if(f_bot) m_code=p_aw->Flav();
-      else      m_code=p_bw->Flav();
+  p_dhwait->DecoupleNew(m_box);
+  if(m_box.pDip) {
+    if(m_box.pQua) {
+      assert(m_box.pAqu && m_box.pGlu);
+      if(m_box.DipOrder) m_code=m_box.pAqu->Flav();
+      else               m_code=m_box.pQua->Flav();
       (*p_win)|0;
       EmitQuark();
     } else {
-      assert(!p_aw && p_gw);
+      assert(!m_box.pAqu && m_box.pGlu);
       m_code=Flavour(kf::gluon);
       (*p_win)|0;
       EmitGluon();
     }
   } else {
-    assert(p_aw && p_bw && p_gw);
-    m_code=p_bw->Flav();
-    assert(p_aw->Flav().Bar()==m_code);
+    assert(m_box.pAqu && m_box.pQua && m_box.pGlu);
+    m_code=m_box.pQua->Flav();
+    assert(m_box.pAqu->Flav().Bar()==m_code);
     (*p_win)|0;
     if(m_typ==Chain::line) {
-      if(f_bot){
+      if(m_box.DipOrder){
 #ifdef CHAIN_HANDLER_OUTPUT
 	cout<<p_win->GetTopBranchPointer()->Momentum()<<"\n";
-	cout<<p_aw->Momentum()<<"\n";
-	cout<<p_bw->Momentum()<<"\n";
+	cout<<m_box.pAqu->Momentum()<<"\n";
+	cout<<m_box.pQua->Momentum()<<"\n";
 	cout<<p_win->GetTopBranchPointer()->Momentum()+
-	  p_aw->Momentum()+p_bw->Momentum()<<endl;
+	  m_box.pAqu->Momentum()+m_box.pQua->Momentum()<<endl;
 #endif
 	BotSplitLine();
       }
       else {
 #ifdef CHAIN_HANDLER_OUTPUT
-	cout<<p_aw->Momentum()<<"\n";
-	cout<<p_bw->Momentum()<<"\n";
+	cout<<m_box.pAqu->Momentum()<<"\n";
+	cout<<m_box.pQua->Momentum()<<"\n";
 	cout<<p_win->GetBotBranchPointer()->Momentum()<<"\n";
 	cout<<p_win->GetBotBranchPointer()->Momentum()+
-	  p_aw->Momentum()+p_bw->Momentum()<<endl;
+	  m_box.pAqu->Momentum()+m_box.pQua->Momentum()<<endl;
 #endif
 	TopSplitLine();
       }
     } else {
-      if(f_bot) BotSplitRing();
-      else      TopSplitRing();
+      if(m_box.DipOrder) BotSplitRing();
+      else               TopSplitRing();
     }
   }
+
+  //Calculation of all factorization scale options:
+  p_cha->FactScaleBox()[fascat::p2t]=p_win->EmitScale();
+  p_cha->FactScaleBox()[fascat::m2t]=
+    p_cha->FactScaleBox()[fascat::k2t]=m_emi.PPerp2();
+  p_cha->FactScaleBox()[fascat::m2t]+=m_dm2;
+  p_cha->FactScaleBox()[fascat::shat]=m_dm2*
+    p_cha->FactScaleBox()[fascat::p2t]/p_cha->FactScaleBox()[fascat::k2t];
+
+#ifdef CHAIN_HANDLER_OUTPUT
+  cout<<p_cha->FactScale()<<" : "<<p_win->FactScale()<<" | "
+      <<p_cha->FactScaleBox()[fascat::p2t]<<" : "
+      <<p_cha->FactScaleBox()[fascat::k2t]<<"("
+      <<sqrt(p_cha->FactScaleBox()[fascat::k2t])<<") : "
+      <<p_cha->FactScaleBox()[fascat::m2t]<<"("
+      <<sqrt(p_cha->FactScaleBox()[fascat::m2t])<<") : "
+      <<p_cha->FactScaleBox()[fascat::shat]<<"("
+      <<sqrt(p_cha->FactScaleBox()[fascat::shat])<<")"<<endl;
+#endif
 
   return true;
 
@@ -441,16 +538,22 @@ const bool Chain_Handler::ModifyChain() {
 
 
 
-void Chain_Handler::DistributeIIRecoil(const Vec4D& viiw) {
-  //Must be executed before new particles are introduced to the chain.
-  assert(m_nii==0 && p_rec==NULL);
-  p_rec=new Recoil_Tool(rdt::iirecoil);
-  assert(dabs(m_vii.Abs2()-viiw.Abs2())<1.0e-7);
-  assert(m_vii.Abs2()>1.0e-12);
-  Poincare* pfly=new Poincare(m_vii); assert(pfly);
-  assert(p_rec->KeepThisBoost(*pfly));
-  Poincare* pflyprime=new Poincare(viiw); assert(pflyprime);
-  assert(p_rec->KeepThisBackBoost(*pflyprime));
+void Chain_Handler::DistributeIIRecoil() {
+  //Must be executed before new particles are introduced into the chain.
+
+  //cout<<"Number of Poincares kept: "<<m_box.Mup.GetItsVec().size()
+  //    <<"   using mode: "<<m_box.Mup.Mode()<<endl;
+
+  assert(m_nii==0);
+  assert(!p_cha->CorrParticlePointerList().empty());
+  assert(m_box.Mup.GetItsVec().size());
+  for(list<Particle*>::iterator it=p_cha->CorrParticlePointerList().begin();
+      it!=p_cha->CorrParticlePointerList().end(); ++it) {
+    Vec4D temp((*it)->Momentum());
+    assert(m_box.Mup.Apply(temp));
+    (*it)->SetMomentum(temp);
+  }
+
   list<Dipole_Particle*> fins;
   if(p_cha->BranchPointer()->Incoming()==false) {
     ++m_nii; fins.push_back(p_cha->BranchPointer());}
@@ -464,8 +567,7 @@ void Chain_Handler::DistributeIIRecoil(const Vec4D& viiw) {
   for(list<Dipole_Particle*>::iterator it=fins.begin(); it!=fins.end(); ++it) {
     Vec4D temp=(*it)->Momentum();
     m_vec-=temp;
-    pfly->Boost(temp);
-    pflyprime->BoostBack(temp);
+    assert(m_box.Mup.Apply(temp));
     (*it)->SetMomentum(temp);    //Updates dipole mass!
     m_vec+=temp;
   }
@@ -477,39 +579,39 @@ void Chain_Handler::DistributeIIRecoil(const Vec4D& viiw) {
 
 void Chain_Handler::EmitGluon() {
 
-  m_vec=p_gw->Momentum();    //This is emitted, so clearly it's an F gluon.
+  m_emi=m_vec=m_box.pGlu->Momentum();    //It is emitted, so it is an F gluon.
 
-  if(f_bot) {
+  if(m_box.DipOrder) {
     i_run=i_fix;
     ++i_run;
-    i_run=p_cha->DipolePointerList().insert(i_run,p_dw);
+    i_run=p_cha->DipolePointerList().insert(i_run,m_box.pDip);
     //if(p_win->GetTopBranchPointer()->Incoming())
-    //if(p_dw->GetBotBranchPointer()->Incoming())
+    //if(m_box.pDip->GetBotBranchPointer()->Incoming())
     if(m_nii>=0) {
       m_vec-=p_win->GetTopBranchPointer()->Momentum();
-      m_vec-=p_dw->GetBotBranchPointer()->Momentum();
-      DistributeIIRecoil(-1*m_vec);    //-1*m_vec corresponds to an m_viinew!
+      m_vec-=m_box.pDip->GetBotBranchPointer()->Momentum();
+      DistributeIIRecoil();    //-1*m_vec corresponds to new i+i-g!
     } else {
       m_vec+=p_win->GetTopBranchPointer()->Momentum();
-      m_vec+=p_dw->GetBotBranchPointer()->Momentum();
+      m_vec+=m_box.pDip->GetBotBranchPointer()->Momentum();
     }
   } else {
-    i_run=p_cha->DipolePointerList().insert(i_fix,p_dw);
+    i_run=p_cha->DipolePointerList().insert(i_fix,m_box.pDip);
     ++i_run;
     i_fix=i_run;
-    //if(p_dw->GetTopBranchPointer()->Incoming())
+    //if(m_box.pDip->GetTopBranchPointer()->Incoming())
     //if(p_win->GetBotBranchPointer()->Incoming())
     if(m_nii>=0) {
-      m_vec-=p_dw->GetTopBranchPointer()->Momentum();
+      m_vec-=m_box.pDip->GetTopBranchPointer()->Momentum();
       m_vec-=p_win->GetBotBranchPointer()->Momentum();
-      DistributeIIRecoil(-1*m_vec);    //-1*m_vec corresponds to an m_viinew!
+      DistributeIIRecoil();    //-1*m_vec corresponds to new i+i-g!
     } else {
-      m_vec+=p_dw->GetTopBranchPointer()->Momentum();
+      m_vec+=m_box.pDip->GetTopBranchPointer()->Momentum();
       m_vec+=p_win->GetBotBranchPointer()->Momentum();
     }
   }
 
-  p_cha->GlubranchPointerList().push_back(p_gw);
+  p_cha->GlubranchPointerList().push_back(m_box.pGlu);
   p_cha->UpdateMomentum(1.0,m_vec);
   p_cha->SetLastScale()=m_k2tcomp;
 
@@ -532,34 +634,36 @@ void Chain_Handler::EmitGluon() {
 void Chain_Handler::EmitQuark() {
 
   assert(m_nii>=0);
-  m_vec=-1*p_gw->Momentum();    //This is the new initial(=I) gluon.
-  //p_cha->GlubranchPointerList().push_back(p_gw);
+  m_vec=-1*m_box.pGlu->Momentum();    //This is the new initial(=I) gluon.
+  //p_cha->GlubranchPointerList().push_back(m_box.pGlu);
 
-  if(f_bot) {
+  if(m_box.DipOrder) {
     i_run=i_fix;
     ++i_run;
-    i_run=p_cha->DipolePointerList().insert(i_run,p_dw);
+    i_run=p_cha->DipolePointerList().insert(i_run,m_box.pDip);
     assert(p_win->GetTopBranchPointer()->Incoming());
     m_vec-=p_win->GetTopBranchPointer()->Momentum();
-    assert(p_dw->GetBotBranchPointer()->Incoming()==false);
-    m_vec+=p_dw->GetBotBranchPointer()->Momentum();
-    DistributeIIRecoil(-1*m_vec);
-    p_cha->AntibranchPointer()=p_aw;    //The new Antibranch of the chain.
-    delete p_bw; p_bw=NULL;    //Remove the old one.
+    assert(m_box.pDip->GetBotBranchPointer()->Incoming()==false);
+    m_vec+=m_box.pDip->GetBotBranchPointer()->Momentum();
+    DistributeIIRecoil();
+    p_cha->AntibranchPointer()=m_box.pAqu;    //The chain's new Antibranch.
+    delete m_box.pQua; m_box.pQua=NULL;    //Remove the old one.
+    m_emi=m_box.pAqu->Momentum();
   } else {
-    i_run=p_cha->DipolePointerList().insert(i_fix,p_dw);
+    i_run=p_cha->DipolePointerList().insert(i_fix,m_box.pDip);
     ++i_run;
     i_fix=i_run;
-    assert(p_dw->GetTopBranchPointer()->Incoming()==false);
-    m_vec+=p_dw->GetTopBranchPointer()->Momentum();
+    assert(m_box.pDip->GetTopBranchPointer()->Incoming()==false);
+    m_vec+=m_box.pDip->GetTopBranchPointer()->Momentum();
     assert(p_win->GetBotBranchPointer()->Incoming());
     m_vec-=p_win->GetBotBranchPointer()->Momentum();
-    DistributeIIRecoil(-1*m_vec);
-    p_cha->BranchPointer()=p_bw;    //The new Branch of the chain.
-    delete p_aw; p_aw=NULL;    //Remove the old one.
+    DistributeIIRecoil();
+    p_cha->BranchPointer()=m_box.pQua;    //The new Branch of the chain.
+    delete m_box.pAqu; m_box.pAqu=NULL;    //Remove the old one.
+    m_emi=m_box.pQua->Momentum();
   }
 
-  p_cha->GlubranchPointerList().push_back(p_gw);
+  p_cha->GlubranchPointerList().push_back(m_box.pGlu);
   p_cha->UpdateMomentum(1.0,m_vec);
   p_cha->SetLastScale()=m_k2tcomp;
 
@@ -585,13 +689,14 @@ void Chain_Handler::TopSplitLine() {
 
   f_below=true;    //New Chain emerges below the old one.
 
-  //p_aw is the new antiquark.
-  //p_bw is the new quark.
-  //p_gw is the split gluon.
+  //m_box.pAqu is the new antiquark.
+  //m_box.pQua is the new quark.
+  //m_box.pGlu is the split gluon.
 
   p_cix=new Chain(); assert(p_cix);
-  p_cix->m_memo=p_cha->m_memo;
-  p_cix->BranchPointer()=p_bw;
+  //p_cix->SetSource()=p_cha->Name;
+  p_cix->m_memo=p_cha->m_name;
+  p_cix->BranchPointer()=m_box.pQua;
   p_cix->AntibranchPointer()=p_cha->AntibranchPointer();
   p_cha->AntibranchPointer()=NULL;
 
@@ -603,10 +708,10 @@ void Chain_Handler::TopSplitLine() {
 
   if(i_run==i_fix) {    //Special case - only the winner dipole.
     assert(p_win->IsType()==Dipole::qqbar);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    m_vec=p_bw->Momentum();
+    m_vec=m_box.pQua->Momentum();
     m_vec+=p_cix->AntibranchPointer()->Momentum();
     p_cix->UpdateMomentum(1.0,m_vec);
-    p_cha->UpdateMomentum(1.0,p_aw->Momentum());
+    p_cha->UpdateMomentum(1.0,m_box.pAqu->Momentum());
     p_cix->DipolePointerList().push_front(p_win);
     p_cha->DipolePointerList().pop_back();
     i_run=p_cha->DipolePointerList().end(); --i_run;
@@ -641,12 +746,12 @@ void Chain_Handler::TopSplitLine() {
     }    //Winner dipole.
     assert(p_win->IsType()==Dipole::qg);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     if(p_win==p_cha->RootPointer()) ++root;
-    p_cix->UpdateMomentum(1.0,p_bw->Momentum()+m_vec+
+    p_cix->UpdateMomentum(1.0,m_box.pQua->Momentum()+m_vec+
 			  p_cix->AntibranchPointer()->Momentum());
     m_vec+=p_cix->AntibranchPointer()->Momentum();
     m_vec*=(-1);
     m_vec+=p_win->GetBotBranchPointer()->Momentum();
-    m_vec+=p_aw->Momentum();
+    m_vec+=m_box.pAqu->Momentum();
     p_cha->UpdateMomentum(1.0,m_vec);
     p_cix->DipolePointerList().push_front(p_win);
     i_run=p_cha->DipolePointerList().end();
@@ -662,10 +767,10 @@ void Chain_Handler::TopSplitLine() {
     }
   }
 
-  (*i_run)->RenewBranch(*p_aw);
-  p_cha->AntibranchPointer()=p_aw;
-  p_cha->GlubranchPointerList().remove(p_gw);
-  delete p_gw; p_gw=NULL;
+  (*i_run)->RenewBranch(*m_box.pAqu);
+  p_cha->AntibranchPointer()=m_box.pAqu;
+  p_cha->GlubranchPointerList().remove(m_box.pGlu);
+  delete m_box.pGlu; m_box.pGlu=NULL;
 
   //Check 4-momenta.
   Vec4D testcha, testcix, testall;
@@ -718,15 +823,16 @@ void Chain_Handler::BotSplitLine() {
 
   f_below=false;    //New Chain is on top of the old one.
 
-  //p_aw is the new antiquark.
-  //p_bw is the new quark.
-  //p_gw is the split gluon.
+  //m_box.pAqu is the new antiquark.
+  //m_box.pQua is the new quark.
+  //m_box.pGlu is the split gluon.
 
   p_cix=new Chain(); assert(p_cix);
-  p_cix->m_memo=p_cha->m_memo;
+  //p_cix->SetSource()=p_cha->Name;
+  p_cix->m_memo=p_cha->m_name;
   p_cix->BranchPointer()=p_cha->BranchPointer();
   p_cha->BranchPointer()=NULL;
-  p_cix->AntibranchPointer()=p_aw;
+  p_cix->AntibranchPointer()=m_box.pAqu;
 
   i_run=p_cha->DipolePointerList().begin();
 
@@ -737,9 +843,9 @@ void Chain_Handler::BotSplitLine() {
   if(i_run==i_fix) {    //Special case - only the winner dipole.
     assert(p_win->IsType()==Dipole::qqbar);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     m_vec=p_cix->BranchPointer()->Momentum();
-    m_vec+=p_aw->Momentum();
+    m_vec+=m_box.pAqu->Momentum();
     p_cix->UpdateMomentum(1.0,m_vec);
-    p_cha->UpdateMomentum(1.0,p_bw->Momentum());
+    p_cha->UpdateMomentum(1.0,m_box.pQua->Momentum());
     p_cix->DipolePointerList().push_front(p_win);
     p_cha->DipolePointerList().pop_front();
     i_run=p_cha->DipolePointerList().begin();
@@ -775,11 +881,11 @@ void Chain_Handler::BotSplitLine() {
     assert(p_win->IsType()==Dipole::gqbar);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     if(p_win==p_cha->RootPointer()) ++root;
     p_cix->UpdateMomentum(1.0,p_cix->BranchPointer()->Momentum()+
-			  m_vec+p_aw->Momentum());
+			  m_vec+m_box.pAqu->Momentum());
     m_vec+=p_cix->BranchPointer()->Momentum();
     m_vec*=(-1);
     m_vec+=p_win->GetTopBranchPointer()->Momentum();
-    m_vec+=p_bw->Momentum();
+    m_vec+=m_box.pQua->Momentum();
     p_cha->UpdateMomentum(1.0,m_vec);
     p_cix->DipolePointerList().push_back(p_win);
     i_run=p_cha->DipolePointerList().begin();
@@ -795,10 +901,10 @@ void Chain_Handler::BotSplitLine() {
     }
   }
 
-  (*i_run)->RenewBranch(*p_bw);
-  p_cha->BranchPointer()=p_bw;
-  p_cha->GlubranchPointerList().remove(p_gw);
-  delete p_gw; p_gw=NULL;
+  (*i_run)->RenewBranch(*m_box.pQua);
+  p_cha->BranchPointer()=m_box.pQua;
+  p_cha->GlubranchPointerList().remove(m_box.pGlu);
+  delete m_box.pGlu; m_box.pGlu=NULL;
 
   //Check 4-momenta.
   Vec4D testcix, testcha, testall;
@@ -852,35 +958,35 @@ void Chain_Handler::TopSplitRing() {
   f_below=false;    //Defined setting.
   p_cix=NULL;
 
-  //p_aw is the new antiquark.
-  //p_bw is the new quark.
-  //p_gw is the split gluon.
+  //m_box.pAqu is the new antiquark.
+  //m_box.pQua is the new quark.
+  //m_box.pGlu is the split gluon.
 
   assert(p_win->IsType()==Dipole::qg);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  m_vec=p_aw->Momentum();
-  m_vec+=p_bw->Momentum();
+  m_vec=m_box.pAqu->Momentum();
+  m_vec+=m_box.pQua->Momentum();
   m_vec+=p_win->GetBotBranchPointer()->Momentum();
   p_cha->UpdateMomentum(1.0,m_vec);
 
-  p_cha->BranchPointer()=p_bw;
-  p_cha->AntibranchPointer()=p_aw;
+  p_cha->BranchPointer()=m_box.pQua;
+  p_cha->AntibranchPointer()=m_box.pAqu;
 
-  if(p_cha->FirstGlubranchPointer()==p_gw) {
+  if(p_cha->FirstGlubranchPointer()==m_box.pGlu) {
 #ifdef CHAIN_HANDLER_OUTPUT
     cout<<"SPECIAL CASE\n";
 #endif
     assert(p_win==p_cha->DipolePointerList().front());//!!!!!!!!!!!!!!!!!!!!!!!
     p_cha->FirstGlubranchPointer()=NULL;
     i_run=p_cha->DipolePointerList().end(); --i_run;
-    (*i_run)->RenewBranch(*p_aw);
-    p_cha->GlubranchPointerList().remove(p_gw);
-    delete p_gw; p_gw=NULL;
+    (*i_run)->RenewBranch(*m_box.pAqu);
+    p_cha->GlubranchPointerList().remove(m_box.pGlu);
+    delete m_box.pGlu; m_box.pGlu=NULL;
   } else {
     i_run=i_fix; --i_run;
-    (*i_run)->RenewBranch(*p_aw);
-    p_cha->GlubranchPointerList().remove(p_gw);
-    delete p_gw; p_gw=NULL;
+    (*i_run)->RenewBranch(*m_box.pAqu);
+    p_cha->GlubranchPointerList().remove(m_box.pGlu);
+    delete m_box.pGlu; m_box.pGlu=NULL;
     p_cha->DipolePointerList().splice(p_cha->DipolePointerList().end(),
 				      p_cha->DipolePointerList(),
 				      p_cha->DipolePointerList().begin(),
@@ -928,35 +1034,35 @@ void Chain_Handler::BotSplitRing() {
   f_below=false;    //Defined setting.
   p_cix=NULL;
 
-  //p_aw is the new antiquark.
-  //p_bw is the new quark.
-  //p_gw is the split gluon.
+  //m_box.pAqu is the new antiquark.
+  //m_box.pQua is the new quark.
+  //m_box.pGlu is the split gluon.
 
   assert(p_win->IsType()==Dipole::gqbar);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   m_vec=p_win->GetTopBranchPointer()->Momentum();
-  m_vec+=p_aw->Momentum();
-  m_vec+=p_bw->Momentum();
+  m_vec+=m_box.pAqu->Momentum();
+  m_vec+=m_box.pQua->Momentum();
   p_cha->UpdateMomentum(1.0,m_vec);
 
-  p_cha->BranchPointer()=p_bw;
-  p_cha->AntibranchPointer()=p_aw;
+  p_cha->BranchPointer()=m_box.pQua;
+  p_cha->AntibranchPointer()=m_box.pAqu;
 
-  if(p_cha->FirstGlubranchPointer()==p_gw) {
+  if(p_cha->FirstGlubranchPointer()==m_box.pGlu) {
 #ifdef CHAIN_HANDLER_OUTPUT
     cout<<"SPECIAL CASE\n";
 #endif
     assert(p_win==p_cha->DipolePointerList().back());//!!!!!!!!!!!!!!!!!!!!!!!!
     p_cha->FirstGlubranchPointer()=NULL;
     i_run=p_cha->DipolePointerList().begin();
-    (*i_run)->RenewBranch(*p_bw);
-    p_cha->GlubranchPointerList().remove(p_gw);
-    delete p_gw; p_gw=NULL;
+    (*i_run)->RenewBranch(*m_box.pQua);
+    p_cha->GlubranchPointerList().remove(m_box.pGlu);
+    delete m_box.pGlu; m_box.pGlu=NULL;
   } else {
     i_run=i_fix; ++i_run;
-    (*i_run)->RenewBranch(*p_bw);
-    p_cha->GlubranchPointerList().remove(p_gw);
-    delete p_gw; p_gw=NULL;
+    (*i_run)->RenewBranch(*m_box.pQua);
+    p_cha->GlubranchPointerList().remove(m_box.pGlu);
+    delete m_box.pGlu; m_box.pGlu=NULL;
     p_cha->DipolePointerList().splice(p_cha->DipolePointerList().end(),
 				      p_cha->DipolePointerList(),
 				      p_cha->DipolePointerList().begin(),

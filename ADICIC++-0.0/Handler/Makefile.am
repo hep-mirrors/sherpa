@@ -5,8 +5,8 @@ libAdicicHdl_la_SOURCES = Dipole_Handler.C \
                           Cascade_Handler.C
 
 pkginclude_HEADERS = Dipole_Handler.H \
-                  Chain_Handler.H \
-                  Cascade_Handler.H
+                     Chain_Handler.H \
+                     Cascade_Handler.H
 
 AM_CXXFLAGS = @SHERPAFLAGS@
 

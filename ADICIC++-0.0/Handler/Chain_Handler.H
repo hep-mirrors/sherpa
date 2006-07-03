@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/09/21    (surely preliminarily)
+//Version: 4 ADICIC++-0.0/2006/07/02    (surely preliminarily)
 
 //Only the Chain_Handler structure can reasonably modify the state of a Chain.
 
@@ -45,7 +45,17 @@ namespace ADICIC {
 
   public:
 
-    //typedef,enum,class
+    //typedef,enum
+
+    struct Carrier {
+      bool            ChaOrder;
+      ATOOLS::Flavour EmitFlav;
+      Chain*          pCha;
+      Multipoincare   Mup;
+      inline Carrier();
+      ~Carrier() {}
+      inline void Reset();
+    };
 
   private:
 
@@ -67,13 +77,15 @@ namespace ADICIC {
 
   private:
 
-    static int         s_count;
+    static int s_count;
 
-    bool             f_below;
-    ATOOLS::Flavour  m_code;
-    Chain*           p_cix;
-    Recoil_Tool*     p_rec;
+    bool                    f_below;
+    ATOOLS::Flavour         m_code;
+    Chain*                  p_cix;
 
+    Dipole_Handler::Carrier m_box;
+
+    int    m_nii;
     double m_k2tcomp;
     Chain* p_cha;
 
@@ -93,24 +105,19 @@ namespace ADICIC {
 #endif
 #endif
 
-    //========================
-    bool                f_bot;
-    xbool               m_rec;
-    Chain::Type         m_typ;
-    Dipole*             p_dw;
-    Dipole::Glubranch*  p_gw;
-    Dipole::Antibranch* p_aw;
-    Dipole::Branch*     p_bw;
-    Dipole*             p_win;
-    ATOOLS::Vec4D       m_vec;
-    ATOOLS::Vec4D       m_old;
-    int                 m_nii;
-    ATOOLS::Vec4D       m_vii;
-    //========================
+    //============================
+    Chain::Type             m_typ;
+    Dipole*                 p_win;
+    double                  m_dm2;
+    ATOOLS::Vec4D           m_emi;
+    ATOOLS::Vec4D           m_vec;
+    ATOOLS::Vec4D           m_old;
+    //============================
 
     //Private static methods:
     //=======================
     static inline const bool ProductionStrategyInfo();
+    static inline const bool EmissionStrategyInfo();
 
     //Private inline methods:
     //=======================
@@ -120,7 +127,7 @@ namespace ADICIC {
     //Private methods:
     //================
     void InitStrategies();
-    void CleanUp();
+    void CleanUpDHs();
     void FreeChain();    //Needed since here we may have handlers acting.
 
     template<Chain_Evolution_Strategy::Type _Strategy>
@@ -128,7 +135,7 @@ namespace ADICIC {
 
     const bool ModifyChain();
 
-    void DistributeIIRecoil(const ATOOLS::Vec4D&);
+    void DistributeIIRecoil();
     void EmitGluon();
     void EmitQuark();
     void TopSplitLine();    //Still as in version 2!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -144,7 +151,7 @@ namespace ADICIC {
 
     //References: just return values
     //==============================
-    static const int&   InStore;
+    static const int& InStore;
 
     //Public inline methods:
     //======================
@@ -157,14 +164,13 @@ namespace ADICIC {
     inline const bool AttachChain(Chain*);
     inline const bool DetachChain(const Chain*);
 
-    inline void DecoupleNew(Recoil_Tool*&, Chain*&, ATOOLS::Flavour&, bool&);
-    inline void RemoveNewProducts();
-
     //Public methods:
     //===============
+    void DecoupleNew(Carrier&);
+    void RemoveNewProducts();
     const bool EvolveChainByOneStep();
     const bool EvolveChain();//////////////////////////////////////////////////
-    const bool CorrectChain(const Recoil_Tool&);
+    const bool CorrectChain(const Multipoincare&);
 
   };
 

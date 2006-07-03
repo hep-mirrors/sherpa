@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/08/22
+//Version: 4 ADICIC++-0.0/2006/05/24
 
 //Inline methods of Dipole_Handler.H.
 
@@ -86,19 +86,16 @@ namespace ADICIC {
 
 
 
-  inline void Dipole_Handler::DecoupleNew(Dipole*& pD,
-					  Dipole::Glubranch*& pG,
-					  Dipole::Antibranch*& pA,
-					  Dipole::Branch*& pB,
-					  bool& below,
-					  xbool& recoil) {
-    if(pD || pG || pA || pB) return;
-    pD=p_dix; p_dix=NULL;
-    pG=p_glu; p_glu=NULL;
-    pA=p_ati; p_ati=NULL;
-    pB=p_ban; p_ban=NULL;
-    below=f_below; f_below=false;
-    recoil=m_rer.Poc; m_rer.Poc=both;
+  inline Dipole_Handler::Carrier::Carrier()
+    : DipOrder(0), RecoComp(both),
+      pQua(NULL), pAqu(NULL), pGlu(NULL), pDip(NULL),
+      Mup() {}
+
+
+  inline void Dipole_Handler::Carrier::Reset() {
+    DipOrder=0; RecoComp=both;
+    pQua=NULL; pAqu=NULL; pGlu=NULL; pDip=NULL;
+    Mup.Clear();
   }
 
 

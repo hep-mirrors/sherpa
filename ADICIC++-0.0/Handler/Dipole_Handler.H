@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/08/22    (surely preliminarily)
+//Version: 4 ADICIC++-0.0/2006/05/24    (surely preliminarily)
 
 //The Dipole_Handler structure has the task of a Dipole modifier.
 
@@ -16,6 +16,7 @@
 #include <utility>
 #include "Sudakov_Utils.hpp"
 #include "Recoil_Strategy.hpp"
+#include "Recoil_Utils.hpp"
 
 
 #define DIPOLE_HANDLER_OUTPUT DIPOLE_HANDLER_OUTPUT
@@ -53,6 +54,19 @@ namespace ADICIC {
     typedef Radiation::Group     Rkey;
     typedef std::pair<Dkey,Rkey> Key;
 
+    struct Carrier {
+      bool                DipOrder;
+      xbool               RecoComp;
+      Dipole::Branch*     pQua;
+      Dipole::Antibranch* pAqu;
+      Dipole::Glubranch*  pGlu;
+      Dipole*             pDip;
+      Multipoincare       Mup;
+      inline Carrier();
+      ~Carrier() {}
+      inline void Reset();
+    };
+
   private:
 
     typedef std::map<Dkey,Sudakov_Calculator*> Sudakovbox;
@@ -80,6 +94,8 @@ namespace ADICIC {
     static Sudakovbox s_sumap;
     static Recoilbox  s_remap;
 
+    static const rdt::code s_mpcode;
+
     Key m_key;
 
     Sudakov_Calculator* p_sudakov;
@@ -98,11 +114,8 @@ namespace ADICIC {
     Sudakov_Result m_sur;
     Recoil_Result  m_rer;
 
-    //Private static methods:
-    //=======================
-
-    //Private inline methods:
-    //=======================
+    //Private static/inline methods:
+    //==============================
 
     //Private methods:
     //================
@@ -135,12 +148,9 @@ namespace ADICIC {
     inline const bool AttachDipole(Dipole*);
     inline const bool DetachDipole(const Dipole*);
 
-    inline void DecoupleNew(Dipole*&, Dipole::Glubranch*&,
-			    Dipole::Antibranch*&, Dipole::Branch*&,
-			    bool&, xbool&);
-
     //Public methods:
     //===============
+    void DecoupleNew(Carrier&);
     void RemoveNewProducts();
     void ShowSudakov() const;
     void ShowRecoil() const;

@@ -1,5 +1,5 @@
 //bof
-//Version: 3 ADICIC++-0.0/2005/09/22
+//Version: 4 ADICIC++-0.0/2006/06/11
 
 //Implementation of Cascade_Handler.H.
 
@@ -41,7 +41,7 @@ const int& Cascade_Handler::InStore=Cascade_Handler::s_count;
 
 
 Cascade_Handler::Cascade_Handler()
-  : p_cas(NULL), m_chh(), v_count(), l_mit(), l_itt() {
+  : p_cas(NULL), m_chh(), v_count(), l_mit(), l_itt(), m_car() {
   ++s_count;
   v_count.reserve(Counter::stop);
   v_count.assign(Counter::stop,0);
@@ -52,7 +52,7 @@ Cascade_Handler::Cascade_Handler()
 
 
 Cascade_Handler::Cascade_Handler(Cascade& cas)
-  : p_cas(NULL), m_chh(), v_count(), l_mit(), l_itt() {
+  : p_cas(NULL), m_chh(), v_count(), l_mit(), l_itt(), m_car() {
 
   ++s_count;
 
@@ -214,16 +214,14 @@ const bool Cascade_Handler::EvolveCascade() {
   }
 
   do {
-    if(EvolveCurrentChain());
-    else {
-      cerr<<"\nMethod: "<<__PRETTY_FUNCTION__<<": "
-	  <<"Error: Evolution of current chain failed!\n"<<endl;
-      return false;
-    }
+    assert(EvolveCurrentChain());
   }
   while(!l_itt.empty());
 
   ++v_count[Counter::total];
+
+  //Check number of ISR legs.
+  assert(p_cas->INumber()==m_nin);
 
   //Check 4-momenta.
   Vec4D testcas;
@@ -235,8 +233,7 @@ const bool Cascade_Handler::EvolveCascade() {
     assert(testcas.Abs2()-m_old.Abs2()<1.0e-7);
   }
 
-  //Check number of ISR legs.
-  assert(p_cas->INumber()==m_nin);
+  p_cas->SetStatus()=Off;
 
   return true;
 
@@ -255,8 +252,12 @@ void Cascade_Handler::FreeCascade() {
 	it!=p_cas->ChainPointerList().end(); ++it)
       **it|0;
   }
+  assert(!m_chh.IsDocked());
+  m_chh.RemoveNewProducts();
   l_mit.clear();
   l_itt.clear();
+  assert(m_car.pCha==NULL);
+  m_car.Mup.Clear();
 }
 
 
@@ -279,25 +280,29 @@ const bool Cascade_Handler::EvolveCurrentChain() {
   while(m_chh.EvolveChainByOneStep()) {
 
     assert(p_cuc->Status()==On);
-    p_ret=NULL; p_nec=NULL;
-    m_chh.DecoupleNew(p_ret,p_nec,m_fla,f_bot);
+    m_car.Reset();    //Note!
+    //Preceding results must have found their way into a carrying list or
+    //been deleted before, otherwise this would be a potential memory leak.
+    m_chh.DecoupleNew(m_car);
 
-    if(p_ret && p_cas->IsLines()) {
+    if(m_car.Mup.GetItsVec().size() && p_cas->IsLines()) {
       Chain_Handler chah;
       for(list<Chain*>::iterator it=p_cas->ChainPointerList().begin();
 	  it!=p_cas->ChainPointerList().end(); ++it) {
 	if(*it==p_cuc) continue;
 	assert(**it|chah);
-	assert(chah.CorrectChain(*p_ret));
+	assert(chah.CorrectChain(m_car.Mup));
+	//After this application, is the chain momentum correct????????????????
 	**it|0;
       }
-      delete p_ret;
+      cerr<<"\nHardCheck: First time that this edge of the program is used!\n";
+      assert(0);
     }
 
-    if(p_nec) {
-      assert(p_nec->Status()==On);
+    if(m_car.pCha) {
+      assert(m_car.pCha->Status()==On);
       ++v_count[Counter::splitting];
-      switch(m_fla.Kfcode()) {
+      switch(m_car.EmitFlav.Kfcode()) {
       case kf::d: ++v_count[Counter::dad]; break;
       case kf::u: ++v_count[Counter::uau]; break;
       case kf::s: ++v_count[Counter::sas]; break;
@@ -305,29 +310,30 @@ const bool Cascade_Handler::EvolveCurrentChain() {
       case kf::b: ++v_count[Counter::bab]; break;
       default   : assert(0);
       }
-      m_vec+=p_nec->Momentum();
+      m_vec+=m_car.pCha->Momentum();
+      size_t root=(*itmi).first;
       ++(*itmi).second;
-      if(f_bot) {
+      if(m_car.ChaOrder) {
 	++itmi;
-	itmi=p_cas->MirrorList().insert(itmi,Cascade::Mirror(p_cuc->Name,0));
+	itmi=p_cas->MirrorList().insert(itmi,Cascade::Mirror(root,0));
 	l_mit.push_back(itmi);
 	--itmi;
 	++itca;
-	itca=p_cas->ChainPointerList().insert(itca,p_nec);
+	itca=p_cas->ChainPointerList().insert(itca,m_car.pCha);
 	l_itt.push_back(itca);
 	--itca;
       } else {
-	itmi=p_cas->MirrorList().insert(itmi,Cascade::Mirror(p_cuc->Name,0));
+	itmi=p_cas->MirrorList().insert(itmi,Cascade::Mirror(root,0));
 	l_mit.push_back(itmi);
 	++itmi;
-	itca=p_cas->ChainPointerList().insert(itca,p_nec);
+	itca=p_cas->ChainPointerList().insert(itca,m_car.pCha);
 	l_itt.push_back(itca);
 	++itca;
       }
     } else {
       ++v_count[Counter::emission];
-      bool a=m_fla.IsAnti();
-      switch(m_fla.Kfcode()) {
+      bool a=m_car.EmitFlav.IsAnti();
+      switch(m_car.EmitFlav.Kfcode()) {
       case kf::gluon: ++v_count[Counter::gluon]; break;
       case kf::d    : if(a) ++v_count[Counter::antid];
                       else  ++v_count[Counter::dquark]; break;
@@ -342,6 +348,8 @@ const bool Cascade_Handler::EvolveCurrentChain() {
       default       : assert(0);
       }
     }
+
+    //cout<<*p_cas<<endl;//////////////////////////////////////////////////////
 
   }
 
