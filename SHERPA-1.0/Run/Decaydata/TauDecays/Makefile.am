@@ -1,3 +1,5 @@
+SUBDIRS = PhaseSpaceFunctions
+
 decaydir      = $(pkgdatadir)/Decaydata/TauDecays
 
 dist_decay_DATA       =	\
