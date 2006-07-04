@@ -126,19 +126,29 @@ bool Input_Output_Handler::InitialiseOutput(const std::string mode,
         ns          = new NameStream(m_path+"/"+outfiles[0],".evts",m_precision);
         m_outmap[iotype::Sherpa] = ns;
         break;
-#ifdef USING__CLHEP
       case 2:
+#ifdef USING__CLHEP
         m_outtype   = m_outtype|test;
         ns          = new NameStream(m_path+"/"+outfiles[1],".hepmc",m_precision);
         m_outmap[iotype::HepMC] = ns;
         if (p_hepmc==NULL) p_hepmc = new HepMC_Interface();
         break;
+#else
+        msg.Error()<<"Error in "<<METHOD<<": HepMC format can only be created when Sherpa "
+                   <<"was linked with CLHEP, please read our Howto to fix this."<<std::endl;
+        abort();
+#endif
       case 4:
+#ifdef USING__CLHEP
         m_outtype   = m_outtype|test;
         ns          = new NameStream(m_path+"/"+outfiles[2],".old.hepmc",m_precision);
         m_outmap[iotype::OldHepMC] = ns;
         if (p_hepmc==NULL) p_hepmc = new HepMC_Interface();
         break;
+#else
+        msg.Error()<<"Error in "<<METHOD<<": HepMC format can only be created when Sherpa "
+                   <<"was linked with CLHEP, please read our Howto to fix this."<<std::endl;
+        abort();
 #endif
       case 8:
         m_outtype   = m_outtype|test;
@@ -161,12 +171,16 @@ bool Input_Output_Handler::InitialiseOutput(const std::string mode,
   }
 
   if (mode=="Sherpa") m_screenout=iotype::Sherpa;
-#ifdef USING__CLHEP
   else if (mode=="HepMC") {
+#ifdef USING__CLHEP
     m_screenout=iotype::HepMC;
     if (p_hepmc==NULL) p_hepmc   = new HepMC_Interface(); 
-  }
+#else
+    msg.Error()<<"Error in "<<METHOD<<": HepMC format can only be created when Sherpa "
+                <<"was linked with CLHEP, please read our Howto to fix this."<<std::endl;
+    abort();
 #endif
+  }
   else if (mode=="HepEvt") {
     m_screenout=iotype::HepEvt;
     if (p_hepevt==NULL) p_hepevt = new HepEvt_Interface(  );
@@ -203,18 +217,22 @@ void Input_Output_Handler::PrintEvent(ATOOLS::Blob_List *const blobs) {
     }
     else msg.Out()<<"  ******** Empty event ********  "<<std::endl;
     break;
+  case iotype::HepMC:
 #ifdef USING__CLHEP
-  case iotype::HepMC: 
     p_hepmc->Sherpa2HepMC(blobs);
     p_hepmc->PrintEvent(1,msg.Out());
     break;
-#endif 
+#else
+    msg.Error()<<"Error in "<<METHOD<<": HepMC format can only be created when Sherpa "
+                <<"was linked with CLHEP, please read our Howto to fix this."<<std::endl;
+    abort();
+#endif
   case iotype::HepEvt: 
     p_hepevt->Sherpa2HepEvt(blobs);
     p_hepevt->PrintEvent(3,msg.Out(),p_hepevt->Nhep());
     break;
   default:
-    msg.Error()<<"Error in Input_Output_Handler::OutputToFormat."<<std::endl
+    msg.Error()<<"Error in "<<METHOD<<std::endl
                <<"   Unknown Output format : "<<m_outtype<<std::endl
                <<"   No output, continue run ..."<<std::endl;
     break;
@@ -244,16 +262,26 @@ bool Input_Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const d
         case iotype::Sherpa:
           SherpaOutput(oit->second->outstream,blobs);
           break;
-#ifdef USING__CLHEP
         case iotype::HepMC:
+#ifdef USING__CLHEP
           p_hepmc->Sherpa2HepMC(blobs);
           p_hepmc->PrintEvent(1,oit->second->outstream);
           break;
+#else
+          msg.Error()<<"Error in "<<METHOD<<": HepMC format can only be created when Sherpa "
+                      <<"was linked with CLHEP, please read our Howto to fix this."<<std::endl;
+          abort();
+#endif
         case iotype::OldHepMC:
+#ifdef USING__CLHEP
           p_hepmc->Sherpa2HepMC(blobs);
           p_hepmc->PrintEvent(2,oit->second->outstream);
           break;
-#endif 
+#else
+          msg.Error()<<"Error in "<<METHOD<<": HepMC format can only be created when Sherpa "
+                      <<"was linked with CLHEP, please read our Howto to fix this."<<std::endl;
+          abort();
+#endif
         case iotype::HepEvt:
           p_hepevt->Sherpa2HepEvt(blobs);
           p_hepevt->PrintEvent(1,oit->second->outstream,p_hepevt->Nhep());
@@ -264,7 +292,7 @@ bool Input_Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const d
           break;
        
         default:
-          msg.Error()<<"Error in Input_Output_Handler::OutputToFormat."<<std::endl
+          msg.Error()<<"Error in "<<METHOD<<std::endl
                      <<"   Unknown Output format : "<<oit->first<<std::endl
                    <<"   No output, continue run ..."<<std::endl;
           break;
