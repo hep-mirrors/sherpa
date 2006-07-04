@@ -2,7 +2,8 @@ bin_PROGRAMS  =	Sherpa
 
 Sherpa_SOURCES        =	Main.C 
 
-Sherpa_LDADD  =	-L$(pkglibdir) -lSherpaMain 
+Sherpa_LDADD  =	-L$(pkglibdir) -lSherpaMain \
+		@CONDITIONAL_CLHEPLIBS@ @CONDITIONAL_ROOTLIBS@ @CONDITIONAL_LHAPDFLIBS@
 
 Sherpa_LDFLAGS        =	@ldflags@
 

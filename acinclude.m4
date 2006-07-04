@@ -289,6 +289,9 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
                CONDITIONAL_ROOTINCS=-I`root-config --incdir`;
                CONDITIONAL_ROOTLIBS=`root-config --glibs`;
                CONDITIONAL_ROOTFLAGS=-Wno-long-long
+                if ! test -d "$CONDITIONAL_ROOTDIR"; then
+                  AC_MSG_ERROR(root-config --prefix returned a path that is not available. Please check your ROOT installation and set \$ROOTSYS manually.);
+                fi
              else
                AC_MSG_ERROR(\$ROOTSYS is not a valid path and root-config was not found.);
              fi;
@@ -313,10 +316,13 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         no)  AC_MSG_RESULT(LHAPDF not enabled); lhapdf=false ;;
         yes) if test -d "$LHAPDFDIR"; then
               CONDITIONAL_LHAPDFDIR=$LHAPDFDIR;
-              CONDITIONAL_LHAPDFLIBS="-lLHAPDF \${LHAPDFDIR}/lib/libLHAPDF.a"
+              CONDITIONAL_LHAPDFLIBS="-lLHAPDF $LHAPDFDIR/lib/libLHAPDF.a"
             elif test -x "`which lhapdf-config`"; then
               CONDITIONAL_LHAPDFDIR=`lhapdf-config --prefix`;
               CONDITIONAL_LHAPDFLIBS="-lLHAPDF `lhapdf-config --prefix`/lib/libLHAPDF.a"
+              if ! test -d "$CONDITIONAL_LHAPDFDIR"; then
+                AC_MSG_ERROR(lhapdf-config --prefix returned a path that is not available. Please check your LHAPDF installation and set \$LHAPDFDIR manually.);
+              fi
   else
               AC_MSG_ERROR(\$LHAPDFDIR is not a valid path and lhapdf-config was not found.);
             fi;
