@@ -191,11 +191,11 @@ GammaG_QQ_Lambda::GammaG_QQ_Lambda(bpm::code mode, double lambda,
 
 double GammaG_QQ_Lambda::Gamma(double q, double Q) 
 {
-  double val(Gamma_Lambda_Base::Gamma(q,Q));
   if (m_qmass==0.0 || !(m_mode&bpm::massive) ||
-      m_mode&bpm::dead_cone) return val;
-  val+=m_colfac*m_lastas/M_PI/q/(1.0+sqr(m_qmass/q))* 
-    (1.0-1.0/3.0/(1.0+sqr(m_qmass/q)));
+      m_mode&bpm::dead_cone) return Gamma_Lambda_Base::Gamma(q,Q);
+  m_lastas=AlphaS(sqr(q));
+  double val(m_colfac*m_lastas/M_PI/q);
+  val*=(1.0-1.0/3.0/(1.0+sqr(m_qmass/q)))/(1.0+sqr(m_qmass/q));
   return Max(val,0.0);
 }
 
