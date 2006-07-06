@@ -17,7 +17,7 @@ AM_CXXFLAGS   = @CONDITIONAL_ROOTFLAGS@
 libSherpaMain_la_LIBADD = -L$(pkglibdir) -lSherpaInitialization -lSherpaSingleEvents \
                 -lSherpaPerturbativePhysics -lSherpaSoftPhysics -lLundTools -lSherpaTools \
                 @AMEGICLIBS@ @ANALYSISLIBS@ @APACICLIBS@ @ATOOLSLIBS@ @BEAMLIBS@ \
-                @MODELLIBS@ @PHASICLIBS@ @PDFLIBS@ \
+                @EXTRAXSLIBS@ @MODELLIBS@ @PHASICLIBS@ @PDFLIBS@ \
                 @CONDITIONAL_ADICICLIBS@ @CONDITIONAL_AHADICLIBS@ @CONDITIONAL_AMISICLIBS@ \
                 @CONDITIONAL_CSSLIBS@ @CONDITIONAL_HADRONSLIBS@ \
                 @CONDITIONAL_HDECAYLIBS@ @CONDITIONAL_ISAJETLIBS@ @CONDITIONAL_MCATNLOLIBS@ \
