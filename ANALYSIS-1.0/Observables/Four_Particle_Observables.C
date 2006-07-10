@@ -4,88 +4,92 @@
 
 using namespace ANALYSIS;
 using namespace ATOOLS;
-
-template <class Class>
-Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
-{									
-  if (parameters.size()<1) return NULL;
-  if (parameters.size()==1) {
-    if (parameters[0].size()<8) return NULL;
-    std::vector<ATOOLS::Flavour> f(4);
-    for (short unsigned int i=0;i<4;++i) {
-      int kf=ATOOLS::ToType<int>(parameters[0][i]);
-      f[i]=ATOOLS::Flavour((ATOOLS::kf::code)abs(kf));
-      if (kf<0) f[i]=f[i].Bar();
-    }
-    std::string list=parameters[0].size()>8?parameters[0][8]:"Analysed";
-    return new Class(f,HistogramType(parameters[0][7]),
-		     ATOOLS::ToType<double>(parameters[0][4]),
-		     ATOOLS::ToType<double>(parameters[0][5]),
-		     ATOOLS::ToType<int>(parameters[0][6]),list);
-  }
-  else if (parameters.size()<8) return NULL;
-  double min=0.0, max=1.0;
-  size_t bins=100;
-  std::vector<ATOOLS::Flavour> f(4);
-  std::string list="Analysed", scale="Lin";
-  for (size_t i=0;i<parameters.size();++i) {
-    if (parameters[i].size()<2) continue;
-    for (short unsigned int j=0;j<4;++j) {
-      if (parameters[i][0]==std::string("FLAV")+ATOOLS::ToString(j+1)) {
-	int kf=ATOOLS::ToType<int>(parameters[i][1]);
-	f[j]=ATOOLS::Flavour((ATOOLS::kf::code)abs(kf));
-	if (kf<0) f[j]=f[j].Bar();
-      }
-    }
-    if (parameters[i][0]=="MIN") min=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="MAX") max=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="BINS") bins=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="SCALE") scale=parameters[i][1];
-    else if (parameters[i][0]=="LIST") list=parameters[i][1];
-  }
-  return new Class(f,HistogramType(scale),min,max,bins,list);
-}									
-
-#define DEFINE_GETTER_METHOD(CLASS,NAME)				\
-  Primitive_Observable_Base *					\
-  NAME::operator()(const String_Matrix &parameters) const		\
-  { return GetObservable<CLASS>(parameters); }
-
-#define DEFINE_PRINT_METHOD(NAME)					\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
-  { str<<"kf1 kf2 kf3 kf4 min max bins Lin|LinErr|Log|LogErr [list]"; }
-
-#define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
-  DEFINE_GETTER_METHOD(CLASS,NAME)					\
-  DEFINE_PRINT_METHOD(NAME)
-
-using namespace ATOOLS;
 using namespace std;
 
-Four_Particle_Observable_Base::Four_Particle_Observable_Base
-(const std::vector<Flavour>& flavs, int type, double xmin, double xmax,
- int nbins, const std::string& listname, const std::string& name)
-  : Primitive_Observable_Base(type,xmin,xmax,nbins), f_special(false) {
+#define DEFINE_GETTER_METHOD(CLASS,NAME)                                \
+  Primitive_Observable_Base *                                           \
+  NAME::operator()(const String_Matrix &parameters) const               \
+{ return new CLASS(parameters); }
 
-  if(flavs.size()<4) {
-    msg.Error()<<"Error in Four_Particle_Observable_Base:"<<std::endl
-	       <<"   No four flavours specified, try to copy flavours."
-	       <<std::endl;
-  }
-  MyStrStream str;
-  str<<name<<flavs[0]<<flavs[1]<<flavs[2]<<flavs[3]<<".dat";
-  str>>m_name;
-  Flavour fl;
-  for(size_t i=0; i<4; i++) {
-    if(i<flavs.size()) fl=flavs[i];
-    m_flavs.push_back(fl);
-  }
-  m_listname = listname;
-  m_blobtype = std::string("");
-  m_blobdisc = false;
-  if(xmin>=0.0) f_special=true;
+#define DEFINE_PRINT_METHOD(NAME)                                       \
+  void NAME::PrintInfo(std::ostream &str,const size_t width) const      \
+{ str<<"kf1 kf2 kf3 kf4 min max bins Lin|LinErr|Log|LogErr [list]"; }
 
+#define DEFINE_CONSTRUCTOR_METHODS(CLASS,TAG)                           \
+  CLASS::CLASS(const String_Matrix & parameters) :                      \
+      Four_Particle_Observable_Base(parameters, TAG) { }               \
+                                                                        \
+  CLASS::CLASS(const CLASS * old) :                                     \
+      Four_Particle_Observable_Base(*old) { }                          \
+                                                                        \
+  Primitive_Observable_Base * CLASS::Copy() const { return new CLASS(this); }
+
+#define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)                        \
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);     \
+  DEFINE_GETTER_METHOD(CLASS,NAME)                                      \
+  DEFINE_PRINT_METHOD(NAME)                                             \
+  DEFINE_CONSTRUCTOR_METHODS(CLASS,TAG)
+
+Four_Particle_Observable_Base::Four_Particle_Observable_Base(const String_Matrix & parameters,
+                                                           const std::string & obsname):
+    Primitive_Observable_Base(parameters), f_special(false), m_flavs(4)
+{
+  if (parameters.size()==1) {
+    if (parameters[0].size()<8) {
+      msg.Error()<<"Error in "<<METHOD<<": Not enough parameters for "
+          <<"observable "<<obsname<<" in Analysis.dat";
+      abort();
+    }
+    for (short unsigned int i=0;i<4;++i) {
+      int kf=ATOOLS::ToType<int>(parameters[0][i]);
+      m_flavs[i]=ATOOLS::Flavour((ATOOLS::kf::code)abs(kf));
+      if (kf<0) m_flavs[i]=m_flavs[i].Bar();
+    }
+
+    m_xmin  = ATOOLS::ToType<double>(parameters[0][4]);
+    m_xmax  = ATOOLS::ToType<double>(parameters[0][5]);
+    int nbins = ATOOLS::ToType<int>(parameters[0][6]);
+    m_type  = HistogramType(parameters[0][7]);
+    p_histo = new Histogram(m_type,m_xmin,m_xmax,nbins);
+
+    MyStrStream str;
+    str<<obsname<<m_flavs[0]<<m_flavs[1]<<m_flavs[2]<<m_flavs[3]<<".dat";
+    str>>m_name;
+
+    m_listname = parameters[0].size()>8?parameters[0][8]:"Analysed";
+  }
+  else {
+    if (m_listname=="") m_listname="Analysed";
+    for (size_t i=0;i<parameters.size();++i) {
+      if (parameters[i].size()<2) continue;
+      for (short unsigned int j=0;j<4;++j) {
+        if (parameters[i][0]==std::string("FLAV")+ATOOLS::ToString(j+1)) {
+          int kf=ATOOLS::ToType<int>(parameters[i][1]);
+          m_flavs[j] = ATOOLS::Flavour((ATOOLS::kf::code)abs(kf),kf<0);
+        }
+      }
+    }
+
+    if (m_name=="SherpaDefault") {
+      MyStrStream str;
+      str<<obsname<<m_flavs[0]<<m_flavs[1]<<m_flavs[2]<<m_flavs[3];
+      str>>m_name;
+    }
+    if (p_histo->Title()=="SherpaDefault") {
+      std::string title = obsname;
+      MyStrStream str;
+      str<<" of "<<m_flavs[0]<<", "<<m_flavs[1]<<", "<<m_flavs[2]<<", "<<m_flavs[3];
+      str>>title;
+      p_histo->SetTitle(title);
+    }
+  }
+  if(m_xmin>=0.0) f_special=true;
+}
+
+Four_Particle_Observable_Base::Four_Particle_Observable_Base(const Four_Particle_Observable_Base * old) :
+    Primitive_Observable_Base(*old)
+{
+  m_flavs=old->m_flavs; f_special=old->f_special;
 }
 
 void Four_Particle_Observable_Base::Evaluate(double value, double weight,
@@ -148,196 +152,54 @@ void Four_Particle_Observable_Base::Evaluate(const Particle_List& plist,
   p_histo->Insert(0.0,0.0,ncount);
 }
 
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-DEFINE_OBSERVABLE_GETTER(Four_Particle_PlaneAngle,
-			 Four_Particle_PlaneAngle_Getter,"PlaneAngle")
-
-void Four_Particle_PlaneAngle::Evaluate(const Vec4D & mom1,const Vec4D & mom2,
-					const Vec4D & mom3,const Vec4D & mom4,
-					double weight, int ncount)
-{
-  Vec3D normal1 = cross(Vec3D(mom1),Vec3D(mom2));
-  Vec3D normal2 = cross(Vec3D(mom3),Vec3D(mom4));
-  double costh  = (normal1*normal2)/(normal1.Abs()*normal2.Abs()); 
-  p_histo->Insert(costh,weight,ncount); 
-}
- 
-Four_Particle_PlaneAngle::Four_Particle_PlaneAngle(const std::vector<Flavour> & flavs,
-						   int type,double xmin,double xmax,int nbins,
-						   const std::string& listname) :
-  Four_Particle_Observable_Base(flavs,type,xmin,xmax,nbins,listname,"NRAngle") { }
-
-Primitive_Observable_Base * Four_Particle_PlaneAngle::Copy() const
-{
-  return new Four_Particle_PlaneAngle(m_flavs,m_type,m_xmin,m_xmax,Nbins(),
-				      m_listname);
-}
-
-//=============================================================================
-
-DEFINE_OBSERVABLE_GETTER(Four_Particle_PT,
-			 Four_Particle_PT_Getter,"PT4")
-
-void Four_Particle_PT::Evaluate(const Vec4D& mom1,const Vec4D& mom2,
-				const Vec4D& mom3,const Vec4D& mom4,
-				double weight, int ncount)
-{
-  double pt = sqrt(sqr(mom1[1]+mom2[1]+mom3[1]+mom4[1]) +
-		   sqr(mom1[2]+mom2[2]+mom3[2]+mom4[2]));
-  p_histo->Insert(pt,weight,ncount);
-}
- 
-Four_Particle_PT::Four_Particle_PT(const std::vector<Flavour>& flavs,
-				   int type,double xmin,double xmax,int nbins,
-				   const std::string & listname)
-  : Four_Particle_Observable_Base(flavs,type,xmin,xmax,nbins,listname,"PT") {}
-
-Primitive_Observable_Base* Four_Particle_PT::Copy() const
-{
-  return new Four_Particle_PT(m_flavs,m_type,m_xmin,m_xmax,Nbins(),m_listname);
-}
-
-//=============================================================================
-
-DEFINE_OBSERVABLE_GETTER(Two_Partonpair_PTdiff,
-			 Two_Partonpair_PTdiff_Getter,"PTdiff4")
-
-void Two_Partonpair_PTdiff::Evaluate(const Vec4D& mom1,const Vec4D& mom2,
-				     const Vec4D& mom3,const Vec4D& mom4,
-				     double weight, int ncount) {
-  Vec4D vecA(mom1); vecA+=mom2;
-  Vec4D vecB(mom3); vecB+=mom4;
-  double ptdiff=sqrt(sqr(vecA[1])+sqr(vecA[2]));
-  ptdiff-=sqrt(sqr(vecB[1])+sqr(vecB[2]));
-  if(f_special) ptdiff=dabs(ptdiff);
-  p_histo->Insert(ptdiff, weight, ncount);
-
-  //std::cout<<f_special<<" ptdiff ---> "<<ptdiff<<"\n";
-}
- 
-Two_Partonpair_PTdiff::Two_Partonpair_PTdiff(const std::vector<Flavour>& flavs,
-					     int type,
-					     double xmin, double xmax,
-					     int nbins,
-					     const std::string & listname)
-  : Four_Particle_Observable_Base(flavs,type,xmin,xmax,
-				  nbins,listname,"PTdiff") {}
-
-Primitive_Observable_Base* Two_Partonpair_PTdiff::Copy() const {
-  return new Two_Partonpair_PTdiff(m_flavs, m_type, m_xmin, m_xmax,
-				   Nbins(), m_listname);
-}
-
-//=============================================================================
-
-DEFINE_OBSERVABLE_GETTER(Two_Partonpair_Theta,
-			 Two_Partonpair_Theta_Getter,"Theta4")
-
-void Two_Partonpair_Theta::Evaluate(const Vec4D& mom1,const Vec4D& mom2,
-				    const Vec4D& mom3,const Vec4D& mom4,
-				    double weight, int ncount) {
-  Vec4D vecA(mom1); vecA+=mom2;
-  Vec4D vecB(mom3); vecB+=mom4;
-  //
-  if(!f_special) {
-    Vec4D plab(vecA); plab+=vecB;
-    //removing the z boost effect of the considered 4 particle system
-    plab[1]=plab[2]=0.0;
-    if(plab.Abs2()<=0.0) {
-      p_histo->Insert(-M_PI/100.0, weight, ncount);
-      msg.Error()<<__PRETTY_FUNCTION__<<":\n   Warning:"
-		 <<" Not able to boost the system. Insert theta=-pi/100.\n"
-		 <<std::endl;
-      return;
-    }
-    Poincare fly(plab);
-    fly.Boost(vecA);
-    fly.Boost(vecB);
-  }
-  Vec3D vec1(vecA);
-  Vec3D vec2(vecB);
-  double theta=acos((vec1*vec2)/(vec1.Abs()*vec2.Abs()));
-  p_histo->Insert(theta, weight, ncount);
-
-  //std::cout<<m_flavs[0]<<" : "<<mom1<<"\n";
-  //std::cout<<m_flavs[1]<<" : "<<mom2<<"  :  "<<vecA<<"\n";
-  //std::cout<<"----------\n";
-  //std::cout<<m_flavs[2]<<" : "<<mom3<<"\n";
-  //std::cout<<m_flavs[3]<<" : "<<mom4<<"  :  "<<vecB<<"\n\n";
-
-  //if(f_special) std::cout<<" theta -------------------> "<<theta<<"\n";
-  //else std::cout<<" theta boost corrected ---> "<<theta<<"\n";
-
-}
-
-Two_Partonpair_Theta::Two_Partonpair_Theta(const std::vector<Flavour>& flavs,
-					   int type, double xmin, double xmax,
-					   int nbins,
-					   const std::string & listname)
-  : Four_Particle_Observable_Base(flavs,type,xmin,xmax,
-				  nbins,listname,"Theta") {}
-
-Primitive_Observable_Base* Two_Partonpair_Theta::Copy() const {
-  return new Two_Partonpair_Theta(m_flavs, m_type, m_xmin, m_xmax,
-				  Nbins(), m_listname);
-}
-
 // ============================================================================
 
-template <class Class>
-Primitive_Observable_Base *const GetObservable2(const String_Matrix &parameters)
-{									
-  if (parameters.size()<1) return NULL;
-  if (parameters.size()==1) {
-    if (parameters[0].size()<4) return NULL;
-    std::string list=parameters[0].size()>4?parameters[0][4]:"Analysed";
-    return new Class(HistogramType(parameters[0][3]),
-		     ATOOLS::ToType<double>(parameters[0][0]),
-		     ATOOLS::ToType<double>(parameters[0][1]),
-		     ATOOLS::ToType<int>(parameters[0][2]),list);
-  }
-  else if (parameters.size()<4) return NULL;
-  double min=0.0, max=1.0;
-  size_t bins=100;
-  std::string list="Analysed", scale="Lin";
-  for (size_t i=0;i<parameters.size();++i) {
-    if (parameters[i].size()<2) continue;
-    if (parameters[i][0]=="MIN") min=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="MAX") max=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="BINS") bins=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="SCALE") scale=parameters[i][1];
-    else if (parameters[i][0]=="LIST") list=parameters[i][1];
-  }
-  return new Class(HistogramType(scale),min,max,bins,list);
-}									
+#define DEFINE_PRINT_METHOD2(NAME)                                      \
+  void NAME::PrintInfo(std::ostream &str,const size_t width) const      \
+{ str<<"min max bins Lin|LinErr|Log|LogErr [list]"; }
 
-#define DEFINE_GETTER_METHOD2(CLASS,NAME)				\
-  Primitive_Observable_Base *					\
-  NAME::operator()(const String_Matrix &parameters) const		\
-  { return GetObservable2<CLASS>(parameters); }
-
-#define DEFINE_PRINT_METHOD2(NAME)					\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
-  { str<<"min max bins Lin|LinErr|Log|LogErr [list]"; }
-
-#define DEFINE_OBSERVABLE_GETTER2(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
-  DEFINE_GETTER_METHOD2(CLASS,NAME)					\
+#define DEFINE_OBSERVABLE_GETTER2(CLASS,NAME,TAG)                       \
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);     \
+  DEFINE_GETTER_METHOD(CLASS,NAME)                                      \
   DEFINE_PRINT_METHOD2(NAME)
 
-
 DEFINE_OBSERVABLE_GETTER2(Di_Mass,
-			 Di_Mass_Getter,"DiMass")
+                          Di_Mass_Getter,"Di_Mass")
 
-Di_Mass::Di_Mass(unsigned int type,double xmin,double xmax,int nbins,
-	       const std::string & lname) :
-  Primitive_Observable_Base(type,xmin,xmax,nbins)
+Di_Mass::Di_Mass(const String_Matrix & parameters):
+    Primitive_Observable_Base(parameters)
 {
-  m_listname=lname;
-  m_name  = std::string("4jet_");
-  if (lname!="Analysed") m_name=lname+std::string("_")+m_name;
-  m_name += "DiMass.dat";
+  if (parameters.size()==1) {
+    if (parameters[0].size()==4 || parameters[0].size()==5) {
+      m_xmin  = ATOOLS::ToType<double>(parameters[0][0]);
+      m_xmax  = ATOOLS::ToType<double>(parameters[0][1]);
+      int nbins = ATOOLS::ToType<int>(parameters[0][2]);
+      m_type  = HistogramType(parameters[0][3]);
+      p_histo = new Histogram(m_type,m_xmin,m_xmax,nbins);
+      m_listname=parameters[0].size()>4?parameters[0][4]:"Analysed";
+
+      m_name  = std::string("4jet_");
+      if (m_listname!="Analysed") m_name=m_listname+std::string("_")+m_name;
+      m_name += "Di_Mass.dat";
+    }
+    else {
+      msg.Error()<<"Error in "<<METHOD<<": Wrong number of parameters for "
+          <<"observable Di_Mass in Analysis.dat";
+      abort();
+    }
+  }
+  else {
+    if (m_listname=="") m_listname="Analysed";
+    if (m_name=="SherpaDefault") {
+      m_name  = std::string("4jet_");
+      if (m_listname!="Analysed") m_name=m_listname+std::string("_")+m_name;
+      m_name += "Di_Mass";
+    }
+    if (p_histo->Title()=="SherpaDefault") {
+      std::string title = "DiMass";
+      p_histo->SetTitle(title);
+    }
+  }
 }
 
 void Di_Mass::Evaluate(const ATOOLS::Blob_List & blobs,double weight, int ncount)
@@ -380,7 +242,79 @@ void Di_Mass::Evaluate(const ATOOLS::Blob_List & blobs,double weight, int ncount
   }
 }
 
-Primitive_Observable_Base * Di_Mass::Copy() const 
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DEFINE_OBSERVABLE_GETTER(Four_Particle_PlaneAngle,
+			 Four_Particle_PlaneAngle_Getter,"PlaneAngle")
+
+void Four_Particle_PlaneAngle::Evaluate(const Vec4D & mom1,const Vec4D & mom2,
+					const Vec4D & mom3,const Vec4D & mom4,
+					double weight, int ncount)
 {
-  return new Di_Mass(m_type,m_xmin,m_xmax,Nbins(),m_listname);
+  Vec3D normal1 = cross(Vec3D(mom1),Vec3D(mom2));
+  Vec3D normal2 = cross(Vec3D(mom3),Vec3D(mom4));
+  double costh  = (normal1*normal2)/(normal1.Abs()*normal2.Abs()); 
+  p_histo->Insert(costh,weight,ncount); 
+}
+
+//=============================================================================
+
+DEFINE_OBSERVABLE_GETTER(Four_Particle_PT,
+			 Four_Particle_PT_Getter,"PT4")
+
+void Four_Particle_PT::Evaluate(const Vec4D& mom1,const Vec4D& mom2,
+				const Vec4D& mom3,const Vec4D& mom4,
+				double weight, int ncount)
+{
+  double pt = sqrt(sqr(mom1[1]+mom2[1]+mom3[1]+mom4[1]) +
+		   sqr(mom1[2]+mom2[2]+mom3[2]+mom4[2]));
+  p_histo->Insert(pt,weight,ncount);
+}
+
+//=============================================================================
+
+DEFINE_OBSERVABLE_GETTER(Two_Partonpair_PTdiff,
+			 Two_Partonpair_PTdiff_Getter,"PTdiff4")
+
+void Two_Partonpair_PTdiff::Evaluate(const Vec4D& mom1,const Vec4D& mom2,
+				     const Vec4D& mom3,const Vec4D& mom4,
+				     double weight, int ncount) {
+  Vec4D vecA(mom1); vecA+=mom2;
+  Vec4D vecB(mom3); vecB+=mom4;
+  double ptdiff=sqrt(sqr(vecA[1])+sqr(vecA[2]));
+  ptdiff-=sqrt(sqr(vecB[1])+sqr(vecB[2]));
+  if(f_special) ptdiff=dabs(ptdiff);
+  p_histo->Insert(ptdiff, weight, ncount);
+}
+
+//=============================================================================
+
+DEFINE_OBSERVABLE_GETTER(Two_Partonpair_Theta,
+			 Two_Partonpair_Theta_Getter,"Theta4")
+
+void Two_Partonpair_Theta::Evaluate(const Vec4D& mom1,const Vec4D& mom2,
+				    const Vec4D& mom3,const Vec4D& mom4,
+				    double weight, int ncount) {
+  Vec4D vecA(mom1); vecA+=mom2;
+  Vec4D vecB(mom3); vecB+=mom4;
+  //
+  if(!f_special) {
+    Vec4D plab(vecA); plab+=vecB;
+    //removing the z boost effect of the considered 4 particle system
+    plab[1]=plab[2]=0.0;
+    if(plab.Abs2()<=0.0) {
+      p_histo->Insert(-M_PI/100.0, weight, ncount);
+      msg.Error()<<__PRETTY_FUNCTION__<<":\n   Warning:"
+		 <<" Not able to boost the system. Insert theta=-pi/100.\n"
+		 <<std::endl;
+      return;
+    }
+    Poincare fly(plab);
+    fly.Boost(vecA);
+    fly.Boost(vecB);
+  }
+  Vec3D vec1(vecA);
+  Vec3D vec2(vecB);
+  double theta=acos((vec1*vec2)/(vec1.Abs()*vec2.Abs()));
+  p_histo->Insert(theta, weight, ncount);
 }

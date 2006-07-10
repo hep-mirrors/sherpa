@@ -4,88 +4,92 @@
 
 using namespace ANALYSIS;
 using namespace ATOOLS;
-
-template <class Class>
-Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
-{									
-  if (parameters.size()<1) return NULL;
-  if (parameters.size()==1) {
-    if (parameters[0].size()<8) return NULL;
-    std::vector<ATOOLS::Flavour> f(6);
-    for (short unsigned int i=0;i<6;++i) {
-      int kf=ATOOLS::ToType<int>(parameters[0][i]);
-      f[i]=ATOOLS::Flavour((ATOOLS::kf::code)abs(kf));
-      if (kf<0) f[i]=f[i].Bar();
-    }
-    std::string list=parameters[0].size()>10?parameters[0][10]:"Analysed";
-    return new Class(f,HistogramType(parameters[0][9]),
-		     ATOOLS::ToType<double>(parameters[0][6]),
-		     ATOOLS::ToType<double>(parameters[0][7]),
-		     ATOOLS::ToType<int>(parameters[0][8]),list);
-  }
-  else if (parameters.size()<10) return NULL;
-  double min=0.0, max=1.0;
-  size_t bins=100;
-  std::vector<ATOOLS::Flavour> f(4);
-  std::string list="Analysed", scale="Lin";
-  for (size_t i=0;i<parameters.size();++i) {
-    if (parameters[i].size()<2) continue;
-    for (short unsigned int j=0;j<6;++j) {
-      if (parameters[i][0]==std::string("FLAV")+ATOOLS::ToString(j+1)) {
-	int kf=ATOOLS::ToType<int>(parameters[i][1]);
-	f[j]=ATOOLS::Flavour((ATOOLS::kf::code)abs(kf));
-	if (kf<0) f[j]=f[j].Bar();
-      }
-    }
-    if (parameters[i][0]=="MIN") min=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="MAX") max=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="BINS") bins=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="SCALE") scale=parameters[i][1];
-    else if (parameters[i][0]=="LIST") list=parameters[i][1];
-  }
-  return new Class(f,HistogramType(scale),min,max,bins,list);
-}									
-
-#define DEFINE_GETTER_METHOD(CLASS,NAME)				\
-  Primitive_Observable_Base *					\
-  NAME::operator()(const String_Matrix &parameters) const		\
-  { return GetObservable<CLASS>(parameters); }
-
-#define DEFINE_PRINT_METHOD(NAME)					\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
-  { str<<"kf1 kf2 kf3 kf4 kf5 kf kf6 min max bins Lin|LinErr|Log|LogErr [list]"; }
-
-#define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
-  DEFINE_GETTER_METHOD(CLASS,NAME)					\
-  DEFINE_PRINT_METHOD(NAME)
-
-using namespace ATOOLS;
 using namespace std;
 
-Six_Particle_Observable_Base::Six_Particle_Observable_Base
-(const std::vector<Flavour>& flavs, int type, double xmin, double xmax,
- int nbins, const std::string& listname, const std::string& name)
-  : Primitive_Observable_Base(type,xmin,xmax,nbins), f_special(false) {
+#define DEFINE_GETTER_METHOD(CLASS,NAME)                                \
+  Primitive_Observable_Base *                                           \
+  NAME::operator()(const String_Matrix &parameters) const               \
+{ return new CLASS(parameters); }
 
-  if(flavs.size()<4) {
-    msg.Error()<<"Error in Six_Particle_Observable_Base:"<<std::endl
-	       <<"   No four flavours specified, try to copy flavours."
-	       <<std::endl;
-  }
-  MyStrStream str;
-  str<<name<<flavs[0]<<flavs[1]<<flavs[2]<<flavs[3]<<flavs[4]<<flavs[5]<<".dat";
-  str>>m_name;
-  Flavour fl;
-  for(size_t i=0; i<6; i++) {
-    if(i<flavs.size()) fl=flavs[i];
-    m_flavs.push_back(fl);
-  }
-  m_listname = listname;
-  m_blobtype = std::string("");
-  m_blobdisc = false;
-  if(xmin>=0.0) f_special=true;
+#define DEFINE_PRINT_METHOD(NAME)                                       \
+  void NAME::PrintInfo(std::ostream &str,const size_t width) const      \
+{ str<<"kf1 kf2 kf3 kf4 kf5 kf6 min max bins Lin|LinErr|Log|LogErr [list]"; }
 
+#define DEFINE_CONSTRUCTOR_METHODS(CLASS,TAG)                           \
+  CLASS::CLASS(const String_Matrix & parameters) :                      \
+      Six_Particle_Observable_Base(parameters, TAG) { }               \
+                                                                        \
+  CLASS::CLASS(const CLASS * old) :                                     \
+      Six_Particle_Observable_Base(*old) { }                          \
+                                                                        \
+  Primitive_Observable_Base * CLASS::Copy() const { return new CLASS(this); }
+
+#define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)                        \
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);     \
+  DEFINE_GETTER_METHOD(CLASS,NAME)                                      \
+  DEFINE_PRINT_METHOD(NAME)                                             \
+  DEFINE_CONSTRUCTOR_METHODS(CLASS,TAG)
+
+Six_Particle_Observable_Base::Six_Particle_Observable_Base(const String_Matrix & parameters,
+                                                           const std::string & obsname):
+    Primitive_Observable_Base(parameters), m_flavs(6)
+{
+  if (parameters.size()==1) {
+    if (parameters[0].size()<10) {
+      msg.Error()<<"Error in "<<METHOD<<": Not enough parameters for "
+          <<"observable "<<obsname<<" in Analysis.dat";
+      abort();
+    }
+    for (short unsigned int i=0;i<6;++i) {
+      int kf=ATOOLS::ToType<int>(parameters[0][i]);
+      m_flavs[i]=ATOOLS::Flavour((ATOOLS::kf::code)abs(kf));
+      if (kf<0) m_flavs[i]=m_flavs[i].Bar();
+    }
+
+    m_xmin  = ATOOLS::ToType<double>(parameters[0][6]);
+    m_xmax  = ATOOLS::ToType<double>(parameters[0][7]);
+    int nbins = ATOOLS::ToType<int>(parameters[0][8]);
+    m_type  = HistogramType(parameters[0][9]);
+    p_histo = new Histogram(m_type,m_xmin,m_xmax,nbins);
+
+    MyStrStream str;
+    str<<obsname<<m_flavs[0]<<m_flavs[1]<<m_flavs[2]<<m_flavs[3]<<m_flavs[4]<<m_flavs[5]<<".dat";
+    str>>m_name;
+
+    m_listname = parameters[0].size()>10?parameters[0][10]:"Analysed";
+  }
+  else {
+    if (m_listname=="") m_listname="Analysed";
+    for (size_t i=0;i<parameters.size();++i) {
+      if (parameters[i].size()<2) continue;
+      for (short unsigned int j=0;j<6;++j) {
+        if (parameters[i][0]==std::string("FLAV")+ATOOLS::ToString(j+1)) {
+          int kf=ATOOLS::ToType<int>(parameters[i][1]);
+          m_flavs[j] = ATOOLS::Flavour((ATOOLS::kf::code)abs(kf),kf<0);
+        }
+      }
+    }
+
+    if (m_name=="SherpaDefault") {
+      MyStrStream str;
+      str<<obsname<<m_flavs[0]<<m_flavs[1]<<m_flavs[2]<<m_flavs[3]<<m_flavs[4]<<m_flavs[5];
+      str>>m_name;
+    }
+    if (p_histo->Title()=="SherpaDefault") {
+      std::string title = "";
+      MyStrStream str;
+      str<<obsname<<" of "<<m_flavs[0]<<", "<<m_flavs[1]<<", "<<m_flavs[2]<<", "
+         <<m_flavs[3]<<", "<<m_flavs[4]<<", "<<m_flavs[5];
+      str>>title;
+      p_histo->SetTitle(title);
+    }
+  }
+}
+
+Six_Particle_Observable_Base::Six_Particle_Observable_Base(const Six_Particle_Observable_Base * old) :
+    Primitive_Observable_Base(*old)
+{
+  m_flavs=old->m_flavs;
 }
 
 void Six_Particle_Observable_Base::Evaluate(double value, double weight,
@@ -191,15 +195,3 @@ void Six_Particle_PlaneAngle::Evaluate(
   double costh  = (normal1*normal2)/(normal1.Abs()*normal2.Abs()); 
   p_histo->Insert(costh,weight,ncount); 
 }
- 
-Six_Particle_PlaneAngle::Six_Particle_PlaneAngle(const std::vector<Flavour> & flavs,
-						   int type,double xmin,double xmax,int nbins,
-						   const std::string& listname) :
-  Six_Particle_Observable_Base(flavs,type,xmin,xmax,nbins,listname,"NRAngle") { }
-
-Primitive_Observable_Base * Six_Particle_PlaneAngle::Copy() const
-{
-  return new Six_Particle_PlaneAngle(m_flavs,m_type,m_xmin,m_xmax,Nbins(),
-				      m_listname);
-}
-

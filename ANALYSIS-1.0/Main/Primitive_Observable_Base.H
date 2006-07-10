@@ -6,6 +6,7 @@
 #include "Vector.H"
 #include "Flavour.H"
 #include "Histogram_Base.H"
+#include "Histogram.H"
 #include "Getter_Function.H"
 
 #include "Particle_List.H"
@@ -34,6 +35,24 @@ namespace ANALYSIS {
   };// end of class String_Matrix
 
 
+//   class Primitive_Observable_Defaults {
+//   public:
+//     bool m_legend;
+//     double m_legendxmin, m_legendymin, m_legendxmax, m_legendymax;
+//     std::string m_inputfile, m_outputfile, m_listname, m_title;
+//     std::vector<std::string> * p_datanames;
+// 
+//     Primitive_Observable_Defaults() :
+//       m_legend(true),
+//       m_legendxmin(-1.), m_legendymin(-1.), m_legendxmax(-1.), m_legendymax(-1.),
+//       m_inputfile(""), m_outputfile(""), m_listname("Analysed"), m_title(""),
+//       p_datanames(NULL) {}
+//     ~Primitive_Observable_Defaults() {
+//       if (p_datanames) { delete p_datanames; p_datanames=NULL; }
+//     }
+//   };
+
+
   struct POBType {
     enum code {
       ROOT    = 1,
@@ -53,9 +72,6 @@ namespace ANALYSIS {
     double                   m_xmin, m_xmax;
     std::string              m_name, m_listname;
     ATOOLS::Histogram_Base * p_histo;
-    int                      m_nout;
-    ATOOLS::Flavour        * p_flavs;
-    ATOOLS::Vec4D          * p_moms;
     std::string              m_blobtype;
     bool                     m_blobdisc, m_splitt_flag;
 
@@ -66,8 +82,8 @@ namespace ANALYSIS {
     // constructors
     Primitive_Observable_Base();
     Primitive_Observable_Base(const int,const double,const double,const int);
-    Primitive_Observable_Base(const std::string,const std::string,std::vector<std::string> &);
-    Primitive_Observable_Base(ATOOLS::Histogram_Base *);
+    Primitive_Observable_Base(const String_Matrix &);
+//     Primitive_Observable_Base(ATOOLS::Histogram_Base *);
     Primitive_Observable_Base(const Primitive_Observable_Base & old);
 
     // destructor
@@ -97,11 +113,6 @@ namespace ANALYSIS {
     ATOOLS::Histogram_Base * Histo() const;
     ATOOLS::Selector_Base  * Sel()   const;
     bool                     Splittable() const;
-
-    void                     SetTitle(const std::string title);
-    void                     SetLegend(const std::string legend,
-				       const double xmin,const double ymin,
-				       const double xmax,const double ymax);
   };// end of class Primitive_Observable_Base
 
   // --- inline functions ---
@@ -116,16 +127,6 @@ namespace ANALYSIS {
   inline ATOOLS::Histogram_Base * Primitive_Observable_Base::Histo()      const { return p_histo; }
   inline ATOOLS::Selector_Base  * Primitive_Observable_Base::Sel()        const { return p_sel; }
   inline bool                     Primitive_Observable_Base::Splittable() const { return m_splitt_flag; }
-
-
-  inline void Primitive_Observable_Base::SetTitle(const std::string title) { 
-    if (m_pobtype==POBType::ROOT) p_histo->SetTitle(title);
-  }
-  inline void Primitive_Observable_Base::SetLegend(const std::string legend,
-						   const double xmin,const double ymin,
-						   const double xmax,const double ymax) {
-    if (m_pobtype==POBType::ROOT) p_histo->SetLegend(legend,xmin,ymin,xmax,ymax);
-  }
 }// end of namespace ANALYSIS
 
 #endif

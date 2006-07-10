@@ -27,7 +27,6 @@ Analysis_Handler::Analysis_Handler():
 
 Analysis_Handler::~Analysis_Handler()
 {
-  // std::cout<<METHOD<<std::endl;
   Clean();
   Exception_Handler::RemoveTerminatorObject(this);
 }
@@ -109,7 +108,6 @@ void Analysis_Handler::ShowSyntax(const size_t i)
 
 bool Analysis_Handler::ReadIn()
 {
-  //std::cout<<METHOD<<std::endl;
   msg_Info()<<"Analysis_Handler::ReadIn(): {\n";
   bool success=false;
   std::vector<std::string> helpsv;
@@ -210,7 +208,6 @@ bool Analysis_Handler::ReadIn()
 void Analysis_Handler::DoAnalysis(const ATOOLS::Blob_List *bloblist,
 				  const double weight)
 {
-  // std::cout<<METHOD<<" : "<<bloblist->size()<<" "<<weight<<std::endl;
   if (!m_initialized) {
     ReadIn();
   }
@@ -244,7 +241,6 @@ void Analysis_Handler::PrepareTerminate()
 
 void Analysis_Handler::Finish(const std::string &path)
 {
-  //std::cout<<METHOD<<": "<<path<<"|"<<OutputPath()<<std::endl;
   if (OutputPath()[OutputPath().length()-1]=='/') {
     if (!MakeDir(OutputPath(),448)) {
       msg.Error()<<"Analysis_Handler::Finish(..): "
@@ -260,14 +256,11 @@ void Analysis_Handler::Finish(const std::string &path)
     }
   }
   msg_Info()<<"Analysis_Handler::Finish(..): {\n";
-  //std::cout<<METHOD<<" Analysis_Handler::Finish(..): {\n";
   double ws=rpa.gen.WAnaScale();
   for (Analyses_Vector::const_iterator ait=m_analyses.begin();
        ait!=m_analyses.end();++ait) {
     msg_Info()<<"   Writing to '"<<OutputPath()<<(*ait)->OutputPath()
-	      <<"'."<<std::endl; 
-    //std::cout<<METHOD<<"   Writing to '"<<OutputPath()<<(*ait)->OutputPath()
-    //	     <<"'."<<std::endl; 
+	      <<"'."<<std::endl;
     (*ait)->FinishAnalysis(OutputPath(),(long int)m_scalefactor,ws); 
   }
   msg_Info()<<"}"<<std::endl;

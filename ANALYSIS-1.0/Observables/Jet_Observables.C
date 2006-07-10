@@ -110,7 +110,7 @@ Jet_Observable_Base::Jet_Observable_Base(unsigned int type,double xmin,double xm
 
   p_histo =  0;
   for (unsigned int i=0;i<m_maxn+1;++i)
-    m_histos.push_back(new Histogram(type,m_xmin,m_xmax,Nbins()));
+    m_histos.push_back(new Histogram(type,m_xmin,m_xmax,nbins));
 }
 
 void Jet_Observable_Base::Evaluate(const Particle_List & pl,double weight, int ncount)
@@ -209,7 +209,7 @@ Two_Jet_Observable_Base::Two_Jet_Observable_Base(unsigned int type,double xmin,d
   p_histo =  0;
   unsigned int num = (m_maxn*m_maxn-m_maxn)/2;
   for (unsigned int i=0;i<num+1;++i)
-    m_histos.push_back(new Histogram(type,m_xmin,m_xmax,Nbins()));
+    m_histos.push_back(new Histogram(type,m_xmin,m_xmax,nbins));
 
   p_minpts = new double[maxn]; p_maxpts = new double[maxn];
   for (unsigned int i=0;i<maxn;i++) { p_minpts[i]=0.; p_maxpts[i]=1.e12; }

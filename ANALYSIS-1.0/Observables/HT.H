@@ -7,9 +7,9 @@ namespace ANALYSIS {
 
   class HT: public Primitive_Observable_Base {  
   public:
-    HT(int type,double xmin,double xmax,int nbins,
-       const std::string & listname=std::string(""));
-    HT(ATOOLS::Histogram_Base *,const std::string & listname=std::string(""));
+    HT(const String_Matrix & parameters);
+    HT(const HT*);
+//     HT(ATOOLS::Histogram_Base *,const std::string & listname=std::string(""));
     
     void Evaluate(const ATOOLS::Particle_List & pl, double weight, int ncount);
     Primitive_Observable_Base * Copy() const;

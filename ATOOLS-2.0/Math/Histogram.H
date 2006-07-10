@@ -54,7 +54,9 @@ namespace ATOOLS {
     double LogCoeff() const;
 
     inline void   SetTitle(const std::string) {}
-    inline void   SetLegend(const std::string,
+    inline std::string Title() const { return std::string(""); }
+    inline void   SetLogY() {}
+    inline void   SetLegend(const bool,
 			    const double,const double,
 			    const double,const double) {}
 

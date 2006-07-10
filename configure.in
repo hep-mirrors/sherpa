@@ -101,6 +101,8 @@ dnl       AHADIC++-0.0/ClusterFormation/Makefile \
 	  ANALYSIS-1.0/Makefile \
 	  ANALYSIS-1.0/Main/Makefile \
 	  ANALYSIS-1.0/Observables/Makefile \
+          ANALYSIS-1.0/Histos/Makefile \
+          ANALYSIS-1.0/Histos/LEP91/Makefile \
 	  SHERPA-1.0/HerwigTools/Makefile \
 	  SHERPA-1.0/Tools/Makefile \
 	  SHERPA-1.0/LundTools/Makefile \

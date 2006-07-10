@@ -4,103 +4,88 @@
 #include "Shell_Tools.H"
 
 using namespace ANALYSIS;
+using namespace ATOOLS;
+using namespace std;
 
-#include "MyStrStream.H"
+#define DEFINE_GETTER_METHOD(CLASS,NAME)                                \
+  Primitive_Observable_Base *                                   \
+  NAME::operator()(const String_Matrix &parameters) const               \
+  { return new CLASS(parameters); }
 
-template <class Class>
-Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
-{									
-  if (parameters.size()<1) return NULL;
-  if (parameters.size()==1) {
-    if (parameters[0].size()<8) return NULL;
-    std::string list=parameters[0].size()>8?parameters[0][8]:"Analysed";
-    return new Class(HistogramType(parameters[0][7]),
-		     ATOOLS::ToType<double>(parameters[0][0]),
-		     ATOOLS::ToType<double>(parameters[0][1]),
-		     ATOOLS::ToType<int>(parameters[0][2]),
-		     ATOOLS::ToType<int>(parameters[0][3]),
-		     ATOOLS::ToType<int>(parameters[0][4]),
-		     ATOOLS::ToType<int>(parameters[0][5]),
-		     ATOOLS::ToType<int>(parameters[0][6]),list);
-  }
-  else if (parameters.size()<8) return NULL;
-  double min=0.0, max=1.0;
-  size_t bins=100;
-  int p0=-1,p1=-1,p2=-1,p3=-1;
-  std::string list="Analysed", scale="Lin";
-  for (size_t i=0;i<parameters.size();++i) {
-    if (parameters[i].size()<2) continue;
-    if (parameters[i][0]=="MIN") min=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="MAX") max=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="BINS") bins=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="PN0")  p0=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="PN1")  p1=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="PN2")  p2=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="PN3")  p3=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="LIST") list=parameters[i][1];
-  }
-  return new Class(HistogramType(scale),min,max,bins,p0,p1,p2,p3,list);
-}									
-
-#define DEFINE_GETTER_METHOD(CLASS,NAME)				\
-  Primitive_Observable_Base *					\
-  NAME::operator()(const String_Matrix &parameters) const		\
-  { return GetObservable<CLASS>(parameters); }
-
-#define DEFINE_PRINT_METHOD(NAME)					\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+#define DEFINE_PRINT_METHOD(NAME)                                       \
+  void NAME::PrintInfo(ostream &str,const size_t width) const   \
   { str<<"min max bins pn0 pn1 pn2 pn3 Lin|LinErr|Log|LogErr [list]"; }
 
-#define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
-  DEFINE_GETTER_METHOD(CLASS,NAME)					\
+#define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)                        \
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);     \
+  DEFINE_GETTER_METHOD(CLASS,NAME)                                      \
   DEFINE_PRINT_METHOD(NAME)
-
-using namespace ATOOLS;
 
 DEFINE_OBSERVABLE_GETTER(PSM_Observable,PSM_Observable_Getter,"PSM")
 
-PSM_Observable::PSM_Observable(unsigned int type,double xmin,double xmax,int nbins,
-			       int p0,int p1,int p2, int p3,
-			       const std::string & lname) :
-  Primitive_Observable_Base(type,xmin,xmax,nbins)
+PSM_Observable::PSM_Observable(const String_Matrix & parameters):
+  Primitive_Observable_Base(parameters), m_pnb(4)
 {
-  m_pnb.clear();
-  m_pnb.push_back(p0);
-  m_pnb.push_back(p1);
-  m_pnb.push_back(p2);
-  m_pnb.push_back(p3);
-  m_listname = lname;
-  m_name     = std::string("psm_");
-  if (lname!="Analysed") m_name=lname+std::string("_")+m_name;
-  if (m_pnb.size()==0) {
+  if (parameters.size()==1) {
+    if (parameters[0].size()<8) {
+    msg.Error()<<"Error in "<<METHOD<<": Not enough parameters for "
+        <<"observable PSM_Observable in Analysis.dat";
+      abort();
+    }
+    m_xmin  = ToType<double>(parameters[0][0]);
+    m_xmax  = ToType<double>(parameters[0][1]);
+    int nbins = ToType<int>(parameters[0][2]);
+    m_type  = HistogramType(parameters[0][3]);
+    p_histo = new Histogram(m_type,m_xmin,m_xmax,nbins);
+
+    m_pnb.clear();
+    for(int i=3;i<7;i++) {
+      m_pnb.push_back(ToType<int>(parameters[0][i]));
+    }
+
+    m_listname = parameters[0].size()>8?parameters[0][8]:"Analysed";
     MyStrStream str;
-    str<<m_name<<"_";
+    if (m_listname!="Analysed") str<<m_listname<<string("_");
+    str<<"PSM_";
     for (size_t i=0;i<m_pnb.size();i++) str<<m_pnb[i];
     str>>m_name;
+  }
+  else {
+    for (size_t i=0;i<parameters.size();++i) {
+      if (parameters[i].size()<2) continue;
+      for (short unsigned int j=0;j<5;++j) {
+        if (parameters[i][0]==std::string("PN")+ToString(j)) {
+          m_pnb[i] = ToType<int>(parameters[i][1]);
+        }
+      }
+    }
+
+    if (m_listname=="") m_listname="Analysed";
+    if (m_name=="SherpaDefault") {
+      MyStrStream str;
+      if (m_listname!="Analysed") str<<m_listname<<string("_");
+      str<<"PSM_";
+      for (size_t i=0;i<m_pnb.size();i++) str<<m_pnb[i];
+      str>>m_name;
+    }
+    if (p_histo->Title()=="SherpaDefault") {
+      std::string title = "";
+      MyStrStream str;
+      str<<"PSM ";
+      for (size_t i=0;i<m_pnb.size();i++) str<<m_pnb[i];
+      str>>title;
+      p_histo->SetTitle(title);
+    }
   }
 }
 
-PSM_Observable::PSM_Observable(Histogram_Base * histo,
-			       int p0,int p1,int p2, int p3,
-			       const std::string & lname) :
-  Primitive_Observable_Base(histo)
+PSM_Observable::PSM_Observable(const PSM_Observable * old) :
+Primitive_Observable_Base(*old)
 {
-  m_pnb.clear();
-  m_pnb.push_back(p0);
-  m_pnb.push_back(p1);
-  m_pnb.push_back(p2);
-  m_pnb.push_back(p3);
-  m_listname = lname;
-  m_name     = std::string("psm_");
-  if (lname!="Analysed") m_name=lname+std::string("_")+m_name;
-  if (m_pnb.size()==0) {
-    MyStrStream str;
-    str<<m_name<<"_";
-    for (size_t i=0;i<m_pnb.size();i++) str<<m_pnb[i];
-    str>>m_name;
-  }
+  m_pnb = old->m_pnb;
 }
+
+Primitive_Observable_Base * PSM_Observable::Copy() const { return new PSM_Observable(this); }
 
 void PSM_Observable::Evaluate(const Particle_List & pl,double weight, int ncount)
 {
@@ -145,40 +130,35 @@ void PSM_Observable::Evaluate(const Blob_List & blobs,double value, int ncount)
   Evaluate(*pl,value, ncount);
 }
 
-void PSM_Observable::EndEvaluation(double scale) {
-    p_histo->Finalize();
-}
+// void PSM_Observable::EndEvaluation(double scale) {
+//     p_histo->Finalize();
+// }
 
-void PSM_Observable::Output(const std::string & pname) {
-  int  mode_dir = 448;
-  ATOOLS::MakeDir((pname).c_str(),mode_dir); 
-  p_histo->Output((pname + std::string("/") + m_name+std::string(".dat")).c_str());
-}
+// void PSM_Observable::Output(const std::string & pname) {
+//   int  mode_dir = 448;
+//   ATOOLS::MakeDir((pname).c_str(),mode_dir); 
+//   p_histo->Output((pname + std::string("/") + m_name+std::string(".dat")).c_str());
+// }
 
+/*
 Primitive_Observable_Base & PSM_Observable::operator+=(const Primitive_Observable_Base & ob)
 {
  PSM_Observable * cob = ((PSM_Observable*)(&ob));
  if (p_histo) {
    //    if (cob->p_histo->Type()>99) (*p_histo)+=(*(static_cast<Histogram *>(cob->p_histo)));
    //                            else (*p_histo)+=(*(static_cast<Root_Histogram *>(cob->p_histo)));
-    
+
     //(*p_histo)+=(cob->p_histo);
   }
   else {
     msg.Out()<<" warning "<<Name()<<" has not overloaded the operator+="<<std::endl;
   }
- 
+
   return *this;
 }
+*/
 
-void PSM_Observable::Reset()
-{
-  p_histo->Reset();
-}
-
-
-Primitive_Observable_Base * PSM_Observable::Copy() const 
-{
-  return new PSM_Observable(p_histo,m_pnb[0],m_pnb[1],m_pnb[2],m_pnb[3],
-			    m_listname);
-}
+// void PSM_Observable::Reset()
+// {
+//   p_histo->Reset();
+// }

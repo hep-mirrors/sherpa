@@ -28,6 +28,7 @@ int main(int argc,char* argv[])
   mtrace();  
 #endif
 #ifdef USING__ROOT
+  gROOT->SetBatch(1);
   MYROOT::myroot = new MYROOT::My_Root(argc,argv);
   ATOOLS::Exception_Handler::AddTerminatorObject(MYROOT::myroot);
 #endif

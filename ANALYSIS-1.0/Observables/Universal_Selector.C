@@ -8,9 +8,6 @@ using namespace ATOOLS;
 DECLARE_GETTER(Universal_Selector_Getter,"UniSelector",
 	       Primitive_Observable_Base,String_Matrix);
 
-DECLARE_GETTER(General_Observable_Getter,"Dummy",
-	       Primitive_Observable_Base,String_Matrix);
-
 Primitive_Observable_Base * 
 Universal_Selector_Getter::operator()(const String_Matrix &parameters) const
 {
@@ -79,58 +76,61 @@ Primitive_Observable_Base *Universal_Selector::Copy() const
 
 // ======================================================================
 
-Primitive_Observable_Base * 
-General_Observable_Getter::operator()(const String_Matrix &parameters) const
-{
-  std::string ilist,olist,obskey;
-  double keymin, keymax;
-  int nbins;
-  if (parameters.size()>0 && parameters[0].size()>=5) {
-    obskey=parameters[0][0];
-    keymin=ATOOLS::ToType<double>(parameters[0][1]);
-    keymax=ATOOLS::ToType<double>(parameters[0][2]);
-    nbins=ATOOLS::ToType<int>(parameters[0][3]);
-    return new General_Observable(HistogramType(parameters[0][4]),
-				  keymin,keymax,nbins,obskey);
-  }
-  return NULL;
-}
+// DECLARE_GETTER(General_Observable_Getter,"Dummy",
+//             Primitive_Observable_Base,String_Matrix);
 
-void General_Observable_Getter::PrintInfo(std::ostream &str,const size_t width) const
-{ 
-  str<<"datakey  obsmin  obsmax nbins  Lin|LinErr|Log|LogErr"; 
-}
-
-General_Observable::General_Observable(int type,double xmin,double xmax,int nbins,
-			   const std::string & key) :
-  Primitive_Observable_Base(type,xmin,xmax,nbins), m_key(key)
-{ 
-  m_name = m_key+".dat";
-}
- 
-General_Observable::General_Observable(Histogram_Base * histo,const std::string & key) :
-  Primitive_Observable_Base(histo), m_key(key)
-{
-  m_name = m_key+".dat";
-}
- 
-void General_Observable::Evaluate(const ATOOLS::Particle_List & pl,
-			    double weight, int ncount)
-{
-  Blob_Data_Base * key=(*p_ana)[m_key];
-  if (key) {
-    double value = key->Get<double>();
-    p_histo->Insert(value,weight,ncount); 
-  }
-  else {
-    std::cout<<"warning #"<<m_key<<"# not found \n";
-    p_histo->Insert(0.,0.,ncount); 
-  }
-}
-
-
-Primitive_Observable_Base * General_Observable::Copy() const {
-  return new General_Observable(p_histo,m_key);
-}
+// Primitive_Observable_Base * 
+// General_Observable_Getter::operator()(const String_Matrix &parameters) const
+// {
+//   std::string ilist,olist,obskey;
+//   double keymin, keymax;
+//   int nbins;
+//   if (parameters.size()>0 && parameters[0].size()>=5) {
+//     obskey=parameters[0][0];
+//     keymin=ATOOLS::ToType<double>(parameters[0][1]);
+//     keymax=ATOOLS::ToType<double>(parameters[0][2]);
+//     nbins=ATOOLS::ToType<int>(parameters[0][3]);
+//     return new General_Observable(HistogramType(parameters[0][4]),
+// 				  keymin,keymax,nbins,obskey);
+//   }
+//   return NULL;
+// }
+// 
+// void General_Observable_Getter::PrintInfo(std::ostream &str,const size_t width) const
+// { 
+//   str<<"datakey  obsmin  obsmax nbins  Lin|LinErr|Log|LogErr"; 
+// }
+// 
+// General_Observable::General_Observable(int type,double xmin,double xmax,int nbins,
+// 			   const std::string & key) :
+//   Primitive_Observable_Base(type,xmin,xmax,nbins), m_key(key)
+// { 
+//   m_name = m_key+".dat";
+// }
+//  
+// General_Observable::General_Observable(Histogram_Base * histo,const std::string & key) :
+//   Primitive_Observable_Base(histo), m_key(key)
+// {
+//   m_name = m_key+".dat";
+// }
+//  
+// void General_Observable::Evaluate(const ATOOLS::Particle_List & pl,
+// 			    double weight, int ncount)
+// {
+//   Blob_Data_Base * key=(*p_ana)[m_key];
+//   if (key) {
+//     double value = key->Get<double>();
+//     p_histo->Insert(value,weight,ncount); 
+//   }
+//   else {
+//     std::cout<<"warning #"<<m_key<<"# not found \n";
+//     p_histo->Insert(0.,0.,ncount); 
+//   }
+// }
+// 
+// 
+// Primitive_Observable_Base * General_Observable::Copy() const {
+//   return new General_Observable(p_histo,m_key);
+// }
 
 

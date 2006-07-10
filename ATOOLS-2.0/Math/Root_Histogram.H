@@ -8,7 +8,7 @@
 namespace ATOOLS {
 
   class Root_Histogram : public Histogram_Base {
-    bool                     m_finished, m_written;
+    bool                     m_finished, m_written, m_legend, m_logy;
     std::string              m_outfile;
     std::vector<std::string> m_data;
 
@@ -16,12 +16,12 @@ namespace ATOOLS {
     TH1D                   * p_roothisto;
     std::vector<TH1D *>      m_rootcomps;
     bool                     m_mustdeletecomps;
-    std::string              m_title,m_legend;
+    std::string              m_title;
     double                   m_lxmin,m_lymin,m_lxmax,m_lymax;
   public :
     Root_Histogram();
     Root_Histogram(const std::string,const std::string,
-		   std::vector<std::string> &);
+		   std::vector<std::string> *);
     Root_Histogram(Root_Histogram *);
     Root_Histogram(const Histogram *)                  { std::cout<<METHOD<<std::endl; abort(); }
     ~Root_Histogram();
@@ -56,7 +56,9 @@ namespace ATOOLS {
     double BinSize(int i=1) const { return p_roothisto->GetBinWidth(i); }
 
     inline void SetTitle(const std::string title) { m_title=title; }
-    inline void SetLegend(const std::string legend,
+    inline std::string Title() const              { return m_title; }
+    inline void SetLogY()                         { m_logy=true; }
+    inline void SetLegend(const bool legend,
 			  const double xmin,const double ymin,
 			  const double xmax,const double ymax) 
     {

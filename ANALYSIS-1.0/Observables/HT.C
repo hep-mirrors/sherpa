@@ -1,43 +1,18 @@
 #include "HT.H"
-
-using namespace ANALYSIS;
-
+#include "Primitive_Analysis.H"
 #include "MyStrStream.H"
 
-template <class Class>
-Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
-{									
-  if (parameters.size()<1) return NULL;
-  if (parameters.size()==1) {
-    if (parameters[0].size()<4) return NULL;
-    std::string list=parameters[0].size()>4?parameters[0][4]:"Analysed";
-    return new Class(HistogramType(parameters[0][3]),
-		     ATOOLS::ToType<double>(parameters[0][0]),
-		     ATOOLS::ToType<double>(parameters[0][1]),
-		     ATOOLS::ToType<int>(parameters[0][2]),list);
-  }
-  else if (parameters.size()<4) return NULL;
-  double min=0.0, max=1.0;
-  size_t bins=100;
-  std::string list="Analysed", scale="Lin";
-  for (size_t i=0;i<parameters.size();++i) {
-    if (parameters[i].size()<2) continue;
-    if (parameters[i][0]=="MIN") min=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="MAX") max=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="BINS") bins=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="SCALE") scale=parameters[i][1];
-    else if (parameters[i][0]=="LIST") list=parameters[i][1];
-  }
-  return new Class(HistogramType(scale),min,max,bins,list);
-}									
+using namespace ANALYSIS;
+using namespace ATOOLS;
+using namespace std;
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
   Primitive_Observable_Base *					\
   NAME::operator()(const String_Matrix &parameters) const		\
-  { return GetObservable<CLASS>(parameters); }
+  { return new CLASS(parameters); }
 
 #define DEFINE_PRINT_METHOD(NAME)					\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+  void NAME::PrintInfo(ostream &str,const size_t width) const	\
   { str<<"min max bins Lin|LinErr|Log|LogErr [list]"; }
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
@@ -45,43 +20,66 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
   DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME)
 
-#include "Primitive_Analysis.H"
 
 DEFINE_OBSERVABLE_GETTER(HT,HT_Getter,"HT")
- 
-HT::HT(int type,double xmin,double xmax,int nbins,
-       const std::string & listname) :
-  Primitive_Observable_Base(type,xmin,xmax,nbins)
+
+HT::HT(const String_Matrix & parameters):
+    Primitive_Observable_Base(parameters)
 {
-  if (listname!="") {
-    m_listname = listname;
-    m_name = listname+"_HT.dat";
+  if (parameters.size()==1) {
+    if (parameters[0].size()<4) {
+      msg.Error()<<"Error in "<<METHOD<<": Not enough parameters for "
+          <<"observable HT in Analysis.dat";
+      abort();
+    }
+    m_xmin  = ToType<double>(parameters[0][0]);
+    m_xmax  = ToType<double>(parameters[0][1]);
+    int nbins = ToType<int>(parameters[0][2]);
+    m_type  = HistogramType(parameters[0][3]);
+    p_histo = new Histogram(m_type,m_xmin,m_xmax,nbins);
+
+    m_listname = parameters[0].size()>4?parameters[0][4]:"Analysed";
+    m_name="";
+    if (m_listname!="Analysed") m_name=m_listname+string("_");
+    m_name+="HT.dat";
   }
-  else
-    m_name = "HT.dat";
+  else {
+    if (m_listname=="") m_listname="Analysed";
+    if (m_name=="SherpaDefault") {
+      m_name="";
+      if (m_listname!="Analysed") m_name=m_listname+string("_");
+      m_name+="HT";
+    }
+    if (p_histo->Title()=="SherpaDefault") {
+      p_histo->SetTitle("HT");
+    }
+  }
 }
 
-HT::HT(ATOOLS::Histogram_Base * histo,const std::string & listname) :
-  Primitive_Observable_Base(histo)
-{
-  if (listname!="") {
-    m_listname = listname;
-    m_name = listname+"_HT.dat";
-  }
-  else
-    m_name = "HT.dat";
-}
+HT::HT(const HT * old) :
+    Primitive_Observable_Base(*old) {}
 
-void HT::Evaluate(const ATOOLS::Particle_List& pl,
+// HT::HT(Histogram_Base * histo,const string & listname) :
+//   Primitive_Observable_Base(histo)
+// {
+//   if (listname!="") {
+//     m_listname = listname;
+//     m_name = listname+"_HT.dat";
+//   }
+//   else
+//     m_name = "HT.dat";
+// }
+
+void HT::Evaluate(const Particle_List& pl,
 		  double weight, int ncount)
 {
-  ATOOLS::Particle_List* jets=p_ana->GetParticleList(m_listname);
+  Particle_List* jets=p_ana->GetParticleList(m_listname);
   double HT=0.0;
   if(jets->size()==0) {
     p_histo->Insert(0.0,0.0,ncount);
     return;
   }
-  for (ATOOLS::Particle_List::const_iterator pit=jets->begin();
+  for (Particle_List::const_iterator pit=jets->begin();
        pit!=jets->end();++pit) {
     HT+=(*pit)->Momentum().PPerp();
   }
@@ -91,5 +89,5 @@ void HT::Evaluate(const ATOOLS::Particle_List& pl,
 
 Primitive_Observable_Base * HT::Copy() const 
 {
-  return new HT(p_histo,m_listname);
+  return new HT(this);
 }

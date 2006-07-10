@@ -8,22 +8,21 @@ using namespace ATOOLS;
 
 Root_Histogram::Root_Histogram() :
   Histogram_Base(), 
-  m_finished(false), m_written(false), 
+  m_finished(false), m_written(false), m_legend(false), m_logy(false), 
   m_type(100), p_roothisto(NULL), m_mustdeletecomps(false),
-  m_legend("Off"), m_lxmin(-1.), m_lymin(-1.), m_lxmax(-1.), m_lymax(-1.)
+  m_lxmin(-1.), m_lymin(-1.), m_lxmax(-1.), m_lymax(-1.)
 {
-  // std::cout<<"In Root_Histogram."<<std::endl;
   abort();
 }
 
 Root_Histogram::Root_Histogram(const std::string filename,const std::string outfile,
-			       std::vector<std::string> & data) :
-  m_finished(false), m_written(false), 
+			       std::vector<std::string> * data) :
+  m_finished(false), m_written(false), m_legend(false), m_logy(false), 
   m_outfile(outfile), m_type(100), p_roothisto(NULL), m_mustdeletecomps(true),
-  m_legend("Off"), m_lxmin(-1.), m_lymin(-1.), m_lxmax(-1.), m_lymax(-1.)
+  m_lxmin(-1.), m_lymin(-1.), m_lxmax(-1.), m_lymax(-1.)
 {
-  for (std::vector<std::string>::iterator dit=data.begin(); 
-       dit!=data.end();dit++) {
+  for (std::vector<std::string>::iterator dit=data->begin(); 
+       dit!=data->end();dit++) {
     m_data.push_back((*dit));
   }
   bool found(false);
@@ -31,7 +30,6 @@ Root_Histogram::Root_Histogram(const std::string filename,const std::string outf
   if (test.good()) found=true;
   test.close();
   if (found) {
-    // std::cout<<"Look for the file."<<std::endl;
     TFile file((filename).c_str());
     TH1D * th1d(NULL);
     for (std::vector<std::string>::iterator dit=m_data.begin(); 
@@ -54,9 +52,8 @@ Root_Histogram::Root_Histogram(const std::string filename,const std::string outf
 }
 
 Root_Histogram::Root_Histogram(Root_Histogram * rhisto) :
-  m_finished(false), m_written(false), 
+  m_finished(false), m_written(false), m_legend(rhisto->m_legend), m_logy(rhisto->m_logy), 
   m_outfile(rhisto->m_outfile), m_type(100), p_roothisto(NULL), m_mustdeletecomps(false),
-  m_legend(rhisto->m_legend), 
   m_lxmin(rhisto->m_lxmin), m_lymin(rhisto->m_lymin),
   m_lxmax(rhisto->m_lxmax), m_lymax(rhisto->m_lymax)
 
@@ -96,31 +93,38 @@ void Root_Histogram::Output() {
 }
 
 
-void Root_Histogram::Output(const std::string name)
+void Root_Histogram::Output(const std::string filename)
 {
   if (!m_written) {
-    TFile file1((name+".root").c_str(),"NEW","test");
+    TFile file1((filename+".root").c_str(),"NEW","test");
     p_roothisto->Write();
     file1.Close();
 
-    TFile file((name+".total.root").c_str(),"NEW","test");
+    TFile file((filename+".total.root").c_str(),"NEW","test");
     if (m_finished) {
-      TCanvas canvas((name).c_str());
+      std::string canvasstring = filename.substr(filename.rfind("/")+1);
+      TCanvas canvas( canvasstring.c_str() );
       p_roothisto->SetTitle(m_title.c_str());
       p_roothisto->SetLineColor(kRed);
+      p_roothisto->SetStats(kFALSE);
       TLegend legend(m_lxmin,m_lymin,m_lxmax,m_lymax);
+      if (m_logy) gPad->SetLogy();
       p_roothisto->Draw("E1");
       legend.AddEntry(p_roothisto,"Sherpa");
-      for (std::vector<TH1D*>::iterator th1dit=m_rootcomps.begin(); 
-	   th1dit!=m_rootcomps.end();th1dit++) {
-	(*th1dit)->Draw("same E1");
-        legend.AddEntry((*th1dit),(*th1dit)->GetTitle());
-	(*th1dit)->Write();
+      for (std::vector<TH1D*>::iterator th1dit=m_rootcomps.begin();
+           th1dit!=m_rootcomps.end();th1dit++) {
+        double compintegral = (*th1dit)->Integral("width");
+        if( (*th1dit)->GetEntries() > 0 && compintegral>0.0) {
+          (*th1dit)->Scale(1./compintegral);
+          (*th1dit)->Draw("same E1");
+          legend.AddEntry((*th1dit),(*th1dit)->GetTitle());
+          (*th1dit)->Write();
+        }
       }
       p_roothisto->Write();
-      if (m_legend=="On") {legend.Draw();legend.Write();}
+      if (m_legend) {legend.Draw(); legend.Write();}
+      canvas.Print((filename+".eps").c_str(),"eps");
       canvas.Write();
-      canvas.Print((name+".eps").c_str(),"eps");
       canvas.Close();
     }
     file.Close();
@@ -130,20 +134,23 @@ void Root_Histogram::Output(const std::string name)
 
 void Root_Histogram::Insert(double x)
 {
-  p_roothisto->Fill(x); 
+  double binwidth(p_roothisto->GetBinWidth(p_roothisto->FindBin(x)));
+  if(binwidth>0.0 ) p_roothisto->Fill(x,1./binwidth);
+  else              p_roothisto->Fill(x);
 }
 
 void Root_Histogram::Insert(double x, double weight, int ntimes) 
 {
-  p_roothisto->Fill(x,weight); 
+  double binwidth(p_roothisto->GetBinWidth(p_roothisto->FindBin(x)));
+  p_roothisto->Fill(x,weight/binwidth); 
 }
 
 void Root_Histogram::Finalize()
-{ 
+{
   if (!m_finished) {
     m_finished=true;
     p_roothisto->Sumw2();
-    double sum(1./p_roothisto->Integral(""));
-    p_roothisto->Scale(sum);    
+    double integral = p_roothisto->Integral("width");
+    if(integral>0.0) p_roothisto->Scale(1./integral);
   }
 }

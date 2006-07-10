@@ -26,7 +26,8 @@ namespace ATOOLS {
     virtual double Mean()     const                                    =0;
     virtual double Integral() const                                    =0;
     virtual double Ymax()     const                                    =0; 
-    virtual double Ymin()     const                                    =0;
+    virtual double Ymin()     const                                    =0; 
+    virtual std::string Title() const                                  =0;
 
     virtual void   InsertRange(double start, double end, double value) =0;
     virtual double LogCoeff() const                                    =0;
@@ -39,7 +40,8 @@ namespace ATOOLS {
     virtual void   SetBin(int i, double x)                             =0;
     virtual void   Extrapolate(double x, double * ys,int mode)         =0;
     virtual void   SetTitle(const std::string)                         =0;
-    virtual void   SetLegend(const std::string,
+    virtual void   SetLogY()                                           =0;
+    virtual void   SetLegend(const bool,
 			     const double,const double,
 			     const double,const double)                =0;
 
