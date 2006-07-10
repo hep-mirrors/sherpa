@@ -36,9 +36,14 @@ Kabbala AnomalousV3_Calc::Do()
   Kabbala f3 = -sgen->GetEnumber(coupl[8]);
   Kabbala f4 = -sgen->GetEnumber(coupl[9]);
 
-  Kabbala t1 = Z(2,1)*(X(0,1)-X(0,2));
-  Kabbala t2 = (X(0,1)-X(0,2))*X(1,0)*X(2,0);
-  Kabbala t3 = Z(1,0)*X(2,0)-Z(2,0)*X(1,0);
-  Kabbala t4 = -Z(1,0)*X(2,0)-Z(2,0)*X(1,0);
-  return f1*t1+f2*(0.5*V(0,0)*t1-t2)+f3*t3+f4*t4;
+  Kabbala t1 = Z(2,1)*(X(0,1)-X(0,2))+Z(2,0)*X(1,2)-Z(0,1)*X(2,1);
+  Kabbala t2 = Z(0,1)*X(2,0)-Z(2,0)*X(1,0);
+  Kabbala t3 = X(2,1)*X(0,2)*X(1,0)-X(0,1)*X(1,2)*X(2,0)
+    +Z(0,1)*(X(2,0)*V(2,1)-X(2,1)*V(2,0))
+    +Z(2,0)*(X(1,2)*V(1,0)-X(1,0)*V(1,2))
+    +Z(1,2)*(X(0,1)*V(0,2)-X(0,2)*V(0,1));
+  Kabbala t4 = Z(0,1)*X(2,0)+Z(2,0)*X(1,0);
+  
+  return f1*t1+f2*t2+f3*t3+f4*t4;
+
 }

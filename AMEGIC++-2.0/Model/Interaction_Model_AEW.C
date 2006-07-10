@@ -207,13 +207,13 @@ void Interaction_Model_AEW::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
     
     kcpl = M_I*g1*charge;
     kcpl0 = kcpl*g1_p;
-    kcpl1 = kcpl*lambda_p/(Wyuk*Wyuk);
-    kcpl2 = kcpl*(g1_p+kappa_p+lambda_p);
+    kcpl1 = kcpl*kappa_p;
+    kcpl2 = kcpl*lambda_p/(Wyuk*Wyuk);
     kcpl3 = kcpl*M_I*g4_p;
         
     vertex[vanz].cpl[0]  = kcpl0.Value();  //g1
-    vertex[vanz].cpl[1]  = kcpl1.Value();  //lambda/m_W^2
-    vertex[vanz].cpl[2]  = kcpl2.Value();  //g1+kappa+lambda
+    vertex[vanz].cpl[1]  = kcpl1.Value();  //kappa
+    vertex[vanz].cpl[2]  = kcpl2.Value();  //lambda/m_W^2
     vertex[vanz].cpl[3]  = kcpl3.Value();  //i*g4
     
     vertex[vanz].ncf   = 1;
@@ -235,13 +235,13 @@ void Interaction_Model_AEW::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
 
     kcpl = M_I*g2*charge*costW;
     kcpl0 = kcpl*g1_Z;
-    kcpl1 = kcpl*lambda_Z/(Wyuk*Wyuk);
-    kcpl2 = kcpl*(g1_Z+kappa_Z+lambda_Z);
+    kcpl1 = kcpl*kappa_Z;
+    kcpl2 = kcpl*lambda_Z/(Wyuk*Wyuk);
     kcpl3 = kcpl*M_I*g4_Z;
   
     vertex[vanz].cpl[0]  = kcpl0.Value();  //g1
-    vertex[vanz].cpl[1]  = kcpl1.Value();  //lambda/m_W^2
-    vertex[vanz].cpl[2]  = kcpl2.Value();  //g1+kappa+lambda
+    vertex[vanz].cpl[1]  = kcpl1.Value();  //kappa
+    vertex[vanz].cpl[2]  = kcpl2.Value();  //lambda/m_W^2
     vertex[vanz].cpl[3]  = kcpl3.Value();  //i*g4
 
     vertex[vanz].ncf   = 1;
