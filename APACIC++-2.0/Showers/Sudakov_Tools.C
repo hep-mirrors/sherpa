@@ -11,7 +11,8 @@ using namespace ATOOLS;
 
 Sudakov_Tools::Sudakov_Tools(MODEL::Model_Base * model) :
   p_as(model->GetScalarFunction(std::string("alpha_S"))),
-  p_aqed(model->GetScalarFunction(std::string("alpha_QED")))
+  p_aqed(model->GetScalarFunction(std::string("alpha_QED"))),
+  m_scalefac(1.)
 { 
 }
 
@@ -48,11 +49,15 @@ void Sudakov_Tools::CalculateMaxCouplings(const int scheme,
 
 void Sudakov_Tools::Output() {
   msg.Out()<<"Initialise Sudakov-Tools : "<<std::endl
-	   <<"   beta0      = "<<m_beta0<<std::endl
-	   <<"   lambda2    = "<<m_lambda2<<std::endl	
-	   <<"   alphaS(MZ) = "<<CrudeAlphaS(sqr((Flavour(kf::Z)).Mass()))<<"  (estimated)"<<std::endl
-	   <<"   alphaS(MZ) = "<<AlphaS(sqr((Flavour(kf::Z)).Mass()))<<"  (exact)"<<std::endl
-	   <<"   scalefac   = "<<m_scalefac<<"."<<std::endl;
+	   <<"   beta0        = "<<m_beta0<<std::endl
+	   <<"   lambda2      = "<<m_lambda2<<std::endl	
+	   <<"   alphaS(MZ)   = "<<CrudeAlphaS(sqr((Flavour(kf::Z)).Mass()))<<"  (estimated)"<<std::endl
+	   <<"   alphaS(MZ)   = "<<AlphaS(sqr((Flavour(kf::Z)).Mass()))<<"  (exact)"<<std::endl
+	   <<"   alphaQED(MZ) = "<<Alpha(sqr((Flavour(kf::Z)).Mass()))<<"  (exact)"<<std::endl
+	   <<"   alphaQED_max = "<<m_alphaQEDmax<<"  (exact)"<<std::endl
+	   <<"   scalefac     = "<<m_scalefac<<", "
+	   <<rpa.gen.RenormalizationScaleFactor()<<"."<<std::endl;
+  abort();
 }
 
 double Sudakov_Tools::CrudeAlphaS(const double t) const 

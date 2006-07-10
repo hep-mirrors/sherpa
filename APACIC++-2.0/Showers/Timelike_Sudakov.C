@@ -16,7 +16,8 @@ Timelike_Sudakov::Timelike_Sudakov(Timelike_Kinematics *const kin,
 				   MODEL::Model_Base *const model) :
   p_tools(new Sudakov_Tools(model)), 
   p_kin(kin), 
-  m_pt2min(1.0), m_pt2max(sqr(rpa.gen.Ecms())), m_t0(4.0) {}
+  m_pt2min(1.0), m_pt2max(sqr(rpa.gen.Ecms())), m_t0(4.0),
+  m_pt2min_qed(0.001), m_t0_qed(0.004) {}
 
 Timelike_Sudakov::~Timelike_Sudakov()
 {
@@ -99,17 +100,18 @@ void Timelike_Sudakov::AcceptBranch(const Knot *const mo)
 bool Timelike_Sudakov::Dice(Knot *const mother, Knot *const granny) 
 {
   m_inflav=mother->part->Flav(); 
+  double t0=m_inflav.Strong()?m_t0:m_t0_qed;
   m_t=mother->t;                  
   m_E2=mother->E2;
-  if (m_t-m_t0<rpa.gen.Accu()) return false;
+  if (m_t-t0<rpa.gen.Accu()) return false;
   double z0;
-  while (m_t>m_t0) {
-    z0=Max(0.5*(1.-sqrt(1.-m_t0/m_t)),1.e-6);
+  while (m_t>t0) {
+    z0=Max(0.5*(1.-sqrt(1.-t0/m_t)),1.e-6);
     CrudeInt(z0,1.-z0);
     if (m_lastint<0.0) return false;
     if (m_mass_scheme>=2) m_t-=mother->tout;
     ProduceT(m_t,mother->tout);
-    if (m_t<m_t0) return 0;
+    if (m_t<t0) return 0;
     if (m_mass_scheme>=2) m_t+=mother->tout;
     // determine estimate for energy
     if (granny) m_E2=0.25*sqr(m_t+granny->E2)/granny->E2;
@@ -149,7 +151,12 @@ bool Timelike_Sudakov::Veto(Knot *const mo,double t,double E2)
   double z(p_kin->GetZ(m_z,t,m_tb,m_tc));
   if (z<0.0 || z>1.0) return true;
   m_pt2=p_kin->GetRelativeKT2(z,m_E2,m_t,m_tb,m_tc);
-  if (m_pt2<m_pt2min) return true;
+  if (m_inflav.Strong()) {
+    if (m_pt2<m_pt2min) return true;
+  }
+  else {
+    if (m_pt2<m_pt2min_qed) return true;
+  }
   // timelike daughters
   m_last_veto=2;
   double wb(z*z*E2), wc((1.-z)*(1.-z)*E2);

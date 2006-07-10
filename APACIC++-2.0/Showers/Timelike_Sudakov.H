@@ -17,16 +17,16 @@ namespace APACIC {
     Sudakov_Tools       *p_tools;
     Timelike_Kinematics *p_kin;
 
-    double m_pt2min, m_pt2max; 
+    double m_pt2min, m_pt2max, m_t0; 
     double m_alphasmax, m_alphasfix; 
-    double m_pt2min_qed, m_alpha_qed;
+    double m_pt2min_qed, m_t0_qed, m_alpha_qed;
 
     int m_cpl_scheme, m_ordering_scheme, m_pt_scheme;
     int m_mass_scheme, m_width_scheme, m_zrange_scheme;
     int m_mecorr_scheme,m_direct_photons,m_azimuthal_correlation;
     int m_last_veto, m_mode;
   
-    double m_E2, m_t, m_tb, m_tc, m_t0, m_z, m_phi, m_pt2;
+    double m_E2, m_t, m_tb, m_tc, m_z, m_phi, m_pt2;
     double m_maxpt, m_rscalefac;
 
     std::vector<int> m_vetos[2];
@@ -90,6 +90,8 @@ namespace APACIC {
 
     inline void SetScaleFactor(const double &fac) { m_rscalefac=fac;         }
     inline void SetPT2Min(const double &pt2)      { m_t0=4.0*(m_pt2min=pt2); }
+    inline void SetPT2MinQED(const double &pt2)   
+    { m_t0_qed=4.0*(m_pt2min_qed=pt2); }
 
     inline double ScaleFactor() const { return m_rscalefac; }
     inline double PT2Min() const      { return m_pt2min;    }
