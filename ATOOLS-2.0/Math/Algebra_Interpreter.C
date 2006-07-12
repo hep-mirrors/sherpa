@@ -12,6 +12,9 @@
 
 using namespace ATOOLS;
 
+#define PTS long unsigned int
+#define PT(ARG) (PTS)(ARG)
+
 struct TDouble: public Term {
   double m_value;
   TDouble(const double &value): m_value(value) {}
@@ -380,8 +383,7 @@ DEFINE_INTERPRETER_FUNCTION(Extract_Leaf)
     for (size_t i=0;i<(*mother)->size();++i)
       if ((*mother)()[i]==leaf) {
 	delete (*mother)()[i];
-	unsigned int add(ToType<unsigned int>
-			 (expr.substr(pos+1,expr.length()-pos-2)));
+	PTS add(ToType<PTS>(expr.substr(pos+1,expr.length()-pos-2)));
 	(*mother)()[i]=dynamic_cast<Node<Function*>*>
 	  ((Node<Function*>*)add);
 	if ((*mother)()[i]==NULL) 
@@ -443,7 +445,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
   p_interpreter->SetLeaf(leaf);
   return p_interpreter->
     Iterate(left+"{"+func->Evaluate(args)+","+
-	    ToString((unsigned int)leaf)+"}"+right);
+	    ToString(PT(leaf))+"}"+right);
 }
 
 size_t FindBinaryPlus(const std::string &expr,const bool fwd,
@@ -552,7 +554,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
 	    <<"' '"<<args[1]<<"' '"<<rrstr<<"'\n";
   return p_interpreter->
     Iterate(lrstr+"{"+op->Evaluate(args)+","+
-	    ToString((unsigned int)leaf)+"}"+rrstr);
+	    ToString(PT(leaf))+"}"+rrstr);
 }
 
 DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
@@ -608,7 +610,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
 		<<lrstr<<"' '"<<op->Tag()<<"' '"<<args[0]<<"' '"<<rrstr<<"'\n";
   return p_interpreter->
     Iterate(lrstr+"{"+op->Evaluate(args)+","+
-	    ToString((unsigned int)leaf)+"}"+rrstr);
+	    ToString(PT(leaf))+"}"+rrstr);
 }
 
 Algebra_Interpreter::Algebra_Interpreter(const bool standard):
