@@ -1,0 +1,7 @@
+# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
+{2212,-211}	 | .3315 [PDG]	 | Delta1232_P+pi-.dat;
+{2112,111}	 | .663 [PDG]	 | Delta1232_npi.dat;
+{2112,22}	 | .0055 [PDG]	 | Delta1232_nP.dat;
+
+! NO_FULLDECAY   ! use this option: no decay of daughters
+! NO_ANTI        ! use this option: anti-mother does not decay

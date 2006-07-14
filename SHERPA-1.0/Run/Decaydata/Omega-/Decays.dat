@@ -1,0 +1,10 @@
+# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
+{3122,-321}	 | .678(.007) [PDG]	 | Omega-_LambdaK-.dat;
+{3212,-211}	 | .236(.007) [PDG]	 | Omega-_Sigmapi-.dat;
+{3112,111}	 | .086(.004) [PDG]	 | Omega-_Sigma-pi.dat;
+{3214,-211}	 | .00064(.0005) [PDG]	 | Omega-_Sigma1385pi-.dat;
+{3214,111}	 | .00023(.0002) [FK]	 | Omega-_Sigma1385pi.dat;
+{3212,11,-12}	 | .0056(.0028) [PDG]	 | Omega-_Sigmanu_ebe-.dat;
+
+! NO_FULLDECAY   ! use this option: no decay of daughters
+! NO_ANTI        ! use this option: anti-mother does not decay

@@ -1,0 +1,12 @@
+# Decay: Omega- --> Sigma nu_eb e- 
+#        0      --> 1     2     3  
+Channels {
+	AlwaysIntegrate = 0;   # 0...read results and skip integration
+	                       # 1...don't read results and integrate
+	MassSmearing    = 1;   # 0...turn off mass smearing for this decay's products
+	                       # 1...turn on mass smearing for this decay's products
+	Isotropic 1;
+}
+Result {
+   5.61309e-06 3.60035e-08 4.18328e-05;
+}
