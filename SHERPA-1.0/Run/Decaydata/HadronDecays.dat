@@ -3,9 +3,15 @@
 #-------------------------------------------------------
 # particle -> directory/ name.dat do not forget the / and space
 #
+##################################################################
 # Taus
+##################################################################
 #
 15      -> tau-/              Decays.dat;
+#
+##################################################################
+# Mesons
+##################################################################
 #
 # Pseudoscalars
 #
@@ -17,15 +23,19 @@
 321     -> K+/                Decays.dat;
 310     -> KS/                Decays.dat;
 130     -> KL/                Decays.dat;
+#
+# Charmed Pseudoscalars
+#
 411     -> D+/                Decays.dat;
 421     -> D/                 Decays.dat;
 431     -> Ds+/               Decays.dat;
-#441     -> Eta_c/           EtacDecays.dat;
+#
+# Beautiful Pseudoscalars
+#
 #511     -> B/               BDecays.dat;
 !521     -> B+/                Decays.dat;
 #531     -> B_s/             BsDecays.dat;
 #541     -> B_c/             BcDecays.dat;
-#551     -> Eta_b/           EtabDecays.dat;
 #
 # Vectors
 #
@@ -35,15 +45,19 @@
 313     -> Kstar892/          Decays.dat;
 323     -> Kstar892+/         Decays.dat;
 333     -> phi1020/           Decays.dat;
+#
+# Charmed Vectors
+#
 413     -> Dstar2010+/        Decays.dat;
 423     -> Dstar2007/         Decays.dat;
 433     -> Dsstar+/           Decays.dat;
-#443     -> J_Psi/           JPsiDecays.dat;
+#
+# Beautiful Vectors
+#
 #513     -> B_0_Star/        BStar0Decays.dat;
 #523     -> B_Star/          BStarDecays.dat;
 #533     -> B_s_Star/        BsStarDecays.dat;
 #543     -> B_c_Star/        BcStarDecays.dat;
-#553     -> Upsilon_1S/      Upsilon1SDecays.dat;
 #
 # Tensors
 #
@@ -54,6 +68,12 @@
 325     -> K2star1430+/       Decays.dat;
 335     -> f2prime1525/       Decays.dat;
 #
+# Charmed Tensors
+#
+415     -> D2star2460+/       Decays.dat;
+425     -> D2star2460/        Decays.dat;
+435     -> Dstars2+/          Decays.dat;
+#
 # J-Excited(L=1,s=0) Pseudoscalars
 #
 10111	-> a01450/            Decays.dat;
@@ -62,6 +82,12 @@
 10311	-> K0star1430/        Decays.dat;
 10321	-> K0star1430+/       Decays.dat;
 10331	-> f01710/            Decays.dat;
+#
+# J-Excited(L=1,s=0) Charmed Pseudoscalars
+#
+10411   -> Dstar0+/           Decays.dat;
+10421   -> Dstar0/            Decays.dat;
+10431   -> Dstars0+/          Decays.dat;
 #
 # J-Excited(L=1,S=0) Vectors
 #
@@ -72,6 +98,12 @@
 10323	-> K11270+/           Decays.dat;
 10333	-> h11370/            Decays.dat;
 #
+# J-Excited(L=1,S=0) Charmed Vectors
+#
+10413   -> D12420+/           Decays.dat;
+10423   -> D12420/            Decays.dat;
+10433   -> Ds12536+/          Decays.dat;
+#
 # J-Excited(L=1,S=1) Vectors
 #
 20113	-> a11260/            Decays.dat;
@@ -80,6 +112,10 @@
 20313	-> K11400/            Decays.dat;
 20323	-> K11400+/           Decays.dat;
 20333	-> f11420/            Decays.dat;
+#
+# J-Excited(L=1,S=1) Charmed Vectors
+#
+20433   -> Dstar_1s+/         Decays.dat;
 #
 # Radially Excited Pseudoscalars
 #
@@ -105,17 +141,44 @@
 9000211 -> a0980+/            Decays.dat;
 9000221 -> f0600/             Decays.dat;
 9010221 -> f0980/             Decays.dat;
-
-# higher D's
-10421   -> Dstar0/            Decays.dat;
-10411   -> Dstar0+/           Decays.dat;
-10423   -> D12420/            Decays.dat;
-10413   -> D12420+/           Decays.dat;
-425     -> D2star2460/        Decays.dat;
-415     -> D2star2460+/       Decays.dat;
-
-# higher strange D's
-10431   -> Dstars0+/          Decays.dat;
-20433   -> Dstar_1s+/         Decays.dat;
-10433   -> Ds12536+/          Decays.dat;
-435     -> Dstars2+/          Decays.dat;
+#
+# Charmonia
+#
+#441     -> Eta_c/             Decays.dat;
+443     -> J_Psi/             Decays.dat;
+#
+# Bottomonia
+#
+#551     -> Eta_b/           EtabDecays.dat;
+#553     -> Upsilon_1S/      Upsilon1SDecays.dat;
+#
+#
+##################################################################
+# Baryons
+##################################################################
+#
+# Octet
+#
+3112     -> Sigma-/          Decays.dat
+3212     -> Sigma/           Decays.dat
+3222     -> Sigma+/          Decays.dat
+3122     -> Lambda/          Decays.dat
+3312     -> Xi-/             Decays.dat
+3322     -> Xi/              Decays.dat
+#
+# Decuplet
+#
+1114     -> Delta1232-/      Decays.dat
+2114     -> Delta1232/       Decays.dat
+2214     -> Delta1232+/      Decays.dat
+2224     -> Delta1232++/     Decays.dat
+3114     -> Sigma1385-/      Decays.dat
+3214     -> Sigma1385/       Decays.dat
+3224     -> Sigma1385+/      Decays.dat
+3124     -> Lambda1520/      Decays.dat
+3314     -> Xi1530-/         Decays.dat
+3324     -> Xi1530/          Decays.dat
+3334     -> Omega-/          Decays.dat
+##################################################################
+##################################################################
+##################################################################
