@@ -1,7 +1,15 @@
 # outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-{9000111,111}	 | 0.334 [FK]	 | eta1475_a0980pi.dat;
-{9000211,-211}	 | 0.333 [FK]	 | eta1475_a0980+pi-.dat;
-{-9000211,211}	 | 0.333 [FK]	 | eta1475_a0980+bpi+.dat;
+{213,-211,111}	 | .12(.01) [FK]	 | eta1475_rho770+pi-pi.dat;
+{211,111,-213}	 | .12(.01) [FK]	 | eta1475_rho770+bpi+pi.dat;
+{113,211,-211}	 | .12(.01) [FK]	 | eta1475_pi+pi-rho770.dat;
+{310,130,111}	 | .145(.01) [FK]	 | eta1475_KSKLpi.dat;
+{321,-321,111}	 | .145(.01) [FK]	 | eta1475_K+K-pi.dat;
+{321,-311,211}	 | .145(.01) [FK]	 | eta1475_K+Kbpi+.dat;
+{-321,311,-211}	 | .145(.01) [FK]	 | eta1475_K-Kpi-.dat;
+{9000111,111}	 | .005(.01) [FK]	 | eta1475_a0980pi.dat;
+{9000211,-211}	 | .027(.01) [FK]	 | eta1475_a0980+pi-.dat;
+{-9000211,211}	 | .027(.01) [FK]	 | eta1475_a0980+bpi+.dat;
+{213,22}	 | .001(.004) [FK]	 | eta1475_rho770+P.dat;
 
 ! NO_FULLDECAY   ! use this option: no decay of daughters
 ! NO_ANTI        ! use this option: anti-mother does not decay
