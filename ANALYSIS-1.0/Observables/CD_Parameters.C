@@ -161,6 +161,9 @@ Primitive_Observable_Base * D_Parameter::Copy() const
   return new D_Parameter(m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
 
+namespace ATOOLS {
 
 template <> Blob_Data<CD_Parameter_Data>::~Blob_Data() { }
 template class Blob_Data<CD_Parameter_Data>;
+
+}

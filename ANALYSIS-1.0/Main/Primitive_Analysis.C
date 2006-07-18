@@ -691,6 +691,7 @@ Primitive_Observable_Base * Primitive_Analysis::GetObservable(const std::string 
 }
 
 
+namespace ATOOLS {
 
 template <>
 std::ostream & Blob_Data<std::vector<double> *>::operator>>(std::ostream & s) const 
@@ -708,3 +709,5 @@ template <> Blob_Data<std::vector<double> *>::~Blob_Data()
 }
 
 template class Blob_Data<std::vector<double> *>;
+
+}

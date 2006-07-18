@@ -65,12 +65,14 @@ namespace ANALYSIS {
   }
 }
 
+namespace ATOOLS {
+
 template <> Blob_Data<Event_Shape_EE_Data>::~Blob_Data() { }
 template class Blob_Data<Event_Shape_EE_Data>;
 
 //std::ostream & operator>>(std::ostream &) const;
 
-
+}
 
 Event_Shapes_EE::Event_Shapes_EE(const std::string & _inlistname,
 				 const std::string & _outlistname,

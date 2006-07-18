@@ -35,25 +35,25 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const om::code modifier)
   if (!msg.Modifiable()) return str;
   switch (modifier) {
 #ifdef USING__COLOUR
-  case om::reset:    return str<<"\e[0m";
-  case om::bold:     return str<<"\e[1m";
-  case om::underln:  return str<<"\e[4m";
-  case om::blink:    return str<<"\e[5m";
-  case om::blackbg:  return str<<"\e[7m";
-  case om::red:      return str<<"\e[31m";
-  case om::green:    return str<<"\e[32m";
-  case om::brown:    return str<<"\e[33m";
-  case om::blue:     return str<<"\e[34m";
-  case om::violet:   return str<<"\e[35m";
-  case om::lblue:    return str<<"\e[36m";
-  case om::grey:     return str<<"\e[37m";
-  case om::redbg:    return str<<"\e[41m";
-  case om::greenbg:  return str<<"\e[42m";
-  case om::brownbg:  return str<<"\e[43m";
-  case om::bluebg:   return str<<"\e[44m";
-  case om::violetbg: return str<<"\e[45m";
-  case om::lbluebg:  return str<<"\e[46m";
-  case om::greybg:   return str<<"\e[47m";
+  case om::reset:    return str<<"\033[0m";
+  case om::bold:     return str<<"\033[1m";
+  case om::underln:  return str<<"\033[4m";
+  case om::blink:    return str<<"\033[5m";
+  case om::blackbg:  return str<<"\033[7m";
+  case om::red:      return str<<"\033[31m";
+  case om::green:    return str<<"\033[32m";
+  case om::brown:    return str<<"\033[33m";
+  case om::blue:     return str<<"\033[34m";
+  case om::violet:   return str<<"\033[35m";
+  case om::lblue:    return str<<"\033[36m";
+  case om::grey:     return str<<"\033[37m";
+  case om::redbg:    return str<<"\033[41m";
+  case om::greenbg:  return str<<"\033[42m";
+  case om::brownbg:  return str<<"\033[43m";
+  case om::bluebg:   return str<<"\033[44m";
+  case om::violetbg: return str<<"\033[45m";
+  case om::lbluebg:  return str<<"\033[46m";
+  case om::greybg:   return str<<"\033[47m";
   case om::none:     return str;
 #else
   default: return str;
@@ -67,10 +67,10 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const mm modifier)
   if (!msg.Modifiable()) return str;
   switch (modifier.m_code) {
 #ifdef USING__COLOUR
-  case mm::up:    return str<<"\e["<<modifier.m_num<<"A";
-  case mm::down:  return str<<"\e["<<modifier.m_num<<"B";
-  case mm::right: return str<<"\e["<<modifier.m_num<<"C";
-  case mm::left:  return str<<"\e["<<modifier.m_num<<"D";
+  case mm::up:    return str<<"\033["<<modifier.m_num<<"A";
+  case mm::down:  return str<<"\033["<<modifier.m_num<<"B";
+  case mm::right: return str<<"\033["<<modifier.m_num<<"C";
+  case mm::left:  return str<<"\033["<<modifier.m_num<<"D";
   case mm::none:  return str;
 #else
   default: return str;
@@ -84,8 +84,8 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const tm::code modifier)
   if (!msg.Modifiable()) return str;
   switch (modifier) {
 #ifdef USING__COLOUR
-  case tm::curon:  return str<<"\e[?25h";
-  case tm::curoff: return str<<"\e[?25l";
+  case tm::curon:  return str<<"\033[?25h";
+  case tm::curoff: return str<<"\033[?25l";
   case mm::none:   return str;
 #else
   default: return str;

@@ -20,9 +20,13 @@ namespace ATOOLS {
 
 template XS_Base *&Blob_Data_Base::Get<XS_Base*>();
 
+namespace ATOOLS {
+
 template <> Blob_Data<XS_Base*>::~Blob_Data() {}
 
 template class Blob_Data<XS_Base*>;
+
+}
 
 SimpleXS_Apacic_Interface::SimpleXS_Apacic_Interface(Matrix_Element_Handler *mehandler,
 						     Shower_Handler *showerhandler):

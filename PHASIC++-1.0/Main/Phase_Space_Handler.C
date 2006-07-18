@@ -1633,10 +1633,8 @@ namespace ATOOLS {
   }
 }
 
-
-template <> Blob_Data<Weight_Info>::~Blob_Data() 
-{
-}
+namespace ATOOLS {
+template <> Blob_Data<Weight_Info>::~Blob_Data() {}
 
 template class Blob_Data<Weight_Info>;
-
+}
