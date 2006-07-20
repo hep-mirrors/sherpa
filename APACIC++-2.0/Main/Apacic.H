@@ -26,7 +26,11 @@ namespace APACIC {
     Tree **p_initrees;
     Tree  *p_fintree;
 
-    bool m_isron, m_fsron, m_showers;
+    ATOOLS::Vec4D m_cms;
+
+    bool m_isron, m_fsron, m_showers, m_last_ljv;
+
+    jv::mode m_jvm;
 
     ATOOLS::Vec4D PrepareFSR();
     void BoostInLab();

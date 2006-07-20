@@ -106,11 +106,9 @@ Single_Process::Single_Process(Process_Info* pinfo,int _nin,int _nout,Flavour * 
 {
   string newpath=rpa.gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath.c_str(),493);
-  if (system((string("test -d ")+newpath+string("/Process")).c_str())) {
-//     system((string("cp -r ")+rpa.gen.Variable("SHERPA_BIN_PATH")+
-// 	    string("/Process/Dummy ")+newpath+string("/Process")).c_str());
-    system((string("cp ")+rpa.gen.Variable("SHERPA_SHARE_PATH")+
-	    string("/makelibs ")+newpath).c_str());
+  if (system(("test -f "+newpath+"/makelibs").c_str())) {
+    system(("cp "+rpa.gen.Variable("SHERPA_SHARE_PATH")+
+	    "/makelibs "+newpath).c_str());
   }
   m_usepi    = usepi;
   m_newlib   = false;

@@ -1,4 +1,4 @@
-MAKE = make 
+MAKE = make
 
 pkglib_LTLIBRARIES = libBeam.la
 

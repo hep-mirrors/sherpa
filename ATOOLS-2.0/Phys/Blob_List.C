@@ -316,3 +316,13 @@ bool Blob_List::ColorConservation() const
   }
   return singlet;
 }
+
+Blob *Blob_List::AddBlob(const btp::code &type)
+{
+  Blob *blob(new Blob());
+  blob->SetType(type);
+  blob->SetId();
+  blob->SetStatus(2);
+  push_back(blob);
+  return blob;
+}

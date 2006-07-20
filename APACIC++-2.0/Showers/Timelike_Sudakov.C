@@ -26,8 +26,10 @@ Timelike_Sudakov::~Timelike_Sudakov()
 
 void Timelike_Sudakov::Init(const double fmed)
 {
+  // std::cout<<"Init Sudakov : "<<fmed<<std::endl;
   // for static couplings, set first argument to 0.
-  p_tools->CalculateMaxCouplings(m_cpl_scheme,m_pt2min,m_pt2max);
+  p_tools->CalculateMaxCouplings
+    (m_cpl_scheme,m_pt2min*m_rscalefac,m_pt2max*m_rscalefac);
   for (int i=1;i<17;++i) {
     if (i==7) i=11;
     Flavour fl = Flavour(kf::code(i));
@@ -70,6 +72,8 @@ double Timelike_Sudakov::CrudeInt(double zmin, double zmax)
       break;
     }
   if (sit==m_splittings.end()) return m_lastint=-1.0;
+  //std::cout<<" Int "<<m_inflav<<" ("<<zmin<<", "<<zmax<<" ) "
+  //	   <<" = "<<p_selected->CrudeInt(zmin,zmax)<<std::endl;
   return m_lastint=p_selected->CrudeInt(zmin,zmax);
 }        
 
@@ -92,12 +96,21 @@ void Timelike_Sudakov::AcceptBranch(const Knot *const mo)
   }
   d1->maxpt2 = d2->maxpt2 = mo->smaxpt2;
   d1->thcrit = d2->thcrit = mo->sthcrit;
-  msg_Debugging()<<"  accept daughter = "<<d1->kn_no
-		 <<", set maxpt2 = "<<d1->maxpt2
-		 <<", thcrit = "<<d1->thcrit<<"\n";
+  //std::cout<<"  accept daughter = "<<d1->kn_no
+  //	   <<", set maxpt2 = "<<d1->maxpt2
+  //	   <<", thcrit = "<<d1->thcrit<<" from "<<mo->sthcrit<<"\n";
 }
 
 bool Timelike_Sudakov::Dice(Knot *const mother, Knot *const granny) 
+{
+  switch (m_evolution_scheme) {
+  case 0: return DiceT(mother,granny);
+  }
+  THROW(fatal_error,"Invalid evolution scheme.");
+  return false;
+}
+
+bool Timelike_Sudakov::DiceT(Knot *const mother, Knot *const granny) 
 {
   m_inflav=mother->part->Flav(); 
   double t0=m_inflav.Strong()?m_t0:m_t0_qed;
@@ -105,8 +118,9 @@ bool Timelike_Sudakov::Dice(Knot *const mother, Knot *const granny)
   m_E2=mother->E2;
   if (m_t-t0<rpa.gen.Accu()) return false;
   double z0;
-  while (m_t>t0) {
-    z0=Max(0.5*(1.-sqrt(1.-t0/m_t)),1.e-6);
+  while (m_t>m_t0) {
+    z0=0.5*(1.-sqrt(1.-m_t0/(m_t-mother->tout)));
+    z0=Max(z0,1.e-6);
     CrudeInt(z0,1.-z0);
     if (m_lastint<0.0) return false;
     if (m_mass_scheme>=2) m_t-=mother->tout;
@@ -143,13 +157,16 @@ bool Timelike_Sudakov::Veto(Knot *const mo,double t,double E2)
   // kincheck for first timelike from spacelike
   if (mo->tmax!=0 && m_t>mo->tmax) return true;
   if (E2<t) return true;
-  //  sum m1 + m2 < sqrt(ta)
+ 
+ //  sum m1 + m2 < sqrt(ta)
   m_tb=sqr(GetFlB().PSMass());
   m_tc=sqr(GetFlC().PSMass());
   m_last_veto=1;
   if (t<sqr(GetFlB().PSMass()+GetFlC().PSMass())) return true;
+
   double z(p_kin->GetZ(m_z,t,m_tb,m_tc));
   if (z<0.0 || z>1.0) return true;
+
   m_pt2=p_kin->GetRelativeKT2(z,m_E2,m_t,m_tb,m_tc);
   if (m_inflav.Strong()) {
     if (m_pt2<m_pt2min) return true;
@@ -157,19 +174,24 @@ bool Timelike_Sudakov::Veto(Knot *const mo,double t,double E2)
   else {
     if (m_pt2<m_pt2min_qed) return true;
   }
+
   // timelike daughters
   m_last_veto=2;
   double wb(z*z*E2), wc((1.-z)*(1.-z)*E2);
   if (m_tb>wb || m_tc>wc) return true;
+
   // z-range and splitting function
   m_last_veto=3;
   if (MassVeto(t,E2)) return true;
+
   // 2. alphaS
   m_last_veto=4;
   if (CplVeto()) return true;
+
   // 3. angular ordering
   m_last_veto=5;
   if (OrderingVeto(mo,t,E2,z)) return true; 
+
   // 5. ME
   m_last_veto=7;
   if (MEVeto(mo)) return true;
@@ -179,8 +201,7 @@ bool Timelike_Sudakov::Veto(Knot *const mo,double t,double E2)
 
 bool Timelike_Sudakov::MassVeto(double t, double E2) 
 {
-  //  if (!p_kin->CheckZRange(m_z,E2,t,m_tb,m_tc)) return true;
-  if (GetWeight(m_z,m_pt2,(m_mass_scheme==1||m_mass_scheme==3))<ran.Get()) 
+  if (GetWeight(m_z,m_pt2,m_mass_scheme&1)<ran.Get()) 
     return true;
   if ((m_width_scheme>0) && (sqr(m_inflav.Width())>0.)) {
     if (m_width_scheme==1 && m_pt2<sqr(m_inflav.Width())) return true;
@@ -208,7 +229,7 @@ bool Timelike_Sudakov::OrderingVeto(Knot * mo,double t, double E2, double z)
   mo->sthcrit=th;
   mo->smaxpt2=m_pt2;
   msg_Debugging()<<"ts: thcrit = "<<mo->thcrit<<", th = "<<th<<std::endl;
-  msg_Debugging()<<"ts: maxpt2 = "<<mo->maxpt2<<", pt2 = "<<m_pt2<<std::endl;
+  //std::cout<<"ts: maxpt2 = "<<mo->maxpt2<<", pt2 = "<<m_pt2<<std::endl;
   if (!m_inflav.Strong()) return false;
   switch (m_ordering_scheme) {
   case 0 : return false;
@@ -220,7 +241,7 @@ bool Timelike_Sudakov::OrderingVeto(Knot * mo,double t, double E2, double z)
     return true;
   case 1 :
   default :
-    if (th<mo->thcrit || 3.14<mo->thcrit) return false;
+    if (th<mo->thcrit || 3.14<mo->thcrit) return false; 
 #ifdef USING__Veto_Info
     m_vetos[m_mode].back()=m_vetos[m_mode].back()|svc::ang_veto;
 #endif
@@ -282,6 +303,12 @@ double Timelike_Sudakov::UniformPhi() const
   return 2.0*M_PI*ATOOLS::ran.Get(); 
 }
 
+void Timelike_Sudakov::SetPT2Min(const double &pt2)      
+{
+  m_pt2min=pt2; 
+  m_t0=4.0*m_pt2min;
+}
+
 #ifdef CHECK_SPLITTINGS
 struct Spl_Data {
   int masses;
@@ -326,3 +353,4 @@ void Timelike_Sudakov::CheckSplittings()
   THROW(normal_exit,"Finished check.");
 }
 #endif
+

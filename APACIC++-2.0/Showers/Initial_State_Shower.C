@@ -27,7 +27,7 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr,
   p_suds(new Spacelike_Sudakov*[2]),
   m_allowed(200)
 {
-  double cplscalefac(dataread->GetValue<double>("IS_CPL_SCALE_FACTOR",0.25));
+  double cplscalefac(dataread->GetValue<double>("IS_CPL_SCALE_FACTOR",.25));
   rpa.gen.SetVariable("IS_CPL_SCALE_FACTOR",ToString(cplscalefac));
   m_t0=dabs(dataread->GetValue<double>("IS_PT2MIN",4.0));
   double shadron(dataread->GetValue<double>("IS_MAX_SCALE",
@@ -36,12 +36,12 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr,
   int cplscheme(dataread->GetValue<int>("IS_COUPLING_SCHEME",1));
   int pdfscheme(dataread->GetValue<int>("IS_PDF_SCALE_SCHEME",1));
   int orderingscheme(dataread->GetValue<int>("IS_ORDERING_SCHEME",2));
-  Splitting_Function::SetKFactorScheme
-    (dataread->GetValue<int>("S_KFACTOR_SCHEME",1));
   for (short unsigned int i(0);i<2;++i) {
     if (isr->PDF(i)->Q2Min()>m_t0*cplscalefac) {
-      msg.Error()<<METHOD<<"(..):\n   IS_PT2MIN*IS_CPL_SCALE_FACTOR "
-		 <<"smaller than minimum scale as given by PDF.\n"
+      msg.Error()<<METHOD<<"(..):\n   IS_PT2MIN("<<m_t0
+		 <<")*IS_CPL_SCALE_FACTOR("<<cplscalefac<<") "
+		 <<"smaller than minimum scale given by PDF ("
+		 <<isr->PDF(i)->Q2Min()<<").\n"
 		 <<"   Please change your settings in "
 		 <<dataread->FileName()<<"\n";
       THROW(fatal_error,"Minimal PDF scale too low.");
@@ -103,8 +103,6 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2)
   int first(0);
   if (decay1^decay2) first=1;
   if (!decay1 && !decay2) first=2;
-  trees[0]->Store();
-  trees[1]->Store();
   int mismatch(0), caught_jetveto(0);
   bool accepted(true); 
   while (true) {
@@ -142,8 +140,6 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2)
       p_suds[1]->AcceptBranch(k2);
       int stat(EvolveSystem(trees,k1,k2));
       if (stat==1) {
-	trees[0]->ClearStore();
-	trees[1]->ClearStore();
 	msg_Debugging()<<"}\n";
 	return true;
       }
@@ -165,8 +161,6 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2)
       if (mismatch>m_allowed) {
 	msg.Error()<<METHOD<<"(..): Shower failure, "
 		   <<mismatch<<" trials."<<std::endl;
-	trees[0]->ClearStore();
-	trees[1]->ClearStore();
 	msg_Debugging()<<"}\n";
 	return false;
       }
@@ -174,8 +168,6 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2)
       trees[1]->Restore();
     }
   }
-  trees[0]->ClearStore();
-  trees[1]->ClearStore();
   msg_Debugging()<<"iss reset";
   msg_Debugging()<<"}\n";
   return false;
@@ -327,8 +319,6 @@ int Initial_State_Shower::FillBranch(Tree ** trees,Knot * active,
   active->prev   = 0;
   active->stat   = 0;
   active->t      = active->tout;
-  // active->thcrit = 0.;
-  // active->maxpt2 = 0.;
   active->part->SetStatus(1);
   msg_Debugging()<<"no branch";
   msg_Debugging()<<"}\n";
@@ -396,6 +386,7 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,
   mother->stat   = 1;
   mother->E2     = 0.;
   mother->thcrit = th;
+  mother->pt2lcm = k->pt2lcm;
 
   Knot * sister = 0;
   if (mother->left) {
@@ -740,10 +731,7 @@ void Initial_State_Shower::SingleExtract(Knot *const kn,const int &beam,
 					 Blob *jet,Blob_List *const bl,
 					 int &nr) 
 {
-  msg_Debugging()<<METHOD<<"("<<(kn?kn->kn_no:-1)<<"): \n";
-  msg_Indent();
   if (kn==NULL) {
-    msg_Debugging()<<"}\n";
     return;
   }
   Particle *p(NULL);
@@ -813,14 +801,12 @@ void Initial_State_Shower::SingleExtract(Knot *const kn,const int &beam,
   // --- add final state particle ---
   if (lastknot && !is_is) {
     p = new Particle(*kn->part);
-    msg_Debugging()<<"take knot "<<kn->kn_no<<"\n";
     p->SetStatus(1);
     jet->AddToOutParticles(p);
   }
 
   SingleExtract(kn->left,beam,jet,bl,nr); 
   SingleExtract(kn->right,beam,jet,bl,nr); 
-  msg_Debugging()<<"}\n";
 }
 
 bool Initial_State_Shower::TestShower(Tree ** trees) 

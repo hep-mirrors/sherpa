@@ -115,8 +115,9 @@ namespace ATOOLS {
   const std::string ATOOLS::Object::Name<Type>(const Type *object)	\
   {									\
     for (String_Object_Map::const_iterator oit=s_objects.begin();	\
-	 oit!=s_objects.end();++oit) if (oit->second==object)		\
-				       return oit->first;		\
+	 oit!=s_objects.end();++oit)                                    \
+      if (oit->second==static_cast<const Object*>(object))              \
+        return oit->first;                                              \
     return "";								\
   }									
   

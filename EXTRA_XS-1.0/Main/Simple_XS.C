@@ -27,7 +27,7 @@ Simple_XS::Simple_XS(const std::string &path,const std::string &file,
   XS_Group(0,0,NULL),
   m_path(path), 
   m_file(file),
-  m_minqcdjet(99), m_maxjet(2)
+  m_minqcdjet(99), m_maxqcdjet(0), m_maxjet(2)
 {
   m_nmax=0;
   m_atoms=1;
@@ -165,6 +165,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	      if (flavs[i+nIS].Strong()) ++qcdjets;
 	    }
 	    m_minqcdjet=Min(m_minqcdjet,qcdjets);
+	    m_maxqcdjet=ATOOLS::Max(m_maxqcdjet,qcdjets);
 	    if (inisum<rpa.gen.Ecms() && finsum<rpa.gen.Ecms()) {
 	      if (nFS==0) {
 		Ladder *ladder(new Ladder(nIS,nFS,flavs,m_scalescheme,

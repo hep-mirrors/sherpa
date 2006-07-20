@@ -1,0 +1,31 @@
+%-------------------------------------------------------
+%-- Processes to calculate -----------------------------
+%-------------------------------------------------------
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% jet jet -> electron positron + n-jets
+%
+Process : 93 93 -> 11 -11
+Order electroweak : 2
+Order strong : 0
+End process
+%
+Process : 93 93 -> 11 -11 93
+Order electroweak : 2
+Order strong : 1
+End process
+%
+%Process : 93 93 -> 11 -11 93 93 
+%Order electroweak : 2
+%Order strong : 2
+%End process
+%
+%Process : 93 93 -> 11 -11 93 93 93
+%Order electroweak : 2
+%Order strong : 3
+%End process
+%
+%Process : 93 93 -> 11 -11 93 93 93 93
+%Order electroweak : 2
+%Order strong : 4
+%End process

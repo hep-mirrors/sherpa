@@ -33,8 +33,8 @@ void Hard_Decay_Handler::ReadInDecays()
 {
   ifstream from((m_path+m_file).c_str());
   if (!from) {
-    msg.Out()<<"Warning :  in Hard_Decay_Handler::ReadInDecays : "<<endl
-	     <<"   File : "<<(m_path+m_file)<<" not found ! "<<endl;
+    msg.Tracking()<<"Warning :  in Hard_Decay_Handler::ReadInDecays : "<<endl
+		  <<"   File : "<<(m_path+m_file)<<" not found ! "<<endl;
     return;
   }
 

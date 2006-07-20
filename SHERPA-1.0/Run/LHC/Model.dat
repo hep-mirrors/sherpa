@@ -8,12 +8,12 @@ GENERATOR_ON          = 0        ! use external spectrum generator
 ! SM parameters
 !
 EW_SCHEME             = 0        ! which parameters define the ew sector.
-ORDER_ALPHAS	      = 1	 ! order of running coupling
-ALPHAS(MZ)            = 0.1188   ! strong coupling at scale M_Z 
+ALPHAS(MZ)            = 0.118    ! strong coupling at scale M_Z 
 ALPHAS(default)       = 0.0800   ! strong coupling
+ORDER_ALPHAS          = 1        ! NLO
 1/ALPHAQED(0)         = 137.036  ! inverse of alpha QED in the Thomson limit
-1/ALPHAQED(default)   = 127.0    ! inverse of alpha QED
-SIN2THETAW            = 0.23     ! Weinberg angle at scale M_Z
+1/ALPHAQED(default)   = 132.51   ! inverse of alpha QED
+SIN2THETAW            = 0.2222   ! Weinberg angle at scale M_Z
 VEV                   = 246.     ! Higgs vev        
 LAMBDA                = 0.47591  ! SM Higgs self coupling
 YUKAWA_E              = 0.       ! Yukawa coupling of electron
@@ -43,6 +43,9 @@ HIGGS_NF_LIGHT_Q_IN_G = 5        ! Number of light flavours in higgs
                                  ! decays h->gg*->g qqbar   
 !
 ! SUSY parameters
+!
+SUSY_GENERATOR        = LesHouches
+LESHOUCHESINPUT       = LesHouches_SPS1A.dat
 !
 SUSY_SCENARIO         = mSUGRA   ! also available : AMSB, mGMSB,non-minimal GMSB, 
                                  !                  SUGRA with enforced unification, 

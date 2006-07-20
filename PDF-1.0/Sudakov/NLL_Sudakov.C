@@ -10,7 +10,6 @@
 #include "NLL_Branching_Probabilities.H"
 #include "NLL_JetRate.H"
 #include "MyStrStream.H"
-#include "Splitting_Function.H"
 
 namespace SHERPA {
   const double   Nc    = 3;
@@ -28,7 +27,7 @@ using namespace MODEL;
 using namespace std;
 
 NLL_Sudakov::NLL_Sudakov(int mode, double _tmax,double _tmin,
-			 MODEL::Running_AlphaS * runas,int jetmode,double asfac) : 
+			 MODEL::Running_AlphaS * runas,double asfac): 
   m_mode(mode), p_runas(runas), m_as_factor(asfac)
 {
   FixLambda2();
@@ -59,52 +58,27 @@ void NLL_Sudakov::PrepareMap()
   NLL_Combined_Sudakov *csud(NULL);
   NLL_Single_Sudakov   *ssud(NULL);
   Flavour flav;
-  BPMode::code bpmode((BPMode::code)(m_mode));
-  if (bpmode & BPMode::fs) {
-    csud = new NLL_Combined_Sudakov(smode);
+  bpm::code bpmode((bpm::code)(m_mode));
+  for (int k=1;k<=6;++k) {
+    flav=Flavour(kf::code(k));
     ssud = new NLL_Single_Sudakov
-      (new GammaQ_QG_Lambda(bpmode,m_lambda,p_runas,m_as_factor),smode);
-    csud->Add(ssud);
-//     ssud = new NLL_Single_Sudakov
-//       (new GammaQ_GQ_Lambda(bpmode,m_lambda,p_runas,m_as_factor),smode);
-//     csud->Add(ssud);
-    for (int k=1;k<=5;++k) {
-      flav                   = Flavour(kf::code(k));
-      m_sudakovs[flav]       = csud;
-      m_sudakovs[flav.Bar()] = csud;
-    }
-    csud = new NLL_Combined_Sudakov(smode);
-    ssud = new NLL_Single_Sudakov
-      (new GammaG_GG_Lambda(bpmode,m_lambda,p_runas,m_as_factor),smode);
-    csud->Add(ssud);
-//     ssud = new NLL_Single_Sudakov
-//       (new GammaG_QQ_Lambda(bpmode,m_lambda,p_runas,m_as_factor),smode);
-//     for (int k=1;k<=5;++k) csud->Add(ssud);
-    m_sudakovs[Flavour(kf::gluon)] = csud;
+      (new GammaQ_QG_Lambda
+       (bpmode,m_lambda,p_runas,flav.Mass(),m_as_factor),smode);
+    m_sudakovs[flav]=ssud;
+    m_sudakovs[flav.Bar()]=ssud;
   }
-  if (bpmode & BPMode::is) {
-    csud = new NLL_Combined_Sudakov(smode);
+  csud = new NLL_Combined_Sudakov(smode);
+  ssud = new NLL_Single_Sudakov
+    (new GammaG_GG_Lambda(bpmode,m_lambda,p_runas,m_as_factor),smode);
+  csud->Add(ssud);
+  for (int k=1;k<=6;++k) {
+    flav=Flavour(kf::code(k));
     ssud = new NLL_Single_Sudakov
-      (new GammaQ_QG_Lambda(bpmode,m_lambda,p_runas,m_as_factor),smode);
+      (new GammaG_QQ_Lambda
+       (bpmode,m_lambda,p_runas,flav.Mass(),m_as_factor),smode);
     csud->Add(ssud);
-//     ssud = new NLL_Single_Sudakov
-//       (new GammaG_QQ_Lambda(bpmode,m_lambda,p_runas,m_as_factor),smode);
-//     csud->Add(ssud);
-    for (int k=1;k<=5;++k) {
-      flav                   = Flavour(kf::code(k));
-      m_sudakovs[flav]       = csud;
-      m_sudakovs[flav.Bar()] = csud;
-    }
-    csud = new NLL_Combined_Sudakov(smode);
-    ssud = new NLL_Single_Sudakov
-      (new GammaG_GG_Lambda(bpmode,m_lambda,p_runas,m_as_factor),smode);
-    csud->Add(ssud);
-    csud->Add(ssud);
-//     ssud = new NLL_Single_Sudakov
-//       (new GammaQ_GQ_Lambda(bpmode,m_lambda,p_runas,m_as_factor),smode);
-//     for (int k=1;k<=5;++k) csud->Add(ssud);
-    m_sudakovs[Flavour(kf::gluon)] = csud;
   }
+  m_sudakovs[Flavour(kf::gluon)]=csud;
 }
 
 void NLL_Sudakov::FixLambda2() 

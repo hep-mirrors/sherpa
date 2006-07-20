@@ -311,7 +311,6 @@ void Channel_Generator_KK::Step0(int flag,Point* p,int& rannum,ofstream& sf)
   string m = Order(LinkedMasses(ph));
   
   string help("");
-  char hs[8];
   switch (flag) {
   case -11: 
     if (ph->m==0) {
@@ -319,8 +318,7 @@ void Channel_Generator_KK::Step0(int flag,Point* p,int& rannum,ofstream& sf)
     } 
     else {
       if (!IsZero(ph->fl.Mass())) {
-	sprintf(hs,"%i",ph->fl.Kfcode());
-	help+=string("ZR")+string(hs)+string("_");
+	help+=string("ZR")+ToString(ph->fl.Kfcode())+string("_");
       }
       else help+=string("ZS_");
     }
@@ -328,8 +326,7 @@ void Channel_Generator_KK::Step0(int flag,Point* p,int& rannum,ofstream& sf)
       int pt;
       double mass = PMassSum(ph,&pt);
       if (pt>1) mass*=pow(1.5,(double)pt-1.);
-      sprintf(hs,"%i",(int)mass);
-      help+=string(hs);
+      help+=ToString((int)mass);
       m_idc.push_back(help);
     }
   case 0: case 1:
@@ -350,9 +347,8 @@ void Channel_Generator_KK::Step0(int flag,Point* p,int& rannum,ofstream& sf)
       int pt;
       double mass = PMassSum(ph,&pt);
       if (pt>1) mass*=pow(1.5,(double)pt-1.);
-      sprintf(hs,"%f",mass);
       sf<<"  type  = 2;"<<endl
-	<<"  mass  = "<<string(hs)<<";"<<endl
+	<<"  mass  = "<<ToString(mass)<<";"<<endl
 	<<"  width = 0.;"<<endl;
       return;
     }
@@ -373,9 +369,7 @@ void Channel_Generator_KK::GenerateDecayChain(int flag,Point* p,int& rannum,ofst
     int hi = p->fl.Kfcode();
     string tmstr;
     if (flag>=0 && !IsZero(p->fl.Mass())) {
-      char hs[3];
-      sprintf(hs,"%i",p->number);
-      tmstr = string("tmass")+string(hs);
+      tmstr = string("tmass")+ToString(p->number);
       sf<<"  double "<<tmstr<<" = Flavour(kf::code("<<hi<<")).Mass();"<<endl;
     }
     else tmstr = string("0.");
@@ -428,12 +422,11 @@ void Channel_Generator_KK::GenerateDecayChain(int flag,Point* p,int& rannum,ofst
 	sctmin = string("-1.");
       }
     }
-    char hs[4];
+    string his;
     switch (flag) {
     case -11:
-      if(!IsZero(p->fl.Mass())) sprintf(hs,"%i",hi);
-      else sprintf(hs,"");
-      m_idc.push_back(string("TC")+string(hs)+
+      if(!IsZero(p->fl.Mass())) his = ToString(hi);
+      m_idc.push_back(string("TC")+his+
 		      string("_")+pin0sum+string("_")+pin1sum+
 		      string("_")+pout0sum+string("_")+pout1sum);
       break;
@@ -448,9 +441,8 @@ void Channel_Generator_KK::GenerateDecayChain(int flag,Point* p,int& rannum,ofst
       sf<<rannum++<<"]);"<<endl;
       break;
     default:
-      if(!IsZero(p->fl.Mass())) sprintf(hs,"%i",hi);
-      else sprintf(hs,"");
-      string idh = string("TC")+string(hs)+
+      if(!IsZero(p->fl.Mass())) his = ToString(hi);
+      string idh = string("TC")+his+
 	string("_")+pin0sum+string("_")+pin1sum+string("_")+pout0sum+string("_")+pout1sum;
       sf<<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT)"<<endl; 
       sf<<"    m_k"<<idh<<"<<CE.TChannelWeight(";
@@ -683,9 +675,7 @@ void Channel_Generator_KK::GenerateMassChain(int flag,Point* p,Point* clmp,int& 
   switch (flag) {
   case -11:
     if (maxpole>0.) {
-      char hs[4];
-      sprintf(hs,"%i",hi);
-      m_idc.push_back(string("MP")+string(hs)+string("_")+mummy);
+      m_idc.push_back(string("MP")+ToString(hi)+string("_")+mummy);
     }
     else m_idc.push_back(string("MTH_")+Order(mummy));
     break;
@@ -844,9 +834,7 @@ string Channel_Generator_KK::GetFlMass(Point* p)
 {
   if (p->left==0) return string("");
   if (p->fl.Mass()>PMassSum(p->left,0)+PMassSum(p->right,0)) {
-    char hs[5];
-    sprintf(hs,"%i",(p->fl).Kfcode());
-    return string("Flavour(kf::code(")+string(hs)+string(")).Mass()");
+    return string("Flavour(kf::code(")+ToString((p->fl).Kfcode())+string(")).Mass()");
   } 
   string h1 = GetFlMass(p->left);
   string h2 = GetFlMass(p->right);
@@ -858,9 +846,7 @@ string Channel_Generator_KK::GetFlMass(Point* p)
 string Channel_Generator_KK::LinkedMasses(Point* p)
 {
   if (p->left==0) {
-    char help[4];
-    sprintf(help,"%i",p->number);
-    return string(help);
+    return ToString(p->number);
   }
   return LinkedMasses(p->left)+LinkedMasses(p->right);
 }

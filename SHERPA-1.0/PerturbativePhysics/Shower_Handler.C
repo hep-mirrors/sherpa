@@ -40,6 +40,7 @@ Shower_Handler::Shower_Handler(std::string dir,std::string file,
   else type = 4;
 
   p_jf = new Jet_Finder(rpa.gen.Ycut(),type,false);
+  p_jf->SetDeltaR(rpa.gen.DeltaR());
 
   if (m_showergenerator==std::string("Apacic")) {
     p_apacic = new APACIC::Apacic(_isr,_model,p_jf,&dataread);

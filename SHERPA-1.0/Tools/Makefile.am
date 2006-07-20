@@ -12,7 +12,7 @@ libSherpaTools_la_SOURCES     =	\
 			    	HepEvt_Interface.C \
                                 Event_Reader.C
 
-pkginclude_HEADERS        =	\
+pkginclude_HEADERS    =	\
 			Kinematics.H \
 			Input_Output_Handler.H \
 		 	$(HEPMCHEADERS) \

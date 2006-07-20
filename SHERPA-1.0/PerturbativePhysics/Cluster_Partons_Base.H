@@ -24,13 +24,13 @@ namespace SHERPA {
     ATOOLS::Blob           * p_blob;
 
     int     m_njet, m_maxjetnumber;
-    double  m_weight, m_ycut, m_qmax, m_qmin_i, m_qmin_f, m_qmin;
+    double  m_weight, m_ycut, m_qmax, m_qmin_i, m_qmin_f, m_qmin_ci, m_qmin_cf;
     double  m_q2_hard, m_q2_fss, m_q2_iss, m_q2_qcd, m_q2_jet;
     int     m_colors[4][2];
 
     int     m_isrmode, m_isrshoweron, m_fsrshoweron;
     int     m_sud_mode, m_bp_mode;
-    double  m_kfac, m_is_as_factor, m_fs_as_factor;
+    double  m_kfac, m_is_as_factor, m_fs_as_factor, m_me_as_factor;
 
     int     m_hard_nqcd, m_hard_nqed, m_nstrong;
     double  m_counts, m_fails;
@@ -41,8 +41,6 @@ namespace SHERPA {
     long    * p_events;
     double  * p_weight_sum;
     double  * p_weight_sum_sqr;
-
-    Flavour_Map m_flmap;
 
     Leg   **CreateLegs(int &,const int,const bool=false);
     bool    FillLegs(Leg *, AMEGIC::Point *, int &, int);

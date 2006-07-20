@@ -1,6 +1,7 @@
 #include "Combine_Table_Base.H"
 
 #include "Exception.H"
+#include "My_Limits.H"
 #include <iomanip>
 
 using namespace SHERPA;
@@ -135,6 +136,7 @@ std::ostream& SHERPA::operator<<(std::ostream& s ,const Combine_Table_Base & ct)
 
 Combine_Table_Base::Combine_Table_Base(Jet_Finder *jf,Vec4D *moms, Combine_Table_Base *up,
 				       int isrmode, int isrshoweron):
+  m_nstrong(0),
   m_isr1on(isrmode&1), m_isr2on((isrmode&2)/2), m_isrshoweron(isrshoweron), 
   m_graph_winner(0), m_kt2min(std::numeric_limits<double>::max()), 
   m_kt2QCD(m_kt2min), m_kt2QED(m_kt2min),
@@ -157,12 +159,16 @@ Combine_Table_Base::~Combine_Table_Base()
 
 void Leg::DetermineCouplings(const int type) 
 {
-  m_nqed=m_nqcd=0;
+  m_nqed=m_nqcd=m_pqcd=m_pqed=0;
   AMEGIC::Point *p(p_point);
   if (type==1) p=p->prev;
-  if (p->fl.Strong() &&
-      p->left->fl.Strong() && 
-      p->right->fl.Strong()) ++m_nqcd;
+  if (p->fl.Strong()) ++m_pqcd;
+  else ++m_pqed;
+  if (p->left->fl.Strong()) ++m_pqcd;
+  else ++m_pqed;
+  if (p->right->fl.Strong()) ++m_pqcd;
+  else ++m_pqed;
+  if (m_pqcd==3) ++m_nqcd;
   else ++m_nqed;
   switch (p->Lorentz->Type()) {
   case lf::Triangle:
@@ -177,6 +183,43 @@ void Leg::DetermineCouplings(const int type)
   msg_Debugging()<<METHOD<<"("<<type<<"): "<<p->fl<<"->"
 		 <<p->left->fl<<","<<p->right->fl
 		 <<" => n_qcd = "<<m_nqcd<<", m_nqed = "<<m_nqed<<"\n";
+}
+
+ATOOLS::Flavour Combine_Table_Base::IsoFlip(const ATOOLS::Flavour &fl)
+{
+  switch (fl.Kfcode()) {
+  case kf::u: return fl.IsAnti()?Flavour(kf::d).Bar():Flavour(kf::d);
+  case kf::d: return fl.IsAnti()?Flavour(kf::u).Bar():Flavour(kf::u);
+  case kf::c: return fl.IsAnti()?Flavour(kf::s).Bar():Flavour(kf::s);
+  case kf::s: return fl.IsAnti()?Flavour(kf::c).Bar():Flavour(kf::c);
+  case kf::t: return fl.IsAnti()?Flavour(kf::b).Bar():Flavour(kf::b);
+  case kf::b: return fl.IsAnti()?Flavour(kf::t).Bar():Flavour(kf::t);
+  default: break;
+  }
+  return fl;
+}
+
+Flavour Combine_Table_Base::MatchFlavour(Leg &a,Leg &b,Leg &c,int mode)
+{
+  Flavour fla(a.Point()->fl), flb(b.Point()->fl), flc(c.Point()->fl);
+  msg_Debugging()<<"have bm="<<b.MapFlavour()<<", cm="<<c.MapFlavour()
+		 <<" mode "<<mode<<" -> ";
+  Flavour fl(fla);
+  if (fla.IsQuark() && !(flb.Strong() && flc.Strong())) {
+    if (flb.Kfcode()==kf::W || flc.Kfcode()==kf::W) 
+      fl=IsoFlip((flb.IsQuark()?b:c).MapFlavour());
+    else fl=Flavour((flb.IsQuark()?b:c).MapFlavour());
+  }
+  else if (fla.Kfcode()==flb.Kfcode()) {
+    fl=b.MapFlavour();
+  }
+  else if (fla.Kfcode()==flc.Kfcode()) {
+    fl=c.MapFlavour();
+  }
+  if (fl.IsAnti()^fla.IsAnti()) fl=fl.Bar();
+  msg_Debugging()<<"match "<<fla<<" "<<flb<<" "
+		 <<flc<<" -> "<<fl<<"\n";
+  return fl;
 }
 
 Leg Combine_Table_Base::CombinedLeg(Leg *legs,const int i,const int j)
@@ -195,29 +238,38 @@ Leg Combine_Table_Base::CombinedLeg(Leg *legs,const int i,const int j)
     // combinable-type: common mother
     mo.SetPoint(a.Point()->prev);
     mo.DetermineCouplings(0);
+    mo.SetMapFlavour(MatchFlavour(mo,a,b,0));
   } 
   else if (a.Point() == b.Point()->left) {
     // combinable-type: a daughter of b
     mo.SetPoint(b.Point()->right);
     mo.DetermineCouplings(1);
+    mo.SetMapFlavour(MatchFlavour(mo,b,a,1));
   } 
   else if (a.Point() == b.Point()->right) {
     // combinable-type: a daughter of b
     mo.SetPoint(b.Point()->left);
     mo.DetermineCouplings(1);
+    mo.SetMapFlavour(MatchFlavour(mo,b,a,1));
   } 
   else  if (b.Point() == a.Point()->left) {
     // combinable-type: b daughter of a
     mo.SetPoint(a.Point()->right);
     mo.DetermineCouplings(1);
+    mo.SetMapFlavour(MatchFlavour(mo,a,b,1));
   } 
   else  if (b.Point() == a.Point()->right) {
     // combinable-type: b daughter of a
     mo.SetPoint(a.Point()->left);
     mo.DetermineCouplings(1);
+    mo.SetMapFlavour(MatchFlavour(mo,a,b,1));
   } 
   else THROW(fatal_error,"   Cannot combine legs.");
 
+  msg_Debugging()<<"mapped flavours: a="
+		 <<a.Point()->fl<<"("<<a.MapFlavour()<<"), b="
+		 <<b.Point()->fl<<"("<<b.MapFlavour()<<"), c="
+		 <<mo.Point()->fl<<"("<<mo.MapFlavour()<<")\n";
   // fix charge incase initial state has wrong
   int icharge;
   if (i<2)  icharge = a.Anti()*a.Point()->fl.IntCharge() - 
@@ -235,8 +287,10 @@ Leg * Combine_Table_Base::CombineLegs
   for (int l=0; l<j; ++l) {
     if (l==i) {
       alegs[i] = CombinedLeg(legs,i,j);
-      if (alegs[i].OrderQCD()>0) m_kt2QCD=Min(m_kt2QCD,pt2ij);
-      if (alegs[i].OrderQED()>0) m_kt2QED=Min(m_kt2QED,pt2ij);
+      if (alegs[i].OrderQCD()>0 || alegs[i].NQCD()>0) 
+	m_kt2QCD=Min(m_kt2QCD,pt2ij);
+      if (alegs[i].OrderQED()>0 || alegs[i].NQED()>0) 
+	m_kt2QED=Min(m_kt2QED,pt2ij);
     }
     else      alegs[l] = legs[l];
   }
@@ -333,6 +387,7 @@ void Combine_Table_Base::IdentifyHardProcess()
 {
   msg_Debugging()<<METHOD<<"():\n";
   msg_Indent();
+  m_nstrong=0;
   if (p_hard==NULL) {
     p_hard = new Leg*[m_nampl];
     for (int i(0);i<m_nampl;++i) p_hard[i] = new Leg[2];
@@ -357,17 +412,27 @@ void Combine_Table_Base::IdentifyHardProcess()
       p_hard[i][1]=CombinedLeg(p_legs[i],1,2);
     }
     else THROW(fatal_error,"No match for hard process.");
+    m_nstrong=Max(m_nstrong,p_hard[i][0].OrderQCD()+p_hard[i][1].OrderQCD());
   }
 }
 
 int Combine_Table_Base::AddCouplings(int &nqed,int &nqcd) const
 {
-  if (p_up) {
-    int nstrong = p_up->m_cdata_winner->second.m_strong;
-    nqed+=1-nstrong;
-    nqcd+=nstrong;
-    return p_up->AddCouplings(nqed,nqcd);
+  int nqedt(-1), nqcdt(-1);
+  for (int i(0);i<m_nampl;++i) {
+    int nqedtt(p_hard[i][0].OrderQED()+p_hard[i][1].OrderQED());
+    int nqcdtt(p_hard[i][0].OrderQCD()+p_hard[i][1].OrderQCD());
+    if (nqedt<0 && nqcdt<0) {
+      nqedt=nqedtt;
+      nqcdt=nqcdtt;
+    }
+    else {
+      if (nqedt!=nqedtt || nqcdt!=nqcdtt) 
+	msg.Error()<<METHOD<<"(): Warning. Ambiguous couplings."<<std::endl;
+    }
   }
+  nqed=nqedt;
+  nqcd=nqcdt;
   return NLegs();
 }
 

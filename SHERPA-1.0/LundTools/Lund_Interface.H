@@ -73,9 +73,54 @@ namespace SHERPA {
     inline static bool ExportAS()  { return s_exportas;  }
     inline static bool ExportPDF() { return s_exportpdf; }
 
-    void SwitchOfDecays(ATOOLS::kf::code);
-    void LeaveOpenOnlyDC( int idc ); 
+    void SwitchOfDecays(ATOOLS::kf::code kfc);
   };// end of class Lund_Interface
+
+  /*!
+    \file Lund_Interface.H
+    \brief Declares the class SHERPA::Lund_Interface
+    */
+  /*!
+    \class Lund_Interface
+    \brief Tools for calling Pythia routines
+    */
+  /*!
+    \fn Lund_Interface::PerformDecay( ATOOLS::Particle * part, ATOOLS::Blob_List * blob_list, ATOOLS::Particle_List * part_list )
+    \brief Performs the decay of the particle <var>part</var>
+
+    This is the main method for the decay of the particle <var>part</var>
+    -# It choses a decay channel  and its kinemtaic by calling Pythia common blocks
+    -# A new blob is created.
+    -# Treats every daughter self-recursively.
+    .
+    */
+  /*!
+    \fn Lund_Interface::SwitchOfDecays(ATOOLS::kf::code kfc)
+    \brief Sets the particle kfc stable
+
+    This method tells Pythia to set the particle <var>kfc</var> stable.
+    */
+  /*!
+    \fn Lund_Interface::FillPrimaryTauInBlob(int,ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist, ATOOLS::Particle_List *pl=NULL)
+    \brief Reconstructs the tau-lepton and pushs it through the Blob
+
+    This method became necessery for the implementation of tau decays into HADRONS.
+    Basically, it pushs a (anti-)tau through the Fragmentation blob such that it can be treated
+    by Hadron_Decays::Treat.
+    */
+  /*!
+    \fn Lund_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist, ATOOLS::Particle_List *pl=NULL)
+    \brief Method responsible for the hadronization and filling the Fragmentation Blob
+
+    It's this methods task to deal with the hadronization and fill the Fragmentation Blob such that
+    the outgoing hadrons can be treated by Hadron_Decays::Treat. If there are however incoming tau-leptons 
+    they need to be "pushed through the blob" by calling Lund_Interface::FillPrimaryTauInBlob.
+    */
+  /*!
+    \fn Lund_Interface::FindDecay( ATOOLS::Particle * part )
+    \brief Returns true of Pythia can cope with the decay of the particle
+    */
+
 
 }// end of namespace SHERPA
 

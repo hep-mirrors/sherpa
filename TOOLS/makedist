@@ -11,7 +11,7 @@ for I in $* ; do
   elif [ "$I" = "--configure" ]; then CONFIGURE=TRUE 
   elif [ "$I" = "--hide-cvs" ]; then ECOPT=$ECOPT" --disable-cvsinclude" && CONFIGURE=TRUE
   elif [ "$I" = "--total" ]; then TOTAL=TRUE && CONFIGURE=TRUE
-  elif [ "$I" = "--copt" ]; then DCOPT=TRUE 
+  elif [ "$I" = "--copt" ]; then DCOPT=TRUE && CONFIGURE=TRUE
   elif [ "$I" = "--no-abort" ]; then NOABORT=TRUE
   elif [ "$I" = "--force" ]; then FORCE=TRUE 
   elif [ "$I" = "-h" ]; then echo && \

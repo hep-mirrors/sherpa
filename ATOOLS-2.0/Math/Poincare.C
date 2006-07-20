@@ -23,6 +23,7 @@ Poincare::Poincare(Vec4D v1, Vec4D v2)   // rotations constructor
   */
   //intitialisation of rotation matrix
   m_status = 2;    
+  /*
   short int i,k,l;
   double r[2][3][3],pm[2],sp[2],cp[2],st[2],ct[2];
   int n0,n1,n2;
@@ -38,7 +39,8 @@ Poincare::Poincare(Vec4D v1, Vec4D v2)   // rotations constructor
     n1 = 1;       // 2nd component
     n0 = 0;       // 1st component
   } 
-  else if ((dabs(pp[1][2])<0.7)&&(dabs(pp[1][2])<0.7)) {
+  //else if ((dabs(pp[1][2])<0.7)&&(dabs(pp[1][2])<0.7)) {
+  else if ((dabs(pp[0][2])<0.7)&&(dabs(pp[1][2])<0.7)) {
     n2 = 1;      
     n1 = 0;      
     n0 = 2;      
@@ -81,7 +83,37 @@ Poincare::Poincare(Vec4D v1, Vec4D v2)   // rotations constructor
 	m_mat[i+1][l+1] += r[0][i][k]*r[1][l][k]; 
     }
   } 
-}
+  */
+  
+  ATOOLS::Vec3D b = Vec3D(v1);
+  ATOOLS::Vec3D a = Vec3D(v2);
+  if( (a*a<1.0e-15) || (b*b<1.0e-15) ) {
+    std::cout<<"Rotation: Out of range.\n";
+    std::cout<<"This is now the 1-element.\n";
+  }
+  else {
+    const double ab=a*b;
+    const double aabs=a.Abs();
+    const double babs=b.Abs();
+    for(int i=1; i<4; i++) {
+      for(int j=1; j<4; j++) {
+	if ((aabs*babs+ab)!=0.) {
+	  m_mat[i][j]=(-1.0/(aabs*babs+ab))*((babs/aabs)*a[i]*a[j] +
+					     (aabs/babs)*b[i]*b[j] +
+					     a[i]*b[j] -
+					     (1.0+(2.0*ab)/(aabs*babs))
+					     *b[i]*a[j]);
+	}
+	else  {
+	  m_mat[i][j] = 0.;
+	  std::cout<<" Error Poincare::Poincare(Vec4D v1, Vec4D v2) : "<<
+	    " in anti-parallel vectors: Don't know how to rotate "<<std::endl;
+	}
+	if(i==j) m_mat[i][j]+=1.0;
+      }
+    }
+  }
+  }
 
 Poincare::Poincare(Vec4D v)              // boost constuctor 
 {

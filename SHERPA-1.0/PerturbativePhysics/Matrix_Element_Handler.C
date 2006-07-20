@@ -79,7 +79,8 @@ bool Particle_Map::Apply(int n, ATOOLS::Flavour * flavs, ATOOLS::Vec4D * moms)
 Matrix_Element_Handler::Matrix_Element_Handler() :
   Object("ME_Handler"),
   m_dir("./"), m_file(""), p_amegic(NULL), p_simplexs(NULL),
-  p_isr(NULL), m_mode(0), m_weight(1.), m_ntrial(1), m_sntrial(0), m_name(""), m_eventmode(1), 
+  p_isr(NULL), m_mode(0), m_weight(1.), m_ntrial(1), m_xsecntrial(0),
+  m_sntrial(0), m_xsecsntrial(0), m_name(""), m_eventmode(1), 
   m_sudakovon(0), m_apply_hhmf(0), m_ini_swaped(0), p_dataread(NULL), p_flavs(NULL), p_moms(NULL) {}
 
 Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _file,
@@ -87,7 +88,8 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
 					       Matrix_Element_Handler * _me) :
   Object("ME_Handler"),
   m_dir(_dir), m_file(_file), p_amegic(NULL), p_simplexs(NULL),
-  p_isr(NULL), m_mode(0), m_weight(1.), m_ntrial(1), m_sntrial(0), m_name(""), m_eventmode(1),
+  p_isr(NULL), m_mode(0), m_weight(1.), m_ntrial(1), m_xsecntrial(0), 
+  m_sntrial(0), m_xsecsntrial(0), m_name(""), m_eventmode(1),
   m_sudakovon(0), m_apply_hhmf(0), m_ini_swaped(0), p_dataread(NULL), p_flavs(NULL), p_moms(NULL) 
 {
   if (_me) p_amegic = _me->GetAmegic(); 
@@ -104,7 +106,8 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
 					       Matrix_Element_Handler * _me) :
   Object("ME_Handler"),
   m_dir(_dir), m_file(_file), p_amegic(NULL), p_simplexs(NULL),
-  p_isr(_isr), m_mode(0), m_weight(1.), m_ntrial(1), m_sntrial(0), m_sudakovon(0), m_apply_hhmf(0),
+  p_isr(_isr), m_mode(0), m_weight(1.), m_ntrial(1), m_xsecntrial(0),
+  m_sntrial(0), m_xsecsntrial(0), m_sudakovon(0), m_apply_hhmf(0),
   m_ini_swaped(0), p_flavs(NULL), p_moms(NULL)
 {
   p_dataread        = new Data_Read(m_dir+m_file);
@@ -303,7 +306,7 @@ bool Matrix_Element_Handler::PrintTotalXSec()
     rfile<<setw(10)<<ycut<<" ";
 
     for (size_t i=0; i<procs->Size();++i) {
-      double xstot = (*procs)[i]->TotalXS()*rpa.Picobarn();
+      double xstot = (*procs)[i]->TotalXS()/((*procs)[i]->EnhanceFactor())*rpa.Picobarn();
       double xserr = (*procs)[i]->TotalError()*rpa.Picobarn();
       //      double njet  = (*procs)[i]->Nout();
       rfile<<setw(10)<<xstot<<" "<<setw(10)<<xserr<<" ";
@@ -326,6 +329,8 @@ bool Matrix_Element_Handler::GenerateOneEvent()
       PHASIC::Weight_Info winfo = message->Get<PHASIC::Weight_Info>();
       m_weight =  winfo.weight;
       m_procweight = winfo.procweight;
+      m_xsecweight = winfo.xsecweight;
+      m_xsecntrial = winfo.xsecntrial;
       m_ntrial =  winfo.ntrial;
       msg_Debugging()<<"MEH::GOE: "<<m_procweight<<" "
 		     <<m_weight<<" "<<m_ntrial<<"\n";
@@ -344,8 +349,10 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     PHASIC::Weight_Info winfo = message->Get<PHASIC::Weight_Info>();
     m_weight =  winfo.weight * rpa.Picobarn();
     m_procweight = winfo.procweight;
+    m_xsecweight = winfo.xsecweight;
+    m_xsecntrial = winfo.xsecntrial;
     m_ntrial =  winfo.ntrial;
-//     PRINT_INFO(m_procweight<<" "<<m_weight<<" "<<m_ntrial);
+    //PRINT_INFO(m_procweight<<" "<<m_weight<<" "<<m_ntrial);
     delete message;
   }
   else {
@@ -380,6 +387,8 @@ bool Matrix_Element_Handler::GenerateSameEvent()
       PHASIC::Weight_Info winfo = message->Get<PHASIC::Weight_Info>();
       m_weight     =  winfo.weight;
       m_procweight = winfo.procweight;
+      m_xsecweight = winfo.xsecweight;
+      m_xsecntrial = winfo.xsecntrial;
       m_ntrial     =  winfo.ntrial;
       delete message;
     }
@@ -489,6 +498,14 @@ unsigned int Matrix_Element_Handler::MinQCDJets() {
   switch (m_mode) {
   case 1: return p_amegic->MinQCDJets();
   case 2: return p_simplexs->MinQCDJets();
+  }
+  return 0;
+}
+
+unsigned int Matrix_Element_Handler::MaxQCDJets() {
+  switch (m_mode) {
+  case 1: return p_amegic->MaxQCDJets();
+  case 2: return p_simplexs->MaxQCDJets();
   }
   return 0;
 }
@@ -656,9 +673,19 @@ double  Matrix_Element_Handler::ProcessWeight()
   return m_procweight;
 }
 
+double  Matrix_Element_Handler::XSecWeight() 
+{
+  return m_xsecweight;
+}
+
 unsigned long Matrix_Element_Handler::NumberOfTrials()
 {
   return m_ntrial+m_sntrial;
+}
+
+unsigned long Matrix_Element_Handler::NumberOfXSecTrials()
+{
+  return m_xsecntrial+m_xsecsntrial;
 }
 
 int Matrix_Element_Handler::OrderStrong()

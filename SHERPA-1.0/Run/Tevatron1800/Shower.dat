@@ -2,12 +2,9 @@
 !-- Parton showers -------------------------------------
 !-------------------------------------------------------
 SHOWER_GENERATOR  = Apacic   !  
+!
 FSR_SHOWER        = 1        !  1=On,0=Off
 ISR_SHOWER        = 1        !  1=On,0=Off
 !
-IS_PT2MIN         = 4.       !  
-FS_PT2MIN         = 1.       !  
-!
-FS_LOSEJETVETO    = 1        !  0=Off 1=On
-SUDAKOVASORDER    = 1        !
-SUDAKOVTYPE       = 8        ! 
+IS_PT2MIN         = 4.       !  IS Shower cutoff
+FS_PT2MIN         = 1.       !  FS Shower cutoff

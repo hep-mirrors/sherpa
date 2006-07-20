@@ -28,6 +28,7 @@ namespace AMEGIC {
 	       VVSS4  = 12,//the generic interaction of 2 vectors and 2 scalars
 	       SSSS   = 13,//the generic interaction of 4 scalars
 	       AV4    = 20,//Anomalous gauge coupling
+	       AV3    = 21,//Anomalous gauge coupling
 	       FFT    = 60,
 	       VVT    = 61,
 	       SST    = 62,

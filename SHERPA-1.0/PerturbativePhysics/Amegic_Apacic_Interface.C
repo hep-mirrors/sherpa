@@ -7,6 +7,7 @@
 #include "Running_AlphaS.H"
 #include "Run_Parameter.H"
 #include "Amegic.H"
+#include "MyStrStream.H"
 #include "Cluster_Partons_CKKW.H"
 
 using namespace SHERPA;
@@ -30,8 +31,11 @@ Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
     (p_mehandler,shower->JetFinder(),m_maxjetnumber,
      p_shower->GetISRHandler()->On(),
      p_shower->ISROn(),p_shower->FSROn());
-  p_filler  = new Tree_Filler
-    (p_cluster,m_maxjetnumber,p_shower->ISROn(),p_shower->FSROn());
+  p_filler  = new Tree_Filler(p_cluster,p_shower,m_maxjetnumber);
+  if (p_mehandler->MinQCDJets()==p_mehandler->MaxQCDJets()) 
+    rpa.gen.SetVariable("SUDAKOV_WEIGHT",ToString("0"));
+  m_ckkwon=ToType<int>(rpa.gen.Variable("SUDAKOV_WEIGHT"));
+  p_filler->SetCKKWOn(m_ckkwon);
 }  
 
 Amegic_Apacic_Interface::~Amegic_Apacic_Interface() 
@@ -113,7 +117,7 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
   if (!m_isdecay) {
     p_xs = p_cluster->GetXS(p_two2two,p_fl);
     p_cluster->SetColours(p_xs,p_moms,p_fl);
-    p_cluster->CalculateWeight();
+    if (m_ckkwon) p_cluster->CalculateWeight();
     p_blob_psme_FS->
       AddData("OrderStrong",new ATOOLS::Blob_Data<double>
 	      (p_cluster->OrderStrong()));
@@ -127,12 +131,13 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
 			    (p_cluster->QCDScale()));
     p_blob_psme_FS->AddData
       ("Core_Process",new ATOOLS::Blob_Data<XS_Base*>(p_xs));
-    m_weight = p_cluster->Weight();
+    m_weight = m_ckkwon?p_cluster->Weight():1.0;
     if (p_mehandler->Weight()==1. && p_mehandler->UseSudakovWeight()) {
       if (m_weight>ran.Get()) {
 	p_shower->CleanUp();
 	p_filler->FillTrees(blob,p_shower->GetIniTrees(),
 			    p_shower->GetFinTree());
+	blob->AddData("Sud_Weight",new Blob_Data<double>(m_weight));
 	m_weight=1.;
 	return 1;
       }
@@ -217,7 +222,7 @@ bool Amegic_Apacic_Interface::FillBlobs(ATOOLS::Blob_List * bl)
 
 int Amegic_Apacic_Interface::PerformShowers()
 {
-  int jetveto(-1), losejv(1);
+  int jetveto(0), losejv(1);
   if (p_mehandler->UseSudakovWeight()) {
     double qmin2i,qmin2f; 
     double scale(p_mehandler->FactorisationScale());
@@ -225,7 +230,6 @@ int Amegic_Apacic_Interface::PerformShowers()
     double yp(((Process_Base*)p_mehandler->GetAmegic()->GetProcess())->Ycut());
     if (yp!=-1.0) ycut=yp; 
     p_cluster->JetvetoPt2(qmin2i,qmin2f);
-    p_shower->SetJetvetoPt2(qmin2i,qmin2f);
     p_shower->SetFactorisationScale(scale);
     jetveto=1;
     if (m_maxjetnumber==m_nout && p_mehandler->OrderStrong()==0) jetveto = 0;

@@ -23,7 +23,8 @@ using namespace std;
 
 Amegic::Amegic(std::string _path,std::string _file,
 	       MODEL::Model_Base * _model) :
-  m_path(_path), m_file(_file), m_nmax(0),m_minqcdjet(99),m_maxjet(0), 
+  m_path(_path), m_file(_file), m_nmax(0),m_minqcdjet(99), m_maxqcdjet(0), 
+  m_maxjet(0), 
   p_procs(NULL), p_decs(NULL), p_model(NULL), p_top(NULL), p_fifo(NULL),
   p_dataread(NULL), p_seldata(NULL), p_beam(NULL), p_isr(NULL)
 {
@@ -124,8 +125,8 @@ bool Amegic::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,PDF::ISR_Han
   ATOOLS::Vec4D * moms  = 0;
 
   msg.Events()<<"Amegic::InitializeProcesses : \n"
-	      <<"   Process initialization started; new libraries may be created."<<std::endl;
-  switch (p_procs->InitAllProcesses(p_model,p_top,moms)) { 
+	   <<"   Process initialization started; new libraries may be created."<<std::endl;
+  switch (p_procs->InitAllProcesses(p_model,p_top,moms)) {
   case 1  : 
     msg.Events()<<"   No new libraries have been created."<<std::endl;
     return 1;
@@ -215,6 +216,7 @@ void Amegic::ReadInProcessfile(string file)
   string      selectorfile;
   while (from) {
     getline(from,buf);
+    position = -1;
     if (buf.length()>0 && buf[0] != '%') {
       msg.LogFile()<<buf<<std::endl;
       position   = buf.find(string("Process :")); 
@@ -260,16 +262,21 @@ void Amegic::ReadInProcessfile(string file)
 	  }
 	  else {
 	    order_ew = order_strong = -1;
-	    ycut           = -1.;
-	    selectorfile   = string("");
-	    scale_scheme   = _scale_scheme;
-	    kfactor_scheme = _kfactor_scheme;
-	    fixed_scale    = _scale;
-	    order_ew       = 99;
-	    order_strong   = 99;
-	    nex            = 0;
+	    ycut                = -1.;
+	    selectorfile        = string("");
+	    scale_scheme        = _scale_scheme;
+	    kfactor_scheme      = _kfactor_scheme;
+	    fixed_scale         = _scale;
+	    order_ew            = 99;
+	    order_strong        = 99;
+	    nex                 = 0;
+	    enhance_factor      = 1.;
+	    maxreduction_factor = 1.;
+	    maxredepsilon       = 0.;
+	    enhance_function    = "1";
 	    do {
 	      getline(from,buf);
+	      position = -1;
 	      if (buf.length()>0 && buf[0] != '%') {
 		msg.LogFile()<<buf<<std::endl;
 		position = buf.find(string("Decay :"));
@@ -447,6 +454,7 @@ void Amegic::ReadInProcessfile(string file)
 		  if (nmax>m_maxjet) {
 		    msg.Out()<<" WARNING: setting max n to "<<nmax<<std::endl;
 		    m_maxjet = nmax;
+		    m_maxqcdjet = nmax;
 		  }		  
 		}
 
@@ -493,7 +501,8 @@ void Amegic::ReadInProcessfile(string file)
 	      summass += flavs[i+nIS].Mass();
 	      if (flavs[i+nIS].Strong()) ++qcdjets;
 	    }
-	    m_minqcdjet=Min(m_minqcdjet,qcdjets);
+	    m_minqcdjet=Min(Max(2+qcdjets-nFS,0),m_minqcdjet);
+	    m_maxqcdjet=ATOOLS::Max(m_maxqcdjet,qcdjets);
 	    if (summass<rpa.gen.Ecms()) {
 	      Process_Base * proc=NULL;
 	      if (single) {

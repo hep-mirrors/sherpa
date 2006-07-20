@@ -14,7 +14,6 @@ libObservables_la_SOURCES     =	\
 				One_Particle_Extractor.C \
 				All_Particle_Selector.C \
 				Universal_Selector.C \
-			    	MI_Observables.C \
 			    	Shower_Statistics.C \
 			    	SV_Statistics.C \
 			    	One_Particle_Observables.C \
@@ -36,19 +35,19 @@ libObservables_la_SOURCES     =	\
 				Four_Jet_Angles.C \
 				Field_Stuart_Cone_Finder.C \
 				Blob_Selector.C \
+				#MI_Observables.C \
 				#Hadron_Multiplicities.C \
 				#ISR_Statistics.C 
 
 pkginclude_HEADERS        =	\
 			HT.H \
 			PSM_Observables.H \
-			Multiplicity.H \
 			Statistics_Observable.H \
 			One_Particle_Selector.H \
 			One_Particle_Extractor.H \
 			All_Particle_Selector.H \
 			Universal_Selector.H \
-			MI_Observables.H \
+			Multiplicity.H \
 			Shower_Statistics.H \
 			One_Particle_Observables.H \
 			Two_Particle_Observables.H \
@@ -67,6 +66,7 @@ pkginclude_HEADERS        =	\
 			Jet_Mass_and_Broadening.H \
 			Scaled_Observables.H \
 			Four_Jet_Angles.H \
+			#MI_Observables.H \
 			#Hadron_Multiplicities.H \
 			#ISR_Statistics.H 
 

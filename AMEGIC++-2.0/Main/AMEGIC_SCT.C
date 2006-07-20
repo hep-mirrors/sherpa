@@ -2,16 +2,11 @@
 #include "Message.H"
 #include "MyComplex.H"
 
-#include "prof.hh"
-
-#define DEBUG_AMEGIC_SCT
-
 namespace AMEGIC {
 
   AMEGIC_SCT::AMEGIC_SCT(std::vector<int> A1, std::vector<int> A2, 
 			 Helicity* Hel, std::vector<int>* particles, size_t pPos)
   {
-    PROFILE_HERE;
     if (pPos == particles->size()) {
       m_particle = -1;
       m_A1 = A1;
@@ -97,23 +92,24 @@ namespace AMEGIC {
   {
     if (m_mode == scmode::None) return NULL;
 
-    PROFILE_HERE;
     SCT_DUMMY* SCT = new SCT_DUMMY();
     if (m_particle==-1) {
       SCT->m_particle=-1;
       Complex val(0., 0.);
-#ifdef DEBUG_AMEGIC_SCT
-      if (m_A1.size() != m_A2.size()) {
-	PRINT_INFO("Now you really have something to think about!");
-	abort();
-      }
-#endif
       for (size_t ampl=0; ampl<m_A1.size(); ++ampl)
 	for (size_t c1=0; c1<graphs->size(); ++c1)
-	  for (size_t c2=0; c2<graphs->size(); ++c2)
+	  for (size_t c2=0; c2<graphs->size(); ++c2) {
 	    val +=  (*graphs)[c1]->Zvalue(m_A1[ampl])
 	           *conj((*graphs)[c2]->Zvalue(m_A2[ampl]))
 	           *col->Mij(c1, c2)*hel->PolarizationFactor(m_A1[ampl]);
+	    if (hel->Multiplicity(ampl) != 1) {
+	      msg.Error()<<"Encoutered process for which the current version of AMEGIC cannot "
+			 <<"create spin informations."<<std::endl
+			 <<"Please restart the run with option SPIN_CORRELATIONS=0 or "
+			 <<"contact the authors at support@sherpa-mc.de for a solution."<<std::endl;
+	      abort();
+	    }
+	  }
       SCT->m_value=val;
     }
     else {
@@ -124,77 +120,4 @@ namespace AMEGIC {
     }
     return SCT;
   }
-
-
-
-
-
-
-
-
-
-
-  /*   AMEGIC_SCT::AMEGIC_SCT(std::vector< std::vector<Complex> > *Ampls, 
-			  CFColor *ColorMatrix, Helicity *Hel,
-			  std::vector<int> comb1, std::vector<int> comb2)
-   {
-#ifdef DEBUG_AMEGIC_SCT
-     if (comb1.size() != comb2.size()) {
-       PRINT_INFO("Error: comb1 and comb2 do not have the same length!");
-       abort();
-     }
-#endif
-     if (comb1.size() == Hel->Nflavs()) {
-       // If an end-node is reached, compute the entry
-       m_particle = -1;
-
-       // get the helicity numbers
-       size_t i1=Hel->GetAmplitudeNumber(&comb1);
-       size_t i2=Hel->GetAmplitudeNumber(&comb2);
-
-       // Get the vectors for the amplitudes of the different graphs.
-       std::vector<Complex> *v1 = &(*Ampls)[i1];
-       std::vector<Complex> *v2 = &(*Ampls)[i2];
-
-#ifdef DEBUG_AMEGIC_SCT
-       if (v1->size() != v2->size()) {
-	 PRINT_INFO("Error in Constructor of AMEGIC_SCT:"<<std::endl<<
-		    "The amplitudes belonging to the "<<"helicities "<<i1<<" and "<<i2
-		    <<" have a different number of associated graphs:");
-	 PRINT_INFO(v1->size()<<" vs. "<<v2->size());
-       }
-#endif
-
-       // Create and store the value M M*
-       for (size_t i=0; i<v1->size(); ++i)
-	 for (size_t j=0; j<v2->size(); ++j)
-	   m_value += (*v1)[i] * conj((*v2)[j]) * ColorMatrix->Mij(i,j);
-     
-     } else {
-
-       // Not an end-node, yet. Add all the possible helicity combinations for the current
-       // particle to the end of the comb1/2 list and go on with recursive creation.
-
-       size_t pos = m_particle = comb1.size();
-       size_t numHel = Hel->MaxHel(pos);
-    
-       p_next = new std::vector<Spin_Correlation_Tensor*>(numHel*numHel);
-       
-       // extend length of comb1 and comb2
-       comb1.push_back(0);
-       comb2.push_back(0);
-       
-       for (size_t i=0; i<numHel; ++i) {
-	 comb1.back() = HADRONS_to_AMEGIC(i, numHel);
-	 for (size_t j=0; j<numHel; ++j) {
-	   comb2.back() = HADRONS_to_AMEGIC(j, numHel);
-	   // *** either numHel*i+j or numHel*j+i *** check!
-	   (*p_next)[numHel*i+j] 
-	     = new AMEGIC_SCT(Ampls, ColorMatrix, Hel, comb1, comb2);
-	 }
-       }
-     }
-     } */
-
-
 } // end of namespace AMEGIC

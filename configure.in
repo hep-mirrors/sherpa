@@ -64,7 +64,6 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  AMEGIC++-2.0/Makefile \
 	  APACIC++-2.0/Main/Makefile \
 	  APACIC++-2.0/Showers/Makefile \
-	  APACIC++-2.0/Run/Makefile \
 	  APACIC++-2.0/Makefile \
 	  AMISIC++-1.0/Tools/Makefile \
 	  AMISIC++-1.0/Model/Makefile \
@@ -116,7 +115,7 @@ dnl       AHADIC++-0.0/ClusterFormation/Makefile \
 	  SHERPA-1.0/Run/MRST99Grid/Makefile \
 	  SHERPA-1.0/Makefile \
 	  TOOLS/Makefile \
-    TOOLS/Sherpa-config \
+          TOOLS/Sherpa-config \
 	  Makefile \
 	  SHERPA-1.0/Run/Decaydata/Makefile \
 	  SHERPA-1.0/Run/Decaydata/a01450/Makefile \
@@ -190,6 +189,5 @@ dnl       AHADIC++-0.0/ClusterFormation/Makefile \
 	  SHERPA-1.0/Run/Decaydata/rho1450+/Makefile \
 	  SHERPA-1.0/Run/Decaydata/rho770/Makefile \
 	  SHERPA-1.0/Run/Decaydata/rho770+/Makefile \
-	  SHERPA-1.0/Run/Decaydata/tau-/Makefile \
+	  SHERPA-1.0/Run/Decaydata/tau-/Makefile
 )
-

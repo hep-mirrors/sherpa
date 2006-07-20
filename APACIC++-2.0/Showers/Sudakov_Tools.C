@@ -19,12 +19,13 @@ Sudakov_Tools::Sudakov_Tools(MODEL::Model_Base * model) :
 void Sudakov_Tools::CalculateMaxCouplings(const int scheme,
 					  const double tmin,const double tmax)
 {
+  m_scalefac=1.0;
   if (scheme>0) {
     m_alphaQEDmax = (*p_aqed)(tmax*rpa.gen.RenormalizationScaleFactor());    
     double cutq2  = static_cast<Running_AlphaS*>(p_as)->CutQ2();
-    if (.25*tmin*rpa.gen.RenormalizationScaleFactor()<cutq2) 
+    if (tmin*rpa.gen.RenormalizationScaleFactor()<cutq2) 
       m_alphaSmax=AlphaS(cutq2); 
-    else m_alphaSmax  = AlphaS(0.25*tmin);    
+    else m_alphaSmax  = AlphaS(tmin);    
     /*
       std::ofstream was;
       was.open("astest.dat");
@@ -42,13 +43,12 @@ void Sudakov_Tools::CalculateMaxCouplings(const int scheme,
     m_alphaQEDmax       = 1./128.;     
     m_alphaSmax         = 0.2;         
     m_beta0 = m_lambda2 = 0.;          
-    m_scalefac          = 1.;          
   }
   if (msg.LevelIsTracking()) Output();
 }
 
 void Sudakov_Tools::Output() {
-  msg.Out()<<"Initialise Sudakov-Tools : "<<std::endl
+  msg.Tracking()<<"Initialise Sudakov-Tools : "<<std::endl
 	   <<"   beta0        = "<<m_beta0<<std::endl
 	   <<"   lambda2      = "<<m_lambda2<<std::endl	
 	   <<"   alphaS(MZ)   = "<<CrudeAlphaS(sqr((Flavour(kf::Z)).Mass()))<<"  (estimated)"<<std::endl
@@ -57,7 +57,6 @@ void Sudakov_Tools::Output() {
 	   <<"   alphaQED_max = "<<m_alphaQEDmax<<"  (exact)"<<std::endl
 	   <<"   scalefac     = "<<m_scalefac<<", "
 	   <<rpa.gen.RenormalizationScaleFactor()<<"."<<std::endl;
-  abort();
 }
 
 double Sudakov_Tools::CrudeAlphaS(const double t) const 

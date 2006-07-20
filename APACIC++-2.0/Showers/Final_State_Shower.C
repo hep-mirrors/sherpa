@@ -25,11 +25,12 @@ Final_State_Shower::Final_State_Shower(MODEL::Model_Base *const model,
   double cplscalefac(dataread->GetValue<double>("FS_CPL_SCALE_FACTOR",1.0));
   rpa.gen.SetVariable("FS_CPL_SCALE_FACTOR",ToString(cplscalefac));
   p_sud->SetScaleFactor(cplscalefac);
+  p_sud->SetEvolutionScheme
+    (dataread->GetValue<int>("FS_EVOLUTION_SCHEME",0));  
   p_kin->SetZScheme(dataread->GetValue<int>("FS_Z_SCHEME",1));      
-  p_kin->SetAngleScheme(dataread->GetValue<int>("FS_ANGLE_SCHEME",1));  
   p_sud->SetOrderingScheme(dataread->GetValue<int>("FS_ORDERING_SCHEME",1));  
   p_sud->SetCouplingScheme(dataread->GetValue<int>("FS_COUPLING_SCHEME",1));
-  p_sud->SetMassScheme(dataread->GetValue<int>("FS_MASS_SCHEME",1));   
+  p_sud->SetMassScheme(dataread->GetValue<int>("FS_MASS_SCHEME",3));   
   p_sud->SetWidthScheme(dataread->GetValue<int>("FS_WIDTH_SCHEME",0));   
   p_sud->SetMECorrectionScheme(dataread->GetValue<int>("FS_ME_SCHEME",0)); 
   p_sud->SetCorrelationScheme(dataread->GetValue<int>("FS_CORR_SCHEME",0));
@@ -37,7 +38,6 @@ Final_State_Shower::Final_State_Shower(MODEL::Model_Base *const model,
   p_sud->SetPT2Min(dataread->GetValue<double>("FS_PT2MIN",1.0));
   p_sud->SetPT2MinQED(dataread->GetValue<double>("FS_PT2MIN_QED",.001));
   p_sud->Init(dataread->GetValue<double>("F_MEDIUM",0.0));
-  p_sud->SetKFactorScheme(dataread->GetValue<int>("S_KFACTOR_SCHEME",1));
 }
 
 Final_State_Shower::~Final_State_Shower() 
@@ -87,23 +87,20 @@ TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
     return InitializeJets(tree,mo,1);
   }
   else {
-    Flavour flavs[2];
-    Simple_Polarisation_Info polinfos[2];
 #ifdef USING__Veto_Info
     p_sud->AddVeto();
 #endif
     while (p_sud->Dice(mo)) {
       mo->E2 = sqr(((1.0/z-1.0)*sprime-mo->t)/(2.0*sqrt(sprime)));
       mo->part->SetMomentum(Vec4D(sqrt(mo->E2),0.,0.,sqrt(mo->E2-mo->t)));
-      flavs[0] = p_sud->GetFlB();
-      flavs[1] = p_sud->GetFlC();
       msg_Debugging()<<"tlfsl test emission at t = "<<mo->t
 		     <<", z = "<<mo->z<<"\n";
       if (!ini->DoKinematics()) continue;
       int stat(jetveto?p_jv->TestISKinematics(mo->prev):1);
       if (stat!=1) continue;
       mo->stat=1;
-      InitDaughters(tree,mo,flavs,polinfos,1);
+      InitDaughters(tree,mo,p_sud->GetFlB(),p_sud->GetFlC(),
+		    Simple_Polarisation_Info(),Simple_Polarisation_Info(),1);
       stat=EvolveJet(tree,mo);
       msg_Debugging()<<"tlfsl stat = "<<stat<<"\n";
       if (stat==1) {
@@ -130,7 +127,8 @@ TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
 int Final_State_Shower::InitializeJets(Tree *tree,Knot *mo,int init)
 {
   if (mo==NULL || mo->left==NULL || mo->right==NULL) {
-    msg.Error()<<METHOD<<"(..): Error. No knots."<<std::endl;
+    msg.Error()<<METHOD<<"(..): Error. No daughters in knot "
+	       <<mo->kn_no<<"."<<std::endl;
     return 0;
   }
   msg_Debugging()<<METHOD<<"("<<mo->kn_no<<","<<init<<"): {\n";
@@ -159,7 +157,6 @@ int Final_State_Shower::InitializeJets(Tree *tree,Knot *mo,int init)
       }
       if (d1->stat==0 && d2->stat==0) {
 	msg_Debugging()<<"reset knot "<<mo->kn_no<<"\n";
-	p_kin->Shuffle(mo,first);
 	break;
       }
     }
@@ -187,6 +184,21 @@ int Final_State_Shower::InitializeJets(Tree *tree,Knot *mo,int init)
   return 1;
 }
 
+Knot *Final_State_Shower::ChooseDaughter(Knot * mo)
+{
+  Knot *d1(mo->left), *d2(mo->right);
+  if ((d1->t>d1->tout && d1->t>=d2->t) || d2->t<=d2->tout) {
+    if (d1->stat!=0) return d1;
+    return d2;
+  }
+  if ((d2->t>d2->tout && d2->t>=d1->t) || d1->t<=d1->tout) {
+    if (d2->stat!=0) return d2;
+    return d1;
+  }
+  THROW(fatal_error,"Selection failed.");
+  return NULL;
+}
+
 int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
 {
   msg_Debugging()<<METHOD<<"(["<<mo->kn_no<<","<<mo->stat<<","
@@ -204,58 +216,35 @@ int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
   msg_Debugging()<<"p_d2 = "<<d2->part->Momentum()
 		 <<", t_d2 = "<<d2->t<<", ("
 		 <<d2->kn_no<<","<<d2->stat<<")"<<std::endl;
-  Flavour d1_flavs[2], d2_flavs[2];
-  Simple_Polarisation_Info d1_polinfos[2], d2_polinfos[2];
-  int selected;
-  bool diced1(false), diced2(false);
   Vec4D p1(d1->part->Momentum()), p2(d2->part->Momentum());
-  Knot *g(NULL);
 #ifdef USING__Veto_Info
   p_sud->AddVeto();
 #endif
   while (true) {
-    g=NULL;
-    selected=ChooseDaughter(mo);
-    msg_Debugging()<<"selected daughter "<<(selected?"2":"1")<<": "
-		   <<(selected?d2->part->Flav():d1->part->Flav())
-		   <<" "<<d1->stat<<" "<<d2->stat<<std::endl;
-    if (first==2) g=mo;
-    if (selected==0) {
-      ResetDaughters(d1);
-      if (p_sud->Dice(d1,g)) { 
-	msg_Debugging()<<"test emission at ("<<d1->t
-		       <<","<<d1->z<<") knot "<<d1->kn_no<<"\n";
-	d1_flavs[0]=p_sud->GetFlB();
-	d1_flavs[1]=p_sud->GetFlC();
-	d1_polinfos[0]=p_sud->GetPolB();
-	d1_polinfos[1]=p_sud->GetPolC();
-	d1->stat=1;
-	diced1=true;
-      }   
-      else Reset(d1);
-    }
+    Knot *d(ChooseDaughter(mo));
+    msg_Debugging()<<"selected daughter "<<d->kn_no<<", "
+		   <<d->part->Flav()<<", t="<<d->t<<", stats "
+		   <<d1->stat<<" "<<d2->stat<<std::endl;
+    ResetDaughters(d);
+    if (p_sud->Dice(d,first==2?mo:NULL)) { 
+      msg_Debugging()<<"test emission at ("<<d->t
+		     <<","<<d->z<<") knot "<<d->kn_no<<"\n";
+      InitDaughters(tree,d,p_sud->GetFlB(),p_sud->GetFlC(),
+		    p_sud->GetPolB(),p_sud->GetPolC(),true);
+      d->stat=1;
+    }   
     else {
-      ResetDaughters(d2);  
-      if (p_sud->Dice(d2,g)) {
-	msg_Debugging()<<"test emission at ("<<d2->t
-		       <<","<<d2->z<<") knot "<<d2->kn_no<<"\n";
-	d2_flavs[0]=p_sud->GetFlB();
-	d2_flavs[1]=p_sud->GetFlC();
-	d2_polinfos[0]=p_sud->GetPolB();
-	d2_polinfos[1]=p_sud->GetPolC();
-	d2->stat=1;
-	diced2=true;
-      }    
-      else Reset(d2);
-    }
-    if (!p_kin->CheckZRange(mo,d1_flavs,d2_flavs)) {
-      msg_Debugging()<<"z value vetoed\n";
-      if (d1->stat==0 && d2->stat==0) break;
-      continue;
+      Reset(d);
     }
     if (d1->stat!=3 && d2->stat!=3) {
-      if (d1->stat>0) InitDaughters(tree,d1,d1_flavs,d1_polinfos,diced1);
-      if (d2->stat>0) InitDaughters(tree,d2,d2_flavs,d2_polinfos,diced2);
+      if (first) {
+ 	msg_Debugging()<<"set mom 1 "<<p1<<" vs. "
+ 		       <<d1->part->Momentum()<<"\n";
+ 	msg_Debugging()<<"set mom 2 "<<p2<<" vs. "
+ 		       <<d2->part->Momentum()<<"\n";
+ 	d1->part->SetMomentum(p1); 
+ 	d2->part->SetMomentum(p2);
+      }
       if (p_kin->Shuffle(mo,first)) {
    	if (p_jv->TestFSKinematics(mo)==1) {
 	  p_sud->AcceptBranch(mo);
@@ -270,27 +259,22 @@ int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
 #endif
       }
       else msg_Debugging()<<"shuffle failed\n";
-      if (d1->left && d1->left->part->Info()!='H') {
-	ResetDaughters(d1);
-	d1->stat=3;
-      }
-      if (d2->left && d2->left->part->Info()!='H') {
-	ResetDaughters(d2);
-	d2->stat=3;
-      }
     }
     if (d1->stat==0 && d2->stat==0) break;
   }
   msg_Debugging()<<"found no possible branch\n";
+  if (d1->left && d1->left->part->Info()!='H') {
+    ResetDaughters(d1);
+    d1->stat=3;
+  }
+  if (d2->left && d2->left->part->Info()!='H') {
+    ResetDaughters(d2);
+    d2->stat=3;
+  }
   if (!p_kin->Shuffle(mo,first)) {
     msg_Debugging()<<"shuffle failed\n";
     msg_Debugging()<<"}\n";
     return 0;
-  }
-  if (p_jv->TestFSKinematics(mo)!=1) {
-    msg_Debugging()<<"kinmatics vetoed\n";
-    msg_Debugging()<<"}\n";
-    return -1;
   }
   msg_Debugging()<<"}\n";
   if (d1->stat==0 && d2->stat==0) return 1;
@@ -329,12 +313,7 @@ int Final_State_Shower::EvolveJet(Tree *tree,Knot *mo)
       return 1; 
     }
   }
-  switch (stat) {
-  case -1:
-    mo->left->stat=mo->right->stat=3;
-    msg_Debugging()<<"}\n";
-    return 0;
-  case 0:
+  if (stat==0) {
     Reset(mo);
     msg_Debugging()<<"reset knot "<<mo->kn_no<<", t = "<<mo->t<<"\n";
     msg_Debugging()<<"}\n";
@@ -569,7 +548,7 @@ void Final_State_Shower::ExtractPartons(Knot *kn,Blob *jet,
                  and kn outgoing
 		 or kn->left or kn->right not from ME
     */
-    if (!(kn->left)) {
+    if (!kn->left) {
       if (bl||bl_meps) 	p = new Particle(*kn->part);
       if (bl) {
 	jet = new Blob();
@@ -646,13 +625,8 @@ void Final_State_Shower::ExtractPartons(Knot *kn,Blob *jet,
     }
   }
   ExtractPartons(kn->left,jet,bl,pl); 
-  ExtractPartons(kn->right,jet,bl,pl); 
+  ExtractPartons(kn->right,jet,bl,pl);
 }
-
-
-//-----------------------------------------------------------------------
-//------------------- Helpers for initialisation of the Shower-----------
-//----------------------------------------------------------------------- 
 
 bool Final_State_Shower::SmearDaughters(Knot *mo) 
 {
@@ -707,13 +681,14 @@ void Final_State_Shower::EstablishRelations(Knot *mo, Knot *d1,Knot *d2)
     if (d2) msg.Error()<<"d2 :"<<*d2<<std::endl; else msg.Error()<<"d2 : 0x0"<<std::endl;
     return;
   }
-  // set color connections (if not jet known)
+  // set color connections (if not yet known)
   APACIC::Final_State_Shower::SetColours(mo,0);
-  
-  double t_mo(mo->part->Momentum().Abs2()), 
-    E_mo(mo->part->Momentum()[0]), z_mo(d1->part->Momentum()[0]/E_mo); 
-  double th(sqrt(dabs(t_mo)/(z_mo*(1.- z_mo)))/E_mo),
-    maxpt2(sqr(ATOOLS::Min(z_mo,1.-z_mo))/(z_mo*(1.-z_mo))*t_mo);
+
+  double t_mo(mo->part->Momentum().Abs2());
+  double tb(d1->part->Momentum().Abs2()), tc(d2->part->Momentum().Abs2());
+  double E_mo(mo->part->Momentum()[0]), z_mo(d1->part->Momentum()[0]/E_mo); 
+  double th(p_kin->GetOpeningAngle(z_mo,sqr(E_mo),t_mo,tb,tc));
+  double maxpt2(p_kin->GetRelativeKT2(z_mo,sqr(E_mo),t_mo,tb,tc));
   if (mo->part->Flav().IsQuark() && 
       d1->part->Flav().Strong() && d2->part->Flav().Strong()) {
     if (d1->part->Flav().IsQuark()) {
@@ -777,26 +752,19 @@ void Final_State_Shower::EstablishRelations(Knot *mo, Knot *d1,Knot *d2)
       d1->maxpt2 = d2->maxpt2 = t_mo;
     }
   }
-  mo->t = t_mo; 
-}
-
-int Final_State_Shower::ChooseDaughter(Knot * mo)
-{
-  if (mo->left->stat==3)  return 0;
-  if (mo->right->stat==3) return 1;
-  if (mo->left->stat && 
-      (!mo->right->stat || mo->right->t<mo->right->tout)) return 0;// left
-  if (mo->right->stat && 
-      (!mo->left->stat || mo->left->t<mo->left->tout)) return 1;// right
-  double tm1(Min(mo->t,mo->left->E2)), tm2(Min(mo->t,mo->right->E2));
-  if (mo->left->t/tm1 > mo->right->t/tm2) return 0;// left
-  return 1;// right
- 
+  mo->t = t_mo;
+  if (d1->part->Info()=='H' && d1->left && 
+      d1->left->part->Info()=='H') 
+    d1->t=d1->part->Momentum().Abs2();
+  if (d2->part->Info()=='H' && d2->left && 
+      d2->left->part->Info()=='H') 
+    d2->t=d2->part->Momentum().Abs2();
 }
 
 void Final_State_Shower::
-InitDaughters(Tree * tree,Knot * mo,Flavour * mo_flavs, 
-	      Simple_Polarisation_Info * mo_pols, bool diced) 
+InitDaughters(Tree * tree,Knot * mo,ATOOLS::Flavour flb,ATOOLS::Flavour flc,
+	      ATOOLS::Simple_Polarisation_Info polb,
+	      ATOOLS::Simple_Polarisation_Info polc,bool diced)
 { 
   if (!mo->left) {
     mo->left          = tree->NewKnot();
@@ -804,20 +772,20 @@ InitDaughters(Tree * tree,Knot * mo,Flavour * mo_flavs,
   }
   if (diced) {
     mo->left->prev     = mo;
-    mo->left->polinfo  = mo_pols[0];
-    mo->left->part->SetFlav(mo_flavs[0]);
+    mo->left->polinfo  = polb;
+    mo->left->part->SetFlav(flb);
     mo->left->part->SetInfo('F');
     mo->left->part->SetStatus(1);
-    mo->left->tout     = sqr(mo_flavs[0].PSMass());
+    mo->left->tout     = sqr(flb.PSMass());
     mo->left->stat     = 3;  
     mo->left->didkin   = false;
 
     mo->right->prev    = mo;
-    mo->right->polinfo = mo_pols[1];
-    mo->right->part->SetFlav(mo_flavs[1]);
+    mo->right->polinfo = polc;
+    mo->right->part->SetFlav(flc);
     mo->right->part->SetInfo('F');
     mo->right->part->SetStatus(1);
-    mo->right->tout    = sqr(mo_flavs[1].PSMass());
+    mo->right->tout    = sqr(flc.PSMass());
     mo->right->stat    = 3;  
     mo->right->didkin  = false;
 
@@ -829,28 +797,30 @@ InitDaughters(Tree * tree,Knot * mo,Flavour * mo_flavs,
   double th, maxpt2;
   if ((mo->left->part->Flav().Strong()) && 
       (mo->right->part->Flav().Strong())) {
-    th     = mo->thcrit = p_kin->GetOpeningAngle(mo);
+    th     = p_kin->GetOpeningAngle(mo);
     maxpt2 = p_kin->GetRelativeKT2(mo->z,mo->E2,mo->t,
 				   sqr(mo->left->part->Flav().PSMass()),
 				   sqr(mo->right->part->Flav().PSMass()));
   }
   else {
     if (mo->prev) {
-      mo->thcrit = th  = mo->prev->thcrit;
-      maxpt2           = mo->prev->maxpt2;
+      th     = mo->prev->thcrit;
+      maxpt2 = mo->prev->maxpt2;
     }
     else {
-      mo->thcrit = th = M_PI;
-      maxpt2     = mo->maxpt2;
+      th     = M_PI;
+      maxpt2 = mo->maxpt2;
     }
   }
 
   mo->left->t       = mo->t; 
+  mo->left->pt2lcm  = mo->pt2lcm; 
   mo->left->E2      = (mo->z)*(mo->z)*(mo->E2); 
   mo->left->thcrit  = th;
   mo->left->maxpt2  = maxpt2;
 
   mo->right->t      = mo->t; 
+  mo->right->pt2lcm = mo->pt2lcm; 
   mo->right->E2     = (1. - mo->z)*(1. - mo->z)*(mo->E2);
   mo->right->thcrit = th;
   mo->right->maxpt2 = maxpt2; 
@@ -938,13 +908,6 @@ void Final_State_Shower::InitTwojetTree(Tree * tree,double scale) {
   mo->right->thcrit    = start_th;
 }
 
-//#####################################################################
-//
-// Helper methods
-//
-//#####################################################################
-
-
 void Final_State_Shower::ResetDaughters(Knot * mo)
 {
   Reset(mo->left);
@@ -955,9 +918,9 @@ void Final_State_Shower::ResetDaughters(Knot * mo)
 
 void Final_State_Shower::Reset(Knot * mo) 
 { 
-  if (!mo) return;
-  mo->left  = NULL;  
-  mo->right = NULL;
+  if (mo==NULL) return;
+  if (mo->left!=NULL && mo->left->part->Info()!='H') mo->left=NULL;  
+  if (mo->right!=NULL && mo->right->part->Info()!='H') mo->right=NULL;  
   mo->t     = mo->tout;
   mo->stat  = 0;
   mo->part->SetStatus(1);

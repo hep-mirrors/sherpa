@@ -23,7 +23,7 @@ namespace AMEGIC {
     std::string                  m_path,m_file;
     std::string                  m_respath,m_resfile;
 
-    int                          m_nmax,m_count,m_minqcdjet,m_maxjet;
+    int m_nmax,m_count,m_minqcdjet,m_maxqcdjet,m_maxjet;
 
     All_Processes              * p_procs;
     All_Decays                 * p_decs;
@@ -68,6 +68,7 @@ namespace AMEGIC {
     int               NumberOfDiagrams() { return static_cast<Process_Base*>(p_procs->Selected())->NumberOfDiagrams(); }
     AMEGIC::Point   * Diagram(int _diag) { return static_cast<Process_Base*>(p_procs->Selected())->Diagram(_diag); }
     int               MinQCDJets()       { return m_minqcdjet; }
+    int               MaxQCDJets()       { return m_maxqcdjet; }
     int               MaxJets()          { return m_maxjet; }
 
 

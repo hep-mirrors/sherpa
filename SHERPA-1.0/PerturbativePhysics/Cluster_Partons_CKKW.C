@@ -1,6 +1,10 @@
 #include "Cluster_Partons_CKKW.H"
 
 #include "Combine_Table_CKKW.H"
+#include "NLL_Branching_Probabilities.H"
+#include "Data_Reader.H"
+#include "Shell_Tools.H"
+#include <fstream> 
 
 using namespace SHERPA;
 using namespace EXTRAXS;
@@ -9,6 +13,31 @@ using namespace ATOOLS;
 using namespace PHASIC;
 using namespace MODEL;
 
+class Three_Jet_Calc: public ATOOLS::Function_Base {
+private:
+  NLL_Sudakov *p_sud;
+  NLL_Branching_Probability_Base *p_bp;
+  double m_q, m_q0;
+public:
+  Three_Jet_Calc(NLL_Sudakov *const sud,const Flavour &f,const double &asfac): 
+    p_sud(sud),
+    p_bp(new GammaQ_QG_Lambda
+	 ((bpm::code)p_sud->Mode(),0.0,MODEL::as,f.Mass(),asfac)) {}
+  ~Three_Jet_Calc() { delete p_bp; }
+  virtual double operator()(double q);
+  virtual double operator()();
+  inline void SetQ(const double q)   { m_q=q;   }
+  inline void SetQ0(const double q0) { m_q0=q0; }
+};// end of class Three_Jet_Rate
+double Three_Jet_Calc::operator()(double q) 
+{
+  return p_bp->Gamma(q,m_q)*p_sud->Delta(kf::gluon)(q,m_q0);
+}
+double Three_Jet_Calc::operator()()
+{
+  return m_defval; 
+} 
+
 Cluster_Partons_CKKW::
 Cluster_Partons_CKKW(Matrix_Element_Handler * me,ATOOLS::Jet_Finder * jf,
 		     const int maxjet,const int isrmode,const int isron,
@@ -16,10 +45,71 @@ Cluster_Partons_CKKW(Matrix_Element_Handler * me,ATOOLS::Jet_Finder * jf,
   Cluster_Partons_Base(me,jf,maxjet,isrmode,isron,fsron),
   m_AcceptMisClusters(1.), m_LowestFromME(true)
 {
+  std::string helps;
+  Data_Reader reader;
+  if (reader.ReadFromFile(helps,"PRINT_SUDAKOV","") && helps.length()>0) 
+    GenerateTables(helps);
 }
 
 Cluster_Partons_CKKW::~Cluster_Partons_CKKW()
 {
+}
+
+void Cluster_Partons_CKKW::GenerateTables(const std::string &path)
+{
+  msg_Info()<<METHOD<<"("<<path<<"): Generating sudakov tables {"<<std::endl;
+    MakeDir(path,448,true);
+  for (short unsigned int l(0);l<2;++l) {
+    NLL_Sudakov *sud(l==0?p_fssud:p_issud);
+    if (sud==NULL) break;
+    msg_Indent();
+    double ecms(rpa.gen.Ecms()), qmin(1.0), step(pow(ecms/qmin,1.0/25.0));
+    for (size_t i(1);i<=7;++i) {
+      if (i==7) i=21;
+      Flavour f((kf::code)i);
+      if (ecms>2.0*f.Mass()) {
+	msg_Info()<<f<<(i<7?" quark":"")<<" sudakov ..."<<std::flush;
+	std::ofstream dqout((path+"/delta_"+std::string(l==0?"":"is_")+
+			     ToString(f)+"_"+ToString(ecms)+".dat").c_str());
+	for (double Q(ecms);Q>qmin;Q/=step) 
+	  dqout<<Q<<" "<<(sud->Delta(f))(Q,qmin)<<"\n";
+	msg_Info()<<"done"<<std::endl;
+      }
+    }
+    for (size_t i(1);i<=7;++i) {
+      if (i==7) i=21;
+      Flavour f((kf::code)i);
+      if (ecms>2.0*f.Mass()) {
+	msg_Info()<<"2-"<<f<<" rate ..."<<std::flush;
+	std::ofstream r2out((path+"/r2_"+std::string(l==0?"":"is_")+
+			     ToString(f)+"_"+ToString(ecms)+".dat").c_str());
+	for (double Q(ecms);Q>qmin;Q/=step) 
+	  r2out<<2.0*log10(Q/ecms)<<" "
+	       <<sqr(sud->Delta(f)(ecms,Q))<<"\n";
+	msg_Info()<<"done"<<std::endl;
+      }
+    }
+    for (size_t i(6);i>0;--i) {
+      Flavour f((kf::code)i);
+      if (ecms>2.0*f.Mass()) {
+	msg_Info()<<"2-"<<f<<"+1-gluon rate ..."<<std::flush;
+	std::ofstream r3out((path+"/r3_"+std::string(l==0?"":"is_")+
+			     ToString(f)+"_"+ToString(ecms)+".dat").c_str());
+	Three_Jet_Calc *r3test(new Three_Jet_Calc(sud,f,m_fs_as_factor));
+	Gauss_Integrator gauss(r3test);
+	r3test->SetQ(ecms);
+	for (double Q(ecms);Q>qmin;Q/=step) {
+	  r3test->SetQ0(Q);
+	  r3out<<2.0*log10(Q/ecms)<<" "
+	       <<2.0*sqr(sud->Delta(f)(ecms,Q))*
+	    gauss.Integrate(Q,ecms,1.0e-3)<<"\n";
+	}
+	delete r3test;
+	msg_Info()<<"done"<<std::endl;
+      }
+    }
+  }
+  msg_Info()<<"}"<<std::endl;
 }
 
 Combine_Table_Base *Cluster_Partons_CKKW::
@@ -33,17 +123,12 @@ EXTRAXS::XS_Base *Cluster_Partons_CKKW::GetXS(EXTRAXS::XS_Group * group,
 					      ATOOLS::Flavour * fl)
 {
   XS_Base * xs(NULL);  
-  const size_t nin(2), nout(2), n(nin+nout);
+  const size_t nin(2), nout(2);
   if (group->XSSelector()->
       FindInGroup(group,xs,nin,nout,fl)==std::string::npos) {
-    int nstrong(0),nqed(0),nqcd(0);
-    for (size_t i=0;i<n;++i) nstrong+=fl[i].Strong();
+    int nqed(0),nqcd(0);
     p_ct->AddCouplings(nqed,nqcd);
-    Process_Base *proc=
-      static_cast<Process_Base*>(p_me->GetAmegic()->GetProcess());
-    int nrqed(proc->OrderEWeak() - nqed);
-    int nrqcd(proc->OrderStrong() - nqcd);
-    xs = group->XSSelector()->GetXS(nin,nout,fl,false,nrqed,nrqcd);
+    xs = group->XSSelector()->GetXS(nin,nout,fl,false,nqed,nqcd);
     if (xs) group->Add(xs);
   }
   p_xs = xs;
@@ -86,15 +171,19 @@ int Cluster_Partons_CKKW::SetColours(EXTRAXS::XS_Base * xs,
   }
   m_q2_fss  = dabs(p_xs->Scale(stp::sfs));
   m_q2_iss  = dabs(p_xs->Scale(stp::sis));
-  msg_Debugging()<<"cp: found xs, fss "<<m_q2_fss<<", iss "<<m_q2_iss<<"\n";
+//   Alternative choice for PS-scale
+//    m_q2_fss  = dabs(p_xs->Scale(stp::as));
+//    m_q2_iss  = dabs(p_xs->Scale(stp::as));
+  msg_Debugging()<<"cp: found xs, fss "<<m_q2_fss<<", iss "<<m_q2_iss
+		 <<", qcd "<<p_xs->Scale(stp::as)<<"\n";
   if (m_q2_fss==std::numeric_limits<double>::max() || 
       m_q2_iss==std::numeric_limits<double>::max()) {
     m_q2_hard = m_q2_fss = m_q2_iss = p_xs->Scale(stp::fac);
   }
   else {
-    m_q2_hard = Max(m_q2_fss,m_q2_iss);
+    m_q2_hard = dabs(p_xs->Scale(stp::as));
   }
-  m_q2_qcd  = p_xs->Scale(stp::as);
+  m_q2_qcd  = dabs(p_xs->Scale(stp::as));
   return test;
 }
 
@@ -113,7 +202,7 @@ void Cluster_Partons_CKKW::InitWeightCalculation()
   while (ct_test->Up()) {
     ct_test=ct_test->Up();
     ++m_njet;
-    if (qmaxt<ct_test->Kt2()) qmaxt=ct_test->Kt2();
+    //    if (qmaxt<ct_test->Kt2()) qmaxt=ct_test->Kt2();
   }
   if (qmaxt>m_q2_hard) m_q2_hard = qmaxt;
   m_qmax=sqrt(m_q2_hard);
@@ -126,13 +215,13 @@ void Cluster_Partons_CKKW::InitWeightCalculation()
   double asfac(sqrt(m_is_as_factor*m_fs_as_factor));
   m_as_hard    = (*p_runas)(m_q2_hard/asfac);
   m_as_qcd     = (*p_runas)(m_q2_qcd/asfac);
-  m_as_jet     = (*p_runas)(m_q2_jet/asfac);
+  m_as_jet     = (*p_runas)(m_me_as_factor*m_q2_jet/asfac);
   msg_Debugging()<<"ct: scales: amegic "<<rpa.gen.Ecms()<<" ("<<m_as_amegic<<")"
 		 <<", hard "<<sqrt(m_q2_hard)<<" ("<<m_as_hard<<")"
 		 <<", qcd "<<sqrt(m_q2_qcd)<<" ("<<m_as_qcd<<")"
 		 <<", jet "<<sqrt(m_q2_jet)<<" ("<<m_as_jet<<"), fac "
 		 <<m_is_as_factor<<"/"<<m_fs_as_factor<<", fss "<<sqrt(m_q2_fss)
-		 <<", iss "<<sqrt(m_q2_iss)<<"\n";
+		 <<", iss "<<sqrt(m_q2_iss)<<" mefac "<<m_me_as_factor<<"\n";
   if (m_kfac!=0.) {
     m_as_hard *= 1. + m_as_hard/(2.*M_PI)*m_kfac;
     m_as_qcd  *= 1. + m_as_qcd/(2.*M_PI)*m_kfac;
@@ -181,36 +270,46 @@ void Cluster_Partons_CKKW::InitWeightCalculation()
   if (m_q2_hard!=m_q2_qcd && m_nstrong==3) m_count_startscale=0;
 
   // determine lowest scale for highest multi treatment
-  m_qmin = 0.;
-  if (m_njet==m_maxjetnumber && m_njet>2) {
-    double qmin2(0.0);
-    FixJetvetoPt2(qmin2);
-    if (m_LowestFromME && m_q2_qcd<qmin2) qmin2 = m_q2_qcd;
-    if (qmin2==0.0)
+  m_qmin_ci = m_qmin_cf = 0.;
+  if ((m_njet==m_maxjetnumber && m_njet>2) ||
+      (m_njet==2 && p_ct->OrderStrong()>0)) {
+    double qmin2i(0.0), qmin2f(0.0);
+    JetvetoPt2(qmin2i,qmin2f);
+    if (m_LowestFromME) {
+      if (m_q2_qcd<qmin2i) qmin2i = m_q2_qcd;
+      if (m_q2_qcd<qmin2f) qmin2f = m_q2_qcd;
+    }
+    if (qmin2i==0.0 || qmin2f==0.0)
       msg.Error()<<"Cluster_Partons_CKKW::InitWeightCalculation(..): "
 		 <<"No minimum scale found."<<std::endl;
-    m_qmin=sqrt(qmin2);
+    m_qmin_ci=sqrt(qmin2i);
+    m_qmin_cf=sqrt(qmin2f);
   }
-  msg_Debugging()<<"ct: qmin "<<m_qmin<<", qmin_i "<<m_qmin_i
-		 <<", qmin_f "<<m_qmin_f<<"\n";
+  msg_Debugging()<<"ct: qmini "<<m_qmin_ci<<", qminf "<<m_qmin_cf
+		 <<", qmin_i "<<m_qmin_i<<", qmin_f "<<m_qmin_f<<"\n";
 }
 
 
 bool Cluster_Partons_CKKW::
 ApplyCombinedInternalWeight(const bool is,const Flavour & fl,
-			    const double upper,const double actual,
+			    const double iupper,const double iactual,
 			    const double asref,const int order)
 {
+  double upper(iupper), actual(iactual);
+  if (upper<actual) {
+    msg_Tracking()<<METHOD<<"(): q = "<<actual<<", Q = "
+		  <<upper<<". Swap."<<std::endl;
+    std::swap<double>(upper,actual);
+  }
   double qmin(0.), DeltaNum(0.), DeltaDenom(1.), DeltaRatio(0.);
   double as_ptij(0.), asRatio(0.);
-
   if (is) {
-      as_ptij = (*p_runas)(sqr(actual)/m_is_as_factor);
-      qmin = Max(m_qmin,m_qmin_i);
+    as_ptij = (*p_runas)(m_me_as_factor*sqr(actual)/m_is_as_factor);
+    qmin = m_qmin_ci!=0.0?m_qmin_ci:m_qmin_i;
   }
   else {
-    as_ptij = (*p_runas)(sqr(actual)/m_fs_as_factor);
-    qmin = Max(m_qmin,m_qmin_f);
+    as_ptij = (*p_runas)(m_me_as_factor*sqr(actual)/m_fs_as_factor);
+    qmin = m_qmin_cf!=0.0?m_qmin_cf:m_qmin_f;
   }
   if (m_kfac!=0.) as_ptij *= 1. + as_ptij/(2.*M_PI)*m_kfac;
   asRatio = as_ptij/asref;
@@ -245,8 +344,8 @@ ApplyExternalWeight(const bool is,const Flavour & fl,
 		    const double actual)
 {
   double qmin(0.), DeltaNum(0.);
-  if (is) qmin = Max(m_qmin,m_qmin_i);
-     else qmin = Max(m_qmin,m_qmin_f);
+  if (is) qmin = m_qmin_ci!=0.0?m_qmin_ci:m_qmin_i;
+     else qmin = m_qmin_cf!=0.0?m_qmin_cf:m_qmin_f;
   if (actual<qmin) {
     ++m_fails;
     DeltaNum = m_AcceptMisClusters;

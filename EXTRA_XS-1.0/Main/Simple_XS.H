@@ -14,7 +14,7 @@ namespace EXTRAXS {
 
     std::string m_path, m_file, m_respath, m_resfile;
 
-    size_t m_nmax, m_count, m_minqcdjet, m_maxjet;
+    size_t m_nmax, m_count, m_minqcdjet, m_maxqcdjet, m_maxjet;
 
     ATOOLS::Data_Read *p_dataread;
 
@@ -69,6 +69,7 @@ namespace EXTRAXS {
     inline bool InSwaped() const { return p_selected->Selected()->InSwaped(); }
 
     inline size_t MinQCDJets() const { return m_minqcdjet; }
+    inline size_t MaxQCDJets() const { return m_maxqcdjet; }
 
     inline size_t MaxJets() const { return m_maxjet; }
 

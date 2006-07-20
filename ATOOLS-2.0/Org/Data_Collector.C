@@ -62,9 +62,10 @@ std::ostream & ATOOLS::operator<<(std::ostream & s, const Process_Info & wi)
   return s;
 }
 
+namespace ATOOLS {
 
-template <> Blob_Data<Process_Info>::~Blob_Data() 
-{
-}
+template <> Blob_Data<Process_Info>::~Blob_Data() {}
 
 template class Blob_Data<Process_Info>;
+
+}

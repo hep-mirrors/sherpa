@@ -11,6 +11,7 @@ namespace MODEL {
     void Info();
     void SetSMInput(); 
     void SetMasses(); 
+    void SetWidths(); 
     void SetHiggsParameters();
     void SetInoParameters();    
     void SetSquarkParameters();    

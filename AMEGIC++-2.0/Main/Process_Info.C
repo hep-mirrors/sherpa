@@ -1,6 +1,7 @@
 #include "Process_Info.H"
 #include "MathTools.H"
 #include "Point.H"
+#include <algorithm>
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -350,8 +351,8 @@ void Process_Info::MergePointList(Point** plist,Point* np, int nin)
 Point* Process_Info::MergePointList(Point** plist,Point* np,int &nd, int nin, int &ep)
 {
   Point* hp;
-//   plist[nd]->Print();cout<<endl;
   hp = np->CopyList(plist[nd++]);
+  
   for (size_t i=0;i<m_sublist[0].size();i++) {
     for (size_t j=0;j<2*(m_sublist[0].size()+nin)-3;j++) {
       if (np[j].b==1 && np[j].number<99) {
@@ -360,7 +361,8 @@ Point* Process_Info::MergePointList(Point** plist,Point* np,int &nd, int nin, in
 	    Point* hhp = m_sublist[0][i]->MergePointList(plist,hp+1,nd,1,ep);
 	    np[j] = hp[1];
 	    np[j].number = 100;
-	  hp = hhp;
+	    hp = hhp;
+ 	    np[j].t = 10;
 	  }
 	  else {
 	    np[j].number = ep;

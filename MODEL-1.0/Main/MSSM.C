@@ -37,8 +37,7 @@ void MSSM::ReadInFile() {
 
   m_scales     = m_unification = 0;
   m_benchmark  = p_dataread->GetValue<std::string>("BENCHMARK",std::string(""));
-  m_spectrum   = p_dataread->GetValue<int>("GENERATOR_ON",1
-);
+  m_spectrum   = p_dataread->GetValue<int>("GENERATOR_ON",1);
 
   if (m_benchmark.length()!=0) InitializeBenchmarkPoint();
   else {

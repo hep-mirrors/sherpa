@@ -358,7 +358,6 @@ void Channel_Generator3_NPV::Step0(int flag,Point* p,int& rannum,ofstream& sf)
   string m = Order(LinkedMasses(ph));
   
   string help("");
-  char hs[8];
   switch (flag) {
   case -11: 
     if (ph->m==0) {
@@ -366,13 +365,11 @@ void Channel_Generator3_NPV::Step0(int flag,Point* p,int& rannum,ofstream& sf)
     } 
     else {
       if (!IsZero(ph->fl.Mass())) {
-	sprintf(hs,"%i",ph->fl.Kfcode());
-	help+=string("ZR")+string(hs)+string("_");
+	help+=string("ZR")+ToString(ph->fl.Kfcode())+string("_");
       }
       else help+=string("ZS_");
     }
-    sprintf(hs,"%i",(int)PMassSum(ph,0));
-    help+=string(hs);
+    help+=ToString((int)PMassSum(ph,0));
     m_idc.push_back(help);
   case 0: case 1:
     sf<<"  Vec4D p"<<m<<"=p[0]+p[1];"<<endl;
@@ -388,9 +385,8 @@ void Channel_Generator3_NPV::Step0(int flag,Point* p,int& rannum,ofstream& sf)
       return;
     }
     {
-     sprintf(hs,"%f",PMassSum(ph,0));
       sf<<"  type  = 2;"<<endl
-	<<"  mass  = "<<string(hs)<<";"<<endl
+	<<"  mass  = "<<ToString(PMassSum(ph,0))<<";"<<endl
 	<<"  width = 0.;"<<endl;
       return;
     }
@@ -411,9 +407,7 @@ void Channel_Generator3_NPV::GenerateDecayChain(int flag,Point* p,int& rannum,of
     int hi = p->fl.Kfcode();
     string tmstr;
     if (flag>=0 && !IsZero(p->fl.Mass())) {
-      char hs[3];
-      sprintf(hs,"%i",p->number);
-      tmstr = string("tmass")+string(hs);
+      tmstr = string("tmass")+ToString(p->number);
       sf<<"  double "<<tmstr<<" = Flavour(kf::code("<<hi<<")).Mass();"<<endl;
     }
     else tmstr = string("0.");
@@ -474,12 +468,11 @@ void Channel_Generator3_NPV::GenerateDecayChain(int flag,Point* p,int& rannum,of
 	sctmin = string("-1.");
       }
     }
-    char hs[4];
+    string his("");
     switch (flag) {
     case -11:
-      if(!IsZero(p->fl.Mass())) sprintf(hs,"%i",hi);
-      else sprintf(hs,"");
-      m_idc.push_back(string("TC")+string(hs)+
+      if(!IsZero(p->fl.Mass())) his = ToString(hi);
+      m_idc.push_back(string("TC")+his+
 		      string("_")+pin0sum+string("_")+pin1sum+
 		      string("_")+pout0sum+string("_")+pout1sum);
       break;
@@ -494,9 +487,8 @@ void Channel_Generator3_NPV::GenerateDecayChain(int flag,Point* p,int& rannum,of
       sf<<rannum++<<"]);"<<endl;
       break;
     default:
-      if(!IsZero(p->fl.Mass())) sprintf(hs,"%i",hi);
-      else sprintf(hs,"");
-      string idh = string("TC")+string(hs)+
+      if(!IsZero(p->fl.Mass()))  his = ToString(hi);
+      string idh = string("TC")+his+
 	string("_")+pin0sum+string("_")+pin1sum+string("_")+pout0sum+string("_")+pout1sum;
       sf<<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT)"<<endl; 
       sf<<"    m_k"<<idh<<"<<CE.TChannelWeight(";
@@ -734,9 +726,7 @@ void Channel_Generator3_NPV::GenerateMassChain(int flag,Point* p,Point* clmp,int
   switch (flag) {
   case -11:
     if (maxpole>0.) {
-      char hs[4];
-      sprintf(hs,"%i",hi);
-      m_idc.push_back(string("MP")+string(hs)+string("_")+mummy);
+      m_idc.push_back(string("MP")+ToString(hi)+string("_")+mummy);
     }
     else m_idc.push_back(string("MTH_")+Order(mummy));
     break;
@@ -822,9 +812,7 @@ void Channel_Generator3_NPV::GenerateMassFwd(int flag,Point* p,int& rannum,ofstr
   switch (flag) {
   case -11: 
     if (maxpole>0.) {
-      char hs[4];
-      sprintf(hs,"%i",hi);
-      m_idc.push_back(string("MP")+string(hs)+string("_")+mummy);
+      m_idc.push_back(string("MP")+ToString(hi)+string("_")+mummy);
     }
     else m_idc.push_back(string("MlP_")+mummy);
     break;

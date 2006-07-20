@@ -3,6 +3,7 @@
 
 #include "File_IO_Base.H"
 #include "Algebra_Interpreter.H"
+#include "My_Limits.H"
 
 namespace ATOOLS {
 
@@ -75,8 +76,8 @@ namespace ATOOLS {
 
     bool m_allownans, m_addcommandline;
 
-    template <class Type> Type Default();
-
+    template <typename Type> Type Default(); 
+  
     size_t Find(std::string input,std::string parameter,
 		size_t &length) const;
 

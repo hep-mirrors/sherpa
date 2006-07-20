@@ -2,7 +2,7 @@ pkglib_LTLIBRARIES       =	libSherpaInitialization.la
 
 libSherpaInitialization_la_SOURCES    =	Initialization_Handler.C 
 
-pkginclude_HEADERS        =	Initialization_Handler.H 
+pkginclude_HEADERS    =	Initialization_Handler.H
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@
 

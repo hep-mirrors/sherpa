@@ -34,11 +34,13 @@ namespace SHERPA {
   public:
 
     NLL_Sudakov(int mode, double q2max, double q2min, 
-		MODEL::Running_AlphaS * =0 ,int =-1,double asfac=1.);
+		MODEL::Running_AlphaS *as=NULL,double asfac=1.);
 
     ~NLL_Sudakov();
 
     NLL_Sudakov_Base & Delta(const ATOOLS::Flavour &);
+
+    inline int Mode() const { return m_mode; }
 
   };
 

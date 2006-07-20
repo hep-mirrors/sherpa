@@ -265,16 +265,16 @@ void Process_Group::GroupProcesses() {
   double   sum_massout = 0.;
   Flavour* flout = new Flavour[m_nout];
   p_pinfo->GetTotalFlavList(flout);
-
+  
   for (size_t i=0;i<m_nin;i++)  {
     massin[i]   = p_flin[i].Mass();
     sum_massin += massin[i];
   }
   for (size_t i=0;i<m_nout;i++) {
-    massout[i]   = p_flout[i].Mass();
+    massout[i]   = flout[i].Mass();
     sum_massout += massout[i];
   }
-
+  
   bool massok = 1;
   for (size_t i=0;i<m_procs.size();i++) {
     for (size_t j=0;j<m_procs[i]->NIn();j++) {
@@ -468,6 +468,7 @@ void Process_Group::WriteOutHistogram(std::string filename)
 
 void Process_Group::SetEvents(const double number) 
 {
+  m_gmin=1.;
   m_expevents=m_dicedevents=0;
   m_anasum=m_validanasum=0.0;
   for (size_t i=0;i<m_procs.size();++i) {
@@ -1175,7 +1176,12 @@ double Process_Group::DSigma2()
 ATOOLS::Blob_Data_Base *Process_Group::OneEvent(double _mass) {
   if (m_atoms) {
     SelectOne();
-    return dynamic_cast<Process_Base*>(p_selected)->OneEvent(_mass);
+    Blob_Data_Base *data(dynamic_cast<Process_Base*>(p_selected)->OneEvent(_mass));
+//     Weight_Info info(data->Get<Weight_Info>());
+//     info.xsecweight=Max()*rpa.Picobarn();
+//     data->Set(info);
+//     PRINT_INFO(info.xsecweight);
+    return data;
   }
   return p_pshandler->OneEvent(_mass);
 }

@@ -198,22 +198,12 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file,bool sher
     }
   }
   delete reader;
-  // print decay channel list
-  //   pylist(12);
-  // for test purposes - leave only one tau decay channel open
-  //  LeaveOpenOnlyDC(93);
 }
 
 void Lund_Interface::SwitchOfDecays(ATOOLS::kf::code kfc)
 {
   pydat3.mdcy[1-1][pycomp(int(kfc))-1]=0;
   msg_Tracking()<<"Lund_Interface::SwitchOfDecays: "<<kfc<<std::endl;
-}
-
-void Lund_Interface::LeaveOpenOnlyDC( int idc )
-{
-  for( int i=89; i<=142; i++ ) pydat3.mdme[1-1][i-1] = 0; 
-  pydat3.mdme[1-1][idc-1] = 1;
 }
 
 Lund_Interface::~Lund_Interface()
@@ -613,9 +603,9 @@ void Lund_Interface::FillPrimaryTauInBlob(int pos,ATOOLS::Blob *blob,
   position=Vec4D(hepevt.vhep[pos][3],hepevt.vhep[pos][0],
 		 hepevt.vhep[pos][1],hepevt.vhep[pos][2]);
   particle = new Particle(-1,flav,momentum);
+  // if (pl) particle->SetNumber(pl->size());
+  // else particle->SetNumber(0);
   particle->SetNumber(-1*blob->InParticle(pos)->Number()); // set outgoing number = incoming number
-//  if (pl) particle->SetNumber(pl->size());
-//  else particle->SetNumber(0);
   particle->SetStatus(1);
   particle->SetInfo('P');
   blob->SetPosition(position);

@@ -21,7 +21,7 @@ namespace APACIC {
     double m_alphasmax, m_alphasfix; 
     double m_pt2min_qed, m_t0_qed, m_alpha_qed;
 
-    int m_cpl_scheme, m_ordering_scheme, m_pt_scheme;
+    int m_cpl_scheme, m_evolution_scheme, m_ordering_scheme;
     int m_mass_scheme, m_width_scheme, m_zrange_scheme;
     int m_mecorr_scheme,m_direct_photons,m_azimuthal_correlation;
     int m_last_veto, m_mode;
@@ -51,6 +51,8 @@ namespace APACIC {
 
     double UniformPhi() const;
 
+    bool DiceT(Knot *const mother,Knot *const granny);
+
 #ifdef CHECK_SPLITTINGS
     void CheckSplittings();
 #endif
@@ -72,9 +74,13 @@ namespace APACIC {
     const ATOOLS::Simple_Polarisation_Info &GetPolB();
     const ATOOLS::Simple_Polarisation_Info &GetPolC();
 
+    void SetPT2Min(const double &pt2);
+
     // inline functions
     inline void SetCouplingScheme(const int scheme)     
     { m_cpl_scheme=scheme; }
+    inline void SetEvolutionScheme(const int scheme)     
+    { m_evolution_scheme=scheme; }
     inline void SetOrderingScheme(const int scheme)     
     { m_ordering_scheme=scheme; }
     inline void SetMassScheme(const int scheme)         
@@ -88,8 +94,7 @@ namespace APACIC {
     inline void SetCorrelationScheme(const int scheme)  
     { m_azimuthal_correlation=scheme; }
 
-    inline void SetScaleFactor(const double &fac) { m_rscalefac=fac;         }
-    inline void SetPT2Min(const double &pt2)      { m_t0=4.0*(m_pt2min=pt2); }
+    inline void SetScaleFactor(const double &fac) { m_rscalefac=fac;   }
     inline void SetPT2MinQED(const double &pt2)   
     { m_t0_qed=4.0*(m_pt2min_qed=pt2); }
 

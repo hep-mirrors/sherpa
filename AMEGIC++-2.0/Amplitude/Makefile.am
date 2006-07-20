@@ -11,15 +11,15 @@ libAmplitude_la_SOURCES = CFColor.C Amplitude_Base.C \
                           Amplitude_Output.C
 
 pkginclude_HEADERS = CFColor.H Single_Amplitude.H \
-                     Amplitude_Generator.H Amplitude_Manipulator.H \
-                     Color_Generator.H \
-                     Prop_Generator.H Zfunc_Generator.H Pfunc.H \
-                     Zfunc.H Amplitude_Handler.H Amplitude_Base.H \
-                     Amplitude_Group.H \
-                     Color_Group.H Super_Amplitude.H Single_Amplitude_Base.H \
-                     Super_Amplitude.H Amplitude_Output.H
-
-AM_CXXFLAGS   = @SHERPAFLAGS@
+                 Amplitude_Generator.H Amplitude_Manipulator.H \
+		 Color_Generator.H \
+	         Prop_Generator.H Zfunc_Generator.H Pfunc.H \
+		 Zfunc.H Amplitude_Handler.H Amplitude_Base.H \
+		 Amplitude_Group.H \
+		 Color_Group.H Super_Amplitude.H Single_Amplitude_Base.H \
+		 Super_Amplitude.H Amplitude_Output.H
+                          
+AM_CXXFLAGS   =	@SHERPAFLAGS@
 
 INCLUDES = @AMEGICINCS@ @MODELINCS@ @ATOOLSINCS@
 

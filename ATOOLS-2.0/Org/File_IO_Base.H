@@ -4,6 +4,16 @@
 #include "My_File.H"
 #include <vector>
 
+#ifdef __GNUC__
+#if __GNUC__ < 3
+#define AT(VECTOR,ELEMENT) VECTOR[ELEMENT]
+#else
+#define AT(VECTOR,ELEMENT) VECTOR.at(ELEMENT)
+#endif
+#else
+#define AT(VECTOR,ELEMENT) VECTOR.at(ELEMENT)
+#endif
+
 namespace ATOOLS {
 
   class File_IO_Base {
@@ -30,37 +40,37 @@ namespace ATOOLS {
     // inline functions
     inline void SetInputPath(const std::string inputpath,
 			     const unsigned int i=0)
-    { m_infiles.at(i).SetPath(inputpath); }
+    { AT(m_infiles,i).SetPath(inputpath); }
     inline void SetInputFile(const std::string inputfile,
 			     const unsigned int i=0)
-    { m_infiles.at(i).SetFile(inputfile); }
+    { AT(m_infiles,i).SetFile(inputfile); }
     inline void SetInFileMode(const fom::code infilemode,
 			      const unsigned int i=0)
-    { m_infiles.at(i).SetMode(infilemode); }
+    { AT(m_infiles,i).SetMode(infilemode); }
 
     inline void SetOutputPath(const std::string outputpath,
 			     const unsigned int i=0)
-    { m_outfiles.at(i).SetPath(outputpath); }
+    { AT(m_outfiles,i).SetPath(outputpath); }
     inline void SetOutputFile(const std::string outputfile,
 			     const unsigned int i=0)
-    { m_outfiles.at(i).SetFile(outputfile); }
+    { AT(m_outfiles,i).SetFile(outputfile); }
     inline void SetOutFileMode(const fom::code outfilemode,
 			       const unsigned int i=0)
-    { m_outfiles.at(i).SetMode(outfilemode); }
+    { AT(m_outfiles,i).SetMode(outfilemode); }
 
     inline const std::string &InputPath(const unsigned int i=0) const
-    { return m_infiles.at(i).Path(); }
+    { return AT(m_infiles,i).Path(); }
     inline const std::string &InputFile(const unsigned int i=0) const
-    { return m_infiles.at(i).File(); }
+    { return AT(m_infiles,i).File(); }
     inline fom::code InFileMode(const unsigned int i=0) const  
-    { return m_infiles.at(i).Mode(); }
+    { return AT(m_infiles,i).Mode(); }
 
     inline const std::string &OutputPath(const unsigned int i=0) const
-    { return m_outfiles.at(i).Path(); }
+    { return AT(m_outfiles,i).Path(); }
     inline const std::string &OutputFile(const unsigned int i=0) const
-    { return m_outfiles.at(i).File(); }
+    { return AT(m_outfiles,i).File(); }
     inline fom::code OutFileMode(const unsigned int i=0) const
-    { return m_outfiles.at(i).Mode(); }
+    { return AT(m_outfiles,i).Mode(); }
 
     inline std::ifstream *InFile(const unsigned int i=0)  
     { return m_infiles[i]();  }

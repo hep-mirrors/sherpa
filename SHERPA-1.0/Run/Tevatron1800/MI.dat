@@ -1,0 +1,20 @@
+!=================================================!
+!          Underlying Event Setup file            !
+!=================================================!
+!
+! general parameters
+!
+MI_HANDLER	= None        	        ! Amisic / None
+!
+! hard underlying event parameters
+!
+CREATE_GRID 93 93 -> 93 93		! processes to generate
+PS_ERROR	    = 1.0e-2 		! error for integration
+REGULATE_XS	    = 0			! regulate cross section
+XS_REGULATION	    = 2.45		! regulation parameter
+SCALE_MIN	    = 2.45 		! minimum scale
+RESCALE_EXPONENT    = 0.16		! rescaling exponent
+REFERENCE_SCALE	    = 1800.0		! reference energy scale
+PROFILE_FUNCTION    = Gaussian		! Gaussian / Double_Gaussian
+PROFILE_PARAMETERS  = 1.0 0.5 0.5	! size (must be 1), coresize, 
+					! matter fraction

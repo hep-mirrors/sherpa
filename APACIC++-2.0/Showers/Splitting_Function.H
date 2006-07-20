@@ -16,6 +16,8 @@ namespace APACIC {
     const static double s_TR;
     const static double s_Tf;
     const static double s_kappa;
+    const static double s_kappaG;
+    const static double s_kappaQ;
 
     static int s_kfactorscheme;
 

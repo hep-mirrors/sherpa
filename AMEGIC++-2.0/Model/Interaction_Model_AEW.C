@@ -30,6 +30,15 @@ Interaction_Model_AEW::Interaction_Model_AEW(MODEL::Model_Base * _model,
   vev   = Kabbala(string("v_{EW}"),ScalarConstant(std::string("vev")));
   a4    = Kabbala(string("\\alpha_4"),ScalarConstant(std::string("Alpha_4")));
   a5    = Kabbala(string("\\alpha_5"),ScalarConstant(std::string("Alpha_5")));
+
+  g1_p     = Kabbala(string("g_1^{gamma}"),ScalarConstant(std::string("g1_gamma")));
+  kappa_p  = Kabbala(string("\\kappa^{gamma}"),ScalarConstant(std::string("kappa_gamma")));
+  lambda_p = Kabbala(string("\\lambda^{gamma}"),ScalarConstant(std::string("lambda_gamma")));
+  g4_p     = Kabbala(string("g_4^{gamma}"),ScalarConstant(std::string("g4_gamma")));
+  g1_Z     = Kabbala(string("g_1^{Z}"),ScalarConstant(std::string("g1_Z")));
+  kappa_Z  = Kabbala(string("\\kappa^{Z}"),ScalarConstant(std::string("kappa_Z")));
+  lambda_Z = Kabbala(string("\\lambda^{Z}"),ScalarConstant(std::string("lambda_Z")));
+  g4_Z     = Kabbala(string("g_4^{Z}"),ScalarConstant(std::string("g4_Z")));
 }
 
 void Interaction_Model_AEW::c_FFV(std::vector<Single_Vertex>& vertex,int & vanz)
@@ -176,67 +185,77 @@ void Interaction_Model_AEW::c_FFV(std::vector<Single_Vertex>& vertex,int & vanz)
   }
 }
 
+// Anomalous triple gauge couplings as defined in Nuclear Physics B282 (1987)253-307
+// only terms ~f1,f2,f3,f4
+
 void Interaction_Model_AEW::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
   Flavour flW(kf::W);
   Flavour flZ(kf::Z);
   Flavour flP(kf::photon);
-  Kabbala kcpl0,kcpl1,kcpl0_1,kcpl1_1,charge;
+  Kabbala kcpl,kcpl0,kcpl1,kcpl2,kcpl3,charge;
+  Kabbala Wyuk = Kabbala(string("M_{")+flW.TexName()+string("}"),flW.Yuk());
 
   charge = Kabbala(string("Q_{")+flW.TexName()+string("}"),flW.Charge());
 
   if (flW.IsOn() && flP.IsOn()) {
 
-  // photon WW
-  vertex[vanz].in[0] = flW;
-  vertex[vanz].in[1] = Flavour(kf::photon);
-  vertex[vanz].in[2] = flW;
-
-  kcpl0 = M_I*g1*charge;
-  kcpl1 = kcpl0;
-
-  vertex[vanz].cpl[0]  = kcpl0.Value();
-  vertex[vanz].cpl[1]  = vertex[vanz].cpl[0];
-  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
-
-  vertex[vanz].ncf   = 1;
-  vertex[vanz].Color = new Color_Function(cf::None);     
-
-  vertex[vanz].nlf     = 1;
-  vertex[vanz].Lorentz = new Lorentz_Function(lf::Gauge3);
-  vertex[vanz].Lorentz->SetParticleArg(0,1,2);     
-
-  vertex[vanz].on      = 1;
-  vertex.push_back(Single_Vertex());vanz++;
-}
+    // photon WW
+    vertex[vanz].in[0] = flW;
+    vertex[vanz].in[1] = Flavour(kf::photon);
+    vertex[vanz].in[2] = flW;
+    
+    kcpl = M_I*g1*charge;
+    kcpl0 = kcpl*g1_p;
+    kcpl1 = kcpl*kappa_p;
+    kcpl2 = kcpl*lambda_p/(Wyuk*Wyuk);
+    kcpl3 = kcpl*M_I*g4_p;
+        
+    vertex[vanz].cpl[0]  = kcpl0.Value();  //g1
+    vertex[vanz].cpl[1]  = kcpl1.Value();  //kappa
+    vertex[vanz].cpl[2]  = kcpl2.Value();  //lambda/m_W^2
+    vertex[vanz].cpl[3]  = kcpl3.Value();  //i*g4
+    
+    vertex[vanz].ncf   = 1;
+    vertex[vanz].Color = new Color_Function(cf::None);     
+    
+    vertex[vanz].nlf     = 1;
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::AGauge3);
+    vertex[vanz].Lorentz->SetParticleArg(1,0,2);     
+  
+    vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
+  }
   if (flZ.IsOn()) {
  
-  // ZWW
-  vertex[vanz].in[0] = flW;
-  vertex[vanz].in[1] = Flavour(kf::Z);
-  vertex[vanz].in[2] = flW;
+    // ZWW
+    vertex[vanz].in[0] = flW;
+    vertex[vanz].in[1] = Flavour(kf::Z);
+    vertex[vanz].in[2] = flW;
 
-  kcpl0 = M_I*g2*charge*costW;
-  kcpl1 = kcpl0;
+    kcpl = M_I*g2*charge*costW;
+    kcpl0 = kcpl*g1_Z;
+    kcpl1 = kcpl*kappa_Z;
+    kcpl2 = kcpl*lambda_Z/(Wyuk*Wyuk);
+    kcpl3 = kcpl*M_I*g4_Z;
   
-  vertex[vanz].cpl[0]  = kcpl0.Value();
-  vertex[vanz].cpl[1]  = kcpl1.Value();
-  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
-  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+    vertex[vanz].cpl[0]  = kcpl0.Value();  //g1
+    vertex[vanz].cpl[1]  = kcpl1.Value();  //kappa
+    vertex[vanz].cpl[2]  = kcpl2.Value();  //lambda/m_W^2
+    vertex[vanz].cpl[3]  = kcpl3.Value();  //i*g4
 
-  vertex[vanz].ncf   = 1;
-  vertex[vanz].Color = new Color_Function(cf::None);     
+    vertex[vanz].ncf   = 1;
+    vertex[vanz].Color = new Color_Function(cf::None);     
+    
+    vertex[vanz].nlf     = 1;
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::AGauge3);
+    vertex[vanz].Lorentz->SetParticleArg(1,0,2);     
 
-  vertex[vanz].nlf     = 1;
-  vertex[vanz].Lorentz = new Lorentz_Function(lf::Gauge3);
-  vertex[vanz].Lorentz->SetParticleArg(0,1,2);     
-
-  vertex[vanz].on      = 1;
-  vertex.push_back(Single_Vertex());vanz++;
+    vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
   }
 }
-
+//End anomalous triple gauge couplings
 
 void Interaction_Model_AEW::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 {
@@ -412,6 +431,8 @@ void Interaction_Model_AEW::c_SSSS(std::vector<Single_Vertex>& vertex,int& vanz)
   }
 }
 
+//Anomalous quadrupole Vertices defined in hep-ph/0001065
+
 void Interaction_Model_AEW::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
 {
 
@@ -561,6 +582,7 @@ void Interaction_Model_AEW::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
   vertex.push_back(Single_Vertex());vanz++;
   }
 }
+//End anoumalous quadrpol vertices
 
 void Interaction_Model_AEW::c_SSVV(std::vector<Single_Vertex>& vertex,int& vanz)
 {

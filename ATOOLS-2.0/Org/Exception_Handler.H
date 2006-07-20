@@ -24,6 +24,8 @@ namespace ATOOLS {
     
     static unsigned int s_nbus, s_nsegv;
 
+    static std::string s_progname;
+
     static std::vector<Tester_Function>     s_testerfunctions;
     static std::vector<Terminator_Function> s_terminatorfunctions;
 
@@ -68,6 +70,8 @@ namespace ATOOLS {
     { s_active=active; }
     inline static void SetStackTrace(const bool trace) 
     { s_stacktrace=trace;  }
+    inline static void SetProgramName(const std::string &name)
+    { s_progname=name; }
 
     inline static bool Active()     { return s_active;      }
     inline static bool StackTrace() { return s_stacktrace;  }

@@ -1,5 +1,6 @@
-#ifdef USING_Amisic
 #include "MI_Observables.H"
+
+#ifdef USING__Amisic
 
 using namespace ANALYSIS;
 
@@ -128,7 +129,7 @@ using namespace ATOOLS;
 
 MI_Statistics::MI_Statistics(const size_t scales,const std::string & listname, 
 			     int type):
-  Primitive_Observable_Base(type,0,100,100,NULL) 
+  Primitive_Observable_Base(type,0,100,100) 
 {
   m_name="MI_Statistics.dat";
   m_type=type;

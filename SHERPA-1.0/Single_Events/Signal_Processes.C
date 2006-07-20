@@ -206,6 +206,8 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,
 
   double  weight = p_mehandler->Weight();
   double  procweight = p_mehandler->ProcessWeight();
+  double  xsecweight = p_mehandler->XSecWeight();
+  int  xsecntrial = p_mehandler->NumberOfXSecTrials();
   double  facscale = p_mehandler->FactorisationScale();
   int  ntrial = p_mehandler->NumberOfTrials();
 
@@ -246,7 +248,7 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,
 
   bool success=true;
 
-  Particle * particle;
+  Particle * particle(NULL);
   EXTRAXS::XS_Base *xs=p_mehandler->GetXS(1);
   for (unsigned int i=0;i<p_mehandler->NIn();i++) {
     particle = new Particle(i,p_mehandler->Flavours()[i],
@@ -312,6 +314,8 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,
   blob->AddData("ME_Weight",new Blob_Data<double>(weight));
   blob->AddData("ME_NumberOfTrials",new Blob_Data<int>(ntrial));
   blob->AddData("Process_Weight",new Blob_Data<double>(procweight));
+  blob->AddData("XS_Weight",new Blob_Data<double>(xsecweight));
+  blob->AddData("XS_NumberOfTrials",new Blob_Data<int>(xsecntrial));
   blob->AddData("Factorisation_Scale",new Blob_Data<double>(facscale));
   Spin_Correlation_Tensor* SCT = p_mehandler->GetSpinCorrelations();
   if (SCT!=NULL)

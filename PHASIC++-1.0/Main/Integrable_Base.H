@@ -2,6 +2,7 @@
 #define Integrable_Base_H
 
 #include "Selector.H"
+#include "Jet_Finder.H"
 #include "Cut_Data.H"
 #include "Flavour.H"
 #include "Vector.H"
@@ -63,7 +64,7 @@ namespace PHASIC {
     double m_totalxs, m_totalsum, m_totalsumsqr, m_totalerr;
     double m_ssum, m_ssumsqr,m_smax,m_ssigma2,m_wmin;
 
-    double m_procweight;
+    double m_procweight, m_me_as_factor;
 
     std::vector<double> m_vsmax;
     std::vector<long unsigned int> m_vsn;
@@ -82,6 +83,8 @@ namespace PHASIC {
     ATOOLS::Selector_Base       *p_selector;
     ATOOLS::Cut_Data            *p_cuts;
     ATOOLS::Histogram     *p_whisto;
+
+    ATOOLS::Jet_Finder *p_jf;
 
     bool m_ownselector;
 
@@ -271,6 +274,8 @@ namespace PHASIC {
     { if (own) return p_pshandler; return p_activepshandler; }
     
     inline std::string EnhanceFunction() const { return m_efunc; }
+
+    inline double GMin() const { return m_gmin; }
 
   };// end of class Integrable_Base
 

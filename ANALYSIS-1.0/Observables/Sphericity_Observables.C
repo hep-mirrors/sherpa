@@ -190,7 +190,9 @@ Primitive_Observable_Base * Planarity::Copy() const
   return new Planarity(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
-
+namespace ATOOLS {
 
 template <> Blob_Data<Sphericity_Data>::~Blob_Data() { }
 template class Blob_Data<Sphericity_Data>;
+
+}

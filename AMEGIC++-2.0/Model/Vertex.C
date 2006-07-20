@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <stdlib.h>
 #include <stdio.h>
+#include <algorithm>
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -280,7 +281,8 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
       }
       
       if (orig.Lorentz->Type()==lf::SSV ||
-	  orig.Lorentz->Type()==lf::Gauge3) conjugate *= -1;
+	  orig.Lorentz->Type()==lf::Gauge3 || 
+	  orig.Lorentz->Type()==lf::AGauge3) conjugate *= -1;
       
       if (conjugate==-1) {
 	for (short int i=0;i<4;i++) probe.cpl[i] = -probe.cpl[i];

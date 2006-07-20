@@ -37,6 +37,8 @@ Exception *Exception_Handler::s_exception=0;
 unsigned int Exception_Handler::s_nbus=0;
 unsigned int Exception_Handler::s_nsegv=0;
 
+std::string Exception_Handler::s_progname="Sherpa";
+
 std::vector<Exception_Handler::Tester_Function> 
 Exception_Handler::s_testerfunctions=
   std::vector<Exception_Handler::Tester_Function>();
@@ -99,7 +101,8 @@ void Exception_Handler::PrepareTerminate()
 void Exception_Handler::Exit(int exitcode)
 {
   if (s_print) msg.Error()<<om::bold<<"Exception_Handler::Exit: "
-			  <<om::reset<<om::blue<<"Exiting Sherpa with code "
+			  <<om::reset<<om::blue<<"Exiting "
+			  <<s_progname<<" with code "
 			  <<om::reset<<om::bold<<"("
 			  <<om::red<<exitcode<<om::reset<<om::bold<<")"
 			  <<om::reset<<tm::curon<<std::endl;

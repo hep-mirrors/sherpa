@@ -4,7 +4,9 @@
 #include "All_Processes.H"
 #include "Random.H"
 #include "Message.H"
+#include "Blob.H"
 
+using namespace PHASIC;
 using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace std;
@@ -160,7 +162,12 @@ bool All_Processes::CalculateTotalXSec(string _resdir)
 
 ATOOLS::Blob_Data_Base *All_Processes::OneEvent(double _mass) {
   SelectOne();
-  return dynamic_cast<Process_Base*>(p_selected)->OneEvent(_mass);
+  Blob_Data_Base *data(dynamic_cast<Process_Base*>(p_selected)->OneEvent(_mass));
+//   Weight_Info info(data->Get<Weight_Info>());
+//   info.xsecweight*=Selected()->TotalXS()*rpa.Picobarn();
+//   data->Set(info);
+  //  PRINT_INFO(Selected()->Name());
+  return data;
 }
 
 ATOOLS::Blob_Data_Base *All_Processes::SameEvent() {
@@ -179,5 +186,8 @@ ATOOLS::Blob_Data_Base *All_Processes::WeightedEvent(const int mode)
     SelectOne();
     res=p_selected->WeightedEvent(mode);
   } while (res==NULL && ++trials<Selected()->PSHandler()->MaxTrials());
+  Weight_Info info(res->Get<Weight_Info>());
+  info.xsecweight*=rpa.Picobarn();
+  res->Set(info);
   return res;
 }

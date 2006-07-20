@@ -283,6 +283,15 @@ namespace SHERPA {
     A pointer to the wrapper around the hadron decay code that will be used during the run.
   */
   /*!
+    \var HDHandlersMap Initialization_Handler::m_hdhandlers
+    This is map with pointers to the corresponding hadron decay handlers
+    <TABLE>
+    <TR> <TD>1st column</TD> <TD>2nd column</TD> </TR>
+    <TR> <TD>Lund</TD> <TD>pointer on Pythia</TD> </TR>
+    <TR> <TD>Hadrons</TD> <TD>pointer on HADRONS</TD> </TR>
+    </TABLE>
+   */
+  /*!
     \fn Initialization_Handler::Initialization_Handler(std::string=std::string("./"),
                                                        std::string=std::string("Run.dat"))
     In the constructor, the data read object is instantiated and all file names to be used
@@ -305,6 +314,21 @@ namespace SHERPA {
     Returns true if the calculation of total cross sections by the matrix elements
     of choice was successful, otherwise, flase will be returned.
   */
+
+  /*!
+    \fn Initialization_Handler::InitializeTheHadronDecays()
+    This method reads \c Fragmentation.dat, especially the desired decay model.
+     
+    If the model is \c Hadrons it calls the HADRONS constructor for initialisation
+    and the Hadron_Decay_Handler::EraseTreated method
+    to remove the particles that HADRONS can cope with from the unstable hadron list. If then
+    there are still some particles in the list, i.e. those that HADRONS can't deal with, it needs to
+    initialise Pythia as well.
+
+    If, on the other hand, the model is \c Lund, it calls the Pythia for initialisation.
+    */
+  
+
 }
 
 

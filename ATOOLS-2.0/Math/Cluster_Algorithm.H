@@ -43,6 +43,8 @@ namespace ATOOLS {
     Measure_Type       m_measure;
     Recombination_Type m_recom;
 
+    bool m_recalc;
+
     inline void SetDMin(const size_t &i, const size_t &j,const double &dij) 
     {
       if (dij<m_dmin) {
@@ -63,7 +65,12 @@ namespace ATOOLS {
     bool Cluster(const double &crit,const cs::code &code=cs::dist);
 
     // inline functions
-    inline void SetPoints(const Point_Vector &p) { m_sp=m_p=p; }
+    inline void SetPoints(const Point_Vector &p)   { m_sp=m_p=p; }
+    inline void SetClusters(const Point_Vector &p) { m_p=p;      }
+
+    inline void SetRecalc(const bool &recalc) { m_recalc=recalc; }
+
+    inline bool Recalc() const { return m_recalc; }
 
     inline Measure_Type       &Measure()       { return m_measure; }
     inline Recombination_Type &Recombination() { return m_recom;   }
@@ -76,6 +83,8 @@ namespace ATOOLS {
 
     inline size_t NClusters() const { return m_n;    }
     inline double DMin() const      { return m_dmin; }
+
+    inline const Size_Vector &CPos() const { return m_i; }
 
   };// end of class Cluster
 

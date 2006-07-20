@@ -88,7 +88,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   }
   delete reader;
   if (msg.Level()>0) msg.Out()<<"Welcome to Sherpa, "<<gen.m_username
-			      <<". Initialization of framework underway."<<std::endl;
+	   <<". Initialization of framework underway."<<std::endl;
   system("if test -f sherpa_user_test; then rm sherpa_user_test; fi");
   m_path = path;
   Data_Read dr(m_path+file);
@@ -204,3 +204,7 @@ void  Run_Parameter::Gen::SetBeam2(const Flavour b) {
   Data_Collector::AddData("BEAM2",new Blob_Data<std::string>(m_beam2.TexName()));
 }
 
+std::string Run_Parameter::Gen::Variable(const std::string &key,const std::string &def) 
+{ 
+  return s_variables.find(key)!=s_variables.end()?s_variables[key]:def; 
+}

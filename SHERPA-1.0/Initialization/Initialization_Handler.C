@@ -60,11 +60,11 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
   m_midat            = p_dataread->GetValue<string>("MI_DATA_FILE",string("MI.dat"));
   m_decaydat         = p_dataread->GetValue<string>("DECAY_DATA_FILE",string("Decays.dat"));
   m_showerdat        = p_dataread->GetValue<string>("SHOWER_DATA_FILE",string("Shower.dat"));
+  rpa.gen.SetVariable("SHOWER_DATA_FILE",m_showerdat);
   m_beamremnantdat   = p_dataread->GetValue<string>("BEAMREMNANT_DATA_FILE",string("Beam.dat"));
   m_fragmentationdat = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_hadrondecaysdat  = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
-
   int spincorrelations = p_dataread->GetValue<int>("SPIN_CORRELATIONS",0);
   Spin_Correlation_Tensor::SetMode( (ATOOLS::scmode::code)spincorrelations );
 }
@@ -172,7 +172,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   bool okay = InitializeTheIO();
   if (m_mode==9999) {
     msg.Events()<<"SHERPA will read in the events."<<std::endl
-		<<"   The full framework is not needed."<<std::endl;
+	     <<"   The full framework is not needed."<<std::endl;
     InitializeTheAnalyses();
     return true;
   }
@@ -212,7 +212,7 @@ bool Initialization_Handler::CheckBeamISRConsistency()
     double ms = p_model->ScalarConstant("M_s");
     if (ms<rpa.gen.Ecms()) {
       msg.Error()<<"WARNING in Initialization_Handler::CheckBeamISRConsistency :"<<std::endl
-		 <<"   You are using the ADD model beyond its valid range ! "<<endl;
+	       <<"   You are using the ADD model beyond its valid range ! "<<endl;
     }
   }
 
@@ -274,17 +274,9 @@ bool Initialization_Handler::InitializeTheIO()
   int filesize        = p_dataread->GetValue<int>("FILE_SIZE",1000);
   int precision        = p_dataread->GetValue<int>("OUTPUT_PRECISION",6);
   std::string outmode = p_dataread->GetValue<string>("EVENT_MODE",string("Sherpa"));
-  
+
   p_iohandler = new Input_Output_Handler(outmode,outfiles,infiles,evtpath,filesize,precision);
-  
-//   for (int i=0;i<4;i++) {
-//     if (infiles[i]!=string("") || outfiles[i]!=string("")) {
-//       p_iohandler = new Input_Output_Handler(outfiles,infiles,evtpath,filesize);
-//       return true;
-//     }
-//   }
-//   std::string outmode = p_dataread->GetValue<string>("EVENT_MODE",string("Sherpa"));
-//   p_iohandler = new Input_Output_Handler(outmode);
+
   return true;
 }
 
@@ -502,22 +494,18 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
     if (flav.IsOn() && flav.IsHadron() && !flav.IsStable()) {
       UnstableHadrons->insert(int(flav.Kfcode()));
-      //	  cout<<"Insert "<<int(flav.Kfcode())<<" into set : "<<UnstableHadrons->size()<<endl;
     }
-    //	if (flav.IsOn()) cout<<"Test this : "<<flav.IsHadron()<<" "<<flav.IsStable()<<" "<<flav.Kfcode()<<endl;
   }
-  //  for (std::set<int>::iterator tester=UnstableHadrons->begin();tester!=UnstableHadrons->end();tester++)
-  //	cout<<(*tester)<<" ";
-  //  cout<<endl;
   
   bool needextra = true;
   Hadron_Decay_Handler * hdhandler = NULL;
   string decmodel = dr.GetValue<string>("DECAYMODEL",string("Lund"));
   msg.Tracking()<<"Decaymodel = "<<decmodel<<std::endl;
 #ifdef USING__Hadrons
-  msg.Tracking()<<"             ... USING__HADRONS enabled"<<std::endl;
   if (decmodel==std::string("Hadrons")) {
     string decaypath       = dr.GetValue<string>("DECAYPATH",string("Decaydata/"));
+    if (system(("test -d "+decaypath).c_str())) 
+      decaypath=rpa.gen.Variable("SHERPA_SHARE_PATH")+"/Decaydata/";
     string decayfile       = dr.GetValue<string>("DECAYFILE",string("HadronDecays.dat"));
     string decayconstfile  = dr.GetValue<string>("DECAYCONSTFILE",string("HadronConstants.dat"));
     hdhandler              = new Hadron_Decay_Handler(new HADRONS::Hadrons(decaypath,decayfile,decayconstfile));
@@ -617,8 +605,8 @@ bool Initialization_Handler::CalculateTheHardProcesses()
     if (p_showerhandler->FSROn()) scalechoice += 2;
   }
   Matrix_Element_Handler * me = GetMatrixElementHandler(std::string("SignalMEs"));
-  msg.Events()<<"==================================================================="<<std::endl
-	      <<"Start calculating the hard cross sections. This may take some time."<<std::endl;
+  msg.Events()<<"=========================================================================="<<std::endl
+              <<"Start calculating the hard cross sections. This may take some time.       "<<std::endl;
   int ok = me->CalculateTotalXSecs(scalechoice);
   if (ok && m_scan_istep!=-1) {
     AMEGIC::Process_Base * procs= me->GetAmegic()->Processes();
@@ -633,11 +621,11 @@ bool Initialization_Handler::CalculateTheHardProcesses()
     msg.Out()<<endl;
   }
   if (ok) 
-    msg.Events()<<"Calculating the hard cross sections has been successful.           "<<std::endl
-		<<"==================================================================="<<std::endl;
+    msg.Events()<<"Calculating the hard cross sections has been successful.                  "<<std::endl
+	     <<"=========================================================================="<<std::endl;
   else
-    msg.Events()<<"Calculating the hard cross sections failed. Check this carefully.  "<<std::endl
-		<<"==================================================================="<<std::endl;
+    msg.Events()<<"Calculating the hard cross sections failed. Check this carefully.         "<<std::endl
+	     <<"=========================================================================="<<std::endl;
   return ok;
 }
 
@@ -645,8 +633,7 @@ void Initialization_Handler::SetParameter(int nr) {
   if (nr<0) return;
 
   if (nr!=m_scan_istep) 
-    msg.Error()<<"WARNING: internal and external scan counter do not coincide "
-	       <<nr<<" vs. "<<m_scan_istep<<endl;
+    msg.Error()<<"WARNING: internal and external scan counter do not coincide "<<nr<<" vs. "<<m_scan_istep<<endl;
 
   bool logmode=false;
   if (m_scan_variable==string("YCUT")) {
@@ -834,10 +821,10 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       case 12:
 	{
 	  // should call a version roution
-	  msg.Out()<<" Sherpa Version 1.0.5"<<endl;
+	  msg.Out()<<" Sherpa Version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<endl;
 	  msg.Out()<<"   employing: "<<endl;
-	  msg.Out()<<"    * AMEGIC++ Version 2.0.5 "<<endl;
-	  msg.Out()<<"    * APACIC++ Version 2.0.5 "<<endl;
+	  msg.Out()<<"    * AMEGIC++ Version 2."<<SHERPA_SUBVERSION<<endl;
+	  msg.Out()<<"    * APACIC++ Version 2."<<SHERPA_SUBVERSION<<endl;
 
 	  string pyver("6.214");
 	  msg.Out()<<"    * Pythia Version "<<pyver<<endl;
@@ -903,6 +890,7 @@ void Initialization_Handler::CheckFlagConsistency()
 {
   Data_Read dr(m_path+m_medat);
   int  sudweight = dr.GetValue<int>("SUDAKOV_WEIGHT",0);
+  rpa.gen.SetVariable("SUDAKOV_WEIGHT",ToString(sudweight));
 
   // if SUDAKOV_WEIGHT=On
   if (sudweight>0) {

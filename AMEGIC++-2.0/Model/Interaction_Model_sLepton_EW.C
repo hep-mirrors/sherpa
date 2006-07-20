@@ -1239,10 +1239,10 @@ void Interaction_Model_sLepton_EW::c_FFS(std::vector<Single_Vertex>& vertex,int&
 	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn()) {
 	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[1] = flav3;
-	  vertex[vanz].in[2] = flav2;
+	  vertex[vanz].in[2] = flav2.Bar();
 	 
 	  kcpl0 = K_zero;
-	  kcpl1 = K_yuk_sign(flav2)*(-M_I)*(K_Z_MI(0,j-41)*K_Z_L((i-12)/2,k-71)*g2+
+	  kcpl1 = -M_I*(K_Z_MI(0,j-41)*K_Z_L((i-12)/2,k-71)*g2+
 					    K_Z_MI(1,j-41)*K_Z_L((i-12)/2+3,k-71)*K_lI);
 	  
 	  

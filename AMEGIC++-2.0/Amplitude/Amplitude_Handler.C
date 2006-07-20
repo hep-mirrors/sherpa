@@ -20,7 +20,8 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Info* pinf
 				     Interaction_Model_Base * model,Topology* top,
 				     int & _orderQCD,int & _orderEW,Basic_Sfuncs* BS,
 				     String_Handler* _shand, bool print_graph) 
-  : shand(_shand),CFCol_Matrix(0),probabs(0),Mi(0), m_print_graph(print_graph), p_SCT(NULL)
+  : shand(_shand),CFCol_Matrix(0),probabs(0),Mi(0), m_print_graph(print_graph),
+    p_SCT(NULL)
 {
   int ndecays=pinfo->Ndecays();
   int nm = pinfo->Nmax(0);
@@ -57,6 +58,10 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Info* pinf
     pi->GetFlavList(sfl+1);
     gen = new Amplitude_Generator(1+pi->Nout(),sfl,b_dec,model,top,99,99,BS,shand);
     subgraphlist[i] = gen->Matching();
+    if (subgraphlist[i]==NULL) {
+      ndecays = 0;
+      subgraphlist[0] = NULL;
+    }
     int ew,qcd;
     gen->GetOrders(ew,qcd);
     _orderEW  += ew;
@@ -655,7 +660,7 @@ double Amplitude_Handler::Zvalue(Helicity* hel)
   std::vector<CVec> A;
   A.resize(graphs.size());
 
-  /* For all graphs: Calculate all the helicity formalism´s amplitudes and transform them to
+  /* For all graphs: Calculate all the helicity formalisms amplitudes and transform them to
      desired polarisation states, if nessecary. */
   for (size_t col=0; col<graphs.size(); ++col) {
     for (size_t ihel=0; ihel<hel->MaxHel(); ++ihel) A[col].push_back(graphs[col]->Zvalue(ihel));
@@ -696,27 +701,21 @@ Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
   if (abs(M)/max<(ATOOLS::Accu()*1.e-2)) return Complex(0.,0.); 
   return M;
 }
-
 ATOOLS::Spin_Correlation_Tensor* Amplitude_Handler::GetSpinCorrelations(Helicity* hel, 
 									size_t nIn)
 { 
-  PROFILE_HERE;
-
   // If there is no pre-SCT constructed, then do this now
   if (p_SCT==NULL) {
     Spin_Correlation_Tensor SCTmethods;
-
-    // construct the list of all particles which are not contracted over
+  
     std::vector<int> pList;
     for (size_t i=nIn; i<hel->Nflavs(); ++i)
       if ( SCTmethods.PossibleParticle( hel->GetFlav(i).Kfcode() ) )
 	pList.push_back(i);
 
-    // create an initial list of all amplitudes
     std::vector<int> AmplNrs;
     for (size_t i=0; i<hel->MaxHel(); ++i) AmplNrs.push_back(i);
 
-    // Create the pre-sct
     p_SCT = new AMEGIC_SCT(AmplNrs, AmplNrs, hel, &pList);
   }
 

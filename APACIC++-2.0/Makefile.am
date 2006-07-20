@@ -1,5 +1,5 @@
 MAKE = make 
 
-SUBDIRS       =	Showers Main Run
+SUBDIRS       =	Showers Main
 
 EXTRA_DIST    = @SVNINCLUDE@

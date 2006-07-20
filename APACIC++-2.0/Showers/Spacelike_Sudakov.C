@@ -45,7 +45,8 @@ Spacelike_Sudakov::~Spacelike_Sudakov()
 bool Spacelike_Sudakov::Initialize()
 {
   m_facscale = rpa.gen.Ycut()*m_s_hadron;
-  p_tools->CalculateMaxCouplings(m_cpl_scheme,m_pt2min,m_s_hadron);
+  p_tools->CalculateMaxCouplings
+    (m_cpl_scheme,m_pt2min*m_cpl_scale_fac,m_s_hadron*m_cpl_scale_fac);
 
   if (p_pdf->Bunch().IsHadron()) {
     for (int i=1;i<6;++i) {
@@ -119,11 +120,18 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,int & extra_pdf)
     return false; 
   }
   
-  p_pdf->Calculate(m_x,(-m_t));
+  switch (m_pdf_scheme) {
+  case 0:
+    p_pdf->Calculate(m_x,Max(-m_t,-m_t0));
+    break;
+  default:
+    p_pdf->Calculate(m_x,Max(mo->pt2lcm,-m_t0));
+  }
   
   while (m_t<m_t0) {
     CrudeInt(m_zmin,m_zmax);
     ProduceT();
+    if (mo->right && m_t<mo->right->t) continue;
     if (m_t>m_t0) {
       mo->t    = mo->tout;
       mo->stat = 0;
@@ -132,6 +140,7 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,int & extra_pdf)
     SelectOne();
     m_z   = GetZ();   
     m_pt2 = -(1.-m_z)*m_t;
+    if (m_pt2<m_pt2min) continue;
 
     double uhat(-m_t - sprime* (1.-m_z)/m_z);
 
@@ -143,7 +152,6 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,int & extra_pdf)
 	mo->phi    = m_phi;
 	return true;
       }
-      else break;
     }
   }
   mo->t    = mo->tout;
@@ -201,6 +209,7 @@ bool Spacelike_Sudakov::MassVeto(int extra_pdf)
 
   q2 *= m_pdf_scale_fac;
 
+  if (q2<p_pdf->Q2Min()) return true;
 
   if (extra_pdf) {
     p_pdf->Calculate(m_x,0.,0.,firstq2);
@@ -234,16 +243,13 @@ bool Spacelike_Sudakov::OrderingVeto(Knot * mo)
   msg_Debugging()<<METHOD<<"("<<mo->kn_no<<")\n";
   msg_Indent();
   double th(4.*m_z*m_z*m_t/(4.*m_z*m_z*m_t-(1.-m_z)*m_x*m_x*m_s_hadron));
-  mo->sthcrit=asin(sqrt(th));
+  mo->sthcrit = th; //asin(sqrt(th));
   if (mo->sthcrit<0.0) mo->sthcrit=M_PI-mo->sthcrit;
   msg_Debugging()<<"ss: thcrit = "<<mo->thcrit<<", th = "<<th<<std::endl;
   msg_Debugging()<<"ss: maxpt2 = "<<mo->maxpt2<<", pt2 = "<<m_pt2<<std::endl;
   if (!m_inflav.Strong()) return false;
   switch (m_ordering_scheme) {
   case 0 :
-    if (m_pt2 > mo->maxpt2) {
-      msg_Debugging()<<"ss: would veto pt "<<m_pt2<<"\n";
-    }
     return false;
   case 2 : 
     if (th > mo->thcrit) {

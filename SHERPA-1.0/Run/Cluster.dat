@@ -1,9 +1,0 @@
-STRANGE_SUPRESSION    = 0.2
-BARYON_SUPRESSION     = 0.5
-P_{QS}/P_{QQ}         = 0.3
-P_{SS}/P_{QQ}         = 0.01
-P_{QQ_1}/P_{QQ_0}     = 1.
-Q_BREAKUP             = 0.15
-TransitionOffset      = 0.75
-AngularSmearing       = 1.
-Mass_glue             = 0.75

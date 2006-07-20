@@ -28,7 +28,10 @@ q_qg::q_qg(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools,double fmed) :
   if (s_kfactorscheme==1) m_kfactor  = 1.0+m_alpha/(2.0*M_PI)*s_kappa;
 }
 
-double q_qg::operator()(double z) { return m_kfactor*s_CF*(2.*(1.+m_fmed)/(1.-z)-(1.+z));}    
+double q_qg::operator()(double z) 
+{ 
+  return m_kfactor*s_CF*(2.*(1.+m_fmed)/(1.-z)-(1.+z));
+}    
 
 double q_qg::GetZ() 
 {
@@ -37,7 +40,6 @@ double q_qg::GetZ()
 
 double q_qg::GetPhi(double z)
 {
-  //  std::cout<<"q_qg::GetPhi --- uniform"<<std::endl;
   return ATOOLS::ran.Get()*2.*M_PI;
 }
 
@@ -65,30 +67,24 @@ double q_qg::GetCoupling(double t) { return p_tools->AlphaS(t);}
 
 double q_qg::GetWeight(double z,double pt2,bool massterm) 
 { 
-  if (!massterm) {
-    if (s_kfactorscheme==1) {
-      double kappa=s_CA*(67.0/18.0-ATOOLS::sqr(M_PI)/6.0)-
-	s_TR*p_tools->Nf(pt2)*10.0/9.0;
-      double weight = (1.-(1.-z*z)/(2.*(1.+m_fmed)))*
-	(1.+kappa/(2.*M_PI)*p_tools->AlphaS(pt2))/m_kfactor;
-      //std::cout<<"   GetWeight : "<<z<<" "<<pt2
-      //		 <<" ("<<massterm<<","<<s_kfactorscheme<<") => "<<weight<<std::endl;
-      return weight;
-    }
-    else {
-      return 1.-(1.-z*z)/(2.*(1.+m_fmed));
-    }
+  double weight(1.-(1.-z*z)/(2.*(1.+m_fmed)));
+  if (massterm) {
+    double mu(z*(1.-z)*ATOOLS::sqr(m_flavs[0].PSMass())/
+	      (pt2+ATOOLS::sqr((1.-z)*m_flavs[0].PSMass())));
+    weight *= 1.-(1.-z)*mu/(2.*(1.+m_fmed)-(1.-z*z));
   }
-  return ( (1.+z*z)/2. - 
-	   z*ATOOLS::sqr((1.-z)*m_flavs[0].PSMass())/
-	   (pt2+ATOOLS::sqr((1.-z)*m_flavs[0].PSMass())) );
+  if (s_kfactorscheme==1) {
+    double kappa(s_kappaG-p_tools->Nf(pt2)*s_kappaQ);
+    weight *= (1.+kappa*p_tools->AlphaS(pt2)/(2.*M_PI))/m_kfactor;
+  } 
+  return weight;
 }
                    
 double q_qg::CrudeInt(double _zmin, double _zmax) 
 {
   m_zmin = _zmin;
   m_zmax = _zmax;
-  return m_kfactor*2.*(1.+m_fmed)*s_CF*m_alpha*log((1.-m_zmin)/(1.-m_zmax));         
+  return 2.*s_CF*m_alpha*m_kfactor*(1.+m_fmed)*log((1.-m_zmin)/(1.-m_zmax));         
 }
 
 double q_qg::Integral(double zmin, double zmax) 
@@ -196,13 +192,12 @@ double g_gg::GetCoupling()         { return m_alpha;}
 double g_gg::GetCoupling(double t) { return p_tools->AlphaS(t);}
 double g_gg::GetWeight(double z,double pt2,bool masses)   
 { 
+  double weight((ATOOLS::sqr(1.-z*(1.-z))+m_fmed)/(1.+m_fmed));
   if (s_kfactorscheme==1) {
-    double kappa=s_CA*(67.0/18.0-ATOOLS::sqr(M_PI)/6.0)-
-      s_TR*p_tools->Nf(pt2)*10.0/9.0;
-    return (ATOOLS::sqr(1.-z*(1.-z))+m_fmed)/(1.+m_fmed) *
-      (1.+kappa/(2.*M_PI)*p_tools->AlphaS(pt2))/m_kfactor;
-  }
-  return (ATOOLS::sqr(1.-z*(1.-z))+m_fmed)/(1.+m_fmed);
+    double kappa(s_kappaG-p_tools->Nf(pt2)*s_kappaQ);
+    weight *= (1.+kappa*p_tools->AlphaS(pt2)/(2.*M_PI))/m_kfactor;
+  } 
+  return weight;
 }
     
 double g_gg::CrudeInt(double _zmin, double _zmax) 
@@ -249,10 +244,6 @@ double g_qq::GetZ()
 
 double g_qq::GetPhi(double z)
 {
-  // uniform
-  //  return Splitting_Function::GetPhi(z);
-  //  std::cout<<"g_qq::GetPhi("<<z<<") ---"<<std::endl;
-
   double phi,f;
   double nume1 = z*z + ATOOLS::sqr(1-z);
   double nume2 = -2.*z*(1-z);
@@ -276,10 +267,15 @@ const ATOOLS::Simple_Polarisation_Info g_qq::GetPolC(double z, double phi, doubl
 
 double g_qq::GetCoupling()         { return m_alpha; }
 double g_qq::GetCoupling(double t) { return p_tools->AlphaS(t); }
-double g_qq::GetWeight(double z,double pt2,bool masses) 
+double g_qq::GetWeight(double z,double pt2,bool massterm) 
 { 
-  if (!masses) return (*this)(z)/s_TR;
-  return (1. - 2.*z*(1.-z)*(1.- pt2/(pt2+ATOOLS::sqr(m_flavs[1].PSMass())))); // /s_TR;
+  double weight((*this)(z)/s_TR);
+  if (massterm) {
+    double m2(ATOOLS::sqr(m_flavs[1].PSMass()));
+    double mu(2.*m2*z*(1.-z)/(pt2+m2));
+    weight *= 1.-mu/(1.-2.*z*(1.-z));
+  }
+  return weight;
 }
                  
 double g_qq::CrudeInt(double _zmin, double _zmax) 
@@ -350,29 +346,23 @@ double q_gq::GetCoupling()         { return m_alpha;}
 double q_gq::GetCoupling(double t) { return p_tools->AlphaS(t);}
 double q_gq::GetWeight(double z,double pt2,bool massterm) 
 { 
-  if (!massterm) {
-    if (s_kfactorscheme==1) {
-      double kappa=s_CA*(67.0/18.0-ATOOLS::sqr(M_PI)/6.0)-
-	s_TR*p_tools->Nf(pt2)*10.0/9.0;
-      double weight = (1.-(2.-z)*z/(2.*(1.+m_fmed)))*
-	(1.+kappa/(2.*M_PI)*p_tools->AlphaS(pt2))/m_kfactor;
-      //std::cout<<"   GetWeight : "<<z<<" "<<pt2
-      //		 <<" ("<<massterm<<","<<s_kfactorscheme<<") => "<<weight<<std::endl;
-      return weight;
-    }
-    else {
-      return 1.-(2.-z)*z/(2.*(1.+m_fmed));
-    }
+  double weight(1.-(2.-z)*z/(2.*(1.+m_fmed)));
+  if (massterm) {
+    double mu(z*(1.-z)*ATOOLS::sqr(m_flavs[0].PSMass())/
+	      (pt2+ATOOLS::sqr(z*m_flavs[0].PSMass())));
+    weight *= 1.-z*mu/(2.*(1.+m_fmed)-z*(2.-z));
   }
-  return ( (1.+ATOOLS::sqr(1.-z))/2. - 
-	   (1.-z)*ATOOLS::sqr(z*m_flavs[0].PSMass())/
-	   (pt2+ATOOLS::sqr(z*m_flavs[0].PSMass())) );
+  if (s_kfactorscheme==1) {
+    double kappa(s_kappaG-p_tools->Nf(pt2)*s_kappaQ);
+    weight *= (1.+kappa*p_tools->AlphaS(pt2)/(2.*M_PI))/m_kfactor;
+  } 
+  return weight;
 }
                    
 double q_gq::CrudeInt(double _zmin, double _zmax) {
   m_zmin = _zmin;
   m_zmax = _zmax;
-  return 2.*(1.+m_fmed)*s_CF*m_alpha*log(m_zmax/m_zmin);
+  return 2.*(1.+m_fmed)*m_kfactor*s_CF*m_alpha*log(m_zmax/m_zmin);
 }
 
 double q_gq::Integral(double zmin, double zmax) 

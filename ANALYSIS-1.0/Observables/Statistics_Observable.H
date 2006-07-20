@@ -6,8 +6,8 @@
 
 namespace ANALYSIS {
   struct Statistics_Data {
-    unsigned long nevt;
-    double  weightsum;
+    unsigned long nevt, xsnevt;
+    double  weightsum, xssum, sudsum;
     unsigned long nblobssum;
     unsigned long nplsum;
 
@@ -16,7 +16,7 @@ namespace ANALYSIS {
     unsigned long nblobssum_cut;
     unsigned long nplsum_cut;
     Statistics_Data() :
-     nevt(0), weightsum(0.), nblobssum(0), nplsum(0),
+     nevt(0), xsnevt(0), weightsum(0.), xssum(0.0), sudsum(0.0), nblobssum(0), nplsum(0),
      nevt_cut(0), weightsum_cut(0.), nblobssum_cut(0), nplsum_cut(0) {} 
 
     void EndEvaluation(double scale=1.);

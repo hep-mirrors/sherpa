@@ -1,19 +1,13 @@
-/* CHANGES:
-   - fixed bug in Trace(sigma0) for particle 0
-   - fixed bug in GetSigma(i) and GetSigma(i, sigma0) where particle-indices <i where
-     contracted with ones, instead of unit-matrix.
-   - operator+= now knows more than only 4 entries.
-*/
-
 #include "Spin_Correlation_Tensor.H"
 #include "Message.H"
 #include "Blob.H"
 #include "Smart_Pointer.H"
 #include "prof.hh"
+#include <typeinfo>
 
 INSTANTIATE_SMART_POINTER(Spin_Correlation_Tensor)
 
-#define SCT_Debug
+  //#define SCT_Debug
 
 namespace ATOOLS{
 
@@ -77,7 +71,6 @@ namespace ATOOLS{
       size_t add):
     p_next(NULL)
   {
-    PROFILE_HERE;
 #ifdef SCT_Debug
     if (m_mode == scmode::None) {
       PRINT_INFO("m_mode == None; why do you want to create an SCT structure ?");
@@ -147,7 +140,6 @@ namespace ATOOLS{
 
   Complex Spin_Correlation_Tensor::Trace( Spin_Density_Matrix * sigma0 )
   {
-    PROFILE_HERE;
 #ifdef SCT_DEBUG
     if (m_mode == scmode::None) {
       PRINT_INFO("Warning! Spin_Correlation_Tensor::Trace(Spin_Density_Matrix) was called"
@@ -194,7 +186,6 @@ namespace ATOOLS{
 
   Complex Spin_Correlation_Tensor::Trace()
   {
-    PROFILE_HERE;
     if (m_particle==-1) return m_value;
     else {
       size_t max(GetIdxRange());
@@ -216,7 +207,6 @@ namespace ATOOLS{
   // return SDM by using a "soft contraction" over mother SDM
   Spin_Density_Matrix Spin_Correlation_Tensor::GetSigma(int i, Spin_Density_Matrix * sigma0 )
   {
-    PROFILE_HERE;
 #ifdef SCT_Debug
     if (m_mode == 0)
       PRINT_INFO("And how do you want to GetSigma from nothing? m_mode==0 !");
@@ -277,10 +267,9 @@ namespace ATOOLS{
   
   Spin_Density_Matrix Spin_Correlation_Tensor::GetSigma(int i) 
   {
-    PROFILE_HERE;
     if (m_particle==-1) {
-      PRINT_INFO("A terrible accident happened. The requested index "<<i<<" couldn't be found."
-          <<"Let's return nothing, then.");
+      msg.Error()<<"Spin_Correlation_Tensor::GetSigma: The requested index "<<i<<" couldn't be found."
+		 <<"Let's return nothing, then."<<std::endl;
       return Spin_Density_Matrix();
     }
     size_t max(GetIdxRange());
@@ -310,9 +299,8 @@ namespace ATOOLS{
 
   void Spin_Correlation_Tensor::Contract(int i, Spin_Density_Matrix* SDM) 
   {
-    PROFILE_HERE;
     if (m_particle == -1) {
-      PRINT_INFO("The index ("<<i<<") could not be found!");
+      msg.Error()<<"Spin_Correlation_Tensor::Contract: The index ("<<i<<") could not be found!"<<std::endl;
       return;
     }
     if (m_particle == i) {
@@ -366,7 +354,6 @@ namespace ATOOLS{
 	            
   Spin_Correlation_Tensor& Spin_Correlation_Tensor::operator+=(Spin_Correlation_Tensor& SCT) 
   {
-    PROFILE_HERE;
     if (m_particle==-1) 
       m_value+=SCT.m_value;
     else 
@@ -376,7 +363,6 @@ namespace ATOOLS{
   
   Spin_Correlation_Tensor& Spin_Correlation_Tensor::operator*=(Complex& c)
   {
-    PROFILE_HERE;
     if (m_particle==-1)  m_value*=c;
     else for (size_t idx=0; idx<p_next->size(); ++idx) *(*p_next)[idx] *= c;
     return *this;
@@ -401,7 +387,6 @@ namespace ATOOLS{
 
   size_t Spin_Correlation_Tensor::GetDepth( size_t i )
   {
-    PROFILE_HERE;
     if( m_particle == -1 ) return i;
     else return (*p_next)[0]->GetDepth(i+1);
   }
@@ -418,9 +403,9 @@ namespace ATOOLS{
       case 25: return 5;
       case 36: return 6;
       default: {
-	PRINT_INFO("Error in Spin_Correlation_Tensor::GetIdxRange():");
-	PRINT_INFO("Can't assign size of legs ("<<p_next->size()<<") to a reasonable "
-		   <<"index range. Return 0");
+	msg.Error()<<"Error in Spin_Correlation_Tensor::GetIdxRange():"<<std::endl;
+	msg.Error()<<"Can't assign size of legs ("<<p_next->size()<<") to a reasonable "
+		   <<"index range. Return 0"<<std::endl;
 	return 0;}
       }
   }

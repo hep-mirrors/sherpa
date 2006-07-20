@@ -340,6 +340,7 @@ Primitive_Observable_Base * Jet_Rapidity_Distribution::Copy() const
 //########################################################################################
 //########################################################################################
 
+
 DEFINE_OBSERVABLE_GETTER(Jet_Eta_Distribution,Jet_Eta_Distribution_Getter,"JetEta")
 
 Jet_Eta_Distribution::Jet_Eta_Distribution(unsigned int type,double xmin,double xmax,int nbins,
@@ -368,6 +369,28 @@ double Jet_Eta_Distribution::Calc(const Particle * p)
 Primitive_Observable_Base * Jet_Eta_Distribution::Copy() const 
 {
   return new Jet_Eta_Distribution(m_type,m_xmin,m_xmax,Nbins(),m_mode,m_minn,m_maxn,m_listname);
+}
+
+DEFINE_OBSERVABLE_GETTER(Jet_Phi_Distribution,Jet_Phi_Distribution_Getter,"JetPhi")
+
+Jet_Phi_Distribution::Jet_Phi_Distribution(unsigned int type,double xmin,double xmax,int nbins,
+					   unsigned int mode,unsigned int minn,unsigned int maxn, 
+					   const std::string & listname) :
+  Jet_Observable_Base(type,xmin,xmax,nbins,mode,minn,maxn,listname) 
+{
+  m_name+="phi_";
+}
+
+Primitive_Observable_Base * Jet_Phi_Distribution::Copy() const 
+{
+  return new Jet_Phi_Distribution(m_type,m_xmin,m_xmax,Nbins(),m_mode,m_minn,m_maxn,m_listname);
+}
+
+double Jet_Phi_Distribution::Calc(const Particle * p)
+{
+  Vec4D mom=p->Momentum();
+  double phi = mom.Phi();
+  return phi;
 }
 
 DEFINE_OBSERVABLE_GETTER(Jet_PT_Distribution,Jet_PT_Distribution_Getter,"JetPT")

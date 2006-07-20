@@ -104,7 +104,7 @@ bool Vec4D::IsZero() const
   return true;
 }
 
-void Vec4D::ResetAccu()                
+void Vec4D::ResetAccu()
 { 
   s_accu=rpa.gen.Accu(); 
 }

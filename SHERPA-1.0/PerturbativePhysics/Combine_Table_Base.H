@@ -13,15 +13,16 @@ namespace SHERPA {
   class Leg {
   private:
     AMEGIC::Point *p_point;
-    int m_anti, m_nqcd, m_nqed;
+    int m_anti, m_nqcd, m_nqed, m_pqcd, m_pqed;
     AMEGIC::lf::code m_type;
+    ATOOLS::Flavour m_mapfl;
     friend std::ostream &operator<<(std::ostream &ostr,const Leg &leg);
   public:
     // constructors
     inline Leg(AMEGIC::Point *const point=NULL,const int anti=1):  
       p_point(point), m_anti(anti) {}
     inline Leg(const Leg &leg): 
-      p_point(leg.p_point), m_anti(leg.m_anti) {}
+      p_point(leg.p_point), m_anti(leg.m_anti), m_mapfl(leg.m_mapfl) {}
     // member functions
     void DetermineCouplings(const int type);
     // inline functions
@@ -30,10 +31,14 @@ namespace SHERPA {
     inline int                  Anti() const  { return m_anti;  }
     inline const AMEGIC::Point *Point() const { return p_point; }
     inline ATOOLS::Flavour Flav() 
-    { return m_anti==-1?p_point->fl.Bar():p_point->fl; }
+    { return m_anti==-1?m_mapfl.Bar():m_mapfl; }
     inline const int OrderQCD() const { return m_nqcd; }
     inline const int OrderQED() const { return m_nqed; }
+    inline const int NQCD() const { return m_pqcd; }
+    inline const int NQED() const { return m_pqed; }
     inline const AMEGIC::lf::code Type() const { return m_type; }
+    inline void SetMapFlavour(const ATOOLS::Flavour &fl) { m_mapfl=fl; }
+    inline ATOOLS::Flavour MapFlavour() const { return m_mapfl; }
   };// end of class Leg
 
   std::ostream &operator<<(std::ostream &ostr,const Leg &leg);
@@ -79,7 +84,7 @@ namespace SHERPA {
   class Combine_Table_Base {
   protected:
     static int s_all;
-    int        m_no;
+    int        m_no, m_nstrong;
     int        m_isr1on, m_isr2on, m_isrshoweron;
     int        m_nlegs, m_nampl, m_graph_winner;
     double     m_x1, m_x2;
@@ -103,6 +108,9 @@ namespace SHERPA {
     void CombineMoms(ATOOLS::Vec4D *moms,const int i,const int j,
 		     const int maxl,ATOOLS::Vec4D *&omoms);
     double      Sprime() const;
+
+    ATOOLS::Flavour IsoFlip(const ATOOLS::Flavour &fl);
+    ATOOLS::Flavour MatchFlavour(Leg &a,Leg &b,Leg &c,int mode);
     friend std::ostream& operator<< (std::ostream&,const Combine_Table_Base &);
     friend std::ostream &operator<<(std::ostream&,const Combine_Data &);
   public:
@@ -130,6 +138,7 @@ namespace SHERPA {
     double Kt2QED() const;
     // inline functions
     inline const int                  NLegs()                              const { return m_nlegs; }
+    inline const int                  OrderStrong()                        const { return m_nstrong; }
     inline const int                  NAmplitudes()                        const { return m_nampl; }
     inline Combine_Table_Base * const Up()                                 const { return p_up; }
     inline ATOOLS::Vec4D              Momentum(const int i)                const { return p_moms[i]; }

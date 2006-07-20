@@ -85,6 +85,7 @@ namespace ANALYSIS {
     void CreateChargedParticleList();
     void CreatePrimordialHadronsList();
     void CreateIntermediateHadronsList();
+    void CreateUEParticleList();
 
     Primitive_Analysis * GetSubAnalysis(const std::string & key, int mode);
     void CallSubAnalysis(const ATOOLS::Blob_List * const bl, double value);
@@ -98,7 +99,7 @@ namespace ANALYSIS {
     void AddObservable(Primitive_Observable_Base *);
     void AddSubAnalysis(const std::string &,Primitive_Analysis *);
     // most simple analysis, assume the observables a know how to handle a single value
-    void DoAnalysis(const ATOOLS::Particle_List &, const double);
+//     void DoAnalysis(const ATOOLS::Particle_List &, const double);
     // advanced analysis, working with a bloblist, thus event generation properties can be exploited
     void DoAnalysis(const ATOOLS::Blob_List * const , const double);
     // finalise and write out results of analysis

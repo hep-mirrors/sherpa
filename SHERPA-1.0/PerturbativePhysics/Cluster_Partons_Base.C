@@ -3,12 +3,15 @@
 #include "Flow.H"
 #include "Poincare.H"
 #include "Message.H"
+#include "Process_Base.H"
+#include "Splitting_Function.H"
 #include "MyStrStream.H"
 #include <iomanip>
 
 using namespace SHERPA;
 using namespace EXTRAXS;
 using namespace AMEGIC;
+using namespace APACIC;
 using namespace ATOOLS;
 using namespace MODEL;
 
@@ -20,41 +23,46 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
 					   const int maxjet, const int isrmode,
 					   const int isron,const int fsron) :
   p_me(me), p_runas(NULL), p_jf(jf), p_fssud(NULL), p_issud(NULL), p_ct(NULL), p_combi(NULL), 
-  m_maxjetnumber(maxjet),m_isrmode(isrmode), m_isrshoweron(isron),m_fsrshoweron(fsron), 
+  m_njet(0), m_maxjetnumber(maxjet),m_isrmode(isrmode), m_isrshoweron(isron),m_fsrshoweron(fsron), 
   m_sud_mode(0), m_kfac(0.), m_counts(0.), m_fails(0.)
 {
   // read in some parameters
-  Data_Read dr(rpa.GetPath()+"Shower.dat");     // !!!!!!!! SHOWER_DATA_FILE
-  m_bp_mode  = dr.GetValue<int>("SUDAKOVTYPE",8);
-  if ((m_bp_mode&(28))!=m_bp_mode) {
-    msg.Error()<<"WARNING in Cluster_Partons_Base :"<<std::endl
-	       <<"   Wrong mode for NLL_Sudakovs: "<<m_bp_mode<<" vs "<<(m_bp_mode&127)<<std::endl
-	       <<"   Set it to 12 = ordinary NLL_Sudakovs."<<std::endl;
-    m_bp_mode=12;
+  Data_Read dr(rpa.GetPath()+
+	       rpa.gen.Variable("SHOWER_DATA_FILE","Shower.dat"));
+  m_bp_mode  = dr.GetValue<int>("SUDAKOV_TYPE",8);
+  if (Splitting_Function::KFactorScheme()==1) {
+    m_bp_mode=m_bp_mode|bpm::soft_kfac;
+    m_kfac=CA*(67./18.-M_PI*M_PI/6.)-10./9.*TR*Nf;
   }
-  if (m_bp_mode&16) m_kfac = CA*(67./18.-M_PI*M_PI/6.)-10./9.*TR*Nf;
-  m_is_as_factor=ToType<double>(rpa.gen.Variable("IS_CPL_SCALE_FACTOR"));
-  m_fs_as_factor=ToType<double>(rpa.gen.Variable("FS_CPL_SCALE_FACTOR"));
-  int jetratemode = dr.GetValue<int>("CALCJETRATE",-1);
-  msg_Info()<<"Initalize Cluster_Partons_Base with {\n"
-	    <<"   Sudakov type            = "<<m_bp_mode<<"\n"
-	    <<"   ren. scale factor       = "<<rpa.gen.RenormalizationScaleFactor()<<"\n" 
-	    <<"   is PS ren. scale factor = "<<m_is_as_factor<<"\n"
-	    <<"   fs PS ren. scale factor = "<<m_fs_as_factor<<"\n"
-	    <<"   K factor                = "<<m_kfac<<"\n"
-	    <<"   calc jetrate            = "<<jetratemode<<"\n}"<<std::endl;
+  else {
+    if (m_bp_mode&bpm::soft_kfac) m_bp_mode-=bpm::soft_kfac; 
+  }
+  //m_is_as_factor=ToType<double>(rpa.gen.Variable("IS_CPL_SCALE_FACTOR","1"));
+  m_is_as_factor=1.0;    //We want this to be unchangeable.
+  m_fs_as_factor=ToType<double>(rpa.gen.Variable("FS_CPL_SCALE_FACTOR","1"));
+  m_me_as_factor=dr.GetValue<double>("ME_AS_FACTOR",1.0);
+  if (p_jf->Type()<2) m_me_as_factor=0.25;
+  msg_Tracking()<<"Initalize Cluster_Partons_Base with {\n"
+		<<"   Sudakov type            = "<<m_bp_mode<<"\n"
+		<<"   ren. scale factor       = "<<rpa.gen.RenormalizationScaleFactor()<<"\n" 
+		<<"   is PS ren. scale factor = "<<m_is_as_factor<<"\n"
+		<<"   fs PS ren. scale factor = "<<m_fs_as_factor<<"\n"
+		<<"   ME ren. scale factor    = "<<m_me_as_factor<<"\n"
+		<<"   K factor                = "<<m_kfac<<"\n}"<<std::endl;
   p_runas = MODEL::as; 
   
   /* 0 no sudakow weights, 1 alphas only, 2 full sudakov weight  (but for highest jet number) */
   /* cf. also begin of Cluster_Partons_Base::CalculateWeight() */
   if (m_fsrshoweron!=0) {
-    p_fssud = new NLL_Sudakov((BPMode::code)(m_bp_mode+1),
-			      p_jf->Smax(),p_jf->Smin(),p_runas,jetratemode,m_fs_as_factor);
+    p_fssud = new NLL_Sudakov((bpm::code)(m_bp_mode+1),
+			      p_jf->Smax(),p_jf->Smin(),
+			      p_runas,m_fs_as_factor);
     m_sud_mode += 1;
   }
   if (m_isrshoweron!=0) {
-    p_issud = new NLL_Sudakov((BPMode::code)(m_bp_mode+2),
-			      p_jf->Smax(),p_jf->Smin(),p_runas,jetratemode,m_is_as_factor);
+    p_issud = new NLL_Sudakov((bpm::code)(m_bp_mode+2),
+			      p_jf->Smax(),p_jf->Smin(),
+			      p_runas,m_is_as_factor);
     m_sud_mode += 2;
   }
   p_events         = new long[m_maxjetnumber];
@@ -68,7 +76,6 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
   double ycut   = rpa.gen.Ycut();
   m_qmin_i = sqrt(ycut)*rpa.gen.Ecms();
   m_qmin_f = sqrt(ycut)*deltar*rpa.gen.Ecms();
-  m_q2_jet = sqr(Min(m_qmin_i,m_qmin_f));
 }
 
 Cluster_Partons_Base::~Cluster_Partons_Base()
@@ -76,7 +83,7 @@ Cluster_Partons_Base::~Cluster_Partons_Base()
   if (p_combi)               { delete p_combi;      p_combi      = NULL; }
   if (p_fssud)               { delete p_fssud;    p_fssud        = NULL; }
   
-  WriteOutSudakovWeights();
+  if (m_counts!=0) WriteOutSudakovWeights();
   
   if (p_events)         delete [] p_events;
   if (p_weight_sum)     delete [] p_weight_sum;
@@ -127,6 +134,7 @@ Leg **Cluster_Partons_Base::CreateLegs(int &nampl,const int nlegs,const bool reu
     p_combi = 0;
     // generate a list of "legs" for each amplitude
     legs = new Leg *[nampl];
+    PHASIC::Integrable_Base *proc(p_me->GetAmegic()->GetProcess());
     for (int k=0;k<nampl;) {
       legs[k] = new Leg[nlegs];
       int l   = 0;
@@ -136,6 +144,18 @@ Leg **Cluster_Partons_Base::CreateLegs(int &nampl,const int nlegs,const bool reu
 	--nampl;
       }
     }
+    for (int k=0;k<nampl;++k) {
+      for (int i(0);i<nlegs;++i) {
+	Flavour fl(proc->Flavours()[i]);
+	if (i<2 && proc->InSwaped()) fl=proc->Flavours()[1-i];
+	legs[k][i].SetMapFlavour(fl);
+// 	msg_Debugging()<<"set mapfl: "<<k<<", "<<i<<": "<<fl<<" "
+// 		       <<proc->InSwaped()<<"\n";
+      }
+    }
+    msg_Debugging()<<"map process: "<<proc->Name()
+		   <<" -> "<<static_cast<AMEGIC::Process_Base*>(proc)->
+      Partner()->Name()<<"\n";
   }  
   return legs;
 }
@@ -412,7 +432,7 @@ int Cluster_Partons_Base::Set3Colours(const int nquark,const int ngluon,Vec4D * 
       m_q2_fss = dabs((p[0]-p[2]).Abs2());
       m_q2_iss = (p[0]+p[1]).Abs2();
     }
-    m_q2_hard = m_q2_qcd = Max(m_q2_iss,m_q2_fss);
+    m_q2_hard = m_q2_qcd = Min(m_q2_iss,m_q2_fss);
     for (int i=0;i<4;i++) {
       if (fl[i].IsGluon()) {
 	if (tmode) {
@@ -472,10 +492,7 @@ void Cluster_Partons_Base::FixJetvetoPt2(double & jetveto_pt2)
 
 Flavour Cluster_Partons_Base::Flav(int i) {
   if (p_ct) {
-    Flavour fl(p_ct->Flav(i));
-    Flavour_Map::const_iterator cit=m_flmap.find(fl);
-    if (cit!=m_flmap.end()) fl=cit->second;
-    return fl;
+    return p_ct->Flav(i);
   }
   msg.Error()<<"ERROR in Cluster_Partons_Base::Flav. No ct."<<std::endl;
   return 0;
@@ -496,14 +513,9 @@ int Cluster_Partons_Base::Colour(const int part,const int ind) {
 
 Combine_Table_Base * Cluster_Partons_Base::GetCombineTable() { return p_ct; }
 
-Flavour_Map * Cluster_Partons_Base::GetFlavourMap() { return &m_flmap; }
-
 void Cluster_Partons_Base::CreateFlavourMap() 
 {
   Process_Base * proc=static_cast<Process_Base*>(p_me->GetAmegic()->GetProcess());
-  Process_Base * partner=proc->Partner();
-  //m_nstrong   = proc->NStrong();
-  const Flavour * flavs=proc->Flavours();
   double ycut = proc->Ycut();
   if (ycut!=-1.) {
     m_ycut=ycut;
@@ -511,43 +523,15 @@ void Cluster_Partons_Base::CreateFlavourMap()
   else {
     m_ycut=ATOOLS::rpa.gen.Ycut();
   }
-
-  const Flavour * partner_flavs=partner->Flavours();
-
-  int n[2]={0,1};
-  //    if (proc->InSwaped()^partner->InSwaped()) {
-  if (p_me->InSwaped()^partner->InSwaped()) {
-    n[0]=1;
-    n[1]=0;
-  }
-
-  // create new map
-  m_flmap.clear();
-  for (size_t i=0;i<proc->NIn();++i) {
-    if (partner_flavs[i]!=flavs[n[i]]) {
-      m_flmap[partner_flavs[i]]=flavs[n[i]];
-      if (partner_flavs[i]!=(Flavour(partner_flavs[i])).Bar()) {
-	m_flmap[(Flavour(partner_flavs[i])).Bar()]=(Flavour(flavs[n[i]])).Bar();
-      }
-    }
-  }
-  for (size_t i=proc->NIn();i<proc->NIn()+proc->NOut();++i) {
-    if (partner_flavs[i]!=flavs[i]) {
-      m_flmap[partner_flavs[i]]=flavs[i];
-      if (partner_flavs[i]!=(Flavour(partner_flavs[i])).Bar()) {
-	m_flmap[(Flavour(partner_flavs[i])).Bar()]=(Flavour(flavs[i])).Bar();	  
-      }
-    }
-  }
+  m_q2_jet = Min(1.0,rpa.gen.DeltaR())*m_ycut*sqr(rpa.gen.Ecms());
 }
 
 void   Cluster_Partons_Base::JetvetoPt2(double & q2i, double & q2f) 
 { 
-  double qmin2(m_q2_jet);
-  if (m_njet==m_maxjetnumber) {
-    if (m_njet>2)  FixJetvetoPt2(qmin2);
-    else qmin2 = m_q2_qcd;
-  }
+  double qmin2(Max(m_qmin_i,m_qmin_f));
+  qmin2*=qmin2;
+  if ((m_njet==m_maxjetnumber && m_njet>2) ||
+      (m_maxjetnumber==2 && p_ct->OrderStrong()>0)) FixJetvetoPt2(qmin2);
   q2i = Max(qmin2,sqr(m_qmin_i));
   q2f = Max(qmin2,sqr(m_qmin_f)); 
   p_jf->SetShowerPt2(qmin2);

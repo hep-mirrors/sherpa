@@ -181,6 +181,7 @@ void Phase_Space_Generator::AddToMakefileAM(string makefilename,string pathID,st
     file<<"\t"<<fileID<<".C"<<endl;
     file<<"CURRENT_SHERPASYS = "<<ATOOLS::rpa.gen.Variable("SHERPA_INC_PATH")<<endl;
     file<<"INCLUDES = -I$(CURRENT_SHERPASYS)"<<endl;
+    file<<"DEFS     = "<<endl;
   }
   else {
     ifstream from(makefilename.c_str());

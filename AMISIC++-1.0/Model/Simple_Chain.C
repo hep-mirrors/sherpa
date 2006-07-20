@@ -93,7 +93,7 @@ Simple_Chain::~Simple_Chain()
 void Simple_Chain::CleanUp() 
 {
   if (p_fsrinterface!=NULL) delete p_fsrinterface;
-  //if (p_processes!=NULL) delete p_processes;
+  //if (p_processes!=NULL)    delete p_processes;
   if (!m_external) {
     if (p_environment!=NULL) delete p_environment;
     p_environment=NULL;
@@ -246,7 +246,7 @@ bool Simple_Chain::ReadInData()
     }
   }
   if (!reader->ReadFromFile(m_scalescheme,"MI_SCALE_SCHEME")) 
-    m_scalescheme=2;
+    m_scalescheme=21;
   if (!reader->ReadFromFile(m_kfactorscheme,"MI_K_FACTOR_SCHEME")) 
     m_kfactorscheme=1;
   if (!reader->ReadFromFile(m_nflavour,"N_FLAVOUR")) m_nflavour=5;
@@ -587,7 +587,7 @@ bool Simple_Chain::Initialize()
     // // Uncomment for cross-check vs. PYHTIA
     // SetStop(0.08*stop,0);
   }
-  if (!reader->ReadFromFile(m_check,"CHECK_CONSISTENCY")) m_check=1;
+  if (!reader->ReadFromFile(m_check,"CHECK_CONSISTENCY")) m_check=0;
   if (!reader->ReadFromFile(m_vegas,"VEGAS_MI")) m_vegas=0;
   if (!reader->ReadFromFile(m_pi,"PI_MI")) m_pi=0;
   m_pi=m_pi&PHASIC::psm::pi_isr;

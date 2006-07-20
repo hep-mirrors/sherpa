@@ -2,6 +2,8 @@
 
 #include "Exception.H"
 
+#include <typeinfo>
+
 INSTANTIATE_SMART_POINTER(std::ifstream)
 INSTANTIATE_SMART_POINTER(std::ofstream)
 
@@ -41,13 +43,12 @@ namespace ATOOLS {
 }
 
 template <class FileType>
-inline My_File<FileType>::My_File(): 
+My_File<FileType>::My_File(): 
   p_file(NULL), m_mode(fom::permanent) {}
 
 template <class FileType>
-inline My_File<FileType>::~My_File() 
+My_File<FileType>::~My_File() 
 { 
-  Close(); 
 }
 
 template <class FileType>

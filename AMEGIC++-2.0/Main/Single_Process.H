@@ -7,6 +7,7 @@
 #include "Helicity.H"
 #include "Amplitude_Handler.H"
 #include "Standard_Selector.H"
+#include "Spin_Correlation_Tensor.H"
 #include <vector>
 #include "Spin_Correlation_Tensor.H"
 

@@ -375,6 +375,9 @@ Primitive_Observable_Base * Single_Inclusive_Jet_Broadening::Copy() const
   return new Single_Inclusive_Jet_Broadening(m_type,m_xmin,m_xmax,Nbins(),m_listname);
 }
 
+namespace ATOOLS {
 
 template <> Blob_Data<JetMass_Broadening_Data>::~Blob_Data() { }
 template class Blob_Data<JetMass_Broadening_Data>;
+
+}
