@@ -19,6 +19,18 @@ Process_Info::Process_Info(ATOOLS::Flavour *fl,Pol_Info *pl)
   m_sublist.push_back(dummy);
 }
 
+Process_Info::Process_Info(Process_Info *pi)
+{
+  if (pi->Flav()) p_fl = new Flavour(*(pi->Flav()));
+  else p_fl=NULL;
+  if (pi->Pol()) p_pl = new Pol_Info(*(pi->Pol()));
+  else p_pl=NULL;
+  vector<Process_Info*> dummy;
+  m_sublist.push_back(dummy);
+  m_sublist[0].clear();  
+  for (int i=0;i<pi->Nout();i++) m_sublist[0].push_back(new Process_Info(pi->m_sublist[0][i]));
+}
+
 Process_Info::~Process_Info()
 {
   for (size_t j=1;j<m_sublist.size();j++) {

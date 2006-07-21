@@ -19,6 +19,7 @@ namespace AMEGIC {
     Point* MergePointList(Point** plist,Point* np,int &nd, int nin, int &ep);
    public:
     Process_Info(ATOOLS::Flavour*,Pol_Info*);
+    Process_Info(Process_Info*);
     ~Process_Info();
     ATOOLS::Flavour* Flav() {return p_fl;}
     Pol_Info* Pol()         {return p_pl;}

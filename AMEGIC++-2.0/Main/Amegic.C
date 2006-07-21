@@ -219,6 +219,10 @@ void Amegic::ReadInProcessfile(string file)
     position = -1;
     if (buf.length()>0 && buf[0] != '%') {
       msg.LogFile()<<buf<<std::endl;
+      vector<Process_Info*> AppPI;
+      vector<int> AppKf;
+      vector<int> AppNum;
+      AppPI.clear();AppKf.clear();AppNum.clear();
       position   = buf.find(string("Process :")); 
       flag       = 0;
       if (position>-1 && position<(int)buf.length()) {
@@ -230,8 +234,9 @@ void Amegic::ReadInProcessfile(string file)
 	  ini    = buf.substr(0,position);
 	  fin    = buf.substr(position+2);
 	  nIS    = ExtractFlavours(IS,plIS,ini);
-	  nFS    = ExtractFlavours(FS,plFS,fin);
+	  nFS    = ExtractFlavours(FS,plFS,fin,&AppKf,&AppNum);
 	  pinfo->AddSubList(nFS,FS,plFS);
+	  if (AppKf.size()>AppPI.size()) AppPI.push_back(pinfo);
 	  njets  = 0;
 	  if ((nIS< 1) || (nIS > 2)) {
 	    msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
@@ -301,7 +306,7 @@ void Amegic::ReadInProcessfile(string file)
 			abort();
 		      }
 
-		      int c=ExtractFlavours(fflb,fplb,fin);
+		      int c=ExtractFlavours(fflb,fplb,fin,&AppKf,&AppNum);
 		      if (c<2) {
 			msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
 				   <<"   Wrong number of partons in decay process: "<<buf<<endl;
@@ -314,6 +319,7 @@ void Amegic::ReadInProcessfile(string file)
 			abort();
 		      }
 		      phelp->AddSubList(c,fflb,fplb);
+		      if (AppKf.size()>AppPI.size()) AppPI.push_back(phelp);
 		      delete [] fflb;
 		      delete [] fplb;		      
 		    }
@@ -474,68 +480,98 @@ void Amegic::ReadInProcessfile(string file)
 	      abort();
 	    }
 
-	    nFS = pinfo->TotalNout();
-	    if (nFS>m_maxjet) m_maxjet = nFS;
-	    m_nmax = Max(m_nmax,pinfo->Nmax(nIS));
-	    flavs              = new Flavour[nIS+nFS];
-	    plavs              = new Pol_Info[nIS+nFS];
-	    for (int i=0;i<nIS;i++) { flavs[i]     = IS[i]; plavs[i]     = plIS[i]; }
-	    pinfo->GetFlavList(&flavs[nIS]);
-	    pinfo->GetPolList(&plavs[nIS]);
-	    bool single        = 1;
-	    for (int i=0;i<nIS+nFS;i++) {
-	      if (flavs[i].Size()>1) { single = 0; break; }
-	    }
+	    vector<int> ii;
+	    ii.clear();
+	    for(size_t i=0;i<AppNum.size();i++) ii.push_back(0);
 
-	    
-	    // for beam
-	    int bsh_pol=p_beam->Polarisation();
-	    int beam_is_poled[2]={bsh_pol&1,bsh_pol&2};
-	    for (int i=0;i<nIS;++i) {
-	      if (plavs[i].DoFNumber()>1 && beam_is_poled[i]) { single = 0; break; }
-	    } 
-	    
-	    int qcdjets(0);
-	    double summass = 0.;
-	    for (int i=0;i<nFS;i++) {
-	      summass += flavs[i+nIS].Mass();
-	      if (flavs[i+nIS].Strong()) ++qcdjets;
-	    }
-	    m_minqcdjet=Min(Max(2+qcdjets-nFS,0),m_minqcdjet);
-	    m_maxqcdjet=ATOOLS::Max(m_maxqcdjet,qcdjets);
-	    if (summass<rpa.gen.Ecms()) {
-	      Process_Base * proc=NULL;
-	      if (single) {
-		if (enable_mhv && CF.PureGluonic(nIS,IS,nFS,FS))
-		  proc = new Single_Process_MHV(pinfo,nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
-						order_strong,order_ew,
-						-kfactor_scheme,-scale_scheme,fixed_scale,
-						plavs,nex,excluded,usepi,ycut,maxerror,enhance_function);
-		else
-		  proc = new Single_Process(pinfo,nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
-					    order_strong,order_ew,
-					    -kfactor_scheme,-scale_scheme,fixed_scale,
-					    plavs,nex,excluded,usepi,ycut,maxerror,enhance_function);
+	    do {
+	      for (size_t i=0;i<AppNum.size();i++) {
+		Flavour afl=Flavour(kf::code(iabs(AppKf[i])));
+		Pol_Info apl=Pol_Info(afl);
+		for (int j=0;j<ii[i];j++) AppPI[i]->m_sublist[0].push_back(new Process_Info(&afl,&apl));
 	      }
-	      else proc = new Process_Group(pinfo,nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
-					    order_strong,order_ew,
-					    -kfactor_scheme,-scale_scheme,fixed_scale,
-					    plavs,nex,excluded,usepi,ycut,maxerror,enhance_function,enable_mhv);
-	      proc->SetEnhance(enhance_factor,maxreduction_factor,maxredepsilon);
-	      if (print_graphs) proc->SetPrintGraphs();
-	      p_procs->Add(proc);
-	      print_graphs=false;
-	    }
-	    else {
-	      msg.Out()<<"Ignored process: ";
-	      for (short int i=0;i<nIS;i++) msg.Out()<<" "<<IS[i].Name();
-	      msg.Out()<<" -> ";
-	      for (short int i=0;i<nFS;i++) msg.Out()<<FS[i].Name()<<" ";
-	      msg.Out()<<", kinematically not allowed."<<endl;
-	    }	    
+	      Process_Info* pcinfo=new Process_Info(pinfo);
 
-	    delete [] flavs;
-	    delete [] plavs;
+	      for (size_t i=0;i<AppNum.size();i++) {
+		for (int j=0;j<ii[i];j++) {
+		  delete AppPI[i]->m_sublist[0][AppPI[i]->m_sublist[0].size()-1];
+		  AppPI[i]->m_sublist[0].pop_back();
+		}
+	      }
+	      
+	      nFS = pcinfo->TotalNout();
+	      if (nFS>m_maxjet) m_maxjet = nFS;
+	      m_nmax = Max(m_nmax,pcinfo->Nmax(nIS));
+	      flavs              = new Flavour[nIS+nFS];
+	      plavs              = new Pol_Info[nIS+nFS];
+	      for (int i=0;i<nIS;i++) { flavs[i]     = IS[i]; plavs[i]     = plIS[i]; }
+	      pcinfo->GetFlavList(&flavs[nIS]);
+	      pcinfo->GetPolList(&plavs[nIS]);
+	      bool single        = 1;
+	      for (int i=0;i<nIS+nFS;i++) {
+		if (flavs[i].Size()>1) { single = 0; break; }
+	      }
+	      
+	      
+	      // for beam
+	      int bsh_pol=p_beam->Polarisation();
+	      int beam_is_poled[2]={bsh_pol&1,bsh_pol&2};
+	      for (int i=0;i<nIS;++i) {
+		if (plavs[i].DoFNumber()>1 && beam_is_poled[i]) { single = 0; break; }
+	      } 
+	    
+	      int qcdjets(0);
+	      double summass = 0.;
+	      for (int i=0;i<nFS;i++) {
+		summass += flavs[i+nIS].Mass();
+		if (flavs[i+nIS].Strong()) ++qcdjets;
+	      }
+	      m_minqcdjet=Min(Max(2+qcdjets-nFS,0),m_minqcdjet);
+	      m_maxqcdjet=ATOOLS::Max(m_maxqcdjet,qcdjets);
+	      if (summass<rpa.gen.Ecms()) {
+		Process_Base * proc=NULL;
+		if (single) {
+		  if (enable_mhv && CF.PureGluonic(nIS,IS,nFS,FS))
+		    proc = new Single_Process_MHV(pcinfo,nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
+						  order_strong,order_ew,
+						  -kfactor_scheme,-scale_scheme,fixed_scale,
+						  plavs,nex,excluded,usepi,ycut,maxerror,enhance_function);
+		  else
+		    proc = new Single_Process(pcinfo,nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
+					    order_strong,order_ew,
+					      -kfactor_scheme,-scale_scheme,fixed_scale,
+					      plavs,nex,excluded,usepi,ycut,maxerror,enhance_function);
+		}
+		else proc = new Process_Group(pcinfo,nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
+					      order_strong,order_ew,
+					      -kfactor_scheme,-scale_scheme,fixed_scale,
+					      plavs,nex,excluded,usepi,ycut,maxerror,enhance_function,enable_mhv);
+		proc->SetEnhance(enhance_factor,maxreduction_factor,maxredepsilon);
+		if (print_graphs) proc->SetPrintGraphs();
+		p_procs->Add(proc);
+		print_graphs=false;
+	      }
+	      else {
+		msg.Out()<<"Ignored process: ";
+		for (short int i=0;i<nIS;i++) msg.Out()<<" "<<IS[i].Name();
+		msg.Out()<<" -> ";
+		for (short int i=0;i<nFS;i++) msg.Out()<<FS[i].Name()<<" ";
+	      msg.Out()<<", kinematically not allowed."<<endl;
+	      }	    
+	      
+	      delete [] flavs;
+	      delete [] plavs;
+	      size_t k=0;
+	      while (k<ii.size()) {
+		ii[k]++;
+		if (ii[k]==AppNum[k]) {
+		  k++;
+		  if (k<AppNum.size()) ii[k-1]=0;
+		}
+		else break;
+	      }
+	    } while (ii.size()!=0 && ii[ii.size()-1]<AppNum[AppNum.size()-1]);
+	    if (pinfo) delete pinfo;
 	  }
 	}
       }
@@ -545,7 +581,7 @@ void Amegic::ReadInProcessfile(string file)
 }
 
 
-int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf)
+int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf,std::vector<int>* kf,vector<int>* num)
 {
   // kill initial spaces
   int ii[20];
@@ -602,12 +638,33 @@ int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf)
 	  pp[count]=pn[0];
 	}
       }
+ 
+     nxt = number.find(string("{"));
+      if (nxt!=(int)string::npos) {
+	pn = number;
+	number = pn.substr(0,nxt);
+	pn.erase(0,nxt);
+	if(pn[pn.length()-1]=='}'){
+	  pn.erase(0,1);
+	  pn.erase(pn.length()-1,1);
+	}
+	MyStrStream sstream;
+	int nnum,nkf;
+ 	sstream<<pn;
+ 	sstream>>nnum;
+ 	MyStrStream kstream;
+ 	kstream<<number;
+ 	kstream>>nkf;	
+	num->push_back(nnum+1);
+	kf->push_back(nkf);
+      }
+      else {
+	MyStrStream sstream;
+	sstream<<number;
+	sstream>>ii[count];
 
-      MyStrStream sstream;
-      sstream<<number;
-      sstream>>ii[count];
-
-      count++;
+	count++;
+      }
       buf = buf.substr(next);
     }
   }
