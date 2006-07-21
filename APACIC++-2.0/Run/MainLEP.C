@@ -212,13 +212,13 @@ int main(int argc,char **argv)
 
     mo->z       = 0.5;
     *(mo->part) = Particle(1,Flavour(kf::photon),Vec4D(rscale,0,0,0));
-    mo->E2    = scale;
-    mo->t    = scale;  
+    mo->E2      = scale;
+    mo->t       = scale;  
     
     mo->stat    = 1;  
   
-    mo->left  = k2;
-    mo->right = k3;
+    mo->left    = k2;
+    mo->right   = k3;
 
     *(k2->part) = Particle(2,quark,Vec4D(E,E*dir));
     k2->part->SetFlow(1,-1);

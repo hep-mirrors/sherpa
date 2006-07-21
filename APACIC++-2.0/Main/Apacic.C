@@ -23,7 +23,7 @@ Apacic::Apacic(ISR_Handler *const isr,MODEL::Model_Base *const model,
 	       ATOOLS::Jet_Finder *const jf,Data_Read *const dataread):
   p_inishower(NULL), p_finshower(NULL), 
   p_jetveto(NULL),
-  p_initrees(NULL), p_fintree(NULL),
+  p_initrees(NULL), p_fintrees(NULL),
   m_showers(false)
 {
   Splitting_Function::SetKFactorScheme
@@ -35,13 +35,10 @@ Apacic::Apacic(ISR_Handler *const isr,MODEL::Model_Base *const model,
     THROW(fatal_error,"Shower must be enabled for hadronic initial state.");
   m_jvm=(jv::mode)dataread->GetValue<int>("JET_VETO_SCHEME",11);
   if (m_fsron) {
-    p_fintree   = new Tree();
+    p_fintrees  = new std::list<Tree *>;
     p_finshower = new Final_State_Shower(model,jf,dataread);
     p_jetveto = new Jet_Veto(jf,p_finshower->Kinematics());
     p_jetveto->SetLoseJetMode(dataread->GetValue<int>("LOSE_JET_MODE",0));
-    p_jetveto->SetMode(m_jvm);
-    p_jetveto->SetFSTree(p_fintree);
-    p_finshower->SetJetVeto(p_jetveto);
     m_showers=true;
   }
   if (m_isron) {
@@ -56,7 +53,14 @@ Apacic::Apacic(ISR_Handler *const isr,MODEL::Model_Base *const model,
   
 Apacic::~Apacic() 
 {
-  if (p_fintree) delete p_fintree;
+  if (p_fintrees) {
+    for (std::list<Tree *>::iterator ftree=p_fintrees->begin();
+	 ftree!=p_fintrees->end(); ftree++) {
+      if ((*ftree)) { delete (*ftree); (*ftree)=NULL; }
+    }
+    p_fintrees->clear();
+    delete p_fintrees;
+  }
   if (p_initrees) {
     for (short unsigned int i(0);i<2;++i) delete p_initrees[i];
     delete p_initrees;
@@ -66,20 +70,49 @@ Apacic::~Apacic()
   delete p_jetveto;
 }
 
+
+// ATOOLS::SuccessCode
 int Apacic::PerformShowers(const int &jetveto,const int &losejv,
-			   const double &x1,const double &x2,
-			   const double &ycut) 
+			   const double &x1,const double &x2)
 {
   PROFILE_HERE;
   if (!m_showers) return 1;
-  p_jetveto->SetYCut(ycut);
-  p_jetveto->SetJetVeto(jetveto);
-  p_jetveto->SetLoseJetVeto(losejv);
+  switch(PerformProductionShowers(jetveto,losejv,x1,x2)) {
+  case -1:
+    // need to shower again
+    return 3;
+  default:
+    // continue happily.
+    break;
+  }
+
+  while (m_ftree!=p_fintrees->end()) {
+    for (int i=0;i<3;i++) {
+      if (PerformDecayShower(jetveto,losejv)==1) break;
+      // Restore (*m_ftree);
+    }
+    m_ftree++;
+  }
+  return 1;
+}
+
+
+int Apacic::PerformProductionShowers(const int &jetveto,const int &losejv,
+				     const double &x1,const double &x2)
+{
   if (m_isron) {
     p_initrees[0]->Store();
     p_initrees[1]->Store();
   }
-  if (m_fsron) p_fintree->Store();
+  if (m_fsron) {
+    m_ftree = p_fintrees->begin();
+    (*m_ftree)->Store();
+  }
+  p_jetveto->SetYCut((*m_ftree)->VetoScale());
+  p_jetveto->SetJetVeto(jetveto);
+  p_jetveto->SetLoseJetVeto(losejv);
+
+
   static size_t m_maxtrials(3);
   static double rej(0.0), cnt(0.0);
   ++cnt;
@@ -103,7 +136,7 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
     Vec4D::SetAccu(accu);
     if (m_fsron) {
       m_cms=PrepareFSR();
-      switch (p_finshower->PerformShower(p_fintree,jetveto)) {
+      switch (p_finshower->PerformShower((*m_ftree),jetveto)) {
       case -1:        //PerformShower(,) never returns a -1.
 	msg.Debugging()<<"Lose jet veto in FSR Shower.\n";
 	m_last_ljv=true;
@@ -114,11 +147,11 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
 	Vec4D::ResetAccu();
 	return 0;
       }
-      p_finshower->SetAllColours(p_fintree->GetRoot());
+      p_finshower->SetAllColours((*m_ftree)->GetRoot());
     }
     if (m_isron) {
       p_inishower->InitShowerPT(p_initrees[0]->GetRoot()->maxpt2);
-      switch (p_inishower->PerformShower(p_initrees,p_fintree,jetveto)) {
+      switch (p_inishower->PerformShower(p_initrees,(*m_ftree),jetveto)) {
       case -1:       //PerformShower(,) never returns a -1.
 	msg.Debugging()<<"Lose jet veto in ISR Shower.\n";
 	m_last_ljv=true;
@@ -144,7 +177,7 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
 	p_initrees[0]->Restore();
 	p_initrees[1]->Restore();
       }
-      if (m_fsron) p_fintree->Restore();
+      if (m_fsron) (*m_ftree)->Restore();
       break;
     case -1: 
       msg_Debugging()<<"Lose jet veto \n";
@@ -153,7 +186,7 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
 	  p_initrees[0]->ClearStore();
 	  p_initrees[1]->ClearStore();
 	}
-	if (m_fsron) p_fintree->ClearStore();
+	if (m_fsron) (*m_ftree)->ClearStore();
 	m_last_ljv=true;
 	Vec4D::ResetAccu();
 	return -1;
@@ -162,7 +195,7 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
 	  p_initrees[0]->Restore();
 	  p_initrees[1]->Restore();
 	}
-	if (m_fsron) p_fintree->Restore();
+	if (m_fsron) (*m_ftree)->Restore();
 	m_last_ljv=true;
       }
     }
@@ -171,7 +204,7 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
     p_initrees[0]->ClearStore();
     p_initrees[1]->ClearStore();
   }
-  if (m_fsron) p_fintree->ClearStore();
+  if (m_fsron) (*m_ftree)->ClearStore();
   Vec4D::ResetAccu();
   if (trials==m_maxtrials) {
     ++rej;
@@ -181,14 +214,14 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
     return -1;
   }
   
-  p_fintree->CheckMomentumConservation();
+  (*m_ftree)->CheckMomentumConservation();
   if (m_isron) {
     p_initrees[0]->CheckMomentumConservation();
     p_initrees[1]->CheckMomentumConservation();
   }
   msg_Debugging()<<"kinematics check passed"<<std::endl;
   int number(0);
-  Vec4D sum_fs(p_finshower->GetMomentum(p_fintree->GetRoot(),number));
+  Vec4D sum_fs(p_finshower->GetMomentum((*m_ftree)->GetRoot(),number));
   Vec4D::ResetAccu();
   if (number<0) {
     msg.Error()<<METHOD<<"(..): Four Momentum not conserved. Abort."
@@ -208,9 +241,23 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
   return 1;
 }
 
+int Apacic::PerformDecayShower(const int &jetveto,const int &losejv) {
+  p_jetveto->SetMode(m_jvm);
+  p_jetveto->SetFSTree((*m_ftree));
+  p_finshower->SetJetVeto(p_jetveto);
+}
+
 void Apacic::PrepareTrees() 
 {
-  if (m_fsron) p_fintree->Reset();
+  if (m_fsron) {
+    std::list<Tree *>::iterator ftree=p_fintrees->begin();
+    (*ftree)->Reset();
+    ftree++;
+    while (ftree!=p_fintrees->end()) {
+      if ((*ftree)) { delete (*ftree); (*ftree)=NULL; }
+      ftree = p_fintrees->erase(ftree);
+    }
+  }
   if (m_isron) for (int i=0;i<2;i++) p_initrees[i]->Reset();
 }
 
@@ -221,9 +268,10 @@ void Apacic::BoostInLab()
     p_inishower->BoostFS();
   }
   else {
-    Poincare lab(m_cms);
-    lab.Invert();
-    p_fintree->BoRo(lab);
+    // work here....
+    //Poincare lab(m_cms);
+    //lab.Invert();
+    //p_fintree->BoRo(lab);
   }
 }
 
@@ -231,9 +279,11 @@ bool Apacic::ExtractPartons(const bool ini,const bool fin,
 			    Blob_List *const bl,Particle_List *const pl) 
 {
   if (fin) {
-    if (p_fintree->CheckStructure(true)) 
-      p_finshower->ExtractPartons(p_fintree->GetRoot(),0,bl,pl);
-    else return false;
+    for (std::list<Tree *>::iterator ftree=p_fintrees->begin();
+	 ftree!=p_fintrees->end(); ftree++) {
+      if (!(*ftree)->CheckStructure(true)) return false;
+      p_finshower->ExtractPartons((*ftree)->GetRoot(),0,bl,pl);
+    } 
   }
   if (ini) {
     for (int i=0;i<2;i++) {
@@ -247,10 +297,11 @@ bool Apacic::ExtractPartons(const bool ini,const bool fin,
 
 ATOOLS::Vec4D Apacic::PrepareFSR() 
 {
-  ATOOLS::Vec4D cms(p_fintree->GetRoot()->part->Momentum());
-  ATOOLS::Poincare cmsb(cms);
-  p_fintree->BoRo(cmsb);
-  return cms;
+  // work needed
+  //ATOOLS::Vec4D cms(p_fintree->GetRoot()->part->Momentum());
+  //ATOOLS::Poincare cmsb(cms);
+  //p_fintree->BoRo(cmsb);
+  return Vec4D(1.,0.,0.,0.);   //cms;
 }
 
 void Apacic::SetMaxJetNumber(const size_t &maxjets) 
@@ -265,10 +316,11 @@ void Apacic::SetJetvetoPt2(const double &q2i, const double &q2f)
 
 void Apacic::OutputTrees() 
 {
-  if (m_fsron) p_finshower->OutputTree(p_fintree);
   if (m_isron) {
     p_inishower->OutputTree(p_initrees[0]);
     p_inishower->OutputTree(p_initrees[1]);
   }
+  if (m_fsron) {
+    //p_finshower->OutputTree(p_fintree);
+  }
 }
-

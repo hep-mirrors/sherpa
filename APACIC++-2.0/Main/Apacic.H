@@ -12,19 +12,21 @@
 #include "Blob_List.H"
 #include "Data_Read.H"
 #include "Jet_Veto.H"
+#include <list>
 
 namespace APACIC {
 
   class Apacic {
   private:
 
-    Initial_State_Shower *p_inishower;
-    Final_State_Shower   *p_finshower;
+    Initial_State_Shower * p_inishower;
+    Final_State_Shower   * p_finshower;
 
-    Jet_Veto *p_jetveto;
+    Jet_Veto             * p_jetveto;
 
-    Tree **p_initrees;
-    Tree  *p_fintree;
+    Tree                ** p_initrees;
+    std::list<Tree *>    * p_fintrees;
+    std::list<Tree *>::iterator m_ftree;
 
     ATOOLS::Vec4D m_cms;
 
@@ -34,7 +36,9 @@ namespace APACIC {
 
     ATOOLS::Vec4D PrepareFSR();
     void BoostInLab();
-
+    int  PerformProductionShowers(const int &jv=0,const int &ljv=0,
+				  const double &x1=1.0,const double &x2=1.0);
+    int  PerformDecayShower(const int &jv=0,const int &ljv=0);
   public :
     
     // constructor
@@ -46,8 +50,7 @@ namespace APACIC {
 
     // member functions
     int  PerformShowers(const int &jv=0,const int &ljv=0,
-			const double &x1=1.0,const double &x2=1.0,
-			const double &ycut=1.0e-2);
+			const double &x1=1.0,const double &x2=1.0);
     bool ExtractPartons(const bool ini,const bool fin,
 			ATOOLS::Blob_List *const blist,
 			ATOOLS::Particle_List *const plist=NULL);
@@ -62,11 +65,11 @@ namespace APACIC {
     inline void SetFactorisationScale(const double &scale)
     { if (m_isron) p_inishower->SetFactorisationScale(scale); }
 
-    inline Tree  *FinTree() const  { return p_fintree;  }
-    inline Tree **IniTrees() const { return p_initrees; }
+    inline std::list<Tree *>    * FinTrees() const  { return p_fintrees;  }
+    inline Tree                ** IniTrees() const  { return p_initrees; }
 
-    inline Final_State_Shower   *FinShower() const { return p_finshower; }
-    inline Initial_State_Shower *IniShower() const { return p_inishower; }
+    inline Final_State_Shower   * FinShower() const { return p_finshower; }
+    inline Initial_State_Shower * IniShower() const { return p_inishower; }
 
   };// end of class Apacic
 
