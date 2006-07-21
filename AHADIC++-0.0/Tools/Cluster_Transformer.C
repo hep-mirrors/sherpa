@@ -87,7 +87,6 @@ bool Cluster_Transformer::TreatSingleCluster(Cluster * cluster,Part_List * plist
 
 void Cluster_Transformer::TreatClusterList(Cluster_List * clist,ATOOLS::Blob * blob) {
   Flavour hadron;
-  std::vector<Cluster_List *>::iterator clit;
   std::map<int,Flavour> hadrons;
 
   int      number  = clist->size(), i=0;
@@ -129,7 +128,6 @@ void Cluster_Transformer::TreatClusterList(Cluster_List * clist,ATOOLS::Blob * b
 	cit = clist->erase(cit);
       }
     }
-    //msg.Out()<<"After : "<<endl<<(*(*clit))<<endl;
   }
   delete masses;
   delete momenta;

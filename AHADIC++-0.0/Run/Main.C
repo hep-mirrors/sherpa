@@ -37,7 +37,7 @@ int main(int argc,char* argv[])
   APACIC::Apacic    * apacic    = new APACIC::Apacic(isr,model,&jf,dataread);
   delete dataread;
 
-  APACIC::Tree      * tree      = apacic->FinTree();
+  APACIC::Tree      * tree      = (*apacic->FinTrees()->begin());
   APACIC::Knot      * mo;
 
   Blob              * blob;
@@ -61,6 +61,7 @@ int main(int argc,char* argv[])
     Flow::ResetCounter();
 
     apacic->PrepareTrees();
+    tree->SetVetoScale(E2);
 
     mo          = tree->NewKnot();
     mo->t       = E2;
@@ -118,7 +119,7 @@ int main(int argc,char* argv[])
     blobs->push_back(blob);
     blob->AddToInParticles(new Particle((*mo->part)));
 
-    if (apacic->PerformShowers(false,true,1.,1.,1.)) {
+    if (apacic->PerformShowers(false,true,1.,1.)) {
       apacic->ExtractPartons(false,true,blobs,particles);
       ahadic->Hadronize(blobs);
     }

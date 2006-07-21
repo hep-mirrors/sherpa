@@ -148,6 +148,7 @@ void Hadronisation_Parameters::Init(string dir,string file)
 
   p_multiplets   = new All_Hadron_Multiplets();
   if (msg.LevelIsTracking()) p_multiplets->PrintWaveFunctions(); 
+  //abort();
 
   p_transitions1 = new All_Single_Transitions(p_multiplets);
   if (msg.LevelIsTracking()) p_transitions1->PrintSingleTransitions(); 
@@ -241,10 +242,16 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
     dataread.GetValue<double>("M_BC_1",Get("Mass_bottom")+Get("Mass_charm"));
   m_parametermap[string("Mass_bb1")]           = 
     dataread.GetValue<double>("M_BB_1",2.*Get("Mass_bottom"));
-  m_parametermap[string("Mixing_Angle_0-")]    = 
-    dataread.GetValue<double>("Mixing_0-",-0.3491);
-  m_parametermap[string("Mixing_Angle_1+")]    = 
-    dataread.GetValue<double>("Mixing_1+",0.6155);
+  m_parametermap[string("Mixing_Angle_0+")]    = 
+    dataread.GetValue<double>("Mixing_0+",-0.3491);
+  m_parametermap[string("Mixing_Angle_1-")]    = 
+    dataread.GetValue<double>("Mixing_1-",0.6155);
+  m_parametermap[string("Mixing_Angle_2+")]    = 
+    dataread.GetValue<double>("Mixing_2+",0.);
+  m_parametermap[string("Mixing_Angle_3-")]    = 
+    dataread.GetValue<double>("Mixing_3-",0.);
+  m_parametermap[string("Mixing_Angle_4+")]    = 
+    dataread.GetValue<double>("Mixing_4+",0.);
 }
 
 double Hadronisation_Parameters::Get(string keyword) 

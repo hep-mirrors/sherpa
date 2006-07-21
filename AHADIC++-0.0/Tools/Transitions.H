@@ -39,10 +39,10 @@ namespace AHADIC {
     stm::code               m_stmode;
     All_Hadron_Multiplets * p_multiplets;
     Single_Transition_Map * p_transitions;
-    void SimpleMassCriterion(Cluster *,Single_Transition_List *,ATOOLS::Flavour &);
-    void MassTimesWavefunction(Cluster *,Single_Transition_List *,ATOOLS::Flavour &);
-    void MWCriterion(Cluster *,Single_Transition_List *,ATOOLS::Flavour &);
-    void MWTimesWavefunction(Cluster *,Single_Transition_List *,ATOOLS::Flavour &);
+    void SimpleMassCriterion(Cluster *,Single_Transition_List *,ATOOLS::Flavour &,bool=false);
+    void MassTimesWavefunction(Cluster *,Single_Transition_List *,ATOOLS::Flavour &,bool=false);
+    void MWCriterion(Cluster *,Single_Transition_List *,ATOOLS::Flavour &,bool=false);
+    void MWTimesWavefunction(Cluster *,Single_Transition_List *,ATOOLS::Flavour &,bool=false);
   public:
     All_Single_Transitions(All_Hadron_Multiplets *);
     ~All_Single_Transitions();

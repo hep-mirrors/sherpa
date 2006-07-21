@@ -44,7 +44,8 @@ namespace AHADIC {
     Hadron_Multiplet_Map  * p_multiplets;
 
     void ConstructWaveFunctions();
-    Hadron_Wave_Function * ConstructMesonWaveFunction(int,int,int,int);
+    Hadron_Wave_Function * ConstructMesonWaveFunction(const int,const int,const int,
+						      const int,const int,const int);
     Hadron_Wave_Function * ConstructBaryonWaveFunction(int,int,int,int,int);
     void ConstructAntiWaveFunctions();
     void CreateMultiplets();

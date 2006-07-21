@@ -74,6 +74,7 @@ void Cluster_Formation_Handler::Reset()
 
 Blob * Cluster_Formation_Handler::FormClusters(Blob_List * bl) 
 {
+  //std::cout<<METHOD<<" "<<bl<<"."<<std::endl;
   if (bl==NULL) return false;
   Reset();
   p_blob = new Blob();
@@ -284,9 +285,10 @@ void Cluster_Formation_Handler::ClustersToHadrons()
     }
     else clit++;
   }
-  msg.Tracking()<<"   Continue with "<<m_clulists.size()<<" lists."<<endl;
+  msg.Tracking()<<"   Continue with "<<m_clulists.size()<<" lists ..."<<std::endl;
   for (clit=m_clulists.begin();clit!=m_clulists.end();clit++) 
     p_ctransformer->TreatClusterList((*clit),p_blob);
+  msg.Tracking()<<"                                                   ... done."<<endl;
 
   Histogram * histomass, * histonumb;
   if (m_analyse) {

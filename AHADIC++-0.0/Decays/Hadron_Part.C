@@ -18,6 +18,7 @@ Hadron_Part::Hadron_Part() :
 void Hadron_Part::RedoDecay(Cluster * cluster,Part_List * pl,
 			    int mode,Flavour & had1,Flavour & had2)
 {
+  //std::cout<<METHOD<<" "<<m_cht<<" "<<mode<<" "<<m_hadsel<<std::endl;
   if (m_cht==chtrans::HH_only) {
     if (p_dtransitions->IsoDecay(cluster,had1,had2)) { 
       TwoHadronDecay(cluster,pl,had1,had2);

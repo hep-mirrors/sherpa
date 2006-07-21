@@ -48,14 +48,16 @@ void All_Hadron_Multiplets::ConstructWaveFunctions()
     if (!hadron.IsHadron() || !hadron.IsOn()) continue;
     
     if (int(kfcode/1000)-int(kfcode/10000)*10==0) {
-      wavefunction = ConstructMesonWaveFunction(kfcode-10*int(kfcode/10),
+      wavefunction = ConstructMesonWaveFunction(int(kfcode/9000000),
+						int(kfcode/100000),
 						int(kfcode/10000),
+						kfcode-10*int(kfcode/10),
 						int(kfcode/10)-int(kfcode/100)*10,
 						int(kfcode/100)-int(kfcode/1000)*10); 
     }
     else {
-      wavefunction = ConstructBaryonWaveFunction(kfcode-10*int(kfcode/10),
-						 int(kfcode/10000),
+      wavefunction = ConstructBaryonWaveFunction(int(kfcode/10000),
+						 kfcode-10*int(kfcode/10),
 						 int(kfcode/10)-int(kfcode/100)*10,
 						 int(kfcode/100)-int(kfcode/1000)*10,
 						 int(kfcode/1000)-int(kfcode/10000)*10); 
@@ -69,7 +71,9 @@ void All_Hadron_Multiplets::ConstructWaveFunctions()
 }
 
 
-Hadron_Wave_Function * All_Hadron_Multiplets::ConstructMesonWaveFunction(int spin,int lp,int fl1,int fl2) 
+Hadron_Wave_Function * 
+All_Hadron_Multiplets::ConstructMesonWaveFunction(const int iso0,const int rp,const int lp,
+						  const int spin,const int fl1,const int fl2) 
 {
   if (spin==0) return NULL;
   Hadron_Wave_Function * wavefunction=NULL;
@@ -99,8 +103,8 @@ Hadron_Wave_Function * All_Hadron_Multiplets::ConstructMesonWaveFunction(int spi
 	wavefunction->AddToWaves(pair,+1./sqrt(2.));
       } 
       if (fl1==2) {
-	weight         = costh/sqrt(3.)+sinth/sqrt(6.);
-	if (weight>1.e-3) {
+	if (iso0==1) {
+	  weight         = 1/sqrt(3.);
 	  wavefunction = new Hadron_Wave_Function;
 	  wavefunction->AddToWaves(pair,weight);
 	  flavs[0]     = Flavour(kf::code(1));
@@ -108,15 +112,32 @@ Hadron_Wave_Function * All_Hadron_Multiplets::ConstructMesonWaveFunction(int spi
 	  pair->first  = flavs[0];
 	  pair->second = flavs[0].Bar();
 	  wavefunction->AddToWaves(pair,weight);
-	}
-	weight         = costh/sqrt(3.)-2.*sinth/sqrt(6.);
-	if (weight>1.e-3) {
 	  flavs[0]     = Flavour(kf::code(3));
 	  pair         = new FlavPair;
 	  pair->first  = flavs[0];
 	  pair->second = flavs[0].Bar();
-	  if (wavefunction==NULL) wavefunction = new Hadron_Wave_Function;
 	  wavefunction->AddToWaves(pair,weight);
+	}
+	else {
+	  weight         = costh/sqrt(3.)+sinth/sqrt(6.);
+	  if (weight>1.e-3) {
+	    wavefunction = new Hadron_Wave_Function;
+	    wavefunction->AddToWaves(pair,weight);
+	    flavs[0]     = Flavour(kf::code(1));
+	    pair         = new FlavPair;
+	    pair->first  = flavs[0];
+	    pair->second = flavs[0].Bar();
+	    wavefunction->AddToWaves(pair,weight);
+	  }
+	  weight         = costh/sqrt(3.)-2.*sinth/sqrt(6.);
+	  if (weight>1.e-3) {
+	    flavs[0]     = Flavour(kf::code(3));
+	    pair         = new FlavPair;
+	    pair->first  = flavs[0];
+	    pair->second = flavs[0].Bar();
+	    if (wavefunction==NULL) wavefunction = new Hadron_Wave_Function;
+	    wavefunction->AddToWaves(pair,weight);
+	  }
 	}
       } 
       if (fl1==3) {
@@ -154,8 +175,9 @@ Hadron_Wave_Function * All_Hadron_Multiplets::ConstructMesonWaveFunction(int spi
   return wavefunction;
 }
 
-Hadron_Wave_Function * All_Hadron_Multiplets::ConstructBaryonWaveFunction(int spin,int lp,
-									  int fl1,int fl2,int fl3) 
+Hadron_Wave_Function * 
+All_Hadron_Multiplets::ConstructBaryonWaveFunction(int lp,int spin,
+						   int fl1,int fl2,int fl3) 
 {
   // Baryon wave functions according to Lichtenberg, Namgung, Wills & Predazzi
   if (spin==0) return NULL;
@@ -206,7 +228,6 @@ Hadron_Wave_Function * All_Hadron_Multiplets::ConstructBaryonWaveFunction(int sp
       pos1 = fl3; pos2 = fl2; pos3 = fl1;
     }
   }
-  //cout<<"Check "<<spin<<" "<<fl1<<" "<<fl2<<" "<<fl3<<" -> "<<wf<<endl;
 
   Hadron_Wave_Function * wavefunction = new Hadron_Wave_Function;
   FlavPair             * pair;
@@ -231,8 +252,8 @@ Hadron_Wave_Function * All_Hadron_Multiplets::ConstructBaryonWaveFunction(int sp
     break;
   case 820:
   case 830:
-    if (wf==82) di=+1;
-           else di=-1;
+    if (wf==82 || wf==820) di=+1;
+                      else di=-1;
     pair         = new FlavPair;
     pair->first  = Flavour(kf::code(pos3));
     pair->second = (pos1>pos2)? Flavour(kf::code(pos1*1000+pos2*100+2+di)) :
@@ -356,10 +377,11 @@ void All_Hadron_Multiplets::LookUpAngles(const int angular,const int spin,double
 {
   double angle=0.;
   switch (spin) {
-  case 7 : angle = hadpars.Get("Mixing_Angle_3+"); break;
-  case 5 : angle = hadpars.Get("Mixing_Angle_2-"); break;
-  case 3 : angle = hadpars.Get("Mixing_Angle_1+"); break;
-  case 1 : angle = hadpars.Get("Mixing_Angle_0-"); break; 
+  case 9 : angle = hadpars.Get("Mixing_Angle_4+"); break;
+  case 7 : angle = hadpars.Get("Mixing_Angle_3-"); break;
+  case 5 : angle = hadpars.Get("Mixing_Angle_2+"); break;
+  case 3 : angle = hadpars.Get("Mixing_Angle_1-"); break;
+  case 1 : angle = hadpars.Get("Mixing_Angle_0+"); break; 
   default: break;  
   }
   costh = cos(angle); sinth = sin(angle);
@@ -368,60 +390,130 @@ void All_Hadron_Multiplets::LookUpAngles(const int angular,const int spin,double
 void All_Hadron_Multiplets::CreateMultiplets()
 {
   p_multiplets           = new Hadron_Multiplet_Map;
-  int                      kfcode,spin;
+  int                      kfcode,dkfc,spin,orbital,radial,iso0;
   Hadron_Multiplet_Miter   mpletiter;
   Hadron_Multiplet       * multiplet;
+  std::string              prefix;
   for (Hadron_WF_Miter wfm=p_wavefunctions->begin();wfm!=p_wavefunctions->end();wfm++) {
-    kfcode = wfm->second->KfCode();
+    kfcode = abs(wfm->second->KfCode());
     spin   = wfm->second->Spin();
     if (spin%2==0) {
-      if (abs(kfcode)>4000 && abs(kfcode)<10000) spin += 10;
-      if (abs(kfcode)>5000 && abs(kfcode)<10000) spin += 10;
+      if (kfcode>4000 && kfcode<10000) spin += 10;
+      if (kfcode>5000 && kfcode<10000) spin += 10;
       if (wfm->first.IsAnti()) spin = -spin;
     }
     else {
-      if (abs(kfcode)>400 && abs(kfcode)<1000) spin += 10;
-      if (abs(kfcode)>500 && abs(kfcode)<1000) spin += 10;
+      iso0    = int(kfcode/9000000);
+      kfcode -= iso0*9000000;
+      radial  = int(kfcode/100000);
+      kfcode -= radial*100000;
+      orbital = int(kfcode/10000);
+      kfcode -= orbital*10000;
+      if (int(kfcode/100)==int((kfcode-100*int(kfcode/100))/10) && 
+	  int(kfcode/100)>3) {
+	spin = -10000*int(kfcode/100);
+      }
+      else {
+	spin   += iso0*10000+radial*1000+orbital*100;
+	if (kfcode>400 && kfcode<500) spin += 40;
+	if (kfcode>500 && kfcode<600) spin += 50;
+      }
     }
     mpletiter = p_multiplets->find(spin);
-    //cout<<"Look for : "<<wfm->first<<" to "<<spin<<" / "<<kfcode<<endl;
-    if (mpletiter!=p_multiplets->end()) {
-      //msg.Debugging()<<"Add "<<wfm->first<<" to "<<mpletiter->second->m_name<<endl;
-      mpletiter->second->AddToElements(wfm->first);
-    }
+    if (mpletiter!=p_multiplets->end()) mpletiter->second->AddToElements(wfm->first);
     else {
       multiplet = new Hadron_Multiplet;
-      if (dabs(kfcode)<1000) {
+      if (kfcode<1000) {
 	switch (spin) {
-	case 1:  multiplet->SetName(string("Pseudoscalars (0-)")); break;
-	case 3:  multiplet->SetName(string("Vectors       (1+)")); break;
-	case 5:  multiplet->SetName(string("Tensors       (2-)")); break;
-	case 7:  multiplet->SetName(string("Tensors       (3+)")); break;
+	case-50000:  multiplet->SetName(string("Bottomonia")); break;
+	case-40000:  multiplet->SetName(string("Charmonia")); break;
+	case     1:  multiplet->SetName(string("Light Pseudoscalars         (0-+)")); break;
+	case     3:  multiplet->SetName(string("Light Vectors               (1--)")); break;
+	case     5:  multiplet->SetName(string("Light Tensors               (2++)")); break;
+	case     7:  multiplet->SetName(string("Light Tensors               (3--)")); break;
+	case     9:  multiplet->SetName(string("Light Tensors               (4++)")); break;
+	case    41:  multiplet->SetName(string("Charmed Pseudoscalars       (0-+)")); break;
+	case    43:  multiplet->SetName(string("Charmed Vectors             (1--)")); break;
+	case    45:  multiplet->SetName(string("Charmed Tensors             (2++)")); break;
+	case    47:  multiplet->SetName(string("Charmed Tensors             (3--)")); break;
+	case    49:  multiplet->SetName(string("Charmed Tensors             (4++)")); break;
+	case    51:  multiplet->SetName(string("Beautiful Pseudoscalars     (0-+)")); break;
+	case    53:  multiplet->SetName(string("Beautiful Vectors           (1--)")); break;
+	case    55:  multiplet->SetName(string("Beautiful Tensors           (2++)")); break;
+	case    57:  multiplet->SetName(string("Beautiful Tensors           (3--)")); break;
+	case    59:  multiplet->SetName(string("Beautiful Tensors           (4++)")); break;
+	case   101:  multiplet->SetName(string("L=1 Light Pseudoscalars     (0++)")); break;
+	case   103:  multiplet->SetName(string("L=1 Light Vectors           (1+-)")); break;
+	case   105:  multiplet->SetName(string("L=1 Light Tensors           (2-+)")); break;
+	case   107:  multiplet->SetName(string("L=1 Light Tensors           (3+-)")); break;
+	case   109:  multiplet->SetName(string("L=1 Light Tensors           (4-+)")); break;
+	case   141:  multiplet->SetName(string("L=1 Charmed Pseudoscalars   (0++)")); break;
+	case   143:  multiplet->SetName(string("L=1 Charmed Vectors         (1+-)")); break;
+	case   145:  multiplet->SetName(string("L=1 Charmed Tensors         (2-+)")); break;
+	case   147:  multiplet->SetName(string("L=1 Charmed Tensors         (3+-)")); break;
+	case   149:  multiplet->SetName(string("L=1 Charmed Tensors         (4-+)")); break;
+	case   151:  multiplet->SetName(string("L=1 Beautiful Pseudoscalars (0++)")); break;
+	case   153:  multiplet->SetName(string("L=1 Beautiful Vectors       (1+-)")); break;
+	case   155:  multiplet->SetName(string("L=1 Beautiful Tensors       (2-+)")); break;
+	case   157:  multiplet->SetName(string("L=1 Beautiful Tensors       (3+-)")); break;
+	case   159:  multiplet->SetName(string("L=1 Beautiful Tensors       (4-+)")); break;
+	case   203:  multiplet->SetName(string("L=2 Light Vectors           (1++)")); break;
+	case   205:  multiplet->SetName(string("L=2 Light Tensors           (2--)")); break;
+	case   207:  multiplet->SetName(string("L=2 Light Tensors           (3++)")); break;
+	case   209:  multiplet->SetName(string("L=2 Light Tensors           (4--)")); break;
+	case   243:  multiplet->SetName(string("L=2 Charmed Vectors         (1++)")); break;
+	case   245:  multiplet->SetName(string("L=2 Charmed Tensors         (2--)")); break;
+	case   247:  multiplet->SetName(string("L=2 Charmed Tensors         (3++)")); break;
+	case   249:  multiplet->SetName(string("L=2 Charmed Tensors         (4--)")); break;
+	case   253:  multiplet->SetName(string("L=2 Beautiful Vectors       (1++)")); break;
+	case   255:  multiplet->SetName(string("L=2 Beautiful Tensors       (2--)")); break;
+	case   257:  multiplet->SetName(string("L=2 Beautiful Tensors       (3++)")); break;
+	case   259:  multiplet->SetName(string("L=2 Beautiful Tensors       (4--)")); break;
+	case   303:  multiplet->SetName(string("L=3 Light Vectors           (1--)")); break;
+	case   305:  multiplet->SetName(string("L=3 Light Tensors           (2++)")); break;
+	case   307:  multiplet->SetName(string("L=3 Light Tensors           (3--)")); break;
+	case   309:  multiplet->SetName(string("L=3 Light Tensors           (4++)")); break;
+	case   343:  multiplet->SetName(string("L=3 Charmed Vectors         (1--)")); break;
+	case   345:  multiplet->SetName(string("L=3 Charmed Tensors         (2++)")); break;
+	case   347:  multiplet->SetName(string("L=3 Charmed Tensors         (3--)")); break;
+	case   349:  multiplet->SetName(string("L=3 Charmed Tensors         (4++)")); break;
+	case   353:  multiplet->SetName(string("L=3 Beautiful Vectors       (1--)")); break;
+	case   355:  multiplet->SetName(string("L=3 Beautiful Tensors       (2++)")); break;
+	case   357:  multiplet->SetName(string("L=3 Beautiful Tensors       (3--)")); break;
+	case   359:  multiplet->SetName(string("L=3 Beautiful Tensors       (4++)")); break;
+	case  1001:  multiplet->SetName(string("R=1 Light Pseudoscalars     (0-+)")); break;
+	case  1003:  multiplet->SetName(string("R=1 Light Vectors           (1--)")); break;
+	case  1041:  multiplet->SetName(string("R=1 Charmed Pseudoscalars   (0-+)")); break;
+	case  1043:  multiplet->SetName(string("R=1 Charmed Vectors         (1--)")); break;
+	case  1051:  multiplet->SetName(string("R=1 Beautiful Pseudoscalars (0-+)")); break;
+	case  1053:  multiplet->SetName(string("R=1 Beautiful Vectors       (1--)")); break;
+	case 10001:  multiplet->SetName(string("Isoscalar Pseudoscalars     (0-+)")); break;
+	case 10003:  multiplet->SetName(string("Isoscalar Vectors           (1--)")); break;
+	case 10101:  multiplet->SetName(string("Isoscalar L=1 Pseudoscalars (0-+)")); break;
+	case 10103:  multiplet->SetName(string("Isoscalar L=1 Vectors       (1--)")); break;
 	default: multiplet->SetName(string("Don't know        ")); break;
 	}
-	multiplet->AddToElements(wfm->first);
-	(*p_multiplets)[spin] = multiplet;
       }
-      else if (dabs(kfcode)<10000) {
+      else if (kfcode<10000) {
 	//cout<<"New multiplet: "<<wfm->first<<" to "<<spin<<endl;
 	switch (spin) {
-	case   2:  multiplet->SetName(string("Nucleons        (1/2)")); break;
-	case   4:  multiplet->SetName(string("Decuplet        (3/2)")); break;
-	case  12:  multiplet->SetName(string("Nucleons_c      (1/2)")); break;
-	case  14:  multiplet->SetName(string("Decuplet_c      (3/2)")); break;
-	case  22:  multiplet->SetName(string("Nucleons_b      (1/2)")); break;
-	case  24:  multiplet->SetName(string("Decuplet_b      (3/2)")); break;
-	case  -2:  multiplet->SetName(string("Anti-Nucleons   (1/2)")); break;
-	case  -4:  multiplet->SetName(string("Anti-Decuplet   (3/2)")); break;
-	case -12:  multiplet->SetName(string("Anti-Nucleons_c (1/2)")); break;
-	case -14:  multiplet->SetName(string("Anti-Decuplet_c (3/2)")); break;
-	case -22:  multiplet->SetName(string("Anti-Nucleons_b (1/2)")); break;
-	case -24:  multiplet->SetName(string("Anti-Decuplet_b (3/2)")); break;
-	default:   multiplet->SetName(string("Don't know     (anti)")); break;
+	case   2:  multiplet->SetName(string("Nucleons                  (1/2)")); break;
+	case   4:  multiplet->SetName(string("Decuplet                  (3/2)")); break;
+	case  12:  multiplet->SetName(string("Charmed Nucleons          (1/2)")); break;
+	case  14:  multiplet->SetName(string("Charmed Decuplet          (3/2)")); break;
+	case  22:  multiplet->SetName(string("Beautiful Nucleons        (1/2)")); break;
+	case  24:  multiplet->SetName(string("Beautiful Decuplet        (3/2)")); break;
+	case  -2:  multiplet->SetName(string("Anti-Nucleons             (1/2)")); break;
+	case  -4:  multiplet->SetName(string("Anti-Decuplet             (3/2)")); break;
+	case -12:  multiplet->SetName(string("Charmed Anti-Nucleons     (1/2)")); break;
+	case -14:  multiplet->SetName(string("Charmed Anti-Decuplet_c   (3/2)")); break;
+	case -22:  multiplet->SetName(string("Beautiful Anti-Nucleons_b (1/2)")); break;
+	case -24:  multiplet->SetName(string("Beautiful Anti-Decuplet_b (3/2)")); break;
+	default:   multiplet->SetName(string("Don't know                (anti)")); break;
 	}
-	multiplet->AddToElements(wfm->first);
-	(*p_multiplets)[spin] = multiplet;
       }
+      multiplet->AddToElements(wfm->first);
+      (*p_multiplets)[spin] = multiplet;
     }
   }
 } 
