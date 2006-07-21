@@ -80,7 +80,7 @@ Shower_Handler::~Shower_Handler()
 
 
 int Shower_Handler::PerformShowers(int jetveto,int losejv,double _x1,double _x2,double ycut) {
-  if (p_apacic) return p_apacic->PerformShowers(jetveto,losejv,_x1,_x2, ycut);
+  if (p_apacic) return p_apacic->PerformShowers(jetveto,losejv,_x1,_x2);
 #ifdef USING__Adicic    
   if (p_adicic) return p_adicic->PerformShowers();
 #endif
@@ -91,7 +91,7 @@ int Shower_Handler::PerformShowers(int jetveto,int losejv,double _x1,double _x2,
 }
 
 int Shower_Handler::PerformDecayShowers(bool jetveto) {
-  if (p_apacic) return p_apacic->PerformShowers(jetveto,1,1.,1.,rpa.gen.Ycut());
+  if (p_apacic) return p_apacic->PerformShowers(jetveto,1,1.,1.);
   return 0;
 }
 
@@ -141,8 +141,8 @@ void Shower_Handler::CleanUp() {
 #endif
 }
 
-APACIC::Tree * Shower_Handler::GetFinTree() { 
-  if (p_apacic) return p_apacic->FinTree();
+std::list<APACIC::Tree *> * Shower_Handler::GetFinTrees() { 
+  if (p_apacic) return p_apacic->FinTrees();
   msg.Error()<<"Error in Shower_Handler::FinTree()."<<std::endl
 	     <<"   Apacic is not the shower handler."<<std::endl
 	     <<"   Initialized "<<m_showergenerator<<". Abort run."<<std::endl;

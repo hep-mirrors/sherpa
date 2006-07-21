@@ -89,6 +89,9 @@ void Event_Handler::PrintGenericEventStructure()
 
 bool Event_Handler::GenerateEvent(int mode) 
 {
+  //std::cout<<METHOD<<"######################################################"<<std::endl
+  //	   <<METHOD<<"######################################################"<<std::endl
+  //	   <<METHOD<<"######################################################"<<std::endl;
   PROFILE_LOCAL("Event_Handler::GenerateEvent");
   if (!rpa.gen.CheckTime()) {
     ATOOLS::msg.Error()<<ATOOLS::om::bold
@@ -117,6 +120,8 @@ bool Event_Handler::GenerateEvent(int mode)
 	for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
 	  if ((*pit)->Type()==eph::Perturbative) {
 	    bool result=(*pit)->Treat(&m_blobs,weight);
+	    //if (result) std::cout<<"Success in "<<(*pit)->Name()<<"."<<std::endl;
+	    //      else std::cout<<"Failure in "<<(*pit)->Name()<<"."<<std::endl;
 	    if (weight==0.0 &&
 		rpa.gen.NumberOfDicedEvents()==rpa.gen.NumberOfEvents()) return true;
 	    msg_Tracking()<<ATOOLS::om::blue<<"Event_Handler::GenerateEvent("<<mode<<"): "
@@ -127,12 +132,16 @@ bool Event_Handler::GenerateEvent(int mode)
 	  }
 	}
       }
-      flag=1;
+      flag=true;
+      //std::cout<<"----------------------------------------------------------------"<<std::endl;
       while (flag) {
 	flag = false;
 	for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
+	  //std::cout<<"   check this out : "<<(*pit)->Name()<<"."<<std::endl;
 	  if ((*pit)->Type()==eph::Hadronization) {
 	    bool result=(*pit)->Treat(&m_blobs,weight);
+	    //if (result) std::cout<<"Success in "<<(*pit)->Name()<<"."<<std::endl;
+	    //      else std::cout<<"Failure in "<<(*pit)->Name()<<"."<<std::endl;
 	    msg_Tracking()<<ATOOLS::om::blue<<"Event_Handler::GenerateEvent("<<mode<<"): "<<ATOOLS::om::reset
 				  <<"Event phase "<<ATOOLS::om::bold<<(*pit)->Name()<<ATOOLS::om::reset
 				  <<" yields "<<ATOOLS::om::bold<<result<<ATOOLS::om::reset<<std::endl;

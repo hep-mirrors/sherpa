@@ -171,11 +171,10 @@ int Cluster_Partons_CKKW::SetColours(EXTRAXS::XS_Base * xs,
   }
   m_q2_fss  = dabs(p_xs->Scale(stp::sfs));
   m_q2_iss  = dabs(p_xs->Scale(stp::sis));
+  std::cout<<"cp: found xs, fss "<<m_q2_fss<<", iss "<<m_q2_iss<<"\n";
 //   Alternative choice for PS-scale
 //    m_q2_fss  = dabs(p_xs->Scale(stp::as));
 //    m_q2_iss  = dabs(p_xs->Scale(stp::as));
-  msg_Debugging()<<"cp: found xs, fss "<<m_q2_fss<<", iss "<<m_q2_iss
-		 <<", qcd "<<p_xs->Scale(stp::as)<<"\n";
   if (m_q2_fss==std::numeric_limits<double>::max() || 
       m_q2_iss==std::numeric_limits<double>::max()) {
     m_q2_hard = m_q2_fss = m_q2_iss = p_xs->Scale(stp::fac);
@@ -216,7 +215,7 @@ void Cluster_Partons_CKKW::InitWeightCalculation()
   m_as_hard    = (*p_runas)(m_q2_hard/asfac);
   m_as_qcd     = (*p_runas)(m_q2_qcd/asfac);
   m_as_jet     = (*p_runas)(m_me_as_factor*m_q2_jet/asfac);
-  msg_Debugging()<<"ct: scales: amegic "<<rpa.gen.Ecms()<<" ("<<m_as_amegic<<")"
+  std::cout<<"ct: scales: amegic "<<rpa.gen.Ecms()<<" ("<<m_as_amegic<<")"
 		 <<", hard "<<sqrt(m_q2_hard)<<" ("<<m_as_hard<<")"
 		 <<", qcd "<<sqrt(m_q2_qcd)<<" ("<<m_as_qcd<<")"
 		 <<", jet "<<sqrt(m_q2_jet)<<" ("<<m_as_jet<<"), fac "
@@ -231,7 +230,7 @@ void Cluster_Partons_CKKW::InitWeightCalculation()
     m_as_jet   = 1.;
     m_as_hard  = 1.;
   }
-  msg_Debugging()<<"ct: weight me : hard qcd "<<m_hard_nqcd<<" weight "
+  std::cout<<"ct: weight me : hard qcd "<<m_hard_nqcd<<" weight "
 		 <<pow(m_as_qcd/m_as_jet,m_hard_nqcd)<<std::endl;
   if (m_hard_nqcd>0) m_weight *= pow(m_as_qcd/m_as_jet,m_hard_nqcd);
   // special treatment for effective higgs vertex
@@ -254,7 +253,7 @@ void Cluster_Partons_CKKW::InitWeightCalculation()
 	static double asmh2((*MODEL::as)(sqr(Flavour(kf::h).Mass())));
  	m_weight*=pow((*MODEL::as)(mth2)/asmh2,
 		      p_ct->GetHardLegs()[i][j].OrderQCD());
-	msg_Debugging()<<METHOD<<"(): found higgs vertex: as = "<<(*MODEL::as)(mth2)
+	std::cout<<METHOD<<"(): found higgs vertex: as = "<<(*MODEL::as)(mth2)
 		       <<" vs. asf = "<<asmh2<<", nqcd = "<<p_ct->GetHardLegs()[i][j].OrderQCD()<<"\n";
 	break;
       }
@@ -285,8 +284,7 @@ void Cluster_Partons_CKKW::InitWeightCalculation()
     m_qmin_ci=sqrt(qmin2i);
     m_qmin_cf=sqrt(qmin2f);
   }
-  msg_Debugging()<<"ct: qmini "<<m_qmin_ci<<", qminf "<<m_qmin_cf
-		 <<", qmin_i "<<m_qmin_i<<", qmin_f "<<m_qmin_f<<"\n";
+  std::cout<<"ct: qmin "<<m_qmin_ci<<", "<<m_qmin_cf<<"\n";
 }
 
 
@@ -329,7 +327,7 @@ ApplyCombinedInternalWeight(const bool is,const Flavour & fl,
     }
     DeltaRatio = DeltaNum/DeltaDenom;
   }
-  msg_Debugging()<<"ct: internal weight: "<<is<<" "<<fl<<" "
+  std::cout<<"ct: internal weight: "<<is<<" "<<fl<<" "
 		 <<upper<<" -> "<<actual<<" / "<<qmin
 		 <<" => delta-> "<<DeltaRatio
 		 <<" ("<<DeltaNum<<"/"<<DeltaDenom<<") as-> "
@@ -354,7 +352,7 @@ ApplyExternalWeight(const bool is,const Flavour & fl,
     if (is) DeltaNum = p_issud->Delta(fl)(actual,qmin);
        else DeltaNum = p_fssud->Delta(fl)(actual,qmin);
   }
-  msg_Debugging()<<"ct: external weight: "<<is<<" "<<fl<<" "
+  std::cout<<"ct: external weight: "<<is<<" "<<fl<<" "
 		 <<actual<<" -> "<<qmin<<" => delta-> "<<DeltaNum<<std::endl;
   m_weight *= DeltaNum;
   return true;
@@ -410,7 +408,7 @@ void Cluster_Partons_CKKW::CalculateWeight()
       case lf::Triangle:
       case lf::Box:
       case lf::C4GS: 
-	msg_Debugging()<<"found higgs vertex\n";
+	std::cout<<"found higgs vertex\n";
 	static double asmh2((*MODEL::as)(sqr(Flavour(kf::h).Mass())));
 	asref=asmh2;
 	break;
@@ -437,7 +435,7 @@ void Cluster_Partons_CKKW::CalculateWeight()
     }
     if (m_count_startscale==2) OverwriteScales(l);
   }
-  msg_Debugging()<<METHOD<<"(..): combine tables {\n"<<*ct_tmp<<"\n}\n";
+  std::cout<<METHOD<<"(..): combine tables {\n"<<*ct_tmp<<"\n}\n";
 
   m_hard_nqed = m_nstrong-m_hard_nqcd-2;
   if (m_nstrong-m_hard_nqcd>2) 

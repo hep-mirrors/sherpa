@@ -39,29 +39,29 @@ namespace SHERPA {
     Shower_Handler(std::string,std::string,MODEL::Model_Base *,
 		   PDF::ISR_Handler *,int);
     ~Shower_Handler();
-    int                       PerformShowers(int,int,double,double,double ycut);
-    int                       PerformDecayShowers(bool);
-    void                      FillBlobs(ATOOLS::Blob_List *);
-    void                      FillDecayBlobs(ATOOLS::Blob_List *);
-    void                      CleanUp();
-    std::string               ShowerGenerator() { return m_showergenerator; }
-    bool                      ISROn()           { return m_isrshowerswitch; }
-    bool                      FSROn()           { return m_fsrshowerswitch; }
-    unsigned int              MaxJetNumber()    { return m_maxjetnumber;    }
-    PDF::ISR_Handler        * GetISRHandler()   { return p_isr_handler; }
-    APACIC::Tree            * GetFinTree(); 
-    APACIC::Tree           ** GetIniTrees();
+    int                         PerformShowers(int,int,double,double,double ycut);
+    int                         PerformDecayShowers(bool);
+    void                        FillBlobs(ATOOLS::Blob_List *);
+    void                        FillDecayBlobs(ATOOLS::Blob_List *);
+    void                        CleanUp();
+    std::string                 ShowerGenerator() { return m_showergenerator; }
+    bool                        ISROn()           { return m_isrshowerswitch; }
+    bool                        FSROn()           { return m_fsrshowerswitch; }
+    unsigned int                MaxJetNumber()    { return m_maxjetnumber;    }
+    PDF::ISR_Handler          * GetISRHandler()   { return p_isr_handler; }
+    std::list<APACIC::Tree *> * GetFinTrees(); 
+    APACIC::Tree             ** GetIniTrees();
 #ifdef USING__Adicic    
-    ADICIC::Cascade&          GetCascade();
+    ADICIC::Cascade&            GetCascade();
 #endif
 #ifdef USING__CSS    
-    CS_SHOWER::All_Singlets * GetAllSinglets();
+    CS_SHOWER::All_Singlets   * GetAllSinglets();
 #endif
-    APACIC::Apacic          * GetApacic() { return p_apacic; }
+    APACIC::Apacic            * GetApacic()               { return p_apacic; }
     void SetJetvetoPt2(const double q2i,const double q2f) { p_apacic->SetJetvetoPt2(q2i,q2f); }
     void SetFactorisationScale(const double scale)        { p_apacic->SetFactorisationScale(scale); }
-    inline bool ShowerMI() const { return m_showermi; }
-    inline ATOOLS::Jet_Finder *JetFinder() const          { return p_jf; }
+    inline bool ShowerMI()                          const { return m_showermi; }
+    inline ATOOLS::Jet_Finder *JetFinder()          const { return p_jf; }
   };
 
 
