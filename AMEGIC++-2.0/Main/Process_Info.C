@@ -17,6 +17,7 @@ Process_Info::Process_Info(ATOOLS::Flavour *fl,Pol_Info *pl)
   else p_pl=NULL;
   vector<Process_Info*> dummy;
   m_sublist.push_back(dummy);
+  m_maxqcdjets = 0;
 }
 
 Process_Info::Process_Info(Process_Info *pi)
@@ -29,6 +30,7 @@ Process_Info::Process_Info(Process_Info *pi)
   m_sublist.push_back(dummy);
   m_sublist[0].clear();  
   for (int i=0;i<pi->Nout();i++) m_sublist[0].push_back(new Process_Info(pi->m_sublist[0][i]));
+  m_maxqcdjets = pi->m_maxqcdjets;
 }
 
 Process_Info::~Process_Info()
@@ -374,7 +376,7 @@ Point* Process_Info::MergePointList(Point** plist,Point* np,int &nd, int nin, in
 	    np[j] = hp[1];
 	    np[j].number = 100;
 	    hp = hhp;
- 	    np[j].t = 10;
+ 	    np[j].t = 10+m_sublist[0][i]->m_maxqcdjets;
 	  }
 	  else {
 	    np[j].number = ep;
@@ -387,6 +389,17 @@ Point* Process_Info::MergePointList(Point** plist,Point* np,int &nd, int nin, in
   }
   return hp;
 }
+
+void Process_Info::SetQCDjetNums()
+{
+  Flavour *stcf = new Flavour[10];
+  int nst=GetStableFlavList(stcf);
+  for (int i=0;i<nst;i++) {
+    if (stcf[i].Strong()) ++m_maxqcdjets;
+  }
+  for (size_t j=0;j<m_sublist[0].size();j++) m_sublist[0][j]->SetQCDjetNums();  
+}
+
 
 bool Check_External_Flavours::ValidProcess(int _nin,Flavour * _in,
 					   int _nout,Flavour * _out) {

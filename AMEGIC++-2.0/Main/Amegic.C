@@ -480,9 +480,13 @@ void Amegic::ReadInProcessfile(string file)
 	      abort();
 	    }
 
+	    pinfo->SetQCDjetNums();
 	    vector<int> ii;
 	    ii.clear();
 	    for(size_t i=0;i<AppNum.size();i++) ii.push_back(0);
+	    for (size_t i=0;i<AppNum.size();i++) {
+	      AppPI[i]->m_maxqcdjets+=AppNum[i]-1;
+	    }
 
 	    do {
 	      for (size_t i=0;i<AppNum.size();i++) {
@@ -524,8 +528,14 @@ void Amegic::ReadInProcessfile(string file)
 	      double summass = 0.;
 	      for (int i=0;i<nFS;i++) {
 		summass += flavs[i+nIS].Mass();
-		if (flavs[i+nIS].Strong()) ++qcdjets;
 	      }
+
+	      Flavour *stcf = new Flavour[nFS];
+	      int nst=pcinfo->GetStableFlavList(stcf);
+	      for (int i=0;i<nst;i++) {
+		if (stcf[i].Strong()) ++qcdjets;
+	      }
+	      delete[] stcf;
 	      m_minqcdjet=Min(Max(2+qcdjets-nFS,0),m_minqcdjet);
 	      m_maxqcdjet=ATOOLS::Max(m_maxqcdjet,qcdjets);
 	      if (summass<rpa.gen.Ecms()) {
