@@ -536,7 +536,7 @@ void Amegic::ReadInProcessfile(string file)
 		if (stcf[i].Strong()) ++qcdjets;
 	      }
 	      delete[] stcf;
-	      m_minqcdjet=Min(Max(2+qcdjets-nFS,0),m_minqcdjet);
+	      m_minqcdjet=Min(Max(2+qcdjets-nst,0),m_minqcdjet);
 	      m_maxqcdjet=ATOOLS::Max(m_maxqcdjet,qcdjets);
 	      if (summass<rpa.gen.Ecms()) {
 		Process_Base * proc=NULL;
