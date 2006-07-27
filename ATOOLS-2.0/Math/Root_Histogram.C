@@ -145,6 +145,12 @@ void Root_Histogram::Insert(double x, double weight, int ntimes)
   p_roothisto->Fill(x,weight/binwidth); 
 }
 
+void Root_Histogram::Insert(std::string bin, double weight, int ntimes) 
+{
+  double binwidth = 1.;
+  p_roothisto->Fill(bin.c_str(),weight/binwidth); 
+}
+
 void Root_Histogram::Finalize()
 {
   if (!m_finished) {

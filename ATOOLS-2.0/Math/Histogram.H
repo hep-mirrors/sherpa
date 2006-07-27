@@ -26,6 +26,7 @@ namespace ATOOLS {
     void Reset();
     void Insert(double x);
     void Insert(double x, double weight, int =1);
+    void Insert(std::string bin, double weight, int ntimes) {}
     void InsertRange(double start, double end, double value);
     void Scale(double factor);
     void Output();

@@ -23,6 +23,7 @@ namespace ATOOLS {
     virtual void Reset()                                               =0;
     virtual void Insert(double x)                                      =0;
     virtual void Insert(double x, double weight, int ntimes)           =0;
+    virtual void Insert(std::string bin, double weight, int ntimes)    =0;
     virtual double Mean()     const                                    =0;
     virtual double Integral() const                                    =0;
     virtual double Ymax()     const                                    =0; 

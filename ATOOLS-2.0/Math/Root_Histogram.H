@@ -29,6 +29,7 @@ namespace ATOOLS {
     void   Reset()                                     { p_roothisto->Reset(); }
     void   Insert(double x);                            
     void   Insert(double x, double weight, int ntimes); 
+    void   Insert(std::string bin, double weight, int ntimes);
     double Mean()     const                            { return p_roothisto->GetMean(); }
     double Integral() const                            { return p_roothisto->Integral(); }
     double Ymax()     const                            { return p_roothisto->GetMaximum(); }

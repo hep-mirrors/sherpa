@@ -117,7 +117,7 @@ Primitive_Observable_Base::Primitive_Observable_Base(const String_Matrix & param
                           <<" and hope for the best."<<endl;
       datanames->push_back("Data");
     }
-    string histofile       = "Histos/"+inputfile;
+    string histofile       = inputfile;
     if (system(("test -f "+histofile).c_str())) // if file does not exist in $PWD
       histofile=rpa.gen.Variable("SHERPA_SHARE_PATH")+"/Histos/"+inputfile;
     p_histo = new Root_Histogram(histofile,m_name,datanames);
@@ -134,7 +134,6 @@ Primitive_Observable_Base::Primitive_Observable_Base(const String_Matrix & param
     abort();
 #endif
   }
-  std::cout<<METHOD<<": m_name="<<m_name<<std::endl;
 }
 
 // Primitive_Observable_Base::Primitive_Observable_Base(Histogram_Base * histo) :
