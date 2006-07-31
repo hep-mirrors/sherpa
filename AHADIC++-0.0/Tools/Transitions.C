@@ -92,7 +92,7 @@ bool All_Single_Transitions::MustTransit(Cluster * cluster,Flavour & hadron,
     } while (!success);
     Flavour flav1 = cluster->GetFlav(1), flav2 = cluster->GetFlav(2);
     //cout<<"Lighter("<<lighter<<") : "<<hadron<<" "<<hadron.Mass()<<" -> "<<mass
-    //	<<" "<<flav1<<"("<<hadpars.GetConstituents()->Mass(flav1)<<") "
+    //<<" "<<flav1<<"("<<hadpars.GetConstituents()->Mass(flav1)<<") "
     //	<<"+"<<flav2<<"("<<hadpars.GetConstituents()->Mass(flav2)<<") "<<endl;
     //std::cout<<"            Selected a hadron in MustTransit: "<<hadron<<std::endl;
     return true;
@@ -194,10 +194,9 @@ void All_Single_Transitions::MassTimesWavefunction(Cluster * cluster,
 						   Single_Transition_List * stl,
 						   Flavour & hadron, bool lighter)
 {
-  double mass2(sqr(cluster->Mass(0))), massdisc(0.);
+  double mass2(sqr(cluster->Mass(0))), disc(1.e100), test;
   Flavour testhad;
   Hadron_Wave_Function * waves;
-  double weight, test;
   Single_Transition_Siter start(stl->begin());
   if (hadron!=Flavour(kf::none)) {
     for (;start!=stl->end();start++) { if ((*start)==hadron) break; }
@@ -208,11 +207,11 @@ void All_Single_Transitions::MassTimesWavefunction(Cluster * cluster,
     testhad = (*siter);
     waves   = p_multiplets->GetWaveFunction(testhad);
     if (waves!=NULL) {
-      weight  = sqr(waves->WaveWeight(cluster->GetFlav(1),cluster->GetFlav(2)));
-      test    = weight/dabs(mass2-sqr(testhad.Mass()));
-      if (test>massdisc) {
-	hadron   = testhad;
-	massdisc = test;
+      test  = dabs(mass2-sqr(testhad.Mass()))/
+	sqr(waves->WaveWeight(cluster->GetFlav(1),cluster->GetFlav(2)));
+      if (test<disc) {
+	hadron = testhad;
+	disc   = test;
       }
     }
   }

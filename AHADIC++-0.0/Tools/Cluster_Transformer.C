@@ -122,8 +122,9 @@ void Cluster_Transformer::TreatClusterList(Cluster_List * clist,ATOOLS::Blob * b
       else {
 	Particle * part = new Particle(0,hadrons[i],momenta[i]);
 	part->SetNumber(0);
-	part->SetStatus(1);
+	part->SetStatus(part_status::active);
 	part->SetInfo('P');
+	part->SetFinalMass();
 	blob->AddToOutParticles(part);
 	cit = clist->erase(cit);
       }
@@ -164,13 +165,15 @@ void Cluster_Transformer::DecayCluster(Cluster * cluster,Flavour & had1,Flavour 
   }
   Particle * part = new Particle(0,had1,hadmom1); 
   part->SetNumber(0);
-  part->SetStatus(1);
+  part->SetStatus(part_status::active);
   part->SetInfo('P');
+  part->SetFinalMass();
   blob->AddToOutParticles(part);
   part = new Particle(0,had2,hadmom2); 
   part->SetNumber(0);
-  part->SetStatus(1);
+  part->SetStatus(part_status::active);
   part->SetInfo('P');
+  part->SetFinalMass();
   blob->AddToOutParticles(part);
 
   //cout<<"         Filling blob from Cluster_Transformer : "<<(*blob)<<endl;
@@ -206,13 +209,15 @@ void Cluster_Transformer::DecayCluster(Cluster * cluster,Flavour & had1,Flavour 
   }
   Particle * part = new Particle(0,had1,hadmom1); 
   part->SetNumber(0);
-  part->SetStatus(1);
+  part->SetStatus(part_status::active);
   part->SetInfo('P');
+  part->SetFinalMass();
   plist->push_back(part);
   part = new Particle(0,had2,hadmom2); 
   part->SetNumber(0);
-  part->SetStatus(1);
+  part->SetStatus(part_status::active);
   part->SetInfo('P');
+  part->SetFinalMass();
   plist->push_back(part);
 
   //cout<<"         Filling blob from Cluster_Transformer : "<<(*blob)<<endl;

@@ -121,12 +121,12 @@ bool Gluon_Decayer::DecayIt(ATOOLS::Particle * part,
   part1 = new Particle(0,m_flav,m_p1vec,'l');
   part1->SetNumber(0);
   part1->SetFlow(1,part->GetFlow(1));
-  part1->SetStatus(1);
+  part1->SetStatus(part_status::active);
 
   part2 = new Particle(0,m_flav.Bar(),m_p2vec,'l');
   part2->SetNumber(0);
   part2->SetFlow(2,part->GetFlow(2));
-  part2->SetStatus(1);
+  part2->SetStatus(part_status::active);
   return true;
 }
 

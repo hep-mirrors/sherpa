@@ -252,6 +252,8 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
     dataread.GetValue<double>("Mixing_3-",0.);
   m_parametermap[string("Mixing_Angle_4+")]    = 
     dataread.GetValue<double>("Mixing_4+",0.);
+  m_parametermap[string("Mixing_Angle_2-")]    = 
+    dataread.GetValue<double>("Mixing_1+",0.);
 }
 
 double Hadronisation_Parameters::Get(string keyword) 

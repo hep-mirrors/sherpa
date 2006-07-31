@@ -201,7 +201,7 @@ bool Adicic::FExtract(Blob* pfs) {
 #ifdef ADICIC_OUTPUT
   cout<<om::greenbg<<"Initial 2nd blob:"<<om::reset<<" \n"<<*pfs<<endl;////////
 #endif
-  for(int i=0; i<pfs->NInP(); ++i) pfs->InParticle(i)->SetStatus(2);
+  for(int i=0; i<pfs->NInP(); ++i) pfs->InParticle(i)->SetStatus(part_status::decayed);
   int num=Max(pfs->InParticle(0)->Number(),pfs->InParticle(1)->Number());
   num=num+1-m_startnum;    //-plist.front()->Number();
   for(Particle_List::iterator piter=plist.begin(); piter!=plist.end();
@@ -232,7 +232,7 @@ bool Adicic::IExtract(Blob* pis, Blob* pisme, Blob* pfs) {
   cout<<om::greenbg<<"Initial FS blob:"<<om::reset<<" \n"<<*pfs<<endl;/////////
 #endif
 
-  for(int i=0; i<pfs->NInP(); ++i) pfs->InParticle(i)->SetStatus(2);
+  for(int i=0; i<pfs->NInP(); ++i) pfs->InParticle(i)->SetStatus(part_status::decayed);
   int num=Max(pfs->InParticle(0)->Number(),pfs->InParticle(1)->Number());
   //cout<<num<<":"<<plist.front()->Number()<<":"<<m_startnum<<":";
   num=num+3-m_startnum;    //cout<<num<<endl;
@@ -294,7 +294,7 @@ bool Adicic::IExtract(Blob* pis, Blob* pisme, Blob* pfs) {
       assert(pfs->InParticle(num-1)->Number()==v_conn[0]->Number());
       for(size_t i=0; i<num; ++i) {
 	v_conn[num-1-i]->SetInfo(pfs->InParticle(i)->Info());
-	v_conn[num-1-i]->SetStatus(1);
+	v_conn[num-1-i]->SetStatus(part_status::active);
 	pfs->AddToOutParticles(v_conn[num-1-i]);
 	addup+=pfs->InParticle(i)->Momentum();
 	eddup+=v_conn[num-1-i]->Momentum();
@@ -305,7 +305,7 @@ bool Adicic::IExtract(Blob* pis, Blob* pisme, Blob* pfs) {
       assert(pfs->InParticle(num-1)->Number()==v_conn[num-1]->Number());
       for(size_t i=0; i<num; ++i) {
 	v_conn[i]->SetInfo(pfs->InParticle(i)->Info());
-	v_conn[i]->SetStatus(1);
+	v_conn[i]->SetStatus(part_status::active);
 	pfs->AddToOutParticles(v_conn[i]);
 	addup+=pfs->InParticle(i)->Momentum();
 	eddup+=v_conn[i]->Momentum();
@@ -318,7 +318,7 @@ bool Adicic::IExtract(Blob* pis, Blob* pisme, Blob* pfs) {
       Vec4D temp=help.Momentum();
       fly.Boost(temp); flyprime.BoostBack(temp);
       help.SetMomentum(temp);
-      help.SetStatus(1);
+      help.SetStatus(part_status::active);
       cout<<help<<endl;
     }
     */
@@ -331,13 +331,13 @@ bool Adicic::IExtract(Blob* pis, Blob* pisme, Blob* pfs) {
     for(int i=0; i<pfs->NInP(); ++i) {
       Particle* help=new Particle(*pfs->InParticle(i));
       pfs->AddToOutParticles(help);
-      help->SetStatus(1);
+      help->SetStatus(part_status::active);
       Vec4D temp=help->Momentum();
       addup+=temp;
       fly.Boost(temp); flyprime.BoostBack(temp);
       eddup+=temp;
       help->SetMomentum(temp);
-      help->SetStatus(1);
+      help->SetStatus(part_status::active);
       //cout<<*help<<endl;
     }
   }

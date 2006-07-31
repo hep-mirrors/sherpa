@@ -418,7 +418,8 @@ bool Input_Output_Handler::SherpaInput(ATOOLS::Blob_List *const blobs)
 //     flav     = Flavour(kf::code(abs(kfc))); if (kfc<0) flav=flav.Bar();
 //     momentum = Vec4D(mom[0],mom[1],mom[2],mom[3]);
 //     part     = new Particle(paid,flav,momentum);
-//     part->SetStatus(status);
+//     part->SetStatus(part_status::code(status));
+//     part->SetFinalMass();
 //     part->SetInfo(info);
 //     I2P.insert(std::make_pair(paid,part));
 //   }

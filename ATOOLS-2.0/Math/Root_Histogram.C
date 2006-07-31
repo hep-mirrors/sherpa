@@ -41,7 +41,7 @@ Root_Histogram::Root_Histogram(const std::string filename,const std::string outf
     }
     file.Close();
     p_roothisto = (TH1D*)((*m_rootcomps.begin())->Clone("SHERPA"));
-    p_roothisto->Reset();
+    p_roothisto->Reset("ICE");
     return;
   }
   else {
@@ -63,7 +63,7 @@ Root_Histogram::Root_Histogram(Root_Histogram * rhisto) :
   for (std::vector<TH1D*>::iterator th1dit=rhisto->m_rootcomps.begin(); 
        th1dit!=rhisto->m_rootcomps.end();th1dit++) m_rootcomps.push_back((*th1dit));
   p_roothisto = (TH1D*)((*m_rootcomps.begin())->Clone("SHERPA"));
-  p_roothisto->Reset();
+  p_roothisto->Reset("ICE");
 }
 
 Root_Histogram::~Root_Histogram()

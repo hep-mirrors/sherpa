@@ -298,7 +298,7 @@ ATOOLS::Blob* Hadrons::CreateDecayBlobSkeleton(
       part_list->push_back( particle );
     }
     else daughter_particle->SetNumber( 0 );
-    daughter_particle->SetStatus(1);
+    daughter_particle->SetStatus(part_status::active);
     daughter_particle->SetInfo('D');
     blob->AddToOutParticles( daughter_particle );
   }
@@ -316,7 +316,9 @@ Spin_Density_Matrix Hadrons::PerformDecay(
     Particle_List       * part_list,
     Spin_Density_Matrix * sigma )
 {
-  msg.Debugging()<<"      Performing decay for blob ["<<blob->Id()<<"] in 2 steps. 1st creating skeleton for daughter decay blobs, then dicing kinematics for the blob itself."<<endl;
+  msg.Debugging()<<"      Performing decay for blob ["<<blob->Id()
+		 <<"] in 2 steps. 1st creating skeleton for daughter decay blobs, "
+		 <<"then dicing kinematics for the blob itself."<<endl;
   Particle* part = blob->InParticle(0);
   msg_Tracking()<<"Hadrons::PerformDecay() for "<<part->Flav()<<" with spin correlation @ "<<sigma<<endl;
   msg.Debugging()<<"        Momentum of inparticle: "<<part->Momentum()<<endl;

@@ -378,13 +378,13 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
 	    if (i<ISc.size()) {
 	      hardblob->AddToInParticles(part);
 	      cms += part->Momentum();
-	      part->SetStatus(2);
+	      part->SetStatus(part_status::decayed);
 	      part->SetInfo('G');
 	    }
 	    else {
 	      hardblob->AddToOutParticles(part);
 	      showerblob->AddToInParticles(part);
-	      part->SetStatus(1);
+	      part->SetStatus(part_status::active);
 	      part->SetInfo('H');
 	      minhadron = part->Number()+1;
 	    }
@@ -396,7 +396,9 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
 	  part=TranslateFromInput(buffer,mother,0);
 	  if(!part) { fshower=fhadron=false;}
 	  else {
-	    if(part->Status()>2) delete part;
+	    if(part->Status()!=part_status::active &&
+	       part->Status()!=part_status::decayed &&
+	       part->Status()!=part_status::fragmented) delete part;
 	    else {
 	      if(part->Flav().IsHadron()) {
 		part->SetInfo('P');
@@ -404,7 +406,7 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
 	      }
 	      else {
 		part->SetInfo('F');
-		if(part->Status()>1) part->SetInfo('f');
+		if(part->Status()!=part_status::active) part->SetInfo('f');
 		if((!part->Flav().IsPhoton()) || (part->Flav().IsPhoton() &&  mother<minhadron)) {
 		  showerblob->AddToOutParticles(part);
 		  hadronblob->AddToInParticles(part);
@@ -484,7 +486,8 @@ Particle* Event_Reader::TranslateFromInput(std::string buffer, int& mother, cons
   flav.FromHepEvt(flags[1]);
   Vec4D momentum=Vec4D(numbers[0],numbers[1],numbers[2],numbers[3]);
   part=new Particle(flags[0],flav,momentum);
-  part->SetStatus(flags[2]);
+  part->SetStatus(part_status::code(flags[2]));
+  part->SetFinalMass(numbers[4]);
   mother=flags[3];
   return part;
 }

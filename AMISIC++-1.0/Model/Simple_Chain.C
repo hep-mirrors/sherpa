@@ -744,7 +744,7 @@ bool Simple_Chain::CreateMomenta()
       particle->SetMomentum(selected->Momenta()[j]);
       particle->SetFlow(1,selected->Colours()[j][0]);
       particle->SetFlow(2,selected->Colours()[j][1]);
-      particle->SetStatus(1);
+      particle->SetStatus(part_status::active);
       m_inparticles.push_back(particle);
     }
     for (size_t j=selected->NIn();j<selected->NIn()+selected->NOut();++j) {
@@ -752,7 +752,7 @@ bool Simple_Chain::CreateMomenta()
       particle->SetMomentum(selected->Momenta()[j]);
       particle->SetFlow(1,selected->Colours()[j][0]);
       particle->SetFlow(2,selected->Colours()[j][1]);
-      particle->SetStatus(1);
+      particle->SetStatus(part_status::active);
       m_outparticles.push_back(particle);
     }
     m_filledblob=true;

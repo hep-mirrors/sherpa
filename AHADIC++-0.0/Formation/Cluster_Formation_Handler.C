@@ -108,7 +108,7 @@ void Cluster_Formation_Handler::ExtractSinglets(Blob_List * bl)
 	(*blit)->Type()==btp::Shower) {
       for (int i=0;i<(*blit)->NOutP();i++) {
 	part2 = (*blit)->OutParticle(i); 
-	if (part2->Status()==1 && 
+	if (part2->Status()==part_status::active && 
 	    (part2->GetFlow(1)!=0 || part2->GetFlow(2)!=0)) {
 	  p_blob->AddToInParticles(part2);
 	  part1 = new Particle(-1,part2->Flav(),part2->Momentum(),'L');

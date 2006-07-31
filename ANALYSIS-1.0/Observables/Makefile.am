@@ -35,8 +35,8 @@ libObservables_la_SOURCES     =	\
 				Four_Jet_Angles.C \
 				Field_Stuart_Cone_Finder.C \
 				Blob_Selector.C \
+				Hadron_Multiplicity.C \
 				#MI_Observables.C \
-				#Hadron_Multiplicities.C \
 				#ISR_Statistics.C 
 
 pkginclude_HEADERS        =	\
@@ -66,8 +66,8 @@ pkginclude_HEADERS        =	\
 			Jet_Mass_and_Broadening.H \
 			Scaled_Observables.H \
 			Four_Jet_Angles.H \
+			Hadron_Multiplicity.H \
 			#MI_Observables.H \
-			#Hadron_Multiplicities.H \
 			#ISR_Statistics.H 
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@ @CONDITIONAL_ROOTFLAGS@

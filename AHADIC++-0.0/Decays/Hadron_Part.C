@@ -72,8 +72,9 @@ void Hadron_Part::RedoDecay(Cluster * cluster,Part_List * pl,
 	cluster->GetLeft()->RescaleMomentum(momenta[0]); 
 	part = new Particle(0,had2,momenta[1]);
 	part->SetNumber(0);
-	part->SetStatus(1);
+	part->SetStatus(part_status::active);
 	part->SetInfo('P');
+	part->SetFinalMass();
 	//cout<<"RedoDecay : Add "<<had2<<" to pl"<<endl;
 	pl->push_back(part);
 	break;
@@ -98,8 +99,9 @@ void Hadron_Part::RedoDecay(Cluster * cluster,Part_List * pl,
 	cluster->GetRight()->RescaleMomentum(momenta[1]); 
 	part = new Particle(0,had1,momenta[0]);
 	part->SetNumber(0);
-	part->SetStatus(1);
+	part->SetStatus(part_status::active);
 	part->SetInfo('P');
+	part->SetFinalMass();
 	//cout<<"RedoDecay : Add "<<had1<<" to pl"<<endl;
 	pl->push_back(part);
 	cluster->GetRight()->RescaleMomentum(momenta[1]); 
@@ -237,14 +239,16 @@ void Isotropic::TwoHadronDecay(Cluster * cluster,Part_List * pl,Flavour & had1,F
   }
   part = new Particle(0,had1,hadmom1); 
   part->SetNumber(0);
-  part->SetStatus(1);
+  part->SetStatus(part_status::active);
   part->SetInfo('P');
+  part->SetFinalMass();
   pl->push_back(part);
   //cout<<"TwoHadronDecay : Add "<<had1<<" to pl"<<endl;
   part = new Particle(0,had2,hadmom2); 
   part->SetNumber(0);
-  part->SetStatus(1);
+  part->SetStatus(part_status::active);
   part->SetInfo('P');
+  part->SetFinalMass();
   pl->push_back(part);
   //cout<<"TwoHadronDecay : Add "<<had2<<" to pl"<<endl;
 }    
@@ -305,14 +309,16 @@ void Retain::TwoHadronDecay(Cluster * cluster,Part_List * pl,Flavour & had1,Flav
   }
   part = new Particle(0,had1,hadmom1); 
   part->SetNumber(0);
-  part->SetStatus(1);
+  part->SetStatus(part_status::active);
   part->SetInfo('P');
+  part->SetFinalMass();
   //cout<<"TwoHadronDecay : Add "<<had1<<" to pl"<<endl;
   pl->push_back(part);
   part = new Particle(0,had2,hadmom2); 
   part->SetNumber(0);
-  part->SetStatus(1);
+  part->SetStatus(part_status::active);
   part->SetInfo('P');
+  part->SetFinalMass();
   pl->push_back(part);
   //cout<<"TwoHadronDecay : Add "<<had2<<" to pl"<<endl;
 }    

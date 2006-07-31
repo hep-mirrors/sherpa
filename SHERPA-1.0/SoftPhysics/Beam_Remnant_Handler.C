@@ -70,12 +70,15 @@ FillBunchBlobs(ATOOLS::Blob_List *const  bloblist,
 	  Particle *p = new Particle(-1,p_beam->GetBeam(i)->Beam(),
 				     p_beam->GetBeam(i)->InMomentum());
 	  p->SetNumber(0);
-	  p->SetStatus(2);
+	  p->SetStatus(part_status::decayed);
+	  p->SetFinalMass();
 	  blob->AddToInParticles(p);
 	  p = new Particle(-1,p_beam->GetBeam(i)->Remnant(),
 			   p_beam->GetBeam(i)->InMomentum()-
 			   (*bit)->InParticle(0)->Momentum());
 	  p->SetNumber(0);
+	  p->SetStatus(part_status::active);
+	  p->SetFinalMass();
 	  blob->AddToOutParticles(p);
 	}
 	flag=true;
@@ -120,7 +123,8 @@ FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
 	    Particle *p = new Particle(-1,p_isr->Flav(i),
 				       p_beam->GetBeam(i)->OutMomentum());
 	    p->SetNumber(0);
-	    p->SetStatus(2);
+	    p->SetStatus(part_status::decayed);
+	    p->SetFinalMass();
 	    p_beamblob[i]->AddToInParticles(p);
 	}
 	if (!p_beampart[i]->Extract((*bit)->InParticle(0))) {
@@ -152,7 +156,8 @@ FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
 	  Particle* p=new Particle(-1,p_isr->Flav(i),
 				   p_beam->GetBeam(i)->OutMomentum());
 	  p->SetNumber(0);
-	  p->SetStatus(2);
+	  p->SetFinalMass();
+	  p->SetStatus(part_status::decayed);
 	  p_beamblob[i]->AddToInParticles(p);
 	}
 	if(!p_beampart[i]->Extract(in)) {

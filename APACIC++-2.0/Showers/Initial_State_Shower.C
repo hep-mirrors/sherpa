@@ -253,7 +253,7 @@ int Initial_State_Shower::EvolveSystem(Tree **const trees,Knot *k1,Knot *k2)
 	Knot * mo = k1->prev->left;
 	mo->t     = mo->tout;
 	mo->stat  = 0;
-	mo->part->SetStatus(1);
+	mo->part->SetStatus(part_status::active);
 	if (!p_kin->DoKinematics(trees,k1,k2,ntree0,false)) return 0;
       }
     }
@@ -319,7 +319,7 @@ int Initial_State_Shower::FillBranch(Tree ** trees,Knot * active,
   active->prev   = 0;
   active->stat   = 0;
   active->t      = active->tout;
-  active->part->SetStatus(1);
+  active->part->SetStatus(part_status::active);
   msg_Debugging()<<"no branch";
   msg_Debugging()<<"}\n";
   return 1;
@@ -379,7 +379,7 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,
   mother->right  = k;
   mother->part->SetFlav(k_flavs[0]);
   mother->part->SetInfo('I');
-  mother->part->SetStatus(1);
+  mother->part->SetStatus(part_status::active);
   mother->t      = k->t;
   mother->tout   = sqr(k_flavs[0].PSMass()); 
   mother->x      = k->x/k->z;
@@ -409,7 +409,7 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,
   }
   sister->part->SetFlav(k_flavs[1]);
   sister->part->SetInfo('F');
-  sister->part->SetStatus(1);
+  sister->part->SetStatus(part_status::active);
   sister->t      = 0.;
   sister->tout   = sqr(k_flavs[1].PSMass());
   sister->x      = (mother->x)*(1.-k->z);
@@ -418,7 +418,7 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,
   sister->thcrit = th; 
 
   if (k->part->Info() != 'G' && k->part->Info() != 'H') k->part->SetInfo('i');
-  k->part->SetStatus(2);
+  k->part->SetStatus(part_status::decayed);
   SetColours(k);
 }
 
@@ -634,7 +634,7 @@ void Initial_State_Shower::InitTwoTrees(Tree ** trees,double E2)
 
   Knot * d1   = trees[0]->NewKnot();
   *(d1->part) = Particle(1,Flavour(kf::u),x1*E*Vec4D(1.,0.,0.,1.));
-  d1->part->SetStatus(1);
+  d1->part->SetStatus(part_status::active);
   d1->part->SetInfo('G');
   d1->part->SetFlow(1,500);
   d1->part->SetFlow(2,501);
@@ -649,7 +649,7 @@ void Initial_State_Shower::InitTwoTrees(Tree ** trees,double E2)
   
   Knot * d2   = trees[1]->NewKnot();
   *(d2->part) = Particle(2,Flavour(kf::u).Bar(),x2*E*Vec4D(1.,0.,0.,-1.));
-  d2->part->SetStatus(1);
+  d2->part->SetStatus(part_status::active);
   d2->part->SetInfo('G');
   d2->part->SetFlow(1,502);
   d2->part->SetFlow(2,d1->part->GetFlow(1));
@@ -774,7 +774,8 @@ void Initial_State_Shower::SingleExtract(Knot *const kn,const int &beam,
 
     if (!kn->prev) jet->SetBeam(beam);
     p = new Particle(*kn->part);
-    p->SetStatus(2);
+    p->SetFinalMass(kn->tout);
+    p->SetStatus(part_status::decayed);
     jet->AddToInParticles(p);
   }
 
@@ -782,18 +783,20 @@ void Initial_State_Shower::SingleExtract(Knot *const kn,const int &beam,
   if (!ignore && (kn->part->Info()=='H' || kn->part->Info()=='G')) {
     if  (is_is && m_bl_meps_is) {
       p = new Particle(*kn->part);
+      p->SetFinalMass(kn->tout);
       jet->AddToOutParticles(p);
-      p->SetStatus(2);
+      p->SetStatus(part_status::decayed);
       m_bl_meps_is->AddToInParticles(p);
     }
     else if (!is_is && m_bl_meps_fs) {
       if (!p) {
 	p = new Particle(*kn->part);
+	p->SetFinalMass(kn->tout);
 	jet->AddToInParticles(p);
       }
       else {
       }
-      p->SetStatus(2); 
+      p->SetStatus(part_status::decayed); 
       m_bl_meps_fs->AddToOutParticles(p); 
     }
   }
@@ -801,7 +804,8 @@ void Initial_State_Shower::SingleExtract(Knot *const kn,const int &beam,
   // --- add final state particle ---
   if (lastknot && !is_is) {
     p = new Particle(*kn->part);
-    p->SetStatus(1);
+    p->SetFinalMass(kn->tout);
+    p->SetStatus(part_status::active);
     jet->AddToOutParticles(p);
   }
 

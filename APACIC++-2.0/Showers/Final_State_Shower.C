@@ -537,7 +537,8 @@ void Final_State_Shower::ExtractPartons(Knot *kn,Blob *jet,
 			 <<"Abort."<<std::endl;
       abort();
     }
-    else for (int i=0;i<bl_meps->NInP();++i) bl_meps->InParticle(i)->SetStatus(2);
+    else for (int i=0;i<bl_meps->NInP();++i) 
+      bl_meps->InParticle(i)->SetStatus(part_status::decayed);
   }
   // deactivate in partons!
   if (!kn) return;
@@ -582,7 +583,7 @@ void Final_State_Shower::ExtractPartons(Knot *kn,Blob *jet,
     else {
       if ((kn->left->part->Info() != 'H') || (kn->right->part->Info() != 'H')) {
 	p = new Particle(*kn->part);
-      	p->SetStatus(2);
+      	p->SetStatus(part_status::decayed);
 	if (pl) {
 	  pl->push_back(p);
 	  p->SetNumber(pl->size());
@@ -619,7 +620,7 @@ void Final_State_Shower::ExtractPartons(Knot *kn,Blob *jet,
       }
       if (pl) kn->part->SetNumber(pl->size());
 	 else kn->part->SetNumber(0);
-      kn->part->SetStatus(1);
+      kn->part->SetStatus(part_status::active);
       if (pl) pl->push_back(kn->part);
       if (bl) jet->AddToOutParticles(new Particle(*kn->part));
     }
@@ -773,24 +774,26 @@ InitDaughters(Tree * tree,Knot * mo,ATOOLS::Flavour flb,ATOOLS::Flavour flc,
   if (diced) {
     mo->left->prev     = mo;
     mo->left->polinfo  = polb;
-    mo->left->part->SetFlav(flb);
-    mo->left->part->SetInfo('F');
-    mo->left->part->SetStatus(1);
     mo->left->tout     = sqr(flb.PSMass());
     mo->left->stat     = 3;  
+    mo->left->part->SetFlav(flb);
+    mo->left->part->SetInfo('F');
+    mo->left->part->SetStatus(part_status::active);
+    mo->left->part->SetFinalMass(mo->left->tout);
     mo->left->didkin   = false;
 
     mo->right->prev    = mo;
     mo->right->polinfo = polc;
-    mo->right->part->SetFlav(flc);
-    mo->right->part->SetInfo('F');
-    mo->right->part->SetStatus(1);
     mo->right->tout    = sqr(flc.PSMass());
     mo->right->stat    = 3;  
+    mo->right->part->SetFlav(flc);
+    mo->right->part->SetInfo('F');
+    mo->right->part->SetStatus(part_status::active);
+    mo->left->part->SetFinalMass(mo->right->tout);
     mo->right->didkin  = false;
 
     if (mo->part->Info()!='H') mo->part->SetInfo('f');
-    mo->part->SetStatus(2);
+    mo->part->SetStatus(part_status::decayed);
   }
 
   // Reset kinematics
@@ -848,7 +851,7 @@ void Final_State_Shower::InitTwojetTree(Tree * tree,double scale) {
 
   Knot * mo   = tree->NewKnot();
   *(mo->part) = Particle(1,Flavour(kf::photon),Vec4D(sqrt(scale),0,0,0));
-  mo->part->SetStatus(2);
+  mo->part->SetStatus(part_status::decayed);
   mo->part->SetInfo('M');
   mo->t       = scale;
   mo->E2      = scale;
@@ -883,7 +886,7 @@ void Final_State_Shower::InitTwojetTree(Tree * tree,double scale) {
   mo->left->prev       = mo;
   mo->left->stat       = 3;    
   *(mo->left->part)    = Particle(2,mo_flavs[0],Vec4D(E,p1));
-  mo->left->part->SetStatus(1);
+  mo->left->part->SetStatus(part_status::active);
   mo->left->part->SetInfo('H');
   mo->left->part->SetFlow(1,-1);
   mo->left->t          = mo->t;
@@ -898,7 +901,7 @@ void Final_State_Shower::InitTwojetTree(Tree * tree,double scale) {
   mo->right->prev      = mo;
   mo->right->stat      = 3;     
   *(mo->right->part) = Particle(3,mo_flavs[1],Vec4D(E,(-1.)*p1)); 
-  mo->right->part->SetStatus(1);
+  mo->right->part->SetStatus(part_status::active);
   mo->right->part->SetInfo('H');
   mo->right->part->SetFlow(2,mo->left->part->GetFlow(1));
   mo->right->t         = mo->t;
@@ -913,7 +916,7 @@ void Final_State_Shower::ResetDaughters(Knot * mo)
   Reset(mo->left);
   Reset(mo->right);
   if (mo->part->Info()!='H') mo->part->SetInfo('F');
-  mo->part->SetStatus(1);
+  mo->part->SetStatus(part_status::active);
 } 
 
 void Final_State_Shower::Reset(Knot * mo) 
@@ -923,7 +926,7 @@ void Final_State_Shower::Reset(Knot * mo)
   if (mo->right!=NULL && mo->right->part->Info()!='H') mo->right=NULL;  
   mo->t     = mo->tout;
   mo->stat  = 0;
-  mo->part->SetStatus(1);
+  mo->part->SetStatus(part_status::active);
   if (mo->part->Info()!='H') {
     mo->part->SetInfo('F');
     mo->part->SetMomentum(Vec4D());

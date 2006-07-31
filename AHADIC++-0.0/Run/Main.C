@@ -73,7 +73,7 @@ int main(int argc,char* argv[])
     mo->phi     = 2.*M_PI*ran.Get();
     mo->stat    = 1;  
     *(mo->part) = Particle(1,Flavour(kf::photon),Vec4D(2.*E,0.,0.,0.));
-    mo->part->SetStatus(2);
+    mo->part->SetStatus(part_status::decayed);
     mo->part->SetInfo('M');
     mo->didkin  = true;
 
@@ -94,7 +94,7 @@ int main(int argc,char* argv[])
     mo->left->E2         = E*E;
     mo->left->thcrit     = mo->thcrit;
     *(mo->left->part)    = Particle(2,mo_flavs[0],Vec4D(E,pvec));
-    mo->left->part->SetStatus(1);
+    mo->left->part->SetStatus(part_status::active);
     mo->left->part->SetInfo('H');
     mo->left->part->SetFlow(1,-1);
     mo->left->didkin     = true;
@@ -108,7 +108,7 @@ int main(int argc,char* argv[])
     mo->right->E2        = E*E;
     mo->right->thcrit    = mo->thcrit;
     *(mo->right->part)   = Particle(3,mo_flavs[1],Vec4D(E,-1.*pvec)); 
-    mo->right->part->SetStatus(1);
+    mo->right->part->SetStatus(part_status::active);
     mo->right->part->SetInfo('H');
     mo->right->part->SetFlow(2,mo->left->part->GetFlow(1));
     mo->right->didkin    = true;

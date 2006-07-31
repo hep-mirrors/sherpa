@@ -29,7 +29,7 @@ using namespace std;
 Jet_Evolution::Jet_Evolution(MEHandlersMap *_mehandlers,Shower_Handler *_showerhandler) :
   p_showerhandler(_showerhandler)
 {
-  m_name      = std::string("Jet_Evolution:")+p_showerhandler->ShowerGenerator();
+  m_name      = string("Jet_Evolution:")+p_showerhandler->ShowerGenerator();
   m_type      = eph::Perturbative;
 
   Perturbative_Interface * interface;
@@ -75,7 +75,7 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
     return 0;
   }
   PertInterfaceIter piIter;
-  std::string tag;
+  string tag;
   bool found = 1;
   bool hit   = 0;
   Blob * blob;
@@ -141,13 +141,13 @@ int Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
       myblob = new Blob();
       myblob->SetType(btp::IS_Shower);
       if (Sign(_blob->InParticle(i)->Momentum()[3])==1-2*i) myblob->SetBeam(i);
-      else myblob->SetBeam(1-i);
+                                                       else myblob->SetBeam(1-i);
       myblob->SetStatus(1);
       Particle * p = new Particle(*_blob->InParticle(i));
-      p->SetStatus(2);
+      p->SetStatus(part_status::decayed);
       myblob->AddToInParticles(p);
       myblob->AddToOutParticles(_blob->InParticle(i));
-      _blob->InParticle(i)->SetStatus(2);
+      _blob->InParticle(i)->SetStatus(part_status::decayed);
       myblob->SetId();
       _bloblist->insert(_bloblist->begin(),myblob);
     }
@@ -158,7 +158,7 @@ int Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
       myblob->SetStatus(1);
       Particle * p = new Particle(*_blob->OutParticle(i));
       myblob->AddToInParticles(_blob->OutParticle(i));
-      _blob->OutParticle(i)->SetStatus(2);
+      _blob->OutParticle(i)->SetStatus(part_status::decayed);
       myblob->AddToOutParticles(p);
       myblob->SetId();
       _bloblist->push_back(myblob);
@@ -192,10 +192,10 @@ int Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
 	  myblob->SetBeam( int( _blob->InParticle(1-i)->Momentum()[3] 
  			        > _blob->InParticle(i)->Momentum()[3]) );
 	  Particle * p = new Particle(*_blob->InParticle(i));
-	  p->SetStatus(2);
+	  p->SetStatus(part_status::decayed);
 	  myblob->AddToInParticles(p);
 	  myblob->AddToOutParticles(_blob->InParticle(i));
-	  _blob->InParticle(i)->SetStatus(2);
+	  _blob->InParticle(i)->SetStatus(part_status::decayed);
 	  myblob->SetId();
 	  _bloblist->insert(_bloblist->begin(),myblob);
 	}
@@ -215,7 +215,7 @@ int Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
 	    }
 	  }
 	  myblob->AddToInParticles(_blob->OutParticle(i));
-	  _blob->OutParticle(i)->SetStatus(2);
+	  _blob->OutParticle(i)->SetStatus(part_status::decayed);
 	  myblob->AddToOutParticles(p);
 	  myblob->SetId();
 	  _bloblist->push_back(myblob);
@@ -230,7 +230,7 @@ int Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
       //interface->CleanBlobList(_bloblist,_blob->Type());
     }
     else {
-      msg.Error()<<"Jet_Evolution::AttachShowers(..): Shower failure."<<std::endl;
+      msg.Error()<<"Jet_Evolution::AttachShowers(..): Shower failure."<<endl;
       _blob->SetStatus(2);
       p_showerhandler->CleanUp();
     }
@@ -253,21 +253,21 @@ void Jet_Evolution::SetDecayBlobPointers(Blob * blob,Blob_List * bloblist)
     if (partin->Flav().IsStable()) continue;
     pbiter = m_decmap.find(partin);
     if (pbiter==m_decmap.end()) {
-      msg.Error()<<"ERROR in Jet_Evolution::SetDecayBlobPointers:"<<std::endl
-		 <<"   Did not find particle in map of decay blobs."<<std::endl
-		 <<"   Particle : "<<partin<<std::endl
-		 <<"   Will abort the run."<<std::endl;
+      msg.Error()<<"ERROR in Jet_Evolution::SetDecayBlobPointers:"<<endl
+		 <<"   Did not find particle in map of decay blobs."<<endl
+		 <<"   Particle : "<<partin<<endl
+		 <<"   Will abort the run."<<endl;
       abort();
     }
     dec     = pbiter->second;
     if (dec->Type()==btp::Hard_Decay) {
-      //std::cout<<"Check for "<<partin->Flav()<<" / "<<partin->FinalMass()<<std::endl;
+      //cout<<"Check for "<<partin->Flav()<<" / "<<partin->FinalMass()<<endl;
       partout = FollowUp(partin,dec);
       partout->SetDecayBlob(dec);
       dec->RemoveInParticle(partin);
       dec->AddToInParticles(partout);
-      //std::cout<<"Match : "<<partin->Number()<<" -> "<<partout->Number()<<std::endl
-      //	       <<(*dec)<<std::endl;
+      //cout<<"Match : "<<partin->Number()<<" -> "<<partout->Number()<<endl
+      //	       <<(*dec)<<endl;
     }
   }
 }
@@ -277,29 +277,29 @@ Particle * Jet_Evolution::FollowUp(Particle * partin,Blob * dec)
   Blob * current = partin->DecayBlob();
   Particle * partout;
   if (current==0 || current==dec) return partin;
-  //std::cout<<"Current : "<<current->Id()<<" <- "<<partin->Number()
-  //	   <<" / "<<partin->Flav()<<std::endl;
+  //cout<<"Current : "<<current->Id()<<" <- "<<partin->Number()
+  //	   <<" / "<<partin->Flav()<<endl;
   for (int i=0;i<current->NOutP();++i) {
     partout = current->OutParticle(i);
     if (partout->Flav()==partin->Flav() &&
 	partout->FinalMass()==partin->FinalMass()) return FollowUp(partout,dec);
   }
-  msg.Error()<<"ERROR in JetEvolution::FollowUp:"<<std::endl
-	     <<"   Did not find a suitable particle to follow up decay initiator through blob list."<<std::endl
-	     <<"   Particle = "<<partin<<std::endl
-	     <<"   Will abort the run."<<std::endl;
+  msg.Error()<<"ERROR in JetEvolution::FollowUp:"<<endl
+	     <<"   Did not find a suitable particle to follow up decay initiator through blob list."<<endl
+	     <<"   Particle = "<<partin<<endl
+	     <<"   Will abort the run."<<endl;
   abort();
 }
 
 void Jet_Evolution::FillDecayBlobMap(Blob * blob,Blob_List * bloblist) 
 {
-  //  std::cout<<"Which blob ? "<<std::endl<<(*blob)<<std::endl;
+  //  cout<<"Which blob ? "<<endl<<(*blob)<<endl;
   for (int i=0;i<blob->NOutP();++i) {
     if (blob->OutParticle(i)->DecayBlob()) 
-      m_decmap.insert(std::make_pair(blob->OutParticle(i),
+      m_decmap.insert(make_pair(blob->OutParticle(i),
 				     blob->OutParticle(i)->DecayBlob()));
   }
-  //  std::cout<<"length of map : "<<m_decmap.size()<<std::endl;
+  //  cout<<"length of map : "<<m_decmap.size()<<endl;
 }
 
 void Jet_Evolution::CleanUp() 
@@ -314,14 +314,14 @@ void Jet_Evolution::Reset()
   p_showerhandler->GetISRHandler()->Reset(1);
 }
 
-bool Jet_Evolution::DefineInitialConditions(const ATOOLS::Blob *blob,
-					    const ATOOLS::Blob_List *bloblist) 
+bool Jet_Evolution::DefineInitialConditions(const Blob *blob,
+					    const Blob_List *bloblist) 
 { 
   Reset();
-  for (ATOOLS::Blob_List::const_iterator blit=bloblist->begin();
+  for (::Blob_List::const_iterator blit=bloblist->begin();
        blit!=bloblist->end();++blit) {
-    if (((*blit)->Type()==ATOOLS::btp::Signal_Process ||
-	 (*blit)->Type()==ATOOLS::btp::Hard_Collision) && *blit!=blob) {
+    if (((*blit)->Type()==::btp::Signal_Process ||
+	 (*blit)->Type()==::btp::Hard_Collision) && *blit!=blob) {
       Update(*blit,0);
       Update(*blit,1);
     }
@@ -329,10 +329,10 @@ bool Jet_Evolution::DefineInitialConditions(const ATOOLS::Blob *blob,
   return true;
 }
 
-void Jet_Evolution::Update(const ATOOLS::Blob *blob,const size_t beam) 
+void Jet_Evolution::Update(const Blob *blob,const size_t beam) 
 { 
   for (size_t i=0;i<(size_t)blob->NInP();++i) {
-    const ATOOLS::Particle *cur=blob->ConstInParticle(i);
+    const Particle *cur=blob->ConstInParticle(i);
     if (i==beam || blob->NInP()<=1) {
       if (cur->ProductionBlob()!=NULL) Update(cur->ProductionBlob(),beam);
       else {
@@ -343,6 +343,6 @@ void Jet_Evolution::Update(const ATOOLS::Blob *blob,const size_t beam)
   }
 }
 
-void Jet_Evolution::Finish(const std::string &) 
+void Jet_Evolution::Finish(const string &) 
 {
 }

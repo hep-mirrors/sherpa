@@ -10,21 +10,29 @@
 namespace ATOOLS {
   class Blob;
    
+  struct part_status {
+    enum code {
+      undefined     = 0,
+      active        = 1,
+      decayed       = 2,
+      documentation = 3,
+      fragmented    = 4,
+      internal      = 5
+    };
+  };
+
   class Particle {
   private : 
     static long unsigned int s_currentnumber;
-    int       m_number;       
-    int       m_status;         
-    char      m_info;   
-    int       m_jetnumber; 
-    Flavour   m_fl;         
-    Flow    * p_flow;
-    Vec4D     m_momentum; 
-    Blob    * p_startblob;
-    Blob    * p_endblob;
-    double    m_dec_time;      
-    double    m_finalmass;
-    static int s_totalnumber;
+    int               m_number, m_jetnumber; 
+    part_status::code m_status;         
+    char              m_info;   
+    Flavour           m_fl;         
+    Vec4D             m_momentum; 
+    Flow            * p_flow;
+    Blob            * p_startblob, * p_endblob;
+    double            m_dec_time, m_finalmass;
+    static int        s_totalnumber;
   public:
     Particle();
     Particle(const Particle & );
@@ -34,29 +42,29 @@ namespace ATOOLS {
     ~Particle();
     friend std::ostream& operator<<(std::ostream &,const Particle &);
 
-    void           Copy(Particle * );
-    double         ProperTime();
-    double         LifeTime();
-    Vec3D          Distance(double = -1.);
-    const Vec4D&   Momentum() const;
-    double         E() const;
-    double         FinalMass() const;
-    int            Status() const;
-    char           Info() const;
-    const Vec4D&   XProd() const;
-    Blob         * ProductionBlob() const;
-    const Vec4D&   XDec() const;
-    Blob         * DecayBlob() const;
-    double         Time() const ;
-    Flavour        Flav() const ;
-    const Flavour& RefFlav() const;
-    Flow         * GetFlow() const ;
-    unsigned int   GetFlow( unsigned int ) const ;
-    int            Number() const;
-    int            JetNumber() const;
+    void              Copy(Particle * );
+    double            ProperTime();
+    double            LifeTime();
+    Vec3D             Distance(double = -1.);
+    const Vec4D&      Momentum() const;
+    double            E() const;
+    double            FinalMass() const;
+    part_status::code Status() const;
+    char              Info() const;
+    const Vec4D&      XProd() const;
+    Blob            * ProductionBlob() const;
+    const Vec4D&      XDec() const;
+    Blob            * DecayBlob() const;
+    double            Time() const ;
+    Flavour           Flav() const ;
+    const Flavour   & RefFlav() const;
+    Flow            * GetFlow() const ;
+    unsigned int      GetFlow( unsigned int ) const ;
+    int               Number() const;
+    int               JetNumber() const;
     void   SetMomentum(const Vec4D &);
-    void   SetFinalMass(const double _lower,const double _upper=-1.);
-    void   SetStatus( int status = 0 );
+    void   SetFinalMass(const double=-1,const double=-1);
+    void   SetStatus(part_status::code=part_status::undefined );
     void   SetInfo(char);
     void   SetProductionBlob(Blob *);
     void   SetDecayBlob(Blob *);
@@ -91,7 +99,8 @@ namespace ATOOLS {
     int     m_flow[2];
     double  m_mom[4];  
     int     blob_owned_by;
-    int     is_initial;           // 1 - is initial particle of this blob, 0 - is final particle of this
+    int     is_initial;           
+    // 1 - is initial particle of this blob, 0 - is final particle of this
   };
 
   void Particle2MPI(const Particle * , MPI_Particle &);  

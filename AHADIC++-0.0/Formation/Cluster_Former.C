@@ -47,8 +47,8 @@ void Cluster_Former::ConstructClusters(Part_List * plin, Cluster_List * clout)
 	  if ((*pit2)->Info()=='L') lead+=2;
 	  if (lead>0) cluster->SetLeads(ltp::code(lead));
 	  clout->push_back(cluster);
-	  (*pit1)->SetStatus(2);
-	  (*pit2)->SetStatus(2);
+	  (*pit1)->SetStatus(part_status::decayed);
+	  (*pit2)->SetStatus(part_status::decayed);
 	}
       }
     }

@@ -50,7 +50,7 @@ void HepMC_Interface::InitTheMap()
       HepPDT::TempParticleData& tpd1 = build->getParticleData(HepPDT::ParticleID(flav.HepEvt()));
       tpd1.tempParticleName=flav.TexName();
       tpd1.tempCharge=flav.Charge();
-      tpd1.tempMass=HepPDT::Measurement(flav.Mass(),0.);
+      tpd1.tempMass=HepPDT::Measurement(flav.PSMass(),0.);
       tpd1.tempSpin=HepPDT::SpinState(flav.Spin(),0.,0.);
       tpd1.tempWidth=HepPDT::Measurement(flav.Width(),0.);
       build->addParticle(tpd1);
@@ -58,7 +58,7 @@ void HepMC_Interface::InitTheMap()
       HepPDT::TempParticleData& tpd2 = build->getParticleData(HepPDT::ParticleID(flav.HepEvt()));
       tpd2.tempParticleName=flav.TexName();
       tpd2.tempCharge=flav.Charge();
-      tpd2.tempMass=HepPDT::Measurement(flav.Mass(),0.);
+      tpd2.tempMass=HepPDT::Measurement(flav.PSMass(),0.);
       tpd2.tempSpin=HepPDT::SpinState(flav.Spin(),0.,0.);
       tpd2.tempWidth=HepPDT::Measurement(flav.Width(),0.);
       build->addParticle(tpd2);
@@ -168,9 +168,9 @@ bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,HepMC::GenParticle 
 
   ATOOLS::Vec4D mom  = parton->Momentum();
   HepLorentzVector momentum(mom[1],mom[2],mom[3],mom[0]);
-  int stat = parton->Status();
+  int stat = int(parton->Status());
   if (parton->DecayBlob()!=NULL) stat = 2;
-  else if (stat==2) stat=1;
+               else if (stat==2) stat=1;
   if (stat==2) {
     if (parton->DecayBlob()->Type()==ATOOLS::btp::Signal_Process ||
 	parton->ProductionBlob()->Type()==ATOOLS::btp::Signal_Process) stat = 3;

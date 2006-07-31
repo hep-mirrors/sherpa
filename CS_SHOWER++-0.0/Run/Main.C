@@ -38,7 +38,7 @@ int main(int argc,char* argv[])
     Particle::Reset();
     part   = new Particle(0,Flavour(kf::u),Vec4D(45.6,0.,0.,45.6),'F');
     part->SetNumber(0);
-    part->SetStatus(2);
+    part->SetStatus(part_status::decayed);
     blob->AddToInParticles(part);
     parton = new Parton(part,pst::FS);
     parton->SetStart(8317.44);
@@ -46,7 +46,7 @@ int main(int argc,char* argv[])
     singlet->push_back(parton);
     part   = new Particle(0,Flavour(kf::u).Bar(),Vec4D(45.6,0.,0.,-45.6),'F');
     part->SetNumber(0);
-    part->SetStatus(2);
+    part->SetStatus(part_status::decayed);
     parton = new Parton(part,pst::FS);
     blob->AddToInParticles(part);
     parton->SetStart(8317.44);

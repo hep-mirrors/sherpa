@@ -116,7 +116,7 @@ void Singlet::ExtractPartons(ATOOLS::Blob * fs,ATOOLS::Blob * is)
     if ((*plit)->GetType()==pst::FS) {
       part = new Particle(-1,(*plit)->GetFlavour(),(*plit)->Momentum(),'F');
       part->SetNumber(0);
-      part->SetStatus(1);
+      part->SetStatus(part_status::active);
       if (plit==begin()) {
 	if ((*plit)->GetFlavour().IsQuark()) {
 	  if ((*plit)->GetFlavour().IsAnti()) abort();
@@ -169,7 +169,7 @@ void Singlet::ExtractPartons(ATOOLS::Blob * fs,ATOOLS::Blob * is)
       //save
       part = new Particle(-1,(*plit)->GetFlavour(),(*plit)->Momentum(),'I');
       part->SetNumber(0);
-      part->SetStatus(1);
+      part->SetStatus(part_status::active);
       if (plit==begin()) {
 	if ((*plit)->GetFlavour().IsQuark()) {
 	  if (!(*plit)->GetFlavour().IsAnti()) abort();
