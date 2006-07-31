@@ -32,7 +32,7 @@ SimpleXS_Apacic_Interface::SimpleXS_Apacic_Interface(Matrix_Element_Handler *meh
 						     Shower_Handler *showerhandler):
   Perturbative_Interface(mehandler,showerhandler),
   p_tools(new Interface_Tools(showerhandler->GetIniTrees(),
-			      (*showerhandler->GetFinTrees()->begin()))),
+			      showerhandler->GetFinTree())),
   p_twototwo(new XS_Group(2,2,"Interface Processes")),
   p_momenta(new Vec4D[4]), 
   p_flavours(new Flavour[4]), 

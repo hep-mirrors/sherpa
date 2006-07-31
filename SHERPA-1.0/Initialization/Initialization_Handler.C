@@ -710,6 +710,7 @@ void Initialization_Handler::SetParameter(int nr) {
   if (pos!=std::string::npos) {
     if (pos!=resdir.size()) resdir=resdir.substr(0,pos)+sval+resdir.substr(pos+1);
     else resdir=resdir.substr(0,pos)+sval;
+    std::cout<<"new RESULT_DIRECTORY = #"<<resdir<<"#\n";
     m_options["RESULT_DIRECTORY"]=resdir;
     ATOOLS::MakeDir(resdir,0755);
   }

@@ -17,11 +17,11 @@ namespace APACIC {
   class Final_State_Shower {
   private:
 
-    Timelike_Kinematics * p_kin;
-    Timelike_Sudakov    * p_sud;
-    Jet_Veto            * p_jv;
+    Timelike_Kinematics *p_kin;
+    Timelike_Sudakov    *p_sud;
+    Jet_Veto            *p_jv;
 
-    //double m_pt2min;
+    double m_pt2min;
 
     int  InitializeJets(Tree *tree,Knot *mo,int init_rel=0);
     bool SmearDaughters(Knot *mo);

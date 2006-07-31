@@ -137,7 +137,7 @@ int Jet_Veto::TestKinematics(const int mode,Knot *const mo,double* vm)
   msg_Debugging()<<"jet veto ("<<m_jmode<<") "<<sqrt(jcrit)
 		 <<", lose jet veto ("<<m_ljmode<<") "<<sqrt(ljcrit)<<"\n";
   size_t njets(0), nljets(0);
-  for (;njets<m_rates.size();++njets) if (m_rates[njets]<jcrit)     break;
+  for (;njets<m_rates.size();++njets) if (m_rates[njets]<jcrit) break;
   for (;nljets<m_rates.size();++nljets) if (m_rates[nljets]<ljcrit) break;
   if (p_jf->Type()==1) {
     ++njets;

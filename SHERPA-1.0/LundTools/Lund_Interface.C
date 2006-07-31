@@ -198,11 +198,6 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file,bool sher
     }
   }
   delete reader;
-  // print decay channel list
-  // pylist(12);
-  // abort();
-  // for test purposes - leave only one tau decay channel open
-  //  LeaveOpenOnlyDC(93);
 }
 
 void Lund_Interface::SwitchOfDecays(ATOOLS::kf::code kfc)

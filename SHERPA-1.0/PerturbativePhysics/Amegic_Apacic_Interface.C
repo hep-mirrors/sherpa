@@ -136,7 +136,7 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
       if (m_weight>ran.Get()) {
 	p_shower->CleanUp();
 	p_filler->FillTrees(blob,p_shower->GetIniTrees(),
-			    (*p_shower->GetFinTrees()->begin()));
+			    p_shower->GetFinTree());
 	blob->AddData("Sud_Weight",new Blob_Data<double>(m_weight));
 	m_weight=1.;
 	return 1;
@@ -164,8 +164,7 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
 		   <<"Missing signal process information."<<std::endl;
 	}
       }
-      p_filler->FillTrees(blob,p_shower->GetIniTrees(),
-			  (*p_shower->GetFinTrees()->begin()));
+      p_filler->FillTrees(blob,p_shower->GetIniTrees(),p_shower->GetFinTree());
       return 1;
     }
   }
@@ -195,7 +194,7 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
 	return 0;
       }
     }
-    p_filler->FillDecayTree((*p_shower->GetFinTrees()->begin()));
+    p_filler->FillDecayTree(p_shower->GetFinTree());
   }
   return 1;
 }

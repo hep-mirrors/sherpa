@@ -143,7 +143,7 @@ Knot * Tree::NewKnot(Particle * _inpart)
   newk->left      = 0;
   newk->right     = 0;
   newk->prev      = 0;
-  if (!p_root) {
+  if (p_root!=NULL) {
     p_root = newk;
   }
   return newk;

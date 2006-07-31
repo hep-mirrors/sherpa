@@ -37,7 +37,7 @@ int main(int argc,char* argv[])
   APACIC::Apacic    * apacic    = new APACIC::Apacic(isr,model,&jf,dataread);
   delete dataread;
 
-  APACIC::Tree      * tree      = (*apacic->FinTrees()->begin());
+  APACIC::Tree      * tree      = apacic->FinTree();
   APACIC::Knot      * mo;
 
   Blob              * blob;
@@ -61,7 +61,6 @@ int main(int argc,char* argv[])
     Flow::ResetCounter();
 
     apacic->PrepareTrees();
-    tree->SetVetoScale(E2);
 
     mo          = tree->NewKnot();
     mo->t       = E2;

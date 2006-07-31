@@ -81,9 +81,9 @@ CD_List::iterator Combine_Table_CKKW::CalcPropagator(CD_List::iterator &cit)
   if (cit->first.m_flav.Kfcode()==kf::none) {
     cit->second.m_sij   = (p_moms[cit->first.m_i]+p_moms[cit->first.m_j]).Abs2();
     cit->second.m_pt2ij = p_jf->MTij2(p_moms[cit->first.m_i],p_moms[cit->first.m_j]);
-     std::cout<<"Calculate m_perp("<<cit->first.m_i<<cit->first.m_j<<") : "
-     	     <<p_moms[cit->first.m_i]<<" & "<<p_moms[cit->first.m_j]
-     	     <<" -> "<<sqrt(cit->second.m_pt2ij)<<std::endl;
+//     std::cout<<"Calculate m_perp("<<cit->first.m_i<<cit->first.m_j<<") : "
+//     	     <<p_moms[cit->first.m_i]<<" & "<<p_moms[cit->first.m_j]
+//     	     <<" -> "<<sqrt(cit->second.m_pt2ij)<<std::endl;
     return cit;
   }
   else {
