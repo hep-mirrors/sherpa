@@ -33,17 +33,17 @@ Knot_List * Tree::s_knots=NULL;
 //----------------------------------------------------------------------- 
 
 
-Tree::Tree() {
+Tree::Tree() :
+  p_root(NULL), p_save_root(NULL)
+{
   if (!s_knots) s_knots = new Knot_List;
-  p_root      = 0;
-  p_save_root = 0;
 }
 
-Tree::Tree(Tree * tree) {
+Tree::Tree(Tree * tree) :
+  p_root(tree->p_root), p_save_root(NULL)
+{
   if (!s_knots) s_knots = new Knot_List;
-  p_root  = NewKnot(tree->p_root);
   Links(p_root,tree->p_root);
-  p_save_root = 0;
 }
 
 void Tree::ResetKnots() {
@@ -52,7 +52,7 @@ void Tree::ResetKnots() {
     delete (*kit); 
   }
   s_knots->erase(s_knots->begin(),s_knots->end());
-  p_root = 0;
+  p_root = NULL;
 }
 
 
@@ -97,12 +97,10 @@ Knot * Tree::NewKnot(ATOOLS::Flavour fl, ATOOLS::Vec4D p, double t, double x1) {
   newk->t         = t;
   newk->x         = x1;
   newk->maxpt2    = 0.;
-  newk->left      = 0;
-  newk->right     = 0;
-  newk->prev      = 0;
-  if (!p_root) {
-    p_root = newk;
-  }
+  newk->left      = NULL;
+  newk->right     = NULL;
+  newk->prev      = NULL;
+  if (p_root==NULL) p_root = newk;
   return newk;
 }
 
@@ -119,12 +117,10 @@ Knot * Tree::NewKnot(Knot * ink) {
   newk->phi    = ink->phi;
   newk->thcrit = ink->thcrit;
 
-  newk->left      = 0;
-  newk->right     = 0;
-  newk->prev      = 0;
-  if (!p_root) {
-    p_root = newk;
-  }
+  newk->left      = NULL;
+  newk->right     = NULL;
+  newk->prev      = NULL;
+  if (p_root==NULL) p_root = newk;
   newk->part      = new Particle(*ink->part);
   return newk;
 }
@@ -140,12 +136,10 @@ Knot * Tree::NewKnot(Particle * _inpart)
   else {
     newk->part    = new Particle(*_inpart);
   }
-  newk->left      = 0;
-  newk->right     = 0;
-  newk->prev      = 0;
-  if (p_root!=NULL) {
-    p_root = newk;
-  }
+  newk->left      = NULL;
+  newk->right     = NULL;
+  newk->prev      = NULL;
+  if (p_root==NULL) p_root = newk;
   return newk;
 }
 
@@ -157,9 +151,9 @@ void Tree::ResetDaughters(Knot * in) {
   if (!(in)) return;
   
   if (in->left)  ResetDaughters(in->left);
-  in->left=0;
+  in->left=NULL;
   if (in->right) ResetDaughters(in->right);
-  in->right=0;
+  in->right=NULL;
 
   for (Knot_Iterator kit=s_knots->begin(); kit!=s_knots->end(); ++kit) {
     if ((*kit) == in) {
@@ -225,7 +219,7 @@ void Tree::BoRo(ATOOLS::Poincare & lorenz, Knot * mo)
 
 Knot * Tree::CopyKnot(Knot * a, Knot * prev) 
 {
-  if (!a) return 0;
+  if (!a) return NULL;
   Knot * nk = new Knot(a);
   nk->prev  = prev;
   nk->left  = CopyKnot(a->left,nk);
@@ -253,14 +247,14 @@ void Tree::CopyBackKnot(Knot * a, Knot * b)
   if (b->left) CopyBackKnot(a->left,b->left);
   else {
     DeleteKnot(a->left);
-    a->left=0;
+    a->left=NULL;
   }
   if (b->right) CopyBackKnot(a->right,b->right);
   else {
     DeleteKnot(a->right);
-    a->right=0;
+    a->right=NULL;
   }
-  if (!(b->prev)) a->prev=0;
+  if (!(b->prev)) a->prev=NULL;
 }
 
 void Tree::DeleteKnot(Knot * b) {
@@ -283,7 +277,7 @@ void Tree::ClearStore()
   help = p_save_root;
   if (help)  while (help->prev)  help = help->prev;
   DeleteKnot(help); 
-  p_save_root = 0;
+  p_save_root = NULL;
 }
 
 void Tree::Store()

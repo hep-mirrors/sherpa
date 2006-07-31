@@ -204,6 +204,7 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
     }
     ct_test = ct_test->Up();
   }
+
   if (msg.LevelIsDebugging()) {
     msg.Out()<<" in Tree_Filler::FillTrees("<<m_isrshoweron<<","
 	     <<m_fsrshoweron<<")"<<std::endl;
