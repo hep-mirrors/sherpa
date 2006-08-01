@@ -7,6 +7,7 @@ endif
 
 libToolsOrg_la_SOURCES        = \
 				Shell_Tools.C \
+				Return_Value.C \
 				Object.C \
 				Getter_Function.C \
 				Exception.C \
@@ -33,6 +34,7 @@ libToolsOrg_la_SOURCES        = \
 
 pkginclude_HEADERS       =	\
 			CXXFLAGS.H \
+			Return_Value.H \
 			Smart_Pointer.H \
 			Shell_Tools.H \
 			Object.H \
