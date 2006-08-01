@@ -8,32 +8,32 @@ namespace ATOOLS {
   class Poincare {
   private:
 
-    int    m_status;               // 0 no operation, 1 boost, 2 rot, 3 boost+rot
-    double m_mat[4][4];
-    Vec4D  m_beta;
-    double m_rsq;
+    int    m_status;
+    Vec4D  m_beta, m_n;
+    double m_rsq, m_ct, m_st, m_nsq, m_nabs;
+    bool   m_usen;
 
   public:
 
-    Poincare();                    // standard constructor Unity
+    Poincare();
     Poincare(Vec4D v1, Vec4D v2);  // rotations constructor
-    Poincare(Vec4D v);             // boost constuctor 
+    Poincare(Vec4D v);             // boost constructor 
  
-    void Boost(Vec4D& v);          // boosts vectors in CMS (of vector given at initialization)
-    void BoostBack(Vec4D& v);      // boost back to LAB Frame
+    void Boost(Vec4D& v);
+    void BoostBack(Vec4D& v);
 
-    void Rotate(Vec4D& v);         // rotate
-    void RotateBack(Vec4D& v);     // rotate back
+    void Rotate(Vec4D& v);
+    void RotateBack(Vec4D& v);
 
-    bool CheckBoost();             // test boost 
-    bool CheckRotation();          // test rotation
+    bool CheckBoost();
+    bool CheckRotation();
 
     void Invert();  
 
     inline Vec4D operator*(const Vec4D& vin) {
       Vec4D v(vin);
-      if ((m_status)&(1)) Boost(v);
-      if ((m_status)&(2)) Rotate(v);
+      if (m_status&1) Boost(v);
+      if (m_status&2) Rotate(v);
       return v;
     }
 

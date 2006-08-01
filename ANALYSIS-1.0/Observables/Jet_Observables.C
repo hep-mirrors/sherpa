@@ -216,34 +216,41 @@ Two_Jet_Observable_Base::Two_Jet_Observable_Base(unsigned int type,double xmin,d
 }
 
 
-void Two_Jet_Observable_Base::Evaluate(const Particle_List & pl,double weight, int ncount)
+void Two_Jet_Observable_Base::Evaluate(const Particle_List & pl,
+				       double weight, int ncount)
 {
-  if ((m_mode==1 && pl.size()>=m_minn) ||
-      (m_mode==2 && pl.size()==m_minn)) {
-    // fill
-    size_t i=1;
-    int jet1=0;
-    for (Particle_List::const_iterator it1=pl.begin();it1!=pl.end();++it1,++jet1) {
-      int jet2=jet1+1;
-      for (Particle_List::const_iterator it2=it1+1;it2!=pl.end() && i<=(sqr(m_maxn)-m_maxn)/2;++it2,++i,++jet2) {
-	double value=Calc(*it1,*it2,jet1,jet2);
+  if((m_mode==1 && pl.size()>=m_minn) || (m_mode==2 && pl.size()==m_minn)) {
+    //fill
+    size_t i=1, jet1=1, jet2=1;
+    size_t j1max=Min(pl.size()-1,size_t(m_maxn)-1), j2max=j1max+1;
+    for(Particle_List::const_iterator it1=pl.begin();
+	jet1<=j1max; ++it1, ++jet1) {
+      jet2=jet1+1;
+      for(Particle_List::const_iterator it2=it1+1;
+	  jet2<=j2max; ++it2, ++i, ++jet2) {
+	double value=Calc(*it1,*it2,jet1-1,jet2-1);
 	m_histos[0]->Insert(value,weight,ncount);
 	m_histos[i]->Insert(value,weight,ncount);
       }
+      for(; jet2<=size_t(m_maxn); ++i, ++jet2) {
+	m_histos[0]->Insert(0.,0.,ncount);
+	m_histos[i]->Insert(0.,0.,ncount);
+      }
     }
-    for (; i<m_histos.size();++i) { 
+    for (; i<m_histos.size(); ++i) {
       m_histos[0]->Insert(0.,0.,ncount);
       m_histos[i]->Insert(0.,0.,ncount);
     }
   }
   else {
-    // fill with 0
-    for (size_t i=0; i<m_histos.size();++i) {
+    //fill with 0
+    for(size_t i=1; i<m_histos.size(); ++i) {
       m_histos[0]->Insert(0.,0.,ncount);
       m_histos[i]->Insert(0.,0.,ncount);
     }
   }
 }
+
 
 void Two_Jet_Observable_Base::Evaluate(const Blob_List & blobs,double value, int ncount)
 {
