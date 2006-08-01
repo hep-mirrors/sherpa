@@ -1,0 +1,12 @@
+# Decay: rho(1450) --> pi+ pi+ pi- pi- 
+#        0         --> 1   2   3   4   
+Channels {
+	AlwaysIntegrate = 0;   # 0...read results and skip integration
+	                       # 1...don't read results and integrate
+	MassSmearing    = 1;   # 0...turn off mass smearing for this decay's products
+	                       # 1...turn on mass smearing for this decay's products
+	Isotropic 1;
+}
+Result {
+   2.11906e-08 4.8671e-11 8.83988e-08;
+}

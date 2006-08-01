@@ -145,7 +145,7 @@
 # Charmonia
 #
 #441     -> Eta_c/             Decays.dat;
-443     -> J_Psi/             Decays.dat;
+#443     -> J_Psi/             Decays.dat;
 #
 # Bottomonia
 #

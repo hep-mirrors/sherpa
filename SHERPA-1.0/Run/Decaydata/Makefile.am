@@ -22,6 +22,10 @@ SUBDIRS       = \
 		D12420+ \
 		D2star2460 \
 		D2star2460+ \
+		Delta1232 \
+		Delta1232- \
+		Delta1232+ \
+		Delta1232++ \
 		Ds+ \
 		Ds12536+ \
 		Dsstar+ \
@@ -64,6 +68,9 @@ SUBDIRS       = \
 		Kstar1410+ \
 		Kstar892 \
 		Kstar892+ \
+		Lambda \
+		Lambda1520 \
+		Omega- \
 		omega1420 \
 		omega782 \
 		phi1020 \
@@ -76,7 +83,17 @@ SUBDIRS       = \
 		rho1450+ \
 		rho770 \
 		rho770+ \
-		tau-
+		Sigma \
+		Sigma- \
+		Sigma+ \
+		Sigma1385 \
+		Sigma1385- \
+		Sigma1385+ \
+		tau- \
+		Xi \
+		Xi- \
+		Xi1530 \
+		Xi1530-
 
 EXTRA_DIST    =	@SVNINCLUDE@
 
