@@ -11,15 +11,12 @@ Parameters {
   RUNNING_WIDTH = 1    	! running width of resonances (On/Off)
   FORM_FACTOR   = 1    	! 1=Kuhn-Santamaria
 
-  ! relative weightfactors for resonances
-  beta = 0.0
-  
   ! parameters for resonances
-  Mass_K*_892 		= 0.89166
-  Width_K*_892 	    = 0.0508
-  Mass_K*_1410   	= 1.414
-  Width_K*_1410  	= 0.232
+  Mass_K*(892)+ 	    = 0.89166
+  Width_K*(892)+        = 0.0508
+  Mass_K(0)*(1430)+     = 1.412
+  Width_K(0)*(1430)+    = 0.294
 }
 Result {
-   6.97216e-15 6.68303e-17 5.74408e-13;
+   6.85478e-15 6.57764e-17 5.74734e-13;
 }

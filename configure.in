@@ -189,5 +189,6 @@ dnl       AHADIC++-0.0/ClusterFormation/Makefile \
 	  SHERPA-1.0/Run/Decaydata/rho1450+/Makefile \
 	  SHERPA-1.0/Run/Decaydata/rho770/Makefile \
 	  SHERPA-1.0/Run/Decaydata/rho770+/Makefile \
+	  SHERPA-1.0/Run/Decaydata/tau-/PhaseSpaceFunctions/Makefile \
 	  SHERPA-1.0/Run/Decaydata/tau-/Makefile
 )

@@ -3,35 +3,27 @@
 Channels {
   	AlwaysIntegrate = 0;	! 0...read results and skip integration
 	  						! 1...don't read results and integrate
-    TwoResonances_axial_1_vector1_23 0.5;
-    TwoResonances_axial_3_vector2_12 0.5;
+    TwoResonances_a(1)(1260)+_3_rho(770)+_12 0.5;
     !Isotropic 1;
 }
 Parameters {
   v      =  1.		 	! V-A structure of tau-nutau
   a      =  1.	
   FORM_FACTOR   = 1    	! 1=KuehnSantamaria
-  RUNNING_WIDTH = 2     ! 0=Off, 1=axial, 2=vector, 3=both resonances
+  RUNNING_WIDTH = 3     ! 0=Off, 1=axial, 2=vector, 3=both resonances
    
   # relative weightfactors for resonances
-  beta 1 = 0.			! vector'_1
-  beta 2 = 0. 	  		! vector'_2
-   
+  beta_rho(1450)+           = -0.145
+
   # parameters for resonances
-  Mass_vector   1	= 0.8961
-  Width_vector  1	= 0.0507
-  Mass_vector'  1 	= 1.412 
-  Width_vector' 1 	= 0.294
-  Mass_vector   2	= 0.7758
-  Width_vector  2	= 0.146
-  Mass_vector'  2	= 1.465
-  Width_vector' 2	= 0.4
-  Mass_axial		= 1.230
-  Width_axial		= 0.440
-   
-  # off-shell width parameters
-  lambda 			= 1.			! exponent in KS
+  Mass_rho(770)+    = 0.773
+  Width_rho(770)+   = 0.145
+  Mass_rho(1450)+   = 1.370
+  Width_rho(1450)+  = 0.510
+
+  Mass_a(1)(1260)+  = 1.254
+  Width_a(1)(1260)+ = 0.599
 }
 Result {
-   1.85458e-16 1.25015e-19 3.78834e-15;
+   2.019e-16 3.92248e-19 3.71097e-15;
 }

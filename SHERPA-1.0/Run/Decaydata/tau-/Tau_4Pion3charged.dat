@@ -11,21 +11,20 @@ Parameters {
     FORM_FACTOR   = 1    	! 1=KuehnSantamaria
 
     # properties of resonances
-    Mass_rho_770		= 0.79
-    Width_rho_770		= 0.151
-    Width_rho_770		= 0.16
-    Mass_rho_1450		= 1.523
-    Width_rho_1450	    = 0.4
-    Mass_rho_1700		= 1.7
-    Width_rho_1700	    = 0.235
-    Mass_omega_782	    = 0.79
-    Width_omega_782	    = 0.0085
-    Mass_a1_1260		= 1.23
-    Width_a1_1260		= 0.6
+    Mass_rho(770)+		= 0.79
+    Width_rho(770)+		= 0.151
+    Mass_rho(1450)+		= 1.523
+    Width_rho(1450)+    = 0.4
+    Mass_rho(1700)+		= 1.7
+    Width_rho(1700)+    = 0.235
+    Mass_omega(782)	    = 0.79
+    Width_omega(782)    = 0.0085
+    Mass_a(1)(1260)+	= 1.23
+    Width_a(1)(1260)+	= 0.6
     Mass_sigma		    = 0.86
     Width_sigma		    = 0.99
-    Mass_f0_980		    = 0.98
-    Width_f0_980		= 0.07
+    Mass_f(0)(980)	    = 0.98
+    Width_f(0)(980)		= 0.07
 
     # relative strength of rho resonances
     # for omega-pi contribution
@@ -66,5 +65,5 @@ Parameters {
     beta_f0_rho	    3 = 0. 0.
 }
 Result {
-   2.05499e-18 1.92027e-21 9.24508e-16;
+   1.68249e-18 1.80454e-21 8.50102e-16;
 }

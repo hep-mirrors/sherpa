@@ -11,18 +11,17 @@ Parameters {
   FORM_FACTOR   = 1    	! 1=KuehnSantamaria
 
   # properties of resonances
-  Mass_rho_770		= 0.79
-  Width_rho_770		= 0.151
-  Width_rho_770		= 0.16
-  Mass_rho_1450		= 1.523
-  Width_rho_1450	= 0.4
-  Mass_rho_1700		= 1.7
-  Width_rho_1700	= 0.235
+  Mass_rho(770)+    = 0.773
+  Width_rho(770)+   = 0.145
+  Mass_rho(1450)+   = 1.500
+  Width_rho(1450)+  = 0.220
+  Mass_rho(1700)+   = 1.750
+  Width_rho(1750)+  = 0.120
 
   # relative strength of rho resonances
   beta 	= -0.25  		! rho_1450
   gamma = -0.00			! rho_1700
 }
 Result {
-   3.83574e-15 3.75068e-18 3.47487e-13;
+   6.26566e-15 6.29446e-18 6.13477e-13;
 }

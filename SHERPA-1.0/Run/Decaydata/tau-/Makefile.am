@@ -41,5 +41,7 @@ dist_decay_DATA       =	\
 			tau-_pi+pi-pi-pipipinu_tau.dat \
 			tau-_pi+pi+pi-pi-pi-pinu_tau.dat
 
+SUBDIRS    = PhaseSpaceFunctions
+
 EXTRA_DIST    =	@SVNINCLUDE@
 

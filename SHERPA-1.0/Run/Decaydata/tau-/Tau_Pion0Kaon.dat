@@ -15,11 +15,11 @@ Parameters {
   beta = 0.0
   
   ! parameters for resonances
-  Mass_K*_892 		= 0.89166
-  Width_K*_892 	    = 0.0508
-  Mass_K*_1410   	= 1.414
-  Width_K*_1410  	= 0.232
+  Mass_K*(892)+		    = 0.89166
+  Width_K*(892)+        = 0.0508
+  Mass_K(0)*(1430)+     = 1.412
+  Width_K(0)*(1430)+    = 0.294
 }
 Result {
-   7.20046e-15 6.97952e-17 6.126e-13;
+   7.08777e-15 6.89698e-17 6.17997e-13;
 }
