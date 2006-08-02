@@ -201,7 +201,8 @@ bool Adicic::FExtract(Blob* pfs) {
 #ifdef ADICIC_OUTPUT
   cout<<om::greenbg<<"Initial 2nd blob:"<<om::reset<<" \n"<<*pfs<<endl;////////
 #endif
-  for(int i=0; i<pfs->NInP(); ++i) pfs->InParticle(i)->SetStatus(part_status::decayed);
+  for(int i=0; i<pfs->NInP(); ++i)
+    pfs->InParticle(i)->SetStatus(part_status::decayed);
   int num=Max(pfs->InParticle(0)->Number(),pfs->InParticle(1)->Number());
   num=num+1-m_startnum;    //-plist.front()->Number();
   for(Particle_List::iterator piter=plist.begin(); piter!=plist.end();
@@ -232,7 +233,8 @@ bool Adicic::IExtract(Blob* pis, Blob* pisme, Blob* pfs) {
   cout<<om::greenbg<<"Initial FS blob:"<<om::reset<<" \n"<<*pfs<<endl;/////////
 #endif
 
-  for(int i=0; i<pfs->NInP(); ++i) pfs->InParticle(i)->SetStatus(part_status::decayed);
+  for(int i=0; i<pfs->NInP(); ++i)
+    pfs->InParticle(i)->SetStatus(part_status::decayed);
   int num=Max(pfs->InParticle(0)->Number(),pfs->InParticle(1)->Number());
   //cout<<num<<":"<<plist.front()->Number()<<":"<<m_startnum<<":";
   num=num+3-m_startnum;    //cout<<num<<endl;

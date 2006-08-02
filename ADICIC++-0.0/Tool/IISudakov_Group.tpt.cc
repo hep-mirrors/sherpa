@@ -76,65 +76,66 @@ IISudakov_Group<DT>::IISudakov_Group(const Radiation::Type ratyp)
 
 
 
-template<>
-IISudakov_Group<Dipole::iiqbarq>::IISudakov_Group(const Radiation::Type ratyp)
-  : Sudakov_Calculator(),
-    m_radtype(ratyp),
-    m_sdip(dpa.sud.MaxIIK2t()),
-    m_a(2*sqrt(2.0)+3.0),
-    m_s(sqr(m_a-1.0)*dpa.sud.MaxIIK2t()),
-    m_x2tmin(dpa.sud.MinIIK2t()/m_s),
-    m_x2tmax(0.25),
-    m_x2t(1.0), m_ymax(0.0), m_rap(0.0), m_corr(1.0),
-    l_sud() {
+namespace ADICIC {
+  template<>
+  IISudakov_Group<Dipole::iiqbarq>::IISudakov_Group(const Radiation::Type ratyp)
+    : Sudakov_Calculator(),
+      m_radtype(ratyp),
+      m_sdip(dpa.sud.MaxIIK2t()),
+      m_a(2*sqrt(2.0)+3.0),
+      m_s(sqr(m_a-1.0)*dpa.sud.MaxIIK2t()),
+      m_x2tmin(dpa.sud.MinIIK2t()/m_s),
+      m_x2tmax(0.25),
+      m_x2t(1.0), m_ymax(0.0), m_rap(0.0), m_corr(1.0),
+      l_sud() {
 
-  if(ratyp>Radiation::duscb && dpa.sud.GsplitRule()!=positive) {
-    Sudakov_Flavour sfc; sfc.Glu=&info.gluon.g;
-    Sudakov_Base* gsud=
-      new IISudakov<Dipole::iiqbarq,Radiation::gluon>(*this,sfc);
-    assert(gsud);
-    l_sud.push_back(gsud);
+    if(ratyp>Radiation::duscb && dpa.sud.GsplitRule()!=positive) {
+      Sudakov_Flavour sfc; sfc.Glu=&info.gluon.g;
+      Sudakov_Base* gsud=
+	new IISudakov<Dipole::iiqbarq,Radiation::gluon>(*this,sfc);
+      assert(gsud);
+      l_sud.push_back(gsud);
+    }
+
+    if(ratyp!=Radiation::g && dpa.sud.GsplitRule()!=positive) {
+      Sudakov_Flavour sfc;
+      Sudakov_Base* qsud;
+      sfc.Qua=&info.quark.d;
+      qsud=new IISudakov<Dipole::iiqbarq,Radiation::igluon>(*this,sfc);
+      assert(qsud);
+      l_sud.push_back(qsud);
+      sfc.Qua=NULL;
+      sfc.Aqu=&info.antiq.d;
+      qsud=new IISudakov<Dipole::iiqbarq,Radiation::igluon>(*this,sfc);
+      assert(qsud);
+      l_sud.push_back(qsud);
+    }
   }
-
-  if(ratyp!=Radiation::g && dpa.sud.GsplitRule()!=positive) {
-    Sudakov_Flavour sfc;
-    Sudakov_Base* qsud;
-    sfc.Qua=&info.quark.d;
-    qsud=new IISudakov<Dipole::iiqbarq,Radiation::igluon>(*this,sfc);
-    assert(qsud);
-    l_sud.push_back(qsud);
-    sfc.Qua=NULL;
-    sfc.Aqu=&info.antiq.d;
-    qsud=new IISudakov<Dipole::iiqbarq,Radiation::igluon>(*this,sfc);
-    assert(qsud);
-    l_sud.push_back(qsud);
-  }
-
 }
 
 
 
+namespace ADICIC {
+  template<>
+  IISudakov_Group<Dipole::iigg>::IISudakov_Group(const Radiation::Type ratyp)
+    : Sudakov_Calculator(),
+      m_radtype(ratyp),
+      m_sdip(dpa.sud.MaxIIK2t()),
+      m_a(2*sqrt(2.0)+3.0),
+      m_s(sqr(m_a-1.0)*dpa.sud.MaxIIK2t()),
+      m_x2tmin(dpa.sud.MinIIK2t()/m_s),
+      m_x2tmax(0.25),
+      m_x2t(1.0), m_ymax(0.0), m_rap(0.0), m_corr(1.0),
+      l_sud() {
 
-
-template<>
-IISudakov_Group<Dipole::iigg>::IISudakov_Group(const Radiation::Type ratyp)
-  : Sudakov_Calculator(),
-    m_radtype(ratyp),
-    m_sdip(dpa.sud.MaxIIK2t()),
-    m_a(2*sqrt(2.0)+3.0),
-    m_s(sqr(m_a-1.0)*dpa.sud.MaxIIK2t()),
-    m_x2tmin(dpa.sud.MinIIK2t()/m_s),
-    m_x2tmax(0.25),
-    m_x2t(1.0), m_ymax(0.0), m_rap(0.0), m_corr(1.0),
-    l_sud() {
-
-  if(ratyp>Radiation::duscb && dpa.sud.GsplitRule()!=positive) {
-    Sudakov_Flavour sfc; sfc.Glu=&info.gluon.g;
-    Sudakov_Base* gsud=new IISudakov<Dipole::iigg,Radiation::gluon>(*this,sfc);
-    assert(gsud);
-    l_sud.push_back(gsud);
+    if(ratyp>Radiation::duscb && dpa.sud.GsplitRule()!=positive) {
+      Sudakov_Flavour sfc; sfc.Glu=&info.gluon.g;
+      Sudakov_Base* gsud=
+	new IISudakov<Dipole::iigg,Radiation::gluon>(*this,sfc);
+      assert(gsud);
+      l_sud.push_back(gsud);
+    }
   }
-
 }
 
 

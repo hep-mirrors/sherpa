@@ -313,9 +313,9 @@ int main() {
 	cout<<cha.MaxDipoleNumber()<<endl;
 	if(i==total) chtest.Print();
 	cout<<endl;
-	cout<<"\e[7m\e[31m                    \e[0m";
-	cout<<"\e[1m\e[40m\e[33mSTART: "<<i<<"\e[0m";
-	cout<<"\e[7m\e[31m                    \e[0m"<<endl;
+	cout<<"\033[7m\033[31m                    \033[0m";
+	cout<<"\033[1m\033[40m\033[33mSTART: "<<i<<"\033[0m";
+	cout<<"\033[7m\033[31m                    \033[0m"<<endl;
 
 	while(H.EvolveChainByOneStep()) {
 	  Chain_Handler::Carrier car;
@@ -343,9 +343,9 @@ int main() {
 	  cout<<cha.CheckMomentumConservation(test)<<"\t"<<test<<"\n\n";
 	}
 
-	cout<<"\e[7m\e[31m                    \e[0m";
-	cout<<"\e[1m\e[40m\e[33mSTOP: "<<i<<"\e[0m";
-	cout<<"\e[7m\e[31m                    \e[0m"<<endl;
+	cout<<"\033[7m\033[31m                    \033[0m";
+	cout<<"\033[1m\033[40m\033[33mSTOP: "<<i<<"\033[0m";
+	cout<<"\033[7m\033[31m                    \033[0m"<<endl;
 
 	if(i==total) {
 	  cha.Print();

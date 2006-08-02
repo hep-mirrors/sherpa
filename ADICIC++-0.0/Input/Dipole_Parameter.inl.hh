@@ -111,6 +111,7 @@ namespace ADICIC {
 		    s_fascatype==fascat::m2t ||
 		    s_fascatype==fascat::shat);
     }
+    return 0.0;
   }
 
 

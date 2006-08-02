@@ -178,7 +178,7 @@ sformat sform75(12,7,false,false);
 istream& enter(istream& is) {
   char lin[2];
   do { 
-    cout<<" \e[1mpress enter\e[0m ";
+    cout<<" \033[1mpress enter\033[0m ";
     is.getline(lin,1,'\n');
   }  
   while(*lin);
@@ -190,4 +190,3 @@ istream& enter(istream& is) {
 
 
 //eof
-

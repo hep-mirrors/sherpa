@@ -325,6 +325,10 @@ const bool Recoil<ST>::Calculate() {
 
 
 
+namespace ADICIC {
+
+
+
 template<>
 const bool Recoil<Recoil_Strategy::Kleiss>::Calculate() {
   if(TEMP::CPTEST) cout<<"Kleiss strategy."<<endl;/////////////////////////////
@@ -618,6 +622,10 @@ const bool Recoil<Recoil_Strategy::Test>::Calculate() {
   return true;
 
 }
+
+
+
+}    //eo extra namespace ADICIC
 
 
 

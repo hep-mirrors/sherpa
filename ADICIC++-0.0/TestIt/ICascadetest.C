@@ -143,9 +143,9 @@ int main() {
       cout<<cas.MaxChainNumber()<<endl;
       if(i==total) cascop.Print();
       cout<<endl;
-      cout<<"\e[7m\e[31m                    \e[0m";
-      cout<<"\e[1m\e[40m\e[33mSTART: "<<i<<"\e[0m";
-      cout<<"\e[7m\e[31m                    \e[0m\n\n";
+      cout<<"\033[7m\033[31m                    \033[0m";
+      cout<<"\033[1m\033[40m\033[33mSTART: "<<i<<"\033[0m";
+      cout<<"\033[7m\033[31m                    \033[0m\n\n";
 
       if(H.EvolveCascade()); else ++fail;
 
@@ -154,9 +154,9 @@ int main() {
       cout<<"Momentum conservation check = ";
       cout<<cas.CheckMomentumConservation(test)<<"\t"<<test<<"\n\n";
 
-      cout<<"\e[7m\e[31m                    \e[0m";
-      cout<<"\e[1m\e[40m\e[33mSTOP: "<<i<<"\e[0m";
-      cout<<"\e[7m\e[31m                    \e[0m"<<endl;
+      cout<<"\033[7m\033[31m                    \033[0m";
+      cout<<"\033[1m\033[40m\033[33mSTOP: "<<i<<"\033[0m";
+      cout<<"\033[7m\033[31m                    \033[0m"<<endl;
 
       if(i==total) {
 	cas.Print();

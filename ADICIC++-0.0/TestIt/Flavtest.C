@@ -30,6 +30,7 @@ using namespace ADICIC;
 
 class Base {
 public:
+  virtual ~Base() {}
   virtual void Hello() { cout<<"Base says hello."<<endl;}
 };
 class Real : public Base {

@@ -73,7 +73,7 @@ Chain_Handler::Chain_Handler()
     m_nii(-7), m_k2tcomp(0.0), p_cha(NULL),
     m_dh1(), m_dh2(),
     p_dhwait(&m_dh1), p_dhaciv(&m_dh2), p_dhtemp(NULL),
-    i_fix(NULL), i_run(NULL) {
+    i_fix(), i_run() {
 
   ++s_count;
 
@@ -103,7 +103,7 @@ Chain_Handler::Chain_Handler(Chain& cha)
     m_nii(-7), m_k2tcomp(0.0), p_cha(NULL),
     m_dh1(), m_dh2(),
     p_dhwait(&m_dh1), p_dhaciv(&m_dh2), p_dhtemp(NULL),
-    i_fix(NULL), i_run(NULL) {
+    i_fix(), i_run() {
 
   ++s_count;
 
@@ -291,8 +291,8 @@ void Chain_Handler::CleanUpDHs() {
   p_dhwait=&m_dh1;
   p_dhaciv=&m_dh2;
   p_dhtemp=NULL;
-  i_fix=NULL;
-  i_run=NULL;
+  i_fix=list<Dipole*>::iterator();
+  i_run=list<Dipole*>::iterator();
 }
 
 
@@ -330,6 +330,7 @@ Chain_Handler::FindTheDipole<Chain_Evolution_Strategy::Production>() {
 
   static const bool isfalse=ProductionStrategyInfo();    //Gives warning.
 
+  i_fix=p_cha->DipolePointerList().end();
   i_run=p_cha->DipolePointerList().begin();
   bool spico=p_cha->ParticleNumber()<dpa.evo.ChainCorrelationLimit();
 
@@ -379,7 +380,7 @@ Chain_Handler::FindTheDipole<Chain_Evolution_Strategy::Production>() {
 
   }
 
-  return bool(i_fix!=NULL);
+  return bool(i_fix!=p_cha->DipolePointerList().end());
 
 }
 
@@ -392,6 +393,7 @@ Chain_Handler::FindTheDipole<Chain_Evolution_Strategy::Emission>() {
 
   static const bool isfalse=EmissionStrategyInfo();    //Gives warning.
 
+  i_fix=p_cha->DipolePointerList().end();
   i_run=p_cha->DipolePointerList().begin();
   bool spico=p_cha->ParticleNumber()<dpa.evo.ChainCorrelationLimit();
 
@@ -416,14 +418,14 @@ Chain_Handler::FindTheDipole<Chain_Evolution_Strategy::Emission>() {
 
   }
 
-  if(i_fix==NULL) m_k2tcomp=0.0;
+  if(i_fix==p_cha->DipolePointerList().end()) m_k2tcomp=0.0;
   i_run=p_cha->DipolePointerList().begin();
   for(; i_run!=p_cha->DipolePointerList().end(); ++i_run) {
     Dipole& dip=**i_run;
     if(i_run!=i_fix) dip.SetBootScale()=m_k2tcomp;
   }
 
-  return bool(i_fix!=NULL);
+  return bool(i_fix!=p_cha->DipolePointerList().end());
 
 }
 

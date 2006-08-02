@@ -56,7 +56,8 @@ Sudakov_Group<DT>::Sudakov_Group(const Radiation::Type ratyp)
 }
 
 
-template<>
+
+namespace ADICIC { template<>
 Sudakov_Group<Dipole::qqbar>::Sudakov_Group(const Radiation::Type ratyp)
   : Sudakov_Calculator(),
     m_radtype(ratyp),
@@ -72,7 +73,7 @@ Sudakov_Group<Dipole::qqbar>::Sudakov_Group(const Radiation::Type ratyp)
     assert(gsud);
     l_sud.push_back(gsud);
   }
-}
+}}
 
 
 
