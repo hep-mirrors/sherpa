@@ -1,0 +1,32 @@
+# Decay: tau- --> nu_tau nu_eb e- 
+#        0    --> 1      2     3  
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+  MassSmearing    = 0    # 0...turn off mass smearing for this decay's products
+                         # 1...turn on mass smearing for this decay's products
+</Options>
+
+<Phasespace>
+#   1.0 Isotropic
+  1.0 Dalitz_W_23
+</Phasespace>
+
+<ME>
+  8.033333333e-6 V_A_Current[1,0] V_A_Current[3,2]
+</ME>
+
+<V_A_Current[1,0]>
+  v      =  1.                    # V-A structure of tau-nutau
+  a      =  1.
+</V_A_Current[1,0]>
+
+<V_A_Current[3,2]>
+  v      =  1.                    # V-A structure of e-nue
+  a      =  1.
+</V_A_Current[3,2]>
+
+<Result>
+  3.84631e-13 1.62074e-15 4.0905e-12;
+</Result>

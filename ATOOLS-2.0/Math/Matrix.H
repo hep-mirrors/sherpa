@@ -6,6 +6,7 @@
 
 #include "Vector.H"
 #include "MyComplex.H"
+#include "ComplexVector.H"
 
 namespace ATOOLS {
 
@@ -43,9 +44,11 @@ namespace ATOOLS {
     CMatrix(int);
     CMatrix(const CMatrix&);
     ~CMatrix();
+    CMatrix         Conjugate();
     int             Rank()                  { return m_rank; }
     Complex       * operator[](int i)       { return p_m[i]; }
     const Complex * operator[](int i) const { return p_m[i]; }
+    ComplexVec4D operator* (const ComplexVec4D& cvec);
   };
 
 

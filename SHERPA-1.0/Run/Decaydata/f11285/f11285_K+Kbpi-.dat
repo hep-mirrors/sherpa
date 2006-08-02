@@ -1,10 +1,21 @@
 # Decay: f(1)(1285) --> K+ Kb pi- 
 #        0          --> 1  2  3   
-Channels {
-	AlwaysIntegrate = 0;   ! 0...read results and skip integration
-	                       ! 1...don't read results and integrate
-	Isotropic 1;
-}
-Result {
-   2.13811e-06 1.29563e-08 1.13728e-05;
-}
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+  MassSmearing    = 0    # 0...turn off mass smearing for this decay's products
+                         # 1...turn on mass smearing for this decay's products
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  1.0 Isotropic
+</ME>
+
+<Result>
+  2.12252e-06 1.28582e-08 1.13744e-05;
+</Result>

@@ -91,8 +91,9 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(EXTRAXSLIBS)
   
   HADRONSDIR="\${top_builddir}/HADRONS++-0.0"
-  HADRONSINCS="-I\${HADRONSDIR}/Main -I\${HADRONSDIR}/ME_Library -I\${HADRONSDIR}/PS_Library"
-  HADRONSLIBS="-lHadronsMain -lHadronsMEs -lHadronsPSs"
+  HADRONSINCS="-I\${HADRONSDIR}/Main -I\${HADRONSDIR}/ME_Library -I\${HADRONSDIR}/PS_Library \
+               -I\${HADRONSDIR}/Current_Library"
+  HADRONSLIBS="-lHadronsMain -lHadronsMEs -lHadronsPSs -lHadronsCurrents"
   AC_SUBST(HADRONSDIR)
   AC_SUBST(HADRONSINCS)
   AC_SUBST(HADRONSLIBS)

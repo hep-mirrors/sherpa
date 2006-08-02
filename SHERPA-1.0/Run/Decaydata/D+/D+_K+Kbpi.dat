@@ -1,12 +1,21 @@
 # Decay: D+ --> K+ Kb pi 
 #        0  --> 1  2  3  
-Channels {
-	AlwaysIntegrate = 0;   # 0...read results and skip integration
-	                       # 1...don't read results and integrate
-	MassSmearing    = 1;   # 0...turn off mass smearing for this decay's products
-	                       # 1...turn on mass smearing for this decay's products
-	Isotropic 1;
-}
-Result {
-   3.2482e-05 1.24026e-07 0.000187258;
-}
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+  MassSmearing    = 0    # 0...turn off mass smearing for this decay's products
+                         # 1...turn on mass smearing for this decay's products
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  1.0 Isotropic
+</ME>
+
+<Result>
+  3.22144e-05 1.25529e-07 0.000187258;
+</Result>

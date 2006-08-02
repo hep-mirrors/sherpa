@@ -6,19 +6,10 @@
 #include <string>
 #include <utility>
 #include "Message.H"
+#include "Tools.H"
+#include "Getter_Function.H"
 
 namespace HADRONS {
-
-  typedef std::map<std::string,double> String_Map;
-
-  struct GeneralModel: public String_Map {
-  public:
-    inline double operator()(const std::string &tag,const double &def) const 
-    {
-      String_Map::const_iterator fit(find(tag));
-      return fit!=end()?fit->second:def;
-    }
-  }; 
 
   class HD_ME_Base {
   protected:
@@ -45,6 +36,8 @@ namespace HADRONS {
     virtual void   AddVector(double,double) {}
 	virtual void   SetModelParameters( struct GeneralModel _md ) {};
   }; // end of class HD_ME_Base
+
+  typedef ATOOLS::Getter_Function<HD_ME_Base,Flavour_Info> HD_ME_Getter_Function;
 
   class Isotropic : public HD_ME_Base {
   public:

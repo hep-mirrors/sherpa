@@ -94,8 +94,10 @@ dnl       AHADIC++-0.0/ClusterFormation/Makefile \
 	  AHADIC++-0.0/Tools/Makefile \
 	  AHADIC++-0.0/Makefile \
 	  HADRONS++-0.0/Main/Makefile \
+          HADRONS++-0.0/Current_Library/Makefile \
 	  HADRONS++-0.0/ME_Library/Makefile \
 	  HADRONS++-0.0/PS_Library/Makefile \
+          HADRONS++-0.0/Run/Makefile \
 	  HADRONS++-0.0/Makefile \
 	  ANALYSIS-1.0/Makefile \
 	  ANALYSIS-1.0/Main/Makefile \

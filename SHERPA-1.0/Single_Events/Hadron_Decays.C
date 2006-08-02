@@ -35,11 +35,6 @@ Hadron_Decays::~Hadron_Decays()
 
 bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight) 
 {
-#ifdef USING__Hadrons
-  if( p_dechandlers->find("Sherpa") != p_dechandlers->end() ) {
-    (*p_dechandlers)["Sherpa"]->GetHadrons()->CleanBlobHdcMap();
-  }
-#endif
   msg.Debugging()<<om::red<<"Hadron_Decays::Treat() _bloblist="<<_bloblist<<om::green<<std::endl;
   PROFILE_HERE;
   if(p_dechandlers->empty()) return false;
@@ -189,4 +184,6 @@ void Hadron_Decays::CleanUp() {
 //  msg_Tracking()<<"-------------------- Hadron_Decays::ConstructBlob: ready -------"<<endl;
 //}
 
-void Hadron_Decays::Finish(const std::string &) {}
+void Hadron_Decays::Finish(const std::string &) {
+  delete (*p_dechandlers)["Sherpa"]->GetHadrons();
+}

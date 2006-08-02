@@ -63,11 +63,11 @@ Single_Channel * HD_Channel_Selector::GetChannel(
     int nout, 
     const Flavour * flavs, 
     string name,
-    GeneralModel & md )
+    GeneralModel const & md )
 {
   if (flavs[0].Kfcode() == kf::K ) return NULL;
   if ( nin>1 || nout<2 ) {
-    msg.Error()<<"Error in HD_Channel_Selector::GetChannel : "<<endl
+    msg.Error()<<METHOD<<": Error: "<<endl
            <<"   No PS for channel ("<<nin<<" -> "<<nout<<" )"<<endl
            <<"   Return nothing and hope for the best."<<endl;
     return NULL;
@@ -86,6 +86,7 @@ Single_Channel * HD_Channel_Selector::GetChannel(
       if( ci.res1==string("photon") ) kfres = kf::photon;
       if( ci.res1==string("rho(770)+") ) kfres = kf::rho_770_plus;
       if( ci.res1==string("K*(892)+") ) kfres = kf::K_star_892_plus;
+      if( ci.res1==string("rho(1700)+") ) kfres = kf::rho_1700_plus;
       if( ci.res1==string("W") ) kfres = kf::W;
       SimpleResonanceFlavour res(
           Flavour(kfres).IDName(),
@@ -110,7 +111,7 @@ Single_Channel * HD_Channel_Selector::GetChannel(
     }
   }
 
-  msg.Error()<<"Error in HD_Channel_Selector::GetChannel : "<<endl
+  msg.Error()<<METHOD<<": Error: "<<endl
     <<"   No channel for ("<<nin<<" -> "<<nout<<") with name "<<name<<endl
          <<"   Return nothing and hope for the best."<<endl;
   return NULL;
@@ -118,31 +119,23 @@ Single_Channel * HD_Channel_Selector::GetChannel(
 
 ////////// class HD_PS_Base /////////
 
-HD_PS_Base::HD_PS_Base( 
-    Hadron_Decay_Channel * hdc, 
-    string _path,
-    vector<string> & _pst, 
-    bool & mustinit, 
-    struct GeneralModel &_locmd,
-    bool read_dc ) :
+HD_PS_Base::HD_PS_Base( Hadron_Decay_Channel * hdc ) :
   Multi_Channel("hadron decay channel"), p_hdc(hdc),
-  p_channelselector(new HD_Channel_Selector), m_file(string("")),
-  m_res(-1.), m_error(0.), m_max(-1.), m_flux(1./(2.*hdc->Flavours()[0].Mass())),
-  m_read_dcfile( read_dc ),
-  m_path(_path), m_foundPS( false )
+  p_channelselector(new HD_Channel_Selector),
+  m_res(-1.), m_error(0.), m_max(-1.), m_flux(1./(2.*hdc->Flavours()[0].Mass()))
 {
-  if (_pst.size()>2) m_file = _pst[2];      // filename of DC file
-  mustinit = Construct(_locmd);             // call Construct to do the rest
-  delete p_channelselector;
 }
 
 
-HD_PS_Base::~HD_PS_Base() {}
+HD_PS_Base::~HD_PS_Base()
+{
+  delete p_channelselector; p_channelselector=NULL;
+}
 
 bool HD_PS_Base::IsChannel( string name )
 {
   GeneralModel ghost_md;
-  Single_Channel * sc = p_channelselector->GetChannel( 1, p_hdc->NOut(), 
+  Single_Channel * sc = p_channelselector->GetChannel( 1, p_hdc->NOut(),
                                                        p_hdc->Flavours(),
                                                        name, ghost_md );
   if (sc==NULL) return 0;
@@ -150,124 +143,9 @@ bool HD_PS_Base::IsChannel( string name )
   return 1;
 }
 
-void HD_PS_Base::Initialise() 
+bool HD_PS_Base::AddChannel(string name,double weight, GeneralModel const & md)
 {
-  CalculateNormalisedWidth();
-  WriteOut();
-}
-
-bool HD_PS_Base::Construct( GeneralModel & _md )
-{
-  bool mustinit (true);
-  if (m_file!=string("") && m_read_dcfile) {        // in case there is a DC file => read it !
-    msg_Tracking()<<"HD_PS_Base::Construct(...) : read "<<m_path<<m_file<<endl;
-    vector<vector<string> > helpsvv;
-    Data_Reader reader = Data_Reader(string("|"),string(";"),string("!"));
-    reader.SetAddCommandLine(false);
-    reader.AddComment("#");
-    reader.AddComment("//");
-    reader.SetInputPath(m_path);
-    reader.SetInputFile(m_file);
-    reader.SetMatrixType(mtc::transposed);
-    if(!reader.MatrixFromFile(helpsvv)) {
-      msg.Error()<<"ERROR in HD_PS_Base::Construct(...) :\n"
-         <<"   Read in failure "<<m_path<<m_file<<", will abort."<<endl;
-      abort();
-    }
-    
-    string name;
-    double weight;
-    bool skipresult (false);
-    vector<string> channels_vector;
-    vector<double> ch_weights;
-    channels_vector.clear();
-    ch_weights.clear();
-    for (int i=0;i<helpsvv.size();i++) {
-      if ( helpsvv[i][0]==string("Channels") ) {
-        i++;                                            // next line
-        while (helpsvv[i][0]!=string("}")) {
-          weight=1.;
-          if (helpsvv[i][0]==string("AlwaysIntegrate")) {
-            skipresult = atoi( helpsvv[i][2].c_str() );
-          }
-          else if(helpsvv[i][0]==string("MassSmearing")) {
-            p_hdc->SetMassSmearing( atoi(helpsvv[i][2].c_str()) );
-          }
-          else {
-            if (helpsvv[i].size()>1) {                  // if factor is given
-              weight=atof(helpsvv[i][1].c_str());
-            }
-            else weight = 1.;
-            if (IsChannel(helpsvv[i][0])) {             // if it is a channel that Sherpa can cope with
-              channels_vector.push_back( helpsvv[i][0] );       // save it for later
-              ch_weights.push_back( weight );
-            }
-          }
-          i++;
-        }
-        m_foundPS = 1;                              
-        if (channels_vector.size()==0) {                // no channel found
-          AddChannel( string("Isotropic"), 1., _md );   //   take Rambo
-          skipresult = true;                            //   and don't read Result
-          m_foundPS = 0;                
-        }
-      }
-      if ( helpsvv[i][0] == string("Parameters") ) {
-
-        // in DC file: complex values are to be given in "abs" "phase"
-        i++;
-        while ( helpsvv[i][0] != string("}") ) {
-          if ( helpsvv[i][1] == string("=")) {
-            if( helpsvv[i].size() == 3 ) {        // <name> = <real value>
-              _md[helpsvv[i][0]] = ToType<double> (
-                  reader.Interpreter()->Interprete(helpsvv[i][2]) );
-            }
-            if( helpsvv[i].size() == 4 ) {        // <name> = <complex value>
-              _md[helpsvv[i][0]+string("_abs")] = ToType<double> (
-                  reader.Interpreter()->Interprete(helpsvv[i][2]) );
-              _md[helpsvv[i][0]+string("_phase")] = ToType<double> (
-                  reader.Interpreter()->Interprete(helpsvv[i][3]) );
-            }
-          }
-          if ( helpsvv[i][2] == string("=")) {
-            if( helpsvv[i].size() == 4 ) {        // <name> <index> = <real value>
-              _md[helpsvv[i][0]+string("_")+helpsvv[i][1]] = ToType<double> (
-                  reader.Interpreter()->Interprete(helpsvv[i][3]) );
-            }
-            if( helpsvv[i].size() == 5 ) {        // <name> <index> = <complex value>
-              _md[helpsvv[i][0]+string("_")+helpsvv[i][1]+string("_abs")] 
-                = ToType<double> ( reader.Interpreter()->Interprete(helpsvv[i][3]) );
-              _md[helpsvv[i][0]+string("_")+helpsvv[i][1]+string("_phase")] 
-                = ToType<double> ( reader.Interpreter()->Interprete(helpsvv[i][4]) );
-            }
-          }
-          i++;
-        }
-      }
-      if (helpsvv[i][0]==string("Result") && !skipresult ) {
-        i++;
-        while (helpsvv[i][0]!=string("}")) {
-          m_res   = atof(helpsvv[i][0].c_str());
-          m_error = atof(helpsvv[i][1].c_str());
-          m_max   = atof(helpsvv[i][2].c_str());
-          i++;
-        }
-        mustinit = false;   // return: no need to integrate
-      }
-    }
-    for (int i=0; i<channels_vector.size(); i++) {
-      AddChannel( channels_vector[i], ch_weights[i], _md ); 
-    }
-  }
-  else {                    // in case there is no DC file
-    AddChannel( string("Isotropic"), 1., _md );
-  }
-  return mustinit;          // return: it has to be integrated or not
-}
-
-bool HD_PS_Base::AddChannel(string name,double weight,GeneralModel & md) 
-{
-  Single_Channel * sc = p_channelselector->GetChannel( 1, p_hdc->NOut(), 
+  Single_Channel * sc = p_channelselector->GetChannel( 1, p_hdc->NOut(),
                                                        p_hdc->Flavours(),
                                                        name, md );
   if (sc==NULL) return 0;
@@ -276,27 +154,30 @@ bool HD_PS_Base::AddChannel(string name,double weight,GeneralModel & md)
   return 1;
 }
 
-void HD_PS_Base::CalculateNormalisedWidth() {
-  msg.Out()<<"HD_PS_Base::CalculateNormalisedWidth() for "
+vector<double> HD_PS_Base::CalculateNormalisedWidth() {
+  msg.Info()<<"HD_PS_Base::CalculateNormalisedWidth() for "
     <<p_hdc->ChannelName()<<endl;
   Reset();
   long int iter = Number()*5000*int(pow(2.,int(p_hdc->NOut())-2));
   int maxopt    = Number()*int(pow(2.,2*(int(p_hdc->NOut())-2)));
-  
+
   long int n;
   int      opt=0;
   double   value, oldvalue=0., sum=0., sum2=0., result=-1., disc;
-  bool     maxincrease, simple=false;
-  bool     isotropic_me = (p_hdc->GetME()->METype() == "Isotropic" )? 1 : 0;
+  bool     simple=false;
+  bool isotropic_me = false; // fixme
+  if( p_hdc->GetCurrents().size()==0 &&
+      p_hdc->GetMEs().size()==1 &&
+      p_hdc->GetMEs()[0].second->METype() == "Isotropic" ) isotropic_me = true;
+
   while(opt<maxopt || (result>0. && m_error/result>0.01) ) {
-    maxincrease = false;
     for (n=1;n<iter+1;n++) {
       value = p_hdc->Differential(NULL,NULL);
       sum  += value;
       sum2 += ATOOLS::sqr(value);
       AddPoint(value);
-      if (value>m_max) { 
-        m_max = value; maxincrease = true; 
+      if (value>m_max) {
+        m_max = value;
       }
       if (value!=0. && value==oldvalue) { simple = true; break; }
       oldvalue = value;
@@ -312,98 +193,19 @@ void HD_PS_Base::CalculateNormalisedWidth() {
     msg.Info()<<"     result (w/o flux): "<<result<<" +/- "<<m_error<<" ("<<m_error/result*100.<<" %)"<<endl;
     if (isotropic_me && m_error/result < 0.01) break;
     if(m_error/result < 0.0007) break;
-  } 
+  }
   m_res  = m_flux*sum/n;
   m_error *= m_flux;
   disc   = sqr(m_res)/((sum2*sqr(m_flux)/n - sqr(m_res))/(n-1));
   if (disc>0) m_error  = m_res/sqrt(disc);
   msg.Info()<<"     result (incl. flux): "<<m_res<<" +/- "<<m_error<<" ("<<m_error/m_res*100.<<" %)"<<endl;
   // note: the m_max is w/o flux factor
-} 
 
-
-bool HD_PS_Base::WriteOut() {
-  if ( m_read_dcfile ) {                // if DC file should be read
-    system((string("mv \"")+m_path+m_file+string("\" \"")+m_path+m_file+string(".old\"")).c_str());
-
-    ofstream to((m_path+m_file).c_str(),ios::out);
-
-    // writes header
-    to<<"# Decay: "<<p_hdc->ChannelName()<<endl;
-    to<<"#        "<<p_hdc->ChannelNameNumbers()<<endl;
-    // copy Channels, ME and Dalitz parameters
-    char buffer[100];
-    ifstream from;
-    from.open((m_path+m_file+string(".old")).c_str());
-    while (from.getline(buffer,100)) {
-      if (buffer==string("Channels {")) {
-        to<<"Channels {\n";
-        from.getline(buffer,100);
-        do {
-          to<<buffer<<endl;
-          from.getline(buffer,100);
-        } while (buffer!=string("}")); 
-        if (!m_foundPS) {                       // if there was no channel given
-          for (int i=0;i<channels.size();i++) {
-            if (channels[i]->Name()==string("Rambo") ||
-                channels[i]->ChID()==string("Iso2"))
-              to<<"    Isotropic"<<" "<<channels[i]->Alpha()<<";"<<endl;
-            else
-              to<<"    "<<channels[i]->ChID()<<" "<<channels[i]->Alpha()<<";"<<endl;
-          }
-        }
-        to<<"}"<<endl;
-      }
-      if (buffer==string("Parameters {")) {
-        to<<"Parameters {"<<endl;
-        while (buffer!=string("}")) {
-          from.getline(buffer,100);
-          to<<buffer<<endl;
-        }
-      }
-      if (buffer==string("Dalitz-Parameters {")) {
-        to<<"Dalitz-Parameters {"<<endl;
-        while (buffer!=string("}")) {
-          from.getline(buffer,100);
-          to<<buffer<<endl;
-        }
-      }
-    }
-    from.close();
-
-    // write out result
-    to<<"Result {"<<endl;
-    to<<"   "<<m_res<<" "<<m_error<<" "<<m_max<<";"<<endl;
-    to<<"}"<<endl;
-    to.close();
-  } // if (read DC file)
-  else {                                // else create DC file                                  
-    ofstream to;
-    to.open((m_path+m_file).c_str(),ios::out);
-
-
-    // writes header
-    to<<"# Decay: "<<p_hdc->ChannelName()<<endl;
-    to<<"#        "<<p_hdc->ChannelNameNumbers()<<endl;
-    // write out channels
-    to<<"Channels {\n"
-      <<"\tAlwaysIntegrate = 0;   # 0...read results and skip integration\n"
-      <<"\t                       # 1...don't read results and integrate\n";
-    to<<"\tMassSmearing    = 1;   # 0...turn off mass smearing for this decay's products\n"
-      <<"\t                       # 1...turn on mass smearing for this decay's products\n";
-    for (int i=0;i<channels.size();i++) {
-      if (channels[i]->Name()==string("Rambo") ||
-          channels[i]->ChID()==string("Iso2"))
-        to<<"\tIsotropic"<<" "<<channels[i]->Alpha()<<";"<<endl;
-      else
-        to<<"\t"<<channels[i]->ChID()<<" "<<channels[i]->Alpha()<<";"<<endl;
-    }
-    to<<"}"<<endl;
-    // write out result
-    to<<"Result {"<<endl;
-    to<<"   "<<m_res<<" "<<m_error<<" "<<m_max<<";"<<endl;
-    to<<"}"<<endl;
-    to.close();
-  }
-  return 1;
+  vector<double> results;
+  results.push_back(m_res);
+  results.push_back(m_error);
+  results.push_back(m_max);
+  return results;
 }
+
+

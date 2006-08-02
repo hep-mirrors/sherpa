@@ -1,0 +1,13 @@
+# -------------------------------------------------------
+# -- Files for hadron decay tables ----------------------
+# -------------------------------------------------------
+
+# particle -> directory/ name.dat do not forget the / and space
+# 511   -> BDecays/        BDecays.dat;
+521   -> B+Decays/           B+Decays.dat;
+# 421   -> DDecays/            DDecays.dat;
+# 423   -> DStar2007Decays/    DStar2007Decays.dat;
+# 111   -> Pi0Decays/          Pi0Decays.dat;
+# 211   -> PiDecays/           PiDecays.dat;
+# 523   -> BStar+Decays/       BStar+Decays.dat;
+# 513   -> BStarDecays/        BStarDecays.dat;

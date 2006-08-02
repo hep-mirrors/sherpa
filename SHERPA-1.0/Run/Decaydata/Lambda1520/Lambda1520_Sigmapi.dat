@@ -1,12 +1,21 @@
 # Decay: Lambda(1520) --> Sigma pi 
 #        0            --> 1     2  
-Channels {
-	AlwaysIntegrate = 0;   # 0...read results and skip integration
-	                       # 1...don't read results and integrate
-	MassSmearing    = 1;   # 0...turn off mass smearing for this decay's products
-	                       # 1...turn on mass smearing for this decay's products
-	Isotropic 1;
-}
-Result {
-   0.00457262 3.43929e-11 0.0138962;
-}
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+  MassSmearing    = 0    # 0...turn off mass smearing for this decay's products
+                         # 1...turn on mass smearing for this decay's products
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  1.0 Isotropic
+</ME>
+
+<Result>
+  0.00457262 3.43929e-11 0.0138962;
+</Result>

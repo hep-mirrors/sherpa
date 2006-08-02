@@ -3,6 +3,8 @@
 
 using namespace std;
 
+#include "ComplexVector.H"
+
 #ifndef SQRT_05
 #define SQRT_05 0.70710678118654757
 #endif
@@ -27,10 +29,15 @@ namespace HADRONS
       XYZFunc( int nout, const ATOOLS::Vec4D *p, const ATOOLS::Flavour *fl);
 	  XYZFunc( int nout, const ATOOLS::Vec4D *p, const ATOOLS::Flavour *fl, int k0n );
 
+      ~XYZFunc() {
+        delete [] p_mom;
+        delete [] p_flav;
+      }
+      
 	  void Delete()
 	  {
-		delete [] p_mom;
-		delete [] p_flav;
+// 		delete [] p_mom;
+// 		delete [] p_flav;
 	  }
 
 	  Complex Z( const int t1, const int t2, const int t3, const int t4,
@@ -63,7 +70,7 @@ namespace HADRONS
       Complex S( const int s, const int i, const ATOOLS::Vec4D p, Complex eta );
       Complex S( const int s, const ATOOLS::Vec4D p, Complex eta, const int j );
 	  Complex Q(short hel); 
-
+      ATOOLS::ComplexVec4D L( const int t1, const int t2, const int hel_comb, const Complex cR, const Complex cL );
   };
 
 

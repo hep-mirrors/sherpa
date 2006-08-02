@@ -1,12 +1,21 @@
 # Decay: D(s)+ --> phi(1020) rho(770)+ pi 
 #        0     --> 1         2         3  
-Channels {
-	AlwaysIntegrate = 0;   # 0...read results and skip integration
-	                       # 1...don't read results and integrate
-	MassSmearing    = 1;   # 0...turn off mass smearing for this decay's products
-	                       # 1...turn on mass smearing for this decay's products
-	Isotropic 1;
-}
-Result {
-   9.7135e-08 9.70154e-10 1.3004e-06;
-}
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+  MassSmearing    = 0    # 0...turn off mass smearing for this decay's products
+                         # 1...turn on mass smearing for this decay's products
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  1.0 Isotropic
+</ME>
+
+<Result>
+  9.76954e-08 9.76595e-10 1.30035e-06;
+</Result>

@@ -1,10 +1,21 @@
 # Decay: tau- --> K- pi pi pi pi nu_tau 
 #        0    --> 1  2  3  4  5  6      
-Channels {
-	AlwaysIntegrate = 0;   ! 0...read results and skip integration
-	                       ! 1...don't read results and integrate
-	Isotropic 1;
-}
-Result {
-   1.22233e-17 4.38104e-20 3.20687e-16;
-}
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+  MassSmearing    = 0    # 0...turn off mass smearing for this decay's products
+                         # 1...turn on mass smearing for this decay's products
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  1.0 Isotropic
+</ME>
+
+<Result>
+  1.2324e-17 4.41631e-20 3.27518e-16;
+</Result>

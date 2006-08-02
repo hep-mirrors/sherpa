@@ -1,5 +1,5 @@
 MAKE = make 
 
-SUBDIRS       =	Main ME_Library PS_Library
+SUBDIRS       =	Main Current_Library ME_Library PS_Library Run
 
 EXTRA_DIST    = @SVNINCLUDE@

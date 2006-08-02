@@ -1,6 +1,7 @@
 #include "Vector.H"
 #include "Flavour.H"
 #include "XYZFuncs.H"
+#include "Tools.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -284,3 +285,82 @@ Complex XYZFunc::Q(short hel)
   q -= X(0,m_N,0,hel,Complex(1.,0.),Complex(-1.,0.));	
   return q/sqrt(p_flav[0].PSMass()-SQRT_05*m_mu[0]*m_eta[0])/2./m_mu[0];
 }
+/*
+ComplexVec4D XYZFunc::L( const int t1, const int t2, const int hel_comb, const Complex cR, const Complex cL )
+{
+  ComplexVec4D l( Complex(0.,0.), Complex(0.,0.), Complex(0.,0.), Complex(0.,0.) );
+  Vec4D tmp[4];
+  tmp[0] = Vec4D(1.0,0.0,0.0,0.0);
+  tmp[1] = Vec4D(0.0,SQRT_05,SQRT_05,0.0);
+  tmp[2] = Vec4D(0.0,SQRT_05,-SQRT_05,0.0);
+  tmp[3] = Vec4D(0.0,0.0,0.0,1.0);
+  
+  for(int i=0; i<4; i++) {
+    double sign=(i==0 ? 1.0 : -1.0);
+    l[i]=sign*X( t1, tmp[i], t2, hel_comb, cR, cL );
+  }
+  return l;
+}
+*/
+
+ComplexVec4D XYZFunc::L( const int t1, const int t3, const int hel_comb, const Complex cR, const Complex cL )
+{
+  ComplexVec4D l( Complex(0.,0.), Complex(0.,0.), Complex(0.,0.), Complex(0.,0.) );
+  ATOOLS::Vec4D k0, k1;
+  switch( m_k0n ) {
+    case 0  : 
+      k0 = ATOOLS::Vec4D(1., SQRT_05, 0., SQRT_05);
+      k1 = ATOOLS::Vec4D(0., 0., 1., 0.);
+      break;
+    case 2  : 
+      k0 = ATOOLS::Vec4D(1., SQRT_05, SQRT_05, 0.);
+      k1 = ATOOLS::Vec4D(0., 0., 0., 1.);
+      break;
+    default : 
+      k0 = ATOOLS::Vec4D(1., 0., SQRT_05, SQRT_05);
+      k1 = ATOOLS::Vec4D(0., 1., 0., 0.);
+  }
+  
+  Complex A, B;
+  ATOOLS::Vec4D tmp_cross, tmp_cross2;
+  switch( hel_comb ) {
+    case 0: // ++
+      A = 2.*cR/m_eta[t1]/m_eta[t3];
+      tmp_cross = cross(k0,p_mom[t1],p_mom[t3]);
+      for(int i=0; i<4; i++) {
+        l[i] = A*( (k0*p_mom[t1])*p_mom[t3][i] + (k0*p_mom[t3])*p_mom[t1][i] - (p_mom[t1]*p_mom[t3])*k0[i] + Complex(0.0,1.0)*tmp_cross[i] );
+        l[i] += 2.0*cL*m_mu[t1]*m_mu[t3]*k0[i];
+      }
+      break;
+    case 1: // +-
+      A = 2.0*cR*m_mu[t3]/m_eta[t1];
+      B = 2.0*cL*m_mu[t1]/m_eta[t3];
+      tmp_cross = cross( k1, k0, p_mom[t1]);
+      tmp_cross2 = cross( k1, k0, p_mom[t3]);
+      for(int i=0; i<4; i++) {
+        l[i] = A*( -k0[i]*(k1*p_mom[t1]) + k1[i]*(k0*p_mom[t1]) + Complex(0.0,1.0)*tmp_cross[i] )
+              +B*( -k1[i]*(k0*p_mom[t3]) + k0[i]*(k1*p_mom[t3]) - Complex(0.0,1.0)*tmp_cross2[i] );
+      }
+      break;
+    case 2: // -+
+      A = -2.0*cL*m_mu[t3]/m_eta[t1];
+      B = -2.0*cR*m_mu[t1]/m_eta[t3];
+      tmp_cross = cross( k1, k0, p_mom[t1]);
+      tmp_cross2 = cross( k1, k0, p_mom[t3]);
+      for(int i=0; i<4; i++) {
+        l[i] = A*( -k0[i]*(k1*p_mom[t1]) + k1[i]*(k0*p_mom[t1]) - Complex(0.0,1.0)*tmp_cross[i] )
+            +B*( -k1[i]*(k0*p_mom[t3]) + k0[i]*(k1*p_mom[t3]) + Complex(0.0,1.0)*tmp_cross2[i] );
+      }
+      break;
+    case 3: // ++
+      A = 2.*cL/m_eta[t1]/m_eta[t3];
+      tmp_cross = cross(k0,p_mom[t1],p_mom[t3]);
+      for(int i=0; i<4; i++) {
+        l[i] = A*( (k0*p_mom[t1])*p_mom[t3][i] + (k0*p_mom[t3])*p_mom[t1][i] - (p_mom[t1]*p_mom[t3])*k0[i] - Complex(0.0,1.0)*tmp_cross[i] );
+        l[i] += 2.0*cR*m_mu[t1]*m_mu[t3]*k0[i];
+      }
+      break;
+  }
+  return l;
+}
+

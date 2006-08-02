@@ -1,10 +1,21 @@
 # Decay: f(1)(1420) --> K*(892)+b K+ 
 #        0          --> 1         2  
-Channels {
-	AlwaysIntegrate = 0;   ! 0...read results and skip integration
-	                       ! 1...don't read results and integrate
-	Isotropic 1;
-}
-Result {
-   0.00318348 0 0.00908057;
-}
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+  MassSmearing    = 0    # 0...turn off mass smearing for this decay's products
+                         # 1...turn on mass smearing for this decay's products
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  1.0 Isotropic
+</ME>
+
+<Result>
+  0.00318348 0 0.00908057;
+</Result>

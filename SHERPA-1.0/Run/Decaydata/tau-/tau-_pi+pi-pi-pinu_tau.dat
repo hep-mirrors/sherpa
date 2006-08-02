@@ -1,0 +1,83 @@
+# Decay: tau- --> pi+ pi- pi- pi nu_tau 
+#        0    --> 1   2   3   4  5      
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+  MassSmearing    = 0    # 0...turn off mass smearing for this decay's products
+                         # 1...turn on mass smearing for this decay's products
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+#   8.033333333e-6 V_A_Current[5,0] FourPionThreeCharged_Current[1,4,2,3]
+  1.0 Tau_Four_Pion_3
+</ME>
+
+<Tau_Four_Pion_3>
+  v      =  1.                    # V-A structure of tau-nutau
+  a      =  1.
+
+  FORM_FACTOR   = 1         # 1=KuehnSantamaria
+  
+  # properties of resonances
+  Mass_rho(770)+              = 0.79
+  Width_rho(770)+             = 0.151
+  Mass_rho(1450)+             = 1.523
+  Width_rho(1450)+    = 0.4
+  Mass_rho(1700)+             = 1.7
+  Width_rho(1700)+    = 0.235
+  Mass_omega(782)         = 0.79
+  Width_omega(782)    = 0.0085
+  Mass_a(1)(1260)+    = 1.23
+  Width_a(1)(1260)+   = 0.6
+  Mass_sigma              = 0.86
+  Width_sigma             = 0.99
+  Mass_f(0)(980)          = 0.98
+  Width_f(0)(980)             = 0.07
+  
+  # relative strength of rho resonances
+  # for omega-pi contribution
+  # for chiral part
+  beta        = -0.25                 # rho_1450
+  gamma = -0.00                       # rho_1700
+  # for anomalous part
+  sigma = -0.2                        # rho_1450
+  
+  # coupling constants
+  # for anomalous part of omega-pi current
+  frho        = 0.266                 # in [Mrho^2]
+  grop        = 12.924                # rho-omega-pi coupling in [GeV^-1]
+  Go3p        = 1476.                 # omega-3pi coupling in [GeV^-3]
+  
+  # amplitudes for partial waves (magnitude, phase)
+  alpha 0 = 1. 0.                     # omega_pi contribution
+  alpha 1 = 90 M_PI/2.                # a1_pi contribution
+  alpha 2 = 90 0                      # sigma_rho contribution
+  alpha 3 = 90 M_PI/2.                # f0_rho contribution
+  
+  # weighted rho resonances for partial waves (magnitude, phase)
+  beta_omega_pi       0 = 1. 0.
+  beta_omega_pi       1 = 0. 0.
+  beta_omega_pi       2 = 0. 0.
+  beta_omega_pi       3 = 0. 0.
+  beta_a1_pi      0 = 1. 0.
+  beta_a1_pi      1 = 0. 0.
+  beta_a1_pi      2 = 0. 0.
+  beta_a1_pi      3 = 0. 0.
+  beta_sigma_rho      0 = 1. 0.
+  beta_sigma_rho      1 = 0. 0.
+  beta_sigma_rho      2 = 0. 0.
+  beta_sigma_rho      3 = 0. 0.
+  beta_f0_rho     0 = 1. 0.
+  beta_f0_rho     1 = 0. 0.
+  beta_f0_rho     2 = 0. 0.
+  beta_f0_rho     3 = 0. 0.
+</Tau_Four_Pion_3>
+
+<Result>
+  1.68665e-18 1.81841e-21 6.77465e-16;
+</Result>

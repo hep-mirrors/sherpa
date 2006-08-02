@@ -73,11 +73,12 @@ void F_VF::operator()(
   Complex ampl (0.,0.);
   for( int h=0; h<4; h++ ) {        // for all hel. comb. (b,t)
     for( int l=0; l<4; l++ ) {      // sum over lambda (s,l,t1,t2)
-      ATOOLS::Vec4D* eps = Tools::ComplexBosonPolarizationVector(p,l,sqr(80.419));
+      ComplexVec4D eps = Tools::ComplexBosonPolarizationVectorC(p,l,sqr(80.419));
+      Vec4D epsreal = Vec4D( eps[0].real(), eps[1].real(), eps[2].real(), eps[3].real() );
+      Vec4D epsimag = Vec4D( eps[0].imag(), eps[1].imag(), eps[2].imag(), eps[3].imag() );
       ampl = Complex(0.,0.);
-      if( !eps[0].IsZero() && !eps[0].Nan() ) ampl += F.X(m_fermion, eps[0], 0, h, m_cR, m_cL);
-      if( !eps[1].IsZero() && !eps[1].Nan() ) ampl += Complex(0.,1.)*F.X(m_fermion, eps[1], 0, h, m_cR, m_cL);
-      delete[] eps;
+      if( !epsreal.IsZero() && !epsreal.Nan() ) ampl += F.X(m_fermion, epsreal, 0, h, m_cR, m_cL);
+      if( !epsimag.IsZero() && !epsimag.Nan() ) ampl += Complex(0.,1.)*F.X(m_fermion, epsimag, 0, h, m_cR, m_cL);
       ampl *= m_global;
       _ampls_tensor->push_back( ampl );
     }

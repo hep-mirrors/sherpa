@@ -33,14 +33,14 @@ namespace HADRONS {
 
   private:
     std::string           m_path, m_file, m_constfile;
-	Channel_Map         * p_channelmap;
-	ATOOLS::Decay_Table * p_table;                 
-	std::map<ATOOLS::kf::code,ATOOLS::Decay_Table *> 
-	                    * p_decaymap;
+    Channel_Map         * p_channelmap;
+    ATOOLS::Decay_Table * p_table;
+    std::map<ATOOLS::Flavour,ATOOLS::Decay_Table *>
+                        * p_decaymap;
     std::map<int,Hadron_Decay_Channel*> 
                           m_blob_hdc_map;       // to save the decay channel for every hadron decay blob
     GeneralModel          m_md0;                // starter model
-	
+    
     void ReadInConstants();
     void ReadInDecayTables(bool & createbooklet);
     ATOOLS::Decay_Table * InitialiseOneDecayTable(std::vector<std::string>);
@@ -51,7 +51,7 @@ namespace HADRONS {
         DoublePair br=DoublePair(1.,1.), 
         bool eoi=true ); 
 
-	bool				  m_createbooklet;
+    bool                  m_createbooklet;
 
   public: 
     Hadrons(
@@ -59,95 +59,96 @@ namespace HADRONS {
         std::string _file=std::string("HadronDecays.dat"),
         std::string _constfile=std::string("HadronConstants.dat")
            );
-	
-	bool                   FindDecay( const Flavour & );
-	Hadron_Decay_Channel * ChooseDecayChannel();
-	void                   ChooseDecayKinematics( Vec4D * _p, 
+    ~Hadrons();
+
+    bool                   FindDecay( const Flavour & );
+    Hadron_Decay_Channel * ChooseDecayChannel();
+    double                 ChooseMixingAndLifeTime( Particle* particle );
+    void                   ChooseDecayKinematics( Vec4D * _p,
                                                   Hadron_Decay_Channel * _hdc,
                                                   ATOOLS::Spin_Density_Matrix * sigma);
-    ATOOLS::Blob* CreateDecayBlobSkeleton(
-        Particle            * particle, 
-        Blob_List           * blob_list, 
-        Particle_List       * part_list );
-	Spin_Density_Matrix    PerformDecay( Blob * blob, 
-		                                 Blob_List * blob_list, 
-		                                 Particle_List * part_list,
+    ATOOLS::Blob*          CreateDecayBlobSkeleton(Particle      * particle,
+                                                   Blob_List     * blob_list,
+                                                   Particle_List * part_list );
+    double*                GetSmearedMasses(Blob* blob);
+    Spin_Density_Matrix    PerformDecay( Blob * blob,
+                                         Blob_List * blob_list,
+                                         Particle_List * part_list,
                                          ATOOLS::Spin_Density_Matrix * sigma );
 
-	std::map<ATOOLS::kf::code,ATOOLS::Decay_Table *> * GetDecayMap() { return p_decaymap; }
-    
+    std::map<ATOOLS::Flavour,ATOOLS::Decay_Table *> *
+                           GetDecayMap() { return p_decaymap; }
+
     void InsertIntoBlobHdcMap( std::pair<int,Hadron_Decay_Channel*> p ) {
       m_blob_hdc_map.insert( p );
     }
-    void CleanBlobHdcMap() {
-      m_blob_hdc_map.clear();
-    }
+    void CleanBlobHdcMap() { m_blob_hdc_map.clear(); }
 
-	void CreateBookletNow();
+    void CreateBookletNow();
   }; // end of class Hadrons
   
   /*!
-	\mainpage
+    \mainpage
 
-	The HADRONS package is the tool which deals with hadron decays. It provides a collection
-	of ME and PS handlings. 
+    The HADRONS package is the tool which deals with hadron decays. It provides a collection
+    of ME and PS handlings.
 
-	\section files Dat-Files
+    \section files Dat-Files
 
-	The idea is to save necessery information for the decays in files. Throughout this
-	documentation three different terms are used each of which stands for a group of dat-files:
-	- <b> Hadron decays file</b>: by default it is the file \c HadronDecays.dat, 
-	  which stores information about the DT-files.
+    The idea is to save necessery information for the decays in files. Throughout this
+    documentation three different terms are used each of which stands for a group of dat-files:
+    - <b> Hadron decays file</b>: by default it is the file \c HadronDecays.dat,
+      which stores information about the DT-files.
       Frequently used constants are written in \c HadronConstants.dat.
-	- <b>DT-file, Decay-table-file</b>: each hadron has its own DT-file 
-	  which stores its decay modes and the
-	  DC-filenames of the corresponding channel.
-	- <b> DC-file, Decay channel file</b>: it has all necessery information about a complete
-	  decay channel
-	.
+    - <b>DT-file, Decay-table-file</b>: each hadron has its own DT-file
+      which stores its decay modes and the
+      DC-filenames of the corresponding channel.
+    - <b> DC-file, Decay channel file</b>: it has all necessery information about a complete
+      decay channel
+    .
 
-	\section libraries Libraries
+    \section libraries Libraries
 
-	The HADRONS package has a couple of libraries, they are grouped by
-	-# <b>PS Libraries</b>: tools to deal with the phase space of a certain decay.
-	-# <b>ME Libraries</b>: tools to calculate the matrix element of a certain decay.
-	.
+    The HADRONS package has a couple of libraries, they are grouped by
+    -# <b>PS Libraries</b>: tools to deal with the phase space of a certain decay.
+    -# <b>ME Libraries</b>: tools to calculate the matrix element of a certain decay.
+    .
 
-	\section sc The Implementation of Spin Correlations
+    \section sc The Implementation of Spin Correlations
 
     The usage with spin correlation from a programming point of view is a bit involved.
     A detailed explanation is given in the description of the class HADRONS::HD_ME_Base.
 
-	
-  */	
-	
+    
+  */    
+    
   /*!
-	\file Hadrons.H
-	\brief Declares the class HADRONS::Hadrons
+    \file Hadrons.H
+    \brief Declares the class HADRONS::Hadrons
 
-	This code can be found in the directory <tt>Main</tt>.
-  */	
+    This code can be found in the directory <tt>Main</tt>.
+  */    
   /*!
-	\class Hadrons
-	\brief Main class for hadron decay handling
-  */	
+    \class Hadrons
+    \brief Main class for hadron decay handling
+  */    
   
   /*!
-	\fn Hadrons::Hadrons(std::string _path=std::string("./"), std::string _file=std::string("HadronDecays.dat"), std::string _constfile=std::string("HadronConstants.dat") )
-	\brief Constructor for the hadron decay handling
+    \fn Hadrons::Hadrons(std::string _path=std::string("./"), std::string _file=std::string("HadronDecays.dat"), std::string _constfile=std::string("HadronConstants.dat") )
+    \brief Constructor for the hadron decay handling
 
-	This constructor calls Hadrons::ReadInConstants and Hadrons::ReadInDecayTables 
+    This constructor calls Hadrons::ReadInConstants and Hadrons::ReadInDecayTables
     to read frequently used constants \c HadronConstants.dat and the Hadron Decays file \c HadronDecays.dat.
   */
   /*!
-	\fn Hadrons::ReadInDecayTables()
-	\brief Reads decay tables and evaluates them
-	
-	It reads the Hadron decays file and extracts the filenames of the DT-files.
-	These files however
-	are evaluated in Hadrons::InitialiseOneDecayTable whose argument is a vector of strings which was created
-	using the ATOOLS::Data_Reader::MatrixFromFile method.
-  */	
+    \fn Hadrons::ReadInDecayTables()
+    \brief Reads decay tables and evaluates them
+    
+    It reads the Hadron decays file and extracts the filenames of the DT-files.
+    These files however
+    are evaluated in Hadrons::InitialiseOneDecayTable whose argument is a vector of strings which was created
+    using the ATOOLS::Data_Reader::MatrixFromFile method.
+  */    
   /*!
     \fn Hadrons::ReadInConstants()
     \brief Reads frequently used constants
@@ -164,13 +165,13 @@ namespace HADRONS {
     */
   
   /*!
-	\fn Hadrons::InitialiseOneDecayTable(std::vector<std::string>)
-	\brief Evaluates a decay table of a hadron
+    \fn Hadrons::InitialiseOneDecayTable(std::vector<std::string>)
+    \brief Evaluates a decay table of a hadron
 
-	This Method uses the Decay_Table_Reader::FillDecayTable method to create the decay table of the considered
-	hadron. It also calls Decay_Table_Reader::FillInMatrixElementsAndPS that actually reads the
+    This Method uses the Decay_Table_Reader::FillDecayTable method to create the decay table of the considered
+    hadron. It also calls Decay_Table_Reader::FillInMatrixElementsAndPS that actually reads the
     DT-file.
-  */	
+  */    
   /*!
     \fn Hadrons::FindDecay(const ATOOLS::Flavour & Decayer)
     

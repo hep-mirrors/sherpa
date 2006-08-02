@@ -91,6 +91,7 @@ Histogram * ResonanceFlavour::CreateGHistogram( ResonanceFlavour res1, Resonance
   else {
     msg.Error()<<"ERROR in ResonanceFlavour::CreateGHistogram(...) : "<<endl
       <<"     Histogram was created recently, but cannot be read."<<endl
+      <<"     Tried to read "<<fn<<"."<<endl
       <<"     Don't know what to do. Will abort."<<endl;
     abort();
   }

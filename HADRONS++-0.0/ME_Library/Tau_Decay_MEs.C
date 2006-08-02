@@ -8,9 +8,18 @@ using namespace HADRONS;
 using namespace ATOOLS;
 using namespace std;
 
+#define DEFINE_ME_GETTER(CLASS,NAME,TAG)                              \
+DECLARE_GETTER(NAME,TAG,HD_ME_Base,Flavour_Info);                     \
+HD_ME_Base* NAME::operator()(const Flavour_Info &parameters) const    \
+{ return new CLASS(parameters.nout, parameters.flavs); }               \
+void NAME::PrintInfo(std::ostream &str,const size_t width) const      \
+{ str<<"implement me"; }                                              \
+
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //  leptonic decay  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DEFINE_ME_GETTER(Tau_Lepton,Tau_Lepton_Getter,"Tau_Lepton");
 
 Tau_Lepton::Tau_Lepton( int _nout, Flavour *_fl ) :
   HD_ME_Base(_nout,_fl),
@@ -68,6 +77,8 @@ void Tau_Lepton::operator()(
 //  1 pion/kaon mode  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+DEFINE_ME_GETTER(Tau_Pseudo,Tau_Pseudo_Getter,"Tau_Pseudo");
+
 Tau_Pseudo::Tau_Pseudo( int _nout, Flavour *_fl ) :
   HD_ME_Base(_nout,_fl),
   m_nutau(-1),
@@ -88,7 +99,7 @@ void Tau_Pseudo::SetModelParameters( GeneralModel _md )
       _md("Vud", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 0).real()) : 
       _md("Vus", rpa.gen.ComplexMatrixElement(string("CKM"), 0, 1).real());
   double fxx  = m_pionmode ? _md("fpi", 0.0924) : _md("fK", 0.113);
-  double GF   = _md("GF", rpa.gen.ScalarConstant(string("GF")) ); 
+  double GF   = _md("GF", rpa.gen.ScalarConstant(string("GF")) );
   m_global = fxx * GF * Vxx;
   m_cR   = Complex(0.,_md("v",1.)-_md("a",1.));
   m_cL   = Complex(0.,_md("v",1.)+_md("a",1.));
@@ -104,9 +115,9 @@ void Tau_Pseudo::operator()(
   // create amplitudes tensor
   _ampls_tensor->clear();
   for( int h=0; h<4; h++ ) {
-      _ampls_tensor->push_back( 
-          F.X(m_nutau,m_pion,0,h,m_cR,m_cL) * m_global
-      );
+    _ampls_tensor->push_back( 
+        -1.0 * Complex(0.0,1.0) * F.X(m_nutau,m_pion,0,h,m_cR,m_cL) * m_global
+    );
   }
   F.Delete();
   // create index bookkeeping (using internal numbers 0 -> 1 2)
@@ -120,6 +131,8 @@ void Tau_Pseudo::operator()(
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //  2 pion/kaon mode  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DEFINE_ME_GETTER(Tau_Two_Pion,Tau_Two_Pion_Getter,"Tau_Two_Pion");
 
 Tau_Two_Pion::Tau_Two_Pion( int _nout, Flavour *_fl ) :
   HD_ME_Base(_nout,_fl),
@@ -255,6 +268,8 @@ void Tau_Two_Pion::operator()(
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //   pion-kaon mode  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DEFINE_ME_GETTER(Tau_Pion_Kaon,Tau_Pion_Kaon_Getter,"Tau_Pion_Kaon");
 
 Tau_Pion_Kaon::Tau_Pion_Kaon( int _nout, Flavour *_fl ) :
   HD_ME_Base(_nout,_fl),
@@ -470,6 +485,7 @@ void Tau_Pion_Kaon::operator()(
 //  3 pseudo mode  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+DEFINE_ME_GETTER(Tau_Three_Pseudo,Tau_Three_Pseudo_Getter,"Tau_Three_Pseudo");
  
 Tau_Three_Pseudo::Tau_Three_Pseudo( int _nout, Flavour *_fl ) :
   HD_ME_Base(_nout,_fl),
@@ -1127,6 +1143,8 @@ void Tau_Three_Pseudo::operator()(
 //  4 pion mode (3prong)  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+DEFINE_ME_GETTER(Tau_Four_Pion_3,Tau_Four_Pion_3_Getter,"Tau_Four_Pion_3");
+
 Tau_Four_Pion_3::Tau_Four_Pion_3( int _nout, Flavour *_fl ) :
   HD_ME_Base(_nout,_fl),
   m_nutau(-1),
@@ -1465,6 +1483,8 @@ void Tau_Four_Pion_3::operator()(
 //  4 pion mode (1prong)  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+DEFINE_ME_GETTER(Tau_Four_Pion_1,Tau_Four_Pion_1_Getter,"Tau_Four_Pion_1");
+
 Tau_Four_Pion_1::Tau_Four_Pion_1( int _nout, Flavour *_fl ) :
   HD_ME_Base(_nout,_fl),
   m_nutau(-1),
@@ -1510,9 +1530,9 @@ void Tau_Four_Pion_1::SetModelParameters( GeneralModel _md )
   p_lorenz = new KS(_md);
 }
  
-void Tau_Four_Pion_1::LorenzBase::SetPrivates( Complex * _X, ATOOLS::Vec4D * _p ) 
+void Tau_Four_Pion_1::LorenzBase::SetPrivates( Complex * _x, ATOOLS::Vec4D * _p ) 
 {
-  p_X  = _X;
+  p_X  = _x;
   p_p  = _p;
   p_p[0] = p_p[1]+p_p[2]+p_p[3]+p_p[4];           // = q
   m_q2 = p_p[0].Abs2();

@@ -354,6 +354,24 @@ CMatrix::~CMatrix() {
   delete[] p_m;
 }
 
+CMatrix CMatrix::Conjugate(){
+  CMatrix conju = CMatrix(m_rank);
+  for(int i=0; i<m_rank; i++) {
+     for(int j=0; j<m_rank; j++) {
+       conju[i][j] = conj(p_m[j][i]);
+     }
+  }
+  return conju;
+}
+
+ComplexVec4D CMatrix::operator* (const ComplexVec4D& cvec) {
+  return ComplexVec4D(p_m[0][0]*cvec[0] + p_m[0][1]*cvec[1] + p_m[0][2]*cvec[2] + p_m[0][3]*cvec[3], 
+                      p_m[1][0]*cvec[0] + p_m[1][1]*cvec[1] + p_m[1][2]*cvec[2] + p_m[1][3]*cvec[3],
+                      p_m[2][0]*cvec[0] + p_m[2][1]*cvec[1] + p_m[2][2]*cvec[2] + p_m[2][3]*cvec[3],
+		      p_m[3][0]*cvec[0] + p_m[3][1]*cvec[1] + p_m[3][2]*cvec[2] + p_m[3][3]*cvec[3]); 
+
+}
+
 
 
 //=============================
