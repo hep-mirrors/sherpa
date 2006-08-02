@@ -93,7 +93,6 @@ Two_Particle_Observable_Base::Two_Particle_Observable_Base(const String_Matrix &
     }
     if (m_listname=="") m_listname="Analysed";
   }
-  std::cout<<METHOD<<": m_name="<<m_name<<std::endl;
 }
 
 Two_Particle_Observable_Base::Two_Particle_Observable_Base(const Two_Particle_Observable_Base * old) :
