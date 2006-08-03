@@ -5,10 +5,13 @@
 #include "Hadrons.H"
 #include "Model_Base.H"
 #include "Standard_Model.H"
+
+#ifdef USING__ROOT
 #include "TFile.h"
 #include "TCanvas.h"
 #include "TH1D.h"
 #include "TApplication.h"
+#endif
 
 #include "Data_Reader.H"
 
@@ -19,7 +22,7 @@ using namespace MODEL;
 
 int main(int argc, char *argv[])
 {
-
+#ifdef USING__ROOT
   if(argc!=2) {
     cout<<"Usage: ./Hadrons <PDG_CODE>"<<endl;
     abort();
@@ -125,5 +128,5 @@ int main(int argc, char *argv[])
 	     <<stdexception.what()<<" ..."<<endl;
     terminate();
   }
-
+#endif
 }
