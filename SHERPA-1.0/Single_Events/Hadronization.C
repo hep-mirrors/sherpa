@@ -25,32 +25,19 @@ Hadronization::Hadronization(Beam_Remnant_Handler * _beamremnant,Fragmentation_H
 
 Hadronization::~Hadronization() {}
 
-bool Hadronization::Treat(ATOOLS::Blob_List *bloblist,double &weight) 
+Return_Value::code Hadronization::Treat(ATOOLS::Blob_List *bloblist,double &weight) 
 {
   PROFILE_LOCAL("Hadronization::Treat");
   if (bloblist->empty()) {
     msg.Error()<<"Hadronization::Treat("<<bloblist<<","<<weight<<"): "<<endl
 	       <<"   Blob list contains "<<bloblist->size()<<" entries."<<endl
 	       <<"   Continue and hope for the best."<<endl;
-    return false;
+    return Return_Value::Error;
   }
-  /////////////////////////////////////////////////////////////////////////////
-  //std::cout<<" => before FillBeamBlobs(bloblist)\n";
-  //for(ATOOLS::Blob_List::const_iterator blit=bloblist->begin();
-  //    blit!=bloblist->end(); ++blit)
-  //  std::cout<<**blit<<"\n";
-  /////////////////////////////////////////////////////////////////////////////
   bool result;
   result=p_beamremnanthandler->FillBeamBlobs(bloblist);
   result=p_beamremnanthandler->FillBunchBlobs(bloblist);
-  p_fragmentationhandler->PerformFragmentation(bloblist);
-  /////////////////////////////////////////////////////////////////////////////
-  //std::cout<<" => after PerformFragmentation(bloblist)\n";
-  //for(ATOOLS::Blob_List::const_iterator blit=bloblist->begin();
-  //    blit!=bloblist->end(); ++blit)
-  //  std::cout<<**blit<<"\n";
-  /////////////////////////////////////////////////////////////////////////////
-  return false;
+  return p_fragmentationhandler->PerformFragmentation(bloblist);
 }
 
 

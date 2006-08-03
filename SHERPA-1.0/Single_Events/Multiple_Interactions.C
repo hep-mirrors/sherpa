@@ -53,21 +53,21 @@ Multiple_Interactions::~Multiple_Interactions()
 {
 }
 
-bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist) 
+Return_Value::code Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist) 
 {
   p_bloblist=bloblist;
-  if (m_vetoed) return false;
+  if (m_vetoed) return Return_Value::Nothing;
   if (!p_bloblist->FourMomentumConservation()) {
     msg.Error()<<"Multiple_Interactions::CheckBlobList(..): "
 	       <<"Retry event "<<rpa.gen.NumberOfDicedEvents()<<std::endl;
     p_bloblist->Clear();
-    return false;
+    return Return_Value::Retry_Event;
   }
   for (Blob_List::const_iterator bit=bloblist->begin();
        bit!=bloblist->end();++bit) {
     if ((*bit)->Type()==btp::Hard_Collision ||
 	(*bit)->Type()==btp::Signal_Process) 
-      if ((*bit)->Status()!=0) return false;
+      if ((*bit)->Status()!=0) return Return_Value::Retry_Event;
   }
   for (short unsigned int i=0;i<2;++i) {
     m_emax[i]=p_remnants[i]->GetBeam()->Energy();
@@ -102,16 +102,16 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
 	ATOOLS::msg.Error()<<"Multiple_Interactions::CheckBlobList(..): "
 			   <<"Shower rejection rate is "
 			   <<nrej/ntot<<"."<<std::endl;
-      return false;
+      return Return_Value::Retry_Event;
     } 
   }
-  if (m_diced) return true;
+  if (m_diced) return Return_Value::Success;
   Blob *signal=bloblist->FindFirst(btp::Signal_Process);
   if (!m_diced) {
     m_ptmax=ATOOLS::rpa.gen.Ecms()/2.0;
     if (VetoHardProcess(signal)) {
       m_ptmax=0.0;
-      return true;
+      return Return_Value::Success;
     }
   }
   switch (p_mihandler->ScaleScheme()) {
@@ -203,21 +203,31 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
   if (!m_diced) {
     signal->AddData("MI_Scale",new Blob_Data<double>(m_ptmax));
   }
-  return m_ptmax!=std::numeric_limits<double>::max();
+  if (m_ptmax!=std::numeric_limits<double>::max()) return Return_Value::Success;
+  return Return_Value::Nothing;
 }
 
-bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
+Return_Value::code Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
 {
 #ifdef USING__Amisic
   PROFILE_HERE;
   if (p_mihandler->Type()==MI_Handler::None ||
-      MI_Base::StopGeneration()) return false;
+      MI_Base::StopGeneration()) return Return_Value::Nothing;
   if (bloblist->empty()) {
     msg.Error()<<"Multiple_Interactions::Treat(): "
 		       <<"Incoming blob list is empty!"<<std::endl;
-    return false;
+    return Return_Value::Error;
   }
-  if (!CheckBlobList(bloblist)) return false;
+  switch (int(CheckBlobList(bloblist))) {
+  case int(Return_Value::Success)     : break;
+  case int(Return_Value::Retry_Event) : return Return_Value::Retry_Event;
+  case int(Return_Value::Nothing)     : return Return_Value::Nothing;
+  default:
+    msg.Error()<<"Error in "<<METHOD<<":"<<std::endl
+	       <<"  Unknown return value for 'CheckBlobList',"<<std::endl
+	       <<"  Will continue and hope for the best."<<std::endl;
+    return Return_Value::Nothing;
+  }
   p_mihandler->SetScaleMax(m_emax[0],2);
   p_mihandler->SetScaleMax(m_emax[1],3);
   if (!m_diced) {
@@ -250,17 +260,17 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
 		      <<"Cannot extract parton from hadron. \n"
 		      <<*blob->InParticle(0)<<std::endl;
 	delete blob;
-	return true;
+	return Return_Value::Success;
       }
     }
     bloblist->push_back(blob);
-    return true;
+    return Return_Value::Success;
   }
   delete blob;
   p_mihandler->ISRHandler()->Reset(0);
   p_mihandler->ISRHandler()->Reset(1);
 #endif
-  return false;
+  return Return_Value::Nothing;
 }
 
 bool Multiple_Interactions::VetoHardProcess(ATOOLS::Blob *const blob)

@@ -6,6 +6,7 @@ GZIPSTREAMHEADERS = Gzip_Stream.H
 endif
 
 libToolsOrg_la_SOURCES        = \
+				Return_Value.C \
 				Shell_Tools.C \
 				Return_Value.C \
 				Object.C \

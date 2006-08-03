@@ -12,10 +12,11 @@ namespace ATOOLS {
     static std::map<std::string,unsigned long int> s_error_counter;
     static std::map<std::string,unsigned long int> s_retry_method_counter;
     static std::map<std::string,unsigned long int> s_retry_phase_counter;
-    static unsigned long int                       s_retry_event_counter;
+    static std::map<std::string,unsigned long int> s_retry_event_counter;
   public:
+    Return_Value() {};
     void Statistics();
-    void IncWarnings(std::string);
+    void IncWarning(std::string);
     void IncError(std::string);
     void IncRetryMethod(std::string);
     void IncRetryPhase(std::string);

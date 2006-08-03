@@ -33,22 +33,22 @@ Hadron_Decays::~Hadron_Decays()
 {
 }
 
-bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight) 
+Return_Value::code Hadron_Decays::Treat(ATOOLS::Blob_List * bloblist, double & weight) 
 {
-  msg.Debugging()<<om::red<<"Hadron_Decays::Treat() _bloblist="<<_bloblist<<om::green<<std::endl;
+  msg.Debugging()<<om::red<<"Hadron_Decays::Treat() bloblist="<<bloblist<<om::green<<std::endl;
   PROFILE_HERE;
-  if(p_dechandlers->empty()) return false;
+  if(p_dechandlers->empty()) return Return_Value::Nothing;
 
-  if (_bloblist->empty()) {
+  if (bloblist->empty()) {
     msg.Error()<<"Potential error in Hadron_Decays::Treat."<<endl
-	       <<"   Incoming blob list contains "<<_bloblist->size()<<" entries."<<endl
+	       <<"   Incoming blob list contains "<<bloblist->size()<<" entries."<<endl
 	       <<"   Continue and hope for the best."<<endl;
-    return 0;
+    return Return_Value::Error;
   }
    
   // get spin correlation tensor from Signal_Process blob
   bool spincorr (false); 
-  Blob_Data_Base *info=(*_bloblist->FindFirst(btp::Signal_Process))
+  Blob_Data_Base *info=(*bloblist->FindFirst(btp::Signal_Process))
     ["Spin_Correlation_Tensor"];
   SP(Spin_Correlation_Tensor) sct = NULL;
   if (info) {
@@ -59,7 +59,7 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
   // treat blob
   Blob * myblob(NULL);
   bool found(true);
-  Hadron_Decay_Handler * hdhandler;				// pointer on considered HD Handler
+  Hadron_Decay_Handler * hdhandler;		// pointer on considered HD Handler
   Particle * myout(NULL);
   int index (0);
   Spin_Density_Matrix * sigma   = NULL;         // SDM for decaying particle
@@ -67,8 +67,8 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
   while (found) {
     found = false;
     bool keeprunning (true);
-    for (Blob_List::iterator blit=_bloblist->begin();
-	 blit!=_bloblist->end() && keeprunning;++blit) {
+    for (Blob_List::iterator blit=bloblist->begin();
+	 blit!=bloblist->end() && keeprunning;++blit) {
       if ((*blit)->Type()==btp::Fragmentation ||
           (*blit)->Type()==btp::Hadron_Decay) {
         myblob = (*blit);
@@ -110,7 +110,7 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
                       decmatr = new Spin_Density_Matrix();      // decay matrix
                     }
                     msg.Debugging()<<"    using HADRONS for outparticle "<<myout->Flav()<<": "<<endl;
-                    hdhandler->FillHadronDecayBlobs( myout, _bloblist, sigma, decmatr );
+                    hdhandler->FillHadronDecayBlobs( myout, bloblist, sigma, decmatr );
                     if( decmatr && spincorr ) {
                       decmatr->Normalise();
                       sct->Contract(index,decmatr);             // contract over decay matrix
@@ -124,7 +124,8 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
                     msg.Error()<<"Error in Hadron_Decays::Treat (Sherpa): "<<endl
                       <<"   Unstable particle has a decayblob."<<endl
                       <<"   Terminate run."<<endl;
-                    abort();
+		    rvalue.IncError(METHOD);
+		    return Return_Value::Error;
                   }
                   decayed = true;						
                 }
@@ -136,7 +137,7 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
                 if(hdhandler->GetLund()->FindDecay(myout) ) {
                   if (myout->DecayBlob()==NULL) {
                     msg.Debugging()<<"    using Lund for outparticle "<<myout->Flav()<<": "<<endl;
-                    hdhandler->FillHadronDecayBlobs( myout, _bloblist );
+                    hdhandler->FillHadronDecayBlobs( myout, bloblist );
                     // contract over unit decay matrix to reduce size of sct
                     if( spin && spincorr ) sct->Contract(index,NULL );
                     found       = true;
@@ -161,16 +162,16 @@ bool Hadron_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
               abort();
             }
             myblob->SetStatus(1);
-                  }
+	  }
         }
-        if ( (*blit)->Id() == (*(_bloblist->end()-1))->Id() ) {
+        if ( (*blit)->Id() == (*(bloblist->end()-1))->Id() ) {
           keeprunning = false;
         }
       }
     }
   }
   msg.Debugging()<<"--------- Hadron_Decays::Treat - FINISH -------------"<<om::reset<<endl;
-  return false;							// can't do anything more
+  return Return_Value::Nothing;
 }
 
 void Hadron_Decays::CleanUp() { 

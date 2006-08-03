@@ -43,6 +43,12 @@ bool Beam_Remnant_Handler::
 FillBunchBlobs(ATOOLS::Blob_List *const  bloblist,
 	       ATOOLS::Particle_List *const particlelist)
 {
+  int bunchblobcount(2);
+  for (Blob_List::iterator bit=bloblist->begin();
+	 bit!=bloblist->end();++bit) {
+    if ((*bit)->Type()==btp::Beam) bunchblobcount++;
+  }
+  if (bunchblobcount>1) return false;
   PROFILE_HERE;
   p_bloblist=bloblist;
   p_particlelist=particlelist;
@@ -101,6 +107,13 @@ FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
       THROW(fatal_error,"No matrix element handler found.");
   }
   if (!m_fill) return false;
+  int beamblobcount(2);
+  for (Blob_List::iterator bit=bloblist->begin();
+	 bit!=bloblist->end();++bit) {
+    if ((*bit)->Type()==btp::Beam) beamblobcount++;
+  }
+  if (beamblobcount>1) return false;
+	
   p_beamblob[1]=p_beamblob[0]=NULL;
   Blob_List::iterator endblob=bloblist->end(); 
   for (short unsigned int i=0;i<2;++i) {
