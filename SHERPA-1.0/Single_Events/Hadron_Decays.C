@@ -185,5 +185,9 @@ void Hadron_Decays::CleanUp() {
 //}
 
 void Hadron_Decays::Finish(const std::string &) {
-  delete (*p_dechandlers)["Sherpa"]->GetHadrons();
+  if( p_dechandlers->find("Sherpa") != p_dechandlers->end() ) {
+    if( (*p_dechandlers)["Sherpa"]->GetHadrons()) {
+      delete (*p_dechandlers)["Sherpa"]->GetHadrons();
+    }
+  }
 }
