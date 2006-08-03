@@ -48,7 +48,7 @@ One_Particle_Observable_Base::One_Particle_Observable_Base(const String_Matrix &
     m_type  = HistogramType(parameters[0][4]);
     p_histo = new Histogram(m_type,m_xmin,m_xmax,nbins);
 
-    m_listname = parameters[0].size()>6?parameters[0][5]:"Analysed";
+    m_listname = parameters[0].size()>5?parameters[0][5]:"Analysed";
 
     MyStrStream str;
     str<<obsname<<m_flav<<".dat";

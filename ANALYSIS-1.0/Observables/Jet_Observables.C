@@ -108,7 +108,7 @@ Jet_Observable_Base::Jet_Observable_Base(unsigned int type,double xmin,double xm
     str>>m_name;
   }
 
-  p_histo =  0;
+  p_histo = new Histogram(type,m_xmin,m_xmax,nbins);
   for (unsigned int i=0;i<m_maxn+1;++i)
     m_histos.push_back(new Histogram(type,m_xmin,m_xmax,nbins));
 }
@@ -206,7 +206,7 @@ Two_Jet_Observable_Base::Two_Jet_Observable_Base(unsigned int type,double xmin,d
     str>>m_name;
   }
 
-  p_histo =  0;
+  p_histo = new Histogram(type,m_xmin,m_xmax,nbins);
   unsigned int num = (m_maxn*m_maxn-m_maxn)/2;
   for (unsigned int i=0;i<num+1;++i)
     m_histos.push_back(new Histogram(type,m_xmin,m_xmax,nbins));
