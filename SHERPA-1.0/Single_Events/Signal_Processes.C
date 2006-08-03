@@ -33,20 +33,20 @@ Signal_Processes::~Signal_Processes()
 {
 }
 
-bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
+Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 {
   PROFILE_HERE;
   if (bloblist->empty()) {
     msg.Error()<<"Potential error in Signal_Processes::Treat."<<std::endl
 	       <<"   Incoming blob list contains no entries."<<std::endl
 	       <<"   Continue and hope for the best."<<std::endl;
-    return 0;
+    return Return_Value::Error;
   }
   
   Blob * myblob;
   bool found = 1;
   bool hit   = 0;
-
+  
   while (found) {
     found = 0;
     for (Blob_List::iterator blit=bloblist->begin();
@@ -91,7 +91,7 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 		  parton2->SetNumber();
 		  parton2->SetStatus(2);
 		  parton2->SetMomentum(parton2->Momentum()
-				      +xs->Momenta()[i]);
+				       +xs->Momenta()[i]);
 		  isr[i]->AddToInParticles(parton2);
 		  isr[i]->SetBeam(i);
 		  if (p_remnants[i]!=NULL) {
@@ -190,7 +190,8 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
       }
     }
   }
-  return hit;
+  if (hit) return Return_Value::Success;
+  return Return_Value::Nothing;
 }
 
 void Signal_Processes::CleanUp() 
@@ -295,7 +296,7 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,
     }
     else {
       msg.Error()<<"Error in Signal_Processes::FillBlob."<<std::endl
-        <<"   No hard decay tables for "<<particle->Flav()<<". Abort."<<std::endl;
+		 <<"   No hard decay tables for "<<particle->Flav()<<". Abort."<<std::endl;
       abort();
     }
   }
@@ -319,8 +320,8 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,
   blob->AddData("XS_NumberOfTrials",new Blob_Data<int>(xsecntrial));
   Spin_Correlation_Tensor* SCT = p_mehandler->GetSpinCorrelations();
   if (SCT!=NULL)
-  blob->AddData("Spin_Correlation_Tensor",
-		new Blob_Data<SP(Spin_Correlation_Tensor) >(SCT));
+    blob->AddData("Spin_Correlation_Tensor",
+		  new Blob_Data<SP(Spin_Correlation_Tensor) >(SCT));
   return success;
 }
 

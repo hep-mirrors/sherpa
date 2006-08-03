@@ -13,8 +13,8 @@ using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
-MC_Interface::MC_Interface(Lund_Interface * _pythia) :
-  p_pythia(_pythia), m_mode(1)
+MC_Interface::MC_Interface(Lund_Interface * lund) :
+  p_lund(lund), m_mode(1)
 {
   m_name      = std::string("MC_Interface:Pythia");
   m_type      = eph::External_MC;
@@ -24,14 +24,14 @@ MC_Interface::MC_Interface(Lund_Interface * _pythia) :
 MC_Interface::~MC_Interface() { }
 
 
-bool MC_Interface::Treat(Blob_List * blobs, double & weight)
+Return_Value::code MC_Interface::Treat(Blob_List * blobs, double & weight)
 {
   PROFILE_LOCAL("MC_Interface::Treat");
-  if (blobs->size()>0) return false;
+  if (blobs->size()>0) return Return_Value::Nothing;
   switch (m_mode) {
-    case 1: return p_pythia->OneEvent(blobs,weight);
+    case 1: return p_lund->OneEvent(blobs,weight);
   }
-  return false;
+  return Return_Value::Nothing;
 }
 
 

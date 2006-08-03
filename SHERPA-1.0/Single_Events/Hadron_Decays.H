@@ -11,9 +11,9 @@ namespace SHERPA {
   public :
     Hadron_Decays(HDHandlersMap *);
     ~Hadron_Decays();
-    bool Treat(ATOOLS::Blob_List *, double &);
-    void CleanUp();
-    void Finish(const std::string &);
+    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *, double &);
+    void                       CleanUp();
+    void                       Finish(const std::string &);
   };
 
   /*!

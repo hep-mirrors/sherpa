@@ -6,6 +6,7 @@ GZIPSTREAMHEADERS = Gzip_Stream.H
 endif
 
 libToolsOrg_la_SOURCES        = \
+				Return_Value.C \
 				Shell_Tools.C \
 				Object.C \
 				Getter_Function.C \
@@ -33,6 +34,7 @@ libToolsOrg_la_SOURCES        = \
 
 pkginclude_HEADERS       =	\
 			CXXFLAGS.H \
+			Return_Value.H \
 			Smart_Pointer.H \
 			Shell_Tools.H \
 			Object.H \

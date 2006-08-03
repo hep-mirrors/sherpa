@@ -33,9 +33,9 @@ namespace SHERPA {
     ~Jet_Evolution();
 
     // member functions
-    bool Treat(ATOOLS::Blob_List *, double &);
-    void CleanUp();
-    void Finish(const std::string &);
+    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *, double &);
+    void                       CleanUp();
+    void                       Finish(const std::string &);
 
   };// end of class Jet_Evolution
 
