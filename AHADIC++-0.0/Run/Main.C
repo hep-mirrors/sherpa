@@ -12,11 +12,13 @@
 #include "Run_Parameter.H"
 #include "Data_Read.H"
 #include "Random.H"
+#include "Return_Value.H"
 
 
 using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
+
 
 
 int main(int argc,char* argv[]) 
@@ -120,7 +122,15 @@ int main(int argc,char* argv[])
 
     if (apacic->PerformShowers(false,true,1.,1.)) {
       apacic->ExtractPartons(false,true,blobs,particles);
-      ahadic->Hadronize(blobs);
+      switch (int(ahadic->Hadronize(blobs))) {
+      case int(Return_Value::Success) : continue;
+      case int(Return_Value::Retry_Event) : break;
+      default:
+	msg.Error()<<"Error in "<<METHOD<<": "<<endl
+		   <<"   Unknown return value."<<endl;
+	abort();
+	break;
+      }
     }
   }
 

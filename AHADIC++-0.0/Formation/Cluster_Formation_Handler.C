@@ -6,10 +6,10 @@ using namespace ATOOLS;
 using namespace std;
 
 Cluster_Formation_Handler::Cluster_Formation_Handler(bool ana) :
-  m_single_cr(true), m_double_cr(false), 
+  m_single_cr(true), m_double_cr(false),
   p_gludecayer(new Gluon_Decayer()), 
   p_cformer(new Cluster_Former()),
-  p_recons(new Colour_Reconnections()), 
+  p_recons(new Colour_Reconnections(0,0,1.)), 
   p_ctransformer(new Cluster_Transformer()),
   p_clulist(new Cluster_List),
   m_analyse(ana)
@@ -47,6 +47,58 @@ Cluster_Formation_Handler::~Cluster_Formation_Handler()
   if (p_clulist)      { delete p_clulist;      p_clulist    = NULL;      }
 }
 
+Return_Value::code Cluster_Formation_Handler::FormClusters(Blob * blob,Blob_List * bl) 
+{
+  p_blob = blob;
+  if (bl==NULL) {
+    msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+	       <<"   Continue with error and hope for the best."<<std::endl;
+    return Return_Value::Error;
+  }
+
+  Return_Value::code success;
+  Reset();
+  msg.Tracking()<<"Extract -----------------------------------------------------------"<<endl;
+  switch (int(ExtractSinglets(bl))) {
+  case int(Return_Value::Retry_Method) : return Return_Value::Retry_Method;
+  case int(Return_Value::Success) : 
+  default:
+    break;
+  }
+  msg.Tracking()<<"Form Original -----------------------------------------------------"<<endl;
+  switch (int(FormOriginalClusters())) {
+  case int(Return_Value::Retry_Method) : return Return_Value::Retry_Method;
+  case int(Return_Value::Success) : 
+  default:
+    break;
+  }
+  msg.Tracking()<<"Color Recons ------------------------------------------------------"<<endl;
+  switch (int(ApplyColourReconnections())) {
+  case int(Return_Value::Retry_Method) : return Return_Value::Retry_Method;
+  case int(Return_Value::Success) : 
+  default:
+    break;
+  }
+  msg.Tracking()<<"Clusters2Hadrons --------------------------------------------------"<<endl;
+  switch (int(ClustersToHadrons())) {
+  case int(Return_Value::Retry_Method) : return Return_Value::Retry_Method;
+  case int(Return_Value::Success) : 
+  default:
+    break;
+  }
+  msg.Tracking()<<"One List ----------------------------------------------------------"<<endl;
+  switch (int(MergeClusterListsIntoOne())) {
+  case int(Return_Value::Retry_Method) : return Return_Value::Retry_Method;
+  case int(Return_Value::Success) : 
+  default:
+    break;
+  }
+  msg.Tracking()<<"Leave Formation ---------------------------------------------------"<<endl;
+  bl->push_back(p_blob);
+  return Return_Value::Success;
+}
+
+
 void Cluster_Formation_Handler::Reset()
 {
   if (m_partlists.size()>0) {
@@ -72,33 +124,8 @@ void Cluster_Formation_Handler::Reset()
   m_clulists.clear();
 }
 
-Blob * Cluster_Formation_Handler::FormClusters(Blob_List * bl) 
-{
-  //std::cout<<METHOD<<" "<<bl<<"."<<std::endl;
-  if (bl==NULL) return false;
-  Reset();
-  p_blob = new Blob();
-  p_blob->SetType(btp::Cluster_Formation);
-  p_blob->SetId();
-  bl->push_back(p_blob);
-  msg.Tracking()<<"Extract -----------------------------------------------------------"<<endl;
-  ExtractSinglets(bl);
-  msg.Tracking()<<"Form Original -----------------------------------------------------"<<endl;
-  FormOriginalClusters();
-  msg.Tracking()<<"Color Recons ------------------------------------------------------"<<endl;
-  ApplyColourReconnections();
-  msg.Tracking()<<"Clusters2Hadrons --------------------------------------------------"<<endl;
-  ClustersToHadrons();
-  msg.Tracking()<<"One List ----------------------------------------------------------"<<endl;
-  MergeClusterListsIntoOne();
-  //std::cout<<"Blob at the beginning "<<std::endl<<(*p_blob)<<std::endl
-  //	   <<"Cluster List at the end : "<<std::endl<<(*p_clulist)<<std::endl;
-  msg.Tracking()<<"Leave Formation ---------------------------------------------------"<<endl;
-  return p_blob;
-}
 
-
-void Cluster_Formation_Handler::ExtractSinglets(Blob_List * bl)
+Return_Value::code Cluster_Formation_Handler::ExtractSinglets(Blob_List * bl)
 {
   Particle  * part1, * part2;
   Part_List * pl = new Part_List;
@@ -120,7 +147,6 @@ void Cluster_Formation_Handler::ExtractSinglets(Blob_List * bl)
       }
     }
   }
-
 
   int  col1, col2;
   bool hit1, hit2;
@@ -153,12 +179,11 @@ void Cluster_Formation_Handler::ExtractSinglets(Blob_List * bl)
     }
   } while(pl->size()>0);
 
-  pl->clear();
-  delete pl;
+  return Return_Value::Success;
 }
 
 
-void Cluster_Formation_Handler::FormOriginalClusters() 
+Return_Value::code Cluster_Formation_Handler::FormOriginalClusters() 
 {
   Cluster_List * clist=NULL;
   std::vector<Part_List *>::iterator help;
@@ -208,10 +233,11 @@ void Cluster_Formation_Handler::FormOriginalClusters()
     clist = new Cluster_List;
     //std::cout<<"Part list with "<<(*plit)->size()<<"."<<std::endl;
     if (!p_gludecayer->DecayList(*plit)) {
-      msg.Error()<<"Error in Cluster_Formation_Handler::FormOriginalClusters() :"<<std::endl
-		 <<"   Not enough energy to move partons on their mass shell."<<std::endl
-		 <<"   Must try a new event ... not yet implemented, abort."<<std::endl;
-      abort();
+      msg.Info()<<"WARNING in "<<METHOD<<":"<<std::endl
+		<<"   Not enough energy to move partons on their mass shell."<<std::endl
+		<<"   Retry the formation procedure."<<std::endl;
+      rvalue.IncRetryMethod(METHOD);
+      return Return_Value::Retry_Method;
     }
     else {
       p_cformer->ConstructClusters(*plit,clist);
@@ -230,10 +256,11 @@ void Cluster_Formation_Handler::FormOriginalClusters()
       histomass->Insert((*cit)->Mass());
     }
   }
+  return Return_Value::Success;
 }
 
 
-void Cluster_Formation_Handler::ApplyColourReconnections()
+Return_Value::code Cluster_Formation_Handler::ApplyColourReconnections()
 {
   std::vector<Cluster_List *>::iterator clit1, clit2;
   if (m_single_cr) {
@@ -260,9 +287,10 @@ void Cluster_Formation_Handler::ApplyColourReconnections()
       }
     }
   }
+  return Return_Value::Success;
 }
 
-void Cluster_Formation_Handler::ClustersToHadrons()
+Return_Value::code Cluster_Formation_Handler::ClustersToHadrons()
 {
   std::vector<Cluster_List *>::iterator clit,clit1;
   Cluster * clu;
@@ -270,7 +298,10 @@ void Cluster_Formation_Handler::ClustersToHadrons()
   for (clit=m_clulists.begin();clit!=m_clulists.end();) {
     if ((*clit)->size()==1) {
       msg.Tracking()<<"      List with 1 cluster only."<<endl;
-      if (p_ctransformer->TreatSingleCluster((*clit),p_blob)) {
+      switch (int(p_ctransformer->TreatSingleCluster((*clit),p_blob))) {
+      case int(Return_Value::Success):
+      case int(Return_Value::Warning):
+      case int(Return_Value::Error):
 	if ((*clit)->size()!=0) {
 	  Cluster_List * clist = NULL;
 	  int maxsize = 10000;
@@ -280,14 +311,25 @@ void Cluster_Formation_Handler::ClustersToHadrons()
 	  clist->push_back(*(*clit)->begin());
 	}
 	clit=m_clulists.erase(clit);
+	break;
+      case int(Return_Value::Nothing): 
+      default:
+	clit++;
+	break;
       }
-      else clit++;
     }
     else clit++;
   }
   msg.Tracking()<<"   Continue with "<<m_clulists.size()<<" lists ..."<<std::endl;
-  for (clit=m_clulists.begin();clit!=m_clulists.end();clit++) 
-    p_ctransformer->TreatClusterList((*clit),p_blob);
+  for (clit=m_clulists.begin();clit!=m_clulists.end();clit++) {
+    switch (int(p_ctransformer->TreatClusterList((*clit),p_blob))) {
+    case int(Return_Value::Error):
+      rvalue.IncRetryMethod(METHOD);
+      return Return_Value::Retry_Method;
+    case int(Return_Value::Success): 
+    default:continue;
+    }
+  }
   msg.Tracking()<<"                                                   ... done."<<endl;
 
   Histogram * histomass, * histonumb;
@@ -303,9 +345,10 @@ void Cluster_Formation_Handler::ClustersToHadrons()
     }
     histonumb->Insert(numb);
   }
+  return Return_Value::Success;
 }
 
-void Cluster_Formation_Handler::MergeClusterListsIntoOne()
+Return_Value::code Cluster_Formation_Handler::MergeClusterListsIntoOne()
 {
   if (!p_clulist->empty()) {
     do {
@@ -330,4 +373,5 @@ void Cluster_Formation_Handler::MergeClusterListsIntoOne()
     }
   }
   Reset();
+  return Return_Value::Success;
 }

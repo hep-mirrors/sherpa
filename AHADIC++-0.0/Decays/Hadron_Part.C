@@ -15,125 +15,35 @@ Hadron_Part::Hadron_Part() :
   p_dtransitions(hadpars.GetDoubleTransitions())   
 { }
 
-void Hadron_Part::RedoDecay(Cluster * cluster,Part_List * pl,
-			    int mode,Flavour & had1,Flavour & had2)
+Return_Value::code  Hadron_Part::RedoDecay(Cluster * cluster,Part_List * pl,
+					   int mode,Flavour & had1,Flavour & had2)
 {
-  //std::cout<<METHOD<<" "<<m_cht<<" "<<mode<<" "<<m_hadsel<<std::endl;
-  if (m_cht==chtrans::HH_only) {
-    if (p_dtransitions->IsoDecay(cluster,had1,had2)) { 
-      TwoHadronDecay(cluster,pl,had1,had2);
-      return;
-    }
-    msg.Error()<<"Error in Hadron_Part::RedoDecay : HH only mode."<<endl
-	       <<"   Could not find a suitable double transition for cluster decay: "
-	       <<(*cluster)<<"   will abort the run."<<endl;
-    abort();
-  }
-  if (mode==3) {
-    if (m_hadsel==hadsel::newpair) {
-      if (p_dtransitions->IsoDecay(cluster,had1,had2)) { 
-	if (had1==Flavour(kf::none) || had2==Flavour(kf::none)) {
-	  msg.Error()<<"Error in Hadron_Part::RedoDecay(mode = "<<mode<<") : "<<endl
-		     <<"   Selected an unphysical flavour (none) in decay of"<<endl
-		     <<(*cluster)<<"   ---> "<<had1<<" + "<<had2<<endl
-		     <<"   Abort the run."<<endl;
-	  abort();
-	}
-      }
-    }
-    else CheckDecayKinematics(cluster,had1,had2);
+  if (m_cht==chtrans::HH_only) return HHDecay(cluster,pl,had1,had2);
+  if (mode==3)                 return CHDecayBoth(cluster,pl,had1,had2);
 
-    TwoHadronDecay(cluster,pl,had1,had2);
+  if ((mode==1 && had1==Flavour(kf::none)) || 
+      (mode==2 && had2==Flavour(kf::none))) {
+    msg.Error()<<"Error in "<<METHOD<<"(mode = "<<mode<<") : "<<endl
+	       <<"   Selected an unphysical flavour (none) in decay of"<<endl
+	       <<(*cluster)<<"   ---> "<<had1<<" + "<<had2<<endl
+	       <<"   Will continue and hope for the best."<<endl;
+    rvalue.IncError(METHOD);
+    return Return_Value::Error;
   }
-  else {
-    if ((mode==1 && had1==Flavour(kf::none)) || 
-	(mode==2 && had2==Flavour(kf::none))) {
-      msg.Error()<<"Error in Hadron_Part::RedoDecay(mode = "<<mode<<") : "<<endl
-		 <<"   Selected an unphysical flavour (none) in decay of"<<endl
-		 <<(*cluster)<<"   ---> "<<had1<<" + "<<had2<<endl
-		 <<"   Abort the run."<<endl;
-      abort();
-    }
-    Vec4D  * momenta = new Vec4D[2];
-    double * masses  = new double[2];
-    momenta[0]   = cluster->GetLeft()->Momentum();
-    momenta[1]   = cluster->GetRight()->Momentum();
-    Flavour help = Flavour(kf::none);
-    Particle * part(NULL);
-    if (mode==2) {
-      masses[0] = cluster->GetLeft()->Mass(); 
-      masses[1] = had2.Mass();
-      switch (CheckDecayKinematics(cluster,cluster->GetLeft(),had2,help)) {
-      case 0:
-	TwoHadronDecay(cluster,pl,had2,help);
-	break;
-      case 1:
-	hadpars.AdjustMomenta(2,momenta,masses);
-	cluster->GetLeft()->RescaleMomentum(momenta[0]); 
-	part = new Particle(0,had2,momenta[1]);
-	part->SetNumber(0);
-	part->SetStatus(part_status::active);
-	part->SetInfo('P');
-	part->SetFinalMass();
-	//cout<<"RedoDecay : Add "<<had2<<" to pl"<<endl;
-	pl->push_back(part);
-	break;
-      case 2:
-	msg.Error()<<"ERROR in Hadron_Part::RedoDecay : "<<endl
-		   <<cluster->Mass()<<" -> "
-		   <<cluster->GetLeft()->Mass()<<" + "<<had2<<" does not work out .... "<<endl;
-	abort();
-      default:
-	return;
-      }
-    }
-    else {
-      masses[0] = had1.Mass();
-      masses[1] = cluster->GetRight()->Mass(); 
-      switch (CheckDecayKinematics(cluster,cluster->GetRight(),had1,help)) {
-      case 0:
-	TwoHadronDecay(cluster,pl,had1,help);
-	break;
-      case 1:
-	hadpars.AdjustMomenta(2,momenta,masses);
-	cluster->GetRight()->RescaleMomentum(momenta[1]); 
-	part = new Particle(0,had1,momenta[0]);
-	part->SetNumber(0);
-	part->SetStatus(part_status::active);
-	part->SetInfo('P');
-	part->SetFinalMass();
-	//cout<<"RedoDecay : Add "<<had1<<" to pl"<<endl;
-	pl->push_back(part);
-	cluster->GetRight()->RescaleMomentum(momenta[1]); 
-	break;
-      case 2:
-	msg.Error()<<"ERROR in Hadron_Part::RedoDecay : "<<endl
-		   <<cluster->Mass()<<" -> "
-		   <<cluster->GetLeft()->Mass()<<" + "<<had2<<" does not work out .... "<<endl;
-	abort();
-      default:
-	return;
-      }
-    }
-    delete momenta;
-    delete masses;
-  }
+  else if (mode==1)            return CHDecayOne(cluster,pl,cluster->GetRight(),had1);
+  else if (mode==2)            return CHDecayOne(cluster,pl,cluster->GetLeft(),had2);
+  rvalue.IncError(METHOD);
+  //cout<<METHOD<<" 1: Error."<<endl;
+  return Return_Value::Error;
 }
 
-bool Hadron_Part::ForcedDecay(Cluster * cluster,Part_List * pl)
+Return_Value::code Hadron_Part::ForcedDecay(Cluster * cluster,Part_List * pl)
 {
   Flavour had1, had2;
-  if (p_dtransitions->IsoDecay(cluster,had1,had2)) { 
-    TwoHadronDecay(cluster,pl,had1,had2);
-    return true;
-  }
-  msg.Error()<<"Error in Hadron_Part::ForcedDecay :"<<endl
-	     <<"   Could not find a suitable double transition for cluster decay: "
-	     <<(*cluster)<<"   will abort the run."<<endl;
-  abort();
+  return HHDecay(cluster,pl,had1,had2);
 }
 
-void Hadron_Part::CheckDecayKinematics(Cluster * cluster,Flavour & had1,Flavour & had2)
+Return_Value::code Hadron_Part::CheckDecayKinematics(Cluster * cluster,Flavour & had1,Flavour & had2)
 {
   Flavour   had;
   Cluster * clu;
@@ -142,45 +52,176 @@ void Hadron_Part::CheckDecayKinematics(Cluster * cluster,Flavour & had1,Flavour 
   while (mass<=m1+m2) {
     if (ran.Get()>0.5) { had = had2; clu=cluster->GetRight(); mode = 1; }
                   else { had = had1; clu=cluster->GetLeft();  mode = 0; }
-    if (p_stransitions->NextLightest(clu,had)) {
+    switch (int(p_stransitions->NextLightest(clu,had))) {
+    case (int(Return_Value::Success)) :  
       if (mode) { had2 = had; m2 = had2.Mass(); } 
            else { had1 = had; m1 = had1.Mass(); } 
+      break;
+    case (int(Return_Value::Error)) :
+      return Return_Value::Error;
+    default:
+      msg.Error()<<"Error in "<<METHOD<<": "<<endl
+		 <<"   Unknown return value."<<endl;
+      abort();
+      break;
     }
   }
-  return;
+  return Return_Value::Success;
 }    
 
 
-int Hadron_Part::CheckDecayKinematics(Cluster * cluster,Cluster * other,
-				      Flavour & had,Flavour & help)
+Return_Value::code  Hadron_Part::CheckDecayKinematics(Cluster * cluster,Cluster * other,
+						      Flavour & had,Flavour & help)
 {
+  //cout<<METHOD<<endl;
   double    m1  = had.Mass(), m2 = other->Mass(), mass = cluster->Mass();
-  Cluster * clu = cluster->GetLeft();
-  if (clu==other) clu = cluster->GetRight();
-  //cout<<"CheckDecayKinematics : "<<mass<<" -> "<<m1<<"+"<<m2<<endl;
-  while (mass<=m1+m2) {
-    if (!p_stransitions->NextLightest(clu,had)) {
+  Cluster * clu(other==cluster->GetLeft()?cluster->GetRight():cluster->GetLeft());
+  bool      exit(false);
+  while (mass<=m1+m2 && !exit) {
+    switch (int(p_stransitions->NextLightest(clu,had))) {
+    case Return_Value::Success : 
+      m1 = had.Mass(); break;
+    case Return_Value::Error : return Return_Value::Error; 
+    case Return_Value::Warning : 
+      exit=true; break;
+    default:
+      msg.Error()<<"Error in "<<METHOD<<": "<<endl
+		 <<"   Unknown return value."<<endl;
+      abort();
       break;
     }
-    else m1 = had.Mass();
   }
-  if (mass>=m1+m2) {
-    //cout<<"CheckDecayKinematics = 1"<<endl; 
-    return 1;
-  }
-  while (mass<=m1+m2) {
-    if (!p_stransitions->NextLightest(other,help)) {
+  if (mass>=m1+m2) return Return_Value::Success; 
+  exit = false;
+  while (mass<=m1+m2 && !exit) {
+    switch (int(p_stransitions->NextLightest(other,help))) {
+    case Return_Value::Success : 
+      m2 = help.Mass(); break;
+    case Return_Value::Error : return Return_Value::Error; 
+    case Return_Value::Warning : 
+      exit=true; break;
+    default:
+      msg.Error()<<"Error in "<<METHOD<<": "<<endl
+		 <<"   Unknown return value."<<endl;
+      abort();
       break;
     }
-    else m2 = help.Mass();
   }  
-  if (mass>=m1+m2) {
-    //cout<<"CheckDecayKinematics = 0"<<endl; 
-    return 0;
-  }
-  //cout<<"CheckDecayKinematics = 2"<<endl; 
-  return 2;
+  if (mass>=m1+m2) return Return_Value::Nothing; 
+  return Return_Value::Error; 
 }    
+
+
+Return_Value::code Hadron_Part::HHDecay(Cluster * cluster,Part_List * pl,Flavour & had1,Flavour & had2) {
+  //cout<<METHOD<<endl;
+  if (p_dtransitions->IsoDecay(cluster,had1,had2)) { 
+    if (had1==Flavour(kf::none) || had2==Flavour(kf::none)) {
+      msg.Error()<<"Error in "<<METHOD<<" : "<<endl
+		 <<"   Selected an unphysical flavour (none) in decay of"<<endl
+		 <<(*cluster)<<"   ---> "<<had1<<" + "<<had2<<endl
+		 <<"   Will continue and hope for the best."<<endl;
+      rvalue.IncError(METHOD);
+      //cout<<METHOD<<" 1: Error."<<endl;
+      return Return_Value::Error;
+    }
+    TwoHadronDecay(cluster,pl,had1,had2);
+    //cout<<METHOD<<" 1: Success."<<endl;
+    return Return_Value::Success;
+  }
+  msg.Error()<<"Error in "<<METHOD<<" : "<<endl
+	     <<"   Could not find a suitable double transition for cluster decay: "
+	     <<(*cluster)<<"   will continue and hope for the best."<<endl;
+  //cout<<METHOD<<" 2: Error."<<endl;
+  rvalue.IncError(METHOD);
+  return Return_Value::Error;
+}
+
+Return_Value::code Hadron_Part::CHDecayOne(Cluster * cluster,Part_List * pl,
+					   Cluster * remain,Flavour & had) {
+  //cout<<METHOD<<endl;
+  Vec4D  * momenta = new Vec4D[2];
+  double * masses  = new double[2];
+  Flavour help = Flavour(kf::none);
+  Particle * part(NULL);
+  Cluster * partner(cluster->GetLeft()==remain?cluster->GetRight():cluster->GetLeft());
+
+  momenta[0]   = remain->Momentum();
+  momenta[1]   = partner->Momentum();
+  masses[0]    = remain->Mass(); 
+  masses[1]    = had.PSMass();
+  switch (int(CheckDecayKinematics(cluster,remain,had,help))) {
+  case int(Return_Value::Success):
+    hadpars.AdjustMomenta(2,momenta,masses);
+    remain->RescaleMomentum(momenta[0]); 
+    part = new Particle(0,had,momenta[1]);
+    part->SetNumber(0);
+    part->SetStatus(part_status::active);
+    part->SetInfo('P');
+    part->SetFinalMass();
+    pl->push_back(part);
+    break;
+  case int(Return_Value::Nothing):
+    TwoHadronDecay(cluster,pl,had,help);
+    break;
+  case int(Return_Value::Error):
+    delete momenta;
+    delete masses;
+    msg.Error()<<"ERROR in Hadron_Part::RedoDecay : "<<endl
+	       <<cluster->Mass()<<" -> "
+	       <<cluster->GetLeft()->Mass()<<" + "<<had
+	       <<" does not work out .... "<<endl;
+    rvalue.IncError(METHOD);
+    //cout<<METHOD<<" 1: Error."<<endl;
+    return Return_Value::Error;
+  default:
+      msg.Error()<<"Error in "<<METHOD<<": "<<endl
+		 <<"   Unknown return value."<<endl;
+      abort();
+    break;
+  }
+  delete momenta;
+  delete masses;
+  //cout<<METHOD<<" 1: Success."<<endl;
+  return Return_Value::Success;
+}
+
+
+Return_Value::code Hadron_Part::CHDecayBoth(Cluster * cluster,Part_List * pl,
+					    Flavour & had1,Flavour & had2) {
+  //cout<<METHOD<<endl;
+  if (m_hadsel==hadsel::newpair) {
+    if (p_dtransitions->IsoDecay(cluster,had1,had2)) { 
+      if (had1==Flavour(kf::none) || had2==Flavour(kf::none)) {
+	msg.Error()<<"Error in "<<METHOD<<" : "<<endl
+		   <<"   Selected an unphysical flavour (none) in decay of"<<endl
+		   <<(*cluster)<<"   ---> "<<had1<<" + "<<had2<<endl
+		   <<"   Will continue and hope for the best."<<endl;
+	rvalue.IncError(METHOD);
+	//cout<<METHOD<<" 1: Error."<<endl;
+	return Return_Value::Error;
+      }
+    }
+  }
+  else {
+    switch (int(CheckDecayKinematics(cluster,had1,had2))) {
+    case int(Return_Value::Success) :
+    case int(Return_Value::Nothing) :
+      break;
+    case int(Return_Value::Error) :
+      rvalue.IncError(METHOD);
+      //cout<<METHOD<<" 2: Error."<<endl;
+      return Return_Value::Error;
+    default:
+      msg.Error()<<"Error in "<<METHOD<<": "<<endl
+		 <<"   Unknown return value."<<endl;
+      abort();
+    }
+  }
+  TwoHadronDecay(cluster,pl,had1,had2);
+  //cout<<METHOD<<" 1: Success."<<endl;
+  return Return_Value::Success;
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Isotropic
@@ -236,6 +277,7 @@ void Isotropic::TwoHadronDecay(Cluster * cluster,Part_List * pl,Flavour & had1,F
     msg.Error()<<"Error in Isotropic::TwoHadronDecay (after boost) : "<<endl
 	       <<"   "<<cluster->Momentum()<<" -> "<<hadmom1<<"+"<<hadmom2<<endl
 	       <<"   Sum of moms : "<<cluster->Momentum()-hadmom1-hadmom2<<endl;
+    rvalue.IncWarning(METHOD);
   }
   part = new Particle(0,had1,hadmom1); 
   part->SetNumber(0);
@@ -306,6 +348,7 @@ void Retain::TwoHadronDecay(Cluster * cluster,Part_List * pl,Flavour & had1,Flav
     msg.Error()<<"Error in Retain::TwoHadronDecay (after boost) : "<<endl
 	       <<"   "<<cluster->Momentum()<<" -> "<<hadmom1<<"+"<<hadmom2<<endl
 	       <<"   Sum of moms : "<<cluster->Momentum()-hadmom1-hadmom2<<endl;
+    rvalue.IncWarning(METHOD);
   }
   part = new Particle(0,had1,hadmom1); 
   part->SetNumber(0);

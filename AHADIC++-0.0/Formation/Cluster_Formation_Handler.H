@@ -9,6 +9,7 @@
 #include "Blob_List.H"
 #include "Blob.H"
 #include "Histogram.H"
+#include "Return_Value.H"
 #include <map>
 
 
@@ -31,16 +32,18 @@ namespace AHADIC {
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
     void Reset();
-    void ExtractSinglets(ATOOLS::Blob_List * bl);
-    void FormOriginalClusters();
-    void ApplyColourReconnections();
-    void ClustersToHadrons();
-    void MergeClusterListsIntoOne();
+
+    ATOOLS::Return_Value::code ExtractSinglets(ATOOLS::Blob_List * bl);
+    ATOOLS::Return_Value::code FormOriginalClusters();
+    ATOOLS::Return_Value::code ApplyColourReconnections();
+    ATOOLS::Return_Value::code ClustersToHadrons();
+    ATOOLS::Return_Value::code MergeClusterListsIntoOne();
   public:
     Cluster_Formation_Handler(bool=false);
     ~Cluster_Formation_Handler();
 
-    ATOOLS::Blob * FormClusters(ATOOLS::Blob_List * bl=NULL);
+    ATOOLS::Return_Value::code FormClusters(ATOOLS::Blob *,
+					    ATOOLS::Blob_List * bl=NULL);
 
     //! general access routines
     //@{

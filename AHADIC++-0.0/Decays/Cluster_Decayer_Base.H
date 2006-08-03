@@ -5,7 +5,7 @@
 #include "Hadron_Part.H"
 #include "Transitions.H"
 #include "Cluster.H"
-
+#include "Return_Value.H"
 
 namespace AHADIC {
   class Cluster_Decayer_Base {
@@ -19,11 +19,11 @@ namespace AHADIC {
     ATOOLS::Flavour m_had1, m_had2;
     
     void TestOffSprings(Cluster *);
-    void TreatHadDecay(Cluster *,Part_List *);
+    ATOOLS::Return_Value::code TreatHadDecay(Cluster *,Part_List *);
   public:
     Cluster_Decayer_Base(Cluster_Part *,Hadron_Part *);
     ~Cluster_Decayer_Base();
-    bool Treat(Cluster *,Part_List *);
+    ATOOLS::Return_Value::code Treat(Cluster *,Part_List *);
   };
   /*!
     \file Cluster_Decayer_Base.H

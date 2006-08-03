@@ -8,7 +8,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Cluster_Decay_Handler::Cluster_Decay_Handler(Cluster_Transformer * transformer,bool ana) :
-  m_cdm(cdm::RunningQoverM_Isotropic), 
+  m_cdm(cdm::RunningQoverM_Retain), 
   p_decayer(NULL), p_analysis(NULL), 
   p_transformer(transformer),
   p_partlist(new Part_List)
@@ -47,7 +47,7 @@ Cluster_Decay_Handler::~Cluster_Decay_Handler()
   if (p_partlist) { delete p_partlist; p_partlist=NULL; }
 }
 
-void Cluster_Decay_Handler::DecayClusters(Cluster_List * clusters,Blob * blob)
+Return_Value::code Cluster_Decay_Handler::DecayClusters(Cluster_List * clusters,Blob * blob)
 {
   p_partlist->clear();
   msg.Tracking()<<"Decay the clusters ------------------------------------------------"<<endl;
@@ -55,42 +55,68 @@ void Cluster_Decay_Handler::DecayClusters(Cluster_List * clusters,Blob * blob)
   Vec4D clumom = Vec4D(0.,0.,0.,0.), partmom = Vec4D(0.,0.,0.,0.);
   for (cit=clusters->begin();cit!=clusters->end();) {
     clumom += (*cit)->Momentum();
-    if (DecayIt((*cit))) cit++;
-    else cit=clusters->erase(cit);
+    switch (int(DecayIt((*cit)))) {
+    case int(Return_Value::Error) :
+      //cout<<METHOD<<" 1: Error."<<endl;
+      return Return_Value::Retry_Method; 
+    case int(Return_Value::Success) : 
+      cit=clusters->erase(cit); break;
+    case int(Return_Value::Nothing) : 
+      cit++; break;
+    default:
+      msg.Error()<<"Error in "<<METHOD<<": "<<endl
+		 <<"   Unknown return value."<<endl;
+      abort();
+    }
   }
   msg.Tracking()<<"Add "<<p_partlist->size()
 		<<" particles to the blob --------------------------------------"<<endl;
+
   for (Part_Iterator pit=p_partlist->begin();pit!=p_partlist->end();) {
     blob->AddToOutParticles((*pit));
     partmom += (*pit)->Momentum();
     pit = p_partlist->erase(pit);
   }
-
-  if (dabs(blob->CheckMomentumConservation().Abs2())>1.e-9) {
+  
+  if (p_analysis) p_analysis->AnalyseThis(blob);
+  
+  if (dabs(blob->CheckMomentumConservation().Abs2())>1.e-6) {
     msg.Tracking()<<"Check this : "
 		  <<blob->CheckMomentumConservation()<<", "
 		  <<blob->CheckMomentumConservation().Abs2()<<endl
 		  <<"   Compare with "<<clumom<<" -> "<<partmom<<" = "<<clumom-partmom<<endl
 		  <<(*blob)
 		  <<"----------------------------------------------------------"<<endl;
+    rvalue.IncWarning(METHOD);
+    return Return_Value::Warning;
   }
-  if (p_analysis) p_analysis->AnalyseThis(blob);
-  //cout<<"Blob now : "<<(*blob)<<endl;
+  msg.Tracking()<<METHOD<<": Success"<<endl;
+  return Return_Value::Success;
 }
 
 
 
 
-bool Cluster_Decay_Handler::DecayIt(Cluster * cluster)
+Return_Value::code Cluster_Decay_Handler::DecayIt(Cluster * cluster)
 {
-  if (p_decayer->Treat(cluster,p_partlist)) {
-    //cout<<"Decay "<<cluster<<endl<<(*cluster)<<endl;
-    if (cluster->GetLeft())  { /*cout<<"Left  : "<<endl;*/ DecayIt(cluster->GetLeft()); }
-    if (cluster->GetRight()) { /*cout<<"Right : "<<endl;*/ DecayIt(cluster->GetRight());}
-    return true;
+  switch (int(p_decayer->Treat(cluster,p_partlist))) {
+  case int(Return_Value::Error) :
+    //cout<<METHOD<<" 1: Error."<<endl;
+    return Return_Value::Error; 
+  case int(Return_Value::Success) :
+    if (cluster->GetLeft()  && DecayIt(cluster->GetLeft())==Return_Value::Error)  return Return_Value::Error; 
+    if (cluster->GetRight() && DecayIt(cluster->GetRight())==Return_Value::Error) return Return_Value::Error; 
+    return Return_Value::Success;
+  case int(Return_Value::Nothing) :
+    break;
+  default:
+    msg.Error()<<"Error in "<<METHOD<<": "<<endl
+	       <<"   Unknown return value."<<endl;
+    abort();
+    break;
   }
   //cout<<"TreatSingleCluster "<<endl<<(*cluster)<<endl;
-  p_transformer->TreatSingleCluster(cluster,p_partlist);
-  //if (cluster->GetPrev()!=NULL) cout<<"------------- Found prev."<<endl;
-  return false;
+  switch (int(p_transformer->TreatSingleCluster(cluster,p_partlist))) {
+  }
+  return Return_Value::Nothing;
 }

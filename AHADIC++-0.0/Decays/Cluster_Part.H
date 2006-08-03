@@ -3,43 +3,46 @@
 
 #include "Pair_Popper.H"
 #include "Cluster.H"
+#include "Return_Value.H"
 
 
 namespace AHADIC {
   class Cluster_Part {
   protected:
-    int m_4Qmode;
-    virtual bool Veto(Cluster *,const ATOOLS::Flavour &);
+    Pair_Popper m_popper;
+    double      m_Q;
+    int         m_4Qmode;
+    bool Veto(Cluster *,const ATOOLS::Flavour &);
+    virtual ATOOLS::Return_Value::code Test(Cluster * const,Part_List * const,const double);
   public:
-    inline Cluster_Part(const int mode=1) : m_4Qmode(mode) {}
+    inline Cluster_Part(const int mode=1) : 
+      m_popper(Pair_Popper()), 
+      m_Q(hadpars.Get(std::string("Q_breakup"))),
+      m_4Qmode(mode) {}
     virtual ~Cluster_Part() {}
-    virtual bool TestDecay(Cluster *,Part_List *)=0;
+    virtual ATOOLS::Return_Value::code TestDecay(Cluster *,Part_List *)=0;
   };
 
   class Simple_Q_over_M : public Cluster_Part {
-    Pair_Popper m_popper;
-    double      m_Q;
   public:
     Simple_Q_over_M();
     ~Simple_Q_over_M();
-    bool TestDecay(Cluster *,Part_List *);
+    ATOOLS::Return_Value::code TestDecay(Cluster *,Part_List *);
   };
 
   class Running_Q_over_M : public Cluster_Part {
-    Pair_Popper m_popper;
-    double      m_Q;
-    double      SelectQ(const double);
+    const double SelectQ(const double) const;
   public:
     Running_Q_over_M();
     ~Running_Q_over_M();
-    bool TestDecay(Cluster *,Part_List *);
+    ATOOLS::Return_Value::code TestDecay(Cluster *,Part_List *);
   };
 
   class Four_Fermion : public Cluster_Part {
   public:
     Four_Fermion() {}
     ~Four_Fermion() {}
-    bool TestDecay(Cluster *,Part_List *) { return true; }
+    ATOOLS::Return_Value::code TestDecay(Cluster *,Part_List *) { abort(); }
   };
   /*!
     \file Cluster_Part.H

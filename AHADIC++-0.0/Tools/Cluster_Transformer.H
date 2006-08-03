@@ -4,13 +4,15 @@
 #include "Transitions.H"
 #include "Cluster.H"
 #include "Blob.H"
+#include "Return_Value.H"
 
 namespace AHADIC {
   struct ctrans {
     enum code {
-      nothing      = 0,
-      forceddecay  = 1,
-      pi0emission  = 2
+      nothing        = 0,
+      forceddecay    = 1,
+      photonemission = 10,
+      pi0emission    = 11
     };
   };
 
@@ -18,16 +20,18 @@ namespace AHADIC {
   private:
     ctrans::code             m_mode;
     double                   m_offset;
+    double                   m_gammaenergy;
     All_Single_Transitions * p_transitions;
 
-    void DecayCluster(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &,ATOOLS::Blob *);
-    void DecayCluster(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &,Part_List *);
+    void DecayCluster(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &,
+		      Part_List *,ATOOLS::Blob *);
   public:
     Cluster_Transformer();
     ~Cluster_Transformer();
-    bool TreatSingleCluster(Cluster_List *,ATOOLS::Blob *);
-    bool TreatSingleCluster(Cluster *,Part_List *);
-    void TreatClusterList(Cluster_List *,ATOOLS::Blob *);
+    ATOOLS::Return_Value::code TreatSingleCluster(Cluster_List *,ATOOLS::Blob *);
+    ATOOLS::Return_Value::code TreatSingleCluster(Cluster *,Part_List *,
+						  ATOOLS::Blob * =NULL);
+    ATOOLS::Return_Value::code TreatClusterList(Cluster_List *,ATOOLS::Blob *);
   };
 
   /*!

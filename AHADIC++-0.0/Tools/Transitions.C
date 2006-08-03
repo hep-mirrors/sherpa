@@ -101,41 +101,47 @@ bool All_Single_Transitions::MustTransit(Cluster * cluster,Flavour & hadron,
   return false;
 }
 
-bool All_Single_Transitions::NextLightest(Cluster * cluster,Flavour & had)
+Return_Value::code
+All_Single_Transitions::NextLightest(Cluster * cluster,Flavour & had)
 {
   FlavPair fpair;
   fpair.first  = cluster->GetFlav(1);
   fpair.second = cluster->GetFlav(2);
   Single_Transition_Miter stiter = p_transitions->find(fpair);
-  if (stiter==p_transitions->end()) {
-    msg.Error()<<"Potential error in  All_Single_Transitions::NextLightest :"<<endl
-	       <<"   Did not find any entry for "<<fpair.first<<"/"<<fpair.second<<";"<<endl
+  if (stiter==p_transitions->end())  {
+    msg.Error()<<"Potential error in  "<<METHOD<<" :"<<endl
+	       <<"   Did not find any entry for "<<fpair.first<<"/"<<fpair.second
+	       <<" in transition list;"<<endl
 	       <<"   will continue and hope for the best."<<endl;
+    rvalue.IncError(METHOD);
+    return Return_Value::Error;
   }
+
   Single_Transition_List * stl  = stiter->second;
   if (had==Flavour(kf::none)) {
     had   = (*stl->begin());
-    return true;
+    return Return_Value::Success;
   }
+
   Single_Transition_Siter siter;
   for (siter=stl->begin();siter!=stl->end();siter++) {
-    //cout<<"NextLightest, check : "
-    //	<<stiter->first.first<<" "<<stiter->first.second<<" "<<(*siter)<<" "<<had<<endl;
     if ((*siter)==had) break;
   }
   if (siter==stl->end()) {
-    msg.Error()<<"Potential error in  All_Single_Transitions::NextLightest :"<<endl
+    msg.Error()<<"Potential error in  "<<METHOD<<" :"<<endl
 	       <<"   Did not find any entry for "<<had<<" in hadron list;"
 	       <<(*stl->begin())<<"; "<<stl->size()<<endl
-	       <<"   will abort."<<endl;
-    abort();
+	       <<"   will continue and hope for the best."<<endl;
+    rvalue.IncError(METHOD);
+    return Return_Value::Error;
   }
   siter++;
   if (siter!=stl->end()) { 
     had=(*siter); 
-    return true; 
+    return Return_Value::Success;
   }
-  return false;
+  rvalue.IncWarning(METHOD);
+  return Return_Value::Warning;
 }
 
 
@@ -195,7 +201,6 @@ void All_Single_Transitions::MassTimesWavefunction(Cluster * cluster,
 						   Flavour & hadron, bool lighter)
 {
   double mass2(sqr(cluster->Mass(0))), disc(1.e100), test;
-  Flavour testhad;
   Hadron_Wave_Function * waves;
   Single_Transition_Siter start(stl->begin());
   if (hadron!=Flavour(kf::none)) {
@@ -204,13 +209,12 @@ void All_Single_Transitions::MassTimesWavefunction(Cluster * cluster,
     start++;
   }
   for (Single_Transition_Siter siter=start;siter!=stl->end();siter++) {
-    testhad = (*siter);
-    waves   = p_multiplets->GetWaveFunction(testhad);
+    waves   = p_multiplets->GetWaveFunction((*siter));
     if (waves!=NULL) {
-      test  = dabs(mass2-sqr(testhad.Mass()))/
+      test  = dabs(mass2-sqr((*siter).Mass()))/
 	sqr(waves->WaveWeight(cluster->GetFlav(1),cluster->GetFlav(2)));
       if (test<disc) {
-	hadron = testhad;
+	hadron = (*siter);
 	disc   = test;
       }
     }
@@ -222,7 +226,6 @@ void All_Single_Transitions::MWTimesWavefunction(Cluster * cluster,
 						 Flavour & hadron, bool lighter)
 {
   double mass(cluster->Mass(0)), crit(0.), minwidth(1.e6), disc(1.e100);
-  Flavour testhad;
   Hadron_Wave_Function * waves;
   double weight;
   Single_Transition_Siter start(stl->begin());
@@ -244,19 +247,18 @@ void All_Single_Transitions::MWTimesWavefunction(Cluster * cluster,
     return;
   }
   for (Single_Transition_Siter siter=start;siter!=stl->end();siter++) {
-    testhad = (*siter);
-    waves   = p_multiplets->GetWaveFunction(testhad);
+    waves   = p_multiplets->GetWaveFunction((*siter));
     if (waves!=NULL) {
       weight  = 1./sqr(waves->WaveWeight(cluster->GetFlav(1),cluster->GetFlav(2)));
       if ((*siter).IsStable()) 
 	weight *= sqr(sqr(mass)-sqr((*siter).Mass()))/((*siter).Mass()*1.e-6);
       else 
 	weight *= sqr(sqr(mass)-sqr((*siter).Mass()))/((*siter).Mass()*(*siter).Width());
-      //std::cout<<"   "<<testhad<<" : "
+      //std::cout<<"   "<<(*siter)<<" : "
       //	       <<sqr(waves->WaveWeight(cluster->GetFlav(1),cluster->GetFlav(2)))<<" & "
       //	       <<weight<<std::endl;
       if (weight<disc) {
-	hadron = testhad;
+	hadron = (*siter);
 	disc   = weight;
       }
     }

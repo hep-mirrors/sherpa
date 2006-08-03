@@ -6,6 +6,7 @@
 #include "Cluster_Transformer.H"
 #include "Blob.H"
 #include "Cluster.H"
+#include "Return_Value.H"
 
 
 namespace AHADIC {
@@ -30,13 +31,14 @@ namespace AHADIC {
     Part_List              * p_partlist;
     ATOOLS::Blob           * p_blob;
 
-    bool DecayIt(Cluster *);
-    void AnalyseThis(ATOOLS::Blob *);
+    ATOOLS::Return_Value::code DecayIt(Cluster *);
+    void                       AnalyseThis(ATOOLS::Blob *);
   public:
     Cluster_Decay_Handler(Cluster_Transformer *,bool=false);
     ~Cluster_Decay_Handler();
-    void DecayClusters(Cluster_List *,ATOOLS::Blob *);
-    Part_List    * GetParticles() { return p_partlist; }
+
+    ATOOLS::Return_Value::code DecayClusters(Cluster_List *,ATOOLS::Blob *);
+    Part_List                * GetParticles() { return p_partlist; }
   };
 
   /*!

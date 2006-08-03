@@ -6,6 +6,7 @@
 #include "Constituents.H"
 #include "Cluster.H"
 #include "Flavour.H"
+#include "Return_Value.H"
 #include <map>
 
 
@@ -47,11 +48,11 @@ namespace AHADIC {
     All_Single_Transitions(All_Hadron_Multiplets *);
     ~All_Single_Transitions();
 
-    Single_Transition_Map * GetSingleTransitions() { return p_transitions; }
-    bool                    MustTransit(Cluster *,ATOOLS::Flavour &,
-					const double=0.,const bool=false);
-    bool                    NextLightest(Cluster *,ATOOLS::Flavour &);
-    void                    PrintSingleTransitions();
+    Single_Transition_Map    * GetSingleTransitions() { return p_transitions; }
+    bool                       MustTransit(Cluster *,ATOOLS::Flavour &,
+					   const double=0.,const bool=false);
+    ATOOLS::Return_Value::code NextLightest(Cluster *,ATOOLS::Flavour &);
+    void                       PrintSingleTransitions();
   };
 
 

@@ -28,20 +28,32 @@ namespace AHADIC {
     
     All_Single_Transitions * p_stransitions;
     All_Double_Transitions * p_dtransitions;
-    virtual void CheckDecayKinematics(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &);
-    virtual int  CheckDecayKinematics(Cluster *,Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &);
-    virtual void TwoHadronDecay(Cluster *,Part_List *,ATOOLS::Flavour &,ATOOLS::Flavour &)=0;
+    virtual ATOOLS::Return_Value::code HHDecay(Cluster *,Part_List *,
+					       ATOOLS::Flavour &,ATOOLS::Flavour &);
+    virtual ATOOLS::Return_Value::code CHDecayOne(Cluster *,Part_List *,
+						  Cluster *,ATOOLS::Flavour &);
+    virtual ATOOLS::Return_Value::code CHDecayBoth(Cluster *,Part_List *,
+						   ATOOLS::Flavour &,ATOOLS::Flavour &);
+    virtual ATOOLS::Return_Value::code CheckDecayKinematics(Cluster *,
+							    ATOOLS::Flavour &,ATOOLS::Flavour &);
+    virtual ATOOLS::Return_Value::code CheckDecayKinematics(Cluster *,Cluster *,
+							    ATOOLS::Flavour &,ATOOLS::Flavour &);
+    virtual void TwoHadronDecay(Cluster *,Part_List *,
+				ATOOLS::Flavour &,ATOOLS::Flavour &)=0;
   public:
     Hadron_Part();
     virtual ~Hadron_Part() {}
-    virtual void RedoDecay(Cluster *,Part_List *,int,ATOOLS::Flavour &,ATOOLS::Flavour &);
-    virtual bool ForcedDecay(Cluster *,Part_List *);
+    virtual ATOOLS::Return_Value::code RedoDecay(Cluster *,Part_List *,int,
+						 ATOOLS::Flavour &,ATOOLS::Flavour &);
+    virtual ATOOLS::Return_Value::code ForcedDecay(Cluster *,Part_List *);
   };
+
 
   class Isotropic : public Hadron_Part {
   private:
     double m_smearparameter;
-    void TwoHadronDecay(Cluster *,Part_List *,ATOOLS::Flavour &,ATOOLS::Flavour &);
+    void TwoHadronDecay(Cluster *,Part_List *,
+			ATOOLS::Flavour &,ATOOLS::Flavour &);
   public:
     Isotropic();
     ~Isotropic() {}
@@ -49,7 +61,8 @@ namespace AHADIC {
 
   class Retain : public Hadron_Part {
     double m_smearparameter;
-    void TwoHadronDecay(Cluster *,Part_List *,ATOOLS::Flavour &,ATOOLS::Flavour &);
+    void TwoHadronDecay(Cluster *,Part_List *,
+			ATOOLS::Flavour &,ATOOLS::Flavour &);
   public:
     Retain();
     ~Retain() {}

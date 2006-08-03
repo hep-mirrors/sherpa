@@ -10,11 +10,13 @@
 #include "Cluster.H"
 #include "Blob_List.H"
 #include "Particle_List.H"
+#include "Return_Value.H"
 
 
 namespace AHADIC {
   class Ahadic {
   private:
+    int                         m_maxtrials;
     Cluster_Formation_Handler * p_cformhandler;
     Cluster_Decay_Handler     * p_cdechandler;
   public:
@@ -22,7 +24,8 @@ namespace AHADIC {
 	   std::string file=std::string("Cluster.dat"),bool=false);
     ~Ahadic();
 
-    bool Hadronize(ATOOLS::Blob_List *,ATOOLS::Particle_List * =NULL);
+    ATOOLS::Return_Value::code Hadronize(ATOOLS::Blob_List *,
+					 ATOOLS::Particle_List * =NULL);
   };
   /*!
     \file Ahadic.H

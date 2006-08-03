@@ -4,6 +4,7 @@
 #include "Hadronisation_Parameters.H"
 #include "Constituents.H"
 #include "Flavour.H"
+#include "Return_Value.H"
 
 namespace AHADIC {
   class Pair_Popper {
@@ -13,7 +14,7 @@ namespace AHADIC {
   public:
     Pair_Popper();
     ~Pair_Popper() {}
-    bool Pop(ATOOLS::Flavour &);
+    ATOOLS::Return_Value::code Pop(ATOOLS::Flavour &);
   };
   /*!
     \file Pair_Popper.H

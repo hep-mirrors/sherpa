@@ -69,11 +69,11 @@ bool Momenta_Stretcher::MassThem(const int n,Vec4D * momenta,const double * mass
     delete [] oldens2;
     delete [] ens;
     msg.Error()<<"ERROR in Momenta_Stretcher::StretchThem: "<<endl
-	       <<"   Not enough energy ("<<cms<<") for the "<<n<<" masses ("<<xmt<<"); return false"<<endl
+	       <<"   Not enough energy ("<<cms<<") for the "<<n
+	       <<" masses ("<<xmt<<"); return false"<<endl
 	       <<"   Masses :";
     for (int i=0;i<n-1;i++) msg.Error()<<masses[i]<<", ";msg.Error()<<masses[n-1]<<"."<<endl;
     return false;
-    abort();
   }
   return false;
 }
