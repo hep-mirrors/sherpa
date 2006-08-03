@@ -99,7 +99,12 @@ Blob::Blob(const Blob * blob) :
 {
   ++s_totalnumber;
   for (int i=0;i<blob->NInP();i++)  AddToInParticles(new Particle((*blob->ConstInParticle(i))));
-  for (int i=0;i<blob->NOutP();i++) AddToOutParticles(new Particle((*blob->ConstOutParticle(i))));
+  Particle * part(NULL);
+  for (int i=0;i<blob->NOutP();i++) {
+    part = new Particle((*blob->ConstOutParticle(i)));
+    part->SetStatus(1);
+    AddToOutParticles(part);
+  }
 }
 
 Blob::~Blob() {
