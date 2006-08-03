@@ -86,6 +86,7 @@ namespace ATOOLS {
     static int              s_totalnumber;
   public:
     Blob(const Vec4D _pos = Vec4D(0.,0.,0.,0.), const int _id=-1);
+    Blob(const Blob *);
     ~Blob();
     void     AddToInParticles(Particle *);
     void     AddToOutParticles(Particle *);

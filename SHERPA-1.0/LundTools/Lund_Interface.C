@@ -26,7 +26,7 @@ size_t Lund_Interface::s_maxerrors=0;
 ATOOLS::Blob_List *Lund_Interface::s_bloblist=NULL; 
 PDF::ISR_Handler *Lund_Interface::s_isrhandler=NULL; 
 
-Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file,bool sherpa):
+Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
   m_path(_m_path),m_file(_m_file), m_maxtrials(1),
   p_hepevt(NULL), 
   m_compress(true),m_writeout(false),
@@ -36,7 +36,7 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file,bool sher
   p_jdahep(new int[2*4000])
 {
   double win;
-  std::string beam[2], frame("CMS");
+  string beam[2], frame("CMS");
   Flavour flav[2];
   for (size_t i=0;i<2;++i) flav[i]=rpa.gen.Bunch(i);
   if (flav[0]==kf::e && flav[1]==kf::p_plus) {
@@ -75,7 +75,7 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file,bool sher
   }
   win=rpa.gen.Ecms();
   s_maxerrors=rpa.gen.NumberOfEvents();
-  std::vector<std::vector<double> > help;
+  vector<vector<double> > help;
   Data_Reader *reader = new Data_Reader("=",";","!");
   reader->SetMatrixType(mtc::transposed);
   reader->SetInputPath(m_path);
@@ -151,7 +151,7 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file,bool sher
       if ((int)help[i][0]>0 && abs((int)help[i][1]<2)) {
 	msg_Tracking()<<"Lund_Interface::Lund_Interface(..): "
 		      <<"Set MDCY("<<pycomp((int)help[i][0])<<","<<(int)help[i][1]
-		      <<") ( from KF code "<<(int)help[i][0]<<" ) to "<<(int)help[i][2]<<std::endl;
+		      <<") ( from KF code "<<(int)help[i][0]<<" ) to "<<(int)help[i][2]<<endl;
 	pydat3.mdcy[(int)help[i][1]-1][pycomp((int)help[i][0])-1]=(int)help[i][2];
       }
     }
@@ -178,7 +178,7 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file,bool sher
     if (!reader->ReadFromFile(asdef,"ALPHAS(default)")) asdef=asmz;
     mz=91.188;
     reader->SetInputFile("Particle.dat");
-    std::vector<std::vector<double> > helpdvv;
+    vector<vector<double> > helpdvv;
     reader->MatrixFromFile(helpdvv,"");
     for (size_t i=0;i<helpdvv.size();++i) {
       if (helpdvv[i][0]==24. && helpdvv.size()>1) mz=helpdvv[i][1];
@@ -200,10 +200,10 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file,bool sher
   delete reader;
 }
 
-void Lund_Interface::SwitchOfDecays(ATOOLS::kf::code kfc)
+void Lund_Interface::SwitchOfDecays(kf::code kfc)
 {
   pydat3.mdcy[1-1][pycomp(int(kfc))-1]=0;
-  msg_Tracking()<<"Lund_Interface::SwitchOfDecays: "<<kfc<<std::endl;
+  msg_Tracking()<<"Lund_Interface::SwitchOfDecays: "<<kfc<<endl;
 }
 
 Lund_Interface::~Lund_Interface()
@@ -225,14 +225,22 @@ Lund_Interface::~Lund_Interface()
   if (p_vhep)   { delete p_vhep;   p_vhep   = NULL; }
 }
 
-bool Lund_Interface::Hadronize(ATOOLS::Blob_List *bloblist,
-			       ATOOLS::Particle_List *particlelist) 
+Return_Value::code Lund_Interface::Hadronize(Blob_List *bloblist,
+					     Particle_List *particlelist) 
 {
-  if (ExtractSinglets(bloblist,particlelist)) {
-    //     for (std::list<Particle_List *>::iterator lit=m_partlists.begin();
+  switch (int(ExtractSinglets(bloblist,particlelist))) {
+  case int(Return_Value::Nothing) :
+    return Return_Value::Nothing;
+  case int(Return_Value::Error) :
+    msg.Error()<<"Error in Lund_Interface::Hadronize ."<<endl
+	       <<"   Hadronization failed. Retry event."<<endl;
+    rvalue.IncRetryEvent(METHOD);
+    return Return_Value::Retry_Event;
+  case int(Return_Value::Success) :
+    //     for (list<Particle_List *>::iterator lit=m_partlists.begin();
     // 	 lit!=m_partlists.end();++lit) PRINT_INFO(**lit);
     if (m_partlists.size()==0) {
-      return true; // no colours in event
+      return Return_Value::Success; // no colours in event
     }
     Blob * blob = new Blob();
     blob->SetId();
@@ -242,25 +250,27 @@ bool Lund_Interface::Hadronize(ATOOLS::Blob_List *bloblist,
     
     int nhep = PrepareFragmentationBlob(blob);
     for (size_t trials=0;trials<m_maxtrials;++trials) {
-      if (StringFragmentation(blob,bloblist,particlelist,nhep)) return true;
+      if (StringFragmentation(blob,bloblist,particlelist,nhep)) return Return_Value::Success;
       if (m_maxtrials>1) 
-	msg.Error()<<"Error in Lund_Interface::Hadronize ."<<std::endl
-		   <<"   Hadronization failed. Retry event."<<std::endl;
+	msg.Error()<<"Error in Lund_Interface::Hadronize ."<<endl
+		   <<"   Hadronization failed. Retry event."<<endl;
+      return Return_Value::Retry_Event;
     }
+    return Return_Value::Success;
+  default:
+    msg.Error()<<"Error in "<<METHOD<<":"<<std::endl
+	       <<"  Unknown return value for 'Treat',"<<std::endl
+	       <<"  Will continue and hope for the best."<<std::endl;
+    rvalue.IncError(METHOD);
+    return Return_Value::Error;
   }
-  msg.Error()<<"Error in Lund_Interface::Hadronize ."<<std::endl
-	     <<"   Hadronization failed. Retry event."<<std::endl;
-  while (bloblist->size()>0) {
-    delete *bloblist->begin();
-    bloblist->erase(bloblist->begin());
-  }
-  return false;
+  return Return_Value::Nothing;
 }
 
 void Lund_Interface::Reset()
 {
   if (m_partlists.size()>0) {
-    for (std::list<Particle_List *>::iterator plit=m_partlists.begin();
+    for (list<Particle_List *>::iterator plit=m_partlists.begin();
 	 plit!=m_partlists.end();plit++) {
       do { (*plit)->pop_back(); } while (!(*plit)->empty());
       delete (*plit); 
@@ -270,17 +280,18 @@ void Lund_Interface::Reset()
 }
 
 
-bool Lund_Interface::ExtractSinglets(ATOOLS::Blob_List *bloblist,ATOOLS::Particle_List *pl) 
+Return_Value::code Lund_Interface::ExtractSinglets(Blob_List *bloblist,Particle_List *pl) 
 {
   Reset();
-  std::list<Particle *> plist;
+  list<Particle *> plist;
   Particle * part;
   for (Blob_List::iterator blit=bloblist->begin();blit!=bloblist->end();++blit) {
-    if ((*blit)->Type()==btp::FS_Shower || 
-	(*blit)->Type()==btp::IS_Shower ||
-	(*blit)->Type()==btp::Shower ||
-	(*blit)->Type()==btp::Hard_Collision ||
-	(*blit)->Type()==btp::Beam) {
+    if ((*blit)->Status()==1 &&
+	((*blit)->Type()==btp::FS_Shower || 
+	 (*blit)->Type()==btp::IS_Shower ||
+	 (*blit)->Type()==btp::Shower ||
+	 (*blit)->Type()==btp::Hard_Collision ||
+	 (*blit)->Type()==btp::Beam)) {
       for (int i=0;i<(*blit)->NOutP();i++) {
 	part = (*blit)->OutParticle(i); 
 	if (part->Status()==1 && part->DecayBlob()==NULL && 
@@ -294,12 +305,13 @@ bool Lund_Interface::ExtractSinglets(ATOOLS::Blob_List *bloblist,ATOOLS::Particl
 	  }
 	}
       }
+      (*blit)->SetStatus(0);
     }
   }
   if (plist.empty()) {
-    msg.Debugging()<<"WARNING in Lund_Interface::PrepareFragmentationBlob:"<<std::endl
-		   <<"   No coloured particle found leaving shower blobs."<<std::endl;
-    return true;
+    msg.Debugging()<<"WARNING in Lund_Interface::PrepareFragmentationBlob:"<<endl
+		   <<"   No coloured particle found leaving shower blobs."<<endl;
+    return Return_Value::Nothing;
   }
 
   int  col1, col2;
@@ -309,7 +321,7 @@ bool Lund_Interface::ExtractSinglets(ATOOLS::Blob_List *bloblist,ATOOLS::Particl
   do {
     actsize = plist.size();
     hit1    = false;
-    for (std::list<Particle *>::iterator pit1=plist.begin();pit1!=plist.end();++pit1) {
+    for (list<Particle *>::iterator pit1=plist.begin();pit1!=plist.end();++pit1) {
       col1 = (*pit1)->GetFlow(1);
       col2 = (*pit1)->GetFlow(2);
       if (col1!=0 && col2==0) {
@@ -320,7 +332,7 @@ bool Lund_Interface::ExtractSinglets(ATOOLS::Blob_List *bloblist,ATOOLS::Particl
 	m_partlists.push_back(pli);
 	do {
 	  hit2 = false;
-	  for (std::list<Particle *>::iterator pit2=plist.begin();pit2!=plist.end();++pit2) {
+	  for (list<Particle *>::iterator pit2=plist.begin();pit2!=plist.end();++pit2) {
 	    if ((int)((*pit2)->GetFlow(2))==col1) {
 	      col1 = (*pit2)->GetFlow(1);
 	      pli->push_back((*pit2));
@@ -339,7 +351,7 @@ bool Lund_Interface::ExtractSinglets(ATOOLS::Blob_List *bloblist,ATOOLS::Particl
   do {
     actsize = plist.size();
     hit1    = false;
-    for (std::list<Particle*>::iterator pit1=plist.begin();pit1!=plist.end();++pit1) {
+    for (list<Particle*>::iterator pit1=plist.begin();pit1!=plist.end();++pit1) {
       col1 = (*pit1)->GetFlow(1);
       col2 = (*pit1)->GetFlow(2);
       if (col1!=0 && col2!=0) {
@@ -350,7 +362,7 @@ bool Lund_Interface::ExtractSinglets(ATOOLS::Blob_List *bloblist,ATOOLS::Particl
 	m_partlists.push_back(pli);
 	do {
 	  hit2 = false;
-	  for (std::list<Particle *>::iterator pit2=plist.begin();pit2!=plist.end();++pit2) {
+	  for (list<Particle *>::iterator pit2=plist.begin();pit2!=plist.end();++pit2) {
 	    if ((int)((*pit2)->GetFlow(2))==col1) {
 	      col1 = (*pit2)->GetFlow(1);
 	      col2 = (*pit2)->GetFlow(2);
@@ -367,7 +379,7 @@ bool Lund_Interface::ExtractSinglets(ATOOLS::Blob_List *bloblist,ATOOLS::Particl
   } while (actsize!=plist.size());
   
   
-  for (std::list<Particle*>::iterator pit1=plist.begin(); pit1!=plist.end();) {
+  for (list<Particle*>::iterator pit1=plist.begin(); pit1!=plist.end();) {
     if ((*pit1)->Flav()==Flavour(kf::tau) ||
 	(*pit1)->Flav()==Flavour(kf::tau).Bar()) {
       pli  = new Particle_List;
@@ -378,20 +390,20 @@ bool Lund_Interface::ExtractSinglets(ATOOLS::Blob_List *bloblist,ATOOLS::Particl
     else pit1++;
   }	  
   if (!plist.empty()) {
-    msg.Error()<<"ERROR in Lund_Interface::ExtractSinglets : "<<std::endl
-	       <<"   Failed to arrange all particles leaving shower blobs in colour singlets."<<std::endl
-	       <<"   Remaining particles are : "<<std::endl;
-    for (std::list<Particle*>::iterator pit1=plist.begin();pit1!=plist.end();++pit1) 
-      msg.Error()<<"   "<<(*pit1)<<std::endl;
-    msg.Error()<<"   Reset, return false and hope for the best."<<std::endl;
+    msg.Error()<<"ERROR in Lund_Interface::ExtractSinglets : "<<endl
+	       <<"   Failed to arrange all particles leaving shower blobs in colour singlets."<<endl
+	       <<"   Remaining particles are : "<<endl;
+    for (list<Particle*>::iterator pit1=plist.begin();pit1!=plist.end();++pit1) 
+      msg.Error()<<"   "<<(*pit1)<<endl;
+    msg.Error()<<"   Reset, return false and hope for the best."<<endl;
     Reset();
-    return false;
+    return Return_Value::Error;
   }
 
-  return true;
+  return Return_Value::Success;
 }
 
-int Lund_Interface::PrepareFragmentationBlob(ATOOLS::Blob *blob) 
+int Lund_Interface::PrepareFragmentationBlob(Blob *blob) 
 {
   int nhep = 0;
   if (nhep==0) {
@@ -411,7 +423,7 @@ int Lund_Interface::PrepareFragmentationBlob(ATOOLS::Blob *blob)
   
   Particle * part;
 
-  for (std::list<Particle_List *>::iterator plit=m_partlists.begin();
+  for (list<Particle_List *>::iterator plit=m_partlists.begin();
        plit!=m_partlists.end();) {
     part = *(*plit)->begin();
     if (part->Flav()==Flavour(kf::tau) ||
@@ -430,7 +442,7 @@ int Lund_Interface::PrepareFragmentationBlob(ATOOLS::Blob *blob)
 
   // Colourful stuff
   if (m_partlists.size()==0) return nhep;
-  for (std::list<Particle_List *>::iterator plit=m_partlists.begin();
+  for (list<Particle_List *>::iterator plit=m_partlists.begin();
        plit!=m_partlists.end();) {
     part = *(*plit)->begin();
     if (part->GetFlow(1)!=0 && part->GetFlow(2)==0) {
@@ -448,7 +460,7 @@ int Lund_Interface::PrepareFragmentationBlob(ATOOLS::Blob *blob)
   
   if (m_partlists.size()==0) return nhep;
   Particle * help,* help1;
-  for (std::list<Particle_List *>::iterator plit=m_partlists.begin();
+  for (list<Particle_List *>::iterator plit=m_partlists.begin();
        plit!=m_partlists.end();) {
     part = *(*plit)->begin();
     if (part->GetFlow(1)!=0 && part->GetFlow(2)!=0) {
@@ -477,10 +489,10 @@ int Lund_Interface::PrepareFragmentationBlob(ATOOLS::Blob *blob)
       plit = m_partlists.erase(plit);
     }
     else {
-      msg.Error()<<"ERROR in Lund_Interface::PrepareFragmentationBlob : "<<std::endl
-		 <<"   No octet found although expected, particle is : "<<std::endl
-		 <<(*plit)<<std::endl
-		 <<"   will abort."<<std::endl;
+      msg.Error()<<"ERROR in Lund_Interface::PrepareFragmentationBlob : "<<endl
+		 <<"   No octet found although expected, particle is : "<<endl
+		 <<(*plit)<<endl
+		 <<"   will abort."<<endl;
       abort();
     }
   }
@@ -491,8 +503,8 @@ int Lund_Interface::PrepareFragmentationBlob(ATOOLS::Blob *blob)
 
 
 
-bool Lund_Interface::StringFragmentation(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
-					 ATOOLS::Particle_List *pl,int nhep) 
+bool Lund_Interface::StringFragmentation(Blob *blob,Blob_List *bloblist,
+					 Particle_List *pl,int nhep) 
 {
   hepevt.nevhep=0;
   hepevt.nhep=nhep;
@@ -500,23 +512,23 @@ bool Lund_Interface::StringFragmentation(ATOOLS::Blob *blob,ATOOLS::Blob_List *b
   pydat1.mstu[70-1]=1;
   pydat1.mstu[71-1]=hepevt.nhep;
   size_t errors=s_errors;
-  //std::cout<<"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"<<std::endl;
+  //cout<<"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"<<endl;
   //pylist(1);
   pyexec();
-  //std::cout<<"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"<<std::endl;
+  //cout<<"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"<<endl;
   //pylist(2);
-  //std::cout<<"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"<<std::endl;
+  //cout<<"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"<<endl;
   pyhepc(1);
   pydat1.mstu[70-1]=2;
   pydat1.mstu[72-1]=hepevt.nhep;
   //if (msg.LevelIsDebugging()) {
-  //  msg.Out()<<std::endl<<std::endl;
+  //  msg.Out()<<endl<<endl;
   //}
   FillPrimaryHadronsInBlob(blob,bloblist,pl);
   return s_errors==errors;
 }
 
-void Lund_Interface::AddPartonToString(ATOOLS::Particle *parton,int &nhep)
+void Lund_Interface::AddPartonToString(Particle *parton,int &nhep)
 {
   hepevt.idhep[nhep]=parton->Flav().HepEvt();
   for (short int j=1; j<4; ++j) hepevt.phep[nhep][j-1]=parton->Momentum()[j];
@@ -534,8 +546,8 @@ void Lund_Interface::AddPartonToString(ATOOLS::Particle *parton,int &nhep)
   nhep++;
 }
 
-void Lund_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
-					      ATOOLS::Particle_List *pl)
+void Lund_Interface::FillPrimaryHadronsInBlob(Blob *blob,Blob_List *bloblist,
+					      Particle_List *pl)
 {
   //pylist(1);
   m_secondarymap.clear();
@@ -551,10 +563,10 @@ void Lund_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_Li
 	 flav==Flavour(kf::tau).Bar()) &&
 	hepevt.jmohep[i][0]==0 && hepevt.jmohep[i][1]==0) {
       /*
-	std::cout<<"HepEvt : "<<i<<" "<<hepevt.isthep[i]<<" "<<hepevt.idhep[i]
+	cout<<"HepEvt : "<<i<<" "<<hepevt.isthep[i]<<" "<<hepevt.idhep[i]
 	<<" "<<hepevt.jmohep[i][0]<<" "<<hepevt.jmohep[i][1]
 	<<" "<<hepevt.jdahep[i][0]<<" "<<hepevt.jdahep[i][1]
-	<<" "<<flav<<" -> new method."<<std::endl;
+	<<" "<<flav<<" -> new method."<<endl;
       */
       FillPrimaryTauInBlob(i,blob,bloblist,pl);
       continue;
@@ -582,15 +594,15 @@ void Lund_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_Li
   }
   blob->SetStatus(0);
 
-  //for(std::map<Particle *,int>::const_iterator
+  //for(map<Particle *,int>::const_iterator
   //	it=m_secondarymap.begin(); it!=m_secondarymap.end(); ++it) {
-  //  std::cout<<*it->first<<"  :  "<<it->second<<std::endl;
+  //  cout<<*it->first<<"  :  "<<it->second<<endl;
   //}
 }
 
-void Lund_Interface::FillPrimaryTauInBlob(int pos,ATOOLS::Blob *blob,
+void Lund_Interface::FillPrimaryTauInBlob(int pos,Blob *blob,
 					  Blob_List *bloblist,
-					  ATOOLS::Particle_List *pl)
+					  Particle_List *pl)
 {
   Particle *particle;
   Flavour flav;
@@ -617,22 +629,22 @@ void Lund_Interface::FillPrimaryTauInBlob(int pos,ATOOLS::Blob *blob,
   blob->SetStatus(0);
 }
 
-bool Lund_Interface::FindDecay( ATOOLS::Particle * part )
+bool Lund_Interface::FindDecay( Particle * part )
 {
   if (m_secondarymap.find(part)==m_secondarymap.end()) return false; 
   return true;
 }  
 
-void Lund_Interface::PerformAllDecays(ATOOLS::Blob * blob)
+void Lund_Interface::PerformAllDecays(Blob * blob)
 {
   if (blob->Type()!=btp::Cluster_Formation &&
       blob->Type()!=btp::Fragmentation) {
-    msg.Error()<<"ERROR in Lund_Interface::PerformAllDecays : "<<std::endl
-	       <<"   Blob is of wrong type, "<<blob->Type()<<"."<<std::endl
-	       <<(*blob)<<"   will continue and hope for the best."<<std::endl;
+    msg.Error()<<"ERROR in Lund_Interface::PerformAllDecays : "<<endl
+	       <<"   Blob is of wrong type, "<<blob->Type()<<"."<<endl
+	       <<(*blob)<<"   will continue and hope for the best."<<endl;
     return;
   }
-  //std::cout<<"Translate this blob : "<<std::endl<<(*blob)<<std::endl;
+  //cout<<"Translate this blob : "<<endl<<(*blob)<<endl;
   Vec4D check=Vec4D(0.,0.,0.,0.);
   Particle * part;
   for (int i=0;i<blob->NOutP();i++) {
@@ -657,27 +669,28 @@ void Lund_Interface::PerformAllDecays(ATOOLS::Blob * blob)
   pyhepc(2);
   pydat1.mstu[70-1]=1;
   pydat1.mstu[71-1]=hepevt.nhep;
-  //std::cout<<"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"<<std::endl;
+  //cout<<"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"<<endl;
   //pylist(1);
   pyexec();
-  //std::cout<<"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"<<std::endl;
+  //cout<<"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"<<endl;
   //pylist(2);
-  //std::cout<<"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"<<std::endl;
+  //cout<<"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"<<endl;
   pyhepc(1);
-  //std::cout<<"---------------------------------------------------------"<<std::endl;
+  //cout<<"---------------------------------------------------------"<<endl;
   blob->SetStatus(0);
   m_secondarymap.clear();
   for (int i=0;i<blob->NOutP();i++) {  
     if (hepevt.jdahep[i][0]!=0 && hepevt.jdahep[i][1]!=0) 
       m_secondarymap[blob->OutParticle(i)]=i;
   }
-  //abort();
 }
 
-void Lund_Interface::PerformDecay( ATOOLS::Particle * part, 
-				   ATOOLS::Blob_List * blob_list, 
-				   ATOOLS::Particle_List * part_list )
+void Lund_Interface::PerformDecay(Particle * part, 
+				  Blob_List * blob_list, 
+				  Particle_List * part_list )
 {
+  std::cout<<METHOD<<" "<<part->Status()<<std::endl;
+  if (part->Status()!=1) return;
   // choose decay channel and kinematics
   int pos = m_secondarymap[part];		// find particle in secondary map
   int daughter1 = hepevt.jdahep[pos][0]-1, daughter2 = hepevt.jdahep[pos][1];
@@ -692,6 +705,7 @@ void Lund_Interface::PerformDecay( ATOOLS::Particle * part,
   blob->AddToInParticles( part );
   if( part->Info() == 'P' ) part->SetInfo('p');
   if( part->Info() == 'D' ) part->SetInfo('d');
+  part->SetStatus(2);
   blob_list->push_back( blob );
   Particle * particle;						// daughter part.
   Vec4D momentum;						// daughter mom.
@@ -714,40 +728,38 @@ void Lund_Interface::PerformDecay( ATOOLS::Particle * part,
     // check if daughter can be treated as well
     if (hepevt.jdahep[i][0]!=0 && hepevt.jdahep[i][1]!=0) {
       m_secondarymap[particle]=i;
-      blob->SetStatus(1);
+      blob->SetStatus(0);
       PerformDecay( particle, blob_list, part_list );
     }
   }
 }
   
-bool Lund_Interface::FillDecay(ATOOLS::Particle * part,ATOOLS::Blob_List *bloblist,
-			       ATOOLS::Particle_List *pl)
+bool Lund_Interface::FillDecay(Particle * part,Blob_List *bloblist,
+			       Particle_List *pl)
 {
   //msg_Tracking()<<"Lund_Interface::FillDecay()"<<endl;
-  Blob *decay;
-  Particle *particle=NULL;
   if (m_secondarymap.find(part)==m_secondarymap.end()) return true; 
   int pos = m_secondarymap[part];
-  decay = new Blob();
+  Blob * decay(new Blob());
   decay->SetStatus(1);
   decay->SetType(btp::Hadron_Decay);
   decay->SetTypeSpec("Pythia_v6.214");
   decay->SetId();
-  decay->AddToInParticles(particle);
-  if (particle->Info()=='P') particle->SetInfo('p');
-  if (particle->Info()=='D') particle->SetInfo('d');
-  particle->SetStatus(2);
+  decay->AddToInParticles(part);
+  if (part->Info()=='P') part->SetInfo('p');
+  if (part->Info()=='D') part->SetInfo('d');
+  part->SetStatus(2);
   bloblist->push_back(decay);
   FillSecondaryHadronsInBlob(decay,bloblist,hepevt.jdahep[pos][0]-1,hepevt.jdahep[pos][1],pl);
   return true;
 }
 
 
-void Lund_Interface::FillSecondaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
-						int daughter1,int daughter2,ATOOLS::Particle_List *pl) 
+void Lund_Interface::FillSecondaryHadronsInBlob(Blob *blob,Blob_List *bloblist,
+						int daughter1,int daughter2,Particle_List *pl) 
 {
-  Blob *decay;
-  Particle *particle;
+  Blob * decay(NULL);
+  Particle * particle(NULL);
   Flavour flav;
   Vec4D momentum, position;
   for (int i=daughter1;i<daughter2;++i) {
@@ -758,7 +770,7 @@ void Lund_Interface::FillSecondaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_
 		   hepevt.vhep[i][1],hepevt.vhep[i][2]);
     particle = new Particle(-1,flav,momentum);
     if (pl) particle->SetNumber(pl->size());
-    else particle->SetNumber(0);
+       else particle->SetNumber(0);
     particle->SetStatus(1);
     particle->SetInfo('D');
     blob->SetPosition(position);
@@ -766,7 +778,6 @@ void Lund_Interface::FillSecondaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_
     blob->AddToOutParticles(particle);
     if (hepevt.jdahep[i][0]!=0 && hepevt.jdahep[i][1]!=0) {
       decay = new Blob();
-      decay->SetStatus(1);
       decay->SetType(btp::Hadron_Decay);
       decay->SetTypeSpec("Pythia_v6.214");
       decay->SetId();
@@ -778,6 +789,7 @@ void Lund_Interface::FillSecondaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_
       FillSecondaryHadronsInBlob(decay,bloblist,hepevt.jdahep[i][0]-1,hepevt.jdahep[i][1],pl);
     }
   }
+  blob->SetStatus(0);
 }
 
 
@@ -792,9 +804,9 @@ void Lund_Interface::Error(const int error)
     msg.Error()<<"Lund_Interface::Error("<<error<<") "<<om::red
 	       <<"Pythia calls PYERRM("<<error<<") in event "
 	       <<rpa.gen.NumberOfDicedEvents()<<"."
-	       <<om::reset<<std::endl;
+	       <<om::reset<<endl;
     if (msg.LevelIsDebugging()) {
-      msg_Tracking()<<*s_bloblist<<std::endl;
+      msg_Tracking()<<*s_bloblist<<endl;
       pylist(2);
     }
   }
@@ -803,17 +815,17 @@ void Lund_Interface::Error(const int error)
 void Lund_Interface::NextFile(const bool newfile) 
 {
   if (!m_writeout) return; 
-  std::string oldfile;
+  string oldfile;
   bool oldfileexists=false;
-  std::ofstream *outfile=p_hepevt->GetOutStream();
+  ofstream *outfile=p_hepevt->GetOutStream();
   if (outfile!=NULL) {
     oldfileexists=true;
-    oldfile=m_outfile+ToString(m_curfile)+std::string(".evts");
+    oldfile=m_outfile+ToString(m_curfile)+string(".evts");
     if (newfile) 
-      (*outfile)<<(m_outfile+ToString(++m_curfile)+std::string(".evts"))<<std::endl;
+      (*outfile)<<(m_outfile+ToString(++m_curfile)+string(".evts"))<<endl;
     if (m_compress) {
-      system((std::string("gzip ")+oldfile+std::string(".gz ")+oldfile).c_str());
-      system((std::string("rm ")+oldfile).c_str());
+      system((string("gzip ")+oldfile+string(".gz ")+oldfile).c_str());
+      system((string("rm ")+oldfile).c_str());
     }
   }
   if (!newfile) {
@@ -830,11 +842,11 @@ void Lund_Interface::NextFile(const bool newfile)
     }
     return;
   }
-  std::string file = std::string(m_outfile+ToString(m_curfile)+std::string(".evts"));
+  string file = string(m_outfile+ToString(m_curfile)+string(".evts"));
   p_hepevt->ChangeOutStream(file,m_evtsperfile);
 }
 
-bool Lund_Interface::OneEvent(Blob_List * const blobs,double &weight)
+Return_Value::code Lund_Interface::OneEvent(Blob_List * const blobs,double &weight)
 {
   bool okay = false;
   for (int i=0;i<200;i++) {
@@ -862,5 +874,6 @@ bool Lund_Interface::OneEvent(Blob_List * const blobs,double &weight)
       break; 
     }
   }
-  return okay;
+  if (okay) return Return_Value::Success;
+  return Return_Value::Nothing;
 } 

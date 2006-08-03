@@ -25,19 +25,18 @@ Hadronization::Hadronization(Beam_Remnant_Handler * _beamremnant,Fragmentation_H
 
 Hadronization::~Hadronization() {}
 
-bool Hadronization::Treat(ATOOLS::Blob_List *bloblist,double &weight) 
+Return_Value::code Hadronization::Treat(ATOOLS::Blob_List *bloblist,double &weight) 
 {
   PROFILE_LOCAL("Hadronization::Treat");
   if (bloblist->empty()) {
     msg.Error()<<"Hadronization::Treat("<<bloblist<<","<<weight<<"): "<<endl
 	       <<"   Blob list contains "<<bloblist->size()<<" entries."<<endl
 	       <<"   Continue and hope for the best."<<endl;
-    return false;
+    return Return_Value::Error;
   }
   p_beamremnanthandler->FillBeamBlobs(bloblist);
   p_beamremnanthandler->FillBunchBlobs(bloblist);
-  p_fragmentationhandler->PerformFragmentation(bloblist);
-  return false;
+  return p_fragmentationhandler->PerformFragmentation(bloblist);
 }
 
 
