@@ -375,8 +375,8 @@ Sudakov_Calculator::Toolbox::~Toolbox() {
 #endif
   //Responsibility of deleting running alphaS is elsewhere!
   //for(size_t i=0; i<m_ras.size(); ++i) if(m_ras[i]) delete m_ras[i];
-  //Responsibility of deleting the PDFs is here!
-  for(size_t i=0; i<m_pdf.size(); ++i) if(m_pdf[i]) delete m_pdf[i];
+  //Responsibility of deleting the PDFs is now with PDF_Base::Box!
+  //for(size_t i=0; i<m_pdf.size(); ++i) if(m_pdf[i]) delete m_pdf[i];
 }
 
 

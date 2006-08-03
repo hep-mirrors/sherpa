@@ -6,11 +6,26 @@
 
 using namespace PDF;
 
-PDF_Base::PDF_Base():
-  m_type("none"),
-  m_exponent(1.), m_rescale(1.),
-  m_ren_scale_factor(1.)
-{
+
+
+PDF_Base::Box PDF_Base::s_box=PDF_Base::Box();
+
+PDF_Base::Box::~Box() {
+  for(unsigned i=0; i<v_pdfp.size(); ++i) if(v_pdfp[i]) delete v_pdfp[i];
+}
+
+std::size_t PDF_Base::Box::TrueEntryNumber() const {
+  std::size_t n=0;
+  for(unsigned i=0; i<v_pdfp.size(); ++i) if(v_pdfp[i]) ++n;
+  return n;
+}
+
+
+
+PDF_Base::PDF_Base()
+  : m_type("none"), m_exponent(1.), m_rescale(1.), m_ren_scale_factor(1.) {
+
+  s_box.v_pdfp.push_back(this);
   m_ren_scale_factor = ATOOLS::rpa.gen.RenormalizationScaleFactor();
   if(m_ren_scale_factor<=0.0) {
     m_ren_scale_factor=1.0;
@@ -18,13 +33,17 @@ PDF_Base::PDF_Base():
 		       <<"!Renormalization! scale factor setting: "
 		       <<"Set it to 1.0 and go on.}\n";
   }
+  msg_Tracking()<<s_box.v_pdfp.size()<<"|"<<s_box.TrueEntryNumber()
+		<<"    PDF_Base CONSTRUCT "<<m_copies.size()<<" "<<this
+		<<std::endl;
 }
 
 PDF_Base::~PDF_Base() {
-  for(size_t i=0; i<m_copies.size(); ++i) {
-    if(m_copies[i]) delete m_copies[i];
-  }
-  //std::cout<<"          PDF_BASE DESTRUCT "<<m_copies.size()<<std::endl;///////
+  for(std::size_t i=0; i<s_box.v_pdfp.size(); ++i)
+    if(this==s_box.v_pdfp[i]) s_box.v_pdfp[i]=NULL;
+  msg_Tracking()<<s_box.v_pdfp.size()<<"|"<<s_box.TrueEntryNumber()
+		<<"    PDF_Base DESTRUCT "<<m_copies.size()<<" "<<this
+		<<std::endl;
 }
 
 bool PDF_Base::Collinear(const double kp2) const

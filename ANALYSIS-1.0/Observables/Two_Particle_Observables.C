@@ -204,7 +204,7 @@ void Two_Particle_DEta::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double we
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DEFINE_OBSERVABLE_GETTER(Two_Particle_Y,Two_Particle_Y_Getter,"Y")
+DEFINE_OBSERVABLE_GETTER(Two_Particle_Y,Two_Particle_Y_Getter,"Y2")
 
 void Two_Particle_Y::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, int ncount) 
 {
