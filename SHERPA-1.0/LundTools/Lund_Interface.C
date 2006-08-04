@@ -237,26 +237,28 @@ Return_Value::code Lund_Interface::Hadronize(Blob_List *bloblist,
     rvalue.IncRetryEvent(METHOD);
     return Return_Value::Retry_Event;
   case int(Return_Value::Success) :
-    //     for (list<Particle_List *>::iterator lit=m_partlists.begin();
-    // 	 lit!=m_partlists.end();++lit) PRINT_INFO(**lit);
-    if (m_partlists.size()==0) {
-      return Return_Value::Success; // no colours in event
+    {
+      //     for (list<Particle_List *>::iterator lit=m_partlists.begin();
+      // 	 lit!=m_partlists.end();++lit) PRINT_INFO(**lit);
+      if (m_partlists.size()==0) {
+	return Return_Value::Success; // no colours in event
+      }
+      Blob * blob = new Blob();
+      blob->SetId();
+      blob->SetType(btp::Fragmentation);
+      blob->SetTypeSpec("Pythia_v6.214");
+      bloblist->push_back(blob);
+      
+      int nhep = PrepareFragmentationBlob(blob);
+      for (size_t trials=0;trials<m_maxtrials;++trials) {
+	if (StringFragmentation(blob,bloblist,particlelist,nhep)) return Return_Value::Success;
+	if (m_maxtrials>1) 
+	  msg.Error()<<"Error in Lund_Interface::Hadronize ."<<endl
+		     <<"   Hadronization failed. Retry event."<<endl;
+	return Return_Value::Retry_Event;
+      }
+      return Return_Value::Success;
     }
-    Blob * blob = new Blob();
-    blob->SetId();
-    blob->SetType(btp::Fragmentation);
-    blob->SetTypeSpec("Pythia_v6.214");
-    bloblist->push_back(blob);
-    
-    int nhep = PrepareFragmentationBlob(blob);
-    for (size_t trials=0;trials<m_maxtrials;++trials) {
-      if (StringFragmentation(blob,bloblist,particlelist,nhep)) return Return_Value::Success;
-      if (m_maxtrials>1) 
-	msg.Error()<<"Error in Lund_Interface::Hadronize ."<<endl
-		   <<"   Hadronization failed. Retry event."<<endl;
-      return Return_Value::Retry_Event;
-    }
-    return Return_Value::Success;
   default:
     msg.Error()<<"Error in "<<METHOD<<":"<<std::endl
 	       <<"  Unknown return value for 'Treat',"<<std::endl

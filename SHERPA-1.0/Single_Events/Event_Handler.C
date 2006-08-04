@@ -129,14 +129,16 @@ bool Event_Handler::GenerateEvent(int mode)
 	      break;
 	    case Return_Value::Error :
 	      return false;
-	    case Return_Value::Retry_Event :
-	      retry = true;
-	      Blob * hardcopy = new Blob(hardblob);
-	      CleanUpEvent();
-	      hardblob = hardcopy;
-	      hardblob->SetStatus(2);
-	      m_blobs.push_back(hardblob);
-	      break;
+	    case Return_Value::Retry_Event : 
+	      {
+		retry = true;
+		Blob * hardcopy = new Blob(hardblob);
+		CleanUpEvent();
+		hardblob = hardcopy;
+		hardblob->SetStatus(2);
+		m_blobs.push_back(hardblob);
+		break;
+	      }
 	    default:
 	      msg.Error()<<"Error in "<<METHOD<<":"<<std::endl
 			 <<"  Unknown return value for 'Treat',"<<std::endl
@@ -167,13 +169,15 @@ bool Event_Handler::GenerateEvent(int mode)
 	    case Return_Value::Error :
 	      return false;
 	    case Return_Value::Retry_Event :
-	      retry = true;
-	      Blob * hardcopy = new Blob(hardblob);
-	      CleanUpEvent();
-	      hardblob = hardcopy;
-	      hardblob->SetStatus(2);
-	      m_blobs.push_back(hardblob);
-	      break;
+	      {
+		retry = true;
+		Blob * hardcopy = new Blob(hardblob);
+		CleanUpEvent();
+		hardblob = hardcopy;
+		hardblob->SetStatus(2);
+		m_blobs.push_back(hardblob);
+		break;
+	      }
 	    default:
 	      msg.Error()<<"Error in "<<METHOD<<":"<<std::endl
 			 <<"  Unknown return value for 'Treat',"<<std::endl
