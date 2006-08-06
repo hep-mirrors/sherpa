@@ -1,4 +1,4 @@
-#include "Single_Process_MHV.H"
+#include "Single_Process_MHV2.H"
 #include "Run_Parameter.H"
 #include "ISR_Base.H"
 
@@ -20,7 +20,7 @@ using namespace BEAM;
 using namespace ATOOLS;
 using namespace std;
 
-int fako(int N)
+int fako2(int N)
 {
   if (N == 0) return 1;
   if (N < 0) return 0;  
@@ -35,14 +35,14 @@ int fako(int N)
 
   ------------------------------------------------------------------------------- */
 
-Single_Process_MHV::Single_Process_MHV(int _nin,int _nout,Flavour * _fl,
+Single_Process_MHV2::Single_Process_MHV2(int _nin,int _nout,Flavour * _fl,
 			       ISR_Handler * _isr,Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			       int _gen_str,int _orderQCD, int _orderEW,
 			       int _kfactorscheme, int _scalescheme,double _scale,
 			       Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi, double ycut,double error,std::string e_func) :
   Process_Base(NULL,_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
 	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,ycut,error),
-  m_sfactor(1.), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_MHVcalc(0), p_perm(0), p_partner(this), 
+  m_sfactor(1.), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_MHVamp(0), p_momlist(0), p_partner(this), 
   m_helsample(false), m_inithelsample(false), m_throws(0), m_helresult(0.), m_helresult2(0.)
 {
 //   p_hcres=0;
@@ -67,7 +67,7 @@ Single_Process_MHV::Single_Process_MHV(int _nin,int _nout,Flavour * _fl,
   if (_seldata) p_selector = new Combined_Selector(m_nin,m_nout,p_flavours,_seldata,ycut);
   else {
     if (m_nout>2)
-      msg.Out()<<"WARNING in Single_Process_MHV "<<m_name<<endl
+      msg.Out()<<"WARNING in Single_Process_MHV2 "<<m_name<<endl
 	       <<"   No selection cuts specified. Init No_Selector !"<<endl;
     p_selector = new No_Selector();
   }
@@ -85,7 +85,7 @@ Single_Process_MHV::Single_Process_MHV(int _nin,int _nout,Flavour * _fl,
 //     unsigned int  mode_dir = 0755;
 //     ATOOLS::MakeDir((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename).c_str(),mode_dir); 
 //   }
-//   msg_Tracking()<<"Initialized Single_Process_MHV : "<<m_name<<"."<<std::endl;
+//   msg_Tracking()<<"Initialized Single_Process_MHV2 : "<<m_name<<"."<<std::endl;
 
   if (m_scalescheme==65 && m_updatescales) {
     double dr   = rpa.gen.DeltaR();
@@ -98,14 +98,14 @@ Single_Process_MHV::Single_Process_MHV(int _nin,int _nout,Flavour * _fl,
 }
 
 
-Single_Process_MHV::Single_Process_MHV(Process_Info* pinfo,int _nin,int _nout,Flavour * _fl,
+Single_Process_MHV2::Single_Process_MHV2(Process_Info* pinfo,int _nin,int _nout,Flavour * _fl,
 			       ISR_Handler * _isr,Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			       int _gen_str,int _orderQCD, int _orderEW,
 			       int _kfactorscheme, int _scalescheme,double _scale,
 			       Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi, double ycut,double error,std::string e_func) :   
   Process_Base(pinfo,_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
 	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,ycut,error),
-  m_sfactor(1.), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_MHVcalc(0), p_perm(0), p_partner(this), 
+  m_sfactor(1.), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_MHVamp(0), p_momlist(0),  p_partner(this), 
   m_helsample(false), m_inithelsample(false), m_throws(0), m_helresult(0.), m_helresult2(0.)
 {
 //   p_hcres=0;
@@ -130,7 +130,7 @@ Single_Process_MHV::Single_Process_MHV(Process_Info* pinfo,int _nin,int _nout,Fl
   if (_seldata) p_selector = new Combined_Selector(m_nin,m_nout,p_flavours,_seldata,ycut);
   else {
     if (m_nout>2)
-      msg.Out()<<"WARNING in Single_Process_MHV "<<m_name<<endl
+      msg.Out()<<"WARNING in Single_Process_MHV2 "<<m_name<<endl
 	       <<"   No selection cuts specified. Init No_Selector !"<<endl;
     p_selector = new No_Selector();
   }
@@ -148,7 +148,7 @@ Single_Process_MHV::Single_Process_MHV(Process_Info* pinfo,int _nin,int _nout,Fl
 //     unsigned int  mode_dir = 0755;
 //     ATOOLS::MakeDir((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename).c_str(),mode_dir); 
 //   }
-//   msg_Tracking()<<"Initialized Single_Process_MHV : "<<m_name<<"."<<std::endl;
+//   msg_Tracking()<<"Initialized Single_Process_MHV2 : "<<m_name<<"."<<std::endl;
 
   if (m_scalescheme==65 && m_updatescales) {
     double dr   = rpa.gen.DeltaR();
@@ -161,24 +161,26 @@ Single_Process_MHV::Single_Process_MHV(Process_Info* pinfo,int _nin,int _nout,Fl
 }
 
 
-Single_Process_MHV::~Single_Process_MHV()
+Single_Process_MHV2::~Single_Process_MHV2()
 {
-  if (p_hel)      {delete p_hel; p_hel=0;}
-  if (p_BS)       {delete p_BS;   p_BS=0;}
-  if (p_shand)    {delete p_shand;p_shand=0;}
-  if (p_ampl)     {delete p_ampl; p_ampl=0;}
-  if (p_psgen)    {delete p_psgen; p_psgen=0;}
-  if (p_MHVcalc)  {delete p_MHVcalc; p_MHVcalc=0;}
-  if (p_perm)     {delete p_perm; p_perm=0;}
+  if (p_hel)        {delete p_hel; p_hel=0;}
+  if (p_BS)         {delete p_BS;   p_BS=0;}
+  if (p_shand)      {delete p_shand;p_shand=0;}
+  if (p_ampl)       {delete p_ampl; p_ampl=0;}
+  if (p_psgen)      {delete p_psgen; p_psgen=0;}
+  if (p_MHVamp)     {delete p_MHVamp; p_MHVamp=0;}
+#ifndef Basic_Sfuncs_In_MHV 
+  if (p_momlist)    {delete p_momlist; p_momlist=0;}
+#endif
 }
 
 /*------------------------------------------------------------------------------
   
-  Generic stuff for initialization of Single_Process_MHVes
+  Generic stuff for initialization of Single_Process_MHV2es
       
   ------------------------------------------------------------------------------*/
 
-void Single_Process_MHV::PolarizationNorm() {
+void Single_Process_MHV2::PolarizationNorm() {
   int                   is_massless_pol  = m_pol.Massless_Vectors(m_nin,p_flin);
   if (!is_massless_pol) is_massless_pol  = m_pol.Massless_Vectors(m_nout,p_flout);
   int                   nmassive_pols    = m_pol.Massive_Vectors(m_nin,p_flin);
@@ -212,7 +214,7 @@ void Single_Process_MHV::PolarizationNorm() {
 #endif
 }
 
-double Single_Process_MHV::SymmetryFactors()
+double Single_Process_MHV2::SymmetryFactors()
 {
   double sym = 1.;
   Fl_Iter fli;
@@ -227,13 +229,13 @@ double Single_Process_MHV::SymmetryFactors()
 	if ((p_flout[j]==hflav.Bar()) && (hflav != hflav.Bar()))  cap++;
       }
     }
-    if (cp>1)  sym *= double(fako(cp));
-    if (cap>1) sym *= double(fako(cap));
+    if (cp>1)  sym *= double(fako2(cp));
+    if (cap>1) sym *= double(fako2(cap));
   } 
   return 1./sym;
 }
 
-void Single_Process_MHV::FixISRThreshold()
+void Single_Process_MHV2::FixISRThreshold()
 {
   double m_mass_in  = 0.;
   double m_mass_out = 0.;
@@ -255,7 +257,7 @@ void Single_Process_MHV::FixISRThreshold()
 
 
 
-int Single_Process_MHV::InitAmplitude(Interaction_Model_Base * model,Topology* top,Vec4D *& _testmoms,
+int Single_Process_MHV2::InitAmplitude(Interaction_Model_Base * model,Topology* top,Vec4D *& _testmoms,
 				  vector<Process_Base *> & links,vector<Process_Base *> & errs,
 				  int & totalsize, int & procs, int & current_atom)
 {
@@ -269,26 +271,28 @@ int Single_Process_MHV::InitAmplitude(Interaction_Model_Base * model,Topology* t
 
   p_hel    = new Helicity(m_nin,m_nout,p_flavours,p_pl);
   p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvector,p_flavours,p_b);  
-  p_MHVcalc = new MHV_Calculator(m_nin+m_nout,p_BS);
-  p_perm   = new Permutation(m_nin+m_nout-1);
+
+  //////////////////////////////////////////////// 
+#ifdef Basic_Sfuncs_In_MHV
+  p_momlist = p_BS; 
+#else
+  p_momlist = new MomentumList(m_nin,m_nout); 
+#endif 
+
+  int *plist = new int[m_nin+m_nout];
+  for (size_t i=0;i<m_nin;i++) plist[i]=p_flin[i];
+  for (size_t i=m_nin;i<m_nin+m_nout;i++) plist[i]=-p_flout[i-m_nin];
+  p_MHVamp = FullAmplitude_MHV_Handler(m_nin+m_nout,plist,p_momlist); 
+
+  delete [] plist;
+  //////////////////////////////////////////////
+
   p_shand  = new String_Handler(m_gen_str,p_BS);
 
-//   p_hcres   = new double*[p_hel->MaxHel()];
-//   p_hcalpha = new double*[p_hel->MaxHel()];
-//   int cfn=p_perm->MaxNumber();  
-//   for (int i=0;i<p_hel->MaxHel();i++) {
-//     p_hcres[i]   = new double[cfn+1];
-//     p_hcalpha[i] = new double[cfn+1];
-//     for (int j=0;j<=cfn;j++) {
-//       p_hcres[i][j]   = 0.;
-//       p_hcalpha[i][j] = 0.;
-//     }
-//   }
-  
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_flavours,p_b,p_pinfo,model,top,m_orderQCD,m_orderEW,
 				   p_BS,p_shand,m_print_graphs,0);
   if (p_ampl->GetGraphNumber()==0) {
-    msg_Tracking()<<"Single_Process_MHV::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
+    msg_Tracking()<<"Single_Process_MHV2::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return -1;
   }
   procs++;
@@ -296,7 +300,7 @@ int Single_Process_MHV::InitAmplitude(Interaction_Model_Base * model,Topology* t
      if (p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler(),m_sfactor)) {
        if (p_hel->Compare(links[j]->GetHelicity(),m_nin+m_nout)) {
  	m_sfactor = sqr(m_sfactor);
- 	msg_Tracking()<<"Single_Process_MHV::InitAmplitude : Found compatible process for "<<m_name<<" : "<<links[j]->Name()<<endl;
+ 	msg_Tracking()<<"Single_Process_MHV2::InitAmplitude : Found compatible process for "<<m_name<<" : "<<links[j]->Name()<<endl;
 
  	if (!FoundMappingFile(m_libname,m_pslibname)) {
  	  if (IsFile(rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/")+links[j]->Name()+string(".map"))) { 
@@ -307,7 +311,7 @@ int Single_Process_MHV::InitAmplitude(Interaction_Model_Base * model,Topology* t
  	  }
  	}
 	
- 	p_partner = (Single_Process_MHV*)links[j];
+ 	p_partner = (Single_Process_MHV2*)links[j];
  	Minimize();
  	return 1;
        }
@@ -324,11 +328,13 @@ int Single_Process_MHV::InitAmplitude(Interaction_Model_Base * model,Topology* t
   case 1 :
      for (size_t j=current_atom;j<links.size();j++) {
        if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
- 	msg_Tracking()<<"Single_Process_MHV::InitAmplitude : "<<std::endl
- 		      <<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
- 	p_partner   = (Single_Process_MHV*)links[j];
- 	m_pslibname = links[j]->PSLibName();
- 	break;
+	 if (CheckMapping(links[j])) {
+	   msg_Tracking()<<"Single_Process_MHV2::InitAmplitude : "<<std::endl
+			 <<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
+	   p_partner   = (Single_Process_MHV2*)links[j];
+	   m_pslibname = links[j]->PSLibName();
+	   break;
+	 }
        } 
      }
      if (p_partner==this) links.push_back(this);
@@ -345,7 +351,7 @@ int Single_Process_MHV::InitAmplitude(Interaction_Model_Base * model,Topology* t
     return 1;
     if (m_gen_str<2) return 1;
     if (p_partner!=this) {
-      msg_Tracking()<<"Single_Process_MHV::InitAmplitude : "<<std::endl
+      msg_Tracking()<<"Single_Process_MHV2::InitAmplitude : "<<std::endl
 		    <<"   Strings of process "<<m_name<<" and partner "
 		    <<p_partner->Name()<<" did not fit."<<std::endl
 		    <<"   Have to write new library."<<std::endl;
@@ -355,7 +361,7 @@ int Single_Process_MHV::InitAmplitude(Interaction_Model_Base * model,Topology* t
     return 0;
   case -3: return -3;
   default :
-    msg.Error()<<"ERROR in Single_Process_MHV::InitAmplitude : "<<std::endl
+    msg.Error()<<"ERROR in Single_Process_MHV2::InitAmplitude : "<<std::endl
 	       <<"   Failed for "<<m_name<<"."<<endl;
 //     errs.push_back(this);
     return 1;
@@ -363,7 +369,7 @@ int Single_Process_MHV::InitAmplitude(Interaction_Model_Base * model,Topology* t
 }
 
 
-int Single_Process_MHV::InitAmplitude(Interaction_Model_Base * model,Topology * top)
+int Single_Process_MHV2::InitAmplitude(Interaction_Model_Base * model,Topology * top)
 {
   if (p_momenta) { delete [] p_momenta; }
   p_momenta   = new Vec4D[m_nvector]; 
@@ -371,8 +377,23 @@ int Single_Process_MHV::InitAmplitude(Interaction_Model_Base * model,Topology * 
 
   p_hel    = new Helicity(m_nin,m_nout,p_flavours,p_pl);
   p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvector,p_flavours,p_b);  
-  p_MHVcalc = new MHV_Calculator(m_nin+m_nout,p_BS);
-  p_perm   = new Permutation(m_nin+m_nout-1);
+
+////////////////////////////////////////////////
+#ifdef Basic_Sfuncs_In_MHV
+  p_momlist = p_BS; 
+#else
+  p_momlist = new MomentumList(m_nin,m_nout); 
+#endif 
+
+  int *plist = new int[m_nin+m_nout];
+  for (size_t i=0;i<m_nin;i++) plist[i]=p_flin[i];
+  for (size_t i=m_nin;i<m_nin+m_nout;i++) plist[i]=-p_flout[i-m_nin];
+  p_MHVamp = FullAmplitude_MHV_Handler(m_nin+m_nout,plist,p_momlist);
+
+  delete [] plist;
+  //////////////////////////////////////////////
+
+
   p_shand  = new String_Handler(m_gen_str,p_BS);
 
 //   p_hcres   = new double*[p_hel->MaxHel()];
@@ -387,10 +408,12 @@ int Single_Process_MHV::InitAmplitude(Interaction_Model_Base * model,Topology * 
 //     }
 //   }
 
+
+
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_flavours,p_b,p_pinfo,model,top,m_orderQCD,m_orderEW,
 				   p_BS,p_shand,0,0);
   if (p_ampl->GetGraphNumber()==0) {
-    msg_Tracking()<<"Single_Process_MHV::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
+    msg_Tracking()<<"Single_Process_MHV2::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return -1;
   }
   p_ampl->CompleteAmplitudes(m_nin+m_nout,p_flavours,p_b,&m_pol,
@@ -406,15 +429,15 @@ int Single_Process_MHV::InitAmplitude(Interaction_Model_Base * model,Topology * 
     WriteLibrary();
     return 0;
   default :
-    msg.Error()<<"Error in Single_Process_MHV::InitAmplitude : Failed for "<<m_name<<"."<<endl;
+    msg.Error()<<"Error in Single_Process_MHV2::InitAmplitude : Failed for "<<m_name<<"."<<endl;
     return -2;
   }
 }
 
 
-void Single_Process_MHV::InitDecay(Topology* top) { }
+void Single_Process_MHV2::InitDecay(Topology* top) { }
 
-int Single_Process_MHV::Tests() {
+int Single_Process_MHV2::Tests() {
   int number      = 1;
   int gauge_test  = 1;
   int string_test = 1;
@@ -438,28 +461,28 @@ int Single_Process_MHV::Tests() {
   double M2 = 0.;
   double helvalue;
 
-  if (gauge_test) {
-    p_BS->Setk0(0);
-    p_BS->CalcEtaMu(p_momenta);  
-//     p_BS->InitGaugeTest(.9);
 
-    msg_Info()<<"Single_Process_MHV::Tests for "<<m_name<<std::endl
-	      <<"   Prepare gauge test and init helicity amplitudes. This may take some time."<<std::endl;
-    int cfn=p_perm->MaxNumber();
-    for (int j=0;j<cfn;j++) {
-      int* pm = p_perm->Get(j);
-      if (pm[0]<pm[m_nin+m_nout-2]) {
-	for (size_t i=0;i<p_hel->MaxHel();i++) { 
-	  if (p_hel->On(i)) {
-	    helvalue = p_MHVcalc->Differential(pm,(*p_hel)[i])*p_hel->PolarizationFactor(i); 
-	    M2      +=  helvalue;
-	  } 
-	}
-// 	M2     *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_flavours,p_BS));
-	m_iresult  = M2;
-      }
-    }
-  }
+ if (gauge_test) {
+#ifdef Basic_Sfuncs_In_MHV
+     p_BS->Setk0(0);
+     p_BS->CalcEtaMu(p_momenta); 
+#else
+     p_momlist->PutMomenta(p_momenta);
+#endif    
+     
+     msg_Info()<<"Single_Process_MHV2::Tests for "<<m_name<<std::endl
+	       <<"   Prepare gauge test and init helicity amplitudes. This may take some time."<<std::endl;
+
+     for (size_t i=0;i<p_hel->MaxHel();i++) { 
+	 if (p_hel->On(i)) {
+	     helvalue = p_MHVamp->MSquare((*p_hel)[i])*p_hel->PolarizationFactor(i); 
+	     M2      +=  helvalue;
+	 } 
+     }
+
+     M2  *= p_MHVamp->ParticlesNorm();
+     m_iresult  = M2;
+ }
 //   p_ampl->ClearCalcList();
 //   // To prepare for the string test.
 //   p_ampl->SetStringOn();
@@ -469,29 +492,26 @@ int Single_Process_MHV::Tests() {
   First test : gauge test
   
   --------------------------------------------------- */
-  p_BS->Setk0(1);
-  p_BS->CalcEtaMu(p_momenta);
-  number++;
+#ifdef Basic_Sfuncs_In_MHV
+     p_BS->Setk0(1);
+     p_BS->CalcEtaMu(p_momenta); 
+#else
+     p_momlist->PutMomenta(p_momenta);
+#endif  
+     number++;
 
 //   if (!gauge_test) p_ampl->SetStringOff();  //second test without string production 
 
-  double M2g = 0.;
-  double * M_doub = new double[p_hel->MaxHel()];
-  for (size_t i=0; i<p_hel->MaxHel(); ++i) M_doub[i]=0.;
-
-    int cfn=p_perm->MaxNumber();
-    for (int j=0;j<cfn;j++) {
-      int* pm = p_perm->Get(j);
-      if (pm[0]<pm[m_nin+m_nout-2]) {
-	for (size_t i=0; i<p_hel->MaxHel(); ++i) { 
-	  if (p_hel->On(i)) {
-	    M_doub[i] += helvalue = p_MHVcalc->Differential(pm,(*p_hel)[i])*p_hel->PolarizationFactor(i); 
-	    M2g       += helvalue;
-	  } 
-	}
-      }
-    }
-
+ double M2g = 0.;
+ double * M_doub = new double[p_hel->MaxHel()];
+ for (size_t i=0; i<p_hel->MaxHel(); ++i) M_doub[i]=0.;
+ for (size_t i=0; i<p_hel->MaxHel(); ++i) { 
+     if (p_hel->On(i)) {
+	 M_doub[i] += helvalue = p_MHVamp->MSquare((*p_hel)[i])*p_hel->PolarizationFactor(i); 
+	 M2g       += helvalue;
+     } 
+ }
+ 
   //shorten helicities
   int switchhit = 0;
   for (size_t i=0; i<p_hel->MaxHel(); ++i) {
@@ -500,10 +520,10 @@ int Single_Process_MHV::Tests() {
       switchhit++;
     }
   }
-  msg_Tracking()<<"Single_Process_MHV::Tests for "<<m_name<<std::endl
+  msg_Tracking()<<"Single_Process_MHV2::Tests for "<<m_name<<std::endl
 		<<"   Switched off or mapped "<<switchhit<<" helicities."<<std::endl;
-
-//   M2g    *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_flavours,p_BS));
+ 
+  M2g    *= p_MHVamp->ParticlesNorm();
   m_iresult  = M2g;
 
 //   p_ampl->ClearCalcList();  
@@ -511,24 +531,6 @@ int Single_Process_MHV::Tests() {
 //   p_ampl->KillZList();  
   p_BS->StartPrecalc();
 
-  if (gauge_test) {
-    if (!ATOOLS::IsEqual(M2,M2g)) {
-      msg.Out()<<"WARNING:  Gauge test not satisfied: "
-	       <<M2<<" vs. "<<M2g<<" : "<<dabs(M2/M2g-1.)*100.<<"%"<<endl
-	       <<"Gauge(1): "<<abs(M2)<<endl
-	       <<"Gauge(2): "<<abs(M2g)<<endl;
-    }
-    /*
-      else {
-      msg_Debugging()<<"Gauge(1): "<<abs(M2)<<endl
-      <<"Gauge(2): "<<abs(M2g)<<endl;
-      if (M2g!=0.)
-      msg_Debugging()<<"Gauge test: "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
-      else
-      msg_Debugging()<<"Gauge test: "<<0.<<"%"<<endl;
-      }
-    */
-  }
   m_libname    = testname;
 
   /* ---------------------------------------------------
@@ -557,12 +559,12 @@ int Single_Process_MHV::Tests() {
   return 1;
 }
 
-int Single_Process_MHV::CheckLibraries() {
+int Single_Process_MHV2::CheckLibraries() {
   return 1;
   if (m_gen_str==0) return 1;
   if (p_shand->IsLibrary()) return 1;
 
-  msg_Info()<<"Single_Process_MHV::CheckLibraries : Looking for a suitable library. This may take some time."<<std::endl;
+  msg_Info()<<"Single_Process_MHV2::CheckLibraries : Looking for a suitable library. This may take some time."<<std::endl;
   String_Handler * shand1;
   shand1      = new String_Handler(p_shand->Get_Generator());
   
@@ -601,7 +603,7 @@ int Single_Process_MHV::CheckLibraries() {
   return 0;
 }
 
-int Single_Process_MHV::CheckStrings(Single_Process_MHV* tproc)
+int Single_Process_MHV2::CheckStrings(Single_Process_MHV2* tproc)
 {
   return 0;
   if (tproc->LibName().find(CreateLibName())!=0) return 0;
@@ -633,7 +635,7 @@ int Single_Process_MHV::CheckStrings(Single_Process_MHV* tproc)
   return 0;
 }
   
-void Single_Process_MHV::WriteLibrary() 
+void Single_Process_MHV2::WriteLibrary() 
 {
   return;
   if (m_gen_str<2) return;
@@ -652,12 +654,12 @@ void Single_Process_MHV::WriteLibrary()
   p_shand->Output(p_hel,m_ptypename+string("/")+m_libname);
   CreateMappingFile();
   m_newlib=true;
-  msg_Info()<<"Single_Process_MHV::WriteLibrary : "<<std::endl
+  msg_Info()<<"Single_Process_MHV2::WriteLibrary : "<<std::endl
 	    <<"   Library for "<<m_name<<" has been written, name is "<<m_libname<<std::endl;
   system("sync");
 }
 
-std::string  Single_Process_MHV::CreateLibName()
+std::string  Single_Process_MHV2::CreateLibName()
 {
   string name=m_ptypename;
   name+="_"+ToString(p_ampl->GetGraphNumber());
@@ -668,14 +670,14 @@ std::string  Single_Process_MHV::CreateLibName()
   return name;
 }
 
-void Single_Process_MHV::CreateMappingFile() {
+void Single_Process_MHV2::CreateMappingFile() {
   if (m_gen_str<2) return;
   std::string outname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
   if (IsFile(outname)) {
     string MEname,PSname;
     FoundMappingFile(MEname,PSname);
     if (MEname != m_libname || PSname != m_pslibname) {
-      msg.Error()<<"ERROR in Single_Process_MHV::CreateMappingFile() :"<<std::endl
+      msg.Error()<<"ERROR in Single_Process_MHV2::CreateMappingFile() :"<<std::endl
 		 <<"   Files do not coincide. Maybe changed input data ? Abort the run."<<std::endl;
       abort();
     }
@@ -689,7 +691,7 @@ void Single_Process_MHV::CreateMappingFile() {
   to.close();
 }
 
-bool Single_Process_MHV::FoundMappingFile(std::string & MEname, std::string & PSname) {
+bool Single_Process_MHV2::FoundMappingFile(std::string & MEname, std::string & PSname) {
   
   std::string buf;
   int pos;
@@ -722,7 +724,7 @@ bool Single_Process_MHV::FoundMappingFile(std::string & MEname, std::string & PS
   ------------------------------------------------------------------------------*/
 
 
-bool Single_Process_MHV::SetUpIntegrator() 
+bool Single_Process_MHV2::SetUpIntegrator() 
 {  
   if (m_nin==2) {
     if ( (p_flavours[0].Mass() != p_isrhandler->Flav(0).Mass()) ||
@@ -733,13 +735,13 @@ bool Single_Process_MHV::SetUpIntegrator()
   return 0;
 }
 
-bool Single_Process_MHV::CreateChannelLibrary()
+bool Single_Process_MHV2::CreateChannelLibrary()
 {
   p_psgen     = new Phase_Space_Generator(m_nin,m_nout);
   bool newch  = 0;
   if (m_nin>=1)  newch = p_psgen->Construct(p_pshandler->GetChannelLibNames(),m_ptypename,m_pslibname,p_flavours,this); 
   if (newch>0) {
-    msg_Tracking()<<"Single_Process_MHV::CreateChannelLibrary() :"<<std::endl
+    msg_Tracking()<<"Single_Process_MHV2::CreateChannelLibrary() :"<<std::endl
 		  <<"   "<<p_pshandler->NumberOfFSRIntegrators()<<" new channels produced for "
 		  <<m_pslibname<<". After program termination please enter \"makelibs\" and rerun."<<endl;
     return 0;
@@ -754,7 +756,7 @@ bool Single_Process_MHV::CreateChannelLibrary()
   Process management
   
   ------------------------------------------------------------------------------*/
-void Single_Process_MHV::Minimize()
+void Single_Process_MHV2::Minimize()
 {
   if (p_partner==this) return;
   if (p_hel)      {delete p_hel; p_hel=0;}
@@ -771,14 +773,14 @@ void Single_Process_MHV::Minimize()
   if (p_pshandler)       { delete p_pshandler;       p_pshandler       = 0; }
 }
 
-void Single_Process_MHV::Empty() {
+void Single_Process_MHV2::Empty() {
   if (p_pshandler)          { delete p_pshandler; p_pshandler = 0; } 
   if (p_partner != this) {
     return;
   }
 }
 
-void Single_Process_MHV::SetTotal(int flag, int depth)  { 
+void Single_Process_MHV2::SetTotal(int flag, int depth)  { 
   if (flag!=2) {
     m_totalxs  = TotalResult(); 
     m_totalerr = TotalVar();
@@ -788,7 +790,7 @@ void Single_Process_MHV::SetTotal(int flag, int depth)  {
   }
   else {
     //   flag==2  means  check xs with sum of subprocesses
-    //   nothing to do for a Single_Process_MHV
+    //   nothing to do for a Single_Process_MHV2
   }
   if (m_nin==2 && flag==0) {
     if ( (depth<=0 && msg.LevelIsInfo()) || msg.LevelIsTracking()) {
@@ -812,8 +814,8 @@ void Single_Process_MHV::SetTotal(int flag, int depth)  {
   
   ------------------------------------------------------------------------------*/
 
-bool Single_Process_MHV::CalculateTotalXSec(std::string _resdir) { 
-  msg_Info()<<"In Single_Process_MHV::CalculateTotalXSec("<<_resdir<<") for "<<m_name<<endl; 
+bool Single_Process_MHV2::CalculateTotalXSec(std::string _resdir) { 
+  msg_Info()<<"In Single_Process_MHV2::CalculateTotalXSec("<<_resdir<<") for "<<m_name<<endl; 
   
   string _name;
   double _totalxs,_totalerr,_max,sum,sqrsum,ssum,ssqrsum,ss2,wmin;
@@ -863,7 +865,7 @@ bool Single_Process_MHV::CalculateTotalXSec(std::string _resdir) {
   m_totalxs = p_pshandler->Integrate();
   if (m_nin==2) m_totalxs /= ATOOLS::rpa.Picobarn();
   if (!(ATOOLS::IsZero((m_totalxs-TotalResult())/(m_totalxs+TotalResult())))) {
-    msg.Error()<<"ERROR in Single_Process_MHV::CalculateTotalXSec :"<<std::endl
+    msg.Error()<<"ERROR in Single_Process_MHV2::CalculateTotalXSec :"<<std::endl
 	       <<"   Result of PS-Integrator and internal summation do not coincide for "<<endl
 	       <<m_name<<" : "<<m_totalxs<<" vs. "<<TotalResult()<<endl;
   }
@@ -894,7 +896,7 @@ bool Single_Process_MHV::CalculateTotalXSec(std::string _resdir) {
   return 0;      
 }
 
-void Single_Process_MHV::PrepareTerminate()
+void Single_Process_MHV2::PrepareTerminate()
 {
   if (m_resultpath.length()==0 && m_resultfile.length()==0) return;
   SetTotal(0);
@@ -912,7 +914,7 @@ void Single_Process_MHV::PrepareTerminate()
   to.close();
 }
 
-void Single_Process_MHV::WriteOutXSecs(std::ofstream & _to)    
+void Single_Process_MHV2::WriteOutXSecs(std::ofstream & _to)    
 { 
 //   _to<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<" "
 //      <<m_totalsum<<" "<<m_totalsumsqr<<" "<<m_n<<endl; 
@@ -922,7 +924,7 @@ void Single_Process_MHV::WriteOutXSecs(std::ofstream & _to)
      <<m_ssum<<" "<<m_ssumsqr<<" "<<m_ssigma2<<" "<<m_sn<<" "<<m_wmin<<" "<<m_son<<endl; 
 }
 
-bool Single_Process_MHV::Find(std::string _name,Process_Base *& _proc)  
+bool Single_Process_MHV2::Find(std::string _name,Process_Base *& _proc)  
 { 
   if (_name==m_name) {
     _proc = this;
@@ -932,11 +934,11 @@ bool Single_Process_MHV::Find(std::string _name,Process_Base *& _proc)
 }
 
 
-bool Single_Process_MHV::LookUpXSec(double ycut,bool calc,string obs) { 
+bool Single_Process_MHV2::LookUpXSec(double ycut,bool calc,string obs) { 
   string filename = (m_resdir+string("/Tab")+m_name+string("/")+obs).c_str();
   if (IsFile(filename)) {
     Histogram * histo = new Histogram(filename);
-    double          * res   = new double[histo->Depth()];
+    double    * res   = new double[histo->Depth()];
     histo->Extrapolate(ycut,res,1);
     m_totalxs = res[0];
     m_max     = res[1];
@@ -960,14 +962,14 @@ bool Single_Process_MHV::LookUpXSec(double ycut,bool calc,string obs) {
   }
 }
 
-bool Single_Process_MHV::PrepareXSecTables() { 
+bool Single_Process_MHV2::PrepareXSecTables() { 
   string filename = (m_resdir+string("/Tab")+m_name+string("dY_cut")).c_str();
 
   m_totalxs = p_pshandler->Integrate();
   if (m_nin==2) m_totalxs /= ATOOLS::rpa.Picobarn();
 
   if (!(ATOOLS::IsZero((m_totalxs-TotalResult())/(m_totalxs+TotalResult())))) {
-    msg.Error()<<"ERROR in Single_Process_MHV::PrepareXSecTables :"<<std::endl
+    msg.Error()<<"ERROR in Single_Process_MHV2::PrepareXSecTables :"<<std::endl
 	       <<"   Result of PS-Integrator and internal summation do not coincide for "
 	       <<m_name<<" : "<<m_totalxs<<" vs. "<<TotalResult()<<endl;
   }
@@ -977,7 +979,7 @@ bool Single_Process_MHV::PrepareXSecTables() {
   return 0;
 }
 
-void Single_Process_MHV::AddPoint(const double value) {
+void Single_Process_MHV2::AddPoint(const double value) {
   Integrable_Base::AddPoint(value);
 
   int iter=1;
@@ -991,7 +993,7 @@ void Single_Process_MHV::AddPoint(const double value) {
   if (value>m_save_max) m_save_max = value;
 }
 
-void Single_Process_MHV::OptimizeResult()
+void Single_Process_MHV2::OptimizeResult()
 {
 //   double ssigma2 = (m_ssumsqr/m_sn - ATOOLS::sqr(m_ssum/m_sn))/(m_sn-1);
 //   m_ssigma2  += 1./ssigma2; 
@@ -1011,7 +1013,7 @@ void Single_Process_MHV::OptimizeResult()
   m_son++;
 }
 
-void Single_Process_MHV::ResetMax(int flag)
+void Single_Process_MHV2::ResetMax(int flag)
 {
   if (flag==0) {
     if (m_vsmax.size()>1) {
@@ -1038,15 +1040,15 @@ void Single_Process_MHV::ResetMax(int flag)
   for (size_t i=0;i<m_vsmax.size();i++) m_max=ATOOLS::Max(m_max,m_vsmax[i]);
 }
 
-double Single_Process_MHV::Differential(const ATOOLS::Vec4D* _moms) { return DSigma(_moms,0); }
+double Single_Process_MHV2::Differential(const ATOOLS::Vec4D* _moms) { return DSigma(_moms,0); }
 
-double Single_Process_MHV::Differential2() { 
+double Single_Process_MHV2::Differential2() { 
   if (p_isrhandler->On()==0) return 0.;
   return DSigma2(); 
 }
 
 
-double Single_Process_MHV::DSigma(const ATOOLS::Vec4D* _moms,bool lookup)
+double Single_Process_MHV2::DSigma(const ATOOLS::Vec4D* _moms,bool lookup)
 {
   m_last = m_lastdxs = 0.;
   if (m_nin==2) {
@@ -1084,7 +1086,7 @@ double Single_Process_MHV::DSigma(const ATOOLS::Vec4D* _moms,bool lookup)
   return m_last = m_Norm * m_lastdxs * m_lastlumi;
 }
 
-double Single_Process_MHV::DSigma2() { 
+double Single_Process_MHV2::DSigma2() { 
   if ((p_flin[0]==p_flin[1]) || (p_isrhandler->On()==0) ) return 0.;
   if (p_partner == this) {
   }
@@ -1093,91 +1095,50 @@ double Single_Process_MHV::DSigma2() {
   return tmp;
 }
 
-
-double Single_Process_MHV::operator()(const ATOOLS::Vec4D * mom)
-{
+/////////////////////////////////////////////////////////////////
+double Single_Process_MHV2::operator()(const ATOOLS::Vec4D * mom)
+{ 
   double M2 = 0.;
-
-  p_BS->CalcEtaMu((ATOOLS::Vec4D*)mom);
-
   double helvalue;
-  int cfn=p_perm->MaxNumber();
 
-//   if (m_scnt<=10000) {
-    for (int j=0;j<cfn;j++) {
-      int* pm = p_perm->Get(j);
-      if (pm[0]<pm[m_nin+m_nout-2]) {
-	for (size_t i=0; i<p_hel->MaxHel(); ++i) { 
-	  if (p_hel->On(i)) {
-	    helvalue = p_MHVcalc->Differential(pm,(*p_hel)[i]) * p_hel->Multiplicity(i) * p_hel->PolarizationFactor(i); 
-// 	    p_hcres[i][j]+=   helvalue;
-// 	    p_hcres[i][cfn]+= helvalue;
-	    M2       += helvalue;
-	  } 
-	}
+#ifdef Basic_Sfuncs_In_MHV
+     p_BS->CalcEtaMu((ATOOLS::Vec4D*)mom); 
+#else
+     p_momlist->PutMomenta(mom);
+#endif  
+
+  for (size_t i=0; i<p_hel->MaxHel(); ++i) { 
+      if (p_hel->On(i)) { 
+	  helvalue = p_MHVamp->MSquare((*p_hel)[i]) * p_hel->Multiplicity(i) * p_hel->PolarizationFactor(i);  
+	  M2       += helvalue;
       }
-    }
-//   } 
-//   else {
-//     double disc = ran.Get();
-//     for (int i=0;i<p_hel->MaxHel();i++) {
-//       if (disc<p_hcalpha[i][cfn]) {
-// 	for (int j=0;j<cfn;j++) {
-// // 	  if (disc<p_hcalpha[i][j]) {
-// 	    int* pm = p_perm->Get(j);
-// 	    if (pm[0]<pm[m_nin+m_nout-2]) {
-// 	      helvalue = p_MHVcalc->Differential(pm,(*p_hel)[i]) * p_hel->Multiplicity(i) * p_hel->PolarizationFactor(i);
-// 	      p_hcres[i][j]+=   helvalue;
-// 	      p_hcres[i][cfn]+= helvalue;
-
-// 	      M2 += helvalue;
-// // 	      M2/= p_hcalpha[i][j];
-// 	    }
-// // 	    break;
-// // 	  }
-// 	  disc-=p_hcalpha[i][j];
-// 	}
-// 	M2/= p_hcalpha[i][cfn];
-// 	break;
-//       }
-//       disc-=p_hcalpha[i][cfn];
-//     }
-//   }
-
-//   m_scnt++;
-//   if (m_scnt%10000==0) {
-//     double sum=0.;
-//     for (int i=0;i<p_hel->MaxHel();i++) sum += p_hcres[i][cfn];
-//      for (int i=0;i<p_hel->MaxHel();i++)
-//        for (int j=0;j<=cfn;j++) p_hcalpha[i][j] = p_hcres[i][j]/sum;
-//   }
-  double cf=16.*pow((double)3.,(int)m_nout);
-  return M2*cf;
+  }
+  return M2*p_MHVamp->ParticlesNorm();
 }
+///////////////////////////////////////////////////
 
-
-ATOOLS::Blob_Data_Base *Single_Process_MHV::OneEvent(double _mass) { 
+ATOOLS::Blob_Data_Base *    Single_Process_MHV2::OneEvent(double _mass) { 
   if (p_partner==this) return p_pshandler->OneEvent(_mass,1); 
   return p_partner->OneEvent(_mass);
 }
 
-ATOOLS::Blob_Data_Base *Single_Process_MHV::SameEvent() { 
+ATOOLS::Blob_Data_Base *    Single_Process_MHV2::SameEvent() { 
   if (p_partner==this) return p_pshandler->SameEvent(); 
   return p_partner->SameEvent(); 
 }
 
-ATOOLS::Blob_Data_Base * Single_Process_MHV::WeightedEvent(const int mode)     
+ATOOLS::Blob_Data_Base * Single_Process_MHV2::WeightedEvent(const int mode)     
 { 
   if (p_partner==this) return p_pshandler->WeightedEvent(mode); 
   return p_partner->WeightedEvent(mode); 
 }
 
-ATOOLS::Blob_Data_Base * Single_Process_MHV::WeightedEventNS(const int mode)     
+ATOOLS::Blob_Data_Base * Single_Process_MHV2::WeightedEventNS(const int mode)     
 { 
   return WeightedEvent(mode); 
 }
 
-ATOOLS::Blob_Data_Base * Single_Process_MHV::SameWeightedEvent() 
+ATOOLS::Blob_Data_Base * Single_Process_MHV2::SameWeightedEvent() 
 { 
   if (p_partner==this) return p_pshandler->SameWeightedEvent(); 
   return p_partner->SameWeightedEvent(); 
@@ -1186,12 +1147,12 @@ ATOOLS::Blob_Data_Base * Single_Process_MHV::SameWeightedEvent()
 
 
 
-int Single_Process_MHV::NumberOfDiagrams() { 
+int Single_Process_MHV2::NumberOfDiagrams() { 
   if (p_partner==this) return p_ampl->GetGraphNumber(); 
   return p_partner->NumberOfDiagrams();
 }
 
-Point * Single_Process_MHV::Diagram(int i) {
+Point * Single_Process_MHV2::Diagram(int i) {
   if (p_partner==this) return p_ampl->GetPointlist(i); 
   return p_partner->Diagram(i);
 } 
@@ -1204,7 +1165,7 @@ Point * Single_Process_MHV::Diagram(int i) {
   
   ------------------------------------------------------------------------------*/
 
-void Single_Process_MHV::PrintDifferential()
+void Single_Process_MHV2::PrintDifferential()
 {
   if (!(ATOOLS::msg.LevelIsDebugging())) return;
   ATOOLS::msg.Out()<<m_name<<" : "<<m_last<<" -> "
@@ -1218,7 +1179,7 @@ void Single_Process_MHV::PrintDifferential()
 
   ------------------------------------------------------------------------------*/
 
-void Single_Process_MHV::InitializeHelicityWeights()
+void Single_Process_MHV2::InitializeHelicityWeights()
 {
   int activehels = 0, active = 0;
   for (size_t i=0;i<p_hel->MaxHel(); ++i) {
@@ -1246,7 +1207,7 @@ void Single_Process_MHV::InitializeHelicityWeights()
   m_inithelsample = true;
 }
 
-const int Single_Process_MHV::SelectedHelicity()
+const int Single_Process_MHV2::SelectedHelicity()
 {
   if (m_throws>0 && (!(m_throws%1000))) OptimizeHelicityWeights();
   double disc = ran.Get();
@@ -1256,13 +1217,13 @@ const int Single_Process_MHV::SelectedHelicity()
     if (disc<=0.) break;
   }
   if (hel>=m_helnumber) {
-    msg.Out()<<"WARNING in Single_Process_MHV::SelectedHelicity() after "<<m_throws<<std::endl;
+    msg.Out()<<"WARNING in Single_Process_MHV2::SelectedHelicity() after "<<m_throws<<std::endl;
     hel = m_helnumber-1;
   }
   return hel;
 }
 
-void Single_Process_MHV::OptimizeHelicityWeights()
+void Single_Process_MHV2::OptimizeHelicityWeights()
 {
   short int i;
 
@@ -1308,10 +1269,10 @@ void Single_Process_MHV::OptimizeHelicityWeights()
 }
 
 
-double Single_Process_MHV::operator()(const ATOOLS::Vec4D * mom,const int hel)
+double Single_Process_MHV2::operator()(const ATOOLS::Vec4D * mom,const int hel)
 {
   if (!p_shand->Is_String()) {
-    msg.Error()<<"Error in Single_Process_MHV::operator()(ATOOLS::Vec4D * p,int hel)"<<std::endl
+    msg.Error()<<"Error in Single_Process_MHV2::operator()(ATOOLS::Vec4D * p,int hel)"<<std::endl
 	       <<"   Sampling over helicities in processes implemented only for libs."<<std::endl
 	       <<"   Will abort the run. Check for libraries."<<std::endl;
     abort();
@@ -1343,7 +1304,7 @@ double Single_Process_MHV::operator()(const ATOOLS::Vec4D * mom,const int hel)
 }
 
 
-void Single_Process_MHV::AddToHelicity(const double M2,const int hel)
+void Single_Process_MHV2::AddToHelicity(const double M2,const int hel)
 {
   m_throws++;
   m_helresult        += M2;
@@ -1353,7 +1314,7 @@ void Single_Process_MHV::AddToHelicity(const double M2,const int hel)
   m_helresults[hel]  += M2;
 }
 
-bool Single_Process_MHV::CheckMapping(const Process_Base * proc)
+bool Single_Process_MHV2::CheckMapping(const Process_Base * proc)
 {
   const Flavour * flavs=Flavours();
   const Flavour * partner_flavs=proc->Flavours();
@@ -1377,14 +1338,14 @@ bool Single_Process_MHV::CheckMapping(const Process_Base * proc)
   return true;
 }
 
-bool             Single_Process_MHV::SelectOne()                        { return true;          }
-bool             Single_Process_MHV::SelectOneFromList()                { return true;          }
-void             Single_Process_MHV::DeSelect()                         {                       }
-bool             Single_Process_MHV::ReSelect(int i) 
+bool             Single_Process_MHV2::SelectOne()                        { return true;          }
+bool             Single_Process_MHV2::SelectOneFromList()                { return true;          }
+void             Single_Process_MHV2::DeSelect()                         {                       }
+bool             Single_Process_MHV2::ReSelect(int i) 
 {   
   if (i==1) return true;
   return Parent()->SelectOne();
 }
 
-size_t           Single_Process_MHV::Size()                             { return 1;             }
-Process_Base   * Single_Process_MHV::operator[] (int idx)               { return this;          }
+size_t           Single_Process_MHV2::Size()                             { return 1;             }
+Process_Base   * Single_Process_MHV2::operator[] (int idx)               { return this;          }

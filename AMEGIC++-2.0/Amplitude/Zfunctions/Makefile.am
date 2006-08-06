@@ -9,9 +9,12 @@ libZfunctions_la_SOURCES = Basic_Func.C Basic_Sfuncs.C Basic_Pfunc.C \
 			   VVV_Calc.C ZLED_Calc.C Loops_Calc.C\
 			   Zfunc_Calc.C \
 			   Calculator.C \
-                           MHV_Calculator.C
+                           MHV_Calculator.C \
+                           Mom.C MHVCalculator.C 
 
-pkginclude_HEADERS = Basic_Func.H  Basic_Sfuncs.H Basic_Func.icc Zfunc_Calc.H Calculator.H MHV_Calculator.H
+pkginclude_HEADERS = Basic_Func.H  Basic_Sfuncs.H Basic_Func.icc \
+                     Zfunc_Calc.H Calculator.H MHV_Calculator.H \
+		     Mom.H MHVCalculator.H
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@
 

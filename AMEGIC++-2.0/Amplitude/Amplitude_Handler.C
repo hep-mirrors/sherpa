@@ -19,7 +19,7 @@ using namespace std;
 Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Info* pinfo,
 				     Interaction_Model_Base * model,Topology* top,
 				     int & _orderQCD,int & _orderEW,Basic_Sfuncs* BS,
-				     String_Handler* _shand, bool print_graph) 
+				     String_Handler* _shand, bool print_graph,bool create_4V) 
   : shand(_shand),CFCol_Matrix(0),probabs(0),Mi(0), m_print_graph(print_graph),
     p_SCT(NULL)
 {
@@ -44,7 +44,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Info* pinf
   else sfl=fl;
 
   //core process
-  gen = new Amplitude_Generator(nin+pinfo->Nout(),sfl,b,model,top,_orderQCD,_orderEW,BS,shand);
+  gen = new Amplitude_Generator(nin+pinfo->Nout(),sfl,b,model,top,_orderQCD,_orderEW,BS,shand,create_4V);
   subgraphlist[0] = gen->Matching();
   gen->GetOrders(_orderEW,_orderQCD);
   delete gen;

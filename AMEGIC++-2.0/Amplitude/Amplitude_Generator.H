@@ -66,8 +66,8 @@ namespace AMEGIC {
     Pre_Amplitude          * prea;
     Basic_Sfuncs           * BS;
     String_Handler         * shand;
-    
-    
+
+    bool                     m_create_4V;
     
     Vertex_Table     v_table;
     //exhibits the points, the topology and the permutation number
@@ -113,7 +113,7 @@ namespace AMEGIC {
   public:
     static int * DivideComparisons(int cpu_size, int nampl, int rank);
     Amplitude_Generator(int,ATOOLS::Flavour *,int *,Interaction_Model_Base *,Topology *,
-			int,int,Basic_Sfuncs *,String_Handler *);
+			int,int,Basic_Sfuncs *,String_Handler *,bool=true);
     ~Amplitude_Generator(); 
     Single_Amplitude* Matching();
     void GetOrders(int& qed,int& qcd) {qed=nEW;qcd=nQCD;}

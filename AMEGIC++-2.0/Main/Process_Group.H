@@ -12,7 +12,7 @@ namespace AMEGIC {
     std::vector<Process_Base *> m_procs;
     bool m_resetted;
     int  m_weventmode;
-    bool m_enable_mhv;
+    int m_enable_mhv; 
     /*------------------------------------------------------------------------------
 
       Constructors
@@ -25,7 +25,7 @@ namespace AMEGIC {
 		  int=0,int=99,int=99,int=0,int=0,double=-1.,
 		  Pol_Info* _pl=0,int _nex=0,ATOOLS::Flavour * _ex_fl=0,int usepi=0, 
 		  double ycut=-1., double error=-1.,
-		  std::string e_func="1", bool enable_mhv=false);
+		  std::string e_func="1", int enable_mhv=0);
     Process_Group();
     ~Process_Group();
     /*------------------------------------------------------------------------------

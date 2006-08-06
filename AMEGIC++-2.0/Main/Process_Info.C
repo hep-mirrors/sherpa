@@ -447,11 +447,44 @@ bool Check_External_Flavours::ValidProcess(int _nin,Flavour * _in,
 
 bool Check_External_Flavours::PureGluonic(int _nin,Flavour * _in,
 					  int _nout,Flavour * _out) {
-  for (int i=0;i<_nin;i++)  { if (!_in->IsGluon())  return 0; }
-  for (int i=0;i<_nout;i++) { if (!_out->IsGluon()) return 0; }
+  for (int i=0;i<_nin;i++)  { if (!_in[i].IsGluon())  return 0; }
+  for (int i=0;i<_nout;i++) { if (!_out[i].IsGluon()) return 0; }
   return 1;
 }
 
+
+///////////////////////////// MHV ///////////////////////////////////
+bool Check_External_Flavours::MHVCalculable(int _nin, Flavour * _in, int _nout, Flavour * _out) {
+    int n_gl(0);
+    int n_q(0);
+    int n_l(0);
+    for (int i=0;i<_nin;i++)  {
+      if (_in[i].IsMassive()) return 0;
+      if (!_in[i].IsGluon()) {
+	if (!_in[i].IsQuark()) {
+	  if (!_in[i].IsLepton()) return 0;
+	  else n_l++;
+	}
+	else n_q++;
+      }
+      else n_gl++;
+    }
+    for (int i=0;i<_nout;i++) { 
+      if (_out[i].IsMassive()) return 0;
+      if (!_out[i].IsGluon()) {
+	if (!_out[i].IsQuark()) {
+	  if (!_out[i].IsLepton()) return 0;
+	  else n_l++;
+	}
+	else n_q++;
+      }
+      else n_gl++;
+    }
+    if (n_q>4 || _nin+_nout>9 || n_l>0) return 0;
+//     if (n_q>4 || _nin+_nout>9 || n_l>2 || (n_l>0 && n_q!=2)) return 0;
+    return 1;
+}
+/////////////////////////////////////////////////////////////////////
 
 
 class Order_FVST {

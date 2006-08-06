@@ -55,6 +55,9 @@ namespace AMEGIC {
   public:
     bool ValidProcess(int _nin,ATOOLS::Flavour * _in,int _nout,ATOOLS::Flavour * _out);
     bool PureGluonic(int _nin,ATOOLS::Flavour * _in,int _nout,ATOOLS::Flavour * _out);
+////////////////////////////////////// MHV //////////////////////////////////////////
+    bool MHVCalculable(int _nin,ATOOLS::Flavour * _in,int _nout,ATOOLS::Flavour * _out);
+/////////////////////////////////////////////////////////////////////////////////////
   };
   extern Check_External_Flavours CF;                                                  
 }
