@@ -8,12 +8,14 @@
 #include "Rambo.H"
 #include "RamboKK.H"
 #include "Sarge.H"
+#include "VHAAG.H"
 #include "Leading_Log_Z.H"
 #include "LL_KPerp.H"
 #include "FSR_Channel.H"
 #include "ISR_Vegas.H"
 #include "PI_Interface.H"
 #include "Running_AlphaS.H"
+#include "Permutation.H"
 
 #include "Run_Parameter.H"
 #include "Blob.H"
@@ -843,7 +845,8 @@ bool Phase_Space_Handler::CreateIntegrators()
     }
   }
   if (m_nin==2) { 
-    if (m_inttype < 3 && (p_fsrchannels!=0)) p_fsrchannels->DropAllChannels();
+    if (m_nout==2&&m_inttype==2) m_inttype=6;
+    if ((m_inttype<3||m_inttype>20) && (p_fsrchannels!=0)) p_fsrchannels->DropAllChannels();
   }
   if (p_process->Name()!="BFKL_ME") {
     switch (m_inttype) {
@@ -866,9 +869,14 @@ bool Phase_Space_Handler::CreateIntegrators()
       p_fsrchannels->Add(new Sarge(m_nin,m_nout));
       break;
     case 2: 
-      p_fsrchannels->Add(new Rambo(m_nin,m_nout,p_flavours));
-      p_fsrchannels->Add(new Sarge(m_nin,m_nout));
-      DropRedundantChannels();
+      {
+	Permutation pp(m_nin+m_nout-1);
+	for (int j=0;j<pp.MaxNumber();j++) {
+	  int* pm = pp.Get(j);
+	  if (pm[1]==0||pm[m_nin+m_nout-3]==0) 
+	    p_fsrchannels->Add(new VHAAG(m_nin,m_nout,j));
+ 	}
+      }
       break;
     case 3: 
       p_fsrchannels->Add(new Rambo(m_nin,m_nout,p_flavours));

@@ -18,6 +18,7 @@ libPhasespace_la_SOURCES      =	\
 				Rambo.C \
 				RamboKK.C \
 				Sarge.C \
+				VHAAG.C \
 				Vegas.C ISR_Vegas.C \
 				Channel_Interface.C \
 			   	Multi_Channel.C \
@@ -43,6 +44,7 @@ pkginclude_HEADERS        =	\
 			Rambo.H \
 			RamboKK.H \
 			Sarge.H \
+			VHAAG.H \
 			Vegas.H ISR_Vegas.H \
 			Multi_Channel.H \
 		 	Integrable_Base.H \

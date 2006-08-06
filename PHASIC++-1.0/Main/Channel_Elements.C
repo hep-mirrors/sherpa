@@ -230,11 +230,37 @@ double Channel_Elements::MasslessPropMomenta(double sexp,
 					     double ran)
 {
   double s = Channel_Basics::PeakedDist(0.,sexp,smin,smax,1,ran);
-  //  cout.precision(12);
-//   cout<<"MlPMom : "<<sexp<<" "<<smin<<" "<<smax<<" "<<s<<" "<<ran<<endl;
-  if (!(s>0) && !(s<0) && s!=0) 
+  if (!(s>0) && !(s<0) && s!=0) {
+    cout.precision(12);
+    cout<<"MlPMom : "<<sexp<<" "<<smin<<" "<<smax<<" "<<s<<" "<<ran<<endl;
     ATOOLS::msg.Error()<<"MasslessPropMomenta produced a nan !"<<endl;
+  }
   return s;
+}
+
+double Channel_Elements::AntennaWeight(double amin,double amax,
+				       const double a,double &ran)
+{
+  if (a<amin||a>amax||amin==amax) {
+    ran=-1.;
+    return 0.;
+  }
+ 
+  double wt = 1./(a*(1.-a)*Channel_Basics::BoundaryPeakedWeight(amin,amax,a,ran));
+  if (!(wt>0) && !(wt<0) && wt!=0) { 
+    ATOOLS::msg.Error()<<"AntennaWeight produces a nan: "<<wt<<endl
+		       <<"   amin,a,amax = "<<amin<<" < "<<a<<" < "<<amax<<endl;
+  }
+  return wt;
+}
+
+double Channel_Elements::AntennaMomenta(double amin,double amax,
+					double ran)
+{
+  double a = Channel_Basics::BoundaryPeakedDist(amin,amax,ran);
+  if (!(a>0) && !(a<0) && a!=0) 
+    ATOOLS::msg.Error()<<"AntennaMomenta produced a nan !"<<endl;
+  return a;
 }
 
 
