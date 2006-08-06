@@ -714,7 +714,7 @@ bool Mass_Selector::Trigger(const Vec4D * mom)
 
 void Mass_Selector::BuildCuts(Cut_Data * cuts) 
 {
-  for (int i=0;i<m_n-1;i++) {
+  for (int i=m_nin;i<m_n-1;i++) {
     for (int j=i+1;j<m_n;j++) {
       cuts->scut[i][j] = cuts->scut[j][i] = Max(cuts->scut[i][j],sqr(massmin[i][j]));
     }
