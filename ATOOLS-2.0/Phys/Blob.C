@@ -102,7 +102,7 @@ Blob::Blob(const Blob * blob) :
   Particle * part(NULL);
   for (int i=0;i<blob->NOutP();i++) {
     part = new Particle((*blob->ConstOutParticle(i)));
-    part->SetStatus(1);
+    part->SetStatus(part_status::active);
     AddToOutParticles(part);
   }
 }

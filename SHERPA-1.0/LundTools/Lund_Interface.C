@@ -287,7 +287,16 @@ Return_Value::code Lund_Interface::ExtractSinglets(Blob_List *bloblist,Particle_
   Reset();
   list<Particle *> plist;
   Particle * part;
+  cout<<METHOD<<":"<<endl
+      <<"============================================================"<<endl
+      <<"============================================================"<<endl;
   for (Blob_List::iterator blit=bloblist->begin();blit!=bloblist->end();++blit) {
+    if ((*blit)->Type()==btp::FS_Shower || 
+	(*blit)->Type()==btp::IS_Shower ||
+	(*blit)->Type()==btp::Shower ||
+	(*blit)->Type()==btp::Hard_Collision ||
+	(*blit)->Type()==btp::Beam ||
+	(*blit)->Type()==btp::Bunch) cout<<(**blit)<<endl;
     if ((*blit)->Status()==1 &&
 	((*blit)->Type()==btp::FS_Shower || 
 	 (*blit)->Type()==btp::IS_Shower ||
@@ -315,6 +324,14 @@ Return_Value::code Lund_Interface::ExtractSinglets(Blob_List *bloblist,Particle_
 		   <<"   No coloured particle found leaving shower blobs."<<endl;
     return Return_Value::Nothing;
   }
+
+  cout<<"============================================================"<<endl
+      <<"============================================================"<<endl;
+    for (list<Particle*>::iterator pit1=plist.begin();pit1!=plist.end();++pit1) 
+      cout<<"   "<<(**pit1)<<endl;
+  cout<<"============================================================"<<endl
+      <<"============================================================"<<endl;
+
 
   int  col1, col2;
   bool hit1, hit2;
@@ -396,7 +413,7 @@ Return_Value::code Lund_Interface::ExtractSinglets(Blob_List *bloblist,Particle_
 	       <<"   Failed to arrange all particles leaving shower blobs in colour singlets."<<endl
 	       <<"   Remaining particles are : "<<endl;
     for (list<Particle*>::iterator pit1=plist.begin();pit1!=plist.end();++pit1) 
-      msg.Error()<<"   "<<(*pit1)<<endl;
+      msg.Error()<<"   "<<(**pit1)<<endl;
     msg.Error()<<"   Reset, return false and hope for the best."<<endl;
     Reset();
     return Return_Value::Error;
@@ -709,7 +726,7 @@ void Lund_Interface::PerformDecay(Particle * part,
   blob->AddToInParticles( part );
   if( part->Info() == 'P' ) part->SetInfo('p');
   if( part->Info() == 'D' ) part->SetInfo('d');
-  part->SetStatus(2);
+  part->SetStatus(part_status::decayed);
   blob_list->push_back( blob );
   Particle * particle;						// daughter part.
   Vec4D momentum;						// daughter mom.

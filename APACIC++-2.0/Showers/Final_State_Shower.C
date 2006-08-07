@@ -776,7 +776,7 @@ InitDaughters(Tree * tree,Knot * mo,ATOOLS::Flavour flb,ATOOLS::Flavour flc,
     mo->right->stat    = 3;  
     mo->right->part->SetFlav(flc);
     mo->right->part->SetInfo('F');
-    mo->right->part->SetStatus(1);
+    mo->right->part->SetStatus(part_status::active);
     mo->right->part->SetFinalMass(mo->right->tout);
     mo->right->didkin  = false;
 
@@ -889,7 +889,7 @@ void Final_State_Shower::InitTwojetTree(Tree * tree,double scale) {
   mo->right->prev      = mo;
   mo->right->stat      = 3;     
   *(mo->right->part) = Particle(3,mo_flavs[1],Vec4D(E,(-1.)*p1)); 
-  mo->right->part->SetStatus(1);
+  mo->right->part->SetStatus(part_status::active);
   mo->right->part->SetInfo('H');
   mo->right->part->SetFlow(2,mo->left->part->GetFlow(1));
   mo->right->t         = mo->t;
