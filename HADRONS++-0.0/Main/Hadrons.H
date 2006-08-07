@@ -35,6 +35,7 @@ namespace HADRONS {
     std::string           m_path, m_file, m_constfile;
     Channel_Map         * p_channelmap;
     ATOOLS::Decay_Table * p_table;
+    bool                  m_use_anti_table;
     std::map<ATOOLS::Flavour,ATOOLS::Decay_Table *>
                         * p_decaymap;
     std::map<int,Hadron_Decay_Channel*> 

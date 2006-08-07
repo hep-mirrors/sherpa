@@ -503,24 +503,42 @@ double Hadron_Decay_Channel::Differential( Vec4D * mom, Spin_Density_Matrix * si
     mom[i] = p_momenta[i];
   }
 
-  // get amplitude tensor
   vector<Complex>* ampls = new vector<Complex>;
   vector<pair<int,int> >* indices = new vector<pair<int,int> >;
   
-  vector<MEPair>::iterator mpit;
-  for(mpit=m_mes.begin(); mpit!=m_mes.end();mpit++) {
-    (*mpit).second->operator()(  p_momenta, ampls, indices, 1 );
-    AddAmpls(ampls,indices);
-    ampls->clear(); indices->clear();
+  if(m_mes.size()>0) {
+    // get the amplitude vector for the first ME
+    m_mes[0].second->operator()(  p_momenta, p_ampls, p_indices, 1 );
+    // add the amplitudes for each other ME
+    vector<MEPair>::iterator mpit;
+    vector<MEPair>::iterator mpstart = m_mes.begin();
+    mpstart++;
+    for(mpit=mpstart; mpit!=m_mes.end();mpit++) {
+      ((*mpit).second)->operator()(  p_momenta, ampls, indices, 1 );
+      AddAmpls(ampls,indices);
+      ampls->clear(); indices->clear();
+    }
   }
-  vector<CurrentsPair>::iterator cpit;
-  for(cpit=m_currents.begin(); cpit!=m_currents.end();cpit++) {
-    ContractCurrents((*cpit).second.first, (*cpit).second.second,
-                     p_momenta, 1, (*cpit).first,
-                     ampls, indices);
-    AddAmpls(ampls,indices);
-    ampls->clear(); indices->clear();
+  
+  if(m_currents.size()>0) {
+    // get the amplitude vector for the first currents (only if not initialised yet)
+    if( m_mes.size()==0 )
+      ContractCurrents(m_currents[0].second.first, m_currents[0].second.second,
+                       p_momenta, 1, m_currents[0].first,
+                       p_ampls, p_indices);
+    // add the amplitudes for all (further) currents
+    vector<CurrentsPair>::iterator cpit;
+    vector<CurrentsPair>::iterator cpstart = m_currents.begin();
+    if( m_mes.size()==0 ) cpstart++;
+    for(cpit=cpstart; cpit!=m_currents.end();cpit++) {
+      ContractCurrents((*cpit).second.first, (*cpit).second.second,
+                       p_momenta, 1, (*cpit).first,
+                       ampls, indices);
+      AddAmpls(ampls,indices);
+      ampls->clear(); indices->clear();
+    }
   }
+  
   delete ampls; ampls=NULL; delete indices; indices=NULL;
 //   // get amplitude tensor
 //   if(p_currents[0] && p_currents[1]) {                         // new for currents
@@ -574,9 +592,10 @@ void Hadron_Decay_Channel::CreateTrivial( Spin_Density_Matrix * sigma )
 
 void Hadron_Decay_Channel::AddAmpls( vector<Complex>* newampls, vector<pair<int,int> >* newindices )
 {
-    msg.Error()<<METHOD<<": Error. I am not able to handle multiple ME/current structures yet. "
-      <<"FS is working on it though. Will abort..."<<endl;
-    abort();
+  msg.Error()<<METHOD<<": Error. I am not able to handle multiple ME/current structures yet "
+    <<"(as they appeared in the <ME> section of "<<m_filename<<")."<<endl
+    <<"FS is working on it though. Will abort..."<<endl;
+  abort();
 }
 
 

@@ -20,7 +20,8 @@ using namespace ATOOLS;
 using namespace std;
 
 Hadrons::Hadrons( string _path, string _file, string _constfile ) : 
-  m_path(_path), m_file(_file), m_constfile(_constfile), m_createbooklet(0)
+  m_use_anti_table(false), m_path(_path), m_file(_file),
+  m_constfile(_constfile), m_createbooklet(0)
 { 
   msg_Tracking()<<"In Hadrons: ("<<_path<<") "<<_file<<std::endl;
   msg_Tracking()<<"In Hadrons: ("<<_path<<") "<<_constfile<<std::endl;
@@ -184,10 +185,13 @@ std::vector<BRPairFlavourSet> Hadrons::GetInclusives(
 bool Hadrons::FindDecay(const ATOOLS::Flavour & Decayer)
 {
   if (p_decaymap->find(Decayer)!=p_decaymap->end()) {
-    p_table = (*p_decaymap)[Decayer]; return true;
+    p_table = (*p_decaymap)[Decayer];
+    return true;
   }
   else if (p_decaymap->find(Decayer.Bar())!=p_decaymap->end()) {
-    p_table = (*p_decaymap)[Decayer.Bar()]; return true;
+    p_table = (*p_decaymap)[Decayer.Bar()];
+    m_use_anti_table = true;
+    return true;
   }
   else return false;
 }
@@ -339,6 +343,7 @@ ATOOLS::Blob* Hadrons::CreateDecayBlobSkeleton(
   FlavourSet::iterator dit;
   for(dit = daughters.begin(); dit != daughters.end(); dit++ ) {
     Flavour daughter_flav=(*dit);
+    if(m_use_anti_table) daughter_flav = daughter_flav.Bar();
     Particle* daughter_particle = new Particle( -1, daughter_flav );
     msg.Debugging()<<"            found daughter "<<daughter_flav
         <<": adding it to blob ["<<blob->Id()<<"]"<<endl;
