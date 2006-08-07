@@ -176,7 +176,7 @@ bool MI_Base::FillBlob(ATOOLS::Blob *blob)
     particle->SetFlow(1,m_inparticles[i]->GetFlow(1));
     particle->SetFlow(2,m_inparticles[i]->GetFlow(2));
     particle->SetNumber(1);
-    particle->SetStatus(1);
+    particle->SetStatus(ATOOLS::part_status::active);
     particle->SetInfo('G');
     blob->AddToInParticles(particle);
   }
@@ -186,7 +186,7 @@ bool MI_Base::FillBlob(ATOOLS::Blob *blob)
     particle->SetFlow(1,m_outparticles[i]->GetFlow(1));
     particle->SetFlow(2,m_outparticles[i]->GetFlow(2));
     particle->SetNumber(1);
-    particle->SetStatus(1);
+    particle->SetStatus(ATOOLS::part_status::active);
     particle->SetInfo('H');
     blob->AddToOutParticles(particle);
   }

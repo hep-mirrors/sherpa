@@ -110,7 +110,7 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
   
   *(mo->part) = Particle(0,Flavour(kf::none),sum);
   mo->part->SetInfo('M');
-  mo->part->SetStatus(2);
+  mo->part->SetStatus(part_status::decayed);
   mo->didkin = true;
   mo->stat   = 0;
   mo->zs     = mo->z = p2[0]/p1[0];
@@ -244,7 +244,7 @@ void Tree_Filler::FillDecayTree(Tree * fin_tree)
     
     Knot * knot  = fin_tree->NewKnot();
     *knot->part  = *p_blob->InParticle(0);
-    knot->part->SetStatus(2);
+    knot->part->SetStatus(part_status::decayed);
     knot->part->SetInfo('h');
     knot->stat   = 0;
     knot->z      = p_blob->OutParticle(0)->Momentum()[0]/knot->part->Momentum()[0];
@@ -352,7 +352,7 @@ Knot * Tree_Filler::Point2Knot(Blob * blob,Tree * tree,const Leg & po,const Vec4
   }
   // preliminary parton status!!!
   k->part->SetInfo(info);
-  k->part->SetStatus(1);  //final
+  k->part->SetStatus(part_status::active);  //final
   if (flav.IsKK() || k->part->DecayBlob()) k->tout=mom.Abs2();
   else k->tout = sqr(flav.PSMass());
   k->E2        = sqr(mom[0]);
@@ -469,7 +469,7 @@ void Tree_Filler::EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC:
     mo->right = d2;
     mo->zs    = mo->z = p2[0]/p1[0];
     mo->stat  = 0;
-    mo->part->SetStatus(2);
+    mo->part->SetStatus(part_status::decayed);
     if (mo->part->Info() != 'H') mo->part->SetInfo('f');
 
     d1->prev  = mo;

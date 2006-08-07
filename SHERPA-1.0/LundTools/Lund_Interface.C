@@ -296,11 +296,11 @@ Return_Value::code Lund_Interface::ExtractSinglets(Blob_List *bloblist,Particle_
 	 (*blit)->Type()==btp::Beam)) {
       for (int i=0;i<(*blit)->NOutP();i++) {
 	part = (*blit)->OutParticle(i); 
-	if (part->Status()==1 && part->DecayBlob()==NULL && 
+	if (part->Status()==part_status::active && part->DecayBlob()==NULL && 
 	    (part->GetFlow(1)!=0 || part->GetFlow(2)!=0)) {
 	  plist.push_back(part);
 	}
-	if (part->Status()==1 && part->DecayBlob()==NULL) {
+	if (part->Status()==part_status::active && part->DecayBlob()==NULL) {
 	  if (part->Flav()==Flavour(kf::tau) ||
 	      part->Flav()==Flavour(kf::tau).Bar()) {
 	    plist.push_back(part);
@@ -584,9 +584,10 @@ void Lund_Interface::FillPrimaryHadronsInBlob(Blob *blob,Blob_List *bloblist,
 		       hepevt.vhep[j][1],hepevt.vhep[j][2]);
 	particle = new Particle(-1,flav,momentum);
 	if (pl) particle->SetNumber(pl->size());
-	else particle->SetNumber(0);
-	particle->SetStatus(1);
+	   else particle->SetNumber(0);
+	particle->SetStatus(part_status::active);
 	particle->SetInfo('P');
+	particle->SetFinalMass(hepevt.phep[j][4]);
 	blob->SetPosition(position);
 	if (pl) pl->push_back(particle);
 	blob->AddToOutParticles(particle);
@@ -620,8 +621,9 @@ void Lund_Interface::FillPrimaryTauInBlob(int pos,Blob *blob,
   // if (pl) particle->SetNumber(pl->size());
   // else particle->SetNumber(0);
   particle->SetNumber(-1*blob->InParticle(pos)->Number()); // set outgoing number = incoming number
-  particle->SetStatus(1);
+  particle->SetStatus(part_status::active);
   particle->SetInfo('P');
+  particle->SetFinalMass(hepevt.phep[pos][4]);
   blob->SetPosition(position);
   if (pl) pl->push_back(particle);
   blob->AddToOutParticles(particle);
@@ -722,8 +724,9 @@ void Lund_Interface::PerformDecay(Particle * part,
     particle = new Particle( -1, flav, momentum );
     if( part_list ) particle->SetNumber( part_list->size() );
                else particle->SetNumber( 0 );
-    particle->SetStatus(1);
+    particle->SetStatus(part_status::active);
     particle->SetInfo('D');
+    particle->SetFinalMass(hepevt.phep[i][4]);
     blob->SetPosition( position );
     if( part_list ) part_list->push_back( particle ); 
     blob->AddToOutParticles( particle );
@@ -750,7 +753,7 @@ bool Lund_Interface::FillDecay(Particle * part,Blob_List *bloblist,
   decay->AddToInParticles(part);
   if (part->Info()=='P') part->SetInfo('p');
   if (part->Info()=='D') part->SetInfo('d');
-  part->SetStatus(2);
+  part->SetStatus(part_status::decayed);
   bloblist->push_back(decay);
   FillSecondaryHadronsInBlob(decay,bloblist,hepevt.jdahep[pos][0]-1,hepevt.jdahep[pos][1],pl);
   return true;
@@ -773,8 +776,9 @@ void Lund_Interface::FillSecondaryHadronsInBlob(Blob *blob,Blob_List *bloblist,
     particle = new Particle(-1,flav,momentum);
     if (pl) particle->SetNumber(pl->size());
        else particle->SetNumber(0);
-    particle->SetStatus(1);
+    particle->SetStatus(part_status::active);
     particle->SetInfo('D');
+    particle->SetFinalMass(hepevt.phep[i][4]);
     blob->SetPosition(position);
     if (pl) pl->push_back(particle);
     blob->AddToOutParticles(particle);
@@ -786,7 +790,7 @@ void Lund_Interface::FillSecondaryHadronsInBlob(Blob *blob,Blob_List *bloblist,
       decay->AddToInParticles(particle);
       if (particle->Info()=='P') particle->SetInfo('p');
       if (particle->Info()=='D') particle->SetInfo('d');
-      particle->SetStatus(2);
+      particle->SetStatus(part_status::decayed);
       bloblist->push_back(decay);
       FillSecondaryHadronsInBlob(decay,bloblist,hepevt.jdahep[i][0]-1,hepevt.jdahep[i][1],pl);
     }

@@ -43,7 +43,7 @@ Knot::Knot():
 
 Knot::Knot(Knot * k):
   prev(k->prev), left(k->left), right(k->right),
-  part(new ATOOLS::Particle(*k->part)), stat(k->stat), kn_no(k->kn_no),
+  part(new Particle(*k->part)), stat(k->stat), kn_no(k->kn_no),
   didkin(k->didkin), t(k->t), tout(k->tout), tmax(k->tmax), z(k->z), zs(0.0),
   E2(k->E2), costh(k->costh), phi(k->phi), thcrit(k->thcrit), 
   maxpt2(k->maxpt2), x(k->x), pt2lcm(0.0), smaxpt2(k->smaxpt2), 

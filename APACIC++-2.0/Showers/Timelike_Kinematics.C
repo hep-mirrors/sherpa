@@ -256,14 +256,14 @@ bool Timelike_Kinematics::DoKinematics(Knot * const mo) const
   if (!mo) return true;
   if (!mo->left) {
     if (mo->part->Info()==' ') {
-      mo->part->SetStatus(1);
+      mo->part->SetStatus(part_status::active);
       mo->part->SetInfo('F');
     }
     msg_Debugging()<<"}\n";
     return true;
   }
   if (!DoSingleKinematics(mo)) return false;
-  mo->part->SetStatus(2);
+  mo->part->SetStatus(part_status::decayed);
   mo->left->didkin=true;
   mo->right->didkin=true;
   if (!DoKinematics(mo->left)) return false;

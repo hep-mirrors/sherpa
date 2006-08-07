@@ -66,7 +66,7 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight
 	  myblob = (*blit);
 	  found  = 1;
 	  bool success=false;
-	  ATOOLS::Blob *isr[2]={NULL,NULL};
+	  Blob *isr[2]={NULL,NULL};
 	  while (!success) {
 	    success=true;
 	    if (p_mehandler->GenerateOneEvent()) {
@@ -74,22 +74,20 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight
 	      if (xs!=NULL && xs->NAddOut()!=0) {
 		xs->SetColours(xs->Momenta());
 		for (size_t stop=xs->NAddOut(), i=0;i<stop;++i) {
-		  isr[i] = new ATOOLS::Blob();
-		  isr[i]->SetType(ATOOLS::btp::IS_Shower);
+		  isr[i] = new Blob();
+		  isr[i]->SetType(btp::IS_Shower);
 		  isr[i]->SetTypeSpec("KMR DUPDF");
 		  isr[i]->SetId();
 		  isr[i]->SetStatus(1);
-		  ATOOLS::Particle *parton1 = 
-		    new ATOOLS::Particle(-1,xs->AddFlavours()[i],
-					 xs->AddMomenta()[i]);
-		  parton1->SetNumber();
-		  parton1->SetStatus(1);
-		  isr[i]->AddToOutParticles(parton1);
-		  ATOOLS::Particle *
-		    parton2 = new ATOOLS::Particle(-1,xs->AddFlavours()[i],
+		  Particle *parton1 = new Particle(-1,xs->AddFlavours()[i],
 						   xs->AddMomenta()[i]);
+		  parton1->SetNumber();
+		  parton1->SetStatus(part_status::active);
+		  isr[i]->AddToOutParticles(parton1);
+		  Particle * parton2 = new Particle(-1,xs->AddFlavours()[i],
+						    xs->AddMomenta()[i]);
 		  parton2->SetNumber();
-		  parton2->SetStatus(2);
+		  parton2->SetStatus(part_status::decayed);
 		  parton2->SetMomentum(parton2->Momentum()
 				       +xs->Momenta()[i]);
 		  isr[i]->AddToInParticles(parton2);
@@ -101,7 +99,7 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight
 		  else THROW(fatal_error,"No remnant found.");
 		  if (xs->Flavours()[i].IsQuark()) {
 		    int anti=xs->Flavours()[i].IsAnti();
-		    int newc=ATOOLS::Flow::Counter();
+		    int newc=Flow::Counter();
 		    if (xs->AddFlavours()[i].IsQuark()) {
 		      parton1->SetFlow(2-anti,newc);
 		      parton2->SetFlow(2-anti,newc);
@@ -120,7 +118,7 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight
 		      parton2->SetFlow(1+anti,xs->Colours()[i][anti]);
 		    }
 		    else {
-		      int newc=ATOOLS::Flow::Counter();
+		      int newc=Flow::Counter();
 		      parton1->SetFlow(1+anti,xs->Colours()[i][1-anti]);
 		      parton1->SetFlow(2-anti,newc);
 		      parton2->SetFlow(2-anti,newc);
@@ -139,25 +137,24 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight
 		  for (short unsigned int i=0;i<2;++i) {
 		    bloblist->push_front(isr[i]);
 		    isr[i]->AddToOutParticles(myblob->InParticle(i));
-		    ATOOLS::Vec4D sum=isr[i]->CheckMomentumConservation();
-		    if (!(sum==ATOOLS::Vec4D()))
-		      ATOOLS::msg.Error()
+		    Vec4D sum=isr[i]->CheckMomentumConservation();
+		    if (!(sum==Vec4D()))
+		      msg.Error()
 			<<"Signal_Processes::Treat(): "
 			<<"4-momentum not conserved: sum = "
 			<<sum<<"."<<std::endl;
 		  }
 		  myblob->SetStatus(0);
 		  for (short unsigned int i=0;i<xs->NOut();++i) {
-		    ATOOLS::Blob *fsr = new ATOOLS::Blob();
-		    fsr->SetType(ATOOLS::btp::FS_Shower);
+		    Blob *fsr = new Blob();
+		    fsr->SetType(btp::FS_Shower);
 		    fsr->SetTypeSpec("KMR DUPDF");
 		    fsr->SetId();
 		    fsr->SetStatus(1);
 		    fsr->AddToInParticles(myblob->OutParticle(i));
-		    ATOOLS::Particle *parton = 
-		      new ATOOLS::Particle(*myblob->OutParticle(i));
+		    Particle *parton = new Particle(*myblob->OutParticle(i));
 		    parton->SetNumber();
-		    parton->SetStatus(1);
+		    parton->SetStatus(part_status::active);
 		    parton->SetFlow(1,xs->Colours()[2+i][0]);
 		    parton->SetFlow(2,xs->Colours()[2+i][1]);
 		    fsr->AddToOutParticles(parton);
@@ -255,7 +252,7 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,
     particle = new Particle(i,p_mehandler->Flavours()[i],
 			    p_mehandler->Momenta()[i]);
     particle->SetNumber(0);
-    particle->SetStatus(2);
+    particle->SetStatus(part_status::decayed);
     particle->SetInfo('G');
     if (xs!=NULL) {
       particle->SetFlow(1,xs->Colours()[i][0]);
@@ -277,7 +274,7 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,
     if( particle->Flav().Kfcode() != kf::tau )
       if (!(particle->Flav().IsStable())) unstable = true;
     particle->SetNumber(0);
-    particle->SetStatus(1);
+    particle->SetStatus(part_status::active);
     particle->SetInfo('H');
     if (xs!=NULL) {
       particle->SetFlow(1,xs->Colours()[i][0]);

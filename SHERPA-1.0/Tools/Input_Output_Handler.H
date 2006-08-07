@@ -60,9 +60,8 @@ namespace SHERPA {
   class Input_Output_Handler {
   private :
     bool            m_on;
-    int             m_io;
+    int             m_io,m_precision;
     iotype::code    m_outtype, m_screenout, m_intype;
-    int             m_precision;
 
     ATOOLS::Blob_List        * p_blobs;        
 #ifdef USING__CLHEP

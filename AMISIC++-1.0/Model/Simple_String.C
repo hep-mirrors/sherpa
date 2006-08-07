@@ -131,7 +131,7 @@ bool Simple_String::CreateMomenta()
 	} while (!(dabs(pz)>0.0));
 	particle->SetFlow(1+constit[j].IsAnti(),flow);
  	particle->SetFlow(2-constit[j].IsAnti(),0);
-	particle->SetStatus(1);
+	particle->SetStatus(part_status::active);
 	m_inparticles.push_back(particle);
 	m_outparticles.push_back(particle);
 	break;

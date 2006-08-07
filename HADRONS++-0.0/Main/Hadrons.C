@@ -214,7 +214,7 @@ Spin_Density_Matrix Hadrons::PerformDecay(
 	particle = new Particle( -1, flav, momentum );
 	if( part_list ) particle->SetNumber( part_list->size() );
 	else particle->SetNumber( 0 );
-	particle->SetStatus(1);
+	particle->SetStatus(part_status::active);
 	particle->SetInfo('D');
 	if( part_list ) part_list->push_back( particle ); 
 	blob->AddToOutParticles( particle );

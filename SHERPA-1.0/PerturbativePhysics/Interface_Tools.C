@@ -25,7 +25,7 @@ void Interface_Tools::InitializeIncoming(const Blob *blob,const double &E)
   Knot *m1=p_initrees[0]->NewKnot();
   *(m1->part)=*blob->ConstInParticle(0);
   m1->part->SetInfo('G');
-  m1->part->SetStatus(1);
+  m1->part->SetStatus(part_status::active);
   m1->t=-scale;
   m1->costh=-1.;
   m1->thcrit=Angle(blob->ConstInParticle(0),blob);
@@ -37,7 +37,7 @@ void Interface_Tools::InitializeIncoming(const Blob *blob,const double &E)
   Knot *m2=p_initrees[1]->NewKnot();
   *(m2->part)=*blob->ConstInParticle(1);
   m2->part->SetInfo('G');
-  m2->part->SetStatus(1);
+  m2->part->SetStatus(part_status::active);
   m2->t=-scale;
   m2->costh=-1.; 
   m2->thcrit=Angle(blob->ConstInParticle(0),blob);
@@ -62,7 +62,7 @@ void Interface_Tools::InitializeOutGoing(Blob *blob,const double &E)
   blob->SetCMS();
   blob->BoostInCMS();
   dummy->part->SetInfo('f');
-  dummy->part->SetStatus(2);
+  dummy->part->SetStatus(part_status::decayed);
   dummy->t=dummy->maxpt2=dummy->tout=dummy->part->Momentum().Abs2();
   dummy->costh=-1;
   dummy->thcrit=M_PI;
@@ -71,7 +71,7 @@ void Interface_Tools::InitializeOutGoing(Blob *blob,const double &E)
   dummy->zs=dummy->z=part1->Momentum()[0]/dummy->part->Momentum()[0];
   dummy->didkin=true;
   d1->part->SetInfo('H');
-  d1->part->SetStatus(1);
+  d1->part->SetStatus(part_status::active);
   d1->t=dummy->t;
   d1->costh=-1.; 
   d1->thcrit=Angle(blob->InParticle(0),blob);
@@ -81,7 +81,7 @@ void Interface_Tools::InitializeOutGoing(Blob *blob,const double &E)
   d1->part->SetProductionBlob(blob);
   d1->didkin=true;
   d2->part->SetInfo('H');
-  d2->part->SetStatus(1);
+  d2->part->SetStatus(part_status::active);
   d2->t=dummy->t;
   d2->costh=-1.; 
   d2->thcrit=Angle(blob->InParticle(1),blob);
