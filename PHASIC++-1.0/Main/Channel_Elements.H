@@ -50,6 +50,9 @@ namespace PHASIC {
     double MasslessPropMomenta(double,double,double,double);
     void MasslessPropGrid(double,double,double,double,double&);
 
+    double AntennaWeight(double amin,double amax,const double a,double &ran);
+    double AntennaMomenta(double amin,double amax,double ran);
+
     double FlatWeight(double,double,double,double);
     double FlatWeight(double,double,double,double,double&);
     double FlatMomenta(double,double,double,double);

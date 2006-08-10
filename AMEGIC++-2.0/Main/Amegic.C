@@ -7,7 +7,7 @@
 #include "MyStrStream.H"
 #include "Process_Info.H"
 #include <iomanip>
-#include "Single_Process_MHV.H"
+#include "Single_Process_MHV2.H"
 
 //#define _DECAYS_
 
@@ -212,7 +212,7 @@ void Amegic::ReadInProcessfile(string file)
   std::string enhance_function="1";
   double      maxerror=-1.;
   bool        print_graphs=false;
-  bool        enable_mhv=false;
+  int         enable_mhv=0; 
   string      selectorfile;
   while (from) {
     getline(from,buf);
@@ -446,7 +446,11 @@ void Amegic::ReadInProcessfile(string file)
 		}
 		position       = buf.find(string("Enable_MHV"));
 		if (position > -1) {
-		  enable_mhv=true;
+		  enable_mhv=1;
+		}
+		position       = buf.find(string("Enable_MHV_ONLY"));
+		if (position > -1) {
+		  enable_mhv=4;
 		}
 
 		position     = buf.find(string("N_Max :"));
@@ -541,12 +545,12 @@ void Amegic::ReadInProcessfile(string file)
 	      if (summass<rpa.gen.Ecms()) {
 		Process_Base * proc=NULL;
 		if (single) {
-		  if (enable_mhv && CF.PureGluonic(nIS,IS,nFS,FS))
-		    proc = new Single_Process_MHV(pcinfo,nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
-						  order_strong,order_ew,
-						  -kfactor_scheme,-scale_scheme,fixed_scale,
-						  plavs,nex,excluded,usepi,ycut,maxerror,enhance_function);
-		  else
+		  if ((enable_mhv==1||enable_mhv==4) && CF.MHVCalculable(nIS,flavs,nFS,flavs+nIS))
+		    proc = new Single_Process_MHV2(pcinfo,nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
+						   order_strong,order_ew,
+						   -kfactor_scheme,-scale_scheme,fixed_scale,
+						   plavs,nex,excluded,usepi,ycut,maxerror,enhance_function);
+		  else if (enable_mhv!=4)
 		    proc = new Single_Process(pcinfo,nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
 					    order_strong,order_ew,
 					      -kfactor_scheme,-scale_scheme,fixed_scale,
@@ -556,10 +560,12 @@ void Amegic::ReadInProcessfile(string file)
 					      order_strong,order_ew,
 					      -kfactor_scheme,-scale_scheme,fixed_scale,
 					      plavs,nex,excluded,usepi,ycut,maxerror,enhance_function,enable_mhv);
-		proc->SetEnhance(enhance_factor,maxreduction_factor,maxredepsilon);
-		if (print_graphs) proc->SetPrintGraphs();
-		p_procs->Add(proc);
-		print_graphs=false;
+		if (proc) {
+		  proc->SetEnhance(enhance_factor,maxreduction_factor,maxredepsilon);
+		  if (print_graphs) proc->SetPrintGraphs();
+		  p_procs->Add(proc);
+		  print_graphs=false;
+		}
 	      }
 	      else {
 		msg.Out()<<"Ignored process: ";

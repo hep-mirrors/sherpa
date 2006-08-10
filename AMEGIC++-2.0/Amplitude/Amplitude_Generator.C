@@ -62,9 +62,9 @@ using namespace std;
 Amplitude_Generator::Amplitude_Generator(int _no,Flavour* _fl,int* _b,
 					 Interaction_Model_Base * _model,Topology * _top,
 					 int _nQCD,int _nEW,
-					 Basic_Sfuncs* _BS,String_Handler* _shand) 
+					 Basic_Sfuncs* _BS,String_Handler* _shand, bool create_4V) 
   : fl(_fl), b(_b), p_model(_model), top(_top), N(_no), nEW(_nEW), nQCD(_nQCD),
-    BS(_BS), shand(_shand), s_buffer(0)
+    BS(_BS), shand(_shand), m_create_4V(create_4V), s_buffer(0)
 {
   single_top = top->Get(N-2);
   
@@ -1683,7 +1683,7 @@ Single_Amplitude* Amplitude_Generator::Matching()
   
   CountOrders(first_amp);
   
-  CheckFor4Vertices(first_amp);
+  if (m_create_4V) CheckFor4Vertices(first_amp);
   Kill5VertexArtefacts(first_amp);
   Compare(first_amp);
 

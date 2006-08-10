@@ -153,6 +153,25 @@ double Channel_Basics::PeakedWeight(double a,double cn,
   return wt;
 }
 
+double Channel_Basics::BoundaryPeakedDist(double cxm,double cxp,double ran)
+  //  1/(x(1-x))
+{ 
+  double fxp=1./cxp-1.;
+  double fxm=1./cxm-1.;
+  double pw = pow(fxm/fxp,ran);
+  return pw/(fxm+pw);
+}
+
+double Channel_Basics::BoundaryPeakedWeight(double cxm,double cxp,double res,double &ran)
+  //  1/(x(1-x))
+{
+  double fxp=1./cxp-1.;
+  double fxm=1./cxm-1.;
+  double wt=log(fxm/fxp);
+  ran = log(fxm/(1./res-1.))/wt;
+  return wt;
+}
+
 double Channel_Basics::Tj1(double cn,double amcxm,double amcxp,double ran)
 {
   double ce= 1.-cn;

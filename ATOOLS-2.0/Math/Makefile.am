@@ -14,6 +14,7 @@ libToolsMath_la_SOURCES       =	\
 				Histogram.C \
 				Variable.C \
 				Permutation.C \
+				PermStore.C \
 				Grid.C \
 				Primitive_Integrator.C \
 				Algebra_Interpreter.C
@@ -34,6 +35,7 @@ pkginclude_HEADERS        =	\
 			Axis.H \
 			Histogram.H \
 			Permutation.H \
+			PermStore.H \
 			Grid.H \
 			Primitive_Integrator.H \
 			Algebra_Interpreter.H \

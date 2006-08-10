@@ -15,6 +15,8 @@ namespace PHASIC {
     static double PeakedWeight(double,double,double,double,int);
     static double PeakedWeight(double,double,double,double,double,int,double&);
     static double PeakedGrid(double a,double cn,double cxm,double cxp,double res,int k,double &ran);
+    static double BoundaryPeakedDist(double cxm,double cxp,double ran);
+    static double BoundaryPeakedWeight(double cxm,double cxp,double res,double &ran);
     static double FlatDist(double,double,double,double);
     static double FlatWeight(double,double,double);
     static double FlatWeight(double,double,double,double,double&);

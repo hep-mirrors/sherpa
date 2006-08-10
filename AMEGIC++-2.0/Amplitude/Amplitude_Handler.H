@@ -41,7 +41,7 @@ namespace AMEGIC {
   public:
     Amplitude_Handler(int,ATOOLS::Flavour *,int *,Process_Info*,
 		      Interaction_Model_Base *,Topology *,int &,int &,
-		      Basic_Sfuncs *,String_Handler *, bool print_graph=false);
+		      Basic_Sfuncs *,String_Handler *, bool print_graph=false, bool create_4V=true);
     ~Amplitude_Handler();
     void ConstructSignalAmplitudes(int N,ATOOLS::Flavour* fl,int* b,
 				   Process_Info* pinfo,Single_Amplitude** sglist,

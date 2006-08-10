@@ -1,6 +1,7 @@
 #include "Process_Group.H"
 #include "Single_Process.H"
-#include "Single_Process_MHV.H"
+// #include "Single_Process_MHV.H"
+#include "Single_Process_MHV2.H"
 
 #include "Run_Parameter.H"
 #include "Message.H"
@@ -30,7 +31,7 @@ using namespace std;
 
 Process_Group::Process_Group() :
   Process_Base(NULL,0,0,NULL,NULL,NULL,0,0,0,0,0,-1.),
-  m_resetted(false), m_weventmode(0), m_enable_mhv(false)
+  m_resetted(false), m_weventmode(0), m_enable_mhv(0)
 { 
   m_name  = "Empty_Group"; 
   p_pl    = 0;
@@ -43,7 +44,7 @@ Process_Group::Process_Group(Process_Info* pinfo,int _nin,int _nout,Flavour *& _
 			     int _gen_str,int _orderQCD, int _orderEW,
 			     int _kfactorscheme,int _scalescheme,double _scale,
 			     Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi,double ycut, double error,
-			     std::string e_func, bool enable_mhv) :
+			     std::string e_func, int enable_mhv) :
   Process_Base(pinfo,_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
 	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,ycut,error),
   m_resetted(false), m_weventmode(0), m_enable_mhv(enable_mhv)
@@ -185,10 +186,10 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
 	  }
 	}
 	if (take) {
-	  if (m_enable_mhv && CF.PureGluonic(m_nin,_fl,m_nout,&_fl[m_nin]))
-	    Add(new Single_Process_MHV(pi,m_nin,m_nout,_fl,p_isrhandler,p_beamhandler,_seldata,m_gen_str,m_orderQCD,m_orderEW,
-				       m_kfactorscheme,m_scalescheme,m_scale[stp::as],_pl,m_nex,p_ex_fl,m_usepi,m_ycut,m_maxerror,m_efunc));
-	  else
+	  if ((m_enable_mhv==1||m_enable_mhv==4) && CF.MHVCalculable(m_nin,_fl,m_nout,&_fl[m_nin]))
+	    Add(new Single_Process_MHV2(pi,m_nin,m_nout,_fl,p_isrhandler,p_beamhandler,_seldata,m_gen_str,m_orderQCD,m_orderEW,
+					m_kfactorscheme,m_scalescheme,m_scale[stp::as],_pl,m_nex,p_ex_fl,m_usepi,m_ycut,m_maxerror,m_efunc));
+	  else if (m_enable_mhv!=4)
 	    Add(new Single_Process(pi,m_nin,m_nout,_fl,p_isrhandler,p_beamhandler,_seldata,m_gen_str,m_orderQCD,m_orderEW,
 				   m_kfactorscheme,m_scalescheme,m_scale[stp::as],_pl,m_nex,p_ex_fl,m_usepi,m_ycut,m_maxerror,m_efunc));
 	}
