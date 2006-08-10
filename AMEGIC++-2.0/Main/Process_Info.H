@@ -13,12 +13,14 @@ namespace AMEGIC {
     ATOOLS::Flavour* p_fl;
     Pol_Info* p_pl;
     std::vector<std::vector<Process_Info*> > m_sublist;
+    int m_maxqcdjets;
   protected:
     Process_Info* GetSubProcess(int n,int& dn);
     int  GetDPOffset(int&,int&);
     Point* MergePointList(Point** plist,Point* np,int &nd, int nin, int &ep);
    public:
     Process_Info(ATOOLS::Flavour*,Pol_Info*);
+    Process_Info(Process_Info*);
     ~Process_Info();
     ATOOLS::Flavour* Flav() {return p_fl;}
     Pol_Info* Pol()         {return p_pl;}
@@ -43,6 +45,7 @@ namespace AMEGIC {
     void Reshuffle();
     std::string GenerateName();
     void MergePointList(Point**,Point*,int);
+    void SetQCDjetNums();
 
     void Print();
     void FullPrint();
