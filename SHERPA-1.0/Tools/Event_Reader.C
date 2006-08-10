@@ -292,7 +292,7 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
   hardblob->SetTypeSpec(m_generator);
   hardblob->SetId();
   hardblob->SetPosition(Vec4D(0.,0.,0.,0.));
-  hardblob->SetStatus(1);
+  hardblob->SetStatus(blob_status::code(30));
   hardblob->SetBeam(-1);
   hardblob->SetWeight(m_weight);
   blobs->push_back(hardblob);
@@ -303,7 +303,7 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
   showerblob->SetTypeSpec(m_generator);
   showerblob->SetId();
   showerblob->SetPosition(Vec4D(0.,0.,0.,0.));
-  showerblob->SetStatus(1);
+  showerblob->SetStatus(blob_status::code(28));
   showerblob->SetBeam(-1);
   blobs->push_back(showerblob);
 
@@ -312,7 +312,7 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
   hadronblob->SetTypeSpec(m_generator);
   hadronblob->SetId();
   hadronblob->SetPosition(Vec4D(0.,0.,0.,0.));
-  hadronblob->SetStatus(1);
+  hadronblob->SetStatus(blob_status::needs_hadrondecays);
   hadronblob->SetBeam(-1);
   blobs->push_back(hadronblob);
 

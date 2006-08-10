@@ -71,7 +71,7 @@ std::ostream& ATOOLS::operator<<(std::ostream& str, const Particle &part) {
   str<<std::setiosflags(std::ios::scientific)
      <<" [("<<std::setw(11)<<p[0]<<','<<std::setw(11)<<p[1]<<','
 	  <<std::setw(11)<<p[2]<<','<<std::setw(11)<<p[3]<<"),"
-     <<std::setw(11)<<"p^2 = "<<p.Abs2()<<", m^2 = "<<part.m_finalmass<<"]"
+     <<std::setw(11)<<"p^2 = "<<p.Abs2()<<", m^2 = "<<sqr(part.m_finalmass)<<"]"
      <<" ("<<std::setw(3)<<part.GetFlow(1)<<","<<std::setw(3)<<part.GetFlow(2)<<")"
      <<std::resetiosflags(std::ios::scientific)<<std::resetiosflags(std::ios::left);
   str.precision(io);

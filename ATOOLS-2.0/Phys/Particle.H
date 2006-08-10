@@ -6,6 +6,7 @@
 #include "Flow.H"
 
 #include <iostream>
+#include <list>
 
 namespace ATOOLS {
   class Blob;
@@ -64,7 +65,7 @@ namespace ATOOLS {
     int               JetNumber() const;
     void   SetMomentum(const Vec4D &);
     void   SetFinalMass(const double=-1,const double=-1);
-    void   SetStatus(part_status::code=part_status::undefined );
+    void   SetStatus(part_status::code=part_status::undefined);
     void   SetInfo(char);
     void   SetProductionBlob(Blob *);
     void   SetDecayBlob(Blob *);
@@ -76,15 +77,20 @@ namespace ATOOLS {
     void   SetNumber(const int number=0);
     void   SetJetNumber(const int);
     bool operator==(Particle part);
-    static void   ResetCounter() { s_totalnumber = 0; }
-    static int    Counter()      { return s_totalnumber; }
-    inline static void Reset()   { s_currentnumber = 0; }
+    static void   ResetCounter(const int number=0)  { s_totalnumber = number; }
+    static int    Counter()                         { return s_totalnumber; }
+    inline static void Reset(const int number=0)    { s_currentnumber = number; }
     inline static long unsigned int CurrentNumber() { return s_currentnumber; }
   };
 
-  typedef std::vector<Particle *>          Particle_Vector;
-  typedef std::map<ATOOLS::Particle *,int> Particle_Int_Map;
-  typedef std::map<int,ATOOLS::Particle *> Int_Particle_Map;
+  typedef std::vector<Particle *>   Particle_Vector;
+  typedef std::map<Particle *,int>  Particle_Int_Map;
+  typedef std::map<int,Particle *>  Int_Particle_Map;
+
+  typedef std::list<Particle*>      Part_List;
+  typedef Part_List::iterator       Part_Iterator;
+  typedef Part_List::const_iterator Part_Const_Iterator;
+
 
 
 

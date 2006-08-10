@@ -227,6 +227,8 @@ bool Hadron_Remnant::DecomposeHadron()
     }
     for (size_t j=0;j<m_constit.size();++j) {
       if ((*pit)->Flav()==m_constit[j]) {
+	//std::cout<<METHOD<<" "<<success<<":"<<(*pit)->Flav()
+	//	 <<" ("<<ValenceQuark(*pit)<<")"<<std::endl;
 	if (success && ValenceQuark(*pit)) {
 	  p_start = new Color_Dipole(*pit,&m_companions);  
 	  p_start->Begin(ANTI((*pit)->Flav().IsAnti()))->
@@ -236,9 +238,12 @@ bool Hadron_Remnant::DecomposeHadron()
       }
     }
   }
-  Flavour flav=m_constit[(size_t)(ran.Get()*3.)];
-  Particle *part = new Particle(-1,flav); 
+  Flavour    flav = m_constit[(size_t)(ran.Get()*3.)];
+  Particle * part = new Particle(-1,flav); 
+  part->SetStatus(part_status::active);
   part->SetFlow(COLOR((qri::type)(flav.IsAnti())),Flow::Counter());
+  //std::cout<<METHOD<<":"<<flav<<std::endl
+  //	   <<"  "<<(*part)<<std::endl;
   p_start = new Color_Dipole(part,&m_companions);  
   p_start->Begin(ANTI(flav.IsAnti()))->SetFlav(Opposite(flav));
   m_companions.push_back(part);

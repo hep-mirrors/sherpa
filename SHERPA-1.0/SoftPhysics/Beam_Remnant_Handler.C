@@ -27,7 +27,7 @@ Beam_Remnant_Handler(const std::string path,const std::string file,
 {
   p_kperp = new Primordial_KPerp(path,file);
   for (size_t i=0;i<2;++i) {
-    p_beampart[i]=p_isr->GetRemnant(i);
+    p_beampart[i] = p_isr->GetRemnant(i);
     p_beampart[i]->SetBeam(beam->GetBeam(i));
     p_kperp->SetRemnant(p_beampart[i],i);
   }
@@ -39,159 +39,220 @@ Beam_Remnant_Handler::~Beam_Remnant_Handler()
   delete p_kperp;
 }
 
-bool Beam_Remnant_Handler::
-FillBunchBlobs(ATOOLS::Blob_List *const  bloblist,
-	       ATOOLS::Particle_List *const particlelist)
+
+Return_Value::code 
+Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist)
 {
-  int bunchblobcount(2);
-  for (Blob_List::iterator bit=bloblist->begin();
-	 bit!=bloblist->end();++bit) {
-    if ((*bit)->Type()==btp::Beam) bunchblobcount++;
+  switch (int(FillBeamBlobs(bloblist))) {
+    case int(Return_Value::Nothing) : return Return_Value::Nothing;
+    case int(Return_Value::Success) : break;
+    case int(Return_Value::Error)   : return Return_Value::Error;
+    default :
+      msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+		 <<"   FillBeamBlobs yields unknown outcome,"
+		 <<" return 'Error' and hope for the best."<<std::endl;
+      return Return_Value::Error;
   }
-  if (bunchblobcount>1) return false;
-  PROFILE_HERE;
-  p_bloblist=bloblist;
-  p_particlelist=particlelist;
-  bool flag=false;
-  for (short unsigned int i=0;i<2;i++) {
-    for (Blob_List::iterator bit=bloblist->begin();
-	 bit!=bloblist->end();++bit) {
-      if ((*bit)->Status()==1 && (*bit)->Beam()==i && 
-	  ((*bit)->Type()==btp::Beam || (*bit)->Type()==btp::IS_Shower)) {
-	(*bit)->SetStatus(2);
-	Blob *blob = new Blob();
-	bloblist->push_front(blob);
-	blob->SetType(btp::Bunch);
-	blob->SetBeam(i);
-	blob->SetId();
-	blob->AddToOutParticles((*bit)->InParticle(0));
-	if ((*bit)->InParticle(0)->Flav()==p_beam->GetBeam(i)->Beam() &&
-	    IsEqual((*bit)->InParticle(0)->E(),
-		    p_beam->GetBeam(i)->InMomentum()[0])) {
-	  Particle *p = new Particle(*(*bit)->InParticle(0));
-	  p->SetNumber(0);
-	  blob->AddToInParticles(p);
-	}
-	else {
-	  Particle *p = new Particle(-1,p_beam->GetBeam(i)->Beam(),
-				     p_beam->GetBeam(i)->InMomentum());
-	  p->SetNumber(0);
-	  p->SetStatus(part_status::decayed);
-	  p->SetFinalMass();
-	  blob->AddToInParticles(p);
-	  p = new Particle(-1,p_beam->GetBeam(i)->Remnant(),
-			   p_beam->GetBeam(i)->InMomentum()-
-			   (*bit)->InParticle(0)->Momentum());
-	  p->SetNumber(0);
-	  p->SetStatus(part_status::active);
-	  p->SetFinalMass();
-	  blob->AddToOutParticles(p);
-	}
-	flag=true;
-      }
-    }
+  switch (int(FillBunchBlobs(bloblist))) {
+    case int(Return_Value::Nothing)     : return Return_Value::Nothing;
+    case int(Return_Value::Success)     : break;
+    case int(Return_Value::Retry_Event) : return Return_Value::Retry_Event;
+    case int(Return_Value::Error)       : return Return_Value::Error;
+    default :
+      msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+		 <<"   FillBunchBlobs yields unknown outcome,"
+		 <<" return 'Error' and hope for the best."<<std::endl;
+      return Return_Value::Error;
   }
-  return flag;
+  return Return_Value::Success;
 }
 
-bool Beam_Remnant_Handler::
-FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
-	      ATOOLS::Particle_List *const particlelist)
+Return_Value::code Beam_Remnant_Handler::
+FillBunchBlobs(Blob_List *const  bloblist,
+	       Particle_List *const particlelist)
+{
+  int bunchblobcount(0);
+  for (Blob_List::iterator bit=bloblist->begin();
+	 bit!=bloblist->end();++bit) {
+    if ((*bit)->Type()==btp::Bunch) bunchblobcount++;
+  }
+  if (bunchblobcount>1) return Return_Value::Nothing;
+  PROFILE_HERE;
+  bool flag(false);
+  m_beam = 0;
+  for (Blob_List::iterator bit=bloblist->begin();
+       bit!=bloblist->end();++bit) {
+    if ((*bit)->Has(blob_status::needs_beams) && 
+	((*bit)->Type()==btp::Beam || (*bit)->Type()==btp::IS_Shower)) {
+      (*bit)->UnsetStatus(blob_status::needs_beams);
+      bloblist->push_front(FillBunchBlob((*bit)->Beam(),(*bit)->InParticle(0)));
+      if (m_beam>2) {
+	msg.Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
+		   <<"   Too many bunch blobs required, "
+		   <<"return 'Error' and hope for the best."<<std::endl;
+	return Return_Value::Error;
+      }
+      flag=true;
+    }
+  }
+  return (flag?Return_Value::Success:Return_Value::Nothing);
+}
+
+Return_Value::code Beam_Remnant_Handler::
+FillBeamBlobs(Blob_List *const bloblist,
+	      Particle_List *const particlelist)
 { 
   PROFILE_HERE;
-  p_bloblist=bloblist;
-  p_particlelist=particlelist;
+  if (!m_fill) return Return_Value::Nothing;
   if (p_mehandler==NULL) {
     p_mehandler=GET_OBJECT(Matrix_Element_Handler,"ME_Handler");
     if (p_mehandler==NULL) 
       THROW(fatal_error,"No matrix element handler found.");
   }
-  if (!m_fill) return false;
-  int beamblobcount(2);
+  int beamblobcount(0);
   for (Blob_List::iterator bit=bloblist->begin();
 	 bit!=bloblist->end();++bit) {
     if ((*bit)->Type()==btp::Beam) beamblobcount++;
   }
-  if (beamblobcount>1) return false;
+  if (beamblobcount>1) return Return_Value::Nothing;
 	
   p_beamblob[1]=p_beamblob[0]=NULL;
   Blob_List::iterator endblob=bloblist->end(); 
   for (short unsigned int i=0;i<2;++i) {
     p_beampart[i]->Clear();
     p_beampart[i]->ClearErrors();
-    for (Blob_List::iterator bit=bloblist->begin();
-	 bit!=bloblist->end();++bit) {
-      if ((*bit)->Beam()==i && (*bit)->Type()==btp::IS_Shower) { 
-	ATOOLS::Particle *in=(*bit)->InParticle(0);
-	if (in->Flav().Strong() &&
-	    in->GetFlow(1)==0 && in->GetFlow(2)==0) continue;
-	if (p_beamblob[i]==NULL) {
-	    p_beamblob[i] = new Blob();
-	    p_beamblob[i]->SetType(btp::Beam);
-	    bloblist->push_front(p_beamblob[i]);
-	    p_beamblob[i]->SetId();
-	    p_beamblob[i]->SetBeam(i);
-	    p_beamblob[i]->SetStatus(1);
-	    Particle *p = new Particle(-1,p_isr->Flav(i),
-				       p_beam->GetBeam(i)->OutMomentum());
-	    p->SetNumber(0);
-	    p->SetStatus(part_status::decayed);
-	    p->SetFinalMass();
-	    p_beamblob[i]->AddToInParticles(p);
-	}
-	if (!p_beampart[i]->Extract((*bit)->InParticle(0))) {
-	  msg.Error()<<"Beam_Remnant_Handler::FillBeamBlobs(..): "
-		     <<"Extract parton failed for\n   "
-		     <<*(*bit)->InParticle(0)<<".\n   Retry event "
+  }
+
+  Particle * isr_init;
+  short unsigned int beam(0);
+  for (Blob_List::iterator bit=bloblist->begin();
+       bit!=bloblist->end();++bit) {
+    if ((*bit)->Has(blob_status::needs_beams) && (*bit)->Type()==btp::IS_Shower) { 
+      isr_init = (*bit)->InParticle(0);
+      beam     = (*bit)->Beam();
+      if (isr_init->Flav().Strong() && isr_init->GetFlow(1)==0 && isr_init->GetFlow(2)==0) {
+	delete p_beamblob[beam]; p_beamblob[beam]=NULL; continue;
+      }
+      else {
+	(*bit)->UnsetStatus(blob_status::needs_beams);
+	(*bit)->AddStatus(blob_status::internal_flag);
+	if (!FillBeamBlob(beam,isr_init)) {
+	  msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+		     <<"   FillBeamBlob failed for\n   "
+		     <<p_beamblob[beam]->InParticle(0)<<" --> \n"
+		     <<isr_init<<".\n   Retry event "
 		     <<rpa.gen.NumberOfDicedEvents()<<"."<<std::endl;
 	  msg_Tracking()<<*bloblist<<std::endl;
-	  bloblist->Clear();
-	  if (p_mehandler->Weight()!=1.0) p_mehandler->SaveNumberOfTrials();
-	  return false;
+	  Reset(bloblist);
+	  return Return_Value::Retry_Event;
 	}
-	(*bit)->SetStatus(2);
+	bloblist->push_front(p_beamblob[beam]);
       }
     }
   }
   if (p_beamblob[0]==NULL || p_beamblob[1]==NULL) {
-    if (bloblist->FourMomentumConservation()) {
-      p_mehandler->ResetNumberOfTrials();
-      return true;
-    }
+    Reset(bloblist);
+    return Return_Value::Success;
   }
-  for (short unsigned int i=0;i<2;++i) 
-    if (p_beamblob[i]) 
-      if (!p_beampart[i]->FillBlob(p_beamblob[i],particlelist)) {
-	msg_Tracking()<<*bloblist<<std::endl;
-	if (i==0) p_beampart[1]->FillBlob(p_beamblob[i],particlelist);
-	bloblist->Clear();
-	if (p_mehandler->Weight()!=1.0) p_mehandler->SaveNumberOfTrials();
-	return false;
-      }
+
   if (p_beampart[0]->Type()==PDF::rtp::hadron || 
       p_beampart[1]->Type()==PDF::rtp::hadron) {
     p_kperp->CreateKPerp(p_beamblob[0],p_beamblob[1]);
     for (short unsigned int i=0;i<2;++i) p_kperp->FillKPerp(p_beamblob[i]);
   }
-  bool adjusted=true;
+
   for (short unsigned int i=0;i<2;++i) {
-    if (!p_beampart[i]->AdjustKinematics()) adjusted=false;
-    if (!p_beampart[i]->AdjustColors()) adjusted=false;
+    if (!p_beampart[i]->AdjustKinematics() || !p_beampart[i]->AdjustColors()) { 
+      Reset(bloblist); 
+      return Return_Value::Retry_Event; 
+    }
   }
-  if (!adjusted) {
-    bloblist->Clear();
-    bloblist->AddBlob(btp::Signal_Process);
-    if (p_mehandler->Weight()!=1.0) p_mehandler->SaveNumberOfTrials();
-    return false;
-  }
+    
   if (bloblist->FourMomentumConservation() && bloblist->ColorConservation()) {
     p_mehandler->ResetNumberOfTrials();
-    return true;
+    for (Blob_List::iterator bit=bloblist->begin();bit!=bloblist->end();++bit) {
+      if ((*bit)->Has(blob_status::internal_flag) && (*bit)->Type()==btp::IS_Shower) { 
+	(*bit)->UnsetStatus(blob_status::internal_flag);
+      }
+    }
+    return Return_Value::Success;
   }
-  ATOOLS::msg.Error()<<"Beam_Remnant_Handler::FillBeamBlobs(..): Retry event "
-		     <<rpa.gen.NumberOfDicedEvents()<<"."<<std::endl;
-  bloblist->Clear();
-  return false;
+  Reset(bloblist);
+  return Return_Value::Retry_Event;
+}
+
+
+
+Blob * Beam_Remnant_Handler::FillBunchBlob(const int beam,Particle * particle) {
+  Blob *blob = new Blob();
+  blob->SetType(btp::Bunch);
+  blob->SetBeam(beam);
+  blob->SetId();
+  blob->SetStatus(blob_status::needs_beams &
+		  blob_status::needs_softUE &
+		  blob_status::needs_hadronization);
+  blob->AddToOutParticles(particle);
+  if (particle->Flav()==p_beam->GetBeam(beam)->Beam() &&
+      IsEqual(particle->E(),p_beam->GetBeam(beam)->InMomentum()[0])) {
+    Particle *p = new Particle(*particle);
+    p->SetNumber(0);
+    blob->AddToInParticles(p);
+  }
+  else {
+    Particle *p = new Particle(-1,p_beam->GetBeam(beam)->Beam(),
+			       p_beam->GetBeam(beam)->InMomentum());
+    p->SetNumber(0);
+    p->SetStatus(part_status::decayed);
+    p->SetFinalMass();
+    blob->AddToInParticles(p);
+    p = new Particle(-1,p_beam->GetBeam(beam)->Remnant(),
+		     p_beam->GetBeam(beam)->InMomentum()-particle->Momentum());
+    p->SetNumber(0);
+    p->SetStatus(part_status::active);
+    p->SetFinalMass();
+    blob->AddToOutParticles(p);
+  }
+  m_beam++;
+  return blob;
+}
+
+
+bool Beam_Remnant_Handler::FillBeamBlob(const int beam,Particle * particle) {
+  p_beamblob[beam] = new Blob();
+  p_beamblob[beam]->SetType(btp::Beam);
+  p_beamblob[beam]->SetId();
+  p_beamblob[beam]->SetBeam(beam);
+  p_beamblob[beam]->SetStatus(blob_status::needs_beams |
+			      blob_status::needs_softUE |
+			      blob_status::needs_hadronization);
+  Particle * beampart = new Particle(-1,p_isr->Flav(beam),
+				     p_beam->GetBeam(beam)->OutMomentum());
+  beampart->SetNumber(0);
+  beampart->SetStatus(part_status::decayed);
+  beampart->SetFinalMass();
+  p_beamblob[beam]->AddToInParticles(beampart);
+  //std::cout<<"Extract "<<isr_init->Flav()<<" out of "
+  //	 <<p_beamblob[beam]->InParticle(0)->Flav()<<std::endl;
+  if (!p_beampart[beam]->Extract(particle) ||
+      !p_beampart[beam]->FillBlob(p_beamblob[beam],NULL)) return false;
+  return true;
+}
+
+void Beam_Remnant_Handler::Reset(Blob_List * const bloblist) {
+  while (bloblist->front()==p_beamblob[0] || bloblist->front()==p_beamblob[1]) {
+    bloblist->pop_front();
+  }
+  for (short unsigned int beam=0;beam<2;beam++) {
+    if (p_mehandler->Weight()!=1.0) p_mehandler->SaveNumberOfTrials();
+    if (p_beamblob[beam]) { delete p_beamblob[beam]; p_beamblob[beam]=NULL; }
+  }
+  for (Blob_List::iterator bit=bloblist->begin();
+       bit!=bloblist->end();++bit) {
+    if ((*bit)->Has(blob_status::internal_flag) && (*bit)->Type()==btp::IS_Shower) { 
+	(*bit)->SetStatus(blob_status::needs_beams);
+	(*bit)->UnsetStatus(blob_status::internal_flag);
+    }
+  }
 }
 
 void Beam_Remnant_Handler::SetScale(const double scale)

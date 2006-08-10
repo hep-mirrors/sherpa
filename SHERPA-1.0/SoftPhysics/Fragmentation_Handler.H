@@ -23,6 +23,8 @@ namespace SHERPA {
     AHADIC::Ahadic * p_ahadic;
 #endif
     Lund_Interface * p_lund;
+
+    ATOOLS::Return_Value::code ExtractSinglets(ATOOLS::Blob_List *);
   public:
     Fragmentation_Handler(std::string,std::string);
     ~Fragmentation_Handler();

@@ -44,133 +44,63 @@ Return_Value::code Hadron_Decays::Treat(ATOOLS::Blob_List * bloblist, double & w
     return Return_Value::Error;
   }
 
-  // get spin correlation tensor from Signal_Process blob
-  bool spincorr (false); 
-  Blob_Data_Base *info=(*bloblist->FindFirst(btp::Signal_Process))
-    ["Spin_Correlation_Tensor"];
-  SP(Spin_Correlation_Tensor) sct = NULL;
-  if (info) {
-    spincorr = true;
-    sct=info->Get<SP(Spin_Correlation_Tensor)>();
-  }
-
-  // treat blob
-  Blob * myblob(NULL);
-  bool found(true);
   Hadron_Decay_Handler * hdhandler;		// pointer on considered HD Handler
-  Particle * myout(NULL);
-  int index (0);
-  Spin_Density_Matrix * sigma   = NULL;         // SDM for decaying particle
-  Spin_Density_Matrix * decmatr = NULL;         // decay matrix
+  Particle * part;
+  bool found(true), didit(false);
   while (found) {
     found = false;
-    bool keeprunning (true);
     for (Blob_List::iterator blit=bloblist->begin();
-        blit!=bloblist->end() && keeprunning;++blit) {
-      if ((*blit)->Type()==btp::Fragmentation ||
-          (*blit)->Type()==btp::Hadron_Decay) {
-        myblob = (*blit);
-        switch (myblob->Status()) {
-          case 2:
-            if( p_dechandlers->find("Lund")!= p_dechandlers->end()) {
-              hdhandler = (*p_dechandlers)["Lund"];
-              hdhandler->PrepareDecays(myblob);
-              found = true;
-            }
-          case 0: {
-                    bool decayed(false); 
+	 blit!=bloblist->end();++blit) {
+      //std::cout<<METHOD<<" : check = "<<(*blit)->Type()<<"/"<<(*blit)->Status()<<std::endl;
+      if ((*blit)->Has(blob_status::needs_hadrondecays)) {
+	//std::cout<<"   Iterate over "<<(*blit)->NOutP()<<" particles."<<std::endl;
+	for (int i=0;i<(*blit)->NOutP();i++) {
+	  part = (*blit)->OutParticle(i);
+	  if (part->Status()==part_status::active && 
+	      !part->Flav().IsStable() && part->DecayBlob()==NULL) {
+	    //std::cout<<METHOD<<" : check for "<<part->Flav()<<std::endl;
+	    hdhandler = NULL;
+	    for (HDHandlersIter hd=p_dechandlers->begin();hd!=p_dechandlers->end();hd++) {
+	      if (hd->second->CanDealWith(part->Flav().Kfcode())) { hdhandler = hd->second; break; }
+	    }
+	    /*
+	      To do: Return_Value for hdhandler->FillHadronDecayBlob for the BW smearing.
+	             Distance measure for decay blob: add it to actual position.
+	    */
+	    if (hdhandler) {
+	      //std::cout<<METHOD<<" : "<<hdhandler->Name()<<" will decay "<<part->Flav()<<std::endl;
+	      if (hdhandler->FillHadronDecayBlob(part,bloblist)) {
+		found=true;
+		//std::cout<<(*bloblist->back())<<std::endl;
+	      }
+	      else {
+		msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+			   <<"   Hadron_Decay_Handler "<<hdhandler->Name()<<" failed to decay "<<std::endl
+			   <<part<<","<<std::endl
+			   <<"   Will retry event."<<std::endl;
+		return Return_Value::Retry_Event;
+	      }
+	    }
+	    else {
+	      msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+			 <<"   Unstable particle found ("<<part->Flav()<<"), "
+			 <<"   but no handler found to deal with it."<<std::endl
+			 <<"   Will continue and hope for the best."<<std::endl;
+	    }
+	  }
+	}
 
-                    // get vector of out particles and shuffle randomly (if applicable)
-                    Particle_Vector outparticles = myblob->GetOutParticles();
-                    if (spincorr) random_shuffle( outparticles.begin(), outparticles.end() );
 
-                    // go through all out particles
-                    for( Particle_Vector::iterator outit = outparticles.begin();
-                        outit!=outparticles.end(); ++outit ) {
-                      myout = (*outit);                         // pointer on out particle
-                      index = myout->Number();                  // index for this particle in SCT
-                      if( myout->Flav().IsStable() ) continue;
-                      decayed = false;
-                      // check if sherpa can cope with OutParticle and pick implemented ones
-                      int spin  = myout->Flav().IntSpin();
-#ifdef USING__Hadrons
-                      if( p_dechandlers->find("Sherpa") != p_dechandlers->end() ) {
-                        hdhandler = (*p_dechandlers)["Sherpa"]; 
-                        if( hdhandler->GetHadrons()->FindDecay(myout->RefFlav()) ) {
-                          if (myout->DecayBlob()==NULL ) {
-                            msg.Debugging()<<"Hadron_Decays::Treat (Sherpa): Decay for "
-                              <<myout->Flav()<<std::endl;
-                            sigma   = NULL; 
-                            decmatr = NULL; 
-                            if( spin && spincorr ) {
-                              sigma = new Spin_Density_Matrix( sct->GetSigma(index) );
-                              sigma->Normalise();
-                              decmatr = new Spin_Density_Matrix();      // decay matrix
-                            }
-                            hdhandler->FillHadronDecayBlobs( myout, bloblist, sigma, decmatr );
-                            if( decmatr && spincorr ) {
-                              decmatr->Normalise();
-                              sct->Contract(index,decmatr);             // contract over decay matrix
-                            }
-                            found       = true;
-                            keeprunning = false;		// start again !
-                            if( sigma )   delete sigma; 
-                            if( decmatr ) delete decmatr;
-                          }
-                          else {
-                            msg.Error()<<"Error in Hadron_Decays::Treat (Sherpa): "<<endl
-                              <<"   Unstable particle has a decayblob."<<endl
-                              <<"   Terminate run."<<endl;
-                            abort();
-                          }
-                          decayed = true;						
-                        }
-                      }
-#endif
-                      // check if Lund can cope with OutParticle 
-                      if( p_dechandlers->find("Lund") != p_dechandlers->end() && !decayed ) {
-                        hdhandler = (*p_dechandlers)["Lund"];
-                        if(hdhandler->GetLund()->FindDecay(myout) ) {
-                          if (myout->DecayBlob()==NULL) {
-                            hdhandler->FillHadronDecayBlobs( myout, bloblist );
-                            // contract over unit decay matrix to reduce size of sct
-                            if( spin && spincorr ) sct->Contract(index,NULL );
-                            found       = true;
-                            keeprunning = false;		// start again !
-                          }
-                          else if (myout->Status()==1) {
-                            msg.Error()<<"Error in Hadron_Decays::Treat (Lund): "<<endl
-				       <<"   Unstable particle (status = "<<myout->Status()
-				       <<") already has a decayblob."<<endl
-				       <<"   Continue and hope for the best."<<endl;
-                            rvalue.IncError(METHOD);
-			    return Return_Value::Error;
-                          }
-                        }
-                      }
-                    }
-                    myblob->SetStatus(1);
-                  }
-        }
-        if ( (*blit)->Id() == (*(bloblist->end()-1))->Id() ) {
-          keeprunning = false;
-        }
+	(*blit)->UnsetStatus(blob_status::needs_hadrondecays);
       }
     }
   }
   msg_Tracking()<<"--------- Hadron_Decays::Treat - FINISH -------------"<<endl; 
-  return Return_Value::Nothing;
+  return (didit?Return_Value::Success:Return_Value::Nothing);
 }
 
 void Hadron_Decays::CleanUp() { 
   
 }
-
-//void Hadron_Decays::ConstructBlob(ATOOLS::Particle * part,ATOOLS::Blob_List * bloblist)
-//{
-//  msg_Tracking()<<"Hadron_Decays::ConstructBlob"<<endl;
-//  p_dechandler->FillHadronDecayBlobs(part,bloblist);
-//  msg_Tracking()<<"-------------------- Hadron_Decays::ConstructBlob: ready -------"<<endl;
-//}
 
 void Hadron_Decays::Finish(const std::string &) {}

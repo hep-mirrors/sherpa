@@ -74,6 +74,9 @@ void Shower_Handler::FillBlobs(ATOOLS::Blob_List * _bloblist)
       msg.Error()<<"Error in Shower_Handler::FillBlobs()."<<std::endl
 		 <<"   Did not succeed to fill bloblist any further."<<std::endl;
     }
+//     std::cout<<"------------------------------------------------------------------------------"<<std::endl
+// 	     <<(*_bloblist)
+// 	     <<"------------------------------------------------------------------------------"<<std::endl;
   }
 }
 

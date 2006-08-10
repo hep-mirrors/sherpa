@@ -5,6 +5,7 @@
 #include "Shower_Handler.H"
 #include "Blob.H"
 #include "Blob_List.H"
+#include "Return_Value.H"
 
 namespace SHERPA {
 
@@ -34,7 +35,7 @@ namespace SHERPA {
     virtual ~Perturbative_Interface();
  
     // member fundctions
-    virtual int  DefineInitialConditions(ATOOLS::Blob *) = 0;
+    virtual ATOOLS::Return_Value::code DefineInitialConditions(ATOOLS::Blob *) = 0;
     virtual bool FillBlobs(ATOOLS::Blob_List *) = 0; 
 
     virtual int PerformShowers() = 0;

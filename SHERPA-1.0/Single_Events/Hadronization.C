@@ -15,11 +15,10 @@ using namespace std;
 #endif
 
 
-Hadronization::Hadronization(Beam_Remnant_Handler * _beamremnant,Fragmentation_Handler * _fragmentation) :
-  p_beamremnanthandler(_beamremnant), p_fragmentationhandler(_fragmentation)
+Hadronization::Hadronization(Fragmentation_Handler * fragmentation) :
+  p_fragmentationhandler(fragmentation)
 {
-  m_name = std::string("Hadronization:")+
-    p_fragmentationhandler->FragmentationModel();
+  m_name = std::string("Hadronization ")+p_fragmentationhandler->FragmentationModel();
   m_type = eph::Hadronization;
 }
 
@@ -34,8 +33,6 @@ Return_Value::code Hadronization::Treat(ATOOLS::Blob_List *bloblist,double &weig
 	       <<"   Continue and hope for the best."<<endl;
     return Return_Value::Error;
   }
-  p_beamremnanthandler->FillBeamBlobs(bloblist);
-  p_beamremnanthandler->FillBunchBlobs(bloblist);
   return p_fragmentationhandler->PerformFragmentation(bloblist);
 }
 

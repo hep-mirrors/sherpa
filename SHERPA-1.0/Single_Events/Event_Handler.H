@@ -18,7 +18,8 @@ namespace SHERPA {
     Phase_List        * p_phases;
     ATOOLS::Blob_List   m_blobs;
 
-    void CleanUpEvent();
+    void CleanUpEvent(ATOOLS::Blob * =NULL);
+    void Reset();
 
   public:
 

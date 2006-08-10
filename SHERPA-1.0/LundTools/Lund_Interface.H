@@ -24,7 +24,7 @@ namespace SHERPA {
     long int m_events, m_curfile, m_evtsperfile;
     bool     m_compress, m_writeout;
 
-    std::list<ATOOLS::Particle_List *> m_partlists;
+
     double *p_phep, *p_vhep;
     int    *p_jmohep, *p_jdahep;
 
@@ -32,41 +32,28 @@ namespace SHERPA {
 
     static bool s_exportas, s_exportpdf;
 
-    std::map<ATOOLS::Particle *,int> m_secondarymap;
-	
     void NextFile(const bool newfile);
 
     // preparing and doing the fragmentation
-    void Reset();
-    ATOOLS::Return_Value::code ExtractSinglets(ATOOLS::Blob_List *,
-					       ATOOLS::Particle_List *);
+    ATOOLS::Return_Value::code ExtractSinglets(ATOOLS::Blob_List *);
     int                        PrepareFragmentationBlob(ATOOLS::Blob *);
-    bool                       StringFragmentation(ATOOLS::Blob *,ATOOLS::Blob_List *,
-			                           ATOOLS::Particle_List *,int); 
+    bool                       StringFragmentation(ATOOLS::Blob *,ATOOLS::Blob_List *,int); 
     // tools for extracting hadrons
     void AddPartonToString(ATOOLS::Particle *,int &);
-    void FillPrimaryHadronsInBlob(ATOOLS::Blob *,ATOOLS::Blob_List *,
-				  ATOOLS::Particle_List * =NULL);
-    void FillPrimaryTauInBlob(int,ATOOLS::Blob *blob,ATOOLS::Blob_List *,
-			      ATOOLS::Particle_List * =NULL);
-    void FillSecondaryHadronsInBlob(ATOOLS::Blob *,ATOOLS::Blob_List *,
-				    int,int,ATOOLS::Particle_List * =NULL);
+    void FillFragmentationBlob(ATOOLS::Blob *);
+    void FillOutgoingParticlesInBlob(ATOOLS::Blob *);
   public:
 
     Lund_Interface(std::string _m_path,std::string _m_file,bool sherpa);
     ~Lund_Interface();
 
-    ATOOLS::Return_Value::code Hadronize(ATOOLS::Blob_List *,
-					 ATOOLS::Particle_List * =NULL);
-    bool                       FillDecay(ATOOLS::Particle *,ATOOLS::Blob_List *,
-					 ATOOLS::Particle_List * =NULL);
-    bool                       FindDecay(ATOOLS::Particle *);
-    void                       PerformAllDecays(ATOOLS::Blob *);
-    void                       PerformDecay(ATOOLS::Particle *,ATOOLS::Blob_List *, 
-					    ATOOLS::Particle_List *);
+    ATOOLS::Return_Value::code Hadronize(ATOOLS::Blob_List *);
+    ATOOLS::Return_Value::code PerformDecay(ATOOLS::Blob *);
     static void Error(const int error);
+
     ATOOLS::Return_Value::code OneEvent(ATOOLS::Blob_List *const,double &);
 
+    bool IsAllowedDecay(ATOOLS::kf::code);
     // inline functions
     inline static void SetISRHandler(PDF::ISR_Handler *const handler) { s_isrhandler=handler; }
     inline static PDF::ISR_Handler *ISRHandler()                      { return s_isrhandler; }

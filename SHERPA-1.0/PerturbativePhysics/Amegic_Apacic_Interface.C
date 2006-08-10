@@ -79,7 +79,7 @@ bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
     p_blob_psme_IS = new Blob();
     p_blob_psme_IS->SetType(btp::ME_PS_Interface_IS);
     p_blob_psme_IS->SetTypeSpec("Sherpa");
-    p_blob_psme_IS->SetStatus(1);
+    p_blob_psme_IS->SetStatus(blob_status::needs_showers);
     p_blob_psme_IS->SetId();
     for (int i=0;i<blob->NInP();++i) {
       p_blob_psme_IS->AddToOutParticles(blob->InParticle(i));
@@ -90,7 +90,7 @@ bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
     p_blob_psme_FS = new Blob();
     p_blob_psme_FS->SetType(btp::ME_PS_Interface_FS);
     p_blob_psme_FS->SetTypeSpec("Sherpa");
-    p_blob_psme_FS->SetStatus(1);
+    p_blob_psme_FS->SetStatus(blob_status::needs_showers);
     p_blob_psme_FS->SetId();
     for (int i=0;i<blob->NOutP();++i) {
       dec = NULL;
@@ -105,11 +105,11 @@ bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
   return 1;
 }
 
-int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
+Return_Value::code Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
 {
   if (!p_shower->ISROn() && !p_shower->FSROn())  {
     m_weight = 1.;
-    return 1;
+    return Return_Value::Nothing;
   }
   m_nin  = blob->NInP();
   m_nout = blob->NOutP();
@@ -139,14 +139,14 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
 			    p_shower->GetFinTree());
 	blob->AddData("Sud_Weight",new Blob_Data<double>(m_weight));
 	m_weight=1.;
-	return 1;
+	return Return_Value::Success;
       }
       if (m_lastshowerveto==-1) {
 	m_weight=1.;
-	return 3;
+	return Return_Value::Retry_Event;
       }
       m_weight=1.;
-      return 0;
+      return Return_Value::New_Event;
     }
     else {
       if (!(p_mehandler->UseSudakovWeight())) m_weight=1.;
@@ -165,7 +165,7 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
 	}
       }
       p_filler->FillTrees(blob,p_shower->GetIniTrees(),p_shower->GetFinTree());
-      return 1;
+      return Return_Value::Success;
     }
   }
   else {
@@ -178,25 +178,25 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
     }
     if (p_xs) {
       if (!(p_xs->SetColours(p_moms))) {
-	msg.Error()<<"Amegic_Apacic_Interface::DefineInitialConditions(..): "
-		   <<"Extra_XS unable to define colour flow. Return 0."
-		   <<std::endl;
-	return 0;
+	msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+		   <<"   Extra_XS unable to define colour flow."
+		   <<"Return 'Error' and hope for the best."<<std::endl;
+	return Return_Value::Error;
       }
     }
     else {
       int col1 = blob->InParticle(0)->GetFlow(1);
       int col2 = blob->InParticle(0)->GetFlow(2);
       if (p_cluster->SetDecayColours(p_moms,p_fl,col1,col2)!=0) {
-	msg.Error()<<"Amegic_Apacic_Interface::DefineInitialConditions(..): "
-		   <<"No Extra_XS found to define colour flow. Return 0."
-		   <<std::endl;
-	return 0;
+	msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+		   <<"   Extra_XS unable to define colour flow."
+		   <<"Return 'Error' and hope for the best."<<std::endl;
+	return Return_Value::Error;
       }
     }
     p_filler->FillDecayTree(p_shower->GetFinTree());
   }
-  return 1;
+  return Return_Value::Success;
 }
 
 

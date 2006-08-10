@@ -30,7 +30,8 @@ namespace ATOOLS {
       Warning      = 10,
       Retry_Method = 20,
       Retry_Phase  = 21,
-      Retry_Event  = 22
+      Retry_Event  = 22,
+      New_Event    = 100
     };
   };
 

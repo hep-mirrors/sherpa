@@ -44,150 +44,42 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight
   }
   
   Blob * myblob;
-  bool found = 1;
-  bool hit   = 0;
+  bool found(true), hit(false);
   
   while (found) {
-    found = 0;
+    found = false;
     for (Blob_List::iterator blit=bloblist->begin();
 	 blit!=bloblist->end();++blit) {
+      //std::cout<<"In "<<METHOD<<":"<<std::endl<<(**blit)<<std::endl;
       if ((*blit)->Type()==btp::Signal_Process) {
-	if ((*blit)->Status()==0 && !m_addedxs) {
- 	  Blob_Data_Base * message = (*(*blit))["ME_Weight"];
- 	  double lastweight = message->Get<double>();
- 	  message = (*(*blit))["ME_Weight_One"];
-	  double nljweight = lastweight;
-	  if (message) nljweight = message->Get<double>();
-	  p_mehandler->AddEvent(nljweight/rpa.Picobarn(),
-				lastweight/rpa.Picobarn(),0);
-	  m_addedxs=true;
-	}
-	else if ((*blit)->Status()==2) {
-	  myblob = (*blit);
-	  found  = 1;
-	  bool success=false;
-	  Blob *isr[2]={NULL,NULL};
-	  while (!success) {
-	    success=true;
-	    if (p_mehandler->GenerateOneEvent()) {
-	      EXTRAXS::XS_Base *xs=p_mehandler->GetXS(1);
-	      if (xs!=NULL && xs->NAddOut()!=0) {
-		xs->SetColours(xs->Momenta());
-		for (size_t stop=xs->NAddOut(), i=0;i<stop;++i) {
-		  isr[i] = new Blob();
-		  isr[i]->SetType(btp::IS_Shower);
-		  isr[i]->SetTypeSpec("KMR DUPDF");
-		  isr[i]->SetId();
-		  isr[i]->SetStatus(1);
-		  Particle *parton1 = new Particle(-1,xs->AddFlavours()[i],
-						   xs->AddMomenta()[i]);
-		  parton1->SetNumber();
-		  parton1->SetStatus(part_status::active);
-		  isr[i]->AddToOutParticles(parton1);
-		  Particle * parton2 = new Particle(-1,xs->AddFlavours()[i],
-						    xs->AddMomenta()[i]);
-		  parton2->SetNumber();
-		  parton2->SetStatus(part_status::decayed);
-		  parton2->SetMomentum(parton2->Momentum()
-				       +xs->Momenta()[i]);
-		  isr[i]->AddToInParticles(parton2);
-		  isr[i]->SetBeam(i);
-		  if (p_remnants[i]!=NULL) {
-		    p_remnants[i]->QuickClear();
-		    if (!p_remnants[i]->TestExtract(parton2)) success=false;
-		  }
-		  else THROW(fatal_error,"No remnant found.");
-		  if (xs->Flavours()[i].IsQuark()) {
-		    int anti=xs->Flavours()[i].IsAnti();
-		    int newc=Flow::Counter();
-		    if (xs->AddFlavours()[i].IsQuark()) {
-		      parton1->SetFlow(2-anti,newc);
-		      parton2->SetFlow(2-anti,newc);
-		      parton2->SetFlow(1+anti,xs->Colours()[i][anti]);
-		    }
-		    else {
-		      parton1->SetFlow(2-anti,xs->Colours()[i][1-anti]);
-		      parton1->SetFlow(1+anti,newc);
-		      parton2->SetFlow(1+anti,newc);
-		    }
-		  }
-		  else {
-		    int anti=xs->AddFlavours()[i].IsAnti();
-		    if (xs->AddFlavours()[i].IsQuark()) {
-		      parton1->SetFlow(1+anti,xs->Colours()[i][1-anti]);
-		      parton2->SetFlow(1+anti,xs->Colours()[i][anti]);
-		    }
-		    else {
-		      int newc=Flow::Counter();
-		      parton1->SetFlow(1+anti,xs->Colours()[i][1-anti]);
-		      parton1->SetFlow(2-anti,newc);
-		      parton2->SetFlow(2-anti,newc);
-		      parton2->SetFlow(1+anti,xs->Colours()[i][anti]);
-		    }
-		  }
-		}
-		blit=bloblist->begin();
-	      }
-	      if (success) {
-		if (!FillBlob(myblob,false,true)) success=false;
-		// moved to Beam_Remnant_Handler
-		// else p_mehandler->ResetNumberOfTrials();
-		weight = p_mehandler->Weight();
-		if (isr[0]!=NULL && isr[1]!=NULL) {
-		  for (short unsigned int i=0;i<2;++i) {
-		    bloblist->push_front(isr[i]);
-		    isr[i]->AddToOutParticles(myblob->InParticle(i));
-		    Vec4D sum=isr[i]->CheckMomentumConservation();
-		    if (!(sum==Vec4D()))
-		      msg.Error()
-			<<"Signal_Processes::Treat(): "
-			<<"4-momentum not conserved: sum = "
-			<<sum<<"."<<std::endl;
-		  }
-		  myblob->SetStatus(0);
-		  for (short unsigned int i=0;i<xs->NOut();++i) {
-		    Blob *fsr = new Blob();
-		    fsr->SetType(btp::FS_Shower);
-		    fsr->SetTypeSpec("KMR DUPDF");
-		    fsr->SetId();
-		    fsr->SetStatus(1);
-		    fsr->AddToInParticles(myblob->OutParticle(i));
-		    Particle *parton = new Particle(*myblob->OutParticle(i));
-		    parton->SetNumber();
-		    parton->SetStatus(part_status::active);
-		    parton->SetFlow(1,xs->Colours()[2+i][0]);
-		    parton->SetFlow(2,xs->Colours()[2+i][1]);
-		    fsr->AddToOutParticles(parton);
-		    bloblist->push_back(fsr);
-		  }
-		}
-		hit = 1;
-	      }
-	      else {
-		for (short unsigned int i=0;i<2;++i) 
-		  if (isr[i]!=NULL) delete isr[i];
-	      }
+	if ((*blit)->Has(blob_status::needs_signal)) {
+	  found  = true;
+	  hit    = false;
+	  //cout<<"Check : "<<blob_status::internal_flag<<" && "<<(*blit)->Status()
+	  //   <<" = "<<(blob_status::internal_flag&(*blit)->Status())
+	  //   <<", "<<(0 & 0)<<endl;
+	  for (;;) {
+	    if ((*blit)->Has(blob_status::internal_flag)) {
+	      //cout<<"Same : "<<(*blit)->Has(blob_status::internal_flag)<<endl;
+	      if (p_mehandler->GenerateSameEvent() &&
+		  FillBlob((*blit),true,true)) hit = true;
 	    }
-	  }
-	}
-	else if (((*blit)->Type()==btp::Signal_Process) &&
-		 ((*blit)->Status()==-1)) {
-	  myblob = (*blit);
-	  found  = 1;
-	  bool success=false;
-	  while (!success) {
-	    success=true;
-	    if (p_mehandler->GenerateSameEvent()) {
-	      if (!FillBlob(myblob,true,true)) success=false;
-	      weight = p_mehandler->Weight();
-	      hit = 1;
+	    else {
+	      //cout<<"New  : "<<(*blit)->Has(blob_status::internal_flag)<<endl;
+	      if (p_mehandler->GenerateOneEvent() &&
+		  FillBlob((*blit),false,true)) hit = true;
+	    }
+	    if (hit) { 
+	      (*blit)->SetStatus(blob_status::needs_showers);
+	      //cout<<"Out "<<METHOD<<":"<<std::endl<<(**blit)<<endl;
+	      weight = p_mehandler->Weight(); 
+	      return Return_Value::Success; 
 	    }
 	  }
 	}
       }
     }
   }
-  if (hit) return Return_Value::Success;
   return Return_Value::Nothing;
 }
 
@@ -232,11 +124,11 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,
   }
   blob->SetPosition(Vec4D(0.,0.,0.,0.));
   blob->SetTypeSpec(p_mehandler->ProcessName());
-  blob->SetStatus(1);
+  blob->SetStatus(blob_status::needs_showers |
+		  blob_status::needs_harddecays);
 
   Vec4D cms = Vec4D(0.,0.,0.,0.);
-  for (size_t i=0;i<p_mehandler->NIn();i++) 
-    cms += p_mehandler->Momenta()[i];
+  for (size_t i=0;i<p_mehandler->NIn();i++) cms += p_mehandler->Momenta()[i];
   blob->SetCMS(cms);
   blob->SetBeam(-1);
   

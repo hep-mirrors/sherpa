@@ -50,12 +50,19 @@ SimpleXS_Apacic_Interface::~SimpleXS_Apacic_Interface()
   delete p_tools;
 }
 
-int SimpleXS_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob *blob) 
+Return_Value::code SimpleXS_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob *blob) 
 {
-  if (blob==NULL) return false;
+  if (blob==NULL) {
+    return Return_Value::Error;
+    msg.Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
+	       <<"   No blob found, will return 'Error' and hope for the best."<<std::endl;
+  }
   if ((blob->NInP()!=2) || (blob->NOutP()!=2)) {
-    msg.Error()<<*blob;
-    THROW(fatal_error,"Cannot handle blobs with more than 4 legs.");
+    msg.Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
+	       <<"   Cannot handle blobs with different than four legs:"<<std::endl
+	       <<(*blob)
+	       <<"   Will return 'Error' and hope for the best."<<std::endl;
+    return Return_Value::Error;
   }
   for (size_t i=0;i<(size_t)blob->NInP();++i) {
     p_flavours[i]=blob->InParticle(i)->Flav();
@@ -76,9 +83,15 @@ int SimpleXS_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob *blob)
   return InitColours(blob);
 }
 
-int SimpleXS_Apacic_Interface::InitColours(ATOOLS::Blob *blob) 
+Return_Value::code SimpleXS_Apacic_Interface::InitColours(ATOOLS::Blob *blob) 
 {
-  if (!p_xs->SetColours(p_momenta)) return 0; 
+  if (!p_xs->SetColours(p_momenta)) {
+    msg.Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
+	       <<"   Could not set initial colour in "<<std::endl
+	       <<*blob
+	       <<"   Return 'Error' and hope for the best."<<std::endl;
+    return Return_Value::Error;
+  } 
   if (blob->InParticle(0)->Momentum()[3]<blob->InParticle(1)->Momentum()[3]) {
     blob->SwapInParticles(0,1);
     blob->SwapOutParticles(0,1);
@@ -95,7 +108,7 @@ int SimpleXS_Apacic_Interface::InitColours(ATOOLS::Blob *blob)
   double E=sqrt(p_mehandler->GetISR_Handler()->Pole())/2.;
   if (m_ini) p_tools->InitializeIncoming(blob,E);
   if (m_fin) p_tools->InitializeOutGoing(blob,E);
-  return 1;
+  return Return_Value::Success;
 }
 
 bool SimpleXS_Apacic_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
@@ -105,7 +118,7 @@ bool SimpleXS_Apacic_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
     p_psme_is = new Blob();
     p_psme_is->SetType(btp::ME_PS_Interface_IS);
     p_psme_is->SetTypeSpec("Sherpa");
-    p_psme_is->SetStatus(1);
+    p_psme_is->SetStatus(blob_status::needs_showers);
     p_psme_is->SetId();
     for (int i=0;i<p_hard->NInP();++i) {
       p_psme_is->AddToOutParticles(p_hard->InParticle(i));
@@ -116,7 +129,7 @@ bool SimpleXS_Apacic_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
     p_psme_fs = new Blob();
     p_psme_fs->SetType(btp::ME_PS_Interface_FS);
     p_psme_fs->SetTypeSpec("Sherpa");
-    p_psme_fs->SetStatus(1);
+    p_psme_fs->SetStatus(blob_status::needs_showers);
     p_psme_fs->SetId();
     for (int i=0;i<p_hard->NOutP();++i) {
       p_psme_fs->AddToInParticles(p_hard->OutParticle(i));

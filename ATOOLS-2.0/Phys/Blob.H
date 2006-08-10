@@ -36,6 +36,27 @@ namespace ATOOLS {
 
   typedef std::map<std::string,Blob_Data_Base *> String_BlobDataBase_Map;
 
+  struct blob_status {
+    enum code {
+      inactive            = 0,
+      needs_signal        = 1,
+      needs_showers       = 2,
+      needs_harddecays    = 4,
+      needs_beams         = 8,
+      needs_softUE        = 16,
+      needs_hadronization = 32,
+      needs_hadrondecays  = 64,
+      needs_extraQED      = 128,
+      internal_flag       = 32768,
+      fully_active        = 65535
+    };
+  };
+
+  inline const blob_status::code operator|(const blob_status::code c1,const blob_status::code c2)
+  { return (blob_status::code)((int)c1|(int)c2); }
+  inline const blob_status::code operator&(const blob_status::code c1,const blob_status::code c2)
+  { return (blob_status::code)((int)c1&(int)c2); }
+
   struct btp {
     enum code {
       Signal_Process      =     1,
@@ -74,7 +95,8 @@ namespace ATOOLS {
     Vec4D                   m_position;
     int                     m_id;
     double                  m_weight;
-    int                     m_status,m_beam;
+    blob_status::code       m_status;
+    int                     m_beam;
     bool                    m_hasboost;
     btp::code               m_type;
     std::string             m_typespec;
@@ -117,10 +139,19 @@ namespace ATOOLS {
     void        SetCMS(Vec4D _cms)                { m_cms_vec  = _cms; }
     void        SetCMS();
     void        SetId(const int _id=0);
-    static void ResetCounter() { s_totalnumber = 0; }
-    static int  Counter()      { return s_totalnumber; }
-    inline static void Reset() { s_currentnumber = 0; }
-    void        SetStatus(int _status)            { m_status   = _status; }
+    static void ResetCounter()                    { s_totalnumber = 0; }
+    static int  Counter()                         { return s_totalnumber; }
+    inline static void Reset(const int number=0)  { s_currentnumber = number; }
+    inline bool Has(blob_status::code status)     { return (int(status&m_status)>0); }
+    void        SetStatus(blob_status::code status=blob_status::inactive) {
+      m_status = status;
+    }
+    void        UnsetStatus(blob_status::code status=blob_status::inactive) {
+      m_status = blob_status::code(int(m_status) & int(~status));
+    }
+    void        AddStatus(blob_status::code status=blob_status::inactive) {
+      m_status = m_status | status;
+    }
     void        SetType(btp::code _type)          { m_type     = _type; }
     void        SetTypeSpec(std::string _type)    { m_typespec = _type; }
     void        SetBeam(int _beam)                { m_beam     = _beam; }

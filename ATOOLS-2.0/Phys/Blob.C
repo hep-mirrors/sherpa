@@ -87,7 +87,8 @@ namespace ATOOLS {
 }
 
 Blob::Blob(const Vec4D _pos, const int _id) : 
-  m_position(_pos), m_id(_id), m_weight(1.), m_status(0), m_beam(-1), m_hasboost(false), 
+  m_position(_pos), m_id(_id), m_weight(1.), m_status(blob_status::inactive), 
+  m_beam(-1), m_hasboost(false), 
   m_type(btp::Unspecified), m_typespec(std::string("none")) 
 { ++s_totalnumber; }
 

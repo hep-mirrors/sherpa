@@ -27,15 +27,15 @@ Primordial_KPerp::Primordial_KPerp(std::string _m_path,std::string _m_file):
   p_boosted(new std::set<ATOOLS::Blob*>()),
   m_scheme(0)
 {
-  p_remnants[0]=p_remnants[1]=NULL;
+  p_remnants[0] = p_remnants[1] = NULL;
   p_kperp[0] = new std::vector<Vec3D>();
   p_kperp[1] = new std::vector<Vec3D>();
   Data_Read *dataread = new Data_Read(_m_path+_m_file);
-  m_scheme=dataread->GetValue<int>("K_PERP_SCHEME",0);
-  m_kperpmean[0]=dataread->GetValue<double>("K_PERP_MEAN_1",0.0);
-  m_kperpmean[1]=dataread->GetValue<double>("K_PERP_MEAN_2",0.0);
-  m_kperpsigma[0]=dataread->GetValue<double>("K_PERP_SIGMA_1",m_kperpmean[0]);
-  m_kperpsigma[1]=dataread->GetValue<double>("K_PERP_SIGMA_2",m_kperpmean[1]);
+  m_scheme        = dataread->GetValue<int>("K_PERP_SCHEME",0);
+  m_kperpmean[0]  = dataread->GetValue<double>("K_PERP_MEAN_1",0.0);
+  m_kperpmean[1]  = dataread->GetValue<double>("K_PERP_MEAN_2",0.0);
+  m_kperpsigma[0] = dataread->GetValue<double>("K_PERP_SIGMA_1",m_kperpmean[0]);
+  m_kperpsigma[1] = dataread->GetValue<double>("K_PERP_SIGMA_2",m_kperpmean[1]);
   delete dataread;
 }
 

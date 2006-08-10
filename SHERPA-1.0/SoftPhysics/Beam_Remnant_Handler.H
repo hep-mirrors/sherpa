@@ -6,6 +6,7 @@
 #include "ISR_Handler.H"
 #include "Blob_List.H"
 #include "Primordial_KPerp.H"
+#include "Return_Value.H"
 
 namespace SHERPA {
 
@@ -14,21 +15,26 @@ namespace SHERPA {
   class Beam_Remnant_Handler {
   private:
 
-    PDF::ISR_Handler           *p_isr;
-    BEAM::Beam_Spectra_Handler *p_beam;
+    PDF::ISR_Handler           * p_isr;
+    BEAM::Beam_Spectra_Handler * p_beam;
 
-    PDF::Remnant_Base *p_beampart[2];
-    Primordial_KPerp  *p_kperp;
+    PDF::Remnant_Base          * p_beampart[2];
+    Primordial_KPerp           * p_kperp;
 
-    ATOOLS::Blob *p_beamblob[2];
+    ATOOLS::Blob               * p_beamblob[2];
 
-    ATOOLS::Blob_List     *p_bloblist;
-    ATOOLS::Particle_List *p_particlelist;
+    Matrix_Element_Handler     * p_mehandler;
+    std::string                  m_path, m_file;
+    bool                         m_fill;
+    short unsigned int           m_beam;
 
-    Matrix_Element_Handler *p_mehandler;
-
-    std::string  m_path, m_file;
-    bool         m_fill;
+    void                       Reset(ATOOLS::Blob_List *const);
+    ATOOLS::Return_Value::code FillBunchBlobs(ATOOLS::Blob_List *const,
+					      ATOOLS::Particle_List *const=NULL);
+    ATOOLS::Blob *             FillBunchBlob(const int,ATOOLS::Particle *);
+    ATOOLS::Return_Value::code FillBeamBlobs(ATOOLS::Blob_List *const,
+					     ATOOLS::Particle_List *const=NULL);
+    bool                       FillBeamBlob(const int,ATOOLS::Particle *);
 
   public :
 
@@ -41,11 +47,7 @@ namespace SHERPA {
     ~Beam_Remnant_Handler();
     
     // member functions
-    bool FillBunchBlobs(ATOOLS::Blob_List *const bloblist,
-			ATOOLS::Particle_List *const particlelist=NULL);
-    bool FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
-		       ATOOLS::Particle_List *const particlelist=NULL);
-
+    ATOOLS::Return_Value::code FillBeamAndBunchBlobs(ATOOLS::Blob_List *const);
     void SetScale(const double scale);
 
     // inline functions

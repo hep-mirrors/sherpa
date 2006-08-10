@@ -11,6 +11,9 @@ extern "C" {
   void pyinit_(const char*,const char*,const char*,double*,int,int,int);
   void pyevnt_();
   void pyexec_();
+  void pyprep_(int &);
+  void pystrf_(int &);
+  void pydecy_(int &);
   void pyinki_(int*);
   void pyinpr_();
   void pylist_(int*);
@@ -42,6 +45,18 @@ void pyevnt() {
 
 void pyexec() { 
   pyexec_(); 
+}
+
+void pyprep(int & callno) {
+  pyprep_(callno);
+}
+
+void pystrf(int & callno) {
+  pystrf_(callno);
+}
+
+void pydecy(int & callno) {
+  pydecy_(callno);
 }
 
 void pyinki(int modki) { 

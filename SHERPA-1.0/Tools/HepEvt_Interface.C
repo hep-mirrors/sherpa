@@ -667,7 +667,8 @@ bool HepEvt_Interface::ConstructBlobsFromHerwig(ATOOLS::Blob_List * const blobs)
     if (piter==m_convertH2S.end() || !piter->second.second) continue;
     part = piter->second.first;
     if (part->Status()!=part_status::active && 
-	part->Status()!=part_status::decayed) part->SetStatus(part_status::documentation);
+	part->Status()!=part_status::decayed) 
+      part->SetStatus(part_status::documentation);
     switch (p_isthep[i]) {
     case 101:
       beam1->AddToInParticles(part);
@@ -1220,6 +1221,7 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
   
   if (signalints.size()>0) {
     signal = new Blob;
+    signal->SetStatus(blob_status::inactive);
     signal->ClearAllData();
     signal->AddData("ME_Weight",new Blob_Data<double>(1.));
     signal->SetType(btp::Signal_Process);
@@ -1290,6 +1292,7 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
       do {
 	test = false;
 	blob = new Blob;
+	blob->SetStatus(blob_status::inactive);
 	_blobs.push_back(blob);
 	blob->AddToOutParticles(piter->second.first);
 	//std::cout<<"Test this : "<<pint<<" <- "<<p_jmohep[2*pint]-1<<std::endl;
@@ -1374,14 +1377,14 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
     Blob *signal = new Blob();
     signal->AddData("ME_Weight",new Blob_Data<double>(1));
     signal->AddData("ME_NumberOfTrials",new Blob_Data<int>(1));
-    signal->SetStatus(0);
+    signal->SetStatus(blob_status::inactive);
     signal->SetType(btp::Signal_Process);
     blobs->push_back(signal);
     Particle *dummy = new Particle(-1,kf::jet,Vec4D());
     dummy->SetNumber();
     signal->AddToOutParticles(dummy);
     Blob *frag = new Blob();
-    frag->SetStatus(0);
+    frag->SetStatus(blob_status::inactive);
     frag->SetType(btp::Fragmentation);
     blobs->push_back(frag);
     frag->AddToInParticles(dummy);
@@ -1398,7 +1401,7 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
 	part->SetFinalMass(tit->second.first->FinalMass());
 	frag->AddToOutParticles(part);
 	Blob *dec = new Blob();
-	dec->SetStatus(0);
+	dec->SetStatus(blob_status::inactive);
 	dec->SetType(btp::Hadron_Decay);
 	blobs->push_back(dec);
 	dec->AddToInParticles(part);
@@ -1842,6 +1845,7 @@ bool HepEvt_Interface::IdentifyBlobs(ATOOLS::Blob_List * const blobs)
   //std::cout<<"Hadron"<<std::endl;
 
   Blob *nirwana = new Blob();
+  nirwana->SetStatus(blob_status::inactive);
   // Nirwana particles
   for (biter=blobs->begin();biter!=blobs->end();biter++) {
     for (size_t i=0;i<(size_t)(*biter)->NOutP();++i) {

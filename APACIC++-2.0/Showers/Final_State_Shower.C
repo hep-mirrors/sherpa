@@ -548,7 +548,12 @@ void Final_State_Shower::ExtractPartons(Knot *kn,Blob *jet,
     if (!kn->left) {
       if (pl) pl->push_back(kn->part);
       jet = new Blob();
-      jet->SetStatus(1);
+      jet->SetId();
+      jet->SetType(btp::FS_Shower);
+      jet->SetTypeSpec("APACIC++2.0");
+      jet->SetStatus(blob_status::needs_harddecays |
+		     blob_status::needs_hadronization);
+      bl->push_back(jet);
 #ifdef USING__Veto_Info
       jet->AddData("FS_VS",new Blob_Data<std::vector<int> >(p_sud->Vetos(0)));
       jet->AddData("IFS_VS",new Blob_Data<std::vector<int> >(p_sud->Vetos(1)));
@@ -557,7 +562,7 @@ void Final_State_Shower::ExtractPartons(Knot *kn,Blob *jet,
       jet->AddToInParticles(p);
       if (bl_meps) {
 	bl_meps->AddToOutParticles(p);
-	bl_meps->SetStatus(0);
+	bl_meps->SetStatus(blob_status::inactive);
       }
 
       p = new Particle(*kn->part);
@@ -565,17 +570,17 @@ void Final_State_Shower::ExtractPartons(Knot *kn,Blob *jet,
       if (pl) p->SetNumber(pl->size());
          else p->SetNumber(0);
       kn->part->SetNumber(p->Number());
-      jet->SetId();
-      jet->SetType(btp::FS_Shower);
-      jet->SetTypeSpec("APACIC++2.0");
-      //      jet->SetPosition(p->XProd() + Vec4D(p->LifeTime(),p->Distance()));
-      bl->push_back(jet);
       return;
     }
     else {
       if ((kn->left->part->Info() != 'H') || (kn->right->part->Info() != 'H')) {
 	jet = new Blob();
-	jet->SetStatus(1);
+	jet->SetId();
+	jet->SetType(btp::FS_Shower);
+	jet->SetTypeSpec("APACIC++2.0");
+	jet->SetStatus(blob_status::needs_harddecays |
+		       blob_status::needs_hadronization);
+	bl->push_back(jet);
 #ifdef USING__Veto_Info
 	jet->AddData("FS_VS",new Blob_Data<std::vector<int> >(p_sud->Vetos(0)));
 	jet->AddData("IFS_VS",new Blob_Data<std::vector<int> >(p_sud->Vetos(1)));
@@ -586,16 +591,11 @@ void Final_State_Shower::ExtractPartons(Knot *kn,Blob *jet,
 	jet->AddToInParticles(p);
 	if (bl_meps) {
 	  bl_meps->AddToOutParticles(p);
-	  bl_meps->SetStatus(0);
+	  bl_meps->SetStatus(blob_status::inactive);
 	}
 	if (pl) p->SetNumber(pl->size());
 	   else p->SetNumber(0);
         kn->part->SetNumber(p->Number());
-	jet->SetId();
-	jet->SetType(btp::FS_Shower);
-	jet->SetTypeSpec("APACIC++2.0");
-	//	jet->SetPosition(p->XProd() + Vec4D(p->LifeTime(),p->Distance()));
-	bl->push_back(jet);
       }
     }
   }

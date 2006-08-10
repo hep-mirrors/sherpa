@@ -23,7 +23,7 @@ namespace SHERPA {
 
     double m_scale;
 
-    int InitColours(ATOOLS::Blob *blob);
+    ATOOLS::Return_Value::code InitColours(ATOOLS::Blob *blob);
 
   public :
 
@@ -34,7 +34,7 @@ namespace SHERPA {
     ~SimpleXS_Apacic_Interface();
 
     // member functions
-    int  DefineInitialConditions(ATOOLS::Blob *blob);
+    ATOOLS::Return_Value::code DefineInitialConditions(ATOOLS::Blob *blob);
     bool FillBlobs(ATOOLS::Blob_List *blobs); 
 
     int  PerformShowers();

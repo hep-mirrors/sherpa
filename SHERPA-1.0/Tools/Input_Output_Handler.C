@@ -436,7 +436,7 @@ bool Input_Output_Handler::SherpaInput(ATOOLS::Blob_List *const blobs)
 
 //     position = Vec4D(pos[0],pos[1],pos[2],pos[3]);
 //     blob     = new Blob(position,blid);
-//     blob->SetStatus(status);
+//     blob->SetStatus(blob_status::code(status));
 //     blob->SetType((btp::code)type);
 //     blob->SetTypeSpec(typespec);
 //     for (int i=0;i<ninp;i++) {

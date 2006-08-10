@@ -252,7 +252,7 @@ Decay_Channel * Hard_Decay_Handler::SpecifyHardDecay(ATOOLS::Particle * _part,do
       blob->SetType(btp::Hard_Decay);
       blob->SetTypeSpec(dc->ProcessName());
       blob->SetBeam(-1);
-      blob->SetStatus(1);
+      blob->SetStatus(blob_status::needs_showers);
       _part->SetDecayBlob(blob);
       Particle * particle;
       Flavour flav;

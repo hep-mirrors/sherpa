@@ -20,8 +20,12 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(Hadrons * _hadrons) :
   p_hadrons(_hadrons),
   p_lund(NULL)
 {
-  //std::cout<<"Hadron_Decay_Handler::Hadron_Decay_Handler(Lund_Interface * _hadrons) :"<<std::endl
-  //	   <<"   "<<_hadrons<<" -> "<<p_hadrons<<" "<<std::endl;
+  p_cans = new set<kf::code>;
+  //p_hadrons->FillAllowedDecays(p_cans);
+  map<kf::code,Decay_Table *> * decmap = p_hadrons->GetDecayMap();
+  for (map<kf::code,Decay_Table *>::iterator decit=decmap->begin();
+       decit!=decmap->end();decit++) p_cans->insert(decit->first);
+  
   SwitchOfLundDecays();
 }
 #endif
@@ -33,9 +37,26 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(Lund_Interface * _lund) :
   p_hadrons(NULL), 
 #endif
   p_lund(_lund)
+{ 
+  p_cans = new set<kf::code>;
+  Flavour flav(Flavour(kf::tau));
+  if (flav.IsOn() && !flav.IsStable()) {
+    if (p_lund->IsAllowedDecay(flav.Kfcode())) p_cans->insert(flav.Kfcode());
+  }
+  Fl_Iter fli;
+  for (flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
+    if (flav.IsOn() && flav.IsHadron() && !flav.IsStable()) {
+      if (p_lund->IsAllowedDecay(flav.Kfcode())) p_cans->insert(flav.Kfcode());
+    }
+  }
+  // To do: Check for interference with hadrons.
+  //  for (set<kf::code>::iterator cit=p_cans->begin();cit!=p_cans->end();cit++) {
+  //    std::cout<<"Lund can deal with :"<<Flavour((*cit))<<std::endl;
+  //}
+}
+
+Hadron_Decay_Handler::~Hadron_Decay_Handler() 
 {
-  //std::cout<<"Hadron_Decay_Handler::Hadron_Decay_Handler(Lund_Interface * _lund) :"<<std::endl
-  //	   <<"   "<<_lund<<" -> "<<p_lund<<" "<<std::endl;
 }
 
 void Hadron_Decay_Handler::EraseTreated(std::set<int> * hadrons)
@@ -43,64 +64,55 @@ void Hadron_Decay_Handler::EraseTreated(std::set<int> * hadrons)
   if (m_mode==0) hadrons->clear();
 #ifdef USING__Hadrons
   if (m_mode==1) {
-    map<kf::code,Decay_Table *> * cans = p_hadrons->GetDecayMap();
-    for (map<kf::code,Decay_Table *>::iterator citer=cans->begin();citer!=cans->end();citer++) {
-      //msg.Debugging()<<"Killing flavours: "<<citer->first<<" ("<<cans->size()<<" ) "<<hadrons->size()<<endl;
-      hadrons->erase(int(citer->first));
-      Spin_Correlation_Tensor::AddPossibleParticle( citer->first );
-      //msg.Debugging()<<"                  "<<citer->first<<" ("<<cans->size()<<" ) "<<hadrons->size()<<endl;
+    
+    for (set<kf::code>::iterator citer=p_cans->begin();citer!=p_cans->end();citer++) {
+      //msg.Debugging()<<"Killing flavours: "
+      //<<citer->first<<" ("<<cans->size()<<" ) "<<hadrons->size()<<endl;
+      hadrons->erase(int(*citer));
+      //msg.Debugging()<<"                  "
+      //<<citer->first<<" ("<<cans->size()<<" ) "<<hadrons->size()<<endl;
     }
   }
 #endif
 }
 
-
-Hadron_Decay_Handler::~Hadron_Decay_Handler() 
-{
-}
-
-void Hadron_Decay_Handler::DeletePointers()
-{
-}
-
-void Hadron_Decay_Handler::PrepareDecays(Blob * blob) {
-  //msg_Tracking()<<"Hadron_Decay_Handler::PrepareDecays "<<endl<<(*blob)<<endl;
-  switch( m_mode ) {
+bool Hadron_Decay_Handler::CanDealWith(kf::code kf) {
+  switch (m_mode) {
+  case 0:
+    return true;
 #ifdef USING__Hadrons
-  case 1: 
-    break;
+  case 1:
+    if (p_cans->find(kf)!=p_cans->end()) return true;
+    return false;
 #endif
-  case 0: 
-    p_lund->PerformAllDecays(blob);
-    break;
   }
+  return false;
 }
+
 
 // with spin correlation 
-bool Hadron_Decay_Handler::FillHadronDecayBlobs(Particle *part,
-						Blob_List *blob_list,
-                        Spin_Density_Matrix * sigma, 
-                        Spin_Density_Matrix * decmatr, 
-						Particle_List *part_list )
+bool Hadron_Decay_Handler::FillHadronDecayBlob(Particle *part,Blob_List *blob_list)
 {
-  msg_Tracking()<<"Hadron_Decay_Handler::FillHadronDecayBlobs "<<part->Flav()<<endl
-    <<"     with spin correlations."<<endl
-    <<"     Momentum: "<<part->Momentum()<<endl;
+  Blob * blob(new Blob());
+  blob->SetType(btp::Hadron_Decay);
+  blob->SetStatus(blob_status::needs_hadrondecays);
+  blob->SetId();
+  blob->SetPosition(part->ProductionBlob()->Position());
+  blob->AddToInParticles(part);
 
-  // perform decay 
-  switch( m_mode ) {
+  switch (m_mode) {
 #ifdef USING__Hadrons
-  case 1: 
-    if( decmatr ) (*decmatr) = p_hadrons->PerformDecay( part, blob_list, part_list, sigma );
-    else p_hadrons->PerformDecay( part, blob_list, part_list, NULL );
-    break;
+    case 1: break;
 #endif
-  case 0: 
-    p_lund->PerformDecay( part, blob_list, part_list );
-    break;
+    case 0:
+      p_lund->PerformDecay(blob);
+      break;
   }
-  
-  return 1;
+  /*
+    To do: PerformDecay doesn't work out: Erase blob, keep particle -> Related to smearing.
+  */
+  blob_list->push_back(blob);
+  return true;
 }
 
 void Hadron_Decay_Handler::SwitchOfLundDecays()

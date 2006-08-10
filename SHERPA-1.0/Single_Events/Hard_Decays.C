@@ -36,14 +36,16 @@ Return_Value::code Hard_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & we
 
   Blob     * myblob, * decblob;
   Particle * check;
-  bool found(true),didit(false);
+  bool found(true),didit(false),switchit(false);
   while (found) {
     found = false;
     for (Blob_List::iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
-      if ((*blit)->Status()==1 && (*blit)->Type()==btp::FS_Shower) {
-	myblob = (*blit);
+      if ((*blit)->Has(blob_status::needs_harddecays)) {
+	myblob   = (*blit);
+	switchit = true;
 	for (int i=0;i<myblob->NOutP();i++) {
 	  if ((!myblob->OutParticle(i)->Flav().IsStable()) &&
+	      (myblob->OutParticle(i)->Status()==1) &&
 	      (myblob->OutParticle(i)->DecayBlob()!=NULL)) {
 	    decblob = myblob->OutParticle(i)->DecayBlob();
 	    if (decblob->NInP()!=1) {
@@ -62,15 +64,17 @@ Return_Value::code Hard_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & we
 	      rvalue.IncError(METHOD);
 	      return Return_Value::Error;
 	    }
-	    found   = didit = true;
+	    found    = didit = true;
+	    switchit = false;
 	    decblob->AddToInParticles(myblob->OutParticle(i));
 	    FillBlob(check,decblob);
 	    decblob->SetId();
 	    _bloblist->push_back(decblob);
 	  }
 	}
+	if (switchit) myblob->UnsetStatus(blob_status::needs_harddecays);
 	//std::cout<<std::endl<<std::endl<<std::endl;
-	myblob->SetStatus(0);
+	//myblob->SetStatus(0);
       }
     }
   }

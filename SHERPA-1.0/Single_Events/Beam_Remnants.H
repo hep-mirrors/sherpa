@@ -1,16 +1,18 @@
-#ifndef Hadronization_h
-#define Hadronization_h
+#ifndef Beam_Remnants_h
+#define Beam_Remnants_h
 
 #include "Event_Phase_Handler.H"
+#include "Beam_Remnant_Handler.H"
 #include "Fragmentation_Handler.H"
 
 namespace SHERPA {
-  class Hadronization : public Event_Phase_Handler {
+  class Beam_Remnants : public Event_Phase_Handler {
   private :
+    Beam_Remnant_Handler  * p_beamremnanthandler;
     Fragmentation_Handler * p_fragmentationhandler;
   public :
-    Hadronization(Fragmentation_Handler *);
-    ~Hadronization();
+    Beam_Remnants(Beam_Remnant_Handler *);
+    ~Beam_Remnants();
     ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *, double &);
     void                       CleanUp();
     void                       Finish(const std::string &);
@@ -19,11 +21,11 @@ namespace SHERPA {
 
   /*!
     \file 
-    \brief Contains the class SHERPA::Hadronization
+    \brief Contains the class SHERPA::Beam_Remnants
   */
 
   /*!
-    \class Hadronization
+    \class Beam_Remnants
     \brief The specific Event_Phase_Handler responsible for the translation of partons
            into hadrons.
 
@@ -32,26 +34,26 @@ namespace SHERPA {
     eventually coloured incoming beams (like protons) and a fragmentation handler.
   */
   /*!
-    \var Fragmentation_Handler * Hadronization::p_fragmentationhandler
+    \var Fragmentation_Handler * Beam_Remnants::p_fragmentationhandler
     A pointer to the Fragmentation_Handler, filled by the constructor.
   */
   /*!
-    \fn Hadronization::Hadronization(Fragmentation_Handler *)
+    \fn Beam_Remnants::Beam_Remnants(Fragmentation_Handler *)
     Copies the pointer to the fragmentation handler and sets the
     name and the type of this event phase. The name is given by 
-    "Hadronization : " plus the name of the fragmentation model (e.g. "Lund"), the type
-    is "Hadronization".
+    "Beam_Remnants : " plus the name of the fragmentation model (e.g. "Lund"), the type
+    is "Beam_Remnants".
   */
   /*!
-    \fn Hadronization::~Hadronization()
+    \fn Beam_Remnants::~Beam_Remnants()
     Nothing to be done in the destructor so far.
   */
   /*!
-    \fn bool Hadronization::Treat(ATOOLS::Blob_List *, double &)
+    \fn bool Beam_Remnants::Treat(ATOOLS::Blob_List *, double &)
     This method basically passes the blob list to the method Hadronize of the fragmentation handler.
   */
   /*!
-    \fn void Hadronization::CleanUp()
+    \fn void Beam_Remnants::CleanUp()
     Nothing has to be done here.
   */
 }

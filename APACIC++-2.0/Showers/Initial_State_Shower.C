@@ -721,7 +721,7 @@ void Initial_State_Shower::ExtractPartons(Knot *const kn,const int &beam,
     msg.Error()<<METHOD<<"(..): No Interface found. Abort."<<std::endl;
     abort();
   }
-  m_bl_meps_is->SetStatus(0);
+  m_bl_meps_is->SetStatus(blob_status::inactive);
   int nr(1000);
   SingleExtract(kn,beam,jet,bl,nr);
 }
@@ -757,7 +757,9 @@ void Initial_State_Shower::SingleExtract(Knot *const kn,const int &beam,
   // --- create new blob ---
   if (newblob) {
     jet = new Blob();
-    jet->SetStatus(1);
+    jet->SetStatus(blob_status::needs_harddecays |
+		   blob_status::needs_beams |
+		   blob_status::needs_hadronization);
     jet->SetId();
 #ifdef USING__Veto_Info
     jet->AddData("IS_VS",new Blob_Data<std::vector<int> >(p_suds[beam]->Vetos()));

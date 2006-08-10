@@ -67,7 +67,7 @@ Return_Value::code Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const
        bit!=bloblist->end();++bit) {
     if ((*bit)->Type()==btp::Hard_Collision ||
 	(*bit)->Type()==btp::Signal_Process) 
-      if ((*bit)->Status()!=0) return Return_Value::Retry_Event;
+      if ((*bit)->Has(blob_status::needs_showers)) return Return_Value::Retry_Event;
   }
   for (short unsigned int i=0;i<2;++i) {
     m_emax[i]=p_remnants[i]->GetBeam()->Energy();
@@ -91,10 +91,10 @@ Return_Value::code Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const
       if (bloblist->empty()) {
 	p_mehandler->SaveNumberOfTrials();
 	Blob *blob = new Blob();
-	blob->SetType(btp::Signal_Process);
-	blob->SetStatus(-1);
+	blob->SetType(btp::Hard_Collision);
+	blob->SetStatus(blob_status::inactive);
 	blob->SetId();
-	blob->SetStatus(2);
+	blob->SetStatus(blob_status::internal_flag);
 	bloblist->push_back(blob);	  
       }
       static double nrej=0.0;
@@ -106,7 +106,8 @@ Return_Value::code Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const
     } 
   }
   if (m_diced) return Return_Value::Success;
-  Blob *signal=bloblist->FindFirst(btp::Signal_Process);
+  Blob * signal=bloblist->FindFirst(btp::Hard_Collision);
+  if (signal==NULL) signal=bloblist->FindFirst(btp::Signal_Process);
   if (!m_diced) {
     m_ptmax=ATOOLS::rpa.gen.Ecms()/2.0;
     if (VetoHardProcess(signal)) {
@@ -245,9 +246,9 @@ Return_Value::code Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,doub
   else if (m_vetoed) {
     success=p_mihandler->GenerateSoftProcess(blob);
     // dummy settings for analysis
-    blob->SetType(btp::Signal_Process);
+    blob->SetType(btp::Soft_Collision);
     blob->SetTypeSpec("Soft UE");
-    blob->SetStatus(5);
+    blob->SetStatus(blob_status::needs_showers);
     blob->AddData("ME_Weight",new Blob_Data<double>(m_weight));
     blob->AddData("ME_NumberOfTrials",new Blob_Data<int>((int)m_ntrials));
   }
