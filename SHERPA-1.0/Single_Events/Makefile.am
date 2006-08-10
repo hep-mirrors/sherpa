@@ -6,6 +6,7 @@ libSherpaSingleEvents_la_SOURCES      =	\
 					Multiple_Interactions.C \
 					Jet_Evolution.C \
 					Hard_Decays.C \
+					Beam_Remnants.C \
 					Hadronization.C \
 					Hadron_Decays.C \
 					Analysis_Phase.C \
@@ -19,6 +20,7 @@ pkginclude_HEADERS    =	\
 			Multiple_Interactions.H \
 			Jet_Evolution.H \
 			Hard_Decays.H \
+			Beam_Remnants.H \
 		 	Hadronization.H \
 			Hadron_Decays.H \
 			Analysis_Phase.H \

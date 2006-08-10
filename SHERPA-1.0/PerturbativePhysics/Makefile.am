@@ -23,8 +23,6 @@ pkginclude_HEADERS        =	\
 		 	Perturbative_Interface.H \
 		 	Interface_Tools.H \
 			SimpleXS_Apacic_Interface.H \
-			SimpleXS_Adicic_Interface.H \
-			SimpleXS_CSS_Interface.H \
 			Tree_Filler.H \
 			Combine_Table_Base.H \
 			Combine_Table_CKKW.H \
