@@ -100,7 +100,7 @@ bool Event_Handler::GenerateEvent(int mode)
   }
   bool   flag(true), retry(false), newone(false);
   double weight = 1.;
-  Blob * hardblob;
+  Blob * hardblob=NULL, * hardcopy=NULL;
   switch (mode) {
   case 0:
     CleanUpEvent();
@@ -144,7 +144,7 @@ bool Event_Handler::GenerateEvent(int mode)
 		//std::cout<<(*pit)->Name()<<" yields retry : "
 		//	 <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
 		retry = true;
-		Blob * hardcopy = new Blob(hardblob);
+		hardcopy = new Blob(hardblob);
 		CleanUpEvent(hardcopy);
 		hardblob = hardcopy;
 		hardblob->SetStatus(blob_status::internal_flag &
@@ -194,7 +194,7 @@ bool Event_Handler::GenerateEvent(int mode)
 		//std::cout<<(*pit)->Name()<<" yields retry : "
 		//	 <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
 		retry = true;
-		Blob * hardcopy = new Blob(hardblob);
+		hardcopy = new Blob(hardblob);
 		CleanUpEvent(hardcopy);
 		hardblob = hardcopy;
 		hardblob->SetStatus(blob_status::internal_flag &
