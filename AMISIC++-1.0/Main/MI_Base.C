@@ -166,9 +166,17 @@ bool MI_Base::FillBlob(ATOOLS::Blob *blob)
   }
   bool dicedprocess=m_dicedprocess;
   m_dicedprocess=false;
-  if (m_type==HardEvent) blob->SetType(ATOOLS::btp::Hard_Collision);
-  else blob->SetType(ATOOLS::btp::Soft_Collision);
-  blob->SetStatus(1);
+  if (m_type==HardEvent) {
+    blob->SetType(ATOOLS::btp::Hard_Collision);
+    blob->SetStatus(ATOOLS::blob_status::needs_showers &
+		    ATOOLS::blob_status::needs_beams &
+		    ATOOLS::blob_status::needs_hadronization);
+  }
+  else {
+    blob->SetType(ATOOLS::btp::Soft_Collision);
+    blob->SetStatus(ATOOLS::blob_status::needs_beams &
+		    ATOOLS::blob_status::needs_hadronization);
+  }
   ATOOLS::Particle *particle;
   for (size_t i=0;i<m_inparticles.size();++i) {
     particle = new ATOOLS::Particle(-1,m_inparticles[i]->Flav(),

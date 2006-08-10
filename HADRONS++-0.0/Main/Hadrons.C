@@ -170,7 +170,7 @@ Spin_Density_Matrix Hadrons::PerformDecay(
   // Create blob
   Blob * blob;											// decay blob
   blob = new Blob();
-  blob->SetStatus(1);
+  blob->SetStatus(blob_status::needs_hadrondecays);
   blob->SetType( btp::Hadron_Decay );
   blob->SetTypeSpec("Sherpa");
   blob->SetId();
