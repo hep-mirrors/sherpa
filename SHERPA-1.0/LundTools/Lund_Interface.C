@@ -301,10 +301,8 @@ Return_Value::code Lund_Interface::PerformDecay(Blob * blob)
   }
   part->SetStatus(part_status::decayed);
   pyhepc(1);
-  //pylist(2);
   blob->SetTypeSpec("Pythia_v6.214");
   FillOutgoingParticlesInBlob(blob);
-  //std::cout<<METHOD<<" : "<<(*blob)<<std::endl;
   return Return_Value::Success;
 } 
 
@@ -352,7 +350,6 @@ int Lund_Interface::PrepareFragmentationBlob(Blob * blob)
 }
 
 
-
 bool Lund_Interface::StringFragmentation(Blob *blob,Blob_List *bloblist,int nhep) 
 {
   hepevt.nevhep=0;
@@ -362,7 +359,8 @@ bool Lund_Interface::StringFragmentation(Blob *blob,Blob_List *bloblist,int nhep
   pydat1.mstu[71-1]=hepevt.nhep;
   int ip(1);
   pyprep(ip);
-  pystrf(ip);
+  while (hepevt.isthep[nhep-1]==1) pystrf(ip);  pyhepc(1); 
+
   if (pydat1.mstu[24-1]!=0) {
     Vec4D cms(0.,0.,0.,0.);
     for (int i=0;i<blob->NInP();i++) cms+=blob->InParticle(i)->Momentum();
@@ -378,7 +376,6 @@ bool Lund_Interface::StringFragmentation(Blob *blob,Blob_List *bloblist,int nhep
     msg.Error()<<"   Up to now: "<<pydat1.mstu[23-1]<<" errors, abort the run."<<std::endl;
     THROW(critical_error,"Too many errors in lund fragmentation.");
   }
-  pyhepc(1);
   pydat1.mstu[70-1]=2;
   pydat1.mstu[72-1]=hepevt.nhep;
   return true;
