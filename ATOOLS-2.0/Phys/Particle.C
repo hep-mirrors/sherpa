@@ -36,26 +36,28 @@ bool ATOOLS::Particle::operator==(Particle part)
 }
 
 std::ostream& ATOOLS::operator<<(std::ostream& str, const Particle &part) {
-  int io=str.precision(4);
+  int io;
   switch (part.Status()) {
   case part_status::undefined : // null entry
     return str<<"--- empty entry ---"<<std::endl;
   case part_status::active :  // active (final state) particle
   case part_status::decayed : // decayed particle 
-  case part_status::fragmented : // or fragmented particle 
-    str<<std::setprecision(4)<<std::setiosflags(std::ios::left);
+  case part_status::fragmented : // or fragmented particle
+    io=str.precision(4);
+    str<<std::setiosflags(std::ios::left);
     str<<"["<<part.Info()<<"] "<<part.Status()<<" "
-       <<std::setw(22)<<part.Flav()<<" "<<std::setiosflags(std::ios::right)
+       <<std::setw(16)<<part.Flav()<<" "<<std::setiosflags(std::ios::right)
        <<std::setw(6)<<part.Number()<<" (";
-    if (part.ProductionBlob()) str<<std::setw(5)<<part.ProductionBlob()->Id();
-    else str<<"     ";
-    if (part.DecayBlob()) str<<" -> "<<std::setw(5)<<part.DecayBlob()->Id();
-    else str<<" ->      ";
-    str<<std::setw(1)<<") "<<std::resetiosflags(std::ios::right);
+    if (part.ProductionBlob()) str<<std::setw(4)<<part.ProductionBlob()->Id();
+    else str<<"    ";
+    if (part.DecayBlob()) str<<" -> "<<std::setw(4)<<part.DecayBlob()->Id();
+    else str<<" ->     ";
+    str<<")"<<std::resetiosflags(std::ios::right);
     str<<std::resetiosflags(std::ios::scientific)<<std::resetiosflags(std::ios::left);
     break;
   case part_status::documentation : // documentation line
-    str<<std::setprecision(4)<<std::setiosflags(std::ios::left);
+    io=str.precision(4);
+    str<<std::setiosflags(std::ios::left);
     str<<"============================================================"<<std::endl
        <<"  "<<std::setw(3)<<part.Info()<<"  "<<std::setw(3)<<part.Status()<<std::setw(1)<<" "
        <<std::setw(22)<<part.Flav()<<std::setw(1)<<" "
@@ -70,8 +72,8 @@ std::ostream& ATOOLS::operator<<(std::ostream& str, const Particle &part) {
   Vec4D p=part.Momentum();
   str<<std::setiosflags(std::ios::scientific)
      <<" [("<<std::setw(11)<<p[0]<<','<<std::setw(11)<<p[1]<<','
-	  <<std::setw(11)<<p[2]<<','<<std::setw(11)<<p[3]<<"),"
-     <<std::setw(11)<<"p^2 = "<<p.Abs2()<<", m^2 = "<<sqr(part.m_finalmass)<<"]"
+     <<std::setw(11)<<p[2]<<','<<std::setw(11)<<p[3]<<"), p^2="
+     <<std::setw(11)<<p.Abs2()<<", m^2="<<std::setw(11)<<part.m_finalmass<<"]"
      <<" ("<<std::setw(3)<<part.GetFlow(1)<<","<<std::setw(3)<<part.GetFlow(2)<<")"
      <<std::resetiosflags(std::ios::scientific)<<std::resetiosflags(std::ios::left);
   str.precision(io);
@@ -128,7 +130,7 @@ Particle& Particle::operator=(const Particle &in)
 
 
 Particle::Particle(int number, Flavour fl, Vec4D p, char a) :
-  m_number(number), m_jetnumber(-1), m_status(part_status::undefined), 
+  m_number(number), m_jetnumber(-1), m_status(part_status::active),
   m_info(a), 
   m_fl(fl), m_momentum(p),
   p_flow(new Flow(this)),

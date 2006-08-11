@@ -13,7 +13,17 @@ namespace ATOOLS {
 namespace PDF {
 
   class PDF_Base {
-  protected :
+
+  private:
+
+    static struct Box {
+      std::vector<PDF_Base*> v_pdfp;
+      Box() : v_pdfp() {}
+      ~Box();
+      std::size_t TrueEntryNumber() const;
+    } s_box;
+
+  protected:
 
     std::vector<PDF_Base*> m_copies;
 

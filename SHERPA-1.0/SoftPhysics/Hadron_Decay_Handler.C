@@ -39,7 +39,7 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(Lund_Interface * _lund) :
   p_lund(_lund)
 { 
   p_cans = new set<kf::code>;
-  Flavour flav(Flavour(kf::tau));
+  Flavour flav(kf::tau);
   if (flav.IsOn() && !flav.IsStable()) {
     if (p_lund->IsAllowedDecay(flav.Kfcode())) p_cans->insert(flav.Kfcode());
   }
