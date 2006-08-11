@@ -724,6 +724,8 @@ Decay_Table * Hadrons::InitialiseOneDecayTable(vector<string> line)
   return dt;
 }
 
-template class ATOOLS::Blob_Data<HADRONS::Hadron_Decay_Channel*>;
-template Hadron_Decay_Channel* &Blob_Data_Base::Get<Hadron_Decay_Channel*>();
-template <> Blob_Data<Hadron_Decay_Channel*>::~Blob_Data() { }
+namespace ATOOLS {
+  template class ATOOLS::Blob_Data<HADRONS::Hadron_Decay_Channel*>;
+  template Hadron_Decay_Channel* &Blob_Data_Base::Get<Hadron_Decay_Channel*>();
+  template <> Blob_Data<Hadron_Decay_Channel*>::~Blob_Data() { }
+}
