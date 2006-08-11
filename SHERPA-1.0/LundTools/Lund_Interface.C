@@ -359,8 +359,9 @@ bool Lund_Interface::StringFragmentation(Blob *blob,Blob_List *bloblist,int nhep
   pydat1.mstu[71-1]=hepevt.nhep;
   int ip(1);
   pyprep(ip);
-  while (hepevt.isthep[nhep-1]==1) pystrf(ip);  pyhepc(1); 
-
+  while (hepevt.isthep[nhep-1]==1) {
+    pystrf(ip);  pyhepc(1); 
+  }
   if (pydat1.mstu[24-1]!=0) {
     Vec4D cms(0.,0.,0.,0.);
     for (int i=0;i<blob->NInP();i++) cms+=blob->InParticle(i)->Momentum();
