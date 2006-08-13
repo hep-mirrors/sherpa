@@ -1,5 +1,5 @@
 //bof
-//Version: 4 ADICIC++-0.0/2006/06/11
+//Version: 4 ADICIC++-0.0/2006/08/02
 
 //Implementation of the template structures of Sudakov_Group.H.
 
@@ -57,23 +57,26 @@ Sudakov_Group<DT>::Sudakov_Group(const Radiation::Type ratyp)
 
 
 
-namespace ADICIC { template<>
-Sudakov_Group<Dipole::qqbar>::Sudakov_Group(const Radiation::Type ratyp)
-  : Sudakov_Calculator(),
-    m_radtype(ratyp),
-    m_s(dpa.sud.MaxK2t()),
-    m_x2tmin(dpa.sud.MinK2t()/m_s),
-    m_x2tmax(dpa.sud.MaxK2t()/m_s),
-    m_x2t(1.0), m_ymax(0.0), m_rap(0.0), m_corr(1.0),
-    l_sud() {
+namespace ADICIC {
+  template<>
+  Sudakov_Group<Dipole::qqbar>::Sudakov_Group(const Radiation::Type ratyp)
+    : Sudakov_Calculator(),
+      m_radtype(ratyp),
+      m_s(dpa.sud.MaxK2t()),
+      m_x2tmin(dpa.sud.MinK2t()/m_s),
+      m_x2tmax(dpa.sud.MaxK2t()/m_s),
+      m_x2t(1.0), m_ymax(0.0), m_rap(0.0), m_corr(1.0),
+      l_sud() {
 
-  if(ratyp>Radiation::duscb && dpa.sud.GsplitRule()!=positive) {
-    Sudakov_Flavour sfc; sfc.Glu=&info.gluon.g;
-    Sudakov_Base* gsud=new Sudakov<Dipole::qqbar,Radiation::gluon>(*this, sfc);
-    assert(gsud);
-    l_sud.push_back(gsud);
+    if(ratyp>Radiation::duscb && dpa.sud.GsplitRule()!=positive) {
+      Sudakov_Flavour sfc; sfc.Glu=&info.gluon.g;
+      Sudakov_Base* gsud=
+	new Sudakov<Dipole::qqbar,Radiation::gluon>(*this, sfc);
+      assert(gsud);
+      l_sud.push_back(gsud);
+    }
   }
-}}
+}
 
 
 

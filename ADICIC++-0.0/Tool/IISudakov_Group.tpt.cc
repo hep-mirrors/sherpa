@@ -1,5 +1,5 @@
 //bof
-//Version: 4 ADICIC++-0.0/2006/06/11
+//Version: 4 ADICIC++-0.0/2006/08/13
 
 //Implementation of the template structures of IISudakov_Group.H.
 
@@ -161,12 +161,12 @@ template<Dipole::Type DT>
 const bool IISudakov_Group<DT>::GenerateVariablesFor(const Dipole& dip,
 						     Sudakov_Result& sur) {
 
-  static IISudakov_Stats efstat(DT,"EfracTest",false);
-  static IISudakov_Stats nfstat(DT,"NfVeto",false);
-  static IISudakov_Stats xmstat(DT,"XMinus",false);
-  static IISudakov_Stats xpstat(DT,"XPlus",false);
-  static IISudakov_Stats costat(DT,"CorrWeight");
-  static IISudakov_Stats pfstat(DT,"PDFWeight",false);
+  static Sudakov_Stats efstat(DT,"EfracTest",false);
+  static Sudakov_Stats nfstat(DT,"NfVeto",false);
+  static Sudakov_Stats xmstat(DT,"XMinus",false);
+  static Sudakov_Stats xpstat(DT,"XPlus",false);
+  static Sudakov_Stats costat(DT,"CorrWeight");
+  static Sudakov_Stats pfstat(DT,"PDFWeight",false);
 
   sur.Reset();
 
@@ -360,8 +360,8 @@ const bool IISudakov_Group<DT>::InitWithCurrentDipole() {
   assert(p_sur->Isr[sr::xpini]<=1.0);
   assert(p_sur->Isr[sr::xmini]<=1.0);
 
-  static IISudakov_Stats dipstat(DT,"DipoleMass",false,40.0,270.0);
-  static IISudakov_Stats saxstat(DT,"-/SHatMax",false,70.0,sqrtS);
+  static Sudakov_Stats dipstat(DT,"DipoleMass",false,40.0,270.0);
+  static Sudakov_Stats saxstat(DT,"-/SHatMax",false,70.0,sqrtS);
 
   p_sur->Isr[sr::fasc]=p_dip->FactScale();
   m_s=m_sdip=p_dip->InvMass();
@@ -415,7 +415,9 @@ template<Dipole::Type DT>
 IISudakov<DT,Radiation::gluon>::IISudakov(const IISudakov_Group<DT>& sg,
 					  const Sudakov_Flavour& go)
   : Sudakov_Base(go,Radiation::gluon),
-    m_genx2tfac(0.0), m_mfl(), m_sgroup(sg) {
+    m_pdfr(Sudakov_Calculator::Pdfrule),
+    m_pdfapx(bool(m_pdfr) ? s_pdfapprox : 1.0),
+    m_pdfapprox(2,1.0), m_genx2tfac(0.0), m_mfl(), m_sgroup(sg) {
 
   assert(go.Gluic());
 }
@@ -442,6 +444,7 @@ const double IISudakov<DT,Radiation::gluon>::GenerateX2t() {
   double coeff=
     std::log(ran)*m_genx2tfac*s_colfac/Sudakov_Calculator::AlphaSApprox();
   double A=sqr(std::log(m_sgroup.X2t()));
+  coeff/=(m_pdfr==on ? m_pdfapprox[0]*m_pdfapprox[1] : m_pdfapx);
   if( coeff < A-sqr(std::log(m_sgroup.X2tmin())) ) return -1.0;
   return std::exp(-sqrt(A-coeff));
 }
@@ -460,7 +463,9 @@ template<Dipole::Type DT>
 IISudakov<DT,Radiation::igluon>::IISudakov(const IISudakov_Group<DT>& sg,
 					   const Sudakov_Flavour& qo)
   : Sudakov_Base(qo,Radiation::igluon),
-    m_genx2tfac(0.0), m_mfl(), m_sgroup(sg) {
+    m_pdfr(Sudakov_Calculator::Pdfrule),
+    m_pdfapx(bool(m_pdfr) ? s_pdfapprox : 1.0),
+    m_pdfapprox(2,1.0), m_genx2tfac(0.0), m_mfl(), m_sgroup(sg) {
 
   if(qo.Quaic()) { m_split=front; return;}
   if(qo.Aquic()) { m_split=end; return;}
@@ -489,6 +494,7 @@ const double IISudakov<DT,Radiation::igluon>::GenerateX2t() {
   double coeff=
     std::log(ran)*m_genx2tfac*s_colfac/Sudakov_Calculator::AlphaSApprox();
   double A=sqr(std::log(m_sgroup.X2t()));
+  coeff/=(m_pdfr==on ? m_pdfapprox[0]*m_pdfapprox[1] : m_pdfapx);
   if( coeff < A-sqr(std::log(m_sgroup.X2tmin())) ) return -1.0;
   return std::exp(-sqrt(A-coeff));
 }

@@ -1,5 +1,5 @@
 //bof
-//Version: 4 ADICIC++-0.0/2006/06/30
+//Version: 4 ADICIC++-0.0/2006/07/27
 
 //Inline methods of Dipole_Parameter.H.
 

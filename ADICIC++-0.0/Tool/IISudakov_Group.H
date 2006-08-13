@@ -1,5 +1,5 @@
 //bof
-//Version: 4 ADICIC++-0.0/2006/06/02    (surely preliminarily)
+//Version: 4 ADICIC++-0.0/2006/08/07    (surely preliminarily)
 
 //The Sudakov classes are provided, which manage the Sudakov calculation needed
 //for emissions of II dipoles.
@@ -12,7 +12,7 @@
 
 
 #include <string>
-#include "Sudakov_Calculator.H"
+#include "Sudakov_Stats.hpp"
 
 
 
@@ -144,6 +144,12 @@ namespace ADICIC {
     static const double s_iieffbas;
     static const double s_pdfapprox;
 
+    static Sudakov_Stats s_pdf1stat;
+    static Sudakov_Stats s_pdf2stat;
+
+    xbool                            m_pdfr;
+    double                           m_pdfapx;
+    Multidouble                      m_pdfapprox;    //0.. + beam, 1.. - beam
     double                           m_genx2tfac;
     Multiflavour                     m_mfl;
     const IISudakov_Group<_Diptype>& m_sgroup;
@@ -193,6 +199,12 @@ namespace ADICIC {
     static const double s_iieffbas;
     static const double s_pdfapprox;
 
+    static Sudakov_Stats s_pdf1stat;
+    static Sudakov_Stats s_pdf2stat;
+
+    xbool                            m_pdfr;
+    double                           m_pdfapx;
+    Multidouble                      m_pdfapprox;    //0.. + beam, 1.. - beam
     double                           m_genx2tfac;
     Multiflavour                     m_mfl;
     const IISudakov_Group<_Diptype>& m_sgroup;
@@ -266,34 +278,6 @@ namespace ADICIC {
     inline const double GenerateCorr();
     const double GenerateX2t();
 
-  };
-
-
-
-  //###########################################################################
-
-
-
-  class IISudakov_Stats {
-  private:
-    bool         out;
-    unsigned     incs;
-    unsigned     bviols;
-    unsigned     tviols;
-    double       blim;
-    double       tlim;
-    double       min;
-    double       max;
-    Dipole::Type type;
-    std::string  name;
-  public:
-    IISudakov_Stats(Dipole::Type, const double&,
-		    const std::string& n="NoName");
-    IISudakov_Stats(Dipole::Type, const std::string& n="NoName",
-		    bool o=true,
-		    const double& bot=0.0, const double& top=1.0);
-    ~IISudakov_Stats();
-    const bool Include(const double& weight);
   };
 
 

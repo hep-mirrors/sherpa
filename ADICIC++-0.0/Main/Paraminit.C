@@ -1,5 +1,5 @@
 //bof
-//Version: 4 ADICIC++-0.0/2006/06/30
+//Version: 4 ADICIC++-0.0/2006/08/13
 
 //Implementation of Paraminit.H.
 
@@ -86,7 +86,7 @@ const bool Dipole_Parameter_Init::Do() {    //Static.
   dpv.evo.SetFactScaleOffset(0.3);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   //Chain evolution strategy (compare with Evolution_Strategy.hpp)
   Dipole_Parameter::Evo::v_chevostrat[cel::def] =
-    Chain_Evolution_Strategy::Emission;//Production;
+    Chain_Evolution_Strategy::Production;//Emission;//Production;
   //###########################################################################
 
   //Re-calculate the maximum k2t for II dipoles.

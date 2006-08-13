@@ -1,5 +1,5 @@
 //bof
-//Version: 4 ADICIC++-0.0/2005/06/15
+//Version: 4 ADICIC++-0.0/2005/08/02
 
 //Implementation of Adicic.H.
 
@@ -115,6 +115,7 @@ int Adicic::PerformShowers() {
   m_cascade|0;
   if(m_cascade.DipoleNumber()==1) ++m_noem;
   //if(m_cascade.INumber()) m_cascade.Print();/////////////////////////////////
+  //if(m_cascade.ParticleNumber()>3) m_cascade.Print();////////////////////////
   return 1;
 }
 

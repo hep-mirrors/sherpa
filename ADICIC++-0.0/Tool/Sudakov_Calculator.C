@@ -1,5 +1,5 @@
 //bof
-//Version: 4 ADICIC++-0.0/2006/06/30
+//Version: 4 ADICIC++-0.0/2006/08/13
 
 //Implementation of Sudakov_Calculator.H.
 
@@ -38,7 +38,8 @@ const bool Sudakov_Calculator::sf_ariadne=false;//true;//false;
 const bool& Sudakov_Calculator::Ariadne=Sudakov_Calculator::sf_ariadne;
 
 //Temporary PDF switch.
-const bool Sudakov_Calculator::sf_pdf=true;//false;
+const xbool Sudakov_Calculator::sf_pdf=on;//onn;//on;//off;
+const xbool& Sudakov_Calculator::Pdfrule=Sudakov_Calculator::sf_pdf;
 
 //So far there is no static Sudakov_Calculator.
 int Sudakov_Calculator::s_count=0;
@@ -108,7 +109,7 @@ void Sudakov_Calculator::ShowEnvironment() {    //Static.
   cout<<"AlphaS approximation is set to......."
       <<s_asapprox<<".\n";
   cout<<"PDF treatment is wished for.........."
-      <<bool(sf_pdf)<<".\n";
+      <<bool(sf_pdf)<<(sf_pdf==onn?"(-).\n":".\n");
   cout<<"PDFs are initialized................."
       <<bool(s_box.m_pdf[0] && s_box.m_pdf[1])<<".\n";
   cout<<"Gluon split handling is set to......."
@@ -207,7 +208,7 @@ const Trio Sudakov_Calculator::AdjustEnvironment(const string& path,
     GetNf=&RunNf;
   }
 
-  if(sf_pdf==false) {
+  if(sf_pdf==off) {
     if(s_box.m_pdf[0]) { delete s_box.m_pdf[0]; s_box.m_pdf[0]=NULL;} 
     if(s_box.m_pdf[1]) { delete s_box.m_pdf[1]; s_box.m_pdf[1]=NULL;}
     GetPDFCorr=&NoPDFCorr;
@@ -350,8 +351,7 @@ const double Sudakov_Calculator::IsPDFCorr(bool z, const Multiflavour& mufl,
   /////////////////////////////////////////////////////////////////////////////
 
   wnum/=wden[z];
-  assert(wnum>=0.0);
-  //assert(wnum<=value);
+  assert(wnum>=0.0);    //if(wnum>xxx) cout<<"   case! "<<wnum<<endl;
   return wnum;
 
 }

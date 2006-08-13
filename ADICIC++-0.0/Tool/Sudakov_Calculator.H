@@ -1,5 +1,5 @@
 //bof
-//Version: 4 ADICIC++-0.0/2006/06/02    (surely preliminarily)
+//Version: 4 ADICIC++-0.0/2006/07/28    (surely preliminarily)
 
 //Base classes are provided, which manage the Sudakov calculations.
 
@@ -59,8 +59,8 @@ namespace ADICIC {
 
   private:
 
-    static const bool sf_ariadne;
-    static const bool sf_pdf;    //Temporary entry.
+    static const bool  sf_ariadne;
+    static const xbool sf_pdf;    //Temporary entry (0..off,1..dyn,-1..static).
 
     static int s_count;
 
@@ -92,8 +92,9 @@ namespace ADICIC {
     inline  Sudakov_Calculator();
     virtual ~Sudakov_Calculator();
 
-    static const bool& Ariadne;
-    static const int&  InStore;
+    static const bool&  Ariadne;
+    static const xbool& Pdfrule;
+    static const int&   InStore;
 
     static inline const bool   IsAlphaSRunning();
     static inline const double AlphaSApprox();

@@ -5,11 +5,13 @@ SUBDIRS = savemaketool
 pkglib_LTLIBRARIES = libAdicicTool.la
 
 libAdicicTool_la_SOURCES = Xio.C Xmath.C Xhisto.C \
+                           Sudakov_Stats.cpp \
                            Sudakov_Calculator.C \
                            Sudakov_Group.C IISudakov_Group.C \
                            Recoil_Calculator.C
 
 pkginclude_HEADERS = Xenum.H Xio.H Xmath.H Xhisto.H defextra enumextra ioextra mathextra histoextra \
+                     Sudakov_Stats.cpp \
                      Sudakov_Calculator.H \
                      Sudakov_Group.H IISudakov_Group.H \
                      Recoil_Calculator.H

@@ -1,5 +1,5 @@
 //bof
-//Version: 4 ADICIC++-0.0/2006/06/30
+//Version: 4 ADICIC++-0.0/2006/07/28
 
 //Inline methods of Sudakov_Calculator.H.
 
@@ -54,7 +54,7 @@ namespace ADICIC {
     return GetNf(p2t);
   }
   inline const bool Sudakov_Calculator::ArePDFsInitialized() {    //Static.
-    //return (sf_pdf && s_box.m_pdf[0] && s_box.m_pdf[1]);
+    //return (bool(sf_pdf) && s_box.m_pdf[0] && s_box.m_pdf[1]);
     return bool(s_box.m_pdf[0] && s_box.m_pdf[1]);
   }
   inline const double

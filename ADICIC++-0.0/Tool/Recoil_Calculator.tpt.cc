@@ -1,5 +1,5 @@
 //bof
-//Version: 4 ADICIC++-0.0/2006/05/31
+//Version: 4 ADICIC++-0.0/2006/08/13
 
 //Implementation of template structures of Recoil_Calculator.H.
 
@@ -221,12 +221,12 @@ const bool Recoil<ST>::CiiMomenta() {
     E1=p_sur->Isr[sr::xpfin]*sqrtS/2.0; E3=p_sur->Isr[sr::xmfin]*sqrtS/2.0;}
   assert(dabs(p_rer->Vec[rr::p3][0]-E3)<1.0e-8 &&
 	 dabs(p_rer->Vec[rr::p3][3]-sig*E3)<1.0e-8 &&
-	 dabs(p_rer->Vec[rr::p3][1])<1.0e-10 &&
-	 dabs(p_rer->Vec[rr::p3][2])<1.0e-10);
+	 dabs(p_rer->Vec[rr::p3][1])<1.0e-9 &&
+	 dabs(p_rer->Vec[rr::p3][2])<1.0e-9);
   assert(dabs(p_rer->Vec[rr::p1][0]-E1)<1.0e-8 &&
 	 dabs(p_rer->Vec[rr::p1][3]+sig*E1)<1.0e-8 &&
-	 dabs(p_rer->Vec[rr::p1][1])<1.0e-10 &&
-	 dabs(p_rer->Vec[rr::p1][2])<1.0e-10);
+	 dabs(p_rer->Vec[rr::p1][1])<1.0e-9 &&
+	 dabs(p_rer->Vec[rr::p1][2])<1.0e-9);
   p_rer->Vec[rr::p3]=Vec4D(E3,0.0,0.0,sig*E3);
   p_rer->Vec[rr::p1]=Vec4D(E1,0.0,0.0,-sig*E1);
   double g=p_sur->Isr[sr::expy]/2.0;
