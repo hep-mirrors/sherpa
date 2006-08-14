@@ -3,6 +3,7 @@
 #include "Run_Parameter.H"
 #include "My_Limits.H"
 #include <unistd.h>
+#include <cassert>
 
 #include "Random.H"
 
@@ -112,8 +113,7 @@ bool Event_Handler::GenerateEvent(int mode)
     hardblob->SetStatus(blob_status::needs_signal);
     m_blobs.push_back(hardblob);
     do {
-      flag  = true;
-      retry = newone = false;
+      flag = true; retry = newone = false;
       while (flag && !retry) {
 	flag = false;
 	for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
@@ -122,11 +122,11 @@ bool Event_Handler::GenerateEvent(int mode)
 	    switch (int((*pit)->Treat(&m_blobs,weight))) {
 	      case Return_Value::Nothing :
 		//std::cout<<(*pit)->Name()<<" yields nothing : "
-		//	 <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
+		//	       <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
 		break;
 	      case Return_Value::Success : 
 		//std::cout<<(*pit)->Name()<<" yields success : "
-		//	 <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
+		//	       <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
 		flag = true;
 		break;
 	      case Return_Value::Error :
@@ -144,12 +144,11 @@ bool Event_Handler::GenerateEvent(int mode)
 		//std::cout<<(*pit)->Name()<<" yields retry : "
 		//	 <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
 		retry = true;
-		hardcopy = new Blob(hardblob);
-		CleanUpEvent(hardcopy);
-		hardblob = hardcopy;
-		hardblob->SetStatus(blob_status::internal_flag &
+		hardblob = m_blobs.FindFirst(btp::Signal_Process);
+		hardblob->SetId();
+		CleanUpEvent(hardblob);
+		hardblob->SetStatus(blob_status::internal_flag |
 				    blob_status::needs_signal);
-		m_blobs.push_back(hardblob);
 		break;
 	      default:
 		msg.Error()<<"Error in "<<METHOD<<":"<<std::endl
@@ -163,7 +162,8 @@ bool Event_Handler::GenerateEvent(int mode)
 	  if (retry || newone) break;
 	}
       }
-      //std::cout<<METHOD<<":"<<std::endl<<m_blobs<<std::endl;
+      //if (retry || newone) std::cout<<METHOD<<":"<<std::endl<<m_blobs<<std::endl;
+
       flag = true;
       while (flag && !retry && !newone) {
 	flag = false;
@@ -194,12 +194,11 @@ bool Event_Handler::GenerateEvent(int mode)
 		//std::cout<<(*pit)->Name()<<" yields retry : "
 		//	 <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
 		retry = true;
-		hardcopy = new Blob(hardblob);
-		CleanUpEvent(hardcopy);
-		hardblob = hardcopy;
-		hardblob->SetStatus(blob_status::internal_flag &
+		hardblob = m_blobs.FindFirst(btp::Signal_Process);
+		hardblob->SetId();
+		CleanUpEvent(hardblob);
+		hardblob->SetStatus(blob_status::internal_flag |
 				    blob_status::needs_signal);
-		m_blobs.push_back(hardblob);
 		break;
 	      default:
 		msg.Error()<<"Error in "<<METHOD<<":"<<std::endl
@@ -284,12 +283,8 @@ bool Event_Handler::GenerateEvent(int mode)
 
 void Event_Handler::CleanUpEvent(Blob * blob) 
 {
-  if (!p_phases->empty()) {
-    for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-      (*pit)->CleanUp();
-    }
-  }
-  m_blobs.Clear();
+  for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) (*pit)->CleanUp();
+  m_blobs.Clear(blob);
   if (!blob) {
     if (Particle::Counter()>m_lastparticlecounter || 
 	Blob::Counter()>m_lastblobcounter) {
@@ -321,17 +316,8 @@ void Event_Handler::CleanUpEvent(Blob * blob)
 
 void Event_Handler::Reset()
 {
-  if (!p_phases->empty()) {
-    for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-      (*pit)->CleanUp();
-    }
-  }
-  if (!m_blobs.empty()) {
-    for (Blob_List::iterator bit=m_blobs.begin();
-	 bit!=m_blobs.end();bit++) (*bit)->DeleteOwnedParticles();
-  }
+  for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) (*pit)->CleanUp();
   m_blobs.Clear();
-
 
   ATOOLS::Vec4D::ResetAccu();
   ATOOLS::ran.SaveStatus();
@@ -346,8 +332,12 @@ void Event_Handler::Reset()
 
 void Event_Handler::Finish() {
   msg_Info()<<"In Event_Handler::Finish : Summarizing the run may take some time."<<std::endl;
-  for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) 
+  for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
     (*pit)->Finish(std::string("Results"));
+    PRINT_INFO((*pit)->Type()<<(*pit)->Name());
+    (*pit)->CleanUp();
+  }
+  m_blobs.Clear();
   if (Particle::Counter()>m_lastparticlecounter || 
       Blob::Counter()>m_lastblobcounter) {
     msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl

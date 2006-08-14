@@ -73,7 +73,7 @@ namespace ATOOLS {
 				   const int mode=0) const;
     Particle_List ExtractLooseParticles(const int mode=0) const;
     
-    void Clear();
+    void Clear(Blob *blob=NULL);
 
   };// end of class Blob_List
   

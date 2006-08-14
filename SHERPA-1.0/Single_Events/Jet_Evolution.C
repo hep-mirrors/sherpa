@@ -133,12 +133,14 @@ Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist
       switch (shower) {
         case 1: 
 	  AftermathOfSuccessfulShower(blob,bloblist,interface);    
+	  return Return_Value::Success;
 	  break;
         case -1:
 	  p_showerhandler->CleanUp();
 	  blob->SetStatus(blob_status::inactive);
 	  if (blob->Type()!=btp::Signal_Process) 
 	    interface->CleanBlobList(bloblist,blob->Type());
+	  return Return_Value::New_Event;
 	  break;
         default:
 	  msg.Error()<<"ERROR in "<<METHOD<<":"<<endl
