@@ -42,10 +42,9 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight
 	       <<"   Continue and hope for the best."<<std::endl;
     return Return_Value::Error;
   }
-  
-  Blob * myblob;
+
   bool found(true), hit(false);
-  
+
   while (found) {
     found = false;
     for (Blob_List::iterator blit=bloblist->begin();
