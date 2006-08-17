@@ -57,7 +57,7 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
   }
   PertInterfaceIter piIter;
   string tag("SignalMEs");
-  bool hit(false),found(true);
+  bool hit(false), found(true);
   Blob * blob;
   while (found) {
     found = false;
@@ -83,32 +83,25 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
 		     <<"   Abort the run."<<endl;
 	  abort();
 	}	
-	switch (int(AttachShowers(blob,bloblist,piIter->second))) {
-	  case int(Return_Value::Success): 
-	    found = hit = true;
-	    weight *= piIter->second->Weight();
-	    break;
-	  case int(Return_Value::New_Event):
-	    //std::cout<<METHOD<<" throws New_Event."<<std::endl;
-	    return Return_Value::New_Event;
-	  case int(Return_Value::Retry_Event):
-	    //std::cout<<METHOD<<" throws Retry_Event."<<std::endl;
-	    return Return_Value::Retry_Event;
-	  case int(Return_Value::Error):
-	    return Return_Value::Error;
-	  default:
-	    msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
-		       <<"   Do not know status of AttachShowers for "<<std::endl<<(*blob)
-		       <<"   Return 'Error' and hope for the best."<<std::endl;
-	    return Return_Value::Error;
+	switch (AttachShowers(blob,bloblist,piIter->second)) {
+	case Return_Value::Success:
+	  found = hit = true;
+	  weight *= piIter->second->Weight();
+	  break;
+	case Return_Value::New_Event  : return Return_Value::New_Event;
+	case Return_Value::Retry_Event: return Return_Value::Retry_Event;
+	case Return_Value::Error      : return Return_Value::Error;
+	default:
+	  msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+		     <<"   Unexpected status of AttachShowers for "<<std::endl<<(*blob)
+		     <<"   Return 'Error' and hope for the best."<<std::endl;
+	  return Return_Value::Error;
 	}
       }
     }
     if (found) hit = true;
     Reset();
   }
-  //std::cout<<"Out "<<METHOD<<":"<<std::endl<<(*blob)<<std::endl;
-  //std::cout<<METHOD<<" throws Success."<<std::endl;
   if (hit) return Return_Value::Success;
   return Return_Value::Nothing;
 }
@@ -116,68 +109,55 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
 Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist,
 						Perturbative_Interface * interface) 
 {
-  //std::cout<<"In "<<METHOD<<" : "<<std::endl;
   if (blob->Type()==btp::Hard_Collision && !p_showerhandler->ShowerMI() && 
       blob->Has(blob_status::needs_showers)) {
     AftermathOfNoShower(blob,bloblist);
     return Return_Value::Success;
   }
-  //std::cout<<"Before DefineInitialConditions ... ";
   int shower(0);
-  switch (int(interface->DefineInitialConditions(blob))) {
-    case int(Return_Value::Success):
-      //std::cout<<" ... yields Success."<<std::endl;
-      DefineInitialConditions(blob,bloblist);
-      if (blob->NInP()==1) shower = interface->PerformDecayShowers();
-      if (blob->NInP()==2) shower = interface->PerformShowers();
-      switch (shower) {
-        case 1: 
-	  AftermathOfSuccessfulShower(blob,bloblist,interface);    
-	  return Return_Value::Success;
-	  break;
-        case -1:
-	  p_showerhandler->CleanUp();
-	  blob->SetStatus(blob_status::inactive);
-	  if (blob->Type()!=btp::Signal_Process) 
-	    interface->CleanBlobList(bloblist,blob->Type());
-	  return Return_Value::New_Event;
-	  break;
-        default:
-	  msg.Error()<<"ERROR in "<<METHOD<<":"<<endl
-		     <<"   Shower failure.  Continue and hope for the best."<<endl;
-	  blob->SetStatus(blob_status::inactive);
-	  p_showerhandler->CleanUp();
-	  break;
-      }
+  switch (interface->DefineInitialConditions(blob)) {
+  case Return_Value::Success:
+    DefineInitialConditions(blob,bloblist);
+    if (blob->NInP()==1) shower = interface->PerformDecayShowers();
+    if (blob->NInP()==2) shower = interface->PerformShowers();
+    switch (shower) {
+    case 1: 
+      AftermathOfSuccessfulShower(blob,bloblist,interface);    
       return Return_Value::Success;
-    case int(Return_Value::Nothing) :
-      AftermathOfNoShower(blob,bloblist);
-      return Return_Value::Success;
-    case int(Return_Value::New_Event) :
-      //std::cout<<" ... yields New_Event."<<std::endl;
-      blob->SetStatus(blob_status::needs_signal);
+    case -1:
+      p_showerhandler->CleanUp();
+      if (blob->Type()!=btp::Signal_Process)
+	interface->CleanBlobList(bloblist,blob->Type());
+      return Return_Value::New_Event;
+    default:
+      msg.Error()<<"ERROR in "<<METHOD<<":"<<endl
+		 <<"   Shower failure. Will try new event."<<endl;
       p_showerhandler->CleanUp();
       return Return_Value::New_Event;
-    case int(Return_Value::Retry_Event) :
-      //std::cout<<" ... yields Retry_Event."<<std::endl;
-      blob->SetStatus(blob_status::needs_signal |
-		      blob_status::internal_flag);
-      p_showerhandler->CleanUp();
-      return Return_Value::Retry_Event;
-    case int(Return_Value::Error) :
-      msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
-		 <<"   DefineInitialConditions yields an error for "<<std::endl<<(*blob)
-		 <<"   Return 'Error' and hope for the best."<<std::endl;
-      blob->SetStatus(blob_status::inactive);
-      p_showerhandler->CleanUp();
-      return Return_Value::Error;
-    default :
-      msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
-		 <<"   Do not know status of DefineInitialConditions for "<<std::endl<<(*blob)
-		 <<"   Return 'Error' and hope for the best."<<std::endl;
-      blob->SetStatus(blob_status::inactive);
-      p_showerhandler->CleanUp();
-      return Return_Value::Error;    
+    }
+  case Return_Value::Nothing:
+    AftermathOfNoShower(blob,bloblist);
+    return Return_Value::Success;
+  case Return_Value::New_Event:
+    p_showerhandler->CleanUp();
+    return Return_Value::New_Event;
+  case Return_Value::Retry_Event:
+    p_showerhandler->CleanUp();
+    return Return_Value::Retry_Event;
+  case Return_Value::Error:
+    msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+	       <<"   DefineInitialConditions yields an error for "<<std::endl<<(*blob)
+	       <<"   Return 'Error' and hope for the best."<<std::endl;
+    blob->SetStatus(blob_status::inactive);
+    p_showerhandler->CleanUp();
+    return Return_Value::Error;
+  default :
+    msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+	       <<"   Unexpected status of DefineInitialConditions for "<<std::endl<<(*blob)
+	       <<"   Return 'Error' and hope for the best."<<std::endl;
+    blob->SetStatus(blob_status::inactive);
+    p_showerhandler->CleanUp();
+    return Return_Value::Error;    
   }
   return Return_Value::Error;    
 }

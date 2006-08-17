@@ -243,19 +243,24 @@ Return_Value::code Lund_Interface::Hadronize(Blob_List *bloblist)
 		   <<"   type different from 'Fragmentation' illegally found."<<std::endl
 		   <<"   Will retry the event and hope for the best."<<std::endl;
 	return Return_Value::Retry_Event;
-	
       }
       (*blit)->SetTypeSpec("Pythia_v6.214");
-      
+
+      bool result=false;
       nhep = PrepareFragmentationBlob((*blit));
       for (size_t trials=0;trials<m_maxtrials;++trials) {
-	if (!StringFragmentation((*blit),bloblist,nhep) && m_maxtrials>1) {
-	  msg.Error()<<"Error in Lund_Interface::Hadronize ."<<endl
-		     <<"   Hadronization failed. Retry event."<<endl;
-	  return Return_Value::Retry_Event;
+	result=StringFragmentation((*blit),bloblist,nhep);
+	if(result==false && m_maxtrials>1) {
+	  msg.Error()<<"Error in "<<METHOD<<"."<<endl
+		     <<"   Hadronization failed. Retry event locally."<<endl;
 	}
-	FillFragmentationBlob((*blit));
       }
+      if(result==false) {
+	msg.Error()<<"Error in "<<METHOD<<"."<<endl
+		   <<"   Hadronization failed. Retry the event."<<endl;
+	return Return_Value::Retry_Event;
+      }
+      FillFragmentationBlob((*blit));
     }
   }
   return Return_Value::Success;
@@ -359,8 +364,25 @@ bool Lund_Interface::StringFragmentation(Blob *blob,Blob_List *bloblist,int nhep
   pydat1.mstu[71-1]=hepevt.nhep;
   int ip(1);
   pyprep(ip);
-  while (hepevt.isthep[nhep-1]==1) {
-    pystrf(ip);  pyhepc(1); 
+  pystrf(ip);
+  pyhepc(1);
+  bool goon(true), flag(false);
+  if(hepevt.nhep<=nhep) { goon=false; flag=true;}
+  while(goon) {
+    goon=false;
+    for(int i=0; i<hepevt.nhep; ++i) {
+      ATOOLS::Flavour flav;
+      flav.FromHepEvt(hepevt.idhep[i]);
+      if(hepevt.isthep[i]==1 && (flav.Strong()||flav.IsDiQuark())) {
+	goon=true;
+	int ipp(i+1);
+	int save(hepevt.nhep);
+	pystrf(ipp);
+	pyhepc(1);
+	if(hepevt.nhep<=save) { goon=false; flag=true;}
+	break;
+      }
+    }
   }
   if (pydat1.mstu[24-1]!=0) {
     Vec4D cms(0.,0.,0.,0.);
@@ -371,11 +393,16 @@ bool Lund_Interface::StringFragmentation(Blob *blob,Blob_List *bloblist,int nhep
     pydat1.mstu[24-1]=0;
     if (pydat1.mstu[23-1]<int(rpa.gen.NumberOfDicedEvents()/100) ||
 	rpa.gen.NumberOfDicedEvents()<200) {
-      msg.Error()<<"   Up to now: "<<pydat1.mstu[23-1]<<" errors, try new event."<<std::endl;
+      msg.Error()<<"   Up to now: "<<pydat1.mstu[23-1]<<" errors, retry event."<<std::endl;
       return false;
     }
     msg.Error()<<"   Up to now: "<<pydat1.mstu[23-1]<<" errors, abort the run."<<std::endl;
     THROW(critical_error,"Too many errors in lund fragmentation.");
+  }
+  if(flag) {
+    msg.Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
+	       <<"   Incomplete fragmentation."<<std::endl;
+    return false;
   }
   pydat1.mstu[70-1]=2;
   pydat1.mstu[72-1]=hepevt.nhep;

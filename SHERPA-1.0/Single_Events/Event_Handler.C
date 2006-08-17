@@ -101,7 +101,7 @@ bool Event_Handler::GenerateEvent(int mode)
   }
   bool   flag(true), retry(false), newone(false);
   double weight = 1.;
-  Blob * hardblob=NULL, * hardcopy=NULL;
+  Blob * hardblob=NULL;
   switch (mode) {
   case 0:
     CleanUpEvent();
@@ -122,33 +122,33 @@ bool Event_Handler::GenerateEvent(int mode)
 	    switch (int((*pit)->Treat(&m_blobs,weight))) {
 	      case Return_Value::Nothing :
 		//std::cout<<(*pit)->Name()<<" yields nothing : "
-		//	       <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
+		//	   <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
 		break;
 	      case Return_Value::Success : 
 		//std::cout<<(*pit)->Name()<<" yields success : "
-		//	       <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
+		//         <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
 		flag = true;
 		break;
 	      case Return_Value::Error :
 		//std::cout<<(*pit)->Name()<<" yields error : "
-		//	 <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
+		//         <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
 		return false;
 	      case Return_Value::New_Event : 
-		//std::cout<<(*pit)->Name()<<" yields new : "
-		//	 <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
 		newone = true;
 		weight = 1.;
 		Reset();
+		//std::cout<<(*pit)->Name()<<" yields new : "
+		//         <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
 		break;
 	      case Return_Value::Retry_Event : 
-		//std::cout<<(*pit)->Name()<<" yields retry : "
-		//	 <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
 		retry = true;
 		hardblob = m_blobs.FindFirst(btp::Signal_Process);
 		hardblob->SetId();
 		CleanUpEvent(hardblob);
 		hardblob->SetStatus(blob_status::internal_flag |
 				    blob_status::needs_signal);
+		//std::cout<<(*pit)->Name()<<" yields retry   : "
+		//         <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
 		break;
 	      default:
 		msg.Error()<<"Error in "<<METHOD<<":"<<std::endl
@@ -162,7 +162,6 @@ bool Event_Handler::GenerateEvent(int mode)
 	  if (retry || newone) break;
 	}
       }
-      //if (retry || newone) std::cout<<METHOD<<":"<<std::endl<<m_blobs<<std::endl;
 
       flag = true;
       while (flag && !retry && !newone) {
@@ -299,19 +298,6 @@ void Event_Handler::CleanUpEvent(Blob * blob)
     Particle::Reset();
     Flow::ResetCounter();
   }
-  else {
-    if (Blob::Counter()>1 || (Particle::Counter()>blob->NInP()+blob->NOutP())) {
-      msg.Error()<<"ERROR in "<<METHOD<<"(blob)"<<std::endl
-		 <<"   After event : "
-		 <<(Particle::Counter()-blob->NInP()-blob->NOutP())<<" / "<<(Blob::Counter()-1)
-		 <<" particles / blobs undeleted !"<<std::endl
-		 <<"   Continue and hope for the best."<<std::endl;
-    }
-    Blob::Reset(1);
-    Particle::Reset(blob->NInP()-blob->NOutP());
-    Particle::ResetCounter(blob->NInP()-blob->NOutP());
-    Flow::ResetCounter();
-  }
 }
 
 void Event_Handler::Reset()
@@ -334,7 +320,6 @@ void Event_Handler::Finish() {
   msg_Info()<<"In Event_Handler::Finish : Summarizing the run may take some time."<<std::endl;
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
     (*pit)->Finish(std::string("Results"));
-    PRINT_INFO((*pit)->Type()<<(*pit)->Name());
     (*pit)->CleanUp();
   }
   m_blobs.Clear();
@@ -351,4 +336,3 @@ void Event_Handler::Finish() {
   Particle::Reset();
   Flow::ResetCounter();
 }
-
