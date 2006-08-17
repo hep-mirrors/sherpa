@@ -128,7 +128,7 @@ void Standard_Model::ReadInFile() {
 
 
 void Standard_Model::FixEWParameters() {
-  double MW,MZ,MH,alphaQED,sin2thetaW,cos2thetaW,vev,lambdaH,GF;
+  double MW,MZ,MH,alphaQED,sin2thetaW,cos2thetaW,vev,lambdaH,GF=1.16639e-5;
   m_ewscheme = p_dataread->GetValue<int>("EW_SCHEME",0);
   switch (m_ewscheme) {
   case 1:
@@ -152,6 +152,19 @@ void Standard_Model::FixEWParameters() {
     MZ         = vev/2.*sqrt((4.*M_PI*alphaQED)*(1/sin2thetaW+1/cos2thetaW));
     MH         = p_dataread->GetValue<double>("MH",120.);
     lambdaH    = 2.*sqr(MH/vev);
+    break;
+  case 3:
+    //gmu scheme
+    MW         = Flavour(kf::W).Mass();
+    MZ         = Flavour(kf::Z).Mass();
+    GF         = p_dataread->GetValue<double>("GF",1.16639e-5);
+    sin2thetaW = 1.-sqr(MW/MZ);
+    cos2thetaW = 1.-sin2thetaW;
+    alphaQED   = sqrt(2.)*GF*sqr(MW)*sin2thetaW/M_PI;
+    MH         = Flavour(kf::h).Mass();
+    vev        = 1./(pow(2.,0.25)*sqrt(GF));
+    lambdaH    = 2.*sqr(MH/vev); 
+    break;
   default:
     // all SM parameters given explicitly
     alphaQED   = 1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
@@ -169,9 +182,9 @@ void Standard_Model::FixEWParameters() {
   aqed->SetDefault(alphaQED_default);
 
   p_functions->insert(std::make_pair(std::string("alpha_QED"),aqed));
-
-  GF = sqrt(2.)*(*aqed)(sqr(Flavour(kf::mu).PSMass()))*M_PI/(2.*sin2thetaW*sqr(MW));
-
+  
+  if (m_ewscheme!=3) GF = sqrt(2.)*(*aqed)(sqr(Flavour(kf::mu).PSMass()))*M_PI/(2.*sin2thetaW*sqr(MW));
+  
   p_constants->insert(std::make_pair(std::string("alpha_QED(0)"),alphaQED));
   p_constants->insert(std::make_pair(std::string("sin2_thetaW"), sin2thetaW));
   p_constants->insert(std::make_pair(std::string("cos2_thetaW"), cos2thetaW));
