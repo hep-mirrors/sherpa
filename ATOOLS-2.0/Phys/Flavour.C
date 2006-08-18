@@ -266,7 +266,7 @@ int Flavour::HepEvt() {
     if (kfc==kf::Chargino1)                  pdgnum = -1000024; 
     if (kfc==kf::Chargino2)                  pdgnum = -1000037; 
     
-    if (pdgnum!=-1) return (anti) ? pdgnum: -pdgnum;
+    if (pdgnum!=-1) return (anti) ? -pdgnum: pdgnum;
   }
 
   if (IsGluino())                            return 1000021;
