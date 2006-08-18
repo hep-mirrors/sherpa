@@ -11,6 +11,7 @@
 #include "Running_AlphaS.H"
 #include "MyStrStream.H"
 #include <list>
+#include <cassert>
 #include "Message.H"
 
 using namespace SHERPA;
@@ -27,7 +28,7 @@ ATOOLS::Blob_List *Lund_Interface::s_bloblist=NULL;
 PDF::ISR_Handler *Lund_Interface::s_isrhandler=NULL; 
 
 Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
-  m_path(_m_path),m_file(_m_file), m_maxtrials(1),
+  m_path(_m_path),m_file(_m_file), m_maxtrials(2),
   p_hepevt(NULL), 
   m_compress(true),m_writeout(false),
   p_phep(new double[5*4000]),
@@ -246,21 +247,26 @@ Return_Value::code Lund_Interface::Hadronize(Blob_List *bloblist)
       }
       (*blit)->SetTypeSpec("Pythia_v6.214");
 
-      bool result=false;
-      nhep = PrepareFragmentationBlob((*blit));
-      for (size_t trials=0;trials<m_maxtrials;++trials) {
-	result=StringFragmentation((*blit),bloblist,nhep);
-	if(result==false && m_maxtrials>1) {
+      Return_Value::code result=Return_Value::Nothing;
+      for(size_t trials=0; trials<m_maxtrials; ++trials) {
+	nhep = PrepareFragmentationBlob(*blit);
+	int errs=pydat1.mstu[23-1];
+	result=StringFragmentation(*blit,bloblist,nhep);
+	if(result==Return_Value::Success) break;
+	assert(result==Return_Value::Retry_Phase);
+	if(trials+1<m_maxtrials) {
 	  msg.Error()<<"Error in "<<METHOD<<"."<<endl
-		     <<"   Hadronization failed. Retry event locally."<<endl;
+		     <<"   Hadronization failed. Retry it."<<endl;
+	  pydat1.mstu[23-1]=errs;   //New try, set back error sum.
+	  continue;
 	}
-      }
-      if(result==false) {
 	msg.Error()<<"Error in "<<METHOD<<"."<<endl
 		   <<"   Hadronization failed. Retry the event."<<endl;
 	return Return_Value::Retry_Event;
       }
-      FillFragmentationBlob((*blit));
+      //Up to this point fragmentation blob remained unchanged.
+      //Therefore, could be used as the safe initial state.
+      FillFragmentationBlob(*blit);
     }
   }
   return Return_Value::Success;
@@ -355,7 +361,7 @@ int Lund_Interface::PrepareFragmentationBlob(Blob * blob)
 }
 
 
-bool Lund_Interface::StringFragmentation(Blob *blob,Blob_List *bloblist,int nhep) 
+Return_Value::code Lund_Interface::StringFragmentation(Blob *blob,Blob_List *bloblist,int nhep) 
 {
   hepevt.nevhep=0;
   hepevt.nhep=nhep;
@@ -384,29 +390,32 @@ bool Lund_Interface::StringFragmentation(Blob *blob,Blob_List *bloblist,int nhep
       }
     }
   }
-  if (pydat1.mstu[24-1]!=0) {
+  if(pydat1.mstu[24-1]!=0) {
     Vec4D cms(0.,0.,0.,0.);
     for (int i=0;i<blob->NInP();i++) cms+=blob->InParticle(i)->Momentum();
     msg.Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
 	       <<"   PYSTRF call results in error code : "<<pydat1.mstu[24-1]
-	       <<" for "<<std::endl<<(*blob)<<"  "<<cms<<", "<<cms.Abs2()<<std::endl;
+	       <<" for "<<std::endl<<(*blob)<<"  "<<cms<<", "<<cms.Abs2()
+	       <<std::endl;
     pydat1.mstu[24-1]=0;
-    if (pydat1.mstu[23-1]<int(rpa.gen.NumberOfDicedEvents()/100) ||
-	rpa.gen.NumberOfDicedEvents()<200) {
-      msg.Error()<<"   Up to now: "<<pydat1.mstu[23-1]<<" errors, retry event."<<std::endl;
-      return false;
+    if(pydat1.mstu[23-1]<int(rpa.gen.NumberOfDicedEvents()/100) ||
+       rpa.gen.NumberOfDicedEvents()<200) {
+      msg.Error()<<"   Up to now: "<<pydat1.mstu[23-1]<<" errors, retrying..."
+		 <<std::endl;
+      return Return_Value::Retry_Phase;
     }
-    msg.Error()<<"   Up to now: "<<pydat1.mstu[23-1]<<" errors, abort the run."<<std::endl;
+    msg.Error()<<"   Up to now: "<<pydat1.mstu[23-1]<<" errors, abort the run."
+	       <<std::endl;
     THROW(critical_error,"Too many errors in lund fragmentation.");
   }
   if(flag) {
     msg.Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
 	       <<"   Incomplete fragmentation."<<std::endl;
-    return false;
+    return Return_Value::Retry_Phase;
   }
   pydat1.mstu[70-1]=2;
   pydat1.mstu[72-1]=hepevt.nhep;
-  return true;
+  return Return_Value::Success;
 }
 
 void Lund_Interface::AddPartonToString(Particle *parton,int &nhep)

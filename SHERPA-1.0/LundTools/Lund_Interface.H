@@ -37,7 +37,7 @@ namespace SHERPA {
     // preparing and doing the fragmentation
     ATOOLS::Return_Value::code ExtractSinglets(ATOOLS::Blob_List *);
     int                        PrepareFragmentationBlob(ATOOLS::Blob *);
-    bool                       StringFragmentation(ATOOLS::Blob *,ATOOLS::Blob_List *,int); 
+    ATOOLS::Return_Value::code StringFragmentation(ATOOLS::Blob *,ATOOLS::Blob_List *,int); 
     // tools for extracting hadrons
     void AddPartonToString(ATOOLS::Particle *,int &);
     void FillFragmentationBlob(ATOOLS::Blob *);
