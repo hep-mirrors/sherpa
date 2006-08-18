@@ -789,7 +789,7 @@ InitDaughters(Tree * tree,Knot * mo,ATOOLS::Flavour flb,ATOOLS::Flavour flc,
     mo->right->part->SetFlav(flc);
     mo->right->part->SetInfo('F');
     mo->right->part->SetStatus(part_status::active);
-    mo->left->part->SetFinalMass(mo->right->tout);
+    mo->right->part->SetFinalMass(mo->right->tout);
     mo->right->didkin  = false;
 
     if (mo->part->Info()!='H') mo->part->SetInfo('f');
