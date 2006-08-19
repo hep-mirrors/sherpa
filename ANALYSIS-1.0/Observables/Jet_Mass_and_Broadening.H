@@ -28,7 +28,6 @@ namespace ANALYSIS {
     std::string m_key;
   public:
     Heavy_Jet_Mass(int type, double xmin, double xmax, int nbin, std::string listname);
-    Heavy_Jet_Mass(ATOOLS::Histogram_Base *, std::string listname);
     void Evaluate(const ATOOLS::Blob_List & ,double weight, int ncout);
     Primitive_Observable_Base * Copy() const;
   };
@@ -37,7 +36,6 @@ namespace ANALYSIS {
     std::string m_key;
   public:
     Light_Jet_Mass(int type, double xmin, double xmax, int nbin, std::string listname);
-    Light_Jet_Mass(ATOOLS::Histogram_Base *, std::string listname);
     void Evaluate(const ATOOLS::Blob_List & ,double weight, int ncout);
     Primitive_Observable_Base * Copy() const;
   };
@@ -46,7 +44,6 @@ namespace ANALYSIS {
     std::string m_key;
   public:
     Jet_Mass_Difference(int type, double xmin, double xmax, int nbin, std::string listname);
-    Jet_Mass_Difference(ATOOLS::Histogram_Base *, std::string listname);
     void Evaluate(const ATOOLS::Blob_List & ,double weight, int ncout);
     Primitive_Observable_Base * Copy() const;
   };
@@ -55,7 +52,6 @@ namespace ANALYSIS {
     std::string m_key;
   public:
     Single_Inclusive_Jet_Mass(int type, double xmin, double xmax, int nbin, std::string listname);
-    Single_Inclusive_Jet_Mass(ATOOLS::Histogram_Base *, std::string listname);
     void Evaluate(const ATOOLS::Blob_List & ,double weight, int ncout);
     Primitive_Observable_Base * Copy() const;
   };
@@ -64,7 +60,6 @@ namespace ANALYSIS {
     std::string m_key;
   public:
     Wide_Jet_Broadening(int type, double xmin, double xmax, int nbin, std::string listname);
-    Wide_Jet_Broadening(ATOOLS::Histogram_Base *, std::string listname);
     void Evaluate(const ATOOLS::Blob_List & ,double weight, int ncout);
     Primitive_Observable_Base * Copy() const;
   };
@@ -73,7 +68,6 @@ namespace ANALYSIS {
     std::string m_key;
   public:
     Narrow_Jet_Broadening(int type, double xmin, double xmax, int nbin, std::string listname);
-    Narrow_Jet_Broadening(ATOOLS::Histogram_Base *, std::string listname);
     void Evaluate(const ATOOLS::Blob_List & ,double weight, int ncout);
     Primitive_Observable_Base * Copy() const;
   };
@@ -82,7 +76,6 @@ namespace ANALYSIS {
     std::string m_key;
   public:
     Total_Jet_Broadening(int type, double xmin, double xmax, int nbin, std::string listname);
-    Total_Jet_Broadening(ATOOLS::Histogram_Base *, std::string listname);
     void Evaluate(const ATOOLS::Blob_List & ,double weight, int ncout);
     Primitive_Observable_Base * Copy() const;
   };
@@ -91,7 +84,6 @@ namespace ANALYSIS {
     std::string m_key;
   public:
     Jet_Broadening_Difference(int type, double xmin, double xmax, int nbin, std::string listname);
-    Jet_Broadening_Difference(ATOOLS::Histogram_Base *, std::string listname);
     void Evaluate(const ATOOLS::Blob_List & ,double weight, int ncout);
     Primitive_Observable_Base * Copy() const;
   };
@@ -100,7 +92,6 @@ namespace ANALYSIS {
     std::string m_key;
   public:
     Single_Inclusive_Jet_Broadening(int type, double xmin, double xmax, int nbin, std::string listname);
-    Single_Inclusive_Jet_Broadening(ATOOLS::Histogram_Base *, std::string listname);    
     void Evaluate(const ATOOLS::Blob_List & ,double weight, int ncout);
     Primitive_Observable_Base * Copy() const;
   };

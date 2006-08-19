@@ -59,8 +59,6 @@ void Calorimeter_Cone::Test()
   p_calorimeter->Fill(pl);
   p_calorimeter->Print();
   CalcJets();
-  msg.Error()<<"Error in "<<METHOD<<":"<<std::endl
-	     <<"   Abort the run."<<std::endl;
   abort();
 }
 

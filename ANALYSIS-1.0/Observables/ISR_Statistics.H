@@ -9,7 +9,7 @@ namespace ANALYSIS {
   class ISR_Statistics : public Primitive_Observable_Base {  
   protected:
 
-    std::vector<ATOOLS::Histogram_Base*> m_observables;
+    std::vector<ATOOLS::Histogram*> m_observables;
 
   public:
 

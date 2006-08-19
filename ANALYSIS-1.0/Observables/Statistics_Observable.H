@@ -28,8 +28,7 @@ namespace ANALYSIS {
 
   class Statistics_Observable : public Primitive_Observable_Base {  
   protected:
-    int             m_mode;
-    unsigned long   m_nevt;
+    unsigned long m_nevt;
     Statistics_Map  m_signal_process_statistics;
   public:
     Statistics_Observable(const std::string & inlistname, int mode=0);
@@ -39,6 +38,7 @@ namespace ANALYSIS {
     void Output(const std::string & pname);
 
     Primitive_Observable_Base * Copy() const;
+
   };
 
   std::ostream & operator<<(std::ostream & str, const Statistics_Data & sd);

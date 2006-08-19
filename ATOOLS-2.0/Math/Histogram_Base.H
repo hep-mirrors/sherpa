@@ -23,12 +23,10 @@ namespace ATOOLS {
     virtual void Reset()                                               =0;
     virtual void Insert(double x)                                      =0;
     virtual void Insert(double x, double weight, int ntimes)           =0;
-    virtual void Insert(std::string bin, double weight, int ntimes)    =0;
     virtual double Mean()     const                                    =0;
     virtual double Integral() const                                    =0;
     virtual double Ymax()     const                                    =0; 
-    virtual double Ymin()     const                                    =0; 
-    virtual std::string Title() const                                  =0;
+    virtual double Ymin()     const                                    =0;
 
     virtual void   InsertRange(double start, double end, double value) =0;
     virtual double LogCoeff() const                                    =0;
@@ -40,11 +38,6 @@ namespace ATOOLS {
     virtual void   Restore()                                           =0;
     virtual void   SetBin(int i, double x)                             =0;
     virtual void   Extrapolate(double x, double * ys,int mode)         =0;
-    virtual void   SetTitle(const std::string)                         =0;
-    virtual void   SetLogY()                                           =0;
-    virtual void   SetLegend(const bool,
-			     const double,const double,
-			     const double,const double)                =0;
 
     // basic access methods
     virtual int    Type()           const=0;

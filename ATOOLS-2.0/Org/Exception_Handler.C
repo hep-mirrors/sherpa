@@ -54,7 +54,6 @@ static bool s_noremove=false;
 
 bool Exception_Handler::ApproveTerminate()
 {
-  std::cout<<METHOD<<std::endl;
   static size_t inttrials=0;
   if (++inttrials>2) kill(getpid(),9);
   if (s_print) msg_Tracking()<<"Exception_Handler::ApproveTerminate(): "

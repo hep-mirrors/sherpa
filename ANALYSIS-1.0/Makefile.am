@@ -1,5 +1,5 @@
 MAKE = make
 
-SUBDIRS = Main Observables Histos
+SUBDIRS = Main Observables
 
 EXTRA_DIST    = docit Doxyfile @SVNINCLUDE@

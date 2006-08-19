@@ -53,7 +53,7 @@ Jet_Cone_Distribution::Jet_Cone_Distribution(const int linlog, const double Etcu
 					     const double Rmin, const double Rmax, 
 					     const int nbins, 
 					     Primitive_Analysis * const ana) :
-  Primitive_Observable_Base(linlog,Rmin,Rmax,nbins), 
+  Primitive_Observable_Base(linlog,Rmin,Rmax,nbins,NULL), 
   m_Etcut(Etcut),m_etamin(etamin),m_etamax(etamax)
 {
   p_ana = ana;
@@ -63,7 +63,7 @@ Jet_Cone_Distribution::Jet_Cone_Distribution(const int linlog, const double Etcu
   s1<<m_Etcut;
   s1>>etname;
   m_name = std::string("ConeNumb_")+etname;
-  double dx = (m_xmax-m_xmin)/double(Nbins());
+  double dx = (m_xmax-m_xmin)/double(m_nbins);
   for (int i=0;i<nbins;i++) {
     m_cones.push_back(new Calorimeter_Cone(Etcut,p_ana,m_xmin+i*dx));
     m_cones[i]->SetEtaRangeForJets(m_etamin,m_etamax,1);
@@ -83,7 +83,7 @@ Jet_Cone_Distribution::~Jet_Cone_Distribution()
 Primitive_Observable_Base * Jet_Cone_Distribution::Copy() const 
 {
   return new Jet_Cone_Distribution(m_type,m_Etcut,m_etamin,m_etamax,
-				   m_xmin,m_xmax,Nbins(),p_ana);
+				   m_xmin,m_xmax,m_nbins,p_ana);
 }
 
 void Jet_Cone_Distribution::EndEvaluation(double scale) 
@@ -187,7 +187,7 @@ Jet_Cone_Dependence::Jet_Cone_Dependence(const int linlog, const double Etcut,
 					 const int njetmin, const int njetmax, 
 					 const int nbins, 
 					 Primitive_Analysis * const ana) :
-  Primitive_Observable_Base(linlog,Rmin,Rmax,nbins), 
+  Primitive_Observable_Base(linlog,Rmin,Rmax,nbins,NULL), 
   m_Etcut(Etcut), m_etamin(etamin), m_etamax(etamax), m_njetmin(njetmin), m_njetmax(njetmax)
 {
   p_ana=ana;
@@ -196,7 +196,7 @@ Jet_Cone_Dependence::Jet_Cone_Dependence(const int linlog, const double Etcut,
   s1<<m_Etcut;
   s1>>etname;
   m_name = std::string("ConeDep_")+etname;
-  double dx = (m_xmax-m_xmin)/double(Nbins());
+  double dx = (m_xmax-m_xmin)/double(m_nbins);
   for (int i=0;i<nbins;i++) {
     m_cones.push_back(new Calorimeter_Cone(Etcut,p_ana,m_xmin+i*dx));
     m_cones[i]->SetEtaRangeForJets(m_etamin,m_etamax,1);
@@ -222,10 +222,10 @@ Primitive_Observable_Base * Jet_Cone_Dependence::Copy() const
 {
   /*
   return new Jet_Cone_Dependence(m_type,m_Etcut,m_xmin,m_xmax,m_etamin,m_etamax,
-				 m_njetmin,m_njetmax,Nbins(),p_ana);
+				 m_njetmin,m_njetmax,m_nbins,p_ana);
   */
   return new Jet_Cone_Dependence(m_type,m_Etcut,m_etamin,m_etamax,m_xmin,m_xmax,
-				 m_njetmin,m_njetmax,Nbins(),p_ana);
+				 m_njetmin,m_njetmax,m_nbins,p_ana);
 }
 
 void Jet_Cone_Dependence::EndEvaluation(double scale) 
@@ -342,7 +342,7 @@ Jet_Cone_Shape::Jet_Cone_Shape(const int linlog,const double Etcut, const double
 			       const double Rmin, const double Rmax,
 			       const int jetmin, const int jetmax, const int nbins, 
 			       Primitive_Analysis * const ana) :
-  Primitive_Observable_Base(linlog,Rmin,Rmax,nbins), 
+  Primitive_Observable_Base(linlog,Rmin,Rmax,nbins,NULL), 
   m_Etcut(Etcut), m_R(radius), m_etamin(etamin), m_etamax(etamax), m_jetmin(jetmin), m_jetmax(jetmax)
 {
   p_ana=ana;
@@ -377,7 +377,7 @@ Jet_Cone_Shape::~Jet_Cone_Shape()
 
 Primitive_Observable_Base * Jet_Cone_Shape::Copy() const 
 {
-  return new Jet_Cone_Shape(m_type,m_Etcut,m_R,m_etamin,m_etamax,m_xmin,m_xmax,m_jetmin,m_jetmax,Nbins(),p_ana);
+  return new Jet_Cone_Shape(m_type,m_Etcut,m_R,m_etamin,m_etamax,m_xmin,m_xmax,m_jetmin,m_jetmax,m_nbins,p_ana);
 }
 
 void Jet_Cone_Shape::Reset()

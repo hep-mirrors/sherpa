@@ -26,7 +26,6 @@ namespace ANALYSIS {
     std::string m_key;
   public:
     C_Parameter(int type, double xmin, double xmax, int nbin, std::string listname);
-    C_Parameter(ATOOLS::Histogram_Base *,std::string listname);
     void Evaluate(const ATOOLS::Blob_List & ,double weight, int ncout);
     Primitive_Observable_Base * Copy() const;
   };
@@ -35,7 +34,6 @@ namespace ANALYSIS {
     std::string m_key;
   public:
     D_Parameter(int type, double xmin, double xmax, int nbin, std::string listname);
-    D_Parameter(ATOOLS::Histogram_Base *,std::string listname);
     void Evaluate(const ATOOLS::Blob_List & ,double weight, int ncout);
     Primitive_Observable_Base * Copy() const;
   };

@@ -11,38 +11,37 @@ namespace ANALYSIS {
   protected:
     std::string m_key;
   public:
-    Event_Shapes_Observable_Base(const String_Matrix &);
-    Event_Shapes_Observable_Base(const Event_Shapes_Observable_Base *);
+    Event_Shapes_Observable_Base(int,double,double,int,const std::string & ="");
   };
 
   class Thrust : public Event_Shapes_Observable_Base {
   public:
-    Thrust(const String_Matrix &);
-    Thrust(const Thrust *);
+    Thrust(int type, double xmin, double xmax, int nbin, 
+	      const std::string & listname, const std::string & name ="Thrust");
     void Evaluate(const ATOOLS::Blob_List & ,double weight, int ncount);
     Primitive_Observable_Base * Copy() const;
   };
 
   class Major : public Event_Shapes_Observable_Base {
   public:
-    Major(const String_Matrix &);
-    Major(const Major *);
+    Major(int type, double xmin, double xmax, int nbin, 
+	      const std::string & listname, const std::string & name ="Major");
     void Evaluate(const ATOOLS::Blob_List & ,double weight, int ncount);
     Primitive_Observable_Base * Copy() const;
   };
 
   class Minor : public Event_Shapes_Observable_Base {
   public:
-    Minor(const String_Matrix &);
-    Minor(const Minor *);
+    Minor(int type, double xmin, double xmax, int nbin, 
+	      const std::string & listname, const std::string & name ="Minor");
     void Evaluate(const ATOOLS::Blob_List & ,double weight, int ncount);
     Primitive_Observable_Base * Copy() const;
   };
 
   class Oblateness : public Event_Shapes_Observable_Base {
   public:
-    Oblateness(const String_Matrix &);
-    Oblateness(const Oblateness *);
+    Oblateness(int type, double xmin, double xmax, int nbin, 
+	      const std::string & listname, const std::string & name ="Oblateness");
     void Evaluate(const ATOOLS::Blob_List & ,double weight, int ncount);
     Primitive_Observable_Base * Copy() const;
   };
@@ -51,8 +50,8 @@ namespace ANALYSIS {
   protected:
     void Evaluate(const ATOOLS::Particle_List & pl,double weight,int ncount);
   public:
-    PT_In_Thrust(const String_Matrix &);
-    PT_In_Thrust(const PT_In_Thrust *);
+    PT_In_Thrust(int type, double xmin, double xmax, int nbin, 
+	      const std::string & listname, const std::string & name ="PT_In_Thrust");
     Primitive_Observable_Base * Copy() const;
   };
 
@@ -60,15 +59,15 @@ namespace ANALYSIS {
   protected:
     void Evaluate(const ATOOLS::Particle_List & pl,double weight,int ncount);
   public:
-    PT_Out_Thrust(const String_Matrix &);
-    PT_Out_Thrust(const PT_Out_Thrust *);
+    PT_Out_Thrust(int type, double xmin, double xmax, int nbin, 
+	      const std::string & listname, const std::string & name ="PT_Out_Thrust");
     Primitive_Observable_Base * Copy() const;
   };
 
   class Eta_Thrust : public Event_Shapes_Observable_Base {
   public:
-    Eta_Thrust(const String_Matrix &);
-    Eta_Thrust(const Eta_Thrust *);
+    Eta_Thrust(int type, double xmin, double xmax, int nbin, 
+	      const std::string & listname, const std::string & name ="EtaThrust");
     void Evaluate(const ATOOLS::Blob_List & ,double weight, int ncount);
     Primitive_Observable_Base * Copy() const;
   };

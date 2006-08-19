@@ -22,7 +22,6 @@ void ISR_Statistics_Getter::PrintInfo(std::ostream &str,const size_t width) cons
 #include "ISR_Info.H"
 #include "MyStrStream.H"
 #include "Shell_Tools.H"
-#include "Histogram.H"
 
 #include <fstream>
 
@@ -105,7 +104,7 @@ void ISR_Statistics::Output(const std::string & pname) {
 
 Primitive_Observable_Base & ISR_Statistics::operator+=(const Primitive_Observable_Base & ob)
 {
-  if (m_xmin!=ob.Xmin() || m_xmax!=ob.Xmax() || Nbins()!=ob.Nbins()) {
+  if (m_xmin!=ob.Xmin() || m_xmax!=ob.Xmax() || m_nbins!=ob.Nbins()) {
     msg.Error()<<"ERROR: in ISR_Statistics::operator+=  in"<<m_name<<std::endl
 	       <<"   Continue and hope for the best."<<std::endl;
     return *this;
@@ -150,12 +149,12 @@ Sprime_Y_Distribution(const double spmin,const double spmax,const size_t spbins,
 { 
   m_xmin=spmin;
   m_xmax=spmax;
-  //m_nbins=spbins;
+  m_nbins=spbins;
   (*MYROOT::myroot)(new TH2D((ATOOLS::ToString((long int)this)+"ME").c_str(),
-			     "Sprime_Y_ME",spbins,m_xmin,m_xmax,m_ybins,m_ymin,m_ymax),
+			     "Sprime_Y_ME",m_nbins,m_xmin,m_xmax,m_ybins,m_ymin,m_ymax),
 		    "Sprime_Y_ME");
   (*MYROOT::myroot)(new TH2D((ATOOLS::ToString((long int)this)+"PS").c_str(),
-			     "Sprime_Y_PS",spbins,m_xmin,m_xmax,m_ybins,m_ymin,m_ymax),
+			     "Sprime_Y_PS",m_nbins,m_xmin,m_xmax,m_ybins,m_ymin,m_ymax),
 		    "Sprime_Y_PS");
 }
 
@@ -181,7 +180,7 @@ void Sprime_Y_Distribution::Evaluate(const Blob_List &  blobs,double weight,int 
 
 Primitive_Observable_Base * Sprime_Y_Distribution::Copy() const 
 {
-  //return new Sprime_Y_Distribution(m_xmin,m_xmax,m_nbins,m_ymin,m_ymax,m_ybins);
+  return new Sprime_Y_Distribution(m_xmin,m_xmax,m_nbins,m_ymin,m_ymax,m_ybins);
 }
 #endif
 

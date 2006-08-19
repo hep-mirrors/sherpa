@@ -7,8 +7,6 @@
 #include "Veto_Info.H"
 #include <fstream>
 #include <iostream>
-#include "Histogram.H"
-
 
 #ifdef USING__Veto_Info
 

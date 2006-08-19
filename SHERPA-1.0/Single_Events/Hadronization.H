@@ -13,9 +13,9 @@ namespace SHERPA {
   public :
     Hadronization(Beam_Remnant_Handler *,Fragmentation_Handler *);
     ~Hadronization();
-    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *, double &);
-    void                       CleanUp();
-    void                       Finish(const std::string &);
+    bool Treat(ATOOLS::Blob_List *, double &);
+    void CleanUp();
+    void Finish(const std::string &);
   };
 
 

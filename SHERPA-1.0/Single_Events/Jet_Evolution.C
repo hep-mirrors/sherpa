@@ -65,19 +65,19 @@ Jet_Evolution::~Jet_Evolution()
 }
 
 
-Return_Value::code Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
+bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 {
   PROFILE_LOCAL("Jet_Evolution::Treat");
   if (_bloblist->empty()) {
     msg.Error()<<"Potential error in Jet_Evolution::Treat."<<endl
 	       <<"   Incoming blob list contains "<<_bloblist->size()<<" entries."<<endl
 	       <<"   Continue and hope for the best."<<endl;
-    return Return_Value::Error;
+    return 0;
   }
   PertInterfaceIter piIter;
   string tag;
   bool found = 1;
-  bool hit(false);
+  bool hit   = 0;
   Blob * blob;
   while (found) {
     found = 0;
@@ -124,11 +124,10 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 	weight *= piIter->second->Weight();
       } 
     }
-    if (found) hit = true;
+    if (found) hit = 1;
     Reset();
   }
-  if (hit) return Return_Value::Success;
-  return Return_Value::Nothing;
+  return hit;
 }
 
 int Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,

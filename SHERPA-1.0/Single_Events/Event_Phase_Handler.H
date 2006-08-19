@@ -4,7 +4,6 @@
 #include "Blob_List.H"
 #include "Blob.H"
 #include "CXXFLAGS.H"
-#include "Return_Value.H"
 
 namespace SHERPA {
   struct eph {
@@ -29,15 +28,32 @@ namespace SHERPA {
     Event_Phase_Handler();
     Event_Phase_Handler(std::string);
     virtual ~Event_Phase_Handler();
-    virtual ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *,double &)=0;
-    virtual void                       CleanUp()=0;
-    virtual void                       Finish(const std::string &)=0;
+    virtual bool  Treat(ATOOLS::Blob_List *, double &) = 0;
+    virtual void  CleanUp() = 0;
+    virtual void  Finish(const std::string &) = 0;
 
-    const eph::code & Type() const          { return m_type; }
-    const std::string & Name() const        { return m_name; }
-    void  SetType(const eph::code & type)   { m_type = type; }
-    void  SetName(const std::string & name) { m_name = name; }
+    const eph::code & Type() const;
+    const std::string & Name() const;
+    void  SetType(const eph::code &);
+    void  SetName(const std::string &);
   };
+
+  inline const eph::code & Event_Phase_Handler::Type() const {
+    return m_type;
+  }
+
+  inline const std::string & Event_Phase_Handler::Name() const {
+    return m_name;
+  }
+
+  inline void Event_Phase_Handler::SetType(const eph::code & type) {
+    m_type = type;
+  }
+
+  inline void Event_Phase_Handler::SetName(const std::string & name) {
+    m_name = name;
+  }
+
   /*!
     \file 
     \brief Contains the class SHERPA::Event_Phase_Handler
@@ -50,9 +66,9 @@ namespace SHERPA {
     This is the - mainly abstract - base class for all event phases. Apart from the name and type and 
     methods to access these characteristics, and apart from constructors and destructors, this class 
     contains two central methods, namely Treat(ATOOLS::Blob_List *, double &) and CleanUp(). The 
-    former is the one through which the concrete event phases interact during the event generation. 
-    This happens by modifying individual blobs of the list or adding or removing blobs from the list. 
-    The latter method is used to reset the event phase handlers between two events.
+    former is the one through which the concrete event phases interact during the event generation. This 
+    happens by modifying individual blobs of the list or adding or removing blobs from the list. The
+    latter method is used to reset the event phase handlers between two events.
   */
   /*!
     \var std::string Event_Phase_Handler::m_type

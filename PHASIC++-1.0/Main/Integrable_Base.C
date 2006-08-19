@@ -169,7 +169,7 @@ double Integrable_Base::GetMaxEps(double epsilon)
   if (ovn<1) return m_max;
   double maxeps = m_max;
   double min = m_max*epsilon; //upper boundary for weight reduction
-  for (int i=p_whisto->Nbins()+1;i>0;i--) {
+  for (int i=p_whisto->Nbin()+1;i>0;i--) {
     if (ovn>=p_whisto->Value(i)) {
       ovn-=(int)p_whisto->Value(i);
       maxeps=exp(log(10.)*(p_whisto->Xmin()+(i-1)*p_whisto->BinSize()));

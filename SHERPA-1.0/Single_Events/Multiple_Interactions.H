@@ -25,21 +25,21 @@ namespace SHERPA {
 
     bool m_vetoed, m_diced;
 
-    ATOOLS::Return_Value::code CheckBlobList(ATOOLS::Blob_List *const bloblist);
-    bool                       VetoHardProcess(ATOOLS::Blob *const blob);
+    bool CheckBlobList(ATOOLS::Blob_List *const bloblist);
+    bool VetoHardProcess(ATOOLS::Blob *const blob);
     
   public:
 
     // constructor
-    Multiple_Interactions(MI_Handler *);
+    Multiple_Interactions(MI_Handler *mihandler);
 
     // destructor
     ~Multiple_Interactions();
 
     // member functions
-    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *, double &);
-    void                       CleanUp();
-    void                       Finish(const std::string &);
+    bool Treat(ATOOLS::Blob_List *bloblist, double &weight);
+    void CleanUp();
+    void Finish(const std::string &resultpath);
 
   }; // end of class Multiple_Interactions
 

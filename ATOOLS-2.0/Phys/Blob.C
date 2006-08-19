@@ -92,22 +92,6 @@ Blob::Blob(const Vec4D _pos, const int _id) :
   m_type(btp::Unspecified), m_typespec(std::string("none")) 
 { ++s_totalnumber; }
 
-Blob::Blob(const Blob * blob) :
-  m_position(blob->m_position), m_id(blob->m_id), m_weight(blob->m_weight),
-  m_status(blob->m_status), m_beam(blob->m_beam),
-  m_type(blob->m_type), m_typespec(blob->m_typespec),
-  m_cms_vec(blob->m_cms_vec), m_cms_boost(Poincare(m_cms_vec))
-{
-  ++s_totalnumber;
-  for (int i=0;i<blob->NInP();i++)  AddToInParticles(new Particle((*blob->ConstInParticle(i))));
-  Particle * part(NULL);
-  for (int i=0;i<blob->NOutP();i++) {
-    part = new Particle((*blob->ConstOutParticle(i)));
-    part->SetStatus(part_status::active);
-    AddToOutParticles(part);
-  }
-}
-
 Blob::~Blob() {
   DeleteOwnedParticles();
   // delete data container

@@ -275,7 +275,6 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,long ntotal, 
   for (Analysis_List::iterator it=m_subanalyses.begin();
        it!=m_subanalyses.end();++it) {
     std::string dir=resdir+OutputPath()+std::string("/")+it->first;
-    //std::cout<<"Finish Subanalysis: "<<dir<<std::endl;
     it->second->FinishAnalysis(dir,ntotal,xs);
   }
 
@@ -313,9 +312,8 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,long ntotal, 
 	  }
 	}
       }
-      if (m_mode&ANALYSIS::output_this) {
+      if (m_mode&ANALYSIS::output_this) 
 	m_observables[i]->Output(resdir+OutputPath());
-      }
     }
   }
 }

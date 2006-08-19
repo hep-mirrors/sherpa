@@ -98,118 +98,52 @@ bool Event_Handler::GenerateEvent(int mode)
                      <<ATOOLS::om::reset<<std::endl;
     kill(getpid(),SIGINT);
   }
-  bool   flag(true), retry(false);
+  bool   flag   = true;
   double weight = 1.;
   Blob * hardblob;
   switch (mode) {
   case 0:
-    CleanUpEvent();
-    ATOOLS::Vec4D::ResetAccu();
-    ATOOLS::ran.SaveStatus();
-    hardblob = new Blob();
-    hardblob->SetType(btp::Signal_Process);
-    hardblob->SetId();
-    hardblob->SetStatus(2);
-    m_blobs.push_back(hardblob);
     do {
-      flag = true;
-      while (flag && !retry) {
+      CleanUpEvent();
+      ATOOLS::Vec4D::ResetAccu();
+      ATOOLS::ran.SaveStatus();
+      hardblob = new Blob();
+      hardblob->SetType(btp::Signal_Process);
+      hardblob->SetId();
+      hardblob->SetStatus(2);
+      m_blobs.push_back(hardblob);
+      while (flag) {
 	flag = false;
 	for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
 	  if ((*pit)->Type()==eph::Perturbative) {
-	    switch (int((*pit)->Treat(&m_blobs,weight))) {
-	    case Return_Value::Nothing :
-	      break;
-	    case Return_Value::Success : 
-	      msg_Tracking()<<ATOOLS::om::blue<<"Event_Handler::GenerateEvent("<<mode<<"): "
-			    <<ATOOLS::om::reset
-			    <<"Event phase "<<ATOOLS::om::bold<<(*pit)->Name()<<ATOOLS::om::reset
-			    <<" yields "<<ATOOLS::om::bold<<true<<ATOOLS::om::reset<<std::endl;
-	      flag = true;
-	      break;
-	    case Return_Value::Error :
-	      return false;
-	    case Return_Value::Retry_Event : 
-	      {
-		retry = true;
-		Blob * hardcopy = new Blob(hardblob);
-		CleanUpEvent();
-		hardblob = hardcopy;
-		hardblob->SetStatus(2);
-		m_blobs.push_back(hardblob);
-		break;
-	      }
-	    default:
-	      msg.Error()<<"Error in "<<METHOD<<":"<<std::endl
-			 <<"  Unknown return value for 'Treat',"<<std::endl
-			 <<"  Will continue and hope for the best."<<std::endl;
-	      return false;
-	    }
+	    bool result=(*pit)->Treat(&m_blobs,weight);
 	    if (weight==0.0 &&
 		rpa.gen.NumberOfDicedEvents()==rpa.gen.NumberOfEvents()) return true;
+	    msg_Tracking()<<ATOOLS::om::blue<<"Event_Handler::GenerateEvent("<<mode<<"): "
+			  <<ATOOLS::om::reset
+			  <<"Event phase "<<ATOOLS::om::bold<<(*pit)->Name()<<ATOOLS::om::reset
+			  <<" yields "<<ATOOLS::om::bold<<result<<ATOOLS::om::reset<<std::endl;
+	    if (result) flag = true;
 	  }
-	  if (retry) break;
 	}
       }
-      flag = true;
-      while (flag&&!retry) {
+      flag=1;
+      while (flag) {
 	flag = false;
 	for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
 	  if ((*pit)->Type()==eph::Hadronization) {
-	    switch (int((*pit)->Treat(&m_blobs,weight))) {
-	    case Return_Value::Nothing :
-	      break;
-	    case Return_Value::Success : 
-	      msg_Tracking()<<ATOOLS::om::blue<<"Event_Handler::GenerateEvent("<<mode<<"): "
-			    <<ATOOLS::om::reset
-			    <<"Event phase "<<ATOOLS::om::bold<<(*pit)->Name()<<ATOOLS::om::reset
-			    <<" yields "<<ATOOLS::om::bold<<true<<ATOOLS::om::reset<<std::endl;
-	      flag = true;
-	      break;
-	    case Return_Value::Error :
-	      return false;
-	    case Return_Value::Retry_Event :
-	      {
-		retry = true;
-		Blob * hardcopy = new Blob(hardblob);
-		CleanUpEvent();
-		hardblob = hardcopy;
-		hardblob->SetStatus(2);
-		m_blobs.push_back(hardblob);
-		break;
-	      }
-	    default:
-	      msg.Error()<<"Error in "<<METHOD<<":"<<std::endl
-			 <<"  Unknown return value for 'Treat',"<<std::endl
-			 <<"  Will continue and hope for the best."<<std::endl;
-	      return false;
-	    }
+	    bool result=(*pit)->Treat(&m_blobs,weight);
+	    msg_Tracking()<<ATOOLS::om::blue<<"Event_Handler::GenerateEvent("<<mode<<"): "<<ATOOLS::om::reset
+				  <<"Event phase "<<ATOOLS::om::bold<<(*pit)->Name()<<ATOOLS::om::reset
+				  <<" yields "<<ATOOLS::om::bold<<result<<ATOOLS::om::reset<<std::endl;
+	    if (result) flag = true;
 	  }
 	}
       }
-    } while (m_blobs.empty() || 
-	     m_blobs.FindFirst(btp::Signal_Process)->NOutP()==0 ||
-	     retry);
+      flag=true;
+    } while (m_blobs.empty());
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-      if ((*pit)->Type()==eph::Analysis) {
-	switch (int((*pit)->Treat(&m_blobs,weight))) {
-	case Return_Value::Nothing :
-	  break;
-	case Return_Value::Success : 
-	  msg_Tracking()<<ATOOLS::om::blue<<"Event_Handler::GenerateEvent("<<mode<<"): "
-			<<ATOOLS::om::reset
-			<<"Event phase "<<ATOOLS::om::bold<<(*pit)->Name()<<ATOOLS::om::reset
-			<<" yields "<<ATOOLS::om::bold<<true<<ATOOLS::om::reset<<std::endl;
-	  break;
-	case Return_Value::Error :
-	  return false;
-	default:
-	  msg.Error()<<"Error in "<<METHOD<<":"<<std::endl
-		     <<"  Unknown return value for 'Treat',"<<std::endl
-		     <<"  Will continue and hope for the best."<<std::endl;
-	  return false;
-	}
-      }
+      if ((*pit)->Type()==eph::Analysis) (*pit)->Treat(&m_blobs,weight);
     }
     return true;
   case 9000:

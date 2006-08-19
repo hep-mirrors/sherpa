@@ -1,34 +1,64 @@
 #include "Three_Particle_Observables.H"
 #include "Primitive_Analysis.H"
-#include "MyStrStream.H"
 
 using namespace ANALYSIS;
-using namespace ATOOLS;
-using namespace std;
 
-#define DEFINE_GETTER_METHOD(CLASS,NAME)                                \
-  Primitive_Observable_Base *                                           \
-  NAME::operator()(const String_Matrix &parameters) const               \
-  { return new CLASS(parameters); }
+#include "MyStrStream.H"
 
-#define DEFINE_PRINT_METHOD(NAME)                                       \
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const      \
+template <class Class>
+Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
+{									
+  if (parameters.size()<1) return NULL;
+  if (parameters.size()==1) {
+    if (parameters[0].size()<7) return NULL;
+    ATOOLS::Flavour f[3];
+    for (short unsigned int i=0;i<3;++i) {
+      int kf=ATOOLS::ToType<int>(parameters[0][i]);
+      f[i]=ATOOLS::Flavour((ATOOLS::kf::code)abs(kf));
+      if (kf<0) f[i]=f[i].Bar();
+    }
+    std::string list=parameters[0].size()>7?parameters[0][7]:"Analysed";
+    return new Class(f[0],f[1],f[2],HistogramType(parameters[0][6]),
+		     ATOOLS::ToType<double>(parameters[0][3]),
+		     ATOOLS::ToType<double>(parameters[0][4]),
+		     ATOOLS::ToType<int>(parameters[0][5]),list);
+  }
+  else if (parameters.size()<7) return NULL;
+  double min=0.0, max=1.0;
+  size_t bins=100;
+  ATOOLS::Flavour f[3];
+  std::string list="Analysed", scale="Lin";
+  for (size_t i=0;i<parameters.size();++i) {
+    if (parameters[i].size()<3) continue;
+    for (short unsigned int j=0;j<3;++j) {
+      if (parameters[i][0]==std::string("FLAV")+ATOOLS::ToString(j+1)) {
+	int kf=ATOOLS::ToType<int>(parameters[i][1]);
+	f[j]=ATOOLS::Flavour((ATOOLS::kf::code)abs(kf));
+	if (kf<0) f[j]=f[j].Bar();
+      }
+    }
+    if (parameters[i][0]=="MIN") min=ATOOLS::ToType<double>(parameters[i][1]);
+    else if (parameters[i][0]=="MAX") max=ATOOLS::ToType<double>(parameters[i][1]);
+    else if (parameters[i][0]=="BINS") bins=ATOOLS::ToType<int>(parameters[i][1]);
+    else if (parameters[i][0]=="SCALE") scale=parameters[i][1];
+    else if (parameters[i][0]=="LIST") list=parameters[i][1];
+  }
+  return new Class(f[0],f[1],f[2],HistogramType(scale),min,max,bins,list);
+}									
+
+#define DEFINE_GETTER_METHOD(CLASS,NAME)				\
+  Primitive_Observable_Base *					\
+  NAME::operator()(const String_Matrix &parameters) const		\
+  { return GetObservable<CLASS>(parameters); }
+
+#define DEFINE_PRINT_METHOD(NAME)					\
+  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
   { str<<"kf1 kf2 kf3 min max bins Lin|LinErr|Log|LogErr [list]"; }
 
-#define DEFINE_CONSTRUCTOR_METHODS(CLASS,TAG)                           \
-  CLASS::CLASS(const String_Matrix & parameters) :                      \
-      Three_Particle_Observable_Base(parameters, TAG) { }               \
-                                                                        \
-  CLASS::CLASS(const CLASS * old) :                                     \
-      Three_Particle_Observable_Base(*old) { }                          \
-                                                                        \
-  Primitive_Observable_Base * CLASS::Copy() const { return new CLASS(this); }
-
-#define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)                        \
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);     \
-  DEFINE_GETTER_METHOD(CLASS,NAME)                                      \
-  DEFINE_PRINT_METHOD(NAME)                                             \
-  DEFINE_CONSTRUCTOR_METHODS(CLASS,TAG)
+#define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
+  DEFINE_GETTER_METHOD(CLASS,NAME)					\
+  DEFINE_PRINT_METHOD(NAME)
 
 #ifdef USING__ROOT
 #include "Scaling.H"
@@ -36,71 +66,22 @@ using namespace std;
 #include "TH2D.h"
 #endif 
 
-Three_Particle_Observable_Base::Three_Particle_Observable_Base(const String_Matrix & parameters,
-                                                           const std::string & obsname):
-    Primitive_Observable_Base(parameters)
+using namespace ATOOLS;
+using namespace std;
+
+Three_Particle_Observable_Base::Three_Particle_Observable_Base(const Flavour & flav1,const Flavour & flav2,
+							       const Flavour & flav3,int type,double xmin,
+							       double xmax,int nbins,const std::string & listname,
+							       const std::string & name) :
+  Primitive_Observable_Base(type,xmin,xmax,nbins,NULL), 
+  m_flav1(flav1), m_flav2(flav2), m_flav3(flav3)
 {
-  if (parameters.size()==1) {
-    if (parameters[0].size()<7) {
-      msg.Error()<<"Error in "<<METHOD<<": Not enough parameters for "
-          <<"observable "<<obsname<<" in Analysis.dat";
-      abort();
-    }
-    ATOOLS::Flavour f[3];
-    for (short unsigned int i=0;i<3;++i) {
-      int kf=ATOOLS::ToType<int>(parameters[0][i]);
-      f[i]=ATOOLS::Flavour((ATOOLS::kf::code)abs(kf));
-      if (kf<0) f[i]=f[i].Bar();
-    }
-    m_flav1 = f[0];
-    m_flav2 = f[1];
-    m_flav3 = f[2];
-
-    m_xmin  = ATOOLS::ToType<double>(parameters[0][3]);
-    m_xmax  = ATOOLS::ToType<double>(parameters[0][4]);
-    int nbins = ATOOLS::ToType<int>(parameters[0][5]);
-    m_type  = HistogramType(parameters[0][6]);
-    p_histo = new Histogram(m_type,m_xmin,m_xmax,nbins);
-
-    MyStrStream str;
-    str<<obsname<<m_flav1<<m_flav2<<m_flav3<<".dat";
-    str>>m_name;
-
-    m_listname = parameters[0].size()>7?parameters[0][7]:"Analysed";
-  }
-  else {
-    for (size_t i=0;i<parameters.size();++i) {
-      if (parameters[i].size()<2) continue;
-      for (short unsigned int j=0;j<3;++j) {
-        if (parameters[i][0]==std::string("FLAV")+ATOOLS::ToString(j+1)) {
-          int kf=ATOOLS::ToType<int>(parameters[i][1]);
-          if(j==0) m_flav1=ATOOLS::Flavour((ATOOLS::kf::code)abs(kf),kf<0);
-          if(j==1) m_flav2=ATOOLS::Flavour((ATOOLS::kf::code)abs(kf),kf<0);
-          if(j==2) m_flav3=ATOOLS::Flavour((ATOOLS::kf::code)abs(kf),kf<0);
-        }
-      }
-    }
-
-    if (m_name=="SherpaDefault") {
-      MyStrStream str;
-      str<<obsname<<m_flav1<<m_flav2<<m_flav3;
-      str>>m_name;
-    }
-    if (p_histo->Title()=="SherpaDefault") {
-      std::string title = "";
-      MyStrStream str;
-      str<<obsname<<" of "<<m_flav1<<", "<<m_flav2<<", "<<m_flav3;
-      str>>title;
-      p_histo->SetTitle(title);
-    }
-    if (m_listname=="") m_listname="Analysed";
-  }
-}
-
-Three_Particle_Observable_Base::Three_Particle_Observable_Base(const Three_Particle_Observable_Base * old) :
-    Primitive_Observable_Base(*old)
-{
-  m_flav1=old->m_flav1; m_flav2=old->m_flav2; m_flav3=old->m_flav3;
+  m_listname=listname;
+  MyStrStream str;
+  str<<name<<m_flav1<<m_flav2<<m_flav3<<".dat";
+  str>>m_name;
+  m_blobtype = std::string("");
+  m_blobdisc = false;
 }
 
 void Three_Particle_Observable_Base::Evaluate(const Particle_List & plist,double weight, int ncount)
@@ -126,15 +107,38 @@ void Three_Particle_Observable_Base::Evaluate(const Particle_List & plist,double
 
 DEFINE_OBSERVABLE_GETTER(Three_Particle_Y,Three_Particle_Y_Getter,"Y3")
 
+Three_Particle_Y::Three_Particle_Y(const Flavour & flav1,const Flavour & flav2,
+				   const Flavour & flav3,int type,double xmin,
+				   double xmax,int nbins,const std::string & listname) :
+  Three_Particle_Observable_Base(flav1,flav2,flav3,type,xmin,xmax,nbins,listname,"Y") 
+  
+{ 
+}
+
+
 void Three_Particle_Y::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const Vec4D & mom3,double weight, int ncount) 
 {    
   double y = (mom1+mom2+mom3).Y();
   p_histo->Insert(y,weight,ncount); 
-}
+} 
 
+Primitive_Observable_Base * Three_Particle_Y::Copy() const 
+{
+    return new Three_Particle_Y(m_flav1,m_flav2,m_flav3,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+    
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 DEFINE_OBSERVABLE_GETTER(Three_Particle_DEta,Three_Particle_DEta_Getter,"DEta3")
+
+Three_Particle_DEta::Three_Particle_DEta(const Flavour & flav1,const Flavour & flav2,
+					 const Flavour & flav3,int type,double xmin,
+					 double xmax,int nbins,const std::string & listname) :
+  Three_Particle_Observable_Base(flav1,flav2,flav3,type,xmin,xmax,nbins,listname,"deta3") 
+  
+{ 
+}
+
 
 void Three_Particle_DEta::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const Vec4D & mom3,double weight, int ncount) 
 {    
@@ -143,9 +147,22 @@ void Three_Particle_DEta::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const V
   p_histo->Insert(deta,weight,ncount); 
 } 
 
+Primitive_Observable_Base * Three_Particle_DEta::Copy() const 
+{
+    return new Three_Particle_DEta(m_flav1,m_flav2,m_flav3,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+    
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 DEFINE_OBSERVABLE_GETTER(Three_Particle_DPhi,Three_Particle_DPhi_Getter,"DPhi3")
+
+Three_Particle_DPhi::Three_Particle_DPhi(const Flavour & flav1,const Flavour & flav2,
+					 const Flavour & flav3,int type,double xmin,
+					 double xmax,int nbins,const std::string & listname) :
+  Three_Particle_Observable_Base(flav1,flav2,flav3,type,xmin,xmax,nbins,listname,"dphi3") 
+{ 
+}
+
 
 void Three_Particle_DPhi::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const Vec4D & mom3,double weight, int ncount) 
 { 
@@ -158,11 +175,24 @@ void Three_Particle_DPhi::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const V
   p_histo->Insert(dphi,weight,ncount); 
 } 
 
+Primitive_Observable_Base * Three_Particle_DPhi::Copy() const 
+{
+    return new Three_Particle_DPhi(m_flav1,m_flav2,m_flav3,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 DEFINE_OBSERVABLE_GETTER(Three_Particle_DR,Three_Particle_DR_Getter,"DR3")
 
-void Three_Particle_DR::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const Vec4D & mom3,double weight, int ncount)
+Three_Particle_DR::Three_Particle_DR(const Flavour & flav1,const Flavour & flav2,
+				     const Flavour & flav3,int type, double xmin, 
+				     double xmax, int nbins,const std::string & listname) :
+  Three_Particle_Observable_Base(flav1,flav2,flav3,type,xmin,xmax,nbins,listname,"dr3") 
+{
+ }
+
+
+void Three_Particle_DR::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const Vec4D & mom3,double weight, int ncount) 
 { 
   
   Vec4D mother = mom1+mom2;
@@ -177,20 +207,47 @@ void Three_Particle_DR::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const Vec
   p_histo->Insert(dr,weight,ncount); 
 } 
 
+Primitive_Observable_Base * Three_Particle_DR::Copy() const 
+{
+  return new Three_Particle_DR(m_flav1,m_flav2,m_flav3,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+
+
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 DEFINE_OBSERVABLE_GETTER(Three_Particle_3Mass2,Three_Particle_3Mass2_Getter,"3Mass2")
 
-void Three_Particle_3Mass2::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const Vec4D & mom3,double weight, int ncount)
+Three_Particle_3Mass2::Three_Particle_3Mass2(const Flavour & flav1,const Flavour & flav2,
+					 const Flavour & flav3,int type,double xmin,
+					 double xmax,int nbins,const std::string & listname) :
+  Three_Particle_Observable_Base(flav1,flav2,flav3,type,xmin,xmax,nbins,listname,"3Mass2") 
+{ 
+}
+
+
+void Three_Particle_3Mass2::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const Vec4D & mom3,double weight, int ncount) 
 { 
   
   double mass = (mom1+mom2+mom3).Abs2();
   p_histo->Insert(mass,weight,ncount); 
 } 
 
+Primitive_Observable_Base * Three_Particle_3Mass2::Copy() const 
+{
+    return new Three_Particle_3Mass2(m_flav1,m_flav2,m_flav3,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 DEFINE_OBSERVABLE_GETTER(Three_Particle_3Mass,Three_Particle_3Mass_Getter,"3Mass")
+
+Three_Particle_3Mass::Three_Particle_3Mass(const Flavour & flav1,const Flavour & flav2,
+					 const Flavour & flav3,int type,double xmin,
+					 double xmax,int nbins,const std::string & listname) :
+  Three_Particle_Observable_Base(flav1,flav2,flav3,type,xmin,xmax,nbins,listname,"3Mass") 
+{ 
+}
+
 
 void Three_Particle_3Mass::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const Vec4D & mom3,double weight, int ncount) 
 { 
@@ -198,3 +255,9 @@ void Three_Particle_3Mass::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const 
   double mass = sqrt( (mom1+mom2+mom3).Abs2() );
   p_histo->Insert(mass,weight,ncount); 
 } 
+
+Primitive_Observable_Base * Three_Particle_3Mass::Copy() const 
+{
+    return new Three_Particle_3Mass(m_flav1,m_flav2,m_flav3,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+

@@ -10,8 +10,10 @@ namespace ANALYSIS {
     void virtual Evaluate(const ATOOLS::Vec4D & mom, double weight, int ncount) = 0; 
     void virtual Evaluate(double value, double weight, int ncount); 
   public:
-    One_Particle_Observable_Base(const String_Matrix & parameters, const std::string & obsname);
-    One_Particle_Observable_Base(const One_Particle_Observable_Base*);
+    One_Particle_Observable_Base(const ATOOLS::Flavour & flav,
+				 int type, double xmin, double xmax, int nbins, 
+				 const std::string & listname,
+				 const std::string & name);
     void virtual Evaluate(int nout, const ATOOLS::Vec4D * moms,
 			  const ATOOLS::Flavour * flavs,
 			  double weight, int ncount);
@@ -22,40 +24,45 @@ namespace ANALYSIS {
   class One_Particle_ET : public One_Particle_Observable_Base {  
     void Evaluate(const ATOOLS::Vec4D & mom, double weight, int ncount); 
   public:
-    One_Particle_ET(const String_Matrix &);
-    One_Particle_ET(const One_Particle_ET * old);
+    One_Particle_ET(const ATOOLS::Flavour & flav,
+		    int type,double xmin,double xmax,int nbins,
+		    const std::string & listname=std::string(""));
     Primitive_Observable_Base * Copy() const;
   };
 
   class One_Particle_PT : public One_Particle_Observable_Base {  
     void Evaluate(const ATOOLS::Vec4D & mom, double weight, int ncount); 
   public:
-    One_Particle_PT(const String_Matrix &);
-    One_Particle_PT(const One_Particle_PT * old);
+    One_Particle_PT(const ATOOLS::Flavour & flav,
+		    int type,double xmin,double xmax,int nbins,
+		    const std::string & listname=std::string(""));
     Primitive_Observable_Base * Copy() const;
   };
 
   class One_Particle_Eta : public One_Particle_Observable_Base {  
     void Evaluate(const ATOOLS::Vec4D & mom, double weight, int ncount); 
   public:
-    One_Particle_Eta(const String_Matrix &);
-    One_Particle_Eta(const One_Particle_Eta * old);
+    One_Particle_Eta(const ATOOLS::Flavour & flav,
+		     int type,double xmin,double xmax,int nbins,
+		     const std::string & listname=std::string(""));
     Primitive_Observable_Base * Copy() const;
   };
 
   class One_Particle_E : public One_Particle_Observable_Base {  
     void Evaluate(const ATOOLS::Vec4D & mom, double weight, int ncount); 
   public:
-    One_Particle_E(const String_Matrix &);
-    One_Particle_E(const One_Particle_E * old);
+    One_Particle_E(const ATOOLS::Flavour & flav,
+		   int type,double xmin,double xmax,int nbins,
+		   const std::string & listname=std::string(""));
     Primitive_Observable_Base * Copy() const;
   };
 
   class One_Particle_BeamAngle : public One_Particle_Observable_Base {  
     void Evaluate(const ATOOLS::Vec4D & mom, double weight, int ncount); 
   public:
-    One_Particle_BeamAngle(const String_Matrix &);
-    One_Particle_BeamAngle(const One_Particle_BeamAngle * old);
+    One_Particle_BeamAngle(const ATOOLS::Flavour & flav,
+		   int type,double xmin,double xmax,int nbins,
+		   const std::string & listname=std::string(""));
     Primitive_Observable_Base * Copy() const;
   };
 
@@ -64,8 +71,9 @@ namespace ANALYSIS {
   class One_Particle_EVis : public One_Particle_Observable_Base {  
     void Evaluate(const ATOOLS::Vec4D & mom, double weight, int ncount); 
   public:
-    One_Particle_EVis(const String_Matrix &);
-    One_Particle_EVis(const One_Particle_EVis * old);
+    One_Particle_EVis(const ATOOLS::Flavour & flav,
+		      int type,double xmin,double xmax,int nbins,
+		      const std::string & listname=std::string(""));
     Primitive_Observable_Base * Copy() const;
     void Evaluate(int nout, const ATOOLS::Vec4D * moms,
 		  const ATOOLS::Flavour * flavs,
@@ -79,24 +87,27 @@ namespace ANALYSIS {
   class One_Particle_Px : public One_Particle_Observable_Base {  
     void Evaluate(const ATOOLS::Vec4D & mom, double weight, int ncount); 
   public:
-    One_Particle_Px(const String_Matrix &);
-    One_Particle_Px(const One_Particle_Px * old);
+    One_Particle_Px(const ATOOLS::Flavour & flav,
+		    int type,double xmin,double xmax,int nbins,
+		    const std::string & listname=std::string(""));
     Primitive_Observable_Base * Copy() const;
   };
 
   class One_Particle_Py : public One_Particle_Observable_Base {  
     void Evaluate(const ATOOLS::Vec4D & mom, double weight, int ncount); 
   public:
-    One_Particle_Py(const String_Matrix &);
-    One_Particle_Py(const One_Particle_Py * old);
+    One_Particle_Py(const ATOOLS::Flavour & flav,
+		    int type,double xmin,double xmax,int nbins,
+		    const std::string & listname=std::string(""));
     Primitive_Observable_Base * Copy() const;
   };
 
   class One_Particle_Pz : public One_Particle_Observable_Base {  
     void Evaluate(const ATOOLS::Vec4D & mom, double weight, int ncount); 
   public:
-    One_Particle_Pz(const String_Matrix &);
-    One_Particle_Pz(const One_Particle_Pz * old);
+    One_Particle_Pz(const ATOOLS::Flavour & flav,
+		    int type,double xmin,double xmax,int nbins,
+		    const std::string & listname=std::string(""));
     Primitive_Observable_Base * Copy() const;
   };
 

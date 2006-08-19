@@ -7,31 +7,32 @@ using namespace std;
 
 
 
-EvtReadin_Phase::EvtReadin_Phase(Input_Output_Handler * iohandler) :
-  p_iohandler(iohandler), p_evtreader(NULL), m_path("."), m_read(false)
+EvtReadin_Phase::EvtReadin_Phase(Input_Output_Handler * _iohandler) :
+  p_iohandler(_iohandler), p_evtreader(NULL), m_path(".")
 {
   m_type = eph::Read_In;
 }    
 
-EvtReadin_Phase::EvtReadin_Phase(Event_Reader * evtreader) :
-  p_iohandler(NULL), p_evtreader(evtreader), m_path(evtreader->GetPath())
+EvtReadin_Phase::EvtReadin_Phase(Event_Reader * _evtreader) :
+  p_iohandler(NULL), p_evtreader(_evtreader), m_path(_evtreader->GetPath())
 {
   m_type = eph::Read_In;
 }    
 
-Return_Value::code EvtReadin_Phase::Treat(ATOOLS::Blob_List * bloblist, 
-					  double & weight) 
+bool EvtReadin_Phase::Treat(ATOOLS::Blob_List * _bloblist, double & weight) 
 {
   if (!m_read) {
-    if (p_iohandler) p_iohandler->InputFromFormat(bloblist);
+    if (p_iohandler) {
+      p_iohandler->InputFromFormat(_bloblist);
+      //weight = p_iohandler->Weight();
+    }
     if (p_evtreader) {
-      p_evtreader->FillBlobs(bloblist);
+      p_evtreader->FillBlobs(_bloblist);
       weight = p_evtreader->Weight();
     }
     m_read = true;
-    return Return_Value::Success;
   }
-  return Return_Value::Nothing;
+  return (!m_read);
 }
 
 

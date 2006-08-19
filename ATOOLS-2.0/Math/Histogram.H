@@ -1,11 +1,12 @@
 #ifndef Histogram_H
 #define Histogram_H
 
-#include "Histogram_Base.H"
+#include <string>
+
 
 namespace ATOOLS {
 
-  class Histogram : public Histogram_Base {
+  class Histogram {
   private :
     int        m_type, m_nbin;
     double     m_lower, m_upper;
@@ -19,14 +20,12 @@ namespace ATOOLS {
     int        m_logarithmic;
   public :
     Histogram(int type,double xmin, double xmax, int nbins);
-    Histogram(const Root_Histogram *);
     Histogram(const Histogram *);
     Histogram(const std::string &);
     ~Histogram();
     void Reset();
     void Insert(double x);
     void Insert(double x, double weight, int =1);
-    void Insert(std::string bin, double weight, int ntimes) {}
     void InsertRange(double start, double end, double value);
     void Scale(double factor);
     void Output();
@@ -40,29 +39,22 @@ namespace ATOOLS {
     inline void SetFills(long int fills) {  m_fills=fills; }
 
     // basic access methods
-    int    Type()         const { return m_type; }
-    int    Depth()        const { return m_depth; }
-    int    Nbins()        const { return m_nbin-2; }
-    double Xmin()         const { return m_lower; }
-    double Xmax()         const { return m_upper; }
-    double Value(int i)   const { return m_yvalues[i]; }
-    double Fills()        const { return m_fills; }
-    double BinSize(int=1) const { return m_binsize; }
+    int Type() { return m_type; }
+    int Depth() { return m_depth; }
+    int    Nbin() const { return m_nbin-2; }
+    double Xmin() const { return m_lower; }
+    double Xmax() const { return m_upper; }
+    double Value(int i) const { return m_yvalues[i]; }
+    double Fills() const { return m_fills; }
+    double BinSize() const { return m_binsize; }
 
     double Integral() const;
     double Ymax() const;
     double Ymin() const;
     double LogCoeff() const;
 
-    inline void   SetTitle(const std::string) {}
-    inline std::string Title() const { return std::string(""); }
-    inline void   SetLogY() {}
-    inline void   SetLegend(const bool,
-			    const double,const double,
-			    const double,const double) {}
 
     Histogram & operator+=(const Histogram & histo);
-    Histogram & operator+=(const Root_Histogram & histo);
   };
 
 
