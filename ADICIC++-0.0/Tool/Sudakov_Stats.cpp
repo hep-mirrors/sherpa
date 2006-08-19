@@ -1,5 +1,5 @@
 //bof
-//Version: 4 ADICIC++-0.0/2006/08/13
+//Version: 4 ADICIC++-0.0/2006/08/19
 
 //Implementation of Sudakov_Stats.hpp.
 
@@ -29,10 +29,12 @@ const size_t Sudakov_Stats::s_mode=1;
 
 
 
-template<> double Sudakov_Stats::CalcEstimate<0>(const size_t, const double&);
-template<> double Sudakov_Stats::CalcEstimate<1>(const size_t, const double&);
-template<> double Sudakov_Stats::CalcEstimate<2>(const size_t, const double&);
-template<> double Sudakov_Stats::CalcEstimate<3>(const size_t, const double&);
+namespace ADICIC {
+  template<> double Sudakov_Stats::CalcEstimate<0>(const size_t, const double&);
+  template<> double Sudakov_Stats::CalcEstimate<1>(const size_t, const double&);
+  template<> double Sudakov_Stats::CalcEstimate<2>(const size_t, const double&);
+  template<> double Sudakov_Stats::CalcEstimate<3>(const size_t, const double&);
+}
 
 
 
@@ -161,30 +163,31 @@ double Sudakov_Stats::CalcEstimate(const size_t dx, const double& resort) {
 }
 
 
-
-template<>
-double Sudakov_Stats::CalcEstimate<0>(const size_t dx, const double& resort) {
-  return (entries[0][dx]>21.0 ? 2*wgtsum[0][dx]/entries[0][dx] : resort);
-}
-template<>
-double Sudakov_Stats::CalcEstimate<1>(const size_t dx, const double& resort) {
-  return (entries[0][dx]>21.0 ?
-	  wgtsum[0][dx]/entries[0][dx] +
-	  (name.find("GQ")!=string::npos ? 2.2 :
-	   name.find("GG")!=string::npos ? 1.7 : 1.0) *
-	  2.2*sqrt(wgtsum[1][dx]/(entries[0][dx]-1)) :
-	  resort);
-}
-template<>
-double Sudakov_Stats::CalcEstimate<2>(const size_t dx, const double& resort) {
-  return (entries[2][dx]>16.0 ? 1.04*wgtsum[2][dx]/entries[2][dx] : resort);
-}
-template<>
-double Sudakov_Stats::CalcEstimate<3>(const size_t dx, const double& resort) {
-  //return (entries[3][dx]>3.0 ? wgtsum[3][dx] : resort);
-  static double b=8; static double logb=std::log10(b);
-  return (entries[3][dx]>3.0 ?
-	  logb*wgtsum[3][dx]/std::log10(b+wgtsum[3][dx]) : resort);
+namespace ADICIC {
+  template<>
+  double Sudakov_Stats::CalcEstimate<0>(const size_t dx, const double& resort) {
+    return (entries[0][dx]>21.0 ? 2*wgtsum[0][dx]/entries[0][dx] : resort);
+  }
+  template<>
+  double Sudakov_Stats::CalcEstimate<1>(const size_t dx, const double& resort) {
+    return (entries[0][dx]>21.0 ?
+	    wgtsum[0][dx]/entries[0][dx] +
+	    (name.find("GQ")!=string::npos ? 2.2 :
+	     name.find("GG")!=string::npos ? 1.7 : 1.0) *
+	    2.2*sqrt(wgtsum[1][dx]/(entries[0][dx]-1)) :
+	    resort);
+  }
+  template<>
+  double Sudakov_Stats::CalcEstimate<2>(const size_t dx, const double& resort) {
+    return (entries[2][dx]>16.0 ? 1.04*wgtsum[2][dx]/entries[2][dx] : resort);
+  }
+  template<>
+  double Sudakov_Stats::CalcEstimate<3>(const size_t dx, const double& resort) {
+    //return (entries[3][dx]>3.0 ? wgtsum[3][dx] : resort);
+    static double b=8; static double logb=std::log10(b);
+    return (entries[3][dx]>3.0 ?
+	    logb*wgtsum[3][dx]/std::log10(b+wgtsum[3][dx]) : resort);
+  }
 }
 
 
