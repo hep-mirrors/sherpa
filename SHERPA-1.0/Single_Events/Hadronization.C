@@ -1,4 +1,5 @@
 #include "Hadronization.H"
+#include "Message.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;

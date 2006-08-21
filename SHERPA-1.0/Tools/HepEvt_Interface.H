@@ -1,15 +1,16 @@
 #ifndef HepEvt_Interface_H
 #define HepEvt_Interface_H
 
-#include "Particle_List.H"
-#include "Particle.H"
-#include "Blob_List.H"
-#include "Blob.H"
-#include "Flavour.H"
-#include "Vector.H"
 #include "Message.H"
+#include <map>
+#include "Particle.H"
 
 namespace ATOOLS {
+  class Blob;
+  class Blob_List;
+}
+
+namespace SHERPA {
   struct gtp {
     enum code {
       Unspecified  = 0,
@@ -18,7 +19,7 @@ namespace ATOOLS {
       Pythia       = 3
     };
   };
-  typedef std::map<int,std::pair<Particle *,bool> > Translation_Map;
+  typedef std::map<int,std::pair<ATOOLS::Particle *,bool> > Translation_Map;
 
   class HepEvt_Interface {
     bool            m_hadronized;
@@ -103,7 +104,7 @@ namespace ATOOLS {
 
     std::ofstream * GetOutStream() { return p_outstream; }
     void ChangeOutStream(std::string &,long int=-1);
-    void PrintEvent(const int mode=1, std::ostream& ostr=msg.Out(),
+    void PrintEvent(const int mode=1, std::ostream& ostr=ATOOLS::msg.Out(),
                     const int nhep=0);
 
     bool Sherpa2HepEvt(ATOOLS::Blob_List * const);

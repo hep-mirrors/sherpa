@@ -1,15 +1,23 @@
 #ifndef Lund_Interface_H
 #define Lund_Interface_H
 
-#include "HepEvt_Interface.H"
-#include "Particle_List.H"
-#include "Blob_List.H"
-#include "ISR_Handler.H"
+#include "Flavour.H"
 #include "Return_Value.H"
 #include <list>
 #include <map>
 
+namespace ATOOLS {
+  class Blob;
+  class Blob_List;
+  class Particle;
+}
+
+namespace PDF {
+  class ISR_Handler;
+}
+
 namespace SHERPA {
+  class HepEvt_Interface;
 
   class Lund_Interface {
   private:
@@ -18,7 +26,7 @@ namespace SHERPA {
     std::string m_path, m_file, m_outfile;
     size_t m_maxtrials;
 
-    ATOOLS::HepEvt_Interface *p_hepevt;
+    HepEvt_Interface *p_hepevt;
     static PDF::ISR_Handler  *s_isrhandler;
 
     long int m_events, m_curfile, m_evtsperfile;
@@ -62,6 +70,8 @@ namespace SHERPA {
     inline static bool ExportPDF() { return s_exportpdf; }
 
     void SwitchOfDecays(ATOOLS::kf::code kfc);
+    void SetAllStable();
+    void SwitchOffMassSmearing();
   };// end of class Lund_Interface
 
   /*!
@@ -73,28 +83,32 @@ namespace SHERPA {
     \brief Tools for calling Pythia routines
     */
   /*!
-    \fn Lund_Interface::PerformDecay( ATOOLS::Particle * part, ATOOLS::Blob_List * blob_list, ATOOLS::Particle_List * part_list )
-    \brief Performs the decay of the particle <var>part</var>
+    \fn Lund_Interface::PerformDecay( ATOOLS::Blob * )
+    \brief Performs the decay of the incoming particle of <var>blob</var>.
 
-    This is the main method for the decay of the particle <var>part</var>
-    -# It choses a decay channel  and its kinemtaic by calling Pythia common blocks
-    -# A new blob is created.
-    -# Treats every daughter self-recursively.
+    This is the main method for the decay of <var>blob</var>. Before decaying
+    the blob, it checks a few conditions:
+    -# blob_status::needs_hadrondecays (otherwise Return_Value::Error)
+    -# 1 incoming, active particle (otherwise Return_Value::Error)
+    -# mass of the incoming particle: peak-w_cut \< m* \< peak+w_cut where peak
+       and w_cut are determined by \c PYDAT2/PMAS(KC,1) and \c PYDAT2/PMAS(KC,3)
+       (otherwise Return_Value::Retry_Method)
+    .
+
+    If all these conditions are met, the decay is performed:
+    -# the in-particle is set to unstable in the Pythia common block
+    -# Pythia's \c PYDECY() routine is called for this decayer
+    -# the resulting event is filled back into the blob
+    -# the in-particle is set back to stable in Pythia
     .
     */
   /*!
     \fn Lund_Interface::SwitchOfDecays(ATOOLS::kf::code kfc)
     \brief Sets the particle kfc stable
 
-    This method tells Pythia to set the particle <var>kfc</var> stable.
-    */
-  /*!
-    \fn Lund_Interface::FillPrimaryTauInBlob(int,ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist, ATOOLS::Particle_List *pl=NULL)
-    \brief Reconstructs the tau-lepton and pushs it through the Blob
-
-    This method became necessery for the implementation of tau decays into HADRONS.
-    Basically, it pushs a (anti-)tau through the Fragmentation blob such that it can be treated
-    by Hadron_Decays::Treat.
+    This method tells Pythia to set the particle <var>kfc</var> stable. Might
+    be obsolete, because the hadron decay handler will call the method
+    SetAllStable.
     */
   /*!
     \fn Lund_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist, ATOOLS::Particle_List *pl=NULL)

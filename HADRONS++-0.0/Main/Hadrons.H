@@ -6,22 +6,25 @@
 #define USING__Hadrons
 #endif
 
-#include "Decay_Table_Reader.H"
-#include "Decay_Table.H"
 #include <string>
 #include <map>
-#include "Vector.H"
-#include "Hadron_Decay_Channel.H"
-#include "Particle.H"
-#include "Particle_List.H"
-#include "Blob_List.H"
-#include "Spin_Density_Matrix.H"
-#include "Spin_Correlation_Tensor.H"
+#include "Flavour.H"
+#include "Return_Value.H"
+#include "Decay_Table_Reader.H"
+#include "HD_ME_Base.H"
 
-
-using namespace ATOOLS;
+namespace ATOOLS {
+  class Decay_Table;
+  class Vec4D;
+  class Particle;
+  class Particle_List;
+  class Spin_Density_Matrix;
+  class Blob;
+  class Blob_List;
+}
 
 namespace HADRONS {
+  class Hadron_Decay_Channel;
   
   class Hadrons {
 
@@ -45,19 +48,20 @@ namespace HADRONS {
         std::string _file=std::string("HadronDecays.dat"),
         std::string _constfile=std::string("HadronConstants.dat") );
 	
-	bool                   FindDecay( const Flavour & );
-	Hadron_Decay_Channel * ChooseDecayChannel();
-	void                   ChooseDecayKinematics( Vec4D * _p, 
+    bool                   FindDecay( const ATOOLS::Flavour & );
+    Hadron_Decay_Channel * ChooseDecayChannel();
+    void                   ChooseDecayKinematics( ATOOLS::Vec4D * _p,
                                                   Hadron_Decay_Channel * _hdc,
                                                   ATOOLS::Spin_Density_Matrix * sigma );
-	Spin_Density_Matrix    PerformDecay( Particle * part, 
-		                                 Blob_List * blob_list, 
-		                                 Particle_List * part_list,
-                                         ATOOLS::Spin_Density_Matrix * sigma );
+    ATOOLS::Return_Value::code     PerformSingleDecay( ATOOLS::Blob* blob );
+    ATOOLS::Spin_Density_Matrix    PerformDecay( ATOOLS::Particle * part,
+                                                 ATOOLS::Blob_List * blob_list, 
+                                                 ATOOLS::Particle_List * part_list,
+                                                 ATOOLS::Spin_Density_Matrix * sigma );
 
-	std::map<ATOOLS::kf::code,ATOOLS::Decay_Table *> * GetDecayMap() { return p_decaymap; }
+    std::map<ATOOLS::kf::code,ATOOLS::Decay_Table *> * GetDecayMap() { return p_decaymap; }
 
-	void CreateBookletNow();
+    void CreateBookletNow();
   }; // end of class Hadrons
   
   /*!
@@ -192,6 +196,26 @@ namespace HADRONS {
         - Hadrons::PerformDecay is called self-recursively
         - Spin correlation algorithm is fully implemented (see hep-ph/0110108)
         .
+    .
+    */
+  /*!
+    \fn Hadrons::PerformSingleDecay( ATOOLS::Blob * )
+    \brief Performs the decay of the incoming particle of <var>blob</var>.
+
+    This is the main method for the decay of <var>blob</var>. Before decaying
+    the blob, it checks a few conditions:
+    -# blob_status::needs_hadrondecays (otherwise Return_Value::Error)
+    -# 1 incoming, active particle (otherwise Return_Value::Error)
+
+    If all these conditions are met, the decay is performed:
+    -# It choses a decay channel by calling Hadrons::ChooseDecayChannel.
+    -# If this channel has the obtion \c NO_ANTI
+       (Hadron_Decay_Channel::m_fulldecay) and the decaying particle is an
+       anti-particle the method does not continue.
+    -# if the (offshell) mass of the incoming particle is too small for the
+       chosen decaychannel, it returns Return_Value::Retry_Method.
+    -# The kinematics of the daughters are determined by
+       Hadrons::ChooseDecayKinematics.
     .
     */
 

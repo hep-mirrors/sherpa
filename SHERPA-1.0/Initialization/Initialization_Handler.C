@@ -21,6 +21,10 @@
 
 #include "Spin_Correlation_Tensor.H"
 
+#ifdef USING__Hadrons
+#include "Hadrons.H"
+#endif
+
 
 using namespace SHERPA;
 using namespace MODEL;
@@ -478,7 +482,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
     hdhandler              = new Hadron_Decay_Handler(new HADRONS::Hadrons(decaypath,decayfile,decayconstfile));
     hdhandler->EraseTreated(UnstableHadrons);
     if (UnstableHadrons->empty()) needextra = false;
-    m_hdhandlers["Sherpa"] = hdhandler;
+    m_hdhandlers["Hadrons"] = hdhandler;
   }
 #endif
   if ((decmodel==string("Lund") || needextra) ) {

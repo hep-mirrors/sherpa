@@ -74,10 +74,10 @@ namespace ATOOLS {
       ostr<<**part<<std::endl;
     }
     if (bl.m_datacontainer.size()>0) {
-      msg.Out()<<"Data_Container:"<<std::endl;
+      ostr<<"Data_Container:"<<std::endl;
       for (String_BlobDataBase_Map::const_iterator it=bl.m_datacontainer.begin();
 	   it!=bl.m_datacontainer.end(); ++it) {
-	msg.Out()<<"   * "<<it->first<<" ("<<*(it->second)<<")"<<std::endl;
+	ostr<<"   * "<<it->first<<" ("<<*(it->second)<<")"<<std::endl;
       }
     }
     ostr.setf(flags);
@@ -337,17 +337,24 @@ void Blob::DeleteOwnedParticles() {
   m_outparticles.clear();
 }
 
-Vec4D Blob::CheckMomentumConservation() {
+Vec4D Blob::CheckMomentumConservation() const {
   Vec4D sump = Vec4D(0.,0.,0.,0.);
-  for (Particle_Vector::iterator part = m_inparticles.begin();
+  for (Particle_Vector::const_iterator part = m_inparticles.begin();
        part != m_inparticles.end(); ++part) {
     sump = sump + (*part)->Momentum();
   }
-  for (Particle_Vector::iterator part = m_outparticles.begin();
+  for (Particle_Vector::const_iterator part = m_outparticles.begin();
        part != m_outparticles.end(); ++part) {
     sump = sump + (-1.)*((*part)->Momentum());
   }
   return sump;
+}
+
+void Blob::Boost(Poincare boost) {
+  for (int i=0;i<NInP();i++)
+    InParticle(i)->SetMomentum(boost*InParticle(i)->Momentum());
+  for (int i=0;i<NOutP();i++)
+    OutParticle(i)->SetMomentum(boost*OutParticle(i)->Momentum());
 }
 
 void Blob::BoostInCMS() {

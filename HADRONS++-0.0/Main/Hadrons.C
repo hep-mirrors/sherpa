@@ -11,6 +11,13 @@
 #include <utility>
 #include <algorithm>
 #include "XYZFuncs.H"
+#include "Decay_Table.H"
+#include "Vector.H"
+#include "Particle.H"
+#include "Particle_List.H"
+#include "Spin_Density_Matrix.H"
+#include "Spin_Correlation_Tensor.H"
+#include "Blob_List.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -127,6 +134,82 @@ void Hadrons::ChooseDecayKinematics(
 //  f<<trials<<endl;
 }
 
+Return_Value::code Hadrons::PerformSingleDecay( Blob* blob )
+{
+  if (!blob->Has(blob_status::needs_hadrondecays) ||
+      blob->NInP()!=1 ||
+      blob->InParticle(0)->Status()!=part_status::active)
+  {
+    msg.Error()<<METHOD<<" Blob or particle have wrong status."<<endl;
+    return Return_Value::Error;
+  }
+  Particle* inpart = blob->InParticle(0);
+  if( inpart->Flav().IsStable() || !FindDecay(inpart->Flav()) ) {
+    return Return_Value::Nothing;
+  }
+
+  // choose decay channel or use the one chosen before (in case of Retry_Method)
+  Blob_Data_Base* data = (*blob)["hdc"];
+  Hadron_Decay_Channel * hdc=NULL;
+  if(data) {
+    hdc = data->Get<Hadron_Decay_Channel*>();
+  }
+  else {
+    delete data; data=NULL;
+    hdc = ChooseDecayChannel();
+    blob->AddData("hdc",new Blob_Data<Hadron_Decay_Channel*>(hdc));
+  }
+
+  if( (inpart->Flav().IsAnti()) && !(hdc->FullDecay()&1) ) {
+    return Return_Value::Nothing;
+  }
+
+  FlavourSet       daughters = hdc->DecayChannel()->GetDecayProducts();
+  const int                n = hdc->DecayChannel()->NumberOfDecayProducts()+1;
+
+  FlSetConstIter dit;                                                                   // Iterator
+  int i(0);
+  double total_mass=0.0;
+  vector<pair<Flavour,int> > daughters_pair;
+  for( dit = daughters.begin(); dit != daughters.end(); dit++ ) {
+    i++;
+    daughters_pair.push_back( pair<Flavour,int>( (*dit), i ) );
+    total_mass+=dit->PSMass();
+  }
+  if( inpart->FinalMass() < total_mass ) {
+    msg.Debugging()<<METHOD<<" not enough mass m="<<inpart->FinalMass()
+      <<" for decaychannel "<< hdc->Name()<<" (m="<<total_mass<<"). Retrying..."<<endl;
+    return Return_Value::Retry_Method;
+  }
+
+  // choose a kinematics that corresponds to the ME kinematic distribution
+  Vec4D mom[n];
+  mom[0] = inpart->Momentum();
+  if( n>2 ) ChooseDecayKinematics( mom, hdc, NULL );
+  else      {
+    mom[1] = mom[0];
+  }
+
+  // add daughters to blob
+  i=1;
+  Vec4D momentum; Flavour flav; Particle* particle=NULL;
+  for( FlavourSet::iterator dpit = daughters.begin(); dpit != daughters.end(); dpit++ ) {
+    momentum = mom[i];
+    flav = (*dpit);
+    if( inpart->Flav().IsAnti() ) flav = flav.Bar();
+    particle = new Particle( 0, flav, momentum );
+    particle->SetStatus(part_status::active);
+    particle->SetInfo('D');
+    blob->AddToOutParticles( particle );
+    i++;
+  }
+
+  if( inpart->Info() == 'P' ) inpart->SetInfo('p');
+  if( inpart->Info() == 'D' ) inpart->SetInfo('d');
+  return Return_Value::Success;
+}
+
+  
 Spin_Density_Matrix Hadrons::PerformDecay( 
     Particle            * part, 
     Blob_List           * blob_list, 
@@ -273,9 +356,9 @@ void Hadrons::ReadInConstants()
   vector<vector<string> > constants;
   reader.SetMatrixType(mtc::transposed);
   if(!reader.MatrixFromFile(constants)) {
-    msg.Out()<<"Warning! The file "<<m_path<<m_constfile<<" does not exist"<<endl
+    msg.Error()<<"Warning! The file "<<m_path<<m_constfile<<" does not exist"<<endl
              <<"     or has some syntax error."<<endl;
-    msg.Out()<<"     Will ignore it and hope for the best."<<endl;     
+    msg.Error()<<"     Will ignore it and hope for the best."<<endl;
     return;
   }
 
@@ -329,22 +412,22 @@ Decay_Table * Hadrons::InitialiseOneDecayTable(vector<string> line)
   string lcpath (line[1]);      // path of decay files
   Decay_Table_Reader * dtreader = new Decay_Table_Reader(m_path+lcpath,line[2]);
   if (dtreader->FillDecayTable(dt)>0) {     // if at least one channel defined
-    msg.Out()<<om::blue<<"Found "<<dt->NumberOfDecayChannels()<<" decay channels for "<<dt->Flav()<<om::reset<<endl;
+    msg.Tracking()<<om::blue<<"Found "<<dt->NumberOfDecayChannels()<<" decay channels for "<<dt->Flav()<<om::reset<<endl;
     dtreader->FillInMatrixElementsAndPS(dt,p_channelmap,m_md0);
     if( msg.LevelIsInfo() ) {
-      msg.Info()<<"Initialised a new decay table : "<<endl;
-      msg.Info()<<"(Using information given in .dat files, such as BR, width, ...)"<<endl;
-      dt->Output();
-      msg.Info()<<"Calculated decay widths using implemented models :"<<endl
+      msg.Tracking()<<"Initialised a new decay table : "<<endl;
+      msg.Tracking()<<"(Using information given in .dat files, such as BR, width, ...)"<<endl;
+      if(msg.LevelIsTracking()) dt->Output();
+      msg.Tracking()<<"Calculated decay widths using implemented models :"<<endl
         <<"(only for information; they are NOT used for the simulation)"<<endl;
       for (int i=0;i<dt->NumberOfDecayChannels();i++) {			
-        msg.Info()
+        msg.Tracking()
           <<(*p_channelmap)[dt->GetDecayChannel(i)]->ChannelName()<<" : "
           <<(*p_channelmap)[dt->GetDecayChannel(i)]->GetPS()->Result()<<" ("
           <<(*p_channelmap)[dt->GetDecayChannel(i)]->GetPS()->RelError()<<" %)"
           <<" GeV"<<endl;
       }
-      msg.Info()<<endl;
+      msg.Tracking()<<endl;
     }
   }
   else { 

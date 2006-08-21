@@ -3,12 +3,14 @@
 #include "Run_Parameter.H"
 #include "MyStrStream.H"
 #include "Exception.H"
-
+#include "Blob_List.H"
+#include "Blob.H"
 
 #include <iomanip>
 #include <stdio.h>
 
 using namespace ATOOLS;
+using namespace SHERPA;
 using namespace std;
 
 HepEvt_Interface::HepEvt_Interface(int _generator) : 

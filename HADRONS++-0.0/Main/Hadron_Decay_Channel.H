@@ -9,6 +9,7 @@
 #include "Vector.H"
 #include "Spin_Density_Matrix.H"
 #include <utility>
+#include "Blob.H"
 
 #define HBAR_C 197.326968e-15	// in [GeV mm] used for decay position
 
@@ -228,5 +229,10 @@ namespace HADRONS {
   
 } // end of namespace
 
+namespace ATOOLS {
+  template class Blob_Data<HADRONS::Hadron_Decay_Channel*>;
+  template HADRONS::Hadron_Decay_Channel* &Blob_Data_Base::Get<HADRONS::Hadron_Decay_Channel*>();
+  template <> Blob_Data<HADRONS::Hadron_Decay_Channel*>::~Blob_Data() { }
+}
 
 #endif

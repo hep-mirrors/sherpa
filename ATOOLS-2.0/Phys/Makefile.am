@@ -25,7 +25,9 @@ libToolsPhys_la_SOURCES       =	\
 				Spin_Correlation_Tensor.C \
 				Spin_Density_Matrix.C \
 				Flow.C \
-				Color.C
+				Color.C \
+				Momenta_Stretcher.C \
+				Mass_Handler.C
 
 pkginclude_HEADERS        =	\
 			Flavour.H \
@@ -53,7 +55,9 @@ pkginclude_HEADERS        =	\
 			Spin_Correlation_Tensor.H \
 			Spin_Density_Matrix.H \
 			Event.H \
-			Color.H
+			Color.H \
+			Momenta_Stretcher.H \
+			Mass_Handler.H
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@
 

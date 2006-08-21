@@ -1,24 +1,22 @@
 #ifndef Hadron_Decay_Handler_h
 #define Hadron_Decay_Handler_h
 
+#include <set>
+#include <iterator>
 
-#include <set> 
-#include <iterator> 
-#include <iostream> 
-
-#include "Lund_Interface.H"
-#include "Particle_List.H"
-#include "Particle.H"
-#include "Blob_List.H"
-#include "Blob.H"
 #include "CXXFLAGS.H"
 
+#include "Return_Value.H"
+#include "Flavour.H"
+
 #ifdef USING__Hadrons
-#include "Hadrons.H"
+namespace HADRONS { class Hadrons; }
 #endif
-#include "Spin_Density_Matrix.H"
+namespace ATOOLS  { class Blob; }
 
 namespace SHERPA {
+  class Lund_Interface;
+
   class Hadron_Decay_Handler {
   protected :
     std::string                   m_decmodel;
@@ -29,7 +27,6 @@ namespace SHERPA {
     Lund_Interface              * p_lund; 
     std::set<ATOOLS::kf::code>  * p_cans;
 
-    void SwitchOfLundDecays();
   public :
 #ifdef USING__Hadrons
     Hadron_Decay_Handler(HADRONS::Hadrons *);
@@ -38,7 +35,7 @@ namespace SHERPA {
 
     ~Hadron_Decay_Handler();
 
-    bool FillHadronDecayBlob(ATOOLS::Particle *,ATOOLS::Blob_List *);
+    ATOOLS::Return_Value::code FillHadronDecayBlob(ATOOLS::Blob *);
     void EraseTreated(std::set<int> *);
     bool CanDealWith(ATOOLS::kf::code);
 
@@ -52,5 +49,34 @@ namespace SHERPA {
   typedef std::map<std::string,Hadron_Decay_Handler *> HDHandlersMap;
   typedef HDHandlersMap::iterator                      HDHandlersIter;
 }
-#endif
 
+  /*!
+    \file Hadron_Decay_Handler.H
+    \brief Declares the class SHERPA::Hadron_Decay_Handler
+    */
+  /*!
+    \class Hadron_Decay_Handler
+    \brief A wrapper class around all implemented hadron decay modules.
+
+    Knows all different hadron decay handlers and can tell whether a specific
+    one can deal with an unstable particle (CanDealWith()). It can then pass
+    the to be decayed blob to it (FillHadronDecayBlob()).
+    */
+  /*!
+    \fn FillHadronDecayBlob(ATOOLS::Blob *)
+    \brief Passes the to be decayed blob to the hadron decay handler
+    incorporated.
+
+    It calls the decay method of its hadron decay handler for the given blob,
+    and returns the \c Return_Value::code that it receives from it.
+    */
+  /*!
+    \fn EraseTreated(std::set<int> *)
+    \brief Erases all kfcodes, which the HADRONS module is
+    able to decay, from the given set
+
+    This is used for finding out whether we need an additional decay module
+    (like Lund).
+    */
+
+#endif

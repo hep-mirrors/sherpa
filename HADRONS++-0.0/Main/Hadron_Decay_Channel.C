@@ -38,7 +38,7 @@ Hadron_Decay_Channel::Hadron_Decay_Channel( Decay_Channel * _dc, string _path ) 
   HD_ME_Selector mesel;                                         // ME selector
   p_me = mesel.GetME(m_nin,m_nout,p_flavours);                  // get the appropr. ME
   p_me->SetPath( m_path );                                      // set Decaydata path 
-  msg.Out()<<"Matrix Element for "<<m_channelname<<" : "<<p_me->METype()<<"."<<endl;
+  msg.Tracking()<<"Matrix Element for "<<m_channelname<<" : "<<p_me->METype()<<"."<<endl;
 }
 
 Hadron_Decay_Channel::~Hadron_Decay_Channel()
@@ -119,22 +119,8 @@ double Hadron_Decay_Channel::Differential()
 // with spin correlation
 double Hadron_Decay_Channel::Differential( Vec4D * mom, Spin_Density_Matrix * sigma )
 {
-  if( !mom ) return Differential();                             // if no momentum
-  double ret;
-  if( !sigma ) {                                                // no SDM
-    ret = Differential();
-    // boost into Lab frame
-    Poincare lambda(mom[0]);
-    lambda.Invert();
-    for( int i=0; i<m_nout+1; ++i ) {
-      p_momenta[i] = lambda*p_momenta[i];
-      mom[i] = p_momenta[i];
-    }
-    return ret;
-  }
-  // spin correlations 
   // get PS point in rest frame
-  p_momenta[0] = Vec4D(p_flavours[0].PSMass(),0.,0.,0.);        // decay from rest
+  p_momenta[0] = Vec4D(mom[0].Mass(),0.,0.,0.);                 // decay from rest
   p_ps->GeneratePoint(p_momenta);                               // generate a PS point
   p_ps->GenerateWeight(p_momenta);                              // calculate its weight factor
   double weight = p_ps->Weight();                               // weight factor
@@ -149,7 +135,17 @@ double Hadron_Decay_Channel::Differential( Vec4D * mom, Spin_Density_Matrix * si
   (*p_me)(  p_momenta,                                          // phase space point
             p_ampls, p_indices,                                 // ampl. tensor and indices
             Spin_Correlation_Tensor::Get_k0_n() );              // spinor base
-  double value;
+  double value=0.;
+  if(!sigma) {
+    if( p_ampls->size() ) {
+      for( size_t i=0; i<p_ampls->size(); ++i ) {
+        value += norm( (*p_ampls)[i] );
+      }
+      value /= (p_dc->GetDecaying().IntSpin()+1);
+    }
+    else value = 1.;
+    return value*weight;
+  }
   if( p_ampls->size()==0 ) {                                    // no ampls <=> isotropic
     CreateTrivial(sigma);                                       // create trivial amplitude tensor
     value = 1.;

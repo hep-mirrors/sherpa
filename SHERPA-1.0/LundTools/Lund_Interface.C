@@ -4,6 +4,8 @@
 #include "ISR_Handler.H"
 #include "Data_Reader.H"
 #include "Particle.H"
+#include "Blob.H"
+#include "Blob_List.H"
 #include "Run_Parameter.H"
 #include "Random.H"
 #include "Message.H"
@@ -13,6 +15,7 @@
 #include <list>
 #include <cassert>
 #include "Message.H"
+#include "HepEvt_Interface.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -160,8 +163,8 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
   // the next lines replace the apyinit_ call
   if (sherpa) {
     hepevt.nhep=100;
-    for (int i=pydat3.mdcy[23-1][2-1];i<pydat3.mdcy[23-1][2-1]+pydat3.mdcy[23-1][3-1];++i) {
-      if (abs(pydat3.kfdp[i-1][1-1])>=2) pydat3.mdme[i-1][1-1]=Min(0,pydat3.mdme[i-1][1-1]);
+    for (int i=pydat3.mdcy[2-1][23-1];i<pydat3.mdcy[2-1][23-1]+pydat3.mdcy[3-1][23-1];++i) {
+      if (abs(pydat3.kfdp[1-1][i-1])>=2) pydat3.mdme[1-1][i-1]=Min(0,pydat3.mdme[1-1][i-1]);
     }
     pyinit(frame.c_str(),beam[0].c_str(),beam[1].c_str(),win);
   }
@@ -198,12 +201,28 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
       m_compress=(bool)helper;
     }
   }
+  // set some masses to ours (otherwise problems with mass check in decay; only minimal change)
+  vector<kf::code> mass_kfs;
+  mass_kfs.push_back(kf::Lambda_b);
+  mass_kfs.push_back(kf::pi);
+  mass_kfs.push_back(kf::eta);
+  Flavour myflav; int kc;
+  for(size_t i=0;i<mass_kfs.size();i++) {
+    myflav = Flavour(mass_kfs[i]);
+    kc = pycomp(int(mass_kfs[i]))-1;
+    pydat2.pmas[1-1][kc]=myflav.PSMass();
+  }
   pylist(0);
   delete reader;
 }
 
 bool Lund_Interface::IsAllowedDecay(kf::code can)
 {
+  // account for Pythia having a_0_980 at code of a_0_1450
+  if( can==kf::a_0_980 )      can=kf::a_0_1450;
+  if( can==kf::a_0_980_plus ) can=kf::a_0_1450_plus;
+  // account for Pythia having f_0_980 at code of f_0_1370
+  if( can==kf::f_0_980 )      can=kf::f_0_1370;
   if (pycomp(int(can))<501 && pydat3.mdcy[1-1][pycomp(int(can))-1]==1) return true;
   return false;
 }
@@ -212,6 +231,19 @@ void Lund_Interface::SwitchOfDecays(kf::code kfc)
 {
   pydat3.mdcy[1-1][pycomp(int(kfc))-1]=0;
   msg_Tracking()<<"Lund_Interface::SwitchOfDecays: "<<kfc<<endl;
+}
+
+void Lund_Interface::SetAllStable()
+{
+  Fl_Iter fli; Flavour flav;
+  for (flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
+    pydat3.mdcy[1-1][pycomp(int(flav.Kfcode()))-1]=0;
+  }
+}
+
+void Lund_Interface::SwitchOffMassSmearing()
+{
+  pydat1.mstj[24-1]=0;
 }
 
 Lund_Interface::~Lund_Interface()
@@ -275,12 +307,40 @@ Return_Value::code Lund_Interface::Hadronize(Blob_List *bloblist)
 Return_Value::code Lund_Interface::PerformDecay(Blob * blob)
 {
   if (!blob->Has(blob_status::needs_hadrondecays) ||
-      !blob->NInP()==1 || !blob->InParticle(0)->Status()==part_status::active)
+      blob->NInP()!=1 ||
+      blob->InParticle(0)->Status()!=part_status::active)
+  {
+    msg.Error()<<METHOD<<" returns Error."<<endl;
+    msg.Error()<<" blob->Status()="<<blob->Status()<<endl;
+    msg.Error()<<" blob->NInP()="<<blob->NInP()<<endl;
+    msg.Error()<<" part->Status()="<<blob->InParticle(0)->Status()<<endl;
     return Return_Value::Error;
+  }
 
   Particle * part = blob->InParticle(0);
+  Flavour fl = part->Flav();
+  // account for Pythia having a_0_980 at code of a_0_1450
+  if( fl.Kfcode()==kf::a_0_980 )      fl=Flavour(kf::a_0_1450, fl.IsAnti());
+  if( fl.Kfcode()==kf::a_0_980_plus ) fl=Flavour(kf::a_0_1450_plus,
+                                                 fl.IsAnti());
+  // account for Pythia having f_0_980 at code of f_0_1370
+  if( fl.Kfcode()==kf::f_0_980 )      fl=Flavour(kf::kf::f_0_1370, fl.IsAnti());
+
+  int kc = pycomp(int(fl.Kfcode()))-1;
+  double peak = pydat2.pmas[1-1][kc];
+  double w_cut = pydat2.pmas[3-1][kc];
+  if( part->FinalMass()+Accu() < peak-w_cut ) {
+    msg.Debugging().precision(8);
+    msg.Debugging()<<METHOD<<" not enough mass m="<<part->FinalMass()
+      <<" for pythia cutoff "<<" (m="<<peak-w_cut<<"). Retrying..."<<endl;
+    return Return_Value::Retry_Method;
+  }
+
+
+  // set particle temporarily to unstable in pythia
+  pydat3.mdcy[1-1][pycomp(int(fl.Kfcode()))-1]=1;
   int nhep(0);
-  hepevt.idhep[nhep] = part->Flav().HepEvt();
+  hepevt.idhep[nhep] = fl.HepEvt();
   for (short int j=1;j<4;++j) hepevt.phep[nhep][j-1]=part->Momentum()[j];
   hepevt.phep[nhep][3] = part->Momentum()[0];
   hepevt.phep[nhep][4] = part->FinalMass();
@@ -312,8 +372,10 @@ Return_Value::code Lund_Interface::PerformDecay(Blob * blob)
   }
   part->SetStatus(part_status::decayed);
   pyhepc(1);
-  blob->SetTypeSpec("Pythia_v6.214");
   FillOutgoingParticlesInBlob(blob);
+  
+  // set particle back to stable in pythia
+  pydat3.mdcy[1-1][pycomp(int(fl.Kfcode()))-1]=0;
   return Return_Value::Success;
 } 
 
@@ -448,7 +510,12 @@ void Lund_Interface::FillFragmentationBlob(Blob *blob)
     if (flav==Flavour(kf::string) || 
 	flav==Flavour(kf::cluster)) {
       for (int j=hepevt.jdahep[i][0]-1;j<hepevt.jdahep[i][1];j++) {
-	flav.FromHepEvt(hepevt.idhep[j]);
+        flav.FromHepEvt(hepevt.idhep[j]);
+        // account for Pythia having a_0_980 at code of a_0_1450
+        if(flav.Kfcode()==kf::a_0_1450) flav=Flavour(kf::a_0_980, flav.IsAnti());
+        else if(flav.Kfcode()==kf::a_0_1450_plus) flav=Flavour(kf::a_0_980_plus, flav.IsAnti());
+        // account for Pythia having f_0_980 at code of f_0_1370
+        else if(flav.Kfcode()==kf::f_0_1370) flav=Flavour(kf::f_0_980, flav.IsAnti());
 	momentum=Vec4D(hepevt.phep[j][3],hepevt.phep[j][0],
 		       hepevt.phep[j][1],hepevt.phep[j][2]);
 	position=Vec4D(hepevt.vhep[j][3],hepevt.vhep[j][0],
@@ -473,6 +540,11 @@ void Lund_Interface::FillOutgoingParticlesInBlob(Blob *blob)
   Particle * particle;
   for (int j=hepevt.jdahep[0][0]-1;j<hepevt.jdahep[0][1];j++) {
     flav.FromHepEvt(hepevt.idhep[j]);
+    // account for Pythia having a_0_980 at code of a_0_1450
+    if(flav.Kfcode()==kf::a_0_1450) flav=Flavour(kf::a_0_980, flav.IsAnti());
+    else if(flav.Kfcode()==kf::a_0_1450_plus) flav=Flavour(kf::a_0_980_plus, flav.IsAnti());
+    // account for Pythia having f_0_980 at code of f_0_1370
+    else if(flav.Kfcode()==kf::f_0_1370) flav=Flavour(kf::f_0_980, flav.IsAnti());
     momentum=Vec4D(hepevt.phep[j][3],hepevt.phep[j][0],
 		   hepevt.phep[j][1],hepevt.phep[j][2]);
     position=Vec4D(hepevt.vhep[j][3],hepevt.vhep[j][0],
@@ -485,7 +557,6 @@ void Lund_Interface::FillOutgoingParticlesInBlob(Blob *blob)
     blob->SetPosition(position);
     blob->AddToOutParticles(particle);
   }
-  blob->SetStatus(blob_status::needs_hadrondecays);
 }
 
 void Lund_Interface::Error(const int error)

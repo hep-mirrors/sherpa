@@ -297,7 +297,7 @@ bool HD_PS_Base::AddChannel(string name,double weight,GeneralModel & md)
 }
 
 void HD_PS_Base::CalculateNormalisedWidth() {
-  msg.Out()<<"HD_PS_Base::CalculateNormalisedWidth() for "
+  msg.Info()<<"HD_PS_Base::CalculateNormalisedWidth() for "
     <<p_hdc->ChannelName()<<endl;
   Reset();
   long int iter = Number()*5000*int(pow(2.,int(p_hdc->NOut())-2));
@@ -311,7 +311,7 @@ void HD_PS_Base::CalculateNormalisedWidth() {
   while(opt<maxopt || (result>0. && m_error/result>0.01) ) {
     maxincrease = false;
     for (n=1;n<iter+1;n++) {
-      value = p_hdc->Differential(NULL,NULL);
+      value = p_hdc->Differential();
       sum  += value;
       sum2 += ATOOLS::sqr(value);
       AddPoint(value);

@@ -3,6 +3,7 @@
 
 #include "Running_AlphaS.H"
 #include "Lund_Interface.H"
+#include "ISR_Handler.H"
 
 using namespace SHERPA;
 
@@ -127,7 +128,7 @@ extern struct {
 
 extern struct {
   int n, npad;
-  double k[nmaxjets][5], p[nmaxjets][5], v[nmaxjets][5];
+  double k[5][nmaxjets], p[5][nmaxjets], v[5][nmaxjets];
 } pyjets_;
 #define pyjets pyjets_
 
@@ -140,21 +141,22 @@ extern struct {
 #define pydat1 pydat1_
 
 extern struct {
-  int kchg[nmaxpart][4];
-  double pmas[nmaxpart][4], parf[nmaxpart]; 
+  int kchg[4][nmaxpart];
+  double pmas[4][nmaxpart];
+  double parf[2000];
   double vckm[4][4];
 } pydat2_;
 #define pydat2 pydat2_
 
 extern struct {
-  int mdcy[nmaxpart][3], mdme[nmaxdecay][2];
+  int mdcy[3][nmaxpart], mdme[2][nmaxdecay];
   double brat[nmaxdecay];
-  int kfdp[nmaxdecay][5];
+  int kfdp[5][nmaxdecay];
 } pydat3_;
 #define pydat3 pydat3_
 
 extern struct {
-  char *chaf[nmaxpart][2];
+  char *chaf[2][nmaxpart];
 } pydat4_;
 #define pydat4 pydat4_
 
@@ -186,27 +188,27 @@ extern struct {
 
 extern struct {
   int iset[nmaxpart], kfpr[nmaxpart][2];
-  double coef[nmaxpart][20];
-  int icol[40][4][2];
+  double coef[20][nmaxpart];
+  int icol[2][4][40];
 } pyint2_;
 #define pyint2 pyint2_
 
 extern struct {
-  double xsfx[2][81];
-  int isig[1000][3];
+  double xsfx[81][2];
+  int isig[3][1000];
   double sigh[1000];
 } pyint3_;
 #define pyint3 pyint3_
 
 extern struct {
   int mwid[nmaxpart];
-  double wids[nmaxpart][5];
+  double wids[5][nmaxpart];
 } pyint4_;
 #define pyint4 pyint4_
 
 extern struct {
-  int ngenpd, ngen[501][3];
-  double xsec[501][3];
+  int ngenpd, ngen[3][501];
+  double xsec[3][501];
 } pyint5_;
 #define pyint5 pyint5_
 
@@ -216,7 +218,7 @@ extern struct {
 #define pyint6 pyint6_
 
 extern struct {
-  double sigt[6][7][7];
+  double sigt[7][7][6];
 } pyint7_;
 #define pyint7 pyint7_
 
@@ -228,7 +230,7 @@ extern struct {
 
 extern struct {
   double zmix[4][4], umix[2][2], vmix[2][2], smz[4], smw[2];
-  double sfmix[16][4], zmixi[4][4], umixi[2][2], vmixi[2][2];
+  double sfmix[4][16], zmixi[4][4], umixi[2][2], vmixi[2][2];
 } pyssmt_;
 #define pyssmt pyssmt_
 
