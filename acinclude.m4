@@ -146,17 +146,19 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(SHERPALIBS)
   AC_SUBST(SHERPAFLAGS)
 
-  final_prefix=$prefix
-  if test "x$final_prefix" = "xNONE"; then
-      final_prefix=$ac_default_prefix
+  if test "x$prefix" = "xNONE"; then
+    prefix=$ac_default_prefix
+  fi
+  if test "x$exec_prefix" = "xNONE"; then
+    exec_prefix=$ac_default_prefix
   fi
   AC_DEFINE_UNQUOTED([SHERPA_VERSION], ["`echo AC_PACKAGE_VERSION | cut -d. -f1`"], [Sherpa version])
   AC_DEFINE_UNQUOTED([SHERPA_SUBVERSION], ["`echo AC_PACKAGE_VERSION | cut -d. -f2,3`"], [Sherpa subversion])
   AC_DEFINE_UNQUOTED([SHERPA_BUILD_PATH], "$PWD", [Sherpa build path])
-  AC_DEFINE_UNQUOTED([SHERPA_INCLUDE_PATH], "$final_prefix/include/SHERPA-MC", [Sherpa include directory])
-  AC_DEFINE_UNQUOTED([SHERPA_BINARY_PATH], "$final_prefix/bin", [Sherpa binary directory])
-  AC_DEFINE_UNQUOTED([SHERPA_PDFS_PATH], "$final_prefix/share/SHERPA-MC", [Sherpa data directory])
-  AC_DEFINE_UNQUOTED([SHERPA_SHARE_PATH], "$final_prefix/share/SHERPA-MC", [Sherpa data directory])
+  AC_DEFINE_UNQUOTED([SHERPA_INCLUDE_PATH], ["`eval echo $includedir`/SHERPA-MC"], [Sherpa include directory])
+  AC_DEFINE_UNQUOTED([SHERPA_BINARY_PATH], ["`eval echo $bindir`/SHERPA-MC"], [Sherpa binary directory])
+  AC_DEFINE_UNQUOTED([SHERPA_PDFS_PATH], ["`eval echo $datadir`/SHERPA-MC"], [Sherpa data directory])
+  AC_DEFINE_UNQUOTED([SHERPA_SHARE_PATH], ["`eval echo $datadir`/SHERPA-MC"], [Sherpa data directory])
   AC_DEFINE([USING__COLOUR], "1", [Using colour])
 ])
 
