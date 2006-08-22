@@ -109,6 +109,7 @@ Return_Value::code Cluster_Decay_Handler::DecayIt(Cluster * cluster,Blob *& blob
 {
   Flavour had1=Flavour(kf::none),had2=Flavour(kf::none);
 
+  int test;
   switch (int(p_clus->TestDecay(cluster))) {
   case Return_Value::Success :
     cout<<METHOD<<" TestDecay yields Success,"<<endl
@@ -116,7 +117,7 @@ Return_Value::code Cluster_Decay_Handler::DecayIt(Cluster * cluster,Blob *& blob
 	<<cluster->GetLeft()->Momentum()<<" ("<<cluster->GetLeft()->Momentum().Abs2()<<"), "
 	<<cluster->GetRight()->Momentum()<<" ("<<cluster->GetRight()->Momentum().Abs2()<<")."<<endl;
     InitDecayBlob(cluster,blob);
-    int test(TestOffSprings(cluster,had1,had2));
+    test = TestOffSprings(cluster,had1,had2);
     if (TreatHadDecay(cluster,blob,test,had1,had2)) {
       FillDecayBlob(cluster,blob,test);
       return Return_Value::Success;
