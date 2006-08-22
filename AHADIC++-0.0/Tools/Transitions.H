@@ -52,10 +52,6 @@ namespace AHADIC {
     bool                       MustTransit(Cluster *,ATOOLS::Flavour &,
 					   const double=0.,const bool=false);
     ATOOLS::Return_Value::code NextLightest(Cluster *,ATOOLS::Flavour &);
-
-    ATOOLS::Flavour            GetSU3Pseudoscalar(double=-1.);
-    ATOOLS::Flavour            GetSU3NeutralPseudoscalar(double=-1.);
-
     void                       PrintSingleTransitions();
   };
 
@@ -86,8 +82,6 @@ namespace AHADIC {
     ~All_Double_Transitions();
 
     bool                    IsoDecay(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &);
-    bool                    MustTransit(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &,
-					const double=0.,const bool=false);
     Double_Transition_Map * GetDoubleTransitions() { return p_transitions; }
     void                    PrintDoubleTransitions();
   };

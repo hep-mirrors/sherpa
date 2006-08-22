@@ -58,12 +58,7 @@ namespace AHADIC {
     All_Hadron_Multiplets();
     ~All_Hadron_Multiplets();
 
-    Hadron_WF_Map         * GetWaveFunctions()    { return p_wavefunctions; }
-    Hadron_Multiplet_Map  * GetMultiplets()       { return p_multiplets; }
-    Hadron_Multiplet      * GetSU3Pseudoscalars() { 
-      if (p_multiplets->find(1)!=p_multiplets->end()) 
-	return p_multiplets->find(1)->second; 
-    }
+    Hadron_WF_Map        * GetWaveFunctions() { return p_wavefunctions; }
 
     Hadron_Wave_Function * GetWaveFunction(ATOOLS::Flavour);
     void                   PrintWaveFunctions();

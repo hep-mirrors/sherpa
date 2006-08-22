@@ -9,7 +9,7 @@ namespace AHADIC {
   public:
     Cluster_Former();
     ~Cluster_Former();
-    void ConstructClusters(Proto_Particle_List *,Cluster_List *);
+    void ConstructClusters(Part_List * plin,Cluster_List * clout);
   };
   /*!
     \file Cluster_Former.H

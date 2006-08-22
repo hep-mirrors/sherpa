@@ -8,6 +8,13 @@
 #include <iostream>
 
 namespace AHADIC {
+  typedef std::list<ATOOLS::Particle*> Part_List;
+  typedef Part_List::iterator Part_Iterator;
+  typedef Part_List::const_iterator Part_Const_Iterator;
+
+  std::ostream & operator<<(std::ostream & s, const Part_List & pl);
+
+
   static ATOOLS::Vec4D s_axis = ATOOLS::Vec4D(1.,1.,0.,0.);
 
   struct ctp {
@@ -35,71 +42,55 @@ namespace AHADIC {
     ltp::code           m_leads;
     ATOOLS::Flavour     m_flavours[2];
     ATOOLS::Vec4D       m_momentum, m_momenta[2];
-    ATOOLS::Poincare    m_boost,m_rotate;
-    bool                m_hasboost,m_hasrotate;
+    ATOOLS::Poincare    m_boost;
+    bool                m_hasboost;
 
     Cluster           * p_left, * p_right, * p_prev;
-    ATOOLS::Particle  * p_self;
-
-    static long int     s_cluster_count, s_cluster_number;
-    int                 m_number;
   public:
     Cluster();
     Cluster(const ATOOLS::Flavour &,const ATOOLS::Vec4D &,
 	    const ATOOLS::Flavour &,const ATOOLS::Vec4D &);
     ~Cluster();
 
-    Cluster          * GetLeft()  const;
-    Cluster          * GetRight() const;
-    Cluster          * GetPrev()  const;
-    void               SetLeft(Cluster *);
-    void               SetRight(Cluster *);
-    void               SetPrev(Cluster *);
-    ATOOLS::Particle * GetSelf() const;
-    void               SetSelf(ATOOLS::Particle *);
-    void               DeleteLeft();
-    void               DeleteRight();
-    ATOOLS::Flavour    GetFlav(const int) const;
-    void               SetFlav(const int,const ATOOLS::Flavour &);
-    ATOOLS::Vec4D      Momentum(const int=0) const;
-    void               SetMomentum(const int,const ATOOLS::Vec4D &);
-    ltp::code          GetLeads() const;
-    void               SetLeads(const ltp::code);
-    double             Mass2() const;
-    double             Mass(const int=0) const;
-    void               Update();
-    void               RescaleMomentum(ATOOLS::Vec4D);
-    void               BoostInCMSAndRotateOnZ();
-    void               RotateAndBoostBack();
-    void               BoostInCMS();
-    void               BoostBack();
-    void               Boost(ATOOLS::Poincare &);
-    void               BoostBack(ATOOLS::Poincare &);
-    void               Rotate(ATOOLS::Poincare &);
-    void               RotateBack(ATOOLS::Poincare &);
-    void               BoostBack(ATOOLS::Vec4D &);
-    void               RotateAndBoostBack(ATOOLS::Vec4D &);
-    friend std::ostream& operator<<(std::ostream &,const Cluster &);
 
-    inline int         RemainingClusters()  { return s_cluster_count; }
-    inline int         ClusterCounter()     { return s_cluster_number; }
-    inline void        ResetClusterNumber() { s_cluster_number = 0; }
+    Cluster         * GetLeft()  const;
+    Cluster         * GetRight() const;
+    Cluster         * GetPrev()  const;
+    void              SetLeft(Cluster *);
+    void              SetRight(Cluster *);
+    void              SetPrev(Cluster *);
+    void              DeleteLeft();
+    void              DeleteRight();
+    ATOOLS::Flavour   GetFlav(const int) const;
+    void              SetFlav(const int,const ATOOLS::Flavour &);
+    ATOOLS::Vec4D     Momentum(const int=0) const;
+    void              SetMomentum(const int,const ATOOLS::Vec4D &);
+    ltp::code         GetLeads() const;
+    void              SetLeads(const ltp::code);
+    double            Mass2() const;
+    double            Mass(const int=0) const;
+    void              Update();
+    void              RescaleMomentum(ATOOLS::Vec4D);
+    void              BoostInCMS();
+    void              BoostBack();
+    void              Boost(ATOOLS::Poincare &);
+    void              BoostBack(ATOOLS::Poincare &);
+    void              BoostBack(ATOOLS::Vec4D &);
+    friend std::ostream& operator<<(std::ostream &,const Cluster &);
   };
 
 
-  inline Cluster          * Cluster::GetLeft()                  const { return p_left;  }
-  inline Cluster          * Cluster::GetRight()                 const { return p_right; }
-  inline Cluster          * Cluster::GetPrev()                  const { return p_prev;  }
-  inline void               Cluster::SetLeft(Cluster * left)          { p_left  = left;  }
-  inline void               Cluster::SetRight(Cluster * right)        { p_right = right; }
-  inline void               Cluster::SetPrev(Cluster * prev)          { p_prev  = prev;  }
-  inline void               Cluster::DeleteLeft()                     { delete p_left;  p_left  = NULL; }
-  inline void               Cluster::DeleteRight()                    { delete p_right; p_right = NULL; }
-  inline double             Cluster::Mass2()                    const { return m_momentum.Abs2(); }
-  inline ltp::code          Cluster::GetLeads()                 const { return m_leads; }
-  inline void               Cluster::SetLeads(const ltp::code l)      { m_leads = l; }
-  inline ATOOLS::Particle * Cluster::GetSelf()                  const { return p_self; }
-  inline void               Cluster::SetSelf(ATOOLS::Particle * part) { p_self = part; }
+  inline Cluster              * Cluster::GetLeft()  const { return p_left;  }
+  inline Cluster              * Cluster::GetRight() const { return p_right; }
+  inline Cluster              * Cluster::GetPrev()  const { return p_prev;  }
+  inline void                   Cluster::SetLeft(Cluster * left)     { p_left  = left;  }
+  inline void                   Cluster::SetRight(Cluster * right)   { p_right = right; }
+  inline void                   Cluster::SetPrev(Cluster * prev)     { p_prev  = prev;  }
+  inline void                   Cluster::DeleteLeft()     { delete p_left;  p_left  = NULL; }
+  inline void                   Cluster::DeleteRight()    { delete p_right; p_right = NULL; }
+  inline double                 Cluster::Mass2()    const { return m_momentum.Abs2(); }
+  inline ltp::code              Cluster::GetLeads() const { return m_leads; }
+  inline void                   Cluster::SetLeads(const ltp::code l) { m_leads = l; }
 
 
 
@@ -110,22 +101,7 @@ namespace AHADIC {
 
   std::ostream & operator<<(std::ostream & s, const Cluster_List & pl);
 
-  struct Proto_Particle {
-  public:
-    ATOOLS::Flavour m_flav;
-    ATOOLS::Vec4D   m_mom;
-    char            m_info;
-    Proto_Particle(ATOOLS::Flavour flav,ATOOLS::Vec4D mom,char info) :
-      m_flav(flav), m_mom(mom), m_info(info) {}
-  };
 
-  typedef std::list<Proto_Particle>           Proto_Particle_List;   
-  typedef Proto_Particle_List::iterator       PPL_Iterator; 
-  typedef Proto_Particle_List::const_iterator PPL_Const_Iterator; 
-  typedef std::vector<Proto_Particle_List *>  VectorOfPPLs;
-  typedef VectorOfPPLs::iterator              VPPL_Iterator;
-
-  std::ostream & operator<<(std::ostream & s, const Proto_Particle_List & pl);
   /*!
     \file 
     \brief Contains the class AHADIC::Cluster and the corresponding structs AHADIC::ctp and

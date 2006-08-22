@@ -16,9 +16,9 @@ namespace AHADIC {
     ATOOLS::Flavour     m_flav;
     ATOOLS::Vec4D       m_p1vec, m_p2vec;
 
-    bool                Shift(Proto_Particle_List * pl);
-    bool                DecayIt(Proto_Particle * part,
-				Proto_Particle *& part1,Proto_Particle *& part2);
+    bool                Shift(Part_List * pl);
+    bool                DecayIt(ATOOLS::Particle * part,
+				ATOOLS::Particle *& part1,ATOOLS::Particle *& part2);
     void                SelectDecay(const ATOOLS::Vec4D &);
     double              ZWeight(const double, const double);
     void                SelectZ(const DecaySpecs*);
@@ -27,7 +27,7 @@ namespace AHADIC {
   public:
     Gluon_Decayer();
     ~Gluon_Decayer();
-    bool DecayList(Proto_Particle_List * plin=NULL);
+    bool DecayList(Part_List * plin=NULL);
   };
   /*!
     \file Gluon_Decayer.H
@@ -97,15 +97,15 @@ namespace AHADIC {
     \brief Empties and deletes the map of flavours and decay characteristics, m_options.
   */
   /*!
-    \fn bool Gluon_Decayer::DecayList(Proto_Particle_List * plin=NULL)
+    \fn bool Gluon_Decayer::DecayList(Part_List * plin=NULL)
     \brief This method steers the full procedure: First, all particles are put on their constituent
-    mass shell, by calling Shift(Proto_Particle_List * pl), then all particles are iterated over and 
-    eventually decayed, through DecayIt(ATOOLS::Particle *,ATOOLS::Particle *&,ATOOLS::Particle *&). 
-    If the decaying particle is a gluon, it is removed from the list and the two offsprings are inserted 
+    mass shell, by calling Shift(Part_List * pl), then all particles are iterated over and eventually
+    decayed, through DecayIt(ATOOLS::Particle *,ATOOLS::Particle *&,ATOOLS::Particle *&). If the 
+    decaying particle is a gluon, it is removed from the list and the two offsprings are inserted 
     at the same place.
   */
   /*!
-    \fn void Gluon_Decayer::Shift(Proto_Particle_List * pl)
+    \fn void Gluon_Decayer::Shift(Part_List * pl)
     \brief Iterates over the particle list, extracts the momenta and finds the constituent masses from
     AHADIC::Constituents::Mass(ATOOLS::Flavour) and put everything in two arrays. These are then passed
     to the AHADIC::Momenta_Stretcher.
@@ -120,7 +120,7 @@ namespace AHADIC {
     Then the two corresponding new particles are initialised and filled accordingly.
 
     \todo make the return value more elegant and straighten out the method 
-    DecayList(Proto_Particle_List * plin=NULL).
+    DecayList(Part_List * plin=NULL).
   */
   /*!
     \fn void Gluon_Decayer::SelectDecay(const ATOOLS::Vec4D &)

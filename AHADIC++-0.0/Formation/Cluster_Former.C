@@ -9,27 +9,49 @@ Cluster_Former::Cluster_Former() { }
 
 Cluster_Former::~Cluster_Former() { }
 
-void Cluster_Former::ConstructClusters(Proto_Particle_List * plin, Cluster_List * clout)
+void Cluster_Former::ConstructClusters(Part_List * plin, Cluster_List * clout)
 {
-  Cluster * cluster(NULL);
-  int       lead(0);
-  PPL_Iterator pit1,pit2;
-  while (!plin->empty()) {
-    pit1=plin->begin();
-    pit2 = pit1;pit2++;
-    cluster = new Cluster(pit1->m_flav,pit1->m_mom,
-			  pit2->m_flav,pit2->m_mom);
-    lead = 0;
-    if (pit1->m_info=='L') lead+=1; 
-    if (pit2->m_info=='L') lead+=2;
-    if (lead>0) cluster->SetLeads(ltp::code(lead));
-    clout->push_back(cluster);
+  if (clout==NULL) {
+    msg.Error()<<"ERROR in Cluster_Former::FormClusters : "<<std::endl
+	       <<"   Funny Cluster_List, abort the run."<<std::endl;
+    abort();
+  }
 
-    Particle * self = new Particle(0,Flavour(kf::cluster),cluster->Momentum());
-    self->SetStatus(part_status::active);
-    self->SetInfo('C');
-    cluster->SetSelf(self);
-    plin->pop_front();
-    plin->pop_front();
+  int col1, lead;
+  Cluster * cluster=NULL;
+  
+  for (Part_Iterator pit1=plin->begin();pit1!=plin->end();++pit1) {
+    col1 = (*pit1)->GetFlow(1);
+    if (col1!=0) {
+      if ((*pit1)->GetFlow(2)!=0) {
+	msg.Error()<<"ERROR in Cluster_Former::FormClusters : "<<std::endl
+		   <<"   Colour octet left in particle list."<<std::endl
+		   <<"   "<<(*pit1)->Number()<<" : "<<(*pit1)->Flav()
+		   <<" ("<<(*pit1)->GetFlow(1)<<","<<(*pit1)->GetFlow(2)
+		   <<"), abort the run."<<std::endl;
+	abort();
+      }
+      for (Part_Iterator pit2=plin->begin();pit2!=plin->end();++pit2) {
+	if (int((*pit2)->GetFlow(2))==col1) {
+	  if (int((*pit2)->GetFlow(1))!=0) {
+	    msg.Error()<<"ERROR in Cluster_Former::FormClusters : "<<std::endl
+		       <<"   Colour octet left in particle list."<<std::endl
+		       <<"   "<<(*pit2)->Number()<<" : "<<(*pit2)->Flav()
+		       <<" ("<<(*pit2)->GetFlow(1)<<","<<(*pit2)->GetFlow(2)
+		       <<"), abort the run."<<std::endl;
+	    abort();
+	  }
+	  cluster = new Cluster((*pit1)->Flav(),(*pit1)->Momentum(),(*pit2)->Flav(),(*pit2)->Momentum());
+	  lead = 0;
+	  if ((*pit1)->Info()=='L') lead+=1; 
+	  if ((*pit2)->Info()=='L') lead+=2;
+	  if (lead>0) cluster->SetLeads(ltp::code(lead));
+	  clout->push_back(cluster);
+	  (*pit1)->SetStatus(part_status::decayed);
+	  (*pit2)->SetStatus(part_status::decayed);
+	}
+      }
+    }
   }
 }
+

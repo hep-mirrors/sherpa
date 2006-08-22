@@ -1,13 +1,11 @@
 #ifndef Cluster_Decay_Handler_H
 #define Cluster_Decay_Handler_H
 
-#include "Cluster_Transformer.H"
-#include "Cluster_Part.H"
-#include "Hadron_Part.H"
-#include "Transitions.H"
-#include "Blob_List.H"
-#include "Cluster.H"
+#include "Cluster_Decayer_Base.H"
 #include "Cluster_Decay_Analysis.H"
+#include "Cluster_Transformer.H"
+#include "Blob.H"
+#include "Cluster.H"
 #include "Return_Value.H"
 
 
@@ -19,42 +17,28 @@ namespace AHADIC {
       RunningQoverM_Isotropic = 21,
       RunningQoverM_Retain    = 22,
       FourFermions_Isotropic  = 41,
-      FourFermions_Retain     = 42,
-      SchwingerUni_Isotropic  = 81,
-      SchwingerUni_Retain     = 82,
-      SchwingerUni_Keep_PY    = 84
+      FourFermions_Retain     = 42
     };
   };
 
   class Cluster_Decay_Handler {
   private:
-    bool                     m_cib;
     cdm::code                m_cdm;
-    Cluster_Transformer    * p_transformer;
-    All_Double_Transitions * p_dtransitions;
-    All_Single_Transitions * p_stransitions;
-
-    Cluster_Part           * p_clus;
-    Hadron_Part            * p_hads;
-
+    Cluster_Decayer_Base   * p_decayer;
     Cluster_Decay_Analysis * p_analysis;
-    Cluster_List           * p_clusters;
+    Cluster_Transformer    * p_transformer;
+
+    Part_List              * p_partlist;
     ATOOLS::Blob           * p_blob;
 
-    double                   m_offset;
- 
-    ATOOLS::Return_Value::code DecayIt(Cluster *,ATOOLS::Blob *&);
-    int                        TestOffSprings(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &);
-    void                       InitDecayBlob(Cluster *,ATOOLS::Blob *&);
-    void                       FillDecayBlob(Cluster *,ATOOLS::Blob *,const int);
-    bool                       TreatHadDecay(Cluster *,ATOOLS::Blob *&,int &,
-					     ATOOLS::Flavour &,ATOOLS::Flavour &);
+    ATOOLS::Return_Value::code DecayIt(Cluster *);
     void                       AnalyseThis(ATOOLS::Blob *);
   public:
-    Cluster_Decay_Handler(Cluster_Transformer *,bool=false,bool=false);
+    Cluster_Decay_Handler(Cluster_Transformer *,bool=false);
     ~Cluster_Decay_Handler();
 
-    ATOOLS::Return_Value::code DecayClusters(Cluster_List *,ATOOLS::Blob_List * = NULL);
+    ATOOLS::Return_Value::code DecayClusters(Cluster_List *,ATOOLS::Blob *);
+    Part_List                * GetParticles() { return p_partlist; }
   };
 
   /*!

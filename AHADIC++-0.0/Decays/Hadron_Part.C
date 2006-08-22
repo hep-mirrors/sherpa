@@ -12,221 +12,288 @@ using namespace std;
 
 Hadron_Part::Hadron_Part() :
   p_stransitions(hadpars.GetSingleTransitions()),
-  p_dtransitions(hadpars.GetDoubleTransitions()),
-  m_smearparameter(hadpars.Get(string("AngularSmearing")))   
+  p_dtransitions(hadpars.GetDoubleTransitions())   
 { }
 
-Return_Value::code Hadron_Part::RedoDecay(Cluster * cluster,Blob * blob,
-					  int & mode,Flavour & had1,Flavour & had2)
+Return_Value::code  Hadron_Part::RedoDecay(Cluster * cluster,Part_List * pl,
+					   int mode,Flavour & had1,Flavour & had2)
 {
-  cout<<"IN "<<METHOD<<" mode = "<<mode<<" for "
-      <<cluster->Mass(0)<<" --> "<<had1<<" + "<<had2<<endl;
-  p_blob     = blob;
-  p_cluster  = cluster;
-  m_flavs[0] = had1;
-  m_flavs[1] = had2;
-  if (m_cht==chtrans::HH_only) return HHDecay();
-  switch (mode) {
-  case 1: 
-  case 2: 
-    return CHDecay(mode);
-  case 3: return HHDecay(true);
-  }
-  rvalue.IncError(METHOD);
-  return Return_Value::Error;
-}
+  if (m_cht==chtrans::HH_only) return HHDecay(cluster,pl,had1,had2);
+  if (mode==3)                 return CHDecayBoth(cluster,pl,had1,had2);
 
-Return_Value::code Hadron_Part::HHDecay(const bool flavs_selected) {
-  cout<<"IN "<<METHOD<<endl;
-  if (!flavs_selected) {
-    if (!p_dtransitions->IsoDecay(p_cluster,m_flavs[0],m_flavs[1]) ||
-	m_flavs[0]==Flavour(kf::none) || m_flavs[1]==Flavour(kf::none)) {
-      msg.Error()<<"Error in "<<METHOD<<" : "<<endl
-		 <<"   Selected an unphysical flavour (none) in decay of"<<endl
-		 <<(*p_cluster)<<"   ---> "<<m_flavs[0]<<" + "<<m_flavs[1]<<endl
-		 <<"   Will continue and hope for the best."<<endl;
-      rvalue.IncError(METHOD);
-      return Return_Value::Error;
-    }
-  }
-  if (!CheckHHDecayKinematics()) {  
-    msg.Error()<<"Error in "<<METHOD<<" : "<<endl
-	       <<"   Selected an unphysical flavour combination in decay of"<<endl
-	       <<(*p_cluster)<<"   ---> "<<m_flavs[0]<<" + "<<m_flavs[1]<<endl
+  if ((mode==1 && had1==Flavour(kf::none)) || 
+      (mode==2 && had2==Flavour(kf::none))) {
+    msg.Error()<<"Error in "<<METHOD<<"(mode = "<<mode<<") : "<<endl
+	       <<"   Selected an unphysical flavour (none) in decay of"<<endl
+	       <<(*cluster)<<"   ---> "<<had1<<" + "<<had2<<endl
 	       <<"   Will continue and hope for the best."<<endl;
     rvalue.IncError(METHOD);
     return Return_Value::Error;
   }
-  cout<<"   "<<METHOD<<" : "<<p_cluster->Mass(0)<<" --> "
-      <<m_flavs[0]<<" + "<<m_flavs[1]<<endl;
-  p_cluster->BoostInCMSAndRotateOnZ();
-  Vec4D hadmoms[2];
-  FillSimpleDecay(hadmoms);
-  p_cluster->RotateAndBoostBack(hadmoms[0]);
-  p_cluster->RotateAndBoostBack(hadmoms[1]);
-  p_cluster->RotateAndBoostBack();
-  cout<<"   After back rotate & boost : "<<hadmoms[0]<<" + "<<hadmoms[1]<<endl; 
-  FillParticles(hadmoms,3);
-  cout<<"   OUT "<<METHOD<<endl<<(*p_blob)<<endl;
+  else if (mode==1)            return CHDecayOne(cluster,pl,cluster->GetRight(),had1);
+  else if (mode==2)            return CHDecayOne(cluster,pl,cluster->GetLeft(),had2);
+  rvalue.IncError(METHOD);
+  //cout<<METHOD<<" 1: Error."<<endl;
+  return Return_Value::Error;
+}
+
+Return_Value::code Hadron_Part::ForcedDecay(Cluster * cluster,Part_List * pl)
+{
+  Flavour had1, had2;
+  return HHDecay(cluster,pl,had1,had2);
+}
+
+Return_Value::code Hadron_Part::CheckDecayKinematics(Cluster * cluster,Flavour & had1,Flavour & had2)
+{
+  Flavour   had;
+  Cluster * clu;
+  bool      mode;
+  double    m1 = had1.Mass(), m2 = had2.Mass(), mass = cluster->Mass();
+  while (mass<=m1+m2) {
+    if (ran.Get()>0.5) { had = had2; clu=cluster->GetRight(); mode = 1; }
+                  else { had = had1; clu=cluster->GetLeft();  mode = 0; }
+    switch (int(p_stransitions->NextLightest(clu,had))) {
+    case (int(Return_Value::Success)) :  
+      if (mode) { had2 = had; m2 = had2.Mass(); } 
+           else { had1 = had; m1 = had1.Mass(); } 
+      break;
+    case (int(Return_Value::Error)) :
+      return Return_Value::Error;
+    default:
+      msg.Error()<<"Error in "<<METHOD<<": "<<endl
+		 <<"   Unknown return value."<<endl;
+      abort();
+      break;
+    }
+  }
+  return Return_Value::Success;
+}    
+
+
+Return_Value::code  Hadron_Part::CheckDecayKinematics(Cluster * cluster,Cluster * other,
+						      Flavour & had,Flavour & help)
+{
+  //cout<<METHOD<<endl;
+  double    m1  = had.Mass(), m2 = other->Mass(), mass = cluster->Mass();
+  Cluster * clu(other==cluster->GetLeft()?cluster->GetRight():cluster->GetLeft());
+  bool      exit(false);
+  while (mass<=m1+m2 && !exit) {
+    switch (int(p_stransitions->NextLightest(clu,had))) {
+    case Return_Value::Success : 
+      m1 = had.Mass(); break;
+    case Return_Value::Error : return Return_Value::Error; 
+    case Return_Value::Warning : 
+      exit=true; break;
+    default:
+      msg.Error()<<"Error in "<<METHOD<<": "<<endl
+		 <<"   Unknown return value."<<endl;
+      abort();
+      break;
+    }
+  }
+  if (mass>=m1+m2) return Return_Value::Success; 
+  exit = false;
+  while (mass<=m1+m2 && !exit) {
+    switch (int(p_stransitions->NextLightest(other,help))) {
+    case Return_Value::Success : 
+      m2 = help.Mass(); break;
+    case Return_Value::Error : return Return_Value::Error; 
+    case Return_Value::Warning : 
+      exit=true; break;
+    default:
+      msg.Error()<<"Error in "<<METHOD<<": "<<endl
+		 <<"   Unknown return value."<<endl;
+      abort();
+      break;
+    }
+  }  
+  if (mass>=m1+m2) return Return_Value::Nothing; 
+  return Return_Value::Error; 
+}    
+
+
+Return_Value::code Hadron_Part::HHDecay(Cluster * cluster,Part_List * pl,Flavour & had1,Flavour & had2) {
+  //cout<<METHOD<<endl;
+  if (p_dtransitions->IsoDecay(cluster,had1,had2)) { 
+    if (had1==Flavour(kf::none) || had2==Flavour(kf::none)) {
+      msg.Error()<<"Error in "<<METHOD<<" : "<<endl
+		 <<"   Selected an unphysical flavour (none) in decay of"<<endl
+		 <<(*cluster)<<"   ---> "<<had1<<" + "<<had2<<endl
+		 <<"   Will continue and hope for the best."<<endl;
+      rvalue.IncError(METHOD);
+      //cout<<METHOD<<" 1: Error."<<endl;
+      return Return_Value::Error;
+    }
+    TwoHadronDecay(cluster,pl,had1,had2);
+    //cout<<METHOD<<" 1: Success."<<endl;
+    return Return_Value::Success;
+  }
+  msg.Error()<<"Error in "<<METHOD<<" : "<<endl
+	     <<"   Could not find a suitable double transition for cluster decay: "
+	     <<(*cluster)<<"   will continue and hope for the best."<<endl;
+  //cout<<METHOD<<" 2: Error."<<endl;
+  rvalue.IncError(METHOD);
+  return Return_Value::Error;
+}
+
+Return_Value::code Hadron_Part::CHDecayOne(Cluster * cluster,Part_List * pl,
+					   Cluster * remain,Flavour & had) {
+  //cout<<METHOD<<endl;
+  Vec4D  * momenta = new Vec4D[2];
+  double * masses  = new double[2];
+  Flavour help = Flavour(kf::none);
+  Particle * part(NULL);
+  Cluster * partner(cluster->GetLeft()==remain?cluster->GetRight():cluster->GetLeft());
+
+  momenta[0]   = remain->Momentum();
+  momenta[1]   = partner->Momentum();
+  masses[0]    = remain->Mass(); 
+  masses[1]    = had.PSMass();
+  switch (int(CheckDecayKinematics(cluster,remain,had,help))) {
+  case int(Return_Value::Success):
+    hadpars.AdjustMomenta(2,momenta,masses);
+    remain->RescaleMomentum(momenta[0]); 
+    part = new Particle(0,had,momenta[1]);
+    part->SetNumber(0);
+    part->SetStatus(part_status::active);
+    part->SetInfo('P');
+    part->SetFinalMass();
+    pl->push_back(part);
+    break;
+  case int(Return_Value::Nothing):
+    TwoHadronDecay(cluster,pl,had,help);
+    break;
+  case int(Return_Value::Error):
+    delete momenta;
+    delete masses;
+    msg.Error()<<"ERROR in Hadron_Part::RedoDecay : "<<endl
+	       <<cluster->Mass()<<" -> "
+	       <<cluster->GetLeft()->Mass()<<" + "<<had
+	       <<" does not work out .... "<<endl;
+    rvalue.IncError(METHOD);
+    //cout<<METHOD<<" 1: Error."<<endl;
+    return Return_Value::Error;
+  default:
+      msg.Error()<<"Error in "<<METHOD<<": "<<endl
+		 <<"   Unknown return value."<<endl;
+      abort();
+    break;
+  }
+  delete momenta;
+  delete masses;
+  //cout<<METHOD<<" 1: Success."<<endl;
   return Return_Value::Success;
 }
 
-Return_Value::code Hadron_Part::CHDecay(int & mode) {
-  cout<<"IN "<<METHOD<<" mode = "<<mode<<" for "
-      <<p_cluster->Mass(0)<<" --> "<<m_flavs[0]<<" + "<<m_flavs[1]<<endl;
-  p_cluster->BoostInCMSAndRotateOnZ();
-  Vec4D hadmoms[2];
-  if (FillCHDecay(hadmoms,mode)) {
-    if (mode==1) {
-      p_cluster->GetRight()->RescaleMomentum(hadmoms[1]);
-      hadmoms[1] = p_cluster->GetRight()->Momentum();
-      p_cluster->RotateAndBoostBack(hadmoms[0]);
+
+Return_Value::code Hadron_Part::CHDecayBoth(Cluster * cluster,Part_List * pl,
+					    Flavour & had1,Flavour & had2) {
+  //cout<<METHOD<<endl;
+  if (m_hadsel==hadsel::newpair) {
+    if (p_dtransitions->IsoDecay(cluster,had1,had2)) { 
+      if (had1==Flavour(kf::none) || had2==Flavour(kf::none)) {
+	msg.Error()<<"Error in "<<METHOD<<" : "<<endl
+		   <<"   Selected an unphysical flavour (none) in decay of"<<endl
+		   <<(*cluster)<<"   ---> "<<had1<<" + "<<had2<<endl
+		   <<"   Will continue and hope for the best."<<endl;
+	rvalue.IncError(METHOD);
+	//cout<<METHOD<<" 1: Error."<<endl;
+	return Return_Value::Error;
+      }
     }
-    else {
-      p_cluster->GetLeft()->RescaleMomentum(hadmoms[0]);
-      hadmoms[0] = p_cluster->GetLeft()->Momentum();
-      p_cluster->RotateAndBoostBack(hadmoms[1]);
-    }
-    p_cluster->RotateAndBoostBack();
-    FillParticles(hadmoms,mode);
-    cout<<"   OUT "<<METHOD<<endl<<(*p_blob)<<endl;
-    return Return_Value::Success;
   }
   else {
-    mode = 3;
-    return HHDecay();
-  }
-}
-
-void Hadron_Part::FillParticles(Vec4D * hadmoms,const int flag) {
-  Particle * part;
-  for (int i=1;i<3;i++) {
-    if (flag&i) {
-      part = new Particle(0,m_flavs[i-1],hadmoms[i-1]); 
-      part->SetNumber(0);
-      part->SetStatus(part_status::active);
-      part->SetInfo('P');
-      part->SetFinalMass();
-      p_blob->AddToOutParticles(part);
-    }
-  }
-}
-
-bool Hadron_Part::CheckHHDecayKinematics()
-{
-  double m1 = m_flavs[0].Mass(), m2 = m_flavs[1].Mass(), mass = p_cluster->Mass();
-  int    next, mode;
-  bool   fix(false);
-  while (mass<=m1+m2) {
-    if (!fix) {
-      mode = 0;
-      if (ran.Get()>0.5) mode = 1;
-    }
-    if (mode==0) {
-      next = int(p_stransitions->NextLightest(p_cluster->GetLeft(),m_flavs[0]));
-      m1   = m_flavs[0].Mass();
-    }
-    else {
-      next = int(p_stransitions->NextLightest(p_cluster->GetRight(),m_flavs[1]));
-      m2   = m_flavs[1].Mass();
-    }
-    switch (next) {
-    case (int(Return_Value::Success)) : break;
-    case (int(Return_Value::Error))   : 
-      if (!fix) {
-	mode = 1-mode;
-	fix  = true;
-	break;
-      }
-      else return false;  
-    }
-  }
-  return true;
-}    
-
-
-bool Hadron_Part::CheckCHDecayKinematics(Cluster * other)
-{
-  int mode      = 0;
-  Cluster * clu = p_cluster->GetLeft();
-  if (clu==other) {
-    mode        = 1;
-    clu         = p_cluster->GetRight();
-  }
-  double    m1  = m_flavs[mode].Mass(), m2 = other->Mass(), mass = p_cluster->Mass();
-  while (mass<=m1+m2) {
-    switch (int(p_stransitions->NextLightest(clu,m_flavs[mode]))) {
-    case Return_Value::Success : 
-      m1 = m_flavs[mode].Mass(); 
+    switch (int(CheckDecayKinematics(cluster,had1,had2))) {
+    case int(Return_Value::Success) :
+    case int(Return_Value::Nothing) :
       break;
-    case Return_Value::Error : return false;
+    case int(Return_Value::Error) :
+      rvalue.IncError(METHOD);
+      //cout<<METHOD<<" 2: Error."<<endl;
+      return Return_Value::Error;
+    default:
+      msg.Error()<<"Error in "<<METHOD<<": "<<endl
+		 <<"   Unknown return value."<<endl;
+      abort();
     }
   }
-  return true;
-}    
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-// Keep_PperpY
-/////////////////////////////////////////////////////////////////////////////////////////////
-  
-Keep_PPerpY::Keep_PPerpY() :
-  Hadron_Part()
-{
+  TwoHadronDecay(cluster,pl,had1,had2);
+  //cout<<METHOD<<" 1: Success."<<endl;
+  return Return_Value::Success;
 }
 
-void Keep_PPerpY::FillSimpleDecay(ATOOLS::Vec4D* hadmoms) 
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+// Isotropic
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+Isotropic::Isotropic() : 
+  Hadron_Part(),
+  m_smearparameter(hadpars.Get(string("AngularSmearing")))
 {
-  double energy   = p_cluster->Momentum()[0];
-  double m12      = sqr(m_flavs[0].Mass());
-  double m22      = sqr(m_flavs[1].Mass());
+  m_cht    = chtrans::CH_incl; 
+  m_hadsel = hadsel::newpair;
+
+  if (m_cht==chtrans::HH_only)   m_hadsel = hadsel::newpair;
+}
+
+void Isotropic::TwoHadronDecay(Cluster * cluster,Part_List * pl,Flavour & had1,Flavour & had2)
+{
+  Particle * part;
+  cluster->BoostInCMS();
+  double energy   = cluster->Momentum()[0];
+  double m12      = sqr(had1.Mass());
+  double m22      = sqr(had2.Mass());
   double energy1  = (sqr(energy)+m12-m22)/(2.*energy);
   double energy2  = (sqr(energy)-m12+m22)/(2.*energy);
-
-  double cosphi   = cos(2.*M_PI*ran.Get()), sinphi=sqrt(1.-cosphi*cosphi);
-  double pperp    = clu->Momentum().PPerp();
-  
-  if () {
-  }
-  else {
-    Vec3D  direction(0.,0.,1.);
-    double costheta, sintheta, phi;
-    if (int(p_cluster->GetLeads())!=0 && m_smearparameter>0.) {
-      double norm   = sqr(m_smearparameter);
+  Vec3D direction;
+  if (int(cluster->GetLeads())>0) {
+    if (m_smearparameter>0.) {
+      double norm = sqr(m_smearparameter), costheta, sintheta;
       do { costheta = 1.-2.*ran.Get(); } while (exp(-(1.-costheta)*norm)<ran.Get());
-      sintheta      = sqrt(1.-sqr(costheta));
-      direction     = Vec3D(sintheta*cosphi,sintheta*sinphi,costheta);
+      sintheta = sqrt(1.-sqr(costheta));
+      double phi      = 2.*M_PI*ran.Get();
+      Vec4D help      = Vec4D(1.,sintheta*sin(phi),sintheta*cos(phi),costheta);
+      Vec4D dir       = Vec4D(1.,Vec3D(cluster->Momentum(1))/Vec3D(cluster->Momentum(1)).Abs());
+      Poincare rot(Vec4D(1.,0.,0.,1.),help);
+      rot.Rotate(dir);
+      direction       = Vec3D(dir);
     }
-    hadmoms[0] = Vec4D(energy1,direction*sqrt(sqr(energy1)-m12));
-    hadmoms[1] = Vec4D(energy2,(-1.)*direction*sqrt(sqr(energy1)-m12));
-  }
-}
-
-bool Keep_PPerpY::FillCHDecay(ATOOLS::Vec4D* hadmoms,const int mode)
-{
-  Cluster * other = (mode==1)?p_cluster->GetRight():p_cluster->GetLeft();
-  Cluster * clu   = (mode==1)?p_cluster->GetLeft():p_cluster->GetRight();
-  if (!CheckCHDecayKinematics(other)) return false;
-
-  double m2;
-
-  double pperp  = clu->Momentum().PPerp();
-  double rap    = clu->Momentum().Y();
-  if (mode==1) m2 = sqr(m_flavs[0].Mass());
-          else m2 = sqr(m_flavs[1].Mass());
-  double mperp  = sqrt(m2+sqr(pperp));
-  double E      = mperp*cosh(rap);
-  double plong  = mperp*sinh(rap);
-  double cosphi = cos(2.*M_PI*ran.Get()), sinphi=sqrt(1.-cosphi*cosphi);
-
-  if (mode==1) {
-    hadmoms[0] = Vec4D(E,pperp*cosphi,pperp*sinphi,plong);
-    hadmoms[1] = p_cluster->Momentum()-hadmoms[0];
+    else direction    = Vec3D(cluster->Momentum(1))/Vec3D(cluster->Momentum(1)).Abs();
   }
   else {
-    hadmoms[1] = Vec4D(E,pperp*cosphi,pperp*sinphi,plong);
-    hadmoms[0] = p_cluster->Momentum()-hadmoms[1];
+    double costheta = 1.-2.*ran.Get(), sintheta = sqrt(1.-sqr(costheta));
+    double phi      = 2.*M_PI*ran.Get();
+    direction       = Vec3D(sintheta*sin(phi),sintheta*cos(phi),costheta);
   }
-}
+  Vec3D p1        = direction*sqrt(sqr(energy1)-m12);
+  Vec3D p2        = (-1.)*p1;
+  Vec4D hadmom1   = Vec4D(energy1,p1);
+  Vec4D hadmom2   = Vec4D(energy2,p2);
+  cluster->BoostBack(hadmom1);
+  cluster->BoostBack(hadmom2);
+  cluster->BoostBack();
+  if (dabs((cluster->Momentum()-hadmom1-hadmom2).Abs2())>1.e-4) {
+    msg.Error()<<"Error in Isotropic::TwoHadronDecay (after boost) : "<<endl
+	       <<"   "<<cluster->Momentum()<<" -> "<<hadmom1<<"+"<<hadmom2<<endl
+	       <<"   Sum of moms : "<<cluster->Momentum()-hadmom1-hadmom2<<endl;
+    rvalue.IncWarning(METHOD);
+  }
+  part = new Particle(0,had1,hadmom1); 
+  part->SetNumber(0);
+  part->SetStatus(part_status::active);
+  part->SetInfo('P');
+  part->SetFinalMass();
+  pl->push_back(part);
+  //cout<<"TwoHadronDecay : Add "<<had1<<" to pl"<<endl;
+  part = new Particle(0,had2,hadmom2); 
+  part->SetNumber(0);
+  part->SetStatus(part_status::active);
+  part->SetInfo('P');
+  part->SetFinalMass();
+  pl->push_back(part);
+  //cout<<"TwoHadronDecay : Add "<<had2<<" to pl"<<endl;
+}    
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Retain
@@ -234,120 +301,69 @@ bool Keep_PPerpY::FillCHDecay(ATOOLS::Vec4D* hadmoms,const int mode)
 
 Retain::Retain() : 
   Hadron_Part(),
-  m_smearparameter(hadpars.Get(string("AngularSmearing")))  
-{
-  m_cht    = chtrans::CH_incl; 
-  m_hadsel = hadsel::newpair;
-  
-  if (m_cht==chtrans::HH_only)   m_hadsel = hadsel::newpair;
-}
-
-void Retain::FillSimpleDecay(ATOOLS::Vec4D * hadmoms) {
-  double energy   = p_cluster->Momentum()[0];
-  double m12      = sqr(m_flavs[0].Mass());
-  double m22      = sqr(m_flavs[1].Mass());
-  double energy1  = (sqr(energy)+m12-m22)/(2.*energy);
-  double energy2  = (sqr(energy)-m12+m22)/(2.*energy);
-  Vec3D  direction(0.,0.,1.);
-  double costheta, sintheta, phi;
-  if (int(p_cluster->GetLeads())!=0 && m_smearparameter>0.) {
-    double norm   = sqr(m_smearparameter);
-    do { costheta = 1.-2.*ran.Get(); } while (exp(-(1.-costheta)*norm)<ran.Get());
-    sintheta      = sqrt(1.-sqr(costheta));
-    phi           = 2.*M_PI*ran.Get();
-    direction  = Vec3D(sintheta*sin(phi),sintheta*cos(phi),costheta);
-  }
-  hadmoms[0] = Vec4D(energy1,direction*sqrt(sqr(energy1)-m12));
-  hadmoms[1] = Vec4D(energy2,(-1.)*direction*sqrt(sqr(energy1)-m12));
-} 
-
-bool Retain::FillCHDecay(ATOOLS::Vec4D * hadmoms,const int mode) {
-  Cluster * other = (mode==1)?p_cluster->GetRight():p_cluster->GetLeft();
-  if (!CheckCHDecayKinematics(other)) return false;
-  double m12,m22;
-  if (mode==1) {
-    m12 = sqr(m_flavs[0].Mass());
-    m22 = sqr(other->Mass(0));
-  }
-  else {
-    m12 = sqr(other->Mass(0));
-    m22 = sqr(m_flavs[1].Mass());
-  }
-
-  double energy    = p_cluster->Momentum()[0];
-  double energy1 = (sqr(energy)+m12-m22)/(2.*energy);
-  double energy2 = (sqr(energy)-m12+m22)/(2.*energy);
-  Vec3D  direction(0.,0.,1.);
-  hadmoms[0] = Vec4D(energy1,0.,0.,sqrt(sqr(energy1)-m12));
-  hadmoms[1] = Vec4D(energy2,0.,0.,-sqrt(sqr(energy1)-m12));
-} 
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-// Isotropic
-/////////////////////////////////////////////////////////////////////////////////////////////
-  
-Isotropic::Isotropic() : 
-  Hadron_Part(),
   m_smearparameter(hadpars.Get(string("AngularSmearing")))
+
 {
   m_cht    = chtrans::CH_incl; 
   m_hadsel = hadsel::newpair;
-  
+
   if (m_cht==chtrans::HH_only)   m_hadsel = hadsel::newpair;
 }
 
-void Isotropic::FillSimpleDecay(ATOOLS::Vec4D * hadmoms) {
-  double energy   = p_cluster->Momentum()[0];
-  double m12      = sqr(m_flavs[0].Mass());
-  double m22      = sqr(m_flavs[1].Mass());
+void Retain::TwoHadronDecay(Cluster * cluster,Part_List * pl,Flavour & had1,Flavour & had2)
+{
+  Particle * part;
+  cluster->BoostInCMS();
+  double energy   = cluster->Momentum()[0];
+  double m12      = sqr(had1.Mass());
+  double m22      = sqr(had2.Mass());
   double energy1  = (sqr(energy)+m12-m22)/(2.*energy);
   double energy2  = (sqr(energy)-m12+m22)/(2.*energy);
-  Vec3D  direction(0.,0.,1.);
-  double costheta, sintheta, phi;
-  if (int(p_cluster->GetLeads())==0) {
-    costheta        = 1.-2.*ran.Get(); 
-    sintheta        = sqrt(1.-sqr(costheta));
-    phi             = 2.*M_PI*ran.Get();
+  Vec3D direction;
+  if (cluster->GetLeft()!=0) {
+    direction = Vec3D(cluster->GetLeft()->Momentum())/(Vec3D(cluster->GetLeft()->Momentum()).Abs());
   }
   else {
-    if (m_smearparameter>0.) {
-      double norm   = sqr(m_smearparameter);
+    if (int(cluster->GetLeads())>0 && m_smearparameter>0.) {
+      double norm = sqr(m_smearparameter), costheta, sintheta;
       do { costheta = 1.-2.*ran.Get(); } while (exp(-(1.-costheta)*norm)<ran.Get());
-      sintheta      = sqrt(1.-sqr(costheta));
-      phi           = 2.*M_PI*ran.Get();
+      sintheta = sqrt(1.-sqr(costheta));
+      double phi      = 2.*M_PI*ran.Get();
+      Vec4D help      = Vec4D(1.,sintheta*sin(phi),sintheta*cos(phi),costheta);
+      Vec4D dir       = Vec4D(1.,Vec3D(cluster->Momentum(1))/Vec3D(cluster->Momentum(1)).Abs());
+      Poincare rot(Vec4D(1.,0.,0.,1.),help);
+      rot.Rotate(dir);
+      direction       = Vec3D(dir);
     }
-    else {
-      costheta      = 1.;
-      sintheta      = 0.;
-      phi           = 0.;
-    }
+    else direction    = Vec3D(cluster->Momentum(1))/Vec3D(cluster->Momentum(1)).Abs();
   }
-  
-  direction  = Vec3D(sintheta*sin(phi),sintheta*cos(phi),costheta);
-  hadmoms[0] = Vec4D(energy1,direction*sqrt(sqr(energy1)-m12));
-  hadmoms[1] = Vec4D(energy2,(-1.)*direction*sqrt(sqr(energy1)-m12));
-} 
-   
-bool Isotropic::FillCHDecay(ATOOLS::Vec4D * hadmoms,const int mode) {
-  Cluster * other = (mode==1)?p_cluster->GetRight():p_cluster->GetLeft();
-  if (!CheckCHDecayKinematics(other)) return false;
-  double m12,m22;
-  if (mode==1) {
-    m12 = sqr(m_flavs[0].Mass());
-    m22 = sqr(other->Mass(0));
+  Vec3D p1        = direction*sqrt(sqr(energy1)-m12);
+  Vec3D p2        = (-1.)*p1;
+  Vec4D hadmom1   = Vec4D(energy1,p1);
+  Vec4D hadmom2   = Vec4D(energy2,p2);
+  cluster->BoostBack(hadmom1);
+  cluster->BoostBack(hadmom2);
+  cluster->BoostBack();
+  if (dabs((cluster->Momentum()-hadmom1-hadmom2).Abs2())>1.e-4) {
+    msg.Error()<<"Error in Retain::TwoHadronDecay (after boost) : "<<endl
+	       <<"   "<<cluster->Momentum()<<" -> "<<hadmom1<<"+"<<hadmom2<<endl
+	       <<"   Sum of moms : "<<cluster->Momentum()-hadmom1-hadmom2<<endl;
+    rvalue.IncWarning(METHOD);
   }
-  else {
-    m12 = sqr(other->Mass(0));
-    m22 = sqr(m_flavs[1].Mass());
-  }
-
-  double energy    = p_cluster->Momentum()[0];
-  double energy1 = (sqr(energy)+m12-m22)/(2.*energy);
-  double energy2 = (sqr(energy)-m12+m22)/(2.*energy);
-  Vec3D  direction(0.,0.,1.);
-  hadmoms[0] = Vec4D(energy1,0.,0.,sqrt(sqr(energy1)-m12));
-  hadmoms[1] = Vec4D(energy2,0.,0.,-sqrt(sqr(energy1)-m12));
-} 
-
+  part = new Particle(0,had1,hadmom1); 
+  part->SetNumber(0);
+  part->SetStatus(part_status::active);
+  part->SetInfo('P');
+  part->SetFinalMass();
+  //cout<<"TwoHadronDecay : Add "<<had1<<" to pl"<<endl;
+  pl->push_back(part);
+  part = new Particle(0,had2,hadmom2); 
+  part->SetNumber(0);
+  part->SetStatus(part_status::active);
+  part->SetInfo('P');
+  part->SetFinalMass();
+  pl->push_back(part);
+  //cout<<"TwoHadronDecay : Add "<<had2<<" to pl"<<endl;
+}    
 
 

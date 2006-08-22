@@ -16,24 +16,24 @@
 namespace AHADIC {
   class Cluster_Formation_Handler {
   private:
-    bool                                m_single_cr,m_double_cr;
+    bool                         m_single_cr,m_double_cr;
 
-    Gluon_Decayer                     * p_gludecayer;
-    Cluster_Former                    * p_cformer;
-    Colour_Reconnections              * p_recons;
-    Cluster_Transformer               * p_ctransformer;
+    Gluon_Decayer              * p_gludecayer;
+    Cluster_Former             * p_cformer;
+    Colour_Reconnections       * p_recons;
+    Cluster_Transformer        * p_ctransformer;
 
-    ATOOLS::Blob                      * p_blob;
-    Cluster_List                      * p_clulist;
-    VectorOfPPLs                        m_partlists;
-    std::vector<Cluster_List *>         m_clulists;
+    ATOOLS::Blob               * p_blob;
+    Cluster_List               * p_clulist;
+    std::vector<Part_List *>     m_partlists;
+    std::vector<Cluster_List *>  m_clulists;
 
     bool                                      m_analyse;
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
     void Reset();
 
-    ATOOLS::Return_Value::code ExtractSinglets();
+    ATOOLS::Return_Value::code ExtractSinglets(ATOOLS::Blob_List * bl);
     ATOOLS::Return_Value::code FormOriginalClusters();
     ATOOLS::Return_Value::code ApplyColourReconnections();
     ATOOLS::Return_Value::code ClustersToHadrons();
@@ -42,7 +42,8 @@ namespace AHADIC {
     Cluster_Formation_Handler(bool=false);
     ~Cluster_Formation_Handler();
 
-    ATOOLS::Return_Value::code FormClusters(ATOOLS::Blob *);
+    ATOOLS::Return_Value::code FormClusters(ATOOLS::Blob *,
+					    ATOOLS::Blob_List * bl=NULL);
 
     //! general access routines
     //@{

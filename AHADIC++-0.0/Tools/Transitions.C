@@ -66,14 +66,12 @@ bool All_Single_Transitions::MustTransit(Cluster * cluster,Flavour & hadron,
   double mass                  = cluster->Mass(0);
   Single_Transition_List * stl = stiter->second;
   double massdiscrim           = stl->begin()->Mass()+offset; 
-
-  if ((fpair.first.IsDiQuark() || fpair.second.IsDiQuark()) &&
-      (fpair.first.Kfcode()==4 || fpair.second.Kfcode()==4))
-    cout<<METHOD<<" for {"<<fpair.first<<","<<fpair.second<<"} : "
-	<<(*stl->begin())<<" "<<mass<<"  "<<massdiscrim<<endl;
+  //cout<<METHOD<<": Must transit "<<mass<<" ("<<(mass<massdiscrim)<<"),"<<std::endl
+  //  <<"     Start at : "<<(*stl->begin())<<" ("<<lighter<<") with "<<offset;
   bool success(true);
   if (mass<massdiscrim) {
     do {
+      //cout<<" -> IN ("<<m_stmode<<")"<<endl;
       success=true;
       switch (m_stmode) {
       case (stm::masswidthXwaves) :
@@ -89,11 +87,17 @@ bool All_Single_Transitions::MustTransit(Cluster * cluster,Flavour & hadron,
       default :
 	SimpleMassCriterion(cluster,stl,hadron,lighter);
       }
+      //std::cout<<"            Try a hadron in MustTransit: "<<hadron<<"("<<mass<<")"<<std::endl;
       if (lighter) { if (hadron.Mass()>mass) success=false; }
     } while (!success);
     Flavour flav1 = cluster->GetFlav(1), flav2 = cluster->GetFlav(2);
+    //cout<<"Lighter("<<lighter<<") : "<<hadron<<" "<<hadron.Mass()<<" -> "<<mass
+    //<<" "<<flav1<<"("<<hadpars.GetConstituents()->Mass(flav1)<<") "
+    //	<<"+"<<flav2<<"("<<hadpars.GetConstituents()->Mass(flav2)<<") "<<endl;
+    //std::cout<<"            Selected a hadron in MustTransit: "<<hadron<<std::endl;
     return true;
   }
+  //cout<<" -> OUT "<<endl;
   return false;
 }
 
@@ -120,7 +124,9 @@ All_Single_Transitions::NextLightest(Cluster * cluster,Flavour & had)
   }
 
   Single_Transition_Siter siter;
-  for (siter=stl->begin();siter!=stl->end();siter++) if ((*siter)==had) break;
+  for (siter=stl->begin();siter!=stl->end();siter++) {
+    if ((*siter)==had) break;
+  }
   if (siter==stl->end()) {
     msg.Error()<<"Potential error in  "<<METHOD<<" :"<<endl
 	       <<"   Did not find any entry for "<<had<<" in hadron list;"
@@ -223,6 +229,9 @@ void All_Single_Transitions::MWTimesWavefunction(Cluster * cluster,
   Hadron_Wave_Function * waves;
   double weight;
   Single_Transition_Siter start(stl->begin());
+  //std::cout<<METHOD<<" : "<<hadron<<" from "<<cluster->Mass()
+  //	   <<"("<<cluster->GetFlav(1)<<","<<cluster->GetFlav(2)<<")"
+  //	   <<"  {"<<lighter<<"}"<<std::endl;
   if (hadron!=Flavour(kf::none)) {
     for (;start!=stl->end();start++) { if ((*start)==hadron) break; }
     if (lighter && mass<hadron.Mass() && start!=stl->end()) hadron = (*start);
@@ -232,6 +241,7 @@ void All_Single_Transitions::MWTimesWavefunction(Cluster * cluster,
     if (!(*siter).IsStable() && ((*siter).Width()<minwidth)) 
       minwidth = (*siter).Width();
   }
+  //std::cout<<"    "<<minwidth<<std::endl;
   if (minwidth==1.e6) {
     MassTimesWavefunction(cluster,stl,hadron);
     return;
@@ -244,12 +254,16 @@ void All_Single_Transitions::MWTimesWavefunction(Cluster * cluster,
 	weight *= sqr(sqr(mass)-sqr((*siter).Mass()))/((*siter).Mass()*1.e-6);
       else 
 	weight *= sqr(sqr(mass)-sqr((*siter).Mass()))/((*siter).Mass()*(*siter).Width());
+      //std::cout<<"   "<<(*siter)<<" : "
+      //	       <<sqr(waves->WaveWeight(cluster->GetFlav(1),cluster->GetFlav(2)))<<" & "
+      //	       <<weight<<std::endl;
       if (weight<disc) {
 	hadron = (*siter);
 	disc   = weight;
       }
     }
   }
+  //std::cout<<METHOD<<" : "<<hadron<<std::endl;
 }
 
 void All_Single_Transitions::PrintSingleTransitions()
@@ -281,45 +295,6 @@ void All_Single_Transitions::PrintSingleTransitions()
 }
 
 
-
-Flavour All_Single_Transitions::GetSU3Pseudoscalar(double mass) {
-  Hadron_Multiplet * pseudos = p_multiplets->GetSU3Pseudoscalars();
-  double help(100.);
-  if (mass>0.) help=mass;
-
-  FlavourSet all;
-  FlSetIter  fliter;
-  Flavour    flav;
-  for (fliter=pseudos->GetElements()->begin();fliter!=pseudos->GetElements()->end();fliter++) {
-    flav = (*fliter);
-    if (flav.Mass()<help) all.insert(flav);
-  }
-  if (all.size()==0) all.insert(Flavour(kf::photon));
-
-  fliter = all.begin();
-  for (int i=0;i<int(.9999999*all.size()*ran.Get());i++) fliter++;
-  return (*fliter);
-}
-
-Flavour All_Single_Transitions::GetSU3NeutralPseudoscalar(double mass) {
-  Hadron_Multiplet * pseudos = p_multiplets->GetSU3Pseudoscalars();
-  double help(100.);
-  if (mass>0.) help=mass;
-
-  FlavourSet neutrals;
-  FlSetIter  fliter;
-  Flavour    flav;
-  for (fliter=pseudos->GetElements()->begin();fliter!=pseudos->GetElements()->end();fliter++) {
-    flav = (*fliter);
-    if (flav.Charge()==0 && flav.Mass()<help) neutrals.insert(flav);
-  }
-  if (neutrals.size()==0) neutrals.insert(Flavour(kf::photon));
-
-  fliter = neutrals.begin();
-  for (int i=0;i<int(.9999999*neutrals.size()*ran.Get());i++) fliter++;
-  return (*fliter);
-}
-
 All_Double_Transitions::All_Double_Transitions(All_Hadron_Multiplets * multis) :
   m_dtmode(dtm::waves_PS), 
   p_multiplets(multis),
@@ -349,26 +324,21 @@ All_Double_Transitions::All_Double_Transitions(All_Hadron_Multiplets * multis) :
 	flpair.first = swv1->first->first;
 	for (WFcompiter swv2=waves2->begin();swv2!=waves2->end();swv2++) {
 	  flpair.second = swv2->first->second;
-	  if (swv1->first->second!=swv2->first->first.Bar() ||
-	      swv1->first->second==Flavour(kf::gluon) ||
-	      swv1->first->second==Flavour(kf::c) ||
-	      swv1->first->second==Flavour(kf::b)) continue;
+	  if (swv1->first->second!=swv2->first->first.Bar()) continue;
 	  cchelp = swv2->first->first;
 	  if (cchelp.IsDiQuark()) cchelp = cchelp.Bar();
 	  cc     = p_alloweds->find(cchelp);
-	  if (cc==p_alloweds->end() ||
-	      cc->second->TotWeight()<1.e-6) continue;
+	  if (cc==p_alloweds->end()) continue;
 	  wt    *= cc->second->TotWeight();
+	  //cout<<swv2->first->first<<" : Multiply by "<<cc->second->TotWeight()<<endl;
 	  dtiter = p_transitions->find(flpair);
 	  if (dtiter!=p_transitions->end()) {
 	    (*dtiter->second)[hadpair] += wt*sqr(swv1->second*swv2->second);
 	  }
 	  else {
-	    if (wt*sqr(swv1->second*swv2->second)>0.) {
-	      dtl                      = new Double_Transition_List;
-	      (*dtl)[hadpair]          = wt*sqr(swv1->second*swv2->second);
-	      (*p_transitions)[flpair] = dtl;
-	    }
+	    dtl             = new Double_Transition_List;
+	    (*dtl)[hadpair] = wt*sqr(swv1->second*swv2->second);
+	    (*p_transitions)[flpair] = dtl;
 	  }
 	}
       }
@@ -389,67 +359,15 @@ All_Double_Transitions::~All_Double_Transitions()
   }
 }  
 
-bool All_Double_Transitions::MustTransit(Cluster * cluster,Flavour & dec1,Flavour & dec2,
-					 const double offset, bool lighter)
-{
-  dec1 = dec2 = Flavour(kf::none); 
-
-  FlavPair flpair;
-  flpair.first  = cluster->GetFlav(1);
-  flpair.second = cluster->GetFlav(2);
-
-  double wt(0.), cmass2(cluster->Mass2()),mmax(0.),mmin(sqrt(cmass2)), ps,m1,m2;
-  Double_Transition_Miter dtliter = p_transitions->find(flpair);
-  if (dtliter==p_transitions->end()) {
-    msg.Error()<<"ERROR in "<<METHOD<<" : "<<endl
-	       <<"   No transition table found for "<<flpair.first<<"/"<<flpair.second<<endl
-	       <<"   Return 'false' and hope for the best."<<std::endl;
-    return false;
-  }
-  for (Double_Transition_Siter decit=dtliter->second->begin();
-       decit!=dtliter->second->end();decit++) {
-    m1  = decit->first.first.Mass();
-    m2  = decit->first.second.Mass();
-    ps  = (cmass2-sqr(m1+m2)>0 ? sqrt((cmass2-sqr(m1+m2))*(cmass2-sqr(m1-m2))):0.);
-    if (ps>0.) {
-      wt += ps*decit->second;
-      if (m1+m2>mmax) { 
-	mmax=m1+m2;
-	dec1 = decit->first.first;
-	dec2 = decit->first.second;
-      }
-    }
-    if (m1+m2<mmin) mmin=m1+m2;
-  }
-  if (cmass2>sqr(mmax+offset) || wt==0.) return false;
-  cout<<"       "<<METHOD<<" : "<<sqrt(cmass2)<<" "<<mmax<<" + "<<offset<<" = "<<wt
-      <<" for "<<dec1<<" & "<<dec2<<" from "<<flpair.first<<" & "<<flpair.second<<endl;
-  dec1 = dec2 = Flavour(kf::none); 
-  wt *= ran.Get();
-  for (Double_Transition_Siter decit=dtliter->second->begin();
-       decit!=dtliter->second->end();decit++) {
-    m1  = decit->first.first.Mass();
-    m2  = decit->first.second.Mass();
-    ps  = (cmass2-sqr(m1+m2)>0 ? sqrt((cmass2-sqr(m1+m2))*(cmass2-sqr(m1-m2))):0.);
-    if (ps>0.) wt -= ps*decit->second;
-    if (wt<0.) {
-      dec1 = decit->first.first;
-      dec2 = decit->first.second;
-      cout<<"       "<<METHOD<<" select cluster ("<<flpair.first<<","<<flpair.second<<"),"
-	  <<" m = "<<sqrt(cmass2)<<" -> "<<dec1<<" & "<<dec2<<endl;
-      return true;
-    }
-  }
-  return false;
-}
-
 bool All_Double_Transitions::IsoDecay(Cluster * cluster,Flavour & dec1,Flavour & dec2)
 {
   FlavPair flpair;
   flpair.first  = cluster->GetFlav(1);
   flpair.second = cluster->GetFlav(2);
   Double_Transition_Miter dtliter = p_transitions->find(flpair);
-  if (dtliter!=p_transitions->end()) {
+  //std::cout<<METHOD<<" "<<flpair.first<<" "<<flpair.second<<std::endl;
+  if (dtliter!=p_transitions->end())
+  {
     double PS=0., cmass2=cluster->Mass2(), ps,m1,m2;
     for (Double_Transition_Siter decit=dtliter->second->begin();
 	 decit!=dtliter->second->end();decit++) {
@@ -459,6 +377,9 @@ bool All_Double_Transitions::IsoDecay(Cluster * cluster,Flavour & dec1,Flavour &
       if (ps>0.) ps = sqrt(ps);
             else ps = 0.;
       PS += ps*decit->second;
+      //std::cout<<"Check this "<<cmass2<<" -> "
+      //<<decit->first.first<<" "<<decit->first.second<<" "
+      //       <<decit->second<<" * "<<ps<<endl;
     }
     PS *= ran.Get();
     for (Double_Transition_Siter decit=dtliter->second->begin();
@@ -472,9 +393,10 @@ bool All_Double_Transitions::IsoDecay(Cluster * cluster,Flavour & dec1,Flavour &
       if (PS<0.) { 
 	dec1 = decit->first.first;
 	dec2 = decit->first.second;
-	return true;
+	break;
       }
     }
+    return true;
   }
   else PrintDoubleTransitions();
   dec1 = dec2 = Flavour(kf::none);

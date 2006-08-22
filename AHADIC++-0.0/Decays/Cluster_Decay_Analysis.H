@@ -10,7 +10,7 @@
 namespace AHADIC {
   class Cluster_Decay_Analysis {
   private:
-    bool                                      m_analyse;
+    bool                                            m_analyse;
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
   public:
     Cluster_Decay_Analysis();

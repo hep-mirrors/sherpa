@@ -3,31 +3,27 @@
 
 #include "Cluster_Part.H"
 #include "Hadron_Part.H"
-#include "Cluster_Transformer.H"
 #include "Transitions.H"
 #include "Cluster.H"
-#include "Blob.H"
 #include "Return_Value.H"
-
 
 namespace AHADIC {
   class Cluster_Decayer_Base {
   private:
-    All_Double_Transitions * p_dtransitions;
     All_Single_Transitions * p_stransitions;
     Cluster_Part           * p_cdecs;
     Hadron_Part            * p_chads;
-    Cluster_Transformer    * p_transformer;
-    double                   m_offset;
+ 
+    int             m_test;
+    double          m_offset;
+    ATOOLS::Flavour m_had1, m_had2;
     
-    int  TestOffSprings(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &);
-    void InitDecayBlob(Cluster *,ATOOLS::Blob *&);
-    ATOOLS::Return_Value::code TreatHadDecay(Cluster *,ATOOLS::Blob *&,const int,
-					     ATOOLS::Flavour &,ATOOLS::Flavour &);
+    void TestOffSprings(Cluster *);
+    ATOOLS::Return_Value::code TreatHadDecay(Cluster *,Part_List *);
   public:
-    Cluster_Decayer_Base(Cluster_Part *,Hadron_Part *,Cluster_Transformer *);
+    Cluster_Decayer_Base(Cluster_Part *,Hadron_Part *);
     ~Cluster_Decayer_Base();
-    ATOOLS::Return_Value::code Treat(Cluster *,ATOOLS::Blob *&);
+    ATOOLS::Return_Value::code Treat(Cluster *,Part_List *);
   };
   /*!
     \file Cluster_Decayer_Base.H
