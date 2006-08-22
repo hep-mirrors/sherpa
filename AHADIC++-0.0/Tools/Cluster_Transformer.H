@@ -21,16 +21,14 @@ namespace AHADIC {
     ctrans::code             m_mode;
     double                   m_offset;
     double                   m_gammaenergy;
-    All_Single_Transitions * p_transitions;
+    All_Single_Transitions * p_stransitions;
+    All_Double_Transitions * p_dtransitions;
 
-    void DecayCluster(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &,
-		      Part_List *,ATOOLS::Blob *);
+    void DecayCluster(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &,ATOOLS::Blob *);
   public:
     Cluster_Transformer();
     ~Cluster_Transformer();
-    ATOOLS::Return_Value::code TreatSingleCluster(Cluster_List *,ATOOLS::Blob *);
-    ATOOLS::Return_Value::code TreatSingleCluster(Cluster *,Part_List *,
-						  ATOOLS::Blob * =NULL);
+    ATOOLS::Return_Value::code TreatSingleCluster(Cluster *,ATOOLS::Blob *);
     ATOOLS::Return_Value::code TreatClusterList(Cluster_List *,ATOOLS::Blob *);
   };
 

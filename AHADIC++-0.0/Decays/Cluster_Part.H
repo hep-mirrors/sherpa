@@ -3,6 +3,8 @@
 
 #include "Pair_Popper.H"
 #include "Cluster.H"
+#include "Histogram.H"
+#include <map>
 #include "Return_Value.H"
 
 
@@ -10,40 +12,70 @@ namespace AHADIC {
   class Cluster_Part {
   protected:
     Pair_Popper m_popper;
-    double      m_Q;
     int         m_4Qmode;
+    bool        m_ana;
+
+    std::map<std::string,ATOOLS::Histogram *> m_histograms;
     bool Veto(Cluster *,const ATOOLS::Flavour &);
-    virtual ATOOLS::Return_Value::code Test(Cluster * const,Part_List * const,const double);
+
+    virtual bool BuildKinematics(Cluster *,ATOOLS::Flavour &,
+				 ATOOLS::Vec4D *,double *)=0;
   public:
-    inline Cluster_Part(const int mode=1) : 
-      m_popper(Pair_Popper()), 
-      m_Q(hadpars.Get(std::string("Q_breakup"))),
-      m_4Qmode(mode) {}
-    virtual ~Cluster_Part() {}
-    virtual ATOOLS::Return_Value::code TestDecay(Cluster *,Part_List *)=0;
+    Cluster_Part(const double,const int);
+    virtual ~Cluster_Part() {};
+    ATOOLS::Return_Value::code TestDecay(Cluster *);
+
+    inline virtual void SetDecayAnalysisOn() { m_ana=true; }
   };
 
-  class Simple_Q_over_M : public Cluster_Part {
-  public:
-    Simple_Q_over_M();
-    ~Simple_Q_over_M();
-    ATOOLS::Return_Value::code TestDecay(Cluster *,Part_List *);
-  };
+  class Schwinger_Uniform : public Cluster_Part {
+    double m_tension, m_fraction, m_ystar_expvalue,m_ystar_sigma;
 
-  class Running_Q_over_M : public Cluster_Part {
-    const double SelectQ(const double) const;
+    double GetYStar(const double,const double);
+    bool   BuildKinematics(Cluster *,ATOOLS::Flavour &,
+			   ATOOLS::Vec4D *,double *);
   public:
-    Running_Q_over_M();
-    ~Running_Q_over_M();
-    ATOOLS::Return_Value::code TestDecay(Cluster *,Part_List *);
+    Schwinger_Uniform();
+    ~Schwinger_Uniform();
+
+    void SetDecayAnalysisOn();
   };
 
   class Four_Fermion : public Cluster_Part {
+    bool BuildKinematics(Cluster *,ATOOLS::Flavour &,
+			 ATOOLS::Vec4D *,double *) { abort(); }
   public:
-    Four_Fermion() {}
+    Four_Fermion() : Cluster_Part(0.,0) {}
     ~Four_Fermion() {}
-    ATOOLS::Return_Value::code TestDecay(Cluster *,Part_List *) { abort(); }
   };
+
+  class Cluster_Part_QBreakup : public Cluster_Part {
+  protected:
+    double m_Q;
+    virtual const double SelectQ(const double) const=0;
+    bool BuildKinematics(Cluster *,ATOOLS::Flavour &,
+			 ATOOLS::Vec4D *,double *); 
+  public:
+    inline Cluster_Part_QBreakup(const double tension=0.,const int mode=1) : 
+      Cluster_Part(tension,mode),
+      m_Q(hadpars.Get(std::string("Q_breakup"))) {}
+    virtual ~Cluster_Part_QBreakup() {}
+  };
+
+  class Simple_Q_over_M : public Cluster_Part_QBreakup {
+    const double SelectQ(const double) const { return m_Q; }
+  public:
+    Simple_Q_over_M();
+    ~Simple_Q_over_M() {}
+  };
+
+  class Running_Q_over_M : public Cluster_Part_QBreakup {
+    const double SelectQ(const double) const;
+  public:
+    Running_Q_over_M();
+    ~Running_Q_over_M() {}
+  };
+
   /*!
     \file Cluster_Part.H
     \brief Contains the virtual mother class AHADIC::Cluster_Part and its explicit realisations

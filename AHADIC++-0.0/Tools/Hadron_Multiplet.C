@@ -290,12 +290,7 @@ All_Hadron_Multiplets::ConstructBaryonWaveFunction(int lp,int spin,
     pair->first  = Flavour(kf::code(pos2));
     pair->second = (pos1>pos3) ? Flavour(kf::code(pos1*1000+pos3*100+3)) :
                                  Flavour(kf::code(pos3*1000+pos1*100+3));
-    wavefunction->AddToWaves(pair,1./sqrt(3.));
-    pair         = new FlavPair;
-    pair->first  = Flavour(kf::code(pos3));
-    pair->second = (pos1>pos2) ? Flavour(kf::code(pos1*1000+pos2*100+3)) :
-                                 Flavour(kf::code(pos2*1000+pos1*100+3));
-    wavefunction->AddToWaves(pair,1./sqrt(3.));
+    wavefunction->AddToWaves(pair,sqrt(2./3.));
     break;
   case 103:
     pair         = new FlavPair;
@@ -368,7 +363,6 @@ void All_Hadron_Multiplets::ConstructAntiWaveFunctions()
   Hadron_Wave_Function * anti; 
   for (Hadron_WF_Miter wfm=p_wavefunctions->begin();wfm!=p_wavefunctions->end();wfm++) {
     anti = wfm->second->Anti();
-    //cout<<"Anti wave function for "<<wfm->first<<" : "<<anti<<endl;
     if (anti!=NULL) (*p_wavefunctions)[wfm->first.Bar()] = anti;
   } 
 }

@@ -11,10 +11,12 @@ namespace AHADIC {
   private:
     Constituents * p_constituents;
     double         m_totweight;
+    double         m_tension,m_minmt2;
   public:
-    Pair_Popper();
+    Pair_Popper(const double=0);
     ~Pair_Popper() {}
-    ATOOLS::Return_Value::code Pop(ATOOLS::Flavour &);
+    ATOOLS::Return_Value::code Pop(ATOOLS::Flavour &,double &,const double=100.);
+    ATOOLS::Return_Value::code Pop(ATOOLS::Flavour &,const double=100.);
   };
   /*!
     \file Pair_Popper.H

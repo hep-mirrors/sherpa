@@ -3,6 +3,7 @@
 
 #include "Transitions.H"
 #include "Cluster.H"
+#include "Blob.H"
 
 
 namespace AHADIC {
@@ -25,47 +26,66 @@ namespace AHADIC {
   protected:
     chtrans::code m_cht;
     hadsel::code  m_hadsel;
+
+    double        m_smearparameter;
     
-    All_Single_Transitions * p_stransitions;
     All_Double_Transitions * p_dtransitions;
-    virtual ATOOLS::Return_Value::code HHDecay(Cluster *,Part_List *,
-					       ATOOLS::Flavour &,ATOOLS::Flavour &);
-    virtual ATOOLS::Return_Value::code CHDecayOne(Cluster *,Part_List *,
-						  Cluster *,ATOOLS::Flavour &);
-    virtual ATOOLS::Return_Value::code CHDecayBoth(Cluster *,Part_List *,
-						   ATOOLS::Flavour &,ATOOLS::Flavour &);
-    virtual ATOOLS::Return_Value::code CheckDecayKinematics(Cluster *,
-							    ATOOLS::Flavour &,ATOOLS::Flavour &);
-    virtual ATOOLS::Return_Value::code CheckDecayKinematics(Cluster *,Cluster *,
-							    ATOOLS::Flavour &,ATOOLS::Flavour &);
-    virtual void TwoHadronDecay(Cluster *,Part_List *,
-				ATOOLS::Flavour &,ATOOLS::Flavour &)=0;
+    All_Single_Transitions * p_stransitions;
+    
+    Cluster                * p_cluster;
+    ATOOLS::Blob           * p_blob;
+    ATOOLS::Flavour          m_flavs[2];
+    
+    ATOOLS::Return_Value::code HHDecay(const bool=false);
+    ATOOLS::Return_Value::code CHDecay(int &);
+    
+    virtual void FillSimpleDecay(ATOOLS::Vec4D*)=0;
+    virtual bool FillCHDecay(ATOOLS::Vec4D*,const int)=0;
+
+    void FillParticles(ATOOLS::Vec4D *,const int=0);
+    bool CheckHHDecayKinematics();
+    bool CheckCHDecayKinematics(Cluster *);
   public:
     Hadron_Part();
     virtual ~Hadron_Part() {}
-    virtual ATOOLS::Return_Value::code RedoDecay(Cluster *,Part_List *,int,
+    virtual ATOOLS::Return_Value::code RedoDecay(Cluster *,ATOOLS::Blob *,int &,
 						 ATOOLS::Flavour &,ATOOLS::Flavour &);
-    virtual ATOOLS::Return_Value::code ForcedDecay(Cluster *,Part_List *);
   };
-
+  
 
   class Isotropic : public Hadron_Part {
   private:
-    double m_smearparameter;
-    void TwoHadronDecay(Cluster *,Part_List *,
-			ATOOLS::Flavour &,ATOOLS::Flavour &);
+    ATOOLS::Return_Value::code CHDecay(const int);
+    ATOOLS::Return_Value::code HHDecay();
+    
+    void FillSimpleDecay(ATOOLS::Vec4D*);
+    bool FillCHDecay(ATOOLS::Vec4D*,const int);
   public:
     Isotropic();
     ~Isotropic() {}
   };
-
+  
   class Retain : public Hadron_Part {
-    double m_smearparameter;
-    void TwoHadronDecay(Cluster *,Part_List *,
-			ATOOLS::Flavour &,ATOOLS::Flavour &);
+    ATOOLS::Return_Value::code CHDecay(const int);
+    ATOOLS::Return_Value::code HHDecay();
+    
+    void FillSimpleDecay(ATOOLS::Vec4D*);
+    bool FillCHDecay(ATOOLS::Vec4D*,const int);
   public:
     Retain();
     ~Retain() {}
+  };
+
+
+  class Keep_PPerpY : public Hadron_Part {
+    ATOOLS::Return_Value::code CHDecay(const int);
+    ATOOLS::Return_Value::code HHDecay();
+
+    void FillSimpleDecay(ATOOLS::Vec4D*);
+    bool FillCHDecay(ATOOLS::Vec4D*,const int);
+  public:
+    Keep_PPerpY();
+    ~Keep_PPerpY() {}
   };
   /*!
     \file Hadron_Part.H

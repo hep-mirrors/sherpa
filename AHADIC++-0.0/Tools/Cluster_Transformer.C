@@ -10,73 +10,67 @@ using namespace std;
 Cluster_Transformer::Cluster_Transformer() :
   m_mode(ctrans::photonemission), 
   m_offset(hadpars.Get(string("Offset"))), m_gammaenergy(0.1), 
-  p_transitions(hadpars.GetSingleTransitions())
+  p_stransitions(hadpars.GetSingleTransitions()),
+  p_dtransitions(hadpars.GetDoubleTransitions())
 {}
 
 Cluster_Transformer::~Cluster_Transformer() {}
 
 
 Return_Value::code 
-Cluster_Transformer::TreatSingleCluster(Cluster_List * clist,Blob * blob) {
-  Cluster * cluster = *(clist->begin());
-  Return_Value::code success(TreatSingleCluster(*(clist->begin()),NULL,blob));
-  if (success==Return_Value::Success) clist->erase(clist->begin());
-  return success;
-}
-
-Return_Value::code 
-Cluster_Transformer::TreatSingleCluster(Cluster * cluster,
-					Part_List * plist,Blob * blob) 
+Cluster_Transformer::TreatSingleCluster(Cluster * cluster,Blob * blob) 
 {
-  Flavour hadron, extra;
-  double  clumass,hadmass,extramass;
-  if (p_transitions->MustTransit(cluster,hadron,m_offset)) {
+  Flavour had1, had2;
+  bool    decayit(false);
+  if (p_dtransitions->MustTransit(cluster,had1,had2)) decayit=true;
+  else if (p_stransitions->MustTransit(cluster,had1,m_offset)) {
+    double clumass(cluster->Mass()), had1mass(had1.Mass()), had2mass(clumass);
     switch (m_mode) {
-    case int(ctrans::photonemission):
-      extra     = Flavour(kf::photon);
-      clumass   = cluster->Mass();
-      hadmass   = hadron.Mass();
-      while (clumass<hadmass+m_gammaenergy) {
-	switch(int(p_transitions->NextLightest(cluster,hadron))) {
-	case (int(Return_Value::Success)) :
-	  break;
-	case (int(Return_Value::Error))   :
-	case (int(Return_Value::Warning)) :
-	  rvalue.IncError(METHOD);
-	  return Return_Value::Failure;
+      case int(ctrans::photonemission):
+	had2 = Flavour(kf::photon);
+	while (clumass<had1mass+m_gammaenergy) {
+	  switch(int(p_stransitions->NextLightest(cluster,had1))) {
+	  case (int(Return_Value::Success)) :
+	    break;
+	  case (int(Return_Value::Error))   :
+	  case (int(Return_Value::Warning)) :
+	    return Return_Value::Warning;
+	  }
+	  had1mass   = had1.Mass();
 	}
-	hadmass   = hadron.Mass();
-      }
-      DecayCluster(cluster,hadron,extra,plist,blob);
-      return Return_Value::Success;
-    case int(ctrans::pi0emission):
-      extra     = Flavour(kf::pi);
-      clumass   = cluster->Mass();
-      hadmass   = hadron.Mass();
-      extramass = extra.Mass();
-      while (clumass<hadmass+extramass) {
-	switch(int(p_transitions->NextLightest(cluster,hadron))) {
-	case (int(Return_Value::Success)) :break;
-	case (int(Return_Value::Error))   :      
-	case (int(Return_Value::Warning)) :
-	  rvalue.IncError(METHOD);
-	  return Return_Value::Failure;
+	decayit = true;
+	break;
+      case int(ctrans::pi0emission):
+	had2     = Flavour(kf::pi);
+	had2mass = had2.Mass();
+	while (clumass<had1mass+had2mass) {
+	  switch(int(p_stransitions->NextLightest(cluster,had1))) {
+	  case (int(Return_Value::Success)) :
+	    break;
+	  case (int(Return_Value::Error))   :
+	  case (int(Return_Value::Warning)) :
+	    return Return_Value::Warning;
+	  }
+	  had1mass   = had1.Mass();
 	}
-	hadmass   = hadron.Mass();
-      }
-      DecayCluster(cluster,hadron,extra,plist,blob);
-      return Return_Value::Success;
-    case int(ctrans::forceddecay):
-      msg.Error()<<"Error in  Cluster_Transformer::TreatSingleCluster: "<<endl
-		 <<"   Option 'ForcedDecay' not realised yet, will abort."<<endl;
-      abort();
-    case int(ctrans::nothing):
-    default:
-      return Return_Value::Success;
+	decayit = true;
+	break;
+      default:
+	return Return_Value::Warning;
     }
+  
+  }
+  if (decayit) {
+    cout<<METHOD<<" : decay "<<endl<<(*cluster)<<" --> "<<had1<<" & "<<had2
+	<<" ("<<cluster->Mass(0)<<" -> "<<had1.Mass()<<"+"<<had2.Mass()<<")"<<endl;
+    DecayCluster(cluster,had1,had2,blob);
+    if (cluster->GetSelf()) { delete cluster->GetSelf(); cluster->SetSelf(NULL); }
+    if (cluster) delete cluster;
+    return Return_Value::Success;
   }
   return Return_Value::Nothing;
 }
+
 
 Return_Value::code 
 Cluster_Transformer::TreatClusterList(Cluster_List * clist,ATOOLS::Blob * blob) {
@@ -87,20 +81,14 @@ Cluster_Transformer::TreatClusterList(Cluster_List * clist,ATOOLS::Blob * blob) 
   Vec4D  * momenta = new Vec4D[number];
   double * masses  = new double[number];
   bool     shiftit = false;
-  //cout<<"Test clusterlist for forced transitions."<<endl;
   for (Cluster_Iterator cit=clist->begin();cit!=clist->end();cit++,i++) {
     momenta[i]   = (*cit)->Momentum(0);
-    //cout<<"Perform check : "<<(*cit)->Mass(0)<<std::endl;
-    if (p_transitions->MustTransit((*cit),hadron,m_offset,true)) {
+    if (p_stransitions->MustTransit((*cit),hadron,m_offset,true)) {
       masses[i]  = hadron.Mass();
       hadrons[i] = hadron;;
-      //cout<<"      Cluster in list with "<<(*cit)->Momentum()<<":"<<hadron.Mass()<<endl;  
       shiftit    = true;
     }
-    else
-      masses[i] = (*cit)->Mass(0);
-    //std::cout<<"      Check this : "<<masses[i]<<" "<<(*cit)->Mass(0)<<" "
-    //	     <<sqrt(momenta[i].Abs2())<<" "<<sqrt(((*cit)->Momentum(0)).Abs2())<<endl;
+    else masses[i] = (*cit)->Mass(0);
   }
   if (shiftit) {
     if (!hadpars.AdjustMomenta(number,momenta,masses)) {
@@ -111,31 +99,38 @@ Cluster_Transformer::TreatClusterList(Cluster_List * clist,ATOOLS::Blob * blob) 
       return Return_Value::Error;
     }
     i = 0;
+    Particle * part;
     for (Cluster_Iterator cit=clist->begin();cit!=clist->end();i++) {
       if (hadrons.find(i)==hadrons.end()) {
 	(*cit)->RescaleMomentum(momenta[i]);  
+	blob->AddToOutParticles((*cit)->GetSelf());	
 	cit++;
       }
       else {
-	Particle * part = new Particle(0,hadrons[i],momenta[i]);
+	part = new Particle(0,hadrons[i],momenta[i]);
 	part->SetNumber(0);
 	part->SetStatus(part_status::active);
 	part->SetInfo('P');
 	part->SetFinalMass();
 	blob->AddToOutParticles(part);
+	if ((*cit)->GetSelf()) { delete (*cit)->GetSelf(); (*cit)->SetSelf(NULL); }
+	if ((*cit))            { delete (*cit); (*cit)=NULL; }
 	cit = clist->erase(cit);
       }
     }
+    delete masses;
+    delete momenta;
   }
-  delete masses;
-  delete momenta;
+  else {
+    for (Cluster_Iterator cit=clist->begin();cit!=clist->end();cit++) 
+      blob->AddToOutParticles((*cit)->GetSelf());	
+  }
   return Return_Value::Success;
 }
 
 void Cluster_Transformer::DecayCluster(Cluster * cluster,Flavour & had1,Flavour & had2,
-				       Part_List * plist,Blob * blob)
+				       Blob * blob)
 {
-  //cout<<"         Check C->HH (1): "<<cluster->Momentum()<<" -> "<<had1<<"/"<<had2<<endl;
   cluster->BoostInCMS();
   double energy   = cluster->Momentum()[0];
   double m12      = sqr(had1.Mass());
@@ -153,9 +148,6 @@ void Cluster_Transformer::DecayCluster(Cluster * cluster,Flavour & had1,Flavour 
   cluster->BoostBack(hadmom2);
   cluster->BoostBack();
 
-  //cout<<"         Check C->HH (2): "<<cluster->Momentum()
-  //<<endl<<"   -> "<<hadmom1<<" "<<hadmom2<<endl;
-  
   if (dabs((cluster->Momentum()-hadmom1-hadmom2).Abs2())>1.e-4) {
     msg.Error()<<"Error in Isotropic::TwoHadronDecay (after boost) : "<<endl
 	       <<"   "<<cluster->Momentum()<<" -> "<<hadmom1<<"+"<<hadmom2<<endl
@@ -166,15 +158,13 @@ void Cluster_Transformer::DecayCluster(Cluster * cluster,Flavour & had1,Flavour 
   part->SetStatus(part_status::active);
   part->SetInfo('P');
   part->SetFinalMass();
-  if (blob!=NULL)       blob->AddToOutParticles(part);
-  else if (plist!=NULL) plist->push_back(part);
+  blob->AddToOutParticles(part);
   part = new Particle(0,had2,hadmom2); 
   part->SetNumber(0);
   part->SetStatus(part_status::active);
   part->SetInfo('P');
   part->SetFinalMass();
-  if (blob!=NULL)       blob->AddToOutParticles(part);
-  else if (plist!=NULL) plist->push_back(part);
+  blob->AddToOutParticles(part);
 }    
 
 

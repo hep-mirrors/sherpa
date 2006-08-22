@@ -10,10 +10,12 @@ using namespace std;
 
 bool Momenta_Stretcher::MassThem(const int n,Vec4D * momenta,const double * masses)
 {
+  //cout<<METHOD<<":"<<momenta[0]<<" "<<momenta[1]<<endl;
   if (n==2) {
     Vec4D cms         = momenta[0]+momenta[1];
     Poincare boost(cms);
     for (int i=0;i<2;i++) boost.Boost(momenta[i]);
+    //cout<<" cms = "<<cms<<":"<<momenta[0]<<" "<<momenta[1]<<endl;
     double energy     = momenta[0][0]+momenta[1][0];
     if (masses[0]+masses[1]<energy) {
       double m12      = sqr(masses[0]);
@@ -25,10 +27,12 @@ bool Momenta_Stretcher::MassThem(const int n,Vec4D * momenta,const double * mass
       Vec3D p1        = (-1.)*p0;
       momenta[0]      = Vec4D(energy0,p0);
       momenta[1]      = Vec4D(energy1,p1);
+      //cout<<METHOD<<" if  :"<<momenta[0]<<" "<<momenta[1]<<endl;
       for (int i=0;i<2;i++) boost.BoostBack(momenta[i]);
       return true; 
     }
     else {
+      //cout<<METHOD<<" else:"<<momenta[0]<<" "<<momenta[1]<<endl;
       for (int i=0;i<2;i++) boost.BoostBack(momenta[i]);
       return false; 
     }
@@ -85,6 +89,7 @@ bool Momenta_Stretcher::ZeroThem(const int n,Vec4D * momenta)
     Vec3D direction = Vec3D(momenta[0])/(Vec3D(momenta[0]).Abs());
     momenta[0]      = energy/2.*Vec4D(1.,direction);
     momenta[1]      = energy/2.*Vec4D(1.,-1.*direction);
+    //cout<<METHOD<<":"<<momenta[0]<<" "<<momenta[1]<<endl;
     return true; 
   }
   else {
@@ -144,34 +149,42 @@ void Hadronisation_Parameters::Init(string dir,string file)
   msg.Tracking()<<"In Hadronisation_Parameters::Init("<<dir<<file<<")"<<endl;
   ReadParameters(dir,file);
   p_constituents = new Constituents(false);
-  if (msg.LevelIsTracking()) p_constituents->PrintConstituents();
+  // if (msg.LevelIsTracking()) p_constituents->PrintConstituents();
 
   p_multiplets   = new All_Hadron_Multiplets();
-  if (msg.LevelIsTracking()) p_multiplets->PrintWaveFunctions(); 
-  //abort();
+  //if (msg.LevelIsTracking()) p_multiplets->PrintWaveFunctions(); 
 
   p_transitions1 = new All_Single_Transitions(p_multiplets);
-  if (msg.LevelIsTracking()) p_transitions1->PrintSingleTransitions(); 
+  //if (msg.LevelIsTracking()) p_transitions1->PrintSingleTransitions(); 
 
   p_transitions2 = new All_Double_Transitions(p_multiplets);
-  if (msg.LevelIsTracking()) p_transitions2->PrintDoubleTransitions(); 
+  //if (msg.LevelIsTracking()) p_transitions2->PrintDoubleTransitions(); 
+  //abort();
 }
   
 void Hadronisation_Parameters::ReadParameters(string dir,string file)
 {
   Data_Read dataread(dir+file);
-  m_parametermap[string("Strange_supression")] =
-    dataread.GetValue<double>("STRANGE_SUPRESSION",0.2);      
-  m_parametermap[string("Baryon_supression")]  = 
-    dataread.GetValue<double>("BARYON_SUPRESSION",0.2);
-  m_parametermap[string("Q_breakup")]          = 
-    dataread.GetValue<double>("Q_BREAKUP",1.);
+  m_parametermap[string("Tension")]            = 
+    dataread.GetValue<double>("COLOUR_TENSION",0.33);
+  m_parametermap[string("<Y>")]                = 
+    dataread.GetValue<double>("<Y*_SHIFT>",0.5);
+  m_parametermap[string("Y*_WIDTH")]           = 
+    dataread.GetValue<double>("Y*_WIDTH",dabs(Get("<Y>"))>1.e-3?Get("<Y>"):0.5);
+  m_parametermap[string("MassFraction")]       = 
+    dataread.GetValue<double>("CLUSTER_MASS_FRACTION",0.5);
   m_parametermap[string("Offset")] =
     dataread.GetValue<double>("TransitionOffset",0.75);      
+  m_parametermap[string("Q_breakup")]          = 
+    dataread.GetValue<double>("Q_BREAKUP",1.);
   m_parametermap[string("AngularSmearing")]    = 
     dataread.GetValue<double>("AngularSmearing",Get("Q_breakup"));
   m_parametermap[string("Max_Prod_Mass")]      = 
     dataread.GetValue<double>("Max_Prod_Mass",Get("Q_breakup"));
+  m_parametermap[string("Strange_supression")] =
+    dataread.GetValue<double>("STRANGE_SUPRESSION",0.2);      
+  m_parametermap[string("Baryon_supression")]  = 
+    dataread.GetValue<double>("BARYON_SUPRESSION",0.2);
   m_parametermap[string("P_qs_by_P_qq")]       = 
     dataread.GetValue<double>("P_{QS}/P_{QQ}",Get("Strange_supression"));
   m_parametermap[string("P_ss_by_P_qq")]       = 
