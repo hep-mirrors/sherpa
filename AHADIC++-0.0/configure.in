@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT
-AM_INIT_AUTOMAKE(AHADIC++, 0.0)
+AM_INIT_AUTOMAKE(AHADIC++, 1.0)
 AM_DISABLE_STATIC
 AC_PREFIX_DEFAULT(${PWD}/..)
 
@@ -146,7 +146,6 @@ AC_OUTPUT(Tools/Makefile \
 	  Formation/Makefile \
 	  Decays/Makefile \
 	  Main/Makefile \
-	  Run/Makefile \
 	  Makefile )
 
 
