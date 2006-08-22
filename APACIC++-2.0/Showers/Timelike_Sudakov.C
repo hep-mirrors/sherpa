@@ -208,11 +208,9 @@ bool Timelike_Sudakov::CplVeto()
   switch (m_cpl_scheme) {
   case 0 : return false;
   case 2 : 
-    return GetCoupling(m_rscalefac*0.25*m_t)/
-      GetCoupling()>ran.Get()?false:true;   
+    return GetCoupling(m_rscalefac*0.25*m_t)/GetCoupling()>ran.Get()?false:true;   
   default : 
-    return GetCoupling(m_rscalefac*m_pt2)/
-      GetCoupling()>ran.Get()?false:true;   
+    return GetCoupling(m_rscalefac*m_pt2)/GetCoupling()>ran.Get()?false:true;   
   }
 }
 
@@ -271,9 +269,9 @@ bool Timelike_Sudakov::MEVeto(Knot * mo)
     mass123/=gr->z*(1.-gr->z);
     mass13/=m_z*(1.-m_z);
   }
-  double x2(1.-mass13/mass123), x1(m_z*(2.-x2)); // quark or antiquark !!! 
-  double x3(2.-x1-x2), ds_ps((1.-x1)/x3*(1.+sqr(x1/(2.-x2)))
-			     +(1.-x2)/x3 * ( 1. + sqr(x2/(2.-x1))));
+  double x2(1.-mass13/mass123), x1(m_z*(2.-x2)), x3(2.-x1-x2); // quark or antiquark !!! 
+  double ds_ps((1.-x1)/x3*(1.+sqr(x1/(2.-x2))) + 
+	       (1.-x2)/x3*(1.+sqr(x2/(2.-x1))));
   double ds_me(sqr(x1)+sqr(x2)), ratio(ds_me/ds_ps);
   return ratio<ran.Get()?true:false;
 }

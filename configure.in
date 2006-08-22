@@ -69,6 +69,11 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  AMISIC++-1.0/Main/Makefile \
 	  AMISIC++-1.0/Run/Makefile \
 	  AMISIC++-1.0/Makefile \
+	  AHADIC++-1.0/Tools/Makefile \
+	  AHADIC++-1.0/Formation/Makefile \
+	  AHADIC++-1.0/Decays/Makefile \
+	  AHADIC++-1.0/Main/Makefile \
+	  AHADIC++-1.0/Makefile \
 	  HADRONS++-0.0/Main/Makefile \
 	  HADRONS++-0.0/ME_Library/Makefile \
 	  HADRONS++-0.0/PS_Library/Makefile \

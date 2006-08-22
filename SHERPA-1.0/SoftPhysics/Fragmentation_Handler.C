@@ -17,6 +17,9 @@
 using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
+#ifdef USING__Ahadic
+using namespace AHADIC;
+#endif
 
 Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
   m_dir(_dir), m_file(_file), m_mode(0), 
@@ -71,7 +74,7 @@ Return_Value::code Fragmentation_Handler::PerformFragmentation(Blob_List *blobli
   switch (m_mode) {
     case 1  : return p_lund->Hadronize(bloblist);
 #ifdef USING__Ahadic
-    case 2  : return p_ahadic->Hadronize(bloblist,particlelist);
+    case 2  : return p_ahadic->Hadronize(bloblist);
 #endif
     default : 
       msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl

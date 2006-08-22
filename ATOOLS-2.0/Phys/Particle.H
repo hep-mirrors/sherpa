@@ -91,6 +91,9 @@ namespace ATOOLS {
   typedef Part_List::iterator       Part_Iterator;
   typedef Part_List::const_iterator Part_Const_Iterator;
 
+  std::ostream & operator<<(std::ostream & s, const Part_List & pl);
+
+
 
 
 

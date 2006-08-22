@@ -54,6 +54,14 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(AMISICDIR)
   AC_SUBST(AMISICINCS)
   AC_SUBST(AMISICLIBS)
+
+  AHADICDIR="\${top_builddir}/AHADIC++-1.0"
+  AHADICINCS="-I\${AHADICDIR}/Main -I\${AHADICDIR}/Tools -I\${AHADICDIR}/Formation \
+	      -I\${AHADICDIR}/Decays"
+  AHADICLIBS="-lAhadicMain -lAhadicTools -lAhadicFormation -lAhadicDecays"
+  AC_SUBST(AHADICDIR)
+  AC_SUBST(AHADICINCS)
+  AC_SUBST(AHADICLIBS)
   
   ANALYSISDIR="\${top_builddir}/ANALYSIS-1.0"
   ANALYSISINCS="-I\${ANALYSISDIR}/Main -I\${ANALYSISDIR}/Observables"
@@ -406,6 +414,24 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(CONDITIONAL_AMISICLIBS)
   AC_SUBST(CONDITIONAL_AMISICINCS)
   AM_CONDITIONAL(AMISIC_SUPPORT, test "$amisicinclude" = "true" )
+  
+  AC_ARG_ENABLE(ahadicinclude,
+    AC_HELP_STRING([--disable-ahadicinclude], [Disable inclusion of AHADIC headers]),
+    [ AC_MSG_CHECKING(whether to include AHADIC headers);
+      case "${enableval}" in
+        yes) AC_MSG_RESULT(yes); ahadicinclude=true;;
+        no)  AC_MSG_RESULT(no); ahadicinclude=false;;
+      esac ],
+    [ AC_MSG_CHECKING(whether to include AHADIC stuff); AC_MSG_RESULT(yes); ahadicinclude=true; ]
+  )
+  if test "$ahadicinclude" = "true" ; then
+    AC_DEFINE([USING__Ahadic], "1", [using AHADIC])
+    CONDITIONAL_AHADICLIBS="\${AHADICLIBS}"
+    CONDITIONAL_AHADICINCS="\${AHADICINCS}"
+  fi
+  AC_SUBST(CONDITIONAL_AHADICLIBS)
+  AC_SUBST(CONDITIONAL_AHADICINCS)
+  AM_CONDITIONAL(AHADIC_SUPPORT, test "$ahadicinclude" = "true" )
   
   AC_ARG_ENABLE(hadronsinclude,
     AC_HELP_STRING([--disable-hadronsinclude], [Disable inclusion of HADRONS headers]),

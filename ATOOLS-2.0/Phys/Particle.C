@@ -80,6 +80,17 @@ std::ostream& ATOOLS::operator<<(std::ostream& str, const Particle &part) {
   return str;
 }
 
+namespace ATOOLS {
+  std::ostream & operator<<(std::ostream & s, const Part_List & pl) {
+    s<<"Particle List with "<<pl.size()<<" elements"<<std::endl;
+    for (Part_Const_Iterator pit=pl.begin(); pit!=pl.end(); ++pit) {
+      s<<**pit<<std::endl;
+    }
+    return s;
+  }
+}
+
+
 Particle::~Particle() 
 {
   delete p_flow; 

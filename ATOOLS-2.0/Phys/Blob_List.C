@@ -347,3 +347,38 @@ Blob *Blob_List::AddBlob(const btp::code &type)
   push_back(blob);
   return blob;
 }
+
+bool Blob_List::MergeSubsequentType(btp::code mtype,btp::code dtype) {
+  bool merger(false);
+  Blob_List::iterator mother(begin()),daughter;
+  while (mother!=end()) {
+    if ((*mother)->Type()==mtype) {
+      for (int i=0;i<(*mother)->NOutP();i++) {
+	Particle * part((*mother)->OutParticle(i));
+	Blob * blob(part->DecayBlob());
+	if (blob && blob->Type()==dtype) {
+	  merger=true;
+	  while (blob->NOutP()>0) {
+	    (*mother)->AddToOutParticles(blob->RemoveOutParticle(blob->NOutP()-1,true));
+	  }
+	  daughter=begin();
+	  while (daughter!=end()) {
+	    if ((*daughter)==blob) {
+	      delete blob; 
+	      daughter = erase(daughter);
+	      break;
+	    }
+	    else daughter++;
+	  }
+	  (*mother)->DeleteOutParticle(part);
+	}
+      }
+    }
+    mother++;
+  }
+  return merger;
+}
+
+void Blob_List::MergeSubsequentTypeRecursively(btp::code mtype,btp::code dtype) {
+  while (MergeSubsequentType(mtype,dtype)) {}
+}
