@@ -15,7 +15,7 @@ namespace SHERPA {
 
     Initialization_Handler * p_inithandler;
     Event_Handler          * p_eventhandler;
-    Input_Output_Handler             * p_iohandler;
+    Input_Output_Handler   * p_iohandler;
 
     void DrawLogo();  
   public:
@@ -31,6 +31,10 @@ namespace SHERPA {
     
     bool     PerformScan();
 
+    inline Initialization_Handler *const GetInitHandler() const 
+    { return p_inithandler; }
+    inline Event_Handler *const GetEventHandler() const 
+    { return p_eventhandler; }
     inline Input_Output_Handler *const GetIOHandler() const 
     { return p_iohandler; }
   };
