@@ -33,9 +33,11 @@ Final_State_Shower::Final_State_Shower(MODEL::Model_Base *const model,
   p_sud->SetMassScheme(dataread->GetValue<int>("FS_MASS_SCHEME",3));   
   p_sud->SetWidthScheme(dataread->GetValue<int>("FS_WIDTH_SCHEME",0));   
   p_sud->SetMECorrectionScheme(dataread->GetValue<int>("FS_ME_SCHEME",0)); 
+  p_sud->SetQEDMECorrectionScheme(dataread->GetValue<int>("FS_QED_ME_SCHEME",0)); 
   p_sud->SetCorrelationScheme(dataread->GetValue<int>("FS_CORR_SCHEME",0));
   p_sud->SetQEDScheme(dataread->GetValue<int>("FS_QED_SCHEME",0));        
   p_sud->SetPT2Min(dataread->GetValue<double>("FS_PT2MIN",1.0));
+  p_sud->SetPT2MinQED(dataread->GetValue<double>("FS_PT2MIN_QED",.0025));
   p_sud->Init(dataread->GetValue<double>("F_MEDIUM",0.0));
 }
 
@@ -525,83 +527,92 @@ void Final_State_Shower::ExtractPartons(Knot *kn,Blob *jet,
 {
   // fetch last ME PS blob
   Blob *bl_meps=NULL;
-  for (Blob_List::iterator blit=bl->begin();blit!=bl->end();++blit) {
-    if((*blit)->Type()==btp::ME_PS_Interface_FS) {
-      bl_meps=*blit;
+  if (bl) {
+    for (Blob_List::iterator blit=bl->begin();blit!=bl->end();++blit) {
+      if((*blit)->Type()==btp::ME_PS_Interface_FS) {
+	bl_meps=*blit;
+      }
     }
-  }
-  if (bl_meps==NULL) {
-    ATOOLS::msg.Error()<<METHOD<<"(..): Error.\n  No ME PS Interface. "
-		       <<"Abort."<<std::endl;
-    abort();
+    if (bl_meps==NULL) {
+      ATOOLS::msg.Error()<<METHOD<<"(..): Error.\n  No ME PS Interface. "
+			 <<"Abort."<<std::endl;
+      abort();
+    }
+    else for (int i=0;i<bl_meps->NInP();++i) bl_meps->InParticle(i)->SetStatus(part_status::decayed);
   }
   // deactivate in partons!
-  for (int i=0;i<bl_meps->NInP();++i) bl_meps->InParticle(i)->SetStatus(part_status::decayed);
   if (!kn) return;
   Particle * p(NULL);
   if (kn->part->Info()=='H') {
     /* 
        New jet : kn = hard parton from ME info = 'HF'
                  and kn outgoing
-		 or kn->left or kn->right not from ME
+                 or kn->left or kn->right not from ME
     */
     if (!kn->left) {
-      if (pl) pl->push_back(kn->part);
-      jet = new Blob();
-      jet->SetId();
-      jet->SetType(btp::FS_Shower);
-      jet->SetTypeSpec("APACIC++2.0");
-      jet->SetStatus(blob_status::needs_harddecays |
-		     blob_status::needs_hadronization);
-      bl->push_back(jet);
+      if (bl||bl_meps) 	p = new Particle(*kn->part);
+      if (bl) {
+	jet = new Blob();
 #ifdef USING__Veto_Info
-      jet->AddData("FS_VS",new Blob_Data<std::vector<int> >(p_sud->Vetos(0)));
-      jet->AddData("IFS_VS",new Blob_Data<std::vector<int> >(p_sud->Vetos(1)));
+	jet->AddData("FS_VS",new Blob_Data<std::vector<int> >(p_sud->Vetos(0)));
+	jet->AddData("IFS_VS",new Blob_Data<std::vector<int> >(p_sud->Vetos(1)));
 #endif
-      p = new Particle(*kn->part);
-      jet->AddToInParticles(p);
+	jet->AddToInParticles(p);
+      }
       if (bl_meps) {
 	bl_meps->AddToOutParticles(p);
 	bl_meps->SetStatus(blob_status::inactive);
       }
 
       p = new Particle(*kn->part);
-      jet->AddToOutParticles(p);
       if (pl) p->SetNumber(pl->size());
          else p->SetNumber(0);
       kn->part->SetNumber(p->Number());
-      return;
-    }
-    else {
-      if ((kn->left->part->Info() != 'H') || (kn->right->part->Info() != 'H')) {
-	jet = new Blob();
+      if (bl) {
+	jet->AddToOutParticles(p);
 	jet->SetId();
 	jet->SetType(btp::FS_Shower);
 	jet->SetTypeSpec("APACIC++2.0");
 	jet->SetStatus(blob_status::needs_harddecays |
 		       blob_status::needs_hadronization);
 	bl->push_back(jet);
-#ifdef USING__Veto_Info
-	jet->AddData("FS_VS",new Blob_Data<std::vector<int> >(p_sud->Vetos(0)));
-	jet->AddData("IFS_VS",new Blob_Data<std::vector<int> >(p_sud->Vetos(1)));
-#endif
+      }
+      return;
+    }
+    else {
+      if ((kn->left->part->Info() != 'H') || (kn->right->part->Info() != 'H')) {
 	p = new Particle(*kn->part);
       	p->SetStatus(part_status::decayed);
-	if (pl) pl->push_back(p);
-	jet->AddToInParticles(p);
+	if (pl) {
+	  pl->push_back(p);
+	  p->SetNumber(pl->size());
+	}
+	else p->SetNumber(0);
+        kn->part->SetNumber(p->Number());
 	if (bl_meps) {
 	  bl_meps->AddToOutParticles(p);
 	  bl_meps->SetStatus(blob_status::inactive);
 	}
-	if (pl) p->SetNumber(pl->size());
-	   else p->SetNumber(0);
-        kn->part->SetNumber(p->Number());
+	if (bl) {
+	  jet = new Blob();
+#ifdef USING__Veto_Info
+	  jet->AddData("FS_VS",new Blob_Data<std::vector<int> >(p_sud->Vetos(0)));
+	  jet->AddData("IFS_VS",new Blob_Data<std::vector<int> >(p_sud->Vetos(1)));
+#endif
+	  jet->AddToInParticles(p);
+	  jet->SetId();
+	  jet->SetType(btp::FS_Shower);
+	  jet->SetTypeSpec("APACIC++2.0");
+	  jet->SetStatus(blob_status::needs_harddecays |
+			 blob_status::needs_hadronization);
+	  bl->push_back(jet);
+	}
       }
     }
   }
   else {
     if (!kn->left) {
-      if (!jet) {
+      if (bl && !jet) {
 	msg.Error()<<"ERROR in Final_State_Shower ::ExtractPartons :\n"
 		   <<"    No jet for Parton : "<<kn->part->Number()<<std::endl;
 	abort();
@@ -610,7 +621,7 @@ void Final_State_Shower::ExtractPartons(Knot *kn,Blob *jet,
 	 else kn->part->SetNumber(0);
       kn->part->SetStatus(part_status::active);
       if (pl) pl->push_back(kn->part);
-      jet->AddToOutParticles(new Particle(*kn->part));
+      if (bl) jet->AddToOutParticles(new Particle(*kn->part));
     }
   }
   ExtractPartons(kn->left,jet,bl,pl); 

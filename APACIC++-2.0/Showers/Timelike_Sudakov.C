@@ -16,7 +16,8 @@ Timelike_Sudakov::Timelike_Sudakov(Timelike_Kinematics *const kin,
 				   MODEL::Model_Base *const model) :
   p_tools(new Sudakov_Tools(model)), 
   p_kin(kin), 
-  m_pt2min(1.0), m_pt2max(sqr(rpa.gen.Ecms())), m_t0(4.0) {}
+  m_pt2min(1.0), m_pt2max(sqr(rpa.gen.Ecms())), m_t0(4.0),
+  m_pt2min_qed(0.0025), m_t0_qed(0.01) {}
 
 Timelike_Sudakov::~Timelike_Sudakov()
 {
@@ -71,8 +72,6 @@ double Timelike_Sudakov::CrudeInt(double zmin, double zmax)
       break;
     }
   if (sit==m_splittings.end()) return m_lastint=-1.0;
-  //std::cout<<" Int "<<m_inflav<<" ("<<zmin<<", "<<zmax<<" ) "
-  //	   <<" = "<<p_selected->CrudeInt(zmin,zmax)<<std::endl;
   return m_lastint=p_selected->CrudeInt(zmin,zmax);
 }        
 
@@ -112,18 +111,18 @@ bool Timelike_Sudakov::Dice(Knot *const mother, Knot *const granny)
 bool Timelike_Sudakov::DiceT(Knot *const mother, Knot *const granny) 
 {
   m_inflav=mother->part->Flav(); 
+  double t0=m_inflav.Strong()?m_t0:m_t0_qed;
   m_t=mother->t;                  
   m_E2=mother->E2;
-  if (m_t-m_t0<rpa.gen.Accu()) return false;
+  if (m_t-t0<rpa.gen.Accu()) return false;
   double z0;
-  while (m_t>m_t0) {
-    z0=0.5*(1.-sqrt(1.-m_t0/(m_t-mother->tout)));
-    z0=Max(z0,1.e-6);
+  while (m_t>t0) {
+    z0=Max(0.5*(1.-sqrt(1.-t0/m_t)),1.e-6);
     CrudeInt(z0,1.-z0);
     if (m_lastint<0.0) return false;
     if (m_mass_scheme>=2) m_t-=mother->tout;
     ProduceT(m_t,mother->tout);
-    if (m_t<m_t0) return 0;
+    if (m_t<t0) return 0;
     if (m_mass_scheme>=2) m_t+=mother->tout;
     // determine estimate for energy
     if (granny) m_E2=0.25*sqr(m_t+granny->E2)/granny->E2;
@@ -166,7 +165,12 @@ bool Timelike_Sudakov::Veto(Knot *const mo,double t,double E2)
   if (z<0.0 || z>1.0) return true;
 
   m_pt2=p_kin->GetRelativeKT2(z,m_E2,m_t,m_tb,m_tc);
-  if (m_pt2<m_pt2min) return true;
+  if (m_inflav.Strong()) {
+    if (m_pt2<m_pt2min) return true;
+  }
+  else {
+    if (m_pt2<m_pt2min_qed) return true;
+  }
 
   // timelike daughters
   m_last_veto=2;
@@ -220,7 +224,6 @@ bool Timelike_Sudakov::OrderingVeto(Knot * mo,double t, double E2, double z)
   mo->sthcrit=th;
   mo->smaxpt2=m_pt2;
   msg_Debugging()<<"ts: thcrit = "<<mo->thcrit<<", th = "<<th<<std::endl;
-  //std::cout<<"ts: maxpt2 = "<<mo->maxpt2<<", pt2 = "<<m_pt2<<std::endl;
   if (!m_inflav.Strong()) return false;
   switch (m_ordering_scheme) {
   case 0 : return false;
@@ -243,6 +246,43 @@ bool Timelike_Sudakov::OrderingVeto(Knot * mo,double t, double E2, double z)
 
 bool Timelike_Sudakov::MEVeto(Knot * mo) 
 {
+  //the QED emission me veto
+  if (m_qed_mecorr_scheme==1) {
+    bool qed_veto=true;
+    Knot *gr(mo->prev);
+    if (gr->t<0) qed_veto = false;
+    if (gr->prev && qed_veto) qed_veto = false;
+    if (!m_inflav.IsFermion() && qed_veto) qed_veto = false;
+    // determine which is the current twig of the tree:
+    if (qed_veto) {
+      Knot *twig(mo);
+      while (gr->prev) {
+	twig=gr;
+	gr=gr->prev;
+      }
+     /*
+       if "first" branch perform ME - Correction for photon radiation
+      (t',z') *      
+             / \      x_i = 2 E_i / sqrt(t')
+      (t,z) *   \
+           / \   \
+          1   3   2
+   */
+      double mass123(gr->t), mass13(m_t);
+      if (m_ordering_scheme==0) {
+	mass123/=gr->z*(1.-gr->z);
+	mass13/=m_z*(1.-m_z);
+      }
+      double x2(1.-mass13/mass123), x1(m_z*(2.-x2)), x3(2.-x1-x2); 
+      double ds_ps((1.-x1)/x3*(1.+sqr(x1/(2.-x2))) + 
+		   (1.-x2)/x3*(1.+sqr(x2/(2.-x1))));
+      double ds_me(sqr(x1)+sqr(x2)), ratio(ds_me/ds_ps);
+      qed_veto =  ratio<ran.Get()?true:false;
+      if (qed_veto) return true;
+    }
+  }
+    
+  //the QCD emission me veto
   if (!m_inflav.Strong()) return false;
   Knot *gr(mo->prev);
   if (gr->t<0) return false;
