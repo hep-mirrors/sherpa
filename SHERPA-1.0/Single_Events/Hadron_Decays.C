@@ -50,10 +50,6 @@ Hadron_Decays::~Hadron_Decays()
 {
 }
 
-bool SortByWidth(Particle* p1, Particle* p2) {
-  return p1->Flav().Width() < p2->Flav().Width();
-}
-
 Return_Value::code Hadron_Decays::Treat(ATOOLS::Blob_List * bloblist, double & weight) 
 {
   msg.Tracking()<<"--------- "<<METHOD<<" - START --------------"<<endl;
@@ -67,183 +63,187 @@ Return_Value::code Hadron_Decays::Treat(ATOOLS::Blob_List * bloblist, double & w
     return Return_Value::Nothing;
   }
 
+  p_bloblist = bloblist;
   bool found(true), didit(false);
   while (found) {
     found = false;
     Blob_List::iterator blit;
     for (blit=bloblist->begin();blit!=bloblist->end();++blit) {
       if ((*blit)->Has(blob_status::needs_hadrondecays)) {
-        Particle_Vector daughters = (*blit)->GetOutParticles();
-        // Sort daughters by width, necessary for mass treatment
-        sort(daughters.begin(), daughters.end(), SortByWidth);
-
-        // Preparing for mass smearing
-        vector<double> widths(daughters.size());
-        vector<double> masses(daughters.size());
-        vector<Vec4D> saved_momenta; // needed for stretching/boosting back later
-        vector<double> max_masses(daughters.size());
-        for(size_t i=0;i<daughters.size();i++) {
-          widths[i]=daughters[i]->Flav().Width();
-          masses[i]=daughters[i]->Flav().PSMass(); // temporary storage of peak mass
-          saved_momenta.push_back(daughters[i]->Momentum());
-        }
-        Vec4D total(0.0,0.0,0.0,0.0);
-        for(int i=0;i<(*blit)->NInP();i++) total += (*blit)->InParticle(i)->Momentum();
-        double max_mass = total.Mass();
-
-        // Decaying all daughters one by one (in CMS*)
-        bool retry_all = false;
-        int all_again_trials = 0;
-        do { // retry smearing of all daughters in case a single-mass retry didn't succeed
-          retry_all = false;
-          for (size_t i=0;i<daughters.size();i++) {
-            max_masses[i] = i>0 ? max_masses[i-1]-masses[i-1] : max_mass;
-            Particle * part = daughters[i];
-            Mass_Handler masshandler(part->Flav());
-            if( part->Status()==part_status::active && !part->Flav().IsStable() ) {
-              Hadron_Decay_Handler * hdhandler = NULL;
-              for (HDHandlersIter hd=p_dechandlers->begin();hd!=p_dechandlers->end();hd++) {
-                if (hd->second->CanDealWith(part->Flav().Kfcode())) {
-                  hdhandler = hd->second;
-                  break;
-                }
-              }
-              if (hdhandler) {
-                Return_Value::code ret = Return_Value::Success;
-                int trials=0;
-                do { // retry decay with new m* as long as Retry_Method
-                  trials++;
-                  masses[i] = masshandler.GetMass(0,max_masses[i]);
-                  part->SetFinalMass(masses[i]);
-                  part->SetMomentum(Vec4D(masses[i],0.0,0.0,0.0));
-                  Blob* blob;
-                  // check if particle has a decayblob already, where its
-                  // decay channel was stored in a previous try (HADRONS)
-                  if(part->DecayBlob()) blob = part->DecayBlob();
-                  else {
-                    blob = new Blob();
-                    blob->SetId();
-                    blob->SetType(btp::Hadron_Decay);
-                    blob->SetStatus(blob_status::needs_hadrondecays);
-                    blob->AddToInParticles(part);
-                    bloblist->push_back(blob);
-                  }
-                  ret = hdhandler->FillHadronDecayBlob(blob);
-                  if( ret == Return_Value::Success ) found = true;
-                  else if (ret == Return_Value::Retry_Method) {
-                    if(trials>100) {
-#ifdef DEBUG
-                      msg.Error()<<endl<<"Warning in "<<METHOD<<" event "
-                        <<rpa.gen.NumberOfDicedEvents()<<endl
-                        <<"   Hadron_Decay_Handler "<<hdhandler->Name()<<" rejected mass of "<<endl
-                        <<(*part)<<endl
-                        <<"   retried method too often. Will retry all masses."<<endl;
-                      Blob_Data_Base* data = (*blob)["hdc"];
-                      if(data) {
-                        HADRONS::Hadron_Decay_Channel *hdc;
-                        hdc = (*blob)["hdc"]->Get<HADRONS::Hadron_Decay_Channel*>();
-                        msg.Error()<<"   Chosen decay channel was "<<hdc->Name()<<endl;
-                      }
-                      msg.Error()<<"   Maximum masses so far:"<<endl;
-                      for(size_t j=0;j<=i;j++) {
-                        msg.Error()<<"   max_masses["<<j<<"]="<<max_masses[j]<<" for "
-                          <<daughters[j]->Flav()<<" -> diced "<<masses[j]<<endl;
-                      }
-                      msg.Error()<<(**blit)<<endl; // show preliminary blob
-#endif
-                      for(size_t i=0;i<daughters.size();i++) {
-                        daughters[i]->SetStatus(part_status::active);
-                        bloblist->Delete(daughters[i]->DecayBlob());
-                      }
-                      retry_all = true;
-                      all_again_trials++;
-                      break;
-                    }
-                  }
-                  else if (ret == Return_Value::Nothing) {
-                    bloblist->Delete(blob);
-                    part->SetStatus(part_status::active);
-                  }
-                  else {
-                    msg.Error()<<"Error in "<<METHOD<<":"<<endl
-                      <<"   Hadron_Decay_Handler "<<hdhandler->Name()<<" failed to decay "<<endl
-                      <<"   "<<(*part)<<","<<endl
-                      <<"   it returned "<<ret<<". Will retry event."<<endl;
-                    return Return_Value::Retry_Event;
-                  }
-                } while( ret == Return_Value::Retry_Method );
-              }
-              else { // if no decay handler found (-> particle quasi stable)
-                msg.Error()<<"Warning in "<<METHOD<<":"<<std::endl
-                  <<"   Unstable particle found ("<<part->Flav()<<"), "<<endl;
-                if( (*blit)->Type()==btp::Fragmentation ) {
-                  msg.Error()<<"   coming out of fragmentation."<<endl;
-                }
-                else {
-                  msg.Error()<<*(part->ProductionBlob())<<endl;
-                }
-                msg.Error()<<"   but no handler found to deal with it."<<std::endl
-                  <<"   Will continue and hope for the best."<<std::endl;
-                masses[i] = masshandler.GetMass(0,max_masses[i]);
-                part->SetFinalMass(masses[i]);
-                part->SetMomentum(Vec4D(masses[i],0.0,0.0,0.0)); // actually not needed
-              }
-            }
-            else { // if particle stable
-              masses[i] = masshandler.GetMass(0,max_masses[i]);
-              part->SetFinalMass(masses[i]);
-              part->SetMomentum(Vec4D(masses[i],0.0,0.0,0.0)); // actually not needed
-            }
-            if( retry_all ) break;
-          }
-          if( all_again_trials > 5 ) {
-            msg.Error()<<"Warning in "<<METHOD<<endl
-              <<"   retried mass dicing too often and didn't succeed. "
-              <<"Will retry event."<<endl;
-            return Return_Value::Retry_Event;
-          }
-        } while( retry_all == true ) ;
-        // by here all daughters should be on their new mass shells and have either
-        // a decayblob or momentum, in CMS.
-        
-        // now we stretch the initial momenta to the accepted m*
-        Momenta_Stretcher stretch;
-        stretch.StretchMomenta( daughters, saved_momenta);
-
-        // now we boost all decayblobs back to these stretched target momenta
-        for (size_t i=0;i<daughters.size();i++) {
-          if(daughters[i]->DecayBlob()) {
-            Poincare boost(saved_momenta[i]);
-            boost.Invert();
-            daughters[i]->DecayBlob()->Boost(boost);
-            daughters[i]->SetStatus(part_status::decayed);
-#ifdef DEBUG // fill the mass histogram of this flavour
-            mass_hists[daughters[i]->Flav().Kfcode()].Fill(daughters[i]->FinalMass());
-#endif
-          }
-          else {
-            daughters[i]->SetMomentum(saved_momenta[i]);
-#ifdef DEBUG // fill the mass histogram of this flavour
-            mass_hists[daughters[i]->Flav().Kfcode()].Fill(daughters[i]->FinalMass());
-#endif
-          }
-        }
-
-        // finally set the position and lifetime in case it's a hadron decay blob
-        if((*blit)->Type() == btp::Hadron_Decay) {
-          double time        = (*blit)->InParticle(0)->LifeTime();
-          Vec3D      spatial = (*blit)->InParticle(0)->Distance( time );
-          Vec4D     position = Vec4D( time*rpa.c(), spatial );
-          (*blit)->SetPosition( (*blit)->InParticle(0)->XProd() + position );
-        }
-        (*blit)->UnsetStatus(blob_status::needs_hadrondecays);
-
+        Return_Value::code blob_ret = Treat((*blit));
+        if( blob_ret == Return_Value::Retry_Event ) return Return_Value::Retry_Event;
         didit = true;
+        found = true;
       }
     }
   }
   msg.Tracking()<<"--------- Hadron_Decays::Treat - FINISH -------------"<<endl;
   return (didit ? Return_Value::Success : Return_Value::Nothing);
+}
+
+
+Return_Value::code Hadron_Decays::Treat(Blob * blob)
+{
+  m_daughters = blob->GetOutParticles();
+  PrepareMassSmearing(blob);
+
+  // Decaying all daughters one by one (in CMS*)
+  bool retry_all = false;
+  int all_again_trials = 0;
+  do { // retry smearing of all daughters in case a single-mass retry didn't succeed
+    retry_all = false;
+    for (size_t i=0;i<m_daughters.size();i++) {
+      Return_Value::code particle_ret = Treat(i);
+      if( particle_ret  == Return_Value::Failure ) {
+        all_again_trials++;
+        retry_all = true;
+        break;
+      }
+      else if( particle_ret == Return_Value::Retry_Event ) {
+        return Return_Value::Retry_Event;
+      }
+    }
+    if( all_again_trials > 10 ) {
+      msg.Error()<<"Warning in "<<METHOD<<endl
+        <<"   retried mass dicing too often and didn't succeed. "
+        <<"Will retry event."<<endl;
+      return Return_Value::Retry_Event;
+    }
+  } while( retry_all == true ) ;
+  // by here all daughters should be on their new mass shells and have either
+  // a decayblob or momentum, in CMS.
+
+  // now we stretch the saved_momenta to the FinalMasses of m_daughters
+  Momenta_Stretcher stretch;
+  stretch.StretchMomenta( m_daughters, m_saved_momenta);
+
+  // now we boost all decayblobs back to these stretched target momenta
+  for (size_t i=0;i<m_daughters.size();i++) {
+    if(m_daughters[i]->DecayBlob()) {
+      Poincare boost(m_saved_momenta[i]);
+      boost.Invert();
+      m_daughters[i]->DecayBlob()->Boost(boost);
+      m_daughters[i]->SetStatus(part_status::decayed);
+#ifdef DEBUG // fill the mass histogram of this flavour
+      mass_hists[m_daughters[i]->Flav().Kfcode()].Fill(m_daughters[i]->FinalMass());
+#endif
+    }
+    else {
+      m_daughters[i]->SetMomentum(m_saved_momenta[i]);
+#ifdef DEBUG // fill the mass histogram of this flavour
+      mass_hists[m_daughters[i]->Flav().Kfcode()].Fill(m_daughters[i]->FinalMass());
+#endif
+    }
+  }
+
+  // finally set the position and lifetime in case it's a hadron decay blob
+  if(blob->Type() == btp::Hadron_Decay) {
+    double time        = blob->InParticle(0)->LifeTime();
+    Vec3D      spatial = blob->InParticle(0)->Distance( time );
+    Vec4D     position = Vec4D( time*rpa.c(), spatial );
+    blob->SetPosition( blob->InParticle(0)->XProd() + position );
+  }
+  blob->UnsetStatus(blob_status::needs_hadrondecays);
+  return Return_Value::Success;
+}
+
+Return_Value::code Hadron_Decays::Treat(int i)
+{
+  double max_mass = m_max_mass;
+  for( int j=0; j<i; j++) max_mass -= m_daughters[j]->FinalMass();
+  Particle * part = m_daughters[i];
+  Mass_Handler masshandler(part->Flav());
+  if( part->Status()==part_status::active && !part->Flav().IsStable() ) {
+    Hadron_Decay_Handler * hdhandler = ChooseDecayHandler(part);
+    if (hdhandler) {
+      Return_Value::code ret = Return_Value::Undefined;
+      for(int trials=0; trials<100; trials++) {
+        part->SetFinalMass(masshandler.GetMass(0,max_mass));
+        part->SetMomentum(Vec4D(part->FinalMass(),0.0,0.0,0.0));
+        Blob* blob;
+        // check if particle has a decayblob already, where its
+        // decay channel could have been stored in a previous try (HADRONS)
+        if(part->DecayBlob()) blob = part->DecayBlob();
+        else {
+          blob = new Blob();
+          blob->SetId();
+          blob->SetType(btp::Hadron_Decay);
+          blob->SetStatus(blob_status::needs_hadrondecays);
+          blob->AddToInParticles(part);
+          p_bloblist->push_back(blob);
+        }
+        ret = hdhandler->FillHadronDecayBlob(blob);
+        if( ret == Return_Value::Success ) { return Return_Value::Success; }
+        else if (ret == Return_Value::Nothing) {
+          p_bloblist->Delete(blob);
+          part->SetStatus(part_status::active);
+          return Return_Value::Success;
+        }
+        else if ( ret == Return_Value::Error ) {
+          msg.Error()<<"Error in "<<METHOD<<":"<<endl
+            <<"   Hadron_Decay_Handler "<<hdhandler->Name()<<" failed to decay "<<endl
+            <<"   "<<(*part)<<","<<endl
+            <<"   it returned "<<ret<<". Will retry event."<<endl;
+          return Return_Value::Retry_Event;
+        }
+      }
+      // if after 100 trials still no success: send back to retry all masses
+      for(size_t k=0;k<m_daughters.size();k++) {
+        m_daughters[k]->SetStatus(part_status::active);
+        p_bloblist->Delete(m_daughters[k]->DecayBlob());
+      }
+      return Return_Value::Failure;
+    }
+    // if no decay handler found (-> particle quasi stable)
+    else part->SetFinalMass(masshandler.GetMass(0,max_mass));
+  }
+  // if particle stable
+  else part->SetFinalMass(masshandler.GetMass(0,max_mass));
+  return Return_Value::Success;
+}
+
+bool SortByWidth(Particle* p1, Particle* p2) {
+  return p1->Flav().Width() < p2->Flav().Width();
+}
+
+void Hadron_Decays::PrepareMassSmearing(Blob* blob)
+{
+  // Sort daughters by width, necessary for mass treatment
+  sort(m_daughters.begin(), m_daughters.end(), SortByWidth);
+  
+  // Preparing for mass smearing
+  m_saved_momenta.clear();
+  for(size_t i=0;i<m_daughters.size();i++) {
+    m_saved_momenta.push_back(m_daughters[i]->Momentum());
+  }
+  Vec4D total(0.0,0.0,0.0,0.0);
+  for(int i=0;i<blob->NInP();i++) total += blob->InParticle(i)->Momentum();
+  m_max_mass = total.Mass();
+  if(blob->NInP()==0) {
+    msg.Error()<<METHOD<<" Error: no incoming particles for blob ["<<blob->Id()<<"]."<<endl
+      <<"  Cannot preserve momentum conservation."<<endl;
+    m_max_mass=9.e99;
+  }
+}
+
+Hadron_Decay_Handler* Hadron_Decays::ChooseDecayHandler(Particle* part)
+{
+  for (HDHandlersIter hd=p_dechandlers->begin();hd!=p_dechandlers->end();hd++) {
+    if (hd->second->CanDealWith(part->Flav().Kfcode())) {
+      return hd->second;
+    }
+  }
+  msg.Error()<<"Warning in "<<METHOD<<":"<<std::endl
+    <<"   Unstable particle found ("<<part->Flav()<<") in "<<endl;
+  if( part->ProductionBlob()->Type()==btp::Fragmentation ) {
+    msg.Error()<<"   coming out of fragmentation."<<endl;
+  }
+  else {
+    msg.Error()<<*(part->ProductionBlob())<<endl;
+  }
+  msg.Error()<<"   but no handler found to deal with it."<<std::endl
+    <<"   Will continue and hope for the best."<<std::endl;
+  return NULL;
 }
 
 void Hadron_Decays::CleanUp() {}

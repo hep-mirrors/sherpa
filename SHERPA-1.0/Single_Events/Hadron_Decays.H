@@ -7,22 +7,33 @@
 
 namespace ATOOLS {
   class Blob;
+  class Particle;
 }
 
 // #define DEBUG
 #ifdef DEBUG
 class TH1D;
 class TFile;
+class Blob_List;
 #endif
 
 namespace SHERPA {
   class Hadron_Decays : public Event_Phase_Handler {
   private :
-    HDHandlersMap * p_dechandlers;
+    HDHandlersMap            * p_dechandlers;
+    ATOOLS::Blob_List        * p_bloblist;
+    ATOOLS::Particle_Vector    m_daughters;
+    std::vector<ATOOLS::Vec4D> m_saved_momenta;
+    double                     m_max_mass;
 #ifdef DEBUG
     TFile* p_file;
     std::map<ATOOLS::kf::code,TH1D> mass_hists;
 #endif
+
+    ATOOLS::Return_Value::code Treat(ATOOLS::Blob * blob);
+    ATOOLS::Return_Value::code Treat(int i);
+    void PrepareMassSmearing(ATOOLS::Blob* blob);
+    Hadron_Decay_Handler* ChooseDecayHandler(ATOOLS::Particle* part);
   public :
     Hadron_Decays(HDHandlersMap *);
     ~Hadron_Decays();
@@ -42,19 +53,32 @@ namespace SHERPA {
     */
   /*!
     \fn Hadron_Decays::Treat(ATOOLS::Blob_List *, double &)
-    \brief Treats Fragmentation and Hadron Decay Blobs
+    \brief Treats all blobs in a blob list which need hadron decays.
 
     This method recurses through the bloblist and when it finds a blob which needs
-    hadron decays, it chooses amongst the available decay handlers (e.g. Lund and
-    HADRONS, if enabled in Fragmentation.dat). It reiterates until no unstable
-    particle is left in a needs_hadrondecays blob.
+    hadron decays, it treats it with the Treat(Blob*) method.
+    */
+  /*!
+    \fn Hadron_Decays::Treat(ATOOLS::Blob*)
+    \brief Treats the given blob by decaying its outgoing hadrons.
 
-    While recursing through the unstable particles of one blob, it also puts
-    them on a new mass shell. This is done according to the mass distribution
-    chosen for this particle in the \c Mass_Handler . If the decay
-    handler cannot cope with a chosen mass for the incoming particle, it
-    is supposed to deliver a Retry_Method, which will cause this method to dice
-    a new mass for this particle and retry it.
+    It uses the Treat(int i) method to decay all outgoing particles. If this
+    method returns Failure for one particle, it starts over from the beginning.
+    If 10 retries didn't help, it returns Retry_Event, otherwise Success.
+    */
+  /*!
+    \fn Hadron_Decays::Treat(int i)
+    \brief Decays the daughter particle #i.
+
+    It chooses amongst the available decay handlers (e.g. Lund and
+    HADRONS, if enabled in Fragmentation.dat).
+
+    It also puts the particle on a new mass shell. This is done according to
+    the mass distribution chosen for this particle in the \c Mass_Handler .
+    If the decay handler cannot cope with a chosen mass for the incoming
+    particle, it is supposed to deliver a Retry_Method, which will cause this
+    method to dice a new mass for this particle and retry it. If 100 retries
+    didn't help, it returns Failure.
     */
 
 
