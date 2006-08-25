@@ -348,7 +348,8 @@ Blob *Blob_List::AddBlob(const btp::code &type)
   return blob;
 }
 
-bool Blob_List::MergeSubsequentType(btp::code mtype,btp::code dtype) {
+bool Blob_List::MergeSubsequentType(btp::code mtype,btp::code dtype,
+				    long int & NBlob, long int & NPart) {
   bool merger(false);
   Blob_List::iterator mother(begin()),daughter;
   while (mother!=end()) {
@@ -364,12 +365,14 @@ bool Blob_List::MergeSubsequentType(btp::code mtype,btp::code dtype) {
 	  daughter=begin();
 	  while (daughter!=end()) {
 	    if ((*daughter)==blob) {
+	      NBlob--;
 	      delete blob; 
 	      daughter = erase(daughter);
 	      break;
 	    }
 	    else daughter++;
 	  }
+	  NPart--;
 	  (*mother)->DeleteOutParticle(part);
 	}
       }
@@ -379,6 +382,7 @@ bool Blob_List::MergeSubsequentType(btp::code mtype,btp::code dtype) {
   return merger;
 }
 
-void Blob_List::MergeSubsequentTypeRecursively(btp::code mtype,btp::code dtype) {
-  while (MergeSubsequentType(mtype,dtype)) {}
+void Blob_List::MergeSubsequentTypeRecursively(btp::code mtype,btp::code dtype,
+					       long int & NBlob, long int & NPart) {
+  while (MergeSubsequentType(mtype,dtype,NBlob,NPart)) {}
 }

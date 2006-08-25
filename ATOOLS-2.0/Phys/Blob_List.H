@@ -73,8 +73,9 @@ namespace ATOOLS {
 				   const int mode=0) const;
     Particle_List ExtractLooseParticles(const int mode=0) const;
 
-    bool MergeSubsequentType(btp::code,btp::code);
-    void MergeSubsequentTypeRecursively(btp::code,btp::code);
+    bool MergeSubsequentType(btp::code,btp::code,long int &,long int &);
+    void MergeSubsequentTypeRecursively(btp::code,btp::code,
+					long int &,long int &);
     
     void Clear(Blob *blob=NULL);
 
