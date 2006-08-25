@@ -31,12 +31,14 @@ namespace AHADIC {
   typedef FlavCCMap::iterator FlavCCMap_Iterator;
 
   class Constituents {
+    double m_minmass;
   public:
     FlavCCMap CCMap;
     Constituents(bool=false);
     ~Constituents();
 
     double Mass(ATOOLS::Flavour & flav);
+    double MinMass();
     double TotWeight(ATOOLS::Flavour & flav);
     double Smearing(ATOOLS::Flavour & flav);
     int    ISpin(ATOOLS::Flavour & flav);

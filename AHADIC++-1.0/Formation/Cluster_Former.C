@@ -29,6 +29,8 @@ void Cluster_Former::ConstructClusters(Proto_Particle_List * plin, Cluster_List 
     self->SetNumber();
     self->SetStatus(part_status::active);
     self->SetInfo('C');
+    self->SetFinalMass(cluster->Mass());
+    control::s_AHAparticles++;
     cluster->SetSelf(self);
     plin->pop_front();
     plin->pop_front();

@@ -6,6 +6,7 @@ libAhadicTools_la_SOURCES = \
                             Hadron_Wave_Function.C \
                             Hadron_Multiplet.C \
                             Transitions.C \
+			    Pair_Popper.C \
                             Cluster_Transformer.C \
                             Hadronisation_Parameters.C
 
@@ -15,6 +16,7 @@ pkginclude_HEADERS = \
                      Hadron_Wave_Function.H \
                      Hadron_Multiplet.H \
                      Transitions.H \
+		     Pair_Popper.H \
                      Cluster_Transformer.H \
                      Hadronisation_Parameters.H
 

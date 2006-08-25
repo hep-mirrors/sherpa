@@ -9,6 +9,9 @@ using namespace ATOOLS;
 namespace AHADIC {
   long int Cluster::s_cluster_count=0;
   long int Cluster::s_cluster_number=0;
+
+  long int control::s_AHAparticles=0;
+  long int control::s_AHAblobs=0;  
 }
 
 
@@ -16,24 +19,26 @@ Cluster::Cluster() :
   m_type(ctp::no),m_leads(ltp::no),
   m_momentum(Vec4D(0.,0.,0.,0.)),
   m_hasboost(false), m_hasrotate(false), 
-  p_left(NULL), p_right(NULL), p_prev(NULL), p_self(NULL)
+  p_left(NULL), p_right(NULL), p_prev(NULL), p_self(NULL),
+  m_number(s_cluster_number++)
 {
-  std::cout<<"   New empty cluster with number "<<m_number<<std::endl;
+  //std::cout<<METHOD<<" for "<<m_number<<"."<<std::endl;
   m_momenta[0]  = m_momenta[1]  = Vec4D(0.,0.,0.,0.);  
   m_flavours[0] = m_flavours[1] = Flavour(kf::none);
 
   s_cluster_count++;
 }
 
-Cluster::Cluster(const ATOOLS::Flavour & flav1,const ATOOLS::Vec4D & mom1,
-		 const ATOOLS::Flavour & flav2,const ATOOLS::Vec4D & mom2) :
+Cluster::Cluster(const ATOOLS::Flavour & flav1,const ATOOLS::Vec4D mom1,
+		 const ATOOLS::Flavour & flav2,const ATOOLS::Vec4D mom2) :
   m_hasboost(false), m_hasrotate(false), 
   m_leads(ltp::no), p_left(NULL), p_right(NULL), p_prev(NULL), p_self(NULL),
   m_number(s_cluster_number++)
 {
-  std::cout<<"   New cluster with number "<<m_number<<std::endl;
   m_momentum = mom1+mom2;
 
+  //std::cout<<METHOD<<" for "<<m_number<<" & "<<m_momentum
+  //	   <<"  ("<<sqrt(m_momentum.Abs2())<<")"<<std::endl;
   s_cluster_count++;
   if (flav1.IsQuark()) {
     if (!flav1.IsAnti()) {
@@ -96,7 +101,7 @@ Cluster::Cluster(const ATOOLS::Flavour & flav1,const ATOOLS::Vec4D & mom1,
 
 Cluster::~Cluster() 
 {
-  std::cout<<METHOD<<" for number = "<<m_number<<std::endl<<(*this)<<std::endl;
+  // std::cout<<METHOD<<" delete : "<<m_number<<" "<<Mass()<<std::endl;
   s_cluster_count--;
 }
 
@@ -134,19 +139,26 @@ void Cluster::RescaleMomentum(ATOOLS::Vec4D newmom)
   Poincare rest(m_momentum);
   Poincare back(newmom);
 
+  Vec4D save[3];
+  save[0] = m_momentum;
+  save[1] = m_momenta[0];
+  save[2] = m_momenta[1];
+
   rest.Boost(m_momenta[0]);
   back.BoostBack(m_momenta[0]);
   rest.Boost(m_momenta[1]);
   back.BoostBack(m_momenta[1]);
-
-  Vec4D help = m_momentum;
   m_momentum = newmom;
 
   Vec4D testmom = m_momentum-m_momenta[0]-m_momenta[1];
   if (dabs(testmom.Abs2())>1.e-6 || testmom[0]>1.e-6) {
-    std::cout<<"Maybe error in RescaleMomentum("<<help<<") : "<<testmom<<std::endl<<(*this)
-	     <<m_momentum<<" "<<Momentum(1)<<" "<<Momentum(2)<<" :: "
-	     <<help.Abs2()<<" <---> "<<newmom.Abs2()<<std::endl;
+    msg.Error()<<"Maybe error in RescaleMomentum("<<save[0]<<" -> "<<m_momentum<<")"<<std::endl
+	       <<" Was : "<<save[0]<<" ("<<save[0].Abs2()<<")"<<" -> "
+	       <<save[1]<<" ("<<save[1].Abs2()<<") + "
+	       <<save[2]<<" ("<<save[2].Abs2()<<")"<<std::endl
+	       <<" Is  : "<<Momentum(0)<<" ("<<Momentum(0).Abs2()<<") -> "
+	       <<Momentum(1)<<" ("<<Momentum(1).Abs2()<<")"
+	       <<Momentum(2)<<" ("<<Momentum(2).Abs2()<<")"<<std::endl;
   }
 }
 
@@ -160,7 +172,7 @@ ATOOLS::Vec4D Cluster::Momentum(const int i) const {
   return m_momentum;
 }
 
-void Cluster::SetMomentum(const int i,const ATOOLS::Vec4D & mom) { 
+void Cluster::SetMomentum(const int i,const ATOOLS::Vec4D mom) { 
   if (i==0) { m_momentum     = mom; return; }       
   if (i<3)  { m_momenta[i-1] = mom; return; }       
   ATOOLS::msg.Error()<<"Error in Cluster::SetMomentum("<<i<<")"<<std::endl
@@ -312,7 +324,7 @@ void Cluster::RotateAndBoostBack(ATOOLS::Vec4D & mom) {
 
 std::ostream& AHADIC::operator<<(std::ostream& str, const Cluster &cluster) {
   str<<"-------------------------------------------------------------"<<std::endl
-     <<"Cluster ("<<cluster.m_flavours[0]<<" "<<cluster.m_flavours[1]
+     <<"Cluster ["<<cluster.m_number<<"] ("<<cluster.m_flavours[0]<<" "<<cluster.m_flavours[1]
      <<", "<<cluster.m_momentum<<","<<sqrt(cluster.m_momentum.Abs2())<<" ): "<<std::endl
      <<cluster.m_momenta[0]<<" ("<<sqrt(cluster.m_momenta[0].Abs2())<<"), "
      <<cluster.m_momenta[1]<<" ("<<sqrt(cluster.m_momenta[1].Abs2())<<")";

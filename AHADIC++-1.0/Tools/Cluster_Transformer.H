@@ -2,6 +2,7 @@
 #define Cluster_Transformer_H
 
 #include "Transitions.H"
+#include "Pair_Popper.H"
 #include "Cluster.H"
 #include "Blob.H"
 #include "Return_Value.H"
@@ -21,8 +22,8 @@ namespace AHADIC {
     ctrans::code             m_mode;
     double                   m_offset;
     double                   m_gammaenergy;
-    All_Single_Transitions * p_stransitions;
-    All_Double_Transitions * p_dtransitions;
+    All_Single_Transitions * p_transitions;
+    Pair_Popper            * p_popper;
 
     void DecayCluster(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &,ATOOLS::Blob *);
   public:

@@ -10,6 +10,12 @@
 namespace AHADIC {
   static ATOOLS::Vec4D s_axis = ATOOLS::Vec4D(1.,1.,0.,0.);
 
+  struct control {
+  public:
+    static long int s_AHAparticles;
+    static long int s_AHAblobs;
+  };
+
   struct ctp {
     enum code {
       no = 0,
@@ -45,8 +51,8 @@ namespace AHADIC {
     int                 m_number;
   public:
     Cluster();
-    Cluster(const ATOOLS::Flavour &,const ATOOLS::Vec4D &,
-	    const ATOOLS::Flavour &,const ATOOLS::Vec4D &);
+    Cluster(const ATOOLS::Flavour &,const ATOOLS::Vec4D,
+	    const ATOOLS::Flavour &,const ATOOLS::Vec4D);
     ~Cluster();
 
     Cluster          * GetLeft()  const;
@@ -62,7 +68,7 @@ namespace AHADIC {
     ATOOLS::Flavour    GetFlav(const int) const;
     void               SetFlav(const int,const ATOOLS::Flavour &);
     ATOOLS::Vec4D      Momentum(const int=0) const;
-    void               SetMomentum(const int,const ATOOLS::Vec4D &);
+    void               SetMomentum(const int,const ATOOLS::Vec4D);
     ltp::code          GetLeads() const;
     void               SetLeads(const ltp::code);
     double             Mass2() const;
@@ -81,6 +87,7 @@ namespace AHADIC {
     void               RotateAndBoostBack(ATOOLS::Vec4D &);
     friend std::ostream& operator<<(std::ostream &,const Cluster &);
 
+    inline int         Number()             { return m_number; }
     inline int         RemainingClusters()  { return s_cluster_count; }
     inline int         ClusterCounter()     { return s_cluster_number; }
     inline void        ResetClusterNumber() { s_cluster_number = 0; }

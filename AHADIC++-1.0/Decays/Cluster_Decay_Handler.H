@@ -31,8 +31,8 @@ namespace AHADIC {
     bool                     m_cib;
     cdm::code                m_cdm;
     Cluster_Transformer    * p_transformer;
-    All_Double_Transitions * p_dtransitions;
-    All_Single_Transitions * p_stransitions;
+    All_Single_Transitions * p_transitions;
+    double                   m_offset1,m_offset2;
 
     Cluster_Part           * p_clus;
     Hadron_Part            * p_hads;
@@ -41,15 +41,12 @@ namespace AHADIC {
     Cluster_List           * p_clusters;
     ATOOLS::Blob           * p_blob;
 
-    double                   m_offset;
  
-    ATOOLS::Return_Value::code DecayIt(Cluster *,ATOOLS::Blob *&);
-    int                        TestOffSprings(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &);
-    void                       InitDecayBlob(Cluster *,ATOOLS::Blob *&);
-    void                       FillDecayBlob(Cluster *,ATOOLS::Blob *,const int);
-    bool                       TreatHadDecay(Cluster *,ATOOLS::Blob *&,int &,
-					     ATOOLS::Flavour &,ATOOLS::Flavour &);
-    void                       AnalyseThis(ATOOLS::Blob *);
+    bool  DecayIt(Cluster *,ATOOLS::Blob *&);
+    int   TestOffSprings(Cluster *);
+    void  InitDecayBlob(Cluster *,ATOOLS::Blob *&);
+    void  FillDecayBlob(Cluster *,ATOOLS::Blob *,const int);
+    void  AnalyseThis(ATOOLS::Blob *);
   public:
     Cluster_Decay_Handler(Cluster_Transformer *,bool=false,bool=false);
     ~Cluster_Decay_Handler();

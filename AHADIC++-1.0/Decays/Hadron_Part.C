@@ -11,341 +11,203 @@ using namespace std;
 
 
 Hadron_Part::Hadron_Part() :
-  p_stransitions(hadpars.GetSingleTransitions()),
-  p_dtransitions(hadpars.GetDoubleTransitions()),
-  m_smearparameter(hadpars.Get(string("AngularSmearing")))   
-{ }
+  m_dtmode(dtm::waves_PS_pop), 
+  p_transitions(new Double_Transition_Map),
+  p_popper(hadpars.GetPopper())
+{ 
+  Hadron_WF_Map * allwaves = hadpars.GetMultiplets()->GetWaveFunctions();
+  FlavCCMap     * alloweds = (&(hadpars.GetConstituents()->CCMap));
+  FlavCCMap_Iterator cc;
 
-Return_Value::code Hadron_Part::RedoDecay(Cluster * cluster,Blob * blob,
-					  int & mode,Flavour & had1,Flavour & had2)
-{
-  cout<<"IN "<<METHOD<<" mode = "<<mode<<" for "
-      <<cluster->Mass(0)<<" --> "<<had1<<" + "<<had2<<endl;
-  p_blob     = blob;
-  p_cluster  = cluster;
-  m_flavs[0] = had1;
-  m_flavs[1] = had2;
-  if (m_cht==chtrans::HH_only) return HHDecay();
-  switch (mode) {
-  case 1: 
-  case 2: 
-    return CHDecay(mode);
-  case 3: return HHDecay(true);
-  }
-  rvalue.IncError(METHOD);
-  return Return_Value::Error;
-}
+  Flavour         had1, had2, cchelp;
+  FlavPair        flpair, hadpair;
+  double          wt;
+  WFcomponent   * waves1, * waves2;
 
-Return_Value::code Hadron_Part::HHDecay(const bool flavs_selected) {
-  cout<<"IN "<<METHOD<<endl;
-  if (!flavs_selected) {
-    if (!p_dtransitions->IsoDecay(p_cluster,m_flavs[0],m_flavs[1]) ||
-	m_flavs[0]==Flavour(kf::none) || m_flavs[1]==Flavour(kf::none)) {
-      msg.Error()<<"Error in "<<METHOD<<" : "<<endl
-		 <<"   Selected an unphysical flavour (none) in decay of"<<endl
-		 <<(*p_cluster)<<"   ---> "<<m_flavs[0]<<" + "<<m_flavs[1]<<endl
-		 <<"   Will continue and hope for the best."<<endl;
-      rvalue.IncError(METHOD);
-      return Return_Value::Error;
-    }
-  }
-  if (!CheckHHDecayKinematics()) {  
-    msg.Error()<<"Error in "<<METHOD<<" : "<<endl
-	       <<"   Selected an unphysical flavour combination in decay of"<<endl
-	       <<(*p_cluster)<<"   ---> "<<m_flavs[0]<<" + "<<m_flavs[1]<<endl
-	       <<"   Will continue and hope for the best."<<endl;
-    rvalue.IncError(METHOD);
-    return Return_Value::Error;
-  }
-  cout<<"   "<<METHOD<<" : "<<p_cluster->Mass(0)<<" --> "
-      <<m_flavs[0]<<" + "<<m_flavs[1]<<endl;
-  p_cluster->BoostInCMSAndRotateOnZ();
-  Vec4D hadmoms[2];
-  FillSimpleDecay(hadmoms);
-  p_cluster->RotateAndBoostBack(hadmoms[0]);
-  p_cluster->RotateAndBoostBack(hadmoms[1]);
-  p_cluster->RotateAndBoostBack();
-  cout<<"   After back rotate & boost : "<<hadmoms[0]<<" + "<<hadmoms[1]<<endl; 
-  FillParticles(hadmoms,3);
-  cout<<"   OUT "<<METHOD<<endl<<(*p_blob)<<endl;
-  return Return_Value::Success;
-}
+  Double_Transition_Miter   dtiter;
+  Double_Transition_List  * dtl;
 
-Return_Value::code Hadron_Part::CHDecay(int & mode) {
-  cout<<"IN "<<METHOD<<" mode = "<<mode<<" for "
-      <<p_cluster->Mass(0)<<" --> "<<m_flavs[0]<<" + "<<m_flavs[1]<<endl;
-  p_cluster->BoostInCMSAndRotateOnZ();
-  Vec4D hadmoms[2];
-  if (FillCHDecay(hadmoms,mode)) {
-    if (mode==1) {
-      p_cluster->GetRight()->RescaleMomentum(hadmoms[1]);
-      hadmoms[1] = p_cluster->GetRight()->Momentum();
-      p_cluster->RotateAndBoostBack(hadmoms[0]);
-    }
-    else {
-      p_cluster->GetLeft()->RescaleMomentum(hadmoms[0]);
-      hadmoms[0] = p_cluster->GetLeft()->Momentum();
-      p_cluster->RotateAndBoostBack(hadmoms[1]);
-    }
-    p_cluster->RotateAndBoostBack();
-    FillParticles(hadmoms,mode);
-    cout<<"   OUT "<<METHOD<<endl<<(*p_blob)<<endl;
-    return Return_Value::Success;
-  }
-  else {
-    mode = 3;
-    return HHDecay();
-  }
-}
-
-void Hadron_Part::FillParticles(Vec4D * hadmoms,const int flag) {
-  Particle * part;
-  for (int i=1;i<3;i++) {
-    if (flag&i) {
-      part = new Particle(-1,m_flavs[i-1],hadmoms[i-1]); 
-      part->SetNumber();
-      part->SetStatus(part_status::active);
-      part->SetInfo('P');
-      part->SetFinalMass();
-      p_blob->AddToOutParticles(part);
-    }
-  }
-}
-
-bool Hadron_Part::CheckHHDecayKinematics()
-{
-  double m1 = m_flavs[0].Mass(), m2 = m_flavs[1].Mass(), mass = p_cluster->Mass();
-  int    next, mode;
-  bool   fix(false);
-  while (mass<=m1+m2) {
-    if (!fix) {
-      mode = 0;
-      if (ran.Get()>0.5) mode = 1;
-    }
-    if (mode==0) {
-      next = int(p_stransitions->NextLightest(p_cluster->GetLeft(),m_flavs[0]));
-      m1   = m_flavs[0].Mass();
-    }
-    else {
-      next = int(p_stransitions->NextLightest(p_cluster->GetRight(),m_flavs[1]));
-      m2   = m_flavs[1].Mass();
-    }
-    switch (next) {
-    case (int(Return_Value::Success)) : break;
-    case (int(Return_Value::Error))   : 
-      if (!fix) {
-	mode = 1-mode;
-	fix  = true;
-	break;
+  for (Hadron_WF_Miter wf1=allwaves->begin();wf1!=allwaves->end();wf1++) {
+    had1          = wf1->first;
+    waves1        = wf1->second->GetWaves();
+    hadpair.first = had1;
+    for (Hadron_WF_Miter wf2=allwaves->begin();wf2!=allwaves->end();wf2++) {
+      had2           = wf2->first;
+      waves2         = wf2->second->GetWaves();
+      wt             = wf1->second->MultipletWeight()*wf2->second->MultipletWeight();
+      hadpair.second = had2;
+      for (WFcompiter swv1=waves1->begin();swv1!=waves1->end();swv1++) {
+	flpair.first = swv1->first->first;
+	for (WFcompiter swv2=waves2->begin();swv2!=waves2->end();swv2++) {
+	  flpair.second = swv2->first->second;
+	  if (swv1->first->second!=swv2->first->first.Bar()) continue;
+	  cchelp = swv2->first->first;
+	  if (cchelp.IsDiQuark()) cchelp = cchelp.Bar();
+	  cc     = alloweds->find(cchelp);
+	  if (cc==alloweds->end() ||
+	      cc->second->TotWeight()<1.e-6) {
+	    continue;
+	  }
+	  if (m_dtmode==dtm::waves_PS_pop ||
+	      m_dtmode==dtm::waves_PS) 
+	    wt  *= cc->second->TotWeight();
+	  if (m_dtmode==dtm::waves_PS_pop ||
+	      m_dtmode==dtm::PS_pop) 
+	    wt  *= p_popper->PopWeight(cchelp);
+ 
+	  dtiter = p_transitions->find(flpair);
+	  if (dtiter!=p_transitions->end()) {
+	    (*dtiter->second)[hadpair] += wt*sqr(swv1->second*swv2->second);
+	  }
+	  else {
+	    if (wt*sqr(swv1->second*swv2->second)>0.) {
+	      dtl                      = new Double_Transition_List;
+	      (*dtl)[hadpair]          = wt*sqr(swv1->second*swv2->second);
+	      (*p_transitions)[flpair] = dtl;
+	    }
+	  }
+	}
       }
-      else return false;  
     }
-  }
-  return true;
-}    
-
-
-bool Hadron_Part::CheckCHDecayKinematics(Cluster * other)
-{
-  int mode      = 0;
-  Cluster * clu = p_cluster->GetLeft();
-  if (clu==other) {
-    mode        = 1;
-    clu         = p_cluster->GetRight();
-  }
-  double    m1  = m_flavs[mode].Mass(), m2 = other->Mass(), mass = p_cluster->Mass();
-  while (mass<=m1+m2) {
-    switch (int(p_stransitions->NextLightest(clu,m_flavs[mode]))) {
-    case Return_Value::Success : 
-      m1 = m_flavs[mode].Mass(); 
-      break;
-    case Return_Value::Error : return false;
-    }
-  }
-  return true;
-}    
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-// Keep_PperpY
-/////////////////////////////////////////////////////////////////////////////////////////////
-  
-Keep_PPerpY::Keep_PPerpY() :
-  Hadron_Part()
-{
-}
-
-void Keep_PPerpY::FillSimpleDecay(ATOOLS::Vec4D* hadmoms) 
-{
-  double energy   = p_cluster->Momentum()[0];
-  double m12      = sqr(m_flavs[0].Mass());
-  double m22      = sqr(m_flavs[1].Mass());
-  double energy1  = (sqr(energy)+m12-m22)/(2.*energy);
-  double energy2  = (sqr(energy)-m12+m22)/(2.*energy);
-  double pperp    = p_cluster->GetLeft()->Momentum().PPerp();
-  
-  if (sqr(energy1)-m12-sqr(pperp)>0) {
-    double cosphi = cos(2.*M_PI*ran.Get()), sinphi=sqrt(1.-cosphi*cosphi);
-    double plong  = sqrt(sqr(energy1)-m12-sqr(pperp));
-    hadmoms[0] = Vec4D(energy1,pperp*cosphi,pperp*sinphi,plong);
-    hadmoms[1] = p_cluster->Momentum()-hadmoms[0];
-  }
-  else {
-    Vec3D direction = Vec3D(p_cluster->GetLeft()->Momentum());
-    direction  = direction/direction.Abs();
-    hadmoms[0] = Vec4D(energy1,direction*sqrt(sqr(energy1)-m12));
-    hadmoms[1] = p_cluster->Momentum()-hadmoms[0];
   }
 }
 
-bool Keep_PPerpY::FillCHDecay(ATOOLS::Vec4D* hadmoms,const int mode)
+Hadron_Part::~Hadron_Part()
 {
-  Cluster * other = (mode==1)?p_cluster->GetRight():p_cluster->GetLeft();
-  Cluster * clu   = (mode==1)?p_cluster->GetLeft():p_cluster->GetRight();
-  if (!CheckCHDecayKinematics(other)) return false;
-
-  double m2;
-
-  double rap    = clu->Momentum().Y();
-  if (mode==1) m2 = sqr(m_flavs[0].Mass());
-          else m2 = sqr(m_flavs[1].Mass());
-  double E      = (p_cluster->Mass2()+m2-other->Mass2())/(2.*p_cluster->Mass());
-  double pperp2  = sqr(E/cosh(rap))-m2, pperp = sqrt(pperp2);
-  double plong  = E*tanh(rap);
-  double cosphi = cos(2.*M_PI*ran.Get()), sinphi=sqrt(1.-cosphi*cosphi);
-
-  if (mode==1) {
-    hadmoms[0] = Vec4D(E,pperp*cosphi,pperp*sinphi,plong);
-    hadmoms[1] = p_cluster->Momentum()-hadmoms[0];
+  if (p_transitions) {
+    for (Double_Transition_Miter dtiter=p_transitions->begin();
+	 dtiter!=p_transitions->end();dtiter++) {
+      dtiter->second->clear();
+      delete dtiter->second;
+    }
+    p_transitions->clear();
+    p_transitions = NULL;
   }
-  else {
-    hadmoms[1] = Vec4D(E,pperp*cosphi,pperp*sinphi,plong);
-    hadmoms[0] = p_cluster->Momentum()-hadmoms[1];
-  }
-  cout<<METHOD<<" E = "<<E<<", y = "<<rap
-      <<"  ->  pt, pt2, pl  = "<<pperp<<", "<<pperp2<<", "<<plong<<endl
-      <<"   "<<hadmoms[0]<<"("<<hadmoms[0].Abs2()<<" vs. "<<m2<<") + "
-      <<hadmoms[1]<<"("<<hadmoms[1].Abs2()<<" vs. "<<m2<<")"<<endl;
+}  
+
+bool Hadron_Part::FixHHDecay(Cluster * cluster,
+			     ATOOLS::Flavour & had1,ATOOLS::Flavour & had2)
+{
+  double M       = cluster->Mass(), M2 = M*M;
+  double m12     = sqr(had1.PSMass()), m22 = sqr(had2.PSMass());
+  double ptmax   = sqrt(sqr(M2-m12-m22)-4.*m12*m22)/(2.*M); 
+  double pt      = p_popper->SelectPT(ptmax);
+
+  cluster->BoostInCMSAndRotateOnZ();
+  double E1      = (M2+m12-m22)/(2.*M);
+  double pl1     = sqrt(sqr(E1)-sqr(pt)-m12);
+  double cosphi  = cos(2.*M_PI*ran.Get()), sinphi = sqrt(1.-cosphi*cosphi);
+  Vec4D  p1      = Vec4D(E1,pt*cosphi,pt*sinphi,pl1);
+  Vec4D  p2      = cluster->Momentum()-p1;
+
+  Particle * part;
+  Cluster * clus;
+  clus = new Cluster();
+  clus->SetMomentum(0,p1);
+  clus->SetPrev(cluster);
+  cluster->SetLeft(clus);
+
+  clus = new Cluster();
+  clus->SetMomentum(0,p2);
+  clus->SetPrev(cluster);
+  cluster->SetRight(clus);
+
+  cluster->RotateAndBoostBack();
+
+  part = new Particle(-1,had1,cluster->GetLeft()->Momentum());
+  part->SetNumber();
+  part->SetInfo('P');
+  part->SetStatus(part_status::active);
+  part->SetFinalMass(had1.PSMass());
+  control::s_AHAparticles++;
+  cluster->GetLeft()->SetSelf(part);
+  
+  part = new Particle(-1,had2,cluster->GetRight()->Momentum());
+  part->SetNumber();
+  part->SetInfo('P');
+  part->SetStatus(part_status::active);
+  part->SetFinalMass(had2.PSMass());
+  control::s_AHAparticles++;
+  cluster->GetRight()->SetSelf(part);
+  
+  //   cout<<METHOD<<" check this decay "
+  //       <<cluster->Number()<<"["<<cluster->Mass()<<"] --> "<<had1<<" & "<<had2<<endl
+  //       <<(*cluster)<<endl;
+  
   return true;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////
-// Retain
-/////////////////////////////////////////////////////////////////////////////////////////////
 
-Retain::Retain() : 
-  Hadron_Part()
+bool Hadron_Part::MustTransit(Cluster * cluster,Flavour & dec1,Flavour & dec2,
+			      const double offset)
 {
-  m_cht    = chtrans::CH_incl; 
-  m_hadsel = hadsel::newpair;
-  
-  if (m_cht==chtrans::HH_only)   m_hadsel = hadsel::newpair;
-}
+  dec1 = dec2 = Flavour(kf::none); 
 
-void Retain::FillSimpleDecay(ATOOLS::Vec4D * hadmoms) {
-  double energy   = p_cluster->Momentum()[0];
-  double m12      = sqr(m_flavs[0].Mass());
-  double m22      = sqr(m_flavs[1].Mass());
-  double energy1  = (sqr(energy)+m12-m22)/(2.*energy);
-  double energy2  = (sqr(energy)-m12+m22)/(2.*energy);
-  Vec3D  direction(0.,0.,1.);
-  double costheta, sintheta, phi;
-  if (int(p_cluster->GetLeads())!=0 && m_smearparameter>0.) {
-    double norm   = sqr(m_smearparameter);
-    do { costheta = 1.-2.*ran.Get(); } while (exp(-(1.-costheta)*norm)<ran.Get());
-    sintheta      = sqrt(1.-sqr(costheta));
-    phi           = 2.*M_PI*ran.Get();
-    direction  = Vec3D(sintheta*sin(phi),sintheta*cos(phi),costheta);
+  FlavPair flpair;
+  flpair.first  = cluster->GetFlav(1);
+  flpair.second = cluster->GetFlav(2);
+
+  double wt(0.), MC(cluster->Mass()), MC2(MC*MC),mmax(0.),mmin(MC), ps,m1,m2;
+  Double_Transition_Miter dtliter = p_transitions->find(flpair);
+  if (dtliter==p_transitions->end()) {
+    msg.Error()<<"ERROR in "<<METHOD<<" : "<<endl
+	       <<"   No transition table found for "<<flpair.first<<"/"<<flpair.second<<endl
+	       <<"   Return 'false' and hope for the best."<<std::endl;
+    return false;
   }
-  hadmoms[0] = Vec4D(energy1,direction*sqrt(sqr(energy1)-m12));
-  hadmoms[1] = Vec4D(energy2,(-1.)*direction*sqrt(sqr(energy1)-m12));
-} 
-
-bool Retain::FillCHDecay(ATOOLS::Vec4D * hadmoms,const int mode) {
-  Cluster * other = (mode==1)?p_cluster->GetRight():p_cluster->GetLeft();
-  if (!CheckCHDecayKinematics(other)) return false;
-  double m12,m22;
-  if (mode==1) {
-    m12 = sqr(m_flavs[0].Mass());
-    m22 = sqr(other->Mass(0));
+  for (Double_Transition_Siter decit=dtliter->second->begin();
+       decit!=dtliter->second->end();decit++) {
+    m1  = decit->first.first.Mass();
+    m2  = decit->first.second.Mass();
+    if (m1+m2>mmax) mmax=m1+m2;
+    if (m1+m2<mmin) mmin=m1+m2;
+    if (m1+m2>MC-offset) continue;
+    ps  = sqrt((MC2-sqr(m1+m2))*(MC2-sqr(m1-m2)));
+    wt += ps*decit->second;
   }
-  else {
-    m12 = sqr(other->Mass(0));
-    m22 = sqr(m_flavs[1].Mass());
+  if (MC>mmax+offset || wt==0.) {
+    return false;
   }
-
-  double energy    = p_cluster->Momentum()[0];
-  double energy1 = (sqr(energy)+m12-m22)/(2.*energy);
-  double energy2 = (sqr(energy)-m12+m22)/(2.*energy);
-  Vec3D  direction(0.,0.,1.);
-  hadmoms[0] = Vec4D(energy1,0.,0.,sqrt(sqr(energy1)-m12));
-  hadmoms[1] = Vec4D(energy2,0.,0.,-sqrt(sqr(energy1)-m12));
-} 
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-// Isotropic
-/////////////////////////////////////////////////////////////////////////////////////////////
-  
-Isotropic::Isotropic() : 
-  Hadron_Part()
-{
-  m_cht    = chtrans::CH_incl; 
-  m_hadsel = hadsel::newpair;
-  
-  if (m_cht==chtrans::HH_only)   m_hadsel = hadsel::newpair;
-}
-
-void Isotropic::FillSimpleDecay(ATOOLS::Vec4D * hadmoms) {
-  double energy   = p_cluster->Momentum()[0];
-  double m12      = sqr(m_flavs[0].Mass());
-  double m22      = sqr(m_flavs[1].Mass());
-  double energy1  = (sqr(energy)+m12-m22)/(2.*energy);
-  double energy2  = (sqr(energy)-m12+m22)/(2.*energy);
-  Vec3D  direction(0.,0.,1.);
-  double costheta, sintheta, phi;
-  if (int(p_cluster->GetLeads())==0) {
-    costheta        = 1.-2.*ran.Get(); 
-    sintheta        = sqrt(1.-sqr(costheta));
-    phi             = 2.*M_PI*ran.Get();
-  }
-  else {
-    if (m_smearparameter>0.) {
-      double norm   = sqr(m_smearparameter);
-      do { costheta = 1.-2.*ran.Get(); } while (exp(-(1.-costheta)*norm)<ran.Get());
-      sintheta      = sqrt(1.-sqr(costheta));
-      phi           = 2.*M_PI*ran.Get();
-    }
-    else {
-      costheta      = 1.;
-      sintheta      = 0.;
-      phi           = 0.;
+  dec1 = dec2 = Flavour(kf::none); 
+  wt *= ran.Get();
+  for (Double_Transition_Siter decit=dtliter->second->begin();
+       decit!=dtliter->second->end();decit++) {
+    m1  = decit->first.first.Mass();
+    m2  = decit->first.second.Mass();
+    if (m1+m2>MC-offset) continue;
+    ps  = sqrt((MC2-sqr(m1+m2))*(MC2-sqr(m1-m2)));
+    wt -= ps*decit->second;
+    if (wt<0.) {
+      dec1 = decit->first.first;
+      dec2 = decit->first.second;
+      return true;
     }
   }
-  
-  direction  = Vec3D(sintheta*sin(phi),sintheta*cos(phi),costheta);
-  hadmoms[0] = Vec4D(energy1,direction*sqrt(sqr(energy1)-m12));
-  hadmoms[1] = Vec4D(energy2,(-1.)*direction*sqrt(sqr(energy1)-m12));
-} 
-   
-bool Isotropic::FillCHDecay(ATOOLS::Vec4D * hadmoms,const int mode) {
-  Cluster * other = (mode==1)?p_cluster->GetRight():p_cluster->GetLeft();
-  if (!CheckCHDecayKinematics(other)) return false;
-  double m12,m22;
-  if (mode==1) {
-    m12 = sqr(m_flavs[0].Mass());
-    m22 = sqr(other->Mass(0));
+  return false;
+}
+
+void Hadron_Part::PrintDoubleTransitions() 
+{
+  map<Flavour,double> checkit;
+  for (Double_Transition_Miter dtiter=p_transitions->begin();
+       dtiter!=p_transitions->end();dtiter++) {
+    msg.Out()<<"Transitions for <"
+	     <<dtiter->first.first<<", "<<dtiter->first.second<<"> : "<<endl;
+    for (Double_Transition_Siter dtit=dtiter->second->begin();
+	 dtit!=dtiter->second->end();dtit++) {
+      msg.Out()<<"   -> {"<<dtit->first.first<<", "<<dtit->first.second<<" }"
+	       <<" with "<<dtit->second<<endl;
+      if (checkit.find(dtit->first.first)==checkit.end()) 
+	checkit[dtit->first.first] = dtit->second;
+      else checkit[dtit->first.first] += dtit->second;
+      if (checkit.find(dtit->first.second)==checkit.end()) 
+	checkit[dtit->first.second] = dtit->second;
+      else checkit[dtit->first.second] += dtit->second;
+    }
   }
-  else {
-    m12 = sqr(other->Mass(0));
-    m22 = sqr(m_flavs[1].Mass());
-  }
-
-  double energy    = p_cluster->Momentum()[0];
-  double energy1 = (sqr(energy)+m12-m22)/(2.*energy);
-  double energy2 = (sqr(energy)-m12+m22)/(2.*energy);
-  Vec3D  direction(0.,0.,1.);
-  hadmoms[0] = Vec4D(energy1,0.,0.,sqrt(sqr(energy1)-m12));
-  hadmoms[1] = Vec4D(energy2,0.,0.,-sqrt(sqr(energy1)-m12));
-} 
-
-
+  msg.Out()<<"In total (summed weights per hadron):"<<endl;
+  for (map<Flavour,double>::iterator it=checkit.begin();it!=checkit.end();it++) 
+    msg.Out()<<"     -> "<<it->first<<" : "<<it->second<<endl;
+  msg.Out()<<"-------- END OF ALL_DOUBLE_TRANSITIONS -----"<<endl;
+}
 

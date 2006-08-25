@@ -8,7 +8,7 @@ using namespace std;
 
 
 Ahadic::Ahadic(string path,string file,bool ana)  :
-  m_fullinfo(true), m_maxtrials(3)
+  m_fullinfo(false), m_maxtrials(3)
 {
   hadpars.Init(path,file);
   ana=false;
@@ -27,14 +27,14 @@ Ahadic::~Ahadic()
 Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
 {
   cout<<"##########################################################################"<<endl
-      <<"##########################################################################"<<endl
-      <<"##########################################################################"<<endl
-      <<"##########################################################################"<<endl
-      <<"##########################################################################"<<endl;
+      <<"###################################### IN ################################"<<endl;
 
   Blob * blob(NULL);
   Cluster clus;
   clus.ResetClusterNumber();
+
+  control::s_AHAparticles=0;
+
   for (Blob_List::iterator blit=blobs->begin();blit!=blobs->end();++blit) {
     if ((*blit)->Has(blob_status::needs_hadronization) &&
 	(*blit)->Type()==btp::Fragmentation) {
@@ -56,8 +56,6 @@ Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
 	  abort();
 	  break;
 	}
-	//cout<<(*blob)<<endl;
-	//return Return_Value::Success;
 	
 	switch (int(p_cdechandler->DecayClusters(p_cformhandler->GetClusters(),blobs))) {
 	case int(Return_Value::Retry_Method) :
@@ -68,17 +66,23 @@ Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
 	case int(Return_Value::Warning) :
 	  blob->AddStatus(blob_status::needs_hadrondecays);
 	  if (!m_fullinfo) {
-	    blobs->MergeSubsequentTypeRecursively(btp::Cluster_Formation,btp::Cluster_Decay);
+	    blobs->MergeSubsequentTypeRecursively(btp::Cluster_Formation,btp::Cluster_Decay,
+						  control::s_AHAblobs,
+						  control::s_AHAparticles);
 	    blob->SetStatus(blob_status::needs_hadrondecays);
 	    blob->SetType(btp::Fragmentation);
 	  }
 	  blob->UnsetStatus(blob_status::needs_hadronization);
 
-	  cout<<"##############################################################"<<endl
-	      <<"##############################################################"<<endl
-	      <<METHOD<<" : "<<clus.RemainingClusters()<<" remaining clusters."<<endl<<(*blobs)
-	      <<endl<<"##############################################################"<<endl;
+	  // 	  cout<<METHOD<<" : "<<clus.RemainingClusters()<<" remaining clusters."<<endl<<(*blob)
+	  // 	      <<"##############################################################"<<endl
+	  // 	      <<"##############################################################"<<endl
+	  // 	      <<"##############################################################"<<endl;
 
+	  cout<<METHOD<<" : "<<clus.RemainingClusters()<<" remaining clusters."<<endl
+	      <<control::s_AHAblobs<<"/"<<control::s_AHAparticles<<" vs. "<<blob->NOutP()<<endl;
+	  cout<<"################################## OUT ###################################"<<endl
+	      <<"##########################################################################"<<endl;
 	  return Return_Value::Success;
 	default:
 	  msg.Error()<<"Error in "<<METHOD<<": "<<endl

@@ -65,8 +65,6 @@ Return_Value::code Cluster_Formation_Handler::FormClusters(Blob * blob)
   default:
     break;
   }
-  //   for (std::vector<Cluster_List *>::iterator clit1=m_clulists.begin();
-  //        clit1!=m_clulists.end();clit1++) cout<<(**clit1)<<std::endl;
 
   switch (int(ApplyColourReconnections())) {
   case int(Return_Value::Retry_Method) : return Return_Value::Retry_Method;
@@ -264,6 +262,7 @@ Return_Value::code Cluster_Formation_Handler::ClustersToHadrons()
       switch (int(p_ctransformer->TreatSingleCluster((*(*clit)->begin()),p_blob))) {
       case int(Return_Value::Success):
 	if ((*(*clit)->begin())->GetSelf()) { 
+	  control::s_AHAparticles--;
 	  delete (*(*clit)->begin())->GetSelf();
 	  (*(*clit)->begin())->SetSelf(NULL);
 	}
@@ -298,7 +297,8 @@ Return_Value::code Cluster_Formation_Handler::ClustersToHadrons()
       rvalue.IncRetryMethod(METHOD);
       return Return_Value::Retry_Method;
     case int(Return_Value::Success): 
-    default:continue;
+    default:
+      continue;
     }
   }
 

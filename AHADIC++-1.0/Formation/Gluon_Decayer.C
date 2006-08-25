@@ -70,8 +70,8 @@ bool Gluon_Decayer::Shift(Proto_Particle_List * pl)
   size_t number(pl->size());
   bool val(true);
   if (number<2) return val; 
-  Vec4D  * momenta = new Vec4D[number];
-  double * masses  = new double[number];
+  Vec4D  momenta[number];
+  double masses[number];
   int k(0);
   Flavour flav;
   PPL_Iterator pit;
@@ -84,9 +84,6 @@ bool Gluon_Decayer::Shift(Proto_Particle_List * pl)
 
   k = 0;
   for (pit=pl->begin();pit!=pl->end();++pit,++k) pit->m_mom = momenta[k]; 
-
-  delete momenta;
-  delete masses;
   return val;
 }
 
@@ -128,7 +125,6 @@ void Gluon_Decayer::SelectDecay(const Vec4D & mom) {
     if (disc<0.) break;
   }
   m_flav = fdit->first;
-  if (m_flav==Flavour(kf::c)) std::cout<<METHOD<<" m_flav = "<<m_flav<<std::endl;
   m_mass = hadpars.GetConstituents()->Mass(m_flav);
   SelectZ(fdit->second);
   SelectPhi();

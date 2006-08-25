@@ -28,7 +28,6 @@ void Colour_Reconnections::Singlet_CR(Cluster_List * clin)
     if (TestClusters((*cit1),(*cit2),gen)) {
       Flavour helpfla = (*cit1)->GetFlav(2);
       Vec4D   helpmom = (*cit1)->Momentum(2);
-      //std::cout<<"Clusters before "<<std::endl<<(*(*cit1))<<std::endl<<(*(*cit2))<<std::endl;
       (*cit1)->SetFlav(2,(*cit2)->GetFlav(2));
       (*cit1)->SetMomentum(2,(*cit2)->Momentum(2));
       (*cit2)->SetFlav(2,helpfla);
@@ -45,7 +44,6 @@ void Colour_Reconnections::Singlet_CR(Cluster_List * clin)
       } 
       (*cit1)->Update();
       (*cit2)->Update();
-      //std::cout<<"Clusters after "<<std::endl<<(*(*cit1))<<std::endl<<(*(*cit2))<<std::endl;
       if (m_w14/(m_w23+m_w14)>ran.Get()) { cit2++; gen++; }
                                     else { cit1 = cit2; cit2++; gen=1; }
     } 
