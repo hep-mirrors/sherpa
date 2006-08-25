@@ -32,7 +32,7 @@ namespace SHERPA {
 
     ATOOLS::Return_Value::code Treat(ATOOLS::Blob * blob);
     ATOOLS::Return_Value::code Treat(int i);
-    void PrepareMassSmearing(ATOOLS::Blob* blob);
+    bool PrepareMassSmearing(ATOOLS::Blob* blob);
     Hadron_Decay_Handler* ChooseDecayHandler(ATOOLS::Particle* part);
   public :
     Hadron_Decays(HDHandlersMap *);

@@ -85,7 +85,7 @@ Return_Value::code Hadron_Decays::Treat(ATOOLS::Blob_List * bloblist, double & w
 Return_Value::code Hadron_Decays::Treat(Blob * blob)
 {
   m_daughters = blob->GetOutParticles();
-  PrepareMassSmearing(blob);
+  if(!PrepareMassSmearing(blob)) return Return_Value::Retry_Event;
 
   // Decaying all daughters one by one (in CMS*)
   bool retry_all = false;
@@ -151,6 +151,7 @@ Return_Value::code Hadron_Decays::Treat(int i)
 {
   double max_mass = m_max_mass;
   for( int j=0; j<i; j++) max_mass -= m_daughters[j]->FinalMass();
+  if( !(max_mass > 0.0) ) return Return_Value::Failure;
   Particle * part = m_daughters[i];
   Mass_Handler masshandler(part->Flav());
   if( part->Status()==part_status::active && !part->Flav().IsStable() ) {
@@ -206,12 +207,10 @@ bool SortByWidth(Particle* p1, Particle* p2) {
   return p1->Flav().Width() < p2->Flav().Width();
 }
 
-void Hadron_Decays::PrepareMassSmearing(Blob* blob)
+bool Hadron_Decays::PrepareMassSmearing(Blob* blob)
 {
   // Sort daughters by width, necessary for mass treatment
   sort(m_daughters.begin(), m_daughters.end(), SortByWidth);
-  
-  // Preparing for mass smearing
   m_saved_momenta.clear();
   for(size_t i=0;i<m_daughters.size();i++) {
     m_saved_momenta.push_back(m_daughters[i]->Momentum());
@@ -219,11 +218,22 @@ void Hadron_Decays::PrepareMassSmearing(Blob* blob)
   Vec4D total(0.0,0.0,0.0,0.0);
   for(int i=0;i<blob->NInP();i++) total += blob->InParticle(i)->Momentum();
   m_max_mass = total.Mass();
+  if( !(m_max_mass > 0.0) ) {
+    msg.Error()<<METHOD<<" there is not enough incoming mass in this blob:"<<endl
+      <<"  m_max_mass="<<m_max_mass<<endl
+      <<"  The blob was:"<<endl
+      <<(*blob)<<endl
+      <<"  and its totalmomentum.Mass2()="<<total.Abs2()<<endl
+      <<"  This should not happen."<<endl;
+    return false;
+  }
+  
   if(blob->NInP()==0) {
     msg.Error()<<METHOD<<" Error: no incoming particles for blob ["<<blob->Id()<<"]."<<endl
-      <<"  Cannot preserve momentum conservation."<<endl;
-    m_max_mass=9.e99;
+      <<"  Cannot ensure momentum conservation."<<endl;
+    return false;
   }
+  return true;
 }
 
 Hadron_Decay_Handler* Hadron_Decays::ChooseDecayHandler(Particle* part)

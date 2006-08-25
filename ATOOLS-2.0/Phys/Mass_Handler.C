@@ -21,14 +21,24 @@ Mass_Handler::~Mass_Handler()
 
 double Mass_Handler::GetMass(double min, double max)
 {
-  return p_mass->GetMass(min, max);
+  if(min<0.0 || max < 0.0) {
+    msg.Error()<<METHOD<<" range not valid: min="<<min<<" max="<<max<<endl;
+    return 0.0;
+  }
+  double m = p_mass->GetMass(min, max);
+  if (!(m>0) && !(m<0) && m!=0) {
+  msg.Error()<<METHOD<<"produced a nan:"<<endl
+      <<"  peak="<<p_mass->Peak()<<" width="<<p_mass->Width()
+      <<" min="<<min<<" max="<<max<<endl;
+  }
+  return m;
 }
 
 // ========================================================
 
-Breit_Wigner::Breit_Wigner(double peak,double width):
-  m_peak(peak), m_width(width)
+Breit_Wigner::Breit_Wigner(double peak,double width)
 {
+  m_peak=peak; m_width=width;
 }
 
 double Breit_Wigner::GetMass(double min, double max)
@@ -39,9 +49,9 @@ double Breit_Wigner::GetMass(double min, double max)
 
 // ========================================================
 
-Relativistic_Breit_Wigner::Relativistic_Breit_Wigner(double peak,double width):
-  m_peak(peak), m_width(width)
+Relativistic_Breit_Wigner::Relativistic_Breit_Wigner(double peak,double width)
 {
+  m_peak=peak; m_width=width;
 }
 
 double Relativistic_Breit_Wigner::GetMass(double min, double max)
@@ -58,10 +68,6 @@ double Relativistic_Breit_Wigner::GetMass(double min, double max)
     double ymax=atan((smin-peak2)/mw);
     double ymin=atan((smax-peak2)/mw);
     s = peak2+mw*tan(ymin + random*(ymax-ymin));
-  }
-  if (!(s>0) && !(s<0) && s!=0) {
-    msg.Error()<<METHOD<<" produced a nan:"<<endl
-      <<"m_peak="<<m_peak<<" m_width="<<m_width<<" min="<<min<<" max="<<max<<endl;
   }
   return sqrt(s);
 }

@@ -21,21 +21,23 @@ namespace ATOOLS {
   };
 
   class Mass_Base {
+  protected:
+    double m_peak, m_width;
   public:
     Mass_Base() {}
     virtual ~Mass_Base() {}
     virtual double GetMass(double min, double max)=0;
+    double Peak() { return m_peak; }
+    double Width() { return m_width; }
   };
 
   class Breit_Wigner: public Mass_Base {
-    double m_peak, m_width;
   public:
     Breit_Wigner(double peak, double width);
     double GetMass(double min=0.0, double max=MYINF);
   };
 
   class Relativistic_Breit_Wigner: public Mass_Base  {
-    double m_peak, m_width;
   public:
     Relativistic_Breit_Wigner(double peak, double width);
     double GetMass(double min=0.0, double max=MYINF);
