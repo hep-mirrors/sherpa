@@ -1,5 +1,4 @@
 #include "Cluster_Part.H"
-#include "Hadronisation_Parameters.H"
 #include "Message.H"
 #include "Random.H"
 
@@ -9,7 +8,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Cluster_Part::Cluster_Part() :
-  m_4Qmode(0), m_ana(true),
+  m_4Qmode(0), m_ybar_mode(2), m_ana(true),
   p_popper(hadpars.GetPopper()), 
   m_fraction(sqr(hadpars.Get(string("MassFraction")))),
   m_ystar_expvalue(sqr(hadpars.Get(string("<Y>")))),
@@ -103,14 +102,13 @@ bool Cluster_Part::BuildKinematics(Cluster * const cluster,ATOOLS::Flavour & fla
 
   double pmax  = sqrt(sqr(MC2+sqr(m0+m1)-sqr(m2+m3))-4.*sqr(m0+m1)*sqr(m2+m3))/(2.*MC);
   double ptmax = m_fraction*pmax;
-  double pt, ystar, s_qq, ybmax, ybar, x1, x2, E_r, E0_r(0.), E3_r(0.);
+  double pt, ystar, s_qq, ybar, x1, x2, E_r, E0_r(0.), E3_r(0.);
   int counter(0);
   do {
     pt     = p_popper->SelectPT(ptmax);
     ystar  = GetYStar(sqr(pt)+m12,sqr(ptmax));
     s_qq   = 4.*(sqr(pt)+m12)*sqr(cosh(ystar));
-    ybmax  = 0.5 * log(sqr(pmax)/s_qq);
-    ybar   = (-1.+2.*ran.Get()) * ybmax;
+    ybar   = GetYBar(sqr(pmax),s_qq); 
     x1     = sqrt(s_qq/MC2)*exp(ybar);
     x2     = sqrt(s_qq/MC2)*exp(-ybar);
     E_r    = sqrt((1.-x1)*(1.-x2))*MC;
@@ -184,8 +182,6 @@ bool Cluster_Part::BuildKinematics(Cluster * const cluster,ATOOLS::Flavour & fla
   //   }
 
   if (m_ana) {
-    m_histograms[string("YBar_by_YBarMax")]->Insert(ybar/ybmax);
-    m_histograms[string("YBar")]->Insert(ybar);
     m_histograms[string("PT")]->Insert(pt);
     m_histograms[string("SQQ")]->Insert(s_qq);
     if (flav==Flavour(kf::u) || flav== Flavour(kf::d)) {
@@ -229,24 +225,46 @@ bool Cluster_Part::UpdateDecay(Cluster * const cluster,const int mode)
   if (!mode&2) cluster->GetRight()->RescaleMomentum(p2);
 
   cluster->RotateAndBoostBack();
-  cluster->GetLeft()->GetSelf()->SetMomentum(p1);
-  cluster->GetRight()->GetSelf()->SetMomentum(p1);
 }
 
 
 double Cluster_Part::GetYStar(const double mt2,const double mmax2) {
   double ystarmax = 0.5 * log(mmax2/(4.*mt2));
-  double ystar, wt, ystarexp = m_ystar_expvalue*ystarmax;
-  do {
-    ystar = (-1.+2.*ran.Get()) * ystarmax;
-    wt    = exp(-sqr((ystar-ystarexp)/m_ystar_sigma));
-  } while (wt<ran.Get());
+  double ystar, ystarexp = m_ystar_expvalue*ystarmax;
+  do { ystar = (-1.+2.*ran.Get()) * ystarmax;
+  } while (exp(-sqr((ystar-ystarexp)/m_ystar_sigma))<ran.Get());
 
   if (m_ana) {
     m_histograms[string("YStar_by_YStarMax")]->Insert(ystar/ystarmax);
     m_histograms[string("YStar")]->Insert(ystar);
   }
   return ystar;
+}
+
+double Cluster_Part::GetYBar(const double pmax2,const double s_qq) {
+  double ybar, ybarmax  = 0.5 * log(pmax2/s_qq);
+  double e_ybarmax = exp(ybarmax), cosh_ybarmax = cosh(ybarmax);
+  switch (m_ybar_mode) {
+  case 2:
+    do { ybar = (-1.+2.*ran.Get());
+    } while (exp(-sqr(ybar/ybarmax))<ran.Get());
+  case 1:
+    do { 
+      ybar = log(1.+ran.Get()*(e_ybarmax-1.));
+      if (ran.Get()<.5) ybar *= -1.;
+    } while (cosh(ybar)<ran.Get()*cosh_ybarmax);
+    break;
+  case 0:
+  default:
+    // Uniform distribution
+    ybar = (-1.+2.*ran.Get());
+    break;
+  }
+  if (m_ana) {
+    m_histograms[string("YBar_by_YBarMax")]->Insert(ybar/ybarmax);
+    m_histograms[string("YBar")]->Insert(ybar);
+  }
+  return ybar;
 }
 
 

@@ -1,6 +1,5 @@
 #include "Cluster_Decay_Handler.H"
 #include "Cluster_Part.H"
-#include "Hadron_Part.H"
 #include "Hadronisation_Parameters.H"
 
 
@@ -8,13 +7,11 @@ using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
 
-Cluster_Decay_Handler::Cluster_Decay_Handler(Cluster_Transformer * transformer,
+Cluster_Decay_Handler::Cluster_Decay_Handler(Soft_Cluster_Handler * softclusters,
 					     bool cib,bool ana) :
   m_cib(cib), 
-  p_transformer(transformer),p_transitions(hadpars.GetSingleTransitions()),
-  p_analysis(NULL), p_clusters(NULL), p_blob(NULL),  
-  m_offset1(hadpars.Get(string("Offset_C->H"))),
-  m_offset2(hadpars.Get(string("Offset_C->HH")))
+  p_softclusters(softclusters),p_transitions(hadpars.GetSingleTransitions()),
+  p_analysis(NULL), p_clusters(NULL), p_blob(NULL)
 { 
   p_clus = new Cluster_Part();
   p_hads = new Hadron_Part();
@@ -129,5 +126,6 @@ void Cluster_Decay_Handler::FillDecayBlob(Cluster * cluster,Blob * blob,const in
     if (cluster->GetRight()) cluster->DeleteRight();
     break;
   }
-  //cout<<METHOD<<endl<<(*blob)<<endl;
+  //cout<<METHOD<<" ("<<mode<<") : "<<blob->CheckMomentumConservation()<<endl
+  //   <<(*blob)<<endl;
 }

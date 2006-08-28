@@ -1,8 +1,8 @@
 #ifndef Cluster_Decay_Handler_H
 #define Cluster_Decay_Handler_H
 
-#include "Cluster_Transformer.H"
 #include "Cluster_Part.H"
+#include "Soft_Cluster_Handler.H"
 #include "Hadron_Part.H"
 #include "Transitions.H"
 #include "Blob_List.H"
@@ -12,31 +12,13 @@
 
 
 namespace AHADIC {
-  struct cdm {
-    enum code {
-      SimpleQoverM_Isotropic  = 11,
-      SimpleQoverM_Retain     = 12,
-      RunningQoverM_Isotropic = 21,
-      RunningQoverM_Retain    = 22,
-      FourFermions_Isotropic  = 41,
-      FourFermions_Retain     = 42,
-      SchwingerUni_Isotropic  = 81,
-      SchwingerUni_Retain     = 82,
-      SchwingerUni_Keep_PY    = 84
-    };
-  };
-
   class Cluster_Decay_Handler {
   private:
     bool                     m_cib;
-    cdm::code                m_cdm;
-    Cluster_Transformer    * p_transformer;
+    Soft_Cluster_Handler   * p_softclusters;
     All_Single_Transitions * p_transitions;
-    double                   m_offset1,m_offset2;
 
     Cluster_Part           * p_clus;
-    Hadron_Part            * p_hads;
-
     Cluster_Decay_Analysis * p_analysis;
     Cluster_List           * p_clusters;
     ATOOLS::Blob           * p_blob;
