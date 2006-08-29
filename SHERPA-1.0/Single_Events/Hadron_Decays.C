@@ -67,11 +67,13 @@ Return_Value::code Hadron_Decays::Treat(ATOOLS::Blob_List * bloblist, double & w
   bool found(true), didit(false);
   while (found) {
     found = false;
-    Blob_List::iterator blit;
-    for (blit=bloblist->begin();blit!=bloblist->end();++blit) {
-      if ((*blit)->Has(blob_status::needs_hadrondecays)) {
-        Return_Value::code blob_ret = Treat((*blit));
-        if( blob_ret == Return_Value::Retry_Event ) return Return_Value::Retry_Event;
+    int count = 0;
+    for (size_t blit(0);blit<bloblist->size();++blit) {
+      count++;
+      if ((*bloblist)[blit]->Has(blob_status::needs_hadrondecays)) {
+	Return_Value::code blob_ret = Treat((*bloblist)[blit]);
+	std::cout << "*blit = " << (*bloblist)[blit] << std::endl; 
+	if( blob_ret == Return_Value::Retry_Event ) return Return_Value::Retry_Event;
         didit = true;
         found = true;
       }
