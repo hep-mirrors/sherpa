@@ -333,9 +333,9 @@ bool Simple_Chain::CreateGrid()
 		    <<"Created output directory "
 		    <<OutputPath()<<"."<<std::endl;
     }
-    Exception_Handler::AddTerminatorObject(this);
+    exh->AddTerminatorObject(this);
     p_gridcreator->CreateGrid();
-    Exception_Handler::RemoveTerminatorObject(this);
+    exh->RemoveTerminatorObject(this);
   }
   delete p_gridcreator;
   PHASIC::Vegas::SetOnExternal(vegas);

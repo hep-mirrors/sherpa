@@ -37,7 +37,7 @@ Random::Random(long nid):
   p_outstream(NULL) 
 { 
   SetSeed(nid); 
-  Exception_Handler::AddTerminatorObject(this);
+  exh->AddTerminatorObject(this);
   SaveStatus();
 }
 
@@ -325,12 +325,12 @@ void Random::RestoreStatus()
 
 void Random::PrepareTerminate()
 {
-  if (Exception_Handler::LastException()==NULL && 
-      Exception_Handler::LastSignal()==0) return;
-  if (Exception_Handler::LastException()!=NULL) {
-    if (Exception_Handler::LastException()->Type()==ex::normal_exit) return;
+  if (exh->LastException()==NULL && 
+      exh->LastSignal()==0) return;
+  if (exh->LastException()!=NULL) {
+    if (exh->LastException()->Type()==ex::normal_exit) return;
   }
-  if (Exception_Handler::LastSignal()==2) return;
+  if (exh->LastSignal()==2) return;
   std::string name="debug_info_";
   unsigned int i=0;
   do { 
@@ -364,7 +364,7 @@ void Random::PrepareTerminate()
 Random::Random(int ij,int kl) : p_outstream(NULL)
 {  
    SetSeed(ij, kl); 
-   Exception_Handler::AddTerminatorObject(this);
+   exh->AddTerminatorObject(this);
    SaveStatus(); 
 }
 

@@ -27,19 +27,20 @@ int main(int argc,char* argv[])
   setenv("MALLOC_TRACE","malloc_trace.log",1);
   mtrace();  
 #endif
+  ATOOLS::exh->Init();
 #ifdef USING__ROOT
   MYROOT::myroot = new MYROOT::My_Root(argc,argv);
-  ATOOLS::Exception_Handler::AddTerminatorObject(MYROOT::myroot);
+  ATOOLS::exh->AddTerminatorObject(MYROOT::myroot);
 #endif
-  std::set_terminate(ATOOLS::Exception_Handler::Terminate);
-  std::set_unexpected(ATOOLS::Exception_Handler::Terminate);
-  signal(SIGSEGV,ATOOLS::Exception_Handler::SignalHandler);
-  signal(SIGINT,ATOOLS::Exception_Handler::SignalHandler);
-  signal(SIGBUS,ATOOLS::Exception_Handler::SignalHandler);
-  signal(SIGFPE,ATOOLS::Exception_Handler::SignalHandler);
-  signal(SIGABRT,ATOOLS::Exception_Handler::SignalHandler);
-  signal(SIGTERM,ATOOLS::Exception_Handler::SignalHandler);
-  signal(SIGXCPU,ATOOLS::Exception_Handler::SignalHandler);
+  std::set_terminate(ATOOLS::Terminate);
+  std::set_unexpected(ATOOLS::Terminate);
+  signal(SIGSEGV,ATOOLS::SignalHandler);
+  signal(SIGINT,ATOOLS::SignalHandler);
+  signal(SIGBUS,ATOOLS::SignalHandler);
+  signal(SIGFPE,ATOOLS::SignalHandler);
+  signal(SIGABRT,ATOOLS::SignalHandler);
+  signal(SIGTERM,ATOOLS::SignalHandler);
+  signal(SIGXCPU,ATOOLS::SignalHandler);
   try {
 #ifdef PROFILE__all    
     set_prof();

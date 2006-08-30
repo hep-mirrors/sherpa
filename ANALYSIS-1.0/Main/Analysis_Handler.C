@@ -28,7 +28,7 @@ Analysis_Handler::Analysis_Handler():
 Analysis_Handler::~Analysis_Handler()
 {
   Clean();
-  Exception_Handler::RemoveTerminatorObject(this);
+  exh->RemoveTerminatorObject(this);
 }
 
 void Analysis_Handler::Clean()
@@ -192,8 +192,8 @@ bool Analysis_Handler::ReadIn()
   }
   msg_Info()<<"}"<<std::endl;
   if (success) {
-    Exception_Handler::AddTesterObject(this);
-    Exception_Handler::AddTerminatorObject(this);
+    exh->AddTesterObject(this);
+    exh->AddTerminatorObject(this);
   }
   m_initialized=true;
   return success;
@@ -259,8 +259,8 @@ void Analysis_Handler::Finish(const std::string &path)
   }
   msg_Info()<<"}"<<std::endl;
   if (m_analyses.size()) {
-    Exception_Handler::RemoveTerminatorObject(this);
-    Exception_Handler::RemoveTesterObject(this);
+    exh->RemoveTerminatorObject(this);
+    exh->RemoveTesterObject(this);
   }
 }
 

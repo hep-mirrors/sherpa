@@ -860,7 +860,7 @@ bool Single_Process_MHV2::CalculateTotalXSec(std::string _resdir) {
   m_resultpath=_resdir;
   m_resultfile=filename;
   m_histofile=histofile;
-  ATOOLS::Exception_Handler::AddTerminatorObject(this);
+  ATOOLS::exh->AddTerminatorObject(this);
   long unsigned int points=m_n;
   m_totalxs = p_pshandler->Integrate();
   if (m_nin==2) m_totalxs /= ATOOLS::rpa.Picobarn();
@@ -872,7 +872,7 @@ bool Single_Process_MHV2::CalculateTotalXSec(std::string _resdir) {
   SetTotal(0);
   if (m_totalxs>=0.) {
     if (points==m_n) {
-      ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+      ATOOLS::exh->RemoveTerminatorObject(this);
       return 1;
     }
     if (_resdir!=string("")) {
@@ -889,10 +889,10 @@ bool Single_Process_MHV2::CalculateTotalXSec(std::string _resdir) {
       p_pshandler->WriteOut(_resdir+string("/MC_")+m_name);
       to.close();
     }
-    ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+    ATOOLS::exh->RemoveTerminatorObject(this);
     return 1;
   }
-  ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+  ATOOLS::exh->RemoveTerminatorObject(this);
   return 0;      
 }
 

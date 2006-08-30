@@ -281,7 +281,7 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath,
     if (m_foundown) SetTotal();
     m_resultpath=resultpath;
     m_resultfile=filename;
-    ATOOLS::Exception_Handler::AddTerminatorObject(this);
+    ATOOLS::exh->AddTerminatorObject(this);
     p_pshandler->InitIncoming();
     double var=TotalVar();
     m_totalxs=p_pshandler->Integrate()/ATOOLS::rpa.Picobarn(); 
@@ -292,7 +292,7 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath,
     if (m_totalxs>0.) {
       SetTotal();
       if (var==TotalVar()) {
-	ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+	ATOOLS::exh->RemoveTerminatorObject(this);
 	return 1;
       }
       if (resultpath!=std::string("")) {
@@ -309,10 +309,10 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath,
 			      +m_name,create);
 	to.close();
       }
-      ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+      ATOOLS::exh->RemoveTerminatorObject(this);
       return 1;
     }
-    ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+    ATOOLS::exh->RemoveTerminatorObject(this);
     return 0;
   }
 }

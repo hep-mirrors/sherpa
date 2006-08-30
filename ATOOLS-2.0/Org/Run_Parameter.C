@@ -154,7 +154,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   if (gen.m_batchmode==NotDefined<int>()) gen.m_batchmode=1;
   int stacktrace           = dr.GetValue<int>("STACK_TRACE");
   if (stacktrace==NotDefined<int>()) stacktrace=0;
-  Exception_Handler::SetStackTrace(stacktrace);
+  exh->SetStackTrace(stacktrace);
   double ycut=dr.GetValue<double>("YCUT");
   if (ycut!=NotDefined<double>()) gen.m_ycut=ycut;
   gen.m_accu               = dr.GetValue<double>("Num. Accuracy",1.e-10);

@@ -68,13 +68,13 @@ Jet_Veto::Jet_Veto(ATOOLS::Jet_Finder *const jf,
     for (size_t i(0);i<m_histos.size();++i)
       m_histos[i] = new Histogram(10,1.0e-5,1.0,100);
   }
-  Exception_Handler::AddTerminatorObject(this);
+  exh->AddTerminatorObject(this);
 }
 
 Jet_Veto::~Jet_Veto()
 {
   PrepareTerminate();
-  Exception_Handler::RemoveTerminatorObject(this);
+  exh->RemoveTerminatorObject(this);
 }
 
 void Jet_Veto::PrepareTerminate()

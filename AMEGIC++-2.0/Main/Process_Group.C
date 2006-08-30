@@ -926,7 +926,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
     m_resultpath=_resdir;
     m_resultfile=filename;
     m_histofile=histofile;
-    ATOOLS::Exception_Handler::AddTerminatorObject(this);
+    ATOOLS::exh->AddTerminatorObject(this);
     double var=TotalVar();
     m_totalxs = p_pshandler->Integrate();
     
@@ -942,7 +942,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 
     if (m_totalxs>0.) {
       if (ATOOLS::IsEqual(var,TotalVar())) {
-	ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+	ATOOLS::exh->RemoveTerminatorObject(this);
 	return 1;
       }
       if (_resdir!=string("")) {
@@ -961,10 +961,10 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	p_pshandler->WriteOut(_resdir+string("/MC_")+m_name);
 	to.close();
       }
-      ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+      ATOOLS::exh->RemoveTerminatorObject(this);
       return 1;
     }
-    ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+    ATOOLS::exh->RemoveTerminatorObject(this);
   }
   return 0;
 }
