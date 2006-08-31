@@ -22,7 +22,10 @@ Cluster_Transformer::TreatSingleCluster(Cluster *& cluster,Blob * blob)
 {
   Flavour had1, had2;
   bool    decayit(false);
-  if (p_transitions->MustTransit(cluster,had1,m_offset)) {
+  if (p_transitions->MustDesintegrate(cluster,had1,had2)) {
+    decayit = true;
+  }
+  else if (p_transitions->MustTransit(cluster,had1,m_offset)) {
     double clumass(cluster->Mass()), had1mass(had1.Mass()), had2mass(clumass);
     switch (m_mode) {
     case int(ctrans::photonemission):
@@ -69,13 +72,30 @@ Cluster_Transformer::TreatSingleCluster(Cluster *& cluster,Blob * blob)
 
 Return_Value::code 
 Cluster_Transformer::TreatClusterList(Cluster_List * clist,ATOOLS::Blob * blob) {
-  Flavour hadron;
-  std::map<int,Flavour> hadrons;
 
+  Cluster_Iterator cit=clist->begin();
+  Flavour hadron, hadron2;
+  while (cit!=clist->end()) {
+    if (p_transitions->MustDesintegrate((*cit),hadron,hadron2)) {
+      DecayCluster((*cit),hadron,hadron2,blob);
+      if ((*cit)->GetSelf()) { 	  
+	control::s_AHAparticles--;
+	delete (*cit)->GetSelf(); (*cit)->SetSelf(NULL); 
+      }
+      if ((*cit)) { 
+	delete (*cit); (*cit)=NULL; 
+      }
+      cit = clist->erase(cit);
+    }
+    else cit++;
+  }
+
+  std::map<int,Flavour> hadrons;
   int    number  = clist->size(), i=0;
   Vec4D  momenta[number];
   double masses[number];
   bool   shiftit = false;
+
   for (Cluster_Iterator cit=clist->begin();cit!=clist->end();cit++,i++) {
     momenta[i]   = (*cit)->Momentum(0);
     if (p_transitions->MustTransit((*cit),hadron,m_offset,true)) {
@@ -91,11 +111,13 @@ Cluster_Transformer::TreatClusterList(Cluster_List * clist,ATOOLS::Blob * blob) 
 		 <<"   Adjust momenta failed, will continue and hope for the best."<<endl;
       return Return_Value::Error;
     }
+
     i = 0;
     Particle * part;
     for (Cluster_Iterator cit=clist->begin();cit!=clist->end();i++) {
       if (hadrons.find(i)==hadrons.end()) {
 	(*cit)->RescaleMomentum(momenta[i]);  
+	(*cit)->GetSelf()->SetMomentum((*cit)->Momentum());
 	blob->AddToOutParticles((*cit)->GetSelf());	
 	cit++;
       }
@@ -130,7 +152,7 @@ void Cluster_Transformer::DecayCluster(Cluster * cluster,Flavour & had1,Flavour 
 {
   double M       = cluster->Mass(), M2 = M*M;
   double m12     = sqr(had1.PSMass()), m22 = sqr(had2.PSMass());
-  double ptmax   = sqrt(sqr(M2-m12-m22)+4.*m12*m22)/(2.*M); 
+  double ptmax   = sqrt(sqr(M2-m12-m22)-4.*m12*m22)/(2.*M); 
   double pt      = p_popper->SelectPT(ptmax);
 
   cluster->BoostInCMSAndRotateOnZ();

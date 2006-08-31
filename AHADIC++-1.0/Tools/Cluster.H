@@ -1,6 +1,7 @@
 #ifndef Cluster_H
 #define Cluster_H
 
+#include "Blob.H"
 #include "Particle.H"
 #include "Poincare.H"
 #include "Message.H"
@@ -54,6 +55,8 @@ namespace AHADIC {
     Cluster(const ATOOLS::Flavour &,const ATOOLS::Vec4D,
 	    const ATOOLS::Flavour &,const ATOOLS::Vec4D);
     ~Cluster();
+
+    ATOOLS::Blob     * CHHDecayBlob();
 
     Cluster          * GetLeft()  const;
     Cluster          * GetRight() const;

@@ -13,7 +13,8 @@ Soft_Cluster_Handler::Soft_Cluster_Handler() :
   p_doubletransitions(hadpars.GetDoubleTransitions()),
   p_popper(hadpars.GetPopper()),
   m_offset1(hadpars.Get(string("Offset_C->H"))),
-  m_offset2(hadpars.Get(string("Offset_C->HH")))
+  m_offset2(hadpars.Get(string("Offset_C->HH"))),
+  m_photonenergy(hadpars.Get(string("Photon_Energy")))
 { }
 
 Soft_Cluster_Handler::~Soft_Cluster_Handler() {}
@@ -24,7 +25,21 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin,Blob * blob)
   for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) 
     CheckCluster((*cit),clin->size()==1);
 
-  if (clin->size()==1) return true;
+  m_ctit=m_ctrans.begin();
+  if (clin->size()==1) {
+    switch (m_ctit->second.size()) {
+    case 1:
+      msg.Error()<<"Potential problem in "<<METHOD<<endl;
+      m_ctrans.clear();
+      return false;
+    case 2:
+      FixHHDecay(m_ctit->first,m_ctit->second[0],m_ctit->second[1]);
+    case 0:
+    default:
+      m_ctrans.clear();
+      return true;
+    }
+  }
 
   ShiftMomenta(clin->size());
 
@@ -51,6 +66,9 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin,Blob * blob)
 
 void Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay)
 {
+  //   cout<<"----------------------------------------------------------------------"<<endl
+  //       <<"Check this out : "<<cluster->Mass()<<"("<<mustdecay<<") / "
+  //       <<cluster->GetFlav(1)<<" + "<<cluster->GetFlav(2)<<endl;
   vector<Flavour> flist;
   m_ctrans[cluster] = flist;
   Flavour had1,had2,hadron;
@@ -86,6 +104,11 @@ void Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay)
 	}
       }
     }
+    //     cout<<METHOD<<" ("<<mustdecay<<", "<<m_ctrans[cluster].size()<<") : "
+    //      	<<decayweight<<" ("<<had1<<","<<had2<<") ; "
+    //      	<<transformweight<<" ("<<hadron<<") for "
+    //      	<<cluster->Mass()<<" / "<<cluster->GetFlav(1)<<" + "<<cluster->GetFlav(2)<<endl
+    //      	<<"----------------------------------------------------------------------"<<endl;
     return;
   }
   // regular case.
@@ -95,8 +118,10 @@ void Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay)
   }
   else m_ctrans[cluster].push_back(hadron);
 
-  //cout<<METHOD<<" ("<<mustdecay<<") : "<<decayweight<<" ("<<had1<<","<<had2<<") ; "
-  //   <<transformweight<<" ("<<hadron<<")"<<endl<<(*cluster)<<endl;
+  //   cout<<METHOD<<" ("<<mustdecay<<") : "<<decayweight<<" ("<<had1<<","<<had2<<") ; "
+  //       <<transformweight<<" ("<<hadron<<") for "
+  //       <<cluster->Mass()<<" / "<<cluster->GetFlav(1)<<" + "<<cluster->GetFlav(2)<<endl
+  //       <<"----------------------------------------------------------------------"<<endl;
   return;
 }
  
@@ -118,17 +143,17 @@ double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavou
 
   double totweight(0.), MC(cluster->Mass()), MC2(MC*MC);
   double wt,m1,m2;
-  //cout<<METHOD<<" : "<<flpair.first<<"/"<<flpair.second<<" -> "
-  //   <<p_doubletransitions->GetHeaviestMass(flpair)<<","
-  //   <<p_doubletransitions->GetLightestMass(flpair)<<" vs. "<<MC<<endl;
+  //   cout<<METHOD<<" : "<<flpair.first<<"/"<<flpair.second<<" -> "
+  //       <<p_doubletransitions->GetHeaviestMass(flpair)<<","
+  //       <<p_doubletransitions->GetLightestMass(flpair)<<" vs. "<<MC<<endl;
 
-  if (p_doubletransitions->GetHeaviestMass(flpair)<MC)           return 0.;
-  if (p_doubletransitions->GetLightestMass(flpair)+m_offset2>MC) return 0.;
+  if (p_doubletransitions->GetHeaviestMass(flpair)+m_offset2<MC) return 0.;
+  if (p_doubletransitions->GetLightestMass(flpair)>MC)           return 0.;
   for (Double_Transition_Siter decit=dtliter->second->begin();
        decit!=dtliter->second->end();decit++) {
     m1  = decit->first.first.Mass();
     m2  = decit->first.second.Mass();
-    if (m1+m2<MC-m_offset2) {
+    if (m1+m2<MC) {
       wt = sqrt((MC2-sqr(m1+m2))*(MC2-sqr(m1-m2)));
       if (m_dtmode==dtm::waves_PS) wt *= decit->second;
       totweight += wt;
@@ -142,7 +167,7 @@ double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavou
        decit!=dtliter->second->end();decit++) {
     m1    = decit->first.first.Mass();
     m2    = decit->first.second.Mass();
-    if (m1+m2>MC-m_offset2) continue;
+    if (m1+m2>MC) continue;
     wt = sqrt((MC2-sqr(m1+m2))*(MC2-sqr(m1-m2)));
     if (m_dtmode==dtm::waves_PS) wt *= decit->second;
     disc -= wt;
@@ -152,7 +177,7 @@ double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavou
       break;
     }
   }
-  //cout<<METHOD<<":"<<totweight/(16.*M_PI*MC*MC*MC)<<" --> "<<had1<<" & "<<had2<<endl;
+  //  cout<<METHOD<<":"<<totweight/(16.*M_PI*MC*MC*MC)<<" --> "<<had1<<" & "<<had2<<endl;
   return totweight * 1./(16.*M_PI*MC*MC*MC);
 }
 
@@ -161,6 +186,7 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Flavour & had1,Flavour &
   double M       = cluster->Mass(), M2 = M*M;
   double m12     = sqr(had1.PSMass()), m22 = sqr(had2.PSMass());
   double ptmax   = sqrt(sqr(M2-m12-m22)-4.*m12*m22)/(2.*M); 
+
   double pt      = p_popper->SelectPT(ptmax);
 
   cluster->BoostInCMSAndRotateOnZ();
@@ -204,7 +230,6 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Flavour & had1,Flavour &
 double Soft_Cluster_Handler::TransformWeight(Cluster * cluster,ATOOLS::Flavour & hadron,
 					     bool lighter)
 {
-  hadron       = Flavour(kf::none);
   Flavour_Pair fpair;
   fpair.first  = cluster->GetFlav(1);
   fpair.second = cluster->GetFlav(2);
@@ -243,7 +268,22 @@ double Soft_Cluster_Handler::SimpleMassCriterion(Single_Transition_List * stl,
 {
   double wt(0.),maxwt(0.);
   Hadron_Wave_Function * waves;
-  for (Single_Transition_Siter siter=stl->begin();siter!=stl->end();siter++) {
+  Single_Transition_Siter start=stl->begin();
+  if (lighter && hadron!=Flavour(kf::none)) {
+    for (Single_Transition_Siter siter=stl->begin();siter!=stl->end();siter++) {
+      if (siter->first==hadron) {
+	start = siter; 
+	if ((siter++)!=stl->end()) start++;
+	if (start->first.Mass()-hadron.Mass()<1.e-2) {
+	  if ((siter++)!=stl->end()) start++;
+	}
+	break;
+      }
+    }
+  }
+  
+
+  for (Single_Transition_Siter siter=start;siter!=stl->end();siter++) {
     if (lighter && siter->first.Mass()>MC) continue;
     wt = 1./pow(sqr(sqr(MC)-sqr(siter->first.Mass()))+1.e-8,0.25);
     if (m_stmode==stm::massXwaves) wt *= siter->second;
@@ -260,12 +300,26 @@ double Soft_Cluster_Handler::MWCriterion(Single_Transition_List * stl,
 					 const double MC, bool lighter)
 {
   double wt(0.), totweight(0.), minwidth(1.e6);
-  for (Single_Transition_Siter siter=stl->begin();siter!=stl->end();siter++) {
+  Single_Transition_Siter start=stl->begin();
+  if (lighter && hadron!=Flavour(kf::none)) {
+    for (Single_Transition_Siter siter=stl->begin();siter!=stl->end();siter++) {
+      if (siter->first==hadron) {
+	start = siter;
+	if ((siter++)!=stl->end()) start++;
+	if (start->first.Mass()-hadron.Mass()<1.e-2) {
+	  if ((siter++)!=stl->end()) start++;
+	}
+	break;
+      }
+    }
+  }
+  
+  for (Single_Transition_Siter siter=start;siter!=stl->end();siter++) {
     if (!siter->first.IsStable() && (siter->first.Width()<minwidth)) 
       minwidth = siter->first.Width();
   }
   if (minwidth==1.e6) return SimpleMassCriterion(stl,hadron,MC,lighter);
-  for (Single_Transition_Siter siter=stl->begin();siter!=stl->end();siter++) {
+  for (Single_Transition_Siter siter=start;siter!=stl->end();siter++) {
     if (lighter && siter->first.Mass()>MC) continue;
     if (siter->first.IsStable()) 
       wt = sqr(siter->first.Mass()*minwidth)/
@@ -279,7 +333,7 @@ double Soft_Cluster_Handler::MWCriterion(Single_Transition_List * stl,
       totweight = wt;
     }
   }
-  //cout<<METHOD<<" --> "<<totweight/(2.*MC)<<" for "<<hadron<<endl;
+  // cout<<METHOD<<" --> "<<totweight/(2.*MC)<<" for "<<hadron<<endl;
   return totweight/(2.*MC);;
 }
 

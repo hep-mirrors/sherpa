@@ -6,11 +6,15 @@
 #include "Return_Value.H"
 
 namespace AHADIC {
+  class Hadronisation_Parameters;
+
   class Pair_Popper {
   private:
     Constituents * p_constituents;
-    double         m_totweight;
     double         m_tension;
+    int            m_mode;
+
+    double         m_totweight;    
     double         m_maxmass,m_minmass;
   public:
     Pair_Popper();

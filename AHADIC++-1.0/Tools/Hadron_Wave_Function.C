@@ -22,7 +22,7 @@ Hadron_Wave_Function::~Hadron_Wave_Function()
   m_waves.clear();
 }
 
-void Hadron_Wave_Function::AddToWaves(FlavPair * pair,double weight)
+void Hadron_Wave_Function::AddToWaves(Flavour_Pair * pair,double weight)
 {
   if (m_waves.find(pair)==m_waves.end()) m_waves[pair] = weight;
   else {
@@ -40,24 +40,24 @@ Hadron_Wave_Function * Hadron_Wave_Function::Anti() {
     wf = new Hadron_Wave_Function(m_hadron.Bar());
     wf->SetSpin(m_spin);
     wf->SetKfCode(-m_kfcode);
-    FlavPair * pair;
+    Flavour_Pair * pair;
     for (WFcompiter wfc=m_waves.begin();wfc!=m_waves.end();wfc++) {
-      pair         = new FlavPair;
-      pair->first  = wfc->first->second.Bar();
-      pair->second = wfc->first->first.Bar();
+      pair         = new Flavour_Pair;
+      pair->first    = wfc->first->second.Bar();
+      pair->second    = wfc->first->first.Bar();
       wf->AddToWaves(pair,wfc->second);
     }
   }
   return wf;
 }
 
-double Hadron_Wave_Function::WaveWeight(ATOOLS::Flavour fl1,ATOOLS::Flavour fl2) 
+double Hadron_Wave_Function::WaveWeight(ATOOLS::Flavour first,ATOOLS::Flavour second) 
 {
-  FlavPair * fpair;
+  Flavour_Pair * fpair;
   for (WFcompiter wit=m_waves.begin();wit!=m_waves.end();wit++) {
     fpair = wit->first;
-    if ((fpair->first==fl1 && fpair->second==fl2) ||
-	(fpair->first==fl2 && fpair->second==fl1)) return wit->second;
+    if ((fpair->first==first && fpair->second==second) ||
+	(fpair->first==second && fpair->second==first)) return wit->second;
   }
   return 0.;
 } 

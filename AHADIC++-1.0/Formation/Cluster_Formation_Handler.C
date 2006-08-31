@@ -10,7 +10,7 @@ Cluster_Formation_Handler::Cluster_Formation_Handler(bool ana) :
   p_gludecayer(new Gluon_Decayer()), 
   p_cformer(new Cluster_Former()),
   p_recons(new Colour_Reconnections(0,0,1.)), 
-  p_ctransformer(new Cluster_Transformer()),
+  p_softclusters(new Soft_Cluster_Handler()),
   p_clulist(new Cluster_List),
   m_analyse(ana)
 { 
@@ -40,14 +40,15 @@ Cluster_Formation_Handler::~Cluster_Formation_Handler()
   }
 
   Reset();
-  if (p_gludecayer)   { delete p_gludecayer;   p_gludecayer = NULL;      }
-  if (p_cformer)      { delete p_cformer;      p_cformer    = NULL;      }
-  if (p_recons)       { delete p_recons;       p_recons    = NULL;       }
-  if (p_ctransformer) { delete p_ctransformer; p_ctransformer    = NULL; }
-  if (p_clulist)      { delete p_clulist;      p_clulist    = NULL;      }
+  if (p_gludecayer)   { delete p_gludecayer;   p_gludecayer   = NULL; }
+  if (p_cformer)      { delete p_cformer;      p_cformer      = NULL; }
+  if (p_recons)       { delete p_recons;       p_recons       = NULL; }
+  if (p_softclusters) { delete p_softclusters; p_softclusters = NULL; }
+  if (p_clulist)      { delete p_clulist;      p_clulist      = NULL; }
 }
 
-Return_Value::code Cluster_Formation_Handler::FormClusters(Blob * blob)
+Return_Value::code Cluster_Formation_Handler::FormClusters(Blob * blob,
+							   Blob_List * bl)
 {
   Reset();
   if (blob==NULL) Return_Value::Error;
@@ -72,7 +73,7 @@ Return_Value::code Cluster_Formation_Handler::FormClusters(Blob * blob)
   default:
     break;
   }
-  switch (int(ClustersToHadrons())) {
+  switch (int(ClustersToHadrons(bl))) {
   case int(Return_Value::Retry_Method) : return Return_Value::Retry_Method;
   case int(Return_Value::Success) : 
   default:
@@ -253,63 +254,56 @@ Return_Value::code Cluster_Formation_Handler::ApplyColourReconnections()
   return Return_Value::Success;
 }
 
-Return_Value::code Cluster_Formation_Handler::ClustersToHadrons()
+Return_Value::code Cluster_Formation_Handler::ClustersToHadrons(ATOOLS::Blob_List * bl)
 {
-  std::vector<Cluster_List *>::iterator clit,clit1;
-  Cluster * clu;
-  for (clit=m_clulists.begin();clit!=m_clulists.end();) {
-    if ((*clit)->size()==1) {
-      switch (int(p_ctransformer->TreatSingleCluster((*(*clit)->begin()),p_blob))) {
-      case int(Return_Value::Success):
-	if ((*(*clit)->begin())->GetSelf()) { 
-	  control::s_AHAparticles--;
-	  delete (*(*clit)->begin())->GetSelf();
-	  (*(*clit)->begin())->SetSelf(NULL);
-	}
-	if (*(*clit)->begin()) delete (*(*clit)->begin());
-	clit=m_clulists.erase(clit);
-	break;
-      case int(Return_Value::Warning):
-	if ((*clit)->size()!=0) {
-	  Cluster_List * clist = NULL;
-	  int maxsize = 10000;
-	  for (clit1=m_clulists.begin();clit1!=m_clulists.end();clit1++) {
-	    if ((*clit1)->size()<maxsize && (*clit1)!=(*clit)) clist = (*clit1);
-	  }
-	  clist->push_back(*(*clit)->begin());
-	}
-	clit=m_clulists.erase(clit);
-	break;
-      case int(Return_Value::Nothing): 
-	clit++;
-	break;
-      default:
-	msg.Error()<<"ERROR in "<<METHOD<<" :"<<endl
-		   <<"   Unknown return value for TratSingleCluster, abort."<<endl;
-	abort();
+  std::vector<Cluster_List *>::iterator clit=m_clulists.begin();
+  while(clit!=m_clulists.end()) {
+    if (!p_softclusters->TreatClusterList((*clit),p_blob)) {
+      Cluster_List * clist = NULL;
+      int maxsize = 10000;
+      for (std::vector<Cluster_List *>::iterator clit1=m_clulists.begin();
+	   clit1!=m_clulists.end();clit1++) {
+	if ((*clit1)->size()<maxsize && (*clit1)!=(*clit)) clist = (*clit1);
       }
+      clist->push_back(*(*clit)->begin());
+      clit=m_clulists.erase(clit);
     }
-    else clit++;
-  }
-  for (clit=m_clulists.begin();clit!=m_clulists.end();clit++) {
-    switch (int(p_ctransformer->TreatClusterList((*clit),p_blob))) {
-    case int(Return_Value::Error):
-      rvalue.IncRetryMethod(METHOD);
-      return Return_Value::Retry_Method;
-    case int(Return_Value::Success): 
-    default:
-      continue;
+    if ((*clit)->empty()) clit = m_clulists.erase(clit);
+    else {
+      Cluster_Iterator cit=(*clit)->begin();
+      Cluster_Iterator endit=(*clit)->end();
+      while (cit!=endit) {
+	if (!(*cit)->GetLeft()) {
+	  p_blob->AddToOutParticles((*cit)->GetSelf());
+	  cit++;
+	}
+	else {
+	  if ((*cit)->GetLeft()->GetSelf()->Flav()==Flavour(kf::none)) {
+	    (*clit)->push_back((*cit)->GetLeft());
+	    (*clit)->push_back((*cit)->GetRight());
+	  }
+	  else {
+	    p_blob->AddToOutParticles((*cit)->GetSelf());
+	    bl->push_back((*cit)->CHHDecayBlob());
+	  }
+	  if (*cit) delete (*cit);
+	  cit = (*clit)->erase(cit);
+	}
+      }
+      clit++;
     }
   }
+
+  
 
   Histogram * histomass, * histonumb;
   if (m_analyse) {
     histomass = (m_histograms.find(string("Cluster_Mass_Transformed")))->second;
     histonumb = (m_histograms.find(string("Cluster_Number_Transformed")))->second;
     int numb  = 0;
-    for (clit1=m_clulists.begin();clit1!=m_clulists.end();clit1++) {
-      numb+=(*clit1)->size();
-      for (Cluster_Iterator cit=(*clit1)->begin();cit!=(*clit1)->end();cit++) {
+    for (clit=m_clulists.begin();clit!=m_clulists.end();clit++) {
+      numb+=(*clit)->size();
+      for (Cluster_Iterator cit=(*clit)->begin();cit!=(*clit)->end();cit++) {
 	histomass->Insert((*cit)->Mass());
       }
     }
@@ -317,6 +311,7 @@ Return_Value::code Cluster_Formation_Handler::ClustersToHadrons()
   }
   return Return_Value::Success;
 }
+
 
 Return_Value::code Cluster_Formation_Handler::MergeClusterListsIntoOne()
 {

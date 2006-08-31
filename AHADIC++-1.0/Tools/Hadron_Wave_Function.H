@@ -7,8 +7,8 @@
 
 
 namespace AHADIC {
-  typedef std::pair<ATOOLS::Flavour,ATOOLS::Flavour> FlavPair;
-  typedef std::map<FlavPair *,double>                WFcomponent;
+  typedef std::pair<ATOOLS::Flavour,ATOOLS::Flavour> Flavour_Pair;
+  typedef std::map<Flavour_Pair *,double>            WFcomponent;
   typedef WFcomponent::iterator                      WFcompiter;
 
 
@@ -24,7 +24,7 @@ namespace AHADIC {
     Hadron_Wave_Function(const ATOOLS::Flavour &);    
     ~Hadron_Wave_Function();
 
-    void AddToWaves(FlavPair *,double);
+    void AddToWaves(Flavour_Pair *,double);
     Hadron_Wave_Function * Anti();
     double WaveWeight(ATOOLS::Flavour,ATOOLS::Flavour);
 
@@ -55,7 +55,7 @@ namespace AHADIC {
     \brief A class that describes the wave function of one hadron plus a few operations possible
     with such a wave function. 
 
-    The wave functions are repesented as maps of flavour pairs (FlavPair = pair<ATOOLS::Flavour,ATOOLS::Flavour>)
+    The wave functions are repesented as maps of flavour pairs (Flavour_Pair = pair<ATOOLS::Flavour,ATOOLS::Flavour>)
     and double, equal their squared wave function contribution. Additional information consists of a specific
     multiplet weight with which relative occurence of hadron species, sorted by their \f$ SU(3)_F\f$ /
     \f$ SU(6)_{F\otimes S}\f$ multiplet for mesons/baryons, can be steered, and information about the hadron,
@@ -112,7 +112,7 @@ namespace AHADIC {
     \brief Deletes the WFcomponent, i.e the m_waves.
   */
   /*!
-    \fn void Hadron_Wave_Function::AddToWaves(FlavPair *,double)
+    \fn void Hadron_Wave_Function::AddToWaves(ATOOLS::Flavour_Pair *,double)
     \brief Adds a certain contribution, i.e. a triplet-antitriplet pair, given by the flavour pair
     and its squared amplitude, i.e. weight, to the total wave function.
   */

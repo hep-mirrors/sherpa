@@ -1,4 +1,5 @@
 #include "Ahadic.H"
+#include "Soft_Cluster_Handler.H"
 #include "Cluster.H"
 #include "Message.H"
 
@@ -14,7 +15,7 @@ Ahadic::Ahadic(string path,string file,bool ana)  :
   ana=false;
 
   p_cformhandler = new Cluster_Formation_Handler(ana);
-  p_cdechandler  = new Cluster_Decay_Handler(p_cformhandler->GetClusterTransformer(),ana);
+  p_cdechandler  = new Cluster_Decay_Handler(p_cformhandler->GetSoftClusterHandler(),ana);
   msg.Tracking()<<"Initialisation of Ahadic complete."<<endl;
 }
 
@@ -26,8 +27,8 @@ Ahadic::~Ahadic()
 
 Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
 {
-  cout<<"##########################################################################"<<endl
-      <<"###################################### IN ################################"<<endl;
+  //   cout<<"##########################################################################"<<endl
+  //       <<"###################################### IN ################################"<<endl;
 
   Blob * blob(NULL);
   Cluster clus;
@@ -42,7 +43,7 @@ Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
       blob->SetType(btp::Cluster_Formation);
       blob->SetTypeSpec("AHADIC-1.0");
       for (int i=0;i<m_maxtrials;i++) {
-	switch (int(p_cformhandler->FormClusters(blob))) {
+	switch (int(p_cformhandler->FormClusters(blob,blobs))) {
 	case int(Return_Value::Retry_Method) :
 	  rvalue.IncRetryMethod(METHOD);
 	  if (blob) { blob->RemoveInParticles(); blob->RemoveOutParticles(); }
@@ -57,6 +58,11 @@ Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
 	  break;
 	}
 	
+	// cout<<METHOD<<" (1) : "<<clus.RemainingClusters()<<" remaining clusters."<<endl
+	// 	    <<control::s_AHAblobs<<"/"<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
+	// 	    <<"   : "<<blob->CheckMomentumConservation()<<endl
+	// 	    <<(*blob)<<endl;
+
 	switch (int(p_cdechandler->DecayClusters(p_cformhandler->GetClusters(),blobs))) {
 	case int(Return_Value::Retry_Method) :
 	  rvalue.IncRetryMethod(METHOD);
@@ -79,10 +85,12 @@ Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
 	  // 	      <<"##############################################################"<<endl
 	  // 	      <<"##############################################################"<<endl;
 
-	  cout<<METHOD<<" : "<<clus.RemainingClusters()<<" remaining clusters."<<endl
-	      <<control::s_AHAblobs<<"/"<<control::s_AHAparticles<<" vs. "<<blob->NOutP()<<endl;
-	  cout<<"################################## OUT ###################################"<<endl
-	      <<"##########################################################################"<<endl;
+	  // 	  cout<<METHOD<<" (2) : "<<clus.RemainingClusters()<<" remaining clusters."<<endl
+	  // 	      <<control::s_AHAblobs<<"/"<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
+	  // 	      <<"   : "<<blob->CheckMomentumConservation()<<endl
+	  // 	    // 	      <<(*blob)<<endl
+	  // 	      <<"################################## OUT ###################################"<<endl
+	  // 	      <<"##########################################################################"<<endl;
 	  return Return_Value::Success;
 	default:
 	  msg.Error()<<"Error in "<<METHOD<<": "<<endl

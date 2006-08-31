@@ -17,12 +17,16 @@ namespace AHADIC {
   typedef std::map<std::string,double> StringDoubleMap;
   typedef StringDoubleMap::iterator    SDiter;
 
+
+  class Pair_Popper;
+
   class Hadronisation_Parameters {
   private:
     double                   m_offset;
     Constituents           * p_constituents;
     All_Hadron_Multiplets  * p_multiplets;
-    All_Single_Transitions * p_transitions;
+    Single_Transitions     * p_singletransitions;
+    Double_Transitions     * p_doubletransitions;
     Pair_Popper            * p_popper;
 
     StringDoubleMap          m_parametermap;
@@ -36,10 +40,11 @@ namespace AHADIC {
     void   Init(std::string,std::string);
     double Get(std::string keyword);
 
-    Constituents           * GetConstituents()      { return p_constituents; }
-    All_Hadron_Multiplets  * GetMultiplets()        { return p_multiplets;   }
-    All_Single_Transitions * GetSingleTransitions() { return p_transitions;  }
-    Pair_Popper            * GetPopper()            { return p_popper;       }
+    Constituents           * GetConstituents()      { return p_constituents;      }
+    All_Hadron_Multiplets  * GetMultiplets()        { return p_multiplets;        }
+    Single_Transitions     * GetSingleTransitions() { return p_singletransitions; }
+    Double_Transitions     * GetDoubleTransitions() { return p_doubletransitions; }
+    Pair_Popper            * GetPopper()            { return p_popper;            }
 
     bool AdjustMomenta(const int,ATOOLS::Vec4D *,const double *);  
   };

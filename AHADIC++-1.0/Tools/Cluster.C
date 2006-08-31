@@ -105,6 +105,35 @@ Cluster::~Cluster()
   s_cluster_count--;
 }
 
+Blob * Cluster::CHHDecayBlob()
+{
+  Blob * blob = new Blob();
+  control::s_AHAblobs++;
+  blob->SetType(btp::Cluster_Decay);
+  blob->SetTypeSpec("AHADIC-1.0");
+  blob->SetStatus(blob_status::needs_hadrondecays);
+  blob->SetId();
+  blob->AddToInParticles(p_self);
+  p_self->SetStatus(part_status::decayed);
+  p_self->ProductionBlob()->UnsetStatus(blob_status::needs_hadrondecays);
+
+  if (p_left && p_left->p_self) {
+    blob->AddToOutParticles(p_left->p_self);
+    if (p_left->p_self->Flav()!=Flavour(kf::cluster)) {
+      delete p_left; p_left=NULL;
+    }
+  }
+  if (p_right && p_right->p_self) {
+    blob->AddToOutParticles(p_right->p_self);
+    if (p_right->p_self->Flav()!=Flavour(kf::cluster)) {
+      delete p_right; p_right=NULL;
+    }
+  }
+
+  return blob;
+}
+
+
 void Cluster::Update()
 {
   m_momentum = m_momenta[0]+m_momenta[1];
@@ -158,7 +187,10 @@ void Cluster::RescaleMomentum(ATOOLS::Vec4D newmom)
 	       <<save[2]<<" ("<<save[2].Abs2()<<")"<<std::endl
 	       <<" Is  : "<<Momentum(0)<<" ("<<Momentum(0).Abs2()<<") -> "
 	       <<Momentum(1)<<" ("<<Momentum(1).Abs2()<<")"
-	       <<Momentum(2)<<" ("<<Momentum(2).Abs2()<<")"<<std::endl;
+	       <<Momentum(2)<<" ("<<Momentum(2).Abs2()<<")"<<std::endl
+	       <<"   diff: "<<testmom;
+    rest.Boost(m_momentum); back.BoostBack(m_momentum);
+    msg.Error()<<" from "<<newmom<<" = "<<m_momentum<<"."<<std::endl;
   }
 }
 

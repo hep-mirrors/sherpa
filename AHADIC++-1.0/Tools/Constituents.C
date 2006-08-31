@@ -19,13 +19,13 @@ Constituents::Constituents(bool no_diquarks) :
   CCMap[Flavour(kf::gluon)] = cc;
 
   // Light quarks
-  double ssup(hadpars.Get("Strange_supression")), bsup(hadpars.Get("Baryon_supression"));
-  double wt(1.-bsup);
-  cc = new ConstituentCharacteristic(hadpars.Get("Mass_down"),1,wt*(1.-ssup)/2.,sm);
+  double sfrac(hadpars.Get("Strange_fraction")), bfrac(hadpars.Get("Baryon_fraction"));
+  double wt(1.-bfrac);
+  cc = new ConstituentCharacteristic(hadpars.Get("Mass_down"),1,wt*(1.-sfrac)/2.,sm);
   CCMap[Flavour(kf::d)] = cc;
-  cc = new ConstituentCharacteristic(hadpars.Get("Mass_up"),1,wt*(1.-ssup)/2.,sm);
+  cc = new ConstituentCharacteristic(hadpars.Get("Mass_up"),1,wt*(1.-sfrac)/2.,sm);
   CCMap[Flavour(kf::u)] = cc;  
-  cc = new ConstituentCharacteristic(hadpars.Get("Mass_strange"),1,wt*ssup,sm);
+  cc = new ConstituentCharacteristic(hadpars.Get("Mass_strange"),1,wt*sfrac,sm);
   CCMap[Flavour(kf::s)] = cc;
 
   cc = new ConstituentCharacteristic(hadpars.Get("Mass_charm"),1,0.,sm);
@@ -38,7 +38,7 @@ Constituents::Constituents(bool no_diquarks) :
     double qssup(hadpars.Get("P_qs_by_P_qq"));
     double sssup(hadpars.Get("P_ss_by_P_qq"));
     double sp1sup(hadpars.Get("P_di_1_by_P_di_0"));
-    wt = bsup/(1.*(1.+2.*qssup) + 3.*sp1sup*(3.+2.*qssup+sssup));
+    wt = bfrac/(1.*(1.+2.*qssup) + 3.*sp1sup*(3.+2.*qssup+sssup));
     
     cc = new ConstituentCharacteristic(hadpars.Get("Mass_ud0"),0,wt,sm);
     CCMap[Flavour(kf::ud_0)] = cc;

@@ -10,9 +10,10 @@ using namespace std;
 Pair_Popper::Pair_Popper() :
   p_constituents(hadpars.GetConstituents()), 
   m_tension(hadpars.Get(string("Tension"))),
-  m_totweight(0)
+  m_mode(2),
+  m_totweight(0), m_maxmass(0.), m_minmass(100.)
 {
-  double  wt(1.),m_maxmass(0.), m_minmass(100.), mass;
+  double  wt(1.),mass;
   Flavour flav;
   for (FlavCCMap_Iterator iter=p_constituents->CCMap.begin();
        iter!=p_constituents->CCMap.end();iter++) { 
@@ -60,8 +61,28 @@ Flavour Pair_Popper::SelectFlavour(const double upper)
 
 double Pair_Popper::SelectPT(const double upper)
 {
-  double pt(1.1*upper);
-  while (pt>upper) pt = sqrt(-m_tension/M_PI*log(ran.Get()));
+  double pt(1.1*upper), pt2;
+  switch (m_mode) {
+  case 2:
+    // Shifted Gaussian
+    while (pt>upper) {
+      pt2 = sqrt(-m_tension/M_PI*log(ran.Get()));
+      if (exp(-M_PI/m_tension*sqr(sqrt(pt2)-sqrt(0.25*upper)))>ran.Get()) pt = sqrt(pt2);
+    }
+    break;
+  case 1:
+    // Gaussian
+    while (pt>upper) {
+      pt2 = -m_tension/M_PI*log(ran.Get());
+      if (exp(-M_PI/m_tension*pt2)>ran.Get()) pt = sqrt(pt2);
+    }
+    break;
+  case 0:
+  default:
+    // Exponential pt^2 ~ exp(-Pi/tension pt^2)
+    while (pt>upper) pt = sqrt(-m_tension/M_PI*log(ran.Get()));
+    break;
+  }
   return pt;
 }
 

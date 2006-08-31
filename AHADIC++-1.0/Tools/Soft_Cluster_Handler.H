@@ -34,7 +34,7 @@ namespace AHADIC {
     
     Pair_Popper        * p_popper;
     double               m_fraction;
-    double               m_offset1,m_offset2;
+    double               m_offset1,m_offset2,m_photonenergy;
     
     std::map<Cluster *,std::vector<ATOOLS::Flavour> >           m_ctrans;
     std::map<Cluster *,std::vector<ATOOLS::Flavour> >::iterator m_ctit;

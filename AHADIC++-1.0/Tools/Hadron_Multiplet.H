@@ -11,28 +11,27 @@ namespace AHADIC {
 
   class Hadron_Multiplet {
   private:
-    std::string        m_name;
-    ATOOLS::FlavourSet m_elements;
-    double             m_spinweight,m_extraweight,m_weight;
+    std::string               m_name;
+    std::set<ATOOLS::Flavour> m_elements;
+    double                    m_spinweight,m_extraweight,m_weight;
   public:
     Hadron_Multiplet() : 
       m_name(std::string("")),
       m_spinweight(1.),m_extraweight(1.),m_weight(1.) {}
     void SetName(std::string name)                 { m_name        = name;  }
-    void AddToElements(ATOOLS::Flavour & fl)       { m_elements.insert(fl); }
-    void AddToElements(const ATOOLS::Flavour & fl) { m_elements.insert(fl); }
+    void AddToElements(ATOOLS::Flavour fl)         { m_elements.insert(fl); }
     void SetSpinWeight(double wt)                  { m_spinweight  = wt;    }
     void SetExtraWeight(double wt)                 { m_extraweight = wt;    }
     void SetWeight(double wt=0.)                   { 
       if (wt==0.) m_weight = m_spinweight * m_extraweight;
              else m_weight = wt;
     }
-    std::string          Name()        { return m_name;            }
-    ATOOLS::FlavourSet * GetElements() { return &m_elements;       }
-    int                  Size()        { return m_elements.size(); }
-    double               SpinWeight()  { return m_spinweight;      }
-    double               ExtraWeight() { return m_extraweight;     }
-    double               Weight()      { return m_weight;          }
+    std::string                 Name()        { return m_name;            }
+    std::set<ATOOLS::Flavour> * GetElements() { return &m_elements;       }
+    int                         Size()        { return m_elements.size(); }
+    double                      SpinWeight()  { return m_spinweight;      }
+    double                      ExtraWeight() { return m_extraweight;     }
+    double                      Weight()      { return m_weight;          }
   };
 
   typedef std::map<int,Hadron_Multiplet *>  Hadron_Multiplet_Map;
@@ -67,6 +66,7 @@ namespace AHADIC {
 
     Hadron_Wave_Function * GetWaveFunction(ATOOLS::Flavour);
     void                   PrintWaveFunctions();
+    void                   PrintMultiplets();
   };
 
   /*!

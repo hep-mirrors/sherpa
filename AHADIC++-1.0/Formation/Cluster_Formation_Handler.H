@@ -4,7 +4,7 @@
 #include "Gluon_Decayer.H"
 #include "Cluster_Former.H"
 #include "Colour_Reconnections.H"
-#include "Cluster_Transformer.H"
+#include "Soft_Cluster_Handler.H"
 #include "Cluster.H"
 #include "Blob_List.H"
 #include "Blob.H"
@@ -21,7 +21,7 @@ namespace AHADIC {
     Gluon_Decayer                     * p_gludecayer;
     Cluster_Former                    * p_cformer;
     Colour_Reconnections              * p_recons;
-    Cluster_Transformer               * p_ctransformer;
+    Soft_Cluster_Handler              * p_softclusters;
 
     ATOOLS::Blob                      * p_blob;
     Cluster_List                      * p_clulist;
@@ -32,23 +32,23 @@ namespace AHADIC {
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
     void Reset();
-
     ATOOLS::Return_Value::code ExtractSinglets();
     ATOOLS::Return_Value::code FormOriginalClusters();
     ATOOLS::Return_Value::code ApplyColourReconnections();
-    ATOOLS::Return_Value::code ClustersToHadrons();
+    ATOOLS::Return_Value::code ClustersToHadrons(ATOOLS::Blob_List *);
     ATOOLS::Return_Value::code MergeClusterListsIntoOne();
   public:
     Cluster_Formation_Handler(bool=false);
     ~Cluster_Formation_Handler();
 
-    ATOOLS::Return_Value::code FormClusters(ATOOLS::Blob *);
+    ATOOLS::Return_Value::code FormClusters(ATOOLS::Blob *,
+					    ATOOLS::Blob_List *);
 
     //! general access routines
     //@{
-    Cluster_Transformer * GetClusterTransformer() { return p_ctransformer; }
-    Cluster_List        * GetClusters()           { return p_clulist;  }
-    ATOOLS::Blob        * GetFragmentationBlob()  { return p_blob; }
+    Soft_Cluster_Handler * GetSoftClusterHandler() { return p_softclusters; }
+    Cluster_List         * GetClusters()           { return p_clulist;  }
+    ATOOLS::Blob         * GetFragmentationBlob()  { return p_blob; }
     //@}
   };
 

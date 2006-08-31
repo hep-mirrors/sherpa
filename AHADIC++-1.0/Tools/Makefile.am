@@ -7,17 +7,17 @@ libAhadicTools_la_SOURCES = \
                             Hadron_Multiplet.C \
                             Transitions.C \
 			    Pair_Popper.C \
-                            Cluster_Transformer.C \
+			    Soft_Cluster_Handler.C \
                             Hadronisation_Parameters.C
 
 pkginclude_HEADERS = \
                      Cluster.H \
                      Constituents.H \
+		     Pair_Popper.H \
                      Hadron_Wave_Function.H \
                      Hadron_Multiplet.H \
                      Transitions.H \
-		     Pair_Popper.H \
-                     Cluster_Transformer.H \
+		     Soft_Cluster_Handler.H \
                      Hadronisation_Parameters.H
 
 INCLUDES = @ATOOLSINCS@

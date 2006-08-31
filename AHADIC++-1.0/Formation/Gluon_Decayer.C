@@ -33,13 +33,8 @@ bool Gluon_Decayer::DecayList(Proto_Particle_List * plin)
   if (plin==NULL || plin->empty()) return true;
 
   PPL_Iterator pit;
-  Vec4D mom=Vec4D(0.,0.,0.,0.);
-  for (pit=plin->begin();pit!=plin->end();pit++) mom+=pit->m_mom;
 
   if (!Shift(plin)) return false;
-
-  mom=Vec4D(0.,0.,0.,0.);
-  for (pit=plin->begin();pit!=plin->end();pit++) mom+=pit->m_mom;
 
   bool success(true);
   Proto_Particle * part, * part1, * part2;
@@ -58,9 +53,6 @@ bool Gluon_Decayer::DecayList(Proto_Particle_List * plin)
     }
     else ++pit;
   } while (pit!=plin->end());
-
-  mom=Vec4D(0.,0.,0.,0.);
-  for (pit=plin->begin();pit!=plin->end();pit++) mom+=pit->m_mom;
 
   return success;
 }
@@ -125,6 +117,7 @@ void Gluon_Decayer::SelectDecay(const Vec4D & mom) {
     if (disc<0.) break;
   }
   m_flav = fdit->first;
+  if (m_flav.IsDiQuark()) m_flav = m_flav.Bar();
   m_mass = hadpars.GetConstituents()->Mass(m_flav);
   SelectZ(fdit->second);
   SelectPhi();
