@@ -136,6 +136,13 @@ void Hadrons::ChooseDecayKinematics(
 
 Return_Value::code Hadrons::PerformSingleDecay( Blob* blob )
 {
+#ifdef DEBUG__Hadrons
+  if(blob->NOutP()>0) {
+    msg.Error()<<METHOD<<" Blob ["<<blob->Id()<<"] in event "<<rpa.gen.NumberOfDicedEvents()
+      <<" already has outparticles: "<<endl
+      <<(*blob)<<endl;
+  }
+#endif
   if (!blob->Has(blob_status::needs_hadrondecays) ||
       blob->NInP()!=1 ||
       blob->InParticle(0)->Status()!=part_status::active)
@@ -155,7 +162,6 @@ Return_Value::code Hadrons::PerformSingleDecay( Blob* blob )
     hdc = data->Get<Hadron_Decay_Channel*>();
   }
   else {
-    delete data; data=NULL;
     hdc = ChooseDecayChannel();
     blob->AddData("hdc",new Blob_Data<Hadron_Decay_Channel*>(hdc));
   }
@@ -167,20 +173,8 @@ Return_Value::code Hadrons::PerformSingleDecay( Blob* blob )
   FlavourSet       daughters = hdc->DecayChannel()->GetDecayProducts();
   const int                n = hdc->DecayChannel()->NumberOfDecayProducts()+1;
 
-  FlSetConstIter dit;                                                                   // Iterator
-  int i(0);
-  double total_mass=0.0;
-  vector<pair<Flavour,int> > daughters_pair;
-  for( dit = daughters.begin(); dit != daughters.end(); dit++ ) {
-    i++;
-    daughters_pair.push_back( pair<Flavour,int>( (*dit), i ) );
-    total_mass+=dit->PSMass();
-  }
-  if( inpart->FinalMass() < total_mass ) {
-    msg.Debugging()<<METHOD<<" not enough mass m="<<inpart->FinalMass()
-      <<" for decaychannel "<< hdc->Name()<<" (m="<<total_mass<<"). Retrying..."<<endl;
+  if( inpart->FinalMass() < hdc->DecayChannel()->MinimalMass() )
     return Return_Value::Retry_Method;
-  }
 
   // choose a kinematics that corresponds to the ME kinematic distribution
   Vec4D mom[n];
@@ -191,7 +185,7 @@ Return_Value::code Hadrons::PerformSingleDecay( Blob* blob )
   }
 
   // add daughters to blob
-  i=1;
+  int i=1;
   Vec4D momentum; Flavour flav; Particle* particle=NULL;
   for( FlavourSet::iterator dpit = daughters.begin(); dpit != daughters.end(); dpit++ ) {
     momentum = mom[i];
@@ -203,6 +197,16 @@ Return_Value::code Hadrons::PerformSingleDecay( Blob* blob )
     blob->AddToOutParticles( particle );
     i++;
   }
+#ifdef DEBUG__Hadrons
+  Vec4D mc = blob->CheckMomentumConservation();
+  double accu=1.e-7;
+  if(!(mc[0]<accu)||!(mc[1]<accu)||!(mc[2]<accu)||!(mc[3]<accu)) {
+    PRINT_INFO(" momentum not conserved in "
+             <<"blob ["<<blob->Id()<<"] of event "<<rpa.gen.NumberOfDicedEvents()<<endl
+             <<blob->CheckMomentumConservation()<<endl
+             <<(*blob));
+  }
+#endif
 
   if( inpart->Info() == 'P' ) inpart->SetInfo('p');
   if( inpart->Info() == 'D' ) inpart->SetInfo('d');

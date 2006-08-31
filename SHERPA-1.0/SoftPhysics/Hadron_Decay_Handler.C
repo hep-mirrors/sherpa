@@ -2,7 +2,9 @@
 #include "Message.H"
 #include "Random.H"
 #include "Blob.H"
+#include "Particle.H"
 #include "Lund_Interface.H"
+#include "Mass_Handler.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -10,6 +12,7 @@ using namespace std;
 
 #ifdef USING__Hadrons
 #include "Hadrons.H"
+#include "Hadron_Decay_Channel.H"
 using namespace HADRONS;
 #endif
 
@@ -43,32 +46,22 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(Lund_Interface * _lund) :
   Fl_Iter fli;
   for (flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
     if (flav.IsOn() && flav.IsHadron() && !flav.IsStable()) {
-      if (p_lund->IsAllowedDecay(flav.Kfcode())) p_cans->insert(flav.Kfcode());
+      if (p_lund->IsAllowedDecay(flav.Kfcode())) {
+        p_cans->insert(flav.Kfcode());
+        p_lund->AdjustProperties(flav);
+      }
+    }
+    if( flav.Kfcode()==kf::K_L || flav.Kfcode()==kf::K_S || flav.Kfcode()==kf::K) {
+      // adjust for K0, KL and KS even if stable,
+      // otherwise 1->1 decay with different masses fails
+      p_lund->AdjustProperties(flav);
     }
   }
-  p_lund->SetAllStable();
   p_lund->SwitchOffMassSmearing();
 }
 
 Hadron_Decay_Handler::~Hadron_Decay_Handler() 
 {
-}
-
-void Hadron_Decay_Handler::EraseTreated(std::set<int> * hadrons)
-{
-  if (m_mode==0) hadrons->clear();
-#ifdef USING__Hadrons
-  if (m_mode==1) {
-    
-    for (set<kf::code>::iterator citer=p_cans->begin();citer!=p_cans->end();citer++) {
-      //msg.Debugging()<<"Killing flavours: "
-      //<<citer->first<<" ("<<cans->size()<<" ) "<<hadrons->size()<<endl;
-      hadrons->erase(int(*citer));
-      //msg.Debugging()<<"                  "
-      //<<citer->first<<" ("<<cans->size()<<" ) "<<hadrons->size()<<endl;
-    }
-  }
-#endif
 }
 
 bool Hadron_Decay_Handler::CanDealWith(kf::code kf) {
@@ -101,4 +94,40 @@ Return_Value::code Hadron_Decay_Handler::FillHadronDecayBlob(Blob *blob)
       break;
   }
   return ret;
+}
+
+bool Hadron_Decay_Handler::DiceMass(ATOOLS::Particle* part, double min, double max) {
+#ifdef DEBUG__Hadrons
+  if(min<0.0 || max<0.0 || !(min<max)) {
+    msg.Error()<<METHOD<<" with strange min, max encountered: min="<<min<<" max="<<max<<endl;
+  }
+#endif
+  double mass = 0.0;
+  switch (m_mode) {
+  case 0:
+    mass = p_lund->DiceMass(part->RefFlav().Kfcode(),min,max);
+    break;
+#ifdef USING__Hadrons
+  case 1:
+    kf::code kfc = part->RefFlav().Kfcode();
+    if(kfc==kf::K || kfc==kf::K_S || kfc==kf::K_L) return true;
+    Mass_Handler masshandler(part->RefFlav());
+    Blob_Data_Base* data = (*(part->DecayBlob()))["hdc"];
+    Hadron_Decay_Channel * hdc=NULL;
+    if(data) {
+      hdc = data->Get<Hadron_Decay_Channel*>();
+      double decaymin = hdc->DecayChannel()->MinimalMass();
+      if(decaymin>max) mass = -1.0;
+      else             mass = masshandler.GetMass(decaymin, max);
+    }
+    else mass = masshandler.GetMass(min, max);
+    break;
+#endif
+  }
+  
+  if(mass>0.0) {
+    part->SetFinalMass(mass);
+    return true;
+  }
+  else return false;
 }

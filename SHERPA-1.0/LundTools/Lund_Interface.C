@@ -16,6 +16,7 @@
 #include <cassert>
 #include "Message.H"
 #include "HepEvt_Interface.H"
+#include "Mass_Handler.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -201,49 +202,58 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
       m_compress=(bool)helper;
     }
   }
-  // set some masses to ours (otherwise problems with mass check in decay; only minimal change)
-  vector<kf::code> mass_kfs;
-  mass_kfs.push_back(kf::Lambda_b);
-  mass_kfs.push_back(kf::pi);
-  mass_kfs.push_back(kf::eta);
-  Flavour myflav; int kc;
-  for(size_t i=0;i<mass_kfs.size();i++) {
-    myflav = Flavour(mass_kfs[i]);
-    kc = pycomp(int(mass_kfs[i]))-1;
-    pydat2.pmas[1-1][kc]=myflav.PSMass();
-  }
   pylist(0);
   delete reader;
 }
 
 bool Lund_Interface::IsAllowedDecay(kf::code can)
 {
-  // account for Pythia having a_0_980 at code of a_0_1450
-  //if( can==kf::a_0_980 )      can=kf::a_0_1450;
-  //if( can==kf::a_0_980_plus ) can=kf::a_0_1450_plus;
-  // account for Pythia having f_0_980 at code of f_0_1370
-  //if( can==kf::f_0_980 )      can=kf::f_0_1370;
   if (pycomp(int(can))<501 && pydat3.mdcy[1-1][pycomp(int(can))-1]==1) return true;
   return false;
 }
 
-void Lund_Interface::SwitchOfDecays(kf::code kfc)
+void Lund_Interface::SwitchOffDecays(kf::code kfc)
 {
-  pydat3.mdcy[1-1][pycomp(int(kfc))-1]=0;
-  msg_Tracking()<<"Lund_Interface::SwitchOfDecays: "<<kfc<<endl;
+  int kc = pycomp(int(kfc));
+  if(kc>500) return;
+  pydat3.mdcy[1-1][kc-1]=0;
 }
 
-void Lund_Interface::SetAllStable()
+void Lund_Interface::AdjustProperties(Flavour flav)
 {
-  Fl_Iter fli; Flavour flav;
-  for (flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
-    pydat3.mdcy[1-1][pycomp(int(flav.Kfcode()))-1]=0;
+  int kc = pycomp(int(flav.Kfcode()));
+  if(kc>500) return;
+  // adjust mass
+  double pythiamass = pydat2.pmas[1-1][kc-1];
+  double sherpamass = flav.PSMass();
+  flav.SetMass(pythiamass);
+  if( !(abs(sherpamass-pythiamass)/sherpamass < 1.e-2) ) {
+    msg.Info()<<METHOD<<" Adjusted mass of "<<flav<<" ("<<flav.Kfcode()
+        <<") from "<<sherpamass<<" to "<<pythiamass<<" to allow Pythia decays."<<endl;
   }
 }
 
 void Lund_Interface::SwitchOffMassSmearing()
 {
   pydat1.mstj[24-1]=0;
+}
+
+double Lund_Interface::DiceMass(Flavour flav, double min, double max)
+{
+  int kc = pycomp(flav.Kfcode())-1;
+  double peak = pydat2.pmas[1-1][kc];
+  double w_cut = pydat2.pmas[3-1][kc];
+  if(w_cut == 0.0) {
+    if(peak<min-Accu() || peak>max+Accu()) return -1.0;
+    else return peak;
+  }
+  else {
+    Mass_Handler masshandler(flav);
+    double finalmin = min>(peak-w_cut)? min : peak-w_cut;
+    double finalmax = max<(peak+w_cut)? max : peak+w_cut;
+    if(finalmin>finalmax) return -1.0;
+    else return masshandler.GetMass(finalmin,finalmax);
+  }
 }
 
 Lund_Interface::~Lund_Interface()
@@ -316,29 +326,16 @@ Return_Value::code Lund_Interface::PerformDecay(Blob * blob)
     msg.Error()<<" part->Status()="<<blob->InParticle(0)->Status()<<endl;
     return Return_Value::Error;
   }
-
+  
   Particle * part = blob->InParticle(0);
   Flavour fl = part->Flav();
-  // account for Pythia having a_0_980 at code of a_0_1450
-  //  if( fl.Kfcode()==kf::a_0_980 )      fl=Flavour(kf::a_0_1450, fl.IsAnti());
-  //if( fl.Kfcode()==kf::a_0_980_plus ) fl=Flavour(kf::a_0_1450_plus,
-  //                                              fl.IsAnti());
-  // account for Pythia having f_0_980 at code of f_0_1370
-  //if( fl.Kfcode()==kf::f_0_980 )      fl=Flavour(kf::kf::f_0_1370, fl.IsAnti());
-
   int kc = pycomp(int(fl.Kfcode()))-1;
   double peak = pydat2.pmas[1-1][kc];
   double w_cut = pydat2.pmas[3-1][kc];
-  if( part->FinalMass()+Accu() < peak-w_cut ) {
-    msg.Debugging().precision(8);
-    msg.Debugging()<<METHOD<<" not enough mass m="<<part->FinalMass()
-      <<" for pythia cutoff "<<" (m="<<peak-w_cut<<"). Retrying..."<<endl;
+  if( part->FinalMass()+Accu() < peak-w_cut || part->FinalMass()-Accu() > peak+w_cut) {
     return Return_Value::Retry_Method;
   }
-
-
-  // set particle temporarily to unstable in pythia
-  pydat3.mdcy[1-1][pycomp(int(fl.Kfcode()))-1]=1;
+  
   int nhep(0);
   int idhep = fl.HepEvt();
   switch (idhep) {
@@ -380,16 +377,13 @@ Return_Value::code Lund_Interface::PerformDecay(Blob * blob)
       return Return_Value::Retry_Method;
     }
     msg.Error()<<"   Up to now: "<<pydat1.mstu[23-1]<<" errors, abort the run."<<std::endl;
-    THROW(critical_error,"Too many errors in lund fragm,entation.");
+    THROW(critical_error,"Too many errors in lund decay.");
   }
   part->SetStatus(part_status::decayed);
   pyhepc(1);
   FillOutgoingParticlesInBlob(blob);
-  
-  // set particle back to stable in pythia
-  pydat3.mdcy[1-1][pycomp(int(fl.Kfcode()))-1]=0;
   return Return_Value::Success;
-} 
+}
 
 int Lund_Interface::PrepareFragmentationBlob(Blob * blob) 
 {
@@ -523,11 +517,6 @@ void Lund_Interface::FillFragmentationBlob(Blob *blob)
 	flav==Flavour(kf::cluster)) {
       for (int j=hepevt.jdahep[i][0]-1;j<hepevt.jdahep[i][1];j++) {
         flav.FromHepEvt(hepevt.idhep[j]);
-        // account for Pythia having a_0_980 at code of a_0_1450
-        if(flav.Kfcode()==kf::a_0_1450) flav=Flavour(kf::a_0_980, flav.IsAnti());
-        else if(flav.Kfcode()==kf::a_0_1450_plus) flav=Flavour(kf::a_0_980_plus, flav.IsAnti());
-        // account for Pythia having f_0_980 at code of f_0_1370
-        else if(flav.Kfcode()==kf::f_0_1370) flav=Flavour(kf::f_0_980, flav.IsAnti());
 	momentum=Vec4D(hepevt.phep[j][3],hepevt.phep[j][0],
 		       hepevt.phep[j][1],hepevt.phep[j][2]);
 	position=Vec4D(hepevt.vhep[j][3],hepevt.vhep[j][0],
@@ -551,12 +540,18 @@ void Lund_Interface::FillOutgoingParticlesInBlob(Blob *blob)
   Vec4D      momentum, position;
   Particle * particle;
   for (int j=hepevt.jdahep[0][0]-1;j<hepevt.jdahep[0][1];j++) {
-    flav.FromHepEvt(hepevt.idhep[j]);
-    // account for Pythia having a_0_980 at code of a_0_1450
-    if(flav.Kfcode()==kf::a_0_1450) flav=Flavour(kf::a_0_980, flav.IsAnti());
-    else if(flav.Kfcode()==kf::a_0_1450_plus) flav=Flavour(kf::a_0_980_plus, flav.IsAnti());
-    // account for Pythia having f_0_980 at code of f_0_1370
-    else if(flav.Kfcode()==kf::f_0_1370) flav=Flavour(kf::f_0_980, flav.IsAnti());
+    int idhep = hepevt.idhep[j];
+    switch (idhep) {
+    case  9000111: idhep =  10111;   break;
+    case  9000211: idhep =  10211;   break;
+    case -9000211: idhep = -10211;   break;
+    case  9010221: idhep =  10221;   break;
+    case    10111: idhep =  9000111; break;
+    case    10211: idhep =  9000211; break;
+    case   -10211: idhep = -9000211; break;
+    case    10221: idhep =  9010221; break;
+    }
+    flav.FromHepEvt(idhep);
     momentum=Vec4D(hepevt.phep[j][3],hepevt.phep[j][0],
 		   hepevt.phep[j][1],hepevt.phep[j][2]);
     position=Vec4D(hepevt.vhep[j][3],hepevt.vhep[j][0],

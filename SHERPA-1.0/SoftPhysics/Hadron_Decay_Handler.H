@@ -12,7 +12,7 @@
 #ifdef USING__Hadrons
 namespace HADRONS { class Hadrons; }
 #endif
-namespace ATOOLS  { class Blob; }
+namespace ATOOLS { class Blob; class Particle;}
 
 namespace SHERPA {
   class Lund_Interface;
@@ -36,7 +36,6 @@ namespace SHERPA {
     ~Hadron_Decay_Handler();
 
     ATOOLS::Return_Value::code FillHadronDecayBlob(ATOOLS::Blob *);
-    void EraseTreated(std::set<int> *);
     bool CanDealWith(ATOOLS::kf::code);
 
 #ifdef USING__Hadrons
@@ -44,6 +43,8 @@ namespace SHERPA {
 #endif
     Lund_Interface   * GetLund()    { return p_lund; }
     std::string        Name()       { return m_decmodel; }
+    std::set<ATOOLS::kf::code>  * GetCans() { return p_cans; }
+    bool               DiceMass(ATOOLS::Particle*, double min, double max);
   };
 
   typedef std::map<std::string,Hadron_Decay_Handler *> HDHandlersMap;

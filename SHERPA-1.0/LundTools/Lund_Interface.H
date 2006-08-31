@@ -69,9 +69,10 @@ namespace SHERPA {
     inline static bool ExportAS()  { return s_exportas;  }
     inline static bool ExportPDF() { return s_exportpdf; }
 
-    void SwitchOfDecays(ATOOLS::kf::code kfc);
-    void SetAllStable();
+    void SwitchOffDecays(ATOOLS::kf::code kfc);
+    void AdjustProperties(ATOOLS::Flavour flav);
     void SwitchOffMassSmearing();
+    double DiceMass(ATOOLS::Flavour flav, double min, double max);
   };// end of class Lund_Interface
 
   /*!
@@ -103,7 +104,7 @@ namespace SHERPA {
     .
     */
   /*!
-    \fn Lund_Interface::SwitchOfDecays(ATOOLS::kf::code kfc)
+    \fn Lund_Interface::SwitchOffDecays(ATOOLS::kf::code kfc)
     \brief Sets the particle kfc stable
 
     This method tells Pythia to set the particle <var>kfc</var> stable. Might

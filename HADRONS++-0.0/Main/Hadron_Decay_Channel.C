@@ -92,8 +92,7 @@ void Hadron_Decay_Channel::WriteModelOnScreen( GeneralModel _locmd )
 }
 
 
-// w/o spin correlation
-
+// differential with random PS points; just for weight
 double Hadron_Decay_Channel::Differential()
 {
   p_momenta[0] = Vec4D(p_flavours[0].PSMass(),0.,0.,0.);        // decay from rest
@@ -116,23 +115,33 @@ double Hadron_Decay_Channel::Differential()
 }
 
 
-// with spin correlation
+// differential with incoming (possibly offshell) momentum; for weight and momenta
 double Hadron_Decay_Channel::Differential( Vec4D * mom, Spin_Density_Matrix * sigma )
 {
-  // get PS point in rest frame
-  p_momenta[0] = Vec4D(mom[0].Mass(),0.,0.,0.);                 // decay from rest
-  p_ps->GeneratePoint(p_momenta);                               // generate a PS point
-  p_ps->GenerateWeight(p_momenta);                              // calculate its weight factor
-  double weight = p_ps->Weight();                               // weight factor
-  // boost into Lab system 
-  Poincare lambda(mom[0]);
-  lambda.Invert();
-  for( int i=0; i<m_nout+1; ++i ) {
-    p_momenta[i] = lambda*p_momenta[i];
-    mom[i] = p_momenta[i];
+#ifdef DEBUG__Hadrons
+  if( !IsZero(mom[0][1]) || !IsZero(mom[0][2]) || !IsZero(mom[0][3]) ) {
+    PRINT_INFO("Error: given momentum is not in CMS: "<<mom[0]);
   }
-  // get amplitude tensor
-  (*p_me)(  p_momenta,                                          // phase space point
+#endif
+  p_ps->GeneratePoint(mom);                               // generate a PS point
+  p_ps->GenerateWeight(mom);                              // calculate its weight factor
+  
+#ifdef DEBUG__Hadrons
+  Vec4D mc = mom[0];
+  for(int i=0;i<m_nout;i++) {
+    mc-=mom[i+1];
+  }
+  double accu=1.e-7;
+  if(!(mc[0]<accu)||!(mc[1]<accu)||!(mc[2]<accu)||!(mc[3]<accu)) {
+    PRINT_INFO(" momentum not conserved in generated point of "<<ChannelName());
+    for(int i=0;i<m_nout+1;i++) {
+      PRINT_INFO("mom["<<i<<"]="<<mom[i]<<" ["<<mom[i].Mass()<<"]");
+    }
+  }
+#endif
+  
+  double weight = p_ps->Weight();                               // weight factor
+  (*p_me)(  mom,                                                // phase space point
             p_ampls, p_indices,                                 // ampl. tensor and indices
             Spin_Correlation_Tensor::Get_k0_n() );              // spinor base
   double value=0.;
@@ -189,5 +198,3 @@ void Hadron_Decay_Channel::CreateTrivial( Spin_Density_Matrix * sigma )
     }
   }
 }
- 
-

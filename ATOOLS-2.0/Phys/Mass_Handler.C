@@ -21,7 +21,7 @@ Mass_Handler::~Mass_Handler()
 
 double Mass_Handler::GetMass(double min, double max)
 {
-  if(min<0.0 || max < 0.0) {
+  if(min<0.0 || max<0.0 || min>max) {
     msg.Error()<<METHOD<<" range not valid: min="<<min<<" max="<<max<<endl;
     return 0.0;
   }
@@ -56,8 +56,7 @@ Relativistic_Breit_Wigner::Relativistic_Breit_Wigner(double peak,double width)
 
 double Relativistic_Breit_Wigner::GetMass(double min, double max)
 {
-  // fixme: sensible?
-  if( m_peak<1.e-6 || m_width/m_peak < 1.e-4) return m_peak;
+  if( m_peak<1.e-6 || m_width/m_peak < 1.e-8) return m_peak;
   double random = ran.Get();
   double peak2 = m_peak*m_peak;
   double mw    = m_peak*m_width;

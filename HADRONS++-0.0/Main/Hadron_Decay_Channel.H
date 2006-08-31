@@ -52,8 +52,6 @@ namespace HADRONS {
 
     HD_ME_Base            * GetME() { return p_me; }
     HD_PS_Base            * GetPS() { return p_ps; }
-	ATOOLS::Vec4D         * Momenta() { return p_momenta; }		// not as const
-	ATOOLS::Vec4D           Momentum( int i ) { return p_momenta[i]; }
 	ATOOLS::Decay_Channel * DecayChannel() { return p_dc; }
 
 	std::string				ChannelName()     { return m_channelname; }

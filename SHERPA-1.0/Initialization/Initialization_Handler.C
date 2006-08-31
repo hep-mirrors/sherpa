@@ -459,16 +459,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
     m_hdhandlers.clear();
   }
   
-  std::set<int> * UnstableHadrons = new std::set<int>;
-  if (!Flavour(kf::tau).IsStable()) UnstableHadrons->insert(int(Flavour(kf::tau).Kfcode()));
-  Fl_Iter fli;
-  for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
-    if (flav.IsOn() && flav.IsHadron() && !flav.IsStable()) {
-      UnstableHadrons->insert(int(flav.Kfcode()));
-    }
-  }
-  
-  bool needextra = true;
+  bool needextra = true; set<kf::code>* hadrons_cans=NULL;
   Hadron_Decay_Handler * hdhandler = NULL;
   string decmodel = dr.GetValue<string>("DECAYMODEL",string("Lund"));
   msg.Tracking()<<"Decaymodel = "<<decmodel<<std::endl;
@@ -480,8 +471,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
     string decayfile       = dr.GetValue<string>("DECAYFILE",string("HadronDecays.dat"));
     string decayconstfile  = dr.GetValue<string>("DECAYCONSTFILE",string("HadronConstants.dat"));
     hdhandler              = new Hadron_Decay_Handler(new HADRONS::Hadrons(decaypath,decayfile,decayconstfile));
-    hdhandler->EraseTreated(UnstableHadrons);
-    if (UnstableHadrons->empty()) needextra = false;
+    hadrons_cans = hdhandler->GetCans();
     m_hdhandlers["Hadrons"] = hdhandler;
   }
 #endif
@@ -492,6 +482,11 @@ bool Initialization_Handler::InitializeTheHadronDecays()
       lund         = new Lund_Interface(m_path,lfile,true);
     }
     else lund      = p_fragmentation->GetLundInterface();
+    if(hadrons_cans) {
+      for(set<kf::code>::iterator cankf=hadrons_cans->begin();cankf!=hadrons_cans->end();cankf++) {
+        lund->SwitchOffDecays((*cankf));
+      }
+    }
     hdhandler      = new Hadron_Decay_Handler(lund);
     m_hdhandlers["Lund"]   = hdhandler;
   }
@@ -499,7 +494,6 @@ bool Initialization_Handler::InitializeTheHadronDecays()
     THROW(critical_error,"Fragmentation model not implemented.");
     abort();
   }
-  delete UnstableHadrons;
   msg_Info()<<"Initialized the Hadron_Decay_Handler, Decay model = "<<decmodel<<endl;
   return true;
 }

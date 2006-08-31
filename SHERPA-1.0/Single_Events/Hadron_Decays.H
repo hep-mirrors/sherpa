@@ -8,13 +8,12 @@
 namespace ATOOLS {
   class Blob;
   class Particle;
+  class Blob_List;
 }
 
-// #define DEBUG
-#ifdef DEBUG
+#ifdef DEBUG__Hadrons
 class TH1D;
 class TFile;
-class Blob_List;
 #endif
 
 namespace SHERPA {
@@ -25,9 +24,10 @@ namespace SHERPA {
     ATOOLS::Particle_Vector    m_daughters;
     std::vector<ATOOLS::Vec4D> m_saved_momenta;
     double                     m_max_mass;
-#ifdef DEBUG
+    bool                       m_mass_smearing;
+#ifdef DEBUG__Hadrons
     TFile* p_file;
-    std::map<ATOOLS::kf::code,TH1D> mass_hists;
+    std::map<ATOOLS::kf::code,TH1D*> mass_hists;
 #endif
 
     ATOOLS::Return_Value::code Treat(ATOOLS::Blob * blob);

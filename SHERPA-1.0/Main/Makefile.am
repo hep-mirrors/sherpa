@@ -12,7 +12,7 @@ else
 PDFEXTRALIBS    = @CTEQLIBS@
 endif
 
-AM_CXXFLAGS   =	@CONDITIONAL_ROOTFLAGS@
+AM_CXXFLAGS   =	@SHERPAFLAGS@ @CONDITIONAL_ROOTFLAGS@
 
 libSherpaMain_la_LIBADD = -L$(pkglibdir) -lSherpaInitialization -lSherpaSingleEvents \
                 -lSherpaPerturbativePhysics -lSherpaSoftPhysics -lLundTools -lSherpaTools \
