@@ -219,10 +219,10 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
 bool Lund_Interface::IsAllowedDecay(kf::code can)
 {
   // account for Pythia having a_0_980 at code of a_0_1450
-  if( can==kf::a_0_980 )      can=kf::a_0_1450;
-  if( can==kf::a_0_980_plus ) can=kf::a_0_1450_plus;
+  //if( can==kf::a_0_980 )      can=kf::a_0_1450;
+  //if( can==kf::a_0_980_plus ) can=kf::a_0_1450_plus;
   // account for Pythia having f_0_980 at code of f_0_1370
-  if( can==kf::f_0_980 )      can=kf::f_0_1370;
+  //if( can==kf::f_0_980 )      can=kf::f_0_1370;
   if (pycomp(int(can))<501 && pydat3.mdcy[1-1][pycomp(int(can))-1]==1) return true;
   return false;
 }
@@ -320,11 +320,11 @@ Return_Value::code Lund_Interface::PerformDecay(Blob * blob)
   Particle * part = blob->InParticle(0);
   Flavour fl = part->Flav();
   // account for Pythia having a_0_980 at code of a_0_1450
-  if( fl.Kfcode()==kf::a_0_980 )      fl=Flavour(kf::a_0_1450, fl.IsAnti());
-  if( fl.Kfcode()==kf::a_0_980_plus ) fl=Flavour(kf::a_0_1450_plus,
-                                                 fl.IsAnti());
+  //  if( fl.Kfcode()==kf::a_0_980 )      fl=Flavour(kf::a_0_1450, fl.IsAnti());
+  //if( fl.Kfcode()==kf::a_0_980_plus ) fl=Flavour(kf::a_0_1450_plus,
+  //                                              fl.IsAnti());
   // account for Pythia having f_0_980 at code of f_0_1370
-  if( fl.Kfcode()==kf::f_0_980 )      fl=Flavour(kf::kf::f_0_1370, fl.IsAnti());
+  //if( fl.Kfcode()==kf::f_0_980 )      fl=Flavour(kf::kf::f_0_1370, fl.IsAnti());
 
   int kc = pycomp(int(fl.Kfcode()))-1;
   double peak = pydat2.pmas[1-1][kc];
@@ -340,7 +340,18 @@ Return_Value::code Lund_Interface::PerformDecay(Blob * blob)
   // set particle temporarily to unstable in pythia
   pydat3.mdcy[1-1][pycomp(int(fl.Kfcode()))-1]=1;
   int nhep(0);
-  hepevt.idhep[nhep] = fl.HepEvt();
+  int idhep = fl.HepEvt();
+  switch (idhep) {
+  case  9000111: idhep =  10111;   break;
+  case  9000211: idhep =  10211;   break;
+  case -9000211: idhep = -10211;   break;
+  case  9010221: idhep =  10221;   break;
+  case    10111: idhep =  9000111; break;
+  case    10211: idhep =  9000211; break;
+  case   -10211: idhep = -9000211; break;
+  case    10221: idhep =  9010221; break;
+  }
+  hepevt.idhep[nhep] = idhep;
   for (short int j=1;j<4;++j) hepevt.phep[nhep][j-1]=part->Momentum()[j];
   hepevt.phep[nhep][3] = part->Momentum()[0];
   hepevt.phep[nhep][4] = part->FinalMass();
@@ -361,7 +372,8 @@ Return_Value::code Lund_Interface::PerformDecay(Blob * blob)
   pydecy(ip);
   if (pydat1.mstu[24-1]!=0) {
     msg.Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
-	       <<"   PYDECY call results in error code : "<<pydat1.mstu[24-1]<<"."<<std::endl;
+	       <<"   PYDECY call results in error code : "<<pydat1.mstu[24-1]<<std::endl
+	       <<"   for decay of "<<fl<<" ("<<fl.HepEvt()<<" -> "<<idhep<<")"<<std::endl;
     if (pydat1.mstu[23-1]<int(rpa.gen.NumberOfDicedEvents()/100) ||
 	rpa.gen.NumberOfDicedEvents()<200) {
       msg.Error()<<"   Up to now: "<<pydat1.mstu[23-1]<<" errors, try new event."<<std::endl;
