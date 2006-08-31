@@ -253,9 +253,9 @@ namespace ATOOLS {
       K_4_star_2045_plus     = 329,
       f_J_2220               = 339,
 
-      a_0_1450               = 10111,
-      a_0_1450_plus          = 10211,
-      f_0_1370               = 10221,
+      a_0_980                = 10111,
+      a_0_980_plus           = 10211,
+      f_0_980                = 10221,
       K_0_star_1430          = 10311,
       K_0_star_1430_plus     = 10321,
       f_0_1710               = 10331,
@@ -343,14 +343,14 @@ namespace ATOOLS {
       Upsilon_3S             = 200553,
       Upsilon_4S             = 300553,
 
-      a_0_980                = 9000111,
-      a_0_980_plus           = 9000211,
+      a_0_1450               = 9000111,
+      a_0_1450_plus          = 9000211,
       f_0_600                = 9000221,
 
       psi_4040               = 9000443,
       Upsilon_10860          = 9000553,
 
-      f_0_980                = 9010221,
+      f_0_1370               = 9010221,
       psi_4160               = 9010443,
       Upsilon_11020          = 9010553,
       f_0_1500               = 9020221,
@@ -919,18 +919,13 @@ namespace ATOOLS {
     }
   };
 
-  struct Flavour_Pair {
-    Flavour fl1;
-    Flavour fl2;
-  };
-
   class Flavour_Sorting_Criterion {
   public :
     bool operator() (const Flavour & _fl1,const Flavour & _fl2) {
       int fl1 = _fl1.Kfcode(), fl2 = _fl2.Kfcode();
       if (fl1<fl2) return 0;
-      if (fl1==fl2 && _fl1.IsAnti() && !(_fl2.IsAnti())) return 0;
-      return 1;
+      if (fl1==fl2 && _fl1.IsAnti() && !(_fl2.IsAnti())) return false;
+      return true;
     }
   };
 

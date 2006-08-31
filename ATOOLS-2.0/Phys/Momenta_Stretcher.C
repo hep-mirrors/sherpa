@@ -39,7 +39,6 @@ bool Momenta_Stretcher::MassThem(const int n0,const int n,Vec4D * momenta,const 
     double * ens       = new double[n];
     Vec4D cms          = Vec4D(0.,0.,0.,0.);
     for (short int k=n0;k<n;k++) {
-//       std::cout<<METHOD<<" momenta["<<k<<"]="<<momenta[k]<<std::endl;
       xmt       += masses[k];
       cms       += momenta[k];
       oldens2[k] = sqr(momenta[k][0]);
@@ -61,9 +60,7 @@ bool Momenta_Stretcher::MassThem(const int n0,const int n,Vec4D * momenta,const 
         x -= f0/(x*g0);  
       }
       for (short int k=n0;k<n;k++) {
-//         std::cout<<"ens["<<k<<"]="<<ens[k]<<" x="<<x<<std::endl;
         momenta[k] = Vec4D(ens[k],x*Vec3D(momenta[k]));
-//         std::cout<<METHOD<<" momenta["<<k<<"]="<<momenta[k]<<std::endl;
       }
       delete [] oldens2;
       delete [] ens;

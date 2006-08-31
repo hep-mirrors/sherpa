@@ -243,37 +243,37 @@ int Random::WriteOutStatus(const char * filename){
 void Random::ReadInStatus(const char * filename, long int index){
   // check what type of data is in target file
   ifstream file(filename);
-      // Check if the first 20 bytes in file are a known identifier and
-      // set the activeGenerator variable accordingly
-      file.read((char*) &status.idTag, sizeof(status.idTag));
-      if (strcmp(status.idTag,  "Rnd4_G_Marsaglia"))
-      { activeGenerator = 2; } else { activeGenerator = 4; }
+  // Check if the first 20 bytes in file are a known identifier and
+  // set the activeGenerator variable accordingly
+  file.read((char*) &status.idTag, sizeof(status.idTag));
+  if (strcmp(status.idTag,  "Rnd4_G_Marsaglia"))
+    { activeGenerator = 2; } else { activeGenerator = 4; }
   file.close();
-
+  
   // use readin method for the Generator identified Generator
-  if (activeGenerator==4) { ReadInStatus4(filename, index);} else {
-
-  // read in every Statusregister of Random Number generator
-  msg_Info()<<"Random::ReadInStatus from "<<filename<<" index "<<index<<endl;
-  std::ifstream myinstream(filename);
-  long int count;
-  if (myinstream.good()) {
-    (myinstream)>>count;
-    std::string buffer;
-    while (count!=index && !myinstream.eof()) {
-      getline(myinstream,buffer);
-      (myinstream)>>count;    
-    }
-    if (count==index) {
-      (myinstream)>>m_id; (myinstream)>>m_inext; (myinstream)>>m_inextp;
-      for (int i=0;i<56;++i) (myinstream)>>m_ma[i];    
-      (myinstream)>>iy>>idum2;
-      for (int i=0;i<NTAB;++i) (myinstream)>>iv[i];
+  if (activeGenerator==4) { ReadInStatus4(filename, index);} 
+  else {  
+    // read in every Statusregister of Random Number generator
+    msg_Info()<<"Random::ReadInStatus from "<<filename<<" index "<<index<<endl;
+    std::ifstream myinstream(filename);
+    long int count;
+    if (myinstream.good()) {
+      (myinstream)>>count;
+      std::string buffer;
+      while (count!=index && !myinstream.eof()) {
+	getline(myinstream,buffer);
+	(myinstream)>>count;    
+      }
+      if (count==index) {
+	(myinstream)>>m_id; (myinstream)>>m_inext; (myinstream)>>m_inextp;
+	for (int i=0;i<56;++i) (myinstream)>>m_ma[i];    
+	(myinstream)>>iy>>idum2;
+	for (int i=0;i<NTAB;++i) (myinstream)>>iv[i];
+      } 
+      else msg.Error()<<"ERROR in Random::ReadInStatus : index="<<index<<" not found in "<<filename<<endl;
+      myinstream.close();
     } 
-    else msg.Error()<<"ERROR in Random::ReadInStatus : index="<<index<<" not found in "<<filename<<endl;
-    myinstream.close();
-  } 
-  else msg.Error()<<"ERROR in Random::ReadInStatus : "<<filename<<" not found!!"<<endl;
+    else msg.Error()<<"ERROR in Random::ReadInStatus : "<<filename<<" not found!!"<<endl;
   }
 }
 

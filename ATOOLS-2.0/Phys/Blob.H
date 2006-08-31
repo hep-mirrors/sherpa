@@ -47,6 +47,7 @@ namespace ATOOLS {
       needs_hadronization = 32,
       needs_hadrondecays  = 64,
       needs_extraQED      = 128,
+      needs_smearing      = 16384,
       internal_flag       = 32768,
       fully_active        = 65535
     };
