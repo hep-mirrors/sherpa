@@ -33,10 +33,10 @@ Return_Value::code Cluster_Decay_Handler::DecayClusters(Cluster_List * clusters,
   Cluster_List clist;
   Cluster_Iterator cit=clusters->begin();
   while (!clusters->empty()) {
-    //cout<<METHOD<<" "<<clusters->size()<<endl<<(**cit)<<endl;
     cluster = (*cit);
     blob    = DecayIt(cluster);
     blobs->push_back(blob);
+    //cout<<METHOD<<" "<<clusters->size()<<endl<<(**cit)<<endl;
     clist.push_back(cluster->GetLeft());
     clist.push_back(cluster->GetRight());
     p_softclusters->TreatClusterList(&clist,blob);

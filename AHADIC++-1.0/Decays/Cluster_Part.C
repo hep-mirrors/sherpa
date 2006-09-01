@@ -100,15 +100,15 @@ bool Cluster_Part::BuildKinematics(Cluster * const cluster,ATOOLS::Flavour & fla
   if (flav==Flavour(kf::none)) return false;
   double m1    = hadpars.GetConstituents()->Mass(flav), m12 = sqr(m1), m2 = m1, m22 = m12;
 
-  double pmax  = sqrt(sqr(MC2+sqr(m0+m1)-sqr(m2+m3))-4.*sqr(m0+m1)*sqr(m2+m3))/(2.*MC);
-  double ptmax = m_fraction*pmax;
+  double pmax2  = (sqr(MC2+sqr(m0+m1)-sqr(m2+m3))-4.*sqr(m0+m1)*sqr(m2+m3))/(4.*MC2);
+  double ptmax2 = m_fraction*pmax2;
   double pt, ystar, s_qq, ybar, x1, x2, E_r, E0_r(0.), E3_r(0.);
   int counter(0);
   do {
-    pt     = p_popper->SelectPT(ptmax);
-    ystar  = GetYStar(sqr(pt)+m12,sqr(ptmax));
+    pt     = p_popper->SelectPT(ptmax2);
+    ystar  = GetYStar(sqr(pt)+m12,ptmax2);
     s_qq   = 4.*(sqr(pt)+m12)*sqr(cosh(ystar));
-    ybar   = GetYBar(sqr(pmax),s_qq); 
+    ybar   = GetYBar(pmax2,s_qq); 
     x1     = sqrt(s_qq/MC2)*exp(ybar);
     x2     = sqrt(s_qq/MC2)*exp(-ybar);
     E_r    = sqrt((1.-x1)*(1.-x2))*MC;
@@ -211,7 +211,6 @@ bool Cluster_Part::UpdateDecay(Cluster * const cluster,const int mode)
   double M       = cluster->Mass(), M2 = M*M;
   double m12     = sqr(cluster->GetLeft()->GetSelf()->FinalMass()); 
   double m22     = sqr(cluster->GetRight()->GetSelf()->FinalMass());
-  double ptmax   = sqrt(sqr(M2-m12-m22)+4.*m12*m22)/(2.*M); 
 
   cluster->BoostInCMSAndRotateOnZ();
   double pt      = cluster->GetLeft()->Momentum().PPerp();

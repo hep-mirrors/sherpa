@@ -33,7 +33,7 @@ namespace AHADIC {
     Double_Transitions * p_doubletransitions;
     
     Pair_Popper        * p_popper;
-    double               m_fraction;
+    double               m_alpha,m_fraction;
     double               m_offset1,m_offset2,m_photonenergy;
     
     std::map<Cluster *,std::vector<ATOOLS::Flavour> >           m_ctrans;

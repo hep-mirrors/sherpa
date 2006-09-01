@@ -9,8 +9,9 @@ using namespace std;
 
 Pair_Popper::Pair_Popper() :
   p_constituents(hadpars.GetConstituents()), 
+  m_ptmode(2),m_flavmode(1),
   m_tension(hadpars.Get(string("Tension"))),
-  m_mode(2),
+  m_ptexp(hadpars.Get(string("<pt/ptmax>"))),
   m_totweight(0), m_maxmass(0.), m_minmass(100.)
 {
   double  wt(1.),mass;
@@ -38,7 +39,17 @@ Flavour Pair_Popper::SelectFlavour(const double upper)
       flav = iter->first;
       mass = p_constituents->Mass(flav);
       if (2.*mass>upper) {
-	totweight -= iter->second->TotWeight() * exp(-M_PI*sqr(mass)/m_tension);
+	switch (m_flavmode) {
+	case 2:
+	  // dynamic suppression
+	  totweight -= iter->second->TotWeight() * exp(-M_PI*sqr(mass)/m_tension);
+	  break;
+	case 1:
+	default:
+	  // no dynamic suppression
+	  totweight -= iter->second->TotWeight();
+	  break;
+	}
       }
     }
   }
@@ -50,7 +61,15 @@ Flavour Pair_Popper::SelectFlavour(const double upper)
       flav = iter->first;
       mass = p_constituents->Mass(flav);
       if (2.*mass<upper) {
-	wt -= iter->second->TotWeight()*exp(-M_PI*sqr(mass)/m_tension);
+	switch (m_flavmode) {
+	case 2:
+	  wt -= iter->second->TotWeight()*exp(-M_PI*sqr(mass)/m_tension);
+	  break;
+	case 1:
+	default:
+	  wt -= iter->second->TotWeight();
+	  break;
+	}
       }
       if (wt<=1.e-12) { wt=-1.; break; }
     }
@@ -61,29 +80,40 @@ Flavour Pair_Popper::SelectFlavour(const double upper)
 
 double Pair_Popper::SelectPT(const double upper)
 {
-  double pt(1.1*upper), pt2;
-  switch (m_mode) {
+  double pt2;
+  int    maxtrials(100);
+  switch (m_ptmode) {
   case 2:
     // Shifted Gaussian
-    while (pt>upper) {
-      pt2 = sqrt(-m_tension/M_PI*log(ran.Get()));
-      if (exp(-M_PI/m_tension*sqr(sqrt(pt2)-sqrt(0.25*upper)))>ran.Get()) pt = sqrt(pt2);
+    while (maxtrials>0) {
+      pt2 = -m_tension/M_PI*log(ran.Get());
+      if (exp(-M_PI/m_tension*sqr(sqrt(pt2)-m_ptexp*sqrt(upper)))>ran.Get()) {
+	if (pt2<upper) return sqrt(pt2);
+      }
+      maxtrials--;
     }
     break;
   case 1:
     // Gaussian
-    while (pt>upper) {
+    while (maxtrials>0) {
       pt2 = -m_tension/M_PI*log(ran.Get());
-      if (exp(-M_PI/m_tension*pt2)>ran.Get()) pt = sqrt(pt2);
+      if (exp(-M_PI/m_tension*pt2)>ran.Get()) {
+	if (pt2<upper) return sqrt(pt2);
+      }
+      maxtrials--;
     }
     break;
   case 0:
   default:
     // Exponential pt^2 ~ exp(-Pi/tension pt^2)
-    while (pt>upper) pt = sqrt(-m_tension/M_PI*log(ran.Get()));
+    while (maxtrials>0) {
+      pt2 = -m_tension/M_PI*log(ran.Get());
+      if (pt2<upper) return sqrt(pt2);
+      maxtrials--;
+    }
     break;
   }
-  return pt;
+  return sqrt(ran.Get()*upper);
 }
 
 double Pair_Popper::PopWeight(Flavour & flav) {

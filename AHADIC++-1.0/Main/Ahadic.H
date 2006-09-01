@@ -61,9 +61,7 @@ namespace AHADIC {
       the All_Single_Transitions, and the All_Double_Transitions objects as well as the service class
       Momenta_Stretcher. For each of them, only one instance will be initialised in AHADIC.
     - Cluster_Formation_Handler, <br>
-      which contains also the Gluon_Decayer, the Cluster_Former, the Colour_Reconnections and the
-      Cluster_Transformer object. The pointer to the latter one will also be put as argument into the 
-      Cluster_Decay_Handler.
+      which contains also the Gluon_Decayer, the Cluster_Former, the and Colour_Reconnections.
     - Cluster_Decay_Handler, <br>
       which contains a Cluster_Decayer_Base, and through it the strategies for cluster decays as implemented in
       Cluster_Part and Hadron_Part.

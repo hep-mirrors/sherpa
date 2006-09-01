@@ -49,10 +49,14 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
   Data_Read dataread(dir+file);
   m_parametermap[string("Tension")]            = 
     dataread.GetValue<double>("COLOUR_TENSION",0.33);
+  m_parametermap[string("<pt/ptmax>")]         = 
+    dataread.GetValue<double>("<PT/PTMAX>",0.5);
   m_parametermap[string("<Y>")]                = 
     dataread.GetValue<double>("<Y*_SHIFT>",0.5);
   m_parametermap[string("Y*_WIDTH")]           = 
     dataread.GetValue<double>("Y*_WIDTH",dabs(Get("<Y>"))>1.e-3?Get("<Y>"):0.5);
+  m_parametermap[string("C->HH_Decay_Exponent")]       = 
+    dataread.GetValue<double>("C->HH_DECAY_EXPONENT",0.5);
   m_parametermap[string("MassFraction")]       = 
     dataread.GetValue<double>("CLUSTER_MASS_FRACTION",0.5);
   m_parametermap[string("Offset_C->H")] =

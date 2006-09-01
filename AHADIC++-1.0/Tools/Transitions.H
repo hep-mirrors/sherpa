@@ -59,7 +59,7 @@ namespace AHADIC {
   typedef std::map<Flavour_Pair,double,
 		   Flavour_Pair_Sorting_Mass>         Double_Transition_List;
   typedef Double_Transition_List::iterator            Double_Transition_Siter;
-  
+    
   typedef std::map<Flavour_Pair,
 		   Double_Transition_List *>          Double_Transition_Map;
   typedef Double_Transition_Map::iterator             Double_Transition_Miter;

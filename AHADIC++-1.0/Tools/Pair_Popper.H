@@ -11,8 +11,8 @@ namespace AHADIC {
   class Pair_Popper {
   private:
     Constituents * p_constituents;
-    double         m_tension;
-    int            m_mode;
+    int            m_ptmode, m_flavmode;
+    double         m_tension, m_ptexp;
 
     double         m_totweight;    
     double         m_maxmass,m_minmass;

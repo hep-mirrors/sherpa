@@ -201,9 +201,6 @@ Double_Transitions::Double_Transitions() :
 	  wtprod = wt * sqr(swv1->second*swv2->second) * cc->second->TotWeight();
 	  dtiter = p_transitions->find(flpair);
 	  if (dtiter!=p_transitions->end()) {
-	    //cout<<METHOD<<"(1) for "		  
-	    //	<<hadpair.first<<"("<<hadpair.first.Kfcode()<<") /"
-	    //	<<hadpair.second<<"("<<hadpair.second.Kfcode()<<")"<<endl;
 	    if (dtiter->second->find(hadpair)!=dtiter->second->end()) 
 	      dtiter->second->find(hadpair)->second += wtprod;
 	    else 
@@ -212,9 +209,6 @@ Double_Transitions::Double_Transitions() :
 	  else {
 	    if (wtprod*sqr(swv1->second*swv2->second)>0.) {
 	      dtl                      = new Double_Transition_List;
-	      //cout<<METHOD<<"(2) for "
-	      //	  <<hadpair.first<<"("<<hadpair.first.Kfcode()<<") /"
-	      //	  <<hadpair.second<<"("<<hadpair.second.Kfcode()<<")"<<endl;
 	      (*dtl)[hadpair]          = wtprod;
 	      (*p_transitions)[flpair] = dtl;
 	    }
