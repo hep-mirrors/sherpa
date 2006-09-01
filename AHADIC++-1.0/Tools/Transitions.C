@@ -73,9 +73,8 @@ bool Single_Transitions::MustDesintegrate(Cluster * cluster,Flavour & had1,Flavo
   fpair2.first = m_lightest_constituent; fpair2.second = fpair.second;
   had1 = GetLightestTransition(fpair1);
   had2 = GetLightestTransition(fpair2);
-  if (had1.Mass()+had2.Mass()<mass+m_offset) {
-    return false;
-  }
+  if (had1.Mass()+had2.Mass()<mass) return false;
+
   int      kfc1  = int(fpair.first.Kfcode()), kfc2 = int(fpair.second.Kfcode());
   
   fpair1.second  = Flavour(int(kfc1/1000)).Bar(); 
@@ -90,6 +89,7 @@ bool Single_Transitions::MustDesintegrate(Cluster * cluster,Flavour & had1,Flavo
   }
   had1 = GetLightestTransition(fpair1);
   had2 = GetLightestTransition(fpair2);
+  return true;
 }
 
 Flavour Single_Transitions::GetLightestTransition(const Flavour_Pair & fpair) {
@@ -199,6 +199,7 @@ Double_Transitions::Double_Transitions() :
 	    continue;
 	  }
 	  wtprod = wt * sqr(swv1->second*swv2->second) * cc->second->TotWeight();
+	  if (wtprod==0.) continue;
 	  dtiter = p_transitions->find(flpair);
 	  if (dtiter!=p_transitions->end()) {
 	    if (dtiter->second->find(hadpair)!=dtiter->second->end()) 

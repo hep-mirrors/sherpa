@@ -34,22 +34,25 @@ Return_Value::code Cluster_Decay_Handler::DecayClusters(Cluster_List * clusters,
   Cluster_Iterator cit=clusters->begin();
   while (!clusters->empty()) {
     cluster = (*cit);
+    //cout<<METHOD<<" ############################### "<<clusters->size()<<endl<<(**cit)<<endl;
     blob    = DecayIt(cluster);
     blobs->push_back(blob);
-    //cout<<METHOD<<" "<<clusters->size()<<endl<<(**cit)<<endl;
     clist.push_back(cluster->GetLeft());
     clist.push_back(cluster->GetRight());
     p_softclusters->TreatClusterList(&clist,blob);
     Cluster_Iterator dcit=clist.begin();
-    Cluster_Iterator endit=clist.end();
-    while (dcit!=endit) {
+    //cout<<"   ---- before loop "<<clist.size()<<endl;
+    while (!clist.empty()) {
       if ((*dcit)) {
+	//cout<<"  add to blob . "<<(*dcit)->GetLeft()<<" && "<<(*dcit)->GetRight()<<endl;
 	blob->AddToOutParticles((*dcit)->GetSelf());
 	if (!(*dcit)->GetLeft() && !(*dcit)->GetRight()) {
 	  clusters->push_back((*dcit));
 	}
 	else {
+	  //cout<<"                     before fill blob ."<<endl;
 	  blobs->push_back((*dcit)->CHHDecayBlob());
+	  //cout<<"                      after fill blob ."<<endl;
 	  if ((*dcit)->GetLeft()) {
 	    if ((*dcit)->GetLeft()->GetSelf()->Flav()==Flavour(kf::none) ||
 		(*dcit)->GetLeft()->GetSelf()->Flav()==Flavour(kf::cluster)) {

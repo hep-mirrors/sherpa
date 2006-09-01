@@ -105,8 +105,9 @@ void Gluon_Decayer::SelectDecay(const Vec4D & mom) {
 	sqrt(sqr(mom.Abs2()-2.*sqr(mass))-4.*pow(mass,4))/mom.Abs2();
       fdit->second->zmin   = (1-disc)/2.;
       fdit->second->zmax   = (1+disc)/2.;
-      sum   += fdit->second->weight = ZWeight(fdit->second->zmin,
-					      fdit->second->zmax);
+      sum   += fdit->second->weight = 
+	ZWeight(fdit->second->zmin,fdit->second->zmax) * 
+	hadpars.GetConstituents()->TotWeight(flav); 
     }
     weights.push_back(fdit->second->weight);
   }

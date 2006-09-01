@@ -37,6 +37,7 @@ namespace AHADIC {
     Single_Transitions();
     ~Single_Transitions();
     bool                    MustDesintegrate(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &);
+    ATOOLS::Flavour         GetLightestConstituent() { return m_lightest_constituent; }
     ATOOLS::Flavour         GetLightestTransition(const Flavour_Pair &);
     ATOOLS::Flavour         GetHeaviestTransition(const Flavour_Pair &);
     double                  GetLightestMass(const Flavour_Pair &);

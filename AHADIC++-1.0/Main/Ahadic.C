@@ -27,8 +27,8 @@ Ahadic::~Ahadic()
 
 Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
 {
-  //   cout<<"##########################################################################"<<endl
-  //       <<"###################################### IN ################################"<<endl;
+//   cout<<"##########################################################################"<<endl
+//       <<"###################################### IN ################################"<<endl;
 
   Blob * blob(NULL);
   Cluster clus;
@@ -58,10 +58,11 @@ Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
 	  break;
 	}
 	
-	// cout<<METHOD<<" (1) : "<<clus.RemainingClusters()<<" remaining clusters."<<endl
-	// 	    <<control::s_AHAblobs<<"/"<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
-	// 	    <<"   : "<<blob->CheckMomentumConservation()<<endl
-	// 	    <<(*blob)<<endl;
+// 	cout<<METHOD<<" (1) : "<<clus.RemainingClusters()<<" remaining clusters."<<endl
+// 	    <<control::s_AHAblobs<<"/"<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
+// 	    <<"   : "<<blob->CheckMomentumConservation()<<endl
+// 	    <<(*blob)<<endl
+// 	    <<(*p_cformhandler->GetClusters())<<endl;
 
 	switch (int(p_cdechandler->DecayClusters(p_cformhandler->GetClusters(),blobs))) {
 	case int(Return_Value::Retry_Method) :
@@ -85,14 +86,14 @@ Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
 	  // 	      <<"##############################################################"<<endl
 	  // 	      <<"##############################################################"<<endl;
 
-	  if (dabs(blob->CheckMomentumConservation().Abs2())>1.e-6) {
-	   	  cout<<METHOD<<" (2) : "<<clus.RemainingClusters()<<" remaining clusters."<<endl
-	   	      <<control::s_AHAblobs<<"/"<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
-	   	      <<"   : "<<blob->CheckMomentumConservation()<<endl
-		      <<(*blob)<<endl
-	   	      <<"################################## OUT ###################################"<<endl
-	   	      <<"##########################################################################"<<endl;
-	  }
+	  //	  if (dabs(blob->CheckMomentumConservation().Abs2())>1.e-6) {
+// 	  cout<<METHOD<<" (2) : "<<clus.RemainingClusters()<<" remaining clusters."<<endl
+// 	      <<control::s_AHAblobs<<"/"<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
+// 	      <<"   : "<<blob->CheckMomentumConservation()<<endl
+// 	      <<(*blob)<<endl
+// 	      <<"################################## OUT ###################################"<<endl
+// 	      <<"##########################################################################"<<endl;
+		  //}
 	  return Return_Value::Success;
 	default:
 	  msg.Error()<<"Error in "<<METHOD<<": "<<endl

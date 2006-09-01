@@ -19,7 +19,7 @@ namespace AHADIC {
   public:
     Pair_Popper();
     ~Pair_Popper() {}
-    ATOOLS::Flavour SelectFlavour(const double=100.);
+    ATOOLS::Flavour SelectFlavour(const double=100.,const bool=true);
     double          SelectPT(const double=100.);
     double          PopWeight(ATOOLS::Flavour & flav);
   };

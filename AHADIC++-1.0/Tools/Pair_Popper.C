@@ -28,7 +28,7 @@ Pair_Popper::Pair_Popper() :
 }
 
 
-Flavour Pair_Popper::SelectFlavour(const double upper)
+Flavour Pair_Popper::SelectFlavour(const double upper,const bool nodiquarks)
 {
   Flavour flav = Flavour(kf::none);
   if (m_minmass>upper) return flav;
@@ -37,6 +37,7 @@ Flavour Pair_Popper::SelectFlavour(const double upper)
     for (FlavCCMap_Iterator iter=p_constituents->CCMap.begin();
 	 iter!=p_constituents->CCMap.end();iter++) { 
       flav = iter->first;
+      if (nodiquarks&&flav.IsDiQuark()) continue;
       mass = p_constituents->Mass(flav);
       if (2.*mass>upper) {
 	switch (m_flavmode) {
@@ -59,6 +60,7 @@ Flavour Pair_Popper::SelectFlavour(const double upper)
     for (FlavCCMap_Iterator iter=p_constituents->CCMap.begin();
 	 iter!=p_constituents->CCMap.end();iter++) { 
       flav = iter->first;
+      if (nodiquarks&&flav.IsDiQuark()) continue;
       mass = p_constituents->Mass(flav);
       if (2.*mass<upper) {
 	switch (m_flavmode) {

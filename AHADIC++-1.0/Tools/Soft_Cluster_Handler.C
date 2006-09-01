@@ -33,6 +33,7 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin,Blob * blob)
     CheckCluster((*cit),clin->size()==1);
   }
 
+
   m_ctit=m_ctrans.begin();
   if (clin->size()==1) {
     switch (m_ctit->second.size()) {
@@ -53,7 +54,8 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin,Blob * blob)
 
   Flavour had1,had2;
   m_ctit=m_ctrans.begin();
-  while (m_ctit!=m_ctrans.end()) {
+  //cout<<METHOD<<" before loop "<<endl;
+  while (m_ctrans.size()>0) {
     if (m_ctit->second.size()==1) {
       blob->AddToOutParticles(m_ctit->first->GetSelf());
       for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
@@ -67,21 +69,28 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin,Blob * blob)
     else if (m_ctit->second.size()==2) {
       FixHHDecay(m_ctit->first,m_ctit->second[0],m_ctit->second[1]);
     }
+    if (m_ctit==m_ctrans.end()) break; 
     m_ctrans.erase(m_ctit++);
   }
+  //cout<<METHOD<<" after loop "<<endl;
   return true;
 }
 
 void Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay)
 {
-  //cout<<"----------------------------------------------------------------------"<<endl
-  //   <<"Check this out : "<<cluster->Mass()<<"("<<mustdecay<<") / "
-  //   <<cluster->GetFlav(1)<<" + "<<cluster->GetFlav(2)<<endl;
+//   cout<<"----------------------------------------------------------------------"<<endl
+//       <<"Check this out : "<<cluster->Mass()<<"("<<mustdecay<<") / "
+//       <<cluster->GetFlav(1)<<" + "<<cluster->GetFlav(2)<<endl;
   vector<Flavour> flist;
   m_ctrans[cluster] = flist;
   Flavour had1,had2,hadron;
-  double decayweight     = DecayWeight(cluster,had1,had2); 
-  double transformweight = TransformWeight(cluster,hadron); 
+
+  double decayweight(0.), transformweight(0.);
+  if (p_singletransitions->MustDesintegrate(cluster,had1,had2)) decayweight=1.;
+  else {
+    decayweight     = DecayWeight(cluster,had1,had2);
+    transformweight = TransformWeight(cluster,hadron); 
+  }
   if (decayweight<=0. && transformweight<=0.) return;
 
   // single cluster in singlet list
@@ -112,11 +121,11 @@ void Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay)
 	}
       }
     }
-    //cout<<METHOD<<" ("<<mustdecay<<", "<<m_ctrans[cluster].size()<<") : "
-    //	<<decayweight<<" ("<<had1<<","<<had2<<") ; "
-    //	<<transformweight<<" ("<<hadron<<") for "
-    //	<<cluster->Mass()<<" / "<<cluster->GetFlav(1)<<" + "<<cluster->GetFlav(2)<<endl
-    //	<<"----------------------------------------------------------------------"<<endl;
+//      cout<<METHOD<<" 1 ("<<mustdecay<<", "<<m_ctrans[cluster].size()<<") : "
+//      	<<decayweight<<" ("<<had1<<","<<had2<<") ; "
+//      	<<transformweight<<" ("<<hadron<<") for "
+//      	<<cluster->Mass()<<" / "<<cluster->GetFlav(1)<<" + "<<cluster->GetFlav(2)<<endl
+//      	<<"----------------------------------------------------------------------"<<endl;
     return;
   }
   // regular case.
@@ -126,14 +135,13 @@ void Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay)
   }
   else m_ctrans[cluster].push_back(hadron);
 
-  //cout<<METHOD<<" ("<<mustdecay<<") : "<<decayweight<<" ("<<had1<<","<<had2<<") ; "
-  //   <<transformweight<<" ("<<hadron<<") for "
-  //   <<cluster->Mass()<<" / "<<cluster->GetFlav(1)<<" + "<<cluster->GetFlav(2)<<endl
-  //   <<"----------------------------------------------------------------------"<<endl;
+//    cout<<METHOD<<" 2 ("<<mustdecay<<") : "<<decayweight<<" ("<<had1<<","<<had2<<") ; "
+//       <<transformweight<<" ("<<hadron<<") for "
+//       <<cluster->Mass()<<" / "<<cluster->GetFlav(1)<<" + "<<cluster->GetFlav(2)<<endl
+//       <<"----------------------------------------------------------------------"<<endl;
   return;
 }
  
-
 double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavour & had2)
 {
   had1 = had2 = Flavour(kf::none);
@@ -146,14 +154,17 @@ double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavou
     msg.Error()<<"ERROR in "<<METHOD<<" : "<<endl
 	       <<"   No transition table found for "<<flpair.first<<"/"<<flpair.second<<endl
 	       <<"   Return 'false' and hope for the best."<<std::endl;
-    return -1.;
+    return 0.;
   }
 
   double totweight(0.), MC(cluster->Mass()), MC2(MC*MC);
   double wt,m1,m2;
 
-  if (p_doubletransitions->GetHeaviestMass(flpair)+m_offset2<MC) return 0.;
-  if (p_doubletransitions->GetLightestMass(flpair)>MC)           return 0.;
+  if (flpair.first.Mass()+flpair.second.Mass()+
+      2.*p_singletransitions->GetLightestConstituent().Mass()>MC+m_offset2) {
+    if (p_doubletransitions->GetHeaviestMass(flpair)+m_offset2<MC) return 0.;
+    if (p_doubletransitions->GetLightestMass(flpair)>MC)           return 0.;
+  }
   for (Double_Transition_Siter decit=dtliter->second->begin();
        decit!=dtliter->second->end();decit++) {
     m1  = decit->first.first.Mass();
@@ -238,14 +249,14 @@ double Soft_Cluster_Handler::TransformWeight(Cluster * cluster,ATOOLS::Flavour &
   Flavour_Pair fpair;
   fpair.first  = cluster->GetFlav(1);
   fpair.second = cluster->GetFlav(2);
-  if (fpair.first.IsDiQuark() && fpair.second.IsDiQuark()) return -1.;
+  if (fpair.first.IsDiQuark() && fpair.second.IsDiQuark()) return 0.;
   Single_Transition_Miter stiter = p_singletransitions->GetTransitions()->find(fpair);
   if (stiter==p_singletransitions->GetTransitions()->end()) {
     msg.Error()<<"Potential error in  All_Single_Transitions::MustTransit :"<<endl
 	       <<"   Did not find any entry for "<<fpair.first<<"/"<<fpair.second
 	       <<", mass = "<<cluster->Mass()<<";"<<endl<<(*cluster->GetPrev())
 	       <<"   will continue and hope for the best."<<endl;
-    return -1.;
+    return 0.;
   }
 
   double totweight(0.), MC(cluster->Mass()), MC2(MC*MC);
@@ -254,7 +265,9 @@ double Soft_Cluster_Handler::TransformWeight(Cluster * cluster,ATOOLS::Flavour &
   //   <<p_singletransitions->GetHeaviestMass(fpair)<<","
   //   <<p_singletransitions->GetLightestMass(fpair)<<" vs. "<<MC
   //   <<" -> "<<(p_singletransitions->GetHeaviestMass(fpair)+m_offset1<MC)<<endl;
-  if (p_singletransitions->GetHeaviestMass(fpair)+m_offset1<MC) return 0.;
+  if (p_doubletransitions->GetLightestMass(fpair)<MC) {
+    if (p_singletransitions->GetHeaviestMass(fpair)+m_offset1<MC) return 0.;
+  }
   switch (m_stmode) {
   case (stm::massXwaves) :
   case (stm::simplemass) :

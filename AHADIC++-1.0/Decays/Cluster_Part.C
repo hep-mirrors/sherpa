@@ -92,10 +92,7 @@ bool Cluster_Part::BuildKinematics(Cluster * const cluster,ATOOLS::Flavour & fla
 
   bool diquarks(cluster->GetFlav(1).IsDiQuark()||cluster->GetFlav(2).IsDiQuark());
 
-  do {
-    flav       = p_popper->SelectFlavour(mmax/2.);
-  } while (diquarks && flav.IsDiQuark());
-
+  flav       = p_popper->SelectFlavour(mmax,diquarks && flav.IsDiQuark());
 
   if (flav==Flavour(kf::none)) return false;
   double m1    = hadpars.GetConstituents()->Mass(flav), m12 = sqr(m1), m2 = m1, m22 = m12;
@@ -230,8 +227,13 @@ bool Cluster_Part::UpdateDecay(Cluster * const cluster,const int mode)
 double Cluster_Part::GetYStar(const double mt2,const double mmax2) {
   double ystarmax = 0.5 * log(mmax2/(4.*mt2));
   double ystar, ystarexp = m_ystar_expvalue*ystarmax;
-  do { ystar = (-1.+2.*ran.Get()) * ystarmax;
-  } while (exp(-sqr((ystar-ystarexp)/m_ystar_sigma))<ran.Get());
+  int maxtrials(100);
+  do { 
+    ystar = (-1.+2.*ran.Get()) * ystarmax;
+    maxtrials--;
+  } while (exp(-sqr((ystar-ystarexp)/m_ystar_sigma))<ran.Get() && maxtrials>0);
+
+  if (maxtrials<=0) ystar = (-1.+2.*ran.Get()) * ystarmax;
 
   if (m_ana) {
     m_histograms[string("YStar_by_YStarMax")]->Insert(ystar/ystarmax);
@@ -243,22 +245,28 @@ double Cluster_Part::GetYStar(const double mt2,const double mmax2) {
 double Cluster_Part::GetYBar(const double pmax2,const double s_qq) {
   double ybar, ybarmax  = 0.5 * log(pmax2/s_qq);
   double e_ybarmax = exp(ybarmax), cosh_ybarmax = cosh(ybarmax);
+  int maxtrials(100);
   switch (m_ybar_mode) {
   case 2:
-    do { ybar = (-1.+2.*ran.Get());
-    } while (exp(-sqr(ybar/ybarmax))<ran.Get());
+    do { 
+      ybar = (-1.+2.*ran.Get());
+      maxtrials--;
+    } while (exp(-sqr(ybar/ybarmax))<ran.Get() && maxtrials>0);
   case 1:
     do { 
       ybar = log(1.+ran.Get()*(e_ybarmax-1.));
       if (ran.Get()<.5) ybar *= -1.;
-    } while (cosh(ybar)<ran.Get()*cosh_ybarmax);
+      maxtrials--;
+    } while (cosh(ybar)<ran.Get()*cosh_ybarmax && maxtrials>0);
     break;
   case 0:
   default:
-    // Uniform distribution
-    ybar = (-1.+2.*ran.Get());
+    maxtrials = -1;
     break;
   }
+
+  // Uniform distribution
+  if (maxtrials<=0) ybar = (-1.+2.*ran.Get());
   if (m_ana) {
     m_histograms[string("YBar_by_YBarMax")]->Insert(ybar/ybarmax);
     m_histograms[string("YBar")]->Insert(ybar);
