@@ -1,11 +1,9 @@
 #ifndef Mass_Handler_H
 #define Mass_Handler_H
 
-#ifdef INFINITY
-#define MYINF INFINITY
-#else
-#define MYINF 9.e99
-#endif
+#include "My_Limits.H"
+
+#define MYINF std::numeric_limits<double>::max()
 
 namespace ATOOLS {
 
