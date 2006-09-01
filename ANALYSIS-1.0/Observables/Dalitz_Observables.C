@@ -85,8 +85,8 @@ public:
 
 void Dalitz::Evaluate(const Vec4D &pin,const Vec4D* pout,const double &weight,const size_t &ncount)
 {
-  double s1((pin-pout[0]).Abs2()), s2((pin-pout[1]).Abs2()), s3((pin-pout[2]).Abs2()); 
-  double s0((s1+s2+s3)/3.0);
+//   double s1((pin-pout[0]).Abs2()), s2((pin-pout[1]).Abs2()), s3((pin-pout[2]).Abs2()); 
+//   double s0((s1+s2+s3)/3.0);
   double s12((pout[0]+pout[1]).Abs2()), s23((pout[1]+pout[2]).Abs2());
 //   p_histogram->Fill((s1-s2)/s0,(s3-s0)/s0,weight);
   p_histogram->Fill(s12,s23,weight);
@@ -106,13 +106,13 @@ Dalitz_Observable_Base_Getter::operator()(const String_Matrix &parameters) const
   int out2(ToType<int>(parameters[0][2]));
   int out3(ToType<int>(parameters[0][3]));
   
-  Flavour flin(kf::code(abs(in)));
+  Flavour flin((kf::code)abs(in));
   if (in<0) flin=flin.Bar();
-  Flavour flout1(kf::code(abs(out1)));
+  Flavour flout1((kf::code)abs(out1));
   if (out1<0) flout1=flout1.Bar();
-  Flavour flout2(kf::code(abs(out2)));
+  Flavour flout2((kf::code)abs(out2));
   if (out2<0) flout2=flout2.Bar();
-  Flavour flout3(kf::code(abs(out3)));
+  Flavour flout3((kf::code)abs(out3));
   if (out3<0) flout3=flout3.Bar();
   std::cout<<in<<" -> "<<out1<<" "<<out2<<" "<<out3<<"      "
 	   <<flin<<" -> "<<flout1<<" "<<flout2<<" "<<flout3<<std::endl;
