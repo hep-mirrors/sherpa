@@ -27,7 +27,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Hadron_Decays::Hadron_Decays(HDHandlersMap * _dechandlers) :
-  p_dechandlers(_dechandlers), p_bloblist(NULL), m_mass_smearing(false)
+  p_dechandlers(_dechandlers), p_bloblist(NULL), m_mass_smearing(true)
 {
 #ifdef DEBUG__Hadrons
   Fl_Iter fli;
