@@ -479,28 +479,28 @@ void Histogram::InsertRange(double start, double end, double value) {
 }
 
 
-/*
-double * Histogram::Bin(int bin) { return m_bins[bin]; }
 
-double * Histogram::Bin(double coordinate) { 
+double Histogram::Bin(int bin) { return m_yvalues[bin]; }
+
+double Histogram::Bin(double coordinate) 
+{ 
   if (!m_active) {
     msg.Error()<<"Error in Histogram : Tried to access a histogram wit binsize <= 0 ! Return 0.."<<std::endl;
-    return NULL;
+    return -1.0;
   }
   else {
     if (m_logarithmic>0) coordinate = log(coordinate)/m_logbase;
 
-    if (coordinate<m_lower) return m_bins[0];
-    if (coordinate>m_upper) return m_bins[m_nbin-1];
+    if (coordinate<m_lower) return m_yvalues[0];
+    if (coordinate>m_upper) return m_yvalues[m_nbin-1];
     for (int i=1;i<m_nbin+1;i++) {
       if ( (coordinate >= m_lower + (i-1)*m_binsize) &&
 	   (coordinate <  m_lower + i*m_binsize) ) 
-	return m_bins[i];
+	return m_yvalues[i];
     }
   }
-  return NULL;
+  return -1.0;
 }
-*/
 
 void Histogram::Extrapolate(double coordinate,double * res,int mode) {
   if (!m_active) {
