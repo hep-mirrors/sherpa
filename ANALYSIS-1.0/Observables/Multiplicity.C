@@ -71,7 +71,7 @@ Multiplicity::Multiplicity(int type,double xmin,double xmax,int nbins,
 void Multiplicity::Evaluate(const ATOOLS::Particle_List & pl,
 			    double weight, int ncount)
 {
-  p_histo->Insert(pl.size(),weight,ncount); 
+  p_histo->Insert((double)pl.size(),weight,ncount); 
 }
 
 

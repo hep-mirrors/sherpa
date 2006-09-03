@@ -25,6 +25,7 @@ namespace ATOOLS {
     ~Histogram();
     void Reset();
     void Insert(double x);
+    void Insert(int i, double weight, int =1);
     void Insert(double x, double weight, int =1);
     void InsertRange(double start, double end, double value);
     void Scale(double factor);

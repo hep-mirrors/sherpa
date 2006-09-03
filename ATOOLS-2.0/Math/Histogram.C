@@ -364,6 +364,41 @@ void Histogram::Insert(double coordinate) {
   }
 }
 
+void Histogram::Insert(int i,double value,int ncount) {
+  if (!m_active) {
+    msg.Error()<<"Error in Histogram : Tried to access a "
+			  <<"histogram with binsize <= 0 !"<<std::endl;
+    return;
+  }
+  m_fills+=ncount;
+  if (value==0.) return;
+  m_psfills++;
+
+  if (i<0) { 
+    m_yvalues[0] += value;
+    if (m_depth>1) {
+      if (value>m_y2values[0]) m_y2values[0] = value;
+      if (m_depth>2) m_psvalues[0] += 1.;
+    }
+    return; 
+  }
+
+  if (i>=m_nbin) { 
+    m_yvalues[m_nbin-1] += value; 
+    if (m_depth>1) {
+      if (value>m_y2values[m_nbin-1]) m_y2values[m_nbin-1] = value;
+      if (m_depth>2) m_psvalues[m_nbin-1] += 1.;
+    }
+    return; 
+  }
+
+  m_yvalues[i] += value;
+  if (m_depth>1) {
+    m_y2values[i] += value*value;
+    if (m_depth>2) m_psvalues[i] += 1.;
+  }
+}
+
 void Histogram::Insert(double coordinate,double value,int ncount) {
   if (!m_active) {
     msg.Error()<<"Error in Histogram : Tried to access a "

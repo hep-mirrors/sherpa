@@ -163,7 +163,7 @@ void MI_Statistics::Evaluate(const Blob_List &  blobs,double weight,int ncount)
     }
   }
   if (number==0) m_scales[0]->Insert(hard,weight,ncount);
-  p_histo->Insert(number,weight,ncount);
+  p_histo->Insert((double)number,weight,ncount);
 }
 
 Primitive_Observable_Base &MI_Statistics::
