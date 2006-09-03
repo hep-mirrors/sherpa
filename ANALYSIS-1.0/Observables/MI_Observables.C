@@ -349,7 +349,7 @@ void Multiplicity_vs_PT::Evaluate(const ATOOLS::Particle_List &particlelist,
     double pt=(*pit)->Momentum().PPerp();
     p_obs->Insert(pt,weight);
   }
-  for (size_t i=0;i<(size_t)m_nbins+2;++i) p_norm->Insert(i,weight);
+  for (int i=0;i<m_nbins+2;++i) p_norm->Insert(i,weight);
 }
     
 Primitive_Observable_Base *Multiplicity_vs_PT::Copy() const
@@ -409,7 +409,7 @@ void Multiplicity_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
       p_obs->Insert(cur,weight);
     }
   }
-  for (size_t i=0;i<(size_t)m_nbins+2;++i) p_norm->Insert(i,weight);
+  for (int i=0;i<m_nbins+2;++i) p_norm->Insert(i,weight);
 }
     
 Primitive_Observable_Base *Multiplicity_vs_DPhi::Copy() const
@@ -468,7 +468,7 @@ void Scalar_PT_Sum_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
       p_obs->Insert(cur,pt*weight);
     }
   }
-  for (size_t i=0;i<(size_t)m_nbins+2;++i) p_norm->Insert(i,weight);
+  for (int i=0;i<m_nbins+2;++i) p_norm->Insert(i,weight);
 }
     
 Primitive_Observable_Base *Scalar_PT_Sum_vs_DPhi::Copy() const
@@ -527,7 +527,7 @@ void Scalar_ET_Sum_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
       p_obs->Insert(cur,et*weight);
     }
   }
-  for (size_t i=0;i<(size_t)m_nbins+2;++i) p_norm->Insert(i,weight);
+  for (int i=0;i<m_nbins+2;++i) p_norm->Insert(i,weight);
 }
     
 Primitive_Observable_Base *Scalar_ET_Sum_vs_DPhi::Copy() const
@@ -568,7 +568,7 @@ void Multiplicity_vs_DEta::Evaluate(const ATOOLS::Particle_List &particlelist,
     double cur=(*pit)->Momentum().DEta(leadingjet)-m_offset;
     p_obs->Insert(cur,weight);
   }
-  for (size_t i=0;i<(size_t)m_nbins+2;++i) p_norm->Insert(i,weight);
+  for (int i=0;i<m_nbins+2;++i) p_norm->Insert(i,weight);
 }
     
 Primitive_Observable_Base *Multiplicity_vs_DEta::Copy() const
@@ -610,7 +610,7 @@ void Scalar_PT_Sum_vs_DEta::Evaluate(const ATOOLS::Particle_List &particlelist,
     double cur=(*pit)->Momentum().DEta(leadingjet)-m_offset;
     p_obs->Insert(cur,(*pit)->Momentum().PPerp()*weight);
   }
-  for (size_t i=0;i<(size_t)m_nbins+2;++i) p_norm->Insert(i,weight);
+  for (int i=0;i<m_nbins+2;++i) p_norm->Insert(i,weight);
 }
     
 Primitive_Observable_Base *Scalar_PT_Sum_vs_DEta::Copy() const
@@ -652,7 +652,7 @@ void Scalar_ET_Sum_vs_DEta::Evaluate(const ATOOLS::Particle_List &particlelist,
     double cur=(*pit)->Momentum().DEta(leadingjet)-m_offset;
     p_obs->Insert(cur,(*pit)->Momentum().EPerp()*weight);
   }
-  for (size_t i=0;i<(size_t)m_nbins+2;++i) p_norm->Insert(i,weight);
+  for (int i=0;i<m_nbins+2;++i) p_norm->Insert(i,weight);
 }
     
 Primitive_Observable_Base *Scalar_ET_Sum_vs_DEta::Copy() const
@@ -690,7 +690,7 @@ void Multiplicity_vs_Eta::Evaluate(const ATOOLS::Particle_List &particlelist,
     double cur=(*pit)->Momentum().Eta();
     p_obs->Insert(cur,weight);
   }
-  for (size_t i=0;i<(size_t)m_nbins+2;++i) p_norm->Insert(i,weight);
+  for (int i=0;i<m_nbins+2;++i) p_norm->Insert(i,weight);
 }
     
 Primitive_Observable_Base *Multiplicity_vs_Eta::Copy() const
@@ -727,7 +727,7 @@ void Scalar_PT_Sum_vs_Eta::Evaluate(const ATOOLS::Particle_List &particlelist,
     double cur=(*pit)->Momentum().Eta();
     p_obs->Insert(cur,(*pit)->Momentum().PPerp()*weight);
   }
-  for (size_t i=0;i<(size_t)m_nbins+2;++i) p_norm->Insert(i,weight);
+  for (int i=0;i<m_nbins+2;++i) p_norm->Insert(i,weight);
 }
     
 Primitive_Observable_Base *Scalar_PT_Sum_vs_Eta::Copy() const
@@ -764,7 +764,7 @@ void Scalar_ET_Sum_vs_Eta::Evaluate(const ATOOLS::Particle_List &particlelist,
     double cur=(*pit)->Momentum().Eta();
     p_obs->Insert(cur,(*pit)->Momentum().EPerp()*weight);
   }
-  for (size_t i=0;i<(size_t)m_nbins+2;++i) p_norm->Insert(i,weight);
+  for (int i=0;i<m_nbins+2;++i) p_norm->Insert(i,weight);
 }
     
 Primitive_Observable_Base *Scalar_ET_Sum_vs_Eta::Copy() const
@@ -808,7 +808,7 @@ void MIScale_vs_JetPT::Evaluate(const ATOOLS::Blob_List &bloblist,
       }
       break;
     }
-  for (size_t i=0;i<(size_t)m_nbins+2;++i) p_norm->Insert(i,weight);
+  for (int i=0;i<m_nbins+2;++i) p_norm->Insert(i,weight);
 }
     
 Primitive_Observable_Base *MIScale_vs_JetPT::Copy() const
