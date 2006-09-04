@@ -117,6 +117,7 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
   if (plist->empty()) {
     msg.Debugging()<<"WARNING in Lund_Interface::PrepareFragmentationBlob:"<<endl
 		   <<"   No coloured particle found leaving shower blobs."<<endl;
+    delete plist;
     return Return_Value::Nothing;
   }
 
@@ -193,8 +194,16 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
       }
     }
     
+    for(size_t i=0;i<partlists.size();i++) {
+      delete partlists[i];
+    }
+    delete plist;
     return Return_Value::Success;
   }
+  for(size_t i=0;i<partlists.size();i++) {
+    delete partlists[i];
+  }
+  delete plist;
   return Return_Value::Error;
 }
 
