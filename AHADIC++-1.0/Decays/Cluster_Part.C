@@ -8,10 +8,10 @@ using namespace ATOOLS;
 using namespace std;
 
 Cluster_Part::Cluster_Part() :
-  m_4Qmode(0), m_ybar_mode(2), m_ana(true),
+  m_4Qmode(0), m_ybar_mode(0), m_ana(true),
   p_popper(hadpars.GetPopper()), 
   m_fraction(sqr(hadpars.Get(string("MassFraction")))),
-  m_ystar_expvalue(sqr(hadpars.Get(string("<Y>")))),
+  m_ystar_expvalue(hadpars.Get(string("<Y>"))),
   m_ystar_sigma(sqr(hadpars.Get(string("Y*_WIDTH"))))
 { 
   if (m_ana) {
@@ -43,6 +43,7 @@ Cluster_Part::~Cluster_Part()
 
 bool Cluster_Part::TestDecay(Cluster * const cluster)
 {
+  //cout<<METHOD<<" before the show "<<endl<<(*cluster)<<endl;
   cluster->BoostInCMSAndRotateOnZ();
 
   Flavour flav = Flavour(kf::none);
@@ -244,7 +245,7 @@ double Cluster_Part::GetYStar(const double mt2,const double mmax2) {
 
 double Cluster_Part::GetYBar(const double pmax2,const double s_qq) {
   double ybar, ybarmax  = 0.5 * log(pmax2/s_qq);
-  double e_ybarmax = exp(ybarmax), cosh_ybarmax = cosh(ybarmax);
+  double e_ybarmax, cosh_ybarmax;
   int maxtrials(100);
   switch (m_ybar_mode) {
   case 2:
@@ -253,6 +254,8 @@ double Cluster_Part::GetYBar(const double pmax2,const double s_qq) {
       maxtrials--;
     } while (exp(-sqr(ybar/ybarmax))<ran.Get() && maxtrials>0);
   case 1:
+    e_ybarmax    = exp(ybarmax); 
+    cosh_ybarmax = cosh(ybarmax);
     do { 
       ybar = log(1.+ran.Get()*(e_ybarmax-1.));
       if (ran.Get()<.5) ybar *= -1.;
@@ -266,7 +269,7 @@ double Cluster_Part::GetYBar(const double pmax2,const double s_qq) {
   }
 
   // Uniform distribution
-  if (maxtrials<=0) ybar = (-1.+2.*ran.Get());
+  if (maxtrials<=0) ybar = (-1.+2.*ran.Get())*ybarmax;
   if (m_ana) {
     m_histograms[string("YBar_by_YBarMax")]->Insert(ybar/ybarmax);
     m_histograms[string("YBar")]->Insert(ybar);

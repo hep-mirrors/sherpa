@@ -78,9 +78,6 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin,Blob * blob)
 
 void Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay)
 {
-//   cout<<"----------------------------------------------------------------------"<<endl
-//       <<"Check this out : "<<cluster->Mass()<<"("<<mustdecay<<") / "
-//       <<cluster->GetFlav(1)<<" + "<<cluster->GetFlav(2)<<endl;
   vector<Flavour> flist;
   m_ctrans[cluster] = flist;
   Flavour had1,had2,hadron;
@@ -121,11 +118,6 @@ void Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay)
 	}
       }
     }
-//      cout<<METHOD<<" 1 ("<<mustdecay<<", "<<m_ctrans[cluster].size()<<") : "
-//      	<<decayweight<<" ("<<had1<<","<<had2<<") ; "
-//      	<<transformweight<<" ("<<hadron<<") for "
-//      	<<cluster->Mass()<<" / "<<cluster->GetFlav(1)<<" + "<<cluster->GetFlav(2)<<endl
-//      	<<"----------------------------------------------------------------------"<<endl;
     return;
   }
   // regular case.
@@ -159,6 +151,7 @@ double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavou
 
   double totweight(0.), MC(cluster->Mass()), MC2(MC*MC);
   double wt,m1,m2;
+  bool   forceit(false);
 
   if (flpair.first.Mass()+flpair.second.Mass()+
       2.*p_singletransitions->GetLightestConstituent().Mass()>MC+m_offset2) {
@@ -183,17 +176,18 @@ double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavou
        decit!=dtliter->second->end();decit++) {
     m1    = decit->first.first.Mass();
     m2    = decit->first.second.Mass();
-    if (m1+m2>MC) continue;
-    wt = sqrt((MC2-sqr(m1+m2))*(MC2-sqr(m1-m2))) * pow(4.*m1*m2/MC2,m_alpha);
-    if (m_dtmode==dtm::waves_PS) wt *= decit->second;
-    disc -= wt;
-    if (disc<0.) {
-      had1 = decit->first.first;
-      had2 = decit->first.second;
-      break;
+    if (m1+m2<MC) {
+      wt = sqrt((MC2-sqr(m1+m2))*(MC2-sqr(m1-m2))) * pow(4.*m1*m2/MC2,m_alpha);
+      if (m_dtmode==dtm::waves_PS) wt *= decit->second;
+      disc -= wt;
+      if (disc<0.) {
+	had1 = decit->first.first;
+	had2 = decit->first.second;
+	break;
+      }
     }
   }
-  //  cout<<METHOD<<":"<<totweight/(16.*M_PI*MC*MC*MC)<<" --> "<<had1<<" & "<<had2<<endl;
+  //cout<<METHOD<<":"<<totweight/(16.*M_PI*MC*MC*MC)<<" --> "<<had1<<" & "<<had2<<endl;
   return totweight * 1./(16.*M_PI*MC*MC*MC);
 }
 
