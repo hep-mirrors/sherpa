@@ -88,7 +88,12 @@ void Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay)
     decayweight     = DecayWeight(cluster,had1,had2);
     transformweight = TransformWeight(cluster,hadron); 
   }
-  if (decayweight<=0. && transformweight<=0.) return;
+  if (decayweight<=0. && transformweight<=0.) {
+    //cout<<METHOD<<" 0 ("<<mustdecay<<") : "<<decayweight<<" ; "<<transformweight<<" for "
+    //	<<cluster->Mass()<<" / "<<cluster->GetFlav(1)<<" + "<<cluster->GetFlav(2)<<endl
+    //	<<"----------------------------------------------------------------------"<<endl;
+    return;
+  }
 
   // single cluster in singlet list
   if (mustdecay==true) {
@@ -118,6 +123,10 @@ void Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay)
 	}
       }
     }
+    //cout<<METHOD<<" 1 ("<<mustdecay<<") : "<<decayweight<<" ("<<had1<<","<<had2<<") ; "
+    //	<<transformweight<<" ("<<hadron<<") for "
+    //	<<cluster->Mass()<<" / "<<cluster->GetFlav(1)<<" + "<<cluster->GetFlav(2)<<endl
+    //	<<"----------------------------------------------------------------------"<<endl;
     return;
   }
   // regular case.
@@ -127,10 +136,10 @@ void Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay)
   }
   else m_ctrans[cluster].push_back(hadron);
 
-//    cout<<METHOD<<" 2 ("<<mustdecay<<") : "<<decayweight<<" ("<<had1<<","<<had2<<") ; "
-//       <<transformweight<<" ("<<hadron<<") for "
-//       <<cluster->Mass()<<" / "<<cluster->GetFlav(1)<<" + "<<cluster->GetFlav(2)<<endl
-//       <<"----------------------------------------------------------------------"<<endl;
+  //cout<<METHOD<<" 2 ("<<mustdecay<<") : "<<decayweight<<" ("<<had1<<","<<had2<<") ; "
+  //   <<transformweight<<" ("<<hadron<<") for "
+  //   <<cluster->Mass()<<" / "<<cluster->GetFlav(1)<<" + "<<cluster->GetFlav(2)<<endl
+  //   <<"----------------------------------------------------------------------"<<endl;
   return;
 }
  
@@ -153,9 +162,13 @@ double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavou
   double wt,m1,m2;
   bool   forceit(false);
 
+  double altweight(0.);
   if (flpair.first.Mass()+flpair.second.Mass()+
-      2.*p_singletransitions->GetLightestConstituent().Mass()>MC+m_offset2) {
-    if (p_doubletransitions->GetHeaviestMass(flpair)+m_offset2<MC) return 0.;
+      2.*p_singletransitions->GetLightestConstituent().Mass()>MC) {
+    forceit=true;
+  }
+  else {
+    if (p_doubletransitions->GetHeaviestMass(flpair)<MC+m_offset2) return 0.;
     if (p_doubletransitions->GetLightestMass(flpair)>MC)           return 0.;
   }
   for (Double_Transition_Siter decit=dtliter->second->begin();
@@ -165,10 +178,11 @@ double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavou
     if (m1+m2<MC) {
       wt = sqrt((MC2-sqr(m1+m2))*(MC2-sqr(m1-m2))) * pow(4.*m1*m2/MC2,m_alpha);
       if (m_dtmode==dtm::waves_PS) wt *= decit->second;
-      totweight += wt;
+      altweight += wt;
+      if  (m1+m2<MC+int(forceit)*m_offset2) totweight += wt;
     }
   }
-  if (totweight==0.) return 0.;
+  if (totweight==0. && altweight==0.) return 0.;
 
   had1 = had2 = Flavour(kf::none); 
   double disc = totweight*ran.Get();
@@ -176,7 +190,7 @@ double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavou
        decit!=dtliter->second->end();decit++) {
     m1    = decit->first.first.Mass();
     m2    = decit->first.second.Mass();
-    if (m1+m2<MC) {
+    if (m1+m2<MC && m1+m2<MC+int(forceit)*m_offset2) {
       wt = sqrt((MC2-sqr(m1+m2))*(MC2-sqr(m1-m2))) * pow(4.*m1*m2/MC2,m_alpha);
       if (m_dtmode==dtm::waves_PS) wt *= decit->second;
       disc -= wt;
@@ -187,7 +201,32 @@ double Soft_Cluster_Handler::DecayWeight(Cluster * cluster,Flavour & had1,Flavou
       }
     }
   }
-  //cout<<METHOD<<":"<<totweight/(16.*M_PI*MC*MC*MC)<<" --> "<<had1<<" & "<<had2<<endl;
+
+  Flavour alt1 = Flavour(kf::none), alt2 = Flavour(kf::none);
+  if (altweight!=0) {
+    disc = altweight*ran.Get();
+    for (Double_Transition_Siter decit=dtliter->second->begin();
+	 decit!=dtliter->second->end();decit++) {
+      m1    = decit->first.first.Mass();
+      m2    = decit->first.second.Mass();
+      if (m1+m2<MC) {
+	wt = sqrt((MC2-sqr(m1+m2))*(MC2-sqr(m1-m2))) * pow(4.*m1*m2/MC2,m_alpha);
+	if (m_dtmode==dtm::waves_PS) wt *= decit->second;
+	disc -= wt;
+	if (disc<0.) {
+	  alt1 = decit->first.first;
+	  alt2 = decit->first.second;
+	  break;
+	}
+      }
+    }
+  }
+
+  //cout<<METHOD<<" Total : ("<<forceit<<")      "
+  //   <<totweight/(16.*M_PI*MC*MC*MC)<<" --> "<<had1<<" & "<<had2<<" "
+  //   <<MC<<"("<<flpair.first<<", "<<flpair.second<<")"<<endl
+  //   <<"                               Alternative : "
+  //   <<altweight/(16.*M_PI*MC*MC*MC)<<" --> "<<alt1<<" & "<<alt2<<endl;
   return totweight * 1./(16.*M_PI*MC*MC*MC);
 }
 
