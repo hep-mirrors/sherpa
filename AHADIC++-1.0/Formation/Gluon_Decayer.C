@@ -40,13 +40,15 @@ bool Gluon_Decayer::DecayList(Proto_Particle_List * plin)
   Proto_Particle * part, * part1, * part2;
   pit=plin->begin();
   do {
-    part  = &(*pit);
+    part  = (*pit);
     part1 = part2 = NULL;
     if (part->m_info=='L'&&part->m_flav.IsGluon()) {
       if (DecayIt(part,part1,part2)) {
+	delete part;
+	control::s_AHAprotoparticles--;
 	pit = plin->erase(pit);
-	pit = plin->insert(pit,*part1);
-	pit = plin->insert(pit,*part2);
+	pit = plin->insert(pit,part1);
+	pit = plin->insert(pit,part2);
 	++pit;++pit;
       }
       else success=false;
@@ -68,14 +70,14 @@ bool Gluon_Decayer::Shift(Proto_Particle_List * pl)
   Flavour flav;
   PPL_Iterator pit;
   for (pit=pl->begin();pit!=pl->end();++pit,++k) {
-    flav       = pit->m_flav;
-    momenta[k] = pit->m_mom;
+    flav       = (*pit)->m_flav;
+    momenta[k] = (*pit)->m_mom;
     masses[k]  = hadpars.GetConstituents()->Mass(flav);
   }
   if (!hadpars.AdjustMomenta(number,momenta,masses)) val=false;
 
   k = 0;
-  for (pit=pl->begin();pit!=pl->end();++pit,++k) pit->m_mom = momenta[k]; 
+  for (pit=pl->begin();pit!=pl->end();++pit,++k) (*pit)->m_mom = momenta[k]; 
   return val;
 }
 
@@ -86,6 +88,7 @@ bool Gluon_Decayer::DecayIt(Proto_Particle * part,
   BuildKinematics(part->m_mom);
   part1 = new Proto_Particle(m_flav,m_p1vec,'l');
   part2 = new Proto_Particle(m_flav.Bar(),m_p2vec,'l');
+  control::s_AHAprotoparticles+=2;
   return true;
 }
 

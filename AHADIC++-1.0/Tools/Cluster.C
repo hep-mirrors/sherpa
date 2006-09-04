@@ -11,6 +11,7 @@ namespace AHADIC {
   long int Cluster::s_cluster_number=0;
 
   long int control::s_AHAparticles=0;
+  long int control::s_AHAprotoparticles=0;
   long int control::s_AHAblobs=0;  
 }
 
@@ -380,7 +381,7 @@ std::ostream & AHADIC::operator<<(std::ostream & s, const Cluster_List & cl) {
 std::ostream & AHADIC::operator<<(std::ostream & s, const Proto_Particle_List & pl) {
   s<<"Proto_Particle_List with "<<pl.size()<<" elements:"<<std::endl;
   for (PPL_Const_Iterator pit=pl.begin(); pit!=pl.end(); ++pit) {
-    s<<"   "<<pit->m_info<<" : "<<pit->m_flav<<" "<<pit->m_mom<<std::endl;
+    s<<"   "<<(*pit)->m_info<<" : "<<(*pit)->m_flav<<" "<<(*pit)->m_mom<<std::endl;
   }
   return s;
 }

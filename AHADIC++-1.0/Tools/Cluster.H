@@ -14,6 +14,7 @@ namespace AHADIC {
   struct control {
   public:
     static long int s_AHAparticles;
+    static long int s_AHAprotoparticles;
     static long int s_AHAblobs;
   };
 
@@ -129,7 +130,7 @@ namespace AHADIC {
       m_flav(flav), m_mom(mom), m_info(info) {}
   };
 
-  typedef std::list<Proto_Particle>           Proto_Particle_List;   
+  typedef std::list<Proto_Particle * >        Proto_Particle_List;   
   typedef Proto_Particle_List::iterator       PPL_Iterator; 
   typedef Proto_Particle_List::const_iterator PPL_Const_Iterator; 
   typedef std::vector<Proto_Particle_List *>  VectorOfPPLs;

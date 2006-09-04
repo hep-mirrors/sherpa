@@ -124,7 +124,8 @@ Return_Value::code Cluster_Formation_Handler::ExtractSinglets()
 	(part->GetFlow(1)==0 && part->GetFlow(2)==0)) continue;
     if (construct) {
       if (part->GetFlow(2)==col1) {
-	Proto_Particle copy(part->Flav(),part->Momentum(),'L');
+	Proto_Particle * copy = new Proto_Particle(part->Flav(),part->Momentum(),'L');
+	control::s_AHAprotoparticles++;
 	pli->push_back(copy);
 	col1 = part->GetFlow(1);
 	if (col1==col2) construct = false;
@@ -141,7 +142,8 @@ Return_Value::code Cluster_Formation_Handler::ExtractSinglets()
       col1 = part->GetFlow(1);
       col2 = part->GetFlow(2);
       pli  = new Proto_Particle_List;
-      Proto_Particle copy(part->Flav(),part->Momentum(),'L');
+      Proto_Particle * copy = new Proto_Particle(part->Flav(),part->Momentum(),'L');
+      control::s_AHAprotoparticles++;
       pli->push_back(copy);
       m_partlists.push_back(pli);
       construct = true;
@@ -165,9 +167,9 @@ Return_Value::code Cluster_Formation_Handler::FormOriginalClusters()
       totmass = 0.;
       totvec  = Vec4D(0.,0.,0.,0.);
       for (PPL_Iterator pit=(*pplit)->begin();pit!=(*pplit)->end();++pit) {
-	flav     = pit->m_flav;
+	flav     = (*pit)->m_flav;
 	totmass += hadpars.GetConstituents()->Mass(flav);
-	totvec  += pit->m_mom;
+	totvec  += (*pit)->m_mom;
       }
       if (sqr(totmass)>totvec.Abs2()) {
 	rearrange = true;
@@ -196,7 +198,8 @@ Return_Value::code Cluster_Formation_Handler::FormOriginalClusters()
   } while(rearrange);
   
   
-  for (pplit=m_partlists.begin();pplit!=m_partlists.end();pplit++) {
+  while (!m_partlists.empty()) {
+    pplit=m_partlists.begin();
     clist = new Cluster_List;
     if (!p_gludecayer->DecayList(*pplit)) {
       msg.Info()<<"WARNING in "<<METHOD<<":"<<std::endl
@@ -209,6 +212,8 @@ Return_Value::code Cluster_Formation_Handler::FormOriginalClusters()
       p_cformer->ConstructClusters(*pplit,clist);
       m_clulists.push_back(clist);    
     }
+    delete (*pplit);
+    pplit=m_partlists.erase(pplit);
   }
 
   Histogram * histomass, * histonumb;
