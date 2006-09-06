@@ -436,8 +436,8 @@ namespace ATOOLS {
       Xi_1720_fict           = 23322,
       Lambda_1405            = 22132,
 
-      N_1520                 = 11214,
-      N_1520_plus            = 12124,
+      N_1520                 = 12114,
+      N_1520_plus            = 12214,
       Sigma_1670_minus       = 13114,
       Lambda_1690            = 13124,
       Sigma_1670             = 13214,
