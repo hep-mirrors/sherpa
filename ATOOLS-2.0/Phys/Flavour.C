@@ -479,11 +479,12 @@ std::string Flavour::IDName() const
       Kfcode()==kf::W ) {
     name.erase(name.length()-1,1);
     if (IsAnti()) name += string("+");
-    else name += string("-");      
+             else name += string("-");      
   }
   else {
-    if( Kfcode()==kf::pi_plus ||
-        Kfcode()==kf::K_plus ) {
+    if (!IsBaryon() && 
+	(Kfcode()==kf::pi_plus ||
+	 Kfcode()==kf::K_plus )) {
       name.erase(name.length()-1,1);
       if (IsAnti()) name += string("-");
       else name += string("+");      
@@ -523,25 +524,26 @@ std::ostream& ATOOLS::operator<<(std::ostream& os, const Flavour& f)
     bool found = 1;
     string tmp = string(f.Name());
     int pos = tmp.find("+");
-    if (pos>-1) {
-      while (found) {
-	pos = tmp.find("+");
-	if (pos>-1) tmp.replace(pos,pos,string("-"));
-	       else found = 0;
+    if (!f.IsBaryon()) {
+      if (pos>-1) {
+	while (found) {
+	  pos = tmp.find("+");
+	  if (pos>-1) tmp.replace(pos,pos,string("-"));
+	  else found = 0;
+	}
+	return os<<tmp.c_str();
       }
-      return os<<tmp.c_str();
-    }
-
-    pos = tmp.find("-");
-    if (pos>-1) {
-      while (found) {
-	pos = tmp.find("-");
-	if (pos>-1) tmp.replace(pos,pos,string("+"));
-	       else found = 0;
+      
+      pos = tmp.find("-");
+      if (pos>-1) {
+	while (found) {
+	  pos = tmp.find("-");
+	  if (pos>-1) tmp.replace(pos,pos,string("+"));
+	  else found = 0;
+	}
+	return os<<tmp.c_str();
       }
-      return os<<tmp.c_str();
     }
-
     return os<<(string("anti-")+string(f.Name())).c_str();
   }
   return os<<f.Name();
