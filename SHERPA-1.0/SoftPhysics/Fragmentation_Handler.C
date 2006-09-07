@@ -108,6 +108,7 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
 	    blob->AddToOutParticles(new Particle((*part)));
 	    blob->InParticle(0)->SetStatus(part_status::decayed);
 	    blob->OutParticle(0)->SetStatus(part_status::active);
+            bloblist->push_back(blob);
 	  }
 	}
       }
