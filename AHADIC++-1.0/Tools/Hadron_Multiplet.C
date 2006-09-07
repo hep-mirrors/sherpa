@@ -188,7 +188,7 @@ All_Hadron_Multiplets::ConstructBaryonWaveFunction(int lp,int spin,
   int wf=-1;
   int pos1,pos2,pos3,di;
 
-  if (spin==2 && (fl1<fl2 || fl2<fl3)) {
+  if ((spin==2 || lp!=0) && (fl1<fl2 || fl2<fl3)) {
     // Octet
     if (fl1==fl2 && fl1<fl3) {
       if (fl3>3) wf = 810;
@@ -392,20 +392,16 @@ void All_Hadron_Multiplets::CreateMultiplets()
   Hadron_Multiplet       * multiplet;
   std::string              prefix;
   for (Hadron_WF_Miter wfm=p_wavefunctions->begin();wfm!=p_wavefunctions->end();wfm++) {
-    kfcode = abs(wfm->second->KfCode());
-    spin   = wfm->second->Spin();
-    if (spin%2==0) {
-      if (wfm->first.IsAnti()) spin = -spin;
-    }
-    else {
-      iso0    = int(kfcode/9000000);
-      kfcode -= iso0*9000000;
-      radial  = int(kfcode/100000);
-      kfcode -= radial*100000;
-      orbital = int(kfcode/10000);
-      kfcode -= orbital*10000;
-      spin   += iso0*10000+radial*1000+orbital*100;
-    }
+    kfcode  = abs(wfm->second->KfCode());
+    spin    = wfm->second->Spin();
+    iso0    = int(kfcode/9000000);
+    kfcode -= iso0*9000000;
+    radial  = int(kfcode/100000);
+    kfcode -= radial*100000;
+    orbital = int(kfcode/10000);
+    kfcode -= orbital*10000;
+    spin   += iso0*10000+radial*1000+orbital*100;
+    if (spin%2==0) { if (wfm->first.IsAnti()) spin = -spin; }
     Flavour flav = wfm->first;
     mpletiter = p_multiplets->find(spin);
     if (mpletiter!=p_multiplets->end()) mpletiter->second->AddToElements(flav);
@@ -514,21 +510,53 @@ void All_Hadron_Multiplets::CreateMultiplets()
       }
       else if (kfcode<10000) {
 	switch (spin) {
-	case   2:  
+	case    2:  
 	  multiplet->SetName(string("Nucleons                  (1/2)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Baryon_L0R0S1/2"));
+	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Nucleon_L0R0S1/2"));
 	  break;
-	case   4:  
-	  multiplet->SetName(string("Decuplet                  (3/2)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Baryon_L0R0S3/2"));
-	  break;
-	case  -2:  
+	case   -2:  
 	  multiplet->SetName(string("Anti-Nucleons             (1/2)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Baryon_L0R0S1/2"));
+	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Nucleon_L0R0S1/2"));
 	  break;
-	case  -4:  
+	case  102:                   
+	  multiplet->SetName(string("L=0 excited Nucleons      (1/2)"));
+	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_exc_Nucleon_L0R0S1/2"));
+	  break;
+	case -102: 
+	  multiplet->SetName(string("L=0 excited Anti-Nucleons  (1/2)"));
+	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_exc_Nucleon_L0R0S1/2"));
+	  break;
+	case  202:                   
+	  multiplet->SetName(string("L=1 excited Nucleons      (1/2)"));
+	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_exc_Nucleon_L1R0S1/2"));
+	  break;
+	case -202: 
+	  multiplet->SetName(string("L=1 excited Anti-Nucleons  (1/2)"));
+	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_exc_Nucleon_L1R0S1/2"));
+	  break;
+	case  104:                   
+	  multiplet->SetName(string("L=1 excited Nucleons      (3/2)"));
+	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_exc_Nucleon_L1R0S3/2"));
+	  break;
+	case -104: 
+	  multiplet->SetName(string("L=1 excited Anti-Nucleons  (3/2)"));
+	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_exc_Nucleon_L1R0S3/2"));
+	  break;
+	case    4:  
+	  multiplet->SetName(string("Decuplet                  (3/2)"));
+	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Delta_L0R0S3/2"));
+	  break;
+	case   -4:  
 	  multiplet->SetName(string("Anti-Decuplet             (3/2)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Baryon_L0R0S3/2"));
+	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Delta_L0R0S3/2"));
+	  break;
+	case  10104:
+	  multiplet->SetName(string("L=1 excited Decuplet      (3/2)"));
+	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_exc_Delta_L1R0S3/2"));
+	  break;
+	case -10104:
+	  multiplet->SetName(string("L=1 excited anti-Decuplet (3/2)"));
+	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_exc_Delta_L1R0S3/2"));
 	  break;
 	default:   multiplet->SetName(string("Don't know                (anti)")); break;
 	}

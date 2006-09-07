@@ -11,7 +11,7 @@ Pair_Popper::Pair_Popper() :
   p_constituents(hadpars.GetConstituents()), 
   m_ptmode(2),m_flavmode(1),
   m_tension(hadpars.Get(string("Tension"))),
-  m_ptexp(hadpars.Get(string("<pt/ptmax>"))),
+  m_ptexp(hadpars.Get(string("<pt shift>"))),
   m_totweight(0), m_maxmass(0.), m_minmass(100.)
 {
   double  wt(1.),mass;

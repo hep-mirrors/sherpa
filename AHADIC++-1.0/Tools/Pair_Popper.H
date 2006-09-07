@@ -31,38 +31,95 @@ namespace AHADIC {
   /*! 
     \class Pair_Popper
     \brief Is used to "pop" quark-antiquark or diquark-antidiquark pairs out of the vacuum.
-    The AHADIC::Cluster_Part employs this method.
+
+    The Pair_Popper can run in different modes:
+    - m_flavmode describes the way, flavours are selected.  Here, m_flavmode = 2 attachs
+      a flavour-mass specific weight to the total weights given in the constituents
+      (accessed through Constituents::TotWeight(ATOOLS::Flavour & flav)).  This extra weight 
+      is given by
+      \f[
+      wt = \exp\left[-\frac{\pi m^2}{\sigma}\right]\,,
+      \f]
+      where \f$\sigma\f$ is one of the parameters of the model ('COLOUR_TENSION').
+    - m_ptmode defines, how \f$p_\perp\f$ is selected:
+      - m_ptmode=0 corresponds to an exponential distribution
+                   \f$p_\perp^2 \propto \exp\left[-\frac{\pi p_\perp^2}{\sigma}\right]\f$
+      - m_ptmode=1 corresponds to a simple Gaussian
+                   \f$p_\perp \propto \exp\left[-\frac{\pi p_\perp^2}{\sigma}\right]\f$
+      - m_ptmode=1 corresponds to a shifted Gaussian
+                   \f$p_\perp \propto 
+                   \exp\left[-\frac{\pi (p_\perp-\langle p_\perp\rangle)^2}{\sigma}\right]\f$,
+        where \f$\langle p_\perp\rangle\f$ is given by the parameter '<PT_SHIFT>'.
+
+    AHADIC::Cluster_Part and AHADIC::Soft_Decay_Handler employ this class.
   */
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   // Description of member variables for Pair_Popper
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   /*!
     \var Constituents * Pair_Popper::p_constituents
-    \brief The constituents that may pop out of the vacuum.
+    \brief A pointer to the constituents that may pop out of the vacuum.
   */
   /*!
     \var double Pair_Popper::m_totweight
     \brief The static normalisation, calculated in the constructor.
+  */
+  /*!
+    \var int Pair_Popper::m_ptmode
+    \brief Defines, how \f$p_\perp\f$ is selected, see in the class description. 
+  */
+  /*!
+    \var int Pair_Popper::m_flavmode
+    \brief Defines, how the flavour of a popped pair is selected, see in the 
+    class description. 
+  */
+  /*!
+    \var double Pair_Popper::m_tension
+    \brief This is \f$\sigma\f$, given by 'COLOUR_TENSION'
+  */ 
+  /*!
+    \var double Pair_Popper::m_ptexp
+    \brief This is \f$\langle p_\perp\rangle\f$, relevant if m_ptmode=2.  Given by '<PT_SHIFT>'.
+  */ 
+  /*!
+    \var double Pair_Popper::m_totweight
+    \brief The sum of all flavour popping weights if there's no upper mass for the popped pair.
+  */
+  /*!
+    \var double Pair_Popper::m_maxmass
+    \brief The mass of the heaviest constituent that can be popped.
+  */
+  /*!
+    \var double Pair_Popper::m_minmass
+    \brief The mass of the lightest constituent that can be popped.
   */
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   // Description of member methods for Pair_Popper
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   /*!
     \fn Pair_Popper::Pair_Popper()
-    \brief Constructor, fills in the p_constituents and calcualtes the normalisation for popping a pair.
+    \brief Constructor, fills in the p_constituents and calculates the normalisation 
+    for popping a pair.
   */
   /*!
     \fn Pair_Popper::~Pair_Popper()
     \brief Destructor, no task so far.
   */
   /*!
-    \fn bool Pair_Popper::Pop(ATOOLS::Flavour &)
-    \brief Gives the flavour for a pair of particles popped out of the vacuum.
+    \fn ATOOLS::Flavour Pair_Popper::SelectFlavour(const double=100.,const bool=true)
+    \brief Selects a flavour.
 
-    The flavour is determined according to the relative probabilities given by the static, flavour-dependent
-    weight provided by AHADIC::Constituents. The popped out flavour msut have a mass smaller than the 
-    mass of the argument. If no such flavour can be found, "false" is returned. In all other cases,
-    "true" is returned and the argument is changed to yield the selected flavour.
+    This method selects a flavour that is lighter than the upper limit given by the 
+    double.  In case the bool is set to true the flavours are restricted to quarks only.
+  */
+  /*!
+    \fn double Pair_Popper::SelectPT(const double=100.)
+    \brief Returns a \f$p_\perp\f$ smaller than an upper limit given as argument.
+  */
+  /*!
+    \fn double Pair_Popper::PopWeight(ATOOLS::Flavour & flav)
+    \brief Returns the mass-dependent part of the weight related to a pair-popping, i.e.
+    \f$wt = \exp\left[-\frac{\pi m^2}{\sigma}\right]\f$.
   */
 }
 #endif

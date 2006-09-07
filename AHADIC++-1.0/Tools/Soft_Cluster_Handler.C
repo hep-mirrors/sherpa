@@ -25,11 +25,7 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin,Blob * blob)
 {
   m_ctrans.clear();
   for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
-    if ((*cit)==NULL) {
-      cout<<"Here's the zero cluster : "<<clin->size()<<endl;
-      abort();
-      continue;
-    }
+    if ((*cit)==NULL) continue;
     CheckCluster((*cit),clin->size()==1);
   }
 
@@ -103,7 +99,7 @@ void Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool mustdecay)
       m_ctrans[cluster].push_back(had2);
     }
     else {
-      if (hadron.Mass()+m_offset2<cluster->Mass()) {
+      if (hadron.Mass()+m_photonenergy<cluster->Mass()) {
 	// selected hadron for transformation is lighter, compensate with photon
 	m_ctrans[cluster].push_back(hadron);
 	m_ctrans[cluster].push_back(Flavour(kf::photon));

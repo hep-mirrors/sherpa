@@ -241,14 +241,7 @@ Flavour Cluster::GetFlav(const int i) const {
 
 
 void Cluster::BoostInCMSAndRotateOnZ() {
-  if (m_hasboost || m_hasrotate) return;
-
-  m_boost = ATOOLS::Poincare(m_momentum);
-  m_boost.Boost(m_momentum);
-  for (int i=0;i<2;i++) m_boost.Boost(m_momenta[i]);
-  if (p_left!=NULL)  p_left->Boost(m_boost);
-  if (p_right!=NULL) p_right->Boost(m_boost);
-  m_hasboost = true;
+  BoostInCMS();
 
   m_rotate = ATOOLS::Poincare(m_momenta[0],ATOOLS::Vec4D(1.,ATOOLS::Vec3D::ZVEC));
   ATOOLS::Vec4D copy0(m_momenta[0]), copy1(m_momenta[1]);
@@ -257,30 +250,16 @@ void Cluster::BoostInCMSAndRotateOnZ() {
   if (copy0[3]<copy1[3]) {
     m_rotate = ATOOLS::Poincare(m_momenta[0],ATOOLS::Vec4D(1.,(-1.)*ATOOLS::Vec3D::ZVEC));
   }
-  for (int i=0;i<2;i++) m_rotate.Rotate(m_momenta[i]);
-  m_rotate.Rotate(m_momentum);
-  if (p_left!=NULL)  p_left->Rotate(m_rotate);
-  if (p_right!=NULL) p_right->Rotate(m_rotate);
-
-  if (p_self) p_self->SetMomentum(m_momentum);
   m_hasrotate = true;
+  Rotate(m_rotate);
 }
 
 void Cluster::RotateAndBoostBack() {
   if (!m_hasboost || !m_hasrotate) return;
 
-  m_rotate.RotateBack(m_momentum);
-  for (int i=0;i<2;i++) m_rotate.RotateBack(m_momenta[i]);
-  if (p_left!=NULL)  p_left->RotateBack(m_rotate);
-  if (p_right!=NULL) p_right->RotateBack(m_rotate);
+  RotateBack(m_rotate);
   m_hasrotate = false;
-
-  m_boost.BoostBack(m_momentum);
-  for (int i=0;i<2;i++) m_boost.BoostBack(m_momenta[i]);
-  if (p_left!=NULL)  p_left->BoostBack(m_boost);
-  if (p_right!=NULL) p_right->BoostBack(m_boost);
-
-  if (p_self) p_self->SetMomentum(m_momentum);
+  BoostBack();
   m_hasboost = false;
 }
 
@@ -323,7 +302,6 @@ void Cluster::BoostBack(Poincare & boost) {
   if (p_right!=NULL) p_right->BoostBack(boost);
 
   if (p_self) p_self->SetMomentum(m_momentum);
-  // was Boost(m_boost) ???
 }
 
 void Cluster::Rotate(Poincare & rotate) {
