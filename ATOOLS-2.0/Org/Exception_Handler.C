@@ -100,9 +100,16 @@ void Exception_Handler::Exit(int exitcode)
   exit(exitcode);
 }
 
+void Exception_Handler::Reset()
+{
+  exh->m_exception=NULL;
+  exh->m_signal=0;
+}
+
 void ATOOLS::Terminate() 
 {
   exh->Terminate();
+  exh->Reset();
 }
 
 void Exception_Handler::Terminate() 
@@ -202,6 +209,7 @@ void Exception_Handler::SetExitCode()
 void ATOOLS::SignalHandler(int signal) 
 {
   exh->SignalHandler(signal);
+  exh->Reset();
 }
 
 void Exception_Handler::SignalHandler(int signal) 
@@ -323,4 +331,45 @@ void Exception_Handler::GenerateStackTrace(std::ostream &ostr,
 #endif
 }
 
+void Exception_Handler::SetActive(const bool active)    
+{ 
+  Init(); 
+  exh->m_active=active; 
+}
+
+void Exception_Handler::SetStackTrace(const bool trace) 
+{ 
+  Init(); 
+  exh->m_stacktrace=trace;  
+}
+
+void Exception_Handler::SetProgramName(const std::string &name)
+{ 
+  Init(); 
+  exh->m_progname=name; 
+}
+
+bool Exception_Handler::Active()     
+{ 
+  Init(); 
+  return exh->m_active;     
+}
+
+bool Exception_Handler::StackTrace() 
+{ 
+  Init(); 
+  return exh->m_stacktrace; 
+}
+
+Exception *Exception_Handler::LastException() 
+{ 
+  Init(); 
+  return exh->m_exception; 
+}
+
+unsigned int Exception_Handler::LastSignal()    
+{ 
+  Init(); 
+  return exh->m_signal;    
+}
 

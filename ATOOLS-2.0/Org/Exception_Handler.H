@@ -44,6 +44,7 @@ namespace ATOOLS {
 
     // member functions
     void Init();
+    void Reset();
 
     bool ApproveTerminate();
     void PrepareTerminate();
@@ -66,19 +67,15 @@ namespace ATOOLS {
     void RemoveTesterObject(Tester_Object *const object);
     void RemoveTerminatorObject(Terminator_Object *const object);
     
-    // inline functions
-    inline void SetActive(const bool active)    
-    { m_active=active; }
-    inline void SetStackTrace(const bool trace) 
-    { m_stacktrace=trace;  }
-    inline void SetProgramName(const std::string &name)
-    { m_progname=name; }
+    void SetActive(const bool active);    
+    void SetStackTrace(const bool trace); 
+    void SetProgramName(const std::string &name);
 
-    inline bool Active()     { return m_active;      }
-    inline bool StackTrace() { return m_stacktrace;  }
+    bool Active();
+    bool StackTrace();
 
-    inline Exception    *LastException() { return m_exception; }
-    inline unsigned int  LastSignal()    { return m_signal;    }
+    Exception    *LastException();
+    unsigned int  LastSignal();
 
   };// end of class Exception_Handler
 
