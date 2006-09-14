@@ -10,7 +10,6 @@
 
 #include "Particle_List.H"
 #include "Particle.H"
-#include "Object.H"
 #include "Blob_List.H"
 #include "Blob.H"
 #include "Spin_Correlation_Tensor.H"
@@ -37,7 +36,7 @@ namespace SHERPA {
   };
 
 
-  class Matrix_Element_Handler: public ATOOLS::Object {
+  class Matrix_Element_Handler {
   private :
 
     std::string          m_dir,m_file;

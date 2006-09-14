@@ -239,7 +239,7 @@ void         Particle::SetTime(const int t)          { m_dec_time = t; }
 void         Particle::SetTime()                     { m_dec_time = LifeTime(); }
 
 // Production and decay vertices
-const Vec4D& Particle::XProd() const          {return p_startblob->Position();}
+const Vec4D& Particle::XProd() const          { if (p_startblob) return p_startblob->Position(); return Vec4D(); }
 Blob *       Particle::ProductionBlob() const {return p_startblob;}
 const Vec4D& Particle::XDec() const           {return p_endblob->Position();}
 Blob *       Particle::DecayBlob() const      {return p_endblob;}

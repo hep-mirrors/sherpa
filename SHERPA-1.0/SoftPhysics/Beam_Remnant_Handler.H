@@ -10,8 +10,6 @@
 
 namespace SHERPA {
 
-  class Matrix_Element_Handler;
-
   class Beam_Remnant_Handler {
   private:
 
@@ -23,7 +21,6 @@ namespace SHERPA {
 
     ATOOLS::Blob               * p_beamblob[2];
 
-    Matrix_Element_Handler     * p_mehandler;
     std::string                  m_path, m_file;
     bool                         m_fill;
     short unsigned int           m_beam;
@@ -34,7 +31,7 @@ namespace SHERPA {
     ATOOLS::Blob *             FillBunchBlob(const int,ATOOLS::Particle *);
     ATOOLS::Return_Value::code FillBeamBlobs(ATOOLS::Blob_List *const,
 					     ATOOLS::Particle_List *const=NULL);
-    bool                       FillBeamBlob(const int,ATOOLS::Particle *);
+    void                       InitBeamBlob(const int beam);
 
   public :
 

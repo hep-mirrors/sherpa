@@ -3,14 +3,17 @@
 #include "Message.H"
 #include "Info_Key.H"
 #include "Run_Parameter.H"
+#include "Exception.H"
 
 using namespace PDF;
+using namespace ATOOLS;
 
 
 
 PDF_Base::Box PDF_Base::s_box=PDF_Base::Box();
 
 PDF_Base::Box::~Box() {
+  if (exh->LastSignal()!=0 || exh->LastException()!=NULL) return;
   for(unsigned i=0; i<v_pdfp.size(); ++i) if(v_pdfp[i]) delete v_pdfp[i];
 }
 

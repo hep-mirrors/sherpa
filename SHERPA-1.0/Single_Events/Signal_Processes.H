@@ -20,6 +20,7 @@ namespace SHERPA {
     ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *,double &);
     void CleanUp();
     void Finish(const std::string &);
+    inline Matrix_Element_Handler *GetMEHandler() const { return p_mehandler; }
   };
 
   /*!

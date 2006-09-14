@@ -6,7 +6,6 @@
 #include "Run_Parameter.H"
 #include "MyStrStream.H"
 #include "Random.H"
-#include "Object.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Simple_String

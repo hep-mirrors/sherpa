@@ -2,6 +2,7 @@
 #include "Message.H"
 #include "Run_Parameter.H"
 #include "My_Limits.H"
+#include "Signal_Processes.H"
 #include <unistd.h>
 #include <cassert>
 
@@ -20,7 +21,8 @@ using namespace ATOOLS;
 
 Event_Handler::Event_Handler():
   m_lastparticlecounter(0),
-  m_lastblobcounter(0)
+  m_lastblobcounter(0),
+  p_mehandler(NULL)
 {
   p_phases  = new Phase_List;
 }
@@ -37,6 +39,8 @@ void Event_Handler::AddEventPhase(Event_Phase_Handler * phase)
 {
   eph::code type   = phase->Type();
   std::string name = phase->Name();
+  if (name.find("Signal_Processes:")!=std::string::npos) 
+    p_mehandler=static_cast<Signal_Processes*>(phase)->GetMEHandler();
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) { 
     if ((type==(*pit)->Type()) && (name==(*pit)->Name())) {
       msg.Out()<<"WARNING in Event_Handler::AddEventPhase("<<type<<":"<<name<<") "
@@ -118,7 +122,7 @@ bool Event_Handler::GenerateEvent(int mode)
 	flag = false;
 	for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
 	  if ((*pit)->Type()==eph::Perturbative) {
-	    //std::cout<<"Try "<<(*pit)->Name()<<std::endl;
+	    msg_Debugging()<<"Try "<<(*pit)->Name()<<std::endl;
 	    switch (int((*pit)->Treat(&m_blobs,weight))) {
 	      case Return_Value::Nothing :
 		//std::cout<<(*pit)->Name()<<" yields nothing : "
@@ -132,6 +136,7 @@ bool Event_Handler::GenerateEvent(int mode)
 	      case Return_Value::Error :
 		//std::cout<<(*pit)->Name()<<" yields error : "
 		//         <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
+		rvalue.IncError((*pit)->Name());
 		return false;
 	      case Return_Value::New_Event : 
 		newone = true;
@@ -139,6 +144,7 @@ bool Event_Handler::GenerateEvent(int mode)
 		Reset();
 		//std::cout<<(*pit)->Name()<<" yields new : "
 		//         <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
+		rvalue.IncNewEvent((*pit)->Name());
 		break;
 	      case Return_Value::Retry_Event : 
 		retry = true;
@@ -147,8 +153,10 @@ bool Event_Handler::GenerateEvent(int mode)
 		CleanUpEvent(hardblob);
 		hardblob->SetStatus(blob_status::internal_flag |
 				    blob_status::needs_signal);
+		if (p_mehandler->Weight()!=1.0) p_mehandler->SaveNumberOfTrials();
 		//std::cout<<(*pit)->Name()<<" yields retry   : "
 		//         <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
+		rvalue.IncRetryEvent((*pit)->Name());
 		break;
 	      default:
 		msg.Error()<<"Error in "<<METHOD<<":"<<std::endl
@@ -156,6 +164,7 @@ bool Event_Handler::GenerateEvent(int mode)
 			   <<"  Will continue and hope for the best."<<std::endl;
 		return false;
 	    }
+	    msg_Debugging()<<m_blobs<<std::endl;
 	    if (weight==0.0 &&
 		rpa.gen.NumberOfDicedEvents()==rpa.gen.NumberOfEvents()) return true;
 	  }
@@ -182,12 +191,14 @@ bool Event_Handler::GenerateEvent(int mode)
 	      case Return_Value::Error :
 		//std::cout<<(*pit)->Name()<<" yields error : "
 		//	 <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
+		rvalue.IncError((*pit)->Name());
 		return false;
 	      case Return_Value::New_Event : 
 		//std::cout<<(*pit)->Name()<<" yields new : "
 		//	 <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
 		newone = true;
 		Reset();
+		rvalue.IncNewEvent((*pit)->Name());
 		break;
 	      case Return_Value::Retry_Event :
 		//std::cout<<(*pit)->Name()<<" yields retry : "
@@ -198,6 +209,8 @@ bool Event_Handler::GenerateEvent(int mode)
 		CleanUpEvent(hardblob);
 		hardblob->SetStatus(blob_status::internal_flag |
 				    blob_status::needs_signal);
+		if (p_mehandler->Weight()!=1.0) p_mehandler->SaveNumberOfTrials();
+		rvalue.IncRetryEvent((*pit)->Name());
 		break;
 	      default:
 		msg.Error()<<"Error in "<<METHOD<<":"<<std::endl
@@ -211,7 +224,7 @@ bool Event_Handler::GenerateEvent(int mode)
     } while (m_blobs.empty() || 
 	     m_blobs.FindFirst(btp::Signal_Process)->NOutP()==0 ||
 	     retry || newone);
-
+    p_mehandler->ResetNumberOfTrials();
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       if ((*pit)->Type()==eph::Analysis) {
 	switch (int((*pit)->Treat(&m_blobs,weight))) {
@@ -224,6 +237,7 @@ bool Event_Handler::GenerateEvent(int mode)
 			<<" yields "<<ATOOLS::om::bold<<true<<ATOOLS::om::reset<<std::endl;
 	  break;
 	case Return_Value::Error :
+	  rvalue.IncError((*pit)->Name());
 	  return false;
 	default:
 	  msg.Error()<<"Error in "<<METHOD<<":"<<std::endl

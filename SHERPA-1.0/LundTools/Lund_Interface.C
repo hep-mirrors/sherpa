@@ -401,29 +401,40 @@ int Lund_Interface::PrepareFragmentationBlob(Blob * blob)
   hepevt.jdahep[nhep][0]=0;
   hepevt.jdahep[nhep][1]=0;
   
-  // Colourful stuff
-  Particle * part = blob->InParticle(0);
-  if (part->GetFlow(1)!=0 && part->GetFlow(2)!=0) {
-    Flavour            flav = Flavour(kf::d);
-    if (ran.Get()<0.5) flav = Flavour(kf::u);
-    Particle * help1(new Particle(-1,flav,0.5*part->Momentum()));
-    Particle * help2(new Particle(-1,flav.Bar(),0.5*help1->Momentum()));
-    help1->SetStatus(part_status::active);
-    help2->SetStatus(part_status::active);
-    AddPartonToString(help1,nhep);
-    delete help1;
-    for (int i=1;i<blob->NInP();i++) {
-      part = blob->InParticle(i);
-      AddPartonToString(part,nhep);
-    }      
-    AddPartonToString(help2,nhep);
-    delete help2;
-  }
-  else {
-    for (int i=0;i<blob->NInP();i++) {
-      part = blob->InParticle(i);
-      AddPartonToString(part,nhep);
-    }  
+  // gluon splittings
+  for (int i(0);i<blob->NInP();++i) {
+    Particle * part = blob->InParticle(i);
+    if (part->GetFlow(1)!=0 && part->GetFlow(2)!=0) {
+      Flavour            flav = Flavour(kf::d);
+      if (ran.Get()<0.5) flav = Flavour(kf::u);
+      Particle *help1(new Particle(-1,flav,0.5*part->Momentum()));
+      Particle *help2(new Particle(-1,flav.Bar(),0.5*help1->Momentum()));
+      help1->SetStatus(part_status::active);
+      help2->SetStatus(part_status::active);
+      AddPartonToString(help1,nhep);
+      delete help1;
+      unsigned int lastc(part->GetFlow(2));
+      for (++i;i<blob->NInP();++i) {
+	part = blob->InParticle(i);
+	if (part->GetFlow(1)==lastc) {
+	  lastc=0;
+	  break;
+	}
+	AddPartonToString(part,nhep);
+      }
+      if (lastc!=0)
+	msg.Error()<<METHOD<<"(): Error. Open color string."<<std::endl;
+      AddPartonToString(help2,nhep);
+      delete help2;
+      lastc=0;
+    }
+    else {
+      for (;i<blob->NInP();i++) {
+	part = blob->InParticle(i);
+	AddPartonToString(part,nhep);
+	if (part->GetFlow(1)==0) break;
+      }  
+    }
   }
   return nhep;
 }

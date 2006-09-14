@@ -18,12 +18,6 @@ using namespace std;
 //                Particle_Map
 // ============================================================
 
-namespace ATOOLS {
-
-  INSTANTIATE_OBJECT(Matrix_Element_Handler)
-
-}
-
 Particle_Map::Particle_Map():
   m_flip_anti(false), m_change_flavs(false)
 {
@@ -77,7 +71,6 @@ bool Particle_Map::Apply(int n, ATOOLS::Flavour * flavs, ATOOLS::Vec4D * moms)
 // ============================================================
 
 Matrix_Element_Handler::Matrix_Element_Handler() :
-  Object("ME_Handler"),
   m_dir("./"), m_file(""), p_amegic(NULL), p_simplexs(NULL),
   p_isr(NULL), m_mode(0), m_weight(1.), m_ntrial(1), m_xsecntrial(0),
   m_sntrial(0), m_name(""), m_eventmode(1), 
@@ -86,7 +79,6 @@ Matrix_Element_Handler::Matrix_Element_Handler() :
 Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _file,
 					       MODEL::Model_Base * _model,
 					       Matrix_Element_Handler * _me) :
-  Object("ME_Handler"),
   m_dir(_dir), m_file(_file), p_amegic(NULL), p_simplexs(NULL),
   p_isr(NULL), m_mode(0), m_weight(1.), m_ntrial(1), m_xsecntrial(0), 
   m_sntrial(0), m_name(""), m_eventmode(1),
@@ -104,7 +96,6 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
 					       BEAM::Beam_Spectra_Handler * _beam,
 					       PDF::ISR_Handler * _isr,
 					       Matrix_Element_Handler * _me) :
-  Object("ME_Handler"),
   m_dir(_dir), m_file(_file), p_amegic(NULL), p_simplexs(NULL),
   p_isr(_isr), m_mode(0), m_weight(1.), m_ntrial(1), m_xsecntrial(0),
   m_sntrial(0), m_sudakovon(0), m_apply_hhmf(0),

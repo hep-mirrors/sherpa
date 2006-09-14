@@ -44,9 +44,6 @@ Multiple_Interactions::Multiple_Interactions(MI_Handler *mihandler):
       THROW(fatal_error,"No beam remnant handler found.");
     }
   }
-  p_mehandler=GET_OBJECT(Matrix_Element_Handler,"ME_Handler");
-  if (p_mehandler==NULL) 
-    THROW(fatal_error,"No matrix element handler found.");
 }
 
 Multiple_Interactions::~Multiple_Interactions() 
@@ -67,7 +64,8 @@ Return_Value::code Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const
        bit!=bloblist->end();++bit) {
     if ((*bit)->Type()==btp::Hard_Collision ||
 	(*bit)->Type()==btp::Signal_Process) 
-      if ((*bit)->Has(blob_status::needs_showers)) return Return_Value::Retry_Event;
+      if ((*bit)->Has(blob_status::needs_showers)) 
+	return Return_Value::Nothing;
   }
   for (short unsigned int i=0;i<2;++i) {
     m_emax[i]=p_remnants[i]->GetBeam()->Energy();
@@ -84,25 +82,23 @@ Return_Value::code Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const
       Extract((*iit)->InParticle(0)->Flav(),
 	      (*iit)->InParticle(0)->Momentum()[0],(*iit)->Beam());
     if (!p_remnants[(*iit)->Beam()]->Extract((*iit)->InParticle(0))) {
-      msg_Tracking()<<"Multiple_Interactions::CheckBlobList(..): "
-		    <<"Cannot extract parton from hadron. \n"
+      msg_Tracking()<<METHOD<<"(): Cannot extract parton from hadron. \n"
 		    <<*(*iit)->InParticle(0)<<std::endl;
       p_bloblist->DeleteConnected(*iit);
       if (bloblist->empty()) {
-	p_mehandler->SaveNumberOfTrials();
+	msg.Error()<<METHOD<<"(): Killed signal. Retry event."<<std::endl;
 	Blob *blob = new Blob();
-	blob->SetType(btp::Hard_Collision);
-	blob->SetStatus(blob_status::inactive);
+	blob->SetType(btp::Signal_Process);
 	blob->SetId();
-	blob->SetStatus(blob_status::internal_flag);
-	bloblist->push_back(blob);	  
+	blob->SetStatus(blob_status::needs_signal);
+	bloblist->push_back(blob);
+	return Return_Value::Retry_Event;
       }
       static double nrej=0.0;
       if (10*++nrej>rpa.gen.NumberOfDicedEvents())
-	ATOOLS::msg.Error()<<"Multiple_Interactions::CheckBlobList(..): "
-			   <<"Shower rejection rate is "
+	ATOOLS::msg.Error()<<METHOD<<"(): Shower rejection rate is "
 			   <<nrej/ntot<<"."<<std::endl;
-      return Return_Value::Retry_Event;
+      return Return_Value::Success;
     } 
   }
   if (m_diced) return Return_Value::Success;
@@ -219,16 +215,8 @@ Return_Value::code Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,doub
 		       <<"Incoming blob list is empty!"<<std::endl;
     return Return_Value::Error;
   }
-  switch (int(CheckBlobList(bloblist))) {
-  case int(Return_Value::Success)     : break;
-  case int(Return_Value::Retry_Event) : return Return_Value::Retry_Event;
-  case int(Return_Value::Nothing)     : return Return_Value::Nothing;
-  default:
-    msg.Error()<<"Error in "<<METHOD<<":"<<std::endl
-	       <<"  Unknown return value for 'CheckBlobList',"<<std::endl
-	       <<"  Will continue and hope for the best."<<std::endl;
-    return Return_Value::Nothing;
-  }
+  Return_Value::code cbc(CheckBlobList(bloblist));
+  if (cbc!=Return_Value::Success) return cbc;
   p_mihandler->SetScaleMax(m_emax[0],2);
   p_mihandler->SetScaleMax(m_emax[1],3);
   if (!m_diced) {
@@ -261,9 +249,10 @@ Return_Value::code Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,doub
 		      <<"Cannot extract parton from hadron. \n"
 		      <<*blob->InParticle(0)<<std::endl;
 	delete blob;
-	return Return_Value::Success;
+	return Return_Value::Retry_Phase;
       }
     }
+    blob->SetStatus(blob_status::needs_showers);
     bloblist->push_back(blob);
     return Return_Value::Success;
   }
