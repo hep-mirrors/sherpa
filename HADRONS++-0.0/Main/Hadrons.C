@@ -367,7 +367,7 @@ double* Hadrons::GetSmearedMasses(
   Particle_Vector daughters = blob->GetOutParticles();
   const int n = blob->NOutP()+1;
   // sort daughter particle indices by width
-  int by_width[n];
+  std::vector<int> by_width(n);
   if(n>2) {
     for(int i=0;i<n;i++) {
       by_width[i]=i;
@@ -384,9 +384,9 @@ double* Hadrons::GetSmearedMasses(
     }
   }
   double* masses = new double[n];
-  double min_masses[n];
-  double max_masses[n];
-  double widths[n];
+  std::vector<double> min_masses(n);
+  std::vector<double> max_masses(n);
+  std::vector<double> widths(n);
   masses[0]=blob->InParticle(0)->Momentum().Mass();
   msg.Debugging()<<"          masses before smearing:"<<endl;
   msg.Debugging()<<"            masses[0]="<<masses[0]<<" for "
@@ -492,11 +492,11 @@ Spin_Density_Matrix Hadrons::PerformDecay(
   }
 
   const int n = blob->NOutP()+1;
-  Vec4D mom[n];
+  std::vector<Vec4D> mom(n);
   mom[0] = part->Momentum();
 
   if(n>2) {
-    ChooseDecayKinematics( mom, hdc, sigma );
+    ChooseDecayKinematics( &mom.front(), hdc, sigma );
     if(hdc->MassSmearing()) {  // if mass smearing is turned on
       double* masses = GetSmearedMasses(blob);
       Vec4D cms = Vec4D(0.,0.,0.,0.);
@@ -508,8 +508,8 @@ Spin_Density_Matrix Hadrons::PerformDecay(
         boost.Boost(mom[i]);
       }
       Momenta_Stretcher stretch;
-      bool okay = stretch.ZeroThem(1,hdc->NOut()+1, mom);
-      okay = okay && stretch.MassThem(1,hdc->NOut()+1, mom, masses);
+      bool okay = stretch.ZeroThem(1,hdc->NOut()+1, &mom.front());
+      okay = okay && stretch.MassThem(1,hdc->NOut()+1, &mom.front(), masses);
       if(!okay) {
         msg.Error()<<METHOD<<": Momenta_Stretcher delivered an error for stretching "
                    <<hdc->ChannelName()<<std::endl;
@@ -725,7 +725,7 @@ Decay_Table * Hadrons::InitialiseOneDecayTable(vector<string> line)
 }
 
 namespace ATOOLS {
+  template <> Blob_Data<Hadron_Decay_Channel*>::~Blob_Data() { }
   template class ATOOLS::Blob_Data<HADRONS::Hadron_Decay_Channel*>;
   template Hadron_Decay_Channel* &Blob_Data_Base::Get<Hadron_Decay_Channel*>();
-  template <> Blob_Data<Hadron_Decay_Channel*>::~Blob_Data() { }
 }
