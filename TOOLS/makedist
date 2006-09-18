@@ -3,34 +3,48 @@
 DISTDIR=`date +'%y-%m-%d'`
 
 ECOPT=""
-for I in $* ; do
-  if [ "$I" = "-f" ]; then DISTDIR=$DISTDIR"_"`date +'%H-%M'` 
-  elif [ "$I" = "-n" ]; then DNAME=TRUE
-  elif [ "$I" = "-u" ]; then COMP=FALSE
-  elif [ "$I" = "--clean" ]; then ALLCLEAN=TRUE 
-  elif [ "$I" = "--configure" ]; then CONFIGURE=TRUE 
-  elif [ "$I" = "--hide-cvs" ]; then ECOPT=$ECOPT" --disable-cvsinclude" && CONFIGURE=TRUE
-  elif [ "$I" = "--total" ]; then TOTAL=TRUE && CONFIGURE=TRUE
-  elif [ "$I" = "--copt" ]; then DCOPT=TRUE && CONFIGURE=TRUE
-  elif [ "$I" = "--no-abort" ]; then NOABORT=TRUE
-  elif [ "$I" = "--force" ]; then FORCE=TRUE 
-  elif [ "$I" = "-h" ]; then echo && \
-    echo "makedist version 1.0 " && echo && \
-    echo "options: -f             include full time information in distribution name" && \
-    echo "         -n <name>      write compressed distribution to <name>.tar.gz" && \
-    echo "         -u             distribute uncompressed modules" && \
-    echo "         --clean        execute 'make clean' before 'make dist'" && \
-    echo "         --configure    configure before 'make dist' (enabled with '--total')" && \
-    echo "         --total        rebuild 'Makefile.in's' and 'configure's' before 'make dist'" && \
-    echo "         --copt         define option for 'configure'" && \
-    echo "         --no-abort     ignore exit status of 'make'" && \
-    echo "         --force        overwrite existing targets" && \
-    echo "         -h             display this help and exit" && echo && \
-    exit 0
-  elif [ "$DNAME" = "TRUE" ]; then DNAME="" && DISTDIR=$I
-  elif [ "$DCOPT" = "TRUE" ]; then DCOPT="" && ECOPT=$ECOPT" "$I
-  else echo "makeinstall: error: unrecognized option $I" && exit 1 ;
-  fi
+
+print_help() {
+  echo "makedist version 1.0 " && echo && \
+  echo "options: -f             include full time information in distribution name" && \
+  echo "         -n <name>      write compressed distribution to <name>.tar.gz" && \
+  echo "         -u             distribute uncompressed modules" && \
+  echo "         --clean        execute 'make clean' before 'make dist'" && \
+  echo "         --configure    configure before 'make dist' (enabled with '--total')" && \
+  echo "         --total        rebuild 'Makefile.in's' and 'configure's' before 'make dist'" && \
+  echo "         --copt         define option for 'configure'" && \
+  echo "         --no-abort     ignore exit status of 'make'" && \
+  echo "         --force        overwrite existing targets" && \
+  echo "         -h             display this help and exit" && \
+  echo
+}
+
+OPTERR=0
+while getopts hfun: OPT
+do
+  case $OPT in
+  f) DISTDIR=$DISTDIR"_"`date +'%H-%M'` ;;
+  u) COMP=FALSE ;;
+  n) DISTDIR=$OPTARG ;;
+  h) print_help && exit 0 ;;
+  \?)
+    shift `expr $OPTIND - 1`
+echo $1 $2
+    if [ "$1" = "--clean" ]; then ALLCLEAN=TRUE 
+    elif [ "$1" = "--configure" ]; then CONFIGURE=TRUE 
+    elif [ "$1" = "--hide-cvs" ]; then ECOPT=$ECOPT" --disable-cvsinclude" && CONFIGURE=TRUE
+    elif [ "$1" = "--total" ]; then TOTAL=TRUE && CONFIGURE=TRUE
+    elif [ "$1" = "--copt" ]; then 
+      CONFIGURE=TRUE && ECOPT=$2" "$ECOPT && shift 1
+    elif [ "$1" = "--no-abort" ]; then NOABORT=TRUE
+    elif [ "$1" = "--force" ]; then FORCE=TRUE 
+    else 
+      echo "makedist: error: unrecognized option '$1'. try '-h'" && \
+      print_help && exit 1
+    fi
+    shift 1
+    OPTIND=1
+  esac
 done
 
 if test -d $DISTDIR ; then
@@ -79,7 +93,7 @@ while [ "$CONTINUE" = "r" ]; do
     fi
   fi
 done
-mv SHERPA-MC-1.0.tar.gz $DISTDIR.tar.gz
+mv SHERPA-MC-1.0.9.tar.gz $DISTDIR.tar.gz
 echo -e "\nwrote distribution to '$DISTDIR".tar.gz"'\n"
 exit 0
 
