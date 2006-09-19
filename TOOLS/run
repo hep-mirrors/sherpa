@@ -13,7 +13,6 @@ rmr () {
     rm -f $2 $i                                                                         
   done
 }                                                                               
-
 RUNPATH=""
 BINPATH=""
 PDFPATH=""
@@ -25,60 +24,57 @@ BASENAME=""
 BATCH="PBS"
 BOPTIONS=""
 NICE=""
-for I in $* ; do
-  if [ "$I" = "-p" ]; then DRUNPATH=TRUE 
-  elif [ "$I" = "-b" ]; then DBINPATH=TRUE 
-  elif [ "$I" = "-s" ]; then DPDFPATH=TRUE 
-  elif [ "$I" = "-r" ]; then DRESULTS=TRUE 
-  elif [ "$I" = "-a" ]; then DANALYSIS=TRUE 
-  elif [ "$I" = "-e" ]; then DEVENTS=TRUE 
-  elif [ "$I" = "-n" ]; then DBASENAME=TRUE 
-  elif [ "$I" = "-l" ]; then DLIBPATH=TRUE 
-  elif [ "$I" = "-o" ]; then DSOPTIONS=TRUE 
-  elif [ "$I" = "-B" ]; then DBATCH=TRUE 
-  elif [ "$I" = "-C" ]; then DSLOGFILE=TRUE 
-  elif [ "$I" = "-O" ]; then DBOPTIONS=TRUE 
-  elif [ "$I" = "-H" ]; then DHOST=TRUE
-  elif [ "$I" = "-N" ]; then DNICE=TRUE
-  elif [ "$I" = "-S" ]; then SUBMIT=TRUE 
-  elif [ "$I" = "-R" ]; then RUN=TRUE
-  elif [ "$I" = "-h" ]; then echo && \
-    echo "run version 1.0" && echo && \
-    echo "options: -p <path>      read configuration from path <path>" && \
-    echo "         -b <binpath>   take executeable from path <binpath>" && \
-    echo "         -s <pdfpath>   take pdfs from path <pdfpath>" && \
-    echo "         -r <results>   write results to path <path>/<results>" && \
-    echo "         -a <analysis>  write analysis output to path <path>/<analysis>" && \
-    echo "         -e <events>    generate <events> events" && \
-    echo "         -n <name>      set basic filename to <name>" && \
-    echo "         -l <libpath>   define library path <libpath>" && \
-    echo "         -o <option>    define commandline option <option>" && \
-    echo "         -B <system>    select batch system <system>" && \
-    echo "         -C <checkfile> write check file <checkfile>" && \
-    echo "         -O <option>    define batch system option <option>" && \
-    echo "         -H <host>      run job locally on <host>" && \
-    echo "         -N <level>     set nice level for nohup" && \
-    echo "         -S             submit job to batch system" && \
-    echo "         -R             run job via nohup" && \
-    echo "         -h             display this help and exit" && echo && \
-    exit 0
-  elif [ "$DRUNPATH" = "TRUE" ]; then DRUNPATH="" && RUNPATH=$I
-  elif [ "$DBINPATH" = "TRUE" ]; then DBINPATH="" && BINPATH=$I
-  elif [ "$DPDFPATH" = "TRUE" ]; then DPDFPATH="" && PDFPATH=$I
-  elif [ "$DRESULTS" = "TRUE" ]; then DRESULTS="" && RESULTS=$I
-  elif [ "$DANALYSIS" = "TRUE" ]; then DANALYSIS="" && ANALYSIS=$I
-  elif [ "$DEVENTS" = "TRUE" ]; then DEVENTS="" && EVENTS=$I
-  elif [ "$DBASENAME" = "TRUE" ]; then DBASENAME="" && BASENAME=$I
-  elif [ "$DLIBPATH" = "TRUE" ]; then DLIBPATH="" && LIBPATH=$I
-  elif [ "$DSOPTIONS" = "TRUE" ]; then DSOPTIONS="" && SOPTIONS=$SOPTIONS" "$I
-  elif [ "$DBATCH" = "TRUE" ]; then DBATCH="" && BATCH=$I
-  elif [ "$DSLOGFILE" = "TRUE" ]; then DSLOGFILE="" && SLOGFILE=$I
-  elif [ "$DBOPTIONS" = "TRUE" ]; then DBOPTIONS="" && BOPTIONS=$BOPTIONS" "$I
-  elif [ "$DHOST" = "TRUE" ]; then DHOST="" && RHOST=$I
-  elif [ "$DNICE" = "TRUE" ]; then DNICE="" && NICE=$I
-  else echo "run: error: unrecognized option '$I'. try '-h'" && \
-    exit 1 
-  fi
+
+print_help() {
+  echo "run version 1.0" && echo && \
+  echo "options: -p <path>      read configuration from path <path>" && \
+  echo "         -b <binpath>   take executeable from path <binpath>" && \
+  echo "         -s <pdfpath>   take pdfs from path <pdfpath>" && \
+  echo "         -r <results>   write results to path <path>/<results>" && \
+  echo "         -a <analysis>  write analysis output to path <path>/<analysis>" && \
+  echo "         -e <events>    generate <events> events" && \
+  echo "         -n <name>      set basic filename to <name>" && \
+  echo "         -l <libpath>   define library path <libpath>" && \
+  echo "         -o <option>    define commandline option <option>" && \
+  echo "         -B <system>    select batch system <system>" && \
+  echo "         -C <checkfile> write check file <checkfile>" && \
+  echo "         -O <option>    define batch system option <option>" && \
+  echo "         -H <host>      run job locally on <host>" && \
+  echo "         -N <level>     set nice level for nohup" && \
+  echo "         -S             submit job to batch system" && \
+  echo "         -R             run job via nohup" && \
+  echo "         -h             display this help and exit" && \
+  echo
+}
+
+while getopts :p:b:s:r:a:e:n:l:o:B:C:O:H:N:SRh OPT
+do
+  case $OPT in
+  p) RUNPATH=$OPTARG ;; 
+  b) BINPATH=$OPTARG ;; 
+  s) PDFPATH=$OPTARG ;; 
+  r) RESULTS=$OPTARG ;; 
+  a) ANALYSIS=$OPTARG ;; 
+  e) EVENTS=$OPTARG ;; 
+  n) BASENAME=$OPTARG ;; 
+  l) LIBPATH=$OPTARG ;; 
+  o) SOPTIONS=$OPTARG ;; 
+  B) BATCH=$OPTARG ;; 
+  C) SLOGFILE=$OPTARG ;; 
+  O) BOPTIONS=$OPTARG ;; 
+  H) RHOST=$OPTARG ;;
+  N) NICE=$OPTARG ;;
+  S) SUBMIT=TRUE ;;
+  R) RUN=TRUE ;;
+  h) print_help && exit 0 ;;
+  \?)
+    shift `expr $OPTIND - 1`
+    echo -n "run: error: unrecognized option "
+    if [ $OPTARG != "-" ]; then echo "'-$OPTARG'. try '--help'"
+    else echo "'$1'. try '--help'"
+    fi
+    print_help && exit 1
+  esac
 done
 if [ "$BINPATH" = "" ]; then BINPATH="." ; fi
 if [ "$RUNPATH" = "" ]; then RUNPATH="./" ; fi
