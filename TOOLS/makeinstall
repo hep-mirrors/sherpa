@@ -80,8 +80,7 @@ print_help() {
     echo "         -h             display this help and exit" && echo
 }
 
-OPTERR=0
-while getopts hctfrso OPT
+while getopts :hctfrso OPT
 do
   case $OPT in
   c) CONFIGURE=TRUE ;; 
@@ -104,7 +103,10 @@ do
     elif [ "$1" = "--rm-libs" ]; then RMLIBS=TRUE
     elif [ "$1" = "--make-only" ]; then MAKEONLY=TRUE
     else 
-      echo "makeinstall: error: unrecognized option '$1'. try '-h'" && \
+      echo -n "makeinstall: error: unrecognized option "
+      if [ $OPTARG != "-" ]; then echo "'-$OPTARG'. try '--help'"
+      else echo "'$1'. try '--help'"
+      fi
       print_help && exit 1
     fi
     shift 1

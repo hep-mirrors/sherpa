@@ -19,8 +19,7 @@ print_help() {
   echo
 }
 
-OPTERR=0
-while getopts hfun: OPT
+while getopts :hfun: OPT
 do
   case $OPT in
   f) DISTDIR=$DISTDIR"_"`date +'%H-%M'` ;;
@@ -39,7 +38,10 @@ echo $1 $2
     elif [ "$1" = "--no-abort" ]; then NOABORT=TRUE
     elif [ "$1" = "--force" ]; then FORCE=TRUE 
     else 
-      echo "makedist: error: unrecognized option '$1'. try '-h'" && \
+      echo -n "makedist: error: unrecognized option "
+      if [ $OPTARG != "-" ]; then echo "'-$OPTARG'. try '--help'"
+      else echo "'$1'. try '--help'"
+      fi
       print_help && exit 1
     fi
     shift 1
