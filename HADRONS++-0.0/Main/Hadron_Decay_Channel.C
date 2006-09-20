@@ -198,3 +198,10 @@ void Hadron_Decay_Channel::CreateTrivial( Spin_Density_Matrix * sigma )
     }
   }
 }
+
+namespace ATOOLS {
+  template <> Blob_Data<HADRONS::Hadron_Decay_Channel*>::~Blob_Data() { }
+  template class Blob_Data<HADRONS::Hadron_Decay_Channel*>;
+  template HADRONS::Hadron_Decay_Channel* &Blob_Data_Base::Get<HADRONS::Hadron_Decay_Channel*>();
+}
+

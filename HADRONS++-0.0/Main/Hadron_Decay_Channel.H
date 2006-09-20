@@ -227,10 +227,4 @@ namespace HADRONS {
   
 } // end of namespace
 
-namespace ATOOLS {
-  template class Blob_Data<HADRONS::Hadron_Decay_Channel*>;
-  template HADRONS::Hadron_Decay_Channel* &Blob_Data_Base::Get<HADRONS::Hadron_Decay_Channel*>();
-  template <> Blob_Data<HADRONS::Hadron_Decay_Channel*>::~Blob_Data() { }
-}
-
 #endif

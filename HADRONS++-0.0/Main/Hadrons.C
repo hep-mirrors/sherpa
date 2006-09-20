@@ -50,7 +50,7 @@ void Hadrons::CreateBookletNow()
 
   // text 
   for ( map<kf::code,Decay_Table *>::iterator pos = p_decaymap->begin(); pos != p_decaymap->end(); ++pos) {
-	kf::code      kfc (pos->first);
+//     kf::code      kfc (pos->first);
 	Decay_Table * dt  (pos->second);
 	f<<"\\section{Decaying Particle: "<<dt->Flav()<<"}\n";
 	f<<"\\begin{center} \n\\begin{tabular}{ll}\n";
@@ -177,9 +177,9 @@ Return_Value::code Hadrons::PerformSingleDecay( Blob* blob )
     return Return_Value::Retry_Method;
 
   // choose a kinematics that corresponds to the ME kinematic distribution
-  Vec4D mom[n];
+  std::vector<Vec4D> mom(n);
   mom[0] = inpart->Momentum();
-  if( n>2 ) ChooseDecayKinematics( mom, hdc, NULL );
+  if( n>2 ) ChooseDecayKinematics( &mom.front(), hdc, NULL );
   else      {
     mom[1] = mom[0];
   }
@@ -247,9 +247,9 @@ Spin_Density_Matrix Hadrons::PerformDecay(
   }
    
   // choose a kinematics that corresponds to the ME kinematic distribution
-  Vec4D mom[n];
+  std::vector<Vec4D> mom(n);
   mom[0] = part->Momentum();
-  if( n>2 ) ChooseDecayKinematics( mom, hdc, sigma ); 
+  if( n>2 ) ChooseDecayKinematics( &mom.front(), hdc, sigma ); 
   else      {
     mom[1] = mom[0];
   }
