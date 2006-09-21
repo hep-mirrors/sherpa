@@ -57,6 +57,7 @@ namespace ATOOLS {
     //!  Computational constructor
     Vec3D(const Vec3D& v1 ,const Vec3D& v2, const Tag::Tcross); 
 
+    bool Nan() const;
 
     inline const double Abs() const;
     inline const double Sqr() const;
@@ -148,6 +149,8 @@ namespace ATOOLS {
     Vec4D& operator+= (const Vec4D& v);
     Vec4D& operator-= (const Vec4D& v);
     Vec4D& operator*= (const double scal);
+
+    Vec4D operator-();
 
     // standard vectors:
     const static Vec4D XVEC;
@@ -302,6 +305,11 @@ namespace ATOOLS {
     m_x[2] *= scal;
     m_x[3] *= scal;
     return *this;
+  }
+
+  inline Vec4D Vec4D::operator-() 
+  {
+    return Vec4D(-m_x[0],-m_x[1],-m_x[2],-m_x[3]);
   }
 
   inline double operator* (const Vec4D& v1, const Vec4D& v2) 

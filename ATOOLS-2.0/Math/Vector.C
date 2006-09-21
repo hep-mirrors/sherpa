@@ -86,14 +86,21 @@ bool ATOOLS::operator==(const Vec4D& v1, const Vec4D& v2)
   double maxp=Max(dabs(v1[0]),Max(dabs(v1[1]),Max(dabs(v1[2]),dabs(v1[3])))); 
   double q(IsZero(maxp)?1.0:1.0/maxp);
   for(short int i=0;i<4;i++) 
-    if (dabs(q*(v1[i]-v2[i]))>Vec4D::Accu()) return false;
+   if (dabs(q*(v1[i]-v2[i]))>Vec4D::Accu() &&
+       !(dabs(v1[i])<=Vec4D::Accu() && 
+	 dabs(v2[i])<=Vec4D::Accu())) return false;
   return true;
 }
 
 bool Vec4D::Nan() const
 {
-  for(short unsigned int i(0);i<4;++i) 
-    if (!(m_x[i]>=0.0) && !(m_x[i]<=0.0)) return true;
+  for(short unsigned int i(0);i<4;++i) if (m_x[i]==NAN) return true;
+  return false;
+}
+
+bool Vec3D::Nan() const
+{
+  for(short unsigned int i(1);i<4;++i) if (m_x[i]==NAN) return true;
   return false;
 }
 
@@ -150,11 +157,13 @@ const double Vec4D::Eta(const Vec4D &ref) const
   
 bool ATOOLS::operator==(const Vec3D& v1, const Vec3D& v2) 
 {
-  double maxp=Max(v1[1],Max(v1[2],v1[3])); 
+  double maxp=Max(dabs(v1[1]),Max(dabs(v1[2]),dabs(v1[3]))); 
   double q=1.;
   if (!IsZero(maxp)) q=1./maxp;
   for(short int i=1;i<4;i++) {
-    if (!IsZero(q*(v1[i]-v2[i]))) return false;
+    if (dabs(q*(v1[i]-v2[i]))>Vec4D::Accu() &&
+	!(dabs(v1[i])<=Vec4D::Accu() && 
+	  dabs(v2[i])<=Vec4D::Accu())) return false;
   }
   return true;
 }
