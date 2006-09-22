@@ -255,14 +255,16 @@ double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale)
   PROFILE_HERE;
   double cut, x;
   cut=2.0*(flavour.PSMass()+m_hardpt.PPerp()/
-	   sqr(m_companions.size()))/sqrt(scale);
+	   sqr(m_companions.size()))/p_beam->OutMomentum()[0];
+  // assume heavy flavours have been pair-produced
+  // => scale should be approximately (2m)^2
+  scale=Max(scale,4.0*sqr(flavour.PSMass()));
   if (scale<p_pdfbase->Q2Min()) {
     msg.Error()<<"Hadron_Remnant::GetXPDF("<<flavour<<","<<scale<<"): "
 		       <<"Scale under-runs minimum given by PDF: "
 		       <<scale<<" < "<<p_pdfbase->Q2Min()<<std::endl;
     return cut;
   } 
-  if (cut>0.49) return 0.5;
   unsigned int xtrials, pdftrials=0;
   while (true) {
     ++pdftrials;
