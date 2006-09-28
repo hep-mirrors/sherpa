@@ -615,6 +615,9 @@ namespace ATOOLS {
     inline bool IsStable() const {
       return particles[ Index() ].stbl;
     }
+    inline void SetStable(bool stable) const {
+      particles[ Index() ].stbl = stable;
+    }
     inline void SetOn(bool on) const {
       particles[ Index() ].on = on;
     }
