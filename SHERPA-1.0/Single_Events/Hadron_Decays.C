@@ -27,7 +27,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Hadron_Decays::Hadron_Decays(HDHandlersMap * _dechandlers) :
-  p_dechandlers(_dechandlers), p_bloblist(NULL), m_mass_smearing(true)
+  p_dechandlers(_dechandlers), p_bloblist(NULL)
 {
 #ifdef DEBUG__Hadrons
   Fl_Iter fli;
@@ -43,6 +43,8 @@ Hadron_Decays::Hadron_Decays(HDHandlersMap * _dechandlers) :
     }
   }
 #endif
+  if(p_dechandlers->size()) m_mass_smearing=p_dechandlers->begin()->second->GetMassSmearing();
+  else                      m_mass_smearing=true;
   m_name      = std::string("Hadron_Decays");
   m_type      = eph::Hadronization;
 }

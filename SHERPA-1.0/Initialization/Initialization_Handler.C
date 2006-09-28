@@ -458,6 +458,18 @@ bool Initialization_Handler::InitializeTheHadronDecays()
     }
     m_hdhandlers.clear();
   }
+
+  double max_propertime = dr.GetValue<double>("MAX_PROPER_LIFETIME",-1.0);
+  if( max_propertime > 0.0) {
+    Fl_Iter fli;
+    for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
+      if (flav.IsOn() && flav.IsHadron() && !flav.IsStable() &&
+          0.197e-12>max_propertime*flav.Width())
+      {
+        flav.SetStable(true);
+      }
+    }
+  }
   
   bool needextra = true; set<kf::code>* hadrons_cans=NULL;
   Hadron_Decay_Handler * hdhandler = NULL;
@@ -472,6 +484,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
     string decayconstfile  = dr.GetValue<string>("DECAYCONSTFILE",string("HadronConstants.dat"));
     hdhandler              = new Hadron_Decay_Handler(new HADRONS::Hadrons(decaypath,decayfile,decayconstfile));
     hadrons_cans = hdhandler->GetCans();
+    hdhandler->SetMassSmearing(dr.GetValue<int>("MASS_SMEARING",1));
     m_hdhandlers["Hadrons"] = hdhandler;
   }
 #endif
@@ -488,6 +501,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
       }
     }
     hdhandler      = new Hadron_Decay_Handler(lund);
+    hdhandler->SetMassSmearing(dr.GetValue<int>("MASS_SMEARING",1));
     m_hdhandlers["Lund"]   = hdhandler;
   }
   if (decmodel!=std::string("Hadrons") && decmodel!=string("Lund")) {

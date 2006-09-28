@@ -21,6 +21,7 @@ namespace SHERPA {
   protected :
     std::string                   m_decmodel;
     int                           m_mode;
+    bool                          m_mass_smearing;
 #ifdef USING__Hadrons
     HADRONS::Hadrons            * p_hadrons;
 #endif
@@ -44,6 +45,8 @@ namespace SHERPA {
     Lund_Interface   * GetLund()    { return p_lund; }
     std::string        Name()       { return m_decmodel; }
     std::set<ATOOLS::kf::code>  * GetCans() { return p_cans; }
+    void               SetMassSmearing(bool ms)      { m_mass_smearing = ms; }
+    bool               GetMassSmearing()             { return m_mass_smearing; }
     bool               DiceMass(ATOOLS::Particle*, double min, double max);
   };
 

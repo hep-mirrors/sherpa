@@ -52,6 +52,16 @@ namespace SHERPA {
     needs_hadrondecays)
     */
   /*!
+    \var double Hadron_Decays::m_mass_smearing
+    \brief Switch to turn mass smearing on and off.
+
+    Can be set by the "MASS_SMEARING = [0,1]" variable in Fragmentation.dat
+  */
+  /*!
+    \var double Hadron_Decays::m_max_mass
+    \brief Temporary storage for total incoming mass in blob.
+  */
+  /*!
     \fn Hadron_Decays::Treat(ATOOLS::Blob_List *, double &)
     \brief Treats all blobs in a blob list which need hadron decays.
 
