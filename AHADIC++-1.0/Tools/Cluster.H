@@ -254,6 +254,7 @@ namespace AHADIC {
     \var ATOOLS::Particle  * p_self
     \brief A pointer to a particle representing the cluster - this can be used for extended
     event records.
+  */
   /*!
     \var static long int s_cluster_count
     \brief For debugging reasons - a counter checking whether all clusters have been
