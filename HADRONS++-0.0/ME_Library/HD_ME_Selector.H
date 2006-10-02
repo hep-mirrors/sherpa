@@ -10,8 +10,6 @@ namespace HADRONS {
 
   class HD_ME_Selector {
 
-    void SelectBMesonDecay(int nout,ATOOLS::Flavour * flavs,HD_ME_Base *& hdme );
-    void SelectKMesonDecay(int nout,ATOOLS::Flavour * flavs,HD_ME_Base *& hdme );
     void SelectTauDecay(int nout,ATOOLS::Flavour * flavs, HD_ME_Base *& hdme ); 
     void SelectLightPseudoScalarDecay( int nout, ATOOLS::Flavour *flavs, HD_ME_Base *& hdme );
     void SetVector_For_2PS(int,int,int,ATOOLS::Flavour *,HD_ME_Base *);
@@ -28,7 +26,7 @@ namespace HADRONS {
     int kfc = flav.Kfcode(); 
     if (kfc<1000 && kfc>110 && kfc%10==1) return true;
     return false;
-  };  // end of inline (belongs to class)
+  }  // end of inline (belongs to class)
 
   /*!
 	\file HD_ME_Selector.H

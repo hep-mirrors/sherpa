@@ -25,7 +25,7 @@ namespace HADRONS
 	  
 	public:
 
-	  XYZFunc( int nout, const ATOOLS::Vec4D *p, const ATOOLS::Flavour *fl, int k0_n );
+	  XYZFunc( int nout, const ATOOLS::Vec4D *p, const ATOOLS::Flavour *fl, int k0_n, bool anti=false );
 
 	  void Delete()
 	  {
@@ -50,15 +50,19 @@ namespace HADRONS
 		  const Complex cR1, const Complex cL2, 
 		  const Complex cR2, const Complex cL2 ); 
 	  Complex Y( 
-		  const int t1, const int l1, 
+		  const int t1, const int l1,
 		  const int t2, const int l2,
-		  const int t3, const int l3,
 		  const Complex cR, const Complex cL ); 
 	  Complex X( 
 		  const int t1, const int l1, 
-		  const int t2, const int l2,
+		  const int t2,
 		  const int t3, const int l3,
-		  const Complex cR, const Complex cL ); 
+		  const Complex cR, const Complex cL );
+      Complex X(
+                const int t1, const int l1,
+                const ATOOLS::Vec4D p2,
+                const int t3, const int l3,
+                const Complex cR, const Complex cL );
 	  Complex S( const int s, const int i, const int j );
       Complex S( const int s, const int i, const ATOOLS::Vec4D p, Complex eta );
       Complex S( const int s, const ATOOLS::Vec4D p, Complex eta, const int j );

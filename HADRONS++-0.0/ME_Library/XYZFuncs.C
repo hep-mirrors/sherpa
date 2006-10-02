@@ -6,7 +6,7 @@ using namespace HADRONS;
 using namespace ATOOLS;
 
 // constructor
-XYZFunc::XYZFunc( int nout, const Vec4D *p, const Flavour *fl, int k0_n )
+XYZFunc::XYZFunc( int nout, const Vec4D *p, const Flavour *fl, int k0_n, bool anti )
 {
   m_N = nout+1;
   p_mom = new Vec4D[m_N];
@@ -14,6 +14,7 @@ XYZFunc::XYZFunc( int nout, const Vec4D *p, const Flavour *fl, int k0_n )
   for( int i=0; i<m_N; i++ ) {
     p_mom[i] = p[i];
     p_flav[i] = fl[i];
+    if(anti) p_flav[i] = p_flav[i].Bar();
   }
   m_k0n = k0_n;
   CalcEtaMu();
@@ -242,24 +243,33 @@ Complex XYZFunc::Z(
 }
  
 Complex XYZFunc::Y( 
-	const int t1, const int l1, 
+	const int t1, const int l1,
 	const int t2, const int l2,
-	const int t3, const int l3,
 	const Complex cR, const Complex cL ) 
 {											// l=0 <=> -; l=1 <=> +; <---- helicity
-  const int hel_comb = ((1-l1)<<2) + ((1-l2)<<1) + (1-l3);
+  const int hel_comb = ((1-l1)<<1) + (1-l2);
   return( Y(t1,t2,hel_comb,cR,cL) );
 }
  
 
 Complex XYZFunc::X( 
 	const int t1, const int l1, 
-	const int t2, const int l2,
+	const int t2,
 	const int t3, const int l3,
 	const Complex cR, const Complex cL ) 
 {											// l=0 <=> -; l=1 <=> +; <---- helicity
-  const int hel_comb = ((1-l1)<<2) + ((1-l2)<<1) + (1-l3);
+  const int hel_comb = ((1-l1)<<1) + (1-l3);
   return( X(t1,t2,t3,hel_comb,cR,cL) );
+}
+
+Complex XYZFunc::X( 
+                    const int t1, const int l1,
+                    const Vec4D p2,
+                    const int t3, const int l3,
+                    const Complex cR, const Complex cL )
+{                                                                                       // l=0 <=> -; l=1 <=> +; <---- helicity
+  const int hel_comb = ((1-l1)<<1) + (1-l3);
+  return( X(t1,p2,t3,hel_comb,cR,cL) );
 }
  
 Complex XYZFunc::Q(short hel)

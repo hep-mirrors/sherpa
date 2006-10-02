@@ -2,10 +2,10 @@
 #include "HD_ME_Selector.H"
 #include "Message.H"
 
-#include "B_Meson_Decay_MEs.H"
 #include "Tau_Decay_MEs.H"
 #include "Two_Body_MEs.H"
 #include "Three_Body_MEs.H"
+#include "Four_Body_MEs.H"
 
 
 using namespace HADRONS;
@@ -32,93 +32,29 @@ HD_ME_Base * HD_ME_Selector::GetME(int nin,int nout,Flavour * flavs)
 
   // Select ME depending on decaying particle
   switch (flavs[0]) {
-    case (kf::mu):
     case (kf::tau):
       SelectTauDecay(nout,flavs,hdme);
-      break;
-    case (kf::pi):
-    case (kf::K_plus):
-      //SelectKMesonDecay(nout,flavs,hdme);
       break;
     case (kf::eta):
     case (kf::eta_prime_958):
       SelectLightPseudoScalarDecay(nout,flavs,hdme);
       break;
-    case (kf::rho_770):
-    case (kf::rho_770_plus):
-    case (kf::omega_782):
-      //  case (kf::Kstar_892):
-      //  case (kf::Kstar_892_plus):
-    case (kf::phi_1020):
-      //SelectLightVectorDecay(nout,flavs,hdme);
-      break;
-    case (kf::B):
-    case (kf::B_plus):
-    case (kf::B_s):
-      SelectBMesonDecay(nout,flavs,hdme);
-      break;
+//     case (kf::B_plus): // for testing higgs -> tau tau
+//       switch(nout) {
+//         case 2:
+//           hdme = new S_FF( nout,flavs );
+//           break;
+//         case 4:
+//           hdme = new Higgs_TauTau_2Pi2Neutrino(nout, flavs);
+//           break;
+//       }
+//       break;
   }
 
   if (hdme==NULL) hdme = new Isotropic(nout,flavs);
   return hdme;
 }
 
-
-// Select the corresponding B meson decay ME
-void HD_ME_Selector::SelectBMesonDecay(int nout,Flavour * flavs,
-				       HD_ME_Base *& hdme )
-{
-  std::cout<<"HD_ME_Selector::SelectBMesonDecay 1->"<<nout<<endl;
-  switch( nout ) {
-  case 3: {
-    int nLep(0), nHeavy(0), nLight(0);
-    for( int i=1; i<4; i++ ) {
-      if( flavs[i].IsLepton() ) nLep++;
-    }
-    std::cout<<"Semileptonic"<<std::endl;
-    if (nLep==2) hdme = new Semileptonic_B_Meson( nout, flavs );
-    break;
-  }
-  default: 
-    msg.Error()<<nout<<"-body decays of B's do not have any ME yet."<<std::endl;
-    abort();
-  }
-}
-
-// Select the corresponding K meson decay ME
-void HD_ME_Selector::SelectKMesonDecay(int nout,Flavour * flavs,
-                                       HD_ME_Base *& hdme )
-{
-  std::cout<<"HD_ME_Selector::SelectKMesonDecay 1->"<<nout<<endl;
-  switch( nout ) {
-    case 2: {
-      if( flavs[1].IsLepton() && flavs[2].IsLepton() ) {
-//        hdme = new K_Meson_Lepton( nout, flavs );
-      }
-      else {
-        msg.Error()<<nout<<"No ME for hadronic 2-body decays of K+ yet."<<std::endl;
-      }
-      break;
-    }
-    case 3: {
-      int nLep(0), nPi(0);
-      for( int i=1; i<4; i++ ) {
-        if( flavs[i].IsLepton() ) nLep++;
-        if( flavs[i].Kfcode() == kf::pi ) nPi++;
-      }
-      if (nLep==2 && nPi==1) {
-//        hdme = new K_Meson_SemiLeptonic( nout, flavs );
-      }
-      else {
-        msg.Error()<<nout<<"No ME for hadronic 3-body decays of K+ yet."<<std::endl;
-      }
-      break;
-    }
-    default:
-      msg.Error()<<nout<<"-body decays of K+'s do not have any ME yet."<<std::endl;
-      //abort();
-  }
-}
 
 // Select the corresponding tau decay ME
 void HD_ME_Selector::SelectTauDecay(int nout,Flavour * flavs,
@@ -153,7 +89,7 @@ void HD_ME_Selector::SelectTauDecay(int nout,Flavour * flavs,
               flavs[i].Kfcode() == kf::K_L ) nKaon++;
         }
         if( nLep == 3 ) {
-          hdme = new Tau_Lepton( nout, flavs ); 
+          hdme = new Tau_Lepton( nout, flavs );
         }
         if( nPion == 2 ) {
           hdme = new Tau_Two_Pion( nout, flavs );
@@ -176,11 +112,11 @@ void HD_ME_Selector::SelectTauDecay(int nout,Flavour * flavs,
               flavs[i].Kfcode() == kf::K_plus ||
               flavs[i].Kfcode() == kf::K_L ||
               flavs[i].Kfcode() == kf::K_S) nPseudo++;
-          if( flavs[i].Kfcode() == kf::eta ) nEta++;  
+          if( flavs[i].Kfcode() == kf::eta ) nEta++;
         }
-        if( nPseudo==3 ) 
+        if( nPseudo==3 )
           hdme = new Tau_Three_Pseudo( nout, flavs );
-        if( nEta==1 && nPseudo==2 ) 
+        if( nEta==1 && nPseudo==2 )
           hdme = new Tau_Eta_Two_Pion( nout, flavs );
 
       }
@@ -207,37 +143,37 @@ void HD_ME_Selector::SelectLightPseudoScalarDecay(
 						  int nout,Flavour * flavs,
 						  HD_ME_Base *& hdme)
 {
-  msg_Tracking()<<"HD_ME_Selector::SelectLightPseudoScalarDecay 1->"<<nout<<endl;
-  switch (nout) {
-  case 2:
-    if (flavs[1]==Flavour(kf::photon) &&
-	flavs[2]==Flavour(kf::photon)) 
-      hdme = new P_2Gamma(nout,flavs);
-    break;
-  case 3: 
-    if (flavs[1].IsLepton() &&
-	flavs[2].IsLepton() && flavs[2].IsAnti() &&
-	flavs[3]==Flavour(kf::photon)) {
-      hdme = new P_GammaFF(nout,flavs);
-    }
-    if (IsPseudoScalar(flavs[1]) &&
-	flavs[2]==Flavour(kf::photon) &&
-	flavs[3]==Flavour(kf::photon)) { 
-      hdme = new P_P2Gamma(nout,flavs);
-    }
-    if (flavs[1]==Flavour(kf::pi_plus) &&
-	flavs[2]==Flavour(kf::pi_plus).Bar() &&
-	flavs[3]==Flavour(kf::photon)) {
-      hdme = new P_2PGamma(nout,flavs);
-      SetVector_For_2PS(nout,1,2,flavs,hdme);
-    }
-    if (IsPseudoScalar(flavs[1]) &&
-	IsPseudoScalar(flavs[2]) &&
-	IsPseudoScalar(flavs[3])) {
-      //hdme = new P_3P_Dalitz(nout,flavs);
-    }
-    break;
-  }
+//   msg_Tracking()<<"HD_ME_Selector::SelectLightPseudoScalarDecay 1->"<<nout<<endl;
+//   switch (nout) {
+//   case 2:
+//     if (flavs[1]==Flavour(kf::photon) &&
+// 	flavs[2]==Flavour(kf::photon))
+//       hdme = new P_2Gamma(nout,flavs);
+//     break;
+//   case 3:
+//     if (flavs[1].IsLepton() &&
+// 	flavs[2].IsLepton() && flavs[2].IsAnti() &&
+// 	flavs[3]==Flavour(kf::photon)) {
+//       hdme = new P_GammaFF(nout,flavs);
+//     }
+//     if (IsPseudoScalar(flavs[1]) &&
+// 	flavs[2]==Flavour(kf::photon) &&
+// 	flavs[3]==Flavour(kf::photon)) {
+//       hdme = new P_P2Gamma(nout,flavs);
+//     }
+//     if (flavs[1]==Flavour(kf::pi_plus) &&
+// 	flavs[2]==Flavour(kf::pi_plus).Bar() &&
+// 	flavs[3]==Flavour(kf::photon)) {
+//       hdme = new P_2PGamma(nout,flavs);
+//       SetVector_For_2PS(nout,1,2,flavs,hdme);
+//     }
+//     if (IsPseudoScalar(flavs[1]) &&
+// 	IsPseudoScalar(flavs[2]) &&
+// 	IsPseudoScalar(flavs[3])) {
+//       //hdme = new P_3P_Dalitz(nout,flavs);
+//     }
+//     break;
+//   }
 }
 
 void HD_ME_Selector::SetVector_For_2PS(int nout,int PS1, int PS2,

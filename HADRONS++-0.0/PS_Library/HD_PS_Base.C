@@ -52,6 +52,16 @@ bool HD_Channel_Selector::DecomposeChannel( string name, ChannelInformation & ci
       ci.c=bc%10; ci.b=bc/10;   // int/int !
       ci.nRes = 2;
     }
+    if( strcmp(result,"TwoResonancesParallel")==0 ) {
+      ci.name = result;
+      result = strtok( NULL, delim ); ci.res1 = result;
+      result = strtok( NULL, delim ); int ab = atoi( result );
+      result = strtok( NULL, delim ); ci.res2 = result;
+      result = strtok( NULL, delim ); int cd = atoi( result );
+      ci.a=ab%10; ci.b=ab/10;   // int/int !
+      ci.c=cd%10; ci.d=cd/10;   // int/int !
+      ci.nRes = 2;
+    }
     result = strtok( NULL, delim );
   }
   if( ci.name==string("noname") ) return 0;
@@ -114,6 +124,24 @@ Single_Channel * HD_Channel_Selector::GetChannel(
           md("Mass_"+helpname, Flavour(kf::rho_770_plus).PSMass()),
           md("Width_"+helpname,Flavour(kf::rho_770_plus).Width()) ); 
       return new TwoResonances( flavs, res_a, ci.a, res_v, ci.b, ci.c );
+    }
+    if( ci.name==string("TwoResonancesParallel") ) {
+      ResonanceFlavour res_1( ci.res1,
+                              md("Mass_"+ci.res1, Flavour(kf::tau).PSMass()),
+                              md("Width_"+ci.res1,Flavour(kf::tau).Width())
+                            );
+      string helpname;                      // name of vector resonanance as it appears in md
+      helpname = ci.res2;                   // take name unchanged
+      if( (int)helpname[helpname.size()-1] >= 48 &&
+          (int)helpname[helpname.size()-1] <= 57 )
+      {    // if last char is a number
+        helpname.insert( helpname.size()-1, "_" );      // insert _ inbetween
+      }
+      ResonanceFlavour res_2(
+                              ci.res2,
+                              md("Mass_"+helpname, Flavour(kf::tau).PSMass()),
+                              md("Width_"+helpname,Flavour(kf::tau).Width()) );
+      return new TwoResonancesParallel( flavs, res_1, ci.a, ci.b, res_2, ci.c, ci.d );
     }
   }
 

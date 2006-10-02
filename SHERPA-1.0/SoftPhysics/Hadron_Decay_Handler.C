@@ -78,14 +78,14 @@ bool Hadron_Decay_Handler::CanDealWith(kf::code kf) {
   return false;
 }
 
-Return_Value::code Hadron_Decay_Handler::FillHadronDecayBlob(Blob *blob)
+Return_Value::code Hadron_Decay_Handler::FillHadronDecayBlob(Blob *blob,const Vec4D& labmom)
 {
   Return_Value::code ret = Return_Value::Success;
   switch (m_mode) {
 #ifdef USING__Hadrons
     case 1:
       blob->SetTypeSpec("Sherpa");
-      ret = p_hadrons->PerformSingleDecay(blob);
+      ret = p_hadrons->PerformDecay(blob,labmom);
       break;
 #endif
     case 0:

@@ -350,6 +350,17 @@ Vec4D Blob::CheckMomentumConservation() const {
   return sump;
 }
 
+bool Blob::MomentumConserved() {
+  Vec4D cms_vec = Vec4D(0.,0.,0.,0.);
+  for (int i=0;i<NInP();i++) cms_vec = cms_vec + InParticle(i)->Momentum();
+  Vec4D mc = CheckMomentumConservation();
+  double accu=1e-6*cms_vec[0];
+  if(dabs(mc[0])>accu||dabs(mc[1])>accu||dabs(mc[2])>accu||dabs(mc[3])>accu) {
+    return false;
+  }
+  return true;
+}
+
 void Blob::Boost(Poincare boost) {
   for (int i=0;i<NInP();i++)
     InParticle(i)->SetMomentum(boost*InParticle(i)->Momentum());

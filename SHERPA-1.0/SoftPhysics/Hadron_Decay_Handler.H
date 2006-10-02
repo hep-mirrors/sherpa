@@ -12,7 +12,7 @@
 #ifdef USING__Hadrons
 namespace HADRONS { class Hadrons; }
 #endif
-namespace ATOOLS { class Blob; class Particle;}
+namespace ATOOLS { class Blob; class Particle; class Vec4D; }
 
 namespace SHERPA {
   class Lund_Interface;
@@ -36,7 +36,7 @@ namespace SHERPA {
 
     ~Hadron_Decay_Handler();
 
-    ATOOLS::Return_Value::code FillHadronDecayBlob(ATOOLS::Blob *);
+    ATOOLS::Return_Value::code FillHadronDecayBlob(ATOOLS::Blob *, const ATOOLS::Vec4D&);
     bool CanDealWith(ATOOLS::kf::code);
 
 #ifdef USING__Hadrons

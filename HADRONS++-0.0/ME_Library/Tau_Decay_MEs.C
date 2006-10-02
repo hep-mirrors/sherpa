@@ -43,26 +43,29 @@ void Tau_Lepton::SetModelParameters( GeneralModel _md )
  
 void Tau_Lepton::operator()( 
     const Vec4D         * _p, 
-    vector<Complex>     * _ampls_tensor, 
-    vector<pair<int,int> > * _indices,
+    Amplitude_Tensor    * amps,
     int                    k0_n)
 {
   XYZFunc F(m_nout,_p,p_flavs,k0_n);
   // create amplitudes tensor
-  _ampls_tensor->clear();
-  for( int h=0; h<16; h++ ) {      // for all helicity combinations
-      _ampls_tensor->push_back( 
-          F.Z( m_nutau, 0, m_lep, m_nulep, h, m_cR1, m_cL1, m_cR2, m_cL2 ) * m_global 
-      );
+  for( int htau=0;htau<2;htau++) {
+    for( int hnutau=0;hnutau<2;hnutau++) {
+      for( int hlep=0;hlep<2;hlep++) {
+        for( int hnulep=0;hnulep<2;hnulep++) {
+          Complex amp = F.Z( m_nutau, hnutau, 0, htau, m_lep, hlep, m_nulep, hnulep,
+                             m_cR1, m_cL1, m_cR2, m_cL2 ) * m_global;
+
+          vector<pair<int,int> > spins;
+          spins.push_back(make_pair(0,htau));
+          spins.push_back(make_pair(m_nutau,hnutau));
+          spins.push_back(make_pair(m_nulep,hnulep));
+          spins.push_back(make_pair(m_lep,hlep));
+          amps->InsertAmplitude(amp,spins);
+        }
+      }
+    }
   }
   F.Delete();
-  // create index bookkeeping (using internal numbers 0 -> 1 2 3)
-  // with pair (number, 2*spin); note: reversed order
-  _indices->clear();
-  _indices->push_back( pair<int,int>(m_nulep,1) );
-  _indices->push_back( pair<int,int>(m_lep,1) );
-  _indices->push_back( pair<int,int>(0,1) );
-  _indices->push_back( pair<int,int>(m_nutau,1) );
 }
  
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -97,25 +100,25 @@ void Tau_Pseudo::SetModelParameters( GeneralModel _md )
   
 void Tau_Pseudo::operator()( 
     const Vec4D         * _p, 
-    vector<Complex>     * _ampls_tensor, 
-    vector<pair<int,int> > * _indices,
+    Amplitude_Tensor    * amps,
     int                   k0_n )
 {
-  XYZFunc F(m_nout,_p,p_flavs,k0_n);
+  XYZFunc F(m_nout,_p,p_flavs,k0_n,m_anti);
+  Complex ampl(0.0,0.0);
   // create amplitudes tensor
-  _ampls_tensor->clear();
-  for( int h=0; h<4; h++ ) {
-      _ampls_tensor->push_back( 
-          F.X(m_nutau,m_pion,0,h,m_cR,m_cL) * m_global
-      );
+  for( int htau=0;htau<2;htau++) {
+    for( int hnutau=0;hnutau<2;hnutau++) {
+      if(m_anti) ampl = F.X(0,htau,m_pion,m_nutau,hnutau,m_cR,m_cL) * m_global;
+      else       ampl = F.X(m_nutau,hnutau,m_pion,0,htau,m_cR,m_cL) * m_global;
+      
+      vector<pair<int,int> > spins;
+      spins.push_back(make_pair(0,htau));
+      spins.push_back(make_pair(m_nutau,hnutau));
+      spins.push_back(make_pair(m_pion,0));
+      amps->InsertAmplitude(ampl,spins);
+    }
   }
   F.Delete();
-  // create index bookkeeping (using internal numbers 0 -> 1 2)
-  // with pair (number, 2*spin); note: reversed order
-  _indices->clear();
-  _indices->push_back( pair<int,int>(0,1) );
-  _indices->push_back( pair<int,int>(m_nutau,1) );
-  // note: pion does not have spin index
 }
  
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -229,28 +232,28 @@ Complex Tau_Two_Pion::FormFactor( double s )
 
 void Tau_Two_Pion::operator()( 
     const Vec4D         * _p, 
-    vector<Complex>     * _ampls_tensor, 
-    vector<pair<int,int> > * _indices,
+    Amplitude_Tensor    * amps,
     int                   k0_n)
 {
   XYZFunc F(m_nout,_p,p_flavs,k0_n);
   // create amplitudes tensor
-  _ampls_tensor->clear();
   double  q2 = (_p[m_pion_ch] + _p[m_pion0] ).Abs2();
   Complex FF = FormFactor(q2);
-  for( int h=0; h<4; h++ ) {        // helicity comb. (nutau,tau)
-      _ampls_tensor->push_back( 
-          ( F.X(m_nutau,m_pion_ch,0,h,m_cR,m_cL)
-          - F.X(m_nutau,m_pion0,0,h,m_cR,m_cL) ) * m_global*FF
-      );
+  for( int htau=0;htau<2;htau++) {
+    for( int hnutau=0;hnutau<2;hnutau++) {
+      Complex amp = (   F.X(m_nutau,hnutau,m_pion_ch,0,htau,m_cR,m_cL)
+                      - F.X(m_nutau,hnutau,m_pion0,0,htau,m_cR,m_cL) ) * m_global*FF;
+      
+      vector<pair<int,int> > spins;
+      spins.push_back(make_pair(0,htau));
+      spins.push_back(make_pair(m_nutau,hnutau));
+      spins.push_back(make_pair(m_pion0,0));
+      spins.push_back(make_pair(m_pion_ch,0));
+      amps->InsertAmplitude(amp,spins);
+    }
   }
+
   F.Delete();
-  // create index bookkeeping (using internal numbers 0 -> 1 2)
-  // with pair (number, 2*spin); note: reversed order
-  _indices->clear();
-  _indices->push_back( pair<int,int>(0,1) );
-  _indices->push_back( pair<int,int>(m_nutau,1) );
-  // note: pion does not have spin index
 }
  
 
@@ -447,31 +450,30 @@ Complex Tau_Pion_Kaon::KS::ScalarFormFactor( double s )
 
 void Tau_Pion_Kaon::operator()( 
     const Vec4D         * _p, 
-    vector<Complex>     * _ampls_tensor, 
-    vector<pair<int,int> > * _indices,
+    Amplitude_Tensor    * amps,
     int                   k0_n)
 {
   XYZFunc F(m_nout,_p,p_flavs,k0_n);
   // create amplitudes tensor
-  _ampls_tensor->clear();
   double  q2 = (_p[m_pion]+_p[m_kaon]).Abs2();
   Complex FS = p_ff->ScalarFormFactor(q2);
   Complex FV = p_ff->VectorFormFactor(q2);
   Complex termK = m_Delta_KP/q2*(FS-FV)+FV;
   Complex termP = m_Delta_KP/q2*(FS-FV)-FV;
-  for( int h=0; h<4; h++ ) {        // helicity comb. (nutau,tau)
-      _ampls_tensor->push_back( 
-          ( F.X(m_nutau,m_kaon,0,h,m_cR,m_cL) * termK
-          + F.X(m_nutau,m_pion,0,h,m_cR,m_cL) * termP ) * m_global
-      );
-  }
+  for( int htau=0;htau<2;htau++) {
+    for( int hnutau=0;hnutau<2;hnutau++) {
+      Complex amp = (   F.X(m_nutau,hnutau,m_kaon,0,htau,m_cR,m_cL) * termK
+                      + F.X(m_nutau,hnutau,m_pion,0,htau,m_cR,m_cL) * termP ) * m_global;
+      
+      vector<pair<int,int> > spins;
+      spins.push_back(make_pair(0,htau));
+      spins.push_back(make_pair(m_nutau,hnutau));
+      spins.push_back(make_pair(m_pion,0));
+      spins.push_back(make_pair(m_kaon,0));
+      amps->InsertAmplitude(amp,spins);
+    }
+  }  
   F.Delete();
-  // create index bookkeeping (using internal numbers 0 -> 1 2)
-  // with pair (number, 2*spin); note: reversed order
-  _indices->clear();
-  _indices->push_back( pair<int,int>(0,1) );
-  _indices->push_back( pair<int,int>(m_nutau,1) );
-  // note: pion/kaon do not have spin index
 }
  
 
@@ -1302,13 +1304,11 @@ Complex Tau_Three_Pseudo::FormFactor( int j, double Q2, double s, double t )
 
 void Tau_Three_Pseudo::operator()( 
     const Vec4D         * _p, 
-    vector<Complex>     * _ampls_tensor, 
-    vector<pair<int,int> > * _indices,
+    Amplitude_Tensor    * amps,
     int                   k0_n )
 {
   XYZFunc F(m_nout,_p,p_flavs,k0_n);
   // create amplitudes tensor
-  _ampls_tensor->clear();
   Vec4D p1( _p[m_pseudo_1] ),
         p2( _p[m_pseudo_2] ),
         p3( _p[m_pseudo_3] );
@@ -1323,20 +1323,23 @@ void Tau_Three_Pseudo::operator()(
   Complex F1 = FormFactor( 1, Q2, s, t );        
   Complex F2 = FormFactor( 2, Q2, s, t );        
   Complex FS = FormFactor( 3, Q2, s, t );
-  for( int h=0; h<4; h++ ) {        // helicity comb. (nutau,tau)
-      _ampls_tensor->push_back( 
-          ( F.X( m_nutau, m_pseudo_1, 0, h, m_cR, m_cL ) * ( FS + F1*(1.-d1) - F2*d2 )
-          + F.X( m_nutau, m_pseudo_2, 0, h, m_cR, m_cL ) * ( FS - F1*d1 + F2*(1.-d2) )
-          + F.X( m_nutau, m_pseudo_3, 0, h, m_cR, m_cL ) * ( FS - F1*(1.+d1) - F2*(1.+d2) ) ) * m_global
-      );
+  for( int htau=0;htau<2;htau++) {
+    for( int hnutau=0;hnutau<2;hnutau++) {
+      Complex amp =
+        ( F.X( m_nutau,hnutau, m_pseudo_1, 0,htau, m_cR, m_cL ) * ( FS + F1*(1.-d1) - F2*d2 )
+        + F.X( m_nutau,hnutau, m_pseudo_2, 0,htau, m_cR, m_cL ) * ( FS - F1*d1 + F2*(1.-d2) )
+        + F.X( m_nutau,hnutau, m_pseudo_3, 0,htau, m_cR, m_cL ) * ( FS - F1*(1.+d1) - F2*(1.+d2) ) ) * m_global;
+      
+      vector<pair<int,int> > spins;
+      spins.push_back(make_pair(0,htau));
+      spins.push_back(make_pair(m_nutau,hnutau));
+      spins.push_back(make_pair(m_pseudo_1,0));
+      spins.push_back(make_pair(m_pseudo_2,0));
+      spins.push_back(make_pair(m_pseudo_3,0));
+      amps->InsertAmplitude(amp,spins);
+    }
   }
   F.Delete();
-  // create index bookkeeping (using internal numbers 0 -> 1 2)
-  // with pair (number, 2*spin); note: reversed order
-  _indices->clear();
-  _indices->push_back( pair<int,int>(0,1) );
-  _indices->push_back( pair<int,int>(m_nutau,1) );
-  // note: pseudos do not have spin index
 }
  
  
@@ -1647,36 +1650,38 @@ Complex Tau_Four_Pion_3::KS::operator()( int number )
 
 void Tau_Four_Pion_3::operator()( 
     const Vec4D         * _p, 
-    vector<Complex>     * _ampls_tensor, 
-    vector<pair<int,int> > * _indices,
+    Amplitude_Tensor    * amps,
     int                   k0_n)
 {
   XYZFunc F(m_nout,_p,p_flavs,k0_n);
   // internal numeration and convenient variables
   for (int i=1; i<=5; i++ ) m_p[i] = _p[m_inter[i]];
   // create amplitudes tensor
-  _ampls_tensor->clear();
   Complex help(0.,0.);
-  for( int h=0; h<4; h++ ) {        // helicity comb. (nutau,tau)
-    // pre-calculate X-funcs
-    for (int k=1; k<=4; k++) 
-      m_X[k] = F.X( m_nutau, m_inter[k], 0, h, m_cR, m_cL );
-    m_X[0] = m_X[1] + m_X[2] + m_X[3] + m_X[4];
-    // sum over all contributions
-    p_lorenz->SetPrivates( m_X, m_p );
-    help = Complex(0.,0.);
-    for (int k=0; k<m_ncontrib; k++) {
-      help += m_Alpha[k] * (*p_lorenz)(k) / m_SumAlpha;
+  for( int htau=0;htau<2;htau++) {
+    for( int hnutau=0;hnutau<2;hnutau++) {
+      // pre-calculate X-funcs
+      for (int k=1; k<=4; k++)
+        m_X[k] = F.X( m_nutau,hnutau, m_inter[k], 0,htau, m_cR, m_cL );
+      m_X[0] = m_X[1] + m_X[2] + m_X[3] + m_X[4];
+      // sum over all contributions
+      p_lorenz->SetPrivates( m_X, m_p );
+      help = Complex(0.,0.);
+      for (int k=0; k<m_ncontrib; k++) {
+        help += m_Alpha[k] * (*p_lorenz)(k) / m_SumAlpha;
+      }
+      
+      vector<pair<int,int> > spins;
+      spins.push_back(make_pair(0,htau));
+      spins.push_back(make_pair(m_nutau,hnutau));
+      spins.push_back(make_pair(m_pion0,0));
+      spins.push_back(make_pair(m_pion1,0));
+      spins.push_back(make_pair(m_pion2,0));
+      spins.push_back(make_pair(m_pion3,0));
+      amps->InsertAmplitude(help*m_global,spins);
     }
-    _ampls_tensor->push_back( help*m_global );
   }
   F.Delete();
-  // create index bookkeeping (using internal numbers 0 -> 1 2)
-  // with pair (number, 2*spin); note: reversed order
-  _indices->clear();
-  _indices->push_back( pair<int,int>(0,1) );
-  _indices->push_back( pair<int,int>(m_nutau,1) );
-  // note: pions do not have spin index
 }
  
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1803,8 +1808,7 @@ Complex Tau_Four_Pion_1::KS::operator()()
 
 void Tau_Four_Pion_1::operator()( 
     const Vec4D         * _p, 
-    vector<Complex>     * _ampls_tensor, 
-    vector<pair<int,int> > * _indices,
+    Amplitude_Tensor    * amps,
     int                   k0_n )
 {
   XYZFunc F(m_nout,_p,p_flavs,k0_n);
@@ -1813,25 +1817,28 @@ void Tau_Four_Pion_1::operator()(
     m_p[i] = _p[m_inter[i]];
   }
   // create amplitudes tensor
-  _ampls_tensor->clear();
   Complex help(0.,0.);
-  for( int h=0; h<4; h++ ) {        // helicity comb. (nutau,tau)
-    // pre-calculate X-funcs
-    for (int k=1; k<=4; k++) 
-      m_X[k] = F.X( m_nutau, m_inter[k], 0, h, m_cR, m_cL );
-    m_X[0] = m_X[1] + m_X[2] + m_X[3] + m_X[4];
-    // get Lorentz structure
-    p_lorenz->SetPrivates( m_X, m_p );
-    help = (*p_lorenz)();
-    _ampls_tensor->push_back( help*m_global );
+  for( int htau=0;htau<2;htau++) {
+    for( int hnutau=0;hnutau<2;hnutau++) {
+      // pre-calculate X-funcs
+      for (int k=1; k<=4; k++)
+        m_X[k] = F.X( m_nutau,hnutau, m_inter[k], 0,htau, m_cR, m_cL );
+      m_X[0] = m_X[1] + m_X[2] + m_X[3] + m_X[4];
+      // get Lorentz structure
+      p_lorenz->SetPrivates( m_X, m_p );
+      help = (*p_lorenz)();
+      
+      vector<pair<int,int> > spins;
+      spins.push_back(make_pair(0,htau));
+      spins.push_back(make_pair(m_nutau,hnutau));
+      spins.push_back(make_pair(m_pion0,0));
+      spins.push_back(make_pair(m_pion1,0));
+      spins.push_back(make_pair(m_pion2,0));
+      spins.push_back(make_pair(m_pion3,0));
+      amps->InsertAmplitude( help*m_global, spins);
+    }
   }
   F.Delete();
-  // create index bookkeeping (using internal numbers 0 -> 1 2)
-  // with pair (number, 2*spin); note: reversed order
-  _indices->clear();
-  _indices->push_back( pair<int,int>(0,1) );
-  _indices->push_back( pair<int,int>(m_nutau,1) );
-  // note: pions do not have spin index
 }
  
  
@@ -1881,13 +1888,11 @@ void Tau_Eta_Two_Pion::SetModelParameters( GeneralModel _md )
 
 void Tau_Eta_Two_Pion::operator()( 
     const Vec4D         * _p, 
-    vector<Complex>     * _ampls_tensor, 
-    vector<pair<int,int> > * _indices,
+    Amplitude_Tensor    * amps,
     int                   k0_n)
 {
   XYZFunc F(m_nout,_p,p_flavs,k0_n);
   // create amplitudes tensor
-  _ampls_tensor->clear();
   Vec4D p1( _p[m_pion] ),
         p2( _p[m_pion0] ),
         p3( _p[m_eta] );
@@ -1902,20 +1907,24 @@ void Tau_Eta_Two_Pion::operator()(
   Complex F1 = Complex(1.,0.);
   Complex F2 = Complex(1.,0.);
   Complex FS = Complex(0.,0.);
-  for( int h=0; h<4; h++ ) {        // helicity comb. (nutau,tau)
-      _ampls_tensor->push_back( 
-          ( F.X( m_nutau, m_pion, 0, h, m_cR, m_cL ) * ( FS + F1*(1.-d1) - F2*d2 )
-          + F.X( m_nutau, m_pion0, 0, h, m_cR, m_cL ) * ( FS - F1*d1 + F2*(1.-d2) )
-          + F.X( m_nutau, m_eta, 0, h, m_cR, m_cL ) * ( FS - F1*(1.+d1) - F2*(1.+d2) ) ) * m_global
-      );
+  for( int htau=0;htau<2;htau++) {
+    for( int hnutau=0;hnutau<2;hnutau++) {
+      Complex amp =
+        ( F.X( m_nutau,hnutau, m_pion, 0,htau, m_cR, m_cL ) * ( FS + F1*(1.-d1) - F2*d2 )
+          + F.X( m_nutau,hnutau, m_pion0, 0,htau, m_cR, m_cL ) * ( FS - F1*d1 + F2*(1.-d2) )
+          + F.X( m_nutau,hnutau, m_eta, 0,htau, m_cR, m_cL ) * ( FS - F1*(1.+d1) - F2*(1.+d2) ) )
+        * m_global;
+      
+      vector<pair<int,int> > spins;
+      spins.push_back(make_pair(0,htau));
+      spins.push_back(make_pair(m_nutau,hnutau));
+      spins.push_back(make_pair(m_pion,0));
+      spins.push_back(make_pair(m_pion0,0));
+      spins.push_back(make_pair(m_eta,0));
+      amps->InsertAmplitude(amp,spins);
+    }
   }
   F.Delete();
-  // create index bookkeeping (using internal numbers 0 -> 1 2)
-  // with pair (number, 2*spin); note: reversed order
-  _indices->clear();
-  _indices->push_back( pair<int,int>(0,1) );
-  _indices->push_back( pair<int,int>(m_nutau,1) );
-  // note: pseudos do not have spin index
 }
  
  

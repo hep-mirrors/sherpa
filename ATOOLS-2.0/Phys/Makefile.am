@@ -27,7 +27,8 @@ libToolsPhys_la_SOURCES       =	\
 				Flow.C \
 				Color.C \
 				Momenta_Stretcher.C \
-				Mass_Handler.C
+				Mass_Handler.C \
+				Amplitude_Tensor.C
 
 pkginclude_HEADERS        =	\
 			Flavour.H \
@@ -57,7 +58,8 @@ pkginclude_HEADERS        =	\
 			Event.H \
 			Color.H \
 			Momenta_Stretcher.H \
-			Mass_Handler.H
+			Mass_Handler.H \
+			Amplitude_Tensor.H
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@
 

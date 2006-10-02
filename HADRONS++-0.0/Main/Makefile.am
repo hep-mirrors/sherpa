@@ -10,6 +10,8 @@ pkginclude_HEADERS = \
 		Decay_Table_Reader.H \
 		Hadron_Decay_Channel.H 
 
+AM_CXXFLAGS = @SHERPAFLAGS@
+
 INCLUDES = @HADRONSINCS@ @PHASICINCS@ @ATOOLSINCS@ @MODELINCS@
 
 EXTRA_DIST    = @SVNINCLUDE@

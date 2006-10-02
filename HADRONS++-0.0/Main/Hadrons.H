@@ -35,6 +35,7 @@ namespace HADRONS {
 	std::map<ATOOLS::kf::code,ATOOLS::Decay_Table *> 
 	                    * p_decaymap;
     GeneralModel          m_md0;                // starter model
+    bool                  m_sc;
 	
     void ReadInConstants();
     void ReadInDecayTables();
@@ -49,15 +50,11 @@ namespace HADRONS {
         std::string _constfile=std::string("HadronConstants.dat") );
 	
     bool                   FindDecay( const ATOOLS::Flavour & );
-    Hadron_Decay_Channel * ChooseDecayChannel();
-    void                   ChooseDecayKinematics( ATOOLS::Vec4D * _p,
-                                                  Hadron_Decay_Channel * _hdc,
-                                                  ATOOLS::Spin_Density_Matrix * sigma );
-    ATOOLS::Return_Value::code     PerformSingleDecay( ATOOLS::Blob* blob );
-    ATOOLS::Spin_Density_Matrix    PerformDecay( ATOOLS::Particle * part,
-                                                 ATOOLS::Blob_List * blob_list, 
-                                                 ATOOLS::Particle_List * part_list,
-                                                 ATOOLS::Spin_Density_Matrix * sigma );
+    Hadron_Decay_Channel * ChooseDecayChannel(ATOOLS::Blob* blob);
+    void                   ChooseDecayKinematics( std::vector<ATOOLS::Vec4D> & moms,
+                                                  Hadron_Decay_Channel       * hdc,
+                                                  bool anti );
+    ATOOLS::Return_Value::code     PerformDecay( ATOOLS::Blob* blob, const ATOOLS::Vec4D& );
 
     std::map<ATOOLS::kf::code,ATOOLS::Decay_Table *> * GetDecayMap() { return p_decaymap; }
 

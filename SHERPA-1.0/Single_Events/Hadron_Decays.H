@@ -9,11 +9,14 @@ namespace ATOOLS {
   class Blob;
   class Particle;
   class Blob_List;
+  class Amplitude_Tensor;
 }
 
 #ifdef DEBUG__Hadrons
+#ifdef USING__Root
 class TH1D;
 class TFile;
+#endif
 #endif
 
 namespace SHERPA {
@@ -23,16 +26,20 @@ namespace SHERPA {
     ATOOLS::Blob_List        * p_bloblist;
     ATOOLS::Particle_Vector    m_daughters;
     std::vector<ATOOLS::Vec4D> m_saved_momenta;
+    ATOOLS::Amplitude_Tensor*  p_saved_amplitudes;
     double                     m_max_mass;
     bool                       m_mass_smearing;
 #ifdef DEBUG__Hadrons
+#ifdef USING__Root
     TFile* p_file;
     std::map<ATOOLS::kf::code,TH1D*> mass_hists;
+#endif
 #endif
 
     ATOOLS::Return_Value::code Treat(ATOOLS::Blob * blob);
     ATOOLS::Return_Value::code Treat(int i);
     bool PrepareMassSmearing(ATOOLS::Blob* blob);
+    void ResetMotherAmplitudes(ATOOLS::Blob* blob);
     Hadron_Decay_Handler* ChooseDecayHandler(ATOOLS::Particle* part);
   public :
     Hadron_Decays(HDHandlersMap *);

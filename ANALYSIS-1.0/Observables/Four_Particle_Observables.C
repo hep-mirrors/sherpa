@@ -384,3 +384,35 @@ Primitive_Observable_Base * Di_Mass::Copy() const
 {
   return new Di_Mass(m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
+
+// ==================================================================
+
+DEFINE_OBSERVABLE_GETTER(Four_Particle_PlaneAngleCMS,
+                         Four_Particle_PlaneAngleCMS_Getter,"PlaneAngleCMS")
+
+void Four_Particle_PlaneAngleCMS::Evaluate(const Vec4D & mom1,const Vec4D & mom2,
+                                        const Vec4D & mom3,const Vec4D & mom4,
+                                        double weight, int ncount)
+{
+  Vec4D sum = mom1+mom2+mom3+mom4;
+  Poincare boost(sum);
+  Vec4D p1 = boost*mom1;
+  Vec4D p2 = boost*mom2;
+  Vec4D p3 = boost*mom3;
+  Vec4D p4 = boost*mom4;
+  Vec3D normal1 = cross(Vec3D(p1),Vec3D(p3+p4));
+  Vec3D normal2 = cross(Vec3D(p3),Vec3D(p3+p4));
+  double costh  = (normal1*normal2)/(normal1.Abs()*normal2.Abs());
+  p_histo->Insert(acos(costh),weight,ncount);
+}
+
+Four_Particle_PlaneAngleCMS::Four_Particle_PlaneAngleCMS(const std::vector<Flavour> & flavs,
+                                                   int type,double xmin,double xmax,int nbins,
+                                                   const std::string& listname) :
+  Four_Particle_Observable_Base(flavs,type,xmin,xmax,nbins,listname,"PlaneAngleCMS") { }
+
+Primitive_Observable_Base * Four_Particle_PlaneAngleCMS::Copy() const
+{
+  return new Four_Particle_PlaneAngleCMS(m_flavs,m_type,m_xmin,m_xmax,m_nbins,
+                                      m_listname);
+}

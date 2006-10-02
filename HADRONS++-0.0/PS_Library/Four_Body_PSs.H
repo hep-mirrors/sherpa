@@ -54,6 +54,52 @@ namespace HADRONS {
 	}
   }; // end of class
 
+class TwoResonancesParallel : public PHASIC::Single_Channel {
+  ATOOLS::Vec4D     m_P;
+  int                   m_I, m_J, m_K, m_L;
+  int                   m_chnumber;
+//   int                   m_chnumber;
+  ResonanceFlavour  m_prop1, m_prop2;
+  ATOOLS::Flavour * p_fl;
+  
+  ATOOLS::Info_Key m_kI_IJ_KL,m_kI_I_J,m_kI_K_L,m_kZRIJ_155;
+  PHASIC::Vegas* p_vegas;
+  
+public :
+  TwoResonancesParallel( const ATOOLS::Flavour * fl,
+                         ResonanceFlavour prop1,
+                         const int i,
+                         const int j,
+                         ResonanceFlavour prop2,
+                         const int k,
+                         const int l );
+  ~TwoResonancesParallel() {
+    if (p_fl!=NULL)      delete [] p_fl; p_fl = NULL;
+    if (p_vegas != NULL) delete p_vegas; p_vegas=NULL;
+  }
+  void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * =NULL,double * _ran=NULL);
+  void GeneratePoint(ATOOLS::Vec4D * p,double * _ran=NULL);
+  void GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * =NULL);
+  void GenerateWeight(ATOOLS::Vec4D * p);
+  int  ChNumber()                 { return m_chnumber;       }
+  void SetChNumber(int _chnumber) { m_chnumber = _chnumber;  }
+  std::string ChID()              { return name;}
+  void   AddPoint(double value )  {
+    Single_Channel::AddPoint( value );
+    p_vegas->AddPoint(value, rans);
+  }
+  void   Optimize()                { p_vegas->Optimize(); }
+  void   EndOptimize()             { p_vegas->EndOptimize(); }
+  void   WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
+  void   ReadIn(std::string pId)   { p_vegas->ReadIn(pId); }
+  void   CreatePointerOnVegas() {
+//        p_vegas = new PHASIC::Vegas( rannum, 100, name );
+  }
+  void   DeletePointerOnVegas() {
+//        delete p_vegas;
+  }
+}; // end of class
+
   /*!
 	\file Four_Body_PSs.H
 	\brief Declares the class HADRONS::TwoResonances

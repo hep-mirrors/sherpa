@@ -5,6 +5,7 @@
 #include "Vector.H"
 #include <string>
 #include <utility>
+#include "Amplitude_Tensor.H"
 
 namespace HADRONS {
 
@@ -26,29 +27,30 @@ namespace HADRONS {
     ATOOLS::Flavour * p_flavs;
     double          * p_masses,* p_masses2;
 	std::string       m_path;
+    bool              m_anti;
   public:
     HD_ME_Base(int,ATOOLS::Flavour *);
     virtual ~HD_ME_Base();
     void SetPath( std::string s ) { m_path=s; }
-	std::string METype() { return m_metype; }
+    std::string METype() { return m_metype; }
+    void SetAnti(bool anti) { m_anti = anti; }
 
     virtual void   operator()( 
-        const ATOOLS::Vec4D      * _p, 
-        std::vector<Complex>     * _ampls_tensor, 
-        std::vector<std::pair<int,int> > * _indices,
-        int                        k0_n )
-    {
-      _ampls_tensor->clear();
-      _indices->clear();
-    }
+        const ATOOLS::Vec4D      * p, 
+        ATOOLS::Amplitude_Tensor * amps,
+        int                        k0_n ) = 0;
     virtual void   AddVector(double,double) {}
-	virtual void   SetModelParameters( GeneralModel _md ) {};
+    virtual void   SetModelParameters( GeneralModel _md ) {};
   }; // end of class HD_ME_Base
 
   class Isotropic : public HD_ME_Base {
   public:
     Isotropic(int,ATOOLS::Flavour *,
 	      std::string _met=std::string(""));
+    void   operator()(
+                       const ATOOLS::Vec4D  * _p,
+                       ATOOLS::Amplitude_Tensor    * amps,
+                       int                    k0_n );
   }; // end of class Isotropic
   
   /*!

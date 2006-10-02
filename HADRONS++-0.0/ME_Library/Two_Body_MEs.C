@@ -8,23 +8,6 @@ using namespace HADRONS;
 using namespace ATOOLS;
 using namespace std;
 
-P_2Gamma::P_2Gamma(int _nout,Flavour * _flavs) :
-  HD_ME_Base(_nout,_flavs)
-{ 
-  m_metype = string("P_2Gamma");
-}
-
-void   P_2Gamma::operator()( 
-    const ATOOLS::Vec4D  * _p, 
-    std::vector<Complex> * _ampls_tensor, 
-    std::vector<std::pair<int,int> > * _indices,
-    int                    k0_n )
-{
-  _ampls_tensor->clear();
-  _ampls_tensor->push_back( p_masses2[0]/2. );
-  _indices->clear();
-}
-
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //  top -> bottom + W         %%%%%%%%%%%%%%%%%%%%%%%%%%%
 //  tau -> rho + neutrino     %%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -43,53 +26,47 @@ F_VF::F_VF( int _nout, Flavour *_fl ) :
 }
  
 void F_VF::SetModelParameters( GeneralModel _md ) 
-{ 
-  double GF = _md("GF", rpa.gen.ScalarConstant(string("GF")) ); 
-  m_global  = GF*SQRT_05*Flavour(kf::W).PSMass();
+{
+  double GF = _md("GF", rpa.gen.ScalarConstant(string("GF")) );
+  m_global  = GF*SQRT_05*(p_flavs[m_boson].PSMass());
   m_cR  = Complex(0.,_md("a",1.)-_md("b",1.));
   m_cL  = Complex(0.,_md("a",1.)+_md("b",1.));
-
-  m_MB  = Flavour(kf::W).PSMass();
-  m_GB  = Flavour(kf::W).Width(); 
-  m_MB2 = sqr(m_MB);
 }
  
 void F_VF::operator()( 
-    const Vec4D         * _p, 
-    vector<Complex>     * _ampls_tensor, 
-    vector<pair<int,int> > * _indices,
+    const Vec4D         * _p,
+    Amplitude_Tensor    * amps,
     int                   k0_n )
 {
   XYZFunc F(m_nout,_p,p_flavs,k0_n);
-  // create amplitudes tensor
-  Vec4D  p  = _p[m_boson];
-  double p2 = p.Abs2();
   Vec4D eps[2];  
-  _ampls_tensor->clear();
   Complex ampl (0.,0.);
-  for( int h=0; h<4; h++ ) {        // for all hel. comb. (b,t)
-    for( int l=0; l<4; l++ ) {      // sum over lambda (s,l,t1,t2)
-      Tools::ComplexBosonPolarizationVector(p,l,sqr(80.419),eps);
-      ampl = Complex(0.,0.);
-      if( !eps[0].IsZero() && !eps[0].Nan() ) ampl += F.X(m_fermion, eps[0], 0, h, m_cR, m_cL);
-      if( !eps[1].IsZero() && !eps[1].Nan() ) ampl += Complex(0.,1.)*F.X(m_fermion, eps[1], 0, h, m_cR, m_cL);
-      ampl *= m_global;
-      _ampls_tensor->push_back( ampl );
+  for( int hboson=0; hboson<3; hboson++ ) {      // sum over lambda (s?,l,t1,t2)
+    Tools::ComplexBosonPolarizationVector(_p[m_boson],hboson,eps);
+    for(int hf1=0;hf1<2;hf1++) {
+      for(int hf2=0;hf2<2;hf2++) {
+        ampl = Complex(0.,0.);
+        if( !eps[0].IsZero() && !eps[0].Nan() )
+          ampl += F.X(m_fermion,hf2, eps[0], 0,hf1, m_cR, m_cL);
+        if( !eps[1].IsZero() && !eps[1].Nan() )
+          ampl += Complex(0.,1.)*F.X(m_fermion,hf2, eps[1], 0,hf1, m_cR, m_cL);
+        ampl *= m_global;
+        
+        vector<pair<int,int> > spins;
+        spins.push_back(make_pair(0,hf1));
+        spins.push_back(make_pair(m_fermion,hf2));
+        spins.push_back(make_pair(m_boson,hboson));
+        amps->InsertAmplitude(ampl,spins);
+      }
     }
   }
   F.Delete();
-  // create index bookkeeping (using internal numbers 0 -> 1 2 3)
-  // with pair (number, 2*spin); note: reversed order
-  _indices->clear();
-  _indices->push_back( pair<int,int>(m_boson,3) );      // it has 4 polarisations !
-  _indices->push_back( pair<int,int>(0,1) );
-  _indices->push_back( pair<int,int>(m_fermion,1) );
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //  W   -> lepton + neutrino  %%%%%%%%%%%%%%%%%%%%%%%%%%%
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- 
+
 V_FF::V_FF( int _nout, Flavour *_fl ) :
   HD_ME_Base(_nout,_fl),
   m_ferm1(-1),
@@ -97,53 +74,117 @@ V_FF::V_FF( int _nout, Flavour *_fl ) :
 {
   m_metype = string("Vector_FermionFermion");
   for( int i=1; i<3; i++ ) {
-    if( p_flavs[i].IsAnti()==p_flavs[0].IsAnti() )  m_ferm1 = i;       
+    if( p_flavs[i].IsAnti()==p_flavs[0].IsAnti() )  m_ferm1 = i;
     else                                            m_ferm2 = i;
   }
 }
- 
-void V_FF::SetModelParameters( GeneralModel _md ) 
-{ 
-  double GF = _md("GF", rpa.gen.ScalarConstant(string("GF")) ); 
+
+void V_FF::SetModelParameters( GeneralModel _md )
+{
+  double GF = _md("GF", rpa.gen.ScalarConstant(string("GF")) );
   m_global  = GF*SQRT_05*Flavour(kf::W).PSMass();
   m_cR  = Complex(0.,_md("a",1.)-_md("b",1.));
   m_cL  = Complex(0.,_md("a",1.)+_md("b",1.));
-
-  m_MB  = Flavour(kf::W).PSMass();
-  m_GB  = Flavour(kf::W).Width(); 
-  m_MB2 = sqr(m_MB);
 }
- 
-void V_FF::operator()( 
-    const Vec4D         * _p, 
-    vector<Complex>     * _ampls_tensor, 
-    vector<pair<int,int> > * _indices,
+
+void V_FF::operator()(
+    const Vec4D         * _p,
+    Amplitude_Tensor    * amps,
     int                   k0_n)
 {
   XYZFunc F(m_nout,_p,p_flavs,k0_n);
-  // create amplitudes tensor
-  Vec4D  p  = _p[0];
-  double p2 = p.Abs2();
-  Vec4D eps[2];  
-  _ampls_tensor->clear();
-  bool zero_eps;
+  Vec4D eps[2];
   Complex ampl(0.,0.);
-  for( int h=0; h<4; h++ ) {        // for all hel. comb. (b,t)
-    for( int l=0; l<4; l++ ) {      // sum over lambda (s,l,t1,t2)
-      Tools::ComplexBosonPolarizationVector(p,l,sqr(80.419),eps);
-      ampl = Complex(0.,0.);
-      if( !eps[0].IsZero() && !eps[0].Nan() ) ampl += F.X(m_ferm1, eps[0], m_ferm2, h, m_cR, m_cL);
-      if( !eps[1].IsZero() && !eps[1].Nan() ) ampl += Complex(0.,1.)*F.X(m_ferm1, eps[1], m_ferm2, h, m_cR, m_cL);
-      ampl *= m_global;
-      _ampls_tensor->push_back( ampl );
+  for( int hboson=0; hboson<3; hboson++ ) {      // sum over lambda (s?,l,t1,t2)
+    Tools::ComplexBosonPolarizationVector(_p[0],hboson,eps);
+    for(int hf1=0;hf1<2;hf1++) {
+      for(int hf2=0;hf2<2;hf2++) {
+        ampl = Complex(0.,0.);
+        if( !eps[0].IsZero() && !eps[0].Nan() )
+          ampl += F.X(m_ferm1,hf1, eps[0], m_ferm2,hf2, m_cR, m_cL);
+        if( !eps[1].IsZero() && !eps[1].Nan() )
+          ampl += Complex(0.,1.)*F.X(m_ferm1,hf1, eps[1], m_ferm2,hf2, m_cR, m_cL);
+        ampl *= m_global;
+        
+        vector<pair<int,int> > spins;
+        spins.push_back(make_pair(0,hboson));
+        spins.push_back(make_pair(m_ferm1,hf1));
+        spins.push_back(make_pair(m_ferm2,hf2));
+        amps->InsertAmplitude(ampl,spins);
+      }
     }
   }
   F.Delete();
-  // create index bookkeeping (using internal numbers 0 -> 1 2 3)
-  // with pair (number, 2*spin); note: reversed order
-  _indices->clear();
-  _indices->push_back( pair<int,int>(0,3) );      // it has 4 polarisations !
-  _indices->push_back( pair<int,int>(m_ferm2,1) );
-  _indices->push_back( pair<int,int>(m_ferm1,1) );
 }
 
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+V_PP::V_PP( int _nout, Flavour *_fl ) :
+  HD_ME_Base(_nout,_fl)
+{
+  m_metype = string("Vector_PseudoscalarPseudoscalar");
+}
+
+void V_PP::SetModelParameters( GeneralModel _md )
+{
+}
+
+void V_PP::operator()(
+                       const Vec4D         * _p,
+                       Amplitude_Tensor    * amps,
+                       int                   k0_n )
+{
+  Vec4D q = _p[1]-_p[2];
+  Vec4D eps[2];
+  Complex ampl (0.,0.);
+  for( int hvector=0; hvector<3; hvector++ ) {      // sum over lambda (s,l,t1,t2)
+    Tools::ComplexBosonPolarizationVector(_p[0],hvector,eps);
+
+    vector<pair<int,int> > spins;
+    spins.push_back(make_pair(0,hvector));
+    spins.push_back(make_pair(1,0));
+    spins.push_back(make_pair(2,0));
+
+    ampl = Complex(0.,0.);
+    ampl += eps[0]*q;
+    ampl += Complex(0.0,1.0)*(eps[1]*q) ;
+
+    amps->InsertAmplitude(ampl,spins);
+  }
+}
+
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+S_FF::S_FF( int _nout, Flavour *_fl ) :
+  HD_ME_Base(_nout,_fl)
+{
+  m_metype = string("S_FF");
+}
+
+void S_FF::SetModelParameters( GeneralModel _md )
+{
+  m_pseudo = int(0.5 + _md("pseudo",0.0)); // scalar or pseudoscalar
+}
+
+void S_FF::operator()(
+                       const Vec4D         * _p,
+                       Amplitude_Tensor    * amps,
+                       int                   k0_n )
+{
+  Complex ampl(0.,0.);
+  Complex i(0.0,1.0);
+  XYZFunc F(m_nout,_p,p_flavs,k0_n);
+  for( int htau1=0; htau1<2; htau1++ ) {
+    for( int htau2=0; htau2<2; htau2++ ) {
+      if(m_pseudo) ampl = F.Y(1,htau1,2,htau2,1.0,-1.0);
+      else         ampl = -i*F.Y(1,htau1,2,htau2,1.0,1.0);
+      
+      vector<pair<int,int> > spins;
+      spins.push_back(make_pair(0,0));
+      spins.push_back(make_pair(1,htau1));
+      spins.push_back(make_pair(2,htau2));
+      amps->InsertAmplitude(ampl,spins);
+    }
+  }
+  F.Delete();
+}

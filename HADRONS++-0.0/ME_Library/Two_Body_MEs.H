@@ -4,27 +4,16 @@
 #include "HD_ME_Base.H"
 
 namespace HADRONS {
-  class P_2Gamma : public HD_ME_Base {
-  public:
-    P_2Gamma(int,ATOOLS::Flavour *);
-    void   operator()( 
-        const ATOOLS::Vec4D  * _p, 
-        std::vector<Complex> * _ampls_tensor, 
-        std::vector<std::pair<int,int> > * _indices,
-        int                    k0_n );
-  }; // end of class
 
   class F_VF : public HD_ME_Base {
     int m_fermion, m_boson;
     double m_global;                        // GF/sqrt(2)
     Complex m_cR, m_cL;                     // couplings for Z function
-    double m_MB, m_GB, m_MB2;               // mass, width of W
     public:
       F_VF( int nout, ATOOLS::Flavour *fl );
       void   operator()( 
-          const ATOOLS::Vec4D  * _p, 
-          std::vector<Complex> * _ampls_tensor, 
-          std::vector<std::pair<int,int> > * _indices,
+          const ATOOLS::Vec4D  * _p,
+          ATOOLS::Amplitude_Tensor     * amps,
           int                    k0_n);
       void   SetModelParameters( GeneralModel _md );
   };
@@ -33,14 +22,35 @@ namespace HADRONS {
     int m_ferm1, m_ferm2;
     double m_global;                        // GF/sqrt(2)
     Complex m_cR, m_cL;                     // couplings for Z function
-    double m_MB, m_GB, m_MB2;               // mass, width of W
     public:
       V_FF( int nout, ATOOLS::Flavour *fl );
-      void   operator()( 
-          const ATOOLS::Vec4D  * _p, 
-          std::vector<Complex> * _ampls_tensor, 
-          std::vector<std::pair<int,int> > * _indices,
+      void   operator()(
+          const ATOOLS::Vec4D  * _p,
+          ATOOLS::Amplitude_Tensor     * amps,
           int                    k0_n);
+      void   SetModelParameters( GeneralModel _md );
+  };
+
+  class V_PP : public HD_ME_Base {
+    public:
+      V_PP( int nout, ATOOLS::Flavour *fl );
+      void   operator()(
+                        const ATOOLS::Vec4D  * _p,
+                        ATOOLS::Amplitude_Tensor     * amps,
+                        int                    k0_n
+                       );
+      void   SetModelParameters( GeneralModel _md );
+  };
+
+  class S_FF : public HD_ME_Base {
+      bool m_pseudo;
+    public:
+      S_FF( int nout, ATOOLS::Flavour *fl );
+      void   operator()(
+                        const ATOOLS::Vec4D  * _p,
+                        ATOOLS::Amplitude_Tensor     * amps,
+                        int                    k0_n
+                       );
       void   SetModelParameters( GeneralModel _md );
   };
   /*!
@@ -84,6 +94,12 @@ namespace HADRONS {
 	This class is subclass of HADRONS::HD_ME_Base.
   */
 
+  /*!
+        \class S_FF
+        \brief Tool to calculate ME for (Pseudo)Scalar -> Fermion Fermion decay
+
+        This class is subclass of HADRONS::HD_ME_Base.
+  */
 	
 } // end of namespace
 

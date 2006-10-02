@@ -186,6 +186,7 @@ namespace ATOOLS {
     double              const Weight()   const { return m_weight; }
     std::vector<double> WeightContainer()      { return m_weightcontainer; } 
     Vec4D        CheckMomentumConservation() const;
+    bool  MomentumConserved();
     const Vec4D& Position()              const { return m_position; }
     const Vec4D& CMS()                   const { return m_cms_vec; }
     btp::code   const Type()             const { return m_type; }

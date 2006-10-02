@@ -41,7 +41,7 @@ int Decay_Table_Reader::FillDecayTable(Decay_Table * dt)
   Flavour          flav;											// involved flavors
   Decay_Channel  * dc;												// pointer on decay channel
 
-  for (int i=0;i<m_helpsvv.size();i++) {							// for each element
+  for (size_t i=0;i<m_helpsvv.size();i++) {							// for each element
 	if (m_helpsvv[i][0] != string("NO_FULLDECAY") &&				// if no special keyword
 	    m_helpsvv[i][0] != string("NO_ANTI") &&
 		m_helpsvv[i][0] != string("CREATE_BOOKLET") ) {
@@ -49,7 +49,7 @@ int Decay_Table_Reader::FillDecayTable(Decay_Table * dt)
 		BR = double(atof(m_helpsvv[i][1].c_str()));					//   get branching ratio
         if ( BR<1.e-6 ) BR=1.e-6;
         dc = new Decay_Channel(dt->Flav());						//   create new decay channel
-        for (int j=0;j<helpkfc.size();++j) {
+        for (size_t j=0;j<helpkfc.size();++j) {
           flav = Flavour(kf::code(abs(helpkfc[j])));
           if (helpkfc[j]<0) flav = flav.Bar();
           dc->AddDecayProduct(flav);				
@@ -74,7 +74,7 @@ int Decay_Table_Reader::FillDecayTable(Decay_Table * dt)
 void Decay_Table_Reader::FillInMatrixElementsAndPS( Decay_Table * dt, Channel_Map * chmap, GeneralModel startmd )
 {
   Decay_Channel        * dc;								// pointer on decay channel
-  Hadron_Decay_Channel * hdc;								// pointer on hadronic decay channel
+  Hadron_Decay_Channel * hdc=NULL;							// pointer on hadronic decay channel
   bool rewrite (false);										// rewrite H file ?
   for (int i=0;i<dt->NumberOfDecayChannels();i++) {			// for each channel in decay table
     dc  = dt->GetDecayChannel(i);							//   get channel
