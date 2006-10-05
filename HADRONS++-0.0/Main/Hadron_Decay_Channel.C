@@ -38,6 +38,9 @@ Hadron_Decay_Channel::Hadron_Decay_Channel( Decay_Channel * _dc, string _path ) 
   }
   ATOOLS::Particle::ResetCounter(counter);
   p_amplitudes = new Amplitude_Tensor(m_particles);
+  CMatrix* color_unitmatrix = new CMatrix(1); // will be deleted in destructor
+  (*color_unitmatrix)[0][0] = Complex(1.0,0.0);
+  p_amplitudes->SetColorMatrix(color_unitmatrix);
   HD_ME_Selector mesel;                                         // ME selector
   p_me = mesel.GetME(m_nin,m_nout,p_flavours);                  // get the appropr. ME
   p_me->SetPath( m_path );                                      // set Decaydata path 
@@ -49,7 +52,10 @@ Hadron_Decay_Channel::~Hadron_Decay_Channel()
   if (p_dc) { delete p_dc; p_dc=NULL; }
   if (p_ps) { delete p_ps; p_ps=NULL; }
   if (p_me) { delete p_me; p_me=NULL; }
-  if(p_amplitudes) { delete p_amplitudes; p_amplitudes=NULL; }
+  if(p_amplitudes) {
+    delete p_amplitudes->GetColorMatrix();
+    delete p_amplitudes; p_amplitudes=NULL;
+  }
   for(size_t i=0;i<m_particles.size();i++) {
     if(m_particles[i]) { delete m_particles[i]; }
   }

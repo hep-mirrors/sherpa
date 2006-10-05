@@ -7,7 +7,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Amplitude_Tensor::Amplitude_Tensor( Particle_Vector particles) :
-  m_particles(particles)
+  m_particles(particles), p_colormatrix(NULL)
 {
   size_t n=1;
   for(size_t i=0;i<m_particles.size();i++) {
@@ -15,22 +15,17 @@ Amplitude_Tensor::Amplitude_Tensor( Particle_Vector particles) :
     int spincombinations = flav.IntSpin()+1;
     n*=spincombinations;
   }
-  m_amplitudes = std::vector<Complex>(n);
+  m_amplitudes = std::vector<std::vector<Complex> >(n);
+}
+
+Amplitude_Tensor::~Amplitude_Tensor()
+{
 }
 
 size_t Amplitude_Tensor::GetAmplitudeNumber(const vector<int>& spins) const
 {
   if(spins.size()!=m_particles.size()) {
-    msg.Error()<<METHOD<<" Error: wrong size of spin vector:"<<endl;
-    msg.Error()<<"spins.size()="<<spins.size()<<endl;
-    for(size_t i=0;i<spins.size();i++) {
-      msg.Error()<<"spins["<<i<<"]="<<spins[i]<<endl;
-    }
-    msg.Error()<<"m_particles.size()="<<m_particles.size()<<endl;
-    for(size_t i=0;i<m_particles.size();i++) {
-      msg.Error()<<"m_particles["<<i<<"]="<<m_particles[i]->Flav()<<endl;
-    }
-    abort();
+    msg.Error()<<METHOD<<" Error: wrong size of spin vector."<<endl;
   }
   int mult(1);
   size_t num(0);
@@ -50,16 +45,7 @@ size_t Amplitude_Tensor::GetAmplitudeNumber(vector<pair<int,int> >& spins) const
   sort(spins.begin(),spins.end(),SortByFirst);
   
   if(spins.size()!=m_particles.size()) {
-    msg.Error()<<METHOD<<" Error: wrong size of spin vector:"<<endl;
-    msg.Error()<<"spins.size()="<<spins.size()<<endl;
-    for(size_t i=0;i<spins.size();i++) {
-      msg.Error()<<"spins["<<i<<"]="<<spins[i].second<<endl;
-    }
-    msg.Error()<<"m_particles.size()="<<m_particles.size()<<endl;
-    for(size_t i=0;i<m_particles.size();i++) {
-      msg.Error()<<"m_particles["<<i<<"]="<<m_particles[i]->Flav()<<endl;
-    }
-    abort();
+    msg.Error()<<METHOD<<" Error: wrong size of spin vector."<<endl;
   }
   int mult(1);
   size_t num(0);
@@ -67,9 +53,9 @@ size_t Amplitude_Tensor::GetAmplitudeNumber(vector<pair<int,int> >& spins) const
     num += mult * spins[i].second;
     mult *= (m_particles[i]->Flav().IntSpin()+1);
   }
-  if(num>m_amplitudes.size()) {
+  if(num>Size()) {
     msg.Error()<<METHOD<<" Error: tried to access amplitude out of bounce. "
-      <<"num="<<num<<" > "<<m_amplitudes.size()<<endl;
+      <<"num="<<num<<" > "<<Size()<<endl;
   }
   return num;
 }
@@ -114,9 +100,9 @@ Amplitude_Tensor ATOOLS::Contraction(Particle* part,
   }
   Amplitude_Tensor newamps(remainingparts);
   
-  for(size_t i=0;i<newamps.m_amplitudes.size();i++) {
+  for(size_t i=0;i<newamps.Size();i++) {
     std::vector<int> spins = newamps.GetSpinCombination(i);
-    Complex amp(0.0,0.0);
+    vector<Complex> amp(amps1->ColorSize()*amps2->ColorSize(),Complex(0.0,0.0));
     for(int j=0;j<part->Flav().IntSpin()+1;j++) {
       
       vector<int> spins1;
@@ -137,66 +123,124 @@ Amplitude_Tensor ATOOLS::Contraction(Particle* part,
         }
         else spins2.push_back(spins[amps1->m_particles.size()-1+k-offset]);
       }
-      amp+=amps1->GetAmplitude(spins1)*amps2->GetAmplitude(spins2);
+
+//       amp+=amps1->GetAmplitude(spins1)*amps2->GetAmplitude(spins2);
+
+      vector<Complex> amps1_colors = amps1->GetAmplitude(spins1);
+      vector<Complex> amps2_colors = amps2->GetAmplitude(spins2);
+      size_t m=0;
+      for(size_t k=0;k<amps1_colors.size();k++) {
+        for(size_t l=0;l<amps2_colors.size();l++) {
+          amp[m] += amps1_colors[k]*amps2_colors[l];
+          m++;
+        }
+      }
+      // todo: more general for both ColorSize() > 1
+      if(amps1->ColorSize()==1) {
+        newamps.SetColorMatrix(amps2->GetColorMatrix());
+      }
+      else if(amps2->ColorSize()==1) {
+        newamps.SetColorMatrix(amps1->GetColorMatrix());
+      }
+      else {
+        msg.Error()<<METHOD<<" Error: contraction not implemented for two "
+          <<"colorful Amplitude_Tensors yet."<<endl;
+        abort();
+      }
     }
     newamps.InsertAmplitude(amp,i);
   }
   return newamps;
 }
 
-void Amplitude_Tensor::InsertAmplitude(Complex amp, const vector<int>& spins)
-{
-  m_amplitudes[GetAmplitudeNumber(spins)]=amp;
-}
-
 void Amplitude_Tensor::InsertAmplitude(Complex amp, vector<pair<int,int> >& spins)
 {
-  m_amplitudes[GetAmplitudeNumber(spins)]=amp;
+  /*! only one color combination in that one spin combination*/
+  vector<Complex> amps(1,amp);
+  m_amplitudes[GetAmplitudeNumber(spins)]=amps;
+}
+
+void Amplitude_Tensor::InsertAmplitude(vector<Complex> amps, vector<pair<int,int> >& spins)
+{
+  /*! amplitudes for multiple color combinations in that one spin combination*/
+  m_amplitudes[GetAmplitudeNumber(spins)]=amps;
 }
 
 void Amplitude_Tensor::InsertAmplitude(Complex amp, size_t index)
 {
-  m_amplitudes[index]=amp;
+  /*! only one color combination in that one spin combination */
+  vector<Complex> amps(1,amp);
+  m_amplitudes[index]=amps;
 }
 
-Complex Amplitude_Tensor::GetAmplitude(const std::vector<int>& spins) const
+void Amplitude_Tensor::InsertAmplitude(vector<Complex> amps, size_t index)
+{
+  /*! amplitudes for multiple color combinations in that one spin combination*/
+  m_amplitudes[index]=amps;
+}
+
+vector<Complex> Amplitude_Tensor::GetAmplitude(const std::vector<int>& spins) const
 {
   return m_amplitudes[GetAmplitudeNumber(spins)];
 }
 
-Complex Amplitude_Tensor::GetAmplitude(size_t index) const
+vector<Complex> Amplitude_Tensor::GetAmplitude(size_t index) const
 {
   return m_amplitudes[index];
 }
 
-int Amplitude_Tensor::Size()
-{
-  return m_amplitudes.size();
-}
-
 double Amplitude_Tensor::SumSquare() const
 {
-  double value=0.0;
-  for( size_t i=0; i<m_amplitudes.size(); ++i ) {
-    value += norm(m_amplitudes[i]);
+  Complex value(0.0,0.0);
+  for( size_t i=0; i<Size(); ++i ) {
+    for( size_t j=0; j<ColorSize(); j++) {
+      for( size_t k=0; k<ColorSize(); k++) {
+        Complex Mj = m_amplitudes[i][j];
+        Complex Mk = conj(m_amplitudes[i][k]);
+        Complex Mjk = (*p_colormatrix)[j][k];
+        value += Mj*Mk*Mjk; // should be real?
+//         if(!IsZero((value.imag()))) PRINT_INFO("value.imag()="<<value.imag());
+      }
+    }
   }
-  return value;
+  return value.real();
 }
 
 void Amplitude_Tensor::Recreate( Amplitude_Tensor* newamps)
 {
   m_particles = newamps->m_particles;
   m_amplitudes = newamps->m_amplitudes;
+  p_colormatrix = newamps->p_colormatrix;
 }
 
 void Amplitude_Tensor::CreateTrivial()
 {
-  size_t n = m_amplitudes.size();
+  size_t n = Size();
   if(n<1) {
     msg.Error()<<METHOD<<" Error: m_amplitudes has size "<<n<<endl;
     abort();
   }
-  m_amplitudes = std::vector<Complex>(n,Complex(1.0,0.0));
+  m_amplitudes = vector<vector<Complex> >(n,vector<Complex>(1,Complex(1.0,0.0)));
+}
+
+size_t Amplitude_Tensor::Size() const
+{
+  return m_amplitudes.size();
+}
+
+size_t Amplitude_Tensor::ColorSize() const
+{
+  return p_colormatrix->Rank();
+}
+
+CMatrix* Amplitude_Tensor::GetColorMatrix() const
+{
+  return p_colormatrix;
+}
+
+void Amplitude_Tensor::SetColorMatrix(CMatrix* colormatrix)
+{
+  p_colormatrix = colormatrix;
 }
 
 std::ostream& ATOOLS::operator<<( std::ostream& ostr, const Amplitude_Tensor & amps) {
@@ -205,19 +249,21 @@ std::ostream& ATOOLS::operator<<( std::ostream& ostr, const Amplitude_Tensor & a
   for(size_t i=0;i<amps.m_particles.size();i++) {
     ostr<<setw(8)<<amps.m_particles[i]->Flav()<<" | ";
   }
-  ostr<<"amplitudes"<<endl;
+  ostr<<"first color amplitude"<<endl;
   for(size_t i=0;i<amps.m_amplitudes.size();i++) {
     std::vector<int> spins = amps.GetSpinCombination(i);
     for(size_t j=0;j<amps.m_particles.size();j++) {
       ostr<<setw(8)<<spins[j]<<" | ";
     }
-    ostr<<amps.m_amplitudes[i]<<endl;
+    ostr<<amps.m_amplitudes[i][0]<<endl;
   }
   return ostr;
 }
 
 namespace ATOOLS {
-  template <> Blob_Data<Amplitude_Tensor*>::~Blob_Data() { delete m_data; }
+  template <> Blob_Data<Amplitude_Tensor*>::~Blob_Data() {
+    if(m_data) delete m_data; m_data=NULL;
+  }
   template class Blob_Data<Amplitude_Tensor*>;
   template Amplitude_Tensor* &Blob_Data_Base::Get<Amplitude_Tensor*>();
 }

@@ -10,14 +10,12 @@
 #include "MyStrStream.H"
 #include <utility>
 #include <algorithm>
-#include "XYZFuncs.H"
 #include "Decay_Table.H"
 #include "Vector.H"
 #include "Particle.H"
 #include "Particle_List.H"
-#include "Spin_Density_Matrix.H"
-#include "Spin_Correlation_Tensor.H"
 #include "Blob_List.H"
+#include "Matrix.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -30,6 +28,8 @@ Hadrons::Hadrons( string _path, string _file, string _constfile ) :
   msg_Tracking()<<"In Hadrons: ("<<_path<<") "<<_constfile<<std::endl;
   ReadInConstants();
   ReadInDecayTables();
+  p_color_unitmatrix = new CMatrix(1);
+  (*p_color_unitmatrix)[0][0] = Complex(1.0,0.0);
 //  CreateBookletNow();
 }
 
@@ -177,13 +177,9 @@ Return_Value::code Hadrons::PerformDecay( Blob* blob, const Vec4D& labmom )
   if( n<3 ) moms[1] = moms[0];
   else      {
     if(m_sc) { // weight correction if spin correlations are enabled
-      // fixme : if all particles have to be retried for mass smearing
       Particle_Vector particles;
       particles.push_back(inpart);
-      Particle_Vector::iterator pit;
-      for(pit=outparticles.begin();pit!=outparticles.end();pit++) {
-        particles.push_back(*pit);
-      }
+      particles.insert(particles.end(),outparticles.begin(),outparticles.end());
 
       Poincare labboost(labmom);
       labboost.Invert();
@@ -194,6 +190,7 @@ Return_Value::code Hadrons::PerformDecay( Blob* blob, const Vec4D& labmom )
       Blob_Data_Base* scdata = (*motherblob)["amps"];
       if(scdata) {
         Amplitude_Tensor* amps = new Amplitude_Tensor(particles);
+        amps->SetColorMatrix(p_color_unitmatrix);
         Amplitude_Tensor* motheramps = scdata->Get<Amplitude_Tensor*>();
         Amplitude_Tensor* contractedamps = NULL;
         double motherampssumsquare = motheramps->SumSquare();
@@ -228,6 +225,7 @@ Return_Value::code Hadrons::PerformDecay( Blob* blob, const Vec4D& labmom )
         ChooseDecayKinematics( moms, hdc, inpart->Flav().IsAnti() );
         for( int i=1; i<n; i++ ) boosted_moms[i]=labboost*moms[i];
         Amplitude_Tensor* amps = new Amplitude_Tensor(particles);
+        amps->SetColorMatrix(p_color_unitmatrix);
         hdc->CalculateAmplitudes( &boosted_moms[0], amps, inpart->Flav().IsAnti() );
         blob->AddData("amps",new Blob_Data<Amplitude_Tensor*>(amps));
       }

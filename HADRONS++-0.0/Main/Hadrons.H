@@ -21,6 +21,7 @@ namespace ATOOLS {
   class Spin_Density_Matrix;
   class Blob;
   class Blob_List;
+  class CMatrix;
 }
 
 namespace HADRONS {
@@ -36,6 +37,7 @@ namespace HADRONS {
 	                    * p_decaymap;
     GeneralModel          m_md0;                // starter model
     bool                  m_sc;
+    ATOOLS::CMatrix             * p_color_unitmatrix;
 	
     void ReadInConstants();
     void ReadInDecayTables();
