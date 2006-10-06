@@ -15,6 +15,7 @@
 #include "Flavour.H"
 #include "Pol_Info.H"
 #include "Data_Read.H"
+#include <vector>
 
 
 namespace AMEGIC {
@@ -39,7 +40,7 @@ namespace AMEGIC {
 
     void InitializeInteractionModel(MODEL::Model_Base *);
     void ReadInProcessfile(std::string); 
-    int  ExtractFlavours(ATOOLS::Flavour *&,Pol_Info *&,std::string,vector<int>* fl=0,vector<int>* num=0);
+    int  ExtractFlavours(ATOOLS::Flavour *&,Pol_Info *&,std::string,std::vector<int>* fl=0,std::vector<int>* num=0);
     void Shorten(std::string&);
   public :
     Amegic(std::string,std::string,MODEL::Model_Base *);

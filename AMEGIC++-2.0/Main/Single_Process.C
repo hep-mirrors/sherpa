@@ -1239,11 +1239,16 @@ double Single_Process::operator()(const ATOOLS::Vec4D * mom)
   return M2 * sqr(m_pol.Massless_Norm(m_nin+m_nout,p_flavours,p_BS));
 }
 
-ATOOLS::Spin_Correlation_Tensor* Single_Process::GetSpinCorrelations()
+// ATOOLS::Spin_Correlation_Tensor* Single_Process::GetSpinCorrelations()
+// {
+//   Spin_Correlation_Tensor* SCT = p_ampl->GetSpinCorrelations(p_hel, m_nin);
+//   if (SCT != NULL) SCT->Set_k0(p_BS->Getk0_n());
+//   return SCT;
+// }
+
+void Single_Process::FillAmplitudes(Amplitude_Tensor* atensor)
 {
-  Spin_Correlation_Tensor* SCT = p_ampl->GetSpinCorrelations(p_hel, m_nin);
-  if (SCT != NULL) SCT->Set_k0(p_BS->Getk0_n());
-  return SCT;
+  p_ampl->FillAmplitudes(atensor,p_hel);
 }
 
 ATOOLS::Blob_Data_Base *Single_Process::OneEvent(double _mass) { 

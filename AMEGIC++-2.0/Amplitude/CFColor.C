@@ -43,7 +43,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
       if (mcount==rmcount) {
 
 	id  = ioh.ArrayInput<int>("",mcount);
-	CFC = ioh.MatrixInput<Complex>("",ncount,ncount);
+	CFC = new CMatrix(ioh.MatrixInput<Complex>("",ncount,ncount),ncount);
 
 	// generate map
 	map = new int[mcount];
@@ -81,9 +81,8 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
     //no color structure
     
     // matrix
-    CFC = new Complex*[1];
-    CFC[0] = new Complex[1];
-    CFC[0][0]=1.;
+    CFC = new CMatrix(1);
+    (*CFC)[0][0]=1.;
 
     ncount=1;
 
@@ -216,8 +215,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
     }
 
     // generate "reduced matrix"
-    CFC = new Complex*[ncount];
-    for (short int j=0;j<ncount;j++) CFC[j] = new Complex[ncount];
+    CFC = new CMatrix(ncount);
     Complex cffactor;
     
     m1 = first;
@@ -374,8 +372,8 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 	    }
 	    else cffactor = valuef;
 
-	    CFC[map[c1]][map[c2]] = cffactor;
-	    CFC[map[c2]][map[c1]] = conj(CFC[map[c1]][map[c2]]);
+	    (*CFC)[map[c1]][map[c2]] = cffactor;
+	    (*CFC)[map[c2]][map[c1]] = conj((*CFC)[map[c1]][map[c2]]);
 	    
 	    //clean up the string tree ...
 	    st.CleanValues();
@@ -403,9 +401,9 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
     if (idid[i]==-1) { idid[i]=idcc; ++idcc; }
     for (int j=i+1; j<ncount; ++j) {
       int hit=1;
-      Complex factor=CFC[i][0]/CFC[j][0];
+      Complex factor=(*CFC)[i][0]/(*CFC)[j][0];
       for (int k=0; k<ncount; ++k) {
-	if (CFC[i][k]!=factor*CFC[j][k]) {
+	if ((*CFC)[i][k]!=factor*(*CFC)[j][k]) {
 	  hit=0;
 	  break;
 	}
@@ -429,10 +427,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 
 CFColor::~CFColor()
 {
-  if (CFC) {
-    for (int i=0;i<ncount;i++) delete [] CFC[i];
-    delete [] CFC;
-  }
+  if (CFC) delete CFC;
   if (id)  delete id;
   if (map) delete map;
 }
@@ -505,7 +500,7 @@ void CFColor::Output(string & dirname) {
   ioh.Output("",ncount);          // size of colormatrix
 
   ioh.ArrayOutput("",id,mcount);
-  ioh.MatrixOutput("",CFC,ncount,ncount);
+  ioh.MatrixOutput("",CFC->GetMatrix(),ncount,ncount);
 }
 
 int CFColor::CompareArg(int a,int b, int c,Color_Function* cm1,Color_Function* cm2)

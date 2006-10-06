@@ -41,11 +41,13 @@ namespace ATOOLS {
   public:
     CMatrix() { m_rank = 0; p_m = NULL; }
     CMatrix(int);
+    CMatrix(Complex**,int);
     CMatrix(const CMatrix&);
     ~CMatrix();
     int             Rank()                  { return m_rank; }
     Complex       * operator[](int i)       { return p_m[i]; }
     const Complex * operator[](int i) const { return p_m[i]; }
+    Complex ** GetMatrix()      const { return p_m; } 
   };
 
 

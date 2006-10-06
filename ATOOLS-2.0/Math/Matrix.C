@@ -340,6 +340,8 @@ CMatrix::CMatrix(int _rank) : m_rank(_rank) {
   }
 }
 
+CMatrix::CMatrix(Complex** m, int rank) : p_m(m), m_rank(rank) {}
+
 CMatrix::CMatrix(const CMatrix& _in) {
   m_rank = _in.m_rank;
   p_m = new Complex*[m_rank];

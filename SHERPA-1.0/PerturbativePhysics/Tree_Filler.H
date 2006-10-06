@@ -20,7 +20,7 @@ namespace SHERPA {
 
     double m_iss_scale_fac, m_fss_scale_fac;
 
-    APACIC::Knot * Point2Knot(ATOOLS::Blob *,APACIC::Tree *,const Leg &,const ATOOLS::Vec4D &,char,Particle *&mep);
+    APACIC::Knot * Point2Knot(ATOOLS::Blob *,APACIC::Tree *,const Leg &,const ATOOLS::Vec4D &,char,ATOOLS::Particle *&mep);
     double         ColourAngle(const std::vector<APACIC::Knot *> & knots, const int i);
     bool           IsColourConnected(ATOOLS::Particle *,ATOOLS::Particle *);
 
@@ -36,8 +36,8 @@ namespace SHERPA {
     void           EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC::Knot * d2,
 				      int mode,double x1,double x2,double scale=0.);
     inline void   SetCKKWOn(const int &on) { m_ckkwon=on;   }
-    inline void   SetCMSBoost(const Vec4D &cms) { m_cms_boost=Poincare(cms); }
-    inline Poincare &CMSBoost() { return m_cms_boost; }
+    inline void   SetCMSBoost(const ATOOLS::Vec4D &cms) { m_cms_boost=ATOOLS::Poincare(cms); }
+    inline ATOOLS::Poincare &CMSBoost() { return m_cms_boost; }
   };
 }
 

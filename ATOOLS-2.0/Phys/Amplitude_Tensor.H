@@ -45,7 +45,7 @@ namespace ATOOLS
     size_t  Size() const;
     size_t  ColorSize() const;
     CMatrix* GetColorMatrix() const;
-    void    SetColorMatrix(CMatrix* colormatrix);
+    void    SetColorMatrix(const CMatrix* colormatrix);
     
     friend std::ostream& operator<<( std::ostream&, const Amplitude_Tensor &);
   };

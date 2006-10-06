@@ -12,7 +12,8 @@
 #include "Particle.H"
 #include "Blob_List.H"
 #include "Blob.H"
-#include "Spin_Correlation_Tensor.H"
+// #include "Spin_Correlation_Tensor.H"
+#include "Amplitude_Tensor.H"
 
 namespace AMEGIC { class Amegic; 
                    class Point;  }
@@ -131,7 +132,8 @@ namespace SHERPA {
     AMEGIC::Amegic     * GetAmegic();
     AMEGIC::Point      * GetDiagram(int);
     EXTRAXS::XS_Base   * GetXS(const int mode=0);
-    ATOOLS::Spin_Correlation_Tensor* GetSpinCorrelations();
+//     ATOOLS::Spin_Correlation_Tensor* GetSpinCorrelations();
+    void                 FillAmplitudes(ATOOLS::Amplitude_Tensor*);
     double               Weight();
     double               ProcessWeight();
     double               XSecWeight();

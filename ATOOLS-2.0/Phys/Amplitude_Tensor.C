@@ -238,7 +238,7 @@ CMatrix* Amplitude_Tensor::GetColorMatrix() const
   return p_colormatrix;
 }
 
-void Amplitude_Tensor::SetColorMatrix(CMatrix* colormatrix)
+void Amplitude_Tensor::SetColorMatrix(const CMatrix* colormatrix)
 {
   p_colormatrix = colormatrix;
 }

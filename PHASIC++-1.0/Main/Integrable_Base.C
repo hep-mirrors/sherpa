@@ -626,3 +626,8 @@ ATOOLS::Spin_Correlation_Tensor* Integrable_Base::GetSpinCorrelations()
 {
   return NULL;
 }
+
+void Integrable_Base::FillAmplitudes(ATOOLS::Amplitude_Tensor*)
+{
+  return;
+}

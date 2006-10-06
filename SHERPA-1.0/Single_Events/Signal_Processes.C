@@ -215,10 +215,10 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,
   blob->AddData("Factorisation_Scale",new Blob_Data<double>(facscale));
   blob->AddData("XS_Weight",new Blob_Data<double>(xsecweight));
   blob->AddData("XS_NumberOfTrials",new Blob_Data<int>(xsecntrial));
-  Spin_Correlation_Tensor* SCT = p_mehandler->GetSpinCorrelations();
-  if (SCT!=NULL)
-    blob->AddData("Spin_Correlation_Tensor",
-		  new Blob_Data<SP(Spin_Correlation_Tensor) >(SCT));
+//   Spin_Correlation_Tensor* SCT = p_mehandler->GetSpinCorrelations();
+//   if (SCT!=NULL)
+//     blob->AddData("Spin_Correlation_Tensor",
+// 		  new Blob_Data<SP(Spin_Correlation_Tensor) >(SCT));
   return success;
 }
 
