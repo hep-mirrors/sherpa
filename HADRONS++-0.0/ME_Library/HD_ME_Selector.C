@@ -39,16 +39,6 @@ HD_ME_Base * HD_ME_Selector::GetME(int nin,int nout,Flavour * flavs)
     case (kf::eta_prime_958):
       SelectLightPseudoScalarDecay(nout,flavs,hdme);
       break;
-//     case (kf::B_plus): // for testing higgs -> tau tau
-//       switch(nout) {
-//         case 2:
-//           hdme = new S_FF( nout,flavs );
-//           break;
-//         case 4:
-//           hdme = new Higgs_TauTau_2Pi2Neutrino(nout, flavs);
-//           break;
-//       }
-//       break;
   }
 
   if (hdme==NULL) hdme = new Isotropic(nout,flavs);

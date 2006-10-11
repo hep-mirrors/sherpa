@@ -134,6 +134,7 @@ namespace SHERPA {
     EXTRAXS::XS_Base   * GetXS(const int mode=0);
 //     ATOOLS::Spin_Correlation_Tensor* GetSpinCorrelations();
     void                 FillAmplitudes(ATOOLS::Amplitude_Tensor*);
+    bool                 SpinCorrelations();
     double               Weight();
     double               ProcessWeight();
     double               XSecWeight();

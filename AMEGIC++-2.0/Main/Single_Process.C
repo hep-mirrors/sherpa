@@ -500,7 +500,7 @@ int Single_Process::Tests() {
 
   /* Calculate the squared amplitude of the polarisation states. If a certain external
      polarisation combination is found not to contribute for the point in phase space
-     tested, it is assumed that is doesn´t contribute at all and is switched off.      */
+     tested, it is assumed that is doesnt contribute at all and is switched off.      */
   for (size_t i=0;i<p_hel->MaxHel();i++) { 
     if (p_hel->On(i)) {
       M_doub[i]  = p_ampl->Differential(i,(*p_hel)[i])*p_hel->PolarizationFactor(i);  
@@ -1246,9 +1246,10 @@ double Single_Process::operator()(const ATOOLS::Vec4D * mom)
 //   return SCT;
 // }
 
-void Single_Process::FillAmplitudes(Amplitude_Tensor* atensor)
+void Single_Process::FillAmplitudes(Amplitude_Tensor* atensor,double sfactor)
 {
-  p_ampl->FillAmplitudes(atensor,p_hel);
+  if (p_partner==this) p_ampl->FillAmplitudes(atensor,p_hel,sfactor);
+  else p_partner->FillAmplitudes(atensor,sfactor*sqrt(m_sfactor));
 }
 
 ATOOLS::Blob_Data_Base *Single_Process::OneEvent(double _mass) { 

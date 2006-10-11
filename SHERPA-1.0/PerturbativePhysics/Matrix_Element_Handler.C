@@ -643,6 +643,11 @@ void Matrix_Element_Handler::FillAmplitudes(ATOOLS::Amplitude_Tensor* atensor)
   p_amegic->GetProcess()->FillAmplitudes(atensor);
 }
 
+bool Matrix_Element_Handler::SpinCorrelations()
+{
+  return false;
+}
+
 
 EXTRAXS::XS_Base * Matrix_Element_Handler::GetXS(const int mode) 
 {

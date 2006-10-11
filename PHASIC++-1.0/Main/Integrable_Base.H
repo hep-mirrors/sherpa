@@ -126,7 +126,7 @@ namespace PHASIC {
     virtual double Differential2() = 0;
     virtual void   AddPoint(const double xs);
     virtual ATOOLS::Spin_Correlation_Tensor* GetSpinCorrelations();
-    virtual void   FillAmplitudes(ATOOLS::Amplitude_Tensor*);
+    virtual void   FillAmplitudes(ATOOLS::Amplitude_Tensor*,double=1.);
 
     virtual double CalculateScale(const ATOOLS::Vec4D *momenta);
     virtual double KFactor(const double scale);

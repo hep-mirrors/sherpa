@@ -22,6 +22,8 @@ namespace ATOOLS {
   class Blob;
   class Blob_List;
   class CMatrix;
+  class Amplitude_Tensor;
+  class Poincare;
 }
 
 namespace HADRONS {
@@ -31,19 +33,22 @@ namespace HADRONS {
 
   private:
     std::string           m_path, m_file, m_constfile;
-	Channel_Map         * p_channelmap;
-	ATOOLS::Decay_Table * p_table;                 
-	std::map<ATOOLS::kf::code,ATOOLS::Decay_Table *> 
-	                    * p_decaymap;
+    Channel_Map         * p_channelmap;
+    ATOOLS::Decay_Table * p_table;
+    std::map<ATOOLS::kf::code,ATOOLS::Decay_Table *>
+                        * p_decaymap;
     GeneralModel          m_md0;                // starter model
     bool                  m_sc;
-    ATOOLS::CMatrix             * p_color_unitmatrix;
-	
+    ATOOLS::CMatrix     * p_color_unitmatrix;
+
     void ReadInConstants();
     void ReadInDecayTables();
     ATOOLS::Decay_Table * InitialiseOneDecayTable(std::vector<std::string>);
 
-	bool				  m_createbooklet;
+    bool                  FindDecay( const ATOOLS::Flavour & );
+    ATOOLS::Poincare GetSignalProcessCMSBoost(ATOOLS::Particle* inpart);
+    ATOOLS::Amplitude_Tensor * GetMotherAmplitudes(ATOOLS::Particle* inpart,
+      ATOOLS::Particle*& outpart,const ATOOLS::Vec4D& labmom);
 
   public: 
     Hadrons(
@@ -51,11 +56,14 @@ namespace HADRONS {
         std::string _file=std::string("HadronDecays.dat"),
         std::string _constfile=std::string("HadronConstants.dat") );
 	
-    bool                   FindDecay( const ATOOLS::Flavour & );
     Hadron_Decay_Channel * ChooseDecayChannel(ATOOLS::Blob* blob);
-    void                   ChooseDecayKinematics( std::vector<ATOOLS::Vec4D> & moms,
-                                                  Hadron_Decay_Channel       * hdc,
-                                                  bool anti );
+    void                   DiceUncorrelatedKinematics(
+                                    std::vector<ATOOLS::Vec4D> & moms,
+                                    Hadron_Decay_Channel       * hdc,
+                                    bool anti );
+    void                   ChooseDecayKinematics( ATOOLS::Blob* blob,
+                                                  const ATOOLS::Vec4D&,
+                                                  Hadron_Decay_Channel* hdc );
     ATOOLS::Return_Value::code     PerformDecay( ATOOLS::Blob* blob, const ATOOLS::Vec4D& );
 
     std::map<ATOOLS::kf::code,ATOOLS::Decay_Table *> * GetDecayMap() { return p_decaymap; }

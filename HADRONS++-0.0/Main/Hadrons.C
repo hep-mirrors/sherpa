@@ -16,13 +16,14 @@
 #include "Particle_List.H"
 #include "Blob_List.H"
 #include "Matrix.H"
+#include "Poincare.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
 using namespace std;
 
 Hadrons::Hadrons( string _path, string _file, string _constfile ) : 
-  m_path(_path), m_file(_file), m_constfile(_constfile), m_sc(false), m_createbooklet(0)
+  m_path(_path), m_file(_file), m_constfile(_constfile), m_sc(false)
 { 
   msg_Tracking()<<"In Hadrons: ("<<_path<<") "<<_file<<std::endl;
   msg_Tracking()<<"In Hadrons: ("<<_path<<") "<<_constfile<<std::endl;
@@ -69,6 +70,62 @@ bool Hadrons::FindDecay(const ATOOLS::Flavour & Decayer)
   return true;
 }
 
+Poincare Hadrons::GetSignalProcessCMSBoost(Particle* inpart)
+{
+  Blob* sp_blob=inpart->ProductionBlob();
+  while(sp_blob) {
+    if(sp_blob->Type()==btp::Signal_Process) break;
+    sp_blob = sp_blob->InParticle(0)->ProductionBlob();
+  }
+  if(!sp_blob) {
+    msg.Error()<<METHOD<<" Error: Didn't find signal process blob for spin "
+      <<"correlations."<<endl;
+    abort();
+  }
+//   PRINT_INFO("sp_blob="<<(*sp_blob));
+//   PRINT_INFO("sp_blob->CMS()="<<sp_blob->CMS());
+  return Poincare(sp_blob->CMS());
+}
+
+Amplitude_Tensor* Hadrons::GetMotherAmplitudes(Particle* inpart,
+                                               Particle*& outpart,
+                                               const Vec4D& labmom)
+{
+//   Blob* motherblob = inpart->ProductionBlob();
+//   Blob_Data_Base* scdata = (*motherblob)["amps"];
+//   if(scdata) return scdata->Get<Amplitude_Tensor*>();
+
+  while(inpart) {
+    Blob* motherblob = inpart->ProductionBlob();
+//     PRINT_INFO("motherblob="<<(*motherblob));
+    // if motherblob contains amplitudes: return them
+    Blob_Data_Base* scdata = (*motherblob)["amps"];
+    if(scdata) {
+//       PRINT_INFO("has amplitudes");
+      Amplitude_Tensor* amps = scdata->Get<Amplitude_Tensor*>();
+      if(amps->Contains(inpart)) {
+//         PRINT_INFO("contains inpart");
+        return amps; // if() not necessary?
+      }
+    }
+
+    // otherwise: if motherblob just duplicates particle, try previous blob
+    if(motherblob->NInP()==1 && motherblob->NOutP()==1 &&
+       motherblob->InParticle(0)->Flav() == inpart->Flav() &&
+       motherblob->InParticle(0)->Momentum() == labmom
+      )
+    {
+//       PRINT_INFO("one step further up");
+      inpart = motherblob->InParticle(0);
+      outpart = motherblob->InParticle(0);
+    }
+    // else: there are no mother amplitudes
+    else break;
+  }
+//   PRINT_INFO("no amps found, returning NULL.");
+  return NULL;
+}
+
 Hadron_Decay_Channel * Hadrons::ChooseDecayChannel(Blob* blob)
 {
   Blob_Data_Base* data = (*blob)["hdc"];
@@ -84,8 +141,8 @@ Hadron_Decay_Channel * Hadrons::ChooseDecayChannel(Blob* blob)
     // dice decay channel acc. to BR
     if( nchan>1 ) {
       while( !channel_chosen ) {
-        k = int( ran.Get() * nchan );					// dice decay channel
-        double r = ran.Get();							// random number for rejection
+        k = int( ran.Get() * nchan );
+        double r = ran.Get();
         if( r < p_table->Width(k) / TotalWidth ) {
           dec_channel = p_table->GetDecayChannel(k);
           channel_chosen = 1;
@@ -94,7 +151,7 @@ Hadron_Decay_Channel * Hadrons::ChooseDecayChannel(Blob* blob)
     }
     else dec_channel = p_table->GetDecayChannel(0);
   }
-  else {                                            // treatment for K0's
+  else { // treatment for K0's
     if (nchan!=2) {
       msg.Error()<<"ERROR in Hadrons::ChooseDecayChannel() : "<<endl
                  <<"     K0 must have two channels K(L) and K(S), but is does not."<<endl
@@ -106,29 +163,118 @@ Hadron_Decay_Channel * Hadrons::ChooseDecayChannel(Blob* blob)
   }
 
   if( p_channelmap->find(dec_channel) == p_channelmap->end() ) {
-	msg.Error()<<"Error in Hadrons::ChooseDecayChannel() \n"
-	  		   <<"      Couldn't find appropriate channel pointer for "<<dec_channel->GetDecaying()
-			   <<" decay. \n"
-			   <<"      Don't know what to do, will abort."<<endl;
+    msg.Error()<<"Error in Hadrons::ChooseDecayChannel() \n"
+      <<"      Couldn't find appropriate channel pointer for "<<dec_channel->GetDecaying()
+      <<" decay. \n"
+      <<"      Don't know what to do, will abort."<<endl;
     abort();
   }
   blob->AddData("hdc",new Blob_Data<Hadron_Decay_Channel*>((*p_channelmap)[dec_channel]));
   return (*p_channelmap)[dec_channel];
 }
 
-// implementation with spin correlation
-// hep-ph/0110108
-
-void Hadrons::ChooseDecayKinematics( 
-    vector<Vec4D>           & moms,
-    Hadron_Decay_Channel    * hdc,
-    bool                      anti )
+void Hadrons::DiceUncorrelatedKinematics(
+                                          std::vector<ATOOLS::Vec4D> & moms,
+                                          Hadron_Decay_Channel       * hdc,
+                                          bool anti )
 {
   double value(0.);
   const double max = hdc->GetPS()->Maximum();    // note: no flux in max.
   do {
-    value = hdc->Differential(&moms.front(),anti);		// current val. of T
+    value = hdc->Differential(&moms.front(),anti);
   } while( ran.Get() > value/max );
+}
+
+void Hadrons::ChooseDecayKinematics(
+                                    Blob* blob,
+                                    const Vec4D& labmom,
+                                    Hadron_Decay_Channel* hdc
+                                   )
+{
+  Particle*       inpart = blob->InParticle(0);
+  Particle_Vector outparticles = blob->GetOutParticles();
+  size_t          n = outparticles.size()+1;
+  
+  vector<Vec4D> moms(n);
+  moms[0] = inpart->Momentum();
+  
+  if(n<3) moms[1] = moms[0];
+  else {
+    if(m_sc) { // weight correction if spin correlations are enabled
+      Particle_Vector particles;
+      particles.push_back(inpart);
+      particles.insert(particles.end(),outparticles.begin(),outparticles.end());
+      
+      Poincare labboost(labmom);
+      labboost.Invert();
+      Poincare spcmsboost = GetSignalProcessCMSBoost(inpart);
+      vector<Vec4D> boosted_moms(n);
+      boosted_moms[0]=spcmsboost*(labboost*moms[0]);
+//       PRINT_INFO("labmom="<<labmom);
+//       PRINT_INFO("boosted_moms[0]="<<boosted_moms[0]);
+
+//       PRINT_INFO("get motheramps for "<<(*blob));
+      Particle* outpart=inpart;
+      Amplitude_Tensor* motheramps = GetMotherAmplitudes(inpart,outpart,labmom);
+      if(motheramps) {
+        Amplitude_Tensor* amps = new Amplitude_Tensor(particles);
+        amps->SetColorMatrix(p_color_unitmatrix);
+        Amplitude_Tensor* contractedamps = NULL;
+        double motherampssumsquare = motheramps->SumSquare();
+//         PRINT_INFO("motheramps for "<<(*blob));
+//         PRINT_INFO(*motheramps);
+//         PRINT_INFO("rank="<<motheramps->GetColorMatrix()->Rank());
+        
+        double weight;
+        int trials=0;
+        do {
+          DiceUncorrelatedKinematics( moms, hdc, inpart->Flav().IsAnti() );
+          
+          // Calculate amplitude in signal process cms frame for correlation
+          for( size_t i=1; i<n; i++ ) {
+            boosted_moms[i]=spcmsboost*(labboost*moms[i]);
+//             PRINT_INFO("boosted_moms["<<i<<"]="<<boosted_moms[i]);
+          }
+          hdc->CalculateAmplitudes( &boosted_moms[0], amps, inpart->Flav().IsAnti() );
+          
+          double denominator = amps->SumSquare()*motherampssumsquare;
+          
+          if(contractedamps) { delete contractedamps; contractedamps = NULL; }
+          contractedamps = new Amplitude_Tensor(Contraction(outpart,inpart,motheramps,amps));
+          double numerator = contractedamps->SumSquare();
+          trials++;
+          weight = numerator/denominator;
+          if(weight>1.0) {
+            PRINT_INFO("Error: weight="<<weight<<" in "<<rpa.gen.NumberOfDicedEvents());
+            PRINT_INFO(*blob);
+          }
+          if(trials>1000) PRINT_INFO("trials="<<trials);
+        } while( ran.Get() > weight );
+        
+        blob->AddData("amps",new Blob_Data<Amplitude_Tensor*>(contractedamps));
+        motheramps->Recreate(contractedamps); // save the contraction with the mother
+        delete amps; amps=NULL;
+      }
+      else { // if first particle in SC chain
+        DiceUncorrelatedKinematics( moms, hdc, inpart->Flav().IsAnti() );
+        
+        for( size_t i=1; i<n; i++ ) boosted_moms[i]=spcmsboost*(labboost*moms[i]);
+        Amplitude_Tensor* amps = new Amplitude_Tensor(particles);
+        amps->SetColorMatrix(p_color_unitmatrix);
+        hdc->CalculateAmplitudes( &boosted_moms[0], amps, inpart->Flav().IsAnti() );
+//         PRINT_INFO("saving amps for blob"<<(*blob));
+//         PRINT_INFO("amps="<<(*amps));
+        blob->AddData("amps",new Blob_Data<Amplitude_Tensor*>(amps));
+      }
+    }
+    else {
+      DiceUncorrelatedKinematics( moms, hdc, inpart->Flav().IsAnti() );
+    }
+  }
+  
+  for( size_t i=1; i<n; i++ ) {
+    outparticles[i-1]->SetMomentum(moms[i]);
+  }
 }
 
 
@@ -157,7 +303,6 @@ Return_Value::code Hadrons::PerformDecay( Blob* blob, const Vec4D& labmom )
   if(inpart->FinalMass()<hdc->DecayChannel()->MinimalMass()) return Return_Value::Retry_Method;
   
   FlavourSet daughters = hdc->DecayChannel()->GetDecayProducts();
-  const int  n         = hdc->DecayChannel()->NumberOfDecayProducts()+1;
 
   // add daughters to blob
   Vec4D momentum; Flavour flav; Particle* particle=NULL;
@@ -169,75 +314,8 @@ Return_Value::code Hadrons::PerformDecay( Blob* blob, const Vec4D& labmom )
     particle->SetInfo('D');
     blob->AddToOutParticles( particle );
   }
-  Particle_Vector outparticles = blob->GetOutParticles();
-
-  // choose a kinematics that corresponds to the ME kinematic distribution
-  vector<Vec4D> moms(n);
-  moms[0] = inpart->Momentum();
-  if( n<3 ) moms[1] = moms[0];
-  else      {
-    if(m_sc) { // weight correction if spin correlations are enabled
-      Particle_Vector particles;
-      particles.push_back(inpart);
-      particles.insert(particles.end(),outparticles.begin(),outparticles.end());
-
-      Poincare labboost(labmom);
-      labboost.Invert();
-      vector<Vec4D> boosted_moms(n);
-      boosted_moms[0]=labboost*moms[0];
-
-      Blob* motherblob = inpart->ProductionBlob();
-      Blob_Data_Base* scdata = (*motherblob)["amps"];
-      if(scdata) {
-        Amplitude_Tensor* amps = new Amplitude_Tensor(particles);
-        amps->SetColorMatrix(p_color_unitmatrix);
-        Amplitude_Tensor* motheramps = scdata->Get<Amplitude_Tensor*>();
-        Amplitude_Tensor* contractedamps = NULL;
-        double motherampssumsquare = motheramps->SumSquare();
-
-        double weight;
-        int trials=0;
-        do {
-          ChooseDecayKinematics( moms, hdc, inpart->Flav().IsAnti() );
-          // Calculate amplitude in lab frame for correlation
-          for( int i=1; i<n; i++ ) boosted_moms[i]=labboost*moms[i];
-          hdc->CalculateAmplitudes( &boosted_moms[0], amps, inpart->Flav().IsAnti() );
-
-          double denominator = amps->SumSquare()*motherampssumsquare;
-
-          if(contractedamps) { delete contractedamps; contractedamps = NULL; }
-          contractedamps = new Amplitude_Tensor(Contraction(inpart,motheramps,amps));
-          double numerator = contractedamps->SumSquare();
-          trials++;
-          weight = numerator/denominator;
-          if(weight>1.0) {
-            PRINT_INFO("Error: weight="<<weight<<" in "<<rpa.gen.NumberOfDicedEvents());
-            PRINT_INFO(*blob);
-          }
-          if(trials>1000) PRINT_INFO("trials="<<trials);
-        } while( ran.Get() > weight );
-
-        blob->AddData("amps",new Blob_Data<Amplitude_Tensor*>(contractedamps));
-        motheramps->Recreate(contractedamps); // save the contraction with the mother
-        delete amps; amps=NULL;
-      }
-      else { // if first particle in SC chain
-        ChooseDecayKinematics( moms, hdc, inpart->Flav().IsAnti() );
-        for( int i=1; i<n; i++ ) boosted_moms[i]=labboost*moms[i];
-        Amplitude_Tensor* amps = new Amplitude_Tensor(particles);
-        amps->SetColorMatrix(p_color_unitmatrix);
-        hdc->CalculateAmplitudes( &boosted_moms[0], amps, inpart->Flav().IsAnti() );
-        blob->AddData("amps",new Blob_Data<Amplitude_Tensor*>(amps));
-      }
-    }
-    else {
-      ChooseDecayKinematics( moms, hdc, inpart->Flav().IsAnti());
-    }
-  }
-
-  for( size_t i=0; i<outparticles.size(); i++ ) {
-    outparticles[i]->SetMomentum(moms[i+1]);
-  }
+  
+  ChooseDecayKinematics( blob, labmom, hdc);
 
   if( inpart->Info() == 'P' ) inpart->SetInfo('p');
   if( inpart->Info() == 'D' ) inpart->SetInfo('d');

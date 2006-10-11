@@ -11,17 +11,17 @@ namespace ATOOLS
   class Amplitude_Tensor {
     std::vector<std::vector<Complex> >  m_amplitudes;
     Particle_Vector                     m_particles;
-    CMatrix                           * p_colormatrix;
+    const CMatrix                     * p_colormatrix;
     
     size_t GetAmplitudeNumber(const std::vector<int>& spins) const;
     size_t GetAmplitudeNumber(std::vector<std::pair<int,int> >& spins) const;
     std::vector<int> GetSpinCombination(size_t ampnumber) const;
   public:
-    Amplitude_Tensor(std::vector<Particle* > particles);
+    Amplitude_Tensor(Particle_Vector particles);
     ~Amplitude_Tensor();
     
     friend Amplitude_Tensor Contraction(
-                                        Particle* part,
+                                        Particle* part1, Particle* part2,
                                         Amplitude_Tensor* const amps1,
                                         Amplitude_Tensor* const amps2
                                        );
@@ -44,8 +44,10 @@ namespace ATOOLS
     
     size_t  Size() const;
     size_t  ColorSize() const;
-    CMatrix* GetColorMatrix() const;
+    const CMatrix* GetColorMatrix() const;
     void    SetColorMatrix(const CMatrix* colormatrix);
+
+    bool    Contains(const Particle* part) const;
     
     friend std::ostream& operator<<( std::ostream&, const Amplitude_Tensor &);
   };

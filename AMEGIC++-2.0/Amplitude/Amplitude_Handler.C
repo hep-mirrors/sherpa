@@ -659,7 +659,7 @@ double Amplitude_Handler::Zvalue(Helicity* hel)
   std::vector<CVec> A;
   A.resize(graphs.size());
 
-  /* For all graphs: Calculate all the helicity formalism´s amplitudes and transform them to
+  /* For all graphs: Calculate all the helicity formalisms amplitudes and transform them to
      desired polarisation states, if nessecary. */
   for (size_t col=0; col<graphs.size(); ++col) {
     for (size_t ihel=0; ihel<hel->MaxHel(); ++ihel) A[col].push_back(graphs[col]->Zvalue(ihel));
@@ -701,13 +701,13 @@ Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
   return M;
 }
 
-void Amplitude_Handler::FillAmplitudes(Amplitude_Tensor *atensor,Helicity* hel)
+void Amplitude_Handler::FillAmplitudes(Amplitude_Tensor *atensor,Helicity* hel,double sfactor)
 {
   atensor->SetColorMatrix(CFCol_Matrix->GetCMatrix());
   vector<Complex> amps; amps.resize(graphs.size());
   
   for (size_t ihel=0; ihel<hel->MaxHel(); ++ihel) {
-    for (size_t i=0;i<graphs.size();i++) amps[i]=graphs[i]->Zvalue(ihel);
+    for (size_t i=0;i<graphs.size();i++) amps[i]=graphs[i]->Zvalue(ihel)*sfactor;
     atensor->InsertAmplitude(amps,ihel);
   }
 }

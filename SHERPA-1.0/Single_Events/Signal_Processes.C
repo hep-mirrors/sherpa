@@ -219,6 +219,17 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,
 //   if (SCT!=NULL)
 //     blob->AddData("Spin_Correlation_Tensor",
 // 		  new Blob_Data<SP(Spin_Correlation_Tensor) >(SCT));
+
+  if(p_mehandler->SpinCorrelations()) {
+    Particle_Vector inparticles = blob->GetInParticles();
+    Particle_Vector outparticles = blob->GetOutParticles();
+    Particle_Vector particles(inparticles.begin(),inparticles.end());
+    particles.insert(particles.end(),outparticles.begin(),outparticles.end());
+    Amplitude_Tensor* amps = new Amplitude_Tensor(particles);
+    p_mehandler->FillAmplitudes(amps);
+//     PRINT_INFO("amps="<<(*amps));
+    blob->AddData("amps",new Blob_Data<Amplitude_Tensor*>(amps));
+  }
   return success;
 }
 
