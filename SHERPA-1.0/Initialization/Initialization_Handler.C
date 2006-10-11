@@ -58,6 +58,7 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
   m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
   rpa.gen.SetVariable("SHOWER_DATA_FILE",m_showerdat);
   m_spincorrelations = bool(p_dataread->GetValue<int>("SPIN_CORRELATIONS",0));
+  rpa.gen.SetSpinCorrelation(m_spincorrelations);
 }
 
 Initialization_Handler::Initialization_Handler(int argc,char * argv[]) : 
@@ -101,6 +102,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   CheckFlagConsistency();
   
   m_spincorrelations = bool(p_dataread->GetValue<int>("SPIN_CORRELATIONS",0));
+  rpa.gen.SetSpinCorrelation(m_spincorrelations);
 }
 
 

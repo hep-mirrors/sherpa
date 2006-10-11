@@ -615,14 +615,16 @@ int Single_Process::Tests() {
   
   if (string_test) {
     //String-Test
-    for (size_t i=0;i<p_hel->MaxHel();i++) {
-      if (p_hel->On(i)) {
-	for (size_t j=i+1;j<p_hel->MaxHel();j++) {
-	  if (p_hel->On(j)) {
-	    if (ATOOLS::IsEqual(M_doub[i],M_doub[j])) {
-	      p_hel->SwitchOff(j);
-	      p_hel->SetPartner(i,j);
-	      p_hel->IncMultiplicity(i);
+    if (!rpa.gen.SpinCorrelation()) {
+      for (size_t i=0;i<p_hel->MaxHel();i++) {
+	if (p_hel->On(i)) {
+	  for (size_t j=i+1;j<p_hel->MaxHel();j++) {
+	    if (p_hel->On(j)) {
+	      if (ATOOLS::IsEqual(M_doub[i],M_doub[j])) {
+		p_hel->SwitchOff(j);
+		p_hel->SetPartner(i,j);
+		p_hel->IncMultiplicity(i);
+	      }
 	    }
 	  }
 	}

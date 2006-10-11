@@ -34,6 +34,7 @@ Run_Parameter::Run_Parameter()
   gen.m_batchmode = 1;
   gen.SetTimeOut(3600);
   gen.SetWAnaScale(1.);
+  gen.m_spincorrelations = 0;
 } 
 
 std::ostream &ATOOLS::operator<<(std::ostream &str,const Run_Parameter &rp)
