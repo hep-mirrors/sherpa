@@ -56,6 +56,7 @@ namespace SHERPA {
     int m_scan_nsteps;
     int m_scan_istep;
     ATOOLS::Parameter_Map m_options;
+    bool m_spincorrelations;
 
     MODEL::Model_Base          * p_model;
     BEAM::Beam_Spectra_Handler * p_beamspectra;

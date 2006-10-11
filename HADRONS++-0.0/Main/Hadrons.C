@@ -23,7 +23,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Hadrons::Hadrons( string _path, string _file, string _constfile ) : 
-  m_path(_path), m_file(_file), m_constfile(_constfile), m_sc(false)
+  m_path(_path), m_file(_file), m_constfile(_constfile), m_spincorrelations(false)
 { 
   msg_Tracking()<<"In Hadrons: ("<<_path<<") "<<_file<<std::endl;
   msg_Tracking()<<"In Hadrons: ("<<_path<<") "<<_constfile<<std::endl;
@@ -91,10 +91,6 @@ Amplitude_Tensor* Hadrons::GetMotherAmplitudes(Particle* inpart,
                                                Particle*& outpart,
                                                const Vec4D& labmom)
 {
-//   Blob* motherblob = inpart->ProductionBlob();
-//   Blob_Data_Base* scdata = (*motherblob)["amps"];
-//   if(scdata) return scdata->Get<Amplitude_Tensor*>();
-
   while(inpart) {
     Blob* motherblob = inpart->ProductionBlob();
 //     PRINT_INFO("motherblob="<<(*motherblob));
@@ -200,7 +196,7 @@ void Hadrons::ChooseDecayKinematics(
   
   if(n<3) moms[1] = moms[0];
   else {
-    if(m_sc) { // weight correction if spin correlations are enabled
+    if(m_spincorrelations) { // weight correction if spin correlations are enabled
       Particle_Vector particles;
       particles.push_back(inpart);
       particles.insert(particles.end(),outparticles.begin(),outparticles.end());
@@ -419,4 +415,9 @@ Decay_Table * Hadrons::InitialiseOneDecayTable(vector<string> line)
   }
   delete dtreader;
   return dt;
+}
+
+void Hadrons::SetSpinCorrelations(bool sc)
+{
+  m_spincorrelations = sc;
 }

@@ -645,9 +645,13 @@ void Matrix_Element_Handler::FillAmplitudes(ATOOLS::Amplitude_Tensor* atensor)
 
 bool Matrix_Element_Handler::SpinCorrelations()
 {
-  return false;
+  return m_spincorrelations;
 }
 
+void Matrix_Element_Handler::SetSpinCorrelations(bool sc)
+{
+  m_spincorrelations = sc;
+}
 
 EXTRAXS::XS_Base * Matrix_Element_Handler::GetXS(const int mode) 
 {

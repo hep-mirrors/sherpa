@@ -38,7 +38,7 @@ namespace HADRONS {
     std::map<ATOOLS::kf::code,ATOOLS::Decay_Table *>
                         * p_decaymap;
     GeneralModel          m_md0;                // starter model
-    bool                  m_sc;
+    bool                  m_spincorrelations;
     ATOOLS::CMatrix     * p_color_unitmatrix;
 
     void ReadInConstants();
@@ -69,6 +69,7 @@ namespace HADRONS {
     std::map<ATOOLS::kf::code,ATOOLS::Decay_Table *> * GetDecayMap() { return p_decaymap; }
 
     void CreateBookletNow();
+    void SetSpinCorrelations(bool sc);
   }; // end of class Hadrons
   
   /*!

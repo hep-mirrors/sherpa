@@ -55,6 +55,7 @@ namespace SHERPA {
     bool m_apply_hhmf;
     bool m_ini_swaped;
     int  m_nmoms;
+    bool m_spincorrelations;
 
     ATOOLS::Data_Read    * p_dataread;
 
@@ -135,6 +136,7 @@ namespace SHERPA {
 //     ATOOLS::Spin_Correlation_Tensor* GetSpinCorrelations();
     void                 FillAmplitudes(ATOOLS::Amplitude_Tensor*);
     bool                 SpinCorrelations();
+    void                 SetSpinCorrelations(bool sc);
     double               Weight();
     double               ProcessWeight();
     double               XSecWeight();

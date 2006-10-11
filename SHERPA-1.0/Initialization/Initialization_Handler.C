@@ -57,8 +57,7 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
   m_hadrondecaysdat  = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
   rpa.gen.SetVariable("SHOWER_DATA_FILE",m_showerdat);
-  int spincorrelations = p_dataread->GetValue<int>("SPIN_CORRELATIONS",0);
-  Spin_Correlation_Tensor::SetMode( (ATOOLS::scmode::code)spincorrelations );
+  m_spincorrelations = bool(p_dataread->GetValue<int>("SPIN_CORRELATIONS",0));
 }
 
 Initialization_Handler::Initialization_Handler(int argc,char * argv[]) : 
@@ -100,9 +99,8 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
 
   CheckFlagConsistency();
-
-  int spincorrelations = p_dataread->GetValue<int>("SPIN_CORRELATIONS",0);
-  Spin_Correlation_Tensor::SetMode( (ATOOLS::scmode::code)spincorrelations );
+  
+  m_spincorrelations = bool(p_dataread->GetValue<int>("SPIN_CORRELATIONS",0));
 }
 
 
@@ -371,6 +369,7 @@ bool Initialization_Handler::InitializeTheMatrixElements()
     me = new Matrix_Element_Handler(m_path,m_medat,p_model,p_beamspectra,
 				    m_isrhandlers[isr::hard_process],NULL);
   }
+  me->SetSpinCorrelations(m_spincorrelations);
   MEHandlersMap::iterator it=m_mehandlers.find("SignalMEs");
   if (it!=m_mehandlers.end()) delete it->second;
   m_mehandlers["SignalMEs"]=me; 
@@ -482,7 +481,9 @@ bool Initialization_Handler::InitializeTheHadronDecays()
       decaypath=rpa.gen.Variable("SHERPA_SHARE_PATH")+"/Decaydata/";
     string decayfile       = dr.GetValue<string>("DECAYFILE",string("HadronDecays.dat"));
     string decayconstfile  = dr.GetValue<string>("DECAYCONSTFILE",string("HadronConstants.dat"));
-    hdhandler              = new Hadron_Decay_Handler(new HADRONS::Hadrons(decaypath,decayfile,decayconstfile));
+    HADRONS::Hadrons* hadrons = new HADRONS::Hadrons(decaypath,decayfile,decayconstfile);
+    hadrons->SetSpinCorrelations(m_spincorrelations);
+    hdhandler              = new Hadron_Decay_Handler(hadrons);
     hadrons_cans = hdhandler->GetCans();
     hdhandler->SetMassSmearing(dr.GetValue<int>("MASS_SMEARING",1));
     m_hdhandlers["Hadrons"] = hdhandler;

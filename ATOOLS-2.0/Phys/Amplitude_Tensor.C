@@ -172,6 +172,10 @@ void Amplitude_Tensor::InsertAmplitude(Complex amp, vector<pair<int,int> >& spin
 
 void Amplitude_Tensor::InsertAmplitude(vector<Complex> amps, vector<pair<int,int> >& spins)
 {
+  if(amps.size()!=ColorSize()) {
+    msg.Error()<<METHOD<<" Warning: filling more color combinations then "
+      <<"the rank of the colormatrix."<<endl;
+  }
   /*! amplitudes for multiple color combinations in that one spin combination*/
   m_amplitudes[GetAmplitudeNumber(spins)]=amps;
 }
@@ -241,6 +245,11 @@ size_t Amplitude_Tensor::Size() const
 
 size_t Amplitude_Tensor::ColorSize() const
 {
+  if(!p_colormatrix) {
+    msg.Error()<<METHOD<<" Warning: asking for ColorSize(), but p_colormatrix has "
+      <<"not been set yet."<<endl;
+    return 1;
+  }
   return p_colormatrix->Rank();
 }
 
