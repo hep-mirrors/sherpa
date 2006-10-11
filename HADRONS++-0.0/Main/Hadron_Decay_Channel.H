@@ -155,31 +155,16 @@ namespace HADRONS {
     the distribution.
   */
   /*!
-    \fn double Hadron_Decay_Channel::Differential( Vec4D * mom, Spin_Density_Matrix * sigma )
-    \brief Returns differential rate \f$d\Gamma \times dlips\f$ with spin correlations
+    \fn double Hadron_Decay_Channel::Differential( Vec4D * mom, bool anti )
+    \brief Returns differential rate \f$d\Gamma \times dlips\f$
 
-    If a a pointer on a spin density matrix <var>sigma</var> is given, this methods
-    returns the "matrix element squared" value with spin correlations.
     It makes the phase space generator choose a phase space point (the
     mother particle decays from rest) and its weight factor.
-    Afterwards, all momenta are boosted into the lab system for correct spin correlations.
     It then calls the ME class (via the pointer Hadron_Decay_Channel::p_me) 
-    which has to fill the amplitude tensor Hadron_Decay_Channel::p_ampls
-    and indix list Hadron_Decay_Channel::p_indices. Both are mere C++ vectors.
-    The amplitude tensor contains the value of the matrix element (\b not squared) for
-    each helicity combination. The index tensor is necessary for the correct book keeping
-    (see HD_ME_Base class for more details). 
-    It sums up the ME squares for each helicity combination weighting with the entries
-    of the spin density matrix. For that it uses the Spin_Correlation_Tensor::Contract and
-    Spin_Correlation_Tensor::Trace method.
-     
-    However, if the ME class does not give an index list things are traeted without
-    spin correlation, that is treating the spin density matrix as if it were a unit matrix.
-
-    There are also effective ME's that do not have information for each helicity combination.
-    Their amplitude tensor only contains one entry. Then a trivial amplitude tenser is created
-    in order to ensure correct behaviour of Hadrons::PerformDecay method (no crash), because
-    the Hadrons::PerformDecay method expects an amplitude tensor of correct size.
+    which has to fill the Amplitude_Tensor Hadron_Decay_Channel::p_amplitudes.
+    The Amplitude_Tensor contains the value of the matrix element (\b not squared) for
+    each helicity combination.
+    It sums up the ME squares for each helicity combination.
    */
   /*!
     \var Hadron_Decay_Channel::p_me
@@ -200,29 +185,17 @@ namespace HADRONS {
   /*!
     \var Hadron_Decay_Channel::m_fulldecay
     Has information about decay: syntax "(binary number) = decimal number"
-    - (00) = 0 ... no full decay, anti particle does not decay
-    - (01) = 1 ... no full decay, anti particle does decay
     - (10) = 2 ... full decay, anti particle does not decay
     - (11) = 3 ... full decay, anti particle does decay
     .
-    "no full decay" means that unstable daughters do not decay.
     "anti particle does not decay" means that the anti-particle is
     seen to be stable.
   */    
   /*!
-    \var Hadron_Decay_Channel::p_ampls
-    Pointer on the amplitude tensor.
-    */
-  /*!
-    \var Hadron_Decay_Channel::p_indices
-    Pointer on the index list.
-    */
-
-    
-    
-
-  
-  
+  \var Hadron_Decay_Channel::p_amplitudes
+    Pointer on the Amplitude_Tensor. Is only needed temporarily to get the amplitudes
+    from the ME and then sum-square them.
+  */
 } // end of namespace
 
 #endif
