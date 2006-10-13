@@ -48,6 +48,15 @@ namespace ANALYSIS {
     Primitive_Observable_Base * Copy() const;
   };
 
+  class One_Particle_EtaSymm : public One_Particle_Observable_Base {
+    void Evaluate(const ATOOLS::Vec4D & mom, double weight, int ncount);
+  public:
+    One_Particle_EtaSymm(const ATOOLS::Flavour & flav,
+			 int type,double xmin,double xmax,int nbins,
+			 const std::string & listname=std::string(""));
+    Primitive_Observable_Base * Copy() const;
+  };
+
   class One_Particle_E : public One_Particle_Observable_Base {  
     void Evaluate(const ATOOLS::Vec4D & mom, double weight, int ncount); 
   public:

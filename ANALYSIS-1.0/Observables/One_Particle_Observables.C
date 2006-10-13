@@ -175,6 +175,27 @@ Primitive_Observable_Base * One_Particle_Eta::Copy() const
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+DEFINE_OBSERVABLE_GETTER(One_Particle_EtaSymm,One_Particle_EtaSymm_Getter,"EtaSymm")
+
+One_Particle_EtaSymm::One_Particle_EtaSymm(const Flavour & flav, int type,
+					   double xmin, double xmax, int nbins,
+					   const std::string & listname) :
+  One_Particle_Observable_Base(flav,type,xmin,xmax,nbins,listname,"EtaSymm") { }
+
+void One_Particle_EtaSymm::Evaluate(const Vec4D& mom,double weight,int ncount) 
+{
+  double value=mom.Eta();
+  if(value<0.0) p_histo->Insert(abs(value),-1.0*weight,ncount);
+  else          p_histo->Insert(abs(value),     weight,ncount);
+}
+
+Primitive_Observable_Base * One_Particle_EtaSymm::Copy() const
+{
+  return new One_Particle_EtaSymm(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 DEFINE_OBSERVABLE_GETTER(One_Particle_E,One_Particle_E_Getter,"E")
 
 One_Particle_E::One_Particle_E(const Flavour & flav,

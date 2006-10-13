@@ -228,26 +228,28 @@ Primitive_Observable_Base * Two_Particle_Eta::Copy() const
 
 DEFINE_OBSERVABLE_GETTER(Two_Particle_DEta,Two_Particle_DEta_Getter,"DEta")
 
-Two_Particle_DEta::Two_Particle_DEta(const Flavour & flav1,const Flavour & flav2,
+Two_Particle_DEta::Two_Particle_DEta(const Flavour& flav1, const Flavour& flav2,
 				     int type,double xmin,double xmax,int nbins,
 				     const std::string & listname) :
-    Two_Particle_Observable_Base(flav1,flav2,type,xmin,xmax,nbins,listname,"deta") 
-
-{ 
+  Two_Particle_Observable_Base(flav1,flav2,type,xmin,xmax,
+			       nbins,listname,"deta") {
+  if(xmin<-1.0) f_spec=true; else f_spec=false;
 }
 
-
-void Two_Particle_DEta::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, int ncount) 
-{    
-    double deta = abs(mom1.Eta()-mom2.Eta());
-    p_histo->Insert(deta,weight,ncount); 
-} 
+void Two_Particle_DEta::Evaluate(const Vec4D& mom1, const Vec4D& mom2,
+				 double weight, int ncount) {
+  double deta = mom1.Eta()-mom2.Eta();
+  f_spec ?
+    p_histo->Insert(deta,weight,ncount) :
+    p_histo->Insert(abs(deta),weight,ncount);
+}
 
 Primitive_Observable_Base * Two_Particle_DEta::Copy() const 
 {
-    return new Two_Particle_DEta(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Two_Particle_DEta(m_flav1,m_flav2,m_type,m_xmin,m_xmax,
+			       m_nbins,m_listname);
 }
-    
+
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 DEFINE_OBSERVABLE_GETTER(Two_Particle_Y,Two_Particle_Y_Getter,"Y2")
