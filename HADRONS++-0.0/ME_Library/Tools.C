@@ -121,26 +121,44 @@ void Tools::ComplexBosonPolarizationVector( Vec4D p, int lambda, Vec4D * eps )
 {
   double ct (p.CosTheta()), st (p.SinTheta()), cp (p.CosPhi()), sp (p.SinPhi());
   if (IsEqual(p.PSpat(), 0.)) {      // decay from rest
-    ct = 0.; st = 1.;
-    cp = 1.; sp = 0.;
+    switch( lambda ) {
+      case 0:
+	eps[0]=sqrt(0.5)*Vec4D(0.,1.,0.,0.);
+	eps[1]=sqrt(0.5)*Vec4D(0.,0.,-1.,0.);
+	break;
+      case 1:
+	eps[0]=sqrt(0.5)*Vec4D(0.,1.,0.,0.);
+	eps[1]=sqrt(0.5)*Vec4D(0.,0.,1.,0.);
+	break;
+      case 2:
+	eps[0]=Vec4D(0.,0.,0.,1.);
+	eps[1]=Vec4D(0.,0.,0.,0.);
+	break;
+      case 3:
+	eps[0] = Vec4D(0.0,0.0,0.0,0.0);
+	eps[1] = Vec4D(0.0,0.0,0.0,0.0);
+	break;
+    }
   }
-  switch( lambda ) {
-    case 0: 
-      eps[0] = 1.0/p.Mass() * Vec4D(p.PSpat(),p[0]*Vec3D(p)/p.PSpat());
-      eps[1] = Vec4D(0.0,0.0,0.0,0.0);
-      break;
-    case 1:
-      eps[0] = 1.0/sqrt(2.0) * Vec4D(0.0,ct*cp,ct*sp,-st);
-      eps[1] = 1.0/sqrt(2.0) * Vec4D(0.0,-sp,cp,0.0);
-      break;
-    case 2:
-      eps[0] = 1.0/sqrt(2.0) * Vec4D(0.0,ct*cp,ct*sp,-st);
-      eps[1] = 1.0/sqrt(2.0) * Vec4D(0.0,sp,-cp,0.0);
-      break; 
-    case 3:
-      eps[0] = Vec4D(0.0,0.0,0.0,0.0);
-      eps[1] = Vec4D(0.0,0.0,0.0,0.0);
-      break;
+  else {
+    switch( lambda ) {
+      case 0:
+	eps[0] = 1.0/sqrt(2.0) * Vec4D(0.0,ct*cp,ct*sp,-st);
+	eps[1] = 1.0/sqrt(2.0) * Vec4D(0.0,-sp,cp,0.0);
+	break;
+      case 1:
+	eps[0] = 1.0/sqrt(2.0) * Vec4D(0.0,ct*cp,ct*sp,-st);
+	eps[1] = 1.0/sqrt(2.0) * Vec4D(0.0,sp,-cp,0.0);
+	break;
+      case 2:
+	eps[0] = 1.0/p.Mass() * Vec4D(p.PSpat(),p[0]*Vec3D(p)/p.PSpat());
+	eps[1] = Vec4D(0.0,0.0,0.0,0.0);
+	break;
+      case 3:
+	eps[0] = Vec4D(0.0,0.0,0.0,0.0);
+	eps[1] = Vec4D(0.0,0.0,0.0,0.0);
+	break;
+    }
   }
 }
  
