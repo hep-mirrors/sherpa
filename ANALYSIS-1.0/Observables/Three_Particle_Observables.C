@@ -1,5 +1,6 @@
 #include "Three_Particle_Observables.H"
 #include "Primitive_Analysis.H"
+#include "Run_Parameter.H"
 
 using namespace ANALYSIS;
 
@@ -235,5 +236,33 @@ void Three_Particle_3Mass::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const 
 Primitive_Observable_Base * Three_Particle_3Mass::Copy() const 
 {
     return new Three_Particle_3Mass(m_flav1,m_flav2,m_flav3,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DEFINE_OBSERVABLE_GETTER(Three_Particle_3EnergyCMS,Three_Particle_3EnergyCMS_Getter,"3EnergyCMS")
+
+Three_Particle_3EnergyCMS::Three_Particle_3EnergyCMS(const Flavour & flav1,const Flavour & flav2,
+                                         const Flavour & flav3,int type,double xmin,
+                                         double xmax,int nbins,const std::string & listname) :
+  Three_Particle_Observable_Base(flav1,flav2,flav3,type,xmin,xmax,nbins,listname,"3EnergyCMS")
+{ 
+}
+
+
+void Three_Particle_3EnergyCMS::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const Vec4D & mom3,double weight, int ncount)
+{ 
+  Vec4D sum = mom1+mom2+mom3;
+  Poincare boost(sum);
+  Vec4D p1 = boost*mom1;
+  Vec4D p2 = boost*mom2;
+  Vec4D p3 = boost*mom3;
+  double E = p1[0];
+  p_histo->Insert(2.0*E/rpa.gen.Ecms(),weight,ncount);
+} 
+
+Primitive_Observable_Base * Three_Particle_3EnergyCMS::Copy() const
+{
+    return new Three_Particle_3EnergyCMS(m_flav1,m_flav2,m_flav3,m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
 

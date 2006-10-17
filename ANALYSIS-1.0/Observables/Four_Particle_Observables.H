@@ -93,6 +93,19 @@ namespace ANALYSIS {
     Primitive_Observable_Base* Copy() const;
   };
 
+  // =====================================================================
+
+  class Four_Particle_EnergyCMS : public Four_Particle_Observable_Base {
+    void Evaluate(const ATOOLS::Vec4D &, const ATOOLS::Vec4D &, 
+                  const ATOOLS::Vec4D &, const ATOOLS::Vec4D &,
+                  double=1.,int=1); 
+  public:
+    Four_Particle_EnergyCMS(const std::vector<ATOOLS::Flavour>&,
+                             int,double,double,int,
+                             const std::string& listname);//=std::string("NRAngle:"));
+    Primitive_Observable_Base* Copy() const;
+  };
+
 }
 
 #endif
