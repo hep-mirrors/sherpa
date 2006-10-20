@@ -269,19 +269,24 @@ Particle_List Blob_List::ExtractLooseParticles(const int mode) const
 void Blob_List::Clear(Blob * blob) 
 {
   if (blob) {
-    for (Blob_List::const_iterator bit=begin();bit!=end();++bit) {
-      if ((*bit)==blob) continue;
+    for (Blob_List::iterator bit=begin();bit!=end();) {
+      if ((*bit)==blob) { bit++; continue; }
       for (int i=0;i<(*bit)->NOutP();i++) {
 	for (int j=0;j<blob->NInP();j++) {
-	  if ((*bit)->OutParticle(i)==blob->InParticle(j)) (*bit)->RemoveOutParticle(i,true);
+	  if ((*bit)->OutParticle(i)==blob->InParticle(j)) {
+	    (*bit)->RemoveOutParticle((*bit)->OutParticle(i),true);
+	  }
 	}
       }
       for (int i=0;i<(*bit)->NInP();i++) {
 	for (int j=0;j<blob->NOutP();j++) {
-	  if ((*bit)->InParticle(i)==blob->OutParticle(j)) (*bit)->RemoveInParticle(i,true);
+	  if ((*bit)->InParticle(i)==blob->OutParticle(j)) {
+	    (*bit)->RemoveInParticle((*bit)->InParticle(i),true);
+	  }
 	}
       }
-      delete (*bit); 
+      delete (*bit);
+      bit = this->erase(bit);
     }
     if (!empty()) clear();
     //for (int j=0;j<blob->NInP();j++)  blob->InParticle(j)->SetProductionBlob(NULL);
