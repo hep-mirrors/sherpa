@@ -8,11 +8,12 @@ namespace PHASIC {
     //int      nin,nout;
     //double * ms;
     bool     massflag;
+    bool     m_use_psmass;
     double   Z_N, * xm2, * p2, * E;
     short int itmax;
     double accu;
   public:
-    Rambo(int,int,const ATOOLS::Flavour *);
+    Rambo(int,int,const ATOOLS::Flavour *,bool use_psmass=false);
     ~Rambo();
     void GenerateWeight(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);  
     void GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);
@@ -22,6 +23,7 @@ namespace PHASIC {
     void MassiveWeight(ATOOLS::Vec4D *,double);
     void MassivePoint(ATOOLS::Vec4D *,double);
     std::string Name() { return std::string("Rambo"); }
+    void UsePSMass(bool use_psmass) { m_use_psmass = use_psmass; }
     int CountResonances(ATOOLS::Flavour *&) { return 0; }
   };
   //! Flag to see wether massive or massless points are to be generated.
