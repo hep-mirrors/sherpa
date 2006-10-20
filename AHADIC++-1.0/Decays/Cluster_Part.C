@@ -19,7 +19,7 @@ Cluster_Part::Cluster_Part() :
     m_histograms[string("YStar")]             = new Histogram(0,-5.,5.,100);
     m_histograms[string("YBar_by_YBarMax")]   = new Histogram(0,-1.,1.,100);
     m_histograms[string("YBar")]              = new Histogram(0,-5.,5.,100);
-    m_histograms[string("Flavour")]           = new Histogram(0,0.,5.,5);
+    m_histograms[string("Flavour")]           = new Histogram(0,0.,15.,15);
     m_histograms[string("PT")]                = new Histogram(0,0.,1.5,150);
     m_histograms[string("SQQ")]               = new Histogram(0,0.,5.,100);
   }
@@ -43,7 +43,6 @@ Cluster_Part::~Cluster_Part()
 
 bool Cluster_Part::TestDecay(Cluster * const cluster)
 {
-  //cout<<METHOD<<" before the show "<<endl<<(*cluster)<<endl;
   cluster->BoostInCMSAndRotateOnZ();
 
   Flavour flav = Flavour(kf::none);
@@ -80,6 +79,7 @@ bool Cluster_Part::TestDecay(Cluster * const cluster)
   control::s_AHAparticles++;
   cluster->GetRight()->SetSelf(part);
 
+  //cout<<METHOD<<endl<<(*cluster)<<endl;
   return true;
 }
 
@@ -92,18 +92,22 @@ bool Cluster_Part::BuildKinematics(Cluster * const cluster,ATOOLS::Flavour & fla
   double mmax  = MC - (m0+m3);
 
   bool diquarks(cluster->GetFlav(1).IsDiQuark()||cluster->GetFlav(2).IsDiQuark());
+  if (flav!=Flavour(kf::none)) diquarks = diquarks && flav.IsDiQuark();
 
-  flav       = p_popper->SelectFlavour(mmax,diquarks && flav.IsDiQuark());
-
-  if (flav==Flavour(kf::none)) return false;
-  double m1    = hadpars.GetConstituents()->Mass(flav), m12 = sqr(m1), m2 = m1, m22 = m12;
-
-  double pmax2  = (sqr(MC2+sqr(m0+m1)-sqr(m2+m3))-4.*sqr(m0+m1)*sqr(m2+m3))/(4.*MC2);
-  double ptmax2 = m_fraction*pmax2;
-  double pt, ystar, s_qq, ybar, x1, x2, E_r, E0_r(0.), E3_r(0.);
+  double ystar, s_qq, ybar, x1, x2, E_r, E0_r(0.), E3_r(0.); 
+  double m1, m2, m12, m22, pmax2, ptmax2, pt(0.);
   int counter(0);
   do {
-    pt     = p_popper->SelectPT(ptmax2);
+    if (pt<=1.e-6) {
+      flav   = p_popper->SelectFlavour(mmax,diquarks);
+      if (flav==Flavour(kf::none)) return false;
+      m1     = hadpars.GetConstituents()->Mass(flav), m12 = sqr(m1), m2 = m1, m22 = m12;
+      pmax2  = (sqr(MC2+sqr(m0+m1)-sqr(m2+m3))-4.*sqr(m0+m1)*sqr(m2+m3))/(4.*MC2);
+      ptmax2 = m_fraction*pmax2; 
+      pt     = sqrt(ptmax2);
+    }
+    //cout<<"in "<<flav<<" MC = "<<MC<<", pt = "<<pt<<endl;
+    pt     = p_popper->SelectPT(sqr(pt));
     ystar  = GetYStar(sqr(pt)+m12,ptmax2);
     s_qq   = 4.*(sqr(pt)+m12)*sqr(cosh(ystar));
     ybar   = GetYBar(pmax2,s_qq); 
@@ -113,7 +117,8 @@ bool Cluster_Part::BuildKinematics(Cluster * const cluster,ATOOLS::Flavour & fla
     E0_r   = (sqr(E_r)+m02-m32)/(2.*E_r);
     E3_r   = (sqr(E_r)-m02+m32)/(2.*E_r);
 
-  } while (E0_r<m0 || E3_r<m3);  
+  } while (E0_r<m0 || E3_r<m3 || x1>0.999 || x2>0.999);  
+  //cout<<"out, pt = "<<pt<<endl;
 
   double mt    = sqrt(m12+sqr(pt));
   double E1    = mt*cosh(ybar+ystar);
@@ -128,7 +133,7 @@ bool Cluster_Part::BuildKinematics(Cluster * const cluster,ATOOLS::Flavour & fla
   
   double pz0_r = sqrt(sqr(E0_r)-m02);
   double gamma = (1.-x1+1.-x2)/(sqrt(4.*(1.-x1)*(1.-x2)));
-  double beta  = sqrt(1.-1./sqr(gamma));
+  double beta  = (gamma==1.)?0.:sqrt(1.-1./sqr(gamma));
 
   if (ybar<0.) beta *= (-1.);
 
@@ -141,64 +146,59 @@ bool Cluster_Part::BuildKinematics(Cluster * const cluster,ATOOLS::Flavour & fla
   m_momenta[0] = Vec4D(E0,0.,0.,pz0);
   m_momenta[3] = Vec4D(E3,0.,0.,pz3);
 
-
-  //   if (cluster->GetFlav(1)==Flavour(kf::c) || cluster->GetFlav(1)==Flavour(kf::b) ||
-  //       cluster->GetFlav(2)==Flavour(kf::c).Bar() || cluster->GetFlav(2)==Flavour(kf::b).Bar()) {
-  //   cout<<METHOD<<" : "
-  //       <<"   flav = "<<flav<<", ptmax = "<<ptmax<<" ("<<MC2<<" "<<m0<<" "<<m3<<"), "
-  //       <<" m_fraction = "<<m_fraction<<" --> "<<endl<<"     "
-  //       <<"                          pt, sqq = "
-  //       <<pt<<", "<<s_qq<<", y^* = "<<ystar<<", ybar = "<<ybar<<endl;
+  /*
+  if (E0<0 || E3<0 || (pz0<0&&pz0>0) || (pz3<0&&pz3>0) ||
+      !IsZero(E0*E0-pz0*pz0-m02) || !IsZero(E3*E3-pz3*pz3-m32)) {
+    cout<<METHOD<<" : "<<endl<<(*cluster)<<endl<<"--------------------"<<endl
+	<<"   flav = "<<flav<<", ptmax = "<<sqrt(ptmax2)<<" ("<<MC<<" "<<m0<<" "<<m3<<"), "
+	<<" m_fraction = "<<m_fraction<<" --> "<<endl<<"     "
+	<<"                          pt, sqq = "
+	<<pt<<", "<<s_qq<<", y^* = "<<ystar<<", ybar = "<<ybar<<endl;
   
-  //   cout<<"- New pair              : "
-  //       <<m_momenta[1]<<" "<<m_momenta[1].Abs2()<<"/"
-  //       <<m_momenta[2]<<" "<<m_momenta[2].Abs2()<<endl
-  //       <<"                          "
-  //       <<"(p1+p2)^2 = "<<(m_momenta[1]+m_momenta[2]).Abs2()<<" = s_qq = "
-  //       <<s_qq<<" vs. "<<(x1*x2*MC2)<<endl;
+    cout<<"- New pair              : "
+	<<m_momenta[1]<<" "<<m_momenta[1].Abs2()<<"/"
+	<<m_momenta[2]<<" "<<m_momenta[2].Abs2()<<endl
+	<<"                          "
+	<<"(p1+p2)^2 = "<<(m_momenta[1]+m_momenta[2]).Abs2()<<" = s_qq = "
+	<<s_qq<<" vs. "<<(x1*x2*MC2)<<endl;
+    cout<<"- New vecs for old pair : "
+        <<m_momenta[0]<<" "<<m_momenta[0].Abs2()<<"/"
+	<<m_momenta[3]<<" "<<m_momenta[3].Abs2()<<endl
+	<<"                          "
+	<<(m_momenta[0]+m_momenta[3]).Abs2()<<" "<<((1.-x1)*(1.-x2)*MC2)
+	<<" from x_{1,2} = "<<x1<<", "<<x2<<", MC2 = "<<MC2<<endl;
   
-  //   cout<<"- New vecs for old pair : "
-  //       <<m_momenta[0]<<" "<<m_momenta[0].Abs2()<<"/"
-  //       <<m_momenta[3]<<" "<<m_momenta[3].Abs2()<<endl
-  //       <<"                          "
-  //       <<(m_momenta[0]+m_momenta[3]).Abs2()<<" "<<((1.-x1)*(1.-x2)*MC2)
-  //       <<" from x_{1,2} = "<<x1<<", "<<x2<<", MC2 = "<<MC2<<endl;
-  
-  //   cout<<" for old pair : E_{0,3} = "<<E0_r<<", "<<E3_r<<" and p = "<<pz0_r
-  //       <<", boost "<<gamma<<","<<beta<<endl;
+    cout<<" for old pair : E_{0,3} = "<<E0_r<<", "<<E3_r<<" and p = "<<pz0_r
+	<<", boost "<<gamma<<","<<beta<<endl;
   
   
-  //   cout<<"check this : "<<cluster->Momentum()<<" vs. "
-  //       <<(m_momenta[0]+m_momenta[1]+m_momenta[2]+m_momenta[3])<<endl
-  //       <<"              axis : "
-  //       <<cluster->Momentum(1)<<"("<<cluster->Momentum(1).Abs2()<<")+"
-  //       <<cluster->Momentum(2)<<"("<<cluster->Momentum(2).Abs2()<<")"<<endl
-  //       <<"                vs.: "
-  //       <<m_momenta[0]<<"("<<m_momenta[0].Abs2()<<")+"
-  //       <<m_momenta[3]<<"("<<m_momenta[3].Abs2()<<")"<<endl;
-
-  //   }
+    cout<<"check this : "<<cluster->Momentum()<<" vs. "
+	<<(m_momenta[0]+m_momenta[1]+m_momenta[2]+m_momenta[3])<<endl
+	<<"              axis : "
+	<<cluster->Momentum(1)<<"("<<cluster->Momentum(1).Abs2()<<")+"
+	<<cluster->Momentum(2)<<"("<<cluster->Momentum(2).Abs2()<<")"<<endl
+	<<"                vs.: "
+	<<m_momenta[0]<<"("<<m_momenta[0].Abs2()<<")+"
+	<<m_momenta[3]<<"("<<m_momenta[3].Abs2()<<")"<<endl;
+    abort();
+  }
+  */
 
   if (m_ana) {
     m_histograms[string("PT")]->Insert(pt);
     m_histograms[string("SQQ")]->Insert(s_qq);
-    if (flav==Flavour(kf::u) || flav== Flavour(kf::d)) {
-      m_histograms[string("Flavour")]->Insert(0.5);
-    }
-    else if (flav==Flavour(kf::s)) {
-      m_histograms[string("Flavour")]->Insert(1.5);
-    }
-    else if (flav==Flavour(kf::dd_1).Bar() || flav== Flavour(kf::uu_1).Bar() ||
-	     flav==Flavour(kf::ud_1).Bar() || flav== Flavour(kf::ud_0).Bar()) {
-      m_histograms[string("Flavour")]->Insert(2.5);
-    }
-    else if (flav==Flavour(kf::sd_1).Bar() || flav== Flavour(kf::su_1).Bar() ||
-	     flav==Flavour(kf::sd_0).Bar() || flav== Flavour(kf::su_0).Bar()) {
-      m_histograms[string("Flavour")]->Insert(3.5);
-    }
-    else if (flav==Flavour(kf::ss_1).Bar()) {
-      m_histograms[string("Flavour")]->Insert(4.5);
-    }
+    if (flav==Flavour(kf::u))                m_histograms[string("Flavour")]->Insert(0.5);
+    else if (flav== Flavour(kf::d))          m_histograms[string("Flavour")]->Insert(1.5);
+    else if (flav== Flavour(kf::s))          m_histograms[string("Flavour")]->Insert(2.5);
+    else if (flav== Flavour(kf::ud_0).Bar()) m_histograms[string("Flavour")]->Insert(5.5);
+    else if (flav== Flavour(kf::dd_1).Bar()) m_histograms[string("Flavour")]->Insert(4.5);
+    else if (flav== Flavour(kf::ud_1).Bar()) m_histograms[string("Flavour")]->Insert(6.5);
+    else if (flav== Flavour(kf::uu_1).Bar()) m_histograms[string("Flavour")]->Insert(7.5);
+    else if (flav== Flavour(kf::sd_0).Bar()) m_histograms[string("Flavour")]->Insert(9.5);
+    else if (flav== Flavour(kf::su_0).Bar()) m_histograms[string("Flavour")]->Insert(11.5);
+    else if (flav== Flavour(kf::sd_1).Bar()) m_histograms[string("Flavour")]->Insert(10.5);
+    else if (flav== Flavour(kf::su_1).Bar()) m_histograms[string("Flavour")]->Insert(12.5);
+    else if (flav== Flavour(kf::ss_1).Bar()) m_histograms[string("Flavour")]->Insert(14.5);
   }
 
   return true;
@@ -222,6 +222,7 @@ bool Cluster_Part::UpdateDecay(Cluster * const cluster,const int mode)
   if (!mode&2) cluster->GetRight()->RescaleMomentum(p2);
 
   cluster->RotateAndBoostBack();
+  //cout<<METHOD<<endl<<(*cluster)<<endl;
 }
 
 

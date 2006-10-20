@@ -23,6 +23,7 @@ Hadronisation_Parameters::~Hadronisation_Parameters() {
   if (p_multiplets!=NULL)        { delete p_multiplets;        p_multiplets=NULL;         }
   if (p_singletransitions!=NULL) { delete p_singletransitions; p_singletransitions=NULL;  }
   if (p_doubletransitions!=NULL) { delete p_doubletransitions; p_doubletransitions=NULL;  }
+  if (p_popper!=NULL)            { delete p_popper;            p_popper=NULL;             }
 }
 
 void Hadronisation_Parameters::Init(string dir,string file)

@@ -251,21 +251,21 @@ namespace AHADIC {
     from the cluster formation.
   */
   /*!
-    \var ATOOLS::Particle  * p_self
+    \var ATOOLS::Particle * Cluster::p_self
     \brief A pointer to a particle representing the cluster - this can be used for extended
     event records.
   */
   /*!
-    \var static long int s_cluster_count
+    \var static long int Cluster::s_cluster_count
     \brief For debugging reasons - a counter checking whether all clusters have been
     deleted.  
   */
   /*!
-    \var static long int s_cluster_number
+    \var static long int Cluster::s_cluster_number
     \brief For debugging reasons - a quick way of identifying clusters.
   */
   /*!
-    \var int m_number
+    \var int Cluster::m_number
     \brief For debugging reasons - a quick way of identifying clusters.
   */
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -483,6 +483,40 @@ namespace AHADIC {
     \fn friend std::ostream& operator<<(std::ostream &,const Cluster &)
     \brief Output the cluster in a stream.
   */
-
+  /*!
+    \fn inline int Cluster::Number()
+    Returns the identifier number of the cluster.  For debugging only.
+  */
+  /*!
+    \fn inline int RemainingClusters()
+    Returns the number of undeleted clusters.  For debugging only.
+  */
+  /*!
+    \fn inline int ClusterCounter()
+    Gives the value of the actual counter.  For debugging only.
+  */
+  /*!
+    \fn inline void ResetClusterNumber()
+    Resets the counter.  For debugging only.
+  */
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Description of member variables for struct Proto_Particle
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  /*!
+    \var ATOOLS::Flavour Proto_Particle::m_flav
+    \brief The original particles flavour, copied in this little container.
+  */
+  /*!
+    \var ATOOLS::Vec4D Proto_Particle::m_mom
+    \brief The original particles four-momentum, copied in this little container.
+  */
+  /*!
+    \var char Proto_Particle::m_info
+    \brief The original particles info-char, copied in this little container.
+  */
+  /*!
+    \fn Proto_Particle::Proto_Particle(ATOOLS::Flavour flav,ATOOLS::Vec4D mom,char info) 
+    \brief Explicit constructor, the only one available and used.
+  */
 }
 #endif

@@ -19,6 +19,11 @@ Gluon_Decayer::Gluon_Decayer()
     }
   }
   msg.Tracking()<<"------------- END OF GLUON_DECAYER --------------"<<std::endl;
+  if (m_options.empty()) {
+    msg.Error()<<"Error in "<<METHOD<<":"<<std::endl
+	       <<"   No decay channels found for gluons, will abort."<<std::endl;
+    abort();
+  }
 }
 
 Gluon_Decayer::~Gluon_Decayer() {

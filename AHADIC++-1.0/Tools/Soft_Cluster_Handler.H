@@ -72,7 +72,7 @@ namespace AHADIC {
     - simplemass      = 1,
     - massXwaves      = 2,
     - masswidth       = 11, and
-    - masswidthXwaves = 12. 
+    - masswidthXwaves = 12.
   */
 
   /*! 
@@ -98,6 +98,9 @@ namespace AHADIC {
     Soft_Cluster_Handler::TransformWeight(Cluster *,ATOOLS::Flavour &,bool=false) and 
     Soft_Cluster_Handler::DecayWeight(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &) and the
     corresponding algorithms are documented there.  
+
+    The default values for the calculation of decay/tansition probabilities are
+    m_stmode=stm::masswidthXwaves and m_dtmode=dtm::waves_PS. 
   */
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -179,7 +182,8 @@ namespace AHADIC {
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   /*!
     \fn Soft_Cluster_Handler::Soft_Cluster_Handler()
-    \brief Constructor, no task so far.
+    \brief Constructor, no task so far, apart from setting parameter values and filling in
+    the members. 
   */
   /*!
     \fn Soft_Cluster_Handler::~Soft_Cluster_Handler()

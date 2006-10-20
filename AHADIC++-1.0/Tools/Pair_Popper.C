@@ -20,7 +20,15 @@ Pair_Popper::Pair_Popper() :
        iter!=p_constituents->CCMap.end();iter++) { 
     flav = iter->first;
     mass = p_constituents->Mass(flav);
-    wt   = iter->second->TotWeight() * exp(-M_PI*sqr(mass)/m_tension);
+    switch (m_flavmode) {
+    case 2:
+      wt   = iter->second->TotWeight() * exp(-M_PI*sqr(mass)/m_tension);
+      break;
+    case 1:
+    default:
+      wt   = iter->second->TotWeight();
+      break;
+    }
     if (mass>m_maxmass) m_maxmass = mass;
     if (mass<m_minmass) m_minmass = mass;
     m_totweight += wt;

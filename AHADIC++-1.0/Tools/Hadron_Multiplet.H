@@ -62,6 +62,7 @@ namespace AHADIC {
     Hadron_Multiplet      * GetSU3Pseudoscalars() { 
       if (p_multiplets->find(1)!=p_multiplets->end()) 
 	return p_multiplets->find(1)->second; 
+      return NULL;
     }
 
     Hadron_Wave_Function * GetWaveFunction(ATOOLS::Flavour);
@@ -82,6 +83,83 @@ namespace AHADIC {
     particles spin \f$s\f$, i.e. by \f$(2s+1)\f$, yielding, e.g., 1 for pseudoscalars and 3 for vector
     mesons.
   */
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Description of member variables for Hadron_Multiplet
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  /*!
+    \var std::string Hadron_Multiplet::m_name
+    \brief The name of the multiplet.
+  */
+  /*!
+    \var std::set<ATOOLS::Flavour> Hadron_Multiplet::m_elements
+    \brief A list of the memebers of the multiplets (like pseudoscalar mesons etc.)
+  */
+  /*!
+    \var double Hadron_Multiplet::m_spinweight
+    \brief The spinweight, given by \f$(2s+1)\$ for a multiplet with given pin\f$s\f$.
+  */
+  /*!
+    \var double Hadron_Multiplet::m_extraweight
+    \brief Some extra weight to enhance or diminish te probability for transitions into
+    that multiplet.  These weights are external parameters of the model.
+  */
+  /*!
+    \var double Hadron_Multiplet::m_weight
+    \brief The product of spin and extra weight, a part of the probability that a given colour
+    anticolour combination produces a given hadron.
+  */
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Description of member functions for Hadron_Multiplet
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+  /*!
+    \fn Hadron_Multiplet::Hadron_Multiplet()
+    \brief Default constructor, all weights equal one and the name is void.
+  */
+  /*!
+    \fn void Hadron_Multiplet::SetName(std::string name)
+    \brief Sets the name for the multiplet.
+  */
+  /*!
+    \fn void Hadron_Multiplet::AddToElements(ATOOLS::Flavour fl)
+    \brief Adds a given (hadron-) flavour to the set of elements, Hadron_Multiplet::m_elements.
+  */
+  /*!
+    \fn void Hadron_Multiplet::SetSpinWeight(double wt)
+    \brief Sets the spin weight for a multiplet.
+  */
+  /*!
+    \fn void Hadron_Multiplet::SetExtraWeight(double wt)
+    \brief Sets the extra weight for a multiplet.
+  */
+  /*!
+    \fn void Hadron_Multiplet::SetWeight(double wt=0.)
+    \brief Sets the weight for a multiplet or calculates it from extra and spin weight.
+  */
+  /*!
+    \fn std::string Hadron_Multiplet::Name()
+    \brief The multiplet's name.
+  */
+  /*!
+    \fn std::set<ATOOLS::Flavour> * Hadron_Multiplet::GetElements()
+    \brief Returns a pointer to the list of elements, Hadron_Multiplet::m_elements.
+  */
+  /*!
+    \fn int Hadron_Multiplet::Size()
+    \brief Number of elements in that multiplet.
+  */
+  /*!
+    \fn double Hadron_Multiplet::SpinWeight()
+    \brief Simple access to Hadron_Multiplet::m_spinweight.
+  */
+  /*!
+    \fn double Hadron_Multiplet::ExtraWeight()
+    \brief Simple access to Hadron_Multiplet::m_extraweight.
+  */
+  /*!
+    \fn double Hadron_Multiplet::Weight()
+    \brief Simple access to Hadron_Multiplet::m_weight.
+  */
+
   /*!
     \class All_Hadron_Multiplets
     \brief This class sets up and manages the various hadron multiplets. 
@@ -93,6 +171,8 @@ namespace AHADIC {
     Hadronisation_Parameters and made available to the rest of the code through a corresponding Get-method, 
     AHADIC::Hadronisation_Parameters::GetMultiplets().
   */
+
+
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   // Description of member variables for All_Hadron_Multiplets
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -103,10 +183,9 @@ namespace AHADIC {
   */
   /*!
     \var Hadron_Multiplet_Map * All_Hadron_Multiplets::p_multiplets
-    \brief The list of all hadron multiplets. They are sorted by spin, hence, potentially, some
-    doubling of spins is possible.
-    
-    \todo Will have to think this over.
+    \brief The list of all hadron multiplets, they are sorted by a number given
+    by (+/-) for baryons/antibaryons (always + for mesons), and 2s+1+100*L+1000*R, and
+    eventually another 10000 for the "wrong" wave function parity.
   */
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   // Description of member methods for All_Hadron_Multiplets
@@ -114,19 +193,33 @@ namespace AHADIC {
   /*!
     \fn All_Hadron_Multiplets::All_Hadron_Multiplets()
     \brief In the constructor all wave functions are constructed through calls to
-    ConstructWaveFunctions() and ConstructAntiWaveFunctions(); then the hadrons are
-    arranged in multiplets, by CreateMultiplets(), before specific multiplet weights are
-    added through AddMultipletWeights().
+    All_Hadron_Multiplets::ConstructWaveFunctions() and 
+    All_Hadron_Multiplets::ConstructAntiWaveFunctions(); then the hadrons are arranged in multiplets, 
+    by All_Hadron_Multiplets::CreateMultiplets(), before specific multiplet weights are added through 
+    All_Hadron_Multiplets::AddMultipletWeights().
   */
   /*!
     \fn All_Hadron_Multiplets::~All_Hadron_Multiplets()
-    \brief Deletes both the Hadron_WF_Map, p_wavefunctions, and the Hadron_Multiplet_Map,
-    p_multiplets.
+    \brief Deletes both the Hadron_WF_Map, All_Hadron_Multiplets::p_wavefunctions, and 
+    the Hadron_Multiplet_Map, All_Hadron_Multiplets::p_multiplets.
+  */
+  /*!
+    \fn Hadron_Multiplet_Map * All_Hadron_Multiplets::GetMultiplets()
+    \brief Returns the constructed hadron multiplets, All_Hadron_Multiplets::p_mulitplets, which are 
+    arranged in AHADIC::Hadron_Multiplet_Map (a map of ints and hadron multiplets).
+  */
+  /*!
+    \fn Hadron_Multiplet_Map * All_Hadron_Multiplets::GetSU3Pseudoscalars()
+    \brief Returns the pseudoscalar hadron multiplet, if existent.
+  */
+  /*!
+    \fn void All_Hadron_Multiplets::PrintMultiplets()
+    \brief Prints all hadron multiplets.
   */
   /*!
     \fn Hadron_WF_Map * All_Hadron_Multiplets::GetWaveFunctions()
-    \brief Returns all hadron wave funxctions, which are arranged in a map of (hadron) flavours
-    and the corresponding pointers to their AHADIC::Hadron_Wave_Function.
+    \brief Returns all hadron wave functions, which are arranged in AHADIC::Hadron_WF_Map
+    (a map of (hadron) flavours) and the corresponding pointers to their AHADIC::Hadron_Wave_Function.
   */
   /*!
     \fn Hadron_Wave_Function * All_Hadron_Multiplets::GetWaveFunction(ATOOLS::Flavour)
@@ -144,12 +237,13 @@ namespace AHADIC {
     In so doing, this method iterates over all flavours in the particle list, ATOOLS::kf_table and 
     analyses the respective codes. From the codes individual quark flavours can be extracted for 
     hadrons; depending on whether there are two or three flavours specified, either 
-    ConstructMesonWaveFunction(int,int,int,int) or ConstructBaryonWaveFunction(int,int,int,int,int), 
-    respectively, is called. The resulting hadron wave function is added to the list of wavefunctions, 
-    realised through the object p_wavefunctions (Hadron_WF_Map).
+    All_Hadron_Multiplets::ConstructMesonWaveFunction(const int,const int,const int,const int,const int,const int) 
+    or All_Hadron_Multiplets::ConstructBaryonWaveFunction(int,int,int,int,int), respectively, is 
+    called.  The resulting hadron wave function is added to the list of wavefunctions, realised through 
+    the object All_Hadron_Multiplets::p_wavefunctions (Hadron_WF_Map).
   */
   /*!
-    \fn Hadron_Wave_Function * All_Hadron_Multiplets::ConstructMesonWaveFunction(int,int,int,int)
+    \fn Hadron_Wave_Function * All_Hadron_Multiplets::ConstructMesonWaveFunction(int,int,int,int,int,int)
     \brief Here the meson wave functions are constructed from the spin, the angular momentum
     and the two quark flavour indices \f$q_1\f$ and \f$\bar q_2\f$. 
 

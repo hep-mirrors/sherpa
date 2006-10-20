@@ -44,7 +44,7 @@ Return_Value::code Cluster_Decay_Handler::DecayClusters(Cluster_List * clusters,
     //cout<<"   ---- before loop "<<clist.size()<<endl;
     while (!clist.empty()) {
       if ((*dcit)) {
-	//cout<<"  add to blob . "<<(*dcit)->GetLeft()<<" && "<<(*dcit)->GetRight()<<endl;
+	//cout<<"  add to blob . "<<(*(*dcit)->GetSelf())<<endl;
 	blob->AddToOutParticles((*dcit)->GetSelf());
 	if (!(*dcit)->GetLeft() && !(*dcit)->GetRight()) {
 	  clusters->push_back((*dcit));
@@ -57,12 +57,14 @@ Return_Value::code Cluster_Decay_Handler::DecayClusters(Cluster_List * clusters,
 	    if ((*dcit)->GetLeft()->GetSelf()->Flav()==Flavour(kf::none) ||
 		(*dcit)->GetLeft()->GetSelf()->Flav()==Flavour(kf::cluster)) {
 	      clusters->push_back((*dcit)->GetLeft());
+	      //cout<<"  add to clusters: "<<(*(*dcit)->GetLeft())<<endl;
 	    }
 	  }
 	  if ((*dcit)->GetRight()) {
 	    if ((*dcit)->GetRight()->GetSelf()->Flav()==Flavour(kf::none) ||
 		(*dcit)->GetRight()->GetSelf()->Flav()==Flavour(kf::cluster)) {
 	      clusters->push_back((*dcit)->GetRight());
+	      //cout<<"  add to clusters: "<<(*(*dcit)->GetRight())<<endl;
 	    }
 	  }
 	  if (*dcit) delete (*dcit);

@@ -30,23 +30,26 @@ namespace AHADIC {
 
   /*! 
     \class Pair_Popper
-    \brief Is used to "pop" quark-antiquark or diquark-antidiquark pairs out of the vacuum.
+    \brief Is used to "pop" quark-antiquark or diquark-antidiquark pairs out of the vacuum,
+    subject to kinematical conditions.
 
-    The Pair_Popper can run in different modes:
-    - m_flavmode describes the way, flavours are selected.  Here, m_flavmode = 2 attachs
-      a flavour-mass specific weight to the total weights given in the constituents
-      (accessed through Constituents::TotWeight(ATOOLS::Flavour & flav)).  This extra weight 
-      is given by
-      \f[
-      wt = \exp\left[-\frac{\pi m^2}{\sigma}\right]\,,
-      \f]
-      where \f$\sigma\f$ is one of the parameters of the model ('COLOUR_TENSION').
+    
+    The Pair_Popper can run in different modes (Default: m_flavmode=1, m_ptmode=2):
+    - m_flavmode describes the way, flavours are selected:  
+      - m_flavmode=1 only uses the a-priori weights given by the AHADIC::Constituents.
+      - m_flavmode=2 attachs a flavour-mass specific weight to the total a priori weights given 
+        in the constituents (accessed through Constituents::TotWeight(ATOOLS::Flavour & flav)).  
+	This extra mass-dependent weight is given by
+        \f[
+        wt = \exp\left[-\frac{\pi m^2}{\sigma}\right]\,,
+        \f]
+        where \f$\sigma\f$ is one of the parameters of the model ('COLOUR_TENSION').
     - m_ptmode defines, how \f$p_\perp\f$ is selected:
       - m_ptmode=0 corresponds to an exponential distribution
                    \f$p_\perp^2 \propto \exp\left[-\frac{\pi p_\perp^2}{\sigma}\right]\f$
       - m_ptmode=1 corresponds to a simple Gaussian
                    \f$p_\perp \propto \exp\left[-\frac{\pi p_\perp^2}{\sigma}\right]\f$
-      - m_ptmode=1 corresponds to a shifted Gaussian
+      - m_ptmode=2 corresponds to a shifted Gaussian
                    \f$p_\perp \propto 
                    \exp\left[-\frac{\pi (p_\perp-\langle p_\perp\rangle)^2}{\sigma}\right]\f$,
         where \f$\langle p_\perp\rangle\f$ is given by the parameter '<PT_SHIFT>'.
@@ -66,12 +69,13 @@ namespace AHADIC {
   */
   /*!
     \var int Pair_Popper::m_ptmode
-    \brief Defines, how \f$p_\perp\f$ is selected, see in the class description. 
+    \brief Defines, how \f$p_\perp\f$ is selected, see in the class description.
+    The default value is m_ptmode=2.
   */
   /*!
     \var int Pair_Popper::m_flavmode
     \brief Defines, how the flavour of a popped pair is selected, see in the 
-    class description. 
+    class description.  The default value is m_flavmode=1.
   */
   /*!
     \var double Pair_Popper::m_tension

@@ -27,8 +27,8 @@ Ahadic::~Ahadic()
 
 Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
 {
-//   cout<<"##########################################################################"<<endl
-//       <<"###################################### IN ################################"<<endl;
+  //cout<<"##########################################################################"<<endl
+  //   <<"###################################### IN ################################"<<endl;
 
   Blob * blob(NULL);
   Cluster clus;
@@ -57,13 +57,13 @@ Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
 	  abort();
 	  break;
 	}
-	
-//  	cout<<METHOD<<" (1) : "<<clus.RemainingClusters()<<" remaining clusters."<<endl
-//  	    <<control::s_AHAblobs<<"/"<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
-//  	    <<"   : "<<blob->CheckMomentumConservation()<<endl
-//  	    <<(*blob)<<endl
-//  	    <<(*p_cformhandler->GetClusters())<<endl;
-
+	/*
+	  cout<<METHOD<<" (1) : "<<clus.RemainingClusters()<<" remaining clusters."<<endl
+	  <<control::s_AHAblobs<<"/"<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
+	  <<"   : "<<blob->CheckMomentumConservation()<<endl
+	  <<(*blob)<<endl
+	  <<(*p_cformhandler->GetClusters())<<endl;
+	*/
 	switch (int(p_cdechandler->DecayClusters(p_cformhandler->GetClusters(),blobs))) {
 	case int(Return_Value::Retry_Method) :
 	  rvalue.IncRetryMethod(METHOD);
@@ -80,12 +80,12 @@ Return_Value::code Ahadic::Hadronize(ATOOLS::Blob_List * blobs)
 	    blob->SetType(btp::Fragmentation);
 	  }
 	  blob->UnsetStatus(blob_status::needs_hadronization);
-
-	  // 	  cout<<METHOD<<" : "<<clus.RemainingClusters()<<" remaining clusters."<<endl<<(*blob)
-	  // 	      <<"##############################################################"<<endl
-	  // 	      <<"##############################################################"<<endl
-	  // 	      <<"##############################################################"<<endl;
-
+	  /*
+	    cout<<METHOD<<" : "<<clus.RemainingClusters()<<" remaining clusters."<<endl<<(*blob)
+	    <<"##############################################################"<<endl
+	    <<"##############################################################"<<endl
+	    <<"##############################################################"<<endl;
+	  */
 	  if (dabs(blob->CheckMomentumConservation().Abs2())>1.e-6 ||
 	      clus.RemainingClusters()!=1 ||
 	      control::s_AHAblobs!=0 || 

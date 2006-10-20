@@ -53,12 +53,7 @@ namespace AHADIC {
 
   /*!
     \file Hadronisation_Parameters.H
-    \brief Contains the classes AHADIC::Momenta_Stretcher and AHADIC::Hadronisation_Parameters.
-  */
-
-  /*!
-    \class Momenta_Stretcher
-    \brief Utility class to bring sets of four vectors on different mass-shells.
+    \brief Contains the class AHADIC::Hadronisation_Parameters.
   */
   /*!
     \class Hadronisation_Parameters
@@ -67,37 +62,12 @@ namespace AHADIC {
     This class is made external, and thus is initialised only once in the AHADIC module. It includes a 
     parameter map (a map connecting word-strings with double numbers), the constituent characteristics 
     (accessible through AHADIC::Constituents), the hadron multiplets (AHADIC::All_Hadron_Multiplets), 
-    and the static single and double hadron transition probabilities of clusters with a given flavour 
-    content (realised by AHADIC::All_Single_Transitions and AHADIC::All_Double_Transitions). These 
-    classes are all initialised and, after the run, deleted by the Hadronisation_Parameters.
-  */
-  ////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Description of member methods for Momenta_Stretcher.
-  ////////////////////////////////////////////////////////////////////////////////////////////////////
-  /*!
-    \fn bool Momenta_Stretcher::MassThem(const int,ATOOLS::Vec4D *,const double *)
-    \brief Puts the momenta on new mass-shells, respecting four-momentum conservation of the overall
-    ensemble and the original directions as far as possible. If this succeeds, "true" is returned; if, 
-    in contrast, the sum of all new masses is larger than the overall energy available, such a 
-    transformation cannot work out and the method yields "false".
-
-    In general the momenta set need to be in its overall c.m. frame for this method to work.
-    Then the corresponding algorithm of Rambo is employed. It shifts the masses and uses
-    scale transformations in an iterative procedure until convergence is reached. 
-    
-    For two momenta, the system does not need to be in its c.m. frame. There, the system is boosted 
-    into its c.m. frame, the overall energy is calculated and the three-momenta are adjusted, 
-    respecting the original directions. Finally, the systemv is boosted back.
-  */
-  /*!
-    \fn bool Momenta_Stretcher::ZeroThem(const int,ATOOLS::Vec4D *)
-    \brief Puts the momenta on zero mass, respecting four-momentum conservation of the overall
-    ensemble and the original directions as far as possible.
-
-    For two momenta this is straight-forwardly done after going to the two vectors c.m. system
-    and calculating the total energy. For an arbitrary number of momenta, the inverse of the
-    Rambo algorithm used in Momenta_Stretcher::MassThem(const int,ATOOLS::Vec4D *,const double *) is
-    employed.
+    the static single and double hadron transition probabilities of clusters with a given flavour 
+    content (realised by AHADIC::Single_Transitions and AHADIC::Double_Transitions), and the
+    pair popper responsible for flavour and kt-selection in the non-pertubative cluster break-up
+    process (realised through AHADIC::Pair_Popper). These classes are all initialised only once,
+    made accessible through the Hadronisation_Parameters, and, after the run, deleted by the 
+    Hadronisation_Parameters.
   */
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   // Description of member variables for Hadronisation_Parameters.
@@ -119,31 +89,94 @@ namespace AHADIC {
     Get-method.
   */
   /*!
-    \var All_Single_Transitions * Hadronisation_Parameters::p_transitions1
+    \var All_Single_Transitions * Hadronisation_Parameters::p_singletransitions
     \brief Pointer to the AHADIC::All_Single_Transitions object. It is also initialised only once, in
     the Hadronisation_Parameters and then made available to the rest of the code through a corresponding
     Get-method.
   */
   /*!
-    \var All_Double_Transitions * Hadronisation_Parameters::p_transitions2
+    \var All_Double_Transitions * Hadronisation_Parameters::p_doubletransitions
     \brief Pointer to the AHADIC::All_Double_Transitions object. It is also initialised only once, in
     the Hadronisation_Parameters and then made available to the rest of the code through a corresponding
     Get-method.
   */
   /*!
-    \var Momenta_Stretcher * Hadronisation_Parameters::p_stretcher
-    \brief Pointer to the Momenta_Stretcher. It seems at this point this is a bit over-engineered.
-  */
+    \var Pair_Popper * Hadronisation_Parameters::p_popper
+    \brief Pointer to the AHADIC::Pair_Popper object. It is also initialised only once, in
+    the Hadronisation_Parameters and then made available to the rest of the code through a corresponding
+    Get-method.
   /*!
     \var StringDoubleMap Hadronisation_Parameters::m_parametermap
-    \brief 
+    \brief A map connecting keyword (wordstrings) with parameters of the model, which in turn are
+    accessible through the method Hadronisation_Parameters::Get(std::string keyword).  For a list
+    of parameters, cf. AHADI::Ahadic. 
+  */
+  /*!
+    \var SDiter Hadronisation_Parameters::m_piter
+    \brief The iterator corresponding to Hadronisation_Parameters::m_parametermap.
   */
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   // Description of member methods for Hadronisation_Parameters.
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   /*!
-    \fn Hadronisation_Parameters::
-    \brief
+    \fn Hadronisation_Parameters::Hadronisation_Parameters()
+    \brief A void constructor.
+  */
+  /*!
+    \fn Hadronisation_Parameters::~Hadronisation_Parameters()
+    \brief Destructor, deleting the Hadronisation_Parameters::p_constituents, 
+    Hadronisation_Parameters::p_multiplets, Hadronisation_Parameters::p_singletransiions,
+    Hadronisation_Parameters::p_doubletransitions, and the Hadronisation_Parameters::p_popper.
+  */
+  /*!
+    \fn void Hadronisation_Parameters::Init(std::string,std::string)
+    \brief Calls the Hadronisation_Parameters::ReadParameters(std::string,std::string)
+    method with the arguments of path and filename, and initialises the 
+    Hadronisation_Parameters::p_constituents, Hadronisation_Parameters::p_multiplets, 
+    Hadronisation_Parameters::p_singletransiions, Hadronisation_Parameters::p_doubletransitions, 
+    and the Hadronisation_Parameters::p_popper.
+  */
+  /*!
+    \fn void Hadronisation_Parameters::ReadParameters(std::string,std::string)
+    \brief Reading the parameter file and filling the Hadronisation_Parameters::m_parametermap.
+  */
+  /*!
+    \fn double Hadronisation_Parameters::Get(std::string keyword)
+    \brief Returns the actual vlaue of a parameter, given by the keyword.
+  */
+  /*!
+    \fn Constituents * Hadronisation_Parameters::GetConstituents()
+    \brief Returns the pointer to the AHADIC::Constituents, 
+    Hadronisation_Parameters::p_constituents.
+  */
+  /*!
+    \fn All_Hadron_Multiplets * Hadronisation_Parameters::GetMultiplets()
+    \brief  Returns the pointer to the AHADIC::All_Hadron_Multiplets,
+    Hadronisation_Parameters::p_multiplets.
+  */
+  /*!
+    \fn Single_Transitions * Hadronisation_Parameters::GetSingleTransitions()
+    \brief  Returns the pointer to the AHADIC::Single_Transitions,
+    Hadronisation_Parameters::p_singletransitions.
+  */
+  /*!
+    \fn Double_Transitions * Hadronisation_Parameters::GetDoubleTransitions()
+    \brief  Returns the pointer to the AHADIC::Double_Transitions, 
+    Hadronisation_Parameters::p_singletransitions.
+  */
+  /*!
+    \fn Pair_Popper * Hadronisation_Parameters::GetPopper()
+    \brief  Returns the pointer to the AHADIC::Pair_Popper, Hadronisation_Parameters::p_popper.
+  */
+  /*!
+    \fn bool Hadronisation_Parameters::AdjustMomenta(const int,ATOOLS::Vec4D *,const double *)
+    \brief Puts a number of vectors on their new mass-shells.  In so doing, the 
+    ATOOLS::Momenta_Stretcher is being used. 
+
+    The algorithm for this putting of momenta onto a new mass-shell is to first put them
+    all on a mass-shell of mass 0 (by inverting the Rambo->Massive trick) and then put them
+    onto their new masses (by the direct Rambo->Massive trick).  Of course, this is an
+    iterative process with an error of roughly 1.e-6, because square roots are involved.
   */
 }
 
