@@ -628,6 +628,20 @@ void Final_State_Shower::ExtractPartons(Knot *kn,Blob *jet,
   ExtractPartons(kn->right,jet,bl,pl);
 }
 
+void Final_State_Shower::ExtractFinalState(Blob *blob,Knot *kn)
+{
+  if (!kn || !blob) return;
+  Particle * p(NULL);
+  if (!kn->left) {
+    p = new Particle(*kn->part);
+    p->SetNumber(0);
+    blob->AddToOutParticles(p);
+    return;
+  }
+  ExtractFinalState(blob,kn->left);
+  ExtractFinalState(blob,kn->right);
+}
+
 bool Final_State_Shower::SmearDaughters(Knot *mo) 
 {
   Knot * d1(mo->left), * d2(mo->right);

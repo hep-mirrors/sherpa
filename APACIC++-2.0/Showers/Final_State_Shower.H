@@ -65,6 +65,7 @@ namespace APACIC {
     void ExtractPartons(Knot *knot,ATOOLS::Blob *blob,
 			ATOOLS::Blob_List *blist,
 			ATOOLS::Particle_List *plist=NULL);
+    void ExtractFinalState(ATOOLS::Blob *,Knot * =NULL);
  
     bool TestShower(Tree *tree);
 

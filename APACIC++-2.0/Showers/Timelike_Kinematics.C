@@ -298,13 +298,11 @@ ConstructVectors(Knot *const mo,Vec4D &p1vec,Vec4D &p2vec) const
   p1vec=Vec4D(sqrt(E12),p1*(cth1*nm - sth1*es));
   p2vec=Vec4D(sqrt(E22),p2*(cth2*nm + sth2*es));
   if (p1vec.Nan() || p2vec.Nan()) {
-    msg.Error()<<METHOD<<"("<<mo->kn_no<<"): Error."<<std::endl;
-    msg_Debugging()<<"mo = "<<*mo;
-    msg_Debugging()<<"d1 = "<<*mo->left;
-    msg_Debugging()<<"d2 = "<<*mo->right;
-    msg_Debugging()<<nm<<" "<<es<<" "<<phi<<" "
-		   <<cth1-1.0<<" "<<cth2-1.0<<" "
-		   <<sth1<<" "<<sth2<<std::endl;
+    msg.Error()<<METHOD<<"("<<mo->kn_no<<"): Error."<<std::endl
+	       <<"mo = "<<*mo<<"d1 = "<<*mo->left<<"d2 = "<<*mo->right
+	       <<nm<<" "<<es
+	       <<" phi's : "<<mo->phi<<"/"<<mo->polinfo.Angle()<<":"<<phi
+	       <<" theta's : "<<cth1-1.0<<" "<<cth2-1.0<<" "<<sth1<<" "<<sth2<<std::endl;
   }
 }
 
