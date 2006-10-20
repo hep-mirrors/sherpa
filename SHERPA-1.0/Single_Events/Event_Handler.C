@@ -121,104 +121,52 @@ bool Event_Handler::GenerateEvent(int mode)
       while (flag && !retry) {
 	flag = false;
 	for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-	  if ((*pit)->Type()==eph::Perturbative) {
-	    msg_Debugging()<<"Try "<<(*pit)->Name()<<std::endl;
-	    switch (int((*pit)->Treat(&m_blobs,weight))) {
-	      case Return_Value::Nothing :
-		//std::cout<<(*pit)->Name()<<" yields nothing : "
-		//	   <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
-		break;
-	      case Return_Value::Success : 
-		//std::cout<<(*pit)->Name()<<" yields success : "
-		//         <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
-		flag = true;
-		break;
-	      case Return_Value::Error :
-		//std::cout<<(*pit)->Name()<<" yields error : "
-		//         <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
-		rvalue.IncError((*pit)->Name());
-		return false;
-	      case Return_Value::New_Event : 
-		newone = true;
-		weight = 1.;
-		Reset();
-		//std::cout<<(*pit)->Name()<<" yields new : "
-		//         <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
-		rvalue.IncNewEvent((*pit)->Name());
-		break;
-	      case Return_Value::Retry_Event : 
-		retry = true;
-		hardblob = m_blobs.FindFirst(btp::Signal_Process);
-		hardblob->SetId();
-		CleanUpEvent(hardblob);
-		hardblob->SetStatus(blob_status::internal_flag |
-				    blob_status::needs_signal);
-		if (p_mehandler->Weight()!=1.0) p_mehandler->SaveNumberOfTrials();
-		//std::cout<<(*pit)->Name()<<" yields retry   : "
-		//         <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
-		rvalue.IncRetryEvent((*pit)->Name());
-		break;
-	      default:
-		msg.Error()<<"Error in "<<METHOD<<":"<<std::endl
-			   <<"  Unknown return value for 'Treat',"<<std::endl
-			   <<"  Will continue and hope for the best."<<std::endl;
-		return false;
-	    }
-	    msg_Debugging()<<m_blobs<<std::endl;
-	    if (weight==0.0 &&
-		rpa.gen.NumberOfDicedEvents()==rpa.gen.NumberOfEvents()) return true;
+	  //	  if ((*pit)->Type()==eph::Perturbative) {
+	  //msg_Debugging()<<"Try "<<(*pit)->Name()<<std::endl;
+	  switch (int((*pit)->Treat(&m_blobs,weight))) {
+	  case Return_Value::Nothing :
+	    //std::cout<<(*pit)->Name()<<" yields nothing : "
+	    //	   <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
+	    break;
+	  case Return_Value::Success : 
+	    //std::cout<<(*pit)->Name()<<" yields success : "
+	    //         <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
+	    flag = true;
+	    break;
+	  case Return_Value::Error :
+	    //std::cout<<(*pit)->Name()<<" yields error : "
+	    //         <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
+	    rvalue.IncError((*pit)->Name());
+	    return false;
+	  case Return_Value::New_Event : 
+	    newone = true;
+	    weight = 1.;
+	    Reset();
+	    //std::cout<<(*pit)->Name()<<" yields new : "
+	    //         <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
+	    rvalue.IncNewEvent((*pit)->Name());
+	    break;
+	  case Return_Value::Retry_Event : 
+	    retry = true;
+	    hardblob = m_blobs.FindFirst(btp::Signal_Process);
+	    hardblob->SetId();
+	    CleanUpEvent(hardblob);
+	    hardblob->SetStatus(blob_status::internal_flag |
+				blob_status::needs_signal);
+	    if (p_mehandler->Weight()!=1.0) p_mehandler->SaveNumberOfTrials();
+	    //std::cout<<(*pit)->Name()<<" yields retry   : "
+	    //         <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
+	    rvalue.IncRetryEvent((*pit)->Name());
+	    break;
+	  default:
+	    msg.Error()<<"Error in "<<METHOD<<":"<<std::endl
+		       <<"  Unknown return value for 'Treat',"<<std::endl
+		       <<"  Will continue and hope for the best."<<std::endl;
+	    return false;
 	  }
-	  if (retry || newone) break;
-	}
-      }
-
-      flag = true;
-      while (flag && !retry && !newone) {
-	flag = false;
-	for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-	  if ((*pit)->Type()==eph::Hadronization) {
-	    //std::cout<<"Try "<<(*pit)->Name()<<std::endl;
-	    switch (int((*pit)->Treat(&m_blobs,weight))) {
-	      case Return_Value::Nothing :
-		//std::cout<<(*pit)->Name()<<" yields nothing : "
-		//	 <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
-		break;
-	      case Return_Value::Success : 
-		//std::cout<<(*pit)->Name()<<" yields success : "
-		//	 <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
-		flag = true;
-		break;
-	      case Return_Value::Error :
-		//std::cout<<(*pit)->Name()<<" yields error : "
-		//	 <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
-		rvalue.IncError((*pit)->Name());
-		return false;
-	      case Return_Value::New_Event : 
-		//std::cout<<(*pit)->Name()<<" yields new : "
-		//	 <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
-		newone = true;
-		Reset();
-		rvalue.IncNewEvent((*pit)->Name());
-		break;
-	      case Return_Value::Retry_Event :
-		//std::cout<<(*pit)->Name()<<" yields retry : "
-		//	 <<m_blobs.size()<<" vs. "<<Blob::Counter()<<std::endl;
-		retry = true;
-		hardblob = m_blobs.FindFirst(btp::Signal_Process);
-		hardblob->SetId();
-		CleanUpEvent(hardblob);
-		hardblob->SetStatus(blob_status::internal_flag |
-				    blob_status::needs_signal);
-		if (p_mehandler->Weight()!=1.0) p_mehandler->SaveNumberOfTrials();
-		rvalue.IncRetryEvent((*pit)->Name());
-		break;
-	      default:
-		msg.Error()<<"Error in "<<METHOD<<":"<<std::endl
-			   <<"  Unknown return value for 'Treat',"<<std::endl
-			   <<"  Will continue and hope for the best."<<std::endl;
-		return false;
-	    }
-	  }
+	  msg_Debugging()<<m_blobs<<std::endl;
+	  if (weight==0.0 &&
+	      rpa.gen.NumberOfDicedEvents()==rpa.gen.NumberOfEvents()) return true;
 	}
       }
     } while (m_blobs.empty() || 
