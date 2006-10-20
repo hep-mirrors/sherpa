@@ -217,7 +217,8 @@ bool Amegic_Apacic_Interface::FillBlobs(ATOOLS::Blob_List * bl)
     bl->push_back(p_blob_psme_FS);  
     p_blob_psme_FS=0;
   }
-  return 1;
+  p_shower->FillBlobs(bl); 
+  return true;
 }
 
 int Amegic_Apacic_Interface::PerformShowers()

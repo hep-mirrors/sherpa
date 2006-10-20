@@ -1,4 +1,5 @@
 #include "Jet_Evolution.H"
+#include "HadronDecays_Apacic_Interface.H"
 #include "SimpleXS_Apacic_Interface.H"
 #include "Amegic_Apacic_Interface.H"
 
@@ -35,6 +36,8 @@ Jet_Evolution::Jet_Evolution(MEHandlersMap *_mehandlers,Shower_Handler *_showerh
       interface = new SimpleXS_Apacic_Interface(meIter->second,p_showerhandler);
     if (interface!=NULL) m_interfaces.insert(make_pair(meIter->first,interface));
   }
+  interface = new HadronDecays_Apacic_Interface(NULL,p_showerhandler);
+  if (interface!=NULL) m_interfaces.insert(make_pair("HadronDecays",interface));
 }
 
 Jet_Evolution::~Jet_Evolution() 
@@ -63,12 +66,15 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
     found = false;
     for (size_t i=0;i<bloblist->size();++i) {
       blob = (*bloblist)[i];
+      //std::cout<<METHOD<<" for "<<int(blob->Type())
+      //	       <<"; check for status "<<int(blob->Status())<<endl;
       if (blob->Has(blob_status::needs_showers)) {
 	FillDecayBlobMap(blob,bloblist);
 	switch (int(blob->Type())) {
 	  case (int(btp::Signal_Process)) : break;
 	  case (int(btp::Hard_Collision)) : tag = string("MIMEs"); break;
 	  case (int(btp::Hard_Decay))     : tag = string("HardDecays"); break;
+	  case (int(btp::Hadron_Decay))   : tag = string("HadronDecays"); break;
 	  default:
 	    msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
 		       <<"   Do not have an interface for this type of blob:"<<std::endl
@@ -79,7 +85,7 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
 	piIter = m_interfaces.find(tag);
 	if (piIter==m_interfaces.end()) {
 	  msg.Error()<<"Error in Jet_Evolution::Treat :"<<endl
-		     <<"   No Perturbative_Interface found for type : SignalMEs."<<endl
+		     <<"   No Perturbative_Interface found for type : "<<tag<<endl
 		     <<"   Abort the run."<<endl;
 	  abort();
 	}	
@@ -165,44 +171,44 @@ Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist
 
 void Jet_Evolution::AftermathOfNoShower(Blob * blob,Blob_List * bloblist)
 {
-     Blob * myblob;
-     for (int i=0;i<2;i++) {
-       myblob = new Blob();
-       myblob->SetType(btp::IS_Shower);
-       if (Sign(blob->InParticle(i)->Momentum()[3])==1-2*i) myblob->SetBeam(i);
-                                                        else myblob->SetBeam(1-i);
-       myblob->SetStatus(blob_status::needs_beams);
-       Particle * p = new Particle(*blob->InParticle(i));
-       p->SetStatus(part_status::decayed);
-       myblob->AddToInParticles(p);
-       myblob->AddToOutParticles(blob->InParticle(i));
-       blob->InParticle(i)->SetStatus(part_status::decayed);
-       myblob->SetId();
-       bloblist->insert(bloblist->begin(),myblob);
-     }
-     for (int i=0;i<blob->NOutP();i++) {
-       myblob = new Blob();
-       myblob->SetType(btp::FS_Shower);
-       myblob->SetBeam(i);
-       myblob->SetStatus(blob_status::needs_hadronization);
-       Particle * p = new Particle(*blob->OutParticle(i));
-       myblob->AddToInParticles(blob->OutParticle(i));
-       blob->OutParticle(i)->SetStatus(part_status::decayed);
-       myblob->AddToOutParticles(p);
-       myblob->SetId();
-       bloblist->push_back(myblob);
-     }
-     //std::cout<<METHOD<<": found a blob for status=0"<<std::endl<<(*blob)<<std::endl;
-     blob->SetStatus(blob_status::inactive);
+  Blob * myblob;
+  for (int i=0;i<2;i++) {
+    myblob = new Blob();
+    myblob->SetType(btp::IS_Shower);
+    if (Sign(blob->InParticle(i)->Momentum()[3])==1-2*i) myblob->SetBeam(i);
+    else myblob->SetBeam(1-i);
+    myblob->SetStatus(blob_status::needs_beams);
+    Particle * p = new Particle(*blob->InParticle(i));
+    p->SetStatus(part_status::decayed);
+    myblob->AddToInParticles(p);
+    myblob->AddToOutParticles(blob->InParticle(i));
+    blob->InParticle(i)->SetStatus(part_status::decayed);
+    myblob->SetId();
+    bloblist->insert(bloblist->begin(),myblob);
+  }
+  for (int i=0;i<blob->NOutP();i++) {
+    myblob = new Blob();
+    myblob->SetType(btp::FS_Shower);
+    myblob->SetBeam(i);
+    myblob->SetStatus(blob_status::needs_hadronization);
+    Particle * p = new Particle(*blob->OutParticle(i));
+    myblob->AddToInParticles(blob->OutParticle(i));
+    blob->OutParticle(i)->SetStatus(part_status::decayed);
+    myblob->AddToOutParticles(p);
+    myblob->SetId();
+    bloblist->push_back(myblob);
+  }
+  //std::cout<<METHOD<<": found a blob for status=0"<<std::endl<<(*blob)<<std::endl;
+  blob->SetStatus(blob_status::inactive);
 }
 
 void Jet_Evolution::AftermathOfSuccessfulShower(Blob * blob,Blob_List * bloblist,
 						Perturbative_Interface * interface)
 {
   Blob * myblob;
-  if (blob->NInP()==1) blob->InParticle(0)->SetInfo('h');
+  if (blob->NInP()==1 && 
+      blob->Type()!=btp::Hadron_Decay) blob->InParticle(0)->SetInfo('h');
   interface->FillBlobs(bloblist);
-  p_showerhandler->FillBlobs(bloblist); // BUG !!!!
   //std::cout<<METHOD<<": found a blob for status=0"<<std::endl<<(*blob)<<std::endl;
   blob->SetStatus(blob_status::inactive);
   if (blob->NInP()!=1 && !p_showerhandler->ISROn()) {
@@ -246,7 +252,9 @@ void Jet_Evolution::AftermathOfSuccessfulShower(Blob * blob,Blob_List * bloblist
       bloblist->push_back(myblob);
     }
   }
-  else SetDecayBlobPointers(blob,bloblist);
+  else {
+    if (blob->Type()!=btp::Hadron_Decay) SetDecayBlobPointers(blob,bloblist);
+  }
 }
 
 void Jet_Evolution::SetDecayBlobPointers(Blob * blob,Blob_List * bloblist) 
@@ -300,6 +308,9 @@ Particle * Jet_Evolution::FollowUp(Particle * partin,Blob * dec)
 
 void Jet_Evolution::FillDecayBlobMap(Blob * blob,Blob_List * bloblist) 
 {
+  if (blob->Type()==btp::Hadron_Decay) {
+    return;
+  }
   //  cout<<"Which blob ? "<<endl<<(*blob)<<endl;
   for (int i=0;i<blob->NOutP();++i) {
     if (blob->OutParticle(i)->DecayBlob()) 

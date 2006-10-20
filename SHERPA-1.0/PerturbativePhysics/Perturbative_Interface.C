@@ -8,10 +8,13 @@ Perturbative_Interface::Perturbative_Interface(Matrix_Element_Handler *mehandler
   p_shower(shower), 
   m_ini(shower->ISROn()), 
   m_fin(shower->FSROn()), 
-  m_maxjetnumber(mehandler->MaxJets()), 
   m_weight(1.),
   p_fl(NULL), 
-  p_moms(NULL) {}
+  p_moms(NULL) 
+{
+  if (mehandler) m_maxjetnumber = mehandler->MaxJets();
+            else m_maxjetnumber = 10000;
+}
 
 Perturbative_Interface::~Perturbative_Interface() 
 {

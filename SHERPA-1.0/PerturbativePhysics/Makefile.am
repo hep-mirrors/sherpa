@@ -7,6 +7,7 @@ libSherpaPerturbativePhysics_la_SOURCES       =	\
 						Hard_Decay_Handler.C \
 						Interface_Tools.C \
 					 	Perturbative_Interface.C \
+					   	HadronDecays_Apacic_Interface.C \
 					   	SimpleXS_Apacic_Interface.C \
 						Tree_Filler.C \
 						Combine_Table_Base.C \
@@ -22,6 +23,7 @@ pkginclude_HEADERS        =	\
 			Hard_Decay_Handler.H \
 		 	Perturbative_Interface.H \
 		 	Interface_Tools.H \
+		   	HadronDecays_Apacic_Interface.H \
 			SimpleXS_Apacic_Interface.H \
 			Tree_Filler.H \
 			Combine_Table_Base.H \

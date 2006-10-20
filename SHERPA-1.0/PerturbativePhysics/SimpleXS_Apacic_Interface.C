@@ -141,6 +141,7 @@ bool SimpleXS_Apacic_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
 		       Blob_Data<double>((double)p_xs->OrderEW()));
     blobs->push_back(p_psme_fs);
   }
+  p_shower->FillBlobs(blobs); 
   return true;
 }
 
