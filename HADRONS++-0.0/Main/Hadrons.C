@@ -80,45 +80,42 @@ Poincare Hadrons::GetSignalProcessCMSBoost(Particle* inpart)
   if(!sp_blob) {
     msg.Error()<<METHOD<<" Error: Didn't find signal process blob for spin "
       <<"correlations."<<endl;
-    abort();
   }
-//   PRINT_INFO("sp_blob="<<(*sp_blob));
-//   PRINT_INFO("sp_blob->CMS()="<<sp_blob->CMS());
   return Poincare(sp_blob->CMS());
 }
 
 Amplitude_Tensor* Hadrons::GetMotherAmplitudes(Particle* inpart,
-                                               Particle*& outpart,
+                                               Particle*& contracting_part,
                                                const Vec4D& labmom)
 {
-  while(inpart) {
-    Blob* motherblob = inpart->ProductionBlob();
-//     PRINT_INFO("motherblob="<<(*motherblob));
-    // if motherblob contains amplitudes: return them
+  Blob* motherblob = inpart->ProductionBlob();
+  while(motherblob) {
     Blob_Data_Base* scdata = (*motherblob)["amps"];
     if(scdata) {
-//       PRINT_INFO("has amplitudes");
       Amplitude_Tensor* amps = scdata->Get<Amplitude_Tensor*>();
-      if(amps->Contains(inpart)) {
-//         PRINT_INFO("contains inpart");
-        return amps; // if() not necessary?
+      if(amps->Contains(contracting_part)) {
+        return amps;
+      }
+      else {
+        msg.Error()<<METHOD<<" Warning: motherblob amplitudes don't contain inpart."<<endl;
       }
     }
-
-    // otherwise: if motherblob just duplicates particle, try previous blob
-    if(motherblob->NInP()==1 && motherblob->NOutP()==1 &&
-       motherblob->InParticle(0)->Flav() == inpart->Flav() &&
-       motherblob->InParticle(0)->Momentum() == labmom
-      )
-    {
-//       PRINT_INFO("one step further up");
+    else {
+      // don't try correlations if pythia blob is inbetween:
+      if(motherblob->TypeSpec()=="Pythia_v6.214") return NULL;
       inpart = motherblob->InParticle(0);
-      outpart = motherblob->InParticle(0);
+      if(motherblob->NInP()==1 && motherblob->NOutP()==1 &&
+	motherblob->InParticle(0)->Flav() == inpart->Flav() &&
+	motherblob->InParticle(0)->Momentum() == labmom
+	)
+      {
+        // for fragmentation or shower blobs, where the particle is only duplicated:
+        contracting_part = inpart;
+      }
+      // look one step further up
+      motherblob = inpart->ProductionBlob();
     }
-    // else: there are no mother amplitudes
-    else break;
   }
-//   PRINT_INFO("no amps found, returning NULL.");
   return NULL;
 }
 
@@ -206,20 +203,13 @@ void Hadrons::ChooseDecayKinematics(
       Poincare spcmsboost = GetSignalProcessCMSBoost(inpart);
       vector<Vec4D> boosted_moms(n);
       boosted_moms[0]=spcmsboost*(labboost*moms[0]);
-//       PRINT_INFO("labmom="<<labmom);
-//       PRINT_INFO("boosted_moms[0]="<<boosted_moms[0]);
 
-//       PRINT_INFO("get motheramps for "<<(*blob));
-      Particle* outpart=inpart;
-      Amplitude_Tensor* motheramps = GetMotherAmplitudes(inpart,outpart,labmom);
+      Particle* contracting_part=inpart;
+      Amplitude_Tensor* motheramps = GetMotherAmplitudes(inpart,contracting_part,labmom);
       if(motheramps) {
         Amplitude_Tensor* amps = new Amplitude_Tensor(particles);
         amps->SetColorMatrix(p_color_unitmatrix);
-        Amplitude_Tensor* contractedamps = NULL;
         double motherampssumsquare = motheramps->SumSquare();
-//         PRINT_INFO("motheramps for "<<(*blob));
-//         PRINT_INFO(*motheramps);
-//         PRINT_INFO("rank="<<motheramps->GetColorMatrix()->Rank());
         
         double weight;
         int trials=0;
@@ -227,28 +217,28 @@ void Hadrons::ChooseDecayKinematics(
           DiceUncorrelatedKinematics( moms, hdc, inpart->Flav().IsAnti() );
           
           // Calculate amplitude in signal process cms frame for correlation
-          for( size_t i=1; i<n; i++ ) {
-            boosted_moms[i]=spcmsboost*(labboost*moms[i]);
-//             PRINT_INFO("boosted_moms["<<i<<"]="<<boosted_moms[i]);
-          }
+          for( size_t i=1; i<n; i++ ) boosted_moms[i]=spcmsboost*(labboost*moms[i]);
           hdc->CalculateAmplitudes( &boosted_moms[0], amps, inpart->Flav().IsAnti() );
           
           double denominator = amps->SumSquare()*motherampssumsquare;
-          
-          if(contractedamps) { delete contractedamps; contractedamps = NULL; }
-          contractedamps = new Amplitude_Tensor(Contraction(outpart,inpart,motheramps,amps));
-          double numerator = contractedamps->SumSquare();
-          trials++;
+          double numerator = motheramps->SoftContract(contracting_part,
+                                                      amps,
+                                                      inpart);
           weight = numerator/denominator;
           if(weight>1.0) {
-            PRINT_INFO("Error: weight="<<weight<<" in "<<rpa.gen.NumberOfDicedEvents());
-            PRINT_INFO(*blob);
+            msg.Error()<<METHOD<<" Error: weight="<<weight<<" in "
+              <<rpa.gen.NumberOfDicedEvents()<<endl
+              <<(*blob)<<endl;
           }
-          if(trials>1000) PRINT_INFO("trials="<<trials);
+          trials++;
+          if(trials>1000) {
+            msg.Error()<<METHOD<<" Warning: spin correlation trials="<<trials<<endl
+              <<"    possibly wrong amplitudes?"<<endl
+              <<(*blob)<<endl;
+          }
         } while( ran.Get() > weight );
-        
-        blob->AddData("amps",new Blob_Data<Amplitude_Tensor*>(contractedamps));
-        motheramps->Recreate(contractedamps); // save the contraction with the mother
+
+        motheramps->Contract(contracting_part,amps,inpart);
         delete amps; amps=NULL;
       }
       else { // if first particle in SC chain
@@ -258,8 +248,6 @@ void Hadrons::ChooseDecayKinematics(
         Amplitude_Tensor* amps = new Amplitude_Tensor(particles);
         amps->SetColorMatrix(p_color_unitmatrix);
         hdc->CalculateAmplitudes( &boosted_moms[0], amps, inpart->Flav().IsAnti() );
-//         PRINT_INFO("saving amps for blob"<<(*blob));
-//         PRINT_INFO("amps="<<(*amps));
         blob->AddData("amps",new Blob_Data<Amplitude_Tensor*>(amps));
       }
     }

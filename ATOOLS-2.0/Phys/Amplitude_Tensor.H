@@ -19,12 +19,15 @@ namespace ATOOLS
   public:
     Amplitude_Tensor(Particle_Vector particles);
     ~Amplitude_Tensor();
-    
+
     friend Amplitude_Tensor Contraction(
                                         Particle* part1, Particle* part2,
                                         Amplitude_Tensor* const amps1,
                                         Amplitude_Tensor* const amps2
                                        );
+
+    void    Contract( Particle* part1, Amplitude_Tensor* const amps, Particle* part2 );
+    double  SoftContract( Particle* part1, Amplitude_Tensor* const amps, Particle* part2 );
 
     void    InsertAmplitude(Complex amp, std::vector<std::pair<int,int> >& spins);
     void    InsertAmplitude(std::vector<Complex> amp, std::vector<std::pair<int,int> >& spins);

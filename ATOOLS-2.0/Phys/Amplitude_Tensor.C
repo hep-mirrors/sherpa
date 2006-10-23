@@ -163,6 +163,20 @@ Amplitude_Tensor ATOOLS::Contraction(Particle* part1, Particle* part2,
   return newamps;
 }
 
+void Amplitude_Tensor::Contract( Particle* part1, Amplitude_Tensor* const amps, Particle* part2 )
+{
+  Amplitude_Tensor contraction = Contraction(part1,part2,this,amps);
+  this->Recreate( &contraction );
+}
+
+double Amplitude_Tensor::SoftContract( Particle* part1,
+                                       Amplitude_Tensor* const amps,
+                                       Particle* part2 )
+{
+  Amplitude_Tensor contraction = Contraction(part1,part2,this,amps);
+  return contraction.SumSquare();
+}
+
 void Amplitude_Tensor::InsertAmplitude(Complex amp, vector<pair<int,int> >& spins)
 {
   /*! only one color combination in that one spin combination*/
