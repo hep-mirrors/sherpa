@@ -17,11 +17,9 @@ Interface_Tools::~Interface_Tools()
 { 
 }
 
-void Interface_Tools::InitializeIncoming(const Blob *blob,const double &E)
+void Interface_Tools::InitializeIncoming(const Blob *blob,const double &E,
+					 const double &scale)
 {
-  const ATOOLS::Particle *part1=blob->ConstOutParticle(0);
-  const ATOOLS::Particle *part2=blob->ConstOutParticle(1);
-  double scale=(part1->Momentum()+part2->Momentum()).Abs2();
   Knot *m1=p_initrees[0]->NewKnot();
   *(m1->part)=*blob->ConstInParticle(0);
   m1->part->SetInfo('G');
@@ -46,15 +44,16 @@ void Interface_Tools::InitializeIncoming(const Blob *blob,const double &E)
   m2->E2=sqr(m2->x*E);
   m2->stat=1;
   m2->part->SetDecayBlob((ATOOLS::Blob*)blob);
-  m_inipt2=part1->Momentum().PPerp2();
+  m_inipt2=blob->ConstOutParticle(0)->Momentum().PPerp2();
   m1->maxpt2=m1->pt2lcm=m_inipt2;
   m2->maxpt2=m2->pt2lcm=m_inipt2;
 }
 
-void Interface_Tools::InitializeOutGoing(Blob *blob,const double &E)
+void Interface_Tools::InitializeOutGoing(Blob *blob,const double &E,
+					 const double &scale)
 {
-  ATOOLS::Particle *part1=blob->OutParticle(0);
-  ATOOLS::Particle *part2=blob->OutParticle(1);
+  ATOOLS::Particle *part1(blob->OutParticle(0));
+  ATOOLS::Particle *part2(blob->OutParticle(1));
   Knot *dummy=p_fintree->NewKnot();
   dummy->part->SetMomentum(part1->Momentum()+part2->Momentum());
   Knot *d1=p_fintree->NewKnot(part1);
@@ -72,7 +71,7 @@ void Interface_Tools::InitializeOutGoing(Blob *blob,const double &E)
   dummy->didkin=true;
   d1->part->SetInfo('H');
   d1->part->SetStatus(part_status::active);
-  d1->t=dummy->t;
+  d1->t=scale;
   d1->costh=-1.; 
   d1->thcrit=Angle(blob->InParticle(0),blob);
   d1->tout=sqr(part1->Flav().PSMass());
@@ -82,7 +81,7 @@ void Interface_Tools::InitializeOutGoing(Blob *blob,const double &E)
   d1->didkin=true;
   d2->part->SetInfo('H');
   d2->part->SetStatus(part_status::active);
-  d2->t=dummy->t;
+  d2->t=scale;
   d2->costh=-1.; 
   d2->thcrit=Angle(blob->InParticle(1),blob);
   d2->tout=sqr(part2->Flav().PSMass());

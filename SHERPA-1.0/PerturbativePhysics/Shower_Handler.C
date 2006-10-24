@@ -27,7 +27,7 @@ Shower_Handler::Shower_Handler(std::string dir,std::string file,
     m_fsrshowerswitch=true;
   }
   m_showermi = dataread.GetValue<int>("SHOWER_MI",1);
-
+  rpa.gen.SetVariable("SHOWER_MODE",dataread.GetValue<std::string>("SHOWER_MODE","0"));
   int type(4);
   if (rpa.gen.Beam1().IsLepton() && rpa.gen.Beam2().IsLepton())          type = 1;
   else if ((!rpa.gen.Beam1().IsLepton() && !rpa.gen.Beam2().IsLepton())) type = 4;

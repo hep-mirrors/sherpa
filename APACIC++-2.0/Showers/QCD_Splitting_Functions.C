@@ -71,7 +71,7 @@ double q_qg::GetWeight(double z,double pt2,bool massterm)
   if (massterm) {
     double mu(z*(1.-z)*ATOOLS::sqr(m_flavs[0].PSMass())/
 	      (pt2+ATOOLS::sqr((1.-z)*m_flavs[0].PSMass())));
-    weight *= 1.-(1.-z)*mu/(2.*(1.+m_fmed)-(1.-z*z));
+    weight *= 1.-(1.-z)*2.*mu/(2.*(1.+m_fmed)-(1.-z*z));
   }
   if (s_kfactorscheme==1) {
     double kappa(s_kappaG-p_tools->Nf(pt2)*s_kappaQ);
@@ -273,7 +273,7 @@ double g_qq::GetWeight(double z,double pt2,bool massterm)
   if (massterm) {
     double m2(ATOOLS::sqr(m_flavs[1].PSMass()));
     double mu(2.*m2*z*(1.-z)/(pt2+m2));
-    weight *= 1.-mu/(1.-2.*z*(1.-z));
+    weight *= 1.+mu/(1.-2.*z*(1.-z));
   }
   return weight;
 }

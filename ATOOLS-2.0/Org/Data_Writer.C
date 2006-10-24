@@ -15,9 +15,10 @@ Data_Writer::Data_Writer():
 }
 
 Data_Writer::Data_Writer(const std::string cut,
-			 const std::string seperator,
+			 const std::string wordsep,
+			 const std::string linesep,
 			 const  std::string comment):
-  Read_Write_Base(0,1,cut,seperator,comment) 
+  Read_Write_Base(0,1,cut,wordsep,linesep,comment) 
 {
   SetOutFileMode(fom::permanent);
 }
@@ -32,7 +33,7 @@ bool Data_Writer::WriteComment(std::string comment,
   if (tempfname!=nullstring) SetOutputFile(tempfname);
   if (!OpenOutFile()) return false;
   if (tag!=nullstring) *OutFile()<<tag;
-  if (Blank().size()>0) *OutFile()<<(char)Blank()[0];
+  if (WordSeparator().size()>0) *OutFile()<<WordSeparator()[0];
   *OutFile()<<comment;
   if (endline) *OutFile()<<std::endl;
   CloseOutFile();
@@ -67,7 +68,7 @@ bool Data_Writer::WriteToFile(Write_Type value,std::string tag,bool endline,
 #endif
   OutFile()->precision(precision);
   if (tag!=nullstring) *OutFile()<<tag;
-  if (Blank().size()>0) *OutFile()<<(char)Blank()[0];
+  if (WordSeparator().size()>0) *OutFile()<<WordSeparator()[0];
   *OutFile()<<value;
   if (endline) *OutFile()<<std::endl;
   OutFile()->flags(defaultflags);
@@ -88,11 +89,11 @@ bool Data_Writer::VectorToFile(std::vector<Write_Type> &values,
   case vtc::horizontal:
     if (values.size()>0) {
       WriteToFile<Write_Type>(values[0],tag,false,tempfname,precision);
-      if (Blank().size()>0) *OutFile()<<(char)Blank()[0];
+      if (WordSeparator().size()>0) *OutFile()<<WordSeparator()[0];
     }
     for (unsigned int i=1;i<values.size();++i) {
       WriteToFile<Write_Type>(values[i],"",false,tempfname,precision);
-      if (Blank().size()>0) *OutFile()<<(char)Blank()[0];
+      if (WordSeparator().size()>0) *OutFile()<<WordSeparator()[0];
     }
     if (endline) *OutFile()<<std::endl;
     break;

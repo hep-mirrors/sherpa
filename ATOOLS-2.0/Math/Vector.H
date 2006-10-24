@@ -116,6 +116,8 @@ namespace ATOOLS {
     inline const double PPerp() const; 
     inline const double MPerp2() const; 
     inline const double MPerp() const; 
+    inline const double MPerp2(const Vec4D &ref) const; 
+    inline const double MPerp(const Vec4D &ref) const; 
     inline const double EPerp2() const;
     inline const double EPerp() const; 
     inline const double PPlus() const; 
@@ -490,6 +492,16 @@ namespace ATOOLS {
     return Eta()-ref.Eta();
   }
   
+  inline const double Vec4D::MPerp2(const Vec4D &ref) const
+  {
+    return Abs2()+PPerp2(ref);
+  }
+ 
+  inline const double Vec4D::MPerp(const Vec4D &ref) const
+  {
+    return sqrt(MPerp2(ref));
+  } 
+
   inline Vec4D Vec4D::Perp() const 
   { 
     return Vec4D(0.,m_x[1],m_x[2],0.);

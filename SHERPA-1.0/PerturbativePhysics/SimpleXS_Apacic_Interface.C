@@ -104,10 +104,10 @@ Return_Value::code SimpleXS_Apacic_Interface::InitColours(ATOOLS::Blob *blob)
       blob->OutParticle(i)->SetFlow(j+1,p_xs->Colours()[i+blob->NInP()][j]);
     }
   }
-  m_scale=p_xs->Scale(PHASIC::stp::as);
+  m_scale=p_xs->Scale(PHASIC::stp::ren);
   double E=sqrt(p_mehandler->GetISR_Handler()->Pole())/2.;
-  if (m_ini) p_tools->InitializeIncoming(blob,E);
-  if (m_fin) p_tools->InitializeOutGoing(blob,E);
+  if (m_ini) p_tools->InitializeIncoming(blob,E,m_scale);
+  if (m_fin) p_tools->InitializeOutGoing(blob,E,m_scale);
   return Return_Value::Success;
 }
 
@@ -147,21 +147,27 @@ bool SimpleXS_Apacic_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
 
 int SimpleXS_Apacic_Interface::PerformShowers()
 {
-  int jetveto=-1;
-  double qmin2i=0., qmin2f=0.; 
+  int jetveto(-1);
   if (p_mehandler->UseSudakovWeight()) {
+    double qmin2i, qmin2f; 
     p_tools->JetVetoPt2(qmin2i,qmin2f);
-    p_shower->SetJetvetoPt2(qmin2i,qmin2f);
-    double scale=p_mehandler->FactorisationScale();
-    p_shower->SetFactorisationScale(scale);
+    if (p_shower->GetIniTrees()!=NULL) {
+      APACIC::Knot *irt1(p_shower->GetIniTrees()[0]->GetRoot());
+      APACIC::Knot *irt2(p_shower->GetIniTrees()[1]->GetRoot());
+      irt1->qjv=irt2->qjv=sqrt(qmin2i);
+      irt1->maxjets=irt2->maxjets=p_mehandler->MaxQCDJets();
+    }
+    APACIC::Knot *frt(p_shower->GetFinTree()->GetRoot());
+    frt->qjv=sqrt(qmin2f);
+    frt->maxjets=p_mehandler->MaxQCDJets();
     jetveto=2;
+    msg_Debugging()<<METHOD<<"(): {\n"
+		   <<"   initial = "<<m_ini<<", final = "<<m_fin<<"\n"
+		   <<"   maxpt ini = "<<sqrt(qmin2i)<<" maxpt fin = "<<sqrt(qmin2f)
+		   <<" vs. "<<p_hard->OutParticle(0)->Momentum().PPerp()
+		   <<"\n}"<<std::endl;
   }
-  msg_Debugging()<<"SimpleXS_Apacic_Interface::PerformShowers(): {\n"
-		 <<"   initial = "<<m_ini<<", final = "<<m_fin<<"\n"
-		 <<"   sudakov weight = "<<p_mehandler->UseSudakovWeight()<<"\n"
-		 <<"   maxpt ini = "<<qmin2i<<" maxpt fin = "<<qmin2f
-		 <<" vs. "<<p_hard->OutParticle(0)->Momentum().PPerp2()
-		 <<"\n}"<<std::endl;
+  p_shower->SetFactorisationScale(p_mehandler->FactorisationScale());
   return p_shower->PerformShowers(jetveto,0,p_mehandler->GetISR_Handler()->X1(),
 				  p_mehandler->GetISR_Handler()->X2(),rpa.gen.Ycut());
 }

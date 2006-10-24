@@ -30,21 +30,21 @@ Process_Base::Process_Base():
   Integrable_Base(0,0),
   m_gen_str(3),p_b(0),p_flin(0),p_flout(0),
   p_pl(0),p_plin(0),p_plout(0), 
-  m_maxfac(1.), m_ycut(-1.),
+  m_maxfac(1.), 
   m_maxerror(-1.), p_psgen(0), m_print_graphs(false), p_pinfo(0)
 {
   m_atoms=1;
   m_analyse=m_tables=0;
 
-  m_n=m_kfactorscheme=m_scalescheme=0;
+  m_n=m_kfactorscheme=0;
+  m_scalescheme=PHASIC::scl::unknown;
   m_nstrong=m_neweak=m_orderQCD=m_orderEW=0;
   m_totalxs=m_totalerr=m_totalsum=m_totalsumsqr=m_max=0.;
   m_last=m_lastdxs=0.;
   m_lastlumi=1.;
-  m_scale[stp::as]=sqr(rpa.gen.Ecms());
+  m_scale[stp::ren]=sqr(rpa.gen.Ecms());
   m_scale[stp::fac]=sqr(rpa.gen.Ecms());
   m_threshold=0.;
-  m_updatescales=false;
 }
 
 
@@ -52,7 +52,7 @@ Process_Base::Process_Base():
 Process_Base::Process_Base(Process_Info* pinfo,int _nin,int _nout,ATOOLS::Flavour * _fl,
 			   PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
 			   int _gen_str, int _orderQCD, int _orderEW,
-			   int _scalescheme,int _kfactorscheme,double _scale,
+			   PHASIC::scl::scheme _scalescheme,int _kfactorscheme,double _scale,
 			   Pol_Info * _pl,
 			   int _nex,ATOOLS::Flavour * _ex_fl,double ycut,double error) :
   Integrable_Base(_nin,_nout,_scalescheme,_kfactorscheme,_beam,_isr),
@@ -61,22 +61,16 @@ Process_Base::Process_Base(Process_Info* pinfo,int _nin,int _nout,ATOOLS::Flavou
   m_atoms(0), m_analyse(0), m_tables(0), 
   m_maxfac(1.),
   m_orderQCD(_orderQCD), m_orderEW(_orderEW),
-  m_ycut(ycut),m_maxerror(error), 
+  m_maxerror(error), 
   p_psgen(0), m_print_graphs(false), p_pinfo(pinfo)
 {
+  if (ycut>0.0) m_ycut=ycut;
+  m_scale[stp::ren]=m_scale[stp::fac]=_scale;
 
-  m_scale[stp::as]=m_scale[stp::fac]=_scale;
-
-  if (m_scale[stp::as]<0.) {
-    m_scale[stp::as]=m_scale[stp::fac]=sqr(rpa.gen.Ecms());
+  if (m_scale[stp::ren]<0.) {
+    m_scale[stp::ren]=m_scale[stp::fac]=sqr(rpa.gen.Ecms());
   }
 
-  m_updatescales=false;
-  if (m_scalescheme<0 || m_kfactorscheme<0) m_updatescales = true;
-  
-  if (m_scalescheme<0)   m_scalescheme   = -m_scalescheme;
-  if (m_kfactorscheme<0) m_kfactorscheme = -m_kfactorscheme;
-  
   p_flavours = 0;
   p_pl = 0;
   p_pshandler = 0;
@@ -412,14 +406,6 @@ void Process_Base::SetMax(const double max, int depth)
   if (max!=0.) m_max     = max;     
 } 
 void Process_Base::SetMaxJetNumber(int max)             { m_maxjetnumber  = max;    } 
-void Process_Base::SetScales(double q2_fac, double q2_ren)
-{ 
-  //  std::cout<<"Process_Base::SetScales("<<q2_fac<<","<<q2_ren<<") : "<<Name()<<std::endl;
-
-  m_scale[stp::fac] = rpa.gen.FactorizationScaleFactor() * q2_fac;  
-  m_scale[stp::as]  = rpa.gen.RenormalizationScaleFactor() * q2_ren;
-} 
-
 void Process_Base::AddToDataCollector(int i)
 {
   std::string name;
@@ -476,19 +462,12 @@ void Process_Base::SetEnhance(double enhancefac, double maxfac, double epsilon)
   
   ------------------------------------------------------------------------------*/
 
-void Process_Base::SetScale(const double scale)         
-{ 
-  //  std::cout<<"Process_Base::SetScale("<<scale<<")"<<std::endl;
-  m_scale[stp::as]=m_scale[stp::fac]=scale; 
-}
-
 string                  Process_Base::ResDir()                       { return m_resdir; }
 string                  Process_Base::LibName()                      { return string("error"); }
 int                     Process_Base::NumberOfDiagrams()             { return 0; }
 Point                 * Process_Base::Diagram(int i)                 { return 0; }
 bool                    Process_Base::IsFreeOfFourVertex(Point * _p) { return 1; }
 Phase_Space_Generator * Process_Base::PSGenerator()                  { return p_psgen; }
-double                  Process_Base::FactorisationScale()           { return m_scale[stp::fac]; }
 
 int                     Process_Base::ISRNumber()                                        { return 0; }
 int                     Process_Base::BeamNumber()                                       { return 0; }

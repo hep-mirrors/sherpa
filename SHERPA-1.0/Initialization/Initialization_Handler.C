@@ -155,6 +155,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     InitializeTheAnalyses();
     return true;
   }
+  if (rpa.gen.NumberOfEvents()>0) SetScaleFactors();
   okay = okay && InitializeTheModel();  
   //  set masses and widths from command line
   SetParameter(nr);
@@ -600,6 +601,33 @@ bool Initialization_Handler::CalculateTheHardProcesses()
   return ok;
 }
 
+void Initialization_Handler::SetScaleFactors() 
+{
+  if (rpa.gen.Variable("SUDAKOV_WEIGHT","0")!="1") return;
+  Data_Reader reader;
+  reader.SetInputPath(m_path+"/");
+  reader.SetInputFile(m_showerdat);
+  bool changed(false);
+  double fac(1.0);
+  if (!reader.ReadFromFile(fac,"IS_CPL_SCALE_FACTOR")) fac=0.25;
+  else changed=true;
+  rpa.gen.SetVariable("IS_CPL_SCALE_FACTOR",ToString(4.0*fac));
+  if (!reader.ReadFromFile(fac,"FS_CPL_SCALE_FACTOR")) fac=1.0;
+  else changed=true;
+  rpa.gen.SetVariable("FS_CPL_SCALE_FACTOR",ToString(fac));
+  int scheme(1);
+  if (!reader.ReadFromFile(scheme,"S_KFACTOR_SCHEME")) scheme=1;
+  else changed=true;
+  rpa.gen.SetVariable("S_KFACTOR_SCHEME",ToString(scheme));
+  if (changed)
+    msg.Error()<<om::bold<<METHOD<<"(): WARNING {\n"<<om::reset<<om::red
+	       <<"  Scale- and K-factors for Matrix Element weighting\n"
+	       <<"  are set to account for Parton Shower settings.\n"
+	       <<"  If re-using integration results, please make sure\n"
+	       <<"  that the integration was performed this way.\n"
+	       <<om::reset<<om::bold<<"}"<<om::reset<<std::endl;
+}
+
 void Initialization_Handler::SetParameter(int nr) {
   if (nr<0) return;
 
@@ -869,16 +897,22 @@ void Initialization_Handler::CheckFlagConsistency()
     }
 
     //  ME.dat 
-    Data_Read::SetCommandLine("SCALE_SCHEME","65");
-    Data_Read::SetCommandLine("KFACTOR_SCHEME","65");
+    Data_Read::SetCommandLine("SCALE_SCHEME","CKKW");
+    Data_Read::SetCommandLine("KFACTOR_SCHEME","1");
     Data_Read::SetCommandLine("COUPLING_SCHEME","Running_alpha_S");
-    Read_Write_Base::AddCommandLine("SCALE_SCHEME = 65; ");
-    Read_Write_Base::AddCommandLine("KFACTOR_SCHEME = 65; ");
+    Read_Write_Base::AddCommandLine("SCALE_SCHEME = CKKW; ");
+    Read_Write_Base::AddCommandLine("KFACTOR_SCHEME = 1; ");
     Read_Write_Base::AddCommandLine("COUPLING_SCHEME = Running_alpha_S; ");
 
     //  Shower.dat
     Data_Read::SetCommandLine("FSR_SHOWER","1");
     Read_Write_Base::AddCommandLine("FSR_SHOWER = 1; ");
+  }
+  else {
+    Data_Read::SetCommandLine("JET_VETO_SCHEME","0");
+    Data_Read::SetCommandLine("LOSE_JET_SCHEME","0");
+    Read_Write_Base::AddCommandLine("JET_VETO_SCHEME = 0; ");
+    Read_Write_Base::AddCommandLine("LOSE_JET_SCHEME = 0; ");
   }
 
 

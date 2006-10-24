@@ -12,7 +12,6 @@ namespace ATOOLS {
     void KillComments(std::string& buffer);
 
     std::string KillBlanks(std::string& buffer);
-    std::string HighlightSeparator(std::string& buffer);
 
   protected:
 
@@ -21,7 +20,7 @@ namespace ATOOLS {
 			     std::string filename);
     template <class Read_Type >
     Read_Type M_ReadFromString(std::string parameter,
-			       std::string &inputstring);
+			       std::string &inputstring,int &septype);
 
     template <class Read_Type >
     std::vector<Read_Type> 
@@ -45,9 +44,8 @@ namespace ATOOLS {
 
     // constructors
     Data_Reader();
-    Data_Reader(const std::string _m_cut,
-		const std::string _m_separator,
-		const std::string _m_comment);
+    Data_Reader(const std::string cut,const std::string wordsep,
+		const std::string linesep,const std::string comment);
 
     // member functions
     template <class Read_Type >
@@ -78,8 +76,6 @@ namespace ATOOLS {
 			  std::string parameter=nullstring,
 			  std::string inputstring=noinputtag,
 			  mtc::code tempmtype=mtc::unknown);
-
-    std::string StripEscapes(const std::string &buffer) const;
 
   }; // end of class Data_Reader
 

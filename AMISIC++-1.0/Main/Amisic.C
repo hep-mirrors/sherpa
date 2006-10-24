@@ -38,7 +38,7 @@ Amisic::~Amisic()
 bool Amisic::Initialize()
 {
   if (InputPath()=="" || InputFile()=="") return false;
-  Data_Reader *reader = new Data_Reader("=",";","!");
+  Data_Reader *reader = new Data_Reader("="," ",";","!");
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
   reader->SetVectorType(vtc::horizontal);

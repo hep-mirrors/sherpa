@@ -3,12 +3,14 @@
 
 #include "File_IO_Base.H"
 #include "Algebra_Interpreter.H"
-#include "My_Limits.H"
+
+#include <map>
 
 namespace ATOOLS {
 
   const std::string defaultcut("=");
-  const std::string defaultsep(";");
+  const std::string defaultwsep(" ");
+  const std::string defaultlsep(";");
   const std::string defaultcom("#");
   const std::string noinputtag("°");
 
@@ -40,13 +42,16 @@ namespace ATOOLS {
   class Read_Write_Base: public File_IO_Base, public Tag_Replacer {
   private:
 
-    std::map<std::string,std::string> m_tags;
+    static std::map<std::string,std::vector<std::string>*> s_buffermap;
 
     static std::vector<std::string> s_commandline;
 
-    std::vector<std::string> m_comment, m_ignore, m_separator;
-    std::vector<std::string> m_filecontent;
+    std::map<std::string,std::string> m_tags;
+
+    std::vector<std::string> m_comment, m_ignore, m_wordsep, m_linesep;
     std::vector<int>         m_blank;
+
+    std::vector<std::vector<std::string> > m_buffer, m_filecontent;
 
     std::vector<std::pair<int,size_t> > m_ifresults;
 
@@ -68,16 +73,10 @@ namespace ATOOLS {
 
   protected:
 
-    inline const std::vector<std::string> &FileContent() const
-    { return m_filecontent; }
-
-    inline static const std::vector<std::string> &CommandLine()
-    { return s_commandline; }
-
     bool m_allownans, m_addcommandline;
 
-    template <typename Type> Type Default(); 
-  
+    template <class Type> Type Default();
+
     size_t Find(std::string input,std::string parameter,
 		size_t &length) const;
 
@@ -92,29 +91,49 @@ namespace ATOOLS {
     Read_Write_Base(const unsigned int infiles,
 		    const unsigned int outfiles,
 		    const std::string cut,
-		    const std::string separator,
+		    const std::string wordsep,
+		    const std::string linesep,
 		    const std::string comment);
 
     // destructor
     ~Read_Write_Base();
 
     // member functions
-    bool OpenInFile(const unsigned int i=0);
+    bool OpenInFile(const unsigned int i=0,const bool force=false);
     bool OpenOutFile(const unsigned int i=0);
 
     void CloseInFile(const unsigned int i=0,const bool force=false);
     void CloseOutFile(const unsigned int i=0,const bool force=false);
 
+    std::string StripEscapes(const std::string &buffer) const;
+
+    inline const std::vector<std::string> 
+    &FileContent(const size_t i=0) const
+    { return m_filecontent[i]; }
+
+    inline static const std::vector<std::string> &CommandLine()
+    { return s_commandline; }
+
     // setters
-    inline void SetSeparator(const std::string separator)
-    { m_separator.clear(); m_separator.push_back(separator); }
-    inline void SetSeparator(const std::vector<std::string> &separator)
-    { m_separator=separator; }
-    inline void AddSeparator(const std::string separator)
-    { m_separator.push_back(separator); }
-    inline void AddSeparator(const std::vector<std::string> &separator)
-    { m_separator.insert(m_separator.end(),
-			 separator.begin(),separator.end()); }
+    inline void SetWordSeparator(const std::string separator)
+    { m_wordsep.clear(); m_wordsep.push_back(separator); }
+    inline void SetWordSeparator(const std::vector<std::string> &separator)
+    { m_wordsep=separator; }
+    inline void AddWordSeparator(const std::string separator)
+    { m_wordsep.push_back(separator); }
+    inline void AddWordSeparator(const std::vector<std::string> &separator)
+    { m_wordsep.insert(m_wordsep.end(),
+		       separator.begin(),separator.end()); }
+
+    inline void SetLineSeparator(const std::string separator)
+    { m_linesep.clear(); m_linesep.push_back(separator); }
+    inline void SetLineSeparator(const std::vector<std::string> &separator)
+    { m_linesep=separator; }
+    inline void AddLineSeparator(const std::string separator)
+    { m_linesep.push_back(separator); }
+    inline void AddLineSeparator(const std::vector<std::string> &separator)
+    { m_linesep.insert(m_linesep.end(),
+		       separator.begin(),separator.end()); }
 
     inline void SetComment(const std::string comment)
     { m_comment.clear(); m_comment.push_back(comment); }
@@ -179,15 +198,18 @@ namespace ATOOLS {
     inline void SetAddCommandLine(const bool commandline)
     { m_addcommandline=commandline; }
 
-    inline void SetFileContent(const std::string filecontent)
-    { m_filecontent.clear(); m_filecontent.push_back(filecontent); }
-    inline void SetFileContent(const std::vector<std::string> &filecontent)
-    {m_filecontent=filecontent; }
-    inline void AddFileContent(const std::string filecontent)
-    { m_filecontent.clear(); m_filecontent.push_back(filecontent); }
-    inline void AddFileContent(const std::vector<std::string> &filecontent)
-    { m_filecontent.insert(m_filecontent.end(),
-			   filecontent.begin(),filecontent.end()); }
+    inline void SetFileContent(const size_t &i,const std::string filecontent)
+    { m_filecontent[i].clear(); m_filecontent[i].push_back(filecontent); }
+    inline void SetFileContent(const size_t &i,
+			       const std::vector<std::string> &filecontent)
+    {m_filecontent[i]=filecontent; }
+    inline void AddFileContent(const size_t &i,
+			       const std::string filecontent)
+    { m_filecontent[i].clear(); m_filecontent[i].push_back(filecontent); }
+    inline void AddFileContent(const size_t &i,
+			       const std::vector<std::string> &filecontent)
+    { m_filecontent[i].insert(m_filecontent[i].end(),
+			      filecontent.begin(),filecontent.end()); }
 
     inline static void SetCommandLine(const std::string commandline)
     { s_commandline.clear(); s_commandline.push_back(commandline); }
@@ -235,8 +257,10 @@ namespace ATOOLS {
     { return m_comment; }
     inline const std::vector<std::string> &Ignore() const
     { return m_ignore; }
-    inline const std::vector<std::string> &Separator() const
-    { return m_separator; }
+    inline const std::vector<std::string> &WordSeparator() const
+    { return m_wordsep; }
+    inline const std::vector<std::string> &LineSeparator() const
+    { return m_linesep; }
 
     inline const std::vector<int> &Blank() const
     { return m_blank; }
@@ -278,7 +302,9 @@ namespace ATOOLS {
     { return m_escape; }
 
     inline bool RereadInFile(const unsigned int i=0)
-    { CloseInFile(i,true); return OpenInFile(i); }
+    { CloseInFile(i,true); return OpenInFile(i,true); }
+    inline bool RescanInFile(const unsigned int i=0)
+    { CloseInFile(i,false); return OpenInFile(i,false); }
     
     inline Algebra_Interpreter *Interpreter() const
     { return p_interpreter; }

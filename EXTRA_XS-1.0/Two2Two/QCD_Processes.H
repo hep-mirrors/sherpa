@@ -34,7 +34,7 @@ namespace EXTRAXS {
 
     // constructor
     QCD_Processes(PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,
-		  ATOOLS::Flavour *,ATOOLS::Selector_Data *,int,int,
+		  ATOOLS::Flavour *,ATOOLS::Selector_Data *,PHASIC::scl::scheme,int,
 		  bool=true);
 
     // setters

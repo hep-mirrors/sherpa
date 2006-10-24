@@ -6,26 +6,32 @@
 using namespace ATOOLS;
 
 std::vector<std::string> Read_Write_Base::s_commandline;
+std::map<std::string,std::vector<std::string>*> Read_Write_Base::s_buffermap;
 
 Read_Write_Base::Read_Write_Base(const unsigned int infiles,
 				 const unsigned int outfiles):
   File_IO_Base(infiles,outfiles),
   m_comment(std::vector<std::string>(1,defaultcom)), 
   m_ignore(std::vector<std::string>(1,defaultcut)),
-  m_separator(std::vector<std::string>(1,defaultsep))
+  m_wordsep(std::vector<std::string>(1,defaultwsep)),
+  m_linesep(std::vector<std::string>(1,defaultlsep)),
+  m_buffer(infiles), m_filecontent(infiles)
 {
   Init();
 }
 
 Read_Write_Base::Read_Write_Base(const unsigned int infiles,
 				 const unsigned int outfiles,
-				 const std::string _m_cut,
-				 const std::string _m_separator,
-				 const std::string _m_comment):
+				 const std::string cut,
+				 const std::string wordsep,
+				 const std::string linesep,
+				 const std::string comment):
   File_IO_Base(infiles,outfiles),
-  m_comment(std::vector<std::string>(1,_m_comment)), 
-  m_ignore(std::vector<std::string>(1,_m_cut)),
-  m_separator(std::vector<std::string>(1,_m_separator))
+  m_comment(std::vector<std::string>(1,comment)), 
+  m_ignore(std::vector<std::string>(1,cut)),
+  m_wordsep(std::vector<std::string>(1,wordsep)),
+  m_linesep(std::vector<std::string>(1,linesep)),
+  m_buffer(infiles), m_filecontent(infiles)
 {
   Init();
 }
@@ -65,7 +71,7 @@ size_t Read_Write_Base::Find(std::string input,std::string parameter,
     for (size_t i=0;i<parameter.length();++i) 
       parameter[i]=toupper(parameter[i]);
   }
-  size_t cutinputblanks=0;
+  size_t cutinputblanks(0), plength(parameter.length());
   if (m_ignoreblanks) {
     for (size_t j=0;j<Blank().size();++j) {
       bool lastblank=true;
@@ -85,12 +91,12 @@ size_t Read_Write_Base::Find(std::string input,std::string parameter,
     }
     for (size_t j=0;j<Blank().size();++j) {
       bool lastblank=true;
-      for (size_t i=0;i<parameter.length();++i) {
+      for (size_t i=0;i<plength;++i) {
 	if (parameter[i]==Blank()[j]) {
 	  parameter[i]=Blank()[0];
 	  if (lastblank) {
 	    parameter=parameter.substr(0,i)+
-	      parameter.substr(i,parameter.length());
+	      parameter.substr(i,plength);
 	  }
 	  lastblank=true;
 	}
@@ -100,12 +106,37 @@ size_t Read_Write_Base::Find(std::string input,std::string parameter,
       }
     }
   }
-  length=parameter.length()+cutinputblanks;
+  length=plength+cutinputblanks;
   size_t pos=input.find(parameter);
-  if (m_exactmatch && pos!=0) {
-    size_t i=0;
-    for (;i<Blank().size();++i) if (input[pos-1]==Blank()[i]) break;
-    if (i==Blank().size()) pos=std::string::npos;
+  if (pos!=std::string::npos && m_exactmatch) {
+    if (pos>0) {
+      size_t i(0); 
+      for (;i<Blank().size();++i) if (input[pos-1]==Blank()[i]) break;
+      if (i==Blank().size()) {
+	for (i=0;i<WordSeparator().size();++i) 
+	  if (input.rfind(WordSeparator()[i],pos)==
+	      pos-WordSeparator()[i].length()) break;
+	if (i==WordSeparator().size()) {
+	  for (i=0;i<LineSeparator().size();++i) 
+	    if (input.rfind(LineSeparator()[i],pos)==
+		pos-LineSeparator()[i].length()) break;
+	  if (i==LineSeparator().size()) pos=std::string::npos;
+	}
+      }
+    }
+    if (pos+plength<input.length()) {
+      size_t i(0);
+      for (;i<Blank().size();++i) if (input[pos+plength]==Blank()[i]) break;
+      if (i==Blank().size()) {
+	for (i=0;i<WordSeparator().size();++i) 
+	  if (input.find(WordSeparator()[i],pos+plength)==pos+plength) break;
+	if (i==WordSeparator().size()) {
+	  for (i=0;i<LineSeparator().size();++i) 
+	    if (input.find(LineSeparator()[i],pos+plength)==pos+plength) break;
+	  if (i==LineSeparator().size()) pos=std::string::npos;
+	}
+      }
+    }
   }
   if (pos==std::string::npos) length=0;
   return pos;
@@ -170,27 +201,44 @@ std::string &Read_Write_Base::Interprete(std::string &lastline)
   return lastline;
 }
 
-bool Read_Write_Base::OpenInFile(const unsigned int i)
+bool Read_Write_Base::OpenInFile(const unsigned int i,const bool force)
 {  
   if (InputFile(i)==nullstring) {
     if (m_addcommandline && CommandLine().size()>0) {
-      AddFileContent(CommandLine());
+      AddFileContent(i,CommandLine());
       return true;
     }
     return false;
   }
-  if (InFileMode(i)==fom::unknown) SetInFileMode(fom::temporary);
+  if (InFileMode(i)==fom::unknown) SetInFileMode(fom::permanent);
   if (m_infiles[i]()==NULL) {
-    m_infiles[i].Open();	
-    m_filecontent.clear();
     std::string lastline;
+    if (force || m_buffer[i].empty()) {
+      std::string file(m_infiles[i].Path()+m_infiles[i].File());
+      if (s_buffermap.find(file)!=s_buffermap.end()) {
+	m_buffer[i]=*s_buffermap[file];
+      }
+      else {
+	m_infiles[i].Open();	
+	m_buffer[i].clear();
+	if (*m_infiles[i]) {
+	  getline(*m_infiles[i],lastline);
+	  do {
+	    if (lastline.length()>0) m_buffer[i].push_back(lastline);
+	    getline(*m_infiles[i],lastline);
+	  } while (*m_infiles[i]);
+	}
+	s_buffermap[file]=&m_buffer[i];
+      }
+    }
+    m_filecontent[i].clear();
     bool checkbegin=(bool)(m_filebegin.size()>0);
     bool checkend=(bool)(m_fileend.size()>0);
     int filebegin=0;
     unsigned int occurrence=0;
-    if (*m_infiles[i]) {
-      getline(*m_infiles[i],lastline);
-      do {
+    if (!m_buffer[i].empty()) {
+      for (size_t ln(0);ln<m_buffer[i].size();++ln) {
+	lastline=m_buffer[i][ln];
 	if (checkbegin) {
 	  for (size_t length=0,j=0;j<m_filebegin.size();++j) {
 	    size_t pos=Find(lastline,m_filebegin[j],length);
@@ -220,18 +268,17 @@ bool Read_Write_Base::OpenInFile(const unsigned int i)
 	    }
 	  }
 	  Interprete(lastline);
-	  if (lastline.length()>0) m_filecontent.push_back(lastline);
+	  if (lastline.length()>0) m_filecontent[i].push_back(lastline);
 	}
 	else if (lastline.length()>0) {
 	  Interprete(lastline);
-	  if (lastline.length()>0) m_filecontent.push_back(lastline);
+	  if (lastline.length()>0) m_filecontent[i].push_back(lastline);
 	}
-	getline(*m_infiles[i],lastline);
-      } while (*m_infiles[i]);
+      }
     }
   }
-  bool success=m_filecontent.size()>0;
-  if (m_addcommandline) AddFileContent(CommandLine());
+  bool success=m_filecontent[i].size()>0;
+  if (m_addcommandline) AddFileContent(i,CommandLine());
   if (!success) m_infiles[i].SetMode(fom::error);
   return success;
 }
@@ -253,7 +300,12 @@ void Read_Write_Base::CloseInFile(const unsigned int i,const bool force)
 { 
   if (m_infiles[i]()==NULL) return;
   if (m_infiles[i].Mode()==fom::permanent && !force) return;
-  m_filecontent.clear();
+  m_filecontent[i].clear();
+  m_buffer[i].clear();
+  std::string file(m_infiles[i].Path()+m_infiles[i].File());
+  std::map<std::string,std::vector<std::string>*>::iterator 
+    rwbit(s_buffermap.find(file));
+  if (rwbit->second==&m_buffer[i]) s_buffermap.erase(rwbit);
   m_infiles[i].Close(); 
 }
 
@@ -283,23 +335,35 @@ std::string Read_Write_Base::ReplaceTags(std::string &expr) const
   return tag;
 }
 
+std::string Read_Write_Base::StripEscapes(const std::string &buffer) const
+{
+  if (buffer.length()==0) return buffer;
+  std::string input=buffer;
+  size_t pos, next=0;
+  while ((pos=input.find(Escape(),next))!=std::string::npos) {
+    input.erase(pos,1);
+    if (input.length()>pos && input[pos]==Escape()) next=pos+1;
+  }
+  return input;
+}
+
 namespace ATOOLS {
 
-  template <typename Type> Type Read_Write_Base::Default() 
+  template <class Type> Type Read_Write_Base::Default() 
   { 
     return std::numeric_limits<Type>::max(); 
   }
-  
+
   template int Read_Write_Base::Default<int>();
   template unsigned int Read_Write_Base::Default<unsigned int>();
   template long int Read_Write_Base::Default<long int>();
   template float Read_Write_Base::Default<float>();
   template double Read_Write_Base::Default<double>();
-  
+
   template <> std::string Read_Write_Base::Default<std::string>()
   {
     return "";
   }
-  
+	
 }
 

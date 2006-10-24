@@ -28,10 +28,11 @@ Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
   p_fl      = new Flavour[4];
   p_moms    = new Vec4D[4];
   p_cluster = new Cluster_Partons_CKKW
-    (p_mehandler,shower->JetFinder(),m_maxjetnumber,
-     p_shower->GetISRHandler()->On(),
-     p_shower->ISROn(),p_shower->FSROn());
-  p_filler  = new Tree_Filler(p_cluster,p_shower,m_maxjetnumber);
+    (p_mehandler,shower->JetFinder(),p_shower->GetISRHandler(),
+     m_maxjetnumber,p_shower->ISROn(),p_shower->FSROn());
+  int showermode(ToType<int>(rpa.gen.Variable("SHOWER_MODE")));
+  msg_Debugging()<<METHOD<<"(): Shower mode is "<<showermode<<std::endl;
+  p_filler  = new Tree_Filler(p_cluster,p_shower,m_maxjetnumber,showermode);
   if (p_mehandler->MinQCDJets()==p_mehandler->MaxQCDJets()) 
     rpa.gen.SetVariable("SUDAKOV_WEIGHT",ToString("0"));
   m_ckkwon=ToType<int>(rpa.gen.Variable("SUDAKOV_WEIGHT"));
@@ -49,6 +50,8 @@ Amegic_Apacic_Interface::~Amegic_Apacic_Interface()
 
 bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
 {
+  p_cluster->SetMaxQCDJets(p_mehandler->MaxQCDJets());
+  p_cluster->SetMinQCDJets(p_mehandler->MinQCDJets());
   if (blob->NInP()==1) {
     m_isdecay = 1;
     if (!(p_cluster->ClusterConfiguration(blob))) return 0; 
@@ -117,6 +120,7 @@ Return_Value::code Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob
   if (!m_isdecay) {
     p_xs = p_cluster->GetXS(p_two2two,p_fl);
     p_cluster->SetColours(p_xs,p_moms,p_fl);
+    p_cluster->SetQMin();
     if (m_ckkwon) p_cluster->CalculateWeight();
     p_blob_psme_FS->
       AddData("OrderStrong",new ATOOLS::Blob_Data<double>
@@ -124,17 +128,13 @@ Return_Value::code Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob
     p_blob_psme_FS->
       AddData("OrderEWeak",new ATOOLS::Blob_Data<double>
 	      (p_cluster->OrderEWeak()));
-    p_blob_psme_FS->
-      AddData("HardScale",new ATOOLS::Blob_Data<double>
-	      (p_cluster->HardScale()));
-    p_blob_psme_FS->AddData("QCDScale",new ATOOLS::Blob_Data<double>
-			    (p_cluster->QCDScale()));
     p_blob_psme_FS->AddData
       ("Core_Process",new ATOOLS::Blob_Data<XS_Base*>(p_xs));
     m_weight = m_ckkwon?p_cluster->Weight():1.0;
     if (p_mehandler->Weight()==1. && p_mehandler->UseSudakovWeight()) {
       if (m_weight>ran.Get()) {
 	p_shower->CleanUp();
+	p_filler->SetQ2Cut(p_cluster->YCut()*sqr(rpa.gen.Ecms()));
 	p_filler->FillTrees(blob,p_shower->GetIniTrees(),
 			    p_shower->GetFinTree());
 	blob->AddData("Sud_Weight",new Blob_Data<double>(m_weight));
@@ -164,6 +164,7 @@ Return_Value::code Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob
 		   <<"Missing signal process information."<<std::endl;
 	}
       }
+      p_filler->SetQ2Cut(p_cluster->YCut()*sqr(rpa.gen.Ecms()));
       p_filler->FillTrees(blob,p_shower->GetIniTrees(),p_shower->GetFinTree());
       return Return_Value::Success;
     }
@@ -223,14 +224,22 @@ bool Amegic_Apacic_Interface::FillBlobs(ATOOLS::Blob_List * bl)
 
 int Amegic_Apacic_Interface::PerformShowers()
 {
-  int jetveto(0), losejv(1);
+  int jetveto(0), losejv(m_ckkwon);
   if (p_mehandler->UseSudakovWeight()) {
-    double qmin2i,qmin2f; 
     double scale(p_mehandler->FactorisationScale());
-    double ycut(p_cluster->YCut());
-    double yp(((Process_Base*)p_mehandler->GetAmegic()->GetProcess())->Ycut());
-    if (yp!=-1.0) ycut=yp; 
-    p_cluster->JetvetoPt2(qmin2i,qmin2f);
+    double qmin2i,qmin2f,q2lji,q2ljf; 
+    p_cluster->JetvetoPt2(qmin2i,qmin2f,q2lji,q2ljf);
+    if (p_shower->GetIniTrees()!=NULL) {
+      Knot *irt1(p_shower->GetIniTrees()[0]->GetRoot());
+      Knot *irt2(p_shower->GetIniTrees()[1]->GetRoot());
+      irt1->qjv=irt2->qjv=sqrt(qmin2i);
+      irt1->qljv=irt2->qljv=sqrt(q2lji);
+      irt1->maxjets=irt2->maxjets=p_mehandler->MaxQCDJets();
+    }
+    Knot *frt(p_shower->GetFinTree()->GetRoot());
+    frt->qjv=sqrt(qmin2f);
+    frt->qljv=sqrt(q2ljf);
+    frt->maxjets=p_mehandler->MaxQCDJets();
     p_shower->SetFactorisationScale(scale);
     jetveto=1;
     if (m_maxjetnumber==m_nout && p_mehandler->OrderStrong()==0) jetveto = 0;

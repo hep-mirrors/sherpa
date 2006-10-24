@@ -108,12 +108,10 @@ FillBeamBlobs(Blob_List *const bloblist,
 	(*bit)->UnsetStatus(blob_status::needs_beams);
 	(*bit)->AddStatus(blob_status::internal_flag);
 	if (!p_beampart[beam]->Extract(isr_init)) {
-	  msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
-		     <<"   FillBeamBlob failed for\n   "
-		     <<p_beamblob[beam]->InParticle(0)<<" --> \n"
-		     <<isr_init<<".\n   Retry event "
-		     <<rpa.gen.NumberOfDicedEvents()<<"."<<std::endl;
-	  msg_Tracking()<<*bloblist<<std::endl;
+	  msg_Debugging()<<METHOD<<"(): Cannot extract "
+			 <<*p_beamblob[beam]->InParticle(0)<<"\n  from"
+			 <<*isr_init<<"\n  retry event "<<std::endl;
+	  msg_Debugging()<<*bloblist<<std::endl;
 	  Reset(bloblist);
 	  return Return_Value::Retry_Event;
 	}

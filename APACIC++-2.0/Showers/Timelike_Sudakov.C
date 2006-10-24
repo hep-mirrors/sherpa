@@ -112,12 +112,13 @@ bool Timelike_Sudakov::DiceT(Knot *const mother, Knot *const granny)
 {
   m_inflav=mother->part->Flav(); 
   double t0=m_inflav.Strong()?m_t0:m_t0_qed;
-  m_t=mother->t;                  
+  m_oldt=m_t=mother->t;                  
   m_E2=mother->E2;
+  m_shower=mother->shower;
   if (m_t-t0<rpa.gen.Accu()) return false;
   double z0;
   while (m_t>t0) {
-    z0=Max(0.5*(1.-sqrt(1.-t0/m_t)),1.e-6);
+    z0=Max(0.5*(1.-sqrt(1.-t0/(m_t-mother->tout))),1.e-6);
     CrudeInt(z0,1.-z0);
     if (m_lastint<0.0) return false;
     if (m_mass_scheme>=2) m_t-=mother->tout;
@@ -158,20 +159,43 @@ bool Timelike_Sudakov::Veto(Knot *const mo,double t,double E2)
  //  sum m1 + m2 < sqrt(ta)
   m_tb=sqr(GetFlB().PSMass());
   m_tc=sqr(GetFlC().PSMass());
+
+  if (mo->shower==3) {
+    m_tb=t;
+    t=mo->tmo;
+  }
+
   m_last_veto=1;
-  if (t<sqr(GetFlB().PSMass()+GetFlC().PSMass())) return true;
+  if (t<sqr(sqrt(m_tb)+sqrt(m_tc))) return true;
 
   double z(p_kin->GetZ(m_z,t,m_tb,m_tc));
   if (z<0.0 || z>1.0) return true;
 
-  m_pt2=p_kin->GetRelativeKT2(z,m_E2,m_t,m_tb,m_tc);
+  switch (m_kt_scheme) {
+  case 0: // durham scheme
+    m_pt2=2.0*Min(z*z*m_E2-m_tb,(1.0-z)*(1.0-z)*m_E2-m_tc)*
+      (1.0-p_kin->GetOpeningAngle(z,E2,t,m_tb,m_tc));
+    break;
+  case 1: // relative transverse momentum in lc kinematics
+    m_pt2=p_kin->GetRelativeKT2(z,m_E2,t,m_tb,m_tc);
+    break;
+  case 2: { // case 1 w/ zero daughter masses
+    double zlc(p_kin->LightConeZ(m_z,m_E2,t,m_tb,m_tc));
+    m_pt2=zlc*(1.0-zlc)*t;
+    break;
+  }
+  case 3: // pseudo transverse momentum
+    m_pt2=z*(1.0-z)*t-(1.0-z)*m_tb-z*m_tc;
+    break;
+  default:
+    THROW(fatal_error,"No kt definition.");
+  }
   if (m_inflav.Strong()) {
-    if (m_pt2<m_pt2min) return true;
+    if (m_pt2<m_pt2min || m_pt2<mo->minpt2) return true;
   }
   else {
     if (m_pt2<m_pt2min_qed) return true;
   }
-
   // timelike daughters
   m_last_veto=2;
   double wb(z*z*E2), wc((1.-z)*(1.-z)*E2);
@@ -183,7 +207,7 @@ bool Timelike_Sudakov::Veto(Knot *const mo,double t,double E2)
 
   // 2. alphaS
   m_last_veto=4;
-  if (CplVeto()) return true;
+  if (CplVeto(t)) return true;
 
   // 3. angular ordering
   m_last_veto=5;
@@ -191,14 +215,24 @@ bool Timelike_Sudakov::Veto(Knot *const mo,double t,double E2)
 
   // 5. ME
   m_last_veto=7;
-  if (MEVeto(mo)) return true;
+  if (MEVeto(mo,t)) return true;
   m_last_veto=-1;
   return false;
 }
 
+double sql(const double &s,const double &s1,const double &s2)
+{
+  return sqr(s-s1-s2)-4.0*s1*s2;
+}
+
 bool Timelike_Sudakov::MassVeto(double t, double E2) 
 {
-  if (GetWeight(m_z,m_pt2,m_mass_scheme&1)<ran.Get()) 
+  double psw(1.0);
+  if (m_shower==3) {
+    // additional phasespace weight
+    psw=sqrt(m_oldt/m_t)*sql(m_t,m_tb,m_tc)/sql(m_oldt,m_tb,m_tc);
+  }
+  if (GetWeight(m_z,m_pt2,m_mass_scheme&1)*psw<ran.Get()) 
     return true;
   if ((m_width_scheme>0) && (sqr(m_inflav.Width())>0.)) {
     if (m_width_scheme==1 && m_pt2<sqr(m_inflav.Width())) return true;
@@ -207,12 +241,13 @@ bool Timelike_Sudakov::MassVeto(double t, double E2)
   return false;
 }
 
-bool Timelike_Sudakov::CplVeto() 
+bool Timelike_Sudakov::CplVeto(double t) 
 {
   switch (m_cpl_scheme) {
   case 0 : return false;
   case 2 : 
-    return GetCoupling(m_rscalefac*0.25*m_t)/GetCoupling()>ran.Get()?false:true;   
+    return GetCoupling(m_rscalefac*0.25*t)/
+      GetCoupling()>ran.Get()?false:true;   
   default : 
     return GetCoupling(m_rscalefac*m_pt2)/GetCoupling()>ran.Get()?false:true;   
   }
@@ -235,6 +270,13 @@ bool Timelike_Sudakov::OrderingVeto(Knot * mo,double t, double E2, double z)
     return true;
   case 1 :
   default :
+    if (mo->shower==3) {
+      if (th>mo->thcrit || 3.14>mo->thcrit) return false; 
+#ifdef USING__Veto_Info
+      m_vetos[m_mode].back()=m_vetos[m_mode].back()|svc::ang_veto;
+#endif
+      return true;
+    }
     if (th<mo->thcrit || 3.14<mo->thcrit) return false; 
 #ifdef USING__Veto_Info
     m_vetos[m_mode].back()=m_vetos[m_mode].back()|svc::ang_veto;
@@ -244,7 +286,7 @@ bool Timelike_Sudakov::OrderingVeto(Knot * mo,double t, double E2, double z)
   return true;
 }
 
-bool Timelike_Sudakov::MEVeto(Knot * mo) 
+bool Timelike_Sudakov::MEVeto(Knot * mo,double t) 
 {
   //the QED emission me veto
   if (m_qed_mecorr_scheme==1) {
@@ -268,7 +310,7 @@ bool Timelike_Sudakov::MEVeto(Knot * mo)
            / \   \
           1   3   2
    */
-      double mass123(gr->t), mass13(m_t);
+      double mass123(gr->t), mass13(t);
       if (m_ordering_scheme==0) {
 	mass123/=gr->z*(1.-gr->z);
 	mass13/=m_z*(1.-m_z);
@@ -304,14 +346,14 @@ bool Timelike_Sudakov::MEVeto(Knot * mo)
           / \   \
          1   3   2
   */
-  double mass123(gr->t), mass13(m_t);
+  double mass123(gr->t), mass13(t);
   if (m_ordering_scheme==0) {
     mass123/=gr->z*(1.-gr->z);
     mass13/=m_z*(1.-m_z);
   }
   double x2(1.-mass13/mass123), x1(m_z*(2.-x2)), x3(2.-x1-x2); // quark or antiquark !!! 
   double ds_ps((1.-x1)/x3*(1.+sqr(x1/(2.-x2))) + 
-	       (1.-x2)/x3*(1.+sqr(x2/(2.-x1))));
+              (1.-x2)/x3*(1.+sqr(x2/(2.-x1))));
   double ds_me(sqr(x1)+sqr(x2)), ratio(ds_me/ds_ps);
   return ratio<ran.Get()?true:false;
 }

@@ -4,6 +4,7 @@
 #include "Random.H"
 #include "Run_Parameter.H"
 #include "Veto_Info.H"
+#include "MyStrStream.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Apacic
@@ -27,19 +28,21 @@ Apacic::Apacic(ISR_Handler *const isr,MODEL::Model_Base *const model,
   m_showers(false)
 {
   Splitting_Function::SetKFactorScheme
-    (dataread->GetValue<int>("S_KFACTOR_SCHEME",1));        
+    (ToType<int>(rpa.gen.Variable("S_KFACTOR_SCHEME","1"))&1);        
   m_fsron=bool(dataread->GetValue<int>("FSR_SHOWER",1));
   m_isron=bool(dataread->GetValue<int>("ISR_SHOWER",1));
   if ((rpa.gen.Beam1().IsHadron() || rpa.gen.Beam2().IsHadron())
       && (m_fsron^m_isron)) 
     THROW(fatal_error,"Shower must be enabled for hadronic initial state.");
-  m_jvm=(jv::mode)dataread->GetValue<int>("JET_VETO_SCHEME",11);
   if (m_fsron) {
     p_fintree   = new Tree();
     p_finshower = new Final_State_Shower(model,jf,dataread);
     p_jetveto = new Jet_Veto(jf,p_finshower->Kinematics());
-    p_jetveto->SetLoseJetMode(dataread->GetValue<int>("LOSE_JET_MODE",0));
-    p_jetveto->SetMode(m_jvm);
+    p_jetveto->SetMode(dataread->GetValue<int>("JET_MODE",1));
+    p_jetveto->SetJetVeto((jv::mode)dataread->GetValue<int>
+			  ("JET_VETO_SCHEME",3));
+    p_jetveto->SetLoseJetVeto((jv::mode)dataread->GetValue<int>
+			      ("LOSE_JET_SCHEME",0));
     p_jetveto->SetFSTree(p_fintree);
     p_finshower->SetJetVeto(p_jetveto);
     m_showers=true;
@@ -51,6 +54,14 @@ Apacic::Apacic(ISR_Handler *const isr,MODEL::Model_Base *const model,
     p_inishower = new Initial_State_Shower(isr,jf,p_finshower,model,dataread);
     if (m_fsron) p_jetveto->SetISTrees(p_initrees);
     m_showers=true;
+  }
+  if (dataread->GetValue<int>("CKKW_WEIGHTING_TEST",0)) {
+    msg.Error()<<om::bold<<METHOD<<"(): SEVERE WARNING {\n"<<om::reset<<om::red
+	       <<"  Setting CKKW_WEIGHTING_TEST disables the Parton Shower.\n"
+	       <<"  It is used for internal testing purposes only.\n"
+	       <<"  Users must never run Sherpa in this mode.\n"<<om::reset
+	       <<om::bold<<"}"<<om::reset<<std::endl;
+    m_showers=false;
   }
 }
   
@@ -72,68 +83,47 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
 {
   PROFILE_HERE;
   if (!m_showers) return 1;
-  p_jetveto->SetYCut(ycut);
-  p_jetveto->SetJetVeto(jetveto);
-  p_jetveto->SetLoseJetVeto(losejv);
   if (m_isron) {
     p_initrees[0]->Store();
     p_initrees[1]->Store();
   }
   if (m_fsron) p_fintree->Store();
-  static size_t m_maxtrials(3);
+  static size_t m_maxtrials(100);
   static double rej(0.0), cnt(0.0);
   ++cnt;
   size_t trials(0);
   for (;trials<m_maxtrials;++trials) {
-    if (msg.LevelIsDebugging()) {
-      msg.Out()<<"Apacic::PerformShowers : Before showering."<<std::endl;
-      OutputTrees();
-    }
-    bool flag=false;
-    if (p_jetveto->JetFinder()->Type()>1) {
-      jv::mode jvm=jv::mode(int(m_jvm)&3);
-      p_jetveto->SetMode(jvm);
-    }
-    else {
-      flag=true;
-      m_maxtrials=100;
-    }
-
     static double accu(sqrt(rpa.gen.Accu()));
     Vec4D::SetAccu(accu);
     if (m_fsron) {
       m_cms=PrepareFSR();
-      switch (p_finshower->PerformShower(p_fintree,jetveto)) {
-      case -1:        //PerformShower(,) never returns a -1.
-	msg.Debugging()<<"Lose jet veto in FSR Shower.\n";
-	m_last_ljv=true;
-	Vec4D::ResetAccu();
-	return -1;
-      case 0:
+      if (msg.LevelIsDebugging()) {
+	msg.Out()<<"Apacic::PerformShowers : Before showering."<<std::endl;
+	OutputTrees();
+      }
+      if (p_finshower->PerformShower(p_fintree,jetveto)==0) {
 	msg.Error()<<METHOD<<"(..): FSR shower failure. Abort."<<std::endl;
 	Vec4D::ResetAccu();
 	return 0;
       }
       p_finshower->SetAllColours(p_fintree->GetRoot());
     }
+    else {
+      if (msg.LevelIsDebugging()) {
+	msg.Out()<<"Apacic::PerformShowers : Before showering."<<std::endl;
+	OutputTrees();
+      }
+    }
     if (m_isron) {
       p_inishower->InitShowerPT(p_initrees[0]->GetRoot()->maxpt2);
-      switch (p_inishower->PerformShower(p_initrees,p_fintree,jetveto)) {
-      case -1:       //PerformShower(,) never returns a -1.
-	msg.Debugging()<<"Lose jet veto in ISR Shower.\n";
-	m_last_ljv=true;
-	Vec4D::ResetAccu();
-	return -1;
-      case 0:
+      if (p_inishower->PerformShower(p_initrees,p_fintree,jetveto)==0) {
 	msg.Error()<<METHOD<<"(..): ISR shower failure. Abort."<<std::endl;
 	Vec4D::ResetAccu();
 	return 0;
       }
     }
-    p_jetveto->SetMode(m_jvm);
     BoostInLab();
-    m_last_ljv=false;
-    switch (p_jetveto->TestKinematics(2,NULL)) {
+    switch (p_jetveto->TestKinematics()) {
     case 1:
       msg_Debugging()<<"passed\n";
       trials=2*m_maxtrials;
@@ -146,25 +136,14 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
       }
       if (m_fsron) p_fintree->Restore();
       break;
-    case -1: 
+    case -1:
       msg_Debugging()<<"Lose jet veto \n";
-      if (flag && trials) {    //new ME now
-	if (m_isron) {
-	  p_initrees[0]->ClearStore();
-	  p_initrees[1]->ClearStore();
-	}
-	if (m_fsron) p_fintree->ClearStore();
-	m_last_ljv=true;
-	Vec4D::ResetAccu();
-	return -1;
-      } else {
-	if (m_isron) {
-	  p_initrees[0]->Restore();
-	  p_initrees[1]->Restore();
-	}
-	if (m_fsron) p_fintree->Restore();
-	m_last_ljv=true;
+      if (m_isron) {
+	p_initrees[0]->ClearStore();
+	p_initrees[1]->ClearStore();
       }
+      if (m_fsron) p_fintree->ClearStore();
+      return -1;
     }
   }
   if (m_isron) {
@@ -177,10 +156,8 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
     ++rej;
     if (rej/cnt>0.1) 
       msg.Error()<<METHOD<<"(): rej. rate = "<<rej/cnt<<".\n";
-    //m_maxtrials*=2;
     return -1;
   }
-  
   p_fintree->CheckMomentumConservation();
   if (m_isron) {
     p_initrees[0]->CheckMomentumConservation();
@@ -255,7 +232,6 @@ ATOOLS::Vec4D Apacic::PrepareFSR()
 
 void Apacic::SetMaxJetNumber(const size_t &maxjets) 
 { 
-  if (p_jetveto!=NULL) p_jetveto->SetMaxJets(maxjets); 
 }
 
 void Apacic::SetJetvetoPt2(const double &q2i, const double &q2f)

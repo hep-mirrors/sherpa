@@ -109,6 +109,7 @@ bool Spacelike_Kinematics::DoKinematics(Tree **const trees,Knot *const active,
     double E_mo(1./(2.*sqrt(sprime))*(sprime/active->z-partner->t+active->t-sister->t));
     double pz_mo(1./(2.*active->part->Momentum()[3])*(s3-2.*partner->part->E()*E_mo));
     double pt_mo(sqrt(sqr(E_mo)-sqr(pz_mo)-mother->t)), cph(cos(active->phi)), sph(sin(active->phi));
+    msg_Debugging()<<METHOD<<"E_mo = "<<E_mo<<"\n";
     if (mode>0) {
       // determine phi
       Vec4D p_mo= mother->part->Momentum();

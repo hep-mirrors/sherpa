@@ -5,7 +5,7 @@
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/HepMC/WriteHepMC.h"
 
-// namespace CLHEP { class Dummy {}; }
+namespace CLHEP { class Dummy {}; }
 
 using namespace CLHEP;
 

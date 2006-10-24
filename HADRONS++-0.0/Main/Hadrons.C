@@ -310,7 +310,7 @@ Return_Value::code Hadrons::PerformDecay( Blob* blob, const Vec4D& labmom )
 void Hadrons::ReadInConstants()
 {
   m_md0.clear();                            // clear model 
-  Data_Reader reader = Data_Reader(string("|"),string(";"),string("!"));
+  Data_Reader reader = Data_Reader("|"," ",";","!");
   reader.SetAddCommandLine(false);
   reader.AddComment("#");
   reader.AddComment("//");
@@ -336,7 +336,7 @@ void Hadrons::ReadInConstants()
  
 void Hadrons::ReadInDecayTables()
 {
-  Data_Reader reader = Data_Reader(string("->"),string(";"),string("!"));
+  Data_Reader reader = Data_Reader("->"," ",";","!");
   reader.SetAddCommandLine(false);
   reader.AddComment("#");
   reader.AddComment("//");

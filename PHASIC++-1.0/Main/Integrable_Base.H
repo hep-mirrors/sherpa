@@ -28,11 +28,44 @@ namespace PHASIC {
       kp21    =  3,
       kp22    =  4,
       sfs     =  8,
-      sis     = 16,
-      as      = 32
+      sis     = 16
     };
 
   };// end of struct stp
+
+  struct scl {
+
+    enum scheme {
+      unknown   = 0,
+      ckkw      = 1,
+      fixed     = 2,
+      shat      = 4,
+      ameanpt   = 8,
+      gmeanpt   = 16,
+      minpt     = 32,
+      sumpt     = 64,
+      strong    = 128,
+      mass      = 256,
+      div_by_2  = 512,
+      mult_by_2 = 1024, 
+      updf      = 2048
+    };
+
+  };// end of struct scl
+
+  inline const scl::scheme operator|(const scl::scheme c1,const scl::scheme c2)
+  { return (scl::scheme)((int)c1|(int)c2); }
+  inline const scl::scheme operator&(const scl::scheme c1,const scl::scheme c2)
+  { return (scl::scheme)((int)c1&(int)c2); }
+  inline const scl::scheme operator+(const scl::scheme c1,const scl::scheme c2)
+  { return (scl::scheme)((int)c1|(int)c2); }
+  inline const scl::scheme operator-(const scl::scheme c1,const scl::scheme c2)
+  { return (scl::scheme)((int)c1&(int)~c2);}
+
+  inline scl::scheme & operator+=(scl::scheme &c1,const scl::scheme c2)
+  { return c1=c1+c2; }
+  inline scl::scheme & operator-=(scl::scheme &c1,const scl::scheme c2)
+  { return c1=c1-c2; }
 
   class Regulator_Base;
   class Phase_Space_Handler;
@@ -46,10 +79,11 @@ namespace PHASIC {
     ATOOLS::Flavour *p_flavours, *p_addflavours;
     ATOOLS::Vec4D   *p_momenta, *p_addmomenta;
 
-    int    m_scalescheme, m_kfactorscheme, m_maxjetnumber;
-    int    m_nstrong, m_neweak, m_usepi;
-    double m_threshold, m_overflow, m_rfactor, m_enhancefac;
-    bool   m_updatescales;
+    scl::scheme m_scalescheme;
+    int         m_kfactorscheme, m_maxjetnumber;
+    int         m_nstrong, m_neweak, m_usepi;
+    double      m_threshold, m_overflow, m_enhancefac;
+    double      m_rfactor, m_ps_kfactor, m_ps_cpl_factor;
 
     std::map<stp::id,double>     m_scale;
     std::vector<ATOOLS::Flavour> m_resonances;
@@ -65,7 +99,7 @@ namespace PHASIC {
     double m_totalxs, m_totalsum, m_totalsumsqr, m_totalerr;
     double m_ssum, m_ssumsqr,m_smax,m_ssigma2,m_wmin;
 
-    double m_procweight, m_me_as_factor;
+    double m_procweight, m_me_as_factor, m_ycut;
 
     std::vector<double> m_vsmax;
     std::vector<long unsigned int> m_vsn;
@@ -101,7 +135,8 @@ namespace PHASIC {
 
     // constructor
     Integrable_Base(const size_t nin=0,const size_t nout=0,
-		    const int scalescheme=0,const int kfactorscheme=0,
+		    const scl::scheme scalescheme=scl::unknown,
+		    const int kfactorscheme=0,
 		    BEAM::Beam_Spectra_Handler *const beamhandler=NULL,
 		    PDF::ISR_Handler *const isrhandler=NULL,
 		    ATOOLS::Selector_Data *const selectordata=NULL);
@@ -139,7 +174,6 @@ namespace PHASIC {
     virtual void SetEvents(const double number);
     virtual void ResetEvents(double gmin);
     virtual void GetGMin(double &gmin, double &meff);
-    virtual void SetScale(const double scale);
     virtual void SetMax(const double max, int depth=0);
     virtual void SetMax();  
     virtual void ResetMax(int);  
@@ -172,15 +206,15 @@ namespace PHASIC {
 
     void CreateMomenta(const size_t n);
 
+    static std::map<std::string,std::string> ScaleTags();
+
+    void SetScaleScheme(const scl::scheme s);
+
     // inline functions
     inline void SetName(const std::string &name) { m_name=name; }
 
-    inline void SetScaleScheme(const int scalescheme)     
-    { m_scalescheme=scalescheme;     }
-    inline void SetKFactorScheme(const int kfactorscheme) 
-    { m_kfactorscheme=kfactorscheme; }
-    inline void SetUsePI(const int usepi) 
-    { m_usepi=usepi; }
+    inline void SetKFactorScheme(const int k) { m_kfactorscheme=k; }
+    inline void SetUsePI(const int usepi)     { m_usepi=usepi;     }
 
     inline void SetTotalXS(const double totalxs)   { m_totalxs=totalxs;    }
     inline void SetTotalError(const double error)  { m_totalerr=error;     }
@@ -248,13 +282,13 @@ namespace PHASIC {
     inline double ISRThreshold() const      { return m_threshold;   }
     inline double EnhanceFactor() const     { return m_enhancefac;  }
 
-    inline int KFactorScheme() const { return m_kfactorscheme; }
-    inline int ScaleScheme() const   { return m_scalescheme;   }
+    inline int         KFactorScheme() const { return m_kfactorscheme; }
+    inline scl::scheme ScaleScheme()  const  { return m_scalescheme;   }
 
     inline int NStrong() const { return m_nstrong; }
     inline int NEWeak() const  { return m_neweak;  }
 
-    inline const double Scale(const stp::id type=stp::as) 
+    inline const double Scale(const stp::id type=stp::ren) 
     { return m_scale[type]; }
 
     inline int InSwaped() const { return m_swaped; }
@@ -277,6 +311,7 @@ namespace PHASIC {
     inline std::string EnhanceFunction() const { return m_efunc; }
 
     inline double GMin() const { return m_gmin; }
+    inline double Ycut() const { return m_ycut; }
 
   };// end of class Integrable_Base
 

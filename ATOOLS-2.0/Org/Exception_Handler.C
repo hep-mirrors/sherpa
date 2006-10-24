@@ -2,6 +2,7 @@
 
 #include "Run_Parameter.H"
 #include "MyStrStream.H"
+#include "CXXFLAGS.H"
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -96,7 +97,8 @@ void Exception_Handler::Exit(int exitcode)
 			  <<om::red<<exitcode<<om::reset<<om::bold<<")"
 			  <<om::reset<<tm::curon<<std::endl;
   msg.LogFile()<<"Exception_Handler::Exit: "
-	       <<"Exiting Sherpa with code ("<<exitcode<<")"<<std::endl;
+	       <<"Exiting "<<m_progname<<" with code ("
+	       <<exitcode<<")"<<std::endl;
   exit(exitcode);
 }
 
@@ -115,10 +117,13 @@ void ATOOLS::Terminate()
 void Exception_Handler::Terminate() 
 {
   bool modifiable=msg.Modifiable();
-  msg.SetModifiable(false);
-  GenerateStackTrace(msg.LogFile(),true,"! ");
-  msg.SetModifiable(modifiable);
-  if (m_stacktrace) GenerateStackTrace(msg.Error());
+  SetExitCode();
+  if (m_print && m_signal!=SIGTERM && m_signal!=SIGINT) {
+    msg.SetModifiable(false);
+    GenerateStackTrace(msg.LogFile(),true,"! ");
+    msg.SetModifiable(modifiable);
+    if (m_stacktrace) GenerateStackTrace(msg.Error());
+  }
   if (!ApproveTerminate()) {
     m_exception=NULL;
     return;
@@ -126,7 +131,6 @@ void Exception_Handler::Terminate()
   PrepareTerminate();
   m_prepared=true;
   if (!m_active) abort();
-  SetExitCode();
   Exit(m_exitcode);
 }
 
@@ -208,6 +212,7 @@ void Exception_Handler::SetExitCode()
 
 void ATOOLS::SignalHandler(int signal) 
 {
+  exh->Init();
   exh->SignalHandler(signal);
   exh->Reset();
 }
@@ -229,7 +234,7 @@ void Exception_Handler::SignalHandler(int signal)
       msg.Error()<<"   Do you want to debug the program (y/n)? "<<om::reset;
       std::cin>>input;
       if (input=="y" || input=="Y") {
-	system((std::string("gdb Sherpa ")+ToString(getpid())).c_str());
+	system(("gdb "+m_progname+" "+ToString(getpid())).c_str());
 	kill(getpid(),9);
       }
     }
@@ -262,7 +267,7 @@ void Exception_Handler::SignalHandler(int signal)
       std::cin.get();
     }
     else if (input=="d" || input=="D") {
-      system((std::string("gdb Sherpa ")+ToString(getpid())).c_str());
+      system(("gdb "+m_progname+" "+ToString(getpid())).c_str());
     }
     else if (input=="s" || input=="S") {
       GenerateStackTrace(std::cout,false);

@@ -44,7 +44,8 @@ namespace APACIC {
     int  EvolveSystem(Tree **const trees,Knot *k1,Knot *k2);
     int  FillBranch(Tree ** trees,Knot * active,Knot * partner,int leg);
 
-    void FillMotherAndSister(Tree * tree,Knot * k,ATOOLS::Flavour * k_flavs);
+    void FillMotherAndSister(Tree * tree,Knot * k,ATOOLS::Flavour * k_flavs,
+			     int leg);
     void SetStartingConditions(double k1,double k2,int flag);
 
   public:

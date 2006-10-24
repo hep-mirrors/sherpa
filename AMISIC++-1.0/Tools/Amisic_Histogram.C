@@ -400,7 +400,7 @@ bool Amisic_Histogram<ArgumentType>::ReadIn(const std::string &filename,
     return false;
   }
   std::string gridxscaling, gridyscaling, gridxvariable, gridyvariable;
-  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","#");
+  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("="," ",";","#");
   reader->SetInputFile(filename);
   reader->AddIgnore("!");
   reader->SetVectorType(ATOOLS::vtc::horizontal);
@@ -474,7 +474,7 @@ WriteOut(const std::string &filename,const std::string &datatag,
     return false;
   }
   Finish();
-  ATOOLS::Data_Writer *writer = new ATOOLS::Data_Writer(":",";","!");
+  ATOOLS::Data_Writer *writer = new ATOOLS::Data_Writer(":"," ",";","!");
   writer->SetOutputFile(filename);
   writer->SetBlank(ATOOLS::defaultblank);
   writer->WriteComment("===================="); 

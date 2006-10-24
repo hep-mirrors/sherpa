@@ -81,7 +81,7 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
   win=rpa.gen.Ecms();
   s_maxerrors=rpa.gen.NumberOfEvents();
   vector<vector<double> > help;
-  Data_Reader *reader = new Data_Reader("=",";","!");
+  Data_Reader *reader = new Data_Reader("="," ",";","!");
   reader->SetMatrixType(mtc::transposed);
   reader->SetInputPath(m_path);
   reader->SetInputFile(m_file);

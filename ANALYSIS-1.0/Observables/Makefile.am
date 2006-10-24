@@ -35,7 +35,8 @@ libObservables_la_SOURCES     =	\
 			    	Scaled_Observables.C \
 				Four_Jet_Angles.C \
 				Field_Stuart_Cone_Finder.C \
-				Blob_Selector.C 
+				Blob_Selector.C \
+				Particle_Ordering.C
 pkginclude_HEADERS        =	\
 			HT.H \
 			PSM_Observables.H \

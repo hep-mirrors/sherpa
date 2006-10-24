@@ -75,6 +75,8 @@ namespace APACIC {
     inline void SetPDFScheme(const int &scheme)      { m_pdf_scheme=scheme;      }
     inline void SetOrderingScheme(const int &scheme) { m_ordering_scheme=scheme; }
 
+    inline double PT2() const { return m_pt2; }
+
 #ifdef USING__Veto_Info
     inline std::vector<int> &Vetos() { return m_vetos; }
 

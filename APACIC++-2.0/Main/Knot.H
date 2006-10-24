@@ -10,14 +10,15 @@ namespace APACIC {
   class Knot {
   public: 
 
-    Knot *prev, *left, *right;
+    Knot *prev, *left, *right, *decay;
 
     ATOOLS::Particle *part;
+    ATOOLS::Vec4D     lp;
 
-    int    stat, kn_no;
+    int    stat, kn_no, shower, maxjets;
     bool   didkin;
     double t, tout, tmax, z, zs, E2, costh, phi, thcrit, maxpt2, x, pt2lcm;
-    double smaxpt2, sthcrit;
+    double smaxpt2, sthcrit, minpt2, qjv, qljv, tmo, lz, lE2;
     ATOOLS::Simple_Polarisation_Info polinfo;
 
   public :
@@ -33,6 +34,9 @@ namespace APACIC {
     void CopyData(const Knot *const k);
 
     void Copy(const Knot *const k);
+
+    void Store();
+    void Restore();
 
     bool CheckMomentumConservation() const;
 

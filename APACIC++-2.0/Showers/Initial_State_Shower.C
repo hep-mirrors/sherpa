@@ -27,15 +27,15 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr,
   p_suds(new Spacelike_Sudakov*[2]),
   m_allowed(200)
 {
-  double cplscalefac(dataread->GetValue<double>("IS_CPL_SCALE_FACTOR",.25));
-  rpa.gen.SetVariable("IS_CPL_SCALE_FACTOR",ToString(cplscalefac));
+  double cplscalefac(0.25*ToType<double>
+		     (rpa.gen.Variable("IS_CPL_SCALE_FACTOR","1.0")));
   m_t0=dabs(dataread->GetValue<double>("IS_PT2MIN",4.0));
   double shadron(dataread->GetValue<double>("IS_MAX_SCALE",
 					    sqr(rpa.gen.Ecms())));
   double emin(dataread->GetValue<double>("IS_MINIMAL_E",0.5));
   int cplscheme(dataread->GetValue<int>("IS_COUPLING_SCHEME",1));
   int pdfscheme(dataread->GetValue<int>("IS_PDF_SCALE_SCHEME",1));
-  int orderingscheme(dataread->GetValue<int>("IS_ORDERING_SCHEME",2));
+  int orderingscheme(dataread->GetValue<int>("IS_ORDERING_SCHEME",0));
   for (short unsigned int i(0);i<2;++i) {
     if (isr->PDF(i)->Q2Min()>m_t0*cplscalefac) {
       msg.Error()<<METHOD<<"(..):\n   IS_PT2MIN("<<m_t0
@@ -204,25 +204,21 @@ int Initial_State_Shower::EvolveSystem(Tree **const trees,Knot *k1,Knot *k2)
 
       m_sprime/=k1->z;
     }
-    if (k1->prev->stat>0) {
+    Knot *mo(k1->prev);
+    if (mo->stat>0) {
       m_to_be_diced[ntree0]=0;
-      bool fill(true);
-      if (k1->prev->part->Info()=='H') {
-	if (k1->prev->prev) {
-	  if (k1->prev->prev->part->Info()=='H') {
-	    fill=false;
-	  }
-	}
-      }
-      if (fill && !FillBranch(trees,k1->prev,k2,ntree0)) return 0; 
+      // do not dice t for me knot
+      if (mo->part->Info()!='H' ||
+	  mo->prev==NULL || mo->prev->part->Info()!='H') 
+	if (!FillBranch(trees,k1->prev,k2,ntree0)) return 0; 
     }
 
     double maxt(p_kin->CalculateMaxT(k1,k2));
-    if (maxt<k1->prev->left->tout) return 0;
+    if (maxt<mo->left->tout) return 0;
     else {
-      if (caught_jetveto==0 && k1->prev->left->stat>0) {
-	k1->prev->left->t    = dabs(k1->t);
-	k1->prev->left->tmax = maxt;
+      if (caught_jetveto==0 && mo->left->stat>0) {
+	if (mo->left->part->Info()!='H') k1->prev->left->t=dabs(k1->t);
+	mo->left->tmax=maxt;
       }
     } 
   
@@ -235,7 +231,7 @@ int Initial_State_Shower::EvolveSystem(Tree **const trees,Knot *k1,Knot *k2)
 	p_k2=k2; 
 	m_ntree0=ntree0;
 	switch (p_fin->TimelikeFromSpacelike(this,trees[ntree0],k1->prev->left,
-					     m_jetveto,sprime_a,k1->z)) {
+					     m_jetveto,sprime_a,k1->z,k2)) {
 	case -1:
 	  msg.Error()<<METHOD<<"(..): FS Shower failure."<<std::endl;
 	  return 0;
@@ -307,10 +303,16 @@ int Initial_State_Shower::FillBranch(Tree ** trees,Knot * active,
 #ifdef USING__Veto_Info
   p_suds[leg]->AddVeto();
 #endif
+  if (active->right) {
+    active->qjv=active->right->qjv;
+    active->qljv=active->right->qljv;
+    active->left->qjv=active->qjv;
+    active->left->qljv=active->qljv;
+  }
   if (p_suds[leg]->Dice(active,m_sprime,m_extra_pdf[leg])) {
     flavs[0] = p_suds[leg]->GetFlA();
     flavs[1] = p_suds[leg]->GetFlC();    
-    FillMotherAndSister(trees[leg],active,flavs);
+    FillMotherAndSister(trees[leg],active,flavs,leg);
     msg_Debugging()<<"test emission at t = "<<active->t
  		   <<", z = "<<active->z<<"\n";
     msg_Debugging()<<"}\n";
@@ -356,7 +358,7 @@ void Initial_State_Shower::ChooseMother(int &ntree0,int &ntree1,
 }
 
 void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,
-					       Flavour * k_flavs)
+					       Flavour * k_flavs,int leg)
 {
   double pt2max(sqr(rpa.gen.Ecms())), th(4.*k->z*k->z*k->t/(4.*k->z*k->z*k->t-(1.-k->z)*k->x*k->x*pt2max));
   if (!k->part->Flav().Strong() || 
@@ -386,7 +388,10 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,
   mother->stat   = 1;
   mother->E2     = 0.;
   mother->thcrit = th;
-  mother->pt2lcm = k->pt2lcm;
+  mother->pt2lcm = p_suds[leg]->PT2();
+  mother->qjv    = k->qjv;
+  mother->qljv   = k->qljv;
+  mother->maxjets= k->maxjets;
 
   Knot * sister = 0;
   if (mother->left) {
@@ -416,6 +421,9 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,
   sister->stat   = 1;
   sister->E2     = 0.;
   sister->thcrit = th; 
+  sister->qjv    = k->qjv;
+  sister->qljv   = k->qljv;
+  sister->maxjets= k->maxjets;
 
   if (k->part->Info() != 'G' && k->part->Info() != 'H') k->part->SetInfo('i');
   k->part->SetStatus(part_status::decayed);
@@ -776,7 +784,7 @@ void Initial_State_Shower::SingleExtract(Knot *const kn,const int &beam,
 
     if (!kn->prev) jet->SetBeam(beam);
     p = new Particle(*kn->part);
-    p->SetFinalMass(kn->tout);
+    p->SetFinalMass(sqrt(kn->tout));
     p->SetStatus(part_status::decayed);
     jet->AddToInParticles(p);
   }
@@ -785,7 +793,7 @@ void Initial_State_Shower::SingleExtract(Knot *const kn,const int &beam,
   if (!ignore && (kn->part->Info()=='H' || kn->part->Info()=='G')) {
     if  (is_is && m_bl_meps_is) {
       p = new Particle(*kn->part);
-      p->SetFinalMass(kn->tout);
+      p->SetFinalMass(sqrt(kn->tout));
       jet->AddToOutParticles(p);
       p->SetStatus(part_status::decayed);
       m_bl_meps_is->AddToInParticles(p);
@@ -793,7 +801,7 @@ void Initial_State_Shower::SingleExtract(Knot *const kn,const int &beam,
     else if (!is_is && m_bl_meps_fs) {
       if (!p) {
 	p = new Particle(*kn->part);
-	p->SetFinalMass(kn->tout);
+	p->SetFinalMass(sqrt(kn->tout));
 	jet->AddToInParticles(p);
       }
       else {
@@ -806,7 +814,7 @@ void Initial_State_Shower::SingleExtract(Knot *const kn,const int &beam,
   // --- add final state particle ---
   if (lastknot && !is_is) {
     p = new Particle(*kn->part);
-    p->SetFinalMass(kn->tout);
+    p->SetFinalMass(sqrt(kn->tout));
     p->SetStatus(part_status::active);
     jet->AddToOutParticles(p);
   }

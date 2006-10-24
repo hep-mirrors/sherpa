@@ -14,9 +14,10 @@ Data_Reader::Data_Reader():
 }
 
 Data_Reader::Data_Reader(const std::string cut,
-			 const std::string separator,
+			 const std::string wordsep,
+			 const std::string linesep,
 			 const std::string comment):
-  Read_Write_Base(1,0,cut,separator,comment)
+  Read_Write_Base(1,0,cut,wordsep,linesep,comment)
 {
   SetInFileMode(fom::permanent);
 }
@@ -72,39 +73,10 @@ std::string Data_Reader::KillBlanks(std::string& buffer)
   return buffer;
 }
 
-std::string Data_Reader::HighlightSeparator(std::string& buffer)
-{
-  if (buffer==nullstring) return buffer;
-  size_t pos=std::string::npos, next=0, min=pos;
-  for (unsigned int j=0; j<Separator().size(); ++j) {
-    while (pos!=next &&
-	   (next=pos=buffer.find(Separator()[j],next))!=std::string::npos) {
-      if (pos>0 && buffer[pos-1]==Escape()) next=pos+1;
-      else {
-	buffer.insert(pos+1," ",1);
-	buffer.insert(pos," ",1);
-	if (pos<min) min=pos+1;
-      }
-    }
-  }
-  return buffer.substr(0,min);
-}
-
-std::string Data_Reader::StripEscapes(const std::string &buffer) const
-{
-  if (buffer.length()==0) return buffer;
-  std::string input=buffer;
-  size_t pos, next=0;
-  while ((pos=input.find(Escape(),next))!=std::string::npos) {
-    input.erase(pos,1);
-    if (input.length()>pos && input[pos]==Escape()) next=pos+1;
-  }
-  return input;
-}
-
 template <class Read_Type>
 Read_Type Data_Reader::M_ReadFromString(std::string parameter,
-					std::string &inputstring)
+					std::string &inputstring,
+					int &septype)
 {
   size_t pos;
   Read_Type value;
@@ -120,20 +92,48 @@ Read_Type Data_Reader::M_ReadFromString(std::string parameter,
   KillComments(inputstring);
   if (parameter==nullstring) { 
     parameter=std::string("DUMMY_PARAMETER");
-    inputstring=parameter+inputstring;
+    inputstring=parameter+" "+inputstring;
   }
   size_t length=0;
   if(((pos=Find(inputstring,parameter,length))!=std::string::npos)&&
      ((inputstring=inputstring.substr(pos+length)).length()>0)) {
-    std::string cur=HighlightSeparator(inputstring);
-    cur=ReplaceTags(cur);
+    std::string cur=inputstring;
     cur=KillBlanks(cur);
+    size_t wi(0), wpos(0);
+    for (;wi<WordSeparator().size();++wi) {
+      while (true) {
+	wpos=cur.find(WordSeparator()[wi],wpos==0?0:wpos+1);
+	if (wpos==std::string::npos ||
+	    wpos<1 || cur[wpos-1]!=Escape()) break;
+      }
+      if (wpos!=std::string::npos) break;
+    }
+    size_t li(0), lpos(0);
+    for (;li<LineSeparator().size();++li) {
+      while (true) {
+	lpos=cur.find(LineSeparator()[li],lpos==0?0:lpos+1);
+	if (lpos==std::string::npos || 
+	    lpos<1 || cur[lpos-1]!=Escape()) break;
+      }
+      if (lpos!=std::string::npos) break;
+    }
+    septype=0;
+    if (lpos==std::string::npos && wpos==std::string::npos) {
+      inputstring=nullstring;
+    }
+    else if (wpos<lpos) {
+      inputstring=cur.substr(wpos+WordSeparator()[wi].length());
+      cur=cur.substr(0,wpos);
+      septype=1;
+    }
+    else {
+      inputstring=cur.substr(lpos+LineSeparator()[li].length());
+      cur=cur.substr(0,lpos);
+      septype=2;
+    }
+    cur=ReplaceTags(cur);
     if (typeid(value)==typeid(int) || typeid(value)==typeid(unsigned int) ||
 	typeid(value)==typeid(float) ||	typeid(value)==typeid(double)) {
-      for (size_t i=0;i<Blank().size();++i) {
-	size_t pos=cur.find(Blank()[i]);
-	if (pos!=std::string::npos) cur=cur.substr(0,pos);
-      }
       if (!m_allownans) {
  	if ((pos=cur.find("nan"))!=std::string::npos) 
 	  cur.replace(pos,3,"1");
@@ -173,7 +173,8 @@ Read_Type Data_Reader::M_ReadFromFile(std::string parameter,
   }
   for (unsigned int i=0;i<FileContent().size();++i) {
     buffer=FileContent()[i];
-    if((temp=M_ReadFromString<Read_Type>(parameter,buffer))!=
+    int septype(0);
+    if((temp=M_ReadFromString<Read_Type>(parameter,buffer,septype))!=
        Default<Read_Type>()) value=temp;
   }
   CloseInFile();
@@ -204,16 +205,13 @@ Data_Reader::M_VectorFromString(std::string parameter,
       return values;
     }
   }
-  value = M_ReadFromString<std::string>(parameter,inputstring);
+  int septype(0);
+  value = M_ReadFromString<std::string>(parameter,inputstring,septype);
   while (value != Default<std::string>()) {
-    bool stop=false;
-    for (unsigned int j=0;j<Separator().size();++j) 
-      if (value==Separator()[j]) stop=true;
-    if (stop) break;
-    values.push_back(M_ReadFromString<Read_Type>(nullstring,value));
-    if (tempvtype==vtc::vertical) break;
-    inputstring=inputstring.substr(inputstring.find(value)+value.length());
-    value=M_ReadFromString<std::string>(nullstring,inputstring);
+    int dseptype(0);
+    values.push_back(M_ReadFromString<Read_Type>(nullstring,value,dseptype));
+    if (septype==2 || tempvtype==vtc::vertical) break;
+    value=M_ReadFromString<std::string>(nullstring,inputstring,septype);
   }
   if (values.size()!=0) return values;
   return values;
@@ -285,14 +283,19 @@ Data_Reader::M_MatrixFromString(std::string parameter,
   for(unsigned int i=0;value.size()!=0;++i) {
     transposedvalues.push_back(value);
     if (value.size()<mindim) mindim=value.size();
-    bool foundseparator=false;
-    size_t sep=std::string::npos;
-    for (unsigned int i=0;i<Separator().size();++i) {
-      if ((sep=inputstring.find(Separator()[i]))!=std::string::npos) 
-	foundseparator=true;
+    size_t i(0), sep(0);
+    for (;i<LineSeparator().size();++i) {
+      while (true) {
+	sep=inputstring.find(LineSeparator()[i],sep==0?0:sep+1);
+	if (sep==std::string::npos || 
+	    sep<1 || inputstring[sep-1]!=Escape()) break;
+      }
+      if (sep!=std::string::npos) {
+	inputstring=inputstring.substr(sep+LineSeparator()[i].length());
+	break;
+      }
     }
-    if(foundseparator) inputstring=inputstring.substr(sep+1);
-    else inputstring=nullstring;
+    if(i==LineSeparator().size()) inputstring=nullstring;
     value=M_VectorFromString<Read_Type>
       (nullstring,inputstring,vtc::horizontal);
   }
@@ -396,7 +399,8 @@ template <class Read_Type > bool Data_Reader::
 ReadFromString(Read_Type &result,
 	       std::string parameter,std::string inputstring) 
 { 
-  if ((result=M_ReadFromString<Read_Type>(parameter,inputstring))!=
+  int septype(0);
+  if ((result=M_ReadFromString<Read_Type>(parameter,inputstring,septype))!=
       Default<Read_Type>()) return true; 
   else return false; 
 }

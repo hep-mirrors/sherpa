@@ -91,6 +91,7 @@ namespace SHERPA {
     void CheckFlagConsistency();
     bool CheckBeamISRConsistency();
     void SetParameter(int nr);
+    void SetScaleFactors();
 
   public :
 

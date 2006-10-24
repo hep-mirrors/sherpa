@@ -9,24 +9,30 @@
 #include "Regulator_Base.H"
 #include "Running_AlphaS.H"
 #include "Message.H"
+#include "MyStrStream.H"
 
 using namespace PHASIC;
+using namespace MODEL;
 using namespace ATOOLS;
 
+#define CA 3.0
+#define TR 0.5
+#define Nf 5.0
+
 Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,
-				 const int scalescheme,const int kfactorscheme,
+				 const scl::scheme scalescheme,const int kfactorscheme,
 				 BEAM::Beam_Spectra_Handler *const beamhandler,
 				 PDF::ISR_Handler *const isrhandler,
-				 ATOOLS::Selector_Data *const selectordata):
+				 Selector_Data *const selectordata):
   m_name(""), m_nin(nin), m_nout(nout), m_naddin(0), m_naddout(0), 
   m_nvector(ATOOLS::Max(nin+nout,(size_t)1)), p_flavours(NULL), p_addflavours(NULL), 
-  p_momenta(new ATOOLS::Vec4D[ATOOLS::Max(nin+nout,(size_t)1)]), p_addmomenta(NULL), 
+  p_momenta(new Vec4D[ATOOLS::Max(nin+nout,(size_t)1)]), p_addmomenta(NULL), 
   m_scalescheme(scalescheme), m_kfactorscheme(kfactorscheme), 
   m_nstrong(0), m_neweak(0), m_usepi(0),
-  m_threshold(0.), m_overflow(0.), m_rfactor(1.0), m_enhancefac(1.0), m_xinfo(std::vector<double>(4)),
+  m_threshold(0.), m_overflow(0.), m_enhancefac(1.0), m_rfactor(1.0), m_xinfo(std::vector<double>(4)),
   m_n(0), m_expevents(1), m_dicedevents(0), m_accevents(0), m_last(0.), m_lastlumi(0.), m_lastdxs(0.), 
   m_max(0.), m_totalxs(0.),m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), 
-  m_ssum(0.), m_ssumsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.), m_me_as_factor(1.0), 
+  m_ssum(0.), m_ssumsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.), m_me_as_factor(1.0), m_ycut(0.0), 
   m_sn(0), m_son(1), m_swaped(false), 
   p_selected(this), p_parent(this), 
   p_regulator(Regulator_Base::GetRegulator(this,"Identity",std::vector<double>())),
@@ -35,6 +41,12 @@ Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,
   p_cuts(NULL), p_whisto(NULL), p_jf(NULL), m_ownselector(true), m_efunc("1") 
 {
   m_gmin=-1.0;
+  SetScaleScheme(m_scalescheme);
+  int kfs(ToType<int>(rpa.gen.Variable("S_KFACTOR_SCHEME","1"))&2);        
+  double fssf(ToType<double>(rpa.gen.Variable("FS_CPL_SCALE_FACTOR","1.0")));
+  double issf(ToType<double>(rpa.gen.Variable("IS_CPL_SCALE_FACTOR","1.0")));
+  m_ps_kfactor=kfs?CA*(67./18.-M_PI*M_PI/6.)-10./9.*TR*Nf:0.0;
+  m_ps_cpl_factor=Min(fssf,issf);
 }
 
 Integrable_Base::~Integrable_Base()
@@ -63,11 +75,11 @@ double Integrable_Base::TotalResult()
 { 
 //   if (m_ssigma2>0. && m_sn<1000) return m_totalsum/m_ssigma2; 
 //   if (m_sn<1000) return m_ssum/m_sn;
-//   double ssigma2 = (m_ssumsqr/m_sn - ATOOLS::sqr(m_ssum/m_sn))/(m_sn-1);
+//   double ssigma2 = (m_ssumsqr/m_sn - sqr(m_ssum/m_sn))/(m_sn-1);
 //   return (m_totalsum+m_ssum/ssigma2/m_sn)/(m_ssigma2+1./ssigma2);
   if (m_ssigma2>0. && m_sn<1000) return m_totalsum/m_ssigma2; 
   if (m_sn<1000) return m_ssum/m_sn;
-  double ssigma2 = ATOOLS::sqr(m_ssum/m_sn)/((m_ssumsqr/m_sn - ATOOLS::sqr(m_ssum/m_sn))/(m_sn-1));
+  double ssigma2 = sqr(m_ssum/m_sn)/((m_ssumsqr/m_sn - sqr(m_ssum/m_sn))/(m_sn-1));
   return (m_totalsum+m_ssum*ssigma2/m_sn)/(m_ssigma2+ssigma2);
 }
 
@@ -79,7 +91,7 @@ double Integrable_Base::TotalVar()
     else return TotalResult(); 
   }
 
-  double disc = ATOOLS::sqr(m_ssum/m_sn)/((m_ssumsqr/m_sn - ATOOLS::sqr(m_ssum/m_sn))/(m_sn-1));
+  double disc = sqr(m_ssum/m_sn)/((m_ssumsqr/m_sn - sqr(m_ssum/m_sn))/(m_sn-1));
   if (disc>0.) return TotalResult()/sqrt(m_ssigma2+disc);
   
   return m_totalsum/m_ssigma2/sqrt(m_ssigma2);
@@ -88,14 +100,14 @@ double Integrable_Base::TotalVar()
 double Integrable_Base::RemainTimeFactor(double maxerr) 
 {
   if (m_sn<1000) return 0.;
-  double disc = ATOOLS::sqr(m_ssum/m_sn)/((m_ssumsqr/m_sn - ATOOLS::sqr(m_ssum/m_sn))/(m_sn-1));
-  return (ATOOLS::sqr(1./maxerr)-m_ssigma2)/disc;
+  double disc = sqr(m_ssum/m_sn)/((m_ssumsqr/m_sn - sqr(m_ssum/m_sn))/(m_sn-1));
+  return (sqr(1./maxerr)-m_ssigma2)/disc;
 }
 
-void Integrable_Base::SetMomenta(const ATOOLS::Vec4D *momenta) 
+void Integrable_Base::SetMomenta(const Vec4D *momenta) 
 { 
   if (!p_momenta) {
-    ATOOLS::msg.Error()<<"Integrable_Base::SetMomenta("<<momenta<<"): "
+    msg.Error()<<"Integrable_Base::SetMomenta("<<momenta<<"): "
 		       <<"p_momenta = NULL. Abort."<<std::endl;
     abort();
   }
@@ -105,10 +117,10 @@ void Integrable_Base::SetMomenta(const ATOOLS::Vec4D *momenta)
       Selected()->p_momenta[i]=momenta[i];
 }
 
-void Integrable_Base::SetAddMomenta(const ATOOLS::Vec4D *momenta) 
+void Integrable_Base::SetAddMomenta(const Vec4D *momenta) 
 { 
   if (!p_addmomenta) {
-    ATOOLS::msg.Error()<<"Integrable_Base::SetAddMomenta("<<momenta<<"): "
+    msg.Error()<<"Integrable_Base::SetAddMomenta("<<momenta<<"): "
 		       <<"p_addmomenta = NULL. Abort."<<std::endl;
     abort();
   }
@@ -118,10 +130,10 @@ void Integrable_Base::SetAddMomenta(const ATOOLS::Vec4D *momenta)
       Selected()->p_addmomenta[i]=momenta[i];
 }
 
-void Integrable_Base::SetAddFlavours(const ATOOLS::Flavour *flavours) 
+void Integrable_Base::SetAddFlavours(const Flavour *flavours) 
 { 
   if (!p_addflavours) {
-    ATOOLS::msg.Error()<<"Integrable_Base::SetAddFlavours("<<flavours<<"): "
+    msg.Error()<<"Integrable_Base::SetAddFlavours("<<flavours<<"): "
 		       <<"p_addflavours = NULL. Abort."<<std::endl;
     abort();
   }
@@ -134,13 +146,13 @@ void Integrable_Base::InitWeightHistogram()
     delete p_whisto; };
   double av=TotalResult();
   if (!av>0.) {
-    ATOOLS::msg.Error()<<"Integrable_Base::InitWeightHistogram(): "
+    msg.Error()<<"Integrable_Base::InitWeightHistogram(): "
 		       <<"No valid result: "<<av<<std::endl;
     return;
   }
   if (av<.3) av/=10.;
   av = exp(log(10.)*int(log(av)/log(10.)+0.5));
-  p_whisto = new ATOOLS::Histogram(10,av*1.e-4,av*1.e6,100);
+  p_whisto = new Histogram(10,av*1.e-4,av*1.e6,100);
 }
 
 void Integrable_Base::ReadInHistogram(std::string dir)
@@ -153,7 +165,7 @@ void Integrable_Base::ReadInHistogram(std::string dir)
   from.close();
   if (!hit) return;
   if (p_whisto) delete p_whisto; 
-  p_whisto = new ATOOLS::Histogram(filename);	
+  p_whisto = new Histogram(filename);	
 }
 
 void Integrable_Base::WriteOutHistogram(std::string dir)
@@ -174,7 +186,7 @@ double Integrable_Base::GetMaxEps(double epsilon)
       ovn-=(int)p_whisto->Value(i);
       maxeps=exp(log(10.)*(p_whisto->Xmin()+(i-1)*p_whisto->BinSize()));
     }
-    else return ATOOLS::Max(ATOOLS::Min(maxeps,m_max),min);
+    else return ATOOLS::Max(Min(maxeps,m_max),min);
   }
   return m_max;
 }
@@ -190,12 +202,6 @@ void Integrable_Base::AddPoint(const double value)
   if (p_whisto) p_whisto->Insert(value);
 }
 
-void Integrable_Base::SetScale(const double scale) 
-{ 
-  ATOOLS::msg.Error()<<"Integrable_Base::SetScale("<<scale
-		     <<"): Virtual function called."<<std::endl;
-}
-
 void Integrable_Base::SetMax(const double max, int depth) 
 {
   if (max!=0.) m_max=max;
@@ -203,17 +209,17 @@ void Integrable_Base::SetMax(const double max, int depth)
 
 void Integrable_Base::SetMax() 
 {
-  ATOOLS::msg.Error()<<"Integrable_Base::SetMax(): Virtual function called !"<<std::endl;
+  msg.Error()<<"Integrable_Base::SetMax(): Virtual function called !"<<std::endl;
 } 
 
 void Integrable_Base::ResetMax(int) 
 {
-  ATOOLS::msg.Error()<<"Integrable_Base::ResetMax(): Virtual function called !"<<std::endl;
+  msg.Error()<<"Integrable_Base::ResetMax(): Virtual function called !"<<std::endl;
 } 
 
-ATOOLS::Blob_Data_Base *Integrable_Base::OneEvent() 
+Blob_Data_Base *Integrable_Base::OneEvent() 
 {
-  ATOOLS::msg.Error()<<"Integrable_Base::OneEvent(): Virtual function called !"<<std::endl;
+  msg.Error()<<"Integrable_Base::OneEvent(): Virtual function called !"<<std::endl;
   return false;
 } 
 
@@ -256,8 +262,8 @@ Memory_Map::~Memory_Map()
       untriggered+=mit->second[4];
       msg_Info()<<std::setw(25)<<std::setiosflags(std::ios::left)<<mit->first
 		<<std::resetiosflags(std::ios::left)<<std::setiosflags(std::ios::right)
-		<<DFORMAT<<(mit->second[0]*ATOOLS::rpa.Picobarn())
-		<<DFORMAT<<(mit->second[2]/mit->second[4]*ATOOLS::rpa.Picobarn())
+		<<DFORMAT<<(mit->second[0]*rpa.Picobarn())
+		<<DFORMAT<<(mit->second[2]/mit->second[4]*rpa.Picobarn())
 		<<LIFORMAT<<mit->second[1]<<LIFORMAT<<mit->second[4]
 		<<LIFORMAT<<mit->second[3]<<LIFORMAT<<mit->second[5]
 		<<std::resetiosflags(std::ios::right)<<std::endl;
@@ -265,8 +271,8 @@ Memory_Map::~Memory_Map()
     msg_Info()<<"\n";
     msg_Info()<<"exp. n = "<<expectedevents<<", diced n = "<<untriggered
 	      <<", acc. n = "<<dicedevents<<"\n";
-    msg_Info()<<"exp. xs = "<<(expectedxs/untriggered*ATOOLS::rpa.Picobarn())
-	      <<", diced xs = "<<(dicedxs/untriggered*ATOOLS::rpa.Picobarn())<<std::endl;
+    msg_Info()<<"exp. xs = "<<(expectedxs/untriggered*rpa.Picobarn())
+	      <<", diced xs = "<<(dicedxs/untriggered*rpa.Picobarn())<<std::endl;
   }
   msg_Info()<<"\n}"<<std::endl;
 }
@@ -274,38 +280,38 @@ Memory_Map::~Memory_Map()
 static Memory_Map mem;
 #endif
 
-bool Integrable_Base::Trigger(const ATOOLS::Vec4D *const momenta)
+bool Integrable_Base::Trigger(const Vec4D *const momenta)
 {
   return p_selector->Trigger(momenta);
 } 
 
-ATOOLS::Blob_Data_Base *Integrable_Base::OneEvent(const double mass,const int mode) 
+Blob_Data_Base *Integrable_Base::OneEvent(const double mass,const int mode) 
 {
   return p_activepshandler->OneEvent(mass,mode);
 } 
 
-ATOOLS::Blob_Data_Base *Integrable_Base::SameEvent() 
+Blob_Data_Base *Integrable_Base::SameEvent() 
 {
   return p_activepshandler->SameEvent();
-  ATOOLS::msg.Error()<<"Integrable_Base::SameEvent(): Virtual function called !"<<std::endl;
+  msg.Error()<<"Integrable_Base::SameEvent(): Virtual function called !"<<std::endl;
   return false;
 } 
 
-ATOOLS::Blob_Data_Base *Integrable_Base::WeightedEvent(const int mode) 
+Blob_Data_Base *Integrable_Base::WeightedEvent(const int mode) 
 {
-  ATOOLS::msg.Error()<<"Integrable_Base::WeightedEvent(): Virtual function called !"<<std::endl;
+  msg.Error()<<"Integrable_Base::WeightedEvent(): Virtual function called !"<<std::endl;
   return NULL;
 } 
 
-ATOOLS::Blob_Data_Base *Integrable_Base::WeightedEventNS(const int mode) 
+Blob_Data_Base *Integrable_Base::WeightedEventNS(const int mode) 
 {
-  ATOOLS::msg.Error()<<"Integrable_Base::WeightedEventNS(): Virtual function called !"<<std::endl;
+  msg.Error()<<"Integrable_Base::WeightedEventNS(): Virtual function called !"<<std::endl;
   return NULL;
 } 
 
-ATOOLS::Blob_Data_Base *Integrable_Base::SameWeightedEvent() 
+Blob_Data_Base *Integrable_Base::SameWeightedEvent() 
 {
-  ATOOLS::msg.Error()<<"Integrable_Base::SameWeightedEvent(): Virtual function called !"<<std::endl;
+  msg.Error()<<"Integrable_Base::SameWeightedEvent(): Virtual function called !"<<std::endl;
   return NULL;
 } 
 
@@ -316,224 +322,156 @@ void Integrable_Base::SetPSHandler(Phase_Space_Handler *const pshandler)
 
 void Integrable_Base::OptimizeResult()
 {
-  ATOOLS::msg.Error()<<"Integrable_Base::OptimizeResult(): Virtual function called !"<<std::endl;
+  msg.Error()<<"Integrable_Base::OptimizeResult(): Virtual function called !"<<std::endl;
 } 
 
 void Integrable_Base::SetMomenta()   
 { 
-  const ATOOLS::Vec4D *p=p_activepshandler->Point();
+  const Vec4D *p=p_activepshandler->Point();
   for (size_t i=0;i<m_nvector;++i) p_momenta[i]=p[i];
 }
 
-double Integrable_Base::CalculateScale(const ATOOLS::Vec4D *momenta) 
+double Integrable_Base::CalculateScale(const Vec4D *momenta) 
 {
+  scl::scheme scheme(m_scalescheme);
+  if (scheme==scl::unknown) 
+    THROW(fatal_error,"Unknown scale scheme: "+ToString(m_scalescheme));
   SetMomenta(momenta);
   if (m_nin==1) return momenta[0].Abs2();
-  if (m_nin!=2) {
-    ATOOLS::msg.Error()<<"Integrable_Base::CalculateScale(..): "
-		       <<"Too many particles."<<std::endl;
-    abort();
+  if (m_nin!=2) THROW(fatal_error,"Too many incoming particles.");
+  if (scheme==scl::ckkw) {
+    double S(sqr(rpa.gen.Ecms()));
+    m_scale[stp::fac]=rpa.gen.Ycut()*S;
+    m_scale[stp::ren]=sqr(rpa.gen.DeltaR())*m_ycut*S;
+    if (p_jf==NULL && p_selector->Name()=="Combined_Selector") {
+      p_jf=(Jet_Finder *)
+	((Combined_Selector*)p_selector)->GetSelector("Jetfinder");
+      if (p_jf!=NULL) m_me_as_factor=p_jf->Type()>1?1.0:0.25;
+      else THROW(critical_error,"'SCALE_SCHEME = CKKW' implies JetFinder <ycut> <deltar>' in 'Selector.dat'.");
+    }
+    double pt2(p_jf->ActualValue()*S);
+    if ((int)m_nout==m_maxjetnumber) 
+      // highest multiplicity treatment
+      m_scale[stp::fac]=pt2;
+    else 
+      // two scale treatment
+      m_scale[stp::fac]=Min(m_scale[stp::fac],pt2);
+    m_scale[stp::ren]*=rpa.gen.RenormalizationScaleFactor();
+    return m_scale[stp::fac]*=rpa.gen.FactorizationScaleFactor();
   }
-  double s;
-  if (m_nin==2) s = (momenta[0]+momenta[1]).Abs2();
-  if (m_nin==1) s = (momenta[0]).Abs2();
-  double pt2 = 0.;
-
-  //new
-  switch (m_scalescheme) {
-  case 1 :   
-    pt2 = m_scale[stp::as];
-    break;
-  case 2  :
+  double pt2(-1.0);
+  if (scheme & scl::fixed) {
+    pt2=m_scale[stp::fac];
+    scheme-=scl::fixed;
+  }
+  else if (scheme & scl::shat) {
+    pt2=(momenta[0]+momenta[1]).Abs2();
+    scheme-=scl::shat;
+  }
+  else if (scheme & scl::gmeanpt) {
     if (m_nin+m_nout==4) {
+      double s = (momenta[0]+momenta[1]).Abs2();
       double t = (momenta[0]-momenta[2]).Abs2()-
-	(ATOOLS::sqr(p_flavours[2].PSMass())+ATOOLS::sqr(p_flavours[3].PSMass()))/2.;
+	(sqr(p_flavours[2].PSMass())+sqr(p_flavours[3].PSMass()))/2.;
       double u = (momenta[0]-momenta[3]).Abs2()-
-	(ATOOLS::sqr(p_flavours[2].PSMass())+ATOOLS::sqr(p_flavours[3].PSMass()))/2.;
-      pt2 = 4.*s*t*u/(s*s+t*t+u*u);
-    }
-    else {
-      pt2 = 0.;
-      for (size_t i=m_nin;i<m_nin+m_nout;i++) {
-	pt2 += ATOOLS::sqr(momenta[i][1])+ATOOLS::sqr(momenta[i][2]);
-      }
-    }
-    break;
-  case 3  :
-    pt2 = s;
-    double pt2i;
-    for (size_t i=m_nin;i<m_nin+m_nout;i++) {
-      pt2i = ATOOLS::sqr(momenta[i][1])+ATOOLS::sqr(momenta[i][2]);
-      if (pt2i<pt2) pt2 = pt2i;
-    }
-    break;
-  case 4  :
-    pt2=1.0;
-    for (size_t i=m_nin;i<m_nin+m_nout;i++) pt2*=momenta[i].PPerp2();
-    pt2=pow(pt2,1.0/m_nout);
-    break;
-  case 21 :
-    if (m_nin+m_nout==4) {
-      double t = (momenta[0]-momenta[2]).Abs2();
-      double u = (momenta[0]-momenta[3]).Abs2();
+	(sqr(p_flavours[2].PSMass())+sqr(p_flavours[3].PSMass()))/2.;
       pt2 = 2.*s*t*u/(s*s+t*t+u*u);
     }
     else {
-      pt2 = 0.;
+      pt2 = 1.;
+      int count(0);
       for (size_t i=m_nin;i<m_nin+m_nout;i++) {
-	pt2 += ATOOLS::sqr(momenta[i][1])+ATOOLS::sqr(momenta[i][2]);
+	if ((scheme & scl::strong) && !p_flavours[i].Strong()) continue;
+	if (scheme & scl::mass) pt2 *= momenta[i].MPerp2();
+	else pt2 *= momenta[i].PPerp2();
+	count++;
       }
+      if (count==0) pt2=(momenta[0]+momenta[1]).Abs2();
+      else pt2 = pow(pt2,1./count);
     }
-    break;
-  case 63 :
-    if ((int)m_nout!=m_maxjetnumber) {
-      pt2 = m_scale[stp::as];
-    }
-    else {
-      pt2 = ATOOLS::sqr(momenta[m_nin][1])+ATOOLS::sqr(momenta[m_nin][2]);
-      for (size_t i=m_nin+1;i<m_nin+m_nout;++i) {
-	if (p_flavours[i].Strong())
-	  pt2 =  ATOOLS::Min(pt2,ATOOLS::sqr(momenta[i][1])+ATOOLS::sqr(momenta[i][2]));
-      }
-    }
-    break;
-  case 64 :
-    pt2 = ATOOLS::sqr(momenta[m_nin][1])+ATOOLS::sqr(momenta[m_nin][2]);
-    for (size_t i=m_nin+1;i<m_nin+m_nout;++i) {
-      pt2 =  ATOOLS::Min(pt2,ATOOLS::sqr(momenta[i][1])+ATOOLS::sqr(momenta[i][2]));
-    }
-    break;
-  case 65: {
-    double ycut = ATOOLS::rpa.gen.Ycut();
-    m_scale[stp::fac] = ATOOLS::rpa.gen.FactorizationScaleFactor()*ycut*ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
-    pt2 = m_scale[stp::fac];
-      
-    double y=2.;
-    if (p_jf==NULL && p_selector->Name()=="Combined_Selector") {
-      p_jf = (ATOOLS::Jet_Finder *)
-	((ATOOLS::Combined_Selector*)p_selector)->GetSelector("Jetfinder");
-      if (p_jf!=NULL) m_me_as_factor=p_jf->Type()>1?1.0:0.25;
-    }
-    if (p_jf) y=p_jf->ActualValue();
-    else {
-      msg.Error()<<METHOD<<"(): SCALE_SCHEME = 65 implies "
-		 <<"'JetFinder <ycut> <deltar>' in 'Selector.dat'. Return s."<<std::endl;
-      pt2 = ATOOLS::rpa.gen.FactorizationScaleFactor()*s;
-    }
-    
-    // if highest number of jets
-    if ((int)m_nout==m_maxjetnumber) {
-      if (y==2.) pt2 = ATOOLS::rpa.gen.FactorizationScaleFactor()*s;
-      else pt2 = ATOOLS::rpa.gen.FactorizationScaleFactor()*y*ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
-    }
-    else {
-      // tanju two scale treatment
-      pt2 = ATOOLS::rpa.gen.FactorizationScaleFactor()*y*ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
-      if (m_scale[stp::fac]<pt2) pt2 = m_scale[stp::fac];
-    }
-    break;
+    scheme-=scl::gmeanpt;
+    scheme-=scl::strong;
+    scheme-=scl::mass;
   }
-  case 101: {// pp->V scheme
-    double M2=0.;
-    if (m_resonances.size()>0) {
-      M2=ATOOLS::sqr(m_resonances[0].Mass());
+  else if (scheme & scl::ameanpt) {
+    pt2 = 0.;
+    int count(0);
+    for (size_t i=m_nin;i<m_nin+m_nout;i++) {
+      if ((scheme & scl::strong) && !p_flavours[i].Strong()) continue;
+      if (scheme & scl::mass) pt2 += momenta[i].MPerp2();
+      else pt2 += momenta[i].PPerp2();
+      count++;
     }
-    ATOOLS::Vec4D *p=p_momenta;
-    double S2=p[4]*p[5], x1=p[5]*p[0]/S2, x2=p[4]*p[1]/S2;
-    double xi=(p[0]+p[1]).PMinus()/(p[0]+p[1]).PPlus();
-    m_scale[PHASIC::stp::kp21]=x1*x1*2.0*S2*xi;
-    m_scale[PHASIC::stp::kp22]=x2*x2*2.0*S2/xi;
-    // ew scale a la watt
-    double sc=(p[0]+p[1]).PPerp2();
-    pt2=m_scale[PHASIC::stp::as]=pow(sc,2./3.)*pow(M2,1./3.);
-    break;
+    if (count==0) pt2=(momenta[0]+momenta[1]).Abs2();
+    else pt2/=count;
+    scheme-=scl::ameanpt;
+    scheme-=scl::strong;
+    scheme-=scl::mass;
   }
-  case 102: {// g*g*->qqb scheme
-    const ATOOLS::Vec4D *p=momenta;
-    ATOOLS::Vec4D p2=p[m_nin], p3=p[m_nin+m_nout-1];
-    double S2=p[m_nin+m_nout]*p[m_nin+m_nout+1];
-    double a1=p[m_nin+m_nout+1]*p[0]/S2;
-    double b2=p[m_nin+m_nout]*p[1]/S2;
-    m_scale[PHASIC::stp::kp21]=a1*a1*2.*S2*p2.PMinus()/p2.PPlus();
-    m_scale[PHASIC::stp::kp22]=b2*b2*2.*S2*p3.PPlus()/p3.PMinus();
-    // qcd scale
-    double s=(p[0]+p[1]).Abs2();
-    double t=(p[0]-p[2]).Abs2();
-    double u=(p[0]-p[3]).Abs2();
-    pt2=m_scale[PHASIC::stp::as]=2.*s*t*u/(s*s+t*t+u*u);
-    break;
+  else if (scheme & scl::minpt) {
+    pt2 = (momenta[0]+momenta[1]).Abs2();
+    for (size_t i=m_nin;i<m_nin+m_nout;i++) {
+      if ((scheme & scl::strong) && !p_flavours[i].Strong()) continue;
+      if (scheme & scl::mass) pt2 = Min(pt2,momenta[i].MPerp2());
+      else pt2 = Min(pt2,momenta[i].PPerp2());
+    }
+    scheme-=scl::minpt;
+    scheme-=scl::strong;
+    scheme-=scl::mass;
   }
-  case 103: {// g*g*->gg scheme
-    const ATOOLS::Vec4D *p=momenta;
-    ATOOLS::Vec4D p2=p[m_nin], p3=p[m_nin+m_nout-1];
-    if (p2.PMinus()/p2.PPlus()>p3.PMinus()/p3.PPlus())
-      std::swap<ATOOLS::Vec4D>(p2,p3);
-    double S2=p[m_nin+m_nout]*p[m_nin+m_nout+1];
-    double a1=p[m_nin+m_nout+1]*p[0]/S2;
-    double b2=p[m_nin+m_nout]*p[1]/S2;
-    m_scale[stp::kp21]=a1*a1*2.*S2*p2.PMinus()/p2.PPlus();
-    m_scale[stp::kp22]=b2*b2*2.*S2*p3.PPlus()/p3.PMinus();
-    // mean of factorisation scales
-    pt2=m_scale[stp::as]=
-      ATOOLS::sqr(sqrt(m_scale[stp::kp21])+sqrt(m_scale[stp::kp22]))/4.0;
-    break;
+  else if (scheme & scl::sumpt) {
+    pt2 = 0.;
+    for (size_t i=m_nin;i<m_nin+m_nout;i++) {
+      if ((scheme & scl::strong) && !p_flavours[i].Strong()) continue;
+      if (scheme & scl::mass) pt2 += momenta[i].MPerp2();
+      else pt2 += momenta[i].PPerp2();
+    }
+    scheme-=scl::sumpt;
+    scheme-=scl::strong;
+    scheme-=scl::mass;
   }
-  case 104: {// g*g*->gg scheme
-    const ATOOLS::Vec4D *p=momenta;
-    ATOOLS::Vec4D p2=p[m_nin], p3=p[m_nin+m_nout-1];
-    if (p2.PMinus()/p2.PPlus()>p3.PMinus()/p3.PPlus())
-      std::swap<ATOOLS::Vec4D>(p2,p3);
-    double S2=p[m_nin+m_nout]*p[m_nin+m_nout+1];
-    double a1=p[m_nin+m_nout+1]*p[0]/S2;
-    double b2=p[m_nin+m_nout]*p[1]/S2;
-    double fac=ATOOLS::rpa.gen.FactorizationScaleFactor();
-    m_scale[stp::kp21]=fac*a1*a1*2.*S2*p2.PMinus()/p2.PPlus();
-    m_scale[stp::kp22]=fac*b2*b2*2.*S2*p3.PPlus()/p3.PMinus();
-    // mean of factorisation scales
-    pt2=m_scale[stp::as]=
-      sqrt(m_scale[stp::kp21]*m_scale[stp::kp22]);
-    break;
+  if (scheme & scl::div_by_2) { 
+    pt2/=2.; 
+    scheme-=scl::div_by_2; 
   }
-  default :
-    pt2 = s;
+  if (scheme & scl::mult_by_2) { 
+    pt2*=2.; 
+    scheme-=scl::mult_by_2;  
   }
-  m_scale[stp::fac]=pt2;
+  if (pt2<0. || scheme!=scl::unknown) 
+    THROW(fatal_error,"Unknown scale scheme: "+ToString(m_scalescheme));
+  m_scale[stp::ren]=rpa.gen.RenormalizationScaleFactor()*pt2;
+  m_scale[stp::fac]=rpa.gen.FactorizationScaleFactor()*pt2;
   if (Selected()==NULL) return m_scale[stp::fac];
-  return (*Selected()->p_regulator)[m_scale[PHASIC::stp::fac]]; 
+  return (*Selected()->p_regulator)[m_scale[stp::fac]]; 
 }
 
 double Integrable_Base::KFactor(const double scale) 
 {
-  switch (m_kfactorscheme) {
-  case 1  :
-    if (m_nstrong>2) {
-      return m_rfactor*pow(MODEL::as->AlphaS(scale)/
-			   MODEL::as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),m_nstrong-2);
-    } 
-    else 
-      return m_rfactor;
-  case 65:
+  if (m_scalescheme&scl::ckkw) {
     m_scale[stp::fac]=scale;
-    msg_Debugging()<<Name()<<" : "<<m_nstrong<<std::endl;
-    msg_Debugging()<<"  Q_F^2 = "<<m_scale[stp::fac]<<std::endl;
-    msg_Debugging()<<"  Q_R^2 = "<<m_scale[stp::as]<<std::endl;
+    if (m_nstrong<=2) return m_rfactor;
+    double asn(as->AlphaS(m_me_as_factor*m_ps_cpl_factor*m_scale[stp::ren]));
+    if (m_ps_kfactor!=0.0) asn*=1.+asn/(2.0*M_PI)*m_ps_kfactor;
+    msg_Debugging()<<METHOD<<"(): "<<Name()<<" ("<<m_nstrong<<") {\n"
+		   <<"  \\mu_{fac}   = "<<sqrt(m_scale[stp::fac])<<"\n"
+		   <<"  \\mu_{ren}   = "<<sqrt(m_scale[stp::ren])<<"\n"
+		   <<"  me scalefac = "<<m_me_as_factor<<"\n"
+		   <<"  r scalefac  = "<<m_rfactor<<"\n"
+		   <<"  ps scalefac = "<<m_ps_cpl_factor<<"\n"
+		   <<"  ps k factor = "<<m_ps_kfactor
+		   <<"\n} -> as = "<<asn<<"\n";
+    return m_rfactor*pow(asn/as->AlphaS(sqr(rpa.gen.Ecms())),m_nstrong-2);
+  }
+  if (m_kfactorscheme==1) {
     if (m_nstrong>2) {
-      return m_rfactor*pow(MODEL::as->AlphaS(m_me_as_factor*m_scale[stp::as])/
-			   MODEL::as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),m_nstrong-2);
+      return m_rfactor*pow
+	(as->AlphaS(scale)/as->AlphaS(sqr(rpa.gen.Ecms())),m_nstrong-2);
     } 
     else 
       return m_rfactor;
-  case 101:{// pp -> V scheme
-    const double CF=4./3.;
-    return exp(CF*MODEL::as->AlphaS(scale)*M_PI/2.);
   }
-  case 102  :
-    return MODEL::as->AlphaS(m_scale[stp::kp21])
-      *MODEL::as->AlphaS(m_scale[stp::kp22])
-      /ATOOLS::sqr(MODEL::as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())));
-  default :
-    return 1.;
-  }
+  return 1.;
 }
 
 void Integrable_Base::SetEvents(const double number)
@@ -588,7 +526,7 @@ void Integrable_Base::ResetEvents(double gmin)
   if (m_validanasum==0.) return;
   long int expevents=m_expevents;
   m_expevents=(long int)(m_anasum/m_validanasum/gmin*(double)m_expevents+.5);
-  m_expevents=(long int)ATOOLS::Min((double)m_expevents,expevents*sqrt(expevents)/gmin);
+  m_expevents=(long int)Min((double)m_expevents,expevents*sqrt(expevents)/gmin);
   if (!(m_expevents>=expevents)) m_expevents=expevents;
 #ifdef EVENT_STATISTICS  
   mem[Name()][5]=m_expevents-expevents;
@@ -603,11 +541,11 @@ void Integrable_Base::GetGMin(double &g, double &meff)
   if (m_validanasum==0.) return;
   double q = m_anasum/m_validanasum;
   double add = q*(double)m_dicedevents;
-  add = ATOOLS::Min(add,sqrt((double)m_expevents)*(double)m_dicedevents);
+  add = Min(add,sqrt((double)m_expevents)*(double)m_dicedevents);
   meff += add;
   if (m_expevents<100) return;
   if (q<1.) if (m_expevents<sqrt(Parent()->m_expevents)) q=1.;
-  g = ATOOLS::Min(g,q);
+  g = Min(g,q);
 }
 
 void Integrable_Base::SetISRThreshold(const double threshold) 
@@ -618,11 +556,11 @@ void Integrable_Base::SetISRThreshold(const double threshold)
 void Integrable_Base::CreateMomenta(const size_t n)
 { 
   delete [] p_momenta; 
-  p_momenta = new ATOOLS::Vec4D[n]; 
+  p_momenta = new Vec4D[n]; 
   m_nvector=n; 
 }
 
-ATOOLS::Spin_Correlation_Tensor* Integrable_Base::GetSpinCorrelations()
+Spin_Correlation_Tensor* Integrable_Base::GetSpinCorrelations()
 {
   return NULL;
 }
@@ -630,4 +568,35 @@ ATOOLS::Spin_Correlation_Tensor* Integrable_Base::GetSpinCorrelations()
 void Integrable_Base::FillAmplitudes(ATOOLS::Amplitude_Tensor*,double)
 {
   return;
+}
+
+std::map<std::string,std::string> Integrable_Base::ScaleTags()
+{
+  std::map<std::string,std::string> tags;
+  tags["UNKNOWN"]=ToString(scl::unknown);
+  tags["CKKW"]=ToString(scl::ckkw);
+  tags["FIX_SCALE"]=ToString(scl::fixed);
+  tags["S_HAT"]=ToString(scl::shat);
+  tags["A_MEAN_PT2"]=ToString(scl::ameanpt);
+  tags["G_MEAN_PT2"]=ToString(scl::gmeanpt);
+  tags["MIN_PT2"]=ToString(scl::minpt);
+  tags["SUM_PT2"]=ToString(scl::sumpt);
+  tags["STRONG"]=ToString(scl::strong);
+  tags["MASSIVE"]=ToString(scl::mass);
+  tags["HALVE"]=ToString(scl::div_by_2);
+  tags["DOUBLE"]=ToString(scl::mult_by_2);
+  tags["UPDF"]=ToString(scl::updf);
+  return tags;
+}
+ 
+void Integrable_Base::SetScaleScheme(const scl::scheme s)
+{ 
+  m_scalescheme=s;   
+  if ((m_scalescheme&scl::ckkw) && m_ycut<=0.0) {
+    m_ycut=rpa.gen.Ycut();
+    m_scale[stp::fac]=m_ycut*sqr(rpa.gen.Ecms())*
+      rpa.gen.FactorizationScaleFactor();
+    m_scale[stp::ren]=m_ycut*sqr(rpa.gen.DeltaR()*rpa.gen.Ecms())*
+      rpa.gen.RenormalizationScaleFactor();
+  }
 }

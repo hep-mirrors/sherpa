@@ -44,8 +44,8 @@ Simple_Chain::Simple_Chain():
   p_differential(NULL), p_total(NULL), m_norm(1.0), m_enhance(1.0), 
   m_maxreduction(1.0), m_xsextension("_xs.dat"), m_mcextension("MC"), 
   p_processes(NULL), p_fsrinterface(NULL), p_environment(NULL), p_model(NULL),
-  p_beam(NULL), p_isr(NULL), p_profile(NULL), m_nflavour(5), 
-  m_maxtrials(1000), m_scalescheme(2), m_kfactorscheme(1), 
+  p_beam(NULL), p_isr(NULL), p_profile(NULL), m_nflavour(5), m_maxtrials(1000), 
+  m_scalescheme(PHASIC::scl::gmeanpt+PHASIC::scl::div_by_2), m_kfactorscheme(1), 
   m_ecms(rpa.gen.Ecms()), m_external(false), m_regulate(false)
 {
   Init();
@@ -57,9 +57,9 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *const model,
   MI_Base("Simple Chain",MI_Base::HardEvent,5,4,1),
   p_differential(NULL), p_total(NULL), m_norm(1.0), m_enhance(1.0),
   m_maxreduction(1.0), m_xsextension("_xs.dat"), m_mcextension("MC"), 
-  p_processes(NULL), p_fsrinterface(NULL), p_environment(NULL), 
-  p_model(model), p_beam(beam), p_isr(isr), p_profile(NULL), m_nflavour(5), 
-  m_maxtrials(1000), m_scalescheme(2), m_kfactorscheme(1), 
+  p_processes(NULL), p_fsrinterface(NULL), p_environment(NULL), p_model(model), 
+  p_beam(beam), p_isr(isr), p_profile(NULL), m_nflavour(5), m_maxtrials(1000), 
+  m_scalescheme(PHASIC::scl::gmeanpt+PHASIC::scl::div_by_2), m_kfactorscheme(1), 
   m_ecms(rpa.gen.Ecms()), m_external(true), m_regulate(false)
 {
   Init();
@@ -225,7 +225,7 @@ bool Simple_Chain::AddProcess(EXTRAXS::XS_Group *const group,
 bool Simple_Chain::ReadInData()
 {
   PROFILE_HERE;
-  Data_Reader *reader = new Data_Reader("=",";","!");
+  Data_Reader *reader = new Data_Reader("="," ",";","!");
   reader->SetInterprete(true);
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
@@ -245,8 +245,10 @@ bool Simple_Chain::ReadInData()
       m_regulation[0]*=pow(m_ecms/scale,exponent);
     }
   }
-  if (!reader->ReadFromFile(m_scalescheme,"MI_SCALE_SCHEME")) 
-    m_scalescheme=21;
+  int helpssc;
+  reader->SetTags(PHASIC::Integrable_Base::ScaleTags());
+  if (reader->ReadFromFile(helpssc,"MI_SCALE_SCHEME")) 
+    m_scalescheme=(PHASIC::scl::scheme)helpssc;
   if (!reader->ReadFromFile(m_kfactorscheme,"MI_K_FACTOR_SCHEME")) 
     m_kfactorscheme=1;
   if (!reader->ReadFromFile(m_nflavour,"N_FLAVOUR")) m_nflavour=5;
@@ -264,7 +266,7 @@ bool Simple_Chain::CreateGrid()
   double min=Min(m_stop[0],m_stop[4]);
   p_isr->SetFixedSprimeMin(4.0*min*min);
   p_isr->SetFixedSprimeMax(4.0*m_start[0]*m_start[0]);
-  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
+  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("="," ",";","!");
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile(2));
   std::string selectorfile;
@@ -548,7 +550,7 @@ bool Simple_Chain::Initialize()
   if (!rpa.gen.Beam1().IsHadron() ||
       !rpa.gen.Beam2().IsHadron()) return false;
   CleanUp();
-  Data_Reader *reader = new Data_Reader("=",";","!");
+  Data_Reader *reader = new Data_Reader("="," ",";","!");
   reader->SetInterprete(true);
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());

@@ -42,7 +42,8 @@ namespace ANALYSIS {
     void SortPT();
     void Test();
   public:
-    Calorimeter_Cone(const double Etcut, Primitive_Analysis * ana, double sep=1.);
+    Calorimeter_Cone(const double Etcut,const double etamin, 
+		     const double etamax,double sep=1.);
     ~Calorimeter_Cone();
 
     bool ConstructJets(const ATOOLS::Particle_List * pl = 0,ATOOLS::Particle_List * jets = 0,
@@ -53,6 +54,7 @@ namespace ANALYSIS {
     int    NumberOfJets();
     double Radius();
     double Et_cut();
+    void SetAnalysis(Primitive_Analysis  * ana);
   };
 
 

@@ -6,10 +6,15 @@
 namespace ANALYSIS {
 
   class HT: public Primitive_Observable_Base {  
+  private:
+
+    std::string m_reflist;
+
   public:
 
     HT(int type,double xmin,double xmax,int nbins,
-       const std::string & listname=std::string(""));
+       const std::string & listname=std::string(""),
+       const std::string & reflistname=std::string(""));
     
     void Evaluate(const ATOOLS::Particle_List & pl, double weight, int ncount);
     Primitive_Observable_Base * Copy() const;

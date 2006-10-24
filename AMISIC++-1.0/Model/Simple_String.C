@@ -65,7 +65,7 @@ bool Simple_String::Initialize()
   if (InputPath()=="" || InputFile()=="") return false;
   if (!rpa.gen.Beam1().IsHadron() ||
       !rpa.gen.Beam2().IsHadron()) return false;
-  Data_Reader *reader = new Data_Reader("=",";","!");
+  Data_Reader *reader = new Data_Reader("="," ",";","!");
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
   reader->SetVectorType(vtc::horizontal);

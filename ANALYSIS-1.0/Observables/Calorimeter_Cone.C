@@ -8,8 +8,7 @@ using namespace ANALYSIS;
 using namespace ATOOLS;
 
 
-Calorimeter_Cone::Calorimeter_Cone(const double Etcut, Primitive_Analysis * ana, double sep) : 
-  Jet_Algorithm_Base(NULL), m_dR(sep), m_dR2(sep*sep), m_Etcut(Etcut), m_Etstop(1.5), m_etamode(1)
+void Calorimeter_Cone::SetAnalysis(Primitive_Analysis  * ana)
 {
   // give analysis
   Primitive_Detector * detector =  
@@ -29,14 +28,24 @@ Calorimeter_Cone::Calorimeter_Cone(const double Etcut, Primitive_Analysis * ana,
   else {
     msg.Out()<<"WARNING  Calorimeter_Cone::Calorimeter_Cone no ""Full Detector"" "<<std::endl;
   }
+  if (p_jetno!=NULL) {
+    for (int i=0; i<m_neta;++i) delete [] p_jetno[i];
+    delete [] p_jetno;
+  }
+  p_jetno = new int*[m_neta];
+  for (int i=0; i<m_neta;++i) p_jetno[i] = new int[m_nphi];
+}
 
-  m_minetajet = m_mineta;
-  m_maxetajet = m_maxeta;
+Calorimeter_Cone::Calorimeter_Cone(const double Etcut,const double etamin, 
+				   const double etamax,double sep) : 
+  Jet_Algorithm_Base(NULL), m_dR(sep), m_dR2(sep*sep), m_Etcut(Etcut), m_Etstop(1.5), m_etamode(1), p_jetno(NULL)
+{
+
+  m_minetajet = etamin;
+  m_maxetajet = etamax;
   m_delta_eta = (m_maxeta-m_mineta)/double(m_neta);
   m_delta_phi = 2.*M_PI/double(m_nphi);
 
-  p_jetno = new int*[m_neta];
-  for (int i=0; i<m_neta;++i) p_jetno[i] = new int[m_nphi];
 }
 
 Calorimeter_Cone::~Calorimeter_Cone() 

@@ -120,16 +120,25 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,int & extra_pdf)
     return false; 
   }
   
-  switch (m_pdf_scheme) {
-  case 0:
-    p_pdf->Calculate(m_x,Max(-m_t,-m_t0));
-    break;
-  default:
-    p_pdf->Calculate(m_x,Max(mo->pt2lcm,-m_t0));
+  double q2pdf(m_facscale);
+  if (!extra_pdf) {
+    switch (m_pdf_scheme) {
+    case 0: q2pdf=Max(-m_t,-m_t0); break;
+    default: q2pdf=Max(mo->pt2lcm,-m_t0);
+    }
   }
-  
+  q2pdf*=m_pdf_scale_fac;
+  msg_Debugging()<<METHOD<<"(): pdf  Q = "<<sqrt(q2pdf)<<", x = "<<m_x<<"\n";
+  if (q2pdf<p_pdf->Q2Min()) {
+    mo->t    = mo->tout;
+    mo->stat = 0;
+    return false;
+  }
+  p_pdf->Calculate(m_x,q2pdf);
+
+  CrudeInt(m_zmin,m_zmax);
+
   while (m_t<m_t0) {
-    CrudeInt(m_zmin,m_zmax);
     ProduceT();
     if (mo->right && m_t<mo->right->t) continue;
     if (m_t>m_t0) {
@@ -195,36 +204,25 @@ bool Spacelike_Sudakov::Veto(Knot * mo,int & extra_pdf)
 bool Spacelike_Sudakov::MassVeto(int extra_pdf) 
 {
   PROFILE_HERE;
-  double weight(p_pdf->GetXPDF(GetFlB())/(p_pdf->GetXPDF(GetFlA())*m_pdf_fac)); 
-  double q2(-m_t), firstq2(m_facscale);
-  double wb_jet(0.);
-
+  // cancel weight from CrudeInt
+  double weight(p_pdf->GetXPDF(GetFlB())/
+		(p_pdf->GetXPDF(GetFlA())*m_pdf_fac)); 
+  double q2(0.0);
   switch (m_pdf_scheme) {
-  case 0:
-    firstq2/=(1.-m_z);
-    break;
-  default:
-    q2 = m_pt2;
+  case 0: q2=-m_t; break;
+  default: q2=m_pt2;
   }
-
-  q2 *= m_pdf_scale_fac;
-
+  q2*=m_pdf_scale_fac;
   if (q2<p_pdf->Q2Min()) return true;
-
-  if (extra_pdf) {
-    p_pdf->Calculate(m_x,0.,0.,firstq2);
-    wb_jet   = p_pdf->GetXPDF(GetFlB());
-  }
-  p_pdf->Calculate(m_x,q2);
-  if (!extra_pdf) {
-    wb_jet   = p_pdf->GetXPDF(GetFlB());
-  }
+  msg_Debugging()<<METHOD<<"(): pdfa Q = "<<sqrt(q2)
+		 <<", x = "<<(m_x/m_z)<<"\n";
   p_pdfa->Calculate(m_x/m_z,q2);
-  double test = p_pdfa->GetXPDF(GetFlA());
+  double test(p_pdfa->GetXPDF(GetFlA()));
   if (IsZero(test)) return true;
-  weight     *= test/wb_jet * GetWeight(m_z,-m_t,0);
-
-  if (ran.Get() > weight) return true;
+  p_pdfa->Calculate(m_x,q2);
+  // weight: P(z)*(x/z*f(x/z,t))/(x*f(x,t));
+  weight*=test/p_pdfa->GetXPDF(GetFlB())*GetWeight(m_z,-m_t,0);
+  if (ran.Get()>weight) return true;
   return false;
 }
 
@@ -279,6 +277,8 @@ bool Spacelike_Sudakov::PTVeto(Knot *knot)
 	   LightConeZ(knot->right->z,E2,knot->t,
 		      knot->right->t,knot->left->t));
   double pt2(z*(1.0-z)*knot->t-(1.0-z)*knot->right->t-z*knot->left->t);
+  if (knot->part->Flav().IsGluon() && knot->right->part->Flav().IsGluon()) 
+    if (ran.Get()<0.5) pt2=knot->right->maxpt2;
   knot->smaxpt2=pt2;
   msg_Debugging()<<"ss: knot "<<knot->kn_no<<", maxpt = "
 		 <<sqrt(knot->maxpt2)<<", pt = "<<sqrt(pt2)<<std::endl;

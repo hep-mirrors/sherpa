@@ -22,6 +22,7 @@ namespace APACIC {
     Jet_Veto            *p_jv;
 
     double m_pt2min;
+    int    m_showermode;
 
     int  InitializeJets(Tree *tree,Knot *mo,int init_rel=0);
     bool SmearDaughters(Knot *mo);
@@ -29,19 +30,21 @@ namespace APACIC {
     Knot *ChooseDaughter(Knot *mo);
 
     void InitTwojetTree(Tree *tree,double scale);
-    int  EvolveJet(Tree *tree,Knot *mo);
+    int  EvolveJet(Tree *tree,Knot *mo,int first=0);
     int  FillBranch(Tree *tree,Knot *mo,int first);
 
     void InitDaughters(Tree *tree,Knot *mo,
 		       ATOOLS::Flavour flb,ATOOLS::Flavour flc,
 		       ATOOLS::Simple_Polarisation_Info polb,
 		       ATOOLS::Simple_Polarisation_Info polc,bool diced);
-    void ResetDaughters(Knot *mo);
+    bool ResetDaughters(Knot *mo);
     void Reset(Knot *knot);
 
     static ATOOLS::Particle * FindAuntParton(Knot *);
 
     static bool SetColours(Knot *mo,Timelike_Kinematics *kin);
+    static bool SetColors(Knot *mo,unsigned int oldr,unsigned int newr,
+			  unsigned int olda,unsigned int newa);
 
   public:
 
@@ -56,7 +59,8 @@ namespace APACIC {
     int PerformShower(Tree *tree, int jetvetoflag);
     int TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
 			      Knot *const mo,const bool jetveto,
-			      const double &sprime,const double &z);
+			      const double &sprime,const double &z,
+			      Knot *partner);
 
     bool SetAllColours(Knot *mo);
 

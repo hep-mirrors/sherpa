@@ -238,7 +238,7 @@ void Tree::CopyBackKnot(Knot * a, Knot * b)
   if (!b) return;
 
   if (!a || a==b) {
-    std::cerr<<" Error in  Tree::CopyBackKnot "<<std::endl;
+    msg.Error()<<" Error in  Tree::CopyBackKnot "<<a<<" "<<b<<std::endl;
     Knot * b = p_save_root;
     if (b) {
       while (b->prev) {
@@ -249,6 +249,20 @@ void Tree::CopyBackKnot(Knot * a, Knot * b)
     abort();
   }
 
+  if (a->decay!=NULL) {
+    Knot *l(a->left), *d(a->decay);
+    while (d==l->decay) {
+      d=l->decay;
+      l=l->left;
+    }
+    if (l->prev!=a) {
+      DeleteKnot(a->right);
+      a->right=l->prev->right;
+      l->prev->right=l->prev->left=NULL;
+      DeleteKnot(a->left);
+      a->left=l;
+    }
+  }
   a->CopyData(b);
   if (b->left) CopyBackKnot(a->left,b->left);
   else {
@@ -356,7 +370,8 @@ bool Tree::CheckMomentumConservation() const
 
 bool Tree::CheckMomentumConservation(Knot *const knot) const 
 {
-  if (knot->left==NULL || knot->stat==3) return true;
+  if (knot->left==NULL || 
+      (knot->stat==3 && knot->shower!=2)) return true;
   bool success(true);
   Vec4D p(knot->part->Momentum());
   Vec4D p1(knot->left->part->Momentum()), p2(knot->right->part->Momentum());

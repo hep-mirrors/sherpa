@@ -364,7 +364,7 @@ bool Matrix_Element_Handler::GenerateOneEvent(ATOOLS::Decay_Channel * _dc,double
 double Matrix_Element_Handler::FactorisationScale()
 {
   switch (m_mode) {
-  case 1: return static_cast<AMEGIC::Process_Base*>(p_amegic->GetProcess())->FactorisationScale();
+  case 1: return p_amegic->GetProcess()->Scale(PHASIC::stp::fac);
   case 2: return p_simplexs->Selected()->Scale(PHASIC::stp::fac);
   }
   return 0.;

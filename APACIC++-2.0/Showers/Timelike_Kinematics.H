@@ -18,8 +18,8 @@ namespace APACIC {
 
     int m_zscheme;
 
-    int ShuffleZ(Knot * const mo) const;
-    int ShuffleMomenta(Knot * const mo) const; 
+    int ShuffleZ(Knot * const mo,const bool update=true) const;
+    int ShuffleMomenta(Knot * const mo,const bool update=true) const; 
 
     void ConstructVectors(Knot *const mo,
 			  ATOOLS::Vec4D &p1,ATOOLS::Vec4D &p2) const;
@@ -30,6 +30,9 @@ namespace APACIC {
 
     inline bool CheckVector(const ATOOLS::Vec4D &mom) const
     { return (mom.Nan() || mom[0]<0.0)?false:true; }
+
+    bool BoostDaughter(Knot * const d) const; 
+    bool ReconstructDaughter(Knot * const d) const; 
 
   public:
 
@@ -58,7 +61,7 @@ namespace APACIC {
     bool DoSingleKinematics(Knot * const mo,const bool force=false) const;
 
     bool DoKinematics(Knot * const mo) const;
-    void BoostDaughters(Knot * const mo) const; 
+    bool BoostDaughters(Knot * const mo) const; 
 
     int UpdateDaughters(Knot *const mo,const bool force=false) const;
 

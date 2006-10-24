@@ -38,8 +38,9 @@ int fak(int N)
 Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
 			       ISR_Handler * _isr,Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			       int _gen_str,int _orderQCD, int _orderEW,
-			       int _kfactorscheme, int _scalescheme,double _scale,
-			       Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi, double ycut,double error,std::string e_func) :
+			       int _kfactorscheme, PHASIC::scl::scheme _scalescheme,double _scale,
+			       Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi, double ycut,
+			       double error,std::string e_func) :
   Process_Base(NULL,_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
 	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,ycut,error),
   m_sfactor(1.), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this), 
@@ -67,6 +68,7 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
 	       <<"   No selection cuts specified. Init No_Selector !"<<endl;
     p_selector = new No_Selector();
   }
+  SetScaleScheme(m_scalescheme);
 
   double sum_massin = 0.,sum_massout = 0.;
   for (size_t i=0;i<m_nin;i++)  sum_massin  += p_flin[i].Mass();
@@ -82,22 +84,13 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
     ATOOLS::MakeDir((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename).c_str(),mode_dir); 
   }
   msg_Tracking()<<"Initialized Single_Process : "<<m_name<<"."<<std::endl;
-
-  if (m_scalescheme==65 && m_updatescales) {
-    double dr   = rpa.gen.DeltaR();
-    double ycut = rpa.gen.Ycut();
-    m_scale[stp::fac] = ycut*sqr(rpa.gen.Ecms());
-    ycut=Min(ycut,ycut*sqr(dr));
-    m_scale[stp::as] = ycut*sqr(rpa.gen.Ecms());
-    SetScales(m_scale[stp::fac],m_scale[stp::as]);
-  }
 }
 
 
 Single_Process::Single_Process(Process_Info* pinfo,int _nin,int _nout,Flavour * _fl,
 			       ISR_Handler * _isr,Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			       int _gen_str,int _orderQCD, int _orderEW,
-			       int _kfactorscheme, int _scalescheme,double _scale,
+			       int _kfactorscheme, PHASIC::scl::scheme _scalescheme,double _scale,
 			       Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi, double ycut,double error,std::string e_func) :   
   Process_Base(pinfo,_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
 	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,ycut,error),
@@ -126,6 +119,7 @@ Single_Process::Single_Process(Process_Info* pinfo,int _nin,int _nout,Flavour * 
 	       <<"   No selection cuts specified. Init No_Selector !"<<endl;
     p_selector = new No_Selector();
   }
+  SetScaleScheme(m_scalescheme);
 
   double sum_massin = 0.,sum_massout = 0.;
   for (size_t i=0;i<m_nin;i++)  sum_massin  += p_flin[i].Mass();
@@ -141,15 +135,6 @@ Single_Process::Single_Process(Process_Info* pinfo,int _nin,int _nout,Flavour * 
     ATOOLS::MakeDir((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename).c_str(),mode_dir); 
   }
   msg_Tracking()<<"Initialized Single_Process : "<<m_name<<"."<<std::endl;
-
-  if (m_scalescheme==65 && m_updatescales) {
-    double dr   = rpa.gen.DeltaR();
-    double ycut = rpa.gen.Ycut();
-    m_scale[stp::fac] = ycut*sqr(rpa.gen.Ecms());
-    ycut=Min(ycut,ycut*sqr(dr));
-    m_scale[stp::as] = ycut*sqr(rpa.gen.Ecms());
-    SetScales(m_scale[stp::fac],m_scale[stp::as]);
-  }
 }
 
 

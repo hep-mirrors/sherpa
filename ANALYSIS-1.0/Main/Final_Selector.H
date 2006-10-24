@@ -71,6 +71,7 @@ namespace ANALYSIS {
 
     Primitive_Observable_Base * Copy() const;    
     ~Final_Selector();
+    void SetAnalysis(Primitive_Analysis  * ana);
   };
 
   class Leading_Particle : public Primitive_Observable_Base {

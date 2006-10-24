@@ -35,6 +35,7 @@ namespace SHERPA {
 
     void   FillTable(Leg **legs,const int nlegs,const int nampl); 
     double GetWinner(int &i, int &j);
+    void   IdentifyHardProcess();
 
   };// end of class Combine_Table_CKKW
 

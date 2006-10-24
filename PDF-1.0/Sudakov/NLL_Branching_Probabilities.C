@@ -23,10 +23,9 @@ using namespace MODEL;
 Gamma_Lambda_Base::
 Gamma_Lambda_Base(bpt::code type,bpm::code mode,double lambda, 
 		  MODEL::Running_AlphaS * runas,double qmass,double asfac): 
-  m_type(type), m_mode(mode), 
+  p_runas(runas), m_type(type), m_mode(mode), 
   m_colfac(0.), m_dlog(0.), m_slog(0.), m_qmass(qmass),
-  m_lambda(lambda), m_as_factor(asfac), p_runas(runas), 
-  m_kfac(0.), m_pca(0)
+  m_lambda(lambda), m_as_factor(asfac), m_kfac(0.), m_pca(0)
 { 
   m_power[4]=m_power[3]=m_power[2]=m_power[1]=m_power[0]=0.0;
 }

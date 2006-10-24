@@ -10,9 +10,8 @@ namespace ATOOLS {
 
     // constructors
     Data_Writer();
-    Data_Writer(const std::string _m_cut,
-		const std::string _m_seperator,
-		const std::string _m_comment);
+    Data_Writer(const std::string cut,const std::string wordsep,
+		const std::string linesep,const std::string comment);
 
     // member functions
     bool WriteComment(std::string comment=nullstring,

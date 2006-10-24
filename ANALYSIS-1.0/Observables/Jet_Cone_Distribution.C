@@ -65,7 +65,8 @@ Jet_Cone_Distribution::Jet_Cone_Distribution(const int linlog, const double Etcu
   m_name = std::string("ConeNumb_")+etname;
   double dx = (m_xmax-m_xmin)/double(m_nbins);
   for (int i=0;i<nbins;i++) {
-    m_cones.push_back(new Calorimeter_Cone(Etcut,p_ana,m_xmin+i*dx));
+    m_cones.push_back(new Calorimeter_Cone(Etcut,m_etamin,m_etamax,m_xmin+i*dx));
+    m_cones.back()->SetAnalysis(p_ana);
     m_cones[i]->SetEtaRangeForJets(m_etamin,m_etamax,1);
     m_histos.push_back(new ATOOLS::Histogram(0,0.,10.,nbins));
   }
@@ -198,7 +199,8 @@ Jet_Cone_Dependence::Jet_Cone_Dependence(const int linlog, const double Etcut,
   m_name = std::string("ConeDep_")+etname;
   double dx = (m_xmax-m_xmin)/double(m_nbins);
   for (int i=0;i<nbins;i++) {
-    m_cones.push_back(new Calorimeter_Cone(Etcut,p_ana,m_xmin+i*dx));
+    m_cones.push_back(new Calorimeter_Cone(Etcut,m_etamin,m_etamax,m_xmin+i*dx));
+    m_cones.back()->SetAnalysis(p_ana);
     m_cones[i]->SetEtaRangeForJets(m_etamin,m_etamax,1);
   }
   for (int i=0;i<m_njetmax-m_njetmin;i++) {
@@ -356,8 +358,8 @@ Jet_Cone_Shape::Jet_Cone_Shape(const int linlog,const double Etcut, const double
   s2>>rname;
   m_name = std::string("ConeShape_")+etname+std::string("_")+rname;
   
-  p_cone = new Calorimeter_Cone(Etcut,p_ana,m_R);
- 
+  p_cone = new Calorimeter_Cone(Etcut,m_etamin,m_etamax,m_R);
+  p_cone->SetAnalysis(p_ana);
   p_cone->SetEtaRangeForJets(m_etamin,m_etamax,1);
    for (int i=jetmin;i<jetmax;i++) {
     m_histos.push_back(new ATOOLS::Histogram(linlog,Rmin,Rmax,nbins));

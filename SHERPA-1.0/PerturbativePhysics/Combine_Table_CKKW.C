@@ -150,13 +150,15 @@ bool Combine_Table_CKKW::SelectWinner(const bool did_boost)
   }
   // calculate pt2ij and determine "best" combination
   m_cdata_winner = cl.end();
+  CD_List::iterator qcd_winner(cl.end());
+  double kt2(std::numeric_limits<double>::max()), kt2qcd(kt2);
   for (CD_List::iterator cit(cl.begin()); cit!=cl.end(); ++cit) {
     CD_List::iterator tit(CalcPropagator(cit));
     double pt2ij(cit->second.m_pt2ij);
     if (cit->second.m_graphs.size()==0) continue;
     if (tit==cit) {
       // Relevant initial-final clustering.
-      if (cit->first.m_i<2 && (pt2ij<m_kt2QCD || pt2ij<m_kt2QED)) {
+      if (cit->first.m_i<2 && pt2ij<kt2) {
 	// check if this combination has right direction (clustering with correct is particle)
 	double d = p_moms[cit->first.m_i][3] * p_moms[cit->first.m_j][3];
 	if (d<0.) {
@@ -169,13 +171,16 @@ bool Combine_Table_CKKW::SelectWinner(const bool did_boost)
 	}
       }
     }
-    if (pt2ij<m_kt2QED && !cit->second.m_strong) m_kt2QED = pt2ij;
-    if (pt2ij<m_kt2QCD &&  cit->second.m_strong) m_kt2QCD = pt2ij;
-    if (pt2ij<m_kt2min) {
-      m_kt2min = pt2ij;
-      m_cdata_winner = cit;
+    if (pt2ij<kt2) {
+      m_cdata_winner=cit;
+      kt2=pt2ij;
+    }
+    if (cit->second.m_strong && pt2ij<kt2qcd) {
+      qcd_winner=cit;
+      kt2qcd=pt2ij;
     }
   }
+  if (qcd_winner!=cl.end()) m_cdata_winner=qcd_winner;
   return true;
 }
 
@@ -250,3 +255,73 @@ Combine_Table_CKKW *Combine_Table_CKKW::NextTable(Combine_Table_CKKW *tab,
   m_graph_winner = m_cdata_winner->second.m_graphs[m_graph_winner];
   return (Combine_Table_CKKW*)ct;
 }
+
+void Combine_Table_CKKW::IdentifyHardProcess()
+{
+  msg_Debugging()<<METHOD<<"():\n";
+  msg_Indent();
+  m_nstrong=0;
+  if (p_hard==NULL) {
+    p_hard = new Leg*[m_nampl];
+    for (int i(0);i<m_nampl;++i) p_hard[i] = new Leg[2];
+    p_hardc = new int*[m_nampl];
+    for (int i(0);i<m_nampl;++i) p_hardc[i] = new int[4];
+  }
+  for (int i(0);i<m_nampl;++i) {
+    if (Combinable(p_legs[i][0],p_legs[i][1]) &&
+	Combinable(p_legs[i][2],p_legs[i][3])) {
+      double pt2ij(p_jf->MTij2(p_moms[2],p_moms[3]));
+      msg_Debugging()<<"s-channel pt = "<<sqrt(pt2ij)<<", m = "
+		     <<sqrt(dabs((p_moms[0]+p_moms[1]).Abs2()))<<"\n";
+      p_hard[i][0]=CombinedLeg(p_legs[i],0,1);
+      SetLegScales(p_hard[i][0],p_legs[i][0],p_legs[i][1],
+		   p_moms[0],p_moms[1],pt2ij);
+      p_hard[i][1]=CombinedLeg(p_legs[i],2,3);
+      SetLegScales(p_hard[i][1],p_legs[i][2],p_legs[i][3],
+		   p_moms[2],p_moms[3],pt2ij);
+      p_hardc[i][0]=0;
+      p_hardc[i][1]=0;
+      p_hardc[i][2]=1;
+      p_hardc[i][3]=1;
+    }
+    else if (Combinable(p_legs[i][0],p_legs[i][2]) &&
+	     Combinable(p_legs[i][1],p_legs[i][3])) {
+      double pt2ij1(p_jf->MTij2(p_moms[0],p_moms[2]));
+      double pt2ij2(p_jf->MTij2(p_moms[1],p_moms[3]));
+      msg_Debugging()<<"t-channel pt = "<<sqrt(pt2ij1)
+		     <<" / "<<sqrt(pt2ij2)<<", m = "
+		     <<sqrt(dabs((p_moms[0]+p_moms[2]).Abs2()))<<"\n";
+      p_hard[i][0]=CombinedLeg(p_legs[i],0,2);
+      SetLegScales(p_hard[i][0],p_legs[i][0],p_legs[i][2],
+		   p_moms[0],p_moms[2],pt2ij1);
+      p_hard[i][1]=CombinedLeg(p_legs[i],1,3);
+      SetLegScales(p_hard[i][1],p_legs[i][1],p_legs[i][3],
+		   p_moms[1],p_moms[3],pt2ij2);
+      p_hardc[i][0]=0;
+      p_hardc[i][1]=1;
+      p_hardc[i][2]=0;
+      p_hardc[i][3]=1;
+    }
+    else if (Combinable(p_legs[i][0],p_legs[i][3]) &&
+	     Combinable(p_legs[i][1],p_legs[i][2])) {
+      double pt2ij1(p_jf->MTij2(p_moms[0],p_moms[3]));
+      double pt2ij2(p_jf->MTij2(p_moms[1],p_moms[2]));
+      msg_Debugging()<<"u-channel pt = "<<sqrt(pt2ij1)
+		     <<" / "<<sqrt(pt2ij2)<<", m = "
+		     <<sqrt(dabs((p_moms[0]+p_moms[3]).Abs2()))<<"\n";
+      p_hard[i][0]=CombinedLeg(p_legs[i],0,3);
+      SetLegScales(p_hard[i][0],p_legs[i][0],p_legs[i][3],
+		   p_moms[0],p_moms[3],pt2ij1);
+      p_hard[i][1]=CombinedLeg(p_legs[i],1,2);
+      SetLegScales(p_hard[i][1],p_legs[i][1],p_legs[i][2],
+		   p_moms[1],p_moms[2],pt2ij2);
+      p_hardc[i][0]=0;
+      p_hardc[i][1]=1;
+      p_hardc[i][2]=1;
+      p_hardc[i][3]=0;
+    }
+    else THROW(fatal_error,"No match for hard process.");
+    m_nstrong=Max(m_nstrong,p_hard[i][0].OrderQCD()+p_hard[i][1].OrderQCD());
+  }
+}
+

@@ -40,11 +40,12 @@ double Three_Jet_Calc::operator()()
 
 Cluster_Partons_CKKW::
 Cluster_Partons_CKKW(Matrix_Element_Handler * me,ATOOLS::Jet_Finder * jf,
-		     const int maxjet,const int isrmode,const int isron,
-		     const int fsron) :
-  Cluster_Partons_Base(me,jf,maxjet,isrmode,isron,fsron),
-  m_AcceptMisClusters(1.), m_LowestFromME(true)
+		     PDF::ISR_Handler *isr,
+		     const int maxjet,const int isron,const int fsron) :
+  Cluster_Partons_Base(me,jf,maxjet,isr->On(),isron,fsron)
 {
+  p_pdf[0]=isr->PDF(0);
+  p_pdf[1]=isr->PDF(1);
   std::string helps;
   Data_Reader reader;
   if (reader.ReadFromFile(helps,"PRINT_SUDAKOV","") && helps.length()>0) 
@@ -169,21 +170,7 @@ int Cluster_Partons_CKKW::SetColours(EXTRAXS::XS_Base * xs,
     m_colors[i][0] = p_xs->Colours()[i][0];
     m_colors[i][1] = p_xs->Colours()[i][1];
   }
-  m_q2_fss  = dabs(p_xs->Scale(stp::sfs));
-  m_q2_iss  = dabs(p_xs->Scale(stp::sis));
-//   Alternative choice for PS-scale
-//    m_q2_fss  = dabs(p_xs->Scale(stp::as));
-//    m_q2_iss  = dabs(p_xs->Scale(stp::as));
-  msg_Debugging()<<"cp: found xs, fss "<<m_q2_fss<<", iss "<<m_q2_iss
-		 <<", qcd "<<p_xs->Scale(stp::as)<<"\n";
-  if (m_q2_fss==std::numeric_limits<double>::max() || 
-      m_q2_iss==std::numeric_limits<double>::max()) {
-    m_q2_hard = m_q2_fss = m_q2_iss = p_xs->Scale(stp::fac);
-  }
-  else {
-    m_q2_hard = dabs(p_xs->Scale(stp::as));
-  }
-  m_q2_qcd  = dabs(p_xs->Scale(stp::as));
+  m_q2_fss = m_q2_iss = p_xs->Scale(stp::ren);
   return test;
 }
 
@@ -191,6 +178,8 @@ int Cluster_Partons_CKKW::SetColours(EXTRAXS::XS_Base * xs,
 void Cluster_Partons_CKKW::InitWeightCalculation()
 {
   m_weight = 1.;
+  m_asweight = 1.;
+  m_scale  = 1.;
   m_nlegs   = p_ct->NLegs();
   m_njet    = m_nlegs-2;
   m_nstrong = 0;
@@ -198,166 +187,91 @@ void Cluster_Partons_CKKW::InitWeightCalculation()
     if (p_ct->GetLeg(l).Point()->fl.Strong()) ++m_nstrong;
   }
   Combine_Table_Base *ct_test(p_ct);
-  double qmaxt(0.);
   while (ct_test->Up()) {
     ct_test=ct_test->Up();
     ++m_njet;
-    //    if (qmaxt<ct_test->Kt2()) qmaxt=ct_test->Kt2();
   }
-  if (qmaxt>m_q2_hard) m_q2_hard = qmaxt;
-  m_qmax=sqrt(m_q2_hard);
   m_last_q.clear();
   m_last_i.clear();
-  m_last_q.resize(m_nlegs,m_qmax);
+  m_last_q.resize(m_nlegs,std::numeric_limits<double>::max());
   m_last_i.resize(m_nlegs,0);
   // scales for alpha_s and correction weight for hard interaction
-  m_as_amegic  = (*as)(sqr(rpa.gen.Ecms()));
-  double asfac(sqrt(m_is_as_factor*m_fs_as_factor));
-  m_as_hard    = (*p_runas)(m_q2_hard/asfac);
-  m_as_qcd     = (*p_runas)(m_q2_qcd/asfac);
-  m_as_jet     = (*p_runas)(m_me_as_factor*m_q2_jet/asfac);
-  msg_Debugging()<<"ct: scales: amegic "<<rpa.gen.Ecms()<<" ("<<m_as_amegic<<")"
-		 <<", hard "<<sqrt(m_q2_hard)<<" ("<<m_as_hard<<")"
-		 <<", qcd "<<sqrt(m_q2_qcd)<<" ("<<m_as_qcd<<")"
-		 <<", jet "<<sqrt(m_q2_jet)<<" ("<<m_as_jet<<"), fac "
-		 <<m_is_as_factor<<"/"<<m_fs_as_factor<<", fss "<<sqrt(m_q2_fss)
-		 <<", iss "<<sqrt(m_q2_iss)<<" mefac "<<m_me_as_factor<<"\n";
-  if (m_kfac!=0.) {
-    m_as_hard *= 1. + m_as_hard/(2.*M_PI)*m_kfac;
-    m_as_qcd  *= 1. + m_as_qcd/(2.*M_PI)*m_kfac;
-    m_as_jet  *= 1. + m_as_jet/(2.*M_PI)*m_kfac;
-  }
-  if (m_q2_qcd<1.e-6) {
-    m_as_jet   = 1.;
-    m_as_hard  = 1.;
-  }
-  msg_Debugging()<<"ct: weight me : hard qcd "<<m_hard_nqcd<<" weight "
-		 <<pow(m_as_qcd/m_as_jet,m_hard_nqcd)<<std::endl;
-  if (m_hard_nqcd>0) m_weight *= pow(m_as_qcd/m_as_jet,m_hard_nqcd);
-  // special treatment for effective higgs vertex
-  bool found(false);
-  for (int i(0);i<p_ct->NAmplitudes();++i) {
-    for (int j(0);j<2;++j) {
-      switch (p_ct->GetHardLegs()[i][j].Type()) {
-      case lf::Triangle:
-      case lf::Box:
-      case lf::C4GS: {
-	double mth2(0.0);
-	for (int k(0);k<4;++k) {
-	  if (p_ct->GetLegs()[i][k].Point()->fl==kf::h) {
-	    mth2=p_ct->Momenta()[k].MPerp2();
-	    found=true;
-	  }
-	  if (p_ct->GetLegs()[i][k].Point()->fl==kf::t) found=false;
-	}
-	if (!found) break;
-	static double asmh2((*MODEL::as)(sqr(Flavour(kf::h).Mass())));
- 	m_weight*=pow((*MODEL::as)(mth2)/asmh2,
-		      p_ct->GetHardLegs()[i][j].OrderQCD());
-	msg_Debugging()<<METHOD<<"(): found higgs vertex: as = "<<(*MODEL::as)(mth2)
-		       <<" vs. asf = "<<asmh2<<", nqcd = "<<p_ct->GetHardLegs()[i][j].OrderQCD()<<"\n";
-	break;
-      }
-      default:
-	break;
-      }
-      if (found) break;
-    }
-    if (found) break;
-  }
-
-  m_count_startscale=-100;
-  if (m_q2_hard!=m_q2_qcd && m_nstrong==3) m_count_startscale=0;
-
-  // determine lowest scale for highest multi treatment
-  m_qmin_ci = m_qmin_cf = 0.;
-  if ((m_njet==m_maxjetnumber && m_njet>2) ||
-      (m_njet==2 && p_ct->OrderStrong()>0)) {
-    double qmin2i(0.0), qmin2f(0.0);
-    JetvetoPt2(qmin2i,qmin2f);
-    if (m_LowestFromME) {
-      if (m_q2_qcd<qmin2i) qmin2i = m_q2_qcd;
-      if (m_q2_qcd<qmin2f) qmin2f = m_q2_qcd;
-    }
-    if (qmin2i==0.0 || qmin2f==0.0)
-      msg.Error()<<"Cluster_Partons_CKKW::InitWeightCalculation(..): "
-		 <<"No minimum scale found."<<std::endl;
-    m_qmin_ci=sqrt(qmin2i);
-    m_qmin_cf=sqrt(qmin2f);
-  }
-  msg_Debugging()<<"ct: qmini "<<m_qmin_ci<<", qminf "<<m_qmin_cf
-		 <<", qmin_i "<<m_qmin_i<<", qmin_f "<<m_qmin_f<<"\n";
+  // me is reweighted w/ Min(m_is_as_factor,m_fs_as_factor), including deltar
+  // and ren. scale factor see Integrable_Base::KFactor and CalculateScale
+  m_as_jet[0]=(*p_runas)(m_me_as_factor*Min
+			 (m_is_as_factor,m_fs_as_factor)*m_q2_amegic);
+  if (m_kfac!=0.) m_as_jet[0]*=1.+m_as_jet[0]/(2.*M_PI)*m_kfac;
+  m_as_jet[1]=m_as_jet[0];
+  msg_Debugging()<<"scales {\n";
+  msg_Debugging()<<"  is_as_fac = "<<m_is_as_factor
+		 <<", fs_as_fac = "<<m_fs_as_factor
+		 <<", me_as_fac = "<<m_me_as_factor
+		 <<", m_kfac = "<<m_kfac<<"\n";
+  msg_Debugging()<<"  amegic : "<<std::setw(12)<<sqrt(m_q2_amegic)<<"\n";
+  msg_Debugging()<<"  jet is : "<<std::setw(12)<<m_qmin_i
+		 <<"  ->  as = "<<m_as_jet[1]<<"\n";
+  msg_Debugging()<<"  jet fs : "<<std::setw(12)<<m_qmin_f
+		 <<"  ->  as = "<<m_as_jet[0]<<"\n";
+  msg_Debugging()<<"  cut is : "<<std::setw(12)<<sqrt(m_q2_isjet)<<"\n";
+  msg_Debugging()<<"  cut fs : "<<std::setw(12)<<sqrt(m_q2_fsjet)<<"\n";
+  msg_Debugging()<<"  is ps  : "<<std::setw(12)<<sqrt(m_q2_iss)<<"\n";
+  msg_Debugging()<<"  fs ps  : "<<std::setw(12)<<sqrt(m_q2_fss)<<"\n";
+  msg_Debugging()<<"}\n"; 
 }
 
-
-bool Cluster_Partons_CKKW::
-ApplyCombinedInternalWeight(const bool is,const Flavour & fl,
-			    const double iupper,const double iactual,
-			    const double asref,const int order)
+double Cluster_Partons_CKKW::
+InternalWeight(const bool is,Leg &leg,const double iupper,
+	       const double iactual,double qmin)
 {
   double upper(iupper), actual(iactual);
   if (upper<actual) {
-    msg_Tracking()<<METHOD<<"(): q = "<<actual<<", Q = "
-		  <<upper<<". Swap."<<std::endl;
+    msg_Debugging()<<METHOD<<"(): q = "<<actual<<", Q = "
+		   <<upper<<". Swap."<<std::endl;
     std::swap<double>(upper,actual);
   }
-  double qmin(0.), DeltaNum(0.), DeltaDenom(1.), DeltaRatio(0.);
-  double as_ptij(0.), asRatio(0.);
+  if (actual<qmin) {
+    msg_Debugging()<<METHOD<<"(): q_{min} = "<<qmin<<", q = "
+		   <<actual<<". Swap."<<std::endl;
+    std::swap<double>(actual,qmin);
+  }
+  double DeltaNum(0.), DeltaDenom(1.), DeltaRatio(0.);
   if (is) {
-    as_ptij = (*p_runas)(m_me_as_factor*sqr(actual)/m_is_as_factor);
-    qmin = m_qmin_ci!=0.0?m_qmin_ci:m_qmin_i;
+    DeltaNum   = p_issud->Delta(leg.Point()->fl)(upper,qmin);
+    DeltaDenom = p_issud->Delta(leg.Point()->fl)(actual,qmin);
   }
   else {
-    as_ptij = (*p_runas)(m_me_as_factor*sqr(actual)/m_fs_as_factor);
-    qmin = m_qmin_cf!=0.0?m_qmin_cf:m_qmin_f;
+    DeltaNum   = p_fssud->Delta(leg.Point()->fl)(upper,qmin);
+    DeltaDenom = p_fssud->Delta(leg.Point()->fl)(actual,qmin);
   }
-  if (m_kfac!=0.) as_ptij *= 1. + as_ptij/(2.*M_PI)*m_kfac;
-  asRatio = as_ptij/asref;
-  if (upper<actual || actual<qmin || asRatio>1.0) {
-    ++m_fails;
-    if (asRatio>1.0)                 asRatio    = m_AcceptMisClusters;
-    if (upper<actual || actual<qmin) DeltaRatio = m_AcceptMisClusters;
-  }
-  else {
-    if (is) {
-      DeltaNum   = p_issud->Delta(fl)(upper,qmin);
-      DeltaDenom = p_issud->Delta(fl)(actual,qmin);
-    }
-    else {
-      DeltaNum   = p_fssud->Delta(fl)(upper,qmin);
-      DeltaDenom = p_fssud->Delta(fl)(actual,qmin);
-    }
-    DeltaRatio = DeltaNum/DeltaDenom;
-  }
-  msg_Debugging()<<"ct: internal weight: "<<is<<" "<<fl<<" "
-		 <<upper<<" -> "<<actual<<" / "<<qmin
-		 <<" => delta-> "<<DeltaRatio
-		 <<" ("<<DeltaNum<<"/"<<DeltaDenom<<") as-> "
-		 <<asRatio<<" from "<<asref<<" "<<order<<std::endl;
-  m_weight *= DeltaRatio * asRatio;
-  ++m_hard_nqcd;
-  return true;
+  DeltaRatio = DeltaNum/DeltaDenom;
+  msg_Debugging()<<(is?"is":"fs")<<" weight \\Delta_{"
+		 <<leg.Point()->fl<<"}("<<upper<<","<<qmin
+		 <<")/\\Delta_{"<<leg.Point()->fl<<"}("<<actual<<","<<qmin
+		 <<") = "<<DeltaNum<<" / "<<DeltaDenom<<" = "
+		 <<DeltaRatio<<"\n";
+  return DeltaRatio;
 }
 
-bool Cluster_Partons_CKKW::
-ApplyExternalWeight(const bool is,const Flavour & fl,
-		    const double actual)
+double Cluster_Partons_CKKW::
+ExternalWeight(const bool is,Leg &leg,
+	       const double actual,double qmin)
 {
-  double qmin(0.), DeltaNum(0.);
-  if (is) qmin = m_qmin_ci!=0.0?m_qmin_ci:m_qmin_i;
-     else qmin = m_qmin_cf!=0.0?m_qmin_cf:m_qmin_f;
+  double DeltaNum(0.);
+  if (qmin==0.0) 
+    if (is) qmin=m_qmin_i;
+    else qmin=m_qmin_f;
   if (actual<qmin) {
     ++m_fails;
-    DeltaNum = m_AcceptMisClusters;
+    DeltaNum=1.0;
   }
   else {
-    if (is) DeltaNum = p_issud->Delta(fl)(actual,qmin);
-       else DeltaNum = p_fssud->Delta(fl)(actual,qmin);
+    if (is) DeltaNum = p_issud->Delta(leg.Point()->fl)(actual,qmin);
+       else DeltaNum = p_fssud->Delta(leg.Point()->fl)(actual,qmin);
   }
-  msg_Debugging()<<"ct: external weight: "<<is<<" "<<fl<<" "
-		 <<actual<<" -> "<<qmin<<" => delta-> "<<DeltaNum<<std::endl;
-  m_weight *= DeltaNum;
-  return true;
+  msg_Debugging()<<(is?"is":"fs")<<" weight \\Delta_{"
+		 <<leg.Point()->fl<<"}("<<actual<<","<<qmin
+		 <<") = "<<DeltaNum<<"\n";
+  return DeltaNum;
 }    
 
 void Cluster_Partons_CKKW::StoreOldValues(const int i,const int j,
@@ -373,21 +287,136 @@ void Cluster_Partons_CKKW::StoreOldValues(const int i,const int j,
   m_last_q[j] = m_last_q[i];
 }  
 
-void Cluster_Partons_CKKW::OverwriteScales(const int j)
+double Cluster_Partons_CKKW::CouplingWeight(const bool is,Leg &leg,
+					    const double &kt)
 {
-  for (int l=j+1; l<m_nlegs; ++l ) {
-    if (m_last_q[l]==m_qmax) m_last_q[l]=sqrt(m_q2_qcd);
-  }      
+  double asref(m_as_jet[is]);
+  switch (leg.Type()) {
+  case lf::Triangle:
+  case lf::Box:
+  case lf::C4GS: 
+    asref=(*p_runas)(sqr(Flavour(kf::h).Mass()));
+    if (m_kfac!=0.) asref*=1.+asref/(2.*M_PI)*m_kfac;
+    msg_Debugging()<<"higgs vertex -> q_ref = "<<Flavour(kf::h).Mass()
+		   <<" -> asref = "<<asref<<"\n";
+    return 1.0;
+    break;
+  default: 
+    break;
+  }
+  double as_ptij(0.), rf(rpa.gen.RenormalizationScaleFactor());
+  if (is) as_ptij=(*p_runas)(rf*m_me_as_factor*sqr(kt)*m_is_as_factor);
+  else as_ptij=(*p_runas)(rf*m_me_as_factor*sqr(kt)*m_fs_as_factor);
+  if (m_kfac!=0.) as_ptij*=1.+as_ptij/(2.*M_PI)*m_kfac;
+  msg_Debugging()<<"as weight (\\alpha_s("<<m_me_as_factor<<"*sqr("<<kt<<")*"
+		 <<(is?m_is_as_factor:m_fs_as_factor)
+		 <<")/\\alpha_{s,ref})^O_{as} = ( "<<as_ptij<<" / "
+		 <<asref<<" ) ^ "<<leg.OrderQCD()<<" = "
+		 <<pow(as_ptij/asref,leg.OrderQCD())<<"\n";
+  return pow(as_ptij/asref,leg.OrderQCD());
+}
+
+void Cluster_Partons_CKKW::WeightHardProcess()
+{
+  msg_Debugging()<<METHOD<<"(): {\n";
+  msg_Indent();
+  int wminqcd(-1), wminqed(-1);
+  double kt2minqcd(std::numeric_limits<double>::max()), kt2minqed(kt2minqcd);
+  for (int i(0);i<p_ct->NAmplitudes();++i) {
+    for (int j(0);j<2;++j) {
+      double kt2qcd(p_ct->GetHardLegs()[i][j].KT2QCD());
+      double kt2qed(p_ct->GetHardLegs()[i][j].KT2QED());
+      if (kt2qcd<kt2minqcd || 
+	  (IsEqual(kt2qcd,kt2minqcd) && kt2qed<kt2minqed)) {
+	wminqcd=i;
+	kt2minqcd=kt2qcd;
+      }
+      if (kt2qed<kt2minqed || 
+	  (IsEqual(kt2qed,kt2minqed) && kt2qcd<kt2minqcd)) {
+	wminqed=i;
+	kt2minqed=kt2qed;
+      }
+    }
+  }
+  msg_Debugging()<<"QCD: wmin_qcd = "<<wminqcd<<", ktmin_qcd = "
+		 <<sqrt(kt2minqcd)<<", wmin_qed = "<<wminqed
+		 <<", ktmin_qed = "<<sqrt(kt2minqed)<<"\n";
+  if (wminqcd>=0) {
+    double mu2r(p_xs?p_xs->Scale(stp::ren):0.0);
+    double qu(sqrt(mu2r!=0.0?mu2r:p_ct->GetHardLegs()[wminqcd][0].KT2QCD()));
+    double ql(sqrt(mu2r!=0.0?mu2r:p_ct->GetHardLegs()[wminqcd][1].KT2QCD()));
+    if (qu<ql) std::swap<double>(qu,ql);
+    // if intermediate particle strong, apply sudakov weight
+    if (p_ct->GetHardLegs()[wminqcd][0].Point()->fl.Strong())
+      m_weight*=InternalWeight(0,p_ct->GetHardLegs()[wminqcd][0],
+			       qu,ql,m_qmin[0]);
+    // set possibly separate scales for the two vertices
+    for (short unsigned int i(0);i<4;++i) {
+      double rs(mu2r!=0.0?mu2r:p_ct->GetHardLegs()[wminqcd]
+		[p_ct->GetHardInfo()[wminqcd][i]].KT2QCD());
+      m_last_q[i]=sqrt(rs);
+    }
+    for (short unsigned int i(0);i<2;++i) {
+      Leg &leg(p_ct->GetHardLegs()[wminqcd][i]);
+      if (leg.OrderQCD()>0) {
+	double rs(mu2r!=0.0?mu2r:leg.KT2QCD());
+	double asw(CouplingWeight(0,leg,sqrt(rs)));
+	m_weight*=asw;
+	m_asweight*=asw;
+	m_scale*=sqrt(rs);
+      }
+    }
+    if (m_q2_fss==std::numeric_limits<double>::max()) {
+      if (p_ct->GetHardInfo()[wminqcd][1]==0) {
+	m_q2_iss=m_q2_fss=(p_ct->Momentum(0)+p_ct->Momentum(1)).Abs2();
+	msg_Debugging()<<"winner is s-channel: q_ps = "<<sqrt(m_q2_fss)<<"\n";
+      }
+      else if (p_ct->GetHardInfo()[wminqcd][2]==0) {
+	m_q2_iss=m_q2_fss=dabs((p_ct->Momentum(0)+p_ct->Momentum(2)).Abs2());
+	msg_Debugging()<<"winner is t-channel: q_ps = "<<sqrt(m_q2_fss)<<"\n";
+      }
+      else if (p_ct->GetHardInfo()[wminqcd][3]==0) {
+	m_q2_iss=m_q2_fss=dabs((p_ct->Momentum(0)-p_ct->Momentum(3)).Abs2());
+	msg_Debugging()<<"winner is u-channel: q_ps = "<<sqrt(m_q2_fss)<<"\n";
+      }
+    }
+  }
+  else if (wminqed>=0) {
+    for (short unsigned int i(0);i<4;++i) 
+      m_last_q[i]=sqrt(p_ct->GetHardLegs()[wminqed]
+ 		       [p_ct->GetHardInfo()[wminqed][i]].KT2QED());
+    if (m_q2_fss==std::numeric_limits<double>::max()) {
+      if (p_ct->GetHardInfo()[wminqed][1]==0) {
+	m_q2_iss=m_q2_fss=(p_ct->Momentum(0)+p_ct->Momentum(1)).Abs2();
+	msg_Debugging()<<"winner is s-channel: q_ps = "<<sqrt(m_q2_fss)<<"\n";
+      }
+      else if (p_ct->GetHardInfo()[wminqed][2]==0) {
+	m_q2_iss=m_q2_fss=dabs((p_ct->Momentum(0)+p_ct->Momentum(2)).Abs2());
+	msg_Debugging()<<"winner is t-channel: q_ps = "<<sqrt(m_q2_fss)<<"\n";
+      }
+      else if (p_ct->GetHardInfo()[wminqed][3]==0) {
+	m_q2_iss=m_q2_fss=dabs((p_ct->Momentum(0)-p_ct->Momentum(3)).Abs2());
+	msg_Debugging()<<"winner is u-channel: q_ps = "<<sqrt(m_q2_fss)<<"\n";
+      }
+    }
+  }
+  else {
+    THROW(fatal_error,"No scale in hard process");
+  }
+  msg_Debugging()<<"} -> w = "<<m_weight<<"\n";
 }
 
 void Cluster_Partons_CKKW::CalculateWeight()
 {
+  msg_Debugging()<<METHOD<<"(): {\n";
+  msg_Indent();
   ++m_counts;
   InitWeightCalculation();
+  WeightHardProcess();
   Combine_Table_Base *ct_tmp(p_ct), *ct_down;
   int si(0), i, j;
   double ptij;
-  bool strong_vertex,singlet_clustered;
+  bool strong_vertex;
 
   // Internal legs
   while (ct_tmp->Up()) {
@@ -395,55 +424,59 @@ void Cluster_Partons_CKKW::CalculateWeight()
     ct_tmp  = ct_tmp->Up();
     ++si;
     ++m_nlegs;
-    m_last_q.push_back(m_qmax);
+    m_last_q.push_back(std::numeric_limits<double>::max());
     m_last_i.push_back(si);
     ptij = ct_tmp->GetWinner(i,j);
     strong_vertex = ct_down->GetLeg(i).OrderQCD()>0;
-    singlet_clustered = 
-      !(ct_down->GetLeg(i).Point()->fl.Strong() && 
-      ct_tmp->GetLeg(i).Point()->fl.Strong() && 
-      ct_tmp->GetLeg(j).Point()->fl.Strong());
-    if (strong_vertex) {
-      ++m_count_startscale;
-      double asref(m_as_jet);
-      switch (ct_down->GetLeg(i).Type()) {
-      case lf::Triangle:
-      case lf::Box:
-      case lf::C4GS: 
-	msg_Debugging()<<"found higgs vertex\n";
-	static double asmh2((*MODEL::as)(sqr(Flavour(kf::h).Mass())));
-	asref=asmh2;
-	break;
-      default: 
-	break;
+    if (ct_down->GetLeg(i).Point()->t<10) {
+      if (ct_down->GetLeg(i).Point()->fl.Strong())
+	m_weight*=InternalWeight(i<2,ct_down->GetLeg(i),m_last_q[i],
+				 ptij,ct_tmp->GetLeg(i).QMin());
+    }
+    else {
+      msg_Debugging()<<"finishing production amplitude {\n";
+      if (ct_down->GetLeg(i).Point()->fl.Strong()) {
+	msg_Indent();
+	m_weight*=ExternalWeight(i<2,ct_down->GetLeg(i),m_last_q[i],
+				 ct_down->GetLeg(i).QMin());
+	if (strong_vertex) {
+	  m_last_q[i]=ptij;
+	  ptij=ct_tmp->GetLeg(i).QMin();
+	}
+	else {
+	  m_weight*=ExternalWeight(i<2,ct_down->GetLeg(i),ptij,
+				   ct_tmp->GetLeg(i).QMin());
+	  m_last_q[i]=ptij;
+	}
       }
-      ApplyCombinedInternalWeight
-	(i<2,ct_down->GetLeg(i).Point()->fl,m_last_q[i],ptij,asref,
-	 ct_down->GetLeg(i).OrderQCD());
-  }
-    if (strong_vertex || singlet_clustered) StoreOldValues(i,j,si,ptij);
-    if (m_count_startscale==2) OverwriteScales(j);
+      msg_Debugging()<<"}\n";
+    }
+    if (strong_vertex) {
+      double asw(CouplingWeight(i<2,ct_down->GetLeg(i),ptij));
+      m_weight*=asw;
+      m_asweight*=asw;
+      m_scale*=ptij;
+      ++m_hard_nqcd;
+    }
+    StoreOldValues(i,j,si,ptij);
   }
 
   // External legs
   for (int l=0; l<m_nlegs; ++l) {
     if (ct_tmp->GetLeg(l).Point()->fl.Strong()) {
-      if (m_last_q[l]==m_qmax) { 
-	++m_count_startscale; 
-      }
-      if (!ApplyExternalWeight(l<2,ct_tmp->GetLeg(l).Point()->fl,
-			       m_last_q[l])) {
-      }
+      m_weight*=ExternalWeight(l<2,ct_tmp->GetLeg(l),
+			       m_last_q[l],ct_tmp->GetLeg(l).QMin());
     }
-    if (m_count_startscale==2) OverwriteScales(l);
   }
-  msg_Debugging()<<METHOD<<"(..): combine tables {\n"<<*ct_tmp<<"\n}\n";
-
+  msg_Debugging()<<"} -> w = "<<m_weight<<"\n";
+  msg_Debugging()<<"\n"<<*ct_tmp<<"\n";
   m_hard_nqed = m_nstrong-m_hard_nqcd-2;
-  if (m_nstrong-m_hard_nqcd>2) 
-    m_weight *= pow(m_as_amegic/m_as_jet,m_hard_nqed);
-  p_events[m_njet-1]         += 1;
-  p_weight_sum[m_njet-1]     += m_weight;
-  p_weight_sum_sqr[m_njet-1] += sqr(m_weight);
+  m_events[m_njet-1]         += 1;
+  m_weight_sum[m_njet-1]     += m_weight;
+  m_weight_sum_sqr[m_njet-1] += sqr(m_weight);
+  m_asweight_sum[m_njet-1]     += m_asweight;
+  m_asweight_sum_sqr[m_njet-1] += sqr(m_asweight);
+  m_sweight_sum[m_njet-1]     += m_weight/m_asweight;
+  m_sweight_sum_sqr[m_njet-1] += sqr(m_weight/m_asweight);
 }
 

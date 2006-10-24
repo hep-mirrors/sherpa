@@ -20,7 +20,7 @@ XS_Base::XS_Base():
 } 
 
 XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
-		 const int scalescheme,const int kfactorscheme,
+		 const PHASIC::scl::scheme scalescheme,const int kfactorscheme,
 		 BEAM::Beam_Spectra_Handler *const beamhandler,
 		 PDF::ISR_Handler *const isrhandler,
 		 ATOOLS::Selector_Data *const selectordata):
@@ -113,7 +113,7 @@ bool XS_Base::SetColours(const ATOOLS::Vec4D *momenta)
 {
   SetMomenta(momenta);
   SetSTU(momenta);
-  SetScale(momenta[2].PPerp2(),PHASIC::stp::as);  
+  SetScale(momenta[2].PPerp2(),PHASIC::stp::ren);  
   return SetColours(m_s,m_t,m_u);
 }
 

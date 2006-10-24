@@ -4,11 +4,13 @@
 #include "Tools.H"
 #else
 #include "MathTools.H"
-#include "MyStrStream.H"
 #include "Exception.H"
+#include "MyStrStream.H"
 #include "Message.H"
 #endif
+#ifndef USING__double_only
 #include "Vector.H"
+#endif
 
 using namespace ATOOLS;
 
@@ -20,10 +22,12 @@ struct TDouble: public Term {
   TDouble(const double &value): m_value(value) {}
 };// end of struct Double
 
+#ifndef USING__double_only
 struct TVec4D: public Term {
   Vec4D m_value;
   TVec4D(const Vec4D &value): m_value(value) {}
 };// end of struct Vec4D
+#endif
 
 Function::Function(const std::string &tag): 
   m_tag(tag), p_interpreter(NULL) {}
@@ -84,6 +88,7 @@ Term *Number::Evaluate(const std::vector<Term*> &args) const
   return &m_value;
 }
 
+#ifndef USING__double_only
 class Vector: public Function {
 private:
 
@@ -121,6 +126,7 @@ Term *Vector::Evaluate(const std::vector<Term*> &args) const
   else m_value.m_value=m_svalue;
   return &m_value;
 }
+#endif
 
 Operator::~Operator() {}
 
@@ -250,6 +256,7 @@ DEFINE_UNARY_DOUBLE_FUNCTION(Absolute_Value,"abs",dabs)
 DEFINE_UNARY_DOUBLE_FUNCTION(Square,"sqr",sqr)
 DEFINE_UNARY_DOUBLE_FUNCTION(Square_Root,"sqrt",sqrt)
 
+#ifndef USING__double_only
 DEFINE_FUNCTION(Vec4D_Part,"Part")
 {
   if (args.size()!=2) THROW(fatal_error,"Part requires 2 arguments.");
@@ -308,6 +315,7 @@ DEFINE_TWO_VECTOR_OPERATOR(Vec4D_PPerpR,"PPerpR",PPerp)
 DEFINE_TWO_VECTOR_OPERATOR(Vec4D_ThetaR,"ThetaR",Theta)
 DEFINE_TWO_VECTOR_OPERATOR(Vec4D_DEta,"DEta",DEta)
 DEFINE_TWO_VECTOR_OPERATOR(Vec4D_DPhi,"DPhi",DPhi)
+#endif
 
 Interpreter_Function::~Interpreter_Function() 
 {
@@ -352,7 +360,7 @@ DEFINE_INTERPRETER_FUNCTION(Resolve_Bracket)
   }
   std::string left=expr.substr(0,l);
   std::string right=expr.substr(r+1);
-  msg_Tracking()<<"Resolve_Bracket -> '"
+  msg_Debugging()<<"Resolve_Bracket -> '"
 		<<left<<"' '"<<expr.substr(l+1,r-l-1)<<"' '"<<right<<"'\n";
   std::string res=p_interpreter->
     Iterate(left+p_interpreter->
@@ -366,11 +374,14 @@ DEFINE_INTERPRETER_FUNCTION(Extract_Leaf)
   if (expr.find("{")!=0 || expr.find("}")!=expr.length()-1) {
     Node<Function*> *leaf=p_interpreter->Leaf();
     Function *func=NULL;
+#ifndef USING__double_only
     if (expr.find(",")!=std::string::npos)
       func = new Vector("("+expr+")",p_interpreter->TagReplacer());
     else if (expr.find("[")!=std::string::npos)
       func = new Vector(expr,p_interpreter->TagReplacer());
-    else func = new Number(expr,p_interpreter->TagReplacer());
+    else 
+#endif
+      func = new Number(expr,p_interpreter->TagReplacer());
     p_interpreter->AddLeaf(func);
     (*leaf)[0]=func;
     std::string value=expr;
@@ -426,10 +437,10 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
   std::string left=expr.substr(0,pos);
   std::string right=expr.substr(i+1);
 #ifndef USING__Calc_only
-  if (msg.LevelIsTracking()) {
+  if (msg.LevelIsDebugging()) {
     std::string out=args[0];
     for (size_t j=1;j<args.size();++j) out+=","+args[j];
-    msg_Tracking()<<"Interprete_Function -> '"<<left
+    msg_Debugging()<<"Interprete_Function -> '"<<left
 		  <<"' '"<<func->Tag()<<"("<<out
 		  <<")' '"<<right<<"'\n";
   }
@@ -455,7 +466,8 @@ size_t FindBinaryPlus(const std::string &expr,const bool fwd,
   size_t pos(fwd?expr.find("+",cpos):expr.rfind("+",cpos));
   if (pos==std::string::npos || (pos==0 && !fwd)) return std::string::npos;
   if (pos==0) return FindBinaryPlus(expr,fwd,1);
-  if (expr[pos-1]=='e' || expr[pos-1]=='E' ||
+  if (((expr[pos-1]=='e' || expr[pos-1]=='E') && pos>1 &&
+       ((expr[pos-2]>=48 && expr[pos-2]<=57) || expr[pos-2]=='.')) ||
       expr[pos-1]==',' || expr[pos-1]=='(' || expr[pos-1]=='{') 
     return FindBinaryPlus(expr,fwd,fwd?pos+1:pos-1);
   return pos;  
@@ -468,7 +480,8 @@ size_t FindBinaryMinus(const std::string &expr,const bool fwd,
   size_t pos(fwd?expr.find("-",cpos):expr.rfind("-",cpos));
   if (pos==std::string::npos || (pos==0 && !fwd)) return std::string::npos;
   if (pos==0) return FindBinaryMinus(expr,fwd,1);
-  if (expr[pos-1]=='e' || expr[pos-1]=='E' ||
+  if (((expr[pos-1]=='e' || expr[pos-1]=='E') && pos>1 &&
+       ((expr[pos-2]>=48 && expr[pos-2]<=57) || expr[pos-2]=='.')) ||
       expr[pos-1]==',' || expr[pos-1]=='(' || expr[pos-1]=='{') 
     return FindBinaryMinus(expr,fwd,fwd?pos+1:pos-1);
   return pos;  
@@ -549,7 +562,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
   p_interpreter->SetLeaf((*leaf)->back());
   args[1]=p_interpreter->Extractor()->Interprete(args[1]);
   p_interpreter->SetLeaf(leaf);
-  msg_Tracking()<<"Interprete_Binary -> '"
+  msg_Debugging()<<"Interprete_Binary -> '"
 	    <<lrstr<<"' '"<<args[0]<<"' '"<<op->Tag()
 	    <<"' '"<<args[1]<<"' '"<<rrstr<<"'\n";
   return p_interpreter->
@@ -606,7 +619,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
   p_interpreter->SetLeaf((*leaf)->back());
   args[0]=p_interpreter->Extractor()->Interprete(args[0]);
   p_interpreter->SetLeaf(leaf);
-  msg_Tracking()<<"Interprete_Unary -> '"
+  msg_Debugging()<<"Interprete_Unary -> '"
 		<<lrstr<<"' '"<<op->Tag()<<"' '"<<args[0]<<"' '"<<rrstr<<"'\n";
   return p_interpreter->
     Iterate(lrstr+"{"+op->Evaluate(args)+","+
@@ -637,6 +650,8 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   AddOperator(new Binary_Modulus());
   AddOperator(new Binary_Shift_Left());
   AddOperator(new Binary_Shift_Right());
+  AddOperator(new Binary_Logical_And());
+  AddOperator(new Binary_Logical_Or());
   AddOperator(new Unary_Not());
   AddFunction(new Power());
   AddFunction(new Logarithm());
@@ -647,6 +662,7 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   AddFunction(new Square_Root());
   AddFunction(new Minimum());
   AddFunction(new Maximum());
+#ifndef USING__double_only
   AddFunction(new Vec4D_Part());
   AddFunction(new Vec4D_Abs2());
   AddFunction(new Vec4D_PPerp());
@@ -658,6 +674,7 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   AddFunction(new Vec4D_ThetaR());
   AddFunction(new Vec4D_DEta());
   AddFunction(new Vec4D_DPhi());
+#endif
 }
 
 Algebra_Interpreter::~Algebra_Interpreter()
@@ -683,7 +700,7 @@ Algebra_Interpreter::~Algebra_Interpreter()
 
 std::string Algebra_Interpreter::Interprete(const std::string &expr)
 {
-  msg_Tracking()<<"Algebra_Interpreter::Interprete("<<expr<<") {\n";
+  msg_Debugging()<<METHOD<<"("<<expr<<") {\n";
   if (p_root!=NULL) delete p_root;
   p_root=p_leaf=NULL;
   while (m_leafs.size()>0) {
@@ -697,16 +714,19 @@ std::string Algebra_Interpreter::Interprete(const std::string &expr)
   size_t pos=result.find(",");
   if (pos==std::string::npos) {
     p_root = p_leaf = new Node<Function*>(NULL,false);
+#ifndef USING__double_only
     if (result.find(",")!=std::string::npos)
       (*p_leaf)[0] = new Vector("("+result+")",p_replacer);
     else if (expr.find("[")!=std::string::npos)
       (*p_leaf)[0] = new Vector(result,p_replacer);
-    else (*p_leaf)[0] = new Number(result,p_replacer);
-    result=ReplaceTags(result);
-    msg_Tracking()<<"} -> "<<result<<std::endl;
+    else 
+#endif
+      (*p_leaf)[0] = new Number(result,p_replacer);
+    result=p_replacer->ReplaceTags(result);
+    msg_Debugging()<<"} -> "<<result<<std::endl;
     return result;
   }
-  msg_Tracking()<<"} -> "<<result.substr(1,pos-1)<<std::endl;
+  msg_Debugging()<<"} -> "<<result.substr(1,pos-1)<<std::endl;
   p_root = p_leaf;
   return result.substr(1,pos-1);
 }
@@ -782,7 +802,6 @@ void Algebra_Interpreter::SetTags(const String_Map &tags)
 
 std::string Algebra_Interpreter::ReplaceTags(std::string &expr) const
 {
-  msg_Debugging()<<"Algebra_Interpreter::ReplaceTags("<<expr<<")\n";
   size_t pos=std::string::npos;
   for (String_Map::const_reverse_iterator sit=m_tags.rbegin();
        sit!=m_tags.rend();++sit) {
@@ -794,14 +813,15 @@ std::string Algebra_Interpreter::ReplaceTags(std::string &expr) const
 
 Term *Algebra_Interpreter::ReplaceTags(Term *expr) const
 {
-  msg_Debugging()<<"Algebra_Interpreter::ReplaceTags("<<expr->m_tag<<")\n";
   size_t pos=std::string::npos;
   for (String_Map::const_reverse_iterator sit=m_tags.rbegin();
        sit!=m_tags.rend();++sit) {
     if ((pos=expr->m_tag.find(sit->first))!=std::string::npos) {
+#ifndef USING__double_only
       if (sit->second[0]=='(' && sit->second[sit->second.length()-1]==')') 
 	((TVec4D*)expr)->m_value=ToType<Vec4D>(sit->second);      
       else 
+#endif
 	((TDouble*)expr)->m_value=ToType<double>(sit->second);      
       return expr;
     }

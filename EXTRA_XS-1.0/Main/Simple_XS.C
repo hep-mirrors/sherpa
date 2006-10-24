@@ -75,7 +75,10 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   if (model==ATOOLS::NotDefined<ATOOLS::Model_Type::code>()) 
     model=ATOOLS::Model_Type::SM;
   ATOOLS::rpa.gen.SetModelType(model);
-  m_scalescheme=p_dataread->GetValue<int>("SCALE_SCHEME",0);
+  ATOOLS::Data_Read::SetTags(Integrable_Base::ScaleTags());
+  m_scalescheme=(PHASIC::scl::scheme)
+    p_dataread->GetValue<int>("SCALE_SCHEME",0);
+  ATOOLS::Data_Read::ResetTags();
   m_kfactorscheme=p_dataread->GetValue<int>("KFACTOR_SCHEME",0);
   double fac_scale_fac=p_dataread->
     GetValue<double>("FACTORIZATION_SCALE_FACTOR",1.);

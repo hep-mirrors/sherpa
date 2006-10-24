@@ -19,7 +19,7 @@ using namespace ATOOLS;
 
 QCD_Processes::QCD_Processes(PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
 			     ATOOLS::Flavour * _fl,ATOOLS::Selector_Data * _seldata,
-			     int _scalescheme,int _kfactorscheme,bool fillmodes) : 
+			     PHASIC::scl::scheme _scalescheme,int _kfactorscheme,bool fillmodes) : 
   XS_Group(2,2,_fl,_scalescheme,_kfactorscheme,_beam,_isr,_seldata)
 {
   SetFSRInterface(NULL);

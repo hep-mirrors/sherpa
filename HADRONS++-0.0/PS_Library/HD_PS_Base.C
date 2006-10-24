@@ -197,7 +197,7 @@ bool HD_PS_Base::Construct( GeneralModel & _md )
   if (m_file!=string("") && m_read_dcfile) {        // in case there is a DC file => read it !
     msg_Tracking()<<"HD_PS_Base::Construct(...) : read "<<m_path<<m_file<<endl;
     vector<vector<string> > helpsvv;
-    Data_Reader reader = Data_Reader(string("|"),string(";"),string("!"));
+    Data_Reader reader = Data_Reader("|"," ",";","!");
     reader.SetAddCommandLine(false);
     reader.AddComment("#");
     reader.AddComment("//");

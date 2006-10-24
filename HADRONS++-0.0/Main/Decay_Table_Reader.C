@@ -18,7 +18,7 @@ Decay_Table_Reader::Decay_Table_Reader(string path,string file) :
     return;
   }
   msg_Info()<<"New Decay_Table_Reader("<<path+file<<")"<<endl;
-  Data_Reader reader = Data_Reader(string("|"),string(";"),string("!"));
+  Data_Reader reader = Data_Reader("|"," ",";","!");
   reader.SetAddCommandLine(false);
   reader.AddComment("#");
   reader.AddComment("//");

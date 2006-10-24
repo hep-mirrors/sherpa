@@ -200,7 +200,8 @@ void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data &
   
   if (fl==kf::jet) {
     switch(m_mode) {
-    case 2: p_jetalg = new Calorimeter_Cone(fs.pt_min,p_ana);break;
+    case 2: p_jetalg = new 
+	      Calorimeter_Cone(fs.pt_min,fs.eta_min,fs.eta_max);break;
     case 10: p_jetalg = new Midpoint_Cone(p_qualifier,0,fs.f); break;
     case 11: p_jetalg = new Midpoint_Cone(p_qualifier,1,fs.f); break;
     }
@@ -519,6 +520,15 @@ void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
   }
   //  std::sort(pl_out->begin(),pl_out->end(),ATOOLS::Order_PT());
   p_ana->AddParticleList(m_outlistname,pl_out);
+}
+
+void Final_Selector::SetAnalysis(Primitive_Analysis  * ana)
+{
+  p_ana=ana;
+  if (p_jetalg!=NULL) {
+    Calorimeter_Cone *cc(dynamic_cast<Calorimeter_Cone*>(p_jetalg));
+    if (cc!=NULL) cc->SetAnalysis(p_ana);
+  }
 }
 
 

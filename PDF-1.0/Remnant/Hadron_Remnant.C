@@ -241,6 +241,7 @@ bool Hadron_Remnant::DecomposeHadron()
   Flavour    flav = m_constit[(size_t)(ran.Get()*3.)];
   Particle * part = new Particle(-1,flav); 
   part->SetStatus(part_status::active);
+  part->SetFinalMass(flav.PSMass());
   part->SetFlow(COLOR((qri::type)(flav.IsAnti())),Flow::Counter());
   //std::cout<<METHOD<<":"<<flav<<std::endl
   //	   <<"  "<<(*part)<<std::endl;

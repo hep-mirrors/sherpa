@@ -95,8 +95,8 @@ bool XS_f1f1_f1f1::SetColours(double s, double t, double u)
   bool swap  = m_swaped;
   RestoreInOrder();
   (*this)(s,t,u);
-  if (SetColours()) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(t);
-               else m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(u);
+  if (SetColours()) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
+               else m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
   if (swap) SwapInOrder();
   return true;
 }
@@ -213,11 +213,11 @@ bool XS_f1f1b_f1f1b::SetColours(double s, double t, double u)
   RestoreInOrder();
   (*this)(s,t,u);
   if (SetColours()) {
-    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(t);
-    if ((m_anti1&&(!m_anti2)) || ((!m_anti1)&&m_anti2)) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(u);
+    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
+    if ((m_anti1&&(!m_anti2)) || ((!m_anti1)&&m_anti2)) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
   }
   else {
-    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = s;
+    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = s;
   }
   if (swap) SwapInOrder();
   return true;
@@ -365,10 +365,10 @@ bool XS_f1f1b_f2f2b::SetColours(double s, double t, double u)
   RestoreInOrder();
   (*this)(s,t,u);
   if (SetColours()) {
-    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(t);
-    if ((m_anti1&&(!m_anti2)) || ((!m_anti1)&&m_anti2)) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(u);
+    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
+    if ((m_anti1&&(!m_anti2)) || ((!m_anti1)&&m_anti2)) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
   }
-  else m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = s;
+  else m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = s;
   if (swap) SwapInOrder();
   return true;
 }
@@ -522,12 +522,12 @@ bool XS_f1f2_f1f2::SetColours(double s, double t, double u)
   RestoreInOrder();
   (*this)(s,t,u);
   if (SetColours()) {
-    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(t);
-    if (m_rev) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(u);
+    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
+    if (m_rev) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
   }
   else {
-    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(u);
-    if (m_rev) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(t);
+    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
+    if (m_rev) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
   }
   if (swap) SwapInOrder();
   return true;
@@ -689,11 +689,11 @@ bool XS_f1f2b_f1f2b::SetColours(double s, double t, double u)
   RestoreInOrder();
   (*this)(s,t,u);
   if (SetColours()) {
-    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(t);
-    if (m_rev) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(u);
+    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
+    if (m_rev) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
   }
   else {
-    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = s;
+    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = s;
   }
   if (swap) SwapInOrder();
   return true;
@@ -829,8 +829,8 @@ bool XS_f1f2_f3f4::SetColours(double s, double t, double u)
     p_colours[2][m_anti] = p_colours[0][m_anti] = Flow::Counter();
     p_colours[3][m_anti] = p_colours[1][m_anti] = Flow::Counter();
   }
-  if (m_rev) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(u);
-        else m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(t);
+  if (m_rev) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
+        else m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
   if (swap) SwapInOrder();
   return true;
 }
@@ -999,10 +999,10 @@ bool XS_f1f2b_f3f4b::SetColours(double s, double t, double u)
 {
   bool swap  = m_swaped;
   RestoreInOrder();
-  if (m_schannel) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(s);
+  if (m_schannel) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(s);
   else {
-    if (m_rev) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(u);
-          else m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(t);
+    if (m_rev) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
+          else m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
   }
   if (swap) SwapInOrder();
   return true;
