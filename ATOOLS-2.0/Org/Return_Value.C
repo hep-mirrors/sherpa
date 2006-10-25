@@ -13,6 +13,7 @@ Counter_Map ATOOLS::Return_Value::s_retry_method_counter;
 Counter_Map ATOOLS::Return_Value::s_retry_phase_counter;
 Counter_Map ATOOLS::Return_Value::s_new_event_counter;
 Counter_Map ATOOLS::Return_Value::s_retry_event_counter;
+Counter_Map ATOOLS::Return_Value::s_call_counter;
 
 ATOOLS::Return_Value ATOOLS::rvalue;
 
@@ -52,10 +53,12 @@ void Return_Value::PrintSingleStatistics(std::ostream &str,
 {
   if (!map.empty()){
     str<<"  "<<type<<" {"<<endl;
-    for (Counter_Map::const_iterator it=map.begin();it!=map.end();it++)
-      str<<"    From \""<<it->first<<"\": "<<it->second
-	 <<" -> "<<((it->second*1000)/rpa.gen.NumberOfDicedEvents())/10.0
+    for (Counter_Map::const_iterator it=map.begin();it!=map.end();it++) {
+      unsigned long int calls(s_call_counter[it->first]);
+      str<<"    From \""<<it->first<<"\": "<<it->second<<" ("
+	 <<calls<<") -> "<<((it->second*1000)/calls)/10.0
 	 <<" %"<<endl;
+    }
     str<<"  }"<<endl;
   }
 }
@@ -74,38 +77,44 @@ void Return_Value::PrintStatistics(std::ostream &str) const
 }
 
 void Return_Value::IncWarning(std::string name) {
-  if (s_warning_counter.find(name)!=s_warning_counter.end())
-    s_warning_counter.find(name)->second++;
+  Counter_Map::iterator cit(s_warning_counter.find(name));
+  if (cit!=s_warning_counter.end()) cit->second++;
   else s_warning_counter[name] = 1;
 }
 
 void Return_Value::IncError(std::string name) {
-  if (s_error_counter.find(name)!=s_error_counter.end())
-    s_error_counter.find(name)->second++;
+  Counter_Map::iterator cit(s_error_counter.find(name));
+  if (cit!=s_error_counter.end()) cit->second++;
   else s_error_counter[name] = 1;
 }
 
 void Return_Value::IncRetryMethod(std::string name){
-  if (s_retry_method_counter.find(name)!=s_retry_method_counter.end())
-    s_retry_method_counter.find(name)->second++;
+  Counter_Map::iterator cit(s_retry_method_counter.find(name));
+  if (cit!=s_retry_method_counter.end()) cit->second++;
   else s_retry_method_counter[name] = 1;
 }
 
 void Return_Value::IncRetryPhase(std::string name) {
-  if (s_retry_phase_counter.find(name)!=s_retry_phase_counter.end())
-    s_retry_phase_counter.find(name)->second++;
+  Counter_Map::iterator cit(s_retry_phase_counter.find(name));
+  if (cit!=s_retry_phase_counter.end()) cit->second++;
   else s_retry_phase_counter[name] = 1;
 }
 
 void Return_Value::IncNewEvent(std::string name) {
-  if (s_new_event_counter.find(name)!=s_new_event_counter.end())
-    s_new_event_counter.find(name)->second++;
+  Counter_Map::iterator cit(s_new_event_counter.find(name));
+  if (cit!=s_new_event_counter.end()) cit->second++;
   else s_new_event_counter[name] = 1;
 }
 
 void Return_Value::IncRetryEvent(std::string name) {
-  if (s_retry_event_counter.find(name)!=s_retry_event_counter.end())
-    s_retry_event_counter.find(name)->second++;
+  Counter_Map::iterator cit(s_retry_event_counter.find(name));
+  if (cit!=s_retry_event_counter.end()) cit->second++;
   else s_retry_event_counter[name] = 1;
+}
+
+void Return_Value::IncCall(std::string name) {
+  if (s_call_counter.find(name)!=s_call_counter.end())
+    s_call_counter.find(name)->second++;
+  else s_call_counter[name] = 1;
 }
 

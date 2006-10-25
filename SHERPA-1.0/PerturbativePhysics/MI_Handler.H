@@ -29,6 +29,7 @@ namespace SHERPA {
 #ifdef USING__Amisic
     AMISIC::Amisic             *p_amisic;
 #endif
+    Matrix_Element_Handler     *p_hardmehandler, *p_softmehandler;
 
     TypeID      m_type;
     std::string m_name;
@@ -51,8 +52,10 @@ namespace SHERPA {
 
     std::string MIGenerator();
     
-    SHERPA::Matrix_Element_Handler *HardMEHandler();
-    SHERPA::Matrix_Element_Handler *SoftMEHandler();
+    Matrix_Element_Handler *HardMEHandler() const 
+    { return p_hardmehandler; }
+    Matrix_Element_Handler *SoftMEHandler() const 
+    { return p_softmehandler; }
 
     PDF::ISR_Handler *ISRHandler();
 

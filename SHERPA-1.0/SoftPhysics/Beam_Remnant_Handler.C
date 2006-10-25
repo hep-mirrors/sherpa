@@ -64,7 +64,8 @@ FillBunchBlobs(Blob_List *const  bloblist,
     if ((*bit)->Has(blob_status::needs_beams) && 
 	((*bit)->Type()==btp::Beam || (*bit)->Type()==btp::IS_Shower)) {
       (*bit)->UnsetStatus(blob_status::needs_beams);
-      bloblist->push_front(FillBunchBlob((*bit)->Beam(),(*bit)->InParticle(0)));
+      bloblist->push_front
+	(FillBunchBlob((*bit)->Beam(),(*bit)->InParticle(0)));
       if (m_beam>2) {
 	msg.Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
 		   <<"   Too many bunch blobs required, "
@@ -112,7 +113,6 @@ FillBeamBlobs(Blob_List *const bloblist,
 			 <<*p_beamblob[beam]->InParticle(0)<<"\n  from"
 			 <<*isr_init<<"\n  retry event "<<std::endl;
 	  msg_Debugging()<<*bloblist<<std::endl;
-	  Reset(bloblist);
 	  return Return_Value::Retry_Event;
 	}
       }
@@ -121,12 +121,10 @@ FillBeamBlobs(Blob_List *const bloblist,
   for (short unsigned int i=0;i<2;++i) 
     if (p_beamblob[i]!=NULL) bloblist->push_front(p_beamblob[i]);
   if (p_beamblob[0]==NULL || p_beamblob[1]==NULL) {
-    Reset(bloblist);
     return Return_Value::Success;
   }
   for (short unsigned int i=0;i<2;++i) {
     if (!p_beampart[i]->FillBlob(p_beamblob[i],NULL)) {
-      Reset(bloblist); 
       return Return_Value::Retry_Event; 
     }
   }
@@ -137,20 +135,21 @@ FillBeamBlobs(Blob_List *const bloblist,
   }
   
   for (short unsigned int i=0;i<2;++i) {
-    if (!p_beampart[i]->AdjustKinematics() || !p_beampart[i]->AdjustColors()) { 
-      Reset(bloblist); 
+    if (!p_beampart[i]->AdjustKinematics() || 
+	!p_beampart[i]->AdjustColors()) { 
       return Return_Value::Retry_Event; 
     }
   }
   if (bloblist->FourMomentumConservation() && bloblist->ColorConservation()) {
-    for (Blob_List::iterator bit=bloblist->begin();bit!=bloblist->end();++bit) {
-      if ((*bit)->Has(blob_status::internal_flag) && (*bit)->Type()==btp::IS_Shower) { 
+    for (Blob_List::iterator bit=bloblist->begin();
+	 bit!=bloblist->end();++bit) {
+      if ((*bit)->Has(blob_status::internal_flag) && 
+	  (*bit)->Type()==btp::IS_Shower) { 
 	(*bit)->UnsetStatus(blob_status::internal_flag);
       }
     }
     return Return_Value::Success;
   }
-  Reset(bloblist);
   return Return_Value::Retry_Event;
 }
 
@@ -206,28 +205,6 @@ void Beam_Remnant_Handler::InitBeamBlob(const int beam)
   beampart->SetStatus(part_status::decayed);
   beampart->SetFinalMass();
   p_beamblob[beam]->AddToInParticles(beampart);
-}
-
-void Beam_Remnant_Handler::Reset(Blob_List * const bloblist) 
-{
-  while (bloblist->front()==p_beamblob[0] || 
-	 bloblist->front()==p_beamblob[1]) {
-    bloblist->pop_front();
-  }
-  for (short unsigned int beam=0;beam<2;beam++) {
-    if (p_beamblob[beam]) { 
-      delete p_beamblob[beam]; 
-      p_beamblob[beam]=NULL; 
-    }
-  }
-  for (Blob_List::iterator bit=bloblist->begin();
-       bit!=bloblist->end();++bit) {
-    if ((*bit)->Has(blob_status::internal_flag) && 
-	(*bit)->Type()==btp::IS_Shower) { 
-	(*bit)->SetStatus(blob_status::needs_beams);
-	(*bit)->UnsetStatus(blob_status::internal_flag);
-    }
-  }
 }
 
 void Beam_Remnant_Handler::SetScale(const double scale)

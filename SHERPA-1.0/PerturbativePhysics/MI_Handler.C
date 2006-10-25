@@ -1,14 +1,11 @@
 #include "MI_Handler.H"
 #include "Data_Read.H"
 
-#ifndef USING__Sherpa
-#define USING__Sherpa
-#endif
+#include "Matrix_Element_Handler.H"
 
 #ifdef USING__Amisic
 #include "Amisic.H"
 #endif
-
 
 #ifdef PROFILE__all
 #define PROFILE__MI_Handler
@@ -28,6 +25,7 @@ MI_Handler::MI_Handler(std::string path,std::string file,MODEL::Model_Base *mode
 #ifdef USING__Amisic
   p_amisic(NULL),
 #endif
+  p_hardmehandler(NULL), p_softmehandler(NULL),
   m_type(None),
   m_scalescheme(1),
   m_ycut(1.0e-7)
@@ -51,6 +49,12 @@ MI_Handler::MI_Handler(std::string path,std::string file,MODEL::Model_Base *mode
     if (!p_amisic->Initialize()) {
       THROW(fatal_error,"Cannot initialize Amisic.");
     }
+    p_hardmehandler = new Matrix_Element_Handler();
+    p_hardmehandler->SetXS((EXTRAXS::Simple_XS*)p_amisic->HardBase()->XS());
+    p_hardmehandler->SetUseSudakovWeight(p_amisic->HardBase()->JetVeto());
+    p_softmehandler = new Matrix_Element_Handler();
+    p_softmehandler->SetXS((EXTRAXS::Simple_XS*)p_amisic->SoftBase()->XS());
+    p_softmehandler->SetUseSudakovWeight(p_amisic->SoftBase()->JetVeto());
     m_ycut=p_amisic->HardBase()->Stop(0);
     m_ycut=ATOOLS::sqr(m_ycut/ATOOLS::rpa.gen.Ecms());
     m_type=Amisic;
@@ -63,28 +67,8 @@ MI_Handler::~MI_Handler()
 #ifdef USING__Amisic
   if (p_amisic!=NULL) delete p_amisic;
 #endif
-}
-
-Matrix_Element_Handler *MI_Handler::HardMEHandler()
-{
-  switch (m_type) {
-#ifdef USING__Amisic
-  case Amisic: return p_amisic->HardMEHandler();
-#endif
-  default    : break;
-  }
-  return NULL;
-}
-
-Matrix_Element_Handler *MI_Handler::SoftMEHandler()
-{
-  switch (m_type) {
-#ifdef USING__Amisic
-  case Amisic: return p_amisic->SoftMEHandler();
-#endif
-  default    : break;
-  }
-  return NULL;
+  if (p_hardmehandler!=NULL) delete p_hardmehandler;
+  if (p_softmehandler!=NULL) delete p_softmehandler;
 }
 
 bool MI_Handler::GenerateHardProcess(ATOOLS::Blob *blob)

@@ -13,9 +13,6 @@
 #include <map>
 
 namespace EXTRAXS { class XS_Base; }
-#ifdef USING__Sherpa
-namespace SHERPA { class Matrix_Element_Handler; }
-#endif
 
 namespace AMISIC {
 
@@ -34,6 +31,8 @@ namespace AMISIC {
 
     std::string m_name;
     TypeID      m_type;
+    
+    bool m_jetveto;
 
   protected:
 
@@ -45,10 +44,6 @@ namespace AMISIC {
     bool m_dicedparameter, m_dicedprocess, m_filledblob;
 
     ATOOLS::Particle_List m_inparticles, m_outparticles;
-
-#ifdef USING__Sherpa
-    SHERPA::Matrix_Element_Handler *p_mehandler;
-#endif
 
     EXTRAXS::XS_Base *p_xs;
     static MI_Base   *s_hard, *s_soft;
@@ -150,13 +145,14 @@ namespace AMISIC {
     inline void SetStop(const double stop,unsigned int i=0)
     { if (i<m_nparameter) m_stop[i]=stop; }
 
+    inline void SetJetVeto(const bool jv) { m_jetveto=jv; }
+
     inline double Start(unsigned int i=0) const { return m_start[i]; }
     inline double Stop(unsigned int i=0) const  { return m_stop[i];  }
 
-#ifdef USING__Sherpa
-    inline SHERPA::Matrix_Element_Handler *MEHandler() 
-    { return p_mehandler; }
-#endif
+    inline TypeID Type() const { return m_type; }
+
+    inline bool JetVeto() const { return m_jetveto; }
 
     inline EXTRAXS::XS_Base *XS() const { return p_xs; }
 

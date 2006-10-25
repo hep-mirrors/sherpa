@@ -23,8 +23,7 @@ namespace SHERPA {
 
     Matrix_Element_Handler * p_mehandler;
 
-    void CleanUpEvent(ATOOLS::Blob * =NULL);
-    void Reset();
+    void Reset(const bool sameevent=false);
 
   public:
 

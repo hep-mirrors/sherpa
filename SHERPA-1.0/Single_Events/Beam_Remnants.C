@@ -33,6 +33,8 @@ Return_Value::code Beam_Remnants::Treat(ATOOLS::Blob_List *bloblist,double &weig
 	       <<"   Continue and hope for the best."<<endl;
     return Return_Value::Error;
   }
+  Blob *signal(bloblist->FindFirst(btp::Signal_Process));
+  if (signal->Has(blob_status::needs_signal)) return Return_Value::Nothing;
   return p_beamremnanthandler->FillBeamAndBunchBlobs(bloblist);
 }
 

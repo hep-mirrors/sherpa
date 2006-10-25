@@ -712,7 +712,7 @@ int Matrix_Element_Handler::OrderEWeak()
 
 void Matrix_Element_Handler::SetAmegic(AMEGIC::Amegic *amegic)
 {
-  if (p_amegic!=NULL || p_simplexs!=NULL) return;
+  if (p_amegic!=NULL || p_simplexs!=NULL || amegic==NULL) return;
   p_amegic=amegic;
   p_isr=p_amegic->Processes()->ISR();
   m_name=string("Amegic");
@@ -721,7 +721,7 @@ void Matrix_Element_Handler::SetAmegic(AMEGIC::Amegic *amegic)
 
 void Matrix_Element_Handler::SetXS(EXTRAXS::Simple_XS *simplexs)
 {
-  if (p_amegic!=NULL || p_simplexs!=NULL) return;
+  if (p_amegic!=NULL || p_simplexs!=NULL || simplexs==NULL) return;
   p_simplexs=simplexs;
   p_isr=p_simplexs->ISR();
   m_name=string("SimpleXS");

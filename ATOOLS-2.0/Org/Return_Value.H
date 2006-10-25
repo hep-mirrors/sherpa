@@ -16,6 +16,7 @@ namespace ATOOLS {
     static Counter_Map s_retry_phase_counter;
     static Counter_Map s_retry_event_counter;
     static Counter_Map s_new_event_counter;
+    static Counter_Map s_call_counter;
     void PrintSingleStatistics(std::ostream &str,const std::string &type,
 			       const Counter_Map &map) const;
   public:
@@ -28,6 +29,7 @@ namespace ATOOLS {
     void IncRetryPhase(std::string);
     void IncRetryEvent(std::string);
     void IncNewEvent(std::string);
+    void IncCall(std::string);
     enum code {
       Error        = -10,
       Failure      = -1,

@@ -57,7 +57,6 @@ Return_Value::code Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const
   if (!p_bloblist->FourMomentumConservation()) {
     msg.Error()<<"Multiple_Interactions::CheckBlobList(..): "
 	       <<"Retry event "<<rpa.gen.NumberOfDicedEvents()<<std::endl;
-    p_bloblist->Clear();
     return Return_Value::Retry_Event;
   }
   for (Blob_List::const_iterator bit=bloblist->begin();
@@ -73,8 +72,6 @@ Return_Value::code Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const
     p_remnants[i]->QuickClear();
   }
   Blob_List isr=bloblist->Find(btp::IS_Shower);
-  static double ntot=0.0;
-  ++ntot;
   for (Blob_List::reverse_iterator iit=isr.rbegin();
        iit!=isr.rend();++iit) {
     m_emax[(*iit)->Beam()]-=(*iit)->InParticle(0)->Momentum()[0];
@@ -86,24 +83,16 @@ Return_Value::code Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const
 		    <<*(*iit)->InParticle(0)<<std::endl;
       p_bloblist->DeleteConnected(*iit);
       if (bloblist->empty()) {
-	msg.Error()<<METHOD<<"(): Killed signal. Retry event."<<std::endl;
-	Blob *blob = new Blob();
-	blob->SetType(btp::Signal_Process);
-	blob->SetId();
-	blob->SetStatus(blob_status::needs_signal);
-	bloblist->push_back(blob);
+	msg.Error()<<METHOD<<"(): Killed signal process. Sorry ..."<<std::endl;
 	return Return_Value::Retry_Event;
       }
-      static double nrej=0.0;
-      if (10*++nrej>rpa.gen.NumberOfDicedEvents())
-	ATOOLS::msg.Error()<<METHOD<<"(): Shower rejection rate is "
-			   <<nrej/ntot<<"."<<std::endl;
-      return Return_Value::Success;
+      return Return_Value::Retry_Phase;
     } 
   }
   if (m_diced) return Return_Value::Success;
   Blob * signal=bloblist->FindFirst(btp::Hard_Collision);
   if (signal==NULL) signal=bloblist->FindFirst(btp::Signal_Process);
+  if (signal->Has(blob_status::needs_signal)) return Return_Value::Nothing;
   if (!m_diced) {
     m_ptmax=ATOOLS::rpa.gen.Ecms()/2.0;
     if (VetoHardProcess(signal)) {
@@ -260,6 +249,7 @@ Return_Value::code Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,doub
   p_mihandler->ISRHandler()->Reset(0);
   p_mihandler->ISRHandler()->Reset(1);
 #endif
+  if (!MI_Base::StopGeneration()) return Return_Value::Retry_Phase;
   return Return_Value::Nothing;
 }
 

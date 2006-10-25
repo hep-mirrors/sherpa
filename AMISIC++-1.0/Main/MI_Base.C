@@ -8,9 +8,6 @@
 #else 
 #define PROFILE_HERE
 #endif
-#ifdef USING__Sherpa
-#include "Matrix_Element_Handler.H"
-#endif
 
 using namespace AMISIC;
 
@@ -30,9 +27,6 @@ MI_Base::MI_Base(std::string name,TypeID type,unsigned int nparameter,
   m_type(type),
   m_start(NULL), m_stop(NULL), m_last(NULL),
   m_nparameter(nparameter),
-#ifdef USING__Sherpa
-  p_mehandler(NULL),
-#endif
   p_xs(NULL)
 {
   static bool initialized=false;
@@ -223,7 +217,7 @@ bool MI_Base::StopGeneration(TypeID type)
   switch (type) {
   case HardEvent: return s_stophard;
   case SoftEvent: return s_stopsoft;
-  case Unknown  : return s_stophard&&s_stopsoft;
+  case Unknown: return s_stophard&&s_stopsoft;
   }
   return true;
 }
@@ -231,9 +225,14 @@ bool MI_Base::StopGeneration(TypeID type)
 void MI_Base::SetStopGeneration(TypeID type,const bool stop)
 { 
   switch (type) {
-  case HardEvent: s_stophard=stop;
-  case SoftEvent: s_stopsoft=stop;
-  case Unknown  : s_stophard=s_stopsoft=stop;
+  case HardEvent: 
+    s_stophard=stop; 
+    break;
+  case SoftEvent: 
+    s_stopsoft=stop; 
+    break;
+  case Unknown: 
+    s_stophard=s_stopsoft=stop;
   }
 }
 
@@ -251,14 +250,21 @@ void MI_None::Update(const MI_Base *mibase)
 
 bool MI_None::Initialize()
 {
-#ifdef USING__Sherpa
-  p_mehandler = new SHERPA::Matrix_Element_Handler();
-#endif
   return true;
 }
 
 void MI_None::Reset()
 {
+  switch (Type()) {
+  case HardEvent: 
+    s_stophard=true; 
+    break;
+  case SoftEvent: 
+    s_stopsoft=true; 
+    break;
+  case Unknown: 
+    THROW(fatal_error,"No type");
+  }
   return;
 }
 

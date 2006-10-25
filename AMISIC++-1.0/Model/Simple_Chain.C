@@ -360,9 +360,7 @@ bool Simple_Chain::SetUpInterface()
     group->SetFSRMode(2);
     group->CreateFSRChannels();
   }
-  p_mehandler = new SHERPA::Matrix_Element_Handler();
-  p_mehandler->SetXS(p_processes);
-  p_mehandler->SetUseSudakovWeight(m_jetveto);
+  p_xs=p_processes;
   return true;
 }
 
@@ -603,8 +601,10 @@ bool Simple_Chain::Initialize()
       p_profile = Profile_Function_Base::SelectProfile(function,parameters);
     }
   }
-  if (!reader->ReadFromFile(m_jetveto,"JET_VETO")) m_jetveto=1;
+  int jetveto(1);
+  if (!reader->ReadFromFile(jetveto,"JET_VETO")) jetveto=1;
   delete reader;
+  SetJetVeto(jetveto);
   if (!CreateGrid()) {
     CleanUp();
     THROW(critical_error,"Grid creation failed.");
@@ -842,6 +842,7 @@ bool Simple_Chain::DiceOrderingParameter()
   }
   m_last[0]=(*p_total)[(*p_total)
  		       (m_last[0])-log(ran.Get())/m_enhance]; 
+  msg_Debugging()<<METHOD<<"(): new p_T = "<<m_last[0]<<"\n";
   s_cleaned=false;
   if (m_last[0]<=m_stop[0]) { 
     m_dicedparameter=false;
