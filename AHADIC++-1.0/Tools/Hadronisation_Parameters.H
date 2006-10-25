@@ -105,6 +105,7 @@ namespace AHADIC {
     \brief Pointer to the AHADIC::Pair_Popper object. It is also initialised only once, in
     the Hadronisation_Parameters and then made available to the rest of the code through a corresponding
     Get-method.
+  */
   /*!
     \var StringDoubleMap Hadronisation_Parameters::m_parametermap
     \brief A map connecting keyword (wordstrings) with parameters of the model, which in turn are
