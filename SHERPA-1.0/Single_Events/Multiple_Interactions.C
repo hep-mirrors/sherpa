@@ -81,11 +81,9 @@ Return_Value::code Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const
     if (!p_remnants[(*iit)->Beam()]->Extract((*iit)->InParticle(0))) {
       msg_Tracking()<<METHOD<<"(): Cannot extract parton from hadron. \n"
 		    <<*(*iit)->InParticle(0)<<std::endl;
-      p_bloblist->DeleteConnected(*iit);
-      if (bloblist->empty()) {
-	msg.Error()<<METHOD<<"(): Killed signal process. Sorry ..."<<std::endl;
-	return Return_Value::Retry_Event;
-      }
+      if ((*iit)->Type()!=btp::Signal_Process)
+	p_bloblist->DeleteConnected(*iit);
+      else return Return_Value::Retry_Event;
       return Return_Value::Retry_Phase;
     } 
   }
