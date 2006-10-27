@@ -63,7 +63,7 @@ namespace ANALYSIS {
 
   };
 
-  DEFINE_ORDERING_GETTER(PT_Ordering,PT_Ordering_Getter,"PTOrder");
+  DEFINE_ORDERING_GETTER(PT_Ordering,PT_Ordering_Getter,"PTOrder")
     
   PT_Ordering::PT_Ordering(const std::string &inlist,
 			   const std::string &outlist):
@@ -115,7 +115,7 @@ namespace ANALYSIS {
 
   };
 
-  DEFINE_ORDERING_GETTER(ET_Ordering,ET_Ordering_Getter,"ETOrder");
+  DEFINE_ORDERING_GETTER(ET_Ordering,ET_Ordering_Getter,"ETOrder")
     
   ET_Ordering::ET_Ordering(const std::string &inlist,
 			   const std::string &outlist):
