@@ -94,10 +94,10 @@ void Dalitz::Evaluate(const Vec4D &pin,const Vec4D* pout,const double &weight,co
 }
 
 DECLARE_GETTER(Dalitz_Observable_Base_Getter,"Dalitz",
-	       Primitive_Observable_Base,String_Matrix);
+	       Primitive_Observable_Base,Argument_Matrix);
 
 Primitive_Observable_Base *
-Dalitz_Observable_Base_Getter::operator()(const String_Matrix &parameters) const
+Dalitz_Observable_Base_Getter::operator()(const Argument_Matrix &parameters) const
 { 
   if (parameters.size()<1) return NULL;
   if (parameters[0].size()<8) return NULL;

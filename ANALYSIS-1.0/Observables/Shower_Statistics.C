@@ -3,10 +3,10 @@
 using namespace ANALYSIS;
 
 DECLARE_GETTER(Shower_Statistics_Getter,"PSStats",
-	       Primitive_Observable_Base,String_Matrix);
+	       Primitive_Observable_Base,Argument_Matrix);
 
 Primitive_Observable_Base * 
-Shower_Statistics_Getter::operator()(const String_Matrix &parameters) const
+Shower_Statistics_Getter::operator()(const Argument_Matrix &parameters) const
 {
   std::string listname="Analysed";
   if (parameters.size()>0 && parameters[0].size()>0) listname=parameters[0][0];

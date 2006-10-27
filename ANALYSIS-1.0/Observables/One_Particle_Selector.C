@@ -7,7 +7,7 @@ using namespace ANALYSIS;
 
 template <class Class>
 Primitive_Observable_Base *const 
-GetOneParticleSelector(const String_Matrix &parameters) 
+GetOneParticleSelector(const Argument_Matrix &parameters) 
 {				
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
@@ -46,7 +46,7 @@ GetOneParticleSelector(const String_Matrix &parameters)
 
 #define DEFINE_ONE_SELECTOR_GETTER_METHOD(CLASS,NAME)	\
   Primitive_Observable_Base *				\
-  NAME::operator()(const String_Matrix &parameters) const	\
+  NAME::operator()(const Argument_Matrix &parameters) const	\
   { return GetOneParticleSelector<CLASS>(parameters); }
 
 #define DEFINE_ONE_SELECTOR_PRINT_METHOD(NAME)			\
@@ -54,13 +54,13 @@ GetOneParticleSelector(const String_Matrix &parameters)
   { str<<"flav item mode min max inlist outlist"; }
 
 #define DEFINE_ONE_SELECTOR_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,Argument_Matrix);	\
   DEFINE_ONE_SELECTOR_GETTER_METHOD(CLASS,NAME)			\
   DEFINE_ONE_SELECTOR_PRINT_METHOD(NAME)
 
 template <class Class>
 Primitive_Observable_Base *const 
-GetOneParticleDeltaSelector(const String_Matrix &parameters) 
+GetOneParticleDeltaSelector(const Argument_Matrix &parameters) 
 {									
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
@@ -107,7 +107,7 @@ GetOneParticleDeltaSelector(const String_Matrix &parameters)
 
 #define DEFINE_ONE_SELECTOR_DELTA_GETTER_METHOD(CLASS,NAME)		\
   Primitive_Observable_Base *					\
-  NAME::operator()(const String_Matrix &parameters) const		\
+  NAME::operator()(const Argument_Matrix &parameters) const		\
   { return GetOneParticleDeltaSelector<CLASS>(parameters); }
 
 #define DEFINE_ONE_SELECTOR_DELTA_PRINT_METHOD(NAME)		\
@@ -115,7 +115,7 @@ GetOneParticleDeltaSelector(const String_Matrix &parameters)
   { str<<"flav1 item1 flav2 item2 min max inlist reflist outlist"; }
 
 #define DEFINE_ONE_SELECTOR_DELTA_GETTER(CLASS,NAME,TAG)		\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,Argument_Matrix);	\
   DEFINE_ONE_SELECTOR_DELTA_GETTER_METHOD(CLASS,NAME)		\
   DEFINE_ONE_SELECTOR_DELTA_PRINT_METHOD(NAME)
 

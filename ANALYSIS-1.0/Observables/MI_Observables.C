@@ -8,7 +8,7 @@ using namespace ANALYSIS;
 #include <algorithm>
 
 template <class Class>
-Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
+Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters)
 {									
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
@@ -38,7 +38,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
   Primitive_Observable_Base *					        \
-  NAME::operator()(const String_Matrix &parameters) const		\
+  NAME::operator()(const Argument_Matrix &parameters) const		\
   { return GetObservable<CLASS>(parameters); }
 
 #define DEFINE_PRINT_METHOD(NAME)					\
@@ -46,12 +46,12 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
   { str<<"min max bins Lin|LinErr|Log|LogErr [jetlist] [list]"; }
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,Argument_Matrix);	\
   DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME)
 
 template <class Class>
-Primitive_Observable_Base *const GetOffsetObservable(const String_Matrix &parameters)
+Primitive_Observable_Base *const GetOffsetObservable(const Argument_Matrix &parameters)
 {									
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
@@ -86,7 +86,7 @@ Primitive_Observable_Base *const GetOffsetObservable(const String_Matrix &parame
 
 #define DEFINE_OFFSET_GETTER_METHOD(CLASS,NAME)				\
   Primitive_Observable_Base *					        \
-  NAME::operator()(const String_Matrix &parameters) const		\
+  NAME::operator()(const Argument_Matrix &parameters) const		\
   { return GetOffsetObservable<CLASS>(parameters); }
 
 #define DEFINE_OFFSET_PRINT_METHOD(NAME)				\
@@ -94,15 +94,15 @@ Primitive_Observable_Base *const GetOffsetObservable(const String_Matrix &parame
   { str<<"min max bins offset Lin|LinErr|Log|LogErr [jetlist] [list]"; }
 
 #define DEFINE_OFFSET_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,Argument_Matrix);	\
   DEFINE_OFFSET_GETTER_METHOD(CLASS,NAME)				\
   DEFINE_OFFSET_PRINT_METHOD(NAME)
 
 DECLARE_GETTER(MI_Statistics_Getter,"MIStats",
-	       Primitive_Observable_Base,String_Matrix);
+	       Primitive_Observable_Base,Argument_Matrix);
 
 Primitive_Observable_Base * 
-MI_Statistics_Getter::operator()(const String_Matrix &parameters) const
+MI_Statistics_Getter::operator()(const Argument_Matrix &parameters) const
 {
   size_t scales=5;
   std::string listname="Analysed";

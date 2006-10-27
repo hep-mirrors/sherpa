@@ -9,7 +9,7 @@ using namespace ANALYSIS;
 #include <iomanip>
 
 DECLARE_GETTER(Final_Selector_Getter,"Trigger",
- 	       Primitive_Observable_Base,String_Matrix);
+ 	       Primitive_Observable_Base,Argument_Matrix);
 
 void Final_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
 {
@@ -26,7 +26,7 @@ void Final_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) cons
 }
 
 Primitive_Observable_Base * 
-Final_Selector_Getter::operator()(const String_Matrix &parameters) const
+Final_Selector_Getter::operator()(const Argument_Matrix &parameters) const
 {
   Final_Selector_Data data;
   int jetmode=0;
@@ -93,7 +93,7 @@ Final_Selector_Getter::operator()(const String_Matrix &parameters) const
 }
 
 DECLARE_GETTER(Leading_Particle_Getter,"LeadingParticle",
- 	       Primitive_Observable_Base,String_Matrix);
+ 	       Primitive_Observable_Base,Argument_Matrix);
 
 void Leading_Particle_Getter::PrintInfo(std::ostream &str,const size_t width) const
 {
@@ -106,7 +106,7 @@ void Leading_Particle_Getter::PrintInfo(std::ostream &str,const size_t width) co
 }
 
 Primitive_Observable_Base * 
-Leading_Particle_Getter::operator()(const String_Matrix &parameters) const
+Leading_Particle_Getter::operator()(const Argument_Matrix &parameters) const
 {
   std::string inlist("FinalState"), outlist("Analysed");
   int mode(0);

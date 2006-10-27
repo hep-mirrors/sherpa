@@ -5,7 +5,7 @@
 using namespace ANALYSIS;
 
 template <class Class>
-Primitive_Observable_Base *const GetOrdering(const String_Matrix &parameters)
+Primitive_Observable_Base *const GetOrdering(const Argument_Matrix &parameters)
 {									
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
@@ -24,7 +24,7 @@ Primitive_Observable_Base *const GetOrdering(const String_Matrix &parameters)
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
   Primitive_Observable_Base *					\
-  NAME::operator()(const String_Matrix &parameters) const		\
+  NAME::operator()(const Argument_Matrix &parameters) const		\
   { return GetOrdering<CLASS>(parameters); }
 
 #define DEFINE_PRINT_METHOD(NAME)					\
@@ -32,7 +32,7 @@ Primitive_Observable_Base *const GetOrdering(const String_Matrix &parameters)
   { str<<"inlist outlist"; }
 
 #define DEFINE_ORDERING_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,Argument_Matrix);	\
   DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME)
 

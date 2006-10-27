@@ -7,7 +7,7 @@ using namespace ANALYSIS;
 
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE Primitive_Observable_Base
-#define PARAMETER_TYPE String_Matrix
+#define PARAMETER_TYPE Argument_Matrix
 #include "Getter_Function.C"
 
 using namespace ATOOLS;

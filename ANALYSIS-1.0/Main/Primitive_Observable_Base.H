@@ -17,7 +17,7 @@ namespace ANALYSIS {
 
   int HistogramType(const std::string &scale);
   
-  class String_Matrix: public std::vector<std::vector<std::string> > {
+  class Argument_Matrix: public std::vector<std::vector<std::string> > {
   private:
 
     Primitive_Analysis *p_analysis;
@@ -25,21 +25,21 @@ namespace ANALYSIS {
   public:
 
     // constructor
-    inline String_Matrix() {}
-    inline String_Matrix(const std::vector<std::vector<std::string> > &ref):
+    inline Argument_Matrix() {}
+    inline Argument_Matrix(const std::vector<std::vector<std::string> > &ref):
       std::vector<std::vector<std::string> >(ref) {}
 
     // member functions
     inline Primitive_Analysis *const operator()() const { return p_analysis; }
-    inline const String_Matrix &operator()(Primitive_Analysis *const analysis) 
+    inline const Argument_Matrix &operator()(Primitive_Analysis *const analysis) 
     { p_analysis=analysis; return *this; }
     
-  };// end of class String_Matrix
+  };// end of class Argument_Matrix
 
   class Primitive_Observable_Base {  
   public:
 
-    typedef ATOOLS::Getter_Function<Primitive_Observable_Base,String_Matrix> 
+    typedef ATOOLS::Getter_Function<Primitive_Observable_Base,Argument_Matrix> 
     Getter_Function;
 
   protected:

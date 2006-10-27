@@ -7,7 +7,7 @@ using namespace ANALYSIS;
 
 template <class Class>
 Primitive_Observable_Base *const 
-GetOneParticleSelector(const String_Matrix &parameters) 
+GetOneParticleSelector(const Argument_Matrix &parameters) 
 {									
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
@@ -46,7 +46,7 @@ GetOneParticleSelector(const String_Matrix &parameters)
 
 #define DEFINE_ONE_EXTRACTOR_GETTER_METHOD(CLASS,NAME)	\
   Primitive_Observable_Base *				\
-  NAME::operator()(const String_Matrix &parameters) const	\
+  NAME::operator()(const Argument_Matrix &parameters) const	\
   { return GetOneParticleSelector<CLASS>(parameters); }
 
 #define DEFINE_ONE_EXTRACTOR_PRINT_METHOD(NAME)			\
@@ -54,7 +54,7 @@ GetOneParticleSelector(const String_Matrix &parameters)
   { str<<"type flav item min max inlist outlist"; }
 
 #define DEFINE_ONE_EXTRACTOR_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,Argument_Matrix);	\
   DEFINE_ONE_EXTRACTOR_GETTER_METHOD(CLASS,NAME)			\
   DEFINE_ONE_EXTRACTOR_PRINT_METHOD(NAME)
 

@@ -9,7 +9,7 @@ using namespace ANALYSIS;
 
 
 DECLARE_GETTER(Event_Shapes_EE_Getter,"EEShapes",
-	       Primitive_Observable_Base,String_Matrix);
+	       Primitive_Observable_Base,Argument_Matrix);
 
 void Event_Shapes_EE_Getter::PrintInfo(std::ostream &str,const size_t width) const
 { 
@@ -21,7 +21,7 @@ void Event_Shapes_EE_Getter::PrintInfo(std::ostream &str,const size_t width) con
 }
 
 Primitive_Observable_Base * 
-Event_Shapes_EE_Getter::operator()(const String_Matrix &parameters) const
+Event_Shapes_EE_Getter::operator()(const Argument_Matrix &parameters) const
 {
   std::string inlist="FinalState", outlist="EEShapes";
   ATOOLS::Particle_Qualifier_Base *qualifier=NULL;

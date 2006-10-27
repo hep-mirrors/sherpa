@@ -7,7 +7,7 @@
 using namespace ANALYSIS;
 
 DECLARE_GETTER(Particle_Selector_Getter,"PartSel",
- 	       Primitive_Observable_Base,String_Matrix);
+ 	       Primitive_Observable_Base,Argument_Matrix);
 
 void Particle_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
 {
@@ -19,7 +19,7 @@ void Particle_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) c
 }
 
 Primitive_Observable_Base *
-Particle_Selector_Getter::operator()(const String_Matrix &parameters) const
+Particle_Selector_Getter::operator()(const Argument_Matrix &parameters) const
 {
   std::string inlist="FinalState", outlist="Selected", qual("NotLepton");
   for (size_t i=0;i<parameters.size();++i) {

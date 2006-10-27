@@ -7,7 +7,7 @@ using namespace ANALYSIS;
 using namespace ATOOLS;
 
 template <class Class>
-Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
+Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters)
 {									
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
@@ -49,7 +49,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
   Primitive_Observable_Base *					\
-  NAME::operator()(const String_Matrix &parameters) const		\
+  NAME::operator()(const Argument_Matrix &parameters) const		\
   { return GetObservable<CLASS>(parameters); }
 
 #define DEFINE_PRINT_METHOD(NAME)					\
@@ -57,7 +57,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
   { str<<"kf1 kf2 kf3 kf4 min max bins Lin|LinErr|Log|LogErr [list]"; }
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,Argument_Matrix);	\
   DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME)
 
@@ -287,7 +287,7 @@ Primitive_Observable_Base* Two_Partonpair_Theta::Copy() const {
 // ============================================================================
 
 template <class Class>
-Primitive_Observable_Base *const GetObservable2(const String_Matrix &parameters)
+Primitive_Observable_Base *const GetObservable2(const Argument_Matrix &parameters)
 {									
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
@@ -315,7 +315,7 @@ Primitive_Observable_Base *const GetObservable2(const String_Matrix &parameters)
 
 #define DEFINE_GETTER_METHOD2(CLASS,NAME)				\
   Primitive_Observable_Base *					\
-  NAME::operator()(const String_Matrix &parameters) const		\
+  NAME::operator()(const Argument_Matrix &parameters) const		\
   { return GetObservable2<CLASS>(parameters); }
 
 #define DEFINE_PRINT_METHOD2(NAME)					\
@@ -323,7 +323,7 @@ Primitive_Observable_Base *const GetObservable2(const String_Matrix &parameters)
   { str<<"min max bins Lin|LinErr|Log|LogErr [list]"; }
 
 #define DEFINE_OBSERVABLE_GETTER2(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,Argument_Matrix);	\
   DEFINE_GETTER_METHOD2(CLASS,NAME)					\
   DEFINE_PRINT_METHOD2(NAME)
 

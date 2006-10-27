@@ -61,10 +61,10 @@ public:
 };
 
 DECLARE_GETTER(Blob_Selector_Getter,"BlobSel",
-	       Primitive_Observable_Base,String_Matrix);
+	       Primitive_Observable_Base,Argument_Matrix);
 
 Primitive_Observable_Base *
-Blob_Selector_Getter::operator()(const String_Matrix &parameters) const
+Blob_Selector_Getter::operator()(const Argument_Matrix &parameters) const
 { 
   if (parameters.size()<1) return NULL;
   if (parameters[0].size()<2) return NULL;

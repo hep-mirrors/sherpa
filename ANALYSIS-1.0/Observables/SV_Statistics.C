@@ -41,10 +41,10 @@ using namespace ANALYSIS;
 using namespace APACIC;
 
 DECLARE_GETTER(SV_Statistics_Getter,"SVStats",
-	       Primitive_Observable_Base,String_Matrix);
+	       Primitive_Observable_Base,Argument_Matrix);
 
 Primitive_Observable_Base * 
-SV_Statistics_Getter::operator()(const String_Matrix &parameters) const
+SV_Statistics_Getter::operator()(const Argument_Matrix &parameters) const
 {
   if (parameters.size()<1 || parameters[0].size()<1) 
     THROW(fatal_error,"Statistics observable needs arguments.");
