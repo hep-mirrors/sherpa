@@ -604,7 +604,8 @@ bool Initialization_Handler::CalculateTheHardProcesses()
 void Initialization_Handler::SetScaleFactors() 
 {
   if (rpa.gen.Variable("SUDAKOV_WEIGHT","0")!="1") return;
-  Data_Reader reader;
+  Data_Reader reader(" ",";","!","=");
+  reader.AddWordSeparator("\t");
   reader.SetInputPath(m_path+"/");
   reader.SetInputFile(m_showerdat);
   bool changed(false);

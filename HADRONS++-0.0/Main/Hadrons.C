@@ -310,7 +310,8 @@ Return_Value::code Hadrons::PerformDecay( Blob* blob, const Vec4D& labmom )
 void Hadrons::ReadInConstants()
 {
   m_md0.clear();                            // clear model 
-  Data_Reader reader = Data_Reader("|"," ",";","!");
+  Data_Reader reader = Data_Reader(" ",";","!","|");
+  reader.AddWordSeparator("\t");
   reader.SetAddCommandLine(false);
   reader.AddComment("#");
   reader.AddComment("//");
@@ -318,7 +319,6 @@ void Hadrons::ReadInConstants()
   reader.SetInputFile(m_constfile);
 
   vector<vector<string> > constants;
-  reader.SetMatrixType(mtc::transposed);
   if(!reader.MatrixFromFile(constants)) {
     msg.Error()<<"Warning! The file "<<m_path<<m_constfile<<" does not exist"<<endl
              <<"     or has some syntax error."<<endl;
@@ -336,7 +336,8 @@ void Hadrons::ReadInConstants()
  
 void Hadrons::ReadInDecayTables()
 {
-  Data_Reader reader = Data_Reader("->"," ",";","!");
+  Data_Reader reader = Data_Reader(" ",";","!","->");
+  reader.AddWordSeparator("\t");
   reader.SetAddCommandLine(false);
   reader.AddComment("#");
   reader.AddComment("//");
@@ -344,7 +345,6 @@ void Hadrons::ReadInDecayTables()
   reader.SetInputFile(m_file);
 
   vector<vector<string> > Decayers;
-  reader.SetMatrixType(mtc::transposed);
   if(!reader.MatrixFromFile(Decayers)) {
     msg.Error()<<"ERROR in Hadrons::ReadInDecayTables() :\n"
 	       <<"   Read in failure "<<m_path<<m_file<<", will abort."<<endl;

@@ -67,9 +67,9 @@ bool Grid_Creator::ReadInArguments(std::string tempifile,
   if (tempipath!="") SetInputPath(tempipath);
   if (tempifile!="") SetInputFile(tempifile);
   if (InputFile()=="") return false;
-  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader();
+  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader(" ",";","//","=");
+  reader->AddWordSeparator("\t");
   reader->SetInputFile(InputPath()+InputFile());
-  reader->SetVectorType(vtc::horizontal);
   std::vector<std::string> helps;
   if (!reader->VectorFromFile(helps,"X_VARIABLE")) m_gridxvariable="p_\\perp";
   else m_gridxvariable=MakeString(helps);

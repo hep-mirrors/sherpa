@@ -30,10 +30,9 @@ void LesHouches_Interface::Run(std::string _model) {
   msg_Tracking()<<"MSSM spectrum generated according to the SUSY Les Houches Accord! "<<std::endl;
   msg_Tracking()<<"Les Houches input file is: "<<m_dir+m_inputfile<<std::endl;
   
-  p_reader = new ATOOLS::Data_Reader("="," ",";","#");
+  p_reader = new ATOOLS::Data_Reader(" ",";","#","=");
+  p_reader->AddWordSeparator("\t");
   p_reader->SetAddCommandLine(false);
-  p_reader->SetVectorType(vtc::horizontal);
-  p_reader->SetMatrixType(mtc::transposed);
   p_reader->SetInputPath(m_dir);
   p_reader->SetInputFile(m_inputfile);
   if (p_reader->InputPath()=="" || p_reader->InputFile()=="")

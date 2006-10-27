@@ -104,7 +104,8 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   int         nIS,   nFS;
   Flavour   * IS,  * FS, * flavs;
   std::string efunc="1";
-  Data_Reader reader;
+  Data_Reader reader(" ",";","!","=");
+  reader.AddWordSeparator("\t");
   m_setup.clear();
   while(from) {
     getline(from,buf);

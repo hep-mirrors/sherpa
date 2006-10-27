@@ -76,8 +76,8 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   gen.m_timer.Start();
   system("finger `whoami` > sherpa_user_test");
   Data_Reader *reader = new Data_Reader();
+  reader->AddWordSeparator("\t");
   reader->SetInputFile("sherpa_user_test");
-  reader->SetVectorType(vtc::horizontal);
   std::vector<std::string> help;
   if (!reader->VectorFromFile(help,"Name:")) { 
     gen.m_username=std::string("<unknown user>");
@@ -137,9 +137,9 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   gen.m_nevents            = dr.GetValue<long>("EVENTS",100);
   // read only if defined (no error message if not defined)
 
-  Data_Reader dreader;
+  Data_Reader dreader(" ",";","!","=");
+  dreader.AddWordSeparator("\t");
   dreader.SetInputFile(m_path+file);
-  dreader.SetVectorType(vtc::horizontal);
   std::vector<long int> seeds;
   gen.m_seed2 = -1;
   if (dreader.VectorFromFile(seeds,"RANDOM_SEED")) {

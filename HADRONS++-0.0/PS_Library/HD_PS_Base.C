@@ -197,13 +197,13 @@ bool HD_PS_Base::Construct( GeneralModel & _md )
   if (m_file!=string("") && m_read_dcfile) {        // in case there is a DC file => read it !
     msg_Tracking()<<"HD_PS_Base::Construct(...) : read "<<m_path<<m_file<<endl;
     vector<vector<string> > helpsvv;
-    Data_Reader reader = Data_Reader("|"," ",";","!");
+    Data_Reader reader = Data_Reader(" ",";","!","|");
+    reader.AddWordSeparator("\t");
     reader.SetAddCommandLine(false);
     reader.AddComment("#");
     reader.AddComment("//");
     reader.SetInputPath(m_path);
     reader.SetInputFile(m_file);
-    reader.SetMatrixType(mtc::transposed);
     if(!reader.MatrixFromFile(helpsvv)) {
       msg.Error()<<"ERROR in HD_PS_Base::Construct(...) :\n"
          <<"   Read in failure "<<m_path<<m_file<<", will abort."<<endl;

@@ -14,11 +14,14 @@ Data_Writer::Data_Writer():
   SetOutFileMode(fom::permanent);
 }
 
-Data_Writer::Data_Writer(const std::string cut,
-			 const std::string wordsep,
-			 const std::string linesep,
-			 const  std::string comment):
-  Read_Write_Base(0,1,cut,wordsep,linesep,comment) 
+Data_Writer::~Data_Writer() 
+{
+  CloseOutFile(0,true);
+}
+
+Data_Writer::Data_Writer(const std::string &wordsep,const std::string &linesep,
+			 const std::string &comment,const std::string &ignore):
+  Read_Write_Base(0,1,wordsep,linesep,comment,ignore) 
 {
   SetOutFileMode(fom::permanent);
 }

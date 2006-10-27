@@ -8,8 +8,6 @@
 
 namespace ANALYSIS {
   
-  typedef ANALYSIS::String_Matrix String_Matrix;
-
   class Analysis_Handler: public ATOOLS::Terminator_Object, 
 			  public ATOOLS::Tester_Object, 
 			  public ATOOLS::File_IO_Base {

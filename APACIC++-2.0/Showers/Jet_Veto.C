@@ -62,7 +62,7 @@ Jet_Veto::Jet_Veto(ATOOLS::Jet_Finder *const jf,
   p_cluster->Measure().SetJetFinder(p_jf);
   std::string helps;
   Data_Reader reader;
-  if (reader.ReadFromFile(helps,"PRINT_PS_RATES","") && helps.length()>0) {
+  if (reader.ReadFromFile(helps,"PRINT_PS_RATES") && helps.length()>0) {
     m_histos.resize(5);
     for (size_t i(0);i<m_histos.size();++i)
       m_histos[i] = new Histogram(10,1.0e-5,1.0,100);

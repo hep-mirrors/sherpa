@@ -11,6 +11,7 @@ int main(int argc, const char *argv[])
   std::string arguments;
   ATOOLS::msg.SetLevel(15);
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader();
+  reader->AddWordSeparator("\t");
   for (int i=0;i<argc;++i) arguments+=std::string(argv[i])+std::string(" ");
   reader->SetString(arguments);
   std::string inputpath, inputfile, outputfile;
@@ -28,7 +29,8 @@ int main(int argc, const char *argv[])
   }
   std::vector<std::string> options;
   bool debug=false, analyse=false, display=false;
-  if (reader->VectorFromString(options,ATOOLS::nullstring,arguments,reader->VHorizontal)) { 
+  reader->SetString(arguments);
+  if (reader->VectorFromString(options)) { 
     for (std::vector<std::string>::iterator it=options.begin();it!=options.end();++it) {
       if (*it==std::string("-d")) debug=true;
       if (*it==std::string("-a")) analyse=true;

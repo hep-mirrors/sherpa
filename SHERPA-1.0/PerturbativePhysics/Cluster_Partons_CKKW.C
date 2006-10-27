@@ -48,7 +48,7 @@ Cluster_Partons_CKKW(Matrix_Element_Handler * me,ATOOLS::Jet_Finder * jf,
   p_pdf[1]=isr->PDF(1);
   std::string helps;
   Data_Reader reader;
-  if (reader.ReadFromFile(helps,"PRINT_SUDAKOV","") && helps.length()>0) 
+  if (reader.ReadFromFile(helps,"PRINT_SUDAKOV") && helps.length()>0) 
     GenerateTables(helps);
 }
 

@@ -38,74 +38,34 @@ namespace ATOOLS {
       having taken a copy of p_this. Is NULL by default.
     */
 
-    inline void Reset() const
-    {
-      p_this=NULL;
-      p_owner=this;
-      p_copy=NULL;
-    }
+    void SetForward(Type *const ref) const;  
     /*!
-      \fn inline void Reset() const
-      \brief Resets the Smart_Pointer
-    */
-
-    inline void Assign(const Smart_Pointer &ref) const
-    { 
-      p_owner=&ref;
-      p_this=ref.p_this;
-      if ((p_copy=ref.p_copy)!=NULL) p_copy->p_owner=this;
-      ref.p_copy=this; 
-    }
-    /*!
-      \fn void Assign(const Smart_Pointer &ref) const
-      \brief Inserts this into the chain of Smart_Pointers 
-      holding ref.p_this. Sets new links between this, ref
-      and ref.p_copy.
-    */
-
-    inline void Remove() const
-    { 
-      if (p_owner!=this) {
-	if ((p_owner->p_copy=p_copy)!=NULL) p_copy->p_owner=p_owner;
-      }
-      else {
-	if (p_copy!=NULL) p_copy->p_owner=p_copy; 
-	else if (p_this!=NULL) delete p_this; 
-      } 
-      Reset();
-    } 
-    /*!
-      \fn inline void Remove() const
-      \brief Removes this from the chain of Smart_Pointers
-      holding p_this. Sets new links between p_owner and p_copy.
-      Deletes p_this if p_owner is NULL and resets this.
-    */
-
-    void RemoveForward() const;  
-    /*!
-      \fn void RemoveForward() const
-      \brief Removes all linked Smart_Pointers from the chain
-      holding p_this, starting at p_copy.
+      \fn void SetForward(Type *const ref) const
+      \brief Sets p_this of all linked Smart_Pointers to ref.
     */
 
     const Smart_Pointer *FindOwner() const; 
     /*!
       \fn const Smart_Pointer &FindOwner() const
-      \brief Determines the real owner of p_this.
+      \brief Determines the first owner of p_this.
+    */
+    const Smart_Pointer *FindCopy() const; 
+    /*!
+      \fn const Smart_Pointer &FindCopy() const
+      \brief Determines the last copy of p_this.
     */
 
   public:
 
     // constructors
     inline Smart_Pointer(): 
-      p_this(NULL), p_owner(this), p_copy(NULL) { }
+      p_this(NULL), p_owner(NULL), p_copy(NULL) { }
     inline Smart_Pointer(Type *const type): 
-      p_this(type), p_owner(this), p_copy(NULL) { }
-    inline Smart_Pointer(const Smart_Pointer &ref): 
-      p_this(NULL), p_owner(this), p_copy(NULL) { Assign(ref); }
+      p_this(type), p_owner(NULL), p_copy(NULL) { }
+    Smart_Pointer(const Smart_Pointer &ref); 
 
     // destructor
-    inline ~Smart_Pointer() { Remove(); }
+    ~Smart_Pointer();
     /*!
       \fn inline ~Smart_Pointer()
       \brief Removes the Smart_Pointer from its current chain.
@@ -113,18 +73,10 @@ namespace ATOOLS {
     */
 
     // inline functions
-    inline void New() { Remove(); p_this = new Type(); } 
-    /*!
-      \fn inline void New()
-      \brief Removes the Smart_Pointer from its current chain.
-      Deletes p_this if no further Smart_Pointer holds it and
-      creates a new object using the default constructor.
-    */
-    inline void Delete() { FindOwner()->RemoveForward(); } 
+    void Delete() const;
     /*!
       \fn inline void Delete()
-      \brief Removes all Smart_Pointers holding p_this 
-      from the chain. Deletes p_this.
+      \brief Deletes p_this and updates all connected Smart_Pointers.
     */
     inline Type &operator*() const { return *p_this; }
     /*!
@@ -142,30 +94,18 @@ namespace ATOOLS {
       \brief Returns a pointer to p_this.
     */
 
-    inline Type *const operator=(Type *const ref) 
-    { 
-      if (ref==p_this) return p_this;
-      Remove(); 
-      return p_this=ref; 
-    }
+    const Smart_Pointer &operator=(Type *const ref);
     /*!
       \fn inline Type *const operator=(Type *const ref)
-      \brief Removes this from its current chain if ref 
-      is not equal to p_this. 
-      Assigns p_this to ref and returns p_this.
+      \brief If not equal to ref, deletes p_this and sets it to ref.
+      Updates all connected Smart_Pointers.
     */
-    inline Type *const operator=(const Smart_Pointer &ref) 
-    { 
-      if (ref==p_this) return p_this;
-      Remove(); 
-      Assign(ref); 
-      return p_this; 
-    }
+    const Smart_Pointer &operator=(const Smart_Pointer &ref);
     /*!
       \fn inline Type *const operator=(Smart_Pointer &ref) 
-      \brief Removes this from its current chain if ref.p_this 
-      is not equal to p_this. 
-      Assigns this to ref and returns p_this.
+      \brief If not equal to ref.p_this, deletes p_this 
+      and sets it to ref.p_this.
+      Concatenates the two chains of connected Smart_Pointers.
     */
     
     inline bool operator==(const Smart_Pointer &ref) const 
@@ -246,38 +186,83 @@ namespace ATOOLS {
 #define SP(Class_Type)				\
   ATOOLS::Smart_Pointer<Class_Type>
 
+
 #define INSTANTIATE_SMART_POINTER(Class_Type)				\
-  namespace ATOOLS { \
-									\
-    template <> const Smart_Pointer<Class_Type> *			\
-    ATOOLS::Smart_Pointer<Class_Type>::FindOwner() const			\
+    template <> ATOOLS::Smart_Pointer<Class_Type>::              	\
+    Smart_Pointer(const Smart_Pointer &ref):                            \
+      p_this(NULL), p_owner(NULL), p_copy(NULL)                         \
+    {                                                                   \
+      p_owner=&ref;                                                     \
+      p_this=ref.p_this;                                                \
+      if ((p_copy=ref.p_copy)!=NULL) p_copy->p_owner=this;              \
+      ref.p_copy=this;                                                  \
+    }                                                                   \
+    template <> ATOOLS::Smart_Pointer<Class_Type>::                     \
+    ~Smart_Pointer()                                                    \
+    {                                                                   \
+      if (p_owner) {                                                    \
+	if ((p_owner->p_copy=p_copy)!=NULL) p_copy->p_owner=p_owner;    \
+      }                                                                 \
+      else {                                                            \
+	if (p_copy) p_copy->p_owner=NULL;                               \
+	else if (p_this!=NULL) delete p_this;                           \
+      }                                                                 \
+    }                                                                   \
+    template <> const ATOOLS::Smart_Pointer<Class_Type> *		\
+    ATOOLS::Smart_Pointer<Class_Type>::FindOwner() const	        \
     {									\
-      if (p_owner!=this) return p_owner->FindOwner();			\
-				return this;							\
-		}									\
-	\
-    template <> void Smart_Pointer<Class_Type>::			\
-    RemoveForward() const							\
+      if (p_owner) return p_owner->FindOwner();			        \
+      return this;				                        \
+    }							                \
+    template <> const ATOOLS::Smart_Pointer<Class_Type> *		\
+    ATOOLS::Smart_Pointer<Class_Type>::FindCopy() const	       	        \
     {									\
-			if (p_copy!=NULL) p_copy->RemoveForward();				\
-			Remove();								\
-		}									\
-  									\
-    template <> void Smart_Pointer<Class_Type>::			\
-    PrintForward(std::ostream &str,const bool all) const			\
+      if (p_copy) return p_copy->FindCopy();			        \
+      return this;				                        \
+    }							                \
+    template <> void ATOOLS::Smart_Pointer<Class_Type>::		\
+    SetForward(Class_Type *const ref) const				\
     {									\
-			if (all) {								\
-				str<<"("<<this<<")["<<typeid(p_this).name()<<"]: p_this = "	\
-				   <<p_this<<" {\n";						\
-				FindOwner()->PrintForward(str,false);				\
-			  str<<"}";								\
-				return;								\
-			}									\
-			str<<"   ("<<this<<"): { p_owner = "<<p_owner			\
-			   <<", p_copy = "<<p_copy<<" }\n";					\
-		  if (p_copy!=NULL) p_copy->PrintForward(str);			\
-		} \
-	\
-	}
+      if (p_copy!=NULL) p_copy->SetForward(ref);	        	\
+      p_this=ref;             						\
+    }									\
+    template <> void ATOOLS::Smart_Pointer<Class_Type>::Delete() const  \
+    {                                                                   \
+      if (p_this) delete p_this;                                        \
+      FindOwner()->SetForward(NULL);                                    \
+    }                                                                   \
+    template <> const Smart_Pointer<Class_Type> &ATOOLS::               \
+    Smart_Pointer<Class_Type>::operator=(Class_Type *const ref)         \
+    {                                                                   \
+      if (ref==p_this) return *this;                                    \
+      if (p_this) delete p_this;                                        \
+      FindOwner()->SetForward(ref);                                     \
+      return *this;                                                     \
+    }                                                                   \
+    template <> const Smart_Pointer<Class_Type> &ATOOLS::               \
+    Smart_Pointer<Class_Type>::operator=(const Smart_Pointer &ref)      \
+    {                                                                   \
+      if (ref==p_this) return *this;                                    \
+      if (p_this) delete p_this;                                        \
+      const Smart_Pointer *own(FindOwner());                            \
+      (own->p_copy=ref.FindCopy())->p_owner=own;                        \
+      own->SetForward(ref.p_this);                                      \
+      return *this;                                                     \
+    }                                                                   \
+    template <> void ATOOLS::Smart_Pointer<Class_Type>::		\
+    PrintForward(std::ostream &str,const bool all) const		\
+    {									\
+      if (all) {							\
+	str<<"("<<this<<")["<<typeid(p_this).name()<<"]: p_this = "	\
+	   <<p_this<<" {\n";						\
+	FindOwner()->PrintForward(str,false);				\
+        str<<"}";							\
+	return;								\
+      }									\
+      str<<"   ("<<this<<"): { p_owner = "<<p_owner			\
+         <<", p_copy = "<<p_copy<<" }\n";				\
+      if (p_copy!=NULL) p_copy->PrintForward(str);			\
+    }                                                                   \
+
 
 #endif

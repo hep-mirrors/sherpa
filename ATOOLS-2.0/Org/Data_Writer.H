@@ -10,8 +10,11 @@ namespace ATOOLS {
 
     // constructors
     Data_Writer();
-    Data_Writer(const std::string cut,const std::string wordsep,
-		const std::string linesep,const std::string comment);
+    Data_Writer(const std::string &wordsep,const std::string &linesep,
+		const std::string &comment,const std::string &ignore="");
+
+    // destructor
+    ~Data_Writer();
 
     // member functions
     bool WriteComment(std::string comment=nullstring,

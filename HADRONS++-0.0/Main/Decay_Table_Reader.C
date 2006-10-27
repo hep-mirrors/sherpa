@@ -18,13 +18,13 @@ Decay_Table_Reader::Decay_Table_Reader(string path,string file) :
     return;
   }
   msg_Info()<<"New Decay_Table_Reader("<<path+file<<")"<<endl;
-  Data_Reader reader = Data_Reader("|"," ",";","!");
+  Data_Reader reader = Data_Reader(" ",";","!","|");
+  reader.AddWordSeparator("\t");
   reader.SetAddCommandLine(false);
   reader.AddComment("#");
   reader.AddComment("//");
   reader.SetInputPath(path);
   reader.SetInputFile(file);
-  reader.SetMatrixType(mtc::transposed);
   if(!reader.MatrixFromFile(m_helpsvv)) {
     msg.Error()<<"ERROR in Decay_Table_Reader::"
 	       <<"Decay_Table_Reader(string,string) :\n"

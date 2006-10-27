@@ -400,10 +400,10 @@ bool Amisic_Histogram<ArgumentType>::ReadIn(const std::string &filename,
     return false;
   }
   std::string gridxscaling, gridyscaling, gridxvariable, gridyvariable;
-  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("="," ",";","#");
+  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader(" ",";","#","=");
+  reader->AddWordSeparator("\t");
   reader->SetInputFile(filename);
   reader->AddIgnore("!");
-  reader->SetVectorType(ATOOLS::vtc::horizontal);
   if (!reader->ReadFromFile(m_xmin,"x_{min} :")) {
     msg_Tracking()<<"Amisic_Histogram::ReadIn(..): "
 		  <<"No x_{min} information in '"
@@ -448,6 +448,7 @@ bool Amisic_Histogram<ArgumentType>::ReadIn(const std::string &filename,
   reader->SetComment("!");
   reader->SetIgnore(":");
   std::vector<std::vector<double> > data;
+  reader->SetMatrixType(ATOOLS::mtc::normal);
   reader->MatrixFromFile(m_data,datatag);
   delete reader;
   if (m_data.size()<hci::size) {

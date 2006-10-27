@@ -225,12 +225,11 @@ bool Simple_Chain::AddProcess(EXTRAXS::XS_Group *const group,
 bool Simple_Chain::ReadInData()
 {
   PROFILE_HERE;
-  Data_Reader *reader = new Data_Reader("="," ",";","!");
+  Data_Reader *reader = new Data_Reader(" ",";","!","=");
+  reader->AddWordSeparator("\t");
   reader->SetInterprete(true);
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
-  reader->SetMatrixType(mtc::transposed);
-  reader->SetVectorType(vtc::horizontal);
   int regulate=0;
   if (reader->ReadFromFile(regulate,"REGULATE_XS")) {
     m_regulate=regulate;
@@ -266,7 +265,8 @@ bool Simple_Chain::CreateGrid()
   double min=Min(m_stop[0],m_stop[4]);
   p_isr->SetFixedSprimeMin(4.0*min*min);
   p_isr->SetFixedSprimeMax(4.0*m_start[0]*m_start[0]);
-  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("="," ",";","!");
+  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader(" ",";","!","=");
+  reader->AddWordSeparator("\t");
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile(2));
   std::string selectorfile;
@@ -283,7 +283,6 @@ bool Simple_Chain::CreateGrid()
   p_processes->XSSelector()->SetOffShell(p_isr->KMROn());
   reader->SetInputFile(InputFile());
   reader->RereadInFile();
-  reader->SetMatrixType(mtc::transposed);
   reader->AddIgnore("->");
   reader->AddIgnore("to");
   reader->AddIgnore("for");
@@ -298,7 +297,8 @@ bool Simple_Chain::CreateGrid()
       for (unsigned int j=0;j<4;++j) {
 	flavour[j]=Flavour(kf_table.FromString(temp[i][j]));
 	if (flavour[j].Kfcode()==kf::none) {
-	  reader->ReadFromString(current,"",temp[i][j]);
+	  reader->SetString(temp[i][j]);
+	  reader->ReadFromString(current);
 	  flavour[j]=Flavour((kf::code)abs(current));
 	  if (current<0) flavour[j]=flavour[j].Bar();
 	  if (flavour[j].Kfcode()==kf::none) success=false;
@@ -548,11 +548,11 @@ bool Simple_Chain::Initialize()
   if (!rpa.gen.Beam1().IsHadron() ||
       !rpa.gen.Beam2().IsHadron()) return false;
   CleanUp();
-  Data_Reader *reader = new Data_Reader("="," ",";","!");
+  Data_Reader *reader = new Data_Reader(" ",";","!","=");
+  reader->AddWordSeparator("\t");
   reader->SetInterprete(true);
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
-  reader->SetVectorType(vtc::horizontal);
   if (!m_external && p_environment==NULL) {
     std::string file;
     if (!reader->ReadFromFile(file,"ENVIRONMENT")) file="Run.dat";

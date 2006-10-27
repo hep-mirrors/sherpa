@@ -111,10 +111,12 @@ Histogram::Histogram(const std::string & pID)
   std::string dummy;
   getline(ifile,dummy);
   
+  Data_Reader dr(" ",";","!");
+  dr.AddWordSeparator("\t");
   if (dummy!="") { 
-    Data_Reader dr;
     std::vector<std::string> conf;
-    dr.VectorFromString(conf,"",dummy,vtc::horizontal);
+    dr.SetString(dummy);
+    dr.VectorFromString(conf);
     size_t k=0;
 
     if (k>=conf.size()) {
@@ -188,11 +190,11 @@ Histogram::Histogram(const std::string & pID)
 
   std::vector<std::string> data;
   MyStrStream str;
-  Data_Reader dr;
   for (int i=0;i<m_nbin-1;i++) {
     getline(ifile,dummy);
     data.clear();
-    dr.VectorFromString(data,"",dummy,vtc::horizontal);
+    dr.SetString(dummy);
+    dr.VectorFromString(data);
 
     //    ifile>>value;
     m_yvalues[i+1] = Get<double>(data[1]);

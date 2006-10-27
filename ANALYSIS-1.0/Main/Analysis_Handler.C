@@ -39,12 +39,12 @@ void Analysis_Handler::Clean()
   }
 }
 
-String_Matrix
-Analysis_Handler::FindArguments(const String_Matrix &strings,
+ANALYSIS::String_Matrix
+Analysis_Handler::FindArguments(const ANALYSIS::String_Matrix &strings,
 				size_t &starty,size_t &startx)
 {
   size_t j=0, open=0;
-  String_Matrix result;
+  ANALYSIS::String_Matrix result;
   if (strings[starty].size()>startx) j=startx;
   for (size_t i=starty;i<strings.size();++i) {
     result.push_back(std::vector<std::string>(strings[i].size()-j));
@@ -112,9 +112,8 @@ bool Analysis_Handler::ReadIn()
   bool success=false;
   std::vector<std::string> helpsv;
   std::vector<std::vector<std::string> > helpsvv;
-  Data_Reader reader;
-  reader.SetVectorType(vtc::horizontal);
-  reader.SetMatrixType(mtc::transposed);
+  Data_Reader reader(" ",";","!");
+  reader.AddWordSeparator("\t");
   reader.SetInputPath(InputPath());
   reader.SetInputFile(InputFile());
   reader.AddComment("#");
@@ -157,13 +156,13 @@ bool Analysis_Handler::ReadIn()
     if (!reader.ReadFromFile(outpath,"PATH_PIECE")) outpath="";
     m_analyses.back()->SetOutputPath(outpath);
     reader.MatrixFromFile(helpsvv,"");
-    String_Matrix arguments(helpsvv);
+    ANALYSIS::String_Matrix arguments(helpsvv);
     for (size_t k=0;k<helpsvv.size();++k) {
       if (arguments[k].size()>0) {
 	if (arguments[k][0]=="{" || arguments[k][0]=="}") continue;
       }
       size_t col=1;
-      String_Matrix mat=FindArguments(arguments,k,col);
+      ANALYSIS::String_Matrix mat=FindArguments(arguments,k,col);
       ANALYSIS::Primitive_Observable_Base *observable = 
 	Getter_Function::GetObject(arguments[k][0],mat(m_analyses.back()));
       if (observable!=NULL) {
@@ -185,7 +184,7 @@ bool Analysis_Handler::ReadIn()
     if (!trigger) {
       ANALYSIS::Primitive_Observable_Base *observable = 
 	Getter_Function::GetObject("Trigger",
-				   String_Matrix()(m_analyses.back()));
+				   ANALYSIS::String_Matrix()(m_analyses.back()));
       m_analyses.back()->AddObservable(observable);
     }
     msg_Tracking()<<"   }\n";

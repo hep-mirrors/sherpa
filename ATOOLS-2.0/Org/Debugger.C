@@ -45,7 +45,7 @@ void Debugger::SetOutputMode(const unsigned int print)
     return;
   }
   Data_Reader *reader = new Data_Reader();
-  if (!reader->ReadFromFile(s_print,"DEBUGGING_OUTPUT","")) s_print=1;
+  if (!reader->ReadFromFile(s_print,"DEBUGGING_OUTPUT")) s_print=1;
   delete reader;
 }
 
