@@ -5,18 +5,6 @@
 
 namespace HADRONS {
 
-  class Higgs_TauTau_2Pi2Neutrino : public HD_ME_Base {
-      bool m_pseudo;
-    public:
-      Higgs_TauTau_2Pi2Neutrino( int nout, ATOOLS::Flavour *fl );
-      void   operator()(
-                        const ATOOLS::Vec4D  * _p,
-                        ATOOLS::Amplitude_Tensor     * amps,
-                        int                    k0_n
-                       );
-      void   SetModelParameters( GeneralModel _md );
-  };
-
 }
 
 
