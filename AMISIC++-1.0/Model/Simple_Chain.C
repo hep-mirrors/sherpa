@@ -282,10 +282,10 @@ bool Simple_Chain::CreateGrid()
   p_processes->SetKFactorScheme(m_kfactorscheme);
   p_processes->XSSelector()->SetOffShell(p_isr->KMROn());
   reader->SetInputFile(InputFile());
-  reader->RereadInFile();
   reader->AddIgnore("->");
   reader->AddIgnore("to");
   reader->AddIgnore("for");
+  reader->RereadInFile();
   std::vector<std::vector<std::string> > temp;
   reader->MatrixFromFile(temp,"CREATE_GRID");
   bool found=false;
