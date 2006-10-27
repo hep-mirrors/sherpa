@@ -37,7 +37,7 @@ namespace HADRONS {
 
     virtual void   operator()(
         const ATOOLS::Vec4D      * p, 
-        ATOOLS::Amplitude_Tensor * amps,
+        ATOOLS::Spin_Amplitudes  * amps,
         int                        k0_n ) = 0;
     virtual void   AddVector(double,double) {}
     virtual void   SetModelParameters( GeneralModel _md ) {};
@@ -49,7 +49,7 @@ namespace HADRONS {
               std::string _met=std::string(""));
     void   operator()(
                        const ATOOLS::Vec4D  * _p,
-                       ATOOLS::Amplitude_Tensor    * amps,
+                       ATOOLS::Spin_Amplitudes * amps,
                        int                    k0_n );
   }; // end of class Isotropic
   

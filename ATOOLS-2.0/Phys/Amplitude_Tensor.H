@@ -5,21 +5,136 @@
 #include "Particle.H"
 #include "Blob.H"
 #include "Matrix.H"
+#include "Message.H"
 
 namespace ATOOLS
 {
-  class Amplitude_Tensor {
-    std::vector<std::vector<Complex> >  m_amplitudes;
+  bool SortByFirst(const std::pair<int,int> p1, const std::pair<int,int> p2);
+
+  template<class Value>
+  class Spin_Structure : public std::vector<Value> {
+    std::vector<int>    m_spins;
+    
+  protected:
+    size_t GetNumber(const std::vector<int>& spins) const
+    {
+      if(spins.size()!=m_spins.size()) {
+	msg.Error()<<METHOD<<" Error: wrong size of spin std::vector."<<std::endl;
+      }
+      int mult(1);
+      size_t num(0);
+      for(size_t i=0; i<spins.size(); i++) {
+	num += mult * spins[i];
+	mult *= m_spins[i];
+      }
+      if(num>this->size()) {
+	msg.Error()<<METHOD<<" Error: tried to access value out of bounce. "
+	  <<"num="<<num<<" > "<<this->size()<<std::endl;
+      }
+      return num;
+    };
+    
+    size_t GetNumber(std::vector<std::pair<int,int> >& spins) const
+    {
+      sort(spins.begin(),spins.end(),SortByFirst);
+      
+      if(spins.size()!=m_spins.size()) {
+	msg.Error()<<METHOD<<" Error: wrong size of spin std::vector."<<std::endl;
+      }
+      int mult(1);
+      size_t num(0);
+      for(size_t i=0; i<spins.size(); i++) {
+	num += mult * spins[i].second;
+	mult *= m_spins[i];
+      }
+      if(num>this->size()) {
+	msg.Error()<<METHOD<<" Error: tried to access value out of bounce. "
+	  <<"num="<<num<<" > "<<this->size()<<std::endl;
+      }
+      return num;
+    };
+    
+    std::vector<int> GetSpinCombination(size_t number) const
+    {
+      std::vector<int> spins(m_spins.size());
+      for(size_t i=0;i<m_spins.size();i++) {
+	spins[i] = number%m_spins[i];
+	number = (number-spins[i])/m_spins[i];
+      }
+      return spins;
+    };
+
+  public:
+    Spin_Structure(Flavour* flavs, size_t size)
+    {
+      m_spins = std::vector<int>(size);
+
+      size_t n=1;
+      for(size_t i=0;i<size;i++) {
+	m_spins[i] = flavs[i].IntSpin()+1;
+	n*=m_spins[i];
+      }
+      this->resize(n);
+    };
+    
+    Spin_Structure(const Particle_Vector& particles)
+    {
+      m_spins = std::vector<int>(particles.size());
+
+      size_t n=1;
+      for(size_t i=0;i<particles.size();i++) {
+	m_spins[i] = particles[i]->Flav().IntSpin()+1;
+	n*=m_spins[i];
+      }
+      this->resize(n);
+    };
+    
+    ~Spin_Structure() {};
+
+    void    Insert(Value value, std::vector<std::pair<int,int> >& spins)
+    {
+      (*this)[GetNumber(spins)]=value;
+    };
+    
+    void    Insert(Value value, size_t index)
+    {
+      (*this)[index]=value;
+    };
+
+    Value   Get(const std::vector<int>& spins) const
+    {
+      return (*this)[GetNumber(spins)];
+    };
+    
+    Value   Get(size_t index) const
+    {
+      return (*this)[index];
+    };
+
+    void    CreateTrivial(Value value)
+    {
+      size_t n = this->size();
+      this->clear();
+      this->resize(n,value);
+    };
+  };
+
+//   typedef Spin_Structure<Complex> Spin_Amplitudes;
+  class Spin_Amplitudes : public Spin_Structure<Complex> {
+  public:
+    Spin_Amplitudes(Flavour* flavs, size_t size);
+    Spin_Amplitudes(const Particle_Vector& particles);
+    double  SumSquare() const;
+  };
+
+  class Amplitude_Tensor : public Spin_Structure<std::vector<Complex> > {
     Particle_Vector                     m_particles;
     const CMatrix                     * p_colormatrix;
     
-    size_t GetAmplitudeNumber(const std::vector<int>& spins) const;
-    size_t GetAmplitudeNumber(std::vector<std::pair<int,int> >& spins) const;
-    std::vector<int> GetSpinCombination(size_t ampnumber) const;
   public:
     Amplitude_Tensor(Particle_Vector particles);
     ~Amplitude_Tensor();
-
+    
     friend Amplitude_Tensor Contraction(
                                         Particle* part1, Particle* part2,
                                         Amplitude_Tensor* const amps1,
@@ -28,54 +143,38 @@ namespace ATOOLS
 
     void    Contract( Particle* part1, Amplitude_Tensor* const amps, Particle* part2 );
     double  SoftContract( Particle* part1, Amplitude_Tensor* const amps, Particle* part2 );
-
-    void    InsertAmplitude(Complex amp, std::vector<std::pair<int,int> >& spins);
-    void    InsertAmplitude(std::vector<Complex> amp, std::vector<std::pair<int,int> >& spins);
-    
-    void    InsertAmplitude(Complex amp, size_t index);
-    void    InsertAmplitude(std::vector<Complex> amp, size_t index);
-    
-    std::vector<Complex>
-            GetAmplitude(const std::vector<int>& spins) const;
-    std::vector<Complex>
-            GetAmplitude(size_t index) const;
     
     double  SumSquare() const;
-    
-    void    Recreate(Amplitude_Tensor* newamps);
-    void    CreateTrivial();
-    
-    size_t  Size() const;
+
     size_t  ColorSize() const;
     const CMatrix* GetColorMatrix() const;
     void    SetColorMatrix(const CMatrix* colormatrix);
 
     bool    Contains(const Particle* part) const;
-    
+    const Particle_Vector& Particles() const;
+
     friend std::ostream& operator<<( std::ostream&, const Amplitude_Tensor &);
   };
 
   /*! 
-    \class Amplitude_Tensor
-    \brief Storing amplitudes for all spin and color combinations of one process.
+    \class Spin_Structure
+    \brief Storing objects by spin combination.
     
-    This class provides methods to access and manipulate amplitudes, by
-    specifying the corresponding spin combination. For each spin combination it
-    contains a vector of complex numbers, each representing one color
-    combination.
-    It also keeps track of the particles involved with this amplitude, so that
-    you can easily contract two amplitude tensors over the spin index of one
-    particle.
-    To allow for sum-squaring over those amplitudes with the correct color
-    factors, it also contains a color matrix, which should have the same rank
-    as the number of amplitudes per spin combination.
+    This class provides methods to access and manipulate arbitrary objects, by
+    specifying the corresponding spin combination. It inherits from STL vector
+    which contains one 'object' for each spin combination.
   */
 
   /*!
-    \var std::vector<std::vector<Complex> >  Amplitude_Tensor::m_amplitudes
-    \brief storage of complex amplitudes
+    \var std::vector<int> Spin_Structure::m_spins
+    \brief vector containing the number of spin combinations for each particle "node".
+  */
+
+  /*!
+    \var std::vector<Value>
+    \brief storage of objects
     
-    Amplitudes are considered to be ordered as in this example (where part1 has
+    Objects are ordered as in this example (where the node part1 has
     2 spin combinations, part2 has 1, part3 has 3, part4 has 2):
         |  part1 |    part2 |    part3 |    part4 |
       0 |      0 |        0 |        0 |        0 |
@@ -93,6 +192,91 @@ namespace ATOOLS
   */
 
   /*!
+    \fn size_t Spin_Structure::GetNumber(const vector<int>& spins) const
+    \brief Determine number of given combination in the STL vector.
+
+    Here, the spins have to be specified in the same order as in m_spins (i.e.
+    as the flavours or particles in the constructor where specified).
+  */
+
+  /*!
+    \fn size_t Spin_Structure::GetNumber(vector<pair<int,int> >& spins) const
+    \brief Determine number of given combination in the STL vector.
+
+    Here, the spins (second int in pair) can be in arbitrary order, as long as
+    the first int in the pair specifies the number in m_spins it belongs to.
+  */
+
+  /*!
+    \fn std::vector<int> Spin_Structure::GetSpinCombination(size_t number) const
+    \brief Determine spin combination from number of combination in the vector.
+
+    The other way around from the GetNumber methods. Useful to
+    traverse through all spin combinations.
+  */
+
+  /*!
+    \fn Spin_Structure::Spin_Structure(Flavour* flavs, size_t size)
+    \brief Constructor
+  */
+
+  /*!
+    \fn Spin_Structure::Spin_Structure(Particle_Vector particles)
+    \brief Constructor
+
+    Particles' flavours determine the number of spin combinations of each node.
+  */
+
+  /*!
+    \fn Spin_Structure::~Spin_Structure()
+    \brief Destructor
+
+    Doesn't do anything, because there are no pointer members.
+  */
+
+  /*!
+    \fn void Spin_Structure::Insert(Value value, vector<pair<int,int> >& spins)
+    \brief Inserts value at the right position determined by GetNumber.
+  */
+
+  /*!
+    \fn void Spin_Structure::Insert(Complex amp, size_t index)
+    \brief Inserts value at the given position.
+  */
+
+  /*!
+    \fn Value Spin_Structure::Get(const vector<int>& spins) const
+    \brief Retrieves the value from the right position determined by GetNumber.
+  */
+
+  /*!
+    \fn vector<Complex> Spin_Structure::Get(size_t index) const;
+    \brief Retrieves the value from the given position.
+  */
+
+  /*!
+    \fn void Spin_Structure::CreateTrivial(Value value)
+    \brief Inserts the given object for all spin combinations.
+  */
+
+
+  /*! 
+    \class Amplitude_Tensor
+    \brief Storing amplitudes for all spin and color combinations of one process.
+    
+    This class inherits from Spin_Structure to provide methods for accessing
+    and manipulating amplitudes, by specifying the corresponding spin
+    combination. For each spin combination it contains a vector(!) of complex
+    numbers, each representing one color combination.
+    It also keeps track of the particles involved with these amplitudes, so that
+    you can easily contract two amplitude tensors over the spin index of one
+    particle.
+    To allow for sum-squaring over those amplitudes with the correct color
+    factors, it also contains a color matrix, which should have the same rank
+    as the number of amplitudes per spin combination.
+  */
+
+  /*!
     \var Particle_Vector Amplitude_Tensor::m_particles;
     \brief particles which are involved with the amplitude
   */
@@ -101,29 +285,6 @@ namespace ATOOLS
     \var const CMatrix* Amplitude_Tensor::p_colormatrix;
     \brief pointer to the matrix which contains the color factors for
            sum-squaring the amplitude
-  */
-
-  /*!
-    \fn size_t Amplitude_Tensor::GetAmplitudeNumber(const vector<int>& spins) const
-    \brief Determine number of amplitude (in m_amplitudes) of given combination
-
-    Here, the spins have to be specified in the same order as m_particles.
-  */
-
-  /*!
-    \fn size_t Amplitude_Tensor::GetAmplitudeNumber(vector<pair<int,int> >& spins) const
-    \brief Determine number of amplitude (in m_amplitudes) of given combination
-
-    Here, the spins (second int in pair) can be in arbitrary order, as long as
-    the first int in the pair specifies the number in m_particles it belongs to.
-  */
-
-  /*!
-    \fn std::vector<int> Amplitude_Tensor::GetSpinCombination(size_t ampnumber) const
-    \brief Determine spin combination from number of amplitude (in m_amplitudes)
-
-    The other way around from the GetAmplitudeNumber methods. Useful to
-    traverse through all spin combinations.
   */
 
   /*!
@@ -144,54 +305,9 @@ namespace ATOOLS
   */
 
   /*!
-    \fn void Amplitude_Tensor::InsertAmplitude(Complex amp, vector<pair<int,int> >& spins)
-    \brief Inserts amplitude at the right position determined by
-           GetAmplitudeNumber.
-  */
-
-  /*!
-    \fn void Amplitude_Tensor::InsertAmplitude(Complex amp, vector<pair<int,int> >& spins)
-    \brief Inserts an amplitude vector of different color combinations at the
-           right position determined by GetAmplitudeNumber.
-  */
-
-  /*!
-    \fn void Amplitude_Tensor::InsertAmplitude(Complex amp, size_t index)
-    \brief Inserts a single amplitude at the given position.
-  */
-
-  /*!
-    \fn void Amplitude_Tensor::InsertAmplitude(vector<Complex> amp, size_t index)
-    \brief Inserts an amplitude vector of different color combinations at the
-           given position.
-  */
-
-  /*!
-    \fn vector<Complex> Amplitude_Tensor::GetAmplitude(const vector<int>& spins) const
-    \brief Retrieves the amplitude vector of different color combinations from
-           the right position determined by GetAmplitudeNumber.
-  */
-
-  /*!
-    \fn vector<Complex> Amplitude_Tensor::GetAmplitude(size_t index) const;
-    \brief Retrieves the amplitude vector of different color combinations from
-           the given position.
-  */
-
-  /*!
     \fn double Amplitude_Tensor::SumSquare() const
     \brief Calculates the spin sum of all squared amplitudes (or of their summed
            color contraction, if necessary)
-  */
-
-  /*!
-    \fn void Amplitude_Tensor::Recreate(Amplitude_Tensor* newamps)
-    \brief Just a simple way to copy another Amplitude_Tensor into this one.
-  */
-
-  /*!
-    \fn void Amplitude_Tensor::CreateTrivial()
-    \brief Inserts a (1.0,0.0) for all amplitudes.
   */
 
   /*!

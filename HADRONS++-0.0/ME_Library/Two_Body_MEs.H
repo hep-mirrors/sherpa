@@ -13,7 +13,7 @@ namespace HADRONS {
       F_VF( int nout, ATOOLS::Flavour *fl );
       void   operator()( 
           const ATOOLS::Vec4D  * _p,
-          ATOOLS::Amplitude_Tensor     * amps,
+          ATOOLS::Spin_Amplitudes     * amps,
           int                    k0_n);
       void   SetModelParameters( GeneralModel _md );
   };
@@ -26,7 +26,7 @@ namespace HADRONS {
       V_FF( int nout, ATOOLS::Flavour *fl );
       void   operator()(
           const ATOOLS::Vec4D  * _p,
-          ATOOLS::Amplitude_Tensor     * amps,
+          ATOOLS::Spin_Amplitudes     * amps,
           int                    k0_n);
       void   SetModelParameters( GeneralModel _md );
   };
@@ -36,7 +36,7 @@ namespace HADRONS {
       V_PP( int nout, ATOOLS::Flavour *fl );
       void   operator()(
                         const ATOOLS::Vec4D  * _p,
-                        ATOOLS::Amplitude_Tensor     * amps,
+                        ATOOLS::Spin_Amplitudes     * amps,
                         int                    k0_n
                        );
       void   SetModelParameters( GeneralModel _md );
@@ -48,7 +48,7 @@ namespace HADRONS {
       S_FF( int nout, ATOOLS::Flavour *fl );
       void   operator()(
                         const ATOOLS::Vec4D  * _p,
-                        ATOOLS::Amplitude_Tensor     * amps,
+                        ATOOLS::Spin_Amplitudes     * amps,
                         int                    k0_n
                        );
       void   SetModelParameters( GeneralModel _md );

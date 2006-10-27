@@ -708,7 +708,7 @@ void Amplitude_Handler::FillAmplitudes(Amplitude_Tensor *atensor,Helicity* hel,d
   
   for (size_t ihel=0; ihel<hel->MaxHel(); ++ihel) {
     for (size_t i=0;i<graphs.size();i++) amps[i]=graphs[i]->Zvalue(ihel)*sfactor;
-    atensor->InsertAmplitude(amps,ihel);
+    atensor->Insert(amps,ihel);
   }
 }
 

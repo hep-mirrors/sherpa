@@ -317,7 +317,7 @@ void Hadron_Decays::ResetMotherAmplitudes(Blob* blob)
   Blob* motherblob = blob->InParticle(0)->ProductionBlob();
   Blob_Data_Base* scdata = (*motherblob)["amps"];
   if(scdata) {
-    scdata->Get<Amplitude_Tensor*>()->Recreate(p_saved_amplitudes);
+    *(scdata->Get<Amplitude_Tensor*>())=*(p_saved_amplitudes);
   }
 }
 

@@ -35,7 +35,7 @@ void F_VF::SetModelParameters( GeneralModel _md )
  
 void F_VF::operator()( 
     const Vec4D         * _p,
-    Amplitude_Tensor    * amps,
+    Spin_Amplitudes    * amps,
     int                   k0_n )
 {
   XYZFunc F(m_nout,_p,p_flavs,k0_n);
@@ -56,7 +56,7 @@ void F_VF::operator()(
         spins.push_back(make_pair(0,hf1));
         spins.push_back(make_pair(m_fermion,hf2));
         spins.push_back(make_pair(m_boson,hboson));
-        amps->InsertAmplitude(ampl,spins);
+        amps->Insert(ampl,spins);
       }
     }
   }
@@ -89,7 +89,7 @@ void V_FF::SetModelParameters( GeneralModel _md )
 
 void V_FF::operator()(
     const Vec4D         * _p,
-    Amplitude_Tensor    * amps,
+    Spin_Amplitudes    * amps,
     int                   k0_n)
 {
   XYZFunc F(m_nout,_p,p_flavs,k0_n);
@@ -110,7 +110,7 @@ void V_FF::operator()(
         spins.push_back(make_pair(0,hboson));
         spins.push_back(make_pair(m_ferm1,hf1));
         spins.push_back(make_pair(m_ferm2,hf2));
-        amps->InsertAmplitude(ampl,spins);
+        amps->Insert(ampl,spins);
       }
     }
   }
@@ -131,7 +131,7 @@ void V_PP::SetModelParameters( GeneralModel _md )
 
 void V_PP::operator()(
                        const Vec4D         * _p,
-                       Amplitude_Tensor    * amps,
+                       Spin_Amplitudes    * amps,
                        int                   k0_n )
 {
   Vec4D q = _p[1]-_p[2];
@@ -149,7 +149,7 @@ void V_PP::operator()(
     ampl += eps[0]*q;
     ampl += Complex(0.0,1.0)*(eps[1]*q) ;
 
-    amps->InsertAmplitude(ampl,spins);
+    amps->Insert(ampl,spins);
   }
 }
 
@@ -168,7 +168,7 @@ void S_FF::SetModelParameters( GeneralModel _md )
 
 void S_FF::operator()(
                        const Vec4D         * _p,
-                       Amplitude_Tensor    * amps,
+                       Spin_Amplitudes    * amps,
                        int                   k0_n )
 {
   Complex ampl(0.,0.);
@@ -183,7 +183,7 @@ void S_FF::operator()(
       spins.push_back(make_pair(0,0));
       spins.push_back(make_pair(1,htau1));
       spins.push_back(make_pair(2,htau2));
-      amps->InsertAmplitude(ampl,spins);
+      amps->Insert(ampl,spins);
     }
   }
   F.Delete();

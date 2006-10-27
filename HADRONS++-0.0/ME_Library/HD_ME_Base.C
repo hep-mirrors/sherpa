@@ -40,8 +40,8 @@ Isotropic::Isotropic(int _nout,Flavour * _flavs,string _met) :
 
 void Isotropic::operator()(
                    const ATOOLS::Vec4D      * p,
-                   ATOOLS::Amplitude_Tensor * amps,
+                   ATOOLS::Spin_Amplitudes  * amps,
                    int                        k0_n )
 {
-  amps->CreateTrivial();
+  amps->CreateTrivial(Complex(1.0,0.0));
 }

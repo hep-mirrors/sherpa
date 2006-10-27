@@ -26,8 +26,7 @@ namespace HADRONS {
     short                   m_fulldecay;
     bool                    m_createbooklet;
     std::string             m_channelname, m_chnamenumbers;
-    ATOOLS::Particle_Vector m_particles;
-    ATOOLS::Amplitude_Tensor * p_amplitudes;
+    ATOOLS::Spin_Amplitudes * p_amplitudes;
   public: 
     Hadron_Decay_Channel( ATOOLS::Decay_Channel * _dc, std::string _path );
     ~Hadron_Decay_Channel();
@@ -58,6 +57,7 @@ namespace HADRONS {
     double                  MeanLifetime()    { return HBAR_C/p_ps->Result(); } // in [mm]
     double                  InMass()          { return (p_dc->GetDecaying()).Mass(); }
 
+    void CalculateAmplitudes(ATOOLS::Vec4D*,ATOOLS::Spin_Amplitudes*, bool anti);
     void CalculateAmplitudes(ATOOLS::Vec4D*,ATOOLS::Amplitude_Tensor*, bool anti);
     
   }; // end of class

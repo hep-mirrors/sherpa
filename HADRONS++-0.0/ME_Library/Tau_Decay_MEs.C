@@ -43,7 +43,7 @@ void Tau_Lepton::SetModelParameters( GeneralModel _md )
  
 void Tau_Lepton::operator()( 
     const Vec4D         * _p, 
-    Amplitude_Tensor    * amps,
+    ATOOLS::Spin_Amplitudes  * amps,
     int                    k0_n)
 {
   XYZFunc F(m_nout,_p,p_flavs,k0_n);
@@ -60,7 +60,7 @@ void Tau_Lepton::operator()(
           spins.push_back(make_pair(m_nutau,hnutau));
           spins.push_back(make_pair(m_nulep,hnulep));
           spins.push_back(make_pair(m_lep,hlep));
-          amps->InsertAmplitude(amp,spins);
+          amps->Insert(amp,spins);
         }
       }
     }
@@ -100,7 +100,7 @@ void Tau_Pseudo::SetModelParameters( GeneralModel _md )
   
 void Tau_Pseudo::operator()( 
     const Vec4D         * _p, 
-    Amplitude_Tensor    * amps,
+    ATOOLS::Spin_Amplitudes  * amps,
     int                   k0_n )
 {
   XYZFunc F(m_nout,_p,p_flavs,k0_n,m_anti);
@@ -115,7 +115,7 @@ void Tau_Pseudo::operator()(
       spins.push_back(make_pair(0,htau));
       spins.push_back(make_pair(m_nutau,hnutau));
       spins.push_back(make_pair(m_pion,0));
-      amps->InsertAmplitude(ampl,spins);
+      amps->Insert(ampl,spins);
     }
   }
   F.Delete();
@@ -232,7 +232,7 @@ Complex Tau_Two_Pion::FormFactor( double s )
 
 void Tau_Two_Pion::operator()( 
     const Vec4D         * _p, 
-    Amplitude_Tensor    * amps,
+    ATOOLS::Spin_Amplitudes  * amps,
     int                   k0_n)
 {
   XYZFunc F(m_nout,_p,p_flavs,k0_n);
@@ -249,7 +249,7 @@ void Tau_Two_Pion::operator()(
       spins.push_back(make_pair(m_nutau,hnutau));
       spins.push_back(make_pair(m_pion0,0));
       spins.push_back(make_pair(m_pion_ch,0));
-      amps->InsertAmplitude(amp,spins);
+      amps->Insert(amp,spins);
     }
   }
 
@@ -450,7 +450,7 @@ Complex Tau_Pion_Kaon::KS::ScalarFormFactor( double s )
 
 void Tau_Pion_Kaon::operator()( 
     const Vec4D         * _p, 
-    Amplitude_Tensor    * amps,
+    ATOOLS::Spin_Amplitudes  * amps,
     int                   k0_n)
 {
   XYZFunc F(m_nout,_p,p_flavs,k0_n);
@@ -470,7 +470,7 @@ void Tau_Pion_Kaon::operator()(
       spins.push_back(make_pair(m_nutau,hnutau));
       spins.push_back(make_pair(m_pion,0));
       spins.push_back(make_pair(m_kaon,0));
-      amps->InsertAmplitude(amp,spins);
+      amps->Insert(amp,spins);
     }
   }  
   F.Delete();
@@ -1304,7 +1304,7 @@ Complex Tau_Three_Pseudo::FormFactor( int j, double Q2, double s, double t )
 
 void Tau_Three_Pseudo::operator()( 
     const Vec4D         * _p, 
-    Amplitude_Tensor    * amps,
+    ATOOLS::Spin_Amplitudes  * amps,
     int                   k0_n )
 {
   XYZFunc F(m_nout,_p,p_flavs,k0_n);
@@ -1336,7 +1336,7 @@ void Tau_Three_Pseudo::operator()(
       spins.push_back(make_pair(m_pseudo_1,0));
       spins.push_back(make_pair(m_pseudo_2,0));
       spins.push_back(make_pair(m_pseudo_3,0));
-      amps->InsertAmplitude(amp,spins);
+      amps->Insert(amp,spins);
     }
   }
   F.Delete();
@@ -1650,7 +1650,7 @@ Complex Tau_Four_Pion_3::KS::operator()( int number )
 
 void Tau_Four_Pion_3::operator()( 
     const Vec4D         * _p, 
-    Amplitude_Tensor    * amps,
+    ATOOLS::Spin_Amplitudes  * amps,
     int                   k0_n)
 {
   XYZFunc F(m_nout,_p,p_flavs,k0_n);
@@ -1678,7 +1678,7 @@ void Tau_Four_Pion_3::operator()(
       spins.push_back(make_pair(m_pion1,0));
       spins.push_back(make_pair(m_pion2,0));
       spins.push_back(make_pair(m_pion3,0));
-      amps->InsertAmplitude(help*m_global,spins);
+      amps->Insert(help*m_global,spins);
     }
   }
   F.Delete();
@@ -1808,7 +1808,7 @@ Complex Tau_Four_Pion_1::KS::operator()()
 
 void Tau_Four_Pion_1::operator()( 
     const Vec4D         * _p, 
-    Amplitude_Tensor    * amps,
+    ATOOLS::Spin_Amplitudes  * amps,
     int                   k0_n )
 {
   XYZFunc F(m_nout,_p,p_flavs,k0_n);
@@ -1835,7 +1835,7 @@ void Tau_Four_Pion_1::operator()(
       spins.push_back(make_pair(m_pion1,0));
       spins.push_back(make_pair(m_pion2,0));
       spins.push_back(make_pair(m_pion3,0));
-      amps->InsertAmplitude( help*m_global, spins);
+      amps->Insert( help*m_global, spins);
     }
   }
   F.Delete();
@@ -1888,7 +1888,7 @@ void Tau_Eta_Two_Pion::SetModelParameters( GeneralModel _md )
 
 void Tau_Eta_Two_Pion::operator()( 
     const Vec4D         * _p, 
-    Amplitude_Tensor    * amps,
+    ATOOLS::Spin_Amplitudes  * amps,
     int                   k0_n)
 {
   XYZFunc F(m_nout,_p,p_flavs,k0_n);
@@ -1921,7 +1921,7 @@ void Tau_Eta_Two_Pion::operator()(
       spins.push_back(make_pair(m_pion,0));
       spins.push_back(make_pair(m_pion0,0));
       spins.push_back(make_pair(m_eta,0));
-      amps->InsertAmplitude(amp,spins);
+      amps->Insert(amp,spins);
     }
   }
   F.Delete();

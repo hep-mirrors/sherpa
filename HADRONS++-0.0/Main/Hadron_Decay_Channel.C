@@ -20,8 +20,6 @@ Hadron_Decay_Channel::Hadron_Decay_Channel( Decay_Channel * _dc, string _path ) 
   m_name            = p_dc->ProcessName();                      // name of proces
   p_flavours        = new Flavour[m_nin+m_nout];                    
   p_flavours[0]     = p_dc->GetDecaying();                      // decaying particle
-  int counter = ATOOLS::Particle::Counter();
-  m_particles.push_back(new Particle(-1,p_flavours[0]));
   m_channelname     = string("");
   m_chnamenumbers   = string("0");
   m_channelname     = p_flavours[0].IDName() + string(" --> ");
@@ -30,17 +28,12 @@ Hadron_Decay_Channel::Hadron_Decay_Channel( Decay_Channel * _dc, string _path ) 
   char helpch[2];
   for (int i=0;i<p_dc->NumberOfDecayProducts();i++) {           // decay products
     p_flavours[i+1] = p_dc->GetDecayProduct(i);
-    m_particles.push_back(new Particle(-1,p_flavours[i+1]));
     m_channelname  += p_flavours[i+1].IDName() + string(" ");
     sprintf( helpch, "%i", i+1 );
     m_chnamenumbers.append(string(helpch));
     m_chnamenumbers.append( (p_flavours[i+1].IDName()).length(), ' ' );
   }
-  ATOOLS::Particle::ResetCounter(counter);
-  p_amplitudes = new Amplitude_Tensor(m_particles);
-  CMatrix* color_unitmatrix = new CMatrix(1); // will be deleted in destructor
-  (*color_unitmatrix)[0][0] = Complex(1.0,0.0);
-  p_amplitudes->SetColorMatrix(color_unitmatrix);
+  p_amplitudes = new Spin_Amplitudes(p_flavours,m_nin+m_nout);
   HD_ME_Selector mesel;                                         // ME selector
   p_me = mesel.GetME(m_nin,m_nout,p_flavours);                  // get the appropr. ME
   p_me->SetPath( m_path );                                      // set Decaydata path 
@@ -53,11 +46,7 @@ Hadron_Decay_Channel::~Hadron_Decay_Channel()
   if (p_ps) { delete p_ps; p_ps=NULL; }
   if (p_me) { delete p_me; p_me=NULL; }
   if(p_amplitudes) {
-    delete p_amplitudes->GetColorMatrix();
     delete p_amplitudes; p_amplitudes=NULL;
-  }
-  for(size_t i=0;i<m_particles.size();i++) {
-    if(m_particles[i]) { delete m_particles[i]; }
   }
 }
 
@@ -135,12 +124,23 @@ double Hadron_Decay_Channel::Differential( Vec4D * mom, bool anti )
   return value*weight;
 }
 
-void Hadron_Decay_Channel::CalculateAmplitudes( Vec4D * moms, Amplitude_Tensor* amps, bool anti )
+void Hadron_Decay_Channel::CalculateAmplitudes( Vec4D * moms, Spin_Amplitudes* amps, bool anti )
 {
   p_me->SetAnti(anti);
   (*p_me)(  moms,                                               // phase space point
             amps,                                               // ampl. tensor and indices
             1);
+}
+
+void Hadron_Decay_Channel::CalculateAmplitudes( Vec4D * moms, Amplitude_Tensor* amps, bool anti )
+{
+  Spin_Amplitudes* spinamps = new Spin_Amplitudes(amps->Particles());
+  p_me->SetAnti(anti);
+  (*p_me)(  moms,                                               // phase space point
+            spinamps,                                           // ampl. tensor and indices
+            1);
+  for(size_t i=0;i<amps->size();i++) amps->Insert(std::vector<Complex>(1,(*spinamps)[i]),i);
+  delete spinamps;
 }
 
 namespace ATOOLS {

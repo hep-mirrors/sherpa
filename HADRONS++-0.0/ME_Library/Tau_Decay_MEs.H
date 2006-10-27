@@ -22,7 +22,7 @@ namespace HADRONS {
       Tau_Lepton( int nout, ATOOLS::Flavour *fl );
       void   operator()( 
           const ATOOLS::Vec4D  * _p, 
-          ATOOLS::Amplitude_Tensor    * amps,
+          ATOOLS::Spin_Amplitudes  * amps,
           int                    k0_n );
       void   SetModelParameters( GeneralModel _md );
   };
@@ -38,7 +38,7 @@ namespace HADRONS {
       Tau_Pseudo( int nout, ATOOLS::Flavour *fl );
       void   operator()( 
           const ATOOLS::Vec4D  * _p, 
-          ATOOLS::Amplitude_Tensor    * amps,
+          ATOOLS::Spin_Amplitudes  * amps,
           int                    k0_n );
       inline void SetModelParameters( GeneralModel _md );
   };
@@ -63,7 +63,7 @@ namespace HADRONS {
       Tau_Two_Pion( int nout, ATOOLS::Flavour *fl );
       void   operator()( 
           const ATOOLS::Vec4D  * _p, 
-          ATOOLS::Amplitude_Tensor    * amps,
+          ATOOLS::Spin_Amplitudes  * amps,
           int                    k0_n );
       Complex A( double x, double y );
       Complex FormFactor( double s ); 
@@ -140,7 +140,7 @@ namespace HADRONS {
       ~Tau_Pion_Kaon() { if (p_ff!=NULL) delete p_ff; }
       void   operator()( 
           const ATOOLS::Vec4D  * _p, 
-          ATOOLS::Amplitude_Tensor    * amps,
+          ATOOLS::Spin_Amplitudes  * amps,
           int                    k0_n );
       void SetModelParameters( GeneralModel _md );
   };
@@ -294,7 +294,7 @@ namespace HADRONS {
      
       void   operator()( 
           const ATOOLS::Vec4D  * _p, 
-          ATOOLS::Amplitude_Tensor    * amps,
+          ATOOLS::Spin_Amplitudes  * amps,
           int                    k0_n );
       Complex FormFactor( int j, double Q2, double s, double t ); 
       void SetModelParameters( GeneralModel _md );
@@ -377,7 +377,7 @@ namespace HADRONS {
    
     void   operator()( 
         const ATOOLS::Vec4D  * _p, 
-        ATOOLS::Amplitude_Tensor    * amps,
+        ATOOLS::Spin_Amplitudes  * amps,
         int                    k0_n );
     void   SetModelParameters( GeneralModel _md );
 
@@ -443,7 +443,7 @@ namespace HADRONS {
    
     void   operator()( 
         const ATOOLS::Vec4D  * _p, 
-        ATOOLS::Amplitude_Tensor    * amps,
+        ATOOLS::Spin_Amplitudes  * amps,
         int                    k0_n );
     void SetModelParameters( GeneralModel _md );
 
@@ -464,7 +464,7 @@ namespace HADRONS {
      
       void   operator()( 
           const ATOOLS::Vec4D  * _p, 
-          ATOOLS::Amplitude_Tensor    * amps,
+          ATOOLS::Spin_Amplitudes  * amps,
           int                    k0_n );
       void   SetModelParameters( GeneralModel _md );
   };
