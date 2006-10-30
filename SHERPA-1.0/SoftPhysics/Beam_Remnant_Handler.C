@@ -113,6 +113,8 @@ FillBeamBlobs(Blob_List *const bloblist,
 			 <<*p_beamblob[beam]->InParticle(0)<<"\n  from"
 			 <<*isr_init<<"\n  retry event "<<std::endl;
 	  msg_Debugging()<<*bloblist<<std::endl;
+	  for (short unsigned int i(0);i<2;++i) 
+	    bloblist->push_front(p_beamblob[i]);
 	  return Return_Value::Retry_Event;
 	}
       }
