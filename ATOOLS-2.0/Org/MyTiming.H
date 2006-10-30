@@ -2,6 +2,7 @@
 #define MyTiming_H
 #include <sys/times.h>
 #include <time.h>
+#include <string>
 
 #ifndef CLK_TCK
 #define CLK_TCK CLOCKS_PER_SEC
@@ -20,6 +21,7 @@ namespace ATOOLS {
     void PrintTime();
     double SystemTime();
     double UserTime();
+    std::string TimeString(const int format=0);
   };
 
   /*!
