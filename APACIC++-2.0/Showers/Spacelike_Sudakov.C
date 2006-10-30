@@ -128,7 +128,7 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,int & extra_pdf)
     }
   }
   q2pdf*=m_pdf_scale_fac;
-  msg_Debugging()<<METHOD<<"(): pdf  Q = "<<sqrt(q2pdf)<<", x = "<<m_x<<"\n";
+//   msg_Debugging()<<METHOD<<"(): pdf  Q = "<<sqrt(q2pdf)<<", x = "<<m_x<<"\n";
   if (q2pdf<p_pdf->Q2Min()) {
     mo->t    = mo->tout;
     mo->stat = 0;
@@ -214,8 +214,8 @@ bool Spacelike_Sudakov::MassVeto(int extra_pdf)
   }
   q2*=m_pdf_scale_fac;
   if (q2<p_pdf->Q2Min()) return true;
-  msg_Debugging()<<METHOD<<"(): pdfa Q = "<<sqrt(q2)
-		 <<", x = "<<(m_x/m_z)<<"\n";
+//   msg_Debugging()<<METHOD<<"(): pdfa Q = "<<sqrt(q2)
+// 		 <<", x = "<<(m_x/m_z)<<"\n";
   p_pdfa->Calculate(m_x/m_z,q2);
   double test(p_pdfa->GetXPDF(GetFlA()));
   if (IsZero(test)) return true;
