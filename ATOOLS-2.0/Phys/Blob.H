@@ -107,6 +107,8 @@ namespace ATOOLS {
     Vec4D                   m_cms_vec;
     Poincare                m_cms_boost;
     static int              s_totalnumber;
+    bool IsConnectedTo(const btp::code &type,
+		       std::set<const Blob*> &checked) const;
   public:
     Blob(const Vec4D _pos = Vec4D(0.,0.,0.,0.), const int _id=-1);
     Blob(const Blob *);
@@ -145,6 +147,7 @@ namespace ATOOLS {
     static int  Counter()                         { return s_totalnumber; }
     inline static void Reset(const int number=0)  { s_currentnumber = number; }
     inline bool Has(blob_status::code status)     { return (int(status&m_status)>0); }
+    bool IsConnectedTo(const btp::code &type) const;
     void        SetStatus(blob_status::code status=blob_status::inactive) {
       m_status = status;
     }

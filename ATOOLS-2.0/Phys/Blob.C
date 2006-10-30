@@ -520,3 +520,23 @@ void Blob::SwapOutParticles(const size_t i, const size_t j)
 }
 
 
+bool Blob::IsConnectedTo(const btp::code &type,
+			 std::set<const Blob*> &checked) const
+{
+  if (this==NULL || checked.find(this)!=checked.end()) return false;
+  checked.insert(this);
+  if (Type()==type) return true;
+  for (int i(0);i<NOutP();++i) 
+    if (ConstOutParticle(i)->DecayBlob()->IsConnectedTo(type,checked)) 
+      return true;
+  for (int i(0);i<NInP();++i) 
+    if (ConstInParticle(i)->ProductionBlob()->IsConnectedTo(type,checked)) 
+      return true;
+  return false;
+}
+
+bool Blob::IsConnectedTo(const btp::code &type) const
+{
+  std::set<const Blob*> checked;
+  return IsConnectedTo(type,checked);
+}
