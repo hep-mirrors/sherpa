@@ -97,33 +97,27 @@ bool Blob_List::Delete(Blob *blob)
 
 void Blob_List::DeleteConnected(Blob *blob,std::set<Blob*> &deleted)
 {
-  if (deleted.find(blob)!=deleted.end()) return;
+  if (blob==NULL || deleted.find(blob)!=deleted.end()) return;
   deleted.insert(blob);
-  for (int i=blob->NOutP()-1;i>=0;i=Min(blob->NOutP()-1,i-1)) {
-    Blob *dblob=blob->OutParticle(i)->DecayBlob();
-    if (dblob!=NULL) DeleteConnected(dblob,deleted);
-  }
-  for (int i=blob->NInP()-1;i>=0;i=Min(blob->NInP()-1,i-1)) {
-    Blob *pblob=blob->InParticle(i)->ProductionBlob();
-    if (pblob!=NULL) DeleteConnected(pblob,deleted);
-  }
-  delete blob;
-  for (Blob_List::iterator bit=begin();bit!=end();++bit)
-    if (*bit==blob) {
-      erase(bit);
-      break;
-    }
+  Particle_Vector parts(blob->GetInParticles());
+  for (Particle_Vector::iterator pit(parts.begin());pit!=parts.end();++pit) 
+    DeleteConnected((*pit)->ProductionBlob(),deleted);
+  parts=blob->GetOutParticles();
+  for (Particle_Vector::iterator pit(parts.begin());pit!=parts.end();++pit) 
+    DeleteConnected((*pit)->DecayBlob(),deleted);
 }
 
 size_t Blob_List::DeleteConnected(Blob *blob)
 {
-  if (blob==NULL) return 0;
   std::set<Blob*> deleted;
-  for (Blob_List::iterator bit=begin();bit!=end();++bit) 
-    if (*bit==blob) {
-      DeleteConnected(blob,deleted);
-      break;
+  DeleteConnected(blob,deleted);
+  for (Blob_List::iterator bit(begin());bit!=end();++bit) {
+    std::set<Blob*>::const_iterator rit(deleted.find(*bit));
+    if (rit!=deleted.end()) {
+      delete *bit;
+      --(bit=erase(bit));
     }
+  }
   return deleted.size();
 }
 
