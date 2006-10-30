@@ -52,9 +52,9 @@ namespace ATOOLS {
     double            FinalMass() const;
     part_status::code Status() const;
     char              Info() const;
-    const Vec4D&      XProd() const;
+    Vec4D             XProd() const;
     Blob            * ProductionBlob() const;
-    const Vec4D&      XDec() const;
+    Vec4D             XDec() const;
     Blob            * DecayBlob() const;
     double            Time() const ;
     Flavour           Flav() const ;
