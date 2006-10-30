@@ -75,8 +75,8 @@ double MyTiming::UserTime()
 
 std::string MyTiming::TimeString(const int format)
 {
-  time_t time(time(NULL));
-  std::string tstring(ctime(&time));
+  time_t t(time(NULL));
+  std::string tstring(ctime(&t));
   tstring.erase(tstring.length()-1,1);
   for (size_t i(0);i<tstring.length();++i) {
     if ((format&1) && (tstring[i]==' ')) tstring[i]='_';
