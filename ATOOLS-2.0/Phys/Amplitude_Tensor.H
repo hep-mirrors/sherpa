@@ -6,6 +6,7 @@
 #include "Blob.H"
 #include "Matrix.H"
 #include "Message.H"
+#include <algorithm>
 
 namespace ATOOLS
 {

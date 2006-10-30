@@ -6,6 +6,7 @@
 #endif
 
 #include <iostream>
+#include <typeinfo>
 
 namespace ATOOLS {
 

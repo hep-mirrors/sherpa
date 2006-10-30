@@ -5,6 +5,7 @@
 #include "Permutation.H"
 #include "Poincare.H"
 #include "Channel_Elements.H"
+#include <stdio.h>
 
 using namespace PHASIC;
 using namespace ATOOLS;

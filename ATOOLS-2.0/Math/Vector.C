@@ -94,13 +94,13 @@ bool ATOOLS::operator==(const Vec4D& v1, const Vec4D& v2)
 
 bool Vec4D::Nan() const
 {
-  for(short unsigned int i(0);i<4;++i) if (m_x[i]==NAN) return true;
+  for(short unsigned int i(0);i<4;++i) if (!(m_x[i]>=0) && !(m_x[i]<0)) return true;
   return false;
 }
 
 bool Vec3D::Nan() const
 {
-  for(short unsigned int i(1);i<4;++i) if (m_x[i]==NAN) return true;
+  for(short unsigned int i(1);i<4;++i) if (!(m_x[i]>=0) && !(m_x[i]<0)) return true;
   return false;
 }
 

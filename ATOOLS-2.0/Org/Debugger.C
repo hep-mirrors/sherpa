@@ -4,6 +4,7 @@
 
 #include "Data_Reader.H"
 #include "Message.H"
+#include "My_Limits.H"
 
 using namespace ATOOLS;
 

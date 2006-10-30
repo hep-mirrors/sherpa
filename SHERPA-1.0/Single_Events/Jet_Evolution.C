@@ -37,7 +37,7 @@ Jet_Evolution::Jet_Evolution(MEHandlersMap *_mehandlers,Shower_Handler *_showerh
     if (interface!=NULL) m_interfaces.insert(make_pair(meIter->first,interface));
   }
   interface = new HadronDecays_Apacic_Interface(NULL,p_showerhandler);
-  if (interface!=NULL) m_interfaces.insert(make_pair("HadronDecays",interface));
+  if (interface!=NULL) m_interfaces["HadronDecays"]=interface;
 }
 
 Jet_Evolution::~Jet_Evolution() 

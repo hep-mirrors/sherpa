@@ -1,6 +1,7 @@
 #include "Primitive_Observable_Base.H"
 #include "Primitive_Analysis.H"
 #include "MyStrStream.H"
+#include <algorithm>
 
 using namespace ANALYSIS;
 

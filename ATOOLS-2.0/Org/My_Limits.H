@@ -2,7 +2,8 @@
 #define My_Limits_H
 
 #ifdef __GNUC__
-#if __GNUC__ > 2
+#if __GNUC__ < 3
+#else
 #define USE_LIMITS
 #endif
 #endif
