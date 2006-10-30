@@ -386,7 +386,8 @@ bool Read_Write_Base::OpenInFile(const unsigned int i,const bool force)
 		 <<file<<"' -> ("<<&buffer<<")\n";
   My_In_File infile(InFile(i));
   if (force || buffer.empty()) {
-    msg_Debugging()<<METHOD<<"(): ("<<this<<") reads '"<<file<<"'\n";
+    msg_Debugging()<<METHOD<<"(): ("<<this<<") reads '"<<file
+		   <<"', mode = "<<infile.Mode()<<"\n";
     infile.Open();	
     buffer.clear();
     if (*infile) {
@@ -465,11 +466,12 @@ bool Read_Write_Base::OpenInFile(const unsigned int i,const bool force)
 void Read_Write_Base::CloseInFile(const unsigned int i,const bool force)
 { 
   msg_Debugging()<<METHOD<<"(): ("<<this<<") closes file '"
-		 <<InputPath(i)+InputFile(i)<<"'\n";
+		 <<InputPath(i)+InputFile(i)<<"', mode = "
+		 <<InFileMode(i)<<"\n";
   My_In_File infile(InFile(i));
   if (infile()==NULL) return;
-  if (infile.Mode()==fom::permanent && !force) return;
   m_filecontent[i].clear();
+  if (infile.Mode()==fom::permanent && !force) return;
   std::string file(InputPath(i)+InputFile(i));
   msg_Debugging()<<METHOD<<"(): ("<<this<<") clears buffer '"
 		 <<file<<"' -> ("<<&s_buffermap[file]<<")\n";
