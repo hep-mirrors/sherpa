@@ -14,7 +14,8 @@
 #include "Hadron_Decays.H"
 #include "MC_Interface.H"
 #include "Message.H"
-#include "Scaling.H"
+#include "MyStrStream.H"
+#include "Data_Reader.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Sherpa
@@ -75,7 +76,12 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
   }
   else {
     if (p_inithandler->InitializeTheFramework()) {
-      return p_inithandler->CalculateTheHardProcesses();
+      if (!p_inithandler->CalculateTheHardProcesses()) return false;
+      Data_Reader reader(" ",";","!","=");
+      std::string statuspath;
+      if (reader.ReadFromFile(statuspath,"STATUS_PATH")) 
+	return exh->ReadInStatus(statuspath);
+      return true;
     }
   }
   msg.Error()<<"Error in Sherpa::InitializeRun("<<m_path<<")"<<endl
