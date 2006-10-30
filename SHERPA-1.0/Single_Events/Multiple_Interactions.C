@@ -81,7 +81,7 @@ Return_Value::code Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const
     if (!p_remnants[(*iit)->Beam()]->Extract((*iit)->InParticle(0))) {
       msg_Tracking()<<METHOD<<"(): Cannot extract parton from hadron. \n"
 		    <<*(*iit)->InParticle(0)<<std::endl;
-      if ((*iit)->Type()!=btp::Signal_Process)
+      if (!(*iit)->IsConnectedTo(btp::Signal_Process))
 	p_bloblist->DeleteConnected(*iit);
       else return Return_Value::Retry_Event;
       return Return_Value::Retry_Phase;
