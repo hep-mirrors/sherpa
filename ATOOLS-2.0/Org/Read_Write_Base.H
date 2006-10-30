@@ -80,9 +80,9 @@ namespace ATOOLS {
 		size_t &length) const;
 
     std::string  ReplaceTags(std::string &expr) const;    
-    std::string &KillBlanks(std::string buffer) const;
-    std::string &KillComments(std::string& buffer) const;
-    std::string &KillIgnored(std::string& buffer) const;
+    std::string &KillBlanks(std::string &buffer) const;
+    std::string &KillComments(std::string &buffer) const;
+    std::string &KillIgnored(std::string &buffer) const;
 
     inline String_Matrix &FileContent(const size_t i=0)
     { return m_filecontent[i]; }

@@ -279,7 +279,7 @@ std::string Read_Write_Base::ReplaceTags(std::string &expr) const
   return tag;
 }
 
-std::string &Read_Write_Base::KillBlanks(std::string buffer) const
+std::string &Read_Write_Base::KillBlanks(std::string &buffer) const
 {
   if (buffer==nullstring) return buffer;
   bool hit=true;
@@ -348,7 +348,7 @@ void Read_Write_Base::AddFileContent(std::string line,const unsigned int i)
 	else m_filecontent[i].push_back(String_Vector(1,line.substr(0,j)));
 	lastword=true;
       }
-      line=KillBlanks(rem.substr(length));
+      KillBlanks(line=rem.substr(length));
       j=-1;
     }
     else if ((length=IsLineSeparator(rem))>0) {
@@ -357,7 +357,7 @@ void Read_Write_Base::AddFileContent(std::string line,const unsigned int i)
 	else m_filecontent[i].push_back(String_Vector(1,line.substr(0,j)));
       }
       lastword=false;
-      line=KillBlanks(rem.substr(length));
+      KillBlanks(line=rem.substr(length));
       j=-1;
     }
   }
