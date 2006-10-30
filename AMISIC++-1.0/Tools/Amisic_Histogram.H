@@ -47,7 +47,7 @@ namespace AMISIC {
     size_t        m_nbins, m_extradim;
     Argument_Type m_xmin, m_xmax, m_entries;
 
-    Argument_Matrix  m_data;
+    Argument_Matrix  m_data, m_sdata;
     Axis_Type       *p_xaxis, *p_yaxis;
 
     mutable Argument_Vector *p_integral;
@@ -103,6 +103,9 @@ namespace AMISIC {
     const Argument_Type operator[](const Argument_Type x) const;
 
     const Argument_Type DiceX() const;
+
+    void StoreData();
+    void RestoreData();
 
     Argument_Type BinXMin(const size_t i); 
     Argument_Type BinXMax(const size_t i); 

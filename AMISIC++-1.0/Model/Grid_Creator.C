@@ -25,7 +25,7 @@ Grid_Creator::Grid_Creator(Amisic_Histogram_Map *histograms,
   p_processes(processes),
   m_xsextension("_xs.dat"),
   m_mcextension("MC"),
-  m_datatag("[x,w,w2,max,n] = "),
+  m_datatag("[x,w,w2,max,n]"),
   m_events(0)
 {
   if (p_processes==NULL) {
@@ -224,15 +224,15 @@ bool Grid_Creator::CreateInitialGrid()
   return true;
 }
 
-bool Grid_Creator::WriteOutGrid(std::vector<std::string> addcomments) 
+bool Grid_Creator::WriteOutGrid(std::vector<std::string> addcomments,
+				const std::string &path) 
 {
   PROFILE_HERE;
   bool success=true;
   for (Amisic_Histogram_Map::iterator hit=p_histograms->begin();
        hit!=p_histograms->end();++hit) {
-    hit->second->Finish();
-    if (!hit->second->WriteOut(OutputPath()+hit->first
-			       +m_xsextension,m_datatag,
+    if (!hit->second->WriteOut((path!=""?path:OutputPath())
+			       +hit->first+m_xsextension,m_datatag,
 			       addcomments)) success=false;
   }
   return success;

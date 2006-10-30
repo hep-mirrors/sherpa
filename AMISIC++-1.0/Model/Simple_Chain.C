@@ -83,6 +83,7 @@ void Simple_Chain::Init()
   m_isrspkey.Assign("s' isr mi",3,0,PHASIC::Phase_Space_Handler::GetInfo());
   m_isrykey.Assign("y isr mi",2,0,PHASIC::Phase_Space_Handler::GetInfo());
   p_remnants[1]=p_remnants[0]=NULL;
+  p_gridcreator=NULL;
 }
 
 Simple_Chain::~Simple_Chain()
@@ -92,7 +93,14 @@ Simple_Chain::~Simple_Chain()
 
 void Simple_Chain::CleanUp() 
 {
-  if (p_fsrinterface!=NULL) delete p_fsrinterface;
+  if (p_gridcreator!=NULL) {
+    delete p_gridcreator;
+    p_gridcreator=NULL;
+  }
+  if (p_fsrinterface!=NULL) {
+    delete p_fsrinterface;
+    p_fsrinterface=NULL;
+  }
   //if (p_processes!=NULL)    delete p_processes;
   if (!m_external) {
     if (p_environment!=NULL) delete p_environment;
@@ -101,13 +109,22 @@ void Simple_Chain::CleanUp()
     p_beam=NULL;
     p_isr=NULL;
   }
-  if (p_differential!=NULL) delete p_differential;
-  if (p_total!=NULL) delete p_total;
+  if (p_differential!=NULL) {
+    delete p_differential;
+    p_differential=NULL;
+  }
+  if (p_total!=NULL) {
+    delete p_total;
+    p_total=NULL;
+  }
   while (m_differentials.size()>0) {
     delete m_differentials.begin()->second;
     m_differentials.erase(m_differentials.begin());
   }
-  if (p_profile!=NULL) delete p_profile;
+  if (p_profile!=NULL) {
+    delete p_profile;
+    p_profile=NULL;
+  }
 }
 
 bool Simple_Chain::GeneratePathName()
@@ -135,7 +152,8 @@ bool Simple_Chain::GeneratePathName()
 		     (p_model->GetScalarFunction("alpha_S"))->Order())+
     std::string("_")+ToString(m_scalescheme)+
     std::string("_")+ToString(m_kfactorscheme)+std::string("/");
-  SetOutputPath(OutputPath()+outputpath);
+  SetOutputPath(OutputPath()+m_pathextra+outputpath);
+  m_pathextra=outputpath;
   return true;
 }
 
@@ -252,6 +270,7 @@ bool Simple_Chain::ReadInData()
     m_kfactorscheme=1;
   if (!reader->ReadFromFile(m_nflavour,"N_FLAVOUR")) m_nflavour=5;
   if (!reader->ReadFromFile(m_error,"PS_ERROR")) m_error=1.e-2;
+  if (!reader->ReadFromFile(m_pathextra,"PATH_EXTRA")) m_pathextra="";
   GeneratePathName();
   delete reader;
   return true;
@@ -285,7 +304,7 @@ bool Simple_Chain::CreateGrid()
   reader->AddIgnore("->");
   reader->AddIgnore("to");
   reader->AddIgnore("for");
-  reader->RereadInFile();
+  reader->RescanInFile();
   std::vector<std::vector<std::string> > temp;
   reader->MatrixFromFile(temp,"CREATE_GRID");
   bool found=false;
@@ -335,12 +354,10 @@ bool Simple_Chain::CreateGrid()
 		    <<"Created output directory "
 		    <<OutputPath()<<"."<<std::endl;
     }
-    exh->AddTerminatorObject(this);
     p_gridcreator->CreateGrid();
-    exh->RemoveTerminatorObject(this);
   }
-  delete p_gridcreator;
   PHASIC::Vegas::SetOnExternal(vegas);
+  exh->AddTerminatorObject(this);
   return true;
 }
 
@@ -857,6 +874,8 @@ bool Simple_Chain::DiceOrderingParameter()
 void Simple_Chain::Reset()
 {
   for (unsigned int i=0;i<4;++i) m_last[i]=m_start[i];
+  for (Amisic_Histogram_Map::const_iterator hit(m_differentials.begin());
+       hit!=m_differentials.end();++hit) hit->second->StoreData();
 }
 
 void Simple_Chain::Update(const MI_Base *mibase)
@@ -864,9 +883,26 @@ void Simple_Chain::Update(const MI_Base *mibase)
   return;
 }
 
+bool Simple_Chain::ReadInStatus(const std::string &path) 
+{
+  msg_Info()<<METHOD<<"(): Reading status from '"
+	    <<path<<m_pathextra<<"'."<<std::endl;
+  p_gridcreator->SetOutputPath(path+m_pathextra);
+  if (!p_gridcreator->ReadInGrid()) {
+    msg.Error()<<METHOD<<"(): No status stored in '"
+	       <<path<<m_pathextra<<"'"<<std::endl;
+    return false;
+  }
+  return true;
+}
+
 void Simple_Chain::PrepareTerminate() 
 {
-  p_gridcreator->WriteOutGrid();
+  for (Amisic_Histogram_Map::const_iterator hit(m_differentials.begin());
+       hit!=m_differentials.end();++hit) hit->second->RestoreData();
+  std::string path(rpa.gen.Variable("SHERPA_STATUS_PATH")+"/"+m_pathextra);
+  MakeDir(path,493,true);
+  p_gridcreator->WriteOutGrid(String_Vector(),path);
 }
 
 bool Simple_Chain::VetoProcess(ATOOLS::Blob *blob)

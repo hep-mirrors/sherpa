@@ -118,10 +118,11 @@ namespace AMISIC {
       \brief Reads the basic information from the given file.
     */
     bool WriteOutGrid(std::vector<std::string> addcomments=
-		      std::vector<std::string>(0));
+		      std::vector<std::string>(0),
+		      const std::string &path="");
     /*!
       \fn bool WriteOutGrid(std::vector<std::string> addcomments=
-      std::vector<std::string>(0))
+      std::vector<std::string>(0),const std::string &path)
       \brief Writes the created grids to external files which are named
       according to the respective process.
     */
