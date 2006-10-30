@@ -46,6 +46,7 @@ namespace ATOOLS {
     void Init();
     void Reset();
 
+    bool ReadInStatus(const std::string &path);
     bool ApproveTerminate();
     void PrepareTerminate();
     void Exit(int exitcode);

@@ -34,6 +34,7 @@ namespace ATOOLS {
 
     void InitRan3(long*);
  
+    bool ReadInStatus(const std::string &path);
     void PrepareTerminate();
 
     // temporary methods for Ran4()

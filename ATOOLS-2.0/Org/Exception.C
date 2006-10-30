@@ -34,6 +34,11 @@ Terminator_Object::~Terminator_Object()
 {
 }
 
+bool Terminator_Object::ReadInStatus(const std::string &path)
+{
+  return true;
+}
+
 void Terminator_Object::PrepareTerminate()
 {
   msg.Error()<<"Terminator_Object::PrepareTerminate(): "

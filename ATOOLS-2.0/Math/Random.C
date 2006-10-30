@@ -2,6 +2,7 @@
 #include "Message.H"
 #include "MathTools.H"
 #include "MyStrStream.H"
+#include "Run_Parameter.H"
 #include <iostream>
 
 #ifdef PROFILE__all
@@ -239,6 +240,11 @@ int Random::WriteOutStatus(const char * filename){
   return m_written++;
 }
 
+bool Random::ReadInStatus(const std::string &path) 
+{
+  ReadInStatus((path+"random.dat").c_str(),0);
+  return true;
+}
 
 void Random::ReadInStatus(const char * filename, long int index){
   // check what type of data is in target file
@@ -254,7 +260,8 @@ void Random::ReadInStatus(const char * filename, long int index){
   if (activeGenerator==4) { ReadInStatus4(filename, index);} 
   else {  
     // read in every Statusregister of Random Number generator
-    msg_Info()<<"Random::ReadInStatus from "<<filename<<" index "<<index<<endl;
+    msg_Info()<<METHOD<<"(): Reading status from '"
+	      <<filename<<"', index "<<index<<"."<<endl;
     std::ifstream myinstream(filename);
     long int count;
     if (myinstream.good()) {
@@ -339,8 +346,7 @@ void Random::PrepareTerminate()
     if (!testfile.is_open()) break;
   } while (i<MAXLOGFILES);
   RestoreStatus();
-  WriteOutStatus((name+ATOOLS::ToString(i)+
-		  std::string(".random")).c_str());
+  WriteOutStatus((rpa.gen.Variable("SHERPA_STATUS_PATH")+"/random.dat").c_str());
 }
 
 // ----------------- Methods for new Random Number Generator -------------

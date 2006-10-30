@@ -3,6 +3,7 @@
 #include "Run_Parameter.H"
 #include "MyStrStream.H"
 #include "CXXFLAGS.H"
+#include "Shell_Tools.H"
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -41,6 +42,16 @@ void Exception_Handler::Init()
     exh = new Exception_Handler();
     init=true;
   }
+}
+
+bool Exception_Handler::ReadInStatus(const std::string &path)
+{
+  bool success(true);
+  msg_Info()<<METHOD<<"(): Reading status from '"<<path<<"' {"<<std::endl;
+  for (size_t i=0;i<m_terminatorobjects.size();++i) 
+    if (!m_terminatorobjects[i]->ReadInStatus(path)) success=false;
+  msg_Info()<<"}"<<std::endl;
+  return success;
 }
 
 bool Exception_Handler::ApproveTerminate()
@@ -118,11 +129,19 @@ void Exception_Handler::Terminate()
 {
   bool modifiable=msg.Modifiable();
   SetExitCode();
-  if (m_print && m_signal!=SIGTERM && m_signal!=SIGINT) {
-    msg.SetModifiable(false);
-    GenerateStackTrace(msg.LogFile(),true,"! ");
-    msg.SetModifiable(modifiable);
-    if (m_stacktrace) GenerateStackTrace(msg.Error());
+  if ((m_signal!=SIGTERM && m_signal!=SIGINT) || m_exception!=NULL) {
+    if (m_print) {
+      msg.SetModifiable(false);
+      GenerateStackTrace(msg.LogFile(),true,"! ");
+      msg.SetModifiable(modifiable);
+      if (m_stacktrace) GenerateStackTrace(msg.Error());
+    }
+    rpa.gen.SetVariable
+      ("SHERPA_STATUS_PATH",rpa.gen.Variable("SHERPA_RUN_PATH")+
+       "/Status__"+rpa.gen.Timer().TimeString(3));
+    msg.Error()<<METHOD<<"(): Pre-crash status saved to '"
+	       <<rpa.gen.Variable("SHERPA_STATUS_PATH")<<"'."<<std::endl;
+    MakeDir(rpa.gen.Variable("SHERPA_STATUS_PATH"),493);
   }
   if (!ApproveTerminate()) {
     m_exception=NULL;
