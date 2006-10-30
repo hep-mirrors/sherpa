@@ -122,7 +122,7 @@ bool Analysis_Handler::ReadIn()
   reader.SetFileEnd("END_ANALYSIS");
   for (size_t i=0;i<s_maxanalyses;++i) {
     reader.SetOccurrence(i);
-    reader.RereadInFile();
+    reader.RescanInFile();
     if (!reader.VectorFromFile(helpsv,"LEVEL")) break;
     bool split=false, trigger=false;
     int mode=ANALYSIS::fill_all|ANALYSIS::splitt_jetseeds;
