@@ -173,7 +173,7 @@ bool Timelike_Sudakov::Veto(Knot *const mo,double t,double E2)
 
   switch (m_kt_scheme) {
   case 0: // durham scheme
-    m_pt2=2.0*Min(z*z*m_E2-m_tb,(1.0-z)*(1.0-z)*m_E2-m_tc)*
+    m_pt2=0.5*Min(z*z*m_E2-m_tb,(1.0-z)*(1.0-z)*m_E2-m_tc)*
       (1.0-p_kin->GetOpeningAngle(z,E2,t,m_tb,m_tc));
     break;
   case 1: // relative transverse momentum in lc kinematics
