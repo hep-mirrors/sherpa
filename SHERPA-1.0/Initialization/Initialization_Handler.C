@@ -59,6 +59,7 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
   rpa.gen.SetVariable("SHOWER_DATA_FILE",m_showerdat);
   m_spincorrelations = bool(p_dataread->GetValue<int>("SPIN_CORRELATIONS",0));
   rpa.gen.SetSpinCorrelation(m_spincorrelations);
+  exh->AddTerminatorObject(this);
 }
 
 Initialization_Handler::Initialization_Handler(int argc,char * argv[]) : 
@@ -103,6 +104,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   
   m_spincorrelations = bool(p_dataread->GetValue<int>("SPIN_CORRELATIONS",0));
   rpa.gen.SetSpinCorrelation(m_spincorrelations);
+  exh->AddTerminatorObject(this);
 }
 
 
@@ -141,6 +143,24 @@ Initialization_Handler::~Initialization_Handler()
     m_isrhandlers.erase(m_isrhandlers.begin());
   }
   PHASIC::Phase_Space_Handler::DeleteInfo();
+}
+
+void Initialization_Handler::PrepareTerminate()
+{
+  std::string path(rpa.gen.Variable("SHERPA_STATUS_PATH")+"/");
+  CopyFile(m_path+m_file,path+m_file);
+  CopyFile(m_path+m_modeldat,path+m_modeldat);
+  CopyFile(m_path+m_beamdat,path+m_beamdat);
+  CopyFile(m_path+m_isrdat[0],path+m_isrdat[0]);
+  CopyFile(m_path+m_isrdat[1],path+m_isrdat[1]);
+  CopyFile(m_path+m_medat,path+m_medat);
+  CopyFile(m_path+m_midat,path+m_midat);
+  CopyFile(m_path+m_decaydat,path+m_decaydat);
+  CopyFile(m_path+m_showerdat,path+m_showerdat);
+  CopyFile(m_path+m_beamremnantdat,path+m_beamremnantdat);
+  CopyFile(m_path+m_fragmentationdat,path+m_fragmentationdat);
+  CopyFile(m_path+m_hadrondecaysdat,path+m_hadrondecaysdat);
+  CopyFile(m_path+m_analysisdat,path+m_analysisdat);
 }
 
 bool Initialization_Handler::InitializeTheFramework(int nr)

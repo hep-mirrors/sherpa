@@ -39,7 +39,7 @@ namespace SHERPA {
 
   class Input_Output_Handler;
 
-  class Initialization_Handler {
+  class Initialization_Handler: public ATOOLS::Terminator_Object {
   private :
     std::string m_path,m_file,m_evtfile;
     std::string m_modeldat, m_beamdat, m_isrdat[2], m_medat, m_midat, m_decaydat, m_showerdat;
@@ -92,6 +92,7 @@ namespace SHERPA {
     bool CheckBeamISRConsistency();
     void SetParameter(int nr);
     void SetScaleFactors();
+    void PrepareTerminate();
 
   public :
 
