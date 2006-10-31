@@ -249,7 +249,7 @@ bool Cluster_Partons_Base::ClusterConfiguration(Blob * blob,double x1,double x2)
   m_q2_isjet=rpa.gen.Ycut()*sqr(rpa.gen.Ecms());
   m_q2_fsjet=sqr(rpa.gen.DeltaR())*m_q2_isjet;
   m_q2_iss=m_q2_fss=std::numeric_limits<double>::max();
-  m_jv_pt2=std::numeric_limits<double>::max();
+  m_q2_hard=m_jv_pt2=std::numeric_limits<double>::max();
   return 1;
 }
 
@@ -505,13 +505,17 @@ int Cluster_Partons_Base::Set2Colours(const int nquark,const int ngluon,Vec4D * 
   }    
   if (connected[0]<2 ^ connected[1]<2) {
     // t/u channel.
-    m_q2_fss = m_q2_iss = dabs((p[connected[0]]-p[connected[1]]).Abs2());
-    msg_Debugging()<<"found t/u channel: fss = iss = "<<sqrt(m_q2_fss)<<"\n";
+    m_q2_hard = m_q2_fss = m_q2_iss = 
+      dabs((p[connected[0]]-p[connected[1]]).Abs2());
+    msg_Debugging()<<"found t/u channel: hard = fss = iss = "
+		   <<sqrt(m_q2_fss)<<"\n";
   }
   else {
     // s channel.
-    m_q2_fss = m_q2_iss = dabs((p[connected[0]]+p[connected[1]]).Abs2());
-    msg_Debugging()<<"found s channel: fss = iss = "<<sqrt(m_q2_fss)<<"\n";
+    m_q2_hard = m_q2_fss = m_q2_iss = 
+      dabs((p[connected[0]]+p[connected[1]]).Abs2());
+    msg_Debugging()<<"found s channel: hard = fss = iss = "
+		   <<sqrt(m_q2_fss)<<"\n";
   }
   return 0;
 }

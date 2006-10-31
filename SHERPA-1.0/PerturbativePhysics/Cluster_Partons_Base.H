@@ -37,7 +37,7 @@ namespace SHERPA {
     double  m_kfac, m_is_as_factor, m_fs_as_factor, m_me_as_factor;
 
     int     m_hard_nqcd, m_hard_nqed, m_nstrong;
-    double  m_counts, m_fails;
+    double  m_counts, m_fails, m_q2_hard;
 
     EXTRAXS::XS_Base * p_xs;
 

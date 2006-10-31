@@ -342,7 +342,10 @@ void Cluster_Partons_CKKW::WeightHardProcess()
 		 <<sqrt(kt2minqcd)<<", wmin_qed = "<<wminqed
 		 <<", ktmin_qed = "<<sqrt(kt2minqed)<<"\n";
   if (wminqcd>=0) {
+    // check for scale definition from Single_XS
     double mu2r(p_xs?p_xs->Scale(stp::ren):0.0);
+    // override scale w/ local definition from SetColours
+    if (m_q2_hard<std::numeric_limits<double>::max()) mu2r=m_q2_hard;
     double qu(sqrt(mu2r!=0.0?mu2r:p_ct->GetHardLegs()[wminqcd][0].KT2QCD()));
     double ql(sqrt(mu2r!=0.0?mu2r:p_ct->GetHardLegs()[wminqcd][1].KT2QCD()));
     if (qu<ql) std::swap<double>(qu,ql);
