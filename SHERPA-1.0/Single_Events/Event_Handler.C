@@ -184,7 +184,6 @@ bool Event_Handler::GenerateEvent(int mode)
 	default:
 	  THROW(fatal_error,"Invalid return value");
 	}
-	msg_Debugging()<<m_blobs<<std::endl;
 	if (weight==0.0 && rpa.gen.NumberOfDicedEvents()==
 	    rpa.gen.NumberOfEvents()) return true;
       }

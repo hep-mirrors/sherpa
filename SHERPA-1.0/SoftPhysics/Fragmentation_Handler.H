@@ -6,16 +6,17 @@
 #include "Blob_List.H"
 #include "CXXFLAGS.H"
 #include "Return_Value.H"
+#include "Exception.H"
 #ifdef USING__Ahadic
 #include "Ahadic.H"
 #endif
 
 namespace SHERPA {
 
-  class Fragmentation_Handler {
+  class Fragmentation_Handler: public ATOOLS::Terminator_Object {
   private:
 
-    std::string m_dir,m_file;
+    std::string m_dir,m_file, m_sfile;
     std::string m_fragmentationmodel;
     int         m_mode;
 
@@ -25,6 +26,7 @@ namespace SHERPA {
     Lund_Interface * p_lund;
 
     ATOOLS::Return_Value::code ExtractSinglets(ATOOLS::Blob_List *);
+    void PrepareTerminate(); 
   public:
     Fragmentation_Handler(std::string,std::string);
     ~Fragmentation_Handler();

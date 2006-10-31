@@ -143,11 +143,13 @@ Initialization_Handler::~Initialization_Handler()
     m_isrhandlers.erase(m_isrhandlers.begin());
   }
   PHASIC::Phase_Space_Handler::DeleteInfo();
+  exh->RemoveTerminatorObject(this);
 }
 
 void Initialization_Handler::PrepareTerminate()
 {
   std::string path(rpa.gen.Variable("SHERPA_STATUS_PATH")+"/");
+  if (path=="/") return;
   CopyFile(m_path+m_file,path+m_file);
   CopyFile(m_path+m_modeldat,path+m_modeldat);
   CopyFile(m_path+m_beamdat,path+m_beamdat);
@@ -161,6 +163,8 @@ void Initialization_Handler::PrepareTerminate()
   CopyFile(m_path+m_fragmentationdat,path+m_fragmentationdat);
   CopyFile(m_path+m_hadrondecaysdat,path+m_hadrondecaysdat);
   CopyFile(m_path+m_analysisdat,path+m_analysisdat);
+  CopyFile(m_path+"Particle.dat",path+"Particle.dat");
+  CopyFile(m_path+"Hadron.dat",path+"Hadron.dat");
 }
 
 bool Initialization_Handler::InitializeTheFramework(int nr)

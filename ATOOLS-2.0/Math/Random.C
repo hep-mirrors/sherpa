@@ -332,21 +332,10 @@ void Random::RestoreStatus()
 
 void Random::PrepareTerminate()
 {
-  if (exh->LastException()==NULL && 
-      exh->LastSignal()==0) return;
-  if (exh->LastException()!=NULL) {
-    if (exh->LastException()->Type()==ex::normal_exit) return;
-  }
-  if (exh->LastSignal()==2) return;
-  std::string name="debug_info_";
-  unsigned int i=0;
-  do { 
-    std::ifstream testfile((name+ATOOLS::ToString(++i)+
-			    std::string(".random")).c_str());
-    if (!testfile.is_open()) break;
-  } while (i<MAXLOGFILES);
+  std::string path(rpa.gen.Variable("SHERPA_STATUS_PATH"));
+  if (path=="") return;
   RestoreStatus();
-  WriteOutStatus((rpa.gen.Variable("SHERPA_STATUS_PATH")+"/random.dat").c_str());
+  WriteOutStatus((path+"/random.dat").c_str());
 }
 
 // ----------------- Methods for new Random Number Generator -------------

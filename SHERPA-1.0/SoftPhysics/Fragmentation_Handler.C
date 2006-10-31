@@ -2,7 +2,7 @@
 
 #include "Data_Read.H"
 #include "Run_Parameter.H"
-#include "Exception.H"
+#include "Shell_Tools.H"
 #include "Return_Value.H"
 
 #ifdef PROFILE__all
@@ -31,16 +31,18 @@ Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
   Data_Read dr(m_dir+m_file);
   m_fragmentationmodel=dr.GetValue<string>("FRAGMENTATION",string("Pythiav6.214"));
   if (m_fragmentationmodel==string("Lund")) {
-    string lundfile=dr.GetValue<string>("LUND_FILE",string("Lund.dat"));
-    p_lund = new Lund_Interface(m_dir,lundfile,true);
+    m_sfile=dr.GetValue<string>("LUND_FILE",string("Lund.dat"));
+    p_lund = new Lund_Interface(m_dir,m_sfile,true);
     m_mode=1;
+    exh->AddTerminatorObject(this);
     return;
   }
 #ifdef USING__Ahadic
   else if (m_fragmentationmodel==string("Ahadic")) {
-    string clusterfile=dr.GetValue<string>("AHADIC_FILE",string("Cluster.dat"));
-    p_ahadic = new AHADIC::Ahadic(m_dir,clusterfile,true);
+    m_sfile=dr.GetValue<string>("AHADIC_FILE",string("Cluster.dat"));
+    p_ahadic = new AHADIC::Ahadic(m_dir,m_sfile,true);
     m_mode=2;
+    exh->AddTerminatorObject(this);
     return;
   }
 #endif
@@ -54,6 +56,14 @@ Fragmentation_Handler::~Fragmentation_Handler()
 #ifdef USING__Ahadic
   if (p_ahadic!=NULL) { delete p_ahadic; p_ahadic = NULL;   }
 #endif
+  exh->RemoveTerminatorObject(this);
+}
+
+void Fragmentation_Handler::PrepareTerminate() 
+{
+  std::string path(rpa.gen.Variable("SHERPA_STATUS_PATH"));
+  if (path=="") return;
+  CopyFile(m_dir+"/"+m_sfile,path+"/"+m_sfile);
 }
 
 Return_Value::code Fragmentation_Handler::PerformFragmentation(Blob_List *bloblist,

@@ -94,6 +94,7 @@ Simple_Chain::~Simple_Chain()
 void Simple_Chain::CleanUp() 
 {
   if (p_gridcreator!=NULL) {
+    exh->RemoveTerminatorObject(this);
     delete p_gridcreator;
     p_gridcreator=NULL;
   }
@@ -905,9 +906,11 @@ bool Simple_Chain::ReadInStatus(const std::string &path)
 
 void Simple_Chain::PrepareTerminate() 
 {
+  std::string path(rpa.gen.Variable("SHERPA_STATUS_PATH"));
+  if (path=="") return;
   for (Amisic_Histogram_Map::const_iterator hit(m_differentials.begin());
        hit!=m_differentials.end();++hit) hit->second->RestoreData();
-  std::string path(rpa.gen.Variable("SHERPA_STATUS_PATH")+"/"+m_pathextra);
+  path+="/"+m_pathextra;
   MakeDir(path,493,true);
   p_gridcreator->WriteOutGrid(String_Vector(),path);
 }
