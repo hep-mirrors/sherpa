@@ -74,6 +74,14 @@ Return_Value::code Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const
   Blob_List isr=bloblist->Find(btp::IS_Shower);
   for (Blob_List::reverse_iterator iit=isr.rbegin();
        iit!=isr.rend();++iit) {
+    if ((*iit)->InParticle(0)->Momentum().Nan()) {
+      msg.Error()<<METHOD<<"(): Nan momentum for "
+		 <<*(*iit)->InParticle(0)<<"\n  Kill subprocess."<<std::endl;
+      if (!(*iit)->IsConnectedTo(btp::Signal_Process))
+	p_bloblist->DeleteConnected(*iit);
+      else return Return_Value::Retry_Event;
+      return Return_Value::Retry_Phase;
+    }
     m_emax[(*iit)->Beam()]-=(*iit)->InParticle(0)->Momentum()[0];
     p_mihandler->ISRHandler()->
       Extract((*iit)->InParticle(0)->Flav(),
