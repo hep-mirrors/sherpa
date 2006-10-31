@@ -248,22 +248,6 @@ int Jet_Veto::TestISKinematics(Knot *const knot,Knot *const partner)
   msg_Debugging()<<METHOD<<"("<<knot->kn_no<<","<<knot->part->Info()
 		 <<"): p_{t,jv} = "<<knot->qjv<<" ("<<jv
 		 <<"), p_{t,ljv} = "<<knot->qljv<<" ("<<ljv<<")\n";
-  /*
-  // very tight veto option, best approximation to real pt^2
-  double E2(sqr(sqrt(knot->left->E2)+sqrt(knot->right->E2)));
-  double z(p_kin->LightConeZ(knot->right->z,E2,knot->t,
-  			     knot->right->t,knot->left->t));
-  // best approximation to jet measure in combination w/ no lose jet veto
-  // double z(knot->right->z);
-  // double pt2(z*(1.0-z)*knot->t-(1.0-z)*knot->right->t-z*knot->left->t);
-  double pt2(-(1.0-z)*knot->right->t-z*knot->left->t);
-  msg_Debugging()<<"kt = "<<sqrt(knot->right->pt2lcm)
- 		 <<" pt = "<<sqrt(pt2)<<", z/\\tilde z-1 = "
-		 <<z/knot->right->z-1.0<<"\n";
-  if (knot->part->Info()!='H') {
-    if (jv && (pt2<0.0 || pt2>sqr(knot->qjv))) return 0;
-  }
-  */
   Vec4D p3(knot->part->Momentum()), p2(partner->part->Momentum());
   Vec4D p4(knot->left->part->Momentum()), cms(p3+p2);
   Poincare boost(cms);
