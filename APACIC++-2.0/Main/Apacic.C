@@ -103,6 +103,11 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
       }
       if (p_finshower->PerformShower(p_fintree,jetveto)==0) {
 	msg.Error()<<METHOD<<"(..): FSR shower failure. Abort."<<std::endl;
+	if (m_isron) {
+	  p_initrees[0]->ClearStore();
+	  p_initrees[1]->ClearStore();
+	}
+	p_fintree->ClearStore();
 	Vec4D::ResetAccu();
 	return 0;
       }
@@ -118,6 +123,9 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
       p_inishower->InitShowerPT(p_initrees[0]->GetRoot()->maxpt2);
       if (p_inishower->PerformShower(p_initrees,p_fintree,jetveto)==0) {
 	msg.Error()<<METHOD<<"(..): ISR shower failure. Abort."<<std::endl;
+	if (m_fsron) p_fintree->ClearStore();
+	p_initrees[0]->ClearStore();
+	p_initrees[1]->ClearStore();
 	Vec4D::ResetAccu();
 	return 0;
       }
