@@ -67,6 +67,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
 { 
   PROFILE_HERE;
   m_path = std::string("./");
+  int oldc(argc);
   char **oldargs(NULL);
   std::string statuspath;
   for (int i(1);i<argc;++i) {
@@ -79,18 +80,21 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
       reader.SetInputFile(statuspath+"cmd");
       String_Matrix args;
       reader.MatrixFromFile(args);
-      if (argc<(int)args.size()+1) {
-	argc=args.size()+1;
-	oldargs=argv;
-	argv = new char*[argc];
-	argv[0] = new char[strlen(oldargs[0])+1];
-	strcpy(argv[0],oldargs[0]);
+      oldc=argc;
+      oldargs=argv;
+      argc+=args.size();
+      argv = new char*[argc];
+      argv[0] = new char[strlen(oldargs[0])+1];
+      strcpy(argv[0],oldargs[0]);
+      for (int j(0);j<(int)args.size();++j) {
+	std::string cur(args[j].front());
+	for (size_t k(1);k<args[j].size();++k) cur+=args[j][k];
+	argv[j+1] = new char[cur.length()+1];
+	strcpy(argv[j+1],cur.c_str());
       }
-      for (int j(1);j<argc;++j) {
-	std::string cur(args[j-1].front());
-	for (size_t k(1);k<args[j-1].size();++k) cur+=args[j-1][k];
-	argv[j] = new char[cur.length()+1];
-	strcpy(argv[j],cur.c_str());
+      for (int j(1);j<oldc;++j) {
+	argv[args.size()+j] = new char[strlen(oldargs[j])+1];
+	strcpy(argv[args.size()+j],oldargs[j]);
       }
       break;
     }
