@@ -26,33 +26,21 @@ namespace ATOOLS {
 		      std::string tempfname=nullstring);
 
     template <class Write_Type >
-    bool WriteToFile(Write_Type value,
+    bool WriteToFile(const Write_Type &value,
 		     std::string tag=nullstring,bool endline=true,
 		     std::string tempfname=nullstring,int precision=6);
 
     template <class Write_Type >
-    bool VectorToFile(std::vector<Write_Type> &values,
+    bool VectorToFile(const std::vector<Write_Type> &values,
 		      std::string tag=nullstring,bool endline=true,
 		      std::string tempfname=nullstring,
 		      vtc::code=vtc::unknown,int precision=6);
 
     template <class Write_Type >
-    bool MatrixToFile(std::vector<std::vector<Write_Type> > &values,
+    bool MatrixToFile(const std::vector<std::vector<Write_Type> > &values,
 		      std::string tag=nullstring,bool endline=true,
 		      std::string tempfname=nullstring,
 		      mtc::code=mtc::unknown,int precision=6);
-
-    template <class Write_Type >
-    inline Data_Writer &operator<<(Write_Type value) 
-    { WriteToFile(value,nullstring,false); return *this; }
-
-    template <class Write_Type >
-    inline Data_Writer &operator<<(std::vector<Write_Type> &value) 
-    { VectorToFile(value,nullstring,false); return *this; }
-
-    template <class Write_Type > inline Data_Writer &
-    operator<<(std::vector<std::vector<Write_Type> > &value) 
-    { MatrixToFile(value,nullstring,false); return *this; }
 
   }; // end of class Data_Writer
 

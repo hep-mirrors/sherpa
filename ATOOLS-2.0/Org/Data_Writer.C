@@ -55,8 +55,9 @@ bool Data_Writer::WriteComment(std::vector<std::string> comments,
 }
 
 template <class Write_Type>  
-bool Data_Writer::WriteToFile(Write_Type value,std::string tag,bool endline,
-			      std::string tempfname,int precision)
+bool Data_Writer::WriteToFile(const Write_Type &value,std::string tag,
+			      bool endline,std::string tempfname,
+			      int precision)
 {
   if (tempfname!=nullstring) SetOutputFile(tempfname);
   if (!OpenOutFile()) return false;
@@ -80,7 +81,7 @@ bool Data_Writer::WriteToFile(Write_Type value,std::string tag,bool endline,
 }
 
 template <class Write_Type>  
-bool Data_Writer::VectorToFile(std::vector<Write_Type> &values,
+bool Data_Writer::VectorToFile(const std::vector<Write_Type> &values,
 			       std::string tag,
 			       bool endline,std::string tempfname,
 			       vtc::code tempvtype,int precision)
@@ -111,7 +112,7 @@ bool Data_Writer::VectorToFile(std::vector<Write_Type> &values,
 }
 
 template <class Write_Type>  
-bool Data_Writer::MatrixToFile(std::vector<std::vector<Write_Type> > 
+bool Data_Writer::MatrixToFile(const std::vector<std::vector<Write_Type> > 
 			       &values,std::string tag,
 			       bool endline,std::string tempfname,
 			       mtc::code tempmtype,int precision)
@@ -149,55 +150,51 @@ bool Data_Writer::MatrixToFile(std::vector<std::vector<Write_Type> >
   return true;    
 }
 
-template bool Data_Writer::WriteToFile<int>
-(int,std::string,bool,std::string,int);
-template bool Data_Writer::WriteToFile<unsigned int>
-(unsigned int,std::string,bool,std::string,int);
-template bool Data_Writer::WriteToFile<long int>
-(long int,std::string,bool,std::string,int);
-template bool Data_Writer::WriteToFile<float>
-(float,std::string,bool,std::string,int);
-template bool Data_Writer::WriteToFile<double>
-(double,std::string,bool,std::string,int);
-template bool Data_Writer::WriteToFile<std::string>
-(std::string,std::string,bool,std::string,int);
-template bool Data_Writer::WriteToFile<const char*>
-(const char*,std::string,bool,std::string,int);
+namespace ATOOLS {
 
-template bool Data_Writer::VectorToFile<int>
-(std::vector<int>&,std::string,bool,std::string,vtc::code,int);
-template bool Data_Writer::VectorToFile<unsigned int>
-(std::vector<unsigned int>&,std::string,bool,std::string,vtc::code,int);
-template bool Data_Writer::VectorToFile<long int>
-(std::vector<long int>&,std::string,bool,std::string,vtc::code,int);
-template bool Data_Writer::VectorToFile<float>
-(std::vector<float>&,std::string,bool,std::string,vtc::code,int);
-template bool Data_Writer::VectorToFile<double>
-(std::vector<double>&,std::string,bool,std::string,vtc::code,int);
-template bool Data_Writer::VectorToFile<std::string>
-(std::vector<std::string>&,std::string,bool,std::string,vtc::code,int);
-template bool Data_Writer::VectorToFile<const char*>
-(std::vector<const char*>&,std::string,bool,std::string,vtc::code,int);
+  template bool Data_Writer::WriteToFile<int>
+  (const int&,std::string,bool,std::string,int);
+  template bool Data_Writer::WriteToFile<unsigned int>
+  (const unsigned int&,std::string,bool,std::string,int);
+  template bool Data_Writer::WriteToFile<long int>
+  (const long int&,std::string,bool,std::string,int);
+  template bool Data_Writer::WriteToFile<float>
+  (const float&,std::string,bool,std::string,int);
+  template bool Data_Writer::WriteToFile<double>
+  (const double&,std::string,bool,std::string,int);
+  template bool Data_Writer::WriteToFile<std::string>
+  (const std::string&,std::string,bool,std::string,int);
 
-template bool Data_Writer::MatrixToFile<int>
-(std::vector<std::vector<int> >&,std::string,bool,
- std::string,mtc::code,int);
-template bool Data_Writer::MatrixToFile<unsigned int>
-(std::vector<std::vector<unsigned int> >&,std::string,bool,
- std::string,mtc::code,int);
-template bool Data_Writer::MatrixToFile<long int>
-(std::vector<std::vector<long int> >&,std::string,bool,
- std::string,mtc::code,int);
-template bool Data_Writer::MatrixToFile<float>
-(std::vector<std::vector<float> >&,std::string,bool,
- std::string,mtc::code,int);
-template bool Data_Writer::MatrixToFile<double>
-(std::vector<std::vector<double> >&,std::string,bool,
- std::string,mtc::code,int);
-template bool Data_Writer::MatrixToFile<std::string>
-(std::vector<std::vector<std::string> >&,std::string,bool,
- std::string,mtc::code,int);
-template bool Data_Writer::MatrixToFile<const char*>
-(std::vector<std::vector<const char*> >&,std::string,bool,
- std::string,mtc::code,int);
+  template bool Data_Writer::VectorToFile<int>
+  (const std::vector<int>&,std::string,bool,std::string,vtc::code,int);
+  template bool Data_Writer::VectorToFile<unsigned int>
+  (const std::vector<unsigned int>&,std::string,bool,std::string,vtc::code,int);
+  template bool Data_Writer::VectorToFile<long int>
+  (const std::vector<long int>&,std::string,bool,std::string,vtc::code,int);
+  template bool Data_Writer::VectorToFile<float>
+  (const std::vector<float>&,std::string,bool,std::string,vtc::code,int);
+  template bool Data_Writer::VectorToFile<double>
+  (const std::vector<double>&,std::string,bool,std::string,vtc::code,int);
+  template bool Data_Writer::VectorToFile<std::string>
+  (const std::vector<std::string>&,std::string,bool,std::string,vtc::code,int);
 
+  template bool Data_Writer::MatrixToFile<int>
+  (const std::vector<std::vector<int> >&,std::string,bool,
+   std::string,mtc::code,int);
+  template bool Data_Writer::MatrixToFile<unsigned int>
+  (const std::vector<std::vector<unsigned int> >&,std::string,bool,
+   std::string,mtc::code,int);
+  template bool Data_Writer::MatrixToFile<long int>
+  (const std::vector<std::vector<long int> >&,std::string,bool,
+   std::string,mtc::code,int);
+  template bool Data_Writer::MatrixToFile<float>
+  (const std::vector<std::vector<float> >&,std::string,bool,
+   std::string,mtc::code,int);
+  template bool Data_Writer::MatrixToFile<double>
+  (const std::vector<std::vector<double> >&,std::string,bool,
+   std::string,mtc::code,int);
+  template bool Data_Writer::MatrixToFile<std::string>
+  (const std::vector<std::vector<std::string> >&,std::string,bool,
+   std::string,mtc::code,int);
+
+}  

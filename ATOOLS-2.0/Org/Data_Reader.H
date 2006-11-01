@@ -52,18 +52,6 @@ namespace ATOOLS {
 
     void SetString(const std::string string);
 
-    template <class Read_Type >
-    inline Data_Reader &operator>>(Read_Type value) 
-    { ReadFromFile(value); return *this; }
-
-    template <class Read_Type >
-    inline Data_Reader &operator>>(std::vector<Read_Type> &value) 
-    { VectorFromFile(value); return *this; }
-
-    template <class Read_Type > inline Data_Reader &
-    operator>>(std::vector<std::vector<Read_Type> > &value) 
-    { MatrixFromFile(value); return *this; }
-
     // inline functions
     inline const std::string String() const
     { return m_string; }
