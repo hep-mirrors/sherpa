@@ -14,7 +14,7 @@ using namespace std;
 
 // Constructors and Destructors
 Single_Vertex::Single_Vertex() : Color(NULL), Lorentz(NULL) 
-{ ncf = nlf = t = 0; nleg=3; }
+{ ncf = nlf = t = 0; nleg=3; cpl.resize(4);}
 
 Single_Vertex::Single_Vertex(const Single_Vertex& v): Color(NULL), 
   Lorentz(NULL) { *this=v; }
@@ -36,7 +36,8 @@ Single_Vertex& Single_Vertex::operator=(const Single_Vertex& v) {
     
       if (this!=&v) {
 	for (short int i=0;i<4;i++) in[i]  = v.in[i];
-	for (short int j=0;j<4;j++) cpl[j] = v.cpl[j];
+	cpl.clear();
+	for (size_t j=0;j<v.cpl.size();j++) cpl.push_back(v.cpl[j]);
 	
 	nleg = v.nleg;
 	Str  = v.Str;

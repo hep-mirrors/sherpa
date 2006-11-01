@@ -116,6 +116,12 @@ void Standard_Model::ReadInFile() {
 				     p_dataread->GetValue<double>("LAMBDA_GAMMA",0.)));
   p_constants->insert(std::make_pair(std::string("g4_gamma"),
 				     p_dataread->GetValue<double>("G4_GAMMA",0.)));
+  p_constants->insert(std::make_pair(std::string("g5_gamma"),
+				     p_dataread->GetValue<double>("G5_GAMMA",0.)));
+  p_constants->insert(std::make_pair(std::string("kappat_gamma"),
+				     p_dataread->GetValue<double>("KAPPAT_GAMMA",0.)));
+  p_constants->insert(std::make_pair(std::string("lambdat_gamma"),
+				     p_dataread->GetValue<double>("LAMBDAT_GAMMA",0.)));
   p_constants->insert(std::make_pair(std::string("g1_Z"),
 				     p_dataread->GetValue<double>("G1_Z",1.)));
   p_constants->insert(std::make_pair(std::string("kappa_Z"),
@@ -124,6 +130,12 @@ void Standard_Model::ReadInFile() {
 				     p_dataread->GetValue<double>("LAMBDA_Z",0.)));
   p_constants->insert(std::make_pair(std::string("g4_Z"),
 				     p_dataread->GetValue<double>("G4_Z",0.)));
+  p_constants->insert(std::make_pair(std::string("g5_Z"),
+				     p_dataread->GetValue<double>("G5_Z",0.)));
+  p_constants->insert(std::make_pair(std::string("kappat_Z"),
+				     p_dataread->GetValue<double>("KAPPAT_Z",0.)));
+  p_constants->insert(std::make_pair(std::string("lambdat_Z"),
+				     p_dataread->GetValue<double>("LAMBDAT_Z",0.)));
 }
 
 

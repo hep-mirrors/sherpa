@@ -181,16 +181,17 @@ void Amplitude_Generator::Print_P(Point* p)
   }
 }
 
-int Amplitude_Generator::MatchVertex(Single_Vertex* v,Flavour* flav,Complex* cpl)
+int Amplitude_Generator::MatchVertex(Single_Vertex* v,Flavour* flav,vector<Complex>& cpl)
 {
   if (flav[0] == v->in[0]) {
-    short int hit = 1;
+    int hit = 1;
     if (flav[1] != Flavour(kf::none)) {if (flav[1] != v->in[1]) hit = 0;}
     else {flav[1] = v->in[1];}
     if (flav[2] != Flavour(kf::none)) {if (flav[2] != v->in[2]) hit = 0;}
     else {flav[2] = v->in[2];}
     if (hit==1) {
-      for (short int j=0;j<4;j++) cpl[j] = v->cpl[j];
+      cpl.clear();
+      for (size_t j=0;j<v->cpl.size();j++) cpl.push_back(v->cpl[j]);
       return 1;
     }
   }
@@ -204,8 +205,8 @@ int Amplitude_Generator::CheckEnd(Point* p,Flavour infl)
   if (((p->left->fl)!=Flavour(kf::none)) && ((p->right->fl)!=Flavour(kf::none))) { 
     Flavour flav[3];
     Flavour s_flav[3];
-    Complex cpl[4];
-    for (int j=0;j<4;j++) cpl[j] = Complex(0.,0.);
+    vector <Complex> cpl;
+    cpl.clear();
 
     flav[0] = infl;
     flav[1] = p->left->fl;
@@ -247,7 +248,8 @@ int Amplitude_Generator::CheckEnd(Point* p,Flavour infl)
 
     for (size_t j=0;j<vl.size();j++) {
       if (MatchVertex(vl[j],flav,cpl)) {
-	for (int k=0;k<4;k++) p->cpl[k] = cpl[k];
+	p->cpl.clear();
+	for (size_t k=0;k<cpl.size();k++) p->cpl.push_back(cpl[k]);
 	p->v = vl[j];
 	*(p->Color)   = *(vl[j]->Color);
 	*(p->Lorentz) = *(vl[j]->Lorentz);
@@ -279,7 +281,7 @@ void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,in
   int sw1;
   Flavour flav[3];
   Flavour s_flav[3];
-  Complex cpl[4];
+  vector<Complex> cpl;
 
   int first_try = 1;
   
@@ -374,7 +376,8 @@ void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,in
 	  *(p->Lorentz) = *(vl[i]->Lorentz);
 	  p->t = vl[i]->t;
 	  
-	  for (int k=0;k<4;k++) p->cpl[k] = cpl[k];
+	  p->cpl.clear();
+	  for (size_t k=0;k<cpl.size();k++) p->cpl.push_back(cpl[k]);
 	  ll = 0;top->Copy(prea[ap].p,prea[lanz].p,ll);
 	  ll = 0;top->Copy(preah,prea[ap].p,ll);
 	  prea[lanz].on = 1;
@@ -737,13 +740,11 @@ void Amplitude_Generator::Unite(Point* p,Point* pdel)
 	  psave = p[i];
 	
 	  if (p[i].nextra>0) delete[] p[i].extrafl;
-	  delete[] p[i].cpl;
+	  p[i].cpl.clear();
 	  
 	  int nfl  = 1+pdel[i].nextra+p[i].nextra;
-	  int ncpl = pdel[i].ncpl+p[i].ncpl;
 	  
 	  p[i].extrafl = new Flavour[nfl];
-	  p[i].cpl     = new Complex[ncpl];
 	  
 	  //Flavour
 	  int count = 0;
@@ -759,12 +760,10 @@ void Amplitude_Generator::Unite(Point* p,Point* pdel)
 	  
 	  //Couplings
 	  count = 0;
-	  for (short int j=0;j<psave.ncpl;j++)
-	    p[i].cpl[j] = psave.cpl[j];   
-	  count += psave.ncpl;
-	  for (short int j=0;j<pdel[i].ncpl;j++)
-	    p[i].cpl[count+j] = pdel[i].cpl[j];			
-	  p[i].ncpl = ncpl;
+	  p[i].cpl.clear();
+	  for (size_t j=0;j<psave.Ncpl();j++) p[i].cpl.push_back(psave.cpl[j]);   
+	  count += psave.Ncpl();
+	  for (size_t j=0;j<pdel[i].Ncpl();j++) p[i].cpl.push_back(pdel[i].cpl[j]);			
 	  
 	  //previous couplings too
 	  int hit = -1;
@@ -776,18 +775,13 @@ void Amplitude_Generator::Unite(Point* p,Point* pdel)
 	  }
 	  if (hit!=-1) {
 	    psave = p[hit];
-	    int ncpl = pdel[hit].ncpl+p[hit].ncpl;	  
-	    delete[] p[hit].cpl;	  
-	    p[hit].cpl = new Complex[ncpl];
+	    p[hit].cpl.clear();
 	    
 	    //Couplings
 	    count = 0;
-	    for (short int j=0;j<psave.ncpl;j++)
-	      p[hit].cpl[j] = psave.cpl[j];   
-	    count += psave.ncpl;
-	    for (short int j=0;j<pdel[hit].ncpl;j++)
-	      p[hit].cpl[count+j] = pdel[hit].cpl[j];			
-	    p[hit].ncpl = ncpl;	  
+	    for (size_t j=0;j<psave.Ncpl();j++) p[hit].cpl.push_back(psave.cpl[j]);   
+	    count += psave.Ncpl();
+	    for (size_t j=0;j<pdel[hit].Ncpl();j++) p[hit].cpl.push_back(pdel[hit].cpl[j]);			
 	  }
 	  else 
 	    ATOOLS::msg.Error()<<"ERROR in Amplitude_Generator"<<endl
@@ -1325,7 +1319,8 @@ int Amplitude_Generator::ShrinkProps(Point*& p,Point*& pnext, Point*& pcopy, Poi
 	  hit = 1;
 	  
 	  pcopy->v      = (*v)(i);
-	  for (short int k=0;k<4;k++) pcopy->cpl[k] = (*v)(i)->cpl[k];
+	  pcopy->cpl.clear();
+	  for (size_t k=0;k<(*v)(i)->cpl.size();k++) pcopy->cpl.push_back((*v)(i)->cpl[k]);
 	  //set pcopy legs
 	  
 	  if (p->left->number==pnext->number) {

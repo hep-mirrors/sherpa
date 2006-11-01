@@ -21,8 +21,7 @@ public:
   Point              * middle;
   Point              * prev;
   Single_Vertex      * v;
-  Complex            * cpl;
-  int                  ncpl;
+  std::vector<Complex> cpl;
   Color_Function     * Color;
   Lorentz_Function   * Lorentz;
 
@@ -33,7 +32,6 @@ public:
 
   ~Point() {
     if (nextra>0) delete[] extrafl;
-    delete[] cpl; 
     delete Color;
     delete Lorentz;
   }
@@ -42,6 +40,7 @@ public:
   void ResetProps();
   void ResetFlag();
   Point* CopyList(Point* p);
+  size_t Ncpl() const {return cpl.size();}
 };
 
  // Format of a Point to transport via MPI:

@@ -163,6 +163,21 @@ namespace AMEGIC {
     Kabbala P(Pfunc*);
   };
 
+  class Basic_Epsilonfunc : public virtual Basic_Func {
+    double EC(const ATOOLS::Vec4D*,const ATOOLS::Vec4D*,const ATOOLS::Vec4D*,const ATOOLS::Vec4D*);
+  public:
+    Basic_Epsilonfunc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : Basic_Func(_sgen,_BS)  {}    
+    Kabbala Epsilon(const int,const int,const int,const int,int=1);
+    Complex EpsCalc(const int,const int,const int,const int,const int);
+    template <int> Complex EpsCalc(const int,const int,const int,const int);
+  };
+  template <> Complex Basic_Epsilonfunc::EpsCalc<0>(const int,const int,const int,const int);
+  template <> Complex Basic_Epsilonfunc::EpsCalc<1>(const int,const int,const int,const int);
+  template <> Complex Basic_Epsilonfunc::EpsCalc<2>(const int,const int,const int,const int);
+  template <> Complex Basic_Epsilonfunc::EpsCalc<3>(const int,const int,const int,const int);
+  template <> Complex Basic_Epsilonfunc::EpsCalc<4>(const int,const int,const int,const int);
+
+
   /*!
     \class Basic_Func
     The mother class of all basic functions and calculator funtions.
