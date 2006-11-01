@@ -81,3 +81,7 @@ void Perturbative_Interface::CleanBlobList(ATOOLS::Blob_List *const bloblist,
   }
 }
 
+void Perturbative_Interface::CleanUp()
+{
+}
+

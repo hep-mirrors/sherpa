@@ -41,6 +41,8 @@ namespace SHERPA {
     virtual int PerformShowers() = 0;
     virtual int PerformDecayShowers() = 0;
 
+    virtual void CleanUp();
+
     void CleanBlobList(ATOOLS::Blob_List *const bloblist,
 		       const ATOOLS::btp::code type);
 

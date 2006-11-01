@@ -75,8 +75,7 @@ bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
     }
   }
   // prepare Blob , will be inserted later
-  if (p_blob_psme_IS) { delete p_blob_psme_IS; p_blob_psme_IS = 0; }
-  if (p_blob_psme_FS) { delete p_blob_psme_FS; p_blob_psme_FS = 0; }
+  CleanUp();
 
   if (!m_isdecay && p_shower->ISROn()) {
     p_blob_psme_IS = new Blob();
@@ -219,6 +218,8 @@ bool Amegic_Apacic_Interface::FillBlobs(ATOOLS::Blob_List * bl)
     p_blob_psme_FS=0;
   }
   p_shower->FillBlobs(bl); 
+  p_blob_psme_IS=NULL;
+  p_blob_psme_FS=NULL;
   return true;
 }
 
@@ -261,4 +262,16 @@ int Amegic_Apacic_Interface::PerformShowers()
 int Amegic_Apacic_Interface::PerformDecayShowers()
 {
   return p_shower->PerformDecayShowers(0);
+}
+
+void Amegic_Apacic_Interface::CleanUp()
+{
+  if (p_blob_psme_IS) { 
+    delete p_blob_psme_IS; 
+    p_blob_psme_IS=NULL; 
+  }
+  if (p_blob_psme_FS) { 
+    delete p_blob_psme_FS; 
+    p_blob_psme_FS=NULL; 
+  }
 }

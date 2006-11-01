@@ -139,6 +139,7 @@ Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist
       msg.Error()<<"ERROR in "<<METHOD<<":"<<endl
 		 <<"   Shower failure. Will try new event."<<endl;
       p_showerhandler->CleanUp();
+      interface->CleanUp();
       return Return_Value::New_Event;
     }
   case Return_Value::Nothing:
@@ -146,9 +147,11 @@ Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist
     return Return_Value::Success;
   case Return_Value::New_Event:
     p_showerhandler->CleanUp();
+    interface->CleanUp();
     return Return_Value::New_Event;
   case Return_Value::Retry_Event:
     p_showerhandler->CleanUp();
+    interface->CleanUp();
     return Return_Value::Retry_Event;
   case Return_Value::Error:
     msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
@@ -156,6 +159,7 @@ Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist
 	       <<"   Return 'Error' and hope for the best."<<std::endl;
     blob->SetStatus(blob_status::inactive);
     p_showerhandler->CleanUp();
+    interface->CleanUp();
     return Return_Value::Error;
   default :
     msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
