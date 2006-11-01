@@ -67,6 +67,35 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
 { 
   PROFILE_HERE;
   m_path = std::string("./");
+  char **oldargs(NULL);
+  std::string statuspath;
+  for (int i(1);i<argc;++i) {
+    std::string cur(argv[i]);
+    size_t pos(cur.find("STATUS_PATH"));
+    if (pos==0 && cur.length()>11 && cur[11]=='=') {
+      statuspath=cur.substr(12);
+      if (statuspath=="") continue;
+      Data_Reader reader;
+      reader.SetInputFile(statuspath+"cmd");
+      String_Matrix args;
+      reader.MatrixFromFile(args);
+      if (argc<(int)args.size()+1) {
+	argc=args.size()+1;
+	oldargs=argv;
+	argv = new char*[argc];
+	argv[0] = new char[strlen(oldargs[0])+1];
+	strcpy(argv[0],oldargs[0]);
+      }
+      for (int j(1);j<argc;++j) {
+	std::string cur(args[j-1].front());
+	for (size_t k(1);k<args[j-1].size();++k) cur+=args[j-1][k];
+	argv[j] = new char[cur.length()+1];
+	strcpy(argv[j],cur.c_str());
+      }
+      break;
+    }
+  }
+
   p_inithandler  = new Initialization_Handler(argc, argv);
   DrawLogo();
 
@@ -77,10 +106,14 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
   else {
     if (p_inithandler->InitializeTheFramework()) {
       if (!p_inithandler->CalculateTheHardProcesses()) return false;
-      Data_Reader reader(" ",";","!","=");
-      std::string statuspath;
-      if (reader.ReadFromFile(statuspath,"STATUS_PATH")) 
-	return exh->ReadInStatus(statuspath);
+      if (statuspath!="") {
+	bool res(exh->ReadInStatus(statuspath));
+	if (oldargs) {
+	  for (int i(0);i<argc;++i) delete [] argv[i];
+	  delete [] argv;
+	}
+	return res;
+      }
       return true;
     }
   }

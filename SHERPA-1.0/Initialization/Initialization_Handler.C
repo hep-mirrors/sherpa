@@ -18,6 +18,7 @@
 #include "Data_Collector.H"
 #include "Variable.H"
 #include "Lund_Interface.H"
+#include "Data_Writer.H"
 
 #include "Spin_Correlation_Tensor.H"
 
@@ -165,6 +166,10 @@ void Initialization_Handler::PrepareTerminate()
   CopyFile(m_path+m_analysisdat,path+m_analysisdat);
   CopyFile(m_path+"Particle.dat",path+"Particle.dat");
   CopyFile(m_path+"Hadron.dat",path+"Hadron.dat");
+  Data_Writer writer;
+  writer.SetOutputFile(path+"cmd");
+  writer.SetVectorType(vtc::vertical);
+  writer.VectorToFile(writer.CommandLine());
 }
 
 bool Initialization_Handler::InitializeTheFramework(int nr)
