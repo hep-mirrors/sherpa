@@ -27,7 +27,7 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr,
   p_suds(new Spacelike_Sudakov*[2]),
   m_allowed(200)
 {
-  double cplscalefac(ToType<double>
+  double cplscalefac(0.25*ToType<double>
 		     (rpa.gen.Variable("IS_CPL_SCALE_FACTOR","1.0")));
   m_t0=dabs(dataread->GetValue<double>("IS_PT2MIN",4.0));
   double shadron(dataread->GetValue<double>("IS_MAX_SCALE",
@@ -329,6 +329,23 @@ void Initial_State_Shower::ChooseMother(int &ntree0,int &ntree1,
 					Knot *&k1, Knot *&k2)
 {
   bool swap((k1->t > k2->t) && (k2->t != k2->tout));
+  bool known1(k1->stat==0 && k1->t != k1->tout), known2(k2->stat==0 && k2->t != k2->tout);
+
+  if (known1 || known2) {
+    bool save_swap(swap);
+    if (known1 && !known2) swap=false;
+    else if (!known1 && known2) swap=true;
+
+    if (known1 && known2) {
+      if (k1->prev->kn_no<k2->prev->kn_no) swap=false;
+      else swap=true;
+    }
+
+    if (swap!=save_swap) {
+      msg_Tracking()<<"Initial_State_Shower::ChooseMother changed swap according to known history \n";
+    }
+  }
+
   if (swap) {
     Knot * kh(k1);
     k1 =k2;
