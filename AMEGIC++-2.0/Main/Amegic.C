@@ -108,11 +108,13 @@ bool Amegic::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,PDF::ISR_Han
   p_beam              = _beam; 
   p_isr               = _isr;
   string processfile  = p_dataread->GetValue<string>("PROCESSFILE",string("Processes.dat"));
+  rpa.gen.SetVariable("PROCESSFILE",processfile);
   p_procs             = new All_Processes();
   p_procs->SetName("All_Processes");
   p_procs->SetAtoms(1);
 
   string selfile      = p_dataread->GetValue<string>("SELECTORFILE",string("Selector.dat"));
+  rpa.gen.SetVariable("SELECTORFILE",selfile);
   p_seldata           = new Selector_Data(m_path+selfile);
 
   ReadInProcessfile(processfile);

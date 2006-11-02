@@ -164,11 +164,22 @@ void Initialization_Handler::PrepareTerminate()
   CopyFile(m_path+m_fragmentationdat,path+m_fragmentationdat);
   CopyFile(m_path+m_hadrondecaysdat,path+m_hadrondecaysdat);
   CopyFile(m_path+m_analysisdat,path+m_analysisdat);
+  CopyFile(m_path+rpa.gen.Variable("SELECTORFILE"),
+	   path+rpa.gen.Variable("SELECTORFILE"));
+  CopyFile(m_path+rpa.gen.Variable("PROCESSFILE"),
+	   path+rpa.gen.Variable("PROCESSFILE"));
+  CopyFile(m_path+"Integration.dat",path+"Integration.dat");
   CopyFile(m_path+"Particle.dat",path+"Particle.dat");
   CopyFile(m_path+"Hadron.dat",path+"Hadron.dat");
   Data_Writer writer;
   writer.SetOutputFile(path+"cmd");
   writer.SetVectorType(vtc::vertical);
+  writer.AddCommandLine("SHERPA_RUN_PATH = "+
+			rpa.gen.Variable("SHERPA_RUN_PATH"));
+  writer.AddCommandLine("SHERPA_CPP_PATH = "+
+			rpa.gen.Variable("SHERPA_CPP_PATH"));
+  writer.AddCommandLine("SHERPA_LIB_PATH = "+
+			rpa.gen.Variable("SHERPA_LIB_PATH"));
   writer.VectorToFile(writer.CommandLine());
 }
 
@@ -762,10 +773,11 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
   special_options["PATH"]=101;
   special_options["RUNDATA"]=102;
   special_options["ECMS"]=103;
+  special_options["STATUS_PATH"]=110;
   special_options["PYTHIA"]=9000;
   special_options["EVTDATA"]=9999;
   
-
+  std::string datpath;
   
 
   for (int i=1; i<argc;++i) {
@@ -796,7 +808,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
     if (mode>=100) {
       MyStrStream s;
       switch (mode) {
-       case 101:
+      case 101:
 	if (value[value.length()-1]!='/') value+=std::string("/");
 	m_path=value;
 	break;
@@ -815,6 +827,10 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 	Data_Read::SetCommandLine("BEAM_ENERGY_2",value);
 	Read_Write_Base::AddCommandLine("BEAM_ENERGY_1 = "+value+"; ");
 	Read_Write_Base::AddCommandLine("BEAM_ENERGY_2 = "+value+"; ");
+	break;
+      case 110:
+	if (value[value.length()-1]!='/') value+=std::string("/");
+	datpath=value;
 	break;
       case 9000:
 	m_mode       = 9000;
@@ -907,6 +923,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       }
     }
   }
+  if (datpath!="") m_path=datpath;
   return m_mode;
 }
 

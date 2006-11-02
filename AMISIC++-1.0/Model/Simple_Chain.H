@@ -38,7 +38,7 @@ namespace AMISIC {
 
     double m_norm, m_enhance, m_maxreduction;
 
-    std::string m_xsextension, m_mcextension, m_pathextra;
+    std::string m_xsextension, m_mcextension, m_pathextra, m_selectorfile;
 
     EXTRAXS::Simple_XS *p_processes;
     FSR_Channel        *p_fsrinterface;

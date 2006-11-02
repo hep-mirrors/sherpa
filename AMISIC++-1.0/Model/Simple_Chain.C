@@ -289,15 +289,14 @@ bool Simple_Chain::CreateGrid()
   reader->AddWordSeparator("\t");
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile(2));
-  std::string selectorfile;
-  if (!reader->ReadFromFile(selectorfile,"MI_SELECTOR_FILE")) 
-    selectorfile="MICuts.dat";
+  if (!reader->ReadFromFile(m_selectorfile,"MI_SELECTOR_FILE")) 
+    m_selectorfile="MICuts.dat";
   p_processes = new EXTRAXS::Simple_XS(InputPath(),InputFile(1),p_model);
   if (p_processes->Size()>0) p_processes->Clear();
   p_processes->InitializeProcesses(p_beam,p_isr,false);  
   delete p_processes->SelectorData();
   p_processes->SetSelectorData
-    (new ATOOLS::Selector_Data(InputPath()+selectorfile));
+    (new ATOOLS::Selector_Data(InputPath()+m_selectorfile));
   p_processes->SetScaleScheme(m_scalescheme);
   p_processes->SetKFactorScheme(m_kfactorscheme);
   p_processes->XSSelector()->SetOffShell(p_isr->KMROn());
@@ -359,6 +358,7 @@ bool Simple_Chain::CreateGrid()
   }
   PHASIC::Vegas::SetOnExternal(vegas);
   exh->AddTerminatorObject(this);
+  Reset();
   return true;
 }
 
@@ -910,6 +910,7 @@ void Simple_Chain::PrepareTerminate()
   if (path=="") return;
   for (Amisic_Histogram_Map::const_iterator hit(m_differentials.begin());
        hit!=m_differentials.end();++hit) hit->second->RestoreData();
+  CopyFile(InputPath()+m_selectorfile,path+"/"+m_selectorfile);
   path+="/"+m_pathextra;
   MakeDir(path,493,true);
   p_gridcreator->WriteOutGrid(String_Vector(),path);

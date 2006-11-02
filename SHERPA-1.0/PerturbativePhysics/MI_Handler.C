@@ -44,7 +44,7 @@ MI_Handler::MI_Handler(std::string path,std::string file,MODEL::Model_Base *mode
   if (mihandler==std::string("Amisic")) {
     p_amisic = new AMISIC::Amisic(model,beam,isr);
     p_amisic->SetInputPath(path);
-    p_amisic->SetOutputPath(path);
+    p_amisic->SetOutputPath(ATOOLS::rpa.gen.Variable("SHERPA_RUN_PATH")+"/");
     p_amisic->SetInputFile(file);
     if (!p_amisic->Initialize()) {
       THROW(fatal_error,"Cannot initialize Amisic.");
