@@ -27,7 +27,7 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr,
   p_suds(new Spacelike_Sudakov*[2]),
   m_allowed(200)
 {
-  double cplscalefac(0.25*ToType<double>
+  double cplscalefac(ToType<double>
 		     (rpa.gen.Variable("IS_CPL_SCALE_FACTOR","1.0")));
   m_t0=dabs(dataread->GetValue<double>("IS_PT2MIN",4.0));
   double shadron(dataread->GetValue<double>("IS_MAX_SCALE",
@@ -51,12 +51,13 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr,
     p_suds[i]->SetRemnant(isr->GetRemnant(i));
     p_suds[i]->SetMaxScale(shadron);
     p_suds[i]->SetMinEnergy(emin);
-    p_suds[i]->SetPDFScaleFactor(cplscalefac);
+    p_suds[i]->SetPDFScaleFactor(rpa.gen.FactorizationScaleFactor());
     p_suds[i]->SetCouplingScaleFactor(cplscalefac);
     p_suds[i]->SetCouplingScheme(cplscheme);
     p_suds[i]->SetPDFScheme(pdfscheme);
     p_suds[i]->SetOrderingScheme(orderingscheme);
-    m_extra_pdf[i]=m_to_be_diced[i]=1;
+    m_extra_pdf[i]=0;
+    m_to_be_diced[i]=1;
     if (!p_suds[i]->Initialize()) 
       THROW(fatal_error,"failed to intialize is sudakov");
   }
@@ -82,8 +83,6 @@ int Initial_State_Shower::PerformShower(Tree **const trees,Tree *const fintree,
   p_suds[0]->ClearVetos();
   p_suds[1]->ClearVetos();
 #endif
-  if (jetvetoflag<0 || jetvetoflag>1) m_extra_pdf[0]=m_extra_pdf[1]=0;
-  else m_extra_pdf[0]=m_extra_pdf[1]=1;
   if (InitializeSystem(trees,trees[0]->GetRoot(),trees[1]->GetRoot())) {
     p_kin->BoostInCMS(trees,trees[0]->GetInitiator(),trees[1]->GetInitiator());
     m_lab=p_kin->BoostInLab(trees);
@@ -208,9 +207,8 @@ int Initial_State_Shower::EvolveSystem(Tree **const trees,Knot *k1,Knot *k2)
     if (mo->stat>0) {
       m_to_be_diced[ntree0]=0;
       // do not dice t for me knot
-      if (mo->part->Info()!='H' ||
-	  mo->prev==NULL || mo->prev->part->Info()!='H') 
-	if (!FillBranch(trees,k1->prev,k2,ntree0)) return 0; 
+      if (mo->prev==NULL || mo->prev->part->Info()!='H') 
+	if (!FillBranch(trees,k1->prev,k2,ntree0)) return 0;
     }
 
     double maxt(p_kin->CalculateMaxT(k1,k2));
@@ -331,23 +329,6 @@ void Initial_State_Shower::ChooseMother(int &ntree0,int &ntree1,
 					Knot *&k1, Knot *&k2)
 {
   bool swap((k1->t > k2->t) && (k2->t != k2->tout));
-  bool known1(k1->stat==0 && k1->t != k1->tout), known2(k2->stat==0 && k2->t != k2->tout);
-
-  if (known1 || known2) {
-    bool save_swap(swap);
-    if (known1 && !known2) swap=false;
-    else if (!known1 && known2) swap=true;
-
-    if (known1 && known2) {
-      if (k1->prev->kn_no<k2->prev->kn_no) swap=false;
-      else swap=true;
-    }
-
-    if (swap!=save_swap) {
-      msg_Tracking()<<"Initial_State_Shower::ChooseMother changed swap according to known history \n";
-    }
-  }
-
   if (swap) {
     Knot * kh(k1);
     k1 =k2;
