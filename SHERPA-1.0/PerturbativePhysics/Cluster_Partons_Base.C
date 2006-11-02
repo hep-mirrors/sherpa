@@ -67,6 +67,7 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
     m_sud_mode += 2;
   }
   m_events.resize(m_maxjetnumber,0);
+  m_meweight_sum.resize(m_maxjetnumber,0.0);
   m_weight_sum.resize(m_maxjetnumber,0.0);
   m_weight_sum_sqr.resize(m_maxjetnumber,0.0); 
   m_asweight_sum.resize(m_maxjetnumber,0.0);
@@ -101,18 +102,15 @@ void Cluster_Partons_Base::WriteOutWeights()
   msg_Info()<<"  Misclusterings: "<<m_fails/m_counts<<std::endl;
   for (int i=0;i<m_maxjetnumber;++i) {
     if (m_events[i]==0) continue;
-    double w_mean(m_weight_sum[i]/m_events[i]);
-    double w_sigma(sqrt(dabs(sqr(m_weight_sum[i]/m_events[i])
-			     - m_weight_sum_sqr[i]/m_events[i])/
-			(m_events[i]-1.0)));
-    double asw_mean(m_asweight_sum[i]/m_events[i]);
-    double asw_sigma(sqrt(dabs(sqr(m_asweight_sum[i]/m_events[i])
-			     - m_asweight_sum_sqr[i]/m_events[i])/
-			(m_events[i]-1.0)));
-    double sw_mean(m_sweight_sum[i]/m_events[i]);
-    double sw_sigma(sqrt(dabs(sqr(m_sweight_sum[i]/m_events[i])
-			     - m_sweight_sum_sqr[i]/m_events[i])/
-			(m_events[i]-1.0)));
+    double w_mean(m_weight_sum[i]/m_meweight_sum[i]);
+    double w_sigma(sqrt((m_weight_sum_sqr[i]/m_meweight_sum[i]
+			 -sqr(w_mean))/(m_events[i]-1.0)));
+    double asw_mean(m_asweight_sum[i]/m_meweight_sum[i]);
+    double asw_sigma(sqrt((m_asweight_sum_sqr[i]/m_meweight_sum[i]
+			   -sqr(asw_mean))/(m_events[i]-1.0)));
+    double sw_mean(m_sweight_sum[i]/m_meweight_sum[i]);
+    double sw_sigma(sqrt((m_sweight_sum_sqr[i]/m_meweight_sum[i]
+			  -sqr(sw_mean))/(m_events[i]-1.0)));
     msg_Info()<<"  <w>_{"<<(i+1)<<"-jet} = "<<std::setw(12)<<w_mean
 	      <<" +- "<<std::setw(12)<<w_sigma<<" ( "<<std::setw(12)
 	      <<(int(w_sigma*10000./w_mean))/100.<<" % )"<<std::endl;

@@ -170,7 +170,8 @@ int Cluster_Partons_CKKW::SetColours(EXTRAXS::XS_Base * xs,
     m_colors[i][0] = p_xs->Colours()[i][0];
     m_colors[i][1] = p_xs->Colours()[i][1];
   }
-  m_q2_fss = m_q2_iss = p_xs->Scale(stp::ren);
+  m_q2_fss=dabs(p_xs->Scale(stp::sfs));
+  m_q2_iss=dabs(p_xs->Scale(stp::sis));
   return test;
 }
 
@@ -184,7 +185,7 @@ void Cluster_Partons_CKKW::InitWeightCalculation()
   m_njet    = m_nlegs-2;
   m_nstrong = 0;
   for (int l=0; l<m_nlegs; ++l) {
-    if (p_ct->GetLeg(l).Point()->fl.Strong()) ++m_nstrong;
+    if (p_ct->GetLeg(l).Flav().Strong()) ++m_nstrong;
   }
   Combine_Table_Base *ct_test(p_ct);
   while (ct_test->Up()) {
@@ -236,17 +237,17 @@ InternalWeight(const bool is,Leg &leg,const double iupper,
   }
   double DeltaNum(0.), DeltaDenom(1.), DeltaRatio(0.);
   if (is) {
-    DeltaNum   = p_issud->Delta(leg.Point()->fl)(upper,qmin);
-    DeltaDenom = p_issud->Delta(leg.Point()->fl)(actual,qmin);
+    DeltaNum   = p_issud->Delta(leg.Flav())(upper,qmin);
+    DeltaDenom = p_issud->Delta(leg.Flav())(actual,qmin);
   }
   else {
-    DeltaNum   = p_fssud->Delta(leg.Point()->fl)(upper,qmin);
-    DeltaDenom = p_fssud->Delta(leg.Point()->fl)(actual,qmin);
+    DeltaNum   = p_fssud->Delta(leg.Flav())(upper,qmin);
+    DeltaDenom = p_fssud->Delta(leg.Flav())(actual,qmin);
   }
   DeltaRatio = DeltaNum/DeltaDenom;
   msg_Debugging()<<(is?"is":"fs")<<" weight \\Delta_{"
-		 <<leg.Point()->fl<<"}("<<upper<<","<<qmin
-		 <<")/\\Delta_{"<<leg.Point()->fl<<"}("<<actual<<","<<qmin
+		 <<leg.Flav()<<"}("<<upper<<","<<qmin
+		 <<")/\\Delta_{"<<leg.Flav()<<"}("<<actual<<","<<qmin
 		 <<") = "<<DeltaNum<<" / "<<DeltaDenom<<" = "
 		 <<DeltaRatio<<"\n";
   return DeltaRatio;
@@ -265,11 +266,11 @@ ExternalWeight(const bool is,Leg &leg,
     DeltaNum=1.0;
   }
   else {
-    if (is) DeltaNum = p_issud->Delta(leg.Point()->fl)(actual,qmin);
-       else DeltaNum = p_fssud->Delta(leg.Point()->fl)(actual,qmin);
+    if (is) DeltaNum = p_issud->Delta(leg.Flav())(actual,qmin);
+       else DeltaNum = p_fssud->Delta(leg.Flav())(actual,qmin);
   }
   msg_Debugging()<<(is?"is":"fs")<<" weight \\Delta_{"
-		 <<leg.Point()->fl<<"}("<<actual<<","<<qmin
+		 <<leg.Flav()<<"}("<<actual<<","<<qmin
 		 <<") = "<<DeltaNum<<"\n";
   return DeltaNum;
 }    
@@ -343,26 +344,31 @@ void Cluster_Partons_CKKW::WeightHardProcess()
 		 <<", ktmin_qed = "<<sqrt(kt2minqed)<<"\n";
   if (wminqcd>=0) {
     // check for scale definition from Single_XS
-    double mu2r(p_xs?p_xs->Scale(stp::ren):0.0);
+    double mu2r[2]={p_xs?m_q2_iss:0.0,p_xs?m_q2_fss:0.0};
     // override scale w/ local definition from SetColours
-    if (m_q2_hard<std::numeric_limits<double>::max()) mu2r=m_q2_hard;
-    double qu(sqrt(mu2r!=0.0?mu2r:p_ct->GetHardLegs()[wminqcd][0].KT2QCD()));
-    double ql(sqrt(mu2r!=0.0?mu2r:p_ct->GetHardLegs()[wminqcd][1].KT2QCD()));
+    if (m_q2_hard<std::numeric_limits<double>::max()) 
+      mu2r[1]=mu2r[0]=m_q2_hard;
+    if (mu2r[0]==std::numeric_limits<double>::max()) mu2r[0]=0.0; 
+    if (mu2r[1]==std::numeric_limits<double>::max()) mu2r[1]=0.0; 
+    double qu(sqrt(mu2r[0]!=0.0?mu2r[0]:
+		   p_ct->GetHardLegs()[wminqcd][0].KT2QCD()));
+    double ql(sqrt(mu2r[1]!=0.0?mu2r[1]:
+		   p_ct->GetHardLegs()[wminqcd][1].KT2QCD()));
     if (qu<ql) std::swap<double>(qu,ql);
     // if intermediate particle strong, apply sudakov weight
-    if (p_ct->GetHardLegs()[wminqcd][0].Point()->fl.Strong())
+    if (p_ct->GetHardLegs()[wminqcd][0].Flav().Strong())
       m_weight*=InternalWeight(0,p_ct->GetHardLegs()[wminqcd][0],
 			       qu,ql,m_qmin[0]);
     // set possibly separate scales for the two vertices
     for (short unsigned int i(0);i<4;++i) {
-      double rs(mu2r!=0.0?mu2r:p_ct->GetHardLegs()[wminqcd]
+      double rs(mu2r[i/2]!=0.0?mu2r[i/2]:p_ct->GetHardLegs()[wminqcd]
 		[p_ct->GetHardInfo()[wminqcd][i]].KT2QCD());
       m_last_q[i]=sqrt(rs);
     }
     for (short unsigned int i(0);i<2;++i) {
       Leg &leg(p_ct->GetHardLegs()[wminqcd][i]);
       if (leg.OrderQCD()>0) {
-	double rs(mu2r!=0.0?mu2r:leg.KT2QCD());
+	double rs(mu2r[i]!=0.0?mu2r[i]:leg.KT2QCD());
 	double asw(CouplingWeight(0,leg,sqrt(rs)));
 	m_weight*=asw;
 	m_asweight*=asw;
@@ -409,7 +415,7 @@ void Cluster_Partons_CKKW::WeightHardProcess()
   msg_Debugging()<<"} -> w = "<<m_weight<<"\n";
 }
 
-void Cluster_Partons_CKKW::CalculateWeight()
+void Cluster_Partons_CKKW::CalculateWeight(const double &meweight)
 {
   msg_Debugging()<<METHOD<<"(): {\n";
   msg_Indent();
@@ -432,13 +438,13 @@ void Cluster_Partons_CKKW::CalculateWeight()
     ptij = ct_tmp->GetWinner(i,j);
     strong_vertex = ct_down->GetLeg(i).OrderQCD()>0;
     if (ct_down->GetLeg(i).Point()->t<10) {
-      if (ct_down->GetLeg(i).Point()->fl.Strong())
+      if (ct_down->GetLeg(i).Flav().Strong())
 	m_weight*=InternalWeight(i<2,ct_down->GetLeg(i),m_last_q[i],
 				 ptij,ct_tmp->GetLeg(i).QMin());
     }
     else {
       msg_Debugging()<<"finishing production amplitude {\n";
-      if (ct_down->GetLeg(i).Point()->fl.Strong()) {
+      if (ct_down->GetLeg(i).Flav().Strong()) {
 	msg_Indent();
 	m_weight*=ExternalWeight(i<2,ct_down->GetLeg(i),m_last_q[i],
 				 ct_down->GetLeg(i).QMin());
@@ -466,7 +472,7 @@ void Cluster_Partons_CKKW::CalculateWeight()
 
   // External legs
   for (int l=0; l<m_nlegs; ++l) {
-    if (ct_tmp->GetLeg(l).Point()->fl.Strong()) {
+    if (ct_tmp->GetLeg(l).Flav().Strong()) {
       m_weight*=ExternalWeight(l<2,ct_tmp->GetLeg(l),
 			       m_last_q[l],ct_tmp->GetLeg(l).QMin());
     }
@@ -475,11 +481,12 @@ void Cluster_Partons_CKKW::CalculateWeight()
   msg_Debugging()<<"\n"<<*ct_tmp<<"\n";
   m_hard_nqed = m_nstrong-m_hard_nqcd-2;
   m_events[m_njet-1]         += 1;
-  m_weight_sum[m_njet-1]     += m_weight;
-  m_weight_sum_sqr[m_njet-1] += sqr(m_weight);
-  m_asweight_sum[m_njet-1]     += m_asweight;
-  m_asweight_sum_sqr[m_njet-1] += sqr(m_asweight);
-  m_sweight_sum[m_njet-1]     += m_weight/m_asweight;
-  m_sweight_sum_sqr[m_njet-1] += sqr(m_weight/m_asweight);
+  m_meweight_sum[m_njet-1]   += meweight;
+  m_weight_sum[m_njet-1]     += m_weight*meweight;
+  m_weight_sum_sqr[m_njet-1] += sqr(m_weight)*meweight;
+  m_asweight_sum[m_njet-1]     += m_asweight*meweight;
+  m_asweight_sum_sqr[m_njet-1] += sqr(m_asweight)*meweight;
+  m_sweight_sum[m_njet-1]     += m_weight/m_asweight*meweight;
+  m_sweight_sum_sqr[m_njet-1] += sqr(m_weight/m_asweight)*meweight;
 }
 

@@ -120,7 +120,11 @@ Return_Value::code Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob
     p_xs = p_cluster->GetXS(p_two2two,p_fl);
     p_cluster->SetColours(p_xs,p_moms,p_fl);
     p_cluster->SetQMin();
-    if (m_ckkwon) p_cluster->CalculateWeight();
+    double meweight(1.0);
+    Blob_Data_Base * message = (*blob)["ME_Weight"];
+    if (message) meweight = message->Get<double>();
+    else msg.Error()<<METHOD<<"(..): Missing weight information."<<std::endl;
+    if (m_ckkwon) p_cluster->CalculateWeight(meweight);
     p_blob_psme_FS->
       AddData("OrderStrong",new ATOOLS::Blob_Data<double>
 	      (p_cluster->OrderStrong()));
@@ -153,14 +157,9 @@ Return_Value::code Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob
 	// update me weight
 	Blob_Data_Base * message = (*blob)["ME_Weight"];
 	if (message) {
-	  double weight = message->Get<double>();
-	  weight*=m_weight;
-	  blob->AddData("ME_Weight",new Blob_Data<double>(weight));
+	  meweight*=m_weight;
+	  blob->AddData("ME_Weight",new Blob_Data<double>(meweight));
 	  blob->AddData("Sud_Weight",new Blob_Data<double>(m_weight));
-	}
-	else {
-	  msg.Out()<<"Amegic_Apacic_Interface::DefineInitialConditions(..): "
-		   <<"Missing signal process information."<<std::endl;
 	}
       }
       p_filler->SetQ2Cut(p_cluster->YCut()*sqr(rpa.gen.Ecms()));

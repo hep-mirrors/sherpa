@@ -39,7 +39,7 @@ namespace SHERPA {
 
     bool ClusterConfiguration(ATOOLS::Blob * blob,double x1=1.,double x2=1.);
     int  SetColours(EXTRAXS::XS_Base * xs, ATOOLS::Vec4D * p, ATOOLS::Flavour * fl);
-    void CalculateWeight();
+    void CalculateWeight(const double &meweight);
   };
 }
 

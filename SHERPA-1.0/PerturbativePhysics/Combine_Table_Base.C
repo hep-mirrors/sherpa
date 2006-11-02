@@ -109,7 +109,7 @@ std::ostream& SHERPA::operator<<(std::ostream& s ,const Combine_Table_Base & ct)
     for (int l=0; l<ct.m_nlegs; ++l) {
       double mc(ct.GetLeg(l).MinKT2QCD()), me(ct.GetLeg(l).MinKT2QED());
       s<<std::setw(3)<<l<<std::setw(8)
-       <<ct.p_legs[0][l].Point()->fl<<std::setw(4)
+       <<ct.p_legs[0][l].Flav()<<std::setw(4)
        <<ct.p_legs[0][l].Point()->t<<" "<<ct.GetLeg(l).OrderQCD()
        <<"/"<<ct.GetLeg(l).NQCD()<<" "<<ct.GetLeg(l).OrderQED()
        <<"/"<<ct.GetLeg(l).NQED()<<std::setw(12)
@@ -141,7 +141,7 @@ std::ostream& SHERPA::operator<<(std::ostream& s ,const Combine_Table_Base & ct)
 	for (int l=0;l<2;++l) {
 	  double mc(ct.p_hard[k][l].KT2QCD()), me(ct.p_hard[k][l].KT2QED());
 	  s<<std::setw(3)<<k<<"("<<l<<")"<<std::setw(8)
-	   <<ct.p_hard[k][l].Point()->fl<<std::setw(4)
+	   <<ct.p_hard[k][l].Flav()<<std::setw(4)
 	   <<ct.p_hard[k][l].Point()->t<<" "<<ct.p_hard[k][l].OrderQCD()
 	   <<"/"<<ct.p_hard[k][l].NQCD()<<" "<<ct.p_hard[k][l].OrderQED()
 	   <<"/"<<ct.p_hard[k][l].NQED()<<std::setw(12)<<(mc!=MAXD?sqrt(mc):-1)

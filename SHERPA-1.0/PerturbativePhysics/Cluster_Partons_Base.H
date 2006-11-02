@@ -43,7 +43,7 @@ namespace SHERPA {
 
     // some statistics:
     std::vector<long>    m_events;
-    std::vector<double>  m_weight_sum, m_asweight_sum, m_sweight_sum;
+    std::vector<double>  m_meweight_sum, m_weight_sum, m_asweight_sum, m_sweight_sum;
     std::vector<double>  m_weight_sum_sqr, m_asweight_sum_sqr, m_sweight_sum_sqr;
 
     void SetQMin(Combine_Table_Base *const ct,
@@ -73,7 +73,7 @@ namespace SHERPA {
     
     virtual EXTRAXS::XS_Base * GetXS(EXTRAXS::XS_Group *,ATOOLS::Flavour *)=NULL;
     virtual int                SetColours(EXTRAXS::XS_Base *,ATOOLS::Vec4D *,ATOOLS::Flavour *) = 0;
-    virtual void               CalculateWeight() = 0;
+    virtual void               CalculateWeight(const double &meweight) = 0;
     void SetQMin(Combine_Table_Base *const ref=NULL);
 
     ATOOLS::Flavour            Flav(int);
