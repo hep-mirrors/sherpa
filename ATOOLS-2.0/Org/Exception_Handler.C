@@ -129,7 +129,8 @@ void Exception_Handler::Terminate()
 {
   bool modifiable=msg.Modifiable();
   SetExitCode();
-  if ((m_signal!=SIGTERM && m_signal!=SIGINT) || m_exception!=NULL) {
+  if ((m_signal!=SIGTERM && m_signal!=SIGINT) || 
+      (m_exception!=NULL && m_exception->Type()!=ex::normal_exit)) {
     if (m_print) {
       msg.SetModifiable(false);
       GenerateStackTrace(msg.LogFile(),true,"! ");
