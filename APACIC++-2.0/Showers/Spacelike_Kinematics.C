@@ -21,16 +21,17 @@ void Spacelike_Kinematics::InitKinematics(Tree **const trees,Knot *const k1,
     msg.Error()<<METHOD<<"(..): No knots. Abort."<<std::endl;
     return;
   }  
-  if (first) BoostInCMS(trees,k1,k2);
+  double dir(1.0);
+  if (first) dir=BoostInCMS(trees,k1,k2);
   double t1(k1->part->Momentum().Abs2()), t2(k2->part->Momentum().Abs2());
   Vec4D  o1(k1->part->Momentum()), o2(k2->part->Momentum()), cms(o1+o2);
   double sprime(cms.Abs2()), rtsprime(sqrt(sprime));
   double E1((sprime+k1->t-k2->t)/(2.0*rtsprime)), E2(rtsprime-E1);
   double pz(sqrt(E1*E1-k1->t));
-  Vec4D  v1(E1,0.0,0.0,pz), v2(E2,0.0,0.0,-pz);
+  Vec4D  v1(E1,0.0,0.0,dir*pz), v2(E2,0.0,0.0,-dir*pz);
   if (first==1 && (!IsEqual(k1->t,t1)||!IsEqual(k2->t,t2))) {
     if (IsEqual(k1->t,t1)) {
-      double sgnt(k1->t<0.0?-1.0:1.0), p1(sqrt(o1[0]*o1[0]-k1->t));
+      double sgnt(k1->t<0.0?-dir:dir), p1(sqrt(o1[0]*o1[0]-k1->t));
       Vec4D b1(sgnt*(E1*o1[0]-pz*p1),0.0,0.0,-sgnt*(pz*o1[0]-E1*p1));
       m_boost=Poincare(b1);
       m_boost.Boost(o1);
@@ -44,7 +45,7 @@ void Spacelike_Kinematics::InitKinematics(Tree **const trees,Knot *const k1,
       trees[0]->BoRo(m_boost);
     }
     if (IsEqual(k2->t,t2)) {
-      double sgnt(k2->t<0.0?-1.0:1.0), p2(sqrt(o2[0]*o2[0]-k2->t));
+      double sgnt(k2->t<0.0?-dir:dir), p2(sqrt(o2[0]*o2[0]-k2->t));
       Vec4D b2(sgnt*(E2*o2[0]-pz*p2),0.0,0.0,sgnt*(pz*o2[0]-E2*p2));
       m_boost=Poincare(b2);
       m_boost.Boost(o2);
@@ -267,15 +268,19 @@ double Spacelike_Kinematics::BoostInCMS(Tree **const trees,
   m_boost=Poincare(cms);
   trees[0]->BoRo(m_boost);
   trees[1]->BoRo(m_boost);
-  
-  if(Vec3D(k1->part->Momentum()).Abs()==(-1.)*k1->part->Momentum()[3]) {
-    m_rot=Poincare(k1->part->Momentum(),Vec4D(1.,0.,0.,-1.));
+  double dir(0.0);
+  if (k1->part->Momentum()[3]<0.0) {
+    dir=-1.0;
+    m_rot=Poincare(k2->part->Momentum(),Vec4D::ZVEC);
   }
-  else m_rot=Poincare(k1->part->Momentum(),Vec4D::ZVEC);
+  else {
+    dir=1.0;
+    m_rot=Poincare(k1->part->Momentum(),Vec4D::ZVEC);
+  }
   
   trees[0]->BoRo(m_rot);
   trees[1]->BoRo(m_rot);
-  return cms.Abs2();
+  return dir;
 }
 
 double Spacelike_Kinematics::BoostFromCMS(Tree **const trees) 
