@@ -264,19 +264,15 @@ void Spacelike_Kinematics::BoostPartial(const int mode,
 double Spacelike_Kinematics::BoostInCMS(Tree **const trees,
 					Knot *const k1,Knot *const k2) 
 {
+  double dir(k1->part->Momentum()[3]>0.0?1.0:-1.0);
+  if (k2->part->Momentum().PSpat2()>k1->part->Momentum().PSpat2()) 
+    dir=k2->part->Momentum()[3]<0.0?1.0:-1.0;
   Vec4D cms(k1->part->Momentum()+k2->part->Momentum());
   m_boost=Poincare(cms);
   trees[0]->BoRo(m_boost);
   trees[1]->BoRo(m_boost);
-  double dir(0.0);
-  if (k1->part->Momentum()[3]<0.0) {
-    dir=-1.0;
-    m_rot=Poincare(k2->part->Momentum(),Vec4D::ZVEC);
-  }
-  else {
-    dir=1.0;
-    m_rot=Poincare(k1->part->Momentum(),Vec4D::ZVEC);
-  }
+  if (dir>0.0) m_rot=Poincare(k1->part->Momentum(),Vec4D::ZVEC);
+  else m_rot=Poincare(k2->part->Momentum(),Vec4D::ZVEC);
   
   trees[0]->BoRo(m_rot);
   trees[1]->BoRo(m_rot);
