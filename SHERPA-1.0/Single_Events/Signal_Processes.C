@@ -166,13 +166,16 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,
       }
       else THROW(fatal_error,"No remnant found.");
   }
-  bool unstable = false; 
+  bool unstable = false; Flavour unstable_flav;
   for (unsigned int i=p_mehandler->NIn();
        i<p_mehandler->NIn()+p_mehandler->NOut();i++) {
     particle = new Particle(i,p_mehandler->Flavours()[i],
 			    p_mehandler->Momenta()[i]);
     if( particle->Flav().Kfcode() != kf::tau )
-      if (!(particle->Flav().IsStable())) unstable = true;
+      if (!(particle->Flav().IsStable())) {
+        unstable = true;
+        unstable_flav = particle->Flav();
+      }
     particle->SetNumber(0);
     particle->SetStatus(part_status::active);
     particle->SetInfo('H');
@@ -193,7 +196,7 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,
     }
     else {
       msg.Error()<<"Error in Signal_Processes::FillBlob."<<std::endl
-		 <<"   No hard decay tables for "<<particle->Flav()<<". Abort."<<std::endl;
+		 <<"   No hard decay tables for "<<unstable_flav<<". Abort."<<std::endl;
       abort();
     }
   }
