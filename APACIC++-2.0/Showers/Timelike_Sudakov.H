@@ -102,6 +102,8 @@ namespace APACIC {
     inline void SetPT2MinQED(const double &pt2)   
     { m_t0_qed=4.0*(m_pt2min_qed=pt2); }
 
+    inline int OrderingScheme() const { return m_ordering_scheme; }
+
     inline double ScaleFactor() const { return m_rscalefac; }
     inline double PT2Min() const      { return m_pt2min;    }
 

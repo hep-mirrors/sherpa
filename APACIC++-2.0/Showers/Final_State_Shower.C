@@ -83,7 +83,8 @@ TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
 #ifdef USING__Veto_Info
   p_sud->SetMode(1);
 #endif
-  mo->thcrit=M_PI;
+  mo->sthcrit=mo->thcrit=M_PI;
+  mo->smaxpt2=mo->maxpt2=1.0e10;
   if (mo->part->Info()=='H' && mo->left && mo->right) {
     mo->Store();
     EstablishRelations(mo,mo->left,mo->right);
@@ -102,12 +103,29 @@ TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
       mo->Store();
       int stat(jetveto?p_jv->TestISKinematics(mo->prev,partner):1);
       if (stat!=1) continue;
-      double th(p_kin->GetOpeningAngle(mo->z,mo->E2,mo->t,
-				       sqr(p_sud->GetFlB().PSMass()),
-				       sqr(p_sud->GetFlC().PSMass())));
-      double thmo(mo->part->Momentum().Theta());
-      if (mo->part->Momentum()[3]<0.0) thmo=M_PI-thmo;
-      if (th>thmo) continue;
+      switch (p_sud->OrderingScheme()) {
+      case 1: {
+	double th(p_kin->GetOpeningAngle(mo->z,mo->E2,mo->t,
+					 sqr(p_sud->GetFlB().PSMass()),
+					 sqr(p_sud->GetFlC().PSMass())));
+	double thmo(mo->part->Momentum().Theta());
+	if (mo->part->Momentum()[3]<0.0) thmo=M_PI-thmo;
+	if (th>thmo) continue;
+	mo->sthcrit=mo->thcrit=thmo;
+	break;
+      }
+      case 2: {
+	double kt2(p_kin->GetRelativeKT2(mo->z,mo->E2,mo->t,
+					sqr(p_sud->GetFlB().PSMass()),
+					sqr(p_sud->GetFlC().PSMass())));
+	double kt2mo(mo->part->Momentum().PPerp2());
+	if (kt2>kt2mo) continue;
+	mo->smaxpt2=mo->maxpt2=kt2mo;
+	break;
+      }
+      default:
+	break;
+      }
       mo->stat=1;
       InitDaughters(tree,mo,p_sud->GetFlB(),p_sud->GetFlC(),
 		    Simple_Polarisation_Info(),Simple_Polarisation_Info(),1);
@@ -119,6 +137,8 @@ TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
 	return 1;
       }
       Reset(mo);
+      mo->sthcrit=mo->thcrit=M_PI;
+      mo->smaxpt2=mo->maxpt2=1.0e10;
     }
     msg_Debugging()<<"reset knot "<<mo->kn_no<<"\n";
     Reset(mo);
