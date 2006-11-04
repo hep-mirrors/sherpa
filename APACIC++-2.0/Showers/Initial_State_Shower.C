@@ -187,28 +187,27 @@ int Initial_State_Shower::EvolveSystem(Tree **const trees,Knot *k1,Knot *k2)
   ChooseMother(ntree0,ntree1,k1,k2);
   int caught_jetveto(0);
   while (true) {
+    Knot *mo(k1->prev);
     if (k1->stat>0 || caught_jetveto) {
-      k1->stat           = 0;
-      k1->E2             = sqr(k1->part->Momentum()[0]);
-      k1->prev->E2       = k1->E2/sqr(k1->z);                      
-      k1->prev->left->E2 = k1->prev->E2*sqr(1.-k1->z);
+      k1->stat     = 0;
+      k1->E2       = sqr(k1->part->Momentum()[0]);
+      mo->E2       = k1->E2/sqr(k1->z);                      
+      mo->left->E2 = mo->E2*sqr(1.-k1->z);
     }  
     else {
       double sprime_a((k1->part->Momentum()+k2->part->Momentum()).Abs2());
-      double sprime_b((k1->prev->part->Momentum()+k2->part->Momentum()).Abs2());
+      double sprime_b((mo->part->Momentum()+k2->part->Momentum()).Abs2());
       k1->z=sprime_a/sprime_b;
-      k1->prev->x=k1->x/k1->z;
-
-      if (k1->prev->x>1.) return 0;
-
+      mo->x=k1->x/k1->z;
+      if (mo->x>1.0) return 0;
       m_sprime/=k1->z;
     }
-    Knot *mo(k1->prev);
     if (mo->stat>0) {
       m_to_be_diced[ntree0]=0;
       // do not dice t for me knot
-      if (mo->prev==NULL || mo->prev->part->Info()!='H') 
-	if (!FillBranch(trees,k1->prev,k2,ntree0)) return 0;
+      if (mo->part->Info()!='H' ||
+	  mo->prev==NULL || mo->prev->part->Info()!='H') 
+	if (!FillBranch(trees,mo,k2,ntree0)) return 0;
     }
 
     double maxt(p_kin->CalculateMaxT(k1,k2));
@@ -219,7 +218,6 @@ int Initial_State_Shower::EvolveSystem(Tree **const trees,Knot *k1,Knot *k2)
 	mo->left->tmax=maxt;
       }
     } 
-  
     if (caught_jetveto==0) {
       if (p_fin) {
 	double sprime_a = (k1->part->Momentum()+k2->part->Momentum()).Abs2();
