@@ -485,13 +485,14 @@ void Tree_Filler::DetermineColourAngles(const std::vector<APACIC::Knot *> & knot
   Vec4D * moms = new Vec4D[n];
   for (int i=0;i<n;++i) moms[i] = knots[i]->part->Momentum();
   
+  bool dir(moms[0][3]>0.0);
+  if (moms[0].PSpat2()<moms[1].PSpat2()) dir=moms[1][3]<0.0;
   Poincare cms(moms[0]+moms[1]);
   for (int i=0;i<n;++i) knots[i]->part->SetMomentum(cms*knots[i]->part->Momentum());
   
   Poincare zaxis;
-  if (Vec3D(knots[0]->part->Momentum()).Abs()==(-1.)*knots[0]->part->Momentum()[3])
-    zaxis = Poincare(knots[0]->part->Momentum(),Vec4D(1.,0.,0.,-1.));
-  else zaxis = Poincare(knots[0]->part->Momentum(),Vec4D::ZVEC);
+  if (dir) zaxis = Poincare(knots[0]->part->Momentum(),Vec4D::ZVEC);
+  else zaxis = Poincare(knots[1]->part->Momentum(),Vec4D::ZVEC);
   
   for (int i=0;i<n;++i) knots[i]->part->SetMomentum(zaxis*knots[i]->part->Momentum());
   for (int i=0;i<n;++i) {

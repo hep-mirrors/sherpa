@@ -124,12 +124,13 @@ bool Combine_Table_CKKW::InitStep(ATOOLS::Vec4D *moms,const int nl)
   bool did_boost(false);
   if (!(Vec3D(p_moms[0])==Vec3D(-1.*p_moms[1]))) {
     Poincare cms, zaxis;
+    bool dir(p_moms[0][3]>0.0);
+    if (p_moms[0].PSpat2()<p_moms[1].PSpat2()) dir=p_moms[1][3]<0.0;
     cms   = Poincare(p_moms[0]+p_moms[1]);
     for (size_t i=0;i<m_nl;++i) cms.Boost(p_moms[i]);
     
-    if (Vec3D(p_moms[0]).Abs()==(-1)*p_moms[0][3])
-      zaxis = Poincare(p_moms[0],Vec4D(1.,0.,0.,-1.));
-    else zaxis = Poincare(p_moms[0],Vec4D::ZVEC);
+    if (dir) zaxis = Poincare(p_moms[0],Vec4D::ZVEC);
+    else zaxis = Poincare(p_moms[1],Vec4D::ZVEC);
     
     for (size_t i=0;i<m_nl;++i) zaxis.Rotate(p_moms[i]);
     did_boost = true;
