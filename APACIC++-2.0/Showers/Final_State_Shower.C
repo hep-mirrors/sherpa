@@ -83,7 +83,10 @@ TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
 #ifdef USING__Veto_Info
   p_sud->SetMode(1);
 #endif
-  mo->thcrit=M_PI;
+  if (mo->thcrit!=M_PI) {
+    Knot *si(mo->prev->right);
+    mo->thcrit=sqrt(dabs(si->t)/((1.0-si->z)*si->E2));
+  }
   if (mo->part->Info()=='H' && mo->left && mo->right) {
     mo->Store();
     EstablishRelations(mo,mo->left,mo->right);
@@ -102,10 +105,6 @@ TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
       mo->Store();
       int stat(jetveto?p_jv->TestISKinematics(mo->prev,partner):1);
       if (stat!=1) continue;
-      double th(p_kin->GetOpeningAngle(mo->z,mo->E2,mo->t,
-				       sqr(p_sud->GetFlB().PSMass()),
-				       sqr(p_sud->GetFlC().PSMass())));
-      if (th>mo->part->Momentum().Theta()) continue;
       mo->stat=1;
       InitDaughters(tree,mo,p_sud->GetFlB(),p_sud->GetFlC(),
 		    Simple_Polarisation_Info(),Simple_Polarisation_Info(),1);
