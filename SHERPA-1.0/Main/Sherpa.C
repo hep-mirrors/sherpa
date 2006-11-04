@@ -76,6 +76,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
     if (pos==0 && cur.length()>11 && cur[11]=='=') {
       statuspath=cur.substr(12);
       if (statuspath=="") continue;
+      if (statuspath[statuspath.length()-1]!='/') statuspath+=std::string("/");
       Data_Reader reader;
       reader.SetInputFile(statuspath+"cmd");
       String_Matrix args;
