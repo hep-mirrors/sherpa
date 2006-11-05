@@ -28,6 +28,9 @@ bool Lund_Interface::s_exportpdf=false;
 size_t Lund_Interface::s_errors=0;
 size_t Lund_Interface::s_maxerrors=0;
 
+int * Lund_Interface::s_saved_mrpy=new int[6];
+double * Lund_Interface::s_saved_rrpy=new double[100];
+
 ATOOLS::Blob_List *Lund_Interface::s_bloblist=NULL; 
 PDF::ISR_Handler *Lund_Interface::s_isrhandler=NULL; 
 
@@ -40,6 +43,7 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
   p_jmohep(new int[2*4000]),
   p_jdahep(new int[2*4000])
 {
+  exh->AddTerminatorObject(this);
   double win;
   string beam[2], frame("CMS");
   Flavour flav[2];
@@ -258,6 +262,7 @@ double Lund_Interface::DiceMass(Flavour flav, double min, double max)
 
 Lund_Interface::~Lund_Interface()
 {
+  exh->RemoveTerminatorObject(this);
   NextFile(false);
   if (p_hepevt) { 
     p_hepevt->SetNhep(0);
@@ -575,6 +580,68 @@ void Lund_Interface::FillOutgoingParticlesInBlob(Blob *blob)
     blob->SetPosition(position);
     blob->AddToOutParticles(particle);
   }
+}
+
+void Lund_Interface::RestoreStatus() {
+  for(int i=0;i<6;i++) {
+    pydatr.mrpy[i] = s_saved_mrpy[i];
+  }
+  for(int i=0;i<100;i++) {
+    pydatr.rrpy[i] = s_saved_rrpy[i];
+  }
+}
+
+void Lund_Interface::SaveStatus() {
+  for(int i=0;i<6;i++) {
+    s_saved_mrpy[i] = pydatr.mrpy[i];
+  }
+  for(int i=0;i<100;i++) {
+    s_saved_rrpy[i] = pydatr.rrpy[i];
+  }
+}
+
+bool Lund_Interface::ReadInStatus(const std::string &path)
+{
+  ReadInStatus((path+"Lund_random.dat").c_str(),0);
+  return true;
+}
+
+void Lund_Interface::ReadInStatus(const std::string &filename, int mode) {
+  ifstream myinstream(filename.c_str());
+  if (myinstream.good()) {
+    for(int i=0;i<6;i++) {
+      myinstream>>pydatr.mrpy[i];
+    }
+    for(int i=0;i<100;i++) {
+      myinstream>>pydatr.rrpy[i];
+    }
+    myinstream.close();
+  }
+  else msg.Error()<<"ERROR in "<<METHOD<<": "<<filename<<" not found!!"<<endl;
+}
+
+void Lund_Interface::WriteOutStatus(const std::string &filename)
+{
+  ofstream myoutstream(filename.c_str());
+  if (myoutstream.good()) {
+    for(int i=0;i<6;i++) {
+      myoutstream<<pydatr.mrpy[i]<<"\t";
+    }
+    for(int i=0;i<100;i++) {
+      myoutstream<<pydatr.rrpy[i]<<"\t";
+    }
+    myoutstream<<endl;
+    myoutstream.close();
+  }
+  else msg.Error()<<"ERROR in "<<METHOD<<": "<<filename<<" not found!!"<<endl;
+}
+
+void Lund_Interface::PrepareTerminate()
+{
+  std::string path(rpa.gen.Variable("SHERPA_STATUS_PATH"));
+  if (path=="") return;
+  RestoreStatus();
+  WriteOutStatus((path+"/Lund_random.dat").c_str());
 }
 
 void Lund_Interface::Error(const int error)

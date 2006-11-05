@@ -3,6 +3,7 @@
 #include "Run_Parameter.H"
 #include "My_Limits.H"
 #include "Signal_Processes.H"
+#include "Lund_Interface.H"
 #include <unistd.h>
 #include <cassert>
 
@@ -125,6 +126,7 @@ void Event_Handler::Reset(const bool sameevent)
   Particle::Reset();
   Flow::ResetCounter();
   ATOOLS::Vec4D::ResetAccu();
+  Lund_Interface::SaveStatus();
 } 
 
 bool Event_Handler::GenerateEvent(int mode) 

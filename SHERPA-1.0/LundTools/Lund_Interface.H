@@ -3,6 +3,7 @@
 
 #include "Flavour.H"
 #include "Return_Value.H"
+#include "Exception.H"
 #include <list>
 #include <map>
 
@@ -19,7 +20,7 @@ namespace PDF {
 namespace SHERPA {
   class HepEvt_Interface;
 
-  class Lund_Interface {
+  class Lund_Interface : public ATOOLS::Terminator_Object {
   private:
     static size_t s_errors, s_maxerrors;
 
@@ -40,6 +41,9 @@ namespace SHERPA {
 
     static bool s_exportas, s_exportpdf;
 
+    static int    * s_saved_mrpy;
+    static double * s_saved_rrpy;
+
     void NextFile(const bool newfile);
 
     // preparing and doing the fragmentation
@@ -50,6 +54,12 @@ namespace SHERPA {
     void AddPartonToString(ATOOLS::Particle *,int &);
     void FillFragmentationBlob(ATOOLS::Blob *);
     void FillOutgoingParticlesInBlob(ATOOLS::Blob *);
+
+    void RestoreStatus();
+    bool ReadInStatus(const std::string &path);
+    void ReadInStatus(const std::string &file, int mode);
+    void WriteOutStatus(const std::string &file);
+    void PrepareTerminate();
   public:
 
     Lund_Interface(std::string _m_path,std::string _m_file,bool sherpa);
@@ -73,6 +83,7 @@ namespace SHERPA {
     void AdjustProperties(ATOOLS::Flavour flav);
     void SwitchOffMassSmearing();
     double DiceMass(ATOOLS::Flavour flav, double min, double max);
+    static void SaveStatus();
   };// end of class Lund_Interface
 
   /*!
