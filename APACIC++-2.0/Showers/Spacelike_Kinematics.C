@@ -19,7 +19,7 @@ bool Spacelike_Kinematics::InitKinematics(Tree **const trees,Knot *const k1,
 {
   if (k1==NULL || k2==NULL) {
     msg.Error()<<METHOD<<"(..): No knots. Abort."<<std::endl;
-    return;
+    return false;
   }  
   double dir(1.0);
   if (first) dir=BoostInCMS(trees,k1,k2);
