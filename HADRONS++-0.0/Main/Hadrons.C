@@ -70,7 +70,7 @@ bool Hadrons::FindDecay(const ATOOLS::Flavour & Decayer)
   return true;
 }
 
-Poincare Hadrons::GetSignalProcessCMSBoost(Particle* inpart)
+Blob* Hadrons::GetSignalProcessBlob(Particle* inpart)
 {
   Blob* sp_blob=inpart->ProductionBlob();
   while(sp_blob) {
@@ -81,42 +81,49 @@ Poincare Hadrons::GetSignalProcessCMSBoost(Particle* inpart)
     msg.Error()<<METHOD<<" Error: Didn't find signal process blob for spin "
       <<"correlations."<<endl;
   }
-  return Poincare(sp_blob->CMS());
+  return sp_blob;
 }
 
-Amplitude_Tensor* Hadrons::GetMotherAmplitudes(Particle* inpart,
+Amplitude_Tensor* Hadrons::GetMotherAmplitudes(Particle* part,
                                                Particle*& contracting_part,
                                                const Vec4D& labmom)
 {
-  Blob* motherblob = inpart->ProductionBlob();
+  /** try to go up step by step along _decay_ blobs, to find a blob where an
+      amplitude tensor containing this particle has been stored */
+  Blob* motherblob = part->ProductionBlob();
   while(motherblob) {
     Blob_Data_Base* scdata = (*motherblob)["amps"];
     if(scdata) {
       Amplitude_Tensor* amps = scdata->Get<Amplitude_Tensor*>();
-      if(amps->Contains(contracting_part)) {
-        return amps;
-      }
-      else {
-        msg.Error()<<METHOD<<" Warning: motherblob amplitudes don't contain inpart."<<endl;
-      }
+      if(amps->Contains(part)) return amps;
+      else                     return NULL;
     }
     else {
-      // don't try correlations if pythia blob is inbetween:
-      if(motherblob->TypeSpec()=="Pythia_v6.214") return NULL;
-      inpart = motherblob->InParticle(0);
-      if(motherblob->NInP()==1 && motherblob->NOutP()==1 &&
-	motherblob->InParticle(0)->Flav() == inpart->Flav() &&
-	motherblob->InParticle(0)->Momentum() == labmom
-	)
-      {
-        // for fragmentation or shower blobs, where the particle is only duplicated:
-        contracting_part = inpart;
-      }
-      // look one step further up
-      motherblob = inpart->ProductionBlob();
+      if(motherblob->Type()==btp::Hadron_Decay)
+        motherblob = motherblob->InParticle(0)->ProductionBlob();
+      else break;
     }
+    /** stop the search if we encounter a pythia blob  (no spin corrrelations there) */
+    if(motherblob->TypeSpec()=="Pythia_v6.214") return NULL;
   }
-  return NULL;
+
+  /** if above didn't succeed, let's look if the signal process blob has an
+      amplitude tensor for this particle */
+  Blob* spblob = GetSignalProcessBlob(part);
+  Blob_Data_Base* scdata = (*spblob)["amps"];
+  if(scdata) {
+    Amplitude_Tensor* amps = scdata->Get<Amplitude_Tensor*>();
+    /** If it directly contains our particle -> fine, return. */
+    if(amps->Contains(part)) return amps;
+    /** If it contains a duplicate of our particle, e.g. because there was a
+        duplicating fragmentation blob or ME_PS_Interface inbetween: */
+    else if(amps->Contains(part->OriginalPart())) {
+      contracting_part = part->OriginalPart();
+      return amps;
+    }
+    else return NULL; // didn't find a duplicate of our particle
+  }
+  else return NULL;
 }
 
 Hadron_Decay_Channel * Hadrons::ChooseDecayChannel(Blob* blob)
@@ -200,7 +207,7 @@ void Hadrons::ChooseDecayKinematics(
       
       Poincare labboost(labmom);
       labboost.Invert();
-      Poincare spcmsboost = GetSignalProcessCMSBoost(inpart);
+      Poincare spcmsboost = Poincare( GetSignalProcessBlob(inpart)->CMS() );
       vector<Vec4D> boosted_moms(n);
       boosted_moms[0]=spcmsboost*(labboost*moms[0]);
 

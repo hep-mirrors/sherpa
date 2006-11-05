@@ -46,7 +46,7 @@ namespace HADRONS {
     ATOOLS::Decay_Table * InitialiseOneDecayTable(std::vector<std::string>);
 
     bool                  FindDecay( const ATOOLS::Flavour & );
-    ATOOLS::Poincare GetSignalProcessCMSBoost(ATOOLS::Particle* inpart);
+    ATOOLS::Blob* GetSignalProcessBlob(ATOOLS::Particle* inpart);
     ATOOLS::Amplitude_Tensor * GetMotherAmplitudes(ATOOLS::Particle* inpart,
       ATOOLS::Particle*& outpart,const ATOOLS::Vec4D& labmom);
 

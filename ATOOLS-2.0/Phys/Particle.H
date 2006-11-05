@@ -32,6 +32,7 @@ namespace ATOOLS {
     Vec4D             m_momentum; 
     Flow            * p_flow;
     Blob            * p_startblob, * p_endblob;
+    Particle        * p_originalpart;
     double            m_dec_time, m_finalmass;
     static int        s_totalnumber;
   public:
@@ -63,6 +64,7 @@ namespace ATOOLS {
     unsigned int      GetFlow( unsigned int ) const ;
     int               Number() const;
     int               JetNumber() const;
+    Particle        * OriginalPart() const;
     void   SetMomentum(const Vec4D &);
     void   SetFinalMass(const double=-1,const double=-1);
     void   SetStatus(part_status::code=part_status::undefined);
@@ -76,6 +78,7 @@ namespace ATOOLS {
     void   SetFlow(int code_index,int code=0);
     void   SetNumber(const int number=0);
     void   SetJetNumber(const int);
+    void   SetOriginalPart(Particle*);
     bool operator==(Particle part);
     static void   ResetCounter(const int number=0)  { s_totalnumber = number; }
     static int    Counter()                         { return s_totalnumber; }
