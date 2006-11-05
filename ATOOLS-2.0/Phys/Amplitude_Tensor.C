@@ -131,9 +131,7 @@ Amplitude_Tensor ATOOLS::Contraction(Particle* part1, Particle* part2,
 
 void Amplitude_Tensor::Contract( Particle* part1, Amplitude_Tensor* const amps, Particle* part2 )
 {
-  Amplitude_Tensor contraction = Contraction(part1,part2,this,amps);
-//   this->Recreate( &contraction );
-  (*this) = contraction;
+  (*this) = Contraction(part1,part2,this,amps);
 }
 
 double Amplitude_Tensor::SoftContract( Particle* part1,
