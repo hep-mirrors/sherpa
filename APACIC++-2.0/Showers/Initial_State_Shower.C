@@ -132,7 +132,7 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2)
       }
     }
     if (accepted) {
-      p_kin->InitKinematics(trees,k1,k2,first);
+      if (!p_kin->InitKinematics(trees,k1,k2,first)) return false;
       if (!decay1) SetColours(k1);
       if (!decay2) SetColours(k2);
       p_suds[0]->AcceptBranch(k1);

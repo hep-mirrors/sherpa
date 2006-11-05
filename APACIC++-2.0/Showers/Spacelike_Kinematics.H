@@ -32,7 +32,7 @@ namespace APACIC {
     ~Spacelike_Kinematics();
 
     // member functions
-    void InitKinematics(Tree **const trees,Knot *const k1, Knot *const k2,
+    bool InitKinematics(Tree **const trees,Knot *const k1, Knot *const k2,
 			const int &first);
     bool DoKinematics(Tree **const trees,Knot *const act,Knot *const part,
 		      const int &leg,const bool test);

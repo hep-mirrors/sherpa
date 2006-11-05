@@ -14,7 +14,7 @@ Spacelike_Kinematics::~Spacelike_Kinematics()
   if (p_kin) delete p_kin;
 }
 
-void Spacelike_Kinematics::InitKinematics(Tree **const trees,Knot *const k1, 
+bool Spacelike_Kinematics::InitKinematics(Tree **const trees,Knot *const k1, 
 					  Knot *const  k2,const int &first) 
 {
   if (k1==NULL || k2==NULL) {
@@ -31,36 +31,39 @@ void Spacelike_Kinematics::InitKinematics(Tree **const trees,Knot *const k1,
   Vec4D  v1(E1,0.0,0.0,dir*pz), v2(E2,0.0,0.0,-dir*pz);
   if (first==1 && (!IsEqual(k1->t,t1)||!IsEqual(k2->t,t2))) {
     if (IsEqual(k1->t,t1)) {
-      double sgnt(k1->t<0.0?-dir:dir), p1(sqrt(o1[0]*o1[0]-k1->t));
-      Vec4D b1(sgnt*(E1*o1[0]-pz*p1),0.0,0.0,-sgnt*(pz*o1[0]-E1*p1));
+      double sgnt(k1->t<0.0?-1.0:1.0), p1(sqrt(o1[0]*o1[0]-k1->t));
+      Vec4D b1(sgnt*(E1*o1[0]-pz*p1),0.0,0.0,dir*sgnt*(E1*p1-pz*o1[0]));
       m_boost=Poincare(b1);
       m_boost.Boost(o1);
       if (!(o1==v1)) {
-	msg.Error()<<METHOD<<"(..): Four momentum not conserved.\n"
+	msg.Error()<<METHOD<<"(..): Four momentum not conserved on tree 1.\n"
 		   <<"  p_miss  = "<<(v1-o1)<<"\n"
 		   <<"  p_old   = "<<o1<<" "<<o1.Abs2()<<" <- "<<k1->t<<"\n"
 		   <<"  p_new   = "<<v1<<" "<<v1.Abs2()<<" <- "<<k1->t<<"\n"
 		   <<"  p_boost = "<<b1<<" "<<b1.Abs2()<<std::endl;
+	return false;
       }
       trees[0]->BoRo(m_boost);
     }
     if (IsEqual(k2->t,t2)) {
-      double sgnt(k2->t<0.0?-dir:dir), p2(sqrt(o2[0]*o2[0]-k2->t));
-      Vec4D b2(sgnt*(E2*o2[0]-pz*p2),0.0,0.0,sgnt*(pz*o2[0]-E2*p2));
+      double sgnt(k2->t<0.0?-1.0:1.0), p2(sqrt(o2[0]*o2[0]-k2->t));
+      Vec4D b2(sgnt*(E2*o2[0]-pz*p2),0.0,0.0,-dir*sgnt*(E2*p2-pz*o2[0]));
       m_boost=Poincare(b2);
       m_boost.Boost(o2);
       if (!(o2==v2)) {
-	msg.Error()<<METHOD<<"(..): Four momentum not conserved.\n"
+	msg.Error()<<METHOD<<"(..): Four momentum not conserved on tree 2.\n"
 		   <<"  p_miss  = "<<(v2-o2)<<"\n"
 		   <<"  p_old   = "<<o2<<" "<<o2.Abs2()<<" <- "<<k2->t<<"\n"
 		   <<"  p_new   = "<<v2<<" "<<v2.Abs2()<<" <- "<<k2->t<<"\n"
 		   <<"  p_boost = "<<b2<<" "<<b2.Abs2()<<std::endl;
+	return false;
       }
       trees[1]->BoRo(m_boost);
     }
   }
   k1->part->SetMomentum(v1);
   k2->part->SetMomentum(v2);  
+  return true;
 }
 
 bool Spacelike_Kinematics::DoKinematics(Tree **const trees,Knot *const active,
