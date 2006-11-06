@@ -23,7 +23,8 @@ Return_Value::code HadronDecays_Apacic_Interface::DefineInitialConditions(ATOOLS
   p_blob->SetStatus(blob_status::needs_hadronization);
   p_blob->SetId();
   unsigned int pos,refpos,compare;
-  int          ref,comppos;
+  int          comppos;
+  size_t       ref;
   bool         chain(false);
   list<Particle *> * singlet;
   Particle * part;

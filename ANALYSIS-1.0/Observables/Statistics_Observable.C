@@ -55,7 +55,6 @@ void Statistics_Observable::Evaluate(const Blob_List &  blobs,double value, int 
 
   double xsecweight=(*p_ana)["XS_Weight"]->Get<double>();
   double sudweight=(*p_ana)["Sud_Weight"]->Get<double>();
-  int xsecntrials=(*p_ana)["XS_NumberOfTrials"]->Get<int>();
   m_nevt+=ncount;
   cit->second.nevt+=ncount;
   cit->second.xsnevt+=1;

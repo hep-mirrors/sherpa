@@ -4,7 +4,7 @@
 #include "Run_Parameter.H"
 #include "MyStrStream.H"
 #include "MathTools.H"
-#include <iostream.h>
+#include <iostream>
 
 using namespace ATOOLS;
 using namespace AMEGIC;
