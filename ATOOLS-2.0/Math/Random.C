@@ -251,8 +251,10 @@ void Random::ReadInStatus(const char * filename, long int index){
   ifstream file(filename);
   // Check if the first 20 bytes in file are a known identifier and
   // set the activeGenerator variable accordingly
-  file.read((char*) &status.idTag, sizeof(status.idTag));
-  if (strcmp(status.idTag,  "Rnd4_G_Marsaglia"))
+  char temp[16];
+  file.read((char*) temp, sizeof(temp));
+  strcpy(status.idTag,temp);
+  if (strcmp(temp,"Rnd4_G_Marsaglia"))
     { activeGenerator = 2; } else { activeGenerator = 4; }
   file.close();
   
@@ -477,7 +479,9 @@ void Random::ReadInStatus4(const char * filename, long int index)
     file.seekg(index*sizeof(Ran4Status));
     file.read((char*) (&status), sizeof(Ran4Status));
 
-    if (strcmp(status.idTag, "Rnd4_G_Marsaglia")) {
+    char temp[16];
+    strncpy(temp,status.idTag,16);
+    if (strcmp(temp, "Rnd4_G_Marsaglia")) {
       // Data read in was not from a RndGen of the same type
       msg.Error()<<"WARNING in Random::ReadInStatus4: Data read from "<<filename;
       msg.Error()<<" at Position "<<index<< " is not of the expected type."<<endl;
