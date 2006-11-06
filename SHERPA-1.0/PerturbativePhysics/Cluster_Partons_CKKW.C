@@ -170,8 +170,7 @@ int Cluster_Partons_CKKW::SetColours(EXTRAXS::XS_Base * xs,
     m_colors[i][0] = p_xs->Colours()[i][0];
     m_colors[i][1] = p_xs->Colours()[i][1];
   }
-  m_q2_fss=dabs(p_xs->Scale(stp::sfs));
-  m_q2_iss=dabs(p_xs->Scale(stp::sis));
+  m_q2_iss=m_q2_fss=dabs(p_xs->Scale(stp::ren));
   return test;
 }
 
@@ -344,7 +343,8 @@ void Cluster_Partons_CKKW::WeightHardProcess()
 		 <<", ktmin_qed = "<<sqrt(kt2minqed)<<"\n";
   if (wminqcd>=0) {
     // check for scale definition from Single_XS
-    double mu2r[2]={p_xs?m_q2_iss:0.0,p_xs?m_q2_fss:0.0};
+    double mu2r[2]={p_xs?dabs(p_xs->Scale(stp::sis)):0.0,
+		    p_xs?dabs(p_xs->Scale(stp::sfs)):0.0};
     // override scale w/ local definition from SetColours
     if (m_q2_hard<std::numeric_limits<double>::max()) 
       mu2r[1]=mu2r[0]=m_q2_hard;
