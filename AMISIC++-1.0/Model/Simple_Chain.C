@@ -267,6 +267,7 @@ bool Simple_Chain::ReadInData()
   reader->SetTags(PHASIC::Integrable_Base::ScaleTags());
   if (reader->ReadFromFile(helpssc,"MI_SCALE_SCHEME")) 
     m_scalescheme=(PHASIC::scl::scheme)helpssc;
+  else m_scalescheme=PHASIC::scl::gmeanpt;
   if (!reader->ReadFromFile(m_kfactorscheme,"MI_K_FACTOR_SCHEME")) 
     m_kfactorscheme=1;
   if (!reader->ReadFromFile(m_nflavour,"N_FLAVOUR")) m_nflavour=5;
