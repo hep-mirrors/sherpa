@@ -223,9 +223,10 @@ void Sherpa::DrawLogo()
 	    <<"     SHERPA version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION
 	    <<"                                              "<<std::endl
 	    <<"                                                                             "<<std::endl
-	    <<"     Authors: Timo Fischer, Tanju Gleisberg, Stefan Hoeche,                  "<<std::endl
-	    <<"              Frank Krauss, Thomas Laubrich, Andreas Schaelicke,             "<<std::endl
-	    <<"              Steffen Schumann, Jan Winter                                   "<<std::endl
+	    <<"     Authors:        Tanju Gleisberg, Stefan Hoeche, Frank Krauss,           "<<std::endl
+	    <<"                     Steffen Schumann, Frank Siegert, Jan Winter             "<<std::endl
+	    <<"     Former Authors: Timo Fischer, Ralf Kuhn, Thomas Laubrich,               "<<std::endl
+	    <<"                     Andreas Schaelicke                                      "<<std::endl
 	    <<"                                                                             "<<std::endl
 	    <<"     This program uses a lot of genuine and original research work           "<<std::endl
 	    <<"     by other people. Users are encouraged to refer to                       "<<std::endl
