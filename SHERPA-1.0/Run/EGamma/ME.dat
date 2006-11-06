@@ -13,7 +13,7 @@ YUKAWA_MASSES         = Fixed       ! Fixed   (polemass) or
                                     ! Running (higgs mass)
 YUKAWA_MASSES_FACTOR  = 1.          ! Additional prefactor for yukawas
 !
-SCALE_SCHEME          = 0           ! default is 0=shat, 
+SCALE_SCHEME          = S_HAT       ! see 'http://www.sherpa-mc.de/scales.html'
 KFACTOR_SCHEME        = 0           ! 1=as(pt2)/as(ecms)^nstrong,default=1
 SUDAKOV_WEIGHT        = 0           ! apply sudakov weight on single events
 SCALE_FACTOR          = 1.          ! factor the scale is multiplied with
