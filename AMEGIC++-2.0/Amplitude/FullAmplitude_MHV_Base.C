@@ -8,6 +8,7 @@
 
 using namespace ATOOLS;
 using namespace AMEGIC;
+using namespace std;
 
 
 
@@ -88,7 +89,7 @@ double FullAmplitude_MHV_Base::MSquareHel()
     if (hps!=1 && hps!=(n_part-1)) {
       double rest=MSquare(hlist); 
       res+=rest;
-      msg_Info()<<endl<<i<<"("<<tt-1<<") h=("; 
+      msg_Info()<<endl<<i<<"("<<tt-1<<") h=(";
       for (int y=0;y<n_part;y++) msg_Info()<<hlist[y]<<","; 
       msg_Info()<<") = "<<rest<<endl;
     }
