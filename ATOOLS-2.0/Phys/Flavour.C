@@ -224,9 +224,10 @@ int Flavour::HepEvt() {
   if (kfc==kf::a_0_1450)                     return 10111; 
   if (kfc==kf::a_0_1450_plus)                return (anti)? -10211 : 10211;
   if (kfc==kf::f_0_1370)                     return 10221; 
+  if (kfc==kf::f_0_1710)                     return 10331;
   if (kfc==kf::a_0_980)                      return 9000111; 
   if (kfc==kf::a_0_980_plus)                 return (anti)? -9000211 : 9000211; 
-  if (kfc==kf::f_0_980)                      return 9010221; 
+  if (kfc==kf::f_0_980)                      return 9010221;
 
   if (IsLepton() || IsQuark() || IsHadron()) return (anti)? -Kfcode():Kfcode();
   if (IsDiQuark())                           return (anti)? -Kfcode():Kfcode();
@@ -293,8 +294,9 @@ void Flavour::FromHepEvt(int code) {
   code = abs(code);
   
   if (code==10111)   { kfc = kf::a_0_1450;      return; }
-  if (code==10211)   { kfc = kf::a_0_1450_plus; return; }
+  if (code==10211)   { kfc = kf::a_0_1450_plus; return; } 
   if (code==10221)   { kfc = kf::f_0_1370;      return; }
+  if (code==10331)   { kfc = kf::f_0_1710;      return; }
   if (code==9000111) { kfc = kf::a_0_980;       return; }
   if (code==9000211) { kfc = kf::a_0_980_plus;  return; }
   if (code==9010221) { kfc = kf::f_0_980;       return; }

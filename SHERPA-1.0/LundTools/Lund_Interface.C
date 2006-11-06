@@ -351,7 +351,8 @@ Return_Value::code Lund_Interface::PerformDecay(Blob * blob)
   case    10111: idhep =  9000111; break;
   case    10211: idhep =  9000211; break;
   case   -10211: idhep = -9000211; break;
-  case    10221: idhep =  9010221; break;
+  case    10221: idhep =  10331; break;
+  case    10331: idhep =  9010221; break;
   }
   hepevt.idhep[nhep] = idhep;
   for (short int j=1;j<4;++j) hepevt.phep[nhep][j-1]=part->Momentum()[j];
@@ -561,11 +562,12 @@ void Lund_Interface::FillOutgoingParticlesInBlob(Blob *blob)
     case  9000111: idhep =  10111;   break;
     case  9000211: idhep =  10211;   break;
     case -9000211: idhep = -10211;   break;
-    case  9010221: idhep =  10221;   break;
+    case  9010221: idhep =  10331;   break;
     case    10111: idhep =  9000111; break;
     case    10211: idhep =  9000211; break;
     case   -10211: idhep = -9000211; break;
     case    10221: idhep =  9010221; break;
+    case    10331: idhep =  10221; break;
     }
     flav.FromHepEvt(idhep);
     momentum=Vec4D(hepevt.phep[j][3],hepevt.phep[j][0],
