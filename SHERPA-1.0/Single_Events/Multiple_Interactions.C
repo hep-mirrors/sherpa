@@ -220,13 +220,21 @@ Return_Value::code Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,doub
     p_mihandler->Reset();
     m_diced=true;
   }
-  Blob *blob = new Blob();
-  blob->AddData("MI_Scale",new Blob_Data<double>(m_ptmax));
+  Blob *blob(NULL);
   bool success=false;
-  if (!m_vetoed && m_ptmax>p_mihandler->ScaleMin(0)) {
-    success=p_mihandler->GenerateHardProcess(blob);
+  if (!m_vetoed) {
+    if (m_ptmax<=p_mihandler->ScaleMin(0)) {
+      return Return_Value::Nothing;
+    }
+    else {
+      blob = new Blob();
+      blob->AddData("MI_Scale",new Blob_Data<double>(m_ptmax));
+      success=p_mihandler->GenerateHardProcess(blob);
+    }
   }
   else if (m_vetoed) {
+    blob = new Blob();
+    blob->AddData("MI_Scale",new Blob_Data<double>(m_ptmax));
     success=p_mihandler->GenerateSoftProcess(blob);
     // dummy settings for analysis
     blob->SetType(btp::Soft_Collision);
