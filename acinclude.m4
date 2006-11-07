@@ -25,6 +25,17 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
 ])
 
 
+AC_DEFUN([AS_AC_EXPAND],
+[
+  full_var="[$2]"
+  numbers="1 2 3 4"
+  for i in $numbers; do
+    full_var="`eval echo $full_var`";
+  done
+  AC_SUBST([$1], "$full_var")
+])
+
+
 dnl setup all variables for substitution in Makefile.am's and some additional DEFINEs
 dnl
 dnl Additionally some variables are defined automatically:
@@ -160,13 +171,20 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   if test "x$exec_prefix" = "xNONE"; then
     exec_prefix=$ac_default_prefix
   fi
+
+  AS_AC_EXPAND(LIBDIR, ${libdir})
+  AS_AC_EXPAND(INCLUDEDIR, ${includedir})
+  AS_AC_EXPAND(BINDIR, ${bindir})
+  AS_AC_EXPAND(DATADIR, ${datadir})
+
   AC_DEFINE_UNQUOTED([SHERPA_VERSION], ["`echo AC_PACKAGE_VERSION | cut -d. -f1`"], [Sherpa version])
   AC_DEFINE_UNQUOTED([SHERPA_SUBVERSION], ["`echo AC_PACKAGE_VERSION | cut -d. -f2,3`"], [Sherpa subversion])
   AC_DEFINE_UNQUOTED([SHERPA_BUILD_PATH], "$PWD", [Sherpa build path])
-  AC_DEFINE_UNQUOTED([SHERPA_INCLUDE_PATH], ["`eval echo $includedir`/SHERPA-MC"], [Sherpa include directory])
-  AC_DEFINE_UNQUOTED([SHERPA_BINARY_PATH], ["`eval echo $bindir`/SHERPA-MC"], [Sherpa binary directory])
-  AC_DEFINE_UNQUOTED([SHERPA_PDFS_PATH], ["`eval echo $datadir`/SHERPA-MC"], [Sherpa data directory])
-  AC_DEFINE_UNQUOTED([SHERPA_SHARE_PATH], ["`eval echo $datadir`/SHERPA-MC"], [Sherpa data directory])
+  AC_DEFINE_UNQUOTED([SHERPA_INCLUDE_PATH], "$INCLUDEDIR/SHERPA-MC", [Sherpa include directory])
+  AC_DEFINE_UNQUOTED([SHERPA_BINARY_PATH], "$BINDIR/SHERPA-MC", [Sherpa binary directory])
+  AC_DEFINE_UNQUOTED([SHERPA_LIBRARY_PATH], "$LIBDIR/SHERPA-MC", [Sherpa library directory])
+  AC_DEFINE_UNQUOTED([SHERPA_PDFS_PATH], "$DATADIR/SHERPA-MC", [Sherpa data directory])
+  AC_DEFINE_UNQUOTED([SHERPA_SHARE_PATH], "$DATADIR/SHERPA-MC", [Sherpa data directory])
   AC_DEFINE([USING__COLOUR], "1", [Using colour])
 ])
 
