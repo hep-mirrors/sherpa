@@ -733,3 +733,249 @@ double Jet_DiMass_Distribution::Calc(const Particle * p1,const Particle * p2,
   
   return (mom1+mom2).Abs();
 }
+
+Three_Jet_Observable_Base::Three_Jet_Observable_Base(unsigned int type,double xmin,double xmax,int nbins,
+                                                 unsigned int mode,unsigned int minn,unsigned int maxn, 
+                                                 const std::string & lname) :
+  Primitive_Observable_Base(type,xmin,xmax,nbins,NULL), m_mode(mode), m_minn(minn), m_maxn(maxn)
+{
+  m_listname = lname;
+  m_name     = std::string("jet_");
+  if (lname!="Analysed") m_name=lname+std::string("_")+m_name;
+  if (m_minn!=0) {
+    MyStrStream str;
+    str<<m_name<<m_mode<<"_"<<m_minn<<"_";
+    str>>m_name;
+  }
+
+  p_histo =  0;
+  unsigned int num = m_maxn*(m_maxn-1)*(m_maxn-2)/6;
+  for (unsigned int i=0;i<num+1;++i)
+    m_histos.push_back(new Histogram(type,m_xmin,m_xmax,m_nbins));
+
+}
+
+void Three_Jet_Observable_Base::Evaluate(const Particle_List & pl,double weight, int ncount)
+{
+  if ((m_mode==1 && pl.size()>=m_minn) ||
+      (m_mode==2 && pl.size()==m_minn)) {
+    // fill
+    size_t i=1;
+    int jet1=0;
+    for (Particle_List::const_iterator it1=pl.begin();it1!=pl.end();++it1,++jet1) {
+      int jet2=jet1+1;
+      for (Particle_List::const_iterator it2=it1+1;it2!=pl.end() && i<=m_maxn*(m_maxn-1)*(m_maxn-2)/6;++it2,++i,++jet2) {
+        int jet3=jet2+1;
+        for (Particle_List::const_iterator it3=it2+1;it3!=pl.end() && i<=m_maxn*(m_maxn-1)*(m_maxn-2)/6;++it3,++i,++jet3) {
+          double value=Calc(*it1,*it2,*it3,jet1,jet2,jet3);
+          m_histos[0]->Insert(value,weight,ncount);
+          m_histos[i]->Insert(value,weight,ncount);
+        }
+      }
+    }
+    for (; i<m_histos.size();++i) { 
+      m_histos[0]->Insert(0.,0.,ncount);
+      m_histos[i]->Insert(0.,0.,ncount);
+    }
+  }
+  else {
+    // fill with 0
+    for (size_t i=0; i<m_histos.size();++i) {
+      m_histos[0]->Insert(0.,0.,ncount);
+      m_histos[i]->Insert(0.,0.,ncount);
+    }
+  }
+}
+
+void Three_Jet_Observable_Base::Evaluate(const Blob_List & blobs,double value, int ncount)
+{
+  Particle_List * pl=p_ana->GetParticleList(m_listname);
+  Evaluate(*pl,value, ncount);
+}
+
+void Three_Jet_Observable_Base::EndEvaluation(double scale) {
+  for (size_t i=0; i<m_histos.size();++i) {
+    m_histos[i]->Finalize();
+    if (scale!=1.) m_histos[i]->Scale(scale);
+    m_histos[i]->Output();
+  }
+}
+
+void Three_Jet_Observable_Base::Output(const std::string & pname) {
+  int  mode_dir = 448;
+  ATOOLS::MakeDir((pname).c_str(),mode_dir); 
+  for (size_t i=0; i<m_histos.size();++i) {
+    std::string fname;
+    MyStrStream s;
+    s<<i;
+    s<<".dat"; 
+    s>>fname;
+    m_histos[i]->Output((pname+std::string("/")+m_name+fname).c_str());
+  }
+}
+
+Primitive_Observable_Base & Three_Jet_Observable_Base::operator+=(const Primitive_Observable_Base & ob)
+{
+  if (m_xmin!=ob.Xmin() || m_xmax!=ob.Xmax() || m_nbins!=ob.Nbins()) {
+    std::cout<<" ERROR: in Three_Jet_Observable_Base::operator+=  in"<<m_name<<std::endl;
+    return *this;
+  }
+
+  Three_Jet_Observable_Base * jdrd = ((Three_Jet_Observable_Base*)(&ob));
+
+  if (m_histos.size()==jdrd->m_histos.size()) {
+    for (size_t i=0; i<m_histos.size();++i) {
+      (*m_histos[i])+=(*jdrd->m_histos[i]);
+    }
+  }
+  return *this;
+}
+
+void Three_Jet_Observable_Base::Reset()
+{
+  for (size_t i=0; i<m_histos.size();++i) {
+    m_histos[i]->Reset();
+  }  
+}
+
+DEFINE_OBSERVABLE_GETTER(Eta_3_Prime,
+			 Eta_3_Prime_Getter,"Eta3Prime")
+
+Eta_3_Prime::Eta_3_Prime(unsigned int type,double xmin,double xmax,int nbins,
+			 unsigned int mode,unsigned int minn,unsigned int maxn, 
+			 const std::string & lname) :
+  Three_Jet_Observable_Base(type,xmin,xmax,nbins,mode,minn,maxn,lname)
+{
+  m_name+="eta3p_";
+}
+
+Primitive_Observable_Base * Eta_3_Prime::Copy() const 
+{
+  Eta_3_Prime * jde =
+    new Eta_3_Prime(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+  return jde;
+}
+
+double Eta_3_Prime::Calc(const Particle * p1,const Particle * p2,
+			 const Particle * p3,const int jet1,const int jet2,
+			 const int jet3)
+{
+  Vec4D mom1 = p1->Momentum();
+  Vec4D mom2 = p2->Momentum();
+  Vec4D mom3 = p3->Momentum();
+//   PRINT_INFO(mom1<<mom2<<mom3);
+  
+  double y1(mom1.Eta()), y2(mom2.Eta()), y3(mom3.Eta());
+  if (!(y1>=0.0) && !(y1<0.0)) return 0.0;
+  if (!(y2>=0.0) && !(y2<0.0)) return 0.0;
+  if (!(y3>=0.0) && !(y3<0.0)) return 0.0;
+  return y3-(y1+y2)/2.0;
+}
+
+DEFINE_OBSERVABLE_GETTER(Y_3_Prime,
+			 Y_3_Prime_Getter,"Y3Prime")
+
+Y_3_Prime::Y_3_Prime(unsigned int type,double xmin,double xmax,int nbins,
+			 unsigned int mode,unsigned int minn,unsigned int maxn, 
+			 const std::string & lname) :
+  Three_Jet_Observable_Base(type,xmin,xmax,nbins,mode,minn,maxn,lname)
+{
+  m_name+="y3p_";
+}
+
+Primitive_Observable_Base * Y_3_Prime::Copy() const 
+{
+  Y_3_Prime * jde =
+    new Y_3_Prime(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+  return jde;
+}
+
+double Y_3_Prime::Calc(const Particle * p1,const Particle * p2,
+			 const Particle * p3,const int jet1,const int jet2,
+			 const int jet3)
+{
+  Vec4D mom1 = p1->Momentum();
+  Vec4D mom2 = p2->Momentum();
+  Vec4D mom3 = p3->Momentum();
+  
+  double y1(mom1.Y()), y2(mom2.Y()), y3(mom3.Y());
+  if (!(y1>=0.0) && !(y1<0.0)) return 0.0;
+  if (!(y2>=0.0) && !(y2<0.0)) return 0.0;
+  if (!(y3>=0.0) && !(y3<0.0)) return 0.0;
+  return y3-(y1+y2)/2.0;
+}
+
+DEFINE_OBSERVABLE_GETTER(Phi_3_Prime,
+			 Phi_3_Prime_Getter,"Phi3Prime")
+
+Phi_3_Prime::Phi_3_Prime(unsigned int type,double xmin,double xmax,int nbins,
+			 unsigned int mode,unsigned int minn,unsigned int maxn, 
+			 const std::string & lname) :
+  Three_Jet_Observable_Base(type,xmin,xmax,nbins,mode,minn,maxn,lname)
+{
+  m_name+="phi3p_";
+}
+
+Primitive_Observable_Base * Phi_3_Prime::Copy() const 
+{
+  Phi_3_Prime * jde =
+    new Phi_3_Prime(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+  return jde;
+}
+
+double Phi_3_Prime::Calc(const Particle * p1,const Particle * p2,
+			 const Particle * p3,const int jet1,const int jet2,
+			 const int jet3)
+{
+  Vec4D mom1 = p1->Momentum();
+  Vec4D mom2 = p2->Momentum();
+  Vec4D mom3 = p3->Momentum();
+ 
+  Vec3D n1(mom1), n2(mom2), n3(mom3);
+  n1=1.0/n1.Abs()*n1;
+  n2=1.0/n2.Abs()*n2;
+  n3=1.0/n3.Abs()*n3;
+
+  double phi(acos(n3*cross(n1,n2)));
+ 
+  if (!(phi>=0.0) && !(phi<0.0)) return 0.0;
+  return phi;
+}
+
+DEFINE_OBSERVABLE_GETTER(CosPhi_3_Prime,
+			 CosPhi_3_Prime_Getter,"CosPhi3Prime")
+
+CosPhi_3_Prime::CosPhi_3_Prime(unsigned int type,double xmin,double xmax,int nbins,
+			 unsigned int mode,unsigned int minn,unsigned int maxn, 
+			 const std::string & lname) :
+  Three_Jet_Observable_Base(type,xmin,xmax,nbins,mode,minn,maxn,lname)
+{
+  m_name+="cosphi3p_";
+}
+
+Primitive_Observable_Base * CosPhi_3_Prime::Copy() const 
+{
+  CosPhi_3_Prime * jde =
+    new CosPhi_3_Prime(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+  return jde;
+}
+
+double CosPhi_3_Prime::Calc(const Particle * p1,const Particle * p2,
+			 const Particle * p3,const int jet1,const int jet2,
+			 const int jet3)
+{
+  Vec4D mom1 = p1->Momentum();
+  Vec4D mom2 = p2->Momentum();
+  Vec4D mom3 = p3->Momentum();
+ 
+  Vec3D n1(mom1), n2(mom2), n3(mom3);
+  n1=1.0/n1.Abs()*n1;
+  n2=1.0/n2.Abs()*n2;
+  n3=1.0/n3.Abs()*n3;
+
+  double cosphi(n3*cross(n1,n2));
+ 
+  if (!(cosphi>=0.0) && !(cosphi<0.0)) return 0.0;
+  return cosphi;
+}
+

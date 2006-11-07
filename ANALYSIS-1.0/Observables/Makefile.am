@@ -11,6 +11,7 @@ libObservables_la_SOURCES     =	\
 				Multiplicity.C \
 			    	Statistics_Observable.C \
 				One_Particle_Selector.C \
+				Two_Particle_Selector.C \
 				One_Particle_Extractor.C \
 				All_Particle_Selector.C \
 				Universal_Selector.C \
@@ -42,7 +43,6 @@ pkginclude_HEADERS        =	\
 			PSM_Observables.H \
 			Multiplicity.H \
 			Statistics_Observable.H \
-			One_Particle_Selector.H \
 			One_Particle_Extractor.H \
 			All_Particle_Selector.H \
 			Universal_Selector.H \

@@ -60,6 +60,29 @@ namespace ANALYSIS {
     virtual void   SetPTRange(const unsigned int jetno,const double minpt,const double maxpt=1.e12);
   };
 
+  class Three_Jet_Observable_Base : public Primitive_Observable_Base {
+  protected:
+    unsigned int  m_mode;
+    unsigned int  m_minn, m_maxn;
+    std::vector<ATOOLS::Histogram*>  m_histos;
+  public:
+    Three_Jet_Observable_Base(unsigned int type,double xmin,double xmax,int nbins,
+			    unsigned int mode, unsigned int minn, unsigned int maxn, 
+			    const std::string & =std::string("Jets"));
+
+    void Evaluate(const ATOOLS::Particle_List &,double, int);
+    void Evaluate(const ATOOLS::Blob_List & blobs,double value, int);
+    
+    void EndEvaluation(double);
+    virtual void Output(const std::string & pname);
+
+    Primitive_Observable_Base & operator+=(const Primitive_Observable_Base &);
+    void Reset();
+
+    virtual double Calc(const ATOOLS::Particle *,const ATOOLS::Particle *,const ATOOLS::Particle *,
+			const int,const int,const int) = 0;
+  };
+
   class Jet_Eta_Distribution : public Jet_Observable_Base {
 
   public:
@@ -199,5 +222,51 @@ namespace ANALYSIS {
     double Calc(const ATOOLS::Particle * p1,const ATOOLS::Particle * p2,
 		const int jet1,const int jet2);
   };
+
+  class Eta_3_Prime : public Three_Jet_Observable_Base {
+  public:
+    Eta_3_Prime(unsigned int type,double xmin,double xmax,int nbins,
+		unsigned int mode, unsigned int minn, unsigned int maxn, 
+		const std::string & =std::string("Jets"));
+
+    Primitive_Observable_Base * Copy() const;
+    double Calc(const ATOOLS::Particle * p1,const ATOOLS::Particle * p2,const ATOOLS::Particle * p3,
+		const int jet1,const int jet2,const int jet3);
+  };
+
+  class Y_3_Prime : public Three_Jet_Observable_Base {
+  public:
+    Y_3_Prime(unsigned int type,double xmin,double xmax,int nbins,
+		unsigned int mode, unsigned int minn, unsigned int maxn, 
+		const std::string & =std::string("Jets"));
+
+    Primitive_Observable_Base * Copy() const;
+    double Calc(const ATOOLS::Particle * p1,const ATOOLS::Particle * p2,const ATOOLS::Particle * p3,
+		const int jet1,const int jet2,const int jet3);
+  };
+
+  class Phi_3_Prime : public Three_Jet_Observable_Base {
+  public:
+    Phi_3_Prime(unsigned int type,double xmin,double xmax,int nbins,
+		unsigned int mode, unsigned int minn, unsigned int maxn, 
+		const std::string & =std::string("Jets"));
+
+    Primitive_Observable_Base * Copy() const;
+    double Calc(const ATOOLS::Particle * p1,const ATOOLS::Particle * p2,const ATOOLS::Particle * p3,
+		const int jet1,const int jet2,const int jet3);
+  };
+
+  class CosPhi_3_Prime : public Three_Jet_Observable_Base {
+  public:
+    CosPhi_3_Prime(unsigned int type,double xmin,double xmax,int nbins,
+		unsigned int mode, unsigned int minn, unsigned int maxn, 
+		const std::string & =std::string("Jets"));
+
+    Primitive_Observable_Base * Copy() const;
+    double Calc(const ATOOLS::Particle * p1,const ATOOLS::Particle * p2,const ATOOLS::Particle * p3,
+		const int jet1,const int jet2,const int jet3);
+  };
+
+
 }
 #endif
