@@ -64,8 +64,8 @@ namespace AMEGIC {
     const ATOOLS::Flavour * Flavours()   { return p_procs->Selected()->Flavours(); }
     const ATOOLS::Vec4D   * Momenta()    { return p_procs->Selected()->Momenta(); }
     int               InSwaped()         { return p_procs->Selected()->InSwaped(); }
-    int               OrderStrong()      { return static_cast<Process_Base*>(p_procs->Selected())->OrderStrong(); }
-    int               OrderEWeak()       { return static_cast<Process_Base*>(p_procs->Selected())->OrderEWeak(); }
+    int               OrderStrong()      { return p_procs->Selected()->OrderStrong(); }
+    int               OrderEWeak()       { return p_procs->Selected()->OrderEWeak(); }
     int               NumberOfDiagrams() { return static_cast<Process_Base*>(p_procs->Selected())->NumberOfDiagrams(); }
     AMEGIC::Point   * Diagram(int _diag) { return static_cast<Process_Base*>(p_procs->Selected())->Diagram(_diag); }
     int               MinQCDJets()       { return m_minqcdjet; }

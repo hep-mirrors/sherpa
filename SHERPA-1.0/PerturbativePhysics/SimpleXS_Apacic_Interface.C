@@ -138,7 +138,7 @@ bool SimpleXS_Apacic_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
     p_psme_fs->AddData("OrderStrong",new 
 		       Blob_Data<double>((double)p_xs->OrderStrong()));
     p_psme_fs->AddData("OrderEWeak",new
-		       Blob_Data<double>((double)p_xs->OrderEW()));
+		       Blob_Data<double>((double)p_xs->OrderEWeak()));
     blobs->push_back(p_psme_fs);
   }
   p_shower->FillBlobs(blobs); 

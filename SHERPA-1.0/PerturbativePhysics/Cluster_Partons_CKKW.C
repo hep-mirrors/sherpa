@@ -142,7 +142,7 @@ int Cluster_Partons_CKKW::SetColours(EXTRAXS::XS_Base * xs,
   p_xs=xs;
   if (!p_xs) return Cluster_Partons_Base::SetColours(p,fl);
 
-  m_hard_nqed = p_xs->OrderEW();
+  m_hard_nqed = p_xs->OrderEWeak();
   m_hard_nqcd = p_xs->OrderStrong();
   bool test(p_xs->SetColours(p)), check(true);
   for (int i=0; i<4; ++i) {

@@ -39,7 +39,6 @@ namespace AMEGIC {
 
     bool    m_atoms, m_analyse, m_tables;
     double  m_maxfac, m_maxeps;
-    int     m_orderQCD, m_orderEW;
     double  m_maxerror;
 
     Phase_Space_Generator          * p_psgen;
@@ -156,8 +155,6 @@ namespace AMEGIC {
       Access methods
 
       ------------------------------------------------------------------------------*/
-    inline int OrderStrong();
-    inline int OrderEWeak();
 
     inline bool         Atoms();
     inline bool         Tables();
@@ -198,9 +195,6 @@ namespace AMEGIC {
     virtual void               PrintDifferential() = 0;
 
   };
-
-  inline int  Process_Base::OrderStrong()  { return m_orderQCD; }
-  inline int  Process_Base::OrderEWeak()   { return m_orderEW; }
 
   inline bool        Process_Base::Atoms()   { return m_atoms; }
   inline bool        Process_Base::Tables()  { return m_tables; }

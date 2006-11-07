@@ -60,10 +60,11 @@ Process_Base::Process_Base(Process_Info* pinfo,int _nin,int _nout,ATOOLS::Flavou
   p_ex_fl(_ex_fl),
   m_atoms(0), m_analyse(0), m_tables(0), 
   m_maxfac(1.),
-  m_orderQCD(_orderQCD), m_orderEW(_orderEW),
   m_maxerror(error), 
   p_psgen(0), m_print_graphs(false), p_pinfo(pinfo)
 {
+  m_orderQCD=_orderQCD;
+  m_orderEW=_orderEW;
   if (ycut>0.0) m_ycut=ycut;
   m_scale[stp::ren]=m_scale[stp::fac]=_scale;
 

@@ -97,8 +97,8 @@ Single_XS *XS_Selector::GetSingleXS(const size_t nin,const size_t nout,
     if (xs==NULL) return xs;
     xs->SetScaleScheme(p_owner->ScaleScheme());
     xs->SetKFactorScheme(p_owner->KFactorScheme());
-    xs->m_order_ew=nqed;
-    xs->m_order_strong=nqcd;
+    xs->m_orderEW=nqed;
+    xs->m_orderQCD=nqcd;
     return xs;
   }
   if (m_offshell) { 
@@ -140,8 +140,8 @@ Single_XS *XS_Selector::GetSingleXS(const size_t nin,const size_t nout,
   if (xs!=NULL) {
     xs->SetScaleScheme(p_owner->ScaleScheme());
     xs->SetKFactorScheme(p_owner->KFactorScheme());
-    xs->m_order_ew=nqed;
-    xs->m_order_strong=nqcd;
+    xs->m_orderEW=nqed;
+    xs->m_orderQCD=nqcd;
   }
   else {
     s_gettermap[flc]=Dummy_Getter;

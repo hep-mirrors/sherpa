@@ -28,7 +28,7 @@ Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,
   m_nvector(ATOOLS::Max(nin+nout,(size_t)1)), p_flavours(NULL), p_addflavours(NULL), 
   p_momenta(new Vec4D[ATOOLS::Max(nin+nout,(size_t)1)]), p_addmomenta(NULL), 
   m_scalescheme(scalescheme), m_kfactorscheme(kfactorscheme), 
-  m_nstrong(0), m_neweak(0), m_usepi(0),
+  m_nstrong(0), m_neweak(0), m_orderQCD(-1), m_orderEW(-1), m_usepi(0),
   m_threshold(0.), m_overflow(0.), m_enhancefac(1.0), m_rfactor(1.0), m_xinfo(std::vector<double>(4)),
   m_n(0), m_expevents(1), m_dicedevents(0), m_accevents(0), m_last(0.), m_lastlumi(0.), m_lastdxs(0.), 
   m_max(0.), m_totalxs(0.),m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), 
@@ -449,24 +449,33 @@ double Integrable_Base::CalculateScale(const Vec4D *momenta)
 double Integrable_Base::KFactor(const double scale) 
 {
   if (m_scalescheme&scl::ckkw) {
+    if (m_orderQCD<0 || m_orderEW<0) {
+      THROW(fatal_error,"Couplings not set for process '"+Name()+"'");
+    }
     m_scale[stp::fac]=scale;
     if (m_nstrong<=2) return m_rfactor;
     double asn(as->AlphaS(m_me_as_factor*m_ps_cpl_factor*m_scale[stp::ren]));
     if (m_ps_kfactor!=0.0) asn*=1.+asn/(2.0*M_PI)*m_ps_kfactor;
-    msg_Debugging()<<METHOD<<"(): "<<Name()<<" ("<<m_nstrong<<") {\n"
+    msg_Debugging()<<METHOD<<"(): "<<Name()<<" ("<<m_nstrong<<","
+		   <<m_orderQCD<<") {\n"
 		   <<"  \\mu_{fac}   = "<<sqrt(m_scale[stp::fac])<<"\n"
 		   <<"  \\mu_{ren}   = "<<sqrt(m_scale[stp::ren])<<"\n"
 		   <<"  me scalefac = "<<m_me_as_factor<<"\n"
 		   <<"  r scalefac  = "<<m_rfactor<<"\n"
 		   <<"  ps scalefac = "<<m_ps_cpl_factor<<"\n"
 		   <<"  ps k factor = "<<m_ps_kfactor
-		   <<"\n} -> as = "<<asn<<"\n";
-    return m_rfactor*pow(asn/as->AlphaS(sqr(rpa.gen.Ecms())),m_nstrong-2);
+		   <<"\n} -> as = "<<asn<<" => K = "
+		   <<m_rfactor*pow(asn/as->AlphaS(sqr(rpa.gen.Ecms())),
+				   m_orderQCD)<<"\n";
+    return m_rfactor*pow(asn/as->AlphaS(sqr(rpa.gen.Ecms())),m_orderQCD);
   }
   if (m_kfactorscheme==1) {
-    if (m_nstrong>2) {
+    if (m_orderQCD<0 || m_orderEW<0) {
+      THROW(fatal_error,"Couplings not set for process '"+Name()+"'");
+    }
+    if (m_orderQCD>0) {
       return m_rfactor*pow
-	(as->AlphaS(scale)/as->AlphaS(sqr(rpa.gen.Ecms())),m_nstrong-2);
+	(as->AlphaS(scale)/as->AlphaS(sqr(rpa.gen.Ecms())),m_orderQCD);
     } 
     else 
       return m_rfactor;

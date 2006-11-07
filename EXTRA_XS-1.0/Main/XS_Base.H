@@ -16,8 +16,6 @@ namespace EXTRAXS {
 
     double m_s, m_t, m_u;
 
-    size_t m_order_ew, m_order_strong;
-
     static std::string GenerateName(const size_t nin,const size_t nout,
 				    const ATOOLS::Flavour *flavours);
 
@@ -87,9 +85,6 @@ namespace EXTRAXS {
 
     inline const std::vector<ATOOLS::Flavour> &Resonances() const 
     { return m_resonances; }
-
-    inline size_t OrderEW() const     { return m_order_ew;     }
-    inline size_t OrderStrong() const { return m_order_strong; }
 
     inline PHASIC::Regulator_Base *const Regulator() const { return p_regulator; }
 

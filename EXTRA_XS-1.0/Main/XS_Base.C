@@ -13,7 +13,7 @@
 using namespace EXTRAXS;
 
 XS_Base::XS_Base():
-  p_colours(NULL), m_order_ew(0), m_order_strong(0)
+  p_colours(NULL)
 {
   m_name="Empty XS";
   m_scale[PHASIC::stp::sfs]=m_scale[PHASIC::stp::sis]=std::numeric_limits<double>::max();
@@ -26,7 +26,7 @@ XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavo
 		 ATOOLS::Selector_Data *const selectordata):
   Integrable_Base(nin,nout,scalescheme,kfactorscheme,
 		  beamhandler,isrhandler,selectordata),
-  p_colours(NULL), m_order_ew(0), m_order_strong(0)
+  p_colours(NULL)
 {
   Init(flavours);
   ResetSelector(selectordata);
@@ -37,7 +37,7 @@ XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavo
 
 XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours):
   Integrable_Base(nin,nout),
-  p_colours(NULL), m_order_ew(0), m_order_strong(0)
+  p_colours(NULL)
 {
   Init(flavours);
   p_selector = new ATOOLS::No_Selector();
@@ -225,6 +225,6 @@ void XS_Base::AssignRegulator(const std::string &regulator,
 
 void XS_Base::Print()
 {
-  ATOOLS::msg.Out()<<m_name<<" ("<<m_order_ew<<","<<m_order_strong
+  ATOOLS::msg.Out()<<m_name<<" ("<<m_orderEW<<","<<m_orderQCD
 		   <<")  ->  "<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb\n";
 }

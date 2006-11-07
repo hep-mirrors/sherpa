@@ -81,7 +81,7 @@ namespace PHASIC {
 
     scl::scheme m_scalescheme;
     int         m_kfactorscheme, m_maxjetnumber;
-    int         m_nstrong, m_neweak, m_usepi;
+    int         m_nstrong, m_neweak, m_orderQCD, m_orderEW, m_usepi;
     double      m_threshold, m_overflow, m_enhancefac;
     double      m_rfactor, m_ps_kfactor, m_ps_cpl_factor;
 
@@ -287,6 +287,9 @@ namespace PHASIC {
 
     inline int NStrong() const { return m_nstrong; }
     inline int NEWeak() const  { return m_neweak;  }
+
+    inline int OrderEWeak() const  { return m_orderEW;  }
+    inline int OrderStrong() const { return m_orderQCD; }
 
     inline const double Scale(const stp::id type=stp::ren) 
     { return m_scale[type]; }
