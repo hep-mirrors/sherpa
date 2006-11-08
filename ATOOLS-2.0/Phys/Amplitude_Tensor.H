@@ -14,9 +14,9 @@ namespace ATOOLS
 
   template<class Value>
   class Spin_Structure : public std::vector<Value> {
+  protected:
     std::vector<int>    m_spins;
     
-  protected:
     size_t GetNumber(const std::vector<int>& spins) const
     {
       if(spins.size()!=m_spins.size()) {
@@ -118,6 +118,11 @@ namespace ATOOLS
       this->clear();
       this->resize(n,value);
     };
+
+    std::vector<int> Spins()
+    {
+      return m_spins;
+    }
   };
 
 //   typedef Spin_Structure<Complex> Spin_Amplitudes;
@@ -131,6 +136,7 @@ namespace ATOOLS
   class Amplitude_Tensor : public Spin_Structure<std::vector<Complex> > {
     Particle_Vector                     m_particles;
     const CMatrix                     * p_colormatrix;
+    Amplitude_Tensor                  * p_contracted;
     
   public:
     Amplitude_Tensor(Particle_Vector particles);

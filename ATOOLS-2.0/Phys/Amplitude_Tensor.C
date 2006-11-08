@@ -33,12 +33,14 @@ double Spin_Amplitudes::SumSquare() const {
 
 
 Amplitude_Tensor::Amplitude_Tensor( Particle_Vector particles) :
-  Spin_Structure<std::vector<Complex> >(particles), m_particles(particles), p_colormatrix(NULL)
+  Spin_Structure<std::vector<Complex> >(particles), m_particles(particles),
+  p_colormatrix(NULL), p_contracted(NULL)
 {
 }
 
 Amplitude_Tensor::~Amplitude_Tensor()
 {
+  if(p_contracted) { delete p_contracted; p_contracted=NULL; }
 }
 
 Amplitude_Tensor ATOOLS::Contraction(Particle* part1, Particle* part2,
@@ -131,15 +133,24 @@ Amplitude_Tensor ATOOLS::Contraction(Particle* part1, Particle* part2,
 
 void Amplitude_Tensor::Contract( Particle* part1, Amplitude_Tensor* const amps, Particle* part2 )
 {
-  (*this) = Contraction(part1,part2,this,amps);
+  if(p_contracted) {
+    Amplitude_Tensor* todelete = p_contracted;
+    (*this)=(*p_contracted);
+    delete todelete;
+    p_contracted=NULL;
+  }
+  else (*this) = Contraction(part1,part2,this,amps);
 }
 
 double Amplitude_Tensor::SoftContract( Particle* part1,
                                        Amplitude_Tensor* const amps,
                                        Particle* part2 )
 {
-  Amplitude_Tensor contraction = Contraction(part1,part2,this,amps);
-  return contraction.SumSquare();
+  if(p_contracted)
+    (*p_contracted) = Contraction(part1,part2,this,amps);
+  else
+    p_contracted = new Amplitude_Tensor(Contraction(part1,part2,this,amps));
+  return p_contracted->SumSquare();
 }
 
 double Amplitude_Tensor::SumSquare() const
