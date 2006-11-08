@@ -46,7 +46,7 @@ void Tau_Lepton::operator()(
     ATOOLS::Spin_Amplitudes  * amps,
     int                    k0_n)
 {
-  XYZFunc F(m_nout,_p,p_flavs,k0_n);
+  XYZFunc F(m_nout,_p,p_flavs,k0_n,m_anti);
   // create amplitudes tensor
   for( int htau=0;htau<2;htau++) {
     for( int hnutau=0;hnutau<2;hnutau++) {
@@ -108,8 +108,7 @@ void Tau_Pseudo::operator()(
   // create amplitudes tensor
   for( int htau=0;htau<2;htau++) {
     for( int hnutau=0;hnutau<2;hnutau++) {
-      if(m_anti) ampl = F.X(0,htau,m_pion,m_nutau,hnutau,m_cR,m_cL) * m_global;
-      else       ampl = F.X(m_nutau,hnutau,m_pion,0,htau,m_cR,m_cL) * m_global;
+      ampl = F.X(m_nutau,hnutau,m_pion,0,htau,m_cR,m_cL) * m_global;
       
       vector<pair<int,int> > spins;
       spins.push_back(make_pair(0,htau));
@@ -235,7 +234,7 @@ void Tau_Two_Pion::operator()(
     ATOOLS::Spin_Amplitudes  * amps,
     int                   k0_n)
 {
-  XYZFunc F(m_nout,_p,p_flavs,k0_n);
+  XYZFunc F(m_nout,_p,p_flavs,k0_n,m_anti);
   // create amplitudes tensor
   double  q2 = (_p[m_pion_ch] + _p[m_pion0] ).Abs2();
   Complex FF = FormFactor(q2);
@@ -453,7 +452,7 @@ void Tau_Pion_Kaon::operator()(
     ATOOLS::Spin_Amplitudes  * amps,
     int                   k0_n)
 {
-  XYZFunc F(m_nout,_p,p_flavs,k0_n);
+  XYZFunc F(m_nout,_p,p_flavs,k0_n,m_anti);
   // create amplitudes tensor
   double  q2 = (_p[m_pion]+_p[m_kaon]).Abs2();
   Complex FS = p_ff->ScalarFormFactor(q2);
@@ -1307,7 +1306,7 @@ void Tau_Three_Pseudo::operator()(
     ATOOLS::Spin_Amplitudes  * amps,
     int                   k0_n )
 {
-  XYZFunc F(m_nout,_p,p_flavs,k0_n);
+  XYZFunc F(m_nout,_p,p_flavs,k0_n,m_anti);
   // create amplitudes tensor
   Vec4D p1( _p[m_pseudo_1] ),
         p2( _p[m_pseudo_2] ),
@@ -1653,7 +1652,7 @@ void Tau_Four_Pion_3::operator()(
     ATOOLS::Spin_Amplitudes  * amps,
     int                   k0_n)
 {
-  XYZFunc F(m_nout,_p,p_flavs,k0_n);
+  XYZFunc F(m_nout,_p,p_flavs,k0_n,m_anti);
   // internal numeration and convenient variables
   for (int i=1; i<=5; i++ ) m_p[i] = _p[m_inter[i]];
   // create amplitudes tensor
@@ -1811,7 +1810,7 @@ void Tau_Four_Pion_1::operator()(
     ATOOLS::Spin_Amplitudes  * amps,
     int                   k0_n )
 {
-  XYZFunc F(m_nout,_p,p_flavs,k0_n);
+  XYZFunc F(m_nout,_p,p_flavs,k0_n,m_anti);
   // internal numeration and convenient variables
   for (int i=1; i<=5; i++ ) {
     m_p[i] = _p[m_inter[i]];
@@ -1891,7 +1890,7 @@ void Tau_Eta_Two_Pion::operator()(
     ATOOLS::Spin_Amplitudes  * amps,
     int                   k0_n)
 {
-  XYZFunc F(m_nout,_p,p_flavs,k0_n);
+  XYZFunc F(m_nout,_p,p_flavs,k0_n,m_anti);
   // create amplitudes tensor
   Vec4D p1( _p[m_pion] ),
         p2( _p[m_pion0] ),
