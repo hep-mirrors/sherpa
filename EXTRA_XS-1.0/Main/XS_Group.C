@@ -70,6 +70,8 @@ void XS_Group::Add(XS_Base *const xsec)
     for (size_t i=0;i<m_nin+m_nout;++i) p_flavours[i]=xsec->Flavours()[i];
     m_neweak=xsec->m_neweak;
     m_nstrong=xsec->m_nstrong;
+    m_orderEW=xsec->m_orderEW;
+    m_orderQCD=xsec->m_orderQCD;
     double inisum=0.0, finsum=0.0;
     for (size_t i=0;i<m_nin;i++) inisum+=p_flavours[i].Mass();
     for (size_t i=0;i<m_nout;i++) finsum+=p_flavours[i+m_nin].Mass();
@@ -77,6 +79,8 @@ void XS_Group::Add(XS_Base *const xsec)
   }
   if (m_neweak!=xsec->m_neweak) m_neweak=0;
   if (m_nstrong!=xsec->m_nstrong) m_nstrong=0;
+  if (m_orderEW!=xsec->m_orderEW) m_orderEW=-1;
+  if (m_orderQCD!=xsec->m_orderQCD) m_orderQCD=-1;
   if (xsec->NVector()>m_nvector) CreateMomenta(xsec->NVector());
   if (xsec->NAddIn()>m_naddin || xsec->NAddOut()>m_naddout) {
     if (p_addmomenta!=NULL) delete [] p_addmomenta;
