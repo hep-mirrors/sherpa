@@ -17,14 +17,12 @@ Parameters {
   gamma = 0.127		! rho1700
    
   ! parameters for resonances
-  Mass_Rho_770 		= 0.775
-  Width_Rho_770 	= 0.16
-  Mass_Omega 		= 0.77
-  Width_Omega 		= 0.005
-  Mass_Rho_1450 	= 1.363
-  Width_Rho_1450 	= 0.31
-  Mass_Rho_1700 	= 1.7
-  Width_Rho_1700 	= 0.235
+  Mass_rho_770 		= 0.775
+  Width_rho_770 	= 0.16
+  Mass_rho_1450 	= 1.363
+  Width_rho_1450 	= 0.31
+  Mass_rho_1700 	= 1.7
+  Width_rho_1700 	= 0.235
 
   ! off-shell width parameters
   lambda 			= 1.			! exponent in KS
@@ -33,5 +31,5 @@ Parameters {
   gamma_rho_1700 	= 0.09			! global factor for RChT rho''
 }
 Result {
-   1.9214e-15 5.73248e-18 2.41098e-14;
+   2.11124e-15 6.69268e-18 2.84125e-14;
 }

@@ -16,6 +16,7 @@ namespace HADRONS
     protected:    
        
       int                 m_k0n;
+      bool                m_anti;
       ATOOLS::Vec4D  	* p_mom;
       ATOOLS::Flavour   * p_flav;
 	  int                 m_N;

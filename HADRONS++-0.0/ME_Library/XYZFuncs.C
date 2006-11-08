@@ -8,13 +8,13 @@ using namespace ATOOLS;
 // constructor
 XYZFunc::XYZFunc( int nout, const Vec4D *p, const Flavour *fl, int k0_n, bool anti )
 {
+  m_anti=anti;
   m_N = nout+1;
   p_mom = new Vec4D[m_N];
   p_flav = new Flavour[m_N];
   for( int i=0; i<m_N; i++ ) {
     p_mom[i] = p[i];
     p_flav[i] = fl[i];
-    if(anti) p_flav[i] = p_flav[i].Bar();
   }
   m_k0n = k0_n;
   CalcEtaMu();
@@ -38,7 +38,8 @@ void XYZFunc::CalcEtaMu()
     m_eta.push_back( _m_eta );
     Complex help( p_flav[i].PSMass(), 0. );
     m_mu.push_back( help/m_eta[i] );
-    if( p_flav[i].IsAnti() ) m_mu[i] *= -1.;
+    if(     p_flav[i].IsAnti() && m_anti==false
+        || !p_flav[i].IsAnti() && m_anti==true  ) m_mu[i] *= -1.;
   }
 }
 
@@ -238,8 +239,14 @@ Complex XYZFunc::Z(
 	const int t4, const int l4,
 	const Complex cR1, const Complex cL1, const Complex cR2, const Complex cL2 ) 
 {											// l=0 <=> -; l=1 <=> +; <---- helicity
-  const int hel_comb = ((1-l1)<<3) + ((1-l2)<<2) + ((1-l3)<<1) + (1-l4);
-  return Z(t1,t2,t3,t4,hel_comb,cR1,cL1,cR2,cL2);
+  if(m_anti) {
+    const int hel_comb = ((1-l2)<<3) + ((1-l1)<<2) + ((1-l4)<<1) + (1-l3);
+    return Z(t2,t1,t4,t3,hel_comb,cR1,cL1,cR2,cL2);
+  }
+  else {
+    const int hel_comb = ((1-l1)<<3) + ((1-l2)<<2) + ((1-l3)<<1) + (1-l4);
+    return Z(t1,t2,t3,t4,hel_comb,cR1,cL1,cR2,cL2);
+  }
 }
  
 Complex XYZFunc::Y( 
@@ -247,8 +254,14 @@ Complex XYZFunc::Y(
 	const int t2, const int l2,
 	const Complex cR, const Complex cL ) 
 {											// l=0 <=> -; l=1 <=> +; <---- helicity
-  const int hel_comb = ((1-l1)<<1) + (1-l2);
-  return( Y(t1,t2,hel_comb,cR,cL) );
+  if(m_anti) {
+    const int hel_comb = ((1-l2)<<1) + (1-l1);
+    return( Y(t2,t1,hel_comb,cR,cL) );
+  }
+  else {
+    const int hel_comb = ((1-l1)<<1) + (1-l2);
+    return( Y(t1,t2,hel_comb,cR,cL) );
+  }
 }
  
 
@@ -258,8 +271,14 @@ Complex XYZFunc::X(
 	const int t3, const int l3,
 	const Complex cR, const Complex cL ) 
 {											// l=0 <=> -; l=1 <=> +; <---- helicity
-  const int hel_comb = ((1-l1)<<1) + (1-l3);
-  return( X(t1,t2,t3,hel_comb,cR,cL) );
+  if(m_anti) {
+    const int hel_comb = ((1-l3)<<1) + (1-l1);
+    return( X(t3,t2,t1,hel_comb,cR,cL) );
+  }
+  else {
+    const int hel_comb = ((1-l1)<<1) + (1-l3);
+    return( X(t1,t2,t3,hel_comb,cR,cL) );
+  }
 }
 
 Complex XYZFunc::X( 
@@ -268,8 +287,14 @@ Complex XYZFunc::X(
                     const int t3, const int l3,
                     const Complex cR, const Complex cL )
 {                                                                                       // l=0 <=> -; l=1 <=> +; <---- helicity
-  const int hel_comb = ((1-l1)<<1) + (1-l3);
-  return( X(t1,p2,t3,hel_comb,cR,cL) );
+  if(m_anti) {
+    const int hel_comb = ((1-l3)<<1) + (1-l1);
+    return( X(t3,p2,t1,hel_comb,cR,cL) );
+  }
+  else {
+    const int hel_comb = ((1-l1)<<1) + (1-l3);
+    return( X(t1,p2,t3,hel_comb,cR,cL) );
+  }
 }
  
 Complex XYZFunc::Q(short hel)
