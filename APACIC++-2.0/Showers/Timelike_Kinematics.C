@@ -152,8 +152,9 @@ int Timelike_Kinematics::ShuffleMomenta(Knot *const mo,const bool update) const
     r2=(t-t2+t1-lambda)/(2.0*t);
     mo->z=z-r1*z+r2*(1.0-z);
   } 
-  if (dabs(mo->z/z-1.0) < rpa.gen.Accu()) {
-    msg_Debugging()<<"shift unnecessary\n";
+  if (dabs(mo->z/z-1.0) < Accu()) {
+    msg_Debugging()<<"shift unnecessary at "<<(mo->z/z-1.0)
+		   <<", "<<Accu()<<"\n";
     if (update) {
       if (!BoostDaughters(mo)) return 0;
       Tree::UpdateDaughters(mo);
@@ -253,33 +254,12 @@ bool Timelike_Kinematics::DoSingleKinematics(Knot * const mo,
     mo->left->part->SetMomentum(p1);
     mo->right->part->SetMomentum(p2);
   }
-  int error(0);
+  if (!mo->CheckMomentumConservation()) return false;
   if (!CheckVector(mo->part->Momentum()) || 
       !CheckVector(mo->left->part->Momentum()) || 
-      !CheckVector(mo->right->part->Momentum())) error=1;
-  if (!(mo->left->part->Momentum()+mo->right->part->Momentum()==
-	mo->part->Momentum())) error=2;
-  if (mo->left->part->Momentum().Nan()) error=3;
-  if (error>0) {
-    int op(msg.Error().precision(6));
-    msg.Error()<<METHOD<<"("<<mo->kn_no<<"): "
-	       <<"Error "<<error<<": Momentum conservation violated.\n"
-	       <<"   p      = "<<mo->part->Momentum()<<" -> "
-	       <<mo->part->Momentum().Abs2()<<" vs. "<<mo->t
-	       <<" ("<<mo->part->Flav()<<","
-	       <<mo->part->Info()<<","<<mo->stat<<")\n"
-	       <<"   p_1    = "<<mo->left->part->Momentum()<<" -> "
-	       <<mo->left->part->Momentum().Abs2()<<" vs. "
-	       <<mo->left->t<<" ("<<mo->left->part->Flav()<<","
-	       <<mo->left->part->Info()<<","<<mo->left->stat<<")\n"
-	       <<"   p_2    = "<<mo->right->part->Momentum()<<" -> "
-	       <<mo->right->part->Momentum().Abs2()<<" vs. "
-	       <<mo->right->t<<" ("<<mo->right->part->Flav()<<","
-	       <<mo->right->part->Info()<<","<<mo->right->stat<<")\n"
-	       <<"   p_miss = "<<(mo->part->Momentum()-
-				  mo->left->part->Momentum()-
-				  mo->right->part->Momentum())<<std::endl;
-    msg.Error().precision(op);
+      !CheckVector(mo->right->part->Momentum())) {
+    msg.Error()<<METHOD<<"(): Constructed negative energy momentum."
+	       <<std::endl;
     return false;
   }
   return true;
