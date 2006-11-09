@@ -24,7 +24,13 @@ double Combine_Table_CKKW::GetWinner(int &i,int &j)
 { 
   i=m_cdata_winner->first.m_i; 
   j=m_cdata_winner->first.m_j;
-  return sqrt(m_cdata_winner->second.m_pt2ij);
+  if (m_cdata_winner->second.p_down!=NULL) {
+    double kt2qcd(m_cdata_winner->second.p_down->GetLeg(i).KT2QCD());
+    if (kt2qcd<std::numeric_limits<double>::max()) return sqrt(kt2qcd);
+    return sqrt(m_cdata_winner->second.p_down->GetLeg(i).KT2());
+  }
+  THROW(fatal_error,"Legs not combined. No Scale information");
+  return 0.0;
 }
 
 void Combine_Table_CKKW::AddPossibility(const int i,const int j,
