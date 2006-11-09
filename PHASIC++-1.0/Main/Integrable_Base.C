@@ -467,7 +467,8 @@ double Integrable_Base::KFactor(const double scale)
 		   <<"\n} -> as = "<<asn<<" => K = "
 		   <<m_rfactor*pow(asn/as->AlphaS(sqr(rpa.gen.Ecms())),
 				   m_orderQCD)<<"\n";
-    return m_rfactor*pow(asn/as->AlphaS(sqr(rpa.gen.Ecms())),m_orderQCD);
+    return m_rfactor*pow(asn/as->AlphaS(sqr(rpa.gen.Ecms())),
+			 Min(m_orderQCD,m_nstrong-2));
   }
   if (m_kfactorscheme==1) {
     if (m_orderQCD<0 || m_orderEW<0) {
@@ -475,7 +476,8 @@ double Integrable_Base::KFactor(const double scale)
     }
     if (m_orderQCD>0) {
       return m_rfactor*pow
-	(as->AlphaS(scale)/as->AlphaS(sqr(rpa.gen.Ecms())),m_orderQCD);
+	(as->AlphaS(scale)/as->AlphaS(sqr(rpa.gen.Ecms())),
+	 Min(m_orderQCD,m_nstrong-2));
     } 
     else 
       return m_rfactor;
