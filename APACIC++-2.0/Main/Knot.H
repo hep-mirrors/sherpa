@@ -15,7 +15,7 @@ namespace APACIC {
     ATOOLS::Particle *part;
     ATOOLS::Vec4D     lp;
 
-    int    stat, kn_no, shower, maxjets;
+    int    stat, kn_no, shower, maxjets, dir;
     bool   didkin;
     double t, tout, tmax, z, zs, E2, costh, phi, thcrit, maxpt2, x, pt2lcm;
     double smaxpt2, sthcrit, minpt2, qjv, qljv, tmo, lz, lE2;

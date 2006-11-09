@@ -1,5 +1,6 @@
 #include "Spacelike_Kinematics.H"
 #include "Run_Parameter.H"
+#include "Exception.H"
 #include <iomanip>
 
 using namespace APACIC;
@@ -267,9 +268,8 @@ void Spacelike_Kinematics::BoostPartial(const int mode,
 double Spacelike_Kinematics::BoostInCMS(Tree **const trees,
 					Knot *const k1,Knot *const k2) 
 {
-  double dir(k1->part->Momentum()[3]>0.0?1.0:-1.0);
-  if (k2->part->Momentum().PSpat2()>k1->part->Momentum().PSpat2()) 
-    dir=k2->part->Momentum()[3]<0.0?1.0:-1.0;
+  double dir((double)k1->dir);
+  if (dir==0.0) THROW(fatal_error,"No knot history found");
   Vec4D cms(k1->part->Momentum()+k2->part->Momentum());
   m_boost=Poincare(cms);
   trees[0]->BoRo(m_boost);

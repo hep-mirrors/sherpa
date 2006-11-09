@@ -92,6 +92,14 @@ int Initial_State_Shower::PerformShower(Tree **const trees,Tree *const fintree,
   return 0;
 }
 
+void Initial_State_Shower::SetDirection(Knot *const k)
+{
+  if (k->right) {
+    if (k->dir!=0) k->right->dir=k->dir;
+    SetDirection(k->right);
+  }
+}
+
 bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2)
 {
   msg_Debugging()<<METHOD<<"("<<k1->kn_no<<","<<k2->kn_no<<"): {\n";
@@ -104,6 +112,8 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2)
   if (!decay1 && !decay2) first=2;
   int mismatch(0), caught_jetveto(0);
   bool accepted(true); 
+  SetDirection(trees[0]->GetInitiator());
+  SetDirection(trees[1]->GetInitiator());
   while (true) {
     accepted=true;
     m_sprime=(k1->part->Momentum()+k2->part->Momentum()).Abs2();
@@ -165,6 +175,8 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2)
       }
       trees[0]->Restore();
       trees[1]->Restore();
+      SetDirection(trees[0]->GetInitiator());
+      SetDirection(trees[1]->GetInitiator());
     }
   }
   msg_Debugging()<<"iss reset";
@@ -388,6 +400,7 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,
   mother->qjv    = k->qjv;
   mother->qljv   = k->qljv;
   mother->maxjets= k->maxjets;
+  mother->dir    = k->dir;
 
   Knot * sister = 0;
   if (mother->left) {

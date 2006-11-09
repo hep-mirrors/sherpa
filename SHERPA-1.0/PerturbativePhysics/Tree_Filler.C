@@ -205,6 +205,8 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
     }
     ct_test = ct_test->Up();
   }
+  knots[0]->dir=knots[0]->part->Momentum()[3]>0.0?1:-1;
+  knots[1]->dir=knots[1]->part->Momentum()[3]>0.0?1:-1;
   /*
   if (msg.LevelIsDebugging()) {
     msg.Out()<<" in Tree_Filler::FillTrees("<<m_isrshoweron<<","
