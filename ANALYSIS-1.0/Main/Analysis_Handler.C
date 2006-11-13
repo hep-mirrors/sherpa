@@ -112,7 +112,7 @@ bool Analysis_Handler::ReadIn()
   bool success=false;
   std::vector<std::string> helpsv;
   std::vector<std::vector<std::string> > helpsvv;
-  Data_Reader reader(" ",";","//");
+  Data_Reader reader(" ",";","//","=");
   reader.AddWordSeparator("\t");
   reader.SetInputPath(InputPath());
   reader.SetInputFile(InputFile());
