@@ -61,9 +61,9 @@ Return_Value::code HadronDecays_Apacic_Interface::DefineInitialConditions(ATOOLS
 	  if (part->GetFlow(3-comppos)==compare) {
 	    part->SetInfo('f');
 	    singlet->push_back(part);
-	    if (part->GetFlow(3-refpos)==ref) chain = false;
-	    break;
+	    compare = part->GetFlow(comppos);
 	  }
+	  if (part->GetFlow(3-refpos)==ref) chain = false;
 	}
       } while (chain);
     }
@@ -133,7 +133,6 @@ bool HadronDecays_Apacic_Interface::FillTree(list<Particle *> * singlet)
   mo->thcrit  = 200.;
   mo->stat    = 1;  
 
-  std::cout<<METHOD<<" : singlet with mass "<<sqrt(scale)<<std::endl;
   list<Particle * >::iterator sit=singlet->begin();
   if (singlet->size()==2) {
     mo->left             = tree->NewKnot((*sit));
@@ -162,10 +161,15 @@ bool HadronDecays_Apacic_Interface::FillTree(list<Particle *> * singlet)
     mo->right->E2        = sqr(mo->right->part->Momentum()[0]);
     return true;
   }
+  else if(singlet->size()==3) {
+    msg.Error()<<"Singlets of size 3: To be implemented."<<endl;
+    abort();
+  }
   else {
     msg.Error()<<"ERROR in "<<METHOD<<" : "<<endl
-	       <<"   Singlets consisting of three partons not considered yet, "<<endl
-	       <<"   will continue and hope for the best."<<endl;
+      <<"   Singlets consisting of "<<singlet->size()<<" partons not considered yet, "<<endl
+      <<"   will abort."<<endl;
+    abort();
   }
   return false;
 }

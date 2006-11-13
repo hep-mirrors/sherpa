@@ -54,6 +54,7 @@ namespace SHERPA {
     void AddPartonToString(ATOOLS::Particle *,int &);
     void FillFragmentationBlob(ATOOLS::Blob *);
     void FillOutgoingParticlesInBlob(ATOOLS::Blob *);
+    bool SetColorFlow(std::vector<ATOOLS::Particle *> parts,int n_q, int n_g);
 
     void RestoreStatus();
     bool ReadInStatus(const std::string &path);
