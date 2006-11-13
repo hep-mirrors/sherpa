@@ -585,7 +585,7 @@ void Lund_Interface::FillOutgoingParticlesInBlob(Blob *blob)
 }
 
 void Lund_Interface::RestoreStatus() {
-  for(int i=0;i<6;i++) {
+  for(int i=0;i<5;i++) {
     pydatr.mrpy[i] = s_saved_mrpy[i];
   }
   for(int i=0;i<100;i++) {
@@ -594,7 +594,7 @@ void Lund_Interface::RestoreStatus() {
 }
 
 void Lund_Interface::SaveStatus() {
-  for(int i=0;i<6;i++) {
+  for(int i=0;i<5;i++) {
     s_saved_mrpy[i] = pydatr.mrpy[i];
   }
   for(int i=0;i<100;i++) {
@@ -611,7 +611,7 @@ bool Lund_Interface::ReadInStatus(const std::string &path)
 void Lund_Interface::ReadInStatus(const std::string &filename, int mode) {
   ifstream myinstream(filename.c_str());
   if (myinstream.good()) {
-    for(int i=0;i<6;i++) {
+    for(int i=0;i<5;i++) {
       myinstream>>pydatr.mrpy[i];
     }
     for(int i=0;i<100;i++) {
@@ -626,7 +626,8 @@ void Lund_Interface::WriteOutStatus(const std::string &filename)
 {
   ofstream myoutstream(filename.c_str());
   if (myoutstream.good()) {
-    for(int i=0;i<6;i++) {
+    myoutstream.precision(32);
+    for(int i=0;i<5;i++) {
       myoutstream<<pydatr.mrpy[i]<<"\t";
     }
     for(int i=0;i<100;i++) {
