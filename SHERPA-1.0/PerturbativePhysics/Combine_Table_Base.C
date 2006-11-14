@@ -51,7 +51,7 @@ bool SHERPA::operator<(const Combine_Key & a,const Combine_Key & b)
 
 std::ostream& SHERPA::operator<<(std::ostream &s,const Combine_Data &cd)
 {
-  s<<" "<<std::setw(8)<<sqrt(cd.m_pt2ij)<<" "<<std::setw(8)<<sqrt(dabs(cd.m_sij))<<" "
+  s<<" "<<std::setw(10)<<sqrt(cd.m_pt2ij)<<" "<<std::setw(10)<<sqrt(dabs(cd.m_sij))<<" "
    <<std::setw(3)<<cd.m_strong;
 //   s<<" ("<<std::setw(11)<<cd.m_prop<<","<<std::setw(11)<<cd.m_coupling<<") ";
   std::string graphs;
@@ -120,10 +120,10 @@ std::ostream& SHERPA::operator<<(std::ostream& s ,const Combine_Table_Base & ct)
     s<<" ---------------"<<std::endl;
     const CD_List & cl=ct.m_combinations;
     if (cl.size()>0) {
-      s<<" cmb        cos\\theta    k_t^2        t qcd"
+      s<<" cmb       cos\\theta        k_t \\sqrt{|t|} qcd"
        <<std::setw(50)<<"graphs"<<std::endl;
       for (CD_List::const_iterator cit=cl.begin(); cit!=cl.end(); ++cit) {
- 	s<<cit->first<<" "<<std::setw(8)
+ 	s<<cit->first<<std::setw(8)
 	 <<ct.p_moms[cit->first.m_i].
 	  Theta(ct.p_moms[cit->first.m_j])<<cit->second<<std::endl; 
       }
