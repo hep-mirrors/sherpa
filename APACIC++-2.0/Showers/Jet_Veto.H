@@ -151,7 +151,7 @@ namespace APACIC {
 
     int TestKinematics(Knot *const mo=NULL);
     /*!
-      \fn int TestKinematics(const int mode=0,Knot *const mo=NULL)
+      \fn int TestKinematics(const int mode=0)
       \brief Implements the global jet veto procedure
 
       This procedure is called, to veto parton configurations according 
@@ -167,18 +167,23 @@ namespace APACIC {
       \brief Implements the jet veto for final state splittings.
       
       This method implements the jet veto for final state splittings.
-      According to the settings in m_mode, either a local or a global 
-      jet veto is applied.
+      According to the settings in m_mode, jet and/or lose jet veto 
+      is applied.
+      The corresponding \f$p_T\f$ values are calculated using 
+      the Jet_Finder p_jf.
     */
     
     int TestISKinematics(Knot *const mo,Knot *const partner);
     /*!
-      \fn int TestISKinematics(Knot *const mo)
+      \fn int TestISKinematics(Knot *const mo,Knot *const partner)
       \brief Implements the jet veto for initial state splittings.
       
       This method implements the jet veto for initial state splittings.
-      According to the settings in m_mode, either a local or a global 
-      jet veto is applied.
+      According to the settings in m_mode, jet and/or lose jet veto
+      is applied.
+      To determine the corresponding \f$p_T\f$, the initial state trees
+      are boosted into the cms of the outermost partons and rotated onto 
+      the corresponding z-axis.
     */
 
     // inline functions
@@ -210,11 +215,9 @@ namespace APACIC {
     Final_State_Shower, any time a new emission is constructed with the 
     full kinematics and tests the jet measure of this emission w.r.t.
     other partons. The emission is rejected, if a new jet has been created. 
-    Likewise, the parton configuration is vetoed, if the number of jets
-    drops below the number of initial jets, i.e. this which has been set by 
-    the hard matrix element. This is a final check, which is performed 
-    only once, after the complete shower evolution. Jet_Veto is then 
-    called by Apacic.
+    Likewise, the parton configuration can be vetoed, if the number of jets
+    drops below the number of initial jets, i.e. the number which has been 
+    defined by the hard matrix element. 
   */
 
 }//end of namespace APACIC
