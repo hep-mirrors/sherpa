@@ -39,17 +39,12 @@ void Combine_Table_CKKW::AddPossibility(const int i,const int j,
   CD_List::iterator cit=m_combinations.find(Combine_Key(i,j));
   if (cit!=m_combinations.end()) {
     cit->second.m_graphs.push_back(ngraph);
-    if (p_legs[ngraph][i].Point()->fl.Strong() && 
-	p_legs[ngraph][j].Point()->fl.Strong() &&
-	p_legs[ngraph][j].Point()->prev->fl.Strong()) 
-      cit->second.m_strong=true;
+    cit->second.m_strong=Max(cit->second.m_strong,
+			     CombinedLeg(p_legs[ngraph],i,j).OrderQCD());
   }
   else {
     Combine_Data cd(0.,ngraph);
-    if (p_legs[ngraph][i].Point()->fl.Strong() && 
-	p_legs[ngraph][j].Point()->fl.Strong() &&
-	p_legs[ngraph][j].Point()->prev->fl.Strong()) 
-      cd.m_strong=true;
+    cd.m_strong=CombinedLeg(p_legs[ngraph],i,j).OrderQCD();
     m_combinations[Combine_Key(i,j)]=cd;
   }
 }
