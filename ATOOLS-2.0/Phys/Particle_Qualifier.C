@@ -36,6 +36,14 @@ namespace ATOOLS {
       Particle_Qualifier_Base * qual2 = ATOOLS::Particle_Qualifier_Getter::GetObject(name2,name2);
       if (qual1 && qual2) return new And_Particle_Qualifier(qual1,qual2);
     }
+    pos=name.find('(');
+    if (pos!=std::string::npos) {
+      size_t epos(name.rfind(')'));
+      if (epos>pos) {
+	return ATOOLS::Particle_Qualifier_Getter::
+	  GetObject(name.substr(0,pos),name.substr(pos+1,epos-pos-1));
+      }
+    }
     String_Getter_Map::iterator git=s_getters->find(name);
     if (git!=s_getters->end()) {
       msg.Tracking()<<"found."<<std::endl;
@@ -99,16 +107,6 @@ DEFINE_QUALIFIER_CLASS(Is_BQuark_Decay_Product);
 DEFINE_QUALIFIER_GETTER(Is_BQuark_Decay_Product,Is_BQuark_Decay_Product_Getter,
 			"DecayedBQuark","decayed b quark")
 
-DEFINE_QUALIFIER_CLASS(Is_Zboson);
-DEFINE_QUALIFIER_GETTER(Is_Zboson,Is_Zboson_Getter,
-			"kf24","zboson")
-DEFINE_QUALIFIER_CLASS(Is_Wboson);
-DEFINE_QUALIFIER_GETTER(Is_Wboson,Is_Wboson_Getter,
-			"kf23","wboson")
-DEFINE_QUALIFIER_GETTER(Is_Photon,Is_Photon_Getter,
-			"kf22","photon")
-DEFINE_QUALIFIER_GETTER(Is_Gluon,Is_Gluon_Getter,
-			"kf21","gluon")
 DEFINE_QUALIFIER_GETTER(Is_ME_Particle,Is_ME_Particle_Getter,
 			"ME","ME particle")
 
@@ -239,23 +237,18 @@ bool Is_BQuark_Decay_Product::operator() (const Particle * p) const {
   return operator()(b->InParticle(0));
 }
 
-bool Is_Photon::operator() (const Particle * p) const {
-  if ( p && p->Flav().IsPhoton() ) return 1;
-  return 0;
-}
+DECLARE_GETTER(Is_KF_Getter,"KF",Particle_Qualifier_Base,std::string);
+Particle_Qualifier_Base *					
+Is_KF_Getter::operator()(const std::string &parameter) const  
+{ return new Is_KF(parameter); }
+void Is_KF_Getter::PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"kf code, usage: KF(<code>)"; }
 
-bool Is_Zboson::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::Z ) return 1;
-  return 0;
-}
+Is_KF::Is_KF(const std::string &kfcode):
+  m_kfcode((kf::code)ToType<int>(kfcode)) {}
 
-bool Is_Wboson::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::W ) return 1;
-  return 0;
-}
-
-bool Is_Gluon::operator() (const Particle * p)const {
-  if ( p && p->Flav().IsGluon() ) return 1;
+bool Is_KF::operator() (const Particle * p) const {
+  if ( p && p->Flav().Kfcode()==m_kfcode ) return 1;
   return 0;
 }
 

@@ -50,13 +50,11 @@ namespace ATOOLS {
     bool operator()(const Particle *) const;
   };
 
-  class Is_Photon : public Particle_Qualifier_Base {
+  class Is_KF : public Particle_Qualifier_Base {
+  private:
+    kf::code m_kfcode;
   public:
-    bool operator()(const Particle *) const;
-  };
-
-  class Is_Gluon : public Particle_Qualifier_Base {
-  public:
+    Is_KF(const std::string &kfcode);
     bool operator()(const Particle *) const;
   };
 
