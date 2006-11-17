@@ -29,7 +29,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f1_f1f1>(const size_t nin,const size_t nou
   if (!(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() ||
 	ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()))         return NULL;
   if ((flavours[0].Charge()!=0. && ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()) ||
-      ATOOLS::Flavour(ATOOLS::kf::Z).IsOn())                 return new XS_f1f1_f1f1(nin,nout,flavours); 
+      ATOOLS::Flavour(ATOOLS::kf::Z).IsOn())                 return new XS_f1f1_f1f1(nin,nout,flavours);
   return NULL;
 }
 
@@ -144,7 +144,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f1b_f1f1b>(const size_t nin,const size_t n
   if (!(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() ||
 	ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()))         return NULL;
   if ((flavours[0].Charge()!=0. && ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()) ||
-      ATOOLS::Flavour(ATOOLS::kf::Z).IsOn())                 return new XS_f1f1b_f1f1b(nin,nout,flavours); 
+      ATOOLS::Flavour(ATOOLS::kf::Z).IsOn())                 return new XS_f1f1b_f1f1b(nin,nout,flavours);
   return NULL;
 }
 
@@ -279,7 +279,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f1b_f2f2b>(const size_t nin,const size_t n
 	 abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2))>0) ||
 	(kfc1%2!=0 && kfc2%2==0 && 
 	 abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2))>0))) ||
-        ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() )                return new XS_f1f1b_f2f2b(nin,nout,flavours); 
+      ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() )                return new XS_f1f1b_f2f2b(nin,nout,flavours);
   return NULL;
 }
 
@@ -433,7 +433,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f2_f1f2>(const size_t nin,const size_t nou
 	 abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2))>0) ||
 	(kfc1%2!=0 && kfc2%2==0 && 
 	 abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2))>0))) ||
-      ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() )                return new XS_f1f2_f1f2(nin,nout,flavours); 
+      ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() )               return new XS_f1f2_f1f2(nin,nout,flavours); 
   return NULL;
 }
 
@@ -599,7 +599,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f2b_f1f2b>(const size_t nin,const size_t n
 	 abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2))>0) ||
 	(kfc1%2!=0 && kfc2%2==0 && 
 	 abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2))>0))) ||
-      ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() )                return new XS_f1f2b_f1f2b(nin,nout,flavours); 
+      ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() )                return new XS_f1f2b_f1f2b(nin,nout,flavours);
   return NULL;
 }
 
@@ -863,6 +863,8 @@ Single_XS *Single_XS::GetProcess<XS_f1f2b_f3f4b>(const size_t nin,const size_t n
   if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD)                      return NULL;
   if (nqcd!=0 || nqed!=2)                                                         return NULL;
   if (!ATOOLS::Flavour(ATOOLS::kf::W).IsOn())                                     return NULL;
+  if (flavours[0].IntCharge()+flavours[1].IntCharge()!=
+      flavours[2].IntCharge()+flavours[3].IntCharge()) return NULL;
   int kfc1 = abs(flavours[0].Kfcode()), kfc2 = abs(flavours[1].Kfcode());
   int kfc3 = abs(flavours[2].Kfcode()), kfc4 = abs(flavours[3].Kfcode());
   if (!(flavours[0].IsQuark() &&flavours[1].IsQuark() &&
@@ -872,24 +874,28 @@ Single_XS *Single_XS::GetProcess<XS_f1f2b_f3f4b>(const size_t nin,const size_t n
 	(!flavours[3].IsDowntype() ||
 	 (flavours[0].IsAnti()^flavours[2].IsAnti()) || 
 	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2))>0) ||
-	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc4/2))>0)))  return NULL;    
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc4/2))>0)) ||
+	abs(flavours[0].IntCharge()+flavours[1].IntCharge())!=3)  return NULL;    
     if (flavours[3].IsUptype() && 
 	(!flavours[2].IsDowntype() ||
 	 (flavours[0].IsAnti()^flavours[3].IsAnti()) || 
 	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2))>0) ||
-	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc3/2))>0)))  return NULL;    
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc3/2))>0)) ||
+	abs(flavours[0].IntCharge()+flavours[1].IntCharge())!=3)  return NULL;    
   }
   if (flavours[0].IsDowntype() && flavours[1].IsUptype()) {
     if (flavours[2].IsDowntype() && 
 	(!flavours[3].IsUptype() ||
 	 (flavours[0].IsAnti()^flavours[2].IsAnti()) || 
 	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2))>0) ||
-	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc3/2))>0)))  return NULL;    
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc3/2))>0)) ||
+	abs(flavours[0].IntCharge()+flavours[1].IntCharge())!=3)  return NULL;    
     if (flavours[3].IsDowntype() && 
 	(!flavours[2].IsUptype() ||
 	 (flavours[0].IsAnti()^flavours[3].IsAnti()) || 
 	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2))>0) ||
-	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc4/2))>0)))  return NULL;    
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc4/2))>0)) ||
+	abs(flavours[0].IntCharge()+flavours[1].IntCharge())!=3)  return NULL;    
   }
   if (flavours[0].IsUptype() && flavours[1].IsUptype()) {
     if (!flavours[2].IsDowntype() || !flavours[3].IsDowntype() ||
@@ -897,10 +903,12 @@ Single_XS *Single_XS::GetProcess<XS_f1f2b_f3f4b>(const size_t nin,const size_t n
 	!(flavours[2].IsAnti()^flavours[3].IsAnti()) )                            return NULL;
     if (!(flavours[0].IsAnti()^flavours[2].IsAnti()) &&  
 	(!(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc3/2))>0) ||
-	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc4/2))>0)))  return NULL;    
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc4/2))>0)) ||
+	abs(flavours[0].IntCharge()-flavours[2].IntCharge())!=3)  return NULL;    
     if (!(flavours[0].IsAnti()^flavours[3].IsAnti()) &&  
 	(!(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc4/2))>0) ||
-	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc3/2))>0)))  return NULL;
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc3/2))>0)) ||
+	abs(flavours[0].IntCharge()-flavours[3].IntCharge())!=3)  return NULL;
   }    
   if (flavours[0].IsDowntype() && flavours[1].IsDowntype()) {
     if (!flavours[2].IsUptype() || !flavours[3].IsUptype() ||
@@ -908,10 +916,12 @@ Single_XS *Single_XS::GetProcess<XS_f1f2b_f3f4b>(const size_t nin,const size_t n
 	!(flavours[2].IsAnti()^flavours[3].IsAnti()) )                            return NULL;
     if (!(flavours[0].IsAnti()^flavours[2].IsAnti()) &&  
 	(!(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc1/2))>0) ||
-	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc2/2))>0)))  return NULL;    
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc2/2))>0)) ||
+	abs(flavours[0].IntCharge()-flavours[2].IntCharge())!=3)  return NULL;    
     if (!(flavours[0].IsAnti()^flavours[3].IsAnti()) &&  
 	(!(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc1/2))>0) ||
-	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc2/2))>0)))  return NULL;
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc2/2))>0)) ||
+	abs(flavours[0].IntCharge()-flavours[3].IntCharge())!=3)  return NULL;
   }    
   return new XS_f1f2b_f3f4b(nin,nout,flavours); 
 }
