@@ -278,13 +278,17 @@ void Blob::DeleteInParticle(Particle * _part) {
   for (Particle_Vector::iterator part = m_inparticles.begin();
        part != m_inparticles.end(); ++part) {
     if ((*part)==_part) {
-      m_inparticles.erase(part);
       if (_part->DecayBlob()==this) {
 	if (_part->ProductionBlob()!=NULL) _part->ProductionBlob()->RemoveOutParticle(_part);
 	delete _part;
 	_part = NULL;
       }
-      else msg.Out()<<"WARNING: particle not owned by the Blob asked to delete it"<<std::endl;
+      else {
+	msg.Out()<<"WARNING in "<<METHOD<<":"<<std::endl
+		 <<"   particle not owned by the Blob asked to delete it"<<std::endl
+		 <<"   "<<(*_part)<<std::endl;
+      }
+      m_inparticles.erase(part);
       return ;
     }
   }
@@ -319,7 +323,11 @@ void Blob::DeleteOutParticle(Particle * _part) {
 	delete _part;
 	_part = NULL;
       }
-      else msg.Out()<<"WARNING: particle not owned by the Blob asked to delete it"<<std::endl;
+      else {
+	msg.Out()<<"WARNING in "<<METHOD<<":"<<std::endl
+		 <<"   particle not owned by the Blob asked to delete it"<<std::endl
+		 <<"   "<<(*_part)<<std::endl;
+      }
       return ;
     }
   }
