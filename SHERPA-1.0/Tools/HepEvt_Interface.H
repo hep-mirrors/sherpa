@@ -1,9 +1,11 @@
 #ifndef HepEvt_Interface_H
 #define HepEvt_Interface_H
 
+#include "Pythia_HepEvt_Translator.H"
+#include "Herwig_HepEvt_Translator.H"
 #include "Message.H"
-#include <map>
 #include "Particle.H"
+#include <map>
 
 namespace ATOOLS {
   class Blob;
@@ -19,9 +21,11 @@ namespace SHERPA {
       Pythia       = 3
     };
   };
-  typedef std::map<int,std::pair<ATOOLS::Particle *,bool> > Translation_Map;
 
   class HepEvt_Interface {
+    friend class Pythia_HepEvt_Translator;
+    friend class Herwig_HepEvt_Translator;
+  private:
     bool            m_hadronized;
     bool            m_io;
     bool            m_converted;
@@ -31,10 +35,9 @@ namespace SHERPA {
     std::ofstream * p_outstream;
 
     ATOOLS::Particle_Int_Map m_convertS2H;
-    Translation_Map          m_convertH2S;
 
-    int       m_evtnumber,m_nhep;
-    long int  m_filesize, m_evtcount;
+    int      m_evtnumber,m_nhep;
+    long int m_filesize,m_evtcount;
     gtp::code m_generator;
 
     static const int s_maxentries = 4000;
@@ -42,10 +45,13 @@ namespace SHERPA {
     int    * p_jmohep, * p_jdahep,  * p_isthep, * p_idhep;
     double   m_weight, m_Q2, m_x1, m_x2;
     int      m_fl1, m_fl2;
-    
+
+    Pythia_HepEvt_Translator * p_pythiatranslator;
+    Herwig_HepEvt_Translator * p_herwigtranslator;
+
     void WriteFullHepEvt(std::ostream& ostr,int nevt);
     void WriteFormatedHepEvt(std::ostream& ostr,int nevt);
-//     void WriteReducedHepEvt(int nevt);
+    //     void WriteReducedHepEvt(int nevt);
     void WriteD0HepEvt(std::ostream& ostr,int nevt);
     void ISBlobs2HepEvt(ATOOLS::Blob_List * const,int &);
     void HardBlob2HepEvt(ATOOLS::Blob_List * const,int &);
@@ -63,13 +69,6 @@ namespace SHERPA {
 
     void ReadHepEvt(ATOOLS::Blob_List * const);
     void OpenNewHepEvtFile();
-    void HepEvt2Particle(const int);
-    bool ConstructBlobsFromHerwig(ATOOLS::Blob_List * const);
-    void FollowDaughters(const int & i,ATOOLS::Blob * hadron,ATOOLS::Blob * clusters);
-    bool ConstructBlobsFromPythia(ATOOLS::Blob_List * const);
-    bool ConstructBlobs(ATOOLS::Blob_List * const);
-    bool IdentifyBlobs(ATOOLS::Blob_List * const);
-    void DeleteObsolete(const int mode);
   public:
     HepEvt_Interface(int/*=0*/);
     HepEvt_Interface(gtp::code/*=gtp::Unspecified*/);
@@ -96,11 +95,11 @@ namespace SHERPA {
     void SetIsthep(int  * _isthep) { p_isthep = _isthep; }
     void SetIdhep(int   * _idhep)  { p_idhep = _idhep; }
     void SetWeight(double _weight) { m_weight = _weight; }
-    void SetQ2(double _Q2) { m_Q2 = _Q2; }
-    void Setx1(double _x1) { m_x1 = _x1; }
-    void Setx2(double _x2) { m_x2 = _x2; }
-    void SetFl1(int   _fl1) { m_fl1 = _fl1; }
-    void SetFl2(int   _fl2) { m_fl2 = _fl2; }
+    void SetQ2(double _Q2)         { m_Q2 = _Q2; }
+    void Setx1(double _x1)         { m_x1 = _x1; }
+    void Setx2(double _x2)         { m_x2 = _x2; }
+    void SetFl1(int   _fl1)        { m_fl1 = _fl1; }
+    void SetFl2(int   _fl2)        { m_fl2 = _fl2; }
 
     std::ofstream * GetOutStream() { return p_outstream; }
     void ChangeOutStream(std::string &,long int=-1);

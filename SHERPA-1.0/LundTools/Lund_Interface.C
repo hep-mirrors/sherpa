@@ -778,6 +778,7 @@ Return_Value::code Lund_Interface::OneEvent(Blob_List * const blobs,double &weig
   for (int i=0;i<200;i++) {
     pyevnt();
     pyhepc(1);
+    //pylist(2);
     weight=1.;  //*=pypars.pari[10];
     for (int i=0;i<hepevt.nhep;i++) {
       for (int j=0;j<2;j++) {

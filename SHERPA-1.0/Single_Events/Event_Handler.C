@@ -221,6 +221,7 @@ bool Event_Handler::GenerateEvent(int mode)
   case 9001:
   case 9002: {
     Reset();
+    m_blobs.Clear();
     bool flag = false;
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       if ((*pit)->Type()==eph::External_MC) {

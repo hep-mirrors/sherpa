@@ -83,8 +83,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
     m_analysisdat = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
     rpa.Init(m_path,m_file,argc,argv);
     return;
-  }
-  
+  }  
   rpa.Init(m_path,m_file,argc,argv);
 
   p_dataread         = new Data_Read(m_path+m_file);
@@ -292,7 +291,7 @@ bool Initialization_Handler::InitializeTheIO()
   outfiles.push_back(p_dataread->GetValue<string>("D0_HEPEVT_OUTPUT",string("")));
   std::string evtpath = p_dataread->GetValue<string>("EVT_FILE_PATH",m_path);
   int filesize        = p_dataread->GetValue<int>("FILE_SIZE",1000);
-  int precision        = p_dataread->GetValue<int>("OUTPUT_PRECISION",6);
+  int precision       = p_dataread->GetValue<int>("OUTPUT_PRECISION",6);
   std::string outmode = p_dataread->GetValue<string>("EVENT_MODE",string("Sherpa"));
 
   p_iohandler = new Input_Output_Handler(outmode,outfiles,infiles,evtpath,filesize,precision);

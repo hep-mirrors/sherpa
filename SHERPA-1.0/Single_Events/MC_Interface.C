@@ -37,6 +37,4 @@ Return_Value::code MC_Interface::Treat(Blob_List * blobs, double & weight)
 
 void MC_Interface::CleanUp() { }
 
-void MC_Interface::Finish(const std::string &) 
-{
-}
+void MC_Interface::Finish(const std::string &) {}
