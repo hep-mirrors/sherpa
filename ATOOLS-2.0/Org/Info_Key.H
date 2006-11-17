@@ -47,12 +47,12 @@ namespace ATOOLS {
     ~Info_Key();
 
     // setters
-    void     SetInfo(const std::string info);
-    si::code SetStatus(const si::code sicode);
+    inline void     SetInfo(const std::string info);
+    inline si::code SetStatus(const si::code sicode) const;
 
     // getters
-    const std::string &Name() const;
-    const std::string &Info() const;
+    inline const std::string &Name() const;
+    inline const std::string &Info() const;
 
     si::code Status() const;
 
@@ -62,20 +62,22 @@ namespace ATOOLS {
     void Assign(const std::string name,const size_t doubles,
 		const size_t vectors,const SP(Integration_Info) &info);
 
-    Double_Container &Doubles();
-    Vector_Container &Vectors();
+    inline Double_Container &Doubles() const;
+    inline Vector_Container &Vectors() const;
 
-    double        Double(const size_t i) const;
-    ATOOLS::Vec4D Vector(const size_t i) const;
-    double        Weight() const;
+    inline double        Double(const size_t i) const;
+    inline ATOOLS::Vec4D Vector(const size_t i) const;
+    inline double        Weight() const;
 
-    double        &operator[](const size_t i);
-    ATOOLS::Vec4D &operator()(const size_t i);
+    inline bool Assigned() const;
 
-    void operator<<(const double weight);
+    inline double        &operator[](const size_t i);
+    inline ATOOLS::Vec4D &operator()(const size_t i);
 
-    Info_Key &operator=(const Info_Key &key);
-    bool      operator==(const Info_Key &key);
+    inline void operator<<(const double weight);
+
+    inline Info_Key &operator=(const Info_Key &key);
+    inline bool      operator==(const Info_Key &key);
 
     friend std::ostream &operator<<(std::ostream &str,const Info_Key &key);
 

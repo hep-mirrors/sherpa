@@ -17,6 +17,7 @@ Single_XS::Single_XS(const size_t nin,const size_t nout,
 	  beamhandler,isrhandler,selectordata)
 {
   p_selected=this;
+  SetScaleScheme(m_scalescheme);
 }
 
 Single_XS::Single_XS(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours):
@@ -138,7 +139,7 @@ double Single_XS::Differential(const double s,const double t,const double u)
     else m_lastlumi=1.;
   }
   else m_lastlumi=1.;
-  return m_last=m_lastdxs*m_lastlumi;
+  return m_last=m_lastdxs*m_lastlumi*KFactor();
 }
 
 double Single_XS::Differential2() 
@@ -147,7 +148,7 @@ double Single_XS::Differential2()
     if (p_flavours[0]==p_flavours[1] || p_isrhandler->On()==0) return 0.;
     double tmp=m_lastdxs*p_isrhandler->Weight2(p_flavours); 
     m_last+=tmp;
-    return tmp;
+    return tmp*KFactor();
   }
   return 0;
 }

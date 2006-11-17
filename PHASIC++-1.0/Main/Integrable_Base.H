@@ -10,6 +10,7 @@
 #include "Histogram.H"
 #include "Spin_Correlation_Tensor.H"
 #include "Amplitude_Tensor.H"
+#include "Info_Key.H"
 
 #include <string>
 
@@ -125,6 +126,8 @@ namespace PHASIC {
 
     std::string m_efunc;
 
+    ATOOLS::Info_Key m_kfkey;
+
   public:
 
     double TotalResult();
@@ -164,7 +167,7 @@ namespace PHASIC {
     virtual void   FillAmplitudes(ATOOLS::Amplitude_Tensor*,double=1.);
 
     virtual double CalculateScale(const ATOOLS::Vec4D *momenta);
-    virtual double KFactor(const double scale);
+    virtual double KFactor();
 
     virtual void DeSelect() = 0;
     virtual bool ReSelect(int) = 0;

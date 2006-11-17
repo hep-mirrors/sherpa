@@ -333,6 +333,13 @@ void Integrable_Base::SetMomenta()
 
 double Integrable_Base::CalculateScale(const Vec4D *momenta) 
 {
+  if (!m_kfkey.Assigned()) {
+    std::string kfinfo("O(QCD)="+ToString(m_orderQCD));
+    msg_Debugging()<<METHOD<<"(): Assign '"<<Name()
+		   <<"' to '"<<Name()<<"','"<<kfinfo<<"'\n";
+    m_kfkey.Assign(Name(),2,0,p_activepshandler->GetInfo());
+    m_kfkey.SetInfo(kfinfo);
+  }
   scl::scheme scheme(m_scalescheme);
   if (scheme==scl::unknown) 
     THROW(fatal_error,"Unknown scale scheme: "+ToString(m_scalescheme));
@@ -356,8 +363,8 @@ double Integrable_Base::CalculateScale(const Vec4D *momenta)
     else 
       // two scale treatment
       m_scale[stp::fac]=Min(m_scale[stp::fac],pt2);
-    m_scale[stp::ren]*=rpa.gen.RenormalizationScaleFactor();
-    return m_scale[stp::fac]*=rpa.gen.FactorizationScaleFactor();
+    m_kfkey[0]=m_scale[stp::ren]*=rpa.gen.RenormalizationScaleFactor();
+    return m_kfkey[1]=m_scale[stp::fac]*=rpa.gen.FactorizationScaleFactor();
   }
   double pt2(-1.0);
   if (scheme & scl::fixed) {
@@ -440,22 +447,33 @@ double Integrable_Base::CalculateScale(const Vec4D *momenta)
   }
   if (pt2<0. || scheme!=scl::unknown) 
     THROW(fatal_error,"Unknown scale scheme: "+ToString(m_scalescheme));
-  m_scale[stp::ren]=rpa.gen.RenormalizationScaleFactor()*pt2;
-  m_scale[stp::fac]=rpa.gen.FactorizationScaleFactor()*pt2;
+  m_kfkey[0]=m_scale[stp::ren]=rpa.gen.RenormalizationScaleFactor()*pt2;
+  m_kfkey[1]=m_scale[stp::fac]=rpa.gen.FactorizationScaleFactor()*pt2;
   if (Selected()==NULL) return m_scale[stp::fac];
   return (*Selected()->p_regulator)[m_scale[stp::fac]]; 
 }
 
-double Integrable_Base::KFactor(const double scale) 
+double Integrable_Base::KFactor() 
 {
+  if (!m_kfkey.Assigned()) {
+    std::string kfname(p_activepshandler->Process()->Name());
+    std::string kfinfo("O(QCD)="+ToString(m_orderQCD));
+    msg_Debugging()<<METHOD<<"(): Assign '"<<Name()
+		   <<"' to '"<<kfname<<"','"<<kfinfo<<"'\n";
+    m_kfkey.Assign(kfname,2,0,p_activepshandler->GetInfo());
+    m_kfkey.SetInfo(kfinfo);
+  }
   if (m_scalescheme&scl::ckkw) {
+    if (m_kfkey.Weight()!=ATOOLS::UNDEFINED_WEIGHT) return m_kfkey.Weight();
     if (m_orderQCD<0 || m_orderEW<0) {
       THROW(fatal_error,"Couplings not set for process '"+Name()+"'");
     }
-    m_scale[stp::fac]=scale;
     if (m_nstrong<=2) return m_rfactor;
+    m_scale[stp::ren]=m_kfkey[0];
+    m_scale[stp::fac]=m_kfkey[1];
     double asn(as->AlphaS(m_me_as_factor*m_ps_cpl_factor*m_scale[stp::ren]));
     if (m_ps_kfactor!=0.0) asn*=1.+asn/(2.0*M_PI)*m_ps_kfactor;
+    m_kfkey<<m_rfactor*pow(asn/as->AlphaS(sqr(rpa.gen.Ecms())),m_orderQCD);
     msg_Debugging()<<METHOD<<"(): "<<Name()<<" ("<<m_nstrong<<","
 		   <<m_orderQCD<<") {\n"
 		   <<"  \\mu_{fac}   = "<<sqrt(m_scale[stp::fac])<<"\n"
@@ -464,20 +482,19 @@ double Integrable_Base::KFactor(const double scale)
 		   <<"  r scalefac  = "<<m_rfactor<<"\n"
 		   <<"  ps scalefac = "<<m_ps_cpl_factor<<"\n"
 		   <<"  ps k factor = "<<m_ps_kfactor
-		   <<"\n} -> as = "<<asn<<" => K = "
-		   <<m_rfactor*pow(asn/as->AlphaS(sqr(rpa.gen.Ecms())),
-				   m_orderQCD)<<"\n";
-    return m_rfactor*pow(asn/as->AlphaS(sqr(rpa.gen.Ecms())),
-			 Min(m_orderQCD,m_nstrong-2));
+		   <<"\n} -> as = "<<asn<<" => K = "<<m_kfkey.Weight()<<"\n";
+    return m_kfkey.Weight();
   }
   if (m_kfactorscheme==1) {
+    if (m_kfkey.Weight()!=ATOOLS::UNDEFINED_WEIGHT) return m_kfkey.Weight();
     if (m_orderQCD<0 || m_orderEW<0) {
       THROW(fatal_error,"Couplings not set for process '"+Name()+"'");
     }
     if (m_orderQCD>0) {
-      return m_rfactor*pow
-	(as->AlphaS(scale)/as->AlphaS(sqr(rpa.gen.Ecms())),
-	 Min(m_orderQCD,m_nstrong-2));
+      m_scale[stp::ren]=m_kfkey[0];
+      m_kfkey<<m_rfactor*pow(as->AlphaS(m_scale[stp::ren])/
+			     as->AlphaS(sqr(rpa.gen.Ecms())),m_orderQCD);
+      return m_kfkey.Weight();
     } 
     else 
       return m_rfactor;

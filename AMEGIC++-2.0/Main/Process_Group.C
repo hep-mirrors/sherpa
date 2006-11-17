@@ -814,6 +814,7 @@ bool Process_Group::SetUpIntegrator()
 	 (p_flavours[1].Mass() != p_isrhandler->Flav(1).Mass()) ) p_isrhandler->SetPartonMasses(p_flavours);
   }
   p_pshandler  = new Phase_Space_Handler(this,p_isrhandler,p_beamhandler,m_maxerror);
+  SetPSHandler(p_pshandler);
   p_pshandler->SetUsePI(m_usepi);
 
   //  if (m_nin==2 ) 
@@ -823,7 +824,11 @@ bool Process_Group::SetUpIntegrator()
   return 1;
 }
 
-
+void Process_Group::SetPSHandler(PHASIC::Phase_Space_Handler *const pshandler) 
+{
+  for (size_t i=0;i<m_procs.size();++i) m_procs[i]->SetPSHandler(pshandler);
+  p_activepshandler=pshandler;
+} 
 
 
 /*----------------------------------------------------------------------------------

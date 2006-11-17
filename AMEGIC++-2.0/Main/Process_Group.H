@@ -51,6 +51,7 @@ namespace AMEGIC {
     void           ResetEvents(double gmin);
     void           GetGMin(double &g, double &meff);
     void           SetWEventMode(int mode);
+    void           SetPSHandler(PHASIC::Phase_Space_Handler *const pshandler); 
 
     void           Empty();
     size_t         Size()                          { return m_procs.size(); }

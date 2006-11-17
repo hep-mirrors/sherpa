@@ -1123,7 +1123,10 @@ void Single_Process::ResetMax(int flag)
   for (size_t i=0;i<m_vsmax.size();i++) m_max=ATOOLS::Max(m_max,m_vsmax[i]);
 }
 
-double Single_Process::Differential(const ATOOLS::Vec4D* _moms) { return DSigma(_moms,0); }
+double Single_Process::Differential(const ATOOLS::Vec4D* _moms) 
+{ 
+  return DSigma(_moms,0); 
+}
 
 double Single_Process::Differential2() { 
   if (p_isrhandler->On()==0) return 0.;
@@ -1166,7 +1169,7 @@ double Single_Process::DSigma(const ATOOLS::Vec4D* _moms,bool lookup)
   }
   else  m_lastlumi = 1.;
 
-  return m_last = m_Norm * m_lastdxs * m_lastlumi;
+  return m_last = m_Norm * m_lastdxs * m_lastlumi*KFactor();
 }
 
 double Single_Process::DSigma2() { 
@@ -1175,7 +1178,7 @@ double Single_Process::DSigma2() {
   }
   double tmp = m_Norm * m_lastdxs * p_isrhandler->Weight2(p_flin); 
   m_last    += tmp;
-  return tmp;
+  return tmp*KFactor();
 }
 
 double Single_Process::operator()(const ATOOLS::Vec4D * mom)

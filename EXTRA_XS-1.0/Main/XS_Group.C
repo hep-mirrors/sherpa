@@ -31,6 +31,7 @@ XS_Group::XS_Group(const size_t nin,const size_t nout,const ATOOLS::Flavour *fla
 {
   p_selected=NULL;
   p_selectordata=selectordata;
+  SetScaleScheme(m_scalescheme);
 }
 
 XS_Group::XS_Group(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours):
