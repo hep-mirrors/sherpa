@@ -232,24 +232,20 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
       case "${enableval}" in
         no)  AC_MSG_RESULT(CLHEP not enabled); clhep=false ;;
         yes) if test -d "$CLHEPDIR"; then
-                CONDITIONAL_CLHEPDIR=$CLHEPDIR
-                if test -x "$CLHEPDIR/bin/clhep-config" && test -d "`$CLHEPDIR/bin/clhep-config --prefix`"; then
-                  CONDITIONAL_CLHEPLIBS=`$CLHEPDIR/bin/clhep-config --libs`
-                  CONDITIONAL_CLHEPINCS=`$CLHEPDIR/bin/clhep-config --include`
-                else
-                  CONDITIONAL_CLHEPINCS=-I$CLHEPDIR/include
-                  possible_libs="libCLHEP-g++.*.so libCLHEP-g++.*.a libCLHEP.so libCLHEP.a libCLHEP-1*.so libCLHEP-1*.a libCLHEP-2*.so libCLHEP-2*.a"
-                  for J in $possible_libs; do
-                    result=`find $CLHEPDIR/lib -name "$J" | head -n 1`;
-                    if test "$result" != ""; then
-                      break;
-                    fi
-                  done;
+                CONDITIONAL_CLHEPDIR="$CLHEPDIR"
+                CONDITIONAL_CLHEPINCS="-I$CLHEPDIR/include"
+                possible_libs="libCLHEP-g++.*.so libCLHEP.so libCLHEP-1*.so libCLHEP-2*.so"
+                for J in $possible_libs; do
+                  result=`find $CLHEPDIR/lib -name "$J" | head -n 1`;
                   if test "$result" != ""; then
-                    CONDITIONAL_CLHEPLIBS=$result;
-                  else
-                    AC_MSG_ERROR(Did not find any library of the following type in $CLHEPDIR/lib: $possible_libs and clhep-config was not available in \$PATH.);
+                    result=`basename $result | sed -e 's/lib//' | sed -e 's/\.so//'`
+                    break;
                   fi
+                done;
+                if test "$result" != ""; then
+                  CONDITIONAL_CLHEPLIBS="-L$CLHEPDIR/lib -R$CLHEPDIR/lib -l$result";
+                else
+                  AC_MSG_ERROR(Did not find any library of the following type in $CLHEPDIR/lib: $possible_libs and clhep-config was not available in \$PATH.);
                 fi
               elif test -x "`which clhep-config`"; then
                 CONDITIONAL_CLHEPDIR=`clhep-config --prefix`;
@@ -258,7 +254,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
                 if ! test -d "$CONDITIONAL_CLHEPDIR"; then
                   AC_MSG_ERROR(clhep-config --prefix returned a path that is not available. Please check your CLHEP installation and set \$CLHEPDIR manually.);
                 fi
-              else 
+              else
                 AC_MSG_ERROR(\$CLHEPDIR is not a valid path and clhep-config was not found.);
               fi;
               AC_MSG_RESULT([${CONDITIONAL_CLHEPDIR}]); clhep=true;;
