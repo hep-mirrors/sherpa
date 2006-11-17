@@ -106,6 +106,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   std::string efunc="1";
   Data_Reader reader(" ",";","!","=");
   reader.AddWordSeparator("\t");
+  reader.AddIgnore(":");
   m_setup.clear();
   while(from) {
     getline(from,buf);
@@ -142,10 +143,10 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 		reader.SetString(buf);
 		unsigned int order_ew_t, order_strong_t;
 		std::string efunc_t="1";
-		if (reader.ReadFromString(order_ew_t,"Order electroweak :")) order_ew=order_ew_t;
-		if (reader.ReadFromString(order_strong_t,"Order strong :")) order_strong=order_strong_t;
-		if (reader.ReadFromString(efunc_t,"Enhance_Function :")) efunc=efunc_t;
-		position = buf.find(string("End process"));
+		if (reader.ReadFromString(order_ew_t,"electroweak")) order_ew=order_ew_t;
+		if (reader.ReadFromString(order_strong_t,"strong")) order_strong=order_strong_t;
+		if (reader.ReadFromString(efunc_t,"Enhance_Function")) efunc=efunc_t;
+		position = buf.find(string("process"));
 		if (!from) {
 		  msg.Error()<<"Error in Simple_XS::InitializeProcesses("
 			     <<m_path+processfile<<")."<<endl
