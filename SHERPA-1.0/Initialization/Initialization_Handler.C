@@ -35,12 +35,12 @@ using namespace ATOOLS;
 using namespace std;
 
 Initialization_Handler::Initialization_Handler(string _path,string _file) : 
-  m_path(_path), m_file(_file), m_mode(0),
+  m_path(_path), m_file(_file), m_mode(0), m_savestatus(false),
   p_model(NULL), p_beamspectra(NULL), p_harddecays(NULL), 
   p_showerhandler(NULL), p_beamremnants(NULL), p_fragmentation(NULL), 
   p_mihandler(NULL), p_iohandler(NULL), p_pythia(NULL), 
   p_evtreader(NULL),
-  p_analysis(NULL) 
+  p_analysis(NULL)
 {
   m_scan_istep=-1;  
 
@@ -64,7 +64,7 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
 }
 
 Initialization_Handler::Initialization_Handler(int argc,char * argv[]) : 
-  m_mode(0), p_model(NULL), p_beamspectra(NULL), 
+  m_mode(0), m_savestatus(false), p_model(NULL), p_beamspectra(NULL), 
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
   p_fragmentation(NULL), p_mihandler(NULL),
   p_iohandler(NULL), p_pythia(NULL), p_evtreader(NULL), 
@@ -110,6 +110,12 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 
 Initialization_Handler::~Initialization_Handler()
 {
+  if (m_savestatus) {
+    msg.Error()<<METHOD<<"(): Status saved to '"
+	       <<rpa.gen.Variable("SHERPA_STATUS_PATH")<<"'."<<std::endl;
+    MakeDir(rpa.gen.Variable("SHERPA_STATUS_PATH"),493);
+    exh->PrepareTerminate();
+  }
   if (p_evtreader)     { delete p_evtreader;     p_evtreader     = NULL; }
   if (p_iohandler)     { delete p_iohandler;     p_iohandler     = NULL; }
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
@@ -773,6 +779,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
   special_options["RUNDATA"]=102;
   special_options["ECMS"]=103;
   special_options["STATUS_PATH"]=110;
+  special_options["SAVE_STATUS"]=111;
   special_options["PYTHIA"]=9000;
   special_options["EVTDATA"]=9999;
   
@@ -830,6 +837,12 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       case 110:
 	if (value[value.length()-1]!='/') value+=std::string("/");
 	datpath=value;
+	break;
+      case 111:
+	if (value[value.length()-1]!='/') value+=std::string("/");
+	rpa.gen.SetVariable
+	  ("SHERPA_STATUS_PATH",rpa.gen.Variable("SHERPA_RUN_PATH")+"/"+value);
+	m_savestatus=true;
 	break;
       case 9000:
 	m_mode       = 9000;
