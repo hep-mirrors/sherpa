@@ -13,14 +13,17 @@ namespace SHERPA {
 
   class HadronDecays_Apacic_Interface: public Perturbative_Interface {
   private:
+    int            m_N_of_singlets;
     ATOOLS::Blob * p_blob;
 
-    std::list<std::list<ATOOLS::Particle * > * > m_singlets;
-    std::list<APACIC::Tree * >                   m_trees;
+    std::vector<ATOOLS::Particle * > m_particles;
 
     ATOOLS::Poincare m_boost;               
 
-    bool FillTree(std::list<ATOOLS::Particle *> *);
+    bool FillTree(APACIC::Tree *);
+    bool FillBinaryDecayTree(APACIC::Tree *);
+    bool FillTertiaryDecayTree(APACIC::Tree *);
+    bool FillSpectatorDecayTree(APACIC::Tree *);
   public :
 
     // constructor
