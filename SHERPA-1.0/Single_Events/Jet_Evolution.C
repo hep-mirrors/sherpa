@@ -136,8 +136,8 @@ Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist
 	interface->CleanBlobList(bloblist,blob->Type());
       return Return_Value::Retry_Event;
     default:
-      msg.Error()<<"ERROR in "<<METHOD<<":"<<endl
-		 <<"   Shower failure. Will try new event."<<endl;
+//       msg.Error()<<"ERROR in "<<METHOD<<":"<<endl
+// 		 <<"   Shower failure. Will try new event."<<endl;
       p_showerhandler->CleanUp();
       interface->CleanUp();
       return Return_Value::New_Event;
