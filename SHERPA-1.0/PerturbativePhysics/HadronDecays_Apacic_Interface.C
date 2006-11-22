@@ -21,8 +21,8 @@ Return_Value::code HadronDecays_Apacic_Interface::DefineInitialConditions(ATOOLS
   p_blob->SetTypeSpec("APACIC++ 2.0");
   p_blob->SetStatus(blob_status::needs_hadronization);
   p_blob->SetId();
-  unsigned int pos,refpos,compare;
-  int          comppos;
+  unsigned int pos(0),refpos(0),compare(0);
+  int          comppos(0);
   size_t       ref;
   bool         chain(false);
   Particle * part;
@@ -89,7 +89,7 @@ int HadronDecays_Apacic_Interface::PerformDecayShowers()
 { 
   APACIC::Tree * tree = p_shower->GetFinTree();
   if (FillTree(tree)) {
-    //cout<<(*tree)<<endl;
+    cout<<METHOD<<endl<<(*tree)<<endl;
     p_shower->GetApacic()->FinShower()->PerformShower(tree,false); 
     p_shower->GetApacic()->FinShower()->SetAllColours(tree->GetRoot());
     m_boost.Invert();
@@ -105,6 +105,7 @@ int HadronDecays_Apacic_Interface::PerformDecayShowers()
 
 bool HadronDecays_Apacic_Interface::FillTree(APACIC::Tree * tree)
 {
+  std::cout<<METHOD<<" "<<m_N_of_singlets<<"/"<<m_particles.size()<<std::endl;
   switch (m_N_of_singlets) {
   case 1:
     if (m_particles.size()==2) return FillBinaryDecayTree(tree);
@@ -139,6 +140,7 @@ bool HadronDecays_Apacic_Interface::FillBinaryDecayTree(APACIC::Tree * tree) {
   mo->costh   = -1.; 
   mo->thcrit  = 200.;
   mo->stat    = 0;  
+  mo->shower  = 0;
 
   Particle * part      = m_particles[0];
   mo->left             = tree->NewKnot(part);
@@ -148,7 +150,7 @@ bool HadronDecays_Apacic_Interface::FillBinaryDecayTree(APACIC::Tree * tree) {
   mo->left->tout       = sqr(part->Flav().PSMass());
   mo->left->maxpt2     = 0.;
   mo->left->didkin     = true;
-  part->SetInfo('F');
+  mo->left->part->SetInfo('H');
 
   part                 = m_particles[1];
   mo->right            = tree->NewKnot(part);
@@ -158,7 +160,7 @@ bool HadronDecays_Apacic_Interface::FillBinaryDecayTree(APACIC::Tree * tree) {
   mo->right->tout      = sqr(part->Flav().PSMass());
   mo->right->maxpt2    = 0.;
   mo->right->didkin    = true;
-  part->SetInfo('F');
+  mo->right->part->SetInfo('H');
 
   m_boost = Poincare(momom);
   tree->BoRo(m_boost);
@@ -198,6 +200,7 @@ bool HadronDecays_Apacic_Interface::FillTertiaryDecayTree(APACIC::Tree * tree) {
   mo->costh                = -1.; 
   mo->thcrit               = 200.;
   mo->stat                 = 0;  
+  mo->shower               = 0;
 
   Particle * part          = m_particles[left];
   mo->left                 = tree->NewKnot(part);
@@ -207,18 +210,27 @@ bool HadronDecays_Apacic_Interface::FillTertiaryDecayTree(APACIC::Tree * tree) {
   mo->left->tout           = sqr(part->Flav().PSMass());
   mo->left->maxpt2         = 0.;
   mo->left->didkin         = true;
-  part->SetInfo('F');
+  mo->left->part->SetInfo('H');
 
-  mo->right                = tree->NewKnot(Flavour(kf::photon),momom,scale,0.);
+  Vec4D rightmom = m_particles[right1]->Momentum() + m_particles[right2]->Momentum();
+  scale = rightmom.Abs2();
+
+  mo->right                = tree->NewKnot(mo->left->part->Flav().Bar(),
+					   rightmom,scale,0.);
   mo->right->part->SetStatus(part_status::decayed);
-  mo->right->part->SetInfo('M');
+  mo->right->part->SetInfo('H');
+  mo->right->part->SetFlow(1,mo->left->part->GetFlow(2));
+  mo->right->part->SetFlow(2,mo->left->part->GetFlow(1));
   mo->right->E2            = scale;
   mo->right->maxpt2        = scale;
+  mo->right->t             = scale;
+  mo->right->tout          = scale;
   mo->right->z             = 0.5;
   mo->right->costh         = -1.; 
   mo->right->thcrit        = 200.;
   mo->right->prev          = mo;
   mo->right->stat          = 0;  
+  mo->right->shower        = 0;
   mo->right->didkin        = true;
 
   part                     = m_particles[right1];
@@ -229,7 +241,7 @@ bool HadronDecays_Apacic_Interface::FillTertiaryDecayTree(APACIC::Tree * tree) {
   mo->right->right->tout   = sqr(part->Flav().PSMass());
   mo->right->right->maxpt2 = 0.;
   mo->right->right->didkin = true;
-  part->SetInfo('F');
+  mo->right->right->part->SetInfo('H');
 
   part                     = m_particles[right2];
   mo->right->left          = tree->NewKnot(part);
@@ -239,7 +251,7 @@ bool HadronDecays_Apacic_Interface::FillTertiaryDecayTree(APACIC::Tree * tree) {
   mo->right->left->tout    = sqr(part->Flav().PSMass());
   mo->right->left->maxpt2  = 0.;
   mo->right->left->didkin  = true;
-  part->SetInfo('F');
+  mo->right->left->part->SetInfo('H');
 
   m_boost = Poincare(momom);
   tree->BoRo(m_boost);
@@ -247,10 +259,15 @@ bool HadronDecays_Apacic_Interface::FillTertiaryDecayTree(APACIC::Tree * tree) {
   mo->right->right->E2     = sqr(mo->right->right->part->Momentum()[0]);
   mo->right->E2            = sqr(sqrt(mo->right->left->E2)+sqrt(mo->right->right->E2));
   mo->right->z             = sqrt(mo->right->left->E2/mo->right->E2);
+  mo->right->zs            = mo->right->z;
   mo->left->E2             = sqr(mo->left->part->Momentum()[0]);
   mo->right->E2            = sqr(mo->right->part->Momentum()[0]);
-  mo->z                    = sqrt(mo->left->E2/mo->E2);
+  mo->zs = mo->z           = sqrt(mo->left->E2/mo->E2);
 
+  std::cout<<METHOD<<std::endl<<(*tree)<<std::endl;
+
+  std::cout<<"Check this :"<<mo<<" -> "<<mo->left<<", {"
+	   <<mo->right<<" -> "<<mo->right->left<<","<<mo->right->right<<"}."<<std::endl;
   return true;
 }
 
@@ -295,7 +312,7 @@ bool HadronDecays_Apacic_Interface::FillSpectatorDecayTree(APACIC::Tree * tree) 
   mo->left->left->tout       = sqr(part->Flav().PSMass());
   mo->left->left->maxpt2     = 0.;
   mo->left->left->didkin     = true;
-  part->SetInfo('F');
+  mo->left->left->part->SetInfo('H');
 
   part                       = m_particles[1];
   mo->left->right            = tree->NewKnot(part);
@@ -305,7 +322,7 @@ bool HadronDecays_Apacic_Interface::FillSpectatorDecayTree(APACIC::Tree * tree) 
   mo->left->right->tout      = sqr(part->Flav().PSMass());
   mo->left->right->maxpt2    = 0.;
   mo->left->right->didkin    = true;
-  part->SetInfo('F');
+  mo->left->right->part->SetInfo('H');
 
 
   momom = Vec4D(0.,0.,0.,0.);
@@ -331,7 +348,7 @@ bool HadronDecays_Apacic_Interface::FillSpectatorDecayTree(APACIC::Tree * tree) 
   mo->right->left->tout       = sqr(part->Flav().PSMass());
   mo->right->left->maxpt2     = 0.;
   mo->right->left->didkin     = true;
-  part->SetInfo('F');
+  mo->right->left->part->SetInfo('H');
 
   part                        = m_particles[3];
   mo->right->right            = tree->NewKnot(part);
@@ -341,19 +358,19 @@ bool HadronDecays_Apacic_Interface::FillSpectatorDecayTree(APACIC::Tree * tree) 
   mo->right->right->tout      = sqr(part->Flav().PSMass());
   mo->right->right->maxpt2    = 0.;
   mo->right->right->didkin    = true;
-  part->SetInfo('F');
+  mo->right->right->part->SetInfo('H');
 
 
   m_boost = Poincare(momom);
   tree->BoRo(m_boost);
-  mo->left->left->E2         = sqr(mo->left->left->part->Momentum()[0]);
-  mo->left->right->E2        = sqr(mo->left->right->part->Momentum()[0]);
-  mo->left->E2               = sqr(mo->left->part->Momentum()[0]);
-  mo->left->z                = sqrt(mo->left->left->E2/mo->left->E2);
-  mo->right->left->E2        = sqr(mo->right->left->part->Momentum()[0]);
-  mo->right->right->E2       = sqr(mo->right->right->part->Momentum()[0]);
-  mo->right->E2              = sqr(mo->right->part->Momentum()[0]);
-  mo->right->z               = sqrt(mo->right->left->E2/mo->right->E2);
-  mo->z                      = sqrt(mo->left->E2/mo->E2);
+  mo->left->left->E2           = sqr(mo->left->left->part->Momentum()[0]);
+  mo->left->right->E2          = sqr(mo->left->right->part->Momentum()[0]);
+  mo->left->E2                 = sqr(mo->left->part->Momentum()[0]);
+  mo->left->zs = mo->left->z   = sqrt(mo->left->left->E2/mo->left->E2);
+  mo->right->left->E2          = sqr(mo->right->left->part->Momentum()[0]);
+  mo->right->right->E2         = sqr(mo->right->right->part->Momentum()[0]);
+  mo->right->E2                = sqr(mo->right->part->Momentum()[0]);
+  mo->right->zs = mo->right->z = sqrt(mo->right->left->E2/mo->right->E2);
+  mo->zs = mo->z               = sqrt(mo->left->E2/mo->E2);
   return true;
 }
