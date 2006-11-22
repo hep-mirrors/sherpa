@@ -89,12 +89,10 @@ int HadronDecays_Apacic_Interface::PerformDecayShowers()
 { 
   APACIC::Tree * tree = p_shower->GetFinTree();
   if (FillTree(tree)) {
-    cout<<METHOD<<endl<<(*tree)<<endl;
     p_shower->GetApacic()->FinShower()->PerformShower(tree,false); 
     p_shower->GetApacic()->FinShower()->SetAllColours(tree->GetRoot());
     m_boost.Invert();
     tree->BoRo(m_boost);
-    //cout<<(*p_shower->GetFinTree())<<endl;
     p_shower->GetApacic()->FinShower()->ExtractFinalState(p_blob,tree->GetRoot());
     tree->Reset();
     m_particles.clear();
@@ -105,7 +103,6 @@ int HadronDecays_Apacic_Interface::PerformDecayShowers()
 
 bool HadronDecays_Apacic_Interface::FillTree(APACIC::Tree * tree)
 {
-  std::cout<<METHOD<<" "<<m_N_of_singlets<<"/"<<m_particles.size()<<std::endl;
   switch (m_N_of_singlets) {
   case 1:
     if (m_particles.size()==2) return FillBinaryDecayTree(tree);
@@ -264,10 +261,6 @@ bool HadronDecays_Apacic_Interface::FillTertiaryDecayTree(APACIC::Tree * tree) {
   mo->right->E2            = sqr(mo->right->part->Momentum()[0]);
   mo->zs = mo->z           = sqrt(mo->left->E2/mo->E2);
 
-  std::cout<<METHOD<<std::endl<<(*tree)<<std::endl;
-
-  std::cout<<"Check this :"<<mo<<" -> "<<mo->left<<", {"
-	   <<mo->right<<" -> "<<mo->right->left<<","<<mo->right->right<<"}."<<std::endl;
   return true;
 }
 
