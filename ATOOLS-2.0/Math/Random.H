@@ -53,6 +53,7 @@ namespace ATOOLS {
     ~Random();
     
     // member functions
+    void InitExternal(void *parent);
     void SetSeed(long nid);  // seed for Rnd2()
     void SetSeed(int, int);  // seed for Rnd4()
     inline long int GetSeed() { return m_id; }
@@ -63,8 +64,7 @@ namespace ATOOLS {
     void RestoreStatus();
 
     // return uniformly distributed random number in [0,1] using active Generator
-    inline double Get()   
-    {  if (activeGenerator==4) {return Ran4();} else {return Ran2(&m_id);}; };
+    double Get();   
         
     inline double Theta() { return acos(2.*Get()-1.); }  
     double        GetNZ();
