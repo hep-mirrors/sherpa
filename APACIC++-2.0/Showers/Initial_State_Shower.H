@@ -26,7 +26,7 @@ namespace APACIC {
     Knot  *p_k1, *p_k2;
 
     double m_t0, m_sprime, m_pt2_1, m_pt2_2, m_th_1, m_th_2;
-    int    m_allowed, m_extra_pdf[2], m_to_be_diced[2], m_ntree0;
+    int    m_allowed, m_extra_pdf[2], m_to_be_diced[2], m_tree1;
     bool   m_jetveto;
 
     ATOOLS::Vec4D    m_lab;
@@ -39,15 +39,15 @@ namespace APACIC {
     void SingleExtract(Knot *const knot,const int &beam,ATOOLS::Blob *jet,
 		       ATOOLS::Blob_List *const list,int &nr);
 
-    void ChooseMother(int &ntree0,int &ntree1,Knot *&k1,Knot *&k2);
+    void ChooseMother(int &ntree1,Knot *&k1,Knot *&k2,bool init=false);
 
-    bool InitializeSystem(Tree **trees,Knot *k1,Knot *k2);
+    bool InitializeSystem(Tree **const trees,int tree1,Knot *k1,Knot *k2);
     void InitTwoTrees(Tree ** trees,double E2);
-    int  EvolveSystem(Tree **const trees,Knot *k1,Knot *k2);
-    int  FillBranch(Tree ** trees,Knot * active,Knot * partner,int leg);
+    int  EvolveSystem(Tree **const trees,int tree1,Knot *k3,Knot *k5);
+    int  FillBranch(Tree **const trees,const int tree1,
+		    Knot *const active,Knot *const partner);
 
-    void FillMotherAndSister(Tree * tree,Knot * k,ATOOLS::Flavour * k_flavs,
-			     int leg);
+    void FillMotherAndSister(Tree * tree,Knot * k,ATOOLS::Flavour * k_flavs);
     void SetStartingConditions(double k1,double k2,int flag);
 
   public:

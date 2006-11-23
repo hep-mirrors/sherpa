@@ -102,7 +102,6 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
 	OutputTrees();
       }
       if (p_finshower->PerformShower(p_fintree,jetveto)==0) {
-	msg.Error()<<METHOD<<"(..): FSR shower failure. Abort."<<std::endl;
 	if (m_isron) {
 	  p_initrees[0]->ClearStore();
 	  p_initrees[1]->ClearStore();
@@ -122,7 +121,6 @@ int Apacic::PerformShowers(const int &jetveto,const int &losejv,
     if (m_isron) {
       p_inishower->InitShowerPT(p_initrees[0]->GetRoot()->maxpt2);
       if (p_inishower->PerformShower(p_initrees,p_fintree,jetveto)==0) {
-	msg.Error()<<METHOD<<"(..): ISR shower failure. Abort."<<std::endl;
 	if (m_fsron) p_fintree->ClearStore();
 	p_initrees[0]->ClearStore();
 	p_initrees[1]->ClearStore();
@@ -249,8 +247,13 @@ void Apacic::SetJetvetoPt2(const double &q2i, const double &q2f)
 
 void Apacic::OutputTrees() 
 {
-  if (m_fsron) p_finshower->OutputTree(p_fintree);
+  if (m_fsron) {
+    p_fintree->CheckMomentumConservation();
+    p_finshower->OutputTree(p_fintree);
+  }
   if (m_isron) {
+    p_initrees[0]->CheckMomentumConservation();
+    p_initrees[1]->CheckMomentumConservation();
     p_inishower->OutputTree(p_initrees[0]);
     p_inishower->OutputTree(p_initrees[1]);
   }

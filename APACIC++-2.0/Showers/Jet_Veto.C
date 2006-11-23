@@ -257,7 +257,7 @@ int Jet_Veto::TestISKinematics(Knot *const knot,Knot *const partner)
   Poincare rot(p3,Vec4D::ZVEC);
   rot.Rotate(p4);
   double pt2(p_jf->MTij2(p4,Vec4D(1.0,0.0,0.0,1.0)));
-  msg_Debugging()<<"kt = "<<sqrt(knot->right->pt2lcm)
+  msg_Debugging()<<"kt = "<<sqrt(knot->pt2lcm)
  		 <<" pt = "<<sqrt(pt2)<<" <- knot = "
 		 <<knot->part->Momentum()<<" left = "
 		 <<knot->left->part->Momentum()<<"\n";

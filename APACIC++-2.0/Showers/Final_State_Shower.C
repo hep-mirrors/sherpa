@@ -157,9 +157,7 @@ TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
 int Final_State_Shower::InitializeJets(Tree *tree,Knot *mo,int init)
 {
   if (mo==NULL || mo->left==NULL || mo->right==NULL) {
-    msg.Error()<<METHOD<<"(..): Error. No daughters in knot "
-	       <<mo->kn_no<<"."<<std::endl;
-    return 0;
+    THROW(fatal_error,"No daughters in knot "+ToString(mo->kn_no));
   }
   msg_Debugging()<<METHOD<<"("<<mo->kn_no<<","<<init<<"): {\n";
   msg_Indent();

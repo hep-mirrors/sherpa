@@ -205,6 +205,8 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
     }
     ct_test = ct_test->Up();
   }
+  for (size_t i(0);i<knots.size();++i) 
+    knots[i]->tout=sqr(knots[i]->part->Flav().PSMass());
   knots[0]->dir=knots[0]->part->Momentum()[3]>0.0?1:-1;
   knots[1]->dir=knots[1]->part->Momentum()[3]>0.0?1:-1;
   /*
@@ -358,8 +360,8 @@ Knot * Tree_Filler::Point2Knot(Blob * blob,Tree * tree,const Leg & po,const Vec4
   // preliminary parton status!!!
   k->part->SetInfo(info);
   k->part->SetStatus(part_status::active);  //final
-  if (flav.IsKK() || k->part->DecayBlob()) k->tout=mom.Abs2();
-  else k->tout = sqr(flav.PSMass());
+  k->tout=sqr(flav.PSMass());
+  if (dabs(mom.Abs2())>rpa.gen.Accu()) k->tout=mom.Abs2(); 
   k->E2        = sqr(mom[0]);
   k->costh     = 0; 
   k->shower=po.External();

@@ -655,9 +655,9 @@ void Initialization_Handler::SetScaleFactors()
   reader.SetInputFile(m_showerdat);
   bool changed(false);
   double fac(1.0);
-  if (!reader.ReadFromFile(fac,"IS_CPL_SCALE_FACTOR")) fac=0.25;
+  if (!reader.ReadFromFile(fac,"IS_CPL_SCALE_FACTOR")) fac=1.0;
   else changed=true;
-  rpa.gen.SetVariable("IS_CPL_SCALE_FACTOR",ToString(4.0*fac));
+  rpa.gen.SetVariable("IS_CPL_SCALE_FACTOR",ToString(fac));
   if (!reader.ReadFromFile(fac,"FS_CPL_SCALE_FACTOR")) fac=1.0;
   else changed=true;
   rpa.gen.SetVariable("FS_CPL_SCALE_FACTOR",ToString(fac));

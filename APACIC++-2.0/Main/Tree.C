@@ -201,8 +201,8 @@ void Tree::UpdateDaughters(Knot * mo)
 
 void Tree::BoRo(ATOOLS::Poincare & lorenz) 
 {
-  Knot * mo= GetRoot();
-  if (mo)  while (mo->prev) mo = mo->prev;
+  Knot * mo(GetRoot());
+  while (mo->prev) mo = mo->prev;
   mo->part->SetMomentum(lorenz*mo->part->Momentum());
   BoRoDaughters(lorenz,mo);
 }
@@ -221,6 +221,33 @@ void Tree::BoRo(ATOOLS::Poincare & lorenz, Knot * mo)
 {
   mo->part->SetMomentum(lorenz*mo->part->Momentum());
   BoRoDaughters(lorenz,mo);
+}
+
+bool Tree::Restore(Knot *const k,Knot *const r) const
+{
+  if (r==NULL) return false;
+  if (k->kn_no==r->kn_no) {
+    k->CopyData(r);
+    return true;
+  }
+  if (Restore(k,r->left)) return true;
+  if (Restore(k,r->right)) return true;
+  return false;
+}
+
+bool Tree::Restore(Knot *const k) const
+{
+  if (p_save_root==NULL) {
+    msg.Error()<<METHOD<<"(): No Storage."<<std::endl;
+    return false;
+  }
+  Knot *ini(p_save_root);
+  while (ini->prev) ini=ini->prev;
+  if (!Restore(k,ini)) {
+    msg.Error()<<METHOD<<"(): Knot "<<k->kn_no<<" not found."<<std::endl;
+    return true;
+  }
+  return false;
 }
 
 Knot * Tree::CopyKnot(Knot * a, Knot * prev) 
@@ -370,16 +397,20 @@ bool Tree::CheckMomentumConservation() const
 
 bool Tree::CheckMomentumConservation(Knot *const knot) const 
 {
-  if (knot->left==NULL || 
-      (knot->stat==3 && knot->shower!=2)) return true;
+  if (knot==NULL) return true;
+  msg_Indent();
   bool success(true);
-  Vec4D p(knot->part->Momentum());
-  Vec4D p1(knot->left->part->Momentum()), p2(knot->right->part->Momentum());
-  if (!(p==p1+p2)) {
-    msg.Error()<<METHOD<<"(): Four momentum not conserved in knot "
-	       <<knot->kn_no<<"\n   p      = "<<p<<"\n   p_miss = "<<(p-p1-p2)
-	       <<"\n   p1     = "<<p1<<"\n   p2     = "<<p2<<std::endl;
-    success=false;
+  if (knot->left!=NULL && knot->part->Momentum()!=Vec4D()) {
+    msg_Debugging()<<"fmc check "<<knot->kn_no<<"\n"; 
+    Vec4D p(knot->part->Momentum());
+    Vec4D p1(knot->left->part->Momentum()), p2(knot->right->part->Momentum());
+    if (!(p==p1+p2)) {
+      msg.Error()<<METHOD<<"(): Four momentum not conserved in knot "
+		 <<knot->kn_no<<"\n   p      = "<<p
+		 <<"\n   p_miss = "<<(p-p1-p2)
+		 <<"\n   p1     = "<<p1<<"\n   p2     = "<<p2<<std::endl;
+      success=false;
+    }
   }
   if (!CheckMomentumConservation(knot->left)) success=false;
   if (!CheckMomentumConservation(knot->right)) success=false;
