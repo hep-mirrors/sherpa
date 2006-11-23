@@ -1,30 +1,30 @@
 C*********************************************************************
  
-C...PYMULT
+C...SPMULT
 C...Initializes treatment of multiple interactions, selects kinematics
 C...of hardest interaction if low-pT physics included in run, and
 C...generates all non-hardest interactions.
  
-      SUBROUTINE PYMULT(MMUL)
+      SUBROUTINE SPMULT(MMUL)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
       COMMON/CFUDGE/MFUDGE(100),PFUDGE(100)
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      COMMON/PYINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
-      COMMON/PYINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
-      COMMON/PYINT7/SIGT(0:6,0:6,0:5)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/,/PYSUBS/,/PYPARS/,/PYINT1/,
-     &/PYINT2/,/PYINT3/,/PYINT5/,/PYINT7/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      COMMON/SPINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
+      COMMON/SPINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
+      COMMON/SPINT7/SIGT(0:6,0:6,0:5)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/,/SPSUBS/,/SPPARS/,/SPINT1/,
+     &/SPINT2/,/SPINT3/,/SPINT5/,/SPINT7/
 C...Local arrays and saved variables.
       DIMENSION NMUL(20),SIGM(20),KSTR(500,2),VINTSV(80),IXT2S(20)
       SAVE XT2,XT2FAC,XC2,XTS,IRBIN,RBIN,NMUL,SIGM
@@ -46,30 +46,30 @@ C...Loop over phase space points: xT2 choice in 20 bins.
           NMUL(IXT2)=MSTP(83)
           SIGM(IXT2)=0D0
           DO 110 ITRY=1,MSTP(83)
-            RSCA=0.05D0*((21-IXT2)-PYR(0))
+            RSCA=0.05D0*((21-IXT2)-SPR(0))
             XT2=VINT(149)*(1D0+VINT(149))/(VINT(149)+RSCA)-VINT(149)
             XT2=MAX(0.01D0*VINT(149),XT2)
             VINT(25)=XT2
 
 C...Choose tau and y*. Calculate cos(theta-hat).
-            IF(PYR(0).LE.COEF(ISUB,1)) THEN
-              TAUT=(2D0*(1D0+SQRT(1D0-XT2))/XT2-1D0)**PYR(0)
+            IF(SPR(0).LE.COEF(ISUB,1)) THEN
+              TAUT=(2D0*(1D0+SQRT(1D0-XT2))/XT2-1D0)**SPR(0)
               TAU=XT2*(1D0+TAUT)**2/(4D0*TAUT)
             ELSE
-              TAU=XT2*(1D0+TAN(PYR(0)*ATAN(SQRT(1D0/XT2-1D0)))**2)
+              TAU=XT2*(1D0+TAN(SPR(0)*ATAN(SQRT(1D0/XT2-1D0)))**2)
             ENDIF
             VINT(21)=TAU
-            CALL PYKLIM(2)
-            RYST=PYR(0)
+            CALL SPKLIM(2)
+            RYST=SPR(0)
             MYST=1
             IF(RYST.GT.COEF(ISUB,8)) MYST=2
             IF(RYST.GT.COEF(ISUB,8)+COEF(ISUB,9)) MYST=3
-            CALL PYKMAP(2,MYST,PYR(0))
-            VINT(23)=SQRT(MAX(0D0,1D0-XT2/TAU))*(-1)**INT(1.5D0+PYR(0))
+            CALL SPKMAP(2,MYST,SPR(0))
+            VINT(23)=SQRT(MAX(0D0,1D0-XT2/TAU))*(-1)**INT(1.5D0+SPR(0))
  
 C...Calculate differential cross-section.
             VINT(71)=0.5D0*VINT(1)*SQRT(XT2)
-            CALL PYSIGH(NCHN,SIGS)
+            CALL SPSIGH(NCHN,SIGS)
             IF (MFUDGE(4).EQ.1) THEN
                IF (VINT(71).GE.PARP(82)) THEN
                   SIGM(IXT2)=SIGM(IXT2)+SIGS
@@ -196,23 +196,23 @@ C...or (MSTP(82)>=2) dpT2/(pT2+pT0**2)**2*exp(-....).
         IF(MSTP(82).LE.0) THEN
           XT2=0D0
         ELSEIF(MSTP(82).EQ.1) THEN
-          XT2=XT2FAC*XT2/(XT2FAC-XT2*LOG(PYR(0)))
+          XT2=XT2FAC*XT2/(XT2FAC-XT2*LOG(SPR(0)))
         ELSEIF(MSTP(82).EQ.2) THEN
           IF(XT2.LT.1D0.AND.EXP(-XT2FAC*XT2/(VINT(149)*(XT2+
-     &    VINT(149)))).GT.PYR(0)) XT2=1D0
+     &    VINT(149)))).GT.SPR(0)) XT2=1D0
           IF(XT2.GE.1D0) THEN
             XT2=(1D0+VINT(149))*XT2FAC/(XT2FAC-(1D0+VINT(149))*LOG(1D0-
-     &      PYR(0)*(1D0-EXP(-XT2FAC/(VINT(149)*(1D0+VINT(149)))))))-
+     &      SPR(0)*(1D0-EXP(-XT2FAC/(VINT(149)*(1D0+VINT(149)))))))-
      &      VINT(149)
           ELSE
-            XT2=-XT2FAC/LOG(EXP(-XT2FAC/(XT2+VINT(149)))+PYR(0)*
+            XT2=-XT2FAC/LOG(EXP(-XT2FAC/(XT2+VINT(149)))+SPR(0)*
      &      (EXP(-XT2FAC/VINT(149))-EXP(-XT2FAC/(XT2+VINT(149)))))-
      &      VINT(149)
           ENDIF
           XT2=MAX(0.01D0*VINT(149),XT2)
         ELSE
           XT2=(XC2+VINT(149))*(1D0+VINT(149))/(1D0+VINT(149)-
-     &    PYR(0)*(1D0-XC2))-VINT(149)
+     &    SPR(0)*(1D0-XC2))-VINT(149)
           XT2=MAX(0.01D0*VINT(149),XT2)
         ENDIF
         VINT(25)=XT2
@@ -231,20 +231,20 @@ C...Low-pT: choose xT2, tau, y* and cos(theta-hat) fixed.
         ELSE
 C...Multiple interactions (first semihard interaction).
 C...Choose tau and y*. Calculate cos(theta-hat).
-          IF(PYR(0).LE.COEF(ISUB,1)) THEN
-            TAUT=(2D0*(1D0+SQRT(1D0-XT2))/XT2-1D0)**PYR(0)
+          IF(SPR(0).LE.COEF(ISUB,1)) THEN
+            TAUT=(2D0*(1D0+SQRT(1D0-XT2))/XT2-1D0)**SPR(0)
             TAU=XT2*(1D0+TAUT)**2/(4D0*TAUT)
           ELSE
-            TAU=XT2*(1D0+TAN(PYR(0)*ATAN(SQRT(1D0/XT2-1D0)))**2)
+            TAU=XT2*(1D0+TAN(SPR(0)*ATAN(SQRT(1D0/XT2-1D0)))**2)
           ENDIF
           VINT(21)=TAU
-          CALL PYKLIM(2)
-          RYST=PYR(0)
+          CALL SPKLIM(2)
+          RYST=SPR(0)
           MYST=1
           IF(RYST.GT.COEF(ISUB,8)) MYST=2
           IF(RYST.GT.COEF(ISUB,8)+COEF(ISUB,9)) MYST=3
-          CALL PYKMAP(2,MYST,PYR(0))
-          VINT(23)=SQRT(MAX(0D0,1D0-XT2/TAU))*(-1)**INT(1.5D0+PYR(0))
+          CALL SPKMAP(2,MYST,SPR(0))
+          VINT(23)=SQRT(MAX(0D0,1D0-XT2/TAU))*(-1)**INT(1.5D0+SPR(0))
         ENDIF
         VINT(71)=0.5D0*VINT(1)*SQRT(VINT(25))
  
@@ -268,16 +268,16 @@ C...Choose impact parameter.
       ELSEIF(MMUL.EQ.5) THEN
         ISUB=MINT(1)
   150   IF(MSTP(82).EQ.3) THEN
-          VINT(148)=PYR(0)/(PARU(2)*VINT(147))
+          VINT(148)=SPR(0)/(PARU(2)*VINT(147))
         ELSE
-          RTYPE=PYR(0)
+          RTYPE=SPR(0)
           CQ2=PARP(84)**2
           IF(RTYPE.LT.(1D0-PARP(83))**2) THEN
-            B2=-LOG(PYR(0))
+            B2=-LOG(SPR(0))
           ELSEIF(RTYPE.LT.1D0-PARP(83)**2) THEN
-            B2=-0.5D0*(1D0+CQ2)*LOG(PYR(0))
+            B2=-0.5D0*(1D0+CQ2)*LOG(SPR(0))
           ELSE
-            B2=-CQ2*LOG(PYR(0))
+            B2=-CQ2*LOG(SPR(0))
           ENDIF
           VINT(148)=((1D0-PARP(83))**2*EXP(-MIN(50D0,B2))+2D0*PARP(83)*
      &    (1D0-PARP(83))*2D0/(1D0+CQ2)*EXP(-MIN(50D0,B2*2D0/(1D0+CQ2)))+
@@ -299,7 +299,7 @@ C...probability exp(-overlap*cross-section above pT/normalization).
         IF(MSTP(86).EQ.3.OR.(MSTP(86).EQ.2.AND.ISUB.NE.11.AND.
      &  ISUB.NE.12.AND.ISUB.NE.13.AND.ISUB.NE.28.AND.ISUB.NE.53
      &  .AND.ISUB.NE.68.AND.ISUB.NE.95.AND.ISUB.NE.96)) THEN
-          IF(VINT(150).LT.PYR(0)) GOTO 150
+          IF(VINT(150).LT.SPR(0)) GOTO 150
           VINT(150)=1D0
         ENDIF
  
@@ -320,7 +320,7 @@ C...Reconstruct strings in hard scattering.
         IF(ISET(ISUBSV).EQ.11) NMAX=MINT(84)+2+MINT(3)
         NSTR=0
         DO 190 I=MINT(84)+1,NMAX
-          KCS=KCHG(PYCOMP(K(I,2)),2)*ISIGN(1,K(I,2))
+          KCS=KCHG(SPCOMP(K(I,2)),2)*ISIGN(1,K(I,2))
           IF(KCS.EQ.0) GOTO 190
           DO 180 J=1,4
             IF(KCS.EQ.1.AND.(J.EQ.2.OR.J.EQ.4)) GOTO 180
@@ -331,7 +331,7 @@ C...Reconstruct strings in hard scattering.
               IST=MOD(K(I,J+1),MSTU(5))
             ENDIF
             IF(IST.LT.MINT(84).OR.IST.GT.I) GOTO 180
-            IF(KCHG(PYCOMP(K(IST,2)),2).EQ.0) GOTO 180
+            IF(KCHG(SPCOMP(K(IST,2)),2).EQ.0) GOTO 180
             NSTR=NSTR+1
             IF(J.EQ.1.OR.J.EQ.4) THEN
               KSTR(NSTR,1)=I
@@ -381,32 +381,32 @@ C...Set up starting values for iteration in xT2.
         VINT(144)=1D0-VINT(142)
 C...Iterate downwards in xT2.
   200   IF(MSTP(82).LE.1) THEN
-          XT2=XT2FAC*XT2/(XT2FAC-XT2*LOG(PYR(0)))
+          XT2=XT2FAC*XT2/(XT2FAC-XT2*LOG(SPR(0)))
           IF(XT2.LT.VINT(149)) GOTO 250
         ELSE
           IF(XT2.LE.0.01001D0*VINT(149)) GOTO 250
           XT2=XT2FAC*(XT2+VINT(149))/(XT2FAC-(XT2+VINT(149))*
-     &    LOG(PYR(0)))-VINT(149)
+     &    LOG(SPR(0)))-VINT(149)
           IF(XT2.LE.0D0) GOTO 250
           XT2=MAX(0.01D0*VINT(149),XT2)
         ENDIF
         VINT(25)=XT2
  
 C...Choose tau and y*. Calculate cos(theta-hat).
-        IF(PYR(0).LE.COEF(ISUB,1)) THEN
-          TAUT=(2D0*(1D0+SQRT(1D0-XT2))/XT2-1D0)**PYR(0)
+        IF(SPR(0).LE.COEF(ISUB,1)) THEN
+          TAUT=(2D0*(1D0+SQRT(1D0-XT2))/XT2-1D0)**SPR(0)
           TAU=XT2*(1D0+TAUT)**2/(4D0*TAUT)
         ELSE
-          TAU=XT2*(1D0+TAN(PYR(0)*ATAN(SQRT(1D0/XT2-1D0)))**2)
+          TAU=XT2*(1D0+TAN(SPR(0)*ATAN(SQRT(1D0/XT2-1D0)))**2)
         ENDIF
         VINT(21)=TAU
-        CALL PYKLIM(2)
-        RYST=PYR(0)
+        CALL SPKLIM(2)
+        RYST=SPR(0)
         MYST=1
         IF(RYST.GT.COEF(ISUB,8)) MYST=2
         IF(RYST.GT.COEF(ISUB,8)+COEF(ISUB,9)) MYST=3
-        CALL PYKMAP(2,MYST,PYR(0))
-        VINT(23)=SQRT(MAX(0D0,1D0-XT2/TAU))*(-1)**INT(1.5D0+PYR(0))
+        CALL SPKMAP(2,MYST,SPR(0))
+        VINT(23)=SQRT(MAX(0D0,1D0-XT2/TAU))*(-1)**INT(1.5D0+SPR(0))
  
 C...Check that x not used up. Accept or reject kinematical variables.
         X1M=SQRT(TAU)*EXP(VINT(22))
@@ -414,9 +414,9 @@ C...Check that x not used up. Accept or reject kinematical variables.
         IF(VINT(143)-X1M.LT.0.01D0.OR.VINT(144)-X2M.LT.0.01D0) GOTO 200
         VINT(71)=0.5D0*VINT(1)*SQRT(XT2)
         IF(MFUDGE(3).EQ.1) ISUB=68
-        CALL PYSIGH(NCHN,SIGS)
+        CALL SPSIGH(NCHN,SIGS)
         IF(MINT(141).NE.0.OR.MINT(142).NE.0) SIGS=SIGS*VINT(320)
-        IF(SIGS.LT.XSEC(ISUB,1)*PYR(0)) THEN
+        IF(SIGS.LT.XSEC(ISUB,1)*SPR(0)) THEN
            IF(MFUDGE(3).EQ.1) ISUB=96
            GOTO 200
         ENDIF
@@ -429,16 +429,16 @@ C...Reset K, P and V vectors. Select some variables.
             V(I,J)=0D0
   210     CONTINUE
   220   CONTINUE
-        RFLAV=PYR(0)
+        RFLAV=SPR(0)
         PT=0.5D0*VINT(1)*SQRT(XT2)
-        PHI=PARU(2)*PYR(0)
+        PHI=PARU(2)*SPR(0)
         CTH=VINT(23)
  
 C...Add first parton to event record.
         K(N+1,1)=3
         K(N+1,2)=21
         IF(RFLAV.GE.MAX(PARP(85),PARP(86))) K(N+1,2)=
-     &  1+INT((2D0+PARJ(2))*PYR(0))
+     &  1+INT((2D0+PARJ(2))*SPR(0))
         P(N+1,1)=PT*COS(PHI)
         P(N+1,2)=PT*SIN(PHI)
         P(N+1,3)=0.25D0*VINT(1)*(VINT(41)*(1D0+CTH)-VINT(42)*(1D0-CTH))
@@ -515,7 +515,7 @@ C...String drawing and colour flow for qqbar pair.
 C...Update remaining energy; iterate.
         N=N+2
         IF(N.GT.MSTU(4)-MSTU(32)-10) THEN
-          CALL PYERRM(11,'(PYMULT:) no more memory left in PYJETS')
+          CALL SPERRM(11,'(SPMULT:) no more memory left in SPJETS')
           IF(MSTU(21).GE.1) RETURN
         ENDIF
         MINT(31)=MINT(31)+1
@@ -532,7 +532,7 @@ C...Update remaining energy; iterate.
       ENDIF
  
 C...Format statements for printout.
- 5000 FORMAT(/1X,'****** PYMULT: initialization of multiple inter',
+ 5000 FORMAT(/1X,'****** SPMULT: initialization of multiple inter',
      &'actions for MSTP(82) =',I2,' ******')
  5100 FORMAT(8X,'pT0 =',F5.2,' GeV gives sigma(parton-parton) =',1P,
      &D9.2,' mb: rejected')

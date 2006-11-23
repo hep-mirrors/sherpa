@@ -59,28 +59,28 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
   else if (flav[0]==kf::e && flav[1]==kf::photon) {
     if (flav[0].IsAnti()) beam[0]="e+"; else beam[0]="e-";
     beam[1]="gamma";
-    pysubs.msub[33]=1;    
+    spsubs.msub[33]=1;    
   }
   else if (flav[0]==kf::photon && flav[1]==kf::e) {
     beam[0]="gamma";
     if (flav[1].IsAnti()) beam[1]="e+"; else beam[1]="e-";
-    pysubs.msub[33]=1;    
+    spsubs.msub[33]=1;    
   }
   else if (flav[0]==kf::photon && flav[1]==kf::photon) {
     for (size_t i=0;i<2;++i) beam[i]="gamma";
-    pysubs.msub[57]=1;    
+    spsubs.msub[57]=1;    
   }
   else if (flav[0].Kfcode()==kf::e && flav[1].Kfcode()==kf::e) {
     for (size_t i=0;i<2;++i) if (flav[i].IsAnti()) beam[i]="e+"; else beam[i]="e-";
-    pysubs.msub[0]=1;    
-    pypars.mstp[47]=1;
-    pydat1.mstj[100]=5;
+    spsubs.msub[0]=1;    
+    sppars.mstp[47]=1;
+    spdat1.mstj[100]=5;
   }
   else {
     for (size_t i=0;i<2;++i) if (flav[i].IsAnti()) beam[i]="p-"; else beam[i]="p+";
-    pysubs.msub[0]=1;    
-    pypars.mstp[47]=1;
-    pydat1.mstj[100]=5;
+    spsubs.msub[0]=1;    
+    sppars.mstp[47]=1;
+    spdat1.mstj[100]=5;
   }
   win=rpa.gen.Ecms();
   s_maxerrors=rpa.gen.NumberOfEvents();
@@ -93,38 +93,38 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
   reader->AddIgnore(")");
   reader->AddIgnore(",");
   if (!sherpa) {
-    if (!reader->ReadFromFile(pysubs.msel,"MSEL")) pysubs.msel=1;
+    if (!reader->ReadFromFile(spsubs.msel,"MSEL")) spsubs.msel=1;
   }
   else {
-    pysubs.msel=0;
+    spsubs.msel=0;
   }
   reader->MatrixFromFile(help,"MSUB");
   for (size_t i=0;i<help.size();++i) {
-    if (help[i].size()>1) if ((int)help[i][0]>0) pysubs.msub[(int)help[i][0]-1]=(int)help[i][1];
+    if (help[i].size()>1) if ((int)help[i][0]>0) spsubs.msub[(int)help[i][0]-1]=(int)help[i][1];
   }
   reader->MatrixFromFile(help,"KFIN");
   for (size_t i=0;i<help.size();++i) {
     if (help[i].size()>2) {
       if (((int)help[i][0]>0)&&((int)help[i][1]>-41)) {
-	pysubs.kfin[(int)help[i][1]+40][(int)help[i][0]-1]=(int)help[i][2];
+	spsubs.kfin[(int)help[i][1]+40][(int)help[i][0]-1]=(int)help[i][2];
       }
     }
   }
   reader->MatrixFromFile(help,"CKIN");
   for (size_t i=0;i<help.size();++i) {
-    if (help[i].size()>1) if ((int)help[i][0]>0) pysubs.ckin[(int)help[i][0]-1]=help[i][1];
+    if (help[i].size()>1) if ((int)help[i][0]>0) spsubs.ckin[(int)help[i][0]-1]=help[i][1];
   }
   reader->MatrixFromFile(help,"MSTJ");
   for (size_t i=0;i<help.size();++i) {
-    if (help[i].size()>1) if ((int)help[i][0]>0) pydat1.mstj[(int)help[i][0]-1]=(int)help[i][1];
+    if (help[i].size()>1) if ((int)help[i][0]>0) spdat1.mstj[(int)help[i][0]-1]=(int)help[i][1];
   }
   reader->MatrixFromFile(help,"MSTP");
   for (size_t i=0;i<help.size();++i) {
-    if (help[i].size()>1) if ((int)help[i][0]>0) pypars.mstp[(int)help[i][0]-1]=(int)help[i][1];
+    if (help[i].size()>1) if ((int)help[i][0]>0) sppars.mstp[(int)help[i][0]-1]=(int)help[i][1];
   }
   reader->MatrixFromFile(help,"MSTU");
   for (size_t i=0;i<help.size();++i) {
-    if (help[i].size()>1) if ((int)help[i][0]>0) pydat1.mstu[(int)help[i][0]-1]=(int)help[i][1];
+    if (help[i].size()>1) if ((int)help[i][0]>0) spdat1.mstu[(int)help[i][0]-1]=(int)help[i][1];
   }
   reader->MatrixFromFile(help,"MFUDGE");
   for (size_t i=0;i<help.size();++i) {
@@ -132,15 +132,15 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
   }
   reader->MatrixFromFile(help,"PARP");
   for (size_t i=0;i<help.size();++i) {
-    if (help[i].size()>1) if ((int)help[i][0]>0) pypars.parp[(int)help[i][0]-1]=help[i][1];
+    if (help[i].size()>1) if ((int)help[i][0]>0) sppars.parp[(int)help[i][0]-1]=help[i][1];
   }
   reader->MatrixFromFile(help,"PARJ");
   for (size_t i=0;i<help.size();++i) {
-    if (help[i].size()>1) if ((int)help[i][0]>0) pydat1.parj[(int)help[i][0]-1]=help[i][1];
+    if (help[i].size()>1) if ((int)help[i][0]>0) spdat1.parj[(int)help[i][0]-1]=help[i][1];
   }
   reader->MatrixFromFile(help,"PARU");
   for (size_t i=0;i<help.size();++i) {
-    if (help[i].size()>1) if ((int)help[i][0]>0) pydat1.paru[(int)help[i][0]-1]=help[i][1];
+    if (help[i].size()>1) if ((int)help[i][0]>0) spdat1.paru[(int)help[i][0]-1]=help[i][1];
   }
   reader->MatrixFromFile(help,"PFUDGE");
   for (size_t i=0;i<help.size();++i) {
@@ -150,7 +150,7 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
   for (size_t i=0;i<help.size();++i) {
     if (help[i].size()>2) {
       if ((int)help[i][0]>0 && abs((int)help[i][1]<2)) {
-	pydat3.mdme[(int)help[i][1]-1][(int)help[i][0]-1]=(int)help[i][2];
+	spdat3.mdme[(int)help[i][1]-1][(int)help[i][0]-1]=(int)help[i][2];
       }
     }
   }
@@ -159,19 +159,19 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
     if (help[i].size()>2) {
       if ((int)help[i][0]>0 && abs((int)help[i][1]<2)) {
 	msg_Tracking()<<"Lund_Interface::Lund_Interface(..): "
-		      <<"Set MDCY("<<pycomp((int)help[i][0])<<","<<(int)help[i][1]
+		      <<"Set MDCY("<<spcomp((int)help[i][0])<<","<<(int)help[i][1]
 		      <<") ( from KF code "<<(int)help[i][0]<<" ) to "<<(int)help[i][2]<<endl;
-	pydat3.mdcy[(int)help[i][1]-1][pycomp((int)help[i][0])-1]=(int)help[i][2];
+	spdat3.mdcy[(int)help[i][1]-1][spcomp((int)help[i][0])-1]=(int)help[i][2];
       }
     }
   }
-  // the next lines replace the apyinit_ call
+  // the next lines replace the aspinit_ call
   if (sherpa) {
     hepevt.nhep=100;
-    for (int i=pydat3.mdcy[2-1][23-1];i<pydat3.mdcy[2-1][23-1]+pydat3.mdcy[3-1][23-1];++i) {
-      if (abs(pydat3.kfdp[1-1][i-1])>=2) pydat3.mdme[1-1][i-1]=Min(0,pydat3.mdme[1-1][i-1]);
+    for (int i=spdat3.mdcy[2-1][23-1];i<spdat3.mdcy[2-1][23-1]+spdat3.mdcy[3-1][23-1];++i) {
+      if (abs(spdat3.kfdp[1-1][i-1])>=2) spdat3.mdme[1-1][i-1]=Min(0,spdat3.mdme[1-1][i-1]);
     }
-    pyinit(frame.c_str(),beam[0].c_str(),beam[1].c_str(),win);
+    spinit(frame.c_str(),beam[0].c_str(),beam[1].c_str(),100.0);
   }
   // replacement ends here
   if (msg.LevelIsDebugging()) ListLundParameters();
@@ -195,8 +195,8 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
     MODEL::as = new MODEL::Running_AlphaS(asmz,mz*mz,orderas);
     MODEL::as->SetDefault(asdef);
     p_hepevt = new HepEvt_Interface(gtp::Pythia);
-    if (pypars.mstp[105-1]==0) p_hepevt->SetHadronized(false);
-    pyinit(frame.c_str(),beam[0].c_str(),beam[1].c_str(),win);
+    if (sppars.mstp[105-1]==0) p_hepevt->SetHadronized(false);
+    spinit(frame.c_str(),beam[0].c_str(),beam[1].c_str(),win);
     if (reader->ReadFromFile(m_outfile,"OUTPUT_FILE")) {
       m_writeout = true;
       if (!reader->ReadFromFile(m_evtsperfile,"EVENTS_PER_FILE")) m_evtsperfile=1000;
@@ -206,29 +206,29 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
       m_compress=(bool)helper;
     }
   }
-  pylist(0);
+  splist(0);
   delete reader;
 }
 
 bool Lund_Interface::IsAllowedDecay(kf::code can)
 {
-  if (pycomp(int(can))<501 && pydat3.mdcy[1-1][pycomp(int(can))-1]==1) return true;
+  if (spcomp(int(can))<501 && spdat3.mdcy[1-1][spcomp(int(can))-1]==1) return true;
   return false;
 }
 
 void Lund_Interface::SwitchOffDecays(kf::code kfc)
 {
-  int kc = pycomp(int(kfc));
+  int kc = spcomp(int(kfc));
   if(kc>500) return;
-  pydat3.mdcy[1-1][kc-1]=0;
+  spdat3.mdcy[1-1][kc-1]=0;
 }
 
 void Lund_Interface::AdjustProperties(Flavour flav)
 {
-  int kc = pycomp(int(flav.Kfcode()));
+  int kc = spcomp(int(flav.Kfcode()));
   if(kc>500) return;
   // adjust mass
-  double pythiamass = pydat2.pmas[1-1][kc-1];
+  double pythiamass = spdat2.pmas[1-1][kc-1];
   double sherpamass = flav.PSMass();
   flav.SetMass(pythiamass);
   if( !(abs(sherpamass-pythiamass)/sherpamass < 1.e-2) ) {
@@ -239,14 +239,14 @@ void Lund_Interface::AdjustProperties(Flavour flav)
 
 void Lund_Interface::SwitchOffMassSmearing()
 {
-  pydat1.mstj[24-1]=0;
+  spdat1.mstj[24-1]=0;
 }
 
 double Lund_Interface::DiceMass(Flavour flav, double min, double max)
 {
-  int kc = pycomp(flav.Kfcode())-1;
-  double peak = pydat2.pmas[1-1][kc];
-  double w_cut = pydat2.pmas[3-1][kc];
+  int kc = spcomp(flav.Kfcode())-1;
+  double peak = spdat2.pmas[1-1][kc];
+  double w_cut = spdat2.pmas[3-1][kc];
   if(w_cut == 0.0) {
     if(peak<min-Accu() || peak>max+Accu()) return -1.0;
     else return peak;
@@ -297,14 +297,14 @@ Return_Value::code Lund_Interface::Hadronize(Blob_List *bloblist)
       Return_Value::code result=Return_Value::Nothing;
       for(size_t trials=0; trials<m_maxtrials; ++trials) {
 	nhep = PrepareFragmentationBlob(*blit);
-	int errs=pydat1.mstu[23-1];
+	int errs=spdat1.mstu[23-1];
 	result=StringFragmentation(*blit,bloblist,nhep);
 	if(result==Return_Value::Success) break;
 	assert(result==Return_Value::Retry_Phase);
 	if(trials+1<m_maxtrials) {
 	  msg.Error()<<"Error in "<<METHOD<<"."<<endl
 		     <<"   Hadronization failed. Retry it."<<endl;
-	  pydat1.mstu[23-1]=errs;   //New try, set back error sum.
+	  spdat1.mstu[23-1]=errs;   //New try, set back error sum.
 	  continue;
 	}
 	msg.Error()<<"Error in "<<METHOD<<"."<<endl
@@ -331,16 +331,16 @@ Return_Value::code Lund_Interface::PerformDecay(Blob * blob)
     msg.Error()<<" part->Status()="<<blob->InParticle(0)->Status()<<endl;
     return Return_Value::Error;
   }
-  
+
   Particle * part = blob->InParticle(0);
   Flavour fl = part->Flav();
-  int kc = pycomp(int(fl.Kfcode()))-1;
-  double peak = pydat2.pmas[1-1][kc];
-  double w_cut = pydat2.pmas[3-1][kc];
+  int kc = spcomp(int(fl.Kfcode()))-1;
+  double peak = spdat2.pmas[1-1][kc];
+  double w_cut = spdat2.pmas[3-1][kc];
   if( part->FinalMass()+Accu() < peak-w_cut || part->FinalMass()-Accu() > peak+w_cut) {
     return Return_Value::Retry_Method;
   }
-  
+
   int nhep(0);
   int idhep = fl.HepEvt();
   switch (idhep) {
@@ -368,28 +368,28 @@ Return_Value::code Lund_Interface::PerformDecay(Blob * blob)
   
   hepevt.nevhep=0;
   hepevt.nhep=nhep;
-  pyhepc(2);
-  pydat1.mstu[70-1]=1;
-  pydat1.mstu[71-1]=hepevt.nhep;
+  sphepc(2);
+  spdat1.mstu[70-1]=1;
+  spdat1.mstu[71-1]=hepevt.nhep;
   int ip(1);
-  pydecy(ip);
-  if (pydat1.mstu[24-1]!=0) {
+  spdecy(ip);
+  if (spdat1.mstu[24-1]!=0) {
     msg.Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
-	       <<"   PYDECY call results in error code : "<<pydat1.mstu[24-1]<<std::endl
+	       <<"   SPDECY call results in error code : "<<spdat1.mstu[24-1]<<std::endl
 	       <<"   for decay of "<<fl<<" ("<<fl.HepEvt()<<" -> "<<idhep<<")"<<std::endl;
-    if (pydat1.mstu[23-1]<int(rpa.gen.NumberOfDicedEvents()/100) ||
+    if (spdat1.mstu[23-1]<int(rpa.gen.NumberOfDicedEvents()/100) ||
 	rpa.gen.NumberOfDicedEvents()<200) {
-      msg.Error()<<"   Up to now: "<<pydat1.mstu[23-1]<<" errors, try new event."<<std::endl;
+      msg.Error()<<"   Up to now: "<<spdat1.mstu[23-1]<<" errors, try new event."<<std::endl;
       return Return_Value::Retry_Method;
     }
-    msg.Error()<<"   Up to now: "<<pydat1.mstu[23-1]<<" errors, abort the run."<<std::endl;
+    msg.Error()<<"   Up to now: "<<spdat1.mstu[23-1]<<" errors, abort the run."<<std::endl;
     THROW(critical_error,"Too many errors in lund decay.");
   }
   part->SetStatus(part_status::decayed);
-  pyhepc(1);
+  sphepc(1);
   FillOutgoingParticlesInBlob(blob);
   return Return_Value::Success;
-}
+} 
 
 int Lund_Interface::PrepareFragmentationBlob(Blob * blob) 
 {
@@ -410,37 +410,37 @@ int Lund_Interface::PrepareFragmentationBlob(Blob * blob)
   // gluon splittings
   for (int i(0);i<blob->NInP();++i) {
     Particle * part = blob->InParticle(i);
-    if (part->GetFlow(1)!=0 && part->GetFlow(2)!=0) {
-      Flavour            flav = Flavour(kf::d);
-      if (ran.Get()<0.5) flav = Flavour(kf::u);
+  if (part->GetFlow(1)!=0 && part->GetFlow(2)!=0) {
+    Flavour            flav = Flavour(kf::d);
+    if (ran.Get()<0.5) flav = Flavour(kf::u);
       Particle *help1(new Particle(-1,flav,0.5*part->Momentum()));
       Particle *help2(new Particle(-1,flav.Bar(),0.5*help1->Momentum()));
-      help1->SetStatus(part_status::active);
-      help2->SetStatus(part_status::active);
-      AddPartonToString(help1,nhep);
-      delete help1;
+    help1->SetStatus(part_status::active);
+    help2->SetStatus(part_status::active);
+    AddPartonToString(help1,nhep);
+    delete help1;
       unsigned int lastc(part->GetFlow(2));
       for (++i;i<blob->NInP();++i) {
-	part = blob->InParticle(i);
+      part = blob->InParticle(i);
 	if (part->GetFlow(1)==lastc) {
 	  lastc=0;
 	  break;
 	}
-	AddPartonToString(part,nhep);
-      }
+      AddPartonToString(part,nhep);
+    }      
       if (lastc!=0)
 	msg.Error()<<METHOD<<"(): Error. Open color string."<<std::endl;
-      AddPartonToString(help2,nhep);
-      delete help2;
+    AddPartonToString(help2,nhep);
+    delete help2;
       lastc=0;
-    }
-    else {
+  }
+  else {
       for (;i<blob->NInP();i++) {
-	part = blob->InParticle(i);
-	AddPartonToString(part,nhep);
+      part = blob->InParticle(i);
+      AddPartonToString(part,nhep);
 	if (part->GetFlow(1)==0) break;
       }  
-    }
+    }  
   }
   return nhep;
 }
@@ -450,13 +450,13 @@ Return_Value::code Lund_Interface::StringFragmentation(Blob *blob,Blob_List *blo
 {
   hepevt.nevhep=0;
   hepevt.nhep=nhep;
-  pyhepc(2);
-  pydat1.mstu[70-1]=1;
-  pydat1.mstu[71-1]=hepevt.nhep;
+  sphepc(2);
+  spdat1.mstu[70-1]=1;
+  spdat1.mstu[71-1]=hepevt.nhep;
   int ip(1);
-  pyprep(ip);
-  pystrf(ip);
-  pyhepc(1);
+  spprep(ip);
+  spstrf(ip);
+  sphepc(1);
   bool goon(true), flag(false);
   if(hepevt.nhep<=nhep) { goon=false; flag=true;}
   while(goon) {
@@ -468,28 +468,28 @@ Return_Value::code Lund_Interface::StringFragmentation(Blob *blob,Blob_List *blo
 	goon=true;
 	int ipp(i+1);
 	int save(hepevt.nhep);
-	pystrf(ipp);
-	pyhepc(1);
+	spstrf(ipp);
+	sphepc(1);
 	if(hepevt.nhep<=save) { goon=false; flag=true;}
 	break;
       }
     }
   }
-  if(pydat1.mstu[24-1]!=0) {
+  if(spdat1.mstu[24-1]!=0) {
     Vec4D cms(0.,0.,0.,0.);
     for (int i=0;i<blob->NInP();i++) cms+=blob->InParticle(i)->Momentum();
     msg.Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
-	       <<"   PYSTRF call results in error code : "<<pydat1.mstu[24-1]
+	       <<"   SPSTRF call results in error code : "<<spdat1.mstu[24-1]
 	       <<" for "<<std::endl<<(*blob)<<"  "<<cms<<", "<<cms.Abs2()
 	       <<std::endl;
-    pydat1.mstu[24-1]=0;
-    if(pydat1.mstu[23-1]<int(rpa.gen.NumberOfDicedEvents()/100) ||
+    spdat1.mstu[24-1]=0;
+    if(spdat1.mstu[23-1]<int(rpa.gen.NumberOfDicedEvents()/100) ||
        rpa.gen.NumberOfDicedEvents()<200) {
-      msg.Error()<<"   Up to now: "<<pydat1.mstu[23-1]<<" errors, retrying..."
+      msg.Error()<<"   Up to now: "<<spdat1.mstu[23-1]<<" errors, retrying..."
 		 <<std::endl;
       return Return_Value::Retry_Phase;
     }
-    msg.Error()<<"   Up to now: "<<pydat1.mstu[23-1]<<" errors, abort the run."
+    msg.Error()<<"   Up to now: "<<spdat1.mstu[23-1]<<" errors, abort the run."
 	       <<std::endl;
     THROW(critical_error,"Too many errors in lund fragmentation.");
   }
@@ -498,8 +498,8 @@ Return_Value::code Lund_Interface::StringFragmentation(Blob *blob,Blob_List *blo
 	       <<"   Incomplete fragmentation."<<std::endl;
     return Return_Value::Retry_Phase;
   }
-  pydat1.mstu[70-1]=2;
-  pydat1.mstu[72-1]=hepevt.nhep;
+  spdat1.mstu[70-1]=2;
+  spdat1.mstu[72-1]=hepevt.nhep;
   return Return_Value::Success;
 }
 
@@ -658,19 +658,19 @@ bool Lund_Interface::SetColorFlow(Particle_Vector parts,int n_q, int n_g)
 
 void Lund_Interface::RestoreStatus() {
   for(int i=0;i<5;i++) {
-    pydatr.mrpy[i] = s_saved_mrpy[i];
+    spdatr.mrsp[i] = s_saved_mrpy[i];
   }
   for(int i=0;i<100;i++) {
-    pydatr.rrpy[i] = s_saved_rrpy[i];
+    spdatr.rrsp[i] = s_saved_rrpy[i];
   }
 }
 
 void Lund_Interface::SaveStatus() {
   for(int i=0;i<5;i++) {
-    s_saved_mrpy[i] = pydatr.mrpy[i];
+    s_saved_mrpy[i] = spdatr.mrsp[i];
   }
   for(int i=0;i<100;i++) {
-    s_saved_rrpy[i] = pydatr.rrpy[i];
+    s_saved_rrpy[i] = spdatr.rrsp[i];
   }
 }
 
@@ -684,10 +684,10 @@ void Lund_Interface::ReadInStatus(const std::string &filename, int mode) {
   ifstream myinstream(filename.c_str());
   if (myinstream.good()) {
     for(int i=0;i<5;i++) {
-      myinstream>>pydatr.mrpy[i];
+      myinstream>>spdatr.mrsp[i];
     }
     for(int i=0;i<100;i++) {
-      myinstream>>pydatr.rrpy[i];
+      myinstream>>spdatr.rrsp[i];
     }
     myinstream.close();
   }
@@ -700,10 +700,10 @@ void Lund_Interface::WriteOutStatus(const std::string &filename)
   if (myoutstream.good()) {
     myoutstream.precision(32);
     for(int i=0;i<5;i++) {
-      myoutstream<<pydatr.mrpy[i]<<"\t";
+      myoutstream<<spdatr.mrsp[i]<<"\t";
     }
     for(int i=0;i<100;i++) {
-      myoutstream<<pydatr.rrpy[i]<<"\t";
+      myoutstream<<spdatr.rrsp[i]<<"\t";
     }
     myoutstream<<endl;
     myoutstream.close();
@@ -731,10 +731,10 @@ void Lund_Interface::Error(const int error)
 	       <<"Pythia calls PYERRM("<<error<<") in event "
 	       <<rpa.gen.NumberOfDicedEvents()<<"."
 	       <<om::reset<<endl;
-    if (msg.LevelIsDebugging()) {
-      msg_Tracking()<<*s_bloblist<<endl;
-      pylist(2);
-    }
+//     if (msg.LevelIsDebugging()) {
+//       msg_Tracking()<<*s_bloblist<<endl;
+      splist(2);
+//     }
   }
 }
 
@@ -776,10 +776,10 @@ Return_Value::code Lund_Interface::OneEvent(Blob_List * const blobs,double &weig
 {
   bool okay = false;
   for (int i=0;i<200;i++) {
-    pyevnt();
-    pyhepc(1);
+    spevnt();
+    sphepc(1);
     //pylist(2);
-    weight=1.;  //*=pypars.pari[10];
+    weight=1.;  //*=sppars.pari[10];
     for (int i=0;i<hepevt.nhep;i++) {
       for (int j=0;j<2;j++) {
 	p_jmohep[2*i+j] = hepevt.jmohep[i][j]; 
@@ -795,7 +795,7 @@ Return_Value::code Lund_Interface::OneEvent(Blob_List * const blobs,double &weig
     p_hepevt->SetJdahep(p_jdahep);
     p_hepevt->SetPhep(p_phep);
     p_hepevt->SetVhep(p_vhep);
-    if (msg.LevelIsDebugging()) pylist(3);
+    if (msg.LevelIsDebugging()) splist(3);
     if (p_hepevt->HepEvt2Sherpa(blobs)) { 
       okay = true; 
       break; 

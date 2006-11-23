@@ -39,8 +39,8 @@ C*                    phone +46 - 46 - 222 77 80                    **
 C*                      E-mail leif@thep.lu.se                      **
 C*                                                                  **
 C*         Several parts are written by Hans-Uno Bengtsson          **
-C*          PYSHOW is written together with Mats Bengtsson          **
-C*               PYMAEL is written by Emanuel Norrbin               **
+C*          SPSHOW is written together with Mats Bengtsson          **
+C*               SPMAEL is written by Emanuel Norrbin               **
 C*     advanced popcorn baryon production written by Patrik Eden    **
 C*    code for virtual photons mainly written by Christer Friberg   **
 C*    code for low-mass strings mainly written by Emanuel Norrbin   **
@@ -51,12 +51,12 @@ C*   SaS photon parton distributions together with Gerhard Schuler  **
 C*     g + g and q + qbar -> t + tbar + H code by Zoltan Kunszt     **
 C*         MSSM Higgs mass calculation code by M. Carena,           **
 C*           J.R. Espinosa, M. Quiros and C.E.M. Wagner             **
-C*         PYGAUS adapted from CERN library (K.S. Kolbig)           **
+C*         SPGAUS adapted from CERN library (K.S. Kolbig)           **
 C*                                                                  **
 C*   The latest program version and documentation is found on WWW   **
 C*            http://www.thep.lu.se/~torbjorn/Pythia.html           **
 C*                                                                  **
-C*              Copyright Torbjorn Sjostrand, Lund 2003             **
+C*              Cospright Torbjorn Sjostrand, Lund 2003             **
 C*                                                                  **
 C*********************************************************************
 C*********************************************************************
@@ -64,237 +64,237 @@ C                                                                    *
 C  List of subprograms in order of appearance, with main purpose     *
 C  (S = subroutine, F = function, B = block data)                    *
 C                                                                    *
-C  B   PYDATA   to contain all default values                        *
-C  S   PYTEST   to test the proper functioning of the package        *
-C  S   PYHEPC   to convert between /PYJETS/ and /HEPEVT/ records     *
+C  B   SPDATA   to contain all default values                        *
+C  S   SPTEST   to test the proper functioning of the package        *
+C  S   SPHEPC   to convert between /SPJETS/ and /HEPEVT/ records     *
 C                                                                    *
-C  S   PYINIT   to administer the initialization procedure           *
-C  S   PYEVNT   to administer the generation of an event             *
-C  S   PYSTAT   to print cross-section and other information         *
-C  S   PYINRE   to initialize treatment of resonances                *
-C  S   PYINBM   to read in beam, target and frame choices            *
-C  S   PYINKI   to initialize kinematics of incoming particles       *
-C  S   PYINPR   to set up the selection of included processes        *
-C  S   PYXTOT   to give total, elastic and diffractive cross-sect.   *
-C  S   PYMAXI   to find differential cross-section maxima            *
-C  S   PYPILE   to select multiplicity of pileup events              *
-C  S   PYSAVE   to save alternatives for gamma-p and gamma-gamma     *
-C  S   PYGAGA   to handle lepton -> lepton + gamma branchings        *
-C  S   PYRAND   to select subprocess and kinematics for event        *
-C  S   PYSCAT   to set up kinematics and colour flow of event        *
-C  S   PYSSPA   to simulate initial state spacelike showers          *
-C  S   PYMEMX   auxiliary to PYSSPA for ME correction maximum        *
-C  S   PYMEWT   auxiliary to PYSSPA for matrix element correction    *
-C  S   PYADSH   to administrate sequential final-state showers       *
-C  S   PYRESD   to perform resonance decays                          *
-C  S   PYMULT   to generate multiple interactions                    *
-C  S   PYREMN   to add on target remnants                            *
-C  S   PYDIFF   to set up kinematics for diffractive events          *
-C  S   PYDISG   to set up kinematics, remnant and showers for DIS    *
-C  S   PYDOCU   to compute cross-sections and handle documentation   *
-C  S   PYFRAM   to perform boosts between different frames           *
-C  S   PYWIDT   to calculate full and partial widths of resonances   *
-C  S   PYOFSH   to calculate partial width into off-shell channels   *
-C  S   PYRECO   to handle colour reconnection in W+W- events         *
-C  S   PYKLIM   to calculate borders of allowed kinematical region   *
-C  S   PYKMAP   to construct value of kinematical variable           *
-C  S   PYSIGH   to calculate differential cross-sections             *
-C  S   PYPDFU   to evaluate parton distributions                     *
-C  S   PYPDFL   to evaluate parton distributions at low x and Q^2    *
-C  S   PYPDEL   to evaluate electron parton distributions            *
-C  S   PYPDGA   to evaluate photon parton distributions (generic)    *
-C  S   PYGGAM   to evaluate photon parton distributions (SaS sets)   *
-C  S   PYGVMD   to evaluate VMD part of photon parton distributions  *
-C  S   PYGANO   to evaluate anomalous part of photon pdf's           *
-C  S   PYGBEH   to evaluate Bethe-Heitler part of photon pdf's       *
-C  S   PYGDIR   to evaluate direct contribution to photon pdf's      *
-C  S   PYPDPI   to evaluate pion parton distributions                *
-C  S   PYPDPR   to evaluate proton parton distributions              *
-C  F   PYCTEQ   to evaluate the CTEQ 3 proton parton distributions   *
-C  S   PYGRVL   to evaluate the GRV 94L proton parton distributions  *
-C  S   PYGRVM   to evaluate the GRV 94M proton parton distributions  *
-C  S   PYGRVD   to evaluate the GRV 94D proton parton distributions  *
-C  F   PYGRVV   auxiliary to the PYGRV* routines                     *
-C  F   PYGRVW   auxiliary to the PYGRV* routines                     *
-C  F   PYGRVS   auxiliary to the PYGRV* routines                     *
-C  F   PYCT5L   to evaluate the CTEQ 5L proton parton distributions  *
-C  F   PYCT5M   to evaluate the CTEQ 5M1 proton parton distributions *
-C  S   PYPDPO   to evaluate old proton parton distributions          *
-C  F   PYHFTH   to evaluate threshold factor for heavy flavour       *
-C  S   PYSPLI   to find flavours left in hadron when one removed     *
-C  F   PYGAMM   to evaluate ordinary Gamma function Gamma(x)         *
-C  S   PYWAUX   to evaluate auxiliary functions W1(s) and W2(s)      *
-C  S   PYI3AU   to evaluate auxiliary function I3(s,t,u,v)           *
-C  F   PYSPEN   to evaluate Spence (dilogarithm) function Sp(x)      *
-C  S   PYQQBH   to evaluate matrix element for g + g -> Q + Qbar + H *
+C  S   SPINIT   to administer the initialization procedure           *
+C  S   SPEVNT   to administer the generation of an event             *
+C  S   SPSTAT   to print cross-section and other information         *
+C  S   SPINRE   to initialize treatment of resonances                *
+C  S   SPINBM   to read in beam, target and frame choices            *
+C  S   SPINKI   to initialize kinematics of incoming particles       *
+C  S   SPINPR   to set up the selection of included processes        *
+C  S   SPXTOT   to give total, elastic and diffractive cross-sect.   *
+C  S   SPMAXI   to find differential cross-section maxima            *
+C  S   SPPILE   to select multiplicity of pileup events              *
+C  S   SPSAVE   to save alternatives for gamma-p and gamma-gamma     *
+C  S   SPGAGA   to handle lepton -> lepton + gamma branchings        *
+C  S   SPRAND   to select subprocess and kinematics for event        *
+C  S   SPSCAT   to set up kinematics and colour flow of event        *
+C  S   SPSSPA   to simulate initial state spacelike showers          *
+C  S   SPMEMX   auxiliary to SPSSPA for ME correction maximum        *
+C  S   SPMEWT   auxiliary to SPSSPA for matrix element correction    *
+C  S   SPADSH   to administrate sequential final-state showers       *
+C  S   SPRESD   to perform resonance decays                          *
+C  S   SPMULT   to generate multiple interactions                    *
+C  S   SPREMN   to add on target remnants                            *
+C  S   SPDIFF   to set up kinematics for diffractive events          *
+C  S   SPDISG   to set up kinematics, remnant and showers for DIS    *
+C  S   SPDOCU   to compute cross-sections and handle documentation   *
+C  S   SPFRAM   to perform boosts between different frames           *
+C  S   SPWIDT   to calculate full and partial widths of resonances   *
+C  S   SPOFSH   to calculate partial width into off-shell channels   *
+C  S   SPRECO   to handle colour reconnection in W+W- events         *
+C  S   SPKLIM   to calculate borders of allowed kinematical region   *
+C  S   SPKMAP   to construct value of kinematical variable           *
+C  S   SPSIGH   to calculate differential cross-sections             *
+C  S   SPPDFU   to evaluate parton distributions                     *
+C  S   SPPDFL   to evaluate parton distributions at low x and Q^2    *
+C  S   SPPDEL   to evaluate electron parton distributions            *
+C  S   SPPDGA   to evaluate photon parton distributions (generic)    *
+C  S   SPGGAM   to evaluate photon parton distributions (SaS sets)   *
+C  S   SPGVMD   to evaluate VMD part of photon parton distributions  *
+C  S   SPGANO   to evaluate anomalous part of photon pdf's           *
+C  S   SPGBEH   to evaluate Bethe-Heitler part of photon pdf's       *
+C  S   SPGDIR   to evaluate direct contribution to photon pdf's      *
+C  S   SPPDPI   to evaluate pion parton distributions                *
+C  S   SPPDPR   to evaluate proton parton distributions              *
+C  F   SPCTEQ   to evaluate the CTEQ 3 proton parton distributions   *
+C  S   SPGRVL   to evaluate the GRV 94L proton parton distributions  *
+C  S   SPGRVM   to evaluate the GRV 94M proton parton distributions  *
+C  S   SPGRVD   to evaluate the GRV 94D proton parton distributions  *
+C  F   SPGRVV   auxiliary to the SPGRV* routines                     *
+C  F   SPGRVW   auxiliary to the SPGRV* routines                     *
+C  F   SPGRVS   auxiliary to the SPGRV* routines                     *
+C  F   SPCT5L   to evaluate the CTEQ 5L proton parton distributions  *
+C  F   SPCT5M   to evaluate the CTEQ 5M1 proton parton distributions *
+C  S   SPPDPO   to evaluate old proton parton distributions          *
+C  F   SPHFTH   to evaluate threshold factor for heavy flavour       *
+C  S   SPSPLI   to find flavours left in hadron when one removed     *
+C  F   SPGAMM   to evaluate ordinary Gamma function Gamma(x)         *
+C  S   SPWAUX   to evaluate auxiliary functions W1(s) and W2(s)      *
+C  S   SPI3AU   to evaluate auxiliary function I3(s,t,u,v)           *
+C  F   SPSPEN   to evaluate Spence (dilogarithm) function Sp(x)      *
+C  S   SPQQBH   to evaluate matrix element for g + g -> Q + Qbar + H *
 C                                                                    *
-C  S   PYMSIN   to initialize the supersymmetry simulation           *
-C  S   PYAPPS   to determine MSSM parameters from SUGRA input        *
-C  S   PYSUGI   to determine MSSM parameters using ISASUSY           *
-C  F   PYRNMQ   to determine running squark masses                   *
-C  S   PYTHRG   to calculate sfermion third-gen. mass eigenstates    *
-C  S   PYINOM   to calculate neutralino/chargino mass eigenstates    *
-C  F   PYRNM3   to determine running M3, gluino mass                 *
-C  S   PYEIG4   to calculate eigenvalues and -vectors in 4*4 matrix  *
-C  S   PYHGGM   to determine Higgs mass spectrum                     *
-C  S   PYSUBH   to determine Higgs masses in the MSSM                *
-C  S   PYPOLE   to determine Higgs masses in the MSSM                *
-C  S   PYRGHM   auxiliary to PYPOLE                                  *
-C  S   PYGFXX   auxiliary to PYRGHM                                  *
-C  F   PYFINT   auxiliary to PYPOLE                                  *
-C  F   PYFISB   auxiliary to PYFINT                                  *
-C  S   PYSFDC   to calculate sfermion decay partial widths           *
-C  S   PYGLUI   to calculate gluino decay partial widths             *
-C  S   PYTBBN   to calculate 3-body decay of gluino to neutralino    *
-C  S   PYTBBC   to calculate 3-body decay of gluino to chargino      *
-C  S   PYNJDC   to calculate neutralino decay partial widths         *
-C  S   PYCJDC   to calculate chargino decay partial widths           *
-C  F   PYXXZ6   auxiliary for ino 3-body decays                      *
-C  F   PYXXGA   auxiliary for ino -> ino + gamma decay               *
-C  F   PYX2XG   auxiliary for ino -> ino + gauge boson decay         *
-C  F   PYX2XH   auxiliary for ino -> ino + Higgs decay               *
-C  S   PYHEXT   to calculate non-SM Higgs decay partial widths       *
-C  F   PYH2XX   auxiliary for H -> ino + ino decay                   *
-C  F   PYGAUS   to perform Gaussian integration                      *
-C  F   PYGAU2   copy of PYGAUS to allow two-dimensional integration  *
-C  F   PYSIMP   to perform Simpson integration                       *
-C  F   PYLAMF   to evaluate the lambda kinematics function           *
-C  S   PYTBDY   to perform 3-body decay of gauginos                  *
-C  S   PYTECM   to calculate techni_rho/omega masses                 *
-C  S   PYEICG   to calculate eigenvalues of a 4*4 complex matrix     *
-C  S   PYCMQR   auxiliary to PYEICG                                  *
-C  S   PYCMQ2   auxiliary to PYEICG                                  *
-C  S   PYCDIV   auxiliary to PYCMQR                                  *
-C  S   PYCSRT   auxiliary to PYCMQR                                  *
-C  S   PYTHAG   auxiliary to PYCMQR                                  *
-C  S   PYCBAL   auxiliary to PYEICG                                  *
-C  S   PYCBA2   auxiliary to PYEICG                                  *
-C  S   PYCRTH   auxiliary to PYEICG                                  *
-C  S   PYLDCM   auxiliary to PYSIGH, for technicolor in QCD 2 -> 2   *
-C  S   PYBKSB   auxiliary to PYSIGH, for technicolor in QCD 2 -> 2   *
-C  S   PYWIDX   to calculate decay widths from within PYWIDT         *
-C  S   PYRVSF   to calculate R-violating sfermion decay widths       *
-C  S   PYRVNE   to calculate R-violating neutralino decay widths     *
-C  S   PYRVCH   to calculate R-violating chargino decay widths       *
-C  S   PYRVGL   to calculate R-violating gluino decay widths         *
-C  F   PYRVSB   auxiliary to PYRVSF                                  *
-C  S   PYRVGW   to calculate R-Violating 3-body widths               *
-C  F   PYRVI1   auxiliary to PYRVGW, to do PS integration for res.   *
-C  F   PYRVI2   auxiliary to PYRVGW, to do PS integration for LR-int.*
-C  F   PYRVI3   auxiliary to PYRVGW, to do PS X integral for int.    *
-C  F   PYRVG1   auxiliary to PYRVI1, general matrix element, res.    *
-C  F   PYRVG2   auxiliary to PYRVI2, general matrix element, LR-int. *
-C  F   PYRVG3   auxiliary to PYRVI3, to do PS Y integral for int.    *
-C  F   PYRVG4   auxiliary to PYRVG3, general matrix element, int.    *
-C  F   PYRVR    auxiliary to PYRVG1, Breit-Wigner                    *
-C  F   PYRVS    auxiliary to PYRVG2 & PYRVG4                         *
+C  S   SPMSIN   to initialize the supersymmetry simulation           *
+C  S   SPAPPS   to determine MSSM parameters from SUGRA input        *
+C  S   SPSUGI   to determine MSSM parameters using ISASUSY           *
+C  F   SPRNMQ   to determine running squark masses                   *
+C  S   SPTHRG   to calculate sfermion third-gen. mass eigenstates    *
+C  S   SPINOM   to calculate neutralino/chargino mass eigenstates    *
+C  F   SPRNM3   to determine running M3, gluino mass                 *
+C  S   SPEIG4   to calculate eigenvalues and -vectors in 4*4 matrix  *
+C  S   SPHGGM   to determine Higgs mass spectrum                     *
+C  S   SPSUBH   to determine Higgs masses in the MSSM                *
+C  S   SPPOLE   to determine Higgs masses in the MSSM                *
+C  S   SPRGHM   auxiliary to SPPOLE                                  *
+C  S   SPGFXX   auxiliary to SPRGHM                                  *
+C  F   SPFINT   auxiliary to SPPOLE                                  *
+C  F   SPFISB   auxiliary to SPFINT                                  *
+C  S   SPSFDC   to calculate sfermion decay partial widths           *
+C  S   SPGLUI   to calculate gluino decay partial widths             *
+C  S   SPTBBN   to calculate 3-body decay of gluino to neutralino    *
+C  S   SPTBBC   to calculate 3-body decay of gluino to chargino      *
+C  S   SPNJDC   to calculate neutralino decay partial widths         *
+C  S   SPCJDC   to calculate chargino decay partial widths           *
+C  F   SPXXZ6   auxiliary for ino 3-body decays                      *
+C  F   SPXXGA   auxiliary for ino -> ino + gamma decay               *
+C  F   SPX2XG   auxiliary for ino -> ino + gauge boson decay         *
+C  F   SPX2XH   auxiliary for ino -> ino + Higgs decay               *
+C  S   SPHEXT   to calculate non-SM Higgs decay partial widths       *
+C  F   SPH2XX   auxiliary for H -> ino + ino decay                   *
+C  F   SPGAUS   to perform Gaussian integration                      *
+C  F   SPGAU2   cosp of SPGAUS to allow two-dimensional integration  *
+C  F   SPSIMP   to perform Simpson integration                       *
+C  F   SPLAMF   to evaluate the lambda kinematics function           *
+C  S   SPTBDY   to perform 3-body decay of gauginos                  *
+C  S   SPTECM   to calculate techni_rho/omega masses                 *
+C  S   SPEICG   to calculate eigenvalues of a 4*4 complex matrix     *
+C  S   SPCMQR   auxiliary to SPEICG                                  *
+C  S   SPCMQ2   auxiliary to SPEICG                                  *
+C  S   SPCDIV   auxiliary to SPCMQR                                  *
+C  S   SPCSRT   auxiliary to SPCMQR                                  *
+C  S   SPTHAG   auxiliary to SPCMQR                                  *
+C  S   SPCBAL   auxiliary to SPEICG                                  *
+C  S   SPCBA2   auxiliary to SPEICG                                  *
+C  S   SPCRTH   auxiliary to SPEICG                                  *
+C  S   SPLDCM   auxiliary to SPSIGH, for technicolor in QCD 2 -> 2   *
+C  S   SPBKSB   auxiliary to SPSIGH, for technicolor in QCD 2 -> 2   *
+C  S   SPWIDX   to calculate decay widths from within SPWIDT         *
+C  S   SPRVSF   to calculate R-violating sfermion decay widths       *
+C  S   SPRVNE   to calculate R-violating neutralino decay widths     *
+C  S   SPRVCH   to calculate R-violating chargino decay widths       *
+C  S   SPRVGL   to calculate R-violating gluino decay widths         *
+C  F   SPRVSB   auxiliary to SPRVSF                                  *
+C  S   SPRVGW   to calculate R-Violating 3-body widths               *
+C  F   SPRVI1   auxiliary to SPRVGW, to do PS integration for res.   *
+C  F   SPRVI2   auxiliary to SPRVGW, to do PS integration for LR-int.*
+C  F   SPRVI3   auxiliary to SPRVGW, to do PS X integral for int.    *
+C  F   SPRVG1   auxiliary to SPRVI1, general matrix element, res.    *
+C  F   SPRVG2   auxiliary to SPRVI2, general matrix element, LR-int. *
+C  F   SPRVG3   auxiliary to SPRVI3, to do PS Y integral for int.    *
+C  F   SPRVG4   auxiliary to SPRVG3, general matrix element, int.    *
+C  F   SPRVR    auxiliary to SPRVG1, Breit-Wigner                    *
+C  F   SPRVS    auxiliary to SPRVG2 & SPRVG4                         *
 C                                                                    *
-C  S   PY1ENT   to fill one entry (= parton or particle)             *
-C  S   PY2ENT   to fill two entries                                  *
-C  S   PY3ENT   to fill three entries                                *
-C  S   PY4ENT   to fill four entries                                 *
-C  S   PY2FRM   to interface to generic two-fermion generator        *
-C  S   PY4FRM   to interface to generic four-fermion generator       *
-C  S   PY6FRM   to interface to generic six-fermion generator        *
-C  S   PY4JET   to generate a shower from a given 4-parton config    *
-C  S   PY4JTW   to evaluate the weight od a shower history for above *
-C  S   PY4JTS   to set up the parton configuration for above         *
-C  S   PYJOIN   to connect entries with colour flow information      *
-C  S   PYGIVE   to fill (or query) commonblock variables             *
-C  S   PYEXEC   to administrate fragmentation and decay chain        *
-C  S   PYPREP   to rearrange showered partons along strings          *
-C  S   PYSTRF   to do string fragmentation of jet system             *
-C  S   PYJURF   to find boost to string junction rest frame          *
-C  S   PYINDF   to do independent fragmentation of one or many jets  *
-C  S   PYDECY   to do the decay of a particle                        *
-C  S   PYDCYK   to select parton and hadron flavours in decays       *
-C  S   PYKFDI   to select parton and hadron flavours in fragm        *
-C  S   PYNMES   to select number of popcorn mesons                   *
-C  S   PYKFIN   to calculate falvour prod. ratios from input params. *
-C  S   PYPTDI   to select transverse momenta in fragm                *
-C  S   PYZDIS   to select longitudinal scaling variable in fragm     *
-C  S   PYSHOW   to do timelike parton shower evolution               *
-C  F   PYMAEL   auxiliary to PYSHOW, with gluon emission ME's        *
-C  S   PYBOEI   to include Bose-Einstein effects (crudely)           *
-C  S   PYBESQ   auxiliary to PYBOEI                                  *
-C  F   PYMASS   to give the mass of a particle or parton             *
-C  F   PYMRUN   to give the running MSbar mass of a quark            *
-C  S   PYNAME   to give the name of a particle or parton             *
-C  F   PYCHGE   to give three times the electric charge              *
-C  F   PYCOMP   to compress standard KF flavour code to internal KC  *
-C  S   PYERRM   to write error messages and abort faulty run         *
-C  F   PYALEM   to give the alpha_electromagnetic value              *
-C  F   PYALPS   to give the alpha_strong value                       *
-C  F   PYANGL   to give the angle from known x and y components      *
-C  F   PYR      to provide a random number generator                 *
-C  S   PYRGET   to save the state of the random number generator     *
-C  S   PYRSET   to set the state of the random number generator      *
-C  S   PYROBO   to rotate and/or boost an event                      *
-C  S   PYEDIT   to remove unwanted entries from record               *
-C  S   PYLIST   to list event record or particle data                *
-C  S   PYLOGO   to write a logo                                      *
-C  S   PYUPDA   to update particle data                              *
-C  F   PYK      to provide integer-valued event information          *
-C  F   PYP      to provide real-valued event information             *
-C  S   PYSPHE   to perform sphericity analysis                       *
-C  S   PYTHRU   to perform thrust analysis                           *
-C  S   PYCLUS   to perform three-dimensional cluster analysis        *
-C  S   PYCELL   to perform cluster analysis in (eta, phi, E_T)       *
-C  S   PYJMAS   to give high and low jet mass of event               *
-C  S   PYFOWO   to give Fox-Wolfram moments                          *
-C  S   PYTABU   to analyze events, with tabular output               *
+C  S   SP1ENT   to fill one entry (= parton or particle)             *
+C  S   SP2ENT   to fill two entries                                  *
+C  S   SP3ENT   to fill three entries                                *
+C  S   SP4ENT   to fill four entries                                 *
+C  S   SP2FRM   to interface to generic two-fermion generator        *
+C  S   SP4FRM   to interface to generic four-fermion generator       *
+C  S   SP6FRM   to interface to generic six-fermion generator        *
+C  S   SP4JET   to generate a shower from a given 4-parton config    *
+C  S   SP4JTW   to evaluate the weight od a shower history for above *
+C  S   SP4JTS   to set up the parton configuration for above         *
+C  S   SPJOIN   to connect entries with colour flow information      *
+C  S   SPGIVE   to fill (or query) commonblock variables             *
+C  S   SPEXEC   to administrate fragmentation and decay chain        *
+C  S   SPPREP   to rearrange showered partons along strings          *
+C  S   SPSTRF   to do string fragmentation of jet system             *
+C  S   SPJURF   to find boost to string junction rest frame          *
+C  S   SPINDF   to do independent fragmentation of one or many jets  *
+C  S   SPDECY   to do the decay of a particle                        *
+C  S   SPDCYK   to select parton and hadron flavours in decays       *
+C  S   SPKFDI   to select parton and hadron flavours in fragm        *
+C  S   SPNMES   to select number of popcorn mesons                   *
+C  S   SPKFIN   to calculate falvour prod. ratios from input params. *
+C  S   SPPTDI   to select transverse momenta in fragm                *
+C  S   SPZDIS   to select longitudinal scaling variable in fragm     *
+C  S   SPSHOW   to do timelike parton shower evolution               *
+C  F   SPMAEL   auxiliary to SPSHOW, with gluon emission ME's        *
+C  S   SPBOEI   to include Bose-Einstein effects (crudely)           *
+C  S   SPBESQ   auxiliary to SPBOEI                                  *
+C  F   SPMASS   to give the mass of a particle or parton             *
+C  F   SPMRUN   to give the running MSbar mass of a quark            *
+C  S   SPNAME   to give the name of a particle or parton             *
+C  F   SPCHGE   to give three times the electric charge              *
+C  F   SPCOMP   to compress standard KF flavour code to internal KC  *
+C  S   SPERRM   to write error messages and abort faulty run         *
+C  F   SPALEM   to give the alpha_electromagnetic value              *
+C  F   SPALPS   to give the alpha_strong value                       *
+C  F   SPANGL   to give the angle from known x and y components      *
+C  F   SPR      to provide a random number generator                 *
+C  S   SPRGET   to save the state of the random number generator     *
+C  S   SPRSET   to set the state of the random number generator      *
+C  S   SPROBO   to rotate and/or boost an event                      *
+C  S   SPEDIT   to remove unwanted entries from record               *
+C  S   SPLIST   to list event record or particle data                *
+C  S   SPLOGO   to write a logo                                      *
+C  S   SPUPDA   to update particle data                              *
+C  F   SPK      to provide integer-valued event information          *
+C  F   SPP      to provide real-valued event information             *
+C  S   SPSPHE   to perform sphericity analysis                       *
+C  S   SPTHRU   to perform thrust analysis                           *
+C  S   SPCLUS   to perform three-dimensional cluster analysis        *
+C  S   SPCELL   to perform cluster analysis in (eta, phi, E_T)       *
+C  S   SPJMAS   to give high and low jet mass of event               *
+C  S   SPFOWO   to give Fox-Wolfram moments                          *
+C  S   SPTABU   to analyze events, with tabular output               *
 C                                                                    *
-C  S   PYEEVT   to administrate the generation of an e+e- event      *
-C  S   PYXTEE   to give the total cross-section at given CM energy   *
-C  S   PYRADK   to generate initial state photon radiation           *
-C  S   PYXKFL   to select flavour of primary qqbar pair              *
-C  S   PYXJET   to select (matrix element) jet multiplicity          *
-C  S   PYX3JT   to select kinematics of three-jet event              *
-C  S   PYX4JT   to select kinematics of four-jet event               *
-C  S   PYXDIF   to select angular orientation of event               *
-C  S   PYONIA   to perform generation of onium decay to gluons       *
+C  S   SPEEVT   to administrate the generation of an e+e- event      *
+C  S   SPXTEE   to give the total cross-section at given CM energy   *
+C  S   SPRADK   to generate initial state photon radiation           *
+C  S   SPXKFL   to select flavour of primary qqbar pair              *
+C  S   SPXJET   to select (matrix element) jet multiplicity          *
+C  S   SPX3JT   to select kinematics of three-jet event              *
+C  S   SPX4JT   to select kinematics of four-jet event               *
+C  S   SPXDIF   to select angular orientation of event               *
+C  S   SPONIA   to perform generation of onium decay to gluons       *
 C                                                                    *
-C  S   PYBOOK   to book a histogram                                  *
-C  S   PYFILL   to fill an entry in a histogram                      *
-C  S   PYFACT   to multiply histogram contents by a factor           *
-C  S   PYOPER   to perform operations between histograms             *
-C  S   PYHIST   to print and reset all histograms                    *
-C  S   PYPLOT   to print a single histogram                          *
-C  S   PYNULL   to reset contents of a single histogram              *
-C  S   PYDUMP   to dump histogram contents onto a file               *
+C  S   SPBOOK   to book a histogram                                  *
+C  S   SPFILL   to fill an entry in a histogram                      *
+C  S   SPFACT   to multiply histogram contents by a factor           *
+C  S   SPOPER   to perform operations between histograms             *
+C  S   SPHIST   to print and reset all histograms                    *
+C  S   SPPLOT   to print a single histogram                          *
+C  S   SPNULL   to reset contents of a single histogram              *
+C  S   SPDUMP   to dump histogram contents onto a file               *
 C                                                                    *
-C  S   PYKCUT   dummy routine for user kinematical cuts              *
-C  S   PYEVWT   dummy routine for weighting events                   *
-C  S   UPINIT   dummy routine to initialize user processes           *
-C  S   UPEVNT   dummy routine to generate a user process event       *
-C  S   PDFSET   dummy routine to be removed when using PDFLIB        *
-C  S   STRUCTM  dummy routine to be removed when using PDFLIB        *
-C  S   STRUCTP  dummy routine to be removed when using PDFLIB        *
+C  S   SPKCUT   dummy routine for user kinematical cuts              *
+C  S   SPEVWT   dummy routine for weighting events                   *
+C  S   SUINIT   dummy routine to initialize user processes           *
+C  S   SUEVNT   dummy routine to generate a user process event       *
+C  S   SDFSET   dummy routine to be removed when using PDFLIB        *
+C  S   PTRUCTM  dummy routine to be removed when using PDFLIB        *
+C  S   PTRUCTP  dummy routine to be removed when using PDFLIB        *
 C  S   SUGRA    dummy routine to be removed when linking with ISAJET *
-C  F   VISAJE   dummy functn. to be removed when linking with ISAJET *
-C  S   PYTAUD   dummy routine for interface to tau decay libraries   *
-C  S   PYTIME   dummy routine for giving date and time               *
+C  F   SVSAJE   dummy functn. to be removed when linking with ISAJET *
+C  S   SPTAUD   dummy routine for interface to tau decay libraries   *
+C  S   SPTIME   dummy routine for giving date and time               *
 C                                                                    *
 C*********************************************************************
 
-C...PYTEST
+C...SPTEST
 C...A simple program (disguised as subroutine) to run at installation
 C...as a check that the program works as intended.
  
-      SUBROUTINE PYTEST(MTEST)
+      SUBROUTINE SPTEST(MTEST)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/,/PYDAT3/,/PYSUBS/,/PYPARS/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/,/SPDAT3/,/SPSUBS/,/SPPARS/
 C...Local arrays.
       DIMENSION PSUM(5),PINI(6),PFIN(6)
  
@@ -316,7 +316,7 @@ C...Save defaults for values that are changed.
       MST116=MSTJ(116)
  
 C...First part: loop over simple events to be generated.
-      IF(MTEST.GE.1) CALL PYTABU(20)
+      IF(MTEST.GE.1) CALL SPTABU(20)
       NERR=0
       DO 180 IEV=1,500
  
@@ -342,23 +342,23 @@ C...Ten events each for some single jets configurations.
           ITY=(IEV+9)/10
           MSTJ(3)=-1
           IF(ITY.EQ.3.OR.ITY.EQ.4) MSTJ(11)=2
-          IF(ITY.EQ.1) CALL PY1ENT(1,1,15D0,0D0,0D0)
-          IF(ITY.EQ.2) CALL PY1ENT(1,3101,15D0,0D0,0D0)
-          IF(ITY.EQ.3) CALL PY1ENT(1,-2203,15D0,0D0,0D0)
-          IF(ITY.EQ.4) CALL PY1ENT(1,-4,30D0,0D0,0D0)
-          IF(ITY.EQ.5) CALL PY1ENT(1,21,15D0,0D0,0D0)
+          IF(ITY.EQ.1) CALL SP1ENT(1,1,15D0,0D0,0D0)
+          IF(ITY.EQ.2) CALL SP1ENT(1,3101,15D0,0D0,0D0)
+          IF(ITY.EQ.3) CALL SP1ENT(1,-2203,15D0,0D0,0D0)
+          IF(ITY.EQ.4) CALL SP1ENT(1,-4,30D0,0D0,0D0)
+          IF(ITY.EQ.5) CALL SP1ENT(1,21,15D0,0D0,0D0)
  
 C...Ten events each for some simple jet systems; string fragmentation.
         ELSEIF(IEV.LE.130) THEN
           ITY=(IEV-41)/10
-          IF(ITY.EQ.1) CALL PY2ENT(1,1,-1,40D0)
-          IF(ITY.EQ.2) CALL PY2ENT(1,4,-4,30D0)
-          IF(ITY.EQ.3) CALL PY2ENT(1,2,2103,100D0)
-          IF(ITY.EQ.4) CALL PY2ENT(1,21,21,40D0)
-          IF(ITY.EQ.5) CALL PY3ENT(1,2101,21,-3203,30D0,0.6D0,0.8D0)
-          IF(ITY.EQ.6) CALL PY3ENT(1,5,21,-5,40D0,0.9D0,0.8D0)
-          IF(ITY.EQ.7) CALL PY3ENT(1,21,21,21,60D0,0.7D0,0.5D0)
-          IF(ITY.EQ.8) CALL PY4ENT(1,2,21,21,-2,40D0,
+          IF(ITY.EQ.1) CALL SP2ENT(1,1,-1,40D0)
+          IF(ITY.EQ.2) CALL SP2ENT(1,4,-4,30D0)
+          IF(ITY.EQ.3) CALL SP2ENT(1,2,2103,100D0)
+          IF(ITY.EQ.4) CALL SP2ENT(1,21,21,40D0)
+          IF(ITY.EQ.5) CALL SP3ENT(1,2101,21,-3203,30D0,0.6D0,0.8D0)
+          IF(ITY.EQ.6) CALL SP3ENT(1,5,21,-5,40D0,0.9D0,0.8D0)
+          IF(ITY.EQ.7) CALL SP3ENT(1,21,21,21,60D0,0.7D0,0.5D0)
+          IF(ITY.EQ.8) CALL SP4ENT(1,2,21,21,-2,40D0,
      &    0.4D0,0.64D0,0.6D0,0.12D0,0.2D0)
  
 C...Seventy events with independent fragmentation and momentum cons.
@@ -366,11 +366,11 @@ C...Seventy events with independent fragmentation and momentum cons.
           ITY=1+(IEV-131)/16
           MSTJ(2)=1+MOD(IEV-131,4)
           MSTJ(3)=1+MOD((IEV-131)/4,4)
-          IF(ITY.EQ.1) CALL PY2ENT(1,4,-5,40D0)
-          IF(ITY.EQ.2) CALL PY3ENT(1,3,21,-3,40D0,0.9D0,0.4D0)
-          IF(ITY.EQ.3) CALL PY4ENT(1,2,21,21,-2,40D0,
+          IF(ITY.EQ.1) CALL SP2ENT(1,4,-5,40D0)
+          IF(ITY.EQ.2) CALL SP3ENT(1,3,21,-3,40D0,0.9D0,0.4D0)
+          IF(ITY.EQ.3) CALL SP4ENT(1,2,21,21,-2,40D0,
      &    0.4D0,0.64D0,0.6D0,0.12D0,0.2D0)
-          IF(ITY.GE.4) CALL PY4ENT(1,2,-3,3,-2,40D0,
+          IF(ITY.GE.4) CALL SP4ENT(1,2,-3,3,-2,40D0,
      &    0.4D0,0.64D0,0.6D0,0.12D0,0.2D0)
  
 C...A hundred events with random jets (check invariant mass).
@@ -378,18 +378,18 @@ C...A hundred events with random jets (check invariant mass).
   100     DO 110 J=1,5
             PSUM(J)=0D0
   110     CONTINUE
-          NJET=2D0+6D0*PYR(0)
+          NJET=2D0+6D0*SPR(0)
           DO 130 I=1,NJET
             KFL=21
-            IF(I.EQ.1) KFL=INT(1D0+4D0*PYR(0))
-            IF(I.EQ.NJET) KFL=-INT(1D0+4D0*PYR(0))
-            EJET=5D0+20D0*PYR(0)
-            THETA=ACOS(2D0*PYR(0)-1D0)
-            PHI=6.2832D0*PYR(0)
-            IF(I.LT.NJET) CALL PY1ENT(-I,KFL,EJET,THETA,PHI)
-            IF(I.EQ.NJET) CALL PY1ENT(I,KFL,EJET,THETA,PHI)
+            IF(I.EQ.1) KFL=INT(1D0+4D0*SPR(0))
+            IF(I.EQ.NJET) KFL=-INT(1D0+4D0*SPR(0))
+            EJET=5D0+20D0*SPR(0)
+            THETA=ACOS(2D0*SPR(0)-1D0)
+            PHI=6.2832D0*SPR(0)
+            IF(I.LT.NJET) CALL SP1ENT(-I,KFL,EJET,THETA,PHI)
+            IF(I.EQ.NJET) CALL SP1ENT(I,KFL,EJET,THETA,PHI)
             IF(I.EQ.1.OR.I.EQ.NJET) MSTJ(93)=1
-            IF(I.EQ.1.OR.I.EQ.NJET) PSUM(5)=PSUM(5)+PYMASS(KFL)
+            IF(I.EQ.1.OR.I.EQ.NJET) PSUM(5)=PSUM(5)+SPMASS(KFL)
             DO 120 J=1,4
               PSUM(J)=PSUM(J)+P(I,J)
   120       CONTINUE
@@ -400,34 +400,34 @@ C...A hundred events with random jets (check invariant mass).
 C...Fifty e+e- continuum events with matrix elements.
         ELSEIF(IEV.LE.350) THEN
           MSTJ(101)=2
-          CALL PYEEVT(0,40D0)
+          CALL SPEEVT(0,40D0)
  
 C...Fifty e+e- continuum event with varying shower options.
         ELSEIF(IEV.LE.400) THEN
           MSTJ(42)=1+MOD(IEV,2)
           MSTJ(43)=1+MOD(IEV/2,4)
           MSTJ(44)=MOD(IEV/8,3)
-          CALL PYEEVT(0,90D0)
+          CALL SPEEVT(0,90D0)
  
 C...Fifty e+e- continuum events with coherent shower.
         ELSEIF(IEV.LE.450) THEN
-          CALL PYEEVT(0,500D0)
+          CALL SPEEVT(0,500D0)
  
 C...Fifty Upsilon decays to ggg or gammagg with coherent shower.
         ELSE
-          CALL PYONIA(5,9.46D0)
+          CALL SPONIA(5,9.46D0)
         ENDIF
  
 C...Generate event. Find total momentum, energy and charge.
         DO 140 J=1,4
-          PINI(J)=PYP(0,J)
+          PINI(J)=SPP(0,J)
   140   CONTINUE
-        PINI(6)=PYP(0,6)
-        CALL PYEXEC
+        PINI(6)=SPP(0,6)
+        CALL SPEXEC
         DO 150 J=1,4
-          PFIN(J)=PYP(0,J)
+          PFIN(J)=SPP(0,J)
   150   CONTINUE
-        PFIN(6)=PYP(0,6)
+        PFIN(6)=SPP(0,6)
  
 C...Check conservation of energy, momentum and charge;
 C...usually exact, but only approximate for single jets.
@@ -451,7 +451,7 @@ C...Check that all KF codes are known ones, and that partons/particles
 C...satisfy energy-momentum-mass relation. Store particle statistics.
         DO 170 I=1,N
           IF(K(I,1).GT.20) GOTO 170
-          IF(PYCOMP(K(I,2)).EQ.0) THEN
+          IF(SPCOMP(K(I,2)).EQ.0) THEN
             WRITE(MSTU(11),5100) I
             MERR=MERR+1
           ENDIF
@@ -462,27 +462,27 @@ C...satisfy energy-momentum-mass relation. Store particle statistics.
             MERR=MERR+1
           ENDIF
   170   CONTINUE
-        IF(MTEST.GE.1) CALL PYTABU(21)
+        IF(MTEST.GE.1) CALL SPTABU(21)
  
 C...List all erroneous events and some normal ones.
         IF(MERR.NE.0.OR.MSTU(24).NE.0.OR.MSTU(28).NE.0) THEN
           IF(MERR.GE.1) WRITE(MSTU(11),6400)
-          CALL PYLIST(2)
+          CALL SPLIST(2)
         ELSEIF(MTEST.GE.1.AND.MOD(IEV-5,100).EQ.0) THEN
-          CALL PYLIST(1)
+          CALL SPLIST(1)
         ENDIF
  
 C...Stop execution if too many errors.
         IF(MERR.NE.0) NERR=NERR+1
         IF(NERR.GE.10) THEN
           WRITE(MSTU(11),6300)
-          CALL PYLIST(1)
+          CALL SPLIST(1)
           STOP
         ENDIF
   180 CONTINUE
  
 C...Summarize result of run.
-      IF(MTEST.GE.1) CALL PYTABU(22)
+      IF(MTEST.GE.1) CALL SPTABU(22)
  
 C...Reset commonblock variables changed during run.
       MSTJ(1)=MSTJ1
@@ -504,7 +504,7 @@ C...Reset commonblock variables changed during run.
 C...Second part: complete events of various kinds.
 C...Common initial values. Loop over initiating conditions.
       MSTP(122)=MAX(0,MIN(2,MTEST))
-      MDCY(PYCOMP(111),1)=0
+      MDCY(SPCOMP(111),1)=0
       DO 230 IPROC=1,8
  
 C...Reset process type, kinematics cuts, and the flags used.
@@ -527,11 +527,11 @@ C...Reset process type, kinematics cuts, and the flags used.
 C...Prompt photon production at fixed target.
         IF(IPROC.EQ.1) THEN
           PZSUM=300D0
-          PESUM=SQRT(PZSUM**2+PYMASS(211)**2)+PYMASS(2212)
+          PESUM=SQRT(PZSUM**2+SPMASS(211)**2)+SPMASS(2212)
           PQSUM=2D0
           MSEL=10
           CKIN(3)=5D0
-          CALL PYINIT('FIXT','pi+','p',PZSUM)
+          CALL SPINIT('FIXT','pi+','p',PZSUM)
  
 C...QCD processes at ISR energies.
         ELSEIF(IPROC.EQ.2) THEN
@@ -540,7 +540,7 @@ C...QCD processes at ISR energies.
           PQSUM=2D0
           MSEL=1
           CKIN(3)=5D0
-          CALL PYINIT('CMS','p','p',PESUM)
+          CALL SPINIT('CMS','p','p',PESUM)
  
 C...W production + multiple interactions at CERN Collider.
         ELSEIF(IPROC.EQ.3) THEN
@@ -552,7 +552,7 @@ C...W production + multiple interactions at CERN Collider.
           MSTP(82)=4
           MSTP(2)=2
           MSTP(33)=3
-          CALL PYINIT('CMS','p','pbar',PESUM)
+          CALL SPINIT('CMS','p','pbar',PESUM)
  
 C...W/Z gauge boson pairs + pileup events at the Tevatron.
         ELSEIF(IPROC.EQ.4) THEN
@@ -567,7 +567,7 @@ C...W/Z gauge boson pairs + pileup events at the Tevatron.
           MSTP(131)=1
           MSTP(133)=2
           PARP(131)=0.04D0
-          CALL PYINIT('CMS','p','pbar',PESUM)
+          CALL SPINIT('CMS','p','pbar',PESUM)
  
 C...Higgs production at LHC.
         ELSEIF(IPROC.EQ.5) THEN
@@ -582,7 +582,7 @@ C...Higgs production at LHC.
           CKIN(1)=200D0
           MSTP(81)=0
           MSTP(111)=0
-          CALL PYINIT('CMS','p','p',PESUM)
+          CALL SPINIT('CMS','p','p',PESUM)
  
 C...Z' production at SSC.
         ELSEIF(IPROC.EQ.6) THEN
@@ -594,7 +594,7 @@ C...Z' production at SSC.
           CKIN(1)=400D0
           MSTP(81)=0
           MSTP(111)=0
-          CALL PYINIT('CMS','p','p',PESUM)
+          CALL SPINIT('CMS','p','p',PESUM)
  
 C...W pair production at 1 TeV e+e- collider.
         ELSEIF(IPROC.EQ.7) THEN
@@ -604,7 +604,7 @@ C...W pair production at 1 TeV e+e- collider.
           MSUB(25)=1
           MSUB(69)=1
           MSTP(11)=1
-          CALL PYINIT('CMS','e+','e-',PESUM)
+          CALL SPINIT('CMS','e+','e-',PESUM)
  
 C...Deep inelastic scattering at a LEP+LHC ep collider.
         ELSEIF(IPROC.EQ.8) THEN
@@ -620,12 +620,12 @@ C...Deep inelastic scattering at a LEP+LHC ep collider.
           MSUB(10)=1
           CKIN(3)=50D0
           MSTP(111)=0
-          CALL PYINIT('3MOM','p','e-',PESUM)
+          CALL SPINIT('3MOM','p','e-',PESUM)
         ENDIF
  
 C...Generate 20 events of each required type.
         DO 220 IEV=1,20
-          CALL PYEVNT
+          CALL SPEVNT
           PESUMM=PESUM
           IF(IPROC.EQ.4) PESUMM=MSTI(41)*PESUM
  
@@ -636,9 +636,9 @@ C...Check conservation of energy/momentum/flavour.
           PINI(4)=PESUMM
           PINI(6)=PQSUM
           DO 200 J=1,4
-            PFIN(J)=PYP(0,J)
+            PFIN(J)=SPP(0,J)
   200     CONTINUE
-          PFIN(6)=PYP(0,6)
+          PFIN(6)=SPP(0,6)
           MERR=0
           DEVE=ABS(PFIN(4)-PINI(4))+ABS(PFIN(3)-PINI(3))
           DEVT=ABS(PFIN(1)-PINI(1))+ABS(PFIN(2)-PINI(2))
@@ -652,7 +652,7 @@ C...Check that all KF codes are known ones, and that partons/particles
 C...satisfy energy-momentum-mass relation.
           DO 210 I=1,N
             IF(K(I,1).GT.20) GOTO 210
-            IF(PYCOMP(K(I,2)).EQ.0) THEN
+            IF(SPCOMP(K(I,2)).EQ.0) THEN
               WRITE(MSTU(11),5100) I
               MERR=MERR+1
             ENDIF
@@ -669,17 +669,17 @@ C...Listing of erroneous events, and first event of each type.
           IF(MERR.GE.1) NERR=NERR+1
           IF(NERR.GE.10) THEN
             WRITE(MSTU(11),6300)
-            CALL PYLIST(1)
+            CALL SPLIST(1)
             STOP
           ENDIF
           IF(MTEST.GE.1.AND.(MERR.GE.1.OR.IEV.EQ.1)) THEN
             IF(MERR.GE.1) WRITE(MSTU(11),6400)
-            CALL PYLIST(1)
+            CALL SPLIST(1)
           ENDIF
   220   CONTINUE
  
 C...List statistics for each process type.
-        IF(MTEST.GE.1) CALL PYSTAT(1)
+        IF(MTEST.GE.1) CALL SPSTAT(1)
   230 CONTINUE
  
 C...Summarize result of run.
@@ -688,7 +688,7 @@ C...Summarize result of run.
  
 C...Format statements for output.
  5000 FORMAT(/' Momentum, energy and/or charge were not conserved ',
-     &'in following event'/' sum of',9X,'px',11X,'py',11X,'pz',11X,
+     &'in following event'/' sum of',9X,'px',11X,'sp',11X,'pz',11X,
      &'E',8X,'charge'/' before',2X,4(1X,F12.5),1X,F8.2/' after',3X,
      &4(1X,F12.5),1X,F8.2)
  5100 FORMAT(/5X,'Entry no.',I4,' in following event not known code')
@@ -697,8 +697,8 @@ C...Format statements for output.
  6300 FORMAT(/5X,'This is the tenth error experienced! Something is ',
      &'wrong.'/5X,'Execution will be stopped after listing of event.')
  6400 FORMAT(5X,'Faulty event follows:')
- 6500 FORMAT(//5X,'End result of PYTEST: no errors detected.')
- 6600 FORMAT(//5X,'End result of PYTEST:',I2,' errors detected.'/
+ 6500 FORMAT(//5X,'End result of SPTEST: no errors detected.')
+ 6600 FORMAT(//5X,'End result of SPTEST:',I2,' errors detected.'/
      &5X,'This should not have happened!')
  
       RETURN
@@ -706,21 +706,21 @@ C...Format statements for output.
  
 C*********************************************************************
  
-C...PYHEPC
+C...SPHEPC
 C...Converts PYTHIA event record contents to or from
 C...the standard event record commonblock.
  
-      SUBROUTINE PYHEPC(MCONV)
+      SUBROUTINE SPHEPC(MCONV)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/
 C...HEPEVT commonblock.
       PARAMETER (NMXHEP=4000)
       COMMON/HEPEVT/NEVHEP,NHEP,ISTHEP(NMXHEP),IDHEP(NMXHEP),
@@ -731,8 +731,8 @@ C...HEPEVT commonblock.
 C...Conversion from PYTHIA to standard, the easy part.
       IF(MCONV.EQ.1) THEN
         NEVHEP=0
-        IF(N.GT.NMXHEP) CALL PYERRM(8,
-     &  '(PYHEPC:) no more space in /HEPEVT/')
+        IF(N.GT.NMXHEP) CALL SPERRM(8,
+     &  '(SPHEPC:) no more space in /HEPEVT/')
         NHEP=MIN(N,NMXHEP)
         DO 150 I=1,NHEP
           ISTHEP(I)=0
@@ -777,10 +777,10 @@ C...Fill in missing mother information.
           ELSEIF(K(I,2).GE.91.AND.K(I,2).LE.93) THEN
             I1=K(I,3)-1
   130       I1=I1+1
-            IF(I1.GE.I) CALL PYERRM(8,
-     &      '(PYHEPC:) translation of inconsistent event history')
+            IF(I1.GE.I) CALL SPERRM(8,
+     &      '(SPHEPC:) translation of inconsistent event history')
             IF(I1.LT.I.AND.K(I1,1).NE.1.AND.K(I1,1).NE.11) GOTO 130
-            KC=PYCOMP(K(I1,2))
+            KC=SPCOMP(K(I1,2))
             IF(I1.LT.I.AND.KC.EQ.0) GOTO 130
             IF(I1.LT.I.AND.KCHG(KC,2).EQ.0) GOTO 130
             JMOHEP(2,I)=I1
@@ -817,8 +817,8 @@ C...Fill in missing daughter information.
  
 C...Conversion from standard to PYTHIA, the easy part.
       ELSE
-        IF(NHEP.GT.MSTU(4)) CALL PYERRM(8,
-     &  '(PYHEPC:) no more space in /PYJETS/')
+        IF(NHEP.GT.MSTU(4)) CALL SPERRM(8,
+     &  '(SPHEPC:) no more space in /SPJETS/')
         N=MIN(NHEP,MSTU(4))
         NKQ=0
         KQSUM=0
@@ -846,7 +846,7 @@ C...Conversion from standard to PYTHIA, the easy part.
  
 C...Fill in missing information on colour connection in jet systems.
           IF(ISTHEP(I).EQ.1) THEN
-            KC=PYCOMP(K(I,2))
+            KC=SPCOMP(K(I,2))
             KQ=0
             IF(KC.NE.0) KQ=KCHG(KC,2)*ISIGN(1,K(I,2))
             IF(KQ.NE.0) NKQ=NKQ+1
@@ -858,37 +858,37 @@ C...Fill in missing information on colour connection in jet systems.
             ENDIF
           ENDIF
   190   CONTINUE
-        IF(NKQ.EQ.1.OR.KQSUM.NE.0) CALL PYERRM(8,
-     &  '(PYHEPC:) input parton configuration not colour singlet')
+        IF(NKQ.EQ.1.OR.KQSUM.NE.0) CALL SPERRM(8,
+     &  '(SPHEPC:) input parton configuration not colour singlet')
       ENDIF
  
       END
  
 C*********************************************************************
  
-C...PYINIT
+C...SPINIT
 C...Initializes the generation procedure; finds maxima of the
 C...differential cross-sections to be used for weighting.
  
-      SUBROUTINE PYINIT(FRAME,BEAM,TARGET,WIN)
+      SUBROUTINE SPINIT(FRAME,BEAM,TARGET,WIN)
       
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      COMMON/PYDAT4/CHAF(500,2)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      COMMON/SPDAT4/CHAF(500,2)
       CHARACTER CHAF*16
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      COMMON/PYINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
-      SAVE /PYDAT1/,/PYDAT2/,/PYDAT3/,/PYDAT4/,/PYSUBS/,/PYPARS/,
-     &/PYINT1/,/PYINT2/,/PYINT5/
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      COMMON/SPINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
+      SAVE /SPDAT1/,/SPDAT2/,/SPDAT3/,/SPDAT4/,/SPSUBS/,/SPPARS/,
+     &/SPINT1/,/SPINT2/,/SPINT5/
 C...Local arrays and character variables.
       DIMENSION ALAMIN(20),NFIN(20)
       CHARACTER*(*) FRAME,BEAM,TARGET
@@ -912,13 +912,13 @@ C...Reset MINT and VINT arrays. Write headers.
         MINT(J)=0
         VINT(J)=0D0
   100 CONTINUE
-      IF(MSTU(12).GE.1) CALL PYLIST(0)
+      IF(MSTU(12).GE.1) CALL SPLIST(0)
 c      IF(MSTP(122).GE.1) WRITE(MSTU(11),5100)
  
 C...Call user process initialization routine.
       IF(FRAME(1:1).EQ.'u'.OR.FRAME(1:1).EQ.'U') THEN
         MSEL=0
-        CALL UPINIT
+        CALL SUINIT
         MSEL=0
       ENDIF
  
@@ -955,7 +955,7 @@ C...Initialize parton distributions: PDFLIB.
         VALUE(3)=MOD(MSTP(51),1000)
         PARM(4)='TMAS'
         VALUE(4)=PMAS(6,1)
-        CALL PDFSET(PARM,VALUE)
+        CALL SDFSET(PARM,VALUE)
         MINT(93)=1000000+MSTP(51)
       ENDIF
  
@@ -981,9 +981,9 @@ C...Choose Lambda value to use in alpha-strong.
  
 C...Initialize the SUSY generation: couplings, masses,
 C...decay modes, branching ratios, and so on.
-      CALL PYMSIN
+      CALL SPMSIN
 C...Initialize widths and partial widths for resonances.
-      CALL PYINRE
+      CALL SPINRE
 C...Set Z0 mass and width for e+e- routines.
       PARJ(123)=PMAS(23,1)
       PARJ(124)=PMAS(23,2)
@@ -992,7 +992,7 @@ C...Identify beam and target particles and frame of process.
       CHFRAM=FRAME//' '
       CHBEAM=BEAM//' '
       CHTARG=TARGET//' '
-      CALL PYINBM(CHFRAM,CHBEAM,CHTARG,WIN)
+      CALL SPINBM(CHFRAM,CHBEAM,CHTARG,WIN)
       IF(MINT(65).EQ.1) GOTO 170
  
 C...For gamma-p or gamma-gamma allow many (3 or 6) alternatives.
@@ -1037,13 +1037,13 @@ C...For e-gamma allow 2 alternatives.
       ENDIF
  
 C...Set up kinematics of process.
-      CALL PYINKI(0)
+      CALL SPINKI(0)
  
 C...Set up kinematics for photons inside leptons.
-      IF(MINT(141).NE.0.OR.MINT(142).NE.0) CALL PYGAGA(1,WTGAGA)
+      IF(MINT(141).NE.0.OR.MINT(142).NE.0) CALL SPGAGA(1,WTGAGA)
  
 C...Precalculate flavour selection weights.
-      CALL PYKFIN
+      CALL SPKFIN
  
 C...Loop over gamma-p or gamma-gamma alternatives.
       CKIN3=CKIN(3)
@@ -1053,7 +1053,7 @@ C...Loop over gamma-p or gamma-gamma alternatives.
         MINT(122)=IGA
  
 C...Select partonic subprocesses to be included in the simulation.
-        CALL PYINPR
+        CALL SPINPR
         MINT(101)=1
         MINT(102)=1
         MINT(103)=MINT(11)
@@ -1102,26 +1102,26 @@ C...Reset variables for cross-section calculation.
   150   CONTINUE
  
 C...Find parametrized total cross-sections.
-        CALL PYXTOT
+        CALL SPXTOT
         VINT(318)=VINT(317)
  
 C...Maxima of differential cross-sections.
-        IF(MSTP(121).LE.1) CALL PYMAXI
+        IF(MSTP(121).LE.1) CALL SPMAXI
  
 C...Initialize possibility of pileup events.
         IF(MINT(121).GT.1) MSTP(131)=0
-        IF(MSTP(131).NE.0) CALL PYPILE(1)
+        IF(MSTP(131).NE.0) CALL SPPILE(1)
  
 C...Initialize multiple interactions with variable impact parameter.
         IF(MINT(50).EQ.1) THEN
           PTMN=PARP(82)*(VINT(1)/PARP(89))**PARP(90)
           IF(MSTP(81).EQ.0.AND.CKIN(3).GT.PTMN) MSTP(82)=MIN(1,MSTP(82))
           IF((MINT(49).NE.0.OR.MSTP(131).NE.0).AND.MSTP(82).GE.2)
-     &    CALL PYMULT(1)
+     &    CALL SPMULT(1)
         ENDIF
  
 C...Save results for gamma-p and gamma-gamma alternatives.
-        IF(MINT(121).GT.1) CALL PYSAVE(1,IGA)
+        IF(MINT(121).GT.1) CALL SPSAVE(1,IGA)
   160 CONTINUE
  
 C...Initialization finished.
@@ -1138,7 +1138,7 @@ C...Initialization finished.
 c      IF(MSTP(122).GE.1) WRITE(MSTU(11),5600)
  
 C...Formats for initialization information.
- 5100 FORMAT('1',18('*'),1X,'PYINIT: initialization of PYTHIA ',
+ 5100 FORMAT('1',18('*'),1X,'SPINIT: initialization of PYTHIA ',
      &'routines',1X,17('*'))
  5200 FORMAT(1X,'Error: process number ',I3,' not meaningful for ',A6,
      &'-',A6,' interactions.'/1X,'Execution stopped!')
@@ -1148,7 +1148,7 @@ C...Formats for initialization information.
      &1X,'Execution stopped!')
  5500 FORMAT(1X,'Error: no subprocess switched on.'/
      &1X,'Execution stopped.')
- 5600 FORMAT(/1X,22('*'),1X,'PYINIT: initialization completed',1X,
+ 5600 FORMAT(/1X,22('*'),1X,'SPINIT: initialization completed',1X,
      &22('*'))
  5700 FORMAT(1X,'Error: no subprocess switched on.'/
      &1X,'Execution will stop if you try to generate events.')
@@ -1158,28 +1158,28 @@ C...Formats for initialization information.
  
 C*********************************************************************
  
-C...PYEVNT
+C...SPEVNT
 C...Administers the generation of a high-pT event via calls to
 C...a number of subroutines.
  
-      SUBROUTINE PYEVNT
+      SUBROUTINE SPEVNT
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      COMMON/PYINT4/MWID(500),WIDS(500,5)
-      COMMON/PYINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/,/PYDAT3/,/PYPARS/,/PYINT1/,
-     &/PYINT2/,/PYINT4/,/PYINT5/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      COMMON/SPINT4/MWID(500),WIDS(500,5)
+      COMMON/SPINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/,/SPDAT3/,/SPPARS/,/SPINT1/,
+     &/SPINT2/,/SPINT4/,/SPINT5/
 C...Local array.
       DIMENSION VTX(4)
  
@@ -1203,26 +1203,26 @@ C...Initial values for some counters.
 C...If variable energies: redo incoming kinematics and cross-section.
       MSTI(61)=0
       IF(MSTP(171).EQ.1) THEN
-        CALL PYINKI(1)
+        CALL SPINKI(1)
         IF(MSTI(61).EQ.1) THEN
           MINT(5)=MINT(5)-1
           RETURN
         ENDIF
-        IF(MINT(121).GT.1) CALL PYSAVE(3,1)
-        CALL PYXTOT
+        IF(MINT(121).GT.1) CALL SPSAVE(3,1)
+        CALL SPXTOT
       ENDIF
  
 C...Loop over number of pileup events; check space left.
       IF(MSTP(131).LE.0) THEN
         NPILE=1
       ELSE
-        CALL PYPILE(2)
+        CALL SPPILE(2)
         NPILE=MINT(81)
       ENDIF
       DO 250 IPILE=1,NPILE
         IF(MINT(84)+100.GE.MSTU(4)) THEN
-          CALL PYERRM(11,
-     &    '(PYEVNT:) no more space in PYJETS for pileup events')
+          CALL SPERRM(11,
+     &    '(SPEVNT:) no more space in SPJETS for pileup events')
           IF(MSTU(21).GE.1) GOTO 260
         ENDIF
         MINT(82)=IPILE
@@ -1235,7 +1235,7 @@ C...Generate variables of hard scattering.
         MINT(31)=0
         MINT(51)=0
         MINT(57)=0
-        CALL PYRAND
+        CALL SPRAND
         IF(MSTI(61).EQ.1) THEN
           MINT(5)=MINT(5)-1
           RETURN
@@ -1250,7 +1250,7 @@ C...reconstruct kinematics and colour flow of hard scattering.
           MINT31=MINT(31)
   110     MINT(31)=MINT31
           MINT(51)=0
-          CALL PYSCAT
+          CALL SPSCAT
           IF(MINT(51).EQ.1) GOTO 100
           IPU1=MINT(84)+1
           IPU2=MINT(84)+2
@@ -1260,7 +1260,7 @@ C...Showering of initial state partons (optional).
           NFIN=N
           ALAMSV=PARJ(81)
           PARJ(81)=PARP(72)
-          IF(MSTP(61).GE.1.AND.MINT(47).GE.2) CALL PYSSPA(IPU1,IPU2)
+          IF(MSTP(61).GE.1.AND.MINT(47).GE.2) CALL SPSSPA(IPU1,IPU2)
           PARJ(81)=ALAMSV
           IF(MINT(51).EQ.1) GOTO 100
  
@@ -1274,34 +1274,34 @@ C...Showering of final state partons (optional).
             IF(ISET(ISUB).EQ.5) IPU4=-3
             QMAX=VINT(55)
             IF(ISET(ISUB).EQ.2) QMAX=SQRT(PARP(71))*VINT(55)
-            CALL PYSHOW(IPU3,IPU4,QMAX)
+            CALL SPSHOW(IPU3,IPU4,QMAX)
           ELSEIF(ISET(ISUB).EQ.11) THEN
-            CALL PYADSH(NFIN)
+            CALL SPADSH(NFIN)
           ENDIF
           PARJ(81)=ALAMSV
  
 C...Decay of final state resonances.
           MINT(32)=0
-          IF(MSTP(41).GE.1.AND.ISET(ISUB).LE.10) CALL PYRESD(0)
+          IF(MSTP(41).GE.1.AND.ISET(ISUB).LE.10) CALL SPRESD(0)
           IF(MINT(51).EQ.1) GOTO 100
           MINT(52)=N
  
 C...Multiple interactions.
-          IF(MSTP(81).GE.1.AND.MINT(50).EQ.1) CALL PYMULT(6)
+          IF(MSTP(81).GE.1.AND.MINT(50).EQ.1) CALL SPMULT(6)
           MINT(53)=N
  
 C...Hadron remnants and primordial kT.
-  120     CALL PYREMN(IPU1,IPU2)
+  120     CALL SPREMN(IPU1,IPU2)
           IF(MINT(51).EQ.1.AND.MINT(57).GE.1.AND.MINT(57).LE.5) GOTO 110
           IF(MINT(51).EQ.1) GOTO 100
  
          ELSEIF(ISUB.NE.99) THEN
 C...Diffractive and elastic scattering.
-          CALL PYDIFF
+          CALL SPDIFF
  
         ELSE
 C...DIS scattering (photon flux external).
-          CALL PYDISG
+          CALL SPDISG
           IF(MINT(51).EQ.1) GOTO 100
         ENDIF
  
@@ -1311,9 +1311,9 @@ C...Check that no odd resonance left undecayed.
           DO 130 I=MINT(84)+1,NFIX
             IF(K(I,1).GE.1.AND.K(I,1).LE.10.AND.K(I,2).NE.21.AND.
      &      K(I,2).NE.22) THEN
-              KCA=PYCOMP(K(I,2))
+              KCA=SPCOMP(K(I,2))
               IF(MWID(KCA).NE.0.AND.MDCY(KCA,1).GE.1) THEN
-                CALL PYRESD(I)
+                CALL SPRESD(I)
                 IF(MINT(51).EQ.1) GOTO 100
               ENDIF
             ENDIF
@@ -1322,7 +1322,7 @@ C...Check that no odd resonance left undecayed.
  
 C...Boost hadronic subsystem to overall rest frame.
 C..(Only relevant when photon inside lepton beam.)
-        IF(MINT(141).NE.0.OR.MINT(142).NE.0) CALL PYGAGA(4,WTGAGA)
+        IF(MINT(141).NE.0.OR.MINT(142).NE.0) CALL SPGAGA(4,WTGAGA)
  
 C...Recalculate energies from momenta and masses (if desired).
         IF(MSTP(113).GE.1) THEN
@@ -1336,7 +1336,7 @@ C...Recalculate energies from momenta and masses (if desired).
 C...Rearrange partons along strings, check invariant mass cuts.
         MSTU(28)=0
         IF(MSTP(111).LE.0) MSTJ(14)=-1
-        CALL PYPREP(MINT(84)+1)
+        CALL SPPREP(MINT(84)+1)
         MSTJ(14)=MSTJ14
         IF(MSTP(112).EQ.1.AND.MSTU(28).EQ.3) GOTO 100
         IF(MSTP(125).EQ.0.OR.MSTP(125).EQ.1) THEN
@@ -1358,9 +1358,9 @@ C...Rearrange partons along strings, check invariant mass cuts.
   160         CONTINUE
             ENDIF
   170     CONTINUE
-          CALL PYEDIT(12)
-          CALL PYEDIT(14)
-          IF(MSTP(125).EQ.0) CALL PYEDIT(15)
+          CALL SPEDIT(12)
+          CALL SPEDIT(14)
+          IF(MSTP(125).EQ.0) CALL SPEDIT(15)
           IF(MSTP(125).EQ.0) MINT(4)=0
           DO 190 I=MINT(83)+1,N
             IF(K(I,1).EQ.11.AND.K(I,4).EQ.0.AND.K(I,5).EQ.0) THEN
@@ -1372,7 +1372,7 @@ C...Rearrange partons along strings, check invariant mass cuts.
   190     CONTINUE
         ENDIF
  
-C...Introduce separators between sections in PYLIST event listing.
+C...Introduce separators between sections in SPLIST event listing.
         IF(IPILE.EQ.1.AND.MSTP(125).LE.0) THEN
           MSTU70=1
           MSTU(71)=N
@@ -1384,13 +1384,13 @@ C...Introduce separators between sections in PYLIST event listing.
         ENDIF
  
 C...Go back to lab frame (needed for vertices, also in fragmentation).
-        CALL PYFRAM(1)
+        CALL SPFRAM(1)
  
 C...Set nonvanishing production vertex (optional).
         IF(MSTP(151).EQ.1) THEN
           DO 200 J=1,4
-            VTX(J)=PARP(150+J)*SQRT(-2D0*LOG(MAX(1D-10,PYR(0))))*
-     &      SIN(PARU(2)*PYR(0))
+            VTX(J)=PARP(150+J)*SQRT(-2D0*LOG(MAX(1D-10,SPR(0))))*
+     &      SIN(PARU(2)*SPR(0))
   200     CONTINUE
           DO 220 I=MINT(83)+1,N
             DO 210 J=1,4
@@ -1401,7 +1401,7 @@ C...Set nonvanishing production vertex (optional).
  
 C...Perform hadronization (if desired).
         IF(MSTP(111).GE.1) THEN
-          CALL PYEXEC
+          CALL SPEXEC
           IF(MSTU(24).NE.0) GOTO 100
         ENDIF
         IF(MSTP(113).GE.1) THEN
@@ -1410,11 +1410,11 @@ C...Perform hadronization (if desired).
      &      P(I,2)**2+P(I,3)**2+P(I,5)**2)
   230     CONTINUE
         ENDIF
-        IF(MSTP(125).EQ.0.OR.MSTP(125).EQ.1) CALL PYEDIT(14)
+        IF(MSTP(125).EQ.0.OR.MSTP(125).EQ.1) CALL SPEDIT(14)
  
 C...Store event information and calculate Monte Carlo estimates of
 C...subprocess cross-sections.
-  240   IF(IPILE.EQ.1) CALL PYDOCU
+  240   IF(IPILE.EQ.1) CALL SPDOCU
  
 C...Set counters for current pileup event and loop to next one.
         MSTI(41)=IPILE
@@ -1425,7 +1425,7 @@ C...Set counters for current pileup event and loop to next one.
         ENDIF
         MINT(83)=N
         MINT(84)=N+MSTP(126)
-        IF(IPILE.LT.NPILE) CALL PYFRAM(2)
+        IF(IPILE.LT.NPILE) CALL SPFRAM(2)
   250 CONTINUE
  
 C...Generic information on pileup events. Reconstruct missing history.
@@ -1435,10 +1435,10 @@ C...Generic information on pileup events. Reconstruct missing history.
         PARI(93)=VINT(134)
         IF(MSTP(133).GE.2) PARI(93)=PARI(93)*XSEC(0,3)/VINT(131)
       ENDIF
-      CALL PYEDIT(16)
+      CALL SPEDIT(16)
  
 C...Transform to the desired coordinate frame.
-  260 CALL PYFRAM(MSTP(124))
+  260 CALL SPFRAM(MSTP(124))
       MSTU(70)=MSTU70
       PARU(21)=VINT(1)
  
@@ -1451,36 +1451,36 @@ C...Error messages
  
 C***********************************************************************
  
-C...PYSTAT
+C...SPSTAT
 C...Prints out information about cross-sections, decay widths, branching
 C...ratios, kinematical limits, status codes and parameter values.
  
-      SUBROUTINE PYSTAT(MSTAT)
+      SUBROUTINE SPSTAT(MSTAT)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
       PARAMETER (EPS=1D-3)
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      COMMON/PYINT4/MWID(500),WIDS(500,5)
-      COMMON/PYINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
-      COMMON/PYINT6/PROC(0:500)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      COMMON/SPINT4/MWID(500),WIDS(500,5)
+      COMMON/SPINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
+      COMMON/SPINT6/PROC(0:500)
       CHARACTER PROC*28, CHTMP*16
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-      COMMON/PYMSRV/RVLAM(3,3,3), RVLAMP(3,3,3), RVLAMB(3,3,3)
-      SAVE /PYDAT1/,/PYDAT2/,/PYDAT3/,/PYSUBS/,/PYPARS/,/PYINT1/,
-     &/PYINT2/,/PYINT4/,/PYINT5/,/PYINT6/,/PYMSSM/,/PYMSRV/
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+      COMMON/SPMSRV/RVLAM(3,3,3), RVLAMP(3,3,3), RVLAMB(3,3,3)
+      SAVE /SPDAT1/,/SPDAT2/,/SPDAT3/,/SPSUBS/,/SPPARS/,/SPINT1/,
+     &/SPINT2/,/SPINT4/,/SPINT5/,/SPINT6/,/SPMSSM/,/SPMSRV/
 C...Local arrays, character variables and data.
       DIMENSION WDTP(0:400),WDTE(0:400,0:5),NMODES(0:20),PBRAT(10)
       CHARACTER PROGA(6)*28,CHAU*16,CHKF*16,CHD1*16,CHD2*16,CHD3*16,
@@ -1522,7 +1522,7 @@ C...Local arrays, character variables and data.
  
 C...Cross-sections.
       IF(MSTAT.LE.1) THEN
-        IF(MINT(121).GT.1) CALL PYSAVE(5,0)
+        IF(MINT(121).GT.1) CALL SPSAVE(5,0)
         WRITE(MSTU(11),5000)
         WRITE(MSTU(11),5100)
         WRITE(MSTU(11),5200) 0,PROC(0),NGEN(0,3),NGEN(0,1),XSEC(0,3)
@@ -1533,7 +1533,7 @@ C...Cross-sections.
         IF(MINT(121).GT.1) THEN
           WRITE(MSTU(11),5300)
           DO 110 IGA=1,MINT(121)
-            CALL PYSAVE(3,IGA)
+            CALL SPSAVE(3,IGA)
             IF(MINT(121).EQ.2.AND.MSTP(14).EQ.10) THEN
               WRITE(MSTU(11),5200) IGA,DISGA(IGA),NGEN(0,3),NGEN(0,1),
      &        XSEC(0,3)
@@ -1554,7 +1554,7 @@ C...Cross-sections.
      &        XSEC(0,3)
             ENDIF
   110     CONTINUE
-          CALL PYSAVE(5,0)
+          CALL SPSAVE(5,0)
         ENDIF
         WRITE(MSTU(11),5400) 1D0-DBLE(NGEN(0,3))/
      &  MAX(1D0,DBLE(NGEN(0,2)))
@@ -1565,7 +1565,7 @@ C...Decay widths and branching ratios.
         WRITE(MSTU(11),5600)
         DO 140 KC=1,500
           KF=KCHG(KC,4)
-          CALL PYNAME(KF,CHKF)
+          CALL SPNAME(KF,CHKF)
           IOFF=0
           IF(KC.LE.22) THEN
             IF(KC.GT.2*MSTP(1).AND.KC.LE.10) GOTO 140
@@ -1592,14 +1592,14 @@ C...Off-shell branchings.
               NGP2=0
               IF(IABS(KFDP(IDC,2)).LE.20) NGP2=
      &        (MOD(IABS(KFDP(IDC,2)),10)+1)/2
-              CALL PYNAME(KFDP(IDC,1),CHD1)
-              CALL PYNAME(KFDP(IDC,2),CHD2)
+              CALL SPNAME(KFDP(IDC,1),CHD1)
+              CALL SPNAME(KFDP(IDC,2),CHD2)
               IF(KFDP(IDC,3).EQ.0) THEN
                 IF(MDME(IDC,2).EQ.102.AND.NGP1.LE.MSTP(1).AND.
      &          NGP2.LE.MSTP(1)) WRITE(MSTU(11),5800) IDC,CHD1(1:10),
      &          CHD2(1:10),0D0,0D0,STATE(MDME(IDC,1)),0D0
               ELSE
-                CALL PYNAME(KFDP(IDC,3),CHD3)
+                CALL SPNAME(KFDP(IDC,3),CHD3)
                 IF(MDME(IDC,2).EQ.102.AND.NGP1.LE.MSTP(1).AND.
      &          NGP2.LE.MSTP(1)) WRITE(MSTU(11),5900) IDC,CHD1(1:10),
      &          CHD2(1:10),CHD3(1:10),0D0,0D0,STATE(MDME(IDC,1)),0D0
@@ -1607,7 +1607,7 @@ C...Off-shell branchings.
   120       CONTINUE
 C...On-shell decays.
           ELSE
-            CALL PYWIDT(KF,PMAS(KC,1)**2,WDTP,WDTE)
+            CALL SPWIDT(KF,PMAS(KC,1)**2,WDTP,WDTE)
             BRFIN=1D0
             IF(WDTE(0,0).LE.0D0) BRFIN=0D0
             WRITE(MSTU(11),5700) KF,CHKF(1:10),PMAS(KC,1),WDTP(0),1D0,
@@ -1622,15 +1622,15 @@ C...On-shell decays.
      &        (MOD(IABS(KFDP(IDC,2)),10)+1)/2
               BRFIN=0D0
               IF(WDTE(0,0).GT.0D0) BRFIN=WDTE(J,0)/WDTE(0,0)
-              CALL PYNAME(KFDP(IDC,1),CHD1)
-              CALL PYNAME(KFDP(IDC,2),CHD2)
+              CALL SPNAME(KFDP(IDC,1),CHD1)
+              CALL SPNAME(KFDP(IDC,2),CHD2)
               IF(KFDP(IDC,3).EQ.0) THEN
                 IF(NGP1.LE.MSTP(1).AND.NGP2.LE.MSTP(1))
      &          WRITE(MSTU(11),5800) IDC,CHD1(1:10),
      &          CHD2(1:10),WDTP(J),WDTP(J)/WDTP(0),
      &          STATE(MDME(IDC,1)),BRFIN
               ELSE
-                CALL PYNAME(KFDP(IDC,3),CHD3)
+                CALL SPNAME(KFDP(IDC,3),CHD3)
                 IF(NGP1.LE.MSTP(1).AND.NGP2.LE.MSTP(1))
      &          WRITE(MSTU(11),5900) IDC,CHD1(1:10),
      &          CHD2(1:10),CHD3(1:10),WDTP(J),WDTP(J)/WDTP(0),
@@ -1644,9 +1644,9 @@ C...On-shell decays.
 C...Allowed incoming partons/particles at hard interaction.
       ELSEIF(MSTAT.EQ.3) THEN
         WRITE(MSTU(11),6100)
-        CALL PYNAME(MINT(11),CHAU)
+        CALL SPNAME(MINT(11),CHAU)
         CHIN(1)=CHAU(1:12)
-        CALL PYNAME(MINT(12),CHAU)
+        CALL SPNAME(MINT(12),CHAU)
         CHIN(2)=CHAU(1:12)
         WRITE(MSTU(11),6200) CHIN(1),CHIN(2)
         DO 150 I=-20,22
@@ -1654,7 +1654,7 @@ C...Allowed incoming partons/particles at hard interaction.
           IA=IABS(I)
           IF(IA.GT.MSTP(58).AND.IA.LE.10) GOTO 150
           IF(IA.GT.10+2*MSTP(1).AND.IA.LE.20) GOTO 150
-          CALL PYNAME(I,CHAU)
+          CALL SPNAME(I,CHAU)
           WRITE(MSTU(11),6300) CHAU,STATE(KFIN(1,I)),CHAU,
      &    STATE(KFIN(2,I))
   150   CONTINUE
@@ -1715,12 +1715,12 @@ C...SDOWN DECAYS
               PBRAT(I)=0D0
               NMODES(I)=0
   190       CONTINUE
-            CALL PYNAME(KFSUSY,CHTMP)
+            CALL SPNAME(KFSUSY,CHTMP)
             CHD0=CHTMP//' '
             CHDC(1)=DNAME(3) // ' + ' // DNAME(1)
             CHDC(2)=DNAME(2) // ' + ' // DNAME(1)
             CHDC(3)=DNAME(1) // ' + ' // DNAME(1)
-            KC=PYCOMP(KFSUSY)
+            KC=SPCOMP(KFSUSY)
             DO 200 J=1,MDCY(KC,3)
               IDC=J+MDCY(KC,2)-1
               ID1=IABS(KFDP(IDC,1))
@@ -1755,11 +1755,11 @@ C...SUP DECAYS
               NMODES(I)=0
               PBRAT(I)=0D0
   210       CONTINUE
-            CALL PYNAME(KFSUSY,CHTMP)
+            CALL SPNAME(KFSUSY,CHTMP)
             CHD0=CHTMP//' '
             CHDC(1)=DNAME(2) // ' + ' // DNAME(1)
             CHDC(2)=DNAME(1) // ' + ' // DNAME(1)
-            KC=PYCOMP(KFSUSY)
+            KC=SPCOMP(KFSUSY)
             DO 220 J=1,MDCY(KC,3)
               IDC=J+MDCY(KC,2)-1
               ID1=IABS(KFDP(IDC,1))
@@ -1788,11 +1788,11 @@ C...SLEPTON DECAYS
               PBRAT(I)=0D0
               NMODES(I)=0
   230       CONTINUE
-            CALL PYNAME(KFSUSY,CHTMP)
+            CALL SPNAME(KFSUSY,CHTMP)
             CHD0=CHTMP//' '
             CHDC(1)=DNAME(3) // ' + ' // DNAME(2)
             CHDC(2)=DNAME(1) // ' + ' // DNAME(1)
-            KC=PYCOMP(KFSUSY)
+            KC=SPCOMP(KFSUSY)
             DO 240 J=1,MDCY(KC,3)
               IDC=J+MDCY(KC,2)-1
               ID1=IABS(KFDP(IDC,1))
@@ -1823,11 +1823,11 @@ C...SNEUTRINO DECAYS
               PBRAT(I)=0D0
               NMODES(I)=0
   250       CONTINUE
-            CALL PYNAME(KFSUSY,CHTMP)
+            CALL SPNAME(KFSUSY,CHTMP)
             CHD0=CHTMP//' '
             CHDC(1)=DNAME(2) // ' + ' // DNAME(2)
             CHDC(2)=DNAME(1) // ' + ' // DNAME(1)
-            KC=PYCOMP(KFSUSY)
+            KC=SPCOMP(KFSUSY)
             DO 260 J=1,MDCY(KC,3)
               IDC=J+MDCY(KC,2)-1
               ID1=IABS(KFDP(IDC,1))
@@ -1868,13 +1868,13 @@ C...NEUTRALINO DECAYS
             PBRAT(I)=0D0
             NMODES(I)=0
   300     CONTINUE
-          CALL PYNAME(KFSUSY,CHTMP)
+          CALL SPNAME(KFSUSY,CHTMP)
           CHD0=CHTMP//' '
           CHDC(1)=DNAME(3) // ' + ' // DNAME(2) // ' + ' // DNAME(2)
           CHDC(2)=DNAME(3) // ' + ' // DNAME(1) // ' + ' // DNAME(1)
           CHDC(3)=DNAME(2) // ' + ' // DNAME(1) // ' + ' // DNAME(1)
           CHDC(4)=DNAME(1) // ' + ' // DNAME(1) // ' + ' // DNAME(1)
-          KC=PYCOMP(KFSUSY)
+          KC=SPCOMP(KFSUSY)
           DO 310 J=1,MDCY(KC,3)
             IDC=J+MDCY(KC,2)-1
             ID1=IABS(KFDP(IDC,1))
@@ -1918,14 +1918,14 @@ C...CHARGINO DECAYS
             PBRAT(I)=0D0
             NMODES(I)=0
   320     CONTINUE
-          CALL PYNAME(KFSUSY,CHTMP)
+          CALL SPNAME(KFSUSY,CHTMP)
           CHD0=CHTMP//' '
           CHDC(1)=DNAME(3) // ' + ' // DNAME(3) // ' + ' // DNAME(2)
           CHDC(2)=DNAME(2) // ' + ' // DNAME(2) // ' + ' // DNAME(2)
           CHDC(3)=DNAME(3) // ' + ' // DNAME(1) // ' + ' // DNAME(1)
           CHDC(4)=DNAME(2) // ' + ' // DNAME(1) // ' + ' // DNAME(1)
           CHDC(5)=DNAME(1) // ' + ' // DNAME(1) // ' + ' // DNAME(1)
-          KC=PYCOMP(KFSUSY)
+          KC=SPCOMP(KFSUSY)
           DO 330 J=1,MDCY(KC,3)
             IDC=J+MDCY(KC,2)-1
             ID1=IABS(KFDP(IDC,1))
@@ -2004,12 +2004,12 @@ C...GLUINO DECAYS
             PBRAT(I)=0D0
             NMODES(I)=0
   340     CONTINUE
-          CALL PYNAME(KFSUSY,CHTMP)
+          CALL SPNAME(KFSUSY,CHTMP)
           CHD0=CHTMP//' '
           CHDC(1)=DNAME(3) // ' + ' // DNAME(1) // ' + ' // DNAME(1)
           CHDC(2)=DNAME(2) // ' + ' // DNAME(1) // ' + ' // DNAME(1)
           CHDC(3)=DNAME(1) // ' + ' // DNAME(1) // ' + ' // DNAME(1)
-          KC=PYCOMP(KFSUSY)
+          KC=SPCOMP(KFSUSY)
           DO 350 J=1,MDCY(KC,3)
             IDC=J+MDCY(KC,2)-1
             ID1=IABS(KFDP(IDC,1))
@@ -2064,7 +2064,7 @@ C...GLUINO DECAYS
       ENDIF
  
 C...Formats for printouts.
- 5000 FORMAT('1',9('*'),1X,'PYSTAT:  Statistics on Number of ',
+ 5000 FORMAT('1',9('*'),1X,'SPSTAT:  Statistics on Number of ',
      &'Events and Cross-sections',1X,9('*'))
  5100 FORMAT(/1X,78('=')/1X,'I',34X,'I',28X,'I',12X,'I'/1X,'I',12X,
      &'Subprocess',12X,'I',6X,'Number of points',6X,'I',4X,'Sigma',3X,
@@ -2080,7 +2080,7 @@ C...Formats for printouts.
  5400 FORMAT(1X,'I',34X,'I',28X,'I',12X,'I'/1X,78('=')//
      &1X,'********* Fraction of events that fail fragmentation ',
      &'cuts =',1X,F8.5,' *********'/)
- 5500 FORMAT('1',27('*'),1X,'PYSTAT:  Decay Widths and Branching ',
+ 5500 FORMAT('1',27('*'),1X,'SPSTAT:  Decay Widths and Branching ',
      &'Ratios',1X,27('*'))
  5600 FORMAT(/1X,98('=')/1X,'I',49X,'I',13X,'I',12X,'I',6X,'I',12X,'I'/
      &1X,'I',5X,'Mother  -->  Branching/Decay Channel',8X,'I',1X,
@@ -2097,7 +2097,7 @@ C...Formats for printouts.
      &1P,D10.3,0P,1X,'I',1X,1P,D10.3,0P,1X,'I',1X,A4,1X,'I',1X,
      &1P,D10.3,0P,1X,'I')
  6000 FORMAT(1X,'I',49X,'I',13X,'I',12X,'I',6X,'I',12X,'I'/1X,98('='))
- 6100 FORMAT('1',7('*'),1X,'PYSTAT: Allowed Incoming Partons/',
+ 6100 FORMAT('1',7('*'),1X,'SPSTAT: Allowed Incoming Partons/',
      &'Particles at Hard Interaction',1X,7('*'))
  6200 FORMAT(/1X,78('=')/1X,'I',38X,'I',37X,'I'/1X,'I',1X,
      &'Beam particle:',1X,A12,10X,'I',1X,'Target particle:',1X,A12,7X,
@@ -2106,7 +2106,7 @@ C...Formats for printouts.
      &78('=')/1X,'I',38X,'I',37X,'I')
  6300 FORMAT(1X,'I',1X,A9,5X,A4,19X,'I',1X,A9,5X,A4,18X,'I')
  6400 FORMAT(1X,'I',38X,'I',37X,'I'/1X,78('='))
- 6500 FORMAT('1',12('*'),1X,'PYSTAT: User-Defined Limits on ',
+ 6500 FORMAT('1',12('*'),1X,'SPSTAT: User-Defined Limits on ',
      &'Kinematical Variables',1X,12('*'))
  6600 FORMAT(/1X,78('=')/1X,'I',76X,'I')
  6700 FORMAT(1X,'I',16X,1P,D10.3,0P,1X,'<',1X,A,1X,'<',1X,1P,D10.3,0P,
@@ -2115,12 +2115,12 @@ C...Formats for printouts.
      &1X,'<',1X,1P,D10.3,0P,16X,'I')
  6900 FORMAT(1X,'I',29X,A,1X,'=',1X,1P,D10.3,0P,16X,'I')
  7000 FORMAT(1X,'I',76X,'I'/1X,78('='))
- 7100 FORMAT('1',12('*'),1X,'PYSTAT: Summary of Status Codes and ',
+ 7100 FORMAT('1',12('*'),1X,'SPSTAT: Summary of Status Codes and ',
      &'Parameter Values',1X,12('*'))
  7200 FORMAT(/3X,'I',4X,'MSTP(I)',9X,'PARP(I)',20X,'I',4X,'MSTP(I)',9X,
      &'PARP(I)'/)
  7300 FORMAT(1X,I3,5X,I6,6X,1P,D10.3,0P,18X,I3,5X,I6,6X,1P,D10.3)
- 7400 FORMAT('1',13('*'),1X,'PYSTAT: List of implemented processes',
+ 7400 FORMAT('1',13('*'),1X,'SPSTAT: List of implemented processes',
      &1X,13('*'))
  7500 FORMAT(/1X,65('=')/1X,'I',34X,'I',28X,'I'/1X,'I',12X,
      &'Subprocess',12X,'I',1X,'ISET',2X,'KFPR(I,1)',2X,'KFPR(I,2)',1X,
@@ -2156,36 +2156,36 @@ C...Formats for printouts.
  
 C*********************************************************************
  
-C...PYINRE
+C...SPINRE
 C...Calculates full and effective widths of gauge bosons, stores
 C...masses and widths, rescales coefficients to be used for
 C...resonance production generation.
  
-      SUBROUTINE PYINRE
+      SUBROUTINE SPINRE
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      COMMON/PYDAT4/CHAF(500,2)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      COMMON/SPDAT4/CHAF(500,2)
       CHARACTER CHAF*16
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      COMMON/PYINT4/MWID(500),WIDS(500,5)
-      COMMON/PYINT6/PROC(0:500)
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      COMMON/SPINT4/MWID(500),WIDS(500,5)
+      COMMON/SPINT6/PROC(0:500)
       CHARACTER PROC*28
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-      SAVE /PYDAT1/,/PYDAT2/,/PYDAT3/,/PYDAT4/,/PYSUBS/,/PYPARS/,
-     &/PYINT1/,/PYINT2/,/PYINT4/,/PYINT6/,/PYMSSM/
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+      SAVE /SPDAT1/,/SPDAT2/,/SPDAT3/,/SPDAT4/,/SPSUBS/,/SPPARS/,
+     &/SPINT1/,/SPINT2/,/SPINT4/,/SPINT6/,/SPMSSM/
 C...Local arrays and data.
       DIMENSION WDTP(0:400),WDTE(0:400,0:5),WDTPM(0:400),
      &WDTEM(0:400,0:5),KCORD(500),PMORD(500)
@@ -2307,7 +2307,7 @@ C...Find mass and evaluate width.
         PMR=PMAS(KC,1)
         IF(KF.EQ.25.OR.KF.EQ.35.OR.KF.EQ.36) MINT(62)=1
         IF(MWID(KC).EQ.3) MINT(63)=1
-        CALL PYWIDT(KF,PMR**2,WDTP,WDTE)
+        CALL SPWIDT(KF,PMR**2,WDTP,WDTE)
         MINT(51)=0
  
 C...Evaluate suppression factors due to non-simulated channels.
@@ -2321,7 +2321,7 @@ C...Evaluate suppression factors due to non-simulated channels.
           WIDS(KC,5)=0D0
         ELSE
           IF(MWID(KC).EQ.3) MINT(63)=1
-          CALL PYWIDT(-KF,PMR**2,WDTPM,WDTEM)
+          CALL SPWIDT(-KF,PMR**2,WDTPM,WDTEM)
           MINT(51)=0
           WIDS(KC,1)=((WDTE(0,1)+WDTE(0,2))*(WDTEM(0,1)+WDTEM(0,3))+
      &    (WDTE(0,1)+WDTE(0,2))*(WDTEM(0,4)+WDTEM(0,5))+
@@ -2354,8 +2354,8 @@ C...also on/off switch for decays.
 C...Flavours of leptoquark: redefine charge and name.
       KFLQQ=KFDP(MDCY(42,2),1)
       KFLQL=KFDP(MDCY(42,2),2)
-      KCHG(42,1)=KCHG(PYCOMP(KFLQQ),1)*ISIGN(1,KFLQQ)+
-     &KCHG(PYCOMP(KFLQL),1)*ISIGN(1,KFLQL)
+      KCHG(42,1)=KCHG(SPCOMP(KFLQQ),1)*ISIGN(1,KFLQQ)+
+     &KCHG(SPCOMP(KFLQL),1)*ISIGN(1,KFLQL)
       LL=1
       IF(IABS(KFLQL).EQ.13) LL=2
       IF(IABS(KFLQL).EQ.15) LL=3
@@ -2419,15 +2419,15 @@ C...Format for error information.
  
 C*********************************************************************
  
-C...PYINBM
+C...SPINBM
 C...Identifies the two incoming particles and the choice of frame.
  
-       SUBROUTINE PYINBM(CHFRAM,CHBEAM,CHTARG,WIN)
+       SUBROUTINE SPINBM(CHFRAM,CHBEAM,CHTARG,WIN)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
  
 C...User process initialization commonblock.
       INTEGER MAXPUP
@@ -2440,13 +2440,13 @@ C...User process initialization commonblock.
       SAVE /HEPRUP/
  
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/,/PYSUBS/,/PYPARS/,/PYINT1/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/,/SPSUBS/,/SPPARS/,/SPINT1/
  
 C...Local arrays, character variables and data.
       CHARACTER CHFRAM*12,CHBEAM*12,CHTARG*12,CHCOM(3)*12,CHALP(2)*26,
@@ -2475,9 +2475,9 @@ C...Store initial energy. Default frame.
 C...Special user process initialization; convert to normal input.
       IF(CHFRAM(1:1).EQ.'u'.OR.CHFRAM(1:1).EQ.'U') THEN
         MINT(111)=11
-        CALL PYNAME(IDBMUP(1),CHNAME)
+        CALL SPNAME(IDBMUP(1),CHNAME)
         CHBEAM=CHNAME(1:12)
-        CALL PYNAME(IDBMUP(2),CHNAME)
+        CALL SPNAME(IDBMUP(2),CHNAME)
         CHTARG=CHNAME(1:12)
       ENDIF
  
@@ -2535,7 +2535,7 @@ C...Identify incoming beam and target particles.
         DO 140 J=1,39
           IF(CHIDNT(I+1).EQ.CHCDE(J)) MINT(10+I)=KCDE(J)
   140   CONTINUE
-        PM(I)=PYMASS(MINT(10+I))
+        PM(I)=SPMASS(MINT(10+I))
         VINT(2+I)=PM(I)
         MINT(140+I)=0
         IF(MINT(10+I).EQ.22.AND.CHIDNT(I+1)(6:6).EQ.'/') THEN
@@ -2543,7 +2543,7 @@ C...Identify incoming beam and target particles.
           DO 150 J=1,12
             IF(CHTEMP.EQ.CHCDE(J)) MINT(140+I)=KCDE(J)
   150	  CONTINUE
-          PM(I)=PYMASS(MINT(140+I))
+          PM(I)=SPMASS(MINT(140+I))
           VINT(302+I)=PM(I)
         ENDIF
   160 CONTINUE
@@ -2682,7 +2682,7 @@ C...Formats for initialization and error information.
  5400 FORMAT(1X,'I',22X,'at',1X,F10.3,1X,'GeV/c lab-momentum',22X,'I')
  5500 FORMAT(1X,'I',76X,'I'/1X,'I',11X,'corresponding to',1X,F10.3,1X,
      &'GeV center-of-mass energy',12X,'I'/1X,'I',76X,'I'/1X,78('='))
- 5600 FORMAT(1X,'I',76X,'I'/1X,'I',18X,'px (GeV/c)',3X,'py (GeV/c)',3X,
+ 5600 FORMAT(1X,'I',76X,'I'/1X,'I',18X,'px (GeV/c)',3X,'sp (GeV/c)',3X,
      &'pz (GeV/c)',6X,'E (GeV)',9X,'I')
  5700 FORMAT(1X,'I',8X,A8,4(2X,F10.3,1X),8X,'I')
  5800 FORMAT(1X,'Error: unrecognized coordinate frame ''',A,'''D0'/
@@ -2697,15 +2697,15 @@ C...Formats for initialization and error information.
  
 C*********************************************************************
  
-C...PYINKI
+C...SPINKI
 C...Sets up kinematics, including rotations and boosts to/from CM frame.
  
-      SUBROUTINE PYINKI(MODKI)
+      SUBROUTINE SPINKI(MODKI)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
  
 C...User process initialization commonblock.
       INTEGER MAXPUP
@@ -2718,13 +2718,13 @@ C...User process initialization commonblock.
       SAVE /HEPRUP/
  
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/,/PYSUBS/,/PYPARS/,/PYINT1/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/,/SPSUBS/,/SPPARS/,/SPINT1/
  
 C...Set initial flavour state.
       N=2
@@ -2776,7 +2776,7 @@ C...Set up kinematics for fixed target events.
         P(2,4)=P(2,5)
         S=P(1,5)**2+P(2,5)**2+2D0*P(2,4)*P(1,4)
         VINT(10)=P(1,3)/(P(1,4)+P(2,4))
-        CALL PYROBO(0,0,0D0,0D0,0D0,0D0,-VINT(10))
+        CALL SPROBO(0,0,0D0,0D0,0D0,0D0,-VINT(10))
  
 C...Set up kinematics for events in user-defined frame.
       ELSEIF(MINT(111).EQ.3) THEN
@@ -2789,11 +2789,11 @@ C...Set up kinematics for events in user-defined frame.
         DO 120 J=1,3
           VINT(7+J)=(P(1,J)+P(2,J))/(P(1,4)+P(2,4))
   120   CONTINUE
-        CALL PYROBO(0,0,0D0,0D0,-VINT(8),-VINT(9),-VINT(10))
-        VINT(7)=PYANGL(P(1,1),P(1,2))
-        CALL PYROBO(0,0,0D0,-VINT(7),0D0,0D0,0D0)
-        VINT(6)=PYANGL(P(1,3),P(1,1))
-        CALL PYROBO(0,0,-VINT(6),0D0,0D0,0D0,0D0)
+        CALL SPROBO(0,0,0D0,0D0,-VINT(8),-VINT(9),-VINT(10))
+        VINT(7)=SPANGL(P(1,1),P(1,2))
+        CALL SPROBO(0,0,0D0,-VINT(7),0D0,0D0,0D0)
+        VINT(6)=SPANGL(P(1,3),P(1,1))
+        CALL SPROBO(0,0,-VINT(6),0D0,0D0,0D0,0D0)
         S=P(1,5)**2+P(2,5)**2+2D0*(P(1,4)*P(2,4)-P(1,3)*P(2,3))
  
 C...Set up kinematics for events with user-defined four-vectors.
@@ -2805,11 +2805,11 @@ C...Set up kinematics for events with user-defined four-vectors.
         DO 130 J=1,3
           VINT(7+J)=(P(1,J)+P(2,J))/(P(1,4)+P(2,4))
   130   CONTINUE
-        CALL PYROBO(0,0,0D0,0D0,-VINT(8),-VINT(9),-VINT(10))
-        VINT(7)=PYANGL(P(1,1),P(1,2))
-        CALL PYROBO(0,0,0D0,-VINT(7),0D0,0D0,0D0)
-        VINT(6)=PYANGL(P(1,3),P(1,1))
-        CALL PYROBO(0,0,-VINT(6),0D0,0D0,0D0,0D0)
+        CALL SPROBO(0,0,0D0,0D0,-VINT(8),-VINT(9),-VINT(10))
+        VINT(7)=SPANGL(P(1,1),P(1,2))
+        CALL SPROBO(0,0,0D0,-VINT(7),0D0,0D0,0D0)
+        VINT(6)=SPANGL(P(1,3),P(1,1))
+        CALL SPROBO(0,0,-VINT(6),0D0,0D0,0D0,0D0)
         S=(P(1,4)+P(2,4))**2
  
 C...Set up kinematics for events with user-defined five-vectors.
@@ -2817,11 +2817,11 @@ C...Set up kinematics for events with user-defined five-vectors.
         DO 140 J=1,3
           VINT(7+J)=(P(1,J)+P(2,J))/(P(1,4)+P(2,4))
   140   CONTINUE
-        CALL PYROBO(0,0,0D0,0D0,-VINT(8),-VINT(9),-VINT(10))
-        VINT(7)=PYANGL(P(1,1),P(1,2))
-        CALL PYROBO(0,0,0D0,-VINT(7),0D0,0D0,0D0)
-        VINT(6)=PYANGL(P(1,3),P(1,1))
-        CALL PYROBO(0,0,-VINT(6),0D0,0D0,0D0,0D0)
+        CALL SPROBO(0,0,0D0,0D0,-VINT(8),-VINT(9),-VINT(10))
+        VINT(7)=SPANGL(P(1,1),P(1,2))
+        CALL SPROBO(0,0,0D0,-VINT(7),0D0,0D0,0D0)
+        VINT(6)=SPANGL(P(1,3),P(1,1))
+        CALL SPROBO(0,0,-VINT(6),0D0,0D0,0D0,0D0)
         S=(P(1,4)+P(2,4))**2
  
 C...Set up kinematics for events with external user processes.
@@ -2839,15 +2839,15 @@ C...Set up kinematics for events with external user processes.
         P(1,4)=EBMUP(1)
         P(2,4)=EBMUP(2)
         VINT(10)=(P(1,3)+P(2,3))/(P(1,4)+P(2,4))
-        CALL PYROBO(0,0,0D0,0D0,0D0,0D0,-VINT(10))
+        CALL SPROBO(0,0,0D0,0D0,0D0,0D0,-VINT(10))
         S=(P(1,4)+P(2,4))**2
       ENDIF
  
 C...Return or error for too low CM energy.
       IF(MODKI.EQ.1.AND.S.LT.PARP(2)**2) THEN
         IF(MSTP(172).LE.1) THEN
-          CALL PYERRM(23,
-     &    '(PYINKI:) too low invariant mass in this event')
+          CALL SPERRM(23,
+     &    '(SPINKI:) too low invariant mass in this event')
         ELSE
           MSTI(61)=1
           RETURN
@@ -2895,15 +2895,15 @@ C...Store pT cut-off and related constants to be used in generation.
  
 C*********************************************************************
  
-C...PYINPR
+C...SPINPR
 C...Selects partonic subprocesses to be included in the simulation.
  
-      SUBROUTINE PYINPR
+      SUBROUTINE SPINPR
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
  
 C...User process initialization commonblock.
       INTEGER MAXPUP
@@ -2916,16 +2916,16 @@ C...User process initialization commonblock.
       SAVE /HEPRUP/
  
 C...Commonblocks and character variables.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      COMMON/PYINT6/PROC(0:500)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      COMMON/SPINT6/PROC(0:500)
       CHARACTER PROC*28
-      SAVE /PYDAT1/,/PYDAT3/,/PYSUBS/,/PYPARS/,/PYINT1/,/PYINT2/,
-     &/PYINT6/
+      SAVE /SPDAT1/,/SPDAT3/,/SPSUBS/,/SPPARS/,/SPINT1/,/SPINT2/,
+     &/SPINT6/
       CHARACTER CHIPR*10
  
 C...Reset processes to be included.
@@ -3301,8 +3301,8 @@ C...For two virtual photons, keep requested order.
             MINT(46)=1
           ENDIF
         ENDIF
-        IF(MINT(123).GE.4.AND.MINT(123).LE.7) CALL PYERRM(26,
-     &  '(PYINPR:) unallowed MSTP(14) code for single photon')
+        IF(MINT(123).GE.4.AND.MINT(123).LE.7) CALL SPERRM(26,
+     &  '(SPINPR:) unallowed MSTP(14) code for single photon')
       ENDIF
  
 C...Flavour information on combination of incoming particles.
@@ -3714,27 +3714,27 @@ C...Find heaviest new fermion flavour allowed in process 85.
  
 C...Import relevant information on external user processes.
       IF(MINT(111).EQ.11) THEN
-        IPYPR=0
+        ISPPR=0
         DO 390 IUP=1,NPRUP
 C...Find next empty PYTHIA process number slot and enable it.
-  370     IPYPR=IPYPR+1
-          IF(IPYPR.GT.500) CALL PYERRM(26,
-     &    '(PYINPR.) no more empty slots for user processes')
-          IF(ISET(IPYPR).GE.0.AND.ISET(IPYPR).LE.9) GOTO 370
-          IF(IPYPR.GE.91.AND.IPYPR.LE.100) GOTO 370
-          ISET(IPYPR)=11
+  370     ISPPR=ISPPR+1
+          IF(ISPPR.GT.500) CALL SPERRM(26,
+     &    '(SPINPR.) no more empty slots for user processes')
+          IF(ISET(ISPPR).GE.0.AND.ISET(ISPPR).LE.9) GOTO 370
+          IF(ISPPR.GE.91.AND.ISPPR.LE.100) GOTO 370
+          ISET(ISPPR)=11
 C...Overwrite KFPR with references back to process number and ID.
-          KFPR(IPYPR,1)=IUP
-          KFPR(IPYPR,2)=LPRUP(IUP)
+          KFPR(ISPPR,1)=IUP
+          KFPR(ISPPR,2)=LPRUP(IUP)
 C...Process title.
           WRITE(CHIPR,'(I10)') LPRUP(IUP)
           ICHIN=1
           DO 380 ICH=1,9
             IF(CHIPR(ICH:ICH).EQ.' ') ICHIN=ICH+1
   380     CONTINUE
-          PROC(IPYPR)='User process '//CHIPR(ICHIN:10)//' '
+          PROC(ISPPR)='User process '//CHIPR(ICHIN:10)//' '
 C...Switch on process.
-          MSUB(IPYPR)=1
+          MSUB(ISPPR)=1
   390   CONTINUE
       ENDIF
  
@@ -3743,7 +3743,7 @@ C...Switch on process.
  
 C*********************************************************************
  
-C...PYXTOT
+C...SPXTOT
 C...Parametrizes total, elastic and diffractive cross-sections
 C...for different energies and beams. Donnachie-Landshoff for
 C...total and Schuler-Sjostrand for elastic and diffractive.
@@ -3768,20 +3768,20 @@ C...= 24 : gamma + pi (VDM);
 C...= 25 : gamma + gamma (DL);
 C...= 26 : gamma + gamma (VDM).
  
-      SUBROUTINE PYXTOT
+      SUBROUTINE SPXTOT
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
-      COMMON/PYINT7/SIGT(0:6,0:6,0:5)
-      SAVE /PYDAT1/,/PYDAT2/,/PYPARS/,/PYINT1/,/PYINT5/,/PYINT7/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
+      COMMON/SPINT7/SIGT(0:6,0:6,0:5)
+      SAVE /SPDAT1/,/SPDAT2/,/SPPARS/,/SPINT1/,/SPINT5/,/SPINT7/
 C...Local arrays.
       DIMENSION NPROC(30),XPAR(30),YPAR(30),IHADA(20),IHADB(20),
      &PMHAD(4),BHAD(4),BETP(4),IFITSD(20),IFITDD(20),CEFFS(10,8),
@@ -3908,8 +3908,8 @@ C... Number of multiple processes to be stored; beam/target side.
  
 C...Do not do any more for user-set or undefined cross-sections.
       IF(MSTP(31).LE.0) RETURN
-      IF(NPR.EQ.0) CALL PYERRM(26,
-     &'(PYXTOT:) cross section for this process not yet implemented')
+      IF(NPR.EQ.0) CALL SPERRM(26,
+     &'(SPXTOT:) cross section for this process not yet implemented')
  
 C...Parameters. Combinations of the energy.
       AEM=PARU(101)
@@ -4148,17 +4148,17 @@ C...Scale up uniformly for Donnachie-Landshoff parametrization.
  
 C*********************************************************************
  
-C...PYMAXI
+C...SPMAXI
 C...Finds optimal set of coefficients for kinematical variable selection
 C...and the maximum of the part of the differential cross-section used
 C...in the event weighting.
  
-      SUBROUTINE PYMAXI
+      SUBROUTINE SPMAXI
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
@@ -4174,21 +4174,21 @@ C...User process initialization commonblock.
       SAVE /HEPRUP/
  
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      COMMON/PYINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
-      COMMON/PYINT4/MWID(500),WIDS(500,5)
-      COMMON/PYINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
-      COMMON/PYINT6/PROC(0:500)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      COMMON/SPINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
+      COMMON/SPINT4/MWID(500),WIDS(500,5)
+      COMMON/SPINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
+      COMMON/SPINT6/PROC(0:500)
       CHARACTER PROC*28
-      COMMON/PYINT7/SIGT(0:6,0:6,0:5)
-      SAVE /PYDAT1/,/PYDAT2/,/PYDAT3/,/PYSUBS/,/PYPARS/,/PYINT1/,
-     &/PYINT2/,/PYINT3/,/PYINT4/,/PYINT5/,/PYINT6/,/PYINT7/
+      COMMON/SPINT7/SIGT(0:6,0:6,0:5)
+      SAVE /SPDAT1/,/SPDAT2/,/SPDAT3/,/SPSUBS/,/SPPARS/,/SPINT1/,
+     &/SPINT2/,/SPINT3/,/SPINT4/,/SPINT5/,/SPINT6/,/SPINT7/
 C...Local arrays, character variables and data.
       CHARACTER CVAR(4)*4
       DIMENSION NPTS(4),MVARPT(500,4),VINTPT(500,30),SIGSPT(500),
@@ -4208,7 +4208,7 @@ C...Initial values and loop over subprocesses.
  
 C...Find maximum weight factors for photon flux.
         IF(MSUB(ISUB).EQ.1.OR.(ISUB.GE.91.AND.ISUB.LE.100)) THEN
-          IF(MINT(141).NE.0.OR.MINT(142).NE.0) CALL PYGAGA(2,WTGAGA)
+          IF(MINT(141).NE.0.OR.MINT(142).NE.0) CALL SPGAGA(2,WTGAGA)
         ENDIF
  
 C...Select subprocess to study: skip cases not applicable.
@@ -4217,14 +4217,14 @@ C...Select subprocess to study: skip cases not applicable.
 C...User process intialization: cross section model dependent.
           IF(IABS(IDWTUP).EQ.1) THEN
             IF(IDWTUP.GT.0.AND.XMAXUP(KFPR(ISUB,1)).LT.0D0) CALL
-     &      PYERRM(26,'(PYMAXI:) Negative XMAXUP for user process')
+     &      SPERRM(26,'(SPMAXI:) Negative XMAXUP for user process')
             XSEC(ISUB,1)=1.00000001D-9*ABS(XMAXUP(KFPR(ISUB,1)))
           ELSE
             IF((IDWTUP.EQ.2.OR.IDWTUP.EQ.3).AND.
      &      XSECUP(KFPR(ISUB,1)).LT.0D0) CALL
-     &      PYERRM(26,'(PYMAXI:) Negative XSECUP for user process')
+     &      SPERRM(26,'(SPMAXI:) Negative XSECUP for user process')
             IF(IDWTUP.EQ.2.AND.XMAXUP(KFPR(ISUB,1)).LT.0D0) CALL
-     &      PYERRM(26,'(PYMAXI:) Negative XMAXUP for user process')
+     &      SPERRM(26,'(SPMAXI:) Negative XMAXUP for user process')
             XSEC(ISUB,1)=1.00000001D-9*ABS(XSECUP(KFPR(ISUB,1)))
           ENDIF
           IF(MINT(141).NE.0.OR.MINT(142).NE.0) XSEC(ISUB,1)=
@@ -4232,7 +4232,7 @@ C...User process intialization: cross section model dependent.
           NPOSI=NPOSI+1
           GOTO 450
         ELSEIF(ISUB.GE.91.AND.ISUB.LE.95) THEN
-          CALL PYSIGH(NCHN,SIGS)
+          CALL SPSIGH(NCHN,SIGS)
           XSEC(ISUB,1)=SIGS
           IF(MINT(141).NE.0.OR.MINT(142).NE.0) XSEC(ISUB,1)=
      &    WTGAGA*XSEC(ISUB,1)
@@ -4240,7 +4240,7 @@ C...User process intialization: cross section model dependent.
           NPOSI=NPOSI+1
           GOTO 450
         ELSEIF(ISUB.EQ.99.AND.MSUB(ISUB).EQ.1) THEN
-          CALL PYSIGH(NCHN,SIGS)
+          CALL SPSIGH(NCHN,SIGS)
           XSEC(ISUB,1)=SIGS
           IF(MINT(141).NE.0.OR.MINT(142).NE.0) XSEC(ISUB,1)=
      &    WTGAGA*XSEC(ISUB,1)
@@ -4299,7 +4299,7 @@ C...Find resonances (explicit or implicit in cross-section).
         ENDIF
         CKMX=CKIN(2)
         IF(CKMX.LE.0D0) CKMX=VINT(1)
-        KCR1=PYCOMP(KFR1)
+        KCR1=SPCOMP(KFR1)
         IF(KFR1.NE.0) THEN
           IF(CKIN(1).GT.PMAS(KCR1,1)+20D0*PMAS(KCR1,2).OR.
      &    CKMX.LT.PMAS(KCR1,1)-20D0*PMAS(KCR1,2)) KFR1=0
@@ -4307,7 +4307,7 @@ C...Find resonances (explicit or implicit in cross-section).
         IF(KFR1.NE.0) THEN
           TAUR1=PMAS(KCR1,1)**2/VINT(2)
           IF(KFR1.EQ.KTECHN+113) THEN
-            CALL PYTECM(S1,S2)
+            CALL SPTECM(S1,S2)
             TAUR1=S1/VINT(2)
           ENDIF
           GAMR1=PMAS(KCR1,1)*PMAS(KCR1,2)/VINT(2)
@@ -4325,10 +4325,10 @@ C...Find resonances (explicit or implicit in cross-section).
           ELSEIF(ISUB.GE.364.AND.ISUB.LE.368) THEN
             KFR2=KTECHN+223
           ENDIF
-          KCR2=PYCOMP(KFR2)
+          KCR2=SPCOMP(KFR2)
           TAUR2=PMAS(KCR2,1)**2/VINT(2)
           IF(KFR2.EQ.KTECHN+223) THEN
-            CALL PYTECM(S1,S2)
+            CALL SPTECM(S1,S2)
             TAUR2=S2/VINT(2)
           ENDIF
           GAMR2=PMAS(KCR2,1)*PMAS(KCR2,2)/VINT(2)
@@ -4362,23 +4362,23 @@ C...Find product masses and minimum pT of process.
           DO 110 I=1,2
             PMMN(I)=0D0
             IF(KFPR(ISUB,I).EQ.0) THEN
-            ELSEIF(MSTP(42).LE.0.OR.PMAS(PYCOMP(KFPR(ISUB,I)),2).LT.
+            ELSEIF(MSTP(42).LE.0.OR.PMAS(SPCOMP(KFPR(ISUB,I)),2).LT.
      &        PARP(41)) THEN
-              IF(I.EQ.1) SQM3=PMAS(PYCOMP(KFPR(ISUB,I)),1)**2
-              IF(I.EQ.2) SQM4=PMAS(PYCOMP(KFPR(ISUB,I)),1)**2
+              IF(I.EQ.1) SQM3=PMAS(SPCOMP(KFPR(ISUB,I)),1)**2
+              IF(I.EQ.2) SQM4=PMAS(SPCOMP(KFPR(ISUB,I)),1)**2
             ELSE
               NBW=NBW+1
 C...This prevents SUSY/t particles from becoming too light.
               KFLW=KFPR(ISUB,I)
               IF(KFLW/KSUSY1.EQ.1.OR.KFLW/KSUSY1.EQ.2) THEN
-                KCW=PYCOMP(KFLW)
+                KCW=SPCOMP(KFLW)
                 PMMN(I)=PMAS(KCW,1)
                 DO 100 IDC=MDCY(KCW,2),MDCY(KCW,2)+MDCY(KCW,3)-1
                   IF(MDME(IDC,1).GT.0.AND.BRAT(IDC).GT.1E-4) THEN
-                    PMSUM=PMAS(PYCOMP(KFDP(IDC,1)),1)+
-     &              PMAS(PYCOMP(KFDP(IDC,2)),1)
+                    PMSUM=PMAS(SPCOMP(KFDP(IDC,1)),1)+
+     &              PMAS(SPCOMP(KFDP(IDC,2)),1)
                     IF(KFDP(IDC,3).NE.0) PMSUM=PMSUM+
-     &              PMAS(PYCOMP(KFDP(IDC,3)),1)
+     &              PMAS(SPCOMP(KFDP(IDC,3)),1)
                     PMMN(I)=MIN(PMMN(I),PMSUM)
                   ENDIF
   100           CONTINUE
@@ -4392,7 +4392,7 @@ C...This prevents SUSY/t particles from becoming too light.
             CKIN43=CKIN(43)
             CKIN(41)=MAX(PMMN(1),CKIN(41))
             CKIN(43)=MAX(PMMN(2),CKIN(43))
-            CALL PYOFSH(3,0,KFPR(ISUB,1),KFPR(ISUB,2),0D0,PQM3,PQM4)
+            CALL SPOFSH(3,0,KFPR(ISUB,1),KFPR(ISUB,2),0D0,PQM3,PQM4)
             CKIN(41)=CKIN41
             CKIN(43)=CKIN43
             IF(MINT(51).EQ.1) THEN
@@ -4417,11 +4417,11 @@ C...This prevents SUSY/t particles from becoming too light.
 C...Prepare for additional variable choices in 2 -> 3.
         IF(ISTSB.EQ.5) THEN
           VINT(201)=0D0
-          IF(KFPR(ISUB,2).GT.0) VINT(201)=PMAS(PYCOMP(KFPR(ISUB,2)),1)
+          IF(KFPR(ISUB,2).GT.0) VINT(201)=PMAS(SPCOMP(KFPR(ISUB,2)),1)
           VINT(206)=VINT(201)
           VINT(204)=PMAS(23,1)
           IF(ISUB.EQ.124.OR.ISUB.EQ.351) VINT(204)=PMAS(24,1)
-          IF(ISUB.EQ.352) VINT(204)=PMAS(PYCOMP(9900024),1)
+          IF(ISUB.EQ.352) VINT(204)=PMAS(SPCOMP(9900024),1)
           IF(ISUB.EQ.121.OR.ISUB.EQ.122.OR.ISUB.EQ.181.OR.ISUB.EQ.182
      &    .OR.ISUB.EQ.186.OR.ISUB.EQ.187) VINT(204)=VINT(201)
           VINT(209)=VINT(204)
@@ -4467,7 +4467,7 @@ C...Reset coefficients of cross-section weighting.
  
 C...Find limits and select tau, y*, cos(theta-hat) and tau' values,
 C...in grid of phase space points.
-        CALL PYKLIM(1)
+        CALL SPKLIM(1)
         METAU=MINT(51)
         NACC=0
         DO 150 ITRY=1,NTRY
@@ -4489,38 +4489,38 @@ C...as is often the case in process 194.
                 ENDIF
               ENDIF
             ENDIF
-            CALL PYKMAP(1,MTAU,RTAU)
-            IF(ISTSB.GE.3.AND.ISTSB.LE.5) CALL PYKLIM(4)
+            CALL SPKMAP(1,MTAU,RTAU)
+            IF(ISTSB.GE.3.AND.ISTSB.LE.5) CALL SPKLIM(4)
             METAUP=MINT(51)
           ENDIF
           IF(METAUP.EQ.1) GOTO 150
           IF(ISTSB.GE.3.AND.ISTSB.LE.5.AND.MOD(ITRY-1,NPTS(3)*NPTS(4))
      &    .EQ.0) THEN
             MTAUP=1+MOD((ITRY-1)/(NPTS(3)*NPTS(4)),NPTS(2))
-            CALL PYKMAP(4,MTAUP,0.5D0)
+            CALL SPKMAP(4,MTAUP,0.5D0)
           ENDIF
           IF(MOD(ITRY-1,NPTS(3)*NPTS(4)).EQ.0) THEN
-            CALL PYKLIM(2)
+            CALL SPKLIM(2)
             MEYST=MINT(51)
           ENDIF
           IF(MEYST.EQ.1) GOTO 150
           IF(MOD(ITRY-1,NPTS(4)).EQ.0) THEN
             MYST=1+MOD((ITRY-1)/NPTS(4),NPTS(3))
             IF(MYST.EQ.4.AND.MINT(45).NE.3) MYST=5
-            CALL PYKMAP(2,MYST,0.5D0)
-            CALL PYKLIM(3)
+            CALL SPKMAP(2,MYST,0.5D0)
+            CALL SPKLIM(3)
             MECTH=MINT(51)
           ENDIF
           IF(MECTH.EQ.1) GOTO 150
           IF(ISTSB.EQ.2.OR.ISTSB.EQ.4) THEN
             MCTH=1+MOD(ITRY-1,NPTS(4))
-            CALL PYKMAP(3,MCTH,0.5D0)
+            CALL SPKMAP(3,MCTH,0.5D0)
           ENDIF
           IF(ISUB.EQ.96) VINT(25)=VINT(21)*(1D0-VINT(23)**2)
  
 C...Store position and limits.
           MINT(51)=0
-          CALL PYKLIM(0)
+          CALL SPKLIM(0)
           IF(MINT(51).EQ.1) GOTO 150
           NACC=NACC+1
           MVARPT(NACC,1)=MTAU
@@ -4533,9 +4533,9 @@ C...Store position and limits.
  
 C...Normal case: calculate cross-section.
           IF(ISTSB.NE.5) THEN
-            CALL PYSIGH(NCHN,SIGS)
+            CALL SPSIGH(NCHN,SIGS)
             IF(MWTXS.EQ.1) THEN
-              CALL PYEVWT(WTXS)
+              CALL SPEVWT(WTXS)
               SIGS=WTXS*SIGS
             ENDIF
  
@@ -4543,11 +4543,11 @@ C..2 -> 3: find highest value out of a number of tries.
           ELSE
             SIGS=0D0
             DO 140 IKIN3=1,MSTP(129)
-              CALL PYKMAP(5,0,0D0)
+              CALL SPKMAP(5,0,0D0)
               IF(MINT(51).EQ.1) GOTO 140
-              CALL PYSIGH(NCHN,SIGTMP)
+              CALL SPSIGH(NCHN,SIGTMP)
               IF(MWTXS.EQ.1) THEN
-                CALL PYEVWT(WTXS)
+                CALL SPEVWT(WTXS)
                 SIGTMP=WTXS*SIGTMP
               ENDIF
               IF(SIGTMP.GT.SIGS) SIGS=SIGTMP
@@ -4797,19 +4797,19 @@ C...Find two most promising maxima among points previously determined.
             VINT(10+J)=VINTPT(IACC,J)
   340     CONTINUE
           IF(ISTSB.NE.5) THEN
-            CALL PYSIGH(NCHN,SIGS)
+            CALL SPSIGH(NCHN,SIGS)
             IF(MWTXS.EQ.1) THEN
-              CALL PYEVWT(WTXS)
+              CALL SPEVWT(WTXS)
               SIGS=WTXS*SIGS
             ENDIF
           ELSE
             SIGS=0D0
             DO 350 IKIN3=1,MSTP(129)
-              CALL PYKMAP(5,0,0D0)
+              CALL SPKMAP(5,0,0D0)
               IF(MINT(51).EQ.1) GOTO 350
-              CALL PYSIGH(NCHN,SIGTMP)
+              CALL SPSIGH(NCHN,SIGTMP)
               IF(MWTXS.EQ.1) THEN
-                CALL PYEVWT(WTXS)
+                CALL SPEVWT(WTXS)
                 SIGTMP=WTXS*SIGTMP
               ENDIF
               IF(SIGTMP.GT.SIGS) SIGS=SIGTMP
@@ -4910,31 +4910,31 @@ C...Convert to relevant variables and find derived new limits.
                 ILERR=0
                 IF(IVAR.EQ.1) THEN
                   VTAU=VNEW
-                  CALL PYKMAP(1,MTAU,VTAU)
+                  CALL SPKMAP(1,MTAU,VTAU)
                   IF(ISTSB.GE.3.AND.ISTSB.LE.5) THEN
-                    CALL PYKLIM(4)
+                    CALL SPKLIM(4)
                     IF(MINT(51).EQ.1) ILERR=1
                   ENDIF
                 ENDIF
                 IF(IVAR.LE.2.AND.ISTSB.GE.3.AND.ISTSB.LE.5.AND.
      &          ILERR.EQ.0) THEN
                   IF(IVAR.EQ.2) VTAUP=VNEW
-                  CALL PYKMAP(4,MTAUP,VTAUP)
+                  CALL SPKMAP(4,MTAUP,VTAUP)
                 ENDIF
                 IF(IVAR.LE.2.AND.ILERR.EQ.0) THEN
-                  CALL PYKLIM(2)
+                  CALL SPKLIM(2)
                   IF(MINT(51).EQ.1) ILERR=1
                 ENDIF
                 IF(IVAR.LE.3.AND.ILERR.EQ.0) THEN
                   IF(IVAR.EQ.3) VYST=VNEW
-                  CALL PYKMAP(2,MYST,VYST)
-                  CALL PYKLIM(3)
+                  CALL SPKMAP(2,MYST,VYST)
+                  CALL SPKLIM(3)
                   IF(MINT(51).EQ.1) ILERR=1
                 ENDIF
                 IF((ISTSB.EQ.2.OR.ISTSB.EQ.4.OR.ISTSB.EQ.6).AND.
      &          ILERR.EQ.0) THEN
                   IF(IVAR.EQ.4) VCTH=VNEW
-                  CALL PYKMAP(3,MCTH,VCTH)
+                  CALL SPKMAP(3,MCTH,VCTH)
                 ENDIF
                 IF(ISUB.EQ.96) VINT(25)=VINT(21)*(1.-VINT(23)**2)
  
@@ -4942,19 +4942,19 @@ C...Evaluate cross-section. Save new maximum. Final maximum.
                 IF(ILERR.NE.0) THEN
                    SIGS=0.
                 ELSEIF(ISTSB.NE.5) THEN
-                  CALL PYSIGH(NCHN,SIGS)
+                  CALL SPSIGH(NCHN,SIGS)
                   IF(MWTXS.EQ.1) THEN
-                    CALL PYEVWT(WTXS)
+                    CALL SPEVWT(WTXS)
                     SIGS=WTXS*SIGS
                   ENDIF
                 ELSE
                   SIGS=0D0
                   DO 400 IKIN3=1,MSTP(129)
-                    CALL PYKMAP(5,0,0D0)
+                    CALL SPKMAP(5,0,0D0)
                     IF(MINT(51).EQ.1) GOTO 400
-                    CALL PYSIGH(NCHN,SIGTMP)
+                    CALL SPSIGH(NCHN,SIGTMP)
                     IF(MWTXS.EQ.1) THEN
-                        CALL PYEVWT(WTXS)
+                        CALL SPEVWT(WTXS)
                         SIGTMP=WTXS*SIGTMP
                     ENDIF
                     IF(SIGTMP.GT.SIGS) SIGS=SIGTMP
@@ -5022,7 +5022,7 @@ C...Format statements for maximization results.
  5800 FORMAT(1X,4I4,F8.4,F11.7,F9.3,F11.6,F11.7,1P,D12.4)
  5900 FORMAT(1X,'Error: no requested process has non-vanishing ',
      &'cross-section.'/1X,'Execution stopped!')
- 6000 FORMAT(/1X,8('*'),1X,'PYMAXI: summary of differential ',
+ 6000 FORMAT(/1X,8('*'),1X,'SPMAXI: summary of differential ',
      &'cross-section maximum search',1X,8('*'))
  6100 FORMAT(/11X,58('=')/11X,'I',38X,'I',17X,'I'/11X,'I  ISUB  ',
      &'Subprocess name',15X,'I  Maximum value  I'/11X,'I',38X,'I',
@@ -5038,23 +5038,23 @@ C...Format statements for maximization results.
  
 C*********************************************************************
  
-C...PYPILE
+C...SPPILE
 C...Initializes multiplicity distribution and selects mutliplicity
 C...of pileup events, i.e. several events occuring at the same
 C...beam crossing.
  
-      SUBROUTINE PYPILE(MPILE)
+      SUBROUTINE SPPILE(MPILE)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT7/SIGT(0:6,0:6,0:5)
-      SAVE /PYDAT1/,/PYPARS/,/PYINT1/,/PYINT7/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT7/SIGT(0:6,0:6,0:5)
+      SAVE /SPDAT1/,/SPPARS/,/SPINT1/,/SPINT7/
 C...Local arrays and saved variables.
       DIMENSION WTI(0:200)
       SAVE IMIN,IMAX,WTI,WTS
@@ -5108,7 +5108,7 @@ C...Pick multiplicity of pileup events.
         IF(MSTP(133).LE.0) THEN
           MINT(81)=MAX(1,MSTP(134))
         ELSE
-          WTR=WTS*PYR(0)
+          WTR=WTS*SPR(0)
           DO 140 I=IMIN,IMAX
             MINT(81)=I
             WTR=WTR-WTI(I)
@@ -5127,25 +5127,25 @@ C...Format statement for error message.
  
 C*********************************************************************
  
-C...PYSAVE
+C...SPSAVE
 C...Saves and restores parameter and cross section values for the
 C...3 gamma-p and 6 (or 4, or 9, or 13) gamma-gamma alternatives.
 C...Also makes random choice between alternatives.
  
-      SUBROUTINE PYSAVE(ISAVE,IGA)
+      SUBROUTINE SPSAVE(ISAVE,IGA)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      COMMON/PYINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
-      COMMON/PYINT7/SIGT(0:6,0:6,0:5)
-      SAVE /PYSUBS/,/PYPARS/,/PYINT1/,/PYINT2/,/PYINT5/,/PYINT7/
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      COMMON/SPINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
+      COMMON/SPINT7/SIGT(0:6,0:6,0:5)
+      SAVE /SPSUBS/,/SPPARS/,/SPINT1/,/SPINT2/,/SPINT5/,/SPINT7/
 C...Local arrays and saved variables.
       DIMENSION NCP(15),NSUBCP(15,20),MSUBCP(15,20),COEFCP(15,20,20),
      &NGENCP(15,0:20,3),XSECCP(15,0:20,3),SIGTCP(15,0:6,0:6,0:5),
@@ -5214,7 +5214,7 @@ C...Choose between allowed alternatives.
           DO 210 IG=1,MINT(121)
             XSUMCP=XSUMCP+XSECCP(IG,0,1)
   210     CONTINUE
-          XSUMCP=XSUMCP*PYR(0)
+          XSUMCP=XSUMCP*SPR(0)
           DO 220 IG=1,MINT(121)
             IGA=IG
             XSUMCP=XSUMCP-XSECCP(IG,0,1)
@@ -5263,7 +5263,7 @@ C...Restore various common process variables.
         CKIN(1)=2D0*CKIN(3)
         VINT(318)=RECP(IGA,2)
  
-C...Sum up cross-section info (for PYSTAT).
+C...Sum up cross-section info (for SPSTAT).
       ELSEIF(ISAVE.EQ.5) THEN
         DO 330 I=1,500
           MSUB(I)=0
@@ -5295,27 +5295,27 @@ C...Sum up cross-section info (for PYSTAT).
  
 C*********************************************************************
  
-C...PYGAGA
+C...SPGAGA
 C...For lepton beams it gives photon-hadron or photon-photon systems
 C...to be treated with the ordinary machinery and combines this with a
 C...description of the lepton -> lepton + photon branching.
  
-      SUBROUTINE PYGAGA(IGAGA,WTGAGA)
+      SUBROUTINE SPGAGA(IGAGA,WTGAGA)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/,/PYSUBS/,/PYPARS/,/PYINT1/,
-     &/PYINT5/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/,/SPSUBS/,/SPPARS/,/SPINT1/,
+     &/SPINT5/
 C...Local variables and data statement.
       DIMENSION PMS(2),XMIN(2),XMAX(2),Q2MIN(2),Q2MAX(2),PMC(3),
      &X(2),Q2(2),Y(2),THETA(2),PHI(2),PT(2),BETA(3)
@@ -5415,7 +5415,7 @@ C...Initialization Q2 scale. Flag incoming unresolved photon.
      &      THEN
               Q2INIT=5D0+Q2MIN(3-I)
             ELSEIF(ISUB.EQ.99.AND.MINT(106+I).EQ.4) THEN
-              Q2INIT=PMAS(PYCOMP(113),1)**2+Q2MIN(3-I)
+              Q2INIT=PMAS(SPCOMP(113),1)**2+Q2MIN(3-I)
             ELSEIF(ISUB.EQ.132.OR.ISUB.EQ.134.OR.ISUB.EQ.136) THEN
               Q2INIT=MAX(CKIN(1),2D0*CKIN(3),2D0*CKIN(5))**2/3D0
             ELSEIF((ISUB.EQ.138.AND.I.EQ.2).OR.
@@ -5442,7 +5442,7 @@ C...Update pTmin and cross section information.
         ENDIF
         VINT(149)=4D0*PTMN**2/VINT(2)
         VINT(154)=PTMN
-        CALL PYXTOT
+        CALL SPXTOT
         VINT(318)=VINT(317)
  
 C...Generate photons inside leptons and
@@ -5458,8 +5458,8 @@ C...Generate phase space point and check against cuts.
         DO 130 I=1,2
           IF(MINT(140+I).NE.0) THEN
 C...Pick x and Q2
-            X(I)=XMIN(I)*(XMAX(I)/XMIN(I))**PYR(0)
-            Q2(I)=Q2MIN(I)*(Q2MAX(I)/Q2MIN(I))**PYR(0)
+            X(I)=XMIN(I)*(XMAX(I)/XMIN(I))**SPR(0)
+            Q2(I)=Q2MIN(I)*(Q2MAX(I)/Q2MIN(I))**SPR(0)
 C...Cuts on internal consistency in x and Q2.
             IF(Q2(I).LT.X(I)**2*PMS(I)/(1D0-X(I))) GOTO 120
             IF(Q2(I).GT.(1D0-X(I))*(VINT(302)-2D0*PMS(3-I))-
@@ -5475,7 +5475,7 @@ C...Cuts on y and theta.
      &      GOTO 120
  
 C...Phi angle isotropic. Reconstruct pT.
-            PHI(I)=PARU(2)*PYR(0)
+            PHI(I)=PARU(2)*SPR(0)
             PT(I)=SQRT(((1D0-X(I))*PMC(I))**2/(4D0*VINT(302))-
      &      PMS(I))*SIN(THETA(I))
  
@@ -5566,7 +5566,7 @@ C...Update pTmin and cross section information.
         ENDIF
         VINT(149)=4D0*PTMN**2/VINT(2)
         VINT(154)=PTMN
-        CALL PYXTOT
+        CALL SPXTOT
  
 C...Reconstruct kinematics of photons inside leptons.
       ELSEIF(IGAGA.EQ.4) THEN
@@ -5685,11 +5685,11 @@ C...collision rest frame; boost hadronic subsystem to this frame.
         DO 260 J=1,3
           BETA(J)=(P(N+1,J)+P(N+2,J))/(P(N+1,4)+P(N+2,4))
   260   CONTINUE
-        CALL PYROBO(N+1,N+2,0D0,0D0,-BETA(1),-BETA(2),-BETA(3))
-        BPHI=PYANGL(P(N+1,1),P(N+1,2))
-        CALL PYROBO(N+1,N+2,0D0,-BPHI,0D0,0D0,0D0)
-        BTHETA=PYANGL(P(N+1,3),P(N+1,1))
-        CALL PYROBO(MINT(83)+MOVE+1,N,BTHETA,BPHI,BETA(1),BETA(2),
+        CALL SPROBO(N+1,N+2,0D0,0D0,-BETA(1),-BETA(2),-BETA(3))
+        BPHI=SPANGL(P(N+1,1),P(N+1,2))
+        CALL SPROBO(N+1,N+2,0D0,-BPHI,0D0,0D0,0D0)
+        BTHETA=SPANGL(P(N+1,3),P(N+1,1))
+        CALL SPROBO(MINT(83)+MOVE+1,N,BTHETA,BPHI,BETA(1),BETA(2),
      &  BETA(3))
  
 C...Add on scattered leptons to final state.
@@ -5713,18 +5713,18 @@ C...Add on scattered leptons to final state.
  
 C*********************************************************************
  
-C...PYRAND
+C...SPRAND
 C...Generates quantities characterizing the high-pT scattering at the
 C...parton level according to the matrix elements. Chooses incoming,
 C...reacting partons, their momentum fractions and one of the possible
 C...subprocesses.
  
-      SUBROUTINE PYRAND
+      SUBROUTINE SPRAND
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
@@ -5747,20 +5747,20 @@ C...User process initialization and event commonblocks.
       SAVE /HEPRUP/,/HEPEUP/
  
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      COMMON/PYINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
-      COMMON/PYINT4/MWID(500),WIDS(500,5)
-      COMMON/PYINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
-      COMMON/PYINT7/SIGT(0:6,0:6,0:5)
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-      SAVE /PYDAT1/,/PYDAT2/,/PYDAT3/,/PYSUBS/,/PYPARS/,/PYINT1/,
-     &/PYINT2/,/PYINT3/,/PYINT4/,/PYINT5/,/PYINT7/,/PYMSSM/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      COMMON/SPINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
+      COMMON/SPINT4/MWID(500),WIDS(500,5)
+      COMMON/SPINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
+      COMMON/SPINT7/SIGT(0:6,0:6,0:5)
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+      SAVE /SPDAT1/,/SPDAT2/,/SPDAT3/,/SPSUBS/,/SPPARS/,/SPINT1/,
+     &/SPINT2/,/SPINT3/,/SPINT4/,/SPINT5/,/SPINT7/,/SPMSSM/
 C...Local arrays.
       DIMENSION XPQ(-25:25),PMM(2),PDIF(4),BHAD(4),PMMN(2)
  
@@ -5805,12 +5805,12 @@ C...Choice of process type - first event of pileup.
  
 C...For gamma-p or gamma-gamma first pick between alternatives.
         IGA=0
-        IF(MINT(121).GT.1) CALL PYSAVE(4,IGA)
+        IF(MINT(121).GT.1) CALL SPSAVE(4,IGA)
         MINT(122)=IGA
  
 C...For real gamma + gamma with different nature, flip at random.
         IF(MINT(11).EQ.22.AND.MINT(12).EQ.22.AND.MINT(123).GE.4.AND.
-     &  MSTP(14).LE.10.AND.PYR(0).GT.0.5D0) THEN
+     &  MSTP(14).LE.10.AND.SPR(0).GT.0.5D0) THEN
           MINTSV=MINT(41)
           MINT(41)=MINT(42)
           MINT(42)=MINTSV
@@ -5826,15 +5826,15 @@ C...For real gamma + gamma with different nature, flip at random.
 C...Pick process type, possibly by user process machinery.
 C...(If the latter, also event will be picked here.)
         IF(MINT(111).EQ.11.AND.IABS(IDWTUP).EQ.2.AND.LOOP.GE.2) THEN
-          CALL UPEVNT
+          CALL SUEVNT
         ELSEIF(MINT(111).EQ.11.AND.IABS(IDWTUP).GE.3) THEN
-          CALL UPEVNT
+          CALL SUEVNT
           ISUB=0
   110     ISUB=ISUB+1
           IF((ISET(ISUB).NE.11.OR.KFPR(ISUB,2).NE.IDPRUP).AND.
      &    ISUB.LT.500) GOTO 110
         ELSE
-          RSUB=XSEC(0,1)*PYR(0)
+          RSUB=XSEC(0,1)*SPR(0)
           DO 120 I=1,500
             IF(MSUB(I).NE.1) GOTO 120
             ISUB=I
@@ -5845,13 +5845,13 @@ C...(If the latter, also event will be picked here.)
           IF(ISUB.EQ.96) INMULT=1
           IF(ISET(ISUB).EQ.11) THEN
             IDPRUP=KFPR(ISUB,2)
-            CALL UPEVNT
+            CALL SUEVNT
           ENDIF
         ENDIF
  
 C...Choice of inclusive process type - pileup events.
       ELSEIF(MINT(82).GE.2.AND.ISUB.EQ.0) THEN
-        RSUB=VINT(131)*PYR(0)
+        RSUB=VINT(131)*SPR(0)
         ISUB=96
         IF(RSUB.GT.SIGT(0,0,5)) ISUB=94
         IF(RSUB.GT.SIGT(0,0,5)+SIGT(0,0,4)) ISUB=93
@@ -5863,7 +5863,7 @@ C...Choice of inclusive process type - pileup events.
  
 C...Choice of photon energy and flux factor inside lepton.
       IF(MINT(141).NE.0.OR.MINT(142).NE.0) THEN
-        CALL PYGAGA(3,WTGAGA)
+        CALL SPGAGA(3,WTGAGA)
         IF(ISUB.GE.131.AND.ISUB.LE.140) THEN
           CKIN(3)=MAX(VINT(285),VINT(154))
           CKIN(1)=2D0*CKIN(3)
@@ -5886,7 +5886,7 @@ C...to avoid doublecounting  with DIS.
       ENDIF
  
 C...Set up for multiple interactions.
-      IF(INMULT.EQ.1) CALL PYMULT(2)
+      IF(INMULT.EQ.1) CALL SPMULT(2)
  
 C...Loopback point for minimum bias in photon physics.
       LOOP2=0
@@ -5902,11 +5902,11 @@ C...Random choice of flavour for some SUSY processes.
       IF(ISUB.GE.201.AND.ISUB.LE.301) THEN
 C...~e_L ~nu_e or ~mu_L ~nu_mu.
         IF(ISUB.EQ.210) THEN
-          KFPR(ISUB,1)=KSUSY1+11+2*INT(0.5D0+PYR(0))
+          KFPR(ISUB,1)=KSUSY1+11+2*INT(0.5D0+SPR(0))
           KFPR(ISUB,2)=KFPR(ISUB,1)+1
 C...~nu_e ~nu_e(bar) or ~nu_mu ~nu_mu(bar).
         ELSEIF(ISUB.EQ.213) THEN
-          KFPR(ISUB,1)=KSUSY1+12+2*INT(0.5D0+PYR(0))
+          KFPR(ISUB,1)=KSUSY1+12+2*INT(0.5D0+SPR(0))
           KFPR(ISUB,2)=KFPR(ISUB,1)
 C...~q ~chi/~g; ~q = ~d, ~u, ~s, ~c or ~b.
         ELSEIF(ISUB.GE.246.AND.ISUB.LE.259) THEN
@@ -5916,9 +5916,9 @@ C...~q ~chi/~g; ~q = ~d, ~u, ~s, ~c or ~b.
             RKF=5D0
           ENDIF
           IF(MOD(ISUB,2).EQ.0) THEN
-            KFPR(ISUB,1)=KSUSY1+1+INT(RKF*PYR(0))
+            KFPR(ISUB,1)=KSUSY1+1+INT(RKF*SPR(0))
           ELSE
-            KFPR(ISUB,1)=KSUSY2+1+INT(RKF*PYR(0))
+            KFPR(ISUB,1)=KSUSY2+1+INT(RKF*SPR(0))
           ENDIF
 C...~q1 ~q2; ~q = ~d, ~u, ~s, or ~c.
         ELSEIF(ISUB.GE.271.AND.ISUB.LE.276) THEN
@@ -5928,21 +5928,21 @@ C...~q1 ~q2; ~q = ~d, ~u, ~s, or ~c.
           ELSEIF(ISUB.EQ.272.OR.ISUB.EQ.275) THEN
             KSU1=KSUSY2
             KSU2=KSUSY2
-          ELSEIF(PYR(0).LT.0.5D0) THEN
+          ELSEIF(SPR(0).LT.0.5D0) THEN
             KSU1=KSUSY1
             KSU2=KSUSY2
           ELSE
             KSU1=KSUSY2
             KSU2=KSUSY1
           ENDIF
-          KFPR(ISUB,1)=KSU1+1+INT(4D0*PYR(0))
-          KFPR(ISUB,2)=KSU2+1+INT(4D0*PYR(0))
+          KFPR(ISUB,1)=KSU1+1+INT(4D0*SPR(0))
+          KFPR(ISUB,2)=KSU2+1+INT(4D0*SPR(0))
 C...~q ~q(bar);  ~q = ~d, ~u, ~s, or ~c.
         ELSEIF(ISUB.EQ.277.OR.ISUB.EQ.279) THEN
-          KFPR(ISUB,1)=KSUSY1+1+INT(4D0*PYR(0))
+          KFPR(ISUB,1)=KSUSY1+1+INT(4D0*SPR(0))
           KFPR(ISUB,2)=KFPR(ISUB,1)
         ELSEIF(ISUB.EQ.278.OR.ISUB.EQ.280) THEN
-          KFPR(ISUB,1)=KSUSY2+1+INT(4D0*PYR(0))
+          KFPR(ISUB,1)=KSUSY2+1+INT(4D0*SPR(0))
           KFPR(ISUB,2)=KFPR(ISUB,1)
 C...~q1 ~q2; ~q = ~d, ~u, ~s, or ~c.
         ELSEIF(ISUB.GE.281.AND.ISUB.LE.286) THEN
@@ -5952,7 +5952,7 @@ C...~q1 ~q2; ~q = ~d, ~u, ~s, or ~c.
           ELSEIF(ISUB.EQ.282.OR.ISUB.EQ.285) THEN
             KSU1=KSUSY2
             KSU2=KSUSY2
-          ELSEIF(PYR(0).LT.0.5D0) THEN
+          ELSEIF(SPR(0).LT.0.5D0) THEN
             KSU1=KSUSY1
             KSU2=KSUSY2
           ELSE
@@ -5964,7 +5964,7 @@ C...~q1 ~q2; ~q = ~d, ~u, ~s, or ~c.
           ELSE
             RKF=4D0
           ENDIF
-          KFPR(ISUB,2)=KSU2+1+INT(RKF*PYR(0))
+          KFPR(ISUB,2)=KSU2+1+INT(RKF*SPR(0))
         ENDIF
       ENDIF
  
@@ -5997,7 +5997,7 @@ C...Find resonances (explicit or implicit in cross-section).
       ENDIF
       CKMX=CKIN(2)
       IF(CKMX.LE.0D0) CKMX=VINT(1)
-      KCR1=PYCOMP(KFR1)
+      KCR1=SPCOMP(KFR1)
       IF(KFR1.NE.0) THEN
         IF(CKIN(1).GT.PMAS(KCR1,1)+20D0*PMAS(KCR1,2).OR.
      &  CKMX.LT.PMAS(KCR1,1)-20D0*PMAS(KCR1,2)) KFR1=0
@@ -6005,7 +6005,7 @@ C...Find resonances (explicit or implicit in cross-section).
       IF(KFR1.NE.0) THEN
         TAUR1=PMAS(KCR1,1)**2/VINT(2)
         IF(KFR1.EQ.KTECHN+113) THEN
-          CALL PYTECM(S1,S2)
+          CALL SPTECM(S1,S2)
           TAUR1=S1/VINT(2)
         ENDIF
         GAMR1=PMAS(KCR1,1)*PMAS(KCR1,2)/VINT(2)
@@ -6022,10 +6022,10 @@ C...Find resonances (explicit or implicit in cross-section).
         ELSEIF(ISUB.GE.364.AND.ISUB.LE.368) THEN
           KFR2=KTECHN+223
         ENDIF
-        KCR2=PYCOMP(KFR2)
+        KCR2=SPCOMP(KFR2)
         TAUR2=PMAS(KCR2,1)**2/VINT(2)
         IF(KFR2.EQ.KTECHN+223) THEN
-          CALL PYTECM(S1,S2)
+          CALL SPTECM(S1,S2)
           TAUR2=S2/VINT(2)
         ENDIF
         GAMR2=PMAS(KCR2,1)*PMAS(KCR2,2)/VINT(2)
@@ -6060,22 +6060,22 @@ C...optionally with broadening according to a truncated Breit-Wigner.
         DO 160 I=1,2
           PMMN(I)=0D0
           IF(KFPR(ISUB,I).EQ.0) THEN
-          ELSEIF(MSTP(42).LE.0.OR.PMAS(PYCOMP(KFPR(ISUB,I)),2).LT.
+          ELSEIF(MSTP(42).LE.0.OR.PMAS(SPCOMP(KFPR(ISUB,I)),2).LT.
      &      PARP(41)) THEN
-            VINT(62+I)=PMAS(PYCOMP(KFPR(ISUB,I)),1)**2
+            VINT(62+I)=PMAS(SPCOMP(KFPR(ISUB,I)),1)**2
           ELSE
             NBW=NBW+1
 C...This prevents SUSY/t particles from becoming too light.
             KFLW=KFPR(ISUB,I)
             IF(KFLW/KSUSY1.EQ.1.OR.KFLW/KSUSY1.EQ.2) THEN
-              KCW=PYCOMP(KFLW)
+              KCW=SPCOMP(KFLW)
               PMMN(I)=PMAS(KCW,1)
               DO 150 IDC=MDCY(KCW,2),MDCY(KCW,2)+MDCY(KCW,3)-1
                 IF(MDME(IDC,1).GT.0.AND.BRAT(IDC).GT.1E-4) THEN
-                  PMSUM=PMAS(PYCOMP(KFDP(IDC,1)),1)+
-     &            PMAS(PYCOMP(KFDP(IDC,2)),1)
+                  PMSUM=PMAS(SPCOMP(KFDP(IDC,1)),1)+
+     &            PMAS(SPCOMP(KFDP(IDC,2)),1)
                   IF(KFDP(IDC,3).NE.0) PMSUM=PMSUM+
-     &            PMAS(PYCOMP(KFDP(IDC,3)),1)
+     &            PMAS(SPCOMP(KFDP(IDC,3)),1)
                   PMMN(I)=MIN(PMMN(I),PMSUM)
                 ENDIF
   150         CONTINUE
@@ -6089,11 +6089,11 @@ C...This prevents SUSY/t particles from becoming too light.
           CKIN43=CKIN(43)
           CKIN(41)=MAX(PMMN(1),CKIN(41))
           CKIN(43)=MAX(PMMN(2),CKIN(43))
-          CALL PYOFSH(4,0,KFPR(ISUB,1),KFPR(ISUB,2),0D0,PQM3,PQM4)
+          CALL SPOFSH(4,0,KFPR(ISUB,1),KFPR(ISUB,2),0D0,PQM3,PQM4)
           CKIN(41)=CKIN41
           CKIN(43)=CKIN43
           IF(MINT(51).EQ.1) THEN
-            IF(MINT(121).GT.1) CALL PYSAVE(2,IGA)
+            IF(MINT(121).GT.1) CALL SPSAVE(2,IGA)
             IF(MFAIL.EQ.1) THEN
               MSTI(61)=1
               RETURN
@@ -6110,11 +6110,11 @@ C...This prevents SUSY/t particles from becoming too light.
 C...Prepare for additional variable choices in 2 -> 3.
       IF(ISTSB.EQ.5) THEN
         VINT(201)=0D0
-        IF(KFPR(ISUB,2).GT.0) VINT(201)=PMAS(PYCOMP(KFPR(ISUB,2)),1)
+        IF(KFPR(ISUB,2).GT.0) VINT(201)=PMAS(SPCOMP(KFPR(ISUB,2)),1)
         VINT(206)=VINT(201)
         VINT(204)=PMAS(23,1)
         IF(ISUB.EQ.124.OR.ISUB.EQ.351) VINT(204)=PMAS(24,1)
-        IF(ISUB.EQ.352) VINT(204)=PMAS(PYCOMP(9900024),1)
+        IF(ISUB.EQ.352) VINT(204)=PMAS(SPCOMP(9900024),1)
         IF(ISUB.EQ.121.OR.ISUB.EQ.122.OR.ISUB.EQ.181.OR.ISUB.EQ.182.OR.
      &  ISUB.EQ.186.OR.ISUB.EQ.187) VINT(204)=VINT(201)
         VINT(209)=VINT(204)
@@ -6123,7 +6123,7 @@ C...Prepare for additional variable choices in 2 -> 3.
 C...Select incoming VDM particle (rho/omega/phi/J/psi).
       IF(ISTSB.NE.0.AND.(MINT(101).GE.2.OR.MINT(102).GE.2).AND.
      &(MINT(123).EQ.2.OR.MINT(123).EQ.3.OR.MINT(123).EQ.7)) THEN
-        VRN=PYR(0)*SIGT(0,0,5)
+        VRN=SPR(0)*SIGT(0,0,5)
         IF(MINT(101).LE.1) THEN
           I1MN=0
           I1MX=0
@@ -6160,7 +6160,7 @@ C...Select incoming particle (rho/omega/phi/J/psi for VDM) and mass.
         PMM(2)=VINT(4)
         IF(MINT(101).GE.2.OR.MINT(102).GE.2) THEN
           JJ=ISUB-90
-          VRN=PYR(0)*SIGT(0,0,JJ)
+          VRN=SPR(0)*SIGT(0,0,JJ)
           IF(MINT(101).LE.1) THEN
             I1MN=0
             I1MX=0
@@ -6185,11 +6185,11 @@ C...Select incoming particle (rho/omega/phi/J/psi for VDM) and mass.
   210     CONTINUE
   220     IF(MINT(101).GE.2) THEN
             MINT(103)=KFV1
-            PMM(1)=PYMASS(KFV1)
+            PMM(1)=SPMASS(KFV1)
           ENDIF
           IF(MINT(102).GE.2) THEN
             MINT(104)=KFV2
-            PMM(2)=PYMASS(KFV2)
+            PMM(2)=SPMASS(KFV2)
           ENDIF
         ENDIF
         VINT(67)=PMM(1)
@@ -6204,9 +6204,9 @@ C...Select mass for GVMD states (rejecting previous assignment).
           IF(MINT(106+JT).EQ.3) THEN
             PS=VINT(2+JT)**2
             PMM(JT)=(Q0S+PS)*(Q1S+PS)/
-     &      (Q0S+PYR(0)*(Q1S-Q0S)+PS)-PS
+     &      (Q0S+SPR(0)*(Q1S-Q0S)+PS)-PS
             IF(MINT(102+JT).GE.333) PMM(JT)=PMM(JT)-
-     &      PMAS(PYCOMP(113),1)+PMAS(PYCOMP(MINT(102+JT)),1)
+     &      PMAS(SPCOMP(113),1)+PMAS(SPCOMP(MINT(102+JT)),1)
           ENDIF
   240   CONTINUE
         IF(PMM(1)+PMM(2)+PARP(104).GE.VINT(1)) THEN
@@ -6270,7 +6270,7 @@ C...Select diffractive mass/masses according to dm^2/m^2.
           ELSE
             PMMIN=PDIF(JT)
             PMMAX=MAX(VINT(2+JT),VINT(1)-PDIF(3-JT))
-            PDIF(2+JT)=PMMIN*(PMMAX/PMMIN)**PYR(0)
+            PDIF(2+JT)=PMMIN*(PMMAX/PMMIN)**SPR(0)
           ENDIF
   270   CONTINUE
         SQM3=PDIF(3)**2
@@ -6283,19 +6283,19 @@ C..Additional mass factors, including resonance enhancement.
         ENDIF
         IF(ISUB.EQ.92) THEN
           FSD=(1D0-SQM3/SH)*(1D0+CRES*SMRES1/(SMRES1+SQM3))
-          IF(FSD.LT.PYR(0)*(1D0+CRES)) GOTO 260
+          IF(FSD.LT.SPR(0)*(1D0+CRES)) GOTO 260
         ELSEIF(ISUB.EQ.93) THEN
           FSD=(1D0-SQM4/SH)*(1D0+CRES*SMRES2/(SMRES2+SQM4))
-          IF(FSD.LT.PYR(0)*(1D0+CRES)) GOTO 260
+          IF(FSD.LT.SPR(0)*(1D0+CRES)) GOTO 260
         ELSEIF(ISUB.EQ.94) THEN
           FDD=(1D0-(PDIF(3)+PDIF(4))**2/SH)*(SH*SMP/
      &    (SH*SMP+SQM3*SQM4))*(1D0+CRES*SMRES1/(SMRES1+SQM3))*
      &    (1D0+CRES*SMRES2/(SMRES2+SQM4))
-          IF(FDD.LT.PYR(0)*(1D0+CRES)**2) GOTO 260
+          IF(FDD.LT.SPR(0)*(1D0+CRES)**2) GOTO 260
         ENDIF
  
 C...Select t according to exp(Bmn*t) and correct to right slope.
-        TH=THU+LOG(1D0+THRND*PYR(0))/BMN
+        TH=THU+LOG(1D0+THRND*SPR(0))/BMN
         IF(ISUB.GE.92) THEN
           IF(ISUB.EQ.92) THEN
             BADD=2D0*ALP*LOG(SH/SQM3)
@@ -6306,7 +6306,7 @@ C...Select t according to exp(Bmn*t) and correct to right slope.
           ELSEIF(ISUB.EQ.94) THEN
             BADD=2D0*ALP*(LOG(EXP(4D0)+SH/(ALP*SQM3*SQM4))-4D0)
           ENDIF
-          IF(EXP(MAX(-50D0,BADD*(TH-THU))).LT.PYR(0)) GOTO 260
+          IF(EXP(MAX(-50D0,BADD*(TH-THU))).LT.SPR(0)) GOTO 260
         ENDIF
  
 C...Check whether m^2 and t choices are consistent.
@@ -6341,16 +6341,16 @@ C...I1/I6*c6*tau/((s*tau-m'^2)^2+(m'*Gamma')^2) +
 C...I1/I7*c7*tau/(1.-tau), and
 C...c1 + c2 + c3 + c4 + c5 + c6 + c7 = 1.
       ELSEIF(ISTSB.GE.1.AND.ISTSB.LE.5) THEN
-        CALL PYKLIM(1)
+        CALL SPKLIM(1)
         IF(MINT(51).NE.0) THEN
-          IF(MINT(121).GT.1) CALL PYSAVE(2,IGA)
+          IF(MINT(121).GT.1) CALL SPSAVE(2,IGA)
           IF(MFAIL.EQ.1) THEN
             MSTI(61)=1
             RETURN
           ENDIF
           GOTO 100
         ENDIF
-        RTAU=PYR(0)
+        RTAU=SPR(0)
         MTAU=1
         IF(RTAU.GT.COEF(ISUB,1)) MTAU=2
         IF(RTAU.GT.COEF(ISUB,1)+COEF(ISUB,2)) MTAU=3
@@ -6361,27 +6361,27 @@ C...c1 + c2 + c3 + c4 + c5 + c6 + c7 = 1.
      &  COEF(ISUB,5)) MTAU=6
         IF(RTAU.GT.COEF(ISUB,1)+COEF(ISUB,2)+COEF(ISUB,3)+COEF(ISUB,4)+
      &  COEF(ISUB,5)+COEF(ISUB,6)) MTAU=7
-        CALL PYKMAP(1,MTAU,PYR(0))
+        CALL SPKMAP(1,MTAU,SPR(0))
  
 C...2 -> 3, 4 processes:
 C...Choose tau' according to h4(tau,tau')/tau', where
 C...h4(tau,tau') = c1 + I1/I2*c2*(1 - tau/tau')^3/tau' +
 C...I1/I3*c3*1/(1 - tau'), and c1 + c2 + c3 = 1.
         IF(ISTSB.GE.3.AND.ISTSB.LE.5) THEN
-          CALL PYKLIM(4)
+          CALL SPKLIM(4)
           IF(MINT(51).NE.0) THEN
-            IF(MINT(121).GT.1) CALL PYSAVE(2,IGA)
+            IF(MINT(121).GT.1) CALL SPSAVE(2,IGA)
             IF(MFAIL.EQ.1) THEN
               MSTI(61)=1
               RETURN
             ENDIF
             GOTO 100
           ENDIF
-          RTAUP=PYR(0)
+          RTAUP=SPR(0)
           MTAUP=1
           IF(RTAUP.GT.COEF(ISUB,18)) MTAUP=2
           IF(RTAUP.GT.COEF(ISUB,18)+COEF(ISUB,19)) MTAUP=3
-          CALL PYKMAP(4,MTAUP,PYR(0))
+          CALL SPKMAP(4,MTAUP,SPR(0))
         ENDIF
  
 C...Choose y* according to h2(y*), where
@@ -6389,23 +6389,23 @@ C...h2(y*) = I0/I1*c1*(y*-y*min) + I0/I2*c2*(y*max-y*) +
 C...I0/I3*c3*1/cosh(y*) + I0/I4*c4*1/(1-exp(y*-y*max)) +
 C...I0/I5*c5*1/(1-exp(-y*-y*min)), I0 = y*max-y*min,
 C...and c1 + c2 + c3 + c4 + c5 = 1.
-        CALL PYKLIM(2)
+        CALL SPKLIM(2)
         IF(MINT(51).NE.0) THEN
-          IF(MINT(121).GT.1) CALL PYSAVE(2,IGA)
+          IF(MINT(121).GT.1) CALL SPSAVE(2,IGA)
           IF(MFAIL.EQ.1) THEN
             MSTI(61)=1
             RETURN
           ENDIF
           GOTO 100
         ENDIF
-        RYST=PYR(0)
+        RYST=SPR(0)
         MYST=1
         IF(RYST.GT.COEF(ISUB,8)) MYST=2
         IF(RYST.GT.COEF(ISUB,8)+COEF(ISUB,9)) MYST=3
         IF(RYST.GT.COEF(ISUB,8)+COEF(ISUB,9)+COEF(ISUB,10)) MYST=4
         IF(RYST.GT.COEF(ISUB,8)+COEF(ISUB,9)+COEF(ISUB,10)+
      &  COEF(ISUB,11)) MYST=5
-        CALL PYKMAP(2,MYST,PYR(0))
+        CALL SPKMAP(2,MYST,SPR(0))
  
 C...2 -> 2 processes:
 C...Choose cos(theta-hat) (cth) according to h3(cth), where
@@ -6413,9 +6413,9 @@ C...h3(cth) = c0 + I0/I1*c1*1/(A - cth) + I0/I2*c2*1/(A + cth) +
 C...I0/I3*c3*1/(A - cth)^2 + I0/I4*c4*1/(A + cth)^2,
 C...A = 1 + 2*(m3*m4/sh)^2 (= 1 for massless products),
 C...and c0 + c1 + c2 + c3 + c4 = 1.
-        CALL PYKLIM(3)
+        CALL SPKLIM(3)
         IF(MINT(51).NE.0) THEN
-          IF(MINT(121).GT.1) CALL PYSAVE(2,IGA)
+          IF(MINT(121).GT.1) CALL SPSAVE(2,IGA)
           IF(MFAIL.EQ.1) THEN
             MSTI(61)=1
             RETURN
@@ -6423,21 +6423,21 @@ C...and c0 + c1 + c2 + c3 + c4 = 1.
           GOTO 100
         ENDIF
         IF(ISTSB.EQ.2.OR.ISTSB.EQ.4) THEN
-          RCTH=PYR(0)
+          RCTH=SPR(0)
           MCTH=1
           IF(RCTH.GT.COEF(ISUB,13)) MCTH=2
           IF(RCTH.GT.COEF(ISUB,13)+COEF(ISUB,14)) MCTH=3
           IF(RCTH.GT.COEF(ISUB,13)+COEF(ISUB,14)+COEF(ISUB,15)) MCTH=4
           IF(RCTH.GT.COEF(ISUB,13)+COEF(ISUB,14)+COEF(ISUB,15)+
      &    COEF(ISUB,16)) MCTH=5
-          CALL PYKMAP(3,MCTH,PYR(0))
+          CALL SPKMAP(3,MCTH,SPR(0))
         ENDIF
  
 C...2 -> 3 : select pT1, phi1, pT2, phi2, y3 for 3 outgoing.
         IF(ISTSB.EQ.5) THEN
-          CALL PYKMAP(5,0,0D0)
+          CALL SPKMAP(5,0,0D0)
           IF(MINT(51).NE.0) THEN
-            IF(MINT(121).GT.1) CALL PYSAVE(2,IGA)
+            IF(MINT(121).GT.1) CALL SPSAVE(2,IGA)
             IF(MFAIL.EQ.1) THEN
               MSTI(61)=1
               RETURN
@@ -6456,13 +6456,13 @@ C...DIS as f + gamma* -> f process: set dummy values.
  
 C...Low-pT or multiple interactions (first semihard interaction).
       ELSEIF(ISTSB.EQ.9) THEN
-        CALL PYMULT(3)
+        CALL SPMULT(3)
         ISUB=MINT(1)
  
 C...Study user-defined process: kinematics plus weight.
       ELSEIF(ISTSB.EQ.11) THEN
         IF(IDWTUP.GT.0.AND.XWGTUP.LT.0D0) CALL
-     &  PYERRM(26,'(PYRAND:) Negative XWGTUP for user process')
+     &  SPERRM(26,'(SPRAND:) Negative XWGTUP for user process')
         MSTI(51)=0
         IF(NUP.LE.0) THEN
           MINT(51)=2
@@ -6471,7 +6471,7 @@ C...Study user-defined process: kinematics plus weight.
             NGEN(0,1)=NGEN(0,1)-1
             NGEN(ISUB,1)=NGEN(ISUB,1)-1
           ENDIF
-          IF(MINT(121).GT.1) CALL PYSAVE(2,IGA)
+          IF(MINT(121).GT.1) CALL SPSAVE(2,IGA)
           RETURN
         ENDIF
  
@@ -6515,11 +6515,11 @@ C...Construct other kinematical variables needed (approximately).
         VINT(54)=VINT(56)
         VINT(25)=0D0
         VINT(48)=0D0
-        IF(ISTUP(1).NE.-1.OR.ISTUP(2).NE.-1) CALL PYERRM(26,
-     &  '(PYRAND:) unacceptable ISTUP code for incoming particles')
+        IF(ISTUP(1).NE.-1.OR.ISTUP(2).NE.-1) CALL SPERRM(26,
+     &  '(SPRAND:) unacceptable ISTUP code for incoming particles')
         DO 280 IUP=3,NUP
-          IF(ISTUP(IUP).LT.1.OR.ISTUP(IUP).GT.3) CALL PYERRM(26,
-     &    '(PYRAND:) unacceptable ISTUP code for particles')
+          IF(ISTUP(IUP).LT.1.OR.ISTUP(IUP).GT.3) CALL SPERRM(26,
+     &    '(SPRAND:) unacceptable ISTUP code for particles')
           IF(ISTUP(IUP).EQ.1) VINT(25)=VINT(25)+2D0*(PUP(5,IUP)**2+
      &    PUP(1,IUP)**2+PUP(2,IUP)**2)/VINT(2)
           IF(ISTUP(IUP).EQ.1) VINT(48)=VINT(48)+0.5D0*(PUP(1,IUP)**2+
@@ -6530,13 +6530,13 @@ C...Construct other kinematical variables needed (approximately).
  
 C...Choose azimuthal angle.
       VINT(24)=0D0
-      IF(ISTSB.NE.11) VINT(24)=PARU(2)*PYR(0)
+      IF(ISTSB.NE.11) VINT(24)=PARU(2)*SPR(0)
  
 C...Check against user cuts on kinematics at parton level.
       MINT(51)=0
-      IF((ISUB.LE.90.OR.ISUB.GT.100).AND.ISTSB.LE.10) CALL PYKLIM(0)
+      IF((ISUB.LE.90.OR.ISUB.GT.100).AND.ISTSB.LE.10) CALL SPKLIM(0)
       IF(MINT(51).NE.0) THEN
-        IF(MINT(121).GT.1) CALL PYSAVE(2,IGA)
+        IF(MINT(121).GT.1) CALL SPSAVE(2,IGA)
         IF(MFAIL.EQ.1) THEN
           MSTI(61)=1
           RETURN
@@ -6546,9 +6546,9 @@ C...Check against user cuts on kinematics at parton level.
       IF(MINT(82).EQ.1.AND.MSTP(141).GE.1.AND.ISTSB.LE.10) THEN
         MCUT=0
         IF(MSUB(91)+MSUB(92)+MSUB(93)+MSUB(94)+MSUB(95).EQ.0)
-     &  CALL PYKCUT(MCUT)
+     &  CALL SPKCUT(MCUT)
         IF(MCUT.NE.0) THEN
-          IF(MINT(121).GT.1) CALL PYSAVE(2,IGA)
+          IF(MINT(121).GT.1) CALL SPSAVE(2,IGA)
           IF(MFAIL.EQ.1) THEN
             MSTI(61)=1
             RETURN
@@ -6558,7 +6558,7 @@ C...Check against user cuts on kinematics at parton level.
       ENDIF
  
 C...Calculate differential cross-section for different subprocesses.
-      IF(ISTSB.LE.10) CALL PYSIGH(NCHN,SIGS)
+      IF(ISTSB.LE.10) CALL SPSIGH(NCHN,SIGS)
       SIGSOR=SIGS
       SIGLPT=SIGT(0,0,5)*VINT(315)*VINT(316)
  
@@ -6585,7 +6585,7 @@ C...Multiply cross-section by user-defined weights.
       VINT(100)=1D0
       IF(MINT(82).EQ.1.AND.MSTP(142).GE.1) THEN
         IF(ISUB.NE.96.AND.MSUB(91)+MSUB(92)+MSUB(93)+MSUB(94)+
-     &  MSUB(95).EQ.0) CALL PYEVWT(WTXS)
+     &  MSUB(95).EQ.0) CALL SPEVWT(WTXS)
         SIGSWT=WTXS*SIGS
         VINT(99)=WTXS
         IF(MSTP(142).EQ.1) VINT(100)=1D0/WTXS
@@ -6607,7 +6607,7 @@ C...Calculations for Monte Carlo estimate of all cross-sections.
 C...Multiple interactions: store results of cross-section calculation.
       IF(MINT(50).EQ.1.AND.MSTP(82).GE.3) THEN
         VINT(153)=SIGSOR
-        CALL PYMULT(4)
+        CALL SPMULT(4)
       ENDIF
  
 C...Ratio of actual to maximum cross section.
@@ -6641,40 +6641,40 @@ C...Check that weight not negative.
  
 C...Weighting using estimate of maximum of differential cross-section.
       IF(MFAIL.EQ.0.AND.ISUB.NE.95.AND.ISUB.NE.96) THEN
-        IF(VIOL.LT.PYR(0)) THEN
-          IF(MINT(121).GT.1) CALL PYSAVE(2,IGA)
+        IF(VIOL.LT.SPR(0)) THEN
+          IF(MINT(121).GT.1) CALL SPSAVE(2,IGA)
           IF(ISUB.GE.91.AND.ISUB.LE.94) ISUB=0
           GOTO 100
         ENDIF
       ELSEIF(MFAIL.EQ.0) THEN
         RATND=SIGLPT/XSEC(95,1)
         VIOL=VIOL/RATND
-        IF(LOOP2.EQ.1.AND.RATND.LT.PYR(0)) THEN
-          IF(VIOL.GT.PYR(0).AND.MINT(82).EQ.1.AND.MSUB(95).EQ.1.AND.
+        IF(LOOP2.EQ.1.AND.RATND.LT.SPR(0)) THEN
+          IF(VIOL.GT.SPR(0).AND.MINT(82).EQ.1.AND.MSUB(95).EQ.1.AND.
      &    (ISUB.LE.90.OR.ISUB.GE.95)) NGEN(95,1)=NGEN(95,1)+MINT(143)
-          IF(MINT(121).GT.1) CALL PYSAVE(2,IGA)
+          IF(MINT(121).GT.1) CALL SPSAVE(2,IGA)
           ISUB=0
           GOTO 100
         ENDIF
-        IF(VIOL.LT.PYR(0)) THEN
+        IF(VIOL.LT.SPR(0)) THEN
           GOTO 140
         ENDIF
       ELSEIF(ISUB.NE.95.AND.ISUB.NE.96) THEN
-        IF(VIOL.LT.PYR(0)) THEN
+        IF(VIOL.LT.SPR(0)) THEN
           MSTI(61)=1
-          IF(MINT(121).GT.1) CALL PYSAVE(2,IGA)
+          IF(MINT(121).GT.1) CALL SPSAVE(2,IGA)
           RETURN
         ENDIF
       ELSE
         RATND=SIGLPT/XSEC(95,1)
-        IF(LOOP.EQ.1.AND.RATND.LT.PYR(0)) THEN
+        IF(LOOP.EQ.1.AND.RATND.LT.SPR(0)) THEN
           MSTI(61)=1
-          IF(MINT(121).GT.1) CALL PYSAVE(2,IGA)
+          IF(MINT(121).GT.1) CALL SPSAVE(2,IGA)
           RETURN
         ENDIF
         VIOL=VIOL/RATND
-        IF(VIOL.LT.PYR(0)) THEN
-          IF(MINT(121).GT.1) CALL PYSAVE(2,IGA)
+        IF(VIOL.LT.SPR(0)) THEN
+          IF(MINT(121).GT.1) CALL SPSAVE(2,IGA)
           GOTO 100
         ENDIF
       ENDIF
@@ -6737,9 +6737,9 @@ C...Multiple interactions: choose impact parameter.
       VINT(148)=1D0
       IF(MINT(50).EQ.1.AND.(ISUB.LE.90.OR.ISUB.GE.96).AND.
      &MSTP(82).GE.3) THEN
-        CALL PYMULT(5)
-        IF(VINT(150).LT.PYR(0)) THEN
-          IF(MINT(121).GT.1) CALL PYSAVE(2,IGA)
+        CALL SPMULT(5)
+        IF(VINT(150).LT.SPR(0)) THEN
+          IF(MINT(121).GT.1) CALL SPSAVE(2,IGA)
           IF(MFAIL.EQ.1) THEN
             MSTI(61)=1
             RETURN
@@ -6756,12 +6756,12 @@ C...Multiple interactions: choose impact parameter.
  
 C...Choose flavour of reacting partons (and subprocess).
       IF(ISTSB.GE.11) GOTO 320
-      RSIGS=SIGS*PYR(0)
+      RSIGS=SIGS*SPR(0)
       QT2=VINT(48)
       RQQBAR=PARP(87)*(1D0-(QT2/(QT2+(PARP(88)*PARP(82)*
      &(VINT(1)/PARP(89))**PARP(90))**2))**2)
       IF(ISUB.NE.95.AND.(ISUB.NE.96.OR.MSTP(82).LE.1.OR.
-     &PYR(0).GT.RQQBAR)) THEN
+     &SPR(0).GT.RQQBAR)) THEN
         DO 310 ICHN=1,NCHN
           KFL1=ISIG(ICHN,1)
           KFL2=ISIG(ICHN,2)
@@ -6774,19 +6774,19 @@ C...Multiple interactions: choose qqbar preferentially at small pT.
       ELSEIF(ISUB.EQ.96) THEN
         MINT(105)=MINT(103)
         MINT(109)=MINT(107)
-        CALL PYSPLI(MINT(11),21,KFL1,KFLDUM)
+        CALL SPSPLI(MINT(11),21,KFL1,KFLDUM)
         MINT(105)=MINT(104)
         MINT(109)=MINT(108)
-        CALL PYSPLI(MINT(12),21,KFL2,KFLDUM)
+        CALL SPSPLI(MINT(12),21,KFL2,KFLDUM)
         MINT(1)=11
         MINT(2)=1
-        IF(KFL1.EQ.KFL2.AND.PYR(0).LT.0.5D0) MINT(2)=2
+        IF(KFL1.EQ.KFL2.AND.SPR(0).LT.0.5D0) MINT(2)=2
  
 C...Low-pT: choose string drawing configuration.
       ELSE
         KFL1=21
         KFL2=21
-        RSIGS=6D0*PYR(0)
+        RSIGS=6D0*SPR(0)
         MINT(2)=1
         IF(RSIGS.GT.1D0) MINT(2)=2
         IF(RSIGS.GT.2D0) MINT(2)=3
@@ -6824,25 +6824,25 @@ C...Calculate x value of photon for parton inside photon inside e.
           MINT(109)=MINT(106+JT)
           VINT(120)=VINT(2+JT)
           IF(MSTP(57).LE.1) THEN
-            CALL PYPDFU(22,XHRD,Q2HRD,XPQ)
+            CALL SPPDFU(22,XHRD,Q2HRD,XPQ)
           ELSE
-            CALL PYPDFL(22,XHRD,Q2HRD,XPQ)
+            CALL SPPDFL(22,XHRD,Q2HRD,XPQ)
           ENDIF
           WTMX=4D0*XPQ(KFLH)
           IF(MSTP(13).EQ.2) THEN
             Q2PMS=Q2HRD/PMAS(11,1)**2
             WTMX=WTMX*LOG(MAX(2D0,Q2PMS*(1D0-XHRD)/XHRD**2))
           ENDIF
-  330     XE=XHRD**PYR(0)
+  330     XE=XHRD**SPR(0)
           XG=MIN(1D0-1D-10,XHRD/XE)
           IF(MSTP(57).LE.1) THEN
-            CALL PYPDFU(22,XG,Q2HRD,XPQ)
+            CALL SPPDFU(22,XG,Q2HRD,XPQ)
           ELSE
-            CALL PYPDFL(22,XG,Q2HRD,XPQ)
+            CALL SPPDFL(22,XG,Q2HRD,XPQ)
           ENDIF
           WT=(1D0+(1D0-XE)**2)*XPQ(KFLH)
           IF(MSTP(13).EQ.2) WT=WT*LOG(MAX(2D0,Q2PMS*(1D0-XE)/XE**2))
-          IF(WT.LT.PYR(0)*WTMX) GOTO 330
+          IF(WT.LT.SPR(0)*WTMX) GOTO 330
           MINT(18+JT)=1
           VINT(154+JT)=XE
           DO 340 KFLS=-25,25
@@ -6857,40 +6857,40 @@ C...Pick scale where photon is resolved.
       VINT(283)=0D0
       IF(MINT(107).EQ.3) THEN
         IF(MSTP(66).EQ.1) THEN
-          VINT(283)=Q0S*(VINT(54)/Q0S)**PYR(0)
+          VINT(283)=Q0S*(VINT(54)/Q0S)**SPR(0)
         ELSEIF(MSTP(66).EQ.2) THEN
           PS=VINT(3)**2
           Q2EFF=VINT(54)*((Q0S+PS)/(VINT(54)+PS))*
      &    EXP(PS*(VINT(54)-Q0S)/((VINT(54)+PS)*(Q0S+PS)))
           Q2INT=SQRT(Q0S*Q2EFF)
-          VINT(283)=Q2INT*(VINT(54)/Q2INT)**PYR(0)
+          VINT(283)=Q2INT*(VINT(54)/Q2INT)**SPR(0)
         ELSEIF(MSTP(66).EQ.3) THEN
-          VINT(283)=Q0S*(Q1S/Q0S)**PYR(0)
+          VINT(283)=Q0S*(Q1S/Q0S)**SPR(0)
         ELSEIF(MSTP(66).GE.4) THEN
           PS=0.25D0*VINT(3)**2
           VINT(283)=(Q0S+PS)*(Q1S+PS)/
-     &    (Q0S+PYR(0)*(Q1S-Q0S)+PS)-PS
+     &    (Q0S+SPR(0)*(Q1S-Q0S)+PS)-PS
         ENDIF
       ENDIF
       VINT(284)=0D0
       IF(MINT(108).EQ.3) THEN
         IF(MSTP(66).EQ.1) THEN
-          VINT(284)=Q0S*(VINT(54)/Q0S)**PYR(0)
+          VINT(284)=Q0S*(VINT(54)/Q0S)**SPR(0)
         ELSEIF(MSTP(66).EQ.2) THEN
           PS=VINT(4)**2
           Q2EFF=VINT(54)*((Q0S+PS)/(VINT(54)+PS))*
      &    EXP(PS*(VINT(54)-Q0S)/((VINT(54)+PS)*(Q0S+PS)))
           Q2INT=SQRT(Q0S*Q2EFF)
-          VINT(284)=Q2INT*(VINT(54)/Q2INT)**PYR(0)
+          VINT(284)=Q2INT*(VINT(54)/Q2INT)**SPR(0)
         ELSEIF(MSTP(66).EQ.3) THEN
-          VINT(284)=Q0S*(Q1S/Q0S)**PYR(0)
+          VINT(284)=Q0S*(Q1S/Q0S)**SPR(0)
         ELSEIF(MSTP(66).GE.4) THEN
           PS=0.25D0*VINT(4)**2
           VINT(284)=(Q0S+PS)*(Q1S+PS)/
-     &    (Q0S+PYR(0)*(Q1S-Q0S)+PS)-PS
+     &    (Q0S+SPR(0)*(Q1S-Q0S)+PS)-PS
         ENDIF
       ENDIF
-      IF(MINT(121).GT.1) CALL PYSAVE(2,IGA)
+      IF(MINT(121).GT.1) CALL SPSAVE(2,IGA)
  
 C...Format statements for differential cross-section maximum violations.
  5000 FORMAT(/1X,'Error: negative cross-section fraction',1P,D11.3,1X,
@@ -6915,16 +6915,16 @@ C...Format statements for differential cross-section maximum violations.
  
 C*********************************************************************
  
-C...PYSCAT
+C...SPSCAT
 C...Finds outgoing flavours and event type; sets up the kinematics
 C...and colour flow of the hard scattering
  
-      SUBROUTINE PYSCAT
+      SUBROUTINE SPSCAT
  
 C...Double precision and integer declarations
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
@@ -6940,22 +6940,22 @@ C...User process event common block.
       SAVE /HEPEUP/
  
 C...Commonblocks
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      COMMON/PYINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
-      COMMON/PYINT4/MWID(500),WIDS(500,5)
-      COMMON/PYINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
-      COMMON/PYSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      COMMON/SPINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
+      COMMON/SPINT4/MWID(500),WIDS(500,5)
+      COMMON/SPINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
+      COMMON/SPSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
      &SFMIX(16,4),ZMIXI(4,4),UMIXI(2,2),VMIXI(2,2)
-      COMMON/PYTCSM/ITCM(0:99),RTCM(0:99)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/,/PYDAT3/,/PYSUBS/,/PYPARS/,
-     &/PYINT1/,/PYINT2/,/PYINT3/,/PYINT4/,/PYINT5/,/PYSSMT/,/PYTCSM/
+      COMMON/SPTCSM/ITCM(0:99),RTCM(0:99)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/,/SPDAT3/,/SPSUBS/,/SPPARS/,
+     &/SPINT1/,/SPINT2/,/SPINT3/,/SPINT4/,/SPINT5/,/SPSSMT/,/SPTCSM/
 C...Local arrays and saved variables
       DIMENSION WDTP(0:400),WDTE(0:400,0:5),PMQ(2),Z(2),CTHE(2),
      &PHI(2),KUPPO(100),VINTSV(41:66),ILAB(100)
@@ -7045,7 +7045,7 @@ C...Store incoming partons in their CM-frame
         P(I,4)=0.5D0*SHUSER
   150 CONTINUE
  
-C...Copy incoming partons to documentation lines
+C...Cosp incoming partons to documentation lines
       DO 170 JT=1,2
         I1=MINT(83)+4+JT
         I2=MINT(84)+JT
@@ -7062,8 +7062,8 @@ C...Choose new quark/lepton flavour for relevant annihilation graphs
      &(ISUB.GE.135.AND.ISUB.LE.140).OR.ISUB.EQ.382.OR.ISUB.EQ.385) THEN
         IGLGA=21
         IF(ISUB.EQ.58.OR.(ISUB.GE.137.AND.ISUB.LE.140)) IGLGA=22
-        CALL PYWIDT(IGLGA,SH,WDTP,WDTE)
-  180   RKFL=(WDTE(0,1)+WDTE(0,2)+WDTE(0,4))*PYR(0)
+        CALL SPWIDT(IGLGA,SH,WDTP,WDTE)
+  180   RKFL=(WDTE(0,1)+WDTE(0,2)+WDTE(0,4))*SPR(0)
         DO 190 I=1,MDCY(IGLGA,3)
           KFLF=KFDP(I+MDCY(IGLGA,2)-1,1)
           RKFL=RKFL-(WDTE(I,1)+WDTE(I,2)+WDTE(I,4))
@@ -7083,16 +7083,16 @@ C...Choose new quark/lepton flavour for relevant annihilation graphs
           FACQQB=VINT(58)**2*4D0/9D0*(VINT(45)**2+VINT(46)**2)/
      &    VINT(44)**2
           FACCIB=VINT(46)**2/RTCM(41)**4
-          IF(FACQQB/(FACQQB+FACCIB).LT.PYR(0)) GOTO 180
+          IF(FACQQB/(FACQQB+FACCIB).LT.SPR(0)) GOTO 180
         ELSEIF(ISUB.EQ.382.AND.ITCM(5).EQ.5.AND.MINT(2).EQ.2) THEN
           KFLF=5
           MINT(2)=1
         ELSEIF(ISUB.EQ.382.AND.ITCM(5).EQ.5.AND.MINT(2).EQ.1) THEN
           IF(KFLF.EQ.5) GOTO 180
         ELSEIF(ISUB.EQ.54.OR.ISUB.EQ.135.OR.ISUB.EQ.136) THEN
-          IF((KCHG(PYCOMP(KFLF),1)/2D0)**2.LT.PYR(0)) GOTO 180
+          IF((KCHG(SPCOMP(KFLF),1)/2D0)**2.LT.SPR(0)) GOTO 180
         ELSEIF(ISUB.EQ.58.OR.(ISUB.GE.137.AND.ISUB.LE.140)) THEN
-          IF((KCHG(PYCOMP(KFLF),1)/3D0)**2.LT.PYR(0)) GOTO 180
+          IF((KCHG(SPCOMP(KFLF),1)/3D0)**2.LT.SPR(0)) GOTO 180
         ENDIF
       ENDIF
  
@@ -7144,30 +7144,30 @@ C...Z0 + Z0 -> h0
           XH=SH/SHP
           MINT(21)=MINT(15)
           MINT(22)=MINT(16)
-          PMQ(1)=PYMASS(MINT(21))
-          PMQ(2)=PYMASS(MINT(22))
-  220     JT=INT(1.5D0+PYR(0))
+          PMQ(1)=SPMASS(MINT(21))
+          PMQ(2)=SPMASS(MINT(22))
+  220     JT=INT(1.5D0+SPR(0))
           ZMIN=2D0*PMQ(JT)/SHPR
           ZMAX=1D0-PMQ(3-JT)/SHPR-(SH-PMQ(JT)**2)/
      &    (SHPR*(SHPR-PMQ(3-JT)))
           ZMAX=MIN(1D0-XH,ZMAX)
-          Z(JT)=ZMIN+(ZMAX-ZMIN)*PYR(0)
+          Z(JT)=ZMIN+(ZMAX-ZMIN)*SPR(0)
           IF(-1D0+(1D0+XH)/(1D0-Z(JT))-XH/(1D0-Z(JT))**2.LT.
-     &    (1D0-XH)**2/(4D0*XH)*PYR(0)) GOTO 220
+     &    (1D0-XH)**2/(4D0*XH)*SPR(0)) GOTO 220
           SQC1=1D0-4D0*PMQ(JT)**2/(Z(JT)**2*SHP)
           IF(SQC1.LT.1D-8) GOTO 220
           C1=SQRT(SQC1)
           C2=1D0+2D0*(PMAS(23,1)**2-PMQ(JT)**2)/(Z(JT)*SHP)
-          CTHE(JT)=(C2-(C2**2-C1**2)/(C2+(2D0*PYR(0)-1D0)*C1))/C1
+          CTHE(JT)=(C2-(C2**2-C1**2)/(C2+(2D0*SPR(0)-1D0)*C1))/C1
           CTHE(JT)=MIN(1D0,MAX(-1D0,CTHE(JT)))
           Z(3-JT)=1D0-XH/(1D0-Z(JT))
           SQC1=1D0-4D0*PMQ(3-JT)**2/(Z(3-JT)**2*SHP)
           IF(SQC1.LT.1D-8) GOTO 220
           C1=SQRT(SQC1)
           C2=1D0+2D0*(PMAS(23,1)**2-PMQ(3-JT)**2)/(Z(3-JT)*SHP)
-          CTHE(3-JT)=(C2-(C2**2-C1**2)/(C2+(2D0*PYR(0)-1D0)*C1))/C1
+          CTHE(3-JT)=(C2-(C2**2-C1**2)/(C2+(2D0*SPR(0)-1D0)*C1))/C1
           CTHE(3-JT)=MIN(1D0,MAX(-1D0,CTHE(3-JT)))
-          PHIR=PARU(2)*PYR(0)
+          PHIR=PARU(2)*SPR(0)
           CPHI=COS(PHIR)
           ANG=CTHE(1)*CTHE(2)-SQRT(1D0-CTHE(1)**2)*
      &    SQRT(1D0-CTHE(2)**2)*CPHI
@@ -7196,7 +7196,7 @@ C...W+ + W- -> h0
             I=MINT(14+JT)
             IA=IABS(I)
             IF(IA.LE.10) THEN
-              RVCKM=VINT(180+I)*PYR(0)
+              RVCKM=VINT(180+I)*SPR(0)
               DO 240 J=1,MSTP(1)
                 IB=2*J-1+MOD(IA,2)
                 IPM=(5-ISIGN(1,I))/2
@@ -7210,31 +7210,31 @@ C...W+ + W- -> h0
               IB=2*((IA+1)/2)-1+MOD(IA,2)
               MINT(20+JT)=ISIGN(IB,I)
             ENDIF
-  250       PMQ(JT)=PYMASS(MINT(20+JT))
+  250       PMQ(JT)=SPMASS(MINT(20+JT))
   260     CONTINUE
-          JT=INT(1.5D0+PYR(0))
+          JT=INT(1.5D0+SPR(0))
           ZMIN=2D0*PMQ(JT)/SHPR
           ZMAX=1D0-PMQ(3-JT)/SHPR-(SH-PMQ(JT)**2)/
      &    (SHPR*(SHPR-PMQ(3-JT)))
           ZMAX=MIN(1D0-XH,ZMAX)
           IF(ZMIN.GE.ZMAX) GOTO 230
-          Z(JT)=ZMIN+(ZMAX-ZMIN)*PYR(0)
+          Z(JT)=ZMIN+(ZMAX-ZMIN)*SPR(0)
           IF(-1D0+(1D0+XH)/(1D0-Z(JT))-XH/(1D0-Z(JT))**2.LT.
-     &    (1D0-XH)**2/(4D0*XH)*PYR(0)) GOTO 230
+     &    (1D0-XH)**2/(4D0*XH)*SPR(0)) GOTO 230
           SQC1=1D0-4D0*PMQ(JT)**2/(Z(JT)**2*SHP)
           IF(SQC1.LT.1D-8) GOTO 230
           C1=SQRT(SQC1)
           C2=1D0+2D0*(PMAS(24,1)**2-PMQ(JT)**2)/(Z(JT)*SHP)
-          CTHE(JT)=(C2-(C2**2-C1**2)/(C2+(2D0*PYR(0)-1D0)*C1))/C1
+          CTHE(JT)=(C2-(C2**2-C1**2)/(C2+(2D0*SPR(0)-1D0)*C1))/C1
           CTHE(JT)=MIN(1D0,MAX(-1D0,CTHE(JT)))
           Z(3-JT)=1D0-XH/(1D0-Z(JT))
           SQC1=1D0-4D0*PMQ(3-JT)**2/(Z(3-JT)**2*SHP)
           IF(SQC1.LT.1D-8) GOTO 230
           C1=SQRT(SQC1)
           C2=1D0+2D0*(PMAS(24,1)**2-PMQ(3-JT)**2)/(Z(3-JT)*SHP)
-          CTHE(3-JT)=(C2-(C2**2-C1**2)/(C2+(2D0*PYR(0)-1D0)*C1))/C1
+          CTHE(3-JT)=(C2-(C2**2-C1**2)/(C2+(2D0*SPR(0)-1D0)*C1))/C1
           CTHE(3-JT)=MIN(1D0,MAX(-1D0,CTHE(3-JT)))
-          PHIR=PARU(2)*PYR(0)
+          PHIR=PARU(2)*SPR(0)
           CPHI=COS(PHIR)
           ANG=CTHE(1)*CTHE(2)-SQRT(1D0-CTHE(1)**2)*
      &    SQRT(1D0-CTHE(2)**2)*CPHI
@@ -7260,7 +7260,7 @@ C...W exchange: need to mix flavours according to CKM matrix
               I=MINT(14+JT)
               IA=IABS(I)
               IF(IA.LE.10) THEN
-                RVCKM=VINT(180+I)*PYR(0)
+                RVCKM=VINT(180+I)*SPR(0)
                 DO 270 J=1,MSTP(1)
                   IB=2*J-1+MOD(IA,2)
                   IPM=(5-ISIGN(1,I))/2
@@ -7299,14 +7299,14 @@ C...f + fbar -> g + g; th arbitrary
  
         ELSEIF(ISUB.EQ.14) THEN
 C...f + fbar -> g + gamma; th arbitrary
-          IF(PYR(0).GT.0.5D0) JS=2
+          IF(SPR(0).GT.0.5D0) JS=2
           MINT(20+JS)=21
           MINT(23-JS)=22
           KCC=17+JS
  
         ELSEIF(ISUB.EQ.15) THEN
 C...f + fbar -> g + Z0; th arbitrary
-          IF(PYR(0).GT.0.5D0) JS=2
+          IF(SPR(0).GT.0.5D0) JS=2
           MINT(20+JS)=21
           MINT(23-JS)=23
           KCC=17+JS
@@ -7322,7 +7322,7 @@ C...f + fbar' -> g + W+/-; th = (p(f)-p(W-))**2 or (p(fbar')-p(W+))**2
  
         ELSEIF(ISUB.EQ.17) THEN
 C...f + fbar -> g + h0; th arbitrary
-          IF(PYR(0).GT.0.5D0) JS=2
+          IF(SPR(0).GT.0.5D0) JS=2
           MINT(20+JS)=21
           MINT(23-JS)=25
           KCC=17+JS
@@ -7334,7 +7334,7 @@ C...f + fbar -> gamma + gamma; th arbitrary
  
         ELSEIF(ISUB.EQ.19) THEN
 C...f + fbar -> gamma + Z0; th arbitrary
-          IF(PYR(0).GT.0.5D0) JS=2
+          IF(SPR(0).GT.0.5D0) JS=2
           MINT(20+JS)=22
           MINT(23-JS)=23
  
@@ -7351,7 +7351,7 @@ C...(p(fbar')-p(W+))**2
       ELSEIF(ISUB.LE.30) THEN
         IF(ISUB.EQ.21) THEN
 C...f + fbar -> gamma + h0; th arbitrary
-          IF(PYR(0).GT.0.5D0) JS=2
+          IF(SPR(0).GT.0.5D0) JS=2
           MINT(20+JS)=22
           MINT(23-JS)=25
  
@@ -7370,7 +7370,7 @@ C...f + fbar' -> Z0 + W+/-; th = (p(f)-p(W-))**2 or (p(fbar')-p(W+))**2
  
         ELSEIF(ISUB.EQ.24) THEN
 C...f + fbar -> Z0 + h0 (or H0, or A0); th arbitrary
-          IF(PYR(0).GT.0.5D0) JS=2
+          IF(SPR(0).GT.0.5D0) JS=2
           MINT(20+JS)=23
           MINT(23-JS)=KFHIGG
  
@@ -7421,7 +7421,7 @@ C...f + g -> f' + W+/-; th = (p(f)-p(f'))**2; choose flavour f'
           I=MINT(14+JS)
           IA=IABS(I)
           MINT(23-JS)=ISIGN(24,KCHG(IA,1)*I)
-          RVCKM=VINT(180+I)*PYR(0)
+          RVCKM=VINT(180+I)*SPR(0)
           DO 290 J=1,MSTP(1)
             IB=2*J-1+MOD(IA,2)
             IPM=(5-ISIGN(1,I))/2
@@ -7467,7 +7467,7 @@ C...f + gamma -> f' + W+/-; th=(p(f)-p(f'))**2
           IA=IABS(I)
           MINT(23-JS)=ISIGN(24,KCHG(IA,1)*I)
           IF(IA.LE.10) THEN
-            RVCKM=VINT(180+I)*PYR(0)
+            RVCKM=VINT(180+I)*SPR(0)
             DO 310 J=1,MSTP(1)
               IB=2*J-1+MOD(IA,2)
               IPM=(5-ISIGN(1,I))/2
@@ -7537,14 +7537,14 @@ C...f + h0 -> f + h0
  
         ELSEIF(ISUB.EQ.53) THEN
 C...g + g -> f + fbar; th arbitrary
-          KCS=(-1)**INT(1.5D0+PYR(0))
+          KCS=(-1)**INT(1.5D0+SPR(0))
           MINT(21)=ISIGN(KFLF,KCS)
           MINT(22)=-MINT(21)
           KCC=MINT(2)+10
  
         ELSEIF(ISUB.EQ.54) THEN
 C...g + gamma -> f + fbar; th arbitrary
-          KCS=(-1)**INT(1.5D0+PYR(0))
+          KCS=(-1)**INT(1.5D0+SPR(0))
           MINT(21)=ISIGN(KFLF,KCS)
           MINT(22)=-MINT(21)
           KCC=27
@@ -7561,7 +7561,7 @@ C...g + h0 -> f + fbar
  
         ELSEIF(ISUB.EQ.58) THEN
 C...gamma + gamma -> f + fbar; th arbitrary
-          KCS=(-1)**INT(1.5D0+PYR(0))
+          KCS=(-1)**INT(1.5D0+SPR(0))
           MINT(21)=ISIGN(KFLF,KCS)
           MINT(22)=-MINT(21)
           KCC=21
@@ -7598,7 +7598,7 @@ C...h0 + h0 -> f + fbar
         ELSEIF(ISUB.EQ.68) THEN
 C...g + g -> g + g; th arbitrary
           KCC=MINT(2)+12
-          KCS=(-1)**INT(1.5D0+PYR(0))
+          KCS=(-1)**INT(1.5D0+SPR(0))
  
         ELSEIF(ISUB.EQ.69) THEN
 C...gamma + gamma -> W+ + W-; th arbitrary
@@ -7619,30 +7619,30 @@ C...Z0 + Z0 -> Z0 + Z0; Z0 + Z0 -> W+ + W-
           XH=SH/SHP
           MINT(21)=MINT(15)
           MINT(22)=MINT(16)
-          PMQ(1)=PYMASS(MINT(21))
-          PMQ(2)=PYMASS(MINT(22))
-  330     JT=INT(1.5D0+PYR(0))
+          PMQ(1)=SPMASS(MINT(21))
+          PMQ(2)=SPMASS(MINT(22))
+  330     JT=INT(1.5D0+SPR(0))
           ZMIN=2D0*PMQ(JT)/SHPR
           ZMAX=1D0-PMQ(3-JT)/SHPR-(SH-PMQ(JT)**2)/
      &    (SHPR*(SHPR-PMQ(3-JT)))
           ZMAX=MIN(1D0-XH,ZMAX)
-          Z(JT)=ZMIN+(ZMAX-ZMIN)*PYR(0)
+          Z(JT)=ZMIN+(ZMAX-ZMIN)*SPR(0)
           IF(-1D0+(1D0+XH)/(1D0-Z(JT))-XH/(1D0-Z(JT))**2.LT.
-     &    (1D0-XH)**2/(4D0*XH)*PYR(0)) GOTO 330
+     &    (1D0-XH)**2/(4D0*XH)*SPR(0)) GOTO 330
           SQC1=1D0-4D0*PMQ(JT)**2/(Z(JT)**2*SHP)
           IF(SQC1.LT.1D-8) GOTO 330
           C1=SQRT(SQC1)
           C2=1D0+2D0*(PMAS(23,1)**2-PMQ(JT)**2)/(Z(JT)*SHP)
-          CTHE(JT)=(C2-(C2**2-C1**2)/(C2+(2D0*PYR(0)-1D0)*C1))/C1
+          CTHE(JT)=(C2-(C2**2-C1**2)/(C2+(2D0*SPR(0)-1D0)*C1))/C1
           CTHE(JT)=MIN(1D0,MAX(-1D0,CTHE(JT)))
           Z(3-JT)=1D0-XH/(1D0-Z(JT))
           SQC1=1D0-4D0*PMQ(3-JT)**2/(Z(3-JT)**2*SHP)
           IF(SQC1.LT.1D-8) GOTO 330
           C1=SQRT(SQC1)
           C2=1D0+2D0*(PMAS(23,1)**2-PMQ(3-JT)**2)/(Z(3-JT)*SHP)
-          CTHE(3-JT)=(C2-(C2**2-C1**2)/(C2+(2D0*PYR(0)-1D0)*C1))/C1
+          CTHE(3-JT)=(C2-(C2**2-C1**2)/(C2+(2D0*SPR(0)-1D0)*C1))/C1
           CTHE(3-JT)=MIN(1D0,MAX(-1D0,CTHE(3-JT)))
-          PHIR=PARU(2)*PYR(0)
+          PHIR=PARU(2)*SPR(0)
           CPHI=COS(PHIR)
           ANG=CTHE(1)*CTHE(2)-SQRT(1D0-CTHE(1)**2)*
      &    SQRT(1D0-CTHE(2)**2)*CPHI
@@ -7665,7 +7665,7 @@ C...Z0 + W+/- -> Z0 + W+/-
           I=MINT(14+JT)
           IA=IABS(I)
           IF(IA.LE.10) THEN
-            RVCKM=VINT(180+I)*PYR(0)
+            RVCKM=VINT(180+I)*SPR(0)
             DO 350 J=1,MSTP(1)
               IB=2*J-1+MOD(IA,2)
               IPM=(5-ISIGN(1,I))/2
@@ -7679,32 +7679,32 @@ C...Z0 + W+/- -> Z0 + W+/-
             IB=2*((IA+1)/2)-1+MOD(IA,2)
             MINT(20+JT)=ISIGN(IB,I)
           ENDIF
-  360     PMQ(JT)=PYMASS(MINT(20+JT))
+  360     PMQ(JT)=SPMASS(MINT(20+JT))
           MINT(23-JT)=MINT(17-JT)
-          PMQ(3-JT)=PYMASS(MINT(23-JT))
-          JT=INT(1.5D0+PYR(0))
+          PMQ(3-JT)=SPMASS(MINT(23-JT))
+          JT=INT(1.5D0+SPR(0))
           ZMIN=2D0*PMQ(JT)/SHPR
           ZMAX=1D0-PMQ(3-JT)/SHPR-(SH-PMQ(JT)**2)/
      &    (SHPR*(SHPR-PMQ(3-JT)))
           ZMAX=MIN(1D0-XH,ZMAX)
           IF(ZMIN.GE.ZMAX) GOTO 340
-          Z(JT)=ZMIN+(ZMAX-ZMIN)*PYR(0)
+          Z(JT)=ZMIN+(ZMAX-ZMIN)*SPR(0)
           IF(-1D0+(1D0+XH)/(1D0-Z(JT))-XH/(1D0-Z(JT))**2.LT.
-     &    (1D0-XH)**2/(4D0*XH)*PYR(0)) GOTO 340
+     &    (1D0-XH)**2/(4D0*XH)*SPR(0)) GOTO 340
           SQC1=1D0-4D0*PMQ(JT)**2/(Z(JT)**2*SHP)
           IF(SQC1.LT.1D-8) GOTO 340
           C1=SQRT(SQC1)
           C2=1D0+2D0*(PMAS(23,1)**2-PMQ(JT)**2)/(Z(JT)*SHP)
-          CTHE(JT)=(C2-(C2**2-C1**2)/(C2+(2D0*PYR(0)-1D0)*C1))/C1
+          CTHE(JT)=(C2-(C2**2-C1**2)/(C2+(2D0*SPR(0)-1D0)*C1))/C1
           CTHE(JT)=MIN(1D0,MAX(-1D0,CTHE(JT)))
           Z(3-JT)=1D0-XH/(1D0-Z(JT))
           SQC1=1D0-4D0*PMQ(3-JT)**2/(Z(3-JT)**2*SHP)
           IF(SQC1.LT.1D-8) GOTO 340
           C1=SQRT(SQC1)
           C2=1D0+2D0*(PMAS(23,1)**2-PMQ(3-JT)**2)/(Z(3-JT)*SHP)
-          CTHE(3-JT)=(C2-(C2**2-C1**2)/(C2+(2D0*PYR(0)-1D0)*C1))/C1
+          CTHE(3-JT)=(C2-(C2**2-C1**2)/(C2+(2D0*SPR(0)-1D0)*C1))/C1
           CTHE(3-JT)=MIN(1D0,MAX(-1D0,CTHE(3-JT)))
-          PHIR=PARU(2)*PYR(0)
+          PHIR=PARU(2)*SPR(0)
           CPHI=COS(PHIR)
           ANG=CTHE(1)*CTHE(2)-SQRT(1D0-CTHE(1)**2)*
      &    SQRT(1D0-CTHE(2)**2)*CPHI
@@ -7732,7 +7732,7 @@ C...W+ + W- -> Z0 + Z0; W+ + W- -> W+ + W-
             I=MINT(14+JT)
             IA=IABS(I)
             IF(IA.LE.10) THEN
-              RVCKM=VINT(180+I)*PYR(0)
+              RVCKM=VINT(180+I)*SPR(0)
               DO 380 J=1,MSTP(1)
                 IB=2*J-1+MOD(IA,2)
                 IPM=(5-ISIGN(1,I))/2
@@ -7746,31 +7746,31 @@ C...W+ + W- -> Z0 + Z0; W+ + W- -> W+ + W-
               IB=2*((IA+1)/2)-1+MOD(IA,2)
               MINT(20+JT)=ISIGN(IB,I)
             ENDIF
-  390       PMQ(JT)=PYMASS(MINT(20+JT))
+  390       PMQ(JT)=SPMASS(MINT(20+JT))
   400     CONTINUE
-          JT=INT(1.5D0+PYR(0))
+          JT=INT(1.5D0+SPR(0))
           ZMIN=2D0*PMQ(JT)/SHPR
           ZMAX=1D0-PMQ(3-JT)/SHPR-(SH-PMQ(JT)**2)/
      &    (SHPR*(SHPR-PMQ(3-JT)))
           ZMAX=MIN(1D0-XH,ZMAX)
           IF(ZMIN.GE.ZMAX) GOTO 370
-          Z(JT)=ZMIN+(ZMAX-ZMIN)*PYR(0)
+          Z(JT)=ZMIN+(ZMAX-ZMIN)*SPR(0)
           IF(-1D0+(1D0+XH)/(1D0-Z(JT))-XH/(1D0-Z(JT))**2.LT.
-     &    (1D0-XH)**2/(4D0*XH)*PYR(0)) GOTO 370
+     &    (1D0-XH)**2/(4D0*XH)*SPR(0)) GOTO 370
           SQC1=1D0-4D0*PMQ(JT)**2/(Z(JT)**2*SHP)
           IF(SQC1.LT.1D-8) GOTO 370
           C1=SQRT(SQC1)
           C2=1D0+2D0*(PMAS(24,1)**2-PMQ(JT)**2)/(Z(JT)*SHP)
-          CTHE(JT)=(C2-(C2**2-C1**2)/(C2+(2D0*PYR(0)-1D0)*C1))/C1
+          CTHE(JT)=(C2-(C2**2-C1**2)/(C2+(2D0*SPR(0)-1D0)*C1))/C1
           CTHE(JT)=MIN(1D0,MAX(-1D0,CTHE(JT)))
           Z(3-JT)=1D0-XH/(1D0-Z(JT))
           SQC1=1D0-4D0*PMQ(3-JT)**2/(Z(3-JT)**2*SHP)
           IF(SQC1.LT.1D-8) GOTO 370
           C1=SQRT(SQC1)
           C2=1D0+2D0*(PMAS(24,1)**2-PMQ(3-JT)**2)/(Z(3-JT)*SHP)
-          CTHE(3-JT)=(C2-(C2**2-C1**2)/(C2+(2D0*PYR(0)-1D0)*C1))/C1
+          CTHE(3-JT)=(C2-(C2**2-C1**2)/(C2+(2D0*SPR(0)-1D0)*C1))/C1
           CTHE(3-JT)=MIN(1D0,MAX(-1D0,CTHE(3-JT)))
-          PHIR=PARU(2)*PYR(0)
+          PHIR=PARU(2)*SPR(0)
           CPHI=COS(PHIR)
           ANG=CTHE(1)*CTHE(2)-SQRT(1D0-CTHE(1)**2)*
      &    SQRT(1D0-CTHE(2)**2)*CPHI
@@ -7811,7 +7811,7 @@ C...q + qbar -> Q + Qbar; th = (p(q)-p(Q))**2
  
         ELSEIF(ISUB.EQ.82) THEN
 C...g + g -> Q + Qbar; th arbitrary
-          KCS=(-1)**INT(1.5D0+PYR(0))
+          KCS=(-1)**INT(1.5D0+SPR(0))
           MINT(21)=ISIGN(MINT(55),KCS)
           MINT(22)=-MINT(21)
           KCC=MINT(2)+10
@@ -7824,7 +7824,7 @@ C...f + q -> f' + Q; th = (p(f) - p(f'))**2
           IF(KFAOLD.GT.10) THEN
             KFANEW=KFAOLD+2*MOD(KFAOLD,2)-1
           ELSE
-            RCKM=VINT(180+KFOLD)*PYR(0)
+            RCKM=VINT(180+KFOLD)*SPR(0)
             IPM=(5-ISIGN(1,KFOLD))/2
             KFANEW=-MOD(KFAOLD+1,2)
   410       KFANEW=KFANEW+2
@@ -7849,7 +7849,7 @@ C...f + q -> f' + Q; th = (p(f) - p(f'))**2
  
         ELSEIF(ISUB.EQ.84) THEN
 C...g + gamma -> Q + Qbar; th arbitary
-          KCS=(-1)**INT(1.5D0+PYR(0))
+          KCS=(-1)**INT(1.5D0+SPR(0))
           MINT(21)=ISIGN(MINT(55),KCS)
           MINT(22)=-MINT(21)
           KCC=27
@@ -7857,7 +7857,7 @@ C...g + gamma -> Q + Qbar; th arbitary
  
         ELSEIF(ISUB.EQ.85) THEN
 C...gamma + gamma -> F + Fbar; th arbitary
-          KCS=(-1)**INT(1.5D0+PYR(0))
+          KCS=(-1)**INT(1.5D0+SPR(0))
           MINT(21)=ISIGN(MINT(56),KCS)
           MINT(22)=-MINT(21)
           KCC=21
@@ -7867,14 +7867,14 @@ C...g + g -> (J/Psi, chi_0c, chi_1c or chi_2c) + g
           MINT(21)=KFPR(ISUB,1)
           MINT(22)=KFPR(ISUB,2)
           KCC=24
-          KCS=(-1)**INT(1.5D0+PYR(0))
+          KCS=(-1)**INT(1.5D0+SPR(0))
         ENDIF
  
       ELSEIF(ISUB.LE.100) THEN
         IF(ISUB.EQ.95) THEN
 C...Low-pT ( = energyless g + g -> g + g)
           KCC=MINT(2)+12
-          KCS=(-1)**INT(1.5D0+PYR(0))
+          KCS=(-1)**INT(1.5D0+SPR(0))
  
         ELSEIF(ISUB.EQ.96) THEN
 C...Multiple interactions (should be reassigned to QCD process)
@@ -7921,7 +7921,7 @@ C...gamma + gamma -> J/Psi + gamma
  
         ELSEIF(ISUB.EQ.110) THEN
 C...f + fbar -> gamma + h0; th arbitrary
-          IF(PYR(0).GT.0.5D0) JS=2
+          IF(SPR(0).GT.0.5D0) JS=2
           MINT(20+JS)=22
           MINT(23-JS)=KFHIGG
         ENDIF
@@ -7929,7 +7929,7 @@ C...f + fbar -> gamma + h0; th arbitrary
       ELSEIF(ISUB.LE.120) THEN
         IF(ISUB.EQ.111) THEN
 C...f + fbar -> g + h0; th arbitrary
-          IF(PYR(0).GT.0.5D0) JS=2
+          IF(SPR(0).GT.0.5D0) JS=2
           MINT(20+JS)=21
           MINT(23-JS)=KFHIGG
           KCC=17+JS
@@ -7943,24 +7943,24 @@ C...f + g -> f + h0; th = (p(f) - p(f))**2
  
         ELSEIF(ISUB.EQ.113) THEN
 C...g + g -> g + h0; th arbitrary
-          IF(PYR(0).GT.0.5D0) JS=2
+          IF(SPR(0).GT.0.5D0) JS=2
           MINT(23-JS)=KFHIGG
           KCC=22+JS
-          KCS=(-1)**INT(1.5D0+PYR(0))
+          KCS=(-1)**INT(1.5D0+SPR(0))
  
         ELSEIF(ISUB.EQ.114) THEN
 C...g + g -> gamma + gamma; th arbitrary
-          IF(PYR(0).GT.0.5D0) JS=2
+          IF(SPR(0).GT.0.5D0) JS=2
           MINT(21)=22
           MINT(22)=22
           KCC=21
  
         ELSEIF(ISUB.EQ.115) THEN
 C...g + g -> g + gamma; th arbitrary
-          IF(PYR(0).GT.0.5D0) JS=2
+          IF(SPR(0).GT.0.5D0) JS=2
           MINT(23-JS)=22
           KCC=22+JS
-          KCS=(-1)**INT(1.5D0+PYR(0))
+          KCS=(-1)**INT(1.5D0+SPR(0))
  
         ELSEIF(ISUB.EQ.116) THEN
 C...g + g -> gamma + Z0
@@ -7975,10 +7975,10 @@ C...g + g -> W+ + W-
       ELSEIF(ISUB.LE.140) THEN
         IF(ISUB.EQ.121) THEN
 C...g + g -> Q + Qbar + h0
-          KCS=(-1)**INT(1.5D0+PYR(0))
+          KCS=(-1)**INT(1.5D0+SPR(0))
           MINT(21)=ISIGN(KFPR(ISUBSV,2),KCS)
           MINT(22)=-MINT(21)
-          KCC=11+INT(0.5D0+PYR(0))
+          KCC=11+INT(0.5D0+SPR(0))
           KFRES=KFHIGG
  
         ELSEIF(ISUB.EQ.122) THEN
@@ -8001,7 +8001,7 @@ C...inner process)
             I=MINT(14+JT)
             IA=IABS(I)
             IF(IA.LE.10) THEN
-              RVCKM=VINT(180+I)*PYR(0)
+              RVCKM=VINT(180+I)*SPR(0)
               DO 420 J=1,MSTP(1)
                 IB=2*J-1+MOD(IA,2)
                 IPM=(5-ISIGN(1,I))/2
@@ -8034,7 +8034,7 @@ C...f + gamma*_(T,L) -> f + gamma; th=(p(f)-p(f))**2
  
         ELSEIF(ISUB.EQ.135.OR.ISUB.EQ.136) THEN
 C...g + gamma*_(T,L) -> f + fbar; th arbitrary
-          KCS=(-1)**INT(1.5D0+PYR(0))
+          KCS=(-1)**INT(1.5D0+SPR(0))
           MINT(21)=ISIGN(KFLF,KCS)
           MINT(22)=-MINT(21)
           KCC=27
@@ -8042,7 +8042,7 @@ C...g + gamma*_(T,L) -> f + fbar; th arbitrary
  
         ELSEIF(ISUB.GE.137.AND.ISUB.LE.140) THEN
 C...gamma*_(T,L) + gamma*_(T,L) -> f + fbar; th arbitrary
-          KCS=(-1)**INT(1.5D0+PYR(0))
+          KCS=(-1)**INT(1.5D0+SPR(0))
           MINT(21)=ISIGN(KFLF,KCS)
           MINT(22)=-MINT(21)
           KCC=21
@@ -8094,7 +8094,7 @@ C...q + g -> q* (excited quark)
 C...g + g -> eta_tc
           KFRES=KTECHN+331
           KCC=23
-          KCS=(-1)**INT(1.5D0+PYR(0))
+          KCS=(-1)**INT(1.5D0+SPR(0))
         ENDIF
  
       ELSEIF(ISUB.LE.200) THEN
@@ -8120,7 +8120,7 @@ C...q + g -> LQ + lbar; LQ=leptoquark; th=(p(q)-p(LQ))^2
  
         ELSEIF(ISUB.EQ.163) THEN
 C...g + g -> LQ + LQbar; LQ=leptoquark; th arbitrary
-          KCS=(-1)**INT(1.5D0+PYR(0))
+          KCS=(-1)**INT(1.5D0+SPR(0))
           MINT(21)=ISIGN(42,KCS)
           MINT(22)=-MINT(21)
           KCC=MINT(2)+10
@@ -8320,42 +8320,42 @@ C...f + fbar -> ~chi04 + ~chi04
         ELSEIF(ISUB.EQ.220 ) THEN
 C...f + fbar -> ~chi01 + ~chi02
           IF(MINT(15).LT.0) JS=2
-C          IF(PYR(0).GT.0.5D0) JS=2
+C          IF(SPR(0).GT.0.5D0) JS=2
           MINT(20+JS)=KSUSY1+22
           MINT(23-JS)=KSUSY1+23
  
         ELSEIF(ISUB.EQ.221 ) THEN
 C...f + fbar -> ~chi01 + ~chi03
           IF(MINT(15).LT.0) JS=2
-C          IF(PYR(0).GT.0.5D0) JS=2
+C          IF(SPR(0).GT.0.5D0) JS=2
           MINT(20+JS)=KSUSY1+22
           MINT(23-JS)=KSUSY1+25
  
         ELSEIF(ISUB.EQ.222) THEN
 C...f + fbar -> ~chi01 + ~chi04
           IF(MINT(15).LT.0) JS=2
-C          IF(PYR(0).GT.0.5D0) JS=2
+C          IF(SPR(0).GT.0.5D0) JS=2
           MINT(20+JS)=KSUSY1+22
           MINT(23-JS)=KSUSY1+35
  
         ELSEIF(ISUB.EQ.223) THEN
 C...f + fbar -> ~chi02 + ~chi03
           IF(MINT(15).LT.0) JS=2
-C          IF(PYR(0).GT.0.5D0) JS=2
+C          IF(SPR(0).GT.0.5D0) JS=2
           MINT(20+JS)=KSUSY1+23
           MINT(23-JS)=KSUSY1+25
  
         ELSEIF(ISUB.EQ.224) THEN
 C...f + fbar -> ~chi02 + ~chi04
           IF(MINT(15).LT.0) JS=2
-C          IF(PYR(0).GT.0.5D0) JS=2
+C          IF(SPR(0).GT.0.5D0) JS=2
           MINT(20+JS)=KSUSY1+23
           MINT(23-JS)=KSUSY1+35
  
         ELSEIF(ISUB.EQ.225) THEN
 C...f + fbar -> ~chi03 + ~chi04
           IF(MINT(15).LT.0) JS=2
-C          IF(PYR(0).GT.0.5D0) JS=2
+C          IF(SPR(0).GT.0.5D0) JS=2
           MINT(20+JS)=KSUSY1+25
           MINT(23-JS)=KSUSY1+35
         ENDIF
@@ -8377,7 +8377,7 @@ C...f + fbar -> ~chi+-2 + ~chi-+2
         ELSEIF(ISUB.EQ.228) THEN
 C...f + fbar -> ~chi+-1 + ~chi-+2
 C...th=(p(q)-p(chi1+))**2 or th=(p(qbar)-p(chi1-))**2
-C...js=1 if pyr<.5, js=2 if pyr>.5
+C...js=1 if spr<.5, js=2 if spr>.5
 C...if 15=q, 16=qbar and js=1, chi1+ + chi2-, th=(q-chi1+)**2
 C...if 15=qbar, 16=q and js=1, chi2- + chi1+, th=(q-chi1+)**2
 C...if 15=q, 16=qbar and js=2, chi1- + chi2+, th=(qbar-chi1-)**2
@@ -8466,7 +8466,7 @@ C...q + qbar' -> ~chi04 + ~chi+-2
         IF(ISUB.EQ.237) THEN
 C...q + qbar -> ~chi01 + ~g
 C...th arbitrary
-          IF(PYR(0).GT.0.5D0) JS=2
+          IF(SPR(0).GT.0.5D0) JS=2
           MINT(20+JS)=KSUSY1+21
           MINT(23-JS)=KSUSY1+22
           KCC=17+JS
@@ -8474,7 +8474,7 @@ C...th arbitrary
         ELSEIF(ISUB.EQ.238) THEN
 C...q + qbar -> ~chi02 + ~g
 C...th arbitrary
-          IF(PYR(0).GT.0.5D0) JS=2
+          IF(SPR(0).GT.0.5D0) JS=2
           MINT(20+JS)=KSUSY1+21
           MINT(23-JS)=KSUSY1+23
           KCC=17+JS
@@ -8482,7 +8482,7 @@ C...th arbitrary
         ELSEIF(ISUB.EQ.239) THEN
 C...q + qbar -> ~chi03 + ~g
 C...th arbitrary
-          IF(PYR(0).GT.0.5D0) JS=2
+          IF(SPR(0).GT.0.5D0) JS=2
           MINT(20+JS)=KSUSY1+21
           MINT(23-JS)=KSUSY1+25
           KCC=17+JS
@@ -8490,7 +8490,7 @@ C...th arbitrary
         ELSEIF(ISUB.EQ.240) THEN
 C...q + qbar -> ~chi04 + ~g
 C...th arbitrary
-          IF(PYR(0).GT.0.5D0) JS=2
+          IF(SPR(0).GT.0.5D0) JS=2
           MINT(20+JS)=KSUSY1+21
           MINT(23-JS)=KSUSY1+35
           KCC=17+JS
@@ -8534,7 +8534,7 @@ C...q + qbar -> ~g + ~g ; th arbitrary
         ELSEIF(ISUB.EQ.244) THEN
 C...g + g -> ~g + ~g ; th arbitrary
           KCC=MINT(2)+12
-          KCS=(-1)**INT(1.5D0+PYR(0))
+          KCS=(-1)**INT(1.5D0+SPR(0))
           MINT(21)=KSUSY1+21
           MINT(22)=KSUSY1+21
         ENDIF
@@ -8691,7 +8691,7 @@ C...qj + g -> ~qj_R + ~g
         IF(ISUB.EQ.261) THEN
 C...f + fbar -> ~t_1 + ~t_1bar; th = (p(q)-p(sq))**2
           ISGN=1
-          IF(MINT(43).EQ.1.AND.PYR(0).GT.0.5D0) ISGN=-1
+          IF(MINT(43).EQ.1.AND.SPR(0).GT.0.5D0) ISGN=-1
           MINT(21)=ISGN*ISIGN(KFPR(ISUB,1),KCS)
           MINT(22)=-MINT(21)
 C...Correct color combination
@@ -8700,7 +8700,7 @@ C...Correct color combination
         ELSEIF(ISUB.EQ.262) THEN
 C...f + fbar -> ~t_2 + ~t_2bar; th = (p(q)-p(sq))**2
           ISGN=1
-          IF(MINT(43).EQ.1.AND.PYR(0).GT.0.5D0) ISGN=-1
+          IF(MINT(43).EQ.1.AND.SPR(0).GT.0.5D0) ISGN=-1
           MINT(21)=ISGN*ISIGN(KFPR(ISUB,1),KCS)
           MINT(22)=-MINT(21)
 C...Correct color combination
@@ -8722,14 +8722,14 @@ C...Correct color combination
  
         ELSEIF(ISUB.EQ.264) THEN
 C...g + g -> ~t_1 + ~t_1bar; th arbitrary
-          KCS=(-1)**INT(1.5D0+PYR(0))
+          KCS=(-1)**INT(1.5D0+SPR(0))
           MINT(21)=ISIGN(KFPR(ISUB,1),KCS)
           MINT(22)=-MINT(21)
           KCC=MINT(2)+10
  
         ELSEIF(ISUB.EQ.265) THEN
 C...g + g -> ~t_2 + ~t_2bar; th arbitrary
-          KCS=(-1)**INT(1.5D0+PYR(0))
+          KCS=(-1)**INT(1.5D0+SPR(0))
           MINT(21)=ISIGN(KFPR(ISUB,1),KCS)
           MINT(22)=-MINT(21)
           KCC=MINT(2)+10
@@ -8781,7 +8781,7 @@ C...qi + qjbar -> ~qi_L + ~qj_Rbar ; th = (p(f)-p(sf'))**2
         ELSEIF(ISUB.EQ.277.OR.ISUB.EQ.287) THEN
 C...f + fbar -> ~qi_L + ~qi_Lbar ; th = (p(q)-p(sq))**2
           ISGN=1
-          IF(MINT(43).EQ.1.AND.PYR(0).GT.0.5D0) ISGN=-1
+          IF(MINT(43).EQ.1.AND.SPR(0).GT.0.5D0) ISGN=-1
           MINT(21)=ISGN*ISIGN(KFPR(ISUB,1),KCS)
           MINT(22)=-MINT(21)
           IF(MINT(43).EQ.4) KCC=4
@@ -8789,7 +8789,7 @@ C...f + fbar -> ~qi_L + ~qi_Lbar ; th = (p(q)-p(sq))**2
         ELSEIF(ISUB.EQ.278.OR.ISUB.EQ.288) THEN
 C...f + fbar -> ~qi_R + ~qi_Rbar; th = (p(q)-p(sq))**2
           ISGN=1
-          IF(MINT(43).EQ.1.AND.PYR(0).GT.0.5D0) ISGN=-1
+          IF(MINT(43).EQ.1.AND.SPR(0).GT.0.5D0) ISGN=-1
           MINT(21)=ISGN*ISIGN(KFPR(ISUB,1),KCS)
           MINT(22)=-MINT(21)
           IF(MINT(43).EQ.4) KCC=4
@@ -8797,14 +8797,14 @@ C...f + fbar -> ~qi_R + ~qi_Rbar; th = (p(q)-p(sq))**2
         ELSEIF(ISUB.EQ.279.OR.ISUB.EQ.289) THEN
 C...g + g -> ~qi_L + ~qi_Lbar ; th arbitrary
 C...pure LL + RR
-          KCS=(-1)**INT(1.5D0+PYR(0))
+          KCS=(-1)**INT(1.5D0+SPR(0))
           MINT(21)=ISIGN(KFPR(ISUB,1),KCS)
           MINT(22)=-MINT(21)
           KCC=MINT(2)+10
  
         ELSEIF(ISUB.EQ.280.OR.ISUB.EQ.290) THEN
 C...g + g -> ~qi_R + ~qi_Rbar ; th arbitrary
-          KCS=(-1)**INT(1.5D0+PYR(0))
+          KCS=(-1)**INT(1.5D0+SPR(0))
           MINT(21)=ISIGN(KFPR(ISUB,1),KCS)
           MINT(22)=-MINT(21)
           KCC=MINT(2)+10
@@ -8843,7 +8843,7 @@ C...q + qbar' -> H+ + H0
           MINT(23-JS)=KFPR(ISUB,2)
         ELSEIF(ISUB.EQ.299.OR.ISUB.EQ.300) THEN
 C...f + fbar -> A0 + H0; th arbitrary
-          IF(PYR(0).GT.0.5D0) JS=2
+          IF(SPR(0).GT.0.5D0) JS=2
           MINT(20+JS)=KFPR(ISUB,1)
           MINT(23-JS)=KFPR(ISUB,2)
         ELSEIF(ISUB.EQ.301) THEN
@@ -8880,7 +8880,7 @@ C...as inner process).
             I=MINT(14+JT)
             IA=IABS(I)
             IF(IA.LE.10) THEN
-              RVCKM=VINT(180+I)*PYR(0)
+              RVCKM=VINT(180+I)*SPR(0)
               DO 440 J=1,MSTP(1)
                 IB=2*J-1+MOD(IA,2)
                 IPM=(5-ISIGN(1,I))/2
@@ -8915,7 +8915,7 @@ C...f + fbar' -> W+/-
  
         IF(ISUB.LE.363.OR.ISUB.EQ.368) THEN
 C...f + fbar -> charged+ charged- technicolor
-          KSW=(-1)**INT(1.5D0+PYR(0))
+          KSW=(-1)**INT(1.5D0+SPR(0))
           MINT(21)=ISIGN(KFPR(ISUB,1),KSW)
           MINT(22)=-ISIGN(KFPR(ISUB,2),KSW)
  
@@ -8973,7 +8973,7 @@ C...f + g -> f + g; th = (p(f)-p(f))**2, TC extensions
  
         ELSEIF(ISUB.EQ.385) THEN
 C...g + g -> f + fbar; th arbitrary, TC extensions
-          KCS=(-1)**INT(1.5D0+PYR(0))
+          KCS=(-1)**INT(1.5D0+SPR(0))
           MINT(21)=ISIGN(KFLF,KCS)
           MINT(22)=-MINT(21)
           KCC=MINT(2)+10
@@ -8981,7 +8981,7 @@ C...g + g -> f + fbar; th arbitrary, TC extensions
         ELSEIF(ISUB.EQ.386) THEN
 C...g + g -> g + g; th arbitrary, TC extensions
           KCC=MINT(2)+12
-          KCS=(-1)**INT(1.5D0+PYR(0))
+          KCS=(-1)**INT(1.5D0+SPR(0))
  
         ELSEIF(ISUB.EQ.387) THEN
 C...q + qbar -> Q + Qbar; th = (p(q)-p(Q))**2, TC extensions
@@ -8991,7 +8991,7 @@ C...q + qbar -> Q + Qbar; th = (p(q)-p(Q))**2, TC extensions
  
         ELSEIF(ISUB.EQ.388) THEN
 C...g + g -> Q + Qbar; th arbitrary, TC extensions
-          KCS=(-1)**INT(1.5D0+PYR(0))
+          KCS=(-1)**INT(1.5D0+SPR(0))
           MINT(21)=ISIGN(MINT(55),KCS)
           MINT(22)=-MINT(21)
           KCC=MINT(2)+10
@@ -9007,7 +9007,7 @@ C...g + g -> G*.
  
         ELSEIF(ISUB.EQ.393) THEN
 C...q + qbar -> g + G*;  th arbitrary.
-          IF(PYR(0).GT.0.5D0) JS=2
+          IF(SPR(0).GT.0.5D0) JS=2
           MINT(20+JS)=KFPR(ISUB,1)
           MINT(23-JS)=KFPR(ISUB,2)
           KCC=17+JS
@@ -9021,7 +9021,7 @@ C...q + g -> q + G*;  th = (p(f) - p(f))**2
  
         ELSEIF(ISUB.EQ.395) THEN
 C...g + g -> G* + g;  th arbitrary.
-          IF(PYR(0).GT.0.5D0) JS=2
+          IF(SPR(0).GT.0.5D0) JS=2
           MINT(23-JS)=KFPR(ISUB,2)
           KCC=22+JS
         ENDIF
@@ -9054,7 +9054,7 @@ C...Store documentation for user-defined processes
   460     CONTINUE
           V(I,5)=VTIMUP(IUP)
   470   CONTINUE
-        CALL PYROBO(MINT(83)+7,MINT(83)+4+NUP,0D0,VINT(24),0D0,0D0,
+        CALL SPROBO(MINT(83)+7,MINT(83)+4+NUP,0D0,VINT(24),0D0,0D0,
      &  -BEZUP)
  
 C...Store final state partons for user-defined processes
@@ -9077,13 +9077,13 @@ C...Store final state partons for user-defined processes
   480     CONTINUE
           V(N,5)=VTIMUP(IUP)
   490   CONTINUE
-        CALL PYROBO(IPU3,N,0D0,VINT(24),0D0,0D0,-BEZUP)
+        CALL SPROBO(IPU3,N,0D0,VINT(24),0D0,0D0,-BEZUP)
  
 C...Arrange colour flow for user-defined processes
         NLBL=0
         DO 540 IUP1=1,NUP
           I1=MINT(84)+IUP1
-          IF(KCHG(PYCOMP(K(I1,2)),2).EQ.0) GOTO 540
+          IF(KCHG(SPCOMP(K(I1,2)),2).EQ.0) GOTO 540
           IF(K(I1,1).EQ.1) K(I1,1)=3
           IF(K(I1,1).EQ.11) K(I1,1)=14
 C...Find a not yet considered colour/anticolour line.
@@ -9144,7 +9144,7 @@ C...Resonance not decaying; store kinematics
         MINT(22)=0
  
 C...Special cases: colour flow in coloured resonances
-        KCRES=PYCOMP(KFRES)
+        KCRES=SPCOMP(KFRES)
         IF(KCHG(KCRES,2).NE.0) THEN
           K(IPU3,1)=3
           DO 550 J=1,2
@@ -9168,7 +9168,7 @@ C...Special cases: colour flow in coloured resonances
 C...2 -> 2 processes: store outgoing partons in their CM-frame
         DO 560 JT=1,2
           I=MINT(84)+2+JT
-          KCA=PYCOMP(MINT(20+JT))
+          KCA=SPCOMP(MINT(20+JT))
           K(I,1)=1
           IF(KCHG(KCA,2).NE.0) K(I,1)=3
           K(I,2)=MINT(20+JT)
@@ -9177,10 +9177,10 @@ C...2 -> 2 processes: store outgoing partons in their CM-frame
           IF(KFPR(ISUBSV,1+MOD(JS+JT,2)).NE.0) THEN
             P(I,5)=SQRT(VINT(63+MOD(JS+JT,2)))
           ELSE
-            P(I,5)=PYMASS(K(I,2))
+            P(I,5)=SPMASS(K(I,2))
           ENDIF
           IF((KFAA.EQ.6.OR.KFAA.EQ.7.OR.KFAA.EQ.8).AND.
-     &    P(I,5).LT.PARP(42)) P(I,5)=PYMASS(K(I,2))
+     &    P(I,5).LT.PARP(42)) P(I,5)=SPMASS(K(I,2))
   560   CONTINUE
         IF(P(IPU3,5)+P(IPU4,5).GE.SHR) THEN
           KFA1=IABS(MINT(21))
@@ -9202,19 +9202,19 @@ C...2 -> 2 processes: store outgoing partons in their CM-frame
         MINT(8)=MINT(83)+8
  
 C...Rotate outgoing partons using cos(theta)=(th-uh)/lam(sh,sqm3,sqm4)
-        CALL PYROBO(IPU3,IPU4,ACOS(VINT(23)),VINT(24),0D0,0D0,0D0)
+        CALL SPROBO(IPU3,IPU4,ACOS(VINT(23)),VINT(24),0D0,0D0,0D0)
  
       ELSEIF(IDOC.EQ.9) THEN
 C...2 -> 3 processes: store outgoing partons in their CM frame
         DO 570 JT=1,2
           I=MINT(84)+2+JT
-          KCA=PYCOMP(MINT(20+JT))
+          KCA=SPCOMP(MINT(20+JT))
           K(I,1)=1
           IF(KCHG(KCA,2).NE.0) K(I,1)=3
           K(I,2)=MINT(20+JT)
           K(I,3)=MINT(83)+IDOC+JT-3
           IF(IABS(K(I,2)).LE.22) THEN
-            P(I,5)=PYMASS(K(I,2))
+            P(I,5)=SPMASS(K(I,2))
           ELSE
             P(I,5)=SQRT(VINT(63+MOD(JS+JT,2)))
           ENDIF
@@ -9252,15 +9252,15 @@ C...2 -> 3 processes: store outgoing partons in their CM frame
  
       ELSEIF(IDOC.EQ.11) THEN
 C...Z0 + Z0 -> h0, W+ + W- -> h0: store Higgs and outgoing partons
-        PHI(1)=PARU(2)*PYR(0)
+        PHI(1)=PARU(2)*SPR(0)
         PHI(2)=PHI(1)-PHIR
         DO 580 JT=1,2
           I=MINT(84)+2+JT
           K(I,1)=1
-          IF(KCHG(PYCOMP(MINT(20+JT)),2).NE.0) K(I,1)=3
+          IF(KCHG(SPCOMP(MINT(20+JT)),2).NE.0) K(I,1)=3
           K(I,2)=MINT(20+JT)
           K(I,3)=MINT(83)+IDOC+JT-2
-          P(I,5)=PYMASS(K(I,2))
+          P(I,5)=SPMASS(K(I,2))
           IF(0.5D0*SHPR*Z(JT).LE.P(I,5)) THEN
             MINT(51)=1
             RETURN
@@ -9274,7 +9274,7 @@ C...Z0 + Z0 -> h0, W+ + W- -> h0: store Higgs and outgoing partons
           IZW=MINT(83)+6+JT
           K(IZW,1)=21
           K(IZW,2)=23
-          IF(ISUB.EQ.8) K(IZW,2)=ISIGN(24,PYCHGE(MINT(14+JT)))
+          IF(ISUB.EQ.8) K(IZW,2)=ISIGN(24,SPCHGE(MINT(14+JT)))
           K(IZW,3)=IZW-2
           P(IZW,1)=-P(I,1)
           P(IZW,2)=-P(I,2)
@@ -9301,16 +9301,16 @@ C...Z0 + Z0 -> h0, W+ + W- -> h0: store Higgs and outgoing partons
  
       ELSEIF(IDOC.EQ.12) THEN
 C...Z0 and W+/- scattering: store bosons and outgoing partons
-        PHI(1)=PARU(2)*PYR(0)
+        PHI(1)=PARU(2)*SPR(0)
         PHI(2)=PHI(1)-PHIR
-        JTRAN=INT(1.5D0+PYR(0))
+        JTRAN=INT(1.5D0+SPR(0))
         DO 600 JT=1,2
           I=MINT(84)+2+JT
           K(I,1)=1
-          IF(KCHG(PYCOMP(MINT(20+JT)),2).NE.0) K(I,1)=3
+          IF(KCHG(SPCOMP(MINT(20+JT)),2).NE.0) K(I,1)=3
           K(I,2)=MINT(20+JT)
           K(I,3)=MINT(83)+IDOC+JT-2
-          P(I,5)=PYMASS(K(I,2))
+          P(I,5)=SPMASS(K(I,2))
           IF(0.5D0*SHPR*Z(JT).LE.P(I,5)) P(I,5)=0D0
           PABS=SQRT(MAX(0D0,(0.5D0*SHPR*Z(JT))**2-P(I,5)**2))
           PTABS=PABS*SQRT(MAX(0D0,1D0-CTHE(JT)**2))
@@ -9323,7 +9323,7 @@ C...Z0 and W+/- scattering: store bosons and outgoing partons
           IF(MINT(14+JT).EQ.MINT(20+JT)) THEN
             K(IZW,2)=23
           ELSE
-            K(IZW,2)=ISIGN(24,PYCHGE(MINT(14+JT))-PYCHGE(MINT(20+JT)))
+            K(IZW,2)=ISIGN(24,SPCHGE(MINT(14+JT))-SPCHGE(MINT(20+JT)))
           ENDIF
           K(IZW,3)=IZW-2
           P(IZW,1)=-P(I,1)
@@ -9338,7 +9338,7 @@ C...Z0 and W+/- scattering: store bosons and outgoing partons
           IF(ISUB.EQ.73.OR.ISUB.EQ.77) K(IPU,2)=K(IZW,2)
           K(IPU,3)=MINT(83)+8+JT
           IF(IABS(K(IPU,2)).LE.10.OR.K(IPU,2).EQ.21) THEN
-            P(IPU,5)=PYMASS(K(IPU,2))
+            P(IPU,5)=SPMASS(K(IPU,2))
           ELSE
             P(IPU,5)=SQRT(VINT(63+MOD(JS+JT,2)))
           ENDIF
@@ -9353,10 +9353,10 @@ C...Find rotation and boost for hard scattering subsystem
         GAMCM=(P(I1,4)+P(I2,4))/SHR
         BEPCM=BEXCM*P(I1,1)+BEYCM*P(I1,2)+BEZCM*P(I1,3)
         PX=P(I1,1)+GAMCM*(GAMCM/(1D0+GAMCM)*BEPCM-P(I1,4))*BEXCM
-        PY=P(I1,2)+GAMCM*(GAMCM/(1D0+GAMCM)*BEPCM-P(I1,4))*BEYCM
+        SP=P(I1,2)+GAMCM*(GAMCM/(1D0+GAMCM)*BEPCM-P(I1,4))*BEYCM
         PZ=P(I1,3)+GAMCM*(GAMCM/(1D0+GAMCM)*BEPCM-P(I1,4))*BEZCM
-        THECM=PYANGL(PZ,SQRT(PX**2+PY**2))
-        PHICM=PYANGL(PX,PY)
+        THECM=SPANGL(PZ,SQRT(PX**2+SP**2))
+        PHICM=SPANGL(PX,SP)
 C...Store hard scattering subsystem. Rotate and boost it
         SQLAM=(SH-P(IPU5,5)**2-P(IPU6,5)**2)**2-4D0*P(IPU5,5)**2*
      &  P(IPU6,5)**2
@@ -9372,7 +9372,7 @@ C...Store hard scattering subsystem. Rotate and boost it
         P(IPU6,2)=-P(IPU5,2)
         P(IPU6,3)=-P(IPU5,3)
         P(IPU6,4)=SQRT(PABS**2+P(IPU6,5)**2)
-        CALL PYROBO(IPU5,IPU6,THECM,PHICM,BEXCM,BEYCM,BEZCM)
+        CALL SPROBO(IPU5,IPU6,THECM,PHICM,BEXCM,BEYCM,BEZCM)
         DO 620 JT=1,2
           I1=MINT(83)+8+JT
           I2=MINT(84)+4+JT
@@ -9403,7 +9403,7 @@ C...Store colour connection indices
      &    MSTU(5)*(MINT(84)+ICOL(KCC,4,JC))
   630   CONTINUE
  
-C...Copy outgoing partons to documentation lines
+C...Cosp outgoing partons to documentation lines
         IMAX=2
         IF(IDOC.EQ.9) IMAX=3
         DO 650 I=1,IMAX
@@ -9435,7 +9435,7 @@ C...Store colour connection indices
      &    MSTU(5)*(MINT(84)+ICOL(KCC,4,JC))
   660   CONTINUE
  
-C...Copy outgoing partons to documentation lines
+C...Cosp outgoing partons to documentation lines
         DO 680 I=1,3
           I1=MINT(83)+IDOC-3+I
           I2=MINT(84)+2+I
@@ -9468,26 +9468,26 @@ C...Low-pT events: remove gluons used for string drawing purposes
  
 C*********************************************************************
  
-C...PYSSPA
+C...SPSSPA
 C...Generates spacelike parton showers.
  
-      SUBROUTINE PYSSPA(IPU1,IPU2)
+      SUBROUTINE SPSSPA(IPU1,IPU2)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      COMMON/PYINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/,/PYSUBS/,/PYPARS/,/PYINT1/,
-     &/PYINT2/,/PYINT3/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      COMMON/SPINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/,/SPSUBS/,/SPPARS/,/SPINT1/,
+     &/SPINT2/,/SPINT3/
 C...Local arrays and data.
       DIMENSION KFLS(4),IS(2),XS(2),ZS(2),Q2S(2),TEVCSV(2),TEVESV(2),
      &XFS(2,-25:25),XFA(-25:25),XFB(-25:25),XFN(-25:25),WTAPC(-25:25),
@@ -9606,9 +9606,9 @@ C...Calculate initial parton distribution weights.
         VINT(120)=VINT(2+JT)
         IF(XS(JT).LT.1D0-XEE) THEN
           IF(MSTP(57).LE.1) THEN
-            CALL PYPDFU(KFBEAM(JT),XS(JT),Q2S(JT),XFB)
+            CALL SPPDFU(KFBEAM(JT),XS(JT),Q2S(JT),XFB)
           ELSE
-            CALL PYPDFL(KFBEAM(JT),XS(JT),Q2S(JT),XFB)
+            CALL SPPDFL(KFBEAM(JT),XS(JT),Q2S(JT),XFB)
           ENDIF
         ENDIF
         DO 110 KFL=-25,25
@@ -9633,7 +9633,7 @@ C...Find if interference with final state partons.
       IF(MFIS.NE.0) THEN
         DO 140 I=1,2
           KCFI(I)=0
-          KCA=PYCOMP(IABS(KFLS(I)))
+          KCA=SPCOMP(IABS(KFLS(I)))
           IF(KCA.NE.0) KCFI(I)=KCHG(KCA,2)*ISIGN(1,KFLS(I))
           NFIS(I)=0
           IF(KCFI(I).NE.0) THEN
@@ -9644,7 +9644,7 @@ C...Find if interference with final state partons.
               IF(ICSI.GT.0.AND.ICSI.NE.IPUS1.AND.ICSI.NE.IPUS2.AND.
      &        (KCFI(I).EQ.(-1)**(J+1).OR.KCFI(I).EQ.2)) THEN
                 NFIS(I)=NFIS(I)+1
-                THEFIS(I,NFIS(I))=PYANGL(P(ICSI,3),SQRT(P(ICSI,1)**2+
+                THEFIS(I,NFIS(I))=SPANGL(P(ICSI,3),SQRT(P(ICSI,1)**2+
      &          P(ICSI,2)**2))
                 IF(I.EQ.2) THEFIS(I,NFIS(I))=PARU(1)-THEFIS(I,NFIS(I))
               ENDIF
@@ -9714,7 +9714,7 @@ C...Maximum Q2 with or without Q2 ordering. Effective Lambda and n_f.
         IF(MEEV.EQ.1) TEVEB=LOG(Q2B/SPME)
       ENDIF
       IF(MCEV.EQ.1) THEN
-        ALSDUM=PYALPS(FQ2C*Q2B)
+        ALSDUM=SPALPS(FQ2C*Q2B)
         TEVCB=TEVCB+2D0*LOG(ALAM(JT)/PARU(117))
         ALAM(JT)=PARU(117)
         B0=(33D0-2D0*MSTU(118))/6D0
@@ -9730,15 +9730,15 @@ C...Select side for interference with final state partons.
         IF(IABS(KCFI(IFI)).EQ.1.AND.NFIS(IFI).EQ.1) THEN
           ISFI(IFI)=1
         ELSEIF(KCFI(IFI).EQ.2.AND.NFIS(IFI).EQ.1) THEN
-          IF(PYR(0).GT.0.5D0) ISFI(IFI)=1
+          IF(SPR(0).GT.0.5D0) ISFI(IFI)=1
         ELSEIF(KCFI(IFI).EQ.2.AND.NFIS(IFI).EQ.2) THEN
           ISFI(IFI)=1
-          IF(PYR(0).GT.0.5D0) ISFI(IFI)=2
+          IF(SPR(0).GT.0.5D0) ISFI(IFI)=2
         ENDIF
       ENDIF
  
 C...Calculate preweighting factor for ME-corrected processes.
-      IF(MECOR.GE.1) CALL PYMEMX(MECOR,WTFF,WTGF,WTFG,WTGG)
+      IF(MECOR.GE.1) CALL SPMEMX(MECOR,WTFF,WTGF,WTFG,WTGG)
  
 C...Calculate Altarelli-Parisi weights.
       DO 170 KFL=-25,25
@@ -9828,18 +9828,18 @@ C...Choose new t: fix alpha_s, alpha_s(Q^2), alpha_s(k_T^2).
       ENDIF
       IF(MCEV.EQ.1) THEN
         IF(MSTP(64).LE.0) THEN
-          TEVCB=TEVCB+LOG(PYR(0))*PARU(2)/(PARU(111)*WTSUMC)
+          TEVCB=TEVCB+LOG(SPR(0))*PARU(2)/(PARU(111)*WTSUMC)
         ELSEIF(MSTP(64).EQ.1) THEN
-          TEVCB=TEVCB*EXP(MAX(-50D0,LOG(PYR(0))*B0/WTSUMC))
+          TEVCB=TEVCB*EXP(MAX(-50D0,LOG(SPR(0))*B0/WTSUMC))
         ELSE
-          TEVCB=TEVCB*EXP(MAX(-50D0,LOG(PYR(0))*B0/(5D0*WTSUMC)))
+          TEVCB=TEVCB*EXP(MAX(-50D0,LOG(SPR(0))*B0/(5D0*WTSUMC)))
         ENDIF
       ENDIF
       IF(MEEV.EQ.1) THEN
-        TEVEB=TEVEB*EXP(MAX(-50D0,LOG(PYR(0))*PARU(2)/
+        TEVEB=TEVEB*EXP(MAX(-50D0,LOG(SPR(0))*PARU(2)/
      &  (PARU(101)*FWTE*WTSUME*TEMX)))
       ELSEIF(MEEV.EQ.2) THEN
-        TEVEB=TEVEB+LOG(PYR(0))*PARU(2)/(PARU(101)*WTSUME)
+        TEVEB=TEVEB+LOG(SPR(0))*PARU(2)/(PARU(101)*WTSUME)
       ENDIF
  
 C...Translate t into Q2 scale; choose between QCD and QED evolution.
@@ -9897,8 +9897,8 @@ C...Evolution possibly ended. Update t values.
       ENDIF
  
 C...Select flavour for branching parton.
-      IF(MCE.EQ.1) WTRAN=PYR(0)*WTSUMC
-      IF(MCE.EQ.2) WTRAN=PYR(0)*WTSUME
+      IF(MCE.EQ.1) WTRAN=SPR(0)*WTSUMC
+      IF(MCE.EQ.2) WTRAN=SPR(0)*WTSUME
       KFLA=-25
   240 KFLA=KFLA+1
       IF(MCE.EQ.1) WTRAN=WTRAN-WTAPC(KFLA)*WTSF(KFLA)
@@ -9914,44 +9914,44 @@ C...Choose z value and corrective weight.
 C...q -> q + g or q -> q + gamma.
       IF(IABS(KFLA).LE.10.AND.IABS(KFLB).LE.10) THEN
         Z=1D0-((1D0-XB-XEC)/(1D0-XEC))*
-     &  (XEC*(1D0-XEC)/((XB+XEC)*(1D0-XB-XEC)))**PYR(0)
+     &  (XEC*(1D0-XEC)/((XB+XEC)*(1D0-XB-XEC)))**SPR(0)
         WTZ=0.5D0*(1D0+Z**2)
 C...q -> g + q.
       ELSEIF(IABS(KFLA).LE.10.AND.KFLB.EQ.21) THEN
-        Z=XB/(SQRT(XB+XEC)+PYR(0)*(SQRT(1D0-XEC)-SQRT(XB+XEC)))**2
+        Z=XB/(SQRT(XB+XEC)+SPR(0)*(SQRT(1D0-XEC)-SQRT(XB+XEC)))**2
         WTZ=0.5D0*(1D0+(1D0-Z)**2)*SQRT(Z)
 C...f -> f + gamma.
       ELSEIF(IABS(KFLA).LE.20.AND.IABS(KFLB).LE.20) THEN
-        IF(WTAPF1.GT.PYR(0)*(WTAPF1+WTAPF2)) THEN
+        IF(WTAPF1.GT.SPR(0)*(WTAPF1+WTAPF2)) THEN
           Z=1D0-((1D0-XB-XEE)/(1D0-XEE))*
-     &    (XEE*(1D0-XEE)/((XB+XEE)*(1D0-XB-XEE)))**PYR(0)
+     &    (XEE*(1D0-XEE)/((XB+XEE)*(1D0-XB-XEE)))**SPR(0)
         ELSE
           Z=XB+XB*(XEE/(1D0-XEE))*
-     &    ((1D0-XB-XEE)*(1D0-XEE)/(XEE*(XB+XEE)))**PYR(0)
+     &    ((1D0-XB-XEE)*(1D0-XEE)/(XEE*(XB+XEE)))**SPR(0)
         ENDIF
         WTZ=0.5D0*(1D0+Z**2)*(Z-XB)/(1D0-XB)
 C...f -> gamma + f.
       ELSEIF(IABS(KFLA).LE.20.AND.KFLB.EQ.22) THEN
         Z=XB+XB*(XEE/(1D0-XEE))*
-     &  ((1D0-XB-XEE)*(1D0-XEE)/(XEE*(XB+XEE)))**PYR(0)
+     &  ((1D0-XB-XEE)*(1D0-XEE)/(XEE*(XB+XEE)))**SPR(0)
         WTZ=0.5D0*(1D0+(1D0-Z)**2)*XB*(Z-XB)/Z
 C...f -> W+- + f.
       ELSEIF(IABS(KFLA).LE.20.AND.IABS(KFLB).EQ.24) THEN
         Z=XB+XB*(XEE/(1D0-XEE))*
-     &  ((1D0-XB-XEE)*(1D0-XEE)/(XEE*(XB+XEE)))**PYR(0)
+     &  ((1D0-XB-XEE)*(1D0-XEE)/(XEE*(XB+XEE)))**SPR(0)
         WTZ=0.5D0*(1D0+(1D0-Z)**2)*(XB*(Z-XB)/Z)*
      &  (Q2B/(Q2B+PMAS(24,1)**2))
 C...g -> q + qbar.
       ELSEIF(KFLA.EQ.21.AND.IABS(KFLB).LE.10) THEN
-        Z=XB/(1D0-XEC)+PYR(0)*(XB/(XB+XEC)-XB/(1D0-XEC))
+        Z=XB/(1D0-XEC)+SPR(0)*(XB/(XB+XEC)-XB/(1D0-XEC))
         WTZ=1D0-2D0*Z*(1D0-Z)
 C...g -> g + g.
       ELSEIF(KFLA.EQ.21.AND.KFLB.EQ.21) THEN
-        Z=1D0/(1D0+((1D0-XEC-XB)/XB)*(XEC/(1D0-XEC-XB))**PYR(0))
+        Z=1D0/(1D0+((1D0-XEC-XB)/XB)*(XEC/(1D0-XEC-XB))**SPR(0))
         WTZ=(1D0-Z*(1D0-Z))**2
 C...gamma -> f + fbar.
       ELSEIF(KFLA.EQ.22.AND.IABS(KFLB).LE.20) THEN
-        Z=XB/(1D0-XEE)+PYR(0)*(XB/(XB+XEE)-XB/(1D0-XEE))
+        Z=XB/(1D0-XEE)+SPR(0)*(XB/(XB+XEE)-XB/(1D0-XEE))
         WTZ=1D0-2D0*Z*(1D0-Z)
       ENDIF
       IF(MCE.EQ.2.AND.MEEV.EQ.1) WTZ=(WTZ/FWTE)*(TEVEB/TEMX)
@@ -9969,7 +9969,7 @@ C...Option with alpha_s(k_T^2): demand k_T^2 > cutoff, reweight.
         IF(MSTP(64).GE.2) THEN
           IF((1D0-Z)*Q2B.LT.Q2MNCS(JT)) GOTO 220
           ALPRAT=TEVCB/(TEVCB+LOG(1D0-Z))
-          IF(ALPRAT.LT.5D0*PYR(0)) GOTO 220
+          IF(ALPRAT.LT.5D0*SPR(0)) GOTO 220
           IF(ALPRAT.GT.5D0) WTZ=WTZ*ALPRAT/5D0
         ENDIF
       ENDIF
@@ -9979,21 +9979,21 @@ C...Remove kinematically impossible branchings.
       IF(MSTP(68).GE.0.AND.UHAT.GT.0D0) GOTO 220
  
 C...Select phi angle of branching at random.
-      PHIBR=PARU(2)*PYR(0)
+      PHIBR=PARU(2)*SPR(0)
  
 C...Matrix-element corrections for some processes.
       IF(MECOR.GE.1.AND.(N.EQ.NS+1.OR.N.EQ.NS+2)) THEN
         IF(IABS(KFLA).LE.20.AND.IABS(KFLB).LE.20) THEN
-          CALL PYMEWT(MECOR,1,Q2B,Z,PHIBR,WTME)
+          CALL SPMEWT(MECOR,1,Q2B,Z,PHIBR,WTME)
           WTZ=WTZ*WTME/WTFF
         ELSEIF((KFLA.EQ.21.OR.KFLA.EQ.22).AND.IABS(KFLB).LE.20) THEN
-          CALL PYMEWT(MECOR,2,Q2B,Z,PHIBR,WTME)
+          CALL SPMEWT(MECOR,2,Q2B,Z,PHIBR,WTME)
           WTZ=WTZ*WTME/WTGF
         ELSEIF(IABS(KFLA).LE.20.AND.(KFLB.EQ.21.OR.KFLB.EQ.22)) THEN
-          CALL PYMEWT(MECOR,3,Q2B,Z,PHIBR,WTME)
+          CALL SPMEWT(MECOR,3,Q2B,Z,PHIBR,WTME)
           WTZ=WTZ*WTME/WTFG
         ELSEIF(KFLA.EQ.21.AND.KFLB.EQ.21) THEN
-          CALL PYMEWT(MECOR,4,Q2B,Z,PHIBR,WTME)
+          CALL SPMEWT(MECOR,4,Q2B,Z,PHIBR,WTME)
           WTZ=WTZ*WTME/WTGG
         ENDIF
       ENDIF
@@ -10022,9 +10022,9 @@ C...Weighting with new parton distributions.
       MINT(109)=MINT(106+JT)
       VINT(120)=VINT(2+JT)
       IF(MSTP(57).LE.1) THEN
-        CALL PYPDFU(KFBEAM(JT),XB,Q2REF,XFN)
+        CALL SPPDFU(KFBEAM(JT),XB,Q2REF,XFN)
       ELSE
-        CALL PYPDFL(KFBEAM(JT),XB,Q2REF,XFN)
+        CALL SPPDFL(KFBEAM(JT),XB,Q2REF,XFN)
       ENDIF
       XFBN=XFN(KFLB)
       IF(XFBN.LT.1D-20) THEN
@@ -10050,14 +10050,14 @@ C...Weighting with new parton distributions.
   250 CONTINUE
       XA=XB/Z
       IF(MSTP(57).LE.1) THEN
-        CALL PYPDFU(KFBEAM(JT),XA,Q2REF,XFA)
+        CALL SPPDFU(KFBEAM(JT),XA,Q2REF,XFA)
       ELSE
-        CALL PYPDFL(KFBEAM(JT),XA,Q2REF,XFA)
+        CALL SPPDFL(KFBEAM(JT),XA,Q2REF,XFA)
       ENDIF
       XFAN=XFA(KFLA)
       IF(XFAN.LT.1D-20) GOTO 200
       WTSFA=WTSF(KFLA)
-      IF(WTZ*XFAN/XFBN.LT.PYR(0)*WTSFA) GOTO 200
+      IF(WTZ*XFAN/XFBN.LT.SPR(0)*WTSFA) GOTO 200
  
 C...Define two hard scatterers in their CM-frame.
   260 IF(N.EQ.NS+2) THEN
@@ -10131,7 +10131,7 @@ C...g (gamma) -> f + fbar, g + g.
         K(IT,1)=3
         IF((IABS(K(IT,2)).GE.11.AND.IABS(K(IT,2)).LE.18).OR.
      &  IABS(K(IT,2)).EQ.22) K(IT,1)=1
-        P(IT,5)=PYMASS(K(IT,2))
+        P(IT,5)=SPMASS(K(IT,2))
         IF(DMSMA.LE.P(IT,5)**2) GOTO 100
         IF(MSTP(63).GE.1.AND.MCESV(JT).EQ.1) THEN
           MSTJ48=MSTJ(48)
@@ -10151,7 +10151,7 @@ C...g (gamma) -> f + fbar, g + g.
             PARJ(85)=SQRT(MAX(0D0,DPT2))*
      &      (1D0/P(IT,4)+1D0/P(IS(JT),4))
           ENDIF
-          CALL PYSHOW(IT,0,SQRT(Q2TIM))
+          CALL SPSHOW(IT,0,SQRT(Q2TIM))
           MSTJ(48)=MSTJ48
           PARJ(85)=PARJ85
           IF(N.GE.IT+1) P(IT,5)=P(IT+1,5)
@@ -10176,9 +10176,9 @@ C...Reconstruct kinematics of branching: timelike parton shower.
           DPB(4)=SQRT(DPB(3)**2+DMS)
           DBEZ=(DPB(4)*DPB(1)-DPB(3)*DPB(2))/(DPB(4)*DPB(2)-DPB(3)*
      &    DPB(1))
-          CALL PYROBO(IT+1,N,0D0,0D0,0D0,0D0,DBEZ)
-          THE=PYANGL(P(IT,3),P(IT,1))
-          CALL PYROBO(IT+1,N,THE,0D0,0D0,0D0,0D0)
+          CALL SPROBO(IT+1,N,0D0,0D0,0D0,0D0,DBEZ)
+          THE=SPANGL(P(IT,3),P(IT,1))
+          CALL SPROBO(IT+1,N,THE,0D0,0D0,0D0,0D0)
         ENDIF
  
 C...Reconstruct kinematics of branching: spacelike parton.
@@ -10231,7 +10231,7 @@ C...qbar -> g + qbar.
           ID1=IT
           ID2=IS(JT)
 C...g -> g + g; g -> q + qbar.
-        ELSEIF((K(IT,2).EQ.21.AND.PYR(0).GT.0.5D0).OR.K(IT,2).LT.0) THEN
+        ELSEIF((K(IT,2).EQ.21.AND.SPR(0).GT.0.5D0).OR.K(IT,2).LT.0) THEN
           ID1=IS(JT)
           ID2=IT
         ELSE
@@ -10256,9 +10256,9 @@ C...Boost to new CM-frame.
         DBSVX=(P(N,1)+P(IS(JR),1))/(P(N,4)+P(IS(JR),4))
         DBSVZ=(P(N,3)+P(IS(JR),3))/(P(N,4)+P(IS(JR),4))
         IF(DBSVX**2+DBSVZ**2.GE.1D0) GOTO 100
-        CALL PYROBO(NS+1,N,0D0,0D0,-DBSVX,0D0,-DBSVZ)
+        CALL SPROBO(NS+1,N,0D0,0D0,-DBSVX,0D0,-DBSVZ)
         IR=N+(JT-1)*(IS(1)-N)
-        CALL PYROBO(NS+1,N,-PYANGL(P(IR,3),P(IR,1)),DPHI(JT),
+        CALL SPROBO(NS+1,N,-SPANGL(P(IR,3),P(IR,1)),DPHI(JT),
      &  0D0,0D0,0D0)
       ENDIF
  
@@ -10289,7 +10289,7 @@ C...Save quantities; loop back.
         IF(JT.EQ.2) IPU2=N
       ENDIF
       IF(N.GT.MSTU(4)-MSTU(32)-10) THEN
-        CALL PYERRM(11,'(PYSSPA:) no more memory left in PYJETS')
+        CALL SPERRM(11,'(SPSSPA:) no more memory left in SPJETS')
         IF(MSTU(21).GE.1) N=NS
         IF(MSTU(21).GE.1) RETURN
       ENDIF
@@ -10303,11 +10303,11 @@ C...Boost hard scattering partons to frame of shower initiators.
       DO 330 J=1,5
         P(N+2,J)=P(NS+1,J)
   330 CONTINUE
-      CALL PYROBO(N+2,N+2,0D0,0D0,-ROBO(3),-ROBO(4),-ROBO(5))
-      ROBO(2)=PYANGL(P(N+2,1),P(N+2,2))
-      ROBO(1)=PYANGL(P(N+2,3),SQRT(P(N+2,1)**2+P(N+2,2)**2))
-      CALL PYROBO(MINT(83)+5,NS,0D0,-ROBO(2),0D0,0D0,0D0)
-      CALL PYROBO(MINT(83)+5,NS,ROBO(1),ROBO(2),ROBO(3),ROBO(4),
+      CALL SPROBO(N+2,N+2,0D0,0D0,-ROBO(3),-ROBO(4),-ROBO(5))
+      ROBO(2)=SPANGL(P(N+2,1),P(N+2,2))
+      ROBO(1)=SPANGL(P(N+2,3),SQRT(P(N+2,1)**2+P(N+2,2)**2))
+      CALL SPROBO(MINT(83)+5,NS,0D0,-ROBO(2),0D0,0D0,0D0)
+      CALL SPROBO(MINT(83)+5,NS,ROBO(1),ROBO(2),ROBO(3),ROBO(4),
      &ROBO(5))
  
 C...Store user information. Reset Lambda value.
@@ -10325,7 +10325,7 @@ C...Store user information. Reset Lambda value.
  
 C*********************************************************************
  
-C...PYMEMX
+C...SPMEMX
 C...Generates maximum ME weight in some initial-state showers.
 C...Inparameter MECOR: kind of hard scattering process
 C...Outparameter WTFF: maximum weight for fermion -> fermion
@@ -10333,19 +10333,19 @@ C...             WTGF: maximum weight for gluon/photon -> fermion
 C...             WTFG: maximum weight for fermion -> gluon/photon
 C...             WTGG: maximum weight for gluon -> gluon
  
-      SUBROUTINE PYMEMX(MECOR,WTFF,WTGF,WTFG,WTGG)
+      SUBROUTINE SPMEMX(MECOR,WTFF,WTGF,WTFG,WTGG)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      SAVE /PYJETS/,/PYDAT1/,/PYPARS/,/PYINT1/,/PYINT2/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      SAVE /SPJETS/,/SPDAT1/,/SPPARS/,/SPINT1/,/SPINT2/
  
 C...Default maximum weight.
       WTFF=1D0
@@ -10367,7 +10367,7 @@ C...Select maximum weight by process.
  
 C*********************************************************************
  
-C...PYMEWT
+C...SPMEWT
 C...Calculates actual ME weight in some initial-state showers.
 C...Inparameter MECOR: kind of hard scattering process
 C...            IFLCB: flavour combination of branching,
@@ -10380,19 +10380,19 @@ C...            Z:     Z value of branching
 C...In+outparameter PHIBR: azimuthal angle of branching
 C...Outparameter WTME: actual ME weight
  
-      SUBROUTINE PYMEWT(MECOR,IFLCB,Q2,Z,PHIBR,WTME)
+      SUBROUTINE SPMEWT(MECOR,IFLCB,Q2,Z,PHIBR,WTME)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      SAVE /PYJETS/,/PYDAT1/,/PYPARS/,/PYINT1/,/PYINT2/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      SAVE /SPJETS/,/SPDAT1/,/SPPARS/,/SPINT1/,/SPINT2/
  
 C...Default output.
       WTME=1D0
@@ -10425,22 +10425,22 @@ C...Matrix-element corrections for g + g -> Higgs (h0, H0, A0).
  
 C*********************************************************************
  
-C...PYADSH
+C...SPADSH
 C...Administers the generation of successive final-state showers
 C...in external processes.
  
-      SUBROUTINE PYADSH(NFIN)
+      SUBROUTINE SPADSH(NFIN)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      SAVE /PYJETS/,/PYDAT1/,/PYPARS/,/PYINT1/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      SAVE /SPJETS/,/SPDAT1/,/SPPARS/,/SPINT1/
 C...Local array.
       DIMENSION IBEG(100),KSAV(10,5),IORD(10),PSUM(4),BETA(3)
  
@@ -10492,9 +10492,9 @@ C...Loop through systems of particles; check that sensible size.
         NSIZ=IBEG(ISYS+1)-IBEG(ISYS)
         IF(NSIZ.EQ.1.AND.ISYS.EQ.1) THEN
         ELSEIF(NSIZ.LE.1) THEN
-          CALL PYERRM(2,'(PYADSH:) only one particle in system')
+          CALL SPERRM(2,'(SPADSH:) only one particle in system')
         ELSEIF(NSIZ.GT.7) THEN
-          CALL PYERRM(2,'(PYADSH:) more than seven particles in system')
+          CALL SPERRM(2,'(SPADSH:) more than seven particles in system')
         ELSE
  
 C...Save status codes and daughters of showering pair; reset them.
@@ -10531,9 +10531,9 @@ C...Perform shower.
           IF(ISYS.EQ.1) QMAX=MIN(QMAX,SQRT(PARP(71))*VINT(55))
           NSAV=N
           IF(NSIZ.EQ.2) THEN
-            CALL PYSHOW(IBEG(ISYS),IBEG(ISYS)+1,QMAX)
+            CALL SPSHOW(IBEG(ISYS),IBEG(ISYS)+1,QMAX)
           ELSE
-            CALL PYSHOW(IBEG(ISYS),-NSIZ,QMAX)
+            CALL SPSHOW(IBEG(ISYS),-NSIZ,QMAX)
           ENDIF
  
 C...Look up showered copies of original showering particles.
@@ -10577,7 +10577,7 @@ C...Reset mother info of existing daughters to showered copies.
               ENDIF
   200       CONTINUE
  
-C...Boost all original daughters to new frame of showered copy.
+C...Boost all original daughters to new frame of showered cosp.
             IF(IMV.NE.I) THEN
               DO 210 J=1,3
                 BETA(J)=(P(IMV,J)-P(I,J))/(P(IMV,4)+P(I,4))
@@ -10592,10 +10592,10 @@ C...Boost all original daughters to new frame of showered copy.
                 IF(MSTP(128).LE.0) THEN
                   IF(IMO.GT.0.AND.IMO.NE.I.AND.IMO.NE.K(I,3)) GOTO 230
                   IF(IMO.EQ.I.OR.(K(I,3).LE.MINT(84).AND.IMO.EQ.K(I,3))) 
-     &            CALL PYROBO(I3,I3,0D0,0D0,BETA(1),BETA(2),BETA(3))
+     &            CALL SPROBO(I3,I3,0D0,0D0,BETA(1),BETA(2),BETA(3))
                 ELSE
                   IF(IMO.EQ.IMV) THEN
-                    CALL PYROBO(I3,I3,0D0,0D0,BETA(1),BETA(2),BETA(3))
+                    CALL SPROBO(I3,I3,0D0,0D0,BETA(1),BETA(2),BETA(3))
                   ELSEIF(IMO.GT.0.AND.IMO.NE.I.AND.IMO.NE.K(I,3)) THEN
                     GOTO 230
                   ENDIF
@@ -10613,31 +10613,31 @@ C...End of loop over showering systems
  
 C*********************************************************************
  
-C...PYRESD
+C...SPRESD
 C...Allows resonances to decay (including parton showers for hadronic
 C...channels).
  
-      SUBROUTINE PYRESD(IRES)
+      SUBROUTINE SPRESD(IRES)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      COMMON/PYINT4/MWID(500),WIDS(500,5)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/,/PYDAT3/,/PYSUBS/,/PYPARS/,
-     &/PYINT1/,/PYINT2/,/PYINT4/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      COMMON/SPINT4/MWID(500),WIDS(500,5)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/,/SPDAT3/,/SPSUBS/,/SPPARS/,
+     &/SPINT1/,/SPINT2/,/SPINT4/
 C...Local arrays and complex and character variables.
       DIMENSION IREF(50,8),KDCY(3),KFL1(3),KFL2(3),KFL3(3),KEQL(3),
      &KCQM(3),KCQ1(3),KCQ2(3),KCQ3(3),NSD(3),PMMN(3),ILIN(6),
@@ -10679,11 +10679,11 @@ C...to get proper amount of smearing of decay angles.
         BEXIN=(P(MINT(84)+1,1)+P(MINT(84)+2,1))/ETOTIN
         BEYIN=(P(MINT(84)+1,2)+P(MINT(84)+2,2))/ETOTIN
         BEZIN=(P(MINT(84)+1,3)+P(MINT(84)+2,3))/ETOTIN
-        CALL PYROBO(MINT(83)+7,N,0D0,0D0,-BEXIN,-BEYIN,-BEZIN)
-        PHIIN=PYANGL(P(MINT(84)+1,1),P(MINT(84)+1,2))
-        CALL PYROBO(MINT(83)+7,N,0D0,-PHIIN,0D0,0D0,0D0)
-        THEIN=PYANGL(P(MINT(84)+1,3),P(MINT(84)+1,1))
-        CALL PYROBO(MINT(83)+7,N,-THEIN,0D0,0D0,0D0,0D0)
+        CALL SPROBO(MINT(83)+7,N,0D0,0D0,-BEXIN,-BEYIN,-BEZIN)
+        PHIIN=SPANGL(P(MINT(84)+1,1),P(MINT(84)+1,2))
+        CALL SPROBO(MINT(83)+7,N,0D0,-PHIIN,0D0,0D0,0D0)
+        THEIN=SPANGL(P(MINT(84)+1,3),P(MINT(84)+1,1))
+        CALL SPROBO(MINT(83)+7,N,-THEIN,0D0,0D0,0D0,0D0)
       ENDIF
  
 C...Reset original resonance configuration.
@@ -10731,7 +10731,7 @@ C...Check if initial resonance has been moved (in resonance + jet).
         IF(IREF(1,JT).GT.0) THEN
           IF(K(IREF(1,JT),1).GT.10) THEN
             KFA=IABS(K(IREF(1,JT),2))
-            IF(KFA.GE.6.AND.KCHG(PYCOMP(KFA),2).NE.0) THEN
+            IF(KFA.GE.6.AND.KCHG(SPCOMP(KFA),2).NE.0) THEN
               KDA1=MOD(K(IREF(1,JT),4),MSTU(5))
               KDA2=MOD(K(IREF(1,JT),5),MSTU(5))
               DO 110 I=IREF(1,JT)+1,N
@@ -10744,7 +10744,7 @@ C...Check if initial resonance has been moved (in resonance + jet).
   110         CONTINUE
             ELSE
               KDA=MOD(K(IREF(1,JT),4),MSTU(5))
-              IF(MWID(PYCOMP(KFA)).NE.0.AND.KDA.GT.1) IREF(1,JT)=KDA
+              IF(MWID(SPCOMP(KFA)).NE.0.AND.KDA.GT.1) IREF(1,JT)=KDA
             ENDIF
           ENDIF
         ENDIF
@@ -10791,7 +10791,7 @@ C...Start treatment of one, two or three resonances in parallel.
 C...Check whether particle can/is allowed to decay.
         IF(ID.EQ.0) GOTO 310
         KFA=IABS(K(ID,2))
-        KCA=PYCOMP(KFA)
+        KCA=SPCOMP(KFA)
         IF(MWID(KCA).EQ.0) GOTO 310
         IF(K(ID,1).GT.10.OR.MDCY(KCA,1).EQ.0) GOTO 310
         IF(KFA.EQ.6.OR.KFA.EQ.7.OR.KFA.EQ.8.OR.KFA.EQ.17.OR.
@@ -10803,7 +10803,7 @@ C...Choose lifetime and determine decay vertex.
         IF(K(ID,1).EQ.5) THEN
           V(ID,5)=0D0
         ELSEIF(K(ID,1).NE.4) THEN
-          V(ID,5)=-PMAS(KCA,4)*LOG(PYR(0))
+          V(ID,5)=-PMAS(KCA,4)*LOG(SPR(0))
         ENDIF
         DO 170 J=1,4
           VDCY(J)=V(ID,J)+V(ID,5)*P(ID,J)/P(ID,5)
@@ -10845,11 +10845,11 @@ C...Info for selection of decay channel: sign, pairings.
 C...Select decay channel.
         IF(ISUB.EQ.1.OR.ISUB.EQ.15.OR.ISUB.EQ.19.OR.ISUB.EQ.22.OR.
      &  ISUB.EQ.30.OR.ISUB.EQ.35.OR.ISUB.EQ.141) MINT(61)=1
-        CALL PYWIDT(KFA,P(ID,5)**2,WDTP,WDTE)
+        CALL SPWIDT(KFA,P(ID,5)**2,WDTP,WDTE)
         WDTE0S=WDTE(0,1)+WDTE(0,IPM)+WDTE(0,4)
         IF(KFB.EQ.KFA) WDTE0S=WDTE0S+WDTE(0,5)
         IF(WDTE0S.LE.0D0) GOTO 310
-        RKFL=WDTE0S*PYR(0)
+        RKFL=WDTE0S*SPR(0)
         IDL=0
   180   IDL=IDL+1
         IDC=IDL+MDCY(KCA,2)-1
@@ -10861,19 +10861,19 @@ C...Read out flavours and colour charges of decay channel chosen.
         KCQM(JT)=KCHG(KCA,2)*ISIGN(1,K(ID,2))
         IF(KCQM(JT).EQ.-2) KCQM(JT)=2
         KFL1(JT)=KFDP(IDC,1)*ISIGN(1,K(ID,2))
-        KFC1A=PYCOMP(IABS(KFL1(JT)))
+        KFC1A=SPCOMP(IABS(KFL1(JT)))
         IF(KCHG(KFC1A,3).EQ.0) KFL1(JT)=IABS(KFL1(JT))
         KCQ1(JT)=KCHG(KFC1A,2)*ISIGN(1,KFL1(JT))
         IF(KCQ1(JT).EQ.-2) KCQ1(JT)=2
         KFL2(JT)=KFDP(IDC,2)*ISIGN(1,K(ID,2))
-        KFC2A=PYCOMP(IABS(KFL2(JT)))
+        KFC2A=SPCOMP(IABS(KFL2(JT)))
         IF(KCHG(KFC2A,3).EQ.0) KFL2(JT)=IABS(KFL2(JT))
         KCQ2(JT)=KCHG(KFC2A,2)*ISIGN(1,KFL2(JT))
         IF(KCQ2(JT).EQ.-2) KCQ2(JT)=2
         KFL3(JT)=KFDP(IDC,3)*ISIGN(1,K(ID,2))
         KCQ3(JT)=0
         IF(KFL3(JT).NE.0) THEN
-          KFC3A=PYCOMP(IABS(KFL3(JT)))
+          KFC3A=SPCOMP(IABS(KFL3(JT)))
           IF(KCHG(KFC3A,3).EQ.0) KFL3(JT)=IABS(KFL3(JT))
           KCQ3(JT)=KCHG(KFC3A,2)*ISIGN(1,KFL3(JT))
           IF(KCQ3(JT).EQ.-2) KCQ3(JT)=2
@@ -10910,10 +10910,10 @@ C...This prevents SUSY/t particles from becoming too light.
             PMMN(I)=PMAS(KCW,1)
             DO 190 IDC=MDCY(KCW,2),MDCY(KCW,2)+MDCY(KCW,3)-1
               IF(MDME(IDC,1).GT.0.AND.BRAT(IDC).GT.1E-4) THEN
-                PMSUM=PMAS(PYCOMP(KFDP(IDC,1)),1)+
-     &          PMAS(PYCOMP(KFDP(IDC,2)),1)
+                PMSUM=PMAS(SPCOMP(KFDP(IDC,1)),1)+
+     &          PMAS(SPCOMP(KFDP(IDC,2)),1)
                 IF(KFDP(IDC,3).NE.0) PMSUM=PMSUM+
-     &          PMAS(PYCOMP(KFDP(IDC,3)),1)
+     &          PMAS(SPCOMP(KFDP(IDC,3)),1)
                 PMMN(I)=MIN(PMMN(I),PMSUM)
               ENDIF
   190       CONTINUE
@@ -10956,11 +10956,11 @@ C....Handle near degeneracy cases.
           ENDIF
 CMRENNA--
           IF(P(N+1,5)+P(N+2,5)+P(N+3,5).GT.P(ID,5)) THEN
-            CALL PYERRM(13,'(PYRESD:) daughter masses too large')
+            CALL SPERRM(13,'(SPRESD:) daughter masses too large')
             MINT(51)=1
             GOTO 700
           ELSEIF(P(N+1,5)+P(N+2,5)+P(N+3,5)+PARJ(64).GT.P(ID,5)) THEN
-            CALL PYERRM(3,'(PYRESD:) daughter masses too large')
+            CALL SPERRM(3,'(SPRESD:) daughter masses too large')
             MINT(51)=1
             GOTO 700
           ENDIF
@@ -10975,7 +10975,7 @@ C...according to BW decoupled from rest.
      &      KFLW1-KFLW2
             LOOP=0
   210       LOOP=LOOP+1
-            P(N+IWID3,5)=PYMASS(KFLW3)
+            P(N+IWID3,5)=SPMASS(KFLW3)
             IF(LOOP.LE.10.AND. P(N+IWID3,5).LE.PMMN(IWID3)) GOTO 210
             PMTOT=PMTOT-P(N+IWID3,5)
           ENDIF
@@ -10985,14 +10985,14 @@ C...Select other two correlated within remaining phase space.
             CKIN47=CKIN(47)
             CKIN(45)=MAX(PMMN(IWID1),CKIN(45))
             CKIN(47)=MAX(PMMN(IWID2),CKIN(47))
-            CALL PYOFSH(2,KFA,KFLW1,KFLW2,PMTOT,P(N+IWID1,5),
+            CALL SPOFSH(2,KFA,KFLW1,KFLW2,PMTOT,P(N+IWID1,5),
      &      P(N+IWID2,5))
             CKIN(45)=CKIN45
             CKIN(47)=CKIN47
           ELSE
             CKIN(49)=PMMN(IWID1)
             CKIN(50)=PMMN(IWID2)
-            CALL PYOFSH(5,KFA,KFLW1,KFLW2,PMTOT,P(N+IWID1,5),
+            CALL SPOFSH(5,KFA,KFLW1,KFLW2,PMTOT,P(N+IWID1,5),
      &      P(N+IWID2,5))
             CKIN(49)=0D0
             CKIN(50)=0D0
@@ -11021,7 +11021,7 @@ C...1) Three-body decays of SUSY particles (plus special case top).
           K(N+3,1)=1
           K(N+3,2)=KFL3(JT)
           IDIN=ID
-          CALL PYTBDY(IDIN)
+          CALL SPTBDY(IDIN)
  
 C...Set colour flow for t -> W + b + Z.
           IF(KFA.EQ.6) THEN
@@ -11088,7 +11088,7 @@ C...Set special junction codes:
             K(N+4,1)=42
             K(N+4,2)=88
  
-C...Order decay products by invariant mass. (will be used in PYSTRF).
+C...Order decay products by invariant mass. (will be used in SPSTRF).
             PM12=P(N+1,4)*P(N+2,4)-P(N+1,1)*P(N+2,1)-P(N+1,2)*P(N+2,2)-
      &      P(N+1,3)*P(N+2,3)
             PM13=P(N+1,4)*P(N+3,4)-P(N+1,1)*P(N+3,1)-P(N+1,2)*P(N+3,2)-
@@ -11139,9 +11139,9 @@ C...Insert junction to keep track of colours.
 C...Start by connecting all daughters to junction.
               K(II,ITJUNC(JT)-1)=MSTU(5)*(N+4)
 C...Only consider colour topologies with off shell resonances.
-              RMQ1=PMAS(PYCOMP(K(II,2)),1)
-              RMRES=PMAS(PYCOMP(KSUSY1+IABS(K(II,2))),1)
-              RMGLU=PMAS(PYCOMP(KSUSY1+21),1)
+              RMQ1=PMAS(SPCOMP(K(II,2)),1)
+              RMRES=PMAS(SPCOMP(KSUSY1+IABS(K(II,2))),1)
+              RMGLU=PMAS(SPCOMP(KSUSY1+21),1)
               IF (RMGLU-RMQ1.LT.RMRES) THEN
 C...Calculate propagators for each colour topology.
                 RM2Q23=RMGLU**2+RMQ1**2-2D0*(P(II,4)*P(ID,4)+P(II,1)
@@ -11152,7 +11152,7 @@ C...Calculate propagators for each colour topology.
               ENDIF
               CTMSUM=CTMSUM+CTM2(II-N)
   270       CONTINUE
-            CTMSUM=PYR(0)*CTMSUM
+            CTMSUM=SPR(0)*CTMSUM
 C...Select colour topology J, with most off shell least likely.
             J=0
   280       J=J+1
@@ -11176,7 +11176,7 @@ C...Update particle counter.
  
 C...2) Everything else two-body decay.
         ELSE
-          CALL PY2ENT(N+1,KFL1(JT),KFL2(JT),P(ID,5))
+          CALL SP2ENT(N+1,KFL1(JT),KFL2(JT),P(ID,5))
 C...First set colour flow as if mother colour singlet.
           IF(KCQ1(JT).NE.0) THEN
             K(N-1,1)=3
@@ -11208,7 +11208,7 @@ C...Then redirect colour flow if mother octet.
           ELSE
             ISID=4
             IF(KCQ1(JT).EQ.-1) ISID=5
-            IF(KCQ1(JT).EQ.2) ISID=INT(4.5D0+PYR(0))
+            IF(KCQ1(JT).EQ.2) ISID=INT(4.5D0+SPR(0))
             K(ID,ISID)=K(ID,ISID)+(N-1)
             K(ID,9-ISID)=K(ID,9-ISID)+N
             K(N-1,ISID)=MSTU(5)*ID
@@ -11252,7 +11252,7 @@ C...End loop over resonances for daughter flavour and mass selection.
      &  KFL1(JT).EQ.0) THEN
           WRITE(CODE,'(I9)') K(ID,2)
           WRITE(MASS,'(F9.3)') P(ID,5)
-          CALL PYERRM(3,'(PYRESD:) Failed to decay particle'//
+          CALL SPERRM(3,'(SPRESD:) Failed to decay particle'//
      &    CODE//' with mass'//MASS)
           MINT(51)=1
           GOTO 700
@@ -11282,13 +11282,13 @@ C...Special case: matrix element option for Z0 decay to quarks.
  
 C...Check consistency of MSTJ options set.
         IF(MSTJ(109).EQ.2.AND.MSTJ(110).NE.1) THEN
-          CALL PYERRM(6,
-     &    '(PYRESD:) MSTJ(109) value requires MSTJ(110) = 1')
+          CALL SPERRM(6,
+     &    '(SPRESD:) MSTJ(109) value requires MSTJ(110) = 1')
           MSTJ(110)=1
         ENDIF
         IF(MSTJ(109).EQ.2.AND.MSTJ(111).NE.0) THEN
-          CALL PYERRM(6,
-     &    '(PYRESD:) MSTJ(109) value requires MSTJ(111) = 0')
+          CALL SPERRM(6,
+     &    '(SPRESD:) MSTJ(109) value requires MSTJ(111) = 0')
  
           MSTJ(111)=0
         ENDIF
@@ -11316,7 +11316,7 @@ C...Find axial fraction in total cross section for scalar gluon model.
           HF1W=SFW*SFF**2*((VE**2+1D0)*POLL+2D0*VE*
      &    (PARJ(132)-PARJ(131)))
           KFLC=IABS(KFL1(1))
-          PMQ=PYMASS(KFLC)
+          PMQ=SPMASS(KFLC)
           QF=KCHG(KFLC,1)/3D0
           VQ=1D0
           IF(MOD(MSTJ(103),2).EQ.1) VQ=SQRT(MAX(0D0,
@@ -11328,14 +11328,14 @@ C...Find axial fraction in total cross section for scalar gluon model.
         ENDIF
  
 C...Choice of jet configuration.
-        CALL PYXJET(P(ID,5),NJET,CUT)
+        CALL SPXJET(P(ID,5),NJET,CUT)
         KFLC=IABS(KFL1(1))
         KFLN=21
  
         IF(NJET.EQ.4) THEN
-          CALL PYX4JT(NJET,CUT,KFLC,P(ID,5),KFLN,X1,X2,X4,X12,X14)
+          CALL SPX4JT(NJET,CUT,KFLC,P(ID,5),KFLN,X1,X2,X4,X12,X14)
         ELSEIF(NJET.EQ.3) THEN
-          CALL PYX3JT(NJET,CUT,KFLC,P(ID,5),X1,X3)
+          CALL SPX3JT(NJET,CUT,KFLC,P(ID,5),X1,X3)
         ELSE
           MSTJ(120)=1
         ENDIF
@@ -11343,16 +11343,16 @@ C...Choice of jet configuration.
 C...Fill jet configuration; return if incorrect kinematics.
         NC=N-2
         IF(NJET.EQ.2.AND.MSTJ(101).NE.5) THEN
-          CALL PY2ENT(NC+1,KFLC,-KFLC,P(ID,5))
+          CALL SP2ENT(NC+1,KFLC,-KFLC,P(ID,5))
         ELSEIF(NJET.EQ.2) THEN
-          CALL PY2ENT(-(NC+1),KFLC,-KFLC,P(ID,5))
+          CALL SP2ENT(-(NC+1),KFLC,-KFLC,P(ID,5))
         ELSEIF(NJET.EQ.3) THEN
-          CALL PY3ENT(NC+1,KFLC,21,-KFLC,P(ID,5),X1,X3)
+          CALL SP3ENT(NC+1,KFLC,21,-KFLC,P(ID,5),X1,X3)
         ELSEIF(KFLN.EQ.21) THEN
-          CALL PY4ENT(NC+1,KFLC,KFLN,KFLN,-KFLC,P(ID,5),X1,X2,X4,
+          CALL SP4ENT(NC+1,KFLC,KFLN,KFLN,-KFLC,P(ID,5),X1,X2,X4,
      &    X12,X14)
         ELSE
-          CALL PY4ENT(NC+1,KFLC,-KFLN,KFLN,-KFLC,P(ID,5),X1,X2,X4,
+          CALL SP4ENT(NC+1,KFLC,-KFLN,KFLN,-KFLC,P(ID,5),X1,X2,X4,
      &    X12,X14)
         ENDIF
         IF(MSTU(24).NE.0) THEN
@@ -11364,15 +11364,15 @@ C...Fill jet configuration; return if incorrect kinematics.
  
 C...Angular orientation according to matrix element.
         IF(MSTJ(106).EQ.1) THEN
-          CALL PYXDIF(NC,NJET,KFLC,P(ID,5),CHIZ,THEZ,PHIZ)
+          CALL SPXDIF(NC,NJET,KFLC,P(ID,5),CHIZ,THEZ,PHIZ)
           IF(MINT(11).LT.0) THEZ=PARU(1)-THEZ
           CTHE(1)=COS(THEZ)
-          CALL PYROBO(NC+1,N,0D0,CHIZ,0D0,0D0,0D0)
-          CALL PYROBO(NC+1,N,THEZ,PHIZ,0D0,0D0,0D0)
+          CALL SPROBO(NC+1,N,0D0,CHIZ,0D0,0D0,0D0)
+          CALL SPROBO(NC+1,N,THEZ,PHIZ,0D0,0D0,0D0)
         ENDIF
  
 C...Boost partons to Z0 rest frame.
-        CALL PYROBO(NC+1,N,0D0,0D0,P(ID,1)/P(ID,4),
+        CALL SPROBO(NC+1,N,0D0,0D0,P(ID,1)/P(ID,4),
      &  P(ID,2)/P(ID,4),P(ID,3)/P(ID,4))
  
 C...Mark decayed resonance and add documentation lines,
@@ -11394,7 +11394,7 @@ C...Mark decayed resonance and add documentation lines,
   340   CONTINUE
  
 C...Generate parton shower.
-        IF(MSTJ(101).EQ.5) CALL PYSHOW(N-1,N,P(ID,5))
+        IF(MSTJ(101).EQ.5) CALL SPSHOW(N-1,N,P(ID,5))
  
 C... End special case for Z0: skip ahead.
         MSTU(111)=MST111
@@ -11474,14 +11474,14 @@ C...Full propagator dependence and flavour correlations for 2 gamma*/Z.
           COMX12=(CORL(1,1,1)+CORL(1,1,2)+CORL(1,2,1)+CORL(1,2,2))*
      &    (CORL(2,1,1)+CORL(2,1,2)+CORL(2,2,1)+CORL(2,2,2))
  
-          IF(COWT12.LT.PYR(0)*COMX12) GOTO 160
+          IF(COWT12.LT.SPR(0)*COMX12) GOTO 160
         ENDIF
       ENDIF
  
 C...Select angular orientation type - Z'/W' only.
       MZPWP=0
       IF(ISUB.EQ.141) THEN
-        IF(PYR(0).LT.PARU(130)) MZPWP=1
+        IF(SPR(0).LT.PARU(130)) MZPWP=1
         IF(IP.EQ.2) THEN
           IF(IABS(K(IREF(2,1),2)).EQ.37) MZPWP=2
           IAKIR=IABS(K(IREF(2,2),2))
@@ -11490,7 +11490,7 @@ C...Select angular orientation type - Z'/W' only.
         ENDIF
         IF(IP.GE.3) MZPWP=2
       ELSEIF(ISUB.EQ.142) THEN
-        IF(PYR(0).LT.PARU(136)) MZPWP=1
+        IF(SPR(0).LT.PARU(136)) MZPWP=1
         IF(IP.EQ.2) THEN
           IAKIR=IABS(K(IREF(2,2),2))
           IF(IAKIR.EQ.25.OR.IAKIR.EQ.35.OR.IAKIR.EQ.36) MZPWP=2
@@ -11503,12 +11503,12 @@ C...Select random angles (begin of weighting procedure).
   410 DO 420 JT=1,JTMAX
         IF(KDCY(JT).EQ.0) GOTO 420
         IF(JTMAX.EQ.1.AND.ISUB.NE.0.AND.IHDEC.EQ.0) THEN
-          CTHE(JT)=VINT(13)+(VINT(33)-VINT(13)+VINT(34)-VINT(14))*PYR(0)
+          CTHE(JT)=VINT(13)+(VINT(33)-VINT(13)+VINT(34)-VINT(14))*SPR(0)
           IF(CTHE(JT).GT.VINT(33)) CTHE(JT)=CTHE(JT)+VINT(14)-VINT(33)
           PHI(JT)=VINT(24)
         ELSE
-          CTHE(JT)=2D0*PYR(0)-1D0
-          PHI(JT)=PARU(2)*PYR(0)
+          CTHE(JT)=2D0*SPR(0)-1D0
+          PHI(JT)=PARU(2)*SPR(0)
         ENDIF
   420 CONTINUE
  
@@ -11528,7 +11528,7 @@ C...Construct massless four-vectors.
           P(N+2*JT-1,4)=0.5D0*P(ID,5)
           P(N+2*JT,3)=-0.5D0*P(ID,5)
           P(N+2*JT,4)=0.5D0*P(ID,5)
-          CALL PYROBO(N+2*JT-1,N+2*JT,ACOS(CTHE(JT)),PHI(JT),
+          CALL SPROBO(N+2*JT-1,N+2*JT,ACOS(CTHE(JT)),PHI(JT),
      &    P(ID,1)/P(ID,4),P(ID,2)/P(ID,4),P(ID,3)/P(ID,4))
   450   CONTINUE
  
@@ -11544,9 +11544,9 @@ C...avoid accidental zeroes in HA expressions.
               P(N+4+I,J)=P(ILIN(I),J)
   460       CONTINUE
   470     CONTINUE
-  480     THERR=ACOS(2D0*PYR(0)-1D0)
-          PHIRR=PARU(2)*PYR(0)
-          CALL PYROBO(N+4+IMIN,N+4+IMAX,THERR,PHIRR,0D0,0D0,0D0)
+  480     THERR=ACOS(2D0*SPR(0)-1D0)
+          PHIRR=PARU(2)*SPR(0)
+          CALL SPROBO(N+4+IMIN,N+4+IMAX,THERR,PHIRR,0D0,0D0,0D0)
           DO 500 I=IMIN,IMAX
             IF(P(N+4+I,1)**2+P(N+4+I,2)**2.LT.1D-4*P(N+4+I,4)**2)
      &      GOTO 480
@@ -12138,10 +12138,10 @@ C...Angular weight for Z_R0 -> 2 quarks/leptons.
         EI=KCHG(IABS(MINT(15)),1)/3D0
         AI=SIGN(1D0,EI+0.1D0)
         VI=AI-4D0*EI*XWV
-        EF=KCHG(PYCOMP(KFL1(1)),1)/3D0
+        EF=KCHG(SPCOMP(KFL1(1)),1)/3D0
         AF=SIGN(1D0,EF+0.1D0)
         VF=AF-4D0*EF*XWV
-        RMF=MIN(1D0,4D0*PMAS(PYCOMP(KFL1(1)),1)**2/SH)
+        RMF=MIN(1D0,4D0*PMAS(SPCOMP(KFL1(1)),1)**2/SH)
         WT1=(VI**2+AI**2)*(VF**2+(1D0-RMF)*AF**2)
         WT2=RMF*(VI**2+AI**2)*VF**2
         WT3=SQRT(1D0-RMF)*4D0*VI*AI*VF*AF
@@ -12151,8 +12151,8 @@ C...Angular weight for Z_R0 -> 2 quarks/leptons.
  
       ELSEIF(ISUB.EQ.354) THEN
 C...Angular weight for W_R+/- -> 2 quarks/leptons.
-        RM3=PMAS(PYCOMP(KFL1(1)),1)**2/SH
-        RM4=PMAS(PYCOMP(KFL2(1)),1)**2/SH
+        RM3=PMAS(SPCOMP(KFL1(1)),1)**2/SH
+        RM4=PMAS(SPCOMP(KFL2(1)),1)**2/SH
         BE34=SQRT(MAX(0D0,(1D0-RM3-RM4)**2-4D0*RM3*RM4))
         WT=(1D0+BE34*CTHE(1)*ISIGN(1,MINT(15)*KFL1(1)))**2-(RM3-RM4)**2
         WTMAX=4D0
@@ -12184,7 +12184,7 @@ C...Obtain correct angular distribution by rejection techniques.
         WT=1D0
         WTMAX=1D0
       ENDIF
-      IF(WT.LT.PYR(0)*WTMAX) GOTO 410
+      IF(WT.LT.SPR(0)*WTMAX) GOTO 410
  
 C...Construct massive four-vectors using angles chosen.
   570 DO 670 JT=1,JTMAX
@@ -12196,11 +12196,11 @@ C...Construct massive four-vectors using angles chosen.
         DPMO(4)=SQRT(DPMO(1)**2+DPMO(2)**2+DPMO(3)**2+DPMO(5)**2)
 CMRENNA++
         IF(KFL3(JT).EQ.0) THEN
-          CALL PYROBO(NSD(JT)+1,NSD(JT)+2,ACOS(CTHE(JT)),PHI(JT),
+          CALL SPROBO(NSD(JT)+1,NSD(JT)+2,ACOS(CTHE(JT)),PHI(JT),
      &    DPMO(1)/DPMO(4),DPMO(2)/DPMO(4),DPMO(3)/DPMO(4))
           N0=NSD(JT)+2
         ELSE
-          CALL PYROBO(NSD(JT)+1,NSD(JT)+3,ACOS(CTHE(JT)),PHI(JT),
+          CALL SPROBO(NSD(JT)+1,NSD(JT)+3,ACOS(CTHE(JT)),PHI(JT),
      &    DPMO(1)/DPMO(4),DPMO(2)/DPMO(4),DPMO(3)/DPMO(4))
           N0=NSD(JT)+3
         ENDIF
@@ -12221,7 +12221,7 @@ CMRENNA--
 C...Mark decayed resonances; trace history.
         K(ID,1)=K(ID,1)+10
         KFA=IABS(K(ID,2))
-        KCA=PYCOMP(KFA)
+        KCA=SPCOMP(KFA)
         IF(KCQM(JT).NE.0) THEN
 C...Do not kill colour flow through coloured resonance!
         ELSE
@@ -12268,9 +12268,9 @@ C...Do showering of two or three objects.
         NSHBEF=N
         IF(MSTP(71).GE.1) THEN
           IF(KFL3(JT).EQ.0) THEN
-            CALL PYSHOW(NSD(JT)+1,NSD(JT)+2,P(ID,5))
+            CALL SPSHOW(NSD(JT)+1,NSD(JT)+2,P(ID,5))
           ELSE
-            CALL PYSHOW(NSD(JT)+1,-3,P(ID,5))
+            CALL SPSHOW(NSD(JT)+1,-3,P(ID,5))
           ENDIF
         ENDIF
         NSHAFT=N
@@ -12338,14 +12338,14 @@ C...Possibility of colour rearrangement in W+W- events.
         IAKF4=IABS(KFL2(2))
         IF(MIN(IAKF1,IAKF2,IAKF3,IAKF4).GE.1.AND.
      &  MAX(IAKF1,IAKF2,IAKF3,IAKF4).LE.5) CALL
-     &  PYRECO(IREF(1,1),IREF(1,2),NSD(1),NAFT1)
+     &  SPRECO(IREF(1,1),IREF(1,2),NSD(1),NAFT1)
       ENDIF
  
 C...Loop back if needed.
   690 IF(IP.LT.NP) GOTO 150
  
 C...Boost back to standard frame.
-  700 IF(IBST.EQ.1) CALL PYROBO(MINT(83)+7,N,THEIN,PHIIN,BEXIN,BEYIN,
+  700 IF(IBST.EQ.1) CALL SPROBO(MINT(83)+7,N,THEIN,PHIIN,BEXIN,BEYIN,
      &BEZIN)
  
       RETURN
@@ -12353,23 +12353,23 @@ C...Boost back to standard frame.
  
 C*********************************************************************
  
-C...PYREMN
+C...SPREMN
 C...Adds on target remnants (one or two from each side) and
 C...includes primordial kT for hadron beams.
  
-      SUBROUTINE PYREMN(IPU1,IPU2)
+      SUBROUTINE SPREMN(IPU1,IPU2)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/,/PYPARS/,/PYINT1/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/,/SPPARS/,/SPINT1/
 C...Local arrays.
       DIMENSION KFLCH(2),KFLSP(2),CHI(2),PMS(0:6),IS(2),ISN(2),ROBO(5),
      &PSYS(0:2,5),PMIN(0:2),QOLD(4),QNEW(4),DBE(3),PSUM(4)
@@ -12410,10 +12410,10 @@ C...exponential, or (for photon) predetermined or power law.
             IF(MSTP(91).LE.0) THEN
               PT=0D0
             ELSEIF(MSTP(91).EQ.1) THEN
-              PT=PARP(91)*SQRT(-LOG(PYR(0)))
+              PT=PARP(91)*SQRT(-LOG(SPR(0)))
             ELSE
-              RPT1=PYR(0)
-              RPT2=PYR(0)
+              RPT1=SPR(0)
+              RPT2=SPR(0)
               PT=-PARP(92)*LOG(RPT1*RPT2)
             ENDIF
             IF(PT.GT.PARP(93)) GOTO 120
@@ -12421,41 +12421,41 @@ C...exponential, or (for photon) predetermined or power law.
             PTA=SQRT(VINT(282+JT))
             PTB=0D0
             IF(MSTP(66).EQ.5.AND.MSTP(93).EQ.1) THEN
-              PTB=PARP(99)*SQRT(-LOG(PYR(0)))
+              PTB=PARP(99)*SQRT(-LOG(SPR(0)))
             ELSEIF(MSTP(66).EQ.5.AND.MSTP(93).EQ.2) THEN
-              RPT1=PYR(0)
-              RPT2=PYR(0)
+              RPT1=SPR(0)
+              RPT2=SPR(0)
               PTB=-PARP(99)*LOG(RPT1*RPT2)
             ENDIF
             IF(PTB.GT.PARP(100)) GOTO 120
-            PT=SQRT(PTA**2+PTB**2+2D0*PTA*PTB*COS(PARU(2)*PYR(0)))
+            PT=SQRT(PTA**2+PTB**2+2D0*PTA*PTB*COS(PARU(2)*SPR(0)))
             PT=PT*0.8D0**MINT(57)
             IF(NTRY.GT.10) PT=PT*0.8D0**(NTRY-10)
           ELSEIF(IABS(MINT(14+JT)).LE.8.OR.MINT(14+JT).EQ.21) THEN
             IF(MSTP(93).LE.0) THEN
               PT=0D0
             ELSEIF(MSTP(93).EQ.1) THEN
-              PT=PARP(99)*SQRT(-LOG(PYR(0)))
+              PT=PARP(99)*SQRT(-LOG(SPR(0)))
             ELSEIF(MSTP(93).EQ.2) THEN
-              RPT1=PYR(0)
-              RPT2=PYR(0)
+              RPT1=SPR(0)
+              RPT2=SPR(0)
               PT=-PARP(99)*LOG(RPT1*RPT2)
             ELSEIF(MSTP(93).EQ.3) THEN
               HA=PARP(99)**2
               HB=PARP(100)**2
-              PT=SQRT(MAX(0D0,HA*(HA+HB)/(HA+HB-PYR(0)*HB)-HA))
+              PT=SQRT(MAX(0D0,HA*(HA+HB)/(HA+HB-SPR(0)*HB)-HA))
             ELSE
               HA=PARP(99)**2
               HB=PARP(100)**2
               IF(MSTP(93).EQ.5) HB=MIN(VINT(48),PARP(100)**2)
-              PT=SQRT(MAX(0D0,HA*((HA+HB)/HA)**PYR(0)-HA))
+              PT=SQRT(MAX(0D0,HA*((HA+HB)/HA)**SPR(0)-HA))
             ENDIF
             IF(PT.GT.PARP(100)) GOTO 120
           ELSE
             PT=0D0
           ENDIF
           VINT(156+JT)=PT
-          PHI=PARU(2)*PYR(0)
+          PHI=PARU(2)*SPR(0)
           P(I,1)=PT*COS(PHI)
           P(I,2)=PT*SIN(PHI)
           PMS(JT)=P(I,5)**2+P(I,1)**2+P(I,2)**2
@@ -12482,15 +12482,15 @@ C...Kinematics construction for initial partons.
 C...Transform partons to overall CM-frame.
         ROBO(3)=(P(I1,1)+P(I2,1))/SHR
         ROBO(4)=(P(I1,2)+P(I2,2))/SHR
-        CALL PYROBO(I1,I2,0D0,0D0,-ROBO(3),-ROBO(4),0D0)
-        ROBO(2)=PYANGL(P(I1,1),P(I1,2))
-        CALL PYROBO(I1,I2,0D0,-ROBO(2),0D0,0D0,0D0)
-        ROBO(1)=PYANGL(P(I1,3),P(I1,1))
-        CALL PYROBO(I1,I2,-ROBO(1),0D0,0D0,0D0,0D0)
-        CALL PYROBO(I2+1,MINT(52),0D0,-ROBO(2),0D0,0D0,0D0)
-        CALL PYROBO(I1,MINT(52),ROBO(1),ROBO(2),ROBO(3),ROBO(4),0D0)
+        CALL SPROBO(I1,I2,0D0,0D0,-ROBO(3),-ROBO(4),0D0)
+        ROBO(2)=SPANGL(P(I1,1),P(I1,2))
+        CALL SPROBO(I1,I2,0D0,-ROBO(2),0D0,0D0,0D0)
+        ROBO(1)=SPANGL(P(I1,3),P(I1,1))
+        CALL SPROBO(I1,I2,-ROBO(1),0D0,0D0,0D0,0D0)
+        CALL SPROBO(I2+1,MINT(52),0D0,-ROBO(2),0D0,0D0,0D0)
+        CALL SPROBO(I1,MINT(52),ROBO(1),ROBO(2),ROBO(3),ROBO(4),0D0)
         ROBO(5)=(VINT(141)-VINT(142))/(VINT(141)+VINT(142))
-        CALL PYROBO(I1,MINT(52),0D0,0D0,0D0,0D0,ROBO(5))
+        CALL SPROBO(I1,MINT(52),0D0,0D0,0D0,0D0,ROBO(5))
       ENDIF
  
 C...Optionally fix up x and Q2 definitions for leptoproduction.
@@ -12557,11 +12557,11 @@ C...Boost outgoing electron and daughters.
   190       IORIG=K(IORIG,3)
             IF(IORIG.GT.LEOUT) GOTO 190
             IF(I.EQ.LEOUT.OR.IORIG.EQ.LEOUT)
-     &      CALL PYROBO(I,I,0D0,0D0,DBE(1),DBE(2),DBE(3))
+     &      CALL SPROBO(I,I,0D0,0D0,DBE(1),DBE(2),DBE(3))
   200     CONTINUE
         ENDIF
  
-C...Copy shower initiator and all outgoing partons.
+C...Cosp shower initiator and all outgoing partons.
         NCOP=N+1
         K(NCOP,3)=LQBG
         DO 210 J=1,5
@@ -12640,7 +12640,7 @@ C...Modify momenta in event record.
           RETURN
         ENDIF
         I=MINT(83)+5-LESD
-        CALL PYROBO(I,I,0D0,0D0,0D0,0D0,HBE)
+        CALL SPROBO(I,I,0D0,0D0,0D0,0D0,HBE)
         DO 330 I=N+1,NCOP
           ICOP=K(I,3)
           DO 320 J=1,4
@@ -12661,13 +12661,13 @@ C...Check minimum invariant mass of remnant system(s).
         IF(MINT(44+JT).EQ.1) GOTO 340
         MINT(105)=MINT(102+JT)
         MINT(109)=MINT(106+JT)
-        CALL PYSPLI(MINT(10+JT),MINT(12+JT),KFLCH(JT),KFLSP(JT))
+        CALL SPSPLI(MINT(10+JT),MINT(12+JT),KFLCH(JT),KFLSP(JT))
         IF(MINT(51).NE.0) THEN
           MINT(57)=MINT(57)+1
           RETURN
         ENDIF
-        IF(KFLCH(JT).NE.0) PMIN(JT)=PMIN(JT)+PYMASS(KFLCH(JT))
-        IF(KFLSP(JT).NE.0) PMIN(JT)=PMIN(JT)+PYMASS(KFLSP(JT))
+        IF(KFLCH(JT).NE.0) PMIN(JT)=PMIN(JT)+SPMASS(KFLCH(JT))
+        IF(KFLSP(JT).NE.0) PMIN(JT)=PMIN(JT)+SPMASS(KFLSP(JT))
         IF(KFLCH(JT)*KFLSP(JT).NE.0) PMIN(JT)=PMIN(JT)+0.5D0*PARP(111)
         PMIN(JT)=SQRT(PMIN(JT)**2+P(MINT(83)+JT+2,1)**2+
      &  P(MINT(83)+JT+2,2)**2)
@@ -12700,10 +12700,10 @@ C...Store first remnant parton.
         K(I,1)=1
         K(I,2)=KFLSP(JT)
         K(I,3)=MINT(83)+JT
-        P(I,5)=PYMASS(K(I,2))
+        P(I,5)=SPMASS(K(I,2))
  
 C...First parton colour connections and kinematics.
-        KCOL=KCHG(PYCOMP(KFLSP(JT)),2)
+        KCOL=KCHG(SPCOMP(KFLSP(JT)),2)
         IF(KCOL.EQ.2) THEN
           K(I,1)=3
           K(I,4)=MSTU(5)*IPU+IPU
@@ -12736,10 +12736,10 @@ C...When extra remnant parton or hadron: store extra remnant.
           K(I,1)=1
           K(I,2)=KFLCH(JT)
           K(I,3)=MINT(83)+JT
-          P(I,5)=PYMASS(K(I,2))
+          P(I,5)=SPMASS(K(I,2))
  
 C...Find parton colour connections of extra remnant.
-          KCOL=KCHG(PYCOMP(KFLCH(JT)),2)
+          KCOL=KCHG(SPCOMP(KFLCH(JT)),2)
           IF(KCOL.EQ.2) THEN
             K(I,1)=3
             K(I,4)=MSTU(5)*IPU+IPU
@@ -12756,7 +12756,7 @@ C...Find parton colour connections of extra remnant.
 C...Relative transverse momentum when two remnants.
           LOOP=0
   370     LOOP=LOOP+1
-          CALL PYPTDI(1,P(I-1,1),P(I-1,2))
+          CALL SPPTDI(1,P(I-1,1),P(I-1,2))
           IF(IABS(MINT(10+JT)).LT.20) THEN
             P(I-1,1)=0D0
             P(I-1,2)=0D0
@@ -12776,7 +12776,7 @@ C...Meson or baryon; photon as meson. For splitup below.
 C***Relative distribution for electron into two electrons. Temporary!
           IF(IABS(MINT(10+JT)).LT.20.AND.MINT(14+JT).EQ.-MINT(10+JT))
      &    THEN
-            CHI(JT)=PYR(0)
+            CHI(JT)=SPR(0)
  
 C...Relative distribution of electron energy into electron plus parton.
           ELSEIF(IABS(MINT(10+JT)).LT.20) THEN
@@ -12788,44 +12788,44 @@ C...Relative distribution of energy for particle into two jets.
           ELSEIF(IABS(KFLCH(JT)).LE.10.OR.KFLCH(JT).EQ.21) THEN
             CHIK=PARP(92+2*IMB)
             IF(MSTP(92).LE.1) THEN
-              IF(IMB.EQ.1) CHI(JT)=PYR(0)
-              IF(IMB.EQ.2) CHI(JT)=1D0-SQRT(PYR(0))
+              IF(IMB.EQ.1) CHI(JT)=SPR(0)
+              IF(IMB.EQ.2) CHI(JT)=1D0-SQRT(SPR(0))
             ELSEIF(MSTP(92).EQ.2) THEN
-              CHI(JT)=1D0-PYR(0)**(1D0/(1D0+CHIK))
+              CHI(JT)=1D0-SPR(0)**(1D0/(1D0+CHIK))
             ELSEIF(MSTP(92).EQ.3) THEN
               CUT=2D0*0.3D0/VINT(1)
-  380         CHI(JT)=PYR(0)**2
+  380         CHI(JT)=SPR(0)**2
               IF((CHI(JT)**2/(CHI(JT)**2+CUT**2))**0.25D0*
-     &        (1D0-CHI(JT))**CHIK.LT.PYR(0)) GOTO 380
+     &        (1D0-CHI(JT))**CHIK.LT.SPR(0)) GOTO 380
             ELSEIF(MSTP(92).EQ.4) THEN
               CUT=2D0*0.3D0/VINT(1)
               CUTR=(1D0+SQRT(1D0+CUT**2))/CUT
-  390         CHIR=CUT*CUTR**PYR(0)
+  390         CHIR=CUT*CUTR**SPR(0)
               CHI(JT)=(CHIR**2-CUT**2)/(2D0*CHIR)
-              IF((1D0-CHI(JT))**CHIK.LT.PYR(0)) GOTO 390
+              IF((1D0-CHI(JT))**CHIK.LT.SPR(0)) GOTO 390
             ELSE
               CUT=2D0*0.3D0/VINT(1)
               CUTA=CUT**(1D0-PARP(98))
               CUTB=(1D0+CUT)**(1D0-PARP(98))
-  400         CHI(JT)=(CUTA+PYR(0)*(CUTB-CUTA))**(1D0/(1D0-PARP(98)))
+  400         CHI(JT)=(CUTA+SPR(0)*(CUTB-CUTA))**(1D0/(1D0-PARP(98)))
               IF(((CHI(JT)+CUT)**2/(2D0*(CHI(JT)**2+CUT**2)))**
-     &        (0.5D0*PARP(98))*(1D0-CHI(JT))**CHIK.LT.PYR(0)) GOTO 400
+     &        (0.5D0*PARP(98))*(1D0-CHI(JT))**CHIK.LT.SPR(0)) GOTO 400
             ENDIF
  
 C...Relative distribution of energy for particle into jet plus particle.
           ELSE
             IF(MSTP(94).LE.1) THEN
-              IF(IMB.EQ.1) CHI(JT)=PYR(0)
-              IF(IMB.EQ.2) CHI(JT)=1D0-SQRT(PYR(0))
+              IF(IMB.EQ.1) CHI(JT)=SPR(0)
+              IF(IMB.EQ.2) CHI(JT)=1D0-SQRT(SPR(0))
               IF(MOD(KFLCH(JT)/1000,10).NE.0) CHI(JT)=1D0-CHI(JT)
             ELSEIF(MSTP(94).EQ.2) THEN
-              CHI(JT)=1D0-PYR(0)**(1D0/(1D0+PARP(93+2*IMB)))
+              CHI(JT)=1D0-SPR(0)**(1D0/(1D0+PARP(93+2*IMB)))
               IF(MOD(KFLCH(JT)/1000,10).NE.0) CHI(JT)=1D0-CHI(JT)
             ELSEIF(MSTP(94).EQ.3) THEN
-              CALL PYZDIS(1,0,PMS(JT+4),ZZ)
+              CALL SPZDIS(1,0,PMS(JT+4),ZZ)
               CHI(JT)=ZZ
             ELSE
-              CALL PYZDIS(1000,0,PMS(JT+4),ZZ)
+              CALL SPZDIS(1000,0,PMS(JT+4),ZZ)
               CHI(JT)=ZZ
             ENDIF
           ENDIF
@@ -12939,7 +12939,7 @@ C...Perform longitudinal boosts.
         P(IS(1),3)=0D0
         P(IS(1),4)=SQRT(P(IS(1),5)**2+P(IS(1),1)**2+P(IS(1),2)**2)
       ELSEIF(IR.EQ.1) THEN
-        CALL PYROBO(IS(1),IS(1)+ISN(1)-1,0D0,0D0,0D0,0D0,DBER)
+        CALL SPROBO(IS(1),IS(1)+ISN(1)-1,0D0,0D0,0D0,0D0,DBER)
       ELSEIF(IDISXQ.EQ.1) THEN
         DO 470 I=I1,NS
           INCL=0
@@ -12947,16 +12947,16 @@ C...Perform longitudinal boosts.
   460     IF(IORIG.EQ.LQOUT.OR.IORIG.EQ.LPIN+2) INCL=1
           IORIG=K(IORIG,3)
           IF(IORIG.GT.LPIN) GOTO 460
-          IF(INCL.EQ.1) CALL PYROBO(I,I,0D0,0D0,0D0,0D0,DBER)
+          IF(INCL.EQ.1) CALL SPROBO(I,I,0D0,0D0,0D0,0D0,DBER)
   470   CONTINUE
       ELSE
-        CALL PYROBO(I1,NS,0D0,0D0,0D0,0D0,DBER)
+        CALL SPROBO(I1,NS,0D0,0D0,0D0,0D0,DBER)
       ENDIF
       IF(IL.EQ.2.AND.ISN(2).EQ.1.AND.DBEL.GE.0.99999999D0) THEN
         P(IS(2),3)=0D0
         P(IS(2),4)=SQRT(P(IS(2),5)**2+P(IS(2),1)**2+P(IS(2),2)**2)
       ELSEIF(IL.EQ.2) THEN
-        CALL PYROBO(IS(2),IS(2)+ISN(2)-1,0D0,0D0,0D0,0D0,DBEL)
+        CALL SPROBO(IS(2),IS(2)+ISN(2)-1,0D0,0D0,0D0,0D0,DBEL)
       ELSEIF(IDISXQ.EQ.1) THEN
         DO 490 I=I1,NS
           INCL=0
@@ -12964,10 +12964,10 @@ C...Perform longitudinal boosts.
   480     IF(IORIG.EQ.LQOUT.OR.IORIG.EQ.LPIN+2) INCL=1
           IORIG=K(IORIG,3)
           IF(IORIG.GT.LPIN) GOTO 480
-          IF(INCL.EQ.1) CALL PYROBO(I,I,0D0,0D0,0D0,0D0,DBEL)
+          IF(INCL.EQ.1) CALL SPROBO(I,I,0D0,0D0,0D0,0D0,DBEL)
   490   CONTINUE
       ELSE
-        CALL PYROBO(I1,NS,0D0,0D0,0D0,0D0,DBEL)
+        CALL SPROBO(I1,NS,0D0,0D0,0D0,0D0,DBEL)
       ENDIF
  
 C...Final check that energy-momentum conservation worked.
@@ -13016,13 +13016,13 @@ C...Boost incoming hadron to hadronic CM frame to determine rotations.
           P(N+1,J)=P(LPIN,J)
           V(N+1,J)=V(LPIN,J)
   540   CONTINUE
-        CALL PYROBO(N+1,N+1,0D0,0D0,VINT(223),VINT(224),VINT(225))
-        VINT(222)=-PYANGL(P(N+1,1),P(N+1,2))
-        CALL PYROBO(N+1,N+1,0D0,VINT(222),0D0,0D0,0D0)
+        CALL SPROBO(N+1,N+1,0D0,0D0,VINT(223),VINT(224),VINT(225))
+        VINT(222)=-SPANGL(P(N+1,1),P(N+1,2))
+        CALL SPROBO(N+1,N+1,0D0,VINT(222),0D0,0D0,0D0)
         IF(LESD.EQ.2) THEN
-          VINT(221)=-PYANGL(P(N+1,3),P(N+1,1))
+          VINT(221)=-SPANGL(P(N+1,3),P(N+1,1))
         ELSE
-          VINT(221)=PYANGL(-P(N+1,3),P(N+1,1))
+          VINT(221)=SPANGL(-P(N+1,3),P(N+1,1))
         ENDIF
       ENDIF
  
@@ -13031,21 +13031,21 @@ C...Boost incoming hadron to hadronic CM frame to determine rotations.
  
 C*********************************************************************
  
-C...PYDIFF
+C...SPDIFF
 C...Handles diffractive and elastic scattering.
  
-      SUBROUTINE PYDIFF
+      SUBROUTINE SPDIFF
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      SAVE /PYJETS/,/PYDAT1/,/PYPARS/,/PYINT1/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      SAVE /SPJETS/,/SPDAT1/,/SPPARS/,/SPINT1/
  
 C...Reset K, P and V vectors. Store incoming particles.
       DO 110 JT=1,MSTP(126)+10
@@ -13099,17 +13099,17 @@ C...distribution of decay products (in rho rest frame).
             DBETAZ=P(N,3)/SQRT(P(N,3)**2+P(N,5)**2)
             P(N,3)=0D0
             P(N,4)=P(N,5)
-            CALL PYDECY(NSAV)
+            CALL SPDECY(NSAV)
             IF(N.EQ.NSAV+2.AND.IABS(K(NSAV+1,2)).EQ.211) THEN
-              PHI=PYANGL(P(NSAV+1,1),P(NSAV+1,2))
-              CALL PYROBO(NSAV+1,NSAV+2,0D0,-PHI,0D0,0D0,0D0)
-              THE=PYANGL(P(NSAV+1,3),P(NSAV+1,1))
-              CALL PYROBO(NSAV+1,NSAV+2,-THE,0D0,0D0,0D0,0D0)
-  140         CTHE=2D0*PYR(0)-1D0
-              IF(1D0-CTHE**2.LT.PYR(0)) GOTO 140
-              CALL PYROBO(NSAV+1,NSAV+2,ACOS(CTHE),PHI,0D0,0D0,0D0)
+              PHI=SPANGL(P(NSAV+1,1),P(NSAV+1,2))
+              CALL SPROBO(NSAV+1,NSAV+2,0D0,-PHI,0D0,0D0,0D0)
+              THE=SPANGL(P(NSAV+1,3),P(NSAV+1,1))
+              CALL SPROBO(NSAV+1,NSAV+2,-THE,0D0,0D0,0D0,0D0)
+  140         CTHE=2D0*SPR(0)-1D0
+              IF(1D0-CTHE**2.LT.SPR(0)) GOTO 140
+              CALL SPROBO(NSAV+1,NSAV+2,ACOS(CTHE),PHI,0D0,0D0,0D0)
             ENDIF
-            CALL PYROBO(NSAV,NSAV+2,0D0,0D0,0D0,0D0,DBETAZ)
+            CALL SPROBO(NSAV,NSAV+2,0D0,0D0,0D0,0D0,DBETAZ)
           ENDIF
  
 C...Diffracted particle: low-mass system to two particles.
@@ -13125,17 +13125,17 @@ C...Diffracted particle: low-mass system to two particles.
           IF(NTRY.LT.20) THEN
             MINT(105)=MINT(102+JT)
             MINT(109)=MINT(106+JT)
-            CALL PYSPLI(KFH,21,KFL1,KFL2)
-            CALL PYKFDI(KFL1,0,KFL3,KF1)
+            CALL SPSPLI(KFH,21,KFL1,KFL2)
+            CALL SPKFDI(KFL1,0,KFL3,KF1)
             IF(KF1.EQ.0) GOTO 150
-            CALL PYKFDI(KFL2,-KFL3,KFLDUM,KF2)
+            CALL SPKFDI(KFL2,-KFL3,KFLDUM,KF2)
             IF(KF2.EQ.0) GOTO 150
           ELSE
             KF1=KFH
             KF2=111
           ENDIF
-          PM1=PYMASS(KF1)
-          PM2=PYMASS(KF2)
+          PM1=SPMASS(KF1)
+          PM2=SPMASS(KF2)
           IF(PM1+PM2+PARJ(64).GT.PMMAS) GOTO 150
           K(N-1,2)=KF1
           K(N,2)=KF2
@@ -13147,13 +13147,13 @@ C...Diffracted particle: low-mass system to two particles.
           P(N,3)=-PZP
           P(N-1,4)=SQRT(PM1**2+PZP**2)
           P(N,4)=SQRT(PM2**2+PZP**2)
-          CALL PYROBO(N-1,N,ACOS(2D0*PYR(0)-1D0),PARU(2)*PYR(0),
+          CALL SPROBO(N-1,N,ACOS(2D0*SPR(0)-1D0),PARU(2)*SPR(0),
      &    0D0,0D0,0D0)
           DBETAZ=PZ*(-1)**(JT+1)/SQRT(PZ**2+PMMAS**2)
-          CALL PYROBO(N-1,N,0D0,0D0,0D0,0D0,DBETAZ)
+          CALL SPROBO(N-1,N,0D0,0D0,0D0,0D0,DBETAZ)
  
 C...Diffracted particle: valence quark kicked out.
-        ELSEIF(MSTP(101).EQ.1.OR.(MSTP(101).EQ.3.AND.PYR(0).LT.
+        ELSEIF(MSTP(101).EQ.1.OR.(MSTP(101).EQ.3.AND.SPR(0).LT.
      &    PARP(101))) THEN
           N=N+2
           K(N-1,1)=2
@@ -13162,9 +13162,9 @@ C...Diffracted particle: valence quark kicked out.
           K(N,3)=I+2
           MINT(105)=MINT(102+JT)
           MINT(109)=MINT(106+JT)
-          CALL PYSPLI(KFH,21,K(N,2),K(N-1,2))
-          P(N-1,5)=PYMASS(K(N-1,2))
-          P(N,5)=PYMASS(K(N,2))
+          CALL SPSPLI(KFH,21,K(N,2),K(N-1,2))
+          P(N-1,5)=SPMASS(K(N-1,2))
+          P(N,5)=SPMASS(K(N,2))
           SQLAM=(VINT(62+JT)-P(N-1,5)**2-P(N,5)**2)**2-
      &    4D0*P(N-1,5)**2*P(N,5)**2
           P(N-1,3)=(PE*SQRT(SQLAM)+PZ*(VINT(62+JT)+P(N-1,5)**2-
@@ -13184,38 +13184,38 @@ C...Diffracted particle: gluon kicked out.
           K(N,3)=I+2
           MINT(105)=MINT(102+JT)
           MINT(109)=MINT(106+JT)
-          CALL PYSPLI(KFH,21,K(N,2),K(N-2,2))
+          CALL SPSPLI(KFH,21,K(N,2),K(N-2,2))
           K(N-1,2)=21
-          P(N-2,5)=PYMASS(K(N-2,2))
+          P(N-2,5)=SPMASS(K(N-2,2))
           P(N-1,5)=0D0
-          P(N,5)=PYMASS(K(N,2))
+          P(N,5)=SPMASS(K(N,2))
 C...Energy distribution for particle into two jets.
   160     IMB=1
           IF(MOD(KFH/1000,10).NE.0) IMB=2
           CHIK=PARP(92+2*IMB)
           IF(MSTP(92).LE.1) THEN
-            IF(IMB.EQ.1) CHI=PYR(0)
-            IF(IMB.EQ.2) CHI=1D0-SQRT(PYR(0))
+            IF(IMB.EQ.1) CHI=SPR(0)
+            IF(IMB.EQ.2) CHI=1D0-SQRT(SPR(0))
           ELSEIF(MSTP(92).EQ.2) THEN
-            CHI=1D0-PYR(0)**(1D0/(1D0+CHIK))
+            CHI=1D0-SPR(0)**(1D0/(1D0+CHIK))
           ELSEIF(MSTP(92).EQ.3) THEN
             CUT=2D0*0.3D0/VINT(1)
-  170       CHI=PYR(0)**2
+  170       CHI=SPR(0)**2
             IF((CHI**2/(CHI**2+CUT**2))**0.25D0*(1D0-CHI)**CHIK.LT.
-     &      PYR(0)) GOTO 170
+     &      SPR(0)) GOTO 170
           ELSEIF(MSTP(92).EQ.4) THEN
             CUT=2D0*0.3D0/VINT(1)
             CUTR=(1D0+SQRT(1D0+CUT**2))/CUT
-  180       CHIR=CUT*CUTR**PYR(0)
+  180       CHIR=CUT*CUTR**SPR(0)
             CHI=(CHIR**2-CUT**2)/(2D0*CHIR)
-            IF((1D0-CHI)**CHIK.LT.PYR(0)) GOTO 180
+            IF((1D0-CHI)**CHIK.LT.SPR(0)) GOTO 180
           ELSE
             CUT=2D0*0.3D0/VINT(1)
             CUTA=CUT**(1D0-PARP(98))
             CUTB=(1D0+CUT)**(1D0-PARP(98))
-  190       CHI=(CUTA+PYR(0)*(CUTB-CUTA))**(1D0/(1D0-PARP(98)))
+  190       CHI=(CUTA+SPR(0)*(CUTB-CUTA))**(1D0/(1D0-PARP(98)))
             IF(((CHI+CUT)**2/(2D0*(CHI**2+CUT**2)))**
-     &      (0.5D0*PARP(98))*(1D0-CHI)**CHIK.LT.PYR(0)) GOTO 190
+     &      (0.5D0*PARP(98))*(1D0-CHI)**CHIK.LT.SPR(0)) GOTO 190
           ENDIF
           IF(CHI.LT.P(N,5)**2/VINT(62+JT).OR.CHI.GT.1D0-P(N-2,5)**2/
      &    VINT(62+JT)) GOTO 160
@@ -13245,9 +13245,9 @@ C...Documentation lines.
  
 C...Rotate outgoing partons/particles using cos(theta).
       IF(VINT(23).LT.0.9D0) THEN
-        CALL PYROBO(MINT(83)+3,N,ACOS(VINT(23)),VINT(24),0D0,0D0,0D0)
+        CALL SPROBO(MINT(83)+3,N,ACOS(VINT(23)),VINT(24),0D0,0D0,0D0)
       ELSE
-        CALL PYROBO(MINT(83)+3,N,ASIN(VINT(59)),VINT(24),0D0,0D0,0D0)
+        CALL SPROBO(MINT(83)+3,N,ASIN(VINT(59)),VINT(24),0D0,0D0,0D0)
       ENDIF
  
       RETURN
@@ -13255,28 +13255,28 @@ C...Rotate outgoing partons/particles using cos(theta).
  
 C*********************************************************************
  
-C...PYDISG
+C...SPDISG
 C...Set up a DIS process as gamma* + f -> f, with beam remnant
-C...and showering added consecutively. Photon flux by the PYGAGA
+C...and showering added consecutively. Photon flux by the SPGAGA
 C...routine (if at all).
  
-      SUBROUTINE PYDISG
+      SUBROUTINE SPDISG
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/,/PYSUBS/,/PYPARS/,/PYINT1/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/,/SPSUBS/,/SPPARS/,/SPINT1/
 C...Local arrays.
       DIMENSION PMS(4)
  
@@ -13335,7 +13335,7 @@ C...Store incoming partons in hadronic CM-frame
       ENDIF
       SIDESG=(-1D0)**(ISIDE-1)
  
-C...Copy incoming partons to documentation lines.
+C...Cosp incoming partons to documentation lines.
       DO 170 JT=1,2
         I1=MINT(83)+4+JT
         I2=MINT(84)+JT
@@ -13346,7 +13346,7 @@ C...Copy incoming partons to documentation lines.
           P(I1,J)=P(I2,J)
   150   CONTINUE
  
-C...Second copy for partons before ISR shower, since no such.
+C...Second cosp for partons before ISR shower, since no such.
         I1=MINT(83)+2+JT
         K(I1,1)=21
         K(I1,2)=K(I2,2)
@@ -13369,7 +13369,7 @@ C...Scattered quark in hadronic CM frame.
       K(IPU3,1)=3
       K(IPU3,2)=KFRES
       K(IPU3,3)=I
-      P(IPU3,5)=PYMASS(KFRES)
+      P(IPU3,5)=SPMASS(KFRES)
       P(IPU3,3)=P(IPU1,3)+P(IPU2,3)
       P(IPU3,4)=P(IPU1,4)+P(IPU2,4)
       P(IPU3,5)=0D0
@@ -13389,10 +13389,10 @@ C...exponential, or (for photon) predetermined or power law.
         IF(MSTP(91).LE.0) THEN
           PT=0D0
         ELSEIF(MSTP(91).EQ.1) THEN
-          PT=PARP(91)*SQRT(-LOG(PYR(0)))
+          PT=PARP(91)*SQRT(-LOG(SPR(0)))
         ELSE
-          RPT1=PYR(0)
-          RPT2=PYR(0)
+          RPT1=SPR(0)
+          RPT2=SPR(0)
           PT=-PARP(92)*LOG(RPT1*RPT2)
         ENDIF
         IF(PT.GT.PARP(93)) GOTO 190
@@ -13400,40 +13400,40 @@ C...exponential, or (for photon) predetermined or power law.
         PTA=SQRT(VINT(282+ISIDE))
         PTB=0D0
         IF(MSTP(66).EQ.5.AND.MSTP(93).EQ.1) THEN
-          PTB=PARP(99)*SQRT(-LOG(PYR(0)))
+          PTB=PARP(99)*SQRT(-LOG(SPR(0)))
         ELSEIF(MSTP(66).EQ.5.AND.MSTP(93).EQ.2) THEN
-          RPT1=PYR(0)
-          RPT2=PYR(0)
+          RPT1=SPR(0)
+          RPT2=SPR(0)
           PTB=-PARP(99)*LOG(RPT1*RPT2)
         ENDIF
         IF(PTB.GT.PARP(100)) GOTO 190
-        PT=SQRT(PTA**2+PTB**2+2D0*PTA*PTB*COS(PARU(2)*PYR(0)))
+        PT=SQRT(PTA**2+PTB**2+2D0*PTA*PTB*COS(PARU(2)*SPR(0)))
         IF(NTRY.GT.10) PT=PT*0.8D0**(NTRY-10)
       ELSEIF(IABS(MINT(14+ISIDE)).LE.8.OR.MINT(14+ISIDE).EQ.21) THEN
         IF(MSTP(93).LE.0) THEN
           PT=0D0
         ELSEIF(MSTP(93).EQ.1) THEN
-          PT=PARP(99)*SQRT(-LOG(PYR(0)))
+          PT=PARP(99)*SQRT(-LOG(SPR(0)))
         ELSEIF(MSTP(93).EQ.2) THEN
-          RPT1=PYR(0)
-          RPT2=PYR(0)
+          RPT1=SPR(0)
+          RPT2=SPR(0)
           PT=-PARP(99)*LOG(RPT1*RPT2)
         ELSEIF(MSTP(93).EQ.3) THEN
           HA=PARP(99)**2
           HB=PARP(100)**2
-          PT=SQRT(MAX(0D0,HA*(HA+HB)/(HA+HB-PYR(0)*HB)-HA))
+          PT=SQRT(MAX(0D0,HA*(HA+HB)/(HA+HB-SPR(0)*HB)-HA))
         ELSE
           HA=PARP(99)**2
           HB=PARP(100)**2
           IF(MSTP(93).EQ.5) HB=MIN(VINT(48),PARP(100)**2)
-          PT=SQRT(MAX(0D0,HA*((HA+HB)/HA)**PYR(0)-HA))
+          PT=SQRT(MAX(0D0,HA*((HA+HB)/HA)**SPR(0)-HA))
         ENDIF
         IF(PT.GT.PARP(100)) GOTO 190
       ELSE
         PT=0D0
       ENDIF
       VINT(156+ISIDE)=PT
-      PHI=PARU(2)*PYR(0)
+      PHI=PARU(2)*SPR(0)
       P(IPU3,1)=PT*COS(PHI)
       P(IPU3,2)=PT*SIN(PHI)
       P(IPU3,4)=SQRT(P(IPU3,5)**2+PT**2+P(IPU3,3)**2)
@@ -13443,7 +13443,7 @@ C...exponential, or (for photon) predetermined or power law.
 C...Find one or two beam remnants.
       MINT(105)=MINT(102+ISIDE)
       MINT(109)=MINT(106+ISIDE)
-      CALL PYSPLI(MINT(10+ISIDE),MINT(12+ISIDE),KFLCH,KFLSP)
+      CALL SPSPLI(MINT(10+ISIDE),MINT(12+ISIDE),KFLCH,KFLSP)
       IF(MINT(51).NE.0) THEN
         MINT(51)=0
         GOTO 180
@@ -13454,8 +13454,8 @@ C...Store first remnant parton, with colour info and kinematics.
       K(I,1)=1
       K(I,2)=KFLSP
       K(I,3)=MINT(83)+ISIDE
-      P(I,5)=PYMASS(K(I,2))
-      KCOL=KCHG(PYCOMP(KFLSP),2)
+      P(I,5)=SPMASS(K(I,2))
+      KCOL=KCHG(SPCOMP(KFLSP),2)
       IF(KCOL.NE.0) THEN
         K(I,1)=3
         KFLS=(3-KCOL*ISIGN(1,KFLSP))/2
@@ -13477,8 +13477,8 @@ C...When extra remnant parton or hadron: store extra remnant.
         K(I,1)=1
         K(I,2)=KFLCH
         K(I,3)=MINT(83)+ISIDE
-        P(I,5)=PYMASS(K(I,2))
-        KCOL=KCHG(PYCOMP(KFLCH),2)
+        P(I,5)=SPMASS(K(I,2))
+        KCOL=KCHG(SPCOMP(KFLCH),2)
         IF(KCOL.NE.0) THEN
           K(I,1)=3
           KFLS=(3-KCOL*ISIGN(1,KFLCH))/2
@@ -13490,7 +13490,7 @@ C...When extra remnant parton or hadron: store extra remnant.
 C...Relative transverse momentum when two remnants.
         LOOP=0
   200   LOOP=LOOP+1
-        CALL PYPTDI(1,P(I-1,1),P(I-1,2))
+        CALL SPPTDI(1,P(I-1,1),P(I-1,2))
         P(I-1,1)=P(I-1,1)-0.5D0*P(IPU3,1)
         P(I-1,2)=P(I-1,2)-0.5D0*P(IPU3,2)
         PMS(3)=P(I-1,5)**2+P(I-1,1)**2+P(I-1,2)**2
@@ -13502,17 +13502,17 @@ C...Relative distribution of energy for particle into jet plus particle.
         IMB=1
         IF(MOD(MINT(10+ISIDE)/1000,10).NE.0) IMB=2
         IF(MSTP(94).LE.1) THEN
-          IF(IMB.EQ.1) CHI=PYR(0)
-          IF(IMB.EQ.2) CHI=1D0-SQRT(PYR(0))
+          IF(IMB.EQ.1) CHI=SPR(0)
+          IF(IMB.EQ.2) CHI=1D0-SQRT(SPR(0))
           IF(MOD(KFLCH/1000,10).NE.0) CHI=1D0-CHI
         ELSEIF(MSTP(94).EQ.2) THEN
-          CHI=1D0-PYR(0)**(1D0/(1D0+PARP(93+2*IMB)))
+          CHI=1D0-SPR(0)**(1D0/(1D0+PARP(93+2*IMB)))
           IF(MOD(KFLCH/1000,10).NE.0) CHI=1D0-CHI
         ELSEIF(MSTP(94).EQ.3) THEN
-          CALL PYZDIS(1,0,PMS(4),ZZ)
+          CALL SPZDIS(1,0,PMS(4),ZZ)
           CHI=ZZ
         ELSE
-          CALL PYZDIS(1000,0,PMS(4),ZZ)
+          CALL SPZDIS(1000,0,PMS(4),ZZ)
           CHI=ZZ
         ENDIF
  
@@ -13545,8 +13545,8 @@ C...Boost current and remnant systems to correct frame.
      &(2D0*VINT(1)*PRP)
       DBEC=-SIDESG*(DRKC**2-1D0)/(DRKC**2+1D0)
       DBER=SIDESG*(DRKR**2-1D0)/(DRKR**2+1D0)
-      CALL PYROBO(IPU3,IPU3,0D0,0D0,0D0,0D0,DBEC)
-      CALL PYROBO(IPU3+1,N,0D0,0D0,0D0,0D0,DBER)
+      CALL SPROBO(IPU3,IPU3,0D0,0D0,0D0,0D0,DBEC)
+      CALL SPROBO(IPU3+1,N,0D0,0D0,0D0,0D0,DBER)
  
 C...Let current quark shower; recoil but no showering by colour partner.
       QMAX=2D0*SQRT(VINT(309-ISIDE))
@@ -13554,7 +13554,7 @@ C...Let current quark shower; recoil but no showering by colour partner.
       MSTJ(48)=1
       PARJ86=PARJ(86)
       PARJ(86)=0D0
-      IF(MSTP(71).EQ.1) CALL PYSHOW(IPU3,ICOLR,QMAX)
+      IF(MSTP(71).EQ.1) CALL SPSHOW(IPU3,ICOLR,QMAX)
       MSTJ(48)=MSTJ48
       PARJ(86)=PARJ86
  
@@ -13563,26 +13563,26 @@ C...Let current quark shower; recoil but no showering by colour partner.
  
 C*********************************************************************
  
-C...PYDOCU
+C...SPDOCU
 C...Handles the documentation of the process in MSTI and PARI,
 C...and also computes cross-sections based on accumulated statistics.
  
-      SUBROUTINE PYDOCU
+      SUBROUTINE SPDOCU
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      COMMON/PYINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
-      SAVE /PYJETS/,/PYDAT1/,/PYSUBS/,/PYPARS/,/PYINT1/,/PYINT2/,
-     &/PYINT5/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      COMMON/SPINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
+      SAVE /SPJETS/,/SPDAT1/,/SPSUBS/,/SPPARS/,/SPINT1/,/SPINT2/,
+     &/SPINT5/
  
 C...Calculate Monte Carlo estimates of cross-sections.
       ISUB=MINT(1)
@@ -13632,8 +13632,8 @@ C...Rescale to known low-pT cross-section for standard QCD processes.
 C...Save information for gamma-p and gamma-gamma.
       IF(MINT(121).GT.1) THEN
         IGA=MINT(122)
-        CALL PYSAVE(2,IGA)
-        CALL PYSAVE(5,0)
+        CALL SPSAVE(2,IGA)
+        CALL SPSAVE(5,0)
       ENDIF
  
 C...Reset information on hard interaction.
@@ -13642,7 +13642,7 @@ C...Reset information on hard interaction.
         PARI(J)=0D0
   110 CONTINUE
  
-C...Copy integer valued information from MINT into MSTI.
+C...Cosp integer valued information from MINT into MSTI.
       DO 120 J=1,32
         MSTI(J)=MINT(J)
   120 CONTINUE
@@ -13691,8 +13691,8 @@ C...Store information on scattered partons in PARI.
           PARI(42+IS)=SIGN(LOG(MIN((SQRT(PR+P(I,3)**2)+ABS(P(I,3)))/
      &    SQRT(PR),1D20)),P(I,3))
           PARI(44+IS)=P(I,3)/SQRT(1D-20+P(I,1)**2+P(I,2)**2+P(I,3)**2)
-          PARI(46+IS)=PYANGL(P(I,3),SQRT(P(I,1)**2+P(I,2)**2))
-          PARI(48+IS)=PYANGL(P(I,1),P(I,2))
+          PARI(46+IS)=SPANGL(P(I,3),SQRT(P(I,1)**2+P(I,2)**2))
+          PARI(48+IS)=SPANGL(P(I,1),P(I,2))
   140   CONTINUE
       ENDIF
  
@@ -13724,7 +13724,7 @@ C...Store various other pieces of information into PARI.
       PARI(78)=VINT(160)
       PARI(81)=VINT(138)
  
-C...Store information on lepton -> lepton + gamma in PYGAGA.
+C...Store information on lepton -> lepton + gamma in SPGAGA.
       MSTI(71)=MINT(141)
       MSTI(72)=MINT(142)
       PARI(101)=VINT(301)
@@ -13733,7 +13733,7 @@ C...Store information on lepton -> lepton + gamma in PYGAGA.
         PARI(I)=VINT(I+202)
   160 CONTINUE
  
-C...Set information for PYTABU.
+C...Set information for SPTABU.
       IF(ISET(ISUB).EQ.1.OR.ISET(ISUB).EQ.3) THEN
         MSTU(161)=MINT(21)
         MSTU(162)=0
@@ -13750,20 +13750,20 @@ C...Set information for PYTABU.
  
 C*********************************************************************
  
-C...PYFRAM
+C...SPFRAM
 C...Performs transformations between different coordinate frames.
  
-      SUBROUTINE PYFRAM(IFRAME)
+      SUBROUTINE SPFRAM(IFRAME)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      SAVE /PYDAT1/,/PYPARS/,/PYINT1/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      SAVE /SPDAT1/,/SPPARS/,/SPINT1/
  
 C...Check that transformation can and should be done.
       IF(IFRAME.EQ.1.OR.IFRAME.EQ.2.OR.(IFRAME.EQ.3.AND.
@@ -13777,31 +13777,31 @@ C...Check that transformation can and should be done.
       IF(MINT(6).EQ.1) THEN
 C...Transform from fixed target or user specified frame to
 C...overall CM frame.
-        CALL PYROBO(0,0,0D0,0D0,-VINT(8),-VINT(9),-VINT(10))
-        CALL PYROBO(0,0,0D0,-VINT(7),0D0,0D0,0D0)
-        CALL PYROBO(0,0,-VINT(6),0D0,0D0,0D0,0D0)
+        CALL SPROBO(0,0,0D0,0D0,-VINT(8),-VINT(9),-VINT(10))
+        CALL SPROBO(0,0,0D0,-VINT(7),0D0,0D0,0D0)
+        CALL SPROBO(0,0,-VINT(6),0D0,0D0,0D0,0D0)
       ELSEIF(MINT(6).EQ.3) THEN
 C...Transform from hadronic CM frame in DIS to overall CM frame.
-        CALL PYROBO(0,0,-VINT(221),-VINT(222),-VINT(223),-VINT(224),
+        CALL SPROBO(0,0,-VINT(221),-VINT(222),-VINT(223),-VINT(224),
      &  -VINT(225))
       ENDIF
  
       IF(IFRAME.EQ.1) THEN
 C...Transform from overall CM frame to fixed target or user specified
 C...frame.
-        CALL PYROBO(0,0,VINT(6),VINT(7),VINT(8),VINT(9),VINT(10))
+        CALL SPROBO(0,0,VINT(6),VINT(7),VINT(8),VINT(9),VINT(10))
       ELSEIF(IFRAME.EQ.3) THEN
 C...Transform from overall CM frame to hadronic CM frame in DIS.
-        CALL PYROBO(0,0,0D0,0D0,VINT(223),VINT(224),VINT(225))
-        CALL PYROBO(0,0,0D0,VINT(222),0D0,0D0,0D0)
-        CALL PYROBO(0,0,VINT(221),0D0,0D0,0D0,0D0)
+        CALL SPROBO(0,0,0D0,0D0,VINT(223),VINT(224),VINT(225))
+        CALL SPROBO(0,0,0D0,VINT(222),0D0,0D0,0D0)
+        CALL SPROBO(0,0,VINT(221),0D0,0D0,0D0,0D0)
       ENDIF
  
 C...Set information about new frame.
       MINT(6)=IFRAME
       MSTI(6)=IFRAME
  
- 5000 FORMAT(1X,'Error: illegal values in subroutine PYFRAM.',1X,
+ 5000 FORMAT(1X,'Error: illegal values in subroutine SPFRAM.',1X,
      &'No transformation performed.'/1X,'IFRAME =',1X,I5,'; MINT(6) =',
      &1X,I5)
  
@@ -13810,32 +13810,32 @@ C...Set information about new frame.
  
 C*********************************************************************
  
-C...PYWIDT
+C...SPWIDT
 C...Calculates full and partial widths of resonances.
  
-      SUBROUTINE PYWIDT(KFLR,SH,WDTP,WDTE)
+      SUBROUTINE SPWIDT(KFLR,SH,WDTP,WDTE)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT4/MWID(500),WIDS(500,5)
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-      COMMON/PYSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT4/MWID(500),WIDS(500,5)
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+      COMMON/SPSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
      &SFMIX(16,4),ZMIXI(4,4),UMIXI(2,2),VMIXI(2,2)
-      COMMON/PYTCSM/ITCM(0:99),RTCM(0:99)
-      SAVE /PYDAT1/,/PYDAT2/,/PYDAT3/,/PYSUBS/,/PYPARS/,/PYINT1/,
-     &/PYINT4/,/PYMSSM/,/PYSSMT/,/PYTCSM/
+      COMMON/SPTCSM/ITCM(0:99),RTCM(0:99)
+      SAVE /SPDAT1/,/SPDAT2/,/SPDAT3/,/SPSUBS/,/SPPARS/,/SPINT1/,
+     &/SPINT4/,/SPMSSM/,/SPSSMT/,/SPTCSM/
 C...Local arrays and saved variables.
       COMPLEX*16 ZMIXC(4,4),AL,BL,AR,BR,FL,FR
       DIMENSION WDTP(0:400),WDTE(0:400,0:5),MOFSV(3,2),WIDWSV(3,2),
@@ -13846,7 +13846,7 @@ C...Local arrays and saved variables.
 C...Compressed code and sign; mass.
       KFLA=IABS(KFLR)
       KFLS=ISIGN(1,KFLR)
-      KC=PYCOMP(KFLA)
+      KC=SPCOMP(KFLA)
       SHR=SQRT(SH)
       PMR=PMAS(KC,1)
  
@@ -13890,17 +13890,17 @@ C...Loop over possible decay channels; skip irrelevant ones.
  
 C...Read out decay products and nominal masses.
           KFD1=KFDP(IDC,1)
-          KFC1=PYCOMP(KFD1)
+          KFC1=SPCOMP(KFD1)
           IF(KCHG(KFC1,3).EQ.1) KFD1=KFLS*KFD1
           PM1=PMAS(KFC1,1)
           KFD2=KFDP(IDC,2)
-          KFC2=PYCOMP(KFD2)
+          KFC2=SPCOMP(KFD2)
           IF(KCHG(KFC2,3).EQ.1) KFD2=KFLS*KFD2
           PM2=PMAS(KFC2,1)
           KFD3=KFDP(IDC,3)
           PM3=0D0
           IF(KFD3.NE.0) THEN
-            KFC3=PYCOMP(KFD3)
+            KFC3=SPCOMP(KFD3)
             IF(KCHG(KFC3,3).EQ.1) KFD3=KFLS*KFD3
             PM3=PMAS(KFC3,1)
           ENDIF
@@ -14072,9 +14072,9 @@ C...Common electroweak and strong constants.
       XWV=XW
       IF(MSTP(8).GE.2) XW=1D0-(PMAS(24,1)/PMAS(23,1))**2
       XW1=1D0-XW
-      AEM=PYALEM(SH)
+      AEM=SPALEM(SH)
       IF(MSTP(8).GE.1) AEM=SQRT(2D0)*PARU(105)*PMAS(24,1)**2*XW/PARU(1)
-      AS=PYALPS(SH)
+      AS=SPALPS(SH)
       RADC=1D0+AS/PARU(1)
  
       IF(KFLA.EQ.6) THEN
@@ -14084,8 +14084,8 @@ C...t quark.
         DO 140 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 140
-          RM1=PMAS(PYCOMP(KFDP(IDC,1)),1)**2/SH
-          RM2=PMAS(PYCOMP(KFDP(IDC,2)),1)**2/SH
+          RM1=PMAS(SPCOMP(KFDP(IDC,1)),1)**2/SH
+          RM2=PMAS(SPCOMP(KFDP(IDC,2)),1)**2/SH
           IF(SQRT(RM1)+SQRT(RM2).GT.1D0) GOTO 140
           WID2=1D0
           IF(I.GE.4.AND.I.LE.7) THEN
@@ -14114,8 +14114,8 @@ C...t -> ~t + ~chi_i0, i = 1, 2, 3 or 4.
             TANW=SQRT(PARU(102)/(1D0-PARU(102)))
             ET=KCHG(6,1)/3D0
             T3L=SIGN(0.5D0,ET)
-            KFC1=PYCOMP(KFDP(IDC,1))
-            KFC2=PYCOMP(KFDP(IDC,2))
+            KFC1=SPCOMP(KFDP(IDC,1))
+            KFC2=SPCOMP(KFDP(IDC,2))
             PMNCHI=PMAS(KFC1,1)
             PMSTOP=PMAS(KFC2,1)
             IF(SHR.GT.PMNCHI+PMSTOP) THEN
@@ -14131,7 +14131,7 @@ C...t -> ~t + ~chi_i0, i = 1, 2, 3 or 4.
               FR=SFMIX(6,1)*BL+SFMIX(6,2)*BR
               PCM=SQRT((SH-(PMNCHI+PMSTOP)**2)*
      &        (SH-(PMNCHI-PMSTOP)**2))/(2D0*SHR)
-              WDTP(I)=(0.5D0*PYALEM(SH)/PARU(102))*PCM*
+              WDTP(I)=(0.5D0*SPALEM(SH)/PARU(102))*PCM*
      &        ((ABS(FL)**2+ABS(FR)**2)*(SH+PMNCHI**2-PMSTOP**2)+
      &        SMZ(IZ)*4D0*SHR*DBLE(FL*DCONJG(FR)))/SH
               IF(KFLR.GT.0) THEN
@@ -14142,8 +14142,8 @@ C...t -> ~t + ~chi_i0, i = 1, 2, 3 or 4.
             ENDIF
           ELSEIF(I.EQ.14.AND.IMSS(1).NE.0) THEN
 C...t -> ~g + ~t
-            KFC1=PYCOMP(KFDP(IDC,1))
-            KFC2=PYCOMP(KFDP(IDC,2))
+            KFC1=SPCOMP(KFDP(IDC,1))
+            KFC2=SPCOMP(KFDP(IDC,2))
             PMNCHI=PMAS(KFC1,1)
             PMSTOP=PMAS(KFC2,1)
             IF(SHR.GT.PMNCHI+PMSTOP) THEN
@@ -14151,7 +14151,7 @@ C...t -> ~g + ~t
               RR=-SFMIX(6,2)
               PCM=SQRT((SH-(PMNCHI+PMSTOP)**2)*
      &        (SH-(PMNCHI-PMSTOP)**2))/(2D0*SHR)
-              WDTP(I)=4D0/3D0*0.5D0*PYALPS(SH)*PCM*((RL**2+RR**2)*
+              WDTP(I)=4D0/3D0*0.5D0*SPALPS(SH)*PCM*((RL**2+RR**2)*
      &        (SH+PMNCHI**2-PMSTOP**2)+PMNCHI*4D0*SHR*RL*RR)/SH
               IF(KFLR.GT.0) THEN
                 WID2=WIDS(KFC1,2)*WIDS(KFC2,2)
@@ -14162,10 +14162,10 @@ C...t -> ~g + ~t
           ELSEIF(I.EQ.15.AND.IMSS(1).NE.0) THEN
 C...t -> ~gravitino + ~t
             XMP2=RMSS(29)**2
-            KFC1=PYCOMP(KFDP(IDC,1))
+            KFC1=SPCOMP(KFDP(IDC,1))
             XMGR2=PMAS(KFC1,1)**2
             WDTP(I)=SH**2*SHR/(96D0*PARU(1)*XMP2*XMGR2)*(1D0-RM2)**4
-            KFC2=PYCOMP(KFDP(IDC,2))
+            KFC2=SPCOMP(KFDP(IDC,2))
             WID2=WIDS(KFC2,2)
             IF(KFLR.LT.0) WID2=WIDS(KFC2,3)
 CMRENNA--
@@ -14186,8 +14186,8 @@ C...b' quark.
         DO 150 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 150
-          RM1=PMAS(PYCOMP(KFDP(IDC,1)),1)**2/SH
-          RM2=PMAS(PYCOMP(KFDP(IDC,2)),1)**2/SH
+          RM1=PMAS(SPCOMP(KFDP(IDC,1)),1)**2/SH
+          RM2=PMAS(SPCOMP(KFDP(IDC,2)),1)**2/SH
           IF(SQRT(RM1)+SQRT(RM2).GT.1D0) GOTO 150
           WID2=1D0
           IF(I.GE.4.AND.I.LE.7) THEN
@@ -14234,8 +14234,8 @@ C...t' quark.
         DO 160 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 160
-          RM1=PMAS(PYCOMP(KFDP(IDC,1)),1)**2/SH
-          RM2=PMAS(PYCOMP(KFDP(IDC,2)),1)**2/SH
+          RM1=PMAS(SPCOMP(KFDP(IDC,1)),1)**2/SH
+          RM2=PMAS(SPCOMP(KFDP(IDC,2)),1)**2/SH
           IF(SQRT(RM1)+SQRT(RM2).GT.1D0) GOTO 160
           WID2=1D0
           IF(I.GE.4.AND.I.LE.7) THEN
@@ -14278,8 +14278,8 @@ C...tau' lepton.
         DO 170 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 170
-          RM1=PMAS(PYCOMP(KFDP(IDC,1)),1)**2/SH
-          RM2=PMAS(PYCOMP(KFDP(IDC,2)),1)**2/SH
+          RM1=PMAS(SPCOMP(KFDP(IDC,1)),1)**2/SH
+          RM2=PMAS(SPCOMP(KFDP(IDC,2)),1)**2/SH
           IF(SQRT(RM1)+SQRT(RM2).GT.1D0) GOTO 170
           WID2=1D0
           IF(I.EQ.3) THEN
@@ -14321,8 +14321,8 @@ C...nu'_tau neutrino.
         DO 180 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 180
-          RM1=PMAS(PYCOMP(KFDP(IDC,1)),1)**2/SH
-          RM2=PMAS(PYCOMP(KFDP(IDC,2)),1)**2/SH
+          RM1=PMAS(SPCOMP(KFDP(IDC,1)),1)**2/SH
+          RM2=PMAS(SPCOMP(KFDP(IDC,2)),1)**2/SH
           IF(SQRT(RM1)+SQRT(RM2).GT.1D0) GOTO 180
           WID2=1D0
           IF(I.EQ.2) THEN
@@ -14398,7 +14398,7 @@ C***Note that widths are not given in dimensional quantities here.
 C...QED -> q + qbar.
             EF=KCHG(I,1)/3D0
             FCOF=3D0*RADC
-            IF(I.GE.6.AND.MSTP(35).GE.1) FCOF=FCOF*PYHFTH(SH,SH*RM1,1D0)
+            IF(I.GE.6.AND.MSTP(35).GE.1) FCOF=FCOF*SPHFTH(SH,SH*RM1,1D0)
             WDTP(I)=FCOF*EF**2*(1D0+2D0*RM1)*SQRT(MAX(0D0,1D0-4D0*RM1))
             IF(I.EQ.6) WID2=WIDS(6,1)
             IF((I.EQ.7.OR.I.EQ.8)) WID2=WIDS(I,1)
@@ -14456,7 +14456,7 @@ C...Z0 -> q + qbar
             AF=SIGN(1D0,EF+0.1D0)
             VF=AF-4D0*EF*XWV
             FCOF=3D0*RADC
-            IF(I.GE.6.AND.MSTP(35).GE.1) FCOF=FCOF*PYHFTH(SH,SH*RM1,1D0)
+            IF(I.GE.6.AND.MSTP(35).GE.1) FCOF=FCOF*SPHFTH(SH,SH*RM1,1D0)
             IF(I.EQ.6) WID2=WIDS(6,1)
             IF((I.EQ.7.OR.I.EQ.8)) WID2=WIDS(I,1)
           ELSEIF(I.LE.16) THEN
@@ -14553,8 +14553,8 @@ C...h0 (or H0, or A0):
         DO 270 I=1,MDCY(KFHIGG,3)
           IDC=I+MDCY(KFHIGG,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 270
-          KFC1=PYCOMP(KFDP(IDC,1))
-          KFC2=PYCOMP(KFDP(IDC,2))
+          KFC1=SPCOMP(KFDP(IDC,1))
+          KFC2=SPCOMP(KFDP(IDC,2))
           RM1=PMAS(KFC1,1)**2/SH
           RM2=PMAS(KFC2,1)**2/SH
           IF(I.NE.16.AND.I.NE.17.AND.SQRT(RM1)+SQRT(RM2).GT.1D0)
@@ -14563,7 +14563,7 @@ C...h0 (or H0, or A0):
  
           IF(I.LE.8) THEN
 C...h0 -> q + qbar
-            WDTP(I)=FAC*3D0*(PYMRUN(KFDP(IDC,1),SH)**2/SHFS)*
+            WDTP(I)=FAC*3D0*(SPMRUN(KFDP(IDC,1),SH)**2/SHFS)*
      &      SQRT(MAX(0D0,1D0-4D0*RM1))*RADC
 C...A0 behaves like beta, ho and H0 like beta**3.
             IF(IHIGG.NE.3) WDTP(I)=WDTP(I)*(1D0-4D0*RM1)
@@ -14828,7 +14828,7 @@ C...h0 -> Z0 + Z0, W+ + W-
               ELSE
                 MOFSV(IHIGG,I-15)=1
                 RMAS=SQRT(MAX(0D0,SH))
-                CALL PYOFSH(1,KFLA,KFDP(IDC,1),KFDP(IDC,2),RMAS,WIDW,
+                CALL SPOFSH(1,KFLA,KFDP(IDC,1),KFDP(IDC,2),RMAS,WIDW,
      &          WID2)
                 WIDWSV(IHIGG,I-15)=WIDW
                 WID2SV(IHIGG,I-15)=WID2
@@ -14988,8 +14988,8 @@ C...Z'0:
         DO 290 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 290
-          RM1=PMAS(PYCOMP(KFDP(IDC,1)),1)**2/SH
-          RM2=PMAS(PYCOMP(KFDP(IDC,2)),1)**2/SH
+          RM1=PMAS(SPCOMP(KFDP(IDC,1)),1)**2/SH
+          RM2=PMAS(SPCOMP(KFDP(IDC,2)),1)**2/SH
           IF(SQRT(RM1)+SQRT(RM2).GT.1D0.OR.MDME(IDC,1).LT.0) GOTO 290
           WID2=1D0
           IF(I.LE.16) THEN
@@ -15010,7 +15010,7 @@ C...Z'0 -> q + qbar
               ENDIF
               FCOF=3D0*RADC
               IF(I.GE.6.AND.MSTP(35).GE.1) FCOF=FCOF*
-     &        PYHFTH(SH,SH*RM1,1D0)
+     &        SPHFTH(SH,SH*RM1,1D0)
               IF(I.EQ.6) WID2=WIDS(6,1)
               IF((I.EQ.7.OR.I.EQ.8)) WID2=WIDS(I,1)
             ELSEIF(I.LE.16) THEN
@@ -15182,8 +15182,8 @@ C...W'+/-:
         DO 300 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 300
-          RM1=PMAS(PYCOMP(KFDP(IDC,1)),1)**2/SH
-          RM2=PMAS(PYCOMP(KFDP(IDC,2)),1)**2/SH
+          RM1=PMAS(SPCOMP(KFDP(IDC,1)),1)**2/SH
+          RM2=PMAS(SPCOMP(KFDP(IDC,2)),1)**2/SH
           IF(SQRT(RM1)+SQRT(RM2).GT.1D0) GOTO 300
           WID2=1D0
           IF(I.LE.20) THEN
@@ -15246,16 +15246,16 @@ C        ENDIF
         DO 310 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 310
-          KFC1=PYCOMP(KFDP(IDC,1))
-          KFC2=PYCOMP(KFDP(IDC,2))
+          KFC1=SPCOMP(KFDP(IDC,1))
+          KFC2=SPCOMP(KFDP(IDC,2))
           RM1=PMAS(KFC1,1)**2/SH
           RM2=PMAS(KFC2,1)**2/SH
           IF(SQRT(RM1)+SQRT(RM2).GT.1D0) GOTO 310
           WID2=1D0
           IF(I.LE.4) THEN
 C...H+/- -> q + qbar'
-            RM1R=PYMRUN(KFDP(IDC,1),SH)**2/SH
-            RM2R=PYMRUN(KFDP(IDC,2),SH)**2/SH
+            RM1R=SPMRUN(KFDP(IDC,1),SH)**2/SH
+            RM2R=SPMRUN(KFDP(IDC,2),SH)**2/SH
             WDTP(I)=FAC*3D0*RADC*MAX(0D0,(RM1R*PARU(141)**2+
      &      RM2R/PARU(141)**2)*(1D0-RM1R-RM2R)-4D0*RM1R*RM2R)*
      &      SQRT(MAX(0D0,(1D0-RM1-RM2)**2-4D0*RM1*RM2))*(SH/SHFS)
@@ -15319,8 +15319,8 @@ C...R:
         DO 320 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 320
-          RM1=PMAS(PYCOMP(KFDP(IDC,1)),1)**2/SH
-          RM2=PMAS(PYCOMP(KFDP(IDC,2)),1)**2/SH
+          RM1=PMAS(SPCOMP(KFDP(IDC,1)),1)**2/SH
+          RM2=PMAS(SPCOMP(KFDP(IDC,2)),1)**2/SH
           IF(SQRT(RM1)+SQRT(RM2).GT.1D0) GOTO 320
           WID2=1D0
           IF(I.LE.6) THEN
@@ -15359,8 +15359,8 @@ C...LQ (leptoquark).
         DO 330 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 330
-          RM1=PMAS(PYCOMP(KFDP(IDC,1)),1)**2/SH
-          RM2=PMAS(PYCOMP(KFDP(IDC,2)),1)**2/SH
+          RM1=PMAS(SPCOMP(KFDP(IDC,1)),1)**2/SH
+          RM2=PMAS(SPCOMP(KFDP(IDC,2)),1)**2/SH
           IF(SQRT(RM1)+SQRT(RM2).GT.1D0) GOTO 330
           WDTP(I)=FAC*SQRT(MAX(0D0,(1D0-RM1-RM2)**2-4D0*RM1*RM2))**3
           WID2=1D0
@@ -15386,8 +15386,8 @@ C...Techni-pi0 and techni-pi0':
         DO 340 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 340
-          PM1=PMAS(PYCOMP(KFDP(IDC,1)),1)
-          PM2=PMAS(PYCOMP(KFDP(IDC,2)),1)
+          PM1=PMAS(SPCOMP(KFDP(IDC,1)),1)
+          PM2=PMAS(SPCOMP(KFDP(IDC,2)),1)
           RM1=PM1**2/SH
           RM2=PM2**2/SH
           IF(SQRT(RM1)+SQRT(RM2).GT.1D0) GOTO 340
@@ -15411,8 +15411,8 @@ C...pi_tc -> f + fbar.
             HM2=PM2
             IF(IKA.GE.4.AND.IKA.LE.6) THEN
                FCOF=FCOF*RTCM(1+IKA)**2
-               HM1=PYMRUN(KFDP(IDC,1),SH)
-               HM2=PYMRUN(KFDP(IDC,2),SH)
+               HM1=SPMRUN(KFDP(IDC,1),SH)
+               HM2=SPMRUN(KFDP(IDC,2),SH)
             ELSEIF(IKA.EQ.15) THEN
                FCOF=FCOF*RTCM(8)**2
             ENDIF
@@ -15435,10 +15435,10 @@ C...pi+_tc
         DO 350 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 350
-          PM1=PMAS(PYCOMP(KFDP(IDC,1)),1)
-          PM2=PMAS(PYCOMP(KFDP(IDC,2)),1)
+          PM1=PMAS(SPCOMP(KFDP(IDC,1)),1)
+          PM2=PMAS(SPCOMP(KFDP(IDC,2)),1)
           PM3=0D0
-          IF(I.EQ.5) PM3=PMAS(PYCOMP(KFDP(IDC,3)),1)
+          IF(I.EQ.5) PM3=PMAS(SPCOMP(KFDP(IDC,3)),1)
           RM1=PM1**2/SH
           RM2=PM2**2/SH
           RM3=PM3**2/SH
@@ -15452,7 +15452,7 @@ C...pi_tc+ -> W b b~
             FCOF=3D0*RADC
             XMT2=PMAS(6,1)**2/SH
             FACP=FAC/(4D0*PARU(1))*FCOF*XMT2*RTCM(7)**2
-            KFC3=PYCOMP(KFDP(IDC,3))
+            KFC3=SPCOMP(KFDP(IDC,3))
             CHECK = SQRT(RM1)+SQRT(RM2)+SQRT(RM3)
             CHECK = SQRT(RM1)
             T0 = (1D0-CHECK**2)*
@@ -15482,8 +15482,8 @@ C...pi_tc+ -> W b b~
               ELSEIF(I.EQ.5) THEN
                 FCOF=FCOF*RTCM(7)**2
               ENDIF
-              HM1=PYMRUN(KFDP(IDC,1),SH)
-              HM2=PYMRUN(KFDP(IDC,2),SH)
+              HM1=SPMRUN(KFDP(IDC,1),SH)
+              HM2=SPMRUN(KFDP(IDC,2),SH)
             ELSEIF(I.EQ.8) THEN
               FCOF=FCOF*RTCM(8)**2
             ENDIF
@@ -15506,8 +15506,8 @@ C...Techni-eta.
         DO 360 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 360
-          RM1=PMAS(PYCOMP(KFDP(IDC,1)),1)**2/SH
-          RM2=PMAS(PYCOMP(KFDP(IDC,2)),1)**2/SH
+          RM1=PMAS(SPCOMP(KFDP(IDC,1)),1)**2/SH
+          RM2=PMAS(SPCOMP(KFDP(IDC,2)),1)**2/SH
           IF(SQRT(RM1)+SQRT(RM2).GT.1D0) GOTO 360
           WID2=1D0
           IF(I.LE.2) THEN
@@ -15534,7 +15534,7 @@ C...Techni-rho0:
         SQMZ=PMAS(23,1)**2
         SQMW=PMAS(24,1)**2
         SHP=SH
-        CALL PYWIDX(23,SHP,WDTPP,WDTEP)
+        CALL SPWIDX(23,SHP,WDTPP,WDTEP)
         GMMZ=SHR*WDTPP(0)
         XWRHT=(1D0-2D0*XW)/(4D0*XW*(1D0-XW))
         BWZR=XWRHT*SH*(SH-SQMZ)/((SH-SQMZ)**2+GMMZ**2)
@@ -15542,8 +15542,8 @@ C...Techni-rho0:
         DO 370 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 370
-          RM1=PMAS(PYCOMP(KFDP(IDC,1)),1)**2/SH
-          RM2=PMAS(PYCOMP(KFDP(IDC,2)),1)**2/SH
+          RM1=PMAS(SPCOMP(KFDP(IDC,1)),1)**2/SH
+          RM2=PMAS(SPCOMP(KFDP(IDC,2)),1)**2/SH
           IF(SQRT(RM1)+SQRT(RM2).GT.1D0) GOTO 370
           WID2=1D0
           IF(I.EQ.1) THEN
@@ -15558,7 +15558,7 @@ C...rho_tc0 -> W+ + pi_tc-.
      &      AEM*SQRT(MAX(0D0,(1D0-RM1-RM2)**2-4D0*RM1*RM2))*
      &      ((1D0-RM1-RM2)**2-4D0*RM1*RM2 + 6D0*SQMW/SH)*
      &      (1D0-RTCM(3)**2)/4D0/XW/24D0/RTCM(13)**2*SHR**3
-            WID2=WIDS(24,2)*WIDS(PYCOMP(KTECHN+211),3)
+            WID2=WIDS(24,2)*WIDS(SPCOMP(KTECHN+211),3)
           ELSEIF(I.EQ.3) THEN
 C...rho_tc0 -> pi_tc+ + W-.
             WDTP(I)=FAC*RTCM(3)**2*(1D0-RTCM(3)**2)*
@@ -15566,35 +15566,35 @@ C...rho_tc0 -> pi_tc+ + W-.
      &      AEM*SQRT(MAX(0D0,(1D0-RM1-RM2)**2-4D0*RM1*RM2))*
      &      ((1D0-RM1-RM2)**2-4D0*RM1*RM2 + 6D0*SQMW/SH)*
      &      (1D0-RTCM(3)**2)/4D0/XW/24D0/RTCM(13)**2*SHR**3
-            WID2=WIDS(PYCOMP(KTECHN+211),2)*WIDS(24,3)
+            WID2=WIDS(SPCOMP(KTECHN+211),2)*WIDS(24,3)
           ELSEIF(I.EQ.4) THEN
 C...rho_tc0 -> pi_tc+ + pi_tc-.
             WDTP(I)=FAC*(1D0-RTCM(3)**2)**2*
      &      SQRT(MAX(0D0,(1D0-RM1-RM2)**2-4D0*RM1*RM2))**3
-            WID2=WIDS(PYCOMP(KTECHN+211),1)
+            WID2=WIDS(SPCOMP(KTECHN+211),1)
           ELSEIF(I.EQ.5) THEN
 C...rho_tc0 -> gamma + pi_tc0
             WDTP(I)=AEM*SQRT(MAX(0D0,(1D0-RM1-RM2)**2-4D0*RM1*RM2))**3*
      &      (2D0*RTCM(2)-1D0)**2*(1D0-RTCM(3)**2)/24D0/RTCM(12)**2*
      &      SHR**3
-            WID2=WIDS(PYCOMP(KTECHN+111),2)
+            WID2=WIDS(SPCOMP(KTECHN+111),2)
           ELSEIF(I.EQ.6) THEN
 C...rho_tc0 -> gamma + pi_tc0'
             WDTP(I)=AEM*SQRT(MAX(0D0,(1D0-RM1-RM2)**2-4D0*RM1*RM2))**3*
      &      (1D0-RTCM(4)**2)/24D0/RTCM(12)**2*SHR**3
-            WID2=WIDS(PYCOMP(KTECHN+221),2)
+            WID2=WIDS(SPCOMP(KTECHN+221),2)
           ELSEIF(I.EQ.7) THEN
 C...rho_tc0 -> Z0 + pi_tc0
             WDTP(I)=AEM*SQRT(MAX(0D0,(1D0-RM1-RM2)**2-4D0*RM1*RM2))**3*
      &      (2D0*RTCM(2)-1D0)**2*(1D0-RTCM(3)**2)/24D0/RTCM(12)**2*
      &      XW/XW1*SHR**3
-            WID2=WIDS(23,2)*WIDS(PYCOMP(KTECHN+111),2)
+            WID2=WIDS(23,2)*WIDS(SPCOMP(KTECHN+111),2)
           ELSEIF(I.EQ.8) THEN
 C...rho_tc0 -> Z0 + pi_tc0'
             WDTP(I)=AEM*SQRT(MAX(0D0,(1D0-RM1-RM2)**2-4D0*RM1*RM2))**3*
      &      (1D0-RTCM(4)**2)/24D0/RTCM(12)**2*(1D0-2D0*XW)**2/4D0/
      &      XW/XW1*SHR**3
-            WID2=WIDS(23,2)*WIDS(PYCOMP(KTECHN+221),2)
+            WID2=WIDS(23,2)*WIDS(SPCOMP(KTECHN+221),2)
           ELSE
 C...rho_tc0 -> f + fbar.
             WID2=1D0
@@ -15634,15 +15634,15 @@ C...Techni-rho+/-:
         SQMZ=PMAS(23,1)**2
         SQMW=PMAS(24,1)**2
         SHP=SH
-        CALL PYWIDX(24,SHP,WDTPP,WDTEP)
+        CALL SPWIDX(24,SHP,WDTPP,WDTEP)
         GMMW=SHR*WDTPP(0)
         FACF=(1D0/12D0)*(AEM**2/ALPRHT)*SHR*
      &  (0.125D0/XW**2)*SH**2/((SH-SQMW)**2+GMMW**2)
         DO 380 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 380
-          RM1=PMAS(PYCOMP(KFDP(IDC,1)),1)**2/SH
-          RM2=PMAS(PYCOMP(KFDP(IDC,2)),1)**2/SH
+          RM1=PMAS(SPCOMP(KFDP(IDC,1)),1)**2/SH
+          RM2=PMAS(SPCOMP(KFDP(IDC,2)),1)**2/SH
           IF(SQRT(RM1)+SQRT(RM2).GT.1D0) GOTO 380
           WID2=1D0
           IF(I.EQ.1) THEN
@@ -15662,9 +15662,9 @@ C...rho_tc+ -> W+ + pi_tc0.
      &      ((1D0-RM1-RM2)**2-4D0*RM1*RM2 + 6D0*SQMW/SH)*
      &      (1D0-RTCM(3)**2)/4D0/XW/24D0/RTCM(13)**2*SHR**3
             IF(KFLR.GT.0) THEN
-              WID2=WIDS(24,2)*WIDS(PYCOMP(KTECHN+111),2)
+              WID2=WIDS(24,2)*WIDS(SPCOMP(KTECHN+111),2)
             ELSE
-              WID2=WIDS(24,3)*WIDS(PYCOMP(KTECHN+111),2)
+              WID2=WIDS(24,3)*WIDS(SPCOMP(KTECHN+111),2)
             ENDIF
           ELSEIF(I.EQ.3) THEN
 C...rho_tc+ -> pi_tc+ + Z0.
@@ -15677,18 +15677,18 @@ C...rho_tc+ -> pi_tc+ + Z0.
      &      (2D0*RTCM(2)-1D0)**2*(1D0-RTCM(3)**2)/24D0/RTCM(12)**2*
      &      SHR**3*XW/XW1
             IF(KFLR.GT.0) THEN
-              WID2=WIDS(PYCOMP(KTECHN+211),2)*WIDS(23,2)
+              WID2=WIDS(SPCOMP(KTECHN+211),2)*WIDS(23,2)
             ELSE
-              WID2=WIDS(PYCOMP(KTECHN+211),3)*WIDS(23,2)
+              WID2=WIDS(SPCOMP(KTECHN+211),3)*WIDS(23,2)
             ENDIF
           ELSEIF(I.EQ.4) THEN
 C...rho_tc+ -> pi_tc+ + pi_tc0.
             WDTP(I)=FAC*(1D0-RTCM(3)**2)**2*
      &      SQRT(MAX(0D0,(1D0-RM1-RM2)**2-4D0*RM1*RM2))**3
             IF(KFLR.GT.0) THEN
-              WID2=WIDS(PYCOMP(KTECHN+211),2)*WIDS(PYCOMP(KTECHN+111),2)
+              WID2=WIDS(SPCOMP(KTECHN+211),2)*WIDS(SPCOMP(KTECHN+111),2)
             ELSE
-              WID2=WIDS(PYCOMP(KTECHN+211),3)*WIDS(PYCOMP(KTECHN+111),2)
+              WID2=WIDS(SPCOMP(KTECHN+211),3)*WIDS(SPCOMP(KTECHN+111),2)
             ENDIF
           ELSEIF(I.EQ.5) THEN
 C...rho_tc+ -> pi_tc+ + gamma
@@ -15696,18 +15696,18 @@ C...rho_tc+ -> pi_tc+ + gamma
      &      (2D0*RTCM(2)-1D0)**2*(1D0-RTCM(3)**2)/24D0/RTCM(12)**2*
      &      SHR**3
             IF(KFLR.GT.0) THEN
-              WID2=WIDS(PYCOMP(KTECHN+211),2)
+              WID2=WIDS(SPCOMP(KTECHN+211),2)
             ELSE
-              WID2=WIDS(PYCOMP(KTECHN+211),3)
+              WID2=WIDS(SPCOMP(KTECHN+211),3)
             ENDIF
           ELSEIF(I.EQ.6) THEN
 C...rho_tc+ -> W+ + pi_tc0'
             WDTP(I)=AEM*SQRT(MAX(0D0,(1D0-RM1-RM2)**2-4D0*RM1*RM2))**3*
      &      (1D0-RTCM(4)**2)/4D0/XW/24D0/RTCM(12)**2*SHR**3
             IF(KFLR.GT.0) THEN
-              WID2=WIDS(24,2)*WIDS(PYCOMP(KTECHN+221),2)
+              WID2=WIDS(24,2)*WIDS(SPCOMP(KTECHN+221),2)
             ELSE
-              WID2=WIDS(24,3)*WIDS(PYCOMP(KTECHN+221),2)
+              WID2=WIDS(24,3)*WIDS(SPCOMP(KTECHN+221),2)
             ENDIF
           ELSE
 C...rho_tc+ -> f + fbar'.
@@ -15752,54 +15752,54 @@ C...Techni-omega:
         FACF=(1D0/6D0)*(AEM**2/ALPRHT)*SHR*(2D0*RTCM(2)-1D0)**2
         SQMZ=PMAS(23,1)**2
         SHP=SH
-        CALL PYWIDX(23,SHP,WDTPP,WDTEP)
+        CALL SPWIDX(23,SHP,WDTPP,WDTEP)
         GMMZ=SHR*WDTPP(0)
         BWZR=(0.5D0/(1D0-XW))*SH*(SH-SQMZ)/((SH-SQMZ)**2+GMMZ**2)
         BWZI=-(0.5D0/(1D0-XW))*SH*GMMZ/((SH-SQMZ)**2+GMMZ**2)
         DO 390 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 390
-          RM1=PMAS(PYCOMP(KFDP(IDC,1)),1)**2/SH
-          RM2=PMAS(PYCOMP(KFDP(IDC,2)),1)**2/SH
+          RM1=PMAS(SPCOMP(KFDP(IDC,1)),1)**2/SH
+          RM2=PMAS(SPCOMP(KFDP(IDC,2)),1)**2/SH
           IF(SQRT(RM1)+SQRT(RM2).GT.1D0) GOTO 390
           WID2=1D0
           IF(I.EQ.1) THEN
 C...omega_tc0 -> gamma + pi_tc0.
             WDTP(I)=AEM/24D0/RTCM(12)**2*(1D0-RTCM(3)**2)*
      &      SQRT(MAX(0D0,(1D0-RM1-RM2)**2-4D0*RM1*RM2))**3*SHR**3
-            WID2=WIDS(PYCOMP(KTECHN+111),2)
+            WID2=WIDS(SPCOMP(KTECHN+111),2)
           ELSEIF(I.EQ.2) THEN
 C...omega_tc0 -> Z0 + pi_tc0
             WDTP(I)=AEM*SQRT(MAX(0D0,(1D0-RM1-RM2)**2-4D0*RM1*RM2))**3*
      &      (1D0-RTCM(3)**2)/24D0/RTCM(12)**2*(1D0-2D0*XW)**2/4D0/
      &      XW/XW1*SHR**3
-            WID2=WIDS(23,2)*WIDS(PYCOMP(KTECHN+111),2)
+            WID2=WIDS(23,2)*WIDS(SPCOMP(KTECHN+111),2)
           ELSEIF(I.EQ.3) THEN
 C...omega_tc0 -> gamma + pi_tc0'
             WDTP(I)=AEM*SQRT(MAX(0D0,(1D0-RM1-RM2)**2-4D0*RM1*RM2))**3*
      &      (2D0*RTCM(2)-1D0)**2*(1D0-RTCM(4)**2)/24D0/RTCM(12)**2*
      &      SHR**3
-            WID2=WIDS(PYCOMP(KTECHN+221),2)
+            WID2=WIDS(SPCOMP(KTECHN+221),2)
           ELSEIF(I.EQ.4) THEN
 C...omega_tc0 -> Z0 + pi_tc0'
             WDTP(I)=AEM*SQRT(MAX(0D0,(1D0-RM1-RM2)**2-4D0*RM1*RM2))**3*
      &      (2D0*RTCM(2)-1D0)**2*(1D0-RTCM(4)**2)/24D0/RTCM(12)**2*
      &      XW/XW1*SHR**3
-            WID2=WIDS(23,2)*WIDS(PYCOMP(KTECHN+221),2)
+            WID2=WIDS(23,2)*WIDS(SPCOMP(KTECHN+221),2)
           ELSEIF(I.EQ.5) THEN
 C...omega_tc0 -> W+ + pi_tc-
             WDTP(I)=AEM*SQRT(MAX(0D0,(1D0-RM1-RM2)**2-4D0*RM1*RM2))**3*
      &      (1D0-RTCM(3)**2)/4D0/XW/24D0/RTCM(12)**2*SHR**3+
      &      FAC*RTCM(3)**2*(1D0-RTCM(3)**2)*RTCM(11)**2*
      &      SQRT(MAX(0D0,(1D0-RM1-RM2)**2-4D0*RM1*RM2))**3
-            WID2=WIDS(24,2)*WIDS(PYCOMP(KTECHN+211),3)
+            WID2=WIDS(24,2)*WIDS(SPCOMP(KTECHN+211),3)
           ELSEIF(I.EQ.6) THEN
 C...omega_tc0 -> pi_tc+ + W-
             WDTP(I)=AEM*SQRT(MAX(0D0,(1D0-RM1-RM2)**2-4D0*RM1*RM2))**3*
      &      (1D0-RTCM(3)**2)/4D0/XW/24D0/RTCM(12)**2*SHR**3+
      &      FAC*RTCM(3)**2*(1D0-RTCM(3)**2)*RTCM(11)**2*
      &      SQRT(MAX(0D0,(1D0-RM1-RM2)**2-4D0*RM1*RM2))**3
-            WID2=WIDS(24,3)*WIDS(PYCOMP(KTECHN+211),2)
+            WID2=WIDS(24,3)*WIDS(SPCOMP(KTECHN+211),2)
           ELSEIF(I.EQ.7) THEN
 C...omega_tc0 -> W+ + W-.
             WDTP(I)=FAC*RTCM(3)**4*RTCM(11)**2*
@@ -15809,7 +15809,7 @@ C...omega_tc0 -> W+ + W-.
 C...omega_tc0 -> pi_tc+ + pi_tc-.
             WDTP(I)=FAC*(1D0-RTCM(3)**2)**2*RTCM(11)**2*
      &      SQRT(MAX(0D0,(1D0-RM1-RM2)**2-4D0*RM1*RM2))**3
-            WID2=WIDS(PYCOMP(KTECHN+211),1)
+            WID2=WIDS(SPCOMP(KTECHN+211),1)
           ELSE
 C...omega_tc0 -> f + fbar.
             WID2=1D0
@@ -15854,7 +15854,7 @@ C.....V8 -> quark anti-quark
         DO 400 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 400
-          PM1=PMAS(PYCOMP(KFDP(IDC,1)),1)
+          PM1=PMAS(SPCOMP(KFDP(IDC,1)),1)
           RM1=PM1**2/SH
           IF(RM1.GT.0.25D0) GOTO 400
           WID2=1D0
@@ -15881,8 +15881,8 @@ C.....V8 -> quark anti-quark
         DO 410 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 410
-          RM1=PMAS(PYCOMP(KFDP(IDC,1)),1)**2/SH
-          RM2=PMAS(PYCOMP(KFDP(IDC,2)),1)**2/SH
+          RM1=PMAS(SPCOMP(KFDP(IDC,1)),1)**2/SH
+          RM2=PMAS(SPCOMP(KFDP(IDC,2)),1)**2/SH
           IF(SQRT(RM1)+SQRT(RM2).GT.1D0) GOTO 410
           WID2=1D0
 C...pi_tc -> g + g
@@ -15901,7 +15901,7 @@ C...pi_tc -> f + fbar.
             FCOF=1D0
             IKA=IABS(KFDP(IDC,1))
             IF(IKA.LT.10) FCOF=3D0*RADC
-            HM1=PYMRUN(KFDP(IDC,1),SH)
+            HM1=SPMRUN(KFDP(IDC,1),SH)
             WDTP(I)=FAC*FCOF*HM1**2*CLEBF*
      &      SQRT(MAX(0D0,(1D0-RM1-RM2)**2-4D0*RM1*RM2))
           ENDIF
@@ -15931,11 +15931,11 @@ C...pi_tc -> f + fbar.
      &  SINT3**2)*2D0
         X22=(.25D0*(2D0-RTCM(29)**2-RTCM(31)**2)-
      &  SINT3**2)*2D0
-        CALL PYWIDX(KTECHN+100021,SH,WDTPP,WDTEP)
+        CALL SPWIDX(KTECHN+100021,SH,WDTPP,WDTEP)
  
         IF(WDTPP(0).GT.RTCM(33)*SHR) WDTPP(0)=RTCM(33)*SHR
         GMV8=SHR*WDTPP(0)
-        RMV8=PMAS(PYCOMP(KTECHN+100021),1)
+        RMV8=PMAS(SPCOMP(KTECHN+100021),1)
         FV8RE=SH*(SH-RMV8**2)/((SH-RMV8**2)**2+GMV8**2)
         FV8IM=SH*GMV8/((SH-RMV8**2)**2+GMV8**2)
         IF(ITCM(2).EQ.0) THEN
@@ -15948,8 +15948,8 @@ C...pi_tc -> f + fbar.
      &    KFLA.EQ.KTECHN+300113)) GOTO 420
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 420
-          RM1=PMAS(PYCOMP(KFDP(IDC,1)),1)**2/SH
-          RM2=PMAS(PYCOMP(KFDP(IDC,2)),1)**2/SH
+          RM1=PMAS(SPCOMP(KFDP(IDC,1)),1)**2/SH
+          RM2=PMAS(SPCOMP(KFDP(IDC,2)),1)**2/SH
           IF(SQRT(RM1)+SQRT(RM2).GT.1D0) GOTO 420
           WID2=1D0
           IF(I.LE.6) THEN
@@ -15980,10 +15980,10 @@ C...pi_tc -> f + fbar.
             WDTP(I)=AS/9D0*PSH**3/RM82
             IF(I.EQ.8) THEN
               WDTP(I)=2D0*WDTP(I)*CSXPP**2
-              WID2=WIDS(PYCOMP(KFDP(IDC,1)),2)
+              WID2=WIDS(SPCOMP(KFDP(IDC,1)),2)
             ELSE
               WDTP(I)=5D0*WDTP(I)
-              WID2=WIDS(PYCOMP(KFDP(IDC,1)),2)
+              WID2=WIDS(SPCOMP(KFDP(IDC,1)),2)
             ENDIF
           ENDIF
           WDTP(I)=FUDGE*WDTP(I)
@@ -16002,8 +16002,8 @@ C...d* excited quark.
         DO 430 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 430
-          RM1=PMAS(PYCOMP(KFDP(IDC,1)),1)**2/SH
-          RM2=PMAS(PYCOMP(KFDP(IDC,2)),1)**2/SH
+          RM1=PMAS(SPCOMP(KFDP(IDC,1)),1)**2/SH
+          RM2=PMAS(SPCOMP(KFDP(IDC,2)),1)**2/SH
           IF(SQRT(RM1)+SQRT(RM2).GT.1D0) GOTO 430
           WID2=1D0
           IF(I.EQ.1) THEN
@@ -16044,8 +16044,8 @@ C...u* excited quark.
         DO 440 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 440
-          RM1=PMAS(PYCOMP(KFDP(IDC,1)),1)**2/SH
-          RM2=PMAS(PYCOMP(KFDP(IDC,2)),1)**2/SH
+          RM1=PMAS(SPCOMP(KFDP(IDC,1)),1)**2/SH
+          RM2=PMAS(SPCOMP(KFDP(IDC,2)),1)**2/SH
           IF(SQRT(RM1)+SQRT(RM2).GT.1D0) GOTO 440
           WID2=1D0
           IF(I.EQ.1) THEN
@@ -16086,8 +16086,8 @@ C...e* excited lepton.
         DO 450 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 450
-          RM1=PMAS(PYCOMP(KFDP(IDC,1)),1)**2/SH
-          RM2=PMAS(PYCOMP(KFDP(IDC,2)),1)**2/SH
+          RM1=PMAS(SPCOMP(KFDP(IDC,1)),1)**2/SH
+          RM2=PMAS(SPCOMP(KFDP(IDC,2)),1)**2/SH
           IF(SQRT(RM1)+SQRT(RM2).GT.1D0) GOTO 450
           WID2=1D0
           IF(I.EQ.1) THEN
@@ -16124,8 +16124,8 @@ C...nu*_e excited neutrino.
         DO 460 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 460
-          RM1=PMAS(PYCOMP(KFDP(IDC,1)),1)**2/SH
-          RM2=PMAS(PYCOMP(KFDP(IDC,2)),1)**2/SH
+          RM1=PMAS(SPCOMP(KFDP(IDC,1)),1)**2/SH
+          RM2=PMAS(SPCOMP(KFDP(IDC,2)),1)**2/SH
           IF(SQRT(RM1)+SQRT(RM2).GT.1D0) GOTO 460
           WID2=1D0
           IF(I.EQ.1) THEN
@@ -16157,15 +16157,15 @@ C...G* (graviton resonance):
         DO 470 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 470
-          RM1=PMAS(PYCOMP(KFDP(IDC,1)),1)**2/SH
-          RM2=PMAS(PYCOMP(KFDP(IDC,2)),1)**2/SH
+          RM1=PMAS(SPCOMP(KFDP(IDC,1)),1)**2/SH
+          RM2=PMAS(SPCOMP(KFDP(IDC,2)),1)**2/SH
           IF(SQRT(RM1)+SQRT(RM2).GT.1D0) GOTO 470
           WID2=1D0
           IF(I.LE.8) THEN
 C...G* -> q + qbar
             FCOF=3D0*RADC
             IF(I.GE.6.AND.MSTP(35).GE.1) FCOF=FCOF*
-     &      PYHFTH(SH,SH*RM1,1D0)
+     &      SPHFTH(SH,SH*RM1,1D0)
             WDTP(I)=FAC*FCOF*SQRT(MAX(0D0,1D0-4D0*RM1))**3*
      &      (1D0+8D0*RM1/3D0)/320D0
             IF(I.EQ.6) WID2=WIDS(6,1)
@@ -16205,14 +16205,14 @@ C...G* -> W+ + W-.
  
       ELSEIF(KFLA.EQ.9900012.OR.KFLA.EQ.9900014.OR.KFLA.EQ.9900016) THEN
 C...nu_eR, nu_muR, nu_tauR: righthanded Majorana neutrinos.
-        PMWR=MAX(1.001D0*SHR,PMAS(PYCOMP(9900024),1))
+        PMWR=MAX(1.001D0*SHR,PMAS(SPCOMP(9900024),1))
         FAC=(AEM**2/(768D0*PARU(1)*XW**2))*SHR**5/PMWR**4
         DO 480 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 480
-          PM1=PMAS(PYCOMP(KFDP(IDC,1)),1)
-          PM2=PMAS(PYCOMP(KFDP(IDC,2)),1)
-          PM3=PMAS(PYCOMP(KFDP(IDC,3)),1)
+          PM1=PMAS(SPCOMP(KFDP(IDC,1)),1)
+          PM2=PMAS(SPCOMP(KFDP(IDC,2)),1)
+          PM3=PMAS(SPCOMP(KFDP(IDC,3)),1)
           IF(PM1+PM2+PM3.GE.SHR) GOTO 480
           WID2=1D0
           IF(I.LE.9) THEN
@@ -16226,7 +16226,7 @@ C...nu_lR -> l+ q qbar'
           ELSE
 C...nu_lR -> l- l'+ nu_lR' + charge conjugate.
             FCOF=1D0
-            WID2=WIDS(PYCOMP(KFDP(IDC,3)),2)
+            WID2=WIDS(SPCOMP(KFDP(IDC,3)),2)
           ENDIF
           X=(PM1+PM2+PM3)/SHR
           FX=1D0-8D0*X**2+8D0*X**6-X**8-24D0*X**4*LOG(X)
@@ -16249,8 +16249,8 @@ C...Z_R0:
         DO 490 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 490
-          RM1=PMAS(PYCOMP(KFDP(IDC,1)),1)**2/SH
-          RM2=PMAS(PYCOMP(KFDP(IDC,2)),1)**2/SH
+          RM1=PMAS(SPCOMP(KFDP(IDC,1)),1)**2/SH
+          RM2=PMAS(SPCOMP(KFDP(IDC,2)),1)**2/SH
           IF(SQRT(RM1)+SQRT(RM2).GT.1D0) GOTO 490
           WID2=1D0
           SYMMET=1D0
@@ -16277,7 +16277,7 @@ C...Z0 -> nu_R + nu_R, assumed Majorana.
             AF=2D0*XW1
             VF=0D0
             FCOF=1D0
-            WID2=WIDS(PYCOMP(KFDP(IDC,1)),1)
+            WID2=WIDS(SPCOMP(KFDP(IDC,1)),1)
             SYMMET=0.5D0
           ENDIF
           WDTP(I)=FAC*FCOF*(VF**2*(1D0+2D0*RM1)+AF**2*(1D0-4D0*RM1))*
@@ -16298,8 +16298,8 @@ C...W_R+/-:
         DO 500 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 500
-          RM1=PMAS(PYCOMP(KFDP(IDC,1)),1)**2/SH
-          RM2=PMAS(PYCOMP(KFDP(IDC,2)),1)**2/SH
+          RM1=PMAS(SPCOMP(KFDP(IDC,1)),1)**2/SH
+          RM2=PMAS(SPCOMP(KFDP(IDC,2)),1)**2/SH
           IF(SQRT(RM1)+SQRT(RM2).GT.1D0) GOTO 500
           WID2=1D0
           IF(I.LE.9) THEN
@@ -16332,8 +16332,8 @@ C...H_L++/--:
         DO 510 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 510
-          RM1=PMAS(PYCOMP(KFDP(IDC,1)),1)**2/SH
-          RM2=PMAS(PYCOMP(KFDP(IDC,2)),1)**2/SH
+          RM1=PMAS(SPCOMP(KFDP(IDC,1)),1)**2/SH
+          RM2=PMAS(SPCOMP(KFDP(IDC,2)),1)**2/SH
           IF(SQRT(RM1)+SQRT(RM2).GT.1D0) GOTO 510
           WID2=1D0
           IF(I.LE.6) THEN
@@ -16365,8 +16365,8 @@ C...H_R++/--:
         DO 520 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 520
-          RM1=PMAS(PYCOMP(KFDP(IDC,1)),1)**2/SH
-          RM2=PMAS(PYCOMP(KFDP(IDC,2)),1)**2/SH
+          RM1=PMAS(SPCOMP(KFDP(IDC,1)),1)**2/SH
+          RM2=PMAS(SPCOMP(KFDP(IDC,2)),1)**2/SH
           IF(SQRT(RM1)+SQRT(RM2).GT.1D0) GOTO 520
           WID2=1D0
           IF(I.LE.6) THEN
@@ -16377,7 +16377,7 @@ C...H_R++/-- -> l+/- + l'+/-
           ELSEIF(I.EQ.7) THEN
 C...H_R++/-- -> W_R+/- + W_R+/-
             FCOF=PARP(191)**2*(3D0*RM1+0.25D0/RM1-1D0)
-            WID2=WIDS(PYCOMP(9900024),4+(1-KFLS)/2)
+            WID2=WIDS(SPCOMP(9900024),4+(1-KFLS)/2)
           ENDIF
           WDTP(I)=FAC*FCOF*
      &    SQRT(MAX(0D0,(1D0-RM1-RM2)**2-4D0*RM1*RM2))
@@ -16400,28 +16400,28 @@ C...H_R++/-- -> W_R+/- + W_R+/-
  
 C***********************************************************************
  
-C...PYOFSH
+C...SPOFSH
 C...Calculates partial width and differential cross-section maxima
 C...of channels/processes not allowed on mass-shell, and selects
 C...masses in such channels/processes.
  
-      SUBROUTINE PYOFSH(MOFSH,KFMO,KFD1,KFD2,PMMO,RET1,RET2)
+      SUBROUTINE SPOFSH(MOFSH,KFMO,KFD1,KFD2,PMMO,RET1,RET2)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      COMMON/PYINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
-      SAVE /PYDAT1/,/PYDAT2/,/PYDAT3/,/PYSUBS/,/PYPARS/,/PYINT1/,
-     &/PYINT2/,/PYINT5/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      COMMON/SPINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
+      SAVE /SPDAT1/,/SPDAT2/,/SPDAT3/,/SPSUBS/,/SPPARS/,/SPINT1/,
+     &/SPINT2/,/SPINT5/
 C...Local arrays.
       DIMENSION KFD(2),MBW(2),PMD(2),PGD(2),PMG(2),PML(2),PMU(2),
      &PMH(2),ATL(2),ATU(2),ATH(2),RMG(2),INX1(100),XPT1(100),
@@ -16436,7 +16436,7 @@ C...Find if particles equal, maximum mass, matrix elements, etc.
       MEQL=0
       IF(KFD(1).EQ.KFD(2)) MEQL=1
       MLM=0
-      IF(MOFSH.GE.2.AND.MEQL.EQ.1) MLM=INT(1.5D0+PYR(0))
+      IF(MOFSH.GE.2.AND.MEQL.EQ.1) MLM=INT(1.5D0+SPR(0))
       IF(MOFSH.LE.2.OR.MOFSH.EQ.5) THEN
         NOFF=44
         PMMX=PMMO
@@ -16456,7 +16456,7 @@ C...Find if particles equal, maximum mass, matrix elements, etc.
  
 C...Find where Breit-Wigners are required, else select discrete masses.
   100 DO 110 I=1,2
-        KFCA=PYCOMP(KFD(I))
+        KFCA=SPCOMP(KFD(I))
         IF(KFCA.GT.0) THEN
           PMD(I)=PMAS(KFCA,1)
           PGD(I)=PMAS(KFCA,2)
@@ -16519,7 +16519,7 @@ C...Find allowed mass range and Breit-Wigner parameters.
   120 CONTINUE
       IF(MBW(1).LT.0.OR.MBW(2).LT.0.OR.(MBW(1).EQ.0.AND.MBW(2).EQ.0))
      &THEN
-        CALL PYERRM(3,'(PYOFSH:) no allowed decay product masses')
+        CALL SPERRM(3,'(SPOFSH:) no allowed decay product masses')
         MINT(51)=1
         RETURN
       ENDIF
@@ -16673,7 +16673,7 @@ C...Select two decay product masses of a resonance.
       ELSEIF(MOFSH.EQ.2.OR.MOFSH.EQ.5) THEN
   220   DO 230 I=1,2
           IF(MBW(I).EQ.0) GOTO 230
-          PMBW=PMD(I)**2+PMD(I)*PGD(I)*TAN(ATL(I)+PYR(0)*
+          PMBW=PMD(I)**2+PMD(I)*PGD(I)*TAN(ATL(I)+SPR(0)*
      &    (ATU(I)-ATL(I)))
           PMG(I)=MIN(PMU(I),MAX(PML(I),SQRT(MAX(0D0,PMBW))))
           RMG(I)=(PMG(I)/PMMX)**2
@@ -16693,7 +16693,7 @@ C...Weight with matrix element (if none known, use beta factor).
         ELSE
           WTBE=FLAM
         ENDIF
-        IF(WTBE.LT.PYR(0)) GOTO 220
+        IF(WTBE.LT.SPR(0)) GOTO 220
         RET1=PMG(1)
         RET2=PMG(2)
  
@@ -16737,7 +16737,7 @@ C...Pick one particle to be the lighter (if improves efficiency).
       ELSEIF(MOFSH.EQ.4) THEN
         IF(MEQL.EQ.0.AND.MBW(1).EQ.1.AND.MBW(2).EQ.1.AND.PMD(1)+PMD(2)
      &  .GT.PMMX.AND.PMH(1).GT.PML(1).AND.PMH(2).GT.PML(2)) MEQL=2
-  260   IF(MEQL.EQ.2) MLM=INT(1.5D0+PYR(0))
+  260   IF(MEQL.EQ.2) MLM=INT(1.5D0+SPR(0))
  
 C...Select two masses according to Breit-Wigner + flat in s + 1/s.
         DO 270 I=1,2
@@ -16746,18 +16746,18 @@ C...Select two masses according to Breit-Wigner + flat in s + 1/s.
           IF(MEQL.EQ.2.AND.I.EQ.MLM) PMV=PMH(I)
           ATV=ATU(I)
           IF(MEQL.EQ.2.AND.I.EQ.MLM) ATV=ATH(I)
-          RBR=PYR(0)
+          RBR=SPR(0)
           IF((ISUB.EQ.15.OR.ISUB.EQ.19.OR.ISUB.EQ.22.OR.ISUB.EQ.30.OR.
      &    ISUB.EQ.35).AND.MSTP(43).NE.2) RBR=2D0*RBR
           IF(RBR.LT.0.8D0) THEN
-            PMSR=PMD(I)**2+PMD(I)*PGD(I)*TAN(ATL(I)+PYR(0)*(ATV-ATL(I)))
+            PMSR=PMD(I)**2+PMD(I)*PGD(I)*TAN(ATL(I)+SPR(0)*(ATV-ATL(I)))
             PMG(I)=MIN(PMV,MAX(PML(I),SQRT(MAX(0D0,PMSR))))
           ELSEIF(RBR.LT.0.9D0) THEN
-            PMG(I)=SQRT(MAX(0D0,PML(I)**2+PYR(0)*(PMV**2-PML(I)**2)))
+            PMG(I)=SQRT(MAX(0D0,PML(I)**2+SPR(0)*(PMV**2-PML(I)**2)))
           ELSEIF(RBR.LT.1.5D0) THEN
-            PMG(I)=PML(I)*(PMV/PML(I))**PYR(0)
+            PMG(I)=PML(I)*(PMV/PML(I))**SPR(0)
           ELSE
-            PMG(I)=SQRT(MAX(0D0,PML(I)**2*PMV**2/(PML(I)**2+PYR(0)*
+            PMG(I)=SQRT(MAX(0D0,PML(I)**2*PMV**2/(PML(I)**2+SPR(0)*
      &      (PMV**2-PML(I)**2))))
           ENDIF
   270   CONTINUE
@@ -16809,7 +16809,7 @@ C...Give weight for selected mass distribution.
  
 C***********************************************************************
  
-C...PYRECO
+C...SPRECO
 C...Handles the possibility of colour reconnection in W+W- events,
 C...Based on the main scenarios of the Sjostrand and Khoze study:
 C...I, II, II', intermediate and instantaneous; plus one model
@@ -16817,21 +16817,21 @@ C...along the lines of the Gustafson and Hakkinen: GH.
 C...Note: also handles Z0 Z0 and W-W+ events, but notation below
 C...is as if first resonance is W+ and second W-.
  
-      SUBROUTINE PYRECO(IW1,IW2,NSD1,NAFT1)
+      SUBROUTINE SPRECO(IW1,IW2,NSD1,NAFT1)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter value; number of points in MC integration.
       PARAMETER (NPT=100)
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/,/PYPARS/,/PYINT1/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/,/SPPARS/,/SPINT1/
 C...Local arrays.
       DIMENSION NBEG(2),NEND(2),INP(50),INM(50),BEWW(3),XP(3),XM(3),
      &V1(3),V2(3),BETP(50,4),DIRP(50,3),BETM(50,4),DIRM(50,3),
@@ -16848,7 +16848,7 @@ C...Functions to give four-product and to do determinants.
 C...Only allow fraction of recoupling for GH, intermediate and
 C...instantaneous.
       IF(MSTP(115).EQ.5.OR.MSTP(115).EQ.11.OR.MSTP(115).EQ.12) THEN
-        IF(PYR(0).GT.PARP(120)) RETURN
+        IF(SPR(0).GT.PARP(120)) RETURN
       ENDIF
       ISUB=MINT(1)
  
@@ -16891,7 +16891,7 @@ C...for first W and in NAFT1+1 through N for the second.
  
 C...Rearrange parton shower products along strings.
         NOLD=N
-        CALL PYPREP(NSD1+1)
+        CALL SPPREP(NSD1+1)
  
 C...Find partons pointing back to W+ and W-; store them with quark
 C...end of string first.
@@ -16933,14 +16933,14 @@ C...Boost to W+W- rest frame (not strictly needed).
         DO 130 J=1,3
           BEWW(J)=(P(IW1,J)+P(IW2,J))/(P(IW1,4)+P(IW2,4))
   130   CONTINUE
-        CALL PYROBO(IW1,IW1,0D0,0D0,-BEWW(1),-BEWW(2),-BEWW(3))
-        CALL PYROBO(IW2,IW2,0D0,0D0,-BEWW(1),-BEWW(2),-BEWW(3))
-        CALL PYROBO(NOLD+1,N,0D0,0D0,-BEWW(1),-BEWW(2),-BEWW(3))
+        CALL SPROBO(IW1,IW1,0D0,0D0,-BEWW(1),-BEWW(2),-BEWW(3))
+        CALL SPROBO(IW2,IW2,0D0,0D0,-BEWW(1),-BEWW(2),-BEWW(3))
+        CALL SPROBO(NOLD+1,N,0D0,0D0,-BEWW(1),-BEWW(2),-BEWW(3))
  
 C...Select decay vertices of W+ and W-.
-        TP=HBAR*(-LOG(PYR(0)))*P(IW1,4)/
+        TP=HBAR*(-LOG(SPR(0)))*P(IW1,4)/
      &  SQRT((P(IW1,5)**2-PMW**2)**2+(P(IW1,5)**2*PGW/PMW)**2)
-        TM=HBAR*(-LOG(PYR(0)))*P(IW2,4)/
+        TM=HBAR*(-LOG(SPR(0)))*P(IW2,4)/
      &  SQRT((P(IW2,5)**2-PMW**2)**2+(P(IW2,5)**2*PGW/PMW)**2)
         GTMAX=MAX(TP,TM)
         DO 140 J=1,3
@@ -16999,12 +16999,12 @@ C...Loop over number of space-time points.
           DO 250 IPT=1,NPT
  
 C...Pick x,y,z,t Gaussian (width RHAD and TFRAG, respectively).
-            R=SQRT(-LOG(PYR(0)))
-            PHI=2D0*PI*PYR(0)
+            R=SQRT(-LOG(SPR(0)))
+            PHI=2D0*PI*SPR(0)
             X=BLOWR*RHAD*R*COS(PHI)
             Y=BLOWR*RHAD*R*SIN(PHI)
-            R=SQRT(-LOG(PYR(0)))
-            PHI=2D0*PI*PYR(0)
+            R=SQRT(-LOG(SPR(0)))
+            PHI=2D0*PI*SPR(0)
             Z=BLOWR*RHAD*R*COS(PHI)
             T=GTMAX+BLOWT*SQRT(0.5D0)*TFRAG*R*ABS(SIN(PHI))
  
@@ -17083,8 +17083,8 @@ C...Result of integration.
 C...Decide whether to reconnect and, if so, where.
           IACC=0
           PREC=1D0-EXP(-FACT*RES)
-          IF(PREC.GT.PYR(0)) THEN
-            RSUM=PYR(0)*SUM
+          IF(PREC.GT.SPR(0)) THEN
+            RSUM=SPR(0)*SUM
             DO 260 IA=1,NACC
               IACC=IA
               RSUM=RSUM-WTA(IA)
@@ -17194,7 +17194,7 @@ C...Loop over crossings; find first (if any) acceptable one.
           IF(NCROSS.GE.1) THEN
             DO 350 IC=1,NCROSS
               PNFRAG=EXP(-(TPC(IC)**2+TMC(IC)**2)/TFRAG**2)
-              IF(PNFRAG.GT.PYR(0)) THEN
+              IF(PNFRAG.GT.SPR(0)) THEN
 C...Scenario II: only compare with fragmentation time.
                 IF(MSTP(115).EQ.2) THEN
                   IACC=IC
@@ -17271,7 +17271,7 @@ C...Common for scenarios I, II, II' and GH: reconnect strings.
             ENDIF
             IJOIN(NJOIN)=I
             IF(K(I,2).LT.0) THEN
-              CALL PYJOIN(NJOIN,IJOIN)
+              CALL SPJOIN(NJOIN,IJOIN)
               NJOIN=0
             ENDIF
   390     CONTINUE
@@ -17291,9 +17291,9 @@ C...Restore original event record if no reconnection.
         ENDIF
  
 C...Boost back system.
-        CALL PYROBO(IW1,IW1,0D0,0D0,BEWW(1),BEWW(2),BEWW(3))
-        CALL PYROBO(IW2,IW2,0D0,0D0,BEWW(1),BEWW(2),BEWW(3))
-        IF(N.GT.NOLD) CALL PYROBO(NOLD+1,N,0D0,0D0,
+        CALL SPROBO(IW1,IW1,0D0,0D0,BEWW(1),BEWW(2),BEWW(3))
+        CALL SPROBO(IW2,IW2,0D0,0D0,BEWW(1),BEWW(2),BEWW(3))
+        IF(N.GT.NOLD) CALL SPROBO(NOLD+1,N,0D0,0D0,
      &  BEWW(1),BEWW(2),BEWW(3))
  
 C...Common part for intermediate and instantaneous scenarios.
@@ -17318,17 +17318,17 @@ C...Identify quark-antiquark pairs.
 C...Reconnect strings.
         IJOIN(1)=IQ1
         IJOIN(2)=IQ4
-        CALL PYJOIN(2,IJOIN)
+        CALL SPJOIN(2,IJOIN)
         IJOIN(1)=IQ3
         IJOIN(2)=IQ2
-        CALL PYJOIN(2,IJOIN)
+        CALL SPJOIN(2,IJOIN)
  
 C...Do new parton showers in intermediate scenario.
         IF(MSTP(71).GE.1.AND.MSTP(115).EQ.11) THEN
           MSTJ50=MSTJ(50)
           MSTJ(50)=0
-          CALL PYSHOW(IQ1,IQ2,P(IW1,5))
-          CALL PYSHOW(IQ3,IQ4,P(IW2,5))
+          CALL SPSHOW(IQ1,IQ2,P(IW1,5))
+          CALL SPSHOW(IQ3,IQ4,P(IW2,5))
           MSTJ(50)=MSTJ50
  
 C...Do new parton showers in instantaneous scenario.
@@ -17336,11 +17336,11 @@ C...Do new parton showers in instantaneous scenario.
           PPM2=(P(IQ1,4)+P(IQ4,4))**2-(P(IQ1,1)+P(IQ4,1))**2-
      &    (P(IQ1,2)+P(IQ4,2))**2-(P(IQ1,3)+P(IQ4,3))**2
           PPM=SQRT(MAX(0D0,PPM2))
-          CALL PYSHOW(IQ1,IQ4,PPM)
+          CALL SPSHOW(IQ1,IQ4,PPM)
           PPM2=(P(IQ3,4)+P(IQ2,4))**2-(P(IQ3,1)+P(IQ2,1))**2-
      &    (P(IQ3,2)+P(IQ2,2))**2-(P(IQ3,3)+P(IQ2,3))**2
           PPM=SQRT(MAX(0D0,PPM2))
-          CALL PYSHOW(IQ3,IQ2,PPM)
+          CALL SPSHOW(IQ3,IQ2,PPM)
         ENDIF
       ENDIF
  
@@ -17349,27 +17349,27 @@ C...Do new parton showers in instantaneous scenario.
  
 C***********************************************************************
  
-C...PYKLIM
+C...SPKLIM
 C...Checks generated variables against pre-set kinematical limits;
 C...also calculates limits on variables used in generation.
  
-      SUBROUTINE PYKLIM(ILIM)
+      SUBROUTINE SPKLIM(ILIM)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/,/PYDAT3/,/PYSUBS/,/PYPARS/,
-     &/PYINT1/,/PYINT2/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/,/SPDAT3/,/SPSUBS/,/SPPARS/,
+     &/SPINT1/,/SPINT2/
  
 C...Common kinematical expressions.
       MINT(51)=0
@@ -17432,12 +17432,12 @@ C...pre-set kinematical limits.
         ENDIF
         IF(ISTSB.EQ.2.OR.ISTSB.EQ.4) THEN
           PTH=0.5D0*BE34*SQRT(TAU*VINT(2)*MAX(0D0,1D0-CTH**2))
-          EXPY3=MAX(1D-20,(1D0+RM3-RM4+BE34*CTH)/
+          EXSP3=MAX(1D-20,(1D0+RM3-RM4+BE34*CTH)/
      &    MAX(1D-20,(1D0+RM3-RM4-BE34*CTH)))
-          EXPY4=MAX(1D-20,(1D0-RM3+RM4-BE34*CTH)/
+          EXSP4=MAX(1D-20,(1D0-RM3+RM4-BE34*CTH)/
      &    MAX(1D-20,(1D0-RM3+RM4+BE34*CTH)))
-          Y3=YST+0.5D0*LOG(EXPY3)
-          Y4=YST+0.5D0*LOG(EXPY4)
+          Y3=YST+0.5D0*LOG(EXSP3)
+          Y4=YST+0.5D0*LOG(EXSP4)
           YLARGE=MAX(Y3,Y4)
           YSMALL=MIN(Y3,Y4)
           ETALAR=20D0
@@ -17703,7 +17703,7 @@ C...Calculate limits on tau'
 C...0) due to kinematics
         TAPMN0=TAU
         IF(ISTSB.EQ.5.AND.KFPR(ISUB,2).GT.0) THEN
-          PQRAT=2D0*PMAS(PYCOMP(KFPR(ISUB,2)),1)/VINT(1)
+          PQRAT=2D0*PMAS(SPCOMP(KFPR(ISUB,2)),1)/VINT(1)
           TAPMN0=(SQRT(TAU)+PQRAT)**2
         ENDIF
         TAPMX0=1D0
@@ -17761,25 +17761,25 @@ C...effective kinematical limits for tau, y*, cos(theta-hat).
  
 C*********************************************************************
  
-C...PYKMAP
+C...SPKMAP
 C...Maps a uniform distribution into a distribution of a kinematical
 C...variable according to one of the possibilities allowed. It is
-C...assumed that kinematical limits have been set by a PYKLIM call.
+C...assumed that kinematical limits have been set by a SPKLIM call.
  
-      SUBROUTINE PYKMAP(IVAR,MVAR,VVAR)
+      SUBROUTINE SPKMAP(IVAR,MVAR,VVAR)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      SAVE /PYDAT1/,/PYDAT2/,/PYSUBS/,/PYPARS/,/PYINT1/,/PYINT2/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      SAVE /SPDAT1/,/SPDAT2/,/SPSUBS/,/SPPARS/,/SPINT1/,/SPINT2/
  
 C...Convert VVAR to tau variable.
       ISUB=MINT(1)
@@ -17958,8 +17958,8 @@ C...Convert VVAR to tau' variable.
  
 C...Selection of extra variables needed in 2 -> 3 process:
 C...pT1, pT2, phi1, phi2, y3 for three outgoing particles.
-C...Since no options are available, the functions of PYKLIM
-C...and PYKMAP are joint for these choices.
+C...Since no options are available, the functions of SPKLIM
+C...and SPKMAP are joint for these choices.
       ELSEIF(IVAR.EQ.5) THEN
  
 C...Read out total energy and particle masses.
@@ -18007,13 +18007,13 @@ C...dp_T^2 * (a + b/(M^2 + p_T^2) + c/(M^2 + p_T^2)^2).
           RETURN
         ENDIF
         HDE=PTSMX1-PTSMN1
-        RPT=PYR(0)
+        RPT=SPR(0)
         IF(RPT.LT.HWT1) THEN
-          PTS1=PTSMN1+PYR(0)*HDE
+          PTS1=PTSMN1+SPR(0)*HDE
         ELSEIF(RPT.LT.HWT1+HWT2) THEN
-          PTS1=MAX(PTSMN1,HMN*(HMX/HMN)**PYR(0)-PMRS1)
+          PTS1=MAX(PTSMN1,HMN*(HMX/HMN)**SPR(0)-PMRS1)
         ELSE
-          PTS1=MAX(PTSMN1,HMN*HMX/(HMN+PYR(0)*HDE)-PMRS1)
+          PTS1=MAX(PTSMN1,HMN*HMX/(HMN+SPR(0)*HDE)-PMRS1)
         ENDIF
         WTPTS1=HDE/(HWT1+HWT2*HDE/(LOG(HMX/HMN)*(PMRS1+PTS1))+
      &  HWT3*HMN*HMX/(PMRS1+PTS1)**2)
@@ -18024,20 +18024,20 @@ C...dp_T^2 * (a + b/(M^2 + p_T^2) + c/(M^2 + p_T^2)^2).
           RETURN
         ENDIF
         HDE=PTSMX2-PTSMN2
-        RPT=PYR(0)
+        RPT=SPR(0)
         IF(RPT.LT.HWT1) THEN
-          PTS2=PTSMN2+PYR(0)*HDE
+          PTS2=PTSMN2+SPR(0)*HDE
         ELSEIF(RPT.LT.HWT1+HWT2) THEN
-          PTS2=MAX(PTSMN2,HMN*(HMX/HMN)**PYR(0)-PMRS2)
+          PTS2=MAX(PTSMN2,HMN*(HMX/HMN)**SPR(0)-PMRS2)
         ELSE
-          PTS2=MAX(PTSMN2,HMN*HMX/(HMN+PYR(0)*HDE)-PMRS2)
+          PTS2=MAX(PTSMN2,HMN*HMX/(HMN+SPR(0)*HDE)-PMRS2)
         ENDIF
         WTPTS2=HDE/(HWT1+HWT2*HDE/(LOG(HMX/HMN)*(PMRS2+PTS2))+
      &  HWT3*HMN*HMX/(PMRS2+PTS2)**2)
  
 C...Select azimuthal angles and check pT choice.
-        PHI1=PARU(2)*PYR(0)
-        PHI2=PARU(2)*PYR(0)
+        PHI1=PARU(2)*SPR(0)
+        PHI2=PARU(2)*SPR(0)
         PHIR=PHI2-PHI1
         PTS3=MAX(0D0,PTS1+PTS2+2D0*SQRT(PTS1*PTS2)*COS(PHIR))
         IF(PTS3.LT.CKIN(55)**2.OR.(CKIN(56).GT.0D0.AND.PTS3.GT.
@@ -18066,7 +18066,7 @@ C...Select rapidity for particle 3 and check phase space not closed.
           MINT(51)=1
           RETURN
         ENDIF
-        Y3=(2D0*PYR(0)-1D0)*0.999999D0*Y3MAX
+        Y3=(2D0*SPR(0)-1D0)*0.999999D0*Y3MAX
         PZ3=PMT3*SINH(Y3)
         PE3=PMT3*COSH(Y3)
  
@@ -18098,7 +18098,7 @@ C...Construct relative mirror weights and make choice.
         WTP=WTPU/(WTPU+WTNU)
         WTN=WTNU/(WTPU+WTNU)
         EPS=1D0
-        IF(WTN.GT.PYR(0)) EPS=-1D0
+        IF(WTN.GT.SPR(0)) EPS=-1D0
  
 C...Store result of variable choice and associated weights.
         VINT(202)=PTS1
@@ -18130,7 +18130,7 @@ C...Store result of variable choice and associated weights.
  
 C***********************************************************************
  
-C...PYSIGH
+C...SPSIGH
 C...Differential matrix elements for all included subprocesses
 C...Note that what is coded is (disregarding the COMFAC factor)
 C...1) for 2 -> 1 processes: s-hat/pi*d(sigma-hat), where,
@@ -18146,39 +18146,39 @@ C...(2pi)^4 delta^4(P - sum p_i)
 C...COMFAC contains the factor pi/s (or equivalent) and
 C...the conversion factor from GeV^-2 to mb
  
-      SUBROUTINE PYSIGH(NCHN,SIGS)
+      SUBROUTINE SPSIGH(NCHN,SIGS)
  
 C...Double precision and integer declarations
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      COMMON/PYINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
-      COMMON/PYINT4/MWID(500),WIDS(500,5)
-      COMMON/PYINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
-      COMMON/PYINT7/SIGT(0:6,0:6,0:5)
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-      COMMON/PYSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      COMMON/SPINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
+      COMMON/SPINT4/MWID(500),WIDS(500,5)
+      COMMON/SPINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
+      COMMON/SPINT7/SIGT(0:6,0:6,0:5)
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+      COMMON/SPSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
      &SFMIX(16,4),ZMIXI(4,4),UMIXI(2,2),VMIXI(2,2)
-      COMMON/PYTCSM/ITCM(0:99),RTCM(0:99)
-      COMMON/PYSGCM/ISUB,ISUBSV,MMIN1,MMAX1,MMIN2,MMAX2,MMINA,MMAXA,
+      COMMON/SPTCSM/ITCM(0:99),RTCM(0:99)
+      COMMON/SPSGCM/ISUB,ISUBSV,MMIN1,MMAX1,MMIN2,MMAX2,MMINA,MMAXA,
      &KFAC(2,-40:40),COMFAC,FACK,FACA,SH,TH,UH,SH2,TH2,UH2,SQM3,SQM4,
      &SHR,SQPTH,TAUP,BE34,CTH,SQMZ,SQMW,GMMZ,GMMW,
      &AEM,AS,XW,XW1,XWC,XWV,POLL,POLR,POLLL,POLRR
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/,/PYDAT3/,/PYSUBS/,/PYPARS/,
-     &/PYINT1/,/PYINT2/,/PYINT3/,/PYINT4/,/PYINT5/,/PYINT7/,
-     &/PYMSSM/,/PYSSMT/,/PYTCSM/,/PYSGCM/
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/,/SPDAT3/,/SPSUBS/,/SPPARS/,
+     &/SPINT1/,/SPINT2/,/SPINT3/,/SPINT4/,/SPINT5/,/SPINT7/,
+     &/SPMSSM/,/SPSSMT/,/SPTCSM/,/SPSGCM/
 C...Local arrays and complex variables
       DIMENSION X(2),XPQ(-25:25)
  
@@ -18355,14 +18355,14 @@ C...Choice of Q2 scale: hard, parton distributions, parton showers
         Q2SF=PMAS(23,1)**2
         IF(ISUB.EQ.8.OR.ISUB.EQ.76.OR.ISUB.EQ.77.OR.ISUB.EQ.124.OR.
      &  ISUB.EQ.351) Q2SF=PMAS(24,1)**2
-        IF(ISUB.EQ.352) Q2SF=PMAS(PYCOMP(9900024),1)**2
+        IF(ISUB.EQ.352) Q2SF=PMAS(SPCOMP(9900024),1)**2
         IF(ISUB.EQ.121.OR.ISUB.EQ.122.OR.ISUB.EQ.181.OR.ISUB.EQ.182.OR.
      &  ISUB.EQ.186.OR.ISUB.EQ.187) THEN
-          Q2SF=PMAS(PYCOMP(KFPR(ISUBSV,2)),1)**2
+          Q2SF=PMAS(SPCOMP(KFPR(ISUBSV,2)),1)**2
           IF(MSTP(39).EQ.2) Q2SF=Q2SF+MAX(VINT(202),VINT(207))
           IF(MSTP(39).EQ.3) Q2SF=SH
           IF(MSTP(39).EQ.4) Q2SF=VINT(26)*VINT(2)
-          IF(MSTP(39).EQ.5) Q2SF=PMAS(PYCOMP(KFPR(ISUBSV,1)),1)**2
+          IF(MSTP(39).EQ.5) Q2SF=PMAS(SPCOMP(KFPR(ISUBSV,1)),1)**2
         ENDIF
       ENDIF
       Q2PS=Q2SF
@@ -18430,9 +18430,9 @@ C...Calculate parton distributions
           MINT(109)=MINT(106+I)
           VINT(120)=VINT(2+I)
           IF(MSTP(57).LE.1) THEN
-            CALL PYPDFU(MINT(10+I),XSF,Q2SF,XPQ)
+            CALL SPPDFU(MINT(10+I),XSF,Q2SF,XPQ)
           ELSE
-            CALL PYPDFL(MINT(10+I),XSF,Q2SF,XPQ)
+            CALL SPPDFL(MINT(10+I),XSF,Q2SF,XPQ)
           ENDIF
           DO 100 KFL=-25,25
             XSFX(I,KFL)=XPQ(KFL)
@@ -18447,9 +18447,9 @@ C...Calculate alpha_em, alpha_strong and K-factor
      &1D0-(PMAS(24,1)/PMAS(23,1))**2
       XW1=1D0-XW
       XWC=1D0/(16D0*XW*XW1)
-      AEM=PYALEM(Q2)
+      AEM=SPALEM(Q2)
       IF(MSTP(8).GE.1) AEM=SQRT(2D0)*PARU(105)*PMAS(24,1)**2*XW/PARU(1)
-      IF(MSTP(33).NE.3) AS=PYALPS(PARP(34)*Q2)
+      IF(MSTP(33).NE.3) AS=SPALPS(PARP(34)*Q2)
       FACK=1D0
       FACA=1D0
       IF(MSTP(33).EQ.1) THEN
@@ -18461,7 +18461,7 @@ C...Calculate alpha_em, alpha_strong and K-factor
         Q2AS=PARP(33)*Q2
         IF(ISTSB.EQ.9.AND.MSTP(82).GE.2) Q2AS=Q2AS+
      &  PARU(112)*PARP(82)*(VINT(1)/PARP(89))**PARP(90)
-        AS=PYALPS(Q2AS)
+        AS=SPALPS(Q2AS)
       ENDIF
       VINT(138)=1D0
       VINT(57)=AEM
@@ -18593,7 +18593,7 @@ C...2 -> 1 processes: reduction in angular part of phase space integral
 C...for case of decaying resonance
       ACTH0=CTNMAX-CTNMIN+CTPMAX-CTPMIN
       IF((ISTSB.EQ.1.OR.ISTSB.EQ.3.OR.ISTSB.EQ.5)) THEN
-        IF(MDCY(PYCOMP(KFPR(ISUBSV,1)),1).EQ.1) THEN
+        IF(MDCY(SPCOMP(KFPR(ISUBSV,1)),1).EQ.1) THEN
           IF(KFPR(ISUB,1).EQ.25.OR.KFPR(ISUB,1).EQ.37.OR.
      &    KFPR(ISUB,1).EQ.39) THEN
             COMFAC=COMFAC*0.5D0*ACTH0
@@ -18704,13 +18704,13 @@ C...longitudinal resolved photons (but not direct or DIS ones).
             ELSEIF(MSTP(17).EQ.2) THEN
               REDUCE=4D0*Q2GA/(Q2+Q2GA)
             ELSEIF(MSTP(17).EQ.3) THEN
-              PMVIRT=PMAS(PYCOMP(113),1)
+              PMVIRT=PMAS(SPCOMP(113),1)
               REDUCE=4D0*Q2GA/(PMVIRT**2+Q2GA)
             ELSEIF(MSTP(17).EQ.4.AND.MINT(106+ISDE).EQ.1) THEN
-              PMVIRT=PMAS(PYCOMP(113),1)
+              PMVIRT=PMAS(SPCOMP(113),1)
               REDUCE=4D0*PMVIRT**2*Q2GA/(PMVIRT**2+Q2GA)**2
             ELSEIF(MSTP(17).EQ.4.AND.MINT(106+ISDE).EQ.2) THEN
-              PMVIRT=PMAS(PYCOMP(113),1)
+              PMVIRT=PMAS(SPCOMP(113),1)
               REDUCE=4D0*PMVIRT**2*Q2GA/(PMVIRT**2+Q2GA)**2
             ELSEIF(MSTP(17).EQ.4.AND.MINT(106+ISDE).EQ.3) THEN
               PMVSMN=4D0*PARP(15)**2
@@ -18720,10 +18720,10 @@ C...longitudinal resolved photons (but not direct or DIS ones).
      &        (3D0*PMVSMX+Q2GA)/(PMVSMX+Q2GA)**3
               REDUCE=4D0*(Q2GA/6D0)*REDLON/REDTRA
             ELSEIF(MSTP(17).EQ.5.AND.MINT(106+ISDE).EQ.1) THEN
-              PMVIRT=PMAS(PYCOMP(113),1)
+              PMVIRT=PMAS(SPCOMP(113),1)
               REDUCE=4D0*Q2GA/(PMVIRT**2+Q2GA)
             ELSEIF(MSTP(17).EQ.5.AND.MINT(106+ISDE).EQ.2) THEN
-              PMVIRT=PMAS(PYCOMP(113),1)
+              PMVIRT=PMAS(SPCOMP(113),1)
               REDUCE=4D0*Q2GA/(PMVIRT**2+Q2GA)
             ELSEIF(MSTP(17).EQ.5.AND.MINT(106+ISDE).EQ.3) THEN
               PMVSMN=4D0*PARP(15)**2
@@ -18732,7 +18732,7 @@ C...longitudinal resolved photons (but not direct or DIS ones).
               REDLON=1D0/(PMVSMN+Q2GA)**2-1D0/(PMVSMX+Q2GA)**2
               REDUCE=4D0*(Q2GA/2D0)*REDLON/REDTRA
             ENDIF
-            BEAMAS=PYMASS(11)
+            BEAMAS=SPMASS(11)
             IF(VINT(302+ISDE).GT.0D0) BEAMAS=VINT(302+ISDE)
             FRACLT=1D0/(1D0+XY**2/2D0/(1D0-XY)*
      &      (1D0-2D0*BEAMAS**2/Q2GA))
@@ -18745,28 +18745,28 @@ C...longitudinal resolved photons (but not direct or DIS ones).
   170 CONTINUE
  
 C...Evaluate cross sections - done in separate routines by kind
-C...of physics, to keep PYSIGH of sensible size.
+C...of physics, to keep SPSIGH of sensible size.
       IF(MAP.EQ.1) THEN
 C...Standard QCD (including photons).
-        CALL PYSGQC(NCHN,SIGS)
+        CALL SPSGQC(NCHN,SIGS)
       ELSEIF(MAP.EQ.2) THEN
 C...Heavy flavours.
-        CALL PYSGHF(NCHN,SIGS)
+        CALL SPSGHF(NCHN,SIGS)
       ELSEIF(MAP.EQ.3) THEN
 C...W/Z.
-        CALL PYSGWZ(NCHN,SIGS)
+        CALL SPSGWZ(NCHN,SIGS)
       ELSEIF(MAP.EQ.4) THEN
 C...Higgs (2 doublets; including longitudinal W/Z scattering).
-        CALL PYSGHG(NCHN,SIGS)
+        CALL SPSGHG(NCHN,SIGS)
       ELSEIF(MAP.EQ.5) THEN
 C...SUSY.
-        CALL PYSGSU(NCHN,SIGS)
+        CALL SPSGSU(NCHN,SIGS)
       ELSEIF(MAP.EQ.6) THEN
 C...Technicolor.
-        CALL PYSGTC(NCHN,SIGS)
+        CALL SPSGTC(NCHN,SIGS)
       ELSEIF(MAP.EQ.7) THEN
 C...Exotics (Z'/W'/LQ/R/f*/H++/Z_R/W_R/G*).
-        CALL PYSGEX(NCHN,SIGS)
+        CALL SPSGEX(NCHN,SIGS)
       ENDIF
  
 C...Multiply with parton distributions
@@ -18789,36 +18789,36 @@ C...Multiply with parton distributions
  
 C*********************************************************************
  
-C...PYSGQC
+C...SPSGQC
 C...Subprocess cross sections for QCD processes,
 C...including photons.
-C...Auxiliary to PYSIGH.
+C...Auxiliary to SPSIGH.
  
-      SUBROUTINE PYSGQC(NCHN,SIGS)
+      SUBROUTINE SPSGQC(NCHN,SIGS)
  
 C...Double precision and integer declarations
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      COMMON/PYINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
-      COMMON/PYINT4/MWID(500),WIDS(500,5)
-      COMMON/PYINT7/SIGT(0:6,0:6,0:5)
-      COMMON/PYSGCM/ISUB,ISUBSV,MMIN1,MMAX1,MMIN2,MMAX2,MMINA,MMAXA,
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      COMMON/SPINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
+      COMMON/SPINT4/MWID(500),WIDS(500,5)
+      COMMON/SPINT7/SIGT(0:6,0:6,0:5)
+      COMMON/SPSGCM/ISUB,ISUBSV,MMIN1,MMAX1,MMIN2,MMAX2,MMINA,MMAXA,
      &KFAC(2,-40:40),COMFAC,FACK,FACA,SH,TH,UH,SH2,TH2,UH2,SQM3,SQM4,
      &SHR,SQPTH,TAUP,BE34,CTH,SQMZ,SQMW,GMMZ,GMMW,
      &AEM,AS,XW,XW1,XWC,XWV,POLL,POLR,POLLL,POLRR
-      SAVE /PYDAT1/,/PYDAT2/,/PYDAT3/,/PYPARS/,/PYINT1/,/PYINT2/,
-     &/PYINT3/,/PYINT4/,/PYINT7/,/PYSGCM/
+      SAVE /SPDAT1/,/SPDAT2/,/SPDAT3/,/SPPARS/,/SPINT1/,/SPINT2/,
+     &/SPINT3/,/SPINT4/,/SPINT7/,/SPSGCM/
 C...Local arrays
       DIMENSION WDTP(0:400),WDTE(0:400,0:5)
  
@@ -18914,7 +18914,7 @@ C...f + f' -> f + f' (g exchange)
  
         ELSEIF(ISUB.EQ.12) THEN
 C...f + fbar -> f' + fbar' (q + qbar -> q' + qbar' only)
-          CALL PYWIDT(21,SH,WDTP,WDTE)
+          CALL SPWIDT(21,SH,WDTP,WDTE)
           FACQQB=COMFAC*AS**2*4D0/9D0*(TH2+UH2)/SH2*
      &    (WDTE(0,1)+WDTE(0,2)+WDTE(0,4))
           DO 140 I=MMINA,MMAXA
@@ -19121,7 +19121,7 @@ C...cos(theta-hat).
  
         ELSEIF(ISUB.EQ.54) THEN
 C...g + gamma -> f + fbar (g + gamma -> q + qbar only)
-          CALL PYWIDT(21,SH,WDTP,WDTE)
+          CALL SPWIDT(21,SH,WDTP,WDTE)
           WDTESU=0D0
           DO 280 I=1,MIN(8,MDCY(21,3))
             EF=KCHG(I,1)/3D0
@@ -19146,7 +19146,7 @@ C...g + gamma -> f + fbar (g + gamma -> q + qbar only)
  
         ELSEIF(ISUB.EQ.58) THEN
 C...gamma + gamma -> f + fbar
-          CALL PYWIDT(22,SH,WDTP,WDTE)
+          CALL SPWIDT(22,SH,WDTP,WDTE)
           WDTESU=0D0
           DO 290 I=1,MIN(12,MDCY(22,3))
             IF(I.LE.8) EF= KCHG(I,1)/3D0
@@ -19192,10 +19192,10 @@ C...g + g -> g + g
         ELSEIF(ISUB.EQ.80) THEN
 C...q + gamma -> q' + pi+/-
           FQPI=COMFAC*(2D0*AEM/9D0)*(-SH/TH)*(1D0/SH2+1D0/TH2)
-          ASSH=PYALPS(MAX(0.5D0,0.5D0*SH))
+          ASSH=SPALPS(MAX(0.5D0,0.5D0*SH))
           Q2FPSH=0.55D0/LOG(MAX(2D0,2D0*SH))
           DELSH=UH*SQRT(ASSH*Q2FPSH)
-          ASUH=PYALPS(MAX(0.5D0,-0.5D0*UH))
+          ASUH=SPALPS(MAX(0.5D0,-0.5D0*UH))
           Q2FPUH=0.55D0/LOG(MAX(2D0,-2D0*UH))
           DELUH=SH*SQRT(ASUH*Q2FPUH)
           DO 320 I=MAX(-2,MMINA),MIN(2,MMAXA)
@@ -19237,7 +19237,7 @@ C...Low-pT scattering
  
         ELSEIF(ISUB.EQ.96) THEN
 C...Multiple interactions: sum of QCD processes
-          CALL PYWIDT(21,SH,WDTP,WDTE)
+          CALL SPWIDT(21,SH,WDTP,WDTE)
  
 C...q + q' -> q + q'
           FACQQ1=COMFAC*AS**2*4D0/9D0*(SH2+UH2)/TH2
@@ -19406,7 +19406,7 @@ C...f + gamma* -> f.
             ISDE=1
           ENDIF
           COMFAC=PARU(5)*4D0*PARU(1)**2*PARU(101)*VINT(315)*VINT(316)
-          PM2RHO=PMAS(PYCOMP(113),1)**2
+          PM2RHO=PMAS(SPCOMP(113),1)**2
           IF(MSTP(19).EQ.0) THEN
             COMFAC=COMFAC/Q2GA
           ELSEIF(MSTP(19).EQ.1) THEN
@@ -19423,7 +19423,7 @@ C...f + gamma* -> f.
             ELSE
               RDRDS=1.5D-4*W2GA**2.167D0/((Q2GA+0.041D0*W2GA)**2*
      &        Q2GA**0.57D0)
-              XGA=Q2GA/(W2GA+Q2GA-PMAS(PYCOMP(MINT(10+ISDE)),1)**2)
+              XGA=Q2GA/(W2GA+Q2GA-PMAS(SPCOMP(MINT(10+ISDE)),1)**2)
             ENDIF
             COMFAC=COMFAC*EXP(-MAX(1D-10,RDRDS))
             IF(MSTP(19).EQ.4) COMFAC=COMFAC/MAX(1D-2,1D0-XGA)
@@ -19479,18 +19479,18 @@ C...g + g -> gamma + gamma or g + g -> g + gamma
               B2STUR=-1D0
               B2STUI=0D0
             ELSE
-              CALL PYWAUX(1,EPSS,W1SR,W1SI)
-              CALL PYWAUX(1,EPST,W1TR,W1TI)
-              CALL PYWAUX(1,EPSU,W1UR,W1UI)
-              CALL PYWAUX(2,EPSS,W2SR,W2SI)
-              CALL PYWAUX(2,EPST,W2TR,W2TI)
-              CALL PYWAUX(2,EPSU,W2UR,W2UI)
-              CALL PYI3AU(EPSS,TH/UH,Y3STUR,Y3STUI)
-              CALL PYI3AU(EPSS,UH/TH,Y3SUTR,Y3SUTI)
-              CALL PYI3AU(EPST,SH/UH,Y3TSUR,Y3TSUI)
-              CALL PYI3AU(EPST,UH/SH,Y3TUSR,Y3TUSI)
-              CALL PYI3AU(EPSU,SH/TH,Y3USTR,Y3USTI)
-              CALL PYI3AU(EPSU,TH/SH,Y3UTSR,Y3UTSI)
+              CALL SPWAUX(1,EPSS,W1SR,W1SI)
+              CALL SPWAUX(1,EPST,W1TR,W1TI)
+              CALL SPWAUX(1,EPSU,W1UR,W1UI)
+              CALL SPWAUX(2,EPSS,W2SR,W2SI)
+              CALL SPWAUX(2,EPST,W2TR,W2TI)
+              CALL SPWAUX(2,EPSU,W2UR,W2UI)
+              CALL SPI3AU(EPSS,TH/UH,Y3STUR,Y3STUI)
+              CALL SPI3AU(EPSS,UH/TH,Y3SUTR,Y3SUTI)
+              CALL SPI3AU(EPST,SH/UH,Y3TSUR,Y3TSUI)
+              CALL SPI3AU(EPST,UH/SH,Y3TUSR,Y3TUSI)
+              CALL SPI3AU(EPSU,SH/TH,Y3USTR,Y3USTI)
+              CALL SPI3AU(EPSU,TH/SH,Y3UTSR,Y3UTSI)
               B0STUR=1D0+(1D0+2D0*TH/SH)*W1TR+(1D0+2D0*UH/SH)*W1UR+
      &        0.5D0*((TH2+UH2)/SH2-EPSS)*(W2TR+W2UR)-
      &        0.25D0*EPST*(1D0-0.5D0*EPSS)*(Y3SUTR+Y3TUSR)-
@@ -19629,7 +19629,7 @@ C...g + gamma*_(T,L) -> f + fbar (g + gamma*_(T,L) -> q + qbar only)
      &    PH=VINT(3)**2
           IF(MINT(16).EQ.22.AND.MINT(108).EQ.0.AND.VINT(4).LT.0D0)
      &    PH=VINT(4)**2
-          CALL PYWIDT(21,SH,WDTP,WDTE)
+          CALL SPWIDT(21,SH,WDTP,WDTE)
           WDTESU=0D0
           DO 460 I=1,MIN(8,MDCY(21,3))
             EF=KCHG(I,1)/3D0
@@ -19663,7 +19663,7 @@ C...gamma*_(T,L) + gamma*_(T,L) -> f + fbar
           IF(VINT(3).LT.0D0) PH1=VINT(3)**2
           PH2=0D0
           IF(VINT(4).LT.0D0) PH2=VINT(4)**2
-          CALL PYWIDT(22,SH,WDTP,WDTE)
+          CALL SPWIDT(22,SH,WDTP,WDTE)
           WDTESU=0D0
           DO 470 I=1,MIN(12,MDCY(22,3))
             IF(I.LE.8) EF= KCHG(I,1)/3D0
@@ -19705,34 +19705,34 @@ C...gamma*_(T,L) + gamma*_(T,L) -> f + fbar
  
 C*********************************************************************
  
-C...PYSGHF
+C...SPSGHF
 C...Subprocess cross sections for heavy flavour production,
 C...open and closed.
-C...Auxiliary to PYSIGH.
+C...Auxiliary to SPSIGH.
  
-      SUBROUTINE PYSGHF(NCHN,SIGS)
+      SUBROUTINE SPSGHF(NCHN,SIGS)
  
 C...Double precision and integer declarations
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      COMMON/PYINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
-      COMMON/PYINT4/MWID(500),WIDS(500,5)
-      COMMON/PYSGCM/ISUB,ISUBSV,MMIN1,MMAX1,MMIN2,MMAX2,MMINA,MMAXA,
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      COMMON/SPINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
+      COMMON/SPINT4/MWID(500),WIDS(500,5)
+      COMMON/SPSGCM/ISUB,ISUBSV,MMIN1,MMAX1,MMIN2,MMAX2,MMINA,MMAXA,
      &KFAC(2,-40:40),COMFAC,FACK,FACA,SH,TH,UH,SH2,TH2,UH2,SQM3,SQM4,
      &SHR,SQPTH,TAUP,BE34,CTH,SQMZ,SQMW,GMMZ,GMMW,
      &AEM,AS,XW,XW1,XWC,XWV,POLL,POLR,POLLL,POLRR
-      SAVE /PYDAT1/,/PYDAT2/,/PYPARS/,/PYINT1/,/PYINT2/,/PYINT3/,
-     &/PYINT4/,/PYSGCM/
+      SAVE /SPDAT1/,/SPDAT2/,/SPPARS/,/SPINT1/,/SPINT2/,/SPINT3/,
+     &/SPINT4/,/SPSGCM/
 C...Local arrays
       DIMENSION WDTP(0:400),WDTE(0:400,0:5)
  
@@ -19746,7 +19746,7 @@ C...q + qbar -> Q + Qbar
           UHQ=-0.5D0*SH*(1D0+BE34*CTH)
           FACQQB=COMFAC*AS**2*4D0/9D0*((THQ**2+UHQ**2)/SH2+
      &    2D0*SQMAVG/SH)
-          IF(MSTP(35).GE.1) FACQQB=FACQQB*PYHFTH(SH,SQMAVG,0D0)
+          IF(MSTP(35).GE.1) FACQQB=FACQQB*SPHFTH(SH,SQMAVG,0D0)
           WID2=1D0
           IF(MINT(55).EQ.6) WID2=WIDS(6,1)
           IF(MINT(55).EQ.7.OR.MINT(55).EQ.8) WID2=WIDS(MINT(55),1)
@@ -19779,7 +19779,7 @@ C...g + g -> Q + Qbar
           FACQQ1=COMFAC*FACA*AS**2*(1D0/6D0)*FACQQ1
           FACQQ2=COMFAC*FACA*AS**2*(1D0/6D0)*FACQQ2
           IF(MSTP(35).GE.1) THEN
-            FATRE=PYHFTH(SH,SQMAVG,2D0/7D0)
+            FATRE=SPHFTH(SH,SQMAVG,2D0/7D0)
             FACQQ1=FACQQ1*FATRE
             FACQQ2=FACQQ2*FATRE
           ENDIF
@@ -19867,7 +19867,7 @@ C...g + gamma -> Q + Qbar
           FACQQ=COMFAC*AS*AEM*(KCHG(IABS(MINT(55)),1)/3D0)**2*
      &    (THQ**2+UHQ**2+4D0*SQMAVG*SH*(1D0-SQMAVG*SH/(THQ*UHQ)))/
      &    (THQ*UHQ)
-          IF(MSTP(35).GE.1) FACQQ=FACQQ*PYHFTH(SH,SQMAVG,0D0)
+          IF(MSTP(35).GE.1) FACQQ=FACQQ*SPHFTH(SH,SQMAVG,0D0)
           WID2=1D0
           IF(MINT(55).EQ.6) WID2=WIDS(6,1)
           IF(MINT(55).EQ.7.OR.MINT(55).EQ.8) WID2=WIDS(MINT(55),1)
@@ -19898,7 +19898,7 @@ C...gamma + gamma -> F + Fbar (heavy fermion, quark or lepton)
      &    SQMAVG*SH**2*(SH-2D0*SQMAVG))/(THQ*UHQ)**2
           IF(IABS(MINT(56)).LT.10) FACFF=3D0*FACFF
           IF(IABS(MINT(56)).LT.10.AND.MSTP(35).GE.1)
-     &    FACFF=FACFF*PYHFTH(SH,SQMAVG,1D0)
+     &    FACFF=FACFF*SPHFTH(SH,SQMAVG,1D0)
           WID2=1D0
           IF(MINT(56).EQ.6) WID2=WIDS(6,1)
           IF(MINT(56).EQ.7.OR.MINT(56).EQ.8) WID2=WIDS(MINT(56),1)
@@ -19984,7 +19984,7 @@ C...g + g -> chi_2c + g
       ELSEIF(ISUB.LE.200) THEN
         IF(ISUB.EQ.104) THEN
 C...g + g -> chi_c0.
-          KC=PYCOMP(10441)
+          KC=SPCOMP(10441)
           FACBW=COMFAC*12D0*AS**2*PARP(39)*PMAS(KC,2)/
      &    ((SH-PMAS(KC,1)**2)**2+(PMAS(KC,1)*PMAS(KC,2))**2)
           IF(ABS(SQRT(SH)-PMAS(KC,1)).GT.50D0*PMAS(KC,2)) FACBW=0D0
@@ -19998,7 +19998,7 @@ C...g + g -> chi_c0.
  
         ELSEIF(ISUB.EQ.105) THEN
 C...g + g -> chi_c2.
-          KC=PYCOMP(445)
+          KC=SPCOMP(445)
           FACBW=COMFAC*16D0*AS**2*PARP(39)*PMAS(KC,2)/
      &    ((SH-PMAS(KC,1)**2)**2+(PMAS(KC,1)*PMAS(KC,2))**2)
           IF(ABS(SQRT(SH)-PMAS(KC,1)).GT.50D0*PMAS(KC,2)) FACBW=0D0
@@ -20066,37 +20066,37 @@ C...gamma + gamma -> J/Psi + gamma.
  
 C*********************************************************************
  
-C...PYSGWZ
+C...SPSGWZ
 C...Subprocess cross sections for W/Z processes,
 C...except that longitudinal WW scattering is in Higgs sector.
-C...Auxiliary to PYSIGH.
+C...Auxiliary to SPSIGH.
  
-      SUBROUTINE PYSGWZ(NCHN,SIGS)
+      SUBROUTINE SPSGWZ(NCHN,SIGS)
  
 C...Double precision and integer declarations
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      COMMON/PYINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
-      COMMON/PYINT4/MWID(500),WIDS(500,5)
-      COMMON/PYTCSM/ITCM(0:99),RTCM(0:99)
-      COMMON/PYSGCM/ISUB,ISUBSV,MMIN1,MMAX1,MMIN2,MMAX2,MMINA,MMAXA,
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      COMMON/SPINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
+      COMMON/SPINT4/MWID(500),WIDS(500,5)
+      COMMON/SPTCSM/ITCM(0:99),RTCM(0:99)
+      COMMON/SPSGCM/ISUB,ISUBSV,MMIN1,MMAX1,MMIN2,MMAX2,MMINA,MMAXA,
      &KFAC(2,-40:40),COMFAC,FACK,FACA,SH,TH,UH,SH2,TH2,UH2,SQM3,SQM4,
      &SHR,SQPTH,TAUP,BE34,CTH,SQMZ,SQMW,GMMZ,GMMW,
      &AEM,AS,XW,XW1,XWC,XWV,POLL,POLR,POLLL,POLRR
-      SAVE /PYDAT1/,/PYDAT2/,/PYDAT3/,/PYSUBS/,/PYPARS/,/PYINT1/,
-     &/PYINT2/,/PYINT3/,/PYINT4/,/PYTCSM/,/PYSGCM/
+      SAVE /SPDAT1/,/SPDAT2/,/SPDAT3/,/SPSUBS/,/SPPARS/,/SPINT1/,
+     &/SPINT2/,/SPINT3/,/SPINT4/,/SPTCSM/,/SPSGCM/
 C...Local arrays and complex numbers
       DIMENSION WDTP(0:400),WDTE(0:400,0:5),HGZ(6,3),HL3(3),HR3(3),
      &HL4(3),HR4(3)
@@ -20108,7 +20108,7 @@ C...Differential cross section expressions.
         IF(ISUB.EQ.1) THEN
 C...f + fbar -> gamma*/Z0
           MINT(61)=2
-          CALL PYWIDT(23,SH,WDTP,WDTE)
+          CALL SPWIDT(23,SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           FACZ=4D0*COMFAC*3D0
           HP0=AEM/3D0*SH
@@ -20134,7 +20134,7 @@ C...f + fbar -> gamma*/Z0
  
         ELSEIF(ISUB.EQ.2) THEN
 C...f + fbar' -> W+/-
-          CALL PYWIDT(24,SH,WDTP,WDTE)
+          CALL SPWIDT(24,SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           FACBW=4D0*COMFAC/((SH-SQMW)**2+HS**2)*3D0
           HP=AEM/(24D0*XW)*SH
@@ -20166,7 +20166,7 @@ C...gamma, gamma/Z interference and Z couplings to final fermion pairs
           HFGG=0D0
           HFGZ=0D0
           HFZZ=0D0
-          RADC4=1D0+PYALPS(SQM4)/PARU(1)
+          RADC4=1D0+SPALPS(SQM4)/PARU(1)
           DO 130 I=1,MIN(16,MDCY(23,3))
             IDC=I+MDCY(23,2)-1
             IF(MDME(IDC,1).LT.0) GOTO 130
@@ -20195,12 +20195,12 @@ C...gamma, gamma/Z interference and Z couplings to final fermion pairs
               ENDIF
             ENDIF
   130     CONTINUE
-C...Propagators: as simulated in PYOFSH and as desired
+C...Propagators: as simulated in SPOFSH and as desired
           HBW4=(1D0/PARU(1))*GMMZ/((SQM4-SQMZ)**2+GMMZ**2)
           MINT15=MINT(15)
           MINT(15)=1
           MINT(61)=1
-          CALL PYWIDT(23,SQM4,WDTP,WDTE)
+          CALL SPWIDT(23,SQM4,WDTP,WDTE)
           MINT(15)=MINT15
           HFAEM=(PARU(108)/PARU(2))*(2D0/3D0)
           HFGG=HFGG*HFAEM*VINT(111)/SQM4
@@ -20224,9 +20224,9 @@ C...Loop over flavours; consider full gamma/Z structure
         ELSEIF(ISUB.EQ.16) THEN
 C...f + fbar' -> g + W+/- (q + qbar' -> g + W+/- only)
           FACWG=COMFAC*AS*AEM/XW*2D0/9D0*(TH2+UH2+2D0*SQM4*SH)/(TH*UH)
-C...Propagators: as simulated in PYOFSH and as desired
+C...Propagators: as simulated in SPOFSH and as desired
           HBW4=GMMW/((SQM4-SQMW)**2+GMMW**2)
-          CALL PYWIDT(24,SQM4,WDTP,WDTE)
+          CALL SPWIDT(24,SQM4,WDTP,WDTE)
           GMMWC=SQRT(SQM4)*WDTP(0)
           HBW4C=GMMWC/((SQM4-SQMW)**2+GMMWC**2)
           FACWG=FACWG*HBW4C/HBW4
@@ -20255,7 +20255,7 @@ C...gamma, gamma/Z interference and Z couplings to final fermion pairs
           HFGG=0D0
           HFGZ=0D0
           HFZZ=0D0
-          RADC4=1D0+PYALPS(SQM4)/PARU(1)
+          RADC4=1D0+SPALPS(SQM4)/PARU(1)
           DO 170 I=1,MIN(16,MDCY(23,3))
             IDC=I+MDCY(23,2)-1
             IF(MDME(IDC,1).LT.0) GOTO 170
@@ -20284,12 +20284,12 @@ C...gamma, gamma/Z interference and Z couplings to final fermion pairs
               ENDIF
             ENDIF
   170     CONTINUE
-C...Propagators: as simulated in PYOFSH and as desired
+C...Propagators: as simulated in SPOFSH and as desired
           HBW4=(1D0/PARU(1))*GMMZ/((SQM4-SQMZ)**2+GMMZ**2)
           MINT15=MINT(15)
           MINT(15)=1
           MINT(61)=1
-          CALL PYWIDT(23,SQM4,WDTP,WDTE)
+          CALL SPWIDT(23,SQM4,WDTP,WDTE)
           MINT(15)=MINT15
           HFAEM=(PARU(108)/PARU(2))*(2D0/3D0)
           HFGG=HFGG*HFAEM*VINT(111)/SQM4
@@ -20314,9 +20314,9 @@ C...Loop over flavours; consider full gamma/Z structure
         ELSEIF(ISUB.EQ.20) THEN
 C...f + fbar' -> gamma + W+/-
           FACGW=COMFAC*0.5D0*AEM**2/XW
-C...Propagators: as simulated in PYOFSH and as desired
+C...Propagators: as simulated in SPOFSH and as desired
           HBW4=GMMW/((SQM4-SQMW)**2+GMMW**2)
-          CALL PYWIDT(24,SQM4,WDTP,WDTE)
+          CALL SPWIDT(24,SQM4,WDTP,WDTE)
           GMMWC=SQRT(SQM4)*WDTP(0)
           HBW4C=GMMWC/((SQM4-SQMW)**2+GMMWC**2)
           FACGW=FACGW*HBW4C/HBW4
@@ -20371,8 +20371,8 @@ C...gamma, gamma/Z interference and Z couplings to final fermion pairs
               HGZ(I,J)=0D0
   210       CONTINUE
   220     CONTINUE
-          RADC3=1D0+PYALPS(SQM3)/PARU(1)
-          RADC4=1D0+PYALPS(SQM4)/PARU(1)
+          RADC3=1D0+SPALPS(SQM3)/PARU(1)
+          RADC4=1D0+SPALPS(SQM4)/PARU(1)
           DO 230 I=1,MIN(16,MDCY(23,3))
             IDC=I+MDCY(23,2)-1
             IF(MDME(IDC,1).LT.0) GOTO 230
@@ -20413,13 +20413,13 @@ C...gamma, gamma/Z interference and Z couplings to final fermion pairs
               ENDIF
             ENDIF
   230     CONTINUE
-C...Propagators: as simulated in PYOFSH and as desired
+C...Propagators: as simulated in SPOFSH and as desired
           HBW3=(1D0/PARU(1))*GMMZ/((SQM3-SQMZ)**2+GMMZ**2)
           HBW4=(1D0/PARU(1))*GMMZ/((SQM4-SQMZ)**2+GMMZ**2)
           MINT15=MINT(15)
           MINT(15)=1
           MINT(61)=1
-          CALL PYWIDT(23,SQM3,WDTP,WDTE)
+          CALL SPWIDT(23,SQM3,WDTP,WDTE)
           MINT(15)=MINT15
           HFAEM=(PARU(108)/PARU(2))*(2D0/3D0)
           DO 240 J=1,3
@@ -20430,7 +20430,7 @@ C...Propagators: as simulated in PYOFSH and as desired
           MINT15=MINT(15)
           MINT(15)=1
           MINT(61)=1
-          CALL PYWIDT(23,SQM4,WDTP,WDTE)
+          CALL SPWIDT(23,SQM4,WDTP,WDTE)
           MINT(15)=MINT15
           HFAEM=(PARU(108)/PARU(2))*(2D0/3D0)
           DO 250 J=1,3
@@ -20517,15 +20517,15 @@ C***sorted out. One possibility: addition of width to the W propagator.)
  
         ELSEIF(ISUB.EQ.25) THEN
 C...f + fbar -> W+ + W-
-C...Propagators: Z0, W+- as simulated in PYOFSH and as desired
+C...Propagators: Z0, W+- as simulated in SPOFSH and as desired
           GMMZC=GMMZ
           HBWZC=SH**2/((SH-SQMZ)**2+GMMZC**2)
           HBW3=GMMW/((SQM3-SQMW)**2+GMMW**2)
-          CALL PYWIDT(24,SQM3,WDTP,WDTE)
+          CALL SPWIDT(24,SQM3,WDTP,WDTE)
           GMMW3=SQRT(SQM3)*WDTP(0)
           HBW3C=GMMW3/((SQM3-SQMW)**2+GMMW3**2)
           HBW4=GMMW/((SQM4-SQMW)**2+GMMW**2)
-          CALL PYWIDT(24,SQM4,WDTP,WDTE)
+          CALL SPWIDT(24,SQM4,WDTP,WDTE)
           GMMW4=SQRT(SQM4)*WDTP(0)
           HBW4C=GMMW4/((SQM4-SQMW)**2+GMMW4**2)
 C...Kinematical functions
@@ -20645,7 +20645,7 @@ C...gamma, gamma/Z interference and Z couplings to final fermion pairs
           HFGG=0D0
           HFGZ=0D0
           HFZZ=0D0
-          RADC4=1D0+PYALPS(SQM4)/PARU(1)
+          RADC4=1D0+SPALPS(SQM4)/PARU(1)
           DO 320 I=1,MIN(16,MDCY(23,3))
             IDC=I+MDCY(23,2)-1
             IF(MDME(IDC,1).LT.0) GOTO 320
@@ -20674,12 +20674,12 @@ C...gamma, gamma/Z interference and Z couplings to final fermion pairs
               ENDIF
             ENDIF
   320     CONTINUE
-C...Propagators: as simulated in PYOFSH and as desired
+C...Propagators: as simulated in SPOFSH and as desired
           HBW4=(1D0/PARU(1))*GMMZ/((SQM4-SQMZ)**2+GMMZ**2)
           MINT15=MINT(15)
           MINT(15)=1
           MINT(61)=1
-          CALL PYWIDT(23,SQM4,WDTP,WDTE)
+          CALL SPWIDT(23,SQM4,WDTP,WDTE)
           MINT(15)=MINT15
           HFAEM=(PARU(108)/PARU(2))*(2D0/3D0)
           HFGG=HFGG*HFAEM*VINT(111)/SQM4
@@ -20708,9 +20708,9 @@ C...Loop over flavours; consider full gamma/Z structure
 C...f + g -> f' + W+/- (q + g -> q' + W+/- only)
           FACWQ=COMFAC*FACA*AS*AEM/XW*1D0/12D0*
      &    (SH2+UH2+2D0*SQM4*TH)/(-SH*UH)
-C...Propagators: as simulated in PYOFSH and as desired
+C...Propagators: as simulated in SPOFSH and as desired
           HBW4=GMMW/((SQM4-SQMW)**2+GMMW**2)
-          CALL PYWIDT(24,SQM4,WDTP,WDTE)
+          CALL SPWIDT(24,SQM4,WDTP,WDTE)
           GMMWC=SQRT(SQM4)*WDTP(0)
           HBW4C=GMMWC/((SQM4-SQMW)**2+GMMWC**2)
           FACWQ=FACWQ*HBW4C/HBW4
@@ -20747,7 +20747,7 @@ C...gamma, gamma/Z interference and Z couplings to final fermion pairs
           HFGG=0D0
           HFGZ=0D0
           HFZZ=0D0
-          RADC4=1D0+PYALPS(SQM4)/PARU(1)
+          RADC4=1D0+SPALPS(SQM4)/PARU(1)
           DO 370 I=1,MIN(16,MDCY(23,3))
             IDC=I+MDCY(23,2)-1
             IF(MDME(IDC,1).LT.0) GOTO 370
@@ -20776,12 +20776,12 @@ C...gamma, gamma/Z interference and Z couplings to final fermion pairs
               ENDIF
             ENDIF
   370     CONTINUE
-C...Propagators: as simulated in PYOFSH and as desired
+C...Propagators: as simulated in SPOFSH and as desired
           HBW4=(1D0/PARU(1))*GMMZ/((SQM4-SQMZ)**2+GMMZ**2)
           MINT15=MINT(15)
           MINT(15)=1
           MINT(61)=1
-          CALL PYWIDT(23,SQM4,WDTP,WDTE)
+          CALL SPWIDT(23,SQM4,WDTP,WDTE)
           MINT(15)=MINT15
           HFAEM=(PARU(108)/PARU(2))*(2D0/3D0)
           HFGG=HFGG*HFAEM*VINT(111)/SQM4
@@ -20811,9 +20811,9 @@ C...Loop over flavours; consider full gamma/Z structure
 C...f + gamma -> f' + W+/-
           FWQ=COMFAC*AEM**2/(2D0*XW)*
      &    (SH2+UH2+2D0*SQM4*TH)/(SQPTH*SQM4-SH*UH)
-C...Propagators: as simulated in PYOFSH and as desired
+C...Propagators: as simulated in SPOFSH and as desired
           HBW4=GMMW/((SQM4-SQMW)**2+GMMW**2)
-          CALL PYWIDT(24,SQM4,WDTP,WDTE)
+          CALL SPWIDT(24,SQM4,WDTP,WDTE)
           GMMWC=SQRT(SQM4)*WDTP(0)
           HBW4C=GMMWC/((SQM4-SQMW)**2+GMMWC**2)
           FWQ=FWQ*HBW4C/HBW4
@@ -20876,36 +20876,36 @@ C...gamma + W+/- -> Z0 + W+/-
  
 C*********************************************************************
  
-C...PYSGHG
+C...SPSGHG
 C...Subprocess cross sections for Higgs processes,
-C...except Higgs pairs in PYSGSU, but including WW scattering.
-C...Auxiliary to PYSIGH.
+C...except Higgs pairs in SPSGSU, but including WW scattering.
+C...Auxiliary to SPSIGH.
  
-      SUBROUTINE PYSGHG(NCHN,SIGS)
+      SUBROUTINE SPSGHG(NCHN,SIGS)
  
 C...Double precision and integer declarations
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      COMMON/PYINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
-      COMMON/PYINT4/MWID(500),WIDS(500,5)
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-      COMMON/PYSGCM/ISUB,ISUBSV,MMIN1,MMAX1,MMIN2,MMAX2,MMINA,MMAXA,
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      COMMON/SPINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
+      COMMON/SPINT4/MWID(500),WIDS(500,5)
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+      COMMON/SPSGCM/ISUB,ISUBSV,MMIN1,MMAX1,MMIN2,MMAX2,MMINA,MMAXA,
      &KFAC(2,-40:40),COMFAC,FACK,FACA,SH,TH,UH,SH2,TH2,UH2,SQM3,SQM4,
      &SHR,SQPTH,TAUP,BE34,CTH,SQMZ,SQMW,GMMZ,GMMW,
      &AEM,AS,XW,XW1,XWC,XWV,POLL,POLR,POLLL,POLRR
-      SAVE /PYDAT1/,/PYDAT2/,/PYPARS/,/PYINT1/,/PYINT2/,/PYINT3/,
-     &/PYINT4/,/PYSUBS/,/PYMSSM/,/PYSGCM/
+      SAVE /SPDAT1/,/SPDAT2/,/SPPARS/,/SPINT1/,/SPINT2/,/SPINT3/,
+     &/SPINT4/,/SPSUBS/,/SPMSSM/,/SPSGCM/
 C...Local arrays and complex variables
       DIMENSION WDTP(0:400),WDTE(0:400,0:5)
       COMPLEX*16 A004,A204,A114,A00U,A20U,A11U
@@ -20982,7 +20982,7 @@ C...Differential cross section expressions.
       IF(ISUB.LE.60) THEN
         IF(ISUB.EQ.3) THEN
 C...f + fbar -> h0 (or H0, or A0)
-          CALL PYWIDT(KFHIGG,SH,WDTP,WDTE)
+          CALL SPWIDT(KFHIGG,SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           FACBW=4D0*COMFAC/((SH-SQMH)**2+HS**2)
           IF(ABS(SHR-PMAS(KFHIGG,1)).GT.PARP(48)*PMAS(KFHIGG,2))
@@ -20992,7 +20992,7 @@ C...f + fbar -> h0 (or H0, or A0)
           DO 100 I=MMINA,MMAXA
             IF(I.EQ.0.OR.KFAC(1,I)*KFAC(2,-I).EQ.0) GOTO 100
             IA=IABS(I)
-            RMQ=PYMRUN(IA,SH)**2/SH
+            RMQ=SPMRUN(IA,SH)**2/SH
             HI=HP*RMQ
             IF(IA.LE.10) HI=HP*RMQ*FACA/3D0
             IF(MSTP(4).GE.1.OR.IHIGG.GE.2) THEN
@@ -21017,7 +21017,7 @@ C...f + fbar -> h0 (or H0, or A0)
  
         ELSEIF(ISUB.EQ.5) THEN
 C...Z0 + Z0 -> h0
-          CALL PYWIDT(25,SH,WDTP,WDTE)
+          CALL SPWIDT(25,SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           FACBW=4D0*COMFAC/((SH-SQMH)**2+HS**2)
           IF(ABS(SHR-PMAS(25,1)).GT.PARP(48)*PMAS(25,2)) FACBW=0D0
@@ -21045,7 +21045,7 @@ C...Z0 + Z0 -> h0
  
         ELSEIF(ISUB.EQ.8) THEN
 C...W+ + W- -> h0
-          CALL PYWIDT(25,SH,WDTP,WDTE)
+          CALL SPWIDT(25,SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           FACBW=4D0*COMFAC/((SH-SQMH)**2+HS**2)
           IF(ABS(SHR-PMAS(25,1)).GT.PARP(48)*PMAS(25,2)) FACBW=0D0
@@ -21070,13 +21070,13 @@ C...W+ + W- -> h0
  
         ELSEIF(ISUB.EQ.24) THEN
 C...f + fbar -> Z0 + h0 (or H0, or A0)
-C...Propagators: Z0, h0 as simulated in PYOFSH and as desired
+C...Propagators: Z0, h0 as simulated in SPOFSH and as desired
           HBW3=GMMZ/((SQM3-SQMZ)**2+GMMZ**2)
-          CALL PYWIDT(23,SQM3,WDTP,WDTE)
+          CALL SPWIDT(23,SQM3,WDTP,WDTE)
           GMMZ3=SQRT(SQM3)*WDTP(0)
           HBW3C=GMMZ3/((SQM3-SQMZ)**2+GMMZ3**2)
           HBW4=GMMH/((SQM4-SQMH)**2+GMMH**2)
-          CALL PYWIDT(KFHIGG,SQM4,WDTP,WDTE)
+          CALL SPWIDT(KFHIGG,SQM4,WDTP,WDTE)
           GMMH4=SQRT(SQM4)*WDTP(0)
           HBW4C=GMMH4/((SQM4-SQMH)**2+GMMH4**2)
           THUH=MAX(TH*UH-SQM3*SQM4,SH*CKIN(3)**2)
@@ -21101,13 +21101,13 @@ C...Propagators: Z0, h0 as simulated in PYOFSH and as desired
  
         ELSEIF(ISUB.EQ.26) THEN
 C...f + fbar' -> W+/- + h0 (or H0, or A0)
-C...Propagators: W+-, h0 as simulated in PYOFSH and as desired
+C...Propagators: W+-, h0 as simulated in SPOFSH and as desired
           HBW3=GMMW/((SQM3-SQMW)**2+GMMW**2)
-          CALL PYWIDT(24,SQM3,WDTP,WDTE)
+          CALL SPWIDT(24,SQM3,WDTP,WDTE)
           GMMW3=SQRT(SQM3)*WDTP(0)
           HBW3C=GMMW3/((SQM3-SQMW)**2+GMMW3**2)
           HBW4=GMMH/((SQM4-SQMH)**2+GMMH**2)
-          CALL PYWIDT(KFHIGG,SQM4,WDTP,WDTE)
+          CALL SPWIDT(KFHIGG,SQM4,WDTP,WDTE)
           GMMH4=SQRT(SQM4)*WDTP(0)
           HBW4C=GMMH4/((SQM4-SQMH)**2+GMMH4**2)
           THUH=MAX(TH*UH-SQM3*SQM4,SH*CKIN(3)**2)
@@ -21534,7 +21534,7 @@ C...W+W+/W-W-
       ELSEIF(ISUB.LE.120) THEN
         IF(ISUB.EQ.102) THEN
 C...g + g -> h0 (or H0, or A0)
-          CALL PYWIDT(KFHIGG,SH,WDTP,WDTE)
+          CALL SPWIDT(KFHIGG,SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           HF=SHR*(WDTE(0,1)+WDTE(0,2)+WDTE(0,4))
           FACBW=4D0*COMFAC/((SH-SQMH)**2+HS**2)
@@ -21551,7 +21551,7 @@ C...g + g -> h0 (or H0, or A0)
  
         ELSEIF(ISUB.EQ.103) THEN
 C...gamma + gamma -> h0 (or H0, or A0)
-          CALL PYWIDT(KFHIGG,SH,WDTP,WDTE)
+          CALL SPWIDT(KFHIGG,SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           HF=SHR*(WDTE(0,1)+WDTE(0,2)+WDTE(0,4))
           FACBW=4D0*COMFAC/((SH-SQMH)**2+HS**2)
@@ -21652,10 +21652,10 @@ C...Loop over initial flavours
 C...f + fbar -> g + h0 (q + qbar -> g + h0 only)
           IF(MSTP(38).NE.0) THEN
 C...Simple case: only do gg <-> h exactly.
-          CALL PYWIDT(KFHIGG,SQM4,WDTP,WDTE)
+          CALL SPWIDT(KFHIGG,SQM4,WDTP,WDTE)
           FACGH=COMFAC*FACA*(2D0/9D0)*AS*(WDTP(13)/SQRT(SQM4))*
      &    (TH**2+UH**2)/(SH*SQM4)
-C...Propagators: as simulated in PYOFSH and as desired
+C...Propagators: as simulated in SPOFSH and as desired
           HBW4=GMMH/((SQM4-SQMH)**2+GMMH**2)
           GMMHC=SQRT(SQM4)*WDTP(0)
           HBW4C=SQRT(SQM4)*(WDTE(0,1)+WDTE(0,2)+WDTE(0,4))/
@@ -21669,10 +21669,10 @@ C...Messy case: do full loop integrals
             SQMQ=PMAS(I,1)**2
             EPSS=4D0*SQMQ/SH
             EPSH=4D0*SQMQ/SQMH
-            CALL PYWAUX(1,EPSS,W1SR,W1SI)
-            CALL PYWAUX(1,EPSH,W1HR,W1HI)
-            CALL PYWAUX(2,EPSS,W2SR,W2SI)
-            CALL PYWAUX(2,EPSH,W2HR,W2HI)
+            CALL SPWAUX(1,EPSS,W1SR,W1SI)
+            CALL SPWAUX(1,EPSH,W1HR,W1HI)
+            CALL SPWAUX(2,EPSS,W2SR,W2SI)
+            CALL SPWAUX(2,EPSH,W2HR,W2HI)
             A5STUR=A5STUR+EPSH*(1D0+SH/(TH+UH)*(W1SR-W1HR)+
      &      (0.25D0-SQMQ/(TH+UH))*(W2SR-W2HR))
             A5STUI=A5STUI+EPSH*(SH/(TH+UH)*(W1SI-W1HI)+
@@ -21696,10 +21696,10 @@ C...Messy case: do full loop integrals
 C...f + g -> f + h0 (q + g -> q + h0 only)
           IF(MSTP(38).NE.0) THEN
 C...Simple case: only do gg <-> h exactly.
-          CALL PYWIDT(KFHIGG,SQM4,WDTP,WDTE)
+          CALL SPWIDT(KFHIGG,SQM4,WDTP,WDTE)
           FACQH=COMFAC*FACA*(1D0/12D0)*AS*(WDTP(13)/SQRT(SQM4))*
      &    (SH**2+UH**2)/(-TH*SQM4)
-C...Propagators: as simulated in PYOFSH and as desired
+C...Propagators: as simulated in SPOFSH and as desired
           HBW4=GMMH/((SQM4-SQMH)**2+GMMH**2)
           GMMHC=SQRT(SQM4)*WDTP(0)
           HBW4C=SQRT(SQM4)*(WDTE(0,1)+WDTE(0,2)+WDTE(0,4))/
@@ -21713,10 +21713,10 @@ C...Messy case: do full loop integrals
             SQMQ=PMAS(I,1)**2
             EPST=4D0*SQMQ/TH
             EPSH=4D0*SQMQ/SQMH
-            CALL PYWAUX(1,EPST,W1TR,W1TI)
-            CALL PYWAUX(1,EPSH,W1HR,W1HI)
-            CALL PYWAUX(2,EPST,W2TR,W2TI)
-            CALL PYWAUX(2,EPSH,W2HR,W2HI)
+            CALL SPWAUX(1,EPST,W1TR,W1TI)
+            CALL SPWAUX(1,EPSH,W1HR,W1HI)
+            CALL SPWAUX(2,EPST,W2TR,W2TI)
+            CALL SPWAUX(2,EPSH,W2HR,W2HI)
             A5TSUR=A5TSUR+EPSH*(1D0+TH/(SH+UH)*(W1TR-W1HR)+
      &      (0.25D0-SQMQ/(SH+UH))*(W2TR-W2HR))
             A5TSUI=A5TSUI+EPSH*(TH/(SH+UH)*(W1TI-W1HI)+
@@ -21743,10 +21743,10 @@ C...Messy case: do full loop integrals
 C...g + g -> g + h0
           IF(MSTP(38).NE.0) THEN
 C...Simple case: only do gg <-> h exactly.
-          CALL PYWIDT(KFHIGG,SQM4,WDTP,WDTE)
+          CALL SPWIDT(KFHIGG,SQM4,WDTP,WDTE)
           FACGH=COMFAC*FACA*(3D0/16D0)*AS*(WDTP(13)/SQRT(SQM4))*
      &    (SH**4+TH**4+UH**4+SQM4**4)/(SH*TH*UH*SQM4)
-C...Propagators: as simulated in PYOFSH and as desired
+C...Propagators: as simulated in SPOFSH and as desired
           HBW4=GMMH/((SQM4-SQMH)**2+GMMH**2)
           GMMHC=SQRT(SQM4)*WDTP(0)
           HBW4C=SQRT(SQM4)*(WDTE(0,1)+WDTE(0,2)+WDTE(0,4))/
@@ -21769,26 +21769,26 @@ C...Messy case: do full loop integrals
             EPSU=4D0*SQMQ/UH
             EPSH=4D0*SQMQ/SQMH
             IF(EPSH.LT.1D-6) GOTO 440
-            CALL PYWAUX(1,EPSS,W1SR,W1SI)
-            CALL PYWAUX(1,EPST,W1TR,W1TI)
-            CALL PYWAUX(1,EPSU,W1UR,W1UI)
-            CALL PYWAUX(1,EPSH,W1HR,W1HI)
-            CALL PYWAUX(2,EPSS,W2SR,W2SI)
-            CALL PYWAUX(2,EPST,W2TR,W2TI)
-            CALL PYWAUX(2,EPSU,W2UR,W2UI)
-            CALL PYWAUX(2,EPSH,W2HR,W2HI)
-            CALL PYI3AU(EPSS,TH/UH,Y3STUR,Y3STUI)
-            CALL PYI3AU(EPSS,UH/TH,Y3SUTR,Y3SUTI)
-            CALL PYI3AU(EPST,SH/UH,Y3TSUR,Y3TSUI)
-            CALL PYI3AU(EPST,UH/SH,Y3TUSR,Y3TUSI)
-            CALL PYI3AU(EPSU,SH/TH,Y3USTR,Y3USTI)
-            CALL PYI3AU(EPSU,TH/SH,Y3UTSR,Y3UTSI)
-            CALL PYI3AU(EPSH,SQMH/SH*TH/UH,YHSTUR,YHSTUI)
-            CALL PYI3AU(EPSH,SQMH/SH*UH/TH,YHSUTR,YHSUTI)
-            CALL PYI3AU(EPSH,SQMH/TH*SH/UH,YHTSUR,YHTSUI)
-            CALL PYI3AU(EPSH,SQMH/TH*UH/SH,YHTUSR,YHTUSI)
-            CALL PYI3AU(EPSH,SQMH/UH*SH/TH,YHUSTR,YHUSTI)
-            CALL PYI3AU(EPSH,SQMH/UH*TH/SH,YHUTSR,YHUTSI)
+            CALL SPWAUX(1,EPSS,W1SR,W1SI)
+            CALL SPWAUX(1,EPST,W1TR,W1TI)
+            CALL SPWAUX(1,EPSU,W1UR,W1UI)
+            CALL SPWAUX(1,EPSH,W1HR,W1HI)
+            CALL SPWAUX(2,EPSS,W2SR,W2SI)
+            CALL SPWAUX(2,EPST,W2TR,W2TI)
+            CALL SPWAUX(2,EPSU,W2UR,W2UI)
+            CALL SPWAUX(2,EPSH,W2HR,W2HI)
+            CALL SPI3AU(EPSS,TH/UH,Y3STUR,Y3STUI)
+            CALL SPI3AU(EPSS,UH/TH,Y3SUTR,Y3SUTI)
+            CALL SPI3AU(EPST,SH/UH,Y3TSUR,Y3TSUI)
+            CALL SPI3AU(EPST,UH/SH,Y3TUSR,Y3TUSI)
+            CALL SPI3AU(EPSU,SH/TH,Y3USTR,Y3USTI)
+            CALL SPI3AU(EPSU,TH/SH,Y3UTSR,Y3UTSI)
+            CALL SPI3AU(EPSH,SQMH/SH*TH/UH,YHSTUR,YHSTUI)
+            CALL SPI3AU(EPSH,SQMH/SH*UH/TH,YHSUTR,YHSUTI)
+            CALL SPI3AU(EPSH,SQMH/TH*SH/UH,YHTSUR,YHTSUI)
+            CALL SPI3AU(EPSH,SQMH/TH*UH/SH,YHTUSR,YHTUSI)
+            CALL SPI3AU(EPSH,SQMH/UH*SH/TH,YHUSTR,YHUSTI)
+            CALL SPI3AU(EPSH,SQMH/UH*TH/SH,YHUTSR,YHUTSI)
             W3STUR=YHSTUR-Y3STUR-Y3UTSR
             W3STUI=YHSTUI-Y3STUI-Y3UTSI
             W3SUTR=YHSUTR-Y3SUTR-Y3TUSR
@@ -21898,7 +21898,7 @@ C...Messy case: do full loop integrals
 C...g + g -> Q + Qbar + h0
           IF(KFAC(1,21)*KFAC(2,21).EQ.0) GOTO 460
           IA=KFPR(ISUBSV,2)
-          PMF=PYMRUN(IA,SH)
+          PMF=SPMRUN(IA,SH)
           FACQQH=COMFAC*(4D0*PARU(1)*AEM/XW)*(4D0*PARU(1)*AS)**2*
      &    (0.5D0*PMF/PMAS(24,1))**2
           WID2=1D0
@@ -21917,8 +21917,8 @@ C...g + g -> Q + Qbar + h0
               ENDIF
             ENDIF
           ENDIF
-          CALL PYQQBH(WTQQBH)
-          CALL PYWIDT(KFHIGG,SH,WDTP,WDTE)
+          CALL SPQQBH(WTQQBH)
+          CALL SPWIDT(KFHIGG,SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           HF=SHR*(WDTE(0,1)+WDTE(0,2)+WDTE(0,4))
           FACBW=(1D0/PARU(1))*VINT(2)*HF/((SH-SQMH)**2+HS**2)
@@ -21934,7 +21934,7 @@ C...g + g -> Q + Qbar + h0
         ELSEIF(ISUB.EQ.122) THEN
 C...q + qbar -> Q + Qbar + h0
           IA=KFPR(ISUBSV,2)
-          PMF=PYMRUN(IA,SH)
+          PMF=SPMRUN(IA,SH)
           FACQQH=COMFAC*(4D0*PARU(1)*AEM/XW)*(4D0*PARU(1)*AS)**2*
      &    (0.5D0*PMF/PMAS(24,1))**2
           WID2=1D0
@@ -21953,8 +21953,8 @@ C...q + qbar -> Q + Qbar + h0
               ENDIF
             ENDIF
           ENDIF
-          CALL PYQQBH(WTQQBH)
-          CALL PYWIDT(KFHIGG,SH,WDTP,WDTE)
+          CALL SPQQBH(WTQQBH)
+          CALL SPWIDT(KFHIGG,SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           HF=SHR*(WDTE(0,1)+WDTE(0,2)+WDTE(0,4))
           FACBW=(1D0/PARU(1))*VINT(2)*HF/((SH-SQMH)**2+HS**2)
@@ -21980,7 +21980,7 @@ C...inner process)
      &    (VINT(216)-VINT(209)**2))**2
           FACZZ1=FACNOR*FACPRP*(0.5D0*TAUP*VINT(2))*VINT(219)
           FACZZ2=FACNOR*FACPRP*VINT(217)*VINT(218)
-          CALL PYWIDT(KFHIGG,SH,WDTP,WDTE)
+          CALL SPWIDT(KFHIGG,SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           HF=SHR*(WDTE(0,1)+WDTE(0,2)+WDTE(0,4))
           FACBW=(1D0/PARU(1))*VINT(2)*HF/((SH-SQMH)**2+HS**2)
@@ -22017,7 +22017,7 @@ C...inner process)
           FACPRP=1D0/((VINT(215)-VINT(204)**2)*
      &    (VINT(216)-VINT(209)**2))**2
           FACWW=FACNOR*FACPRP*(0.5D0*TAUP*VINT(2))*VINT(219)
-          CALL PYWIDT(KFHIGG,SH,WDTP,WDTE)
+          CALL SPWIDT(KFHIGG,SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           HF=SHR*(WDTE(0,1)+WDTE(0,2)+WDTE(0,4))
           FACBW=(1D0/PARU(1))*VINT(2)*HF/((SH-SQMH)**2+HS**2)
@@ -22042,7 +22042,7 @@ C...inner process)
         ELSEIF(ISUB.EQ.143) THEN
 C...f + fbar' -> H+/-
           SQMHC=PMAS(37,1)**2
-          CALL PYWIDT(37,SH,WDTP,WDTE)
+          CALL SPWIDT(37,SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           FACBW=4D0*COMFAC/((SH-SQMHC)**2+HS**2)
           HP=AEM/(8D0*XW)*SH/SQMW*SH
@@ -22064,8 +22064,8 @@ C...f + fbar' -> H+/-
                 IU=JA
                 IL=IA
               ENDIF
-              RML=PYMRUN(IL,SH)**2/SH
-              RMU=PYMRUN(IU,SH)**2/SH
+              RML=SPMRUN(IL,SH)**2/SH
+              RMU=SPMRUN(IU,SH)**2/SH
               HI=HP*(RML*PARU(141)**2+RMU/PARU(141)**2)
               IF(IA.LE.10) HI=HI*FACA/3D0
               KCHHC=(KCHG(IA,1)*ISIGN(1,I)+KCHG(JA,1)*ISIGN(1,J))/3
@@ -22082,20 +22082,20 @@ C...f + fbar' -> H+/-
 C...f + g -> f' + H+/- (b + g -> t + H+/- only)
 C...(choice of only b and t to avoid kinematics problems)
           FHCQ=COMFAC*FACA*AS*AEM/XW*1D0/24
-C...H propagator: as simulated in PYOFSH and as desired
+C...H propagator: as simulated in SPOFSH and as desired
           SQMHC=PMAS(37,1)**2
           GMMHC=PMAS(37,1)*PMAS(37,2)
           HBW4=GMMHC/((SQM4-SQMHC)**2+GMMHC**2)
-          CALL PYWIDT(37,SQM4,WDTP,WDTE)
+          CALL SPWIDT(37,SQM4,WDTP,WDTE)
           GMMHCC=SQRT(SQM4)*WDTP(0)
           HBW4C=GMMHCC/((SQM4-SQMHC)**2+GMMHCC**2)
           FHCQ=FHCQ*HBW4C/HBW4
           DO 550 I=MMINA,MMAXA
             IA=IABS(I)
             IF(IA.NE.5) GOTO 550
-            SQML=PYMRUN(IA,SH)**2
+            SQML=SPMRUN(IA,SH)**2
             IUA=IA+MOD(IA,2)
-            SQMQ=PYMRUN(IUA,SH)**2
+            SQMQ=SPMRUN(IUA,SH)**2
             FACHCQ=FHCQ*(SQML*PARU(141)**2+SQMQ/PARU(141)**2)/SQMW*
      &      (SH/(SQMQ-UH)+2D0*SQMQ*(SQMHC-UH)/(SQMQ-UH)**2+(SQMQ-UH)/SH+
      &      2D0*SQMQ/(SQMQ-UH)+2D0*(SQMHC-UH)/(SQMQ-UH)*
@@ -22119,37 +22119,37 @@ C...H propagator: as simulated in PYOFSH and as desired
  
 C*********************************************************************
  
-C...PYSGSU
+C...SPSGSU
 C...Subprocess cross sections for SUSY processes,
 C...including Higgs pair production.
-C...Auxiliary to PYSIGH.
+C...Auxiliary to SPSIGH.
  
-      SUBROUTINE PYSGSU(NCHN,SIGS)
+      SUBROUTINE SPSGSU(NCHN,SIGS)
  
 C...Double precision and integer declarations
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      COMMON/PYINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
-      COMMON/PYINT4/MWID(500),WIDS(500,5)
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-      COMMON/PYSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      COMMON/SPINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
+      COMMON/SPINT4/MWID(500),WIDS(500,5)
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+      COMMON/SPSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
      &SFMIX(16,4),ZMIXI(4,4),UMIXI(2,2),VMIXI(2,2)
-      COMMON/PYSGCM/ISUB,ISUBSV,MMIN1,MMAX1,MMIN2,MMAX2,MMINA,MMAXA,
+      COMMON/SPSGCM/ISUB,ISUBSV,MMIN1,MMAX1,MMIN2,MMAX2,MMINA,MMAXA,
      &KFAC(2,-40:40),COMFAC,FACK,FACA,SH,TH,UH,SH2,TH2,UH2,SQM3,SQM4,
      &SHR,SQPTH,TAUP,BE34,CTH,SQMZ,SQMW,GMMZ,GMMW,
      &AEM,AS,XW,XW1,XWC,XWV,POLL,POLR,POLLL,POLRR
-      SAVE /PYDAT1/,/PYDAT2/,/PYPARS/,/PYINT1/,/PYINT2/,/PYINT3/,
-     &/PYINT4/,/PYMSSM/,/PYSSMT/,/PYSGCM/
+      SAVE /SPDAT1/,/SPDAT2/,/SPPARS/,/SPINT1/,/SPINT2/,/SPINT3/,
+     &/SPINT4/,/SPMSSM/,/SPSSMT/,/SPSGCM/
 C...Local arrays and complex variables
       DIMENSION WDTP(0:400),WDTE(0:400,0:5)
       COMPLEX*16 OLPP,ORPP,OLP,ORP,OL,OR,QLL,QLR
@@ -22423,14 +22423,14 @@ C...correct final-state Breit-Wigners from fixed to running width.
       IF(MSTP(42).GT.0) THEN
         DO 100 I=1,2
         KFLW=KFPR(ISUBSV,I)
-        KCW=PYCOMP(KFLW)
+        KCW=SPCOMP(KFLW)
         IF(PMAS(KCW,2).LT.PARP(41)) GOTO 100
         IF(I.EQ.1) SQMI=SQM3
         IF(I.EQ.2) SQMI=SQM4
         SQMS=PMAS(KCW,1)**2
         GMMS=PMAS(KCW,1)*PMAS(KCW,2)
         HBWS=GMMS/((SQMI-SQMS)**2+GMMS**2)
-        CALL PYWIDT(KFLW,SQMI,WDTP,WDTE)
+        CALL SPWIDT(KFLW,SQMI,WDTP,WDTE)
         GMMI=SQRT(SQMI)*WDTP(0)
         HBWI=GMMI/((SQMI-SQMS)**2+GMMI**2)
         COMFAC=COMFAC*(HBWI/HBWS)
@@ -22442,7 +22442,7 @@ C...Differential cross section expressions.
       IF(ISUB.LE.210) THEN
         IF(ISUB.EQ.201) THEN
 C...f + fbar -> e_L + e_Lbar
-          COMFAC=COMFAC*WIDS(PYCOMP(KFPR(ISUBSV,1)),1)
+          COMFAC=COMFAC*WIDS(SPCOMP(KFPR(ISUBSV,1)),1)
           DO 130 I=MMIN1,MMAX1
             IA=IABS(I)
             IF(I.EQ.0.OR.KFAC(1,I)*KFAC(2,-I).EQ.0) GOTO 130
@@ -22578,14 +22578,14 @@ C%%%%%%%%%%%
             ISIG(NCHN,1)=I
             ISIG(NCHN,2)=-I
             ISIG(NCHN,3)=1
-            SIGH(NCHN)=(FACQQ0+FACQQ1)*WIDS(PYCOMP(KFPR(ISUBSV,1)),2)*
-     &      WIDS(PYCOMP(KFPR(ISUBSV,2)),3)
+            SIGH(NCHN)=(FACQQ0+FACQQ1)*WIDS(SPCOMP(KFPR(ISUBSV,1)),2)*
+     &      WIDS(SPCOMP(KFPR(ISUBSV,2)),3)
             NCHN=NCHN+1
             ISIG(NCHN,1)=I
             ISIG(NCHN,2)=-I
             ISIG(NCHN,3)=2
-            SIGH(NCHN)=(FACQQ0+FACQQ2)*WIDS(PYCOMP(KFPR(ISUBSV,1)),3)*
-     &      WIDS(PYCOMP(KFPR(ISUBSV,2)),2)
+            SIGH(NCHN)=(FACQQ0+FACQQ2)*WIDS(SPCOMP(KFPR(ISUBSV,1)),3)*
+     &      WIDS(SPCOMP(KFPR(ISUBSV,2)),2)
   160     CONTINUE
  
         ELSEIF(ISUB.EQ.210) THEN
@@ -22609,11 +22609,11 @@ C...q + qbar' -> W*- > ~l_L + ~nu_L
               ISIG(NCHN,2)=J
               ISIG(NCHN,3)=1
               IF(ISUBSV.EQ.297.OR.ISUBSV.EQ.298) THEN
-                FACR=WIDS(PYCOMP(KFPR(ISUBSV,1)),5-KCHW)*
-     &          WIDS(PYCOMP(KFPR(ISUBSV,2)),2)
+                FACR=WIDS(SPCOMP(KFPR(ISUBSV,1)),5-KCHW)*
+     &          WIDS(SPCOMP(KFPR(ISUBSV,2)),2)
               ELSE
-                FACR=WIDS(PYCOMP(KFPR(ISUBSV,1)),5-KCHW)*
-     &          WIDS(PYCOMP(KFPR(ISUBSV,2)),KCHW)
+                FACR=WIDS(SPCOMP(KFPR(ISUBSV,1)),5-KCHW)*
+     &          WIDS(SPCOMP(KFPR(ISUBSV,2)),KCHW)
               ENDIF
               SIGH(NCHN)=FAC0*FAC1*FCKM*FACR
   170       CONTINUE
@@ -22624,10 +22624,10 @@ C...q + qbar' -> W*- > ~l_L + ~nu_L
         IF(ISUB.EQ.213) THEN
 C...f + fbar -> ~nu_L + ~nu_Lbar
           IF(ISUBSV.EQ.299.OR.ISUBSV.EQ.300) THEN
-            FACR=WIDS(PYCOMP(KFPR(ISUBSV,1)),2)*
-     &      WIDS(PYCOMP(KFPR(ISUBSV,2)),2)
+            FACR=WIDS(SPCOMP(KFPR(ISUBSV,1)),2)*
+     &      WIDS(SPCOMP(KFPR(ISUBSV,2)),2)
           ELSE
-            FACR=WIDS(PYCOMP(KFPR(ISUBSV,1)),1)
+            FACR=WIDS(SPCOMP(KFPR(ISUBSV,1)),1)
           ENDIF
           COMFAC=COMFAC*FACR
           PROPZ2=(SH-SQMZ)**2+ZWID**2*SQMZ
@@ -22663,10 +22663,10 @@ C...Color factor for e+ e-
         ELSEIF(ISUB.EQ.216) THEN
 C...q + qbar -> ~chi0_1 + ~chi0_1
           IF(IZID1.EQ.IZID2) THEN
-            COMFAC=COMFAC*WIDS(PYCOMP(KFPR(ISUBSV,1)),1)
+            COMFAC=COMFAC*WIDS(SPCOMP(KFPR(ISUBSV,1)),1)
           ELSE
-            COMFAC=COMFAC*WIDS(PYCOMP(KFPR(ISUBSV,1)),2)*
-     &      WIDS(PYCOMP(KFPR(ISUBSV,2)),2)
+            COMFAC=COMFAC*WIDS(SPCOMP(KFPR(ISUBSV,1)),2)*
+     &      WIDS(SPCOMP(KFPR(ISUBSV,2)),2)
           ENDIF
           FACXX=COMFAC*AEM**2/3D0/XW**2
           IF(IZID1.EQ.IZID2) FACXX=FACXX/2D0
@@ -22690,8 +22690,8 @@ C...q + qbar -> ~chi0_1 + ~chi0_1
             IF(I.EQ.0.OR.KFAC(1,I)*KFAC(2,-I).EQ.0) GOTO 210
             EI=KCHG(IABS(I),1)/3D0
             T3I=SIGN(1D0,EI+1D-6)/2D0
-            XML2=PMAS(PYCOMP(KSUSY1+IABS(I)),1)**2
-            XMR2=PMAS(PYCOMP(KSUSY2+IABS(I)),1)**2
+            XML2=PMAS(SPCOMP(KSUSY1+IABS(I)),1)**2
+            XMR2=PMAS(SPCOMP(KSUSY2+IABS(I)),1)**2
             GLIJ=(T3I*ZMIXC(IZID1,2)-TANW*(T3I-EI)*ZMIXC(IZID1,1))*
      &      DCONJG(T3I*ZMIXC(IZID2,2)-TANW*(T3I-EI)*ZMIXC(IZID2,1))
             GRIJ=ZMIXC(IZID1,1)*DCONJG(ZMIXC(IZID2,1))*(EI*TANW)**2
@@ -22748,12 +22748,12 @@ C...f + fbar -> ~chi+_1 + ~chi-_1
             QLL=DCMPLX(-EI/SH*DIFF)+DCMPLX((T3I-XW*EI)/XW/XW1)*PROPZ*ORP
             QRR=DCMPLX(-EI/SH*DIFF)-DCMPLX(EI/XW1)*PROPZ*OLP
             IF(MOD(I,2).EQ.0) THEN
-              XML2=PMAS(PYCOMP(KSUSY1+IABS(I)-1),1)**2
+              XML2=PMAS(SPCOMP(KSUSY1+IABS(I)-1),1)**2
               QLR=DCMPLX(-EI/SH*DIFF)+DCMPLX((T3I-XW*EI)/XW/XW1)*
      &        PROPZ*OLP-UMIXC(IZID2,1)*DCONJG(UMIXC(IZID1,1))*
      &        DCMPLX(T3I/XW/(TH-XML2))
             ELSE
-              XML2=PMAS(PYCOMP(KSUSY1+IABS(I)+1),1)**2
+              XML2=PMAS(SPCOMP(KSUSY1+IABS(I)+1),1)**2
               QLR=DCMPLX(-EI/SH*DIFF)+DCMPLX((T3I-XW*EI)/XW/XW1)*
      &        PROPZ*OLP-VMIXC(IZID2,1)*DCONJG(VMIXC(IZID1,1))*
      &        DCMPLX(T3I/XW/(TH-XML2))
@@ -22769,16 +22769,16 @@ C...f + fbar -> ~chi+_1 + ~chi-_1
             ISIG(NCHN,2)=-I
             ISIG(NCHN,3)=1
             IF(IZID1.EQ.IZID2) THEN
-              SIGH(NCHN)=FACSUM*WIDS(PYCOMP(KFPR(ISUBSV,1)),1)
+              SIGH(NCHN)=FACSUM*WIDS(SPCOMP(KFPR(ISUBSV,1)),1)
             ELSE
-              SIGH(NCHN)=FACSUM*WIDS(PYCOMP(KFPR(ISUBSV,1)),3)*
-     &        WIDS(PYCOMP(KFPR(ISUBSV,2)),2)
+              SIGH(NCHN)=FACSUM*WIDS(SPCOMP(KFPR(ISUBSV,1)),3)*
+     &        WIDS(SPCOMP(KFPR(ISUBSV,2)),2)
               NCHN=NCHN+1
               ISIG(NCHN,1)=I
               ISIG(NCHN,2)=-I
               ISIG(NCHN,3)=2
-              SIGH(NCHN)=FACSUM*WIDS(PYCOMP(KFPR(ISUBSV,1)),2)*
-     &        WIDS(PYCOMP(KFPR(ISUBSV,2)),3)
+              SIGH(NCHN)=FACSUM*WIDS(SPCOMP(KFPR(ISUBSV,1)),2)*
+     &        WIDS(SPCOMP(KFPR(ISUBSV,2)),3)
             ENDIF
   230     CONTINUE
  
@@ -22822,16 +22822,16 @@ C...q + qbar' -> ~chi0_1 + ~chi+-_1
               KCHW=2
               IF(KCHSUM.LT.0) KCHW=3
               IF(MOD(IA,2).EQ.0) THEN
-                ZMI2  = PMAS(PYCOMP(KSUSY1+IA),1)**2
-                ZMJ2  = PMAS(PYCOMP(KSUSY1+JA),1)**2
+                ZMI2  = PMAS(SPCOMP(KSUSY1+IA),1)**2
+                ZMJ2  = PMAS(SPCOMP(KSUSY1+JA),1)**2
                 QLL=OL+VMIXC(IZID1,1)*DCONJG(ZMIXC(IZID2,1)*(EI-T3I)*
      &          TANW+ZMIXC(IZID2,2)*T3I)/DCMPLX(UH-ZMI2)
                 QLR=OR-DCONJG(UMIXC(IZID1,1))*(
      &          ZMIXC(IZID2,1)*(EJ-T3J)*TANW+ZMIXC(IZID2,2)*T3J)
      &          /DCMPLX(TH-ZMJ2)
               ELSE
-                ZMI2  = PMAS(PYCOMP(KSUSY1+JA),1)**2
-                ZMJ2  = PMAS(PYCOMP(KSUSY1+IA),1)**2
+                ZMI2  = PMAS(SPCOMP(KSUSY1+JA),1)**2
+                ZMJ2  = PMAS(SPCOMP(KSUSY1+IA),1)**2
                 QLL=OL+VMIXC(IZID1,1)*DCONJG(ZMIXC(IZID2,1)*(EJ-T3J)*
      &          TANW+ZMIXC(IZID2,2)*T3J)/DCMPLX(UH-ZMJ2)
                 QLR=OR-DCONJG(UMIXC(IZID1,1))*(
@@ -22845,8 +22845,8 @@ C...q + qbar' -> ~chi0_1 + ~chi+-_1
               ISIG(NCHN,1)=I
               ISIG(NCHN,2)=J
               ISIG(NCHN,3)=1
-              SIGH(NCHN)=FACGG1*FCKM*WIDS(PYCOMP(KFPR(ISUBSV,1)),2)*
-     &        WIDS(PYCOMP(KFPR(ISUBSV,2)),KCHW)
+              SIGH(NCHN)=FACGG1*FCKM*WIDS(SPCOMP(KFPR(ISUBSV,1)),2)*
+     &        WIDS(SPCOMP(KFPR(ISUBSV,2)),KCHW)
   260       CONTINUE
   270     CONTINUE
         ENDIF
@@ -22854,8 +22854,8 @@ C...q + qbar' -> ~chi0_1 + ~chi+-_1
       ELSEIF(ISUB.LE.240) THEN
         IF(ISUB.EQ.237) THEN
 C...q + qbar -> gluino + ~chi0_1
-          COMFAC=COMFAC*WIDS(PYCOMP(KFPR(ISUBSV,1)),2)*
-     &    WIDS(PYCOMP(KFPR(ISUBSV,2)),2)
+          COMFAC=COMFAC*WIDS(SPCOMP(KFPR(ISUBSV,1)),2)*
+     &    WIDS(SPCOMP(KFPR(ISUBSV,2)),2)
           FAC0=COMFAC*AS*AEM*4D0/9D0/XW
           GM2=SQM3
           ZM2=SQM4
@@ -22868,8 +22868,8 @@ C...q + qbar -> gluino + ~chi0_1
      &      (SIGN(1D0,EI)-2D0*EI)*ZMIX(IZID,1))/2D0
             XLQ2=XLQC**2
             XRQ2=XRQC**2
-            XML2=PMAS(PYCOMP(KSUSY1+IA),1)**2
-            XMR2=PMAS(PYCOMP(KSUSY2+IA),1)**2
+            XML2=PMAS(SPCOMP(KSUSY1+IA),1)**2
+            XMR2=PMAS(SPCOMP(KSUSY2+IA),1)**2
             ATKIN=(TH-GM2)*(TH-ZM2)/(TH-XML2)**2
             AUKIN=(UH-GM2)*(UH-ZM2)/(UH-XML2)**2
             ATUKIN=SMZ(IZID)*SQRT(GM2)*SH/(TH-XML2)/(UH-XML2)
@@ -22907,13 +22907,13 @@ C...q + qbar' -> ~chi+-_1 + gluino
               KCHSUM=KCHG(IA,1)*ISIGN(1,I)+KCHG(JA,1)*ISIGN(1,J)
               KCHW=2
               IF(KCHSUM.LT.0) KCHW=3
-              XMU2=PMAS(PYCOMP(KSUSY1+2),1)**2
-              XMD2=PMAS(PYCOMP(KSUSY1+1),1)**2
+              XMU2=PMAS(SPCOMP(KSUSY1+2),1)**2
+              XMD2=PMAS(SPCOMP(KSUSY1+1),1)**2
               ATKIN=(TH-GM2)*(TH-ZM2)/(TH-XMU2)**2
               AUKIN=(UH-GM2)*(UH-ZM2)/(UH-XMD2)**2
               ATUKIN=SMW(IZID)*SQRT(GM2)*SH/(TH-XMU2)/(UH-XMD2)
-              XMU2=PMAS(PYCOMP(KSUSY2+2),1)**2
-              XMD2=PMAS(PYCOMP(KSUSY2+1),1)**2
+              XMU2=PMAS(SPCOMP(KSUSY2+2),1)**2
+              XMD2=PMAS(SPCOMP(KSUSY2+1),1)**2
               ATKIN=(ATKIN+(TH-GM2)*(TH-ZM2)/(TH-XMU2)**2)/2D0
               AUKIN=(AUKIN+(UH-GM2)*(UH-ZM2)/(UH-XMD2)**2)/2D0
               ATUKIN=(ATUKIN+SMW(IZID)*SQRT(GM2)*
@@ -22923,28 +22923,28 @@ C...q + qbar' -> ~chi+-_1 + gluino
               ISIG(NCHN,2)=J
               ISIG(NCHN,3)=1
               SIGH(NCHN)=FACWG*FCKM*(FAC0*ATKIN+FAC1*AUKIN-
-     &        FAC01*ATUKIN)*WIDS(PYCOMP(KFPR(ISUBSV,1)),2)*
-     &        WIDS(PYCOMP(KFPR(ISUBSV,2)),KCHW)
+     &        FAC01*ATUKIN)*WIDS(SPCOMP(KFPR(ISUBSV,1)),2)*
+     &        WIDS(SPCOMP(KFPR(ISUBSV,2)),KCHW)
   290       CONTINUE
   300     CONTINUE
  
         ELSEIF(ISUB.EQ.243) THEN
 C...q + qbar -> gluino + gluino
-          COMFAC=COMFAC*WIDS(PYCOMP(KFPR(ISUBSV,1)),1)
+          COMFAC=COMFAC*WIDS(SPCOMP(KFPR(ISUBSV,1)),1)
           XMT=SQM3-TH
           XMU=SQM3-UH
           DO 310 I=MMINA,MMAXA
             IF(I.EQ.0.OR.IABS(I).GT.MSTP(58).OR.
      &      KFAC(1,I)*KFAC(2,-I).EQ.0) GOTO 310
             NCHN=NCHN+1
-            XSU=PMAS(PYCOMP(KSUSY1+IABS(I)),1)**2-UH
-            XST=PMAS(PYCOMP(KSUSY1+IABS(I)),1)**2-TH
+            XSU=PMAS(SPCOMP(KSUSY1+IABS(I)),1)**2-UH
+            XST=PMAS(SPCOMP(KSUSY1+IABS(I)),1)**2-TH
             FACGG1=COMFAC*AS**2*8D0/3D0*( (XMT**2+XMU**2+
      &      2D0*SQM3*SH)/SH2 +4D0/9D0*(XMT**2/XST**2+
      &      XMU**2/XSU**2) - (XMT**2+SH*SQM3)/SH/XST +
      &      SQM3*SH/XST/XSU/9D0- (XMU**2+SH*SQM3)/SH/XSU )
-            XSU=PMAS(PYCOMP(KSUSY2+IABS(I)),1)**2-UH
-            XST=PMAS(PYCOMP(KSUSY2+IABS(I)),1)**2-TH
+            XSU=PMAS(SPCOMP(KSUSY2+IABS(I)),1)**2-UH
+            XST=PMAS(SPCOMP(KSUSY2+IABS(I)),1)**2-TH
             FACGG2=COMFAC*AS**2*8D0/3D0*( (XMT**2+XMU**2+
      &      2D0*SQM3*SH)/SH2 +4D0/9D0*(XMT**2/XST**2+
      &      XMU**2/XSU**2) - (XMT**2+SH*SQM3)/SH/XST +
@@ -22958,7 +22958,7 @@ C...1/2 for identical particles
  
         ELSEIF(ISUB.EQ.244) THEN
 C...g + g -> gluino + gluino
-          COMFAC=COMFAC*WIDS(PYCOMP(KFPR(ISUBSV,1)),1)
+          COMFAC=COMFAC*WIDS(SPCOMP(KFPR(ISUBSV,1)),1)
           XMT=SQM3-TH
           XMU=SQM3-UH
           FACQQ1=COMFAC*AS**2*9D0/4D0*(
@@ -23019,8 +23019,8 @@ C...g + q_j -> ~chi0_1 + ~q_j
               ISIG(NCHN,ISDE)=I
               ISIG(NCHN,3-ISDE)=21
               ISIG(NCHN,3)=1
-              SIGH(NCHN)=FACZQ*RKF*WIDS(PYCOMP(KFPR(ISUBSV,1)),KCHQ)*
-     &        WIDS(PYCOMP(KFPR(ISUBSV,2)),2)
+              SIGH(NCHN)=FACZQ*RKF*WIDS(SPCOMP(KFPR(ISUBSV,1)),KCHQ)*
+     &        WIDS(SPCOMP(KFPR(ISUBSV,2)),2)
   330       CONTINUE
   340     CONTINUE
         ENDIF
@@ -23065,8 +23065,8 @@ C...g + q_j -> ~chi1_1 + ~q_i
               ISIG(NCHN,ISDE)=I
               ISIG(NCHN,3-ISDE)=21
               ISIG(NCHN,3)=1
-              SIGH(NCHN)=FACZQ*RKF*WIDS(PYCOMP(KFPR(ISUBSV,1)),KCHQ)*
-     &        WIDS(PYCOMP(KFPR(ISUBSV,2)),KCHWQ)
+              SIGH(NCHN)=FACZQ*RKF*WIDS(SPCOMP(KFPR(ISUBSV,1)),KCHQ)*
+     &        WIDS(SPCOMP(KFPR(ISUBSV,2)),KCHWQ)
   350       CONTINUE
   360     CONTINUE
  
@@ -23095,8 +23095,8 @@ C...g + q_j -> gluino + ~q_i
             IF(I.EQ.0.OR.IABS(I).GT.10) GOTO 380
             KCHQ=2
             IF(I.LT.0) KCHQ=3
-            FACSEL=RKF*WIDS(PYCOMP(KFPR(ISUBSV,1)),KCHQ)*
-     &      WIDS(PYCOMP(KFPR(ISUBSV,2)),2)
+            FACSEL=RKF*WIDS(SPCOMP(KFPR(ISUBSV,1)),KCHQ)*
+     &      WIDS(SPCOMP(KFPR(ISUBSV,2)),2)
             DO 370 ISDE=1,2
               IF(ISDE.EQ.1.AND.KFAC(1,I)*KFAC(2,21).EQ.0) GOTO 370
               IF(ISDE.EQ.2.AND.KFAC(1,21)*KFAC(2,I).EQ.0) GOTO 370
@@ -23118,7 +23118,7 @@ C...g + q_j -> gluino + ~q_i
         IF(ISUB.EQ.261) THEN
 C...q_i + q_ibar -> ~t_1 + ~t_1bar
           FACQQ1=COMFAC*( (UH*TH-SQM3*SQM4)/ SH**2 )*
-     &    WIDS(PYCOMP(KFPR(ISUBSV,1)),1)
+     &    WIDS(SPCOMP(KFPR(ISUBSV,1)),1)
           KFNSQ=MOD(KFPR(ISUBSV,1),KSUSY1)
           FAC0=AS**2*4D0/9D0
           DO 390 I=MMIN1,MMAX1
@@ -23173,14 +23173,14 @@ C...Factor of 2 for t1 t2bar + t2 t1bar
             ISIG(NCHN,1)=I
             ISIG(NCHN,2)=-I
             ISIG(NCHN,3)=1
-            SIGH(NCHN)=FACQQ1*WIDS(PYCOMP(KFPR(ISUBSV,1)),2)*
-     &      WIDS(PYCOMP(KFPR(ISUBSV,2)),3)
+            SIGH(NCHN)=FACQQ1*WIDS(SPCOMP(KFPR(ISUBSV,1)),2)*
+     &      WIDS(SPCOMP(KFPR(ISUBSV,2)),3)
             NCHN=NCHN+1
             ISIG(NCHN,1)=I
             ISIG(NCHN,2)=-I
             ISIG(NCHN,3)=2
-            SIGH(NCHN)=FACQQ1*WIDS(PYCOMP(KFPR(ISUBSV,1)),3)*
-     &      WIDS(PYCOMP(KFPR(ISUBSV,2)),2)
+            SIGH(NCHN)=FACQQ1*WIDS(SPCOMP(KFPR(ISUBSV,1)),3)*
+     &      WIDS(SPCOMP(KFPR(ISUBSV,2)),2)
   400     CONTINUE
  
         ELSEIF(ISUB.EQ.264) THEN
@@ -23188,7 +23188,7 @@ C...g + g -> ~t_1 + ~t_1bar
           XSU=SQM3-UH
           XST=SQM3-TH
           FAC0=COMFAC*AS**2*(7D0/48D0+3D0*(UH-TH)**2/16D0/SH2 )*0.5D0*
-     &    WIDS(PYCOMP(KFPR(ISUBSV,1)),1)
+     &    WIDS(SPCOMP(KFPR(ISUBSV,1)),1)
           FACQQ1=FAC0*(0.5D0+2D0*SQM3*TH/XST**2 + 2D0*SQM3**2/XSU/XST)
           FACQQ2=FAC0*(0.5D0+2D0*SQM3*UH/XSU**2 + 2D0*SQM3**2/XSU/XST)
           IF(KFAC(1,21)*KFAC(2,21).EQ.0) GOTO 410
@@ -23208,7 +23208,7 @@ C...g + g -> ~t_1 + ~t_1bar
       ELSEIF(ISUB.LE.280) THEN
         IF(ISUB.EQ.271) THEN
 C...q + q' -> ~q + ~q' (~g exchange)
-          XMG2=PMAS(PYCOMP(KSUSY1+21),1)**2
+          XMG2=PMAS(SPCOMP(KSUSY1+21),1)**2
           XMT=XMG2-TH
           XMU=XMG2-UH
           XSU1=SQM3-UH
@@ -23242,16 +23242,16 @@ C...q + q' -> ~q + ~q' (~g exchange)
               ISIG(NCHN,1)=I
               ISIG(NCHN,2)=J
               ISIG(NCHN,3)=1
-              SIGH(NCHN)=FACQQ1*RKF*WIDS(PYCOMP(KFPR(ISUBSV,1)),KCHQ)*
-     &        WIDS(PYCOMP(KFPR(ISUBSV,2)),KCHQ)
+              SIGH(NCHN)=FACQQ1*RKF*WIDS(SPCOMP(KFPR(ISUBSV,1)),KCHQ)*
+     &        WIDS(SPCOMP(KFPR(ISUBSV,2)),KCHQ)
               IF(I.EQ.J) THEN
                 IF(ILR.EQ.0) THEN
                   SIGH(NCHN)=0.5D0*(FACQQ1+0.5D0*FACQQB)*RKF*
-     &            WIDS(PYCOMP(KFPR(ISUBSV,1)),KCHQ+2)
+     &            WIDS(SPCOMP(KFPR(ISUBSV,1)),KCHQ+2)
                 ELSE
                   SIGH(NCHN)=0.5D0*FACQQ1*RKF*
-     &            WIDS(PYCOMP(KFPR(ISUBSV,1)),KCHQ)*
-     &            WIDS(PYCOMP(KFPR(ISUBSV,2)),KCHQ)
+     &            WIDS(SPCOMP(KFPR(ISUBSV,1)),KCHQ)*
+     &            WIDS(SPCOMP(KFPR(ISUBSV,2)),KCHQ)
                 ENDIF
                 NCHN=NCHN+1
                 ISIG(NCHN,1)=I
@@ -23259,11 +23259,11 @@ C...q + q' -> ~q + ~q' (~g exchange)
                 ISIG(NCHN,3)=2
                 IF(ILR.EQ.0) THEN
                   SIGH(NCHN)=0.5D0*(FACQQ2+0.5D0*FACQQB)*RKF*
-     &            WIDS(PYCOMP(KFPR(ISUBSV,1)),KCHQ+2)
+     &            WIDS(SPCOMP(KFPR(ISUBSV,1)),KCHQ+2)
                 ELSE
                   SIGH(NCHN)=0.5D0*FACQQ2*RKF*
-     &            WIDS(PYCOMP(KFPR(ISUBSV,1)),KCHQ)*
-     &            WIDS(PYCOMP(KFPR(ISUBSV,2)),KCHQ)
+     &            WIDS(SPCOMP(KFPR(ISUBSV,1)),KCHQ)*
+     &            WIDS(SPCOMP(KFPR(ISUBSV,2)),KCHQ)
                 ENDIF
               ENDIF
   420       CONTINUE
@@ -23271,7 +23271,7 @@ C...q + q' -> ~q + ~q' (~g exchange)
  
         ELSEIF(ISUB.EQ.274) THEN
 C...q + qbar' -> ~q + ~qbar'
-          XMG2=PMAS(PYCOMP(KSUSY1+21),1)**2
+          XMG2=PMAS(SPCOMP(KSUSY1+21),1)**2
           XMT=XMG2-TH
           XMU=XMG2-UH
           IF(ILR.EQ.0) THEN
@@ -23302,10 +23302,10 @@ C...Mrenna...Normalization.and.1/XMT
               ISIG(NCHN,1)=I
               ISIG(NCHN,2)=J
               ISIG(NCHN,3)=1
-              SIGH(NCHN)=FACQQ1*RKF*WIDS(PYCOMP(KFPR(ISUBSV,1)),KCHQ)*
-     &        WIDS(PYCOMP(KFPR(ISUBSV,2)),5-KCHQ)
+              SIGH(NCHN)=FACQQ1*RKF*WIDS(SPCOMP(KFPR(ISUBSV,1)),KCHQ)*
+     &        WIDS(SPCOMP(KFPR(ISUBSV,2)),5-KCHQ)
               IF(I.EQ.-J) SIGH(NCHN)=FACQQB*RKF*
-     &        WIDS(PYCOMP(KFPR(ISUBSV,1)),1)
+     &        WIDS(SPCOMP(KFPR(ISUBSV,1)),1)
   440       CONTINUE
   450     CONTINUE
  
@@ -23352,7 +23352,7 @@ C...if i .eq. j covered in 274
             ISIG(NCHN,1)=I
             ISIG(NCHN,2)=-I
             ISIG(NCHN,3)=1
-            SIGH(NCHN)=FACQQ1*FAC0*RKF*WIDS(PYCOMP(KFPR(ISUBSV,1)),1)
+            SIGH(NCHN)=FACQQ1*FAC0*RKF*WIDS(SPCOMP(KFPR(ISUBSV,1)),1)
   460     CONTINUE
  
         ELSEIF(ISUB.EQ.279) THEN
@@ -23368,12 +23368,12 @@ C...5=RKF because ~t ~tbar treated separately
           ISIG(NCHN,1)=21
           ISIG(NCHN,2)=21
           ISIG(NCHN,3)=1
-          SIGH(NCHN)=FACQQ1/2D0*WIDS(PYCOMP(KFPR(ISUBSV,1)),1)
+          SIGH(NCHN)=FACQQ1/2D0*WIDS(SPCOMP(KFPR(ISUBSV,1)),1)
           NCHN=NCHN+1
           ISIG(NCHN,1)=21
           ISIG(NCHN,2)=21
           ISIG(NCHN,3)=2
-          SIGH(NCHN)=FACQQ2/2D0*WIDS(PYCOMP(KFPR(ISUBSV,1)),1)
+          SIGH(NCHN)=FACQQ2/2D0*WIDS(SPCOMP(KFPR(ISUBSV,1)),1)
   470     CONTINUE
  
         ENDIF
@@ -23385,35 +23385,35 @@ CMRENNA--
  
 C*********************************************************************
  
-C...PYSGTC
+C...SPSGTC
 C...Subprocess cross sections for Technicolor processes.
-C...Auxiliary to PYSIGH.
+C...Auxiliary to SPSIGH.
  
-      SUBROUTINE PYSGTC(NCHN,SIGS)
+      SUBROUTINE SPSGTC(NCHN,SIGS)
  
 C...Double precision and integer declarations
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      COMMON/PYINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
-      COMMON/PYINT4/MWID(500),WIDS(500,5)
-      COMMON/PYTCSM/ITCM(0:99),RTCM(0:99)
-      COMMON/PYSGCM/ISUB,ISUBSV,MMIN1,MMAX1,MMIN2,MMAX2,MMINA,MMAXA,
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      COMMON/SPINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
+      COMMON/SPINT4/MWID(500),WIDS(500,5)
+      COMMON/SPTCSM/ITCM(0:99),RTCM(0:99)
+      COMMON/SPSGCM/ISUB,ISUBSV,MMIN1,MMAX1,MMIN2,MMAX2,MMINA,MMAXA,
      &KFAC(2,-40:40),COMFAC,FACK,FACA,SH,TH,UH,SH2,TH2,UH2,SQM3,SQM4,
      &SHR,SQPTH,TAUP,BE34,CTH,SQMZ,SQMW,GMMZ,GMMW,
      &AEM,AS,XW,XW1,XWC,XWV,POLL,POLR,POLLL,POLRR
-      SAVE /PYDAT1/,/PYDAT2/,/PYDAT3/,/PYPARS/,/PYINT1/,/PYINT2/,
-     &/PYINT3/,/PYINT4/,/PYTCSM/,/PYSGCM/
+      SAVE /SPDAT1/,/SPDAT2/,/SPDAT3/,/SPPARS/,/SPINT1/,/SPINT2/,
+     &/SPINT3/,/SPINT4/,/SPTCSM/,/SPSGCM/
 C...Local arrays and complex variables
       DIMENSION WDTP(0:400),WDTE(0:400,0:5)
       COMPLEX*16 SSMZ,SSMR,SSMO,DETD,F2L,F2R,DARHO,DZRHO,DAOME,DZOME
@@ -23601,7 +23601,7 @@ C...QCD 2 -> 2 processes: corrections from virtual technicolor exchange.
           ALPRHT=2.91D0*(3D0/ITCM(1))
           SIN2T=2D0*TANT3/(TANT3**2+1D0)
           SINT3=TANT3/SQRT(TANT3**2+1D0)
-          XIG=SQRT(PYALPS(SH)/ALPRHT)
+          XIG=SQRT(SPALPS(SH)/ALPRHT)
           X12=(RTCM(29)*SQRT(1D0-RTCM(29)**2)*COS(RTCM(30))+
      &    RTCM(31)*SQRT(1D0-RTCM(31)**2)*COS(RTCM(32)))/SQRT(2D0)/SIN2T
           X21=(RTCM(29)*SQRT(1D0-RTCM(29)**2)*SIN(RTCM(30))+
@@ -23621,17 +23621,17 @@ C...QCD 2 -> 2 processes: corrections from virtual technicolor exchange.
  
 C.........SH LOOP
           ZTC(1,1)=DCMPLX(SH,0D0)
-          CALL PYWIDT(3100021,SH,WDTP,WDTE)
+          CALL SPWIDT(3100021,SH,WDTP,WDTE)
           IF(WDTP(0).GT.RTCM(33)*SHR) WDTP(0)=RTCM(33)*SHR
-          ZTC(2,2)=DCMPLX(SH-PMAS(PYCOMP(3100021),1)**2,-SHR*WDTP(0))
-          CALL PYWIDT(3100113,SH,WDTP,WDTE)
-          ZTC(3,3)=DCMPLX(SH-PMAS(PYCOMP(3100113),1)**2,-SHR*WDTP(0))
-          CALL PYWIDT(3400113,SH,WDTP,WDTE)
-          ZTC(4,4)=DCMPLX(SH-PMAS(PYCOMP(3400113),1)**2,-SHR*WDTP(0))
-          CALL PYWIDT(3200113,SH,WDTP,WDTE)
-          ZTC(5,5)=DCMPLX(SH-PMAS(PYCOMP(3200113),1)**2,-SHR*WDTP(0))
-          CALL PYWIDT(3300113,SH,WDTP,WDTE)
-          ZTC(6,6)=DCMPLX(SH-PMAS(PYCOMP(3300113),1)**2,-SHR*WDTP(0))
+          ZTC(2,2)=DCMPLX(SH-PMAS(SPCOMP(3100021),1)**2,-SHR*WDTP(0))
+          CALL SPWIDT(3100113,SH,WDTP,WDTE)
+          ZTC(3,3)=DCMPLX(SH-PMAS(SPCOMP(3100113),1)**2,-SHR*WDTP(0))
+          CALL SPWIDT(3400113,SH,WDTP,WDTE)
+          ZTC(4,4)=DCMPLX(SH-PMAS(SPCOMP(3400113),1)**2,-SHR*WDTP(0))
+          CALL SPWIDT(3200113,SH,WDTP,WDTE)
+          ZTC(5,5)=DCMPLX(SH-PMAS(SPCOMP(3200113),1)**2,-SHR*WDTP(0))
+          CALL SPWIDT(3300113,SH,WDTP,WDTE)
+          ZTC(6,6)=DCMPLX(SH-PMAS(SPCOMP(3300113),1)**2,-SHR*WDTP(0))
           ZTC(1,2)=(0D0,0D0)
           ZTC(1,3)=DCMPLX(SH*XIG,0D0)
           ZTC(1,4)=ZTC(1,3)
@@ -23653,7 +23653,7 @@ C.........SH LOOP
                ZTC(J,I)=ZTC(I,J)
   100       CONTINUE
   110     CONTINUE
-          CALL PYLDCM(ZTC,6,6,INDX,D)
+          CALL SPLDCM(ZTC,6,6,INDX,D)
           DO 130 I=1,6
             DO 120 J=1,6
              YTC(I,J)=(0D0,0D0)
@@ -23662,20 +23662,20 @@ C.........SH LOOP
   130     CONTINUE
  
           DO 140 I=1,6
-            CALL PYBKSB(ZTC,6,6,INDX,YTC(1,I))
+            CALL SPBKSB(ZTC,6,6,INDX,YTC(1,I))
   140     CONTINUE
           DGGS=YTC(1,1)
           DVVS=YTC(2,2)
           DGVS=YTC(1,2)
  
-          XIG=SQRT(PYALPS(-TH)/ALPRHT)
+          XIG=SQRT(SPALPS(-TH)/ALPRHT)
 C.........TH LOOP
           ZTC(1,1)=DCMPLX(TH)
-          ZTC(2,2)=DCMPLX(TH-PMAS(PYCOMP(3100021),1)**2)
-          ZTC(3,3)=DCMPLX(TH-PMAS(PYCOMP(3100113),1)**2)
-          ZTC(4,4)=DCMPLX(TH-PMAS(PYCOMP(3400113),1)**2)
-          ZTC(5,5)=DCMPLX(TH-PMAS(PYCOMP(3200113),1)**2)
-          ZTC(6,6)=DCMPLX(TH-PMAS(PYCOMP(3300113),1)**2)
+          ZTC(2,2)=DCMPLX(TH-PMAS(SPCOMP(3100021),1)**2)
+          ZTC(3,3)=DCMPLX(TH-PMAS(SPCOMP(3100113),1)**2)
+          ZTC(4,4)=DCMPLX(TH-PMAS(SPCOMP(3400113),1)**2)
+          ZTC(5,5)=DCMPLX(TH-PMAS(SPCOMP(3200113),1)**2)
+          ZTC(6,6)=DCMPLX(TH-PMAS(SPCOMP(3300113),1)**2)
           ZTC(1,2)=(0D0,0D0)
           ZTC(1,3)=DCMPLX(TH*XIG,0D0)
           ZTC(1,4)=ZTC(1,3)
@@ -23696,7 +23696,7 @@ C.........TH LOOP
                ZTC(J,I)=ZTC(I,J)
   150       CONTINUE
   160     CONTINUE
-          CALL PYLDCM(ZTC,6,6,INDX,D)
+          CALL SPLDCM(ZTC,6,6,INDX,D)
           DO 180 I=1,6
             DO 170 J=1,6
               YTC(I,J)=(0D0,0D0)
@@ -23704,20 +23704,20 @@ C.........TH LOOP
   170       CONTINUE
   180     CONTINUE
           DO 190 I=1,6
-            CALL PYBKSB(ZTC,6,6,INDX,YTC(1,I))
+            CALL SPBKSB(ZTC,6,6,INDX,YTC(1,I))
   190     CONTINUE
           DGGT=YTC(1,1)
           DVVT=YTC(2,2)
           DGVT=YTC(1,2)
  
-          XIG=SQRT(PYALPS(-UH)/ALPRHT)
+          XIG=SQRT(SPALPS(-UH)/ALPRHT)
 C.........UH LOOP
           ZTC(1,1)=DCMPLX(UH,0D0)
-          ZTC(2,2)=DCMPLX(UH-PMAS(PYCOMP(3100021),1)**2)
-          ZTC(3,3)=DCMPLX(UH-PMAS(PYCOMP(3100113),1)**2)
-          ZTC(4,4)=DCMPLX(UH-PMAS(PYCOMP(3400113),1)**2)
-          ZTC(5,5)=DCMPLX(UH-PMAS(PYCOMP(3200113),1)**2)
-          ZTC(6,6)=DCMPLX(UH-PMAS(PYCOMP(3300113),1)**2)
+          ZTC(2,2)=DCMPLX(UH-PMAS(SPCOMP(3100021),1)**2)
+          ZTC(3,3)=DCMPLX(UH-PMAS(SPCOMP(3100113),1)**2)
+          ZTC(4,4)=DCMPLX(UH-PMAS(SPCOMP(3400113),1)**2)
+          ZTC(5,5)=DCMPLX(UH-PMAS(SPCOMP(3200113),1)**2)
+          ZTC(6,6)=DCMPLX(UH-PMAS(SPCOMP(3300113),1)**2)
           ZTC(1,2)=(0D0,0D0)
           ZTC(1,3)=DCMPLX(UH*XIG,0D0)
           ZTC(1,4)=ZTC(1,3)
@@ -23738,7 +23738,7 @@ C.........UH LOOP
                ZTC(J,I)=ZTC(I,J)
   200       CONTINUE
   210     CONTINUE
-          CALL PYLDCM(ZTC,6,6,INDX,D)
+          CALL SPLDCM(ZTC,6,6,INDX,D)
           DO 230 I=1,6
             DO 220 J=1,6
               YTC(I,J)=(0D0,0D0)
@@ -23746,7 +23746,7 @@ C.........UH LOOP
   220       CONTINUE
   230     CONTINUE
           DO 240 I=1,6
-            CALL PYBKSB(ZTC,6,6,INDX,YTC(1,I))
+            CALL SPBKSB(ZTC,6,6,INDX,YTC(1,I))
   240     CONTINUE
           DGGU=YTC(1,1)
           DVVU=YTC(2,2)
@@ -23798,8 +23798,8 @@ C...Differential cross section expressions.
       IF(ISUB.LE.190) THEN
         IF(ISUB.EQ.149) THEN
 C...g + g -> eta_tc
-          KCTC=PYCOMP(KTECHN+331)
-          CALL PYWIDT(KTECHN+331,SH,WDTP,WDTE)
+          KCTC=SPCOMP(KTECHN+331)
+          CALL SPWIDT(KTECHN+331,SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           FACBW=COMFAC*0.5D0/((SH-PMAS(KCTC,1)**2)**2+HS**2)
           IF(ABS(SHR-PMAS(KCTC,1)).GT.PARP(48)*PMAS(KCTC,2)) FACBW=0D0
@@ -23902,9 +23902,9 @@ C...q + q'bar -> l + nu_l (including contact term for compositeness)
       ELSEIF(ISUB.LE.200) THEN
         IF(ISUB.EQ.191) THEN
 C...q + qbar -> rho_tc0.
-          KCTC=PYCOMP(KTECHN+113)
+          KCTC=SPCOMP(KTECHN+113)
           SQMRHT=PMAS(KCTC,1)**2
-          CALL PYWIDT(KTECHN+113,SH,WDTP,WDTE)
+          CALL SPWIDT(KTECHN+113,SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           FACBW=12D0*COMFAC/((SH-SQMRHT)**2+HS**2)
           IF(ABS(SHR-PMAS(KCTC,1)).GT.PARP(48)*PMAS(KCTC,2)) FACBW=0D0
@@ -23934,9 +23934,9 @@ C...q + qbar -> rho_tc0.
  
         ELSEIF(ISUB.EQ.192) THEN
 C...q + qbar' -> rho_tc+/-.
-          KCTC=PYCOMP(KTECHN+213)
+          KCTC=SPCOMP(KTECHN+213)
           SQMRHT=PMAS(KCTC,1)**2
-          CALL PYWIDT(KTECHN+213,SH,WDTP,WDTE)
+          CALL SPWIDT(KTECHN+213,SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           FACBW=12D0*COMFAC/((SH-SQMRHT)**2+HS**2)
           IF(ABS(SHR-PMAS(KCTC,1)).GT.PARP(48)*PMAS(KCTC,2)) FACBW=0D0
@@ -23966,9 +23966,9 @@ C...q + qbar' -> rho_tc+/-.
  
         ELSEIF(ISUB.EQ.193) THEN
 C...q + qbar -> omega_tc0.
-          KCTC=PYCOMP(KTECHN+223)
+          KCTC=SPCOMP(KTECHN+223)
           SQMOMT=PMAS(KCTC,1)**2
-          CALL PYWIDT(KTECHN+223,SH,WDTP,WDTE)
+          CALL SPWIDT(KTECHN+223,SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           FACBW=12D0*COMFAC/((SH-SQMOMT)**2+HS**2)
           IF(ABS(SHR-PMAS(KCTC,1)).GT.PARP(48)*PMAS(KCTC,2)) FACBW=0D0
@@ -24013,12 +24013,12 @@ C...f + fbar -> f' + fbar' via s-channel rho_tc and omega_tc.
           SFAO=FAO**2
           SFZR=FZR**2
           SFZO=FZO**2
-          CALL PYWIDT(23,SH,WDTP,WDTE)
+          CALL SPWIDT(23,SH,WDTP,WDTE)
           SSMZ=DCMPLX(1D0-PMAS(23,1)**2/SH,WDTP(0)/SHR)
-          CALL PYWIDT(KTECHN+113,SH,WDTP,WDTE)
-          SSMR=DCMPLX(1D0-PMAS(PYCOMP(KTECHN+113),1)**2/SH,WDTP(0)/SHR)
-          CALL PYWIDT(KTECHN+223,SH,WDTP,WDTE)
-          SSMO=DCMPLX(1D0-PMAS(PYCOMP(KTECHN+223),1)**2/SH,WDTP(0)/SHR)
+          CALL SPWIDT(KTECHN+113,SH,WDTP,WDTE)
+          SSMR=DCMPLX(1D0-PMAS(SPCOMP(KTECHN+113),1)**2/SH,WDTP(0)/SHR)
+          CALL SPWIDT(KTECHN+223,SH,WDTP,WDTE)
+          SSMO=DCMPLX(1D0-PMAS(SPCOMP(KTECHN+223),1)**2/SH,WDTP(0)/SHR)
           DETD=(FAR*FZO-FAO*FZR)**2+SSMZ*SSMR*SSMO-SFZR*SSMO-
      $    SFZO*SSMR-SFAR*SSMO*SSMZ-SFAO*SSMR*SSMZ
           DAA=(-Sfzr*SSMO - Sfzo*SSMR + SSMO*SSMR*SSMZ)/DETD/SH
@@ -24071,10 +24071,10 @@ C...f + fbar' -> f'' + fbar''' via s-channel rho_tc+
           FACTC=COMFAC*(AEM**2/12D0/XW**2)*(UH-SQM3)*(UH-SQM4)*3D0
  
           FWR=SQRT(AEM/ALPRHT)/(2D0*SQRT(XW))
-          CALL PYWIDT(24,SH,WDTP,WDTE)
+          CALL SPWIDT(24,SH,WDTP,WDTE)
           SSMZ=DCMPLX(1D0-PMAS(24,1)**2/SH,WDTP(0)/SHR)
-          CALL PYWIDT(KTECHN+213,SH,WDTP,WDTE)
-          SSMR=DCMPLX(1D0-PMAS(PYCOMP(KTECHN+213),1)**2/SH,WDTP(0)/SHR)
+          CALL SPWIDT(KTECHN+213,SH,WDTP,WDTE)
+          SSMR=DCMPLX(1D0-PMAS(SPCOMP(KTECHN+213),1)**2/SH,WDTP(0)/SHR)
  
           FCOF=1D0
           IF(KFA.LE.8) FCOF=3D0
@@ -24116,12 +24116,12 @@ C...f + fbar -> W_L W_L, W_L pi_tc, pi_tc pi_tc
           SFAO=FAO**2
           SFZR=FZR**2
           SFZO=FZO**2
-          CALL PYWIDT(23,SH,WDTP,WDTE)
+          CALL SPWIDT(23,SH,WDTP,WDTE)
           SSMZ=DCMPLX(1D0-PMAS(23,1)**2/SH,WDTP(0)/SHR)
-          CALL PYWIDT(KTECHN+113,SH,WDTP,WDTE)
-          SSMR=DCMPLX(1D0-PMAS(PYCOMP(KTECHN+113),1)**2/SH,WDTP(0)/SHR)
-          CALL PYWIDT(KTECHN+223,SH,WDTP,WDTE)
-          SSMO=DCMPLX(1D0-PMAS(PYCOMP(KTECHN+223),1)**2/SH,WDTP(0)/SHR)
+          CALL SPWIDT(KTECHN+113,SH,WDTP,WDTE)
+          SSMR=DCMPLX(1D0-PMAS(SPCOMP(KTECHN+113),1)**2/SH,WDTP(0)/SHR)
+          CALL SPWIDT(KTECHN+223,SH,WDTP,WDTE)
+          SSMO=DCMPLX(1D0-PMAS(SPCOMP(KTECHN+223),1)**2/SH,WDTP(0)/SHR)
           DETD=(FAR*FZO-FAO*FZR)**2+SSMZ*SSMR*SSMO-SFZR*SSMO-
      $    SFZO*SSMR-SFAR*SSMO*SSMZ-SFAO*SSMR*SSMZ
           DARHO=-(-FAR*SFZO+FAO*FZO*FZR+FAR*SSMO*SSMZ)/DETD/SH
@@ -24149,14 +24149,14 @@ C...f + fbar -> W_L W_L, W_L pi_tc, pi_tc pi_tc
             ISIG(NCHN,2)=-I
             ISIG(NCHN,3)=1
             IF(KFA.EQ.KFB) THEN
-               SIGH(NCHN)=HI*HP*WIDS(PYCOMP(KFA),1)
+               SIGH(NCHN)=HI*HP*WIDS(SPCOMP(KFA),1)
             ELSE
-               SIGH(NCHN)=HI*HP*WIDS(PYCOMP(KFA),2)*WIDS(PYCOMP(KFB),3)
+               SIGH(NCHN)=HI*HP*WIDS(SPCOMP(KFA),2)*WIDS(SPCOMP(KFB),3)
                NCHN=NCHN+1
                ISIG(NCHN,1)=I
                ISIG(NCHN,2)=-I
                ISIG(NCHN,3)=2
-               SIGH(NCHN)=HI*HP*WIDS(PYCOMP(KFA),3)*WIDS(PYCOMP(KFB),2)
+               SIGH(NCHN)=HI*HP*WIDS(SPCOMP(KFA),3)*WIDS(SPCOMP(KFB),2)
             ENDIF
   360     CONTINUE
  
@@ -24177,12 +24177,12 @@ C...W pi_tc
           SFAO=FAO**2
           SFZR=FZR**2
           SFZO=FZO**2
-          CALL PYWIDT(23,SH,WDTP,WDTE)
+          CALL SPWIDT(23,SH,WDTP,WDTE)
           SSMZ=DCMPLX(1D0-PMAS(23,1)**2/SH,WDTP(0)/SHR)
-          CALL PYWIDT(KTECHN+113,SH,WDTP,WDTE)
-          SSMR=DCMPLX(1D0-PMAS(PYCOMP(KTECHN+113),1)**2/SH,WDTP(0)/SHR)
-          CALL PYWIDT(KTECHN+223,SH,WDTP,WDTE)
-          SSMO=DCMPLX(1D0-PMAS(PYCOMP(KTECHN+223),1)**2/SH,WDTP(0)/SHR)
+          CALL SPWIDT(KTECHN+113,SH,WDTP,WDTE)
+          SSMR=DCMPLX(1D0-PMAS(SPCOMP(KTECHN+113),1)**2/SH,WDTP(0)/SHR)
+          CALL SPWIDT(KTECHN+223,SH,WDTP,WDTE)
+          SSMO=DCMPLX(1D0-PMAS(SPCOMP(KTECHN+223),1)**2/SH,WDTP(0)/SHR)
           DETD=(FAR*FZO-FAO*FZR)**2+SSMZ*SSMR*SSMO-SFZR*SSMO-
      $    SFZO*SSMR-SFAR*SSMO*SSMZ-SFAO*SSMR*SSMZ
           DARHO=(-FAR*SFZO+FAO*FZO*FZR+FAR*SSMO*SSMZ)/DETD/SH
@@ -24223,14 +24223,14 @@ C...........Add in anomaly contribution
             ISIG(NCHN,2)=-I
             ISIG(NCHN,3)=1
             IF(ISUBSV.NE.368) THEN
-               SIGH(NCHN)=HI*HP*WIDS(PYCOMP(KFA),2)*WIDS(PYCOMP(KFB),2)
+               SIGH(NCHN)=HI*HP*WIDS(SPCOMP(KFA),2)*WIDS(SPCOMP(KFB),2)
             ELSE
-               SIGH(NCHN)=HI*HP*WIDS(PYCOMP(KFA),2)*WIDS(PYCOMP(KFB),3)
+               SIGH(NCHN)=HI*HP*WIDS(SPCOMP(KFA),2)*WIDS(SPCOMP(KFB),3)
                NCHN=NCHN+1
                ISIG(NCHN,1)=I
                ISIG(NCHN,2)=-I
                ISIG(NCHN,3)=2
-               SIGH(NCHN)=HI*HP*WIDS(PYCOMP(KFA),3)*WIDS(PYCOMP(KFB),2)
+               SIGH(NCHN)=HI*HP*WIDS(SPCOMP(KFA),3)*WIDS(SPCOMP(KFB),2)
             ENDIF
   370     CONTINUE
  
@@ -24241,10 +24241,10 @@ C...f + fbar' -> W_L Z_L, W_L pi_tc, Z_L pi_tc, pi_tc pi_tc
           ALPRHT=2.91D0*(3D0/ITCM(1))
           HP=(1D0/96D0)*AEM**2*CAB2*COMFAC*FACA*3D0/XW**2
           FWR=SQRT(AEM/ALPRHT)/(2D0*SQRT(XW))
-          CALL PYWIDT(24,SH,WDTP,WDTE)
+          CALL SPWIDT(24,SH,WDTP,WDTE)
           SSMZ=DCMPLX(1D0-PMAS(24,1)**2/SH,WDTP(0)/SHR)
-          CALL PYWIDT(KTECHN+213,SH,WDTP,WDTE)
-          SSMR=DCMPLX(1D0-PMAS(PYCOMP(KTECHN+213),1)**2/SH,WDTP(0)/SHR)
+          CALL SPWIDT(KTECHN+213,SH,WDTP,WDTE)
+          SSMR=DCMPLX(1D0-PMAS(SPCOMP(KTECHN+213),1)**2/SH,WDTP(0)/SHR)
           DETD=SSMZ*SSMR-DCMPLX(FWR**2,0D0)
           DWW=SSMR/DETD/SH
           DWRHO=-1D0/DETD/SH
@@ -24265,8 +24265,8 @@ C...f + fbar' -> W_L Z_L, W_L pi_tc, Z_L pi_tc, pi_tc pi_tc
               ISIG(NCHN,1)=I
               ISIG(NCHN,2)=J
               ISIG(NCHN,3)=1
-              SIGH(NCHN)=HI*WIDS(PYCOMP(KFA),(5-KCHR)/2)*
-     &        WIDS(PYCOMP(KFB),2)
+              SIGH(NCHN)=HI*WIDS(SPCOMP(KFA),(5-KCHR)/2)*
+     &        WIDS(SPCOMP(KFB),2)
   380       CONTINUE
   390     CONTINUE
  
@@ -24278,10 +24278,10 @@ C...f + fbar' -> gamma pi_tc
           ALPRHT=2.91D0*(3D0/ITCM(1))
           HP=(1D0/48D0)*AEM**2/XW*COMFAC*3D0*SH
           FWR=SQRT(AEM/ALPRHT)/(2D0*SQRT(XW))
-          CALL PYWIDT(24,SH,WDTP,WDTE)
+          CALL SPWIDT(24,SH,WDTP,WDTE)
           SSMZ=DCMPLX(1D0-PMAS(24,1)**2/SH,WDTP(0)/SHR)
-          CALL PYWIDT(KTECHN+213,SH,WDTP,WDTE)
-          SSMR=DCMPLX(1D0-PMAS(PYCOMP(KTECHN+213),1)**2/SH,WDTP(0)/SHR)
+          CALL SPWIDT(KTECHN+213,SH,WDTP,WDTE)
+          SSMR=DCMPLX(1D0-PMAS(SPCOMP(KTECHN+213),1)**2/SH,WDTP(0)/SHR)
           DETD=SSMZ*SSMR-DCMPLX(FWR**2,0D0)
           DWW=SSMR/DETD/SH
           DWRHO=-DCMPLX(FWR,0D0)/DETD/SH
@@ -24303,8 +24303,8 @@ C...f + fbar' -> gamma pi_tc
               ISIG(NCHN,1)=I
               ISIG(NCHN,2)=J
               ISIG(NCHN,3)=1
-              SIGH(NCHN)=HI*WIDS(PYCOMP(KFA),(5-KCHR)/2)*
-     &        WIDS(PYCOMP(KFB),2)
+              SIGH(NCHN)=HI*WIDS(SPCOMP(KFA),(5-KCHR)/2)*
+     &        WIDS(SPCOMP(KFB),2)
   400       CONTINUE
   410     CONTINUE
         ENDIF
@@ -24373,7 +24373,7 @@ CSM            RATCII=1D0
  
         ELSEIF(ISUB.EQ.382) THEN
 C...f + fbar -> f' + fbar' (q + qbar -> q' + qbar' only)
-          CALL PYWIDT(21,SH,WDTP,WDTE)
+          CALL SPWIDT(21,SH,WDTP,WDTE)
           FACQQF=COMFAC*AS**2*4D0/9D0*(TH2+UH2)
           FACQQB=FACQQF*SQDQQS*(WDTE(0,1)+WDTE(0,2)+WDTE(0,4))
           IF(ITCM(5).EQ.1) THEN
@@ -24615,7 +24615,7 @@ C...q + qbar -> Q + Qbar
               FACQQB=FACQQB*SH2*SQDQQS
             ENDIF
           ENDIF
-          IF(MSTP(35).GE.1) FACQQB=FACQQB*PYHFTH(SH,SQMAVG,0D0)
+          IF(MSTP(35).GE.1) FACQQB=FACQQB*SPHFTH(SH,SQMAVG,0D0)
           WID2=1D0
           IF(MINT(55).EQ.6) WID2=WIDS(6,1)
           IF(MINT(55).EQ.7.OR.MINT(55).EQ.8) WID2=WIDS(MINT(55),1)
@@ -24661,7 +24661,7 @@ C...g + g -> Q + Qbar
           FACQQ1=COMFAC*FACA*AS**2*(1D0/6D0)*FACQQ1
           FACQQ2=COMFAC*FACA*AS**2*(1D0/6D0)*FACQQ2
           IF(MSTP(35).GE.1) THEN
-            FATRE=PYHFTH(SH,SQMAVG,2D0/7D0)
+            FATRE=SPHFTH(SH,SQMAVG,2D0/7D0)
             FACQQ1=FACQQ1*FATRE
             FACQQ2=FACQQ2*FATRE
           ENDIF
@@ -24692,36 +24692,36 @@ CMRENNA--
  
 C*********************************************************************
  
-C...PYSGEX
+C...SPSGEX
 C...Subprocess cross sections for assorted exotic processes,
 C...including Z'/W'/LQ/R/f*/H++/Z_R/W_R/G*.
-C...Auxiliary to PYSIGH.
+C...Auxiliary to SPSIGH.
  
-      SUBROUTINE PYSGEX(NCHN,SIGS)
+      SUBROUTINE SPSGEX(NCHN,SIGS)
  
 C...Double precision and integer declarations
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      COMMON/PYINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
-      COMMON/PYINT4/MWID(500),WIDS(500,5)
-      COMMON/PYTCSM/ITCM(0:99),RTCM(0:99)
-      COMMON/PYSGCM/ISUB,ISUBSV,MMIN1,MMAX1,MMIN2,MMAX2,MMINA,MMAXA,
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      COMMON/SPINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
+      COMMON/SPINT4/MWID(500),WIDS(500,5)
+      COMMON/SPTCSM/ITCM(0:99),RTCM(0:99)
+      COMMON/SPSGCM/ISUB,ISUBSV,MMIN1,MMAX1,MMIN2,MMAX2,MMINA,MMAXA,
      &KFAC(2,-40:40),COMFAC,FACK,FACA,SH,TH,UH,SH2,TH2,UH2,SQM3,SQM4,
      &SHR,SQPTH,TAUP,BE34,CTH,SQMZ,SQMW,GMMZ,GMMW,
      &AEM,AS,XW,XW1,XWC,XWV,POLL,POLR,POLLL,POLRR
-      SAVE /PYDAT1/,/PYDAT2/,/PYDAT3/,/PYPARS/,/PYINT1/,/PYINT2/,
-     &/PYINT3/,/PYINT4/,/PYTCSM/,/PYSGCM/
+      SAVE /SPDAT1/,/SPDAT2/,/SPDAT3/,/SPPARS/,/SPINT1/,/SPINT2/,
+     &/SPINT3/,/SPINT4/,/SPTCSM/,/SPSGCM/
 C...Local arrays
       DIMENSION WDTP(0:400),WDTE(0:400,0:5)
  
@@ -24732,7 +24732,7 @@ C...Differential cross section expressions.
 C...f + fbar -> gamma*/Z0/Z'0
           SQMZP=PMAS(32,1)**2
           MINT(61)=2
-          CALL PYWIDT(32,SH,WDTP,WDTE)
+          CALL SPWIDT(32,SH,WDTP,WDTE)
           HP0=AEM/3D0*SH
           HP1=AEM/3D0*XWC*SH
           HP2=HP1
@@ -24791,7 +24791,7 @@ C...f + fbar -> gamma*/Z0/Z'0
         ELSEIF(ISUB.EQ.142) THEN
 C...f + fbar' -> W'+/-
           SQMWP=PMAS(34,1)**2
-          CALL PYWIDT(34,SH,WDTP,WDTE)
+          CALL SPWIDT(34,SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           FACBW=4D0*COMFAC/((SH-SQMWP)**2+HS**2)*3D0
           HP=AEM/(24D0*XW)*SH
@@ -24820,7 +24820,7 @@ C...f + fbar' -> W'+/-
         ELSEIF(ISUB.EQ.144) THEN
 C...f + fbar' -> R
           SQMR=PMAS(41,1)**2
-          CALL PYWIDT(41,SH,WDTP,WDTE)
+          CALL SPWIDT(41,SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           FACBW=4D0*COMFAC/((SH-SQMR)**2+HS**2)*3D0
           HP=AEM/(12D0*XW)*SH
@@ -24845,7 +24845,7 @@ C...f + fbar' -> R
         ELSEIF(ISUB.EQ.145) THEN
 C...q + l -> LQ (leptoquark)
           SQMLQ=PMAS(42,1)**2
-          CALL PYWIDT(42,SH,WDTP,WDTE)
+          CALL SPWIDT(42,SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           FACBW=4D0*COMFAC/((SH-SQMLQ)**2+HS**2)
           IF(ABS(SHR-PMAS(42,1)).GT.PARP(48)*PMAS(42,2)) FACBW=0D0
@@ -24877,9 +24877,9 @@ C...q + l -> LQ (leptoquark)
         ELSEIF(ISUB.EQ.146) THEN
 C...e + gamma* -> e* (excited lepton)
           KFQSTR=KFPR(ISUB,1)
-          KCQSTR=PYCOMP(KFQSTR)
+          KCQSTR=SPCOMP(KFQSTR)
           KFQEXC=MOD(KFQSTR,KEXCIT)
-          CALL PYWIDT(KFQSTR,SH,WDTP,WDTE)
+          CALL SPWIDT(KFQSTR,SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           FACBW=COMFAC/((SH-PMAS(KCQSTR,1)**2)**2+HS**2)
           QF=-RTCM(43)/2D0-RTCM(44)/2D0
@@ -24905,9 +24905,9 @@ C...e + gamma* -> e* (excited lepton)
         ELSEIF(ISUB.EQ.147.OR.ISUB.EQ.148) THEN
 C...d + g -> d* and u + g -> u* (excited quarks)
           KFQSTR=KFPR(ISUB,1)
-          KCQSTR=PYCOMP(KFQSTR)
+          KCQSTR=SPCOMP(KFQSTR)
           KFQEXC=MOD(KFQSTR,KEXCIT)
-          CALL PYWIDT(KFQSTR,SH,WDTP,WDTE)
+          CALL SPWIDT(KFQSTR,SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           FACBW=COMFAC/((SH-PMAS(KCQSTR,1)**2)**2+HS**2)
           FACBW=FACBW*AS*RTCM(45)**2*SH/(3D0*RTCM(41)**2)
@@ -24963,7 +24963,7 @@ C...g + g -> LQ + LQbar; LQ=leptoquark
           ISIG(NCHN,1)=21
           ISIG(NCHN,2)=21
 C...Since don't know proper colour flow, randomize between alternatives
-          ISIG(NCHN,3)=INT(1.5D0+PYR(0))
+          ISIG(NCHN,3)=INT(1.5D0+SPR(0))
           SIGH(NCHN)=FACLQ
   230     CONTINUE
  
@@ -24994,15 +24994,15 @@ C          SQMLQ=PMAS(42,1)**2
         ELSEIF(ISUB.EQ.167.OR.ISUB.EQ.168) THEN
 C...q + q' -> q" + d* and q + q' -> q" + u* (excited quarks)
           KFQSTR=KFPR(ISUB,2)
-          KCQSTR=PYCOMP(KFQSTR)
+          KCQSTR=SPCOMP(KFQSTR)
           KFQEXC=MOD(KFQSTR,KEXCIT)
           FACQSA=COMFAC*(SH/RTCM(41)**2)**2*(1D0-SQM4/SH)
           FACQSB=COMFAC*0.25D0*(SH/RTCM(41)**2)**2*(1D0-SQM4/SH)*
      &    (1D0+SQM4/SH)*(1D0+CTH)*(1D0+((SH-SQM4)/(SH+SQM4))*CTH)
-C...Propagators: as simulated in PYOFSH and as desired
+C...Propagators: as simulated in SPOFSH and as desired
           GMMQ=PMAS(KCQSTR,1)*PMAS(KCQSTR,2)
           HBW4=GMMQ/((SQM4-PMAS(KCQSTR,1)**2)**2+GMMQ**2)
-          CALL PYWIDT(KFQSTR,SQM4,WDTP,WDTE)
+          CALL SPWIDT(KFQSTR,SQM4,WDTP,WDTE)
           GMMQC=SQRT(SQM4)*WDTP(0)
           HBW4C=GMMQC/((SQM4-PMAS(KCQSTR,1)**2)**2+GMMQC**2)
           FACQSA=FACQSA*HBW4C/HBW4
@@ -25078,14 +25078,14 @@ C...Branching ratios.
         ELSEIF(ISUB.EQ.169) THEN
 C...q + qbar -> e + e* (excited lepton)
           KFQSTR=KFPR(ISUB,2)
-          KCQSTR=PYCOMP(KFQSTR)
+          KCQSTR=SPCOMP(KFQSTR)
           KFQEXC=MOD(KFQSTR,KEXCIT)
           FACQSB=(COMFAC/12D0)*(SH/RTCM(41)**2)**2*(1D0-SQM4/SH)*
      &    (1D0+SQM4/SH)*(1D0+CTH)*(1D0+((SH-SQM4)/(SH+SQM4))*CTH)
-C...Propagators: as simulated in PYOFSH and as desired
+C...Propagators: as simulated in SPOFSH and as desired
           GMMQ=PMAS(KCQSTR,1)*PMAS(KCQSTR,2)
           HBW4=GMMQ/((SQM4-PMAS(KCQSTR,1)**2)**2+GMMQ**2)
-          CALL PYWIDT(KFQSTR,SQM4,WDTP,WDTE)
+          CALL SPWIDT(KFQSTR,SQM4,WDTP,WDTE)
           GMMQC=SQRT(SQM4)*WDTP(0)
           HBW4C=GMMQC/((SQM4-PMAS(KCQSTR,1)**2)**2+GMMQC**2)
           FACQSB=FACQSB*HBW4C/HBW4
@@ -25117,8 +25117,8 @@ C...Branching ratios.
         IF(ISUB.EQ.341.OR.ISUB.EQ.342) THEN
 C...l + l -> H_L++/-- or H_R++/--.
           KFRES=KFPR(ISUB,1)
-          KFREC=PYCOMP(KFRES)
-          CALL PYWIDT(KFRES,SH,WDTP,WDTE)
+          KFREC=SPCOMP(KFRES)
+          CALL SPWIDT(KFRES,SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           FACBW=8D0*COMFAC/((SH-PMAS(KFREC,1)**2)**2+HS**2)
           DO 290 I=MMIN1,MMAX1
@@ -25144,11 +25144,11 @@ C...l + l -> H_L++/-- or H_R++/--.
         ELSEIF(ISUB.GE.343.AND.ISUB.LE.348) THEN
 C...l + gamma -> H_L++/-- l' or l + gamma -> H_R++/-- l'.
           KFRES=KFPR(ISUB,1)
-          KFREC=PYCOMP(KFRES)
-C...Propagators: as simulated in PYOFSH and as desired
+          KFREC=SPCOMP(KFRES)
+C...Propagators: as simulated in SPOFSH and as desired
           HBW3=PMAS(KFREC,1)*PMAS(KFREC,2)/((SQM3-PMAS(KFREC,1)**2)**2+
      &    (PMAS(KFREC,1)*PMAS(KFREC,2))**2)
-          CALL PYWIDT(KFRES,SQM3,WDTP,WDTE)
+          CALL SPWIDT(KFRES,SQM3,WDTP,WDTE)
           GMMC=SQRT(SQM3)*WDTP(0)
           HBW3C=GMMC/((SQM3-PMAS(KFREC,1)**2)**2+GMMC**2)
           FHCC=COMFAC*AEM*HBW3C/HBW3
@@ -25190,16 +25190,16 @@ C...Propagators: as simulated in PYOFSH and as desired
         ELSEIF(ISUB.EQ.349.OR.ISUB.EQ.350) THEN
 C...f + fbar -> H_L++ + H_L-- or H_R++ + H_R--
           KFRES=KFPR(ISUB,1)
-          KFREC=PYCOMP(KFRES)
+          KFREC=SPCOMP(KFRES)
           SQMH=PMAS(KFREC,1)**2
           GMMH=PMAS(KFREC,1)*PMAS(KFREC,2)
-C...Propagators: H++/-- as simulated in PYOFSH and as desired
+C...Propagators: H++/-- as simulated in SPOFSH and as desired
           HBW3=GMMH/((SQM3-SQMH)**2+GMMH**2)
-          CALL PYWIDT(KFRES,SQM3,WDTP,WDTE)
+          CALL SPWIDT(KFRES,SQM3,WDTP,WDTE)
           GMMH3=SQRT(SQM3)*WDTP(0)
           HBW3C=GMMH3/((SQM3-SQMH)**2+GMMH3**2)
           HBW4=GMMH/((SQM4-SQMH)**2+GMMH**2)
-          CALL PYWIDT(KFRES,SQM4,WDTP,WDTE)
+          CALL SPWIDT(KFRES,SQM4,WDTP,WDTE)
           GMMH4=SQRT(SQM4)*WDTP(0)
           HBW4C=GMMH4/((SQM4-SQMH)**2+GMMH4**2)
 C...Kinematical and coupling functions
@@ -25251,17 +25251,17 @@ C...Loop over allowed flavours
         ELSEIF(ISUB.EQ.351.OR.ISUB.EQ.352) THEN
 C...f + f' -> f" + f"' + H++/-- (W+/- + W+/- -> H++/-- as inner process)
           KFRES=KFPR(ISUB,1)
-          KFREC=PYCOMP(KFRES)
+          KFREC=SPCOMP(KFRES)
           SQMH=PMAS(KFREC,1)**2
           IF(ISUB.EQ.351) FACNOR=PARP(190)**8*PARP(192)**2
           IF(ISUB.EQ.352) FACNOR=PARP(191)**6*2D0*
-     &    PMAS(PYCOMP(9900024),1)**2
+     &    PMAS(SPCOMP(9900024),1)**2
           FACWW=COMFAC*FACNOR*TAUP*VINT(2)*VINT(219)
           FACPRT=1D0/((VINT(204)**2-VINT(215))*
      &    (VINT(209)**2-VINT(216)))
           FACPRU=1D0/((VINT(204)**2+2D0*VINT(217))*
      &    (VINT(209)**2+2D0*VINT(218)))
-          CALL PYWIDT(KFRES,SH,WDTP,WDTE)
+          CALL SPWIDT(KFRES,SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           FACBW=(1D0/PARU(1))*VINT(2)/((SH-SQMH)**2+HS**2)
           IF(ABS(SHR-PMAS(KFREC,1)).GT.PARP(48)*PMAS(KFREC,2))
@@ -25293,8 +25293,8 @@ C...f + f' -> f" + f"' + H++/-- (W+/- + W+/- -> H++/-- as inner process)
  
         ELSEIF(ISUB.EQ.353) THEN
 C...f + fbar -> Z_R0
-          SQMZR=PMAS(PYCOMP(KFPR(ISUB,1)),1)**2
-          CALL PYWIDT(KFPR(ISUB,1),SH,WDTP,WDTE)
+          SQMZR=PMAS(SPCOMP(KFPR(ISUB,1)),1)**2
+          CALL SPWIDT(KFPR(ISUB,1),SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           FACBW=4D0*COMFAC/((SH-SQMZR)**2+HS**2)*3D0
           HF=SHR*(WDTE(0,1)+WDTE(0,2)+WDTE(0,4))
@@ -25320,8 +25320,8 @@ C...f + fbar -> Z_R0
  
         ELSEIF(ISUB.EQ.354) THEN
 C...f + fbar' -> W_R+/-
-          SQMWR=PMAS(PYCOMP(KFPR(ISUB,1)),1)**2
-          CALL PYWIDT(KFPR(ISUB,1),SH,WDTP,WDTE)
+          SQMWR=PMAS(SPCOMP(KFPR(ISUB,1)),1)**2
+          CALL SPWIDT(KFPR(ISUB,1),SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           FACBW=4D0*COMFAC/((SH-SQMWR)**2+HS**2)*3D0
           HP=AEM/(24D0*XW)*SH
@@ -25351,8 +25351,8 @@ C...f + fbar' -> W_R+/-
         IF(ISUB.EQ.391) THEN
 C...f + fbar -> G*.
           KFGSTR=KFPR(ISUB,1)
-          KCGSTR=PYCOMP(KFGSTR)
-          CALL PYWIDT(KFGSTR,SH,WDTP,WDTE)
+          KCGSTR=SPCOMP(KFGSTR)
+          CALL SPWIDT(KFGSTR,SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           HF=SHR*(WDTE(0,1)+WDTE(0,2)+WDTE(0,4))
           FACG=COMFAC*PARP(50)**2/(16D0*PARU(1))*SH*HF/
@@ -25371,8 +25371,8 @@ C...f + fbar -> G*.
         ELSEIF(ISUB.EQ.392) THEN
 C...g + g -> G*.
           KFGSTR=KFPR(ISUB,1)
-          KCGSTR=PYCOMP(KFGSTR)
-          CALL PYWIDT(KFGSTR,SH,WDTP,WDTE)
+          KCGSTR=SPCOMP(KFGSTR)
+          CALL SPWIDT(KFGSTR,SH,WDTP,WDTE)
           HS=SHR*WDTP(0)
           HF=SHR*(WDTE(0,1)+WDTE(0,2)+WDTE(0,4))
           FACG=COMFAC*PARP(50)**2/(32D0*PARU(1))*SH*HF/
@@ -25388,15 +25388,15 @@ C...g + g -> G*.
         ELSEIF(ISUB.EQ.393) THEN
 C...q + qbar -> g + G*.
           KFGSTR=KFPR(ISUB,2)
-          KCGSTR=PYCOMP(KFGSTR)
+          KCGSTR=SPCOMP(KFGSTR)
           FACG=COMFAC*PARP(50)**2*AS*SH/(72D0*PARU(1)*SQM4)*
      &    (4D0*(TH2+UH2)/SH2+9D0*(TH+UH)/SH+(TH2/UH+UH2/TH)/SH+
      &    3D0*(4D0+TH/UH+UH/TH)+4D0*(SH/UH+SH/TH)+
      &    2D0*SH2/(TH*UH))
-C...Propagators: as simulated in PYOFSH and as desired
+C...Propagators: as simulated in SPOFSH and as desired
           GMMG=PMAS(KCGSTR,1)*PMAS(KCGSTR,2)
           HBW4=GMMG/((SQM4-PMAS(KCGSTR,1)**2)**2+GMMG**2)
-          CALL PYWIDT(KFGSTR,SQM4,WDTP,WDTE)
+          CALL SPWIDT(KFGSTR,SQM4,WDTP,WDTE)
           HS=SQRT(SQM4)*WDTP(0)
           HF=SQRT(SQM4)*(WDTE(0,1)+WDTE(0,2)+WDTE(0,4))
           HBW4C=HF/((SQM4-PMAS(KCGSTR,1)**2)**2+HS**2)
@@ -25414,15 +25414,15 @@ C...Propagators: as simulated in PYOFSH and as desired
         ELSEIF(ISUB.EQ.394) THEN
 C...q + g -> q + G*.
           KFGSTR=KFPR(ISUB,2)
-          KCGSTR=PYCOMP(KFGSTR)
+          KCGSTR=SPCOMP(KFGSTR)
           FACG=-COMFAC*PARP(50)**2*AS*SH/(192D0*PARU(1)*SQM4)*
      &    (4D0*(SH2+UH2)/(TH*SH)+9D0*(SH+UH)/SH+SH/UH+UH2/SH2+
      &    3D0*TH*(4D0+SH/UH+UH/SH)/SH+4D0*TH2*(1D0/UH+1D0/SH)/SH+
      &    2D0*TH2*TH/(UH*SH2))
-C...Propagators: as simulated in PYOFSH and as desired
+C...Propagators: as simulated in SPOFSH and as desired
           GMMG=PMAS(KCGSTR,1)*PMAS(KCGSTR,2)
           HBW4=GMMG/((SQM4-PMAS(KCGSTR,1)**2)**2+GMMG**2)
-          CALL PYWIDT(KFGSTR,SQM4,WDTP,WDTE)
+          CALL SPWIDT(KFGSTR,SQM4,WDTP,WDTE)
           HS=SQRT(SQM4)*WDTP(0)
           HF=SQRT(SQM4)*(WDTE(0,1)+WDTE(0,2)+WDTE(0,4))
           HBW4C=HF/((SQM4-PMAS(KCGSTR,1)**2)**2+HS**2)
@@ -25443,14 +25443,14 @@ C...Propagators: as simulated in PYOFSH and as desired
         ELSEIF(ISUB.EQ.395) THEN
 C...g + g -> g + G*.
           KFGSTR=KFPR(ISUB,2)
-          KCGSTR=PYCOMP(KFGSTR)
+          KCGSTR=SPCOMP(KFGSTR)
           FACG=COMFAC*3D0*PARP(50)**2*AS*SH/(32D0*PARU(1)*SQM4)*
      &    ((TH2+TH*UH+UH2)**2/(SH2*TH*UH)+2D0*(TH2/UH+UH2/TH)/SH+
      &    3D0*(TH/UH+UH/TH)+2D0*(SH/UH+SH/TH)+SH2/(TH*UH))
-C...Propagators: as simulated in PYOFSH and as desired
+C...Propagators: as simulated in SPOFSH and as desired
           GMMG=PMAS(KCGSTR,1)*PMAS(KCGSTR,2)
           HBW4=GMMG/((SQM4-PMAS(KCGSTR,1)**2)**2+GMMG**2)
-          CALL PYWIDT(KFGSTR,SQM4,WDTP,WDTE)
+          CALL SPWIDT(KFGSTR,SQM4,WDTP,WDTE)
           HS=SQRT(SQM4)*WDTP(0)
           HF=SQRT(SQM4)*(WDTE(0,1)+WDTE(0,2)+WDTE(0,4))
           HBW4C=HF/((SQM4-PMAS(KCGSTR,1)**2)**2+HS**2)
@@ -25470,27 +25470,27 @@ C...Propagators: as simulated in PYOFSH and as desired
  
 C*********************************************************************
  
-C...PYPDFL
+C...SPPDFL
 C...Gives proton parton distribution at small x and/or Q^2 according to
 C...correct limiting behaviour.
  
-      SUBROUTINE PYPDFL(KF,X,Q2,XPQ)
+      SUBROUTINE SPPDFL(KF,X,Q2,XPQ)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      SAVE /PYDAT1/,/PYDAT2/,/PYPARS/,/PYINT1/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      SAVE /SPDAT1/,/SPDAT2/,/SPPARS/,/SPINT1/
 C...Local arrays.
       DIMENSION XPQ(-25:25),XPA(-25:25),XPB(-25:25),WTSB(-3:3)
       DATA RMR/0.92D0/,RMP/0.38D0/,WTSB/0.5D0,1D0,1D0,5D0,1D0,1D0,0.5D0/
  
-C...Send everything but protons/neutrons/VMD pions directly to PYPDFU.
+C...Send everything but protons/neutrons/VMD pions directly to SPPDFU.
       MINT(92)=0
       KFA=IABS(KF)
       IACC=0
@@ -25498,7 +25498,7 @@ C...Send everything but protons/neutrons/VMD pions directly to PYPDFU.
       IF(KFA.EQ.211.AND.MSTP(57).GE.3) IACC=1
       IF(KFA.EQ.22.AND.MINT(109).EQ.2.AND.MSTP(57).GE.3) IACC=1
       IF(IACC.EQ.0) THEN
-        CALL PYPDFU(KF,X,Q2,XPQ)
+        CALL SPPDFU(KF,X,Q2,XPQ)
         RETURN
       ENDIF
  
@@ -25553,7 +25553,7 @@ C...Define valence content.
       ENDIF
  
 C...Do naive evaluation and find min Q^2, boundary Q^2 and x_0.
-      CALL PYPDFU(KFC,X,Q2,XPA)
+      CALL SPPDFU(KFC,X,Q2,XPA)
       Q2MN=MAX(3D0,VINT(231))
       Q2B=2D0+0.052D0**2*EXP(3.56D0*SQRT(MAX(0D0,-LOG(3D0*X))))
       XMN=EXP(-(LOG((Q2MN-2D0)/0.052D0**2)/3.56D0)**2)/3D0
@@ -25569,7 +25569,7 @@ C...Small Q2 and large x: dampen boundary value.
       ELSEIF(X.GT.XMN) THEN
  
 C...Evaluate at boundary and define dampening factors.
-        CALL PYPDFU(KFC,X,Q2MN,XPA)
+        CALL SPPDFU(KFC,X,Q2MN,XPA)
         FV=(Q2*(Q2MN+RMR)/(Q2MN*(Q2+RMR)))**(0.55D0*(1D0-X)/(1D0-XMN))
         FS=(Q2*(Q2MN+RMP)/(Q2MN*(Q2+RMP)))**1.08D0
  
@@ -25605,9 +25605,9 @@ C...Large Q2 and small x: interpolate behaviour.
       ELSEIF(Q2.GT.Q2MN) THEN
  
 C...Evaluate at extremes and define coefficients for interpolation.
-        CALL PYPDFU(KFC,XMN,Q2MN,XPA)
+        CALL SPPDFU(KFC,XMN,Q2MN,XPA)
         VI232A=VINT(232)
-        CALL PYPDFU(KFC,X,Q2B,XPB)
+        CALL SPPDFU(KFC,X,Q2B,XPB)
         VI232B=VINT(232)
         FLA=LOG(Q2B/Q2)/LOG(Q2B/Q2MN)
         FVA=(X/XMN)**0.45D0*FLA
@@ -25654,7 +25654,7 @@ C...Small Q2 and small x: dampen boundary value and add term.
       ELSE
  
 C...Evaluate at boundary and define dampening factors.
-        CALL PYPDFU(KFC,XMN,Q2MN,XPA)
+        CALL SPPDFU(KFC,XMN,Q2MN,XPA)
         FB=(XMN-X)*(Q2MN-Q2)/(XMN*Q2MN)
         FA=1D0-FB
         FVC=(X/XMN)**0.45D0*(Q2/(Q2+RMR))**0.55D0
@@ -25709,21 +25709,21 @@ C...Format for error printout.
  
 C*********************************************************************
  
-C...PYPDEL
+C...SPPDEL
 C...Gives electron (or muon, or tau) parton distribution.
  
-      SUBROUTINE PYPDEL(KFA,X,Q2,XPEL)
+      SUBROUTINE SPPDEL(KFA,X,Q2,XPEL)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      SAVE /PYDAT1/,/PYDAT2/,/PYPARS/,/PYINT1/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      SAVE /SPDAT1/,/SPDAT2/,/SPPARS/,/SPINT1/
 C...Local arrays.
       DIMENSION XPEL(-25:25),XPGA(-6:6),SXP(0:6)
  
@@ -25758,7 +25758,7 @@ C...LEP 1, CERN 89-08, p. 34
      &  4D0*XL/(1D0-X)-5D0-X)
       ELSE
         HEE=HBE2*(1D0-X)**(HBE2-1D0)*EXP(0.172784D0*HBE2)/
-     &  PYGAMM(1D0+HBE2)-0.5D0*HBE2*(1D0+X)+HBE2**2/8D0*((1D0+X)*
+     &  SPGAMM(1D0+HBE2)-0.5D0*HBE2*(1D0+X)+HBE2**2/8D0*((1D0+X)*
      &  (-4D0*X1L+3D0*XL)-4D0*XL/(1D0-X)-5D0-X)
       ENDIF
 C...Zero distribution for very large x and rescale it for intermediate.
@@ -25770,7 +25770,7 @@ C...Zero distribution for very large x and rescale it for intermediate.
       XPEL(KFA)=X*HEE
  
 C...Photon and (transverse) W- inside electron.
-      AEMP=PYALEM(PME*SQRT(MAX(0D0,Q2)))/PARU(2)
+      AEMP=SPALEM(PME*SQRT(MAX(0D0,Q2)))/PARU(2)
       IF(MSTP(13).LE.1) THEN
         HLG=HLE
       ELSE
@@ -25796,7 +25796,7 @@ C...Initialize PDFLIB photon parton distributions.
           PARM(3)='NSET'
           VALUE(3)=MOD(MSTP(55),1000)
           IF(MINT(93).NE.3000000+MSTP(55)) THEN
-            CALL PDFSET(PARM,VALUE)
+            CALL SDFSET(PARM,VALUE)
             MINT(93)=3000000+MSTP(55)
           ENDIF
         ENDIF
@@ -25836,7 +25836,7 @@ C...Evaluate photon inside electron parton distribution for convolution.
 C...Evaluate photon parton distributions for convolution.
           IF(MSTP(56).EQ.1) THEN
             IF(MSTP(55).EQ.1) THEN
-              CALL PYPDGA(XG,Q2,XPGA)
+              CALL SPPDGA(XG,Q2,XPGA)
             ELSEIF(MSTP(55).GE.5.AND.MSTP(55).LE.8) THEN
               Q2MX=Q2
               P2MX=0.36D0
@@ -25844,7 +25844,7 @@ C...Evaluate photon parton distributions for convolution.
               IF(MSTP(57).EQ.0) Q2MX=P2MX
               P2=0D0
               IF(VINT(120).LT.0D0) P2=VINT(120)**2
-              CALL PYGGAM(MSTP(55)-4,XG,Q2MX,P2,MSTP(60),F2GAM,XPGA)
+              CALL SPGGAM(MSTP(55)-4,XG,Q2MX,P2,MSTP(60),F2GAM,XPGA)
               VINT(231)=P2MX
             ELSEIF(MSTP(55).GE.9.AND.MSTP(55).LE.12) THEN
               Q2MX=Q2
@@ -25853,7 +25853,7 @@ C...Evaluate photon parton distributions for convolution.
               IF(MSTP(57).EQ.0) Q2MX=P2MX
               P2=0D0
               IF(VINT(120).LT.0D0) P2=VINT(120)**2
-              CALL PYGGAM(MSTP(55)-8,XG,Q2MX,P2,MSTP(60),F2GAM,XPGA)
+              CALL SPGGAM(MSTP(55)-8,XG,Q2MX,P2,MSTP(60),F2GAM,XPGA)
               VINT(231)=P2MX
             ENDIF
             DO 140 KFL=0,5
@@ -25864,7 +25864,7 @@ C...Call PDFLIB parton distributions.
             XX=XG
             QQ=SQRT(MAX(0D0,Q2MIN,Q2))
             IF(MSTP(57).EQ.0) QQ=SQRT(Q2MIN)
-            CALL STRUCTM(XX,QQ,UPV,DNV,USEA,DSEA,STR,CHM,BOT,TOP,GLU)
+            CALL PTRUCTM(XX,QQ,UPV,DNV,USEA,DSEA,STR,CHM,BOT,TOP,GLU)
             SXP(0)=SXP(0)+WTSTP*XPGP*GLU
             SXP(1)=SXP(1)+WTSTP*XPGP*DNV
             SXP(2)=SXP(2)+WTSTP*XPGP*UPV
@@ -25892,20 +25892,20 @@ C...Put convolution into output arrays.
  
 C*********************************************************************
  
-C...PYPDGA
+C...SPPDGA
 C...Gives photon parton distribution.
  
-      SUBROUTINE PYPDGA(X,Q2,XPGA)
+      SUBROUTINE SPPDGA(X,Q2,XPGA)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      SAVE /PYDAT1/,/PYPARS/,/PYINT1/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      SAVE /SPDAT1/,/SPPARS/,/SPINT1/
 C...Local arrays.
       DIMENSION XPGA(-6:6),DGAG(4,3),DGBG(4,3),DGCG(4,3),DGAN(4,3),
      &DGBN(4,3),DGCN(4,3),DGDN(4,3),DGEN(4,3),DGAS(4,3),DGBS(4,3),
@@ -26007,7 +26007,7 @@ C...Put into output arrays.
  
 C*********************************************************************
  
-C...PYGGAM
+C...SPGGAM
 C...Constructs the F2 and parton distributions of the photon
 C...by summing homogeneous (VMD) and inhomogeneous (anomalous) terms.
 C...For F2, c and b are included by the Bethe-Heitler formula;
@@ -26015,17 +26015,17 @@ C...in the 'MSbar' scheme additionally a Cgamma term is added.
 C...Contains the SaS sets 1D, 1M, 2D and 2M.
 C...Adapted from SaSgam library, authors G.A. Schuler and T. Sjostrand.
  
-      SUBROUTINE PYGGAM(ISET,X,Q2,P2,IP2,F2GM,XPDFGM)
+      SUBROUTINE SPGGAM(ISET,X,Q2,P2,IP2,F2GM,XPDFGM)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYINT8/XPVMD(-6:6),XPANL(-6:6),XPANH(-6:6),XPBEH(-6:6),
+      COMMON/SPINT8/XPVMD(-6:6),XPANL(-6:6),XPANH(-6:6),XPBEH(-6:6),
      &XPDIR(-6:6)
-      COMMON/PYINT9/VXPVMD(-6:6),VXPANL(-6:6),VXPANH(-6:6),VXPDGM(-6:6)
-      SAVE /PYINT8/,/PYINT9/
+      COMMON/SPINT9/VXPVMD(-6:6),VXPANL(-6:6),VXPANH(-6:6),VXPDGM(-6:6)
+      SAVE /SPINT8/,/SPINT9/
 C...Local arrays.
       DIMENSION XPDFGM(-6:6),XPGA(-6:6), VXPGA(-6:6)
 C...Charm and bottom masses (low to compensate for J/psi etc.).
@@ -26108,7 +26108,7 @@ C...Scale choice for off-shell photon; common factors.
  
 C...Call VMD parametrization for d quark and use to give rho, omega,
 C...phi. Note dipole dampening for off-shell photon.
-      CALL PYGVMD(ISET,1,X,Q2A,P2MX,ALAM,XPGA,VXPGA)
+      CALL SPGVMD(ISET,1,X,Q2A,P2MX,ALAM,XPGA,VXPGA)
       XFVAL=VXPGA(1)
       XPGA(1)=XPGA(2)
       XPGA(-1)=XPGA(-2)
@@ -26135,19 +26135,19 @@ C...Anomalous parametrizations for different strategies
 C...for off-shell photons; except full integration.
  
 C...Call anomalous parametrization for d + u + s.
-        CALL PYGANO(-3,X,Q2A,P2MX,ALAM,XPGA,VXPGA)
+        CALL SPGANO(-3,X,Q2A,P2MX,ALAM,XPGA,VXPGA)
         DO 120 KFL=-5,5
           XPANL(KFL)=FACNOR*XPGA(KFL)
           VXPANL(KFL)=FACNOR*VXPGA(KFL)
   120   CONTINUE
  
 C...Call anomalous parametrization for c and b.
-        CALL PYGANO(4,X,Q2A,P2MX,ALAM,XPGA,VXPGA)
+        CALL SPGANO(4,X,Q2A,P2MX,ALAM,XPGA,VXPGA)
         DO 130 KFL=-5,5
           XPANH(KFL)=FACNOR*XPGA(KFL)
           VXPANH(KFL)=FACNOR*VXPGA(KFL)
   130   CONTINUE
-        CALL PYGANO(5,X,Q2A,P2MX,ALAM,XPGA,VXPGA)
+        CALL SPGANO(5,X,Q2A,P2MX,ALAM,XPGA,VXPGA)
         DO 140 KFL=-5,5
           XPANH(KFL)=XPANH(KFL)+FACNOR*XPGA(KFL)
           VXPANH(KFL)=VXPANH(KFL)+FACNOR*VXPGA(KFL)
@@ -26160,7 +26160,7 @@ C...Special option: loop over flavours and integrate over k2.
             Q2STEP=Q02*(Q2/Q02)**((ISTEP-0.5D0)/NSTEP)
             IF((KF.EQ.4.AND.Q2STEP.LT.PMC**2).OR.
      &      (KF.EQ.5.AND.Q2STEP.LT.PMB**2)) GOTO 160
-            CALL PYGVMD(0,KF,X,Q2,Q2STEP,ALAM,XPGA,VXPGA)
+            CALL SPGVMD(0,KF,X,Q2,Q2STEP,ALAM,XPGA,VXPGA)
             FACQ=AEM2PI*(Q2STEP/(Q2STEP+P2))**2*FACNOR
             IF(MOD(KF,2).EQ.0) FACQ=FACQ*(8D0/9D0)
             IF(MOD(KF,2).EQ.1) FACQ=FACQ*(2D0/9D0)
@@ -26175,16 +26175,16 @@ C...Special option: loop over flavours and integrate over k2.
       ENDIF
  
 C...Call Bethe-Heitler term expression for charm and bottom.
-      CALL PYGBEH(4,X,Q2,P2,PMC**2,XPBH)
+      CALL SPGBEH(4,X,Q2,P2,PMC**2,XPBH)
       XPBEH(4)=XPBH
       XPBEH(-4)=XPBH
-      CALL PYGBEH(5,X,Q2,P2,PMB**2,XPBH)
+      CALL SPGBEH(5,X,Q2,P2,PMB**2,XPBH)
       XPBEH(5)=XPBH
       XPBEH(-5)=XPBH
  
 C...For MSbar subtraction call C^gamma term expression for d, u, s.
       IF(ISET.EQ.2.OR.ISET.EQ.4) THEN
-        CALL PYGDIR(X,Q2,P2,Q02,XPGA)
+        CALL SPGDIR(X,Q2,P2,Q02,XPGA)
         DO 180 KFL=-5,5
           XPDIR(KFL)=XPGA(KFL)
   180   CONTINUE
@@ -26205,7 +26205,7 @@ C...Store result in output array.
  
 C*********************************************************************
  
-C...PYGVMD
+C...SPGVMD
 C...Evaluates the VMD parton distributions of a photon,
 C...evolved homogeneously from an initial scale P2 to Q2.
 C...Does not include dipole suppression factor.
@@ -26216,12 +26216,12 @@ C...ALAM is the 4-flavour Lambda, which is automatically converted
 C...to 3- and 5-flavour equivalents as needed.
 C...Adapted from SaSgam library, authors G.A. Schuler and T. Sjostrand.
  
-      SUBROUTINE PYGVMD(ISET,KF,X,Q2,P2,ALAM,XPGA,VXPGA)
+      SUBROUTINE SPGVMD(ISET,KF,X,Q2,P2,ALAM,XPGA,VXPGA)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Local arrays and data.
       DIMENSION XPGA(-6:6), VXPGA(-6:6)
       DATA PMC/1.3D0/, PMB/4.6D0/, AEM/0.007297D0/, AEM2PI/0.0011614D0/
@@ -26425,7 +26425,7 @@ C...Fill parton distributions.
  
 C*********************************************************************
  
-C...PYGANO
+C...SPGANO
 C...Evaluates the parton distributions of the anomalous photon,
 C...inhomogeneously evolved from a scale P2 (where it vanishes) to Q2.
 C...KF=0 gives the sum over (up to) 5 flavours,
@@ -26435,12 +26435,12 @@ C...ALAM is the 4-flavour Lambda, which is automatically converted
 C...to 3- and 5-flavour equivalents as needed.
 C...Adapted from SaSgam library, authors G.A. Schuler and T. Sjostrand.
  
-      SUBROUTINE PYGANO(KF,X,Q2,P2,ALAM,XPGA,VXPGA)
+      SUBROUTINE SPGANO(KF,X,Q2,P2,ALAM,XPGA,VXPGA)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Local arrays and data.
       DIMENSION XPGA(-6:6), VXPGA(-6:6), ALAMSQ(3:5)
       DATA PMC/1.3D0/, PMB/4.6D0/, AEM/0.007297D0/, AEM2PI/0.0011614D0/
@@ -26592,17 +26592,17 @@ C...Add contribution of each valence flavour.
  
 C*********************************************************************
  
-C...PYGBEH
+C...SPGBEH
 C...Evaluates the Bethe-Heitler cross section for heavy flavour
 C...production.
 C...Adapted from SaSgam library, authors G.A. Schuler and T. Sjostrand.
  
-      SUBROUTINE PYGBEH(KF,X,Q2,P2,PM2,XPBH)
+      SUBROUTINE SPGBEH(KF,X,Q2,P2,PM2,XPBH)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
  
 C...Local data.
       DATA AEM2PI/0.0011614D0/
@@ -26659,17 +26659,17 @@ C...Multiply by charge-squared etc. to get parton distribution.
  
 C*********************************************************************
  
-C...PYGDIR
+C...SPGDIR
 C...Evaluates the direct contribution, i.e. the C^gamma term,
 C...as needed in MSbar parametrizations.
 C...Adapted from SaSgam library, authors G.A. Schuler and T. Sjostrand.
  
-      SUBROUTINE PYGDIR(X,Q2,P2,Q02,XPGA)
+      SUBROUTINE SPGDIR(X,Q2,P2,Q02,XPGA)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Local array and data.
       DIMENSION XPGA(-6:6)
       DATA PMC/1.3D0/, PMB/4.6D0/, AEM2PI/0.0011614D0/
@@ -26698,21 +26698,21 @@ C...Also fill for antiquarks.
  
 C*********************************************************************
  
-C...PYPDPI
+C...SPPDPI
 C...Gives pi+ parton distribution according to two different
 C...parametrizations.
  
-      SUBROUTINE PYPDPI(X,Q2,XPPI)
+      SUBROUTINE SPPDPI(X,Q2,XPPI)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      SAVE /PYDAT1/,/PYPARS/,/PYINT1/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      SAVE /SPDAT1/,/SPPARS/,/SPINT1/
 C...Local arrays.
       DIMENSION XPPI(-6:6),COW(3,5,4,2),XQ(9),TS(6)
  
@@ -26756,7 +26756,7 @@ C...Expansion coefficients for charm quark sea distribution.
      &-4.0990D-02, -1.0820D-01,  2.0360D+00,  5.2090D+00, -4.8400D-02/
  
 C...Euler's beta function, requires ordinary Gamma function
-      EULBET(X,Y)=PYGAMM(X)*PYGAMM(Y)/PYGAMM(X+Y)
+      EULBET(X,Y)=SPGAMM(X)*SPGAMM(Y)/SPGAMM(X+Y)
  
 C...Reset output array.
       DO 100 KFL=-6,6
@@ -26870,22 +26870,22 @@ C...Put into output array.
  
 C*********************************************************************
  
-C...PYPDPR
+C...SPPDPR
 C...Gives proton parton distributions according to a few different
 C...parametrizations.
  
-      SUBROUTINE PYPDPR(X,Q2,XPPR)
+      SUBROUTINE SPPDPR(X,Q2,XPPR)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      SAVE /PYDAT1/,/PYDAT2/,/PYPARS/,/PYINT1/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      SAVE /SPDAT1/,/SPDAT2/,/SPPARS/,/SPINT1/
 C...Arrays and data.
       DIMENSION XPPR(-6:6),Q2MIN(16)
       DATA Q2MIN/ 2.56D0, 2.56D0, 2.56D0, 0.4D0, 0.4D0, 0.4D0,
@@ -26913,9 +26913,9 @@ C...Interface to the CTEQ 3 parton distributions.
 C...Loop over flavours.
         DO 110 I=-6,6
           IF(I.LE.0) THEN
-            XPPR(I)=PYCTEQ(NSET,I,X,QRT)
+            XPPR(I)=SPCTEQ(NSET,I,X,QRT)
           ELSEIF(I.LE.2) THEN
-            XPPR(I)=PYCTEQ(NSET,I,X,QRT)+XPPR(-I)
+            XPPR(I)=SPCTEQ(NSET,I,X,QRT)+XPPR(-I)
           ELSE
             XPPR(I)=XPPR(-I)
           ENDIF
@@ -26924,11 +26924,11 @@ C...Loop over flavours.
       ELSEIF(NSET.GE.4.AND.NSET.LE.6) THEN
 C...Interface to the GRV 94 distributions.
         IF(NSET.EQ.4) THEN
-          CALL PYGRVL (X, Q2L, UV, DV, DEL, UDB, SB, CHM, BOT, GL)
+          CALL SPGRVL (X, Q2L, UV, DV, DEL, UDB, SB, CHM, BOT, GL)
         ELSEIF(NSET.EQ.5) THEN
-          CALL PYGRVM (X, Q2L, UV, DV, DEL, UDB, SB, CHM, BOT, GL)
+          CALL SPGRVM (X, Q2L, UV, DV, DEL, UDB, SB, CHM, BOT, GL)
         ELSE
-          CALL PYGRVD (X, Q2L, UV, DV, DEL, UDB, SB, CHM, BOT, GL)
+          CALL SPGRVD (X, Q2L, UV, DV, DEL, UDB, SB, CHM, BOT, GL)
         ENDIF
  
 C...Put into output array.
@@ -26952,19 +26952,19 @@ C...freezing x*f(x,Q2) at borders.
         XIN=MAX(1D-6,MIN(1D0,X))
  
 C...Loop over flavours (with u <-> d notation mismatch).
-        SUMUDB=PYCT5L(-1,XIN,QRT)
-        RATUDB=PYCT5L(-2,XIN,QRT)
+        SUMUDB=SPCT5L(-1,XIN,QRT)
+        RATUDB=SPCT5L(-2,XIN,QRT)
         DO 120 I=-5,2
           IF(I.EQ.1) THEN
-            XPPR(I)=XIN*PYCT5L(2,XIN,QRT)
+            XPPR(I)=XIN*SPCT5L(2,XIN,QRT)
           ELSEIF(I.EQ.2) THEN
-            XPPR(I)=XIN*PYCT5L(1,XIN,QRT)
+            XPPR(I)=XIN*SPCT5L(1,XIN,QRT)
           ELSEIF(I.EQ.-1) THEN
             XPPR(I)=XIN*SUMUDB*RATUDB/(1D0+RATUDB)
           ELSEIF(I.EQ.-2) THEN
             XPPR(I)=XIN*SUMUDB/(1D0+RATUDB)
           ELSE
-            XPPR(I)=XIN*PYCT5L(I,XIN,QRT)
+            XPPR(I)=XIN*SPCT5L(I,XIN,QRT)
             IF(I.LT.0) XPPR(-I)=XPPR(I)
           ENDIF
   120   CONTINUE
@@ -26975,19 +26975,19 @@ C...Interface to the CTEQ 5M1 parton distributions.
         XIN=MAX(1D-6,MIN(1D0,X))
  
 C...Loop over flavours (with u <-> d notation mismatch).
-        SUMUDB=PYCT5M(-1,XIN,QRT)
-        RATUDB=PYCT5M(-2,XIN,QRT)
+        SUMUDB=SPCT5M(-1,XIN,QRT)
+        RATUDB=SPCT5M(-2,XIN,QRT)
         DO 130 I=-5,2
           IF(I.EQ.1) THEN
-            XPPR(I)=XIN*PYCT5M(2,XIN,QRT)
+            XPPR(I)=XIN*SPCT5M(2,XIN,QRT)
           ELSEIF(I.EQ.2) THEN
-            XPPR(I)=XIN*PYCT5M(1,XIN,QRT)
+            XPPR(I)=XIN*SPCT5M(1,XIN,QRT)
           ELSEIF(I.EQ.-1) THEN
             XPPR(I)=XIN*SUMUDB*RATUDB/(1D0+RATUDB)
           ELSEIF(I.EQ.-2) THEN
             XPPR(I)=XIN*SUMUDB/(1D0+RATUDB)
           ELSE
-            XPPR(I)=XIN*PYCT5M(I,XIN,QRT)
+            XPPR(I)=XIN*SPCT5M(I,XIN,QRT)
             IF(I.LT.0) XPPR(-I)=XPPR(I)
           ENDIF
   130   CONTINUE
@@ -26995,7 +26995,7 @@ C...Loop over flavours (with u <-> d notation mismatch).
       ELSEIF(NSET.GE.11.AND.NSET.LE.15) THEN
 C...GRV92LO, EHLQ1, EHLQ2, DO1 AND DO2 distributions:
 C...obsolete but offers backwards compatibility.
-        CALL PYPDPO(X,Q2L,XPPR)
+        CALL SPPDPO(X,Q2L,XPPR)
  
 C...Symmetric choice for debugging only
       ELSEIF(NSET.EQ.16) THEN
@@ -27018,13 +27018,13 @@ C...Symmetric choice for debugging only
  
 C*********************************************************************
  
-C...PYCTEQ
+C...SPCTEQ
 C...Gives the CTEQ 3 parton distribution function sets in
 C...parametrized form, of October 24, 1994.
 C...Authors: H.L. Lai, J. Botts, J. Huston, J.G. Morfin, J.F. Owens,
 C...J. Qiu, W.K. Tung and H. Weerts.
  
-      FUNCTION PYCTEQ (ISET, IPRT, X, Q)
+      FUNCTION SPCTEQ (ISET, IPRT, X, Q)
  
 C...Double precision declaration.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
@@ -27039,7 +27039,7 @@ C....Check flavour thresholds. Set up QI for SB.
       IP = IABS(IPRT)
       IF(IP .GE. 4) THEN
         IF(Q .LE. QMS(IP)) THEN
-          PYCTEQ = 0D0
+          SPCTEQ = 0D0
           RETURN
         ENDIF
         QI = QMS(IP)
@@ -27284,7 +27284,7 @@ C...Expansion for CTEQ3D.
       ENDIF
  
 C...Calculation of x * f(x, Q).
-      PYCTEQ = MAX(0D0, A0 *(X**A1) *((1D0-X)**A2) *(1D0+A3*(X**A4))
+      SPCTEQ = MAX(0D0, A0 *(X**A1) *((1D0-X)**A2) *(1D0+A3*(X**A4))
      &   *(LOG(1D0+1D0/X))**A5 )
  
       RETURN
@@ -27292,12 +27292,12 @@ C...Calculation of x * f(x, Q).
  
 C*********************************************************************
  
-C...PYGRVL
+C...SPGRVL
 C...Gives the GRV 94 L (leading order) parton distribution function set
 C...in parametrized form.
 C...Authors: M. Glueck, E. Reya and A. Vogt.
  
-      SUBROUTINE PYGRVL (X, Q2, UV, DV, DEL, UDB, SB, CHM, BOT, GL)
+      SUBROUTINE SPGRVL (X, Q2, UV, DV, DEL, UDB, SB, CHM, BOT, GL)
  
 C...Double precision declaration.
       IMPLICIT DOUBLE PRECISION (A - Z)
@@ -27318,7 +27318,7 @@ C...uv :
       BU  =  0.213D0 + 2.669D0 * S - 0.728D0 * S2
       CU  =  8.854D0 - 9.135D0 * S + 1.979D0 * S2
       DU  =  2.997D0 + 0.753D0 * S - 0.076D0 * S2
-      UV  = PYGRVV (X, NU, AKU, BKU, AU, BU, CU, DU)
+      UV  = SPGRVV (X, NU, AKU, BKU, AU, BU, CU, DU)
  
 C...dv :
       ND  =  0.371D0 + 0.083D0 * S + 0.039D0 * S2
@@ -27328,7 +27328,7 @@ C...dv :
       BD  =  12.41D0 - 10.52D0 * S + 2.267D0 * S2
       CD  =  6.373D0 - 6.208D0 * S + 1.418D0 * S2
       DD  =  3.691D0 + 0.799D0 * S - 0.071D0 * S2
-      DV  = PYGRVV (X, ND, AKD, BKD, AD, BD, CD, DD)
+      DV  = SPGRVV (X, ND, AKD, BKD, AD, BD, CD, DD)
  
 C...del :
       NE  =  0.082D0 + 0.014D0 * S + 0.008D0 * S2
@@ -27338,7 +27338,7 @@ C...del :
       BE  =  90.31D0 - 74.15D0 * S + 7.645D0 * S2
       CE  =  0.0D0
       DE  =  7.486D0 + 1.217D0 * S - 0.159D0 * S2
-      DEL = PYGRVV (X, NE, AKE, BKE, AE, BE, CE, DE)
+      DEL = SPGRVV (X, NE, AKE, BKE, AE, BE, CE, DE)
  
 C...udb :
       ALX =  1.451D0
@@ -27351,7 +27351,7 @@ C...udb :
       DX  =  4.752D0 + 1.164D0 * S + 0.286D0 * S2
       EX  =  4.119D0 + 1.713D0 * S
       ESX =  0.682D0 + 2.978D0 * S
-      UDB = PYGRVW (X, S, ALX, BEX, AKX, BKX, AGX, BGX, CX,
+      UDB = SPGRVW (X, S, ALX, BEX, AKX, BKX, AGX, BGX, CX,
      & DX, EX, ESX)
  
 C...sb :
@@ -27364,7 +27364,7 @@ C...sb :
       DST =  6.379D0 - 0.350D0 * S  + 0.142D0 * S2
       EST =  3.981D0 + 1.638D0 * S
       ESS =  6.402D0
-      SB  = PYGRVS (X, S, STS, ALS, BES, AKS, AS, BS, DST, EST, ESS)
+      SB  = SPGRVS (X, S, STS, ALS, BES, AKS, AS, BS, DST, EST, ESS)
  
 C...cb :
       STC =  0.888D0
@@ -27376,7 +27376,7 @@ C...cb :
       DCT =  3.46D0  - 1.076D0 * S
       ECT =  4.61D0  + 1.49D0  * S
       ESC =  2.555D0 + 1.961D0 * S
-      CHM = PYGRVS (X, S, STC, ALC, BEC, AKC, AC, BC, DCT, ECT, ESC)
+      CHM = SPGRVS (X, S, STC, ALC, BEC, AKC, AC, BC, DCT, ECT, ESC)
  
 C...bb :
       STB =  1.351D0
@@ -27388,7 +27388,7 @@ C...bb :
       DBT =  2.929D0 + 1.396D0 * S
       EBT =  4.71D0  + 1.514D0 * S
       ESB =  4.02D0  + 1.239D0 * S
-      BOT = PYGRVS (X, S, STB, ALB, BEB, AKB, AB, BB, DBT, EBT, ESB)
+      BOT = SPGRVS (X, S, STB, ALB, BEB, AKB, AB, BB, DBT, EBT, ESB)
  
 C...gl :
       ALG =  0.524D0
@@ -27401,7 +27401,7 @@ C...gl :
       DG  =  2.792D0 + 2.215D0 * S  + 0.422D0 * S2 - 0.104D0 * S3
       EG  =  0.807D0 + 2.005D0 * S
       ESG =  3.841D0 + 0.316D0 * S
-      GL  = PYGRVW (X, S, ALG, BEG, AKG, BKG, AG, BG, CG,
+      GL  = SPGRVW (X, S, ALG, BEG, AKG, BKG, AG, BG, CG,
      & DG, EG, ESG)
  
       RETURN
@@ -27409,12 +27409,12 @@ C...gl :
  
 C*********************************************************************
  
-C...PYGRVM
+C...SPGRVM
 C...Gives the GRV 94 M (MSbar) parton distribution function set
 C...in parametrized form.
 C...Authors: M. Glueck, E. Reya and A. Vogt.
  
-      SUBROUTINE PYGRVM (X, Q2, UV, DV, DEL, UDB, SB, CHM, BOT, GL)
+      SUBROUTINE SPGRVM (X, Q2, UV, DV, DEL, UDB, SB, CHM, BOT, GL)
  
 C...Double precision declaration.
       IMPLICIT DOUBLE PRECISION (A - Z)
@@ -27435,7 +27435,7 @@ C...uv :
       BU  =  6.843D0 - 5.089D0 * S + 2.647D0 * S2 - 0.527D0 * S3
       CU  =  7.771D0 - 10.09D0 * S + 2.630D0 * S2
       DU  =  3.315D0 + 1.145D0 * S - 0.583D0 * S2 + 0.154D0 * S3
-      UV  = PYGRVV (X, NU, AKU, BKU, AU, BU, CU, DU)
+      UV  = SPGRVV (X, NU, AKU, BKU, AU, BU, CU, DU)
  
 C...dv :
       ND  =  0.102D0 - 0.017D0 * S + 0.005D0 * S2
@@ -27445,7 +27445,7 @@ C...dv :
       BD  =  46.06D0 + 4.673D0 * S - 14.98D0 * S2 + 1.331D0 * S3
       CD  =  17.83D0 - 53.47D0 * S + 21.24D0 * S2
       DD  =  4.081D0 + 0.976D0 * S - 0.485D0 * S2 + 0.152D0 * S3
-      DV  = PYGRVV (X, ND, AKD, BKD, AD, BD, CD, DD)
+      DV  = SPGRVV (X, ND, AKD, BKD, AD, BD, CD, DD)
  
 C...del :
       NE  =  0.070D0 + 0.042D0 * S - 0.011D0 * S2 + 0.004D0 * S3
@@ -27455,7 +27455,7 @@ C...del :
       BE  =  90.20D0 - 74.97D0 * S + 4.526D0 * S2
       CE  =  0.0D0
       DE  =  8.122D0 + 2.120D0 * S - 1.088D0 * S2 + 0.231D0 * S3
-      DEL = PYGRVV (X, NE, AKE, BKE, AE, BE, CE, DE)
+      DEL = SPGRVV (X, NE, AKE, BKE, AE, BE, CE, DE)
  
 C...udb :
       ALX =  0.877D0
@@ -27468,7 +27468,7 @@ C...udb :
       DX  =  9.010D0 + 0.896D0 * DS + 0.222D0 * S2
       EX  =  3.077D0 + 1.446D0 * S
       ESX =  3.173D0 - 2.445D0 * DS + 2.207D0 * S
-      UDB = PYGRVW (X, S, ALX, BEX, AKX, BKX, AGX, BGX, CX,
+      UDB = SPGRVW (X, S, ALX, BEX, AKX, BKX, AGX, BGX, CX,
      & DX, EX, ESX)
  
 C...sb :
@@ -27481,7 +27481,7 @@ C...sb :
       DST =  9.377D0 + 1.088D0 * DS - 1.320D0 * S + 0.130D0 * S2
       EST =  3.031D0 + 1.639D0 * S
       ESS =  5.837D0 + 0.815D0 * S
-      SB  = PYGRVS (X, S, STS, ALS, BES, AKS, AS, BS, DST, EST, ESS)
+      SB  = SPGRVS (X, S, STS, ALS, BES, AKS, AS, BS, DST, EST, ESS)
  
 C...cb :
       STC =  0.820D0
@@ -27493,7 +27493,7 @@ C...cb :
       DCT =  4.12D0  + 0.683D0 * S
       ECT =  4.36D0  + 1.328D0 * S
       ESC =  0.677D0 + 0.679D0 * S
-      CHM = PYGRVS (X, S, STC, ALC, BEC, AKC, AC, BC, DCT, ECT, ESC)
+      CHM = SPGRVS (X, S, STC, ALC, BEC, AKC, AC, BC, DCT, ECT, ESC)
  
 C...bb :
       STB =  1.297D0
@@ -27505,7 +27505,7 @@ C...bb :
       DBT =  3.447D0 + 0.927D0 * S
       EBT =  4.68D0  + 1.259D0 * S
       ESB =  1.892D0 + 2.199D0 * S
-      BOT = PYGRVS (X, S, STB, ALB, BEB, AKB, AB, BB, DBT, EBT, ESB)
+      BOT = SPGRVS (X, S, STB, ALB, BEB, AKB, AB, BB, DBT, EBT, ESB)
  
 C...gl :
        ALG =  1.014D0
@@ -27518,19 +27518,19 @@ C...gl :
        DG  =  3.404D0 + 0.830D0 * S
        EG  = -1.112D0 + 3.438D0 * S  - 0.302D0 * S2
        ESG =  3.256D0 - 0.436D0 * S
-       GL  = PYGRVW (X, S, ALG, BEG, AKG, BKG, AG, BG, CG, DG, EG, ESG)
+       GL  = SPGRVW (X, S, ALG, BEG, AKG, BKG, AG, BG, CG, DG, EG, ESG)
  
        RETURN
        END
  
 C*********************************************************************
  
-C...PYGRVD
+C...SPGRVD
 C...Gives the GRV 94 D (DIS) parton distribution function set
 C...in parametrized form.
 C...Authors: M. Glueck, E. Reya and A. Vogt.
  
-      SUBROUTINE PYGRVD (X, Q2, UV, DV, DEL, UDB, SB, CHM, BOT, GL)
+      SUBROUTINE SPGRVD (X, Q2, UV, DV, DEL, UDB, SB, CHM, BOT, GL)
  
 C...Double precision declaration.
       IMPLICIT DOUBLE PRECISION (A - Z)
@@ -27551,7 +27551,7 @@ C...uv :
       BU  = -3.322D0 + 8.259D0 * S - 3.119D0 * S2 + 0.291D0 * S3
       CU  =  11.52D0 - 12.99D0 * S + 3.161D0 * S2
       DU  =  2.808D0 + 1.400D0 * S - 0.557D0 * S2 + 0.119D0 * S3
-      UV  = PYGRVV (X, NU, AKU, BKU, AU, BU, CU, DU)
+      UV  = SPGRVV (X, NU, AKU, BKU, AU, BU, CU, DU)
  
 C...dv :
       ND  =  0.156D0 - 0.017D0 * S
@@ -27561,7 +27561,7 @@ C...dv :
       BD  = -6.934D0 + 37.45D0 * S - 18.95D0 * S2 + 1.463D0 * S3
       CD  =  55.45D0 - 69.92D0 * S + 20.78D0 * S2
       DD  =  3.577D0 + 1.441D0 * S - 0.683D0 * S2 + 0.179D0 * S3
-      DV  = PYGRVV (X, ND, AKD, BKD, AD, BD, CD, DD)
+      DV  = SPGRVV (X, ND, AKD, BKD, AD, BD, CD, DD)
  
 C...del :
       NE  =  0.099D0 + 0.019D0 * S + 0.002D0 * S2
@@ -27571,7 +27571,7 @@ C...del :
       BE  =  28.59D0 - 40.94D0 * S - 13.66D0 * S2 + 2.523D0 * S3
       CE  =  84.57D0 - 108.8D0 * S + 31.52D0 * S2
       DE  =  7.469D0 + 2.480D0 * S - 0.866D0 * S2
-      DEL = PYGRVV (X, NE, AKE, BKE, AE, BE, CE, DE)
+      DEL = SPGRVV (X, NE, AKE, BKE, AE, BE, CE, DE)
  
 C...udb :
       ALX =  1.215D0
@@ -27584,7 +27584,7 @@ C...udb :
       DX  =  7.941D0 + 0.534D0 * DS - 0.940D0 * S + 0.410D0 * S2
       EX  =  3.049D0 + 1.597D0 * S
       ESX =  4.396D0 - 4.594D0 * DS + 3.268D0 * S
-      UDB = PYGRVW (X, S, ALX, BEX, AKX, BKX, AGX, BGX, CX,
+      UDB = SPGRVW (X, S, ALX, BEX, AKX, BKX, AGX, BGX, CX,
      & DX, EX, ESX)
  
 C...sb :
@@ -27597,7 +27597,7 @@ C...sb :
       DST =  13.78D0 - 9.581D0 * S  + 5.370D0 * S2 - 0.996D0 * S3
       EST =  4.546D0 + 0.372D0 * S2
       ESS =  5.053D0 - 1.070D0 * S  + 0.805D0 * S2
-      SB  = PYGRVS (X, S, STS, ALS, BES, AKS, AS, BS, DST, EST, ESS)
+      SB  = SPGRVS (X, S, STS, ALS, BES, AKS, AS, BS, DST, EST, ESS)
  
 C...cb :
       STC =  0.820D0
@@ -27609,7 +27609,7 @@ C...cb :
       DCT =  4.12D0  + 0.683D0 * S
       ECT =  4.36D0  + 1.328D0 * S
       ESC =  0.677D0 + 0.679D0 * S
-      CHM = PYGRVS (X, S, STC, ALC, BEC, AKC, AC, BC, DCT, ECT, ESC)
+      CHM = SPGRVS (X, S, STC, ALC, BEC, AKC, AC, BC, DCT, ECT, ESC)
  
 C...bb :
       STB =  1.297D0
@@ -27621,7 +27621,7 @@ C...bb :
       DBT =  3.447D0 + 0.927D0 * S
       EBT =  4.68D0  + 1.259D0 * S
       ESB =  1.892D0 + 2.199D0 * S
-      BOT = PYGRVS (X, S, STB, ALB, BEB, AKB, AB, BB, DBT, EBT, ESB)
+      BOT = SPGRVS (X, S, STB, ALB, BEB, AKB, AB, BB, DBT, EBT, ESB)
  
 C...gl :
       ALG =  1.258D0
@@ -27634,26 +27634,26 @@ C...gl :
       DG  =  5.196D0 + 1.857D0 * S
       EG  = -1.648D0 + 3.988D0 * S  - 0.432D0 * S2
       ESG =  3.232D0 - 0.542D0 * S
-      GL  = PYGRVW (X, S, ALG, BEG, AKG, BKG, AG, BG, CG, DG, EG, ESG)
+      GL  = SPGRVW (X, S, ALG, BEG, AKG, BKG, AG, BG, CG, DG, EG, ESG)
  
       RETURN
       END
  
 C*********************************************************************
  
-C...PYGRVV
+C...SPGRVV
 C...Auxiliary for the GRV 94 parton distribution functions
 C...for u and d valence and d-u sea.
 C...Authors: M. Glueck, E. Reya and A. Vogt.
  
-      FUNCTION PYGRVV (X, N, AK, BK, A, B, C, D)
+      FUNCTION SPGRVV (X, N, AK, BK, A, B, C, D)
  
 C...Double precision declaration.
       IMPLICIT DOUBLE PRECISION (A - Z)
  
 C...Evaluation.
       DX = SQRT (X)
-      PYGRVV = N * X**AK * (1D0+ A*X**BK + X * (B + C*DX)) *
+      SPGRVV = N * X**AK * (1D0+ A*X**BK + X * (B + C*DX)) *
      & (1D0- X)**D
  
       RETURN
@@ -27661,19 +27661,19 @@ C...Evaluation.
  
 C*********************************************************************
  
-C...PYGRVW
+C...SPGRVW
 C...Auxiliary for the GRV 94 parton distribution functions
 C...for d+u sea and gluon.
 C...Authors: M. Glueck, E. Reya and A. Vogt.
  
-      FUNCTION PYGRVW (X, S, AL, BE, AK, BK, A, B, C, D, E, ES)
+      FUNCTION SPGRVW (X, S, AL, BE, AK, BK, A, B, C, D, E, ES)
  
 C...Double precision declaration.
       IMPLICIT DOUBLE PRECISION (A - Z)
  
 C...Evaluation.
       LX = LOG (1D0/X)
-      PYGRVW = (X**AK * (A + X * (B + X*C)) * LX**BK + S**AL
+      SPGRVW = (X**AK * (A + X * (B + X*C)) * LX**BK + S**AL
      &     * EXP (-E + SQRT (ES * S**BE * LX))) * (1D0- X)**D
  
       RETURN
@@ -27681,23 +27681,23 @@ C...Evaluation.
  
 C*********************************************************************
  
-C...PYGRVS
+C...SPGRVS
 C...Auxiliary for the GRV 94 parton distribution functions
 C...for s, c and b sea.
 C...Authors: M. Glueck, E. Reya and A. Vogt.
  
-      FUNCTION PYGRVS (X, S, STH, AL, BE, AK, AG, B, D, E, ES)
+      FUNCTION SPGRVS (X, S, STH, AL, BE, AK, AG, B, D, E, ES)
  
 C...Double precision declaration.
       IMPLICIT DOUBLE PRECISION (A - Z)
  
 C...Evaluation.
       IF(S.LE.STH) THEN
-        PYGRVS = 0D0
+        SPGRVS = 0D0
       ELSE
         DX = SQRT (X)
         LX = LOG (1D0/X)
-        PYGRVS = (S - STH)**AL / LX**AK * (1D0+ AG*DX + B*X) *
+        SPGRVS = (S - STH)**AL / LX**AK * (1D0+ AG*DX + B*X) *
      &     (1D0- X)**D * EXP (-E + SQRT (ES * S**BE * LX))
       ENDIF
  
@@ -27706,7 +27706,7 @@ C...Evaluation.
  
 C*********************************************************************
  
-C...PYCT5L
+C...SPCT5L
 C...Auxiliary function for parametrization of CTEQ5L.
 C...Author: J. Pumplin 9/99.
  
@@ -27759,7 +27759,7 @@ C...approximately 0.01 < x < 0.75 ; and 4 GeV^2 < Q^2 < 400 GeV^2 for
 C...fixed target experiments; 0.0001 < x < 0.3 from HERA data; and
 C...Q^2 up to 40,000 GeV^2 from Tevatron inclusive Jet data.
  
-      FUNCTION PYCT5L(IFL,X,Q)
+      FUNCTION SPCT5L(IFL,X,Q)
  
 C...Double precision declaration.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
@@ -27963,18 +27963,18 @@ C...Double precision declaration.
      & / -0.1327377E+02,  0.1201754E+02, -0.6277844E+01 /
  
       IF(Q .LE. QMAVEC(IFL)) THEN
-         PYCT5L = 0.D0
+         SPCT5L = 0.D0
          RETURN
       ENDIF
  
       IF(X .GE. 1.D0) THEN
-         PYCT5L = 0.D0
+         SPCT5L = 0.D0
          RETURN
       ENDIF
  
       TMP = LOG(Q/ALFVEC(IFL))
       IF(TMP .LE. 0.D0) THEN
-         PYCT5L = 0.D0
+         SPCT5L = 0.D0
          RETURN
       ENDIF
  
@@ -28000,21 +28000,21 @@ C...Double precision declaration.
       PART4 = UT1VEC(IFL)*LOG(1.D0-X) +
      &	      AF(2)*LOG(1.D0+EXP(UT2VEC(IFL))-X)
  
-      PYCT5L = EXP(LOG(X) + PART1 + PART2 + PART3 + PART4)
+      SPCT5L = EXP(LOG(X) + PART1 + PART2 + PART3 + PART4)
  
 C...Include threshold factor.
-      PYCT5L = PYCT5L * (1.D0 - QMAVEC(IFL)/Q)
+      SPCT5L = SPCT5L * (1.D0 - QMAVEC(IFL)/Q)
  
       RETURN
       END
  
 C*********************************************************************
  
-C...PYCT5M
+C...SPCT5M
 C...Auxiliary function for parametrization of CTEQ5M1.
 C...Author: J. Pumplin 9/99.
  
-      FUNCTION PYCT5M(IFL,X,Q)
+      FUNCTION SPCT5M(IFL,X,Q)
  
 C...Double precision declaration.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
@@ -28218,18 +28218,18 @@ C...Double precision declaration.
      & / -0.1465793E+02,  0.2703365E+02, -0.2176372E+02 /
  
       IF(Q .LE. QMAVEC(IFL)) THEN
-         PYCT5M = 0.D0
+         SPCT5M = 0.D0
          RETURN
       ENDIF
  
       IF(X .GE. 1.D0) THEN
-         PYCT5M = 0.D0
+         SPCT5M = 0.D0
          RETURN
       ENDIF
  
       TMP = LOG(Q/ALFVEC(IFL))
       IF(TMP .LE. 0.D0) THEN
-         PYCT5M = 0.D0
+         SPCT5M = 0.D0
          RETURN
       ENDIF
  
@@ -28255,33 +28255,33 @@ C...Double precision declaration.
       PART4 = UT1VEC(IFL)*LOG(1.D0-X) +
      &	      AF(2)*LOG(1.D0+EXP(UT2VEC(IFL))-X)
  
-      PYCT5M = EXP(LOG(X) + PART1 + PART2 + PART3 + PART4)
+      SPCT5M = EXP(LOG(X) + PART1 + PART2 + PART3 + PART4)
  
 C...Include threshold factor.
-      PYCT5M = PYCT5M * (1.D0 - QMAVEC(IFL)/Q)
+      SPCT5M = SPCT5M * (1.D0 - QMAVEC(IFL)/Q)
  
       RETURN
       END
  
 C*********************************************************************
  
-C...PYPDPO
-C...Auxiliary to PYPDPR. Gives proton parton distributions according to
+C...SPPDPO
+C...Auxiliary to SPPDPR. Gives proton parton distributions according to
 C...a few older parametrizations, now obsolete but convenient for
 C...backwards checks.
  
-      SUBROUTINE PYPDPO(X,Q2,XPPR)
+      SUBROUTINE SPPDPO(X,Q2,XPPR)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      SAVE /PYDAT1/,/PYDAT2/,/PYPARS/,/PYINT1/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      SAVE /SPDAT1/,/SPDAT2/,/SPPARS/,/SPINT1/
       DIMENSION XPPR(-6:6),XQ(9),TX(6),TT(6),TS(6),NEHLQ(8,2),
      &CEHLQ(6,6,2,8,2),CDO(3,6,5,2)
  
@@ -28557,7 +28557,7 @@ C...Expansion coefficients for gluon distribution.
      3 4.340D-01, 4.760D-01,-2.540D-01,-8.170D-01, 5.500D+00, 1.260D-01/
  
 C...Euler's beta function, requires ordinary Gamma function
-      EULBET(X,Y)=PYGAMM(X)*PYGAMM(Y)/PYGAMM(X+Y)
+      EULBET(X,Y)=SPGAMM(X)*SPGAMM(Y)/SPGAMM(X+Y)
  
 C...Leading order proton parton distributions from Glueck, Reya and
 C...Vogt. Allowed variable range: 0.25 GeV^2 < Q^2 < 10^8 GeV^2 and
@@ -28765,21 +28765,21 @@ C...Put into output arrays.
  
 C*********************************************************************
  
-C...PYHFTH
+C...SPHFTH
 C...Gives threshold attractive/repulsive factor for heavy flavour
 C...production.
  
-      FUNCTION PYHFTH(SH,SQM,FRATT)
+      FUNCTION SPHFTH(SH,SQM,FRATT)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      SAVE /PYDAT1/,/PYPARS/,/PYINT1/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      SAVE /SPDAT1/,/SPPARS/,/SPINT1/
  
 C...Value for alpha_strong.
       IF(MSTP(35).LE.1) THEN
@@ -28789,7 +28789,7 @@ C...Value for alpha_strong.
         MSTU(115)=MSTP(36)
         Q2BN=SQRT(MAX(1D0,SQM*((SQRT(SH)-2D0*SQRT(SQM))**2+
      &  PARP(36)**2)))
-        ALSSG=PYALPS(Q2BN)
+        ALSSG=SPALPS(Q2BN)
         MSTU(115)=MST115
       ENDIF
  
@@ -28798,29 +28798,29 @@ C...Evaluate attractive and repulsive factors.
       FATTR=XATTR/(1D0-EXP(-MIN(50D0,XATTR)))
       XREPU=PARU(1)*ALSSG/(6D0*SQRT(MAX(1D-20,1D0-4D0*SQM/SH)))
       FREPU=XREPU/(EXP(MIN(50D0,XREPU))-1D0)
-      PYHFTH=FRATT*FATTR+(1D0-FRATT)*FREPU
-      VINT(138)=PYHFTH
+      SPHFTH=FRATT*FATTR+(1D0-FRATT)*FREPU
+      VINT(138)=SPHFTH
  
       RETURN
       END
  
 C*********************************************************************
  
-C...PYSPLI
+C...SPSPLI
 C...Splits a hadron remnant into two (partons or hadron + parton)
 C...in case it is more complicated than just a quark or a diquark.
  
-      SUBROUTINE PYSPLI(KF,KFLIN,KFLCH,KFLSP)
+      SUBROUTINE SPSPLI(KF,KFLIN,KFLCH,KFLSP)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
-C...Commonblocks. PYDAT1 temporary
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYPARS/,/PYINT1/,/PYDAT1/
+      INTEGER SPK,SPCHGE,SPCOMP
+C...Commonblocks. SPDAT1 temporary
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      SAVE /SPPARS/,/SPINT1/,/SPDAT1/
 C...Local array.
       DIMENSION KFL(3)
  
@@ -28831,17 +28831,17 @@ C...Preliminaries. Parton composition.
       KFL(2)=MOD(KFA/100,10)
       KFL(3)=MOD(KFA/10,10)
       IF(KFA.EQ.22.AND.MINT(109).EQ.2) THEN
-        KFL(2)=INT(1.5D0+PYR(0))
+        KFL(2)=INT(1.5D0+SPR(0))
         IF(MINT(105).EQ.333) KFL(2)=3
         IF(MINT(105).EQ.443) KFL(2)=4
         KFL(3)=KFL(2)
-      ELSEIF((KFA.EQ.111.OR.KFA.EQ.113).AND.PYR(0).GT.0.5D0) THEN
+      ELSEIF((KFA.EQ.111.OR.KFA.EQ.113).AND.SPR(0).GT.0.5D0) THEN
         KFL(2)=2
         KFL(3)=2
-      ELSEIF(KFA.EQ.223.AND.PYR(0).GT.0.5D0) THEN
+      ELSEIF(KFA.EQ.223.AND.SPR(0).GT.0.5D0) THEN
         KFL(2)=1
         KFL(3)=1
-      ELSEIF((KFA.EQ.130.OR.KFA.EQ.310).AND.PYR(0).GT.0.5D0) THEN
+      ELSEIF((KFA.EQ.130.OR.KFA.EQ.310).AND.SPR(0).GT.0.5D0) THEN
         KFL(2)=MOD(KFA/10,10)
         KFL(3)=MOD(KFA/100,10)
       ENDIF
@@ -28875,11 +28875,11 @@ C...Subdivide photon.
         IF(KFLR.NE.21) THEN
           KFLSP=-KFLR
         ELSE
-          RAGR=0.75D0*PYR(0)
+          RAGR=0.75D0*SPR(0)
           KFLSP=1
           IF(RAGR.GT.0.125D0) KFLSP=2
           IF(RAGR.GT.0.625D0) KFLSP=3
-          IF(PYR(0).GT.0.5D0) KFLSP=-KFLSP
+          IF(SPR(0).GT.0.5D0) KFLSP=-KFLSP
           KFLCH=-KFLSP
         ENDIF
  
@@ -28899,7 +28899,7 @@ C...Subdivide meson.
           KFLSP=KFL(3)
         ELSEIF(KFLR.EQ.KFL(3)) THEN
           KFLSP=KFL(2)
-        ELSEIF(KFLR.EQ.21.AND.PYR(0).GT.0.5D0) THEN
+        ELSEIF(KFLR.EQ.21.AND.SPR(0).GT.0.5D0) THEN
           KFLSP=KFL(2)
           KFLCH=KFL(3)
         ELSEIF(KFLR.EQ.21) THEN
@@ -28908,11 +28908,11 @@ C...Subdivide meson.
         ELSEIF(KFLR*KFL(2).GT.0) THEN
           NTRY=0
   100     NTRY=NTRY+1
-          CALL PYKFDI(-KFLR,KFL(2),KFDUMP,KFLCH)
+          CALL SPKFDI(-KFLR,KFL(2),KFDUMP,KFLCH)
           IF(KFLCH.EQ.0.AND.NTRY.LT.100) THEN
             GOTO 100
           ELSEIF(KFLCH.EQ.0) THEN
-            CALL PYERRM(14,'(PYSPLI:) caught in infinite loop')
+            CALL SPERRM(14,'(SPSPLI:) caught in infinite loop')
             MINT(51)=1
             RETURN
           ENDIF
@@ -28920,11 +28920,11 @@ C...Subdivide meson.
         ELSE
           NTRY=0
   110     NTRY=NTRY+1
-          CALL PYKFDI(-KFLR,KFL(3),KFDUMP,KFLCH)
+          CALL SPKFDI(-KFLR,KFL(3),KFDUMP,KFLCH)
           IF(KFLCH.EQ.0.AND.NTRY.LT.100) THEN
             GOTO 110
           ELSEIF(KFLCH.EQ.0) THEN
-            CALL PYERRM(14,'(PYSPLI:) caught in infinite loop')
+            CALL SPERRM(14,'(SPSPLI:) caught in infinite loop')
             MINT(51)=1
             RETURN
           ENDIF
@@ -28938,14 +28938,14 @@ C...Subdivide baryon.
           IF(KFLR.EQ.KFL(J)) NAGR=NAGR+1
   120   CONTINUE
         IF(NAGR.GE.1) THEN
-          RAGR=0.00001D0+(NAGR-0.00002D0)*PYR(0)
+          RAGR=0.00001D0+(NAGR-0.00002D0)*SPR(0)
           IAGR=0
           DO 130 J=1,3
             IF(KFLR.EQ.KFL(J)) RAGR=RAGR-1D0
             IF(IAGR.EQ.0.AND.RAGR.LE.0D0) IAGR=J
   130     CONTINUE
         ELSE
-          IAGR=1.00001D0+2.99998D0*PYR(0)
+          IAGR=1.00001D0+2.99998D0*SPR(0)
         ENDIF
         ID1=1
         IF(IAGR.EQ.1) ID1=2
@@ -28953,12 +28953,12 @@ C...Subdivide baryon.
         ID2=6-IAGR-ID1
         KSP=3
         IF(MOD(KFA,10).EQ.2.AND.KFL(1).EQ.KFL(2)) THEN
-          IF(IAGR.NE.3.AND.PYR(0).GT.0.25D0) KSP=1
+          IF(IAGR.NE.3.AND.SPR(0).GT.0.25D0) KSP=1
         ELSEIF(MOD(KFA,10).EQ.2.AND.KFL(2).GE.KFL(3)) THEN
-          IF(IAGR.NE.1.AND.PYR(0).GT.0.25D0) KSP=1
+          IF(IAGR.NE.1.AND.SPR(0).GT.0.25D0) KSP=1
         ELSEIF(MOD(KFA,10).EQ.2) THEN
           IF(IAGR.EQ.1) KSP=1
-          IF(IAGR.NE.1.AND.PYR(0).GT.0.75D0) KSP=1
+          IF(IAGR.NE.1.AND.SPR(0).GT.0.75D0) KSP=1
         ENDIF
         KFLSP=1000*KFL(ID1)+100*KFL(ID2)+KSP
         IF(KFLR.EQ.21) THEN
@@ -28966,22 +28966,22 @@ C...Subdivide baryon.
         ELSEIF(NAGR.EQ.0.AND.KFLR.GT.0) THEN
           NTRY=0
   140     NTRY=NTRY+1
-          CALL PYKFDI(-KFLR,KFL(IAGR),KFDUMP,KFLCH)
+          CALL SPKFDI(-KFLR,KFL(IAGR),KFDUMP,KFLCH)
           IF(KFLCH.EQ.0.AND.NTRY.LT.100) THEN
             GOTO 140
           ELSEIF(KFLCH.EQ.0) THEN
-            CALL PYERRM(14,'(PYSPLI:) caught in infinite loop')
+            CALL SPERRM(14,'(SPSPLI:) caught in infinite loop')
             MINT(51)=1
             RETURN
           ENDIF
         ELSEIF(NAGR.EQ.0) THEN
           NTRY=0
   150     NTRY=NTRY+1
-          CALL PYKFDI(10000*KFL(ID1)+KFLSP,-KFLR,KFDUMP,KFLCH)
+          CALL SPKFDI(10000*KFL(ID1)+KFLSP,-KFLR,KFDUMP,KFLCH)
           IF(KFLCH.EQ.0.AND.NTRY.LT.100) THEN
             GOTO 150
           ELSEIF(KFLCH.EQ.0) THEN
-            CALL PYERRM(14,'(PYSPLI:) caught in infinite loop')
+            CALL SPERRM(14,'(SPSPLI:) caught in infinite loop')
             MINT(51)=1
             RETURN
           ENDIF
@@ -28998,17 +28998,17 @@ C...Add on correct sign for result.
  
 C*********************************************************************
  
-C...PYGAMM
+C...SPGAMM
 C...Gives ordinary Gamma function Gamma(x) for positive, real arguments;
 C...see M. Abramowitz, I. A. Stegun: Handbook of Mathematical Functions
 C...(Dover, 1965) 6.1.36.
  
-      FUNCTION PYGAMM(X)
+      FUNCTION SPGAMM(X)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Local array and data.
       DIMENSION B(8)
       DATA B/-0.577191652D0,0.988205891D0,-0.897056937D0,0.918206857D0,
@@ -29017,17 +29017,17 @@ C...Local array and data.
       NX=INT(X)
       DX=X-NX
  
-      PYGAMM=1D0
+      SPGAMM=1D0
       DXP=1D0
       DO 100 I=1,8
         DXP=DXP*DX
-        PYGAMM=PYGAMM+B(I)*DXP
+        SPGAMM=SPGAMM+B(I)*DXP
   100 CONTINUE
       IF(X.LT.1D0) THEN
-        PYGAMM=PYGAMM/X
+        SPGAMM=SPGAMM/X
       ELSE
         DO 110 IX=1,NX-1
-          PYGAMM=(X-IX)*PYGAMM
+          SPGAMM=(X-IX)*SPGAMM
   110   CONTINUE
       ENDIF
  
@@ -29036,20 +29036,20 @@ C...Local array and data.
  
 C***********************************************************************
  
-C...PYWAUX
+C...SPWAUX
 C...Calculates real and imaginary parts of the auxiliary functions W1
 C...and W2; see R. K. Ellis, I. Hinchliffe, M. Soldate and J. J. van
 C...der Bij, Nucl. Phys. B297 (1988) 221.
  
-      SUBROUTINE PYWAUX(IAUX,EPS,WRE,WIM)
+      SUBROUTINE SPWAUX(IAUX,EPS,WRE,WIM)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYDAT1/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      SAVE /SPDAT1/
  
       ASINH(X)=LOG(X+SQRT(X**2+1D0))
       ACOSH(X)=LOG(X+SQRT(X**2-1D0))
@@ -29074,89 +29074,89 @@ C...Commonblocks.
  
 C***********************************************************************
  
-C...PYI3AU
+C...SPI3AU
 C...Calculates real and imaginary parts of the auxiliary function I3;
 C...see R. K. Ellis, I. Hinchliffe, M. Soldate and J. J. van der Bij,
 C...Nucl. Phys. B297 (1988) 221.
  
-      SUBROUTINE PYI3AU(EPS,RAT,Y3RE,Y3IM)
+      SUBROUTINE SPI3AU(EPS,RAT,Y3RE,Y3IM)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYDAT1/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      SAVE /SPDAT1/
  
       BE=0.5D0*(1D0+SQRT(1D0+RAT*EPS))
       IF(EPS.LT.1D0) GA=0.5D0*(1D0+SQRT(1D0-EPS))
  
       IF(EPS.LT.0D0) THEN
         IF(ABS(EPS).LT.1D-4.AND.ABS(RAT*EPS).LT.1D-4) THEN
-          F3RE=PYSPEN(-0.25D0*EPS/(1D0+0.25D0*(RAT-1D0)*EPS),0D0,1)-
-     &    PYSPEN((1D0-0.25D0*EPS)/(1D0+0.25D0*(RAT-1D0)*EPS),0D0,1)+
-     &    PYSPEN(0.25D0*(RAT+1D0)*EPS/(1D0+0.25D0*RAT*EPS),0D0,1)-
-     &    PYSPEN((RAT+1D0)/RAT,0D0,1)+0.5D0*(LOG(1D0+0.25D0*RAT*EPS)**2-
+          F3RE=SPSPEN(-0.25D0*EPS/(1D0+0.25D0*(RAT-1D0)*EPS),0D0,1)-
+     &    SPSPEN((1D0-0.25D0*EPS)/(1D0+0.25D0*(RAT-1D0)*EPS),0D0,1)+
+     &    SPSPEN(0.25D0*(RAT+1D0)*EPS/(1D0+0.25D0*RAT*EPS),0D0,1)-
+     &    SPSPEN((RAT+1D0)/RAT,0D0,1)+0.5D0*(LOG(1D0+0.25D0*RAT*EPS)**2-
      &    LOG(0.25D0*RAT*EPS)**2)+LOG(1D0-0.25D0*EPS)*
      &    LOG((1D0+0.25D0*(RAT-1D0)*EPS)/(1D0+0.25D0*RAT*EPS))+
      &    LOG(-0.25D0*EPS)*LOG(0.25D0*RAT*EPS/(1D0+0.25D0*(RAT-1D0)*
      &    EPS))
         ELSEIF(ABS(EPS).LT.1D-4.AND.ABS(RAT*EPS).GE.1D-4) THEN
-          F3RE=PYSPEN(-0.25D0*EPS/(BE-0.25D0*EPS),0D0,1)-
-     &    PYSPEN((1D0-0.25D0*EPS)/(BE-0.25D0*EPS),0D0,1)+
-     &    PYSPEN((BE-1D0+0.25D0*EPS)/BE,0D0,1)-
-     &    PYSPEN((BE-1D0+0.25D0*EPS)/(BE-1D0),0D0,1)+
+          F3RE=SPSPEN(-0.25D0*EPS/(BE-0.25D0*EPS),0D0,1)-
+     &    SPSPEN((1D0-0.25D0*EPS)/(BE-0.25D0*EPS),0D0,1)+
+     &    SPSPEN((BE-1D0+0.25D0*EPS)/BE,0D0,1)-
+     &    SPSPEN((BE-1D0+0.25D0*EPS)/(BE-1D0),0D0,1)+
      &    0.5D0*(LOG(BE)**2-LOG(BE-1D0)**2)+
      &    LOG(1D0-0.25D0*EPS)*LOG((BE-0.25D0*EPS)/BE)+
      &    LOG(-0.25D0*EPS)*LOG((BE-1D0)/(BE-0.25D0*EPS))
         ELSEIF(ABS(EPS).GE.1D-4.AND.ABS(RAT*EPS).LT.1D-4) THEN
-          F3RE=PYSPEN((GA-1D0)/(GA+0.25D0*RAT*EPS),0D0,1)-
-     &    PYSPEN(GA/(GA+0.25D0*RAT*EPS),0D0,1)+
-     &    PYSPEN((1D0+0.25D0*RAT*EPS-GA)/(1D0+0.25D0*RAT*EPS),0D0,1)-
-     &    PYSPEN((1D0+0.25D0*RAT*EPS-GA)/(0.25D0*RAT*EPS),0D0,1)+
+          F3RE=SPSPEN((GA-1D0)/(GA+0.25D0*RAT*EPS),0D0,1)-
+     &    SPSPEN(GA/(GA+0.25D0*RAT*EPS),0D0,1)+
+     &    SPSPEN((1D0+0.25D0*RAT*EPS-GA)/(1D0+0.25D0*RAT*EPS),0D0,1)-
+     &    SPSPEN((1D0+0.25D0*RAT*EPS-GA)/(0.25D0*RAT*EPS),0D0,1)+
      &    0.5D0*(LOG(1D0+0.25D0*RAT*EPS)**2-LOG(0.25D0*RAT*EPS)**2)+
      &    LOG(GA)*LOG((GA+0.25D0*RAT*EPS)/(1D0+0.25D0*RAT*EPS))+
      &    LOG(GA-1D0)*LOG(0.25D0*RAT*EPS/(GA+0.25D0*RAT*EPS))
         ELSE
-          F3RE=PYSPEN((GA-1D0)/(GA+BE-1D0),0D0,1)-
-     &    PYSPEN(GA/(GA+BE-1D0),0D0,1)+PYSPEN((BE-GA)/BE,0D0,1)-
-     &    PYSPEN((BE-GA)/(BE-1D0),0D0,1)+0.5D0*(LOG(BE)**2-
+          F3RE=SPSPEN((GA-1D0)/(GA+BE-1D0),0D0,1)-
+     &    SPSPEN(GA/(GA+BE-1D0),0D0,1)+SPSPEN((BE-GA)/BE,0D0,1)-
+     &    SPSPEN((BE-GA)/(BE-1D0),0D0,1)+0.5D0*(LOG(BE)**2-
      &    LOG(BE-1D0)**2)+LOG(GA)*LOG((GA+BE-1D0)/BE)+
      &    LOG(GA-1D0)*LOG((BE-1D0)/(GA+BE-1D0))
         ENDIF
         F3IM=0D0
       ELSEIF(EPS.LT.1D0) THEN
         IF(ABS(EPS).LT.1D-4.AND.ABS(RAT*EPS).LT.1D-4) THEN
-          F3RE=PYSPEN(-0.25D0*EPS/(1D0+0.25D0*(RAT-1D0)*EPS),0D0,1)-
-     &    PYSPEN((1D0-0.25D0*EPS)/(1D0+0.25D0*(RAT-1D0)*EPS),0D0,1)+
-     &    PYSPEN((1D0-0.25D0*EPS)/(-0.25D0*(RAT+1D0)*EPS),0D0,1)-
-     &    PYSPEN(1D0/(RAT+1D0),0D0,1)+LOG((1D0-0.25D0*EPS)/
+          F3RE=SPSPEN(-0.25D0*EPS/(1D0+0.25D0*(RAT-1D0)*EPS),0D0,1)-
+     &    SPSPEN((1D0-0.25D0*EPS)/(1D0+0.25D0*(RAT-1D0)*EPS),0D0,1)+
+     &    SPSPEN((1D0-0.25D0*EPS)/(-0.25D0*(RAT+1D0)*EPS),0D0,1)-
+     &    SPSPEN(1D0/(RAT+1D0),0D0,1)+LOG((1D0-0.25D0*EPS)/
      &    (0.25D0*EPS))*LOG((1D0+0.25D0*(RAT-1D0)*EPS)/
      &    (0.25D0*(RAT+1D0)*EPS))
           F3IM=-PARU(1)*LOG((1D0+0.25D0*(RAT-1D0)*EPS)/
      &    (0.25D0*(RAT+1D0)*EPS))
         ELSEIF(ABS(EPS).LT.1D-4.AND.ABS(RAT*EPS).GE.1D-4) THEN
-          F3RE=PYSPEN(-0.25D0*EPS/(BE-0.25D0*EPS),0D0,1)-
-     &    PYSPEN((1D0-0.25D0*EPS)/(BE-0.25D0*EPS),0D0,1)+
-     &    PYSPEN((1D0-0.25D0*EPS)/(1D0-0.25D0*EPS-BE),0D0,1)-
-     &    PYSPEN(-0.25D0*EPS/(1D0-0.25D0*EPS-BE),0D0,1)+
+          F3RE=SPSPEN(-0.25D0*EPS/(BE-0.25D0*EPS),0D0,1)-
+     &    SPSPEN((1D0-0.25D0*EPS)/(BE-0.25D0*EPS),0D0,1)+
+     &    SPSPEN((1D0-0.25D0*EPS)/(1D0-0.25D0*EPS-BE),0D0,1)-
+     &    SPSPEN(-0.25D0*EPS/(1D0-0.25D0*EPS-BE),0D0,1)+
      &    LOG((1D0-0.25D0*EPS)/(0.25D0*EPS))*
      &    LOG((BE-0.25D0*EPS)/(BE-1D0+0.25D0*EPS))
           F3IM=-PARU(1)*LOG((BE-0.25D0*EPS)/(BE-1D0+0.25D0*EPS))
         ELSEIF(ABS(EPS).GE.1D-4.AND.ABS(RAT*EPS).LT.1D-4) THEN
-          F3RE=PYSPEN((GA-1D0)/(GA+0.25D0*RAT*EPS),0D0,1)-
-     &    PYSPEN(GA/(GA+0.25D0*RAT*EPS),0D0,1)+
-     &    PYSPEN(GA/(GA-1D0-0.25D0*RAT*EPS),0D0,1)-
-     &    PYSPEN((GA-1D0)/(GA-1D0-0.25D0*RAT*EPS),0D0,1)+
+          F3RE=SPSPEN((GA-1D0)/(GA+0.25D0*RAT*EPS),0D0,1)-
+     &    SPSPEN(GA/(GA+0.25D0*RAT*EPS),0D0,1)+
+     &    SPSPEN(GA/(GA-1D0-0.25D0*RAT*EPS),0D0,1)-
+     &    SPSPEN((GA-1D0)/(GA-1D0-0.25D0*RAT*EPS),0D0,1)+
      &    LOG(GA/(1D0-GA))*LOG((GA+0.25D0*RAT*EPS)/
      &    (1D0+0.25D0*RAT*EPS-GA))
           F3IM=-PARU(1)*LOG((GA+0.25D0*RAT*EPS)/
      &    (1D0+0.25D0*RAT*EPS-GA))
         ELSE
-          F3RE=PYSPEN((GA-1D0)/(GA+BE-1D0),0D0,1)-
-     &    PYSPEN(GA/(GA+BE-1D0),0D0,1)+PYSPEN(GA/(GA-BE),0D0,1)-
-     &    PYSPEN((GA-1D0)/(GA-BE),0D0,1)+LOG(GA/(1D0-GA))*
+          F3RE=SPSPEN((GA-1D0)/(GA+BE-1D0),0D0,1)-
+     &    SPSPEN(GA/(GA+BE-1D0),0D0,1)+SPSPEN(GA/(GA-BE),0D0,1)-
+     &    SPSPEN((GA-1D0)/(GA-BE),0D0,1)+LOG(GA/(1D0-GA))*
      &    LOG((GA+BE-1D0)/(BE-GA))
           F3IM=-PARU(1)*LOG((GA+BE-1D0)/(BE-GA))
         ENDIF
@@ -29169,11 +29169,11 @@ C...Commonblocks.
         R=SQRT(RSQ)
         THE=ACOS(MAX(-0.999999D0,MIN(0.999999D0,RCTHE/R)))
         PHI=ACOS(MAX(-0.999999D0,MIN(0.999999D0,RCPHI/R)))
-        F3RE=PYSPEN(RCTHE,RSTHE,1)+PYSPEN(RCTHE,-RSTHE,1)-
-     &  PYSPEN(RCPHI,RSPHI,1)-PYSPEN(RCPHI,-RSPHI,1)+
+        F3RE=SPSPEN(RCTHE,RSTHE,1)+SPSPEN(RCTHE,-RSTHE,1)-
+     &  SPSPEN(RCPHI,RSPHI,1)-SPSPEN(RCPHI,-RSPHI,1)+
      &  (PHI-THE)*(PHI+THE-PARU(1))
-        F3IM=PYSPEN(RCTHE,RSTHE,2)+PYSPEN(RCTHE,-RSTHE,2)-
-     &  PYSPEN(RCPHI,RSPHI,2)-PYSPEN(RCPHI,-RSPHI,2)
+        F3IM=SPSPEN(RCTHE,RSTHE,2)+SPSPEN(RCTHE,-RSTHE,2)-
+     &  SPSPEN(RCPHI,RSPHI,2)-SPSPEN(RCPHI,-RSPHI,2)
       ENDIF
  
       Y3RE=2D0/(2D0*BE-1D0)*F3RE
@@ -29184,19 +29184,19 @@ C...Commonblocks.
  
 C***********************************************************************
  
-C...PYSPEN
+C...SPSPEN
 C...Calculates real and imaginary part of Spence function; see
 C...G. 't Hooft and M. Veltman, Nucl. Phys. B153 (1979) 365.
  
-      FUNCTION PYSPEN(XREIN,XIMIN,IREIM)
+      FUNCTION SPSPEN(XREIN,XIMIN,IREIM)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYDAT1/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      SAVE /SPDAT1/
 C...Local array and data.
       DIMENSION B(0:14)
       DATA B/
@@ -29209,15 +29209,15 @@ C...Local array and data.
       XRE=XREIN
       XIM=XIMIN
       IF(ABS(1D0-XRE).LT.1D-6.AND.ABS(XIM).LT.1D-6) THEN
-        IF(IREIM.EQ.1) PYSPEN=PARU(1)**2/6D0
-        IF(IREIM.EQ.2) PYSPEN=0D0
+        IF(IREIM.EQ.1) SPSPEN=PARU(1)**2/6D0
+        IF(IREIM.EQ.2) SPSPEN=0D0
         RETURN
       ENDIF
  
       XMOD=SQRT(XRE**2+XIM**2)
       IF(XMOD.LT.1D-6) THEN
-        IF(IREIM.EQ.1) PYSPEN=0D0
-        IF(IREIM.EQ.2) PYSPEN=0D0
+        IF(IREIM.EQ.1) SPSPEN=0D0
+        IF(IREIM.EQ.2) SPSPEN=0D0
         RETURN
       ENDIF
  
@@ -29271,33 +29271,33 @@ C...Local array and data.
         SPIM=SPIM+B(I)*TERMIM
   100 CONTINUE
  
-  110 IF(IREIM.EQ.1) PYSPEN=SP0RE+SGN*SPRE
-      IF(IREIM.EQ.2) PYSPEN=SP0IM+SGN*SPIM
+  110 IF(IREIM.EQ.1) SPSPEN=SP0RE+SGN*SPRE
+      IF(IREIM.EQ.2) SPSPEN=SP0IM+SGN*SPIM
  
       RETURN
       END
  
 C***********************************************************************
  
-C...PYQQBH
+C...SPQQBH
 C...Calculates the matrix element for the processes
 C...g + g or q + qbar -> Q + Qbar + H (normally with Q = t).
 C...REDUCE output and part of the rest courtesy Z. Kunszt, see
 C...Z. Kunszt, Nucl. Phys. B247 (1984) 339.
  
-      SUBROUTINE PYQQBH(WTQQBH)
+      SUBROUTINE SPQQBH(WTQQBH)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      SAVE /PYDAT1/,/PYDAT2/,/PYPARS/,/PYINT1/,/PYINT2/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      SAVE /SPDAT1/,/SPDAT2/,/SPPARS/,/SPINT1/,/SPINT2/
 C...Local arrays and function.
       DIMENSION PP(15,4),CLR(8,8),FM(10,10),RM(8,8),DX(8)
       DOT(I,J)=PP(I,4)*PP(J,4)-PP(I,1)*PP(J,1)-PP(I,2)*PP(J,2)-
@@ -29307,7 +29307,7 @@ C...Mass parameters.
       WTQQBH=0D0
       ISUB=MINT(1)
       SHPR=SQRT(VINT(26))*VINT(1)
-      PQ=PMAS(PYCOMP(KFPR(ISUB,2)),1)
+      PQ=PMAS(SPCOMP(KFPR(ISUB,2)),1)
       PH=SQRT(VINT(21))*VINT(1)
       SPQ=PQ**2
       SPH=PH**2
@@ -29690,34 +29690,34 @@ C...Produce final result: matrix elements * propagators.
  
 C*********************************************************************
  
-C...PYMSIN
+C...SPMSIN
 C...Initializes supersymmetry: finds sparticle masses and
 C...branching ratios and stores this information.
 C...AUTHOR: STEPHEN MRENNA
 C...Baryon- and lepton-number violating parameters by P. Z. Skands.
  
-      SUBROUTINE PYMSIN
+      SUBROUTINE SPMSIN
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT4/MWID(500),WIDS(500,5)
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-      COMMON/PYMSRV/RVLAM(3,3,3), RVLAMP(3,3,3), RVLAMB(3,3,3)
-      COMMON/PYSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT4/MWID(500),WIDS(500,5)
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+      COMMON/SPMSRV/RVLAM(3,3,3), RVLAMP(3,3,3), RVLAMB(3,3,3)
+      COMMON/SPSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
      &SFMIX(16,4),ZMIXI(4,4),UMIXI(2,2),VMIXI(2,2)
-      COMMON/PYHTRI/HHH(7)
-      SAVE /PYDAT1/,/PYDAT2/,/PYDAT3/,/PYPARS/,/PYINT4/,/PYMSSM/,
-     &/PYMSRV/,/PYSSMT/
+      COMMON/SPHTRI/HHH(7)
+      SAVE /SPDAT1/,/SPDAT2/,/SPDAT3/,/SPPARS/,/SPINT4/,/SPMSSM/,
+     &/SPMSRV/,/SPSSMT/
  
 C...Local variables.
       DOUBLE PRECISION ALFA,BETA
@@ -29747,13 +29747,13 @@ C...Do nothing if SUSY not requested.
       IMSSM=IMSS(1)
       IF(IMSSM.EQ.0) RETURN
  
-C...Save copy of MWID(KC) and MDCY(KC,1) values before
+C...Save cosp of MWID(KC) and MDCY(KC,1) values before
 C...they are set to zero for the LSP.
       IF(INIT.EQ.0) THEN
         INIT=1
         DO 100 I=1,36
           KF=KFSUSY(I)
-          KC=PYCOMP(KF)
+          KC=SPCOMP(KF)
           MWIDSU(I)=MWID(KC)
           MDCYSU(I)=MDCY(KC,1)
   100   CONTINUE
@@ -29762,7 +29762,7 @@ C...they are set to zero for the LSP.
 C...Restore MWID(KC) and MDCY(KC,1) values previously zeroed for LSP.
       DO 110 I=1,36
         KF=KFSUSY(I)
-        KC=PYCOMP(KF)
+        KC=SPCOMP(KF)
         IF(MDCY(KC,1).EQ.0.AND.MDCYSU(I).NE.0) THEN
           MWID(KC)=MWIDSU(I)
           MDCY(KC,1)=MDCYSU(I)
@@ -29794,13 +29794,13 @@ C...Define sparticle masses for a general MSSM simulation.
       IF(IMSSM.EQ.1) THEN
         IF(IMSS(9).EQ.0) RMSS(22)=RMSS(9)
         DO 130 I=1,5,2
-          KC=PYCOMP(KSUSY1+I)
+          KC=SPCOMP(KSUSY1+I)
           PMAS(KC,1)=SQRT(RMSS(8)**2-(2D0*XMW2+XMZ2)*COS2B/6D0)
-          KC=PYCOMP(KSUSY2+I)
+          KC=SPCOMP(KSUSY2+I)
           PMAS(KC,1)=SQRT(RMSS(9)**2+(XMW2-XMZ2)*COS2B/3D0)
-          KC=PYCOMP(KSUSY1+I+1)
+          KC=SPCOMP(KSUSY1+I+1)
           PMAS(KC,1)=SQRT(RMSS(8)**2+(4D0*XMW2-XMZ2)*COS2B/6D0)
-          KC=PYCOMP(KSUSY2+I+1)
+          KC=SPCOMP(KSUSY2+I+1)
           PMAS(KC,1)=SQRT(RMSS(22)**2-(XMW2-XMZ2)*COS2B*2D0/3D0)
   130   CONTINUE
         XARG=RMSS(6)**2-PMAS(24,1)**2*ABS(COS(2D0*BETA))
@@ -29813,10 +29813,10 @@ C...Define sparticle masses for a general MSSM simulation.
           XARG=SQRT(XARG)
         ENDIF
         DO 140 I=11,15,2
-          PMAS(PYCOMP(KSUSY1+I),1)=RMSS(6)
-          PMAS(PYCOMP(KSUSY2+I),1)=RMSS(7)
-          PMAS(PYCOMP(KSUSY1+I+1),1)=XARG
-          PMAS(PYCOMP(KSUSY2+I+1),1)=9999D0
+          PMAS(SPCOMP(KSUSY1+I),1)=RMSS(6)
+          PMAS(SPCOMP(KSUSY2+I),1)=RMSS(7)
+          PMAS(SPCOMP(KSUSY1+I+1),1)=XARG
+          PMAS(SPCOMP(KSUSY2+I+1),1)=9999D0
   140   CONTINUE
         IF(IMSS(8).EQ.1) THEN
           RMSS(13)=RMSS(6)
@@ -29825,10 +29825,10 @@ C...Define sparticle masses for a general MSSM simulation.
  
 C...Alternatively derive masses from SUGRA relations.
       ELSEIF(IMSSM.EQ.2) THEN
-        CALL PYAPPS
+        CALL SPAPPS
 C...Or use ISASUSY
       ELSEIF(IMSSM.EQ.12) THEN
-        CALL PYSUGI
+        CALL SPSUGI
         ALFA=RMSS(18)
         GOTO 170
       ENDIF
@@ -29860,21 +29860,21 @@ C...Add in extra D-term contributions.
      &  /ABS(COS2B)
         DMA2 = 2D0*DMU2+DHU2+DHD2
         DO 150 I=1,5,2
-          KC=PYCOMP(KSUSY1+I)
+          KC=SPCOMP(KSUSY1+I)
           PMAS(KC,1)=SQRT(PMAS(KC,1)**2+DQ2)
-          KC=PYCOMP(KSUSY2+I)
+          KC=SPCOMP(KSUSY2+I)
           PMAS(KC,1)=SQRT(PMAS(KC,1)**2+DD2)
-          KC=PYCOMP(KSUSY1+I+1)
+          KC=SPCOMP(KSUSY1+I+1)
           PMAS(KC,1)=SQRT(PMAS(KC,1)**2+DQ2)
-          KC=PYCOMP(KSUSY2+I+1)
+          KC=SPCOMP(KSUSY2+I+1)
           PMAS(KC,1)=SQRT(PMAS(KC,1)**2+DU2)
   150   CONTINUE
         DO 160 I=11,15,2
-          KC=PYCOMP(KSUSY1+I)
+          KC=SPCOMP(KSUSY1+I)
           PMAS(KC,1)=SQRT(PMAS(KC,1)**2+DL2)
-          KC=PYCOMP(KSUSY2+I)
+          KC=SPCOMP(KSUSY2+I)
           PMAS(KC,1)=SQRT(PMAS(KC,1)**2+DE2)
-          KC=PYCOMP(KSUSY1+I+1)
+          KC=SPCOMP(KSUSY1+I+1)
           PMAS(KC,1)=SQRT(PMAS(KC,1)**2+DL2)
   160   CONTINUE
         IF(RMSS(4)**2+DMU2.LT.0D0) THEN
@@ -29908,13 +29908,13 @@ C...Add in extra D-term contributions.
       ENDIF
  
 C...Fix the third generation sfermions.
-      CALL PYTHRG
+      CALL SPTHRG
  
 C...Fix the neutralino--chargino--gluino sector.
-      CALL PYINOM
+      CALL SPINOM
  
 C...Fix the Higgs sector.
-      CALL PYHGGM(ALFA)
+      CALL SPHGGM(ALFA)
  
 C...Choose the Gunion-Haber convention.
       ALFA=-ALFA
@@ -29960,7 +29960,7 @@ C...Print information on mass parameters.
       ENDIF
  
 C...Set up the Higgs couplings - needed here since initialization
-C...in PYINRE did not yet occur when PYWIDT is called below.
+C...in SPINRE did not yet occur when SPWIDT is called below.
   170 AL=ALFA
       BE=BETA
       SINA=SIN(AL)
@@ -30139,7 +30139,7 @@ C...Antisymmetrize couplings set by user
 C...Second part of routine: set decay modes and branching ratios.
  
 C...Allow chi10 -> gravitino + gamma or not.
-      KC=PYCOMP(KSUSY1+39)
+      KC=SPCOMP(KSUSY1+39)
       IF( IMSS(11) .NE. 0 ) THEN
         PMAS(KC,1)=RMSS(21)/1000000000D0
         PMAS(KC,2)=0.0001D0
@@ -30162,14 +30162,14 @@ C...Allow chi10 -> gravitino + gamma or not.
       ENDIF
  
 C...Loop over sparticle and Higgs species.
-      PMCHI1=PMAS(PYCOMP(KSUSY1+22),1)
+      PMCHI1=PMAS(SPCOMP(KSUSY1+22),1)
 C...Find the LSP or NLSP for a gravitino LSP
       ILSP=0
       PMLSP=1D20
       DO 300 I=1,36
         KF=KFSUSY(I)
         IF(KF.EQ.1000039) GOTO 300
-        KC=PYCOMP(KF)
+        KC=SPCOMP(KF)
         IF(PMAS(KC,1).LT.PMLSP) THEN
           ILSP=I
           PMLSP=PMAS(KC,1)
@@ -30177,7 +30177,7 @@ C...Find the LSP or NLSP for a gravitino LSP
   300 CONTINUE
       DO 370 I=1,36
         KF=KFSUSY(I)
-        KC=PYCOMP(KF)
+        KC=SPCOMP(KF)
         LKNT=0
  
 C...Sfermion decays.
@@ -30186,17 +30186,17 @@ C...First check to see if sneutrino is lighter than chi10.
           IF((I.EQ.15.OR.I.EQ.19.OR.I.EQ.23).AND.
      &    PMAS(KC,1).LT.PMCHI1) THEN
           ELSE
-            CALL PYSFDC(KF,XLAM,IDLAM,LKNT)
+            CALL SPSFDC(KF,XLAM,IDLAM,LKNT)
           ENDIF
  
 C...Gluino decays.
         ELSEIF(I.EQ.25) THEN
-          CALL PYGLUI(KF,XLAM,IDLAM,LKNT)
+          CALL SPGLUI(KF,XLAM,IDLAM,LKNT)
           IF(I.EQ.ILSP.AND.IRPRTY.EQ.1) LKNT=0
  
 C...Neutralino decays.
         ELSEIF(I.GE.26.AND.I.LE.29) THEN
-          CALL PYNJDC(KF,XLAM,IDLAM,LKNT)
+          CALL SPNJDC(KF,XLAM,IDLAM,LKNT)
 C...chi10 stable or chi10 -> gravitino + gamma.
           IF(I.EQ.26.AND.IRPRTY.EQ.1) THEN
             PMAS(KC,2)=1D-6
@@ -30206,7 +30206,7 @@ C...chi10 stable or chi10 -> gravitino + gamma.
  
 C...Chargino decays.
         ELSEIF(I.GE.30.AND.I.LE.31) THEN
-          CALL PYCJDC(KF,XLAM,IDLAM,LKNT)
+          CALL SPCJDC(KF,XLAM,IDLAM,LKNT)
  
 C...Gravitino is stable.
         ELSEIF(I.EQ.32) THEN
@@ -30216,7 +30216,7 @@ C...Gravitino is stable.
 C...Higgs decays.
         ELSEIF(I.GE.33.AND.I.LE.36) THEN
 C...Calculate decays to non-SUSY particles.
-          CALL PYWIDT(KF,PMAS(KC,1)**2,WDTP,WDTE)
+          CALL SPWIDT(KF,PMAS(KC,1)**2,WDTP,WDTE)
           LKNT=0
           DO 310 I1=0,100
             XLAM(I1)=0D0
@@ -30233,7 +30233,7 @@ C...Calculate decays to non-SUSY particles.
             LKNT=LKNT+1
   330     CONTINUE
 C...Add the decays to SUSY particles.
-          CALL PYHEXT(KF,XLAM,IDLAM,LKNT)
+          CALL SPHEXT(KF,XLAM,IDLAM,LKNT)
         ENDIF
 C...Zero the branching ratios for use in loop mode
 C...thanks to K. Matchev (FNAL)
@@ -30263,10 +30263,10 @@ C...Store branching ratios in the standard tables.
               BRAT(IDC)=XLAM(IL)/XLAM(0)
               XMDIF=PMAS(KC,1)
               IF(MDME(IDC,1).GE.1) THEN
-                XMDIF=XMDIF-PMAS(PYCOMP(KFDP(IDC,1)),1)-
-     &          PMAS(PYCOMP(KFDP(IDC,2)),1)
+                XMDIF=XMDIF-PMAS(SPCOMP(KFDP(IDC,1)),1)-
+     &          PMAS(SPCOMP(KFDP(IDC,2)),1)
                 IF(KFDP(IDC,3).NE.0) XMDIF=XMDIF-
-     &          PMAS(PYCOMP(KFDP(IDC,3)),1)
+     &          PMAS(SPCOMP(KFDP(IDC,3)),1)
               ENDIF
               IF(I.LE.32) THEN
                 IF(XMDIF.GE.0D0) THEN
@@ -30279,7 +30279,7 @@ C...Store branching ratios in the standard tables.
               ENDIF
               GOTO 360
             ELSEIF(IDC.EQ.IDCSV) THEN
-              WRITE(MSTU(11),*) ' Error in PYMSIN: SUSY decay ',
+              WRITE(MSTU(11),*) ' Error in SPMSIN: SUSY decay ',
      &        'channel not recognized:'
               WRITE(MSTU(11),*) KF,' -> ',(IDLAM(I,J),J=1,3)
               GOTO 360
@@ -30306,25 +30306,25 @@ C...Store width, cutoff and lifetime.
  
 C*********************************************************************
  
-C...PYAPPS
+C...SPAPPS
 C...Uses approximate analytical formulae to determine the full set of
 C...MSSM parameters from SUGRA input.
 C...See M. Drees and S.P. Martin, hep-ph/9504124
  
-      SUBROUTINE PYAPPS
+      SUBROUTINE SPAPPS
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-      SAVE /PYDAT1/,/PYDAT2/,/PYMSSM/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+      SAVE /SPDAT1/,/SPDAT2/,/SPMSSM/
  
       IMSS(5)=0
       IMSS(8)=0
@@ -30349,15 +30349,15 @@ C...Commonblocks.
       XMEL=SQRT(XM02+0.52D0*XMG2-(0.5D0-XW)*DTERM)
       RMSS(6)=XMEL
       RMSS(7)=XMER
-      XMUR=SQRT(PYRNMQ(2,2D0/3D0*XW*DTERM))
-      XMDR=SQRT(PYRNMQ(3,-1D0/3D0*XW*DTERM))
-      XMUL=SQRT(PYRNMQ(1,(0.5D0-2D0/3D0*XW)*DTERM))
-      XMDL=SQRT(PYRNMQ(1,-(0.5D0-1D0/3D0*XW)*DTERM))
+      XMUR=SQRT(SPRNMQ(2,2D0/3D0*XW*DTERM))
+      XMDR=SQRT(SPRNMQ(3,-1D0/3D0*XW*DTERM))
+      XMUL=SQRT(SPRNMQ(1,(0.5D0-2D0/3D0*XW)*DTERM))
+      XMDL=SQRT(SPRNMQ(1,-(0.5D0-1D0/3D0*XW)*DTERM))
       DO 100 I=1,5,2
-        PMAS(PYCOMP(KSUSY1+I),1)=XMDL
-        PMAS(PYCOMP(KSUSY2+I),1)=XMDR
-        PMAS(PYCOMP(KSUSY1+I+1),1)=XMUL
-        PMAS(PYCOMP(KSUSY2+I+1),1)=XMUR
+        PMAS(SPCOMP(KSUSY1+I),1)=XMDL
+        PMAS(SPCOMP(KSUSY2+I),1)=XMDR
+        PMAS(SPCOMP(KSUSY1+I+1),1)=XMUL
+        PMAS(SPCOMP(KSUSY2+I+1),1)=XMUR
   100 CONTINUE
       XARG=XMEL**2-XMW2*ABS(COS(2D0*BETA))
       IF(XARG.LT.0D0) THEN
@@ -30369,15 +30369,15 @@ C...Commonblocks.
         XARG=SQRT(XARG)
       ENDIF
       DO 110 I=11,15,2
-        PMAS(PYCOMP(KSUSY1+I),1)=XMEL
-        PMAS(PYCOMP(KSUSY2+I),1)=XMER
-        PMAS(PYCOMP(KSUSY1+I+1),1)=XARG
-        PMAS(PYCOMP(KSUSY2+I+1),1)=9999D0
+        PMAS(SPCOMP(KSUSY1+I),1)=XMEL
+        PMAS(SPCOMP(KSUSY2+I),1)=XMER
+        PMAS(SPCOMP(KSUSY1+I+1),1)=XARG
+        PMAS(SPCOMP(KSUSY2+I+1),1)=9999D0
   110 CONTINUE
-      RMT=PYMRUN(6,PMAS(6,1)**2)
+      RMT=SPMRUN(6,PMAS(6,1)**2)
       XTOP=(RMT/150D0/SINB)**2*(.9D0*XM02+2.1D0*XMG2+
      &(1D0-(RMT/190D0/SINB)**3)*(.24D0*AT**2+AT*XMG))
-      RMB=PYMRUN(5,PMAS(6,1)**2)
+      RMB=SPMRUN(5,PMAS(6,1)**2)
       XBOT=(RMB/150D0/COSB)**2*(.9D0*XM02+2.1D0*XMG2+
      &(1D0-(RMB/190D0/COSB)**3)*(.24D0*AT**2+AT*XMG))
       XTAU=1D-4/COSB**2*(XM02+0.15D0*XMG2+AT**2/3D0)
@@ -30392,36 +30392,36 @@ C...Commonblocks.
       IF(XMA2.GT.0D0) THEN
         RMSS(19)=SQRT(XMA2)
       ELSE
-        WRITE(MSTU(11),*) ' PYAPPS:: PSEUDOSCALAR MASS**2 < 0 '
+        WRITE(MSTU(11),*) ' SPAPPS:: PSEUDOSCALAR MASS**2 < 0 '
         STOP
       ENDIF
       ARG=XM02+0.15D0*XMG2-2D0*XTAU/3D0-XW*DTERM
       IF(ARG.GT.0D0) THEN
         RMSS(14)=SQRT(ARG)
       ELSE
-        WRITE(MSTU(11),*) ' PYAPPS:: RIGHT STAU MASS**2 < 0 '
+        WRITE(MSTU(11),*) ' SPAPPS:: RIGHT STAU MASS**2 < 0 '
         STOP
       ENDIF
       ARG=XM02+0.52D0*XMG2-XTAU/3D0-(0.5D0-XW)*DTERM
       IF(ARG.GT.0D0) THEN
         RMSS(13)=SQRT(ARG)
       ELSE
-        WRITE(MSTU(11),*) ' PYAPPS::  LEFT STAU MASS**2 < 0 '
+        WRITE(MSTU(11),*) ' SPAPPS::  LEFT STAU MASS**2 < 0 '
         STOP
       ENDIF
-      ARG=PYRNMQ(1,-(XBOT+XTOP)/3D0)
+      ARG=SPRNMQ(1,-(XBOT+XTOP)/3D0)
       IF(ARG.GT.0D0) THEN
         RMSS(10)=SQRT(ARG)
       ELSE
         RMSS(10)=-SQRT(-ARG)
       ENDIF
-      ARG=PYRNMQ(2,-2D0*XTOP/3D0)
+      ARG=SPRNMQ(2,-2D0*XTOP/3D0)
       IF(ARG.GT.0D0) THEN
         RMSS(12)=SQRT(ARG)
       ELSE
         RMSS(12)=-SQRT(-ARG)
       ENDIF
-      ARG=PYRNMQ(3,-2D0*XBOT/3D0)
+      ARG=SPRNMQ(3,-2D0*XBOT/3D0)
       IF(ARG.GT.0D0) THEN
         RMSS(11)=SQRT(ARG)
       ELSE
@@ -30432,17 +30432,17 @@ C...Commonblocks.
       END
  
 C*********************************************************************
-C...PYSUGI
+C...SPSUGI
 C...Interface to ISASUSY version dummy version
 C...avoids conflicts if linked with wrong ISASUSY version
-      SUBROUTINE PYSUGI
+      SUBROUTINE SPSUGI
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYDAT1/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      SAVE /SPDAT1/
 C...Local arrays and character variables.
       CHARACTER*20 PARM(20)
       DOUBLE PRECISION VALUE(20)
@@ -30453,23 +30453,23 @@ C...Stop program if this routine is ever called.
       STOP
  
 C...Format for error printout.
- 5000 FORMAT(1X,'Error: you did not link PYSUGI correctly.'/
+ 5000 FORMAT(1X,'Error: you did not link SPSUGI correctly.'/
      &1X,'Dummy routine called instead.'/
      &1X,'Execution stopped!')
  
       END
  
-cc C...PYSUGI
+cc C...SPSUGI
 cc C...Interface to ISASUSY version 7.61.
 cc C...Warning: if you use earlier versions, change dimension to
 cc C...SUPER(66) in /SSPAR/ and remove MHPNEG and ASM3 from /SUGPAS/.
 cc C...Calls SUGRA (in ISAJET) to perform RGE evolution.
 cc C...Then converts to Gunion-Haber conventions.
  
-cc       SUBROUTINE PYSUGI
+cc       SUBROUTINE SPSUGI
 cc       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
  
-cc       INTEGER PYK,PYCHGE,PYCOMP
+cc       INTEGER SPK,SPCHGE,SPCOMP
 cc       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
 cc      &KEXCIT=4000000,KDIMEN=5000000)
  
@@ -30480,7 +30480,7 @@ cc       PARAMETER (DOC='22 Nov 2002')
 cc C...ISASUGRA Input:
 cc       REAL MZERO,MHLF,AZERO,TANB,SGNMU,MTOP
 cc C...ISASUGRA Output
-cc       CHARACTER*40 ISAVER,VISAJE
+cc       CHARACTER*40 ISAVER,SVSAJE
 cc       REAL SUPER
 cc       COMMON /SSPAR/ SUPER(69)
 cc       COMMON /SUGMG/ MSS(32),GSS(29),MGUTSS,GGUTSS,AGUTSS,FTGUT,
@@ -30538,24 +30538,24 @@ cc C     MGUTSS  = M_GUT    GGUTSS  = g_GUT    AGUTSS  = alpha_GUTC
 cc C...SPYTHIA Input/Output:
 cc       INTEGER IMSS
 cc       DOUBLE PRECISION RMSS
-cc       COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-cc       COMMON/PYSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
+cc       COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+cc       COMMON/SPSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
 cc      &SFMIX(16,4),ZMIXI(4,4),UMIXI(2,2),VMIXI(2,2)
 cc       SAVE /SUGMG/,/SSPAR/
 cc C
 cc C...PYTHIA common blocks
 cc C...Parameters.
-cc       COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-cc       COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+cc       COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+cc       COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
 cc C...Particle properties + some flavour parameters.
-cc       COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-cc       SAVE  /PYDAT2/,/PYSSMT/
+cc       COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+cc       SAVE  /SPDAT2/,/SPSSMT/
  
 cc C...Start by checking for incompatibilities/inconsistencies:
 cc       DO 100 ICHK=2,9
 cc         IF (ICHK.NE.8.AND.ICHK.NE.4.AND.IMSS(ICHK).NE.0) THEN
-cc           WRITE (MSTU(11),*) '(PYSUGI:) IMSS(',ICHK,')=',IMSS(ICHK)
-cc      &         ,' option not used by PYSUGI'
+cc           WRITE (MSTU(11),*) '(SPSUGI:) IMSS(',ICHK,')=',IMSS(ICHK)
+cc      &         ,' option not used by SPSUGI'
 cc         ENDIF
 cc   100 CONTINUE
 cc C...ISAJET works with REAL numbers.
@@ -30573,25 +30573,25 @@ cc C...Call ISASUGRA
 cc       CALL SUGRA(MZERO,MHLF,AZERO,TANB,SGNMU,MTOP,1)
 cc C...Check whether ISASUSY thought the model was OK.
 cc       IF (NOGOOD.NE.0) THEN
-cc         IF (NOGOOD.EQ.1) CALL PYERRM(26
-cc      &       ,'(PYSUGI:) SUSY parameters give tachyonic particles.')
-cc         IF (NOGOOD.EQ.2) CALL PYERRM(26
-cc      &       ,'(PYSUGI:) SUSY parameters give no EWSB.')
-cc         IF (NOGOOD.EQ.3) CALL PYERRM(26
-cc      &       ,'(PYSUGI:) SUSY parameters give m(A0) < 0.')
-cc         IF (NOGOOD.EQ.4) CALL PYERRM(26
-cc      &       ,'(PYSUGI:) SUSY parameters give Yukawa > 100.')
-cc         IF (NOGOOD.EQ.7) CALL PYERRM(26
-cc      &       ,'(PYSUGI:) SUSY parameters give x_T EWSB bad.')
-cc         IF (NOGOOD.EQ.8) CALL PYERRM(26
-cc      &       ,'(PYSUGI:) SUSY parameters give m(h0)^2 < 0.')
+cc         IF (NOGOOD.EQ.1) CALL SPERRM(26
+cc      &       ,'(SPSUGI:) SUSY parameters give tachyonic particles.')
+cc         IF (NOGOOD.EQ.2) CALL SPERRM(26
+cc      &       ,'(SPSUGI:) SUSY parameters give no EWSB.')
+cc         IF (NOGOOD.EQ.3) CALL SPERRM(26
+cc      &       ,'(SPSUGI:) SUSY parameters give m(A0) < 0.')
+cc         IF (NOGOOD.EQ.4) CALL SPERRM(26
+cc      &       ,'(SPSUGI:) SUSY parameters give Yukawa > 100.')
+cc         IF (NOGOOD.EQ.7) CALL SPERRM(26
+cc      &       ,'(SPSUGI:) SUSY parameters give x_T EWSB bad.')
+cc         IF (NOGOOD.EQ.8) CALL SPERRM(26
+cc      &       ,'(SPSUGI:) SUSY parameters give m(h0)^2 < 0.')
 cc C...Give warning, but don't stop, if LSP not ~chi_10.
-cc         IF (NOGOOD.EQ.5) CALL PYERRM(16
-cc      &       ,'(PYSUGI:) SUSY parameters give ~chi_10 not LSP.')
+cc         IF (NOGOOD.EQ.5) CALL SPERRM(16
+cc      &       ,'(SPSUGI:) SUSY parameters give ~chi_10 not LSP.')
 cc       ENDIF
 cc C...Warn about possible GUT scale tachyons.
-cc       IF (ITACHY.NE.0) CALL PYERRM(16,
-cc      &       '(PYSUGI:) Tachyonic sleptons at GUT scale.')
+cc       IF (ITACHY.NE.0) CALL SPERRM(16,
+cc      &       '(SPSUGI:) Tachyonic sleptons at GUT scale.')
  
 cc C...M1 and M2.
 cc       RMSS(1)=GSS(7)
@@ -30630,41 +30630,41 @@ cc       RMSS(21)=SUPER(66)
  
 cc C...Now we're done with RMSS. Time to fill PMAS (m > 0 required).
 cc C...Higgs sector.
-cc       PMAS(PYCOMP(25),1)=ABS(SUPER(55))
-cc       PMAS(PYCOMP(35),1)=ABS(SUPER(56))
-cc       PMAS(PYCOMP(36),1)=ABS(SUPER(57))
-cc       PMAS(PYCOMP(37),1)=ABS(SUPER(58))
+cc       PMAS(SPCOMP(25),1)=ABS(SUPER(55))
+cc       PMAS(SPCOMP(35),1)=ABS(SUPER(56))
+cc       PMAS(SPCOMP(36),1)=ABS(SUPER(57))
+cc       PMAS(SPCOMP(37),1)=ABS(SUPER(58))
 cc C...Gluino.
-cc       PMAS(PYCOMP(KSUSY1+21),1)=ABS(SUPER(1))
+cc       PMAS(SPCOMP(KSUSY1+21),1)=ABS(SUPER(1))
 cc C...Squarks and Sleptons.
 cc       DO 120 ILR=1,2
 cc         ILRM=ILR-1
-cc         PMAS(PYCOMP(ILR*KSUSY1+1),1)=ABS(SUPER(4+ILRM))
-cc         PMAS(PYCOMP(ILR*KSUSY1+2),1)=ABS(SUPER(2+ILRM))
-cc         PMAS(PYCOMP(ILR*KSUSY1+3),1)=ABS(SUPER(6+ILRM))
-cc         PMAS(PYCOMP(ILR*KSUSY1+4),1)=ABS(SUPER(8+ILRM))
-cc         PMAS(PYCOMP(ILR*KSUSY1+5),1)=ABS(SUPER(12+ILRM))
-cc         PMAS(PYCOMP(ILR*KSUSY1+6),1)=ABS(SUPER(16+ILRM))
-cc         PMAS(PYCOMP(ILR*KSUSY1+11),1)=ABS(SUPER(18+ILRM))
-cc         PMAS(PYCOMP(ILR*KSUSY1+13),1)=ABS(SUPER(20+ILRM))
-cc         PMAS(PYCOMP(ILR*KSUSY1+15),1)=ABS(SUPER(24+ILRM))
+cc         PMAS(SPCOMP(ILR*KSUSY1+1),1)=ABS(SUPER(4+ILRM))
+cc         PMAS(SPCOMP(ILR*KSUSY1+2),1)=ABS(SUPER(2+ILRM))
+cc         PMAS(SPCOMP(ILR*KSUSY1+3),1)=ABS(SUPER(6+ILRM))
+cc         PMAS(SPCOMP(ILR*KSUSY1+4),1)=ABS(SUPER(8+ILRM))
+cc         PMAS(SPCOMP(ILR*KSUSY1+5),1)=ABS(SUPER(12+ILRM))
+cc         PMAS(SPCOMP(ILR*KSUSY1+6),1)=ABS(SUPER(16+ILRM))
+cc         PMAS(SPCOMP(ILR*KSUSY1+11),1)=ABS(SUPER(18+ILRM))
+cc         PMAS(SPCOMP(ILR*KSUSY1+13),1)=ABS(SUPER(20+ILRM))
+cc         PMAS(SPCOMP(ILR*KSUSY1+15),1)=ABS(SUPER(24+ILRM))
 cc   120 CONTINUE
-cc       PMAS(PYCOMP(KSUSY1+12),1)=ABS(SUPER(26))
-cc       PMAS(PYCOMP(KSUSY1+14),1)=ABS(SUPER(27))
-cc       PMAS(PYCOMP(KSUSY1+16),1)=ABS(SUPER(28))
+cc       PMAS(SPCOMP(KSUSY1+12),1)=ABS(SUPER(26))
+cc       PMAS(SPCOMP(KSUSY1+14),1)=ABS(SUPER(27))
+cc       PMAS(SPCOMP(KSUSY1+16),1)=ABS(SUPER(28))
 cc C...Neutralinos.
-cc       PMAS(PYCOMP(KSUSY1+22),1)=ABS(SUPER(31))
-cc       PMAS(PYCOMP(KSUSY1+23),1)=ABS(SUPER(32))
-cc       PMAS(PYCOMP(KSUSY1+25),1)=ABS(SUPER(33))
-cc       PMAS(PYCOMP(KSUSY1+35),1)=ABS(SUPER(34))
+cc       PMAS(SPCOMP(KSUSY1+22),1)=ABS(SUPER(31))
+cc       PMAS(SPCOMP(KSUSY1+23),1)=ABS(SUPER(32))
+cc       PMAS(SPCOMP(KSUSY1+25),1)=ABS(SUPER(33))
+cc       PMAS(SPCOMP(KSUSY1+35),1)=ABS(SUPER(34))
 cc C...Signed masses (extra minus from going to G-H convention).
 cc       SMZ(1)=-SUPER(31)
 cc       SMZ(2)=-SUPER(32)
 cc       SMZ(3)=-SUPER(33)
 cc       SMZ(4)=-SUPER(34)
 cc C...Charginos
-cc       PMAS(PYCOMP(KSUSY1+24),1)=ABS(SUPER(51))
-cc       PMAS(PYCOMP(KSUSY1+37),1)=ABS(SUPER(52))
+cc       PMAS(SPCOMP(KSUSY1+24),1)=ABS(SUPER(51))
+cc       PMAS(SPCOMP(KSUSY1+37),1)=ABS(SUPER(52))
 cc C...Signed masses (extra minus from going to G-H convention).
 cc       SMW(1)=-SUPER(51)
 cc       SMW(2)=-SUPER(52)
@@ -30705,7 +30705,7 @@ cc       SFMIX(15,4)=COS(SUPER(65))
  
 cc       IF (MSTP(122).NE.0) THEN
 cc C...Print a few lines to make the user know what's happening
-cc         ISAVER=VISAJE()
+cc         ISAVER=SVSAJE()
 cc         WRITE(MSTU(11),5000) DOC, ISAVER
 cc         WRITE(MSTU(11),5100)
 cc         WRITE(MSTU(11),5200) MZERO, MHLF, AZERO, TANB, NINT(SGNMU), MTOP
@@ -30732,12 +30732,12 @@ cc         WRITE(MSTU(11),5400)
 cc         WRITE(MSTU(11),6500)
 cc       ENDIF
  
-cc C...Fix the higgs sector (in PYMSIN) using the masses and mixing angle
+cc C...Fix the higgs sector (in SPMSIN) using the masses and mixing angle
 cc C...output by ISASUGRA.
 cc       IMSS(4)=2
  
-cc  5000 FORMAT(1x,19('*'),1x,'PYSUGI v1.1: PYTHIA/ISASUGRA '
-cc      &     ,'INTERFACE',1x,19('*')/1x,'*',3x,'PYSUGI: Last Change',1x,A
+cc  5000 FORMAT(1x,19('*'),1x,'SPSUGI v1.1: PYTHIA/ISASUGRA '
+cc      &     ,'INTERFACE',1x,19('*')/1x,'*',3x,'SPSUGI: Last Change',1x,A
 cc      &     ,1x,'-',1x,'P.Z. Skands'/1x,'*',2x,A/1x,'*')
 cc  5100 FORMAT(1x,'*',1x,'ISASUGRA Input:'/1x,'*',1x,'----------------')
 cc  5200 FORMAT(1x,'*',1x,3x,'M_0',6x,'M_1/2',5x,'A_0',3x,'Tan(beta)',
@@ -30781,30 +30781,30 @@ cc      &     1x,'*',3x,'~b_2',1x,2('|',1x,F6.3,1x),'|',3x,'~t_2',1x,2('|'
 cc      &     ,1x,F6.3,1x),'|',3x,'~tau_2',1x,2('|',1x,F6.3,1x),'|')
 cc  6400 FORMAT(1x,'*',3x,'A_b = ',F8.2,4x,'A_t = ',F8.2,4x,'A_tau = ',F8.2
 cc      &     ,4x,'Alpha_GUT = ',F8.2)
-cc  6500 FORMAT(1x,32('*'),1x,'END OF PYSUGI',1x,31('*'))
+cc  6500 FORMAT(1x,32('*'),1x,'END OF SPSUGI',1x,31('*'))
 cc       END
  
 C*********************************************************************
  
-C...PYRNMQ
+C...SPRNMQ
 C...Determines the running mass of Squarks.
  
-      FUNCTION PYRNMQ(ID,DTERM)
+      FUNCTION SPRNMQ(ID,DTERM)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblock.
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-      SAVE /PYMSSM/
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+      SAVE /SPMSSM/
  
 C...Local variables.
       DOUBLE PRECISION PI,R
       DOUBLE PRECISION TOL
       DOUBLE PRECISION CI(3)
-      EXTERNAL PYALPS
-      DOUBLE PRECISION PYALPS
+      EXTERNAL SPALPS
+      DOUBLE PRECISION SPALPS
       DATA TOL/0.001D0/
       DATA PI,R/3.141592654D0,.61803399D0/
       DATA CI/0.47D0,0.07D0,0.02D0/
@@ -30818,7 +30818,7 @@ C...Local variables.
       XM02=XM0*XM0
       XMG2=XMG*XMG
  
-      AS=PYALPS(XM02+6D0*XMG2)
+      AS=SPALPS(XM02+6D0*XMG2)
       CG=8D0/9D0*((AS/AG)**2-1D0)
       BX=XM02+(CA+CG)*XMG2+DTERM
       AX=MIN(50D0**2,0.5D0*BX)
@@ -30833,10 +30833,10 @@ C...Local variables.
         X2=BX
         X1=BX-C*(BX-AX)
       ENDIF
-      AS1=PYALPS(X1)
+      AS1=SPALPS(X1)
       CG=8D0/9D0*((AS1/AG)**2-1D0)
       F1=ABS(XM02+(CA+CG)*XMG2+DTERM-X1)
-      AS2=PYALPS(X2)
+      AS2=SPALPS(X2)
       CG=8D0/9D0*((AS2/AG)**2-1D0)
       F2=ABS(XM02+(CA+CG)*XMG2+DTERM-X2)
   100 IF(ABS(X3-X0).GT.TOL*(ABS(X1)+ABS(X2))) THEN
@@ -30845,7 +30845,7 @@ C...Local variables.
           X1=X2
           X2=R*X1+C*X3
           F1=F2
-          AS2=PYALPS(X2)
+          AS2=SPALPS(X2)
           CG=8D0/9D0*((AS2/AG)**2-1D0)
           F2=ABS(XM02+(CA+CG)*XMG2+DTERM-X2)
         ELSE
@@ -30853,17 +30853,17 @@ C...Local variables.
           X2=X1
           X1=R*X2+C*X0
           F2=F1
-          AS1=PYALPS(X1)
+          AS1=SPALPS(X1)
           CG=8D0/9D0*((AS1/AG)**2-1D0)
           F1=ABS(XM02+(CA+CG)*XMG2+DTERM-X1)
         ENDIF
         GOTO 100
       ENDIF
       IF(F1.LT.F2) THEN
-        PYRNMQ=X1
+        SPRNMQ=X1
         XMIN=X1
       ELSE
-        PYRNMQ=X2
+        SPRNMQ=X2
         XMIN=X2
       ENDIF
  
@@ -30872,26 +30872,26 @@ C...Local variables.
  
 C*********************************************************************
  
-C...PYTHRG
+C...SPTHRG
 C...Calculates the mass eigenstates of the third generation sfermions.
 C...Created:  5-31-96
  
-      SUBROUTINE PYTHRG
+      SUBROUTINE SPTHRG
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-      COMMON/PYSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+      COMMON/SPSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
      &SFMIX(16,4),ZMIXI(4,4),UMIXI(2,2),VMIXI(2,2)
-      SAVE /PYDAT1/,/PYDAT2/,/PYMSSM/,/PYSSMT/
+      SAVE /SPDAT1/,/SPDAT2/,/SPMSSM/,/SPSSMT/
  
 C...Local variables.
       DOUBLE PRECISION BETA
@@ -30928,7 +30928,7 @@ C...OPTION TO FIX T1, T2, B1 MASSES AND MIXINGS
         XM22=RMSS(12)**2
         XMQL2=CTT2*XM12+STT2*XM22
         XMQR2=STT2*XM12+CTT2*XM22
-        XMF2=PYMRUN(6,PMAS(6,1)**2)**2
+        XMF2=SPMRUN(6,PMAS(6,1)**2)**2
         ATOP=-XMU/TANB+CTT*STT*(XM12-XM22)/SQRT(XMF2)
         RMSS(16)=ATOP
 C......SUBTRACT OUT D-TERM AND FERMION MASS
@@ -30951,7 +30951,7 @@ C SAME FOR BOTTOM SQUARK
         STT=DSIN(RMSS(26))
         STT2=STT**2
         XM22=RMSS(11)**2
-        XMF2=PYMRUN(5,PMAS(6,1)**2)**2
+        XMF2=SPMRUN(5,PMAS(6,1)**2)**2
         XMQL2=SIGN(RMSS(10)**2,RMSS(10))-(2D0*XMW2+XMZ2)*COS2B/6D0+XMF2
         IF(ABS(CTT).GE..9999D0) THEN
           ABOT=-XMU*TANB
@@ -31014,7 +31014,7 @@ C......SUBTRACT OUT D-TERM AND FERMION MASS
           XMQR2=AMQR**2
         ENDIF
         IF=ID2(L)
-        XMF=PYMRUN(IF,PMAS(6,1)**2)
+        XMF=SPMRUN(IF,PMAS(6,1)**2)
         XMF2=XMF**2
         AM2(1,1)=XMQL2+XMF2
         AM2(2,2)=XMQR2+XMF2
@@ -31046,7 +31046,7 @@ C......SUBTRACT OUT D-TERM AND FERMION MASS
         DETM=AM2(1,1)*AM2(2,2)-AM2(2,1)**2
         IF(DETM.LT.0D0) THEN
           WRITE(MSTU(11),*) ID2(L),DETM,AM2
-          CALL PYERRM(30,' NEGATIVE**2 MASS FOR SFERMION IN PYTHRG ')
+          CALL SPERRM(30,' NEGATIVE**2 MASS FOR SFERMION IN SPTHRG ')
         ENDIF
         SAME=0.5D0*(AM2(1,1)+AM2(2,2))
         DIFF=0.5D0*SQRT((AM2(1,1)-AM2(2,2))**2+4D0*AM2(1,2)*AM2(2,1))
@@ -31107,8 +31107,8 @@ C...STOP
      &    ' NEGATIVE MASSES '
           STOP
         ENDIF
-        PMAS(PYCOMP(KSUSY1+IF),1)=SQRT(XMF12)
-        PMAS(PYCOMP(KSUSY2+IF),1)=SQRT(XMF22)
+        PMAS(SPCOMP(KSUSY1+IF),1)=SQRT(XMF12)
+        PMAS(SPCOMP(KSUSY2+IF),1)=SQRT(XMF22)
         SFMIX(IF,1)=RT(1,1)
         SFMIX(IF,2)=RT(1,2)
         SFMIX(IF,3)=RT(2,1)
@@ -31119,12 +31119,12 @@ C.....TAU SNEUTRINO MASS...L=3
  
       XARG=AM2(1,1)+XMW2*COS2B
       IF(XARG.LT.0D0) THEN
-        WRITE(MSTU(11),*) ' PYTHRG:: TAU SNEUTRINO MASS IS NEGATIVE'//
+        WRITE(MSTU(11),*) ' SPTHRG:: TAU SNEUTRINO MASS IS NEGATIVE'//
      &  ' FROM THE SUM RULE. '
         WRITE(MSTU(11),*) '  TRY A SMALLER VALUE OF TAN(BETA). '
         RETURN
       ELSE
-        PMAS(PYCOMP(KSUSY1+16),1)=SQRT(XARG)
+        PMAS(SPCOMP(KSUSY1+16),1)=SQRT(XARG)
       ENDIF
  
       RETURN
@@ -31132,26 +31132,26 @@ C.....TAU SNEUTRINO MASS...L=3
  
 C*********************************************************************
  
-C...PYINOM
+C...SPINOM
 C...Finds the mass eigenstates and mixing matrices for neutralinos
 C...and charginos.
  
-      SUBROUTINE PYINOM
+      SUBROUTINE SPINOM
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYCOMP
+      INTEGER SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-      COMMON/PYSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+      COMMON/SPSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
      &SFMIX(16,4),ZMIXI(4,4),UMIXI(2,2),VMIXI(2,2)
-      SAVE /PYDAT1/,/PYDAT2/,/PYMSSM/,/PYSSMT/
+      SAVE /SPDAT1/,/SPDAT2/,/SPMSSM/,/SPSSMT/
  
 C...Local variables.
       DOUBLE PRECISION XMW,XMZ,XM(4)
@@ -31165,8 +31165,8 @@ C...Local variables.
       DOUBLE PRECISION ARG,X0,X1,AX0,AX1,AT,BT
       DOUBLE PRECISION Y0,Y1,AMGX0,AM1X0,AMGX1,AM1X1
       DOUBLE PRECISION ARGX0,AR1X0,ARGX1,AR1X1
-      DOUBLE PRECISION PYALPS,PYALEM
-      DOUBLE PRECISION PYRNM3
+      DOUBLE PRECISION SPALPS,SPALEM
+      DOUBLE PRECISION SPRNM3
       COMPLEX*16 CAR(4,4),CAI(4,4),CA1,CA2
       INTEGER IERR,INDEX(4),I,J,K,IOPT,ILR,KFNCHI(4)
       DATA KFNCHI/1000022,1000023,1000025,1000035/
@@ -31182,7 +31182,7 @@ C...M1, M2, AND M3 ARE INDEPENDENT
         XM3=RMSS(3)
       ELSEIF(IOPT.GE.1) THEN
         Q2=PMAS(23,1)**2
-        AEM=PYALEM(Q2)
+        AEM=SPALEM(Q2)
         A2=AEM/PARU(102)
         A1=AEM/(1D0-PARU(102))
         XM1=RMSS(1)
@@ -31195,7 +31195,7 @@ C...M1, M2, AND M3 ARE INDEPENDENT
           XM1=XM2*5D0/3D0*A1/A2
           RMSS(1)=XM1
         ENDIF
-        XM3=PYRNM3(XM2/A2)
+        XM3=SPRNM3(XM2/A2)
         RMSS(3)=XM3
         IF(XM3.LE.0D0) THEN
           WRITE(MSTU(11),*) ' ERROR WITH M3 = ',XM3
@@ -31205,12 +31205,12 @@ C...M1, M2, AND M3 ARE INDEPENDENT
  
 C...GLUINO MASS
       IF(IMSS(3).EQ.1) THEN
-        PMAS(PYCOMP(KSUSY1+21),1)=ABS(XM3)
+        PMAS(SPCOMP(KSUSY1+21),1)=ABS(XM3)
       ELSE
         AQ=0D0
         DO 110 I=1,4
           DO 100 ILR=1,2
-            RM1=PMAS(PYCOMP(ILR*KSUSY1+I),1)**2/XM3**2
+            RM1=PMAS(SPCOMP(ILR*KSUSY1+I),1)**2/XM3**2
             AQ=AQ+0.5D0*((2D0-RM1)*(RM1*LOG(RM1)-1D0)
      &      +(1D0-RM1)**2*LOG(ABS(1D0-RM1)))
   100     CONTINUE
@@ -31218,7 +31218,7 @@ C...GLUINO MASS
  
         DO 130 I=5,6
           DO 120 ILR=1,2
-            RM1=PMAS(PYCOMP(ILR*KSUSY1+I),1)**2/XM3**2
+            RM1=PMAS(SPCOMP(ILR*KSUSY1+I),1)**2/XM3**2
             RM2=PMAS(I,1)**2/XM3**2
             ARG=(RM1-RM2-1D0)**2-4D0*RM2**2
             IF(ARG.GE.0D0) THEN
@@ -31272,7 +31272,7 @@ C...GLUINO MASS
             ENDIF
   120     CONTINUE
   130   CONTINUE
-        PMAS(PYCOMP(KSUSY1+21),1)=ABS(XM3)*(1D0+PYALPS(XM3**2)
+        PMAS(SPCOMP(KSUSY1+21),1)=ABS(XM3)*(1D0+SPALPS(XM3**2)
      &  /(2D0*PARU(2))*(15D0+AQ))
       ENDIF
  
@@ -31315,10 +31315,10 @@ C... => L_neutralino = -1/2*(psi^0)^T * [AR] * psi^0 + h.c.
       AI(3,4) = -XMU*SIN(RMSS(33))
       AR(4,3) = -XMU*COS(RMSS(33))
       AI(4,3) = -XMU*SIN(RMSS(33))
-C      CALL PYEIG4(AR,WR,ZR)
-      CALL PYEICG(4,4,AR,AI,WR,WI,1,ZR,ZI,FV1,FV2,FV3,IERR)
+C      CALL SPEIG4(AR,WR,ZR)
+      CALL SPEICG(4,4,AR,AI,WR,WI,1,ZR,ZI,FV1,FV2,FV3,IERR)
       IF(IERR.NE.0) THEN
-       WRITE(MSTU(11),*) ' PROBLEM WITH PYEICG IN PYINOM '
+       WRITE(MSTU(11),*) ' PROBLEM WITH SPEICG IN SPINOM '
       ENDIF
       DO 160 I=1,4
         INDEX(I)=I
@@ -31345,7 +31345,7 @@ C      CALL PYEIG4(AR,WR,ZR)
       DO 210 I=1,4
         K=INDEX(I)
         SMZ(I)=WR(K)
-        PMAS(PYCOMP(KFNCHI(I)),1)=ABS(SMZ(I))
+        PMAS(SPCOMP(KFNCHI(I)),1)=ABS(SMZ(I))
         S=0D0
         DO 190 J=1,4
           S=S+ZR(J,K)**2+ZI(J,K)**2
@@ -31372,9 +31372,9 @@ C.....Find eigenvectors of X X^*
      &XMU*COS(RMSS(33))*SINB)
       AI(2,1) = SQRT(2D0)*XMW*(-XM2*SIN(RMSS(31))*COSB+
      &XMU*SIN(RMSS(33))*SINB)
-      CALL PYEICG(4,2,AR,AI,WR,WI,1,ZR,ZI,FV1,FV2,FV3,IERR)
+      CALL SPEICG(4,2,AR,AI,WR,WI,1,ZR,ZI,FV1,FV2,FV3,IERR)
       IF(IERR.NE.0) THEN
-       WRITE(MSTU(11),*) ' PROBLEM WITH PYEICG IN PYINOM '
+       WRITE(MSTU(11),*) ' PROBLEM WITH SPEICG IN SPINOM '
       ENDIF
       INDEX(1)=1
       INDEX(2)=2
@@ -31398,10 +31398,10 @@ C.....Find eigenvectors of X X^*
   230   CONTINUE
   240 CONTINUE
       IF(ABS(SMW(1)).LT.ABS(SMZ(1))) THEN
-       SMW(1)=SIGN(ABS(SMZ(1))+2D0*PMAS(PYCOMP(111),1),SMW(1))
+       SMW(1)=SIGN(ABS(SMZ(1))+2D0*PMAS(SPCOMP(111),1),SMW(1))
       ENDIF
-      PMAS(PYCOMP(KSUSY1+24),1)=SMW(1)
-      PMAS(PYCOMP(KSUSY1+37),1)=SMW(2)
+      PMAS(SPCOMP(KSUSY1+24),1)=SMW(1)
+      PMAS(SPCOMP(KSUSY1+37),1)=SMW(2)
  
 C.....Find eigenvectors of X^* X
       AI(1,1) = 0D0
@@ -31416,9 +31416,9 @@ C.....Find eigenvectors of X^* X
      &XMU*COS(RMSS(33))*COSB)
       AI(2,1) = SQRT(2D0)*XMW*(XM2*SIN(RMSS(31))*SINB-
      &XMU*SIN(RMSS(33))*COSB)
-      CALL PYEICG(4,2,AR,AI,WR,WI,1,ZR,ZI,FV1,FV2,FV3,IERR)
+      CALL SPEICG(4,2,AR,AI,WR,WI,1,ZR,ZI,FV1,FV2,FV3,IERR)
       IF(IERR.NE.0) THEN
-       WRITE(MSTU(11),*) ' PROBLEM WITH PYEICG IN PYINOM '
+       WRITE(MSTU(11),*) ' PROBLEM WITH SPEICG IN SPINOM '
       ENDIF
       INDEX(1)=1
       INDEX(2)=2
@@ -31447,27 +31447,27 @@ C.....Find eigenvectors of X^* X
  
 C*********************************************************************
  
-C...PYRNM3
+C...SPRNM3
 C...Calculates the running of M3, the SU(3) gluino mass parameter.
  
-      FUNCTION PYRNM3(RGUT)
+      FUNCTION SPRNM3(RGUT)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
  
 C...Local variables.
       DOUBLE PRECISION R
       DOUBLE PRECISION TOL
-      EXTERNAL PYALPS
-      DOUBLE PRECISION PYALPS
+      EXTERNAL SPALPS
+      DOUBLE PRECISION SPALPS
       DATA TOL/0.001D0/
       DATA R/0.61803399D0/
  
       C=1D0-R
  
-      BX=RGUT*PYALPS(RGUT**2)
+      BX=RGUT*SPALPS(RGUT**2)
       AX=MIN(50D0,BX*0.5D0)
       CX=MAX(2000D0,2D0*BX)
  
@@ -31480,9 +31480,9 @@ C...Local variables.
         X2=BX
         X1=BX-C*(BX-AX)
       ENDIF
-      AS1=PYALPS(X1**2)
+      AS1=SPALPS(X1**2)
       F1=ABS(X1-RGUT*AS1)
-      AS2=PYALPS(X2**2)
+      AS2=SPALPS(X2**2)
       F2=ABS(X2-RGUT*AS2)
   100 IF(ABS(X3-X0).GT.TOL*(ABS(X1)+ABS(X2))) THEN
         IF(F2.LT.F1) THEN
@@ -31490,23 +31490,23 @@ C...Local variables.
           X1=X2
           X2=R*X1+C*X3
           F1=F2
-          AS2=PYALPS(X2**2)
+          AS2=SPALPS(X2**2)
           F2=ABS(X2-RGUT*AS2)
         ELSE
           X3=X2
           X2=X1
           X1=R*X2+C*X0
           F2=F1
-          AS1=PYALPS(X1**2)
+          AS1=SPALPS(X1**2)
           F1=ABS(X1-RGUT*AS1)
         ENDIF
         GOTO 100
       ENDIF
       IF(F1.LT.F2) THEN
-        PYRNM3=X1
+        SPRNM3=X1
         XMIN=X1
       ELSE
-        PYRNM3=X2
+        SPRNM3=X2
         XMIN=X2
       ENDIF
  
@@ -31515,16 +31515,16 @@ C...Local variables.
  
 C*********************************************************************
  
-C...PYEIG4
+C...SPEIG4
 C...Finds eigenvalues and eigenvectors to a 4 * 4 matrix.
 C...Specific application: mixing in neutralino sector.
  
-      SUBROUTINE PYEIG4(A,W,Z)
+      SUBROUTINE SPEIG4(A,W,Z)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
  
 C...Arrays: in call and local.
       DIMENSION A(4,4),W(4),Z(4,4),X(4),D(4,4),E(4)
@@ -31663,7 +31663,7 @@ C...Construct unnormalized eigenvector.
  
 C...Normalize and fill in final array.
         EA=SQRT(E(1)**2+E(2)**2+E(3)**2+E(4)**2)
-        SGN=(-1D0)**INT(PYR(0)+0.5D0)
+        SGN=(-1D0)**INT(SPR(0)+0.5D0)
         DO 240 J=1,4
           Z(I,J)=SGN*E(J)/EA
   240   CONTINUE
@@ -31674,24 +31674,24 @@ C...Normalize and fill in final array.
  
 C*********************************************************************
  
-C...PYHGGM
+C...SPHGGM
 C...Determines the Higgs boson mass spectrum using several inputs.
  
-      SUBROUTINE PYHGGM(ALPHA)
+      SUBROUTINE SPHGGM(ALPHA)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-      SAVE /PYDAT1/,/PYDAT2/,/PYPARS/,/PYMSSM/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+      SAVE /SPDAT1/,/SPDAT2/,/SPPARS/,/SPMSSM/
  
 C...Local variables.
       DOUBLE PRECISION AT,AB,XMU,TANB
@@ -31719,7 +31719,7 @@ C...Local variables.
       DMUR=RMSS(12)
       DMDR=RMSS(11)
       DMTOP=PMAS(6,1)
-      DMC=PMAS(PYCOMP(KSUSY1+37),1)
+      DMC=PMAS(SPCOMP(KSUSY1+37),1)
       DAU=AT
       DAD=AB
       DMU=XMU
@@ -31727,12 +31727,12 @@ C...Local variables.
       RMSS(41)=0D0
  
       IF(IHOPT.EQ.0) THEN
-        CALL PYSUBH (DMA,DTANB,DMQ,DMUR,DMTOP,DAU,DAD,DMU,DMH,DHM,
+        CALL SPSUBH (DMA,DTANB,DMQ,DMUR,DMTOP,DAU,DAD,DMU,DMH,DHM,
      &  DMHCH,DSA,DCA,DTANBA)
       ELSEIF(IHOPT.EQ.1) THEN
-        CALL PYSUBH (DMA,DTANB,DMQ,DMUR,DMTOP,DAU,DAD,DMU,DMH,DHM,
+        CALL SPSUBH (DMA,DTANB,DMQ,DMUR,DMTOP,DAU,DAD,DMU,DMH,DHM,
      &  DMHCH,DSA,DCA,DTANBA)
-        CALL PYPOLE(3,DMC,DMA,DTANB,DMQ,DMUR,DMDR,DMTOP,DAU,DAD,DMU,
+        CALL SPPOLE(3,DMC,DMA,DTANB,DMQ,DMUR,DMDR,DMTOP,DAU,DAD,DMU,
      &  DMH,DMHP,DHM,DHMP,DAMP,DSA,DCA,
      &  DSTOP1,DSTOP2,DSBOT1,DSBOT2,DTANBA,DMGL,DDT,DDB)
         RMSS(40)=DDT
@@ -31740,25 +31740,25 @@ C...Local variables.
         DMH=DMHP
         DHM=DHMP
         DMA=DAMP
-        IF(ABS(PMAS(PYCOMP(1000006),1)-DSTOP2).GT.5D-1) THEN
-         WRITE(MSTU(11),*) ' STOP1 MASS DOES NOT MATCH IN PYHGGM '
+        IF(ABS(PMAS(SPCOMP(1000006),1)-DSTOP2).GT.5D-1) THEN
+         WRITE(MSTU(11),*) ' STOP1 MASS DOES NOT MATCH IN SPHGGM '
          WRITE(MSTU(11),*) ' STOP1 MASSES = ',
-     & PMAS(PYCOMP(1000006),1),DSTOP2
+     & PMAS(SPCOMP(1000006),1),DSTOP2
         ENDIF
-        IF(ABS(PMAS(PYCOMP(2000006),1)-DSTOP1).GT.5D-1) THEN
-         WRITE(MSTU(11),*) ' STOP2 MASS DOES NOT MATCH IN PYHGGM '
+        IF(ABS(PMAS(SPCOMP(2000006),1)-DSTOP1).GT.5D-1) THEN
+         WRITE(MSTU(11),*) ' STOP2 MASS DOES NOT MATCH IN SPHGGM '
          WRITE(MSTU(11),*) ' STOP2 MASSES = ',
-     & PMAS(PYCOMP(2000006),1),DSTOP1
+     & PMAS(SPCOMP(2000006),1),DSTOP1
         ENDIF
-        IF(ABS(PMAS(PYCOMP(1000005),1)-DSBOT2).GT.5D-1) THEN
-         WRITE(MSTU(11),*) ' SBOT1 MASS DOES NOT MATCH IN PYHGGM '
+        IF(ABS(PMAS(SPCOMP(1000005),1)-DSBOT2).GT.5D-1) THEN
+         WRITE(MSTU(11),*) ' SBOT1 MASS DOES NOT MATCH IN SPHGGM '
          WRITE(MSTU(11),*) ' SBOT1 MASSES = ',
-     & PMAS(PYCOMP(1000005),1),DSBOT2
+     & PMAS(SPCOMP(1000005),1),DSBOT2
         ENDIF
-        IF(ABS(PMAS(PYCOMP(2000005),1)-DSBOT1).GT.5D-1) THEN
-         WRITE(MSTU(11),*) ' SBOT2 MASS DOES NOT MATCH IN PYHGGM '
+        IF(ABS(PMAS(SPCOMP(2000005),1)-DSBOT1).GT.5D-1) THEN
+         WRITE(MSTU(11),*) ' SBOT2 MASS DOES NOT MATCH IN SPHGGM '
          WRITE(MSTU(11),*) ' SBOT2 MASSES = ',
-     & PMAS(PYCOMP(2000005),1),DSBOT1
+     & PMAS(SPCOMP(2000005),1),DSBOT1
         ENDIF
  
       ENDIF
@@ -31775,7 +31775,7 @@ C...Local variables.
  
 C*********************************************************************
  
-C...PYSUBH
+C...SPSUBH
 C...This routine computes the renormalization group improved
 C...values of Higgs masses and couplings in the MSSM.
  
@@ -31815,24 +31815,24 @@ C...eigenvalues, M_SUSY**2 = (STOP1**2 + STOP2**2)/2. The sbottom
 C...masses have been assumed to be of order of the stop ones
 C...M_SUSY**2 = (MQ**2 + MUR**2)*0.5 + MTOP**2
  
-      SUBROUTINE PYSUBH (XMA,TANB,XMQ,XMUR,XMTOP,AU,AD,XMU,XMH,XHM,
+      SUBROUTINE SPSUBH (XMA,TANB,XMQ,XMUR,XMTOP,AU,AD,XMU,XMH,XHM,
      &XMHCH,SA,CA,TANBA)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYHTRI/HHH(7)
-      SAVE /PYDAT1/,/PYDAT2/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPHTRI/HHH(7)
+      SAVE /SPDAT1/,/SPDAT2/
  
 C...Local variables.
-      DOUBLE PRECISION PYALEM,PYALPS
+      DOUBLE PRECISION SPALEM,SPALPS
       DOUBLE PRECISION TANB,XMQ,XMUR,XMTOP,AU,AD,XMU,XMH,XHM
       DOUBLE PRECISION XMHCH,SA,CA
       DOUBLE PRECISION XMA,AEM,ALP1,ALP2,ALPH3Z,V,PI
@@ -31848,10 +31848,10 @@ C...Local variables.
  
       XMZ = PMAS(23,1)
       Q02=XMZ**2
-      AEM=PYALEM(Q02)
+      AEM=SPALEM(Q02)
       ALP1=AEM/(1D0-PARU(102))
       ALP2=AEM/PARU(102)
-      ALPH3Z=PYALPS(Q02)
+      ALPH3Z=SPALPS(Q02)
  
       ALP1 = 0.0101D0
       ALP2 = 0.0337D0
@@ -31863,7 +31863,7 @@ C...Local variables.
       TANBT = TANB
  
 C...MBOTTOM(MTOP) = 3. GEV
-      XMB = PYMRUN(5,XMTOP**2)
+      XMB = SPMRUN(5,XMTOP**2)
       ALP3 = ALPH3Z/(1D0 +(11D0 - 10D0/3D0)/4D0/PI*ALPH3Z*
      &LOG(XMTOP**2/XMZ**2))
  
@@ -32007,7 +32007,7 @@ C      COS2BT = (TANBT**2 - 1D0)/(TANBT**2 + 1D0)
  
 C*********************************************************************
  
-C...PYPOLE
+C...SPPOLE
 C...This subroutine computes the CP-even higgs and CP-odd pole
 c...Higgs masses and mixing angles.
  
@@ -32050,7 +32050,7 @@ C...improvement. Those who are not able to call the CERN
 C...libraries, please use the subroutine SUBHPOLE2.F, which
 C...although somewhat slower, gives identical results
  
-      SUBROUTINE PYPOLE(IHIGGS,XMC,XMA,TANB,XMQ,XMUR,XMDR,XMT,AT,AB,XMU,
+      SUBROUTINE SPPOLE(IHIGGS,XMC,XMA,TANB,XMQ,XMUR,XMDR,XMT,AT,AB,XMU,
      &XMH,XMHP,HM,HMP,AMP,SA,CA,STOP1,STOP2,SBOT1,SBOT2,TANBA,XMG,DT,DB)
  
 C...Double precision and integer declarations.
@@ -32058,9 +32058,9 @@ C...Double precision and integer declarations.
       IMPLICIT INTEGER(I-N)
  
 C...Parameters.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYDAT1/
-      INTEGER PYK,PYCHGE,PYCOMP
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      SAVE /SPDAT1/
+      INTEGER SPK,SPCHGE,SPCOMP
  
 C...Local variables.
       DIMENSION DELTA(2,2),COUPT(2,2),T(2,2),SSTOP2(2),
@@ -32075,8 +32075,8 @@ C...Local variables.
       V = 174.1D0
       XMZ=91.18D0
       PI=PARU(1)
-      RXMT=PYMRUN(6,XMT**2)
-      CALL PYRGHM(XMC,XMA,TANB,XMQ,XMUR,XMDR,XMT,AT,AB,
+      RXMT=SPMRUN(6,XMT**2)
+      CALL SPRGHM(XMC,XMA,TANB,XMQ,XMUR,XMDR,XMT,AT,AB,
      &XMU,XMH,HM,XMCH,SA,CA,SAB,CAB,TANBA,XMG,DT,DB)
  
       SINB = TANB/(TANB**2+1D0)**0.5D0
@@ -32084,7 +32084,7 @@ C...Local variables.
       COS2B = SINB**2 - COSB**2
       SINBPA = SINB*CA + COSB*SA
       COSBPA = COSB*CA - SINB*SA
-      RMBOT = PYMRUN(5,XMT**2)
+      RMBOT = SPMRUN(5,XMT**2)
       XMQ2 = XMQ**2
       XMUR2 = XMUR**2
       IF(XMUR.LT.0D0) XMUR2=-XMUR2
@@ -32214,7 +32214,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         DO 200 I = 1,2
           DO 190 J = 1,2
             POLT = POLT + COUPT(I,J)**2*3D0*
-     &      PYFINT(P2,SSTOP2(I),SSTOP2(J))/16D0/PI**2
+     &      SPFINT(P2,SSTOP2(I),SSTOP2(J))/16D0/PI**2
   190     CONTINUE
   200   CONTINUE
  
@@ -32222,7 +32222,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         DO 220 I = 1,2
           DO 210 J = 1,2
             POLB = POLB + COUPB(I,J)**2*3D0*
-     &      PYFINT(P2,SSBOT2(I),SSBOT2(J))/16D0/PI**2
+     &      SPFINT(P2,SSBOT2(I),SSBOT2(J))/16D0/PI**2
   210     CONTINUE
   220   CONTINUE
 C        RXMT2 = RXMT**2
@@ -32232,7 +32232,7 @@ C        RXMT2 = RXMT**2
      &  3D0*RXMT**2/8D0/PI**2/  V  **2*
      &  CA**2/SINB**2 *
      &  (-2D0*XMT**2+0.5D0*P2)*
-     &  PYFINT(P2,XMT2,XMT2)
+     &  SPFINT(P2,XMT2,XMT2)
  
         POL = POLT + POLB + POLTT
         POLAR(I3) = P2 - XMH**2 - POL
@@ -32292,7 +32292,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         DO 320 I = 1,2
           DO 310 J = 1,2
             HPOLT = HPOLT + HCOUPT(I,J)**2*3D0*
-     &      PYFINT(HP2,SSTOP2(I),SSTOP2(J))/16D0/PI**2
+     &      SPFINT(HP2,SSTOP2(I),SSTOP2(J))/16D0/PI**2
   310     CONTINUE
   320   CONTINUE
  
@@ -32300,7 +32300,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         DO 340 I = 1,2
           DO 330 J = 1,2
             HPOLB = HPOLB + HCOUPB(I,J)**2*3D0*
-     &      PYFINT(HP2,SSBOT2(I),SSBOT2(J))/16D0/PI**2
+     &      SPFINT(HP2,SSBOT2(I),SSBOT2(J))/16D0/PI**2
   330     CONTINUE
   340   CONTINUE
  
@@ -32311,7 +32311,7 @@ C        RXMT2 = RXMT**2
      &  3D0*RXMT**2/8D0/PI**2/  V  **2*
      &  SA**2/SINB**2 *
      &  (-2D0*XMT**2+0.5D0*HP2)*
-     &  PYFINT(HP2,XMT2,XMT2)
+     &  SPFINT(HP2,XMT2,XMT2)
  
         HPOL = HPOLT + HPOLB + HPOLTT
         POLAR(I3) =HP2-HM**2-HPOL
@@ -32364,14 +32364,14 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         DO 440 I = 1,2
           DO 430 J = 1,2
             APOLT = APOLT + ACOUPT(I,J)**2*3D0*
-     &      PYFINT(AP2,SSTOP2(I),SSTOP2(J))/16D0/PI**2
+     &      SPFINT(AP2,SSTOP2(I),SSTOP2(J))/16D0/PI**2
   430     CONTINUE
   440   CONTINUE
         APOLB = 0D0
         DO 460 I = 1,2
           DO 450 J = 1,2
             APOLB = APOLB + ACOUPB(I,J)**2*3D0*
-     &      PYFINT(AP2,SSBOT2(I),SSBOT2(J))/16D0/PI**2
+     &      SPFINT(AP2,SSBOT2(I),SSBOT2(J))/16D0/PI**2
   450     CONTINUE
   460   CONTINUE
 C        RXMT2 = RXMT**2
@@ -32380,7 +32380,7 @@ C        RXMT2 = RXMT**2
      &  3D0*RXMT**2/8D0/PI**2/  V  **2*
      &  COSB**2/SINB**2 *
      &  (-0.5D0*AP2)*
-     &  PYFINT(AP2,XMT2,XMT2)
+     &  SPFINT(AP2,XMT2,XMT2)
         APOL = APOLT + APOLB + APOLTT
         POLAR(I3) = AP2 - XMA**2 -APOL
   470 CONTINUE
@@ -32403,7 +32403,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
   490 CONTINUE
       RETURN
   500 CONTINUE
-      WRITE(MSTU(11),*) ' EXITING IN PYPOLE '
+      WRITE(MSTU(11),*) ' EXITING IN SPPOLE '
       WRITE(MSTU(11),*) ' XMST11,XMST22 = ',XMST11,XMST22
       WRITE(MSTU(11),*) ' XMSB11,XMSB22 = ',XMSB11,XMSB22
       WRITE(MSTU(11),*) ' STOP22,SBOT22 = ',STOP22,SBOT22
@@ -32412,17 +32412,17 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
  
 C*********************************************************************
  
-C...PYRGHM
-C...Auxiliary to PYPOLE.
+C...SPRGHM
+C...Auxiliary to SPPOLE.
  
-      SUBROUTINE PYRGHM(MCHI,MA,TANB,MQ,MUR,MD,MTOP,AU,AD,MU,
+      SUBROUTINE SPRGHM(MCHI,MA,TANB,MQ,MUR,MD,MTOP,AU,AD,MU,
      *    MHP,HMP,MCH,SA,CA,SAB,CAB,TANBA,MGLU,DELTAMT,DELTAMB)
       IMPLICIT DOUBLE PRECISION(A-H,L,M,O-Z)
       DIMENSION VH(2,2),M2(2,2),M2P(2,2)
 C...Parameters.
       INTEGER MSTU,MSTJ
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYDAT1/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      SAVE /SPDAT1/
  
       MZ = 91.18D0
       PI = PARU(1)
@@ -32433,7 +32433,7 @@ C...Parameters.
       TANBA = TANB
       TANBT = TANB
 C     MBOTTOM(MTOP) = 3. GEV
-      MB = PYMRUN(5,MTOP**2)
+      MB = SPMRUN(5,MTOP**2)
       ALPHA3 = ALPHA3Z/(1D0 +(11D0 - 10D0/3D0)/4D0/PI*ALPHA3Z*
      *LOG(MTOP**2/MZ**2))
 C     RMTOP= RUNNING TOP QUARK MASS
@@ -32461,7 +32461,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       G3 = SQRT(ALPHA3*4D0*PI)
       HU = RMTOP/V/SINB
       HD =  MB/V/COSB
-      CALL PYGFXX(MA,TANBA,MQ,MUR,MD,MTOP,AU,AD,MU,MGLU,VH,STOP1,STOP2,
+      CALL SPGFXX(MA,TANBA,MQ,MUR,MD,MTOP,AU,AD,MU,MGLU,VH,STOP1,STOP2,
      *SBOT1,SBOT2,DELTAMT,DELTAMB)
       IF(MQ.GT.MUR) TP = TQ - TU
       IF(MQ.LT.MUR.OR.MQ.EQ.MUR) TP = TU - TQ
@@ -32631,18 +32631,18 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
  
 C*********************************************************************
  
-C...PYGFXX
-C...Auxiliary to PYRGHM.
+C...SPGFXX
+C...Auxiliary to SPRGHM.
  
-      SUBROUTINE PYGFXX(MA,TANB,MQ,MUR,MD,MTOP,AT,AB,XMU,XMGL,VH,
+      SUBROUTINE SPGFXX(MA,TANB,MQ,MUR,MD,MTOP,AT,AB,XMU,XMGL,VH,
      *  STOP1,STOP2,SBOT1,SBOT2,DELTAMT,DELTAMB)
       IMPLICIT DOUBLE PRECISION(A-H,M,O-Z)
       DIMENSION VH(2,2),VH3T(2,2),VH3B(2,2),AL(2,2)
 C...Commonblocks.
       INTEGER MSTU,MSTJ,KCHG
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYDAT1/,/PYDAT2/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPDAT1/,/SPDAT2/
  
       G(X,Y) = 2.D0 - (X+Y)/(X-Y)*DLOG(X/Y)
  
@@ -32678,7 +32678,7 @@ C...Commonblocks.
       IF(MQ.GT.MD) MSB = MQ
       IF(MD.GT.MQ.OR.MD.EQ.MQ) MSB = MD
  
-      MB = PYMRUN(5,MSB**2)
+      MB = SPMRUN(5,MSB**2)
       MSUSYB = DSQRT(MSB**2 + MB**2)
       TT = LOG(MSUSYT**2/MTOP**2)
       TB = LOG(MSUSYB**2/MTOP**2)
@@ -32953,49 +32953,49 @@ C      TD = LOG((MD2+MB**2)/MB**2)
  
 C*********************************************************************
  
-C...PYFINT
-C...Auxiliary routine to PYPOLE for SUSY Higgs calculations.
+C...SPFINT
+C...Auxiliary routine to SPPOLE for SUSY Higgs calculations.
  
-      FUNCTION PYFINT(A,B,C)
+      FUNCTION SPFINT(A,B,C)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblock.
-      COMMON/PYINTS/XXM(20)
-      SAVE/PYINTS/
+      COMMON/SPINTS/XXM(20)
+      SAVE/SPINTS/
  
 C...Local variables.
-      EXTERNAL PYFISB
-      DOUBLE PRECISION PYFISB
+      EXTERNAL SPFISB
+      DOUBLE PRECISION SPFISB
  
       XXM(1)=A
       XXM(2)=B
       XXM(3)=C
       XLO=0D0
       XHI=1D0
-      PYFINT  = PYGAUS(PYFISB,XLO,XHI,1D-3)
+      SPFINT  = SPGAUS(SPFISB,XLO,XHI,1D-3)
  
       RETURN
       END
  
 C*********************************************************************
  
-C...PYFISB
-C...Auxiliary routine to PYFINT for SUSY Higgs calculations.
+C...SPFISB
+C...Auxiliary routine to SPFINT for SUSY Higgs calculations.
  
-      FUNCTION PYFISB(X)
+      FUNCTION SPFISB(X)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblock.
-      COMMON/PYINTS/XXM(20)
-      SAVE/PYINTS/
+      COMMON/SPINTS/XXM(20)
+      SAVE/SPINTS/
  
-      PYFISB = LOG(ABS(X*XXM(2)+(1-X)*XXM(3)-X*(1-X)*XXM(1))/
+      SPFISB = LOG(ABS(X*XXM(2)+(1-X)*XXM(3)-X*(1-X)*XXM(1))/
      &(X*(XXM(2)-XXM(3))+XXM(3)))
  
       RETURN
@@ -33003,25 +33003,25 @@ C...Commonblock.
  
 C*********************************************************************
  
-C...PYSFDC
+C...SPSFDC
 C...Calculates decays of sfermions.
  
-      SUBROUTINE PYSFDC(KFIN,XLAM,IDLAM,IKNT)
+      SUBROUTINE SPSFDC(KFIN,XLAM,IDLAM,IKNT)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-      COMMON/PYSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+      COMMON/SPSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
      &SFMIX(16,4),ZMIXI(4,4),UMIXI(2,2),VMIXI(2,2)
-      SAVE /PYDAT1/,/PYDAT2/,/PYMSSM/,/PYSSMT/
+      SAVE /SPDAT1/,/SPDAT2/,/SPMSSM/,/SPSSMT/
  
 C...Local variables.
       COMPLEX*16 ZMIXC(4,4),VMIXC(2,2),UMIXC(2,2)
@@ -33029,7 +33029,7 @@ C...Local variables.
       INTEGER KFIN,KCIN
       DOUBLE PRECISION XMI,XMJ,XMF,XMSF1,XMSF2,XMW,XMW2,XMZ,AXMJ
       DOUBLE PRECISION XMI2,XMI3,XMA2,XMB2,XMFP
-      DOUBLE PRECISION PYLAMF,XL
+      DOUBLE PRECISION SPLAMF,XL
       DOUBLE PRECISION TANW,XW,AEM,C1,AS
       DOUBLE PRECISION AL,AR,BL,BR
       DOUBLE PRECISION CH1,CH2,CH3,CH4
@@ -33042,7 +33042,7 @@ C...Local variables.
       DOUBLE PRECISION CW
       DOUBLE PRECISION BETA,ALFA,XMU,AT,AB,ATRIT,ATRIB,ATRIL
       DOUBLE PRECISION COSA,SINA,TANB
-      DOUBLE PRECISION PYALEM,PI,PYALPS,EI
+      DOUBLE PRECISION SPALEM,PI,SPALPS,EI
       DOUBLE PRECISION GHRR,GHLL,GHLR,XMB,BLR
       INTEGER IG,KF1,KF2
       INTEGER IGG(4),KFNCHI(4),KFCCHI(2)
@@ -33079,7 +33079,7 @@ C...NO NU_R DECAYS
   130 CONTINUE
  
 C...KCIN
-      KCIN=PYCOMP(KFIN)
+      KCIN=SPCOMP(KFIN)
 C...ILR is 1 for left and 2 for right.
       ILR=KFIN/KSUSY1
 C...IFL is matching non-SUSY flavour.
@@ -33089,14 +33089,14 @@ C...IDU is weak isospin, 1 for down and 2 for up.
  
       XMI=PMAS(KCIN,1)
       XMI2=XMI**2
-      AEM=PYALEM(XMI2)
-      AS =PYALPS(XMI2)
+      AEM=SPALEM(XMI2)
+      AS =SPALPS(XMI2)
       C1=AEM/XW
       XMI3=XMI**3
       EI=KCHG(IFL,1)/3D0
  
-      XMBOT=PYMRUN(5,XMI2)
-      XMTOP=PYMRUN(6,XMI2)
+      XMBOT=SPMRUN(5,XMI2)
+      XMTOP=SPMRUN(6,XMI2)
  
       TANB=RMSS(5)
       BETA=ATAN(TANB)
@@ -33115,7 +33115,7 @@ C...2-BODY DECAYS OF SFERMION -> GRAVITINO + FERMION
       IF(IMSS(11).EQ.1) THEN
         XMP=RMSS(29)
         IDG=39+KSUSY1
-        XMGR=PMAS(PYCOMP(IDG),1)
+        XMGR=PMAS(SPCOMP(IDG),1)
         XFAC=(XMI2/(XMP*XMGR))**2*XMI/48D0/PI
         IF(IFL.EQ.5) THEN
           XMF=XMBOT
@@ -33196,7 +33196,7 @@ C...F2 -> F` CHI
             CB=CBR
           ENDIF
           LKNT=LKNT+1
-          XL=PYLAMF(XMI2,XMA2,XMB2)
+          XL=SPLAMF(XMI2,XMA2,XMB2)
 C...SPIN AVERAGE = 1/1 NOT 1/2....NO COLOR ENHANCEMENT
           XLAM(LKNT)=2D0*C1/8D0/XMI3*SQRT(XL)*((XMI2-XMB2-XMA2)*
      &    (ABS(CA)**2+ABS(CB)**2)-4D0*DBLE(CA*DCONJG(CB))*XMJ*XMFP)
@@ -33261,7 +33261,7 @@ C...F2 -> F CHI
             CB=CBR
           ENDIF
           LKNT=LKNT+1
-          XL=PYLAMF(XMI2,XMA2,XMB2)
+          XL=SPLAMF(XMI2,XMA2,XMB2)
 C...SPIN AVERAGE = 1/1 NOT 1/2....NO COLOR ENHANCEMENT
           XLAM(LKNT)=C1/8D0/XMI3*SQRT(XL)*((XMI2-XMB2-XMA2)*
      &    (ABS(CA)**2+ABS(CB)**2)-4D0*DBLE(CA*DCONJG(CB))*XMJ*XMF)
@@ -33277,7 +33277,7 @@ C...IG=23,25,35,36
         IG=IGG(II)
         IF(ILR.EQ.1) GOTO 160
         XMB=PMAS(IG,1)
-        XMSF1=PMAS(PYCOMP(KFIN-KSUSY1),1)
+        XMSF1=PMAS(SPCOMP(KFIN-KSUSY1),1)
         IF(XMI.LT.XMSF1+XMB) GOTO 160
         IF(IG.EQ.23) THEN
           BL=-SIGN(.5D0,EI)/CW+EI*XW/CW
@@ -33399,7 +33399,7 @@ C.........Need to complexify
         AL=SFMIX(IFL,1)*SFMIX(IFL,3)*BL+
      &  SFMIX(IFL,2)*SFMIX(IFL,4)*BR+
      &  (SFMIX(IFL,1)*SFMIX(IFL,4)+SFMIX(IFL,3)*SFMIX(IFL,2))*BLR
-        XL=PYLAMF(XMI2,XMSF1**2,XMB**2)
+        XL=SPLAMF(XMI2,XMSF1**2,XMB**2)
         LKNT=LKNT+1
         IF(IG.EQ.23) THEN
           XLAM(LKNT)=C1/4D0/XMI3*XL**1.5D0/XMB**2*AL**2
@@ -33419,8 +33419,8 @@ C...SF -> SF' + W
         KF1=KSUSY1+IFL+1
       ENDIF
       KF2=KF1+KSUSY1
-      XMSF1=PMAS(PYCOMP(KF1),1)
-      XMSF2=PMAS(PYCOMP(KF2),1)
+      XMSF1=PMAS(SPCOMP(KF1),1)
+      XMSF2=PMAS(SPCOMP(KF2),1)
       IF(XMI.GT.XMB+XMSF1) THEN
         IF(MOD(IFL,2).EQ.0) THEN
           IF(ILR.EQ.1) THEN
@@ -33435,7 +33435,7 @@ C...SF -> SF' + W
             AL=1D0/SR2*SFMIX(IFL,3)*SFMIX(IFL+1,1)
           ENDIF
         ENDIF
-        XL=PYLAMF(XMI2,XMSF1**2,XMB**2)
+        XL=SPLAMF(XMI2,XMSF1**2,XMB**2)
         LKNT=LKNT+1
         XLAM(LKNT)=C1/4D0/XMI3*XL**1.5D0/XMB**2*AL**2
         IDLAM(LKNT,3)=0
@@ -33456,7 +33456,7 @@ C...SF -> SF' + W
             AL=1D0/SR2*SFMIX(IFL,3)*SFMIX(IFL+1,3)
           ENDIF
         ENDIF
-        XL=PYLAMF(XMI2,XMSF2**2,XMB**2)
+        XL=SPLAMF(XMI2,XMSF2**2,XMB**2)
         LKNT=LKNT+1
         XLAM(LKNT)=C1/4D0/XMI3*XL**1.5D0/XMB**2*AL**2
         IDLAM(LKNT,3)=0
@@ -33472,8 +33472,8 @@ C...SF -> SF' + HC
         KF1=KSUSY1+IFL+1
       ENDIF
       KF2=KF1+KSUSY1
-      XMSF1=PMAS(PYCOMP(KF1),1)
-      XMSF2=PMAS(PYCOMP(KF2),1)
+      XMSF1=PMAS(SPCOMP(KF1),1)
+      XMSF2=PMAS(SPCOMP(KF2),1)
       IF(XMI.GT.XMB+XMSF1) THEN
         XMF=0D0
         XMFP=0D0
@@ -33520,7 +33520,7 @@ C...B2-> T1 HC
             AB=ATRIB
           ENDIF
         ENDIF
-        XL=PYLAMF(XMI2,XMSF1**2,XMB**2)
+        XL=SPLAMF(XMI2,XMSF1**2,XMB**2)
         LKNT=LKNT+1
 C.......Need to complexify
         AL=CH1*(XMW2*2D0*CBETA*SBETA-XMFP**2*TANB-XMF**2/TANB)+
@@ -33577,7 +33577,7 @@ C...B2-> T2 HC
             AB=ATRIB
           ENDIF
         ENDIF
-        XL=PYLAMF(XMI2,XMSF1**2,XMB**2)
+        XL=SPLAMF(XMI2,XMSF1**2,XMB**2)
         LKNT=LKNT+1
 C.......Need to complexify
         AL=CH1*(XMW2*2D0*CBETA*SBETA-XMFP**2*TANB-XMF**2/TANB)+
@@ -33596,7 +33596,7 @@ C...2-BODY DECAYS OF SQUARK -> QUARK GLUINO
         XMF=0D0
         IF(IFL.EQ.6) XMF=PMAS(6,1)
         IF(IFL.EQ.5) XMF=PMAS(5,1)
-        XMJ=PMAS(PYCOMP(KSUSY1+21),1)
+        XMJ=PMAS(SPCOMP(KSUSY1+21),1)
         AXMJ=ABS(XMJ)
         IF(XMI.GE.AXMJ+XMF) THEN
           AL=-SFMIX(IFL,3)
@@ -33615,7 +33615,7 @@ C...F2 -> F CHI
           LKNT=LKNT+1
           XMA2=XMJ**2
           XMB2=XMF**2
-          XL=PYLAMF(XMI2,XMA2,XMB2)
+          XL=SPLAMF(XMI2,XMA2,XMB2)
           XLAM(LKNT)=4D0/3D0*AS/2D0/XMI3*SQRT(XL)*((XMI2-XMB2-XMA2)*
      &    (XCA**2+XCB**2)+4D0*XCA*XCB*XMJ*XMF)
           IDLAM(LKNT,1)=KSUSY1+21
@@ -33626,13 +33626,13 @@ C...F2 -> F CHI
  
 C...IF NOTHING ELSE FOR T1, THEN T1* -> C+CHI0
       IF(KFIN.EQ.KSUSY1+6.AND.PMAS(KCIN,1).GT.
-     &PMAS(PYCOMP(KSUSY1+22),1)+PMAS(4,1)) THEN
+     &PMAS(SPCOMP(KSUSY1+22),1)+PMAS(4,1)) THEN
 C...THIS IS A BACK-OF-THE-ENVELOPE ESTIMATE
 C...M = 1/(16PI**2)G**3 = G*2/(4PI) G/(4PI) = C1 * G/(4PI)
 C...M*M = C1**2 * G**2/(16PI**2)
 C...G = 1/(8PI)P/MI**2 * M*M = C1**3/(32PI**2)*LAM/(2*MI**3)
         LKNT=LKNT+1
-        XL=PYLAMF(XMI2,0D0,PMAS(PYCOMP(KSUSY1+22),1)**2)
+        XL=SPLAMF(XMI2,0D0,PMAS(SPCOMP(KSUSY1+22),1)**2)
         XLAM(LKNT)=C1**3/64D0/PI**2/XMI3*SQRT(XL)
         IF(XLAM(LKNT).EQ.0) XLAM(LKNT)=1D-3
         IDLAM(LKNT,1)=KSUSY1+22
@@ -33641,7 +33641,7 @@ C...G = 1/(8PI)P/MI**2 * M*M = C1**3/(32PI**2)*LAM/(2*MI**3)
       ENDIF
  
 C...R-violating sfermion decays (SKANDS).
-      CALL PYRVSF(KFIN,XLAM,IDLAM,LKNT)
+      CALL SPRVSF(KFIN,XLAM,IDLAM,LKNT)
  
       IKNT=LKNT
       XLAM(0)=0D0
@@ -33656,35 +33656,35 @@ C...R-violating sfermion decays (SKANDS).
  
 C*********************************************************************
  
-C...PYGLUI
+C...SPGLUI
 C...Calculates gluino decay modes.
  
-      SUBROUTINE PYGLUI(KFIN,XLAM,IDLAM,IKNT)
+      SUBROUTINE SPGLUI(KFIN,XLAM,IDLAM,IKNT)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-      COMMON/PYSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+      COMMON/SPSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
      &SFMIX(16,4),ZMIXI(4,4),UMIXI(2,2),VMIXI(2,2)
 CC     &SFMIX(16,4),
-C      COMMON/PYINTS/XXM(20)
+C      COMMON/SPINTS/XXM(20)
       COMPLEX*16 CXC
-      COMMON/PYINTC/XXC(10),CXC(8)
-      SAVE /PYDAT1/,/PYDAT2/,/PYMSSM/,/PYSSMT/,/PYINTC/
+      COMMON/SPINTC/XXC(10),CXC(8)
+      SAVE /SPDAT1/,/SPDAT2/,/SPMSSM/,/SPSSMT/,/SPINTC/
  
 C...Local variables
       COMPLEX*16 ZMIXC(4,4),VMIXC(2,2),UMIXC(2,2),OLPP,ORPP,GLIJ,GRIJ
       DOUBLE PRECISION XMI,XMJ,XMF,AXMJ,AXMI
       DOUBLE PRECISION XMI2,XMI3,XMA2,XMB2,XMFP
-      DOUBLE PRECISION PYLAMF,XL
+      DOUBLE PRECISION SPLAMF,XL
       DOUBLE PRECISION TANW,XW,AEM,C1,AS,S12MAX,S12MIN
       DOUBLE PRECISION CA,CB,AL,AR,BL,BR
       DOUBLE PRECISION XLAM(0:400)
@@ -33692,9 +33692,9 @@ C...Local variables
       INTEGER LKNT,IX,ILR,I,IKNT,IFL
       DOUBLE PRECISION SR2
       DOUBLE PRECISION GAM
-      DOUBLE PRECISION PYALEM,PI,PYALPS,EI,T3I
-      EXTERNAL PYGAUS,PYXXZ6
-      DOUBLE PRECISION PYGAUS,PYXXZ6
+      DOUBLE PRECISION SPALEM,PI,SPALPS,EI,T3I
+      EXTERNAL SPGAUS,SPXXZ6
+      DOUBLE PRECISION SPGAUS,SPXXZ6
       DOUBLE PRECISION PREC
       INTEGER KFNCHI(4),KFCCHI(2)
       DATA PI/3.141592654D0/
@@ -33706,7 +33706,7 @@ C...Local variables
 C...COUNT THE NUMBER OF DECAY MODES
       LKNT=0
       IF(KFIN.NE.KSUSY1+21) RETURN
-      KCIN=PYCOMP(KFIN)
+      KCIN=SPCOMP(KFIN)
  
       XW=PARU(102)
       TANW = SQRT(XW/(1D0-XW))
@@ -33714,8 +33714,8 @@ C...COUNT THE NUMBER OF DECAY MODES
       XMI=PMAS(KCIN,1)
       AXMI=ABS(XMI)
       XMI2=XMI**2
-      AEM=PYALEM(XMI2)
-      AS =PYALPS(XMI2)
+      AEM=SPALEM(XMI2)
+      AS =SPALPS(XMI2)
       C1=AEM/XW
       XMI3=AXMI**3
  
@@ -33726,7 +33726,7 @@ C...2-BODY DECAYS OF GLUINO -> GRAVITINO GLUON
       IF(IMSS(11).EQ.1) THEN
         XMP=RMSS(29)
         IDG=39+KSUSY1
-        XMGR=PMAS(PYCOMP(IDG),1)
+        XMGR=PMAS(SPCOMP(IDG),1)
         XFAC=(XMI2/(XMP*XMGR))**2*AXMI/48D0/PI
         IF(AXMI.GT.XMGR) THEN
           LKNT=LKNT+1
@@ -33741,7 +33741,7 @@ C...2-BODY DECAYS OF GLUINO -> QUARK SQUARK
  
       DO 110 IFL=1,6
         DO 100 ILR=1,2
-          XMJ=PMAS(PYCOMP(ILR*KSUSY1+IFL),1)
+          XMJ=PMAS(SPCOMP(ILR*KSUSY1+IFL),1)
           AXMJ=ABS(XMJ)
           XMF=PMAS(IFL,1)
           IF(AXMI.GE.AXMJ+XMF) THEN
@@ -33762,7 +33762,7 @@ C...F2 -> F CHI
             LKNT=LKNT+1
             XMA2=XMJ**2
             XMB2=XMF**2
-            XL=PYLAMF(XMI2,XMA2,XMB2)
+            XL=SPLAMF(XMI2,XMA2,XMB2)
             XLAM(LKNT)=4D0/8D0*AS/4D0/XMI3*SQRT(XL)*((XMI2+XMB2-XMA2)*
      &      (CA**2+CB**2)-4D0*CA*CB*XMI*XMF)
             IDLAM(LKNT,1)=ILR*KSUSY1+IFL
@@ -33793,8 +33793,8 @@ C...GLUINO -> NI Q QBAR
           XXC(3)=0D0
           XXC(4)=XMI
           IA=1
-          XXC(5)=PMAS(PYCOMP(KSUSY1+IA),1)
-          XXC(6)=PMAS(PYCOMP(KSUSY2+IA),1)
+          XXC(5)=PMAS(SPCOMP(KSUSY1+IA),1)
+          XXC(6)=PMAS(SPCOMP(KSUSY2+IA),1)
           XXC(7)=XXC(5)
           XXC(8)=XXC(6)
           XXC(9)=1D6
@@ -33817,7 +33817,7 @@ C...GLUINO -> NI Q QBAR
           IF(AXMI.GE.AXMJ+2D0*PMAS(1,1)) THEN
             LKNT=LKNT+1
             XLAM(LKNT)=C1*AS/XMI3/(16D0*PI)*
-     &      PYGAUS(PYXXZ6,S12MIN,S12MAX,1D-2)
+     &      SPGAUS(SPXXZ6,S12MIN,S12MAX,1D-2)
             IDLAM(LKNT,1)=KFNCHI(IX)
             IDLAM(LKNT,2)=1
             IDLAM(LKNT,3)=-1
@@ -33831,25 +33831,25 @@ C...GLUINO -> NI Q QBAR
           ENDIF
   130     CONTINUE
           IF(AXMI.GE.AXMJ+2D0*PMAS(5,1)) THEN
-            PMOLD=PMAS(PYCOMP(KSUSY1+5),1)
-            IF(AXMI.GT.PMAS(PYCOMP(KSUSY2+5),1)+PMAS(5,1)) THEN
+            PMOLD=PMAS(SPCOMP(KSUSY1+5),1)
+            IF(AXMI.GT.PMAS(SPCOMP(KSUSY2+5),1)+PMAS(5,1)) THEN
               GOTO 140
-            ELSEIF(AXMI.GT.PMAS(PYCOMP(KSUSY1+5),1)+PMAS(5,1)) THEN
-              PMAS(PYCOMP(KSUSY1+5),1)=100D0*XMI
+            ELSEIF(AXMI.GT.PMAS(SPCOMP(KSUSY1+5),1)+PMAS(5,1)) THEN
+              PMAS(SPCOMP(KSUSY1+5),1)=100D0*XMI
             ENDIF
-            CALL PYTBBN(IX,100,-1D0/3D0,XMI,GAM)
+            CALL SPTBBN(IX,100,-1D0/3D0,XMI,GAM)
             LKNT=LKNT+1
             XLAM(LKNT)=GAM
             IDLAM(LKNT,1)=KFNCHI(IX)
             IDLAM(LKNT,2)=5
             IDLAM(LKNT,3)=-5
-            PMAS(PYCOMP(KSUSY1+5),1)=PMOLD
+            PMAS(SPCOMP(KSUSY1+5),1)=PMOLD
           ENDIF
 C...U-TYPE QUARKS
   140     CONTINUE
           IA=2
-          XXC(5)=PMAS(PYCOMP(KSUSY1+IA),1)
-          XXC(6)=PMAS(PYCOMP(KSUSY2+IA),1)
+          XXC(5)=PMAS(SPCOMP(KSUSY1+IA),1)
+          XXC(6)=PMAS(SPCOMP(KSUSY2+IA),1)
 C        IF( XXC(5).LT.AXMI .OR. XXC(6).LT.AXMI ) GOTO 290
           XXC(7)=XXC(5)
           XXC(8)=XXC(6)
@@ -33865,7 +33865,7 @@ C        IF( XXC(5).LT.AXMI .OR. XXC(6).LT.AXMI ) GOTO 290
           IF(AXMI.GE.AXMJ+2D0*PMAS(2,1)) THEN
             LKNT=LKNT+1
             XLAM(LKNT)=C1*AS/XMI3/(16D0*PI)*
-     &      PYGAUS(PYXXZ6,S12MIN,S12MAX,1D-2)
+     &      SPGAUS(SPXXZ6,S12MIN,S12MAX,1D-2)
             IDLAM(LKNT,1)=KFNCHI(IX)
             IDLAM(LKNT,2)=2
             IDLAM(LKNT,3)=-2
@@ -33882,19 +33882,19 @@ C...INCLUDE THE DECAY GLUINO -> NJ + T + T~
 C...IF THE DECAY GLUINO -> ST + T CANNOT OCCUR
           XMF=PMAS(6,1)
           IF(AXMI.GE.AXMJ+2D0*XMF) THEN
-            PMOLD=PMAS(PYCOMP(KSUSY1+6),1)
-            IF(AXMI.GT.PMAS(PYCOMP(KSUSY2+6),1)+XMF) THEN
+            PMOLD=PMAS(SPCOMP(KSUSY1+6),1)
+            IF(AXMI.GT.PMAS(SPCOMP(KSUSY2+6),1)+XMF) THEN
               GOTO 160
-            ELSEIF(AXMI.GT.PMAS(PYCOMP(KSUSY1+6),1)+XMF) THEN
-              PMAS(PYCOMP(KSUSY1+6),1)=100D0*XMI
+            ELSEIF(AXMI.GT.PMAS(SPCOMP(KSUSY1+6),1)+XMF) THEN
+              PMAS(SPCOMP(KSUSY1+6),1)=100D0*XMI
             ENDIF
-            CALL PYTBBN(IX,100,2D0/3D0,XMI,GAM)
+            CALL SPTBBN(IX,100,2D0/3D0,XMI,GAM)
             LKNT=LKNT+1
             XLAM(LKNT)=GAM
             IDLAM(LKNT,1)=KFNCHI(IX)
             IDLAM(LKNT,2)=6
             IDLAM(LKNT,3)=-6
-            PMAS(PYCOMP(KSUSY1+6),1)=PMOLD
+            PMAS(SPCOMP(KSUSY1+6),1)=PMOLD
           ENDIF
   160     CONTINUE
         ENDIF
@@ -33915,8 +33915,8 @@ C...GLUINO -> CI Q QBAR'
           XXC(2)=XMJ
           XXC(3)=0D0
           XXC(4)=XMI
-          XXC(5)=PMAS(PYCOMP(KSUSY1+1),1)
-          XXC(6)=PMAS(PYCOMP(KSUSY1+2),1)
+          XXC(5)=PMAS(SPCOMP(KSUSY1+1),1)
+          XXC(6)=PMAS(SPCOMP(KSUSY1+2),1)
           XXC(9)=1D6
           XXC(10)=0D0
           OLPP=DCMPLX(COS(RMSS(32)),SIN(RMSS(32)))
@@ -33940,7 +33940,7 @@ C...GLUINO -> CI Q QBAR'
           IF(AXMI.GE.AXMJ+PMAS(1,1)+PMAS(2,1)) THEN
             LKNT=LKNT+1
             XLAM(LKNT)=0.5D0*C1*AS/XMI3/(16D0*PI)*
-     &      PYGAUS(PYXXZ6,S12MIN,S12MAX,PREC)
+     &      SPGAUS(SPXXZ6,S12MIN,S12MAX,PREC)
             IDLAM(LKNT,1)=KFCCHI(IX)
             IDLAM(LKNT,2)=1
             IDLAM(LKNT,3)=-2
@@ -33967,17 +33967,17 @@ C...GLUINO -> CI Q QBAR'
           XMF=PMAS(6,1)
           XMFP=PMAS(5,1)
           IF(AXMI.GE.AXMJ+XMF+XMFP) THEN
-            IF(XMI.GT.MIN(PMAS(PYCOMP(KSUSY1+5),1)+XMFP,
-     $      PMAS(PYCOMP(KSUSY2+6),1)+XMF)) GOTO 200
-            PMOLT2=PMAS(PYCOMP(KSUSY2+6),1)
-            PMOLB2=PMAS(PYCOMP(KSUSY2+5),1)
-            PMOLT1=PMAS(PYCOMP(KSUSY1+6),1)
-            PMOLB1=PMAS(PYCOMP(KSUSY1+5),1)
+            IF(XMI.GT.MIN(PMAS(SPCOMP(KSUSY1+5),1)+XMFP,
+     $      PMAS(SPCOMP(KSUSY2+6),1)+XMF)) GOTO 200
+            PMOLT2=PMAS(SPCOMP(KSUSY2+6),1)
+            PMOLB2=PMAS(SPCOMP(KSUSY2+5),1)
+            PMOLT1=PMAS(SPCOMP(KSUSY1+6),1)
+            PMOLB1=PMAS(SPCOMP(KSUSY1+5),1)
             IF(XMI.GT.PMOLT2+XMF) PMOLT2=100D0*AXMI
             IF(XMI.GT.PMOLT1+XMF) PMOLT1=100D0*AXMI
             IF(XMI.GT.PMOLB2+XMFP) PMOLB2=100D0*AXMI
             IF(XMI.GT.PMOLB1+XMFP) PMOLB1=100D0*AXMI
-            CALL PYTBBC(IX,100,XMI,GAM)
+            CALL SPTBBC(IX,100,XMI,GAM)
             LKNT=LKNT+1
             XLAM(LKNT)=GAM
             IDLAM(LKNT,1)=KFCCHI(IX)
@@ -33988,17 +33988,17 @@ C...GLUINO -> CI Q QBAR'
             IDLAM(LKNT,1)=-IDLAM(LKNT-1,1)
             IDLAM(LKNT,2)=-IDLAM(LKNT-1,2)
             IDLAM(LKNT,3)=-IDLAM(LKNT-1,3)
-            PMAS(PYCOMP(KSUSY2+6),1)=PMOLT2
-            PMAS(PYCOMP(KSUSY2+5),1)=PMOLB2
-            PMAS(PYCOMP(KSUSY1+6),1)=PMOLT1
-            PMAS(PYCOMP(KSUSY1+5),1)=PMOLB1
+            PMAS(SPCOMP(KSUSY2+6),1)=PMOLT2
+            PMAS(SPCOMP(KSUSY2+5),1)=PMOLB2
+            PMAS(SPCOMP(KSUSY1+6),1)=PMOLT1
+            PMAS(SPCOMP(KSUSY1+5),1)=PMOLB1
           ENDIF
   200     CONTINUE
         ENDIF
   210 CONTINUE
  
 C...R-parity violating (3-body) decays.
-      CALL PYRVGL(KFIN,XLAM,IDLAM,LKNT)
+      CALL SPRVGL(KFIN,XLAM,IDLAM,LKNT)
  
       IKNT=LKNT
       XLAM(0)=0D0
@@ -34013,30 +34013,30 @@ C...R-parity violating (3-body) decays.
  
 C*********************************************************************
  
-C...PYTBBN
+C...SPTBBN
 C...Calculates the three-body decay of gluinos into
 C...neutralinos and third generation fermions.
  
-      SUBROUTINE PYTBBN(I,NN,E,XMGLU,GAM)
+      SUBROUTINE SPTBBN(I,NN,E,XMGLU,GAM)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-      COMMON/PYSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+      COMMON/SPSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
      &SFMIX(16,4),ZMIXI(4,4),UMIXI(2,2),VMIXI(2,2)
-      SAVE /PYDAT1/,/PYDAT2/,/PYMSSM/,/PYSSMT/
+      SAVE /SPDAT1/,/SPDAT2/,/SPMSSM/,/SPSSMT/
  
 C...Local variables.
-      EXTERNAL PYSIMP,PYLAMF
-      DOUBLE PRECISION PYSIMP,PYLAMF
+      EXTERNAL SPSIMP,SPLAMF
+      DOUBLE PRECISION SPSIMP,SPLAMF
       INTEGER LIN,NN
       DOUBLE PRECISION COSD,SIND,COSD2,SIND2,COS2D,SIN2D
       DOUBLE PRECISION HL,HR,FL,FR,HL2,HR2,FL2,FR2
@@ -34072,8 +34072,8 @@ C...Local variables.
       SINC=SFMIX(5,3)
       COSA=SFMIX(6,1)
       SINA=SFMIX(6,3)
-      AMBOT=PYMRUN(5,XMGLU**2)
-      AMTOP=PYMRUN(6,XMGLU**2)
+      AMBOT=SPMRUN(5,XMGLU**2)
+      AMTOP=SPMRUN(6,XMGLU**2)
       W2=SQRT(2D0)
       FAKT1=AMBOT/W2/AMW/COSB
       FAKT2=AMTOP/W2/AMW/SINB
@@ -34121,10 +34121,10 @@ C          FRU(J)=ZN(2)
 C          FLD(J)=ZN(3)
 C          FRD(J)=ZN(2)
   150   CONTINUE
-C        AMST(1)=PMAS(PYCOMP(KSUSY1+6),1)
-C        AMST(2)=PMAS(PYCOMP(KSUSY2+6),1)
-C        AMSB(1)=PMAS(PYCOMP(KSUSY1+5),1)
-C        AMSB(2)=PMAS(PYCOMP(KSUSY2+5),1)
+C        AMST(1)=PMAS(SPCOMP(KSUSY1+6),1)
+C        AMST(2)=PMAS(SPCOMP(KSUSY2+6),1)
+C        AMSB(1)=PMAS(SPCOMP(KSUSY1+5),1)
+C        AMSB(2)=PMAS(SPCOMP(KSUSY2+5),1)
         IFIRST=.FALSE.
       ENDIF
  
@@ -34135,8 +34135,8 @@ C        AMSB(2)=PMAS(PYCOMP(KSUSY2+5),1)
         FR=FRT(I)
         COSD=SFMIX(6,1)
         SIND=SFMIX(6,3)
-        XMS2(1)=PMAS(PYCOMP(KSUSY1+6),1)**2
-        XMS2(2)=PMAS(PYCOMP(KSUSY2+6),1)**2
+        XMS2(1)=PMAS(SPCOMP(KSUSY1+6),1)**2
+        XMS2(2)=PMAS(SPCOMP(KSUSY2+6),1)**2
         XM=PMAS(6,1)
       ELSE
         HL=HLB(I)
@@ -34145,8 +34145,8 @@ C        AMSB(2)=PMAS(PYCOMP(KSUSY2+5),1)
         FR=FRB(I)
         COSD=SFMIX(5,1)
         SIND=SFMIX(5,3)
-        XMS2(1)=PMAS(PYCOMP(KSUSY1+5),1)**2
-        XMS2(2)=PMAS(PYCOMP(KSUSY2+5),1)**2
+        XMS2(1)=PMAS(SPCOMP(KSUSY1+5),1)**2
+        XMS2(2)=PMAS(SPCOMP(KSUSY2+5),1)**2
         XM=PMAS(5,1)
       ENDIF
       COSD2=COSD*COSD
@@ -34166,8 +34166,8 @@ C        AMSB(2)=PMAS(PYCOMP(KSUSY2+5),1)
       XM2=XM*XM
       XMG=XMGLU
       XMG2=XMG*XMG
-      ALPHAW=PYALEM(XMG2)
-      ALPHAS=PYALPS(XMG2)
+      ALPHAW=SPALEM(XMG2)
+      ALPHAS=SPALPS(XMG2)
       XMR=AMN(I)
       XMR2=XMR*XMR
       XMQ4=XMG*XM2*XMR
@@ -34178,7 +34178,7 @@ C        AMSB(2)=PMAS(PYCOMP(KSUSY2+5),1)
       DO 170 LIN=1,NN-1
         SBAR=SMIN+DBLE(LIN)*(SMAX-SMIN)/DBLE(NN)
         GRS=SBAR-XMQA
-        W=PYLAMF(XMG2,XMR2,SBAR)*(0.25D0-XM2/SBAR)
+        W=SPLAMF(XMG2,XMR2,SBAR)*(0.25D0-XM2/SBAR)
         W=DSQRT(W)
         XLN1=LOG(ABS((GRS/2D0+XMS2(1)-W)/(GRS/2D0+XMS2(1)+W)))
         XLN2=LOG(ABS((GRS/2D0+XMS2(2)-W)/(GRS/2D0+XMS2(2)+W)))
@@ -34227,7 +34227,7 @@ C        AMSB(2)=PMAS(PYCOMP(KSUSY2+5),1)
   170 CONTINUE
       SUMME(0)=0D0
       SUMME(NN)=0D0
-      GAM = ALPHAW * ALPHAS * PYSIMP(SUMME,SMIN,SMAX,NN)
+      GAM = ALPHAW * ALPHAS * SPSIMP(SUMME,SMIN,SMAX,NN)
      &/ (16D0 * PARU(1) * PARU(102) * XMGLU**3)
  
       RETURN
@@ -34235,30 +34235,30 @@ C        AMSB(2)=PMAS(PYCOMP(KSUSY2+5),1)
  
 C*********************************************************************
  
-C...PYTBBC
+C...SPTBBC
 C...Calculates the three-body decay of gluinos into
 C...charginos and third generation fermions.
  
-      SUBROUTINE PYTBBC(I,NN,XMGLU,GAM)
+      SUBROUTINE SPTBBC(I,NN,XMGLU,GAM)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-      COMMON/PYSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+      COMMON/SPSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
      &SFMIX(16,4),ZMIXI(4,4),UMIXI(2,2),VMIXI(2,2)
-      SAVE /PYDAT1/,/PYDAT2/,/PYMSSM/,/PYSSMT/
+      SAVE /SPDAT1/,/SPDAT2/,/SPMSSM/,/SPSSMT/
  
 C...Local variables.
-      EXTERNAL PYSIMP,PYLAMF
-      DOUBLE PRECISION PYSIMP,PYLAMF
+      EXTERNAL SPSIMP,SPLAMF
+      DOUBLE PRECISION SPSIMP,SPLAMF
       INTEGER I,NN,LIN
       DOUBLE PRECISION XMG,XMG2,XMB,XMB2,XMR,XMR2
       DOUBLE PRECISION XMT,XMT2,XMST(4),XMSB(4)
@@ -34289,8 +34289,8 @@ C...Local variables.
       SINC=SFMIX(5,3)
       COSA=SFMIX(6,1)
       SINA=SFMIX(6,3)
-      AMBOT=PYMRUN(5,XMGLU**2)
-      AMTOP=PYMRUN(6,XMGLU**2)
+      AMBOT=SPMRUN(5,XMGLU**2)
+      AMTOP=SPMRUN(6,XMGLU**2)
       W2=SQRT(2D0)
       AMW=PMAS(24,1)
       FAKT1=AMBOT/W2/AMW/COSB
@@ -34308,10 +34308,10 @@ C...Local variables.
           XX2(JJ)=FAKT2*VMIX(JJ,2)*COSA+VMIX(JJ,1)*SINA
           BBB(JJ)=FAKT1*UMIX(JJ,2)*SINA
   100   CONTINUE
-        AMST(1)=PMAS(PYCOMP(KSUSY1+6),1)
-        AMST(2)=PMAS(PYCOMP(KSUSY2+6),1)
-        AMSB(1)=PMAS(PYCOMP(KSUSY1+5),1)
-        AMSB(2)=PMAS(PYCOMP(KSUSY2+5),1)
+        AMST(1)=PMAS(SPCOMP(KSUSY1+6),1)
+        AMST(2)=PMAS(SPCOMP(KSUSY2+6),1)
+        AMSB(1)=PMAS(SPCOMP(KSUSY1+5),1)
+        AMSB(2)=PMAS(SPCOMP(KSUSY2+5),1)
         IFIRST=.FALSE.
       ENDIF
  
@@ -34330,8 +34330,8 @@ C...Local variables.
       XMB=PMAS(5,1)
       XMR=AMC(I)
       XMG2=XMG*XMG
-      ALPHAW=PYALEM(XMG2)
-      ALPHAS=PYALPS(XMG2)
+      ALPHAW=SPALEM(XMG2)
+      ALPHAS=SPALPS(XMG2)
       XMT2=XMT*XMT
       XMB2=XMB*XMB
       XMR2=XMR*XMR
@@ -34393,7 +34393,7 @@ C...Local variables.
         SBAR=SMIN+DBLE(LIN)*(SMAX-SMIN)/DBLE(NN)
         AM=(XMG2-XMR2)*(XMT2-XMB2)/2D0/SBAR
         GRS=SBAR-XMQ2
-        W=PYLAMF(SBAR,XMB2,XMT2)*PYLAMF(SBAR,XMG2,XMR2)
+        W=SPLAMF(SBAR,XMB2,XMT2)*SPLAMF(SBAR,XMG2,XMR2)
         W=DSQRT(W)/2D0/SBAR
         ANT1=LOG(ABS((GRS/2D0+AM+XMST(1)-W)/(GRS/2D0+AM+XMST(1)+W)))
         ANT2=LOG(ABS((GRS/2D0+AM+XMST(3)-W)/(GRS/2D0+AM+XMST(3)+W)))
@@ -34456,7 +34456,7 @@ C...Local variables.
   110   CONTINUE
   120 CONTINUE
       SUMME(NN)=0D0
-      GAM= ALPHAW * ALPHAS * PYSIMP(SUMME,SMIN,SMAX,NN)
+      GAM= ALPHAW * ALPHAS * SPSIMP(SUMME,SMIN,SMAX,NN)
      &/ (16D0 * PARU(1) * PARU(102) * XMGLU**3)
  
       RETURN
@@ -34464,7 +34464,7 @@ C...Local variables.
  
 C*********************************************************************
  
-C...PYNJDC
+C...SPNJDC
 C...Calculates decay widths for the neutralinos (admixtures of
 C...Bino, W3-ino, Higgs1-ino, Higgs2-ino)
  
@@ -34478,27 +34478,27 @@ C...10-15-95:  force decay chi^0_2 -> chi^0_1 + gamma
 C...when CHIGAMMA .NE. 0
 C...10 FEB 96:  Calculate this decay for small tan(beta)
  
-      SUBROUTINE PYNJDC(KFIN,XLAM,IDLAM,IKNT)
+      SUBROUTINE SPNJDC(KFIN,XLAM,IDLAM,IKNT)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-c      COMMON/PYSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+c      COMMON/SPSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
 c     &SFMIX(16,4)
-      COMMON/PYSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
+      COMMON/SPSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
      &SFMIX(16,4),ZMIXI(4,4),UMIXI(2,2),VMIXI(2,2)
-C      COMMON/PYINTS/XXM(20)
+C      COMMON/SPINTS/XXM(20)
       COMPLEX*16 CXC
-      COMMON/PYINTC/XXC(10),CXC(8)
-      SAVE /PYDAT1/,/PYDAT2/,/PYMSSM/,/PYSSMT/,/PYINTC/
+      COMMON/SPINTC/XXC(10),CXC(8)
+      SAVE /SPDAT1/,/SPDAT2/,/SPMSSM/,/SPSSMT/,/SPINTC/
  
 C...Local variables.
       COMPLEX*16 ZMIXC(4,4),VMIXC(2,2),UMIXC(2,2),OLPP,ORPP,GLIJ,GRIJ
@@ -34508,9 +34508,9 @@ C...Local variables.
      &XMZ,XMZ2,AXMJ,AXMI
       DOUBLE PRECISION S12MIN,S12MAX
       DOUBLE PRECISION XMI2,XMI3,XMJ2,XMH,XMH2,XMHP,XMA2,XMB2
-      DOUBLE PRECISION PYLAMF,XL
+      DOUBLE PRECISION SPLAMF,XL
       DOUBLE PRECISION TANW,XW,AEM,C1,AS,EI,T3I
-      DOUBLE PRECISION PYX2XH,PYX2XG
+      DOUBLE PRECISION SPX2XH,SPX2XG
       DOUBLE PRECISION XLAM(0:400)
       INTEGER IDLAM(400,3)
       INTEGER LKNT,IX,IH,J,IJ,I,IKNT,FID
@@ -34520,13 +34520,13 @@ C...Local variables.
       DOUBLE PRECISION SR2
       DOUBLE PRECISION CBETA,SBETA
       DOUBLE PRECISION GAMCON,XMT1,XMT2
-      DOUBLE PRECISION PYALEM,PI,PYALPS
+      DOUBLE PRECISION SPALEM,PI,SPALPS
       DOUBLE PRECISION RAT1,RAT2
       DOUBLE PRECISION T3T,FCOL
       DOUBLE PRECISION ALFA,BETA,TANB
-      DOUBLE PRECISION PYXXGA
-      EXTERNAL PYGAUS,PYXXZ6
-      DOUBLE PRECISION PYGAUS,PYXXZ6
+      DOUBLE PRECISION SPXXGA
+      EXTERNAL SPGAUS,SPXXZ6
+      DOUBLE PRECISION SPGAUS,SPXXZ6
       DOUBLE PRECISION PREC
       INTEGER KFNCHI(4),KFCCHI(2)
       DATA ITH/25,35,36/
@@ -34557,8 +34557,8 @@ C...IX IS 1 - 4 DEPENDING ON SEQUENCE NUMBER
       XMI=SMZ(IX)
       XMI2=XMI**2
       AXMI=ABS(XMI)
-      AEM=PYALEM(XMI2)
-      AS =PYALPS(XMI2)
+      AEM=SPALEM(XMI2)
+      AS =SPALPS(XMI2)
       C1=AEM/XW
       XMI3=ABS(XMI**3)
  
@@ -34591,9 +34591,9 @@ C...FORCE CHI0_2 -> CHI0_1 + GAMMA
         AXMJ=ABS(XMJ)
         LKNT=LKNT+1
         GAMCON=AEM**3/8D0/PI/XMW2/XW
-        XMT1=(PMAS(PYCOMP(KSUSY1+6),1)/PMAS(6,1))**2
-        XMT2=(PMAS(PYCOMP(KSUSY2+6),1)/PMAS(6,1))**2
-        XLAM(LKNT)=PYXXGA(GAMCON,AXMI,AXMJ,XMT1,XMT2)
+        XMT1=(PMAS(SPCOMP(KSUSY1+6),1)/PMAS(6,1))**2
+        XMT2=(PMAS(SPCOMP(KSUSY2+6),1)/PMAS(6,1))**2
+        XLAM(LKNT)=SPXXGA(GAMCON,AXMI,AXMJ,XMT1,XMT2)
         IDLAM(LKNT,1)=KSUSY1+22
         IDLAM(LKNT,2)=22
         IDLAM(LKNT,3)=0
@@ -34606,7 +34606,7 @@ C...GRAVITINO DECAY MODES
       IF(IMSS(11).EQ.1) THEN
         XMP=RMSS(29)
         IDG=39+KSUSY1
-        XMGR=PMAS(PYCOMP(IDG),1)
+        XMGR=PMAS(SPCOMP(IDG),1)
         SINW=SQRT(XW)
         COSW=SQRT(1D0-XW)
         XFAC=(XMI2/(XMP*XMGR))**2*AXMI/48D0/PI
@@ -34671,9 +34671,9 @@ C...CHI0_I -> CHI0_J + GAMMA
             IDLAM(LKNT,2)=22
             IDLAM(LKNT,3)=0
             GAMCON=AEM**3/8D0/PI/XMW2/XW
-            XMT1=(PMAS(PYCOMP(KSUSY1+6),1)/PMAS(6,1))**2
-            XMT2=(PMAS(PYCOMP(KSUSY2+6),1)/PMAS(6,1))**2
-            XLAM(LKNT)=PYXXGA(GAMCON,AXMI,AXMJ,XMT1,XMT2)
+            XMT1=(PMAS(SPCOMP(KSUSY1+6),1)/PMAS(6,1))**2
+            XMT2=(PMAS(SPCOMP(KSUSY2+6),1)/PMAS(6,1))**2
+            XLAM(LKNT)=SPXXGA(GAMCON,AXMI,AXMJ,XMT1,XMT2)
           ENDIF
         ENDIF
  
@@ -34685,7 +34685,7 @@ C...CHI0_I -> CHI0_J + Z0
           ORPP=-DCONJG(OLPP)
           GX2=ABS(OLPP)**2+ABS(ORPP)**2
           GLR=DBLE(OLPP*DCONJG(ORPP))
-          XLAM(LKNT)=PYX2XG(C1/XMW2,XMI,XMJ,XMZ,GX2,GLR)
+          XLAM(LKNT)=SPX2XG(C1/XMW2,XMI,XMJ,XMZ,GX2,GLR)
           IDLAM(LKNT,1)=KFNCHI(IJ)
           IDLAM(LKNT,2)=23
           IDLAM(LKNT,3)=0
@@ -34701,8 +34701,8 @@ C...CHI0_I -> CHI0_J + Z0
           ORPP=DCONJG(OLPP)
 C...CHARGED LEPTONS
           FID=11
-          XXC(5)=PMAS(PYCOMP(KSUSY1+FID),1)
-          XXC(6)=PMAS(PYCOMP(KSUSY2+FID),1)
+          XXC(5)=PMAS(SPCOMP(KSUSY1+FID),1)
+          XXC(6)=PMAS(SPCOMP(KSUSY2+FID),1)
           EI=KCHG(FID,1)/3D0
           T3I=SIGN(1D0,EI+1D-6)/2D0
           GLIJ=(T3I*ZMIXC(IX,2)-TANW*(T3I-EI)*ZMIXC(IX,1))*
@@ -34730,7 +34730,7 @@ C...CHARGED LEPTONS
           IF(AXMI.GE.AXMJ+2D0*PMAS(11,1)) THEN
             LKNT=LKNT+1
             XLAM(LKNT)=C1**2/XMI3/(16D0*PI)*
-     &      PYGAUS(PYXXZ6,S12MIN,S12MAX,1D-3)
+     &      SPGAUS(SPXXZ6,S12MIN,S12MAX,1D-3)
             IDLAM(LKNT,1)=KFNCHI(IJ)
             IDLAM(LKNT,2)=FID
             IDLAM(LKNT,3)=-FID
@@ -34744,11 +34744,11 @@ C...CHARGED LEPTONS
           ENDIF
   140     CONTINUE
           IF(ABS(SFMIX(15,1)).GT.ABS(SFMIX(15,2))) THEN
-            XXC(5)=PMAS(PYCOMP(KSUSY1+15),1)
-            XXC(6)=PMAS(PYCOMP(KSUSY2+15),1)
+            XXC(5)=PMAS(SPCOMP(KSUSY1+15),1)
+            XXC(6)=PMAS(SPCOMP(KSUSY2+15),1)
           ELSE
-            XXC(6)=PMAS(PYCOMP(KSUSY1+15),1)
-            XXC(5)=PMAS(PYCOMP(KSUSY2+15),1)
+            XXC(6)=PMAS(SPCOMP(KSUSY1+15),1)
+            XXC(5)=PMAS(SPCOMP(KSUSY2+15),1)
           ENDIF
           IF( XXC(5).LT.AXMI ) THEN
             XXC(5)=1D6
@@ -34762,7 +34762,7 @@ C...CHARGED LEPTONS
           IF(AXMI.GE.AXMJ+2D0*PMAS(15,1)) THEN
             LKNT=LKNT+1
             XLAM(LKNT)=C1**2/XMI3/(16D0*PI)*
-     &      PYGAUS(PYXXZ6,S12MIN,S12MAX,1D-3)
+     &      SPGAUS(SPXXZ6,S12MIN,S12MAX,1D-3)
             IDLAM(LKNT,1)=KFNCHI(IJ)
             IDLAM(LKNT,2)=15
             IDLAM(LKNT,3)=-15
@@ -34771,8 +34771,8 @@ C...CHARGED LEPTONS
 C...NEUTRINOS
   150     CONTINUE
           FID=12
-          XXC(5)=PMAS(PYCOMP(KSUSY1+FID),1)
-          XXC(6)=PMAS(PYCOMP(KSUSY2+FID),1)
+          XXC(5)=PMAS(SPCOMP(KSUSY1+FID),1)
+          XXC(6)=PMAS(SPCOMP(KSUSY2+FID),1)
           EI=KCHG(FID,1)/3D0
           T3I=SIGN(1D0,EI+1D-6)/2D0
           GLIJ=(T3I*ZMIXC(IX,2)-TANW*(T3I-EI)*ZMIXC(IX,1))*
@@ -34799,7 +34799,7 @@ C...NEUTRINOS
  
           LKNT=LKNT+1
           XLAM(LKNT)=C1**2/XMI3/(16D0*PI)*
-     &    PYGAUS(PYXXZ6,S12MIN,S12MAX,1D-3)
+     &    SPGAUS(SPXXZ6,S12MIN,S12MAX,1D-3)
           IDLAM(LKNT,1)=KFNCHI(IJ)
           IDLAM(LKNT,2)=12
           IDLAM(LKNT,3)=-12
@@ -34810,16 +34810,16 @@ C...NEUTRINOS
           IDLAM(LKNT,3)=-14
   160     CONTINUE
  
-          IF(PMAS(PYCOMP(KSUSY1+16),1).NE.PMAS(PYCOMP(KSUSY1+12),1))
+          IF(PMAS(SPCOMP(KSUSY1+16),1).NE.PMAS(SPCOMP(KSUSY1+12),1))
      &    THEN
-            XXC(5)=PMAS(PYCOMP(KSUSY1+16),1)
+            XXC(5)=PMAS(SPCOMP(KSUSY1+16),1)
             IF( XXC(5).LT.AXMI ) THEN
               XXC(5)=1D6
             ENDIF
             XXC(7)=XXC(5)
             LKNT=LKNT+1
             XLAM(LKNT)=C1**2/XMI3/(16D0*PI)*
-     &      PYGAUS(PYXXZ6,S12MIN,S12MAX,1D-3)
+     &      SPGAUS(SPXXZ6,S12MIN,S12MAX,1D-3)
           ELSE
             LKNT=LKNT+1
             XLAM(LKNT)=XLAM(LKNT-1)
@@ -34830,8 +34830,8 @@ C...NEUTRINOS
 C...D-TYPE QUARKS
   170     CONTINUE
           FID=1
-          XXC(5)=PMAS(PYCOMP(KSUSY1+FID),1)
-          XXC(6)=PMAS(PYCOMP(KSUSY2+FID),1)
+          XXC(5)=PMAS(SPCOMP(KSUSY1+FID),1)
+          XXC(6)=PMAS(SPCOMP(KSUSY2+FID),1)
           EI=KCHG(FID,1)/3D0
           T3I=SIGN(1D0,EI+1D-6)/2D0
           GLIJ=(T3I*ZMIXC(IX,2)-TANW*(T3I-EI)*ZMIXC(IX,1))*
@@ -34859,7 +34859,7 @@ C...D-TYPE QUARKS
           IF(AXMI.GE.AXMJ+2D0*PMAS(1,1)) THEN
             LKNT=LKNT+1
             XLAM(LKNT)=C1**2/XMI3/(16D0*PI)*
-     &      PYGAUS(PYXXZ6,S12MIN,S12MAX,1D-3)*3D0
+     &      SPGAUS(SPXXZ6,S12MIN,S12MAX,1D-3)*3D0
             IDLAM(LKNT,1)=KFNCHI(IJ)
             IDLAM(LKNT,2)=1
             IDLAM(LKNT,3)=-1
@@ -34873,11 +34873,11 @@ C...D-TYPE QUARKS
           ENDIF
   180     CONTINUE
           IF(ABS(SFMIX(5,1)).GT.ABS(SFMIX(5,2))) THEN
-            XXC(5)=PMAS(PYCOMP(KSUSY1+5),1)
-            XXC(6)=PMAS(PYCOMP(KSUSY2+5),1)
+            XXC(5)=PMAS(SPCOMP(KSUSY1+5),1)
+            XXC(6)=PMAS(SPCOMP(KSUSY2+5),1)
           ELSE
-            XXC(6)=PMAS(PYCOMP(KSUSY1+5),1)
-            XXC(5)=PMAS(PYCOMP(KSUSY2+5),1)
+            XXC(6)=PMAS(SPCOMP(KSUSY1+5),1)
+            XXC(5)=PMAS(SPCOMP(KSUSY2+5),1)
           ENDIF
           IF( XXC(5).LT.AXMI .AND. XXC(6).LT.AXMI ) GOTO 190
           IF(XXC(5).LT.AXMI) THEN
@@ -34890,7 +34890,7 @@ C...D-TYPE QUARKS
           IF(AXMI.GE.AXMJ+2D0*PMAS(5,1)) THEN
             LKNT=LKNT+1
             XLAM(LKNT)=C1**2/XMI3/(16D0*PI)*
-     &      PYGAUS(PYXXZ6,S12MIN,S12MAX,1D-3)*3D0
+     &      SPGAUS(SPXXZ6,S12MIN,S12MAX,1D-3)*3D0
             IDLAM(LKNT,1)=KFNCHI(IJ)
             IDLAM(LKNT,2)=5
             IDLAM(LKNT,3)=-5
@@ -34899,8 +34899,8 @@ C...D-TYPE QUARKS
 C...U-TYPE QUARKS
   190     CONTINUE
           FID=2
-          XXC(5)=PMAS(PYCOMP(KSUSY1+FID),1)
-          XXC(6)=PMAS(PYCOMP(KSUSY2+FID),1)
+          XXC(5)=PMAS(SPCOMP(KSUSY1+FID),1)
+          XXC(6)=PMAS(SPCOMP(KSUSY2+FID),1)
           EI=KCHG(FID,1)/3D0
           T3I=SIGN(1D0,EI+1D-6)/2D0
           GLIJ=(T3I*ZMIXC(IX,2)-TANW*(T3I-EI)*ZMIXC(IX,1))*
@@ -34927,7 +34927,7 @@ C...U-TYPE QUARKS
           IF(AXMI.GE.AXMJ+2D0*PMAS(2,1)) THEN
             LKNT=LKNT+1
             XLAM(LKNT)=C1**2/XMI3/(16D0*PI)*
-     &      PYGAUS(PYXXZ6,S12MIN,S12MAX,1D-3)*3D0
+     &      SPGAUS(SPXXZ6,S12MIN,S12MAX,1D-3)*3D0
             IDLAM(LKNT,1)=KFNCHI(IJ)
             IDLAM(LKNT,2)=2
             IDLAM(LKNT,3)=-2
@@ -34962,7 +34962,7 @@ C...CHI0_I -> CHI0_J + H0_K
           XMH2=XMH**2
           IF(AXMI.GE.AXMJ+XMH) THEN
             LKNT=LKNT+1
-            XL=PYLAMF(XMI2,XMJ2,XMH2)
+            XL=SPLAMF(XMI2,XMJ2,XMH2)
             F21K=0.5D0*(QIJ*EH(IH)+RIJ*DH(IH))
             F12K=F21K
 C...SIGN OF MASSES I,J
@@ -34970,7 +34970,7 @@ C...SIGN OF MASSES I,J
             IF(IH.EQ.3) XMK=-XMK
             GX2=ABS(F21K)**2+ABS(F12K)**2
             GLR=DBLE(F21K*DCONJG(F12K))
-            XLAM(LKNT)=PYX2XH(C1,XMI,XMK,XMH,GX2,GLR)
+            XLAM(LKNT)=SPX2XH(C1,XMI,XMK,XMH,GX2,GLR)
             IDLAM(LKNT,1)=KFNCHI(IJ)
             IDLAM(LKNT,2)=ITH(IH)
             IDLAM(LKNT,3)=0
@@ -34991,7 +34991,7 @@ C...CHI0_I -> CHI+_J + W-
      &    ZMIXC(IX,3)*DCONJG(UMIXC(IJ,2))/SR2)
           GX2=ABS(CXC(1))**2+ABS(CXC(3))**2
           GLR=DBLE(CXC(1)*DCONJG(CXC(3)))
-          XLAM(LKNT)=PYX2XG(C1/XMW2,XMI,XMJ,XMW,GX2,GLR)
+          XLAM(LKNT)=SPX2XG(C1/XMW2,XMI,XMJ,XMW,GX2,GLR)
           IDLAM(LKNT,1)=KFCCHI(IJ)
           IDLAM(LKNT,2)=-24
           IDLAM(LKNT,3)=0
@@ -35026,8 +35026,8 @@ C...CHI0_I -> CHI+_J + W-
           XXC(2)=XMJ
           XXC(3)=0D0
           XXC(4)=XMI
-          XXC(5)=PMAS(PYCOMP(KSUSY1+JA),1)
-          XXC(6)=PMAS(PYCOMP(KSUSY1+IA),1)
+          XXC(5)=PMAS(SPCOMP(KSUSY1+JA),1)
+          XXC(6)=PMAS(SPCOMP(KSUSY1+IA),1)
           XXC(9)=PMAS(24,1)
           XXC(10)=PMAS(24,2)
           IF( XXC(5).LT.AXMI .AND. XXC(6).LT.AXMI ) GOTO 230
@@ -35041,7 +35041,7 @@ C...CHI0_I -> CHI+_J + W-
           IF(AXMI.GE.AXMJ+PMAS(11,1)+PMAS(12,1)) THEN
             LKNT=LKNT+1
             XLAM(LKNT)=C1**2/XMI3/(16D0*PI)*
-     &      PYGAUS(PYXXZ6,S12MIN,S12MAX,PREC)
+     &      SPGAUS(SPXXZ6,S12MIN,S12MAX,PREC)
             IDLAM(LKNT,1)=KFCCHI(IJ)
             IDLAM(LKNT,2)=11
             IDLAM(LKNT,3)=-12
@@ -35065,11 +35065,11 @@ C...CHI0_I -> CHI+_J + W-
           ENDIF
   230     CONTINUE
           IF(ABS(SFMIX(15,1)).GT.ABS(SFMIX(15,2))) THEN
-            XXC(5)=PMAS(PYCOMP(KSUSY1+15),1)
-            XXC(6)=PMAS(PYCOMP(KSUSY1+16),1)
+            XXC(5)=PMAS(SPCOMP(KSUSY1+15),1)
+            XXC(6)=PMAS(SPCOMP(KSUSY1+16),1)
           ELSE
-            XXC(5)=PMAS(PYCOMP(KSUSY2+15),1)
-            XXC(6)=PMAS(PYCOMP(KSUSY1+16),1)
+            XXC(5)=PMAS(SPCOMP(KSUSY2+15),1)
+            XXC(6)=PMAS(SPCOMP(KSUSY1+16),1)
           ENDIF
           IF(XXC(5).LT.AXMI) THEN
             XXC(5)=1D6
@@ -35082,7 +35082,7 @@ C...CHI0_I -> CHI+_J + W-
           IF(AXMI.GE.AXMJ+PMAS(15,1)+PMAS(16,1)) THEN
             LKNT=LKNT+1
             XLAM(LKNT)=C1**2/XMI3/(16D0*PI)*
-     &      PYGAUS(PYXXZ6,S12MIN,S12MAX,PREC)
+     &      SPGAUS(SPXXZ6,S12MIN,S12MAX,PREC)
             XLAM(LKNT)=XLAM(LKNT-1)
             IDLAM(LKNT,1)=KFCCHI(IJ)
             IDLAM(LKNT,2)=15
@@ -35106,8 +35106,8 @@ C...NOW, DO THE QUARKS
      &    TANW+ZMIXC(IX,2)*T3J)
           CXC(4)=-DCONJG(UMIXC(IJ,1))*(
      &    ZMIXC(IX,1)*(EI-T3I)*TANW+ZMIXC(IX,2)*T3I)
-          XXC(5)=PMAS(PYCOMP(KSUSY1+IA),1)
-          XXC(6)=PMAS(PYCOMP(KSUSY1+JA),1)
+          XXC(5)=PMAS(SPCOMP(KSUSY1+IA),1)
+          XXC(6)=PMAS(SPCOMP(KSUSY1+JA),1)
           IF(XXC(5).LT.AXMI) THEN
             XXC(5)=1D6
           ENDIF
@@ -35119,7 +35119,7 @@ C...NOW, DO THE QUARKS
           IF(AXMI.GE.AXMJ+PMAS(2,1)+PMAS(1,1)) THEN
             LKNT=LKNT+1
             XLAM(LKNT)=3D0*C1**2/XMI3/(16D0*PI)*
-     &      PYGAUS(PYXXZ6,S12MIN,S12MAX,PREC)
+     &      SPGAUS(SPXXZ6,S12MIN,S12MAX,PREC)
             IDLAM(LKNT,1)=KFCCHI(IJ)
             IDLAM(LKNT,2)=1
             IDLAM(LKNT,3)=-2
@@ -35161,7 +35161,7 @@ C...CHI0_I -> CHI+_I + H-
      &    UMIXC(IJ,2)/SR2)
           GX2=ABS(OLPP)**2+ABS(ORPP)**2
           GLR=DBLE(OLPP*DCONJG(ORPP))
-          XLAM(LKNT)=PYX2XH(C1,XMI,XMJ,XMHP,GX2,GLR)
+          XLAM(LKNT)=SPX2XH(C1,XMI,XMJ,XMHP,GX2,GLR)
           IDLAM(LKNT,1)=KFCCHI(IJ)
           IDLAM(LKNT,2)=-ITHC
           IDLAM(LKNT,3)=0
@@ -35180,8 +35180,8 @@ C...2-BODY DECAYS TO FERMION SFERMION
         IF(J.GE.7.AND.J.LE.10) GOTO 290
         KF1=KSUSY1+J
         KF2=KSUSY2+J
-        XMSF1=PMAS(PYCOMP(KF1),1)
-        XMSF2=PMAS(PYCOMP(KF2),1)
+        XMSF1=PMAS(SPCOMP(KF1),1)
+        XMSF2=PMAS(SPCOMP(KF2),1)
         XMF=PMAS(J,1)
         IF(J.LE.6) THEN
           FCOL=3D0
@@ -35209,7 +35209,7 @@ C...D~ D_L
           LKNT=LKNT+1
           XMA2=XMSF1**2
           XMB2=XMF**2
-          XL=PYLAMF(XMI2,XMA2,XMB2)
+          XL=SPLAMF(XMI2,XMA2,XMB2)
           CA=CAL*SFMIX(J,1)+CAR*SFMIX(J,2)
           CB=CBL*SFMIX(J,1)+CBR*SFMIX(J,2)
           XLAM(LKNT)=0.5D0*FCOL*C1/8D0/XMI3*SQRT(XL)*( (XMI2+XMB2-XMA2)*
@@ -35231,7 +35231,7 @@ C...D~ D_R
           XMB2=XMF**2
           CA=CAL*SFMIX(J,3)+CAR*SFMIX(J,4)
           CB=CBL*SFMIX(J,3)+CBR*SFMIX(J,4)
-          XL=PYLAMF(XMI2,XMA2,XMB2)
+          XL=SPLAMF(XMI2,XMA2,XMB2)
           XLAM(LKNT)=0.5D0*FCOL*C1/8D0/XMI3*SQRT(XL)*( (XMI2+XMB2-XMA2)*
      &    (ABS(CA)**2+ABS(CB)**2)+4D0*DBLE(CA*DCONJG(CB))*XMF*XMI)
           IDLAM(LKNT,1)=KF2
@@ -35246,7 +35246,7 @@ C...D~ D_R
   290 CONTINUE
   300 CONTINUE
 C...3-BODY DECAY TO Q Q~ GLUINO
-      XMJ=PMAS(PYCOMP(KSUSY1+21),1)
+      XMJ=PMAS(SPCOMP(KSUSY1+21),1)
       IF(AXMI.GE.XMJ) THEN
         RT2I = 1D0/SQRT(2D0)
         OLPP=DCMPLX(COS(RMSS(32)),SIN(RMSS(32)))*RT2I
@@ -35257,8 +35257,8 @@ C...3-BODY DECAY TO Q Q~ GLUINO
         XXC(3)=0D0
         XXC(4)=XMI
         FID=1
-        XXC(5)=PMAS(PYCOMP(KSUSY1+FID),1)
-        XXC(6)=PMAS(PYCOMP(KSUSY2+FID),1)
+        XXC(5)=PMAS(SPCOMP(KSUSY1+FID),1)
+        XXC(6)=PMAS(SPCOMP(KSUSY2+FID),1)
         IF( XXC(5).LT.AXMI .OR. XXC(6).LT.AXMI ) GOTO 310
         XXC(7)=XXC(5)
         XXC(8)=XXC(6)
@@ -35282,7 +35282,7 @@ C...ALL QUARKS BUT T
         IF(AXMI.GE.AXMJ+2D0*PMAS(1,1)) THEN
           LKNT=LKNT+1
           XLAM(LKNT)=4D0*C1*AS/XMI3/(16D0*PI)*
-     &    PYGAUS(PYXXZ6,S12MIN,S12MAX,1D-3)
+     &    SPGAUS(SPXXZ6,S12MIN,S12MAX,1D-3)
           IDLAM(LKNT,1)=KSUSY1+21
           IDLAM(LKNT,2)=1
           IDLAM(LKNT,3)=-1
@@ -35296,11 +35296,11 @@ C...ALL QUARKS BUT T
         ENDIF
   310   CONTINUE
         IF(ABS(SFMIX(5,1)).GT.ABS(SFMIX(5,2))) THEN
-          XXC(5)=PMAS(PYCOMP(KSUSY1+5),1)
-          XXC(6)=PMAS(PYCOMP(KSUSY2+5),1)
+          XXC(5)=PMAS(SPCOMP(KSUSY1+5),1)
+          XXC(6)=PMAS(SPCOMP(KSUSY2+5),1)
         ELSE
-          XXC(6)=PMAS(PYCOMP(KSUSY1+5),1)
-          XXC(5)=PMAS(PYCOMP(KSUSY2+5),1)
+          XXC(6)=PMAS(SPCOMP(KSUSY1+5),1)
+          XXC(5)=PMAS(SPCOMP(KSUSY2+5),1)
         ENDIF
         IF( XXC(5).LT.AXMI .OR. XXC(6).LT.AXMI ) GOTO 320
         XXC(7)=XXC(5)
@@ -35308,7 +35308,7 @@ C...ALL QUARKS BUT T
         IF(AXMI.GE.AXMJ+2D0*PMAS(5,1)) THEN
           LKNT=LKNT+1
           XLAM(LKNT)=0.5D0*C1*AS/XMI3/(16D0*PI)*
-     &    PYGAUS(PYXXZ6,S12MIN,S12MAX,1D-3)
+     &    SPGAUS(SPXXZ6,S12MIN,S12MAX,1D-3)
           IDLAM(LKNT,1)=KSUSY1+21
           IDLAM(LKNT,2)=5
           IDLAM(LKNT,3)=-5
@@ -35316,8 +35316,8 @@ C...ALL QUARKS BUT T
 C...U-TYPE QUARKS
   320   CONTINUE
         FID=2
-        XXC(5)=PMAS(PYCOMP(KSUSY1+FID),1)
-        XXC(6)=PMAS(PYCOMP(KSUSY2+FID),1)
+        XXC(5)=PMAS(SPCOMP(KSUSY1+FID),1)
+        XXC(6)=PMAS(SPCOMP(KSUSY2+FID),1)
         IF( XXC(5).LT.AXMI .OR. XXC(6).LT.AXMI ) GOTO 330
         XXC(7)=XXC(5)
         XXC(8)=XXC(6)
@@ -35332,7 +35332,7 @@ C...U-TYPE QUARKS
         IF(AXMI.GE.AXMJ+2D0*PMAS(2,1)) THEN
           LKNT=LKNT+1
           XLAM(LKNT)=0.5D0*C1*AS/XMI3/(16D0*PI)*
-     &    PYGAUS(PYXXZ6,S12MIN,S12MAX,1D-3)
+     &    SPGAUS(SPXXZ6,S12MIN,S12MAX,1D-3)
           IDLAM(LKNT,1)=KSUSY1+21
           IDLAM(LKNT,2)=2
           IDLAM(LKNT,3)=-2
@@ -35348,7 +35348,7 @@ C...U-TYPE QUARKS
       ENDIF
  
 C...R-violating decay modes (SKANDS).
-      CALL PYRVNE(KFIN,XLAM,IDLAM,LKNT)
+      CALL SPRVNE(KFIN,XLAM,IDLAM,LKNT)
  
   340 IKNT=LKNT
       XLAM(0)=0D0
@@ -35363,7 +35363,7 @@ C...R-violating decay modes (SKANDS).
  
 C*********************************************************************
  
-C...PYCJDC
+C...SPCJDC
 C...Calculate decay widths for the charginos (admixtures of
 C...charged Wino and charged Higgsino.
  
@@ -35376,26 +35376,26 @@ C...Last change:
 C...10-16-95:  force decay chi^+_1 -> chi^0_1 e+ nu_e
 C...when CHIENU .NE. 0
  
-      SUBROUTINE PYCJDC(KFIN,XLAM,IDLAM,IKNT)
+      SUBROUTINE SPCJDC(KFIN,XLAM,IDLAM,IKNT)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-      COMMON/PYSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+      COMMON/SPSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
      &SFMIX(16,4),ZMIXI(4,4),UMIXI(2,2),VMIXI(2,2)
 CC     &SFMIX(16,4),
-C      COMMON/PYINTS/XXM(20)
+C      COMMON/SPINTS/XXM(20)
       COMPLEX*16 CXC
-      COMMON/PYINTC/XXC(10),CXC(8)
-      SAVE /PYDAT1/,/PYDAT2/,/PYMSSM/,/PYSSMT/,/PYINTC/
+      COMMON/SPINTC/XXC(10),CXC(8)
+      SAVE /SPDAT1/,/SPDAT2/,/SPMSSM/,/SPSSMT/,/SPINTC/
  
 C...Local variables
       COMPLEX*16 ZMIXC(4,4),VMIXC(2,2),UMIXC(2,2),OLPP,ORPP
@@ -35405,9 +35405,9 @@ C...Local variables
      &XMZ,XMZ2,AXMJ,AXMI
       DOUBLE PRECISION S12MIN,S12MAX
       DOUBLE PRECISION XMI2,XMI3,XMJ2,XMH,XMH2,XMHP,XMA2,XMB2,XMK
-      DOUBLE PRECISION PYLAMF,XL
+      DOUBLE PRECISION SPLAMF,XL
       DOUBLE PRECISION TANW,XW,AEM,C1,AS,EI,T3I,BETA,ALFA
-      DOUBLE PRECISION PYX2XH,PYX2XG
+      DOUBLE PRECISION SPX2XH,SPX2XG
       DOUBLE PRECISION XLAM(0:400)
       INTEGER IDLAM(400,3)
       INTEGER LKNT,IX,IH,J,IJ,I,IKNT
@@ -35417,14 +35417,14 @@ C...Local variables
       DOUBLE PRECISION SR2
       DOUBLE PRECISION CBETA,SBETA,TANB
  
-      DOUBLE PRECISION PYALEM,PI,PYALPS
+      DOUBLE PRECISION SPALEM,PI,SPALPS
       DOUBLE PRECISION FCOL
       INTEGER KF1,KF2,ISF
       INTEGER KFNCHI(4),KFCCHI(2)
  
       DOUBLE PRECISION TEMP
-      EXTERNAL PYGAUS,PYXXZ6
-      DOUBLE PRECISION PYGAUS,PYXXZ6
+      EXTERNAL SPGAUS,SPXXZ6
+      DOUBLE PRECISION SPGAUS,SPXXZ6
       DOUBLE PRECISION PREC
       DATA ITH/25,35,36/
       DATA ITHC/37/
@@ -35448,13 +35448,13 @@ C...COUNT THE NUMBER OF DECAY MODES
 C...1 OR 2 DEPENDING ON CHARGINO TYPE
       IX=1
       IF(KFIN.EQ.KFCCHI(2)) IX=2
-      KCIN=PYCOMP(KFIN)
+      KCIN=SPCOMP(KFIN)
  
       XMI=SMW(IX)
       XMI2=XMI**2
       AXMI=ABS(XMI)
-      AEM=PYALEM(XMI2)
-      AS =PYALPS(XMI2)
+      AEM=SPALEM(XMI2)
+      AS =SPALPS(XMI2)
       C1=AEM/XW
       XMI3=ABS(XMI**3)
       TANB=RMSS(5)
@@ -35475,7 +35475,7 @@ C...GRAVITINO DECAY MODES
       IF(IMSS(11).EQ.1) THEN
         XMP=RMSS(29)
         IDG=39+KSUSY1
-        XMGR=PMAS(PYCOMP(IDG),1)
+        XMGR=PMAS(SPCOMP(IDG),1)
 C        SINW=SQRT(XW)
 C        COSW=SQRT(1D0-XW)
         XFAC=(XMI2/(XMP*XMGR))**2*AXMI/48D0/PI
@@ -35516,7 +35516,7 @@ C...CHI_2+ -> CHI_1+ + Z0
      &  UMIXC(IX,2)*DCONJG(UMIXC(IJ,2))/2D0
         GX2=ABS(OLPP)**2+ABS(ORPP)**2
         GLR=DBLE(OLPP*DCONJG(ORPP))
-        XLAM(LKNT)=PYX2XG(C1/XMW2,XMI,XMJ,XMZ,GX2,GLR)
+        XLAM(LKNT)=SPX2XG(C1/XMW2,XMI,XMJ,XMZ,GX2,GLR)
         IDLAM(LKNT,1)=KFCCHI(1)
         IDLAM(LKNT,2)=23
         IDLAM(LKNT,3)=0
@@ -35533,7 +35533,7 @@ C...CHARGED LEPTONS
         XXC(2)=XMJ
         XXC(3)=0D0
         XXC(4)=XMI
-        XXC(5)=PMAS(PYCOMP(KSUSY1+JA),1)
+        XXC(5)=PMAS(SPCOMP(KSUSY1+JA),1)
         XXC(6)=1D6
         XXC(9)=PMAS(23,1)
         XXC(10)=PMAS(23,2)
@@ -35558,7 +35558,7 @@ C...CHARGED LEPTONS
         IF(AXMI.GE.AXMJ+2D0*PMAS(11,1)) THEN
           LKNT=LKNT+1
           XLAM(LKNT)=C1**2/XMI3/(16D0*PI)*
-     &    PYGAUS(PYXXZ6,S12MIN,S12MAX,PREC)
+     &    SPGAUS(SPXXZ6,S12MIN,S12MAX,PREC)
           IDLAM(LKNT,1)=KFCCHI(1)
           IDLAM(LKNT,2)=11
           IDLAM(LKNT,3)=-11
@@ -35584,7 +35584,7 @@ C...NEUTRINOS
         JA=11
         EI=KCHG(IABS(IA),1)/3D0
         T3I=SIGN(1D0,EI+1D-6)/2D0
-        XXC(5)=PMAS(PYCOMP(KSUSY1+JA),1)
+        XXC(5)=PMAS(SPCOMP(KSUSY1+JA),1)
         XXC(6)=1D6
         CXC(1)=DCMPLX((T3I-XW*EI)/XW/XW1)*ORPP
         CXC(3)=DCMPLX((T3I-XW*EI)/XW/XW1)*OLPP
@@ -35599,7 +35599,7 @@ C...NEUTRINOS
         IF(AXMI.GE.AXMJ+2D0*PMAS(12,1)) THEN
           LKNT=LKNT+1
           XLAM(LKNT)=C1**2/XMI3/(16D0*PI)*
-     &    PYGAUS(PYXXZ6,S12MIN,S12MAX,PREC)
+     &    SPGAUS(SPXXZ6,S12MIN,S12MAX,PREC)
           IDLAM(LKNT,1)=KFCCHI(1)
           IDLAM(LKNT,2)=12
           IDLAM(LKNT,3)=-12
@@ -35611,9 +35611,9 @@ C...NEUTRINOS
         ENDIF
         IF(AXMI.GE.AXMJ+2D0*PMAS(16,1)) THEN
           IF(ABS(SFMIX(15,1)).GT.ABS(SFMIX(15,2))) THEN
-            XXC(5)=PMAS(PYCOMP(KSUSY1+15),1)
+            XXC(5)=PMAS(SPCOMP(KSUSY1+15),1)
           ELSE
-            XXC(5)=PMAS(PYCOMP(KSUSY2+15),1)
+            XXC(5)=PMAS(SPCOMP(KSUSY2+15),1)
           ENDIF
           IF( XXC(5).LT.AXMI ) THEN
             XXC(5)=1D6
@@ -35621,7 +35621,7 @@ C...NEUTRINOS
           XXC(7)=XXC(5)
           LKNT=LKNT+1
           XLAM(LKNT)=C1**2/XMI3/(16D0*PI)*
-     &    PYGAUS(PYXXZ6,S12MIN,S12MAX,PREC)
+     &    SPGAUS(SPXXZ6,S12MIN,S12MAX,PREC)
           IDLAM(LKNT,1)=KFCCHI(1)
           IDLAM(LKNT,2)=16
           IDLAM(LKNT,3)=-16
@@ -35633,7 +35633,7 @@ C...D-TYPE QUARKS
         JA=2
         EI=KCHG(IABS(IA),1)/3D0
         T3I=SIGN(1D0,EI+1D-6)/2D0
-        XXC(5)=PMAS(PYCOMP(KSUSY1+JA),1)
+        XXC(5)=PMAS(SPCOMP(KSUSY1+JA),1)
         XXC(6)=1D6
         CXC(1)=DCMPLX((T3I-XW*EI)/XW/XW1)*ORPP
         CXC(2)=DCMPLX(0D0,0D0)
@@ -35651,7 +35651,7 @@ C...D-TYPE QUARKS
         IF(AXMI.GE.AXMJ+2D0*PMAS(1,1)) THEN
           LKNT=LKNT+1
           XLAM(LKNT)=3D0*C1**2/XMI3/(16D0*PI)*
-     &    PYGAUS(PYXXZ6,S12MIN,S12MAX,PREC)
+     &    SPGAUS(SPXXZ6,S12MIN,S12MAX,PREC)
           IDLAM(LKNT,1)=KFCCHI(1)
           IDLAM(LKNT,2)=1
           IDLAM(LKNT,3)=-1
@@ -35665,9 +35665,9 @@ C...D-TYPE QUARKS
         ENDIF
         IF(AXMI.GE.AXMJ+2D0*PMAS(5,1)) THEN
           IF(ABS(SFMIX(5,1)).GT.ABS(SFMIX(5,2))) THEN
-            XXC(5)=PMAS(PYCOMP(KSUSY1+5),1)
+            XXC(5)=PMAS(SPCOMP(KSUSY1+5),1)
           ELSE
-            XXC(5)=PMAS(PYCOMP(KSUSY2+5),1)
+            XXC(5)=PMAS(SPCOMP(KSUSY2+5),1)
           ENDIF
           IF( XXC(5).LT.AXMI ) THEN
             XXC(5)=1D6
@@ -35675,7 +35675,7 @@ C...D-TYPE QUARKS
           XXC(7)=XXC(5)
           LKNT=LKNT+1
           XLAM(LKNT)=3D0*C1**2/XMI3/(16D0*PI)*
-     &    PYGAUS(PYXXZ6,S12MIN,S12MAX,PREC)
+     &    SPGAUS(SPXXZ6,S12MIN,S12MAX,PREC)
           IDLAM(LKNT,1)=KFCCHI(1)
           IDLAM(LKNT,2)=5
           IDLAM(LKNT,3)=-5
@@ -35687,7 +35687,7 @@ C...U-TYPE QUARKS
         JA=1
         EI=KCHG(IABS(IA),1)/3D0
         T3I=SIGN(1D0,EI+1D-6)/2D0
-        XXC(5)=PMAS(PYCOMP(KSUSY1+JA),1)
+        XXC(5)=PMAS(SPCOMP(KSUSY1+JA),1)
         XXC(6)=1D6
         CXC(1)=DCMPLX((T3I-XW*EI)/XW/XW1)*ORPP
         CXC(2)=DCMPLX(0D0,0D0)
@@ -35705,7 +35705,7 @@ C...U-TYPE QUARKS
         IF(AXMI.GE.AXMJ+2D0*PMAS(2,1)) THEN
           LKNT=LKNT+1
           XLAM(LKNT)=3D0*C1**2/XMI3/(16D0*PI)*
-     &    PYGAUS(PYXXZ6,S12MIN,S12MAX,PREC)
+     &    SPGAUS(SPXXZ6,S12MIN,S12MAX,PREC)
           IDLAM(LKNT,1)=KFCCHI(1)
           IDLAM(LKNT,2)=2
           IDLAM(LKNT,3)=-2
@@ -35733,7 +35733,7 @@ C...CHI_2+ -> CHI_1+ + H0_K
 C...NO 3-BODY OPTION
         IF(AXMI.GE.AXMJ+XMH) THEN
           LKNT=LKNT+1
-          XL=PYLAMF(XMI2,XMJ2,XMH2)
+          XL=SPLAMF(XMI2,XMJ2,XMH2)
           OLPP=(VMIXC(2,1)*DCONJG(UMIXC(1,2))*EH(IH) -
      &    VMIXC(2,2)*DCONJG(UMIXC(1,1))*DH(IH))/SR2
           ORPP=(DCONJG(VMIXC(1,1))*UMIXC(2,2)*EH(IH) -
@@ -35741,7 +35741,7 @@ C...NO 3-BODY OPTION
           XMK=XMJ*ETAH(IH)
           GX2=ABS(OLPP)**2+ABS(ORPP)**2
           GLR=DBLE(OLPP*DCONJG(ORPP))
-          XLAM(LKNT)=PYX2XH(C1,XMI,XMK,XMH,GX2,GLR)
+          XLAM(LKNT)=SPX2XH(C1,XMI,XMK,XMH,GX2,GLR)
           IDLAM(LKNT,1)=KFCCHI(1)
           IDLAM(LKNT,2)=ITH(IH)
           IDLAM(LKNT,3)=0
@@ -35767,7 +35767,7 @@ C...CHI+_I -> CHI0_J + W+
      &    ZMIXC(IJ,3)*DCONJG(UMIXC(IX,2))/SR2)
           GX2=ABS(CXC(1))**2+ABS(CXC(3))**2
           GLR=DBLE(CXC(1)*DCONJG(CXC(3)))
-          XLAM(LKNT)=PYX2XG(C1/XMW2,XMI,XMJ,XMW,GX2,GLR)
+          XLAM(LKNT)=SPX2XG(C1/XMW2,XMI,XMJ,XMW,GX2,GLR)
           IDLAM(LKNT,1)=KFNCHI(IJ)
           IDLAM(LKNT,2)=24
           IDLAM(LKNT,3)=0
@@ -35800,8 +35800,8 @@ C...LEPTONS
           XXC(2)=XMJ
           XXC(3)=0D0
           XXC(4)=XMI
-          XXC(5)=PMAS(PYCOMP(KSUSY1+JA),1)
-          XXC(6)=PMAS(PYCOMP(KSUSY1+IA),1)
+          XXC(5)=PMAS(SPCOMP(KSUSY1+JA),1)
+          XXC(6)=PMAS(SPCOMP(KSUSY1+IA),1)
           XXC(9)=PMAS(24,1)
           XXC(10)=PMAS(24,2)
 CCC          IF( XXC(5).LT.AXMI .AND. XXC(6).LT.AXMI ) GOTO 190
@@ -35816,7 +35816,7 @@ C...1/(2PI)**3*/(32*M**3)*G^4, G^2/(4*PI)= AEM/XW,
 C...--> 1/(16PI)/M**3*(AEM/XW)**2
           IF(AXMI.GE.AXMJ+PMAS(11,1)+PMAS(12,1)) THEN
             LKNT=LKNT+1
-            TEMP=PYGAUS(PYXXZ6,S12MIN,S12MAX,PREC)
+            TEMP=SPGAUS(SPXXZ6,S12MIN,S12MAX,PREC)
             XLAM(LKNT)=C1**2/XMI3/(16D0*PI)*TEMP
             IDLAM(LKNT,1)=KFNCHI(IJ)
             IDLAM(LKNT,2)=-11
@@ -35834,11 +35834,11 @@ C...ONLY DECAY CHI+1 -> E+ NU_E
           IF(AXMI.GE.AXMJ+PMAS(15,1)+PMAS(16,1)) THEN
             LKNT=LKNT+1
             IF(ABS(SFMIX(15,1)).GT.ABS(SFMIX(15,2))) THEN
-              XXC(6)=PMAS(PYCOMP(KSUSY1+15),1)
+              XXC(6)=PMAS(SPCOMP(KSUSY1+15),1)
             ELSE
-              XXC(6)=PMAS(PYCOMP(KSUSY2+15),1)
+              XXC(6)=PMAS(SPCOMP(KSUSY2+15),1)
             ENDIF
-            XXC(5)=PMAS(PYCOMP(KSUSY1+16),1)
+            XXC(5)=PMAS(SPCOMP(KSUSY1+16),1)
             IF(XXC(5).LT.AXMI) THEN
               XXC(5)=1D6
             ELSEIF(XXC(6).LT.AXMI) THEN
@@ -35846,7 +35846,7 @@ C...ONLY DECAY CHI+1 -> E+ NU_E
             ENDIF
             XXC(7)=XXC(6)
             XXC(8)=XXC(5)
-            TEMP=PYGAUS(PYXXZ6,S12MIN,S12MAX,PREC)
+            TEMP=SPGAUS(SPXXZ6,S12MIN,S12MAX,PREC)
             XLAM(LKNT)=C1**2/XMI3/(16D0*PI)*TEMP
             IDLAM(LKNT,1)=KFNCHI(IJ)
             IDLAM(LKNT,2)=-15
@@ -35865,8 +35865,8 @@ C...NOW, DO THE QUARKS
      &    TANW+ZMIXC(IX,2)*T3J)
           CXC(4)=-DCONJG(UMIXC(IJ,1))*(
      &    ZMIXC(IX,1)*(EI-T3I)*TANW+ZMIXC(IX,2)*T3I)
-          XXC(5)=PMAS(PYCOMP(KSUSY1+JA),1)
-          XXC(6)=PMAS(PYCOMP(KSUSY1+IA),1)
+          XXC(5)=PMAS(SPCOMP(KSUSY1+JA),1)
+          XXC(6)=PMAS(SPCOMP(KSUSY1+IA),1)
           IF( XXC(5).LT.AXMI .AND. XXC(6).LT.AXMI ) GOTO 210
           IF(XXC(5).LT.AXMI) THEN
             XXC(5)=1D6
@@ -35879,7 +35879,7 @@ C...NOW, DO THE QUARKS
           IF(AXMI.GE.AXMJ+PMAS(1,1)+PMAS(2,1)) THEN
             LKNT=LKNT+1
             XLAM(LKNT)=3D0*C1**2/XMI3/(16D0*PI)*
-     &      PYGAUS(PYXXZ6,S12MIN,S12MAX,PREC)
+     &      SPGAUS(SPXXZ6,S12MIN,S12MAX,PREC)
             IDLAM(LKNT,1)=KFNCHI(IJ)
             IDLAM(LKNT,2)=-1
             IDLAM(LKNT,3)=2
@@ -35910,7 +35910,7 @@ C...CHI+_I -> CHI0_J + H+
      &    UMIXC(IX,2)/SR2)
           GX2=ABS(OLPP)**2+ABS(ORPP)**2
           GLR=DBLE(OLPP*DCONJG(ORPP))
-          XLAM(LKNT)=PYX2XH(C1,XMI,XMJ,XMHP,GX2,GLR)
+          XLAM(LKNT)=SPX2XH(C1,XMI,XMJ,XMHP,GX2,GLR)
           IDLAM(LKNT,1)=KFNCHI(IJ)
           IDLAM(LKNT,2)=ITHC
           IDLAM(LKNT,3)=0
@@ -35928,8 +35928,8 @@ C...2-BODY DECAYS TO FERMION SFERMION
           KF1=KSUSY1+J+1
         ENDIF
         KF2=KF1+KSUSY1
-        XMSF1=PMAS(PYCOMP(KF1),1)
-        XMSF2=PMAS(PYCOMP(KF2),1)
+        XMSF1=PMAS(SPCOMP(KF1),1)
+        XMSF2=PMAS(SPCOMP(KF2),1)
         XMF=PMAS(J,1)
         IF(J.LE.6) THEN
           FCOL=3D0
@@ -35959,7 +35959,7 @@ C...~U_L D
           LKNT=LKNT+1
           XMA2=XMSF1**2
           XMB2=XMF**2
-          XL=PYLAMF(XMI2,XMA2,XMB2)
+          XL=SPLAMF(XMI2,XMA2,XMB2)
           CA=CAL*SFMIX(ISF,1)+CAR*SFMIX(ISF,2)
           CB=CBL*SFMIX(ISF,1)+CBR*SFMIX(ISF,2)
           XLAM(LKNT)=FCOL*C1/8D0/XMI3*SQRT(XL)*( (XMI2+XMB2-XMA2)*
@@ -35981,7 +35981,7 @@ C...U~ D_R
           XMB2=XMF**2
           CA=CAL*SFMIX(ISF,3)+CAR*SFMIX(ISF,4)
           CB=CBL*SFMIX(ISF,3)+CBR*SFMIX(ISF,4)
-          XL=PYLAMF(XMI2,XMA2,XMB2)
+          XL=SPLAMF(XMI2,XMA2,XMB2)
           XLAM(LKNT)=FCOL*C1/8D0/XMI3*SQRT(XL)*( (XMI2+XMB2-XMA2)*
      &    (ABS(CA)**2+ABS(CB)**2)+4D0*DBLE(CA*DCONJG(CB))*XMF*XMI)
           IDLAM(LKNT,3)=0
@@ -35997,7 +35997,7 @@ C...U~ D_R
  
 C...3-BODY DECAY TO Q Q~' GLUINO, ONLY IF IT CANNOT PROCEED THROUGH
 C...A 2-BODY -- 2-BODY CHAIN
-      XMJ=PMAS(PYCOMP(KSUSY1+21),1)
+      XMJ=PMAS(SPCOMP(KSUSY1+21),1)
       IF(AXMI.GE.XMJ) THEN
         AXMJ=ABS(XMJ)
         S12MIN=0D0
@@ -36006,8 +36006,8 @@ C...A 2-BODY -- 2-BODY CHAIN
         XXC(2)=XMJ
         XXC(3)=0D0
         XXC(4)=XMI
-        XXC(5)=PMAS(PYCOMP(KSUSY1+1),1)
-        XXC(6)=PMAS(PYCOMP(KSUSY1+2),1)
+        XXC(5)=PMAS(SPCOMP(KSUSY1+1),1)
+        XXC(6)=PMAS(SPCOMP(KSUSY1+2),1)
         XXC(9)=1D6
         XXC(10)=0D0
         OLPP=DCMPLX(COS(RMSS(32)),SIN(RMSS(32)))
@@ -36031,7 +36031,7 @@ C...A 2-BODY -- 2-BODY CHAIN
         IF(AXMI.GE.AXMJ+PMAS(1,1)+PMAS(2,1)) THEN
           LKNT=LKNT+1
           XLAM(LKNT)=4D0*C1*AS/XMI3/(16D0*PI)*
-     &    PYGAUS(PYXXZ6,S12MIN,S12MAX,PREC)
+     &    SPGAUS(SPXXZ6,S12MIN,S12MAX,PREC)
           IDLAM(LKNT,1)=KSUSY1+21
           IDLAM(LKNT,2)=-1
           IDLAM(LKNT,3)=2
@@ -36047,7 +36047,7 @@ C...A 2-BODY -- 2-BODY CHAIN
       ENDIF
  
 C...R-violating decay modes (SKANDS).
-      CALL PYRVCH(KFIN,XLAM,IDLAM,LKNT)
+      CALL SPRVCH(KFIN,XLAM,IDLAM,LKNT)
  
   260 IKNT=LKNT
       XLAM(0)=0D0
@@ -36071,28 +36071,28 @@ C...R-violating decay modes (SKANDS).
  
 C*********************************************************************
  
-C...PYXXZ6
+C...SPXXZ6
 C...Used in the calculation of  inoi -> inoj + f + ~f.
  
-      FUNCTION PYXXZ6(X)
+      FUNCTION SPXXZ6(X)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-C      COMMON/PYINTS/XXM(20)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+C      COMMON/SPINTS/XXM(20)
       COMPLEX*16 CXC
-      COMMON/PYINTC/XXC(10),CXC(8)
-      SAVE /PYDAT1/,/PYINTC/
+      COMMON/SPINTC/XXC(10),CXC(8)
+      SAVE /SPDAT1/,/SPINTC/
  
 C...Local variables.
       COMPLEX*16 QLLS,QRRS,QRLS,QLRS,QLLU,QRRU,QLRT,QRLT
-      DOUBLE PRECISION PYXXZ6,X
+      DOUBLE PRECISION SPXXZ6,X
       DOUBLE PRECISION XM12,XM22,XM32,S,S13,WPROP2
       DOUBLE PRECISION WW,WF1,WF2,WFL1,WFL2
       DOUBLE PRECISION SIJ
@@ -36193,17 +36193,17 @@ C...Integral from x to y of 1/(t-a) dt.
         WF2=0D0
       ENDIF
  
-      PYXXZ6=(WW+WF1+WF2+WFL1+WFL2)
+      SPXXZ6=(WW+WF1+WF2+WFL1+WFL2)
  
-      IF(PYXXZ6.LT.0D0) THEN
-        WRITE(MSTU(11),*) ' NEGATIVE WT IN PYXXZ6 '
+      IF(SPXXZ6.LT.0D0) THEN
+        WRITE(MSTU(11),*) ' NEGATIVE WT IN SPXXZ6 '
         WRITE(MSTU(11),*) XXc(1),XXc(2),XXc(3),XXc(4)
         WRITE(MSTU(11),*) (XXc(I),I=5,8)
         WRITE(MSTU(11),*) (XXc(I),I=9,12)
         WRITE(MSTU(11),*) (XXc(I),I=13,16)
         WRITE(MSTU(11),*) WW,WF1,WF2,WFL1,WFL2
         WRITE(MSTU(11),*) S23MIN,S23MAX
-        PYXXZ6=0D0
+        SPXXZ6=0D0
       ENDIF
  
       RETURN
@@ -36212,51 +36212,51 @@ C...Integral from x to y of 1/(t-a) dt.
  
 C*********************************************************************
  
-C...PYXXGA
+C...SPXXGA
 C...Calculates chi0_i -> chi0_j + gamma.
  
-      FUNCTION PYXXGA(C0,XM1,XM2,XMTR,XMTL)
+      FUNCTION SPXXGA(C0,XM1,XM2,XMTR,XMTL)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
  
 C...Local variables.
-      DOUBLE PRECISION PYXXGA,C0,XM1,XM2,XMTR,XMTL
+      DOUBLE PRECISION SPXXGA,C0,XM1,XM2,XMTR,XMTL
       DOUBLE PRECISION F1,F2
  
       F1=(1D0+XMTR/(1D0-XMTR)*LOG(XMTR))/(1D0-XMTR)
       F2=(1D0+XMTL/(1D0-XMTL)*LOG(XMTL))/(1D0-XMTL)
-      PYXXGA=C0*((XM1**2-XM2**2)/XM1)**3
-      PYXXGA=PYXXGA*(2D0/3D0*(F1+F2)-13D0/12D0)**2
+      SPXXGA=C0*((XM1**2-XM2**2)/XM1)**3
+      SPXXGA=SPXXGA*(2D0/3D0*(F1+F2)-13D0/12D0)**2
  
       RETURN
       END
  
 C*********************************************************************
  
-C...PYX2XG
+C...SPX2XG
 C...Calculates the decay rate for ino -> ino + gauge boson.
  
-      FUNCTION PYX2XG(C1,XM1,XM2,XM3,GX2,GLR)
+      FUNCTION SPX2XG(C1,XM1,XM2,XM3,GX2,GLR)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
  
 C...Local variables.
-      DOUBLE PRECISION PYX2XG,XM1,XM2,XM3,GX2,GLR
-      DOUBLE PRECISION XL,PYLAMF,C1
+      DOUBLE PRECISION SPX2XG,XM1,XM2,XM3,GX2,GLR
+      DOUBLE PRECISION XL,SPLAMF,C1
       DOUBLE PRECISION XMI2,XMJ2,XMV2,XMI3
  
       XMI2=XM1**2
       XMI3=ABS(XM1**3)
       XMJ2=XM2**2
       XMV2=XM3**2
-      XL=PYLAMF(XMI2,XMJ2,XMV2)
-      PYX2XG=C1/8D0/XMI3*SQRT(XL)
+      XL=SPLAMF(XMI2,XMJ2,XMV2)
+      SPX2XG=C1/8D0/XMI3*SQRT(XL)
      &*(GX2*(XL+3D0*XMV2*(XMI2+XMJ2-XMV2))-
      &12D0*GLR*XM1*XM2*XMV2)
  
@@ -36265,27 +36265,27 @@ C...Local variables.
  
 C*********************************************************************
  
-C...PYX2XH
+C...SPX2XH
 C...Calculates the decay rate for ino -> ino + H.
  
-      FUNCTION PYX2XH(C1,XM1,XM2,XM3,GX2,GLR)
+      FUNCTION SPX2XH(C1,XM1,XM2,XM3,GX2,GLR)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
  
 C...Local variables.
-      DOUBLE PRECISION PYX2XH,XM1,XM2,XM3
-      DOUBLE PRECISION XL,PYLAMF,C1
+      DOUBLE PRECISION SPX2XH,XM1,XM2,XM3
+      DOUBLE PRECISION XL,SPLAMF,C1
       DOUBLE PRECISION XMI2,XMJ2,XMV2,XMI3
  
       XMI2=XM1**2
       XMI3=ABS(XM1**3)
       XMJ2=XM2**2
       XMV2=XM3**2
-      XL=PYLAMF(XMI2,XMJ2,XMV2)
-      PYX2XH=C1/8D0/XMI3*SQRT(XL)
+      XL=SPLAMF(XMI2,XMJ2,XMV2)
+      SPX2XH=C1/8D0/XMI3*SQRT(XL)
      &*(GX2*(XMI2+XMJ2-XMV2)+
      &4D0*GLR*XM1*XM2)
  
@@ -36294,30 +36294,30 @@ C...Local variables.
  
 C*********************************************************************
  
-C...PYHEXT
+C...SPHEXT
 C...Calculates the non-standard decay modes of the Higgs boson.
 C...
 C...Author:  Stephen Mrenna
 C...Last Update:  April 2001
 C......Allow complex values for Z,U, and V
  
-      SUBROUTINE PYHEXT(KFIN,XLAM,IDLAM,IKNT)
+      SUBROUTINE SPHEXT(KFIN,XLAM,IDLAM,IKNT)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-      COMMON/PYSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+      COMMON/SPSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
      &SFMIX(16,4),ZMIXI(4,4),UMIXI(2,2),VMIXI(2,2)
-      SAVE /PYDAT1/,/PYDAT2/,/PYPARS/,/PYMSSM/,/PYSSMT/
+      SAVE /SPDAT1/,/SPDAT2/,/SPPARS/,/SPMSSM/,/SPSSMT/
  
 C...Local variables.
       COMPLEX*16 ZMIXC(4,4),VMIXC(2,2),UMIXC(2,2),OLPP,ORPP
@@ -36325,10 +36325,10 @@ C...Local variables.
       INTEGER KFIN
       DOUBLE PRECISION XMI,XMJ,XMF,XMW,XMW2,XMZ,AXMJ,AXMI
       DOUBLE PRECISION XMI2,XMI3,XMJ2
-      DOUBLE PRECISION PYLAMF,XL,CF,EI
+      DOUBLE PRECISION SPLAMF,XL,CF,EI
       INTEGER IDU,IFL
       DOUBLE PRECISION TANW,XW,AEM,C1,AS
-      DOUBLE PRECISION PYH2XX,GHLL,GHRR,GHLR
+      DOUBLE PRECISION SPH2XX,GHLL,GHRR,GHLR
       DOUBLE PRECISION XLAM(0:400)
       INTEGER IDLAM(400,3)
       INTEGER LKNT,IH,J,IJ,I,IKNT,IK
@@ -36338,7 +36338,7 @@ C...Local variables.
       DOUBLE PRECISION SR2
       DOUBLE PRECISION BETA,ALFA
       DOUBLE PRECISION CBETA,SBETA,GR,GL,TANB
-      DOUBLE PRECISION PYALEM
+      DOUBLE PRECISION SPALEM
       DOUBLE PRECISION AL,AR,ALR
       DOUBLE PRECISION XMK,AXMK,COSA,SINA,CW,XML
       DOUBLE PRECISION XMUZ,ATRIT,ATRIB,ATRIL
@@ -36368,7 +36368,7 @@ C...1 - 4 DEPENDING ON Higgs species.
       XMI=PMAS(KFIN,1)
       XMI2=XMI**2
       AXMI=ABS(XMI)
-      AEM=PYALEM(XMI2)
+      AEM=SPALEM(XMI2)
       C1=AEM/XW
       XMI3=ABS(XMI**3)
  
@@ -36429,7 +36429,7 @@ C...SIGN OF MASSES I,J
             XML=XMK*ETAH(IH)
             GX2=ABS(F12K)**2+ABS(F21K)**2
             GLR=DBLE(F12K*DCONJG(F21K))
-            XLAM(LKNT)=PYH2XX(C1,XMI,XMJ,XML,GX2,GLR)
+            XLAM(LKNT)=SPH2XX(C1,XMI,XMJ,XML,GX2,GLR)
             IF(IJ.EQ.IK) XLAM(LKNT)=XLAM(LKNT)*0.5D0
             IDLAM(LKNT,1)=KFNCHI(IJ)
             IDLAM(LKNT,2)=KFNCHI(IK)
@@ -36454,7 +36454,7 @@ C...H0_K -> CHI+_I CHI-_J
             GX2=ABS(OLPP)**2+ABS(ORPP)**2
             GLR=DBLE(OLPP*DCONJG(ORPP))
             XML=XMK*ETAH(IH)
-            XLAM(LKNT)=PYH2XX(C1,XMI,XMJ,XML,GX2,GLR)
+            XLAM(LKNT)=SPH2XX(C1,XMI,XMJ,XML,GX2,GLR)
             IDLAM(LKNT,1)=KFCCHI(IJ)
             IDLAM(LKNT,2)=-KFCCHI(IK)
             IDLAM(LKNT,3)=0
@@ -36466,12 +36466,12 @@ C...HIGGS TO SFERMION SFERMION
       DO 200 IFL=1,16
         IF(IFL.GE.7.AND.IFL.LE.10) GOTO 200
         IJ=KSUSY1+IFL
-        XMJL=PMAS(PYCOMP(IJ),1)
-        XMJR=PMAS(PYCOMP(IJ+KSUSY1),1)
+        XMJL=PMAS(SPCOMP(IJ),1)
+        XMJR=PMAS(SPCOMP(IJ+KSUSY1),1)
         IF(AXMI.GE.2D0*MIN(XMJL,XMJR)) THEN
           XMJ=XMJL
           XMJ2=XMJ**2
-          XL=PYLAMF(XMI2,XMJ2,XMJ2)
+          XL=SPLAMF(XMI2,XMJ2,XMJ2)
           XMF=PMAS(IFL,1)
           EI=KCHG(IFL,1)/3D0
           IDU=2-MOD(IFL,2)
@@ -36576,7 +36576,7 @@ C...HIGGS TO SFERMION SFERMION
             ALR=SFMIX(IFL,3)*SFMIX(IFL,4)
             XMJ=XMJR
             XMJ2=XMJ**2
-            XL=PYLAMF(XMI2,XMJ2,XMJ2)
+            XL=SPLAMF(XMI2,XMJ2,XMJ2)
             XLAM(LKNT)=CF*SQRT(XL)/4D0*C1/XMI3*
      &      (GHLL*AL+GHRR*AR
      &      +2D0*GHLR*ALR)**2
@@ -36593,7 +36593,7 @@ C...HIGGS TO SFERMION SFERMION
             ALR=SFMIX(IFL,1)*SFMIX(IFL,4)+SFMIX(IFL,2)*SFMIX(IFL,3)
             XMJ=XMJR
             XMJ2=XMJ**2
-            XL=PYLAMF(XMI2,XMJ2,XMJL**2)
+            XL=SPLAMF(XMI2,XMJ2,XMJL**2)
             XLAM(LKNT)=CF*SQRT(XL)/4D0*C1/XMI3*
      &      (GHLL*AL+GHRR*AR)**2
             IDLAM(LKNT,1)=IJ
@@ -36629,7 +36629,7 @@ C...H+ -> CHI+_I + CHI0_J
      &      (ZMIXC(IJ,2)+ZMIXC(IJ,1)*TANW)*UMIXC(IK,2)/SR2)
             GX2=ABS(OLPP)**2+ABS(ORPP)**2
             GLR=DBLE(OLPP*DCONJG(ORPP))
-            XLAM(LKNT)=PYH2XX(C1,XMI,XMJ,-XMK,GX2,GLR)
+            XLAM(LKNT)=SPH2XX(C1,XMI,XMJ,-XMK,GX2,GLR)
             IDLAM(LKNT,1)=KFNCHI(IJ)
             IDLAM(LKNT,2)=KFCCHI(IK)
             IDLAM(LKNT,3)=0
@@ -36644,10 +36644,10 @@ C...H+ -> CHI+_I + CHI0_J
       CF=3D0
  
 C...H+ -> T_1 B_1~
-      XM1=PMAS(PYCOMP(KSUSY1+6),1)
-      XM2=PMAS(PYCOMP(KSUSY1+5),1)
+      XM1=PMAS(SPCOMP(KSUSY1+6),1)
+      XM2=PMAS(SPCOMP(KSUSY1+5),1)
       IF(XMI.GE.XM1+XM2) THEN
-        XL=PYLAMF(XMI2,XM1**2,XM2**2)
+        XL=SPLAMF(XMI2,XM1**2,XM2**2)
         LKNT=LKNT+1
         XLAM(LKNT)=CF*SQRT(XL)/4D0*C1/XMI3*
      &  (GL*SFMIX(6,1)*SFMIX(5,1)+GR*SFMIX(6,2)*SFMIX(5,1))**2
@@ -36657,10 +36657,10 @@ C...H+ -> T_1 B_1~
       ENDIF
  
 C...H+ -> T_2 B_1~
-      XM1=PMAS(PYCOMP(KSUSY2+6),1)
-      XM2=PMAS(PYCOMP(KSUSY1+5),1)
+      XM1=PMAS(SPCOMP(KSUSY2+6),1)
+      XM2=PMAS(SPCOMP(KSUSY1+5),1)
       IF(XMI.GE.XM1+XM2) THEN
-        XL=PYLAMF(XMI2,XM1**2,XM2**2)
+        XL=SPLAMF(XMI2,XM1**2,XM2**2)
         LKNT=LKNT+1
         XLAM(LKNT)=CF*SQRT(XL)/4D0*C1/XMI3*
      &  (GL*SFMIX(6,3)*SFMIX(5,1)+GR*SFMIX(6,4)*SFMIX(5,1))**2
@@ -36670,10 +36670,10 @@ C...H+ -> T_2 B_1~
       ENDIF
  
 C...H+ -> T_1 B_2~
-      XM1=PMAS(PYCOMP(KSUSY1+6),1)
-      XM2=PMAS(PYCOMP(KSUSY2+5),1)
+      XM1=PMAS(SPCOMP(KSUSY1+6),1)
+      XM2=PMAS(SPCOMP(KSUSY2+5),1)
       IF(XMI.GE.XM1+XM2) THEN
-        XL=PYLAMF(XMI2,XM1**2,XM2**2)
+        XL=SPLAMF(XMI2,XM1**2,XM2**2)
         LKNT=LKNT+1
         XLAM(LKNT)=CF*SQRT(XL)/4D0*C1/XMI3*
      &  (GL*SFMIX(6,1)*SFMIX(5,3)+GR*SFMIX(6,2)*SFMIX(5,3))**2
@@ -36683,10 +36683,10 @@ C...H+ -> T_1 B_2~
       ENDIF
  
 C...H+ -> T_2 B_2~
-      XM1=PMAS(PYCOMP(KSUSY2+6),1)
-      XM2=PMAS(PYCOMP(KSUSY2+5),1)
+      XM1=PMAS(SPCOMP(KSUSY2+6),1)
+      XM2=PMAS(SPCOMP(KSUSY2+5),1)
       IF(XMI.GE.XM1+XM2) THEN
-        XL=PYLAMF(XMI2,XM1**2,XM2**2)
+        XL=SPLAMF(XMI2,XM1**2,XM2**2)
         LKNT=LKNT+1
         XLAM(LKNT)=CF*SQRT(XL)/4D0*C1/XMI3*
      &  (GL*SFMIX(6,3)*SFMIX(5,3)+GR*SFMIX(6,4)*SFMIX(5,3))**2
@@ -36698,10 +36698,10 @@ C...H+ -> T_2 B_2~
 C...H+ -> UL DL~
       GL=-XMW/SR2*SIN(2D0*BETA)
       DO 250 IJ=1,3,2
-        XM1=PMAS(PYCOMP(KSUSY1+IJ),1)
-        XM2=PMAS(PYCOMP(KSUSY1+IJ+1),1)
+        XM1=PMAS(SPCOMP(KSUSY1+IJ),1)
+        XM2=PMAS(SPCOMP(KSUSY1+IJ+1),1)
         IF(XMI.GE.XM1+XM2) THEN
-          XL=PYLAMF(XMI2,XM1**2,XM2**2)
+          XL=SPLAMF(XMI2,XM1**2,XM2**2)
           LKNT=LKNT+1
           XLAM(LKNT)=CF*SQRT(XL)/4D0*C1/XMI3*GL**2
           IDLAM(LKNT,1)=-(KSUSY1+IJ)
@@ -36713,10 +36713,10 @@ C...H+ -> UL DL~
 C...H+ -> EL~ NUL
       CF=1D0
       DO 260 IJ=11,13,2
-        XM1=PMAS(PYCOMP(KSUSY1+IJ),1)
-        XM2=PMAS(PYCOMP(KSUSY1+IJ+1),1)
+        XM1=PMAS(SPCOMP(KSUSY1+IJ),1)
+        XM2=PMAS(SPCOMP(KSUSY1+IJ+1),1)
         IF(XMI.GE.XM1+XM2) THEN
-          XL=PYLAMF(XMI2,XM1**2,XM2**2)
+          XL=SPLAMF(XMI2,XM1**2,XM2**2)
           LKNT=LKNT+1
           XLAM(LKNT)=CF*SQRT(XL)/4D0*C1/XMI3*GL**2
           IDLAM(LKNT,1)=-(KSUSY1+IJ)
@@ -36726,10 +36726,10 @@ C...H+ -> EL~ NUL
   260 CONTINUE
  
 C...H+ -> TAU1 NUTAUL
-      XM1=PMAS(PYCOMP(KSUSY1+15),1)
-      XM2=PMAS(PYCOMP(KSUSY1+16),1)
+      XM1=PMAS(SPCOMP(KSUSY1+15),1)
+      XM2=PMAS(SPCOMP(KSUSY1+16),1)
       IF(XMI.GE.XM1+XM2) THEN
-        XL=PYLAMF(XMI2,XM1**2,XM2**2)
+        XL=SPLAMF(XMI2,XM1**2,XM2**2)
         LKNT=LKNT+1
         XLAM(LKNT)=CF*SQRT(XL)/4D0*C1/XMI3*GL**2*SFMIX(15,1)**2
         IDLAM(LKNT,1)=-(KSUSY1+15)
@@ -36738,10 +36738,10 @@ C...H+ -> TAU1 NUTAUL
       ENDIF
  
 C...H+ -> TAU2 NUTAUL
-      XM1=PMAS(PYCOMP(KSUSY2+15),1)
-      XM2=PMAS(PYCOMP(KSUSY1+16),1)
+      XM1=PMAS(SPCOMP(KSUSY2+15),1)
+      XM2=PMAS(SPCOMP(KSUSY1+16),1)
       IF(XMI.GE.XM1+XM2) THEN
-        XL=PYLAMF(XMI2,XM1**2,XM2**2)
+        XL=SPLAMF(XMI2,XM1**2,XM2**2)
         LKNT=LKNT+1
         XLAM(LKNT)=CF*SQRT(XL)/4D0*C1/XMI3*GL**2*SFMIX(15,3)**2
         IDLAM(LKNT,1)=-(KSUSY2+15)
@@ -36763,34 +36763,34 @@ C...H+ -> TAU2 NUTAUL
  
 C*********************************************************************
  
-C...PYH2XX
+C...SPH2XX
 C...Calculates the decay rate for a Higgs to an ino pair.
  
-      FUNCTION PYH2XX(C1,XM1,XM2,XM3,GX2,GLR)
+      FUNCTION SPH2XX(C1,XM1,XM2,XM3,GX2,GLR)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYDAT1/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      SAVE /SPDAT1/
  
 C...Local variables.
-      DOUBLE PRECISION PYH2XX,XM1,XM2,XM3,GL,GR
-      DOUBLE PRECISION XL,PYLAMF,C1
+      DOUBLE PRECISION SPH2XX,XM1,XM2,XM3,GL,GR
+      DOUBLE PRECISION XL,SPLAMF,C1
       DOUBLE PRECISION XMI2,XMJ2,XMK2,XMI3
  
       XMI2=XM1**2
       XMI3=ABS(XM1**3)
       XMJ2=XM2**2
       XMK2=XM3**2
-      XL=PYLAMF(XMI2,XMJ2,XMK2)
-      PYH2XX=C1/4D0/XMI3*SQRT(XL)
+      XL=SPLAMF(XMI2,XMJ2,XMK2)
+      SPH2XX=C1/4D0/XMI3*SQRT(XL)
      &*(GX2*(XMI2-XMJ2-XMK2)-
      &4D0*GLR*XM3*XM2)
-      IF(PYH2XX.LT.0D0) THEN
-        WRITE(MSTU(11),*) ' NEGATIVE WIDTH IN PYH2XX '
+      IF(SPH2XX.LT.0D0) THEN
+        WRITE(MSTU(11),*) ' NEGATIVE WIDTH IN SPH2XX '
         WRITE(MSTU(11),*) XMI2,XMJ2,XMK2,GX2,GLR,XM1,XM2,XM3
         STOP
       ENDIF
@@ -36800,16 +36800,16 @@ C...Local variables.
  
 C*********************************************************************
  
-C...PYGAUS
+C...SPGAUS
 C...Integration by adaptive Gaussian quadrature.
 C...Adapted from the CERNLIB DGAUSS routine by K.S. Kolbig.
  
-      FUNCTION PYGAUS(F, A, B, EPS)
+      FUNCTION SPGAUS(F, A, B, EPS)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
  
 C...Local declarations.
       EXTERNAL F
@@ -36856,28 +36856,28 @@ C...The Gaussian quadrature algorithm.
         BB = C1
         IF(1D0 + CONST*ABS(C2) .NE. 1D0) GOTO 110
         H = 0D0
-        CALL PYERRM(18,'(PYGAUS:) too high accuracy required')
+        CALL SPERRM(18,'(SPGAUS:) too high accuracy required')
         GOTO 140
       ENDIF
   140 CONTINUE
-      PYGAUS = H
+      SPGAUS = H
  
       RETURN
       END
  
 C*********************************************************************
  
-C...PYGAU2
+C...SPGAU2
 C...Integration by adaptive Gaussian quadrature.
 C...Adapted from the CERNLIB DGAUSS routine by K.S. Kolbig.
-C...Carbon copy of PYGAUS, but avoids having to use it recursively.
+C...Carbon cosp of SPGAUS, but avoids having to use it recursively.
  
-      FUNCTION PYGAU2(F, A, B, EPS)
+      FUNCTION SPGAU2(F, A, B, EPS)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
  
 C...Local declarations.
       EXTERNAL F
@@ -36924,26 +36924,26 @@ C...The Gaussian quadrature algorithm.
         BB = C1
         IF(1D0 + CONST*ABS(C2) .NE. 1D0) GOTO 110
         H = 0D0
-        CALL PYERRM(18,'(PYGAU2:) too high accuracy required')
+        CALL SPERRM(18,'(SPGAU2:) too high accuracy required')
         GOTO 140
       ENDIF
   140 CONTINUE
-      PYGAU2 = H
+      SPGAU2 = H
  
       RETURN
       END
  
 C*********************************************************************
  
-C...PYSIMP
+C...SPSIMP
 C...Simpson formula for an integral.
  
-      FUNCTION PYSIMP(Y,X0,X1,N)
+      FUNCTION SPSIMP(Y,X0,X1,N)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
  
 C...Local variables.
       DOUBLE PRECISION Y,X0,X1,H,S
@@ -36954,56 +36954,56 @@ C...Local variables.
       DO 100 I=0,N-2,2
         S=S+Y(I)+4D0*Y(I+1)+Y(I+2)
   100 CONTINUE
-      PYSIMP=S*H/3D0
+      SPSIMP=S*H/3D0
  
       RETURN
       END
  
 C*********************************************************************
  
-C...PYLAMF
+C...SPLAMF
 C...The standard lambda function.
  
-      FUNCTION PYLAMF(X,Y,Z)
+      FUNCTION SPLAMF(X,Y,Z)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
  
 C...Local variables.
-      DOUBLE PRECISION PYLAMF,X,Y,Z
+      DOUBLE PRECISION SPLAMF,X,Y,Z
  
-      PYLAMF=(X-(Y+Z))**2-4D0*Y*Z
-      IF(PYLAMF.LT.0D0) PYLAMF=0D0
+      SPLAMF=(X-(Y+Z))**2-4D0*Y*Z
+      IF(SPLAMF.LT.0D0) SPLAMF=0D0
  
       RETURN
       END
  
 C*********************************************************************
  
-C...PYTBDY
+C...SPTBDY
 C...Generates 3-body decays of gauginos.
  
-      SUBROUTINE PYTBDY(IDIN)
+      SUBROUTINE SPTBDY(IDIN)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-C     COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-C     COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+C     COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+C     COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
      &SFMIX(16,4),ZMIXI(4,4),UMIXI(2,2),VMIXI(2,2)
-C     SAVE /PYJETS/,/PYDAT1/,/PYDAT2/,/PYDAT3/,/PYPARS/,/PYSSMT/
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/,/PYSSMT/
+C     SAVE /SPJETS/,/SPDAT1/,/SPDAT2/,/SPDAT3/,/SPPARS/,/SPSSMT/
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/,/SPSSMT/
  
 C...Local variables.
       DOUBLE PRECISION XM(5)
@@ -37067,9 +37067,9 @@ C...Initialize some parameters
         OLPP=(ZMIXC(IZID1,3)*DCONJG(ZMIXC(IZID2,3))-
      &  ZMIXC(IZID1,4)*DCONJG(ZMIXC(IZID2,4)))/2D0
         ORPP=DCONJG(OLPP)
-        XLL2=PMAS(PYCOMP(KSUSY1+IABS(IA)),1)**2
+        XLL2=PMAS(SPCOMP(KSUSY1+IABS(IA)),1)**2
         XLR2=XLL2
-        XRR2=PMAS(PYCOMP(KSUSY2+IABS(IA)),1)**2
+        XRR2=PMAS(SPCOMP(KSUSY2+IABS(IA)),1)**2
         XRL2=XRR2
         GLIJ=(T3I*ZMIXC(IZID1,2)-TANW*(T3I-EI)*ZMIXC(IZID1,1))*
      &  DCONJG(T3I*ZMIXC(IZID2,2)-TANW*(T3I-EI)*ZMIXC(IZID2,1))
@@ -37114,8 +37114,8 @@ C...Initialize some parameters
         QRRU=QRLS
         XRR2=1D6**2
         XRL2=XRR2
-        XLR2  = PMAS(PYCOMP(KSUSY1+JA),1)**2
-        XLL2  = PMAS(PYCOMP(KSUSY1+IA),1)**2
+        XLR2  = PMAS(SPCOMP(KSUSY1+JA),1)**2
+        XLL2  = PMAS(SPCOMP(KSUSY1+IA),1)**2
         IF(MOD(IA,2).EQ.0) THEN
           QLLU=VMIXC(IZID1,1)*DCONJG(ZMIXC(IZID2,1)*(EI-T3I)*
      &    TANW+ZMIXC(IZID2,2)*T3I)
@@ -37148,10 +37148,10 @@ C...Initialize some parameters
         QRRS=-DCMPLX(EI/XW1)*OLPP
         QLRS=DCMPLX((T3I-XW*EI)/XW/XW1)*OLPP
         IF(MOD(IA,2).EQ.0) THEN
-          XLR2=PMAS(PYCOMP(KSUSY1+IABS(IA)-1),1)**2
+          XLR2=PMAS(SPCOMP(KSUSY1+IABS(IA)-1),1)**2
           QLRT=-UMIXC(IZID2,1)*DCONJG(UMIXC(IZID1,1))*DCMPLX(T3I/XW)
         ELSE
-          XLR2=PMAS(PYCOMP(KSUSY1+IABS(IA)+1),1)**2
+          XLR2=PMAS(SPCOMP(KSUSY1+IABS(IA)+1),1)**2
           QLRT=-VMIXC(IZID2,1)*DCONJG(VMIXC(IZID1,1))*DCMPLX(T3I/XW)
         ENDIF
       ELSEIF(MOD(K(N+1,2),KSUSY1).EQ.21.OR.MOD(K(ID,2),KSUSY1).EQ.21)
@@ -37275,7 +37275,7 @@ C...WE WANT THE MAXIMUM, NOT THE MINIMUM
       ENDIF
  
       IKNT=0
-  180 S12=S12MIN+PYR(0)*YJACO1
+  180 S12=S12MIN+SPR(0)*YJACO1
       IKNT=IKNT+1
 C...GENERATE S23
       S23AVE=XM(2)**2+XM(3)**2-(S12+XM(2)**2-XM(1)**2)
@@ -37291,14 +37291,14 @@ C...GENERATE S23
       S23MIN=S23AVE-S23DEL
       S23MAX=S23AVE+S23DEL
       YJACO2=S23MAX-S23MIN
-      S23=S23MIN+PYR(0)*YJACO2
+      S23=S23MIN+SPR(0)*YJACO2
  
 C...CHECK THE SAMPLING
       IF(IKNT.GT.100) THEN
-        WRITE(MSTU(11),*) ' IKNT > 100 IN PYTBDY '
+        WRITE(MSTU(11),*) ' IKNT > 100 IN SPTBDY '
         GOTO 190
       ENDIF
-      IF(YJACO2.LT.PYR(0)*GOLDEN) GOTO 180
+      IF(YJACO2.LT.SPR(0)*GOLDEN) GOTO 180
  
       IF(ISKIP.EQ.0) GOTO 190
  
@@ -37326,7 +37326,7 @@ c     &-DCONJG(GRIJ)/DCMPLX(UH-XMR2)
      &(ABS(QRL)**2+ABS(QLR)**2)*WT2+
      &2D0*DBLE(QLR*DCONJG(QLL)+QRL*DCONJG(QRR))*WS2)
  
-      IF(WT.LT.PYR(0)*WTMAX) GOTO 180
+      IF(WT.LT.SPR(0)*WTMAX) GOTO 180
       IF(WT.GT.WTMAX) PRINT*,' WT > WTMAX ',WT,WTMAX
  
   190 D3=(XM(5)**2+XM(3)**2-S12)/(2D0*XM(5))
@@ -37335,8 +37335,8 @@ c     &-DCONJG(GRIJ)/DCMPLX(UH-XMR2)
       P1=SQRT(D1*D1-XM(1)**2)
       P2=SQRT(D2*D2-XM(2)**2)
       P3=SQRT(D3*D3-XM(3)**2)
-      CTHE1=2D0*PYR(0)-1D0
-      ANG1=2D0*PYR(0)*PARU(1)
+      CTHE1=2D0*SPR(0)-1D0
+      ANG1=2D0*SPR(0)*PARU(1)
       CPHI1=COS(ANG1)
       SPHI1=SIN(ANG1)
       ARG=1D0-CTHE1**2
@@ -37348,7 +37348,7 @@ c     &-DCONJG(GRIJ)/DCMPLX(UH-XMR2)
       P(N+1,4)=D1
  
 C...GET CPHI3
-      ANG3=2D0*PYR(0)*PARU(1)
+      ANG3=2D0*SPR(0)*PARU(1)
       CPHI3=COS(ANG3)
       SPHI3=SIN(ANG3)
       CTHE3=(P2**2-P1**2-P3**2)/2D0/P1/P3
@@ -37375,26 +37375,26 @@ C...GET CPHI3
  
 C*********************************************************************
  
-C...PYTECM
+C...SPTECM
 C...Finds the s-hat dependent eigenvalues of the inverse propagator
 C...matrix for gamma, Z, techni-rho, and techni-omega to optimize the
 C...phase space generation.
  
-      SUBROUTINE PYTECM(S1,S2)
+      SUBROUTINE SPTECM(S1,S2)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYTCSM/ITCM(0:99),RTCM(0:99)
-      SAVE /PYDAT1/,/PYDAT2/,/PYPARS/,/PYTCSM/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPTCSM/ITCM(0:99),RTCM(0:99)
+      SAVE /SPDAT1/,/SPDAT2/,/SPPARS/,/SPTCSM/
  
 C...Local variables.
       DOUBLE PRECISION AR(4,4),WR(4),ZR(4,4),ZI(4,4),WORK(12,12),
@@ -37402,8 +37402,8 @@ C...Local variables.
      &far,fao,fzr,fzo,shr,R1,R2,S1,S2,WDTP(0:400),WDTE(0:400,0:5)
       INTEGER i,j,ierr
  
-      SH=PMAS(PYCOMP(KTECHN+113),1)**2
-      AEM=PYALEM(SH)
+      SH=PMAS(SPCOMP(KTECHN+113),1)**2
+      AEM=SPALEM(SH)
  
       TANW=SQRT(PARU(102)/(1D0-PARU(102)))
       CT2W=(1D0-2D0*PARU(102))/(2D0*PARU(102)/TANW)
@@ -37417,8 +37417,8 @@ C...Local variables.
  
       AR(1,1) = SH
       AR(2,2) = SH-PMAS(23,1)**2
-      AR(3,3) = SH-PMAS(PYCOMP(KTECHN+113),1)**2
-      AR(4,4) = SH-PMAS(PYCOMP(KTECHN+223),1)**2
+      AR(3,3) = SH-PMAS(SPCOMP(KTECHN+113),1)**2
+      AR(4,4) = SH-PMAS(SPCOMP(KTECHN+223),1)**2
       AR(1,2) = 0D0
       AR(2,1) = 0D0
       AR(1,3) = -SH*FAR
@@ -37438,14 +37438,14 @@ CCCCCCCC
   100   CONTINUE
   110 CONTINUE
       SHR=SQRT(SH)
-      CALL PYWIDT(23,SH,WDTP,WDTE)
+      CALL SPWIDT(23,SH,WDTP,WDTE)
       AT(2,2) = WDTP(0)*SHR
-      CALL PYWIDT(KTECHN+113,SH,WDTP,WDTE)
+      CALL SPWIDT(KTECHN+113,SH,WDTP,WDTE)
       AT(3,3) = WDTP(0)*SHR
-      CALL PYWIDT(KTECHN+223,SH,WDTP,WDTE)
+      CALL SPWIDT(KTECHN+223,SH,WDTP,WDTE)
       AT(4,4) = WDTP(0)*SHR
 CCCC
-      CALL PYEICG(4,4,AR,AT,WR,WI,0,ZR,ZI,FV1,FV2,FV3,IERR)
+      CALL SPEICG(4,4,AR,AT,WR,WI,0,ZR,ZI,FV1,FV2,FV3,IERR)
       DO 120 I=1,4
         WI(I)=SQRT(ABS(SH-WR(I)))
         WR(I)=ABS(WR(I))
@@ -37471,7 +37471,7 @@ CCCC
  
 C*********************************************************************
  
-C...PYEIGC
+C...SPEIGC
 C...Finds eigenvalues of a general complex matrix
 C
 C     THIS SUBROUTINE CALLS THE RECOMMENDED SEQUENCE OF
@@ -37514,7 +37514,7 @@ C
 C     THIS VERSION DATED AUGUST 1983.
 C
  
-      SUBROUTINE PYEICG(NM,N,AR,AI,WR,WI,MATZ,ZR,ZI,FV1,FV2,FV3,IERR)
+      SUBROUTINE SPEICG(NM,N,AR,AI,WR,WI,MATZ,ZR,ZI,FV1,FV2,FV3,IERR)
  
       INTEGER N,NM,IS1,IS2,IERR,MATZ
       DOUBLE PRECISION AR(4,4),AI(4,4),WR(4),WI(4),ZR(4,4),ZI(4,4),
@@ -37523,23 +37523,23 @@ C
       IERR = 10 * N
       GOTO 120
 C
-  100 CALL  PYCBAL(NM,N,AR,AI,IS1,IS2,FV1)
-      CALL  PYCRTH(NM,N,IS1,IS2,AR,AI,FV2,FV3)
+  100 CALL  SPCBAL(NM,N,AR,AI,IS1,IS2,FV1)
+      CALL  SPCRTH(NM,N,IS1,IS2,AR,AI,FV2,FV3)
       IF (MATZ .NE. 0) GOTO 110
 C     .......... FIND EIGENVALUES ONLY ..........
-      CALL  PYCMQR(NM,N,IS1,IS2,AR,AI,WR,WI,IERR)
+      CALL  SPCMQR(NM,N,IS1,IS2,AR,AI,WR,WI,IERR)
       GOTO 120
 C     .......... FIND BOTH EIGENVALUES AND EIGENVECTORS ..........
-  110 CALL  PYCMQ2(NM,N,IS1,IS2,FV2,FV3,AR,AI,WR,WI,ZR,ZI,IERR)
+  110 CALL  SPCMQ2(NM,N,IS1,IS2,FV2,FV3,AR,AI,WR,WI,ZR,ZI,IERR)
       IF (IERR .NE. 0) GOTO 120
-      CALL  PYCBA2(NM,N,IS1,IS2,FV1,N,ZR,ZI)
+      CALL  SPCBA2(NM,N,IS1,IS2,FV1,N,ZR,ZI)
   120 RETURN
       END
  
 C*********************************************************************
  
-C...PYCMQR
-C...Auxiliary to PYEICG.
+C...SPCMQR
+C...Auxiliary to SPEICG.
 C
 C     THIS SUBROUTINE IS A TRANSLATION OF A UNITARY ANALOGUE OF THE
 C     ALGOL PROCEDURE  COMLR, NUM. MATH. 12, 369-376(1968) BY MARTIN
@@ -37586,9 +37586,9 @@ C          ZERO       FOR NORMAL RETURN,
 C          J          IF THE LIMIT OF 30*N ITERATIONS IS EXHAUSTED
 C                     WHILE THE J-TH EIGENVALUE IS BEING SOUGHT.
 C
-C     CALLS PYCDIV FOR COMPLEX DIVISION.
-C     CALLS PYCSRT FOR COMPLEX SQUARE ROOT.
-C     CALLS PYTHAG FOR  DSQRT(A*A + B*B) .
+C     CALLS SPCDIV FOR COMPLEX DIVISION.
+C     CALLS SPCSRT FOR COMPLEX SQUARE ROOT.
+C     CALLS SPTHAG FOR  DSQRT(A*A + B*B) .
 C
 C     QUESTIONS AND COMMENTS SHOULD BE DIRECTED TO BURTON S. GARBOW,
 C     MATHEMATICS AND COMPUTER SCIENCE DIV, ARGONNE NATIONAL LABORATORY
@@ -37596,12 +37596,12 @@ C
 C     THIS VERSION DATED AUGUST 1983.
 C
  
-      SUBROUTINE PYCMQR(NM,N,LOW,IGH,HR,HI,WR,WI,IERR)
+      SUBROUTINE SPCMQR(NM,N,LOW,IGH,HR,HI,WR,WI,IERR)
  
       INTEGER I,J,L,N,EN,LL,NM,IGH,ITN,ITS,LOW,LP1,ENM1,IERR
       DOUBLE PRECISION HR(4,4),HI(4,4),WR(4),WI(4)
       DOUBLE PRECISION SI,SR,TI,TR,XI,XR,YI,YR,ZZI,ZZR,NORM,TST1,TST2,
-     X       PYTHAG
+     X       SPTHAG
  
       IERR = 0
       IF (LOW .EQ. IGH) GOTO 130
@@ -37611,7 +37611,7 @@ C
       DO 120 I = L, IGH
          LL = MIN0(I+1,IGH)
          IF (HI(I,I-1) .EQ. 0.0D0) GOTO 120
-         NORM = PYTHAG(HR(I,I-1),HI(I,I-1))
+         NORM = SPTHAG(HR(I,I-1),HI(I,I-1))
          YR = HR(I,I-1) / NORM
          YI = HI(I,I-1) / NORM
          HR(I,I-1) = NORM
@@ -37666,11 +37666,11 @@ C     .......... FORM SHIFT ..........
       IF (XR .EQ. 0.0D0 .AND. XI .EQ. 0.0D0) GOTO 210
       YR = (HR(ENM1,ENM1) - SR) / 2.0D0
       YI = (HI(ENM1,ENM1) - SI) / 2.0D0
-      CALL PYCSRT(YR**2-YI**2+XR,2.0D0*YR*YI+XI,ZZR,ZZI)
+      CALL SPCSRT(YR**2-YI**2+XR,2.0D0*YR*YI+XI,ZZR,ZZI)
       IF (YR * ZZR + YI * ZZI .GE. 0.0D0) GOTO 190
       ZZR = -ZZR
       ZZI = -ZZI
-  190 CALL PYCDIV(XR,XI,YR+ZZR,YI+ZZI,XR,XI)
+  190 CALL SPCDIV(XR,XI,YR+ZZR,YI+ZZI,XR,XI)
       SR = SR - XR
       SI = SI - XI
       GOTO 210
@@ -37693,7 +37693,7 @@ C
       DO 240 I = LP1, EN
          SR = HR(I,I-1)
          HR(I,I-1) = 0.0D0
-         NORM = PYTHAG(PYTHAG(HR(I-1,I-1),HI(I-1,I-1)),SR)
+         NORM = SPTHAG(SPTHAG(HR(I-1,I-1),HI(I-1,I-1)),SR)
          XR = HR(I-1,I-1) / NORM
          WR(I-1) = XR
          XI = HI(I-1,I-1) / NORM
@@ -37717,7 +37717,7 @@ C
 C
       SI = HI(EN,EN)
       IF (SI .EQ. 0.0D0) GOTO 250
-      NORM = PYTHAG(HR(EN,EN),SI)
+      NORM = SPTHAG(HR(EN,EN),SI)
       SR = HR(EN,EN) / NORM
       SI = SI / NORM
       HR(EN,EN) = NORM
@@ -37765,8 +37765,8 @@ C                CONVERGED AFTER 30*N ITERATIONS ..........
  
 C*********************************************************************
  
-C...PYCMQ2
-C...Auxiliary to PYEICG.
+C...SPCMQ2
+C...Auxiliary to SPEICG.
 C
 C     THIS SUBROUTINE IS A TRANSLATION OF A UNITARY ANALOGUE OF THE
 C     ALGOL PROCEDURE  COMLR2, NUM. MATH. 16, 181-204(1970) BY PETERS
@@ -37827,9 +37827,9 @@ C          ZERO       FOR NORMAL RETURN,
 C          J          IF THE LIMIT OF 30*N ITERATIONS IS EXHAUSTED
 C                     WHILE THE J-TH EIGENVALUE IS BEING SOUGHT.
 C
-C     CALLS PYCDIV FOR COMPLEX DIVISION.
-C     CALLS PYCSRT FOR COMPLEX SQUARE ROOT.
-C     CALLS PYTHAG FOR  DSQRT(A*A + B*B) .
+C     CALLS SPCDIV FOR COMPLEX DIVISION.
+C     CALLS SPCSRT FOR COMPLEX SQUARE ROOT.
+C     CALLS SPTHAG FOR  DSQRT(A*A + B*B) .
 C
 C     QUESTIONS AND COMMENTS SHOULD BE DIRECTED TO BURTON S. GARBOW,
 C     MATHEMATICS AND COMPUTER SCIENCE DIV, ARGONNE NATIONAL LABORATORY
@@ -37840,14 +37840,14 @@ C  MESHED OVERFLOW CONTROL WITH VECTORS OF ISOLATED ROOTS (10/19/89 BSG)
 C  MESHED OVERFLOW CONTROL WITH TRIANGULAR MULTIPLY (10/30/89 BSG)
 C
  
-      SUBROUTINE PYCMQ2(NM,N,LOW,IGH,ORTR,ORTI,HR,HI,WR,WI,ZR,ZI,IERR)
+      SUBROUTINE SPCMQ2(NM,N,LOW,IGH,ORTR,ORTI,HR,HI,WR,WI,ZR,ZI,IERR)
  
       INTEGER I,J,K,L,M,N,EN,II,JJ,LL,NM,NN,IGH,IP1,
      X        ITN,ITS,LOW,LP1,ENM1,IEND,IERR
       DOUBLE PRECISION HR(4,4),HI(4,4),WR(4),WI(4),ZR(4,4),ZI(4,4),
      X       ORTR(4),ORTI(4)
       DOUBLE PRECISION SI,SR,TI,TR,XI,XR,YI,YR,ZZI,ZZR,NORM,TST1,TST2,
-     X       PYTHAG
+     X       SPTHAG
  
       IERR = 0
 C     .......... INITIALIZE EIGENVECTOR MATRIX ..........
@@ -37904,7 +37904,7 @@ C
       DO 210 I = L, IGH
          LL = MIN0(I+1,IGH)
          IF (HI(I,I-1) .EQ. 0.0D0) GOTO 210
-         NORM = PYTHAG(HR(I,I-1),HI(I,I-1))
+         NORM = SPTHAG(HR(I,I-1),HI(I,I-1))
          YR = HR(I,I-1) / NORM
          YI = HI(I,I-1) / NORM
          HR(I,I-1) = NORM
@@ -37965,11 +37965,11 @@ C     .......... FORM SHIFT ..........
       IF (XR .EQ. 0.0D0 .AND. XI .EQ. 0.0D0) GOTO 300
       YR = (HR(ENM1,ENM1) - SR) / 2.0D0
       YI = (HI(ENM1,ENM1) - SI) / 2.0D0
-      CALL PYCSRT(YR**2-YI**2+XR,2.0D0*YR*YI+XI,ZZR,ZZI)
+      CALL SPCSRT(YR**2-YI**2+XR,2.0D0*YR*YI+XI,ZZR,ZZI)
       IF (YR * ZZR + YI * ZZI .GE. 0.0D0) GOTO 280
       ZZR = -ZZR
       ZZI = -ZZI
-  280 CALL PYCDIV(XR,XI,YR+ZZR,YI+ZZI,XR,XI)
+  280 CALL SPCDIV(XR,XI,YR+ZZR,YI+ZZI,XR,XI)
       SR = SR - XR
       SI = SI - XI
       GOTO 300
@@ -37992,7 +37992,7 @@ C
       DO 330 I = LP1, EN
          SR = HR(I,I-1)
          HR(I,I-1) = 0.0D0
-         NORM = PYTHAG(PYTHAG(HR(I-1,I-1),HI(I-1,I-1)),SR)
+         NORM = SPTHAG(SPTHAG(HR(I-1,I-1),HI(I-1,I-1)),SR)
          XR = HR(I-1,I-1) / NORM
          WR(I-1) = XR
          XI = HI(I-1,I-1) / NORM
@@ -38016,7 +38016,7 @@ C
 C
       SI = HI(EN,EN)
       IF (SI .EQ. 0.0D0) GOTO 350
-      NORM = PYTHAG(HR(EN,EN),SI)
+      NORM = SPTHAG(HR(EN,EN),SI)
       SR = HR(EN,EN) / NORM
       SI = SI / NORM
       HR(EN,EN) = NORM
@@ -38126,7 +38126,7 @@ C
                TST2 = NORM + YR
                IF (TST2 .GT. TST1) GOTO 460
   470       CONTINUE
-            CALL PYCDIV(ZZR,ZZI,YR,YI,HR(I,EN),HI(I,EN))
+            CALL SPCDIV(ZZR,ZZI,YR,YI,HR(I,EN),HI(I,EN))
 C     .......... OVERFLOW CONTROL ..........
             TR = DABS(HR(I,EN)) + DABS(HI(I,EN))
             IF (TR .EQ. 0.0D0) GOTO 490
@@ -38181,13 +38181,13 @@ C                CONVERGED AFTER 30*N ITERATIONS ..........
  
 C*********************************************************************
  
-C...PYCDIV
-C...Auxiliary to PYCMQR
+C...SPCDIV
+C...Auxiliary to SPCMQR
 C
 C     COMPLEX DIVISION, (CR,CI) = (AR,AI)/(BR,BI)
 C
  
-      SUBROUTINE PYCDIV(AR,AI,BR,BI,CR,CI)
+      SUBROUTINE SPCDIV(AR,AI,BR,BI,CR,CI)
  
       DOUBLE PRECISION AR,AI,BR,BI,CR,CI
       DOUBLE PRECISION S,ARS,AIS,BRS,BIS
@@ -38205,21 +38205,21 @@ C
  
 C*********************************************************************
  
-C...PYCSRT
-C...Auxiliary to PYCMQR
+C...SPCSRT
+C...Auxiliary to SPCMQR
 C
 C     (YR,YI) = COMPLEX DSQRT(XR,XI)
 C     BRANCH CHOSEN SO THAT YR .GE. 0.0 AND SIGN(YI) .EQ. SIGN(XI)
 C
  
-      SUBROUTINE PYCSRT(XR,XI,YR,YI)
+      SUBROUTINE SPCSRT(XR,XI,YR,YI)
  
       DOUBLE PRECISION XR,XI,YR,YI
-      DOUBLE PRECISION S,TR,TI,PYTHAG
+      DOUBLE PRECISION S,TR,TI,SPTHAG
  
       TR = XR
       TI = XI
-      S = DSQRT(0.5D0*(PYTHAG(TR,TI) + DABS(TR)))
+      S = DSQRT(0.5D0*(SPTHAG(TR,TI) + DABS(TR)))
       IF (TR .GE. 0.0D0) YR = S
       IF (TI .LT. 0.0D0) S = -S
       IF (TR .LE. 0.0D0) YI = S
@@ -38228,7 +38228,7 @@ C
       RETURN
       END
  
-      DOUBLE PRECISION FUNCTION PYTHAG(A,B)
+      DOUBLE PRECISION FUNCTION SPTHAG(A,B)
       DOUBLE PRECISION A,B
 C
 C     FINDS DSQRT(A**2+B**2) WITHOUT OVERFLOW OR DESTRUCTIVE UNDERFLOW
@@ -38245,14 +38245,14 @@ C
          P = U*P
          R = (S/U)**2 * R
       GOTO 100
-  110 PYTHAG = P
+  110 SPTHAG = P
       RETURN
       END
  
 C*********************************************************************
  
-C...PYCBAL
-C...Auxiliary to PYEICG
+C...SPCBAL
+C...Auxiliary to SPEICG
 C
 C     THIS SUBROUTINE IS A TRANSLATION OF THE ALGOL PROCEDURE
 C     CBALANCE, WHICH IS A COMPLEX VERSION OF BALANCE,
@@ -38310,7 +38310,7 @@ C
 C     THIS VERSION DATED AUGUST 1983.
 C
  
-      SUBROUTINE PYCBAL(NM,N,AR,AI,LOW,IGH,SCALE)
+      SUBROUTINE SPCBAL(NM,N,AR,AI,LOW,IGH,SCALE)
  
       INTEGER I,J,K,L,M,N,JJ,NM,IGH,LOW,IEXC
       DOUBLE PRECISION AR(4,4),AI(4,4),SCALE(4)
@@ -38438,8 +38438,8 @@ C
  
 C*********************************************************************
  
-C...PYCBA2
-C...Auxiliary to PYEICG.
+C...SPCBA2
+C...Auxiliary to SPEICG.
 C
 C     THIS SUBROUTINE IS A TRANSLATION OF THE ALGOL PROCEDURE
 C     CBABK2, WHICH IS A COMPLEX VERSION OF BALBAK,
@@ -38481,7 +38481,7 @@ C
 C     THIS VERSION DATED AUGUST 1983.
 C
  
-      SUBROUTINE PYCBA2(NM,N,LOW,IGH,SCALE,M,ZR,ZI)
+      SUBROUTINE SPCBA2(NM,N,LOW,IGH,SCALE,M,ZR,ZI)
  
       INTEGER I,J,K,M,N,II,NM,IGH,LOW
       DOUBLE PRECISION SCALE(4),ZR(4,4),ZI(4,4)
@@ -38526,8 +38526,8 @@ C
  
 C*********************************************************************
  
-C...PYCRTH
-C...Auxiliary to PYEICG.
+C...SPCRTH
+C...Auxiliary to SPEICG.
 C
 C     THIS SUBROUTINE IS A TRANSLATION OF A COMPLEX ANALOGUE OF
 C     THE ALGOL PROCEDURE ORTHES, NUM. MATH. 12, 349-368(1968)
@@ -38565,7 +38565,7 @@ C
 C        ORTR AND ORTI CONTAIN FURTHER INFORMATION ABOUT THE
 C          TRANSFORMATIONS.  ONLY ELEMENTS LOW THROUGH IGH ARE USED.
 C
-C     CALLS PYTHAG FOR  DSQRT(A*A + B*B) .
+C     CALLS SPTHAG FOR  DSQRT(A*A + B*B) .
 C
 C     QUESTIONS AND COMMENTS SHOULD BE DIRECTED TO BURTON S. GARBOW,
 C     MATHEMATICS AND COMPUTER SCIENCE DIV, ARGONNE NATIONAL LABORATORY
@@ -38573,11 +38573,11 @@ C
 C     THIS VERSION DATED AUGUST 1983.
 C
  
-      SUBROUTINE PYCRTH(NM,N,LOW,IGH,AR,AI,ORTR,ORTI)
+      SUBROUTINE SPCRTH(NM,N,LOW,IGH,AR,AI,ORTR,ORTI)
  
       INTEGER I,J,M,N,II,JJ,LA,MP,NM,IGH,KP1,LOW
       DOUBLE PRECISION AR(4,4),AI(4,4),ORTR(4),ORTI(4)
-      DOUBLE PRECISION F,G,H,FI,FR,SCALE,PYTHAG
+      DOUBLE PRECISION F,G,H,FI,FR,SCALE,SPTHAG
  
       LA = IGH - 1
       KP1 = LOW + 1
@@ -38603,7 +38603,7 @@ C     .......... FOR I=IGH STEP -1 UNTIL M DO -- ..........
   110    CONTINUE
 C
          G = DSQRT(H)
-         F = PYTHAG(ORTR(M),ORTI(M))
+         F = SPTHAG(ORTR(M),ORTI(M))
          IF (F .EQ. 0.0D0) GOTO 120
          H = H + F * G
          G = G / F
@@ -38665,11 +38665,11 @@ C
  
 C*********************************************************************
  
-C...PYLDCM
-C...Auxiliary to PYSIGH, for technicolor corrections to QCD 2 -> 2
+C...SPLDCM
+C...Auxiliary to SPSIGH, for technicolor corrections to QCD 2 -> 2
 C...processes.
  
-      SUBROUTINE PYLDCM(A,N,NP,INDX,D)
+      SUBROUTINE SPLDCM(A,N,NP,INDX,D)
       IMPLICIT NONE
       INTEGER N,NP,INDX(N)
       REAL*8 D,TINY
@@ -38685,7 +38685,7 @@ C...processes.
         DO 100 J=1,N
           IF (ABS(A(I,J)).GT.AAMAX) AAMAX=ABS(A(I,J))
   100   CONTINUE
-        IF (AAMAX.EQ.0D0) PAUSE 'SINGULAR MATRIX IN PYLDCM'
+        IF (AAMAX.EQ.0D0) PAUSE 'SINGULAR MATRIX IN SPLDCM'
         VV(I)=1D0/AAMAX
   110 CONTINUE
       DO 180 J=1,N
@@ -38732,11 +38732,11 @@ C...processes.
  
 C*********************************************************************
  
-C...PYBKSB
-C...Auxiliary to PYSIGH, for technicolor corrections to QCD 2 -> 2
+C...SPBKSB
+C...Auxiliary to SPSIGH, for technicolor corrections to QCD 2 -> 2
 C...processes.
  
-      SUBROUTINE PYBKSB(A,N,NP,INDX,B)
+      SUBROUTINE SPBKSB(A,N,NP,INDX,B)
       IMPLICIT NONE
       INTEGER N,NP,INDX(N)
       COMPLEX*16 A(NP,NP),B(N)
@@ -38769,31 +38769,31 @@ C...processes.
  
 C***********************************************************************
  
-C...PYWIDX
+C...SPWIDX
 C...Calculates full and partial widths of resonances.
-C....copy of PYWIDT, used for techniparticle widths
+C....cosp of SPWIDT, used for techniparticle widths
  
-      SUBROUTINE PYWIDX(KFLR,SH,WDTP,WDTE)
+      SUBROUTINE SPWIDX(KFLR,SH,WDTP,WDTE)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT4/MWID(500),WIDS(500,5)
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-      COMMON/PYTCSM/ITCM(0:99),RTCM(0:99)
-      SAVE /PYDAT1/,/PYDAT2/,/PYDAT3/,/PYSUBS/,/PYPARS/,/PYINT1/,
-     &/PYINT4/,/PYMSSM/,/PYTCSM/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT4/MWID(500),WIDS(500,5)
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+      COMMON/SPTCSM/ITCM(0:99),RTCM(0:99)
+      SAVE /SPDAT1/,/SPDAT2/,/SPDAT3/,/SPSUBS/,/SPPARS/,/SPINT1/,
+     &/SPINT4/,/SPMSSM/,/SPTCSM/
 C...Local arrays and saved variables.
       DIMENSION WDTP(0:400),WDTE(0:400,0:5),MOFSV(3,2),WIDWSV(3,2),
      &WID2SV(3,2)
@@ -38803,7 +38803,7 @@ C...Local arrays and saved variables.
 C...Compressed code and sign; mass.
       KFLA=IABS(KFLR)
       KFLS=ISIGN(1,KFLR)
-      KC=PYCOMP(KFLA)
+      KC=SPCOMP(KFLA)
       SHR=SQRT(SH)
       PMR=PMAS(KC,1)
  
@@ -38820,9 +38820,9 @@ C...Common electroweak and strong constants.
       XWV=XW
       IF(MSTP(8).GE.2) XW=1D0-(PMAS(24,1)/PMAS(23,1))**2
       XW1=1D0-XW
-      AEM=PYALEM(SH)
+      AEM=SPALEM(SH)
       IF(MSTP(8).GE.1) AEM=SQRT(2D0)*PARU(105)*PMAS(24,1)**2*XW/PARU(1)
-      AS=PYALPS(SH)
+      AS=SPALPS(SH)
       RADC=1D0+AS/PARU(1)
  
       IF(KFLA.EQ.23) THEN
@@ -38844,7 +38844,7 @@ C...Z0 -> q + qbar
             AF=SIGN(1D0,EF+0.1D0)
             VF=AF-4D0*EF*XWV
             FCOF=3D0*RADC
-            IF(I.GE.6.AND.MSTP(35).GE.1) FCOF=FCOF*PYHFTH(SH,SH*RM1,1D0)
+            IF(I.GE.6.AND.MSTP(35).GE.1) FCOF=FCOF*SPHFTH(SH,SH*RM1,1D0)
             IF(I.EQ.6) WID2=WIDS(6,1)
             IF((I.EQ.7.OR.I.EQ.8)) WID2=WIDS(I,1)
           ELSEIF(I.LE.16) THEN
@@ -38923,7 +38923,7 @@ C.....V8 -> quark anti-quark
         DO 150 I=1,MDCY(KC,3)
           IDC=I+MDCY(KC,2)-1
           IF(MDME(IDC,1).LT.0) GOTO 150
-          PM1=PMAS(PYCOMP(KFDP(IDC,1)),1)
+          PM1=PMAS(SPCOMP(KFDP(IDC,1)),1)
           RM1=PM1**2/SH
           IF(RM1.GT.0.25D0) GOTO 150
           WID2=1D0
@@ -38949,11 +38949,11 @@ C.....V8 -> quark anti-quark
  
 C*********************************************************************
  
-C...PYRVSF
+C...SPRVSF
 C...Calculates R-violating decays of sfermions.
 C...P. Z. Skands
  
-      SUBROUTINE PYRVSF(KFIN,XLAM,IDLAM,LKNT)
+      SUBROUTINE SPRVSF(KFIN,XLAM,IDLAM,LKNT)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
@@ -38962,15 +38962,15 @@ C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-      COMMON/PYSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+      COMMON/SPSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
      &SFMIX(16,4),ZMIXI(4,4),UMIXI(2,2),VMIXI(2,2)
-      COMMON/PYMSRV/RVLAM(3,3,3), RVLAMP(3,3,3), RVLAMB(3,3,3)
+      COMMON/SPMSRV/RVLAM(3,3,3), RVLAMP(3,3,3), RVLAMB(3,3,3)
 C...Local variables.
       DOUBLE PRECISION XLAM(0:400)
-      INTEGER IDLAM(400,3), PYCOMP
-      SAVE /PYMSRV/,/PYSSMT/,/PYMSSM/,/PYDAT2/
+      INTEGER IDLAM(400,3), SPCOMP
+      SAVE /SPMSRV/,/SPSSMT/,/SPMSSM/,/SPDAT2/
  
 C...IS R-VIOLATION ON ?
       IF ((IMSS(51).GE.1).OR.(IMSS(52).GE.1).OR.(IMSS(53).GE.1)) THEN
@@ -38979,9 +38979,9 @@ C...Mass eigenstate counter
 C...SM KF code of SUSY particle
         KFSM=KFIN-ICNT*KSUSY1
 C...Squared Sparticle Mass
-        SM=PMAS(PYCOMP(KFIN),1)**2
+        SM=PMAS(SPCOMP(KFIN),1)**2
 C... Squared mass of top quark
-        SMT=PMAS(PYCOMP(6),1)**2
+        SMT=PMAS(SPCOMP(6),1)**2
 C...IS L-VIOLATION ON ?
         IF ((IMSS(51).GE.1).OR.(IMSS(52).GE.1)) THEN
 C...SLEPTON -> NU(BAR) + LEPTON and UBAR + D
@@ -38999,7 +38999,7 @@ C...~e,~mu,~tau -> nu_I + lepton-_J
                   XLAM(LKNT)=0D0
                   RM2=RVLAM(I,J,K)**2*SFMIX(KFSM,2*ICNT)**2 * SM
                   IF (IMSS(51).NE.0) XLAM(LKNT) =
-     &                 PYRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,4)
+     &                 SPRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,4)
 C...KINEMATICS CHECK
                   IF (XLAM(LKNT).EQ.0D0) THEN
                     LKNT=LKNT-1
@@ -39019,7 +39019,7 @@ C...~e,~mu,~tau -> nu_Ibar + lepton-_K
                   XLAM(LKNT)=0D0
                   RM2=RVLAM(I,J,K)**2*SFMIX(KFSM,2*ICNT-1)**2 * SM
                   IF (IMSS(51).NE.0) XLAM(LKNT) =
-     &                 PYRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,4)
+     &                 SPRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,4)
 C...KINEMATICS CHECK
                   IF (XLAM(LKNT).EQ.0D0) THEN
                     LKNT=LKNT-1
@@ -39042,12 +39042,12 @@ C...Use massive top quark
                     RM2=3*RVLAMP(I,J,K)**2*SFMIX(KFSM,2*ICNT-1)**2
      &                   * (SM-SMT)
                     XLAM(LKNT) =
-     &                   PYRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,3)
+     &                   SPRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,3)
 C...If no top quark, all decay products massless
                   ELSE
                     RM2=3*RVLAMP(I,J,K)**2*SFMIX(KFSM,2*ICNT-1)**2 * SM
                     XLAM(LKNT) =
-     &                   PYRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,4)
+     &                   SPRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,4)
                   ENDIF
 C...KINEMATICS CHECK
                   IF (XLAM(LKNT).EQ.0D0) THEN
@@ -39073,7 +39073,7 @@ C...~nu_J -> lepton+_I + lepton-_K
                     XLAM(LKNT)=0D0
                     RM2=RVLAM(I,J,K)**2 * SM
                     IF (IMSS(51).NE.0) XLAM(LKNT) =
-     &                   PYRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,4)
+     &                   SPRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,4)
 C...KINEMATICS CHECK
                     IF (XLAM(LKNT).EQ.0D0) THEN
                       LKNT=LKNT-1
@@ -39092,7 +39092,7 @@ C...~nu_I -> dbar_J + d_K
                   XLAM(LKNT)=0D0
                   RM2=3*RVLAMP(I,J,K)**2 * SM
                   IF (IMSS(52).NE.0) XLAM(LKNT) =
-     &                 PYRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,4)
+     &                 SPRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,4)
 C...KINEMATICS CHECK
                   IF (XLAM(LKNT).EQ.0D0) THEN
                     LKNT=LKNT-1
@@ -39114,7 +39114,7 @@ C...~d_J -> nu_Ibar + d_K
                 XLAM(LKNT)=0D0
                 RM2=RVLAMP(I,J,K)**2*SFMIX(KFSM,2*ICNT-1)**2 * SM
                 IF (IMSS(52).NE.0) XLAM(LKNT) =
-     &               PYRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,4)
+     &               SPRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,4)
 C...KINEMATICS CHECK
                 IF (XLAM(LKNT).EQ.0D0) THEN
                   LKNT=LKNT-1
@@ -39132,7 +39132,7 @@ C...~d_K -> nu_I + d_J
                 XLAM(LKNT)=0D0
                 RM2=RVLAMP(I,J,K)**2*SFMIX(KFSM,2*ICNT)**2 * SM
                 IF (IMSS(52).NE.0) XLAM(LKNT) =
-     &               PYRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,4)
+     &               SPRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,4)
 C...KINEMATICS CHECK
                 IF (XLAM(LKNT).EQ.0D0) THEN
                   LKNT=LKNT-1
@@ -39148,12 +39148,12 @@ C...Use massive top quark
                   IF (IDLAM(LKNT,2).EQ.6) THEN
                     RM2=RVLAMP(I,J,K)**2*SFMIX(KFSM,2*ICNT)**2*(SM-SMT)
                     XLAM(LKNT) =
-     &                   PYRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,2)
+     &                   SPRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,2)
 C...If no top quark, all decay products massless
                   ELSE
                     RM2=RVLAMP(I,J,K)**2*SFMIX(KFSM,2*ICNT)**2 * SM
                     XLAM(LKNT) =
-     &                   PYRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,4)
+     &                   SPRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,4)
                   ENDIF
 C...KINEMATICS CHECK
                   IF (XLAM(LKNT).EQ.0D0) THEN
@@ -39176,7 +39176,7 @@ C...~u_J -> lepton_I+ + d_K
                 XLAM(LKNT)=0D0
                 RM2=RVLAMP(I,J,K)**2*SFMIX(KFSM,2*ICNT-1)**2 * SM
                 IF (IMSS(52).NE.0) XLAM(LKNT) =
-     &               PYRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,4)
+     &               SPRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,4)
 C...KINEMATICS CHECK
                 IF (XLAM(LKNT).EQ.0D0) THEN
                   LKNT=LKNT-1
@@ -39203,7 +39203,7 @@ C...(anti-) symmetry J <-> K.
                   RM2 = 2.*(RVLAMB(I,J,K)**2)
      &                 * SFMIX(KFSM,2*ICNT)**2 * SM
                   XLAM(LKNT)    =
-     &                 PYRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,4)
+     &                 SPRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,4)
 C...KINEMATICS CHECK
                   IF (XLAM(LKNT).EQ.0D0) THEN
                     LKNT = LKNT-1
@@ -39230,12 +39230,12 @@ C...Use massive top quark
                     RM2=2*RVLAMB(I,J,K)**2*SFMIX(KFSM,2*ICNT)**2*(SM-SMT
      &                   )
                     XLAM(LKNT) =
-     &                   PYRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,3)
+     &                   SPRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,3)
 C...If no top quark, all decay products massless
                   ELSE
                     RM2=2*RVLAMB(I,J,K)**2*SFMIX(KFSM,2*ICNT)**2 * SM
                     XLAM(LKNT) =
-     &                   PYRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,4)
+     &                   SPRVSB(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),RM2,4)
                   ENDIF
 C...KINEMATICS CHECK
                   IF (XLAM(LKNT).EQ.0D0) THEN
@@ -39253,11 +39253,11 @@ C...KINEMATICS CHECK
  
 C*********************************************************************
  
-C...PYRVNE
+C...SPRVNE
 C...Calculates R-violating neutralino decay widths (pure 1->3 parts).
 C...P. Z. Skands
  
-      SUBROUTINE PYRVNE(KFIN,XLAM,IDLAM,LKNT)
+      SUBROUTINE SPRVNE(KFIN,XLAM,IDLAM,LKNT)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
@@ -39266,20 +39266,20 @@ C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-      COMMON/PYSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+      COMMON/SPSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
      &SFMIX(16,4),ZMIXI(4,4),UMIXI(2,2),VMIXI(2,2)
-      COMMON/PYMSRV/RVLAM(3,3,3), RVLAMP(3,3,3), RVLAMB(3,3,3)
+      COMMON/SPMSRV/RVLAM(3,3,3), RVLAMP(3,3,3), RVLAMB(3,3,3)
 C...Local variables.
-      COMMON/PYRVNV/AB(2,16,2),RMS(0:3),RES(6,2),INTRES(6,3),IDR,IDR2
+      COMMON/SPRVNV/AB(2,16,2),RMS(0:3),RES(6,2),INTRES(6,3),IDR,IDR2
      &     ,DCMASS,KFR(3)
       DOUBLE PRECISION XLAM(0:400)
       DOUBLE PRECISION ZPMIX(4,4), NMIX(4,4), RMQ(6)
-      INTEGER IDLAM(400,3), PYCOMP
+      INTEGER IDLAM(400,3), SPCOMP
       LOGICAL DCMASS
-      SAVE /PYDAT1/,/PYDAT2/,/PYMSSM/,/PYSSMT/,/PYMSRV/,/PYRVNV/
+      SAVE /SPDAT1/,/SPDAT2/,/SPMSSM/,/SPSSMT/,/SPMSRV/,/SPRVNV/
  
 C...R-VIOLATING DECAYS
       IF ((IMSS(51).GE.1).OR.(IMSS(52).GE.1).OR.(IMSS(53).GE.1)) THEN
@@ -39295,7 +39295,7 @@ C...SIGN OF MASS (Opposite convention as HERWIG)
           IF (SMZ(NCHI).LT.0D0) ISM = -ISM
  
 C...Useful parameters for the calculation of the A and B constants.
-          WMASS = PMAS(PYCOMP(24),1)
+          WMASS = PMAS(SPCOMP(24),1)
           ECHG = 2*SQRT(PARU(103)*PARU(1))
           COSB=1/(SQRT(1+RMSS(5)**2))
           SINB=RMSS(5)/SQRT(1+RMSS(5)**2)
@@ -39304,9 +39304,9 @@ C...Useful parameters for the calculation of the A and B constants.
           GW=2D0*SQRT(PARU(103)*PARU(1))/SINW
 C...Run quark masses to neutralino mass squared (for Higgs-type
 C...couplings)
-          SQMCHI=PMAS(PYCOMP(KFIN),1)**2
+          SQMCHI=PMAS(SPCOMP(KFIN),1)**2
           DO 100 I=1,6
-            RMQ(I)=PYMRUN(I,SQMCHI)
+            RMQ(I)=SPMRUN(I,SQMCHI)
   100     CONTINUE
 C...EXPRESS NEUTRALINO MIXING IN (photino,Zino,~H_u,~H_d) BASIS
             DO 110 NCHJ=1,4
@@ -39328,7 +39328,7 @@ C                                    11-16:e,nu_e,mu,...)
 C       z=1-2  : Mass eigenstate number
 C...CALCULATE COUPLINGS
           DO 120 I = 11,15,2
-            CMS=PMAS(PYCOMP(I),1)
+            CMS=PMAS(SPCOMP(I),1)
 C...Intermediate sleptons
             AB(1,I,1)=ISM*(CMS*C1*SFMIX(I,1) + SFMIX(I,2)
      &           *(C2-C3*SINW**2))
@@ -39390,7 +39390,7 @@ C...Resonance KF codes (1=I,2=J,3=K)
                 KFR(2)=-IDLAM(LKNT,2)
                 KFR(3)=-IDLAM(LKNT,3)
 C...Calculate width.
-                CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
+                CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
      &               IDLAM(LKNT,3),XLAM(LKNT))
                 XLAM(LKNT)=XLAM(LKNT)*RVLAMC/((2*PARU(1)*RMS(0))**3*32)
 C...Charge conjugate mode.
@@ -39427,7 +39427,7 @@ C...Resonance KF codes (1=I,2=J,3=K)
               KFR(2)=-IDLAM(LKNT,2)
               KFR(3)=-IDLAM(LKNT,3)
 C...Calculate width.
-              CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
+              CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
      &             ,XLAM(LKNT))
               XLAM(LKNT)=XLAM(LKNT)*RVLAMC/((2*PARU(1)*RMS(0))**3*32)
 C...Charge conjugate mode.
@@ -39458,7 +39458,7 @@ C...Resonance KF codes (1=I,2=J,3=K)
               KFR(2)=-IDLAM(LKNT,2)
               KFR(3)=-IDLAM(LKNT,3)
 C...Calculate width.
-              CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
+              CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
      &             ,XLAM(LKNT))
               XLAM(LKNT)=XLAM(LKNT)*RVLAMC/((2*PARU(1)*RMS(0))**3*32)
 C...Charge conjugate mode.
@@ -39496,7 +39496,7 @@ C...Resonance KF codes (1=I,2=J,3=K)
                 KFR(2) = IDLAM(LKNT,2)
                 KFR(3) = IDLAM(LKNT,3)
 C...Calculate width.
-                CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
+                CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
      &               IDLAM(LKNT,3),XLAM(LKNT))
                 XLAM(LKNT)=XLAM(LKNT)*RVLAMC/((2*PARU(1)*RMS(0))**3*32)
 C...Charge conjugate mode.
@@ -39520,11 +39520,11 @@ C...KINEMATICS CHECK
  
 C*********************************************************************
  
-C...PYRVCH
+C...SPRVCH
 C...Calculates R-violating chargino decay widths.
 C...P. Z. Skands
  
-      SUBROUTINE PYRVCH(KFIN,XLAM,IDLAM,LKNT)
+      SUBROUTINE SPRVCH(KFIN,XLAM,IDLAM,LKNT)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
@@ -39533,17 +39533,17 @@ C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-      COMMON/PYSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+      COMMON/SPSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
      &SFMIX(16,4),ZMIXI(4,4),UMIXI(2,2),VMIXI(2,2)
-      COMMON/PYMSRV/RVLAM(3,3,3), RVLAMP(3,3,3), RVLAMB(3,3,3)
+      COMMON/SPMSRV/RVLAM(3,3,3), RVLAMP(3,3,3), RVLAMB(3,3,3)
 C...Local variables.
       DOUBLE PRECISION XLAM(0:400)
-      INTEGER IDLAM(400,3), PYCOMP
-C...Information from main routine to PYRVGW
-      COMMON/PYRVNV/AB(2,16,2),RMS(0:3),RES(6,2),INTRES(6,3),IDR,IDR2
+      INTEGER IDLAM(400,3), SPCOMP
+C...Information from main routine to SPRVGW
+      COMMON/SPRVNV/AB(2,16,2),RMS(0:3),RES(6,2),INTRES(6,3),IDR,IDR2
      &     ,DCMASS,KFR(3)
 C...Auxiliary variables needed for BV (RV Gauge STOre)
       COMMON/RVGSTO/XRESI,XRESJ,XRESK,XRESIJ,XRESIK,XRESJK,RVLIJK,RVLKIJ
@@ -39552,7 +39552,7 @@ C...Running quark masses
       DOUBLE PRECISION RMQ(6)
 C...Decay product masses on/off
       LOGICAL DCMASS
-      SAVE /PYDAT1/,/PYDAT2/,/PYMSSM/,/PYSSMT/,/PYMSRV/,/PYRVNV/,
+      SAVE /SPDAT1/,/SPDAT2/,/SPMSSM/,/SPSSMT/,/SPMSRV/,/SPRVNV/,
      &     /RVGSTO/
  
  
@@ -39568,7 +39568,7 @@ C...Useful parameters for calculating the A and B constants.
 C...SIGN OF MASS (Opposite convention as HERWIG)
           ISM  = 1
           IF (SMW(NCHI).LT.0D0) ISM = -1
-          WMASS   = PMAS(PYCOMP(24),1)
+          WMASS   = PMAS(SPCOMP(24),1)
           COSB    = 1/(SQRT(1+RMSS(5)**2))
           SINB    = RMSS(5)/SQRT(1+RMSS(5)**2)
           GW2     = 4*PARU(103)*PARU(1)/PARU(102)
@@ -39577,9 +39577,9 @@ C...SIGN OF MASS (Opposite convention as HERWIG)
           C2      = UMIX(NCHI,1)
           C3      = VMIX(NCHI,1)
 C...Running masses at Q^2=MCHI^2.
-          SQMCHI  = PMAS(PYCOMP(KFSM),1)**2
+          SQMCHI  = PMAS(SPCOMP(KFSM),1)**2
           DO 100 I=1,6
-            RMQ(I)=PYMRUN(I,SQMCHI)
+            RMQ(I)=SPMRUN(I,SQMCHI)
   100     CONTINUE
  
 C... AB(x,y,z) coefficients:
@@ -39591,12 +39591,12 @@ C       z=1-2  : Mass eigenstate number
 C...Intermediate sleptons
             AB(1,I,1)   = 0D0
             AB(1,I,2)   = 0D0
-            AB(2,I,1)   = -PMAS(PYCOMP(I),1)*C1U*SFMIX(I,2) +
+            AB(2,I,1)   = -PMAS(SPCOMP(I),1)*C1U*SFMIX(I,2) +
      &           SFMIX(I,1)*C2
-            AB(2,I,2)   = -PMAS(PYCOMP(I),1)*C1U*SFMIX(I,4) +
+            AB(2,I,2)   = -PMAS(SPCOMP(I),1)*C1U*SFMIX(I,4) +
      &           SFMIX(I,3)*C2
 C...Intermediate sneutrinos
-            AB(1,I+1,1) = -PMAS(PYCOMP(I),1)*C1U
+            AB(1,I+1,1) = -PMAS(SPCOMP(I),1)*C1U
             AB(1,I+1,2) = 0D0
             AB(2,I+1,1) = ISM*C3
             AB(2,I+1,2) = 0D0
@@ -39637,7 +39637,7 @@ C...Resonance KF codes (1=I,2=J,3=K).
                 KFR(2) = 0
                 KFR(3) = -IDLAM(LKNT,3)+1
 C...Calculate width.
-                CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
+                CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
      &               IDLAM(LKNT,3),XLAM(LKNT))
                 XLAM(LKNT)=XLAM(LKNT)*RVLAMC/((2*PARU(1)*RMS(0))**3*32)
 C...KINEMATICS CHECK
@@ -39664,7 +39664,7 @@ C...Resonance KF codes (1=I,2=J,3=K)
                   KFR(2)=IDLAM(LKNT,2)-1
                   KFR(3)=0
 C...Calculate width.
-                  CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
+                  CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
      &                 IDLAM(LKNT,3),XLAM(LKNT))
                  XLAM(LKNT)=XLAM(LKNT)*RVLAMC/((2*PARU(1)*RMS(0))**3*32)
 C...KINEMATICS CHECK
@@ -39692,7 +39692,7 @@ C...Resonance KF codes (1=I,2=J,3=K)
                 KFR(2) =-IDLAM(LKNT,2)+1
                 KFR(3) = 0
 C...Calculate width.
-                CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
+                CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
      &               IDLAM(LKNT,3),XLAM(LKNT))
                 XLAM(LKNT)=XLAM(LKNT)*RVLAMC/((2*PARU(1)*RMS(0))**3*32)
 C...KINEMATICS CHECK
@@ -39725,7 +39725,7 @@ C...Resonance KF codes (1=I,2=J,3=K)
               KFR(2)=0
               KFR(3)=-IDLAM(LKNT,3)+1
 C...Calculate width.
-              CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
+              CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
      &             ,XLAM(LKNT))
               XLAM(LKNT)=XLAM(LKNT)*RVLAMC/((2*PARU(1)*RMS(0))**3*32)
 C...KINEMATICS CHECK
@@ -39750,7 +39750,7 @@ C...Resonance KF codes (1=I,2=J,3=K)
               KFR(2)=0
               KFR(3)=-IDLAM(LKNT,3)+1
 C...Calculate width.
-              CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
+              CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
      &             ,XLAM(LKNT))
               XLAM(LKNT)=XLAM(LKNT)*RVLAMC/((2*PARU(1)*RMS(0))**3*32)
 C...KINEMATICS CHECK
@@ -39775,7 +39775,7 @@ C...Resonance KF codes (1=I,2=J,3=K)
               KFR(2)=-IDLAM(LKNT,2)+1
               KFR(3)=0
 C...Calculate width.
-              CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
+              CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
      &             ,XLAM(LKNT))
               XLAM(LKNT)=XLAM(LKNT)*RVLAMC/((2*PARU(1)*RMS(0))**3*32)
 C...KINEMATICS CHECK
@@ -39800,7 +39800,7 @@ C...Resonance KF codes (1=I,2=J,3=K)
               KFR(2)=IDLAM(LKNT,2)-1
               KFR(3)=0
 C...Calculate width.
-              CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
+              CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
      &             ,XLAM(LKNT))
               XLAM(LKNT)=XLAM(LKNT)*RVLAMC/((2*PARU(1)*RMS(0))**3*32)
 C...KINEMATICS CHECK
@@ -39814,12 +39814,12 @@ C...KINEMATICS CHECK
 C...UDD TYPE R-VIOLATION
 C...These decays need special treatment since more than one BV coupling
 C...contributes (with interference). Consider e.g. (symbolically)
-C      |M|^2 = |l''_{ijk}|^2*(PYRVI1(RES_I) + PYRVI2(RES_I))
-C             +|l''_{jik}|^2*(PYRVI1(RES_J) + PYRVI2(RES_J))
-C             +l''_{ijk}*l''_{jik}*PYRVI3(PYRVI4(RES_I,RES_J))
-C...The problem is that a single call to PYRVGW would evaluate all
+C      |M|^2 = |l''_{ijk}|^2*(SPRVI1(RES_I) + SPRVI2(RES_I))
+C             +|l''_{jik}|^2*(SPRVI1(RES_J) + SPRVI2(RES_J))
+C             +l''_{ijk}*l''_{jik}*SPRVI3(SPRVI4(RES_I,RES_J))
+C...The problem is that a single call to SPRVGW would evaluate all
 C...these terms and sum them, but without the different couplings. The
-C...way out is to call PYRVGW three times, once for the first line, once
+C...way out is to call SPRVGW three times, once for the first line, once
 C...for the second line, and then once for all the lines (it is
 C...impossible to get just the last line out) without multiplying by
 C...couplings. The last line is then obtained as the result of the third
@@ -39857,21 +39857,21 @@ C...Resonance KF codes (1=I,2=J,3=K)
                 KFR(2) = 0
                 KFR(3) = 0
 C...Calculate width.
-                CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
+                CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
      &               IDLAM(LKNT,3),XRESI)
 C...Resonance KF codes (1=I,2=J,3=K)
                 KFR(1) = 0
                 KFR(2) = -IDLAM(LKNT,2)+1
                 KFR(3) = 0
 C...Calculate width.
-                CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
+                CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
      &               IDLAM(LKNT,3),XRESJ)
 C...Resonance KF codes (1=I,2=J,3=K)
                 KFR(1) = -IDLAM(LKNT,1)+1
                 KFR(2) = -IDLAM(LKNT,2)+1
                 KFR(3) = 0
 C...Calculate width.
-                CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
+                CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
      &               IDLAM(LKNT,3),XRESIJ)
                 IF (ABS((XRESI+XRESJ)/XRESIJ-1.).GT.1D-4) THEN
                   XRESIJ = XRESIJ-XRESI-XRESJ
@@ -39916,28 +39916,28 @@ C...Resonance KF codes (1=I,2=J,3=K)
                 KFR(2) = 0
                 KFR(3) = 0
 C...Calculate width.
-                CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
+                CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
      &               IDLAM(LKNT,3),XRESI)
 C...Resonance KF codes (1=I,2=J,3=K)
                 KFR(1) = 0
                 KFR(2) = IDLAM(LKNT,2)-1
                 KFR(3) = 0
 C...Calculate width.
-                CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
+                CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
      &               IDLAM(LKNT,3),XRESJ)
 C...Resonance KF codes (1=I,2=J,3=K)
                 KFR(1) = 0
                 KFR(2) = 0
                 KFR(3) = IDLAM(LKNT,3)-1
 C...Calculate width.
-                CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
+                CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
      &               IDLAM(LKNT,3),XRESK)
 C...Resonance KF codes (1=I,2=J,3=K)
                 KFR(1) = IDLAM(LKNT,1)-1
                 KFR(2) = IDLAM(LKNT,2)-1
                 KFR(3) = 0
 C...Calculate width.
-                CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
+                CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
      &               IDLAM(LKNT,3),XRESIJ)
                 IF (ABS(XRESIJ/(XRESI+XRESJ)-1.).GT.1D-4) THEN
                   XRESIJ = XRESI+XRESJ-XRESIJ
@@ -39949,7 +39949,7 @@ C...Resonance KF codes (1=I,2=J,3=K)
                 KFR(2) = IDLAM(LKNT,2)-1
                 KFR(3) = IDLAM(LKNT,3)-1
 C...Calculate width.
-                CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
+                CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
      &               IDLAM(LKNT,3),XRESJK)
                 IF (ABS(XRESJK/(XRESJ+XRESK)-1.).GT.1D-4) THEN
                   XRESJK = XRESJ+XRESK-XRESJK
@@ -39961,7 +39961,7 @@ C...Resonance KF codes (1=I,2=J,3=K)
                 KFR(2) = 0
                 KFR(3) = IDLAM(LKNT,3)-1
 C...Calculate width.
-                CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
+                CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),
      &               IDLAM(LKNT,3),XRESIK)
                 IF (ABS(XRESIK/(XRESI+XRESK)-1.).GT.1D-4) THEN
                   XRESIK = XRESI+XRESK-XRESIK
@@ -39992,13 +39992,13 @@ C...KINEMATICS CHECK
  
 C*********************************************************************
  
-C...PYRVGL
+C...SPRVGL
 C...Calculates R-violating gluino decay widths.
-C...See BV part of PYRVCH for comments about the way the BV decay width
+C...See BV part of SPRVCH for comments about the way the BV decay width
 C...is calculated. Same comments apply here.
 C...P. Z. Skands
  
-      SUBROUTINE PYRVGL(KFIN,XLAM,IDLAM,LKNT)
+      SUBROUTINE SPRVGL(KFIN,XLAM,IDLAM,LKNT)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
@@ -40007,17 +40007,17 @@ C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-      COMMON/PYSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+      COMMON/SPSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
      &SFMIX(16,4),ZMIXI(4,4),UMIXI(2,2),VMIXI(2,2)
-      COMMON/PYMSRV/RVLAM(3,3,3), RVLAMP(3,3,3), RVLAMB(3,3,3)
+      COMMON/SPMSRV/RVLAM(3,3,3), RVLAMP(3,3,3), RVLAMB(3,3,3)
 C...Local variables.
       DOUBLE PRECISION XLAM(0:400)
-      INTEGER IDLAM(400,3), PYCOMP
-C...Information from main routine to PYRVGW
-      COMMON/PYRVNV/AB(2,16,2),RMS(0:3),RES(6,2),INTRES(6,3),IDR,IDR2
+      INTEGER IDLAM(400,3), SPCOMP
+C...Information from main routine to SPRVGW
+      COMMON/SPRVNV/AB(2,16,2),RMS(0:3),RES(6,2),INTRES(6,3),IDR,IDR2
      &     ,DCMASS,KFR(3)
 C...Auxiliary variables needed for BV (RV Gauge STOre)
       COMMON/RVGSTO/XRESI,XRESJ,XRESK,XRESIJ,XRESIK,XRESJK,RVLIJK,RVLKIJ
@@ -40026,7 +40026,7 @@ C...Running quark masses
       DOUBLE PRECISION RMQ(6)
 C...Decay product masses on/off
       LOGICAL DCMASS
-      SAVE /PYDAT1/,/PYDAT2/,/PYMSSM/,/PYSSMT/,/PYMSRV/,/PYRVNV/,
+      SAVE /SPDAT1/,/SPDAT2/,/SPMSSM/,/SPSSMT/,/SPMSRV/,/SPRVNV/,
      &     /RVGSTO/
  
 C...IF LQD OR UDD TYPE R-VIOLATION ON.
@@ -40046,7 +40046,7 @@ C...B Couplings
           AB(2,I,1) = -SFMIX(I,1)
           AB(2,I,2) = -SFMIX(I,3)
   100   CONTINUE
-        GSTR2 = 4D0*PARU(1) * PYALPS(PMAS(PYCOMP(KFIN),1)**2)
+        GSTR2 = 4D0*PARU(1) * SPALPS(PMAS(SPCOMP(KFIN),1)**2)
 C...LQD DECAYS.
         IF (IMSS(52).GE.1) THEN
 C...STEP IN I,J,K USING SINGLE COUNTER
@@ -40067,7 +40067,7 @@ C...Resonance KF codes (1=I,2=J,3=K)
             KFR(2)        = -IDLAM(LKNT,2)
             KFR(3)        = -IDLAM(LKNT,3)
 C...Calculate width.
-            CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
+            CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
      &           ,XLAM(LKNT))
 C...Normalize
             XLAM(LKNT)=XLAM(LKNT)*RVLAMC/((2*PARU(1)*RMS(0))**3*32)
@@ -40099,7 +40099,7 @@ C...Resonance KF codes (1=I,2=J,3=K)
             KFR(2)        = -IDLAM(LKNT,2)
             KFR(3)        = -IDLAM(LKNT,3)
 C...Calculate width.
-            CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
+            CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
      &           ,XLAM(LKNT))
             XLAM(LKNT)=XLAM(LKNT)*RVLAMC/((2*PARU(1)*RMS(0))**3*32)
 C...Charge conjugate mode.
@@ -40139,31 +40139,31 @@ C...Resonance KF codes (1=I,2=J,3=K)
               KFR(2)        = 0
               KFR(3)        = 0
 C...Calculate width.
-              CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
+              CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
      &             ,XRESI)
 C...Resonance KF codes (1=I,2=J,3=K)
               KFR(1)        = 0
               KFR(2)        = IDLAM(LKNT,2)
               KFR(3)        = 0
 C...Calculate width.
-              CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
+              CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
      &             ,XRESJ)
 C...Resonance KF codes (1=I,2=J,3=K)
               KFR(1)        = 0
               KFR(2)        = 0
               KFR(3)        = IDLAM(LKNT,3)
 C...Calculate width.
-              CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
+              CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
      &             ,XRESK)
 C...Resonance KF codes (1=I,2=J,3=K)
               KFR(1)        = IDLAM(LKNT,1)
               KFR(2)        = IDLAM(LKNT,2)
               KFR(3)        = 0
 C...Calculate width.
-              CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
+              CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
      &             ,XRESIJ)
 C...Calculate interference function. (Factor -1/2 to make up for factor
-C...-2 in PYRVGW.
+C...-2 in SPRVGW.
               IF (ABS((XRESI+XRESJ)/XRESIJ-1D0).GT.1D-4) THEN
                 XRESIJ = 5D-1 * (XRESI+XRESJ-XRESIJ)
               ELSE
@@ -40174,7 +40174,7 @@ C...Resonance KF codes (1=I,2=J,3=K)
               KFR(2)        = IDLAM(LKNT,2)
               KFR(3)        = IDLAM(LKNT,3)
 C...Calculate width.
-              CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
+              CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
      &             ,XRESJK)
               IF (ABS((XRESJ+XRESK)/XRESJK-1).GT.1D-4) THEN
                 XRESJK = 5D-1 * (XRESJ+XRESK-XRESJK)
@@ -40186,7 +40186,7 @@ C...Resonance KF codes (1=I,2=J,3=K)
               KFR(2)        = 0
               KFR(3)        = IDLAM(LKNT,3)
 C...Calculate width.
-              CALL PYRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
+              CALL SPRVGW(KFIN,IDLAM(LKNT,1),IDLAM(LKNT,2),IDLAM(LKNT,3)
      &             ,XRESIK)
               IF (ABS((XRESI+XRESK)/XRESIK-1).GT.1D-4) THEN
                 XRESIK = 5D-1 * (XRESI+XRESK-XRESIK)
@@ -40217,8 +40217,8 @@ C...KINEMATICS CHECK
  
 C*********************************************************************
  
-C...PYRVSB
-C...Auxiliary function to PYRVSF for calculating R-Violating
+C...SPRVSB
+C...Auxiliary function to SPRVSF for calculating R-Violating
 C...sfermion widths. Though the decay products are most often treated
 C...as massless in the calculation, the kinematical boundary of phase
 C...space is tested using the true masses.
@@ -40227,24 +40227,24 @@ C...MODE = 2: Decay product 1 massless
 C...MODE = 3: Decay product 2 massless
 C...MODE = 4: All decay products  massless
  
-      FUNCTION PYRVSB(KFIN,ID1,ID2,RM2,MODE)
+      FUNCTION SPRVSB(KFIN,ID1,ID2,RM2,MODE)
  
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       IMPLICIT INTEGER (I-N)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYDAT1/,/PYDAT2/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPDAT1/,/SPDAT2/
       DOUBLE PRECISION SM(3)
-      INTEGER PYCOMP, KC(3)
-      KC(1)=PYCOMP(KFIN)
-      KC(2)=PYCOMP(ID1)
-      KC(3)=PYCOMP(ID2)
+      INTEGER SPCOMP, KC(3)
+      KC(1)=SPCOMP(KFIN)
+      KC(2)=SPCOMP(ID1)
+      KC(3)=SPCOMP(ID2)
       SM(1)=PMAS(KC(1),1)**2
       SM(2)=PMAS(KC(2),1)**2
       SM(3)=PMAS(KC(3),1)**2
 C...Kinematics check
       IF ((SM(1)-(PMAS(KC(2),1)+PMAS(KC(3),1))**2).LE.0D0) THEN
-        PYRVSB=0D0
+        SPRVSB=0D0
         RETURN
       ENDIF
 C...CM momenta squared
@@ -40259,42 +40259,42 @@ C...CM momenta squared
         P2CM=SM(1)/4.
       ENDIF
 C...Calculate Width
-      PYRVSB=RM2*SQRT(MAX(0D0,P2CM))/(8*PARU(1)*SM(1))
+      SPRVSB=RM2*SQRT(MAX(0D0,P2CM))/(8*PARU(1)*SM(1))
       RETURN
       END
  
 C*********************************************************************
  
-C...PYRVGW
+C...SPRVGW
 C...Generalized Matrix Element for R-Violating 3-body widths.
 C...P. Z. Skands
-      SUBROUTINE PYRVGW(KFIN,ID1,ID2,ID3,XLAM)
+      SUBROUTINE SPRVGW(KFIN,ID1,ID2,ID3,XLAM)
  
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       IMPLICIT INTEGER (I-N)
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
       PARAMETER (EPS=1D-4)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYRVNV/AB(2,16,2),RMS(0:3),RES(6,2),INTRES(6,3),IDR,IDR2
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPRVNV/AB(2,16,2),RMS(0:3),RES(6,2),INTRES(6,3),IDR,IDR2
      &     ,DCMASS,KFR(3)
-      COMMON/PYSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
+      COMMON/SPSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
      & SFMIX(16,4),ZMIXI(4,4),UMIXI(2,2),VMIXI(2,2)
       DOUBLE PRECISION XLIM(3,3)
-      INTEGER KC(0:3), PYCOMP
+      INTEGER KC(0:3), SPCOMP
       LOGICAL DCMASS, DCHECK(6)
-      SAVE /PYDAT2/,/PYRVNV/,/PYSSMT/
+      SAVE /SPDAT2/,/SPRVNV/,/SPSSMT/
  
       XLAM   = 0D0
  
-      KC(0)  = PYCOMP(KFIN)
-      KC(1)  = PYCOMP(ID1)
-      KC(2)  = PYCOMP(ID2)
-      KC(3)  = PYCOMP(ID3)
+      KC(0)  = SPCOMP(KFIN)
+      KC(1)  = SPCOMP(ID1)
+      KC(2)  = SPCOMP(ID2)
+      KC(3)  = SPCOMP(ID3)
       RMS(0) = PMAS(KC(0),1)
-      RMS(1) = PYMRUN(ID1,PMAS(KC(1),1)**2)
-      RMS(2) = PYMRUN(ID2,PMAS(KC(2),1)**2)
-      RMS(3) = PYMRUN(ID3,PMAS(KC(3),1)**2)
+      RMS(1) = SPMRUN(ID1,PMAS(KC(1),1)**2)
+      RMS(2) = SPMRUN(ID2,PMAS(KC(2),1)**2)
+      RMS(3) = SPMRUN(ID3,PMAS(KC(3),1)**2)
 C...INITIALIZE OUTER INTEGRATION LIMITS AND KINEMATICS CHECK
       XLIM(1,1)=(RMS(1)+RMS(2))**2
       XLIM(1,2)=(RMS(0)-RMS(3))**2
@@ -40320,8 +40320,8 @@ C...NO RIGHT-HANDED NEUTRINOS
           IF (((IMASS.EQ.2).AND.((IABS(KFR(JRES)).EQ.12).OR
      &         .(IABS(KFR(JRES)).EQ.14).OR.(IABS(KFR(JRES)).EQ.16))).OR
      &         .KFR(JRES).EQ.0) GOTO 100
-          RES(IRES,1) = PMAS(PYCOMP(IMASS*KSUSY1+IABS(KFR(JRES))),1)
-          RES(IRES,2) = PMAS(PYCOMP(IMASS*KSUSY1+IABS(KFR(JRES))),2)
+          RES(IRES,1) = PMAS(SPCOMP(IMASS*KSUSY1+IABS(KFR(JRES))),1)
+          RES(IRES,2) = PMAS(SPCOMP(IMASS*KSUSY1+IABS(KFR(JRES))),2)
           INTRES(IRES,1) = IABS(KFR(JRES))
           INTRES(IRES,2) = IMASS
           IF (KFR(JRES).LT.0) INTRES(IRES,3) = 1
@@ -40341,7 +40341,7 @@ C...LOOP OVER MASS STATES
         IF ((RMS(0).LT.(RMS(1)+RES(IDR,1)).OR.(RES(IDR,1).LT.(RMS(2)
      &       +RMS(3)))).AND.TMIX.GT.EPS.AND.INTRES(IDR,1).NE.0) THEN
           DCHECK(IDR) =.TRUE.
-          XLAM = XLAM + TMIX * PYRVI1(2,3,1)
+          XLAM = XLAM + TMIX * SPRVI1(2,3,1)
         ENDIF
  
         IDR=J+2
@@ -40349,7 +40349,7 @@ C...LOOP OVER MASS STATES
         IF ((RMS(0).LT.(RMS(2)+RES(IDR,1)).OR.(RES(IDR,1).LT.(RMS(1)
      &       +RMS(3)))).AND.TMIX.GT.EPS.AND.INTRES(IDR,1).NE.0) THEN
           DCHECK(IDR) =.TRUE.
-          XLAM = XLAM + TMIX * PYRVI1(1,3,2)
+          XLAM = XLAM + TMIX * SPRVI1(1,3,2)
         ENDIF
  
         IDR=J+4
@@ -40357,7 +40357,7 @@ C...LOOP OVER MASS STATES
         IF ((RMS(0).LT.(RMS(3)+RES(IDR,1)).OR.(RES(IDR,1).LT.(RMS(1)
      &       +RMS(2)))).AND.TMIX.GT.EPS.AND.INTRES(IDR,1).NE.0) THEN
           DCHECK(IDR) =.TRUE.
-          XLAM = XLAM + TMIX * PYRVI1(1,2,3)
+          XLAM = XLAM + TMIX * SPRVI1(1,2,3)
         ENDIF
   120 CONTINUE
 C... L-R INTERFERENCES
@@ -40366,21 +40366,21 @@ C... are non-resonant).
       IDR=1
       IF (DCHECK(1).AND.DCHECK(2)) THEN
 C...Bug corrected 11/12 2001. Skands.
-        XLAM  = XLAM + 2D0 * PYRVI2(2,3,1)
+        XLAM  = XLAM + 2D0 * SPRVI2(2,3,1)
      &     * SFMIX(INTRES(1,1),2+INTRES(1,3)-1)
      &     * SFMIX(INTRES(2,1),4+INTRES(2,3)-1)
       ENDIF
  
       IDR=3
       IF (DCHECK(3).AND.DCHECK(4)) THEN
-        XLAM  = XLAM + 2D0 * PYRVI2(1,3,2)
+        XLAM  = XLAM + 2D0 * SPRVI2(1,3,2)
      &     * SFMIX(INTRES(3,1),2+INTRES(3,3)-1)
      &     * SFMIX(INTRES(4,1),4+INTRES(4,3)-1)
       ENDIF
  
       IDR=5
       IF (DCHECK(5).AND.DCHECK(6)) THEN
-        XLAM  = XLAM + 2D0 * PYRVI2(1,2,3)
+        XLAM  = XLAM + 2D0 * SPRVI2(1,2,3)
      &     * SFMIX(INTRES(5,1),2+INTRES(5,3)-1)
      &     * SFMIX(INTRES(6,1),4+INTRES(6,3)-1)
       ENDIF
@@ -40394,7 +40394,7 @@ C... are non-resonant).
           IDR  = IKR1+2
           IDR2 = IKR2
           IF (DCHECK(IDR).AND.DCHECK(IDR2)) THEN
-            XLAM = XLAM + PREF*PYRVI3(1,3,2) *
+            XLAM = XLAM + PREF*SPRVI3(1,3,2) *
      &           SFMIX(INTRES(IDR,1),2*IKR1+INTRES(IDR,3)-1)
      &           *SFMIX(INTRES(IDR2,1),2*IKR2+INTRES(IDR2,3)-1)
           ENDIF
@@ -40402,7 +40402,7 @@ C... are non-resonant).
           IDR  = IKR1+4
           IDR2 = IKR2
           IF (DCHECK(IDR).AND.DCHECK(IDR2)) THEN
-            XLAM = XLAM + PREF*PYRVI3(1,2,3) *
+            XLAM = XLAM + PREF*SPRVI3(1,2,3) *
      &           SFMIX(INTRES(IDR,1),2*IKR1+INTRES(IDR,3)-1)
      &           *SFMIX(INTRES(IDR2,1),2*IKR2+INTRES(IDR2,3)-1)
           ENDIF
@@ -40410,7 +40410,7 @@ C... are non-resonant).
           IDR  = IKR1+4
           IDR2 = IKR2+2
           IF (DCHECK(IDR).AND.DCHECK(IDR2)) THEN
-            XLAM = XLAM + PREF*PYRVI3(2,1,3) *
+            XLAM = XLAM + PREF*SPRVI3(2,1,3) *
      &           SFMIX(INTRES(IDR,1),2*IKR1+INTRES(IDR,3)-1)
      &           *SFMIX(INTRES(IDR2,1),2*IKR2+INTRES(IDR2,3)-1)
           ENDIF
@@ -40422,23 +40422,23 @@ C... are non-resonant).
  
 C*********************************************************************
  
-C...PYRVI1
+C...SPRVI1
 C...Function to integrate resonance contributions
  
-      FUNCTION PYRVI1(ID1,ID2,ID3)
+      FUNCTION SPRVI1(ID1,ID2,ID3)
  
       IMPLICIT NONE
-      DOUBLE PRECISION LO,HI,PYRVI1,PYRVG1,PYGAUS
+      DOUBLE PRECISION LO,HI,SPRVI1,SPRVG1,SPGAUS
       DOUBLE PRECISION RES, AB, RM, RESM, RESW, A, B, RMS
       INTEGER ID1,ID2,ID3, IDR, IDR2, KFR, INTRES
       LOGICAL MFLAG,DCMASS
-      EXTERNAL PYRVG1,PYGAUS
-      COMMON/PYRVNV/AB(2,16,2),RMS(0:3),RES(6,2),INTRES(6,3),IDR,IDR2
+      EXTERNAL SPRVG1,SPGAUS
+      COMMON/SPRVNV/AB(2,16,2),RMS(0:3),RES(6,2),INTRES(6,3),IDR,IDR2
      &     ,DCMASS,KFR(3)
-      COMMON/PYRVPM/RM(0:3),A(2),B(2),RESM(2),RESW(2),MFLAG
-      SAVE/PYRVNV/,/PYRVPM/
+      COMMON/SPRVPM/RM(0:3),A(2),B(2),RESM(2),RESW(2),MFLAG
+      SAVE/SPRVNV/,/SPRVPM/
 C...Initialize mass and width information
-      PYRVI1 = 0D0
+      SPRVI1 = 0D0
       RM(0)  = RMS(0)
       RM(1)  = RMS(ID1)
       RM(2)  = RMS(ID2)
@@ -40452,29 +40452,29 @@ C...Integration boundaries and mass flag
       LO     = (RM(1)+RM(2))**2
       HI     = (RM(0)-RM(3))**2
       MFLAG  = DCMASS
-      PYRVI1 = PYGAUS(PYRVG1,LO,HI,1D-3)
+      SPRVI1 = SPGAUS(SPRVG1,LO,HI,1D-3)
       RETURN
       END
  
 C*********************************************************************
  
-C...PYRVI2
+C...SPRVI2
 C...Function to integrate L-R interference contributions
  
-      FUNCTION PYRVI2(ID1,ID2,ID3)
+      FUNCTION SPRVI2(ID1,ID2,ID3)
  
       IMPLICIT NONE
-      DOUBLE PRECISION LO,HI,PYRVI2, PYRVG2, PYGAUS
+      DOUBLE PRECISION LO,HI,SPRVI2, SPRVG2, SPGAUS
       DOUBLE PRECISION RES, AB, RM, RESM, RESW, A, B, RMS
       INTEGER ID1,ID2,ID3, IDR, IDR2, KFR, INTRES
       LOGICAL MFLAG,DCMASS
-      EXTERNAL PYRVG2,PYGAUS
-      COMMON/PYRVNV/AB(2,16,2),RMS(0:3),RES(6,2),INTRES(6,3),IDR,IDR2
+      EXTERNAL SPRVG2,SPGAUS
+      COMMON/SPRVNV/AB(2,16,2),RMS(0:3),RES(6,2),INTRES(6,3),IDR,IDR2
      &     ,DCMASS,KFR(3)
-      COMMON/PYRVPM/RM(0:3),A(2),B(2),RESM(2),RESW(2),MFLAG
-      SAVE/PYRVNV/,/PYRVPM/
+      COMMON/SPRVPM/RM(0:3),A(2),B(2),RESM(2),RESW(2),MFLAG
+      SAVE/SPRVNV/,/SPRVPM/
 C...Initialize mass and width information
-      PYRVI2 = 0D0
+      SPRVI2 = 0D0
       RM(0)  = RMS(0)
       RM(1)  = RMS(ID1)
       RM(2)  = RMS(ID2)
@@ -40492,29 +40492,29 @@ C...Boundaries and mass flag
       LO     = (RM(1)+RM(2))**2
       HI     = (RM(0)-RM(3))**2
       MFLAG  = DCMASS
-      PYRVI2 = PYGAUS(PYRVG2,LO,HI,1D-3)
+      SPRVI2 = SPGAUS(SPRVG2,LO,HI,1D-3)
       RETURN
       END
  
 C*********************************************************************
  
-C...PYRVI3
+C...SPRVI3
 C...Function to integrate true interference contributions
  
-      FUNCTION PYRVI3(ID1,ID2,ID3)
+      FUNCTION SPRVI3(ID1,ID2,ID3)
  
       IMPLICIT NONE
-      DOUBLE PRECISION LO,HI,PYRVI3, PYRVG3, PYGAUS
+      DOUBLE PRECISION LO,HI,SPRVI3, SPRVG3, SPGAUS
       DOUBLE PRECISION RES, AB, RM, RESM, RESW, A, B, RMS
       INTEGER ID1,ID2,ID3, IDR, IDR2, KFR, INTRES
       LOGICAL MFLAG,DCMASS
-      EXTERNAL PYRVG3,PYGAUS
-      COMMON/PYRVNV/AB(2,16,2),RMS(0:3),RES(6,2),INTRES(6,3),IDR,IDR2
+      EXTERNAL SPRVG3,SPGAUS
+      COMMON/SPRVNV/AB(2,16,2),RMS(0:3),RES(6,2),INTRES(6,3),IDR,IDR2
      &     ,DCMASS,KFR(3)
-      COMMON/PYRVPM/RM(0:3),A(2),B(2),RESM(2),RESW(2),MFLAG
-      SAVE/PYRVNV/,/PYRVPM/
+      COMMON/SPRVPM/RM(0:3),A(2),B(2),RESM(2),RESW(2),MFLAG
+      SAVE/SPRVNV/,/SPRVPM/
 C...Initialize mass and width information
-      PYRVI3 = 0D0
+      SPRVI3 = 0D0
       RM(0)  = RMS(0)
       RM(1)  = RMS(ID1)
       RM(2)  = RMS(ID2)
@@ -40532,30 +40532,30 @@ C...Boundaries and mass flag
       LO     = (RM(1)+RM(2))**2
       HI     = (RM(0)-RM(3))**2
       MFLAG  = DCMASS
-      PYRVI3 = PYGAUS(PYRVG3,LO,HI,1D-3)
+      SPRVI3 = SPGAUS(SPRVG3,LO,HI,1D-3)
       RETURN
       END
  
 C*********************************************************************
  
-C...PYRVG1
+C...SPRVG1
 C...Integrand for resonance contributions
  
-      FUNCTION PYRVG1(X)
+      FUNCTION SPRVG1(X)
  
       IMPLICIT NONE
-      COMMON/PYRVPM/RM(0:3),A(2),B(2),RESM(2),RESW(2),MFLAG
-      DOUBLE PRECISION X, RM, A, B, RESM, RESW, DELTAY,PYRVR
-      DOUBLE PRECISION RVR,PYRVG1,E2,E3,C1,SR1,SR2,A1,A2
+      COMMON/SPRVPM/RM(0:3),A(2),B(2),RESM(2),RESW(2),MFLAG
+      DOUBLE PRECISION X, RM, A, B, RESM, RESW, DELTAY,SPRVR
+      DOUBLE PRECISION RVR,SPRVG1,E2,E3,C1,SR1,SR2,A1,A2
       LOGICAL MFLAG
-      SAVE/PYRVPM/
-      RVR    = PYRVR(X,RESM(1),RESW(1))
+      SAVE/SPRVPM/
+      RVR    = SPRVR(X,RESM(1),RESW(1))
       C1     = 2D0*SQRT(MAX(0D0,X))
       IF (.NOT.MFLAG) THEN
         E2     = X/C1
         E3     = (RM(0)**2-X)/C1
         DELTAY = 4D0*E2*E3
-        PYRVG1 = DELTAY*RVR*X*(A(1)**2+B(1)**2)*(RM(0)**2-X)
+        SPRVG1 = DELTAY*RVR*X*(A(1)**2+B(1)**2)*(RM(0)**2-X)
       ELSE
         E2     = (X-RM(1)**2+RM(2)**2)/C1
         E3     = (RM(0)**2-X-RM(3)**2)/C1
@@ -40564,38 +40564,38 @@ C...Integrand for resonance contributions
         DELTAY = 4D0*SR1*SR2
         A1     = 4.*A(1)*B(1)*RM(3)*RM(0)
         A2     = (A(1)**2+B(1)**2)*(RM(0)**2+RM(3)**2-X)
-        PYRVG1 = DELTAY*RVR*(X-RM(1)**2-RM(2)**2)*(A1+A2)
+        SPRVG1 = DELTAY*RVR*(X-RM(1)**2-RM(2)**2)*(A1+A2)
       ENDIF
       RETURN
       END
  
 C*********************************************************************
  
-C...PYRVG2
+C...SPRVG2
 C...Integrand for L-R interference contributions
  
-      FUNCTION PYRVG2(X)
+      FUNCTION SPRVG2(X)
  
       IMPLICIT NONE
-      COMMON/PYRVPM/RM(0:3),A(2),B(2),RESM(2),RESW(2),MFLAG
-      DOUBLE PRECISION X, RM, A, B, RESM, RESW, DELTAY, PYRVS
-      DOUBLE PRECISION RVS,PYRVG2,E2,E3,C1,SR1,SR2
+      COMMON/SPRVPM/RM(0:3),A(2),B(2),RESM(2),RESW(2),MFLAG
+      DOUBLE PRECISION X, RM, A, B, RESM, RESW, DELTAY, SPRVS
+      DOUBLE PRECISION RVS,SPRVG2,E2,E3,C1,SR1,SR2
       LOGICAL MFLAG
-      SAVE/PYRVPM/
+      SAVE/SPRVPM/
       C1     = 2D0*SQRT(MAX(0D0,X))
-      RVS    = PYRVS(X,X,RESM(1),RESW(1),RESM(2),RESW(2))
+      RVS    = SPRVS(X,X,RESM(1),RESW(1),RESM(2),RESW(2))
       IF (.NOT.MFLAG) THEN
         E2     = X/C1
         E3     = (RM(0)**2-X)/C1
         DELTAY = 4D0*E2*E3
-        PYRVG2 = DELTAY*RVS*X*(A(1)*A(2)+B(1)*B(2))*(RM(0)**2-X)
+        SPRVG2 = DELTAY*RVS*X*(A(1)*A(2)+B(1)*B(2))*(RM(0)**2-X)
       ELSE
         E2     = (X-RM(1)**2+RM(2)**2)/C1
         E3     = (RM(0)**2-X-RM(3)**2)/C1
         SR1    = SQRT(MAX(0D0,E2**2-RM(2)**2))
         SR2    = SQRT(MAX(0D0,E3**2-RM(3)**2))
         DELTAY = 4D0*SR1*SR2
-        PYRVG2 = DELTAY*RVS*(X-RM(1)**2-RM(2)**2)*((A(1)*A(2)
+        SPRVG2 = DELTAY*RVS*(X-RM(1)**2-RM(2)**2)*((A(1)*A(2)
      &       + B(1)*B(2))*(RM(0)**2+RM(3)**2-X)
      &       + 2D0*(A(1)*B(2)+A(2)*B(1))*RM(3)*RM(0))
       ENDIF
@@ -40604,22 +40604,22 @@ C...Integrand for L-R interference contributions
  
 C*********************************************************************
  
-C...PYRVG3
+C...SPRVG3
 C...Function to do Y integration over true interference contributions
  
-      FUNCTION PYRVG3(X)
+      FUNCTION SPRVG3(X)
  
       IMPLICIT NONE
-      COMMON/PYRVPM/RM(0:3),A(2),B(2),RESM(2),RESW(2),MFLAG
-C...Second Dalitz variable for PYRVG4
-      COMMON/PYG2DX/X1
+      COMMON/SPRVPM/RM(0:3),A(2),B(2),RESM(2),RESW(2),MFLAG
+C...Second Dalitz variable for SPRVG4
+      COMMON/SPG2DX/X1
       DOUBLE PRECISION RM, A, B, RESM, RESW, X, X1
       DOUBLE PRECISION E2, E3, C1, SQ1, SR1, SR2, YMIN, YMAX
-      DOUBLE PRECISION PYRVG3, PYRVG4, PYGAU2
+      DOUBLE PRECISION SPRVG3, SPRVG4, SPGAU2
       LOGICAL MFLAG
-      EXTERNAL PYGAU2,PYRVG4
-      SAVE/PYRVPM/,/PYG2DX/
-      PYRVG3=0D0
+      EXTERNAL SPGAU2,SPRVG4
+      SAVE/SPRVPM/,/SPG2DX/
+      SPRVG3=0D0
       C1=2D0*SQRT(MAX(1D-9,X))
       X1=X
       IF (.NOT.MFLAG) THEN
@@ -40636,29 +40636,29 @@ C...Second Dalitz variable for PYRVG4
         YMIN  = SQ1-(SR1+SR2)**2
         YMAX  = SQ1-(SR1-SR2)**2
       ENDIF
-      PYRVG3 = PYGAU2(PYRVG4,YMIN,YMAX,1D-3)
+      SPRVG3 = SPGAU2(SPRVG4,YMIN,YMAX,1D-3)
       RETURN
       END
  
 C*********************************************************************
  
-C...PYRVG4
+C...SPRVG4
 C...Integrand for true intereference contributions
  
-      FUNCTION PYRVG4(Y)
+      FUNCTION SPRVG4(Y)
  
       IMPLICIT NONE
-      COMMON/PYRVPM/RM(0:3),A(2),B(2),RESM(2),RESW(2),MFLAG
-      COMMON/PYG2DX/X
-      DOUBLE PRECISION X, Y, PYRVG4, RM, A, B, RESM, RESW, RVS, PYRVS
+      COMMON/SPRVPM/RM(0:3),A(2),B(2),RESM(2),RESW(2),MFLAG
+      COMMON/SPG2DX/X
+      DOUBLE PRECISION X, Y, SPRVG4, RM, A, B, RESM, RESW, RVS, SPRVS
       LOGICAL MFLAG
-      SAVE /PYRVPM/,/PYG2DX/
-      PYRVG4=0D0
-      RVS=PYRVS(X,Y,RESM(1),RESW(1),RESM(2),RESW(2))
+      SAVE /SPRVPM/,/SPG2DX/
+      SPRVG4=0D0
+      RVS=SPRVS(X,Y,RESM(1),RESW(1),RESM(2),RESW(2))
       IF (.NOT.MFLAG) THEN
-        PYRVG4 = RVS*B(1)*B(2)*X*Y
+        SPRVG4 = RVS*B(1)*B(2)*X*Y
       ELSE
-        PYRVG4 = RVS*(RM(1)*RM(3)*A(1)*A(2)*(X+Y-RM(1)**2-RM(3)**2)
+        SPRVG4 = RVS*(RM(1)*RM(3)*A(1)*A(2)*(X+Y-RM(1)**2-RM(3)**2)
      &       + RM(1)*RM(0)*B(1)*A(2)*(Y-RM(2)**2-RM(3)**2)
      &       + RM(3)*RM(0)*A(1)*B(2)*(X-RM(1)**2-RM(2)**2)
      &       + B(1)*B(2)*(X*Y-(RM(1)*RM(3))**2-(RM(0)*RM(2))**2))
@@ -40668,61 +40668,61 @@ C...Integrand for true intereference contributions
  
 C*********************************************************************
  
-C...PYRVR
+C...SPRVR
 C...Breit-Wigner for resonance contributions
  
-      FUNCTION PYRVR(Mab2,RM,RW)
+      FUNCTION SPRVR(Mab2,RM,RW)
  
       IMPLICIT NONE
-      DOUBLE PRECISION Mab2,RM,RW,PYRVR
-      PYRVR = 1D0/((Mab2-RM**2)**2+RM**2*RW**2)
+      DOUBLE PRECISION Mab2,RM,RW,SPRVR
+      SPRVR = 1D0/((Mab2-RM**2)**2+RM**2*RW**2)
       RETURN
       END
  
 C*********************************************************************
  
-C...PYRVS
+C...SPRVS
 C...Interference function
  
-      FUNCTION PYRVS(X,Y,M1,W1,M2,W2)
+      FUNCTION SPRVS(X,Y,M1,W1,M2,W2)
  
       IMPLICIT NONE
-      DOUBLE PRECISION X, Y, PYRVS, PYRVR, M1, M2, W1, W2
-      PYRVS = PYRVR(X,M1,W1)*PYRVR(Y,M2,W2)*((X-M1**2)*(Y-M2**2)
+      DOUBLE PRECISION X, Y, SPRVS, SPRVR, M1, M2, W1, W2
+      SPRVS = SPRVR(X,M1,W1)*SPRVR(Y,M2,W2)*((X-M1**2)*(Y-M2**2)
      &     +W1*W2*M1*M2)
       RETURN
       END
  
 C*********************************************************************
  
-C...PY1ENT
-C...Stores one parton/particle in commonblock PYJETS.
+C...SP1ENT
+C...Stores one parton/particle in commonblock SPJETS.
  
-      SUBROUTINE PY1ENT(IP,KF,PE,THE,PHI)
+      SUBROUTINE SP1ENT(IP,KF,PE,THE,PHI)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/
  
 C...Standard checks.
       MSTU(28)=0
-      IF(MSTU(12).GE.1) CALL PYLIST(0)
+      IF(MSTU(12).GE.1) CALL SPLIST(0)
       IPA=MAX(1,IABS(IP))
-      IF(IPA.GT.MSTU(4)) CALL PYERRM(21,
-     &'(PY1ENT:) writing outside PYJETS memory')
-      KC=PYCOMP(KF)
-      IF(KC.EQ.0) CALL PYERRM(12,'(PY1ENT:) unknown flavour code')
+      IF(IPA.GT.MSTU(4)) CALL SPERRM(21,
+     &'(SP1ENT:) writing outside SPJETS memory')
+      KC=SPCOMP(KF)
+      IF(KC.EQ.0) CALL SPERRM(12,'(SP1ENT:) unknown flavour code')
  
 C...Find mass. Reset K, P and V vectors.
       PM=0D0
       IF(MSTU(10).EQ.1) PM=P(IPA,5)
-      IF(MSTU(10).GE.2) PM=PYMASS(KF)
+      IF(MSTU(10).GE.2) PM=SPMASS(KF)
       DO 100 J=1,5
         K(IPA,J)=0
         P(IPA,J)=0D0
@@ -40742,47 +40742,47 @@ C...Store parton/particle in K and P vectors.
  
 C...Set N. Optionally fragment/decay.
       N=IPA
-      IF(IP.EQ.0) CALL PYEXEC
+      IF(IP.EQ.0) CALL SPEXEC
  
       RETURN
       END
  
 C*********************************************************************
  
-C...PY2ENT
+C...SP2ENT
 C...Stores two partons/particles in their CM frame,
 C...with the first along the +z axis.
  
-      SUBROUTINE PY2ENT(IP,KF1,KF2,PECM)
+      SUBROUTINE SP2ENT(IP,KF1,KF2,PECM)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/
  
 C...Standard checks.
       MSTU(28)=0
-      IF(MSTU(12).GE.1) CALL PYLIST(0)
+      IF(MSTU(12).GE.1) CALL SPLIST(0)
       IPA=MAX(1,IABS(IP))
-      IF(IPA.GT.MSTU(4)-1) CALL PYERRM(21,
-     &'(PY2ENT:) writing outside PYJETS memory')
-      KC1=PYCOMP(KF1)
-      KC2=PYCOMP(KF2)
-      IF(KC1.EQ.0.OR.KC2.EQ.0) CALL PYERRM(12,
-     &'(PY2ENT:) unknown flavour code')
+      IF(IPA.GT.MSTU(4)-1) CALL SPERRM(21,
+     &'(SP2ENT:) writing outside SPJETS memory')
+      KC1=SPCOMP(KF1)
+      KC2=SPCOMP(KF2)
+      IF(KC1.EQ.0.OR.KC2.EQ.0) CALL SPERRM(12,
+     &'(SP2ENT:) unknown flavour code')
  
 C...Find masses. Reset K, P and V vectors.
       PM1=0D0
       IF(MSTU(10).EQ.1) PM1=P(IPA,5)
-      IF(MSTU(10).GE.2) PM1=PYMASS(KF1)
+      IF(MSTU(10).GE.2) PM1=SPMASS(KF1)
       PM2=0D0
       IF(MSTU(10).EQ.1) PM2=P(IPA+1,5)
-      IF(MSTU(10).GE.2) PM2=PYMASS(KF2)
+      IF(MSTU(10).GE.2) PM2=SPMASS(KF2)
       DO 110 I=IPA,IPA+1
         DO 100 J=1,5
           K(I,J)=0
@@ -40797,8 +40797,8 @@ C...Check flavours.
       IF(MSTU(19).EQ.1) THEN
         MSTU(19)=0
       ELSE
-        IF(KQ1+KQ2.NE.0.AND.KQ1+KQ2.NE.4) CALL PYERRM(2,
-     &  '(PY2ENT:) unphysical flavour combination')
+        IF(KQ1+KQ2.NE.0.AND.KQ1+KQ2.NE.4) CALL SPERRM(2,
+     &  '(SP2ENT:) unphysical flavour combination')
       ENDIF
       K(IPA,2)=KF1
       K(IPA+1,2)=KF2
@@ -40820,8 +40820,8 @@ C...Store partons in K vectors for parton shower evolution.
       ENDIF
  
 C...Check kinematics and store partons/particles in P vectors.
-      IF(PECM.LE.PM1+PM2) CALL PYERRM(13,
-     &'(PY2ENT:) energy smaller than sum of masses')
+      IF(PECM.LE.PM1+PM2) CALL SPERRM(13,
+     &'(SP2ENT:) energy smaller than sum of masses')
       PA=SQRT(MAX(0D0,(PECM**2-PM1**2-PM2**2)**2-(2D0*PM1*PM2)**2))/
      &(2D0*PECM)
       P(IPA,3)=PA
@@ -40833,52 +40833,52 @@ C...Check kinematics and store partons/particles in P vectors.
  
 C...Set N. Optionally fragment/decay.
       N=IPA+1
-      IF(IP.EQ.0) CALL PYEXEC
+      IF(IP.EQ.0) CALL SPEXEC
  
       RETURN
       END
  
 C*********************************************************************
  
-C...PY3ENT
+C...SP3ENT
 C...Stores three partons or particles in their CM frame,
 C...with the first along the +z axis and the third in the (x,z)
 C...plane with x > 0.
  
-      SUBROUTINE PY3ENT(IP,KF1,KF2,KF3,PECM,X1,X3)
+      SUBROUTINE SP3ENT(IP,KF1,KF2,KF3,PECM,X1,X3)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/
  
 C...Standard checks.
       MSTU(28)=0
-      IF(MSTU(12).GE.1) CALL PYLIST(0)
+      IF(MSTU(12).GE.1) CALL SPLIST(0)
       IPA=MAX(1,IABS(IP))
-      IF(IPA.GT.MSTU(4)-2) CALL PYERRM(21,
-     &'(PY3ENT:) writing outside PYJETS memory')
-      KC1=PYCOMP(KF1)
-      KC2=PYCOMP(KF2)
-      KC3=PYCOMP(KF3)
-      IF(KC1.EQ.0.OR.KC2.EQ.0.OR.KC3.EQ.0) CALL PYERRM(12,
-     &'(PY3ENT:) unknown flavour code')
+      IF(IPA.GT.MSTU(4)-2) CALL SPERRM(21,
+     &'(SP3ENT:) writing outside SPJETS memory')
+      KC1=SPCOMP(KF1)
+      KC2=SPCOMP(KF2)
+      KC3=SPCOMP(KF3)
+      IF(KC1.EQ.0.OR.KC2.EQ.0.OR.KC3.EQ.0) CALL SPERRM(12,
+     &'(SP3ENT:) unknown flavour code')
  
 C...Find masses. Reset K, P and V vectors.
       PM1=0D0
       IF(MSTU(10).EQ.1) PM1=P(IPA,5)
-      IF(MSTU(10).GE.2) PM1=PYMASS(KF1)
+      IF(MSTU(10).GE.2) PM1=SPMASS(KF1)
       PM2=0D0
       IF(MSTU(10).EQ.1) PM2=P(IPA+1,5)
-      IF(MSTU(10).GE.2) PM2=PYMASS(KF2)
+      IF(MSTU(10).GE.2) PM2=SPMASS(KF2)
       PM3=0D0
       IF(MSTU(10).EQ.1) PM3=P(IPA+2,5)
-      IF(MSTU(10).GE.2) PM3=PYMASS(KF3)
+      IF(MSTU(10).GE.2) PM3=SPMASS(KF3)
       DO 110 I=IPA,IPA+2
         DO 100 J=1,5
           K(I,J)=0
@@ -40897,7 +40897,7 @@ C...Check flavours.
       ELSEIF(KQ1.NE.0.AND.KQ2.EQ.2.AND.(KQ1+KQ3.EQ.0.OR.
      &  KQ1+KQ3.EQ.4)) THEN
       ELSE
-        CALL PYERRM(2,'(PY3ENT:) unphysical flavour combination')
+        CALL SPERRM(2,'(SP3ENT:) unphysical flavour combination')
       ENDIF
       K(IPA,2)=KF1
       K(IPA+1,2)=KF2
@@ -40937,8 +40937,8 @@ C...Check kinematics.
       CTHE3=(PA2**2-PA1**2-PA3**2)/(2D0*PA1*PA3)
       IF(ABS(CTHE2).GE.1.001D0.OR.ABS(CTHE3).GE.1.001D0) MKERR=1
       CTHE3=MAX(-1D0,MIN(1D0,CTHE3))
-      IF(MKERR.NE.0) CALL PYERRM(13,
-     &'(PY3ENT:) unphysical kinematical variable setup')
+      IF(MKERR.NE.0) CALL SPERRM(13,
+     &'(SP3ENT:) unphysical kinematical variable setup')
  
 C...Store partons/particles in P vectors.
       P(IPA,3)=PA1
@@ -40955,56 +40955,56 @@ C...Store partons/particles in P vectors.
  
 C...Set N. Optionally fragment/decay.
       N=IPA+2
-      IF(IP.EQ.0) CALL PYEXEC
+      IF(IP.EQ.0) CALL SPEXEC
  
       RETURN
       END
  
 C*********************************************************************
  
-C...PY4ENT
+C...SP4ENT
 C...Stores four partons or particles in their CM frame, with
 C...the first along the +z axis, the last in the xz plane with x > 0
 C...and the second having y < 0 and y > 0 with equal probability.
  
-      SUBROUTINE PY4ENT(IP,KF1,KF2,KF3,KF4,PECM,X1,X2,X4,X12,X14)
+      SUBROUTINE SP4ENT(IP,KF1,KF2,KF3,KF4,PECM,X1,X2,X4,X12,X14)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/
  
 C...Standard checks.
       MSTU(28)=0
-      IF(MSTU(12).GE.1) CALL PYLIST(0)
+      IF(MSTU(12).GE.1) CALL SPLIST(0)
       IPA=MAX(1,IABS(IP))
-      IF(IPA.GT.MSTU(4)-3) CALL PYERRM(21,
-     &'(PY4ENT:) writing outside PYJETS momory')
-      KC1=PYCOMP(KF1)
-      KC2=PYCOMP(KF2)
-      KC3=PYCOMP(KF3)
-      KC4=PYCOMP(KF4)
-      IF(KC1.EQ.0.OR.KC2.EQ.0.OR.KC3.EQ.0.OR.KC4.EQ.0) CALL PYERRM(12,
-     &'(PY4ENT:) unknown flavour code')
+      IF(IPA.GT.MSTU(4)-3) CALL SPERRM(21,
+     &'(SP4ENT:) writing outside SPJETS momory')
+      KC1=SPCOMP(KF1)
+      KC2=SPCOMP(KF2)
+      KC3=SPCOMP(KF3)
+      KC4=SPCOMP(KF4)
+      IF(KC1.EQ.0.OR.KC2.EQ.0.OR.KC3.EQ.0.OR.KC4.EQ.0) CALL SPERRM(12,
+     &'(SP4ENT:) unknown flavour code')
  
 C...Find masses. Reset K, P and V vectors.
       PM1=0D0
       IF(MSTU(10).EQ.1) PM1=P(IPA,5)
-      IF(MSTU(10).GE.2) PM1=PYMASS(KF1)
+      IF(MSTU(10).GE.2) PM1=SPMASS(KF1)
       PM2=0D0
       IF(MSTU(10).EQ.1) PM2=P(IPA+1,5)
-      IF(MSTU(10).GE.2) PM2=PYMASS(KF2)
+      IF(MSTU(10).GE.2) PM2=SPMASS(KF2)
       PM3=0D0
       IF(MSTU(10).EQ.1) PM3=P(IPA+2,5)
-      IF(MSTU(10).GE.2) PM3=PYMASS(KF3)
+      IF(MSTU(10).GE.2) PM3=SPMASS(KF3)
       PM4=0D0
       IF(MSTU(10).EQ.1) PM4=P(IPA+3,5)
-      IF(MSTU(10).GE.2) PM4=PYMASS(KF4)
+      IF(MSTU(10).GE.2) PM4=SPMASS(KF4)
       DO 110 I=IPA,IPA+3
         DO 100 J=1,5
           K(I,J)=0
@@ -41026,7 +41026,7 @@ C...Check flavours.
       ELSEIF(KQ1.NE.0.AND.KQ1+KQ2.EQ.0.AND.KQ3.NE.0.AND.KQ3+KQ4.EQ.0D0)
      &  THEN
       ELSE
-        CALL PYERRM(2,'(PY4ENT:) unphysical flavour combination')
+        CALL SPERRM(2,'(SP4ENT:) unphysical flavour combination')
       ENDIF
       K(IPA,2)=KF1
       K(IPA+1,2)=KF2
@@ -41099,8 +41099,8 @@ C...Check kinematics.
      &MAX(1D-8*PECM**2,4D0*PA2*STHE2*PA4*STHE4)
       IF(ABS(CPHI2).GE.1.05D0) MKERR=1
       CPHI2=MAX(-1D0,MIN(1D0,CPHI2))
-      IF(MKERR.EQ.1) CALL PYERRM(13,
-     &'(PY4ENT:) unphysical kinematical variable setup')
+      IF(MKERR.EQ.1) CALL SPERRM(13,
+     &'(SP4ENT:) unphysical kinematical variable setup')
  
 C...Store partons/particles in P vectors.
       P(IPA,3)=PA1
@@ -41111,7 +41111,7 @@ C...Store partons/particles in P vectors.
       P(IPA+3,4)=SQRT(PA4**2+PM4**2)
       P(IPA+3,5)=PM4
       P(IPA+1,1)=PA2*STHE2*CPHI2
-      P(IPA+1,2)=PA2*STHE2*SQRT(1D0-CPHI2**2)*(-1D0)**INT(PYR(0)+0.5D0)
+      P(IPA+1,2)=PA2*STHE2*SQRT(1D0-CPHI2**2)*(-1D0)**INT(SPR(0)+0.5D0)
       P(IPA+1,3)=PA2*CTHE2
       P(IPA+1,4)=SQRT(PA2**2+PM2**2)
       P(IPA+1,5)=PM2
@@ -41123,34 +41123,34 @@ C...Store partons/particles in P vectors.
  
 C...Set N. Optionally fragment/decay.
       N=IPA+3
-      IF(IP.EQ.0) CALL PYEXEC
+      IF(IP.EQ.0) CALL SPEXEC
  
       RETURN
       END
  
 C*********************************************************************
  
-C...PY2FRM
+C...SP2FRM
 C...An interface from a two-fermion generator to include
 C...parton showers and hadronization.
  
-      SUBROUTINE PY2FRM(IRAD,ITAU,ICOM)
+      SUBROUTINE SP2FRM(IRAD,ITAU,ICOM)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYJETS/,/PYDAT1/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      SAVE /SPJETS/,/SPDAT1/
 C...Local arrays.
       DIMENSION IJOIN(2),INTAU(2)
  
-C...Call PYHEPC to convert input from HEPEVT to PYJETS common.
+C...Call SPHEPC to convert input from HEPEVT to SPJETS common.
       IF(ICOM.EQ.0) THEN
         MSTU(28)=0
-        CALL PYHEPC(2)
+        CALL SPHEPC(2)
       ENDIF
  
 C...Loop through entries and pick up all final fermions/antifermions.
@@ -41164,13 +41164,13 @@ C...Loop through entries and pick up all final fermions/antifermions.
           IF(I1.EQ.0) THEN
             I1=I
           ELSE
-            CALL PYERRM(16,'(PY2FRM:) more than one fermion')
+            CALL SPERRM(16,'(SP2FRM:) more than one fermion')
           ENDIF
         ELSE
           IF(I2.EQ.0) THEN
             I2=I
           ELSE
-            CALL PYERRM(16,'(PY2FRM:) more than one antifermion')
+            CALL SPERRM(16,'(SP2FRM:) more than one antifermion')
           ENDIF
         ENDIF
       ENDIF
@@ -41178,10 +41178,10 @@ C...Loop through entries and pick up all final fermions/antifermions.
  
 C...Check that event is arranged according to conventions.
       IF(I1.EQ.0.OR.I2.EQ.0) THEN
-        CALL PYERRM(16,'(PY2FRM:) event contains too few fermions')
+        CALL SPERRM(16,'(SP2FRM:) event contains too few fermions')
       ENDIF
       IF(I2.LT.I1) THEN
-        CALL PYERRM(6,'(PY2FRM:) fermions arranged in wrong order')
+        CALL SPERRM(6,'(SP2FRM:) fermions arranged in wrong order')
       ENDIF
  
 C...Check whether fermion pair is quarks or leptons.
@@ -41190,7 +41190,7 @@ C...Check whether fermion pair is quarks or leptons.
       ELSEIF(IABS(K(I1,2)).GT.10.AND.IABS(K(I2,2)).GT.10) THEN
         IQL12=2
       ELSE
-        CALL PYERRM(16,'(PY2FRM:) fermion pair inconsistent')
+        CALL SPERRM(16,'(SP2FRM:) fermion pair inconsistent')
       ENDIF
  
 C...Decide whether to allow or not photon radiation in showers.
@@ -41203,12 +41203,12 @@ C...Do colour joining and parton showers.
       IF(IQL12.EQ.1) THEN
         IJOIN(1)=IP1
         IJOIN(2)=IP2
-        CALL PYJOIN(2,IJOIN)
+        CALL SPJOIN(2,IJOIN)
       ENDIF
       IF(IQL12.EQ.1.OR.IRAD.EQ.1) THEN
         PM12S=(P(IP1,4)+P(IP2,4))**2-(P(IP1,1)+P(IP2,1))**2-
      &  (P(IP1,2)+P(IP2,2))**2-(P(IP1,3)+P(IP2,3))**2
-        CALL PYSHOW(IP1,IP2,SQRT(MAX(0D0,PM12S)))
+        CALL SPSHOW(IP1,IP2,SQRT(MAX(0D0,PM12S)))
       ENDIF
  
 C...Do fragmentation and decays. Possibly except tau decay.
@@ -41222,46 +41222,46 @@ C...Do fragmentation and decays. Possibly except tau decay.
         ENDIF
   110   CONTINUE
       ENDIF
-      CALL PYEXEC
+      CALL SPEXEC
       IF(ITAU.EQ.0) THEN
         DO 120 I=1,NTAU
         K(INTAU(I),1)=1
   120   CONTINUE
       ENDIF
  
-C...Call PYHEPC to convert output from PYJETS to HEPEVT common.
+C...Call SPHEPC to convert output from SPJETS to HEPEVT common.
       IF(ICOM.EQ.0) THEN
         MSTU(28)=0
-        CALL PYHEPC(1)
+        CALL SPHEPC(1)
       ENDIF
  
       END
  
 C*********************************************************************
  
-C...PY4FRM
+C...SP4FRM
 C...An interface from a four-fermion generator to include
 C...parton showers and hadronization.
  
-      SUBROUTINE PY4FRM(ATOTSQ,A1SQ,A2SQ,ISTRAT,IRAD,ITAU,ICOM)
+      SUBROUTINE SP4FRM(ATOTSQ,A1SQ,A2SQ,ISTRAT,IRAD,ITAU,ICOM)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      SAVE /PYJETS/,/PYDAT1/,/PYPARS/,/PYINT1/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      SAVE /SPJETS/,/SPDAT1/,/SPPARS/,/SPINT1/
 C...Local arrays.
       DIMENSION IJOIN(2),INTAU(4)
  
-C...Call PYHEPC to convert input from HEPEVT to PYJETS common.
+C...Call SPHEPC to convert input from HEPEVT to SPJETS common.
       IF(ICOM.EQ.0) THEN
         MSTU(28)=0
-        CALL PYHEPC(2)
+        CALL SPHEPC(2)
       ENDIF
  
 C...Loop through entries and pick up all final fermions/antifermions.
@@ -41279,7 +41279,7 @@ C...Loop through entries and pick up all final fermions/antifermions.
           ELSEIF(I3.EQ.0) THEN
             I3=I
           ELSE
-            CALL PYERRM(16,'(PY4FRM:) more than two fermions')
+            CALL SPERRM(16,'(SP4FRM:) more than two fermions')
           ENDIF
         ELSE
           IF(I2.EQ.0) THEN
@@ -41287,7 +41287,7 @@ C...Loop through entries and pick up all final fermions/antifermions.
           ELSEIF(I4.EQ.0) THEN
             I4=I
           ELSE
-            CALL PYERRM(16,'(PY4FRM:) more than two antifermions')
+            CALL SPERRM(16,'(SP4FRM:) more than two antifermions')
           ENDIF
         ENDIF
       ENDIF
@@ -41295,10 +41295,10 @@ C...Loop through entries and pick up all final fermions/antifermions.
  
 C...Check that event is arranged according to conventions.
       IF(I3.EQ.0.OR.I4.EQ.0) THEN
-        CALL PYERRM(16,'(PY4FRM:) event contains too few fermions')
+        CALL SPERRM(16,'(SP4FRM:) event contains too few fermions')
       ENDIF
       IF(I2.LT.I1.OR.I3.LT.I2.OR.I4.LT.I3) THEN
-        CALL PYERRM(6,'(PY4FRM:) fermions arranged in wrong order')
+        CALL SPERRM(6,'(SP4FRM:) fermions arranged in wrong order')
       ENDIF
  
 C...Check which fermion pairs are quarks and which leptons.
@@ -41307,14 +41307,14 @@ C...Check which fermion pairs are quarks and which leptons.
       ELSEIF(IABS(K(I1,2)).GT.10.AND.IABS(K(I2,2)).GT.10) THEN
         IQL12=2
       ELSE
-        CALL PYERRM(16,'(PY4FRM:) first fermion pair inconsistent')
+        CALL SPERRM(16,'(SP4FRM:) first fermion pair inconsistent')
       ENDIF
       IF(IABS(K(I3,2)).LT.10.AND.IABS(K(I4,2)).LT.10) THEN
         IQL34=1
       ELSEIF(IABS(K(I3,2)).GT.10.AND.IABS(K(I4,2)).GT.10) THEN
         IQL34=2
       ELSE
-        CALL PYERRM(16,'(PY4FRM:) second fermion pair inconsistent')
+        CALL SPERRM(16,'(SP4FRM:) second fermion pair inconsistent')
       ENDIF
  
 C...Decide whether to allow or not photon radiation in showers.
@@ -41337,14 +41337,14 @@ C...Decide on dipole pairing.
           IF(DELTA.GT.0D0) R2SQ=R2SQ+DELTA
           IF(DELTA.LT.0D0) R1SQ=MAX(0D0,R1SQ+DELTA)
         ENDIF
-        IF(R2SQ.GT.PYR(0)*(R1SQ+R2SQ)) THEN
+        IF(R2SQ.GT.SPR(0)*(R1SQ+R2SQ)) THEN
           IP2=I4
           IP4=I2
         ENDIF
       ENDIF
  
 C...If colour reconnection then bookkeep W+W- or Z0Z0
-C...and copy q qbar q qbar consecutively.
+C...and cosp q qbar q qbar consecutively.
       IF(MSTP(115).GE.1.AND.IQL12.EQ.1.AND.IQL34.EQ.1) THEN
         K(N+1,1)=11
         K(N+1,3)=IP1
@@ -41358,7 +41358,7 @@ C...and copy q qbar q qbar consecutively.
           K(N+1,2)=23
           K(N+2,2)=23
           MINT(1)=22
-        ELSEIF(PYCHGE(K(IP1,2)).GT.0) THEN
+        ELSEIF(SPCHGE(K(IP1,2)).GT.0) THEN
           K(N+1,2)=24
           K(N+2,2)=-24
           MINT(1)=25
@@ -41412,30 +41412,30 @@ C...Do colour joinings and parton showers.
       IF(IQL12.EQ.1) THEN
         IJOIN(1)=IP1
         IJOIN(2)=IP2
-        CALL PYJOIN(2,IJOIN)
+        CALL SPJOIN(2,IJOIN)
       ENDIF
       IF(IQL12.EQ.1.OR.IRAD.EQ.1) THEN
         PM12S=(P(IP1,4)+P(IP2,4))**2-(P(IP1,1)+P(IP2,1))**2-
      &  (P(IP1,2)+P(IP2,2))**2-(P(IP1,3)+P(IP2,3))**2
-        CALL PYSHOW(IP1,IP2,SQRT(MAX(0D0,PM12S)))
+        CALL SPSHOW(IP1,IP2,SQRT(MAX(0D0,PM12S)))
       ENDIF
       NAFT1=N
       IF(IQL34.EQ.1) THEN
         IJOIN(1)=IP3
         IJOIN(2)=IP4
-        CALL PYJOIN(2,IJOIN)
+        CALL SPJOIN(2,IJOIN)
       ENDIF
       IF(IQL34.EQ.1.OR.IRAD.EQ.1) THEN
         PM34S=(P(IP3,4)+P(IP4,4))**2-(P(IP3,1)+P(IP4,1))**2-
      &  (P(IP3,2)+P(IP4,2))**2-(P(IP3,3)+P(IP4,3))**2
-        CALL PYSHOW(IP3,IP4,SQRT(MAX(0D0,PM34S)))
+        CALL SPSHOW(IP3,IP4,SQRT(MAX(0D0,PM34S)))
       ENDIF
  
 C...Optionally do colour reconnection.
       MINT(32)=0
       MSTI(32)=0
       IF(MSTP(115).GE.1.AND.IQL12.EQ.1.AND.IQL34.EQ.1) THEN
-        CALL PYRECO(IW1,IW2,NSD1,NAFT1)
+        CALL SPRECO(IW1,IW2,NSD1,NAFT1)
         MSTI(32)=MINT(32)
       ENDIF
  
@@ -41450,44 +41450,44 @@ C...Do fragmentation and decays. Possibly except tau decay.
         ENDIF
   120   CONTINUE
       ENDIF
-      CALL PYEXEC
+      CALL SPEXEC
       IF(ITAU.EQ.0) THEN
         DO 130 I=1,NTAU
         K(INTAU(I),1)=1
   130   CONTINUE
       ENDIF
  
-C...Call PYHEPC to convert output from PYJETS to HEPEVT common.
+C...Call SPHEPC to convert output from SPJETS to HEPEVT common.
       IF(ICOM.EQ.0) THEN
         MSTU(28)=0
-        CALL PYHEPC(1)
+        CALL SPHEPC(1)
       ENDIF
  
       END
  
 C*********************************************************************
  
-C...PY6FRM
+C...SP6FRM
 C...An interface from a six-fermion generator to include
 C...parton showers and hadronization.
  
-      SUBROUTINE PY6FRM(P12,P13,P21,P23,P31,P32,PTOP,IRAD,ITAU,ICOM)
+      SUBROUTINE SP6FRM(P12,P13,P21,P23,P31,P32,PTOP,IRAD,ITAU,ICOM)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYJETS/,/PYDAT1/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      SAVE /SPJETS/,/SPDAT1/
 C...Local arrays.
       DIMENSION IJOIN(2),INTAU(6),BETA(3),BETAO(3),BETAN(3)
  
-C...Call PYHEPC to convert input from HEPEVT to PYJETS common.
+C...Call SPHEPC to convert input from HEPEVT to SPJETS common.
       IF(ICOM.EQ.0) THEN
         MSTU(28)=0
-        CALL PYHEPC(2)
+        CALL SPHEPC(2)
       ENDIF
  
 C...Loop through entries and pick up all final fermions/antifermions.
@@ -41509,7 +41509,7 @@ C...Loop through entries and pick up all final fermions/antifermions.
           ELSEIF(I5.EQ.0) THEN
             I5=I
           ELSE
-            CALL PYERRM(16,'(PY6FRM:) more than three fermions')
+            CALL SPERRM(16,'(SP6FRM:) more than three fermions')
           ENDIF
         ELSE
           IF(I2.EQ.0) THEN
@@ -41519,7 +41519,7 @@ C...Loop through entries and pick up all final fermions/antifermions.
           ELSEIF(I6.EQ.0) THEN
             I6=I
           ELSE
-            CALL PYERRM(16,'(PY6FRM:) more than three antifermions')
+            CALL SPERRM(16,'(SP6FRM:) more than three antifermions')
           ENDIF
         ENDIF
       ENDIF
@@ -41527,10 +41527,10 @@ C...Loop through entries and pick up all final fermions/antifermions.
  
 C...Check that event is arranged according to conventions.
       IF(I5.EQ.0.OR.I6.EQ.0) THEN
-        CALL PYERRM(16,'(PY6FRM:) event contains too few fermions')
+        CALL SPERRM(16,'(SP6FRM:) event contains too few fermions')
       ENDIF
       IF(I2.LT.I1.OR.I3.LT.I2.OR.I4.LT.I3.OR.I5.LT.I4.OR.I6.LT.I5) THEN
-        CALL PYERRM(6,'(PY6FRM:) fermions arranged in wrong order')
+        CALL SPERRM(6,'(SP6FRM:) fermions arranged in wrong order')
       ENDIF
  
 C...Check which fermion pairs are quarks and which leptons.
@@ -41539,21 +41539,21 @@ C...Check which fermion pairs are quarks and which leptons.
       ELSEIF(IABS(K(I1,2)).GT.10.AND.IABS(K(I2,2)).GT.10) THEN
         IQL12=2
       ELSE
-        CALL PYERRM(16,'(PY6FRM:) first fermion pair inconsistent')
+        CALL SPERRM(16,'(SP6FRM:) first fermion pair inconsistent')
       ENDIF
       IF(IABS(K(I3,2)).LT.10.AND.IABS(K(I4,2)).LT.10) THEN
         IQL34=1
       ELSEIF(IABS(K(I3,2)).GT.10.AND.IABS(K(I4,2)).GT.10) THEN
         IQL34=2
       ELSE
-        CALL PYERRM(16,'(PY6FRM:) second fermion pair inconsistent')
+        CALL SPERRM(16,'(SP6FRM:) second fermion pair inconsistent')
       ENDIF
       IF(IABS(K(I5,2)).LT.10.AND.IABS(K(I6,2)).LT.10) THEN
         IQL56=1
       ELSEIF(IABS(K(I5,2)).GT.10.AND.IABS(K(I6,2)).GT.10) THEN
         IQL56=2
       ELSE
-        CALL PYERRM(16,'(PY6FRM:) third fermion pair inconsistent')
+        CALL SPERRM(16,'(SP6FRM:) third fermion pair inconsistent')
       ENDIF
  
 C...Decide whether to allow or not photon radiation in showers.
@@ -41575,7 +41575,7 @@ C...Allow dipole pairings only among leptons and quarks separately.
  
 C...Decide whether t+tbar.
       ITOP=0
-      IF(PYR(0).LT.PTOP) THEN
+      IF(SPR(0).LT.PTOP) THEN
         ITOP=1
  
 C...If t+tbar: reconstruct t's.
@@ -41602,10 +41602,10 @@ C...If t+tbar: reconstruct t's.
 C...If t+tbar: colour join t's and let them shower.
         IJOIN(1)=IT
         IJOIN(2)=ITB
-        CALL PYJOIN(2,IJOIN)
+        CALL SPJOIN(2,IJOIN)
         PMTTS=(P(IT,4)+P(ITB,4))**2-(P(IT,1)+P(ITB,1))**2-
      &  (P(IT,2)+P(ITB,2))**2-(P(IT,3)+P(ITB,3))**2
-        CALL PYSHOW(IT,ITB,SQRT(MAX(0D0,PMTTS)))
+        CALL SPSHOW(IT,ITB,SQRT(MAX(0D0,PMTTS)))
  
 C...If t+tbar: pick up the t's after shower.
         ITNEW=IT
@@ -41630,8 +41630,8 @@ C...If t+tbar: loop over two top systems.
             IW1=I5
             IW2=I6
           ENDIF
-          IF(IABS(K(IBO,2)).NE.5) CALL PYERRM(6,
-     &    '(PY6FRM:) not b in t decay')
+          IF(IABS(K(IBO,2)).NE.5) CALL SPERRM(6,
+     &    '(SP6FRM:) not b in t decay')
  
 C...If t+tbar: find boost from original to new top frame.
           DO 130 J=1,3
@@ -41639,7 +41639,7 @@ C...If t+tbar: find boost from original to new top frame.
             BETAN(J)=P(ITN,J)/P(ITN,4)
   130     CONTINUE
  
-C...If t+tbar: boost copy of b by t shower and connect it in colour.
+C...If t+tbar: boost cosp of b by t shower and connect it in colour.
           N=N+1
           IB=N
           K(IB,1)=3
@@ -41649,8 +41649,8 @@ C...If t+tbar: boost copy of b by t shower and connect it in colour.
             P(IB,J)=P(IBO,J)
             V(IB,J)=0D0
   140     CONTINUE
-          CALL PYROBO(IB,IB,0D0,0D0,-BETAO(1),-BETAO(2),-BETAO(3))
-          CALL PYROBO(IB,IB,0D0,0D0,BETAN(1),BETAN(2),BETAN(3))
+          CALL SPROBO(IB,IB,0D0,0D0,-BETAO(1),-BETAO(2),-BETAO(3))
+          CALL SPROBO(IB,IB,0D0,0D0,BETAN(1),BETAN(2),BETAN(3))
           K(IB,4)=MSTU(5)*ITN
           K(IB,5)=MSTU(5)*ITN
           K(ITN,4)=K(ITN,4)+IB
@@ -41666,11 +41666,11 @@ C...If t+tbar: construct W recoiling against b.
             V(IW,J)=0D0
   150     CONTINUE
           K(IW,1)=1
-          KCHW=PYCHGE(K(IW1,2))+PYCHGE(K(IW2,2))
+          KCHW=SPCHGE(K(IW1,2))+SPCHGE(K(IW2,2))
           IF(IABS(KCHW).EQ.3) THEN
             K(IW,2)=ISIGN(24,KCHW)
           ELSE
-            CALL PYERRM(16,'(PY6FRM:) fermion pair inconsistent with W')
+            CALL SPERRM(16,'(SP6FRM:) fermion pair inconsistent with W')
           ENDIF
           K(IW,3)=IW1
  
@@ -41680,25 +41680,25 @@ C...If t+tbar: construct W momentum, including boost by t shower.
   160     CONTINUE
           P(IW,5)=SQRT(MAX(0D0,P(IW,4)**2-P(IW,1)**2-P(IW,2)**2-
      &    P(IW,3)**2))
-          CALL PYROBO(IW,IW,0D0,0D0,-BETAO(1),-BETAO(2),-BETAO(3))
-          CALL PYROBO(IW,IW,0D0,0D0,BETAN(1),BETAN(2),BETAN(3))
+          CALL SPROBO(IW,IW,0D0,0D0,-BETAO(1),-BETAO(2),-BETAO(3))
+          CALL SPROBO(IW,IW,0D0,0D0,BETAN(1),BETAN(2),BETAN(3))
  
 C...If t+tbar: boost b and W to top rest frame.
           DO 170 J=1,3
             BETA(J)=(P(IB,J)+P(IW,J))/(P(IB,4)+P(IW,4))
   170     CONTINUE
-          CALL PYROBO(IB,IB,0D0,0D0,-BETA(1),-BETA(2),-BETA(3))
-          CALL PYROBO(IW,IW,0D0,0D0,-BETA(1),-BETA(2),-BETA(3))
+          CALL SPROBO(IB,IB,0D0,0D0,-BETA(1),-BETA(2),-BETA(3))
+          CALL SPROBO(IW,IW,0D0,0D0,-BETA(1),-BETA(2),-BETA(3))
  
 C...If t+tbar: let b shower and pick up modified W.
           PMTS=(P(IB,4)+P(IW,4))**2-(P(IB,1)+P(IW,1))**2-
      &    (P(IB,2)+P(IW,2))**2-(P(IB,3)+P(IW,3))**2
-          CALL PYSHOW(IB,IW,SQRT(MAX(0D0,PMTS)))
+          CALL SPSHOW(IB,IW,SQRT(MAX(0D0,PMTS)))
           DO 180 I=IW,N
             IF(IABS(K(I,2)).EQ.24) IWM=I
   180     CONTINUE
  
-C...If t+tbar: take copy of W decay products.
+C...If t+tbar: take cosp of W decay products.
           DO 190 J=1,5
             K(N+1,J)=K(IW1,J)
             P(N+1,J)=P(IW1,J)
@@ -41725,15 +41725,15 @@ C...If t+tbar: take copy of W decay products.
  
 C...If t+tbar: boost W decay products, first by effects of t shower,
 C...then by those of b shower. b and its shower simple boost back.
-          CALL PYROBO(N-1,N,0D0,0D0,-BETAO(1),-BETAO(2),-BETAO(3))
-          CALL PYROBO(N-1,N,0D0,0D0,BETAN(1),BETAN(2),BETAN(3))
-          CALL PYROBO(N-1,N,0D0,0D0,-BETA(1),-BETA(2),-BETA(3))
-          CALL PYROBO(N-1,N,0D0,0D0,-P(IW,1)/P(IW,4),
+          CALL SPROBO(N-1,N,0D0,0D0,-BETAO(1),-BETAO(2),-BETAO(3))
+          CALL SPROBO(N-1,N,0D0,0D0,BETAN(1),BETAN(2),BETAN(3))
+          CALL SPROBO(N-1,N,0D0,0D0,-BETA(1),-BETA(2),-BETA(3))
+          CALL SPROBO(N-1,N,0D0,0D0,-P(IW,1)/P(IW,4),
      &    -P(IW,2)/P(IW,4),-P(IW,3)/P(IW,4))
-          CALL PYROBO(N-1,N,0D0,0D0,P(IWM,1)/P(IWM,4),
+          CALL SPROBO(N-1,N,0D0,0D0,P(IWM,1)/P(IWM,4),
      &    P(IWM,2)/P(IWM,4),P(IWM,3)/P(IWM,4))
-          CALL PYROBO(IB,IB,0D0,0D0,BETA(1),BETA(2),BETA(3))
-          CALL PYROBO(IW,N,0D0,0D0,BETA(1),BETA(2),BETA(3))
+          CALL SPROBO(IB,IB,0D0,0D0,BETA(1),BETA(2),BETA(3))
+          CALL SPROBO(IW,N,0D0,0D0,BETA(1),BETA(2),BETA(3))
   200   CONTINUE
       ENDIF
  
@@ -41741,7 +41741,7 @@ C...Decide on dipole pairing.
       IP1=I1
       IP3=I3
       IP5=I5
-      PRN=PYR(0)*(P12D+P13D+P21D+P23D+P31D+P32D)
+      PRN=SPR(0)*(P12D+P13D+P21D+P23D+P31D+P32D)
       IF(ITOP.EQ.1.OR.PRN.LT.P12D) THEN
         IP2=I2
         IP4=I4
@@ -41774,33 +41774,33 @@ C...(except ones already made for t+tbar).
         IF(IQL12.EQ.1) THEN
           IJOIN(1)=IP1
           IJOIN(2)=IP2
-          CALL PYJOIN(2,IJOIN)
+          CALL SPJOIN(2,IJOIN)
         ENDIF
         IF(IQL12.EQ.1.OR.IRAD.EQ.1) THEN
           PM12S=(P(IP1,4)+P(IP2,4))**2-(P(IP1,1)+P(IP2,1))**2-
      &    (P(IP1,2)+P(IP2,2))**2-(P(IP1,3)+P(IP2,3))**2
-          CALL PYSHOW(IP1,IP2,SQRT(MAX(0D0,PM12S)))
+          CALL SPSHOW(IP1,IP2,SQRT(MAX(0D0,PM12S)))
         ENDIF
       ENDIF
       IF(IQL34.EQ.1) THEN
         IJOIN(1)=IP3
         IJOIN(2)=IP4
-        CALL PYJOIN(2,IJOIN)
+        CALL SPJOIN(2,IJOIN)
       ENDIF
       IF(IQL34.EQ.1.OR.IRAD.EQ.1) THEN
         PM34S=(P(IP3,4)+P(IP4,4))**2-(P(IP3,1)+P(IP4,1))**2-
      &  (P(IP3,2)+P(IP4,2))**2-(P(IP3,3)+P(IP4,3))**2
-        CALL PYSHOW(IP3,IP4,SQRT(MAX(0D0,PM34S)))
+        CALL SPSHOW(IP3,IP4,SQRT(MAX(0D0,PM34S)))
       ENDIF
       IF(IQL56.EQ.1) THEN
         IJOIN(1)=IP5
         IJOIN(2)=IP6
-        CALL PYJOIN(2,IJOIN)
+        CALL SPJOIN(2,IJOIN)
       ENDIF
       IF(IQL56.EQ.1.OR.IRAD.EQ.1) THEN
         PM56S=(P(IP5,4)+P(IP6,4))**2-(P(IP5,1)+P(IP6,1))**2-
      &  (P(IP5,2)+P(IP6,2))**2-(P(IP5,3)+P(IP6,3))**2
-        CALL PYSHOW(IP5,IP6,SQRT(MAX(0D0,PM56S)))
+        CALL SPSHOW(IP5,IP6,SQRT(MAX(0D0,PM56S)))
       ENDIF
  
 C...Do fragmentation and decays. Possibly except tau decay.
@@ -41814,44 +41814,44 @@ C...Do fragmentation and decays. Possibly except tau decay.
         ENDIF
   210   CONTINUE
       ENDIF
-      CALL PYEXEC
+      CALL SPEXEC
       IF(ITAU.EQ.0) THEN
         DO 220 I=1,NTAU
         K(INTAU(I),1)=1
   220   CONTINUE
       ENDIF
  
-C...Call PYHEPC to convert output from PYJETS to HEPEVT common.
+C...Call SPHEPC to convert output from SPJETS to HEPEVT common.
       IF(ICOM.EQ.0) THEN
         MSTU(28)=0
-        CALL PYHEPC(1)
+        CALL SPHEPC(1)
       ENDIF
  
       END
  
 C*********************************************************************
  
-C...PY4JET
+C...SP4JET
 C...An interface from a four-parton generator to include
 C...parton showers and hadronization.
  
-      SUBROUTINE PY4JET(PMAX,IRAD,ICOM)
+      SUBROUTINE SP4JET(PMAX,IRAD,ICOM)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYJETS/,/PYDAT1/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      SAVE /SPJETS/,/SPDAT1/
 C...Local arrays.
       DIMENSION IJOIN(2),PTOT(4),BETA(3)
  
-C...Call PYHEPC to convert input from HEPEVT to PYJETS common.
+C...Call SPHEPC to convert input from HEPEVT to SPJETS common.
       IF(ICOM.EQ.0) THEN
         MSTU(28)=0
-        CALL PYHEPC(2)
+        CALL SPHEPC(2)
       ENDIF
  
 C...Loop through entries and pick up all final partons.
@@ -41869,7 +41869,7 @@ C...Loop through entries and pick up all final partons.
           ELSEIF(I3.EQ.0) THEN
             I3=I
           ELSE
-            CALL PYERRM(16,'(PY4JET:) more than two quarks')
+            CALL SPERRM(16,'(SP4JET:) more than two quarks')
           ENDIF
         ELSEIF(K(I,2).LT.0) THEN
           IF(I2.EQ.0) THEN
@@ -41877,7 +41877,7 @@ C...Loop through entries and pick up all final partons.
           ELSEIF(I4.EQ.0) THEN
             I4=I
           ELSE
-            CALL PYERRM(16,'(PY4JET:) more than two antiquarks')
+            CALL SPERRM(16,'(SP4JET:) more than two antiquarks')
           ENDIF
         ELSE
           IF(I3.EQ.0) THEN
@@ -41885,7 +41885,7 @@ C...Loop through entries and pick up all final partons.
           ELSEIF(I4.EQ.0) THEN
             I4=I
           ELSE
-            CALL PYERRM(16,'(PY4JET:) more than two gluons')
+            CALL SPERRM(16,'(SP4JET:) more than two gluons')
           ENDIF
         ENDIF
       ENDIF
@@ -41893,10 +41893,10 @@ C...Loop through entries and pick up all final partons.
  
 C...Check that event is arranged according to conventions.
       IF(I1.EQ.0.OR.I2.EQ.0.OR.I3.EQ.0.OR.I4.EQ.0) THEN
-        CALL PYERRM(16,'(PY4JET:) event contains too few partons')
+        CALL SPERRM(16,'(SP4JET:) event contains too few partons')
       ENDIF
       IF(I2.LT.I1.OR.I3.LT.I2.OR.I4.LT.I3) THEN
-        CALL PYERRM(6,'(PY4JET:) partons arranged in wrong order')
+        CALL SPERRM(6,'(SP4JET:) partons arranged in wrong order')
       ENDIF
  
 C...Check whether second pair are quarks or gluons.
@@ -41905,7 +41905,7 @@ C...Check whether second pair are quarks or gluons.
       ELSEIF(K(I3,2).EQ.21.AND.K(I4,2).EQ.21) THEN
         IQG34=2
       ELSE
-        CALL PYERRM(16,'(PY4JET:) second parton pair inconsistent')
+        CALL SPERRM(16,'(SP4JET:) second parton pair inconsistent')
       ENDIF
  
 C...Boost partons to their cm frame.
@@ -41916,69 +41916,69 @@ C...Boost partons to their cm frame.
       DO 120 J=1,3
         BETA(J)=PTOT(J)/PTOT(4)
   120 CONTINUE
-      CALL PYROBO(I1,I1,0D0,0D0,-BETA(1),-BETA(2),-BETA(3))
-      CALL PYROBO(I2,I2,0D0,0D0,-BETA(1),-BETA(2),-BETA(3))
-      CALL PYROBO(I3,I3,0D0,0D0,-BETA(1),-BETA(2),-BETA(3))
-      CALL PYROBO(I4,I4,0D0,0D0,-BETA(1),-BETA(2),-BETA(3))
+      CALL SPROBO(I1,I1,0D0,0D0,-BETA(1),-BETA(2),-BETA(3))
+      CALL SPROBO(I2,I2,0D0,0D0,-BETA(1),-BETA(2),-BETA(3))
+      CALL SPROBO(I3,I3,0D0,0D0,-BETA(1),-BETA(2),-BETA(3))
+      CALL SPROBO(I4,I4,0D0,0D0,-BETA(1),-BETA(2),-BETA(3))
       NSAV=N
  
 C...Decide and set up shower history for q qbar q' qbar' events.
       IF(IQG34.EQ.1) THEN
-        W1=PY4JTW(0,I1,I3,I4)
-        W2=PY4JTW(0,I2,I3,I4)
-        IF(W1.GT.PYR(0)*(W1+W2)) THEN
-          CALL PY4JTS(0,I1,I3,I4,I2,QMAX)
+        W1=SP4JTW(0,I1,I3,I4)
+        W2=SP4JTW(0,I2,I3,I4)
+        IF(W1.GT.SPR(0)*(W1+W2)) THEN
+          CALL SP4JTS(0,I1,I3,I4,I2,QMAX)
         ELSE
-          CALL PY4JTS(0,I2,I3,I4,I1,QMAX)
+          CALL SP4JTS(0,I2,I3,I4,I1,QMAX)
         ENDIF
  
 C...Decide and set up shower history for q qbar g g events.
       ELSE
-        W1=PY4JTW(I1,I3,I2,I4)
-        W2=PY4JTW(I1,I4,I2,I3)
-        W3=PY4JTW(0,I3,I1,I4)
-        W4=PY4JTW(0,I4,I1,I3)
-        W5=PY4JTW(0,I3,I2,I4)
-        W6=PY4JTW(0,I4,I2,I3)
-        W7=PY4JTW(0,I1,I3,I4)
-        W8=PY4JTW(0,I2,I3,I4)
-        WR=(W1+W2+W3+W4+W5+W6+W7+W8)*PYR(0)
+        W1=SP4JTW(I1,I3,I2,I4)
+        W2=SP4JTW(I1,I4,I2,I3)
+        W3=SP4JTW(0,I3,I1,I4)
+        W4=SP4JTW(0,I4,I1,I3)
+        W5=SP4JTW(0,I3,I2,I4)
+        W6=SP4JTW(0,I4,I2,I3)
+        W7=SP4JTW(0,I1,I3,I4)
+        W8=SP4JTW(0,I2,I3,I4)
+        WR=(W1+W2+W3+W4+W5+W6+W7+W8)*SPR(0)
         IF(W1.GT.WR) THEN
-          CALL PY4JTS(I1,I3,I2,I4,0,QMAX)
+          CALL SP4JTS(I1,I3,I2,I4,0,QMAX)
         ELSEIF(W1+W2.GT.WR) THEN
-          CALL PY4JTS(I1,I4,I2,I3,0,QMAX)
+          CALL SP4JTS(I1,I4,I2,I3,0,QMAX)
         ELSEIF(W1+W2+W3.GT.WR) THEN
-          CALL PY4JTS(0,I3,I1,I4,I2,QMAX)
+          CALL SP4JTS(0,I3,I1,I4,I2,QMAX)
         ELSEIF(W1+W2+W3+W4.GT.WR) THEN
-          CALL PY4JTS(0,I4,I1,I3,I2,QMAX)
+          CALL SP4JTS(0,I4,I1,I3,I2,QMAX)
         ELSEIF(W1+W2+W3+W4+W5.GT.WR) THEN
-          CALL PY4JTS(0,I3,I2,I4,I1,QMAX)
+          CALL SP4JTS(0,I3,I2,I4,I1,QMAX)
         ELSEIF(W1+W2+W3+W4+W5+W6.GT.WR) THEN
-          CALL PY4JTS(0,I4,I2,I3,I1,QMAX)
+          CALL SP4JTS(0,I4,I2,I3,I1,QMAX)
         ELSEIF(W1+W2+W3+W4+W5+W6+W7.GT.WR) THEN
-          CALL PY4JTS(0,I1,I3,I4,I2,QMAX)
+          CALL SP4JTS(0,I1,I3,I4,I2,QMAX)
         ELSE
-          CALL PY4JTS(0,I2,I3,I4,I1,QMAX)
+          CALL SP4JTS(0,I2,I3,I4,I1,QMAX)
         ENDIF
       ENDIF
  
 C...Boost back original partons and mark them as deleted.
-      CALL PYROBO(I1,I1,0D0,0D0,BETA(1),BETA(2),BETA(3))
-      CALL PYROBO(I2,I2,0D0,0D0,BETA(1),BETA(2),BETA(3))
-      CALL PYROBO(I3,I3,0D0,0D0,BETA(1),BETA(2),BETA(3))
-      CALL PYROBO(I4,I4,0D0,0D0,BETA(1),BETA(2),BETA(3))
+      CALL SPROBO(I1,I1,0D0,0D0,BETA(1),BETA(2),BETA(3))
+      CALL SPROBO(I2,I2,0D0,0D0,BETA(1),BETA(2),BETA(3))
+      CALL SPROBO(I3,I3,0D0,0D0,BETA(1),BETA(2),BETA(3))
+      CALL SPROBO(I4,I4,0D0,0D0,BETA(1),BETA(2),BETA(3))
       K(I1,1)=K(I1,1)+10
       K(I2,1)=K(I2,1)+10
       K(I3,1)=K(I3,1)+10
       K(I4,1)=K(I4,1)+10
  
 C...Rotate shower initiating partons to be along z axis.
-      PHI=PYANGL(P(NSAV+1,1),P(NSAV+1,2))
-      CALL PYROBO(NSAV+1,NSAV+6,0D0,-PHI,0D0,0D0,0D0)
-      THE=PYANGL(P(NSAV+1,3),P(NSAV+1,1))
-      CALL PYROBO(NSAV+1,NSAV+6,-THE,0D0,0D0,0D0,0D0)
+      PHI=SPANGL(P(NSAV+1,1),P(NSAV+1,2))
+      CALL SPROBO(NSAV+1,NSAV+6,0D0,-PHI,0D0,0D0,0D0)
+      THE=SPANGL(P(NSAV+1,3),P(NSAV+1,1))
+      CALL SPROBO(NSAV+1,NSAV+6,-THE,0D0,0D0,0D0,0D0)
  
-C...Set up copy of shower initiating partons as on mass shell.
+C...Set up cosp of shower initiating partons as on mass shell.
       DO 140 I=N+1,N+2
         DO 130 J=1,5
           K(I,J)=0
@@ -42013,7 +42013,7 @@ C...Connect up colours.
       IF(IRAD.EQ.0) MSTJ(41)=1
       IJOIN(1)=N-1
       IJOIN(2)=N
-      CALL PYJOIN(2,IJOIN)
+      CALL SPJOIN(2,IJOIN)
  
 C...Decide on maximum virtuality and do parton shower.
       IF(PMAX.LT.PARJ(82)) THEN
@@ -42021,18 +42021,18 @@ C...Decide on maximum virtuality and do parton shower.
       ELSE
         PQMAX=PMAX
       ENDIF
-      CALL PYSHOW(NSAV+1,-8,PQMAX)
+      CALL SPSHOW(NSAV+1,-8,PQMAX)
  
 C...Rotate and boost back system.
-      CALL PYROBO(NSAV+1,N,THE,PHI,BETA(1),BETA(2),BETA(3))
+      CALL SPROBO(NSAV+1,N,THE,PHI,BETA(1),BETA(2),BETA(3))
  
 C...Do fragmentation and decays.
-      CALL PYEXEC
+      CALL SPEXEC
  
-C...Call PYHEPC to convert output from PYJETS to HEPEVT common.
+C...Call SPHEPC to convert output from SPJETS to HEPEVT common.
       IF(ICOM.EQ.0) THEN
         MSTU(28)=0
-        CALL PYHEPC(1)
+        CALL SPHEPC(1)
       ENDIF
  
       RETURN
@@ -42040,18 +42040,18 @@ C...Call PYHEPC to convert output from PYJETS to HEPEVT common.
  
 C*********************************************************************
  
-C...PY4JTW
-C...Auxiliary to PY4JET, to evaluate weight of configuration.
+C...SP4JTW
+C...Auxiliary to SP4JET, to evaluate weight of configuration.
  
-      FUNCTION PY4JTW(IA1,IA2,IA3,IA4)
+      FUNCTION SP4JTW(IA1,IA2,IA3,IA4)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      SAVE /PYJETS/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      SAVE /SPJETS/
  
 C...First case: when both original partons radiate.
 C...IA1 /= 0: N+1 -> IA1 + IA2, N+2 -> IA3 + IA4.
@@ -42101,25 +42101,25 @@ C...IA1  = 0: N+1 -> IA2 + N+2, N+2 -> IA3 + IA4.
       ENDIF
  
 C...Total weight.
-      PY4JTW=WT1*WT2
+      SP4JTW=WT1*WT2
  
       RETURN
       END
  
 C*********************************************************************
  
-C...PY4JTS
-C...Auxiliary to PY4JET, to set up chosen configuration.
+C...SP4JTS
+C...Auxiliary to SP4JET, to set up chosen configuration.
  
-      SUBROUTINE PY4JTS(IA1,IA2,IA3,IA4,IA5,QMAX)
+      SUBROUTINE SP4JTS(IA1,IA2,IA3,IA4,IA5,QMAX)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      SAVE /PYJETS/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      SAVE /SPJETS/
  
 C...Reset info.
       DO 110 I=N+1,N+6
@@ -42251,21 +42251,21 @@ C...Set up momenta for new partons.
  
 C*********************************************************************
  
-C...PYJOIN
+C...SPJOIN
 C...Connects a sequence of partons with colour flow indices,
 C...as required for subsequent shower evolution (or other operations).
  
-      SUBROUTINE PYJOIN(NJOIN,IJOIN)
+      SUBROUTINE SPJOIN(NJOIN,IJOIN)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/
 C...Local array.
       DIMENSION IJOIN(*)
  
@@ -42276,7 +42276,7 @@ C...Check that partons are of right types to be connected.
         I=IJOIN(IJN)
         IF(I.LE.0.OR.I.GT.N) GOTO 120
         IF(K(I,1).LT.1.OR.K(I,1).GT.3) GOTO 120
-        KC=PYCOMP(K(I,2))
+        KC=SPCOMP(K(I,2))
         IF(KC.EQ.0) GOTO 120
         KQ=KCHG(KC,2)*ISIGN(1,K(I,2))
         IF(KQ.EQ.0) GOTO 120
@@ -42288,7 +42288,7 @@ C...Check that partons are of right types to be connected.
  
 C...Connect the partons sequentially (closing for gluon loop).
       KCS=(9-KQS)/2
-      IF(KQS.EQ.2) KCS=INT(4.5D0+PYR(0))
+      IF(KQS.EQ.2) KCS=INT(4.5D0+SPR(0))
       DO 110 IJN=1,NJOIN
         I=IJOIN(IJN)
         K(I,1)=3
@@ -42304,49 +42304,49 @@ C...Connect the partons sequentially (closing for gluon loop).
  
 C...Error exit: no action taken.
       RETURN
-  120 CALL PYERRM(12,
-     &'(PYJOIN:) given entries can not be joined by one string')
+  120 CALL SPERRM(12,
+     &'(SPJOIN:) given entries can not be joined by one string')
  
       RETURN
       END
  
 C*********************************************************************
  
-C...PYGIVE
+C...SPGIVE
 C...Sets values of commonblock variables.
  
-      SUBROUTINE PYGIVE(CHIN)
+      SUBROUTINE SPGIVE(CHIN)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      COMMON/PYDAT4/CHAF(500,2)
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      COMMON/SPDAT4/CHAF(500,2)
       CHARACTER CHAF*16
-      COMMON/PYDATR/MRPY(6),RRPY(100)
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      COMMON/PYINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
-      COMMON/PYINT4/MWID(500),WIDS(500,5)
-      COMMON/PYINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
-      COMMON/PYINT6/PROC(0:500)
+      COMMON/SPDATR/MRSP(6),RRSP(100)
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      COMMON/SPINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
+      COMMON/SPINT4/MWID(500),WIDS(500,5)
+      COMMON/SPINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
+      COMMON/SPINT6/PROC(0:500)
       CHARACTER PROC*28
-      COMMON/PYINT7/SIGT(0:6,0:6,0:5)
-      COMMON/PYINT8/XPVMD(-6:6),XPANL(-6:6),XPANH(-6:6),XPBEH(-6:6),
+      COMMON/SPINT7/SIGT(0:6,0:6,0:5)
+      COMMON/SPINT8/XPVMD(-6:6),XPANL(-6:6),XPANH(-6:6),XPBEH(-6:6),
      &XPDIR(-6:6)
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-      COMMON/PYMSRV/RVLAM(3,3,3), RVLAMP(3,3,3), RVLAMB(3,3,3)
-      COMMON/PYTCSM/ITCM(0:99),RTCM(0:99)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/,/PYDAT3/,/PYDAT4/,/PYDATR/,
-     &/PYSUBS/,/PYPARS/,/PYINT1/,/PYINT2/,/PYINT3/,/PYINT4/,
-     &/PYINT5/,/PYINT6/,/PYINT7/,/PYINT8/,/PYMSSM/,/PYMSRV/,/PYTCSM/
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+      COMMON/SPMSRV/RVLAM(3,3,3), RVLAMP(3,3,3), RVLAMB(3,3,3)
+      COMMON/SPTCSM/ITCM(0:99),RTCM(0:99)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/,/SPDAT3/,/SPDAT4/,/SPDATR/,
+     &/SPSUBS/,/SPPARS/,/SPINT1/,/SPINT2/,/SPINT3/,/SPINT4/,
+     &/SPINT5/,/SPINT6/,/SPINT7/,/SPINT8/,/SPMSSM/,/SPMSRV/,/SPTCSM/
 C...Local arrays and character variables.
       CHARACTER CHIN*(*),CHFIX*104,CHBIT*104,CHOLD*8,CHNEW*8,CHOLD2*28,
      &CHNEW2*28,CHNAM*6,CHVAR(54)*6,CHALP(2)*26,CHIND*8,CHINI*10,
@@ -42356,8 +42356,8 @@ C...Local arrays and character variables.
 C...For each variable to be translated give: name,
 C...integer/real/character, no. of indices, lower&upper index bounds.
       DATA CHVAR/'N','K','P','V','MSTU','PARU','MSTJ','PARJ','KCHG',
-     &'PMAS','PARF','VCKM','MDCY','MDME','BRAT','KFDP','CHAF','MRPY',
-     &'RRPY','MSEL','MSUB','KFIN','CKIN','MSTP','PARP','MSTI','PARI',
+     &'PMAS','PARF','VCKM','MDCY','MDME','BRAT','KFDP','CHAF','MRSP',
+     &'RRSP','MSEL','MSUB','KFIN','CKIN','MSTP','PARP','MSTI','PARI',
      &'MINT','VINT','ISET','KFPR','COEF','ICOL','XSFX','ISIG','SIGH',
      &'MWID','WIDS','NGEN','XSEC','PROC','SIGT','XPVMD','XPANL',
      &'XPANH','XPBEH','XPDIR','IMSS','RMSS','RVLAM','RVLAMP','RVLAMB',
@@ -42384,7 +42384,7 @@ C...integer/real/character, no. of indices, lower&upper index bounds.
      &'ABCDEFGHIJKLMNOPQRSTUVWXYZ'/
  
 C...Length of character variable. Subdivide it into instructions.
-      IF(MSTU(12).GE.1) CALL PYLIST(0)
+      IF(MSTU(12).GE.1) CALL SPLIST(0)
       CHBIT=CHIN//' '
       LBIT=101
   100 LBIT=LBIT-1
@@ -42426,7 +42426,7 @@ C...Identify commonblock variable.
         IF(CHNAM.EQ.CHVAR(IV)) IVAR=IV
   180 CONTINUE
       IF(IVAR.EQ.0) THEN
-        CALL PYERRM(18,'(PYGIVE:) do not recognize variable '//CHNAM)
+        CALL SPERRM(18,'(SPGIVE:) do not recognize variable '//CHNAM)
         LLOW=LHIG
         IF(LLOW.LT.LTOT) GOTO 120
         RETURN
@@ -42447,10 +42447,10 @@ C...Identify any indices.
      &  IVAR.EQ.37)) THEN
           CHIND(LNAM-LIND+11:8)=CHBIT(LNAM+2:LIND-1)
           READ(CHIND,'(I8)') KF
-          I1=PYCOMP(KF)
+          I1=SPCOMP(KF)
         ELSEIF(CHBIT(LNAM+1:LNAM+1).EQ.'C'.OR.CHBIT(LNAM+1:LNAM+1).EQ.
      &    'c') THEN
-          CALL PYERRM(18,'(PYGIVE:) not allowed to use C index for '//
+          CALL SPERRM(18,'(SPGIVE:) not allowed to use C index for '//
      &    CHNAM)
           LLOW=LHIG
           IF(LLOW.LT.LTOT) GOTO 120
@@ -42496,7 +42496,7 @@ C...Check that indices allowed.
      &IERR=4
       IF(CHBIT(LNAM:LNAM).NE.'=') IERR=5
       IF(IERR.GE.1) THEN
-        CALL PYERRM(18,'(PYGIVE:) unallowed indices for '//
+        CALL SPERRM(18,'(SPGIVE:) unallowed indices for '//
      &  CHBIT(1:LNAM-1))
         LLOW=LHIG
         IF(LLOW.LT.LTOT) GOTO 120
@@ -42539,9 +42539,9 @@ C...Save old value of variable.
       ELSEIF(IVAR.EQ.17) THEN
         CHOLD=CHAF(I1,I2)
       ELSEIF(IVAR.EQ.18) THEN
-        IOLD=MRPY(I1)
+        IOLD=MRSP(I1)
       ELSEIF(IVAR.EQ.19) THEN
-        ROLD=RRPY(I1)
+        ROLD=RRSP(I1)
       ELSEIF(IVAR.EQ.20) THEN
         IOLD=MSEL
       ELSEIF(IVAR.EQ.21) THEN
@@ -42684,9 +42684,9 @@ C...Store new variable value.
       ELSEIF(IVAR.EQ.17) THEN
         CHAF(I1,I2)=CHNEW
       ELSEIF(IVAR.EQ.18) THEN
-        MRPY(I1)=INEW
+        MRSP(I1)=INEW
       ELSEIF(IVAR.EQ.19) THEN
-        RRPY(I1)=RNEW
+        RRSP(I1)=RNEW
       ELSEIF(IVAR.EQ.20) THEN
         MSEL=INEW
       ELSEIF(IVAR.EQ.21) THEN
@@ -42790,28 +42790,28 @@ C...Format statement for output on unit MSTU(11) (by default 6).
  
 C*********************************************************************
  
-C...PYEXEC
+C...SPEXEC
 C...Administrates the fragmentation and decay chain.
  
-      SUBROUTINE PYEXEC
+      SUBROUTINE SPEXEC
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      COMMON/PYINT4/MWID(500),WIDS(500,5)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/,/PYDAT3/,/PYINT4/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      COMMON/SPINT4/MWID(500),WIDS(500,5)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/,/SPDAT3/,/SPINT4/
 C...Local array.
       DIMENSION PS(2,6),IJOIN(100)
  
 C...Initialize and reset.
       MSTU(24)=0
-      IF(MSTU(12).GE.1) CALL PYLIST(0)
+      IF(MSTU(12).GE.1) CALL SPLIST(0)
       MSTU(29)=0
       MSTU(31)=MSTU(31)+1
       MSTU(1)=0
@@ -42832,7 +42832,7 @@ C...Sum up momentum, energy and charge for starting entries.
         DO 120 J=1,4
           PS(1,J)=PS(1,J)+P(I,J)
   120   CONTINUE
-        PS(1,6)=PS(1,6)+PYCHGE(K(I,2))
+        PS(1,6)=PS(1,6)+SPCHGE(K(I,2))
   130 CONTINUE
       PARU(21)=PS(1,4)
  
@@ -42840,13 +42840,13 @@ C...Start by all decays of coloured resonances involved in shower.
       NORIG=N
       DO 140 I=1,NORIG
         IF(K(I,1).EQ.3) THEN
-          KC=PYCOMP(K(I,2))
-          IF(MWID(KC).NE.0.AND.KCHG(KC,2).NE.0) CALL PYRESD(I)
+          KC=SPCOMP(K(I,2))
+          IF(MWID(KC).NE.0.AND.KCHG(KC,2).NE.0) CALL SPRESD(I)
         ENDIF
   140 CONTINUE
  
 C...Prepare system for subsequent fragmentation/decay.
-      CALL PYPREP(0)
+      CALL SPPREP(0)
  
 C...Loop through jet fragmentation and particle decays.
       MBE=0
@@ -42854,11 +42854,11 @@ C...Loop through jet fragmentation and particle decays.
       IP=0
   160 IP=IP+1
       KC=0
-      IF(K(IP,1).GT.0.AND.K(IP,1).LE.10) KC=PYCOMP(K(IP,2))
+      IF(K(IP,1).GT.0.AND.K(IP,1).LE.10) KC=SPCOMP(K(IP,2))
       IF(KC.EQ.0) THEN
  
 C...Deal with any remaining undecayed resonance
-C...(normally the task of PYEVNT, so seldom used).
+C...(normally the task of SPEVNT, so seldom used).
       ELSEIF(MWID(KC).NE.0) THEN
         IBEG=IP
         IF(KCHG(KC,2).NE.0.AND.K(I,1).NE.3) THEN
@@ -42869,37 +42869,37 @@ C...(normally the task of PYEVNT, so seldom used).
           IEND=IP-1
   180     IEND=IEND+1
           IF(IEND.LT.N.AND.K(IEND,1).EQ.2) GOTO 180
-          IF(IEND.LT.N.AND.KCHG(PYCOMP(K(IEND,2)),2).EQ.0) GOTO 180
+          IF(IEND.LT.N.AND.KCHG(SPCOMP(K(IEND,2)),2).EQ.0) GOTO 180
           NJOIN=0
           DO 190 I=IBEG,IEND
-            IF(KCHG(PYCOMP(K(IEND,2)),2).NE.0) THEN
+            IF(KCHG(SPCOMP(K(IEND,2)),2).NE.0) THEN
               NJOIN=NJOIN+1
               IJOIN(NJOIN)=I
             ENDIF
   190     CONTINUE
         ENDIF
-        CALL PYRESD(IP)
-        CALL PYPREP(IBEG)
+        CALL SPRESD(IP)
+        CALL SPPREP(IBEG)
  
 C...Particle decay if unstable and allowed. Save long-lived particle
 C...decays until second pass after Bose-Einstein effects.
       ELSEIF(KCHG(KC,2).EQ.0) THEN
         IF(MSTJ(21).GE.1.AND.MDCY(KC,1).GE.1.AND.(MSTJ(51).LE.0.OR.MBE
      &  .EQ.2.OR.PMAS(KC,2).GE.PARJ(91).OR.IABS(K(IP,2)).EQ.311))
-     &  CALL PYDECY(IP)
+     &  CALL SPDECY(IP)
  
 C...Decay products may develop a shower.
         IF(MSTJ(92).GT.0) THEN
           IP1=MSTJ(92)
           QMAX=SQRT(MAX(0D0,(P(IP1,4)+P(IP1+1,4))**2-(P(IP1,1)+P(IP1+1,
      &    1))**2-(P(IP1,2)+P(IP1+1,2))**2-(P(IP1,3)+P(IP1+1,3))**2))
-          CALL PYSHOW(IP1,IP1+1,QMAX)
-          CALL PYPREP(IP1)
+          CALL SPSHOW(IP1,IP1+1,QMAX)
+          CALL SPPREP(IP1)
           MSTJ(92)=0
         ELSEIF(MSTJ(92).LT.0) THEN
           IP1=-MSTJ(92)
-          CALL PYSHOW(IP1,-3,P(IP,5))
-          CALL PYPREP(IP1)
+          CALL SPSHOW(IP1,-3,P(IP,5))
+          CALL SPPREP(IP1)
           MSTJ(92)=0
         ENDIF
  
@@ -42910,26 +42910,26 @@ C...Jet fragmentation: string or independent fragmentation.
         IF(MSTJ(21).GE.2.AND.K(IP,1).EQ.2.AND.N.GT.IP) THEN
           IF(K(IP+1,1).EQ.1.AND.K(IP+1,3).EQ.K(IP,3).AND.
      &    K(IP,3).GT.0.AND.K(IP,3).LT.IP) THEN
-            IF(KCHG(PYCOMP(K(K(IP,3),2)),2).EQ.0) MFRAG=MIN(1,MFRAG)
+            IF(KCHG(SPCOMP(K(K(IP,3),2)),2).EQ.0) MFRAG=MIN(1,MFRAG)
           ENDIF
         ENDIF
-        IF(MFRAG.EQ.1) CALL PYSTRF(IP)
-        IF(MFRAG.EQ.2) CALL PYINDF(IP)
+        IF(MFRAG.EQ.1) CALL SPSTRF(IP)
+        IF(MFRAG.EQ.2) CALL SPINDF(IP)
         IF(MFRAG.EQ.2.AND.K(IP,1).EQ.1) MCONS=0
         IF(MFRAG.EQ.2.AND.(MSTJ(3).LE.0.OR.MOD(MSTJ(3),5).EQ.0)) MCONS=0
       ENDIF
  
-C...Loop back if enough space left in PYJETS and no error abort.
+C...Loop back if enough space left in SPJETS and no error abort.
       IF(MSTU(24).NE.0.AND.MSTU(21).GE.2) THEN
       ELSEIF(IP.LT.N.AND.N.LT.MSTU(4)-20-MSTU(32)) THEN
         GOTO 160
       ELSEIF(IP.LT.N) THEN
-        CALL PYERRM(11,'(PYEXEC:) no more memory left in PYJETS')
+        CALL SPERRM(11,'(SPEXEC:) no more memory left in SPJETS')
       ENDIF
  
 C...Include simple Bose-Einstein effect parametrization if desired.
       IF(MBE.EQ.1.AND.MSTJ(51).GE.1) THEN
-        CALL PYBOEI(NSAV)
+        CALL SPBOEI(NSAV)
         GOTO 150
       ENDIF
  
@@ -42939,38 +42939,38 @@ C...Check that momentum, energy and charge were conserved.
         DO 200 J=1,4
           PS(2,J)=PS(2,J)+P(I,J)
   200   CONTINUE
-        PS(2,6)=PS(2,6)+PYCHGE(K(I,2))
+        PS(2,6)=PS(2,6)+SPCHGE(K(I,2))
   210 CONTINUE
       PDEV=(ABS(PS(2,1)-PS(1,1))+ABS(PS(2,2)-PS(1,2))+ABS(PS(2,3)-
      &PS(1,3))+ABS(PS(2,4)-PS(1,4)))/(1D0+ABS(PS(2,4))+ABS(PS(1,4)))
-      IF(MCONS.EQ.1.AND.PDEV.GT.PARU(11)) CALL PYERRM(15,
-     &'(PYEXEC:) four-momentum was not conserved')
-      IF(MCONS.EQ.1.AND.ABS(PS(2,6)-PS(1,6)).GT.0.1D0) CALL PYERRM(15,
-     &'(PYEXEC:) charge was not conserved')
+      IF(MCONS.EQ.1.AND.PDEV.GT.PARU(11)) CALL SPERRM(15,
+     &'(SPEXEC:) four-momentum was not conserved')
+      IF(MCONS.EQ.1.AND.ABS(PS(2,6)-PS(1,6)).GT.0.1D0) CALL SPERRM(15,
+     &'(SPEXEC:) charge was not conserved')
  
       RETURN
       END
  
 C*********************************************************************
  
-C...PYPREP
+C...SPPREP
 C...Rearranges partons along strings.
 C...Special considerations for systems with junctions, with
 C...possibility of junction-antijunction annihilation.
 C...Allows small systems to collapse into one or two particles.
 C...Checks flavours and colour singlet invariant masses.
  
-      SUBROUTINE PYPREP(IP)
+      SUBROUTINE SPPREP(IP)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/,/PYDAT3/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/,/SPDAT3/
 C...Local arrays.
       DIMENSION DPS(5),DPC(5),UE(3),PG(5),E1(3),E2(3),E3(3),E4(3),
      &ECL(3),IJUNC(10,0:4),IPIECE(30,0:4),KFEND(4),KFQ(4),
@@ -43025,15 +43025,15 @@ C...prevent the colour mother from connecting here again.
               ELSE IF (ILC.NE.3) THEN
 C...This could happen if 2 legs of a junction connect to other
 C...junctions.
-                CALL PYERRM(12,
-     &          '(PYPREP:) Too many junction-junction strings.')
+                CALL SPERRM(12,
+     &          '(SPPREP:) Too many junction-junction strings.')
               ENDIF
             ENDIF
           ENDIF
  
 C...Look for coloured string endpoint, or (later) leftover gluon.
           IF(K(I,1).NE.3) GOTO 160
-          KC=PYCOMP(K(I,2))
+          KC=SPCOMP(K(I,2))
           IF(KC.EQ.0) GOTO 160
           KQ=KCHG(KC,2)
           IF(KQ.EQ.0.OR.(MQGST.LE.2.AND.KQ.EQ.2)) GOTO 160
@@ -43047,19 +43047,19 @@ C...Pick up loose string end.
           NSTP=0
   110     NSTP=NSTP+1
           IF(NSTP.GT.4*N) THEN
-            CALL PYERRM(14,'(PYPREP:) caught in infinite loop')
+            CALL SPERRM(14,'(SPPREP:) caught in infinite loop')
             RETURN
           ENDIF
  
-C...Copy undecayed parton. Finished if reached string endpoint.
+C...Cosp undecayed parton. Finished if reached string endpoint.
           IF(K(IA,1).EQ.3) THEN
             IF(I1.GE.MSTU(4)-MSTU32-5) THEN
-              CALL PYERRM(11,'(PYPREP:) no more memory left in PYJETS')
+              CALL SPERRM(11,'(SPPREP:) no more memory left in SPJETS')
               RETURN
             ENDIF
             I1=I1+1
             K(I1,1)=2
-            IF(NSTP.GE.2.AND.KCHG(PYCOMP(K(IA,2)),2).NE.2) K(I1,1)=1
+            IF(NSTP.GE.2.AND.KCHG(SPCOMP(K(IA,2)),2).NE.2) K(I1,1)=1
             K(I1,2)=K(IA,2)
             K(I1,3)=IA
             K(I1,4)=0
@@ -43072,29 +43072,29 @@ C...Copy undecayed parton. Finished if reached string endpoint.
             IF(K(I1,1).EQ.1) GOTO 160
           ENDIF
  
-C...Also finished (for now) if reached junction; then copy to end.
+C...Also finished (for now) if reached junction; then cosp to end.
           IF(K(IA,1).EQ.42) THEN
-            NCOPY=I1-I1BEG
-            IF(I1.GE.MSTU(4)-MSTU32-NCOPY-5) THEN
-              CALL PYERRM(11,'(PYPREP:) no more memory left in PYJETS')
+            NCOSP=I1-I1BEG
+            IF(I1.GE.MSTU(4)-MSTU32-NCOSP-5) THEN
+              CALL SPERRM(11,'(SPPREP:) no more memory left in SPJETS')
               RETURN
             ENDIF
-            IF (MQGST.LE.2.AND.NCOPY.NE.0) THEN
-              DO 140 ICOPY=1,NCOPY
+            IF (MQGST.LE.2.AND.NCOSP.NE.0) THEN
+              DO 140 ICOSP=1,NCOSP
                 DO 130 J=1,5
-                  K(MSTU(4)-MSTU32-ICOPY,J)=K(I1BEG+ICOPY,J)
-                  P(MSTU(4)-MSTU32-ICOPY,J)=P(I1BEG+ICOPY,J)
-                  V(MSTU(4)-MSTU32-ICOPY,J)=V(I1BEG+ICOPY,J)
+                  K(MSTU(4)-MSTU32-ICOSP,J)=K(I1BEG+ICOSP,J)
+                  P(MSTU(4)-MSTU32-ICOSP,J)=P(I1BEG+ICOSP,J)
+                  V(MSTU(4)-MSTU32-ICOSP,J)=V(I1BEG+ICOSP,J)
   130           CONTINUE
   140         CONTINUE
             ENDIF
             NPIECE=NPIECE+1
             IPIECE(NPIECE,0)=I
             IPIECE(NPIECE,1)=MSTU32+1
-            IPIECE(NPIECE,2)=MSTU32+NCOPY
+            IPIECE(NPIECE,2)=MSTU32+NCOSP
             IPIECE(NPIECE,3)=IB
             IPIECE(NPIECE,4)=IA
-            MSTU32=MSTU32+NCOPY
+            MSTU32=MSTU32+NCOSP
             I1=I1BEG
             GOTO 160
           ENDIF
@@ -43114,7 +43114,7 @@ C...GOTO next parton in colour space.
             MREV=1
           ENDIF
           IF(IA.LE.0.OR.IA.GT.N) THEN
-            CALL PYERRM(12,'(PYPREP:) colour rearrangement failed')
+            CALL SPERRM(12,'(SPPREP:) colour rearrangement failed')
             RETURN
           ENDIF
           IF(MOD(K(IA,4)/MSTU(5),MSTU(5)).EQ.IB.OR.MOD(K(IA,5)/MSTU(5),
@@ -43202,7 +43202,7 @@ C..Order pieces belonging to this junction. Also look for j-j.
               MREV = 0
             ENDIF
   220     CONTINUE
-C...Copy back chains in proper order. MREV=0/1 : descending/ascending
+C...Cosp back chains in proper order. MREV=0/1 : descending/ascending
           IPC=IJUNC(IJUCNT,IHK)
           DO 240 ICP=IPIECE(IPC,1+MREV),IPIECE(IPC,2-MREV),1-2*MREV
             I1=I1+1
@@ -43236,7 +43236,7 @@ C...Shift to end junction if a j-j string has been processed.
           K(I1,3)=K(IJUS,3)
   270     IF (IHK.LT.3) GOTO 200
         ELSE
-          CALL PYERRM(12,'(PYPREP:) Unknown junction type')
+          CALL SPERRM(12,'(SPPREP:) Unknown junction type')
         ENDIF
         IF (IJUCNT.NE.NJUNC) GOTO 180
       ENDIF
@@ -43302,7 +43302,7 @@ C...Decide how to rearrange so that new last has highest energy.
               ENDIF
               IRNG(3,1)=IJUR(3)
               IRNG(3,2)=IJUR(3)
-C...Copy in correct order below bottom of current event record.
+C...Cosp in correct order below bottom of current event record.
               I2=N
               DO 350 II=1,4
                 DO 340 I1=IRNG(II,1),IRNG(II,2),
@@ -43317,7 +43317,7 @@ C...Copy in correct order below bottom of current event record.
   340           CONTINUE
   350         CONTINUE
               K(I2,1)=1
-C...Copy back up, overwriting but now in correct order.
+C...Cosp back up, overwriting but now in correct order.
               DO 370 I1=NBEG,NEND
                 I2=I1-NBEG+N+1
                 DO 360 J=1,5
@@ -43375,10 +43375,10 @@ C...Store string piece division locations in event record
   390         CONTINUE
 C...Randomly choose between (1,3)(2,4) and (1,4)(2,3) topologies.
               ISW=0
-              IF (PYR(0).LT.0.5D0) ISW=1
+              IF (SPR(0).LT.0.5D0) ISW=1
 C...Randomly choose which qqbar string gets the jj gluons.
               IGS=1
-              IF (PYR(0).GT.0.5D0) IGS=2
+              IF (SPR(0).GT.0.5D0) IGS=2
 C...Only compute string lengths when no topology forced.
               IF (MSTJ(19).EQ.0) THEN
 C...Repeat following for each junction
@@ -43443,7 +43443,7 @@ C...Put |p| rather than m in 5th slot
   450             CONTINUE
 C...Compute boost
                   IJRFIT=IJRFIT+1
-                  CALL PYJURF(PUL,T)
+                  CALL SPJURF(PUL,T)
 C...Combine new boost (T) with old boost (TJUOLD)
                   TMP=T(1)*TJUOLD(1)+T(2)*TJUOLD(2)+T(3)*TJUOLD(3)
                   DO 460 IX=1,3
@@ -43458,7 +43458,7 @@ C...Also prevent possibility of infinite loop.
      &                 IJRFIT.LT.MSTJ(18))THEN
                     GOTO 410
                   ELSEIF (IJRFIT.GE.MSTJ(18)) THEN
-                    CALL PYERRM(1,'(PYPREP:) failed to converge on JRF')
+                    CALL SPERRM(1,'(SPPREP:) failed to converge on JRF')
                   ENDIF
 C...Store final boost, with change of sign since TJJ motion vector.
                   DO 470 IX=1,3
@@ -43554,7 +43554,7 @@ C...Insert inter-junction gluon string piece (reversed)
   550             CONTINUE
                   K(NCOP,1)=1
   560           CONTINUE
-C...Copy system back in right order
+C...Cosp system back in right order
                 DO 580 ICOP=NBEG,NEND-2
                   DO 570 IX=1,5
                     P(ICOP,IX)=P(N+ICOP-NBEG+1,IX)
@@ -43596,23 +43596,23 @@ C...Find lowest-mass colour singlet jet system.
             DPS(J)=P(I,J)
   630     CONTINUE
           MSTJ(93)=1
-          DPS(5)=PYMASS(K(I,2))
+          DPS(5)=SPMASS(K(I,2))
         ELSEIF(K(I,1).EQ.2.AND.K(I,2).NE.21) THEN
           DO 640 J=1,4
             DPS(J)=DPS(J)+P(I,J)
   640     CONTINUE
           MSTJ(93)=1
-          DPS(5)=DPS(5)+PYMASS(K(I,2))
+          DPS(5)=DPS(5)+SPMASS(K(I,2))
         ELSEIF(K(I,1).EQ.2) THEN
           DO 650 J=1,4
             DPS(J)=DPS(J)+P(I,J)
   650     CONTINUE
-        ELSEIF(IC.NE.0.AND.KCHG(PYCOMP(K(I,2)),2).NE.0) THEN
+        ELSEIF(IC.NE.0.AND.KCHG(SPCOMP(K(I,2)),2).NE.0) THEN
           DO 660 J=1,4
             DPS(J)=DPS(J)+P(I,J)
   660     CONTINUE
           MSTJ(93)=1
-          DPS(5)=DPS(5)+PYMASS(K(I,2))
+          DPS(5)=DPS(5)+SPMASS(K(I,2))
           PD=SQRT(MAX(0D0,DPS(4)**2-DPS(1)**2-DPS(2)**2-DPS(3)**2))-
      &    DPS(5)
           IF(PD.LT.PDMIN) THEN
@@ -43692,7 +43692,7 @@ C...If four quark ends, join two to diquark.
         I2=2
         IF(KFQ(I1)*KFQ(I2).LT.0) I2=3
         IF(I2.EQ.3.AND.KFQ(I1)*KFQ(I2).LT.0) I2=4
-        KFLS=2*INT(PYR(0)+3D0*PARJ(4)/(1D0+3D0*PARJ(4)))+1
+        KFLS=2*INT(SPR(0)+3D0*PARJ(4)/(1D0+3D0*PARJ(4)))+1
         IF(KFQ(I1).EQ.KFQ(I2)) KFLS=3
         KFQ(I1)=ISIGN(1000*MAX(IABS(KFQ(I1)),IABS(KFQ(I2)))+
      &  100*MIN(IABS(KFQ(I1)),IABS(KFQ(I2)))+KFLS,KFQ(I1))
@@ -43707,7 +43707,7 @@ C...If two quark ends, plus quark or diquark, join quarks to diquark.
         I2=2
         IF(IABS(KFQ(I1)).GT.1000) I1=3
         IF(IABS(KFQ(I2)).GT.1000) I2=3
-        KFLS=2*INT(PYR(0)+3D0*PARJ(4)/(1D0+3D0*PARJ(4)))+1
+        KFLS=2*INT(SPR(0)+3D0*PARJ(4)/(1D0+3D0*PARJ(4)))+1
         IF(KFQ(I1).EQ.KFQ(I2)) KFLS=3
         KFQ(I1)=ISIGN(1000*MAX(IABS(KFQ(I1)),IABS(KFQ(I2)))+
      &  100*MIN(IABS(KFQ(I1)),IABS(KFQ(I2)))+KFLS,KFQ(I1))
@@ -43722,8 +43722,8 @@ C...Form two particles from flavours of lowest-mass system, if feasible.
  
 C...Open string with two specified endpoint flavours.
       IF(NQ.EQ.2) THEN
-        KC1=PYCOMP(KFQ(1))
-        KC2=PYCOMP(KFQ(2))
+        KC1=SPCOMP(KFQ(1))
+        KC2=SPCOMP(KFQ(2))
         IF(KC1.EQ.0.OR.KC2.EQ.0) GOTO 1050
         KQ1=KCHG(KC1,2)*ISIGN(1,KFQ(1))
         KQ2=KCHG(KC2,2)*ISIGN(1,KFQ(2))
@@ -43732,16 +43732,16 @@ C...Start with qq, if there is one. Only allow for rank 1 popcorn meson
   710   K1=KFQ(1)
         IF(IABS(KFQ(2)).GT.1000) K1=KFQ(2)
         MSTU(125)=0
-        CALL PYDCYK(K1,0,KFLN,K(N+2,2))
-        CALL PYDCYK(KFQ(1)+KFQ(2)-K1,-KFLN,KFLDMP,K(N+3,2))
+        CALL SPDCYK(K1,0,KFLN,K(N+2,2))
+        CALL SPDCYK(KFQ(1)+KFQ(2)-K1,-KFLN,KFLDMP,K(N+3,2))
         IF(K(N+2,2).EQ.0.OR.K(N+3,2).EQ.0) GOTO 710
  
 C...Open string with four specified flavours.
       ELSEIF(NQ.EQ.4) THEN
-        KC1=PYCOMP(KFQ(1))
-        KC2=PYCOMP(KFQ(2))
-        KC3=PYCOMP(KFQ(3))
-        KC4=PYCOMP(KFQ(4))
+        KC1=SPCOMP(KFQ(1))
+        KC2=SPCOMP(KFQ(2))
+        KC3=SPCOMP(KFQ(3))
+        KC4=SPCOMP(KFQ(4))
         IF(KC1.EQ.0.OR.KC2.EQ.0.OR.KC3.EQ.0.OR.KC4.EQ.0) GOTO 1050
         KQ1=KCHG(KC1,2)*ISIGN(1,KFQ(1))
         KQ2=KCHG(KC2,2)*ISIGN(1,KFQ(2))
@@ -43758,8 +43758,8 @@ C...Combine flavours pairwise to form two hadrons.
         I3=3
         IF(I2.EQ.3) I3=2
         I4=10-I1-I2-I3
-        CALL PYDCYK(KFQ(I1),KFQ(I2),KFLDMP,K(N+2,2))
-        CALL PYDCYK(KFQ(I3),KFQ(I4),KFLDMP,K(N+3,2))
+        CALL SPDCYK(KFQ(I1),KFQ(I2),KFLDMP,K(N+2,2))
+        CALL SPDCYK(KFQ(I3),KFQ(I4),KFLDMP,K(N+3,2))
         IF(K(N+2,2).EQ.0.OR.K(N+3,2).EQ.0) GOTO 720
  
 C...Closed string.
@@ -43767,13 +43767,13 @@ C...Closed string.
         IF(IABS(K(IC2,2)).NE.21) GOTO 1050
 C...No room for popcorn mesons in closed string -> 2 hadrons.
         MSTU(125)=0
-  730   CALL PYDCYK(1+INT((2D0+PARJ(2))*PYR(0)),0,KFLN,KFDMP)
-        CALL PYDCYK(KFLN,0,KFLM,K(N+2,2))
-        CALL PYDCYK(-KFLN,-KFLM,KFLDMP,K(N+3,2))
+  730   CALL SPDCYK(1+INT((2D0+PARJ(2))*SPR(0)),0,KFLN,KFDMP)
+        CALL SPDCYK(KFLN,0,KFLM,K(N+2,2))
+        CALL SPDCYK(-KFLN,-KFLM,KFLDMP,K(N+3,2))
         IF(K(N+2,2).EQ.0.OR.K(N+3,2).EQ.0) GOTO 730
       ENDIF
-      P(N+2,5)=PYMASS(K(N+2,2))
-      P(N+3,5)=PYMASS(K(N+3,2))
+      P(N+2,5)=SPMASS(K(N+2,2))
+      P(N+3,5)=SPMASS(K(N+3,2))
  
 C...If it does not work: try again (a number of times), give up (if no
 C...place to shuffle momentum or too many flavours), or form one hadron.
@@ -43795,28 +43795,28 @@ C...(Borrow slot N+2 for temporary direction.)
   740 CONTINUE
       DO 760 I=IC1+1,IC2-1
         IF((K(I,1).EQ.1.OR.K(I,1).EQ.2).AND.
-     &  KCHG(PYCOMP(K(I,2)),2).NE.0) THEN
+     &  KCHG(SPCOMP(K(I,2)),2).NE.0) THEN
           FRAC1=FOUR(IC2,I)/(FOUR(IC1,I)+FOUR(IC2,I))
           DO 750 J=1,4
             P(N+2,J)=P(N+2,J)+FRAC1*P(I,J)
   750     CONTINUE
         ENDIF
   760 CONTINUE
-      CALL PYROBO(N+2,N+2,0D0,0D0,-DPC(1)/DPC(4),-DPC(2)/DPC(4),
+      CALL SPROBO(N+2,N+2,0D0,0D0,-DPC(1)/DPC(4),-DPC(2)/DPC(4),
      &-DPC(3)/DPC(4))
-      THE1=PYANGL(P(N+2,3),SQRT(P(N+2,1)**2+P(N+2,2)**2))
-      PHI1=PYANGL(P(N+2,1),P(N+2,2))
+      THE1=SPANGL(P(N+2,3),SQRT(P(N+2,1)**2+P(N+2,2)**2))
+      PHI1=SPANGL(P(N+2,1),P(N+2,2))
  
 C...Second step: generate isotropic/anisotropic decay.
       PA=SQRT((PECM**2-(P(N+2,5)+P(N+3,5))**2)*(PECM**2-
      &(P(N+2,5)-P(N+3,5))**2))/(2D0*PECM)
-  770 UE(3)=PYR(0)
+  770 UE(3)=SPR(0)
       IF(PARJ(21).LE.0.01D0) UE(3)=1D0
       PT2=(1D0-UE(3)**2)*PA**2
       IF(MSTJ(16).LE.0) THEN
         PREV=0.5D0
       ELSE
-        IF(EXP(-PT2/(2D0*MAX(0.01D0,PARJ(21))**2)).LT.PYR(0)) GOTO 770
+        IF(EXP(-PT2/(2D0*MAX(0.01D0,PARJ(21))**2)).LT.SPR(0)) GOTO 770
         PR1=P(N+2,5)**2+PT2
         PR2=P(N+3,5)**2+PT2
         ALAMBD=SQRT(MAX(0D0,(PECM**2-PR1-PR2)**2-4D0*PR1*PR2))
@@ -43824,8 +43824,8 @@ C...Second step: generate isotropic/anisotropic decay.
         IF(MSTJ(11).EQ.2) PREVCF=PARJ(39)
         PREV=1D0/(1D0+EXP(MIN(50D0,PREVCF*ALAMBD*PARJ(40))))
       ENDIF
-      IF(PYR(0).LT.PREV) UE(3)=-UE(3)
-      PHI=PARU(2)*PYR(0)
+      IF(SPR(0).LT.PREV) UE(3)=-UE(3)
+      PHI=PARU(2)*SPR(0)
       UE(1)=SQRT(1D0-UE(3)**2)*COS(PHI)
       UE(2)=SQRT(1D0-UE(3)**2)*SIN(PHI)
       DO 780 J=1,3
@@ -43836,7 +43836,7 @@ C...Second step: generate isotropic/anisotropic decay.
       P(N+3,4)=SQRT(PA**2+P(N+3,5)**2)
  
 C...Third step: move back to event frame and set production vertex.
-      CALL PYROBO(N+2,N+3,THE1,PHI1,DPC(1)/DPC(4),DPC(2)/DPC(4),
+      CALL SPROBO(N+2,N+3,THE1,PHI1,DPC(1)/DPC(4),DPC(2)/DPC(4),
      &DPC(3)/DPC(4))
       DO 790 J=1,4
         V(N+1,J)=V(IC1,J)
@@ -43858,13 +43858,13 @@ C...Select hadron flavour from available quark flavours.
   820 IF(NQ.EQ.2.AND.IABS(KFQ(1)).GT.100.AND.IABS(KFQ(2)).GT.100) THEN
         GOTO 1050
       ELSEIF(NQ.EQ.2) THEN
-        CALL PYKFDI(KFQ(1),KFQ(2),KFLDMP,K(N+2,2))
+        CALL SPKFDI(KFQ(1),KFQ(2),KFLDMP,K(N+2,2))
       ELSE
-        KFLN=1+INT((2D0+PARJ(2))*PYR(0))
-        CALL PYKFDI(KFLN,-KFLN,KFLDMP,K(N+2,2))
+        KFLN=1+INT((2D0+PARJ(2))*SPR(0))
+        CALL SPKFDI(KFLN,-KFLN,KFLDMP,K(N+2,2))
       ENDIF
       IF(K(N+2,2).EQ.0) GOTO 820
-      P(N+2,5)=PYMASS(K(N+2,2))
+      P(N+2,5)=SPMASS(K(N+2,2))
  
 C...Use old algorithm for E/p conservation? (EN)
       IF (MSTJ(16).LE.0) GOTO 990
@@ -43886,7 +43886,7 @@ C...over the undecayed partons not in present cluster. (EN)
   830     I2=I2+1
           IF(K(I2,1).EQ.41) GOTO 850
           IF(K(I2,1).GT.10) GOTO 830
-          IF(KCHG(PYCOMP(K(I2,2)),2).EQ.0) GOTO 830
+          IF(KCHG(SPCOMP(K(I2,2)),2).EQ.0) GOTO 830
           IF(K(I1,2).EQ.21.AND.K(I2,2).NE.21.AND.K(I2,1).NE.1.AND.
      &    NJUNC.EQ.0) GOTO 850
           IF(K(I1,2).NE.21.AND.K(I2,2).EQ.21.AND.NJUNC.NE.0) GOTO 850
@@ -43918,7 +43918,7 @@ C...Is this the smallest so far?
             IBEG=I0
             IPCS=I1
           ENDIF
-        ELSEIF(K(I1,1).EQ.1.AND.KCHG(PYCOMP(K(I1,2)),2).NE.0) THEN
+        ELSEIF(K(I1,1).EQ.1.AND.KCHG(SPCOMP(K(I1,2)),2).NE.0) THEN
           I0=0
         ENDIF
   850 CONTINUE
@@ -43936,12 +43936,12 @@ C...Construct 'gluon' that is needed to put hadron on the mass shell.
           PG(J)=(1D0-FRAC)*P(N+1,J)
   860   CONTINUE
  
-C... Copy string with new gluon put in.
+C... Cosp string with new gluon put in.
         N=N+2
         I=IBEG-1
   870   I=I+1
         IF(K(I,1).NE.1.AND.K(I,1).NE.2.AND.K(I,1).NE.41) GOTO 870
-        IF(KCHG(PYCOMP(K(I,2)),2).EQ.0.AND.K(I,1).NE.41) GOTO 870
+        IF(KCHG(SPCOMP(K(I,2)),2).EQ.0.AND.K(I,1).NE.41) GOTO 870
         N=N+1
         DO 880 J=1,5
           K(N,J)=K(I,J)
@@ -43969,12 +43969,12 @@ C...Delta_m = m_clus - m_had < 0: have to absorb a 'gluon' instead,
 C...from string piece endpoints.
       ELSE
  
-C...Begin by copying string that should give energy to cluster.
+C...Begin by cosping string that should give energy to cluster.
         N=N+2
         I=IBEG-1
   900   I=I+1
         IF(K(I,1).NE.1.AND.K(I,1).NE.2.AND.K(I,1).NE.41) GOTO 900
-        IF(KCHG(PYCOMP(K(I,2)),2).EQ.0.AND.K(I,1).NE.41) GOTO 900
+        IF(KCHG(SPCOMP(K(I,2)),2).EQ.0.AND.K(I,1).NE.41) GOTO 900
         N=N+1
         DO 910 J=1,5
           K(N,J)=K(I,J)
@@ -44077,7 +44077,7 @@ C...Find parton/particle which combines to largest extra mass.
         DO 1000 I=MAX(1,IP),N
           IF(K(I,1).LE.0.OR.K(I,1).GT.10.OR.(I.GE.IC1.AND.I.LE.IC2
      &    .AND.K(I,1).GE.1.AND.K(I,1).LE.2)) GOTO 1000
-          IF(MCOMB.EQ.1) KCI=PYCOMP(K(I,2))
+          IF(MCOMB.EQ.1) KCI=SPCOMP(K(I,2))
           IF(MCOMB.EQ.1.AND.KCI.EQ.0) GOTO 1000
           IF(MCOMB.EQ.1.AND.KCHG(KCI,2).EQ.0.AND.I.LE.NS) GOTO 1000
           IF(MCOMB.EQ.2.AND.IABS(K(I,2)).GT.10.AND.IABS(K(I,2)).LE.100)
@@ -44106,14 +44106,14 @@ C...Shuffle energy and momentum to put new particle on mass shell.
  1020   CONTINUE
         N=N+2
       ELSE
-        CALL PYERRM(3,'(PYPREP:) no match for collapsing cluster')
+        CALL SPERRM(3,'(SPPREP:) no match for collapsing cluster')
         RETURN
       ENDIF
  
 C...Mark collapsed system and store daughter pointers. Iterate.
  1030 DO 1040 I=IC1,IC2
         IF((K(I,1).EQ.1.OR.K(I,1).EQ.2).AND.
-     &  KCHG(PYCOMP(K(I,2)),2).NE.0) THEN
+     &  KCHG(SPCOMP(K(I,2)),2).NE.0) THEN
           K(I,1)=K(I,1)+10
           IF(MSTU(16).NE.2) THEN
             K(I,4)=NSAV+1
@@ -44138,7 +44138,7 @@ C...Check flavours and invariant masses in parton systems.
       DO 1090 I=MAX(1,IP),N
         IF(K(I,1).EQ.41) NJU=NJU+1
         IF(K(I,1).LE.0.OR.K(I,1).GT.10) GOTO 1090
-        KC=PYCOMP(K(I,2))
+        KC=SPCOMP(K(I,2))
         IF(KC.EQ.0) GOTO 1090
         KQ=KCHG(KC,2)*ISIGN(1,K(I,2))
         IF(KQ.EQ.0) GOTO 1090
@@ -44147,7 +44147,7 @@ C...Check flavours and invariant masses in parton systems.
           KFN=KFN+1
           KQS=KQS+KQ
           MSTJ(93)=1
-          DPS(5)=DPS(5)+PYMASS(K(I,2))
+          DPS(5)=DPS(5)+SPMASS(K(I,2))
         ENDIF
         DO 1070 J=1,4
           DPS(J)=DPS(J)+P(I,J)
@@ -44164,10 +44164,10 @@ C...Check flavours and invariant masses in parton systems.
             NFERR=1
           ENDIF
           IF(NFERR.EQ.1) CALL
-     &    PYERRM(2,'(PYPREP:) unphysical flavour combination')
+     &    SPERRM(2,'(SPPREP:) unphysical flavour combination')
           IF(NP.NE.1.AND.DPS(4)**2-DPS(1)**2-DPS(2)**2-DPS(3)**2.LT.
-     &    (0.9D0*PARJ(32)+DPS(5))**2) CALL PYERRM(3,
-     &    '(PYPREP:) too small mass in jet system')
+     &    (0.9D0*PARJ(32)+DPS(5))**2) CALL SPERRM(3,
+     &    '(SPPREP:) too small mass in jet system')
           NP=0
           KFN=0
           KQS=0
@@ -44183,23 +44183,23 @@ C...Check flavours and invariant masses in parton systems.
  
 C*********************************************************************
  
-C...PYSTRF
+C...SPSTRF
 C...Handles the fragmentation of an arbitrary colour singlet
 C...jet system according to the Lund string fragmentation model.
  
-      SUBROUTINE PYSTRF(IP)
+      SUBROUTINE SPSTRF(IP)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/
 C...Local arrays. All MOPS variables ends with MO
-      DIMENSION DPS(5),KFL(3),PMQ(3),PX(3),PY(3),GAM(3),IE(2),PR(2),
+      DIMENSION DPS(5),KFL(3),PMQ(3),PX(3),SP(3),GAM(3),IE(2),PR(2),
      &IN(9),DHM(4),DHG(4),DP(5,5),IRANK(2),MJU(4),IJU(6),PJU(5,5),
      &TJU(5),KFJH(2),NJS(2),KFJS(2),PJS(4,5),MSTU9T(8),PARU9T(8),
      &INMO(9),PM2QMO(2),XTMO(2),EJSTR(2),IJUORI(2),IBARRK(2),
@@ -44229,20 +44229,20 @@ C...Identify parton system.
       I=IP-1
   110 I=I+1
       IF(I.GT.MIN(N,MSTU(4)-MSTU(32))) THEN
-        CALL PYERRM(12,'(PYSTRF:) failed to reconstruct jet system')
+        CALL SPERRM(12,'(SPSTRF:) failed to reconstruct jet system')
         IF(MSTU(21).GE.1) RETURN
       ENDIF
       IF(K(I,1).NE.1.AND.K(I,1).NE.2.AND.K(I,1).NE.41) GOTO 110
-      KC=PYCOMP(K(I,2))
+      KC=SPCOMP(K(I,2))
       IF(KC.EQ.0) GOTO 110
       KQ=KCHG(KC,2)*ISIGN(1,K(I,2))
       IF(KQ.EQ.0.AND.K(I,1).NE.41) GOTO 110
       IF(N+5*NP+11.GT.MSTU(4)-MSTU(32)-5) THEN
-        CALL PYERRM(11,'(PYSTRF:) no more memory left in PYJETS')
+        CALL SPERRM(11,'(SPSTRF:) no more memory left in SPJETS')
         IF(MSTU(21).GE.1) RETURN
       ENDIF
  
-C...Take copy of partons to be considered. Check flavour sum.
+C...Take cosp of partons to be considered. Check flavour sum.
       NP=NP+1
       DO 120 J=1,5
         K(N+NP,J)=K(I,J)
@@ -44263,7 +44263,7 @@ C...Take copy of partons to be considered. Check flavour sum.
       ENDIF
       IF(K(I,1).EQ.2.OR.K(I,1).EQ.41) GOTO 110
       IF(MOD(KQSUM,3).NE.0) THEN
-        CALL PYERRM(12,'(PYSTRF:) unphysical flavour combination')
+        CALL SPERRM(12,'(SPSTRF:) unphysical flavour combination')
         IF(MSTU(21).GE.1) RETURN
       ENDIF
       IF(MJU(1).GT.0.OR.MJU(2).GT.0) MSTU(29)=1
@@ -44272,7 +44272,7 @@ C...Boost copied system to CM frame (for better numerical precision).
       IF(ABS(DPS(3)).LT.0.99D0*DPS(4)) THEN
         MBST=0
         MSTU(33)=1
-        CALL PYROBO(N+1,N+NP,0D0,0D0,-DPS(1)/DPS(4),-DPS(2)/DPS(4),
+        CALL SPROBO(N+1,N+NP,0D0,0D0,-DPS(1)/DPS(4),-DPS(2)/DPS(4),
      &  -DPS(3)/DPS(4))
       ELSE
         MBST=1
@@ -44362,13 +44362,13 @@ C...this is usually the case!
         PARU13=2D0*PARU13
         GOTO 140
       ELSEIF(NTRY.GT.100) THEN
-        CALL PYERRM(14,'(PYSTRF:) caught in infinite loop')
+        CALL SPERRM(14,'(SPSTRF:) caught in infinite loop')
         IF(MSTU(21).GE.1) RETURN
       ENDIF
       I=N+NRS
       MSTU(90)=MSTU90
       IF(MJU(1).EQ.0.AND.MJU(2).EQ.0) GOTO 640
-      IF(MSTJ(12).GE.4) CALL PYERRM(29,'(PYSTRF:) sorry,'//
+      IF(MSTJ(12).GE.4) CALL SPERRM(29,'(SPSTRF:) sorry,'//
      &     ' junction strings not handled by MSTJ(12)>3 options')
       DO 630 JT=1,2
         NJS(JT)=0
@@ -44454,7 +44454,7 @@ C...Put |p| rather than m in 5th slot.
  
 C...Calculate boost from present frame to next JRF candidate.
         IJRFIT=IJRFIT+1
-        CALL PYJURF(PBST,TJU)
+        CALL SPJURF(PBST,TJU)
  
 C...Combine new boost (TJU) with old boost (TJUOLD)
         TMP=TJU(1)*TJUOLD(1)+TJU(2)*TJUOLD(2)+TJU(3)*TJUOLD(3)
@@ -44469,7 +44469,7 @@ C...Also prevent possibility of infinite loop.
      &  IJRFIT.LT.MSTJ(18)) THEN
           GOTO 220
         ELSEIF (IJRFIT.GE.MSTJ(18)) THEN
-          CALL PYERRM(1,'(PYSTRF:) failed to converge on JRF')
+          CALL SPERRM(1,'(SPSTRF:) failed to converge on JRF')
         ENDIF
  
 C...Now store total boost in TJU and change perception.
@@ -44541,7 +44541,7 @@ C...Junction strings: initialize flavour, momentum and starting pos.
             PARU13=2D0*PARU13
             GOTO 140
           ELSEIF(NTRY.GT.100) THEN
-            CALL PYERRM(14,'(PYSTRF:) caught in infinite loop')
+            CALL SPERRM(14,'(SPSTRF:) caught in infinite loop')
             IF(MSTU(21).GE.1) RETURN
           ENDIF
           I=ISAV
@@ -44560,7 +44560,7 @@ C...Junction strings: initialize flavour, momentum and starting pos.
   380     CONTINUE
           KFL(1)=K(IJU(IU),2)
           PX(1)=0D0
-          PY(1)=0D0
+          SP(1)=0D0
           GAM(1)=0D0
           DO 390 J=1,5
             PJU(IU+3,J)=0D0
@@ -44600,7 +44600,7 @@ C...Junction strings: find initial transverse directions.
 C...Junction strings: produce new particle, origin.
   420     I=I+1
           IF(2*I-NSAV.GE.MSTU(4)-MSTU(32)-5) THEN
-            CALL PYERRM(11,'(PYSTRF:) no more memory left in PYJETS')
+            CALL SPERRM(11,'(SPSTRF:) no more memory left in SPJETS')
             IF(MSTU(21).GE.1) RETURN
           ENDIF
           IRANKJ=IRANKJ+1
@@ -44610,16 +44610,16 @@ C...Junction strings: produce new particle, origin.
           K(I,5)=0
  
 C...Junction strings: generate flavour, hadron, pT, z and Gamma.
-  430     CALL PYKFDI(KFL(1),0,KFL(3),K(I,2))
+  430     CALL SPKFDI(KFL(1),0,KFL(3),K(I,2))
           IF(K(I,2).EQ.0) GOTO 360
           IF(IRANKJ.EQ.1.AND.IABS(KFL(1)).LE.10.AND.
      &    IABS(KFL(3)).GT.10) THEN
-            IF(PYR(0).GT.PARJ(19)) GOTO 430
+            IF(SPR(0).GT.PARJ(19)) GOTO 430
           ENDIF
-          P(I,5)=PYMASS(K(I,2))
-          CALL PYPTDI(KFL(1),PX(3),PY(3))
-          PR(1)=P(I,5)**2+(PX(1)+PX(3))**2+(PY(1)+PY(3))**2
-          CALL PYZDIS(KFL(1),KFL(3),PR(1),Z)
+          P(I,5)=SPMASS(K(I,2))
+          CALL SPPTDI(KFL(1),PX(3),SP(3))
+          PR(1)=P(I,5)**2+(PX(1)+PX(3))**2+(SP(1)+SP(3))**2
+          CALL SPZDIS(KFL(1),KFL(3),PR(1),Z)
           IF(IABS(KFL(1)).GE.4.AND.IABS(KFL(1)).LE.8.AND.
      &    MSTU(90).LT.8) THEN
             MSTU(90)=MSTU(90)+1
@@ -44637,7 +44637,7 @@ C...Junction strings: stepping within 'low' string region.
             P(IN(1)+2,4)=Z*P(IN(1)+2,3)
             P(IN(2)+2,4)=PR(1)/(P(IN(1)+2,4)*P(IN(1),5)**2)
             DO 450 J=1,4
-              P(I,J)=(PX(1)+PX(3))*P(IN(3),J)+(PY(1)+PY(3))*P(IN(3)+1,J)
+              P(I,J)=(PX(1)+PX(3))*P(IN(3),J)+(SP(1)+SP(3))*P(IN(3)+1,J)
   450       CONTINUE
             GOTO 550
 C...Has used up energy of junction string, i.e. no more hadrons in it.
@@ -44700,19 +44700,19 @@ C...Junction strings: find new transverse directions.
      &        DHCYX*DP(3,J))
   490       CONTINUE
 C...Express pT with respect to new axes, if sensible.
-            PXP=-(PX(3)*FOUR(IN(6),IN(3))+PY(3)*FOUR(IN(6)+1,IN(3)))
-            PYP=-(PX(3)*FOUR(IN(6),IN(3)+1)+PY(3)*FOUR(IN(6)+1,IN(3)+1))
-            IF(ABS(PXP**2+PYP**2-PX(3)**2-PY(3)**2).LT.0.01D0) THEN
+            PXP=-(PX(3)*FOUR(IN(6),IN(3))+SP(3)*FOUR(IN(6)+1,IN(3)))
+            SPP=-(PX(3)*FOUR(IN(6),IN(3)+1)+SP(3)*FOUR(IN(6)+1,IN(3)+1))
+            IF(ABS(PXP**2+SPP**2-PX(3)**2-SP(3)**2).LT.0.01D0) THEN
               PX(3)=PXP
-              PY(3)=PYP
+              SP(3)=SPP
             ENDIF
           ENDIF
  
 C...Junction strings: sum up known four-momentum, coefficients for m2.
           DO 520 J=1,4
             DHG(J)=0D0
-            P(I,J)=PX(1)*P(IN(6),J)+PY(1)*P(IN(6)+1,J)+PX(3)*P(IN(3),J)+
-     &      PY(3)*P(IN(3)+1,J)
+            P(I,J)=PX(1)*P(IN(6),J)+SP(1)*P(IN(6)+1,J)+PX(3)*P(IN(3),J)+
+     &      SP(3)*P(IN(3)+1,J)
             DO 500 IN1=IN(4),IN(1)-4,4
               P(I,J)=P(I,J)+P(IN1+2,3)*P(IN1,J)
   500       CONTINUE
@@ -44779,7 +44779,7 @@ C...Junction strings: particle four-momentum, remainder, loop back.
           IF(PJU(IU+3,5).LT.PJU(IU,5)) THEN
             KFL(1)=-KFL(3)
             PX(1)=-PX(3)
-            PY(1)=-PY(3)
+            SP(1)=-SP(3)
             GAM(1)=GAM(3)
             IF(IN(3).NE.IN(6)) THEN
               DO 570 J=1,4
@@ -44809,13 +44809,13 @@ C...Junction strings: loopback if much unused energy in both strings.
           EJSTR(IU)=PJU(IU,5)-PJU(IU+3,5)
   610   CONTINUE
         IF((MIN(EJSTR(1),EJSTR(2)).GT.PARJ(49).OR.
-     &  EJSTR(1).GT.PARJ(49)+PYR(0)*PARJ(50).OR.
-     &  EJSTR(2).GT.PARJ(49)+PYR(0)*PARJ(50))
+     &  EJSTR(1).GT.PARJ(49)+SPR(0)*PARJ(50).OR.
+     &  EJSTR(2).GT.PARJ(49)+SPR(0)*PARJ(50))
      &  .AND.NTRYER.LT.10) GOTO 320
  
 C...Junction strings: put together to new effective string endpoint.
         NJS(JT)=I-ISTA
-        KFLS=2*INT(PYR(0)+3D0*PARJ(4)/(1D0+3D0*PARJ(4)))+1
+        KFLS=2*INT(SPR(0)+3D0*PARJ(4)/(1D0+3D0*PARJ(4)))+1
         IF(KFJH(1).EQ.KFJH(2)) KFLS=3
         KFJS(JT)=ISIGN(1000*MAX(IABS(KFJH(1)),IABS(KFJH(2)))+
      &  100*MIN(IABS(KFJH(1)),IABS(KFJH(2)))+KFLS,KFJH(1))
@@ -44848,7 +44848,7 @@ C...Open versus closed strings. Choose breakup region for latter.
           P(N+NR+IS,1)=0.5D0*FOUR(N+IS,N+IS+1-NR*(IS/NR))
           W2SUM=W2SUM+P(N+NR+IS,1)
   650   CONTINUE
-        W2RAN=PYR(0)*W2SUM
+        W2RAN=SPR(0)*W2SUM
         NB=0
   660   NB=NB+1
         W2SUM=W2SUM-P(N+NR+NB,1)
@@ -44895,7 +44895,7 @@ C...Begin initialization: sum up energy, set starting position.
         PARU13=2D0*PARU13
         GOTO 140
       ELSEIF(NTRY.GT.100) THEN
-        CALL PYERRM(14,'(PYSTRF:) caught in infinite loop')
+        CALL SPERRM(14,'(SPSTRF:) caught in infinite loop')
         IF(MSTU(21).GE.1) RETURN
       ENDIF
       I=ISAV
@@ -44931,24 +44931,24 @@ C.. MOPS variables and switches
 C...Initialize flavour and pT variables for open string.
       IF(NS.LT.NR) THEN
         PX(1)=0D0
-        PY(1)=0D0
-        IF(NS.EQ.1.AND.MJU(1)+MJU(2).EQ.0) CALL PYPTDI(0,PX(1),PY(1))
+        SP(1)=0D0
+        IF(NS.EQ.1.AND.MJU(1)+MJU(2).EQ.0) CALL SPPTDI(0,PX(1),SP(1))
         PX(2)=-PX(1)
-        PY(2)=-PY(1)
+        SP(2)=-SP(1)
         DO 750 JT=1,2
           KFL(JT)=K(IE(JT),2)
           IF(MJU(JT).NE.0) KFL(JT)=KFJS(JT)
           IF(MJU(JT).NE.0.AND.IABS(KFL(JT)).GT.1000) IBARRK(JT)=1
           MSTJ(93)=1
-          PMQ(JT)=PYMASS(KFL(JT))
+          PMQ(JT)=SPMASS(KFL(JT))
           GAM(JT)=0D0
   750   CONTINUE
  
 C...Closed string: random initial breakup flavour, pT and vertex.
       ELSE
-        KFL(3)=INT(1D0+(2D0+PARJ(2))*PYR(0))*(-1)**INT(PYR(0)+0.5D0)
+        KFL(3)=INT(1D0+(2D0+PARJ(2))*SPR(0))*(-1)**INT(SPR(0)+0.5D0)
         IBMO=0
-  760   CALL PYKFDI(KFL(3),0,KFL(1),KDUMP)
+  760   CALL SPKFDI(KFL(3),0,KFL(1),KDUMP)
 C.. Closed string: first vertex diq attempt => enforced second
 C.. vertex diq
         IF(IABS(KFL(1)).GT.10)THEN
@@ -44958,16 +44958,16 @@ C.. vertex diq
         ENDIF
         IF(IBMO.EQ.1) MSTU(121)=-1
         KFL(2)=-KFL(1)
-        CALL PYPTDI(KFL(1),PX(1),PY(1))
+        CALL SPPTDI(KFL(1),PX(1),SP(1))
         PX(2)=-PX(1)
-        PY(2)=-PY(1)
+        SP(2)=-SP(1)
         PR3=MIN(25D0,0.1D0*P(N+NR+1,5)**2)
-  770   CALL PYZDIS(KFL(1),KFL(2),PR3,Z)
+  770   CALL SPZDIS(KFL(1),KFL(2),PR3,Z)
         ZR=PR3/(Z*P(N+NR+1,5)**2)
         IF(ZR.GE.1D0) GOTO 770
         DO 780 JT=1,2
           MSTJ(93)=1
-          PMQ(JT)=PYMASS(KFL(JT))
+          PMQ(JT)=SPMASS(KFL(JT))
           GAM(JT)=PR3*(1D0-Z)/Z
           IN1=N+NR+3+4*(JT/2)*(NS-1)
           P(IN1,JT)=1D0-Z
@@ -45049,12 +45049,12 @@ C...Remove energy used up in junction string fragmentation.
 C...Produce new particle: side, origin.
   860 I=I+1
       IF(2*I-NSAV.GE.MSTU(4)-MSTU(32)-5) THEN
-        CALL PYERRM(11,'(PYSTRF:) no more memory left in PYJETS')
+        CALL SPERRM(11,'(SPSTRF:) no more memory left in SPJETS')
         IF(MSTU(21).GE.1) RETURN
       ENDIF
 C.. New side priority for popcorn systems
       IF(MSTU(121).LE.0)THEN
-         JT=1.5D0+PYR(0)
+         JT=1.5D0+SPR(0)
          IF(IABS(KFL(3-JT)).GT.10) JT=3-JT
          IF(IABS(KFL(3-JT)).GE.4.AND.IABS(KFL(3-JT)).LE.8) JT=3-JT
       ENDIF
@@ -45067,23 +45067,23 @@ C.. New side priority for popcorn systems
  
 C...Generate flavour, hadron and pT.
   870 K(I,3)=IE(JT)
-      CALL PYKFDI(KFL(JT),0,KFL(3),K(I,2))
+      CALL SPKFDI(KFL(JT),0,KFL(3),K(I,2))
       IF(K(I,2).EQ.0) GOTO 700
       MU90MO=MSTU(90)
       IF(MSTU(121).EQ.-1) GOTO 900
       IF(IRANK(JT).EQ.1.AND.IABS(KFL(JT)).LE.10.AND.
      &IABS(KFL(3)).GT.10) THEN
-        IF(PYR(0).GT.PARJ(19)) GOTO 870
+        IF(SPR(0).GT.PARJ(19)) GOTO 870
       ENDIF
       IF(IBARRK(JT).EQ.1.AND.MOD(IABS(K(I,2)),10000).GT.1000)
      &K(I,3)=IJUORI(JT)
-      P(I,5)=PYMASS(K(I,2))
-      CALL PYPTDI(KFL(JT),PX(3),PY(3))
-      PR(JT)=P(I,5)**2+(PX(JT)+PX(3))**2+(PY(JT)+PY(3))**2
+      P(I,5)=SPMASS(K(I,2))
+      CALL SPPTDI(KFL(JT),PX(3),SP(3))
+      PR(JT)=P(I,5)**2+(PX(JT)+PX(3))**2+(SP(JT)+SP(3))**2
  
 C...Final hadrons for small invariant mass.
       MSTJ(93)=1
-      PMQ(3)=PYMASS(KFL(3))
+      PMQ(3)=SPMASS(KFL(3))
       PARJST=PARJ(33)
       IF(MSTJ(11).EQ.2) PARJST=PARJ(34)
       WMIN=PARJST+PMQ(1)+PMQ(2)+PARJ(36)*PMQ(3)
@@ -45091,11 +45091,11 @@ C...Final hadrons for small invariant mass.
      &WMIN-0.5D0*PARJ(36)*PMQ(3)
       WREM2=FOUR(N+NRS,N+NRS)
       IF(WREM2.LT.0.10D0) GOTO 700
-      IF(WREM2.LT.MAX(WMIN*(1D0+(2D0*PYR(0)-1D0)*PARJ(37)),
+      IF(WREM2.LT.MAX(WMIN*(1D0+(2D0*SPR(0)-1D0)*PARJ(37)),
      &PARJ(32)+PMQ(1)+PMQ(2))**2) GOTO 1070
  
 C...Choose z, which gives Gamma. Shift z for heavy flavours.
-      CALL PYZDIS(KFL(JT),KFL(3),PR(JT),Z)
+      CALL SPZDIS(KFL(JT),KFL(3),PR(JT),Z)
       IF(IABS(KFL(JT)).GE.4.AND.IABS(KFL(JT)).LE.8.AND.
      &MSTU(90).LT.8) THEN
         MSTU(90)=MSTU(90)+1
@@ -45106,10 +45106,10 @@ C...Choose z, which gives Gamma. Shift z for heavy flavours.
       KFL2A=IABS(KFL(2))
       IF(MAX(MOD(KFL1A,10),MOD(KFL1A/1000,10),MOD(KFL2A,10),
      &MOD(KFL2A/1000,10)).GE.4) THEN
-        PR(JR)=(PMQ(JR)+PMQ(3))**2+(PX(JR)-PX(3))**2+(PY(JR)-PY(3))**2
+        PR(JR)=(PMQ(JR)+PMQ(3))**2+(PX(JR)-PX(3))**2+(SP(JR)-SP(3))**2
         PW12=SQRT(MAX(0D0,(WREM2-PR(1)-PR(2))**2-4D0*PR(1)*PR(2)))
         Z=(WREM2+PR(JT)-PR(JR)+PW12*(2D0*Z-1D0))/(2D0*WREM2)
-        PR(JR)=(PMQ(JR)+PARJST)**2+(PX(JR)-PX(3))**2+(PY(JR)-PY(3))**2
+        PR(JR)=(PMQ(JR)+PARJST)**2+(PX(JR)-PX(3))**2+(SP(JR)-SP(3))**2
         IF((1D0-Z)*(WREM2-PR(JT)/Z).LT.PR(JR)) GOTO 1070
       ENDIF
       GAM(3)=(1D0-Z)*(GAM(JT)+PR(JT)/Z)
@@ -45120,7 +45120,7 @@ C.. MOPS baryon model modification
       IF(IABS(KFL(3)).GT.10.AND.MSTJ(12).GE.4) THEN
          GTSTMO=1D0
          PTSTMO=1D0
-         RTSTMO=PYR(0)
+         RTSTMO=SPR(0)
          IF(IABS(KFL(JT)).LE.10)THEN
             XBMO=MIN(XTMO3,1D0-(2D-10))
             GBMO=GAM(3)
@@ -45140,7 +45140,7 @@ C.. MOPS baryon model modification
             ENDIF
             IF(MSTJ(12).GE.5)THEN
                PMNMO=SQRT((XBMO-XTMO3)*(GAM(3)/XTMO3-GBMO/XBMO))
-               PMMO=PMMO+PMAS(PYCOMP(K(I,2)),1)-PMAS(PYCOMP(K(I,2)),3)
+               PMMO=PMMO+PMAS(SPCOMP(K(I,2)),1)-PMAS(SPCOMP(K(I,2)),3)
                PTSTMO=EXP((PMMO-PMNMO)*PARF(193))
                PMMO=PMNMO
             ENDIF
@@ -45151,15 +45151,15 @@ C.. MOPS Accepting popcorn system hadron.
             IF(IRANK(JT).EQ.1.OR.IABS(KFL(JT)).LE.10) THEN
                NRVMO=I-N-NR
                IF(I+NRVMO.GT.MSTU(4)-MSTU(32)-5) THEN
-                  CALL PYERRM(11,
-     &                 '(PYSTRF:) no more memory left in PYJETS')
+                  CALL SPERRM(11,
+     &                 '(SPSTRF:) no more memory left in SPJETS')
                   IF(MSTU(21).GE.1) RETURN
                ENDIF
                IMO=I
                KFLMO=KFL(JT)
                PMQMO=PMQ(JT)
                PXMO=PX(JT)
-               PYMO=PY(JT)
+               SPMO=SP(JT)
                GAMMO=GAM(JT)
                IRMO=IRANK(JT)
                XMO=XTMO(JT)
@@ -45191,7 +45191,7 @@ C..Lift restoring string outside MOPS block
          KFL(JT)=KFLMO
          PMQ(JT)=PMQMO
          PX(JT)=PXMO
-         PY(JT)=PYMO
+         SP(JT)=SPMO
          GAM(JT)=GAMMO
          IRANK(JT)=IRMO
          XTMO(JT)=XMO
@@ -45219,7 +45219,7 @@ C...Stepping within or from 'low' string region easy.
         P(IN(JT)+2,4)=Z*P(IN(JT)+2,3)
         P(IN(JR)+2,4)=PR(JT)/(P(IN(JT)+2,4)*P(IN(1),5)**2)
         DO 940 J=1,4
-          P(I,J)=(PX(JT)+PX(3))*P(IN(3),J)+(PY(JT)+PY(3))*P(IN(3)+1,J)
+          P(I,J)=(PX(JT)+PX(3))*P(IN(3),J)+(SP(JT)+SP(3))*P(IN(3)+1,J)
   940   CONTINUE
         GOTO 1030
       ELSEIF(IN(1)+1.EQ.IN(2)) THEN
@@ -45275,21 +45275,21 @@ C...Find new transverse directions (i.e. spacelike string vectors).
      &    DHCYX*DP(3,J))
   970   CONTINUE
 C...Express pT with respect to new axes, if sensible.
-        PXP=-(PX(3)*FOUR(IN(3*JT+3),IN(3))+PY(3)*
+        PXP=-(PX(3)*FOUR(IN(3*JT+3),IN(3))+SP(3)*
      &  FOUR(IN(3*JT+3)+1,IN(3)))
-        PYP=-(PX(3)*FOUR(IN(3*JT+3),IN(3)+1)+PY(3)*
+        SPP=-(PX(3)*FOUR(IN(3*JT+3),IN(3)+1)+SP(3)*
      &  FOUR(IN(3*JT+3)+1,IN(3)+1))
-        IF(ABS(PXP**2+PYP**2-PX(3)**2-PY(3)**2).LT.0.01D0) THEN
+        IF(ABS(PXP**2+SPP**2-PX(3)**2-SP(3)**2).LT.0.01D0) THEN
           PX(3)=PXP
-          PY(3)=PYP
+          SP(3)=SPP
         ENDIF
       ENDIF
  
 C...Sum up known four-momentum. Gives coefficients for m2 expression.
       DO 1000 J=1,4
         DHG(J)=0D0
-        P(I,J)=PX(JT)*P(IN(3*JT+3),J)+PY(JT)*P(IN(3*JT+3)+1,J)+
-     &  PX(3)*P(IN(3),J)+PY(3)*P(IN(3)+1,J)
+        P(I,J)=PX(JT)*P(IN(3*JT+3),J)+SP(JT)*P(IN(3*JT+3)+1,J)+
+     &  PX(3)*P(IN(3),J)+SP(3)*P(IN(3)+1,J)
         DO 980 IN1=IN(3*JT+1),IN(1)-4*JS,4*JS
           P(I,J)=P(I,J)+P(IN1+2,3)*P(IN1,J)
   980   CONTINUE
@@ -45353,7 +45353,7 @@ C...Four-momentum of particle. Remaining quantities. Loop back.
       KFL(JT)=-KFL(3)
       PMQ(JT)=PMQ(3)
       PX(JT)=-PX(3)
-      PY(JT)=-PY(3)
+      SP(JT)=-SP(3)
       GAM(JT)=GAM(3)
       IF(IN(3).NE.IN(3*JT+3)) THEN
         DO 1050 J=1,4
@@ -45376,7 +45376,7 @@ C...Final hadron: side, flavour, hadron, mass.
       K(I,3)=IE(JR)
       K(I,4)=0
       K(I,5)=0
-      CALL PYKFDI(KFL(JR),-KFL(3),KFLDMP,K(I,2))
+      CALL SPKFDI(KFL(JR),-KFL(3),KFLDMP,K(I,2))
       IF(K(I,2).EQ.0) GOTO 700
       IF(IBARRK(JT).EQ.1.AND.MOD(IABS(K(I-1,2)),10000).GT.1000)
      &IBARRK(JT)=0
@@ -45384,8 +45384,8 @@ C...Final hadron: side, flavour, hadron, mass.
      &K(I,3)=IJUORI(JT)
       IF(IBARRK(JR).EQ.1.AND.MOD(IABS(K(I,2)),10000).GT.1000)
      &K(I,3)=IJUORI(JR)
-      P(I,5)=PYMASS(K(I,2))
-      PR(JR)=P(I,5)**2+(PX(JR)-PX(3))**2+(PY(JR)-PY(3))**2
+      P(I,5)=SPMASS(K(I,2))
+      PR(JR)=P(I,5)**2+(PX(JR)-PX(3))**2+(SP(JR)-SP(3))**2
  
 C...Final two hadrons: find common setup of four-vectors.
       JQ=1
@@ -45396,9 +45396,9 @@ C...Final two hadrons: find common setup of four-vectors.
       DHR2=FOUR(N+NRS,IN(3*JQ+1))/DHC12
       IF(IN(4).NE.IN(7).OR.IN(5).NE.IN(8)) THEN
         PX(3-JQ)=-FOUR(N+NRS,IN(3*JQ+3))-PX(JQ)
-        PY(3-JQ)=-FOUR(N+NRS,IN(3*JQ+3)+1)-PY(JQ)
+        SP(3-JQ)=-FOUR(N+NRS,IN(3*JQ+3)+1)-SP(JQ)
         PR(3-JQ)=P(I+(JT+JQ-3)**2-1,5)**2+(PX(3-JQ)+(2*JQ-3)*JS*
-     &  PX(3))**2+(PY(3-JQ)+(2*JQ-3)*JS*PY(3))**2
+     &  PX(3))**2+(SP(3-JQ)+(2*JQ-3)*JS*SP(3))**2
       ENDIF
  
 C...Solve kinematics for final two hadrons, if possible.
@@ -45411,14 +45411,14 @@ C...Solve kinematics for final two hadrons, if possible.
       PREVCF=PARJ(42)
       IF(MSTJ(11).EQ.2) PREVCF=PARJ(39)
       PREV=1D0/(1D0+EXP(MIN(50D0,PREVCF*FB*PARJ(40))))
-      FB=SIGN(FB,JS*(PYR(0)-PREV))
+      FB=SIGN(FB,JS*(SPR(0)-PREV))
       KFL1A=IABS(KFL(1))
       KFL2A=IABS(KFL(2))
       IF(MAX(MOD(KFL1A,10),MOD(KFL1A/1000,10),MOD(KFL2A,10),
      &MOD(KFL2A/1000,10)).GE.6) FB=SIGN(SQRT(MAX(0D0,FA**2-
      &4D0*WREM2*PR(JT))),DBLE(JS))
       DO 1080 J=1,4
-        P(I-1,J)=(PX(JT)+PX(3))*P(IN(3*JQ+3),J)+(PY(JT)+PY(3))*
+        P(I-1,J)=(PX(JT)+PX(3))*P(IN(3*JQ+3),J)+(SP(JT)+SP(3))*
      &  P(IN(3*JQ+3)+1,J)+0.5D0*(DHR1*(FA+FB)*P(IN(3*JQ+1),J)+
      &  DHR2*(FA-FB)*P(IN(3*JQ+2),J))/WREM2
         P(I,J)=P(N+NRS,J)-P(I-1,J)
@@ -45429,7 +45429,7 @@ C...Solve kinematics for final two hadrons, if possible.
       IF(DM2F1.GT.1D-10*P(I-1,4)**2.OR.DM2F2.GT.1D-10*P(I,4)**2) THEN
         NTRYFN=NTRYFN+1
         IF(NTRYFN.LT.100) GOTO 140
-        CALL PYERRM(13,'(PYSTRF:) bad energies for final two hadrons')
+        CALL SPERRM(13,'(SPSTRF:) bad energies for final two hadrons')
       ENDIF
  
 C...Mark jets as fragmented and give daughter pointers.
@@ -45517,7 +45517,7 @@ C...Order particles in rank along the chain. Update mother pointer.
 C...Boost back particle system. Set production vertices.
       IF(MBST.EQ.0) THEN
         MSTU(33)=1
-        CALL PYROBO(NSAV+1,N,0D0,0D0,DPS(1)/DPS(4),DPS(2)/DPS(4),
+        CALL SPROBO(NSAV+1,N,0D0,0D0,DPS(1)/DPS(4),DPS(2)/DPS(4),
      &  DPS(3)/DPS(4))
       ELSE
         DO 1220 I=NSAV+1,N
@@ -45544,11 +45544,11 @@ C...Boost back particle system. Set production vertices.
  
 C*********************************************************************
  
-C...PYJURF
+C...SPJURF
 C...From three given input vectors in PJU the boost VJU from
 C...the "lab frame" to the junction rest frame is constructed.
  
-      SUBROUTINE PYJURF(PJU,VJU)
+      SUBROUTINE SPJURF(PJU,VJU)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
@@ -45674,7 +45674,7 @@ C...Now know energies in junction rest frame.
       PENEW(J)=PEJ
       PENEW(K)=PEK
  
-C...Boost (copy of) partons to their rest frame.
+C...Boost (cosp of) partons to their rest frame.
       VXCM=-PSUM(1)/PSUM(5)
       VYCM=-PSUM(2)/PSUM(5)
       VZCM=-PSUM(3)/PSUM(5)
@@ -45752,30 +45752,30 @@ C...In case of error in reconstruction: revert to CM frame of system.
  
 C*********************************************************************
  
-C...PYINDF
+C...SPINDF
 C...Handles the fragmentation of a jet system (or a single
 C...jet) according to independent fragmentation models.
  
-      SUBROUTINE PYINDF(IP)
+      SUBROUTINE SPINDF(IP)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/
 C...Local arrays.
       DIMENSION DPS(5),PSI(4),NFI(3),NFL(3),IFET(3),KFLF(3),
-     &KFLO(2),PXO(2),PYO(2),WO(2)
+     &KFLO(2),PXO(2),SPO(2),WO(2)
  
 C.. MOPS error message
-      IF(MSTJ(12).GT.3) CALL PYERRM(9,'(PYINDF:) MSTJ(12)>3 options'//
+      IF(MSTJ(12).GT.3) CALL SPERRM(9,'(SPINDF:) MSTJ(12)>3 options'//
      &' are not treated as expected in independent fragmentation')
  
-C...Reset counters. Identify parton system and take copy. Check flavour.
+C...Reset counters. Identify parton system and take cosp. Check flavour.
       NSAV=N
       MSTU90=MSTU(90)
       NJET=0
@@ -45785,12 +45785,13 @@ C...Reset counters. Identify parton system and take copy. Check flavour.
   100 CONTINUE
       I=IP-1
   110 I=I+1
+      write (*,*) '2 have ',i,' ',n,' ',mstu(4),' ',mstu(32)
       IF(I.GT.MIN(N,MSTU(4)-MSTU(32))) THEN
-        CALL PYERRM(12,'(PYINDF:) failed to reconstruct jet system')
+        CALL SPERRM(12,'(SPINDF:) failed to reconstruct jet system')
         IF(MSTU(21).GE.1) RETURN
       ENDIF
       IF(K(I,1).NE.1.AND.K(I,1).NE.2) GOTO 110
-      KC=PYCOMP(K(I,2))
+      KC=SPCOMP(K(I,2))
       IF(KC.EQ.0) GOTO 110
       KQ=KCHG(KC,2)*ISIGN(1,K(I,2))
       IF(KQ.EQ.0) GOTO 110
@@ -45805,14 +45806,14 @@ C...Reset counters. Identify parton system and take copy. Check flavour.
       IF(K(I,1).EQ.2.OR.(MSTJ(3).LE.5.AND.N.GT.I.AND.
      &K(I+1,1).EQ.2)) GOTO 110
       IF(NJET.NE.1.AND.KQSUM.NE.0) THEN
-        CALL PYERRM(12,'(PYINDF:) unphysical flavour combination')
+        CALL SPERRM(12,'(SPINDF:) unphysical flavour combination')
         IF(MSTU(21).GE.1) RETURN
       ENDIF
  
 C...Boost copied system to CM frame. Find CM energy and sum flavours.
       IF(NJET.NE.1) THEN
         MSTU(33)=1
-        CALL PYROBO(NSAV+1,NSAV+NJET,0D0,0D0,-DPS(1)/DPS(4),
+        CALL SPROBO(NSAV+1,NSAV+NJET,0D0,0D0,-DPS(1)/DPS(4),
      &  -DPS(2)/DPS(4),-DPS(3)/DPS(4))
       ENDIF
       PECM=0D0
@@ -45836,7 +45837,7 @@ C...Loop over attempts made. Reset counters.
       NTRY=0
   150 NTRY=NTRY+1
       IF(NTRY.GT.200) THEN
-        CALL PYERRM(14,'(PYINDF:) caught in infinite loop')
+        CALL SPERRM(14,'(SPINDF:) caught in infinite loop')
         IF(MSTU(21).GE.1) RETURN
       ENDIF
       N=NSAV+NJET
@@ -45863,15 +45864,15 @@ C...Initial values for quark or diquark jet.
   170   IF(IABS(K(IP1,2)).NE.21) THEN
           NSTR=1
           KFLO(1)=K(IP1,2)
-          CALL PYPTDI(0,PXO(1),PYO(1))
+          CALL SPPTDI(0,PXO(1),SPO(1))
           WO(1)=WF
  
 C...Initial values for gluon treated like random quark jet.
         ELSEIF(MSTJ(2).LE.2) THEN
           NSTR=1
           IF(MSTJ(2).EQ.2) MSTJ(91)=1
-          KFLO(1)=INT(1D0+(2D0+PARJ(2))*PYR(0))*(-1)**INT(PYR(0)+0.5D0)
-          CALL PYPTDI(0,PXO(1),PYO(1))
+          KFLO(1)=INT(1D0+(2D0+PARJ(2))*SPR(0))*(-1)**INT(SPR(0)+0.5D0)
+          CALL SPPTDI(0,PXO(1),SPO(1))
           WO(1)=WF
  
 C...Initial values for gluon treated like quark-antiquark jet pair,
@@ -45879,12 +45880,12 @@ C...sharing energy according to Altarelli-Parisi splitting function.
         ELSE
           NSTR=2
           IF(MSTJ(2).EQ.4) MSTJ(91)=1
-          KFLO(1)=INT(1D0+(2D0+PARJ(2))*PYR(0))*(-1)**INT(PYR(0)+0.5D0)
+          KFLO(1)=INT(1D0+(2D0+PARJ(2))*SPR(0))*(-1)**INT(SPR(0)+0.5D0)
           KFLO(2)=-KFLO(1)
-          CALL PYPTDI(0,PXO(1),PYO(1))
+          CALL SPPTDI(0,PXO(1),SPO(1))
           PXO(2)=-PXO(1)
-          PYO(2)=-PYO(1)
-          WO(1)=WF*PYR(0)**(1D0/3D0)
+          SPO(2)=-SPO(1)
+          WO(1)=WF*SPR(0)**(1D0/3D0)
           WO(2)=WF-WO(1)
         ENDIF
  
@@ -45895,13 +45896,13 @@ C...Initial values for rank, flavour, pT and W+.
           IRANK=0
           KFL1=KFLO(ISTR)
           PX1=PXO(ISTR)
-          PY1=PYO(ISTR)
+          SP1=SPO(ISTR)
           W=WO(ISTR)
  
 C...New hadron. Generate flavour and hadron species.
   190     I=I+1
           IF(I.GE.MSTU(4)-MSTU(32)-NJET-5) THEN
-            CALL PYERRM(11,'(PYINDF:) no more memory left in PYJETS')
+            CALL SPERRM(11,'(SPINDF:) no more memory left in SPJETS')
             IF(MSTU(21).GE.1) RETURN
           ENDIF
           IRANK=IRANK+1
@@ -45909,19 +45910,19 @@ C...New hadron. Generate flavour and hadron species.
           K(I,3)=IP1
           K(I,4)=0
           K(I,5)=0
-  200     CALL PYKFDI(KFL1,0,KFL2,K(I,2))
+  200     CALL SPKFDI(KFL1,0,KFL2,K(I,2))
           IF(K(I,2).EQ.0) GOTO 180
           IF(IRANK.EQ.1.AND.IABS(KFL1).LE.10.AND.IABS(KFL2).GT.10) THEN
-            IF(PYR(0).GT.PARJ(19)) GOTO 200
+            IF(SPR(0).GT.PARJ(19)) GOTO 200
           ENDIF
  
 C...Find hadron mass. Generate four-momentum.
-          P(I,5)=PYMASS(K(I,2))
-          CALL PYPTDI(KFL1,PX2,PY2)
+          P(I,5)=SPMASS(K(I,2))
+          CALL SPPTDI(KFL1,PX2,SP2)
           P(I,1)=PX1+PX2
-          P(I,2)=PY1+PY2
+          P(I,2)=SP1+SP2
           PR=P(I,5)**2+P(I,1)**2+P(I,2)**2
-          CALL PYZDIS(KFL1,KFL2,PR,Z)
+          CALL SPZDIS(KFL1,KFL2,PR,Z)
           MZSAV=0
           IF(IABS(KFL1).GE.4.AND.IABS(KFL1).LE.8.AND.MSTU(90).LT.8) THEN
             MZSAV=1
@@ -45942,7 +45943,7 @@ C...Find hadron mass. Generate four-momentum.
 C...Remaining flavour and momentum.
           KFL1=-KFL2
           PX1=-PX2
-          PY1=-PY2
+          SP1=-SP2
           W=(1D0-Z)*W
           DO 210 J=1,5
             V(I,J)=0D0
@@ -45960,10 +45961,10 @@ C...Check if pL acceptable. Go back for new hadron if enough energy.
         IF(MOD(MSTJ(3),5).EQ.4.AND.N.EQ.NSAV1) GOTO 170
  
 C...Rotate jet to new direction.
-        THE=PYANGL(P(IP1,3),SQRT(P(IP1,1)**2+P(IP1,2)**2))
-        PHI=PYANGL(P(IP1,1),P(IP1,2))
+        THE=SPANGL(P(IP1,3),SQRT(P(IP1,1)**2+P(IP1,2)**2))
+        PHI=SPANGL(P(IP1,1),P(IP1,2))
         MSTU(33)=1
-        CALL PYROBO(NSAV1+1,N,THE,PHI,0D0,0D0,0D0)
+        CALL SPROBO(NSAV1+1,N,THE,PHI,0D0,0D0,0D0)
         K(K(IP1,3),4)=NSAV1+1
         K(K(IP1,3),5)=N
  
@@ -46031,7 +46032,7 @@ C...Find combination of existing and new flavours for hadron.
       IF(NREQ.LT.NREM) NFET=1
       IF(IABS(NFL(1))+IABS(NFL(2))+IABS(NFL(3)).EQ.0) NFET=0
       DO 290 J=1,NFET
-        IFET(J)=1+(IABS(NFL(1))+IABS(NFL(2))+IABS(NFL(3)))*PYR(0)
+        IFET(J)=1+(IABS(NFL(1))+IABS(NFL(2))+IABS(NFL(3)))*SPR(0)
         KFLF(J)=ISIGN(1,NFL(1))
         IF(IFET(J).GT.IABS(NFL(1))) KFLF(J)=ISIGN(2,NFL(2))
         IF(IFET(J).GT.IABS(NFL(1))+IABS(NFL(2))) KFLF(J)=ISIGN(3,NFL(3))
@@ -46041,32 +46042,32 @@ C...Find combination of existing and new flavours for hadron.
       IF(NFET.EQ.3.AND.(IFET(1).EQ.IFET(2).OR.IFET(1).EQ.IFET(3).OR.
      &IFET(2).EQ.IFET(3).OR.KFLF(1)*KFLF(2).LT.0.OR.KFLF(1)*KFLF(3)
      &.LT.0.OR.KFLF(1)*(NFL(1)+NFL(2)+NFL(3)).LT.0)) GOTO 280
-      IF(NFET.EQ.0) KFLF(1)=1+INT((2D0+PARJ(2))*PYR(0))
+      IF(NFET.EQ.0) KFLF(1)=1+INT((2D0+PARJ(2))*SPR(0))
       IF(NFET.EQ.0) KFLF(2)=-KFLF(1)
-      IF(NFET.EQ.1) KFLF(2)=ISIGN(1+INT((2D0+PARJ(2))*PYR(0)),-KFLF(1))
+      IF(NFET.EQ.1) KFLF(2)=ISIGN(1+INT((2D0+PARJ(2))*SPR(0)),-KFLF(1))
       IF(NFET.LE.2) KFLF(3)=0
       IF(KFLF(3).NE.0) THEN
         KFLFC=ISIGN(1000*MAX(IABS(KFLF(1)),IABS(KFLF(3)))+
      &  100*MIN(IABS(KFLF(1)),IABS(KFLF(3)))+1,KFLF(1))
-        IF(KFLF(1).EQ.KFLF(3).OR.(1D0+3D0*PARJ(4))*PYR(0).GT.1D0)
+        IF(KFLF(1).EQ.KFLF(3).OR.(1D0+3D0*PARJ(4))*SPR(0).GT.1D0)
      &  KFLFC=KFLFC+ISIGN(2,KFLFC)
       ELSE
         KFLFC=KFLF(1)
       ENDIF
-      CALL PYKFDI(KFLFC,KFLF(2),KFLDMP,KF)
+      CALL SPKFDI(KFLFC,KFLF(2),KFLDMP,KF)
       IF(KF.EQ.0) GOTO 280
       DO 300 J=1,MAX(2,NFET)
         NFL(IABS(KFLF(J)))=NFL(IABS(KFLF(J)))-ISIGN(1,KFLF(J))
   300 CONTINUE
  
 C...Store hadron at random among free positions.
-      NPOS=MIN(1+INT(PYR(0)*NREM),NREM)
+      NPOS=MIN(1+INT(SPR(0)*NREM),NREM)
       DO 310 I=NSAV+NJET+1,N
         IF(K(I,1).EQ.7) NPOS=NPOS-1
         IF(K(I,1).EQ.1.OR.NPOS.NE.0) GOTO 310
         K(I,1)=1
         K(I,2)=KF
-        P(I,5)=PYMASS(K(I,2))
+        P(I,5)=SPMASS(K(I,2))
         P(I,4)=SQRT(P(I,1)**2+P(I,2)**2+P(I,3)**2+P(I,5)**2)
   310 CONTINUE
       NREM=NREM-1
@@ -46186,7 +46187,7 @@ C...Origin of produced particles and parton daughter pointers.
         ENDIF
   510 CONTINUE
  
-C...Document independent fragmentation system. Remove copy of jets.
+C...Document independent fragmentation system. Remove cosp of jets.
       NSAV=NSAV+1
       K(NSAV,1)=11
       K(NSAV,2)=93
@@ -46212,7 +46213,7 @@ C...Document independent fragmentation system. Remove copy of jets.
   550 CONTINUE
  
 C...Boost back particle system. Set production vertices.
-      IF(NJET.NE.1) CALL PYROBO(NSAV+1,N,0D0,0D0,DPS(1)/DPS(4),
+      IF(NJET.NE.1) CALL SPROBO(NSAV+1,N,0D0,0D0,DPS(1)/DPS(4),
      &DPS(2)/DPS(4),DPS(3)/DPS(4))
       DO 570 I=NSAV+1,N
         DO 560 J=1,4
@@ -46225,21 +46226,21 @@ C...Boost back particle system. Set production vertices.
  
 C*********************************************************************
  
-C...PYDECY
+C...SPDECY
 C...Handles the decay of unstable particles.
  
-      SUBROUTINE PYDECY(IP)
+      SUBROUTINE SPDECY(IP)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/,/PYDAT3/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/,/SPDAT3/
 C...Local arrays.
       DIMENSION VDCY(4),KFLO(4),KFL1(4),PV(10,5),RORD(10),UE(3),BE(3),
      &WTCOR(10),PTAU(4),PCMTAU(4),DBETAU(3)
@@ -46255,14 +46256,14 @@ C...Initial values.
       NSAV=N
       KFA=IABS(K(IP,2))
       KFS=ISIGN(1,K(IP,2))
-      KC=PYCOMP(KFA)
+      KC=SPCOMP(KFA)
       MSTJ(92)=0
  
 C...Choose lifetime and determine decay vertex.
       IF(K(IP,1).EQ.5) THEN
         V(IP,5)=0D0
       ELSEIF(K(IP,1).NE.4) THEN
-        V(IP,5)=-PMAS(KC,4)*LOG(PYR(0))
+        V(IP,5)=-PMAS(KC,4)*LOG(SPR(0))
       ENDIF
       DO 100 J=1,4
         VDCY(J)=V(IP,J)+V(IP,5)*P(IP,J)/P(IP,5)
@@ -46329,7 +46330,7 @@ C...but can be reconstructed by adding neutrino momentum.
   160     CONTINUE
  
         ELSE
-C...If coming from resonance decay then find latest copy of this
+C...If coming from resonance decay then find latest cosp of this
 C...resonance (may not completely agree).
           KFORIG=K(IMTAU,2)
           IORIG=IMTAU
@@ -46347,16 +46348,16 @@ C...and rotate it to sit along +z axis.
         DO 190 J=1,3
           DBETAU(J)=PCMTAU(J)/PCMTAU(4)
   190   CONTINUE
-        IF(KFORIG.NE.0) CALL PYROBO(ITAU,ITAU,0D0,0D0,-DBETAU(1),
+        IF(KFORIG.NE.0) CALL SPROBO(ITAU,ITAU,0D0,0D0,-DBETAU(1),
      &  -DBETAU(2),-DBETAU(3))
-        PHITAU=PYANGL(P(ITAU,1),P(ITAU,2))
-        CALL PYROBO(ITAU,ITAU,0D0,-PHITAU,0D0,0D0,0D0)
-        THETAU=PYANGL(P(ITAU,3),P(ITAU,1))
-        CALL PYROBO(ITAU,ITAU,-THETAU,0D0,0D0,0D0,0D0)
+        PHITAU=SPANGL(P(ITAU,1),P(ITAU,2))
+        CALL SPROBO(ITAU,ITAU,0D0,-PHITAU,0D0,0D0,0D0)
+        THETAU=SPANGL(P(ITAU,3),P(ITAU,1))
+        CALL SPROBO(ITAU,ITAU,-THETAU,0D0,0D0,0D0,0D0)
  
 C...Call tau decay routine (if meaningful) and fill extra info.
         IF(KFORIG.NE.0.OR.MSTJ(28).EQ.2) THEN
-          CALL PYTAUD(ITAU,IORIG,KFORIG,NDECAY)
+          CALL SPTAUD(ITAU,IORIG,KFORIG,NDECAY)
           DO 200 II=NSAV+1,NSAV+NDECAY
             K(II,1)=1
             K(II,3)=IP
@@ -46371,8 +46372,8 @@ C...Boost back decay tau and decay products.
           P(ITAU,J)=PTAU(J)
   210   CONTINUE
         IF(KFORIG.NE.0.OR.MSTJ(28).EQ.2) THEN
-          CALL PYROBO(NSAV+1,N,THETAU,PHITAU,0D0,0D0,0D0)
-          IF(KFORIG.NE.0) CALL PYROBO(NSAV+1,N,0D0,0D0,DBETAU(1),
+          CALL SPROBO(NSAV+1,N,THETAU,PHITAU,0D0,0D0,0D0)
+          IF(KFORIG.NE.0) CALL SPROBO(NSAV+1,N,0D0,0D0,DBETAU(1),
      &    DBETAU(2),DBETAU(3))
  
 C...Skip past ordinary tau decay treatment.
@@ -46388,7 +46389,7 @@ C...B-Bbar mixing: flip sign of meson appropriately.
       IF((KFA.EQ.511.OR.KFA.EQ.531).AND.MSTJ(26).GE.1) THEN
         XBBMIX=PARJ(76)
         IF(KFA.EQ.531) XBBMIX=PARJ(77)
-        IF(SIN(0.5D0*XBBMIX*V(IP,5)/PMAS(KC,4))**2.GT.PYR(0)) MMIX=1
+        IF(SIN(0.5D0*XBBMIX*V(IP,5)/PMAS(KC,4))**2.GT.SPR(0)) MMIX=1
         IF(MMIX.EQ.1) KFS=-KFS
       ENDIF
  
@@ -46399,14 +46400,14 @@ C...Check existence of decay channels. Particle/antiparticle rules.
         IF(MDMDCY.GT.80.AND.MDMDCY.LE.90) KCA=MDMDCY
       ENDIF
       IF(MDCY(KCA,2).LE.0.OR.MDCY(KCA,3).LE.0) THEN
-        CALL PYERRM(9,'(PYDECY:) no decay channel defined')
+        CALL SPERRM(9,'(SPDECY:) no decay channel defined')
         RETURN
       ENDIF
       IF(MOD(KFA/1000,10).EQ.0.AND.KCA.EQ.85) KFS=-KFS
       IF(KCHG(KC,3).EQ.0) THEN
         KFSP=1
         KFSN=0
-        IF(PYR(0).GT.0.5D0) KFS=-KFS
+        IF(SPR(0).GT.0.5D0) KFS=-KFS
       ELSEIF(KFS.GT.0) THEN
         KFSP=1
         KFSN=0
@@ -46426,12 +46427,12 @@ C...Sum branching ratios of allowed decay channels.
         BRSU=BRSU+BRAT(IDL)
   230 CONTINUE
       IF(NOPE.EQ.0) THEN
-        CALL PYERRM(2,'(PYDECY:) all decay channels closed by user')
+        CALL SPERRM(2,'(SPDECY:) all decay channels closed by user')
         RETURN
       ENDIF
  
 C...Select decay channel among allowed ones.
-  240 RBR=BRSU*PYR(0)
+  240 RBR=BRSU*SPR(0)
       IDL=MDCY(KCA,2)-1
   250 IDL=IDL+1
       IF(MDME(IDL,1).NE.1.AND.KFSP*MDME(IDL,1).NE.2.AND.
@@ -46452,12 +46453,12 @@ C...Start readout of decay channel: matrix element, reset counters.
         WRITE(CIDC,'(I4)') IDC
 C...Do not print warning for some well-known special cases.
         IF(KFA.NE.113.AND.KFA.NE.115.AND.KFA.NE.215)
-     &  CALL PYERRM(4,'(PYDECY:) caught in loop for decay channel'//
+     &  CALL SPERRM(4,'(SPDECY:) caught in loop for decay channel'//
      &  CIDC)
         GOTO 240
       ENDIF
       IF(NTRY.GT.1000) THEN
-        CALL PYERRM(14,'(PYDECY:) caught in infinite loop')
+        CALL SPERRM(14,'(SPDECY:) caught in infinite loop')
         IF(MSTU(21).GE.1) RETURN
       ENDIF
       I=N
@@ -46490,7 +46491,7 @@ C...Read out decay products. Convert to standard flavour code.
         IF(JT.GE.6) KP=KFDP(IDC+1,JT-5)
         IF(KP.EQ.0) GOTO 280
         KPA=IABS(KP)
-        KCP=PYCOMP(KPA)
+        KCP=SPCOMP(KPA)
         IF(KPA.GT.80) MHADDY=1
         IF(KCHG(KCP,3).EQ.0.AND.KPA.NE.81.AND.KPA.NE.82) THEN
           KFP=KP
@@ -46503,16 +46504,16 @@ C...Read out decay products. Convert to standard flavour code.
         ELSEIF(KPA.EQ.81) THEN
           KFP=KFS*(1000*MOD(KFA/10,10)+100*MOD(KFA/100,10)+1)
         ELSEIF(KP.EQ.82) THEN
-          CALL PYDCYK(-KFS*INT(1D0+(2D0+PARJ(2))*PYR(0)),0,KFP,KDUMP)
+          CALL SPDCYK(-KFS*INT(1D0+(2D0+PARJ(2))*SPR(0)),0,KFP,KDUMP)
           IF(KFP.EQ.0) GOTO 260
           KFP=-KFP
           IRNDMO=1
           MSTJ(93)=1
-          IF(PV(1,5).LT.PARJ(32)+2D0*PYMASS(KFP)) GOTO 260
+          IF(PV(1,5).LT.PARJ(32)+2D0*SPMASS(KFP)) GOTO 260
         ELSEIF(KP.EQ.-82) THEN
           KFP=MSTU(124)
         ENDIF
-        IF(KPA.EQ.81.OR.KPA.EQ.82) KCP=PYCOMP(KFP)
+        IF(KPA.EQ.81.OR.KPA.EQ.82) KCP=SPCOMP(KFP)
  
 C...Add decay product to event record or to quark flavour list.
         KFPA=IABS(KFP)
@@ -46523,17 +46524,17 @@ C...Add decay product to event record or to quark flavour list.
 C...set rndmflav popcorn system pointer
           IF(KP.EQ.82.AND.MSTU(121).GT.0) JTMO=NQ
           MSTJ(93)=2
-          PSQ=PSQ+PYMASS(KFLO(NQ))
+          PSQ=PSQ+SPMASS(KFLO(NQ))
         ELSEIF((MMAT.EQ.42.OR.MMAT.EQ.43.OR.MMAT.EQ.48).AND.NP.EQ.3.AND.
      &    MOD(NQ,2).EQ.1) THEN
           NQ=NQ-1
           PS=PS-P(I,5)
           K(I,1)=1
           KFI=K(I,2)
-          CALL PYKFDI(KFP,KFI,KFLDMP,K(I,2))
+          CALL SPKFDI(KFP,KFI,KFLDMP,K(I,2))
           IF(K(I,2).EQ.0) GOTO 260
           MSTJ(93)=1
-          P(I,5)=PYMASS(K(I,2))
+          P(I,5)=SPMASS(K(I,2))
           PS=PS+P(I,5)
         ELSE
           I=I+1
@@ -46547,7 +46548,7 @@ C...set rndmflav popcorn system pointer
           K(I,3)=IP
           K(I,4)=0
           K(I,5)=0
-          P(I,5)=PYMASS(KFP)
+          P(I,5)=SPMASS(KFP)
           PS=PS+P(I,5)
         ENDIF
   280 CONTINUE
@@ -46573,12 +46574,12 @@ C...Reset popcorn flags if new attempt. Re-select rndmflav if failed.
            GOTO 260
         ENDIF
         IF(NTRY.GT.1000) THEN
-          CALL PYERRM(14,'(PYDECY:) caught in infinite loop')
+          CALL SPERRM(14,'(SPDECY:) caught in infinite loop')
           IF(MSTU(21).GE.1) RETURN
         ENDIF
         IF(MMAT.LE.20) THEN
-          GAUSS=SQRT(-2D0*CNDE*LOG(MAX(1D-10,PYR(0))))*
-     &    SIN(PARU(2)*PYR(0))
+          GAUSS=SQRT(-2D0*CNDE*LOG(MAX(1D-10,SPR(0))))*
+     &    SIN(PARU(2)*SPR(0))
           ND=0.5D0+0.5D0*NP+0.25D0*NQ+CNDE+GAUSS
           IF(ND.LT.NP+NQ/2.OR.ND.LT.2.OR.ND.GT.10) GOTO 300
           IF(MMAT.EQ.13.AND.ND.EQ.2) GOTO 300
@@ -46599,8 +46600,8 @@ C...Form hadrons from flavour content.
         DO 320 I=N+NP+1,N+ND-NQ/2
 C.. Stick to started popcorn system, else pick side at random
           JT=JTMO
-          IF(JT.EQ.0) JT=1+INT((NQ-1)*PYR(0))
-          CALL PYDCYK(KFL1(JT),0,KFL2,K(I,2))
+          IF(JT.EQ.0) JT=1+INT((NQ-1)*SPR(0))
+          CALL SPDCYK(KFL1(JT),0,KFL2,K(I,2))
           IF(K(I,2).EQ.0) GOTO 300
           MSTU(125)=MSTU(125)-1
           JTMO=0
@@ -46610,14 +46611,14 @@ C.. Stick to started popcorn system, else pick side at random
   330   JT=2
         JT2=3
         JT3=4
-        IF(NQ.EQ.4.AND.PYR(0).LT.PARJ(66)) JT=4
+        IF(NQ.EQ.4.AND.SPR(0).LT.PARJ(66)) JT=4
         IF(JT.EQ.4.AND.ISIGN(1,KFL1(1)*(10-IABS(KFL1(1))))*
      &  ISIGN(1,KFL1(JT)*(10-IABS(KFL1(JT)))).GT.0) JT=3
         IF(JT.EQ.3) JT2=2
         IF(JT.EQ.4) JT3=2
-        CALL PYDCYK(KFL1(1),KFL1(JT),KFLDMP,K(N+ND-NQ/2+1,2))
+        CALL SPDCYK(KFL1(1),KFL1(JT),KFLDMP,K(N+ND-NQ/2+1,2))
         IF(K(N+ND-NQ/2+1,2).EQ.0) GOTO 300
-        IF(NQ.EQ.4) CALL PYDCYK(KFL1(JT2),KFL1(JT3),KFLDMP,K(N+ND,2))
+        IF(NQ.EQ.4) CALL SPDCYK(KFL1(JT2),KFL1(JT3),KFLDMP,K(N+ND,2))
         IF(NQ.EQ.4.AND.K(N+ND,2).EQ.0) GOTO 300
  
 C...Check that sum of decay product masses not too large.
@@ -46627,7 +46628,7 @@ C...Check that sum of decay product masses not too large.
           K(I,3)=IP
           K(I,4)=0
           K(I,5)=0
-          P(I,5)=PYMASS(K(I,2))
+          P(I,5)=SPMASS(K(I,2))
           PS=PS+P(I,5)
   340   CONTINUE
         IF(PS+PARJ(64).GT.PV(1,5)) GOTO 300
@@ -46701,18 +46702,18 @@ C...Find virtual gamma mass in Dalitz decay.
         PMES=4D0*PMAS(11,1)**2
         PMRHO2=PMAS(131,1)**2
         PGRHO2=PMAS(131,2)**2
-  400   PMST=PMES*(P(IP,5)**2/PMES)**PYR(0)
+  400   PMST=PMES*(P(IP,5)**2/PMES)**SPR(0)
         WT=(1+0.5D0*PMES/PMST)*SQRT(MAX(0D0,1D0-PMES/PMST))*
      &  (1D0-PMST/P(IP,5)**2)**3*(1D0+PGRHO2/PMRHO2)/
      &  ((1D0-PMST/PMRHO2)**2+PGRHO2/PMRHO2)
-        IF(WT.LT.PYR(0)) GOTO 400
+        IF(WT.LT.SPR(0)) GOTO 400
         PV(2,5)=MAX(2.00001D0*PMAS(11,1),SQRT(PMST))
  
 C...M-generator gives weight. If rejected, try again.
       ELSE
   410   RORD(1)=1D0
         DO 440 IL1=2,ND-1
-          RSAV=PYR(0)
+          RSAV=SPR(0)
           DO 420 IL2=IL1-1,1,-1
             IF(RSAV.LE.RORD(IL2)) GOTO 430
             RORD(IL2+1)=RORD(IL2)
@@ -46726,14 +46727,14 @@ C...M-generator gives weight. If rejected, try again.
      &    (PV(1,5)-PS)
           WT=WT*PAWT(PV(IL,5),PV(IL+1,5),P(N+IL,5))
   450   CONTINUE
-        IF(WT.LT.PYR(0)*WTMAX) GOTO 410
+        IF(WT.LT.SPR(0)*WTMAX) GOTO 410
       ENDIF
  
 C...Perform two-particle decays in respective CM frame.
   460 DO 480 IL=1,ND-1
         PA=PAWT(PV(IL,5),PV(IL+1,5),P(N+IL,5))
-        UE(3)=2D0*PYR(0)-1D0
-        PHI=PARU(2)*PYR(0)
+        UE(3)=2D0*SPR(0)-1D0
+        PHI=PARU(2)*SPR(0)
         UE(1)=SQRT(1D0-UE(3)**2)*COS(PHI)
         UE(2)=SQRT(1D0-UE(3)**2)*SIN(PHI)
         DO 470 J=1,3
@@ -46771,7 +46772,7 @@ C...Matrix elements for omega and phi decays.
         WT=(P(N+1,5)*P(N+2,5)*P(N+3,5))**2-(P(N+1,5)*FOUR(N+2,N+3))**2
      &  -(P(N+2,5)*FOUR(N+1,N+3))**2-(P(N+3,5)*FOUR(N+1,N+2))**2
      &  +2D0*FOUR(N+1,N+2)*FOUR(N+1,N+3)*FOUR(N+2,N+3)
-        IF(MAX(WT*WTCOR(9)/P(IP,5)**6,0.001D0).LT.PYR(0)) GOTO 390
+        IF(MAX(WT*WTCOR(9)/P(IP,5)**6,0.001D0).LT.SPR(0)) GOTO 390
  
 C...Matrix elements for pi0 or eta Dalitz decay to gamma e+ e-.
       ELSEIF(MMAT.EQ.2) THEN
@@ -46779,7 +46780,7 @@ C...Matrix elements for pi0 or eta Dalitz decay to gamma e+ e-.
         FOUR13=FOUR(N+1,N+3)
         WT=(PMST-0.5D0*PMES)*(FOUR12**2+FOUR13**2)+
      &  PMES*(FOUR12*FOUR13+FOUR12**2+FOUR13**2)
-        IF(WT.LT.PYR(0)*0.25D0*PMST*(P(IP,5)**2-PMST)**2) GOTO 460
+        IF(WT.LT.SPR(0)*0.25D0*PMST*(P(IP,5)**2-PMST)**2) GOTO 460
  
 C...Matrix element for S0 -> S1 + V1 -> S1 + S2 + S3 (S scalar,
 C...V vector), of form cos**2(theta02) in V1 rest frame, and for
@@ -46796,7 +46797,7 @@ C...S0 -> gamma + V1 -> gamma + S2 + S3, of form sin**2(theta02).
      &  PMS1*FOUR02**2-PMS0*FOUR12**2-PMS2*FOUR10**2+PMS1*PMS0*PMS2)
         HNUM=MAX(1D-6*PMS1**2*PMS0*PMS2,HNUM)
         HDEN=(FOUR10**2-PMS1*PMS0)*(FOUR12**2-PMS1*PMS2)
-        IF(HNUM.LT.PYR(0)*HDEN) GOTO 460
+        IF(HNUM.LT.SPR(0)*HDEN) GOTO 460
  
 C...Matrix element for "onium" -> g + g + g or gamma + g + g.
       ELSEIF(MMAT.EQ.4) THEN
@@ -46805,7 +46806,7 @@ C...Matrix element for "onium" -> g + g + g or gamma + g + g.
         HX3=2D0*FOUR(IP,N+3)/P(IP,5)**2
         WT=((1D0-HX1)/(HX2*HX3))**2+((1D0-HX2)/(HX1*HX3))**2+
      &  ((1D0-HX3)/(HX1*HX2))**2
-        IF(WT.LT.2D0*PYR(0)) GOTO 390
+        IF(WT.LT.2D0*SPR(0)) GOTO 390
         IF(K(IP+1,2).EQ.22.AND.(1D0-HX1)*P(IP,5)**2.LT.4D0*PARJ(32)**2)
      &  GOTO 390
  
@@ -46813,14 +46814,14 @@ C...Effective matrix element for nu spectrum in tau -> nu + hadrons.
       ELSEIF(MMAT.EQ.41) THEN
         HX1=2D0*FOUR(IP,N+1)/P(IP,5)**2
         HXM=MIN(0.75D0,2D0*(1D0-PS/P(IP,5)))
-        IF(HX1*(3D0-2D0*HX1).LT.PYR(0)*HXM*(3D0-2D0*HXM)) GOTO 390
+        IF(HX1*(3D0-2D0*HX1).LT.SPR(0)*HXM*(3D0-2D0*HXM)) GOTO 390
  
 C...Matrix elements for weak decays (only semileptonic for c and b)
       ELSEIF((MMAT.EQ.42.OR.MMAT.EQ.43.OR.MMAT.EQ.44.OR.MMAT.EQ.48)
      &  .AND.ND.EQ.3) THEN
         IF(MBST.EQ.0) WT=FOUR(IP,N+1)*FOUR(N+2,N+3)
         IF(MBST.EQ.1) WT=P(IP,5)*P(N+1,4)*FOUR(N+2,N+3)
-        IF(WT.LT.PYR(0)*P(IP,5)*PV(1,5)**3/WTCOR(10)) GOTO 390
+        IF(WT.LT.SPR(0)*P(IP,5)*PV(1,5)**3/WTCOR(10)) GOTO 390
       ELSEIF(MMAT.EQ.42.OR.MMAT.EQ.43.OR.MMAT.EQ.44.OR.MMAT.EQ.48) THEN
         DO 550 J=1,4
           P(N+NP+1,J)=0D0
@@ -46830,7 +46831,7 @@ C...Matrix elements for weak decays (only semileptonic for c and b)
   550   CONTINUE
         IF(MBST.EQ.0) WT=FOUR(IP,N+1)*FOUR(N+2,N+NP+1)
         IF(MBST.EQ.1) WT=P(IP,5)*P(N+1,4)*FOUR(N+2,N+NP+1)
-        IF(WT.LT.PYR(0)*P(IP,5)*PV(1,5)**3/WTCOR(10)) GOTO 390
+        IF(WT.LT.SPR(0)*P(IP,5)*PV(1,5)**3/WTCOR(10)) GOTO 390
       ENDIF
  
 C...Scale back energy and reattach spectator.
@@ -46846,16 +46847,16 @@ C...Low invariant mass for system with spectator quark gives particle,
 C...not two jets. Readjust momenta accordingly.
       IF(MMAT.EQ.31.AND.ND.EQ.3) THEN
         MSTJ(93)=1
-        PM2=PYMASS(K(N+2,2))
+        PM2=SPMASS(K(N+2,2))
         MSTJ(93)=1
-        PM3=PYMASS(K(N+3,2))
+        PM3=SPMASS(K(N+3,2))
         IF(P(N+2,5)**2+P(N+3,5)**2+2D0*FOUR(N+2,N+3).GE.
      &  (PARJ(32)+PM2+PM3)**2) GOTO 630
         K(N+2,1)=1
         KFTEMP=K(N+2,2)
-        CALL PYKFDI(KFTEMP,K(N+3,2),KFLDMP,K(N+2,2))
+        CALL SPKFDI(KFTEMP,K(N+3,2),KFLDMP,K(N+2,2))
         IF(K(N+2,2).EQ.0) GOTO 260
-        P(N+2,5)=PYMASS(K(N+2,2))
+        P(N+2,5)=SPMASS(K(N+2,2))
         PS=P(N+1,5)+P(N+2,5)
         PV(2,5)=P(N+2,5)
         MMAT=0
@@ -46863,16 +46864,16 @@ C...not two jets. Readjust momenta accordingly.
         GOTO 460
       ELSEIF(MMAT.EQ.44) THEN
         MSTJ(93)=1
-        PM3=PYMASS(K(N+3,2))
+        PM3=SPMASS(K(N+3,2))
         MSTJ(93)=1
-        PM4=PYMASS(K(N+4,2))
+        PM4=SPMASS(K(N+4,2))
         IF(P(N+3,5)**2+P(N+4,5)**2+2D0*FOUR(N+3,N+4).GE.
      &  (PARJ(32)+PM3+PM4)**2) GOTO 600
         K(N+3,1)=1
         KFTEMP=K(N+3,2)
-        CALL PYKFDI(KFTEMP,K(N+4,2),KFLDMP,K(N+3,2))
+        CALL SPKFDI(KFTEMP,K(N+4,2),KFLDMP,K(N+3,2))
         IF(K(N+3,2).EQ.0) GOTO 260
-        P(N+3,5)=PYMASS(K(N+3,2))
+        P(N+3,5)=SPMASS(K(N+3,2))
         DO 580 J=1,3
           P(N+3,J)=P(N+3,J)+P(N+4,J)
   580   CONTINUE
@@ -46901,24 +46902,24 @@ C...Check invariant mass of W jets. May give one particle or start over.
      &.AND.IABS(K(N+1,2)).LT.10) THEN
         PMR=SQRT(MAX(0D0,P(N+1,5)**2+P(N+2,5)**2+2D0*FOUR(N+1,N+2)))
         MSTJ(93)=1
-        PM1=PYMASS(K(N+1,2))
+        PM1=SPMASS(K(N+1,2))
         MSTJ(93)=1
-        PM2=PYMASS(K(N+2,2))
+        PM2=SPMASS(K(N+2,2))
         IF(PMR.GT.PARJ(32)+PM1+PM2) GOTO 610
-        KFLDUM=INT(1.5D0+PYR(0))
-        CALL PYKFDI(K(N+1,2),-ISIGN(KFLDUM,K(N+1,2)),KFLDMP,KF1)
-        CALL PYKFDI(K(N+2,2),-ISIGN(KFLDUM,K(N+2,2)),KFLDMP,KF2)
+        KFLDUM=INT(1.5D0+SPR(0))
+        CALL SPKFDI(K(N+1,2),-ISIGN(KFLDUM,K(N+1,2)),KFLDMP,KF1)
+        CALL SPKFDI(K(N+2,2),-ISIGN(KFLDUM,K(N+2,2)),KFLDMP,KF2)
         IF(KF1.EQ.0.OR.KF2.EQ.0) GOTO 260
-        PSM=PYMASS(KF1)+PYMASS(KF2)
+        PSM=SPMASS(KF1)+SPMASS(KF2)
         IF((MMAT.EQ.42.OR.MMAT.EQ.48).AND.PMR.GT.PARJ(64)+PSM) GOTO 610
         IF(MMAT.GE.43.AND.PMR.GT.0.2D0*PARJ(32)+PSM) GOTO 610
         IF(MMAT.EQ.48) GOTO 390
         IF(ND.EQ.4.OR.KFA.EQ.15) GOTO 260
         K(N+1,1)=1
         KFTEMP=K(N+1,2)
-        CALL PYKFDI(KFTEMP,K(N+2,2),KFLDMP,K(N+1,2))
+        CALL SPKFDI(KFTEMP,K(N+2,2),KFLDMP,K(N+1,2))
         IF(K(N+1,2).EQ.0) GOTO 260
-        P(N+1,5)=PYMASS(K(N+1,2))
+        P(N+1,5)=SPMASS(K(N+1,2))
         K(N+2,2)=K(N+3,2)
         P(N+2,5)=P(N+3,5)
         PS=P(N+1,5)+P(N+2,5)
@@ -46945,9 +46946,9 @@ C...Phase space decay of partons from W decay.
         NQ=2
         PS=0D0
         MSTJ(93)=2
-        PSQ=PYMASS(KFLO(1))
+        PSQ=SPMASS(KFLO(1))
         MSTJ(93)=2
-        PSQ=PSQ+PYMASS(KFLO(2))
+        PSQ=PSQ+SPMASS(KFLO(2))
         MMAT=11
         GOTO 290
       ENDIF
@@ -47013,7 +47014,7 @@ C...Set up for parton shower evolution from jets.
         K(NSAV+1,1)=3
         K(NSAV+2,1)=3
         K(NSAV+3,1)=3
-        KCP=PYCOMP(K(NSAV+1,2))
+        KCP=SPCOMP(K(NSAV+1,2))
         KQP=KCHG(KCP,2)*ISIGN(1,K(NSAV+1,2))
         JCON=4
         IF(KQP.LT.0) JCON=5
@@ -47045,25 +47046,25 @@ C...Mark decayed particle; special option for B-Bbar mixing.
  
 C*********************************************************************
  
-C...PYDCYK
+C...SPDCYK
 C...Handles flavour production in the decay of unstable particles
 C...and small string clusters.
  
-      SUBROUTINE PYDCYK(KFL1,KFL2,KFL3,KF)
+      SUBROUTINE SPDCYK(KFL1,KFL2,KFL3,KF)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYDAT1/,/PYDAT2/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPDAT1/,/SPDAT2/
  
  
-C.. Call PYKFDI directly if no popcorn option is on
+C.. Call SPKFDI directly if no popcorn option is on
       IF(MSTJ(12).LT.2) THEN
-         CALL PYKFDI(KFL1,KFL2,KFL3,KF)
+         CALL SPKFDI(KFL1,KFL2,KFL3,KF)
          MSTU(124)=KFL3
          RETURN
       ENDIF
@@ -47087,7 +47088,7 @@ C.. Join jets: Fails if store not empty
             MSTU(121)=0
             RETURN
          ENDIF
-         CALL PYKFDI(KFL1,KFL2,KFL3,KF)
+         CALL SPKFDI(KFL1,KFL2,KFL3,KF)
       ELSEIF(KF1A.GT.10.AND.MSTU(121).GT.0)THEN
 C.. Pick popcorn meson from store, return same qq, decrease store
          KF=MSTU(NSTO+MSTU(121))
@@ -47095,7 +47096,7 @@ C.. Pick popcorn meson from store, return same qq, decrease store
          MSTU(121)=MSTU(121)-1
       ELSE
 C.. Generate new flavour. Then done if no diquark is generated
-  100    CALL PYKFDI(KFL1,0,KFL3,KF)
+  100    CALL SPKFDI(KFL1,0,KFL3,KF)
          IF(MSTU(121).EQ.-1) GOTO 100
          MSTU(124)=KFL3
          IF(KF.EQ.0.OR.IABS(KFL3).LE.10) RETURN
@@ -47105,7 +47106,7 @@ C.. Simple case if no dynamical popcorn suppressions are considered
             IF(MSTU(121).EQ.0) RETURN
             NMES=1
             KFPREV=-KFL3
-            CALL PYKFDI(KFPREV,0,KFL3,KFM)
+            CALL SPKFDI(KFPREV,0,KFL3,KFM)
 C.. Due to eta+eta' suppr., a qq->M+qq attempt might end as qq->B+q
             IF(IABS(KFL3).LE.10)THEN
                KFL3=-KFPREV
@@ -47117,9 +47118,9 @@ C.. Due to eta+eta' suppr., a qq->M+qq attempt might end as qq->B+q
 C test output qq against fake Gamma, then return if no popcorn.
          GB=2D0
          IF(IRANK.NE.0)THEN
-            CALL PYZDIS(1,2103,5D0,Z)
+            CALL SPZDIS(1,2103,5D0,Z)
             GB=5D0*(1D0-Z)/Z
-            IF(1D0-PARF(192)**GB.LT.PYR(0)) THEN
+            IF(1D0-PARF(192)**GB.LT.SPR(0)) THEN
                MSTU(121)=0
                GOTO 100
             ENDIF
@@ -47128,7 +47129,7 @@ C test output qq against fake Gamma, then return if no popcorn.
  
 C..Set store size memory. Pick fake dynamical variables of qq.
          NMES=MSTU(121)
-         CALL PYPTDI(1,PX3,PY3)
+         CALL SPPTDI(1,PX3,SP3)
          X=1D0
          POPM=0D0
          G=GB
@@ -47137,21 +47138,21 @@ C..Set store size memory. Pick fake dynamical variables of qq.
 C.. Pick next popcorn meson, test with fake dynamical variables
   110    KFPREV=-KFL3
          PX1=-PX3
-         PY1=-PY3
-         CALL PYKFDI(KFPREV,0,KFL3,KFM)
+         SP1=-SP3
+         CALL SPKFDI(KFPREV,0,KFL3,KFM)
          IF(MSTU(121).EQ.-1) GOTO 100
-         CALL PYPTDI(KFL3,PX3,PY3)
-         PM=PYMASS(KFM)**2+(PX1+PX3)**2+(PY1+PY3)**2
-         CALL PYZDIS(KFPREV,KFL3,PM,Z)
+         CALL SPPTDI(KFL3,PX3,SP3)
+         PM=SPMASS(KFM)**2+(PX1+PX3)**2+(SP1+SP3)**2
+         CALL SPZDIS(KFPREV,KFL3,PM,Z)
          G=(1D0-Z)*(G+PM/Z)
          X=(1D0-Z)*X
  
          PTST=1D0
          GTST=1D0
-         RTST=PYR(0)
+         RTST=SPR(0)
          IF(MSTJ(12).GT.4)THEN
             POPMN=SQRT((1D0-X)*(G/X-GB))
-            POPM=POPM+PMAS(PYCOMP(KFM),1)-PMAS(PYCOMP(KFM),3)
+            POPM=POPM+PMAS(SPCOMP(KFM),1)-PMAS(SPCOMP(KFM),3)
             PTST=EXP((POPM-POPMN)*PARF(193))
             POPM=POPMN
          ENDIF
@@ -47184,23 +47185,23 @@ C.. Test accepted system size. If OK set global popcorn size variable.
  
 C********************************************************************
  
-C...PYKFDI
+C...SPKFDI
 C...Generates a new flavour pair and combines off a hadron
  
-      SUBROUTINE PYKFDI(KFL1,KFL2,KFL3,KF)
+      SUBROUTINE SPKFDI(KFL1,KFL2,KFL3,KF)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYDAT1/,/PYDAT2/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPDAT1/,/SPDAT2/
 C...Local arrays.
       DIMENSION PD(7)
  
-      IF(MSTU(123).EQ.0.AND.MSTJ(12).GE.0)  CALL PYKFIN
+      IF(MSTU(123).EQ.0.AND.MSTJ(12).GE.0)  CALL SPKFIN
  
 C...Default flavour values. Input consistency checks.
       KF1A=IABS(KFL1)
@@ -47216,8 +47217,8 @@ C...Default flavour values. Input consistency checks.
  
 C...Check if tabulated flavour probabilities are to be used.
       IF(MSTJ(15).EQ.1) THEN
-        IF(MSTJ(12).GE.5)  CALL PYERRM(29,
-     &        '(PYKFDI:) Sorry, option MSTJ(15)=1 not available' //
+        IF(MSTJ(12).GE.5)  CALL SPERRM(29,
+     &        '(SPKFDI:) Sorry, option MSTJ(15)=1 not available' //
      &        ' together with MSTJ(12)>=5 modification')
         KTAB1=-1
         IF(KF1A.GE.1.AND.KF1A.LE.6) KTAB1=KF1A
@@ -47252,7 +47253,7 @@ C.. Join two flavours to meson or baryon. Test for popcorn.
         MBARY=0
         IF(KFDIQ.GT.10) THEN
           IF(IRANK.EQ.0.AND.MSTJ(12).LT.5)
-     &         CALL PYNMES(KFDIQ)
+     &         CALL SPNMES(KFDIQ)
           IF(MSTU(121).NE.0) THEN
              MSTU(121)=0
              RETURN
@@ -47276,7 +47277,7 @@ C.. Separate incoming flavours, curtain flavour consistency check
             QAWT=1D0
             IF(KFL1A.GE.3) QAWT=PARF(136+KFL1A/4)
             IF(KFL1B.GE.3) QAWT=QAWT/PARF(136+KFL1B/4)
-            KFQPOP=KFL1A+(KFL1B-KFL1A)*INT(1D0/(QAWT+1D0)+PYR(0))
+            KFQPOP=KFL1A+(KFL1B-KFL1A)*INT(1D0/(QAWT+1D0)+SPR(0))
          ENDIF
          IF(KFQPOP.NE.KFL1B.AND.KFQPOP.NE.KFL1A) THEN
              MSTU(121)=0
@@ -47289,19 +47290,19 @@ C...Meson/baryon choice. Set number of mesons if starting a popcorn
 C...system.
   110 MBARY=0
       IF(KF1A.LE.10.AND.MSTJ(12).GT.0)THEN
-         IF(MSTU(121).EQ.-1.OR.(1D0+PARJ(1))*PYR(0).GT.1D0)THEN
+         IF(MSTU(121).EQ.-1.OR.(1D0+PARJ(1))*SPR(0).GT.1D0)THEN
             MBARY=1
-            CALL PYNMES(0)
+            CALL SPNMES(0)
          ENDIF
       ELSEIF(KF1A.GT.10)THEN
          MBARY=2
-         IF(IRANK.EQ.0) CALL PYNMES(KF1A)
+         IF(IRANK.EQ.0) CALL SPNMES(KF1A)
          IF(MSTU(121).GT.0) MBARY=-1
       ENDIF
  
 C..x->H+q: Choose single vertex quark. Jump to form hadron.
       IF(MBARY.EQ.0.OR.MBARY.EQ.2)THEN
-         KFQVER=1+INT((2D0+PARJ(2))*PYR(0))
+         KFQVER=1+INT((2D0+PARJ(2))*SPR(0))
          KFL3=ISIGN(KFQVER,-KFIN)
          GOTO 130
       ENDIF
@@ -47312,7 +47313,7 @@ C..x->H+qq: (IDW=proper PARF position for diquark weights)
          IF(MSTU(121).EQ.0) IDW=150
          SQWT=PARF(IDW+1)
          IF(MSTU(121).GT.0) SQWT=SQWT*PARF(135)*PARF(138)**MSTU(121)
-         KFQPOP=1+INT((2D0+SQWT)*PYR(0))
+         KFQPOP=1+INT((2D0+SQWT)*SPR(0))
 C..   Shift to s-curtain parameters if needed
          IF(KFQPOP.GE.3.AND.MSTJ(12).GE.5)THEN
             PARF(194)=PARF(138)*PARF(139)
@@ -47340,7 +47341,7 @@ C.. x->H+qq: Get vertex quark
          IPOS=200+30*IPOS+1
  
          IMES=-1
-         RMES=PYR(0)*PARF(194)
+         RMES=SPR(0)*PARF(194)
   120    IMES=IMES+1
          RMES=RMES-PARF(IPOS+IMES)
          IF(IMES.EQ.30) THEN
@@ -47367,10 +47368,10 @@ C.. x->H+qq: Get vertex quark
          SQWT=PARF(IDW+2)
          IF(KFQPOP.EQ.3) SQWT=PARF(IDW+3)
          IF(KFQPOP.GT.3) SQWT=PARF(IDW+3)*(1D0/PARF(IDW+5)+1D0)/2D0
-         KFQVER=MIN(3,1+INT((2D0+SQWT)*PYR(0)))
+         KFQVER=MIN(3,1+INT((2D0+SQWT)*SPR(0)))
          IF(KFQPOP.LT.3.AND.KFQVER.LT.3)THEN
             KFQVER=KFQPOP
-            IF(PYR(0).GT.PARF(IDW+4)) KFQVER=3-KFQPOP
+            IF(SPR(0).GT.PARF(IDW+4)) KFQVER=3-KFQPOP
          ENDIF
       ENDIF
  
@@ -47380,7 +47381,7 @@ C..x->H+qq: form outgoing diquark with KFQPOP flag at 10000-pos
          SWT=PARF(IDW+7)
          IF(KFQVER.EQ.3) SWT=PARF(IDW+6)
          IF(KFQPOP.GE.3) SWT=PARF(IDW+5)
-         IF((1D0+SWT)*PYR(0).LT.1D0) KFLDS=1
+         IF((1D0+SWT)*SPR(0).LT.1D0) KFLDS=1
       ENDIF
       KFDIQ=900*MAX(KFQVER,KFQPOP)+100*(KFQVER+KFQPOP)+KFLDS
      &      +10000*KFQPOP
@@ -47398,13 +47399,13 @@ C... Form meson, with spin and flavour mixing for diagonal states.
            IF(IDIAG.EQ.0) KF=(100*KFLA+10*KFLB+KFJ)*KFS*(-1)**KFLA
            RETURN
         ENDIF
-        IF(KFLA.LE.2) KMUL=INT(PARJ(11)+PYR(0))
-        IF(KFLA.EQ.3) KMUL=INT(PARJ(12)+PYR(0))
-        IF(KFLA.GE.4) KMUL=INT(PARJ(13)+PYR(0))
+        IF(KFLA.LE.2) KMUL=INT(PARJ(11)+SPR(0))
+        IF(KFLA.EQ.3) KMUL=INT(PARJ(12)+SPR(0))
+        IF(KFLA.GE.4) KMUL=INT(PARJ(13)+SPR(0))
         IF(KMUL.EQ.0.AND.PARJ(14).GT.0D0)THEN
-          IF(PYR(0).LT.PARJ(14)) KMUL=2
+          IF(SPR(0).LT.PARJ(14)) KMUL=2
         ELSEIF(KMUL.EQ.1.AND.PARJ(15)+PARJ(16)+PARJ(17).GT.0D0)THEN
-          RMUL=PYR(0)
+          RMUL=SPR(0)
           IF(RMUL.LT.PARJ(15)) KMUL=3
           IF(KMUL.EQ.1.AND.RMUL.LT.PARJ(15)+PARJ(16)) KMUL=4
           IF(KMUL.EQ.1.AND.RMUL.LT.PARJ(15)+PARJ(16)+PARJ(17)) KMUL=5
@@ -47415,7 +47416,7 @@ C... Form meson, with spin and flavour mixing for diagonal states.
         IF(KFLA.NE.KFLB)THEN
           KF=(100*KFLA+10*KFLB+KFLS)*KFS*(-1)**KFLA
         ELSE
-          RMIX=PYR(0)
+          RMIX=SPR(0)
           IMIX=2*KFLA+10*KMUL
           IF(KFLA.LE.3) KF=110*(1+INT(RMIX+PARF(IMIX-1))+
      &    INT(RMIX+PARF(IMIX)))+KFLS
@@ -47427,7 +47428,7 @@ C... Form meson, with spin and flavour mixing for diagonal states.
 C..Optional extra suppression of eta and eta'.
 C..Allow shift to qq->B+q in old version (set IRANK to 0)
         IF(KF.EQ.221.OR.KF.EQ.331)THEN
-           IF(PYR(0).GT.PARJ(25+KF/300))THEN
+           IF(SPR(0).GT.PARJ(25+KF/300))THEN
               IF(KF2A.GT.0) GOTO 130
               IF(MSTJ(12).LT.4) IRANK=0
               GOTO 110
@@ -47478,7 +47479,7 @@ C...  SU(6) factors for formation of baryon.
         SU6WT=SU6OCT+SU6DEC*PARF(70+KBARY)
  
 C..   SU(6) test. Old options enforce new baryon if q->B+qq is rejected.
-        IF(SU6WT.LT.PYR(0)*SU6MAX.AND.KF2A.EQ.0)THEN
+        IF(SU6WT.LT.SPR(0)*SU6MAX.AND.KF2A.EQ.0)THEN
            MSTU(121)=0
            IF(MSTJ(12).LE.2.AND.MBARY.EQ.1) MSTU(121)=-1
            GOTO 110
@@ -47487,10 +47488,10 @@ C..   SU(6) test. Old options enforce new baryon if q->B+qq is rejected.
 C.. Form baryon. Distinguish Lambda- and Sigmalike baryons.
         KSIG=1
         KFLS=2
-        IF(SU6WT*PYR(0).GT.SU6OCT) KFLS=4
+        IF(SU6WT*SPR(0).GT.SU6OCT) KFLS=4
         IF(KFLS.EQ.2.AND.KFLD.GT.KFLE.AND.KFLE.GT.KFLF)THEN
           KSIG=KFLDS/3
-          IF(KFLA.NE.KFLD) KSIG=INT(3*SU6S/(3*SU6S+KFLDS**2)+PYR(0))
+          IF(KFLA.NE.KFLD) KSIG=INT(3*SU6S/(3*SU6S+KFLDS**2)+SPR(0))
         ENDIF
         KF=ISIGN(1000*KFLD+100*KFLE+10*KFLF+KFLS,KFL1)
         IF(KSIG.EQ.0) KF=ISIGN(1000*KFLD+100*KFLF+10*KFLE+KFLS,KFL1)
@@ -47517,7 +47518,7 @@ C...Use tabulated probabilities to select new flavour and hadron.
           RFL=RFL+PARF(120+80*KTAB1+25*KTS+KT3)
   150   CONTINUE
   160 CONTINUE
-      RFL=PYR(0)*RFL
+      RFL=SPR(0)*RFL
       DO 180 KTS=0,2
         KTABS=KTS
         DO 170 KT3=KT3L,KT3U
@@ -47548,7 +47549,7 @@ C...Reconstruct flavour of produced quark/diquark.
 C...Reconstruct meson code.
       IF(KFL3A.EQ.KFL1A.AND.KFL3B.EQ.KFL1B.AND.(KFL3A.LE.3.OR.
      &KFL3B.NE.0)) THEN
-        RFL=PYR(0)*(PARF(143+80*KTAB1+25*KTABS)+PARF(144+80*KTAB1+
+        RFL=SPR(0)*(PARF(143+80*KTAB1+25*KTABS)+PARF(144+80*KTAB1+
      &  25*KTABS)+PARF(145+80*KTAB1+25*KTABS))
         KF=110+2*KTABS+1
         IF(RFL.GT.PARF(143+80*KTAB1+25*KTABS)) KF=220+2*KTABS+1
@@ -47578,7 +47579,7 @@ C...Reconstruct meson code.
           KFLB=MIN(KFL1A,KFL3A)
           IF(KFLA.NE.KFL1A) KFS=-KFS
         ELSE
-          CALL PYERRM(2,'(PYKFDI:) no matching flavours for qq -> qq')
+          CALL SPERRM(2,'(SPKFDI:) no matching flavours for qq -> qq')
           GOTO 100
         ENDIF
         KF=(100*KFLA+10*KFLB+2*KTABS+1)*KFS*(-1)**KFLA
@@ -47603,9 +47604,9 @@ C...Reconstruct baryon code.
  
 C...Check that constructed flavour code is an allowed one.
       IF(KFL2.NE.0) KFL3=0
-      KC=PYCOMP(KF)
+      KC=SPCOMP(KF)
       IF(KC.EQ.0) THEN
-        CALL PYERRM(2,'(PYKFDI:) user-defined flavour probabilities '//
+        CALL SPERRM(2,'(SPKFDI:) user-defined flavour probabilities '//
      &  'failed')
         GOTO 100
       ENDIF
@@ -47615,20 +47616,20 @@ C...Check that constructed flavour code is an allowed one.
  
 C*********************************************************************
  
-C...PYNMES
+C...SPNMES
 C...Generates number of popcorn mesons and stores some relevant
 C...parameters.
  
-      SUBROUTINE PYNMES(KFDIQ)
+      SUBROUTINE SPNMES(KFDIQ)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYDAT1/,/PYDAT2/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPDAT1/,/SPDAT2/
  
       MSTU(121)=0
       IF(MSTJ(12).LT.2) RETURN
@@ -47646,7 +47647,7 @@ C..Old version: Get 1 or 0 popcorn mesons
             IF(KFB.EQ.3) POPWT=PARF(134)
             IF(KFS.EQ.1) POPWT=POPWT*SQRT(PARJ(4))
          ENDIF
-         MSTU(121)=INT(POPWT/(1D0+POPWT)+PYR(0))
+         MSTU(121)=INT(POPWT/(1D0+POPWT)+SPR(0))
          RETURN
       ENDIF
  
@@ -47660,37 +47661,37 @@ C..New version: Store popcorn- or rank 0 diquark parameters
          PARF(194)=PARF(140)
       ENDIF
       IF(PARF(194).LT.1D-5.OR.PARF(194).GT.1D0-1D-5) THEN
-         IF(PARF(194).GT.1D0-1D-5) CALL PYERRM(9,
-     &        '(PYNMES:) Neglecting too large popcorn possibility')
+         IF(PARF(194).GT.1D0-1D-5) CALL SPERRM(9,
+     &        '(SPNMES:) Neglecting too large popcorn possibility')
          RETURN
       ENDIF
  
 C..New version: Get number of popcorn mesons
-  100 RTST=PYR(0)
+  100 RTST=SPR(0)
       MSTU(121)=-1
   110 MSTU(121)=MSTU(121)+1
       RTST=RTST/PARF(194)
       IF(RTST.LT.1D0) GOTO 110
-      IF(KFDIQ.EQ.0.AND.PYR(0)*(2D0+PARF(135)*PARF(161)).GT.
+      IF(KFDIQ.EQ.0.AND.SPR(0)*(2D0+PARF(135)*PARF(161)).GT.
      &     (2D0+PARF(135)*PARF(161)*PARF(138)**MSTU(121))) GOTO 100
       RETURN
       END
  
 C***************************************************************
  
-C...PYKFIN
+C...SPKFIN
 C...Precalculates a set of diquark and popcorn weights.
  
-      SUBROUTINE PYKFIN
+      SUBROUTINE SPKFIN
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYDAT1/,/PYDAT2/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPDAT1/,/SPDAT2/
  
       DIMENSION SU6(12),SU6M(7),QBB(7),QBM(7),DMB(14)
  
@@ -47709,8 +47710,8 @@ C.. *** SU(6) factors **
 C..Modify with decuplet- (and Sigma/Lambda-) suppression.
       PARF(146)=1D0
       IF(MSTJ(12).GE.5) PARF(146)=3D0*PARJ(18)/(2D0*PARJ(18)+1D0)
-      IF(PARJ(18).LT.1D0-1D-5.AND.MSTJ(12).LT.5) CALL PYERRM(9,
-     &     '(PYKFIN:) PARJ(18)<1 combined with 0<MSTJ(12)<5 option')
+      IF(PARJ(18).LT.1D0-1D-5.AND.MSTJ(12).LT.5) CALL SPERRM(9,
+     &     '(SPKFIN:) PARJ(18)<1 combined with 0<MSTJ(12)<5 option')
       DO 100 I=1,6
          SU6(I)=PARF(60+I)
          SU6(6+I)=SU6(I)*4*PARF(146)/(3*PARF(146)+1)
@@ -47753,11 +47754,11 @@ C..sum over quark (quark tunnel weight)*(SU(6)).
 C.. *** Tunneling factors for Diquark production***
 C.. T: half a curtain pair = sqrt(curtain pair factor)
       IF(MSTJ(12).GE.5) THEN
-         PMUD0=PYMASS(2101)
-         PMUD1=PYMASS(2103)-PMUD0
-         PMUS0=PYMASS(3201)-PMUD0
-         PMUS1=PYMASS(3203)-PMUS0-PMUD0
-         PMSS1=PYMASS(3303)-PMUS0-PMUD0
+         PMUD0=SPMASS(2101)
+         PMUD1=SPMASS(2103)-PMUD0
+         PMUS0=SPMASS(3201)-PMUD0
+         PMUS1=SPMASS(3203)-PMUS0-PMUD0
+         PMSS1=SPMASS(3303)-PMUS0-PMUD0
          QBB(ISU0)=EXP(-(PARJ(9)+PARJ(8))*PMUS0-PARJ(9)*PARF(191))
          QBB(IUS0)=EXP(-PARJ(8)*PMUS0)
          QBB(ISS1)=EXP(-(PARJ(9)+PARJ(8))*PMSS1)*QBB(ISU0)
@@ -47920,7 +47921,7 @@ C..get prel. popcorn weights.
             IF(KFQVER.NE.KFQOLD)THEN
                IMES=IMES+1
                KFM=100*KFLA+10*KFLB+KFJ
-               PMM=PMAS(PYCOMP(KFM),1)-PMAS(PYCOMP(KFM),3)
+               PMM=PMAS(SPCOMP(KFM),1)-PMAS(SPCOMP(KFM),3)
                PARF(IPOS+IMES)=QWT*SWT*EXP(-PARF(193)*PMM)
                WTTOT=WTTOT+PARF(IPOS+IMES)
             ELSE
@@ -47929,7 +47930,7 @@ C..get prel. popcorn weights.
                   IF(ID.EQ.4) DWT=PARF(IMIX-1)-PARF(IMIX)
                   IF(ID.EQ.5) DWT=PARF(IMIX)
                   KFM=110*(ID-2)+KFJ
-                  PMM=PMAS(PYCOMP(KFM),1)-PMAS(PYCOMP(KFM),3)
+                  PMM=PMAS(SPCOMP(KFM),1)-PMAS(SPCOMP(KFM),3)
                   PARF(IPOS+5*KMUL+ID)=QWT*SWT*DWT*EXP(-PARF(193)*PMM)
                   IF(KMUL.EQ.0.AND.ID.GT.3) THEN
                      WTFAIL=WTFAIL+QWT*SWT*DWT*(1D0-PARJ(21+ID))
@@ -47996,47 +47997,47 @@ C..Recombine diquark weights to flavour and spin ratios
  
 C*********************************************************************
  
-C...PYPTDI
+C...SPPTDI
 C...Generates transverse momentum according to a Gaussian.
  
-      SUBROUTINE PYPTDI(KFL,PX,PY)
+      SUBROUTINE SPPTDI(KFL,PX,SP)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYDAT1/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      SAVE /SPDAT1/
  
 C...Generate p_T and azimuthal angle, gives p_x and p_y.
       KFLA=IABS(KFL)
-      PT=PARJ(21)*SQRT(-LOG(MAX(1D-10,PYR(0))))
-      IF(PARJ(23).GT.PYR(0)) PT=PARJ(24)*PT
+      PT=PARJ(21)*SQRT(-LOG(MAX(1D-10,SPR(0))))
+      IF(PARJ(23).GT.SPR(0)) PT=PARJ(24)*PT
       IF(MSTJ(91).EQ.1) PT=PARJ(22)*PT
       IF(KFLA.EQ.0.AND.MSTJ(13).LE.0) PT=0D0
-      PHI=PARU(2)*PYR(0)
+      PHI=PARU(2)*SPR(0)
       PX=PT*COS(PHI)
-      PY=PT*SIN(PHI)
+      SP=PT*SIN(PHI)
  
       RETURN
       END
  
 C*********************************************************************
  
-C...PYZDIS
+C...SPZDIS
 C...Generates the longitudinal splitting variable z.
  
-      SUBROUTINE PYZDIS(KFL1,KFL2,PR,Z)
+      SUBROUTINE SPZDIS(KFL1,KFL2,PR,Z)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYDAT1/,/PYDAT2/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPDAT1/,/SPDAT2/
  
 C...Check if heavy flavour fragmentation.
       KFLA=IABS(KFL1)
@@ -48099,10 +48100,10 @@ C...Subdivide z range if distribution very peaked near endpoint.
         ENDIF
  
 C...Choice of z, preweighted for peaks at low or high z.
-  100   Z=PYR(0)
+  100   Z=SPR(0)
         FPRE=1D0
         IF(MMAX.EQ.1) THEN
-          IF(FINT*PYR(0).LE.1D0) THEN
+          IF(FINT*SPR(0).LE.1D0) THEN
             Z=ZDIV*Z
           ELSEIF(MC.EQ.1) THEN
             Z=ZDIV**Z
@@ -48112,7 +48113,7 @@ C...Choice of z, preweighted for peaks at low or high z.
             FPRE=(ZDIV/Z)**FC
           ENDIF
         ELSEIF(MMAX.EQ.3) THEN
-          IF(FINT*PYR(0).LE.1D0) THEN
+          IF(FINT*SPR(0).LE.1D0) THEN
             Z=ZDIV+LOG(Z)/FB
             FPRE=EXP(FB*(Z-ZDIV))
           ELSE
@@ -48125,17 +48126,17 @@ C...Weighting according to correct formula.
         FEXP=FC*LOG(ZMAX/Z)+FB*(1D0/ZMAX-1D0/Z)
         IF(MA.GE.2) FEXP=FEXP+FA*LOG((1D0-Z)/(1D0-ZMAX))
         FVAL=EXP(MAX(-50D0,MIN(50D0,FEXP)))
-        IF(FVAL.LT.PYR(0)*FPRE) GOTO 100
+        IF(FVAL.LT.SPR(0)*FPRE) GOTO 100
  
 C...Generate z according to Field-Feynman, SLAC, (1-z)**c OR z**c.
       ELSE
         FC=PARJ(50+MAX(1,KFLH))
         IF(MSTJ(91).EQ.1) FC=PARJ(59)
-  110   Z=PYR(0)
+  110   Z=SPR(0)
         IF(FC.GE.0D0.AND.FC.LE.1D0) THEN
-          IF(FC.GT.PYR(0)) Z=1D0-Z**(1D0/3D0)
+          IF(FC.GT.SPR(0)) Z=1D0-Z**(1D0/3D0)
         ELSEIF(FC.GT.-1.AND.FC.LT.0D0) THEN
-          IF(-4D0*FC*Z*(1D0-Z)**2.LT.PYR(0)*((1D0-Z)**2-FC*Z)**2)
+          IF(-4D0*FC*Z*(1D0-Z)**2.LT.SPR(0)*((1D0-Z)**2-FC*Z)**2)
      &    GOTO 110
         ELSE
           IF(FC.GT.0D0) Z=1D0-Z**(1D0/FC)
@@ -48148,23 +48149,23 @@ C...Generate z according to Field-Feynman, SLAC, (1-z)**c OR z**c.
  
 C*********************************************************************
  
-C...PYSHOW
+C...SPSHOW
 C...Generates timelike parton showers from given partons.
  
-      SUBROUTINE PYSHOW(IP1,IP2,QMAX)
+      SUBROUTINE SPSHOW(IP1,IP2,QMAX)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/
 C...Local arrays.
       DIMENSION PMTH(5,50),PS(5),PMA(19),PMSD(10),IEP(10),IPA(10),
      &KFLA(10),KFLD(10),KFL(10),ITRY(10),ISI(10),ISL(10),DP(10),
@@ -48190,12 +48191,12 @@ C...Initialization of cutoff masses etc.
   100 CONTINUE
       ISCOL(21)=1
       KSH(21)=1
-      PMTH(1,21)=PYMASS(21)
+      PMTH(1,21)=SPMASS(21)
       PMTH(2,21)=SQRT(PMTH(1,21)**2+0.25D0*PARJ(82)**2)
       PMTH(3,21)=2D0*PMTH(2,21)
       PMTH(4,21)=PMTH(3,21)
       PMTH(5,21)=PMTH(3,21)
-      PMTH(1,22)=PYMASS(22)
+      PMTH(1,22)=SPMASS(22)
       PMTH(2,22)=SQRT(PMTH(1,22)**2+0.25D0*PARJ(83)**2)
       PMTH(3,22)=2D0*PMTH(2,22)
       PMTH(4,22)=PMTH(3,22)
@@ -48210,7 +48211,7 @@ C...Initialization of cutoff masses etc.
         ISCOL(IFL)=1
         IF(MSTJ(41).GE.2) ISCHG(IFL)=1
         KSH(IFL)=1
-        PMTH(1,IFL)=PYMASS(IFL)
+        PMTH(1,IFL)=SPMASS(IFL)
         PMTH(2,IFL)=SQRT(PMTH(1,IFL)**2+0.25D0*PMQTH1**2)
         PMTH(3,IFL)=PMTH(2,IFL)+PMQTH2
         PMTH(4,IFL)=SQRT(PMTH(1,IFL)**2+0.25D0*PARJ(82)**2)+PMTH(2,21)
@@ -48219,7 +48220,7 @@ C...Initialization of cutoff masses etc.
       DO 120 IFL=11,15,2
         IF(MSTJ(41).EQ.2.OR.MSTJ(41).GE.4) ISCHG(IFL)=1
         IF(MSTJ(41).EQ.2.OR.MSTJ(41).GE.4) KSH(IFL)=1
-        PMTH(1,IFL)=PYMASS(IFL)
+        PMTH(1,IFL)=SPMASS(IFL)
         PMTH(2,IFL)=SQRT(PMTH(1,IFL)**2+0.25D0*PARJ(90)**2)
         PMTH(3,IFL)=PMTH(2,IFL)+0.5D0*PARJ(90)
         PMTH(4,IFL)=PMTH(3,IFL)
@@ -48252,8 +48253,8 @@ C...Store positions of shower initiating partons.
         IPA(1)=IP1+6
         IPA(2)=IP1+7
       ELSE
-        CALL PYERRM(12,
-     &  '(PYSHOW:) failed to reconstruct showering system')
+        CALL SPERRM(12,
+     &  '(SPSHOW:) failed to reconstruct showering system')
         IF(MSTU(21).GE.1) RETURN
       ENDIF
  
@@ -48484,7 +48485,7 @@ C...Find if interference with initial state partons.
       IF(MIIS.NE.0) THEN
         DO 180 I=1,2
           KCII(I)=0
-          KCA=PYCOMP(KFLA(I))
+          KCA=SPCOMP(KFLA(I))
           IF(KCA.NE.0) KCII(I)=KCHG(KCA,2)*ISIGN(1,K(IPA(I),2))
           NIIS(I)=0
           IF(KCII(I).NE.0) THEN
@@ -48525,31 +48526,31 @@ C...and reconstruct their polar and azimuthal angles.
             V(N+I,J)=0D0
   230     CONTINUE
   240   CONTINUE
-        CALL PYROBO(N+1,N+2+NIIS(1)+NIIS(2),0D0,0D0,-PS(1)/PS(4),
+        CALL SPROBO(N+1,N+2+NIIS(1)+NIIS(2),0D0,0D0,-PS(1)/PS(4),
      &  -PS(2)/PS(4),-PS(3)/PS(4))
-        PHI=PYANGL(P(N+1,1),P(N+1,2))
-        CALL PYROBO(N+1,N+2+NIIS(1)+NIIS(2),0D0,-PHI,0D0,0D0,0D0)
-        THE=PYANGL(P(N+1,3),P(N+1,1))
-        CALL PYROBO(N+1,N+2+NIIS(1)+NIIS(2),-THE,0D0,0D0,0D0,0D0)
+        PHI=SPANGL(P(N+1,1),P(N+1,2))
+        CALL SPROBO(N+1,N+2+NIIS(1)+NIIS(2),0D0,-PHI,0D0,0D0,0D0)
+        THE=SPANGL(P(N+1,3),P(N+1,1))
+        CALL SPROBO(N+1,N+2+NIIS(1)+NIIS(2),-THE,0D0,0D0,0D0,0D0)
         DO 250 I=3,2+NIIS(1)
-          THEIIS(1,I-2)=PYANGL(P(N+I,3),SQRT(P(N+I,1)**2+P(N+I,2)**2))
-          PHIIIS(1,I-2)=PYANGL(P(N+I,1),P(N+I,2))
+          THEIIS(1,I-2)=SPANGL(P(N+I,3),SQRT(P(N+I,1)**2+P(N+I,2)**2))
+          PHIIIS(1,I-2)=SPANGL(P(N+I,1),P(N+I,2))
   250   CONTINUE
         DO 260 I=3+NIIS(1),2+NIIS(1)+NIIS(2)
-          THEIIS(2,I-2-NIIS(1))=PARU(1)-PYANGL(P(N+I,3),
+          THEIIS(2,I-2-NIIS(1))=PARU(1)-SPANGL(P(N+I,3),
      &    SQRT(P(N+I,1)**2+P(N+I,2)**2))
-          PHIIIS(2,I-2-NIIS(1))=PYANGL(P(N+I,1),P(N+I,2))
+          PHIIIS(2,I-2-NIIS(1))=SPANGL(P(N+I,1),P(N+I,2))
   260   CONTINUE
       ENDIF
  
 C...Boost 3 or more partons to their rest frame.
-      IF(NPA.GE.3) CALL PYROBO(IPA(1),IPA(NPA),0D0,0D0,-PS(1)/PS(4),
+      IF(NPA.GE.3) CALL SPROBO(IPA(1),IPA(NPA),0D0,0D0,-PS(1)/PS(4),
      &-PS(2)/PS(4),-PS(3)/PS(4))
  
 C...Define imagined single initiator of shower for parton system.
       NS=N
       IF(N.GT.MSTU(4)-MSTU(32)-10) THEN
-        CALL PYERRM(11,'(PYSHOW:) no more memory left in PYJETS')
+        CALL SPERRM(11,'(SPSHOW:) no more memory left in SPJETS')
         IF(MSTU(21).GE.1) RETURN
       ENDIF
   270 N=NS
@@ -48585,7 +48586,7 @@ C...Loop over partons that may branch.
         IGM=-1
       ENDIF
       IF(N+NEP.GT.MSTU(4)-MSTU(32)-10) THEN
-        CALL PYERRM(11,'(PYSHOW:) no more memory left in PYJETS')
+        CALL SPERRM(11,'(SPSHOW:) no more memory left in SPJETS')
         IF(MSTU(21).GE.1) RETURN
       ENDIF
  
@@ -48631,7 +48632,7 @@ C...Reset flags on daughters and tries made.
         K(N+IP,4)=0
         K(N+IP,5)=0
         KFLD(IP)=IABS(K(N+IP,2))
-        IF(KCHG(PYCOMP(KFLD(IP)),2).EQ.0) K(N+IP,1)=1
+        IF(KCHG(SPCOMP(KFLD(IP)),2).EQ.0) K(N+IP,1)=1
         ITRY(IP)=0
         ISL(IP)=0
         ISI(IP)=0
@@ -48711,7 +48712,7 @@ C...Store information on choice of evolving daughter.
   390 CONTINUE
       ITRY(INUM)=ITRY(INUM)+1
       IF(ITRY(INUM).GT.200) THEN
-        CALL PYERRM(14,'(PYSHOW:) caught in infinite loop')
+        CALL SPERRM(14,'(SPSHOW:) caught in infinite loop')
         IF(MSTU(21).GE.1) RETURN
       ENDIF
       Z=0.5D0
@@ -48737,10 +48738,10 @@ C...Select side for interference with initial state partons.
         IF(IABS(KCII(III)).EQ.1.AND.NIIS(III).EQ.1) THEN
           ISII(III)=1
         ELSEIF(KCII(III).EQ.2.AND.NIIS(III).EQ.1) THEN
-          IF(PYR(0).GT.0.5D0) ISII(III)=1
+          IF(SPR(0).GT.0.5D0) ISII(III)=1
         ELSEIF(KCII(III).EQ.2.AND.NIIS(III).EQ.2) THEN
           ISII(III)=1
-          IF(PYR(0).GT.0.5D0) ISII(III)=2
+          IF(SPR(0).GT.0.5D0) ISII(III)=2
         ENDIF
       ENDIF
  
@@ -48834,11 +48835,11 @@ C...Already predetermined choice.
       ELSEIF(FBR.LT.1D-3) THEN
         PMSQCD=0D0
       ELSEIF(MSTJ(44).LE.0) THEN
-        PMSQCD=PMSC*EXP(MAX(-50D0,LOG(PYR(0))*PARU(2)/(PARU(111)*FBR)))
+        PMSQCD=PMSC*EXP(MAX(-50D0,LOG(SPR(0))*PARU(2)/(PARU(111)*FBR)))
       ELSEIF(MSTJ(44).EQ.1) THEN
-        PMSQCD=4D0*ALAMS*(0.25D0*PMSC/ALAMS)**(PYR(0)**(B0/FBR))
+        PMSQCD=4D0*ALAMS*(0.25D0*PMSC/ALAMS)**(SPR(0)**(B0/FBR))
       ELSE
-        PMSQCD=PMSC*EXP(MAX(-50D0,ALFM*B0*LOG(PYR(0))/FBR))
+        PMSQCD=PMSC*EXP(MAX(-50D0,ALFM*B0*LOG(SPR(0))/FBR))
       ENDIF
 C...Shift back m^2 from evolution in Q^2 = m^2 - m(onshell)^2.
       IF(IPSPD.EQ.0) PMSQCD=PMSQCD+PMTH(1,IR)**2
@@ -48853,7 +48854,7 @@ C...Shift m^2 for evolution in Q^2 = m^2 - m(onshell)^2.
         IF(FBRE.LT.1D-3) THEN
           PMSQED=0D0
         ELSE
-          PMSQED=PMSE*EXP(MAX(-50D0,LOG(PYR(0))*PARU(2)/
+          PMSQED=PMSE*EXP(MAX(-50D0,LOG(SPR(0))*PARU(2)/
      &    (PARU(101)*FBRE)))
         ENDIF
 C...Shift back m^2 from evolution in Q^2 = m^2 - m(onshell)^2.
@@ -48893,47 +48894,47 @@ C...Already predetermined choice of z, and flavour in g -> qqbar.
  
 C...Select z value of branching: q -> qgamma.
       ELSEIF(MCE.EQ.2) THEN
-        Z=1D0-(1D0-ZCE)*(ZCE/(1D0-ZCE))**PYR(0)
-        IF(1D0+Z**2.LT.2D0*PYR(0)) GOTO 400
+        Z=1D0-(1D0-ZCE)*(ZCE/(1D0-ZCE))**SPR(0)
+        IF(1D0+Z**2.LT.2D0*SPR(0)) GOTO 400
         K(IEP(1),5)=22
  
 C...Select z value of branching: q -> qg, g -> gg, g -> qqbar.
       ELSEIF(MSTJ(49).NE.1.AND.KFL(1).NE.21) THEN
-        Z=1D0-(1D0-ZC)*(ZC/(1D0-ZC))**PYR(0)
+        Z=1D0-(1D0-ZC)*(ZC/(1D0-ZC))**SPR(0)
 C...Only do z weighting when no ME correction afterwards.
-        IF(M3JC.EQ.0.AND.1D0+Z**2.LT.2D0*PYR(0)) GOTO 400
+        IF(M3JC.EQ.0.AND.1D0+Z**2.LT.2D0*SPR(0)) GOTO 400
         K(IEP(1),5)=21
-      ELSEIF(MSTJ(49).EQ.0.AND.MSTJ(45)*0.5D0.LT.PYR(0)*FBR) THEN
-        Z=(1D0-ZC)*(ZC/(1D0-ZC))**PYR(0)
-        IF(PYR(0).GT.0.5D0) Z=1D0-Z
-        IF((1D0-Z*(1D0-Z))**2.LT.PYR(0)) GOTO 400
+      ELSEIF(MSTJ(49).EQ.0.AND.MSTJ(45)*0.5D0.LT.SPR(0)*FBR) THEN
+        Z=(1D0-ZC)*(ZC/(1D0-ZC))**SPR(0)
+        IF(SPR(0).GT.0.5D0) Z=1D0-Z
+        IF((1D0-Z*(1D0-Z))**2.LT.SPR(0)) GOTO 400
         K(IEP(1),5)=21
       ELSEIF(MSTJ(49).NE.1) THEN
-        Z=PYR(0)
-        IF(Z**2+(1D0-Z)**2.LT.PYR(0)) GOTO 400
-        KFLB=1+INT(MSTJ(45)*PYR(0))
+        Z=SPR(0)
+        IF(Z**2+(1D0-Z)**2.LT.SPR(0)) GOTO 400
+        KFLB=1+INT(MSTJ(45)*SPR(0))
         PMQ=4D0*PMTH(2,KFLB)**2/V(IEP(1),5)
         IF(PMQ.GE.1D0) GOTO 400
         IF(MSTJ(44).LE.2.OR.MSTJ(44).EQ.4) THEN
           IF(Z.LT.ZC.OR.Z.GT.1D0-ZC) GOTO 400
           PMQ0=4D0*PMTH(2,21)**2/V(IEP(1),5)
           IF(MOD(MSTJ(43),2).EQ.0.AND.(1D0+0.5D0*PMQ)*SQRT(1D0-PMQ)
-     &    .LT.PYR(0)*(1D0+0.5D0*PMQ0)*SQRT(1D0-PMQ0)) GOTO 400
+     &    .LT.SPR(0)*(1D0+0.5D0*PMQ0)*SQRT(1D0-PMQ0)) GOTO 400
         ELSE
-          IF((1D0+0.5D0*PMQ)*SQRT(1D0-PMQ).LT.PYR(0)) GOTO 400
+          IF((1D0+0.5D0*PMQ)*SQRT(1D0-PMQ).LT.SPR(0)) GOTO 400
         ENDIF
         K(IEP(1),5)=KFLB
  
 C...Ditto for scalar gluon model.
       ELSEIF(KFL(1).NE.21) THEN
-        Z=1D0-SQRT(ZC**2+PYR(0)*(1D0-2D0*ZC))
+        Z=1D0-SQRT(ZC**2+SPR(0)*(1D0-2D0*ZC))
         K(IEP(1),5)=21
-      ELSEIF(PYR(0)*(PARJ(87)+MSTJ(45)*PARJ(88)).LE.PARJ(87)) THEN
-        Z=ZC+(1D0-2D0*ZC)*PYR(0)
+      ELSEIF(SPR(0)*(PARJ(87)+MSTJ(45)*PARJ(88)).LE.PARJ(87)) THEN
+        Z=ZC+(1D0-2D0*ZC)*SPR(0)
         K(IEP(1),5)=21
       ELSE
-        Z=ZC+(1D0-2D0*ZC)*PYR(0)
-        KFLB=1+INT(MSTJ(45)*PYR(0))
+        Z=ZC+(1D0-2D0*ZC)*SPR(0)
+        KFLB=1+INT(MSTJ(45)*SPR(0))
         PMQ=4D0*PMTH(2,KFLB)**2/V(IEP(1),5)
         IF(PMQ.GE.1D0) GOTO 400
         K(IEP(1),5)=KFLB
@@ -48943,13 +48944,13 @@ C...Correct to alpha_s(pT^2) (optionally m^2/4 for g -> q qbar).
       IF(MCE.EQ.1.AND.MSTJ(44).GE.2.AND.IPSPD.EQ.0) THEN
         IF(KFL(1).EQ.21.AND.K(IEP(1),5).LT.10.AND.
      &  (MSTJ(44).EQ.3.OR.MSTJ(44).EQ.5)) THEN
-          IF(ALFM/LOG(V(IEP(1),5)*0.25D0/ALAMS).LT.PYR(0)) GOTO 400
+          IF(ALFM/LOG(V(IEP(1),5)*0.25D0/ALAMS).LT.SPR(0)) GOTO 400
         ELSE
           PT2APP=Z*(1D0-Z)*V(IEP(1),5)
           IF(MSTJ(44).GE.4) PT2APP=PT2APP*
      &    (1D0-PMTH(1,IR)**2/V(IEP(1),5))**2
           IF(PT2APP.LT.PT2MIN) GOTO 400
-          IF(ALFM/LOG(PT2APP/ALAMS).LT.PYR(0)) GOTO 400
+          IF(ALFM/LOG(PT2APP/ALAMS).LT.SPR(0)) GOTO 400
         ENDIF
       ENDIF
  
@@ -49005,9 +49006,9 @@ C...Width suppression for q -> q + g.
         ENDIF
         CHI=PARJ(89)**2/(PARJ(89)**2+EGLU**2)
         IF(MSTJ(40).EQ.1) THEN
-          IF(CHI.LT.PYR(0)) GOTO 400
+          IF(CHI.LT.SPR(0)) GOTO 400
         ELSEIF(MSTJ(40).EQ.2) THEN
-          IF(1D0-CHI.LT.PYR(0)) GOTO 400
+          IF(1D0-CHI.LT.SPR(0)) GOTO 400
         ENDIF
       ENDIF
  
@@ -49023,8 +49024,8 @@ C...QED matrix elements: only for massless case so far.
           X3=(1D0-X1)+(1D0-X2)
           KI1=K(IPA(INUM),2)
           KI2=K(IPA(3-INUM),2)
-          QF1=KCHG(PYCOMP(KI1),1)*ISIGN(1,KI1)/3D0
-          QF2=KCHG(PYCOMP(KI2),1)*ISIGN(1,KI2)/3D0
+          QF1=KCHG(SPCOMP(KI1),1)*ISIGN(1,KI1)/3D0
+          QF2=KCHG(SPCOMP(KI2),1)*ISIGN(1,KI2)/3D0
           WSHOW=QF1**2*(1D0-X1)/X3*(1D0+(X1/(2D0-X2))**2)+
      &    QF2**2*(1D0-X2)/X3*(1D0+(X2/(2D0-X1))**2)
           WME=(QF1*(1D0-X1)/X3-QF2*(1D0-X2)/X3)**2*(X1**2+X2**2)
@@ -49069,9 +49070,9 @@ C...Construct ME variables.
           X2=1D0+R2ME**2-PS1ME/ECMME**2
 C...Call ME, with right order important for two inequivalent showerers.
           IF(IR.EQ.IORD+30) THEN
-            WME=PYMAEL(M3JCC,X1,X2,R1ME,R2ME,ALPHA)
+            WME=SPMAEL(M3JCC,X1,X2,R1ME,R2ME,ALPHA)
           ELSE
-            WME=PYMAEL(M3JCC,X2,X1,R2ME,R1ME,ALPHA)
+            WME=SPMAEL(M3JCC,X2,X1,R2ME,R1ME,ALPHA)
           ENDIF
 C...Split up total ME when two radiating partons.
           ISPRAD=1
@@ -49099,7 +49100,7 @@ C...Toy model scalar theory matrix elements; no mass effects.
      &    PARJ(171)
         ENDIF
  
-        IF(WME.LT.PYR(0)*WSHOW) GOTO 400
+        IF(WME.LT.SPR(0)*WSHOW) GOTO 400
       ENDIF
  
 C...Impose angular ordering by rejection of nonordered emission.
@@ -49239,7 +49240,7 @@ C...Check if chosen multiplet m1,m2,z1,z2 is physical.
         ELSEIF(ISL(1).EQ.1.AND.ISL(2).EQ.1) THEN
           ZDR1=MAX(0D0,V(N+1,3)/MAX(1D-6,V(N+1,4))-1D0)
           ZDR2=MAX(0D0,V(N+2,3)/MAX(1D-6,V(N+2,4))-1D0)
-          IF(ZDR2.GT.PYR(0)*(ZDR1+ZDR2)) ISL(1)=0
+          IF(ZDR2.GT.SPR(0)*(ZDR1+ZDR2)) ISL(1)=0
           IF(ISL(1).EQ.1) ISL(2)=0
           IF(ISL(1).EQ.0) ISLM=1
           IF(ISL(2).EQ.0) ISLM=2
@@ -49392,27 +49393,27 @@ C...Construct energies for ordinary branching in shower.
         ENDIF
  
 C...Already predetermined choice of phi angle or not
-        PHI=PARU(2)*PYR(0)
+        PHI=PARU(2)*SPR(0)
         IF(MPSPD.EQ.1.AND.IGM.EQ.NS+1) THEN
           IPSPD=IP1+IM-NS-2
           IF(K(IPSPD,4).GT.0) THEN
             IPSGD1=K(IPSPD,4)
             IF(IM.EQ.NS+2) THEN
-              PHI=PYANGL(P(IPSGD1,1),P(IPSGD1,2))
+              PHI=SPANGL(P(IPSGD1,1),P(IPSGD1,2))
             ELSE
-              PHI=PYANGL(-P(IPSGD1,1),P(IPSGD1,2))
+              PHI=SPANGL(-P(IPSGD1,1),P(IPSGD1,2))
             ENDIF
           ENDIF
         ELSEIF(MPSPD.EQ.1.AND.IGM.EQ.NS+2) THEN
           IPSPD=IP1+IM-NS-2
           IF(K(IPSPD,4).GT.0) THEN
             IPSGD1=K(IPSPD,4)
-            PHIPSM=PYANGL(P(IPSPD,1),P(IPSPD,2))
-            THEPSM=PYANGL(P(IPSPD,3),SQRT(P(IPSPD,1)**2+P(IPSPD,2)**2))
-            CALL PYROBO(IPSGD1,IPSGD1,0D0,-PHIPSM,0D0,0D0,0D0)
-            CALL PYROBO(IPSGD1,IPSGD1,-THEPSM,0D0,0D0,0D0,0D0)
-            PHI=PYANGL(P(IPSGD1,1),P(IPSGD1,2))
-            CALL PYROBO(IPSGD1,IPSGD1,THEPSM,PHIPSM,0D0,0D0,0D0)
+            PHIPSM=SPANGL(P(IPSPD,1),P(IPSPD,2))
+            THEPSM=SPANGL(P(IPSPD,3),SQRT(P(IPSPD,1)**2+P(IPSPD,2)**2))
+            CALL SPROBO(IPSGD1,IPSGD1,0D0,-PHIPSM,0D0,0D0,0D0)
+            CALL SPROBO(IPSGD1,IPSGD1,-THEPSM,0D0,0D0,0D0,0D0)
+            PHI=SPANGL(P(IPSGD1,1),P(IPSGD1,2))
+            CALL SPROBO(IPSGD1,IPSGD1,THEPSM,PHIPSM,0D0,0D0,0D0)
           ENDIF
         ENDIF
  
@@ -49456,9 +49457,9 @@ C...Rotate and boost daughters.
           GABEP=0D0
         ENDIF
         PTIMB=SQRT((P(IM,1)+GABEP*BEX)**2+(P(IM,2)+GABEP*BEY)**2)
-        THE=PYANGL(P(IM,3)+GABEP*BEZ,PTIMB)
+        THE=SPANGL(P(IM,3)+GABEP*BEZ,PTIMB)
         IF(PTIMB.GT.1D-4) THEN
-          PHI=PYANGL(P(IM,1)+GABEP*BEX,P(IM,2)+GABEP*BEY)
+          PHI=SPANGL(P(IM,1)+GABEP*BEX,P(IM,2)+GABEP*BEY)
         ELSE
           PHI=0D0
         ENDIF
@@ -49498,18 +49499,18 @@ C...Weight with azimuthal distribution, if required.
           CAD=(DPT(4,1)*DPT(5,1)+DPT(4,2)*DPT(5,2)+
      &    DPT(4,3)*DPT(5,3))/(DPT(4,4)*DPT(5,4))
           IF(MAZIP.NE.0) THEN
-            IF(1D0+HAZIP*(2D0*CAD**2-1D0).LT.PYR(0)*(1D0+ABS(HAZIP)))
+            IF(1D0+HAZIP*(2D0*CAD**2-1D0).LT.SPR(0)*(1D0+ABS(HAZIP)))
      &      GOTO 550
           ENDIF
           IF(MAZIC.NE.0) THEN
             IF(MAZIC.EQ.N+2) CAD=-CAD
             IF((1D0-HAZIC)*(1D0-HAZIC*CAD)/(1D0+HAZIC**2-2D0*HAZIC*CAD)
-     &      .LT.PYR(0)) GOTO 550
+     &      .LT.SPR(0)) GOTO 550
           ENDIF
         ENDIF
       ENDIF
  
-C...Azimuthal anisotropy due to interference with initial state partons.
+C...Azimuthal anisotrosp due to interference with initial state partons.
       IF(MOD(MIIS,2).EQ.1.AND.IGM.EQ.NS+1.AND.(K(N+1,2).EQ.21.OR.
      &K(N+2,2).EQ.21)) THEN
         III=IM-NS-1
@@ -49518,15 +49519,15 @@ C...Azimuthal anisotropy due to interference with initial state partons.
           IF(K(N+1,2).NE.21) IAZIID=N+2
           IF(K(N+1,2).EQ.21.AND.K(N+2,2).EQ.21.AND.
      &    P(N+1,4).GT.P(N+2,4)) IAZIID=N+2
-          THEIID=PYANGL(P(IAZIID,3),SQRT(P(IAZIID,1)**2+P(IAZIID,2)**2))
+          THEIID=SPANGL(P(IAZIID,3),SQRT(P(IAZIID,1)**2+P(IAZIID,2)**2))
           IF(III.EQ.2) THEIID=PARU(1)-THEIID
-          PHIIID=PYANGL(P(IAZIID,1),P(IAZIID,2))
+          PHIIID=SPANGL(P(IAZIID,1),P(IAZIID,2))
           HAZII=MIN(0.95D0,THEIID/THEIIS(III,ISII(III)))
           CAD=COS(PHIIID-PHIIIS(III,ISII(III)))
           PHIREL=ABS(PHIIID-PHIIIS(III,ISII(III)))
           IF(PHIREL.GT.PARU(1)) PHIREL=PARU(2)-PHIREL
           IF((1D0-HAZII)*(1D0-HAZII*CAD)/(1D0+HAZII**2-2D0*HAZII*CAD)
-     &    .LT.PYR(0)) GOTO 550
+     &    .LT.SPR(0)) GOTO 550
         ENDIF
       ENDIF
  
@@ -49535,7 +49536,7 @@ C...Continue loop over partons that may branch, until none left.
       N=N+NEP
       NEP=2
       IF(N.GT.MSTU(4)-MSTU(32)-10) THEN
-        CALL PYERRM(11,'(PYSHOW:) no more memory left in PYJETS')
+        CALL SPERRM(11,'(SPSHOW:) no more memory left in SPJETS')
         IF(MSTU(21).GE.1) N=NS
         IF(MSTU(21).GE.1) RETURN
       ENDIF
@@ -49556,7 +49557,7 @@ C...Set information on imagined shower initiator.
  
 C...Reconstruct string drawing information.
       DO 600 I=NS+1+IIM,N
-        KQ=KCHG(PYCOMP(K(I,2)),2)
+        KQ=KCHG(SPCOMP(K(I,2)),2)
         IF(K(I,1).LE.10.AND.K(I,2).EQ.22) THEN
           K(I,1)=1
         ELSEIF(K(I,1).LE.10.AND.IABS(K(I,2)).GE.11.AND.
@@ -49569,7 +49570,7 @@ C...Reconstruct string drawing information.
           ID1=MOD(K(I,4),MSTU(5))
           IF(KQ.EQ.1.AND.K(I,2).GT.0) ID1=MOD(K(I,4),MSTU(5))+1
           IF(KQ.EQ.2.AND.(K(ID1,2).EQ.21.OR.K(ID1+1,2).EQ.21).AND.
-     &    PYR(0).GT.0.5D0) ID1=MOD(K(I,4),MSTU(5))+1
+     &    SPR(0).GT.0.5D0) ID1=MOD(K(I,4),MSTU(5))+1
           ID2=2*MOD(K(I,4),MSTU(5))+1-ID1
           K(I,4)=MSTU(5)*(K(I,4)/MSTU(5))+ID1
           K(I,5)=MSTU(5)*(K(I,5)/MSTU(5))+ID2
@@ -49596,10 +49597,10 @@ C...Reconstruct string drawing information.
  
 C...Transformation from CM frame.
       IF(NPA.EQ.1) THEN
-        THE=PYANGL(P(IPA(1),3),SQRT(P(IPA(1),1)**2+P(IPA(1),2)**2))
-        PHI=PYANGL(P(IPA(1),1),P(IPA(1),2))
+        THE=SPANGL(P(IPA(1),3),SQRT(P(IPA(1),1)**2+P(IPA(1),2)**2))
+        PHI=SPANGL(P(IPA(1),1),P(IPA(1),2))
         MSTU(33)=1
-        CALL PYROBO(NS+1,N,THE,PHI,0D0,0D0,0D0)
+        CALL SPROBO(NS+1,N,THE,PHI,0D0,0D0,0D0)
       ELSEIF(NPA.EQ.2) THEN
         BEX=PS(1)/PS(4)
         BEY=PS(2)/PS(4)
@@ -49607,16 +49608,16 @@ C...Transformation from CM frame.
         GA=PS(4)/PS(5)
         GABEP=GA*(GA*(BEX*P(IPA(1),1)+BEY*P(IPA(1),2)+BEZ*P(IPA(1),3))
      &  /(1D0+GA)-P(IPA(1),4))
-        THE=PYANGL(P(IPA(1),3)+GABEP*BEZ,SQRT((P(IPA(1),1)
+        THE=SPANGL(P(IPA(1),3)+GABEP*BEZ,SQRT((P(IPA(1),1)
      &  +GABEP*BEX)**2+(P(IPA(1),2)+GABEP*BEY)**2))
-        PHI=PYANGL(P(IPA(1),1)+GABEP*BEX,P(IPA(1),2)+GABEP*BEY)
+        PHI=SPANGL(P(IPA(1),1)+GABEP*BEX,P(IPA(1),2)+GABEP*BEY)
         MSTU(33)=1
-        CALL PYROBO(NS+1,N,THE,PHI,BEX,BEY,BEZ)
+        CALL SPROBO(NS+1,N,THE,PHI,BEX,BEY,BEZ)
       ELSE
-        CALL PYROBO(IPA(1),IPA(NPA),0D0,0D0,PS(1)/PS(4),PS(2)/PS(4),
+        CALL SPROBO(IPA(1),IPA(NPA),0D0,0D0,PS(1)/PS(4),PS(2)/PS(4),
      &  PS(3)/PS(4))
         MSTU(33)=1
-        CALL PYROBO(NS+1,N,0D0,0D0,PS(1)/PS(4),PS(2)/PS(4),PS(3)/PS(4))
+        CALL SPROBO(NS+1,N,0D0,0D0,PS(1)/PS(4),PS(2)/PS(4),PS(3)/PS(4))
       ENDIF
  
 C...Decay vertex of shower.
@@ -49648,13 +49649,13 @@ C...Delete trivial shower, else connect initiators.
  
 C*********************************************************************
  
-C...PYMAEL
-C...Auxiliary to PYSHOW.
+C...SPMAEL
+C...Auxiliary to SPSHOW.
 C...Matrix elements for gluon (or photon) emission from
 C...a two-body state; to be used by the parton shower routine.
 C...Here X_i = 2 E_i/E_cm, R_i = m_i/E_cm and
 C...1/sigma_0 d(sigma)/d(x_1)d(x_2) =
-C...      = (alpha-strong/2 pi) * CF * PYMAEL,
+C...      = (alpha-strong/2 pi) * CF * SPMAEL,
 C...i.e. normalization is such that one recovers the familiar
 C...(X1**2+X2**2)/((1-X1)*(1-X2)) for the massless case.
 C...Coupling structure:
@@ -49681,14 +49682,14 @@ C...       = 2 : pure gamma5, i.e. axial vector/pseudoscalar/....
 C...       = 3 : mixture alpha*(ICOMBI=1) + (1-alpha)*(ICOMBI=2)
 C...       = 4 : mixture (ICOMBI=1) +- (ICOMBI=2)
  
-      FUNCTION PYMAEL(NI,X1,X2,R1,R2,ALPHA)
+      FUNCTION SPMAEL(NI,X1,X2,R1,R2,ALPHA)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
  
 C...Check input values. Return zero outside allowed phase space.
-      PYMAEL=0D0
+      SPMAEL=0D0
       IF(X1.LE.2D0*R1.OR.X1.GE.1D0+R1**2-R2**2) RETURN
       IF(X2.LE.2D0*R2.OR.X2.GE.1D0+R2**2-R1**2) RETURN
       IF(X1+X2.LE.1D0+(R1+R2)**2) RETURN
@@ -50321,39 +50322,39 @@ C...Find relevant LO and FO expression.
         RLO=RLO1
         RFO=RFO1
       ELSE
-        CALL PYERRM(16,'(PYMAEL:) not implemented ME code')
+        CALL SPERRM(16,'(SPMAEL:) not implemented ME code')
         RLO=1D0
         RFO=0D0
       ENDIF
  
 C...Output.
-      PYMAEL=RFO/RLO
+      SPMAEL=RFO/RLO
  
       RETURN
       END
  
 C*********************************************************************
  
-C...PYBOEI
+C...SPBOEI
 C...Modifies an event so as to approximately take into account
 C...Bose-Einstein effects according to a simple phenomenological
 C...parametrization.
  
-      SUBROUTINE PYBOEI(NSAV)
+      SUBROUTINE SPBOEI(NSAV)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/,/PYINT1/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/,/SPINT1/
 C...Local arrays and data.
       DIMENSION DPS(4),KFBE(9),NBE(0:10),BEI(100),BEI3(100),
      &BEIW(100),BEI3W(100)
@@ -50379,7 +50380,7 @@ C...Boost event to overall CM frame. Calculate CM energy.
           DPS(J)=DPS(J)+P(I,J)
   110   CONTINUE
   120 CONTINUE
-      CALL PYROBO(0,0,0D0,0D0,-DPS(1)/DPS(4),-DPS(2)/DPS(4),
+      CALL SPROBO(0,0,0D0,0D0,-DPS(1)/DPS(4),-DPS(2)/DPS(4),
      &-DPS(3)/DPS(4))
       PECM=0D0
       DO 130 I=1,N
@@ -50388,7 +50389,7 @@ C...Boost event to overall CM frame. Calculate CM energy.
  
 C...Check if we have separated strings
  
-C...Reserve copy of particles by species at end of record.
+C...Reserve cosp of particles by species at end of record.
       IWP=0
       IWN=0
       NBE(0)=N+MSTU(3)
@@ -50406,7 +50407,7 @@ C...Reserve copy of particles by species at end of record.
           ENDIF
           IF(K(I,1).LE.0.OR.K(I,1).GT.10) GOTO 180
           IF(NBE(IBE).GE.MSTU(4)-MSTU(32)-5) THEN
-            CALL PYERRM(11,'(PYBOEI:) no more memory left in PYJETS')
+            CALL SPERRM(11,'(SPBOEI:) no more memory left in SPJETS')
             RETURN
           ENDIF
           NBE(IBE)=NBE(IBE)+1
@@ -50468,10 +50469,10 @@ C...No separation if there has been re-connections.
         DMN=P(IWN,5)
         TAUPD=DMP/SQRT((DMP**2-DMW**2)**2+(DGW*(DMP**2)/DMW)**2)
         TAUND=DMN/SQRT((DMN**2-DMW**2)**2+(DGW*(DMN**2)/DMW)**2)
-        TAUP=-TAUPD*LOG(PYR(IDUM))
-        TAUN=-TAUND*LOG(PYR(IDUM))
-        DXP=TAUP*PYP(IWP,8)/DMP
-        DXN=TAUN*PYP(IWN,8)/DMN
+        TAUP=-TAUPD*LOG(SPR(IDUM))
+        TAUN=-TAUND*LOG(SPR(IDUM))
+        DXP=TAUP*SPP(IWP,8)/DMP
+        DXN=TAUN*SPP(IWN,8)/DMN
         DX=DXP+DXN
         SIGW=1.0D0/(1.0D0/PARJ(93)+REAL(MSTJ(56))*DX)
         IF(PARJ(94).LT.0.0D0) SIGW=1.0D0/(1.0D0/SIGW-1.0D0/PARJ(94))
@@ -50512,10 +50513,10 @@ C...Tabulate integral for subsequent momentum shift.
         IF(IBE.EQ.4.AND.MAX(NBE(4)-NBE(3),NBE(5)-NBE(4),NBE(6)-NBE(5),
      &  NBE(7)-NBE(6)).LE.1) GOTO 270
         IF(IBE.GE.8.AND.NBE(IBE)-NBE(IBE-1).LE.1) GOTO 270
-        IF(IBE.EQ.1) PMHQ=2D0*PYMASS(211)
-        IF(IBE.EQ.4) PMHQ=2D0*PYMASS(321)
-        IF(IBE.EQ.8) PMHQ=2D0*PYMASS(221)
-        IF(IBE.EQ.9) PMHQ=2D0*PYMASS(331)
+        IF(IBE.EQ.1) PMHQ=2D0*SPMASS(211)
+        IF(IBE.EQ.4) PMHQ=2D0*SPMASS(321)
+        IF(IBE.EQ.8) PMHQ=2D0*SPMASS(221)
+        IF(IBE.EQ.9) PMHQ=2D0*SPMASS(331)
         QDEL=0.1D0*MIN(PMHQ,PARJ(93))
         QDEL3=0.1D0*MIN(PMHQ,PARJ(93)*3.0D0)
         QDELW=0.1D0*MIN(PMHQ,SIGW)
@@ -50667,13 +50668,13 @@ C...Calculate new relative momentum.
             IF(MSTJ(54).EQ.2)
      &      RSCALE=1.0D0-EXP(-(QOLD/(2D0*SIGW))**2)
  
-  320       CALL PYBESQ(I1,I2,NMAX,Q2OLD,Q2NEW)
+  320       CALL SPBESQ(I1,I2,NMAX,Q2OLD,Q2NEW)
             DO 330 J=1,3
               P(I1M,J)=P(I1M,J)+P(NMAX+1,J)
               P(I2M,J)=P(I2M,J)+P(NMAX+2,J)
   330       CONTINUE
             IF(MSTJ(54).GE.1) THEN
-              CALL PYBESQ(I1,I2,NMAX,Q2OLD,Q2NEW3)
+              CALL SPBESQ(I1,I2,NMAX,Q2OLD,Q2NEW3)
               DO 340 J=1,3
                 V(I1M,J)=V(I1M,J)+P(NMAX+1,J)*RSCALE
                 V(I2M,J)=V(I2M,J)+P(NMAX+2,J)*RSCALE
@@ -50762,7 +50763,7 @@ C...weight=1-cos(theta)/mtot2
      &        (P(I3,3)+P(I4,3))**2
               Q2NEWP=MAX(0.0D0,ENEW**2-P2-(P(I3,5)+P(I4,5))**2)
               Q2OLDP=MAX(0.0D0,EOLD**2-P2-(P(I3,5)+P(I4,5))**2)
-              CALL PYBESQ(I3,I4,NMAX,Q2OLDP,Q2NEWP)
+              CALL SPBESQ(I3,I4,NMAX,Q2OLDP,Q2NEWP)
               DO 370 J=1,3
                 V(MI3,J)=V(MI3,J)+P(NMAX+1,J)
                 V(MI4,J)=V(MI4,J)+P(NMAX+2,J)
@@ -50829,7 +50830,7 @@ C...Rescale all momenta for energy conservation.
   500 CONTINUE
  
 C...Boost back to correct reference frame.
-  510 CALL PYROBO(0,0,0D0,0D0,DPS(1)/DPS(4),DPS(2)/DPS(4),DPS(3)/DPS(4))
+  510 CALL SPROBO(0,0,0D0,0D0,DPS(1)/DPS(4),DPS(2)/DPS(4),DPS(3)/DPS(4))
       DO 520 I=1,N
         IF(K(I,1).LT.0) K(I,1)=-K(I,1)
   520 CONTINUE
@@ -50839,24 +50840,24 @@ C...Boost back to correct reference frame.
  
 C*********************************************************************
  
-C...PYBESQ
+C...SPBESQ
 C...Calculates the momentum shift in a system of two particles assuming
 C...the relative momentum squared should be shifted to Q2NEW. NI is the
-C...last position occupied in /PYJETS/.
+C...last position occupied in /SPJETS/.
  
-      SUBROUTINE PYBESQ(I1,I2,NI,Q2OLD,Q2NEW)
+      SUBROUTINE SPBESQ(I1,I2,NI,Q2OLD,Q2NEW)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYJETS/,/PYDAT1/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      SAVE /SPJETS/,/SPDAT1/
 C...Local arrays and data.
       DIMENSION DP(5)
       SAVE HC1
@@ -50890,10 +50891,10 @@ C...Local arrays and data.
   110 CONTINUE
  
 C...Boost to cms and rotate first particle to z-axis
-      CALL PYROBO(NI+1,NI+2,0.0D0,0.0D0,
+      CALL SPROBO(NI+1,NI+2,0.0D0,0.0D0,
      &-DP(1)/DP(4),-DP(2)/DP(4),-DP(3)/DP(4))
-      PHI=PYANGL(P(NI+1,1),P(NI+1,2))
-      THE=PYANGL(P(NI+1,3),SQRT(P(NI+1,1)**2+P(NI+1,2)**2))
+      PHI=SPANGL(P(NI+1,1),P(NI+1,2))
+      THE=SPANGL(P(NI+1,3),SQRT(P(NI+1,1)**2+P(NI+1,2)**2))
       S=Q2NEW+(P(I1,5)+P(I2,5))**2
       PZ=0.5D0*SQRT(Q2NEW*(S-(P(I1,5)-P(I2,5))**2)/S)
       P(NI+1,1)=0.0D0
@@ -50905,7 +50906,7 @@ C...Boost to cms and rotate first particle to z-axis
       P(NI+2,3)=-PZ
       P(NI+2,4)=SQRT(PZ**2+P(I2,5)**2)
       DP(4)=SQRT(DP(1)**2+DP(2)**2+DP(3)**2+S)
-      CALL PYROBO(NI+1,NI+2,THE,PHI,
+      CALL SPROBO(NI+1,NI+2,THE,PHI,
      &DP(1)/DP(4),DP(2)/DP(4),DP(3)/DP(4))
  
       DO 120 J=1,3
@@ -50918,24 +50919,24 @@ C...Boost to cms and rotate first particle to z-axis
  
 C*********************************************************************
  
-C...PYMASS
+C...SPMASS
 C...Gives the mass of a particle/parton.
  
-      FUNCTION PYMASS(KF)
+      FUNCTION SPMASS(KF)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYDAT1/,/PYDAT2/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPDAT1/,/SPDAT2/
  
 C...Reset variables. Compressed code. Special case for popcorn diquarks.
-      PYMASS=0D0
+      SPMASS=0D0
       KFA=IABS(KF)
-      KC=PYCOMP(KF)
+      KC=SPCOMP(KF)
       IF(KC.EQ.0) THEN
         MSTJ(93)=0
         RETURN
@@ -50945,34 +50946,34 @@ C...Guarantee use of constituent masses for internal checks.
       IF((MSTJ(93).EQ.1.OR.MSTJ(93).EQ.2).AND.
      &(KFA.LE.10.OR.MOD(KFA/10,10).EQ.0)) THEN
         IF(KFA.LE.5) THEN
-          PYMASS=PARF(100+KFA)
-          IF(MSTJ(93).EQ.2) PYMASS=MAX(0D0,PYMASS-PARF(121))
+          SPMASS=PARF(100+KFA)
+          IF(MSTJ(93).EQ.2) SPMASS=MAX(0D0,SPMASS-PARF(121))
         ELSEIF(KFA.LE.10) THEN
-          PYMASS=PMAS(KFA,1)
+          SPMASS=PMAS(KFA,1)
         ELSEIF(MSTJ(93).EQ.1) THEN
-          PYMASS=PARF(100+MOD(KFA/1000,10))+PARF(100+MOD(KFA/100,10))
+          SPMASS=PARF(100+MOD(KFA/1000,10))+PARF(100+MOD(KFA/100,10))
         ELSE
-          PYMASS=MAX(0D0,PMAS(KC,1)-PARF(122)-2D0*PARF(112)/3D0)
+          SPMASS=MAX(0D0,PMAS(KC,1)-PARF(122)-2D0*PARF(112)/3D0)
         ENDIF
  
 C...Other masses can be read directly off table.
       ELSE
-        PYMASS=PMAS(KC,1)
+        SPMASS=PMAS(KC,1)
       ENDIF
  
 C...Optional mass broadening according to truncated Breit-Wigner
 C...(either in m or in m^2).
       IF(MSTJ(24).GE.1.AND.PMAS(KC,2).GT.1D-4) THEN
         IF(MSTJ(24).EQ.1.OR.(MSTJ(24).EQ.2.AND.KFA.GT.100)) THEN
-          PYMASS=PYMASS+0.5D0*PMAS(KC,2)*TAN((2D0*PYR(0)-1D0)*
+          SPMASS=SPMASS+0.5D0*PMAS(KC,2)*TAN((2D0*SPR(0)-1D0)*
      &    ATAN(2D0*PMAS(KC,3)/PMAS(KC,2)))
         ELSE
-          PM0=PYMASS
+          PM0=SPMASS
           PMLOW=ATAN((MAX(0D0,PM0-PMAS(KC,3))**2-PM0**2)/
      &    (PM0*PMAS(KC,2)))
           PMUPP=ATAN(((PM0+PMAS(KC,3))**2-PM0**2)/(PM0*PMAS(KC,2)))
-          PYMASS=SQRT(MAX(0D0,PM0**2+PM0*PMAS(KC,2)*TAN(PMLOW+
-     &    (PMUPP-PMLOW)*PYR(0))))
+          SPMASS=SQRT(MAX(0D0,PM0**2+PM0*PMAS(KC,2)*TAN(PMLOW+
+     &    (PMUPP-PMLOW)*SPR(0))))
         ENDIF
       ENDIF
       MSTJ(93)=0
@@ -50982,35 +50983,35 @@ C...(either in m or in m^2).
  
 C*********************************************************************
  
-C...PYMRUN
+C...SPMRUN
 C...Gives the running, current-algebra mass of a d, u, s, c or b quark,
-C...for Higgs couplings. Everything else sent on to PYMASS.
+C...for Higgs couplings. Everything else sent on to SPMASS.
  
-      FUNCTION PYMRUN(KF,Q2)
+      FUNCTION SPMRUN(KF,Q2)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      SAVE /PYDAT1/,/PYDAT2/,/PYPARS/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      SAVE /SPDAT1/,/SPDAT2/,/SPPARS/
  
 C...Most masses not handled here.
       KFA=IABS(KF)
       IF(KFA.EQ.0.OR.KFA.GT.6) THEN
-        PYMRUN=PYMASS(KF)
+        SPMRUN=SPMASS(KF)
  
 C...Current-algebra masses, but no Q2 dependence.
       ELSEIF(MSTP(37).NE.1.OR.MSTP(2).LE.0) THEN
-        PYMRUN=PARF(90+KFA)
+        SPMRUN=PARF(90+KFA)
  
 C...Running current-algebra masses.
       ELSE
-        AS=PYALPS(Q2)
-        PYMRUN=PARF(90+KFA)*
+        AS=SPALPS(Q2)
+        SPMRUN=PARF(90+KFA)*
      &  (LOG(MAX(4D0,PARP(37)**2*PARF(90+KFA)**2/PARU(117)**2))/
      &  LOG(MAX(4D0,Q2/PARU(117)**2)))**(12D0/(33D0-2D0*MSTU(118)))
       ENDIF
@@ -51020,27 +51021,27 @@ C...Running current-algebra masses.
  
 C*********************************************************************
  
-C...PYNAME
+C...SPNAME
 C...Gives the particle/parton name as a character string.
  
-      SUBROUTINE PYNAME(KF,CHAU)
+      SUBROUTINE SPNAME(KF,CHAU)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT4/CHAF(500,2)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT4/CHAF(500,2)
       CHARACTER CHAF*16
-      SAVE /PYDAT1/,/PYDAT2/,/PYDAT4/
+      SAVE /SPDAT1/,/SPDAT2/,/SPDAT4/
 C...Local character variable.
       CHARACTER CHAU*16
  
 C...Read out code with distinction particle/antiparticle.
       CHAU=' '
-      KC=PYCOMP(KF)
+      KC=SPCOMP(KF)
       IF(KC.NE.0) CHAU=CHAF(KC,(3-ISIGN(1,KF))/2)
  
  
@@ -51049,43 +51050,43 @@ C...Read out code with distinction particle/antiparticle.
  
 C*********************************************************************
  
-C...PYCHGE
+C...SPCHGE
 C...Gives three times the charge for a particle/parton.
  
-      FUNCTION PYCHGE(KF)
+      FUNCTION SPCHGE(KF)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYDAT2/
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPDAT2/
  
 C...Read out charge and change sign for antiparticle.
-      PYCHGE=0
-      KC=PYCOMP(KF)
-      IF(KC.NE.0) PYCHGE=KCHG(KC,1)*ISIGN(1,KF)
+      SPCHGE=0
+      KC=SPCOMP(KF)
+      IF(KC.NE.0) SPCHGE=KCHG(KC,1)*ISIGN(1,KF)
  
       RETURN
       END
  
 C*********************************************************************
  
-C...PYCOMP
+C...SPCOMP
 C...Compress the standard KF codes for use in mass and decay arrays;
 C...also checks whether a given code actually is defined.
  
-      FUNCTION PYCOMP(KF)
+      FUNCTION SPCOMP(KF)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYDAT1/,/PYDAT2/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPDAT1/,/SPDAT2/
 C...Local arrays and saved data.
       DIMENSION KFORD(100:500),KCORD(101:500)
       SAVE KFORD,KCORD,NFORD,KFLAST,KCLAST
@@ -51113,12 +51114,12 @@ C...Whenever necessary reorder codes for faster search.
  
 C...Fast action if same code as in latest call.
       IF(KF.EQ.KFLAST) THEN
-        PYCOMP=KCLAST
+        SPCOMP=KCLAST
         RETURN
       ENDIF
  
 C...Starting values. Remove internal diquark flags.
-      PYCOMP=0
+      SPCOMP=0
       KFA=IABS(KF)
       IF(MOD(KFA/10,10).EQ.0.AND.KFA.LT.100000
      &     .AND.MOD(KFA/1000,10).GT.0) KFA=MOD(KFA,10000)
@@ -51126,7 +51127,7 @@ C...Starting values. Remove internal diquark flags.
 C...Simple cases: direct translation.
       IF(KFA.GT.KFORD(NFORD)) THEN
       ELSEIF(KFA.LE.100) THEN
-        PYCOMP=KFA
+        SPCOMP=KFA
  
 C...Else binary search.
       ELSE
@@ -51140,37 +51141,37 @@ C...Else binary search.
           IMIN=IAVG
           IF(IMAX.GT.IMIN+1) GOTO 130
         ELSE
-          PYCOMP=KCORD(IAVG)
+          SPCOMP=KCORD(IAVG)
         ENDIF
       ENDIF
  
 C...Check if antiparticle allowed.
-      IF(PYCOMP.NE.0.AND.KF.LT.0) THEN
-        IF(KCHG(PYCOMP,3).EQ.0) PYCOMP=0
+      IF(SPCOMP.NE.0.AND.KF.LT.0) THEN
+        IF(KCHG(SPCOMP,3).EQ.0) SPCOMP=0
       ENDIF
  
 C...Save codes for possible future fast action.
       KFLAST=KF
-      KCLAST=PYCOMP
+      KCLAST=SPCOMP
  
       RETURN
       END
  
 C*********************************************************************
  
-C...PYERRM
+C...SPERRM
 C...Informs user of errors in program execution.
  
-      SUBROUTINE PYERRM(MERR,CHMESS)
+      SUBROUTINE SPERRM(MERR,CHMESS)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYJETS/,/PYDAT1/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      SAVE /SPJETS/,/SPDAT1/
 C...Local character variable.
       CHARACTER CHMESS*(*)
  
@@ -51201,31 +51202,31 @@ C      ENDIF
  
 C...Formats for output.
  5000 FORMAT(/5X,'Advisory warning type',I2,' given after',I9,
-     &' PYEXEC calls:'/5X,A)
+     &' SPEXEC calls:'/5X,A)
  5100 FORMAT(/5X,'Error type',I2,' has occured after',I9,
-     &' PYEXEC calls:'/5X,A)
+     &' SPEXEC calls:'/5X,A)
  5200 FORMAT(5X,'Execution will be stopped after listing of last ',
      &'event!')
  5300 FORMAT(/5X,'Fatal error type',I2,' has occured after',I9,
-     &' PYEXEC calls:'/5X,A/5X,'Execution will now be stopped!')
+     &' SPEXEC calls:'/5X,A/5X,'Execution will now be stopped!')
  
       RETURN
       END
  
 C*********************************************************************
  
-C...PYALEM
+C...SPALEM
 C...Calculates the running alpha_electromagnetic.
  
-      FUNCTION PYALEM(Q2)
+      FUNCTION SPALEM(Q2)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYDAT1/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      SAVE /SPDAT1/
  
 C...Calculate real part of photon vacuum polarization.
 C...For leptons simplify by using asymptotic (Q^2 >> m^2) expressions.
@@ -51252,38 +51253,38 @@ C...See R. Kleiss et al, CERN 89-08, vol. 3, pp. 129-131.
       ENDIF
  
 C...Calculate running alpha_em.
-      PYALEM=PARU(101)/(1D0-RPIGG)
-      PARU(108)=PYALEM
+      SPALEM=PARU(101)/(1D0-RPIGG)
+      PARU(108)=SPALEM
  
       RETURN
       END
  
 C*********************************************************************
  
-C...PYANGL
+C...SPANGL
 C...Reconstructs an angle from given x and y coordinates.
  
-      FUNCTION PYANGL(X,Y)
+      FUNCTION SPANGL(X,Y)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYDAT1/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      SAVE /SPDAT1/
  
-      PYANGL=0D0
+      SPANGL=0D0
       R=SQRT(X**2+Y**2)
       IF(R.LT.1D-20) RETURN
       IF(ABS(X)/R.LT.0.8D0) THEN
-        PYANGL=SIGN(ACOS(X/R),Y)
+        SPANGL=SIGN(ACOS(X/R),Y)
       ELSE
-        PYANGL=ASIN(Y/R)
-        IF(X.LT.0D0.AND.PYANGL.GE.0D0) THEN
-          PYANGL=PARU(1)-PYANGL
+        SPANGL=ASIN(Y/R)
+        IF(X.LT.0D0.AND.SPANGL.GE.0D0) THEN
+          SPANGL=PARU(1)-SPANGL
         ELSEIF(X.LT.0D0) THEN
-          PYANGL=-PARU(1)-PYANGL
+          SPANGL=-PARU(1)-SPANGL
         ENDIF
       ENDIF
  
@@ -51292,28 +51293,28 @@ C...Commonblocks.
  
 C*********************************************************************
  
-C...PYR
+C...SPR
 C...Generates random numbers uniformly distributed between
 C...0 and 1, excluding the endpoints.
  
-      FUNCTION PYR(IDUMMY)
+      FUNCTION SPR(IDUMMY)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDATR/MRPY(6),RRPY(100)
-      SAVE /PYDATR/
+      COMMON/SPDATR/MRSP(6),RRSP(100)
+      SAVE /SPDATR/
 C...Equivalence between commonblock and local variables.
-      EQUIVALENCE (MRPY1,MRPY(1)),(MRPY2,MRPY(2)),(MRPY3,MRPY(3)),
-     &(MRPY4,MRPY(4)),(MRPY5,MRPY(5)),(MRPY6,MRPY(6)),
-     &(RRPY98,RRPY(98)),(RRPY99,RRPY(99)),(RRPY00,RRPY(100))
+      EQUIVALENCE (MRSP1,MRSP(1)),(MRSP2,MRSP(2)),(MRSP3,MRSP(3)),
+     &(MRSP4,MRSP(4)),(MRSP5,MRSP(5)),(MRSP6,MRSP(6)),
+     &(RRSP98,RRSP(98)),(RRSP99,RRSP(99)),(RRSP00,RRSP(100))
  
 C...Initialize generation from given seed.
-      IF(MRPY2.EQ.0) THEN
-        IJ=MOD(MRPY1/30082,31329)
-        KL=MOD(MRPY1,30082)
+      IF(MRSP2.EQ.0) THEN
+        IJ=MOD(MRSP1/30082,31329)
+        KL=MOD(MRSP1,30082)
         I=MOD(IJ/177,177)+2
         J=MOD(IJ,177)+2
         K=MOD(KL/169,178)+1
@@ -51330,82 +51331,82 @@ C...Initialize generation from given seed.
             IF(MOD(L*M,64).GE.32) S=S+T
             T=0.5D0*T
   100     CONTINUE
-          RRPY(II)=S
+          RRSP(II)=S
   110   CONTINUE
         TWOM24=1D0
         DO 120 I24=1,24
           TWOM24=0.5D0*TWOM24
   120   CONTINUE
-        RRPY98=362436D0*TWOM24
-        RRPY99=7654321D0*TWOM24
-        RRPY00=16777213D0*TWOM24
-        MRPY2=1
-        MRPY3=0
-        MRPY4=97
-        MRPY5=33
+        RRSP98=362436D0*TWOM24
+        RRSP99=7654321D0*TWOM24
+        RRSP00=16777213D0*TWOM24
+        MRSP2=1
+        MRSP3=0
+        MRSP4=97
+        MRSP5=33
       ENDIF
  
 C...Generate next random number.
-  130 RUNI=RRPY(MRPY4)-RRPY(MRPY5)
+  130 RUNI=RRSP(MRSP4)-RRSP(MRSP5)
       IF(RUNI.LT.0D0) RUNI=RUNI+1D0
-      RRPY(MRPY4)=RUNI
-      MRPY4=MRPY4-1
-      IF(MRPY4.EQ.0) MRPY4=97
-      MRPY5=MRPY5-1
-      IF(MRPY5.EQ.0) MRPY5=97
-      RRPY98=RRPY98-RRPY99
-      IF(RRPY98.LT.0D0) RRPY98=RRPY98+RRPY00
-      RUNI=RUNI-RRPY98
+      RRSP(MRSP4)=RUNI
+      MRSP4=MRSP4-1
+      IF(MRSP4.EQ.0) MRSP4=97
+      MRSP5=MRSP5-1
+      IF(MRSP5.EQ.0) MRSP5=97
+      RRSP98=RRSP98-RRSP99
+      IF(RRSP98.LT.0D0) RRSP98=RRSP98+RRSP00
+      RUNI=RUNI-RRSP98
       IF(RUNI.LT.0D0) RUNI=RUNI+1D0
       IF(RUNI.LE.0D0.OR.RUNI.GE.1D0) GOTO 130
  
 C...Update counters. Random number to output.
-      MRPY3=MRPY3+1
-      IF(MRPY3.EQ.1000000000) THEN
-        MRPY2=MRPY2+1
-        MRPY3=0
+      MRSP3=MRSP3+1
+      IF(MRSP3.EQ.1000000000) THEN
+        MRSP2=MRSP2+1
+        MRSP3=0
       ENDIF
-      PYR=RUNI
+      SPR=RUNI
  
       RETURN
       END
  
 C*********************************************************************
  
-C...PYRGET
+C...SPRGET
 C...Dumps the state of the random number generator on a file
 C...for subsequent startup from this state onwards.
  
-      SUBROUTINE PYRGET(LFN,MOVE)
+      SUBROUTINE SPRGET(LFN,MOVE)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDATR/MRPY(6),RRPY(100)
-      SAVE /PYDATR/
+      COMMON/SPDATR/MRSP(6),RRSP(100)
+      SAVE /SPDATR/
 C...Local character variable.
       CHARACTER CHERR*8
  
 C...Backspace required number of records (or as many as there are).
       IF(MOVE.LT.0) THEN
-        NBCK=MIN(MRPY(6),-MOVE)
+        NBCK=MIN(MRSP(6),-MOVE)
         DO 100 IBCK=1,NBCK
           BACKSPACE(LFN,ERR=110,IOSTAT=IERR)
   100   CONTINUE
-        MRPY(6)=MRPY(6)-NBCK
+        MRSP(6)=MRSP(6)-NBCK
       ENDIF
  
 C...Unformatted write on unit LFN.
-      WRITE(LFN,ERR=110,IOSTAT=IERR) (MRPY(I1),I1=1,5),
-     &(RRPY(I2),I2=1,100)
-      MRPY(6)=MRPY(6)+1
+      WRITE(LFN,ERR=110,IOSTAT=IERR) (MRSP(I1),I1=1,5),
+     &(RRSP(I2),I2=1,100)
+      MRSP(6)=MRSP(6)+1
       RETURN
  
 C...Write error.
   110 WRITE(CHERR,'(I8)') IERR
-      CALL PYERRM(18,'(PYRGET:) error when accessing file, IOSTAT ='//
+      CALL SPERRM(18,'(SPRGET:) error when accessing file, IOSTAT ='//
      &CHERR)
  
       RETURN
@@ -51413,43 +51414,43 @@ C...Write error.
  
 C*********************************************************************
  
-C...PYRSET
+C...SPRSET
 C...Reads a state of the random number generator from a file
 C...for subsequent generation from this state onwards.
  
-      SUBROUTINE PYRSET(LFN,MOVE)
+      SUBROUTINE SPRSET(LFN,MOVE)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDATR/MRPY(6),RRPY(100)
-      SAVE /PYDATR/
+      COMMON/SPDATR/MRSP(6),RRSP(100)
+      SAVE /SPDATR/
 C...Local character variable.
       CHARACTER CHERR*8
  
 C...Backspace required number of records (or as many as there are).
       IF(MOVE.LT.0) THEN
-        NBCK=MIN(MRPY(6),-MOVE)
+        NBCK=MIN(MRSP(6),-MOVE)
         DO 100 IBCK=1,NBCK
           BACKSPACE(LFN,ERR=120,IOSTAT=IERR)
   100   CONTINUE
-        MRPY(6)=MRPY(6)-NBCK
+        MRSP(6)=MRSP(6)-NBCK
       ENDIF
  
 C...Unformatted read from unit LFN.
       NFOR=1+MAX(0,MOVE)
       DO 110 IFOR=1,NFOR
-        READ(LFN,ERR=120,IOSTAT=IERR) (MRPY(I1),I1=1,5),
-     &  (RRPY(I2),I2=1,100)
+        READ(LFN,ERR=120,IOSTAT=IERR) (MRSP(I1),I1=1,5),
+     &  (RRSP(I2),I2=1,100)
   110 CONTINUE
-      MRPY(6)=MRPY(6)+NFOR
+      MRSP(6)=MRSP(6)+NFOR
       RETURN
  
 C...Write error.
   120 WRITE(CHERR,'(I8)') IERR
-      CALL PYERRM(18,'(PYRSET:) error when accessing file, IOSTAT ='//
+      CALL SPERRM(18,'(SPRSET:) error when accessing file, IOSTAT ='//
      &CHERR)
  
       RETURN
@@ -51457,19 +51458,19 @@ C...Write error.
  
 C*********************************************************************
  
-C...PYROBO
+C...SPROBO
 C...Performs rotations and boosts.
  
-      SUBROUTINE PYROBO(IMI,IMA,THE,PHI,BEX,BEY,BEZ)
+      SUBROUTINE SPROBO(IMI,IMA,THE,PHI,BEX,BEY,BEZ)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYJETS/,/PYDAT1/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      SAVE /SPJETS/,/SPDAT1/
 C...Local arrays.
       DIMENSION ROT(3,3),PR(3),VR(3),DP(4),DV(4)
  
@@ -51481,7 +51482,7 @@ C...Find and check range of rotation/boost.
       IF(IMAX.LE.0) IMAX=N
       IF(MSTU(2).GT.0) IMAX=MSTU(2)
       IF(IMIN.GT.MSTU(4).OR.IMAX.GT.MSTU(4)) THEN
-        CALL PYERRM(11,'(PYROBO:) range outside PYJETS memory')
+        CALL SPERRM(11,'(SPROBO:) range outside SPJETS memory')
         RETURN
       ENDIF
  
@@ -51528,7 +51529,7 @@ C...Boost, typically from rest to momentum/energy=beta.
         EPS1=1D0-1D-12
         IF(DB.GT.EPS1) THEN
 C...Rescale boost vector if too close to unity.
-          CALL PYERRM(3,'(PYROBO:) boost vector too large')
+          CALL SPERRM(3,'(SPROBO:) boost vector too large')
           DBX=DBX*(EPS1/DB)
           DBY=DBY*(EPS1/DB)
           DBZ=DBZ*(EPS1/DB)
@@ -51561,21 +51562,21 @@ C...Rescale boost vector if too close to unity.
  
 C*********************************************************************
  
-C...PYEDIT
+C...SPEDIT
 C...Performs global manipulations on the event record, in particular
 C...to exclude unstable or undetectable partons/particles.
  
-      SUBROUTINE PYEDIT(MEDIT)
+      SUBROUTINE SPEDIT(MEDIT)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/
 C...Local arrays.
       DIMENSION NS(2),PTS(2),PLS(2)
  
@@ -51590,17 +51591,17 @@ C...Remove unwanted partons/particles.
             IF(K(I,1).GT.10.AND.K(I,1).NE.41.AND.K(I,1).NE.42) GOTO 110
           ELSEIF(MEDIT.EQ.2) THEN
             IF(K(I,1).GT.10.AND.K(I,1).NE.41.AND.K(I,1).NE.42) GOTO 110
-            KC=PYCOMP(K(I,2))
+            KC=SPCOMP(K(I,2))
             IF(KC.EQ.0.OR.KC.EQ.12.OR.KC.EQ.14.OR.KC.EQ.16.OR.KC.EQ.18)
      &      GOTO 110
           ELSEIF(MEDIT.EQ.3) THEN
             IF(K(I,1).GT.10.AND.K(I,1).NE.41.AND.K(I,1).NE.42) GOTO 110
-            KC=PYCOMP(K(I,2))
+            KC=SPCOMP(K(I,2))
             IF(KC.EQ.0) GOTO 110
-            IF(KCHG(KC,2).EQ.0.AND.PYCHGE(K(I,2)).EQ.0) GOTO 110
+            IF(KCHG(KC,2).EQ.0.AND.SPCHGE(K(I,2)).EQ.0) GOTO 110
           ELSEIF(MEDIT.EQ.5) THEN
             IF(K(I,1).EQ.13.OR.K(I,1).EQ.14.OR.K(I,1).EQ.52) GOTO 110
-            KC=PYCOMP(K(I,2))
+            KC=SPCOMP(K(I,2))
             IF(KC.EQ.0) GOTO 110
             IF(K(I,1).GT.10.AND.K(I,1).NE.41.AND.K(I,1).NE.42.AND.
      &      KCHG(KC,2).EQ.0) GOTO 110
@@ -51754,10 +51755,10 @@ C...in their turn, point to documentation mother.
           IF(K(I,5).EQ.0) K(I,5)=K(I,4)
   220   CONTINUE
  
-C...Save top entries at bottom of PYJETS commonblock.
+C...Save top entries at bottom of SPJETS commonblock.
       ELSEIF(MEDIT.EQ.21) THEN
         IF(2*N.GE.MSTU(4)) THEN
-          CALL PYERRM(11,'(PYEDIT:) no more memory left in PYJETS')
+          CALL SPERRM(11,'(SPEDIT:) no more memory left in SPJETS')
           RETURN
         ENDIF
         DO 240 I=1,N
@@ -51769,7 +51770,7 @@ C...Save top entries at bottom of PYJETS commonblock.
   240   CONTINUE
         MSTU(32)=N
  
-C...Restore bottom entries of commonblock PYJETS to top.
+C...Restore bottom entries of commonblock SPJETS to top.
       ELSEIF(MEDIT.EQ.22) THEN
         DO 260 I=1,MSTU(32)
           DO 250 J=1,5
@@ -51780,7 +51781,7 @@ C...Restore bottom entries of commonblock PYJETS to top.
   260   CONTINUE
         N=MSTU(32)
  
-C...Mark primary entries at top of commonblock PYJETS as untreated.
+C...Mark primary entries at top of commonblock SPJETS as untreated.
       ELSEIF(MEDIT.EQ.23) THEN
         I1=0
         DO 270 I=1,N
@@ -51797,11 +51798,11 @@ C...Mark primary entries at top of commonblock PYJETS as untreated.
  
 C...Place largest axis along z axis and second largest in xy plane.
       ELSEIF(MEDIT.EQ.31.OR.MEDIT.EQ.32) THEN
-        CALL PYROBO(1,N+MSTU(3),0D0,-PYANGL(P(MSTU(61),1),
+        CALL SPROBO(1,N+MSTU(3),0D0,-SPANGL(P(MSTU(61),1),
      &  P(MSTU(61),2)),0D0,0D0,0D0)
-        CALL PYROBO(1,N+MSTU(3),-PYANGL(P(MSTU(61),3),
+        CALL SPROBO(1,N+MSTU(3),-SPANGL(P(MSTU(61),3),
      &  P(MSTU(61),1)),0D0,0D0,0D0,0D0)
-        CALL PYROBO(1,N+MSTU(3),0D0,-PYANGL(P(MSTU(61)+1,1),
+        CALL SPROBO(1,N+MSTU(3),0D0,-SPANGL(P(MSTU(61)+1,1),
      &  P(MSTU(61)+1,2)),0D0,0D0,0D0)
         IF(MEDIT.EQ.31) RETURN
  
@@ -51814,10 +51815,10 @@ C...Rotate to put slim jet along +z axis.
         DO 300 I=1,N
           IF(K(I,1).LE.0.OR.K(I,1).GT.10) GOTO 300
           IF(MSTU(41).GE.2) THEN
-            KC=PYCOMP(K(I,2))
+            KC=SPCOMP(K(I,2))
             IF(KC.EQ.0.OR.KC.EQ.12.OR.KC.EQ.14.OR.KC.EQ.16.OR.
      &      KC.EQ.18) GOTO 300
-            IF(MSTU(41).GE.3.AND.KCHG(KC,2).EQ.0.AND.PYCHGE(K(I,2))
+            IF(MSTU(41).GE.3.AND.KCHG(KC,2).EQ.0.AND.SPCHGE(K(I,2))
      &      .EQ.0) GOTO 300
           ENDIF
           IS=2D0-SIGN(0.5D0,P(I,3))
@@ -51825,23 +51826,23 @@ C...Rotate to put slim jet along +z axis.
           PTS(IS)=PTS(IS)+SQRT(P(I,1)**2+P(I,2)**2)
   300   CONTINUE
         IF(NS(1)*PTS(2)**2.LT.NS(2)*PTS(1)**2)
-     &  CALL PYROBO(1,N+MSTU(3),PARU(1),0D0,0D0,0D0,0D0)
+     &  CALL SPROBO(1,N+MSTU(3),PARU(1),0D0,0D0,0D0,0D0)
  
 C...Rotate to put second largest jet into -z,+x quadrant.
         DO 310 I=1,N
           IF(P(I,3).GE.0D0) GOTO 310
           IF(K(I,1).LE.0.OR.K(I,1).GT.10) GOTO 310
           IF(MSTU(41).GE.2) THEN
-            KC=PYCOMP(K(I,2))
+            KC=SPCOMP(K(I,2))
             IF(KC.EQ.0.OR.KC.EQ.12.OR.KC.EQ.14.OR.KC.EQ.16.OR.
      &      KC.EQ.18) GOTO 310
-            IF(MSTU(41).GE.3.AND.KCHG(KC,2).EQ.0.AND.PYCHGE(K(I,2))
+            IF(MSTU(41).GE.3.AND.KCHG(KC,2).EQ.0.AND.SPCHGE(K(I,2))
      &      .EQ.0) GOTO 310
           ENDIF
           IS=2D0-SIGN(0.5D0,P(I,1))
           PLS(IS)=PLS(IS)-P(I,3)
   310   CONTINUE
-        IF(PLS(2).GT.PLS(1)) CALL PYROBO(1,N+MSTU(3),0D0,PARU(1),
+        IF(PLS(2).GT.PLS(1)) CALL SPROBO(1,N+MSTU(3),0D0,PARU(1),
      &  0D0,0D0,0D0)
       ENDIF
  
@@ -51850,16 +51851,16 @@ C...Rotate to put second largest jet into -z,+x quadrant.
  
 C*********************************************************************
  
-C...PYLIST
+C...SPLIST
 C...Gives program heading, or lists an event, or particle
 C...data, or current parameter values.
  
-      SUBROUTINE PYLIST(MLIST)
+      SUBROUTINE SPLIST(MLIST)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter statement to help give large particle numbers.
       PARAMETER (KSUSY1=1000000,KSUSY2=2000000,KTECHN=3000000,
      &KEXCIT=4000000,KDIMEN=5000000)
@@ -51882,11 +51883,11 @@ C...User process event common block.
       SAVE /HEPEUP/
  
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/,/PYDAT3/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/,/SPDAT3/
 C...Local arrays, character variables and data.
       CHARACTER CHAP*16,CHAC*16,CHAN*16,CHAD(5)*16,CHDL(7)*4
       DIMENSION PS(6)
@@ -51894,7 +51895,7 @@ C...Local arrays, character variables and data.
  
 C...Initialization printout: version number and date of last change.
       IF(MLIST.EQ.0.OR.MSTU(12).EQ.1) THEN
-        CALL PYLOGO
+        CALL SPLOGO
         MSTU(12)=0
         IF(MLIST.EQ.0) RETURN
       ENDIF
@@ -51915,7 +51916,7 @@ C...List event data, including additional lines after N.
           IF(MSTU(15).EQ.1.AND.K(I,1).LT.0) GOTO 120
  
 C...Get particle name, pad it and check it is not too long.
-          CALL PYNAME(K(I,2),CHAP)
+          CALL SPNAME(K(I,2),CHAP)
           LEN=0
           DO 100 LEM=1,16
             IF(CHAP(LEM:LEM).NE.' ') LEN=LEM
@@ -51940,7 +51941,7 @@ C...Get particle name, pad it and check it is not too long.
 C...Add information on string connection.
           IF(K(I,1).EQ.1.OR.K(I,1).EQ.2.OR.K(I,1).EQ.11.OR.K(I,1).EQ.12)
      &    THEN
-            KC=PYCOMP(K(I,2))
+            KC=SPCOMP(K(I,2))
             KCC=0
             IF(KC.NE.0) KCC=KCHG(KC,2)
             IF(IABS(K(I,2)).EQ.39) THEN
@@ -51993,7 +51994,7 @@ C...Insert extra separator lines specified by user.
  
 C...Sum of charges and momenta.
         DO 130 J=1,6
-          PS(J)=PYP(0,J)
+          PS(J)=SPP(0,J)
   130   CONTINUE
         IF(MLIST.EQ.1.AND.ABS(PS(4)).LT.9999D0) THEN
           WRITE(MSTU(11),6200) PS(6),(PS(J),J=1,5)
@@ -52027,8 +52028,8 @@ C...Give simple list of KF codes defined in program.
       ELSEIF(MLIST.EQ.11) THEN
         WRITE(MSTU(11),6600)
         DO 160 KF=1,80
-          CALL PYNAME(KF,CHAP)
-          CALL PYNAME(-KF,CHAN)
+          CALL SPNAME(KF,CHAP)
+          CALL SPNAME(-KF,CHAN)
           IF(CHAP.NE.' '.AND.CHAN.EQ.' ') WRITE(MSTU(11),6700) KF,CHAP
           IF(CHAN.NE.' ') WRITE(MSTU(11),6700) KF,CHAP,-KF,CHAN
   160   CONTINUE
@@ -52036,8 +52037,8 @@ C...Give simple list of KF codes defined in program.
           DO 180 KFLA=1,5
             DO 170 KFLB=1,KFLA-(3-KFLS)/2
               KF=1000*KFLA+100*KFLB+KFLS
-              CALL PYNAME(KF,CHAP)
-              CALL PYNAME(-KF,CHAN)
+              CALL SPNAME(KF,CHAP)
+              CALL SPNAME(-KF,CHAN)
               WRITE(MSTU(11),6700) KF,CHAP,-KF,CHAN
   170       CONTINUE
   180     CONTINUE
@@ -52052,28 +52053,28 @@ C...Give simple list of KF codes defined in program.
           DO 210 KFLB=1,5
             DO 200 KFLC=1,KFLB-1
               KF=10000*KFLR+100*KFLB+10*KFLC+KFLS
-              CALL PYNAME(KF,CHAP)
-              CALL PYNAME(-KF,CHAN)
+              CALL SPNAME(KF,CHAP)
+              CALL SPNAME(-KF,CHAN)
               WRITE(MSTU(11),6700) KF,CHAP,-KF,CHAN
               IF(KF.EQ.311) THEN
                 KFK=130
-                CALL PYNAME(KFK,CHAP)
+                CALL SPNAME(KFK,CHAP)
                 WRITE(MSTU(11),6700) KFK,CHAP
                 KFK=310
-                CALL PYNAME(KFK,CHAP)
+                CALL SPNAME(KFK,CHAP)
                 WRITE(MSTU(11),6700) KFK,CHAP
               ENDIF
   200       CONTINUE
             KF=10000*KFLR+110*KFLB+KFLS
-            CALL PYNAME(KF,CHAP)
+            CALL SPNAME(KF,CHAP)
             WRITE(MSTU(11),6700) KF,CHAP
   210     CONTINUE
   220   CONTINUE
         KF=100443
-        CALL PYNAME(KF,CHAP)
+        CALL SPNAME(KF,CHAP)
         WRITE(MSTU(11),6700) KF,CHAP
         KF=100553
-        CALL PYNAME(KF,CHAP)
+        CALL SPNAME(KF,CHAP)
         WRITE(MSTU(11),6700) KF,CHAP
         DO 260 KFLSP=1,3
           KFLS=2+2*(KFLSP/3)
@@ -52085,8 +52086,8 @@ C...Give simple list of KF codes defined in program.
                 IF(KFLSP.EQ.2.AND.KFLA.EQ.KFLC) GOTO 230
                 IF(KFLSP.EQ.1) KF=1000*KFLA+100*KFLC+10*KFLB+KFLS
                 IF(KFLSP.GE.2) KF=1000*KFLA+100*KFLB+10*KFLC+KFLS
-                CALL PYNAME(KF,CHAP)
-                CALL PYNAME(-KF,CHAN)
+                CALL SPNAME(KF,CHAP)
+                CALL SPNAME(-KF,CHAN)
                 WRITE(MSTU(11),6700) KF,CHAP,-KF,CHAN
   230         CONTINUE
   240       CONTINUE
@@ -52095,8 +52096,8 @@ C...Give simple list of KF codes defined in program.
         DO 270 KC=1,500
           KF=KCHG(KC,4)
           IF(KF.LT.1000000) GOTO 270
-          CALL PYNAME(KF,CHAP)
-          CALL PYNAME(-KF,CHAN)
+          CALL SPNAME(KF,CHAP)
+          CALL SPNAME(-KF,CHAN)
           IF(CHAP.NE.' '.AND.CHAN.EQ.' ') WRITE(MSTU(11),6700) KF,CHAP
           IF(CHAN.NE.' ') WRITE(MSTU(11),6700) KF,CHAP,-KF,CHAN
   270   CONTINUE
@@ -52111,9 +52112,9 @@ C...List parton/particle data table. Check whether to be listed.
      &    GOTO 300
  
 C...Find particle name and mass. Print information.
-          CALL PYNAME(KF,CHAP)
+          CALL SPNAME(KF,CHAP)
           IF(KF.LE.100.AND.CHAP.EQ.' '.AND.MDCY(KC,2).EQ.0) GOTO 300
-          CALL PYNAME(-KF,CHAN)
+          CALL SPNAME(-KF,CHAN)
           WRITE(MSTU(11),6900) KF,KC,CHAP,CHAN,(KCHG(KC,J1),J1=1,3),
      &    (PMAS(KC,J2),J2=1,4),MDCY(KC,1)
  
@@ -52121,7 +52122,7 @@ C...Particle decay: channel number, branching ratios, matrix element,
 C...decay products.
           DO 290 IDC=MDCY(KC,2),MDCY(KC,2)+MDCY(KC,3)-1
             DO 280 J=1,5
-              CALL PYNAME(KFDP(IDC,J),CHAD(J))
+              CALL SPNAME(KFDP(IDC,J),CHAD(J))
   280       CONTINUE
             WRITE(MSTU(11),7000) IDC,MDME(IDC,1),MDME(IDC,2),BRAT(IDC),
      &      (CHAD(J),J=1,5)
@@ -52185,21 +52186,21 @@ C...Format statements for output on unit MSTU(11) (by default 6).
  
 C*********************************************************************
  
-C...PYLOGO
+C...SPLOGO
 C...Writes a logo for the program.
  
-      SUBROUTINE PYLOGO
+      SUBROUTINE SPLOGO
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Parameter for length of information block.
       PARAMETER (IREFER=24)
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      SAVE /PYDAT1/,/PYPARS/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      SAVE /SPDAT1/,/SPPARS/
 C...Local arrays and character variables.
       INTEGER IDATI(6)
       CHARACTER MONTH(12)*3, LOGO(48)*32, REFER(2*IREFER)*36, LINE*79,
@@ -52247,11 +52248,11 @@ C...Data on months, logo, titles, and references.
      &'of errors and use common sense  ',
      &'when interpreting results.      ',
      &'                                ',
-     &'Copyright T. Sjostrand (2003)   '/
+     &'Cospright T. Sjostrand (2003)   '/
       DATA (REFER(J),J=1,18)/
      &'An archive of program versions and d',
      &'ocumentation is found on the web:   ',
-     &'http://www.thep.lu.se/~torbjorn/Pyth',
+     &'http://www.thep.lu.se/~torbjorn/Spth',
      &'ia.html                             ',
      &'                                    ',
      &'                                    ',
@@ -52300,10 +52301,10 @@ C...Data on months, logo, titles, and references.
      &'  phone: + 46 - 46 - 222 31 92; e-ma',
      &'il: zeiler@thep.lu.se               '/
       return 
-C...Check that PYDATA linked.
+C...Check that SPDATA linked.
       IF(MSTP(183)/10.NE.199.AND.MSTP(183)/10.NE.200) THEN
         WRITE(*,'(1X,A)')
-     &  'Error: PYDATA has not been linked.'
+     &  'Error: SPDATA has not been linked.'
         WRITE(*,'(1X,A)') 'Execution stopped!'
         STOP
  
@@ -52319,7 +52320,7 @@ C...Write current version number and current date+time.
         LOGO(29)(25:27)=MONTH(MSTP(184))
         WRITE(YEAR,'(I4)') MSTP(183)
         LOGO(29)(29:32)=YEAR
-        CALL PYTIME(IDATI)
+        CALL SPTIME(IDATI)
         IF(IDATI(1).LE.0) THEN
           LOGO(31)='                                '
         ELSE
@@ -52370,24 +52371,24 @@ C...Write lines to appropriate unit.
  
 C*********************************************************************
  
-C...PYUPDA
+C...SPUPDA
 C...Facilitates the updating of particle and decay data
 C...by allowing it to be done in an external file.
  
-      SUBROUTINE PYUPDA(MUPDA,LFN)
+      SUBROUTINE SPUPDA(MUPDA,LFN)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      COMMON/PYDAT4/CHAF(500,2)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      COMMON/SPDAT4/CHAF(500,2)
       CHARACTER CHAF*16
-      COMMON/PYINT4/MWID(500),WIDS(500,5)
-      SAVE /PYDAT1/,/PYDAT2/,/PYDAT3/,/PYDAT4/,/PYINT4/
+      COMMON/SPINT4/MWID(500),WIDS(500,5)
+      SAVE /SPDAT1/,/SPDAT2/,/SPDAT3/,/SPDAT4/,/SPINT4/
 C...Local arrays, character variables and data.
       CHARACTER CHINL*120,CHKF*9,CHVAR(22)*9,CHLIN*72,
      &CHBLK(20)*72,CHOLD*16,CHTMP*16,CHNEW*16,CHCOM*24
@@ -52398,7 +52399,7 @@ C...Local arrays, character variables and data.
      &'CHAF(I,1)','CHAF(I,2)','MWID(I)  '/
  
 C...Write header if not yet done.
-      IF(MSTU(12).GE.1) CALL PYLIST(0)
+      IF(MSTU(12).GE.1) CALL SPLIST(0)
  
 C...Write information on file for editing.
       IF(MUPDA.EQ.1) THEN
@@ -52481,8 +52482,8 @@ C...Remove duplicate old decay data.
           ENDIF
  
 C...Study line with particle data.
-          IF(KC.GT.MSTU(6)) CALL PYERRM(27,
-     &    '(PYUPDA:) Particle arrays full by KF ='//CHKF)
+          IF(KC.GT.MSTU(6)) CALL SPERRM(27,
+     &    '(SPUPDA:) Particle arrays full by KF ='//CHKF)
           READ(CHINL,5000) KCHG(KC,4),(CHAF(KC,J1),J1=1,2),
      &    (KCHG(KC,J2),J2=1,3),(PMAS(KC,J3),J3=1,4),
      &    MWID(KC),MDCY(KC,1)
@@ -52492,15 +52493,15 @@ C...Study line with particle data.
 C...Study line with decay data.
         ELSE
           NDC=NDC+1
-          IF(NDC.GT.MSTU(7)) CALL PYERRM(27,
-     &    '(PYUPDA:) Decay data arrays full by KF ='//CHKF)
+          IF(NDC.GT.MSTU(7)) CALL SPERRM(27,
+     &    '(SPUPDA:) Decay data arrays full by KF ='//CHKF)
           IF(MDCY(KC,2).EQ.0) MDCY(KC,2)=NDC
           MDCY(KC,3)=MDCY(KC,3)+1
           READ(CHINL,5100) MDME(NDC,1),MDME(NDC,2),BRAT(NDC),
      &    (KFDP(NDC,J),J=1,5)
         ENDIF
  
-C...End of loop; ensure that PYCOMP tables are updated.
+C...End of loop; ensure that SPCOMP tables are updated.
         GOTO 140
   190   CONTINUE
         MSTU(20)=0
@@ -52511,8 +52512,8 @@ C...Perform possible tests that new information is consistent.
           IF(KF.EQ.0) GOTO 220
           WRITE(CHKF,5300) KF
           IF(MIN(PMAS(KC,1),PMAS(KC,2),PMAS(KC,3),PMAS(KC,1)-PMAS(KC,3),
-     &    PMAS(KC,4)).LT.0D0.OR.MDCY(KC,3).LT.0) CALL PYERRM(17,
-     &    '(PYUPDA:) Mass/width/life/(# channels) wrong for KF ='//CHKF)
+     &    PMAS(KC,4)).LT.0D0.OR.MDCY(KC,3).LT.0) CALL SPERRM(17,
+     &    '(SPUPDA:) Mass/width/life/(# channels) wrong for KF ='//CHKF)
           BRSUM=0D0
           DO 210 IDC=MDCY(KC,2),MDCY(KC,2)+MDCY(KC,3)-1
             IF(MDME(IDC,2).GT.80) GOTO 210
@@ -52523,11 +52524,11 @@ C...Perform possible tests that new information is consistent.
               KP=KFDP(IDC,J)
               IF(KP.EQ.0.OR.KP.EQ.81.OR.IABS(KP).EQ.82) THEN
                 IF(KP.EQ.81) KQ=0
-              ELSEIF(PYCOMP(KP).EQ.0) THEN
+              ELSEIF(SPCOMP(KP).EQ.0) THEN
                 MERR=3
               ELSE
-                KQ=KQ-PYCHGE(KP)
-                KPC=PYCOMP(KP)
+                KQ=KQ-SPCHGE(KP)
+                KPC=SPCOMP(KP)
                 PMS=PMS-PMAS(KPC,1)
                 IF(MSTJ(24).GT.0) PMS=PMS+0.5D0*MIN(PMAS(KPC,2),
      &          PMAS(KPC,3))
@@ -52536,17 +52537,17 @@ C...Perform possible tests that new information is consistent.
             IF(KQ.NE.0) MERR=MAX(2,MERR)
             IF(MWID(KC).EQ.0.AND.KF.NE.311.AND.PMS.LT.0D0)
      &      MERR=MAX(1,MERR)
-            IF(MERR.EQ.3) CALL PYERRM(17,
-     &      '(PYUPDA:) Unknown particle code in decay of KF ='//CHKF)
-            IF(MERR.EQ.2) CALL PYERRM(17,
-     &      '(PYUPDA:) Charge not conserved in decay of KF ='//CHKF)
-            IF(MERR.EQ.1) CALL PYERRM(7,
-     &      '(PYUPDA:) Kinematically unallowed decay of KF ='//CHKF)
+            IF(MERR.EQ.3) CALL SPERRM(17,
+     &      '(SPUPDA:) Unknown particle code in decay of KF ='//CHKF)
+            IF(MERR.EQ.2) CALL SPERRM(17,
+     &      '(SPUPDA:) Charge not conserved in decay of KF ='//CHKF)
+            IF(MERR.EQ.1) CALL SPERRM(7,
+     &      '(SPUPDA:) Kinematically unallowed decay of KF ='//CHKF)
             BRSUM=BRSUM+BRAT(IDC)
   210     CONTINUE
           WRITE(CHTMP,5500) BRSUM
           IF(ABS(BRSUM).GT.0.0005D0.AND.ABS(BRSUM-1D0).GT.0.0005D0)
-     &    CALL PYERRM(7,'(PYUPDA:) Sum of branching ratios is '//
+     &    CALL SPERRM(7,'(SPUPDA:) Sum of branching ratios is '//
      &    CHTMP(9:16)//' for KF ='//CHKF)
   220   CONTINUE
  
@@ -52730,74 +52731,74 @@ C...Formats for reading and writing particle data.
  
 C*********************************************************************
  
-C...PYK
+C...SPK
 C...Provides various integer-valued event related data.
  
-      FUNCTION PYK(I,J)
+      FUNCTION SPK(I,J)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/
  
 C...Default value. For I=0 number of entries, number of stable entries
 C...or 3 times total charge.
-      PYK=0
+      SPK=0
       IF(I.LT.0.OR.I.GT.MSTU(4).OR.J.LE.0) THEN
       ELSEIF(I.EQ.0.AND.J.EQ.1) THEN
-        PYK=N
+        SPK=N
       ELSEIF(I.EQ.0.AND.(J.EQ.2.OR.J.EQ.6)) THEN
         DO 100 I1=1,N
-          IF(J.EQ.2.AND.K(I1,1).GE.1.AND.K(I1,1).LE.10) PYK=PYK+1
-          IF(J.EQ.6.AND.K(I1,1).GE.1.AND.K(I1,1).LE.10) PYK=PYK+
-     &    PYCHGE(K(I1,2))
+          IF(J.EQ.2.AND.K(I1,1).GE.1.AND.K(I1,1).LE.10) SPK=SPK+1
+          IF(J.EQ.6.AND.K(I1,1).GE.1.AND.K(I1,1).LE.10) SPK=SPK+
+     &    SPCHGE(K(I1,2))
   100   CONTINUE
       ELSEIF(I.EQ.0) THEN
  
 C...For I > 0 direct readout of K matrix or charge.
       ELSEIF(J.LE.5) THEN
-        PYK=K(I,J)
+        SPK=K(I,J)
       ELSEIF(J.EQ.6) THEN
-        PYK=PYCHGE(K(I,2))
+        SPK=SPCHGE(K(I,2))
  
 C...Status (existing/fragmented/decayed), parton/hadron separation.
       ELSEIF(J.LE.8) THEN
-        IF(K(I,1).GE.1.AND.K(I,1).LE.10) PYK=1
-        IF(J.EQ.8) PYK=PYK*K(I,2)
+        IF(K(I,1).GE.1.AND.K(I,1).LE.10) SPK=1
+        IF(J.EQ.8) SPK=SPK*K(I,2)
       ELSEIF(J.LE.12) THEN
         KFA=IABS(K(I,2))
-        KC=PYCOMP(KFA)
+        KC=SPCOMP(KFA)
         KQ=0
         IF(KC.NE.0) KQ=KCHG(KC,2)
-        IF(J.EQ.9.AND.KC.NE.0.AND.KQ.NE.0) PYK=K(I,2)
-        IF(J.EQ.10.AND.KC.NE.0.AND.KQ.EQ.0) PYK=K(I,2)
-        IF(J.EQ.11) PYK=KC
-        IF(J.EQ.12) PYK=KQ*ISIGN(1,K(I,2))
+        IF(J.EQ.9.AND.KC.NE.0.AND.KQ.NE.0) SPK=K(I,2)
+        IF(J.EQ.10.AND.KC.NE.0.AND.KQ.EQ.0) SPK=K(I,2)
+        IF(J.EQ.11) SPK=KC
+        IF(J.EQ.12) SPK=KQ*ISIGN(1,K(I,2))
  
 C...Heaviest flavour in hadron/diquark.
       ELSEIF(J.EQ.13) THEN
         KFA=IABS(K(I,2))
-        PYK=MOD(KFA/100,10)*(-1)**MOD(KFA/100,10)
-        IF(KFA.LT.10) PYK=KFA
-        IF(MOD(KFA/1000,10).NE.0) PYK=MOD(KFA/1000,10)
-        PYK=PYK*ISIGN(1,K(I,2))
+        SPK=MOD(KFA/100,10)*(-1)**MOD(KFA/100,10)
+        IF(KFA.LT.10) SPK=KFA
+        IF(MOD(KFA/1000,10).NE.0) SPK=MOD(KFA/1000,10)
+        SPK=SPK*ISIGN(1,K(I,2))
  
 C...Particle history: generation, ancestor, rank.
       ELSEIF(J.LE.15) THEN
         I2=I
         I1=I
-  110   PYK=PYK+1
+  110   SPK=SPK+1
         I2=I1
         I1=K(I1,3)
         IF(I1.GT.0) THEN
           IF(K(I1,1).GT.0.AND.K(I1,1).LE.20) GOTO 110
         ENDIF
-        IF(J.EQ.15) PYK=I2
+        IF(J.EQ.15) SPK=I2
       ELSEIF(J.EQ.16) THEN
         KFA=IABS(K(I,2))
         IF(K(I,1).LE.20.AND.((KFA.GE.11.AND.KFA.LE.20).OR.KFA.EQ.22.OR.
@@ -52817,11 +52818,11 @@ C...Particle history: generation, ancestor, rank.
           IF(K(I1,1).EQ.12) THEN
             DO 130 I3=I1+1,I2
               IF(K(I3,3).EQ.K(I2,3).AND.K(I3,2).NE.91.AND.K(I3,2).NE.92
-     &        .AND.K(I3,2).NE.93) PYK=PYK+1
+     &        .AND.K(I3,2).NE.93) SPK=SPK+1
   130       CONTINUE
           ELSE
             I3=I2
-  140       PYK=PYK+1
+  140       SPK=SPK+1
             I3=I3+1
             IF(I3.LT.N.AND.K(I3,3).EQ.K(I2,3)) GOTO 140
           ENDIF
@@ -52830,37 +52831,37 @@ C...Particle history: generation, ancestor, rank.
 C...Particle coming from collapsing jet system or not.
       ELSEIF(J.EQ.17) THEN
         I1=I
-  150   PYK=PYK+1
+  150   SPK=SPK+1
         I3=I1
         I1=K(I1,3)
         I0=MAX(1,I1)
-        KC=PYCOMP(K(I0,2))
+        KC=SPCOMP(K(I0,2))
         IF(I1.EQ.0.OR.K(I0,1).LE.0.OR.K(I0,1).GT.20.OR.KC.EQ.0) THEN
-          IF(PYK.EQ.1) PYK=-1
-          IF(PYK.GT.1) PYK=0
+          IF(SPK.EQ.1) SPK=-1
+          IF(SPK.GT.1) SPK=0
           RETURN
         ENDIF
         IF(KCHG(KC,2).EQ.0) GOTO 150
-        IF(K(I1,1).NE.12) PYK=0
+        IF(K(I1,1).NE.12) SPK=0
         IF(K(I1,1).NE.12) RETURN
         I2=I1
   160   I2=I2+1
         IF(I2.LT.N.AND.K(I2,1).NE.11) GOTO 160
         K3M=K(I3-1,3)
-        IF(K3M.GE.I1.AND.K3M.LE.I2) PYK=0
+        IF(K3M.GE.I1.AND.K3M.LE.I2) SPK=0
         K3P=K(I3+1,3)
-        IF(I3.LT.N.AND.K3P.GE.I1.AND.K3P.LE.I2) PYK=0
+        IF(I3.LT.N.AND.K3P.GE.I1.AND.K3P.LE.I2) SPK=0
  
 C...Number of decay products. Colour flow.
       ELSEIF(J.EQ.18) THEN
-        IF(K(I,1).EQ.11.OR.K(I,1).EQ.12) PYK=MAX(0,K(I,5)-K(I,4)+1)
-        IF(K(I,4).EQ.0.OR.K(I,5).EQ.0) PYK=0
+        IF(K(I,1).EQ.11.OR.K(I,1).EQ.12) SPK=MAX(0,K(I,5)-K(I,4)+1)
+        IF(K(I,4).EQ.0.OR.K(I,5).EQ.0) SPK=0
       ELSEIF(J.LE.22) THEN
         IF(K(I,1).NE.3.AND.K(I,1).NE.13.AND.K(I,1).NE.14) RETURN
-        IF(J.EQ.19) PYK=MOD(K(I,4)/MSTU(5),MSTU(5))
-        IF(J.EQ.20) PYK=MOD(K(I,5)/MSTU(5),MSTU(5))
-        IF(J.EQ.21) PYK=MOD(K(I,4),MSTU(5))
-        IF(J.EQ.22) PYK=MOD(K(I,5),MSTU(5))
+        IF(J.EQ.19) SPK=MOD(K(I,4)/MSTU(5),MSTU(5))
+        IF(J.EQ.20) SPK=MOD(K(I,5)/MSTU(5),MSTU(5))
+        IF(J.EQ.21) SPK=MOD(K(I,4),MSTU(5))
+        IF(J.EQ.22) SPK=MOD(K(I,5),MSTU(5))
       ELSE
       ENDIF
  
@@ -52869,30 +52870,30 @@ C...Number of decay products. Colour flow.
  
 C*********************************************************************
  
-C...PYP
+C...SPP
 C...Provides various real-valued event related data.
  
-      FUNCTION PYP(I,J)
+      FUNCTION SPP(I,J)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/
 C...Local array.
       DIMENSION PSUM(4)
  
 C...Set default value. For I = 0 sum of momenta or charges,
 C...or invariant mass of system.
-      PYP=0D0
+      SPP=0D0
       IF(I.LT.0.OR.I.GT.MSTU(4).OR.J.LE.0) THEN
       ELSEIF(I.EQ.0.AND.J.LE.4) THEN
         DO 100 I1=1,N
-          IF(K(I1,1).GT.0.AND.K(I1,1).LE.10) PYP=PYP+P(I1,J)
+          IF(K(I1,1).GT.0.AND.K(I1,1).LE.10) SPP=SPP+P(I1,J)
   100   CONTINUE
       ELSEIF(I.EQ.0.AND.J.EQ.5) THEN
         DO 120 J1=1,4
@@ -52902,48 +52903,48 @@ C...or invariant mass of system.
      &      P(I1,J1)
   110     CONTINUE
   120   CONTINUE
-        PYP=SQRT(MAX(0D0,PSUM(4)**2-PSUM(1)**2-PSUM(2)**2-PSUM(3)**2))
+        SPP=SQRT(MAX(0D0,PSUM(4)**2-PSUM(1)**2-PSUM(2)**2-PSUM(3)**2))
       ELSEIF(I.EQ.0.AND.J.EQ.6) THEN
         DO 130 I1=1,N
-          IF(K(I1,1).GT.0.AND.K(I1,1).LE.10) PYP=PYP+PYCHGE(K(I1,2))/3D0
+          IF(K(I1,1).GT.0.AND.K(I1,1).LE.10) SPP=SPP+SPCHGE(K(I1,2))/3D0
   130   CONTINUE
       ELSEIF(I.EQ.0) THEN
  
 C...Direct readout of P matrix.
       ELSEIF(J.LE.5) THEN
-        PYP=P(I,J)
+        SPP=P(I,J)
  
 C...Charge, total momentum, transverse momentum, transverse mass.
       ELSEIF(J.LE.12) THEN
-        IF(J.EQ.6) PYP=PYCHGE(K(I,2))/3D0
-        IF(J.EQ.7.OR.J.EQ.8) PYP=P(I,1)**2+P(I,2)**2+P(I,3)**2
-        IF(J.EQ.9.OR.J.EQ.10) PYP=P(I,1)**2+P(I,2)**2
-        IF(J.EQ.11.OR.J.EQ.12) PYP=P(I,5)**2+P(I,1)**2+P(I,2)**2
-        IF(J.EQ.8.OR.J.EQ.10.OR.J.EQ.12) PYP=SQRT(PYP)
+        IF(J.EQ.6) SPP=SPCHGE(K(I,2))/3D0
+        IF(J.EQ.7.OR.J.EQ.8) SPP=P(I,1)**2+P(I,2)**2+P(I,3)**2
+        IF(J.EQ.9.OR.J.EQ.10) SPP=P(I,1)**2+P(I,2)**2
+        IF(J.EQ.11.OR.J.EQ.12) SPP=P(I,5)**2+P(I,1)**2+P(I,2)**2
+        IF(J.EQ.8.OR.J.EQ.10.OR.J.EQ.12) SPP=SQRT(SPP)
  
 C...Theta and phi angle in radians or degrees.
       ELSEIF(J.LE.16) THEN
-        IF(J.LE.14) PYP=PYANGL(P(I,3),SQRT(P(I,1)**2+P(I,2)**2))
-        IF(J.GE.15) PYP=PYANGL(P(I,1),P(I,2))
-        IF(J.EQ.14.OR.J.EQ.16) PYP=PYP*180D0/PARU(1)
+        IF(J.LE.14) SPP=SPANGL(P(I,3),SQRT(P(I,1)**2+P(I,2)**2))
+        IF(J.GE.15) SPP=SPANGL(P(I,1),P(I,2))
+        IF(J.EQ.14.OR.J.EQ.16) SPP=SPP*180D0/PARU(1)
  
 C...True rapidity, rapidity with pion mass, pseudorapidity.
       ELSEIF(J.LE.19) THEN
         PMR=0D0
         IF(J.EQ.17) PMR=P(I,5)
-        IF(J.EQ.18) PMR=PYMASS(211)
+        IF(J.EQ.18) PMR=SPMASS(211)
         PR=MAX(1D-20,PMR**2+P(I,1)**2+P(I,2)**2)
-        PYP=SIGN(LOG(MIN((SQRT(PR+P(I,3)**2)+ABS(P(I,3)))/SQRT(PR),
+        SPP=SIGN(LOG(MIN((SQRT(PR+P(I,3)**2)+ABS(P(I,3)))/SQRT(PR),
      &  1D20)),P(I,3))
  
 C...Energy and momentum fractions (only to be used in CM frame).
       ELSEIF(J.LE.25) THEN
-        IF(J.EQ.20) PYP=2D0*SQRT(P(I,1)**2+P(I,2)**2+P(I,3)**2)/PARU(21)
-        IF(J.EQ.21) PYP=2D0*P(I,3)/PARU(21)
-        IF(J.EQ.22) PYP=2D0*SQRT(P(I,1)**2+P(I,2)**2)/PARU(21)
-        IF(J.EQ.23) PYP=2D0*P(I,4)/PARU(21)
-        IF(J.EQ.24) PYP=(P(I,4)+P(I,3))/PARU(21)
-        IF(J.EQ.25) PYP=(P(I,4)-P(I,3))/PARU(21)
+        IF(J.EQ.20) SPP=2D0*SQRT(P(I,1)**2+P(I,2)**2+P(I,3)**2)/PARU(21)
+        IF(J.EQ.21) SPP=2D0*P(I,3)/PARU(21)
+        IF(J.EQ.22) SPP=2D0*SQRT(P(I,1)**2+P(I,2)**2)/PARU(21)
+        IF(J.EQ.23) SPP=2D0*P(I,4)/PARU(21)
+        IF(J.EQ.24) SPP=(P(I,4)+P(I,3))/PARU(21)
+        IF(J.EQ.25) SPP=(P(I,4)-P(I,3))/PARU(21)
       ENDIF
  
       RETURN
@@ -52951,21 +52952,21 @@ C...Energy and momentum fractions (only to be used in CM frame).
  
 C*********************************************************************
  
-C...PYSPHE
+C...SPSPHE
 C...Performs sphericity tensor analysis to give sphericity,
 C...aplanarity and the related event axes.
  
-      SUBROUTINE PYSPHE(SPH,APL)
+      SUBROUTINE SPSPHE(SPH,APL)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/
 C...Local arrays.
       DIMENSION SM(3,3),SV(3,3)
  
@@ -52980,10 +52981,10 @@ C...Calculate matrix to be diagonalized.
       DO 140 I=1,N
         IF(K(I,1).LE.0.OR.K(I,1).GT.10) GOTO 140
         IF(MSTU(41).GE.2) THEN
-          KC=PYCOMP(K(I,2))
+          KC=SPCOMP(K(I,2))
           IF(KC.EQ.0.OR.KC.EQ.12.OR.KC.EQ.14.OR.KC.EQ.16.OR.
      &    KC.EQ.18) GOTO 140
-          IF(MSTU(41).GE.3.AND.KCHG(KC,2).EQ.0.AND.PYCHGE(K(I,2)).EQ.0)
+          IF(MSTU(41).GE.3.AND.KCHG(KC,2).EQ.0.AND.SPCHGE(K(I,2)).EQ.0)
      &    GOTO 140
         ENDIF
         NP=NP+1
@@ -53001,7 +53002,7 @@ C...Calculate matrix to be diagonalized.
  
 C...Very low multiplicities (0 or 1) not considered.
       IF(NP.LE.1) THEN
-        CALL PYERRM(8,'(PYSPHE:) too few particles for analysis')
+        CALL SPERRM(8,'(SPSPHE:) too few particles for analysis')
         SPH=-1D0
         APL=-1D0
         RETURN
@@ -53023,7 +53024,7 @@ C...Find eigenvalues to matrix (third degree equation).
       P(N+3,4)=1D0/3D0+SQRT(-SQ)*MIN(2D0*SP,-SQRT(3D0*(1D0-SP**2))-SP)
       P(N+2,4)=1D0-P(N+1,4)-P(N+3,4)
       IF(P(N+2,4).LT.1D-5) THEN
-        CALL PYERRM(8,'(PYSPHE:) all particles back-to-back')
+        CALL SPERRM(8,'(SPSPHE:) all particles back-to-back')
         SPH=-1D0
         APL=-1D0
         RETURN
@@ -53065,14 +53066,14 @@ C...Find first and last eigenvector by solving equation system.
         P(N+I,JB)=-(SV(JA,JB1)*P(N+I,JB1)+SV(JA,JB2)*P(N+I,JB2))/
      &  SV(JA,JB)
         PA=SQRT(P(N+I,1)**2+P(N+I,2)**2+P(N+I,3)**2)
-        SGN=(-1D0)**INT(PYR(0)+0.5D0)
+        SGN=(-1D0)**INT(SPR(0)+0.5D0)
         DO 230 J=1,3
           P(N+I,J)=SGN*P(N+I,J)/PA
   230   CONTINUE
   240 CONTINUE
  
 C...Middle axis orthogonal to other two. Fill other codes.
-      SGN=(-1D0)**INT(PYR(0)+0.5D0)
+      SGN=(-1D0)**INT(SPR(0)+0.5D0)
       P(N+2,1)=SGN*(P(N+1,2)*P(N+3,3)-P(N+1,3)*P(N+3,2))
       P(N+2,2)=SGN*(P(N+1,3)*P(N+3,1)-P(N+1,1)*P(N+3,3))
       P(N+2,3)=SGN*(P(N+1,1)*P(N+3,2)-P(N+1,2)*P(N+3,1))
@@ -53101,38 +53102,38 @@ C...Calculate sphericity and aplanarity. Select storing option.
  
 C*********************************************************************
  
-C...PYTHRU
+C...SPTHRU
 C...Performs thrust analysis to give thrust, oblateness
 C...and the related event axes.
  
-      SUBROUTINE PYTHRU(THR,OBL)
+      SUBROUTINE SPTHRU(THR,OBL)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/
 C...Local arrays.
       DIMENSION TDI(3),TPR(3)
  
-C...Take copy of particles that are to be considered in thrust analysis.
+C...Take cosp of particles that are to be considered in thrust analysis.
       NP=0
       PS=0D0
       DO 100 I=1,N
         IF(K(I,1).LE.0.OR.K(I,1).GT.10) GOTO 100
         IF(MSTU(41).GE.2) THEN
-          KC=PYCOMP(K(I,2))
+          KC=SPCOMP(K(I,2))
           IF(KC.EQ.0.OR.KC.EQ.12.OR.KC.EQ.14.OR.KC.EQ.16.OR.
      &    KC.EQ.18) GOTO 100
-          IF(MSTU(41).GE.3.AND.KCHG(KC,2).EQ.0.AND.PYCHGE(K(I,2)).EQ.0)
+          IF(MSTU(41).GE.3.AND.KCHG(KC,2).EQ.0.AND.SPCHGE(K(I,2)).EQ.0)
      &    GOTO 100
         ENDIF
         IF(N+NP+MSTU(44)+15.GE.MSTU(4)-MSTU(32)-5) THEN
-          CALL PYERRM(11,'(PYTHRU:) no more memory left in PYJETS')
+          CALL SPERRM(11,'(SPTHRU:) no more memory left in SPJETS')
           THR=-2D0
           OBL=-2D0
           RETURN
@@ -53151,7 +53152,7 @@ C...Take copy of particles that are to be considered in thrust analysis.
  
 C...Very low multiplicities (0 or 1) not considered.
       IF(NP.LE.1) THEN
-        CALL PYERRM(8,'(PYTHRU:) too few particles for analysis')
+        CALL SPERRM(8,'(SPTHRU:) too few particles for analysis')
         THR=-1D0
         OBL=-1D0
         RETURN
@@ -53161,11 +53162,11 @@ C...Loop over thrust and major. T axis along z direction in latter case.
       DO 320 ILD=1,2
         IF(ILD.EQ.2) THEN
           K(N+NP+1,1)=31
-          PHI=PYANGL(P(N+NP+1,1),P(N+NP+1,2))
+          PHI=SPANGL(P(N+NP+1,1),P(N+NP+1,2))
           MSTU(33)=1
-          CALL PYROBO(N+1,N+NP+1,0D0,-PHI,0D0,0D0,0D0)
-          THE=PYANGL(P(N+NP+1,3),P(N+NP+1,1))
-          CALL PYROBO(N+1,N+NP+1,-THE,0D0,0D0,0D0,0D0)
+          CALL SPROBO(N+1,N+NP+1,0D0,-PHI,0D0,0D0,0D0)
+          THE=SPANGL(P(N+NP+1,3),P(N+NP+1,1))
+          CALL SPROBO(N+1,N+NP+1,-THE,0D0,0D0,0D0,0D0)
         ENDIF
  
 C...Find and order particles with highest p (pT for major).
@@ -53240,7 +53241,7 @@ C...Save good axis. Try new initial axis until a number of tries agree.
         IF(THP.LT.P(N+NP+ILD,4)-PARU(48).AND.ILG.LT.MIN(10,NC)) GOTO 260
         IF(THP.GT.P(N+NP+ILD,4)+PARU(48)) THEN
           IAGR=0
-          SGN=(-1D0)**INT(PYR(0)+0.5D0)
+          SGN=(-1D0)**INT(SPR(0)+0.5D0)
           DO 310 J=1,3
             P(N+NP+ILD,J)=SGN*TPR(J)/(PS*THP)
   310     CONTINUE
@@ -53252,7 +53253,7 @@ C...Save good axis. Try new initial axis until a number of tries agree.
   320 CONTINUE
  
 C...Find minor axis and value by orthogonality.
-      SGN=(-1D0)**INT(PYR(0)+0.5D0)
+      SGN=(-1D0)**INT(SPR(0)+0.5D0)
       P(N+NP+3,1)=-SGN*P(N+NP+2,2)
       P(N+NP+3,2)=SGN*P(N+NP+2,1)
       P(N+NP+3,3)=0D0
@@ -53275,7 +53276,7 @@ C...Fill axis information. Rotate back to original coordinate system.
           V(N+ILD,J)=0D0
   340   CONTINUE
   350 CONTINUE
-      CALL PYROBO(N+1,N+3,THE,PHI,0D0,0D0,0D0)
+      CALL SPROBO(N+1,N+3,THE,PHI,0D0,0D0,0D0)
  
 C...Calculate thrust and oblateness. Select storing option.
       THR=P(N+1,4)
@@ -53290,20 +53291,20 @@ C...Calculate thrust and oblateness. Select storing option.
  
 C*********************************************************************
  
-C...PYCLUS
+C...SPCLUS
 C...Subdivides the particle content of an event into jets/clusters.
  
-      SUBROUTINE PYCLUS(NJET)
+      SUBROUTINE SPCLUS(NJET)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/
 C...Local arrays and saved variables.
       DIMENSION PS(5)
       SAVE NSAV,NP,PS,PSS,RINIT,NPRE,NREM
@@ -53323,7 +53324,7 @@ C...If first time, reset. If reentering, skip preliminaries.
           PS(J)=0D0
   100   CONTINUE
         PSS=0D0
-        PIMASS=PMAS(PYCOMP(211),1)
+        PIMASS=PMAS(SPCOMP(211),1)
       ELSE
         NJET=NSAV
         IF(MSTU(43).GE.2) N=N-NJET
@@ -53343,19 +53344,19 @@ C...Find which particles are to be considered in cluster search.
       DO 140 I=1,N
         IF(K(I,1).LE.0.OR.K(I,1).GT.10) GOTO 140
         IF(MSTU(41).GE.2) THEN
-          KC=PYCOMP(K(I,2))
+          KC=SPCOMP(K(I,2))
           IF(KC.EQ.0.OR.KC.EQ.12.OR.KC.EQ.14.OR.KC.EQ.16.OR.
      &    KC.EQ.18) GOTO 140
-          IF(MSTU(41).GE.3.AND.KCHG(KC,2).EQ.0.AND.PYCHGE(K(I,2)).EQ.0)
+          IF(MSTU(41).GE.3.AND.KCHG(KC,2).EQ.0.AND.SPCHGE(K(I,2)).EQ.0)
      &    GOTO 140
         ENDIF
         IF(N+2*NP.GE.MSTU(4)-MSTU(32)-5) THEN
-          CALL PYERRM(11,'(PYCLUS:) no more memory left in PYJETS')
+          CALL SPERRM(11,'(SPCLUS:) no more memory left in SPJETS')
           NJET=-1
           RETURN
         ENDIF
  
-C...Take copy of these particles, with space left for jets later on.
+C...Take cosp of these particles, with space left for jets later on.
         NP=NP+1
         K(N+NP,3)=I
         DO 120 J=1,5
@@ -53380,7 +53381,7 @@ C...Take copy of these particles, with space left for jets later on.
  
 C...Very low multiplicities not considered.
       IF(NP.LT.MSTU(47)) THEN
-        CALL PYERRM(8,'(PYCLUS:) too few particles for analysis')
+        CALL SPERRM(8,'(SPCLUS:) too few particles for analysis')
         NJET=-1
         RETURN
       ENDIF
@@ -53650,7 +53651,7 @@ C...Select storing option. Output variables. Check for failure.
       PARU(63)=SQRT(R2MIN)
       IF(NJET.LE.1) PARU(63)=0D0
       IF(IEMP.NE.0) THEN
-        CALL PYERRM(8,'(PYCLUS:) failed to reconstruct as requested')
+        CALL SPERRM(8,'(SPCLUS:) failed to reconstruct as requested')
         NJET=-1
         RETURN
       ENDIF
@@ -53663,21 +53664,21 @@ C...Select storing option. Output variables. Check for failure.
  
 C*********************************************************************
  
-C...PYCELL
+C...SPCELL
 C...Provides a simple way of jet finding in eta-phi-ET coordinates,
 C...as used for calorimeters at hadron colliders.
  
-      SUBROUTINE PYCELL(NJET)
+      SUBROUTINE SPCELL(NJET)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/
  
 C...Loop over all particles. Find cell that was hit by given particle.
       PTLRAT=1D0/SINH(PARU(51))**2
@@ -53687,10 +53688,10 @@ C...Loop over all particles. Find cell that was hit by given particle.
         IF(K(I,1).LE.0.OR.K(I,1).GT.10) GOTO 110
         IF(P(I,1)**2+P(I,2)**2.LE.PTLRAT*P(I,3)**2) GOTO 110
         IF(MSTU(41).GE.2) THEN
-          KC=PYCOMP(K(I,2))
+          KC=SPCOMP(K(I,2))
           IF(KC.EQ.0.OR.KC.EQ.12.OR.KC.EQ.14.OR.KC.EQ.16.OR.
      &    KC.EQ.18) GOTO 110
-          IF(MSTU(41).GE.3.AND.KCHG(KC,2).EQ.0.AND.PYCHGE(K(I,2)).EQ.0)
+          IF(MSTU(41).GE.3.AND.KCHG(KC,2).EQ.0.AND.SPCHGE(K(I,2)).EQ.0)
      &    GOTO 110
         ENDIF
         NP=NP+1
@@ -53698,7 +53699,7 @@ C...Loop over all particles. Find cell that was hit by given particle.
         ETA=SIGN(LOG((SQRT(PT**2+P(I,3)**2)+ABS(P(I,3)))/PT),P(I,3))
         IETA=MAX(1,MIN(MSTU(51),1+INT(MSTU(51)*0.5D0*
      &  (ETA/PARU(51)+1D0))))
-        PHI=PYANGL(P(I,1),P(I,2))
+        PHI=SPANGL(P(I,1),P(I,2))
         IPHI=MAX(1,MIN(MSTU(52),1+INT(MSTU(52)*0.5D0*
      &  (PHI/PARU(1)+1D0))))
         IETPH=MSTU(52)*IETA+IPHI
@@ -53712,7 +53713,7 @@ C...Add to cell already hit, or book new cell.
           ENDIF
   100   CONTINUE
         IF(NC.GE.MSTU(4)-MSTU(32)-5) THEN
-          CALL PYERRM(11,'(PYCELL:) no more memory left in PYJETS')
+          CALL SPERRM(11,'(SPCELL:) no more memory left in SPJETS')
           NJET=-2
           RETURN
         ENDIF
@@ -53730,8 +53731,8 @@ C...Smear true bin content by calorimeter resolution.
         DO 130 IC=N+1,NC
           PEI=P(IC,5)
           IF(MSTU(53).EQ.2) PEI=P(IC,5)*COSH(P(IC,1))
-  120     PEF=PEI+PARU(55)*SQRT(-2D0*LOG(MAX(1D-10,PYR(0)))*PEI)*
-     &    COS(PARU(2)*PYR(0))
+  120     PEF=PEI+PARU(55)*SQRT(-2D0*LOG(MAX(1D-10,SPR(0)))*PEI)*
+     &    COS(PARU(2)*SPR(0))
           IF(PEF.LT.0D0.OR.PEF.GT.PARU(56)*PEI) GOTO 120
           P(IC,5)=PEF
           IF(MSTU(53).EQ.2) P(IC,5)=PEF/COSH(P(IC,1))
@@ -53768,7 +53769,7 @@ C...Find initiator cell: the one with highest pT of not yet used ones.
   160 CONTINUE
       IF(ETMAX.LT.PARU(52)) GOTO 220
       IF(NJ.GE.MSTU(4)-MSTU(32)-5) THEN
-        CALL PYERRM(11,'(PYCELL:) no more memory left in PYJETS')
+        CALL SPERRM(11,'(SPCELL:) no more memory left in SPJETS')
         NJET=-2
         RETURN
       ENDIF
@@ -53877,21 +53878,21 @@ C...Information about storage.
  
 C*********************************************************************
  
-C...PYJMAS
+C...SPJMAS
 C...Determines, approximately, the two jet masses that minimize
 C...the sum m_H^2 + m_L^2, a la Clavelli and Wyler.
  
-      SUBROUTINE PYJMAS(PMH,PML)
+      SUBROUTINE SPJMAS(PMH,PML)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/
 C...Local arrays.
       DIMENSION SM(3,3),SAX(3),PS(3,5)
  
@@ -53906,20 +53907,20 @@ C...Reset.
   110   CONTINUE
   120 CONTINUE
       PSS=0D0
-      PIMASS=PMAS(PYCOMP(211),1)
+      PIMASS=PMAS(SPCOMP(211),1)
  
-C...Take copy of particles that are to be considered in mass analysis.
+C...Take cosp of particles that are to be considered in mass analysis.
       DO 170 I=1,N
         IF(K(I,1).LE.0.OR.K(I,1).GT.10) GOTO 170
         IF(MSTU(41).GE.2) THEN
-          KC=PYCOMP(K(I,2))
+          KC=SPCOMP(K(I,2))
           IF(KC.EQ.0.OR.KC.EQ.12.OR.KC.EQ.14.OR.KC.EQ.16.OR.
      &    KC.EQ.18) GOTO 170
-          IF(MSTU(41).GE.3.AND.KCHG(KC,2).EQ.0.AND.PYCHGE(K(I,2)).EQ.0)
+          IF(MSTU(41).GE.3.AND.KCHG(KC,2).EQ.0.AND.SPCHGE(K(I,2)).EQ.0)
      &    GOTO 170
         ENDIF
         IF(N+NP+1.GE.MSTU(4)-MSTU(32)-5) THEN
-          CALL PYERRM(11,'(PYJMAS:) no more memory left in PYJETS')
+          CALL SPERRM(11,'(SPJMAS:) no more memory left in SPJETS')
           PMH=-2D0
           PML=-2D0
           RETURN
@@ -53946,7 +53947,7 @@ C...Fill information in sphericity tensor and total momentum vector.
  
 C...Very low multiplicities (0 or 1) not considered.
       IF(NP.LE.1) THEN
-        CALL PYERRM(8,'(PYJMAS:) too few particles for analysis')
+        CALL SPERRM(8,'(SPJMAS:) too few particles for analysis')
         PMH=-1D0
         PML=-1D0
         RETURN
@@ -54055,36 +54056,36 @@ C...Final masses and output.
  
 C*********************************************************************
  
-C...PYFOWO
+C...SPFOWO
 C...Calculates the first few Fox-Wolfram moments.
  
-      SUBROUTINE PYFOWO(H10,H20,H30,H40)
+      SUBROUTINE SPFOWO(H10,H20,H30,H40)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/
  
-C...Copy momenta for particles and calculate H0.
+C...Cosp momenta for particles and calculate H0.
       NP=0
       H0=0D0
       HD=0D0
       DO 110 I=1,N
         IF(K(I,1).LE.0.OR.K(I,1).GT.10) GOTO 110
         IF(MSTU(41).GE.2) THEN
-          KC=PYCOMP(K(I,2))
+          KC=SPCOMP(K(I,2))
           IF(KC.EQ.0.OR.KC.EQ.12.OR.KC.EQ.14.OR.KC.EQ.16.OR.
      &    KC.EQ.18) GOTO 110
-          IF(MSTU(41).GE.3.AND.KCHG(KC,2).EQ.0.AND.PYCHGE(K(I,2)).EQ.0)
+          IF(MSTU(41).GE.3.AND.KCHG(KC,2).EQ.0.AND.SPCHGE(K(I,2)).EQ.0)
      &    GOTO 110
         ENDIF
         IF(N+NP.GE.MSTU(4)-MSTU(32)-5) THEN
-          CALL PYERRM(11,'(PYFOWO:) no more memory left in PYJETS')
+          CALL SPERRM(11,'(SPFOWO:) no more memory left in SPJETS')
           H10=-1D0
           H20=-1D0
           H30=-1D0
@@ -54103,7 +54104,7 @@ C...Copy momenta for particles and calculate H0.
  
 C...Very low multiplicities (0 or 1) not considered.
       IF(NP.LE.1) THEN
-        CALL PYERRM(8,'(PYFOWO:) too few particles for analysis')
+        CALL SPERRM(8,'(SPFOWO:) too few particles for analysis')
         H10=-1D0
         H20=-1D0
         H30=-1D0
@@ -54141,23 +54142,23 @@ C...Calculate H1/H0 - H4/H0. Output.
  
 C*********************************************************************
  
-C...PYTABU
+C...SPTABU
 C...Evaluates various properties of an event, with statistics
 C...accumulated during the course of the run and
 C...printed at the end.
  
-      SUBROUTINE PYTABU(MTABU)
+      SUBROUTINE SPTABU(MTABU)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/,/PYDAT3/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/,/SPDAT3/
 C...Local arrays, character variables, saved variables and data.
       DIMENSION KFIS(100,2),NPIS(100,0:10),KFFS(400),NPFS(400,4),
      &FEVFM(10,4),FM1FM(3,10,4),FM2FM(3,10,4),FMOMA(4),FMOMS(4),
@@ -54257,21 +54258,21 @@ C...Write statistics on initial parton state.
           IF(KFMN.EQ.0) KFMN=KFIS(I,2)
           KFM1=(KFMN+1)/2
           IF(2*KFM1.EQ.KFMN) KFM1=-KFM1
-          CALL PYNAME(KFM1,CHAU)
+          CALL SPNAME(KFM1,CHAU)
           CHIS(1)=CHAU(1:12)
           IF(CHAU(13:13).NE.' ') CHIS(1)(12:12)='?'
           KFMX=KFIS(I,2)
           IF(KFIS(I,1).EQ.0) KFMX=0
           KFM2=(KFMX+1)/2
           IF(2*KFM2.EQ.KFMX) KFM2=-KFM2
-          CALL PYNAME(KFM2,CHAU)
+          CALL SPNAME(KFM2,CHAU)
           CHIS(2)=CHAU(1:12)
           IF(CHAU(13:13).NE.' ') CHIS(2)(12:12)='?'
           WRITE(MSTU(11),5100) CHIS(1),CHIS(2),FAC*NPIS(I,0),
      &    (NPIS(I,J)/DBLE(NPIS(I,0)),J=1,10)
   170   CONTINUE
  
-C...Copy statistics on initial parton state into /PYJETS/.
+C...Cosp statistics on initial parton state into /SPJETS/.
       ELSEIF(MTABU.EQ.13) THEN
         FAC=1D0/MAX(1,NEVIS)
         DO 190 I=1,NKFIS
@@ -54319,7 +54320,7 @@ C...Identify whether particle/parton is primary or not.
         DO 260 I=1,N
           IF(K(I,1).LE.0.OR.K(I,1).GT.20.OR.K(I,1).EQ.13) GOTO 260
           MSTU(62)=MSTU(62)+1
-          KC=PYCOMP(K(I,2))
+          KC=SPCOMP(K(I,2))
           MPRI=0
           IF(K(I,3).LE.0.OR.K(I,3).GT.N) THEN
             MPRI=1
@@ -54336,7 +54337,7 @@ C...Identify whether particle/parton is primary or not.
               MPRI=1
             ENDIF
           ELSEIF(KCHG(KC,2).EQ.0) THEN
-            KCM=PYCOMP(K(K(I,3),2))
+            KCM=SPCOMP(K(K(I,3),2))
             IF(KCM.NE.0) THEN
               IF(KCHG(KCM,2).NE.0) MPRI=1
             ENDIF
@@ -54346,7 +54347,7 @@ C...Identify whether particle/parton is primary or not.
           ENDIF
           IF(K(I,1).LE.10) THEN
             NFIFS=NFIFS+1
-            IF(PYCHGE(K(I,2)).NE.0) NCHFS=NCHFS+1
+            IF(SPCHGE(K(I,2)).NE.0) NCHFS=NCHFS+1
           ENDIF
  
 C...Fill statistics on number of particles/partons in event.
@@ -54386,15 +54387,15 @@ C...Write statistics on particle/parton composition of events.
         FAC=1D0/MAX(1,NEVFS)
         WRITE(MSTU(11),5200) NEVFS,FAC*NPRFS,FAC*NFIFS,FAC*NCHFS
         DO 270 I=1,NKFFS
-          CALL PYNAME(KFFS(I),CHAU)
-          KC=PYCOMP(KFFS(I))
+          CALL SPNAME(KFFS(I),CHAU)
+          KC=SPCOMP(KFFS(I))
           MDCYF=0
           IF(KC.NE.0) MDCYF=MDCY(KC,1)
           WRITE(MSTU(11),5300) KFFS(I),CHAU,MDCYF,(FAC*NPFS(I,J),J=1,4),
      &    FAC*(NPFS(I,1)+NPFS(I,2)+NPFS(I,3)+NPFS(I,4))
   270   CONTINUE
  
-C...Copy particle/parton composition information into /PYJETS/.
+C...Cosp particle/parton composition information into /SPJETS/.
       ELSEIF(MTABU.EQ.23) THEN
         FAC=1D0/MAX(1,NEVFS)
         DO 290 I=1,NKFFS
@@ -54445,20 +54446,20 @@ C...Find particles to include, with (pion,pseudo)rapidity and azimuth.
         DO 410 I=1,N
           IF(K(I,1).LE.0.OR.K(I,1).GT.10) GOTO 410
           IF(MSTU(41).GE.2) THEN
-            KC=PYCOMP(K(I,2))
+            KC=SPCOMP(K(I,2))
             IF(KC.EQ.0.OR.KC.EQ.12.OR.KC.EQ.14.OR.KC.EQ.16.OR.
      &      KC.EQ.18) GOTO 410
             IF(MSTU(41).GE.3.AND.KCHG(KC,2).EQ.0.AND.
-     &      PYCHGE(K(I,2)).EQ.0) GOTO 410
+     &      SPCHGE(K(I,2)).EQ.0) GOTO 410
           ENDIF
           PMR=0D0
-          IF(MSTU(42).EQ.1.AND.K(I,2).NE.22) PMR=PYMASS(211)
+          IF(MSTU(42).EQ.1.AND.K(I,2).NE.22) PMR=SPMASS(211)
           IF(MSTU(42).GE.2) PMR=P(I,5)
           PR=MAX(1D-20,PMR**2+P(I,1)**2+P(I,2)**2)
           YETA=SIGN(LOG(MIN((SQRT(PR+P(I,3)**2)+ABS(P(I,3)))/SQRT(PR),
      &    1D20)),P(I,3))
           IF(ABS(YETA).GT.PARU(57)) GOTO 410
-          PHI=PYANGL(P(I,1),P(I,2))
+          PHI=SPANGL(P(I,1),P(I,2))
           IYETA=512D0*(YETA+PARU(57))/(2D0*PARU(57))
           IYETA=MAX(0,MIN(511,IYETA))
           IPHI=512D0*(PHI+PARU(1))/PARU(2)
@@ -54470,7 +54471,7 @@ C...Find particles to include, with (pion,pseudo)rapidity and azimuth.
  
 C...Order particles in (pseudo)rapidity and/or azimuth.
           IF(NUPP.GT.MSTU(4)-5-MSTU(32)) THEN
-            CALL PYERRM(11,'(PYTABU:) no more memory left in PYJETS')
+            CALL SPERRM(11,'(SPTABU:) no more memory left in SPJETS')
             RETURN
           ENDIF
           NUPP=NUPP+1
@@ -54584,7 +54585,7 @@ C...Write accumulated statistics on factorial moments.
   500     CONTINUE
   510   CONTINUE
  
-C...Copy statistics on factorial moments into /PYJETS/.
+C...Cosp statistics on factorial moments into /SPJETS/.
       ELSEIF(MTABU.EQ.33) THEN
         FAC=1D0/MAX(1,NEVFM)
         DO 540 IM=1,3
@@ -54638,17 +54639,17 @@ C...Find particles to include, with proper assumed mass.
         DO 570 I=1,N
           IF(K(I,1).LE.0.OR.K(I,1).GT.10) GOTO 570
           IF(MSTU(41).GE.2) THEN
-            KC=PYCOMP(K(I,2))
+            KC=SPCOMP(K(I,2))
             IF(KC.EQ.0.OR.KC.EQ.12.OR.KC.EQ.14.OR.KC.EQ.16.OR.
      &      KC.EQ.18) GOTO 570
             IF(MSTU(41).GE.3.AND.KCHG(KC,2).EQ.0.AND.
-     &      PYCHGE(K(I,2)).EQ.0) GOTO 570
+     &      SPCHGE(K(I,2)).EQ.0) GOTO 570
           ENDIF
           PMR=0D0
-          IF(MSTU(42).EQ.1.AND.K(I,2).NE.22) PMR=PYMASS(211)
+          IF(MSTU(42).EQ.1.AND.K(I,2).NE.22) PMR=SPMASS(211)
           IF(MSTU(42).GE.2) PMR=P(I,5)
           IF(NUPP.GT.MSTU(4)-5-MSTU(32)) THEN
-            CALL PYERRM(11,'(PYTABU:) no more memory left in PYJETS')
+            CALL SPERRM(11,'(SPTABU:) no more memory left in SPJETS')
             RETURN
           ENDIF
           NUPP=NUPP+1
@@ -54700,7 +54701,7 @@ C...Write statistics on Energy-Energy Correlation.
      &    FEEC2,FEES2,FEECA,FEESA
   620   CONTINUE
  
-C...Copy statistics on Energy-Energy Correlation into /PYJETS/.
+C...Cosp statistics on Energy-Energy Correlation into /SPJETS/.
       ELSEIF(MTABU.EQ.43) THEN
         FAC=1D0/MAX(1,NEVEE)
         DO 630 I=1,25
@@ -54808,7 +54809,7 @@ C...Write statistics on decay channels.
             KFM=KFDC(IDC,I)
             KF=(KFM+1)/2
             IF(2*KF.NE.KFM) KF=-KF
-            CALL PYNAME(KF,CHAU)
+            CALL SPNAME(KF,CHAU)
             CHDC(I)=CHAU(1:12)
             IF(CHAU(13:13).NE.' ') CHDC(I)(12:12)='?'
   740     CONTINUE
@@ -54816,7 +54817,7 @@ C...Write statistics on decay channels.
   750   CONTINUE
         IF(NREDC.NE.0) WRITE(MSTU(11),6100) FAC*NREDC
  
-C...Copy statistics on decay channels into /PYJETS/.
+C...Cosp statistics on decay channels into /SPJETS/.
       ELSEIF(MTABU.EQ.53) THEN
         FAC=1D0/MAX(1,NEVDC)
         DO 780 IDC=1,NKFDC
@@ -54892,43 +54893,43 @@ C...Format statements for output on unit MSTU(11) (default 6).
  
 C*********************************************************************
  
-C...PYEEVT
+C...SPEEVT
 C...Handles the generation of an e+e- annihilation jet event.
  
-      SUBROUTINE PYEEVT(KFL,ECM)
+      SUBROUTINE SPEEVT(KFL,ECM)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/
  
 C...Check input parameters.
-      IF(MSTU(12).GE.1) CALL PYLIST(0)
+      IF(MSTU(12).GE.1) CALL SPLIST(0)
       IF(KFL.LT.0.OR.KFL.GT.8) THEN
-        CALL PYERRM(16,'(PYEEVT:) called with unknown flavour code')
+        CALL SPERRM(16,'(SPEEVT:) called with unknown flavour code')
         IF(MSTU(21).GE.1) RETURN
       ENDIF
       IF(KFL.LE.5) ECMMIN=PARJ(127)+2.02D0*PARF(100+MAX(1,KFL))
       IF(KFL.GE.6) ECMMIN=PARJ(127)+2.02D0*PMAS(KFL,1)
       IF(ECM.LT.ECMMIN) THEN
-        CALL PYERRM(16,'(PYEEVT:) called with too small CM energy')
+        CALL SPERRM(16,'(SPEEVT:) called with too small CM energy')
         IF(MSTU(21).GE.1) RETURN
       ENDIF
  
 C...Check consistency of MSTJ options set.
       IF(MSTJ(109).EQ.2.AND.MSTJ(110).NE.1) THEN
-        CALL PYERRM(6,
-     &  '(PYEEVT:) MSTJ(109) value requires MSTJ(110) = 1')
+        CALL SPERRM(6,
+     &  '(SPEEVT:) MSTJ(109) value requires MSTJ(110) = 1')
         MSTJ(110)=1
       ENDIF
       IF(MSTJ(109).EQ.2.AND.MSTJ(111).NE.0) THEN
-        CALL PYERRM(6,
-     &  '(PYEEVT:) MSTJ(109) value requires MSTJ(111) = 0')
+        CALL SPERRM(6,
+     &  '(SPEEVT:) MSTJ(109) value requires MSTJ(111) = 0')
         MSTJ(111)=0
       ENDIF
  
@@ -54939,7 +54940,7 @@ C...Initialize alpha_strong and total cross-section.
       PARU(112)=PARJ(121)
       IF(MSTU(111).EQ.2) PARU(112)=PARJ(122)
       IF(MSTJ(116).GT.0.AND.(MSTJ(116).GE.2.OR.ABS(ECM-PARJ(151)).GE.
-     &PARJ(139).OR.10*MSTJ(102)+KFL.NE.MSTJ(119))) CALL PYXTEE(KFL,ECM,
+     &PARJ(139).OR.10*MSTJ(102)+KFL.NE.MSTJ(119))) CALL SPXTEE(KFL,ECM,
      &XTOT)
       IF(MSTJ(116).GE.3) MSTJ(116)=1
       PARJ(171)=0D0
@@ -54948,28 +54949,28 @@ C...Add initial e+e- to event record (documentation only).
       NTRY=0
   100 NTRY=NTRY+1
       IF(NTRY.GT.100) THEN
-        CALL PYERRM(14,'(PYEEVT:) caught in an infinite loop')
+        CALL SPERRM(14,'(SPEEVT:) caught in an infinite loop')
         RETURN
       ENDIF
       MSTU(24)=0
       NC=0
       IF(MSTJ(115).GE.2) THEN
         NC=NC+2
-        CALL PY1ENT(NC-1,11,0.5D0*ECM,0D0,0D0)
+        CALL SP1ENT(NC-1,11,0.5D0*ECM,0D0,0D0)
         K(NC-1,1)=21
-        CALL PY1ENT(NC,-11,0.5D0*ECM,PARU(1),0D0)
+        CALL SP1ENT(NC,-11,0.5D0*ECM,PARU(1),0D0)
         K(NC,1)=21
       ENDIF
  
 C...Radiative photon (in initial state).
       MK=0
       ECMC=ECM
-      IF(MSTJ(107).GE.1.AND.MSTJ(116).GE.1) CALL PYRADK(ECM,MK,PAK,
+      IF(MSTJ(107).GE.1.AND.MSTJ(116).GE.1) CALL SPRADK(ECM,MK,PAK,
      &THEK,PHIK,ALPK)
       IF(MK.EQ.1) ECMC=SQRT(ECM*(ECM-2D0*PAK))
       IF(MSTJ(115).GE.1.AND.MK.EQ.1) THEN
         NC=NC+1
-        CALL PY1ENT(NC,22,PAK,THEK,PHIK)
+        CALL SP1ENT(NC,22,PAK,THEK,PHIK)
         K(NC,3)=MIN(MSTJ(115)/2,1)
       ENDIF
  
@@ -54981,30 +54982,30 @@ C...Virtual exchange boson (gamma or Z0).
         MSTU10=MSTU(10)
         MSTU(10)=1
         P(NC,5)=ECMC
-        CALL PY1ENT(NC,KF,ECMC,0D0,0D0)
+        CALL SP1ENT(NC,KF,ECMC,0D0,0D0)
         K(NC,1)=21
         K(NC,3)=1
         MSTU(10)=MSTU10
       ENDIF
  
 C...Choice of flavour and jet configuration.
-      CALL PYXKFL(KFL,ECM,ECMC,KFLC)
+      CALL SPXKFL(KFL,ECM,ECMC,KFLC)
       IF(KFLC.EQ.0) GOTO 100
-      CALL PYXJET(ECMC,NJET,CUT)
+      CALL SPXJET(ECMC,NJET,CUT)
       KFLN=21
-      IF(NJET.EQ.4) CALL PYX4JT(NJET,CUT,KFLC,ECMC,KFLN,X1,X2,X4,
+      IF(NJET.EQ.4) CALL SPX4JT(NJET,CUT,KFLC,ECMC,KFLN,X1,X2,X4,
      &X12,X14)
-      IF(NJET.EQ.3) CALL PYX3JT(NJET,CUT,KFLC,ECMC,X1,X3)
+      IF(NJET.EQ.3) CALL SPX3JT(NJET,CUT,KFLC,ECMC,X1,X3)
       IF(NJET.EQ.2) MSTJ(120)=1
  
 C...Fill jet configuration and origin.
-      IF(NJET.EQ.2.AND.MSTJ(101).NE.5) CALL PY2ENT(NC+1,KFLC,-KFLC,ECMC)
-      IF(NJET.EQ.2.AND.MSTJ(101).EQ.5) CALL PY2ENT(-(NC+1),KFLC,-KFLC,
+      IF(NJET.EQ.2.AND.MSTJ(101).NE.5) CALL SP2ENT(NC+1,KFLC,-KFLC,ECMC)
+      IF(NJET.EQ.2.AND.MSTJ(101).EQ.5) CALL SP2ENT(-(NC+1),KFLC,-KFLC,
      &ECMC)
-      IF(NJET.EQ.3) CALL PY3ENT(NC+1,KFLC,21,-KFLC,ECMC,X1,X3)
-      IF(NJET.EQ.4.AND.KFLN.EQ.21) CALL PY4ENT(NC+1,KFLC,KFLN,KFLN,
+      IF(NJET.EQ.3) CALL SP3ENT(NC+1,KFLC,21,-KFLC,ECMC,X1,X3)
+      IF(NJET.EQ.4.AND.KFLN.EQ.21) CALL SP4ENT(NC+1,KFLC,KFLN,KFLN,
      &-KFLC,ECMC,X1,X2,X4,X12,X14)
-      IF(NJET.EQ.4.AND.KFLN.NE.21) CALL PY4ENT(NC+1,KFLC,-KFLN,KFLN,
+      IF(NJET.EQ.4.AND.KFLN.NE.21) CALL SP4ENT(NC+1,KFLC,-KFLN,KFLN,
      &-KFLC,ECMC,X1,X2,X4,X12,X14)
       IF(MSTU(24).NE.0) GOTO 100
       DO 110 IP=NC+1,N
@@ -55013,33 +55014,33 @@ C...Fill jet configuration and origin.
  
 C...Angular orientation according to matrix element.
       IF(MSTJ(106).EQ.1) THEN
-        CALL PYXDIF(NC,NJET,KFLC,ECMC,CHI,THE,PHI)
-        CALL PYROBO(NC+1,N,0D0,CHI,0D0,0D0,0D0)
-        CALL PYROBO(NC+1,N,THE,PHI,0D0,0D0,0D0)
+        CALL SPXDIF(NC,NJET,KFLC,ECMC,CHI,THE,PHI)
+        CALL SPROBO(NC+1,N,0D0,CHI,0D0,0D0,0D0)
+        CALL SPROBO(NC+1,N,THE,PHI,0D0,0D0,0D0)
       ENDIF
  
 C...Rotation and boost from radiative photon.
       IF(MK.EQ.1) THEN
         DBEK=-PAK/(ECM-PAK)
         NMIN=NC+1-MSTJ(115)/3
-        CALL PYROBO(NMIN,N,0D0,-PHIK,0D0,0D0,0D0)
-        CALL PYROBO(NMIN,N,ALPK,0D0,DBEK*SIN(THEK),0D0,DBEK*COS(THEK))
-        CALL PYROBO(NMIN,N,0D0,PHIK,0D0,0D0,0D0)
+        CALL SPROBO(NMIN,N,0D0,-PHIK,0D0,0D0,0D0)
+        CALL SPROBO(NMIN,N,ALPK,0D0,DBEK*SIN(THEK),0D0,DBEK*COS(THEK))
+        CALL SPROBO(NMIN,N,0D0,PHIK,0D0,0D0,0D0)
       ENDIF
  
 C...Generate parton shower. Rearrange along strings and check.
       IF(MSTJ(101).EQ.5) THEN
-        CALL PYSHOW(N-1,N,ECMC)
+        CALL SPSHOW(N-1,N,ECMC)
         MSTJ14=MSTJ(14)
         IF(MSTJ(105).EQ.-1) MSTJ(14)=-1
         IF(MSTJ(105).GE.0) MSTU(28)=0
-        CALL PYPREP(0)
+        CALL SPPREP(0)
         MSTJ(14)=MSTJ14
         IF(MSTJ(105).GE.0.AND.MSTU(28).NE.0) GOTO 100
       ENDIF
  
-C...Fragmentation/decay generation. Information for PYTABU.
-      IF(MSTJ(105).EQ.1) CALL PYEXEC
+C...Fragmentation/decay generation. Information for SPTABU.
+      IF(MSTJ(105).EQ.1) CALL SPEXEC
       MSTU(161)=KFLC
       MSTU(162)=-KFLC
  
@@ -55048,20 +55049,20 @@ C...Fragmentation/decay generation. Information for PYTABU.
  
 C*********************************************************************
  
-C...PYXTEE
+C...SPXTEE
 C...Calculates total cross-section, including initial state
 C...radiation effects.
  
-      SUBROUTINE PYXTEE(KFL,ECM,XTOT)
+      SUBROUTINE SPXTEE(KFL,ECM,XTOT)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYDAT1/,/PYDAT2/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPDAT1/,/SPDAT2/
  
 C...Status, (optimized) Q^2 scale, alpha_strong.
       PARJ(151)=ECM
@@ -55077,7 +55078,7 @@ C...Status, (optimized) Q^2 scale, alpha_strong.
      &  (2D0*PARU(112)/ECM)**2))
         Q2R=PARJ(168)*ECM**2
       ENDIF
-      ALSPI=PYALPS(Q2R)/PARU(1)
+      ALSPI=SPALPS(Q2R)/PARU(1)
  
 C...QCD corrections factor in R.
       IF(MSTJ(101).EQ.0.OR.MSTJ(109).EQ.1) THEN
@@ -55101,7 +55102,7 @@ C...Calculate Z0 width if default value not acceptable.
         DO 100 KFLC=5,6
           VQ=1D0
           IF(MOD(MSTJ(103),2).EQ.1) VQ=SQRT(MAX(0D0,1D0-
-     &    (2D0*PYMASS(KFLC)/ ECM)**2))
+     &    (2D0*SPMASS(KFLC)/ ECM)**2))
           IF(KFLC.EQ.5) VF=4D0*PARU(102)/3D0-1D0
           IF(KFLC.EQ.6) VF=1D0-8D0*PARU(102)/3D0
           RVA=RVA+3D0*RQCD*(0.5D0*VQ*(3D0-VQ**2)*VF**2+VQ**3)
@@ -55131,7 +55132,7 @@ C...Loop over different flavours: charge, velocity.
       DO 110 KFLC=1,MAX(MSTJ(104),KFL)
         IF(KFL.GT.0.AND.KFLC.NE.KFL) GOTO 110
         MSTJ(93)=1
-        PMQ=PYMASS(KFLC)
+        PMQ=SPMASS(KFLC)
         IF(ECM.LT.2D0*PMQ+PARJ(127)) GOTO 110
         QF=KCHG(KFLC,1)/3D0
         VQ=1D0
@@ -55170,8 +55171,8 @@ C...Calculate cross-section, including QCD corrections.
 C...Virtual cross-section.
       XKL=PARJ(135)
       XKU=MIN(PARJ(136),1D0-(2D0*PARJ(127)/ECM)**2)
-      ALE=2D0*LOG(ECM/PYMASS(11))-1D0
-      SIGV=ALE/3D0+2D0*LOG(ECM**2/(PYMASS(13)*PYMASS(15)))/3D0-4D0/3D0+
+      ALE=2D0*LOG(ECM/SPMASS(11))-1D0
+      SIGV=ALE/3D0+2D0*LOG(ECM**2/(SPMASS(13)*SPMASS(15)))/3D0-4D0/3D0+
      &1.526D0*LOG(ECM**2/0.932D0)
  
 C...Soft and hard radiative cross-section in QED case.
@@ -55212,18 +55213,18 @@ C...Total cross-section and fraction of hard photon events.
  
 C*********************************************************************
  
-C...PYRADK
+C...SPRADK
 C...Generates initial state photon radiation.
  
-      SUBROUTINE PYRADK(ECM,MK,PAK,THEK,PHIK,ALPK)
+      SUBROUTINE SPRADK(ECM,MK,PAK,THEK,PHIK,ALPK)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYDAT1/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      SAVE /SPDAT1/
  
 C...Function: cumulative hard photon spectrum in QFD case.
       FXK(XX)=2D0*LOG(XX)+PARJ(161)*LOG(1D0-XX)+PARJ(162)*XX+
@@ -55232,15 +55233,15 @@ C...Function: cumulative hard photon spectrum in QFD case.
 C...Determine whether radiative photon or not.
       MK=0
       PAK=0D0
-      IF(PARJ(160).LT.PYR(0)) RETURN
+      IF(PARJ(160).LT.SPR(0)) RETURN
       MK=1
  
 C...Photon energy range. Find photon momentum in QED case.
       XKL=PARJ(135)
       XKU=MIN(PARJ(136),1D0-(2D0*PARJ(127)/ECM)**2)
       IF(MSTJ(102).LE.1) THEN
-  100   XK=1D0/(1D0+(1D0/XKL-1D0)*((1D0/XKU-1D0)/(1D0/XKL-1D0))**PYR(0))
-        IF(1D0+(1D0-XK)**2.LT.2D0*PYR(0)) GOTO 100
+  100   XK=1D0/(1D0+(1D0/XKL-1D0)*((1D0/XKU-1D0)/(1D0/XKL-1D0))**SPR(0))
+        IF(1D0+(1D0-XK)**2.LT.2D0*SPR(0)) GOTO 100
  
 C...Ditto in QFD case, by numerical inversion of integrated spectrum.
       ELSE
@@ -55249,7 +55250,7 @@ C...Ditto in QFD case, by numerical inversion of integrated spectrum.
         FXKL=FXK(XKL)
         FXKU=FXK(XKU)
         FXKD=1D-4*(FXKU-FXKL)
-        FXKR=FXKL+PYR(0)*(FXKU-FXKL)
+        FXKR=FXKL+SPR(0)*(FXKU-FXKL)
         NXK=0
   110   NXK=NXK+1
         XK=0.5D0*(XKL+XKU)
@@ -55267,20 +55268,20 @@ C...Ditto in QFD case, by numerical inversion of integrated spectrum.
       PAK=0.5D0*ECM*XK
  
 C...Photon polar and azimuthal angle.
-      PME=2D0*(PYMASS(11)/ECM)**2
-  120 CTHM=PME*(2D0/PME)**PYR(0)
+      PME=2D0*(SPMASS(11)/ECM)**2
+  120 CTHM=PME*(2D0/PME)**SPR(0)
       IF(1D0-(XK**2*CTHM*(1D0-0.5D0*CTHM)+2D0*(1D0-XK)*PME/MAX(PME,
-     &CTHM*(1D0-0.5D0*CTHM)))/(1D0+(1D0-XK)**2).LT.PYR(0)) GOTO 120
+     &CTHM*(1D0-0.5D0*CTHM)))/(1D0+(1D0-XK)**2).LT.SPR(0)) GOTO 120
       CTHE=1D0-CTHM
-      IF(PYR(0).GT.0.5D0) CTHE=-CTHE
+      IF(SPR(0).GT.0.5D0) CTHE=-CTHE
       STHE=SQRT(MAX(0D0,(CTHM-PME)*(2D0-CTHM)))
-      THEK=PYANGL(CTHE,STHE)
-      PHIK=PARU(2)*PYR(0)
+      THEK=SPANGL(CTHE,STHE)
+      PHIK=PARU(2)*SPR(0)
  
 C...Rotation angle for hadronic system.
       SGN=1D0
       IF(0.5D0*(2D0-XK*(1D0-CTHE))**2/((2D0-XK)**2+(XK*CTHE)**2).GT.
-     &PYR(0)) SGN=-1D0
+     &SPR(0)) SGN=-1D0
       ALPK=ASIN(SGN*STHE*(XK-SGN*(2D0*SQRT(1D0-XK)-2D0+XK)*CTHE)/
      &(2D0-XK*(1D0-SGN*CTHE)))
  
@@ -55289,19 +55290,19 @@ C...Rotation angle for hadronic system.
  
 C*********************************************************************
  
-C...PYXKFL
+C...SPXKFL
 C...Selects flavour for produced qqbar pair.
  
-      SUBROUTINE PYXKFL(KFL,ECM,ECMC,KFLC)
+      SUBROUTINE SPXKFL(KFL,ECM,ECMC,KFLC)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYDAT1/,/PYDAT2/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPDAT1/,/SPDAT2/
  
 C...Calculate maximum weight in QED or QFD case.
       IF(MSTJ(102).LE.1) THEN
@@ -55324,14 +55325,14 @@ C...Choose flavour. Gives charge and velocity.
       NTRY=0
   100 NTRY=NTRY+1
       IF(NTRY.GT.100) THEN
-        CALL PYERRM(14,'(PYXKFL:) caught in an infinite loop')
+        CALL SPERRM(14,'(SPXKFL:) caught in an infinite loop')
         KFLC=0
         RETURN
       ENDIF
       KFLC=KFL
-      IF(KFL.LE.0) KFLC=1+INT(MSTJ(104)*PYR(0))
+      IF(KFL.LE.0) KFLC=1+INT(MSTJ(104)*SPR(0))
       MSTJ(93)=1
-      PMQ=PYMASS(KFLC)
+      PMQ=SPMASS(KFLC)
       IF(ECM.LT.2D0*PMQ+PARJ(127)) GOTO 100
       QF=KCHG(KFLC,1)/3D0
       VQ=1D0
@@ -55350,9 +55351,9 @@ C...Calculate weight in QED or QFD case.
       ENDIF
  
 C...Weighting or new event (radiative photon). Cross-section update.
-      IF(KFL.LE.0.AND.RF.LT.PYR(0)*RFMAX) GOTO 100
+      IF(KFL.LE.0.AND.RF.LT.SPR(0)*RFMAX) GOTO 100
       PARJ(158)=PARJ(158)+1D0
-      IF(ECMC.LT.2D0*PMQ+PARJ(127).OR.RFV.LT.PYR(0)*RF) KFLC=0
+      IF(ECMC.LT.2D0*PMQ+PARJ(127).OR.RFV.LT.SPR(0)*RF) KFLC=0
       IF(MSTJ(107).LE.0.AND.KFLC.EQ.0) GOTO 100
       IF(KFLC.NE.0) PARJ(159)=PARJ(159)+1D0
       PARJ(144)=PARJ(157)*PARJ(159)/PARJ(158)
@@ -55363,18 +55364,18 @@ C...Weighting or new event (radiative photon). Cross-section update.
  
 C*********************************************************************
  
-C...PYXJET
+C...SPXJET
 C...Selects number of jets in matrix element approach.
  
-      SUBROUTINE PYXJET(ECM,NJET,CUT)
+      SUBROUTINE SPXJET(ECM,NJET,CUT)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYDAT1/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      SAVE /SPDAT1/
 C...Local array and data.
       DIMENSION ZHUT(5)
       DATA ZHUT/3.0922D0, 6.2291D0, 7.4782D0, 7.8440D0, 8.2560D0/
@@ -55405,7 +55406,7 @@ C...QCD and Abelian vector gluon theory: Q^2 for jet rate and R.
         ENDIF
  
 C...alpha_strong for R and R itself.
-        ALSPI=(3D0/4D0)*CF*PYALPS(Q2R)/PARU(1)
+        ALSPI=(3D0/4D0)*CF*SPALPS(Q2R)/PARU(1)
         IF(IABS(MSTJ(101)).EQ.1) THEN
           RQCD=1D0+ALSPI
         ELSEIF(MSTJ(109).EQ.0) THEN
@@ -55417,7 +55418,7 @@ C...alpha_strong for R and R itself.
         ENDIF
  
 C...alpha_strong for jet rate. Initial value for y cut.
-        ALSPI=(3D0/4D0)*CF*PYALPS(Q2)/PARU(1)
+        ALSPI=(3D0/4D0)*CF*SPALPS(Q2)/PARU(1)
         CUT=MAX(0.001D0,PARJ(125),(PARJ(126)/ECM)**2)
         IF(IABS(MSTJ(101)).LE.1.OR.(MSTJ(109).EQ.0.AND.MSTJ(111).EQ.0))
      &  CUT=MAX(CUT,EXP(-SQRT(0.75D0/ALSPI))/2D0)
@@ -55492,7 +55493,7 @@ C...If negative three-jet rate, change y' optimization parameter.
      &  PARJ(169).LT.0.99D0) THEN
           PARJ(169)=MIN(1D0,1.2D0*PARJ(169))
           Q2=PARJ(169)*ECM**2
-          ALSPI=(3D0/4D0)*CF*PYALPS(Q2)/PARU(1)
+          ALSPI=(3D0/4D0)*CF*SPALPS(Q2)/PARU(1)
           GOTO 100
         ENDIF
  
@@ -55502,11 +55503,11 @@ C...If too high cross-section, use harder cuts, or fail.
      &    PARJ(169).LT.0.99D0) THEN
             PARJ(169)=MIN(1D0,1.2D0*PARJ(169))
             Q2=PARJ(169)*ECM**2
-            ALSPI=(3D0/4D0)*CF*PYALPS(Q2)/PARU(1)
+            ALSPI=(3D0/4D0)*CF*SPALPS(Q2)/PARU(1)
             GOTO 100
           ELSEIF(MSTJ(110).EQ.2.AND.CUT.GT.0.0499D0) THEN
-            CALL PYERRM(26,
-     &      '(PYXJET:) no allowed y cut value for Zhu parametrization')
+            CALL SPERRM(26,
+     &      '(SPXJET:) no allowed y cut value for Zhu parametrization')
           ENDIF
           CUT=0.26D0*(4D0*CUT)**(PARJ(152)+PARJ(153)+
      &    PARJ(154))**(-1D0/3D0)
@@ -55516,7 +55517,7 @@ C...If too high cross-section, use harder cuts, or fail.
  
 C...Scalar gluon (first order only).
       ELSE
-        ALSPI=PYALPS(ECM**2)/PARU(1)
+        ALSPI=SPALPS(ECM**2)/PARU(1)
         CUT=MAX(0.001D0,PARJ(125),(PARJ(126)/ECM)**2,EXP(-3D0/ALSPI))
         PARJ(152)=0D0
         IF(CUT.LT.0.25D0) PARJ(152)=(ALSPI/3D0)*((1D0-2D0*CUT)*
@@ -55532,7 +55533,7 @@ C...Select number of jets.
       ELSEIF(MSTJ(101).LE.0) THEN
         NJET=MIN(4,2-MSTJ(101))
       ELSE
-        RNJ=PYR(0)
+        RNJ=SPR(0)
         NJET=2
         IF(PARJ(152)+PARJ(153)+PARJ(154).GT.RNJ) NJET=3
         IF(PARJ(154).GT.RNJ) NJET=4
@@ -55543,18 +55544,18 @@ C...Select number of jets.
  
 C*********************************************************************
  
-C...PYX3JT
+C...SPX3JT
 C...Selects the kinematical variables of three-jet events.
  
-      SUBROUTINE PYX3JT(NJET,CUT,KFL,ECM,X1,X2)
+      SUBROUTINE SPX3JT(NJET,CUT,KFL,ECM,X1,X2)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYDAT1/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      SAVE /SPDAT1/
 C...Local array.
       DIMENSION ZHUP(5,12)
  
@@ -55578,7 +55579,7 @@ C...Dilogarithm of x for x<0.5 (x>0.5 obtained by analytic trick).
 C...Event type. Mass effect factors and other common constants.
       MSTJ(120)=2
       MSTJ(121)=0
-      PMQ=PYMASS(KFL)
+      PMQ=SPMASS(KFL)
       QME=(2D0*PMQ/ECM)**2
       IF(MSTJ(109).NE.1) THEN
         CUTL=LOG(CUT)
@@ -55605,13 +55606,13 @@ C...Alpha_strong and effects of optimized Q^2 scale. Maximum weight.
  
 C...Choose three-jet events in allowed region.
   100   NJET=3
-  110   Y13L=CUTL+CUTD*PYR(0)
-        Y23L=CUTL+CUTD*PYR(0)
+  110   Y13L=CUTL+CUTD*SPR(0)
+        Y23L=CUTL+CUTD*SPR(0)
         Y13=EXP(Y13L)
         Y23=EXP(Y23L)
         Y12=1D0-Y13-Y23
         IF(Y12.LE.CUT) GOTO 110
-        IF(Y13**2+Y23**2+2D0*Y12.LE.2D0*PYR(0)) GOTO 110
+        IF(Y13**2+Y23**2+2D0*Y12.LE.2D0*SPR(0)) GOTO 110
  
 C...Second order corrections.
         IF(MSTJ(101).EQ.2.AND.MSTJ(110).LE.1) THEN
@@ -55644,7 +55645,7 @@ C...Second order corrections.
      &    2D0*Y12L*Y12**2/(Y13+Y23)**2-4D0*Y12L*Y12/(Y13+Y23))/WT1-
      &    CN*(Y13L*Y23L-Y13L*Y13M-Y23L*Y23M+1.644934D0-Y13I-Y23I)
           IF(1D0+WTOPT+ALS2PI*WT2.LE.0D0) MSTJ(121)=1
-          IF(1D0+WTOPT+ALS2PI*WT2.LE.WTMAX*PYR(0)) GOTO 110
+          IF(1D0+WTOPT+ALS2PI*WT2.LE.WTMAX*SPR(0)) GOTO 110
           PARJ(156)=(WTOPT+ALS2PI*WT2)/(1D0+WTOPT+ALS2PI*WT2)
  
         ELSEIF(MSTJ(101).EQ.2.AND.MSTJ(110).EQ.2) THEN
@@ -55675,7 +55676,7 @@ C...Second order corrections; Zhu parametrization of ERT.
             WT2=WTL+(WTU-WTL)*(100D0*CUT+1D0-IZ)
           ENDIF
           IF(1D0+WTOPT+2D0*ALS2PI*WT2.LE.0D0) MSTJ(121)=1
-          IF(1D0+WTOPT+2D0*ALS2PI*WT2.LE.WTMAX*PYR(0)) GOTO 110
+          IF(1D0+WTOPT+2D0*ALS2PI*WT2.LE.WTMAX*SPR(0)) GOTO 110
           PARJ(156)=(WTOPT+2D0*ALS2PI*WT2)/(1D0+WTOPT+2D0*ALS2PI*WT2)
         ENDIF
  
@@ -55686,21 +55687,21 @@ C...Impose mass cuts (gives two jets). For fixed jet number new try.
         IF(4D0*Y23*Y13*Y12/X3**2.LE.QME) NJET=2
         IF(MOD(MSTJ(103),4).GE.2.AND.IABS(MSTJ(101)).LE.1.AND.QME*X3+
      &  0.5D0*QME**2+(0.5D0*QME+0.25D0*QME**2)*((1D0-X2)/(1D0-X1)+
-     &  (1D0-X1)/(1D0-X2)).GT.(X1**2+X2**2)*PYR(0)) NJET=2
+     &  (1D0-X1)/(1D0-X2)).GT.(X1**2+X2**2)*SPR(0)) NJET=2
         IF(MSTJ(101).EQ.-1.AND.NJET.EQ.2) GOTO 100
  
 C...Scalar gluon model (first order only, no mass effects).
       ELSE
   130   NJET=3
-  140   X3=SQRT(4D0*CUT**2+PYR(0)*((1D0-CUT)**2-4D0*CUT**2))
-        IF(LOG((X3-CUT)/CUT).LE.PYR(0)*LOG((1D0-2D0*CUT)/CUT)) GOTO 140
-        YD=SIGN(2D0*CUT*((X3-CUT)/CUT)**PYR(0)-X3,PYR(0)-0.5D0)
+  140   X3=SQRT(4D0*CUT**2+SPR(0)*((1D0-CUT)**2-4D0*CUT**2))
+        IF(LOG((X3-CUT)/CUT).LE.SPR(0)*LOG((1D0-2D0*CUT)/CUT)) GOTO 140
+        YD=SIGN(2D0*CUT*((X3-CUT)/CUT)**SPR(0)-X3,SPR(0)-0.5D0)
         X1=1D0-0.5D0*(X3+YD)
         X2=1D0-0.5D0*(X3-YD)
         IF(4D0*(1D0-X1)*(1D0-X2)*(1D0-X3)/X3**2.LE.QME) NJET=2
         IF(MSTJ(102).GE.2) THEN
           IF(X3**2-2D0*(1D0+X3)*(1D0-X1)*(1D0-X2)*PARJ(171).LT.
-     &    X3**2*PYR(0)) NJET=2
+     &    X3**2*SPR(0)) NJET=2
         ENDIF
         IF(MSTJ(101).EQ.-1.AND.NJET.EQ.2) GOTO 130
       ENDIF
@@ -55710,23 +55711,23 @@ C...Scalar gluon model (first order only, no mass effects).
  
 C*********************************************************************
  
-C...PYX4JT
+C...SPX4JT
 C...Selects the kinematical variables of four-jet events.
  
-      SUBROUTINE PYX4JT(NJET,CUT,KFL,ECM,KFLN,X1,X2,X4,X12,X14)
+      SUBROUTINE SPX4JT(NJET,CUT,KFL,ECM,KFLN,X1,X2,X4,X12,X14)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYDAT1/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      SAVE /SPDAT1/
 C...Local arrays.
       DIMENSION WTA(4),WTB(4),WTC(4),WTD(4),WTE(4)
  
 C...Common constants. Colour factors for QCD and Abelian gluon theory.
-      PMQ=PYMASS(KFL)
+      PMQ=SPMASS(KFL)
       QME=(2D0*PMQ/ECM)**2
       CT=LOG(1D0/CUT-5D0)
       IF(MSTJ(109).EQ.0) THEN
@@ -55742,7 +55743,7 @@ C...Common constants. Colour factors for QCD and Abelian gluon theory.
 C...Choice of process (qqbargg or qqbarqqbar).
   100 NJET=4
       IT=1
-      IF(PARJ(155).GT.PYR(0)) IT=2
+      IF(PARJ(155).GT.SPR(0)) IT=2
       IF(MSTJ(101).LE.-3) IT=-MSTJ(101)-2
       IF(IT.EQ.1) WTMX=0.7D0/CUT**2
       IF(IT.EQ.1.AND.MSTJ(109).EQ.2) WTMX=0.6D0/CUT**2
@@ -55750,13 +55751,13 @@ C...Choice of process (qqbargg or qqbarqqbar).
       ID=1
  
 C...Sample the five kinematical variables (for qqgg preweighted in y34).
-  110 Y134=3D0*CUT+(1D0-6D0*CUT)*PYR(0)
-      Y234=3D0*CUT+(1D0-6D0*CUT)*PYR(0)
-      IF(IT.EQ.1) Y34=(1D0-5D0*CUT)*EXP(-CT*PYR(0))
-      IF(IT.EQ.2) Y34=CUT+(1D0-6D0*CUT)*PYR(0)
+  110 Y134=3D0*CUT+(1D0-6D0*CUT)*SPR(0)
+      Y234=3D0*CUT+(1D0-6D0*CUT)*SPR(0)
+      IF(IT.EQ.1) Y34=(1D0-5D0*CUT)*EXP(-CT*SPR(0))
+      IF(IT.EQ.2) Y34=CUT+(1D0-6D0*CUT)*SPR(0)
       IF(Y34.LE.Y134+Y234-1D0.OR.Y34.GE.Y134*Y234) GOTO 110
-      VT=PYR(0)
-      CP=COS(PARU(1)*PYR(0))
+      VT=SPR(0)
+      CP=COS(PARU(1)*SPR(0))
       Y14=(Y134-Y34)*VT
       Y13=Y134-Y14-Y34
       VB=Y34*(1D0-Y134-Y234+Y34)/((Y134-Y34)*(Y234-Y34))
@@ -55860,7 +55861,7 @@ C...Permutations of momenta in matrix element. Weighting.
         Y234=YSAV
       ENDIF
       IF(IC.LE.3) GOTO 120
-      IF(ID.EQ.1.AND.WTTOT.LT.PYR(0)*WTMX) GOTO 110
+      IF(ID.EQ.1.AND.WTTOT.LT.SPR(0)*WTMX) GOTO 110
       IC=5
  
 C...qqgg events: string configuration and event type.
@@ -55868,17 +55869,17 @@ C...qqgg events: string configuration and event type.
         IF(MSTJ(109).EQ.0.AND.ID.EQ.1) THEN
           PARJ(156)=Y34*(2D0*(WTA(1)+WTA(2)+WTA(3)+WTA(4))+4D0*(WTC(1)+
      &    WTC(2)+WTC(3)+WTC(4)))/(9D0*WTTOT)
-          IF(WTA(2)+WTA(4)+2D0*(WTC(2)+WTC(4)).GT.PYR(0)*(WTA(1)+WTA(2)+
+          IF(WTA(2)+WTA(4)+2D0*(WTC(2)+WTC(4)).GT.SPR(0)*(WTA(1)+WTA(2)+
      &    WTA(3)+WTA(4)+2D0*(WTC(1)+WTC(2)+WTC(3)+WTC(4)))) ID=2
           IF(ID.EQ.2) GOTO 130
         ELSEIF(MSTJ(109).EQ.2.AND.ID.EQ.1) THEN
           PARJ(156)=Y34*(WTA(1)+WTA(2)+WTA(3)+WTA(4))/(8D0*WTTOT)
-          IF(WTA(2)+WTA(4).GT.PYR(0)*(WTA(1)+WTA(2)+WTA(3)+WTA(4))) ID=2
+          IF(WTA(2)+WTA(4).GT.SPR(0)*(WTA(1)+WTA(2)+WTA(3)+WTA(4))) ID=2
           IF(ID.EQ.2) GOTO 130
         ENDIF
         MSTJ(120)=3
         IF(MSTJ(109).EQ.0.AND.0.5D0*Y34*(WTC(1)+WTC(2)+WTC(3)+
-     &  WTC(4)).GT.PYR(0)*WTTOT) MSTJ(120)=4
+     &  WTC(4)).GT.SPR(0)*WTTOT) MSTJ(120)=4
         KFLN=21
  
 C...Mass cuts. Kinematical variables out.
@@ -55890,12 +55891,12 @@ C...Mass cuts. Kinematical variables out.
         X2=1D0-Y124
         X12=(1D0-Q12)*Y13+Q12*Y23
         X14=Y12-0.5D0*QME
-        IF(Y134*Y234/((1D0-X1)*(1D0-X4)).LE.PYR(0)) NJET=2
+        IF(Y134*Y234/((1D0-X1)*(1D0-X4)).LE.SPR(0)) NJET=2
  
 C...qqbarqqbar events: string configuration, choose new flavour.
       ELSE
         IF(ID.EQ.1) THEN
-          WTR=PYR(0)*(WTD(1)+WTD(2)+WTD(3)+WTD(4))
+          WTR=SPR(0)*(WTD(1)+WTD(2)+WTD(3)+WTD(4))
           IF(WTR.LT.WTD(2)+WTD(3)+WTD(4)) ID=2
           IF(WTR.LT.WTD(3)+WTD(4)) ID=3
           IF(WTR.LT.WTD(4)) ID=4
@@ -55903,11 +55904,11 @@ C...qqbarqqbar events: string configuration, choose new flavour.
         ENDIF
         MSTJ(120)=5
         PARJ(156)=CF*TR*(WTD(1)+WTD(2)+WTD(3)+WTD(4))/(16D0*WTTOT)
-  140   KFLN=1+INT(5D0*PYR(0))
-        IF(KFLN.NE.KFL.AND.0.2D0*PARJ(156).LE.PYR(0)) GOTO 140
-        IF(KFLN.EQ.KFL.AND.1D0-0.8D0*PARJ(156).LE.PYR(0)) GOTO 140
+  140   KFLN=1+INT(5D0*SPR(0))
+        IF(KFLN.NE.KFL.AND.0.2D0*PARJ(156).LE.SPR(0)) GOTO 140
+        IF(KFLN.EQ.KFL.AND.1D0-0.8D0*PARJ(156).LE.SPR(0)) GOTO 140
         IF(KFLN.GT.MSTJ(104)) NJET=2
-        PMQN=PYMASS(KFLN)
+        PMQN=SPMASS(KFLN)
         QMEN=(2D0*PMQN/ECM)**2
  
 C...Mass cuts. Kinematical variables out.
@@ -55925,7 +55926,7 @@ C...Mass cuts. Kinematical variables out.
      &  Q13*Y14)
         IF(PMQ**2+PMQN**2+MIN(X12,X34)*ECM**2.LE.
      &  (PARJ(127)+PMQ+PMQN)**2) NJET=2
-        IF(Y123*Y134/((1D0-X1)*(1D0-X4)).LE.PYR(0)) NJET=2
+        IF(Y123*Y134/((1D0-X1)*(1D0-X4)).LE.SPR(0)) NJET=2
       ENDIF
   150 IF(MSTJ(101).LE.-2.AND.NJET.EQ.2) GOTO 100
  
@@ -55934,20 +55935,20 @@ C...Mass cuts. Kinematical variables out.
  
 C*********************************************************************
  
-C...PYXDIF
+C...SPXDIF
 C...Gives the angular orientation of events.
  
-      SUBROUTINE PYXDIF(NC,NJET,KFL,ECM,CHI,THE,PHI)
+      SUBROUTINE SPXDIF(NC,NJET,KFL,ECM,CHI,THE,PHI)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/
  
 C...Charge. Factors depending on polarization for QED case.
       QF=KCHG(KFL,1)/3D0
@@ -55982,7 +55983,7 @@ C...Mass factor. Differential cross-sections for two-jet events.
       SQ2=SQRT(2D0)
       QME=0D0
       IF(MSTJ(103).GE.4.AND.IABS(MSTJ(101)).LE.1.AND.MSTJ(102).LE.1.AND.
-     &MSTJ(109).NE.1) QME=(2D0*PYMASS(KFL)/ECM)**2
+     &MSTJ(109).NE.1) QME=(2D0*SPMASS(KFL)/ECM)**2
       IF(NJET.EQ.2) THEN
         SIGU=4D0*SQRT(1D0-QME)
         SIGL=2D0*QME*SQRT(1D0-QME)
@@ -56048,9 +56049,9 @@ C...Upper bounds for differential cross-section.
      &2D0*HF2A*ABS(SIGP)
  
 C...Generate angular orientation according to differential cross-sect.
-  100 CHI=PARU(2)*PYR(0)
-      CTHE=2D0*PYR(0)-1D0
-      PHI=PARU(2)*PYR(0)
+  100 CHI=PARU(2)*SPR(0)
+      CTHE=2D0*SPR(0)-1D0
+      PHI=PARU(2)*SPR(0)
       CCHI=COS(CHI)
       SCHI=SIN(CHI)
       C2CHI=COS(2D0*CHI)
@@ -56066,37 +56067,37 @@ C...Generate angular orientation according to differential cross-sect.
      &SIGT-2D0*SQ2*(2D0*STHE*CTHE*CCHI*HF1-2D0*STHE*(CTHE*CCHI*C2PHI-
      &SCHI*S2PHI)*HF3+2D0*STHE*(CTHE*CCHI*S2PHI+SCHI*C2PHI)*HF4)*SIGI+
      &4D0*SQ2*STHE*CCHI*HF2*SIGA+2D0*CTHE*HF2*SIGP
-      IF(SIG.LT.SIGMAX*PYR(0)) GOTO 100
+      IF(SIG.LT.SIGMAX*SPR(0)) GOTO 100
  
       RETURN
       END
  
 C*********************************************************************
  
-C...PYONIA
+C...SPONIA
 C...Generates Upsilon and toponium decays into three gluons
 C...or two gluons and a photon.
  
-      SUBROUTINE PYONIA(KFL,ECM)
+      SUBROUTINE SPONIA(KFL,ECM)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYJETS/,/PYDAT1/,/PYDAT2/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPJETS/,/SPDAT1/,/SPDAT2/
  
 C...Printout. Check input parameters.
-      IF(MSTU(12).GE.1) CALL PYLIST(0)
+      IF(MSTU(12).GE.1) CALL SPLIST(0)
       IF(KFL.LT.0.OR.KFL.GT.8) THEN
-        CALL PYERRM(16,'(PYONIA:) called with unknown flavour code')
+        CALL SPERRM(16,'(SPONIA:) called with unknown flavour code')
         IF(MSTU(21).GE.1) RETURN
       ENDIF
       IF(ECM.LT.PARJ(127)+2.02D0*PARF(101)) THEN
-        CALL PYERRM(16,'(PYONIA:) called with too small CM energy')
+        CALL SPERRM(16,'(SPONIA:) called with too small CM energy')
         IF(MSTU(21).GE.1) RETURN
       ENDIF
  
@@ -56104,9 +56105,9 @@ C...Initial e+e- and onium state (optional).
       NC=0
       IF(MSTJ(115).GE.2) THEN
         NC=NC+2
-        CALL PY1ENT(NC-1,11,0.5D0*ECM,0D0,0D0)
+        CALL SP1ENT(NC-1,11,0.5D0*ECM,0D0,0D0)
         K(NC-1,1)=21
-        CALL PY1ENT(NC,-11,0.5D0*ECM,PARU(1),0D0)
+        CALL SP1ENT(NC,-11,0.5D0*ECM,PARU(1),0D0)
         K(NC,1)=21
       ENDIF
       KFLC=IABS(KFL)
@@ -56116,7 +56117,7 @@ C...Initial e+e- and onium state (optional).
         MSTU10=MSTU(10)
         MSTU(10)=1
         P(NC,5)=ECM
-        CALL PY1ENT(NC,KF,ECM,0D0,0D0)
+        CALL SP1ENT(NC,KF,ECM,0D0,0D0)
         K(NC,1)=21
         K(NC,3)=1
         MSTU(10)=MSTU10
@@ -56124,15 +56125,15 @@ C...Initial e+e- and onium state (optional).
  
 C...Choose x1 and x2 according to matrix element.
       NTRY=0
-  100 X1=PYR(0)
-      X2=PYR(0)
+  100 X1=SPR(0)
+      X2=SPR(0)
       X3=2D0-X1-X2
       IF(X3.GE.1D0.OR.((1D0-X1)/(X2*X3))**2+((1D0-X2)/(X1*X3))**2+
-     &((1D0-X3)/(X1*X2))**2.LE.2D0*PYR(0)) GOTO 100
+     &((1D0-X3)/(X1*X2))**2.LE.2D0*SPR(0)) GOTO 100
       NTRY=NTRY+1
       NJET=3
-      IF(MSTJ(101).LE.4) CALL PY3ENT(NC+1,21,21,21,ECM,X1,X3)
-      IF(MSTJ(101).GE.5) CALL PY3ENT(-(NC+1),21,21,21,ECM,X1,X3)
+      IF(MSTJ(101).LE.4) CALL SP3ENT(NC+1,21,21,21,ECM,X1,X3)
+      IF(MSTJ(101).GE.5) CALL SP3ENT(-(NC+1),21,21,21,ECM,X1,X3)
  
 C...Photon-gluon-gluon events. Small system modifications. Jet origin.
       MSTU(111)=MSTJ(108)
@@ -56142,14 +56143,14 @@ C...Photon-gluon-gluon events. Small system modifications. Jet origin.
       IF(MSTU(111).EQ.2) PARU(112)=PARJ(122)
       QF=0D0
       IF(KFLC.NE.0) QF=KCHG(KFLC,1)/3D0
-      RGAM=7.2D0*QF**2*PARU(101)/PYALPS(ECM**2)
+      RGAM=7.2D0*QF**2*PARU(101)/SPALPS(ECM**2)
       MK=0
       ECMC=ECM
-      IF(PYR(0).GT.RGAM/(1D0+RGAM)) THEN
+      IF(SPR(0).GT.RGAM/(1D0+RGAM)) THEN
         IF(1D0-MAX(X1,X2,X3).LE.MAX((PARJ(126)/ECM)**2,PARJ(125)))
      &  NJET=2
-        IF(NJET.EQ.2.AND.MSTJ(101).LE.4) CALL PY2ENT(NC+1,21,21,ECM)
-        IF(NJET.EQ.2.AND.MSTJ(101).GE.5) CALL PY2ENT(-(NC+1),21,21,ECM)
+        IF(NJET.EQ.2.AND.MSTJ(101).LE.4) CALL SP2ENT(NC+1,21,21,ECM)
+        IF(NJET.EQ.2.AND.MSTJ(101).GE.5) CALL SP2ENT(-(NC+1),21,21,ECM)
       ELSE
         MK=1
         ECMC=SQRT(1D0-X1)*ECM
@@ -56167,7 +56168,7 @@ C...Photon-gluon-gluon events. Small system modifications. Jet origin.
           MSTU10=MSTU(10)
           MSTU(10)=1
           P(NC+2,5)=ECMC
-          CALL PY1ENT(NC+2,83,0.5D0*(X2+X3)*ECM,PARU(1),0D0)
+          CALL SP1ENT(NC+2,83,0.5D0*(X2+X3)*ECM,PARU(1),0D0)
           MSTU(10)=MSTU10
           NJET=0
         ENDIF
@@ -56191,9 +56192,9 @@ C...Differential cross-sections. Upper limit for cross-section.
      &  2D0*HF3)*ABS(SIGT)+2D0*SQ2*(HF1+2D0*HF3)*ABS(SIGI)
  
 C...Angular orientation of event.
-  120   CHI=PARU(2)*PYR(0)
-        CTHE=2D0*PYR(0)-1D0
-        PHI=PARU(2)*PYR(0)
+  120   CHI=PARU(2)*SPR(0)
+        CTHE=2D0*SPR(0)-1D0
+        PHI=PARU(2)*SPR(0)
         CCHI=COS(CHI)
         SCHI=SIN(CHI)
         C2CHI=COS(2D0*CHI)
@@ -56207,24 +56208,24 @@ C...Angular orientation of event.
      &  C2CHI*C2PHI-2D0*CTHE*S2CHI*S2PHI)*HF3)*SIGT-
      &  2D0*SQ2*(2D0*STHE*CTHE*CCHI*HF1-2D0*STHE*
      &  (CTHE*CCHI*C2PHI-SCHI*S2PHI)*HF3)*SIGI
-        IF(SIG.LT.SIGMAX*PYR(0)) GOTO 120
-        CALL PYROBO(NC+1,N,0D0,CHI,0D0,0D0,0D0)
-        CALL PYROBO(NC+1,N,THE,PHI,0D0,0D0,0D0)
+        IF(SIG.LT.SIGMAX*SPR(0)) GOTO 120
+        CALL SPROBO(NC+1,N,0D0,CHI,0D0,0D0,0D0)
+        CALL SPROBO(NC+1,N,THE,PHI,0D0,0D0,0D0)
       ENDIF
  
 C...Generate parton shower. Rearrange along strings and check.
       IF(MSTJ(101).GE.5.AND.NJET.GE.2) THEN
-        CALL PYSHOW(NC+MK+1,-NJET,ECMC)
+        CALL SPSHOW(NC+MK+1,-NJET,ECMC)
         MSTJ14=MSTJ(14)
         IF(MSTJ(105).EQ.-1) MSTJ(14)=-1
         IF(MSTJ(105).GE.0) MSTU(28)=0
-        CALL PYPREP(0)
+        CALL SPPREP(0)
         MSTJ(14)=MSTJ14
         IF(MSTJ(105).GE.0.AND.MSTU(28).NE.0) GOTO 100
       ENDIF
  
-C...Generate fragmentation. Information for PYTABU:
-      IF(MSTJ(105).EQ.1) CALL PYEXEC
+C...Generate fragmentation. Information for SPTABU:
+      IF(MSTJ(105).EQ.1) CALL SPEXEC
       MSTU(161)=110*KFLC+3
       MSTU(162)=0
  
@@ -56233,31 +56234,31 @@ C...Generate fragmentation. Information for PYTABU:
  
 C*********************************************************************
  
-C...PYBOOK
+C...SPBOOK
 C...Books a histogram.
  
-      SUBROUTINE PYBOOK(ID,TITLE,NX,XL,XU)
+      SUBROUTINE SPBOOK(ID,TITLE,NX,XL,XU)
  
 C...Double precision declaration.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
 C...Commonblock.
-      COMMON/PYBINS/IHIST(4),INDX(1000),BIN(20000)
-      SAVE /PYBINS/
+      COMMON/SPBINS/IHIST(4),INDX(1000),BIN(20000)
+      SAVE /SPBINS/
 C...Local character variables.
       CHARACTER TITLE*(*), TITFX*60
  
 C...Check that input is sensible. Find initial address in memory.
-      IF(ID.LE.0.OR.ID.GT.IHIST(1)) CALL PYERRM(28,
-     &'(PYBOOK:) not allowed histogram number')
-      IF(NX.LE.0.OR.NX.GT.100) CALL PYERRM(28,
-     &'(PYBOOK:) not allowed number of bins')
-      IF(XL.GE.XU) CALL PYERRM(28,
-     &'(PYBOOK:) x limits in wrong order')
+      IF(ID.LE.0.OR.ID.GT.IHIST(1)) CALL SPERRM(28,
+     &'(SPBOOK:) not allowed histogram number')
+      IF(NX.LE.0.OR.NX.GT.100) CALL SPERRM(28,
+     &'(SPBOOK:) not allowed number of bins')
+      IF(XL.GE.XU) CALL SPERRM(28,
+     &'(SPBOOK:) x limits in wrong order')
       INDX(ID)=IHIST(4)
       IHIST(4)=IHIST(4)+28+NX
-      IF(IHIST(4).GT.IHIST(2)) CALL PYERRM(28,
-     &'(PYBOOK:) out of histogram space')
+      IF(IHIST(4).GT.IHIST(2)) CALL SPERRM(28,
+     &'(SPBOOK:) out of histogram space')
       IS=INDX(ID)
  
 C...Store histogram size and reset contents.
@@ -56265,7 +56266,7 @@ C...Store histogram size and reset contents.
       BIN(IS+2)=XL
       BIN(IS+3)=XU
       BIN(IS+4)=(XU-XL)/NX
-      CALL PYNULL(ID)
+      CALL SPNULL(ID)
  
 C...Store title by conversion to integer to double precision.
       TITFX=TITLE//' '
@@ -56279,24 +56280,24 @@ C...Store title by conversion to integer to double precision.
  
 C*********************************************************************
  
-C...PYFILL
+C...SPFILL
 C...Fills entry in histogram.
  
-      SUBROUTINE PYFILL(ID,X,W)
+      SUBROUTINE SPFILL(ID,X,W)
  
 C...Double precision declaration.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
 C...Commonblock.
-      COMMON/PYBINS/IHIST(4),INDX(1000),BIN(20000)
-      SAVE /PYBINS/
+      COMMON/SPBINS/IHIST(4),INDX(1000),BIN(20000)
+      SAVE /SPBINS/
  
 C...Find initial address in memory. Increase number of entries.
-      IF(ID.LE.0.OR.ID.GT.IHIST(1)) CALL PYERRM(28,
-     &'(PYFILL:) not allowed histogram number')
+      IF(ID.LE.0.OR.ID.GT.IHIST(1)) CALL SPERRM(28,
+     &'(SPFILL:) not allowed histogram number')
       IS=INDX(ID)
-      IF(IS.EQ.0) CALL PYERRM(28,
-     &'(PYFILL:) filling unbooked histogram')
+      IF(IS.EQ.0) CALL SPERRM(28,
+     &'(SPFILL:) filling unbooked histogram')
       BIN(IS+5)=BIN(IS+5)+1D0
  
 C...Find bin in x, including under/overflow, and fill.
@@ -56316,24 +56317,24 @@ C...Find bin in x, including under/overflow, and fill.
  
 C*********************************************************************
  
-C...PYFACT
+C...SPFACT
 C...Multiplies histogram contents by factor.
  
-      SUBROUTINE PYFACT(ID,F)
+      SUBROUTINE SPFACT(ID,F)
  
 C...Double precision declaration.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
 C...Commonblock.
-      COMMON/PYBINS/IHIST(4),INDX(1000),BIN(20000)
-      SAVE /PYBINS/
+      COMMON/SPBINS/IHIST(4),INDX(1000),BIN(20000)
+      SAVE /SPBINS/
  
 C...Find initial address in memory. Multiply all contents bins.
-      IF(ID.LE.0.OR.ID.GT.IHIST(1)) CALL PYERRM(28,
-     &'(PYFACT:) not allowed histogram number')
+      IF(ID.LE.0.OR.ID.GT.IHIST(1)) CALL SPERRM(28,
+     &'(SPFACT:) not allowed histogram number')
       IS=INDX(ID)
-      IF(IS.EQ.0) CALL PYERRM(28,
-     &'(PYFACT:) scaling unbooked histogram')
+      IF(IS.EQ.0) CALL SPERRM(28,
+     &'(SPFACT:) scaling unbooked histogram')
       DO 100 IX=IS+6,IS+8+NINT(BIN(IS+1))
         BIN(IX)=F*BIN(IX)
   100 CONTINUE
@@ -56343,23 +56344,23 @@ C...Find initial address in memory. Multiply all contents bins.
  
 C*********************************************************************
  
-C...PYOPER
+C...SPOPER
 C...Performs operations between histograms.
  
-      SUBROUTINE PYOPER(ID1,OPER,ID2,ID3,F1,F2)
+      SUBROUTINE SPOPER(ID1,OPER,ID2,ID3,F1,F2)
  
 C...Double precision declaration.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
 C...Commonblock.
-      COMMON/PYBINS/IHIST(4),INDX(1000),BIN(20000)
-      SAVE /PYBINS/
+      COMMON/SPBINS/IHIST(4),INDX(1000),BIN(20000)
+      SAVE /SPBINS/
 C...Character variable.
       CHARACTER OPER*(*)
  
 C...Find initial addresses in memory, and histogram size.
-      IF(ID1.LE.0.OR.ID1.GT.IHIST(1)) CALL PYERRM(28,
-     &'(PYFACT:) not allowed histogram number')
+      IF(ID1.LE.0.OR.ID1.GT.IHIST(1)) CALL SPERRM(28,
+     &'(SPFACT:) not allowed histogram number')
       IS1=INDX(ID1)
       IS2=INDX(MIN(IHIST(1),MAX(1,ID2)))
       IS3=INDX(MIN(IHIST(1),MAX(1,ID3)))
@@ -56443,24 +56444,24 @@ C...standard deviation.
  
 C*********************************************************************
  
-C...PYHIST
+C...SPHIST
 C...Prints and resets all histograms.
  
-      SUBROUTINE PYHIST
+      SUBROUTINE SPHIST
  
 C...Double precision declaration.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
 C...Commonblock.
-      COMMON/PYBINS/IHIST(4),INDX(1000),BIN(20000)
-      SAVE /PYBINS/
+      COMMON/SPBINS/IHIST(4),INDX(1000),BIN(20000)
+      SAVE /SPBINS/
  
 C...Loop over histograms, print and reset used ones.
       DO 100 ID=1,IHIST(1)
         IS=INDX(ID)
         IF(IS.NE.0.AND.NINT(BIN(IS+5)).GT.0) THEN
-          CALL PYPLOT(ID)
-          CALL PYNULL(ID)
+          CALL SPPLOT(ID)
+          CALL SPNULL(ID)
         ENDIF
   100 CONTINUE
  
@@ -56469,18 +56470,18 @@ C...Loop over histograms, print and reset used ones.
  
 C*********************************************************************
  
-C...PYPLOT
+C...SPPLOT
 C...Prints a histogram (but does not reset it).
  
-      SUBROUTINE PYPLOT(ID)
+      SUBROUTINE SPPLOT(ID)
  
 C...Double precision declaration.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYBINS/IHIST(4),INDX(1000),BIN(20000)
-      SAVE /PYDAT1/,/PYBINS/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPBINS/IHIST(4),INDX(1000),BIN(20000)
+      SAVE /SPDAT1/,/SPBINS/
 C...Local arrays and character variables.
       DIMENSION IDATI(6), IROW(100), IFRA(100), DYAC(10)
       CHARACTER TITLE*60, OUT*100, CHA(0:11)*1
@@ -56510,7 +56511,7 @@ C...Extract title by conversion from double precision via integer.
   100 CONTINUE
  
 C...Find time; print title.
-      CALL PYTIME(IDATI)
+      CALL SPTIME(IDATI)
       IF(IDATI(1).GT.0) THEN
         WRITE(MSTU(11),5100) ID, TITLE, (IDATI(J),J=1,5)
       ELSE
@@ -56625,17 +56626,17 @@ C...Formats for output.
  
 C*********************************************************************
  
-C...PYNULL
+C...SPNULL
 C...Resets bin contents of a histogram.
  
-      SUBROUTINE PYNULL(ID)
+      SUBROUTINE SPNULL(ID)
  
 C...Double precision declaration.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
 C...Commonblock.
-      COMMON/PYBINS/IHIST(4),INDX(1000),BIN(20000)
-      SAVE /PYBINS/
+      COMMON/SPBINS/IHIST(4),INDX(1000),BIN(20000)
+      SAVE /SPBINS/
  
       IF(ID.LE.0.OR.ID.GT.IHIST(1)) RETURN
       IS=INDX(ID)
@@ -56649,18 +56650,18 @@ C...Commonblock.
  
 C*********************************************************************
  
-C...PYDUMP
+C...SPDUMP
 C...Dumps histogram contents on file for reading by other program.
 C...Can also read back own dump.
  
-      SUBROUTINE PYDUMP(MDUMP,LFN,NHI,IHI)
+      SUBROUTINE SPDUMP(MDUMP,LFN,NHI,IHI)
  
 C...Double precision declaration.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
 C...Commonblock.
-      COMMON/PYBINS/IHIST(4),INDX(1000),BIN(20000)
-      SAVE /PYBINS/
+      COMMON/SPBINS/IHIST(4),INDX(1000),BIN(20000)
+      SAVE /SPBINS/
 C...Local arrays and character variables.
       DIMENSION IHI(*),ISS(100),VAL(5)
       CHARACTER TITLE*60,FORMAT*13
@@ -56712,7 +56713,7 @@ C...Write histogram contents, in groups of five.
  
 C...Go to next histogram; finish.
           ELSEIF(NHI.GT.0) THEN
-            CALL PYERRM(8,'(PYDUMP:) unknown histogram number')
+            CALL SPERRM(8,'(SPDUMP:) unknown histogram number')
           ENDIF
   130   CONTINUE
  
@@ -56722,7 +56723,7 @@ C...Read back in histograms dumped MDUMP=1.
 C...Read histogram number, title and range, and book.
   140   READ(LFN,5100,END=170) ID,TITLE
         READ(LFN,5200) NX,XL,XU
-        CALL PYBOOK(ID,TITLE,NX,XL,XU)
+        CALL SPBOOK(ID,TITLE,NX,XL,XU)
         IS=INDX(ID)
  
 C...Read filling statistics.
@@ -56764,9 +56765,9 @@ C...Find addresses to wanted histograms.
             NSS=NSS+1
             ISS(NSS)=IS
           ELSEIF(NSS.GE.100) THEN
-            CALL PYERRM(8,'(PYDUMP:) too many histograms requested')
+            CALL SPERRM(8,'(SPDUMP:) too many histograms requested')
           ELSEIF(NHI.GT.0) THEN
-            CALL PYERRM(8,'(PYDUMP:) unknown histogram number')
+            CALL SPERRM(8,'(SPDUMP:) unknown histogram number')
           ENDIF
   180   CONTINUE
  
@@ -56774,7 +56775,7 @@ C...Check that they have common number of x bins. Fix format.
         NX=NINT(BIN(ISS(1)+1))
         DO 190 IW=2,NSS
           IF(NINT(BIN(ISS(IW)+1)).NE.NX) THEN
-            CALL PYERRM(8,'(PYDUMP:) different number of bins')
+            CALL SPERRM(8,'(SPDUMP:) different number of bins')
             RETURN
           ENDIF
   190   CONTINUE
@@ -56800,7 +56801,7 @@ C...Formats for output.
  
 C*********************************************************************
  
-C...PYKCUT
+C...SPKCUT
 C...Dummy routine, which the user can replace in order to make cuts on
 C...the kinematics on the parton level before the matrix elements are
 C...evaluated and the event is generated. The cross-section estimates
@@ -56808,17 +56809,17 @@ C...will automatically take these cuts into account, so the given
 C...values are for the allowed phase space region only. MCUT=0 means
 C...that the event has passed the cuts, MCUT=1 that it has failed.
  
-      SUBROUTINE PYKCUT(MCUT)
+      SUBROUTINE SPKCUT(MCUT)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      SAVE /PYDAT1/,/PYINT1/,/PYINT2/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      SAVE /SPDAT1/,/SPINT1/,/SPINT2/
  
 C...Set default value (accepting event) for MCUT.
       MCUT=0
@@ -56864,12 +56865,12 @@ C...Calculate shat, that, uhat, p_T^2.
 C...Decisions by user to be put here.
  
 C...Stop program if this routine is ever called.
-C...You should not copy these lines to your own routine.
+C...You should not cosp these lines to your own routine.
       WRITE(MSTU(11),5000)
-      IF(PYR(0).LT.10D0) STOP
+      IF(SPR(0).LT.10D0) STOP
  
 C...Format for error printout.
- 5000 FORMAT(1X,'Error: you did not link your PYKCUT routine ',
+ 5000 FORMAT(1X,'Error: you did not link your SPKCUT routine ',
      &'correctly.'/1X,'Dummy routine in PYTHIA file called instead.'/
      &1X,'Execution stopped!')
  
@@ -56878,7 +56879,7 @@ C...Format for error printout.
  
 C*********************************************************************
  
-C...PYEVWT
+C...SPEVWT
 C...Dummy routine, which the user can replace in order to multiply the
 C...standard PYTHIA differential cross-section by a process- and
 C...kinematics-dependent factor WTXS. For MSTP(142)=1 this corresponds
@@ -56886,17 +56887,17 @@ C...to generation of weighted events, with weight 1/WTXS, while for
 C...MSTP(142)=2 it corresponds to a modification of the underlying
 C...physics.
  
-      SUBROUTINE PYEVWT(WTXS)
+      SUBROUTINE SPEVWT(WTXS)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      SAVE /PYDAT1/,/PYINT1/,/PYINT2/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      SAVE /SPDAT1/,/SPINT1/,/SPINT2/
  
 C...Set default weight for WTXS.
       WTXS=1D0
@@ -56925,12 +56926,12 @@ C...Read out x_1, x_2, x_F, shat, that, uhat, p_T^2.
 C...Modifications by user to be put here.
  
 C...Stop program if this routine is ever called.
-C...You should not copy these lines to your own routine.
+C...You should not cosp these lines to your own routine.
       WRITE(MSTU(11),5000)
-      IF(PYR(0).LT.10D0) STOP
+      IF(SPR(0).LT.10D0) STOP
  
 C...Format for error printout.
- 5000 FORMAT(1X,'Error: you did not link your PYEVWT routine ',
+ 5000 FORMAT(1X,'Error: you did not link your SPEVWT routine ',
      &'correctly.'/1X,'Dummy routine in PYTHIA file called instead.'/
      &1X,'Execution stopped!')
  
@@ -56939,12 +56940,12 @@ C...Format for error printout.
  
 C*********************************************************************
  
-C...UPINIT
+C...SUINIT
 C...Dummy routine, to be replaced by a user implementing external
 C...processes. Is supposed to fill the HEPRUP commonblock with info
 C...on incoming beams and allowed processes.
  
-      SUBROUTINE UPINIT
+      SUBROUTINE SUINIT
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
@@ -56965,14 +56966,14 @@ C...User process initialization commonblock.
  
 C*********************************************************************
  
-C...UPEVNT
+C...SUEVNT
 C...Dummy routine, to be replaced by a user implementing external
 C...processes. Depending on cross section model chosen, it either has
 C...to generate a process of the type IDPRUP requested, or pick a type
 C...itself and generate this event. The event is to be stored in the
 C...HEPEUP commonblock, including (often) an event weight.
  
-      SUBROUTINE UPEVNT
+      SUBROUTINE SUEVNT
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
@@ -56993,31 +56994,31 @@ C...User process event common block.
  
 C*********************************************************************
  
-C...PDFSET
+C...SDFSET
 C...Dummy routine, to be removed when PDFLIB is to be linked.
  
-      SUBROUTINE PDFSET(PARM,VALUE)
+      SUBROUTINE SDFSET(PARM,VALUE)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYDAT1/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      SAVE /SPDAT1/
 C...Local arrays and character variables.
       CHARACTER*20 PARM(20)
       DOUBLE PRECISION VALUE(20)
  
 C...Stop program if this routine is ever called.
       WRITE(MSTU(11),5000)
-      IF(PYR(0).LT.10D0) STOP
+      IF(SPR(0).LT.10D0) STOP
       PARM(20)=PARM(1)
       VALUE(20)=VALUE(1)
  
 C...Format for error printout.
  5000 FORMAT(1X,'Error: you did not link PDFLIB correctly.'/
-     &1X,'Dummy routine PDFSET in PYTHIA file called instead.'/
+     &1X,'Dummy routine SDFSET in PYTHIA file called instead.'/
      &1X,'Execution stopped!')
  
       RETURN
@@ -57025,24 +57026,24 @@ C...Format for error printout.
  
 C*********************************************************************
  
-C...STRUCTM
+C...PTRUCTM
 C...Dummy routine, to be removed when PDFLIB is to be linked.
  
-      SUBROUTINE STRUCTM(XX,QQ,UPV,DNV,USEA,DSEA,STR,CHM,BOT,TOP,GLU)
+      SUBROUTINE PTRUCTM(XX,QQ,UPV,DNV,USEA,DSEA,STR,CHM,BOT,TOP,GLU)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYDAT1/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      SAVE /SPDAT1/
 C...Local variables
       DOUBLE PRECISION XX,QQ,UPV,DNV,USEA,DSEA,STR,CHM,BOT,TOP,GLU
  
 C...Stop program if this routine is ever called.
       WRITE(MSTU(11),5000)
-      IF(PYR(0).LT.10D0) STOP
+      IF(SPR(0).LT.10D0) STOP
       UPV=XX+QQ
       DNV=XX+2D0*QQ
       USEA=XX+3D0*QQ
@@ -57055,7 +57056,7 @@ C...Stop program if this routine is ever called.
  
 C...Format for error printout.
  5000 FORMAT(1X,'Error: you did not link PDFLIB correctly.'/
-     &1X,'Dummy routine STRUCTM in PYTHIA file called instead.'/
+     &1X,'Dummy routine PTRUCTM in PYTHIA file called instead.'/
      &1X,'Execution stopped!')
  
       RETURN
@@ -57063,26 +57064,26 @@ C...Format for error printout.
  
 C*********************************************************************
  
-C...STRUCTP
+C...PTRUCTP
 C...Dummy routine, to be removed when PDFLIB is to be linked.
  
-      SUBROUTINE STRUCTP(XX,QQ2,P2,IP2,UPV,DNV,USEA,DSEA,STR,CHM,
+      SUBROUTINE PTRUCTP(XX,QQ2,P2,IP2,UPV,DNV,USEA,DSEA,STR,CHM,
      &BOT,TOP,GLU)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYDAT1/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      SAVE /SPDAT1/
 C...Local variables
       DOUBLE PRECISION XX,QQ2,P2,UPV,DNV,USEA,DSEA,STR,CHM,BOT,
      &TOP,GLU
  
 C...Stop program if this routine is ever called.
       WRITE(MSTU(11),5000)
-      IF(PYR(0).LT.10D0) STOP
+      IF(SPR(0).LT.10D0) STOP
       UPV=XX+QQ2
       DNV=XX+2D0*QQ2
       USEA=XX+3D0*QQ2
@@ -57095,7 +57096,7 @@ C...Stop program if this routine is ever called.
  
 C...Format for error printout.
  5000 FORMAT(1X,'Error: you did not link PDFLIB correctly.'/
-     &1X,'Dummy routine STRUCTP in PYTHIA file called instead.'/
+     &1X,'Dummy routine PTRUCTP in PYTHIA file called instead.'/
      &1X,'Execution stopped!')
  
       RETURN
@@ -57112,12 +57113,12 @@ C      IMPLICIT INTEGER(I-N)
 C      REAL MZERO,MHLF,AZERO,TANB,SGNMU,MTOP
 C      INTEGER IMODL
 C...Commonblocks.
-C      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-C      SAVE /PYDAT1/
+C      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+C      SAVE /SPDAT1/
  
 C...Stop program if this routine is ever called.
 C      WRITE(MSTU(11),5000)
-C      IF(PYR(0).LT.10D0) STOP
+C      IF(SPR(0).LT.10D0) STOP
  
 C...Format for error printout.
 C 5000 FORMAT(1X,'Error: you did not link ISAJET correctly.'/
@@ -57129,28 +57130,28 @@ C      END
  
 C*********************************************************************
  
-C...VISAJE
+C...SVSAJE
 C...Dummy function, to be removed when ISAJET (ISASUSY) is to be linked.
 C 
-C      FUNCTION VISAJE()
+C      FUNCTION SVSAJE()
 C      IMPLICIT DOUBLE PRECISION(A-H, O-Z)
 C      IMPLICIT INTEGER(I-N)
-C      CHARACTER*40 VISAJE
+C      CHARACTER*40 SVSAJE
 C 
 C...Commonblocks.
-C      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-C      SAVE /PYDAT1/
+C      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+C      SAVE /SPDAT1/
 C 
 C...Assign default value.
-C      VISAJE='Undefined'
+C      SVSAJE='Undefined'
 C 
 C...Stop program if this routine is ever called.
 C      WRITE(MSTU(11),5000)
-C      IF(PYR(0).LT.10D0) STOP
+C      IF(SPR(0).LT.10D0) STOP
  
 C...Format for error printout.
 C 5000 FORMAT(1X,'Error: you did not link ISAJET correctly.'/
-C     &1X,'Dummy function VISAJE in PYTHIA file called instead.'/
+C     &1X,'Dummy function SVSAJE in PYTHIA file called instead.'/
 C     &1X,'Execution stopped!')
 C 
 C      RETURN
@@ -57158,11 +57159,11 @@ C      END
 C 
 C*********************************************************************
  
-C...PYTAUD
+C...SPTAUD
 C...Dummy routine, to be replaced by user, to handle the decay of a
 C...polarized tau lepton.
 C...Input:
-C...ITAU is the position where the decaying tau is stored in /PYJETS/.
+C...ITAU is the position where the decaying tau is stored in /SPJETS/.
 C...IORIG is the position where the mother of the tau is stored;
 C...     is 0 when the mother is not stored.
 C...KFORIG is the flavour of the mother of the tau;
@@ -57172,30 +57173,30 @@ C...     e.g. in B hadron semileptonic decays the W  propagator
 C...     is not explicitly stored but the W code is still unambiguous.
 C...Output:
 C...NDECAY is the number of decay products in the current tau decay.
-C...These decay products should be added to the /PYJETS/ common block,
+C...These decay products should be added to the /SPJETS/ common block,
 C...in positions N+1 through N+NDECAY. For each product I you must
 C...give the flavour codes K(I,2) and the five-momenta P(I,1), P(I,2),
 C...P(I,3), P(I,4) and P(I,5). The rest will be stored automatically.
  
-      SUBROUTINE PYTAUD(ITAU,IORIG,KFORIG,NDECAY)
+      SUBROUTINE SPTAUD(ITAU,IORIG,KFORIG,NDECAY)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYJETS/,/PYDAT1/
+      COMMON/SPJETS/N,NPAD,K(4000,5),P(4000,5),V(4000,5)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      SAVE /SPJETS/,/SPDAT1/
  
 C...Stop program if this routine is ever called.
-C...You should not copy these lines to your own routine.
+C...You should not cosp these lines to your own routine.
       NDECAY=ITAU+IORIG+KFORIG
       WRITE(MSTU(11),5000)
-      IF(PYR(0).LT.10D0) STOP
+      IF(SPR(0).LT.10D0) STOP
  
 C...Format for error printout.
- 5000 FORMAT(1X,'Error: you did not link your PYTAUD routine ',
+ 5000 FORMAT(1X,'Error: you did not link your SPTAUD routine ',
      &'correctly.'/1X,'Dummy routine in PYTHIA file called instead.'/
      &1X,'Execution stopped!')
  
@@ -57204,19 +57205,19 @@ C...Format for error printout.
  
 C*********************************************************************
  
-C...PYTIME
+C...SPTIME
 C...Finds current date and time.
 C...Since this task is not standardized in Fortran 77, the routine
 C...is dummy, to be replaced by the user. Examples are given for
 C...the Fortran 90 routine and DEC Fortran 77, and what to do if
 C...you do not have access to suitable routines.
  
-      SUBROUTINE PYTIME(IDATI)
+      SUBROUTINE SPTIME(IDATI)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
       CHARACTER*8 ATIME
 C...Local array.
       INTEGER IDATI(6),IDTEMP(3)

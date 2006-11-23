@@ -1,43 +1,43 @@
 C*********************************************************************
  
-C...PYDATA
+C...SPDATA
 C...Default values for switches and parameters,
 C...and particle, decay and process data.
  
-      BLOCK DATA PYDATA
+      BLOCK DATA SPDATA
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
-      COMMON/PYDAT4/CHAF(500,2)
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPDAT3/MDCY(500,3),MDME(8000,2),BRAT(8000),KFDP(8000,5)
+      COMMON/SPDAT4/CHAF(500,2)
       CHARACTER CHAF*16
-      COMMON/PYDATR/MRPY(6),RRPY(100)
-      COMMON/PYSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
-      COMMON/PYINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
-      COMMON/PYINT4/MWID(500),WIDS(500,5)
-      COMMON/PYINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
-      COMMON/PYINT6/PROC(0:500)
+      COMMON/SPDATR/MRSP(6),RRSP(100)
+      COMMON/SPSUBS/MSEL,MSELPD,MSUB(500),KFIN(2,-40:40),CKIN(200)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT2/ISET(500),KFPR(500,2),COEF(500,20),ICOL(40,4,2)
+      COMMON/SPINT3/XSFX(2,-40:40),ISIG(1000,3),SIGH(1000)
+      COMMON/SPINT4/MWID(500),WIDS(500,5)
+      COMMON/SPINT5/NGENPD,NGEN(0:500,3),XSEC(0:500,3)
+      COMMON/SPINT6/PROC(0:500)
       CHARACTER PROC*28
-      COMMON/PYINT7/SIGT(0:6,0:6,0:5)
-      COMMON/PYMSSM/IMSS(0:99),RMSS(0:99)
-      COMMON/PYSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
+      COMMON/SPINT7/SIGT(0:6,0:6,0:5)
+      COMMON/SPMSSM/IMSS(0:99),RMSS(0:99)
+      COMMON/SPSSMT/ZMIX(4,4),UMIX(2,2),VMIX(2,2),SMZ(4),SMW(2),
      &SFMIX(16,4),ZMIXI(4,4),UMIXI(2,2),VMIXI(2,2)
-      COMMON/PYMSRV/RVLAM(3,3,3), RVLAMP(3,3,3), RVLAMB(3,3,3)
-      COMMON/PYTCSM/ITCM(0:99),RTCM(0:99)
-      COMMON/PYBINS/IHIST(4),INDX(1000),BIN(20000)
-      SAVE /PYDAT1/,/PYDAT2/,/PYDAT3/,/PYDAT4/,/PYDATR/,/PYSUBS/,
-     &/PYPARS/,/PYINT1/,/PYINT2/,/PYINT3/,/PYINT4/,/PYINT5/,
-     &/PYINT6/,/PYINT7/,/PYMSSM/,/PYSSMT/,/PYMSRV/,/PYTCSM/,/PYBINS/
+      COMMON/SPMSRV/RVLAM(3,3,3), RVLAMP(3,3,3), RVLAMB(3,3,3)
+      COMMON/SPTCSM/ITCM(0:99),RTCM(0:99)
+      COMMON/SPBINS/IHIST(4),INDX(1000),BIN(20000)
+      SAVE /SPDAT1/,/SPDAT2/,/SPDAT3/,/SPDAT4/,/SPDATR/,/SPSUBS/,
+     &/SPPARS/,/SPINT1/,/SPINT2/,/SPINT3/,/SPINT4/,/SPINT5/,
+     &/SPINT6/,/SPINT7/,/SPMSSM/,/SPSSMT/,/SPMSRV/,/SPTCSM/,/SPBINS/
  
-C...PYDAT1, containing status codes and most parameters.
+C...SPDAT1, containing status codes and most parameters.
       DATA MSTU/
      &   0,    0,    0, 4000,10000,  500, 8000,    0,    0,    2,
      1   6,    1,    1,    0,    0,    1,    0,    0,    0,    0,
@@ -111,7 +111,7 @@ C...PYDAT1, containing status codes and most parameters.
      9  1.0D0, -0.08D0, -1.0D0,   1.0D0, 1.0D0,
      9  5*0D0/
  
-C...PYDAT2, with particle data and flavour treatment parameters.
+C...SPDAT2, with particle data and flavour treatment parameters.
       DATA (KCHG(I,1),I=   1, 500)/-1,2,-1,2,-1,2,-1,2,2*0,-3,0,-3,0,
      &-3,0,-3,6*0,3,9*0,3,2*0,3,4*0,-1,41*0,2,-1,20*0,3*3,7*0,3*3,3*0,
      &3*3,3*0,3*3,6*0,3*3,3*0,3*3,4*0,-2,-3,2*1,2*0,4,2*3,6,2*-2,2*-3,
@@ -260,7 +260,7 @@ C...PYDAT2, with particle data and flavour treatment parameters.
      &  0.00003D0,  0.00176D0,  0.99821D0,  0.00000D0,
      &  0.00000D0,  0.00000D0,  0.00000D0,  1.00000D0/
  
-C...PYDAT3, with particle decay parameters and data.
+C...SPDAT3, with particle decay parameters and data.
       DATA (MDCY(I,1),I=   1, 500)/5*0,3*1,6*0,1,0,1,5*0,3*1,6*0,1,0,
      &4*1,3*0,2*1,40*0,3*1,16*0,3*1,2*0,9*1,0,32*1,2*0,1,3*0,1,2*0,2*1,
      &2*0,3*1,2*0,4*1,0,5*1,2*0,4*1,2*0,5*1,2*0,6*1,0,7*1,2*0,5*1,2*0,
@@ -1082,7 +1082,7 @@ C...PYDAT3, with particle decay parameters and data.
      &3*111,0,111,597*0,-211,2*111,-211,111,-211,111,65*0,111,-211,
      &3*111,-211,111,7193*0/
  
-C...PYDAT4, with particle names (character strings).
+C...SPDAT4, with particle names (character strings).
       DATA (CHAF(I,1),I=   1, 100)/'d','u','s','c','b','t','b''','t''',
      &2*' ','e-','nu_e','mu-','nu_mu','tau-','nu_tau','tau''-',
      &'nu''_tau',2*' ','g','gamma','Z0','W+','h0',6*' ','Z''0','Z"0',
@@ -1175,8 +1175,8 @@ C...PYDAT4, with particle names (character strings).
      &'e*bar+','nu*_ebar0',5*' ','W_R-','H_L--','H_R--',' ',
      &'pi_diffr-',3*' ','n_diffrbar0','p_diffrbar-',139*' '/
  
-C...PYDATR, with initial values for the random number generator.
-      DATA MRPY/19780503,0,0,97,33,0/
+C...SPDATR, with initial values for the random number generator.
+      DATA MRSP/19780503,0,0,97,33,0/
  
 C...Default values for allowed processes and kinematics constraints.
       DATA MSEL/1/
@@ -1644,7 +1644,7 @@ C...Supersymmetry switches and parameters.
      2   1D0,800D0,1D4,1D4,1D4,0D0,0D0,0D0,24D17,0D0,
      3  69*0D0/
 C...Initial values for R-violating SUSY couplings.
-C...Should not be changed here. See PYMSIN.
+C...Should not be changed here. See SPMSIN.
       DATA RVLAM/27*0D0/
       DATA RVLAMP/27*0D0/
       DATA RVLAMB/27*0D0/
