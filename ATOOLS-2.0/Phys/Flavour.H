@@ -490,8 +490,8 @@ namespace ATOOLS {
   struct Part_Info {
     kf::code kfc;
     double m,w,yuk;
-    int    iq,isow,sp,masssign;
-    bool   str,Maj,on,stbl,msv,hadron;
+    int    iq,isow,sp,stbl,masssign;
+    bool   str,Maj,on,msv,hadron;
     char * n;
 
     std::vector<Flavour *> flavs;
@@ -613,9 +613,12 @@ namespace ATOOLS {
       return particles[ Index() ].on;
     }
     inline bool IsStable() const {
+      return particles[ Index() ].stbl&1;
+    }
+    inline int Stable() const {
       return particles[ Index() ].stbl;
     }
-    inline void SetStable(bool stable) const {
+    inline void SetStable(const int stable) const {
       particles[ Index() ].stbl = stable;
     }
     inline void SetOn(bool on) const {

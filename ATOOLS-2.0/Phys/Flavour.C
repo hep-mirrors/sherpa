@@ -21,16 +21,17 @@
 
 namespace ATOOLS {
   Part_Info particles[MAX_PARTICLES];
+  int Kf_To_Int::is_initialised(0);
   Kf_To_Int kf_table;
 }
 
 using namespace ATOOLS;
 using namespace std;
 
-int Kf_To_Int::is_initialised=0;
-
 void Kf_To_Int::Init()
 {
+  if (is_initialised) return;
+  is_initialised=true;
   for(anz=0;anz<MAX_PARTICLES;++anz) {
     kf_tab[anz] = particles[anz].kfc;
     if(kf_tab[anz]==kf::none) break;
@@ -39,7 +40,6 @@ void Kf_To_Int::Init()
   if(anz==MAX_PARTICLES) {
     THROW(fatal_error,"Too many particle types.");
   }
-  is_initialised = 1;
 }
 
 int Kf_To_Int::ToInt(kf::code kfc)
@@ -75,8 +75,8 @@ Part_Info::Part_Info(kf::code kfc_,
 		     bool strong, int spin, bool Majorana, 
 		     bool Take, bool stable,bool massive,
 		     char* name,int _masssign) : 
-  kfc(kfc_), m(mass), w(width), yuk(mass), iq(icharge), isow(isoweak), sp(spin), masssign(_masssign),  
-  str(strong), Maj(Majorana), on(Take), stbl(stable), msv(massive),hadron(0), n(name), group(0) { 
+  kfc(kfc_), m(mass), w(width), yuk(mass), iq(icharge), isow(isoweak), sp(spin), stbl(stable), masssign(_masssign),  
+  str(strong), Maj(Majorana), on(Take), msv(massive),hadron(0), n(name), group(0) { 
   n  = new char[strlen(name)+1];
   strcpy(n,name);
 }
@@ -85,8 +85,8 @@ Part_Info::Part_Info(kf::code kfc_,
 		     double mass, double width, int icharge, int isoweak, 
 		     int spin, bool Take, bool stable,
 		     char* name) : 
-  kfc(kfc_), m(mass), w(width), yuk(0.), iq(icharge), isow(isoweak), sp(spin), masssign(1), 
-  str(0), Maj(0), on(Take), stbl(stable), msv(1), hadron(1), n(name), group(0) { 
+  kfc(kfc_), m(mass), w(width), yuk(0.), iq(icharge), isow(isoweak), sp(spin), stbl(stable), masssign(1), 
+  str(0), Maj(0), on(Take), msv(1), hadron(1), n(name), group(0) { 
   n  = new char[strlen(name)+1];
   strcpy(n,name);
 }
@@ -481,7 +481,7 @@ std::string Flavour::IDName() const
       Kfcode()==kf::W ) {
     name.erase(name.length()-1,1);
     if (IsAnti()) name += string("+");
-             else name += string("-");      
+    else name += string("-");      
   }
   else {
     if (!IsBaryon() && 
@@ -555,6 +555,9 @@ std::ostream& ATOOLS::operator<<(std::ostream& os, const Flavour& f)
 
 void ATOOLS::ParticleInit(std::string path)
 {
+  static bool initialized(false);
+  if (initialized) return;
+  initialized=true;
   Part_Info * pi = particles;
 
   int    kfc,charge,icharge,spin;
@@ -777,7 +780,7 @@ int Flavour::FlagID() {
   flag*=16;
   flag+= (particles[ix].isow +1)*4 + particles[ix].sp;
   flag*=16;
-  flag+=  particles[ix].Maj*8+ particles[ix].on*4+ particles[ix].stbl*2 + particles[ix].msv;
+  flag+=  particles[ix].Maj*8+ particles[ix].on*4+ ((bool)particles[ix].stbl)*2 + particles[ix].msv;
   flag*=16;
   flag+=  particles[ix].str;
   return flag;
