@@ -249,6 +249,8 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
 				  vector<Process_Base *> & links,vector<Process_Base *> & errs,
 				  int & totalsize, int & procs, int & current_atom)
 {
+  if (CheckAlternatives(links,current_atom)) return 1;
+
   if (_testmoms==0) {
     string model_name = model->Name();
     if (model_name==string("ADD")) {
@@ -304,6 +306,8 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
 	}
 	
 	p_partner = (Single_Process*)links[j];
+	WriteAlternativeName(p_partner->Name());
+
 	Minimize();
 	return 1;
       }
@@ -333,6 +337,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
       totalsize++;
     }
     Minimize();
+    WriteAlternativeName(p_partner->Name());
     return 1;
   case 1 :
     for (size_t j=current_atom;j<links.size();j++) {
@@ -341,6 +346,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
 		      <<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
 	p_partner   = (Single_Process*)links[j];
 	m_pslibname = links[j]->PSLibName();
+	WriteAlternativeName(p_partner->Name());
 	break;
       } 
     }
@@ -719,6 +725,39 @@ int Single_Process::CheckStrings(Single_Process* tproc)
   return 0;
 }
   
+void Single_Process::WriteAlternativeName(string aname) 
+{
+  if (aname==m_name) return;
+  std::string altname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".alt";
+  if (IsFile(altname)) return;
+  std::ofstream to;
+  to.open(altname.c_str(),ios::out);
+  to<<aname<<" "<<m_sfactor<<endl;
+  to.close();
+}
+
+bool Single_Process::CheckAlternatives(vector<Process_Base *> & links,int current_atom)
+{
+  std::string altname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".alt";
+  if (IsFile(altname)) {
+    double factor;
+    string name; 
+    ifstream from;
+    from.open(altname.c_str(),ios::in);
+    from>>name>>factor;
+    from.close();
+    for (size_t j=current_atom;j<links.size();j++) {
+      if (links[j]->Name()==name) {
+	p_partner = (Single_Process*)links[j];
+	m_sfactor = factor;
+	msg_Tracking()<<"Found Alternative process: "<<m_name<<" "<<name<<endl;
+	return true;
+      }
+    }
+  }
+  return false;
+}
+
 void Single_Process::WriteLibrary() 
 {
   if (m_gen_str<2) return;

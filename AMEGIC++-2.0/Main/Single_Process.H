@@ -75,6 +75,8 @@ namespace AMEGIC {
     int                 CheckLibraries();
     int                 CheckStrings(Single_Process*);
     void                WriteLibrary();
+    void                WriteAlternativeName(std::string); 
+    bool                CheckAlternatives(std::vector<Process_Base *> &,int);
     std::string         CreateLibName();
     void                CreateMappingFile();
     bool                CreateChannelLibrary();
