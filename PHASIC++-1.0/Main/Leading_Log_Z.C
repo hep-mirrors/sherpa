@@ -17,7 +17,6 @@ Z_Channel_Base::Z_Channel_Base()
 
 Z_Channel_Base::~Z_Channel_Base()
 {
-  delete [] rans;
   delete p_vegas;
 }
 

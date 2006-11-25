@@ -81,7 +81,6 @@ VHAAG::VHAAG(int _nin,int _nout,int pn) :
 VHAAG::~VHAAG()
 {
   delete[] p_perm;
-  delete[] rans;
   delete[] m_q;
   if (m_ownvegas) delete p_vegas;
 }
