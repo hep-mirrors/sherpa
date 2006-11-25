@@ -54,7 +54,7 @@ Process_Group::Process_Group(Process_Info* pinfo,int _nin,int _nout,Flavour *& _
   string stan,oli;
   m_efunc=e_func;
   GenerateNames(m_nin,p_flin,p_plin,m_name,stan,oli);
-
+//   PRINT_INFO(m_name);
   p_flavours   = new Flavour[m_nvector];
   p_pl   = new Pol_Info[m_nvector];
   p_b    = new int[m_nvector];
@@ -163,9 +163,9 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
       for (size_t i=0;i<m_nin+nout;++i) {
 	if (plindex[i]!=' ') _pl[i].SetPol(plindex[i]);
       }
+
       for (int j=0;j<nsproc;j++) {
-	if (nsproc==1) pi = p_pinfo->GetSubProcess(-1);
-	else pi = p_pinfo->GetSubProcess(j);
+	pi = p_pinfo->GetSubProcess(j);
  	pi->ResetSubList(nout,_fl+m_nin,_pl+m_nin);
 	pi->Reshuffle();
 	GenerateNames(m_nin,_fl,_pl,_name,_stan,_oli,pi);
