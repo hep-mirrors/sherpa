@@ -492,6 +492,7 @@ template double &Blob_Data_Base::Get<double>();
 template std::string &Blob_Data_Base::Get<std::string>();
 template std::vector<double> &Blob_Data_Base::Get<std::vector<double> >();
 template std::vector<int> &Blob_Data_Base::Get<std::vector<int> >();
+template Vec4D &Blob_Data_Base::Get<Vec4D>();
 
 template void Blob_Data_Base::Set<int>(const int &data);
 template void Blob_Data_Base::Set<size_t>(const size_t &data);
@@ -500,6 +501,7 @@ template void Blob_Data_Base::Set<double>(const double &data);
 template void Blob_Data_Base::Set<std::string>(const std::string &data);
 template void Blob_Data_Base::Set<std::vector<double> >(const std::vector<double> &data);
 template void Blob_Data_Base::Set<std::vector<int> >(const std::vector<int> &data);
+template void Blob_Data_Base::Set<Vec4D>(const Vec4D &data);
 
 template class Blob_Data<int>;
 template class Blob_Data<size_t>;
@@ -508,6 +510,7 @@ template class Blob_Data<double>;
 template class Blob_Data<std::string>;
 template class Blob_Data<std::vector<double> >;
 template class Blob_Data<std::vector<int> >;
+template class Blob_Data<Vec4D>;
 
 void Blob::SwapInParticles(const size_t i, const size_t j) 
 {

@@ -43,14 +43,14 @@ namespace ATOOLS {
   protected:
     ATOOLS::Particle_Qualifier_Base * p_qualifier;
     std::vector<double> m_jetnumbers;
-    bool   m_bflag;
+    int   m_bflag;
   public:
     Jet_Algorithm_Base(ATOOLS::Particle_Qualifier_Base * const qualifier) : 
       p_qualifier(qualifier), m_bflag(true) {}
 
     virtual bool ConstructJets(const Particle_List * ,Particle_List * ,std::vector<double> * ,double)=0;
 
-    void Setbflag(bool bf) { m_bflag=bf; }
+    void Setbflag(int bf) { m_bflag=bf; }
     void SortE(Particle_List *);
     void SortPT(Particle_List *);
     
@@ -79,7 +79,7 @@ namespace ATOOLS {
     double R2(const Vec4D &p1, const Vec4D &p2) const;
       
     void AddToKtlist(double );
-    void AddToJetlist(const Vec4D &, bool);
+    void AddToJetlist(const Vec4D &, int);
   public:
     static double Kt2(const Vec4D & p);    
 
@@ -89,7 +89,7 @@ namespace ATOOLS {
     void   Init(int);
     bool   ConstructJets(const Particle_List *,Particle_List * ,std::vector<double> * ,double);
 
-    double Ktmin(Vec4D *,bool *,int);
+    double Ktmin(Vec4D *,int *,int);
   };
 
 

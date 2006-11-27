@@ -60,7 +60,7 @@ Final_Selector_Getter::operator()(const Argument_Matrix &parameters) const
       if (cur.size()>3) data.eta_min=ATOOLS::ToType<double>(cur[3]);
       if (cur.size()>4) data.eta_max=ATOOLS::ToType<double>(cur[4]);
       if (cur.size()>5 && kf==93) data.r_min=ATOOLS::ToType<double>(cur[5]);
-      if (cur.size()>6 && kf==93) data.bf=ATOOLS::ToType<bool>(cur[6]);
+      if (cur.size()>6 && kf==93) data.bf=ATOOLS::ToType<int>(cur[6]);
       if (cur.size()>7 && kf==93) data.f=ATOOLS::ToType<double>(cur[7]);
       selector->AddSelector(flavour,data);
     }
