@@ -31,7 +31,7 @@ namespace ANALYSIS {
 
     virtual bool Select(const Particle *p1,const Particle *p2) const = 0;
 
-  };// end of class Two_DPhi_Selector
+  };// end of class Two_Particle_Selector_Base
 
   class Two_DPhi_Selector: public Two_Particle_Selector_Base {  
   public:
@@ -122,6 +122,21 @@ namespace ANALYSIS {
     Primitive_Observable_Base *Copy() const;
     
   };// end of class Two_Mass_Selector
+
+  class Two_PT_Selector: public Two_Particle_Selector_Base {  
+  public:
+
+    Two_PT_Selector(const ATOOLS::Flavour flav,const size_t item,
+		      const ATOOLS::Flavour ref,const size_t refitem,
+		      const double min,const double max,
+		      const std::string &inlist,const std::string &reflist,
+		      const std::string &outlist);
+    
+    bool Select(const Particle *p1,const Particle *p2) const;
+
+    Primitive_Observable_Base *Copy() const;
+    
+  };// end of class Two_PT_Selector
 
   class Two_DR_Selector: public Two_Particle_Selector_Base {  
   public:
@@ -426,6 +441,31 @@ Primitive_Observable_Base *Two_Mass_Selector::Copy() const
 {
   return new Two_Mass_Selector(m_flavour,m_item,m_refflavour,m_refitem,
 				   m_xmin,m_xmax,m_listname,m_reflist,m_outlist);
+}
+
+DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_PT_Selector,
+				 Two_PT_Selector_Getter,"TwoPTSel")
+
+Two_PT_Selector::
+Two_PT_Selector(const ATOOLS::Flavour flav,const size_t item,
+		const ATOOLS::Flavour refflav,const size_t refitem,
+		const double min,const double max,
+		const std::string &inlist,const std::string &reflist,
+		const std::string &outlist):
+  Two_Particle_Selector_Base(flav,item,refflav,refitem,min,max,
+			     inlist,reflist,outlist) {}
+
+bool Two_PT_Selector::Select(const Particle *p1,const Particle *p2) const
+{
+  double pt=(p1->Momentum()+p2->Momentum()).PPerp();
+  if (pt<m_xmin || pt>m_xmax) return false;
+  return true;
+}
+
+Primitive_Observable_Base *Two_PT_Selector::Copy() const
+{
+  return new Two_PT_Selector(m_flavour,m_item,m_refflavour,m_refitem,
+			     m_xmin,m_xmax,m_listname,m_reflist,m_outlist);
 }
 
 DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_DR_Selector,

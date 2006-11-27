@@ -2,6 +2,7 @@
 
 #include "MyStrStream.H"
 #include "Algebra_Interpreter.H"
+#include "Exception.H"
 #include <iomanip>
 
 using namespace ATOOLS;
@@ -9,6 +10,11 @@ using namespace ATOOLS;
 struct TDouble: public Term {
   double m_value;
 };// end of struct Double
+
+struct TVec4D: public Term {
+  Vec4D m_value;
+  TVec4D(const Vec4D &value): m_value(value) {}
+};// end of struct Vec4D
 
 namespace ANALYSIS {
 
@@ -114,9 +120,16 @@ Two_Particle_Modifier_Base(const ATOOLS::Flavour flav[2],const size_t item[2],
   while (bpos!=std::string::npos) {
     size_t epos(m_crit.find('@',bpos+1));
     if (epos!=std::string::npos && epos-bpos>1) {
-      m_interpreter.AddTag(m_crit.substr(bpos,epos-bpos+1),"1");
-      msg_Debugging()<<"  adding tag '"
-		     <<m_crit.substr(bpos+1,epos-bpos-1)<<"'\n";
+      if (m_crit[epos-1]==']') {
+	m_interpreter.AddTag(m_crit.substr(bpos,epos-bpos+1),"(1.0,0.0,0.0,1.0)");
+	msg_Debugging()<<"  adding vector tag '"
+		       <<m_crit.substr(bpos+1,epos-bpos-1)<<"'\n";
+      }
+      else {
+	m_interpreter.AddTag(m_crit.substr(bpos,epos-bpos+1),"1");
+	msg_Debugging()<<"  adding double tag '"
+		       <<m_crit.substr(bpos+1,epos-bpos-1)<<"'\n";
+      }
     }
     bpos=m_crit.find('@',++epos);
   }
@@ -167,11 +180,10 @@ Term *Two_Particle_Modifier_Base::ReplaceTags(Term *term) const
 {
   std::string tag(term->m_tag.substr(1,term->m_tag.length()-2));
   Blob_Data_Base *data((*p_ana)[tag]);
-  if (data==NULL) {
-    msg.Error()<<METHOD<<"(): Data '"<<tag<<"' not found."<<std::endl;
-    return term;
-  }
-  ((TDouble*)term)->m_value=data->Get<double>();
+  if (data==NULL) THROW(critical_error,"Data '"+tag+"' not found.");
+  if (term->m_tag[term->m_tag.length()-1]==']') 
+    ((TVec4D*)term)->m_value=data->Get<Vec4D>();
+  else ((TDouble*)term)->m_value=data->Get<double>();
   return term;
 }
 

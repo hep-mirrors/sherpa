@@ -96,7 +96,7 @@ GetFourParticleCalculator(const Argument_Matrix &parameters)
 
 #define DEFINE_FOUR_CALCULATOR_PRINT_METHOD(NAME)		\
   void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
-  { str<<"flav1 item1 ... flav4 item4 min max inlist outlist"; }
+  { str<<"flav1 item1 ... flav4 item4 min max inlist resulttag"; }
 
 #define DEFINE_FOUR_CALCULATOR_GETTER(CLASS,NAME,TAG)		\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,Argument_Matrix);	\
@@ -109,8 +109,7 @@ Four_Particle_Calculator_Base::Four_Particle_Calculator_Base
 (const ATOOLS::Flavour flav[4],const size_t item[4],
  const double min,const double max,
  const std::string &inlist,const std::string &outlist):
-  m_outlist(outlist!=""?outlist:ATOOLS::ToString(min)+"<SEL<"+
-	    ATOOLS::ToString(max)+inlist)
+  m_outlist(outlist)
 {
   for (size_t i(0);i<4;++i) {
     m_flav[i]=flav[i];
@@ -123,11 +122,8 @@ Four_Particle_Calculator_Base::Four_Particle_Calculator_Base
 }
 
 void Four_Particle_Calculator_Base::Evaluate
-(const ATOOLS::Particle_List &plist,double weight,int ncount)
+(const ATOOLS::Particle_List &inlist,double weight,int ncount)
 {
-  ATOOLS::Particle_List inlist(plist);
-  ATOOLS::Particle_List *outlist = new ATOOLS::Particle_List();
-  p_ana->AddParticleList(m_outlist,outlist);
   int no(-1);
   size_t pos[4]={std::string::npos,std::string::npos,
 		 std::string::npos,std::string::npos};

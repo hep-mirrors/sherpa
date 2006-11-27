@@ -6,12 +6,15 @@ pkglib_LTLIBRARIES       =	libObservables.la
 
 libObservables_la_SOURCES     =	\
 				$(EXTRAOBS) \
+				List_Modifier.C \
+				Global_Calculator.C \
 				HT.C \
 				PSM_Observables.C \
 				Multiplicity.C \
 			    	Statistics_Observable.C \
 				One_Particle_Selector.C \
 				Two_Particle_Selector.C \
+				Four_Particle_Calculator.C \
 				One_Particle_Extractor.C \
 				All_Particle_Selector.C \
 				Universal_Selector.C \
@@ -21,8 +24,10 @@ libObservables_la_SOURCES     =	\
 			    	SV_Statistics.C \
 			    	One_Particle_Observables.C \
 			    	Two_Particle_Observables.C \
+				Two_Particle_Observables_2.C \
                                 Three_Particle_Observables.C \
 			    	Four_Particle_Observables.C \
+			    	Four_Particle_Observables_2.C \
 				Midpoint_Cone.C \
 			    	Calorimeter_Cone.C \
 			    	Jet_Cone_Distribution.C \
