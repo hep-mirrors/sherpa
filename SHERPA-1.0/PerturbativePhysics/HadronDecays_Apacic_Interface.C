@@ -269,7 +269,7 @@ bool HadronDecays_Apacic_Interface::FillSpectatorDecayTree(APACIC::Tree * tree) 
   tree->Reset();
 
   Vec4D momom(Vec4D(0.,0.,0.,0.));
-  for (int i=0;i<3;i++) momom += m_particles[i]->Momentum();
+  for (int i=0;i<4;i++) momom += m_particles[i]->Momentum();
   double scale(momom.Abs2());
 
   APACIC::Knot * mo = tree->NewKnot(Flavour(kf::photon),momom,scale,0.);
@@ -289,6 +289,7 @@ bool HadronDecays_Apacic_Interface::FillSpectatorDecayTree(APACIC::Tree * tree) 
   mo->left = tree->NewKnot(Flavour(kf::photon),momom,scale,0.);
   mo->left->part->SetStatus(part_status::decayed);
   mo->left->part->SetInfo('M');
+  mo->left->t       = scale;
   mo->left->E2      = scale;
   mo->left->maxpt2  = scale;
   mo->left->z       = 0.5;
@@ -325,6 +326,7 @@ bool HadronDecays_Apacic_Interface::FillSpectatorDecayTree(APACIC::Tree * tree) 
   mo->right = tree->NewKnot(Flavour(kf::photon),momom,scale,0.);
   mo->right->part->SetStatus(part_status::decayed);
   mo->right->part->SetInfo('M');
+  mo->right->t       = scale;
   mo->right->E2      = scale;
   mo->right->maxpt2  = scale;
   mo->right->z       = 0.5;
@@ -354,7 +356,7 @@ bool HadronDecays_Apacic_Interface::FillSpectatorDecayTree(APACIC::Tree * tree) 
   mo->right->right->part->SetInfo('H');
 
 
-  m_boost = Poincare(momom);
+  m_boost = Poincare(mo->part->Momentum());
   tree->BoRo(m_boost);
   mo->left->left->E2           = sqr(mo->left->left->part->Momentum()[0]);
   mo->left->right->E2          = sqr(mo->left->right->part->Momentum()[0]);
