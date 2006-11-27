@@ -334,10 +334,11 @@ void Integrable_Base::SetMomenta()
 double Integrable_Base::CalculateScale(const Vec4D *momenta) 
 {
   if (!m_kfkey.Assigned()) {
+    std::string kfname(p_activepshandler->Process()->Name());
     std::string kfinfo("O(QCD)="+ToString(m_orderQCD));
     msg_Debugging()<<METHOD<<"(): Assign '"<<Name()
-		   <<"' to '"<<Name()<<"','"<<kfinfo<<"'\n";
-    m_kfkey.Assign(Name(),2,0,p_activepshandler->GetInfo());
+		   <<"' to '"<<kfname<<"','"<<kfinfo<<"'\n";
+    m_kfkey.Assign(kfname,2,0,p_activepshandler->GetInfo());
     m_kfkey.SetInfo(kfinfo);
   }
   scl::scheme scheme(m_scalescheme);
