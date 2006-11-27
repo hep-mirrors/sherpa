@@ -132,7 +132,11 @@ Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist
       return Return_Value::Success;
     case -1:
       p_showerhandler->CleanUp();
-      if (blob->Type()!=btp::Signal_Process)
+      if (blob->Type()==btp::Hadron_Decay) {
+	blob->SetStatus(blob_status::needs_hadrondecays);
+	return Return_Value::Success;
+      }
+      else if (blob->Type()!=btp::Signal_Process) 
 	interface->CleanBlobList(bloblist,blob->Type());
       return Return_Value::Retry_Event;
     default:

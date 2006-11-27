@@ -89,8 +89,10 @@ int HadronDecays_Apacic_Interface::PerformDecayShowers()
 { 
   APACIC::Tree * tree = p_shower->GetFinTree();
   if (FillTree(tree)) {
-    if (p_shower->GetApacic()->FinShower()->PerformShower(tree,false)==-1)
+    if (p_shower->GetApacic()->FinShower()->PerformShower(tree,false)==-1) {
+      delete p_blob;
       return -1;
+    }
     p_shower->GetApacic()->FinShower()->SetAllColours(tree->GetRoot());
     m_boost.Invert();
     tree->BoRo(m_boost);
