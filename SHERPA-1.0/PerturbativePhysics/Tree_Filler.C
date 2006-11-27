@@ -59,7 +59,7 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
     ct_test=ct_test->Up();
     ++njet;
   }
-  
+
   // generate knotlist from pointlist in Combine_Table
   
   // start initial state
@@ -144,6 +144,9 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
   // known.)
   DetermineColourAngles(knots);
 
+  knots[0]->dir=ct_test->Momentum(0)[3]>0?1:-1;
+  knots[1]->dir=ct_test->Momentum(1)[3]>0?1:-1;
+
   for (int i=0;i<4;++i) ini_knots.push_back(mo);
 
   Tree * tree;
@@ -207,8 +210,6 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
   }
   for (size_t i(0);i<knots.size();++i) 
     knots[i]->tout=sqr(knots[i]->part->Flav().PSMass());
-  knots[0]->dir=knots[0]->part->Momentum()[3]>0.0?1:-1;
-  knots[1]->dir=knots[1]->part->Momentum()[3]>0.0?1:-1;
   /*
   if (msg.LevelIsDebugging()) {
     msg.Out()<<" in Tree_Filler::FillTrees("<<m_isrshoweron<<","
@@ -532,8 +533,13 @@ void Tree_Filler::EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC:
     p_fsrshower->EstablishRelations(mo,d1,d2);
 
     mo->tout = mo->t;
-    if (m_showermode&1 && mo->prev!=NULL && mo->shower==2) 
-      mo->t=mo->prev->t; 
+    if (m_showermode&1 && mo->prev!=NULL && mo->shower==2) {
+      msg_Debugging()<<*mo<<*mo->prev;
+      // is mother
+      if (mo->prev->dir!=0) mo->t=dabs(mo->prev->right->t);
+      // fs mother
+      else mo->t=mo->prev->t; 
+    }
     return;
   }
   else if (mode==0) {
@@ -562,6 +568,7 @@ void Tree_Filler::EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC:
     }
     mo->right = d1;
     mo->left  = d2;
+    mo->dir   = d1->dir;
     d1->prev  = mo;
     d2->prev  = mo;
 
