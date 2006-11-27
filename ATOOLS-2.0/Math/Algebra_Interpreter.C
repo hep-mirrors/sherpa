@@ -253,6 +253,7 @@ DEFINE_UNARY_DOUBLE_FUNCTION(Logarithm,"log",log)
 DEFINE_UNARY_DOUBLE_FUNCTION(Logarithm10,"log10",log10)
 DEFINE_UNARY_DOUBLE_FUNCTION(Exponential,"exp",exp)
 DEFINE_UNARY_DOUBLE_FUNCTION(Absolute_Value,"abs",dabs)
+DEFINE_UNARY_DOUBLE_FUNCTION(Prefix,"sgn",Sign)
 DEFINE_UNARY_DOUBLE_FUNCTION(Square,"sqr",sqr)
 DEFINE_UNARY_DOUBLE_FUNCTION(Square_Root,"sqrt",sqrt)
 
@@ -658,6 +659,7 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   AddFunction(new Logarithm10());
   AddFunction(new Exponential());
   AddFunction(new Absolute_Value());
+  AddFunction(new Prefix());
   AddFunction(new Square());
   AddFunction(new Square_Root());
   AddFunction(new Minimum());
