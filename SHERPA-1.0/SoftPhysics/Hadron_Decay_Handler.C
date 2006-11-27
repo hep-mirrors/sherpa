@@ -93,6 +93,29 @@ Return_Value::code Hadron_Decay_Handler::FillHadronDecayBlob(Blob *blob,const Ve
       ret = p_lund->PerformDecay(blob);
       break;
   }
+
+  int number_of_quarks(0), number_of_gluons(0); Particle_Vector partons;
+  for(int i=0;i<blob->NOutP();i++) {
+    if(blob->OutParticle(i)->Flav().IsQuark()) {
+      number_of_quarks++;
+      partons.push_back(blob->OutParticle(i));
+    }
+    else if(blob->OutParticle(i)->Flav().IsGluon()) {
+      number_of_gluons++;
+      partons.push_back(blob->OutParticle(i));
+    }
+  }
+  if(number_of_quarks>0 || number_of_gluons>0) {
+    if(SetColorFlow(partons,number_of_quarks,number_of_gluons))
+      blob->SetStatus(blob_status::needs_showers);
+    else {
+      msg.Error()<<METHOD<<" Warning: "<<endl
+        <<"Unknown combination of coloured objects leaving hadron decay:"<<endl
+        <<*blob<<endl
+        <<"Don't know how to handle them."<<endl;
+    }
+  }
+
   return ret;
 }
 
@@ -131,3 +154,48 @@ bool Hadron_Decay_Handler::DiceMass(ATOOLS::Particle* part, double min, double m
   }
   else return false;
 }
+
+
+bool Hadron_Decay_Handler::SetColorFlow(Particle_Vector parts,int n_q, int n_g)
+{
+  size_t n=parts.size();
+  if(n_q==2 && n_g==0 && n==2) {
+    if(parts[0]->Flav().IsAnti()) parts[0]->SetFlow(2,-1);
+    else                          parts[0]->SetFlow(1,-1);
+    if(parts[1]->Flav().IsAnti()) parts[1]->SetFlow(2,parts[0]->GetFlow(1));
+    else                          parts[1]->SetFlow(1,parts[0]->GetFlow(2));
+  }
+  else if(n_q==0 && n_g==2 && n==2) {
+    parts[0]->SetFlow(2,-1);
+    parts[0]->SetFlow(1,-1);
+    parts[1]->SetFlow(2,parts[0]->GetFlow(1));
+    parts[1]->SetFlow(1,parts[0]->GetFlow(2));
+  }
+  else if(n_q==0 && n_g==3 && n==3) {
+    parts[0]->SetFlow(2,-1);
+    parts[0]->SetFlow(1,-1);
+    parts[1]->SetFlow(2,parts[0]->GetFlow(1));
+    parts[1]->SetFlow(1,-1);
+    parts[2]->SetFlow(2,parts[1]->GetFlow(1));
+    parts[2]->SetFlow(1,parts[0]->GetFlow(2));
+  }
+  else if(n_q==4 && n_g==0 && n==4) {
+    // only for indices B -> c(0) db(3) d(2) ub(1)    so far
+    if(parts[0]->Flav().IsAnti()) {
+      parts[0]->SetFlow(2,-1);
+      parts[3]->SetFlow(1,parts[0]->GetFlow(2));
+      parts[2]->SetFlow(2,-1);
+      parts[1]->SetFlow(1,parts[2]->GetFlow(2));
+    }
+    else {
+      parts[0]->SetFlow(1,-1);
+      parts[3]->SetFlow(2,parts[0]->GetFlow(1));
+      parts[2]->SetFlow(1,-1);
+      parts[1]->SetFlow(2,parts[2]->GetFlow(1));
+    }
+  }
+  else return false;
+  
+  return true;
+}
+

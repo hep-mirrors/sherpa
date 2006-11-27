@@ -593,67 +593,6 @@ void Lund_Interface::FillOutgoingParticlesInBlob(Blob *blob)
       partons.push_back(particle);
     }
   }
-  if(number_of_quarks>0 || number_of_gluons>0) {
-    if(SetColorFlow(partons,number_of_quarks,number_of_gluons))
-      blob->SetStatus(blob_status::needs_showers);
-    else {
-      msg.Error()<<METHOD<<" Warning in event "<<rpa.gen.NumberOfDicedEvents()<<endl
-        <<"Unknown combination of coloured objects leaving Pythia hadron decay:"<<endl
-        <<*blob<<endl
-        <<"Don't know how to handle them."<<endl;
-    }
-  }
-}
-
-bool Lund_Interface::SetColorFlow(Particle_Vector parts,int n_q, int n_g)
-{
-  size_t n=parts.size();
-  if(n_q==2 && n_g==0 && n==2) {
-    if(parts[0]->Flav().IsAnti()) parts[0]->SetFlow(2,-1);
-    else                          parts[0]->SetFlow(1,-1);
-    if(parts[1]->Flav().IsAnti()) parts[1]->SetFlow(2,parts[0]->GetFlow(1));
-    else                          parts[1]->SetFlow(1,parts[0]->GetFlow(2));
-  }
-  else if(n_q==0 && n_g==2 && n==2) {
-    parts[0]->SetFlow(2,-1);
-    parts[0]->SetFlow(1,-1);
-    parts[1]->SetFlow(2,parts[0]->GetFlow(1));
-    parts[1]->SetFlow(1,parts[0]->GetFlow(2));
-  }
-  else if(n_q==0 && n_g==3 && n==3) {
-    parts[0]->SetFlow(2,-1);
-    parts[0]->SetFlow(1,-1);
-    parts[1]->SetFlow(2,parts[0]->GetFlow(1));
-    parts[1]->SetFlow(1,-1);
-    parts[2]->SetFlow(2,parts[1]->GetFlow(1));
-    parts[2]->SetFlow(1,parts[0]->GetFlow(2));
-  }
-  else if(n_q==4 && n_g==0 && n==4) {
-    if(parts[0]->Flav().IsAnti()) parts[0]->SetFlow(2,-1);
-    else                          parts[0]->SetFlow(1,-1);
-    size_t next_one=0;
-    for(size_t i=1;i<n;i++) {
-      if(parts[i]->Flav() == parts[0]->Flav().Bar()) {
-	if(parts[i]->Flav().IsAnti()) parts[i]->SetFlow(2,parts[0]->GetFlow(1));
-	else                          parts[i]->SetFlow(1,parts[0]->GetFlow(2));
-      }
-      else next_one=i; // one of the two others has to be treated next
-    }
-    
-    if(parts[next_one]->Flav().IsAnti()) parts[next_one]->SetFlow(2,-1);
-    else                                 parts[next_one]->SetFlow(1,-1);
-    for(size_t i=1;i<n;i++) {
-      if(parts[i]->Flav() == parts[next_one]->Flav().Bar() &&
-         parts[i]->GetFlow(1)==0 && parts[i]->GetFlow(2)==0 )
-      {
-	if(parts[i]->Flav().IsAnti()) parts[i]->SetFlow(2,parts[next_one]->GetFlow(1));
-	else                          parts[i]->SetFlow(1,parts[next_one]->GetFlow(2));
-      }
-    }
-  }
-  else return false;
-  
-  return true;
 }
 
 void Lund_Interface::RestoreStatus() {
