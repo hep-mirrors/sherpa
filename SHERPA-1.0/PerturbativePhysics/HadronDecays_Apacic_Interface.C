@@ -89,7 +89,8 @@ int HadronDecays_Apacic_Interface::PerformDecayShowers()
 { 
   APACIC::Tree * tree = p_shower->GetFinTree();
   if (FillTree(tree)) {
-    p_shower->GetApacic()->FinShower()->PerformShower(tree,false); 
+    if (p_shower->GetApacic()->FinShower()->PerformShower(tree,false)==-1)
+      return -1;
     p_shower->GetApacic()->FinShower()->SetAllColours(tree->GetRoot());
     m_boost.Invert();
     tree->BoRo(m_boost);
@@ -370,5 +371,8 @@ bool HadronDecays_Apacic_Interface::FillSpectatorDecayTree(APACIC::Tree * tree) 
   mo->right->E2                = sqr(mo->right->part->Momentum()[0]);
   mo->right->zs = mo->right->z = sqrt(mo->right->left->E2/mo->right->E2);
   mo->zs = mo->z               = sqrt(mo->left->E2/mo->E2);
+
+  cout<<METHOD<<":"<<endl
+      <<(*tree)<<endl;
   return true;
 }
