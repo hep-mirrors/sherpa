@@ -121,11 +121,12 @@ bool Initial_State_Shower::InitializeSystem(Tree **const trees,int tree1,
       if (!FillBranch(trees,tree1,k1,k2)) decay1=false;
     }
     msg_Debugging()<<"t_{"<<k1->kn_no<<"} = "<<k1->t
-		   <<", t_{"<<k2->kn_no<<"} "<<k2->t<<"\n";
+		   <<" ("<<decay1<<"), t_{"<<k2->kn_no<<"} "
+		   <<k2->t<<" ("<<decay2<<")\n";
     if (decay1 && k1->t<k1->tout) m_sprime/=k1->z;
     if (decay2 && k2->t<k2->tout) m_sprime/=k2->z;
     int stat(p_kin->InitKinematics(trees,tree1,k1,k2));
-    if (stat==-1) return false;
+    if (stat==-1) break;
     if (stat==1) { 
       if (!decay1) SetColours(k1);
       if (!decay2) SetColours(k2);
@@ -135,7 +136,7 @@ bool Initial_State_Shower::InitializeSystem(Tree **const trees,int tree1,
       bool t2(k2->shower==0 || k2->t<k2->tout);
       if (t1 || t2)
 	if ((stat=EvolveSystem(trees,tree1,t1?k1->prev:k1,t2?k2->prev:k2))==-1) 
-	  return false;
+	  break;
       if (stat==1) return true;
     }
     if (!(decay1 || decay2)) break;
@@ -149,7 +150,7 @@ bool Initial_State_Shower::InitializeSystem(Tree **const trees,int tree1,
 
 int Initial_State_Shower::DoKinematics()
 {
-  if (!p_kin->DoKinematics(p_istrees,m_tree1,p_k1,p_k2,false)) return -1;
+  if (!p_kin->DoKinematics(p_istrees,m_tree1,p_k1,p_k2,false)) return 0;
   return 1-p_suds[m_tree1]->PTVeto(p_k1->prev);
 }
 
@@ -245,7 +246,7 @@ int Initial_State_Shower::EvolveSystem(Tree **const trees,int tree1,
       }
     }
     else {
-      k4->t     = k3->tout;
+      k4->t     = k4->tout;
       k4->stat  = 0;
       k4->part->SetStatus(part_status::active);
       if (!p_kin->DoKinematics(trees,tree1,k1,k2,false)) continue;
