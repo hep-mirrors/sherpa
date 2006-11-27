@@ -140,8 +140,9 @@ bool Spacelike_Kinematics::DoKinematics(Tree **const trees,const int &leg,
     double sprime(cms.Abs2()), s3(sprime/active->z-partner->t-mother->t);
     if (s3<0.0) return false;
     double maxt_d2(CalculateMaxT(active,partner));
-    if (maxt_d2<sister->t) return false;
-    double E_mo(1./(2.*sqrt(sprime))*(sprime/active->z-partner->t+active->t-sister->t));
+    double t_si(sister->shower!=2?sister->t:sister->tout);
+    if (maxt_d2<t_si) return false;
+    double E_mo(1./(2.*sqrt(sprime))*(sprime/active->z-partner->t+active->t-t_si));
     double pz_mo(1./(2.*active->part->Momentum()[3])*(s3-2.*partner->part->E()*E_mo));
     double pt_mo(sqrt(sqr(E_mo)-sqr(pz_mo)-mother->t)), cph(cos(active->phi)), sph(sin(active->phi));
     if (mode>0) {
@@ -166,14 +167,14 @@ bool Spacelike_Kinematics::DoKinematics(Tree **const trees,const int &leg,
 		 <<"  Act: "<<active->part->Momentum()<<" "
 		 <<active->part->Momentum().Abs2()<<" / "<<active->t<<"\n"
 		 <<"  Mom: "<<v_mo<<" "<<v_mo.Abs2()<<" / "<<mother->t<<"\n"
-		 <<"  Sis: "<<v_si<<" "<<v_si.Abs2()<<" / "<<sister->t<<"\n"
+		 <<"  Sis: "<<v_si<<" "<<v_si.Abs2()<<" / "<<t_si
+		 <<" ("<<sister->t<<")\n"
 		 <<"  nom E_sis: "<<(1./active->z-1.)*sqrt(sprime/4.)
 		 <<" / "<<((1./active->z-1.)*sqrt(sprime/4.)-
-			   sister->t/sqrt(4.*sprime))<<"\n"
+			   t_si/sqrt(4.*sprime))<<"\n"
 		 <<"  test s' "<<sprime/active->z<<" =?= "
 		 <<(v_mo+partner->part->Momentum()).Abs2()<<"\n"
-		 <<"  (spr,z,t4): " <<sprime<<", "<<active->z<<", "
-		 <<sister->t<<"\n"
+		 <<"  (spr,z,t4): " <<sprime<<", "<<active->z<<", "<<t_si<<"\n"
 		 <<"  (E3,pz3,pt3,s3): "<<E_mo<<", "<<pz_mo<<", "
 		 <<pt_mo<<" "<<s3<<std::endl;
     }
