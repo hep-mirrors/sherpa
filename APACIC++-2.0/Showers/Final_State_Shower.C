@@ -353,6 +353,12 @@ int Final_State_Shower::FillBranch(Tree *tree,Knot *mo,int first)
   msg_Debugging()<<"}\n";
   if (first>0) {
     mo->Restore();
+    if ((mo->left->left==NULL || mo->right->left==NULL) && 
+	!p_kin->Shuffle(mo,0)) {
+      msg_Debugging()<<"shuffle failed\n";
+      msg_Debugging()<<"}\n";
+      return -1;
+    }
   }
   else {
     if (!p_kin->Shuffle(mo,0)) {
