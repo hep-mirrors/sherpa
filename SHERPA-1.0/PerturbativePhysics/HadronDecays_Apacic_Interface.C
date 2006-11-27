@@ -281,6 +281,7 @@ bool HadronDecays_Apacic_Interface::FillSpectatorDecayTree(APACIC::Tree * tree) 
   mo->costh   = -1.; 
   mo->thcrit  = 200.;
   mo->stat    = 0;  
+  mo->didkin  = true;
 
   momom = Vec4D(0.,0.,0.,0.);
   for (int i=0;i<2;i++) momom += m_particles[i]->Momentum();
@@ -297,6 +298,7 @@ bool HadronDecays_Apacic_Interface::FillSpectatorDecayTree(APACIC::Tree * tree) 
   mo->left->thcrit  = 200.;
   mo->left->prev    = mo;
   mo->left->stat    = 0;  
+  mo->left->didkin  = true;
 
   Particle * part            = m_particles[0];
   mo->left->left             = tree->NewKnot(part);
@@ -334,6 +336,7 @@ bool HadronDecays_Apacic_Interface::FillSpectatorDecayTree(APACIC::Tree * tree) 
   mo->right->thcrit  = 200.;
   mo->right->prev    = mo;
   mo->right->stat    = 0;  
+  mo->right->didkin  = true;
 
   part                        = m_particles[2];
   mo->right->left             = tree->NewKnot(part);
