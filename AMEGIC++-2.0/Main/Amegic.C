@@ -213,9 +213,8 @@ void Amegic::ReadInProcessfile(string file)
   int         order_ew,order_strong,kfactor_scheme;
   PHASIC::scl::scheme scale_scheme; 
   double      fixed_scale;
-  double      enhance_factor=1.,maxreduction_factor=1.,maxredepsilon=0.,ycut=-1.;
+  vector<double>  venhance_factor,vmaxreduction_factor,vmaxredepsilon,vycut,vmaxerror;
   std::string enhance_function="1";
-  double      maxerror=-1.;
   bool        print_graphs=false;
   int         enable_mhv=0; 
   string      selectorfile;
@@ -272,7 +271,6 @@ void Amegic::ReadInProcessfile(string file)
 	  }
 	  else {
 	    order_ew = order_strong = -1;
-	    ycut                = -1.;
 	    selectorfile        = string("");
 	    scale_scheme        = _sc;
 	    kfactor_scheme      = _kfactor_scheme;
@@ -280,9 +278,13 @@ void Amegic::ReadInProcessfile(string file)
 	    order_ew            = 99;
 	    order_strong        = 99;
 	    nex                 = 0;
-	    enhance_factor      = 1.;
-	    maxreduction_factor = 1.;
-	    maxredepsilon       = 0.;
+
+	    vycut.clear();                vycut.push_back(-1.);
+	    venhance_factor.clear();      venhance_factor.push_back(1.);
+	    vmaxreduction_factor.clear(); vmaxreduction_factor.push_back(1.);
+	    vmaxredepsilon.clear();       vmaxredepsilon.push_back(0.);
+	    vmaxerror.clear();            vmaxerror.push_back(-1.);
+
 	    enhance_function    = "1";
 	    do {
 	      getline(from,buf);
@@ -399,10 +401,7 @@ void Amegic::ReadInProcessfile(string file)
 		  MyStrStream str;      
 		  buf          = buf.substr(buf.find(":",position)+1);
 		  Shorten(buf);
-		  Algebra_Interpreter inter;
-		  enhance_factor=ToType<double>(inter.Interprete(buf));
-		  std::cout<<"AMEGIC: found enhance factor "
-			   <<enhance_factor<<std::endl;
+		  ExtractMPvalues(buf,venhance_factor);
 		}
 		position       = buf.find(string("Enhance_Function :"));
 		if (position > -1) {
@@ -416,16 +415,14 @@ void Amegic::ReadInProcessfile(string file)
 		  MyStrStream str;      
 		  buf          = buf.substr(buf.find(":",position)+1);
 		  Shorten(buf);
-		  str<<buf;
-		  str>>maxreduction_factor;
+		  ExtractMPvalues(buf,vmaxreduction_factor);
 		}
 		position       = buf.find(string("Max_Epsilon :"));
 		if (position > -1) {
 		  MyStrStream str;      
 		  buf          = buf.substr(buf.find(":",position)+1);
 		  Shorten(buf);
-		  str<<buf;
-		  str>>maxredepsilon;
+		  ExtractMPvalues(buf,vmaxredepsilon);
 		}
 
 		position       = buf.find(string("Integration_Error :"));
@@ -433,8 +430,7 @@ void Amegic::ReadInProcessfile(string file)
 		  MyStrStream str;      
 		  buf          = buf.substr(buf.find(":",position)+1);
 		  Shorten(buf);
-		  str<<buf;
-		  str>>maxerror;
+		  ExtractMPvalues(buf,vmaxerror);
 		}
 
 		position       = buf.find(string("YCUT :"));
@@ -442,9 +438,7 @@ void Amegic::ReadInProcessfile(string file)
 		  MyStrStream str;      
 		  buf          = buf.substr(buf.find(":",position)+1);
 		  Shorten(buf);
-		  Algebra_Interpreter inter;
-		  ycut=ToType<double>(inter.Interprete(buf));
-		  std::cout<<"AMEGIC: found ycut "<<ycut<<std::endl;
+		  ExtractMPvalues(buf,vycut);
 		}
 
 		position       = buf.find(string("Print_Graphs"));
@@ -494,7 +488,7 @@ void Amegic::ReadInProcessfile(string file)
 	    pinfo->SetQCDjetNums();
 	    vector<int> ii;
 	    ii.clear();
-	    for(size_t i=0;i<AppNum.size();i++) ii.push_back(0);
+	    for (size_t i=0;i<AppNum.size();i++) ii.push_back(0);
 	    for (size_t i=0;i<AppNum.size();i++) {
 	      AppPI[i]->m_maxqcdjets+=AppNum[i]-1;
 	    }
@@ -515,6 +509,17 @@ void Amegic::ReadInProcessfile(string file)
 	      }
 	      
 	      nFS = pcinfo->TotalNout();
+	      double  enhance_factor      = venhance_factor[0];
+	      double  maxreduction_factor = vmaxreduction_factor[0];
+	      double  maxredepsilon       = vmaxredepsilon[0];
+	      double  ycut                = vycut[0];
+	      double  maxerror            = vmaxerror[0];
+	      if ((int)venhance_factor.size()>nFS&&venhance_factor[nFS]!=-1.) enhance_factor=venhance_factor[nFS];
+	      if ((int)vmaxreduction_factor.size()>nFS&&vmaxreduction_factor[nFS]!=-1.) maxreduction_factor=vmaxreduction_factor[nFS];
+	      if ((int)vmaxredepsilon.size()>nFS&&vmaxredepsilon[nFS]!=-1.) maxredepsilon=vmaxredepsilon[nFS];
+	      if ((int)vycut.size()>nFS&&vycut[nFS]!=-1.) ycut=vycut[nFS];
+	      if ((int)vmaxerror.size()>nFS&&vmaxerror[nFS]!=-1.) maxerror=vmaxerror[nFS];
+
 	      if (nFS>m_maxjet) m_maxjet = nFS;
 	      m_nmax = Max(m_nmax,pcinfo->Nmax(nIS));
 	      flavs              = new Flavour[nIS+nFS];
@@ -560,7 +565,7 @@ void Amegic::ReadInProcessfile(string file)
 						   plavs,nex,excluded,usepi,ycut,maxerror,enhance_function);
 		  else if (enable_mhv!=4)
 		    proc = new Single_Process(pcinfo,nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
-					    order_strong,order_ew,
+					      order_strong,order_ew,
 					      kfactor_scheme,scale_scheme,fixed_scale,
 					      plavs,nex,excluded,usepi,ycut,maxerror,enhance_function);
 		}
@@ -604,6 +609,38 @@ void Amegic::ReadInProcessfile(string file)
   p_procs->SetMaxJetNumber(m_maxjet);
 }
 
+void Amegic::ExtractMPvalues(string& str,vector<double>& dv)
+{
+  Shorten(str);
+  int position;
+  Algebra_Interpreter inter;
+  position = str.find(string("{"));
+  if (position==-1) {
+    dv[0]=ToType<double>(inter.Interprete(str));
+    return;
+  }
+  string hstr = str.substr(0,position);
+  Shorten(hstr);  
+  double value = ToType<double>(inter.Interprete(hstr));
+  str = str.substr(position+1,str.length()-position-2);
+  do {
+    position = str.find(string(","));
+    int pos = -1;
+    if (position>-1) {
+      hstr = str.substr(0,position);
+      Shorten(hstr);
+      str = str.substr(position+1);
+    }
+    else hstr=str;
+    MyStrStream strm;      
+    strm<<hstr;
+    strm>>pos;
+    if (pos>0) {
+      if (pos>=(int)dv.size()) dv.resize(pos+1,-1.);
+      dv[pos]=value;
+    }
+  } while (position>-1);
+}
 
 int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf,std::vector<int>* kf,vector<int>* num)
 {

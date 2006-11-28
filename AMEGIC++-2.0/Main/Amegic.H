@@ -40,6 +40,7 @@ namespace AMEGIC {
 
     void InitializeInteractionModel(MODEL::Model_Base *);
     void ReadInProcessfile(std::string); 
+    void ExtractMPvalues(std::string& str,std::vector<double>& dv);
     int  ExtractFlavours(ATOOLS::Flavour *&,Pol_Info *&,std::string,std::vector<int>* fl=0,std::vector<int>* num=0);
     void Shorten(std::string&);
   public :
