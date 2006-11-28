@@ -1208,7 +1208,7 @@ double Single_Process::DSigma(const ATOOLS::Vec4D* _moms,bool lookup)
   }
   else  m_lastlumi = 1.;
 
-  return m_last = m_Norm * m_lastdxs * m_lastlumi*KFactor();
+  return m_last = m_Norm * m_lastdxs * m_lastlumi*p_partner->KFactor();
 }
 
 double Single_Process::DSigma2() { 
@@ -1217,7 +1217,7 @@ double Single_Process::DSigma2() {
   }
   double tmp = m_Norm * m_lastdxs * p_isrhandler->Weight2(p_flin); 
   m_last    += tmp;
-  return tmp*KFactor();
+  return tmp*p_partner->KFactor();
 }
 
 double Single_Process::operator()(const ATOOLS::Vec4D * mom)

@@ -1048,8 +1048,8 @@ void Amplitude_Generator::CountOrders(Single_Amplitude * & first)
     int hitQCD = 0;
     hitQCD = FindQCDOrder(f1->GetPointlist(),hitQCD);
     hitQED = N -2 - hitQCD;  // N = nin + nout
-    if (hitQED>QEDmax) QEDmax=hitQED;
-    if (hitQCD>QCDmax) QCDmax=hitQCD;
+    if (hitQED>QEDmax&&hitQED<=nEW) QEDmax=hitQED;
+    if (hitQCD>QCDmax&&hitQCD<=nQCD) QCDmax=hitQCD;
     if (hitQED > nEW || hitQCD > nQCD) {
       ++count;
       if (f1==first) {
@@ -1070,8 +1070,8 @@ void Amplitude_Generator::CountOrders(Single_Amplitude * & first)
       f1 = f1->Next;
     }
   }
-  if (nEW==99)  nEW = QEDmax;
-  if (nQCD==99) nQCD = QCDmax;
+  nEW = QEDmax;
+  nQCD = QCDmax;
   msg_Tracking()<<"Kicked number of diagrams (Amplitude_Generator::CountOrders()) "<<count<<endl;
 }
 
