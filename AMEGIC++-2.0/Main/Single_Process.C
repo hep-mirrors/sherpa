@@ -76,6 +76,7 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
   m_threshold = ATOOLS::Max(sum_massin,sum_massout);
 
   p_pshandler = new Phase_Space_Handler(this,p_isrhandler,p_beamhandler,m_maxerror);
+  SetPSHandler(p_pshandler);
   p_pshandler->SetUsePI(m_usepi);
 
   // making directory
@@ -127,6 +128,7 @@ Single_Process::Single_Process(Process_Info* pinfo,int _nin,int _nout,Flavour * 
   m_threshold = ATOOLS::Max(sum_massin,sum_massout);
 
   p_pshandler = new Phase_Space_Handler(this,p_isrhandler,p_beamhandler,m_maxerror);
+  SetPSHandler(p_pshandler);
   p_pshandler->SetUsePI(m_usepi);
 
   // making directory
