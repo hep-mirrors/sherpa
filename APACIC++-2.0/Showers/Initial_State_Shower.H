@@ -35,6 +35,7 @@ namespace APACIC {
     ATOOLS::Blob *m_bl_meps_is, *m_bl_meps_fs;
 
     void SetDirection(Knot *const k);
+    void SetVetoScales(Knot *const d);
 
     void SingleExtract(Knot *const knot,const int &beam,ATOOLS::Blob *jet,
 		       ATOOLS::Blob_List *const list,int &nr);

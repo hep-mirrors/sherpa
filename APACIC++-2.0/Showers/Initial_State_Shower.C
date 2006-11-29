@@ -101,6 +101,19 @@ void Initial_State_Shower::SetDirection(Knot *const k)
   }
 }
 
+void Initial_State_Shower::SetVetoScales(Knot *const d)
+{
+  if (d==NULL || d->prev==NULL) return;
+  if (d->prev->qjv==1.0e10) {
+    d->prev->qjv=d->qjv;
+    d->prev->qljv=d->qljv;
+  }
+  if (d->prev->left->qjv==1.0e10) {
+    d->prev->left->qjv=d->qjv;
+    d->prev->left->qljv=d->qljv;
+  }
+}
+
 bool Initial_State_Shower::InitializeSystem(Tree **const trees,int tree1,
 					    Knot *k1,Knot *k2)
 {
@@ -212,6 +225,7 @@ int Initial_State_Shower::EvolveSystem(Tree **const trees,int tree1,
       k3->x=k1->x/k1->z;
       m_sprime/=k1->z;
     }
+    SetVetoScales(k1);
     if (k3->stat>0) {
       // dice t for non-me knot
       if (k3->part->Info()!='H' ||
@@ -277,12 +291,7 @@ int Initial_State_Shower::FillBranch(Tree **const trees,const int tree1,
 #ifdef USING__Veto_Info
   p_suds[tree1]->AddVeto();
 #endif
-  if (active->right) {
-    active->qjv=active->right->qjv;
-    active->qljv=active->right->qljv;
-    active->left->qjv=active->qjv;
-    active->left->qljv=active->qljv;
-  }
+  SetVetoScales(active->right);
   if (p_suds[tree1]->Dice(active,m_sprime,
 			  sqr(partner->part->Flav().PSMass()),
 			  m_extra_pdf[tree1])) {
