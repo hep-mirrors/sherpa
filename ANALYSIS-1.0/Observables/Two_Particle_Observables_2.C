@@ -467,8 +467,8 @@ Two_DR_Distribution(const ATOOLS::Flavour flav,const size_t item,
 bool Two_DR_Distribution::Evaluate(const Particle *p1,const Particle *p2,
 				   double weight,int ncount) const
 {
-  p_histo->Insert((sqr(p1->Momentum().Eta()-p2->Momentum().Eta())+
-		   sqr(p1->Momentum().DPhi(p2->Momentum()))),weight,ncount);
+  p_histo->Insert(sqrt(sqr(p1->Momentum().Eta()-p2->Momentum().Eta())+
+		       sqr(p1->Momentum().DPhi(p2->Momentum()))),weight,ncount);
   return true;
 }
 
