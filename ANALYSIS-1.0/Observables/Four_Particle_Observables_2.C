@@ -133,7 +133,7 @@ void SFour_Particle_Observable_Base::Evaluate
 }
 
 DEFINE_FOUR_OBSERVABLE_GETTER(Four_Particle_Plane_Angle,
-			      Four_Particle_Plane_Angle_Getter,"FourPlaneAngle");
+			      Four_Particle_Plane_Angle_Getter,"FourPlaneAngle")
   
 Four_Particle_Plane_Angle::Four_Particle_Plane_Angle
 (const ATOOLS::Flavour flav[4],const size_t item[4],

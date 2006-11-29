@@ -57,7 +57,7 @@ GetGlobalCalculator(const Argument_Matrix &parameters)
 
 #include "Primitive_Analysis.H"
 
-DEFINE_GLOBAL_CALCULATOR_GETTER(Total_Momentum,Total_Momentum_Getter,"MomSum");
+DEFINE_GLOBAL_CALCULATOR_GETTER(Total_Momentum,Total_Momentum_Getter,"MomSum")
 
 Total_Momentum::Total_Momentum(const std::string &inlist,
 			       const std::string &outlist):
