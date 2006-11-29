@@ -300,30 +300,64 @@ ConstructVectors(Knot *const mo,Vec4D &p1vec,Vec4D &p2vec) const
   if (mo->shower==3) p=sqrt(mo->E2-mo->tmo);
   if (mo->left->shower==3) t1=mo->left->tmo;
   if (mo->right->shower==3) t2=mo->right->tmo;
-  msg_Debugging()<<"construct, t_1 = "<<t1<<" <- "<<mo->left->t
-		 <<", t_2 = "<<t2<<" <- "<<mo->right->t<<"\n";
-  double p1(sqrt(E12-t1)), p2(sqrt(E22-t2));
-  msg_Debugging()<<"construct, p_1 = "<<p1<<", p_2 = "<<p2<<", p = "<<p<<"\n";
-  Vec3D n1,n2;
-  ConstructDreiBein(mo,n1,n2);
-  double phi(mo->phi + mo->polinfo.Angle()), bph(cos(phi)), cph(-sin(phi));
-  Vec3D es(cph*n1 + bph*n2);
-  double cth1((p*p-p2*p2+p1*p1)/(2.*p*p1)), sth1(sqrt(1.-sqr(cth1)));
-  if (!(sth1>0.0) && IsZero(cth1-1.0)) sth1=0.0;
-  double cth2((p*p+p2*p2-p1*p1)/(2.*p*p2)), sth2(sqrt(1.-sqr(cth2)));
-  if (!(sth2>0.0) && IsZero(cth2-1.0)) sth2=0.0;
-  mo->costh=cth1*cth2-sth1*sth2;
-  Vec3D nm(mo->part->Momentum());
-  nm=1.0/nm.Abs()*nm;
-  p1vec=Vec4D(sqrt(E12),p1*(cth1*nm - sth1*es));
-  p2vec=Vec4D(sqrt(E22),p2*(cth2*nm + sth2*es));
-  if (p1vec.Nan() || p2vec.Nan()) {
-    msg.Error()<<METHOD<<"("<<mo->kn_no<<"): Error."<<std::endl
-	       <<"mo = "<<*mo<<"d1 = "<<*mo->left<<"d2 = "<<*mo->right
-	       <<"n = "<<nm<<", e = "<<es<<"\nphi = "
-	       <<phi<<" <- "<<mo->phi<<" ("<<mo->polinfo.Angle()<<")"
-	       <<"sth_1 = "<<sth1<<" <- "<<cth1-1.0<<", sth_2 = "
-	       <<sth2<<" <- "<<cth2-1.0<<std::endl;
+  msg_Debugging()<<"construct "<<mo->kn_no<<", t_1 = "<<t1<<"("
+		 <<mo->left->kn_no<<","<<mo->left->part->Info()
+		 <<") <- "<<mo->left->t<<", t_2 = "<<t2<<"("<<mo->right->kn_no
+		 <<","<<mo->right->part->Info()<<") <- "<<mo->right->t<<"\n";
+  if (mo->left->part->Info()=='H' && mo->right->part->Info()=='H') {
+    Vec4D p(mo->part->Momentum());
+    Vec4D p1(mo->left->part->Momentum()), p2(mo->right->part->Momentum());
+    double ap(p.PSpat());
+    double kt(sqrt(GetRelativeKT2(mo->z,mo->E2,mo->t,t1,t2)));
+    Vec4D l(0.0,1.0/ap*(Vec3D)p), t(0.0,(Vec3D)(p1-(p1*l)*l));
+    t=1.0/t.PSpat()*t;
+    if (p1.PSpat2()>p2.PSpat2()) {
+      double lf(sqrt(E12-kt*kt));
+      p1vec=kt*t+lf*l;
+      p2vec=(-kt)*t+(ap-lf)*l;
+    }
+    else {
+      double lf(sqrt(E22-kt*kt));
+      p2vec=(-kt)*t+lf*l;
+      p1vec=kt*t+(ap-lf)*l;
+    }
+    p1vec[0]=sqrt(E12);
+    p1vec[1]=sqrt(E22);
+    msg_Debugging()<<"old p_1 = "<<mo->left->part->Momentum()
+		   <<", p_2 = "<<mo->right->part->Momentum()<<"\n";
+    msg_Debugging()<<"new p_1 = "<<p1vec<<", p_2 = "<<p2vec<<"\n";
+    if (p!=p1vec+p2vec) {
+      msg.Error()<<METHOD<<"(..): Four momentum not conserved.\n"
+		 <<"  p_miss  = "<<(p1vec+p2vec-p)<<"\n"
+		 <<"  p_old   = "<<(p1+p2)<<" "<<(p1+p2).Abs2()<<"\n"
+		 <<"  p_new   = "<<(p1vec+p2vec)
+		 <<" "<<(p1vec+p2vec).Abs2()<<std::endl;
+    }
+  }
+  else {
+    Vec3D n1,n2;
+    ConstructDreiBein(mo,n1,n2);
+    double p1(sqrt(E12-t1)), p2(sqrt(E22-t2));
+    msg_Debugging()<<"construct, p_1 = "<<p1<<", p_2 = "<<p2<<", p = "<<p<<"\n";
+    double phi(mo->phi + mo->polinfo.Angle()), bph(cos(phi)), cph(-sin(phi));
+    Vec3D es(cph*n1 + bph*n2);
+    double cth1((p*p-p2*p2+p1*p1)/(2.*p*p1)), sth1(sqrt(1.-sqr(cth1)));
+    if (!(sth1>0.0) && IsZero(cth1-1.0)) sth1=0.0;
+    double cth2((p*p+p2*p2-p1*p1)/(2.*p*p2)), sth2(sqrt(1.-sqr(cth2)));
+    if (!(sth2>0.0) && IsZero(cth2-1.0)) sth2=0.0;
+    mo->costh=cth1*cth2-sth1*sth2;
+    Vec3D nm(mo->part->Momentum());
+    nm=1.0/nm.Abs()*nm;
+    p1vec=Vec4D(sqrt(E12),p1*(cth1*nm - sth1*es));
+    p2vec=Vec4D(sqrt(E22),p2*(cth2*nm + sth2*es));
+    if (p1vec.Nan() || p2vec.Nan()) {
+      msg.Error()<<METHOD<<"("<<mo->kn_no<<"): Error."<<std::endl
+		 <<"mo = "<<*mo<<"d1 = "<<*mo->left<<"d2 = "<<*mo->right
+		 <<"n = "<<nm<<", e = "<<es<<"\nphi = "
+		 <<phi<<" <- "<<mo->phi<<" ("<<mo->polinfo.Angle()<<")"
+		 <<"sth_1 = "<<sth1<<" <- "<<cth1-1.0<<", sth_2 = "
+		 <<sth2<<" <- "<<cth2-1.0<<std::endl;
+    }
   }
 }
 

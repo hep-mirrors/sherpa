@@ -140,7 +140,7 @@ bool Spacelike_Kinematics::DoKinematics(Tree **const trees,const int &leg,
     double sprime(cms.Abs2()), s3(sprime/active->z-partner->t-mother->t);
     if (s3<0.0) return false;
     double maxt_d2(CalculateMaxT(active,partner));
-    double t_si(sister->shower!=2?sister->t:sister->tout);
+    double t_si(sister->shower<=1?sister->t:sister->part->Momentum().Abs2());
     if (maxt_d2<t_si) return false;
     double E_mo(1./(2.*sqrt(sprime))*(sprime/active->z-partner->t+active->t-t_si));
     double pz_mo(1./(2.*active->part->Momentum()[3])*(s3-2.*partner->part->E()*E_mo));
@@ -342,7 +342,11 @@ Vec4D Spacelike_Kinematics::BoostInLab(Tree **const trees)
 
 bool Spacelike_Kinematics::ResetEnergies(Knot *const in) 
 {
-  if (in->E2 < in->t) return 0;
+  double tt((in->stat!=3||in->shower>1)?in->t:in->tout);
+  msg_Debugging()<<METHOD<<"("<<in->kn_no
+		 <<"): test E = "<<sqrt(in->E2)<<" > m = "<<sqrt(tt)<<"\n";
+  msg_Indent();
+  if (in->E2 < tt) return 0;
   if (in->left) {
     if (in->part->Info()=='H' && in->left->part->Info()=='H') {
       // update z:
@@ -407,6 +411,8 @@ double Spacelike_Kinematics::CalculateMaxT(Knot *const active,
 void Spacelike_Kinematics::ResetMomenta(Knot *const k, Tree *const tree, 
 					const int &mode) 
 {
+  msg_Debugging()<<METHOD<<"(): "<<k->kn_no<<"\n";
+  msg_Indent();
   if (mode==0) {
     Knot *mo(k->prev), *si(mo->left);
     // kill not-ME daughters of sister
@@ -416,16 +422,23 @@ void Spacelike_Kinematics::ResetMomenta(Knot *const k, Tree *const tree,
     k->stat=1;
   }
   else if (mode==1) {
-    if (k->part->Info()!='H') {
+    if (k->part->Info()!='H' && k->decay==NULL) {
       k->left=NULL;
       k->right=NULL;
     }
     else {
+      k->Restore(1);
       Vec4D mom(k->part->Momentum());
+      if (k->decay!=NULL) {
+	k->left=k->decay->left;
+	k->right=k->decay->right;
+	k->decay->left->prev=k;
+	k->decay->right->prev=k;
+      }
       tree->Restore(k);
       k->part->SetMomentum(mom);
       if (k->left) {
-	if (k->left->part->Info()!='H') {
+	if (k->left->part->Info()!='H' && k->left->decay==NULL) {
 	  k->left=NULL;
 	  k->right=NULL;
 	}

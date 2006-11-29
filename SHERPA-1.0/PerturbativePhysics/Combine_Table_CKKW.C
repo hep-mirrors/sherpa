@@ -106,12 +106,26 @@ CalcJet(int nl,const double x1,const double x2,ATOOLS::Vec4D * moms)
     m_x1 = x1;
     m_x2 = x2;
   }
-  bool did_boost(InitStep(moms,nl));
-  if (!SelectWinner(did_boost)) return this;
-  // if number of legs is still greater 4 Cluster once more
-  // if number of legs equals 4, determine end situation
-  if (nl<4) THROW(fatal_error,"nlegs < min. Abort.");
-  return NextTable(CreateNext(did_boost),x1,x2);
+  m_rejected.clear();
+  while (true) {
+    bool did_boost(InitStep(moms,nl));
+    if (!SelectWinner(did_boost)) {
+      if (!IdentifyHardProcess()) {
+	delete this;
+	return NULL;
+      }
+      return this;
+    }
+    // if number of legs is still greater 4 Cluster once more
+    // if number of legs equals 4, determine end situation
+    if (nl<4) THROW(fatal_error,"nlegs < min. Abort.");
+    Combine_Table_Base *next(NextTable(CreateNext(did_boost),x1,x2));
+    if (next!=NULL) return next;
+    m_rejected.insert(m_cdata_winner->first);
+    msg_Debugging()<<METHOD<<"(): Table "<<m_no<<": reject winner "
+		   <<m_cdata_winner->first<<"\n";
+  }
+  return NULL;
 }
 
 bool Combine_Table_CKKW::InitStep(ATOOLS::Vec4D *moms,const int nl)
@@ -173,17 +187,19 @@ bool Combine_Table_CKKW::SelectWinner(const bool did_boost)
 	}
       }
     }
-    if (pt2ij<kt2) {
-      m_cdata_winner=cit;
-      kt2=pt2ij;
-    }
-    if (cit->second.m_strong && pt2ij<kt2qcd) {
-      qcd_winner=cit;
-      kt2qcd=pt2ij;
+    if (m_rejected.find(cit->first)==m_rejected.end()) {
+      if (pt2ij<kt2) {
+	m_cdata_winner=cit;
+	kt2=pt2ij;
+      }
+      if (cit->second.m_strong && pt2ij<kt2qcd) {
+	qcd_winner=cit;
+	kt2qcd=pt2ij;
+      }
     }
   }
   if (qcd_winner!=cl.end()) m_cdata_winner=qcd_winner;
-  return true;
+  return m_cdata_winner!=cl.end();
 }
 
 bool Combine_Table_CKKW::TestMomenta(const int i,const int j)
@@ -252,13 +268,14 @@ Combine_Table_CKKW *Combine_Table_CKKW::NextTable(Combine_Table_CKKW *tab,
 						  const double x1,const double x2)
 {
   Combine_Table_Base* ct = tab->CalcJet(m_nl,x1,x2);
-  m_graph_winner = tab->m_graph_winner;
+  if (ct!=NULL) m_graph_winner=tab->m_graph_winner;
+  else m_cdata_winner->second.p_down=NULL;
   // translate back
   m_graph_winner = m_cdata_winner->second.m_graphs[m_graph_winner];
   return (Combine_Table_CKKW*)ct;
 }
 
-void Combine_Table_CKKW::IdentifyHardProcess()
+bool Combine_Table_CKKW::IdentifyHardProcess()
 {
   msg_Debugging()<<METHOD<<"():\n";
   msg_Indent();
@@ -324,6 +341,8 @@ void Combine_Table_CKKW::IdentifyHardProcess()
     }
     else THROW(fatal_error,"No match for hard process.");
     m_nstrong=Max(m_nstrong,p_hard[i][0].OrderQCD()+p_hard[i][1].OrderQCD());
+    if (p_hard[i][0].Point()->t>=10) return false;
   }
+  return true;
 }
 

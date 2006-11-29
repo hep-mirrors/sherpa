@@ -366,7 +366,7 @@ Knot * Tree_Filler::Point2Knot(Blob * blob,Tree * tree,const Leg & po,const Vec4
   k->E2        = sqr(mom[0]);
   k->costh     = 0; 
   k->shower=po.External();
-  if ((m_showermode&1) && po.Point()->t-10>0) {
+  if ((m_showermode&1) && po.Point()->t-10>=0) {
     k->shower+=2;
     if (po.QCDJets()<po.Point()->t-10) {
       if (po.Point()->t-10+po.Point()->fl.Strong()>2) 
@@ -374,7 +374,7 @@ Knot * Tree_Filler::Point2Knot(Blob * blob,Tree * tree,const Leg & po,const Vec4
       else k->qjv=sqrt(po.MinKT2QCD());
     }
     else k->qjv=sqrt(po.MinKT2QCD());
-    k->qljv=sqrt(rpa.gen.Ycut())*rpa.gen.Ecms();
+    k->qljv=sqrt(m_q2_cut);
     k->maxjets=po.Point()->t-10;
     msg_Debugging()<<METHOD<<"(): ("<<k->kn_no<<") -> n_jets = "
 		   <<po.QCDJets()<<"+"<<po.Point()->fl.Strong()
@@ -534,7 +534,6 @@ void Tree_Filler::EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC:
 
     mo->tout = mo->t;
     if (m_showermode&1 && mo->prev!=NULL && mo->shower==2) {
-      msg_Debugging()<<*mo<<*mo->prev;
       // is mother
       if (mo->prev->dir!=0) mo->t=dabs(mo->prev->right->t);
       // fs mother

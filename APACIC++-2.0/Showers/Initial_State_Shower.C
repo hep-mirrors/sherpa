@@ -170,7 +170,8 @@ int Initial_State_Shower::EvolveSystem(Tree **const trees,int tree1,
   Knot *k2((k5->t<0.0&&k5->right!=NULL)?k5->right:k5); 
   while (true) {
     m_sprime=oldsprime;
-    if (k1!=NULL) p_kin->ResetMomenta(k1,trees[tree1]);
+    if ((k3->shower==0 || k3->t<k3->tout) && k1!=NULL) 
+      p_kin->ResetMomenta(k1,trees[tree1]);
     if (k3->shower && k3->t==k3->tout) {
       if (k5->shower && k5->t==k5->tout) {
 	msg_Debugging()<<"evolution finished, veto = "<<veto<<"\n";

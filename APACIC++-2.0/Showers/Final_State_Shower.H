@@ -32,6 +32,9 @@ namespace APACIC {
     void InitTwojetTree(Tree *tree,double scale);
     int  EvolveJet(Tree *tree,Knot *mo,int first=0);
     int  FillBranch(Tree *tree,Knot *mo,int first);
+    int  FillISBranch(Initial_State_Shower *const ini,
+		      Tree *tree,Knot *mo,const bool jetveto,
+		      const double &sprime,const double &z,Knot *partner);
 
     void InitDaughters(Tree *tree,Knot *mo,
 		       ATOOLS::Flavour flb,ATOOLS::Flavour flc,

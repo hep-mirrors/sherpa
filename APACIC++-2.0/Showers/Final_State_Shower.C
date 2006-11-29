@@ -73,32 +73,49 @@ int Final_State_Shower::PerformShower(Tree *tree,int jetveto)
 }
 
 int Final_State_Shower::
-TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
-		      Knot *const mo,const bool jetveto,
-		      const double &sprime,const double &z,Knot *partner)
+FillISBranch(Initial_State_Shower *const ini,
+	     Tree *tree,Knot *mo,const bool jetveto,
+	     const double &sprime,const double &z,Knot *partner)
 {
-  msg_Debugging()<<METHOD<<"(["<<mo->kn_no<<","<<mo->part->Info()<<"],"
-		 <<jetveto<<","<<sprime<<","<<z<<"): {\n";
-  msg_Indent();
 #ifdef USING__Veto_Info
-  p_sud->SetMode(1);
+  p_sud->AddVeto();
 #endif
-  mo->sthcrit=mo->thcrit=M_PI;
-  mo->smaxpt2=mo->maxpt2=1.0e10;
-  if (mo->part->Info()=='H' && mo->left && mo->right) {
-    mo->Store();
-    EstablishRelations(mo,mo->left,mo->right);
-    return InitializeJets(tree,mo,1);
-  }
-  else {
-#ifdef USING__Veto_Info
-    p_sud->AddVeto();
-#endif
-    while (p_sud->Dice(mo)) {
+  mo->t=Max(mo->t,mo->tout);
+  while (true) {
+    ResetDaughters(mo);
+    mo->Restore(1);
+    if (!p_sud->Dice(mo)) {
+      if ((m_showermode&2) && (mo->stat!=0 && mo->shower==2)) {
+	msg_Debugging()<<"decay shower for "<<mo->kn_no<<"\n";
+	mo->tmo=mo->t=mo->tout;
+	mo->tout=sqr(mo->left->part->Momentum().Mass()+
+		     mo->right->part->Momentum().Mass());
+	mo->shower=3;
+	mo->stat=3;
+	mo->qjv=mo->decay->qjv;
+	mo->qljv=mo->decay->qljv;
+	mo->maxjets=mo->decay->maxjets;
+	continue;
+      }
+      else {
+	Reset(mo);
+	break;
+      }
+    }
+    else {
       mo->E2 = sqr(((1.0/z-1.0)*sprime-mo->t)/(2.0*sqrt(sprime)));
       mo->part->SetMomentum(Vec4D(sqrt(mo->E2),0.,0.,sqrt(mo->E2-mo->t)));
       msg_Debugging()<<"tlfsl test emission at t = "<<mo->t
-		     <<", z = "<<mo->z<<"\n";
+		     <<", z = "<<mo->z<<", mode = "<<mo->shower<<"\n";
+      if ((m_showermode&2) && (mo->stat!=0 && mo->shower>1)) {
+	msg_Debugging()<<"resonance decay "<<mo->shower<<"\n";
+	InitDaughters(tree,mo,p_sud->GetFlB(),p_sud->GetFlC(),
+		      Simple_Polarisation_Info(),Simple_Polarisation_Info(),1);
+	if (!p_kin->Shuffle(mo,0)) {
+	  msg_Debugging()<<"shuffle failed\n";
+	  continue;
+	}
+      } 
       if (!ini->DoKinematics()) continue;
       mo->Store();
       int stat(jetveto?p_jv->TestISKinematics(mo->prev,partner):1);
@@ -116,8 +133,8 @@ TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
       }
       case 2: {
 	double kt2(p_kin->GetRelativeKT2(mo->z,mo->E2,mo->t,
-					sqr(p_sud->GetFlB().PSMass()),
-					sqr(p_sud->GetFlC().PSMass())));
+					 sqr(p_sud->GetFlB().PSMass()),
+					 sqr(p_sud->GetFlC().PSMass())));
 	double kt2mo(mo->part->Momentum().PPerp2());
 	if (kt2>kt2mo) continue;
 	mo->smaxpt2=mo->maxpt2=kt2mo;
@@ -127,30 +144,97 @@ TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
 	break;
       }
       mo->stat=1;
-      InitDaughters(tree,mo,p_sud->GetFlB(),p_sud->GetFlC(),
-		    Simple_Polarisation_Info(),Simple_Polarisation_Info(),1);
-      stat=EvolveJet(tree,mo,-1);
-      msg_Debugging()<<"tlfsl stat = "<<stat<<"\n";
-      if (stat==1) {
-	if (!p_kin->DoKinematics(mo)) return -1;
-	msg_Debugging()<<"}\n";
-	return 1;
+      if (!((m_showermode&2) && (mo->stat!=0 && mo->shower>1))) {
+	InitDaughters(tree,mo,p_sud->GetFlB(),p_sud->GetFlC(),
+		      Simple_Polarisation_Info(),Simple_Polarisation_Info(),1);
       }
-      Reset(mo);
-      mo->sthcrit=mo->thcrit=M_PI;
-      mo->smaxpt2=mo->maxpt2=1.0e10;
+      return 1;
     }
-    msg_Debugging()<<"reset knot "<<mo->kn_no<<"\n";
-    Reset(mo);
-    int stat(ini->DoKinematics());
-    if (stat!=1) return stat;
-    stat=jetveto?p_jv->TestISKinematics(mo->prev,partner):1;
-    if (stat!=1) return stat;
-    msg_Debugging()<<"}\n";
-    return 1;
   }
-  msg_Debugging()<<"fs shower failure\n";
+  msg_Debugging()<<"reset knot "<<mo->kn_no<<"\n";
+  int stat(ini->DoKinematics());
+  if (stat!=1) return stat;
+  stat=jetveto?p_jv->TestISKinematics(mo->prev,partner):1;
+  if (stat!=1) return stat;
   msg_Debugging()<<"}\n";
+  return 1;
+}
+
+int Final_State_Shower::
+TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
+		      Knot *const mo,const bool jetveto,
+		      const double &sprime,const double &z,Knot *partner)
+{
+  msg_Debugging()<<METHOD<<"(["<<mo->kn_no<<","<<mo->part->Info()<<"],"
+		 <<jetveto<<","<<sprime<<","<<z<<"): {\n";
+  msg_Indent();
+#ifdef USING__Veto_Info
+  p_sud->SetMode(1);
+#endif
+  mo->sthcrit=mo->thcrit=M_PI;
+  mo->smaxpt2=mo->maxpt2=1.0e10;
+  if (mo->part->Info()!='H' || mo->left==NULL || mo->right==NULL) {
+    int stat(FillISBranch(ini,tree,mo,jetveto,sprime,z,partner));
+    if (stat!=1) return stat;
+    stat=EvolveJet(tree,mo,-1);
+    msg_Debugging()<<"tlfsl stat = "<<stat<<"\n";
+    if (stat==1) {
+      if (!p_kin->DoKinematics(mo)) return -1;
+      msg_Debugging()<<"}\n";
+      return 1;
+    }
+    Reset(mo);
+    mo->sthcrit=mo->thcrit=M_PI;
+    mo->smaxpt2=mo->maxpt2=1.0e10;
+    return 0;
+  }
+  else {
+    if (mo->decay!=NULL) {
+      mo->Restore(1);
+      mo->shower=2;
+      mo->stat=3;
+    }
+    if (mo->shower==2 && mo->decay==NULL) {
+      mo->decay = tree->NewKnot();
+      mo->decay->Copy(mo);
+      mo->minpt2=sqr(mo->part->Flav().Width());
+      mo->Store(1);
+    }
+    if (mo->qjv==1.0e10) {
+      mo->qjv=mo->prev->qjv;
+      mo->qljv=mo->prev->qljv;
+      mo->maxjets=mo->prev->maxjets;
+      mo->Store(1);
+    }
+    if (mo->stat==0) {
+      msg_Debugging()<<"init jets knot "<<mo->kn_no<<"\n";
+      mo->Store();
+      EstablishRelations(mo,mo->left,mo->right);
+      return InitializeJets(tree,mo,1);
+    }
+    else {
+      msg_Debugging()<<"intermediate shower knot "<<mo->kn_no<<"\n";
+      while (true) {
+	int stat(1);
+	if ((stat=FillISBranch(ini,tree,mo,jetveto,sprime,z,partner))==-1)
+	  return stat;
+	msg_Debugging()<<"fillisbranch returned "<<stat<<"\n";
+	if (stat==0) {
+	  if (mo->stat==0) return 0;
+	  continue;
+	}
+	if (mo->shower>=2 || mo->decay!=NULL) {
+	  mo->Store();
+	  EstablishRelations(mo,mo->left,mo->right);
+	  return InitializeJets(tree,mo);
+	}
+	return EvolveJet(tree,mo);
+      }
+    }
+    msg.Error()<<METHOD<<"(): Internal error."<<std::endl;
+    return -1;
+  }
+  msg.Error()<<METHOD<<"(): Internal error."<<std::endl;
   return -1;
 }
 
@@ -252,7 +336,7 @@ int Final_State_Shower::InitializeJets(Tree *tree,Knot *mo,int init)
       return 0;
     }
   }
-  msg_Debugging()<<"end initialize jets, knot "<<mo->kn_no<<"\n"<<"}\n";
+  msg_Debugging()<<"end initialize jets, knot "<<mo->kn_no<<"\n";
   return 1;
 }
 

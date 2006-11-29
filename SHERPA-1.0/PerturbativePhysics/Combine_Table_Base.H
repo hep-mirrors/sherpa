@@ -169,7 +169,7 @@ namespace SHERPA {
 					 ATOOLS::Vec4D *moms=NULL) = 0;
     virtual void                 FillTable(Leg **legs,const int nlegs,const int nampl) = 0;
     virtual double               GetWinner(int &i, int &j) = 0;
-    virtual void                 IdentifyHardProcess() = 0;
+    virtual bool                 IdentifyHardProcess() = 0;
 
     bool Combinable(const Leg &a,const Leg &b) const ;
 
