@@ -110,7 +110,8 @@ CalcJet(int nl,const double x1,const double x2,ATOOLS::Vec4D * moms)
   while (true) {
     bool did_boost(InitStep(moms,nl));
     if (!SelectWinner(did_boost)) {
-      if (!IdentifyHardProcess()) {
+      if (nl==4 && !IdentifyHardProcess()) {
+	if (p_up==NULL) return this;
 	delete this;
 	return NULL;
       }
