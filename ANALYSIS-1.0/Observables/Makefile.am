@@ -23,6 +23,7 @@ libObservables_la_SOURCES     =	\
 			    	Shower_Statistics.C \
 			    	SV_Statistics.C \
 			    	One_Particle_Observables.C \
+			    	One_Particle_Observables_2.C \
 			    	Two_Particle_Observables.C \
 				Two_Particle_Observables_2.C \
                                 Three_Particle_Observables.C \
