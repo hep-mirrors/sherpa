@@ -200,3 +200,10 @@ Selector_Base * Combined_Selector::GetSelector(std::string name)
   return 0;
   
 }
+
+void Combined_Selector::SetProcessName(const std::string &name)   
+{ 
+  m_procname=name; 
+  for (size_t i=0; i<m_sels.size(); ++i)
+    m_sels[i]->SetProcessName(m_procname);
+}

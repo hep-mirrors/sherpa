@@ -68,6 +68,7 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
 	       <<"   No selection cuts specified. Init No_Selector !"<<endl;
     p_selector = new No_Selector();
   }
+  p_selector->SetProcessName(Name());
   SetScaleScheme(m_scalescheme);
 
   double sum_massin = 0.,sum_massout = 0.;
@@ -120,6 +121,7 @@ Single_Process::Single_Process(Process_Info* pinfo,int _nin,int _nout,Flavour * 
 	       <<"   No selection cuts specified. Init No_Selector !"<<endl;
     p_selector = new No_Selector();
   }
+  p_selector->SetProcessName(Name());
   SetScaleScheme(m_scalescheme);
 
   double sum_massin = 0.,sum_massout = 0.;

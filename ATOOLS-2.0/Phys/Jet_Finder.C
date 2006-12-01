@@ -1,6 +1,7 @@
 #include "Jet_Finder.H"
 #include "Run_Parameter.H"
 #include "Message.H"
+#include "Exception.H"
 
 #ifdef PROFILE__Analysis_Phase
 #include "prof.hh"
@@ -411,9 +412,59 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
   return ymin;
 }
 
+void Jet_Finder::FillCombinations(const std::string &name,int &cp)
+{
+  std::vector<int> pos;
+  for (size_t i(0);i<name.length();++i) {
+    if (name[i]=='[') {
+      int open(1);
+      for (size_t j(i+1);j<name.length();++j) {
+	if (name[j]=='[') ++open;
+	if (name[j]==']') --open;
+	if (open==0) {
+	  FillCombinations(name.substr(i+1,j-i-1),cp);
+	  i=j+2;
+	  break;
+	}
+      }
+    }
+    else if (name[i]=='_' && name[i-1]!='_') {
+      pos.push_back(cp++);
+    }
+  }
+  if (name[name.length()-1]!=']') pos.push_back(cp++);
+  for (size_t i(0);i<pos.size();++i)
+    for (size_t j(0);j<pos.size();++j)
+      if (i!=j) m_combs[pos[i]].insert(pos[j]);
+}
+
+void Jet_Finder::FillCombinations()
+{
+  if (m_combs.empty()) {
+    if (m_procname=="") THROW(fatal_error,"Process name not set.");
+    int i(0);
+    m_combs.resize(m_nin+m_nout);
+    std::string name(m_procname.substr(m_procname.find('_')+1));
+    name=name.substr(name.find('_')+1);
+    FillCombinations(name,i);
+    if (msg.LevelIsDebugging()) {
+      msg.Out()<<METHOD<<"(): Found combinations {\n";
+      for (size_t i(0);i<m_combs.size();++i) {
+	if (m_combs[i].size()>0) {
+	  msg.Out()<<"  "<<i<<" & {"<<*m_combs[i].begin();
+	  for (std::set<int>::const_iterator scit(++m_combs[i].begin());
+	       scit!=m_combs[i].end();++scit) msg.Out()<<","<<*scit;
+	  msg.Out()<<"}\n";
+	}
+      }
+      msg.Out()<<"}\n";
+    }
+  }
+}
 
 bool Jet_Finder::Trigger(const Vec4D * p)
 {
+  FillCombinations();
   PROFILE_HERE;
   // create copy
   Vec4D * moms = new Vec4D[m_nin+m_nout];
@@ -434,6 +485,7 @@ bool Jet_Finder::Trigger(const Vec4D * p)
 
 void Jet_Finder::BuildCuts(Cut_Data * cuts) 
 {
+  FillCombinations();
   for (int i=m_nin; i<m_nin+m_nout; ++i) {
     cuts->energymin[i] = m_fl[i].SelMass();
     if (m_fl[i].Strong()) {                
@@ -445,7 +497,8 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
 	             ycut s' > ycut s_min   
 	             (lepton-lepton collisions)
       */
-      if (m_type>=2) {
+      if (m_type>=2 && (m_combs[i].find(0)!=m_combs[i].end() || 
+			m_combs[i].find(1)!=m_combs[i].end())) {
 	cuts->energymin[i] = Max(sqrt(1. * m_ycut * m_s),cuts->energymin[i]);
 	if (m_type==4) {
 	  cuts->cosmax[0][i] = cuts->cosmax[1][i] = cuts->cosmax[i][0] = cuts->cosmax[i][1] =  
@@ -454,17 +507,19 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
 	}
 	if (m_type==2) {
 	  int hadron=m_fl[0].Strong()?0:1;
-	  cuts->cosmax[hadron][i] = cuts->cosmax[i][hadron] = 
-	    Min(cuts->cosmax[hadron][i],sqrt(1.-4.*m_ycut));
-	  cuts->cosmin[hadron][i] = cuts->cosmin[i][hadron] = 
-	    Max(cuts->cosmin[hadron][i],-sqrt(1.-4.*m_ycut));
-	  cuts->etmin[i] = Max(sqrt(m_ycut * m_s),cuts->etmin[i]);
+	  if (m_combs[i].find(hadron)!=m_combs[i].end()) {
+	    cuts->cosmax[hadron][i] = cuts->cosmax[i][hadron] = 
+	      Min(cuts->cosmax[hadron][i],sqrt(1.-4.*m_ycut));
+	    cuts->cosmin[hadron][i] = cuts->cosmin[i][hadron] = 
+	      Max(cuts->cosmin[hadron][i],-sqrt(1.-4.*m_ycut));
+	    cuts->etmin[i] = Max(sqrt(m_ycut * m_s),cuts->etmin[i]);
+	  }
 	}
       }
       else cuts->energymin[i] = Max(sqrt(m_ycut * m_smin/4.),cuts->energymin[i]);
       
       for (int j=i+1; j<m_nin+m_nout; ++j) {
-	if (m_fl[j].Strong()) {                
+	if (m_fl[j].Strong() && m_combs[i].find(j)!=m_combs[i].end()) {
 	  /* 
 	     minimal scut :
 	     either   :  s_ij = 2 E_i E_j (1-cos(ij)) > 2 min{E_i^2,E_j^2} (1-cos(ij)) > 
@@ -514,15 +569,18 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1)
   for (int j=m_nin;j<m_n;j++) {
     if (m_fl[j].Strong()) {
       if (m_type>=3) {
-	pt2j = (sqr(p[j][1]) + sqr(p[j][2]));
-	if (pt2j < ymin*m_s) {
-	  ymin = pt2j/m_s;
-	  j1   = j;
-	  if (p[j][3]*p[0][3] > 0.) k1 = 0;
-	                       else k1 = 1;
-	} 
+	if (m_combs[j].find(0)!=m_combs[j].end() ||
+	    m_combs[j].find(1)!=m_combs[j].end()) {
+	  pt2j = (sqr(p[j][1]) + sqr(p[j][2]));
+	  if (pt2j < ymin*m_s) {
+	    ymin = pt2j/m_s;
+	    j1   = j;
+	    if (p[j][3]*p[0][3] > 0.) k1 = 0;
+	    else k1 = 1;
+	  } 
+	}
 	for (int k=j+1;k<m_n;k++) {
-	  if (m_fl[k].Strong()) {
+	  if (m_fl[k].Strong() && m_combs[j].find(k)!=m_combs[j].end()) {
 	    pt2k  = (sqr(p[k][1]) + sqr(p[k][2]));
 	    pt2jk = 2.*Min(pt2j,pt2k) * (Coshyp(DEta12(p[j],p[k])) - CosDPhi12(p[j],p[k]))/sqr(m_delta_r);
 	    if (pt2jk<ymin*m_s) {
@@ -534,14 +592,16 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1)
       else {
 	if (m_type==2) {
 	  int hadron=m_fl[0].Strong()?0:1;
-	  pt2j = 2.*sqr(p[j][0])*(1.-DCos12(p[j],p[hadron]));
-	  if (pt2j < ymin*m_sprime) {
-	    ymin = pt2j/m_sprime;
-	    j1   = j;k1=1;
+	  if (m_combs[j].find(hadron)!=m_combs[j].end()) {
+	    pt2j = 2.*sqr(p[j][0])*(1.-DCos12(p[j],p[hadron]));
+	    if (pt2j < ymin*m_sprime) {
+	      ymin = pt2j/m_sprime;
+	      j1   = j;k1=1;
+	    }
 	  }
 	}
 	for (int k=j+1;k<m_n;k++) {
-	  if (m_fl[k].Strong()) {
+	  if (m_fl[k].Strong() && m_combs[j].find(k)!=m_combs[j].end()) {
 	    pt2jk  = 2.*sqr(Min(p[j][0],p[k][0]))*(1.-DCos12(p[j],p[k]));
 	    if (pt2jk<ymin*m_sprime) {
 	      ymin = pt2jk/m_sprime;j1 = j;k1 = k;

@@ -23,6 +23,7 @@ namespace ATOOLS {
     size_t Size();
     Selector_Base * operator[](size_t);
     Selector_Base * GetSelector(std::string);
+    void SetProcessName(const std::string &name);
   };
 
 

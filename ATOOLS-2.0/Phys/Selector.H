@@ -41,7 +41,7 @@ namespace ATOOLS {
     int            m_n, m_nin, m_nout;
     Flavour      * m_fl;
     double         m_smin,m_smax;
-    std::string    m_name;
+    std::string    m_name, m_procname;
     Selector_Log * m_sel_log;
 
     virtual void Init(const Vec4D *) { }
@@ -66,6 +66,8 @@ namespace ATOOLS {
     //virtual double Smin();
     //virtual double Smax(); 
     virtual std::string Name(); 
+    virtual void SetProcessName(const std::string &name);
+    virtual std::string ProcessName() const;
     
     // inline functions
     inline void SetNIn(const size_t nin)   { m_nin=nin;   }

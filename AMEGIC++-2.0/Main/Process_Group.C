@@ -82,6 +82,7 @@ Process_Group::Process_Group(Process_Info* pinfo,int _nin,int _nout,Flavour *& _
 	       <<"   No selection cuts specified. Init No_Selector !"<<endl;
     p_selector = new No_Selector();
   }
+  p_selector->SetProcessName(Name());
   ConstructProcesses(_seldata);
   GroupProcesses();
 

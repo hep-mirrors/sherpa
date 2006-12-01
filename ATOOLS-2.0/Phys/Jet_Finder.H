@@ -14,6 +14,7 @@ namespace ATOOLS {
 
     double m_shower_pt2,m_value;
 
+    std::vector<std::set<int> > m_combs;
 
     /*
       The vectors related to the frame
@@ -21,6 +22,9 @@ namespace ATOOLS {
     Vec4D *  p_frame;
     Poincare m_cms_boost;
     Poincare m_zrot;
+
+    void FillCombinations(const std::string &name,int &cp);
+    void FillCombinations();
 
     void BoostInFrame(Vec4D *);
     void BoostBack(Vec4D *);

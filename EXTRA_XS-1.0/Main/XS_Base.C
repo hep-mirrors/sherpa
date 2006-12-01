@@ -153,6 +153,7 @@ void XS_Base::ResetSelector(ATOOLS::Selector_Data *const selectordata)
 		       <<"   No cuts specified. Initialize 'No_Selector'."<<std::endl;
     p_selector = new ATOOLS::No_Selector();
   }
+  p_selector->SetProcessName(Name());
 }
 
 void XS_Base::SetSTU(const ATOOLS::Vec4D *momenta)
