@@ -14,7 +14,7 @@ namespace ATOOLS {
 
     double m_shower_pt2,m_value;
 
-    std::vector<std::set<int> > m_combs;
+    std::vector<std::vector<int> > m_combs;
 
     /*
       The vectors related to the frame
