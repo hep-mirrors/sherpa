@@ -2,6 +2,7 @@
 #include "Run_Parameter.H"
 #include "Message.H"
 #include "Exception.H"
+#include "Blob.H"
 
 #ifdef PROFILE__Analysis_Phase
 #include "prof.hh"
@@ -412,8 +413,52 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
   return ymin;
 }
 
-void Jet_Finder::FillCombinations(const std::string &name,int &cp)
+std::vector<int> ID(size_t id)
 {
+  std::vector<int> ids;
+  for (size_t n(0);id>0;++n) {
+    if (id&(1<<n)) {
+      ids.push_back(n);
+      id-=1<<n;
+    }
+  }
+  return ids;
+}
+
+size_t ID(const std::vector<int> &ids)
+{
+  size_t id(0);
+  for (size_t i(0);i<ids.size();++i) 
+    if (ids[i]!=0) id+=1<<i;
+  return id;
+}
+
+Flavour Jet_Finder::GetFlavour(std::string fl)
+{
+  bool bar(false);
+  if (fl=="j") return Flavour(kf::jet);
+  if (fl=="G") return Flavour(kf::gluon);
+  if (fl.length()>1) {
+    if (fl[fl.length()-1]=='b') {
+      fl.erase(fl.length()-1,1);
+      bar=true;
+    }
+    else if (fl[fl.length()-1]=='+') {
+      fl[fl.length()-1]='-';
+      bar=true;
+    }
+  }
+  Flavour flav(kf_table.FromString(fl));
+  if (flav.Kfcode()==kf::none) 
+    THROW(critical_error,"No flavour for '"+fl+"'.");
+  if (bar) flav=flav.Bar();
+  return flav;
+}
+
+size_t Jet_Finder::FillCombinations(const std::string &name,size_t &cp,
+				    const int fl)
+{
+  size_t sum(0);
   std::vector<int> pos;
   for (size_t i(0);i<name.length();++i) {
     if (name[i]=='[') {
@@ -422,41 +467,108 @@ void Jet_Finder::FillCombinations(const std::string &name,int &cp)
 	if (name[j]=='[') ++open;
 	if (name[j]==']') --open;
 	if (open==0) {
-	  FillCombinations(name.substr(i+1,j-i-1),cp);
+	  pos.push_back(FillCombinations(name.substr(i+1,j-i-1),cp,fl-1));
+	  size_t sp(name.rfind('_',i));
+	  m_flavs[pos.back()]=GetFlavour(name.substr(sp+1,i-sp-1));
+	  sum=sum|pos.back();
 	  i=j+2;
 	  break;
 	}
       }
     }
     else if (name[i]=='_' && name[i-1]!='_') {
-      pos.push_back(cp++);
+      pos.push_back(1<<cp++);
+      size_t sp(name.rfind('_',i-1));
+      if (sp==std::string::npos) sp=0;
+      else ++sp;
+      m_flavs[pos.back()]=GetFlavour(name.substr(sp,i-sp));
+      sum=sum|pos.back();
     }
   }
-  if (name[name.length()-1]!=']') pos.push_back(cp++);
-  for (size_t i(0);i<pos.size();++i)
-    for (size_t j(0);j<pos.size();++j)
-      if (i!=j) m_combs[pos[i]][pos[j]]=1;
+  if (name[name.length()-1]!=']') {
+    pos.push_back(1<<cp++);
+    size_t sp(name.rfind('_',name.length()-1));
+    m_flavs[pos.back()]=GetFlavour(name.substr(sp+1,name.length()-sp-1));
+    sum=sum|pos.back();
+  }
+  for (size_t i(0);i<pos.size();++i) {
+    for (size_t j(i+1);j<pos.size();++j) {
+      if (pos[i]>2 || pos[j]>2) {
+	m_combs[pos[i]][pos[j]]=1;
+	m_fills[fl].push_back(std::pair<size_t,size_t>(pos[i],pos[j]));
+      }
+    }
+//     // adds checks w.r.t. incoming particle within each decay amplitude
+//     // not complete, moementum of decaying particle has to be rotated
+//     // not necessary, however since masses regularize cross section
+//     if (fl<(int)m_fills.size()-1) {
+//       m_combs[pos[i]][sum]=1;
+//       m_fills[fl].push_back(std::pair<size_t,size_t>(pos[i],sum));
+//     }
+  }
+  m_mcomb.push_back(pos);
+  m_mcomb.back().push_back(sum);
+  return sum;
 }
 
 void Jet_Finder::FillCombinations()
 {
   if (m_combs.empty()) {
     if (m_procname=="") THROW(fatal_error,"Process name not set.");
-    int i(0);
-    m_combs.resize(m_nin+m_nout,std::vector<int>(m_nin+m_nout,0));
+    size_t size(1<<(m_nin+m_nout));
+    m_moms.resize(size);
+    m_flavs.resize(size);
+    m_combs.resize(size,std::vector<int>(size,0));
+    m_fills.resize(m_nin+m_nout);
     std::string name(m_procname.substr(m_procname.find('_')+1));
     name=name.substr(name.find('_')+1);
-    FillCombinations(name,i);
+    size_t i(0);
+    FillCombinations(name,i,m_nin+m_nout-1);
     if (msg.LevelIsDebugging()) {
-      msg.Out()<<METHOD<<"(): Found combinations {\n";
+      msg.Out()<<METHOD<<"(): Combinations for '"<<m_procname<<"' {\n";
       for (size_t i(0);i<m_combs.size();++i) {
-	msg.Out()<<"  "<<i<<" & {";
-	for (size_t j(0);j<m_combs[i].size();++j) 
-	  if (m_combs[i][j]!=0) msg.Out()<<","<<j;
-	msg.Out()<<"}\n";
+	if (ID(m_combs[i])!=0) {
+	  msg.Out()<<"  "<<ID(i)<<"["<<m_flavs[i]<<","
+		   <<m_flavs[i].Strong()<<"] & {";
+	  for (size_t j(0);j<m_combs[i].size();++j)
+	    if (m_combs[i][j]!=0) msg.Out()<<" "<<ID(j)<<"["<<m_flavs[j]<<","
+					   <<m_flavs[j].Strong()<<"]";
+	  msg.Out()<<" }\n";
+	}
+      }
+      msg.Out()<<"}\n";
+      msg.Out()<<METHOD<<"(): Identified cluster structure {\n";
+      for (size_t i(0);i<m_fills.size();++i) {
+	if (m_fills[i].size()>0) {
+	  msg.Out()<<"  "<<i<<" -> {";
+	  for (size_t j(0);j<m_fills[i].size();++j)
+	    msg.Out()<<" ["<<ID(m_fills[i][j].first)<<","
+		     <<ID(m_fills[i][j].second)<<"]";
+	  msg.Out()<<" }\n";
+	}
+      }
+      msg.Out()<<"}\n";
+      msg.Out()<<METHOD<<"(): Momentum combination {\n";
+      for (size_t i(0);i<m_mcomb.size();++i) {
+	msg.Out()<<"  "<<ID(m_mcomb[i].back())<<" -> {";
+	for (size_t j(0);j<m_mcomb[i].size()-1;++j) 
+	  msg.Out()<<" "<<ID(m_mcomb[i][j]);
+	msg.Out()<<" }\n";
       }
       msg.Out()<<"}\n";
     }
+  }
+}
+
+void Jet_Finder::PrepareMomList()
+{
+  for (size_t n(0);n<m_mcomb.size()-1;++n) {
+    m_moms[m_mcomb[n].back()]=m_moms[m_mcomb[n].front()];
+    for (size_t i(1);i<m_mcomb[n].size()-1;++i)
+      m_moms[m_mcomb[n].back()]+=m_moms[m_mcomb[n][i]];
+//     msg_Debugging()<<"p["<<ID(m_mcomb[n].back())<<"] = "
+// 		   <<m_moms[m_mcomb[n].back()]
+// 		   <<" ["<<m_flavs[m_mcomb[n].back()]<<"]\n";
   }
 }
 
@@ -465,17 +577,20 @@ bool Jet_Finder::Trigger(const Vec4D * p)
   FillCombinations();
   PROFILE_HERE;
   // create copy
-  Vec4D * moms = new Vec4D[m_nin+m_nout];
-  for (int i=0;i<m_nin+m_nout;i++) moms[i]=p[i];
+  for (int i=0;i<m_nin+m_nout;i++) {
+    m_moms[1<<i]=p[i];
+//     msg_Debugging()<<"p["<<i<<"] = "<<m_moms[1<<i]<<" ("<<m_flavs[1<<i]<<")\n";
+  }
 
-  Init(moms);
-  BoostInFrame(moms);
+  Init(&m_moms.front());
+  BoostInFrame(&m_moms.front());
+  PrepareMomList();
+
   int    j,k;
   bool   trigger(true);
   double ymin=0.;
-  ymin = YminKt(moms,j,k); 
+  ymin = YminKt(&m_moms.front(),j,k); 
   if (ymin < m_ycut) trigger = false;
-  delete [] moms;
   
   m_value = ymin;
   return (1-m_sel_log->Hit(1-trigger));
@@ -495,7 +610,7 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
 	             ycut s' > ycut s_min   
 	             (lepton-lepton collisions)
       */
-      if (m_type>=2 && (m_combs[i][0] || m_combs[i][1])) {
+      if (m_type>=2 && (m_combs[1<<i][1<<0] || m_combs[1<<i][1<<1])) {
 	cuts->energymin[i] = Max(sqrt(1. * m_ycut * m_s),cuts->energymin[i]);
 	if (m_type==4) {
 	  cuts->cosmax[0][i] = cuts->cosmax[1][i] = cuts->cosmax[i][0] = cuts->cosmax[i][1] =  
@@ -504,7 +619,7 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
 	}
 	if (m_type==2) {
 	  int hadron=m_fl[0].Strong()?0:1;
-	  if (m_combs[i][hadron]) {
+	  if (m_combs[1<<i][1<<hadron]) {
 	    cuts->cosmax[hadron][i] = cuts->cosmax[i][hadron] = 
 	      Min(cuts->cosmax[hadron][i],sqrt(1.-4.*m_ycut));
 	    cuts->cosmin[hadron][i] = cuts->cosmin[i][hadron] = 
@@ -516,7 +631,7 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
       else cuts->energymin[i] = Max(sqrt(m_ycut * m_smin/4.),cuts->energymin[i]);
       
       for (int j=i+1; j<m_nin+m_nout; ++j) {
-	if (m_fl[j].Strong() && m_combs[i][j]) {
+	if (m_fl[j].Strong() && m_combs[1<<i][1<<j]) {
 	  /* 
 	     minimal scut :
 	     either   :  s_ij = 2 E_i E_j (1-cos(ij)) > 2 min{E_i^2,E_j^2} (1-cos(ij)) > 
@@ -559,48 +674,57 @@ void   Jet_Finder::UpdateCuts(double sprime,double y,Cut_Data * cuts)
 
 double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1)
 {
-  
   PROFILE_HERE;
   double ymin = 2.;
   double pt2jk,pt2j,pt2k;
-  for (int j=m_nin;j<m_n;j++) {
-    if (m_fl[j].Strong()) {
-      if (m_type>=3) {
-	if (m_combs[j][0] || m_combs[j][1]) {
-	  pt2j = (sqr(p[j][1]) + sqr(p[j][2]));
-	  if (pt2j < ymin*m_s) {
-	    ymin = pt2j/m_s;
-	    j1   = j;
-	    if (p[j][3]*p[0][3] > 0.) k1 = 0;
-	    else k1 = 1;
-	  } 
-	}
-	for (int k=j+1;k<m_n;k++) {
-	  if (m_fl[k].Strong() && m_combs[j][k]) {
-	    pt2k  = (sqr(p[k][1]) + sqr(p[k][2]));
-	    pt2jk = 2.*Min(pt2j,pt2k) * (Coshyp(DEta12(p[j],p[k])) - CosDPhi12(p[j],p[k]))/sqr(m_delta_r);
-	    if (pt2jk<ymin*m_s) {
-	      ymin = pt2jk/m_s;j1 = j;k1 = k;
+  for (size_t n(0);n<m_fills.size();++n) {
+    for (size_t ps(0);ps<m_fills[n].size();++ps) {
+      int j(m_fills[n][ps].first), k(m_fills[n][ps].second);
+//       msg_Debugging()<<"test "<<ID(j)<<"["<<m_flavs[j]<<"] & "
+// 		     <<ID(k)<<"["<<m_flavs[k]<<"]\n";
+      if (m_flavs[k].Strong()) {
+	if (m_type>=3) {
+	  pt2k=p[k].PPerp2();
+	  if (m_pt_def) pt2k+=p[k].Abs2();
+	  if (j<3) {
+	    if (pt2k<ymin*m_s) {
+	      ymin=pt2k/m_s;
+	      j1=j;
+	      k1=k;
+	    } 
+	  }
+	  else {
+	    if (m_flavs[j].Strong()) {
+	      pt2j=p[j].PPerp2();
+	      if (m_pt_def) pt2j+=p[j].Abs2();
+	      pt2jk=2.*Min(pt2j,pt2k)*
+		(Coshyp(DEta12(p[j],p[k]))-CosDPhi12(p[j],p[k]))/sqr(m_delta_r);
+	      if (pt2jk<ymin*m_s) {
+		ymin=pt2jk/m_s;
+		j1=j;
+		k1=k;
+	      }
 	    }
 	  }
 	}
-      }
-      else {
-	if (m_type==2) {
-	  int hadron=m_fl[0].Strong()?0:1;
-	  if (m_combs[j][hadron]) {
-	    pt2j = 2.*sqr(p[j][0])*(1.-DCos12(p[j],p[hadron]));
-	    if (pt2j < ymin*m_sprime) {
-	      ymin = pt2j/m_sprime;
-	      j1   = j;k1=1;
+	else {
+	  if (m_type==2) {
+	    int hadron=m_fl[0].Strong()?0:1;
+	    if (j==1<<hadron) {
+	      pt2k=2.*sqr(p[k][0])*(1.-DCos12(p[k],p[hadron]));
+	      if (pt2k<ymin*m_sprime) {
+		ymin=pt2k/m_sprime;
+		j1=j;
+		k1=k;
+	      }
 	    }
 	  }
-	}
-	for (int k=j+1;k<m_n;k++) {
-	  if (m_fl[k].Strong() && m_combs[j][k]) {
-	    pt2jk  = 2.*sqr(Min(p[j][0],p[k][0]))*(1.-DCos12(p[j],p[k]));
+	  if (m_fl[j].Strong()) {
+	    pt2jk=2.*sqr(Min(p[j][0],p[k][0]))*(1.-DCos12(p[j],p[k]));
 	    if (pt2jk<ymin*m_sprime) {
-	      ymin = pt2jk/m_sprime;j1 = j;k1 = k;
+	      ymin=pt2jk/m_sprime;
+	      j1=j;
+	      k1=k;
 	    }
 	  }
 	}

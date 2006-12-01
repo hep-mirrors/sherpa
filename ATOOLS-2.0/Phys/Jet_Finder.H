@@ -14,8 +14,13 @@ namespace ATOOLS {
 
     double m_shower_pt2,m_value;
 
-    std::vector<std::vector<int> > m_combs;
+    std::vector<Vec4D>   m_moms;
+    std::vector<Flavour> m_flavs;
 
+    std::vector<std::vector<int> > m_combs, m_mcomb;
+
+    std::vector<std::vector<std::pair<size_t,size_t> > > m_fills;
+    
     /*
       The vectors related to the frame
     */
@@ -23,8 +28,12 @@ namespace ATOOLS {
     Poincare m_cms_boost;
     Poincare m_zrot;
 
-    void FillCombinations(const std::string &name,int &cp);
-    void FillCombinations();
+    Flavour GetFlavour(std::string fl);
+
+    size_t FillCombinations(const std::string &name,size_t &cp,const int fl);
+    void   FillCombinations();
+
+    void PrepareMomList();
 
     void BoostInFrame(Vec4D *);
     void BoostBack(Vec4D *);
