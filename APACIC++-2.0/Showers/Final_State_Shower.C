@@ -174,19 +174,17 @@ TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
   mo->sthcrit=mo->thcrit=M_PI;
   mo->smaxpt2=mo->maxpt2=1.0e10;
   if (mo->part->Info()!='H' || mo->left==NULL || mo->right==NULL) {
-    int stat(FillISBranch(ini,tree,mo,jetveto,sprime,z,partner));
-    if (stat!=1) return stat;
-    stat=EvolveJet(tree,mo,-1);
-    msg_Debugging()<<"tlfsl stat = "<<stat<<"\n";
-    if (stat==1) {
-      if (!p_kin->DoKinematics(mo)) return -1;
-      msg_Debugging()<<"}\n";
-      return 1;
+    while (true) {
+      int stat(FillISBranch(ini,tree,mo,jetveto,sprime,z,partner));
+      if (stat!=1) return stat;
+      stat=EvolveJet(tree,mo,-1);
+      msg_Debugging()<<"tlfsl stat = "<<stat<<"\n";
+      if (stat==1) {
+	if (!p_kin->DoKinematics(mo)) return -1;
+	msg_Debugging()<<"}\n";
+	return 1;
+      }
     }
-    Reset(mo);
-    mo->sthcrit=mo->thcrit=M_PI;
-    mo->smaxpt2=mo->maxpt2=1.0e10;
-    return 0;
   }
   else {
     if (mo->decay!=NULL) {
