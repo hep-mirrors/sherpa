@@ -19,7 +19,7 @@ namespace ATOOLS {
 
     std::vector<std::vector<int> > m_combs, m_mcomb;
 
-    std::vector<std::vector<std::pair<size_t,size_t> > > m_fills;
+    std::vector<std::pair<size_t,size_t> > m_fills;
     
     /*
       The vectors related to the frame

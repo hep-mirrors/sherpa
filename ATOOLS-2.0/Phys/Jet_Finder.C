@@ -495,16 +495,13 @@ size_t Jet_Finder::FillCombinations(const std::string &name,size_t &cp,
     for (size_t j(i+1);j<pos.size();++j) {
       if (pos[i]>2 || pos[j]>2) {
 	m_combs[pos[i]][pos[j]]=1;
-	m_fills[fl].push_back(std::pair<size_t,size_t>(pos[i],pos[j]));
+	m_fills.push_back(std::pair<size_t,size_t>(pos[i],pos[j]));
       }
     }
-//     // adds checks w.r.t. incoming particle within each decay amplitude
-//     // not complete, moementum of decaying particle has to be rotated
-//     // not necessary, however since masses regularize cross section
-//     if (fl<(int)m_fills.size()-1) {
-//       m_combs[pos[i]][sum]=1;
-//       m_fills[fl].push_back(std::pair<size_t,size_t>(pos[i],sum));
-//     }
+    if (fl<m_nin+m_nout) {
+      m_combs[pos[i]][sum]=1;
+      m_fills.push_back(std::pair<size_t,size_t>(pos[i],sum));
+    }
   }
   m_mcomb.push_back(pos);
   m_mcomb.back().push_back(sum);
@@ -519,11 +516,10 @@ void Jet_Finder::FillCombinations()
     m_moms.resize(size);
     m_flavs.resize(size);
     m_combs.resize(size,std::vector<int>(size,0));
-    m_fills.resize(m_nin+m_nout);
     std::string name(m_procname.substr(m_procname.find('_')+1));
     name=name.substr(name.find('_')+1);
     size_t i(0);
-    FillCombinations(name,i,m_nin+m_nout-1);
+    FillCombinations(name,i,m_nin+m_nout);
     if (msg.LevelIsDebugging()) {
       msg.Out()<<METHOD<<"(): Combinations for '"<<m_procname<<"' {\n";
       for (size_t i(0);i<m_combs.size();++i) {
@@ -537,16 +533,10 @@ void Jet_Finder::FillCombinations()
 	}
       }
       msg.Out()<<"}\n";
-      msg.Out()<<METHOD<<"(): Identified cluster structure {\n";
-      for (size_t i(0);i<m_fills.size();++i) {
-	if (m_fills[i].size()>0) {
-	  msg.Out()<<"  "<<i<<" -> {";
-	  for (size_t j(0);j<m_fills[i].size();++j)
-	    msg.Out()<<" ["<<ID(m_fills[i][j].first)<<","
-		     <<ID(m_fills[i][j].second)<<"]";
-	  msg.Out()<<" }\n";
-	}
-      }
+      msg.Out()<<METHOD<<"(): Identified clusterings {\n";
+      for (size_t j(0);j<m_fills.size();++j)
+	msg.Out()<<" ["<<ID(m_fills[j].first)<<","
+		     <<ID(m_fills[j].second)<<"]\n";
       msg.Out()<<"}\n";
       msg.Out()<<METHOD<<"(): Momentum combination {\n";
       for (size_t i(0);i<m_mcomb.size();++i) {
@@ -677,55 +667,58 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1)
   PROFILE_HERE;
   double ymin = 2.;
   double pt2jk,pt2j,pt2k;
-  for (size_t n(0);n<m_fills.size();++n) {
-    for (size_t ps(0);ps<m_fills[n].size();++ps) {
-      int j(m_fills[n][ps].first), k(m_fills[n][ps].second);
+  for (size_t ps(0);ps<m_fills.size();++ps) {
+    int j(m_fills[ps].first), k(m_fills[ps].second);
+    Vec4D pj(p[j]), pk(p[k]);
 //       msg_Debugging()<<"test "<<ID(j)<<"["<<m_flavs[j]<<"] & "
-// 		     <<ID(k)<<"["<<m_flavs[k]<<"]\n";
-      if (m_flavs[k].Strong()) {
-	if (m_type>=3) {
-	  pt2k=p[k].PPerp2();
-	  if (m_pt_def) pt2k+=p[k].Abs2();
-	  if (j<3) {
-	    if (pt2k<ymin*m_s) {
-	      ymin=pt2k/m_s;
+//  		     <<ID(k)<<"["<<m_flavs[k]<<"]\n";
+    if (j&k) {
+      if (j>k) pj=-pj;
+      else pk=-pk;
+    }
+    if (m_flavs[k].Strong()) {
+      if (m_type>=3) {
+	pt2k=pk.PPerp2();
+	if (m_pt_def) pt2k+=pk.Abs2();
+	if (j<3) {
+	  if (pt2k<ymin*m_s) {
+	    ymin=pt2k/m_s;
+	    j1=j;
+	    k1=k;
+	  } 
+	}
+	else {
+	  if (m_flavs[j].Strong()) {
+	    pt2j=pj.PPerp2();
+	    if (m_pt_def) pt2j+=pj.Abs2();
+	    pt2jk=2.*Min(pt2j,pt2k)*
+	      (Coshyp(DEta12(pj,pk))-CosDPhi12(pj,pk))/sqr(m_delta_r);
+	    if (pt2jk<ymin*m_s) {
+	      ymin=pt2jk/m_s;
 	      j1=j;
 	      k1=k;
-	    } 
-	  }
-	  else {
-	    if (m_flavs[j].Strong()) {
-	      pt2j=p[j].PPerp2();
-	      if (m_pt_def) pt2j+=p[j].Abs2();
-	      pt2jk=2.*Min(pt2j,pt2k)*
-		(Coshyp(DEta12(p[j],p[k]))-CosDPhi12(p[j],p[k]))/sqr(m_delta_r);
-	      if (pt2jk<ymin*m_s) {
-		ymin=pt2jk/m_s;
-		j1=j;
-		k1=k;
-	      }
 	    }
 	  }
 	}
-	else {
-	  if (m_type==2) {
-	    int hadron=m_fl[0].Strong()?0:1;
-	    if (j==1<<hadron) {
-	      pt2k=2.*sqr(p[k][0])*(1.-DCos12(p[k],p[hadron]));
-	      if (pt2k<ymin*m_sprime) {
-		ymin=pt2k/m_sprime;
-		j1=j;
-		k1=k;
-	      }
-	    }
-	  }
-	  if (m_fl[j].Strong()) {
-	    pt2jk=2.*sqr(Min(p[j][0],p[k][0]))*(1.-DCos12(p[j],p[k]));
-	    if (pt2jk<ymin*m_sprime) {
-	      ymin=pt2jk/m_sprime;
+      }
+      else {
+	if (m_type==2) {
+	  int hadron=m_fl[0].Strong()?0:1;
+	  if (j==1<<hadron) {
+	    pt2k=2.*sqr(pk[0])*(1.-DCos12(pk,p[hadron]));
+	    if (pt2k<ymin*m_sprime) {
+	      ymin=pt2k/m_sprime;
 	      j1=j;
 	      k1=k;
 	    }
+	  }
+	}
+	if (m_fl[j].Strong()) {
+	  pt2jk=2.*sqr(Min(pj[0],pk[0]))*(1.-DCos12(pj,pk));
+	  if (pt2jk<ymin*m_sprime) {
+	    ymin=pt2jk/m_sprime;
+	    j1=j;
+	    k1=k;
 	  }
 	}
       }
