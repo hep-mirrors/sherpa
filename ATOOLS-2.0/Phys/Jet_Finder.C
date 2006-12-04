@@ -670,8 +670,8 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1)
   for (size_t ps(0);ps<m_fills.size();++ps) {
     int j(m_fills[ps].first), k(m_fills[ps].second);
     Vec4D pj(p[j]), pk(p[k]);
-//       msg_Debugging()<<"test "<<ID(j)<<"["<<m_flavs[j]<<"] & "
-//  		     <<ID(k)<<"["<<m_flavs[k]<<"]\n";
+//     msg_Debugging()<<"test "<<ID(j)<<"["<<m_flavs[j]<<"] & "
+// 		   <<ID(k)<<"["<<m_flavs[k]<<"]\n";
     if (j&k) {
       if (j>k) pj=-pj;
       else pk=-pk;
@@ -713,7 +713,7 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1)
 	    }
 	  }
 	}
-	if (m_fl[j].Strong()) {
+	if (m_flavs[j].Strong()) {
 	  pt2jk=2.*sqr(Min(pj[0],pk[0]))*(1.-DCos12(pj,pk));
 	  if (pt2jk<ymin*m_sprime) {
 	    ymin=pt2jk/m_sprime;
