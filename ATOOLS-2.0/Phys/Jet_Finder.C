@@ -552,13 +552,14 @@ void Jet_Finder::FillCombinations()
 
 void Jet_Finder::PrepareMomList()
 {
+  for (int i(m_nin+m_nout-1);i>=0;--i) m_moms[1<<i]=m_moms[i];
   for (size_t n(0);n<m_mcomb.size()-1;++n) {
     m_moms[m_mcomb[n].back()]=m_moms[m_mcomb[n].front()];
     for (size_t i(1);i<m_mcomb[n].size()-1;++i)
       m_moms[m_mcomb[n].back()]+=m_moms[m_mcomb[n][i]];
 //     msg_Debugging()<<"p["<<ID(m_mcomb[n].back())<<"] = "
-// 		   <<m_moms[m_mcomb[n].back()]
-// 		   <<" ["<<m_flavs[m_mcomb[n].back()]<<"]\n";
+//  		   <<m_moms[m_mcomb[n].back()]
+//  		   <<" ["<<m_flavs[m_mcomb[n].back()]<<"]\n";
   }
 }
 
@@ -567,9 +568,9 @@ bool Jet_Finder::Trigger(const Vec4D * p)
   FillCombinations();
   PROFILE_HERE;
   // create copy
-  for (int i=0;i<m_nin+m_nout;i++) {
-    m_moms[1<<i]=p[i];
-//     msg_Debugging()<<"p["<<i<<"] = "<<m_moms[1<<i]<<" ("<<m_flavs[1<<i]<<")\n";
+  for (int i(0);i<m_nin+m_nout;++i) {
+    m_moms[i]=p[i];
+//     msg_Debugging()<<"p["<<i<<"] = "<<m_moms[i]<<" ("<<m_flavs[1<<i]<<")\n";
   }
 
   Init(&m_moms.front());
@@ -671,7 +672,7 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1)
     int j(m_fills[ps].first), k(m_fills[ps].second);
     Vec4D pj(p[j]), pk(p[k]);
 //     msg_Debugging()<<"test "<<ID(j)<<"["<<m_flavs[j]<<"] & "
-// 		   <<ID(k)<<"["<<m_flavs[k]<<"]\n";
+//  		   <<ID(k)<<"["<<m_flavs[k]<<"]\n";
     if (j&k) {
       if (j>k) pj=-pj;
       else pk=-pk;
