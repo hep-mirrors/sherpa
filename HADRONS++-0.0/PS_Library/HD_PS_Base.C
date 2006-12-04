@@ -86,7 +86,7 @@ Single_Channel * HD_Channel_Selector::GetChannel(
   if( DecomposeChannel( name, ci ) ) {
     if (ci.name==string("Isotropic")) {
       if ( nout == 2 ) return new Iso2Channel(flavs);
-      return new Rambo(1,nout,flavs);
+      return new Rambo(1,nout,flavs,true);
     }
   }
   if (ci.name==string("Iso2") || nout==2 ) return new Iso2Channel(flavs);
