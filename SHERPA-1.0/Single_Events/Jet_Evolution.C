@@ -133,7 +133,9 @@ Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist
     case -1:
       p_showerhandler->CleanUp();
       if (blob->Type()==btp::Hadron_Decay) {
-	blob->SetStatus(blob_status::needs_hadrondecays);
+        Particle* inpart = blob->InParticle(0);
+        inpart->SetStatus(part_status::active);
+        inpart->ProductionBlob()->SetStatus(blob_status::needs_hadrondecays);
 	return Return_Value::Success;
       }
       else if (blob->Type()!=btp::Signal_Process) 

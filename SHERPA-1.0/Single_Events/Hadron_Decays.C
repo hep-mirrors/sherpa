@@ -219,7 +219,12 @@ Return_Value::code Hadron_Decays::Treat(int i)
         Blob* blob;
         // check if particle has a decayblob already, where its
         // decay channel could have been stored in a previous try (HADRONS)
-        if(part->DecayBlob()) blob = part->DecayBlob();
+        if(part->DecayBlob()) {
+          blob = part->DecayBlob();
+          blob->SetStatus(blob_status::needs_hadrondecays);
+          part->SetStatus(part_status::active);
+          blob->DeleteOutParticles();
+        }
         else {
           blob = new Blob();
           blob->SetId();

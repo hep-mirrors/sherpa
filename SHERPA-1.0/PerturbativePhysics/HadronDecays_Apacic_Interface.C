@@ -374,7 +374,5 @@ bool HadronDecays_Apacic_Interface::FillSpectatorDecayTree(APACIC::Tree * tree) 
   mo->right->zs = mo->right->z = sqrt(mo->right->left->E2/mo->right->E2);
   mo->zs = mo->z               = sqrt(mo->left->E2/mo->E2);
 
-  cout<<METHOD<<":"<<endl
-      <<(*tree)<<endl;
   return true;
 }
