@@ -498,10 +498,10 @@ size_t Jet_Finder::FillCombinations(const std::string &name,size_t &cp,
 	m_fills.push_back(std::pair<size_t,size_t>(pos[i],pos[j]));
       }
     }
-    if (fl<m_nin+m_nout) {
-      m_combs[pos[i]][sum]=1;
-      m_fills.push_back(std::pair<size_t,size_t>(pos[i],sum));
-    }
+//     if (fl<m_nin+m_nout) {
+//       m_combs[pos[i]][sum]=1;
+//       m_fills.push_back(std::pair<size_t,size_t>(pos[i],sum));
+//     }
   }
   m_mcomb.push_back(pos);
   m_mcomb.back().push_back(sum);
