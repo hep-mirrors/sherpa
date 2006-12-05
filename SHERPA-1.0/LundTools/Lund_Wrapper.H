@@ -119,6 +119,7 @@ const int nmaxpup   = 100;
 
 const int nmxhep    = 4000;
 
+extern "C" {
 extern struct {
   int mfudge[100];
   double pfudge[100];
@@ -265,4 +266,5 @@ extern struct {
 } heprup_;
 #define heprup heprup_
 
+}
 #endif
