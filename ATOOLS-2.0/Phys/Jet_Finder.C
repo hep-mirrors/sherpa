@@ -458,7 +458,8 @@ Flavour Jet_Finder::GetFlavour(std::string fl)
 size_t Jet_Finder::FillCombinations(const std::string &name,size_t &cp,
 				    const int fl)
 {
-  size_t sum(0);
+  bool ex(false);
+  size_t sum(0), sp(0);
   std::vector<int> pos;
   for (size_t i(0);i<name.length();++i) {
     if (name[i]=='[') {
@@ -468,27 +469,31 @@ size_t Jet_Finder::FillCombinations(const std::string &name,size_t &cp,
 	if (name[j]==']') --open;
 	if (open==0) {
 	  pos.push_back(FillCombinations(name.substr(i+1,j-i-1),cp,fl-1));
-	  size_t sp(name.rfind('_',i));
-	  m_flavs[pos.back()]=GetFlavour(name.substr(sp+1,i-sp-1));
+	  m_flavs[pos.back()]=GetFlavour(name.substr(sp,i-sp));
 	  sum=sum|pos.back();
-	  i=j+2;
+	  sp=i=j+2;
 	  break;
 	}
       }
     }
-    else if (name[i]=='_' && name[i-1]!='_') {
-      pos.push_back(1<<cp++);
-      size_t sp(name.rfind('_',i-1));
-      if (sp==std::string::npos) sp=0;
-      else ++sp;
-      m_flavs[pos.back()]=GetFlavour(name.substr(sp,i-sp));
-      sum=sum|pos.back();
+    else if (name[i]=='_') {
+      if (name[i-1]!='_' && (i<2 || name.rfind("nu",i)!=i-2) && 
+	  name[i+1]!='R' && name[i+1]!='L' &&
+	  (name[i+1]<48 || name[i+1]>57)) {
+	pos.push_back(1<<cp++);
+	m_flavs[pos.back()]=GetFlavour(name.substr(sp,i-sp));
+	sum=sum|pos.back();
+	ex=true;
+      }
+      if (ex && name[i+1]!='_') {
+	sp=i+1;
+	ex=false;
+      }
     }
   }
   if (name[name.length()-1]!=']') {
     pos.push_back(1<<cp++);
-    size_t sp(name.rfind('_',name.length()-1));
-    m_flavs[pos.back()]=GetFlavour(name.substr(sp+1,name.length()-sp-1));
+    m_flavs[pos.back()]=GetFlavour(name.substr(sp,name.length()-sp));
     sum=sum|pos.back();
   }
   for (size_t i(0);i<pos.size();++i) {
