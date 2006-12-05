@@ -48,7 +48,6 @@ namespace SHERPA {
     void               SetMassSmearing(bool ms)      { m_mass_smearing = ms; }
     bool               GetMassSmearing()             { return m_mass_smearing; }
     bool               DiceMass(ATOOLS::Particle*, double min, double max);
-    bool               SetColorFlow(std::vector<ATOOLS::Particle*> parts,int n_q, int n_g);
   };
 
   typedef std::map<std::string,Hadron_Decay_Handler *> HDHandlersMap;

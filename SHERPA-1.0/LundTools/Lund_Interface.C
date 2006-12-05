@@ -557,7 +557,7 @@ void Lund_Interface::FillOutgoingParticlesInBlob(Blob *blob)
   Vec4D      momentum, position;
   Particle * particle;
 
-  int number_of_quarks(0), number_of_gluons(0); Particle_Vector partons;
+  int n_q(0), n_g(0); Particle_Vector partons;
   for (int j=hepevt.jdahep[0][0]-1;j<hepevt.jdahep[0][1];j++) {
     int idhep = hepevt.idhep[j];
     switch (idhep) {
@@ -585,13 +585,42 @@ void Lund_Interface::FillOutgoingParticlesInBlob(Blob *blob)
     blob->AddToOutParticles(particle);
     
     if(abs(idhep)>0 && abs(idhep)<7) {
-      number_of_quarks++;
+      n_q++;
       partons.push_back(particle);
     }
     else if(abs(idhep)==21) {
-      number_of_gluons++;
+      n_g++;
       partons.push_back(particle);
     }
+  }
+  
+  size_t n=partons.size();
+  if(n_q==2 && n_g==0 && n==2) {
+    if(partons[0]->Flav().IsAnti()) {
+      partons[0]->SetFlow(2,-1);
+      partons[1]->SetFlow(1,partons[0]->GetFlow(2));
+    }
+    else {
+      partons[0]->SetFlow(1,-1);
+      partons[1]->SetFlow(2,partons[0]->GetFlow(1));
+    }
+  }
+  else if(n_q==0 && n_g==2 && n==2) {
+    partons[0]->SetFlow(2,-1);
+    partons[0]->SetFlow(1,-1);
+    partons[1]->SetFlow(2,partons[0]->GetFlow(1));
+    partons[1]->SetFlow(1,partons[0]->GetFlow(2));
+  }
+  else if(n_q==0 && n_g==3 && n==3) {
+    partons[0]->SetFlow(2,-1);
+    partons[0]->SetFlow(1,-1);
+    partons[1]->SetFlow(2,partons[0]->GetFlow(1));
+    partons[1]->SetFlow(1,-1);
+    partons[2]->SetFlow(2,partons[1]->GetFlow(1));
+    partons[2]->SetFlow(1,partons[0]->GetFlow(2));
+  }
+  else if(n>0) {
+    msg.Error()<<METHOD<<" wasn't able to set the color flow for"<<endl<<*blob<<endl;
   }
 }
 
