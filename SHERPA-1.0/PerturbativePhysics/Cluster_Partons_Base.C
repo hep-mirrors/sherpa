@@ -30,6 +30,7 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
   Data_Read dr(rpa.GetPath()+
 	       rpa.gen.Variable("SHOWER_DATA_FILE","Shower.dat"));
   m_bp_mode  = dr.GetValue<int>("SUDAKOV_TYPE",40);
+  m_sud_mode = dr.GetValue<int>("SUDAKOV_MODE",3);
   if (ToType<int>(rpa.gen.Variable("S_KFACTOR_SCHEME","1"))&2) {
     /*
       in principle we need the k factor also in the sudakovs
@@ -54,17 +55,15 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
 		<<"   ME ren. scale factor    = "<<m_me_as_factor<<"\n"
 		<<"   K factor                = "<<m_kfac<<"\n}"<<std::endl;
   p_runas = MODEL::as; 
-  if (m_fsrshoweron!=0) {
+  if (m_fsrshoweron!=0 && (m_sud_mode&1)) {
     p_fssud = new NLL_Sudakov((bpm::code)(m_bp_mode+1),
 			      p_jf->Smax(),p_jf->Smin(),
 			      p_runas,m_fs_as_factor*m_me_as_factor);
-    m_sud_mode += 1;
   }
-  if (m_isrshoweron!=0) {
+  if (m_isrshoweron!=0 && (m_sud_mode&2)) {
     p_issud = new NLL_Sudakov((bpm::code)(m_bp_mode+2),
 			      p_jf->Smax(),p_jf->Smin(),
 			      p_runas,m_is_as_factor*m_me_as_factor);
-    m_sud_mode += 2;
   }
   m_events.resize(m_maxjetnumber,0);
   m_meweight_sum.resize(m_maxjetnumber,0.0);

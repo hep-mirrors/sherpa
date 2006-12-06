@@ -234,12 +234,12 @@ InternalWeight(const bool is,Leg &leg,const double iupper,
 		   <<actual<<". Swap."<<std::endl;
     std::swap<double>(actual,qmin);
   }
-  double DeltaNum(0.), DeltaDenom(1.), DeltaRatio(0.);
-  if (is) {
+  double DeltaNum(1.), DeltaDenom(1.), DeltaRatio(1.);
+  if (is && (m_sud_mode&2)) {
     DeltaNum   = p_issud->Delta(leg.Flav())(upper,qmin);
     DeltaDenom = p_issud->Delta(leg.Flav())(actual,qmin);
   }
-  else {
+  else if (m_sud_mode&1) {
     DeltaNum   = p_fssud->Delta(leg.Flav())(upper,qmin);
     DeltaDenom = p_fssud->Delta(leg.Flav())(actual,qmin);
   }
@@ -256,7 +256,7 @@ double Cluster_Partons_CKKW::
 ExternalWeight(const bool is,Leg &leg,
 	       const double actual,double qmin)
 {
-  double DeltaNum(0.);
+  double DeltaNum(1.);
   if (qmin==0.0) 
     if (is) qmin=m_qmin_i;
     else qmin=m_qmin_f;
@@ -265,8 +265,8 @@ ExternalWeight(const bool is,Leg &leg,
     DeltaNum=1.0;
   }
   else {
-    if (is) DeltaNum = p_issud->Delta(leg.Flav())(actual,qmin);
-       else DeltaNum = p_fssud->Delta(leg.Flav())(actual,qmin);
+    if (is && (m_sud_mode&2)) DeltaNum = p_issud->Delta(leg.Flav())(actual,qmin);
+    else if (m_sud_mode&1) DeltaNum = p_fssud->Delta(leg.Flav())(actual,qmin);
   }
   msg_Debugging()<<(is?"is":"fs")<<" weight \\Delta_{"
 		 <<leg.Flav()<<"}("<<actual<<","<<qmin
@@ -412,6 +412,33 @@ void Cluster_Partons_CKKW::WeightHardProcess()
   else {
     THROW(fatal_error,"No scale in hard process");
   }
+  PHASIC::Integrable_Base *proc(p_me->GetAmegic()->GetProcess());
+  double qmin2me(proc->Scale(PHASIC::stp::fac));
+  if (!IsEqual(qmin2me,m_qmin[0]*m_qmin[1])) {
+    double x[2];
+    Combine_Table_Base *ct(p_ct);
+    while (ct->Up()) ct=ct->Up();
+    ct->GetX1X2(x[0],x[1]);
+    msg_Debugging()<<"pdf reweighting: q_{fac,me} = "<<sqrt(qmin2me)
+		   <<" -> q_{fac} = "<<m_qmin[0]<<"/"<<m_qmin[1]
+		   <<", x_1 = "<<x[0]<<", x_2 = "<<x[1]<<"\n";
+    for (short unsigned int i(0);i<2;++i) { 
+      if (p_pdf[i]!=NULL) {
+	if (sqr(m_qmin[i])<p_pdf[i]->Q2Min()) {
+	  msg.Error()<<METHOD<<"(): Scale under-runs minimum PDF scale."
+		     <<std::endl;
+	  continue;
+	}
+	p_pdf[i]->Calculate(x[i],qmin2me);
+	double w(p_pdf[i]->GetXPDF(ct->GetLeg(i).Flav()));
+	p_pdf[i]->Calculate(x[i],sqr(m_qmin[i]));
+	w/=p_pdf[i]->GetXPDF(ct->GetLeg(i).Flav());
+	msg_Debugging()<<"w_{"<<i<<"} = "<<(1.0/w)
+		       <<" ("<<ct->GetLeg(i).Flav()<<")\n";
+	if (w>0.0) m_weight/=w;
+      }
+    }
+  }
   msg_Debugging()<<"} -> w = "<<m_weight<<"\n";
 }
 
@@ -436,6 +463,8 @@ void Cluster_Partons_CKKW::CalculateWeight(const double &meweight)
     m_last_q.push_back(std::numeric_limits<double>::max());
     m_last_i.push_back(si);
     ptij = ct_tmp->GetWinner(i,j);
+    if (i<2) m_q2_iss=Max(m_q2_iss,dabs(ct_down->Momentum(i).Abs2()));
+    else m_q2_fss=Max(m_q2_fss,ct_down->Momentum(i).Abs2());
     strong_vertex = ct_down->GetLeg(i).OrderQCD()>0;
     if (ct_down->GetLeg(i).Point()->t<10) {
       if (ct_down->GetLeg(i).Flav().Strong())
