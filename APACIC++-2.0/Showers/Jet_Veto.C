@@ -276,6 +276,7 @@ int Jet_Veto::TestFSKinematics(Knot *const knot)
   msg_Debugging()<<METHOD<<"("<<knot->kn_no<<","<<knot->part->Info()
 		 <<"): p_{t,jv} = "<<knot->qjv<<" ("<<jv
 		 <<"), p_{t,ljv} = "<<knot->qljv<<" ("<<ljv<<")\n";
+  int type(p_jf->Type());
   Knot *d[3]={knot,knot->left,knot->right};
   for (short unsigned int i(1);i<3;++i) {
     if (d[i]->left==NULL) continue;
@@ -284,9 +285,11 @@ int Jet_Veto::TestFSKinematics(Knot *const knot)
 		d[i]->right->part->Momentum()};
     double sf(sqrt(sqr(p[0][0])-d[3-i]->tout)/p[0].PSpat());
     for (short unsigned int j(1);j<3;++j) p[0][j]*=sf;
+    p_jf->SetType(knot->cms!=Vec4D()?1:type);
     double jpt2[3]={p_jf->MTij2(p[0],p[1]),
 		    p_jf->MTij2(p[0],p[2]),
 		    p_jf->MTij2(p[1],p[2])};
+    p_jf->SetType(type);
     int jets(3), ljets(0);
     if (d[i]->left->part->Info()!='H' || 
 	d[i]->right->part->Info()!='H') { 
@@ -304,7 +307,8 @@ int Jet_Veto::TestFSKinematics(Knot *const knot)
 		     <<","<<d[i]->right->part->Info()
 		     <<"), jpt = {"<<sqrt(jpt2[0])<<","
 		     <<sqrt(jpt2[1])<<","<<sqrt(jpt2[2])
-		     <<"} -> "<<jets<<" jets\n";
+		     <<"} -> "<<jets<<" jets of type "
+		     <<(knot->cms!=Vec4D()?1:type)<<"\n";
       if (jv && jets>2) {
 	msg_Debugging()<<"  jet veto\n";
 	return 0;
