@@ -2,6 +2,7 @@
 #include "Run_Parameter.H"
 #include "Message.H"
 #include "Exception.H"
+#include "MyStrStream.H"
 #include "Blob.H"
 
 #ifdef PROFILE__Analysis_Phase
@@ -500,13 +501,9 @@ size_t Jet_Finder::FillCombinations(const std::string &name,size_t &cp,
     for (size_t j(i+1);j<pos.size();++j) {
       if (pos[i]>2 || pos[j]>2) {
 	m_combs[pos[i]][pos[j]]=1;
-	m_fills.push_back(std::pair<size_t,size_t>(pos[i],pos[j]));
+	m_fills[fl].push_back(std::pair<size_t,size_t>(pos[i],pos[j]));
       }
     }
-//     if (fl<m_nin+m_nout) {
-//       m_combs[pos[i]][sum]=1;
-//       m_fills.push_back(std::pair<size_t,size_t>(pos[i],sum));
-//     }
   }
   m_mcomb.push_back(pos);
   m_mcomb.back().push_back(sum);
@@ -521,6 +518,7 @@ void Jet_Finder::FillCombinations()
     m_moms.resize(size);
     m_flavs.resize(size);
     m_combs.resize(size,std::vector<int>(size,0));
+    m_fills.resize(m_nin+m_nout+1);
     std::string name(m_procname.substr(m_procname.find('_')+1));
     name=name.substr(name.find('_')+1);
     size_t i(0);
@@ -539,9 +537,10 @@ void Jet_Finder::FillCombinations()
       }
       msg.Out()<<"}\n";
       msg.Out()<<METHOD<<"(): Identified clusterings {\n";
-      for (size_t j(0);j<m_fills.size();++j)
-	msg.Out()<<" ["<<ID(m_fills[j].first)<<","
-		     <<ID(m_fills[j].second)<<"]\n";
+      for (size_t i(0);i<m_fills.size();++i)
+	for (size_t j(0);j<m_fills[i].size();++j)
+	  msg.Out()<<" ["<<ID(m_fills[i][j].first)<<","
+		   <<ID(m_fills[i][j].second)<<"] ("<<i<<")\n";
       msg.Out()<<"}\n";
       msg.Out()<<METHOD<<"(): Momentum combination {\n";
       for (size_t i(0);i<m_mcomb.size();++i) {
@@ -562,9 +561,22 @@ void Jet_Finder::PrepareMomList()
     m_moms[m_mcomb[n].back()]=m_moms[m_mcomb[n].front()];
     for (size_t i(1);i<m_mcomb[n].size()-1;++i)
       m_moms[m_mcomb[n].back()]+=m_moms[m_mcomb[n][i]];
+    Vec4D cc;
+    Poincare cms(m_moms[m_mcomb[n].back()]);
+    for (size_t i(0);i<m_mcomb[n].size()-1;++i) {
+      cms.Boost(m_moms[m_mcomb[n][i]]);
+      cc+=m_moms[m_mcomb[n][i]];
+    }
+    Vec4D::SetAccu(1.0e-10);
+    if (!(Vec3D(cc)==Vec3D()) || 
+	!IsEqual(cc.Abs2(),m_moms[m_mcomb[n].back()].Abs2())) 
+      msg.Error()<<METHOD<<"(): CMS boost failure. sum = "
+		 <<cc<<" "<<cc.Abs2()<<" vs. "
+		 <<m_moms[m_mcomb[n].back()].Abs2()<<"\n";
+    Vec4D::ResetAccu();
 //     msg_Debugging()<<"p["<<ID(m_mcomb[n].back())<<"] = "
 //  		   <<m_moms[m_mcomb[n].back()]
-//  		   <<" ["<<m_flavs[m_mcomb[n].back()]<<"]\n";
+//  		   <<" ["<<m_flavs[m_mcomb[n].back()]<<"] "<<cc<<"\n";
   }
 }
 
@@ -584,8 +596,9 @@ bool Jet_Finder::Trigger(const Vec4D * p)
 
   int    j,k;
   bool   trigger(true);
-  double ymin=0.;
-  ymin = YminKt(&m_moms.front(),j,k); 
+  double ymin(2.0);
+  for (short unsigned int cl(0);cl<m_fills.size();++cl)
+    ymin=Min(ymin,YminKt(&m_moms.front(),j,k,cl)); 
   if (ymin < m_ycut) trigger = false;
   
   m_value = ymin;
@@ -639,7 +652,7 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
 	  */
 	  if (m_type>=2) cuts->scut[j][i] = cuts->scut[i][j] 
 			   = Max(cuts->scut[i][j],sqr(m_delta_r)*m_ycut*m_s);
-	  else cuts->scut[i][j] = cuts->scut[j][i] = Max(cuts->scut[i][j],m_ycut*m_smin);
+	  else cuts->scut[i][j] = cuts->scut[j][i] = Max(cuts->scut[i][j],m_ycut*m_s);
 	}
       }
     }
@@ -668,22 +681,19 @@ void   Jet_Finder::UpdateCuts(double sprime,double y,Cut_Data * cuts)
   }
 }
 
-double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1)
+double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1,int cl)
 {
   PROFILE_HERE;
   double ymin = 2.;
   double pt2jk,pt2j,pt2k;
-  for (size_t ps(0);ps<m_fills.size();++ps) {
-    int j(m_fills[ps].first), k(m_fills[ps].second);
+  for (size_t ps(0);ps<m_fills[cl].size();++ps) {
+    int j(m_fills[cl][ps].first), k(m_fills[cl][ps].second);
     Vec4D pj(p[j]), pk(p[k]);
 //     msg_Debugging()<<"test "<<ID(j)<<"["<<m_flavs[j]<<"] & "
-//  		   <<ID(k)<<"["<<m_flavs[k]<<"]\n";
-    if (j&k) {
-      if (j>k) pj=-pj;
-      else pk=-pk;
-    }
+// 		   <<ID(k)<<"["<<m_flavs[k]<<"], core = "
+// 		   <<(cl==m_nin+m_nout)<<"\n";
     if (m_flavs[k].Strong()) {
-      if (m_type>=3) {
+      if (m_type>=3 && cl==m_nin+m_nout) {
 	pt2k=pk.PPerp2();
 	if (m_pt_def) pt2k+=pk.Abs2();
 	if (j<3) {
@@ -708,7 +718,7 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1)
 	}
       }
       else {
-	if (m_type==2) {
+	if (m_type==2 && cl==m_nin+m_nout) {
 	  int hadron=m_fl[0].Strong()?0:1;
 	  if (j==1<<hadron) {
 	    pt2k=2.*sqr(pk[0])*(1.-DCos12(pk,p[hadron]));

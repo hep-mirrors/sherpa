@@ -19,7 +19,7 @@ namespace ATOOLS {
 
     std::vector<std::vector<int> > m_combs, m_mcomb;
 
-    std::vector<std::pair<size_t,size_t> > m_fills;
+    std::vector<std::vector<std::pair<size_t,size_t> > > m_fills;
     
     /*
       The vectors related to the frame
@@ -45,7 +45,7 @@ namespace ATOOLS {
     bool ConstructJetSystem(Vec4D *,Flavour *,std::vector<Vec4D> &,
 			    std::vector<int> jets,std::vector<double> & lastys);
 
-    double YminKt(Vec4D *,int &,int &);
+    double YminKt(Vec4D *,int &,int &,int);
     double YminKt(Vec4D *,Flavour *,std::vector<Vec4D>,int &,int &);
     double Yij(Vec4D,Vec4D);
 
