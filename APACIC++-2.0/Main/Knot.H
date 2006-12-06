@@ -13,7 +13,7 @@ namespace APACIC {
     Knot *prev, *left, *right, *decay;
 
     ATOOLS::Particle *part;
-    ATOOLS::Vec4D     lp[2];
+    ATOOLS::Vec4D     lp[2], cms;
 
     int    stat, kn_no, shower, maxjets, dir;
     bool   didkin;

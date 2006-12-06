@@ -32,8 +32,9 @@ std::ostream &APACIC::operator<<(std::ostream& s,const Knot &k)
      <<k.part->Momentum()<<","<<(k.part->Momentum()).Abs2()
      <<": ("<<k.part->GetFlow(1)<<", "<<k.part->GetFlow(2)<<") {"
      <<(k.part->ProductionBlob()?k.part->ProductionBlob()->Id():0)<<","
-     <<(k.part->DecayBlob()?k.part->DecayBlob()->Id():0)<<"} didkin="
-     <<k.didkin<<" dir="<<k.dir<<"\n phi="<<k.phi<<" pol="<<k.polinfo<<"\n";
+     <<(k.part->DecayBlob()?k.part->DecayBlob()->Id():0)<<"} "
+     <<k.cms<<", didkin="<<k.didkin<<", dir="<<k.dir<<", phi="<<k.phi
+     <<" pol="<<k.polinfo<<"\n";
   } 
   else { 
     s<<"***empty knot***\n"; 
