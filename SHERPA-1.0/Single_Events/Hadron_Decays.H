@@ -13,9 +13,9 @@ namespace ATOOLS {
 }
 
 #ifdef DEBUG__Hadrons
-#ifdef USING__Root
-class TH1D;
-class TFile;
+#ifdef USING__ROOT
+#include "TH1D.h"
+#include "TFile.h"
 #endif
 #endif
 
@@ -30,7 +30,7 @@ namespace SHERPA {
     double                     m_max_mass;
     bool                       m_mass_smearing;
 #ifdef DEBUG__Hadrons
-#ifdef USING__Root
+#ifdef USING__ROOT
     TFile* p_file;
     std::map<ATOOLS::kf::code,TH1D*> mass_hists;
 #endif

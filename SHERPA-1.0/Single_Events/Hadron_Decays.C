@@ -15,16 +15,6 @@
 #define PROFILE_LOCAL(LOCALNAME) {}
 #endif
 
-#ifdef DEBUG__Hadrons
-#ifdef USING__Hadrons
-#include "Hadron_Decay_Channel.H"
-#endif
-#ifdef USING__Root
-#include "TH1D.h"
-#include "TFile.h"
-#endif
-#endif
-
 using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
@@ -33,14 +23,14 @@ Hadron_Decays::Hadron_Decays(HDHandlersMap * _dechandlers) :
   p_dechandlers(_dechandlers), p_bloblist(NULL), p_saved_amplitudes(NULL)
 {
 #ifdef DEBUG__Hadrons
-#ifdef USING__Root
+#ifdef USING__ROOT
+  p_file = new TFile("masses.root","RECREATE");
   Fl_Iter fli;
   for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
     if (flav.IsOn() && (flav.IsHadron() || flav.IsLepton())) {
       double limit = flav.Width()==0.0?0.01*flav.PSMass():flav.Width();
       double min = flav.PSMass()-3.0*limit;
       double max = flav.PSMass()+3.0*limit;
-      p_file = new TFile("masses.root","RECREATE");
       TH1D* myhist = new TH1D(flav.ShellName().c_str(),flav.IDName().c_str(),100,min,max);
       myhist->SetDirectory(p_file);
       mass_hists.insert(make_pair(flav.Kfcode(),myhist));
@@ -158,7 +148,7 @@ Return_Value::code Hadron_Decays::Treat(Blob * blob)
       m_daughters[i]->DecayBlob()->Boost(boost);
       m_daughters[i]->SetStatus(part_status::decayed);
 #ifdef DEBUG__Hadrons // fill the mass histogram of this flavour
-#ifdef USING__Root
+#ifdef USING__ROOT
       if(mass_hists.find(m_daughters[i]->Flav().Kfcode())!=mass_hists.end()) {
         mass_hists[m_daughters[i]->Flav().Kfcode()]->Fill(m_daughters[i]->FinalMass());
       }
@@ -168,7 +158,7 @@ Return_Value::code Hadron_Decays::Treat(Blob * blob)
     else {
       m_daughters[i]->SetMomentum(m_saved_momenta[i]);
 #ifdef DEBUG__Hadrons // fill the mass histogram of this flavour
-#ifdef USING__Root
+#ifdef USING__ROOT
       if(mass_hists.find(m_daughters[i]->Flav().Kfcode())!=mass_hists.end()) {
         mass_hists[m_daughters[i]->Flav().Kfcode()]->Fill(m_daughters[i]->FinalMass());
       }
@@ -355,13 +345,14 @@ void Hadron_Decays::CleanUp() {}
 
 void Hadron_Decays::Finish(const std::string &) {
 #ifdef DEBUG__Hadrons
-#ifdef USING__Root
+#ifdef USING__ROOT
   map<kf::code,TH1D*>::iterator it;
   for(it=mass_hists.begin();it!=mass_hists.end();it++) {
     if(it->second->GetEntries()>0) {
       it->second->Write();
     }
   }
+  p_file->Close();
 #endif
 #endif
 }
