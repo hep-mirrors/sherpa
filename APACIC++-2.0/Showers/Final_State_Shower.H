@@ -29,6 +29,10 @@ namespace APACIC {
 
     Knot *ChooseDaughter(Knot *mo);
 
+    void BoostDecay(Knot *const mo,ATOOLS::Poincare &cms,ATOOLS::Vec4D &bv);
+    bool BoostDecays(Knot *const mo);
+    bool BoostBackDecays(Knot *const mo);
+
     void InitTwojetTree(Tree *tree,double scale);
     int  EvolveJet(Tree *tree,Knot *mo,int first=0);
     int  FillBranch(Tree *tree,Knot *mo,int first);

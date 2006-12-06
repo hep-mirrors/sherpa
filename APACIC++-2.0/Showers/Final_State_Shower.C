@@ -72,6 +72,54 @@ int Final_State_Shower::PerformShower(Tree *tree,int jetveto)
   return 0;
 }
 
+void Final_State_Shower::BoostDecay
+(Knot *const mo,Poincare &cms,ATOOLS::Vec4D &bv)
+{
+  if (mo==NULL) return;
+  msg_Indent();
+  Vec4D pm(mo->part->Momentum());
+  cms.Boost(pm);
+  msg_Debugging()<<mo->kn_no<<"->("<<(mo->left?mo->left->kn_no:-1)<<","
+		 <<(mo->right?mo->right->kn_no:-1)<<") "
+		 <<mo->part->Momentum()<<" -> "<<pm<<"\n";
+  mo->part->SetMomentum(pm);
+  mo->cms=bv;
+  BoostDecay(mo->left,cms,bv);
+  BoostDecay(mo->right,cms,bv);
+}
+
+bool Final_State_Shower::BoostDecays(Knot *const mo)
+{
+  if (mo->decay!=NULL && mo->cms==Vec4D() &&
+      (mo->shower==3 || mo->shower==0)) {
+    msg_Debugging()<<METHOD<<"(): {\n";
+    mo->cms=mo->part->Momentum();
+    Poincare cms(mo->cms);
+    BoostDecay(mo,cms,mo->cms);
+    Tree::UpdateDaughters(mo);
+    mo->Store();
+    msg_Debugging()<<"}\n";
+    return true;
+  }
+  return false;
+}
+
+bool Final_State_Shower::BoostBackDecays(Knot *const mo)
+{
+  if (mo->cms!=Vec4D() && mo->prev->cms!=mo->cms) {
+    msg_Debugging()<<METHOD<<"(): {\n";
+    Poincare cms(mo->cms);
+    cms.Invert();
+    mo->cms=Vec4D();
+    BoostDecay(mo,cms,mo->cms);
+    Tree::UpdateDaughters(mo);
+    mo->Store();
+    msg_Debugging()<<"}\n";
+    return true;
+  }
+  return false;
+}
+
 int Final_State_Shower::
 FillISBranch(Initial_State_Shower *const ini,
 	     Tree *tree,Knot *mo,const bool jetveto,
@@ -243,6 +291,7 @@ int Final_State_Shower::InitializeJets(Tree *tree,Knot *mo,int init)
   }
   msg_Debugging()<<METHOD<<"("<<mo->kn_no<<","<<init<<"): {\n";
   msg_Indent();
+  BoostDecays(mo);
   Knot *d1(mo->left), *d2(mo->right);
   if (d1->shower==2 && d1->decay==NULL) {
     d1->decay = tree->NewKnot();
@@ -322,6 +371,7 @@ int Final_State_Shower::InitializeJets(Tree *tree,Knot *mo,int init)
     msg_Debugging()<<"init jets knot "<<d1->kn_no<<"\n";
     if (init) EstablishRelations(d1,d1->left,d1->right);
     if (!InitializeJets(tree,d1)) {
+      BoostBackDecays(mo);
       msg_Debugging()<<"}\n";
       return 0;
     }
@@ -330,10 +380,12 @@ int Final_State_Shower::InitializeJets(Tree *tree,Knot *mo,int init)
     msg_Debugging()<<"init jets knot "<<d2->kn_no<<"\n";
     if (init) EstablishRelations(d2,d2->left,d2->right);
     if (!InitializeJets(tree,d2)) {
+      BoostBackDecays(mo);
       msg_Debugging()<<"}\n";
       return 0;
     }
   }
+  BoostBackDecays(mo);
   msg_Debugging()<<"end initialize jets, knot "<<mo->kn_no<<"\n";
   return 1;
 }
@@ -510,6 +562,7 @@ bool Final_State_Shower::
 SetColors(Knot *mo,unsigned int oldr,unsigned int newr,
 	  unsigned int olda,unsigned int newa)
 {
+  if (mo==NULL) return true;
   msg_Debugging()<<METHOD<<"("<<oldr<<"->"<<newr<<","<<olda<<"->"<<newa
 		 <<"): sync colors in "<<mo->kn_no
 		 <<"("<<mo->part->GetFlow(1)<<","
@@ -517,19 +570,15 @@ SetColors(Knot *mo,unsigned int oldr,unsigned int newr,
 		 <<(mo->left?mo->left->kn_no:0)<<","
 		 <<(mo->right?mo->right->kn_no:0)<<"\n";
   msg_Indent();
-  for (short unsigned int i(0);i<2;++i) {
-    Knot *k(i==0?mo->left:mo->right);
-    if (k!=NULL) {
-      unsigned int r(k->part->GetFlow(1)), a(k->part->GetFlow(2));
-      if (r==oldr || a==olda) {
-	if (!SetColors(k,oldr,newr,olda,newa)) {
-	  msg.Error()<<METHOD<<"(): Colour adjustment failed."<<std::endl;
-	  return false;
-	}
- 	if (r==oldr) k->part->SetFlow(1,newr);
- 	if (a==olda) k->part->SetFlow(2,newa);
-      }
-    }  
+  unsigned int r(mo->part->GetFlow(1)), a(mo->part->GetFlow(2));
+  if (r==oldr || a==olda) {
+    if (!SetColors(mo->left,oldr,newr,olda,newa) || 
+	!SetColors(mo->right,oldr,newr,olda,newa)) {
+      msg.Error()<<METHOD<<"(): Colour adjustment failed."<<std::endl;
+      return false;
+    }
+    if (r==oldr) mo->part->SetFlow(1,newr);
+    if (a==olda) mo->part->SetFlow(2,newa);
   }
   return true;
 }
@@ -603,10 +652,10 @@ bool Final_State_Shower::SetColours(Knot *mo,Timelike_Kinematics *kin)
   if (all_colors_known) {
     if (mo->decay && mo->left->decay!=mo->decay) {
       // sync colors
-      SetColors(mo->left,mo->decay->part->GetFlow(1),mo->part->GetFlow(1),
-  		mo->decay->part->GetFlow(2),mo->part->GetFlow(2));
-      SetColors(mo->right,mo->decay->part->GetFlow(1),mo->part->GetFlow(1),
-  		mo->decay->part->GetFlow(2),mo->part->GetFlow(2));
+      SetColors(mo->left,mo->left->part->GetFlow(1),mo->part->GetFlow(1),
+  		mo->left->part->GetFlow(2),mo->part->GetFlow(2));
+      SetColors(mo->right,mo->right->part->GetFlow(1),mo->part->GetFlow(1),
+  		mo->right->part->GetFlow(2),mo->part->GetFlow(2));
     }
   }
   else if (mo->part->Flav().Kfcode()!=kf::none) {
@@ -1063,6 +1112,8 @@ InitDaughters(Tree * tree,Knot * mo,ATOOLS::Flavour flb,ATOOLS::Flavour flc,
     mo->left->shower   = mo->shower;  
     mo->left->decay    = mo->decay;
     if (mo->shower==3) mo->left->tmo=mo->t;
+    mo->left->cms      = mo->cms;
+    mo->right->cms     = mo->cms;
     mo->left->qjv      = mo->qjv;
     mo->left->qljv     = mo->qljv;
     mo->left->maxjets  = mo->maxjets;
