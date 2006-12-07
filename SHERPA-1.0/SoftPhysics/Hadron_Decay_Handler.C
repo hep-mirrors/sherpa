@@ -132,3 +132,10 @@ bool Hadron_Decay_Handler::DiceMass(ATOOLS::Particle* part, double min, double m
   }
   else return false;
 }
+
+void Hadron_Decay_Handler::SetSignalProcessBlob(ATOOLS::Blob* spblob)
+{
+#ifdef USING__Hadrons
+  if(m_mode==1) p_hadrons->SetSignalProcessBlob(spblob);
+#endif
+}

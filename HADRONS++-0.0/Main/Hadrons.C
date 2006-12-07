@@ -70,20 +70,6 @@ bool Hadrons::FindDecay(const ATOOLS::Flavour & Decayer)
   return true;
 }
 
-Blob* Hadrons::GetSignalProcessBlob(Particle* inpart)
-{
-  Blob* sp_blob=inpart->ProductionBlob();
-  while(sp_blob) {
-    if(sp_blob->Type()==btp::Signal_Process) break;
-    sp_blob = sp_blob->InParticle(0)->ProductionBlob();
-  }
-  if(!sp_blob) {
-    msg.Error()<<METHOD<<" Error: Didn't find signal process blob for spin "
-      <<"correlations."<<endl;
-  }
-  return sp_blob;
-}
-
 Amplitude_Tensor* Hadrons::GetMotherAmplitudes(Particle* part,
                                                Particle*& contracting_part,
                                                const Vec4D& labmom)
@@ -109,8 +95,7 @@ Amplitude_Tensor* Hadrons::GetMotherAmplitudes(Particle* part,
 
   /** if above didn't succeed, let's look if the signal process blob has an
       amplitude tensor for this particle */
-  Blob* spblob = GetSignalProcessBlob(part);
-  Blob_Data_Base* scdata = (*spblob)["amps"];
+  Blob_Data_Base* scdata = (*p_spblob)["amps"];
   if(scdata) {
     Amplitude_Tensor* amps = scdata->Get<Amplitude_Tensor*>();
     /** If it directly contains our particle -> fine, return. */
@@ -207,7 +192,7 @@ void Hadrons::ChooseDecayKinematics(
       
       Poincare labboost(labmom);
       labboost.Invert();
-      Poincare spcmsboost = Poincare( GetSignalProcessBlob(inpart)->CMS() );
+      Poincare spcmsboost = Poincare( p_spblob->CMS() );
       vector<Vec4D> boosted_moms(n);
       boosted_moms[0]=spcmsboost*(labboost*moms[0]);
 

@@ -40,6 +40,7 @@ namespace HADRONS {
     GeneralModel          m_md0;                // starter model
     bool                  m_spincorrelations;
     ATOOLS::CMatrix     * p_color_unitmatrix;
+    ATOOLS::Blob        * p_spblob;
 
     void ReadInConstants();
     void ReadInDecayTables();
@@ -70,6 +71,7 @@ namespace HADRONS {
 
     void CreateBookletNow();
     void SetSpinCorrelations(bool sc);
+    void SetSignalProcessBlob(ATOOLS::Blob* spblob) { p_spblob=spblob; }
   }; // end of class Hadrons
   
   /*!
