@@ -43,7 +43,8 @@ libObservables_la_SOURCES     =	\
 				Four_Jet_Angles.C \
 				Field_Stuart_Cone_Finder.C \
 				Blob_Selector.C \
-				Particle_Ordering.C
+				Particle_Ordering.C \
+				Lorentz.C
 pkginclude_HEADERS        =	\
 			HT.H \
 			PSM_Observables.H \
