@@ -217,13 +217,13 @@ void Hadrons::ChooseDecayKinematics(
                                                       amps,
                                                       inpart);
           weight = numerator/denominator;
-          if(weight>1.0) {
+          if(weight>(1.0+Accu())) {
             msg.Error()<<METHOD<<" Error: weight="<<weight<<" in "
               <<rpa.gen.NumberOfDicedEvents()<<endl
               <<(*blob)<<endl;
           }
           trials++;
-          if(trials>1000) {
+          if(trials%1000==0) {
             msg.Error()<<METHOD<<" Warning: spin correlation trials="<<trials<<endl
               <<"    possibly wrong amplitudes?"<<endl
               <<(*blob)<<endl;
