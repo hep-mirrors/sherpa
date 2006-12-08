@@ -567,7 +567,8 @@ void Jet_Finder::PrepareMomList()
       cms.Boost(m_moms[m_mcomb[n][i]]);
       cc+=m_moms[m_mcomb[n][i]];
     }
-    Vec4D::SetAccu(1.0e-10);
+    static double accu(sqrt(Accu()));
+    Vec4D::SetAccu(accu);
     if (!(Vec3D(cc)==Vec3D()) || 
 	!IsEqual(cc.Abs2(),m_moms[m_mcomb[n].back()].Abs2())) 
       msg.Error()<<METHOD<<"(): CMS boost failure. sum = "
