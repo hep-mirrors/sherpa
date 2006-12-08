@@ -54,7 +54,7 @@ void LesHouches_Interface::Run(std::string _model) {
   
   //SetSMInput();
   SetMasses();
-  SetWidths();
+  if (p_dataread->GetValue<int>("LESHOUCHES_WIDTHS",1)) SetWidths();
   SetHiggsParameters();
   SetInoParameters();
   SetSquarkParameters();
