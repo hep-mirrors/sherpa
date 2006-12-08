@@ -72,7 +72,8 @@ namespace ATOOLS
 
       size_t n=1;
       for(size_t i=0;i<size;i++) {
-	m_spins[i] = flavs[i].IntSpin()+1;
+        if(flavs[i].IsVector() && flavs[i].PSMass()==0) m_spins[i] = 2;
+        else m_spins[i] = flavs[i].IntSpin()+1;
 	n*=m_spins[i];
       }
       this->resize(n);
@@ -84,7 +85,8 @@ namespace ATOOLS
 
       size_t n=1;
       for(size_t i=0;i<particles.size();i++) {
-	m_spins[i] = particles[i]->Flav().IntSpin()+1;
+        if(particles[i]->Flav().IsVector() && particles[i]->Flav().PSMass()==0) m_spins[i] = 2;
+        else m_spins[i] = particles[i]->Flav().IntSpin()+1;
 	n*=m_spins[i];
       }
       this->resize(n);
