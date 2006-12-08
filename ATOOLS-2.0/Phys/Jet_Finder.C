@@ -619,7 +619,7 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
 	             ycut s' > ycut s_min   
 	             (lepton-lepton collisions)
       */
-      if (m_type>=2 && (m_combs[1<<i][1<<0] || m_combs[1<<i][1<<1])) {
+      if (m_type>=2 && (m_combs[1<<0][1<<i] || m_combs[1<<1][1<<i])) {
 	cuts->energymin[i] = Max(sqrt(1. * m_ycut * m_s),cuts->energymin[i]);
 	if (m_type==4) {
 	  cuts->cosmax[0][i] = cuts->cosmax[1][i] = cuts->cosmax[i][0] = cuts->cosmax[i][1] =  
@@ -628,7 +628,7 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
 	}
 	if (m_type==2) {
 	  int hadron=m_fl[0].Strong()?0:1;
-	  if (m_combs[1<<i][1<<hadron]) {
+	  if (m_combs[1<<hadron][1<<i]) {
 	    cuts->cosmax[hadron][i] = cuts->cosmax[i][hadron] = 
 	      Min(cuts->cosmax[hadron][i],sqrt(1.-4.*m_ycut));
 	    cuts->cosmin[hadron][i] = cuts->cosmin[i][hadron] = 
