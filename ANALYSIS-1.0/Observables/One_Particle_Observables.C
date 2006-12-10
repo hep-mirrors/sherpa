@@ -175,6 +175,26 @@ Primitive_Observable_Base * One_Particle_Eta::Copy() const
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+DEFINE_OBSERVABLE_GETTER(One_Particle_Y,One_Particle_Y_Getter,"Y")
+
+One_Particle_Y::One_Particle_Y(const Flavour & flav,
+				   int type,double xmin,double xmax,int nbins,
+				   const std::string & listname) :
+  One_Particle_Observable_Base(flav,type,xmin,xmax,nbins,listname,"Y") { }
+
+
+void One_Particle_Y::Evaluate(const Vec4D & mom,double weight, int ncount) 
+{
+  p_histo->Insert(mom.Y(),weight,ncount);
+} 
+
+Primitive_Observable_Base * One_Particle_Y::Copy() const
+{
+  return new One_Particle_Y(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 DEFINE_OBSERVABLE_GETTER(One_Particle_E,One_Particle_E_Getter,"E")
 
 One_Particle_E::One_Particle_E(const Flavour & flav,
