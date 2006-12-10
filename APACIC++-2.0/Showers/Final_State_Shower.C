@@ -77,12 +77,14 @@ void Final_State_Shower::BoostDecay
 {
   if (mo==NULL) return;
   msg_Indent();
+#ifdef BOOST_Decays
   Vec4D pm(mo->part->Momentum());
   cms.Boost(pm);
   msg_Debugging()<<mo->kn_no<<"->("<<(mo->left?mo->left->kn_no:-1)<<","
 		 <<(mo->right?mo->right->kn_no:-1)<<") "
 		 <<mo->part->Momentum()<<" -> "<<pm<<"\n";
   mo->part->SetMomentum(pm);
+#endif
   mo->cms=bv;
   BoostDecay(mo->left,cms,bv);
   BoostDecay(mo->right,cms,bv);
@@ -96,8 +98,11 @@ bool Final_State_Shower::BoostDecays(Knot *const mo)
     mo->cms=mo->part->Momentum();
     Poincare cms(mo->cms);
     BoostDecay(mo,cms,mo->cms);
+#ifdef BOOST_Decays
     Tree::UpdateDaughters(mo);
     mo->Store();
+    EstablishRelations(mo,mo->left,mo->right);
+#endif
     msg_Debugging()<<"}\n";
     return true;
   }
@@ -112,8 +117,10 @@ bool Final_State_Shower::BoostBackDecays(Knot *const mo)
     cms.Invert();
     mo->cms=Vec4D();
     BoostDecay(mo,cms,mo->cms);
+#ifdef BOOST_Decays
     Tree::UpdateDaughters(mo);
     mo->Store();
+#endif
     msg_Debugging()<<"}\n";
     return true;
   }
@@ -394,6 +401,8 @@ Knot *Final_State_Shower::ChooseDaughter(Knot * mo)
 {
   Knot *d1(mo->left), *d2(mo->right);
   if (d1->stat==3^d2->stat==3) return d1->stat==3?d1:d2;
+  if ((d1->t>d1->tout && d2->t>d2->tout) && d1->t==d2->t) 
+    return ran.Get()>0.5?d1:d2;
   if ((d1->t>d1->tout && d1->t>=d2->t) || d2->t<=d2->tout) {
     if (d1->stat!=0) return d1;
     return d2;

@@ -280,24 +280,37 @@ int Jet_Veto::TestFSKinematics(Knot *const knot)
   Knot *d[3]={knot,knot->left,knot->right};
   for (short unsigned int i(1);i<3;++i) {
     if (d[i]->left==NULL) continue;
+    bool f[3]={d[3-i]->part->Flav().Strong()&&
+	       d[i]->left->part->Flav().Strong(),
+	       d[3-i]->part->Flav().Strong()&&
+	       d[i]->right->part->Flav().Strong(),
+	       d[i]->left->part->Flav().Strong()&&
+	       d[i]->right->part->Flav().Strong()};
     Vec4D p[3]={d[3-i]->part->Momentum(),
 		d[i]->left->part->Momentum(),
 		d[i]->right->part->Momentum()};
+    if (knot->cms!=Vec4D()) {
+      Poincare cms(knot->cms);
+      msg_Debugging()<<"boost in cms "<<knot->cms<<"\n";
+      for (short unsigned int j(0);j<3;++j) cms.Boost(p[i]);
+    }
     double sf(sqrt(sqr(p[0][0])-d[3-i]->tout)/p[0].PSpat());
     for (short unsigned int j(1);j<3;++j) p[0][j]*=sf;
     p_jf->SetType(knot->cms!=Vec4D()?1:type);
-    double jpt2[3]={p_jf->MTij2(p[0],p[1]),
-		    p_jf->MTij2(p[0],p[2]),
-		    p_jf->MTij2(p[1],p[2])};
+    double jpt2[3]={f[0]?p_jf->MTij2(p[0],p[1]):0.0,
+		    f[1]?p_jf->MTij2(p[0],p[2]):0.0,
+		    f[2]?p_jf->MTij2(p[1],p[2]):0.0};
     p_jf->SetType(type);
-    int jets(3), ljets(0);
+    int jets(f[0]+f[1]+f[2]), ljets(0);
     if (d[i]->left->part->Info()!='H' || 
 	d[i]->right->part->Info()!='H') { 
       for (short unsigned int j(0);j<3;++j) {
-	if (jpt2[j]<=sqr(knot->qjv)) --jets;
-	if (jpt2[j]>sqr(knot->qljv)) ++ljets;
+	if (f[j]&&jpt2[j]<=sqr(knot->qjv)) --jets;
+	if (f[j]&&jpt2[j]>sqr(knot->qljv)) ++ljets;
       }
-      msg_Debugging()<<"  jv ("<<d[i]->kn_no<<","<<d[i]->part->Flav()
+      msg_Debugging()<<"  jv ("<<d[3-i]->kn_no<<","
+		     <<d[3-i]->part->Flav()<<","<<d[3-i]->part->Info()
+		     <<"),("<<d[i]->kn_no<<","<<d[i]->part->Flav()
 		     <<","<<d[i]->part->Info()
 		     <<")->("<<d[i]->left->kn_no
 		     <<","<<d[i]->left->part->Flav()
@@ -306,8 +319,8 @@ int Jet_Veto::TestFSKinematics(Knot *const knot)
 		     <<","<<d[i]->right->part->Flav()
 		     <<","<<d[i]->right->part->Info()
 		     <<"), jpt = {"<<sqrt(jpt2[0])<<","
-		     <<sqrt(jpt2[1])<<","<<sqrt(jpt2[2])
-		     <<"} -> "<<jets<<" jets of type "
+		     <<sqrt(jpt2[1])<<","<<sqrt(jpt2[2])<<"} -> "
+		     <<jets<<"("<<(f[0]+f[1]+f[2])<<") jets of type "
 		     <<(knot->cms!=Vec4D()?1:type)<<"\n";
       if (jv && jets>2) {
 	msg_Debugging()<<"  jet veto\n";
