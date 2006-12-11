@@ -110,12 +110,9 @@ CalcJet(int nl,const double x1,const double x2,ATOOLS::Vec4D * moms)
   while (true) {
     bool did_boost(InitStep(moms,nl));
     if (!SelectWinner(did_boost)) {
-      if (nl==4 && !IdentifyHardProcess()) {
-	if (p_up==NULL) return this;
-	delete this;
-	return NULL;
-      }
-      return this;
+      if (nl==4 && (IdentifyHardProcess() || p_up==NULL)) return this;
+      delete this;
+      return NULL;
     }
     // if number of legs is still greater 4 Cluster once more
     // if number of legs equals 4, determine end situation
@@ -292,7 +289,10 @@ bool Combine_Table_CKKW::IdentifyHardProcess()
 	Combinable(p_legs[i][2],p_legs[i][3])) {
       double pt2ij(p_jf->MTij2(p_moms[2],p_moms[3]));
       msg_Debugging()<<"s-channel pt = "<<sqrt(pt2ij)<<", m = "
-		     <<sqrt(dabs((p_moms[0]+p_moms[1]).Abs2()))<<"\n";
+		     <<sqrt(dabs((p_moms[0]+p_moms[1]).Abs2()))<<", "
+		     <<p_legs[i][0].Flav()<<" "<<p_legs[i][1].Flav()
+		     <<" -> "<<p_legs[i][2].Flav()<<" "
+		     <<p_legs[i][3].Flav()<<"\n";
       p_hard[i][0]=CombinedLeg(p_legs[i],0,1);
       SetLegScales(p_hard[i][0],p_legs[i][0],p_legs[i][1],
 		   p_moms[0],p_moms[1],pt2ij);
@@ -310,7 +310,10 @@ bool Combine_Table_CKKW::IdentifyHardProcess()
       double pt2ij2(p_jf->MTij2(p_moms[1],p_moms[3]));
       msg_Debugging()<<"t-channel pt = "<<sqrt(pt2ij1)
 		     <<" / "<<sqrt(pt2ij2)<<", m = "
-		     <<sqrt(dabs((p_moms[0]+p_moms[2]).Abs2()))<<"\n";
+		     <<sqrt(dabs((p_moms[0]+p_moms[2]).Abs2()))<<", "
+		     <<p_legs[i][0].Flav()<<" "<<p_legs[i][1].Flav()
+		     <<" -> "<<p_legs[i][2].Flav()<<" "
+		     <<p_legs[i][3].Flav()<<"\n";
       p_hard[i][0]=CombinedLeg(p_legs[i],0,2);
       SetLegScales(p_hard[i][0],p_legs[i][0],p_legs[i][2],
 		   p_moms[0],p_moms[2],pt2ij1);
@@ -328,7 +331,10 @@ bool Combine_Table_CKKW::IdentifyHardProcess()
       double pt2ij2(p_jf->MTij2(p_moms[1],p_moms[2]));
       msg_Debugging()<<"u-channel pt = "<<sqrt(pt2ij1)
 		     <<" / "<<sqrt(pt2ij2)<<", m = "
-		     <<sqrt(dabs((p_moms[0]+p_moms[3]).Abs2()))<<"\n";
+		     <<sqrt(dabs((p_moms[0]+p_moms[3]).Abs2()))<<", "
+		     <<p_legs[i][0].Flav()<<" "<<p_legs[i][1].Flav()
+		     <<" -> "<<p_legs[i][2].Flav()<<" "
+		     <<p_legs[i][3].Flav()<<"\n";
       p_hard[i][0]=CombinedLeg(p_legs[i],0,3);
       SetLegScales(p_hard[i][0],p_legs[i][0],p_legs[i][3],
 		   p_moms[0],p_moms[3],pt2ij1);
