@@ -562,6 +562,7 @@ void Jet_Finder::PrepareMomList()
     for (size_t i(1);i<m_mcomb[n].size()-1;++i)
       m_moms[m_mcomb[n].back()]+=m_moms[m_mcomb[n][i]];
     Vec4D cc;
+#ifdef BOOST_Decays
     Poincare cms(m_moms[m_mcomb[n].back()]);
     for (size_t i(0);i<m_mcomb[n].size()-1;++i) {
       cms.Boost(m_moms[m_mcomb[n][i]]);
@@ -575,6 +576,7 @@ void Jet_Finder::PrepareMomList()
 		 <<cc<<" "<<cc.Abs2()<<" vs. "
 		 <<m_moms[m_mcomb[n].back()].Abs2()<<"\n";
     Vec4D::ResetAccu();
+#endif
 //     msg_Debugging()<<"p["<<ID(m_mcomb[n].back())<<"] = "
 //  		   <<m_moms[m_mcomb[n].back()]
 //  		   <<" ["<<m_flavs[m_mcomb[n].back()]<<"] "<<cc<<"\n";

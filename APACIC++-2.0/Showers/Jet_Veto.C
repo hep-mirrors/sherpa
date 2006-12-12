@@ -289,11 +289,13 @@ int Jet_Veto::TestFSKinematics(Knot *const knot)
     Vec4D p[3]={d[3-i]->part->Momentum(),
 		d[i]->left->part->Momentum(),
 		d[i]->right->part->Momentum()};
+#ifdef BOOST_Decay_JV
     if (knot->cms!=Vec4D()) {
       Poincare cms(knot->cms);
       msg_Debugging()<<"boost in cms "<<knot->cms<<"\n";
       for (short unsigned int j(0);j<3;++j) cms.Boost(p[i]);
     }
+#endif
     double sf(sqrt(sqr(p[0][0])-d[3-i]->tout)/p[0].PSpat());
     for (short unsigned int j(1);j<3;++j) p[0][j]*=sf;
     p_jf->SetType(knot->cms!=Vec4D()?1:type);
@@ -322,7 +324,7 @@ int Jet_Veto::TestFSKinematics(Knot *const knot)
 		     <<sqrt(jpt2[1])<<","<<sqrt(jpt2[2])<<"} -> "
 		     <<jets<<"("<<(f[0]+f[1]+f[2])<<") jets of type "
 		     <<(knot->cms!=Vec4D()?1:type)<<"\n";
-      if (jv && jets>2) {
+      if (jv && jets>f[0]+f[1]+f[2]-1) {
 	msg_Debugging()<<"  jet veto\n";
 	return 0;
       }
