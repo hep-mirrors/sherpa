@@ -360,7 +360,7 @@ double Integrable_Base::CalculateScale(const Vec4D *momenta)
     double pt2(p_jf->ActualValue()*S);
     if ((int)m_nout==m_maxjetnumber) 
       // highest multiplicity treatment
-      m_scale[stp::fac]=pt2;
+      if (m_nstrong>2) m_scale[stp::fac]=pt2;
     else 
       // two scale treatment
       m_scale[stp::fac]=Min(m_scale[stp::fac],pt2);
