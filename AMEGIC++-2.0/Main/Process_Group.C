@@ -160,7 +160,7 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
       }
     }
     if (CF.ValidProcess(m_nin,_fl,nout,_fl+m_nin)) {
-      overflow = SetPolarisations(plindex,_pl,beam_is_poled);
+      overflow = SetPolarisations(plindex,_pl,beam_is_poled,nout);
       for (size_t i=0;i<m_nin+nout;++i) {
 	if (plindex[i]!=' ') _pl[i].SetPol(plindex[i]);
       }
@@ -213,9 +213,9 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
   delete [] plindex;
 }
 
-int Process_Group::SetPolarisations(char * plindex, Pol_Info * pl, int * beam_is_poled) 
+int Process_Group::SetPolarisations(char * plindex, Pol_Info * pl, int * beam_is_poled,const int &nout) 
 {
-  for (size_t i=m_nin;i<m_nin+m_nout;++i) {
+  for (size_t i=m_nin;i<m_nin+nout;++i) {
     if (pl[i].DoFNumber()==1) {
       plindex[i]=pl[i].GetPol();
     }

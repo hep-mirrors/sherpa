@@ -34,7 +34,7 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   private :
-    int            SetPolarisations(char * plindex, Pol_Info * pl, int * beam_is_poled);
+    int            SetPolarisations(char * plindex, Pol_Info * pl, int * beam_is_poled,const int &nout);
     void           ConstructProcesses(ATOOLS::Selector_Data *);
     void           PrepareTerminate();
   public :
