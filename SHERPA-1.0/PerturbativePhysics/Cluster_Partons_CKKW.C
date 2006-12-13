@@ -413,14 +413,16 @@ void Cluster_Partons_CKKW::WeightHardProcess()
     THROW(fatal_error,"No scale in hard process");
   }
   PHASIC::Integrable_Base *proc(p_me->GetAmegic()->GetProcess());
-  double qmin2me(proc->Scale(PHASIC::stp::fac));
-  if (!IsEqual(qmin2me,m_qmin[0]*m_qmin[1])) {
+  double qmin2me(Min(m_is_as_factor,m_fs_as_factor)*
+		 proc->Scale(PHASIC::stp::fac));
+  if (!IsEqual(qmin2me,m_is_as_factor*m_qmin[0]*m_qmin[1])) {
     double x[2];
     Combine_Table_Base *ct(p_ct);
     while (ct->Up()) ct=ct->Up();
     ct->GetX1X2(x[0],x[1]);
     msg_Debugging()<<"pdf reweighting: q_{fac,me} = "<<sqrt(qmin2me)
-		   <<" -> q_{fac} = "<<m_qmin[0]<<"/"<<m_qmin[1]
+		   <<" -> q_{fac} = "<<(sqrt(m_is_as_factor)*m_qmin[0])
+		   <<"/"<<(sqrt(m_is_as_factor)*m_qmin[1])
 		   <<", x_1 = "<<x[0]<<", x_2 = "<<x[1]<<"\n";
     for (short unsigned int i(0);i<2;++i) { 
       if (p_pdf[i]!=NULL) {
@@ -431,7 +433,7 @@ void Cluster_Partons_CKKW::WeightHardProcess()
 	}
 	p_pdf[i]->Calculate(x[i],qmin2me);
 	double w(p_pdf[i]->GetXPDF(ct->GetLeg(i).Flav()));
-	p_pdf[i]->Calculate(x[i],sqr(m_qmin[i]));
+	p_pdf[i]->Calculate(x[i],m_is_as_factor*sqr(m_qmin[i]));
 	w/=p_pdf[i]->GetXPDF(ct->GetLeg(i).Flav());
 	msg_Debugging()<<"w_{"<<i<<"} = "<<(1.0/w)
 		       <<" ("<<ct->GetLeg(i).Flav()<<")\n";

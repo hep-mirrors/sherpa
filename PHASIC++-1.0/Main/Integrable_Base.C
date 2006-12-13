@@ -365,7 +365,8 @@ double Integrable_Base::CalculateScale(const Vec4D *momenta)
       // two scale treatment
       m_scale[stp::fac]=Min(m_scale[stp::fac],pt2);
     m_kfkey[0]=m_scale[stp::ren]*=rpa.gen.RenormalizationScaleFactor();
-    return m_kfkey[1]=m_scale[stp::fac]*=rpa.gen.FactorizationScaleFactor();
+    m_kfkey[1]=m_scale[stp::fac]*=rpa.gen.FactorizationScaleFactor();
+    return m_scale[stp::fac]*m_ps_cpl_factor;
   }
   double pt2(-1.0);
   if (scheme & scl::fixed) {
@@ -450,8 +451,8 @@ double Integrable_Base::CalculateScale(const Vec4D *momenta)
     THROW(fatal_error,"Unknown scale scheme: "+ToString(m_scalescheme));
   m_kfkey[0]=m_scale[stp::ren]=rpa.gen.RenormalizationScaleFactor()*pt2;
   m_kfkey[1]=m_scale[stp::fac]=rpa.gen.FactorizationScaleFactor()*pt2;
-  if (Selected()==NULL) return m_scale[stp::fac];
-  return (*Selected()->p_regulator)[m_scale[stp::fac]]; 
+  if (Selected()==NULL) return m_scale[stp::fac]*m_ps_cpl_factor;
+  return (*Selected()->p_regulator)[m_scale[stp::fac]*m_ps_cpl_factor]; 
 }
 
 double Integrable_Base::KFactor() 
