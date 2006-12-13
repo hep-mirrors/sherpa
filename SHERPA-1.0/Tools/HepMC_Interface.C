@@ -140,18 +140,18 @@ bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob * blob,HepMC::GenVertex *& verte
     ATOOLS::msg.Error()<<"Error in HepMC_Interface::Sherpa2HepMC(Blob,Vertex)."<<std::endl
 		       <<"   Continue event generation with new event."<<std::endl;
   }
-  if (ATOOLS::msg.Debugging()) {
+  if (ATOOLS::msg.LevelIsDebugging()) {
     ATOOLS::Vec4D check = blob->CheckMomentumConservation();
     double test         = ATOOLS::Vec3D(check).Abs();
-    if (ATOOLS::dabs(1.-vertex->check_momentum_conservation()/test)>1.e-6 &&
-	ATOOLS::dabs(test)>1.e-6)
+    if (ATOOLS::dabs(1.-vertex->check_momentum_conservation()/test)>1.e-5 &&
+	ATOOLS::dabs(test)>1.e-5)
       {
 	ATOOLS::msg.Error()<<"ERROR in HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob_List *):"<<std::endl
 			   <<"   Momentum not conserved. Continue."<<std::endl
 			   <<"ERROR in Blob -> Vertex : "<<vertex->check_momentum_conservation()
 			   <<" <- "<<test<<" "<<check
 			   <<std::endl<<(*blob)<<std::endl;
-	vertex->print(std::cout);
+// 	vertex->print(std::cout); // this causes crashes because of CLHEP and gcc 4.x
 	std::cout<<"--------------------------------------------------------"<<std::endl;
       }
   }
