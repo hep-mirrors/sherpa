@@ -52,7 +52,8 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr,
     p_suds[i]->SetRemnant(isr->GetRemnant(i));
     p_suds[i]->SetMaxScale(shadron);
     p_suds[i]->SetMinEnergy(emin);
-    p_suds[i]->SetPDFScaleFactor(rpa.gen.FactorizationScaleFactor());
+    p_suds[i]->SetPDFScaleFactor
+      (cplscalefac*rpa.gen.FactorizationScaleFactor());
     p_suds[i]->SetCouplingScaleFactor(cplscalefac);
     p_suds[i]->SetCouplingScheme(cplscheme);
     p_suds[i]->SetPDFScheme(pdfscheme);
