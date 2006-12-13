@@ -622,9 +622,12 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
 	             ycut s' > ycut s_min   
 	             (lepton-lepton collisions)
       */
-      if (m_type>=2 && (m_combs[1<<0][1<<i] || m_combs[1<<1][1<<i])) {
-	cuts->energymin[i] = Max(sqrt(1. * m_ycut * m_s),cuts->energymin[i]);
-	if (m_type==4) {
+      if (m_type==1) {
+	cuts->energymin[i] = Max(sqrt(m_ycut * m_s/4.),cuts->energymin[i]);
+      }
+      else {
+	cuts->energymin[i] = Max(sqrt(m_ycut * m_s),cuts->energymin[i]);
+	if (m_type==4 && (m_combs[1<<0][1<<i] || m_combs[1<<1][1<<i])) {
 	  cuts->cosmax[0][i] = cuts->cosmax[1][i] = cuts->cosmax[i][0] = cuts->cosmax[i][1] =  
 	    Min(cuts->cosmax[0][i],sqrt(1.-4.*m_ycut));
 	  cuts->etmin[i] = Max(sqrt(m_ycut * m_s),cuts->etmin[i]);
@@ -640,7 +643,6 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
 	  }
 	}
       }
-      else cuts->energymin[i] = Max(sqrt(m_ycut * m_smin/4.),cuts->energymin[i]);
       
       for (int j=i+1; j<m_nin+m_nout; ++j) {
 	if (m_fl[j].Strong() && m_combs[1<<i][1<<j]) {
@@ -666,19 +668,18 @@ void   Jet_Finder::UpdateCuts(double sprime,double y,Cut_Data * cuts)
 {
   if (m_type>1) return;
   for (int i=m_nin; i<m_nin+m_nout; ++i) {
-    cuts->energymin[i] = Max(sqrt(m_ycut * sprime/4.),cuts->energymin[i]);
-    for (int j=i+1; j<m_nin+m_nout; ++j) {
-      if (m_fl[j].Strong()) {                
-	/* 
-	   minimal scut :
-	   either   :  s_ij = 2 E_i E_j (1-cos(ij)) > 2 min{E_i^2,E_j^2} (1-cos(ij)) > 
-	               ycut s' > ycut s_min   
-	               (lepton-lepton collisions)
-	   or       :  similarly .... have to think ...
-	               (hadron-hadron collisions)
-	   
-	*/
-	cuts->scut[i][j] = cuts->scut[j][i] = Max(cuts->scut[i][j],m_ycut*sprime);
+    if (m_fl[i].Strong()) {                
+      if (m_type==1)
+	cuts->energymin[i] = Max(sqrt(m_ycut * m_s/4.),cuts->energymin[i]);
+      else
+	cuts->energymin[i] = Max(sqrt(m_ycut * m_s),cuts->energymin[i]);
+      for (int j=i+1; j<m_nin+m_nout; ++j) {
+	if (m_fl[j].Strong() && m_combs[1<<i][1<<j]) {
+	  if (m_type>=2) cuts->scut[j][i] = cuts->scut[i][j] 
+			   = Max(cuts->scut[i][j],sqr(m_delta_r)*m_ycut*m_s);
+	  else cuts->scut[i][j] = cuts->scut[j][i] = 
+		 Max(cuts->scut[i][j],m_ycut*m_s);
+	}
       }
     }
   }
