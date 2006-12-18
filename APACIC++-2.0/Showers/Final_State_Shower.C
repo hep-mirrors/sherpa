@@ -57,6 +57,7 @@ int Final_State_Shower::PerformShower(Tree *tree,int jetveto)
   p_sud->ClearVetos();
   p_sud->SetMode(0);
 #endif
+  if (p_kin->GeneratePSMasses(tree->GetRoot())!=1) return -1;
   tree->GetRoot()->Store();
   if (InitializeJets(tree,tree->GetRoot())) {
     if (p_kin->DoKinematics(tree->GetRoot())) return 1;
@@ -247,6 +248,7 @@ TimelikeFromSpacelike(Initial_State_Shower *const ini,Tree *const tree,
       mo->shower=2;
       mo->stat=3;
     }
+    if (p_kin->GeneratePSMasses(mo)!=1) return -1;
     if (mo->shower==2 && mo->decay==NULL) {
       mo->decay = tree->NewKnot();
       mo->decay->Copy(mo);

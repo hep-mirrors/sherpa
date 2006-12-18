@@ -56,6 +56,7 @@ namespace APACIC {
 			      const double &ta,
 			      const double &tb,const double &tc) const;
 
+    int  GeneratePSMasses(Knot *const mo) const;
     int  Shuffle(Knot * const mo,const int first) const;
 
     bool DoSingleKinematics(Knot * const mo,const bool force=false) const;

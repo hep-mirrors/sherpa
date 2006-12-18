@@ -67,6 +67,20 @@ int Timelike_Kinematics::UpdateDaughters(Knot *const mo,
   return 1;
 }
 
+int Timelike_Kinematics::GeneratePSMasses(Knot *const mo) const
+{
+  if (mo->left==NULL) return 1;
+  msg_Debugging()<<METHOD<<"(): knot "<<mo->kn_no<<"\n";
+  msg_Indent();
+  int res(1);
+  if ((res=GeneratePSMasses(mo->left))!=1) return res;
+  if ((res=GeneratePSMasses(mo->right))!=1) return res;
+  if (mo->left->left==NULL || mo->right->left==NULL) 
+    res=ShuffleMomenta(mo);
+  mo->CheckMomentumConservation(); 
+  return res;
+}
+
 int Timelike_Kinematics::ShuffleZ(Knot * const mo,const bool update) const
 {
   msg_Debugging()<<METHOD<<"("<<mo->kn_no<<")\n";
@@ -119,12 +133,12 @@ int Timelike_Kinematics::ShuffleMomenta(Knot *const mo,const bool update) const
   double t2(mo->right->stat!=3?mo->right->t:mo->right->tout); 
   if (mo->left->shower==3) t1=mo->left->tmo;
   if (mo->right->shower==3) t2=mo->right->tmo;
-  double ta(mo->part->Momentum().Abs2());
-  if (dabs((mo->t-ta)/mo->t)>1.e-7) {
+  double t(mo->part->Momentum().Abs2());
+  if (dabs((mo->t-t)/mo->t)>1.e-7 && mo->shower!=2) {
     msg.Error()<<METHOD<<"(..): Inconsistent masses. t = "<<mo->t
-	       <<", p^2 = "<<ta<<std::endl;
+	       <<", p^2 = "<<t<<std::endl;
+    mo->t=t;
   }
-  double t(mo->t=ta);
   if (t1+t2+2.0*sqrt(t1*t2)-t>rpa.gen.Accu()) {
     msg_Debugging()<<"missing mass "<<(t1+t2+2.0*sqrt(t1*t2))
 		   <<" vs. "<<t<<"\n";
@@ -152,15 +166,6 @@ int Timelike_Kinematics::ShuffleMomenta(Knot *const mo,const bool update) const
     r2=(t-t2+t1-lambda)/(2.0*t);
     mo->z=z-r1*z+r2*(1.0-z);
   } 
-  if (dabs(mo->z/z-1.0) < Accu()) {
-    msg_Debugging()<<"shift unnecessary at "<<(mo->z/z-1.0)
-		   <<", "<<Accu()<<"\n";
-    if (update) {
-      if (!BoostDaughters(mo)) return 0;
-      Tree::UpdateDaughters(mo);
-    }
-    return 1;
-  }
   if (!CheckKinematics(mo,1)) {
     msg_Debugging()<<"kinematics check failed "<<mo->z<<" "<<z<<std::endl;
     mo->z = z;
