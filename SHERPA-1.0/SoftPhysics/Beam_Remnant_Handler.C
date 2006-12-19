@@ -103,6 +103,7 @@ FillBeamBlobs(Blob_List *const bloblist,
 	  isr_init->GetFlow(1)==0 && isr_init->GetFlow(2)==0) {
 	delete p_beamblob[beam]; 
 	p_beamblob[beam]=NULL; 
+	(*bit)->UnsetStatus(blob_status::needs_beams);
 	continue;
       }
       else {
