@@ -28,7 +28,7 @@ public:
     p_ana->AddParticleList(m_outlist,outlist);
     for (ATOOLS::Blob_List::const_iterator bit=blobs.begin();
 	 bit!=blobs.end();++bit) {
-      if ((*bit)->Type()==m_type) {
+      if ((*bit)->Type()&m_type) {
 	if (m_mode>1) {
 	  for (int i=0;i<(*bit)->NInP();++i) {
 	    const ATOOLS::Particle *cur=(*bit)->ConstInParticle(i);
