@@ -109,6 +109,13 @@ void Event_Handler::Reset(const bool sameevent)
       m_lastparticlecounter=Particle::Counter();
       m_lastblobcounter=Blob::Counter();
     }
+
+    Blob::Reset();
+    Particle::Reset();
+    Flow::ResetCounter();
+    ATOOLS::Vec4D::ResetAccu();
+    Lund_Interface::SaveStatus();
+
     Blob *signal(new Blob());
     signal->SetType(btp::Signal_Process);
     signal->SetId();
@@ -121,12 +128,12 @@ void Event_Handler::Reset(const bool sameevent)
     m_blobs.Clear(signal);
     signal->SetStatus(blob_status::internal_flag |
 		      blob_status::needs_signal);
+    Blob::Reset();
+    Particle::Reset();
+    Flow::ResetCounter();
+    ATOOLS::Vec4D::ResetAccu();
+    Lund_Interface::SaveStatus();
   }
-  Blob::Reset();
-  Particle::Reset();
-  Flow::ResetCounter();
-  ATOOLS::Vec4D::ResetAccu();
-  Lund_Interface::SaveStatus();
 } 
 
 bool Event_Handler::GenerateEvent(int mode) 
