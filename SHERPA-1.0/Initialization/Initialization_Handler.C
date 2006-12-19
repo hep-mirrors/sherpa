@@ -511,7 +511,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
     Fl_Iter fli;
     for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
       if (flav.IsOn() && flav.IsHadron() && !flav.IsStable() &&
-          0.197e-12>max_propertime*flav.Width())
+          0.197e-12>max_propertime*flav.Width() && flav.Kfcode()!=kf::K)
       {
         flav.SetStable(true);
       }
