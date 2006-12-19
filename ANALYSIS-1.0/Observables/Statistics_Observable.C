@@ -53,8 +53,10 @@ void Statistics_Observable::Evaluate(const Blob_List &  blobs,double value, int 
     cit=m_signal_process_statistics.find(key);
   }
 
-  double xsecweight=(*p_ana)["XS_Weight"]->Get<double>();
-  double sudweight=(*p_ana)["Sud_Weight"]->Get<double>();
+  Blob_Data_Base *data((*p_ana)["XS_Weight"]);
+  double xsecweight(data?data->Get<double>():1.0);
+  data=(*p_ana)["Sud_Weight"];
+  double sudweight(data?data->Get<double>():1.0);
   m_nevt+=ncount;
   cit->second.nevt+=ncount;
   cit->second.xsnevt+=1;
