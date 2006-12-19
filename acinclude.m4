@@ -234,11 +234,11 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         yes) if test -d "$CLHEPDIR"; then
                 CONDITIONAL_CLHEPDIR="$CLHEPDIR"
                 CONDITIONAL_CLHEPINCS="-I$CLHEPDIR/include"
-                possible_libs="libCLHEP-g++.*.so libCLHEP.so libCLHEP-1*.so libCLHEP-2*.so"
+                possible_libs="libCLHEP-g++.*.a libCLHEP-g++.*.so libCLHEP.so libCLHEP-1*.so libCLHEP-2*.so"
                 for J in $possible_libs; do
                   result=`find $CLHEPDIR/lib -name "$J" | head -n 1`;
                   if test "$result" != ""; then
-                    result=`basename $result | sed -e 's/lib//' | sed -e 's/\.so//'`
+                    result=`basename $result | sed -e 's/lib//' | sed -e 's/\.so//' | sed -e 's/\.a//'`
                     break;
                   fi
                 done;
