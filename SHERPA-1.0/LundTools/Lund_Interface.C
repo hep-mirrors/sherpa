@@ -414,7 +414,7 @@ int Lund_Interface::PrepareFragmentationBlob(Blob * blob)
     Flavour            flav = Flavour(kf::d);
     if (ran.Get()<0.5) flav = Flavour(kf::u);
       Particle *help1(new Particle(-1,flav,0.5*part->Momentum()));
-      Particle *help2(new Particle(-1,flav.Bar(),0.5*help1->Momentum()));
+      Particle *help2(new Particle(-1,flav.Bar(),help1->Momentum()));
     help1->SetStatus(part_status::active);
     help2->SetStatus(part_status::active);
     AddPartonToString(help1,nhep);
@@ -422,11 +422,11 @@ int Lund_Interface::PrepareFragmentationBlob(Blob * blob)
       unsigned int lastc(part->GetFlow(2));
       for (++i;i<blob->NInP();++i) {
       part = blob->InParticle(i);
+      AddPartonToString(part,nhep);
 	if (part->GetFlow(1)==lastc) {
 	  lastc=0;
 	  break;
 	}
-      AddPartonToString(part,nhep);
     }      
       if (lastc!=0)
 	msg.Error()<<METHOD<<"(): Error. Open color string."<<std::endl;
