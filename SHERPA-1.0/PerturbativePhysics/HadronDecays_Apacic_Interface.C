@@ -18,7 +18,7 @@ Return_Value::code HadronDecays_Apacic_Interface::DefineInitialConditions(ATOOLS
 {
   p_blob = new Blob();
   p_blob->SetType(btp::FS_Shower);
-  p_blob->SetTypeSpec("APACIC++ 2.0");
+  p_blob->SetTypeSpec("APACIC++2.0");
   p_blob->SetStatus(blob_status::needs_hadronization);
   p_blob->SetId();
   unsigned int pos(0),refpos(0),compare(0);
