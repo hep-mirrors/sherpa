@@ -595,6 +595,7 @@ void Lund_Interface::FillOutgoingParticlesInBlob(Blob *blob)
   }
   
   size_t n=partons.size();
+  if(n>0) blob->SetStatus(blob_status::needs_showers);
   if(n_q==2 && n_g==0 && n==2) {
     if(partons[0]->Flav().IsAnti()) {
       partons[0]->SetFlow(2,-1);
