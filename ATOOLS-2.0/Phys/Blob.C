@@ -15,7 +15,6 @@ std::ostream& ATOOLS::operator<<(std::ostream& ostr, const btp::code btpc) {
   case btp::Soft_Collision:     return ostr<<"Soft Collision    "; 
   case btp::ME_PS_Interface_IS: return ostr<<"ME PS Interface IS";
   case btp::ME_PS_Interface_FS: return ostr<<"ME PS Interface FS";
-  case btp::ME_PS_Interface:    return ostr<<"ME PS Interface   ";
   case btp::FS_Shower:          return ostr<<"FS Shower         ";
   case btp::IS_Shower:          return ostr<<"IS Shower         ";
   case btp::Shower:             return ostr<<"Shower            ";
@@ -75,10 +74,10 @@ namespace ATOOLS {
       ostr<<**part<<std::endl;
     }
     if (bl.m_datacontainer.size()>0) {
-      msg.Tracking()<<"Data_Container:"<<std::endl;
+      ostr<<"Data_Container:"<<std::endl;
       for (String_BlobDataBase_Map::const_iterator it=bl.m_datacontainer.begin();
 	   it!=bl.m_datacontainer.end(); ++it) {
-	msg.Tracking()<<"   * "<<it->first<<" ("<<*(it->second)<<")"<<std::endl;
+	ostr<<"   * "<<it->first<<" ("<<*(it->second)<<")"<<std::endl;
       }
     }
     ostr.setf(flags);
@@ -88,9 +87,26 @@ namespace ATOOLS {
 }
 
 Blob::Blob(const Vec4D _pos, const int _id) : 
-  m_position(_pos), m_id(_id), m_weight(1.), m_status(0), m_beam(-1), m_hasboost(false), 
+  m_position(_pos), m_id(_id), m_weight(1.), m_status(blob_status::inactive), 
+  m_beam(-1), m_hasboost(false), 
   m_type(btp::Unspecified), m_typespec(std::string("none")) 
 { ++s_totalnumber; }
+
+Blob::Blob(const Blob * blob) :
+  m_position(blob->m_position), m_id(blob->m_id), m_weight(blob->m_weight),
+  m_status(blob->m_status), m_beam(blob->m_beam),
+  m_type(blob->m_type), m_typespec(blob->m_typespec),
+  m_cms_vec(blob->m_cms_vec), m_cms_boost(Poincare(m_cms_vec))
+{
+  ++s_totalnumber;
+  for (int i=0;i<blob->NInP();i++)  AddToInParticles(new Particle((*blob->ConstInParticle(i))));
+  Particle * part(NULL);
+  for (int i=0;i<blob->NOutP();i++) {
+    part = new Particle((*blob->ConstOutParticle(i)));
+    part->SetStatus(part_status::active);
+    AddToOutParticles(part);
+  }
+}
 
 Blob::~Blob() {
   DeleteOwnedParticles();
@@ -262,13 +278,17 @@ void Blob::DeleteInParticle(Particle * _part) {
   for (Particle_Vector::iterator part = m_inparticles.begin();
        part != m_inparticles.end(); ++part) {
     if ((*part)==_part) {
-      m_inparticles.erase(part);
       if (_part->DecayBlob()==this) {
 	if (_part->ProductionBlob()!=NULL) _part->ProductionBlob()->RemoveOutParticle(_part);
 	delete _part;
 	_part = NULL;
       }
-      else msg.Out()<<"WARNING: particle not owned by the Blob asked to delete it"<<std::endl;
+      else {
+	msg.Out()<<"WARNING in "<<METHOD<<":"<<std::endl
+		 <<"   particle not owned by the Blob asked to delete it"<<std::endl
+		 <<"   "<<(*_part)<<std::endl;
+      }
+      m_inparticles.erase(part);
       return ;
     }
   }
@@ -303,7 +323,11 @@ void Blob::DeleteOutParticle(Particle * _part) {
 	delete _part;
 	_part = NULL;
       }
-      else msg.Out()<<"WARNING: particle not owned by the Blob asked to delete it"<<std::endl;
+      else {
+	msg.Out()<<"WARNING in "<<METHOD<<":"<<std::endl
+		 <<"   particle not owned by the Blob asked to delete it"<<std::endl
+		 <<"   "<<(*_part)<<std::endl;
+      }
       return ;
     }
   }
@@ -321,17 +345,35 @@ void Blob::DeleteOwnedParticles() {
   m_outparticles.clear();
 }
 
-Vec4D Blob::CheckMomentumConservation() {
+Vec4D Blob::CheckMomentumConservation() const {
   Vec4D sump = Vec4D(0.,0.,0.,0.);
-  for (Particle_Vector::iterator part = m_inparticles.begin();
+  for (Particle_Vector::const_iterator part = m_inparticles.begin();
        part != m_inparticles.end(); ++part) {
     sump = sump + (*part)->Momentum();
   }
-  for (Particle_Vector::iterator part = m_outparticles.begin();
+  for (Particle_Vector::const_iterator part = m_outparticles.begin();
        part != m_outparticles.end(); ++part) {
     sump = sump + (-1.)*((*part)->Momentum());
   }
   return sump;
+}
+
+bool Blob::MomentumConserved() {
+  Vec4D cms_vec = Vec4D(0.,0.,0.,0.);
+  for (int i=0;i<NInP();i++) cms_vec = cms_vec + InParticle(i)->Momentum();
+  Vec4D mc = CheckMomentumConservation();
+  double accu=1e-6*cms_vec[0];
+  if(dabs(mc[0])>accu||dabs(mc[1])>accu||dabs(mc[2])>accu||dabs(mc[3])>accu) {
+    return false;
+  }
+  return true;
+}
+
+void Blob::Boost(Poincare boost) {
+  for (int i=0;i<NInP();i++)
+    InParticle(i)->SetMomentum(boost*InParticle(i)->Momentum());
+  for (int i=0;i<NOutP();i++)
+    OutParticle(i)->SetMomentum(boost*OutParticle(i)->Momentum());
 }
 
 void Blob::BoostInCMS() {
@@ -450,6 +492,7 @@ template double &Blob_Data_Base::Get<double>();
 template std::string &Blob_Data_Base::Get<std::string>();
 template std::vector<double> &Blob_Data_Base::Get<std::vector<double> >();
 template std::vector<int> &Blob_Data_Base::Get<std::vector<int> >();
+template Vec4D &Blob_Data_Base::Get<Vec4D>();
 
 template void Blob_Data_Base::Set<int>(const int &data);
 template void Blob_Data_Base::Set<size_t>(const size_t &data);
@@ -458,6 +501,7 @@ template void Blob_Data_Base::Set<double>(const double &data);
 template void Blob_Data_Base::Set<std::string>(const std::string &data);
 template void Blob_Data_Base::Set<std::vector<double> >(const std::vector<double> &data);
 template void Blob_Data_Base::Set<std::vector<int> >(const std::vector<int> &data);
+template void Blob_Data_Base::Set<Vec4D>(const Vec4D &data);
 
 template class Blob_Data<int>;
 template class Blob_Data<size_t>;
@@ -466,6 +510,7 @@ template class Blob_Data<double>;
 template class Blob_Data<std::string>;
 template class Blob_Data<std::vector<double> >;
 template class Blob_Data<std::vector<int> >;
+template class Blob_Data<Vec4D>;
 
 void Blob::SwapInParticles(const size_t i, const size_t j) 
 {
@@ -486,3 +531,23 @@ void Blob::SwapOutParticles(const size_t i, const size_t j)
 }
 
 
+bool Blob::IsConnectedTo(const btp::code &type,
+			 std::set<const Blob*> &checked) const
+{
+  if (this==NULL || checked.find(this)!=checked.end()) return false;
+  checked.insert(this);
+  if (Type()==type) return true;
+  for (int i(0);i<NOutP();++i) 
+    if (ConstOutParticle(i)->DecayBlob()->IsConnectedTo(type,checked)) 
+      return true;
+  for (int i(0);i<NInP();++i) 
+    if (ConstInParticle(i)->ProductionBlob()->IsConnectedTo(type,checked)) 
+      return true;
+  return false;
+}
+
+bool Blob::IsConnectedTo(const btp::code &type) const
+{
+  std::set<const Blob*> checked;
+  return IsConnectedTo(type,checked);
+}

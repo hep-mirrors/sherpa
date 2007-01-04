@@ -1,25 +1,25 @@
 C*********************************************************************
  
-C...PYPDFU
+C...SPPDFU
 C...Gives electron, muon, tau, photon, pi+, neutron, proton and hyperon
 C...parton distributions according to a few different parametrizations.
 C...Note that what is coded is x times the probability distribution,
 C...i.e. xq(x,Q2) etc.
  
-      SUBROUTINE PYPDFU(KF,X,Q2,XPQ)
+      SUBROUTINE SPPDFU(KF,X,Q2,XPQ)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      COMMON/PYPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
-      COMMON/PYINT1/MINT(400),VINT(400)
-      COMMON/PYINT8/XPVMD(-6:6),XPANL(-6:6),XPANH(-6:6),XPBEH(-6:6),
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      COMMON/SPPARS/MSTP(200),PARP(200),MSTI(200),PARI(200)
+      COMMON/SPINT1/MINT(400),VINT(400)
+      COMMON/SPINT8/XPVMD(-6:6),XPANL(-6:6),XPANH(-6:6),XPBEH(-6:6),
      &XPDIR(-6:6)
-      SAVE /PYDAT1/,/PYDAT2/,/PYPARS/,/PYINT1/,/PYINT8/
+      SAVE /SPDAT1/,/SPDAT2/,/SPPARS/,/SPINT1/,/SPINT8/
 C...Local arrays.
       DIMENSION XPQ(-25:25),XPEL(-25:25),XPGA(-6:6),VXPGA(-6:6),
      &XPPI(-6:6),XPPR(-6:6)
@@ -58,7 +58,7 @@ C...Check x and particle species.
  
 C...Electron (or muon or tau) parton distribution call.
       IF(KFA.EQ.11.OR.KFA.EQ.13.OR.KFA.EQ.15) THEN
-        CALL PYPDEL(KFA,X,Q2,XPEL)
+        CALL SPPDEL(KFA,X,Q2,XPEL)
         DO 110 KFL=-25,25
           XPQ(KFL)=XPEL(KFL)
   110   CONTINUE
@@ -66,7 +66,7 @@ C...Electron (or muon or tau) parton distribution call.
 C...Photon parton distribution call (VDM+anomalous).
       ELSEIF(KFA.EQ.22.AND.MINT(109).LE.1) THEN
         IF(MSTP(56).EQ.1.AND.MSTP(55).EQ.1) THEN
-          CALL PYPDGA(X,Q2,XPGA)
+          CALL SPPDGA(X,Q2,XPGA)
           DO 120 KFL=-6,6
             XPQ(KFL)=XPGA(KFL)
   120     CONTINUE
@@ -77,7 +77,7 @@ C...Photon parton distribution call (VDM+anomalous).
           IF(MSTP(57).EQ.0) Q2MX=P2MX
           P2=0D0
           IF(VINT(120).LT.0D0) P2=VINT(120)**2
-          CALL PYGGAM(MSTP(55)-4,X,Q2MX,P2,MSTP(60),F2GAM,XPGA)
+          CALL SPGGAM(MSTP(55)-4,X,Q2MX,P2,MSTP(60),F2GAM,XPGA)
           DO 130 KFL=-6,6
             XPQ(KFL)=XPGA(KFL)
   130     CONTINUE
@@ -89,7 +89,7 @@ C...Photon parton distribution call (VDM+anomalous).
           IF(MSTP(57).EQ.0) Q2MX=P2MX
           P2=0D0
           IF(VINT(120).LT.0D0) P2=VINT(120)**2
-          CALL PYGGAM(MSTP(55)-8,X,Q2MX,P2,MSTP(60),F2GAM,XPGA)
+          CALL SPGGAM(MSTP(55)-8,X,Q2MX,P2,MSTP(60),F2GAM,XPGA)
           DO 140 KFL=-6,6
             XPQ(KFL)=XPVMD(KFL)+XPANL(KFL)+XPBEH(KFL)+XPDIR(KFL)
   140     CONTINUE
@@ -103,7 +103,7 @@ C...Call PDFLIB parton distributions.
           PARM(3)='NSET'
           VALUE(3)=MOD(MSTP(55),1000)
           IF(MINT(93).NE.3000000+MSTP(55)) THEN
-            CALL PDFSET(PARM,VALUE)
+            CALL SDFSET(PARM,VALUE)
             MINT(93)=3000000+MSTP(55)
           ENDIF
           XX=X
@@ -117,7 +117,7 @@ C...Call PDFLIB parton distributions.
      &      QQ2.GT.0.6D0.AND.QQ2.LT.5D4.AND.
      &      P2.GE.0D0.AND.P2.LT.10D0.AND.
      &      XX.GT.1D-4.AND.XX.LT.1D0) THEN
-              CALL STRUCTP(XX,QQ2,P2,IP2,UPV,DNV,USEA,DSEA,STR,CHM,
+              CALL PTRUCTP(XX,QQ2,P2,IP2,UPV,DNV,USEA,DSEA,STR,CHM,
      &        BOT,TOP,GLU)
             ELSE
               UPV=0D0
@@ -132,7 +132,7 @@ C...Call PDFLIB parton distributions.
             ENDIF
           ELSE
             IF(P2.LT.QQ2) THEN
-              CALL STRUCTP(XX,QQ2,P2,IP2,UPV,DNV,USEA,DSEA,STR,CHM,
+              CALL PTRUCTP(XX,QQ2,P2,IP2,UPV,DNV,USEA,DSEA,STR,CHM,
      &        BOT,TOP,GLU)
             ELSE
               UPV=0D0
@@ -176,13 +176,13 @@ C...Pion/gammaVDM parton distribution call.
           IF(MSTP(57).EQ.0) Q2MX=P2MX
           P2=0D0
           IF(VINT(120).LT.0D0) P2=VINT(120)**2
-          CALL PYGGAM(ISET,X,Q2MX,P2,MSTP(60),F2GAM,XPGA)
+          CALL SPGGAM(ISET,X,Q2MX,P2,MSTP(60),F2GAM,XPGA)
           DO 150 KFL=-6,6
             XPQ(KFL)=XPVMD(KFL)
   150     CONTINUE
           VINT(231)=P2MX
         ELSEIF(MSTP(54).EQ.1.AND.MSTP(53).GE.1.AND.MSTP(53).LE.3) THEN
-          CALL PYPDPI(X,Q2,XPPI)
+          CALL SPPDPI(X,Q2,XPPI)
           DO 160 KFL=-6,6
             XPQ(KFL)=XPPI(KFL)
   160     CONTINUE
@@ -195,13 +195,13 @@ C...Call PDFLIB parton distributions.
           PARM(3)='NSET'
           VALUE(3)=MOD(MSTP(53),1000)
           IF(MINT(93).NE.2000000+MSTP(53)) THEN
-            CALL PDFSET(PARM,VALUE)
+            CALL SDFSET(PARM,VALUE)
             MINT(93)=2000000+MSTP(53)
           ENDIF
           XX=X
           QQ=SQRT(MAX(0D0,Q2MIN,Q2))
           IF(MSTP(57).EQ.0) QQ=SQRT(Q2MIN)
-          CALL STRUCTM(XX,QQ,UPV,DNV,USEA,DSEA,STR,CHM,BOT,TOP,GLU)
+          CALL PTRUCTM(XX,QQ,UPV,DNV,USEA,DSEA,STR,CHM,BOT,TOP,GLU)
           VINT(231)=Q2MIN
           XPQ(0)=GLU
           XPQ(1)=DSEA
@@ -230,7 +230,7 @@ C...Anomalous photon parton distribution call.
           IF(MSTP(57).EQ.0) Q2MX=P2MX
           P2=0D0
           IF(VINT(120).LT.0D0) P2=VINT(120)**2
-          CALL PYGGAM(MSTP(55)-4,X,Q2MX,P2,MSTP(60),F2GM,XPGA)
+          CALL SPGGAM(MSTP(55)-4,X,Q2MX,P2,MSTP(60),F2GM,XPGA)
           DO 170 KFL=-6,6
             XPQ(KFL)=XPANL(KFL)+XPANH(KFL)
   170     CONTINUE
@@ -241,27 +241,27 @@ C...Anomalous photon parton distribution call.
           IF(MSTP(57).EQ.0) Q2MX=P2MX
           P2=0D0
           IF(VINT(120).LT.0D0) P2=VINT(120)**2
-          CALL PYGGAM(MSTP(55)-8,X,Q2MX,P2,MSTP(60),F2GM,XPGA)
+          CALL SPGGAM(MSTP(55)-8,X,Q2MX,P2,MSTP(60),F2GM,XPGA)
           DO 180 KFL=-6,6
             XPQ(KFL)=MAX(0D0,XPANL(KFL)+XPBEH(KFL)+XPDIR(KFL))
   180     CONTINUE
           VINT(231)=P2MX
         ELSEIF(MSTP(56).EQ.2) THEN
           IF(MSTP(57).EQ.0) Q2MX=P2MX
-          CALL PYGANO(0,X,Q2MX,P2MX,ALAMGA,XPGA,VXPGA)
+          CALL SPGANO(0,X,Q2MX,P2MX,ALAMGA,XPGA,VXPGA)
           DO 190 KFL=-6,6
             XPQ(KFL)=XPGA(KFL)
   190     CONTINUE
           VINT(231)=P2MX
         ELSEIF(MSTP(55).GE.1.AND.MSTP(55).LE.5) THEN
           IF(MSTP(57).EQ.0) Q2MX=P2MX
-          CALL PYGVMD(0,MSTP(55),X,Q2MX,P2MX,PARP(1),XPGA,VXPGA)
+          CALL SPGVMD(0,MSTP(55),X,Q2MX,P2MX,PARP(1),XPGA,VXPGA)
           DO 200 KFL=-6,6
             XPQ(KFL)=XPGA(KFL)
   200     CONTINUE
           VINT(231)=P2MX
         ELSE
-  210     RKF=11D0*PYR(0)
+  210     RKF=11D0*SPR(0)
           KFR=1
           IF(RKF.GT.1D0) KFR=2
           IF(RKF.GT.5D0) KFR=3
@@ -270,7 +270,7 @@ C...Anomalous photon parton distribution call.
           IF(KFR.EQ.4.AND.Q2.LT.PMCGA**2) GOTO 210
           IF(KFR.EQ.5.AND.Q2.LT.PMBGA**2) GOTO 210
           IF(MSTP(57).EQ.0) Q2MX=P2MX
-          CALL PYGVMD(0,KFR,X,Q2MX,P2MX,PARP(1),XPGA,VXPGA)
+          CALL SPGVMD(0,KFR,X,Q2MX,P2MX,PARP(1),XPGA,VXPGA)
           DO 220 KFL=-6,6
             XPQ(KFL)=XPGA(KFL)
   220     CONTINUE
@@ -281,7 +281,7 @@ C...Proton parton distribution call.
       ELSE
         IF(MSTP(52).EQ.1.AND.MSTP(51).GE.1.AND.MSTP(51).LE.20) THEN
 C*sh* you may use Sherpa interfaces to PDF here
-C          CALL PYPDPR(X,Q2,XPPR)
+C          CALL SPPDPR(X,Q2,XPPR)
           CALL SHPDPR(X,Q2,XPPR)
 C*end*
           DO 230 KFL=-6,6
@@ -296,13 +296,13 @@ C...Call PDFLIB parton distributions.
           PARM(3)='NSET'
           VALUE(3)=MOD(MSTP(51),1000)
           IF(MINT(93).NE.1000000+MSTP(51)) THEN
-            CALL PDFSET(PARM,VALUE)
+            CALL SDFSET(PARM,VALUE)
             MINT(93)=1000000+MSTP(51)
           ENDIF
           XX=X
           QQ=SQRT(MAX(0D0,Q2MIN,Q2))
           IF(MSTP(57).EQ.0) QQ=SQRT(Q2MIN)
-          CALL STRUCTM(XX,QQ,UPV,DNV,USEA,DSEA,STR,CHM,BOT,TOP,GLU)
+          CALL PTRUCTM(XX,QQ,UPV,DNV,USEA,DSEA,STR,CHM,BOT,TOP,GLU)
           VINT(231)=Q2MIN
           XPQ(0)=GLU
           XPQ(1)=DNV+DSEA

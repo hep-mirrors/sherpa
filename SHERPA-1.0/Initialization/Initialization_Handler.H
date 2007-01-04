@@ -17,13 +17,6 @@
 #include "Lund_Interface.H"
 #include "Event_Reader.H"
 #include "Data_Read.H"
-#ifdef USING__MCatNLO
-#include "Herwig_Interface.H"
-#include "MCatNLO_Interface.H"
-#endif
-#ifdef USING__Ahadic
-#include "Ahadic.H"
-#endif
 
 #include <map>
 #include <string>
@@ -46,7 +39,7 @@ namespace SHERPA {
 
   class Input_Output_Handler;
 
-  class Initialization_Handler {
+  class Initialization_Handler: public ATOOLS::Terminator_Object {
   private :
     std::string m_path,m_file,m_evtfile;
     std::string m_modeldat, m_beamdat, m_isrdat[2], m_medat, m_midat, m_decaydat, m_showerdat;
@@ -63,6 +56,7 @@ namespace SHERPA {
     int m_scan_nsteps;
     int m_scan_istep;
     ATOOLS::Parameter_Map m_options;
+    bool m_spincorrelations, m_savestatus;
 
     MODEL::Model_Base          * p_model;
     BEAM::Beam_Spectra_Handler * p_beamspectra;
@@ -77,13 +71,6 @@ namespace SHERPA {
     Input_Output_Handler       * p_iohandler;
     Lund_Interface             * p_pythia;
     Event_Reader               * p_evtreader;
-#ifdef USING__MCatNLO
-    Herwig_Interface           * p_herwig;
-    MCatNLO_Interface          * p_mcatnlo;
-#endif
-#ifdef USING__Ahadic
-    AHADIC::Ahadic             * p_ahadic;
-#endif
     ANALYSIS::Analysis_Handler * p_analysis;
   private :
     bool InitializeTheIO();
@@ -104,6 +91,8 @@ namespace SHERPA {
     void CheckFlagConsistency();
     bool CheckBeamISRConsistency();
     void SetParameter(int nr);
+    void SetScaleFactors();
+    void PrepareTerminate();
 
   public :
 
@@ -139,13 +128,6 @@ namespace SHERPA {
     Input_Output_Handler        * const GetIOHandler()             const { return p_iohandler;       }
     Lund_Interface              * const GetPythiaInterface()       const { return p_pythia;          }
     Event_Reader                * const GetEventReader()           const { return p_evtreader;       }
-#ifdef USING__MCatNLO
-    Herwig_Interface            * const GetHerwigInterface()       const { return p_herwig;          }
-    MCatNLO_Interface           * const GetMCatNLOInterface()      const { return p_mcatnlo;         }
-#endif
-#ifdef USING__Ahadic
-    AHADIC::Ahadic              * const GetAhadic()                const { return p_ahadic;          }
-#endif
 
     int    const Mode()           const { return m_mode; };
     int    const NumberOfSteps()  const { return m_scan_nsteps; }

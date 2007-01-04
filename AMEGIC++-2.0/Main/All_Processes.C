@@ -163,10 +163,9 @@ bool All_Processes::CalculateTotalXSec(string _resdir)
 ATOOLS::Blob_Data_Base *All_Processes::OneEvent(double _mass) {
   SelectOne();
   Blob_Data_Base *data(dynamic_cast<Process_Base*>(p_selected)->OneEvent(_mass));
-//   Weight_Info info(data->Get<Weight_Info>());
-//   info.xsecweight*=Selected()->TotalXS()*rpa.Picobarn();
-//   data->Set(info);
-  //  PRINT_INFO(Selected()->Name());
+  Weight_Info info(data->Get<Weight_Info>());
+  info.xsecweight=Selected()->TotalXS()*rpa.Picobarn();
+  data->Set(info);
   return data;
 }
 

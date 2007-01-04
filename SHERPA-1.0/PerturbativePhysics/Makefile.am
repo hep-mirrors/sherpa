@@ -1,10 +1,3 @@
-if ADICIC_SUPPORT
-ADICICCFILES  = SimpleXS_Adicic_Interface.C 
-endif
-if CSS_SUPPORT
-CSSCFILES     = SimpleXS_CSS_Interface.C 
-endif
-
 pkglib_LTLIBRARIES       =	libSherpaPerturbativePhysics.la
 
 libSherpaPerturbativePhysics_la_SOURCES       =	\
@@ -14,15 +7,14 @@ libSherpaPerturbativePhysics_la_SOURCES       =	\
 						Hard_Decay_Handler.C \
 						Interface_Tools.C \
 					 	Perturbative_Interface.C \
+					   	HadronDecays_Apacic_Interface.C \
 					   	SimpleXS_Apacic_Interface.C \
 						Tree_Filler.C \
 						Combine_Table_Base.C \
 						Combine_Table_CKKW.C \
 					   	Cluster_Partons_Base.C \
 					   	Cluster_Partons_CKKW.C \
-						Amegic_Apacic_Interface.C \
-					   	$(ADICICCFILES) \
-					   	$(CSSCFILES)
+						Amegic_Apacic_Interface.C
 
 pkginclude_HEADERS        =	\
 			Matrix_Element_Handler.H \
@@ -31,9 +23,8 @@ pkginclude_HEADERS        =	\
 			Hard_Decay_Handler.H \
 		 	Perturbative_Interface.H \
 		 	Interface_Tools.H \
+		   	HadronDecays_Apacic_Interface.H \
 			SimpleXS_Apacic_Interface.H \
-			SimpleXS_Adicic_Interface.H \
-			SimpleXS_CSS_Interface.H \
 			Tree_Filler.H \
 			Combine_Table_Base.H \
 			Combine_Table_CKKW.H \
@@ -43,9 +34,9 @@ pkginclude_HEADERS        =	\
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@
 
-INCLUDES      = @SHERPAINCS@ @CONDITIONAL_ADICICINCS@ @APACICINCS@ @AMEGICINCS@ \
+INCLUDES      = @SHERPAINCS@ @APACICINCS@ @AMEGICINCS@ \
 		@CONDITIONAL_AMISICINCS@ @EXTRAXSINCS@ @PHASICINCS@ \
-		@MODELINCS@ @PDFINCS@ @CONDITIONAL_CSSINCS@ \
+		@MODELINCS@ @PDFINCS@ \
 		@BEAMINCS@ @ATOOLSINCS@
 
 EXTRA_DIST    = @SVNINCLUDE@

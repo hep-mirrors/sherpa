@@ -12,6 +12,7 @@
 #endif
 
 using namespace SHERPA;
+using namespace ATOOLS;
 
 Analysis_Phase::Analysis_Phase(ANALYSIS::Analysis_Handler *const analysis):
   Event_Phase_Handler(std::string("Analysis")), 
@@ -20,11 +21,11 @@ Analysis_Phase::Analysis_Phase(ANALYSIS::Analysis_Handler *const analysis):
   m_type=eph::Analysis;
 }
 
-bool Analysis_Phase::Treat(ATOOLS::Blob_List *bloblist,double &weight) 
+Return_Value::code Analysis_Phase::Treat(Blob_List *bloblist,double &weight) 
 {
   PROFILE_HERE;
   if (!bloblist->empty()) p_analysis->DoAnalysis(bloblist,weight);
-  return false;
+  return Return_Value::Nothing;
 }
 
 void Analysis_Phase::CleanUp() 

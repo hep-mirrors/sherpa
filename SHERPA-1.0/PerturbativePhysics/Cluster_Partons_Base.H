@@ -8,13 +8,14 @@
 #include "Matrix_Element_Handler.H"
 #include "XS_Selector.H"
 #include "Amegic.H"
+#include "Exception.H"
 #include <map>
 
 
 namespace SHERPA {
   typedef std::map<ATOOLS::Flavour,ATOOLS::Flavour> Flavour_Map;
 
-  class Cluster_Partons_Base {
+  class Cluster_Partons_Base: public ATOOLS::Terminator_Object {
   protected:
     Matrix_Element_Handler * p_me;
     MODEL::Running_AlphaS  * p_runas;
@@ -23,9 +24,12 @@ namespace SHERPA {
     Combine_Table_Base     * p_ct, * p_combi;
     ATOOLS::Blob           * p_blob;
 
-    int     m_njet, m_maxjetnumber;
-    double  m_weight, m_ycut, m_qmax, m_qmin_i, m_qmin_f, m_qmin_ci, m_qmin_cf;
-    double  m_q2_hard, m_q2_fss, m_q2_iss, m_q2_qcd, m_q2_jet;
+    std::vector<double> m_qmin;
+
+    int     m_njet, m_hardjets, m_maxqcdjets, m_minqcdjets;
+    int     m_maxjetnumber, m_cut, m_max_decayjets;
+    double  m_weight, m_asweight, m_scale, m_ycut, m_qmin_i, m_qmin_f;
+    double  m_q2_fss, m_q2_iss, m_q2_isjet, m_q2_fsjet, m_q2_amegic, m_jv_pt2;
     int     m_colors[4][2];
 
     int     m_isrmode, m_isrshoweron, m_fsrshoweron;
@@ -33,24 +37,28 @@ namespace SHERPA {
     double  m_kfac, m_is_as_factor, m_fs_as_factor, m_me_as_factor;
 
     int     m_hard_nqcd, m_hard_nqed, m_nstrong;
-    double  m_counts, m_fails;
+    double  m_counts, m_fails, m_q2_hard;
 
     EXTRAXS::XS_Base * p_xs;
 
     // some statistics:
-    long    * p_events;
-    double  * p_weight_sum;
-    double  * p_weight_sum_sqr;
+    std::vector<long>    m_events;
+    std::vector<double>  m_meweight_sum, m_weight_sum, m_asweight_sum, m_sweight_sum;
+    std::vector<double>  m_weight_sum_sqr, m_asweight_sum_sqr, m_sweight_sum_sqr;
+
+    void SetQMin(Combine_Table_Base *const ct,
+		 Combine_Table_Base *const ref,size_t &decayjets,
+		 size_t &hardjets,double &hardqmin);
 
     Leg   **CreateLegs(int &,const int,const bool=false);
     bool    FillLegs(Leg *, AMEGIC::Point *, int &, int);
     void    CreateTables(Leg **,const int,const double,const double);
-    void    CreateFlavourMap();
 
     int     Set2Colours(const int,const int,ATOOLS::Vec4D *,ATOOLS::Flavour *);
     int     Set3Colours(const int,const int,ATOOLS::Vec4D *,ATOOLS::Flavour *);
 
-    void    WriteOutSudakovWeights();
+    void    PrepareTerminate();
+    void    WriteOutWeights();
     virtual Combine_Table_Base *CreateTable(ATOOLS::Jet_Finder *,ATOOLS::Vec4D *,
 					    Combine_Table_Base *,const int,const int) = 0;
   public :
@@ -61,11 +69,12 @@ namespace SHERPA {
     int  SetColours(ATOOLS::Vec4D *,ATOOLS::Flavour *);
     int  SetDecayColours(ATOOLS::Vec4D *,ATOOLS::Flavour *,int,int);
     void FixJetvetoPt2(double &);
-    void JetvetoPt2(double &, double &);
+    void JetvetoPt2(double &, double &,double &,double &);
     
     virtual EXTRAXS::XS_Base * GetXS(EXTRAXS::XS_Group *,ATOOLS::Flavour *)=NULL;
     virtual int                SetColours(EXTRAXS::XS_Base *,ATOOLS::Vec4D *,ATOOLS::Flavour *) = 0;
-    virtual void               CalculateWeight() = 0;
+    virtual void               CalculateWeight(const double &meweight) = 0;
+    void SetQMin(Combine_Table_Base *const ref=NULL);
 
     ATOOLS::Flavour            Flav(int);
     ATOOLS::Vec4D              Momentum(int); 
@@ -74,9 +83,8 @@ namespace SHERPA {
     Flavour_Map *              GetFlavourMap();
     // inline functions
     inline double Weight() const      { return m_weight;    }
-    inline double HardScale() const   { return m_q2_hard;   }
-    inline double QCDScale() const    { return m_q2_qcd;    }
-    inline double JetScale() const    { return m_q2_jet;    }
+    inline double ISJetScale() const  { return m_q2_isjet;  }
+    inline double FSJetScale() const  { return m_q2_fsjet;  }
     inline double YCut() const        { return m_ycut;      }
     inline int    OrderStrong() const { return m_hard_nqcd; }
     inline int    OrderEWeak()  const { return m_hard_nqed; }
@@ -84,6 +92,9 @@ namespace SHERPA {
 
     inline double FSShowerScale() const { return m_q2_fss;   }
     inline double ISShowerScale() const { return m_q2_iss;   }
+    
+    inline void SetMaxQCDJets(const int jets) { m_maxqcdjets=jets; }
+    inline void SetMinQCDJets(const int jets) { m_minqcdjets=jets; }
   };
 
   /*!

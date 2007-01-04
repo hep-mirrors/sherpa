@@ -154,8 +154,6 @@ bool QCD_Remnant_Base::AdjustColors()
 {
   PROFILE_HERE;
   if (!m_active) return true;
-  static double tot=0.0, rej=0.0;
-  ++tot;
   QCD_Remnant_Base *partner=dynamic_cast<QCD_Remnant_Base*>(p_partner);
   if (partner==NULL) 
     THROW(not_implemented,
@@ -201,15 +199,10 @@ bool QCD_Remnant_Base::AdjustColors()
       }
     }
   }
-  ++rej;
   msg_Tracking()<<"QCD_Remnant_Base::AdjustColors(): "
 		<<"No solution in event ["
 		<<ATOOLS::rpa.gen.NumberOfDicedEvents()<<"]."
 		<<std::endl;
-  if (100*rej>tot) 
-    ATOOLS::msg.Error()<<"QCD_Remnant_Base::AdjustColors(): "
-		       <<"Remnant rejection rate is "
-		       <<rej/tot<<"."<<std::endl;
   return false;
 }
 

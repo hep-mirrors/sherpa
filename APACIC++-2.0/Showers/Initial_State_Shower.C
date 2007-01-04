@@ -25,21 +25,22 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr,
   p_tools(new Sudakov_Tools(model)),
   p_kin(new Spacelike_Kinematics(jf)),
   p_suds(new Spacelike_Sudakov*[2]),
-  m_allowed(200)
+  m_allowed(100)
 {
-  double cplscalefac(dataread->GetValue<double>("IS_CPL_SCALE_FACTOR",.25));
-  rpa.gen.SetVariable("IS_CPL_SCALE_FACTOR",ToString(cplscalefac));
+  double cplscalefac(0.25*ToType<double>
+		     (rpa.gen.Variable("IS_CPL_SCALE_FACTOR","1.0")));
   m_t0=dabs(dataread->GetValue<double>("IS_PT2MIN",4.0));
   double shadron(dataread->GetValue<double>("IS_MAX_SCALE",
 					    sqr(rpa.gen.Ecms())));
   double emin(dataread->GetValue<double>("IS_MINIMAL_E",0.5));
-  int cplscheme(dataread->GetValue<int>("IS_COUPLING_SCHEME",1));
+  int cplscheme(dataread->GetValue<int>("IS_COUPLING_SCHEME",3));
   int pdfscheme(dataread->GetValue<int>("IS_PDF_SCALE_SCHEME",1));
-  int orderingscheme(dataread->GetValue<int>("IS_ORDERING_SCHEME",2));
+  int orderingscheme(dataread->GetValue<int>("IS_ORDERING_SCHEME",0));
   for (short unsigned int i(0);i<2;++i) {
-    if (isr->PDF(i)->Q2Min()>m_t0*cplscalefac) {
+    if (isr->PDF(i)->Q2Min()>m_t0*rpa.gen.FactorizationScaleFactor()) {
       msg.Error()<<METHOD<<"(..):\n   IS_PT2MIN("<<m_t0
-		 <<")*IS_CPL_SCALE_FACTOR("<<cplscalefac<<") "
+		 <<")*FACTORIZATION_SCALE_FACTOR("
+		 <<rpa.gen.FactorizationScaleFactor()<<") "
 		 <<"smaller than minimum scale given by PDF ("
 		 <<isr->PDF(i)->Q2Min()<<").\n"
 		 <<"   Please change your settings in "
@@ -51,12 +52,13 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr,
     p_suds[i]->SetRemnant(isr->GetRemnant(i));
     p_suds[i]->SetMaxScale(shadron);
     p_suds[i]->SetMinEnergy(emin);
-    p_suds[i]->SetPDFScaleFactor(cplscalefac);
+    p_suds[i]->SetPDFScaleFactor
+      (cplscalefac*rpa.gen.FactorizationScaleFactor());
     p_suds[i]->SetCouplingScaleFactor(cplscalefac);
     p_suds[i]->SetCouplingScheme(cplscheme);
     p_suds[i]->SetPDFScheme(pdfscheme);
     p_suds[i]->SetOrderingScheme(orderingscheme);
-    m_extra_pdf[i]=m_to_be_diced[i]=1;
+    m_extra_pdf[i]=0;
     if (!p_suds[i]->Initialize()) 
       THROW(fatal_error,"failed to intialize is sudakov");
   }
@@ -82,92 +84,79 @@ int Initial_State_Shower::PerformShower(Tree **const trees,Tree *const fintree,
   p_suds[0]->ClearVetos();
   p_suds[1]->ClearVetos();
 #endif
-  if (jetvetoflag<0 || jetvetoflag>1) m_extra_pdf[0]=m_extra_pdf[1]=0;
-  else m_extra_pdf[0]=m_extra_pdf[1]=1;
-  if (InitializeSystem(trees,trees[0]->GetRoot(),trees[1]->GetRoot())) {
-    p_kin->BoostInCMS(trees,trees[0]->GetInitiator(),trees[1]->GetInitiator());
-    m_lab=p_kin->BoostInLab(trees);
-    return 1;
+  for (int i(0);i<m_allowed;++i) {
+    if (InitializeSystem(trees,0,trees[0]->GetRoot(),trees[1]->GetRoot())) {
+      p_kin->BoostInCMS(trees,0,trees[0]->GetInitiator(),trees[1]->GetInitiator());
+      m_lab=p_kin->BoostInLab(trees);
+      return 1;
+    }
   }
-  msg.Error()<<METHOD<<"(..): Shower failure."<<std::endl;
   return 0;
 }
 
-bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2)
+void Initial_State_Shower::SetDirection(Knot *const k)
+{
+  if (k->right) {
+    if (k->dir!=0) k->right->dir=k->dir;
+    SetDirection(k->right);
+  }
+}
+
+void Initial_State_Shower::SetVetoScales(Knot *const d)
+{
+  if (d==NULL || d->prev==NULL) return;
+  if (d->prev->qjv==1.0e10) {
+    d->prev->qjv=d->qjv;
+    d->prev->qljv=d->qljv;
+  }
+  if (d->prev->left->qjv==1.0e10) {
+    d->prev->left->qjv=d->qjv;
+    d->prev->left->qljv=d->qljv;
+  }
+}
+
+bool Initial_State_Shower::InitializeSystem(Tree **const trees,int tree1,
+					    Knot *k1,Knot *k2)
 {
   msg_Debugging()<<METHOD<<"("<<k1->kn_no<<","<<k2->kn_no<<"): {\n";
   msg_Indent();
-  m_to_be_diced[1]=m_to_be_diced[0]=1;
   if (k1==NULL || k2==NULL) THROW(fatal_error,"No trees.");
-  bool decay1(k1->stat>=1), decay2(k2->stat>=1);
-  int first(0);
-  if (decay1^decay2) first=1;
-  if (!decay1 && !decay2) first=2;
-  int mismatch(0), caught_jetveto(0);
-  bool accepted(true); 
+  int decay1(k1->shower>0), decay2(k2->shower>0);
+  SetDirection(trees[0]->GetInitiator());
+  SetDirection(trees[1]->GetInitiator());
+  m_sprime=(k1->part->Momentum()+k2->part->Momentum()).Abs2();
+  if (decay1 && decay2) FillBranch(trees,tree1,k1,k2);
   while (true) {
-    accepted=true;
     m_sprime=(k1->part->Momentum()+k2->part->Momentum()).Abs2();
-    msg_Debugging()<<"decay1 = "<<decay1<<", decay2 = "<<decay2
-		   <<", jetveto = "<<caught_jetveto<<"\n";  
-    // Parton 1/Tree 1 is the one to decay.
-    if (decay1 && caught_jetveto!=3) {
-      msg_Debugging()<<"evolve 1\n";
-      m_to_be_diced[0]=0;
-      if (FillBranch(trees,k1,k2,0)) {
-	if (k1->z>0.0) m_sprime=m_sprime/k1->z;
-      }
-      else {
-	accepted=false;
-      }
+    if (decay1 || decay2) {
+      int tree(tree1);
+      ChooseMother(tree1,k1,k2,true);
+      if (tree!=tree1) std::swap<int>(decay1,decay2);
+      if (!FillBranch(trees,tree1,k1,k2)) decay1=false;
     }
-    // Parton 2/Tree 2 is the one to decay.    
-    if (decay2 && caught_jetveto!=2) {
-      msg_Debugging()<<"evolve 2\n";
-      m_to_be_diced[1]=0;
-      if (FillBranch(trees,k2,k1,1)) {
-	if (k2->z>0.0) m_sprime=m_sprime/k2->z;
-      }
-      else {
-	accepted=false;
-      }
-    }
-    if (accepted) {
-      p_kin->InitKinematics(trees,k1,k2,first);
+    msg_Debugging()<<"t_{"<<k1->kn_no<<"} = "<<k1->t
+		   <<" ("<<decay1<<"), t_{"<<k2->kn_no<<"} "
+		   <<k2->t<<" ("<<decay2<<")\n";
+    if (decay1 && k1->t<k1->tout) m_sprime/=k1->z;
+    if (decay2 && k2->t<k2->tout) m_sprime/=k2->z;
+    int stat(p_kin->InitKinematics(trees,tree1,k1,k2));
+    if (stat==-1) break;
+    if (stat==1) { 
       if (!decay1) SetColours(k1);
       if (!decay2) SetColours(k2);
       p_suds[0]->AcceptBranch(k1);
       p_suds[1]->AcceptBranch(k2);
-      int stat(EvolveSystem(trees,k1,k2));
-      if (stat==1) {
-	msg_Debugging()<<"}\n";
-	return true;
-      }
-      else if (stat==2 || stat==3) {
-	msg_Debugging()<<"init system veto "<<stat<<"\n";
-	if (stat==2) m_sprime=m_sprime*k1->z;
-	else m_sprime=m_sprime*k2->z;
-	caught_jetveto=stat;
-      }
-      else {
-	caught_jetveto=0;
-      }
+      bool t1(k1->shower==0 || k1->t<k1->tout);
+      bool t2(k2->shower==0 || k2->t<k2->tout);
+      if (t1 || t2)
+	if ((stat=EvolveSystem(trees,tree1,t1?k1->prev:k1,t2?k2->prev:k2))==-1) 
+	  break;
+      if (stat==1) return true;
     }
-    else {
-      caught_jetveto=0;
-    }
-    if (caught_jetveto==0) {
-      ++mismatch;
-      if (mismatch>m_allowed) {
-	msg.Error()<<METHOD<<"(..): Shower failure, "
-		   <<mismatch<<" trials."<<std::endl;
-	msg_Debugging()<<"}\n";
-	return false;
-      }
-      trees[0]->Restore();
-      trees[1]->Restore();
-    }
+    if (!(decay1 || decay2)) break;
   }
+  trees[0]->Restore();
+  trees[1]->Restore();
   msg_Debugging()<<"iss reset";
   msg_Debugging()<<"}\n";
   return false;
@@ -175,144 +164,145 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2)
 
 int Initial_State_Shower::DoKinematics()
 {
-  if (!p_kin->DoKinematics(p_istrees,p_k1,p_k2,m_ntree0,false)) return -1;
-  return 1-p_suds[m_ntree0]->PTVeto(p_k1->prev);
+  if (!p_kin->DoKinematics(p_istrees,m_tree1,p_k1,p_k2,false)) return 0;
+  return 1-p_suds[m_tree1]->PTVeto(p_k1->prev);
 }
 
-int Initial_State_Shower::EvolveSystem(Tree **const trees,Knot *k1,Knot *k2)
+int Initial_State_Shower::EvolveSystem(Tree **const trees,int tree1,
+				       Knot *k3,Knot *k5)
 {
-  msg_Debugging()<<METHOD<<"("<<k1->kn_no<<","<<k2->kn_no<<"): {\n";
+  msg_Debugging()<<METHOD<<"("<<tree1<<";"<<k3->kn_no<<","<<k5->kn_no
+		 <<"): { m_sprime = "<<m_sprime<<"\n";
   msg_Indent();
-  if (k1->t==k1->tout && k2->t==k2->tout) return 1;  
-  int ntree0(0), ntree1(1);
-  ChooseMother(ntree0,ntree1,k1,k2);
-  int caught_jetveto(0);
+  k3->tmo=k3->t;
+  k5->tmo=k5->t;
+  int veto(0);
+  double oldsprime(m_sprime);
+  // select parton / tree to evolve according either to history or virtuality
+  ChooseMother(tree1,k3,k5);
+  Knot *k1(k3->right), *k4(k3->left);
+  Knot *k2((k5->t<0.0&&k5->right!=NULL)?k5->right:k5); 
   while (true) {
-    if (k1->stat>0 || caught_jetveto) {
-      k1->stat           = 0;
-      k1->E2             = sqr(k1->part->Momentum()[0]);
-      k1->prev->E2       = k1->E2/sqr(k1->z);                      
-      k1->prev->left->E2 = k1->prev->E2*sqr(1.-k1->z);
+    m_sprime=oldsprime;
+    if ((k3->shower==0 || k3->t<k3->tout) && k1!=NULL) 
+      p_kin->ResetMomenta(k1,trees[tree1]);
+    if (k3->shower && k3->t==k3->tout) {
+      if (k5->shower && k5->t==k5->tout) {
+	msg_Debugging()<<"evolution finished, veto = "<<veto<<"\n";
+	if (veto) {
+	  if (k3->part->Info()!='H' || k3->prev==NULL ||
+	      k3->prev->part->Info()!='H') {
+	    k3->t=k3->tmo;
+	    k3->stat=1;
+	  }
+	  return 0;
+	}
+	return 1;
+      }
+      return EvolveSystem(trees,tree1,k3->prev!=NULL?k3->prev:k3,k5);
+    }
+    if (veto && !k3->shower) return 0;
+    msg_Debugging()<<"start evolution of "<<k3->kn_no<<"->"<<k1->kn_no
+		   <<" at "<<k3->t<<", veto = "<<veto<<"\n";
+    ++veto;
+    if (k1->shower>0) {
+      // set properties of t-channel particle
+      k1->E2       = sqr(k1->part->Momentum()[0]);
+      // set properties of mother
+      k3->E2       = k1->E2/sqr(k1->z);                      
+      k3->left->E2 = k3->E2*sqr(1.-k1->z);
     }  
     else {
-      double sprime_a((k1->part->Momentum()+k2->part->Momentum()).Abs2());
-      double sprime_b((k1->prev->part->Momentum()+k2->part->Momentum()).Abs2());
-      k1->z=sprime_a/sprime_b;
-      k1->prev->x=k1->x/k1->z;
-
-      if (k1->prev->x>1.) return 0;
-
+      double s12((k1->part->Momentum()+k2->part->Momentum()).Abs2());
+      double s32((k3->part->Momentum()+k2->part->Momentum()).Abs2());
+      msg_Debugging()<<"x_{"<<k1->kn_no<<"} = "<<k1->x
+		     <<" -> x_{"<<k3->kn_no<<"} = "
+		     <<(k1->x*s32/s12)<<"\n";
+      // x>1 can happen as outermost partons are allowed to radiate
+      // if left radiates and right remains to be unfolded, momenta might be 
+      // shifted such that x>1. in that case, retry left emission
+      if (k1->x>s12/s32) return 0;
+      k1->z=s12/s32;
+      k3->x=k1->x/k1->z;
       m_sprime/=k1->z;
     }
-    if (k1->prev->stat>0) {
-      m_to_be_diced[ntree0]=0;
-      bool fill(true);
-      if (k1->prev->part->Info()=='H') {
-	if (k1->prev->prev) {
-	  if (k1->prev->prev->part->Info()=='H') {
-	    fill=false;
-	  }
-	}
-      }
-      if (fill && !FillBranch(trees,k1->prev,k2,ntree0)) return 0; 
+    SetVetoScales(k1);
+    if (k3->stat>0) {
+      // dice t for non-me knot
+      if (k3->part->Info()!='H' ||
+	  k3->prev==NULL || k3->prev->part->Info()!='H')
+	if (!FillBranch(trees,tree1,k3,k2)) k3->stat=0;
     }
-
     double maxt(p_kin->CalculateMaxT(k1,k2));
-    if (maxt<k1->prev->left->tout) return 0;
-    else {
-      if (caught_jetveto==0 && k1->prev->left->stat>0) {
-	k1->prev->left->t    = dabs(k1->t);
-	k1->prev->left->tmax = maxt;
-      }
-    } 
-  
-    if (caught_jetveto==0) {
-      if (p_fin) {
-	double sprime_a = (k1->part->Momentum()+k2->part->Momentum()).Abs2();
-
-	if (!p_kin->DoKinematics(trees,k1,k2,ntree0,true)) return 0;
-	p_k1=k1; 
-	p_k2=k2; 
-	m_ntree0=ntree0;
-	switch (p_fin->TimelikeFromSpacelike(this,trees[ntree0],k1->prev->left,
-					     m_jetveto,sprime_a,k1->z)) {
-	case -1:
-	  msg.Error()<<METHOD<<"(..): FS Shower failure."<<std::endl;
-	  return 0;
-	case 0: 
-	  caught_jetveto=-10;
+    if (k4->part->Info()!='H') {
+      if (maxt<k4->tout) continue;
+      k4->t=dabs(k1->t);
+      k4->stat=3;
+    }
+    k4->tmax=maxt;
+    if (p_fin) {
+      if (!p_kin->DoKinematics(trees,tree1,k1,k2,true)) continue;
+      double s12((k1->part->Momentum()+k2->part->Momentum()).Abs2());
+      p_k1=k1;
+      p_k2=k2;
+      m_tree1=tree1;
+      switch (p_fin->TimelikeFromSpacelike(this,trees[tree1],k4,
+					   m_jetveto,s12,k1->z,k2)) {
+      case -1:
+	return -1;
+      case 0: 
 #ifdef USING__Veto_Info
-	  p_suds[ntree0]->SetVeto(svc::jet_veto);
+	p_suds[tree1]->SetVeto(svc::jet_veto);
 #endif
-	  break;
-	case 1:
-	  break;
-	}
-      }
-      else {
-	Knot * mo = k1->prev->left;
-	mo->t     = mo->tout;
-	mo->stat  = 0;
-	mo->part->SetStatus(part_status::active);
-	if (!p_kin->DoKinematics(trees,k1,k2,ntree0,false)) return 0;
+	msg_Debugging()<<"caught jetveto\n";
+	return 0;
+      case 1:
+	p_fin->SetAllColours(k4);
+	break;
       }
     }
     else {
-      if (!p_kin->DoKinematics(trees,k1,k2,ntree0,false)) return 0;
+      k4->t     = k4->tout;
+      k4->stat  = 0;
+      k4->part->SetStatus(part_status::active);
+      if (!p_kin->DoKinematics(trees,tree1,k1,k2,false)) continue;
     }
-
-    if (caught_jetveto==-10) {
-      m_to_be_diced[ntree0]=1;
-      p_kin->ResetMomenta(k1,trees[ntree0]);
-      msg_Debugging()<<"caught jetveto\n";
-      return (ntree0+2);
+    if (k3->shower==1 && k3->t<k3->tout) {
+      double mmaxt(p_kin->CalculateMaxT(k3,k2,false));
+      if (mmaxt<k3->prev->left->tout) continue;
     }
-    
-    if (p_fin) p_fin->SetAllColours(k1->prev->left);
-    p_suds[ntree0]->AcceptBranch(k1->prev);
-  
-    if (k1->prev->z>0.) m_sprime = m_sprime/k1->prev->z;
-    
-    if (ntree0==0) {
-      int stat(EvolveSystem(trees,k1->prev,k2));
-      if (stat==0 || stat ==1) return stat;
-      caught_jetveto=stat;
-    }
-    else {  
-      int stat(EvolveSystem(trees,k2,k1->prev));
-      if (stat==0 || stat ==1) return stat;
-      caught_jetveto=stat;
-    }
-    
-    if (caught_jetveto && k1->prev->z>0.) m_sprime = m_sprime*k1->prev->z;
-
-    if (caught_jetveto!=ntree0+2) {
-      m_to_be_diced[ntree0]=1;
-      k1->prev->t=k1->prev->tmax;
-      p_kin->ResetMomenta(k1,trees[ntree0]);
-      msg_Debugging()<<"jet veto not on tree "<<ntree0<<"\n";
-      msg_Debugging()<<"}\n";
-      return caught_jetveto;
-    }
+    p_suds[tree1]->AcceptBranch(k3);
+    k1->stat=0;
+    if (k3->z>0.) m_sprime/=k3->z;
+    int stat(-1);
+    if (abs(stat=EvolveSystem(trees,tree1,k3->prev!=NULL?k3->prev:k3,k5))==1)
+      return stat;
+    msg_Debugging()<<"back in ("<<k3->kn_no<<","<<k5->kn_no<<") with "
+		   <<k3->t<<" "<<k5->t<<"\n";
   }
   return 0;
 }  
 
-int Initial_State_Shower::FillBranch(Tree ** trees,Knot * active,
-				     Knot * partner,int leg) {
+int Initial_State_Shower::FillBranch(Tree **const trees,const int tree1,
+				     Knot *const active,Knot *const partner) {
   msg_Debugging()<<METHOD<<"("<<active->kn_no<<","<<partner->kn_no<<","
- 		 <<leg<<"): {\n";
+ 		 <<tree1<<"): {\n";
   msg_Indent();
   Flavour flavs[2];
 #ifdef USING__Veto_Info
-  p_suds[leg]->AddVeto();
+  p_suds[tree1]->AddVeto();
 #endif
-  if (p_suds[leg]->Dice(active,m_sprime,m_extra_pdf[leg])) {
-    flavs[0] = p_suds[leg]->GetFlA();
-    flavs[1] = p_suds[leg]->GetFlC();    
-    FillMotherAndSister(trees[leg],active,flavs);
+  SetVetoScales(active->right);
+  if (p_suds[tree1]->Dice(active,m_sprime,
+			  sqr(partner->part->Flav().PSMass()),
+			  m_extra_pdf[tree1])) {
+    flavs[0] = p_suds[tree1]->GetFlA();
+    flavs[1] = p_suds[tree1]->GetFlC();    
+    FillMotherAndSister(trees[tree1],active,flavs);
+    active->prev->pt2lcm = p_suds[tree1]->PT2();
     msg_Debugging()<<"test emission at t = "<<active->t
- 		   <<", z = "<<active->z<<"\n";
+ 		   <<", z = "<<active->z<<", pt = "
+		   <<sqrt(active->prev->pt2lcm)<<"\n";
     msg_Debugging()<<"}\n";
     return 1;
   }
@@ -320,39 +310,36 @@ int Initial_State_Shower::FillBranch(Tree ** trees,Knot * active,
   active->stat   = 0;
   active->t      = active->tout;
   active->part->SetStatus(part_status::active);
-  msg_Debugging()<<"no branch";
+  msg_Debugging()<<"no branch\n";
   msg_Debugging()<<"}\n";
-  return 1;
+  return 0;
 }
 
-void Initial_State_Shower::ChooseMother(int &ntree0,int &ntree1, 
-					Knot *&k1, Knot *&k2)
+void Initial_State_Shower::
+ChooseMother(int &ntree1,Knot *&k1, Knot *&k2,bool init)
 {
-  bool swap((k1->t > k2->t) && (k2->t != k2->tout));
-  bool known1(k1->stat==0 && k1->t != k1->tout), known2(k2->stat==0 && k2->t != k2->tout);
-
+  bool swap(k1->t>k2->t);
+  bool known1(k1->part->Info()=='H' || k1->shower==0);
+  bool known2(k2->part->Info()=='H' || k2->shower==0);
+  msg_Debugging()<<METHOD<<"("<<k1->kn_no<<","<<k2->kn_no
+		 <<"): t1 = "<<k1->t<<", t2 = "<<k2->t
+		 <<", known1 = "<<known1<<", known2 = "<<known2<<"\n";
   if (known1 || known2) {
-    bool save_swap(swap);
-    if (known1 && !known2) swap=false;
-    else if (!known1 && known2) swap=true;
-
+    if (known1 && !known2) swap=init;
+    else if (!known1 && known2) swap=!init;
     if (known1 && known2) {
-      if (k1->prev->kn_no<k2->prev->kn_no) swap=false;
-      else swap=true;
-    }
-
-    if (swap!=save_swap) {
-      msg_Tracking()<<"Initial_State_Shower::ChooseMother changed swap according to known history \n";
+      if (k1->kn_no<k2->kn_no) swap=init;
+      else swap=!init;
     }
   }
-
+  if (k1->t>=0.0 && k2->t<0.0) swap=true;
+  if (k2->t>=0.0 && k1->t<0.0) swap=false;
   if (swap) {
-    Knot * kh(k1);
-    k1 =k2;
-    k2 =kh;
-    ntree0=1;
-    ntree1=0;
+    std::swap<Knot*>(k1,k2);
+    ntree1=1-ntree1;
   }
+  msg_Debugging()<<"  swap = "<<swap<<" -> k1 = "<<k1->kn_no
+		 <<", k2 = "<<k2->kn_no<<"\n";
 }
 
 void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,
@@ -386,7 +373,10 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,
   mother->stat   = 1;
   mother->E2     = 0.;
   mother->thcrit = th;
-  mother->pt2lcm = k->pt2lcm;
+  mother->qjv    = k->qjv;
+  mother->qljv   = k->qljv;
+  mother->maxjets= k->maxjets;
+  mother->dir    = k->dir;
 
   Knot * sister = 0;
   if (mother->left) {
@@ -416,6 +406,9 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,
   sister->stat   = 1;
   sister->E2     = 0.;
   sister->thcrit = th; 
+  sister->qjv    = k->qjv;
+  sister->qljv   = k->qljv;
+  sister->maxjets= k->maxjets;
 
   if (k->part->Info() != 'G' && k->part->Info() != 'H') k->part->SetInfo('i');
   k->part->SetStatus(part_status::decayed);
@@ -721,7 +714,7 @@ void Initial_State_Shower::ExtractPartons(Knot *const kn,const int &beam,
     msg.Error()<<METHOD<<"(..): No Interface found. Abort."<<std::endl;
     abort();
   }
-  m_bl_meps_is->SetStatus(0);
+  m_bl_meps_is->SetStatus(blob_status::inactive);
   int nr(1000);
   SingleExtract(kn,beam,jet,bl,nr);
 }
@@ -757,7 +750,9 @@ void Initial_State_Shower::SingleExtract(Knot *const kn,const int &beam,
   // --- create new blob ---
   if (newblob) {
     jet = new Blob();
-    jet->SetStatus(1);
+    jet->SetStatus(blob_status::needs_harddecays |
+		   blob_status::needs_beams |
+		   blob_status::needs_hadronization);
     jet->SetId();
 #ifdef USING__Veto_Info
     jet->AddData("IS_VS",new Blob_Data<std::vector<int> >(p_suds[beam]->Vetos()));
@@ -774,7 +769,7 @@ void Initial_State_Shower::SingleExtract(Knot *const kn,const int &beam,
 
     if (!kn->prev) jet->SetBeam(beam);
     p = new Particle(*kn->part);
-    p->SetFinalMass(kn->tout);
+    p->SetFinalMass(sqrt(kn->tout));
     p->SetStatus(part_status::decayed);
     jet->AddToInParticles(p);
   }
@@ -783,7 +778,7 @@ void Initial_State_Shower::SingleExtract(Knot *const kn,const int &beam,
   if (!ignore && (kn->part->Info()=='H' || kn->part->Info()=='G')) {
     if  (is_is && m_bl_meps_is) {
       p = new Particle(*kn->part);
-      p->SetFinalMass(kn->tout);
+      p->SetFinalMass(sqrt(kn->tout));
       jet->AddToOutParticles(p);
       p->SetStatus(part_status::decayed);
       m_bl_meps_is->AddToInParticles(p);
@@ -791,7 +786,7 @@ void Initial_State_Shower::SingleExtract(Knot *const kn,const int &beam,
     else if (!is_is && m_bl_meps_fs) {
       if (!p) {
 	p = new Particle(*kn->part);
-	p->SetFinalMass(kn->tout);
+	p->SetFinalMass(sqrt(kn->tout));
 	jet->AddToInParticles(p);
       }
       else {
@@ -804,7 +799,7 @@ void Initial_State_Shower::SingleExtract(Knot *const kn,const int &beam,
   // --- add final state particle ---
   if (lastknot && !is_is) {
     p = new Particle(*kn->part);
-    p->SetFinalMass(kn->tout);
+    p->SetFinalMass(sqrt(kn->tout));
     p->SetStatus(part_status::active);
     jet->AddToOutParticles(p);
   }
@@ -816,8 +811,6 @@ void Initial_State_Shower::SingleExtract(Knot *const kn,const int &beam,
 bool Initial_State_Shower::TestShower(Tree ** trees) 
 {
   double E2(sqr(rpa.gen.Ecms()));
-
-  ran.ReadInStatus("RandomA.dat",2735);
 
   msg.Out()<<" Starting Test IS Shower :"<<std::endl;
   for (long int n=1;n<=rpa.gen.NumberOfEvents();n++) { 

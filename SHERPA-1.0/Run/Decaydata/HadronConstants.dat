@@ -7,3 +7,5 @@ Vud = 0.9744            ! CKM matrix element
 Vus = 0.2204            ! CKM matrix element
 fpi = 0.0924            ! pion decay constant
 fK  = 0.113             ! kaon decay constant
+! GF = ... enter your own Fermi constant if you do not
+!          want to take the value from Model.dat

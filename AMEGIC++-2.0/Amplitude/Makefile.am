@@ -3,11 +3,11 @@ SUBDIRS = Zfunctions
 pkglib_LTLIBRARIES = libAmplitude.la
 
 libAmplitude_la_SOURCES = CFColor.C Amplitude_Base.C \
-                          Single_Amplitude.C Amplitude_Manipulator.C \
+			  Single_Amplitude.C Amplitude_Manipulator.C \
                           Amplitude_Generator.C Color_Generator.C \
-                          Prop_Generator.C Zfunc_Generator.C Amplitude_Group.C \
-                          Amplitude_Handler.C \
-                          Single_Amplitude_Base.C Super_Amplitude.C Zfunc.C \
+	                  Prop_Generator.C Zfunc_Generator.C Amplitude_Group.C \
+		          Amplitude_Handler.C \
+			  Single_Amplitude_Base.C Super_Amplitude.C Zfunc.C \
                           FullAmplitude_MHV_Base.C \
                           Amplitude_Output.C
 

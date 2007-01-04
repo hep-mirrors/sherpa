@@ -17,16 +17,17 @@
 namespace ATOOLS {
 
   class File_IO_Base {
-  protected:
+  private:
 
     std::vector<My_In_File>  m_infiles;
     std::vector<My_Out_File> m_outfiles;
 
-    virtual bool OpenInFile(const unsigned int i);
-    virtual bool OpenOutFile(const unsigned int i);
+  protected:
 
-    virtual void CloseInFile(const unsigned int i,const bool force=false);
-    virtual void CloseOutFile(const unsigned int i,const bool force=false);
+    inline My_In_File InFile(const unsigned int i=0)  
+    { return AT(m_infiles,i);  }
+    inline My_Out_File OutFile(const unsigned int i=0)  
+    { return AT(m_outfiles,i);  }
 
   public:
 
@@ -72,10 +73,10 @@ namespace ATOOLS {
     inline fom::code OutFileMode(const unsigned int i=0) const
     { return AT(m_outfiles,i).Mode(); }
 
-    inline std::ifstream *InFile(const unsigned int i=0)  
-    { return m_infiles[i]();  }
-    inline std::ofstream *OutFile(const unsigned int i=0) 
-    { return m_outfiles[i](); }
+    inline std::ifstream *InputStream(const unsigned int i=0)  
+    { return AT(m_infiles,i)();  }
+    inline std::ofstream *OutputStream(const unsigned int i=0) 
+    { return AT(m_outfiles,i)(); }
 
   }; // end of class File_IO_Base
 

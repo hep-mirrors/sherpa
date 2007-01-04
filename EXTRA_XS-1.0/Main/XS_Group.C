@@ -19,10 +19,9 @@
 #endif
 
 using namespace EXTRAXS;
-using namespace ATOOLS;
 
 XS_Group::XS_Group(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
-		   const int scalescheme,const int kfactorscheme,
+		   const PHASIC::scl::scheme scalescheme,const int kfactorscheme,
 		   BEAM::Beam_Spectra_Handler *const beamhandler,
 		   PDF::ISR_Handler *const isrhandler,
 		   ATOOLS::Selector_Data *const selectordata):
@@ -32,6 +31,7 @@ XS_Group::XS_Group(const size_t nin,const size_t nout,const ATOOLS::Flavour *fla
 {
   p_selected=NULL;
   p_selectordata=selectordata;
+  SetScaleScheme(m_scalescheme);
 }
 
 XS_Group::XS_Group(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours):
@@ -71,6 +71,8 @@ void XS_Group::Add(XS_Base *const xsec)
     for (size_t i=0;i<m_nin+m_nout;++i) p_flavours[i]=xsec->Flavours()[i];
     m_neweak=xsec->m_neweak;
     m_nstrong=xsec->m_nstrong;
+    m_orderEW=xsec->m_orderEW;
+    m_orderQCD=xsec->m_orderQCD;
     double inisum=0.0, finsum=0.0;
     for (size_t i=0;i<m_nin;i++) inisum+=p_flavours[i].Mass();
     for (size_t i=0;i<m_nout;i++) finsum+=p_flavours[i+m_nin].Mass();
@@ -78,6 +80,8 @@ void XS_Group::Add(XS_Base *const xsec)
   }
   if (m_neweak!=xsec->m_neweak) m_neweak=0;
   if (m_nstrong!=xsec->m_nstrong) m_nstrong=0;
+  if (m_orderEW!=xsec->m_orderEW) m_orderEW=-1;
+  if (m_orderQCD!=xsec->m_orderQCD) m_orderQCD=-1;
   if (xsec->NVector()>m_nvector) CreateMomenta(xsec->NVector());
   if (xsec->NAddIn()>m_naddin || xsec->NAddOut()>m_naddout) {
     if (p_addmomenta!=NULL) delete [] p_addmomenta;
@@ -146,12 +150,7 @@ void XS_Group::Clear()
 bool XS_Group::SelectOne()
 {
   DeSelect();
-  if (m_totalxs==0.) {
-    p_selected=m_xsecs[Min(size_t(ATOOLS::ran.Get()*m_xsecs.size()),
-			   m_xsecs.size()-1)];
-    p_selected->SetPSHandler(p_pshandler);
-    p_selected->SelectOne();
-  }
+  if (m_totalxs==0.) p_selected=m_xsecs[int(ATOOLS::ran.Get()*m_xsecs.size())];
   else {
     double disc;
     if (m_atoms) disc=m_totalxs*ATOOLS::ran.Get();
@@ -287,7 +286,7 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath,
     if (m_foundown) SetTotal();
     m_resultpath=resultpath;
     m_resultfile=filename;
-    ATOOLS::Exception_Handler::AddTerminatorObject(this);
+    ATOOLS::exh->AddTerminatorObject(this);
     p_pshandler->InitIncoming();
     double var=TotalVar();
     m_totalxs=p_pshandler->Integrate()/ATOOLS::rpa.Picobarn(); 
@@ -298,7 +297,7 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath,
     if (m_totalxs>0.) {
       SetTotal();
       if (var==TotalVar()) {
-	ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+	ATOOLS::exh->RemoveTerminatorObject(this);
 	return 1;
       }
       if (resultpath!=std::string("")) {
@@ -315,10 +314,10 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath,
 			      +m_name,create);
 	to.close();
       }
-      ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+      ATOOLS::exh->RemoveTerminatorObject(this);
       return 1;
     }
-    ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+    ATOOLS::exh->RemoveTerminatorObject(this);
     return 0;
   }
 }

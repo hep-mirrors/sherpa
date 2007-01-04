@@ -42,7 +42,6 @@ for I in $DIRS; do
         echo -e "			$J\n" >> Makefile.am
       fi
     done
-    if test -d "PhaseSpaceFunctions"; then echo -e "SUBDIRS    = PhaseSpaceFunctions\n" >> Makefile.am; fi
     echo -e "EXTRA_DIST    =	@SVNINCLUDE@\n" >> Makefile.am
   cd ..
   echo "	  SHERPA-1.0/Run/Decaydata/$I/Makefile \\" >> configure.in.decays

@@ -93,6 +93,7 @@ namespace APACIC {
     static void BoRo(ATOOLS::Poincare &, Knot * );
     static void UpdateDaughters(Knot *);
     bool CheckMomentumConservation() const;
+    bool Restore(Knot *const k) const;
   private:
     static void BoRoDaughters(ATOOLS::Poincare &, Knot *);
 
@@ -101,6 +102,7 @@ namespace APACIC {
     void CopyBackKnot(Knot *, Knot *);
     //! deletes a Knot();
     void DeleteKnot(Knot *);
+    bool Restore(Knot *const k,Knot *const r) const;
   };
 
   //-----------------------------------------------------------------------

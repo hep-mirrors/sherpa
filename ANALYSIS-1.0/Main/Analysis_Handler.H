@@ -7,9 +7,9 @@
 #include "Exception.H"
 
 namespace ANALYSIS {
-  
-  typedef ANALYSIS::String_Matrix String_Matrix;
 
+  typedef ANALYSIS::Argument_Matrix Argument_Matrix;
+  
   class Analysis_Handler: public ATOOLS::Terminator_Object, 
 			  public ATOOLS::Tester_Object, 
 			  public ATOOLS::File_IO_Base {
@@ -50,8 +50,8 @@ namespace ANALYSIS {
     
     static void ShowSyntax(const size_t i);
 
-    static String_Matrix FindArguments(const String_Matrix &strings,
-				       size_t &starty,size_t &startx);
+    static Argument_Matrix FindArguments(const Argument_Matrix &strings,
+					 size_t &starty,size_t &startx);
 
     // inline functions
     inline void SetWeighted(const int weighted)    { m_weighted=weighted;  }

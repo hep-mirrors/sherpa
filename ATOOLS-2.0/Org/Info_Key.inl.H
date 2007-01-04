@@ -9,7 +9,7 @@ namespace ATOOLS {
   inline void Info_Key::SetInfo(const std::string info)
   { m_info=info; }
 
-  inline si::code Info_Key::SetStatus(const si::code status)
+  inline si::code Info_Key::SetStatus(const si::code status) const
   { return p_info->SetStatus(m_valuekey,status); }
 
   inline const std::string &Info_Key::Name() const
@@ -18,10 +18,10 @@ namespace ATOOLS {
   inline const std::string &Info_Key::Info() const
   { return m_info; }
 
-  inline Double_Container &Info_Key::Doubles()
+  inline Double_Container &Info_Key::Doubles() const
   { return p_info->Doubles(m_valuekey); }
 
-  inline Vector_Container &Info_Key::Vectors()
+  inline Vector_Container &Info_Key::Vectors() const
   { return p_info->Vectors(m_valuekey); }
 
   inline si::code Info_Key::Status() const
@@ -35,6 +35,9 @@ namespace ATOOLS {
 
   inline ATOOLS::Vec4D Info_Key::Vector(const size_t i) const
   { return p_info->Vector(m_valuekey,i); }
+
+  inline bool Info_Key::Assigned() const
+  { return p_info!=NULL; }
 
   inline double &Info_Key::operator[](const size_t i)
   { return p_info->Double(m_valuekey,i); }

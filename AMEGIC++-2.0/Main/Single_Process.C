@@ -38,8 +38,9 @@ int fak(int N)
 Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
 			       ISR_Handler * _isr,Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			       int _gen_str,int _orderQCD, int _orderEW,
-			       int _kfactorscheme, int _scalescheme,double _scale,
-			       Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi, double ycut,double error,std::string e_func) :
+			       int _kfactorscheme, PHASIC::scl::scheme _scalescheme,double _scale,
+			       Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi, double ycut,
+			       double error,std::string e_func) :
   Process_Base(NULL,_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
 	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,ycut,error),
   m_sfactor(1.), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this), 
@@ -67,6 +68,8 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
 	       <<"   No selection cuts specified. Init No_Selector !"<<endl;
     p_selector = new No_Selector();
   }
+  p_selector->SetProcessName(Name());
+  SetScaleScheme(m_scalescheme);
 
   double sum_massin = 0.,sum_massout = 0.;
   for (size_t i=0;i<m_nin;i++)  sum_massin  += p_flin[i].Mass();
@@ -74,6 +77,7 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
   m_threshold = ATOOLS::Max(sum_massin,sum_massout);
 
   p_pshandler = new Phase_Space_Handler(this,p_isrhandler,p_beamhandler,m_maxerror);
+  SetPSHandler(p_pshandler);
   p_pshandler->SetUsePI(m_usepi);
 
   // making directory
@@ -82,22 +86,13 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
     ATOOLS::MakeDir((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename).c_str(),mode_dir); 
   }
   msg_Tracking()<<"Initialized Single_Process : "<<m_name<<"."<<std::endl;
-
-  if (m_scalescheme==65 && m_updatescales) {
-    double dr   = rpa.gen.DeltaR();
-    double ycut = rpa.gen.Ycut();
-    m_scale[stp::fac] = ycut*sqr(rpa.gen.Ecms());
-    ycut=Min(ycut,ycut*sqr(dr));
-    m_scale[stp::as] = ycut*sqr(rpa.gen.Ecms());
-    SetScales(m_scale[stp::fac],m_scale[stp::as]);
-  }
 }
 
 
 Single_Process::Single_Process(Process_Info* pinfo,int _nin,int _nout,Flavour * _fl,
 			       ISR_Handler * _isr,Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			       int _gen_str,int _orderQCD, int _orderEW,
-			       int _kfactorscheme, int _scalescheme,double _scale,
+			       int _kfactorscheme, PHASIC::scl::scheme _scalescheme,double _scale,
 			       Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi, double ycut,double error,std::string e_func) :   
   Process_Base(pinfo,_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
 	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,ycut,error),
@@ -126,6 +121,8 @@ Single_Process::Single_Process(Process_Info* pinfo,int _nin,int _nout,Flavour * 
 	       <<"   No selection cuts specified. Init No_Selector !"<<endl;
     p_selector = new No_Selector();
   }
+  p_selector->SetProcessName(Name());
+  SetScaleScheme(m_scalescheme);
 
   double sum_massin = 0.,sum_massout = 0.;
   for (size_t i=0;i<m_nin;i++)  sum_massin  += p_flin[i].Mass();
@@ -133,6 +130,7 @@ Single_Process::Single_Process(Process_Info* pinfo,int _nin,int _nout,Flavour * 
   m_threshold = ATOOLS::Max(sum_massin,sum_massout);
 
   p_pshandler = new Phase_Space_Handler(this,p_isrhandler,p_beamhandler,m_maxerror);
+  SetPSHandler(p_pshandler);
   p_pshandler->SetUsePI(m_usepi);
 
   // making directory
@@ -141,15 +139,6 @@ Single_Process::Single_Process(Process_Info* pinfo,int _nin,int _nout,Flavour * 
     ATOOLS::MakeDir((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename).c_str(),mode_dir); 
   }
   msg_Tracking()<<"Initialized Single_Process : "<<m_name<<"."<<std::endl;
-
-  if (m_scalescheme==65 && m_updatescales) {
-    double dr   = rpa.gen.DeltaR();
-    double ycut = rpa.gen.Ycut();
-    m_scale[stp::fac] = ycut*sqr(rpa.gen.Ecms());
-    ycut=Min(ycut,ycut*sqr(dr));
-    m_scale[stp::as] = ycut*sqr(rpa.gen.Ecms());
-    SetScales(m_scale[stp::fac],m_scale[stp::as]);
-  }
 }
 
 
@@ -264,6 +253,8 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
 				  vector<Process_Base *> & links,vector<Process_Base *> & errs,
 				  int & totalsize, int & procs, int & current_atom)
 {
+  if (CheckAlternatives(links,current_atom)) return 1;
+
   if (_testmoms==0) {
     string model_name = model->Name();
     if (model_name==string("ADD")) {
@@ -319,6 +310,8 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
 	}
 	
 	p_partner = (Single_Process*)links[j];
+	WriteAlternativeName(p_partner->Name());
+
 	Minimize();
 	return 1;
       }
@@ -348,6 +341,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
       totalsize++;
     }
     Minimize();
+    WriteAlternativeName(p_partner->Name());
     return 1;
   case 1 :
     for (size_t j=current_atom;j<links.size();j++) {
@@ -356,6 +350,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
 		      <<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
 	p_partner   = (Single_Process*)links[j];
 	m_pslibname = links[j]->PSLibName();
+	WriteAlternativeName(p_partner->Name());
 	break;
       } 
     }
@@ -615,14 +610,16 @@ int Single_Process::Tests() {
   
   if (string_test) {
     //String-Test
-    for (size_t i=0;i<p_hel->MaxHel();i++) {
-      if (p_hel->On(i)) {
-	for (size_t j=i+1;j<p_hel->MaxHel();j++) {
-	  if (p_hel->On(j)) {
-	    if (ATOOLS::IsEqual(M_doub[i],M_doub[j])) {
-	      p_hel->SwitchOff(j);
-	      p_hel->SetPartner(i,j);
-	      p_hel->IncMultiplicity(i);
+    if (!rpa.gen.SpinCorrelation()) {
+      for (size_t i=0;i<p_hel->MaxHel();i++) {
+	if (p_hel->On(i)) {
+	  for (size_t j=i+1;j<p_hel->MaxHel();j++) {
+	    if (p_hel->On(j)) {
+	      if (ATOOLS::IsEqual(M_doub[i],M_doub[j])) {
+		p_hel->SwitchOff(j);
+		p_hel->SetPartner(i,j);
+		p_hel->IncMultiplicity(i);
+	      }
 	    }
 	  }
 	}
@@ -732,6 +729,39 @@ int Single_Process::CheckStrings(Single_Process* tproc)
   return 0;
 }
   
+void Single_Process::WriteAlternativeName(string aname) 
+{
+  if (aname==m_name) return;
+  std::string altname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".alt";
+  if (IsFile(altname)) return;
+  std::ofstream to;
+  to.open(altname.c_str(),ios::out);
+  to<<aname<<" "<<m_sfactor<<endl;
+  to.close();
+}
+
+bool Single_Process::CheckAlternatives(vector<Process_Base *> & links,int current_atom)
+{
+  std::string altname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".alt";
+  if (IsFile(altname)) {
+    double factor;
+    string name; 
+    ifstream from;
+    from.open(altname.c_str(),ios::in);
+    from>>name>>factor;
+    from.close();
+    for (size_t j=current_atom;j<links.size();j++) {
+      if (links[j]->Name()==name) {
+	p_partner = (Single_Process*)links[j];
+	m_sfactor = factor;
+	msg_Tracking()<<"Found Alternative process: "<<m_name<<" "<<name<<endl;
+	return true;
+      }
+    }
+  }
+  return false;
+}
+
 void Single_Process::WriteLibrary() 
 {
   if (m_gen_str<2) return;
@@ -956,7 +986,7 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
   m_resultpath=_resdir;
   m_resultfile=filename;
   m_histofile=histofile;
-  ATOOLS::Exception_Handler::AddTerminatorObject(this);
+  ATOOLS::exh->AddTerminatorObject(this);
   long unsigned int points=m_n;
   m_totalxs = p_pshandler->Integrate();
   if (m_nin==2) m_totalxs /= ATOOLS::rpa.Picobarn();
@@ -968,7 +998,7 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
   SetTotal(0);
   if (m_totalxs>=0.) {
     if (points==m_n) {
-      ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+      ATOOLS::exh->RemoveTerminatorObject(this);
       return 1;
     }
     if (_resdir!=string("")) {
@@ -985,10 +1015,10 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
       p_pshandler->WriteOut(_resdir+string("/MC_")+m_name);
       to.close();
     }
-    ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+    ATOOLS::exh->RemoveTerminatorObject(this);
     return 1;
   }
-  ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+  ATOOLS::exh->RemoveTerminatorObject(this);
   return 0;      
 }
 
@@ -1034,7 +1064,7 @@ bool Single_Process::LookUpXSec(double ycut,bool calc,string obs) {
   string filename = (m_resdir+string("/Tab")+m_name+string("/")+obs).c_str();
   if (IsFile(filename)) {
     Histogram * histo = new Histogram(filename);
-    double          * res   = new double[histo->Depth()];
+    double    * res   = new double[histo->Depth()];
     histo->Extrapolate(ycut,res,1);
     m_totalxs = res[0];
     m_max     = res[1];
@@ -1136,7 +1166,10 @@ void Single_Process::ResetMax(int flag)
   for (size_t i=0;i<m_vsmax.size();i++) m_max=ATOOLS::Max(m_max,m_vsmax[i]);
 }
 
-double Single_Process::Differential(const ATOOLS::Vec4D* _moms) { return DSigma(_moms,0); }
+double Single_Process::Differential(const ATOOLS::Vec4D* _moms) 
+{ 
+  return DSigma(_moms,0); 
+}
 
 double Single_Process::Differential2() { 
   if (p_isrhandler->On()==0) return 0.;
@@ -1179,7 +1212,7 @@ double Single_Process::DSigma(const ATOOLS::Vec4D* _moms,bool lookup)
   }
   else  m_lastlumi = 1.;
 
-  return m_last = m_Norm * m_lastdxs * m_lastlumi;
+  return m_last = m_Norm * m_lastdxs * m_lastlumi*p_partner->KFactor();
 }
 
 double Single_Process::DSigma2() { 
@@ -1188,7 +1221,7 @@ double Single_Process::DSigma2() {
   }
   double tmp = m_Norm * m_lastdxs * p_isrhandler->Weight2(p_flin); 
   m_last    += tmp;
-  return tmp;
+  return tmp*p_partner->KFactor();
 }
 
 double Single_Process::operator()(const ATOOLS::Vec4D * mom)
@@ -1212,6 +1245,7 @@ double Single_Process::operator()(const ATOOLS::Vec4D * mom)
   double helvalue;
   if (p_shand->Is_String()) {
     p_shand->Calculate();
+
     if (p_hel->UseTransformation()) {
       M2 = p_ampl->Zvalue(p_hel);
     } else {
@@ -1225,6 +1259,7 @@ double Single_Process::operator()(const ATOOLS::Vec4D * mom)
     }
   }
   else {
+    // *** is this ever called ?
     for (size_t i=0;i<p_hel->MaxHel();i++) {
       if (p_hel->On(i)) {
 	helvalue = p_ampl->Differential(i,(*p_hel)[i]) * p_hel->PolarizationFactor(i);
@@ -1237,11 +1272,17 @@ double Single_Process::operator()(const ATOOLS::Vec4D * mom)
   return M2 * sqr(m_pol.Massless_Norm(m_nin+m_nout,p_flavours,p_BS));
 }
 
-ATOOLS::Spin_Correlation_Tensor* Single_Process::GetSpinCorrelations()
+// ATOOLS::Spin_Correlation_Tensor* Single_Process::GetSpinCorrelations()
+// {
+//   Spin_Correlation_Tensor* SCT = p_ampl->GetSpinCorrelations(p_hel, m_nin);
+//   if (SCT != NULL) SCT->Set_k0(p_BS->Getk0_n());
+//   return SCT;
+// }
+
+void Single_Process::FillAmplitudes(Amplitude_Tensor* atensor,double sfactor)
 {
-  Spin_Correlation_Tensor* SCT = p_ampl->GetSpinCorrelations(p_hel, m_nin);
-  if (SCT != NULL) SCT->Set_k0(p_BS->Getk0_n());
-  return SCT;
+  if (p_partner==this) p_ampl->FillAmplitudes(atensor,p_hel,sfactor);
+  else p_partner->FillAmplitudes(atensor,sfactor*sqrt(m_sfactor));
 }
 
 ATOOLS::Blob_Data_Base *Single_Process::OneEvent(double _mass) { 

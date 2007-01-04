@@ -28,7 +28,7 @@ Analysis_Handler::Analysis_Handler():
 Analysis_Handler::~Analysis_Handler()
 {
   Clean();
-  Exception_Handler::RemoveTerminatorObject(this);
+  exh->RemoveTerminatorObject(this);
 }
 
 void Analysis_Handler::Clean()
@@ -39,12 +39,12 @@ void Analysis_Handler::Clean()
   }
 }
 
-String_Matrix
-Analysis_Handler::FindArguments(const String_Matrix &strings,
+Argument_Matrix
+Analysis_Handler::FindArguments(const Argument_Matrix &strings,
 				size_t &starty,size_t &startx)
 {
   size_t j=0, open=0;
-  String_Matrix result;
+  Argument_Matrix result;
   if (strings[starty].size()>startx) j=startx;
   for (size_t i=starty;i<strings.size();++i) {
     result.push_back(std::vector<std::string>(strings[i].size()-j));
@@ -112,18 +112,16 @@ bool Analysis_Handler::ReadIn()
   bool success=false;
   std::vector<std::string> helpsv;
   std::vector<std::vector<std::string> > helpsvv;
-  Data_Reader reader;
-  reader.SetVectorType(vtc::horizontal);
-  reader.SetMatrixType(mtc::transposed);
+  Data_Reader reader(" ",";","//","=");
+  reader.AddWordSeparator("\t");
   reader.SetInputPath(InputPath());
   reader.SetInputFile(InputFile());
   reader.AddComment("#");
-  reader.AddComment("//");
   reader.SetFileBegin("BEGIN_ANALYSIS");
   reader.SetFileEnd("END_ANALYSIS");
   for (size_t i=0;i<s_maxanalyses;++i) {
     reader.SetOccurrence(i);
-    reader.RereadInFile();
+    reader.RescanInFile();
     if (!reader.VectorFromFile(helpsv,"LEVEL")) break;
     bool split=false, trigger=false;
     int mode=ANALYSIS::fill_all|ANALYSIS::splitt_jetseeds;
@@ -157,13 +155,13 @@ bool Analysis_Handler::ReadIn()
     if (!reader.ReadFromFile(outpath,"PATH_PIECE")) outpath="";
     m_analyses.back()->SetOutputPath(outpath);
     reader.MatrixFromFile(helpsvv,"");
-    String_Matrix arguments(helpsvv);
+    Argument_Matrix arguments(helpsvv);
     for (size_t k=0;k<helpsvv.size();++k) {
       if (arguments[k].size()>0) {
 	if (arguments[k][0]=="{" || arguments[k][0]=="}") continue;
       }
       size_t col=1;
-      String_Matrix mat=FindArguments(arguments,k,col);
+      Argument_Matrix mat=FindArguments(arguments,k,col);
       ANALYSIS::Primitive_Observable_Base *observable = 
 	Getter_Function::GetObject(arguments[k][0],mat(m_analyses.back()));
       if (observable!=NULL) {
@@ -185,15 +183,15 @@ bool Analysis_Handler::ReadIn()
     if (!trigger) {
       ANALYSIS::Primitive_Observable_Base *observable = 
 	Getter_Function::GetObject("Trigger",
-				   String_Matrix()(m_analyses.back()));
+				   Argument_Matrix()(m_analyses.back()));
       m_analyses.back()->AddObservable(observable);
     }
     msg_Tracking()<<"   }\n";
   }
   msg_Info()<<"}"<<std::endl;
   if (success) {
-    Exception_Handler::AddTesterObject(this);
-    Exception_Handler::AddTerminatorObject(this);
+    exh->AddTesterObject(this);
+    exh->AddTerminatorObject(this);
   }
   m_initialized=true;
   return success;
@@ -259,8 +257,8 @@ void Analysis_Handler::Finish(const std::string &path)
   }
   msg_Info()<<"}"<<std::endl;
   if (m_analyses.size()) {
-    Exception_Handler::RemoveTerminatorObject(this);
-    Exception_Handler::RemoveTesterObject(this);
+    exh->RemoveTerminatorObject(this);
+    exh->RemoveTesterObject(this);
   }
 }
 

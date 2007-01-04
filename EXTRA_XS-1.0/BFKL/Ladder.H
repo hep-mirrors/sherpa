@@ -24,23 +24,22 @@ namespace EXTRAXS {
     Vector_Vector  m_moms;
     Flavour_Vector m_flavs;
 
-    ATOOLS::Vec4D m_pa, m_pb, m_k1, m_k2, m_q, m_oldq, m_p1, m_p2, m_kn;
+    ATOOLS::Vec4D m_pa, m_pb, m_k1, m_k2, m_q, m_oldq;
 
     double m_weight, m_ya, m_yb, m_kt2min, m_q2;
-    double m_y1, m_kt21, m_phi1, m_z1, m_y, m_yn, m_s, m_lw, m_wy;
+    double m_y1, m_kt21, m_phi1, m_z1;
     double m_a1, m_a2, m_z2, m_kt22, m_mu21, m_mu22;
 
     size_t m_ncols;
 
     bool GeneratePDFJet();
     bool ConstructRung();
-    bool ConstructIncoming();
     bool GenerateLadder();
 
     double Flux() const;
     double Jacobian() const;
 
-    bool TestEmission();
+    bool CheckEnergy() const;
     bool SetScales();
 
   public:
@@ -73,9 +72,6 @@ namespace EXTRAXS {
 
     bool SelectOne();
     void DeSelect();
-
-    void AddEvent(const double xs,const double validxs,
-		  const int ncounts);
 
   };// end of class Ladder
 

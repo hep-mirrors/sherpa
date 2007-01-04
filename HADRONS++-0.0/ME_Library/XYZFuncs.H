@@ -3,8 +3,6 @@
 
 using namespace std;
 
-#include "ComplexVector.H"
-
 #ifndef SQRT_05
 #define SQRT_05 0.70710678118654757
 #endif
@@ -18,6 +16,7 @@ namespace HADRONS
     protected:    
        
       int                 m_k0n;
+      bool                m_anti;
       ATOOLS::Vec4D  	* p_mom;
       ATOOLS::Flavour   * p_flav;
 	  int                 m_N;
@@ -26,18 +25,13 @@ namespace HADRONS
 	  void CalcEtaMu();
 	  
 	public:
-      XYZFunc( int nout, const ATOOLS::Vec4D *p, const ATOOLS::Flavour *fl);
-	  XYZFunc( int nout, const ATOOLS::Vec4D *p, const ATOOLS::Flavour *fl, int k0n );
 
-      ~XYZFunc() {
-        delete [] p_mom;
-        delete [] p_flav;
-      }
-      
+	  XYZFunc( int nout, const ATOOLS::Vec4D *p, const ATOOLS::Flavour *fl, int k0_n, bool anti=false );
+
 	  void Delete()
 	  {
-// 		delete [] p_mom;
-// 		delete [] p_flav;
+		delete [] p_mom;
+		delete [] p_flav;
 	  }
 
 	  Complex Z( const int t1, const int t2, const int t3, const int t4,
@@ -57,20 +51,24 @@ namespace HADRONS
 		  const Complex cR1, const Complex cL2, 
 		  const Complex cR2, const Complex cL2 ); 
 	  Complex Y( 
-		  const int t1, const int l1, 
+		  const int t1, const int l1,
 		  const int t2, const int l2,
-		  const int t3, const int l3,
 		  const Complex cR, const Complex cL ); 
 	  Complex X( 
 		  const int t1, const int l1, 
-		  const int t2, const int l2,
+		  const int t2,
 		  const int t3, const int l3,
-		  const Complex cR, const Complex cL ); 
+		  const Complex cR, const Complex cL );
+      Complex X(
+                const int t1, const int l1,
+                const ATOOLS::Vec4D p2,
+                const int t3, const int l3,
+                const Complex cR, const Complex cL );
 	  Complex S( const int s, const int i, const int j );
       Complex S( const int s, const int i, const ATOOLS::Vec4D p, Complex eta );
       Complex S( const int s, const ATOOLS::Vec4D p, Complex eta, const int j );
 	  Complex Q(short hel); 
-      ATOOLS::ComplexVec4D L( const int t1, const int t2, const int hel_comb, const Complex cR, const Complex cL );
+
   };
 
 
@@ -78,7 +76,7 @@ namespace HADRONS
 	\file XYZFuncs.H
 	\brief Declares the class HADRONS::XYZFunc
 
-	This file can be found in directory \c ME_Library.
+	This file can be found in the directory \c ME_Library.
    */  
 
   /*!
@@ -88,12 +86,12 @@ namespace HADRONS
 	This class contains everything that is necessery to calculate the value
 	of an X, Y, or Z function, which can be used to calculate a decay matrix
 	element.
-	<b>Note!</b> Helicity combinations are coded in a binary number such that 
-	- ++++ = 0 
-	- +++- = 1 
-	- ++-+ = 2 
+	<b>Note!</b> Helicity combinations are coded in like a binary number such that 
+	- \f$++++ \equiv 0\f$ 
+	- \f$+++- \equiv 1\f$ 
+	- \f$++-+ \equiv 2\f$ 
 	- ...
-	- ---- = 15 
+	- \f$---- \equiv 15\f$ 
 	.
    */  
 
@@ -110,27 +108,31 @@ namespace HADRONS
 	\brief Calculates \f$\eta_i\f$ and \f$\mu_i\f$ for each particle
 
 	Eta's and Mu's are calcuted and stored in private attributes. For Eta's \f$k_0\f$ is set to
-	\f$k_0=(1,0,\frac{1}{\sqrt{2}},\frac{1}{\sqrt{2}})\f$.
+	\f$k_0=(1,0,\frac{1}{\sqrt{2}},\frac{1}{\sqrt{2}})\f$ if XYZFunc::m_k0n is 1 (default).
    */
 
   /*!
 	\var XYZFunc::p_mom
-
 	Pointer on involved 4-momenta.
    */
 
   /*!
 	\var XYZFunc::p_flav
-
 	Pointer on involved flavours.
    */
 
   /*!
 	\var XYZFunc::N
-
 	Number of involved particles (in- and out-particles)
    */	
-
+  /*!
+    \var XYZFunc::m_k0n
+    It is either 0, 1 or 2. The used vector \f$k_0\f$ is then either 
+    \f$k_0=(1,\frac{1}{\sqrt{2}},0,\frac{1}{\sqrt{2}})\f$,
+    \f$k_0=(1,0,\frac{1}{\sqrt{2}},\frac{1}{\sqrt{2}})\f$ or
+    \f$k_0=(1,\frac{1}{\sqrt{2}},\frac{1}{\sqrt{2}},0)\f$, respectively.
+    */
+  
 	
   
 } 

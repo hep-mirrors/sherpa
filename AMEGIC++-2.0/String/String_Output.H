@@ -20,7 +20,7 @@ class String_Output {
   void Cform(std::ofstream&,int,int,Virtual_String_Generator*,
 	     sknot***,String_Tree*,const std::string&,Helicity*);
   void Zform(std::ofstream&,int,int,Virtual_String_Generator*,String_Tree*);
-  void Make_Header(std::ofstream &,Virtual_String_Generator*);
+  void Make_Header(std::ofstream &);
   int  Line_Form(std::ofstream&,const std::string &);
   void Add_To_Set_Values();
 public:

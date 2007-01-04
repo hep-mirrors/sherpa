@@ -6,7 +6,7 @@ using namespace ANALYSIS;
 #include "MyStrStream.H"
 
 template <class Class>
-Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
+Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters)
 {									
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
@@ -48,7 +48,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
   Primitive_Observable_Base *					\
-  NAME::operator()(const String_Matrix &parameters) const		\
+  NAME::operator()(const Argument_Matrix &parameters) const		\
   { return GetObservable<CLASS>(parameters); }
 
 #define DEFINE_PRINT_METHOD(NAME)					\
@@ -56,7 +56,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
   { str<<"kf1 kf2 min max bins Lin|LinErr|Log|LogErr [list]"; }
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,Argument_Matrix);	\
   DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME)
 
@@ -201,8 +201,6 @@ Primitive_Observable_Base * Two_Particle_Angles::Copy() const
 }
 #endif
 
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 DEFINE_OBSERVABLE_GETTER(Two_Particle_Eta,Two_Particle_Eta_Getter,"Eta2")
 
 Two_Particle_Eta::Two_Particle_Eta(const Flavour & flav1,const Flavour & flav2,
@@ -224,55 +222,31 @@ Primitive_Observable_Base * Two_Particle_Eta::Copy() const
   return new Two_Particle_Eta(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
 
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 DEFINE_OBSERVABLE_GETTER(Two_Particle_DEta,Two_Particle_DEta_Getter,"DEta")
 
-Two_Particle_DEta::Two_Particle_DEta(const Flavour& flav1, const Flavour& flav2,
+Two_Particle_DEta::Two_Particle_DEta(const Flavour & flav1,const Flavour & flav2,
 				     int type,double xmin,double xmax,int nbins,
 				     const std::string & listname) :
-  Two_Particle_Observable_Base(flav1,flav2,type,xmin,xmax,
-			       nbins,listname,"deta") {
-  if(xmin<-1.0) f_spec=true; else f_spec=false;
+    Two_Particle_Observable_Base(flav1,flav2,type,xmin,xmax,nbins,listname,"deta") 
+
+{ 
 }
 
-void Two_Particle_DEta::Evaluate(const Vec4D& mom1, const Vec4D& mom2,
-				 double weight, int ncount) {
-  double deta = mom1.Eta()-mom2.Eta();
-  f_spec ?
-    p_histo->Insert(deta,weight,ncount) :
-    p_histo->Insert(abs(deta),weight,ncount);
-}
+
+void Two_Particle_DEta::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, int ncount) 
+{    
+    double deta = abs((mom1.Eta()-mom2.Eta()));
+    p_histo->Insert(deta,weight,ncount); 
+} 
 
 Primitive_Observable_Base * Two_Particle_DEta::Copy() const 
 {
-  return new Two_Particle_DEta(m_flav1,m_flav2,m_type,m_xmin,m_xmax,
-			       m_nbins,m_listname);
+    return new Two_Particle_DEta(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
-
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-DEFINE_OBSERVABLE_GETTER(Two_Particle_Y,Two_Particle_Y_Getter,"Y2")
-
-Two_Particle_Y::Two_Particle_Y(const Flavour & flav1,const Flavour & flav2,
-			       int type,double xmin,double xmax,int nbins,
-			       const std::string & listname) :
-  Two_Particle_Observable_Base(flav1,flav2,type,xmin,xmax,nbins,listname,"Y") 
-{
-}
-
-void Two_Particle_Y::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, int ncount) 
-{
-  double y = (mom1+mom2).Y();
-  p_histo->Insert(y,weight,ncount); 
-} 
-
-Primitive_Observable_Base * Two_Particle_Y::Copy() const 
-{
-  return new Two_Particle_Y(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
-}
-
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 DEFINE_OBSERVABLE_GETTER(Two_Particle_DY,Two_Particle_DY_Getter,"DY")
 

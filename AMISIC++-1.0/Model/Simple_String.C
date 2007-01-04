@@ -6,7 +6,6 @@
 #include "Run_Parameter.H"
 #include "MyStrStream.H"
 #include "Random.H"
-#include "Object.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Simple_String
@@ -66,11 +65,10 @@ bool Simple_String::Initialize()
   if (InputPath()=="" || InputFile()=="") return false;
   if (!rpa.gen.Beam1().IsHadron() ||
       !rpa.gen.Beam2().IsHadron()) return false;
-  Data_Reader *reader = new Data_Reader("=",";","!");
+  Data_Reader *reader = new Data_Reader(" ",";","!","=");
+  reader->AddWordSeparator("\t");
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
-  reader->SetVectorType(vtc::horizontal);
-  reader->SetMatrixType(mtc::transposed);
   std::vector<std::vector<std::string> > helpsvv;
   if (!reader->MatrixFromFile(helpsvv,"REGGE_TRAJECTORY")) {
     helpsvv.push_back(std::vector<std::string>(3));

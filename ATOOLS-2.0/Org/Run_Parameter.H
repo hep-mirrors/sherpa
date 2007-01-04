@@ -61,6 +61,7 @@ namespace ATOOLS {
       std::string m_username;
       double m_fac_scale_fac;
       double m_ren_scale_fac;
+      bool m_spincorrelations;
     public:
       inline long   NumberOfEvents()                      { return m_nevents; }
       inline long   NumberOfEstimatedEvents()             { return m_estimatedevents; }
@@ -77,6 +78,8 @@ namespace ATOOLS {
       inline void   SetYcut(double _ycut)                 { m_ycut    = _ycut;}
       inline double DeltaR()                              { return m_delta_r; }
       inline void   SetDeltaR(double dr)                  { m_delta_r   = dr;}
+      inline bool   SpinCorrelation()                     { return m_spincorrelations; }
+      inline void   SetSpinCorrelation(bool sc)           { m_spincorrelations   = sc;}
       inline const  Flavour Beam1()           { return m_beam1; }
       inline const  Flavour Beam2()           { return m_beam2; }
       void   SetBeam1(const Flavour b);

@@ -1,8 +1,0 @@
-Checked by fsiegert: Quite different from Pythia:
-{211,-211}       | 0.360 [Pythia]    | f01710_pi+pi-.dat;
-{111,111}        | 0.180 [Pythia]    | f01710_pipi.dat;
-{321,-321}       | 0.03 [Pythia]     | f01710_K+K-.dat;
-{130,130}        | 0.015 [Pythia]     | f01710_KLKL.dat;
-{310,310}        | 0.015 [Pythia]     | f01710_KSKS.dat;
-{211,-211,211,-211} | 0.200 [Pythia]
-{211,-211,111,111} | 0.200 [Pythia]

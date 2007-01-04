@@ -5,6 +5,7 @@
 #include "Permutation.H"
 #include "Poincare.H"
 #include "Channel_Elements.H"
+#include <stdio.h>
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -80,7 +81,6 @@ VHAAG::VHAAG(int _nin,int _nout,int pn) :
 VHAAG::~VHAAG()
 {
   delete[] p_perm;
-  delete[] rans;
   delete[] m_q;
   if (m_ownvegas) delete p_vegas;
 }
@@ -281,7 +281,6 @@ void VHAAG::SingleSplitF0(ATOOLS::Vec4D q1,ATOOLS::Vec4D q2,
 			  ATOOLS::Vec4D& p1,ATOOLS::Vec4D& p2,double *ran)
 {
   double s = (q1+q2).Abs2();
-  double v  = Vec3D(q1)*Vec3D(q2)/(q1[0]*q2[0]);
 
   double a1min = 0.5*m_s0/(q1*q2); 
   double a1max = 1.-a1min; 

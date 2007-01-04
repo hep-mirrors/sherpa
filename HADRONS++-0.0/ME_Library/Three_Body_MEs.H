@@ -9,6 +9,11 @@ namespace HADRONS {
   public:
     P_GammaFF(int,ATOOLS::Flavour *);
     double operator()(const ATOOLS::Vec4D *);
+    void   operator()( 
+        const ATOOLS::Vec4D  * _p, 
+        std::vector<Complex> * _ampls_tensor, 
+        std::vector<std::pair<int,int> > * _indices,
+        int                    k0_n );
   };
 
   class P_2PGamma : public HD_ME_Base {
@@ -64,6 +69,11 @@ namespace HADRONS {
   public:
     P_3P_Dalitz(int,ATOOLS::Flavour *);
     double operator()(const ATOOLS::Vec4D *);
+    void   operator()( 
+        const ATOOLS::Vec4D  * _p, 
+        std::vector<Complex> * _ampls_tensor, 
+        std::vector<std::pair<int,int> > * _indices,
+        int                    k0_n );
     void SetModelParameters( GeneralModel _md );
   };
 }

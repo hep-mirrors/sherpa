@@ -3,7 +3,6 @@
 #ifdef USING__ROOT
 #include "Shell_Tools.H"
 #include "TStyle.h"
-#include "TError.h"
 
 using namespace MYROOT;
 
@@ -26,8 +25,7 @@ My_Root::My_Root(const int argc,char **const argv):
 #else
   path="./";
   file="output.root";
-#endif
-  gErrorIgnoreLevel=1;
+#endif      
   SetOutputPath(path);
   SetOutputFile(file);
   int argcf=1;

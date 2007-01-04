@@ -6,7 +6,7 @@ libString_la_SOURCES = String_Handler.C String_Generator.C \
 
 pkginclude_HEADERS = String_Handler.H String_Generator.H \
                  String_Tree.H String_Output.H \
-                 MyString.H Kabbala.H Values.H String_Library.H
+	         MyString.H Kabbala.H Values.H String_Library.H
 
 INCLUDES = @AMEGICINCS@ @ATOOLSINCS@ @MODELINCS@
 

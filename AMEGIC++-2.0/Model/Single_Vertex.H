@@ -5,7 +5,6 @@
 #include "Flavour.H"
 #include "Color_Function.H"
 #include "Lorentz_Function.H"
-#include <vector>
 
 
 namespace AMEGIC {
@@ -18,7 +17,7 @@ namespace AMEGIC {
     int               ncf, nlf, t; // number of color functions, lorentz
                                    //  functions and ?
  
-    std::vector<Complex> cpl;      // coupling constants
+    Complex           cpl[4];      // coupling constants
     Color_Function*   Color;       // color structure 
     Lorentz_Function* Lorentz;     // lorentz structure
 

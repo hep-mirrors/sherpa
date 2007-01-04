@@ -32,7 +32,7 @@ double XS_qqbar_pg::operator()(double s,double t,double u) {
 } 
 
 bool XS_qqbar_pg::SetColours(double s,double t,double u) { 
-  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = (2.*s*t*u)/(s*s+t*t+u*u);
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = (2.*s*t*u)/(s*s+t*t+u*u);
   return 1; 
 }
 
@@ -56,7 +56,7 @@ double XS_qg_qp::operator()(double s,double t,double u) {
 } 
 
 bool XS_qg_qp::SetColours(double s,double t,double u) { 
-  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = (2.*s*t*u)/(s*s+t*t+u*u);
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = (2.*s*t*u)/(s*s+t*t+u*u);
   return 1; 
 }
 
@@ -90,8 +90,6 @@ XS_ee_ffbar::XS_ee_ffbar(const size_t nin,const size_t nout,const ATOOLS::Flavou
  
   alpha  = aqed->Aqed((sqr(rpa.gen.Ecms())));
   sin2tw = rpa.gen.ScalarConstant(string("sin2_thetaW"));
-  if (ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()) gammaon=true;
-  else gammaon=false;
   if (ATOOLS::Flavour(ATOOLS::kf::Z).IsOn()) 
     kappa  = 1./(4.*sin2tw*(1.-sin2tw));
   else
@@ -127,10 +125,10 @@ XS_ee_ffbar::XS_ee_ffbar(const size_t nin,const size_t nout,const ATOOLS::Flavou
 
 double XS_ee_ffbar::operator()(double s,double t,double u) {
   if (s<m_threshold) return 0.;
-  chi1  = gammaon * kappa * s * (s-MZ2)/(sqr(s-MZ2) + GZ2*MZ2);
+  chi1  = kappa * s * (s-MZ2)/(sqr(s-MZ2) + GZ2*MZ2);
   chi2  = sqr(kappa * s)/(sqr(s-MZ2) + GZ2*MZ2);
 
-  term1 = (1+sqr(1.+2.*t/s)) * (gammaon * sqr(qf*qe) + 2.*(qf*qe*vf*ve) * chi1 +
+  term1 = (1+sqr(1.+2.*t/s)) * (sqr(qf*qe) + 2.*(qf*qe*vf*ve) * chi1 +
 				(ae*ae+ve*ve) * (af*af+vf*vf) * chi2);
   term2 = (1.+2.*t/s) * (4. * qe*qf*ae*af * chi1 + 8. * ae*ve*af*vf * chi2);
 
@@ -139,7 +137,7 @@ double XS_ee_ffbar::operator()(double s,double t,double u) {
 }
 
 bool XS_ee_ffbar::SetColours(double s,double t,double u) { 
-  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = s;
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = s;
   return 1; 
 }
 

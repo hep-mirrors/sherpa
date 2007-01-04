@@ -36,7 +36,7 @@ int Timelike_Kinematics::Shuffle(Knot * const mo, const int first) const
 {
   msg_Debugging()<<METHOD<<"("<<mo->kn_no<<","<<first<<"): {\n";
   msg_Indent();
-  int stat(first?ShuffleMomenta(mo):ShuffleZ(mo));
+  int stat(first&&(mo->shower<2||mo->stat==0)?ShuffleMomenta(mo):ShuffleZ(mo));
   msg_Debugging()<<"z = "<<mo->z<<", stat = "<<stat<<"\n";
   if (stat==1) stat=UpdateDaughters(mo);
   msg_Debugging()<<"}\n";
@@ -44,12 +44,10 @@ int Timelike_Kinematics::Shuffle(Knot * const mo, const int first) const
 } 
 
 int Timelike_Kinematics::UpdateDaughters(Knot *const mo,
-					  const bool force) const
+					 const bool force) const
 {
+  msg_Debugging()<<METHOD<<"("<<mo->kn_no<<","<<force<<")\n";
   if (mo->left) {
-    mo->left->E2=sqr(mo->z)*mo->E2;
-    mo->right->E2=sqr((1.-mo->z))*mo->E2;
-    DoSingleKinematics(mo,force);
     int stat(1);
     if (mo->left->left!=NULL && mo->left->stat!=3)
       stat=Shuffle(mo->left,mo->left->left->part->Info()=='H' ||
@@ -60,25 +58,47 @@ int Timelike_Kinematics::UpdateDaughters(Knot *const mo,
 		   mo->right->right->part->Info()=='H');
     if (stat!=1) {
       msg_Debugging()<<METHOD<<"(..): shuffle failed\n";
+      mo->z=mo->zs;
+      mo->left->E2=sqr(mo->z)*mo->E2;
+      mo->right->E2=sqr((1.-mo->z))*mo->E2;
       return stat;
     }
   }
   return 1;
 }
 
-int Timelike_Kinematics::ShuffleZ(Knot * const mo) const
+int Timelike_Kinematics::GeneratePSMasses(Knot *const mo) const
 {
+  if (mo->left==NULL) return 1;
+  msg_Debugging()<<METHOD<<"(): knot "<<mo->kn_no<<"\n";
+  msg_Indent();
+  int res(1);
+  if ((res=GeneratePSMasses(mo->left))!=1) return res;
+  if ((res=GeneratePSMasses(mo->right))!=1) return res;
+  if (mo->left->left==NULL || mo->right->left==NULL) 
+    res=ShuffleMomenta(mo);
+  mo->CheckMomentumConservation(); 
+  return res;
+}
+
+int Timelike_Kinematics::ShuffleZ(Knot * const mo,const bool update) const
+{
+  msg_Debugging()<<METHOD<<"("<<mo->kn_no<<")\n";
+  msg_Indent();
   double t(mo->t);
   double t1(mo->left->stat!=3?mo->left->t:mo->left->tout); 
   double t2(mo->right->stat!=3?mo->right->t:mo->right->tout); 
+  double t01(mo->left->tout), t02(mo->right->tout);
+  if (mo->shower==3) t=mo->tmo;
+  if (mo->left->shower==3) t01=t1=mo->left->tmo;
+  if (mo->right->shower==3) t02=t2=mo->right->tmo;
   msg_Debugging()<<"t = "<<t<<", t_1 = "<<t1<<", t_2 = "<<t2<<"\n";
   if (t1+t2+2.0*sqrt(t1*t2)-t>rpa.gen.Accu()) {
     msg_Debugging()<<METHOD<<"(..): Missing mass. m_a = "<<sqrt(t)
 		   <<", m_b "<<sqrt(t1)<<", m_c = "<<sqrt(t2)<<std::endl;
     return 0; 
   }
-  double t01(mo->left->tout), t02(mo->right->tout);
-  msg_Debugging()<<"z = "<<mo->zs<<", t0_1 = "<<t1<<", t0_2 = "<<t2<<"\n";
+  msg_Debugging()<<"z = "<<mo->zs<<", t0_1 = "<<t01<<", t0_2 = "<<t02<<"\n";
   mo->z=GetZ(mo->zs,t,t1,t2,t01,t02);
   if (!CheckKinematics(mo,0)) {
     mo->z=mo->zs;
@@ -95,25 +115,36 @@ int Timelike_Kinematics::ShuffleZ(Knot * const mo) const
 		 <<", E_1 = "<<sqrt(mo->left->E2)<<", E_2 = "
 		 <<sqrt(mo->right->E2)<<", E = "<<sqrt(mo->E2)<<"\n";
   if (mo->left->part->Info()!='H') mo->right->didkin=mo->left->didkin=false;
+  DoSingleKinematics(mo,true);
+  if (update) {
+    if (!BoostDaughters(mo)) return 0;
+    Tree::UpdateDaughters(mo);
+  }
+  mo->CheckMomentumConservation();
   return 1;
 }
 
-int Timelike_Kinematics::ShuffleMomenta(Knot *const mo) const
+int Timelike_Kinematics::ShuffleMomenta(Knot *const mo,const bool update) const
 { 
+  msg_Debugging()<<METHOD<<"("<<mo->kn_no<<")\n";
+  msg_Indent();
   Knot *d1(mo->left), *d2(mo->right);
   double t1(mo->left->stat!=3?mo->left->t:mo->left->tout); 
   double t2(mo->right->stat!=3?mo->right->t:mo->right->tout); 
-  double ta(mo->part->Momentum().Abs2());
-  if (dabs((mo->t-ta)/mo->t)>1.e-7) {
+  if (mo->left->shower==3) t1=mo->left->tmo;
+  if (mo->right->shower==3) t2=mo->right->tmo;
+  double t(mo->part->Momentum().Abs2());
+  if (dabs((mo->t-t)/mo->t)>1.e-7 && mo->shower!=2) {
     msg.Error()<<METHOD<<"(..): Inconsistent masses. t = "<<mo->t
-	       <<", p^2 = "<<ta<<std::endl;
+	       <<", p^2 = "<<t<<std::endl;
+    mo->t=t;
   }
-  double t(mo->t=ta);
   if (t1+t2+2.0*sqrt(t1*t2)-t>rpa.gen.Accu()) {
-    msg_Debugging()<<"missing mass\n";
+    msg_Debugging()<<"missing mass "<<(t1+t2+2.0*sqrt(t1*t2))
+		   <<" vs. "<<t<<"\n";
     return 0;
   }
-  double r1(0.0), r2(0.0), z(mo->zs);
+  double r1(0.0), r2(0.0), z(mo->z);
   Vec4D p1(d1->part->Momentum()), p2(d2->part->Momentum());
   if ((t1+p1.Abs2())/d1->E2>rpa.gen.Accu() || 
       (t2+p2.Abs2())/d2->E2>rpa.gen.Accu()) {
@@ -135,19 +166,15 @@ int Timelike_Kinematics::ShuffleMomenta(Knot *const mo) const
     r2=(t-t2+t1-lambda)/(2.0*t);
     mo->z=z-r1*z+r2*(1.0-z);
   } 
-  if (dabs(mo->z/z-1.0) < rpa.gen.Accu()) {
-    msg_Debugging()<<"shift unnecessary\n";
-    BoostDaughters(mo);
-    Tree::UpdateDaughters(mo);
-    return 1;
-  }
   if (!CheckKinematics(mo,1)) {
     msg_Debugging()<<"kinematics check failed "<<mo->z<<" "<<z<<std::endl;
     mo->z = z;
     return 0;
   }
   msg_Debugging()<<"z = "<<mo->z<<", p_1 = "<<d1->part->Momentum()
-		 <<", p_2 = "<<d2->part->Momentum()<<"\n";
+		 <<" "<<d1->part->Momentum().Abs2()
+		 <<", p_2 = "<<d2->part->Momentum()
+		 <<" "<<d2->part->Momentum().Abs2()<<"\n";
   msg_Debugging()<<"p-p_1-p_2, old = "<<(mo->part->Momentum()-
 					 d1->part->Momentum()-
 					 d2->part->Momentum())<<"\n";
@@ -159,9 +186,20 @@ int Timelike_Kinematics::ShuffleMomenta(Knot *const mo) const
 					 d1->part->Momentum()-
 					 d2->part->Momentum())<<"\n";
   msg_Debugging()<<"z = "<<mo->z<<", p_1 = "<<d1->part->Momentum()
-		 <<", p_2 = "<<d2->part->Momentum()<<"\n";
-  BoostDaughters(mo);
-  Tree::UpdateDaughters(mo);
+		 <<" "<<d1->part->Momentum().Abs2()
+		 <<", p_2 = "<<d2->part->Momentum()<<" "
+		 <<d2->part->Momentum().Abs2()<<"\n";
+  if (update) {
+    if (!BoostDaughters(mo)) {
+      mo->z=mo->zs;
+      d1->part->SetMomentum(p1);
+      d2->part->SetMomentum(p2);
+      d1->E2=mo->z*mo->z*mo->E2;
+      d2->E2=(1.0-mo->z)*(1.0-mo->z)*mo->E2;
+      return 0;
+    }
+    Tree::UpdateDaughters(mo);
+  }
   return 1;
 }
 
@@ -171,8 +209,12 @@ bool Timelike_Kinematics::CheckKinematics(Knot *const mo,
   Knot *d1(mo->left), *d2(mo->right);
   if (d1==NULL || d2==NULL) return true;
   double E12(mo->z*mo->z*mo->E2), E22((1.0-mo->z)*(1.0-mo->z)*mo->E2);
+  double t(mo->t);
   double t1(mo->left->stat!=3?mo->left->t:mo->left->tout); 
   double t2(mo->right->stat!=3?mo->right->t:mo->right->tout); 
+  if (mo->shower==3) t=mo->tmo;
+  if (mo->left->shower==3) t1=mo->left->tmo;
+  if (mo->right->shower==3) t2=mo->right->tmo;
   // timelike daughters 
   if (t1>E12 || t2>E22) {
     msg_Debugging()<<"timelike daughters\n";
@@ -180,11 +222,11 @@ bool Timelike_Kinematics::CheckKinematics(Knot *const mo,
   }
   double p1p2(sqrt((E12-t1)*(E22-t2)));
   // triangular three momementum relation     
-  if (mo->E2-mo->t-(E12-t1+E22-t2+2.0*p1p2)>rpa.gen.Accu()) {
+  if (mo->E2-t-(E12-t1+E22-t2+2.0*p1p2)>rpa.gen.Accu()) {
     msg_Debugging()<<"three momentum\n";
     return false;
   }
-  double costh((2.0*mo->z*(1.0-mo->z)*mo->E2-mo->t+t1+t2)/(2.0*p1p2)); 
+  double costh((2.0*mo->z*(1.0-mo->z)*mo->E2-t+t1+t2)/(2.0*p1p2)); 
   // physical opening angle
   if (dabs(costh)>1.0 && !first) {
     msg_Debugging()<<"|cos| > 1\n";
@@ -195,8 +237,8 @@ bool Timelike_Kinematics::CheckKinematics(Knot *const mo,
   mo->costh=costh;
   // physical deflection angle
   double costh1(-1.0);
-  if (!IsZero(mo->E2-mo->t)) {
-    costh1=(2.0*mo->z*mo->E2-mo->t-t1+t2)/(2.0*sqrt((mo->E2-mo->t)*(E12-t1)));
+  if (!IsZero(mo->E2-t)) {
+    costh1=(2.0*mo->z*mo->E2-t-t1+t2)/(2.0*sqrt((mo->E2-t)*(E12-t1)));
   }
   if (dabs(costh1)>1.0+rpa.gen.Accu()) {
     msg_Debugging()<<" |cos_1| = "<<costh1<<"\n";
@@ -210,39 +252,19 @@ bool Timelike_Kinematics::DoSingleKinematics(Knot * const mo,
 {
   msg_Debugging()<<METHOD<<"("<<mo->kn_no<<","<<force<<"): "
 		 <<mo->left->didkin<<"\n";
-  if (!mo->left->didkin || force) {
+  msg_Indent();
+  if (!mo->left->didkin || !mo->right->didkin || force) {
     Vec4D p1, p2;
     ConstructVectors(mo,p1,p2);
     mo->left->part->SetMomentum(p1);
     mo->right->part->SetMomentum(p2);
   }
-  int error(0);
+  if (!mo->CheckMomentumConservation()) return false;
   if (!CheckVector(mo->part->Momentum()) || 
       !CheckVector(mo->left->part->Momentum()) || 
-      !CheckVector(mo->right->part->Momentum())) error=1;
-  if (!(mo->left->part->Momentum()+mo->right->part->Momentum()==
-	mo->part->Momentum())) error=2;
-  if (mo->left->part->Momentum().Nan()) error=3;
-  if (error>0) {
-    int op(msg.Error().precision(6));
-    msg.Error()<<"Timelike_Kinematics::DoKinematics("<<mo->kn_no<<"): "
-	       <<"Error "<<error<<": Momentum conservation violated.\n"
-	       <<"   p      = "<<mo->part->Momentum()<<" -> "
-	       <<mo->part->Momentum().Abs2()<<" vs. "<<mo->t
-	       <<" ("<<mo->part->Flav()<<","
-	       <<mo->part->Info()<<","<<mo->stat<<")\n"
-	       <<"   p_1    = "<<mo->left->part->Momentum()<<" -> "
-	       <<mo->left->part->Momentum().Abs2()<<" vs. "
-	       <<mo->left->t<<" ("<<mo->left->part->Flav()<<","
-	       <<mo->left->part->Info()<<","<<mo->left->stat<<")\n"
-	       <<"   p_2    = "<<mo->right->part->Momentum()<<" -> "
-	       <<mo->right->part->Momentum().Abs2()<<" vs. "
-	       <<mo->right->t<<" ("<<mo->right->part->Flav()<<","
-	       <<mo->right->part->Info()<<","<<mo->right->stat<<")\n"
-	       <<"   p_miss = "<<(mo->part->Momentum()-
-				  mo->left->part->Momentum()-
-				  mo->right->part->Momentum())<<std::endl;
-    msg.Error().precision(op);
+      !CheckVector(mo->right->part->Momentum())) {
+    msg.Error()<<METHOD<<"(): Constructed negative energy momentum."
+	       <<std::endl;
     return false;
   }
   return true;
@@ -279,32 +301,68 @@ ConstructVectors(Knot *const mo,Vec4D &p1vec,Vec4D &p2vec) const
   double p(sqrt(mo->E2-mo->t));
   double E12(mo->left->E2), E22(mo->right->E2);
   double t1(mo->left->stat!=3?mo->left->t:mo->left->tout); 
-  double t2(mo->right->stat!=3?mo->right->t:mo->right->tout); 
-  msg_Debugging()<<"construct, t_1 = "<<t1<<" <- "<<mo->left->t
-		 <<", t_2 = "<<t2<<" <- "<<mo->right->t<<"\n";
-  double p1(sqrt(E12-t1)), p2(sqrt(E22-t2));
-  msg_Debugging()<<"construct, p_1 = "<<p1<<", p_2 = "<<p2<<", p = "<<p<<"\n";
-  Vec3D n1,n2;
-  ConstructDreiBein(mo,n1,n2);
-  double phi(mo->phi + mo->polinfo.Angle()), bph(cos(phi)), cph(-sin(phi));
-  Vec3D es(cph*n1 + bph*n2);
-  double cth1((p*p-p2*p2+p1*p1)/(2.*p*p1)), sth1(sqrt(1.-sqr(cth1)));
-  if (!(sth1>0.0) && IsZero(cth1-1.0)) sth1=0.0;
-  double cth2((p*p+p2*p2-p1*p1)/(2.*p*p2)), sth2(sqrt(1.-sqr(cth2)));
-  if (!(sth2>0.0) && IsZero(cth2-1.0)) sth2=0.0;
-  mo->costh=cth1*cth2-sth1*sth2;
-  Vec3D nm(mo->part->Momentum());
-  nm=1.0/nm.Abs()*nm;
-  p1vec=Vec4D(sqrt(E12),p1*(cth1*nm - sth1*es));
-  p2vec=Vec4D(sqrt(E22),p2*(cth2*nm + sth2*es));
-  if (p1vec.Nan() || p2vec.Nan()) {
-    msg.Error()<<METHOD<<"("<<mo->kn_no<<"): Error."<<std::endl;
-    msg_Debugging()<<"mo = "<<*mo;
-    msg_Debugging()<<"d1 = "<<*mo->left;
-    msg_Debugging()<<"d2 = "<<*mo->right;
-    msg_Debugging()<<nm<<" "<<es<<" "<<phi<<" "
-		   <<cth1-1.0<<" "<<cth2-1.0<<" "
-		   <<sth1<<" "<<sth2<<std::endl;
+  double t2(mo->right->stat!=3?mo->right->t:mo->right->tout);
+  if (mo->shower==3) p=sqrt(mo->E2-mo->tmo);
+  if (mo->left->shower==3) t1=mo->left->tmo;
+  if (mo->right->shower==3) t2=mo->right->tmo;
+  msg_Debugging()<<"construct "<<mo->kn_no<<", t_1 = "<<t1<<"("
+		 <<mo->left->kn_no<<","<<mo->left->part->Info()
+		 <<") <- "<<mo->left->t<<", t_2 = "<<t2<<"("<<mo->right->kn_no
+		 <<","<<mo->right->part->Info()<<") <- "<<mo->right->t<<"\n";
+  if (mo->left->part->Info()=='H' && mo->right->part->Info()=='H') {
+    Vec4D p(mo->part->Momentum());
+    Vec4D p1(mo->left->part->Momentum()), p2(mo->right->part->Momentum());
+    double ap(p.PSpat());
+    double kt(sqrt(GetRelativeKT2(mo->z,mo->E2,mo->t,t1,t2)));
+    Vec4D l(0.0,1.0/ap*(Vec3D)p), t(0.0,(Vec3D)(p1-(p1*l)*l));
+    t=1.0/t.PSpat()*t;
+    if (p1.PSpat2()>p2.PSpat2()) {
+      double lf(sqrt(E12-kt*kt));
+      p1vec=kt*t+lf*l;
+      p2vec=(-kt)*t+(ap-lf)*l;
+    }
+    else {
+      double lf(sqrt(E22-kt*kt));
+      p2vec=(-kt)*t+lf*l;
+      p1vec=kt*t+(ap-lf)*l;
+    }
+    p1vec[0]=sqrt(E12);
+    p1vec[1]=sqrt(E22);
+    msg_Debugging()<<"old p_1 = "<<mo->left->part->Momentum()
+		   <<", p_2 = "<<mo->right->part->Momentum()<<"\n";
+    msg_Debugging()<<"new p_1 = "<<p1vec<<", p_2 = "<<p2vec<<"\n";
+    if (p!=p1vec+p2vec) {
+      msg.Error()<<METHOD<<"(..): Four momentum not conserved.\n"
+		 <<"  p_miss  = "<<(p1vec+p2vec-p)<<"\n"
+		 <<"  p_old   = "<<(p1+p2)<<" "<<(p1+p2).Abs2()<<"\n"
+		 <<"  p_new   = "<<(p1vec+p2vec)
+		 <<" "<<(p1vec+p2vec).Abs2()<<std::endl;
+    }
+  }
+  else {
+    Vec3D n1,n2;
+    ConstructDreiBein(mo,n1,n2);
+    double p1(sqrt(E12-t1)), p2(sqrt(E22-t2));
+    msg_Debugging()<<"construct, p_1 = "<<p1<<", p_2 = "<<p2<<", p = "<<p<<"\n";
+    double phi(mo->phi + mo->polinfo.Angle()), bph(cos(phi)), cph(-sin(phi));
+    Vec3D es(cph*n1 + bph*n2);
+    double cth1((p*p-p2*p2+p1*p1)/(2.*p*p1)), sth1(sqrt(1.-sqr(cth1)));
+    if (!(sth1>0.0) && IsZero(cth1-1.0)) sth1=0.0;
+    double cth2((p*p+p2*p2-p1*p1)/(2.*p*p2)), sth2(sqrt(1.-sqr(cth2)));
+    if (!(sth2>0.0) && IsZero(cth2-1.0)) sth2=0.0;
+    mo->costh=cth1*cth2-sth1*sth2;
+    Vec3D nm(mo->part->Momentum());
+    nm=1.0/nm.Abs()*nm;
+    p1vec=Vec4D(sqrt(E12),p1*(cth1*nm - sth1*es));
+    p2vec=Vec4D(sqrt(E22),p2*(cth2*nm + sth2*es));
+    if (p1vec.Nan() || p2vec.Nan()) {
+      msg.Error()<<METHOD<<"("<<mo->kn_no<<"): Error."<<std::endl
+		 <<"mo = "<<*mo<<"d1 = "<<*mo->left<<"d2 = "<<*mo->right
+		 <<"n = "<<nm<<", e = "<<es<<"\nphi = "
+		 <<phi<<" <- "<<mo->phi<<" ("<<mo->polinfo.Angle()<<")"
+		 <<"sth_1 = "<<sth1<<" <- "<<cth1-1.0<<", sth_2 = "
+		 <<sth2<<" <- "<<cth2-1.0<<std::endl;
+    }
   }
 }
 
@@ -341,32 +399,90 @@ ConstructDreiBein(Knot *const mo,Vec3D &n1,Vec3D &n2) const
   n2=n2/n2.Abs();
 }
 
-void Timelike_Kinematics::BoostDaughters(Knot * const mo) const
+bool Timelike_Kinematics::BoostDaughter(Knot * const d) const
 {
-  msg_Debugging()<<METHOD<<"("<<mo->kn_no<<"):\n";
+  msg_Debugging()<<METHOD<<"("<<d->kn_no<<"): "
+		 <<d->kn_no<<"->("<<(d->left?d->left->kn_no:0)
+		 <<","<<(d->right?d->right->kn_no:0)<<")\n";
   msg_Indent();
+  if (d->left && d->left->shower==3) {
+    if (!ShuffleZ(d,false)) return false;
+    if (!ReconstructDaughter(d->left)) return false;
+  }
+  if (d->left && d->left->part->Momentum()!=Vec4D()) {
+    Poincare cms(d->left->part->Momentum()+d->right->part->Momentum());
+    Poincare cmsp(d->part->Momentum());
+    cmsp.Invert();
+    Tree::BoRo(cms,d->left);
+    Tree::BoRo(cms,d->right);
+    Tree::BoRo(cmsp,d->left);
+    Tree::BoRo(cmsp,d->right);
+//     d->CheckMomentumConservation();
+  }
+  return true;
+}
+
+bool Timelike_Kinematics::ReconstructDaughter(Knot * const d) const
+{
+  Knot *d1(d->left), *d2(d->right);
+  msg_Debugging()<<METHOD<<"("<<d->kn_no<<"): "
+		 <<d->kn_no<<"->("<<(d1?d1->kn_no:0)
+		 <<","<<(d2?d2->kn_no:0)<<")\n";
+  msg_Indent();
+  Vec4D op1(d1->part->Momentum()), op2(d2->part->Momentum());
+  Poincare cms(op1+op2);
+  Poincare cmsp(d->part->Momentum());
+  cmsp.Invert();
+  msg_Debugging()<<"lab: p1 = "<<d1->part->Momentum()
+		 <<", p2 = "<<d2->part->Momentum()<<"\n";
+  Tree::BoRo(cms,d1);
+  Tree::BoRo(cms,d2);
+  msg_Debugging()<<"cms: p1 = "<<d1->part->Momentum()
+		 <<", p2 = "<<d2->part->Momentum()<<"\n";
+  Vec3D n(d1->part->Momentum());
+  n=1.0/n.Abs()*n;
+  double s1(d1->part->Momentum().Abs2()), s2(d2->part->Momentum().Abs2());
+  double s(d->t), eps(0.5*(s+s1-s2)/s), pi2(eps*eps-s1/s);
+  if (pi2<0.0) {
+    msg.Error()<<METHOD<<"(): Cannot construct new cms."<<std::endl;
+    abort();
+  }
+  double z(eps+sqrt(pi2)), Q(sqrt(d->t));
+  msg_Debugging()<<"now: n = "<<n<<" "<<n.Abs()<<", z = "<<z
+		 <<", Q = "<<Q<<", s1 = "<<s1<<", s2 = "<<s2<<"\n";
+  double p1p(z*Q), p1m(s1/p1p);
+  Vec4D p1(0.5*(p1p+p1m),0.5*(p1p-p1m)*n);
+  d1->part->SetMomentum(p1);
+  d2->part->SetMomentum(Vec4D(Q,0.0,0.0,0.0)-p1);
+  msg_Debugging()<<"new cms: p1 = "<<d1->part->Momentum()
+		 <<" "<<d1->part->Momentum().Abs2()
+		 <<", p2 = "<<d2->part->Momentum()
+		 <<" "<<d2->part->Momentum().Abs2()<<"\n";
+  if (!BoostDaughter(d1) || !BoostDaughter(d2)) {
+    d1->part->SetMomentum(op1);
+    d2->part->SetMomentum(op2);
+    return false;
+  }
+  d1->CheckMomentumConservation();
+  d2->CheckMomentumConservation();
+  Tree::BoRo(cmsp,d1);
+  Tree::BoRo(cmsp,d2);
+  msg_Debugging()<<"new lab: p1 = "<<d1->part->Momentum()
+		 <<", p2 = "<<d2->part->Momentum()<<"\n";
+  d->CheckMomentumConservation();
+  return true;
+}
+
+bool Timelike_Kinematics::BoostDaughters(Knot * const mo) const
+{
   Knot *d1(mo->left), *d2(mo->right);
-  if (d1->left && d1->left->part->Momentum()!=Vec4D()) {
-    Poincare cms(d1->left->part->Momentum()+d1->right->part->Momentum());
-    Poincare cmsp(d1->part->Momentum());
-    cmsp.Invert();
-    Tree::BoRo(cms,d1->left);
-    Tree::BoRo(cms,d1->right);
-    Tree::BoRo(cmsp,d1->left);
-    Tree::BoRo(cmsp,d1->right);
-    d1->CheckMomentumConservation();
-  }
-  if (d2->left && d2->left->part->Momentum()!=Vec4D()) {
-    Poincare cms(d2->left->part->Momentum()+d2->right->part->Momentum());
-    Poincare cmsp(d2->part->Momentum());
-    cmsp.Invert();
-    Tree::BoRo(cms,d2->left);
-    Tree::BoRo(cms,d2->right);
-    Tree::BoRo(cmsp,d2->left);
-    Tree::BoRo(cmsp,d2->right);
-    d2->CheckMomentumConservation();
-  }
+  msg_Debugging()<<METHOD<<"("<<mo->kn_no<<"): d1 = "
+		 <<d1->kn_no<<", d2 = "<<d2->kn_no<<"\n";
+  msg_Indent();
+  if (!BoostDaughter(d1)) return false;
+  if (!BoostDaughter(d2)) return false;
   mo->CheckMomentumConservation();
+  return true;
 }
 
 double Timelike_Kinematics::GetOpeningAngle(Knot *const knot) const

@@ -23,11 +23,11 @@ namespace APACIC {
 
     int m_cpl_scheme, m_evolution_scheme, m_ordering_scheme;
     int m_mass_scheme, m_width_scheme, m_zrange_scheme;
-    int m_mecorr_scheme,m_direct_photons,m_azimuthal_correlation;
-    int m_last_veto, m_mode;
+    int m_mecorr_scheme,m_qed_mecorr_scheme,m_direct_photons,m_azimuthal_correlation;
+    int m_last_veto, m_mode, m_shower, m_kt_scheme;
   
     double m_E2, m_t, m_tb, m_tc, m_z, m_phi, m_pt2;
-    double m_maxpt, m_rscalefac;
+    double m_maxpt, m_rscalefac, m_oldt;
 
     std::vector<int> m_vetos[2];
 
@@ -44,9 +44,9 @@ namespace APACIC {
 
     bool Veto(Knot *const mo, double ta, double wa); 
 
-    bool CplVeto();
+    bool CplVeto(double t);
     bool OrderingVeto(Knot *const mo,double ta,double wa,double z);
-    bool MEVeto(Knot *const mo);
+    bool MEVeto(Knot *const mo,double t);
     bool MassVeto(double ta,double wa);
 
     double UniformPhi() const;
@@ -89,14 +89,20 @@ namespace APACIC {
     { m_width_scheme=scheme; }
     inline void SetMECorrectionScheme(const int scheme) 
     { m_mecorr_scheme=scheme; }
+    inline void SetQEDMECorrectionScheme(const int scheme) 
+    { m_qed_mecorr_scheme=scheme; }
     inline void SetQEDScheme(const int scheme)          
     { m_direct_photons=scheme; }
     inline void SetCorrelationScheme(const int scheme)  
     { m_azimuthal_correlation=scheme; }
+    inline void SetKTScheme(const int scheme)  
+    { m_kt_scheme=scheme; }
 
     inline void SetScaleFactor(const double &fac) { m_rscalefac=fac;   }
     inline void SetPT2MinQED(const double &pt2)   
     { m_t0_qed=4.0*(m_pt2min_qed=pt2); }
+
+    inline int OrderingScheme() const { return m_ordering_scheme; }
 
     inline double ScaleFactor() const { return m_rscalefac; }
     inline double PT2Min() const      { return m_pt2min;    }

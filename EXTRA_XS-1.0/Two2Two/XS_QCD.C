@@ -50,7 +50,7 @@ double XS_pp_ffbar::operator()(double s,double t,double u)
 
 bool XS_pp_ffbar::SetColours(double s,double t,double u) 
 { 
-  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = s;
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = s;
   return 1; 
 }
 
@@ -93,7 +93,7 @@ bool XS_q1q2_q1q2::SetColours(double s,double t,double u)
 { 
   bool swap=m_swaped;
   RestoreInOrder();
-  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = 2.0*(s*t*u)/(s*s+t*t+u*u);
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = 2.0*(s*t*u)/(s*s+t*t+u*u);
   int r = !(p_flavours[0] == p_flavours[2]);
   if (a==p) {
     /*
@@ -107,7 +107,7 @@ bool XS_q1q2_q1q2::SetColours(double s,double t,double u)
     */
     p_colours[0][a] = p_colours[3-r][a] = Flow::Counter();
     p_colours[1][a] = p_colours[2+r][a] = Flow::Counter();
-    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = u;
+    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
     msg_Debugging()<<"xs: qq'->qq', set scale u "<<u<<"\n";
   }
   else {
@@ -122,7 +122,7 @@ bool XS_q1q2_q1q2::SetColours(double s,double t,double u)
     */
     p_colours[0][a]   = p_colours[1][p]   = Flow::Counter();
     p_colours[2+r][a] = p_colours[3-r][p] = Flow::Counter();
-    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = s;
+    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
     msg_Debugging()<<"xs: qqb'->qqb', set scale s "<<s<<"\n";
   }
   if (swap) SwapInOrder();
@@ -173,7 +173,7 @@ bool XS_q1qbar1_q2qbar2::SetColours(double s,double t,double u)
 { 
   bool swap=m_swaped;
   RestoreInOrder();
-  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = 2.0*(s*t*u)/(s*s+t*t+u*u);
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = 2.0*(s*t*u)/(s*s+t*t+u*u);
   int r = !(p_flavours[0].IsAnti() == p_flavours[2].IsAnti());
   /*
     0\         /2, if fl[0].IsAnti()==fl[2].IsAnti()
@@ -187,7 +187,7 @@ bool XS_q1qbar1_q2qbar2::SetColours(double s,double t,double u)
   p_colours[0][a] = p_colours[2+r][a] = Flow::Counter();
   p_colours[1][p] = p_colours[3-r][p] = Flow::Counter();
 
-  m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = t;
+  m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
     msg_Debugging()<<"xs: qqb->q'qb', set scale t "<<t<<"\n";
   if (swap) SwapInOrder();
   return 1; 
@@ -238,17 +238,17 @@ bool XS_q1q1_q1q1::SetColours(double s, double t, double u)
 {
   bool swap=m_swaped;
   RestoreInOrder();
-  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = 2.0*(s*t*u)/(s*s+t*t+u*u);
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = 2.0*(s*t*u)/(s*s+t*t+u*u);
   
   Mt      = 1. - 2.*(u*s) / (t*t);
   Mu      = 1. - 2.*(s*t) / (u*u);
   
   if (Mt > (Mt+Mu) * ran.Get()) {
-    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = u;
+    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
     msg_Debugging()<<"xs: qq->qq, set scale u "<<u<<"\n";
   }
   else {
-    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = t;
+    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
     msg_Debugging()<<"xs: qq->qq, set scale t "<<t<<"\n";
   }
   bool result=SetColours();
@@ -334,17 +334,17 @@ double XS_q1qbar1_q1qbar1::operator()(double s,double t,double u) {
 bool XS_q1qbar1_q1qbar1::SetColours(double s, double t, double u) {
   bool swap=m_swaped;
   RestoreInOrder();
-  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = 2.0*(s*t*u)/(s*s+t*t+u*u);
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = 2.0*(s*t*u)/(s*s+t*t+u*u);
 
   Mt = 1. - 2.*(u*s)/(t*t); 
   Ms = 1. - 2.*(t*u)/(s*s); 
 
   if (Ms >  (Mt+Ms) * ran.Get()) {
-    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = t;
+    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
     msg_Debugging()<<"xs: qqb->qqb, set scale t "<<t<<"\n";
   }
   else {
-    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = s;
+    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
     msg_Debugging()<<"xs: qqb->qqb, set scale s "<<s<<"\n";
   }
   bool result=SetColours();
@@ -428,19 +428,17 @@ double XS_q1qbar1_gg::operator()(double s,double t,double u) {
 bool XS_q1qbar1_gg::SetColours(double s, double t, double u) {
   bool swap=m_swaped;
   RestoreInOrder();
-  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = 2.0*(s*t*u)/(s*s+t*t+u*u);
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = 2.0*(s*t*u)/(s*s+t*t+u*u);
 
   Mt    = u/t;
   Mu    = t/u;
 
   if (Mt > (Mt+Mu) * ran.Get()) {
-    m_scale[PHASIC::stp::sfs] = s;
-    m_scale[PHASIC::stp::sis] = t;
+    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
     msg_Debugging()<<"xs: qqb->gg, set scale s/t "<<s<<"/"<<t<<"\n";
   }
   else {
-    m_scale[PHASIC::stp::sfs] = s;
-    m_scale[PHASIC::stp::sis] = u;
+    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
     msg_Debugging()<<"xs: qqb->gg, set scale s/u "<<s<<"/"<<u<<"\n";
   }
   bool result=SetColours();
@@ -526,19 +524,17 @@ double XS_gg_q1qbar1::operator()(double s,double t,double u) {
 bool XS_gg_q1qbar1::SetColours(double s, double t, double u) {
   bool swap=m_swaped;
   RestoreInOrder();
-  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = (2.*s*t*u)/(s*s+t*t+u*u);
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = (2.*s*t*u)/(s*s+t*t+u*u);
 
   Mt      = u/t;
   Mu      = t/u;
 
   if (Mt*(1-r) +Mu*r > (Mt+Mu) * ran.Get()) {
-    m_scale[PHASIC::stp::sfs] = t;
-    m_scale[PHASIC::stp::sis] = s;
+    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
     msg_Debugging()<<"xs: gg->qqb, set scale t/s "<<t<<"/"<<s<<"\n";
   }
   else {
-    m_scale[PHASIC::stp::sfs] = u;
-    m_scale[PHASIC::stp::sis] = s;
+    m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
     msg_Debugging()<<"xs: gg->qqb, set scale u/s "<<u<<"/"<<s<<"\n";
   }
   bool result=SetColours();
@@ -648,7 +644,7 @@ bool XS_q1g_q1g::SetColours(double s, double t, double u)
 {
   bool swap=m_swaped;
   RestoreInOrder();
-  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = (2.*s*t*u)/(s*s+t*t+u*u);
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = (2.*s*t*u)/(s*s+t*t+u*u);
   if (swap_ut) {
     Ms      = t/s;
     Mu      = s/t;
@@ -659,21 +655,21 @@ bool XS_q1g_q1g::SetColours(double s, double t, double u)
   }
   if (Mu > (Ms+Mu) * ran.Get()) {
     if (dabs(t)>dabs(u)) {
-      m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = t;
+      m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
       msg_Debugging()<<"xs: qg->qg, set scale t "<<t<<"\n";
     }
     else {
-      m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = u;
+      m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
       msg_Debugging()<<"xs: qg->qg, set scale u "<<u<<"\n";
     }
   }
   else {
     if (dabs(t)>s) {
-      m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = t;
+      m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
       msg_Debugging()<<"xs: qg->qg, set scale t "<<t<<"\n";
     }
     else {
-      m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = s;
+      m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
       msg_Debugging()<<"xs: qg->qg, set scale s "<<s<<"\n";
     }
   }
@@ -760,13 +756,13 @@ double XS_gg_gg::operator()(double s,double t,double u) {
 bool XS_gg_gg::SetColours(double s, double t, double u) {
   bool swap=m_swaped;
   RestoreInOrder();
-  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = (2.*s*t*u)/(s*s+t*t+u*u);
+  m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = (2.*s*t*u)/(s*s+t*t+u*u);
   
   Mu      = 1 + t*t/(u*s) - s*t/(u*u) - t*u/(s*s);
   Ms      = 1 + s*s/(t*u) - s*t/(u*u) - u*s/(t*t);
   Mt      = 1 + u*u/(s*t) - u*s/(t*t) - t*u/(s*s);
 
-  m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = s;
+  m_scale[PHASIC::stp::sfs] = m_scale[PHASIC::stp::sis] = pow(s*t*u,1.0/3.0);
   msg_Debugging()<<"xs: gg->gg, set scale s "<<s<<"\n";
 
   bool result=SetColours();

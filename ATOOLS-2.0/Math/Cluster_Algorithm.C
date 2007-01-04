@@ -42,6 +42,7 @@ Cluster(const double &crit,const cs::code &code)
   m_r.clear();
   m_lp.clear();
   if (m_n==0) return false;
+  if (code==cs::num && m_n<=crit) return ArrangePoints();
   while (true) {
     m_r.push_back(m_dmin);
     size_t iimin(m_i[m_imin]), ijmin(m_i[m_jmin]);
@@ -57,7 +58,7 @@ Cluster(const double &crit,const cs::code &code)
     }
     for (size_t i(m_jmin+1);i<m_n;++i) m_i[i-1]=m_i[i];
     --m_n;
-    if (code==cs::num && m_n<=crit || m_n==0)  return ArrangePoints();
+    if (code==cs::num && m_n<=crit || m_n==0) return ArrangePoints();
     if (iimin!=ijmin) {
       if (!m_recalc) {
 	for (size_t i(0);i<m_imin;++i) 

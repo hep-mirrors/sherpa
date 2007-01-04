@@ -44,30 +44,27 @@ Multiple_Interactions::Multiple_Interactions(MI_Handler *mihandler):
       THROW(fatal_error,"No beam remnant handler found.");
     }
   }
-  p_mehandler=GET_OBJECT(Matrix_Element_Handler,"ME_Handler");
-  if (p_mehandler==NULL) 
-    THROW(fatal_error,"No matrix element handler found.");
 }
 
 Multiple_Interactions::~Multiple_Interactions() 
 {
 }
 
-bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist) 
+Return_Value::code Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist) 
 {
   p_bloblist=bloblist;
-  if (m_vetoed) return false;
+  if (m_vetoed) return Return_Value::Nothing;
   if (!p_bloblist->FourMomentumConservation()) {
     msg.Error()<<"Multiple_Interactions::CheckBlobList(..): "
 	       <<"Retry event "<<rpa.gen.NumberOfDicedEvents()<<std::endl;
-    p_bloblist->Clear();
-    return false;
+    return Return_Value::Retry_Event;
   }
   for (Blob_List::const_iterator bit=bloblist->begin();
        bit!=bloblist->end();++bit) {
     if ((*bit)->Type()==btp::Hard_Collision ||
 	(*bit)->Type()==btp::Signal_Process) 
-      if ((*bit)->Status()!=0) return false;
+      if ((*bit)->Has(blob_status::needs_showers)) 
+	return Return_Value::Nothing;
   }
   for (short unsigned int i=0;i<2;++i) {
     m_emax[i]=p_remnants[i]->GetBeam()->Energy();
@@ -75,43 +72,38 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
     p_remnants[i]->QuickClear();
   }
   Blob_List isr=bloblist->Find(btp::IS_Shower);
-  static double ntot=0.0;
-  ++ntot;
   for (Blob_List::reverse_iterator iit=isr.rbegin();
        iit!=isr.rend();++iit) {
+    if ((*iit)->InParticle(0)->Momentum().Nan()) {
+      msg.Error()<<METHOD<<"(): Nan momentum for "
+		 <<*(*iit)->InParticle(0)<<"\n  Kill subprocess."<<std::endl;
+      if (!(*iit)->IsConnectedTo(btp::Signal_Process))
+	p_bloblist->DeleteConnected(*iit);
+      else return Return_Value::Retry_Event;
+      return Return_Value::Retry_Phase;
+    }
     m_emax[(*iit)->Beam()]-=(*iit)->InParticle(0)->Momentum()[0];
     p_mihandler->ISRHandler()->
       Extract((*iit)->InParticle(0)->Flav(),
 	      (*iit)->InParticle(0)->Momentum()[0],(*iit)->Beam());
     if (!p_remnants[(*iit)->Beam()]->Extract((*iit)->InParticle(0))) {
-      msg_Tracking()<<"Multiple_Interactions::CheckBlobList(..): "
-		    <<"Cannot extract parton from hadron. \n"
+      msg_Tracking()<<METHOD<<"(): Cannot extract parton from hadron. \n"
 		    <<*(*iit)->InParticle(0)<<std::endl;
-      p_bloblist->DeleteConnected(*iit);
-      if (bloblist->empty()) {
-	p_mehandler->SaveNumberOfTrials();
-	Blob *blob = new Blob();
-	blob->SetType(btp::Signal_Process);
-	blob->SetStatus(-1);
-	blob->SetId();
-	blob->SetStatus(2);
-	bloblist->push_back(blob);	  
-      }
-      static double nrej=0.0;
-      if (10*++nrej>rpa.gen.NumberOfDicedEvents())
-	ATOOLS::msg.Error()<<"Multiple_Interactions::CheckBlobList(..): "
-			   <<"Shower rejection rate is "
-			   <<nrej/ntot<<"."<<std::endl;
-      return false;
+      if (!(*iit)->IsConnectedTo(btp::Signal_Process))
+	p_bloblist->DeleteConnected(*iit);
+      else return Return_Value::Retry_Event;
+      return Return_Value::Retry_Phase;
     } 
   }
-  if (m_diced) return true;
-  Blob *signal=bloblist->FindFirst(btp::Signal_Process);
+  if (m_diced) return Return_Value::Success;
+  Blob * signal=bloblist->FindFirst(btp::Hard_Collision);
+  if (signal==NULL) signal=bloblist->FindFirst(btp::Signal_Process);
+  if (signal->Has(blob_status::needs_signal)) return Return_Value::Nothing;
   if (!m_diced) {
     m_ptmax=ATOOLS::rpa.gen.Ecms()/2.0;
     if (VetoHardProcess(signal)) {
       m_ptmax=0.0;
-      return true;
+      return Return_Value::Success;
     }
   }
   switch (p_mihandler->ScaleScheme()) {
@@ -203,21 +195,23 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
   if (!m_diced) {
     signal->AddData("MI_Scale",new Blob_Data<double>(m_ptmax));
   }
-  return m_ptmax!=std::numeric_limits<double>::max();
+  if (m_ptmax!=std::numeric_limits<double>::max()) return Return_Value::Success;
+  return Return_Value::Nothing;
 }
 
-bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
+Return_Value::code Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
 {
 #ifdef USING__Amisic
   PROFILE_HERE;
   if (p_mihandler->Type()==MI_Handler::None ||
-      MI_Base::StopGeneration()) return false;
+      MI_Base::StopGeneration()) return Return_Value::Nothing;
   if (bloblist->empty()) {
     msg.Error()<<"Multiple_Interactions::Treat(): "
 		       <<"Incoming blob list is empty!"<<std::endl;
-    return false;
+    return Return_Value::Error;
   }
-  if (!CheckBlobList(bloblist)) return false;
+  Return_Value::code cbc(CheckBlobList(bloblist));
+  if (cbc!=Return_Value::Success) return cbc;
   p_mihandler->SetScaleMax(m_emax[0],2);
   p_mihandler->SetScaleMax(m_emax[1],3);
   if (!m_diced) {
@@ -226,18 +220,26 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
     p_mihandler->Reset();
     m_diced=true;
   }
-  Blob *blob = new Blob();
-  blob->AddData("MI_Scale",new Blob_Data<double>(m_ptmax));
+  Blob *blob(NULL);
   bool success=false;
-  if (!m_vetoed && m_ptmax>p_mihandler->ScaleMin(0)) {
-    success=p_mihandler->GenerateHardProcess(blob);
+  if (!m_vetoed) {
+    if (m_ptmax<=p_mihandler->ScaleMin(0)) {
+      return Return_Value::Nothing;
+    }
+    else {
+      blob = new Blob();
+      blob->AddData("MI_Scale",new Blob_Data<double>(m_ptmax));
+      success=p_mihandler->GenerateHardProcess(blob);
+    }
   }
   else if (m_vetoed) {
+    blob = new Blob();
+    blob->AddData("MI_Scale",new Blob_Data<double>(m_ptmax));
     success=p_mihandler->GenerateSoftProcess(blob);
     // dummy settings for analysis
-    blob->SetType(btp::Signal_Process);
+    blob->SetType(btp::Soft_Collision);
     blob->SetTypeSpec("Soft UE");
-    blob->SetStatus(5);
+    blob->SetStatus(blob_status::needs_showers);
     blob->AddData("ME_Weight",new Blob_Data<double>(m_weight));
     blob->AddData("ME_NumberOfTrials",new Blob_Data<int>((int)m_ntrials));
   }
@@ -250,17 +252,19 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
 		      <<"Cannot extract parton from hadron. \n"
 		      <<*blob->InParticle(0)<<std::endl;
 	delete blob;
-	return true;
+	return Return_Value::Retry_Phase;
       }
     }
+    blob->SetStatus(blob_status::needs_showers);
     bloblist->push_back(blob);
-    return true;
+    return Return_Value::Success;
   }
   delete blob;
   p_mihandler->ISRHandler()->Reset(0);
   p_mihandler->ISRHandler()->Reset(1);
 #endif
-  return false;
+  if (!MI_Base::StopGeneration()) return Return_Value::Retry_Phase;
+  return Return_Value::Nothing;
 }
 
 bool Multiple_Interactions::VetoHardProcess(ATOOLS::Blob *const blob)
@@ -269,6 +273,7 @@ bool Multiple_Interactions::VetoHardProcess(ATOOLS::Blob *const blob)
     m_weight=(*blob)["ME_Weight"]->Get<double>();
     m_ntrials=(*blob)["ME_NumberOfTrials"]->Get<int>();
     p_bloblist->DeleteConnected(blob);
+    p_bloblist->AddBlob(btp::Signal_Process);
     return m_vetoed=true;
   }
   return false;

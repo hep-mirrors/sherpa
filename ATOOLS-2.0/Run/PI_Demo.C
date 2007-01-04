@@ -232,17 +232,17 @@ int main(int argc,char **argv)
 {
 #ifdef USING__ROOT
   MYROOT::myroot = new MYROOT::My_Root(argc,argv);
-  Exception_Handler::AddTerminatorObject(MYROOT::myroot);
+  exh->AddTerminatorObject(MYROOT::myroot);
 #endif
-  std::set_terminate(Exception_Handler::Terminate);
-  std::set_unexpected(Exception_Handler::Terminate);
-  signal(SIGSEGV,Exception_Handler::SignalHandler);
-  signal(SIGINT,Exception_Handler::SignalHandler);
-  signal(SIGBUS,Exception_Handler::SignalHandler);
-  signal(SIGFPE,Exception_Handler::SignalHandler);
-  signal(SIGABRT,Exception_Handler::SignalHandler);
-  signal(SIGTERM,Exception_Handler::SignalHandler);
-  signal(SIGXCPU,Exception_Handler::SignalHandler);
+  std::set_terminate(exh->Terminate);
+  std::set_unexpected(exh->Terminate);
+  signal(SIGSEGV,exh->SignalHandler);
+  signal(SIGINT,exh->SignalHandler);
+  signal(SIGBUS,exh->SignalHandler);
+  signal(SIGFPE,exh->SignalHandler);
+  signal(SIGABRT,exh->SignalHandler);
+  signal(SIGTERM,exh->SignalHandler);
+  signal(SIGXCPU,exh->SignalHandler);
   try {
     msg.Init(2,"");
     termios testos;

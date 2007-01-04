@@ -39,8 +39,7 @@ namespace AMEGIC {
 
     bool    m_atoms, m_analyse, m_tables;
     double  m_maxfac, m_maxeps;
-    int     m_orderQCD, m_orderEW;
-    double  m_ycut,m_maxerror;
+    double  m_maxerror;
 
     Phase_Space_Generator          * p_psgen;
     
@@ -68,7 +67,7 @@ namespace AMEGIC {
     Process_Base(Process_Info*,int nin,int nout,ATOOLS::Flavour * fl,
 		 PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam,
 		 int gen_str, int orderQCD, int orderEW,
-		 int scalescheme,int kfactorscheme,double scale,
+		 PHASIC::scl::scheme scalescheme,int kfactorscheme,double scale,
 		 Pol_Info * pl = 0,
 		 int nex = 0,ATOOLS::Flavour * ex_fl = 0,double ycut=-1., double error=-1.);
     
@@ -116,8 +115,6 @@ namespace AMEGIC {
 
     virtual void             Empty()                                               =0;
     virtual void             SetTotal(int flag, int depth=0)                       =0;
-    virtual void             SetScale(const double);
-    virtual void             SetScales(double q2_fac, double q2_ren);
     virtual void             SetMax(const double max, int depth=0);
     virtual void             SetMaxJetNumber(int);
     virtual void             SetWEventMode(int mode);
@@ -148,7 +145,6 @@ namespace AMEGIC {
     virtual double DSigma(const ATOOLS::Vec4D *,bool)                              =0;
     virtual double DSigma2()                                                       =0;
     virtual double operator()(const ATOOLS::Vec4D *) { return 0.; }
-    virtual double FactorisationScale();
     virtual ATOOLS::Blob_Data_Base *OneEvent(double = -1.)                                          =0;
 
     virtual void SwapInOrder();
@@ -159,8 +155,6 @@ namespace AMEGIC {
       Access methods
 
       ------------------------------------------------------------------------------*/
-    inline int OrderStrong();
-    inline int OrderEWeak();
 
     inline bool         Atoms();
     inline bool         Tables();
@@ -202,15 +196,11 @@ namespace AMEGIC {
 
   };
 
-  inline int  Process_Base::OrderStrong()  { return m_orderQCD; }
-  inline int  Process_Base::OrderEWeak()   { return m_orderEW; }
-
   inline bool        Process_Base::Atoms()   { return m_atoms; }
   inline bool        Process_Base::Tables()  { return m_tables; }
   inline std::string Process_Base::Name()    { return m_name; }
 
   inline double      Process_Base::MaxReduction()  { return m_maxfac; }
-  inline double      Process_Base::Ycut()  { return m_ycut; }
 
 }
 

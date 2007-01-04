@@ -6,7 +6,7 @@
 namespace ANALYSIS {
   class Two_Particle_Observable_Base : public Primitive_Observable_Base {  
   protected:
-    ATOOLS::Flavour m_flav1, m_flav2;
+    ATOOLS::Flavour      m_flav1,m_flav2;
     void virtual Evaluate(const ATOOLS::Vec4D & mom1, const ATOOLS::Vec4D & mom2, 
 			  double weight, int ncount) = 0; 
     //    void virtual Evaluate(double value, double weight, int ncount); 
@@ -73,23 +73,12 @@ namespace ANALYSIS {
   };
 
   class Two_Particle_DEta : public Two_Particle_Observable_Base {  
-    bool f_spec;
     void Evaluate(const ATOOLS::Vec4D & mom1, const ATOOLS::Vec4D & mom2, 
 		  double weight, int ncount); 
   public:
     Two_Particle_DEta(const ATOOLS::Flavour & flav1, const ATOOLS::Flavour & flav2,
 		      int type, double xmin, double xmax, int nbins, 
 		      const std::string & listname);
-    Primitive_Observable_Base * Copy() const;
-  };
-
-  class Two_Particle_Y : public Two_Particle_Observable_Base {  
-    void Evaluate(const ATOOLS::Vec4D & mom1, const ATOOLS::Vec4D & mom2, 
-		  double weight, int ncount); 
-  public:
-    Two_Particle_Y(const ATOOLS::Flavour & flav1, const ATOOLS::Flavour & flav2,
-		     int type, double xmin, double xmax, int nbins, 
-		     const std::string & listname);
     Primitive_Observable_Base * Copy() const;
   };
 

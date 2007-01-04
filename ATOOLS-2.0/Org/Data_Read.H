@@ -6,6 +6,7 @@
 #include <fstream>
 
 #include "Flavour.H"
+#include "Algebra_Interpreter.H"
 
 namespace ATOOLS {  
   //! The On/Off switch.
@@ -90,10 +91,10 @@ namespace ATOOLS {
   typedef std::map<std::string,std::string> Parameter_Map;
   typedef Parameter_Map::iterator           Parameter_Iterator;
 
-  class Data_Read {
+  class Data_Read: public Tag_Replacer {
     //associative map (parameter name and coresponding value)
     Parameter_Map m_parameters;
-    static Parameter_Map s_commandlineparameters;
+    static Parameter_Map s_commandlineparameters, s_tags;
 
     bool m_fileexists;
     
@@ -106,6 +107,7 @@ namespace ATOOLS {
     void AddCommandLine();
     template <class Type>
     const Type ReturnData(const std::string &name,const Type type);
+    std::string ReplaceTags(std::string &expr) const;    
   public:
     Data_Read(std::string filename, bool ignoremissingfile=false);
     void ReadIn(std::string filename, bool ignoremissingfile=false);
@@ -126,6 +128,8 @@ namespace ATOOLS {
     
     bool FileExists() { return m_fileexists; }
     inline std::string FileName() const { return m_filename; }
+    inline static void SetTags(const Parameter_Map &tags) { s_tags=tags; }
+    inline static void ResetTags() { s_tags.clear(); }
   };  
 
   // specialisation

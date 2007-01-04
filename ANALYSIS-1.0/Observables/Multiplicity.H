@@ -2,6 +2,7 @@
 #define Primitive_Observable_h
 
 #include "Primitive_Observable_Base.H"
+#include "Normalized_Observable.H"
 
 namespace ANALYSIS {
 
@@ -15,7 +16,7 @@ namespace ANALYSIS {
 
   };// end of class Multiplicity
 
-  class Hadron_Multiplicities : public Primitive_Observable_Base {  
+  class Hadron_Multiplicities : public Normalized_Observable {  
   public:
     Hadron_Multiplicities(int type,double xmin,double xmax,int nbins,
 			  const std::string & listname=std::string(""));

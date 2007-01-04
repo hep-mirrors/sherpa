@@ -33,17 +33,17 @@ Knot_List * Tree::s_knots=NULL;
 //----------------------------------------------------------------------- 
 
 
-Tree::Tree() :
-  p_root(NULL), p_save_root(NULL)
-{
+Tree::Tree() {
   if (!s_knots) s_knots = new Knot_List;
+  p_root      = 0;
+  p_save_root = 0;
 }
 
-Tree::Tree(Tree * tree) :
-  p_root(tree->p_root), p_save_root(NULL)
-{
+Tree::Tree(Tree * tree) {
   if (!s_knots) s_knots = new Knot_List;
+  p_root  = NewKnot(tree->p_root);
   Links(p_root,tree->p_root);
+  p_save_root = 0;
 }
 
 void Tree::ResetKnots() {
@@ -52,7 +52,7 @@ void Tree::ResetKnots() {
     delete (*kit); 
   }
   s_knots->erase(s_knots->begin(),s_knots->end());
-  p_root = NULL;
+  p_root = 0;
 }
 
 
@@ -97,10 +97,12 @@ Knot * Tree::NewKnot(ATOOLS::Flavour fl, ATOOLS::Vec4D p, double t, double x1) {
   newk->t         = t;
   newk->x         = x1;
   newk->maxpt2    = 0.;
-  newk->left      = NULL;
-  newk->right     = NULL;
-  newk->prev      = NULL;
-  if (p_root==NULL) p_root = newk;
+  newk->left      = 0;
+  newk->right     = 0;
+  newk->prev      = 0;
+  if (!p_root) {
+    p_root = newk;
+  }
   return newk;
 }
 
@@ -117,10 +119,12 @@ Knot * Tree::NewKnot(Knot * ink) {
   newk->phi    = ink->phi;
   newk->thcrit = ink->thcrit;
 
-  newk->left      = NULL;
-  newk->right     = NULL;
-  newk->prev      = NULL;
-  if (p_root==NULL) p_root = newk;
+  newk->left      = 0;
+  newk->right     = 0;
+  newk->prev      = 0;
+  if (!p_root) {
+    p_root = newk;
+  }
   newk->part      = new Particle(*ink->part);
   return newk;
 }
@@ -136,10 +140,12 @@ Knot * Tree::NewKnot(Particle * _inpart)
   else {
     newk->part    = new Particle(*_inpart);
   }
-  newk->left      = NULL;
-  newk->right     = NULL;
-  newk->prev      = NULL;
-  if (p_root==NULL) p_root = newk;
+  newk->left      = 0;
+  newk->right     = 0;
+  newk->prev      = 0;
+  if (!p_root) {
+    p_root = newk;
+  }
   return newk;
 }
 
@@ -151,9 +157,9 @@ void Tree::ResetDaughters(Knot * in) {
   if (!(in)) return;
   
   if (in->left)  ResetDaughters(in->left);
-  in->left=NULL;
+  in->left=0;
   if (in->right) ResetDaughters(in->right);
-  in->right=NULL;
+  in->right=0;
 
   for (Knot_Iterator kit=s_knots->begin(); kit!=s_knots->end(); ++kit) {
     if ((*kit) == in) {
@@ -195,8 +201,8 @@ void Tree::UpdateDaughters(Knot * mo)
 
 void Tree::BoRo(ATOOLS::Poincare & lorenz) 
 {
-  Knot * mo= GetRoot();
-  if (mo)  while (mo->prev) mo = mo->prev;
+  Knot * mo(GetRoot());
+  while (mo->prev) mo = mo->prev;
   mo->part->SetMomentum(lorenz*mo->part->Momentum());
   BoRoDaughters(lorenz,mo);
 }
@@ -217,9 +223,36 @@ void Tree::BoRo(ATOOLS::Poincare & lorenz, Knot * mo)
   BoRoDaughters(lorenz,mo);
 }
 
+bool Tree::Restore(Knot *const k,Knot *const r) const
+{
+  if (r==NULL) return false;
+  if (k->kn_no==r->kn_no) {
+    k->CopyData(r);
+    return true;
+  }
+  if (Restore(k,r->left)) return true;
+  if (Restore(k,r->right)) return true;
+  return false;
+}
+
+bool Tree::Restore(Knot *const k) const
+{
+  if (p_save_root==NULL) {
+    msg.Error()<<METHOD<<"(): No Storage."<<std::endl;
+    return false;
+  }
+  Knot *ini(p_save_root);
+  while (ini->prev) ini=ini->prev;
+  if (!Restore(k,ini)) {
+    msg.Error()<<METHOD<<"(): Knot "<<k->kn_no<<" not found."<<std::endl;
+    return true;
+  }
+  return false;
+}
+
 Knot * Tree::CopyKnot(Knot * a, Knot * prev) 
 {
-  if (!a) return NULL;
+  if (!a) return 0;
   Knot * nk = new Knot(a);
   nk->prev  = prev;
   nk->left  = CopyKnot(a->left,nk);
@@ -232,7 +265,7 @@ void Tree::CopyBackKnot(Knot * a, Knot * b)
   if (!b) return;
 
   if (!a || a==b) {
-    std::cerr<<" Error in  Tree::CopyBackKnot "<<std::endl;
+    msg.Error()<<" Error in  Tree::CopyBackKnot "<<a<<" "<<b<<std::endl;
     Knot * b = p_save_root;
     if (b) {
       while (b->prev) {
@@ -243,18 +276,32 @@ void Tree::CopyBackKnot(Knot * a, Knot * b)
     abort();
   }
 
+  if (a->decay!=NULL) {
+    Knot *l(a->left), *d(a->decay);
+    while (d==l->decay) {
+      d=l->decay;
+      l=l->left;
+    }
+    if (l->prev!=a) {
+      DeleteKnot(a->right);
+      a->right=l->prev->right;
+      l->prev->right=l->prev->left=NULL;
+      DeleteKnot(a->left);
+      a->left=l;
+    }
+  }
   a->CopyData(b);
   if (b->left) CopyBackKnot(a->left,b->left);
   else {
     DeleteKnot(a->left);
-    a->left=NULL;
+    a->left=0;
   }
   if (b->right) CopyBackKnot(a->right,b->right);
   else {
     DeleteKnot(a->right);
-    a->right=NULL;
+    a->right=0;
   }
-  if (!(b->prev)) a->prev=NULL;
+  if (!(b->prev)) a->prev=0;
 }
 
 void Tree::DeleteKnot(Knot * b) {
@@ -277,7 +324,7 @@ void Tree::ClearStore()
   help = p_save_root;
   if (help)  while (help->prev)  help = help->prev;
   DeleteKnot(help); 
-  p_save_root = NULL;
+  p_save_root = 0;
 }
 
 void Tree::Store()
@@ -350,15 +397,20 @@ bool Tree::CheckMomentumConservation() const
 
 bool Tree::CheckMomentumConservation(Knot *const knot) const 
 {
-  if (knot->left==NULL || knot->stat==3) return true;
+  if (knot==NULL) return true;
+  msg_Indent();
   bool success(true);
-  Vec4D p(knot->part->Momentum());
-  Vec4D p1(knot->left->part->Momentum()), p2(knot->right->part->Momentum());
-  if (!(p==p1+p2)) {
-    msg.Error()<<METHOD<<"(): Four momentum not conserved in knot "
-	       <<knot->kn_no<<"\n   p      = "<<p<<"\n   p_miss = "<<(p-p1-p2)
-	       <<"\n   p1     = "<<p1<<"\n   p2     = "<<p2<<std::endl;
-    success=false;
+  if (knot->left!=NULL && knot->part->Momentum()!=Vec4D()) {
+    msg_Debugging()<<"fmc check "<<knot->kn_no<<"\n"; 
+    Vec4D p(knot->part->Momentum());
+    Vec4D p1(knot->left->part->Momentum()), p2(knot->right->part->Momentum());
+    if (!(p==p1+p2)) {
+      msg.Error()<<METHOD<<"(): Four momentum not conserved in knot "
+		 <<knot->kn_no<<"\n   p      = "<<p
+		 <<"\n   p_miss = "<<(p-p1-p2)
+		 <<"\n   p1     = "<<p1<<"\n   p2     = "<<p2<<std::endl;
+      success=false;
+    }
   }
   if (!CheckMomentumConservation(knot->left)) success=false;
   if (!CheckMomentumConservation(knot->right)) success=false;

@@ -25,7 +25,6 @@ LL_KPerp::LL_KPerp(double beta,const std::string cinfo,
 
 LL_KPerp::~LL_KPerp()
 {
-  delete [] rans;
   delete p_vegas;
 }
 

@@ -10,6 +10,8 @@ libSherpaTools_la_SOURCES     =	\
 				Input_Output_Handler.C \
 			    	$(HEPMCSOURCES) \
 			    	HepEvt_Interface.C \
+				Pythia_HepEvt_Translator.C \
+				Herwig_HepEvt_Translator.C \
                                 Event_Reader.C
 
 pkginclude_HEADERS    =	\
@@ -17,6 +19,8 @@ pkginclude_HEADERS    =	\
 			Input_Output_Handler.H \
 		 	$(HEPMCHEADERS) \
 			HepEvt_Interface.H \
+			Pythia_HepEvt_Translator.H \
+			Herwig_HepEvt_Translator.H \
 			Event_Reader.H
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@ @CONDITIONAL_ROOTFLAGS@

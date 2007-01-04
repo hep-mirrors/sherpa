@@ -67,8 +67,6 @@ RamboKK::~RamboKK()
   if (xm2) { delete [] xm2; xm2 = 0; }
   if (p2)  { delete [] p2;  p2  = 0; }
   if (E)   { delete [] E;   E   = 0; }
-  if (ms)  { delete [] ms;  ms  = 0; }
-  if (rans){ delete [] rans;rans = 0; }
 }
 
 void RamboKK::Set_KKmass()

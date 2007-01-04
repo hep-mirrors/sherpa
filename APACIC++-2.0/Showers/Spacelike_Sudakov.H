@@ -30,7 +30,7 @@ namespace APACIC {
 
     double m_facscale, m_pdf_fac, m_pdf_scale_fac, m_cpl_scale_fac;
     // mother
-    double m_E2, m_x, m_z, m_t, m_phi, m_pt2;
+    double m_E2, m_x, m_z, m_t, m_ta, m_tc, m_phi, m_pt2;
     ATOOLS::Flavour m_inflav;
 
     std::vector<int> m_vetos;
@@ -51,7 +51,7 @@ namespace APACIC {
 		      double,ATOOLS::Data_Read *,const size_t); 
     ~Spacelike_Sudakov();
     bool Initialize();
-    bool Dice(Knot * mother,double sprime,int & extra_pdf);
+    bool Dice(Knot * mother,double sprime,double m2p,int & extra_pdf);
     void AcceptBranch(const Knot *const mo);
     bool PTVeto(Knot *);
 
@@ -74,6 +74,8 @@ namespace APACIC {
     inline void SetCouplingScheme(const int &scheme) { m_cpl_scheme=scheme;      }
     inline void SetPDFScheme(const int &scheme)      { m_pdf_scheme=scheme;      }
     inline void SetOrderingScheme(const int &scheme) { m_ordering_scheme=scheme; }
+
+    inline double PT2() const { return m_pt2; }
 
 #ifdef USING__Veto_Info
     inline std::vector<int> &Vetos() { return m_vetos; }

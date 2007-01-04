@@ -43,6 +43,7 @@ namespace ATOOLS {
   class Terminator_Object {
   protected:
 
+    virtual bool ReadInStatus(const std::string &path);
     virtual void PrepareTerminate();
     friend class Exception_Handler;
     

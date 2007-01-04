@@ -7,26 +7,24 @@
 
 namespace HADRONS {
   class Dalitz : public PHASIC::Single_Channel {
-
-    private:
-      ATOOLS::Vec4D m_decvec, m_pvec;
-      double        m_pmass, m_pwidth, m_sexp, m_smin, m_smax;
-      int           m_p1, m_p2, m_dir, m_mode;
-      std::string   m_propmass;				
-      int           m_chnumber;			
-    public :
-      Dalitz(
-          const ATOOLS::Flavour * fl,
-          SimpleResonanceFlavour res,
-          const int p1, 
-          const int p2 );
-      void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * =NULL,double * _ran=NULL);
-      void GeneratePoint(ATOOLS::Vec4D * p,double * _ran=NULL);
-      void GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * =NULL);
-      void GenerateWeight(ATOOLS::Vec4D * p);
-      int  ChNumber()                 { return m_chnumber;       }
-      void SetChNumber(int _chnumber) { m_chnumber = _chnumber;  }
-      std::string ChID()              { return name;}
+    ATOOLS::Vec4D m_decvec, m_pvec;
+    double        m_pmass, m_pwidth, m_sexp, m_smin, m_smax;
+    int           m_p1, m_p2, m_dir, m_mode;
+    std::string   m_propmass;				
+    int           m_chnumber;			
+  public :
+    Dalitz(
+		const ATOOLS::Flavour * fl,
+		ResonanceFlavour res,
+		const int p1, 
+		const int p2 );
+    void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * =NULL,double * _ran=NULL);
+    void GeneratePoint(ATOOLS::Vec4D * p,double * _ran=NULL);
+    void GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data * =NULL);
+    void GenerateWeight(ATOOLS::Vec4D * p);
+    int  ChNumber()                 { return m_chnumber;       }
+    void SetChNumber(int _chnumber) { m_chnumber = _chnumber;  }
+    std::string ChID()              { return name;}
   }; // end of class
 
   /*!
@@ -45,7 +43,7 @@ namespace HADRONS {
     \f[ M \to k + res; \: res \to i+j. \f]
   */	  
   /*!
-	\fn Dalitz::Dalitz( const ATOOLS::Flavour * fl, SimpleResonanceFlavour res, const int p1, const int p2 )
+	\fn Dalitz::Dalitz( const ATOOLS::Flavour * fl, ResonanceFlavour res, const int p1, const int p2 )
 	\brief Constructor for the Dalitz 1 to 3 decay integration channel
 
 	The required information is in which two of the three final particles the

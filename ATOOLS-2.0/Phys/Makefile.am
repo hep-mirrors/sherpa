@@ -22,11 +22,13 @@ libToolsPhys_la_SOURCES       =	\
 				Parton_Finder.C \
 				Color_Tester.C \
 				Momentum_Shifter.C \
+				Spin_Correlation_Tensor.C \
+				Spin_Density_Matrix.C \
 				Flow.C \
 				Color.C \
-				Spin_Density_Matrix.C \
-				Spin_Correlation_Tensor.C \
-				Momenta_Stretcher.C
+				Momenta_Stretcher.C \
+				Mass_Handler.C \
+				Amplitude_Tensor.C
 
 pkginclude_HEADERS        =	\
 			Flavour.H \
@@ -51,11 +53,13 @@ pkginclude_HEADERS        =	\
 			Parton_Finder.H \
 			Color_Tester.H \
 			Momentum_Shifter.H \
+			Spin_Correlation_Tensor.H \
+			Spin_Density_Matrix.H \
 			Event.H \
 			Color.H \
-			Spin_Density_Matrix.H \
-			Spin_Correlation_Tensor.H \
-			Momenta_Stretcher.H
+			Momenta_Stretcher.H \
+			Mass_Handler.H \
+			Amplitude_Tensor.H
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@
 

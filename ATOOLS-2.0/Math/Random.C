@@ -2,6 +2,7 @@
 #include "Message.H"
 #include "MathTools.H"
 #include "MyStrStream.H"
+#include "Run_Parameter.H"
 #include <iostream>
 
 #ifdef PROFILE__all
@@ -10,8 +11,8 @@
 #define PROFILE_HERE
 #endif
 
-using namespace ATOOLS;
 using namespace std;
+using namespace ATOOLS;
 
 #define MAXLOGFILES 10
 
@@ -33,16 +34,16 @@ using namespace std;
 ATOOLS::Random ATOOLS::ran(1234, 4321);
 
 
-Random::Random(long nid): 
+ATOOLS::Random::Random(long nid): 
   p_outstream(NULL) 
 { 
   SetSeed(nid); 
-  Exception_Handler::AddTerminatorObject(this);
+  ATOOLS::exh->AddTerminatorObject(this);
   SaveStatus();
 }
 
 
-Random::~Random() 
+ATOOLS::Random::~Random() 
 { 
   if (p_outstream!=NULL) {
     p_outstream->close();
@@ -57,7 +58,7 @@ static long siy=0;
 static long iv[NTAB];
 static long siv[NTAB];
 
-double Random::Ran2(long *idum)
+double ATOOLS::Random::Ran2(long *idum)
 {
   PROFILE_HERE;
   int   j;
@@ -114,7 +115,7 @@ double Random::Ran2(long *idum)
 #define RNMX (1.0-EPS)
 
 
-double Random::Ran1(long *idum)
+double ATOOLS::Random::Ran1(long *idum)
 {
   int j;
   long k;
@@ -156,7 +157,7 @@ double Random::Ran1(long *idum)
 #define FAC (1.0/MBIG)
 
 
-void Random::InitRan3(long *idum)
+void ATOOLS::Random::InitRan3(long *idum)
 {
   long mj,mk;
   int i,ii,k;
@@ -182,7 +183,7 @@ void Random::InitRan3(long *idum)
 }
 
 
-double Random::Ran3()
+double ATOOLS::Random::Ran3()
 {
   if (++m_inext == 56) m_inext=1;
   if (++m_inextp == 56) m_inextp=1;
@@ -198,7 +199,7 @@ double Random::Ran3()
 /* (C) Copr. 1986-92 Numerical Recipes Software VsXz&v%120(9p+45$j3D. */
 
 
-int Random::WriteOutStatus(const char * filename){
+int ATOOLS::Random::WriteOutStatus(const char * filename){
   // if Ran4 is the active Random Generator, then use its method
   if (activeGenerator==4) {return WriteOutStatus4(filename);}
   // write out every Statusregister of Random Number generator
@@ -239,46 +240,54 @@ int Random::WriteOutStatus(const char * filename){
   return m_written++;
 }
 
+bool ATOOLS::Random::ReadInStatus(const std::string &path) 
+{
+  ReadInStatus((path+"random.dat").c_str(),0);
+  return true;
+}
 
-void Random::ReadInStatus(const char * filename, long int index){
+void ATOOLS::Random::ReadInStatus(const char * filename, long int index){
   // check what type of data is in target file
   ifstream file(filename);
-      // Check if the first 20 bytes in file are a known identifier and
-      // set the activeGenerator variable accordingly
-      file.read((char*) &status.idTag, sizeof(status.idTag));
-      if (strcmp(status.idTag,  "Rnd4_G_Marsaglia"))
-      { activeGenerator = 2; } else { activeGenerator = 4; }
+  // Check if the first 20 bytes in file are a known identifier and
+  // set the activeGenerator variable accordingly
+  char temp[16];
+  file.read((char*) temp, sizeof(temp));
+  strcpy(status.idTag,temp);
+  if (strcmp(temp,"Rnd4_G_Marsaglia"))
+    { activeGenerator = 2; } else { activeGenerator = 4; }
   file.close();
-
+  
   // use readin method for the Generator identified Generator
-  if (activeGenerator==4) { ReadInStatus4(filename, index);} else {
-
-  // read in every Statusregister of Random Number generator
-  msg_Info()<<"Random::ReadInStatus from "<<filename<<" index "<<index<<endl;
-  std::ifstream myinstream(filename);
-  long int count;
-  if (myinstream.good()) {
-    (myinstream)>>count;
-    std::string buffer;
-    while (count!=index && !myinstream.eof()) {
-      getline(myinstream,buffer);
-      (myinstream)>>count;    
-    }
-    if (count==index) {
-      (myinstream)>>m_id; (myinstream)>>m_inext; (myinstream)>>m_inextp;
-      for (int i=0;i<56;++i) (myinstream)>>m_ma[i];    
-      (myinstream)>>iy>>idum2;
-      for (int i=0;i<NTAB;++i) (myinstream)>>iv[i];
+  if (activeGenerator==4) { ReadInStatus4(filename, index);} 
+  else {  
+    // read in every Statusregister of Random Number generator
+    msg_Info()<<METHOD<<"(): Reading status from '"
+	      <<filename<<"', index "<<index<<"."<<endl;
+    std::ifstream myinstream(filename);
+    long int count;
+    if (myinstream.good()) {
+      (myinstream)>>count;
+      std::string buffer;
+      while (count!=index && !myinstream.eof()) {
+	getline(myinstream,buffer);
+	(myinstream)>>count;    
+      }
+      if (count==index) {
+	(myinstream)>>m_id; (myinstream)>>m_inext; (myinstream)>>m_inextp;
+	for (int i=0;i<56;++i) (myinstream)>>m_ma[i];    
+	(myinstream)>>iy>>idum2;
+	for (int i=0;i<NTAB;++i) (myinstream)>>iv[i];
+      } 
+      else ATOOLS::msg.Error()<<"ERROR in Random::ReadInStatus : index="<<index<<" not found in "<<filename<<endl;
+      myinstream.close();
     } 
-    else msg.Error()<<"ERROR in Random::ReadInStatus : index="<<index<<" not found in "<<filename<<endl;
-    myinstream.close();
-  } 
-  else msg.Error()<<"ERROR in Random::ReadInStatus : "<<filename<<" not found!!"<<endl;
+    else ATOOLS::msg.Error()<<"ERROR in Random::ReadInStatus : "<<filename<<" not found!!"<<endl;
   }
 }
 
 
-double Random::GetNZ() 
+double ATOOLS::Random::GetNZ() 
 {
   double ran1;
   do ran1=Get(); while (ran1==0.); 
@@ -286,7 +295,7 @@ double Random::GetNZ()
 }
 
 
-void Random::SetSeed(long int nid) 
+void ATOOLS::Random::SetSeed(long int nid) 
 {
   m_id = nid<0 ? nid : -nid;
   InitRan3(&m_id);
@@ -297,7 +306,7 @@ void Random::SetSeed(long int nid)
 }
 
 
-void Random::SaveStatus()
+void ATOOLS::Random::SaveStatus()
 {
   if (activeGenerator==4) { return SaveStatus4(); };
   m_sid=m_id; 
@@ -310,7 +319,7 @@ void Random::SaveStatus()
 }
 
 
-void Random::RestoreStatus()
+void ATOOLS::Random::RestoreStatus()
 {
   if (activeGenerator==4) { return RestoreStatus4(); };
   m_id=m_sid; 
@@ -323,24 +332,12 @@ void Random::RestoreStatus()
 }
 
 
-void Random::PrepareTerminate()
+void ATOOLS::Random::PrepareTerminate()
 {
-  if (Exception_Handler::LastException()==NULL && 
-      Exception_Handler::LastSignal()==0) return;
-  if (Exception_Handler::LastException()!=NULL) {
-    if (Exception_Handler::LastException()->Type()==ex::normal_exit) return;
-  }
-  if (Exception_Handler::LastSignal()==2) return;
-  std::string name="debug_info_";
-  unsigned int i=0;
-  do { 
-    std::ifstream testfile((name+ATOOLS::ToString(++i)+
-			    std::string(".random")).c_str());
-    if (!testfile.is_open()) break;
-  } while (i<MAXLOGFILES);
+  std::string path(rpa.gen.Variable("SHERPA_STATUS_PATH"));
+  if (path=="") return;
   RestoreStatus();
-  WriteOutStatus((name+ATOOLS::ToString(i)+
-		  std::string(".random")).c_str());
+  WriteOutStatus((path+"/random.dat").c_str());
 }
 
 // ----------------- Methods for new Random Number Generator -------------
@@ -361,15 +358,16 @@ void Random::PrepareTerminate()
    number generator can create 900 million different subsequences -- with
    each subsequence having a length of approximately 10^30.
 */
-Random::Random(int ij,int kl) : p_outstream(NULL)
+
+ATOOLS::Random::Random(int ij,int kl) : p_outstream(NULL)
 {  
    SetSeed(ij, kl); 
-   Exception_Handler::AddTerminatorObject(this);
+   ATOOLS::exh->AddTerminatorObject(this);
    SaveStatus(); 
 }
 
 
-void Random::SetSeed(int ij, int kl)
+void ATOOLS::Random::SetSeed(int ij, int kl)
 {
    // mark Generator 4 as used one and set idTag for file output
    activeGenerator = 4;
@@ -420,7 +418,7 @@ void Random::SetSeed(int ij, int kl)
 }
 
 
-double Random::Ran4()
+double ATOOLS::Random::Ran4()
 {
   double uni;
   
@@ -445,7 +443,7 @@ double Random::Ran4()
 }
 
 
-int Random::WriteOutStatus4(const char * filename)
+int ATOOLS::Random::WriteOutStatus4(const char * filename)
 {
   // dunno what this is good for - kept from old routine
   if ((p_outstream!=0) && (std::strcmp(filename,m_outname)!=0)) {
@@ -472,7 +470,7 @@ int Random::WriteOutStatus4(const char * filename)
 }
 
 
-void Random::ReadInStatus4(const char * filename, long int index)
+void ATOOLS::Random::ReadInStatus4(const char * filename, long int index)
 {
   msg_Info()<<"Random::ReadInStatus from "<<filename<<" index "<<index<<endl;
 
@@ -482,16 +480,29 @@ void Random::ReadInStatus4(const char * filename, long int index)
     file.seekg(index*sizeof(Ran4Status));
     file.read((char*) (&status), sizeof(Ran4Status));
 
-    if (strcmp(status.idTag, "Rnd4_G_Marsaglia")) {
+    char temp[16];
+    strncpy(temp,status.idTag,16);
+    if (strcmp(temp, "Rnd4_G_Marsaglia")) {
       // Data read in was not from a RndGen of the same type
-      msg.Error()<<"WARNING in Random::ReadInStatus4: Data read from "<<filename;
-      msg.Error()<<" at Position "<<index<< " is not of the expected type."<<endl;
+      ATOOLS::msg.Error()<<"WARNING in Random::ReadInStatus4: Data read from "<<filename;
+      ATOOLS::msg.Error()<<" at Position "<<index<< " is not of the expected type."<<endl;
     }
   }  
   else 
-    msg.Error()<<"ERROR in Random::ReadInStatus4 : "<<filename<<" not found!!"<<endl;
+    ATOOLS::msg.Error()<<"ERROR in Random::ReadInStatus4 : "<<filename<<" not found!!"<<endl;
 }
 
 
-void Random::SaveStatus4() { backupStat = status; }
-void Random::RestoreStatus4() { status = backupStat; }
+void ATOOLS::Random::SaveStatus4() { backupStat = status; }
+void ATOOLS::Random::RestoreStatus4() { status = backupStat; }
+
+void ATOOLS::Random::InitExternal(void *_parent) 
+{
+}
+
+double ATOOLS::Random::Get()   
+{
+  // Sherpa internal
+  if (activeGenerator==4) return Ran4();
+  else                    return Ran2(&m_id);
+}

@@ -2,61 +2,35 @@
 #define Hadron_Decay_Channel_H
 
 #include "Integrable_Base.H"
+#include "Amplitude_Tensor.H"
 #include "HD_ME_Base.H"
-#include "Current_Base.H"
 #include "HD_PS_Base.H"
 #include "Decay_Table.H"
 #include <string>
 #include "Vector.H"
-#include "Spin_Density_Matrix.H"
 #include <utility>
-#include "Data_Reader.H"
+#include "Particle.H"
 
-
-#define HBAR_C 197.326968e-15    // in [GeV mm] used for decay position
+#define HBAR_C 197.326968e-15  // in [GeV mm] used for decay position
 
 namespace HADRONS {
-
-  typedef std::pair<double,std::pair<Current_Base*,Current_Base*> >  CurrentsPair;
-  typedef std::pair<double,HD_ME_Base*> MEPair;
 
   class Hadron_Decay_Channel : public PHASIC::Integrable_Base {
   private:
     ATOOLS::Decay_Channel * p_dc;
-    std::vector<MEPair>     m_mes;    // MEs with their relative factors
-    std::vector<CurrentsPair> m_currents;
+    HD_ME_Base            * p_me;
     HD_PS_Base            * p_ps;
-//     std::string             m_metype;
+    std::string             m_metype;
+    void                    CalculateNormalisedWidth();
     std::string             m_path;
-    std::string             m_filename;
     short                   m_fulldecay;
-    bool                    m_mass_smearing;
-    bool                    m_always_integrate;
     bool                    m_createbooklet;
     std::string             m_channelname, m_chnamenumbers;
-    std::vector<std::pair<int,int> > * p_indices;
-    std::vector<Complex>  * p_ampls;
-    double                  m_symmetry;
-    GeneralModel            m_startmd;
-    
-    void   ProcessOptions(std::vector<std::vector<std::string> > helpsvv);
-    void   ProcessPhasespace(std::vector<std::vector<std::string> > ps_svv,
-                             Data_Reader                          & reader,
-                             GeneralModel                   const & model_for_ps );
-    void   ProcessME( std::vector<std::vector<std::string> > me_svv,
-                      Data_Reader           & reader,
-                      GeneralModel          & model_for_ps );
-    void   ProcessResult(std::vector<std::vector<std::string> > result_svv);
-    GeneralModel Parameters2Model(std::vector<std::vector<std::string> > helpsvv,
-                                  GeneralModel * md = NULL);
-    bool   WriteOut( std::vector<double> results, bool newfile=false );
-    void   AddAmpls( std::vector<Complex>* newampls, std::vector<std::pair<int,int> >* newindices );
-    
-  public:
+    ATOOLS::Spin_Amplitudes * p_amplitudes;
+  public: 
     Hadron_Decay_Channel( ATOOLS::Decay_Channel * _dc, std::string _path );
     ~Hadron_Decay_Channel();
-    bool   Initialise(std::vector<std::string> & PStype, GeneralModel startmd);
-//     bool   InitialisePhaseSpace(std::vector<std::string> & PStype, GeneralModel startmd );
+    bool   InitialisePhaseSpace(std::vector<std::string> & PStype, GeneralModel startmd );
     void   WriteModelOnScreen( GeneralModel _locmd );
     void   SwapInOrder()    {}
     void   RestoreInOrder() {}
@@ -65,39 +39,26 @@ namespace HADRONS {
     bool   ReSelect( int )  { return 1; }
     bool   SelectOneFromList() { return 1; }
     double Differential();
-    double Differential( ATOOLS::Vec4D * mom, ATOOLS::Spin_Density_Matrix * );
-//    double Differential(double&);
+    double Differential( ATOOLS::Vec4D * mom, bool anti );
     double Differential(const ATOOLS::Vec4D *momenta) { return 0.; }
     double Differential2()                            { return 0.; }
 
     void   SetFullDecay( short a ) { m_fulldecay = a; }
     short  FullDecay() { return m_fulldecay; }
-    void   SetMassSmearing( bool a ) { m_mass_smearing = a; }
-    void   SetAlwaysIntegrate( bool a ) { m_always_integrate = a; }
-    bool   MassSmearing() { return m_mass_smearing; }
     void   SetCreateBooklet( bool a ) { m_createbooklet = a; }
     bool   CreateBooklet() { return m_createbooklet; }
-    void   CreateTrivial( ATOOLS::Spin_Density_Matrix * sigma );
-    
-    HD_ME_Base            * SelectME(std::string me_string);
-    Current_Base          * SelectCurrent(std::string current_string);
 
-//     HD_ME_Base            * GetME() { return p_me; }
-//     Current_Base         ** GetCurrents() { return p_currents; }
-    std::vector<MEPair>     GetMEs() { return m_mes; }
-    std::vector<CurrentsPair> GetCurrents() { return m_currents; }
+    HD_ME_Base            * GetME() { return p_me; }
     HD_PS_Base            * GetPS() { return p_ps; }
-    ATOOLS::Vec4D         * Momenta() { return p_momenta; }        // not as const
-    ATOOLS::Vec4D           Momentum( int i ) { return p_momenta[i]; }
     ATOOLS::Decay_Channel * DecayChannel() { return p_dc; }
 
-    std::string                ChannelName()     { return m_channelname; }
-    std::string                ChannelNameNumbers() { return m_chnamenumbers; }
+    std::string             ChannelName()     { return m_channelname; }
+    std::string             ChannelNameNumbers() { return m_chnamenumbers; }
     double                  MeanLifetime()    { return HBAR_C/p_ps->Result(); } // in [mm]
     double                  InMass()          { return (p_dc->GetDecaying()).Mass(); }
 
-    std::vector<std::pair<int,int> > * GetIndexList() { return p_indices; }
-    std::vector<Complex>  * GetAmplitudeTensor()      { return p_ampls; }
+    void CalculateAmplitudes(ATOOLS::Vec4D*,ATOOLS::Spin_Amplitudes*, bool anti);
+    void CalculateAmplitudes(ATOOLS::Vec4D*,ATOOLS::Amplitude_Tensor*, bool anti);
     
   }; // end of class
    
@@ -194,31 +155,16 @@ namespace HADRONS {
     the distribution.
   */
   /*!
-    \fn double Hadron_Decay_Channel::Differential( Vec4D * mom, Spin_Density_Matrix * sigma )
-    \brief Returns differential rate \f$d\Gamma \times dlips\f$ with spin correlations
+    \fn double Hadron_Decay_Channel::Differential( Vec4D * mom, bool anti )
+    \brief Returns differential rate \f$d\Gamma \times dlips\f$
 
-    If a a pointer on a spin density matrix <var>sigma</var> is given, this methods
-    returns the "matrix element squared" value with spin correlations.
     It makes the phase space generator choose a phase space point (the
     mother particle decays from rest) and its weight factor.
-    Afterwards, all momenta are boosted into the lab system for correct spin correlations.
     It then calls the ME class (via the pointer Hadron_Decay_Channel::p_me) 
-    which has to fill the amplitude tensor Hadron_Decay_Channel::p_ampls
-    and indix list Hadron_Decay_Channel::p_indices. Both are mere C++ vectors.
-    The amplitude tensor contains the value of the matrix element (\b not squared) for
-    each helicity combination. The index tensor is necessary for the correct book keeping
-    (see HD_ME_Base class for more details). 
-    It sums up the ME squares for each helicity combination weighting with the entries
-    of the spin density matrix. For that it uses the Spin_Correlation_Tensor::Contract and
-    Spin_Correlation_Tensor::Trace method.
-     
-    However, if the ME class does not give an index list things are traeted without
-    spin correlation, that is treating the spin density matrix as if it were a unit matrix.
-
-    There are also effective ME's that do not have information for each helicity combination.
-    Their amplitude tensor only contains one entry. Then a trivial amplitude tenser is created
-    in order to ensure correct behaviour of Hadrons::PerformDecay method (no crash), because
-    the Hadrons::PerformDecay method expects an amplitude tensor of correct size.
+    which has to fill the Amplitude_Tensor Hadron_Decay_Channel::p_amplitudes.
+    The Amplitude_Tensor contains the value of the matrix element (\b not squared) for
+    each helicity combination.
+    It sums up the ME squares for each helicity combination.
    */
   /*!
     \var Hadron_Decay_Channel::p_me
@@ -239,34 +185,17 @@ namespace HADRONS {
   /*!
     \var Hadron_Decay_Channel::m_fulldecay
     Has information about decay: syntax "(binary number) = decimal number"
-    - (00) = 0 ... no full decay, anti particle does not decay
-    - (01) = 1 ... no full decay, anti particle does decay
     - (10) = 2 ... full decay, anti particle does not decay
     - (11) = 3 ... full decay, anti particle does decay
     .
-    "no full decay" means that unstable daughters do not decay.
     "anti particle does not decay" means that the anti-particle is
     seen to be stable.
   */    
   /*!
-    \var Hadron_Decay_Channel::m_mass_smearing
-      Stores whether MassSmearing was set to 0 or 1 in the decay channel file.
-   */
-  /*!
-    \var Hadron_Decay_Channel::p_ampls
-    Pointer on the amplitude tensor.
-    */
-  /*!
-    \var Hadron_Decay_Channel::p_indices
-    Pointer on the index list.
-    */
-
-    
-    
-
-  
-  
+  \var Hadron_Decay_Channel::p_amplitudes
+    Pointer on the Amplitude_Tensor. Is only needed temporarily to get the amplitudes
+    from the ME and then sum-square them.
+  */
 } // end of namespace
-
 
 #endif

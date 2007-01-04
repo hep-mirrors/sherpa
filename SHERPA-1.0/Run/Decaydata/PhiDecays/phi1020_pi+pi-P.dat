@@ -1,0 +1,10 @@
+# Decay: phi(1020) --> pi+ pi- P 
+#        0         --> 1   2   3 
+Channels {
+	AlwaysIntegrate = 0;   ! 0...read results and skip integration
+	                       ! 1...don't read results and integrate
+	Isotropic 1;
+}
+Result {
+   4.55139e-05 9.7812e-08 0.000116401;
+}

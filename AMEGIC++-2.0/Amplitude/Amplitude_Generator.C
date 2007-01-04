@@ -181,17 +181,16 @@ void Amplitude_Generator::Print_P(Point* p)
   }
 }
 
-int Amplitude_Generator::MatchVertex(Single_Vertex* v,Flavour* flav,vector<Complex>& cpl)
+int Amplitude_Generator::MatchVertex(Single_Vertex* v,Flavour* flav,Complex* cpl)
 {
   if (flav[0] == v->in[0]) {
-    int hit = 1;
+    short int hit = 1;
     if (flav[1] != Flavour(kf::none)) {if (flav[1] != v->in[1]) hit = 0;}
     else {flav[1] = v->in[1];}
     if (flav[2] != Flavour(kf::none)) {if (flav[2] != v->in[2]) hit = 0;}
     else {flav[2] = v->in[2];}
     if (hit==1) {
-      cpl.clear();
-      for (size_t j=0;j<v->cpl.size();j++) cpl.push_back(v->cpl[j]);
+      for (short int j=0;j<4;j++) cpl[j] = v->cpl[j];
       return 1;
     }
   }
@@ -205,8 +204,8 @@ int Amplitude_Generator::CheckEnd(Point* p,Flavour infl)
   if (((p->left->fl)!=Flavour(kf::none)) && ((p->right->fl)!=Flavour(kf::none))) { 
     Flavour flav[3];
     Flavour s_flav[3];
-    vector <Complex> cpl;
-    cpl.clear();
+    Complex cpl[4];
+    for (int j=0;j<4;j++) cpl[j] = Complex(0.,0.);
 
     flav[0] = infl;
     flav[1] = p->left->fl;
@@ -248,8 +247,7 @@ int Amplitude_Generator::CheckEnd(Point* p,Flavour infl)
 
     for (size_t j=0;j<vl.size();j++) {
       if (MatchVertex(vl[j],flav,cpl)) {
-	p->cpl.clear();
-	for (size_t k=0;k<cpl.size();k++) p->cpl.push_back(cpl[k]);
+	for (int k=0;k<4;k++) p->cpl[k] = cpl[k];
 	p->v = vl[j];
 	*(p->Color)   = *(vl[j]->Color);
 	*(p->Lorentz) = *(vl[j]->Lorentz);
@@ -281,7 +279,7 @@ void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,in
   int sw1;
   Flavour flav[3];
   Flavour s_flav[3];
-  vector<Complex> cpl;
+  Complex cpl[4];
 
   int first_try = 1;
   
@@ -376,8 +374,7 @@ void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,in
 	  *(p->Lorentz) = *(vl[i]->Lorentz);
 	  p->t = vl[i]->t;
 	  
-	  p->cpl.clear();
-	  for (size_t k=0;k<cpl.size();k++) p->cpl.push_back(cpl[k]);
+	  for (int k=0;k<4;k++) p->cpl[k] = cpl[k];
 	  ll = 0;top->Copy(prea[ap].p,prea[lanz].p,ll);
 	  ll = 0;top->Copy(preah,prea[ap].p,ll);
 	  prea[lanz].on = 1;
@@ -740,11 +737,13 @@ void Amplitude_Generator::Unite(Point* p,Point* pdel)
 	  psave = p[i];
 	
 	  if (p[i].nextra>0) delete[] p[i].extrafl;
-	  p[i].cpl.clear();
+	  delete[] p[i].cpl;
 	  
 	  int nfl  = 1+pdel[i].nextra+p[i].nextra;
+	  int ncpl = pdel[i].ncpl+p[i].ncpl;
 	  
 	  p[i].extrafl = new Flavour[nfl];
+	  p[i].cpl     = new Complex[ncpl];
 	  
 	  //Flavour
 	  int count = 0;
@@ -760,10 +759,12 @@ void Amplitude_Generator::Unite(Point* p,Point* pdel)
 	  
 	  //Couplings
 	  count = 0;
-	  p[i].cpl.clear();
-	  for (size_t j=0;j<psave.Ncpl();j++) p[i].cpl.push_back(psave.cpl[j]);   
-	  count += psave.Ncpl();
-	  for (size_t j=0;j<pdel[i].Ncpl();j++) p[i].cpl.push_back(pdel[i].cpl[j]);			
+	  for (short int j=0;j<psave.ncpl;j++)
+	    p[i].cpl[j] = psave.cpl[j];   
+	  count += psave.ncpl;
+	  for (short int j=0;j<pdel[i].ncpl;j++)
+	    p[i].cpl[count+j] = pdel[i].cpl[j];			
+	  p[i].ncpl = ncpl;
 	  
 	  //previous couplings too
 	  int hit = -1;
@@ -775,13 +776,18 @@ void Amplitude_Generator::Unite(Point* p,Point* pdel)
 	  }
 	  if (hit!=-1) {
 	    psave = p[hit];
-	    p[hit].cpl.clear();
+	    int ncpl = pdel[hit].ncpl+p[hit].ncpl;	  
+	    delete[] p[hit].cpl;	  
+	    p[hit].cpl = new Complex[ncpl];
 	    
 	    //Couplings
 	    count = 0;
-	    for (size_t j=0;j<psave.Ncpl();j++) p[hit].cpl.push_back(psave.cpl[j]);   
-	    count += psave.Ncpl();
-	    for (size_t j=0;j<pdel[hit].Ncpl();j++) p[hit].cpl.push_back(pdel[hit].cpl[j]);			
+	    for (short int j=0;j<psave.ncpl;j++)
+	      p[hit].cpl[j] = psave.cpl[j];   
+	    count += psave.ncpl;
+	    for (short int j=0;j<pdel[hit].ncpl;j++)
+	      p[hit].cpl[count+j] = pdel[hit].cpl[j];			
+	    p[hit].ncpl = ncpl;	  
 	  }
 	  else 
 	    ATOOLS::msg.Error()<<"ERROR in Amplitude_Generator"<<endl
@@ -1042,8 +1048,8 @@ void Amplitude_Generator::CountOrders(Single_Amplitude * & first)
     int hitQCD = 0;
     hitQCD = FindQCDOrder(f1->GetPointlist(),hitQCD);
     hitQED = N -2 - hitQCD;  // N = nin + nout
-    if (hitQED>QEDmax) QEDmax=hitQED;
-    if (hitQCD>QCDmax) QCDmax=hitQCD;
+    if (hitQED>QEDmax&&hitQED<=nEW) QEDmax=hitQED;
+    if (hitQCD>QCDmax&&hitQCD<=nQCD) QCDmax=hitQCD;
     if (hitQED > nEW || hitQCD > nQCD) {
       ++count;
       if (f1==first) {
@@ -1064,8 +1070,8 @@ void Amplitude_Generator::CountOrders(Single_Amplitude * & first)
       f1 = f1->Next;
     }
   }
-  if (nEW==99)  nEW = QEDmax;
-  if (nQCD==99) nQCD = QCDmax;
+  nEW = QEDmax;
+  nQCD = QCDmax;
   msg_Tracking()<<"Kicked number of diagrams (Amplitude_Generator::CountOrders()) "<<count<<endl;
 }
 
@@ -1319,8 +1325,7 @@ int Amplitude_Generator::ShrinkProps(Point*& p,Point*& pnext, Point*& pcopy, Poi
 	  hit = 1;
 	  
 	  pcopy->v      = (*v)(i);
-	  pcopy->cpl.clear();
-	  for (size_t k=0;k<(*v)(i)->cpl.size();k++) pcopy->cpl.push_back((*v)(i)->cpl[k]);
+	  for (short int k=0;k<4;k++) pcopy->cpl[k] = (*v)(i)->cpl[k];
 	  //set pcopy legs
 	  
 	  if (p->left->number==pnext->number) {

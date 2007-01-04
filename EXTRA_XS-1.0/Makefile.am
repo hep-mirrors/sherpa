@@ -1,5 +1,5 @@
 MAKE = make 
 
-SUBDIRS       =	Main Two2Two BFKL
+SUBDIRS       =	Main Two2Two
 
 EXTRA_DIST    = @SVNINCLUDE@

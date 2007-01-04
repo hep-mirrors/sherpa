@@ -6,13 +6,13 @@ using namespace ANALYSIS;
 using namespace ATOOLS;
 
 DECLARE_GETTER(Universal_Selector_Getter,"UniSelector",
-	       Primitive_Observable_Base,String_Matrix);
+	       Primitive_Observable_Base,Argument_Matrix);
 
 DECLARE_GETTER(General_Observable_Getter,"Dummy",
-	       Primitive_Observable_Base,String_Matrix);
+	       Primitive_Observable_Base,Argument_Matrix);
 
 Primitive_Observable_Base * 
-Universal_Selector_Getter::operator()(const String_Matrix &parameters) const
+Universal_Selector_Getter::operator()(const Argument_Matrix &parameters) const
 {
   std::string ilist,olist,obskey;
   double keymin, keymax;
@@ -78,7 +78,7 @@ Primitive_Observable_Base *Universal_Selector::Copy() const
 // ======================================================================
 
 Primitive_Observable_Base * 
-General_Observable_Getter::operator()(const String_Matrix &parameters) const
+General_Observable_Getter::operator()(const Argument_Matrix &parameters) const
 {
   std::string ilist,olist,obskey;
   double keymin, keymax;

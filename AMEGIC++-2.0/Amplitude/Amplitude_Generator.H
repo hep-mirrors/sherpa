@@ -77,7 +77,7 @@ namespace AMEGIC {
     void Set_End(Point*,int* &,int&);
     void Next_P(Point*,Point* &);
     void Print_P(Point*);
-    int  MatchVertex(Single_Vertex*,ATOOLS::Flavour*,std::vector<Complex>&);
+    int  MatchVertex(Single_Vertex*,ATOOLS::Flavour*,Complex*);
     int  CheckEnd(Point*,ATOOLS::Flavour);  
     void SetProps(Point*,int,Single_Amplitude* &,int*, int, int);
     int  Kill_Off(Single_Amplitude* &);

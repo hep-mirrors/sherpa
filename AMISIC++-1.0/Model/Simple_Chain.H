@@ -38,7 +38,7 @@ namespace AMISIC {
 
     double m_norm, m_enhance, m_maxreduction;
 
-    std::string m_xsextension, m_mcextension;
+    std::string m_xsextension, m_mcextension, m_pathextra, m_selectorfile;
 
     EXTRAXS::Simple_XS *p_processes;
     FSR_Channel        *p_fsrinterface;
@@ -52,8 +52,9 @@ namespace AMISIC {
 
     std::string m_selected;
 
-    unsigned int m_nflavour, m_maxtrials, m_check, m_jetveto;
-    unsigned int m_scalescheme, m_kfactorscheme, m_vegas, m_pi;
+    unsigned int m_nflavour, m_maxtrials, m_check;
+    PHASIC::scl::scheme m_scalescheme;
+    unsigned int m_kfactorscheme, m_vegas, m_pi;
     double       m_sigmahard, m_error, m_ecms;
     bool         m_external, m_regulate;
 
@@ -128,6 +129,12 @@ namespace AMISIC {
       \brief Employs the selected process to determine the kinematics
       of the interaction. The outgoing transverse momentum is kept fixed. 
       It is diced in advance by DiceOrderingParameter.      
+    */
+
+    bool ReadInStatus(const std::string &path);
+    /*!
+      \fn void PrepareTerminate()
+      \brief Restores grid calculations in case of debugging.
     */
 
     void PrepareTerminate();

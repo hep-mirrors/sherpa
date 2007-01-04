@@ -30,8 +30,10 @@ namespace SHERPA {
     ~Interface_Tools(); 
 
     // member functions
-    void InitializeIncoming(const ATOOLS::Blob *blob,const double &ecms);
-    void InitializeOutGoing(ATOOLS::Blob *blob,const double &ecms);
+    void InitializeIncoming(const ATOOLS::Blob *blob,
+			    const double &ecms,const double &scale);
+    void InitializeOutGoing(ATOOLS::Blob *blob,
+			    const double &ecms,const double &scale);
 
     void JetVetoPt2(double &inipt2,double &finpt2);
 

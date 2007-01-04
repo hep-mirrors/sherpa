@@ -1,0 +1,10 @@
+# Decay: tau- --> eta eta pi- nu_tau 
+#        0    --> 1   2   3   4      
+Channels {
+	AlwaysIntegrate = 0;   ! 0...read results and skip integration
+	                       ! 1...don't read results and integrate
+	Isotropic 1;
+}
+Result {
+   9.93003e-09 6.59821e-11 1.89056e-07;
+}

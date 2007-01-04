@@ -7,10 +7,11 @@ using namespace ATOOLS;
 using namespace std;
 
 Tree_Filler::Tree_Filler(Cluster_Partons_Base * cluster,
-			 Shower_Handler *shower,int maxjetno) : 
+			 Shower_Handler *shower,int maxjetno,int showermode) : 
   p_cluster(cluster), m_maxjetnumber(maxjetno), 
   m_isrshoweron(shower->ISROn()), m_fsrshoweron(shower->FSROn()),
-  p_local_tree(NULL), p_fsrshower(shower->GetApacic()->FinShower())
+  p_local_tree(NULL), p_fsrshower(shower->GetApacic()->FinShower()),
+  m_showermode(showermode)
 {
   m_iss_scale_fac=1.0;
   m_fss_scale_fac=1.0;
@@ -58,7 +59,7 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
     ct_test=ct_test->Up();
     ++njet;
   }
-  
+
   // generate knotlist from pointlist in Combine_Table
   
   // start initial state
@@ -113,6 +114,7 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
   mo->part->SetStatus(part_status::decayed);
   mo->didkin = true;
   mo->stat   = 0;
+  mo->shower = 0;
   mo->zs     = mo->z = p2[0]/p1[0];
   mo->E2     = sqr(p1[0]);
   mo->thcrit = M_PI;
@@ -120,12 +122,12 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
   //we have a virtuality ordered shower, therefore:
   mo->t = p_cluster->FSShowerScale();
   // set jet veto scale for each emission
-  double q2j(p_cluster->JetScale());
+  double q2j(p_cluster->FSJetScale());
   if (p_cluster->OrderStrong()>0) p_cluster->FixJetvetoPt2(q2j);
   mo->pt2lcm = mo->maxpt2 = m_ckkwon?q2j/m_fss_scale_fac:
     sqr(sqrt(mo->t)-sqrt(knots[2]->tout)-sqrt(knots[3]->tout));
   double scale(p_cluster->ISShowerScale());
-  if (p_cluster->OrderStrong()==0) scale=Max(scale,4.*p_cluster->JetScale());
+  if (p_cluster->OrderStrong()==0) scale=Max(scale,4.*p_cluster->ISJetScale());
   double x1,x2;
   p_cluster->GetCombineTable()->GetX1X2(x1,x2);
   EstablishRelations(mo,knots[0],knots[1],0,x1,x2,scale);
@@ -135,13 +137,15 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
   for (int i(2);i<4;++i) 
     knots[i]->pt2lcm=knots[i]->maxpt2=m_ckkwon?q2j/m_fss_scale_fac:
       sqr(sqrt(mo->t)-sqrt(knots[2]->tout)-sqrt(knots[3]->tout));
-
   // determine starting conditions for showers
   // note, that starting conditions for subsequent branches have to be 
   // evaluted during the shower evoultion (since the system, esp. for 
   // final state showers starting from the initial state shower are not
   // known.)
   DetermineColourAngles(knots);
+
+  knots[0]->dir=ct_test->Momentum(0)[3]>0?1:-1;
+  knots[1]->dir=ct_test->Momentum(1)[3]>0?1:-1;
 
   for (int i=0;i<4;++i) ini_knots.push_back(mo);
 
@@ -182,15 +186,15 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
     d1->pt2lcm=d1->maxpt2=knots[k]->maxpt2;
     d2->pt2lcm=d2->maxpt2=knots[k]->maxpt2;
     double asfac(k<2?m_iss_scale_fac:m_fss_scale_fac);
-    if (scale/asfac<knots[k]->maxpt2 && 
-	!IsEqual(scale/asfac,knots[k]->maxpt2) &&
+    if (scale*asfac<knots[k]->maxpt2 && 
+	!IsEqual(scale*asfac,knots[k]->maxpt2) &&
 	d1->part->Flav().Strong() && d2->part->Flav().Strong() &&
 	mo->part->Flav().Strong()) {
       msg.Error()<<METHOD<<"(): scale ordering violated in knot "<<k<<".\n"
 		 <<"   last scale = "<<knots[k]->maxpt2
 		 <<", new scale = "<<scale<<std::endl;
-      d1->pt2lcm=d1->maxpt2=scale/asfac;
-      d2->pt2lcm=d2->maxpt2=scale/asfac;
+      d1->pt2lcm=d1->maxpt2=scale*asfac;
+      d2->pt2lcm=d2->maxpt2=scale*asfac;
     }
     knots[k] = d1;
     knots[l] = d2;
@@ -204,7 +208,9 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
     }
     ct_test = ct_test->Up();
   }
-
+  for (size_t i(0);i<knots.size();++i) 
+    knots[i]->tout=sqr(knots[i]->part->Flav().PSMass());
+  /*
   if (msg.LevelIsDebugging()) {
     msg.Out()<<" in Tree_Filler::FillTrees("<<m_isrshoweron<<","
 	     <<m_fsrshoweron<<")"<<std::endl;
@@ -215,6 +221,7 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
     msg.Out()<<"fin_tree:"<<std::endl<<*fin_tree
 	     <<"****************************************"<<std::endl;
   }
+  */
 }
 
 void Tree_Filler::FillDecayTree(Tree * fin_tree)
@@ -354,11 +361,30 @@ Knot * Tree_Filler::Point2Knot(Blob * blob,Tree * tree,const Leg & po,const Vec4
   // preliminary parton status!!!
   k->part->SetInfo(info);
   k->part->SetStatus(part_status::active);  //final
-  if (flav.IsKK() || k->part->DecayBlob()) k->tout=mom.Abs2();
-  else k->tout = sqr(flav.PSMass());
+  k->tout=sqr(flav.PSMass());
+  if (dabs(mom.Abs2())>rpa.gen.Accu()) k->tout=mom.Abs2(); 
   k->E2        = sqr(mom[0]);
   k->costh     = 0; 
-  k->stat      = 3;
+  k->shower=po.External();
+  if ((m_showermode&1) && po.Point()->t-10>=0) {
+    k->shower+=2;
+    if (po.QCDJets()<po.Point()->t-10) {
+      if (po.Point()->t-10+po.Point()->fl.Strong()>2) 
+	k->qjv=sqrt(m_q2_cut);
+      else k->qjv=sqrt(po.MinKT2QCD());
+    }
+    else k->qjv=sqrt(po.MinKT2QCD());
+    k->qljv=sqrt(m_q2_cut);
+    k->maxjets=po.Point()->t-10;
+    msg_Debugging()<<METHOD<<"(): ("<<k->kn_no<<") -> n_jets = "
+		   <<po.QCDJets()<<"+"<<po.Point()->fl.Strong()
+		   <<" ("<<po.Point()->t-10<<"+"<<po.Point()->fl.Strong()
+		   <<") at m_kt = "<<sqrt(po.MinKT2QCD())
+		   <<" ("<<sqrt(m_q2_cut)<<") -> qjv = "
+		   <<k->qjv<<", qljv = "<<k->qljv
+		   <<", n_max = "<<k->maxjets<<"\n";
+  }
+  k->stat      = 3*(k->shower!=0);
   k->didkin    = true;
   k->thcrit    = M_PI;
   return k;
@@ -390,7 +416,7 @@ double Tree_Filler::ColourAngle(const std::vector<Knot *> & knots, const int i)
   Vec3D ivec, jvec;
   Vec4D i4vec, j4vec;
   for (int j=start;j<(int)knots.size();++j) {
-    if (j!=i) {
+    if (j!=i && (i>1 || j>1)) {
       if (IsColourConnected(knots[i]->part,knots[j]->part)) {
 	if (i<2) {
 	  // determine isr angles in labframe
@@ -421,6 +447,31 @@ double Tree_Filler::ColourAngle(const std::vector<Knot *> & knots, const int i)
       }
     }
   }
+  if (i<2 && angle==0.0) {
+    int j(1-i);
+    if (IsColourConnected(knots[i]->part,knots[j]->part)) {
+      if (i<2) {
+	// determine isr angles in labframe
+	i4vec=lab*knots[i]->part->Momentum();
+	j4vec=lab*knots[j]->part->Momentum();
+	ivec = Vec3D(i4vec);
+	jvec = Vec3D(j4vec);
+      }
+      else {
+	i4vec=knots[i]->part->Momentum();
+	j4vec=knots[j]->part->Momentum();
+	ivec = Vec3D(i4vec);
+	jvec = Vec3D(j4vec);
+      }
+      test       = ivec*jvec/(ivec.Abs()*jvec.Abs());
+      if (test<=-1.)     th_ex = M_PI; 
+      else if (test>=1.) th_ex = 0;   
+      else th_ex = acos(test);
+      
+      angle = Max(angle,th_ex);
+      if (IsEqual(angle,M_PI)) angle = M_PI;
+    }
+  }
   return angle;
 }
 
@@ -439,13 +490,14 @@ void Tree_Filler::DetermineColourAngles(const std::vector<APACIC::Knot *> & knot
   Vec4D * moms = new Vec4D[n];
   for (int i=0;i<n;++i) moms[i] = knots[i]->part->Momentum();
   
+  bool dir(moms[0][3]>0.0);
+  if (moms[0].PSpat2()<moms[1].PSpat2()) dir=moms[1][3]<0.0;
   Poincare cms(moms[0]+moms[1]);
   for (int i=0;i<n;++i) knots[i]->part->SetMomentum(cms*knots[i]->part->Momentum());
   
   Poincare zaxis;
-  if (Vec3D(knots[0]->part->Momentum()).Abs()==(-1.)*knots[0]->part->Momentum()[3])
-    zaxis = Poincare(knots[0]->part->Momentum(),Vec4D(1.,0.,0.,-1.));
-  else zaxis = Poincare(knots[0]->part->Momentum(),Vec4D::ZVEC);
+  if (dir) zaxis = Poincare(knots[0]->part->Momentum(),Vec4D::ZVEC);
+  else zaxis = Poincare(knots[1]->part->Momentum(),Vec4D::ZVEC);
   
   for (int i=0;i<n;++i) knots[i]->part->SetMomentum(zaxis*knots[i]->part->Momentum());
   for (int i=0;i<n;++i) {
@@ -469,7 +521,7 @@ void Tree_Filler::EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC:
     mo->left  = d1;
     mo->right = d2;
     mo->zs    = mo->z = p2[0]/p1[0];
-    mo->stat  = 0;
+//     mo->stat  = 0;
     mo->part->SetStatus(part_status::decayed);
     if (mo->part->Info() != 'H') mo->part->SetInfo('f');
 
@@ -481,6 +533,12 @@ void Tree_Filler::EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC:
     p_fsrshower->EstablishRelations(mo,d1,d2);
 
     mo->tout = mo->t;
+    if (m_showermode&1 && mo->prev!=NULL && mo->shower==2) {
+      // is mother
+      if (mo->prev->dir!=0) mo->t=dabs(mo->prev->right->t);
+      // fs mother
+      else mo->t=mo->prev->t; 
+    }
     return;
   }
   else if (mode==0) {
@@ -509,6 +567,7 @@ void Tree_Filler::EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC:
     }
     mo->right = d1;
     mo->left  = d2;
+    mo->dir   = d1->dir;
     d1->prev  = mo;
     d2->prev  = mo;
 
@@ -518,7 +577,9 @@ void Tree_Filler::EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC:
     d1->t     = t1;
     d1->tmax  = t1;
     d2->t     = -t1;
-    d1->stat  = 0;
+    // account for correct amount of radiation 
+    // from is/fs color dipole q->gq
+    if (d1->part->Flav().IsGluon()) d2->t=-t0;
     if (mode==2) mo->x = x1;
             else mo->x = x2;
 
@@ -547,3 +608,4 @@ void Tree_Filler::EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC:
 		   <<th12<<") -> "<<mo->thcrit<<","<<d2->thcrit<<std::endl;
   }
 }
+

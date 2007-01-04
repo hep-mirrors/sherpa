@@ -3,6 +3,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <dirent.h>
+#include <fstream>
 
 #ifdef DEBUG__Shell_Tools
 #include <iostream>
@@ -53,6 +54,16 @@ bool ATOOLS::MakeDir(std::string path,const mode_t mode,const bool create_tree)
 #ifdef DEBUG__Shell_Tools
   std::cout<<"}"<<std::endl;
 #endif
+  return true;
+}
+
+bool ATOOLS::CopyFile(const std::string &oldname,const std::string &newname)
+{
+  std::ifstream oldfile(oldname.c_str());
+  if (oldfile.bad()) return false;
+  std::ofstream newfile(newname.c_str());
+  if (newfile.bad()) return false;
+  newfile<<oldfile.rdbuf();
   return true;
 }
 

@@ -1,12 +1,17 @@
 #!/bin/bash
 GPATH=$PWD
-RELEASE=#"TRUE"
+RELEASE="TRUE"
 LOGFILE="sherpa_install.log"
 
 DIRS="ATOOLS-2.0 BEAM-1.0 PDF-1.0 MODEL-1.0 PHASIC++-1.0"
-DIRS=$DIRS" EXTRA_XS-1.0 AMEGIC++-2.0 APACIC++-2.0 ADICIC++-0.0"
-DIRS=$DIRS" CS_SHOWER++-0.0 AMISIC++-1.0 AHADIC++-0.0 HADRONS++-0.0"
+DIRS=$DIRS" EXTRA_XS-1.0 AMEGIC++-2.0 APACIC++-2.0"
+DIRS=$DIRS" AHADIC++-1.0 AMISIC++-1.0 HADRONS++-0.0"
 DIRS=$DIRS" ANALYSIS-1.0 SHERPA-1.0"
+
+ECXXFLAGS=""
+EFFLAGS=""
+ECOPT=""
+EMOPT=""
 
 rmr () { 
   for file in `ls -a` ; do   
@@ -27,7 +32,7 @@ rebuild_current() {
   if [ "$RELEASE" = "TRUE" ] ; then
     libtoolize --force >> $GPATH/$LOGFILE 2>&1
     aclocal >> $GPATH/$LOGFILE 2>&1
-    autoheader >> $GPATH/$LOGFILE 2>&1
+    autoheader >> ../$LOGFILE 2>&1
     automake -a >> $GPATH/$LOGFILE 2>&1
     autoconf >> $GPATH/$LOGFILE 2>&1
   else
@@ -48,34 +53,14 @@ configure_current() {
   fi
   if [ "$?" != "0" ] && [ "$NOABORT" != "TRUE" ] ; then
     clear;
-    echo "ERROR:";
-    echo "./configure returned an error, please have a look at $LOGFILE for the reason.";
+    echo "makeinstall: error: './configure' returned an error."
+    echo "                    please have a look at '$LOGFILE' for the reason.";
     exit 1; 
   fi;
   if [ "$1" != "" ] ; then cd $1 ; fi
 }
 
-ECXXFLAGS=""
-EFFLAGS=""
-ECOPT=""
-EMOPT=""
-for I in $* ; do
-  if [ "$I" = "-c" ]; then CONFIGURE=TRUE 
-  elif [ "$I" = "-t" ]; then TOTAL=TRUE && CONFIGURE=TRUE
-  elif [ "$I" = "-f" ]; then RELEASE=FALSE
-  elif [ "$I" = "-r" ]; then RELEASE=TRUE
-  elif [ "$I" = "-s" ]; then SCRIPT=TRUE
-  elif [ "$I" = "-o" ]; then ONE=TRUE
-  elif [ "$I" = "--clean" ]; then CLEAN=TRUE
-  elif [ "$I" = "--no-abort" ]; then NOABORT=TRUE
-  elif [ "$I" = "--copt" ]; then DCOPT=TRUE && CONFIGURE=TRUE
-  elif [ "$I" = "--mopt" ]; then DMOPT=TRUE 
-  elif [ "$I" = "--cxx" ]; then DCXXFLAGS=TRUE 
-  elif [ "$I" = "--f" ]; then DFFLAGS=TRUE 
-  elif [ "$I" = "--clean-up" ]; then CLEANUP=TRUE
-  elif [ "$I" = "--rm-libs" ]; then RMLIBS=TRUE
-  elif [ "$I" = "--make-only" ]; then MAKEONLY=TRUE
-  elif [ "$I" = "-h" ]; then echo && \
+print_help() {
     echo "makeinstall version 1.0" && echo && \
     echo "options: -c             configure before compiling (enabled with '-t')" && \
     echo "         -t             rebuild 'Makefile.in's and 'configure' before compiling" && \
@@ -92,15 +77,41 @@ for I in $* ; do
     echo "         --clean-up     execute 'make clean' in every module and exit" && \
     echo "         --rm-libs      remove shared libraries (does not remove '.lo' files)" && \
     echo "         --make-only    do not install" && \
-    echo "         -h             display this help and exit" && echo && \
-    exit 0
-  elif [ "$DCXXFLAGS" = "TRUE" ]; then DCXXFLAGS="" && ECXXFLAGS=$I" "$ECXXFLAGS
-  elif [ "$DFFLAGS" = "TRUE" ]; then DFFLAGS="" && EFFLAGS=$I" "$EFFLAGS
-  elif [ "$DCOPT" = "TRUE" ]; then DCOPT="" && ECOPT=$I" "$ECOPT
-  elif [ "$DMOPT" = "TRUE" ]; then DMOPT="" && EMOPT=$I" "$EMOPT
-  else echo "makeinstall: error: unrecognized option '$I'. try '-h'" && \
-    exit 1 
-  fi
+    echo "         -h             display this help and exit" && echo
+}
+
+while getopts :hctfrso OPT
+do
+  case $OPT in
+  c) CONFIGURE=TRUE ;; 
+  t) TOTAL=TRUE && CONFIGURE=TRUE ;;
+  f) RELEASE=FALSE ;;
+  r) RELEASE=TRUE ;;
+  s) SCRIPT=TRUE ;;
+  o) ONE=TRUE ;;
+  h) print_help && exit 0 ;;
+  \?)
+    shift `expr $OPTIND - 1`
+    if [ "$1" = "--clean" ]; then CLEAN=TRUE
+    elif [ "$1" = "--no-abort" ]; then NOABORT=TRUE
+    elif [ "$1" = "--copt" ]; then 
+      CONFIGURE=TRUE && ECOPT=$2" "$ECOPT && shift 1
+    elif [ "$1" = "--mopt" ]; then EMOPT=$2" "$EMOPT && shift 1
+    elif [ "$1" = "--cxx" ]; then ECXXFLAGS=$2" "$ECXXFLAGS && shift 1
+    elif [ "$1" = "--f" ]; then EFFLAGS=$2" "$EFFLAGS && shift 1
+    elif [ "$1" = "--clean-up" ]; then CLEANUP=TRUE
+    elif [ "$1" = "--rm-libs" ]; then RMLIBS=TRUE
+    elif [ "$1" = "--make-only" ]; then MAKEONLY=TRUE
+    else 
+      echo -n "makeinstall: error: unrecognized option "
+      if [ $OPTARG != "-" ]; then echo "'-$OPTARG'. try '--help'"
+      else echo "'$1'. try '--help'"
+      fi
+      print_help && exit 1
+    fi
+    shift 1
+    OPTIND=1
+  esac
 done
 if [ ! "$ECXXFLAGS" = "" ]; then ECXXFLAGS="CXXFLAGS="$ECXXFLAGS ; fi
 if [ ! "$EFFLAGS" = "" ]; then EFFLAGS="FFLAGS="$EFFLAGS ; fi

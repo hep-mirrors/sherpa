@@ -2,6 +2,8 @@
 
 #include "Run_Parameter.H"
 #include "MyStrStream.H"
+#include "CXXFLAGS.H"
+#include "Shell_Tools.H"
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -25,52 +27,52 @@
 
 using namespace ATOOLS;
 
-bool Exception_Handler::s_active=true;
-bool Exception_Handler::s_prepared=false;
-bool Exception_Handler::s_stacktrace=true;
-bool Exception_Handler::s_print=true;
+ATOOLS::Exception_Handler *ATOOLS::exh(NULL);
 
-unsigned int Exception_Handler::s_exitcode=0;
-unsigned int Exception_Handler::s_signal=0;
-Exception *Exception_Handler::s_exception=0;
+Exception_Handler::Exception_Handler():
+  m_active(true), m_prepared(false), m_stacktrace(true), 
+  m_print(true), m_noremove(false),
+  m_signal(0), m_exitcode(0), m_exception(0), m_nbus(0), m_nsegv(0),
+  m_progname("Sherpa") {}
 
-unsigned int Exception_Handler::s_nbus=0;
-unsigned int Exception_Handler::s_nsegv=0;
+void Exception_Handler::Init()
+{
+  static bool init(false);
+  if (!init) {
+    exh = new Exception_Handler();
+    init=true;
+  }
+}
 
-std::string Exception_Handler::s_progname="Sherpa";
-
-std::vector<Exception_Handler::Tester_Function> 
-Exception_Handler::s_testerfunctions=
-  std::vector<Exception_Handler::Tester_Function>();
-std::vector<Exception_Handler::Terminator_Function> 
-Exception_Handler::s_terminatorfunctions=
-  std::vector<Exception_Handler::Terminator_Function>();
-std::vector<Tester_Object*> 
-Exception_Handler::s_testerobjects=std::vector<Tester_Object*>();
-std::vector<Terminator_Object*> 
-Exception_Handler::s_terminatorobjects=std::vector<Terminator_Object*>();
-
-static bool s_noremove=false;
+bool Exception_Handler::ReadInStatus(const std::string &path)
+{
+  bool success(true);
+  msg_Info()<<METHOD<<"(): Reading status from '"<<path<<"' {"<<std::endl;
+  for (size_t i=0;i<m_terminatorobjects.size();++i) 
+    if (!m_terminatorobjects[i]->ReadInStatus(path)) success=false;
+  msg_Info()<<"}"<<std::endl;
+  return success;
+}
 
 bool Exception_Handler::ApproveTerminate()
 {
   static size_t inttrials=0;
   if (++inttrials>2) kill(getpid(),9);
-  if (s_print) msg_Tracking()<<"Exception_Handler::ApproveTerminate(): "
+  if (m_print) msg_Tracking()<<"Exception_Handler::ApproveTerminate(): "
 			     <<"Asking for termination ..."<<std::endl;
-  if (s_testerfunctions.size()==0 && s_testerobjects.size()==0) {
-    if (s_print) msg_Tracking()<<"... approved."<<std::endl;
+  if (m_testerfunctions.size()==0 && m_testerobjects.size()==0) {
+    if (m_print) msg_Tracking()<<"... approved."<<std::endl;
     return true;
   }
   bool approved=true;
-  s_noremove=true;
-  for (size_t i=0;i<s_testerfunctions.size();++i) 
-    if (!s_testerfunctions[i]()) approved=false;
-  for (size_t i=0;i<s_testerobjects.size();++i) 
-    if (!s_testerobjects[i]->ApproveTerminate()) approved=false;
-  s_noremove=false;
-  if (approved && s_print) msg_Tracking()<<"... approved."<<std::endl;
-  else if (s_print) msg_Tracking()<<"... refused."<<std::endl;
+  m_noremove=true;
+  for (size_t i=0;i<m_testerfunctions.size();++i) 
+    if (!m_testerfunctions[i]()) approved=false;
+  for (size_t i=0;i<m_testerobjects.size();++i) 
+    if (!m_testerobjects[i]->ApproveTerminate()) approved=false;
+  m_noremove=false;
+  if (approved && m_print) msg_Tracking()<<"... approved."<<std::endl;
+  else if (m_print) msg_Tracking()<<"... refused."<<std::endl;
   return approved;
 }
 
@@ -78,62 +80,110 @@ void Exception_Handler::PrepareTerminate()
 {
   static size_t trials=0;
   if (++trials>3) kill(getpid(),9);
-  if (s_print) msg_Tracking()<<"Exception_Handler::PrepareTerminate(): "
+  if (m_print) msg_Tracking()<<"Exception_Handler::PrepareTerminate(): "
 			     <<"Preparing termination ..."<<std::endl;
-  while (s_terminatorobjects.size()>0) {
-    s_noremove=true;
-    s_terminatorobjects.back()->PrepareTerminate();
-    s_noremove=false;
-    std::vector<Terminator_Object*>::iterator end=s_terminatorobjects.end();
+  while (m_terminatorobjects.size()>0) {
+    m_noremove=true;
+    m_terminatorobjects.back()->PrepareTerminate();
+    m_noremove=false;
+    std::vector<Terminator_Object*>::iterator end=m_terminatorobjects.end();
     RemoveTerminatorObject(*--end);
   }
-  while (s_terminatorfunctions.size()>0) {
-    s_noremove=true;
-    s_terminatorfunctions.back()();
-    s_noremove=false;
-    std::vector<Terminator_Function>::iterator end=s_terminatorfunctions.end();
+  while (m_terminatorfunctions.size()>0) {
+    m_noremove=true;
+    m_terminatorfunctions.back()();
+    m_noremove=false;
+    std::vector<Terminator_Function>::iterator end=m_terminatorfunctions.end();
     RemoveTerminatorFunction(*--end);
   }
-  if (s_print) msg_Tracking()<<"... prepared."<<std::endl;
+  if (m_print) msg_Tracking()<<"... prepared."<<std::endl;
 }
 
 void Exception_Handler::Exit(int exitcode)
 {
-  if (s_print) msg.Error()<<om::bold<<"Exception_Handler::Exit: "
+  if (m_print) msg.Error()<<om::bold<<"Exception_Handler::Exit: "
 			  <<om::reset<<om::blue<<"Exiting "
-			  <<s_progname<<" with code "
+			  <<m_progname<<" with code "
 			  <<om::reset<<om::bold<<"("
 			  <<om::red<<exitcode<<om::reset<<om::bold<<")"
 			  <<om::reset<<tm::curon<<std::endl;
   msg.LogFile()<<"Exception_Handler::Exit: "
-	       <<"Exiting Sherpa with code ("<<exitcode<<")"<<std::endl;
+	       <<"Exiting "<<m_progname<<" with code ("
+	       <<exitcode<<")"<<std::endl;
   exit(exitcode);
+}
+
+void Exception_Handler::Reset()
+{
+  exh->m_exception=NULL;
+  exh->m_signal=0;
+}
+
+void ATOOLS::Terminate() 
+{
+  exh->Terminate();
+  exh->Reset();
 }
 
 void Exception_Handler::Terminate() 
 {
   bool modifiable=msg.Modifiable();
-  msg.SetModifiable(false);
-  GenerateStackTrace(msg.LogFile(),true,"! ");
-  msg.SetModifiable(modifiable);
-  if (s_stacktrace) GenerateStackTrace(msg.Error());
+  SetExitCode();
+  if ((m_signal!=SIGTERM && m_signal!=SIGINT) &&
+      (m_exception==NULL || m_exception->Type()!=ex::normal_exit)) {
+    if (m_print) {
+      msg.SetModifiable(false);
+      GenerateStackTrace(msg.LogFile(),true,"! ");
+      msg.SetModifiable(modifiable);
+      if (m_stacktrace) GenerateStackTrace(msg.Error());
+    }
+    rpa.gen.SetVariable
+      ("SHERPA_STATUS_PATH",rpa.gen.Variable("SHERPA_RUN_PATH")+
+       "/Status__"+rpa.gen.Timer().TimeString(3));
+    msg.Error()<<METHOD<<"(): Pre-crash status saved to '"
+	       <<rpa.gen.Variable("SHERPA_STATUS_PATH")<<"'."<<std::endl;
+    MakeDir(rpa.gen.Variable("SHERPA_STATUS_PATH"),493);
+  }
   if (!ApproveTerminate()) {
-    s_exception=NULL;
+    m_exception=NULL;
     return;
   }
   PrepareTerminate();
-  s_prepared=true;
-  if (!s_active) abort();
-  SetExitCode();
-  Exit(s_exitcode);
+  m_prepared=true;
+  if (!m_active) abort();
+  Exit(m_exitcode);
+}
+
+void Exception_Handler::AddTesterFunction(bool (*function)(void))
+{ 
+  Init();
+  exh->m_testerfunctions.push_back(function); 
+}
+
+void Exception_Handler::AddTerminatorFunction(void (*function)(void))
+{ 
+  Init();
+  exh->m_terminatorfunctions.push_back(function); 
+}
+
+void Exception_Handler::AddTesterObject(Tester_Object *const object)
+{ 
+  Init();
+  exh->m_testerobjects.push_back(object); 
+}
+
+void Exception_Handler::AddTerminatorObject(Terminator_Object *const object)
+{ 
+  Init();
+  exh->m_terminatorobjects.push_back(object); 
 }
 
 void Exception_Handler::RemoveTesterObject(Tester_Object *const testerobject)
 {
-  if (s_noremove) return;
-  for (std::vector<Tester_Object*>::iterator toit=s_testerobjects.begin();
-       toit!=s_testerobjects.end();) {
-    if (*toit==testerobject) toit=s_testerobjects.erase(toit); 
+  if (m_noremove) return;
+  for (std::vector<Tester_Object*>::iterator toit=m_testerobjects.begin();
+       toit!=m_testerobjects.end();) {
+    if (*toit==testerobject) toit=m_testerobjects.erase(toit); 
     else ++toit;
   }
 }
@@ -141,52 +191,56 @@ void Exception_Handler::RemoveTesterObject(Tester_Object *const testerobject)
 void Exception_Handler::
 RemoveTerminatorObject(Terminator_Object *const terminatorobject)
 {
-  if (s_noremove) return;
+  if (m_noremove) return;
   for (std::vector<Terminator_Object*>::iterator 
-	 toit=s_terminatorobjects.begin();
-       toit!=s_terminatorobjects.end();) {
-    if (*toit==terminatorobject) toit=s_terminatorobjects.erase(toit); 
+	 toit=m_terminatorobjects.begin();
+       toit!=m_terminatorobjects.end();) {
+    if (*toit==terminatorobject) toit=m_terminatorobjects.erase(toit); 
     else ++toit;
   }
 }
 
 void Exception_Handler::RemoveTesterFunction(bool (*function)(void))
 {
-  if (s_noremove) return;
-  for (std::vector<Tester_Function>::iterator tfit=s_testerfunctions.begin();
-       tfit!=s_testerfunctions.end();) {
-    if (*tfit==function) tfit=s_testerfunctions.erase(tfit); 
+  if (m_noremove) return;
+  for (std::vector<Tester_Function>::iterator tfit=m_testerfunctions.begin();
+       tfit!=m_testerfunctions.end();) {
+    if (*tfit==function) tfit=m_testerfunctions.erase(tfit); 
     else ++tfit;
   }
 }
 
 void Exception_Handler::RemoveTerminatorFunction(void (*function)(void))
 {
-  if (s_noremove) return;
+  if (m_noremove) return;
   for (std::vector<Terminator_Function>::iterator 
-	 tfit=s_terminatorfunctions.begin();
-       tfit!=s_terminatorfunctions.end();) {
-    if (*tfit==function) tfit=s_terminatorfunctions.erase(tfit); 
+	 tfit=m_terminatorfunctions.begin();
+       tfit!=m_terminatorfunctions.end();) {
+    if (*tfit==function) tfit=m_terminatorfunctions.erase(tfit); 
     else ++tfit;
   }
 }
 
 void Exception_Handler::SetExitCode()
 {
-  s_print=true;
-  if (s_exception==NULL) return;
-  if (s_exception->m_class=="ISR_Handler")                 s_exitcode=151;
-  else if (s_exception->m_class=="MI_Base")                s_exitcode=211;
-  else if (s_exception->m_class=="Simple_Chain")           s_exitcode=212;
-  else if (s_exception->m_class=="Matrix_Element_Handler") s_exitcode=201;
-  else s_exitcode=1;
-  if (s_exception->m_type==ex::normal_exit) s_print=false;
+  m_print=true;
+  if (m_exception==NULL) return;
+  if (m_exception->m_class=="Matrix_Element_Handler") m_exitcode=201;
+  else m_exitcode=1;
+  if (m_exception->m_type==ex::normal_exit) m_print=false;
+}
+
+void ATOOLS::SignalHandler(int signal) 
+{
+  exh->Init();
+  exh->SignalHandler(signal);
+  exh->Reset();
 }
 
 void Exception_Handler::SignalHandler(int signal) 
 {
-  s_signal=signal;
-  s_print=true;
+  m_signal=signal;
+  m_print=true;
   std::string input="y";
   msg.Error()<<std::endl<<om::bold<<"Exception_Handler::SignalHandler: "
 	     <<om::reset<<om::blue<<"Signal "<<om::reset<<om::bold
@@ -194,26 +248,26 @@ void Exception_Handler::SignalHandler(int signal)
 	     <<om::reset<<om::blue<<" caught. "<<om::reset<<std::endl;
   switch (signal) {
   case SIGSEGV:
-    ++s_nsegv;
+    ++m_nsegv;
     GenerateStackTrace(std::cout,false);
     if (!rpa.gen.BatchMode()) {
       msg.Error()<<"   Do you want to debug the program (y/n)? "<<om::reset;
       std::cin>>input;
       if (input=="y" || input=="Y") {
-	system((std::string("gdb Sherpa ")+ToString(getpid())).c_str());
+	system(("gdb "+m_progname+" "+ToString(getpid())).c_str());
 	kill(getpid(),9);
       }
     }
-    if (s_nsegv>3) {
+    if (m_nsegv>3) {
       msg.Error()<<om::reset<<"   Abort immediately."<<om::reset<<std::endl;
       kill(getpid(),9);
     }
   case SIGABRT:
-    if (!s_active && s_prepared) abort();
+    if (!m_active && m_prepared) abort();
   case SIGTERM:
   case SIGXCPU:
     msg.Error()<<om::reset<<"   Cannot continue."<<om::reset<<std::endl;
-    s_exitcode=2;
+    m_exitcode=2;
     Terminate();
     break;
   case SIGINT:
@@ -226,14 +280,14 @@ void Exception_Handler::SignalHandler(int signal)
       kill(getpid(),9);
     }
     else if (input=="p" || input=="P") {
-      bool print=s_print;
-      s_print=true;
+      bool print=m_print;
+      m_print=true;
       PrepareTerminate();
-      s_print=print;
+      m_print=print;
       std::cin.get();
     }
     else if (input=="d" || input=="D") {
-      system((std::string("gdb Sherpa ")+ToString(getpid())).c_str());
+      system(("gdb "+m_progname+" "+ToString(getpid())).c_str());
     }
     else if (input=="s" || input=="S") {
       GenerateStackTrace(std::cout,false);
@@ -242,27 +296,28 @@ void Exception_Handler::SignalHandler(int signal)
       std::cin.get();
     }
     if (input!="y" && input!="Y") return;
-    s_exitcode=1;
+    m_exitcode=1;
     Terminate();
     break;
   case SIGBUS:
-    ++s_nbus;
-    if (s_nbus>3) {
+    ++m_nbus;
+    if (m_nbus>3) {
       msg.Error()<<om::reset<<"   Abort immediately."<<om::reset<<std::endl;
       kill(getpid(),9);
     }
     GenerateStackTrace(std::cout,false);
     msg.Error()<<om::reset<<"   Cannot continue."<<om::reset<<std::endl;
-    s_exitcode=3;
+    m_exitcode=3;
     Terminate();
     break;
   case SIGFPE:
-    msg.Error()<<"   Sherpa does not throw floating point exceptions."
-	       <<om::reset<<std::endl;
+    msg.Error()<<"   Floating point exception."<<om::reset<<std::endl;
+    m_exitcode=1;
+    Terminate();
     break;
   default:
     msg.Error()<<"   Cannot handle signal."<<om::reset<<std::endl;
-    s_exitcode=1;
+    m_exitcode=1;
     Terminate();
   }
 }
@@ -300,3 +355,46 @@ void Exception_Handler::GenerateStackTrace(std::ostream &ostr,
   if (endline) ostr<<std::endl;
 #endif
 }
+
+void Exception_Handler::SetActive(const bool active)    
+{ 
+  Init(); 
+  exh->m_active=active; 
+}
+
+void Exception_Handler::SetStackTrace(const bool trace) 
+{ 
+  Init(); 
+  exh->m_stacktrace=trace;  
+}
+
+void Exception_Handler::SetProgramName(const std::string &name)
+{ 
+  Init(); 
+  exh->m_progname=name; 
+}
+
+bool Exception_Handler::Active()     
+{ 
+  Init(); 
+  return exh->m_active;     
+}
+
+bool Exception_Handler::StackTrace() 
+{ 
+  Init(); 
+  return exh->m_stacktrace; 
+}
+
+Exception *Exception_Handler::LastException() 
+{ 
+  Init(); 
+  return exh->m_exception; 
+}
+
+unsigned int Exception_Handler::LastSignal()    
+{ 
+  Init(); 
+  return exh->m_signal;    
+}
+

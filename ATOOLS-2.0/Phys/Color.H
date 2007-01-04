@@ -7,6 +7,7 @@
 */
 
 #include <iostream>
+#include <string>
 #ifndef USING__Color_only
 #include "MyComplex.H"
 #else

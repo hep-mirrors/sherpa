@@ -7,10 +7,7 @@ using namespace ATOOLS;
 
 template void copy_if<>(Particle_List::iterator, Particle_List::iterator, 
 			std::back_insert_iterator<Particle_List>,
-			const Is_Gluon &);
-template void copy_if<>(Particle_List::iterator, Particle_List::iterator, 
-			std::back_insert_iterator<Particle_List>,
-			const Is_Photon &);
+			const Is_KF &);
 template void copy_if<>(Particle_List::iterator, Particle_List::iterator, 
 			std::back_insert_iterator<Particle_List>,
 			const Is_Final_State &);

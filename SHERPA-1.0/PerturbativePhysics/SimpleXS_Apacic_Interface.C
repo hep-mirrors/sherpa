@@ -50,12 +50,19 @@ SimpleXS_Apacic_Interface::~SimpleXS_Apacic_Interface()
   delete p_tools;
 }
 
-int SimpleXS_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob *blob) 
+Return_Value::code SimpleXS_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob *blob) 
 {
-  if (blob==NULL) return false;
+  if (blob==NULL) {
+    return Return_Value::Error;
+    msg.Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
+	       <<"   No blob found, will return 'Error' and hope for the best."<<std::endl;
+  }
   if ((blob->NInP()!=2) || (blob->NOutP()!=2)) {
-    msg.Error()<<*blob;
-    THROW(fatal_error,"Cannot handle blobs with more than 4 legs.");
+    msg.Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
+	       <<"   Cannot handle blobs with different than four legs:"<<std::endl
+	       <<(*blob)
+	       <<"   Will return 'Error' and hope for the best."<<std::endl;
+    return Return_Value::Error;
   }
   for (size_t i=0;i<(size_t)blob->NInP();++i) {
     p_flavours[i]=blob->InParticle(i)->Flav();
@@ -76,9 +83,15 @@ int SimpleXS_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob *blob)
   return InitColours(blob);
 }
 
-int SimpleXS_Apacic_Interface::InitColours(ATOOLS::Blob *blob) 
+Return_Value::code SimpleXS_Apacic_Interface::InitColours(ATOOLS::Blob *blob) 
 {
-  if (!p_xs->SetColours(p_momenta)) return 0; 
+  if (!p_xs->SetColours(p_momenta)) {
+    msg.Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
+	       <<"   Could not set initial colour in "<<std::endl
+	       <<*blob
+	       <<"   Return 'Error' and hope for the best."<<std::endl;
+    return Return_Value::Error;
+  } 
   if (blob->InParticle(0)->Momentum()[3]<blob->InParticle(1)->Momentum()[3]) {
     blob->SwapInParticles(0,1);
     blob->SwapOutParticles(0,1);
@@ -91,11 +104,11 @@ int SimpleXS_Apacic_Interface::InitColours(ATOOLS::Blob *blob)
       blob->OutParticle(i)->SetFlow(j+1,p_xs->Colours()[i+blob->NInP()][j]);
     }
   }
-  m_scale=p_xs->Scale(PHASIC::stp::as);
+  m_scale=p_xs->Scale(PHASIC::stp::ren);
   double E=sqrt(p_mehandler->GetISR_Handler()->Pole())/2.;
-  if (m_ini) p_tools->InitializeIncoming(blob,E);
-  if (m_fin) p_tools->InitializeOutGoing(blob,E);
-  return 1;
+  if (m_ini) p_tools->InitializeIncoming(blob,E,m_scale);
+  if (m_fin) p_tools->InitializeOutGoing(blob,E,m_scale);
+  return Return_Value::Success;
 }
 
 bool SimpleXS_Apacic_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
@@ -105,7 +118,7 @@ bool SimpleXS_Apacic_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
     p_psme_is = new Blob();
     p_psme_is->SetType(btp::ME_PS_Interface_IS);
     p_psme_is->SetTypeSpec("Sherpa");
-    p_psme_is->SetStatus(1);
+    p_psme_is->SetStatus(blob_status::needs_showers);
     p_psme_is->SetId();
     for (int i=0;i<p_hard->NInP();++i) {
       p_psme_is->AddToOutParticles(p_hard->InParticle(i));
@@ -116,7 +129,7 @@ bool SimpleXS_Apacic_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
     p_psme_fs = new Blob();
     p_psme_fs->SetType(btp::ME_PS_Interface_FS);
     p_psme_fs->SetTypeSpec("Sherpa");
-    p_psme_fs->SetStatus(1);
+    p_psme_fs->SetStatus(blob_status::needs_showers);
     p_psme_fs->SetId();
     for (int i=0;i<p_hard->NOutP();++i) {
       p_psme_fs->AddToInParticles(p_hard->OutParticle(i));
@@ -125,29 +138,36 @@ bool SimpleXS_Apacic_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
     p_psme_fs->AddData("OrderStrong",new 
 		       Blob_Data<double>((double)p_xs->OrderStrong()));
     p_psme_fs->AddData("OrderEWeak",new
-		       Blob_Data<double>((double)p_xs->OrderEW()));
+		       Blob_Data<double>((double)p_xs->OrderEWeak()));
     blobs->push_back(p_psme_fs);
   }
+  p_shower->FillBlobs(blobs); 
   return true;
 }
 
 int SimpleXS_Apacic_Interface::PerformShowers()
 {
-  int jetveto=-1;
-  double qmin2i=0., qmin2f=0.; 
+  int jetveto(-1);
   if (p_mehandler->UseSudakovWeight()) {
+    double qmin2i, qmin2f; 
     p_tools->JetVetoPt2(qmin2i,qmin2f);
-    p_shower->SetJetvetoPt2(qmin2i,qmin2f);
-    double scale=p_mehandler->FactorisationScale();
-    p_shower->SetFactorisationScale(scale);
+    if (p_shower->GetIniTrees()!=NULL) {
+      APACIC::Knot *irt1(p_shower->GetIniTrees()[0]->GetRoot());
+      APACIC::Knot *irt2(p_shower->GetIniTrees()[1]->GetRoot());
+      irt1->qjv=irt2->qjv=sqrt(qmin2i);
+      irt1->maxjets=irt2->maxjets=p_mehandler->MaxQCDJets();
+    }
+    APACIC::Knot *frt(p_shower->GetFinTree()->GetRoot());
+    frt->qjv=sqrt(qmin2f);
+    frt->maxjets=p_mehandler->MaxQCDJets();
     jetveto=2;
+    msg_Debugging()<<METHOD<<"(): {\n"
+		   <<"   initial = "<<m_ini<<", final = "<<m_fin<<"\n"
+		   <<"   maxpt ini = "<<sqrt(qmin2i)<<" maxpt fin = "<<sqrt(qmin2f)
+		   <<" vs. "<<p_hard->OutParticle(0)->Momentum().PPerp()
+		   <<"\n}"<<std::endl;
   }
-  msg_Debugging()<<"SimpleXS_Apacic_Interface::PerformShowers(): {\n"
-		 <<"   initial = "<<m_ini<<", final = "<<m_fin<<"\n"
-		 <<"   sudakov weight = "<<p_mehandler->UseSudakovWeight()<<"\n"
-		 <<"   maxpt ini = "<<qmin2i<<" maxpt fin = "<<qmin2f
-		 <<" vs. "<<p_hard->OutParticle(0)->Momentum().PPerp2()
-		 <<"\n}"<<std::endl;
+  p_shower->SetFactorisationScale(p_mehandler->FactorisationScale());
   return p_shower->PerformShowers(jetveto,0,p_mehandler->GetISR_Handler()->X1(),
 				  p_mehandler->GetISR_Handler()->X2(),rpa.gen.Ycut());
 }

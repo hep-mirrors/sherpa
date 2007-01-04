@@ -48,12 +48,12 @@ namespace ANALYSIS {
     Primitive_Observable_Base * Copy() const;
   };
 
-  class One_Particle_EtaSymm : public One_Particle_Observable_Base {
-    void Evaluate(const ATOOLS::Vec4D & mom, double weight, int ncount);
+  class One_Particle_Y : public One_Particle_Observable_Base {  
+    void Evaluate(const ATOOLS::Vec4D & mom, double weight, int ncount); 
   public:
-    One_Particle_EtaSymm(const ATOOLS::Flavour & flav,
-			 int type,double xmin,double xmax,int nbins,
-			 const std::string & listname=std::string(""));
+    One_Particle_Y(const ATOOLS::Flavour & flav,
+		   int type,double xmin,double xmax,int nbins,
+		   const std::string & listname=std::string(""));
     Primitive_Observable_Base * Copy() const;
   };
 
@@ -90,36 +90,6 @@ namespace ANALYSIS {
     void Evaluate(const ATOOLS::Particle_List & plist, 
 		  double weight, int ncount);
   };
-   
-// ---------------------------------------------------------------------------
-   
-  class One_Particle_Px : public One_Particle_Observable_Base {  
-    void Evaluate(const ATOOLS::Vec4D & mom, double weight, int ncount); 
-  public:
-    One_Particle_Px(const ATOOLS::Flavour & flav,
-		    int type,double xmin,double xmax,int nbins,
-		    const std::string & listname=std::string(""));
-    Primitive_Observable_Base * Copy() const;
-  };
-
-  class One_Particle_Py : public One_Particle_Observable_Base {  
-    void Evaluate(const ATOOLS::Vec4D & mom, double weight, int ncount); 
-  public:
-    One_Particle_Py(const ATOOLS::Flavour & flav,
-		    int type,double xmin,double xmax,int nbins,
-		    const std::string & listname=std::string(""));
-    Primitive_Observable_Base * Copy() const;
-  };
-
-  class One_Particle_Pz : public One_Particle_Observable_Base {  
-    void Evaluate(const ATOOLS::Vec4D & mom, double weight, int ncount); 
-  public:
-    One_Particle_Pz(const ATOOLS::Flavour & flav,
-		    int type,double xmin,double xmax,int nbins,
-		    const std::string & listname=std::string(""));
-    Primitive_Observable_Base * Copy() const;
-  };
-
 }
 
 #endif

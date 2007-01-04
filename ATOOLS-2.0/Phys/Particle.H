@@ -6,6 +6,7 @@
 #include "Flow.H"
 
 #include <iostream>
+#include <list>
 
 namespace ATOOLS {
   class Blob;
@@ -31,6 +32,7 @@ namespace ATOOLS {
     Vec4D             m_momentum; 
     Flow            * p_flow;
     Blob            * p_startblob, * p_endblob;
+    Particle        * p_originalpart;
     double            m_dec_time, m_finalmass;
     static int        s_totalnumber;
   public:
@@ -51,9 +53,9 @@ namespace ATOOLS {
     double            FinalMass() const;
     part_status::code Status() const;
     char              Info() const;
-    const Vec4D&      XProd() const;
+    Vec4D             XProd() const;
     Blob            * ProductionBlob() const;
-    const Vec4D&      XDec() const;
+    Vec4D             XDec() const;
     Blob            * DecayBlob() const;
     double            Time() const ;
     Flavour           Flav() const ;
@@ -62,9 +64,10 @@ namespace ATOOLS {
     unsigned int      GetFlow( unsigned int ) const ;
     int               Number() const;
     int               JetNumber() const;
+    Particle        * OriginalPart() const;
     void   SetMomentum(const Vec4D &);
     void   SetFinalMass(const double=-1,const double=-1);
-    void   SetStatus(part_status::code=part_status::undefined );
+    void   SetStatus(part_status::code=part_status::undefined);
     void   SetInfo(char);
     void   SetProductionBlob(Blob *);
     void   SetDecayBlob(Blob *);
@@ -75,16 +78,26 @@ namespace ATOOLS {
     void   SetFlow(int code_index,int code=0);
     void   SetNumber(const int number=0);
     void   SetJetNumber(const int);
+    void   SetOriginalPart(Particle*);
     bool operator==(Particle part);
-    static void   ResetCounter() { s_totalnumber = 0; }
-    static int    Counter()      { return s_totalnumber; }
-    inline static void Reset()   { s_currentnumber = 0; }
+    static void   ResetCounter(const int number=0)  { s_totalnumber = number; }
+    static int    Counter()                         { return s_totalnumber; }
+    inline static void Reset(const int number=0)    { s_currentnumber = number; }
     inline static long unsigned int CurrentNumber() { return s_currentnumber; }
   };
 
-  typedef std::vector<Particle *>          Particle_Vector;
-  typedef std::map<ATOOLS::Particle *,int> Particle_Int_Map;
-  typedef std::map<int,ATOOLS::Particle *> Int_Particle_Map;
+  typedef std::vector<Particle *>   Particle_Vector;
+  typedef std::map<Particle *,int>  Particle_Int_Map;
+  typedef std::map<int,Particle *>  Int_Particle_Map;
+
+  typedef std::list<Particle*>      Part_List;
+  typedef Part_List::iterator       Part_Iterator;
+  typedef Part_List::const_iterator Part_Const_Iterator;
+
+  std::ostream & operator<<(std::ostream & s, const Part_List & pl);
+
+  typedef std::map<int,std::pair<ATOOLS::Particle *,bool> > Translation_Map;
+
 
 
 

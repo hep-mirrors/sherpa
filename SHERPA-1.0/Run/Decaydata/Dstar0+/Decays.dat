@@ -1,6 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-{421,211}	 | 0.667 [Pythia]	 | Dstar0+_Dpi+.dat;
-{411,111}	 | 0.333 [Pythia]	 | Dstar0+_D+pi.dat;
-
-! NO_FULLDECAY   ! use this option: no decay of daughters
-! NO_ANTI        ! use this option: anti-mother does not decay

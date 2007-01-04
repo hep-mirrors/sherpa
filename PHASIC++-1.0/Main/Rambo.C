@@ -6,9 +6,9 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 
-Rambo::Rambo(int _nin,int _nout,const Flavour * fl)// : nin(_nin), nout(_nout)
+Rambo::Rambo(int _nin,int _nout,const Flavour * fl,bool use_psmass)
 {
-  nin=_nin;nout=_nout;
+  nin=_nin; nout=_nout; m_use_psmass=use_psmass;
   xm2 = new double[nin+nout+1];
   p2  = new double[nin+nout+1];  
   E   = new double[nin+nout+1];
@@ -17,7 +17,7 @@ Rambo::Rambo(int _nin,int _nout,const Flavour * fl)// : nin(_nin), nout(_nout)
   rannum=0;
   massflag = 0;
   for (short int i=0;i<nin+nout;i++) {
-    ms[i] = ATOOLS::sqr(fl[i].Mass());
+    ms[i] = m_use_psmass ? sqr(fl[i].PSMass()) : sqr(fl[i].Mass());
     if (!ATOOLS::IsZero(ms[i])) massflag = 1;
   } 
 
@@ -35,8 +35,6 @@ Rambo::~Rambo()
   if (xm2) { delete [] xm2; xm2 = 0; }
   if (p2)  { delete [] p2;  p2  = 0; }
   if (E)   { delete [] E;   E   = 0; }
-  if (ms)  { delete [] ms;  ms  = 0; }
-  if (rans){ delete [] rans;rans = 0; }
 }
 
 
@@ -67,7 +65,7 @@ void Rambo::GeneratePoint(Vec4D * p,Cut_Data * cuts)
     C     = 2*ran.Get()-1;
     S     = sqrt(1-C*C);
     F     = 2*M_PI*ran.Get();
-    Q     = -log(ran.Get()*ran.Get());
+    Q     = -log( std::min( 1.0-1.e-10, std::max(1.e-10,ran.Get()*ran.Get()) ) );
     p[i]  = Vec4D(Q, Q*S*::sin(F), Q*S*cos(F), Q*C);
     R    += p[i]; 
   }

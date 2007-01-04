@@ -1,9 +1,0 @@
-echo "=========================================="
-echo "  Processing..... configure ADICIC++-0.0  "
-echo "=========================================="
-libtoolize --force
-aclocal
-automake -a
-autoconf
-./configure --disable-cvsinclude
-

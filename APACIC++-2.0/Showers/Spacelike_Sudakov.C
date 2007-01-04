@@ -95,7 +95,8 @@ void Spacelike_Sudakov::AcceptBranch(const Knot *const mo)
 		 <<", thcrit = "<<sister->thcrit<<"\n";
 }
 
-bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,int & extra_pdf) 
+bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,
+			     double m2p,int & extra_pdf) 
 {
   PROFILE_HERE;
   mo->tmax = mo->t;  // last start t
@@ -120,16 +121,27 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,int & extra_pdf)
     return false; 
   }
   
-  switch (m_pdf_scheme) {
-  case 0:
-    p_pdf->Calculate(m_x,Max(-m_t,-m_t0));
-    break;
-  default:
-    p_pdf->Calculate(m_x,Max(mo->pt2lcm,-m_t0));
+  double q2pdf(m_facscale);
+  if (!extra_pdf) {
+    switch (m_pdf_scheme) {
+    case 0: q2pdf=Max(-m_t,-m_t0); break;
+    default: q2pdf=Max(mo->pt2lcm+mo->tout,-m_t0);
+    }
   }
-  
+  q2pdf*=m_pdf_scale_fac;
+  msg_Debugging()<<METHOD<<"(): s' = "<<sprime<<", Q = "
+		 <<sqrt(q2pdf)<<", x = "<<m_x<<", "
+		 <<m_zmin<<" < z < "<<m_zmax<<"\n";
+  if (q2pdf<p_pdf->Q2Min()) {
+    mo->t    = mo->tout;
+    mo->stat = 0;
+    return false;
+  }
+  p_pdf->Calculate(m_x,q2pdf);
+
+  CrudeInt(m_zmin,m_zmax);
+
   while (m_t<m_t0) {
-    CrudeInt(m_zmin,m_zmax);
     ProduceT();
     if (mo->right && m_t<mo->right->t) continue;
     if (m_t>m_t0) {
@@ -138,11 +150,13 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,int & extra_pdf)
       return false;     
     }
     SelectOne();
-    m_z   = GetZ();   
-    m_pt2 = -(1.-m_z)*m_t;
-    if (m_pt2<m_pt2min) continue;
+    m_z   = GetZ();
+    m_ta  = sqr(GetFlA().PSMass()); 
+    m_tc  = sqr(GetFlC().PSMass());
+    m_pt2 = m_z*(1.-m_z)*m_ta-(1.-m_z)*m_t-m_z*m_tc;
+    if (m_pt2+m_ta<m_pt2min) continue;
 
-    double uhat(-m_t - sprime* (1.-m_z)/m_z);
+    double uhat(m_ta+m_tc+m2p-m_t-sprime*(1.-m_z)/m_z);
 
     if (uhat<0. && !Veto(mo,extra_pdf)) {
       if (!RemnantVeto(mo)) {
@@ -162,9 +176,9 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,int & extra_pdf)
 void Spacelike_Sudakov::ProduceT() {
   if (m_lastint <0.) m_t = +1.;            
   else {
-    double rn(ran.Get());
-    if (IsZero( 2.*M_PI*log(rn) / (m_lastint*m_pdf_fac) )) m_t=m_t0;
-    else m_t *= exp( 2.*M_PI*log(rn) / (m_lastint*m_pdf_fac) );
+    double rn(ran.Get()), ne(2.*M_PI*log(rn)/(m_lastint*m_pdf_fac));
+    if (IsZero(ne)) m_t=m_t0;
+    else m_t*=exp(ne);
   }
   return;
 }
@@ -172,8 +186,6 @@ void Spacelike_Sudakov::ProduceT() {
 bool Spacelike_Sudakov::Veto(Knot * mo,int & extra_pdf) 
 {  
   PROFILE_HERE;
-  if ((1.-m_z)*m_t>m_t0)         return true;
-
   // 1. masses, z-range and splitting function
   if (!extra_pdf && MassVeto(0)) return true;
 
@@ -195,36 +207,25 @@ bool Spacelike_Sudakov::Veto(Knot * mo,int & extra_pdf)
 bool Spacelike_Sudakov::MassVeto(int extra_pdf) 
 {
   PROFILE_HERE;
-  double weight(p_pdf->GetXPDF(GetFlB())/(p_pdf->GetXPDF(GetFlA())*m_pdf_fac)); 
-  double q2(-m_t), firstq2(m_facscale);
-  double wb_jet(0.);
-
+  // cancel weight from CrudeInt
+  double weight(p_pdf->GetXPDF(GetFlB())/
+		(p_pdf->GetXPDF(GetFlA())*m_pdf_fac)); 
+  double q2(0.0);
   switch (m_pdf_scheme) {
-  case 0:
-    firstq2/=(1.-m_z);
-    break;
-  default:
-    q2 = m_pt2;
+  case 0: q2=-m_t; break;
+  default: q2=m_pt2+m_ta;
   }
-
-  q2 *= m_pdf_scale_fac;
-
-  if (q2<p_pdf->Q2Min()) return true;
-
-  if (extra_pdf) {
-    p_pdf->Calculate(m_x,0.,0.,firstq2);
-    wb_jet   = p_pdf->GetXPDF(GetFlB());
-  }
-  p_pdf->Calculate(m_x,q2);
-  if (!extra_pdf) {
-    wb_jet   = p_pdf->GetXPDF(GetFlB());
-  }
+  q2*=m_pdf_scale_fac;
+  if (q2<p_pdf->Q2Min() || m_x>m_z) return true;
+//    msg_Debugging()<<METHOD<<"(): pdfa Q = "<<sqrt(q2)
+//   		 <<", x = "<<(m_x/m_z)<<"\n";
   p_pdfa->Calculate(m_x/m_z,q2);
-  double test = p_pdfa->GetXPDF(GetFlA());
+  double test(p_pdfa->GetXPDF(GetFlA()));
   if (IsZero(test)) return true;
-  weight     *= test/wb_jet * GetWeight(m_z,-m_t,0);
-
-  if (ran.Get() > weight) return true;
+  p_pdfa->Calculate(m_x,q2);
+  // weight: P(z)*(x/z*f(x/z,t))/(x*f(x,t));
+  weight*=test/p_pdfa->GetXPDF(GetFlB())*GetWeight(m_z,-m_t,0);
+  if (ran.Get()>weight) return true;
   return false;
 }
 
@@ -232,8 +233,12 @@ bool Spacelike_Sudakov::CplVeto()
 {
   switch (m_cpl_scheme) {
   case 0 :  return false;
-  case 2 :  return (GetCoupling(m_cpl_scale_fac*m_t)/GetCoupling()   > ran.Get()) ? false : true;   
-  default : return (GetCoupling(m_cpl_scale_fac*m_pt2)/GetCoupling() > ran.Get()) ? false : true;   
+  case 1 :  return GetCoupling(m_cpl_scale_fac*m_pt2)/GetCoupling()<ran.Get();   
+  case 2 :  return GetCoupling(m_cpl_scale_fac*m_t)/GetCoupling()<ran.Get();   
+  default : {
+    double q2(Max(m_pt2min,0.25*(m_pt2-m_t)));
+    return GetCoupling(m_cpl_scale_fac*q2)/GetCoupling()<ran.Get();   
+  }
   }
   return true;
 }
@@ -279,6 +284,8 @@ bool Spacelike_Sudakov::PTVeto(Knot *knot)
 	   LightConeZ(knot->right->z,E2,knot->t,
 		      knot->right->t,knot->left->t));
   double pt2(z*(1.0-z)*knot->t-(1.0-z)*knot->right->t-z*knot->left->t);
+  if (knot->part->Flav().IsGluon() && knot->right->part->Flav().IsGluon()) 
+    if (ran.Get()<0.5) pt2=knot->right->maxpt2;
   knot->smaxpt2=pt2;
   msg_Debugging()<<"ss: knot "<<knot->kn_no<<", maxpt = "
 		 <<sqrt(knot->maxpt2)<<", pt = "<<sqrt(pt2)<<std::endl;

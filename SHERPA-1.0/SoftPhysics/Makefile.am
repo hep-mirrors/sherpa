@@ -1,12 +1,10 @@
 pkglib_LTLIBRARIES       =	libSherpaSoftPhysics.la
-
 libSherpaSoftPhysics_la_SOURCES	      =	\
 					Primordial_KPerp.C \
 					Beam_Remnant_Handler.C \
 				   	Fragmentation_Handler.C \
 					Hadron_Decay_Handler.C
-
-pkginclude_HEADERS        =	\
+pkginclude_HEADERS    =	\
 			Primordial_KPerp.H \
 			Beam_Remnant_Handler.H \
 		 	Fragmentation_Handler.H \
@@ -14,8 +12,9 @@ pkginclude_HEADERS        =	\
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@ @CONDITIONAL_ROOTFLAGS@
 
-INCLUDES      = @SHERPAINCS@ @CONDITIONAL_HADRONSINCS@ @APACICINCS@ @AMEGICINCS@ \
+INCLUDES      = @SHERPAINCS@ @CONDITIONAL_HADRONSINCS@ @APACICINCS@ \
+		@AMEGICINCS@ @AHADICINCS@ \
 		@EXTRAXSINCS@ @PHASICINCS@ @MODELINCS@ @PDFINCS@ \
-		@BEAMINCS@ @ATOOLSINCS@ @CONDITIONAL_AHADICINCS@ @CONDITIONAL_ROOTINCS@
+		@BEAMINCS@ @ATOOLSINCS@ @CONDITIONAL_ROOTINCS@
 
 EXTRA_DIST    = @SVNINCLUDE@

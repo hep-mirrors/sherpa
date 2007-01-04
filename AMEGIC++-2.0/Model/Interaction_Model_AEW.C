@@ -35,16 +35,10 @@ Interaction_Model_AEW::Interaction_Model_AEW(MODEL::Model_Base * _model,
   kappa_p  = Kabbala(string("\\kappa^{gamma}"),ScalarConstant(std::string("kappa_gamma")));
   lambda_p = Kabbala(string("\\lambda^{gamma}"),ScalarConstant(std::string("lambda_gamma")));
   g4_p     = Kabbala(string("g_4^{gamma}"),ScalarConstant(std::string("g4_gamma")));
-  g5_p     = Kabbala(string("g_5^{gamma}"),ScalarConstant(std::string("g5_gamma")));
-  kappat_p = Kabbala(string("\\kappat^{gamma}"),ScalarConstant(std::string("kappat_gamma")));
-  lambdat_p= Kabbala(string("\\lambdat^{gamma}"),ScalarConstant(std::string("lambdat_gamma")));
   g1_Z     = Kabbala(string("g_1^{Z}"),ScalarConstant(std::string("g1_Z")));
   kappa_Z  = Kabbala(string("\\kappa^{Z}"),ScalarConstant(std::string("kappa_Z")));
   lambda_Z = Kabbala(string("\\lambda^{Z}"),ScalarConstant(std::string("lambda_Z")));
   g4_Z     = Kabbala(string("g_4^{Z}"),ScalarConstant(std::string("g4_Z")));
-  g5_Z     = Kabbala(string("g_5^{Z}"),ScalarConstant(std::string("g4_Z")));
-  kappat_Z = Kabbala(string("\\kappat^{Z}"),ScalarConstant(std::string("kappat_Z")));
-  lambdat_Z= Kabbala(string("\\lambdat^{Z}"),ScalarConstant(std::string("lambdat_Z")));
 }
 
 void Interaction_Model_AEW::c_FFV(std::vector<Single_Vertex>& vertex,int & vanz)
@@ -221,21 +215,13 @@ void Interaction_Model_AEW::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
     vertex[vanz].cpl[1]  = kcpl1.Value();  //kappa
     vertex[vanz].cpl[2]  = kcpl2.Value();  //lambda/m_W^2
     vertex[vanz].cpl[3]  = kcpl3.Value();  //i*g4
-
-    kcpl1 = kcpl*kappat_p;
-    kcpl2 = kcpl*lambdat_p/(Wyuk*Wyuk);
-    kcpl3 = kcpl*M_I*g5_p;
-    vertex[vanz].cpl.push_back(kcpl3.Value());  //g1
-    vertex[vanz].cpl.push_back(kcpl1.Value());  //kappa
-    vertex[vanz].cpl.push_back(kcpl2.Value());  //lambda/m_W^2
-    vertex[vanz].cpl.push_back(kcpl0.Value());  //lambda/m_W^2
     
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None);     
     
     vertex[vanz].nlf     = 1;
     vertex[vanz].Lorentz = new Lorentz_Function(lf::AGauge3);
-    vertex[vanz].Lorentz->SetParticleArg(1,2,0);     
+    vertex[vanz].Lorentz->SetParticleArg(1,0,2);     
   
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
@@ -252,25 +238,18 @@ void Interaction_Model_AEW::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
     kcpl1 = kcpl*kappa_Z;
     kcpl2 = kcpl*lambda_Z/(Wyuk*Wyuk);
     kcpl3 = kcpl*M_I*g4_Z;
+  
     vertex[vanz].cpl[0]  = kcpl0.Value();  //g1
     vertex[vanz].cpl[1]  = kcpl1.Value();  //kappa
     vertex[vanz].cpl[2]  = kcpl2.Value();  //lambda/m_W^2
     vertex[vanz].cpl[3]  = kcpl3.Value();  //i*g4
-
-    kcpl1 = kcpl*kappat_Z;
-    kcpl2 = kcpl*lambdat_Z/(Wyuk*Wyuk);
-    kcpl3 = kcpl*M_I*g5_Z;
-    vertex[vanz].cpl.push_back(kcpl3.Value());  //g1
-    vertex[vanz].cpl.push_back(kcpl1.Value());  //kappa
-    vertex[vanz].cpl.push_back(kcpl2.Value());  //lambda/m_W^2
-    vertex[vanz].cpl.push_back(kcpl0.Value());  //lambda/m_W^2
 
     vertex[vanz].ncf   = 1;
     vertex[vanz].Color = new Color_Function(cf::None);     
     
     vertex[vanz].nlf     = 1;
     vertex[vanz].Lorentz = new Lorentz_Function(lf::AGauge3);
-    vertex[vanz].Lorentz->SetParticleArg(1,2,0);     
+    vertex[vanz].Lorentz->SetParticleArg(1,0,2);     
 
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;

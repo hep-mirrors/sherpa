@@ -311,9 +311,10 @@ bool Input_Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const d
       for (std::map<iotype::code,NameStream *>::iterator oit=m_outmap.begin();
            oit!=m_outmap.end();oit++) {
         if (oit->second!=NULL) {
+          std::string newfilename=oit->second->basicfilename+"."+number+oit->second->fileextension;
+          if(oit->first==iotype::Sherpa) oit->second->outstream<<newfilename<<std::endl;
           oit->second->outstream.close();
-          oit->second->outstream.open((oit->second->basicfilename+"."+
-                                       number+oit->second->fileextension).c_str());
+          oit->second->outstream.open(newfilename.c_str());
           if (!oit->second->outstream.good()) { 
             msg.Error()<<"ERROR in Input_Output_Handler."<<std::endl
                        <<"   Could not open event file "
@@ -436,7 +437,7 @@ bool Input_Output_Handler::SherpaInput(ATOOLS::Blob_List *const blobs)
 
 //     position = Vec4D(pos[0],pos[1],pos[2],pos[3]);
 //     blob     = new Blob(position,blid);
-//     blob->SetStatus(status);
+//     blob->SetStatus(blob_status::code(status));
 //     blob->SetType((btp::code)type);
 //     blob->SetTypeSpec(typespec);
 //     for (int i=0;i<ninp;i++) {

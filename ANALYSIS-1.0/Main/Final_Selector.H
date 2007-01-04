@@ -10,8 +10,8 @@
 
 namespace ANALYSIS {
   struct Final_Selector_Data {
-    bool   keep,bf;
-    int    min_n, max_n;
+    bool   keep;
+    int    bf, min_n, max_n;
     double eta_min, eta_max, et_min, pt_min;
     double r_min, mass_min, mass_max, f;
     Final_Selector_Data(): 
@@ -71,6 +71,7 @@ namespace ANALYSIS {
 
     Primitive_Observable_Base * Copy() const;    
     ~Final_Selector();
+    void SetAnalysis(Primitive_Analysis  * ana);
   };
 
   class Leading_Particle : public Primitive_Observable_Base {

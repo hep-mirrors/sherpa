@@ -1,12 +1,13 @@
 #include "Four_Particle_Observables.H"
 #include "Primitive_Analysis.H"
 #include "MyStrStream.H"
+#include "Run_Parameter.H"
 
 using namespace ANALYSIS;
 using namespace ATOOLS;
 
 template <class Class>
-Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
+Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters)
 {									
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
@@ -48,7 +49,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
   Primitive_Observable_Base *					\
-  NAME::operator()(const String_Matrix &parameters) const		\
+  NAME::operator()(const Argument_Matrix &parameters) const		\
   { return GetObservable<CLASS>(parameters); }
 
 #define DEFINE_PRINT_METHOD(NAME)					\
@@ -56,7 +57,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
   { str<<"kf1 kf2 kf3 kf4 min max bins Lin|LinErr|Log|LogErr [list]"; }
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,Argument_Matrix);	\
   DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME)
 
@@ -286,7 +287,7 @@ Primitive_Observable_Base* Two_Partonpair_Theta::Copy() const {
 // ============================================================================
 
 template <class Class>
-Primitive_Observable_Base *const GetObservable2(const String_Matrix &parameters)
+Primitive_Observable_Base *const GetObservable2(const Argument_Matrix &parameters)
 {									
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
@@ -314,7 +315,7 @@ Primitive_Observable_Base *const GetObservable2(const String_Matrix &parameters)
 
 #define DEFINE_GETTER_METHOD2(CLASS,NAME)				\
   Primitive_Observable_Base *					\
-  NAME::operator()(const String_Matrix &parameters) const		\
+  NAME::operator()(const Argument_Matrix &parameters) const		\
   { return GetObservable2<CLASS>(parameters); }
 
 #define DEFINE_PRINT_METHOD2(NAME)					\
@@ -322,7 +323,7 @@ Primitive_Observable_Base *const GetObservable2(const String_Matrix &parameters)
   { str<<"min max bins Lin|LinErr|Log|LogErr [list]"; }
 
 #define DEFINE_OBSERVABLE_GETTER2(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,Argument_Matrix);	\
   DEFINE_GETTER_METHOD2(CLASS,NAME)					\
   DEFINE_PRINT_METHOD2(NAME)
 
@@ -383,4 +384,66 @@ void Di_Mass::Evaluate(const ATOOLS::Blob_List & blobs,double weight, int ncount
 Primitive_Observable_Base * Di_Mass::Copy() const 
 {
   return new Di_Mass(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+
+// ==================================================================
+
+DEFINE_OBSERVABLE_GETTER(Four_Particle_PlaneAngleCMS,
+                         Four_Particle_PlaneAngleCMS_Getter,"PlaneAngleCMS")
+
+void Four_Particle_PlaneAngleCMS::Evaluate(const Vec4D & mom1,const Vec4D & mom2,
+                                        const Vec4D & mom3,const Vec4D & mom4,
+                                        double weight, int ncount)
+{
+  Vec4D sum = mom1+mom2+mom3+mom4;
+  Poincare boost(sum);
+  Vec4D p1 = boost*mom1;
+  Vec4D p2 = boost*mom2;
+  Vec4D p3 = boost*mom3;
+  Vec4D p4 = boost*mom4;
+  Vec3D normal1 = cross(Vec3D(p1),Vec3D(p3+p4));
+  Vec3D normal2 = cross(Vec3D(p3),Vec3D(p3+p4));
+  double costh  = (normal1*normal2)/(normal1.Abs()*normal2.Abs());
+  p_histo->Insert(acos(costh),weight,ncount);
+}
+
+Four_Particle_PlaneAngleCMS::Four_Particle_PlaneAngleCMS(const std::vector<Flavour> & flavs,
+                                                   int type,double xmin,double xmax,int nbins,
+                                                   const std::string& listname) :
+  Four_Particle_Observable_Base(flavs,type,xmin,xmax,nbins,listname,"PlaneAngleCMS") { }
+
+Primitive_Observable_Base * Four_Particle_PlaneAngleCMS::Copy() const
+{
+  return new Four_Particle_PlaneAngleCMS(m_flavs,m_type,m_xmin,m_xmax,m_nbins,
+                                      m_listname);
+}
+
+// ==================================================================
+
+DEFINE_OBSERVABLE_GETTER(Four_Particle_EnergyCMS,
+                         Four_Particle_EnergyCMS_Getter,"4EnergyCMS")
+
+void Four_Particle_EnergyCMS::Evaluate(const Vec4D & mom1,const Vec4D & mom2,
+                                       const Vec4D & mom3,const Vec4D & mom4,
+                                       double weight, int ncount)
+{
+  Vec4D sum = mom1+mom2+mom3+mom4;
+  Poincare boost(sum);
+  Vec4D p1 = boost*mom1;
+  Vec4D p2 = boost*mom2;
+  Vec4D p3 = boost*mom3;
+  Vec4D p4 = boost*mom4;
+  double E = p1[0];
+  p_histo->Insert(2.0*E/rpa.gen.Ecms(),weight,ncount);
+}
+
+Four_Particle_EnergyCMS::Four_Particle_EnergyCMS(const std::vector<Flavour> & flavs,
+                                                   int type,double xmin,double xmax,int nbins,
+                                                   const std::string& listname) :
+  Four_Particle_Observable_Base(flavs,type,xmin,xmax,nbins,listname,"4EnergyCMS") { }
+
+Primitive_Observable_Base * Four_Particle_EnergyCMS::Copy() const
+{
+  return new Four_Particle_EnergyCMS(m_flavs,m_type,m_xmin,m_xmax,m_nbins,
+                                      m_listname);
 }

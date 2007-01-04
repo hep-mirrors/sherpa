@@ -1,24 +1,37 @@
 #!/bin/bash
 
 SIGNAL=2
-for I in $* ; do
-  if [ "$I" = "-j" ]; then DJOB=TRUE 
-  elif [ "$I" = "-s" ]; then DSIGNAL=TRUE 
-  elif [ "$I" = "-l" ]; then LOCAL=TRUE 
-  elif [ "$I" = "-h" ]; then echo && \
-    echo "killjob version 1.0" && echo && \
-    echo "options: -j <job>       kill job running in directory <job>" && \
-    echo "         -s <signal>    kill job with signal <signal>" && \
-    echo "         -l             run on local host" && \
-    echo "         -h             display this help and exit" && echo && \
-    exit 0
-  elif [ "$DJOB" = "TRUE" ]; then DJOB="" && JOB=$I
-  elif [ "$DSIGNAL" = "TRUE" ]; then DSIGNAL="" && SIGNAL=$I
-  else echo "killjob: error: unrecognized option '$I'. try '-h'" && \
-    exit 1 
-  fi
+
+print_help() {
+  echo "killjob version 1.0" && echo && \
+  echo "options: -j <job>       kill job running in directory <job>" && \
+  echo "         -s <signal>    kill job with signal <signal>" && \
+  echo "         -l             run on local host" && \
+  echo "         -h             display this help and exit" && \
+  echo
+}
+
+while getopts :j:s:lh OPT
+do
+  case $OPT in
+  j) JOB=$OPTARG ;;
+  s) SIGNAL=$OPTARG ;;
+  l) LOCAL=TRUE ;; 
+  h) print_help && exit 0 ;;
+  \?)
+    shift `expr $OPTIND - 1`
+    echo -n "killjob: error: unrecognized option "
+    if [ $OPTARG != "-" ]; then echo "'-$OPTARG'. try '--help'"
+    else echo "'$1'. try '--help'"
+    fi
+    print_help && exit 1
+  esac
 done
 
+if [ "$JOB" = "" ] ; then
+  echo "killjob: error: no job specified"
+  exit 1
+fi
 if [ "$LOCAL" = "TRUE" ] ; then 
 
   ITEM=0

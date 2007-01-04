@@ -67,7 +67,7 @@ namespace SHERPA {
 #ifdef USING__CLHEP
     HepMC_Interface          * p_hepmc;
 #endif
-    ATOOLS::HepEvt_Interface * p_hepevt;
+    HepEvt_Interface * p_hepevt;
     std::ifstream            * p_instream;
     std::string                m_path, m_filename, m_file;
     long int                   m_filesize, m_evtnumber, m_evtcount;

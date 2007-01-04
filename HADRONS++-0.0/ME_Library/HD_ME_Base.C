@@ -1,11 +1,6 @@
 #include "HD_ME_Base.H"
 #include "Message.H"
 
-#define COMPILE__Getter_Function
-#define OBJECT_TYPE HADRONS::HD_ME_Base
-#define PARAMETER_TYPE HADRONS::Flavour_Info
-#include "Getter_Function.C"
-
 using namespace HADRONS;
 using namespace ATOOLS;
 using namespace std;
@@ -35,15 +30,18 @@ Isotropic::Isotropic(int _nout,Flavour * _flavs,string _met) :
 {
   m_metype = "Isotropic";
   if (msg.LevelIsDebugging()) {
-    msg.Tracking()<<"Initialised Isotropic("<<m_nout<<") for "<<endl
+    msg.Out()<<"Initialised Isotropic("<<m_nout<<") for "<<endl
 	     <<"   "<<p_flavs[0]<<" ->";
-    for (int i=1;i<1+m_nout;i++) msg.Tracking()<<" "<<p_flavs[i];
-    msg.Tracking()<<endl;
+    for (int i=1;i<1+m_nout;i++) msg.Out()<<" "<<p_flavs[i];
+    msg.Out()<<endl;
   }
 }
 
-DECLARE_GETTER(Isotropic_Getter,"Isotropic",HD_ME_Base,Flavour_Info);
-HD_ME_Base* Isotropic_Getter::operator()(const Flavour_Info &parameters) const
-{ return new Isotropic(parameters.nout, parameters.flavs); }
-void Isotropic_Getter::PrintInfo(std::ostream &str,const size_t width) const
-{ str<<"implement me"; }
+
+void Isotropic::operator()(
+                   const ATOOLS::Vec4D      * p,
+                   ATOOLS::Spin_Amplitudes  * amps,
+                   int                        k0_n )
+{
+  amps->CreateTrivial(Complex(1.0,0.0));
+}

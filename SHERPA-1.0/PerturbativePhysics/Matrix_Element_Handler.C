@@ -18,12 +18,6 @@ using namespace std;
 //                Particle_Map
 // ============================================================
 
-namespace ATOOLS {
-
-  INSTANTIATE_OBJECT(Matrix_Element_Handler)
-
-}
-
 Particle_Map::Particle_Map():
   m_flip_anti(false), m_change_flavs(false)
 {
@@ -77,19 +71,17 @@ bool Particle_Map::Apply(int n, ATOOLS::Flavour * flavs, ATOOLS::Vec4D * moms)
 // ============================================================
 
 Matrix_Element_Handler::Matrix_Element_Handler() :
-  Object("ME_Handler"),
   m_dir("./"), m_file(""), p_amegic(NULL), p_simplexs(NULL),
   p_isr(NULL), m_mode(0), m_weight(1.), m_ntrial(1), m_xsecntrial(0),
-  m_sntrial(0), m_xsecsntrial(0), m_name(""), m_eventmode(1), 
+  m_sntrial(0), m_name(""), m_eventmode(1), 
   m_sudakovon(0), m_apply_hhmf(0), m_ini_swaped(0), p_dataread(NULL), p_flavs(NULL), p_moms(NULL) {}
 
 Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _file,
 					       MODEL::Model_Base * _model,
 					       Matrix_Element_Handler * _me) :
-  Object("ME_Handler"),
   m_dir(_dir), m_file(_file), p_amegic(NULL), p_simplexs(NULL),
   p_isr(NULL), m_mode(0), m_weight(1.), m_ntrial(1), m_xsecntrial(0), 
-  m_sntrial(0), m_xsecsntrial(0), m_name(""), m_eventmode(1),
+  m_sntrial(0), m_name(""), m_eventmode(1),
   m_sudakovon(0), m_apply_hhmf(0), m_ini_swaped(0), p_dataread(NULL), p_flavs(NULL), p_moms(NULL) 
 {
   if (_me) p_amegic = _me->GetAmegic(); 
@@ -104,10 +96,9 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
 					       BEAM::Beam_Spectra_Handler * _beam,
 					       PDF::ISR_Handler * _isr,
 					       Matrix_Element_Handler * _me) :
-  Object("ME_Handler"),
   m_dir(_dir), m_file(_file), p_amegic(NULL), p_simplexs(NULL),
   p_isr(_isr), m_mode(0), m_weight(1.), m_ntrial(1), m_xsecntrial(0),
-  m_sntrial(0), m_xsecsntrial(0), m_sudakovon(0), m_apply_hhmf(0),
+  m_sntrial(0), m_sudakovon(0), m_apply_hhmf(0),
   m_ini_swaped(0), p_flavs(NULL), p_moms(NULL)
 {
   p_dataread        = new Data_Read(m_dir+m_file);
@@ -373,7 +364,7 @@ bool Matrix_Element_Handler::GenerateOneEvent(ATOOLS::Decay_Channel * _dc,double
 double Matrix_Element_Handler::FactorisationScale()
 {
   switch (m_mode) {
-  case 1: return static_cast<AMEGIC::Process_Base*>(p_amegic->GetProcess())->FactorisationScale();
+  case 1: return p_amegic->GetProcess()->Scale(PHASIC::stp::fac);
   case 2: return p_simplexs->Selected()->Scale(PHASIC::stp::fac);
   }
   return 0.;
@@ -637,15 +628,30 @@ AMEGIC::Point * Matrix_Element_Handler::GetDiagram(int _diag)
 	     <<"   Wrong mode for "<<m_signalgenerator<<", abort."<<endl;
   abort();
 }
-ATOOLS::Spin_Correlation_Tensor * Matrix_Element_Handler::GetSpinCorrelations() 
+
+// ATOOLS::Spin_Correlation_Tensor * Matrix_Element_Handler::GetSpinCorrelations() 
+// {
+//   if (Spin_Correlation_Tensor::Mode()==scmode::None) return NULL;
+//   if (m_mode==1) return p_amegic->GetProcess()->GetSpinCorrelations();
+//   msg.Error()<<"Error in Matrix_Element_Handler::GetSpinCorrelations()."<<endl
+// 	     <<"   Wrong mode for ME generator "<<m_signalgenerator<<", abort."<<endl;
+//   abort();
+// }
+
+void Matrix_Element_Handler::FillAmplitudes(ATOOLS::Amplitude_Tensor* atensor) 
 {
-  if (Spin_Correlation_Tensor::Mode()==scmode::None) return NULL;
-  if (m_mode==1) return p_amegic->GetProcess()->GetSpinCorrelations();
-  msg.Error()<<"Error in Matrix_Element_Handler::GetSpinCorrelations()."<<endl
-	     <<"   Wrong mode for ME generator "<<m_signalgenerator<<", abort."<<endl;
-  abort();
+  p_amegic->GetProcess()->FillAmplitudes(atensor);
 }
 
+bool Matrix_Element_Handler::SpinCorrelations()
+{
+  return m_spincorrelations;
+}
+
+void Matrix_Element_Handler::SetSpinCorrelations(bool sc)
+{
+  m_spincorrelations = sc;
+}
 
 EXTRAXS::XS_Base * Matrix_Element_Handler::GetXS(const int mode) 
 {
@@ -685,7 +691,7 @@ unsigned long Matrix_Element_Handler::NumberOfTrials()
 
 unsigned long Matrix_Element_Handler::NumberOfXSecTrials()
 {
-  return m_xsecntrial+m_xsecsntrial;
+  return m_xsecntrial;
 }
 
 int Matrix_Element_Handler::OrderStrong()
@@ -706,7 +712,7 @@ int Matrix_Element_Handler::OrderEWeak()
 
 void Matrix_Element_Handler::SetAmegic(AMEGIC::Amegic *amegic)
 {
-  if (p_amegic!=NULL || p_simplexs!=NULL) return;
+  if (p_amegic!=NULL || p_simplexs!=NULL || amegic==NULL) return;
   p_amegic=amegic;
   p_isr=p_amegic->Processes()->ISR();
   m_name=string("Amegic");
@@ -715,7 +721,7 @@ void Matrix_Element_Handler::SetAmegic(AMEGIC::Amegic *amegic)
 
 void Matrix_Element_Handler::SetXS(EXTRAXS::Simple_XS *simplexs)
 {
-  if (p_amegic!=NULL || p_simplexs!=NULL) return;
+  if (p_amegic!=NULL || p_simplexs!=NULL || simplexs==NULL) return;
   p_simplexs=simplexs;
   p_isr=p_simplexs->ISR();
   m_name=string("SimpleXS");

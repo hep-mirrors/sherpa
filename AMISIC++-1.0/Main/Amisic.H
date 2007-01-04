@@ -146,13 +146,6 @@ namespace AMISIC {
     inline MI_Base *const HardBase() const { return p_hardbase; }
     inline MI_Base *const SoftBase() const { return p_softbase; }
 
-#ifdef USING__Sherpa
-    inline SHERPA::Matrix_Element_Handler *const HardMEHandler()
-    { return p_hardbase->MEHandler(); }
-    inline SHERPA::Matrix_Element_Handler *const SoftMEHandler()
-    { return p_softbase->MEHandler(); }
-#endif
-
     inline EXTRAXS::XS_Base *const HardXS() { return p_hardbase->XS(); }
     inline EXTRAXS::XS_Base *const SoftXS() { return p_softbase->XS(); }
 

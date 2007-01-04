@@ -1,6 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-
-{-421,-11,12}           | 0.0215(0.0022)        [PDG]      | B+_Dbnu_ee+.dat;
-
-NO_FULLDECAY   ! use this option: no decay of daughters
-NO_ANTI        ! use this option: anti-mother does not decay

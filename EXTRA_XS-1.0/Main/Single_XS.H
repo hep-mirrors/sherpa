@@ -20,7 +20,7 @@ namespace EXTRAXS {
     // constructors
     Single_XS(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours);
     Single_XS(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
-	      const int scalescheme,const int kfactorscheme,
+	      const PHASIC::scl::scheme scalescheme,const int kfactorscheme,
 	      BEAM::Beam_Spectra_Handler *const beamhandler,
 	      PDF::ISR_Handler *const isrhandler,
 	      ATOOLS::Selector_Data *const selectordata);

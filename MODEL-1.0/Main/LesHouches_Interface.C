@@ -13,7 +13,7 @@ using namespace std;
 
 
 LesHouches_Interface::LesHouches_Interface(Data_Read * _dataread,
-					   Model_Base * _model, std::string _dir) :
+						   Model_Base * _model, std::string _dir) :
   Spectrum_Generator_Base(_dataread,_model),m_dir(_dir) { }
 
 
@@ -30,10 +30,9 @@ void LesHouches_Interface::Run(std::string _model) {
   msg_Tracking()<<"MSSM spectrum generated according to the SUSY Les Houches Accord! "<<std::endl;
   msg_Tracking()<<"Les Houches input file is: "<<m_dir+m_inputfile<<std::endl;
   
-  p_reader = new ATOOLS::Data_Reader("=",";","#");
+  p_reader = new ATOOLS::Data_Reader(" ",";","#","=");
+  p_reader->AddWordSeparator("\t");
   p_reader->SetAddCommandLine(false);
-  p_reader->SetVectorType(vtc::horizontal);
-  p_reader->SetMatrixType(mtc::transposed);
   p_reader->SetInputPath(m_dir);
   p_reader->SetInputFile(m_inputfile);
   if (p_reader->InputPath()=="" || p_reader->InputFile()=="")
@@ -55,7 +54,7 @@ void LesHouches_Interface::Run(std::string _model) {
   
   //SetSMInput();
   SetMasses();
-  SetWidths();
+  if (p_dataread->GetValue<int>("LESHOUCHES_WIDTHS",1)) SetWidths();
   SetHiggsParameters();
   SetInoParameters();
   SetSquarkParameters();
@@ -255,7 +254,9 @@ void LesHouches_Interface::SetHiggsParameters() {
   ZR[0][1]    = Complex(cosa,0.);
   ZR[1][0]    = Complex(cosa,0.);
   ZR[1][1]    = Complex(sina,0.);
-
+  //reset tanb to the input value
+  tanb = (*p_model->GetScalarConstants())["tan(beta)"];
+  
   double cosb = sqrt(1./(1.+sqr(tanb)));
   double sinb = cosb*tanb;  
 

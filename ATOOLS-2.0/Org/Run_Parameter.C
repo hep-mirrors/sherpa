@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
+#include <pwd.h>
 
 using namespace ATOOLS;
 
@@ -34,6 +35,7 @@ Run_Parameter::Run_Parameter()
   gen.m_batchmode = 1;
   gen.SetTimeOut(3600);
   gen.SetWAnaScale(1.);
+  gen.m_spincorrelations = 0;
 } 
 
 std::ostream &ATOOLS::operator<<(std::ostream &str,const Run_Parameter &rp)
@@ -73,28 +75,17 @@ void Run_Parameter::AnalyseEnvironment()
 void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[])
 {
   gen.m_timer.Start();
-  system("finger `whoami` > sherpa_user_test");
-  Data_Reader *reader = new Data_Reader();
-  reader->SetInputFile("sherpa_user_test");
-  reader->SetVectorType(vtc::horizontal);
-  std::vector<std::string> help;
-  if (!reader->VectorFromFile(help,"Name:")) { 
-    gen.m_username=std::string("<unknown user>");
-  }
-  else {
-    for (std::vector<std::string>::iterator nit=help.begin();nit!=help.end();++nit) {
-      gen.m_username+=*nit+std::string(" ");
-    }
-  }
-  delete reader;
-  if (msg.Level()>0) msg.Out()<<"Welcome to Sherpa, "<<gen.m_username
-	   <<". Initialization of framework underway."<<std::endl;
-  system("if test -f sherpa_user_test; then rm sherpa_user_test; fi");
+  struct passwd* user_info = getpwuid(getuid());
+  if (!user_info) gen.m_username="<unknown user>";
+  else gen.m_username=user_info->pw_gecos;
   m_path = path;
   Data_Read dr(m_path+file);
   gen.m_output = dr.GetValue<int>("OUTPUT",0);
   std::string logfile=dr.GetValue<std::string>("LOG_FILE",std::string(""));
   msg.Init(gen.m_output,logfile);
+  if (msg.Level()>0) 
+    msg.Out()<<"Welcome to Sherpa, "<<gen.m_username
+	     <<". Initialization of framework underway."<<std::endl;
   // make path nice
   if (path.length()>0) {
     if (path[0]!='/') path=std::string(getenv("PWD"))+"/"+path;
@@ -136,9 +127,9 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   gen.m_nevents            = dr.GetValue<long>("EVENTS",100);
   // read only if defined (no error message if not defined)
 
-  Data_Reader dreader;
+  Data_Reader dreader(" ",";","!","=");
+  dreader.AddWordSeparator("\t");
   dreader.SetInputFile(m_path+file);
-  dreader.SetVectorType(vtc::horizontal);
   std::vector<long int> seeds;
   gen.m_seed2 = -1;
   if (dreader.VectorFromFile(seeds,"RANDOM_SEED")) {
@@ -153,8 +144,8 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   gen.m_batchmode          = dr.GetValue<int>("BATCH_MODE");
   if (gen.m_batchmode==NotDefined<int>()) gen.m_batchmode=1;
   int stacktrace           = dr.GetValue<int>("STACK_TRACE");
-  if (stacktrace==NotDefined<int>()) stacktrace=0;
-  Exception_Handler::SetStackTrace(stacktrace);
+  if (stacktrace==NotDefined<int>()) stacktrace=1;
+  exh->SetStackTrace(stacktrace);
   double ycut=dr.GetValue<double>("YCUT");
   if (ycut!=NotDefined<double>()) gen.m_ycut=ycut;
   gen.m_accu               = dr.GetValue<double>("Num. Accuracy",1.e-10);

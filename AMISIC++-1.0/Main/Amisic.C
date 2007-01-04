@@ -38,10 +38,10 @@ Amisic::~Amisic()
 bool Amisic::Initialize()
 {
   if (InputPath()=="" || InputFile()=="") return false;
-  Data_Reader *reader = new Data_Reader("=",";","!");
+  Data_Reader *reader = new Data_Reader(" ",";","!","=");
+  reader->AddWordSeparator("\t");
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
-  reader->SetVectorType(vtc::horizontal);
   std::vector<std::string> model;
   if (!reader->VectorFromFile(model,"HARD_MODEL_NAME")) {
     model.push_back("Simple_Chain");
@@ -105,7 +105,9 @@ bool Amisic::GenerateHardEvent(ATOOLS::Blob_List *blobs)
     Blob *newblob = new Blob();
     if (GenerateHardProcess(newblob)) {
       newblob->SetType(btp::Hard_Collision);
-      newblob->SetStatus(1);
+      newblob->SetStatus(blob_status::needs_showers &
+			 blob_status::needs_beams &
+			 blob_status::needs_hadronization);
       newblob->SetId();
       blobs->push_back(newblob);
     }
@@ -128,7 +130,8 @@ bool Amisic::GenerateSoftEvent(ATOOLS::Blob_List *blobs)
     Blob *newblob = new Blob();
     if (GenerateSoftProcess(newblob)) {
       newblob->SetType(btp::Soft_Collision);
-      newblob->SetStatus(1);
+      newblob->SetStatus(blob_status::needs_beams &
+			 blob_status::needs_hadronization);
       newblob->SetId();
       blobs->push_back(newblob);
     }

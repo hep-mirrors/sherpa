@@ -97,33 +97,27 @@ bool Blob_List::Delete(Blob *blob)
 
 void Blob_List::DeleteConnected(Blob *blob,std::set<Blob*> &deleted)
 {
-  if (deleted.find(blob)!=deleted.end()) return;
+  if (blob==NULL || deleted.find(blob)!=deleted.end()) return;
   deleted.insert(blob);
-  for (int i=blob->NOutP()-1;i>=0;i=Min(blob->NOutP()-1,i-1)) {
-    Blob *dblob=blob->OutParticle(i)->DecayBlob();
-    if (dblob!=NULL) DeleteConnected(dblob,deleted);
-  }
-  for (int i=blob->NInP()-1;i>=0;i=Min(blob->NInP()-1,i-1)) {
-    Blob *pblob=blob->InParticle(i)->ProductionBlob();
-    if (pblob!=NULL) DeleteConnected(pblob,deleted);
-  }
-  delete blob;
-  for (Blob_List::iterator bit=begin();bit!=end();++bit)
-    if (*bit==blob) {
-      erase(bit);
-      break;
-    }
+  Particle_Vector parts(blob->GetInParticles());
+  for (Particle_Vector::iterator pit(parts.begin());pit!=parts.end();++pit) 
+    DeleteConnected((*pit)->ProductionBlob(),deleted);
+  parts=blob->GetOutParticles();
+  for (Particle_Vector::iterator pit(parts.begin());pit!=parts.end();++pit) 
+    DeleteConnected((*pit)->DecayBlob(),deleted);
 }
 
 size_t Blob_List::DeleteConnected(Blob *blob)
 {
-  if (blob==NULL) return 0;
   std::set<Blob*> deleted;
-  for (Blob_List::iterator bit=begin();bit!=end();++bit) 
-    if (*bit==blob) {
-      DeleteConnected(blob,deleted);
-      break;
+  DeleteConnected(blob,deleted);
+  for (Blob_List::iterator bit(begin());bit!=end();++bit) {
+    std::set<Blob*>::const_iterator rit(deleted.find(*bit));
+    if (rit!=deleted.end()) {
+      delete *bit;
+      --(bit=erase(bit));
     }
+  }
   return deleted.size();
 }
 
@@ -266,12 +260,27 @@ Particle_List Blob_List::ExtractLooseParticles(const int mode) const
   return particles;
 }
 
-void Blob_List::Clear() 
+void Blob_List::Clear(Blob * blob) 
 {
-  while (!empty()) {
-    delete back();
-    pop_back();
+  if (blob==NULL) {
+    while (!empty()) {
+      delete back();
+      pop_back();
+    }
+    return;
   }
+  for (int i(0);i<blob->NInP();++i) 
+    if (blob->InParticle(i)->ProductionBlob()!=NULL)
+      blob->InParticle(i)->ProductionBlob()->
+	RemoveOutParticle(blob->InParticle(i));
+  for (int i(0);i<blob->NOutP();++i) 
+    if (blob->OutParticle(i)->DecayBlob()!=NULL)
+      blob->OutParticle(i)->DecayBlob()->
+	RemoveInParticle(blob->OutParticle(i));
+  for (const_iterator bit(begin());bit!=end();++bit) 
+    if (*bit!=blob) delete *bit;
+  resize(1);
+  back()=blob;
 }
 
 bool Blob_List::ColorConservation() const
@@ -322,7 +331,83 @@ Blob *Blob_List::AddBlob(const btp::code &type)
   Blob *blob(new Blob());
   blob->SetType(type);
   blob->SetId();
-  blob->SetStatus(2);
+  blob->SetStatus(blob_status::inactive);
   push_back(blob);
   return blob;
+}
+
+bool Blob_List::MergeSubsequentType(btp::code mtype,btp::code dtype,
+				    long int & NBlob, long int & NPart) {
+  bool merger(false);
+  Blob_List::iterator mother(begin()),daughter;
+  while (mother!=end()) {
+    if ((*mother)->Type()==mtype) {
+      for (int i=0;i<(*mother)->NOutP();i++) {
+	Particle * part((*mother)->OutParticle(i));
+	Blob * blob(part->DecayBlob());
+	if (blob && blob->Type()==dtype) {
+	  merger=true;
+	  while (blob->NOutP()>0) {
+	    (*mother)->AddToOutParticles(blob->RemoveOutParticle(blob->NOutP()-1,true));
+	  }
+	  daughter=begin();
+	  while (daughter!=end()) {
+	    if ((*daughter)==blob) {
+	      NBlob--;
+	      delete blob; 
+	      daughter = erase(daughter);
+	      break;
+	    }
+	    else daughter++;
+	  }
+	  NPart--;
+	  (*mother)->DeleteOutParticle(part);
+	}
+      }
+    }
+    mother++;
+  }
+  return merger;
+}
+
+void Blob_List::MergeSubsequentTypeRecursively(btp::code mtype,btp::code dtype,
+					       long int & NBlob, long int & NPart) {
+  while (MergeSubsequentType(mtype,dtype,NBlob,NPart)) {}
+}
+
+bool Blob_List::Shorten(kf::code kfc,btp::code out,btp::code in)
+{
+  bool shorten(false);
+  Blob_List::iterator mother(begin()),daughter;
+  while (mother!=end()) {
+    if (out==btp::Unspecified || (*mother)->Type()==out) {
+      for (int i=0;i<(*mother)->NOutP();i++) {
+	Particle * part((*mother)->OutParticle(i));
+	if (part->Flav().Kfcode()!=kfc) continue;
+	Blob * blob(part->DecayBlob());
+	if (blob && (in==btp::Unspecified || blob->Type()==in)) {
+	  shorten=true;
+	  while (blob->NOutP()>0) {
+	    (*mother)->AddToOutParticles(blob->RemoveOutParticle(blob->NOutP()-1,true));
+	  }
+	  daughter=begin();
+	  while (daughter!=end()) {
+	    if ((*daughter)==blob) {
+	      delete blob; 
+	      daughter = erase(daughter);
+	      break;
+	    }
+	    else daughter++;
+	  }
+	  (*mother)->DeleteOutParticle(part);
+	}
+      }
+    }
+    mother++;
+  }  
+  return shorten;
+}
+
+void Blob_List::ShortenRecursively(kf::code kfc,btp::code out,btp::code in) {
+  while (Shorten(kfc,out,in)) {}
 }

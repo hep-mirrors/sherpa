@@ -5,6 +5,7 @@
 #include <map>
 #include "Point.H" 
 #include "Vector.H"
+#include "My_Limits.H"
 
 namespace ATOOLS { class Jet_Finder; }
 
@@ -13,23 +14,63 @@ namespace SHERPA {
   class Leg {
   private:
     AMEGIC::Point *p_point;
-    int m_anti, m_nqcd, m_nqed, m_pqcd, m_pqed;
+    int m_anti, m_nqcd, m_nqed, m_pqcd, m_pqed, m_ext, m_qcdjets;
+    double m_kt2, m_kt2qcd, m_kt2qed, m_minkt2, m_minkt2qcd, m_minkt2qed;
+    double *p_qmin;
     AMEGIC::lf::code m_type;
     ATOOLS::Flavour m_mapfl;
     friend std::ostream &operator<<(std::ostream &ostr,const Leg &leg);
   public:
     // constructors
     inline Leg(AMEGIC::Point *const point=NULL,const int anti=1):  
-      p_point(point), m_anti(anti) {}
+      p_point(point), m_anti(anti), 
+      m_nqcd(0), m_nqed(0), m_pqcd(0), m_pqed(0), m_ext(0), 
+      m_qcdjets(point!=NULL?point->fl.Strong():0),
+      m_kt2(std::numeric_limits<double>::max()), 
+      m_kt2qcd(m_kt2), m_kt2qed(m_kt2), 
+      m_minkt2(m_kt2), m_minkt2qcd(m_kt2), m_minkt2qed(m_kt2), 
+      p_qmin(NULL) {}
     inline Leg(const Leg &leg): 
-      p_point(leg.p_point), m_anti(leg.m_anti), m_mapfl(leg.m_mapfl) {}
+      p_point(leg.p_point), m_anti(leg.m_anti), 
+      m_nqcd(0), m_nqed(0), m_pqcd(0), m_pqed(0), m_ext(leg.m_ext), 
+      m_qcdjets(leg.m_qcdjets), 
+      m_kt2(std::numeric_limits<double>::max()), 
+      m_kt2qcd(m_kt2), m_kt2qed(m_kt2), m_minkt2(leg.m_minkt2),  
+      m_minkt2qcd(leg.m_minkt2qcd), m_minkt2qed(leg.m_minkt2qed), 
+      p_qmin(leg.p_qmin), m_mapfl(leg.m_mapfl) {}
     // member functions
     void DetermineCouplings(const int type);
     // inline functions
     inline void SetAnti(int a)                       { m_anti=a;      }
+    inline void SetExternal(int ext)                 { m_ext=ext;     }
     inline void SetPoint(AMEGIC::Point *const point) { p_point=point; }
-    inline int                  Anti() const  { return m_anti;  }
-    inline const AMEGIC::Point *Point() const { return p_point; }
+    inline int                  Anti() const      { return m_anti;  }
+    inline int                  External() const  { return m_ext;   }
+    inline const AMEGIC::Point *Point() const     { return p_point; }
+    inline void SetQCDJets(const int qcdjets) { m_qcdjets=qcdjets; }
+    inline int  QCDJets() const               { return m_qcdjets;  }
+    inline void   SetKT2(const double &kt2)    
+    { m_kt2=kt2; SetMinKT2(m_kt2); }
+    inline void   SetKT2QCD(const double &kt2) 
+    { m_kt2qcd=kt2; SetMinKT2QCD(m_kt2qcd); }
+    inline void   SetKT2QED(const double &kt2) 
+    { m_kt2qed=kt2; SetMinKT2QED(m_kt2qed); }
+    inline void   SetMinKT2(const double &kt2) 
+    { m_minkt2=ATOOLS::Min(m_minkt2,kt2); }
+    inline void   SetMinKT2QCD(const double &kt2) 
+    { m_minkt2qcd=ATOOLS::Min(m_minkt2qcd,kt2); }
+    inline void   SetMinKT2QED(const double &kt2) 
+    { m_minkt2qed=ATOOLS::Min(m_minkt2qed,kt2); }
+    inline double KT2() const       { return m_kt2;       }
+    inline double KT2QCD() const    { return m_kt2qcd;    }
+    inline double KT2QED() const    { return m_kt2qed;    }
+    inline double MinKT2() const    { return m_minkt2;    }
+    inline double MinKT2QCD() const { return m_minkt2qcd; }
+    inline double MinKT2QED() const { return m_minkt2qed; }
+    inline void    SetPQMin(double *const qmin) { p_qmin=qmin;   }
+    inline double *PQMin() const                { return p_qmin; }
+    inline void   SetQMin(const double qmin) { *p_qmin=qmin; }
+    inline double QMin() const { return p_qmin!=NULL?*p_qmin:-1.0; }
     inline ATOOLS::Flavour Flav() 
     { return m_anti==-1?m_mapfl.Bar():m_mapfl; }
     inline const int OrderQCD() const { return m_nqcd; }
@@ -88,7 +129,6 @@ namespace SHERPA {
     int        m_isr1on, m_isr2on, m_isrshoweron;
     int        m_nlegs, m_nampl, m_graph_winner;
     double     m_x1, m_x2;
-    double     m_kt2min, m_kt2QCD, m_kt2QED;
 
     CD_List               m_combinations;
     CD_List::iterator     m_cdata_winner;
@@ -99,6 +139,7 @@ namespace SHERPA {
     ATOOLS::Vec4D       * p_moms;
 
     Leg **p_hard;
+    int **p_hardc;
 
     Leg  CombinedLeg(Leg *legs,const int i,const int j);
     Leg *CombineLegs(Leg *legs,const int i,const int j,
@@ -109,6 +150,9 @@ namespace SHERPA {
 		     const int maxl,ATOOLS::Vec4D *&omoms);
     double      Sprime() const;
 
+    void SetLegScales(Leg &leg,Leg &legi,Leg &legj,
+		      const ATOOLS::Vec4D &pi,const ATOOLS::Vec4D &pj,
+		      const double &pt2ij);
     ATOOLS::Flavour IsoFlip(const ATOOLS::Flavour &fl);
     ATOOLS::Flavour MatchFlavour(Leg &a,Leg &b,Leg &c,int mode);
     friend std::ostream& operator<< (std::ostream&,const Combine_Table_Base &);
@@ -125,18 +169,22 @@ namespace SHERPA {
 					 ATOOLS::Vec4D *moms=NULL) = 0;
     virtual void                 FillTable(Leg **legs,const int nlegs,const int nampl) = 0;
     virtual double               GetWinner(int &i, int &j) = 0;
+    virtual bool                 IdentifyHardProcess() = 0;
 
     bool Combinable(const Leg &a,const Leg &b) const ;
 
-    void   IdentifyHardProcess();
     int    AddCouplings(int &nqed,int &nqcd) const;
     double MinKt2() const;
-    double MinKt2QCD() const;
-    double MinKt2QED() const;
+    double MinKt2QCD(const int cpl=0) const;
+    double MinKt2QED(const int cpl=0) const;
     double Kt2() const;
-    double Kt2QCD() const;
-    double Kt2QED() const;
+    double Kt2QCD(const int cpl=0) const;
+    double Kt2QED(const int cpl=0) const;
+    double Kt2Hard() const;
+    double Kt2QCDHard(const int cpl=0) const;
+    double Kt2QEDHard(const int cpl=0) const;
     // inline functions
+    inline const int                  Number()                             const { return m_no; }
     inline const int                  NLegs()                              const { return m_nlegs; }
     inline const int                  OrderStrong()                        const { return m_nstrong; }
     inline const int                  NAmplitudes()                        const { return m_nampl; }
@@ -144,10 +192,11 @@ namespace SHERPA {
     inline ATOOLS::Vec4D              Momentum(const int i)                const { return p_moms[i]; }
     inline ATOOLS::Flavour            Flav(const int i)                    const { return p_legs[m_graph_winner][i].Flav(); }
     inline const Leg                & GetLeg(const int ngraph,const int l) const { return p_legs[ngraph][l]; }
-    inline const Leg                & GetLeg(const int l)                  const { return p_legs[m_graph_winner][l]; }
+    inline Leg                & GetLeg(const int l)                  const { return p_legs[m_graph_winner][l]; }
     inline ATOOLS::Vec4D      * const Momenta()                            const { return p_moms; }
     inline Leg               ** const GetLegs()                            const { return p_legs; }
     inline Leg               ** const GetHardLegs()                        const { return p_hard; }
+    inline int               ** const GetHardInfo()                        const { return p_hardc; }
     inline void                       GetX1X2(double & x1, double & x2)    const { x1=m_x1; x2=m_x2; }
     inline static void                ResetCounter()                             { s_all=0; }
   };// end of class Combine_Table_Base

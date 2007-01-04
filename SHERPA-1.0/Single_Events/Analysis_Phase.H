@@ -15,13 +15,13 @@ namespace SHERPA {
   public:
     
     // constructors
-    Analysis_Phase(ANALYSIS::Analysis_Handler *const analysis);
+    Analysis_Phase(ANALYSIS::Analysis_Handler *const);
 
     // member functions
-    bool Treat(ATOOLS::Blob_List *bloblist,double &weight);
+    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *,double &);
     void CleanUp();
 
-    void Finish(const std::string &path);
+    void Finish(const std::string &);
 
     // inline functions
     inline ANALYSIS::Analysis_Handler *const GetAnalysisHandler() const   

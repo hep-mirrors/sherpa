@@ -13,20 +13,20 @@
 using namespace EXTRAXS;
 
 XS_Base::XS_Base():
-  p_colours(NULL), m_order_ew(0), m_order_strong(0)
+  p_colours(NULL)
 {
   m_name="Empty XS";
   m_scale[PHASIC::stp::sfs]=m_scale[PHASIC::stp::sis]=std::numeric_limits<double>::max();
 } 
 
 XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
-		 const int scalescheme,const int kfactorscheme,
+		 const PHASIC::scl::scheme scalescheme,const int kfactorscheme,
 		 BEAM::Beam_Spectra_Handler *const beamhandler,
 		 PDF::ISR_Handler *const isrhandler,
 		 ATOOLS::Selector_Data *const selectordata):
   Integrable_Base(nin,nout,scalescheme,kfactorscheme,
 		  beamhandler,isrhandler,selectordata),
-  p_colours(NULL), m_order_ew(0), m_order_strong(0)
+  p_colours(NULL)
 {
   Init(flavours);
   ResetSelector(selectordata);
@@ -37,7 +37,7 @@ XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavo
 
 XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours):
   Integrable_Base(nin,nout),
-  p_colours(NULL), m_order_ew(0), m_order_strong(0)
+  p_colours(NULL)
 {
   Init(flavours);
   p_selector = new ATOOLS::No_Selector();
@@ -113,7 +113,7 @@ bool XS_Base::SetColours(const ATOOLS::Vec4D *momenta)
 {
   SetMomenta(momenta);
   SetSTU(momenta);
-  SetScale(momenta[2].PPerp2(),PHASIC::stp::as);  
+  SetScale(momenta[2].PPerp2(),PHASIC::stp::ren);  
   return SetColours(m_s,m_t,m_u);
 }
 
@@ -153,6 +153,7 @@ void XS_Base::ResetSelector(ATOOLS::Selector_Data *const selectordata)
 		       <<"   No cuts specified. Initialize 'No_Selector'."<<std::endl;
     p_selector = new ATOOLS::No_Selector();
   }
+  p_selector->SetProcessName(Name());
 }
 
 void XS_Base::SetSTU(const ATOOLS::Vec4D *momenta)
@@ -225,6 +226,6 @@ void XS_Base::AssignRegulator(const std::string &regulator,
 
 void XS_Base::Print()
 {
-  ATOOLS::msg.Out()<<m_name<<" ("<<m_order_ew<<","<<m_order_strong
+  ATOOLS::msg.Out()<<m_name<<" ("<<m_orderEW<<","<<m_orderQCD
 		   <<")  ->  "<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb\n";
 }

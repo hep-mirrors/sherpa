@@ -1,0 +1,153 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT
+AM_INIT_AUTOMAKE(AHADIC++, 1.0)
+AM_DISABLE_STATIC
+AC_PREFIX_DEFAULT(${PWD}/..)
+
+dnl Conditional compiling and linking
+AC_ARG_ENABLE(cvsinclude,
+[  --disable-cvsinclude    Disable CVS Synchronization ],
+[ cvsinclude=true
+  case "${enableval}" in
+    no) echo "enable CVS synchronization... no" ;
+        cvsinclude=false ;;
+    yes) echo "enable CVS synchronization... yes" ;;
+    *) echo "enable CVS synchronization... yes" ;;
+  esac ],
+[ echo "enable CVS synchronization... yes" ;
+  cvsinclude=true ])
+AM_CONDITIONAL(CVS_INCLUDE, test "$cvsinclude" = "true" )
+dnl Conditional compiling and linking
+AC_ARG_ENABLE(mcatnlo,
+[  --enable-mcatnlo        Enable MCatNLO support ],
+[ mcatnlo=false
+  case "${enableval}" in 
+    yes) mcatnlo=true && echo "checking for MC@NLO support... yes" ;;
+    *) echo "checking for MC@NLO support... no" ;;
+  esac ],[ mcatnlo=false ])
+AM_CONDITIONAL(MCATNLO_SUPPORT, test $mcatnlo = true)
+AC_ARG_ENABLE(adicic,
+[  --enable-adicic        Enable Adicic support ],
+[ adicic=false
+  case "${enableval}" in 
+    yes) adicic=true && echo "checking for ADICIC support... yes" ;;
+    *) echo "checking for ADICIC support... no" ;;
+  esac ],[ adicic=true ])
+AM_CONDITIONAL(ADICIC_SUPPORT, test $adicic = true)
+AC_ARG_ENABLE(ahadic,
+[  --enable-ahadic        Enable Ahadic support ],
+[ ahadic=false
+  case "${enableval}" in 
+    yes) ahadic=true && echo "checking for AHADIC support... yes" ;;
+    *) echo "checking for AHADIC support... no" ;;
+  esac ],[ ahadic=false ])
+AM_CONDITIONAL(AHADIC_SUPPORT, test $ahadic = true)
+AC_ARG_ENABLE(clhep,
+[  --enable-clhep          Enable CLHEP support ],
+[ clhep=false
+  if test -d "$CLHEPDIR"; then
+    echo "checking for CLHEP libraries... yes"
+    case "${enableval}" in 
+      yes) clhep=true ;;
+    esac
+  else 
+    echo "checking for CLHEP libraries... no"
+    case "${enableval}" in 
+      yes) AC_MSG_ERROR(\$CLHEPDIR is not a valid path.) ;;
+    esac
+  fi ],[ clhep=false ])
+AM_CONDITIONAL(CLHEP_SUPPORT, test $clhep = true)
+ROOT_PATH(, have_root=yes, have_root=no)
+AC_ARG_ENABLE(root,
+[  --enable-root           Enable ROOT support ],
+[ AC_MSG_CHECKING(whether to enable ROOT support)
+  if test "$have_root" = "yes"; then
+    case "${enableval}" in
+      yes) AC_MSG_RESULT(yes); root=true ;;
+      no)  AC_MSG_RESULT(no); root=false;;
+    esac
+  else 
+		case "${enableval}" in
+      yes) AC_MSG_RESULT(not possible);
+           AC_MSG_ERROR([ROOT not found on your system, cannot compile ROOT support. If ROOT is installed, please provide the installation path using e.g. --with-rootsys=/usr/local/]); root=false;;
+      no)  AC_MSG_RESULT(no); root=false;;
+		esac
+  fi ],[ root=false ])
+AM_CONDITIONAL(ROOT_SUPPORT, test $root = true)
+AC_ARG_ENABLE(lhapdf,
+[  --enable-lhapdf          Enable LHAPDF support ],
+[ lhapdf=false
+  if test -d "$LHAPDFDIR"; then
+    echo "checking for LHAPDF libraries... yes"
+    case "${enableval}" in 
+      yes) lhapdf=true ;;
+    esac
+  else 
+    echo "checking for LHAPDF libraries... no"
+    case "${enableval}" in 
+      yes) AC_MSG_ERROR(\$LHAPDFDIR is not a valid path.) ;;
+    esac
+  fi ],[ lhapdf=false ])
+AM_CONDITIONAL(LHAPDF_SUPPORT, test $lhapdf = true)
+AC_ARG_ENABLE(cvsinclude,
+[  --disable-cvsinclude    Disable CVS Synchronization ],
+[ cvsinclude=true
+  case "${enableval}" in
+    no) echo "enable CVS synchronization... no" ;
+        cvsinclude=false ;;
+    yes) echo "enable CVS synchronization... yes" ;;
+    *) echo "enable CVS synchronization... yes" ;;
+  esac ],
+[ echo "enable CVS synchronization... yes" ;
+  cvsinclude=true ])
+AM_CONDITIONAL(CVS_INCLUDE, test "$cvsinclude" = "true" )
+
+AC_ARG_ENABLE(hdecay,
+[  --enable-hdecay         Enable HDECAY support ],
+[ AC_MSG_CHECKING(whether to enable HDECAY support);AC_MSG_RESULT(${enableval});
+	case "${enableval}" in
+		yes) hdecay=true ;;
+		no)  hdecay=false;;
+	esac ],[ hdecay=false ])
+AM_CONDITIONAL(HDECAY_SUPPORT, test $hdecay = true)
+
+AC_ARG_ENABLE(isajet,
+[  --enable-isajet         Enable ISAJET support ],
+[ AC_MSG_CHECKING(whether to enable ISAJET support);AC_MSG_RESULT(${enableval});
+	case "${enableval}" in
+		yes) isajet=true ;;
+		no)  isajet=false;;
+	esac ],[ isajet=false ])
+AM_CONDITIONAL(ISAJET_SUPPORT, test $isajet = true)
+
+AM_CONDITIONAL(AMISIC_SUPPORT, test -d "../AMISIC++-1.0")
+AM_CONDITIONAL(HADRONS_SUPPORT, test -d "../HADRONS++-0.0")
+
+dnl Checks for programs.
+AC_PROG_INSTALL
+AC_PROG_MAKE_SET
+AC_PROG_CXX
+AC_PROG_CC
+AC_PROG_F77
+AM_PROG_LIBTOOL
+
+dnl Checks for header files.
+AC_HEADER_STDC
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_TYPE_SIZE_T
+
+dnl Checks for library functions.
+AC_CHECK_FUNCS(mkdir)
+
+
+AC_OUTPUT(Tools/Makefile \
+	  Formation/Makefile \
+	  Decays/Makefile \
+	  Main/Makefile \
+	  Makefile )
+
+
+
+

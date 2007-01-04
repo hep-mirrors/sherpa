@@ -8,7 +8,8 @@ Point::Point(const Point& copy) {
   Color   = new Color_Function;
   Lorentz = new Lorentz_Function;
   middle  = 0;
-  cpl.clear();
+  ncpl = 4;
+  cpl = new Complex[4];
   nextra = 0;
 
   *this = copy;
@@ -20,7 +21,8 @@ Point::Point(int extra) : nextra(extra)  {
   Color   = new Color_Function;
   Lorentz = new Lorentz_Function;
   middle  = 0;
-  cpl.clear();
+  ncpl = 4;
+  cpl = new Complex[4];
   if (nextra>0) extrafl = new ATOOLS::Flavour[nextra]; 
 }
 
@@ -39,7 +41,7 @@ Point& Point::operator=(const Point& p) {
     nextra = p.nextra;
     if (nextra>0) {
       extrafl = new ATOOLS::Flavour[nextra]; 
-      for(int i=0;i<nextra;i++) extrafl[i] = p.extrafl[i];
+      for(short int i=0;i<nextra;i++) extrafl[i] = p.extrafl[i];
     }
     left   = p.left;
     right  = p.right;
@@ -47,9 +49,13 @@ Point& Point::operator=(const Point& p) {
     prev  = p.prev;
     v = p.v;
     //cpl's
-    cpl.clear();
+    if (ncpl!=p.ncpl) {
+      delete[] cpl;
+      ncpl = p.ncpl;
+      cpl = new Complex[ncpl];
+    } 
 
-    for(size_t i=0;i<p.Ncpl();i++) cpl.push_back(p.cpl[i]);
+    for(short int i=0;i<ncpl;i++) cpl[i] = p.cpl[i];
   }
   return *this;
 }

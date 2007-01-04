@@ -8,8 +8,6 @@ namespace PDF    { class Remnant_Base; }
 
 namespace SHERPA {
 
-  class Matrix_Element_Handler;
-
   class Multiple_Interactions: public Event_Phase_Handler {
   private:
 
@@ -19,27 +17,25 @@ namespace SHERPA {
     MI_Handler        *p_mihandler;
     PDF::Remnant_Base *p_remnants[2];
 
-    Matrix_Element_Handler *p_mehandler;
-
     ATOOLS::Blob_List *p_bloblist;
 
     bool m_vetoed, m_diced;
 
-    bool CheckBlobList(ATOOLS::Blob_List *const bloblist);
-    bool VetoHardProcess(ATOOLS::Blob *const blob);
+    ATOOLS::Return_Value::code CheckBlobList(ATOOLS::Blob_List *const bloblist);
+    bool                       VetoHardProcess(ATOOLS::Blob *const blob);
     
   public:
 
     // constructor
-    Multiple_Interactions(MI_Handler *mihandler);
+    Multiple_Interactions(MI_Handler *);
 
     // destructor
     ~Multiple_Interactions();
 
     // member functions
-    bool Treat(ATOOLS::Blob_List *bloblist, double &weight);
-    void CleanUp();
-    void Finish(const std::string &resultpath);
+    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *, double &);
+    void                       CleanUp();
+    void                       Finish(const std::string &);
 
   }; // end of class Multiple_Interactions
 

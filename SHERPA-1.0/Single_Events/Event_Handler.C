@@ -2,7 +2,10 @@
 #include "Message.H"
 #include "Run_Parameter.H"
 #include "My_Limits.H"
+#include "Signal_Processes.H"
+#include "Lund_Interface.H"
 #include <unistd.h>
+#include <cassert>
 
 #include "Random.H"
 
@@ -19,14 +22,15 @@ using namespace ATOOLS;
 
 Event_Handler::Event_Handler():
   m_lastparticlecounter(0),
-  m_lastblobcounter(0)
+  m_lastblobcounter(0),
+  p_mehandler(NULL)
 {
   p_phases  = new Phase_List;
 }
 
 Event_Handler::~Event_Handler() 
 {
-  CleanUpEvent();
+  Reset();
   EmptyEventPhases();
   
   if (p_phases)   { delete p_phases;   p_phases   = NULL; }
@@ -36,6 +40,8 @@ void Event_Handler::AddEventPhase(Event_Phase_Handler * phase)
 {
   eph::code type   = phase->Type();
   std::string name = phase->Name();
+  if (name.find("Signal_Processes:")!=std::string::npos) 
+    p_mehandler=static_cast<Signal_Processes*>(phase)->GetMEHandler();
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) { 
     if ((type==(*pit)->Type()) && (name==(*pit)->Name())) {
       msg.Out()<<"WARNING in Event_Handler::AddEventPhase("<<type<<":"<<name<<") "
@@ -87,6 +93,49 @@ void Event_Handler::PrintGenericEventStructure()
   msg.Out()<<"---------------------------------------------------------"<<std::endl;
 }
 
+void Event_Handler::Reset(const bool sameevent)
+{
+  for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) 
+    if (!sameevent || (*pit)->Type()!=eph::Perturbative ||
+	(*pit)->Name().find("Signal_Processes")==std::string::npos) 
+      (*pit)->CleanUp();
+  if (!sameevent) {
+    m_blobs.Clear();
+    if (Particle::Counter()>m_lastparticlecounter || 
+	Blob::Counter()>m_lastblobcounter) {
+      msg.Error()<<METHOD<<"(): "<<Particle::Counter()
+		 <<" particles and "<<Blob::Counter()
+		 <<" blobs undeleted. Continuing."<<std::endl;
+      m_lastparticlecounter=Particle::Counter();
+      m_lastblobcounter=Blob::Counter();
+    }
+
+    Blob::Reset();
+    Particle::Reset();
+    Flow::ResetCounter();
+    ATOOLS::Vec4D::ResetAccu();
+    Lund_Interface::SaveStatus();
+
+    Blob *signal(new Blob());
+    signal->SetType(btp::Signal_Process);
+    signal->SetId();
+    signal->SetStatus(blob_status::needs_signal);
+    m_blobs.push_back(signal);
+  }
+  else {
+    if (p_mehandler->Weight()!=1.0) p_mehandler->SaveNumberOfTrials();
+    Blob *signal(m_blobs.FindFirst(btp::Signal_Process));
+    m_blobs.Clear(signal);
+    signal->SetStatus(blob_status::internal_flag |
+		      blob_status::needs_signal);
+    Blob::Reset();
+    Particle::Reset();
+    Flow::ResetCounter();
+    ATOOLS::Vec4D::ResetAccu();
+    Lund_Interface::SaveStatus();
+  }
+} 
+
 bool Event_Handler::GenerateEvent(int mode) 
 {
   PROFILE_LOCAL("Event_Handler::GenerateEvent");
@@ -98,59 +147,90 @@ bool Event_Handler::GenerateEvent(int mode)
                      <<ATOOLS::om::reset<<std::endl;
     kill(getpid(),SIGINT);
   }
-  bool   flag   = true;
   double weight = 1.;
-  Blob * hardblob;
   switch (mode) {
   case 0:
+    Reset();
+    ATOOLS::Vec4D::ResetAccu();
+    ATOOLS::ran.SaveStatus();
     do {
-      CleanUpEvent();
-      ATOOLS::Vec4D::ResetAccu();
-      ATOOLS::ran.SaveStatus();
-      hardblob = new Blob();
-      hardblob->SetType(btp::Signal_Process);
-      hardblob->SetId();
-      hardblob->SetStatus(2);
-      m_blobs.push_back(hardblob);
-      while (flag) {
-	flag = false;
-	for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-	  if ((*pit)->Type()==eph::Perturbative) {
-	    bool result=(*pit)->Treat(&m_blobs,weight);
-	    if (weight==0.0 &&
-		rpa.gen.NumberOfDicedEvents()==rpa.gen.NumberOfEvents()) return true;
-	    msg_Tracking()<<ATOOLS::om::blue<<"Event_Handler::GenerateEvent("<<mode<<"): "
-			  <<ATOOLS::om::reset
-			  <<"Event phase "<<ATOOLS::om::bold<<(*pit)->Name()<<ATOOLS::om::reset
-			  <<" yields "<<ATOOLS::om::bold<<result<<ATOOLS::om::reset<<std::endl;
-	    if (result) flag = true;
-	  }
+      for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();) {
+	if ((*pit)->Type()==eph::Analysis) {
+	  ++pit;
+	  continue;
 	}
-      }
-      flag=1;
-      while (flag) {
-	flag = false;
-	for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-	  if ((*pit)->Type()==eph::Hadronization) {
-	    bool result=(*pit)->Treat(&m_blobs,weight);
-	    msg_Tracking()<<ATOOLS::om::blue<<"Event_Handler::GenerateEvent("<<mode<<"): "<<ATOOLS::om::reset
-				  <<"Event phase "<<ATOOLS::om::bold<<(*pit)->Name()<<ATOOLS::om::reset
-				  <<" yields "<<ATOOLS::om::bold<<result<<ATOOLS::om::reset<<std::endl;
-	    if (result) flag = true;
-	  }
+	msg_Debugging()<<METHOD<<"(): run '"<<(*pit)->Name()<<"'"<<std::endl;
+	switch ((*pit)->Treat(&m_blobs,weight)) {
+	case Return_Value::Nothing :
+	  ++pit;
+	  break;
+	case Return_Value::Success : 
+	  rvalue.IncCall((*pit)->Name());
+	  pit=p_phases->begin();
+	  break;
+	case Return_Value::Error :
+	  rvalue.IncCall((*pit)->Name());
+	  rvalue.IncError((*pit)->Name());
+	  return false;
+	case Return_Value::Retry_Phase : 
+	  rvalue.IncCall((*pit)->Name());
+	  rvalue.IncRetryPhase((*pit)->Name());
+	  pit=p_phases->begin();
+	  break;
+	case Return_Value::Retry_Event : 
+	  rvalue.IncCall((*pit)->Name());
+	  rvalue.IncRetryEvent((*pit)->Name());
+	  Reset(true);
+	  pit=p_phases->begin();
+	  break;
+	case Return_Value::New_Event : 
+	  rvalue.IncCall((*pit)->Name());
+	  rvalue.IncNewEvent((*pit)->Name());
+	  Reset();
+	  weight=1.;
+	  pit=p_phases->begin();
+	  break;
+	default:
+	  THROW(fatal_error,"Invalid return value");
 	}
+	if (weight==0.0 && rpa.gen.NumberOfDicedEvents()==
+	    rpa.gen.NumberOfEvents()) return true;
       }
-      flag=true;
-    } while (m_blobs.empty());
+    } while (m_blobs.empty() || 
+	     m_blobs.FindFirst(btp::Signal_Process)->NOutP()==0);
+    if (!m_blobs.FourMomentumConservation()) return false;
+    p_mehandler->ResetNumberOfTrials();
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-      if ((*pit)->Type()==eph::Analysis) (*pit)->Treat(&m_blobs,weight);
+      if ((*pit)->Type()==eph::Analysis) {
+	switch ((*pit)->Treat(&m_blobs,weight)) {
+	case Return_Value::Nothing :
+	  break;
+	case Return_Value::Success : 
+	  rvalue.IncCall((*pit)->Name());
+	  msg_Tracking()<<ATOOLS::om::blue<<"Event_Handler::GenerateEvent("<<mode<<"): "
+			<<ATOOLS::om::reset
+			<<"Event phase "<<ATOOLS::om::bold<<(*pit)->Name()<<ATOOLS::om::reset
+			<<" yields "<<ATOOLS::om::bold<<true<<ATOOLS::om::reset<<std::endl;
+	  break;
+	case Return_Value::Error :
+	  rvalue.IncCall((*pit)->Name());
+	  rvalue.IncError((*pit)->Name());
+	  return false;
+	default:
+	  msg.Error()<<"Error in "<<METHOD<<":"<<std::endl
+		     <<"  Unknown return value for 'Treat',"<<std::endl
+		     <<"  Will continue and hope for the best."<<std::endl;
+	  return false;
+	}
+      }
     }
     return true;
   case 9000:
   case 9001:
-  case 9002:
-    CleanUpEvent();
-    flag = false;
+  case 9002: {
+    Reset();
+    m_blobs.Clear();
+    bool flag = false;
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       if ((*pit)->Type()==eph::External_MC) {
 	bool result=(*pit)->Treat(&m_blobs,weight);
@@ -172,8 +252,10 @@ bool Event_Handler::GenerateEvent(int mode)
     }
 
     return true;
-  case 9999:
-    CleanUpEvent();
+  }
+  case 9999: {
+    Reset();
+    bool flag(true);
     while (flag) {
       flag = false;
       for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
@@ -188,21 +270,20 @@ bool Event_Handler::GenerateEvent(int mode)
     }
     return true;
   }
+  }
   return false;
 } 
 
-
-void Event_Handler::CleanUpEvent() 
-{
-  if (!p_phases->empty()) {
-    for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-      (*pit)->CleanUp();
-    }
+void Event_Handler::Finish() {
+  msg_Info()<<"In Event_Handler::Finish : Summarizing the run may take some time."<<std::endl;
+  for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
+    (*pit)->Finish(std::string("Results"));
+    (*pit)->CleanUp();
   }
   m_blobs.Clear();
   if (Particle::Counter()>m_lastparticlecounter || 
       Blob::Counter()>m_lastblobcounter) {
-    msg.Error()<<"Error in Event_Handler::CleanUpEvent()"<<std::endl
+    msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
 	       <<"   After event : "<<Particle::Counter()<<" / "<<Blob::Counter()
 	       <<" particles / blobs undeleted !"<<std::endl
 	       <<"   Continue and hope for the best."<<std::endl;
@@ -213,13 +294,3 @@ void Event_Handler::CleanUpEvent()
   Particle::Reset();
   Flow::ResetCounter();
 }
-
-
-
-
-void Event_Handler::Finish() {
-  msg_Info()<<"In Event_Handler::Finish : Summarizing the run may take some time."<<std::endl;
-  for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) 
-    (*pit)->Finish(std::string("Results"));
-}
-

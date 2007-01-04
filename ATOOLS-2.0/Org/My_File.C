@@ -4,10 +4,12 @@
 
 #include <typeinfo>
 
-INSTANTIATE_SMART_POINTER(std::ifstream)
-INSTANTIATE_SMART_POINTER(std::ofstream)
-
 using namespace ATOOLS;
+
+namespace ATOOLS {
+  INSTANTIATE_SMART_POINTER(std::ifstream)
+  INSTANTIATE_SMART_POINTER(std::ofstream)
+}
 
 std::ostream &ATOOLS::operator<<(std::ostream &ostr,const fom::code &code)
 {

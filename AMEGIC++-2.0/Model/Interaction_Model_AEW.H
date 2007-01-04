@@ -7,8 +7,7 @@
 namespace AMEGIC {  
   class Interaction_Model_AEW : public Interaction_Model_Base {
     Kabbala g1,g2,sintW,costW,PL,PR,M_I,root2,vev,a4,a5;
-    Kabbala g1_p,lambda_p,kappa_p,g4_p,g5_p,lambdat_p,kappat_p;
-    Kabbala g1_Z,lambda_Z,kappa_Z,g4_Z,g5_Z,lambdat_Z,kappat_Z;
+    Kabbala g1_p,lambda_p,kappa_p,g4_p,g1_Z,lambda_Z,kappa_Z,g4_Z;
     Kabbala K_CKM(short int i,short int j);  
     Kabbala conj_K_CKM(short int i,short int j);
   public:

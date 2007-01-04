@@ -7,7 +7,6 @@
 #include "Random.H"
 #include "Exception.H"
 #include "Run_Parameter.H"
-#include "Splitting_Group.H"
 
 #ifdef PROFILE__All
 #include "prof.hh"

@@ -34,6 +34,11 @@ Terminator_Object::~Terminator_Object()
 {
 }
 
+bool Terminator_Object::ReadInStatus(const std::string &path)
+{
+  return true;
+}
+
 void Terminator_Object::PrepareTerminate()
 {
   msg.Error()<<"Terminator_Object::PrepareTerminate(): "
@@ -44,7 +49,7 @@ Exception::Exception(const ex::type type,const std::string info):
   m_type(type),
   m_info(info)
 {
-  Exception_Handler::s_exception=this;
+  exh->m_exception=this;
 }
 
 Exception::Exception(const ex::type type,const std::string info,
@@ -63,7 +68,7 @@ Exception::Exception(const ex::type type,const std::string info,
     pos=cmethod.find("::");
     m_method=cmethod.substr(0,ATOOLS::Min(cmethod.length(),pos));
   }
-  Exception_Handler::s_exception=this;
+  exh->m_exception=this;
 }
 
 Exception::Exception(const ex::type type,const std::string info,
@@ -73,14 +78,14 @@ Exception::Exception(const ex::type type,const std::string info,
   m_class(cclass),
   m_method(cmethod) 
 {
-  Exception_Handler::s_exception=this;
+  exh->m_exception=this;
 }
 
 Exception::~Exception() 
 {
-  if (Exception_Handler::s_exception==this) {
-    Exception_Handler::SetExitCode();
-    Exception_Handler::s_exception=NULL;
+  if (exh->m_exception==this) {
+    exh->SetExitCode();
+    exh->m_exception=NULL;
   }
 }
 

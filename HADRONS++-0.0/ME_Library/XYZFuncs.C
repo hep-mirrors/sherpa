@@ -1,14 +1,14 @@
 #include "Vector.H"
 #include "Flavour.H"
 #include "XYZFuncs.H"
-#include "Tools.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
 
 // constructor
-XYZFunc::XYZFunc( int nout, const Vec4D *p, const Flavour *fl, int k0n )
+XYZFunc::XYZFunc( int nout, const Vec4D *p, const Flavour *fl, int k0_n, bool anti )
 {
+  m_anti=anti;
   m_N = nout+1;
   p_mom = new Vec4D[m_N];
   p_flav = new Flavour[m_N];
@@ -16,25 +16,10 @@ XYZFunc::XYZFunc( int nout, const Vec4D *p, const Flavour *fl, int k0n )
     p_mom[i] = p[i];
     p_flav[i] = fl[i];
   }
-  m_k0n = k0n;
+  m_k0n = k0_n;
   CalcEtaMu();
 }
  
- 
-XYZFunc::XYZFunc( int nout, const Vec4D *p, const Flavour *fl)
-{
-  m_N = nout+1;
-  p_mom = new Vec4D[m_N];
-  p_flav = new Flavour[m_N];
-  for( int i=0; i<m_N; i++ ) {
-    p_mom[i] = p[i];
-    p_flav[i] = fl[i];
-  }
-  m_k0n = 1;
-  CalcEtaMu();
-}
-
-
 void XYZFunc::CalcEtaMu() 
 {
   Vec4D pi;
@@ -53,7 +38,8 @@ void XYZFunc::CalcEtaMu()
     m_eta.push_back( _m_eta );
     Complex help( p_flav[i].PSMass(), 0. );
     m_mu.push_back( help/m_eta[i] );
-    if( p_flav[i].IsAnti() ) m_mu[i] *= -1.;
+    if(     p_flav[i].IsAnti() && m_anti==false
+        || !p_flav[i].IsAnti() && m_anti==true  ) m_mu[i] *= -1.;
   }
 }
 
@@ -253,29 +239,62 @@ Complex XYZFunc::Z(
 	const int t4, const int l4,
 	const Complex cR1, const Complex cL1, const Complex cR2, const Complex cL2 ) 
 {											// l=0 <=> -; l=1 <=> +; <---- helicity
-  const int hel_comb = ((1-l1)<<3) + ((1-l2)<<2) + ((1-l3)<<1) + (1-l4);
-  return Z(t1,t2,t3,t4,hel_comb,cR1,cL1,cR2,cL2);
+  if(m_anti) {
+    const int hel_comb = ((1-l2)<<3) + ((1-l1)<<2) + ((1-l4)<<1) + (1-l3);
+    return Z(t2,t1,t4,t3,hel_comb,cR1,cL1,cR2,cL2);
+  }
+  else {
+    const int hel_comb = ((1-l1)<<3) + ((1-l2)<<2) + ((1-l3)<<1) + (1-l4);
+    return Z(t1,t2,t3,t4,hel_comb,cR1,cL1,cR2,cL2);
+  }
 }
  
 Complex XYZFunc::Y( 
-	const int t1, const int l1, 
+	const int t1, const int l1,
 	const int t2, const int l2,
-	const int t3, const int l3,
 	const Complex cR, const Complex cL ) 
 {											// l=0 <=> -; l=1 <=> +; <---- helicity
-  const int hel_comb = ((1-l1)<<2) + ((1-l2)<<1) + (1-l3);
-  return( Y(t1,t2,hel_comb,cR,cL) );
+  if(m_anti) {
+    const int hel_comb = ((1-l2)<<1) + (1-l1);
+    return( Y(t2,t1,hel_comb,cR,cL) );
+  }
+  else {
+    const int hel_comb = ((1-l1)<<1) + (1-l2);
+    return( Y(t1,t2,hel_comb,cR,cL) );
+  }
 }
  
 
 Complex XYZFunc::X( 
 	const int t1, const int l1, 
-	const int t2, const int l2,
+	const int t2,
 	const int t3, const int l3,
 	const Complex cR, const Complex cL ) 
 {											// l=0 <=> -; l=1 <=> +; <---- helicity
-  const int hel_comb = ((1-l1)<<2) + ((1-l2)<<1) + (1-l3);
-  return( X(t1,t2,t3,hel_comb,cR,cL) );
+  if(m_anti) {
+    const int hel_comb = ((1-l3)<<1) + (1-l1);
+    return( X(t3,t2,t1,hel_comb,cR,cL) );
+  }
+  else {
+    const int hel_comb = ((1-l1)<<1) + (1-l3);
+    return( X(t1,t2,t3,hel_comb,cR,cL) );
+  }
+}
+
+Complex XYZFunc::X( 
+                    const int t1, const int l1,
+                    const Vec4D p2,
+                    const int t3, const int l3,
+                    const Complex cR, const Complex cL )
+{                                                                                       // l=0 <=> -; l=1 <=> +; <---- helicity
+  if(m_anti) {
+    const int hel_comb = ((1-l3)<<1) + (1-l1);
+    return( X(t3,p2,t1,hel_comb,cR,cL) );
+  }
+  else {
+    const int hel_comb = ((1-l1)<<1) + (1-l3);
+    return( X(t1,p2,t3,hel_comb,cR,cL) );
+  }
 }
  
 Complex XYZFunc::Q(short hel)
@@ -285,82 +304,3 @@ Complex XYZFunc::Q(short hel)
   q -= X(0,m_N,0,hel,Complex(1.,0.),Complex(-1.,0.));	
   return q/sqrt(p_flav[0].PSMass()-SQRT_05*m_mu[0]*m_eta[0])/2./m_mu[0];
 }
-/*
-ComplexVec4D XYZFunc::L( const int t1, const int t2, const int hel_comb, const Complex cR, const Complex cL )
-{
-  ComplexVec4D l( Complex(0.,0.), Complex(0.,0.), Complex(0.,0.), Complex(0.,0.) );
-  Vec4D tmp[4];
-  tmp[0] = Vec4D(1.0,0.0,0.0,0.0);
-  tmp[1] = Vec4D(0.0,SQRT_05,SQRT_05,0.0);
-  tmp[2] = Vec4D(0.0,SQRT_05,-SQRT_05,0.0);
-  tmp[3] = Vec4D(0.0,0.0,0.0,1.0);
-  
-  for(int i=0; i<4; i++) {
-    double sign=(i==0 ? 1.0 : -1.0);
-    l[i]=sign*X( t1, tmp[i], t2, hel_comb, cR, cL );
-  }
-  return l;
-}
-*/
-
-ComplexVec4D XYZFunc::L( const int t1, const int t3, const int hel_comb, const Complex cR, const Complex cL )
-{
-  ComplexVec4D l( Complex(0.,0.), Complex(0.,0.), Complex(0.,0.), Complex(0.,0.) );
-  ATOOLS::Vec4D k0, k1;
-  switch( m_k0n ) {
-    case 0  : 
-      k0 = ATOOLS::Vec4D(1., SQRT_05, 0., SQRT_05);
-      k1 = ATOOLS::Vec4D(0., 0., 1., 0.);
-      break;
-    case 2  : 
-      k0 = ATOOLS::Vec4D(1., SQRT_05, SQRT_05, 0.);
-      k1 = ATOOLS::Vec4D(0., 0., 0., 1.);
-      break;
-    default : 
-      k0 = ATOOLS::Vec4D(1., 0., SQRT_05, SQRT_05);
-      k1 = ATOOLS::Vec4D(0., 1., 0., 0.);
-  }
-  
-  Complex A, B;
-  ATOOLS::Vec4D tmp_cross, tmp_cross2;
-  switch( hel_comb ) {
-    case 0: // ++
-      A = 2.*cR/m_eta[t1]/m_eta[t3];
-      tmp_cross = cross(k0,p_mom[t1],p_mom[t3]);
-      for(int i=0; i<4; i++) {
-        l[i] = A*( (k0*p_mom[t1])*p_mom[t3][i] + (k0*p_mom[t3])*p_mom[t1][i] - (p_mom[t1]*p_mom[t3])*k0[i] + Complex(0.0,1.0)*tmp_cross[i] );
-        l[i] += 2.0*cL*m_mu[t1]*m_mu[t3]*k0[i];
-      }
-      break;
-    case 1: // +-
-      A = 2.0*cR*m_mu[t3]/m_eta[t1];
-      B = 2.0*cL*m_mu[t1]/m_eta[t3];
-      tmp_cross = cross( k1, k0, p_mom[t1]);
-      tmp_cross2 = cross( k1, k0, p_mom[t3]);
-      for(int i=0; i<4; i++) {
-        l[i] = A*( -k0[i]*(k1*p_mom[t1]) + k1[i]*(k0*p_mom[t1]) + Complex(0.0,1.0)*tmp_cross[i] )
-              +B*( -k1[i]*(k0*p_mom[t3]) + k0[i]*(k1*p_mom[t3]) - Complex(0.0,1.0)*tmp_cross2[i] );
-      }
-      break;
-    case 2: // -+
-      A = -2.0*cL*m_mu[t3]/m_eta[t1];
-      B = -2.0*cR*m_mu[t1]/m_eta[t3];
-      tmp_cross = cross( k1, k0, p_mom[t1]);
-      tmp_cross2 = cross( k1, k0, p_mom[t3]);
-      for(int i=0; i<4; i++) {
-        l[i] = A*( -k0[i]*(k1*p_mom[t1]) + k1[i]*(k0*p_mom[t1]) - Complex(0.0,1.0)*tmp_cross[i] )
-            +B*( -k1[i]*(k0*p_mom[t3]) + k0[i]*(k1*p_mom[t3]) + Complex(0.0,1.0)*tmp_cross2[i] );
-      }
-      break;
-    case 3: // ++
-      A = 2.*cL/m_eta[t1]/m_eta[t3];
-      tmp_cross = cross(k0,p_mom[t1],p_mom[t3]);
-      for(int i=0; i<4; i++) {
-        l[i] = A*( (k0*p_mom[t1])*p_mom[t3][i] + (k0*p_mom[t3])*p_mom[t1][i] - (p_mom[t1]*p_mom[t3])*k0[i] - Complex(0.0,1.0)*tmp_cross[i] );
-        l[i] += 2.0*cR*m_mu[t1]*m_mu[t3]*k0[i];
-      }
-      break;
-  }
-  return l;
-}
-

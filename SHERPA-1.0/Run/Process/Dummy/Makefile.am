@@ -1,13 +1,7 @@
 pkglib_LTLIBRARIES = libDummy.la
+
 libDummy_la_SOURCES = Dummy.C
+
 INCLUDES = @AMEGICINCS@ @PHASICINCS@ @ATOOLSINCS@ @MODELINCS@
+
 EXTRA_DIST = @SVNINCLUDE@ Dummy.H
-
-
-
-
-
-
-
-
-

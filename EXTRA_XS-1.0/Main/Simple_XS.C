@@ -14,7 +14,6 @@
 #include "Regulator_Base.H"
 #include "Remnant_Base.H"
 #include "Phase_Space_Handler.H"
-#include "Ladder.H"
 
 using namespace EXTRAXS;
 using namespace MODEL;
@@ -76,7 +75,10 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   if (model==ATOOLS::NotDefined<ATOOLS::Model_Type::code>()) 
     model=ATOOLS::Model_Type::SM;
   ATOOLS::rpa.gen.SetModelType(model);
-  m_scalescheme=p_dataread->GetValue<int>("SCALE_SCHEME",0);
+  ATOOLS::Data_Read::SetTags(Integrable_Base::ScaleTags());
+  m_scalescheme=(PHASIC::scl::scheme)
+    p_dataread->GetValue<int>("SCALE_SCHEME",0);
+  ATOOLS::Data_Read::ResetTags();
   m_kfactorscheme=p_dataread->GetValue<int>("KFACTOR_SCHEME",0);
   double fac_scale_fac=p_dataread->
     GetValue<double>("FACTORIZATION_SCALE_FACTOR",1.);
@@ -102,7 +104,9 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   int         nIS,   nFS;
   Flavour   * IS,  * FS, * flavs;
   std::string efunc="1";
-  Data_Reader reader;
+  Data_Reader reader(" ",";","!","=");
+  reader.AddWordSeparator("\t");
+  reader.AddIgnore(":");
   m_setup.clear();
   while(from) {
     getline(from,buf);
@@ -139,10 +143,10 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 		reader.SetString(buf);
 		unsigned int order_ew_t, order_strong_t;
 		std::string efunc_t="1";
-		if (reader.ReadFromString(order_ew_t,"Order electroweak :")) order_ew=order_ew_t;
-		if (reader.ReadFromString(order_strong_t,"Order strong :")) order_strong=order_strong_t;
-		if (reader.ReadFromString(efunc_t,"Enhance_Function :")) efunc=efunc_t;
-		position = buf.find(string("End process"));
+		if (reader.ReadFromString(order_ew_t,"electroweak")) order_ew=order_ew_t;
+		if (reader.ReadFromString(order_strong_t,"strong")) order_strong=order_strong_t;
+		if (reader.ReadFromString(efunc_t,"Enhance_Function")) efunc=efunc_t;
+		position = buf.find(string("process"));
 		if (!from) {
 		  msg.Error()<<"Error in Simple_XS::InitializeProcesses("
 			     <<m_path+processfile<<")."<<endl
@@ -167,17 +171,8 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	    m_minqcdjet=Min(m_minqcdjet,qcdjets);
 	    m_maxqcdjet=ATOOLS::Max(m_maxqcdjet,qcdjets);
 	    if (inisum<rpa.gen.Ecms() && finsum<rpa.gen.Ecms()) {
-	      if (nFS==0) {
-		Ladder *ladder(new Ladder(nIS,nFS,flavs,m_scalescheme,
-					  m_kfactorscheme,p_beamhandler,
-					  p_isrhandler,p_selectordata));
-		m_xsecs.push_back(ladder);
-		ladder->Initialize();
-	      }
-	      else {
-		InitializeProcess(flavs,efunc,inisum,finsum,
-				  order_ew,order_strong,nIS,nFS,0);
-	      }
+	      InitializeProcess(flavs,efunc,inisum,finsum,
+				order_ew,order_strong,nIS,nFS,0);
 	      if (m_xsecs.size()>0) p_selected=m_xsecs.back();
 	    }
 	    delete [] flavs;
@@ -274,12 +269,7 @@ XS_Group *Simple_XS::FindPDFGroup(const size_t nin,const size_t nout,
   ATOOLS::Flavour *copy = new ATOOLS::Flavour[nin+nout];
   for (short unsigned int i=0;i<nin;++i) 
     copy[i]=p_remnants[i]->ConstituentType(flavours[i]);
-  ////////////////////////////////////////////////////////
-  for (short unsigned int i=nin;i<nin+nout;++i) {
-   if (flavours[i].Strong()) copy[i]=ATOOLS::kf::jet;
-   else copy[i]=flavours[i];
-  }
-  ////////////////////////////////////////////////////////
+  for (short unsigned int i=nin;i<nin+nout;++i) copy[i]=ATOOLS::kf::jet;
   XS_Group *newgroup = 
     new XS_Group(nin,nout,copy,m_scalescheme,m_kfactorscheme,
 		 p_beamhandler,p_isrhandler,p_selectordata);
@@ -366,11 +356,9 @@ bool Simple_XS::CalculateTotalXSec(const std::string &resultpath)
 bool  Simple_XS::SelectOne() 
 {
   DeSelect();
-  if (m_totalxs==0) {
+  if (m_totalxs==0) 
     p_selected = m_xsecs[ATOOLS::Min(size_t(ran.Get()*m_xsecs.size()),
-				     m_xsecs.size()-1)];
-    p_selected->DeSelect();
-  }
+				     m_xsecs.size())];
   else {
     double disc = m_totalxs * ran.Get(); 
     for (size_t i=0;i<m_xsecs.size();++i) {

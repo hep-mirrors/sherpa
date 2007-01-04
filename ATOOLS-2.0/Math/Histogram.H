@@ -25,6 +25,7 @@ namespace ATOOLS {
     ~Histogram();
     void Reset();
     void Insert(double x);
+    void Insert(int i, double weight, int =1);
     void Insert(double x, double weight, int =1);
     void InsertRange(double start, double end, double value);
     void Scale(double factor);
@@ -34,7 +35,8 @@ namespace ATOOLS {
     void Restore();
     double Mean() const;
     void SetBin(int i, double y)  { m_yvalues[i]=y; }
-//     double * Bin(double x);
+    double Bin(int i);
+    double Bin(double x);
     void Extrapolate(double x, double * ys,int mode);
     inline void SetFills(long int fills) {  m_fills=fills; }
 

@@ -400,42 +400,44 @@ bool Amisic_Histogram<ArgumentType>::ReadIn(const std::string &filename,
     return false;
   }
   std::string gridxscaling, gridyscaling, gridxvariable, gridyvariable;
-  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","#");
+  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader(" ",";",datatag,"=");
+  reader->AddWordSeparator("\t");
+  reader->SetAddCommandLine(false);
   reader->SetInputFile(filename);
   reader->AddIgnore("!");
-  reader->SetVectorType(ATOOLS::vtc::horizontal);
-  if (!reader->ReadFromFile(m_xmin,"x_{min} :")) {
+  reader->AddIgnore(":");
+  if (!reader->ReadFromFile(m_xmin,"x_{min}")) {
     msg_Tracking()<<"Amisic_Histogram::ReadIn(..): "
 		  <<"No x_{min} information in '"
 		  <<filename<<"'."<<std::endl;
     return false;
   }
-  if (!reader->ReadFromFile(m_xmax,"x_{max} :")) {
+  if (!reader->ReadFromFile(m_xmax,"x_{max}")) {
     msg_Tracking()<<"Amisic_Histogram::ReadIn(..): "
 		  <<"No x_{max} information in '"
 		  <<filename<<"'."<<std::endl;
     return false;
   }
-  if (!reader->ReadFromFile(gridxscaling,"x scale :")) {
+  if (!reader->ReadFromFile(gridxscaling,"x-scale")) {
     msg_Tracking()<<"Amisic_Histogram::ReadIn(..): "
 		  <<"No x scaling information in '"
 		  <<filename<<"'."<<std::endl;
     return false;
   }
-  if (!reader->ReadFromFile(gridyscaling,"y scale :")) {
+  if (!reader->ReadFromFile(gridyscaling,"y-scale")) {
     msg_Tracking()<<"Amisic_Histogram::ReadIn(..): "
 		  <<"No y scaling information in '"
 		  <<filename<<"!."<<std::endl;
     return false;
   }
   std::vector<std::string> temp;
-  if (!reader->VectorFromFile(temp,"x :")) gridxvariable="Unknown";
+  if (!reader->VectorFromFile(temp,"x")) gridxvariable="Unknown";
   else {
     gridxvariable=temp[0];
     for (unsigned int i=1;i<temp.size();++i) 
       gridxvariable+=std::string(" ")+temp[i];
   }
-  if (!reader->VectorFromFile(temp,"y :")) gridyvariable="Unknown";
+  if (!reader->VectorFromFile(temp,"y")) gridyvariable="Unknown";
   else {
     gridyvariable=temp[0];
     for (unsigned int i=1;i<temp.size();++i) 
@@ -446,8 +448,9 @@ bool Amisic_Histogram<ArgumentType>::ReadIn(const std::string &filename,
   p_xaxis->SetScaling(gridxscaling);
   p_yaxis->SetScaling(gridyscaling);
   reader->SetComment("!");
-  reader->SetIgnore(":");
+  reader->RescanInFile();
   std::vector<std::vector<double> > data;
+  reader->SetMatrixType(ATOOLS::mtc::normal);
   reader->MatrixFromFile(m_data,datatag);
   delete reader;
   if (m_data.size()<hci::size) {
@@ -474,15 +477,15 @@ WriteOut(const std::string &filename,const std::string &datatag,
     return false;
   }
   Finish();
-  ATOOLS::Data_Writer *writer = new ATOOLS::Data_Writer(":",";","!");
+  ATOOLS::Data_Writer *writer = new ATOOLS::Data_Writer(" ",";","!",":");
   writer->SetOutputFile(filename);
   writer->SetBlank(ATOOLS::defaultblank);
   writer->WriteComment("===================="); 
   writer->WriteComment(" AMISIC++ grid file "); 
   writer->WriteComment("===================="); 
-  writer->WriteComment(std::string("x scale : ")+
+  writer->WriteComment(std::string("x-scale : ")+
 		       p_xaxis->Scaling()->Name());
-  writer->WriteComment(std::string("y scale : ")+
+  writer->WriteComment(std::string("y-scale : ")+
 		       p_yaxis->Scaling()->Name());
   writer->WriteComment("--------------------");
   writer->WriteComment(std::string("x : ")+
@@ -824,6 +827,19 @@ template <class ArgumentType>
 void Amisic_Histogram<ArgumentType>::SetFinished(const bool finished) 
 { 
   m_finished=finished; 
+}
+
+template <class ArgumentType> 
+void Amisic_Histogram<ArgumentType>::StoreData()
+{
+  m_sdata=m_data;
+}
+
+template <class ArgumentType> 
+void Amisic_Histogram<ArgumentType>::RestoreData()
+{
+  m_data=m_sdata;
+  m_sdata=Argument_Matrix();
 }
 
 namespace AMISIC {

@@ -44,19 +44,19 @@ void Sudakov_Tools::CalculateMaxCouplings(const int scheme,
     m_alphaSmax         = 0.2;         
     m_beta0 = m_lambda2 = 0.;          
   }
-  if (msg.LevelIsTracking()) Output();
+  Output();
 }
 
 void Sudakov_Tools::Output() {
   msg.Tracking()<<"Initialise Sudakov-Tools : "<<std::endl
-	   <<"   beta0        = "<<m_beta0<<std::endl
-	   <<"   lambda2      = "<<m_lambda2<<std::endl	
-	   <<"   alphaS(MZ)   = "<<CrudeAlphaS(sqr((Flavour(kf::Z)).Mass()))<<"  (estimated)"<<std::endl
-	   <<"   alphaS(MZ)   = "<<AlphaS(sqr((Flavour(kf::Z)).Mass()))<<"  (exact)"<<std::endl
-	   <<"   alphaQED(MZ) = "<<Alpha(sqr((Flavour(kf::Z)).Mass()))<<"  (exact)"<<std::endl
-	   <<"   alphaQED_max = "<<m_alphaQEDmax<<"  (exact)"<<std::endl
-	   <<"   scalefac     = "<<m_scalefac<<", "
-	   <<rpa.gen.RenormalizationScaleFactor()<<"."<<std::endl;
+		<<"   beta0        = "<<m_beta0<<std::endl
+		<<"   lambda2      = "<<m_lambda2<<std::endl	
+		<<"   alphaS(MZ)   = "<<CrudeAlphaS(sqr((Flavour(kf::Z)).Mass()))<<"  (estimated)"<<std::endl
+		<<"   alphaS(MZ)   = "<<AlphaS(sqr((Flavour(kf::Z)).Mass()))<<"  (exact)"<<std::endl
+		<<"   alphaQED(MZ) = "<<Alpha(sqr((Flavour(kf::Z)).Mass()))<<"  (exact)"<<std::endl
+		<<"   alphaQED_max = "<<m_alphaQEDmax<<"  (exact)"<<std::endl
+		<<"   scalefac     = "<<m_scalefac<<", "
+		<<rpa.gen.RenormalizationScaleFactor()<<"."<<std::endl;
 }
 
 double Sudakov_Tools::CrudeAlphaS(const double t) const 

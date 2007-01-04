@@ -253,12 +253,12 @@ namespace ATOOLS {
       K_4_star_2045_plus     = 329,
       f_J_2220               = 339,
 
-      a_0_1450               = 10111,
-      a_0_1450_plus          = 10211,
-      f_0_1370               = 10221,
+      a_0_980                = 10111,
+      a_0_980_plus           = 10211,
+      f_0_980                = 10221,
       K_0_star_1430          = 10311,
       K_0_star_1430_plus     = 10321,
-      f_0_1710               = 10331,
+      f_0_1370               = 10331,
       D_0_star_plus          = 10411,
       D_0_star               = 10421,
       D_s0_star              = 10431,
@@ -343,14 +343,14 @@ namespace ATOOLS {
       Upsilon_3S             = 200553,
       Upsilon_4S             = 300553,
 
-      a_0_980                = 9000111,
-      a_0_980_plus           = 9000211,
+      a_0_1450               = 9000111,
+      a_0_1450_plus          = 9000211,
       f_0_600                = 9000221,
 
       psi_4040               = 9000443,
       Upsilon_10860          = 9000553,
 
-      f_0_980                = 9010221,
+      f_0_1710               = 9010221,
       psi_4160               = 9010443,
       Upsilon_11020          = 9010553,
       f_0_1500               = 9020221,
@@ -365,122 +365,97 @@ namespace ATOOLS {
 
          ------------------------------------------ */
 
-      Delta_1620_minus       = 1112,
-      Delta_1232_minus       = 1114,
-      Delta_1905_minus       = 1116,
-      Delta_1950_minus       = 1118,
-      Delta_1620             = 1212,
-      N_1520                 = 1214,
-      Delta_1905             = 1216,
-      N_2190                 = 1218,
       n                      = 2112,
-      Delta_1232             = 2114,
-      N_1675                 = 2116,
-      Delta_1950             = 2118,
-      Delta_1620_plus        = 2122,
-      N_1520_plus            = 2124,
-      Delta_1905_plus        = 2126,
-      N_2190_plus            = 2128,
       p_plus                 = 2212,
-      Delta_1232_plus        = 2214,
-      N_1675_plus            = 2216,
-      Delta_1950_plus        = 2218,
-      Delta_1620_plus_plus   = 2222,
-      Delta_1232_plus_plus   = 2224,
-      Delta_1905_plus_plus   = 2226,
-      Delta_1950_plus_plus   = 2228,
       Sigma_minus            = 3112,
-      Sigma_1385_minus       = 3114,
-      Sigma_1775_minus       = 3116,
-      Sigma_2030_minus       = 3118,
       Lambda                 = 3122,
-      Lambda_1520            = 3124,
-      Lambda_1820            = 3126,
-      Lambda_2100            = 3128,
       Sigma                  = 3212,
-      Sigma_1385             = 3214,
-      Sigma_1775             = 3216,
-      Sigma_2030             = 3218,
       Sigma_plus             = 3222,
-      Sigma_1385_plus        = 3224,
-      Sigma_1775_plus        = 3226,
-      Sigma_2030_plus        = 3228,
       Xi_minus               = 3312,
-      Xi_1530_minus          = 3314,
       Xi                     = 3322,
-      Xi_1530                = 3324,
-      Omega_minus            = 3334,
       Sigma_c_2455           = 4112,
       Lambda_c_plus          = 4122,
-      Xi_c                   = 4132,
       Sigma_c_2455_plus      = 4212,
       Sigma_c_2455_plus_plus = 4222,
-      Xi_c_plus              = 4232,
-      Omega_c                = 4332,
+      Xi_c_2466              = 4132,
+      Xi_c_2466_plus         = 4232,
+      Xi_c_2574              = 4312,
+      Xi_c_2574_plus         = 4322,
+      Omega_c_0              = 4332,
+      Sigma_b_5820_minus     = 5212,
       Lambda_b               = 5122,
+      Sigma_b_5820           = 5212,
+      Sigma_b_5820_plus      = 5222,
+      Xi_b_5840              = 5132,
+      Xi_b_5840_minus        = 5232,
+      Xi_b_5960              = 5312,
+      Xi_b_5960_minus        = 5322,
+      Omega_b_0              = 5332,
 
-      Delta_1700_minus       = 11114,
-      Delta_1930_minus       = 11116,
-      Delta_1930             = 11216,
+      Delta_1232_minus       = 1114,
+      Delta_1232             = 2114,
+      Delta_1232_plus        = 2214,
+      Delta_1232_plus_plus   = 2224,
+      Sigma_1385_minus       = 3114,
+      Sigma_1385             = 3214,
+      Sigma_1385_plus        = 3224,
+      Xi_1530_minus          = 3314,
+      Xi_1530                = 3324,
+      Omega_minus            = 3334,
+      Sigma_c_2520           = 4114,
+      Lambda_c_2625_plus     = 4124,
+      Sigma_c_2520_plus      = 4214,
+      Sigma_c_2520_plus_plus = 4224,
+      Xi_c_2645              = 4314,
+      Xi_c_2645_plus         = 4324,
+      Omega_c_star           = 4334,
+      Sigma_b_5840_minus     = 5114,
+      Lambda_b_5940          = 5124,
+      Sigma_b_5840           = 5214,
+      Sigma_b_5840_plus      = 5224,
+      Xi_b_5940              = 5314,
+      Xi_b_5940_minus        = 5324,
+      Omega_b_star           = 5334,
+
       N_1440                 = 12112,
-      Delta_1700             = 12114,
-      N_1680                 = 12116,
-      Delta_1930_plus        = 12126,
       N_1440_plus            = 12212,
-      Delta_1700_plus        = 12214,
-      N_1680_plus            = 12216,
-      Delta_1700_plus_plus   = 12224,
-      Delta_1930_plus_plus   = 12226,
       Sigma_1660_minus       = 13112,
-      Sigma_1670_minus       = 13114,
-      Sigma_1915_minus       = 13116,
-      Lambda_1405            = 13122,
-      Lambda_1690            = 13124,
-      Lambda_1830            = 13126,
+      Lambda_1600            = 13122,
       Sigma_1660             = 13212,
-      Sigma_1670             = 13214,
-      Sigma_1915             = 13216,
       Sigma_1660_plus        = 13222,
+      Xi_1800_minus_fict     = 13312,
+      Xi_1800_fict           = 13322,
+
+      N_1535                 = 22112,
+      N_1535_plus            = 22212,
+      Sigma_1620_minus       = 23112,
+      Lambda_1670            = 23122,
+      Sigma_1620             = 23212,
+      Sigma_1620_plus        = 23222,
+      Xi_1720_minus_fict     = 23312,
+      Xi_1720_fict           = 23322,
+      Lambda_1405            = 22132,
+
+      N_1520                 = 12114,
+      N_1520_plus            = 12214,
+      Sigma_1670_minus       = 13114,
+      Lambda_1690            = 13124,
+      Sigma_1670             = 13214,
       Sigma_1670_plus        = 13224,
-      Sigma_1915_plus        = 13226,
       Xi_1820_minus          = 13314,
       Xi_1820                = 13324,
-      Lambda_c_2593_plus     = 14122,
+      Lambda_1520            = 12134,
 
-      Delta_1910_minus       = 21112,
-      Delta_1920_minus       = 21114,
-      Delta_1910             = 21212,
-      N_1700                 = 21214,
-      N_1535                 = 22112,
-      Delta_1920             = 22114,
-      Delta_1910_plus        = 22122,
-      N_1700_plus            = 22124,
-      N_1535_plus            = 22212,
-      Delta_1920_plus        = 22214,
-      Delta_1910_plus_plus   = 22222,
-      Delta_1920_plus_plus   = 22224,
-      Sigma_1750_minus       = 23112,
-      Sigma_1940_minus       = 23114,
-      Lambda_1600            = 23122,
-      Lambda_1890            = 23124,
-      Lambda_2110            = 23126,
-      Sigma_1750             = 23212,
-      Sigma_1940             = 23214,
-      Sigma_1750_plus        = 23222,
-      Sigma_1940_plus        = 23224,
-      Delta_1600_minus       = 31114,
-      N_1720                 = 31214,
-      N_1650                 = 32112,
-      Delta_1600             = 32114,
-      N_1720_plus            = 32124,
-      N_1650_plus            = 32212,
-      Delta_1600_plus        = 32214,
-      Delta_1600_plus_plus   = 32224,
-      Lambda_1670            = 33122,
-      N_1710                 = 42112,
-      N_1710_plus            = 42212,
-      Lambda_1800            = 43122,
-      Lambda_1810            = 53122,
+      Delta_1700_minus       = 9011114,
+      Delta_1700             = 9012114,
+      Delta_1700_plus        = 9012214,
+      Delta_1700_plus_plus   = 9012224,
+      Sigma_1940_minus_fict  = 9013114,
+      Sigma_1940_fict        = 9013214,
+      Sigma_1940_plus_fict   = 9013224,
+      Xi_2100_minus_fict     = 9013314,
+      Xi_2100_fict           = 9013324,
+      Omega_2300_minus_fict  = 9013334,
 
       none                   = 99999
     };
@@ -515,8 +490,8 @@ namespace ATOOLS {
   struct Part_Info {
     kf::code kfc;
     double m,w,yuk;
-    int    iq,isow,sp,masssign;
-    bool   str,Maj,on,stbl,msv,hadron;
+    int    iq,isow,sp,stbl,masssign;
+    bool   str,Maj,on,msv,hadron;
     char * n;
 
     std::vector<Flavour *> flavs;
@@ -638,7 +613,13 @@ namespace ATOOLS {
       return particles[ Index() ].on;
     }
     inline bool IsStable() const {
+      return particles[ Index() ].stbl&1;
+    }
+    inline int Stable() const {
       return particles[ Index() ].stbl;
+    }
+    inline void SetStable(const int stable) const {
+      particles[ Index() ].stbl = stable;
     }
     inline void SetOn(bool on) const {
       particles[ Index() ].on = on;
@@ -863,6 +844,11 @@ namespace ATOOLS {
       if (kfc-100*int(kfc/100)<10) return 0;
       return 1;
     }
+    inline const bool IsBaryon() const {
+      if (abs(kfc)<1000)    return 0;
+      if (int(kfc/1000)==0) return 0;
+      return !IsDiQuark();
+    }
     inline const bool IsB_Hadron() const {
       if (abs(kfc)<100)                            return 0;
       if (kfc-100*int(kfc/100)<10)                 return 0;
@@ -919,18 +905,13 @@ namespace ATOOLS {
     }
   };
 
-  struct Flavour_Pair {
-    Flavour fl1;
-    Flavour fl2;
-  };
-
   class Flavour_Sorting_Criterion {
   public :
     bool operator() (const Flavour & _fl1,const Flavour & _fl2) {
       int fl1 = _fl1.Kfcode(), fl2 = _fl2.Kfcode();
       if (fl1<fl2) return 0;
-      if (fl1==fl2 && _fl1.IsAnti() && !(_fl2.IsAnti())) return 0;
-      return 1;
+      if (fl1==fl2 && _fl1.IsAnti() && !(_fl2.IsAnti())) return false;
+      return true;
     }
   };
 

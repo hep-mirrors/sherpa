@@ -14,13 +14,12 @@ namespace HADRONS {
   private:
     std::vector<std::vector<std::string> > m_helpsvv;
     bool ExtractFlavours(std::vector<int> &,std::string);
-    void ExtractBRInfo( std::string entry, std::string & sbr, std::string & sdbr, std::string & sorigin );
 	std::string m_path, m_file;
 	bool m_fulldecay, m_antidecays, m_createbooklet;
   public: 
     Decay_Table_Reader( std::string path=std::string("./"), 
 						std::string file=std::string(""));
-    int  FillDecayTable(ATOOLS::Decay_Table * dt);
+    int  FillDecayTable(ATOOLS::Decay_Table * dt=NULL);
     void FillInMatrixElementsAndPS( ATOOLS::Decay_Table *dt, 
 		Channel_Map *chmap, GeneralModel );
   }; // end of class Decay_Table_Reader

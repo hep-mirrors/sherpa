@@ -7,6 +7,7 @@
 #else
 #include "Tools.H"
 #endif
+#include <algorithm>
 
 using namespace ATOOLS;
 
@@ -63,7 +64,7 @@ bool CNumber::Evaluate(Expression *const expression)
     if (*cit!=this) {
       m_n*=((CNumber*)*cit)->m_n;
       ((CNumber*)*cit)->Delete();
-      cit=--expression->erase(cit);
+      --(cit=expression->erase(cit));
       evaluated=true;
     }
   }
@@ -118,13 +119,13 @@ bool Delta::Evaluate(Expression *const expression)
 	if (m_j==delta->m_i) {
 	  m_j=delta->m_j;
 	  delta->Delete();
-	  tit=--expression->erase(tit);
+	  --(tit=expression->erase(tit));
 	  evaluated=true;
 	}
 	else if (m_i==delta->m_j) {
 	  m_i=delta->m_i;
 	  delta->Delete();
-	  tit=--expression->erase(tit);
+	  --(tit=expression->erase(tit));
 	  evaluated=true;
 	}
       }

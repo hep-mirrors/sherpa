@@ -1,5 +1,5 @@
 MAKE = make 
 
-SUBDIRS = Math Phys Org
+SUBDIRS = Org Math Phys 
 
 EXTRA_DIST    = @SVNINCLUDE@

@@ -37,6 +37,7 @@ namespace SHERPA {
     { return p_eventhandler; }
     inline Input_Output_Handler *const GetIOHandler() const 
     { return p_iohandler; }
+    
   };
 
   /*!

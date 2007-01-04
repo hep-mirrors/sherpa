@@ -3,10 +3,10 @@
 using namespace ANALYSIS;
 
 DECLARE_GETTER(ISR_Statistics_Getter,"ISRStats",
-	       Primitive_Observable_Base,String_Matrix);
+	       Primitive_Observable_Base,Argument_Matrix);
 
 Primitive_Observable_Base * 
-ISR_Statistics_Getter::operator()(const String_Matrix &parameters) const
+ISR_Statistics_Getter::operator()(const Argument_Matrix &parameters) const
 {
   std::string listname="Analysed";
   if (parameters.size()>0 && parameters[0].size()>0) listname=parameters[0][0];
@@ -125,10 +125,10 @@ Primitive_Observable_Base & ISR_Statistics::operator+=(const Primitive_Observabl
 #include "TH2D.h"
 
 DECLARE_GETTER(Sprime_Y_Distribution_Getter,"SprimeY",
-	       Primitive_Observable_Base,String_Matrix);
+	       Primitive_Observable_Base,Argument_Matrix);
 
 Primitive_Observable_Base *
-Sprime_Y_Distribution_Getter::operator()(const String_Matrix &parameters) const
+Sprime_Y_Distribution_Getter::operator()(const Argument_Matrix &parameters) const
 {
   std::string listname="Analysed";
   if (parameters.size()>0 && parameters[0].size()>0) listname=parameters[0][0];

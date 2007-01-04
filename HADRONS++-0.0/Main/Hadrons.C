@@ -10,9 +10,12 @@
 #include "MyStrStream.H"
 #include <utility>
 #include <algorithm>
-#include "XYZFuncs.H"
-#include "Channel_Elements.H"
-#include "Momenta_Stretcher.H"
+#include "Decay_Table.H"
+#include "Vector.H"
+#include "Particle.H"
+#include "Particle_List.H"
+#include "Blob_List.H"
+#include "Matrix.H"
 #include "Poincare.H"
 
 using namespace HADRONS;
@@ -20,184 +23,99 @@ using namespace ATOOLS;
 using namespace std;
 
 Hadrons::Hadrons( string _path, string _file, string _constfile ) : 
-  m_use_anti_table(false), m_path(_path), m_file(_file),
-  m_constfile(_constfile), m_createbooklet(0)
+  m_path(_path), m_file(_file), m_constfile(_constfile), m_spincorrelations(false)
 { 
   msg_Tracking()<<"In Hadrons: ("<<_path<<") "<<_file<<std::endl;
   msg_Tracking()<<"In Hadrons: ("<<_path<<") "<<_constfile<<std::endl;
   ReadInConstants();
-  bool createbooklet (false);
-  ReadInDecayTables(createbooklet);
-  if( createbooklet ) CreateBookletNow();
+  ReadInDecayTables();
+  p_color_unitmatrix = new CMatrix(1);
+  (*p_color_unitmatrix)[0][0] = Complex(1.0,0.0);
+//  CreateBookletNow();
 }
 
-Hadrons::~Hadrons(){
-  std::map<ATOOLS::Decay_Channel *, HADRONS::Hadron_Decay_Channel *>::iterator it;
-  for( it=p_channelmap->begin(); it!=p_channelmap->end(); it++) {
-    if( (*it).second ) {
-      delete (*it).second;
-      (*it).second = NULL;
-    }
-  }
-}
 
 void Hadrons::CreateBookletNow()
 {
-  string fn = string("hadrons");
+  string fn = string("DecayBooklet");
   string texfn = m_path + fn + string(".tex");
   ofstream f(texfn.c_str());
    
   // header
-  f<<"\\documentclass[a4paper]{article}\n"
-   <<"\\usepackage{latexsym,amssymb,amsmath,amsxtra,longtable,fullpage}\n\n"
-   <<"\\begin{document}\n"<<endl; 
-  f<<"\\newcommand{\\m}{-}"<<endl; 
-  f<<"\\newcommand{\\p}{+}"<<endl; 
-  f<<"\\title{Decay Channels of the {\\tt HADRONS++} Module}\n\\maketitle"<<endl;
-  f<<"\\tableofcontents"<<endl<<endl;
+  f<<"\\documentclass{article}\n"
+   <<"\\usepackage{latexsym,amssymb,amsmath,amsxtra}\n\n"
+   <<"\\begin{document}\n\n"; 
+  f<<"\\newcommand{\\m}{-}\n"; 
+  f<<"\\newcommand{\\p}{+}\n"; 
+  f<<"\\title{Decay Information}\n\\maketitle\n";
 
   // text 
-  Decay_Channel * dc (NULL);
-  FlavourSet outs;
-  char helpstr[10];
-  for ( map<Flavour,Decay_Table *>::iterator pos = p_decaymap->begin(); pos != p_decaymap->end(); ++pos) {
-    Decay_Table * dt  (pos->second);
-    f<<"\\section{Decaying Particle: $"<<dt->Flav().TexName()<<"$}"<<endl;
-    f<<"\\begin{tabular}{ll}"<<endl;
-    f<<" number of decay channels:    & "<<dt->NumberOfDecayChannels()<<"\\\\ "<<endl;
-    f<<" total width:               & "<<dt->TotalWidth()<<" GeV \\\\ "<<endl;
-    f<<" experimental width:        & "<<dt->Flav().Width()<<" GeV \\\\ "<<endl;
-    f<<"\\end{tabular}"<<endl;
-    f<<"\\begin{longtable}[l]{lll}"<<endl;
-    f<<"\\multicolumn{3}{c}{\\bf Exclusive Decays}\\\\"<<endl;
-    f<<"\\hline"<<endl;
-    f<<"Decay Channel & Branching Ratio & Origin \\\\"<<endl;
-    f<<"\\hline\n\\hline"<<endl;
-    for( size_t i=0; i<dt->NumberOfDecayChannels(); ++i ) {
-      dc = dt->GetDecayChannel(i);
-      outs = dc->GetDecayProducts();
-      f<<"$"<<dc->GetDecaying().TexName()<<"$ $\\to$ ";
-      for (FlSetConstIter fl=outs.begin();fl!=outs.end();++fl) f<<"$"<<fl->TexName()<<"$ ";
-      f<<" & ";
-      sprintf( helpstr, "%.4f", dc->Width()/dt->TotalWidth()*100. );
-      f<<helpstr;
-      if( dc->DeltaWidth() > 0. ) {
-        sprintf( helpstr, "%.4f", dc->DeltaWidth()/dt->TotalWidth()*100. );
-        f<<" $\\pm$ "<<helpstr;
-      }
-      f<<" \\% & \\verb;"<<dc->Origin()<<";\\\\"<<endl;
-    }
-    f<<"\\hline"<<endl;
-    map<string,pair<double,double> > brmap;
-    GetInclusives(dt,brmap);
-    f<<"\\multicolumn{3}{c}{\\hfill}\\\\"<<endl;
-    f<<"\\multicolumn{3}{c}{\\bf Inclusive Decays with $BR>10^{-6}$}\\\\"<<endl;
-    f<<"\\hline"<<endl;
-    f<<"Decay Channel & Branching Ratio \\\\"<<endl;
-    f<<"\\hline\n\\hline"<<endl;
-    for( BRMapString::iterator brit=brmap.begin(); brit != brmap.end(); ++brit ) {
-      double br  = (brit->second.first+brit->second.second)/2.;
-      double dbr = (brit->second.first-brit->second.second)/2.;
-      if( br>1.e-6 ) {
-        f<<"$"<<dc->GetDecaying().TexName()<<"$ $\\to$ $"<<brit->first<<"$ & ";
-        sprintf( helpstr, "%.4f", br*100. );
-        f<<helpstr;
-        if( dbr > 0. ) {
-          sprintf( helpstr, "%.4f", dbr*100. );
-          f<<" $\\pm$ "<<helpstr;
-        }
-        f<<" \\% \\\\"<<endl;
-      }
-    }
-    f<<"\\hline"<<endl;
-    f<<"\\end{longtable}"<<endl;
+  for ( map<kf::code,Decay_Table *>::iterator pos = p_decaymap->begin(); pos != p_decaymap->end(); ++pos) {
+	Decay_Table * dt  (pos->second);
+	f<<"\\section{Decaying Particle: "<<dt->Flav()<<"}\n";
+	f<<"\\begin{center} \n\\begin{tabular}{ll}\n";
+	f<<" number of decay channels:	& "<<dt->NumberOfDecayChannels()<<"\\\\ \n";
+	f<<" total width:               & "<<dt->TotalWidth()<<"\\\\ \n";
+	f<<"\\end{tabular} \n\\end{center}\n";
   }
    
   // end 
-  f<<"\\end{document}"<<endl; 
-  msg.Out()<<"Created HADRONS++ booklet:"<<endl;
-  msg.Out()<<"Run "<<om::bold<<"latex "<<fn<<om::reset<<" in "<<m_path<<" for compilation."<<endl;
-  abort();
-}
-
-std::vector<BRPairFlavourSet> Hadrons::GetInclusives( 
-    Decay_Table * dt,                               // decay table to be considered
-    BRMapString & brmap,                            // map with flavourset <-> (upper, lower)
-    FlavourSet flset,                               // flavour set
-    DoublePair br,                                  // upper, lower br
-    bool eoi )                                      // end of iteration
-{
-  Decay_Channel * dc;
-  FlavourSet outs;
-  vector<BRPairFlavourSet> new_flset, flvec;
-  // for each decay channel
-  for( size_t I=0; I<dt->NumberOfDecayChannels(); ++I ) {
-    dc = dt->GetDecayChannel(I);                            // decay channel
-    outs = dc->GetDecayProducts();                          // FlavourSet of products
-    // for each decay product
-    new_flset.clear();
-    double dbr = (dc->DeltaWidth()>0.)? dc->DeltaWidth()/dt->TotalWidth() : 0.;
-    new_flset.push_back(BRPairFlavourSet(
-          flset,
-          DoublePair(
-            br.first*(dc->Width()/dt->TotalWidth()+dbr),
-            br.second*(dc->Width()/dt->TotalWidth()-dbr))
-          ));
-    for (FlSetConstIter fl=outs.begin();fl!=outs.end();++fl) {
-      if (p_decaymap->find((*fl))==p_decaymap->end() ||
-          fl->IsStable()) {                                  // if daughter is stable
-        for( size_t i=0; i<new_flset.size(); ++i ) {
-          new_flset[i].first.insert(*fl);
-        }
-      }
-      else {                                                 // if daughter has DT 
-        vector< vector<BRPairFlavourSet> > dauchans; 
-        for( size_t i=0; i<new_flset.size(); ++i ) {
-          dauchans.push_back( GetInclusives( (*p_decaymap)[(*fl)], brmap, new_flset[i].first, new_flset[i].second, 0 ) );
-        }
-        new_flset.clear();
-        for( size_t i=0; i<dauchans.size(); ++i ) 
-          for( size_t j=0; j<dauchans[i].size(); ++j )
-            new_flset.push_back( dauchans[i][j] );
-      }
-    }
-    // end of iteration?
-    if( eoi ) {
-      // add to map
-      for( size_t i=0; i<new_flset.size(); ++i ) {
-        string channel = string("");
-        for (FlSetConstIter fl=new_flset[i].first.begin();fl!=new_flset[i].first.end();++fl) 
-          channel += fl->TexName()+string(" ");
-        brmap[channel].first += new_flset[i].second.first;          // upper limit
-        brmap[channel].second += new_flset[i].second.second;        // lower limit
-      }
-    }
-    else {
-      for( size_t i=0; i<new_flset.size(); ++i ) 
-        flvec.push_back(new_flset[i]);
-    }
-  }
-  if( flvec.size() ) {
-  }
-  return flvec;
+  f<<"\\end{document}\n"; 
 }
 
 bool Hadrons::FindDecay(const ATOOLS::Flavour & Decayer)
 {
-  if (p_decaymap->find(Decayer)!=p_decaymap->end()) {
-    p_table = (*p_decaymap)[Decayer];
-    return true;
-  }
-  else if (p_decaymap->find(Decayer.Bar())!=p_decaymap->end()) {
-    p_table = (*p_decaymap)[Decayer.Bar()];
-    m_use_anti_table = true;
-    return true;
-  }
-  else return false;
+  if (p_decaymap->find(Decayer.Kfcode())==p_decaymap->end()) return false;
+  p_table = (*p_decaymap)[Decayer.Kfcode()];
+  return true;
 }
 
-Hadron_Decay_Channel * Hadrons::ChooseDecayChannel()
+Amplitude_Tensor* Hadrons::GetMotherAmplitudes(Particle* part,
+                                               Particle*& contracting_part,
+                                               const Vec4D& labmom)
 {
+  /** try to go up step by step along _decay_ blobs, to find a blob where an
+      amplitude tensor containing this particle has been stored */
+  Blob* motherblob = part->ProductionBlob();
+  while(motherblob) {
+    Blob_Data_Base* scdata = (*motherblob)["amps"];
+    if(scdata) {
+      Amplitude_Tensor* amps = scdata->Get<Amplitude_Tensor*>();
+      if(amps->Contains(part)) return amps;
+      else                     return NULL;
+    }
+    else {
+      if(motherblob->Type()==btp::Hadron_Decay)
+        motherblob = motherblob->InParticle(0)->ProductionBlob();
+      else break;
+    }
+    /** stop the search if we encounter a pythia blob  (no spin corrrelations there) */
+    if(motherblob->TypeSpec()=="Pythia_v6.214") return NULL;
+  }
+
+  /** if above didn't succeed, let's look if the signal process blob has an
+      amplitude tensor for this particle */
+  Blob_Data_Base* scdata = (*p_spblob)["amps"];
+  if(scdata) {
+    Amplitude_Tensor* amps = scdata->Get<Amplitude_Tensor*>();
+    /** If it directly contains our particle -> fine, return. */
+    if(amps->Contains(part)) return amps;
+    /** If it contains a duplicate of our particle, e.g. because there was a
+        duplicating fragmentation blob or ME_PS_Interface inbetween: */
+    else if(amps->Contains(part->OriginalPart())) {
+      contracting_part = part->OriginalPart();
+      return amps;
+    }
+    else return NULL; // didn't find a duplicate of our particle
+  }
+  else return NULL;
+}
+
+Hadron_Decay_Channel * Hadrons::ChooseDecayChannel(Blob* blob)
+{
+  Blob_Data_Base* data = (*blob)["hdc"];
+  if(data) return data->Get<Hadron_Decay_Channel*>();
+  
   const int nchan = p_table->NumberOfDecayChannels();
   Decay_Channel * dec_channel;
   if (p_table->Flav().Kfcode() != kf::K ) {
@@ -208,17 +126,17 @@ Hadron_Decay_Channel * Hadrons::ChooseDecayChannel()
     // dice decay channel acc. to BR
     if( nchan>1 ) {
       while( !channel_chosen ) {
-        k = int( ran.Get() * nchan );                    // dice decay channel
-        double r = ran.Get();                            // random number for rejection
+        k = int( ran.Get() * nchan );
+        double r = ran.Get();
         if( r < p_table->Width(k) / TotalWidth ) {
           dec_channel = p_table->GetDecayChannel(k);
           channel_chosen = 1;
         }
-      }
+      }	
     }
     else dec_channel = p_table->GetDecayChannel(0);
   }
-  else {                                            // treatment for K0's
+  else { // treatment for K0's
     if (nchan!=2) {
       msg.Error()<<"ERROR in Hadrons::ChooseDecayChannel() : "<<endl
                  <<"     K0 must have two channels K(L) and K(S), but is does not."<<endl
@@ -231,396 +149,161 @@ Hadron_Decay_Channel * Hadrons::ChooseDecayChannel()
 
   if( p_channelmap->find(dec_channel) == p_channelmap->end() ) {
     msg.Error()<<"Error in Hadrons::ChooseDecayChannel() \n"
-        <<"      Couldn't find appropriate channel pointer for "
-        <<dec_channel->GetDecaying()<<" decay. \n"
-        <<"      Don't know what to do, will abort."<<endl;
+      <<"      Couldn't find appropriate channel pointer for "<<dec_channel->GetDecaying()
+      <<" decay. \n"
+      <<"      Don't know what to do, will abort."<<endl;
     abort();
   }
+  blob->AddData("hdc",new Blob_Data<Hadron_Decay_Channel*>((*p_channelmap)[dec_channel]));
   return (*p_channelmap)[dec_channel];
 }
 
-double Hadrons::ChooseMixingAndLifeTime(ATOOLS::Particle* particle)
-{
-  double lifetime= -particle->ProperTime()*log(1.-ran.Get());
-
-  // work in progress!!!
-//   // B/anti-B mixing
-//   if(particle->Flav().Kfcode() == kf::B) {
-//     double value;
-//     double t        = lifetime*1.52284e22; // in 1/GeV
-//     double Gamma    = 4.285e-13;
-//     double delta_mB = 3.304e-13;
-// 
-// 
-//     value = exp(-Gamma*t)*sqr(cos(delta_mB*t/2.0)); // probability to stay B or anti-B
-//     if ( ran.Get() > value ) {
-//       particle->SetFlav(particle->Flav().Bar());
-//       std::cout<<om::green<<"Mixing a "<<particle->Flav()<<" with lifetime="<<lifetime
-//           <<" (="<<lifetime*1.52284e22<<" 1/GeV)"<<std::endl;
-//       std::cout<<"  mixed to: "<<particle->Flav()<<" value="<<value<<om::reset<<std::endl;
-//     }
-//     else {
-//       std::cout<<"Mixing a "<<particle->Flav()<<" with lifetime="<<lifetime
-//           <<" (="<<lifetime*1.52284e22<<" 1/GeV)"<<std::endl;
-//       std::cout<<"  didn't mix: "<<particle->Flav()<<" value="<<value<<std::endl;
-//     }
-//   }
-//   else {
-//     std::cout<<om::red<<"Did not do any mixing for "<<particle->Flav()<<om::reset<<std::endl;
-//   }
-  
-  // finally return the diced life time
-  return lifetime;
-}
-
-// implementation with spin correlation
-// hep-ph/0110108
-
-void Hadrons::ChooseDecayKinematics( 
-    Vec4D                   * _p, 
-    Hadron_Decay_Channel    * _hdc, 
-    Spin_Density_Matrix     * sigma )
+void Hadrons::DiceUncorrelatedKinematics(
+                                          std::vector<ATOOLS::Vec4D> & moms,
+                                          Hadron_Decay_Channel       * hdc,
+                                          bool anti )
 {
   double value(0.);
-  double over_factor (1.);                                      // overestimate maximum factor
-  if( sigma ) over_factor = double((*_hdc->Flavours())[0].IntSpin() + 1);
-  const double max = _hdc->GetPS()->Maximum() * over_factor;    // note: no flux in max.
-  int trials(0);                                                // number of trials
+  const double max = hdc->GetPS()->Maximum();    // note: no flux in max.
   do {
-    value = _hdc->Differential(_p,sigma);                       // current val. of T
-    if( value/max>1.+1.e-4 ) {
-      msg.Error()<<"Warning in Hadrons::ChooseDecayKinematics for "
-          <<_hdc->ChannelName()<<" with sigma @ "<<sigma<<endl
-          <<"  "<<value<<" > "<<max<<"   factor 1.+"<<value/max-1.
-          <<"     @ trial "<<trials+1<<om::reset<<endl;
-    }
-    trials++;
+    value = hdc->Differential(&moms.front(),anti);
   } while( ran.Get() > value/max );
-  msg.Debugging()<<"          Decay kinematics before mass smearing:"<<endl;
-  for(int i=0;i<_hdc->NOut()+1;i++) {
-    msg.Debugging()<<"            p["<<i<<"]="<<_p[i]<<": ["<<_p[i].Mass()<<"]"<<endl;
-  }
 }
 
-
-ATOOLS::Blob* Hadrons::CreateDecayBlobSkeleton(
-    Particle            * particle, 
-    Blob_List           * blob_list, 
-    Particle_List       * part_list )
+void Hadrons::ChooseDecayKinematics(
+                                    Blob* blob,
+                                    const Vec4D& labmom,
+                                    Hadron_Decay_Channel* hdc
+                                   )
 {
-  if( particle->Flav().IsStable() || !FindDecay(particle->RefFlav()) ) {
-    msg.Debugging()<<"            is stable."<<endl;
-    return NULL; // don't create decayskeleton
-  }
-
-  // choose decay channel for particle acc. to BR
-  Hadron_Decay_Channel * hdc = ChooseDecayChannel();
-
-  if( particle->Flav().IsAnti() && !(hdc->FullDecay() & 1) ) { // if NO_ANTI
-    msg.Debugging()<<"            anti particle does not decay."<<endl;
-    return NULL;
-  }
-
-  // Create particle's decay blob and add incoming particle
-  Blob * blob;
-  blob = new Blob();
-  blob->SetStatus(3);
-  blob->SetType( btp::Hadron_Decay );
-  blob->SetTypeSpec("Sherpa");
-  blob->SetId();
-  blob->AddToInParticles( particle );
-  if( particle->Info() == 'P' ) particle->SetInfo('p');
-  if( particle->Info() == 'D' ) particle->SetInfo('d');
-  msg.Debugging()<<"            created decayblob skeleton ["<<blob->Id()<<"]."<<endl;
-
-  // dice lifetime for particle and mix it if necessary
-  double time = ChooseMixingAndLifeTime(particle);
-  blob->AddData("LifeTimeInRest",new Blob_Data<double>(time));
-  blob->AddData("hdc",new Blob_Data<Hadron_Decay_Channel*>(hdc));
-
-  // fill blob with outgoing particles (no momenta yet)
-  FlavourSet daughters = hdc->DecayChannel()->GetDecayProducts();
-  FlavourSet::iterator dit;
-  for(dit = daughters.begin(); dit != daughters.end(); dit++ ) {
-    Flavour daughter_flav=(*dit);
-    if(m_use_anti_table) daughter_flav = daughter_flav.Bar();
-    Particle* daughter_particle = new Particle( -1, daughter_flav );
-    msg.Debugging()<<"            found daughter "<<daughter_flav
-        <<": adding it to blob ["<<blob->Id()<<"]"<<endl;
-    if( part_list ) {
-      daughter_particle->SetNumber( part_list->size() );
-      part_list->push_back( particle );
-    }
-    else daughter_particle->SetNumber( 0 );
-    daughter_particle->SetInfo('D');
-    blob->AddToOutParticles( daughter_particle );
-  }
-
-  blob_list->push_back( blob );
-  return blob;
-}
-
-
-double* Hadrons::GetSmearedMasses(
-      Blob              * blob)
-{
-  Particle_Vector daughters = blob->GetOutParticles();
-  const int n = blob->NOutP()+1;
-  // sort daughter particle indices by width
-  std::vector<int> by_width(n);
-  if(n>2) {
-    for(int i=0;i<n;i++) {
-      by_width[i]=i;
-    }
-        // sort "by_width"-array by the width of daughters (insertion sort)
-    for(int i=2; i<n; ++i) {
-      int j;
-      int value = by_width[i];
-      for (j=i-1; j>=1 && daughters[by_width[j]-1]->Flav().Width() >
-           daughters[i-1]->Flav().Width(); --j) {
-             by_width[j+1] = by_width[j];
-           }
-           by_width[j+1] = value;
-    }
-  }
-  double* masses = new double[n];
-  std::vector<double> min_masses(n);
-  std::vector<double> max_masses(n);
-  std::vector<double> widths(n);
-  masses[0]=blob->InParticle(0)->Momentum().Mass();
-  msg.Debugging()<<"          masses before smearing:"<<endl;
-  msg.Debugging()<<"            masses[0]="<<masses[0]<<" for "
-      <<blob->InParticle(0)->Flav()<<endl;
-  // get minimum mass as min_daughter = sum ( min_daughter_daughters )
-  for(int ii=1;ii<n;ii++) {
-    int i=by_width[ii];
-    widths[i]=daughters[i-1]->Flav().Width();
-    masses[i]=daughters[i-1]->Flav().Mass(); // temporary storage of peak mass
-    min_masses[i]=0.0;
-    if(daughters[i-1]->DecayBlob()) {
-      Particle_Vector daughter_daughters = daughters[i-1]->DecayBlob()->GetOutParticles();
-      for(int j=0;j<daughter_daughters.size();j++) {
-        min_masses[i]+=daughter_daughters[j]->Flav().Mass();
-      }
-    }
-  }
-  // get maximum masses and smear masses
-  for(int ii=1;ii<n;ii++) {
-    int i=by_width[ii];
-    max_masses[i]=masses[0];
-    for(int kk=1;kk<i;kk++) {
-      int k=by_width[kk];
-      max_masses[i]-=masses[k];
-    }
-    for(int jj=i+1;jj<n;jj++) {
-      int j=by_width[jj];
-      max_masses[i]-=min_masses[j];
-    }
-    msg.Debugging()<<"            masses["<<i<<"]="<<masses[i]
-        <<" for "<<daughters[i-1]->Flav()<<endl;
-        // BreitWigner with mass, width, min_mass, max_mass
-    if( masses[i] > 1e-5 && widths[i] > 1e-5 ) {
-      double myrandom = ran.Get();
-      msg.Debugging()<<"            "<<daughters[i-1]->Flav()
-          <<": smearing with mass="<<masses[i]
-          <<" width="<<widths[i]
-          <<" min="<<min_masses[i]
-          <<" max="<<max_masses[i]
-          <<" random="<<myrandom<<endl;
-      masses[i] = sqrt( PHASIC::CE.MassivePropMomenta(masses[i],widths[i],
-                        1,sqr(min_masses[i]),sqr(max_masses[i]),myrandom) );
-    }
-  }
-  msg.Debugging()<<"          diced target masses:"<<endl;
-  for(int i=1;i<n;i++) {
-    msg.Debugging()<<"            masses["<<i<<"]="<<masses[i]
-        <<" for "<<daughters[i-1]->Flav()<<endl;
-  }
-  return masses;
-}
-
-
-Spin_Density_Matrix Hadrons::PerformDecay( 
-    Blob                * blob, 
-    Blob_List           * blob_list, 
-    Particle_List       * part_list,
-    Spin_Density_Matrix * sigma )
-{
-  msg.Debugging()<<"      Performing decay for blob ["<<blob->Id()
-		 <<"] in 2 steps. 1st creating skeleton for daughter decay blobs, "
-		 <<"then dicing kinematics for the blob itself."<<endl;
-  Particle* part = blob->InParticle(0);
-  msg.Debugging()<<"        Momentum of inparticle: "<<part->Momentum()<<endl;
-
-  // find decay channel for current decay blob (it was saved during the skeleton creation)
-  Hadron_Decay_Channel * hdc = (*blob)["hdc"]->Get<Hadron_Decay_Channel*>();
-
-  bool       anti = part->Flav().IsAnti();                // antiparticle ?
-  int mother_spin = part->Flav().IntSpin();             // 2*spin
-
-  // create decay blob skeleton for daughters' decay (for mass smearing)
-  Particle_Vector daughters = blob->GetOutParticles();
-  Particle_Vector::iterator dit;
-  if(hdc->FullDecay() & 2) {  // only if NO_FULLDECAY is not specified
-    msg.Debugging()<<"        Creating skeleton for daughters of blob ["
-        <<blob->Id()<<"]"<<endl;
-    for( dit = daughters.begin(); dit != daughters.end(); dit++ ) {
-      msg.Debugging()<<"          Daughter of blob ["<<blob->Id()<<"]: "
-          <<(*dit)->Flav()<<": "<<(*dit)<<endl;
-      Blob* daughter_blob=CreateDecayBlobSkeleton((*dit),blob_list,part_list);
-    }
-  }
-
-  msg.Debugging()<<"        Dicing kinematics for ["<<blob->Id()
-      <<"] with hadron decay channel "<<hdc->ChannelName()<<endl;
-
-
-  if( (anti) && !(hdc->FullDecay() & 1) ) {             // if NO_ANTI
-    if( sigma ) {
-      Spin_Density_Matrix unitmatrix = Spin_Density_Matrix(mother_spin);
-      unitmatrix.SetUnitMatrix();
-      return unitmatrix;                                // return unit matrix
-    }
-    return Spin_Density_Matrix();                       // return empty decay matrix
-  }
-
-  // actually decay the current blob (create its kinematics)   
-  // choose a kinematics that corresponds to the ME kinematic distribution
-  if( !FindDecay(part->RefFlav()) ) {
-    msg.Error()<<"Hadrons::PerformDecay cannot decay particle "<<part->RefFlav()<<std::endl;
-    abort();
-  }
-
-  const int n = blob->NOutP()+1;
-  std::vector<Vec4D> mom(n);
-  mom[0] = part->Momentum();
-
-  if(n>2) {
-    ChooseDecayKinematics( &mom.front(), hdc, sigma );
-    if(hdc->MassSmearing()) {  // if mass smearing is turned on
-      double* masses = GetSmearedMasses(blob);
-      Vec4D cms = Vec4D(0.,0.,0.,0.);
-      for(int i=1;i<hdc->NOut()+1;i++) {
-        cms += mom[i];
-      }
-      Poincare boost(cms);
-      for(int i=1;i<hdc->NOut()+1;i++) {
-        boost.Boost(mom[i]);
-      }
-      Momenta_Stretcher stretch;
-      bool okay = stretch.ZeroThem(1,hdc->NOut()+1, &mom.front());
-      okay = okay && stretch.MassThem(1,hdc->NOut()+1, &mom.front(), masses);
-      if(!okay) {
-        msg.Error()<<METHOD<<": Momenta_Stretcher delivered an error for stretching "
-                   <<hdc->ChannelName()<<std::endl;
-        msg.Error()<<METHOD<<":  "<<" masses["<<0<<"]="<<masses[0]<<std::endl;
-        for(int i=1;i<n;i++) {
-          msg.Error()<<METHOD<<":  "<<" masses["<<i<<"]="<<masses[i]<<std::endl;
-        }
-      }
-      for(int i=1;i<hdc->NOut()+1;i++) {
-        boost.BoostBack(mom[i]);
-      }
-      msg.Debugging()<<"          Decay kinematics after mass smearing:"<<endl;
-      for(int i=0;i<hdc->NOut()+1;i++) {
-        msg.Debugging()<<"            p["<<i<<"]="<<mom[i]
-                       <<": ["<<mom[i].Mass()<<"]"<<endl;
-      }
-    }
-  }
-  else { // if n=2
-    mom[1] = mom[0];
-  }  
-  /*------------------------------*/
-
-  double time = (*blob)["LifeTimeInRest"]->Get<double>();
-  double gamma = 1./rpa.gen.Accu();
-  if (part->Flav().Mass()>rpa.gen.Accu()) gamma = part->E()/part->Flav().Mass();
+  Particle*       inpart = blob->InParticle(0);
+  Particle_Vector outparticles = blob->GetOutParticles();
+  size_t          n = outparticles.size()+1;
+  
+  vector<Vec4D> moms(n);
+  moms[0] = inpart->Momentum();
+  
+  if(n<3) moms[1] = moms[0];
   else {
-    double q2    = dabs(part->Momentum().Abs2());
-    if (q2>rpa.gen.Accu()) gamma = part->E()/sqrt(q2);
-  }
-  time *= gamma;
-  Vec3D      spatial = part->Distance( time );
-  Vec4D     position = Vec4D( time*rpa.c(), spatial );
-  blob->SetPosition( part->XProd() + position );
-  blob->SetStatus(1);
-  int i(0);
-  vector<pair<Particle*,int> > daughters_pair;
-  for( dit = daughters.begin(); dit != daughters.end(); dit++ ) {
-    i++;
-    (*dit)->SetMomentum(mom[i]);
-    daughters_pair.push_back( pair<Particle*,int>( (*dit), i ) );
-  }
+    if(m_spincorrelations) { // weight correction if spin correlations are enabled
+      Particle_Vector particles;
+      particles.push_back(inpart);
+      particles.insert(particles.end(),outparticles.begin(),outparticles.end());
+      
+      Poincare labboost(labmom);
+      labboost.Invert();
+      Poincare spcmsboost = Poincare( p_spblob->CMS() );
+      vector<Vec4D> boosted_moms(n);
+      boosted_moms[0]=spcmsboost*(labboost*moms[0]);
 
-  msg.Debugging()<<"        Finished with kinematics for ["<<blob->Id()<<"]. Going on recursively if necessary..."<<endl;
+      Particle* contracting_part=inpart;
+      Amplitude_Tensor* motheramps = GetMotherAmplitudes(inpart,contracting_part,labmom);
+      if(motheramps) {
+        Amplitude_Tensor* amps = new Amplitude_Tensor(particles);
+        amps->SetColorMatrix(p_color_unitmatrix);
+        double motherampssumsquare = motheramps->SumSquare();
+        
+        double weight;
+        int trials=0;
+        do {
+          DiceUncorrelatedKinematics( moms, hdc, inpart->Flav().IsAnti() );
+          
+          // Calculate amplitude in signal process cms frame for correlation
+          for( size_t i=1; i<n; i++ ) boosted_moms[i]=spcmsboost*(labboost*moms[i]);
+          hdc->CalculateAmplitudes( &boosted_moms[0], amps, inpart->Flav().IsAnti() );
+          
+          double denominator = amps->SumSquare()*motherampssumsquare;
+          double numerator = motheramps->SoftContract(contracting_part,
+                                                      amps,
+                                                      inpart);
+          weight = numerator/denominator;
+          if(weight>(1.0+Accu())) {
+            msg.Error()<<METHOD<<" Error: weight="<<weight<<" in "
+              <<rpa.gen.NumberOfDicedEvents()<<endl
+              <<(*blob)<<endl;
+          }
+          trials++;
+          if(trials%1000==0) {
+            msg.Error()<<METHOD<<" Warning: spin correlation trials="<<trials<<endl
+              <<"    possibly wrong amplitudes?"<<endl
+              <<(*blob)<<endl;
+          }
+        } while( ran.Get() > weight );
 
-  // create new spin correlation tensor and shuffle randomly daughters
-  Spin_Correlation_Tensor * SCT (NULL);
-  if( Spin_Correlation_Tensor::Mode()!=scmode::None && hdc->GetIndexList()->size() ) {
-    SCT = 
-      new Spin_Correlation_Tensor( hdc->GetIndexList(), hdc->GetAmplitudeTensor() );
-    random_shuffle( daughters_pair.begin(), daughters_pair.end() );
-  }
-
-  // treat every daughter
-  vector<pair<Particle*,int> >::iterator dpit;
-  for( dpit = daughters_pair.begin(); dpit != daughters_pair.end(); dpit++ ) {
-    // check if daughter can be treated as well
-    Particle* daughter_particle = dpit->first;
-    Blob* daughter_decay_blob = daughter_particle->DecayBlob();
-    int spin = daughter_particle->Flav().IntSpin();    // 2*spin
-    if ( ( hdc->FullDecay() & 2 ) &&
-         ( !(daughter_particle->Flav().IsStable()) ) &&
-         ( FindDecay(daughter_particle->RefFlav()) ) &&
-           daughter_decay_blob
-       )  
-    {                          // it is not stable
-      if( spin && SCT ) {
-        Spin_Density_Matrix * new_sigma    (NULL);
-        Spin_Density_Matrix * decay_matrix (NULL);
-        if( sigma )             // if mother has SDM
-          new_sigma    = new Spin_Density_Matrix( SCT->GetSigma(i,sigma) );
-        else
-          new_sigma    = new Spin_Density_Matrix( SCT->GetSigma(i) );
-        new_sigma->Normalise();
-        decay_matrix   = new Spin_Density_Matrix();
-        (*decay_matrix) = PerformDecay( daughter_decay_blob, blob_list, part_list, new_sigma );
-        decay_matrix->Normalise();
-        // contract over decay matrix to reduce the size of the SCT
-        SCT->Contract( i, decay_matrix );
-        delete new_sigma;
-        delete decay_matrix;
+        motheramps->Contract(contracting_part,amps,inpart);
+        delete amps; amps=NULL;
       }
-      else PerformDecay( daughter_decay_blob, blob_list, part_list, NULL );
+      else { // if first particle in SC chain
+        DiceUncorrelatedKinematics( moms, hdc, inpart->Flav().IsAnti() );
+        
+        for( size_t i=1; i<n; i++ ) boosted_moms[i]=spcmsboost*(labboost*moms[i]);
+        Amplitude_Tensor* amps = new Amplitude_Tensor(particles);
+        amps->SetColorMatrix(p_color_unitmatrix);
+        hdc->CalculateAmplitudes( &boosted_moms[0], amps, inpart->Flav().IsAnti() );
+        blob->AddData("amps",new Blob_Data<Amplitude_Tensor*>(amps));
+      }
     }
-    else {                      // it is stable
-      if( spin && SCT ) SCT->Contract( i, NULL );   // contract with unitmatrix
+    else {
+      DiceUncorrelatedKinematics( moms, hdc, inpart->Flav().IsAnti() );
     }
   }
-  // finished with all daughters
-  if( SCT ) {
-    if( sigma ) {
-      Spin_Density_Matrix decm = SCT->GetSigma(0);
-      delete SCT;
-      return decm;                              // return decay matrix for this particle
-    }
-    if( SCT->GetDepth()!= 0 ) {
-      PRINT_INFO("not eth. was contracted!");
-      cout<<"SCT : "<<(*SCT)<<" with depth "<<SCT->GetDepth()<<endl;
-      PRINT_INFO(om::red<<"will abort."<<om::reset);
-      abort();
-    }
-    delete SCT;
-    return Spin_Density_Matrix(0);              // empty Decay Matrix
+  
+  for( size_t i=1; i<n; i++ ) {
+    outparticles[i-1]->SetMomentum(moms[i]);
   }
-  return Spin_Density_Matrix(0);              // empty Decay Matrix
 }
+
+
+Return_Value::code Hadrons::PerformDecay( Blob* blob, const Vec4D& labmom )
+{
+  Particle*  inpart    = blob->InParticle(0);
+#ifdef DEBUG__Hadrons
+  if(blob->NOutP()>0) {
+    msg.Error()<<METHOD<<" Blob ["<<blob->Id()<<"] in event "<<rpa.gen.NumberOfDicedEvents()
+      <<" already has outparticles: "<<endl
+      <<(*blob)<<endl;
+  }
+#endif
+  if (!blob->Has(blob_status::needs_hadrondecays) ||
+      blob->NInP()!=1 ||
+      blob->InParticle(0)->Status()!=part_status::active)
+  {
+    msg.Error()<<METHOD<<" Blob or particle have wrong status."<<endl;
+    return Return_Value::Error;
+  }
+  
+  // choose decay channel or use the one chosen before for this blob
+  if( inpart->Flav().IsStable() || !FindDecay(inpart->Flav()) ) return Return_Value::Nothing;
+  Hadron_Decay_Channel* hdc = ChooseDecayChannel(blob);
+  if( (inpart->Flav().IsAnti()) && !(hdc->FullDecay()&1) ) return Return_Value::Nothing;
+  if(inpart->FinalMass()<hdc->DecayChannel()->MinimalMass()) return Return_Value::Retry_Method;
+  
+  FlavourSet daughters = hdc->DecayChannel()->GetDecayProducts();
+
+  // add daughters to blob
+  Vec4D momentum; Flavour flav; Particle* particle=NULL;
+  for( FlavourSet::iterator dpit = daughters.begin(); dpit != daughters.end(); dpit++ ) {
+    flav = (*dpit);
+    if( inpart->Flav().IsAnti() ) flav = flav.Bar();
+    particle = new Particle( 0, flav );
+    particle->SetStatus(part_status::active);
+    particle->SetInfo('D');
+    blob->AddToOutParticles( particle );
+  }
+  
+  ChooseDecayKinematics( blob, labmom, hdc);
+
+  if( inpart->Info() == 'P' ) inpart->SetInfo('p');
+  if( inpart->Info() == 'D' ) inpart->SetInfo('d');
+  return Return_Value::Success;
+}
+
 
 void Hadrons::ReadInConstants()
 {
   m_md0.clear();                            // clear model 
-  Data_Reader reader = Data_Reader(string("|"),string(";"),string("!"));
+  Data_Reader reader = Data_Reader(" ",";","!","|");
+  reader.AddWordSeparator("\t");
   reader.SetAddCommandLine(false);
   reader.AddComment("#");
   reader.AddComment("//");
@@ -628,11 +311,10 @@ void Hadrons::ReadInConstants()
   reader.SetInputFile(m_constfile);
 
   vector<vector<string> > constants;
-  reader.SetMatrixType(mtc::transposed);
   if(!reader.MatrixFromFile(constants)) {
-    msg.Out()<<"Warning! The file "<<m_path<<m_constfile<<" does not exist"<<endl
+    msg.Error()<<"Warning! The file "<<m_path<<m_constfile<<" does not exist"<<endl
              <<"     or has some syntax error."<<endl;
-    msg.Out()<<"     Will ignore it and hope for the best."<<endl;     
+    msg.Error()<<"     Will ignore it and hope for the best."<<endl;
     return;
   }
 
@@ -643,10 +325,11 @@ void Hadrons::ReadInConstants()
     }
   }
 }
-
-void Hadrons::ReadInDecayTables( bool & createbooklet )
+ 
+void Hadrons::ReadInDecayTables()
 {
-  Data_Reader reader = Data_Reader(string("->"),string(";"),string("!"));
+  Data_Reader reader = Data_Reader(" ",";","!","->");
+  reader.AddWordSeparator("\t");
   reader.SetAddCommandLine(false);
   reader.AddComment("#");
   reader.AddComment("//");
@@ -654,34 +337,26 @@ void Hadrons::ReadInDecayTables( bool & createbooklet )
   reader.SetInputFile(m_file);
 
   vector<vector<string> > Decayers;
-  reader.SetMatrixType(mtc::transposed);
   if(!reader.MatrixFromFile(Decayers)) {
     msg.Error()<<"ERROR in Hadrons::ReadInDecayTables() :\n"
-           <<"   Read in failure "<<m_path<<m_file<<", will abort."<<endl;
+	       <<"   Read in failure "<<m_path<<m_file<<", will abort."<<endl;
     abort();
   }
 
-  p_decaymap = new map<ATOOLS::Flavour,ATOOLS::Decay_Table *>;
+  p_decaymap = new map<ATOOLS::kf::code,ATOOLS::Decay_Table *>;
   p_channelmap = new map< Decay_Channel*, Hadron_Decay_Channel* >;
   Decay_Table * dt;
   Flavour fl;
   for (size_t i=0;i<Decayers.size();++i) {
-    if( Decayers[i][0] != string("CREATE_BOOKLET") ) {
-      int decayerkf = atoi((Decayers[i][0]).c_str());
-      dt = InitialiseOneDecayTable(Decayers[i]);
-
-      // add decayer as entered in HadronDecays.dat
-      fl = Flavour( kf::code(abs(decayerkf)), decayerkf<0 );
-      if (p_decaymap->find(fl)!=p_decaymap->end()) {
-        msg.Error()<<"ERROR in Hadrons::ReadInDecayTables() :"<<endl
-          <<"   Flavour "<<fl
-          <<" already in map. Don't know what to do, will abort."<<endl;
-        abort();
-      }
-      (*p_decaymap)[fl] = dt;
-
+    fl = Flavour(kf::code(atoi((Decayers[i][0]).c_str())));
+    if (p_decaymap->find(fl.Kfcode())!=p_decaymap->end()) {
+      msg.Error()<<"ERROR in Hadrons::ReadInDecayTables() :"<<endl
+		 <<"   Flavour "<<fl
+		 <<" already in map. Don't know what to do, will abort."<<endl;
+      abort();
     }
-    else createbooklet = true;
+    dt = InitialiseOneDecayTable(Decayers[i]);
+    (*p_decaymap)[fl.Kfcode()] = dt;
   }
 }
 
@@ -689,43 +364,40 @@ void Hadrons::ReadInDecayTables( bool & createbooklet )
 // line: kfcode -> filepath/  filename
 Decay_Table * Hadrons::InitialiseOneDecayTable(vector<string> line)
 {
-  int decayerkf = atoi((line[0]).c_str());
-  Decay_Table * dt              = new Decay_Table(Flavour(kf::code(abs(decayerkf)),decayerkf<0));
+  Decay_Table * dt              = new Decay_Table(Flavour(kf::code(atoi((line[0]).c_str()))));
   string lcpath (line[1]);      // path of decay files
   Decay_Table_Reader * dtreader = new Decay_Table_Reader(m_path+lcpath,line[2]);
   if (dtreader->FillDecayTable(dt)>0) {     // if at least one channel defined
-    msg.Info()<<om::blue<<"Found "<<dt->NumberOfDecayChannels()
-        <<" decay channels for "<<dt->Flav()<<om::reset<<endl;
+    msg.Tracking()<<om::blue<<"Found "<<dt->NumberOfDecayChannels()<<" decay channels for "<<dt->Flav()<<om::reset<<endl;
     dtreader->FillInMatrixElementsAndPS(dt,p_channelmap,m_md0);
     if( msg.LevelIsInfo() ) {
-      msg.Info()<<"Initialised a new decay table : "<<endl;
-      msg.Info()<<"(Using information given in .dat files, such as BR, width, ...)"<<endl;
-      dt->Output();
-      msg.Info()<<"Calculated decay widths using implemented models :"<<endl
+      msg.Tracking()<<"Initialised a new decay table : "<<endl;
+      msg.Tracking()<<"(Using information given in .dat files, such as BR, width, ...)"<<endl;
+      if(msg.LevelIsTracking()) dt->Output();
+      msg.Tracking()<<"Calculated decay widths using implemented models :"<<endl
         <<"(only for information; they are NOT used for the simulation)"<<endl;
-      for (int i=0;i<dt->NumberOfDecayChannels();i++) {
-        msg.Info()
+      for (int i=0;i<dt->NumberOfDecayChannels();i++) {			
+        msg.Tracking()
           <<(*p_channelmap)[dt->GetDecayChannel(i)]->ChannelName()<<" : "
           <<(*p_channelmap)[dt->GetDecayChannel(i)]->GetPS()->Result()<<" ("
           <<(*p_channelmap)[dt->GetDecayChannel(i)]->GetPS()->RelError()<<" %)"
           <<" GeV"<<endl;
       }
-      msg.Info()<<endl;
+      msg.Tracking()<<endl;
     }
   }
   else { 
     msg.Error()<<"WARNING in Hadrons::InitialiseOneDecayTable : "<<endl
-        <<"   No decay channels found for "<<dt->Flav()<<" in file "<<line[1]<<endl
-        <<"   Will continue and hope for the best."<<endl;
-    delete dt;
+	       <<"   No decay channels found for "<<dt->Flav()<<" in file "<<line[1]<<endl
+	       <<"   Will continue and hope for the best."<<endl;
+    delete dt; 
     dt = NULL;
   }
   delete dtreader;
   return dt;
 }
 
-namespace ATOOLS {
-  template <> Blob_Data<Hadron_Decay_Channel*>::~Blob_Data() { }
-  template class ATOOLS::Blob_Data<HADRONS::Hadron_Decay_Channel*>;
-  template Hadron_Decay_Channel* &Blob_Data_Base::Get<Hadron_Decay_Channel*>();
+void Hadrons::SetSpinCorrelations(bool sc)
+{
+  m_spincorrelations = sc;
 }

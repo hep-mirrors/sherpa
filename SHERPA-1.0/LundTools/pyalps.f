@@ -1,45 +1,45 @@
 C*********************************************************************
  
-C...PYALPS
+C...SPALPS
 C...Gives the value of alpha_strong.
  
-      FUNCTION PYALPS(Q2)
+      FUNCTION SPALPS(Q2)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYDAT1/,/PYDAT2/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPDAT1/,/SPDAT2/
  
 C...Interface Sherpa AlphaS
 C ** start ** you may use the sherpa alpha_s here
-      PYALPS=SHALPS(Q2)
+      SPALPS=SHALPS(Q2)
       RETURN
 C ** end   **
       END
 
 C*********************************************************************
  
-C...PYALPS
+C...SPALPS
 C...Gives the value of alpha_strong.
  
-      FUNCTION PYALP(Q2)
+      FUNCTION SPALP(Q2)
  
 C...Double precision and integer declarations.
       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
       IMPLICIT INTEGER(I-N)
-      INTEGER PYK,PYCHGE,PYCOMP
+      INTEGER SPK,SPCHGE,SPCOMP
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
-      SAVE /PYDAT1/,/PYDAT2/
+      COMMON/SPDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+      COMMON/SPDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
+      SAVE /SPDAT1/,/SPDAT2/
 
 C...Constant alpha_strong trivial. Pick artificial Lambda.
       IF(MSTU(111).LE.0) THEN
-        PYALP=PARU(111)
+        SPALP=PARU(111)
         MSTU(118)=MSTU(112)
         PARU(117)=0.2D0
         IF(Q2.GT.0.04D0) PARU(117)=SQRT(Q2)*EXP(-6D0*PARU(1)/
@@ -76,14 +76,14 @@ C...Evaluate first or second order alpha_strong.
       B0=(33D0-2D0*NF)/6D0
       ALGQ=LOG(MAX(1.0001D0,Q2EFF/ALAM2))
       IF(MSTU(111).EQ.1) THEN
-        PYALP=MIN(PARU(115),PARU(2)/(B0*ALGQ))
+        SPALP=MIN(PARU(115),PARU(2)/(B0*ALGQ))
       ELSE
         B1=(153D0-19D0*NF)/6D0
-        PYALP=MIN(PARU(115),PARU(2)/(B0*ALGQ)*(1D0-B1*LOG(ALGQ)/
+        SPALP=MIN(PARU(115),PARU(2)/(B0*ALGQ)*(1D0-B1*LOG(ALGQ)/
      &  (B0**2*ALGQ)))
       ENDIF
       MSTU(118)=NF
-      PARU(118)=PYALP
+      PARU(118)=SPALP
  
       RETURN
       END

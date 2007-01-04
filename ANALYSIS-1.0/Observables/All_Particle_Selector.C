@@ -7,7 +7,7 @@ using namespace ANALYSIS;
 
 template <class Class>
 Primitive_Observable_Base *const 
-GetParticleSelector(const String_Matrix &parameters) 
+GetParticleSelector(const Argument_Matrix &parameters) 
 {									
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
@@ -31,7 +31,7 @@ GetParticleSelector(const String_Matrix &parameters)
 
 #define DEFINE_SELECTOR_GETTER_METHOD(CLASS,NAME)		\
   Primitive_Observable_Base *				\
-  NAME::operator()(const String_Matrix &parameters) const	\
+  NAME::operator()(const Argument_Matrix &parameters) const	\
   { return GetParticleSelector<CLASS>(parameters); }
 
 #define DEFINE_SELECTOR_PRINT_METHOD(NAME)				\
@@ -39,7 +39,7 @@ GetParticleSelector(const String_Matrix &parameters)
   { str<<"min max inlist outlist"; }
 
 #define DEFINE_SELECTOR_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,Argument_Matrix);	\
   DEFINE_SELECTOR_GETTER_METHOD(CLASS,NAME)			\
   DEFINE_SELECTOR_PRINT_METHOD(NAME)
 
@@ -47,7 +47,7 @@ GetParticleSelector(const String_Matrix &parameters)
 
 template <class Class>
 Primitive_Observable_Base *const 
-GetParticleDSelector(const String_Matrix &parameters) 
+GetParticleDSelector(const Argument_Matrix &parameters) 
 {									
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
@@ -84,7 +84,7 @@ GetParticleDSelector(const String_Matrix &parameters)
 
 #define DEFINE_SELECTOR_D_GETTER_METHOD(CLASS,NAME)		\
   Primitive_Observable_Base *				\
-  NAME::operator()(const String_Matrix &parameters) const	\
+  NAME::operator()(const Argument_Matrix &parameters) const	\
   { return GetParticleDSelector<CLASS>(parameters); }
 
 #define DEFINE_SELECTOR_D_PRINT_METHOD(NAME)				\
@@ -92,7 +92,7 @@ GetParticleDSelector(const String_Matrix &parameters)
   { str<<"min max flav item inlist reflist outlist"; }
 
 #define DEFINE_SELECTOR_D_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,Argument_Matrix);	\
   DEFINE_SELECTOR_D_GETTER_METHOD(CLASS,NAME)			\
   DEFINE_SELECTOR_D_PRINT_METHOD(NAME)
 

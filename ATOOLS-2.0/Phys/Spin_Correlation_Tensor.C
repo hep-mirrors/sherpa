@@ -5,11 +5,12 @@
 #include "prof.hh"
 #include <typeinfo>
 
-INSTANTIATE_SMART_POINTER(Spin_Correlation_Tensor)
 
   //#define SCT_Debug
 
 namespace ATOOLS{
+
+  INSTANTIATE_SMART_POINTER(Spin_Correlation_Tensor)
 
   // INITIALIZATION OF THE STATIC MEMBERS OF SPIN_CORRELATION_TENSOR
 

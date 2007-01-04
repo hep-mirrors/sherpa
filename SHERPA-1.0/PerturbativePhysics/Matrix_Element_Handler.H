@@ -10,10 +10,10 @@
 
 #include "Particle_List.H"
 #include "Particle.H"
-#include "Object.H"
 #include "Blob_List.H"
 #include "Blob.H"
-#include "Spin_Correlation_Tensor.H"
+// #include "Spin_Correlation_Tensor.H"
+#include "Amplitude_Tensor.H"
 
 namespace AMEGIC { class Amegic; 
                    class Point;  }
@@ -37,7 +37,7 @@ namespace SHERPA {
   };
 
 
-  class Matrix_Element_Handler: public ATOOLS::Object {
+  class Matrix_Element_Handler {
   private :
 
     std::string          m_dir,m_file;
@@ -46,14 +46,16 @@ namespace SHERPA {
     PDF::ISR_Handler   * p_isr;
     int                  m_mode;
     double               m_weight, m_procweight, m_xsecweight;
-    unsigned long          m_ntrial, m_xsecntrial, m_sntrial, m_xsecsntrial;
+    unsigned long          m_ntrial, m_xsecntrial, m_sntrial;
 
     std::string            m_name,m_signalgenerator,m_readin;
+ 
     int  m_eventmode;
     int  m_sudakovon;
     bool m_apply_hhmf;
     bool m_ini_swaped;
     int  m_nmoms;
+    bool m_spincorrelations;
 
     ATOOLS::Data_Read    * p_dataread;
 
@@ -131,7 +133,10 @@ namespace SHERPA {
     AMEGIC::Amegic     * GetAmegic();
     AMEGIC::Point      * GetDiagram(int);
     EXTRAXS::XS_Base   * GetXS(const int mode=0);
-    ATOOLS::Spin_Correlation_Tensor* GetSpinCorrelations();
+//     ATOOLS::Spin_Correlation_Tensor* GetSpinCorrelations();
+    void                 FillAmplitudes(ATOOLS::Amplitude_Tensor*);
+    bool                 SpinCorrelations();
+    void                 SetSpinCorrelations(bool sc);
     double               Weight();
     double               ProcessWeight();
     double               XSecWeight();
@@ -144,8 +149,8 @@ namespace SHERPA {
 
     inline void SetUseSudakovWeight(const int on) { m_sudakovon=on; }
     inline int  EventGenerationMode() const { return m_eventmode; }
-    inline void SaveNumberOfTrials() { m_sntrial+=m_ntrial; m_xsecsntrial+=m_xsecntrial; }
-    inline void ResetNumberOfTrials() { m_xsecsntrial=m_sntrial=0; }
+    inline void SaveNumberOfTrials() { m_sntrial+=m_ntrial; }
+    inline void ResetNumberOfTrials() { m_sntrial=0; }
   };
 
   typedef std::map<std::string,Matrix_Element_Handler *> MEHandlersMap;

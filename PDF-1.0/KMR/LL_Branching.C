@@ -5,7 +5,6 @@
 #include "MyStrStream.H"
 #include "Exception.H"
 #include "MathTools.H"
-#include "Splitting_Group.H"
 
 using namespace PDF;
 

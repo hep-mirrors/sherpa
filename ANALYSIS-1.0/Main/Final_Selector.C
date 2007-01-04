@@ -9,7 +9,7 @@ using namespace ANALYSIS;
 #include <iomanip>
 
 DECLARE_GETTER(Final_Selector_Getter,"Trigger",
- 	       Primitive_Observable_Base,String_Matrix);
+ 	       Primitive_Observable_Base,Argument_Matrix);
 
 void Final_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
 {
@@ -26,7 +26,7 @@ void Final_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) cons
 }
 
 Primitive_Observable_Base * 
-Final_Selector_Getter::operator()(const String_Matrix &parameters) const
+Final_Selector_Getter::operator()(const Argument_Matrix &parameters) const
 {
   Final_Selector_Data data;
   int jetmode=0;
@@ -60,7 +60,7 @@ Final_Selector_Getter::operator()(const String_Matrix &parameters) const
       if (cur.size()>3) data.eta_min=ATOOLS::ToType<double>(cur[3]);
       if (cur.size()>4) data.eta_max=ATOOLS::ToType<double>(cur[4]);
       if (cur.size()>5 && kf==93) data.r_min=ATOOLS::ToType<double>(cur[5]);
-      if (cur.size()>6 && kf==93) data.bf=ATOOLS::ToType<bool>(cur[6]);
+      if (cur.size()>6 && kf==93) data.bf=ATOOLS::ToType<int>(cur[6]);
       if (cur.size()>7 && kf==93) data.f=ATOOLS::ToType<double>(cur[7]);
       selector->AddSelector(flavour,data);
     }
@@ -93,7 +93,7 @@ Final_Selector_Getter::operator()(const String_Matrix &parameters) const
 }
 
 DECLARE_GETTER(Leading_Particle_Getter,"LeadingParticle",
- 	       Primitive_Observable_Base,String_Matrix);
+ 	       Primitive_Observable_Base,Argument_Matrix);
 
 void Leading_Particle_Getter::PrintInfo(std::ostream &str,const size_t width) const
 {
@@ -106,7 +106,7 @@ void Leading_Particle_Getter::PrintInfo(std::ostream &str,const size_t width) co
 }
 
 Primitive_Observable_Base * 
-Leading_Particle_Getter::operator()(const String_Matrix &parameters) const
+Leading_Particle_Getter::operator()(const Argument_Matrix &parameters) const
 {
   std::string inlist("FinalState"), outlist("Analysed");
   int mode(0);
@@ -200,7 +200,8 @@ void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data &
   
   if (fl==kf::jet) {
     switch(m_mode) {
-    case 2: p_jetalg = new Calorimeter_Cone(fs.pt_min,p_ana);break;
+    case 2: p_jetalg = new 
+	      Calorimeter_Cone(fs.pt_min,fs.eta_min,fs.eta_max);break;
     case 10: p_jetalg = new Midpoint_Cone(p_qualifier,0,fs.f); break;
     case 11: p_jetalg = new Midpoint_Cone(p_qualifier,1,fs.f); break;
     }
@@ -519,6 +520,15 @@ void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
   }
   //  std::sort(pl_out->begin(),pl_out->end(),ATOOLS::Order_PT());
   p_ana->AddParticleList(m_outlistname,pl_out);
+}
+
+void Final_Selector::SetAnalysis(Primitive_Analysis  * ana)
+{
+  p_ana=ana;
+  if (p_jetalg!=NULL) {
+    Calorimeter_Cone *cc(dynamic_cast<Calorimeter_Cone*>(p_jetalg));
+    if (cc!=NULL) cc->SetAnalysis(p_ana);
+  }
 }
 
 

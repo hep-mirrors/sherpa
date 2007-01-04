@@ -24,7 +24,13 @@ double Combine_Table_CKKW::GetWinner(int &i,int &j)
 { 
   i=m_cdata_winner->first.m_i; 
   j=m_cdata_winner->first.m_j;
-  return sqrt(m_cdata_winner->second.m_pt2ij);
+  if (m_cdata_winner->second.p_down!=NULL) {
+    double kt2qcd(m_cdata_winner->second.p_down->GetLeg(i).KT2QCD());
+    if (kt2qcd<std::numeric_limits<double>::max()) return sqrt(kt2qcd);
+    return sqrt(m_cdata_winner->second.p_down->GetLeg(i).KT2());
+  }
+  THROW(fatal_error,"Legs not combined. No Scale information");
+  return 0.0;
 }
 
 void Combine_Table_CKKW::AddPossibility(const int i,const int j,
@@ -33,17 +39,12 @@ void Combine_Table_CKKW::AddPossibility(const int i,const int j,
   CD_List::iterator cit=m_combinations.find(Combine_Key(i,j));
   if (cit!=m_combinations.end()) {
     cit->second.m_graphs.push_back(ngraph);
-    if (p_legs[ngraph][i].Point()->fl.Strong() && 
-	p_legs[ngraph][j].Point()->fl.Strong() &&
-	p_legs[ngraph][j].Point()->prev->fl.Strong()) 
-      cit->second.m_strong=true;
+    cit->second.m_strong=Max(cit->second.m_strong,
+			     CombinedLeg(p_legs[ngraph],i,j).OrderQCD());
   }
   else {
     Combine_Data cd(0.,ngraph);
-    if (p_legs[ngraph][i].Point()->fl.Strong() && 
-	p_legs[ngraph][j].Point()->fl.Strong() &&
-	p_legs[ngraph][j].Point()->prev->fl.Strong()) 
-      cd.m_strong=true;
+    cd.m_strong=CombinedLeg(p_legs[ngraph],i,j).OrderQCD();
     m_combinations[Combine_Key(i,j)]=cd;
   }
 }
@@ -105,12 +106,24 @@ CalcJet(int nl,const double x1,const double x2,ATOOLS::Vec4D * moms)
     m_x1 = x1;
     m_x2 = x2;
   }
-  bool did_boost(InitStep(moms,nl));
-  if (!SelectWinner(did_boost)) return this;
-  // if number of legs is still greater 4 Cluster once more
-  // if number of legs equals 4, determine end situation
-  if (nl<4) THROW(fatal_error,"nlegs < min. Abort.");
-  return NextTable(CreateNext(did_boost),x1,x2);
+  m_rejected.clear();
+  while (true) {
+    bool did_boost(InitStep(moms,nl));
+    if (!SelectWinner(did_boost)) {
+      if (nl==4 && (IdentifyHardProcess() || p_up==NULL)) return this;
+      delete this;
+      return NULL;
+    }
+    // if number of legs is still greater 4 Cluster once more
+    // if number of legs equals 4, determine end situation
+    if (nl<4) THROW(fatal_error,"nlegs < min. Abort.");
+    Combine_Table_Base *next(NextTable(CreateNext(did_boost),x1,x2));
+    if (next!=NULL) return next;
+    m_rejected.insert(m_cdata_winner->first);
+    msg_Debugging()<<METHOD<<"(): Table "<<m_no<<": reject winner "
+		   <<m_cdata_winner->first<<"\n";
+  }
+  return NULL;
 }
 
 bool Combine_Table_CKKW::InitStep(ATOOLS::Vec4D *moms,const int nl)
@@ -124,12 +137,13 @@ bool Combine_Table_CKKW::InitStep(ATOOLS::Vec4D *moms,const int nl)
   bool did_boost(false);
   if (!(Vec3D(p_moms[0])==Vec3D(-1.*p_moms[1]))) {
     Poincare cms, zaxis;
+    bool dir(p_moms[0][3]>0.0);
+    if (p_moms[0].PSpat2()<p_moms[1].PSpat2()) dir=p_moms[1][3]<0.0;
     cms   = Poincare(p_moms[0]+p_moms[1]);
     for (size_t i=0;i<m_nl;++i) cms.Boost(p_moms[i]);
     
-    if (Vec3D(p_moms[0]).Abs()==(-1)*p_moms[0][3])
-      zaxis = Poincare(p_moms[0],Vec4D(1.,0.,0.,-1.));
-    else zaxis = Poincare(p_moms[0],Vec4D::ZVEC);
+    if (dir) zaxis = Poincare(p_moms[0],Vec4D::ZVEC);
+    else zaxis = Poincare(p_moms[1],Vec4D::ZVEC);
     
     for (size_t i=0;i<m_nl;++i) zaxis.Rotate(p_moms[i]);
     did_boost = true;
@@ -150,13 +164,15 @@ bool Combine_Table_CKKW::SelectWinner(const bool did_boost)
   }
   // calculate pt2ij and determine "best" combination
   m_cdata_winner = cl.end();
+  CD_List::iterator qcd_winner(cl.end());
+  double kt2(std::numeric_limits<double>::max()), kt2qcd(kt2);
   for (CD_List::iterator cit(cl.begin()); cit!=cl.end(); ++cit) {
     CD_List::iterator tit(CalcPropagator(cit));
     double pt2ij(cit->second.m_pt2ij);
     if (cit->second.m_graphs.size()==0) continue;
     if (tit==cit) {
       // Relevant initial-final clustering.
-      if (cit->first.m_i<2 && (pt2ij<m_kt2QCD || pt2ij<m_kt2QED)) {
+      if (cit->first.m_i<2 && pt2ij<kt2) {
 	// check if this combination has right direction (clustering with correct is particle)
 	double d = p_moms[cit->first.m_i][3] * p_moms[cit->first.m_j][3];
 	if (d<0.) {
@@ -169,14 +185,19 @@ bool Combine_Table_CKKW::SelectWinner(const bool did_boost)
 	}
       }
     }
-    if (pt2ij<m_kt2QED && !cit->second.m_strong) m_kt2QED = pt2ij;
-    if (pt2ij<m_kt2QCD &&  cit->second.m_strong) m_kt2QCD = pt2ij;
-    if (pt2ij<m_kt2min) {
-      m_kt2min = pt2ij;
-      m_cdata_winner = cit;
+    if (m_rejected.find(cit->first)==m_rejected.end()) {
+      if (pt2ij<kt2) {
+	m_cdata_winner=cit;
+	kt2=pt2ij;
+      }
+      if (cit->second.m_strong && pt2ij<kt2qcd) {
+	qcd_winner=cit;
+	kt2qcd=pt2ij;
+      }
     }
   }
-  return true;
+  if (qcd_winner!=cl.end()) m_cdata_winner=qcd_winner;
+  return m_cdata_winner!=cl.end();
 }
 
 bool Combine_Table_CKKW::TestMomenta(const int i,const int j)
@@ -245,8 +266,90 @@ Combine_Table_CKKW *Combine_Table_CKKW::NextTable(Combine_Table_CKKW *tab,
 						  const double x1,const double x2)
 {
   Combine_Table_Base* ct = tab->CalcJet(m_nl,x1,x2);
-  m_graph_winner = tab->m_graph_winner;
+  if (ct!=NULL) m_graph_winner=tab->m_graph_winner;
+  else m_cdata_winner->second.p_down=NULL;
   // translate back
   m_graph_winner = m_cdata_winner->second.m_graphs[m_graph_winner];
   return (Combine_Table_CKKW*)ct;
 }
+
+bool Combine_Table_CKKW::IdentifyHardProcess()
+{
+  msg_Debugging()<<METHOD<<"():\n";
+  msg_Indent();
+  m_nstrong=0;
+  if (p_hard==NULL) {
+    p_hard = new Leg*[m_nampl];
+    for (int i(0);i<m_nampl;++i) p_hard[i] = new Leg[2];
+    p_hardc = new int*[m_nampl];
+    for (int i(0);i<m_nampl;++i) p_hardc[i] = new int[4];
+  }
+  for (int i(0);i<m_nampl;++i) {
+    if (Combinable(p_legs[i][0],p_legs[i][1]) &&
+	Combinable(p_legs[i][2],p_legs[i][3])) {
+      double pt2ij(p_jf->MTij2(p_moms[2],p_moms[3]));
+      msg_Debugging()<<"s-channel pt = "<<sqrt(pt2ij)<<", m = "
+		     <<sqrt(dabs((p_moms[0]+p_moms[1]).Abs2()))<<", "
+		     <<p_legs[i][0].Flav()<<" "<<p_legs[i][1].Flav()
+		     <<" -> "<<p_legs[i][2].Flav()<<" "
+		     <<p_legs[i][3].Flav()<<"\n";
+      p_hard[i][0]=CombinedLeg(p_legs[i],0,1);
+      SetLegScales(p_hard[i][0],p_legs[i][0],p_legs[i][1],
+		   p_moms[0],p_moms[1],pt2ij);
+      p_hard[i][1]=CombinedLeg(p_legs[i],2,3);
+      SetLegScales(p_hard[i][1],p_legs[i][2],p_legs[i][3],
+		   p_moms[2],p_moms[3],pt2ij);
+      p_hardc[i][0]=0;
+      p_hardc[i][1]=0;
+      p_hardc[i][2]=1;
+      p_hardc[i][3]=1;
+    }
+    else if (Combinable(p_legs[i][0],p_legs[i][2]) &&
+	     Combinable(p_legs[i][1],p_legs[i][3])) {
+      double pt2ij1(p_jf->MTij2(p_moms[0],p_moms[2]));
+      double pt2ij2(p_jf->MTij2(p_moms[1],p_moms[3]));
+      msg_Debugging()<<"t-channel pt = "<<sqrt(pt2ij1)
+		     <<" / "<<sqrt(pt2ij2)<<", m = "
+		     <<sqrt(dabs((p_moms[0]+p_moms[2]).Abs2()))<<", "
+		     <<p_legs[i][0].Flav()<<" "<<p_legs[i][1].Flav()
+		     <<" -> "<<p_legs[i][2].Flav()<<" "
+		     <<p_legs[i][3].Flav()<<"\n";
+      p_hard[i][0]=CombinedLeg(p_legs[i],0,2);
+      SetLegScales(p_hard[i][0],p_legs[i][0],p_legs[i][2],
+		   p_moms[0],p_moms[2],pt2ij1);
+      p_hard[i][1]=CombinedLeg(p_legs[i],1,3);
+      SetLegScales(p_hard[i][1],p_legs[i][1],p_legs[i][3],
+		   p_moms[1],p_moms[3],pt2ij2);
+      p_hardc[i][0]=0;
+      p_hardc[i][1]=1;
+      p_hardc[i][2]=0;
+      p_hardc[i][3]=1;
+    }
+    else if (Combinable(p_legs[i][0],p_legs[i][3]) &&
+	     Combinable(p_legs[i][1],p_legs[i][2])) {
+      double pt2ij1(p_jf->MTij2(p_moms[0],p_moms[3]));
+      double pt2ij2(p_jf->MTij2(p_moms[1],p_moms[2]));
+      msg_Debugging()<<"u-channel pt = "<<sqrt(pt2ij1)
+		     <<" / "<<sqrt(pt2ij2)<<", m = "
+		     <<sqrt(dabs((p_moms[0]+p_moms[3]).Abs2()))<<", "
+		     <<p_legs[i][0].Flav()<<" "<<p_legs[i][1].Flav()
+		     <<" -> "<<p_legs[i][2].Flav()<<" "
+		     <<p_legs[i][3].Flav()<<"\n";
+      p_hard[i][0]=CombinedLeg(p_legs[i],0,3);
+      SetLegScales(p_hard[i][0],p_legs[i][0],p_legs[i][3],
+		   p_moms[0],p_moms[3],pt2ij1);
+      p_hard[i][1]=CombinedLeg(p_legs[i],1,2);
+      SetLegScales(p_hard[i][1],p_legs[i][1],p_legs[i][2],
+		   p_moms[1],p_moms[2],pt2ij2);
+      p_hardc[i][0]=0;
+      p_hardc[i][1]=1;
+      p_hardc[i][2]=1;
+      p_hardc[i][3]=0;
+    }
+    else THROW(fatal_error,"No match for hard process.");
+    m_nstrong=Max(m_nstrong,p_hard[i][0].OrderQCD()+p_hard[i][1].OrderQCD());
+    if (p_hard[i][0].Point()->t>=10) return false;
+  }
+  return true;
+}
+

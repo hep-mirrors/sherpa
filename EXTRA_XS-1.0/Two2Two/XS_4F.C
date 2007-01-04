@@ -29,7 +29,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f1_f1f1>(const size_t nin,const size_t nou
   if (!(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() ||
 	ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()))         return NULL;
   if ((flavours[0].Charge()!=0. && ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()) ||
-      ATOOLS::Flavour(ATOOLS::kf::Z).IsOn())                 return new XS_f1f1_f1f1(nin,nout,flavours); 
+      ATOOLS::Flavour(ATOOLS::kf::Z).IsOn())                 return new XS_f1f1_f1f1(nin,nout,flavours);
   return NULL;
 }
 
@@ -95,8 +95,8 @@ bool XS_f1f1_f1f1::SetColours(double s, double t, double u)
   bool swap  = m_swaped;
   RestoreInOrder();
   (*this)(s,t,u);
-  if (SetColours()) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(t);
-               else m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(u);
+  if (SetColours()) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
+               else m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
   if (swap) SwapInOrder();
   return true;
 }
@@ -144,7 +144,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f1b_f1f1b>(const size_t nin,const size_t n
   if (!(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() ||
 	ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()))         return NULL;
   if ((flavours[0].Charge()!=0. && ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()) ||
-      ATOOLS::Flavour(ATOOLS::kf::Z).IsOn())                 return new XS_f1f1b_f1f1b(nin,nout,flavours); 
+      ATOOLS::Flavour(ATOOLS::kf::Z).IsOn())                 return new XS_f1f1b_f1f1b(nin,nout,flavours);
   return NULL;
 }
 
@@ -213,11 +213,11 @@ bool XS_f1f1b_f1f1b::SetColours(double s, double t, double u)
   RestoreInOrder();
   (*this)(s,t,u);
   if (SetColours()) {
-    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(t);
-    if ((m_anti1&&(!m_anti2)) || ((!m_anti1)&&m_anti2)) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(u);
+    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
+    if ((m_anti1&&(!m_anti2)) || ((!m_anti1)&&m_anti2)) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
   }
   else {
-    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = s;
+    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = s;
   }
   if (swap) SwapInOrder();
   return true;
@@ -260,7 +260,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f1b_f2f2b>(const size_t nin,const size_t n
 						 const ATOOLS::Flavour *flavours,
 						 const size_t nqed, const size_t nqcd)
 {
-//   std::cout<<"XS_f1f1b_f2f2b Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<" "<<nqed<<" "<<nqcd<<"\n";
+  //  std::cout<<"XS_f1f1b_f2f2b Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<"\n";
   int  kfc1  = abs(flavours[0].Kfcode()), kfc2  = abs(flavours[2].Kfcode());
   if (flavours[0]!=flavours[1].Bar() || 
       flavours[0]==flavours[2] || flavours[0]==flavours[3] || 
@@ -279,9 +279,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f1b_f2f2b>(const size_t nin,const size_t n
 	 abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2))>0) ||
 	(kfc1%2!=0 && kfc2%2==0 && 
 	 abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2))>0))) ||
-        ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() )  {
-    return new XS_f1f1b_f2f2b(nin,nout,flavours); 
-  }
+      ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() )                return new XS_f1f1b_f2f2b(nin,nout,flavours);
   return NULL;
 }
 
@@ -367,10 +365,10 @@ bool XS_f1f1b_f2f2b::SetColours(double s, double t, double u)
   RestoreInOrder();
   (*this)(s,t,u);
   if (SetColours()) {
-    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(t);
-    if ((m_anti1&&(!m_anti2)) || ((!m_anti1)&&m_anti2)) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(u);
+    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
+    if ((m_anti1&&(!m_anti2)) || ((!m_anti1)&&m_anti2)) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
   }
-  else m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = s;
+  else m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = s;
   if (swap) SwapInOrder();
   return true;
 }
@@ -435,7 +433,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f2_f1f2>(const size_t nin,const size_t nou
 	 abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2))>0) ||
 	(kfc1%2!=0 && kfc2%2==0 && 
 	 abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2))>0))) ||
-      ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() )                return new XS_f1f2_f1f2(nin,nout,flavours); 
+      ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() )               return new XS_f1f2_f1f2(nin,nout,flavours); 
   return NULL;
 }
 
@@ -524,12 +522,12 @@ bool XS_f1f2_f1f2::SetColours(double s, double t, double u)
   RestoreInOrder();
   (*this)(s,t,u);
   if (SetColours()) {
-    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(t);
-    if (m_rev) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(u);
+    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
+    if (m_rev) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
   }
   else {
-    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(u);
-    if (m_rev) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(t);
+    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
+    if (m_rev) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
   }
   if (swap) SwapInOrder();
   return true;
@@ -601,7 +599,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f2b_f1f2b>(const size_t nin,const size_t n
 	 abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2))>0) ||
 	(kfc1%2!=0 && kfc2%2==0 && 
 	 abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2))>0))) ||
-      ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() )                return new XS_f1f2b_f1f2b(nin,nout,flavours); 
+      ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() )                return new XS_f1f2b_f1f2b(nin,nout,flavours);
   return NULL;
 }
 
@@ -691,11 +689,11 @@ bool XS_f1f2b_f1f2b::SetColours(double s, double t, double u)
   RestoreInOrder();
   (*this)(s,t,u);
   if (SetColours()) {
-    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(t);
-    if (m_rev) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(u);
+    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
+    if (m_rev) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
   }
   else {
-    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = s;
+    m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = s;
   }
   if (swap) SwapInOrder();
   return true;
@@ -831,8 +829,8 @@ bool XS_f1f2_f3f4::SetColours(double s, double t, double u)
     p_colours[2][m_anti] = p_colours[0][m_anti] = Flow::Counter();
     p_colours[3][m_anti] = p_colours[1][m_anti] = Flow::Counter();
   }
-  if (m_rev) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(u);
-        else m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(t);
+  if (m_rev) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
+        else m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
   if (swap) SwapInOrder();
   return true;
 }
@@ -865,6 +863,8 @@ Single_XS *Single_XS::GetProcess<XS_f1f2b_f3f4b>(const size_t nin,const size_t n
   if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD)                      return NULL;
   if (nqcd!=0 || nqed!=2)                                                         return NULL;
   if (!ATOOLS::Flavour(ATOOLS::kf::W).IsOn())                                     return NULL;
+  if (flavours[0].IntCharge()+flavours[1].IntCharge()!=
+      flavours[2].IntCharge()+flavours[3].IntCharge()) return NULL;
   int kfc1 = abs(flavours[0].Kfcode()), kfc2 = abs(flavours[1].Kfcode());
   int kfc3 = abs(flavours[2].Kfcode()), kfc4 = abs(flavours[3].Kfcode());
   if (!(flavours[0].IsQuark() &&flavours[1].IsQuark() &&
@@ -874,24 +874,28 @@ Single_XS *Single_XS::GetProcess<XS_f1f2b_f3f4b>(const size_t nin,const size_t n
 	(!flavours[3].IsDowntype() ||
 	 (flavours[0].IsAnti()^flavours[2].IsAnti()) || 
 	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2))>0) ||
-	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc4/2))>0)))  return NULL;    
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc4/2))>0)) ||
+	abs(flavours[0].IntCharge()+flavours[1].IntCharge())!=3)  return NULL;    
     if (flavours[3].IsUptype() && 
 	(!flavours[2].IsDowntype() ||
 	 (flavours[0].IsAnti()^flavours[3].IsAnti()) || 
 	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2))>0) ||
-	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc3/2))>0)))  return NULL;    
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc3/2))>0)) ||
+	abs(flavours[0].IntCharge()+flavours[1].IntCharge())!=3)  return NULL;    
   }
   if (flavours[0].IsDowntype() && flavours[1].IsUptype()) {
     if (flavours[2].IsDowntype() && 
 	(!flavours[3].IsUptype() ||
 	 (flavours[0].IsAnti()^flavours[2].IsAnti()) || 
 	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2))>0) ||
-	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc3/2))>0)))  return NULL;    
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc3/2))>0)) ||
+	abs(flavours[0].IntCharge()+flavours[1].IntCharge())!=3)  return NULL;    
     if (flavours[3].IsDowntype() && 
 	(!flavours[2].IsUptype() ||
 	 (flavours[0].IsAnti()^flavours[3].IsAnti()) || 
 	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2))>0) ||
-	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc4/2))>0)))  return NULL;    
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc4/2))>0)) ||
+	abs(flavours[0].IntCharge()+flavours[1].IntCharge())!=3)  return NULL;    
   }
   if (flavours[0].IsUptype() && flavours[1].IsUptype()) {
     if (!flavours[2].IsDowntype() || !flavours[3].IsDowntype() ||
@@ -899,10 +903,12 @@ Single_XS *Single_XS::GetProcess<XS_f1f2b_f3f4b>(const size_t nin,const size_t n
 	!(flavours[2].IsAnti()^flavours[3].IsAnti()) )                            return NULL;
     if (!(flavours[0].IsAnti()^flavours[2].IsAnti()) &&  
 	(!(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc3/2))>0) ||
-	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc4/2))>0)))  return NULL;    
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc4/2))>0)) ||
+	abs(flavours[0].IntCharge()-flavours[2].IntCharge())!=3)  return NULL;    
     if (!(flavours[0].IsAnti()^flavours[3].IsAnti()) &&  
 	(!(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc4/2))>0) ||
-	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc3/2))>0)))  return NULL;
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc3/2))>0)) ||
+	abs(flavours[0].IntCharge()-flavours[3].IntCharge())!=3)  return NULL;
   }    
   if (flavours[0].IsDowntype() && flavours[1].IsDowntype()) {
     if (!flavours[2].IsUptype() || !flavours[3].IsUptype() ||
@@ -910,10 +916,12 @@ Single_XS *Single_XS::GetProcess<XS_f1f2b_f3f4b>(const size_t nin,const size_t n
 	!(flavours[2].IsAnti()^flavours[3].IsAnti()) )                            return NULL;
     if (!(flavours[0].IsAnti()^flavours[2].IsAnti()) &&  
 	(!(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc1/2))>0) ||
-	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc2/2))>0)))  return NULL;    
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc2/2))>0)) ||
+	abs(flavours[0].IntCharge()-flavours[2].IntCharge())!=3)  return NULL;    
     if (!(flavours[0].IsAnti()^flavours[3].IsAnti()) &&  
 	(!(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc1/2))>0) ||
-	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc2/2))>0)))  return NULL;
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc2/2))>0)) ||
+	abs(flavours[0].IntCharge()-flavours[3].IntCharge())!=3)  return NULL;
   }    
   return new XS_f1f2b_f3f4b(nin,nout,flavours); 
 }
@@ -1001,10 +1009,10 @@ bool XS_f1f2b_f3f4b::SetColours(double s, double t, double u)
 {
   bool swap  = m_swaped;
   RestoreInOrder();
-  if (m_schannel) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(s);
+  if (m_schannel) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(s);
   else {
-    if (m_rev) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(u);
-          else m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::as] = dabs(t);
+    if (m_rev) m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(u);
+          else m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(t);
   }
   if (swap) SwapInOrder();
   return true;

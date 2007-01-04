@@ -30,7 +30,7 @@ using namespace std;
   ----------------------------------------------------------------------------------*/
 
 Process_Group::Process_Group() :
-  Process_Base(NULL,0,0,NULL,NULL,NULL,0,0,0,0,0,-1.),
+  Process_Base(NULL,0,0,NULL,NULL,NULL,0,0,0,PHASIC::scl::unknown,0,-1.),
   m_resetted(false), m_weventmode(0), m_enable_mhv(0)
 { 
   m_name  = "Empty_Group"; 
@@ -42,7 +42,7 @@ Process_Group::Process_Group() :
 Process_Group::Process_Group(Process_Info* pinfo,int _nin,int _nout,Flavour *& _fl,
 			     PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			     int _gen_str,int _orderQCD, int _orderEW,
-			     int _kfactorscheme,int _scalescheme,double _scale,
+			     int _kfactorscheme,PHASIC::scl::scheme _scalescheme,double _scale,
 			     Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi,double ycut, double error,
 			     std::string e_func, int enable_mhv) :
   Process_Base(pinfo,_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
@@ -54,7 +54,7 @@ Process_Group::Process_Group(Process_Info* pinfo,int _nin,int _nout,Flavour *& _
   string stan,oli;
   m_efunc=e_func;
   GenerateNames(m_nin,p_flin,p_plin,m_name,stan,oli);
-
+//   PRINT_INFO(m_name);
   p_flavours   = new Flavour[m_nvector];
   p_pl   = new Pol_Info[m_nvector];
   p_b    = new int[m_nvector];
@@ -75,9 +75,6 @@ Process_Group::Process_Group(Process_Info* pinfo,int _nin,int _nout,Flavour *& _
 
   m_usepi = usepi;
 
-  ConstructProcesses(_seldata);
-  GroupProcesses();
-
   if (_seldata) p_selector = new Combined_Selector(m_nin,m_nout,p_flavours,_seldata,ycut);
   else {
     if (m_nout>2) 
@@ -85,16 +82,12 @@ Process_Group::Process_Group(Process_Info* pinfo,int _nin,int _nout,Flavour *& _
 	       <<"   No selection cuts specified. Init No_Selector !"<<endl;
     p_selector = new No_Selector();
   }
-  SetSelector(p_selector);
+  p_selector->SetProcessName(Name());
+  ConstructProcesses(_seldata);
+  GroupProcesses();
 
-  if (m_scalescheme==65 && m_updatescales) {
-    double dr   = rpa.gen.DeltaR();
-    double ycut = rpa.gen.Ycut();
-    m_scale[stp::fac] = ycut*sqr(rpa.gen.Ecms());
-    ycut=Min(ycut,ycut*sqr(dr));
-    m_scale[stp::as] = ycut*sqr(rpa.gen.Ecms());
-    SetScales(m_scale[stp::fac],m_scale[stp::as]);
-  }
+  SetSelector(p_selector);
+  SetScaleScheme(m_scalescheme);
 }
 
 
@@ -167,13 +160,13 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
       }
     }
     if (CF.ValidProcess(m_nin,_fl,nout,_fl+m_nin)) {
-      overflow = SetPolarisations(plindex,_pl,beam_is_poled);
+      overflow = SetPolarisations(plindex,_pl,beam_is_poled,nout);
       for (size_t i=0;i<m_nin+nout;++i) {
 	if (plindex[i]!=' ') _pl[i].SetPol(plindex[i]);
       }
+
       for (int j=0;j<nsproc;j++) {
-	if (nsproc==1) pi = p_pinfo->GetSubProcess(-1);
-	else pi = p_pinfo->GetSubProcess(j);
+	pi = p_pinfo->GetSubProcess(j);
  	pi->ResetSubList(nout,_fl+m_nin,_pl+m_nin);
 	pi->Reshuffle();
 	GenerateNames(m_nin,_fl,_pl,_name,_stan,_oli,pi);
@@ -188,10 +181,10 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
 	if (take) {
 	  if ((m_enable_mhv==1||m_enable_mhv==4) && CF.MHVCalculable(m_nin,_fl,m_nout,&_fl[m_nin]))
 	    Add(new Single_Process_MHV2(pi,m_nin,m_nout,_fl,p_isrhandler,p_beamhandler,_seldata,m_gen_str,m_orderQCD,m_orderEW,
-					m_kfactorscheme,m_scalescheme,m_scale[stp::as],_pl,m_nex,p_ex_fl,m_usepi,m_ycut,m_maxerror,m_efunc));
+					m_kfactorscheme,m_scalescheme,m_scale[stp::ren],_pl,m_nex,p_ex_fl,m_usepi,m_ycut,m_maxerror,m_efunc));
 	  else if (m_enable_mhv!=4)
 	    Add(new Single_Process(pi,m_nin,m_nout,_fl,p_isrhandler,p_beamhandler,_seldata,m_gen_str,m_orderQCD,m_orderEW,
-				   m_kfactorscheme,m_scalescheme,m_scale[stp::as],_pl,m_nex,p_ex_fl,m_usepi,m_ycut,m_maxerror,m_efunc));
+				   m_kfactorscheme,m_scalescheme,m_scale[stp::ren],_pl,m_nex,p_ex_fl,m_usepi,m_ycut,m_maxerror,m_efunc));
 	}
       }
     }
@@ -220,9 +213,9 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
   delete [] plindex;
 }
 
-int Process_Group::SetPolarisations(char * plindex, Pol_Info * pl, int * beam_is_poled) 
+int Process_Group::SetPolarisations(char * plindex, Pol_Info * pl, int * beam_is_poled,const int &nout) 
 {
-  for (size_t i=m_nin;i<m_nin+m_nout;++i) {
+  for (size_t i=m_nin;i<m_nin+nout;++i) {
     if (pl[i].DoFNumber()==1) {
       plindex[i]=pl[i].GetPol();
     }
@@ -392,6 +385,8 @@ void Process_Group::GroupProcesses() {
     }
     if (!found) {
       group = new Process_Group();
+      group->SetScaleScheme(m_scalescheme);
+      group->SetKFactorScheme(m_kfactorscheme);
       group->SetName(help);
       group->SetAtoms(0);
       group->SetBeam(p_beamhandler);
@@ -595,19 +590,6 @@ void Process_Group::SetResDir(std::string _resdir) {
   m_resdir = _resdir;
   for (size_t i=0;i<m_procs.size();i++) m_procs[i]->SetResDir(m_resdir);
 }
-
-
-void Process_Group::SetScale(const double _scale)
-{
-  Process_Base::SetScale(_scale);
-  for (size_t i=0;i<m_procs.size();i++) m_procs[i]->SetScale(_scale); 
-} 
-
-void Process_Group::SetScales(double q2_fac, double q2_ren)
-{ 
-  Process_Base::SetScales(q2_fac,q2_ren);
-  for (size_t i=0;i<m_procs.size();i++) m_procs[i]->SetScales(q2_fac,q2_ren); 
-} 
 
 
 void Process_Group::SetISRThreshold(double _isrth)
@@ -833,6 +815,7 @@ bool Process_Group::SetUpIntegrator()
 	 (p_flavours[1].Mass() != p_isrhandler->Flav(1).Mass()) ) p_isrhandler->SetPartonMasses(p_flavours);
   }
   p_pshandler  = new Phase_Space_Handler(this,p_isrhandler,p_beamhandler,m_maxerror);
+  SetPSHandler(p_pshandler);
   p_pshandler->SetUsePI(m_usepi);
 
   //  if (m_nin==2 ) 
@@ -842,7 +825,11 @@ bool Process_Group::SetUpIntegrator()
   return 1;
 }
 
-
+void Process_Group::SetPSHandler(PHASIC::Phase_Space_Handler *const pshandler) 
+{
+  for (size_t i=0;i<m_procs.size();++i) m_procs[i]->SetPSHandler(pshandler);
+  p_activepshandler=pshandler;
+} 
 
 
 /*----------------------------------------------------------------------------------
@@ -926,7 +913,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
     m_resultpath=_resdir;
     m_resultfile=filename;
     m_histofile=histofile;
-    ATOOLS::Exception_Handler::AddTerminatorObject(this);
+    ATOOLS::exh->AddTerminatorObject(this);
     double var=TotalVar();
     m_totalxs = p_pshandler->Integrate();
     
@@ -942,7 +929,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 
     if (m_totalxs>0.) {
       if (ATOOLS::IsEqual(var,TotalVar())) {
-	ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+	ATOOLS::exh->RemoveTerminatorObject(this);
 	return 1;
       }
       if (_resdir!=string("")) {
@@ -961,10 +948,10 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	p_pshandler->WriteOut(_resdir+string("/MC_")+m_name);
 	to.close();
       }
-      ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+      ATOOLS::exh->RemoveTerminatorObject(this);
       return 1;
     }
-    ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+    ATOOLS::exh->RemoveTerminatorObject(this);
   }
   return 0;
 }
@@ -1177,12 +1164,7 @@ double Process_Group::DSigma2()
 ATOOLS::Blob_Data_Base *Process_Group::OneEvent(double _mass) {
   if (m_atoms) {
     SelectOne();
-    Blob_Data_Base *data(dynamic_cast<Process_Base*>(p_selected)->OneEvent(_mass));
-//     Weight_Info info(data->Get<Weight_Info>());
-//     info.xsecweight=Max()*rpa.Picobarn();
-//     data->Set(info);
-//     PRINT_INFO(info.xsecweight);
-    return data;
+    return dynamic_cast<Process_Base*>(p_selected)->OneEvent(_mass);
   }
   return p_pshandler->OneEvent(_mass);
 }
@@ -1273,10 +1255,10 @@ void Process_Group::ControlOutput(Vec4D * p)
   double s   = (p[0]+p[1]).Abs2();
   double t   = (p[0]-p[2]).Abs2();
   double u   = (p[0]-p[3]).Abs2();
-  m_scale[stp::as]    = ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
-  double a_s = as->AlphaS(m_scale[stp::as]);
+  m_scale[stp::ren]    = ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
+  double a_s = as->AlphaS(m_scale[stp::ren]);
   msg.Out()<<"-------- Process_Group : "<<m_name<<" : DSigma -------------------"<<endl
-	   <<"         scale = "<<m_scale[stp::as]<<" = "<<2.*s*t*u/(s*s+u*u+t*t)<<endl
+	   <<"         scale = "<<m_scale[stp::ren]<<" = "<<2.*s*t*u/(s*s+u*u+t*t)<<endl
 	   <<"         s,t,u = "<<s<<", "<<t<<", "<<u<<" : "<<sqrt(4.*M_PI*a_s)<<endl
 	   <<"-----------------------------------------------------------------------"<<endl;
   double g4  = sqr(4.*M_PI*a_s);

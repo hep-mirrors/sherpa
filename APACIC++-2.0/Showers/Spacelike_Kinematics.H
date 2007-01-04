@@ -32,19 +32,20 @@ namespace APACIC {
     ~Spacelike_Kinematics();
 
     // member functions
-    void InitKinematics(Tree **const trees,Knot *const k1, Knot *const k2,
-			const int &first);
-    bool DoKinematics(Tree **const trees,Knot *const act,Knot *const part,
-		      const int &leg,const bool test);
+    int InitKinematics(Tree **const trees,const int tree1,
+		       Knot *const k1, Knot *const k2);
+    bool DoKinematics(Tree **const trees,const int &leg,
+		      Knot *const act,Knot *const part,const bool test);
 
-    double BoostInCMS(Tree **const trees,Knot *const k1, Knot *const k2);
+    double BoostInCMS(Tree **const trees,const int tree1,
+		      Knot *const k1, Knot *const k2);
     double BoostFromCMS(Tree **const trees);
 
     ATOOLS::Vec4D BoostInLab(Tree **const trees);
 
     void ResetMomenta(Knot *const knot,Tree *const tree,const int &mode=0);
 
-    static double CalculateMaxT(Knot *const k1,Knot *const k2);
+    static double CalculateMaxT(Knot *const k1,Knot *const k2,bool diced=true);
 
     inline Timelike_Kinematics *Kinematics() const { return p_kin; }
 

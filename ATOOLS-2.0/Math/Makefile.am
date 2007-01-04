@@ -6,7 +6,6 @@ libToolsMath_la_SOURCES       =	\
 				Function_Base.C \
 				Poincare.C \
 				Vector.C \
-				ComplexVector.C \
 				Matrix.C \
 				Fast_Function.C \
 				Gauss_Integrator.C \
@@ -26,7 +25,6 @@ pkginclude_HEADERS        =	\
 			Function_Base.H \
 			Poincare.H \
 			Vector.H \
-			ComplexVector.H \
 			MyComplex.H \
 			Matrix.H \
 			Fast_Function.H \

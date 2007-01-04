@@ -227,6 +227,8 @@ bool Hadron_Remnant::DecomposeHadron()
     }
     for (size_t j=0;j<m_constit.size();++j) {
       if ((*pit)->Flav()==m_constit[j]) {
+	//std::cout<<METHOD<<" "<<success<<":"<<(*pit)->Flav()
+	//	 <<" ("<<ValenceQuark(*pit)<<")"<<std::endl;
 	if (success && ValenceQuark(*pit)) {
 	  p_start = new Color_Dipole(*pit,&m_companions);  
 	  p_start->Begin(ANTI((*pit)->Flav().IsAnti()))->
@@ -236,9 +238,13 @@ bool Hadron_Remnant::DecomposeHadron()
       }
     }
   }
-  Flavour flav=m_constit[(size_t)(ran.Get()*3.)];
-  Particle *part = new Particle(-1,flav); 
+  Flavour    flav = m_constit[(size_t)(ran.Get()*3.)];
+  Particle * part = new Particle(-1,flav); 
+  part->SetStatus(part_status::active);
+  part->SetFinalMass(flav.PSMass());
   part->SetFlow(COLOR((qri::type)(flav.IsAnti())),Flow::Counter());
+  //std::cout<<METHOD<<":"<<flav<<std::endl
+  //	   <<"  "<<(*part)<<std::endl;
   p_start = new Color_Dipole(part,&m_companions);  
   p_start->Begin(ANTI(flav.IsAnti()))->SetFlav(Opposite(flav));
   m_companions.push_back(part);
@@ -250,14 +256,16 @@ double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale)
   PROFILE_HERE;
   double cut, x;
   cut=2.0*(flavour.PSMass()+m_hardpt.PPerp()/
-	   sqr(m_companions.size()))/sqrt(scale);
+	   sqr(m_companions.size()))/p_beam->OutMomentum()[0];
+  // assume heavy flavours have been pair-produced
+  // => scale should be approximately (2m)^2
+  scale=Max(scale,4.0*sqr(flavour.PSMass()));
   if (scale<p_pdfbase->Q2Min()) {
     msg.Error()<<"Hadron_Remnant::GetXPDF("<<flavour<<","<<scale<<"): "
 		       <<"Scale under-runs minimum given by PDF: "
 		       <<scale<<" < "<<p_pdfbase->Q2Min()<<std::endl;
     return cut;
   } 
-  if (cut>0.49) return 0.5;
   unsigned int xtrials, pdftrials=0;
   while (true) {
     ++pdftrials;

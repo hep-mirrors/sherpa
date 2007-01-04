@@ -128,10 +128,10 @@ public:
 };
 
 DECLARE_GETTER(FS_Cone_Getter,"FSCone",
-	       Primitive_Observable_Base,String_Matrix);	
+	       Primitive_Observable_Base,Argument_Matrix);	
 
 Primitive_Observable_Base *FS_Cone_Getter::
-operator()(const String_Matrix &parameters) const	
+operator()(const Argument_Matrix &parameters) const	
 {									
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {

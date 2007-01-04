@@ -12,9 +12,9 @@ namespace SHERPA {
   public :
     Hard_Decays(Hard_Decay_Handler *);
     ~Hard_Decays();
-    bool Treat(ATOOLS::Blob_List *, double &);
-    void CleanUp();
-    void Finish(const std::string &);
+    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *, double &);
+    void                       CleanUp();
+    void                       Finish(const std::string &);
   };
 }
 #endif

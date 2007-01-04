@@ -15,14 +15,17 @@ namespace SHERPA {
     Shower_Handler          * p_showerhandler;
     PertInterfaceMap          m_interfaces;
 
-    int AttachShowers(ATOOLS::Blob *,ATOOLS::Blob_List *,Perturbative_Interface *);
+    ATOOLS::Return_Value::code AttachShowers(ATOOLS::Blob *,ATOOLS::Blob_List *,
+					     Perturbative_Interface *);
     
     void Reset();
-    void Update(const ATOOLS::Blob *blob,const size_t beam);
-    bool DefineInitialConditions(const ATOOLS::Blob *blob,
-				 const ATOOLS::Blob_List *bloblist); 
-    void FillDecayBlobMap(ATOOLS::Blob * blob,ATOOLS::Blob_List *bloblist);
-    void SetDecayBlobPointers(ATOOLS::Blob * blob,ATOOLS::Blob_List *bloblist);
+    void Update(const ATOOLS::Blob *,const size_t);
+    bool DefineInitialConditions(const ATOOLS::Blob *,const ATOOLS::Blob_List *); 
+    void FillDecayBlobMap(ATOOLS::Blob *,ATOOLS::Blob_List *);
+    void SetDecayBlobPointers(ATOOLS::Blob *,ATOOLS::Blob_List *);
+    void AftermathOfNoShower(ATOOLS::Blob *,ATOOLS::Blob_List *);
+    void AftermathOfSuccessfulShower(ATOOLS::Blob *,ATOOLS::Blob_List *,
+				     Perturbative_Interface *);    
     ATOOLS::Particle * FollowUp(ATOOLS::Particle *,ATOOLS::Blob *);
   public :
 
@@ -33,9 +36,9 @@ namespace SHERPA {
     ~Jet_Evolution();
 
     // member functions
-    bool Treat(ATOOLS::Blob_List *, double &);
-    void CleanUp();
-    void Finish(const std::string &);
+    ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *, double &);
+    void                       CleanUp();
+    void                       Finish(const std::string &);
 
   };// end of class Jet_Evolution
 

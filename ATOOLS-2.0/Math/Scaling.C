@@ -119,6 +119,7 @@ template <class Value_Type>
 Log_B_Scaling<Value_Type>::Log_B_Scaling(const std::string &parameter)
 {
   Data_Reader reader;
+  reader.SetExactMatch(false);
   reader.SetString(parameter);
   reader.ReadFromString(m_b,"Log_B_");
   m_logb=log(m_b); 
@@ -139,6 +140,7 @@ template <class Value_Type>
 B_To_X_Scaling<Value_Type>::B_To_X_Scaling(const std::string &parameter)
 {
   Data_Reader reader;
+  reader.SetExactMatch(false);
   reader.SetString(parameter);
   reader.ReadFromString(m_b,"B_To_X_");
   this->m_name="B_To_X_"+ToString(m_b);
@@ -158,6 +160,7 @@ template <class Value_Type>
 X_To_P_Scaling<Value_Type>::X_To_P_Scaling(const std::string &parameter)
 {
   Data_Reader reader;
+  reader.SetExactMatch(false);
   reader.SetString(parameter);
   reader.ReadFromString(m_p,"X_To_P_");
   this->m_name="X_To_P_"+ToString(m_p);

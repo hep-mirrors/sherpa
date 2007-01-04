@@ -15,6 +15,7 @@
 #include "Flavour.H"
 #include "Pol_Info.H"
 #include "Data_Read.H"
+#include <vector>
 
 
 namespace AMEGIC {
@@ -39,7 +40,8 @@ namespace AMEGIC {
 
     void InitializeInteractionModel(MODEL::Model_Base *);
     void ReadInProcessfile(std::string); 
-    int  ExtractFlavours(ATOOLS::Flavour *&,Pol_Info *&,std::string,vector<int>* fl=0,vector<int>* num=0);
+    void ExtractMPvalues(std::string& str,std::vector<double>& dv);
+    int  ExtractFlavours(ATOOLS::Flavour *&,Pol_Info *&,std::string,std::vector<int>* fl=0,std::vector<int>* num=0);
     void Shorten(std::string&);
   public :
     Amegic(std::string,std::string,MODEL::Model_Base *);
@@ -63,8 +65,8 @@ namespace AMEGIC {
     const ATOOLS::Flavour * Flavours()   { return p_procs->Selected()->Flavours(); }
     const ATOOLS::Vec4D   * Momenta()    { return p_procs->Selected()->Momenta(); }
     int               InSwaped()         { return p_procs->Selected()->InSwaped(); }
-    int               OrderStrong()      { return static_cast<Process_Base*>(p_procs->Selected())->OrderStrong(); }
-    int               OrderEWeak()       { return static_cast<Process_Base*>(p_procs->Selected())->OrderEWeak(); }
+    int               OrderStrong()      { return p_procs->Selected()->OrderStrong(); }
+    int               OrderEWeak()       { return p_procs->Selected()->OrderEWeak(); }
     int               NumberOfDiagrams() { return static_cast<Process_Base*>(p_procs->Selected())->NumberOfDiagrams(); }
     AMEGIC::Point   * Diagram(int _diag) { return static_cast<Process_Base*>(p_procs->Selected())->Diagram(_diag); }
     int               MinQCDJets()       { return m_minqcdjet; }

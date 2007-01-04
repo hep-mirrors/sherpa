@@ -14,13 +14,26 @@ namespace ATOOLS {
 
     double m_shower_pt2,m_value;
 
+    std::vector<Vec4D>   m_moms;
+    std::vector<Flavour> m_flavs;
 
+    std::vector<std::vector<int> > m_combs, m_mcomb;
+
+    std::vector<std::vector<std::pair<size_t,size_t> > > m_fills;
+    
     /*
       The vectors related to the frame
     */
     Vec4D *  p_frame;
     Poincare m_cms_boost;
     Poincare m_zrot;
+
+    Flavour GetFlavour(std::string fl);
+
+    size_t FillCombinations(const std::string &name,size_t &cp,const int fl);
+    void   FillCombinations();
+
+    void PrepareMomList();
 
     void BoostInFrame(Vec4D *);
     void BoostBack(Vec4D *);
@@ -32,7 +45,7 @@ namespace ATOOLS {
     bool ConstructJetSystem(Vec4D *,Flavour *,std::vector<Vec4D> &,
 			    std::vector<int> jets,std::vector<double> & lastys);
 
-    double YminKt(Vec4D *,int &,int &);
+    double YminKt(Vec4D *,int &,int &,int);
     double YminKt(Vec4D *,Flavour *,std::vector<Vec4D>,int &,int &);
     double Yij(Vec4D,Vec4D);
 

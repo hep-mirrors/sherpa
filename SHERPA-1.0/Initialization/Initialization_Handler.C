@@ -18,14 +18,13 @@
 #include "Data_Collector.H"
 #include "Variable.H"
 #include "Lund_Interface.H"
+#include "Data_Writer.H"
 
-#ifdef USING__MCatNLO
-#include "MCatNLO_Wrapper.H"
-#endif
+#include "Spin_Correlation_Tensor.H"
+
 #ifdef USING__Hadrons
 #include "Hadrons.H"
 #endif
-#include "Spin_Correlation_Tensor.H"
 
 
 using namespace SHERPA;
@@ -36,18 +35,12 @@ using namespace ATOOLS;
 using namespace std;
 
 Initialization_Handler::Initialization_Handler(string _path,string _file) : 
-  m_path(_path), m_file(_file), m_mode(0),
+  m_path(_path), m_file(_file), m_mode(0), m_savestatus(false),
   p_model(NULL), p_beamspectra(NULL), p_harddecays(NULL), 
   p_showerhandler(NULL), p_beamremnants(NULL), p_fragmentation(NULL), 
   p_mihandler(NULL), p_iohandler(NULL), p_pythia(NULL), 
   p_evtreader(NULL),
-#ifdef USING__MCatNLO
-  p_herwig(NULL), p_mcatnlo(NULL),
-#endif
-#ifdef USING__Ahadic
-  p_ahadic(NULL),
-#endif
-  p_analysis(NULL) 
+  p_analysis(NULL)
 {
   m_scan_istep=-1;  
 
@@ -60,26 +53,21 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
   m_midat            = p_dataread->GetValue<string>("MI_DATA_FILE",string("MI.dat"));
   m_decaydat         = p_dataread->GetValue<string>("DECAY_DATA_FILE",string("Decays.dat"));
   m_showerdat        = p_dataread->GetValue<string>("SHOWER_DATA_FILE",string("Shower.dat"));
-  rpa.gen.SetVariable("SHOWER_DATA_FILE",m_showerdat);
   m_beamremnantdat   = p_dataread->GetValue<string>("BEAMREMNANT_DATA_FILE",string("Beam.dat"));
   m_fragmentationdat = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_hadrondecaysdat  = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
-  int spincorrelations = p_dataread->GetValue<int>("SPIN_CORRELATIONS",0);
-  Spin_Correlation_Tensor::SetMode( (ATOOLS::scmode::code)spincorrelations );
+  rpa.gen.SetVariable("SHOWER_DATA_FILE",m_showerdat);
+  m_spincorrelations = bool(p_dataread->GetValue<int>("SPIN_CORRELATIONS",0));
+  rpa.gen.SetSpinCorrelation(m_spincorrelations);
+  exh->AddTerminatorObject(this);
 }
 
 Initialization_Handler::Initialization_Handler(int argc,char * argv[]) : 
-  m_mode(0), p_model(NULL), p_beamspectra(NULL), 
+  m_mode(0), m_savestatus(false), p_model(NULL), p_beamspectra(NULL), 
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
   p_fragmentation(NULL), p_mihandler(NULL),
   p_iohandler(NULL), p_pythia(NULL), p_evtreader(NULL), 
-#ifdef USING__MCatNLO
-  p_herwig(NULL), p_mcatnlo(NULL),
-#endif
-#ifdef USING__Ahadic
-  p_ahadic(NULL),
-#endif
   p_analysis(NULL)
 {
   m_path=std::string("./");
@@ -95,8 +83,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
     m_analysisdat = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
     rpa.Init(m_path,m_file,argc,argv);
     return;
-  }
-  
+  }  
   rpa.Init(m_path,m_file,argc,argv);
 
   p_dataread         = new Data_Read(m_path+m_file);
@@ -114,14 +101,21 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
 
   CheckFlagConsistency();
-
-  int spincorrelations = p_dataread->GetValue<int>("SPIN_CORRELATIONS",0);
-  Spin_Correlation_Tensor::SetMode( (ATOOLS::scmode::code)spincorrelations );
+  
+  m_spincorrelations = bool(p_dataread->GetValue<int>("SPIN_CORRELATIONS",0));
+  rpa.gen.SetSpinCorrelation(m_spincorrelations);
+  exh->AddTerminatorObject(this);
 }
 
 
 Initialization_Handler::~Initialization_Handler()
 {
+  if (m_savestatus) {
+    msg.Error()<<METHOD<<"(): Status saved to '"
+	       <<rpa.gen.Variable("SHERPA_STATUS_PATH")<<"'."<<std::endl;
+    MakeDir(rpa.gen.Variable("SHERPA_STATUS_PATH"),493);
+    exh->PrepareTerminate();
+  }
   if (p_evtreader)     { delete p_evtreader;     p_evtreader     = NULL; }
   if (p_iohandler)     { delete p_iohandler;     p_iohandler     = NULL; }
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
@@ -132,13 +126,6 @@ Initialization_Handler::~Initialization_Handler()
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
   if (p_model)         { delete p_model;         p_model         = NULL; }
   if (p_pythia)        { delete p_pythia;        p_pythia        = NULL; }
-#ifdef USING__MCatNLO
-  if (p_herwig)        { delete p_herwig;        p_herwig        = NULL; }
-  if (p_mcatnlo)       { delete p_mcatnlo;       p_mcatnlo       = NULL; }
-#endif
-#ifdef USING__Ahadic
-  if (p_ahadic)        { delete p_ahadic;        p_ahadic        = NULL; }
-#endif
   if (p_analysis)      { delete p_analysis;      p_analysis      = NULL; }
   if (p_dataread)      { delete p_dataread;      p_dataread      = NULL; }
   std::set<Matrix_Element_Handler*> deletedme;
@@ -162,6 +149,43 @@ Initialization_Handler::~Initialization_Handler()
     m_isrhandlers.erase(m_isrhandlers.begin());
   }
   PHASIC::Phase_Space_Handler::DeleteInfo();
+  exh->RemoveTerminatorObject(this);
+}
+
+void Initialization_Handler::PrepareTerminate()
+{
+  std::string path(rpa.gen.Variable("SHERPA_STATUS_PATH")+"/");
+  if (path=="/") return;
+  CopyFile(m_path+m_file,path+m_file);
+  CopyFile(m_path+m_modeldat,path+m_modeldat);
+  CopyFile(m_path+m_beamdat,path+m_beamdat);
+  CopyFile(m_path+m_isrdat[0],path+m_isrdat[0]);
+  CopyFile(m_path+m_isrdat[1],path+m_isrdat[1]);
+  CopyFile(m_path+m_medat,path+m_medat);
+  CopyFile(m_path+m_midat,path+m_midat);
+  CopyFile(m_path+m_decaydat,path+m_decaydat);
+  CopyFile(m_path+m_showerdat,path+m_showerdat);
+  CopyFile(m_path+m_beamremnantdat,path+m_beamremnantdat);
+  CopyFile(m_path+m_fragmentationdat,path+m_fragmentationdat);
+  CopyFile(m_path+m_hadrondecaysdat,path+m_hadrondecaysdat);
+  CopyFile(m_path+m_analysisdat,path+m_analysisdat);
+  CopyFile(m_path+rpa.gen.Variable("SELECTORFILE"),
+	   path+rpa.gen.Variable("SELECTORFILE"));
+  CopyFile(m_path+rpa.gen.Variable("PROCESSFILE"),
+	   path+rpa.gen.Variable("PROCESSFILE"));
+  CopyFile(m_path+"Integration.dat",path+"Integration.dat");
+  CopyFile(m_path+"Particle.dat",path+"Particle.dat");
+  CopyFile(m_path+"Hadron.dat",path+"Hadron.dat");
+  Data_Writer writer;
+  writer.SetOutputFile(path+"cmd");
+  writer.SetVectorType(vtc::vertical);
+  writer.AddCommandLine("SHERPA_RUN_PATH = "+
+			rpa.gen.Variable("SHERPA_RUN_PATH"));
+  writer.AddCommandLine("SHERPA_CPP_PATH = "+
+			rpa.gen.Variable("SHERPA_CPP_PATH"));
+  writer.AddCommandLine("SHERPA_LIB_PATH = "+
+			rpa.gen.Variable("SHERPA_LIB_PATH"));
+  writer.VectorToFile(writer.CommandLine());
 }
 
 bool Initialization_Handler::InitializeTheFramework(int nr)
@@ -176,6 +200,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     InitializeTheAnalyses();
     return true;
   }
+  if (rpa.gen.NumberOfEvents()>0) SetScaleFactors();
   okay = okay && InitializeTheModel();  
   //  set masses and widths from command line
   SetParameter(nr);
@@ -272,7 +297,7 @@ bool Initialization_Handler::InitializeTheIO()
   outfiles.push_back(p_dataread->GetValue<string>("D0_HEPEVT_OUTPUT",string("")));
   std::string evtpath = p_dataread->GetValue<string>("EVT_FILE_PATH",m_path);
   int filesize        = p_dataread->GetValue<int>("FILE_SIZE",1000);
-  int precision        = p_dataread->GetValue<int>("OUTPUT_PRECISION",6);
+  int precision       = p_dataread->GetValue<int>("OUTPUT_PRECISION",6);
   std::string outmode = p_dataread->GetValue<string>("EVENT_MODE",string("Sherpa"));
 
   p_iohandler = new Input_Output_Handler(outmode,outfiles,infiles,evtpath,filesize,precision);
@@ -287,14 +312,6 @@ bool Initialization_Handler::InitializeTheExternalMC()
   case 9000: 
     p_pythia  = new Lund_Interface(m_path,m_evtfile,false);
     return true;
-#ifdef USING__MCatNLO
-  case 9001: 
-    p_herwig  = new Herwig_Interface(m_path,m_evtfile,false);
-    return true;
-  case 9002: 
-    p_mcatnlo = new MCatNLO_Interface(m_path,m_evtfile,false);
-    return true;
-#endif
   default: 
     m_mode = 9999;
     msg_Info()<<"Initialization_Handler::InitializeTheExternalMC :"<<std::endl
@@ -400,6 +417,7 @@ bool Initialization_Handler::InitializeTheMatrixElements()
     me = new Matrix_Element_Handler(m_path,m_medat,p_model,p_beamspectra,
 				    m_isrhandlers[isr::hard_process],NULL);
   }
+  me->SetSpinCorrelations(m_spincorrelations);
   MEHandlersMap::iterator it=m_mehandlers.find("SignalMEs");
   if (it!=m_mehandlers.end()) delete it->second;
   m_mehandlers["SignalMEs"]=me; 
@@ -487,17 +505,20 @@ bool Initialization_Handler::InitializeTheHadronDecays()
     }
     m_hdhandlers.clear();
   }
-  
-  std::set<int> * UnstableHadrons = new std::set<int>;
-  if (!Flavour(kf::tau).IsStable()) UnstableHadrons->insert(int(Flavour(kf::tau).Kfcode()));
-  Fl_Iter fli;
-  for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
-    if (flav.IsOn() && flav.IsHadron() && !flav.IsStable()) {
-      UnstableHadrons->insert(int(flav.Kfcode()));
+
+  double max_propertime = dr.GetValue<double>("MAX_PROPER_LIFETIME",-1.0);
+  if( max_propertime > 0.0) {
+    Fl_Iter fli;
+    for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
+      if (flav.IsOn() && flav.IsHadron() && !flav.IsStable() &&
+          0.197e-12>max_propertime*flav.Width() && flav.Kfcode()!=kf::K)
+      {
+        flav.SetStable(true);
+      }
     }
   }
   
-  bool needextra = true;
+  bool needextra = true; set<kf::code>* hadrons_cans=NULL;
   Hadron_Decay_Handler * hdhandler = NULL;
   string decmodel = dr.GetValue<string>("DECAYMODEL",string("Lund"));
   msg.Tracking()<<"Decaymodel = "<<decmodel<<std::endl;
@@ -508,10 +529,12 @@ bool Initialization_Handler::InitializeTheHadronDecays()
       decaypath=rpa.gen.Variable("SHERPA_SHARE_PATH")+"/Decaydata/";
     string decayfile       = dr.GetValue<string>("DECAYFILE",string("HadronDecays.dat"));
     string decayconstfile  = dr.GetValue<string>("DECAYCONSTFILE",string("HadronConstants.dat"));
-    hdhandler              = new Hadron_Decay_Handler(new HADRONS::Hadrons(decaypath,decayfile,decayconstfile));
-    hdhandler->EraseTreated(UnstableHadrons);
-    if (UnstableHadrons->empty()) needextra = false;
-    m_hdhandlers["Sherpa"] = hdhandler;
+    HADRONS::Hadrons* hadrons = new HADRONS::Hadrons(decaypath,decayfile,decayconstfile);
+    hadrons->SetSpinCorrelations(m_spincorrelations);
+    hdhandler              = new Hadron_Decay_Handler(hadrons);
+    hadrons_cans = hdhandler->GetCans();
+    hdhandler->SetMassSmearing(dr.GetValue<int>("MASS_SMEARING",1));
+    m_hdhandlers["Hadrons"] = hdhandler;
   }
 #endif
   if ((decmodel==string("Lund") || needextra) ) {
@@ -521,14 +544,19 @@ bool Initialization_Handler::InitializeTheHadronDecays()
       lund         = new Lund_Interface(m_path,lfile,true);
     }
     else lund      = p_fragmentation->GetLundInterface();
+    if(hadrons_cans) {
+      for(set<kf::code>::iterator cankf=hadrons_cans->begin();cankf!=hadrons_cans->end();cankf++) {
+        lund->SwitchOffDecays((*cankf));
+      }
+    }
     hdhandler      = new Hadron_Decay_Handler(lund);
+    hdhandler->SetMassSmearing(dr.GetValue<int>("MASS_SMEARING",1));
     m_hdhandlers["Lund"]   = hdhandler;
   }
   if (decmodel!=std::string("Hadrons") && decmodel!=string("Lund")) {
     THROW(critical_error,"Fragmentation model not implemented.");
     abort();
   }
-  delete UnstableHadrons;
   msg_Info()<<"Initialized the Hadron_Decay_Handler, Decay model = "<<decmodel<<endl;
   return true;
 }
@@ -582,17 +610,6 @@ bool Initialization_Handler::CalculateTheHardProcesses()
       msg.Out()<<"SHERPA will generate the events through Pythia."<<std::endl
 	       <<"   No cross sections for hard processes to be calculated."<<std::endl;
       return true;
-#ifdef USING__MCatNLO
-    case 9001:
-      msg.Out()<<"SHERPA will generate the events through Herwig."<<std::endl
-             <<"   No cross sections for hard processes to be calculated."<<std::endl;
-      p_herwig->Initialize();
-      return true;
-    case 9002:
-      msg.Out()<<"SHERPA will generate the events through MCatNLO."<<std::endl;
-      p_mcatnlo->Initialize();
-      return true;
-#endif
     case 9999:
       msg.Out()<<"SHERPA will read in the events."<<std::endl
 	       <<"   No cross sections for hard processes to be calculated."<<std::endl;
@@ -627,6 +644,34 @@ bool Initialization_Handler::CalculateTheHardProcesses()
     msg.Events()<<"Calculating the hard cross sections failed. Check this carefully.         "<<std::endl
 	     <<"=========================================================================="<<std::endl;
   return ok;
+}
+
+void Initialization_Handler::SetScaleFactors() 
+{
+  if (rpa.gen.Variable("SUDAKOV_WEIGHT","0")!="1") return;
+  Data_Reader reader(" ",";","!","=");
+  reader.AddWordSeparator("\t");
+  reader.SetInputPath(m_path+"/");
+  reader.SetInputFile(m_showerdat);
+  bool changed(false);
+  double fac(1.0);
+  if (!reader.ReadFromFile(fac,"IS_CPL_SCALE_FACTOR")) fac=1.0;
+  else changed=true;
+  rpa.gen.SetVariable("IS_CPL_SCALE_FACTOR",ToString(fac));
+  if (!reader.ReadFromFile(fac,"FS_CPL_SCALE_FACTOR")) fac=1.0;
+  else changed=true;
+  rpa.gen.SetVariable("FS_CPL_SCALE_FACTOR",ToString(fac));
+  int scheme(1);
+  if (!reader.ReadFromFile(scheme,"S_KFACTOR_SCHEME")) scheme=1;
+  else changed=true;
+  rpa.gen.SetVariable("S_KFACTOR_SCHEME",ToString(scheme));
+  if (changed)
+    msg.Error()<<om::bold<<METHOD<<"(): WARNING {\n"<<om::reset<<om::red
+	       <<"  Scale- and K-factors for Matrix Element weighting\n"
+	       <<"  are set to account for Parton Shower settings.\n"
+	       <<"  If re-using integration results, please make sure\n"
+	       <<"  that the integration was performed this way.\n"
+	       <<om::reset<<om::bold<<"}"<<om::reset<<std::endl;
 }
 
 void Initialization_Handler::SetParameter(int nr) {
@@ -733,14 +778,12 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
   special_options["PATH"]=101;
   special_options["RUNDATA"]=102;
   special_options["ECMS"]=103;
+  special_options["STATUS_PATH"]=110;
+  special_options["SAVE_STATUS"]=111;
   special_options["PYTHIA"]=9000;
   special_options["EVTDATA"]=9999;
-#ifdef USING__MCatNLO
-  special_options["HERWIG"]=9001;
-  special_options["MCatNLO"]=9002;
-#endif
   
-
+  std::string datpath;
   
 
   for (int i=1; i<argc;++i) {
@@ -771,7 +814,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
     if (mode>=100) {
       MyStrStream s;
       switch (mode) {
-       case 101:
+      case 101:
 	if (value[value.length()-1]!='/') value+=std::string("/");
 	m_path=value;
 	break;
@@ -790,6 +833,16 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 	Data_Read::SetCommandLine("BEAM_ENERGY_2",value);
 	Read_Write_Base::AddCommandLine("BEAM_ENERGY_1 = "+value+"; ");
 	Read_Write_Base::AddCommandLine("BEAM_ENERGY_2 = "+value+"; ");
+	break;
+      case 110:
+	if (value[value.length()-1]!='/') value+=std::string("/");
+	datpath=value;
+	break;
+      case 111:
+	if (value[value.length()-1]!='/') value+=std::string("/");
+	rpa.gen.SetVariable
+	  ("SHERPA_STATUS_PATH",rpa.gen.Variable("SHERPA_RUN_PATH")+"/"+value);
+	m_savestatus=true;
 	break;
       case 9000:
 	m_mode       = 9000;
@@ -882,6 +935,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       }
     }
   }
+  if (datpath!="") m_path=datpath;
   return m_mode;
 }
 
@@ -902,16 +956,22 @@ void Initialization_Handler::CheckFlagConsistency()
     }
 
     //  ME.dat 
-    Data_Read::SetCommandLine("SCALE_SCHEME","65");
-    Data_Read::SetCommandLine("KFACTOR_SCHEME","65");
+    Data_Read::SetCommandLine("SCALE_SCHEME","CKKW");
+    Data_Read::SetCommandLine("KFACTOR_SCHEME","1");
     Data_Read::SetCommandLine("COUPLING_SCHEME","Running_alpha_S");
-    Read_Write_Base::AddCommandLine("SCALE_SCHEME = 65; ");
-    Read_Write_Base::AddCommandLine("KFACTOR_SCHEME = 65; ");
+    Read_Write_Base::AddCommandLine("SCALE_SCHEME = CKKW; ");
+    Read_Write_Base::AddCommandLine("KFACTOR_SCHEME = 1; ");
     Read_Write_Base::AddCommandLine("COUPLING_SCHEME = Running_alpha_S; ");
 
     //  Shower.dat
     Data_Read::SetCommandLine("FSR_SHOWER","1");
     Read_Write_Base::AddCommandLine("FSR_SHOWER = 1; ");
+  }
+  else {
+    Data_Read::SetCommandLine("JET_VETO_SCHEME","0");
+    Data_Read::SetCommandLine("LOSE_JET_SCHEME","0");
+    Read_Write_Base::AddCommandLine("JET_VETO_SCHEME = 0; ");
+    Read_Write_Base::AddCommandLine("LOSE_JET_SCHEME = 0; ");
   }
 
 

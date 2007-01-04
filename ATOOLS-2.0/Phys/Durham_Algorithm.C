@@ -46,10 +46,11 @@ void Durham_Algorithm::AddToKtlist(double kt2) {
    }
 }
 
-void Durham_Algorithm::AddToJetlist(const Vec4D & mom, bool bf) {
+void Durham_Algorithm::AddToJetlist(const Vec4D & mom, int bf) {
   if (p_jets) {
     if(!bf) p_jets->push_back(new Particle(p_jets->size(),Flavour(kf::jet),mom));
-    else    p_jets->push_back(new Particle(p_jets->size(),Flavour(kf::bjet),mom));
+    else p_jets->push_back(new Particle(p_jets->size(),bf>0?Flavour(kf::bjet):
+					Flavour(kf::bjet).Bar(),mom));
   }
 }
 
@@ -73,8 +74,13 @@ bool Durham_Algorithm::ConstructJets(const Particle_List * pl, Particle_List * j
   for (Particle_List::const_iterator it=pl->begin(); it!=pl->end();++it) {
     momsum+=(*it)->Momentum();
     if ((*p_qualifier)(*it)) {
-      p_moms[n]  = ((*it)->Momentum()); 
-      p_bflag[n] = (((*it)->Flav()).Kfcode()==kf::b)&& !m_bflag;
+      p_moms[n]  = ((*it)->Momentum());
+      p_bflag[n] = 0; 
+      if (m_bflag==0) p_bflag[n] = (((*it)->Flav()).Kfcode()==kf::b || 
+				    ((*it)->Flav()).Kfcode()==kf::bjet);
+      else if (m_bflag==-1) p_bflag[n] = (1-2*(*it)->Flav().IsAnti())*
+			      (((*it)->Flav()).Kfcode()==kf::b || 
+			       ((*it)->Flav()).Kfcode()==kf::bjet);
       ++n;
     }
   }
@@ -100,7 +106,7 @@ void Durham_Algorithm::InitMoms(int size)
     if (p_moms)  delete [] p_moms;
     if (p_bflag) delete [] p_bflag;
     p_moms = new Vec4D[size*2];
-    p_bflag = new bool[size*2];
+    p_bflag = new int[size*2];
   }
 }
 
@@ -122,7 +128,7 @@ void Durham_Algorithm::Init(int size)
 }
 
 
-void Durham_Algorithm::Ymin(Vec4D * p, bool * bf, int n)
+void Durham_Algorithm::Ymin(Vec4D * p, int * bf, int n)
 {
   PROFILE_HERE;
   if (n==0) return;
@@ -159,7 +165,7 @@ void Durham_Algorithm::Ymin(Vec4D * p, bool * bf, int n)
 
     // combine precluster
     p[p_imap[jj]]+=p[p_imap[ii]];
-    bf[p_imap[jj]] = bf[p_imap[jj]]||bf[p_imap[ii]];      
+    bf[p_imap[jj]] = bf[p_imap[jj]]+bf[p_imap[ii]];      
     AddToKtlist(ymin);
     --n;
     for (int i=ii;i<n;++i) p_imap[i]=p_imap[i+1];

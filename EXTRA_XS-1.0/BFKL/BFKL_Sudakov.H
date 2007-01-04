@@ -15,7 +15,7 @@ namespace EXTRAXS {
     LEV_Group *p_levs;
 
     double m_ya, m_yb, m_kt2min, m_kt2max, m_y, m_kt2, m_phi;
-    double m_asmax, m_integral, m_gamma, m_oldy;
+    double m_oldy, m_asmax, m_integral, m_weight;
 
   public:
 
@@ -29,8 +29,7 @@ namespace EXTRAXS {
     bool Initialize();
 
     bool Dice();
-    bool Approve(const Vector_Vector &k,
-		 const ATOOLS::Vec4D &q1,const ATOOLS::Vec4D &q2);
+    bool CalculateWeight(const Vector_Vector &k,const ATOOLS::Vec4D &q);
 
     // inline functions
     inline void SetYMax(const double &ymax) { m_ya=ymax; }
@@ -42,6 +41,8 @@ namespace EXTRAXS {
     inline double GetY() const   { return m_y;   }
     inline double GetKT2() const { return m_kt2; }
     inline double GetPhi() const { return m_phi; }
+
+    inline double Weight() const { return m_weight; }
 
     inline LEV_Base *Selected() const { return p_levs->Selected(); }
 

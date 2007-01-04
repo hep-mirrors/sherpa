@@ -48,7 +48,8 @@ void MyTiming::PrintTime()
     //    double clk_tck=double(CLK_TCK);  // does not work properly!
     double clk_tck=100.;
     double secs=clocks/clk_tck;
-    msg_Info()<<"Time: "<<secs<<" s (clocks="<<clocks<<")\n";
+    msg_Info()<<"Time: "<<secs<<" s (clocks="<<clocks<<") on "
+	      <<TimeString()<<"\n";
     double utime=(currenttms.tms_utime-starttms.tms_utime)/clk_tck;
     double stime=(currenttms.tms_stime-starttms.tms_stime)/clk_tck;
     double cutime=(currenttms.tms_cutime-starttms.tms_cutime)/clk_tck;
@@ -70,4 +71,16 @@ double MyTiming::UserTime()
   double clk_tck=100.;
   SetCurrent();
   return (currenttms.tms_utime-starttms.tms_utime)/clk_tck;
+}
+
+std::string MyTiming::TimeString(const int format)
+{
+  time_t t(time(NULL));
+  std::string tstring(ctime(&t));
+  tstring.erase(tstring.length()-1,1);
+  for (size_t i(0);i<tstring.length();++i) {
+    if ((format&1) && (tstring[i]==' ')) tstring[i]='_';
+    if ((format&2) && (tstring[i]==':')) tstring[i]='-';
+  }
+  return tstring;
 }

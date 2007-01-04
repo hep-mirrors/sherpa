@@ -13,7 +13,7 @@ using namespace ATOOLS;
 #include <iomanip>
 
 DECLARE_GETTER(Primitive_Detector_Getter,"Detector",
-	       Primitive_Observable_Base,String_Matrix);
+	       Primitive_Observable_Base,Argument_Matrix);
 
 void Primitive_Detector_Getter::PrintInfo(std::ostream &str,const size_t width) const
 {
@@ -25,7 +25,7 @@ void Primitive_Detector_Getter::PrintInfo(std::ostream &str,const size_t width) 
 }
 
 Primitive_Observable_Base *
-Primitive_Detector_Getter::operator()(const String_Matrix &parameters) const
+Primitive_Detector_Getter::operator()(const Argument_Matrix &parameters) const
 {
   std::string inlist="FinalState", outlist="Detected";
   for (size_t i=0;i<parameters.size();++i) {

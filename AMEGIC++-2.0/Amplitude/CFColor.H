@@ -1,6 +1,7 @@
 #ifndef CFColor_h
 #define CFColor_h
 
+#include "Matrix.H"
 #include "String_Tree.H"
 #include "Single_Amplitude.H"
 #include <map>
@@ -18,7 +19,7 @@ namespace AMEGIC {
     static std::string noname;
     
     String_Tree    st;
-    Complex     ** CFC;
+    ATOOLS::CMatrix * CFC;
 
     int *     id;        // points to graph with same Color structure (mod. sign)
     int *     map;       // points to entry of color matrix for each graph
@@ -66,7 +67,8 @@ namespace AMEGIC {
     /*!
       Simple access to individual elements of the colour matrix.
     */
-    inline const Complex& Mij(const int i,const int j) const {return CFC[i][j];}
+    inline const Complex& Mij(const int i,const int j) const {return (*CFC)[i][j];}
+    inline const ATOOLS::CMatrix* GetCMatrix() const {return CFC;}
     inline const int CFMap(int i) const {return map[i]; }
     inline const int CFSign(int i) const {return (id[i]>=0) ? 1 : -1; }
     inline const int MatrixSize() const {return ncount;}

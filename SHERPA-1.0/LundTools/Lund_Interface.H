@@ -1,29 +1,39 @@
 #ifndef Lund_Interface_H
 #define Lund_Interface_H
 
-#include "HepEvt_Interface.H"
-#include "Particle_List.H"
-#include "Blob_List.H"
-#include "ISR_Handler.H"
+#include "Flavour.H"
+#include "Return_Value.H"
+#include "Exception.H"
 #include <list>
 #include <map>
 
-namespace SHERPA {
+namespace ATOOLS {
+  class Blob;
+  class Blob_List;
+  class Particle;
+}
 
-  class Lund_Interface {
+namespace PDF {
+  class ISR_Handler;
+}
+
+namespace SHERPA {
+  class HepEvt_Interface;
+
+  class Lund_Interface : public ATOOLS::Terminator_Object {
   private:
     static size_t s_errors, s_maxerrors;
 
     std::string m_path, m_file, m_outfile;
     size_t m_maxtrials;
 
-    ATOOLS::HepEvt_Interface *p_hepevt;
+    HepEvt_Interface *p_hepevt;
     static PDF::ISR_Handler  *s_isrhandler;
 
     long int m_events, m_curfile, m_evtsperfile;
     bool     m_compress, m_writeout;
 
-    std::list<ATOOLS::Particle_List *> m_partlists;
+
     double *p_phep, *p_vhep;
     int    *p_jmohep, *p_jdahep;
 
@@ -31,41 +41,37 @@ namespace SHERPA {
 
     static bool s_exportas, s_exportpdf;
 
-    std::map<ATOOLS::Particle *,int> m_secondarymap;
-	
+    static int    * s_saved_mrpy;
+    static double * s_saved_rrpy;
+
     void NextFile(const bool newfile);
 
     // preparing and doing the fragmentation
-    void Reset();
-    bool ExtractSinglets(ATOOLS::Blob_List *bloblist,ATOOLS::Particle_List *pl);
-    int  PrepareFragmentationBlob(ATOOLS::Blob *blob);
-    bool StringFragmentation(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
-			     ATOOLS::Particle_List *pl,int nhep); 
+    ATOOLS::Return_Value::code ExtractSinglets(ATOOLS::Blob_List *);
+    int                        PrepareFragmentationBlob(ATOOLS::Blob *);
+    ATOOLS::Return_Value::code StringFragmentation(ATOOLS::Blob *,ATOOLS::Blob_List *,int); 
     // tools for extracting hadrons
-    void AddPartonToString(ATOOLS::Particle *particle,int &nhep);
-    void FillPrimaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
-				  ATOOLS::Particle_List *pl=NULL);
-    void FillPrimaryTauInBlob(int,ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
-			      ATOOLS::Particle_List *pl=NULL);
-    void FillSecondaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
-				    int daughter1,int daughter2,
-				    ATOOLS::Particle_List *pl=NULL);
+    void AddPartonToString(ATOOLS::Particle *,int &);
+    void FillFragmentationBlob(ATOOLS::Blob *);
+    void FillOutgoingParticlesInBlob(ATOOLS::Blob *);
+
+    void RestoreStatus();
+    bool ReadInStatus(const std::string &path);
+    void ReadInStatus(const std::string &file, int mode);
+    void WriteOutStatus(const std::string &file);
+    void PrepareTerminate();
   public:
 
     Lund_Interface(std::string _m_path,std::string _m_file,bool sherpa);
     ~Lund_Interface();
 
-    bool        Hadronize(ATOOLS::Blob_List *bloblist,ATOOLS::Particle_List *pl=NULL);
-    bool        FillDecay(ATOOLS::Particle * part,
-			  ATOOLS::Blob_List *bloblist,ATOOLS::Particle_List *pl=NULL);
-    bool        FindDecay( ATOOLS::Particle * part );
-    void        PerformAllDecays(ATOOLS::Blob *);
-    void        PerformDecay( ATOOLS::Particle * part, 
-			      ATOOLS::Blob_List * blob_list, 
-			      ATOOLS::Particle_List * part_list );
+    ATOOLS::Return_Value::code Hadronize(ATOOLS::Blob_List *);
+    ATOOLS::Return_Value::code PerformDecay(ATOOLS::Blob *);
     static void Error(const int error);
-    bool        OneEvent(ATOOLS::Blob_List *const bloblist,double &weight);
 
+    ATOOLS::Return_Value::code OneEvent(ATOOLS::Blob_List *const,double &);
+
+    bool IsAllowedDecay(ATOOLS::kf::code);
     // inline functions
     inline static void SetISRHandler(PDF::ISR_Handler *const handler) { s_isrhandler=handler; }
     inline static PDF::ISR_Handler *ISRHandler()                      { return s_isrhandler; }
@@ -73,7 +79,11 @@ namespace SHERPA {
     inline static bool ExportAS()  { return s_exportas;  }
     inline static bool ExportPDF() { return s_exportpdf; }
 
-    void SwitchOfDecays(ATOOLS::kf::code kfc);
+    void SwitchOffDecays(ATOOLS::kf::code kfc);
+    void AdjustProperties(ATOOLS::Flavour flav);
+    void SwitchOffMassSmearing();
+    double DiceMass(ATOOLS::Flavour flav, double min, double max);
+    static void SaveStatus();
   };// end of class Lund_Interface
 
   /*!
@@ -85,28 +95,32 @@ namespace SHERPA {
     \brief Tools for calling Pythia routines
     */
   /*!
-    \fn Lund_Interface::PerformDecay( ATOOLS::Particle * part, ATOOLS::Blob_List * blob_list, ATOOLS::Particle_List * part_list )
-    \brief Performs the decay of the particle <var>part</var>
+    \fn Lund_Interface::PerformDecay( ATOOLS::Blob * )
+    \brief Performs the decay of the incoming particle of <var>blob</var>.
 
-    This is the main method for the decay of the particle <var>part</var>
-    -# It choses a decay channel  and its kinemtaic by calling Pythia common blocks
-    -# A new blob is created.
-    -# Treats every daughter self-recursively.
+    This is the main method for the decay of <var>blob</var>. Before decaying
+    the blob, it checks a few conditions:
+    -# blob_status::needs_hadrondecays (otherwise Return_Value::Error)
+    -# 1 incoming, active particle (otherwise Return_Value::Error)
+    -# mass of the incoming particle: peak-w_cut \< m* \< peak+w_cut where peak
+       and w_cut are determined by \c PYDAT2/PMAS(KC,1) and \c PYDAT2/PMAS(KC,3)
+       (otherwise Return_Value::Retry_Method)
+    .
+
+    If all these conditions are met, the decay is performed:
+    -# the in-particle is set to unstable in the Pythia common block
+    -# Pythia's \c PYDECY() routine is called for this decayer
+    -# the resulting event is filled back into the blob
+    -# the in-particle is set back to stable in Pythia
     .
     */
   /*!
-    \fn Lund_Interface::SwitchOfDecays(ATOOLS::kf::code kfc)
+    \fn Lund_Interface::SwitchOffDecays(ATOOLS::kf::code kfc)
     \brief Sets the particle kfc stable
 
-    This method tells Pythia to set the particle <var>kfc</var> stable.
-    */
-  /*!
-    \fn Lund_Interface::FillPrimaryTauInBlob(int,ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist, ATOOLS::Particle_List *pl=NULL)
-    \brief Reconstructs the tau-lepton and pushs it through the Blob
-
-    This method became necessery for the implementation of tau decays into HADRONS.
-    Basically, it pushs a (anti-)tau through the Fragmentation blob such that it can be treated
-    by Hadron_Decays::Treat.
+    This method tells Pythia to set the particle <var>kfc</var> stable. Might
+    be obsolete, because the hadron decay handler will call the method
+    SetAllStable.
     */
   /*!
     \fn Lund_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist, ATOOLS::Particle_List *pl=NULL)

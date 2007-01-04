@@ -111,10 +111,12 @@ Histogram::Histogram(const std::string & pID)
   std::string dummy;
   getline(ifile,dummy);
   
+  Data_Reader dr(" ",";","!");
+  dr.AddWordSeparator("\t");
   if (dummy!="") { 
-    Data_Reader dr;
     std::vector<std::string> conf;
-    dr.VectorFromString(conf,"",dummy,vtc::horizontal);
+    dr.SetString(dummy);
+    dr.VectorFromString(conf);
     size_t k=0;
 
     if (k>=conf.size()) {
@@ -188,11 +190,11 @@ Histogram::Histogram(const std::string & pID)
 
   std::vector<std::string> data;
   MyStrStream str;
-  Data_Reader dr;
   for (int i=0;i<m_nbin-1;i++) {
     getline(ifile,dummy);
     data.clear();
-    dr.VectorFromString(data,"",dummy,vtc::horizontal);
+    dr.SetString(dummy);
+    dr.VectorFromString(data);
 
     //    ifile>>value;
     m_yvalues[i+1] = Get<double>(data[1]);
@@ -364,6 +366,41 @@ void Histogram::Insert(double coordinate) {
   }
 }
 
+void Histogram::Insert(int i,double value,int ncount) {
+  if (!m_active) {
+    msg.Error()<<"Error in Histogram : Tried to access a "
+			  <<"histogram with binsize <= 0 !"<<std::endl;
+    return;
+  }
+  m_fills+=ncount;
+  if (value==0.) return;
+  m_psfills++;
+
+  if (i<0) { 
+    m_yvalues[0] += value;
+    if (m_depth>1) {
+      if (value>m_y2values[0]) m_y2values[0] = value;
+      if (m_depth>2) m_psvalues[0] += 1.;
+    }
+    return; 
+  }
+
+  if (i>=m_nbin) { 
+    m_yvalues[m_nbin-1] += value; 
+    if (m_depth>1) {
+      if (value>m_y2values[m_nbin-1]) m_y2values[m_nbin-1] = value;
+      if (m_depth>2) m_psvalues[m_nbin-1] += 1.;
+    }
+    return; 
+  }
+
+  m_yvalues[i] += value;
+  if (m_depth>1) {
+    m_y2values[i] += value*value;
+    if (m_depth>2) m_psvalues[i] += 1.;
+  }
+}
+
 void Histogram::Insert(double coordinate,double value,int ncount) {
   if (!m_active) {
     msg.Error()<<"Error in Histogram : Tried to access a "
@@ -479,28 +516,28 @@ void Histogram::InsertRange(double start, double end, double value) {
 }
 
 
-/*
-double * Histogram::Bin(int bin) { return m_bins[bin]; }
 
-double * Histogram::Bin(double coordinate) { 
+double Histogram::Bin(int bin) { return m_yvalues[bin]; }
+
+double Histogram::Bin(double coordinate) 
+{ 
   if (!m_active) {
     msg.Error()<<"Error in Histogram : Tried to access a histogram wit binsize <= 0 ! Return 0.."<<std::endl;
-    return NULL;
+    return -1.0;
   }
   else {
     if (m_logarithmic>0) coordinate = log(coordinate)/m_logbase;
 
-    if (coordinate<m_lower) return m_bins[0];
-    if (coordinate>m_upper) return m_bins[m_nbin-1];
+    if (coordinate<m_lower) return m_yvalues[0];
+    if (coordinate>m_upper) return m_yvalues[m_nbin-1];
     for (int i=1;i<m_nbin+1;i++) {
       if ( (coordinate >= m_lower + (i-1)*m_binsize) &&
 	   (coordinate <  m_lower + i*m_binsize) ) 
-	return m_bins[i];
+	return m_yvalues[i];
     }
   }
-  return NULL;
+  return -1.0;
 }
-*/
 
 void Histogram::Extrapolate(double coordinate,double * res,int mode) {
   if (!m_active) {

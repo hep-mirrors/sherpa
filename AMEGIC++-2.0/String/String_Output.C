@@ -55,7 +55,7 @@ void String_Output::Output(sknot*** sk,String_Tree* stree,
   
   ofstream header;
   header.open(headername.c_str());
-  Make_Header(header,sgen);
+  Make_Header(header);
 
   int maxlines  = 200;
   int tolerance = 50;
@@ -96,15 +96,15 @@ void String_Output::Cform(ofstream& header,int maxlines,int tolerance,
   cfile<<"}"<<endl<<endl;
 
   cfile<<pID<<"::"<<pID<<"(Basic_Sfuncs* _BS) :"<<endl;
-  cfile<<"     Basic_Func(0,_BS)";  
-  if (sgen->UsesFunction(4)) cfile<<","<<endl<<"     Basic_Yfunc(0,_BS)";  
-  if (sgen->UsesFunction(1)) cfile<<","<<endl<<"     Basic_Zfunc(0,_BS)";  
-  if (sgen->UsesFunction(0)) cfile<<","<<endl<<"     Basic_Xfunc(0,_BS)";  
-  if (sgen->UsesFunction(3)||sgen->UsesFunction(9)) cfile<<","<<endl<<"     Basic_Vfunc(0,_BS)";  
-  if (sgen->UsesFunction(5)) cfile<<","<<endl<<"     Basic_Pfunc(0,_BS)"; 
-  if (sgen->UsesFunction(10)) cfile<<","<<endl<<"     Basic_Epsilonfunc(0,_BS)";
-  if (sgen->UsesFunction(7)) cfile<<","<<endl<<"     Basic_MassTermfunc(0,_BS)";
-  cfile<<endl<<"{"<<endl;
+  cfile<<"     Basic_Func(0,_BS),"<<endl;  
+  cfile<<"     Basic_Yfunc(0,_BS),"<<endl;  
+  cfile<<"     Basic_Zfunc(0,_BS),"<<endl;  
+  cfile<<"     Basic_Xfunc(0,_BS),"<<endl;  
+  cfile<<"     Basic_Mfunc(0,_BS),"<<endl;   
+  cfile<<"     Basic_Vfunc(0,_BS),"<<endl;  
+  cfile<<"     Basic_Pfunc(0,_BS),"<<endl; 
+  cfile<<"     Basic_MassTermfunc(0,_BS)"<<endl;
+  cfile<<"{"<<endl;
   cfile<<"  f = new int["<<sgen->GetFlavours()->size()<<"];"<<endl;
   cfile<<"  c = new Complex["<<sgen->NumberOfCouplings()<<"];"<<endl;
   cfile<<"  Z = new Complex["<<sgen->ZXMaxNumber()<<"];"<<endl;
@@ -435,9 +435,6 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
       case 9: 
  	zf<<"Vcplxcalc("<<arg[0]<<","<<arg[1]<<");"<<endl;
  	break;
-      case 10: 
- 	zf<<"EpsCalc<"<<arg[4]<<">("<<arg[0]<<","<<arg[1]<<","<<arg[2]<<","<<arg[3]<<");"<<endl;
- 	break;
       }
     }
     if (((maxlines+tolerance)<lines) && (i!=sgen->ZXMaxNumber()-1)) {
@@ -466,7 +463,7 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
   zf.close();
 }
 
-void String_Output::Make_Header(ofstream &header,Virtual_String_Generator* sgen)
+void String_Output::Make_Header(ofstream &header)
 {
   header<<"//Header file for process "<<pID.c_str()<<endl<<endl;
   header<<"#ifndef "<<pID<<"_on"<<endl;
@@ -476,15 +473,14 @@ void String_Output::Make_Header(ofstream &header,Virtual_String_Generator* sgen)
   header<<"extern "<<'"'<<"C"<<'"'<<" AMEGIC::Values* Getter_"<<pID<<"(AMEGIC::Basic_Sfuncs* bs);"<<endl<<endl;
 
   header<<"namespace AMEGIC {"<<endl<<endl;  
-  header<<"class "<<pID.c_str()<<" : public Values";
-  if (sgen->UsesFunction(4)) header<<","<<endl<<"  public Basic_Yfunc"; 
-  if (sgen->UsesFunction(1)) header<<","<<endl<<"  public Basic_Zfunc"; 
-  if (sgen->UsesFunction(0)) header<<","<<endl<<"  public Basic_Xfunc"; 
-  if (sgen->UsesFunction(3)||sgen->UsesFunction(9)) header<<","<<endl<<"  public Basic_Vfunc"; 
-  if (sgen->UsesFunction(5)) header<<","<<endl<<"  public Basic_Pfunc"; 
-  if (sgen->UsesFunction(10)) header<<","<<endl<<"  public Basic_Epsilonfunc";
-  if (sgen->UsesFunction(7)) header<<","<<endl<<"  public Basic_MassTermfunc";
-  header<<" {"<<endl; 
+  header<<"class "<<pID.c_str()<<" : public Values,"<<endl;
+  header<<"  public Basic_Yfunc,"<<endl; 
+  header<<"  public Basic_Zfunc,"<<endl; 
+  header<<"  public Basic_Xfunc,"<<endl; 
+  header<<"  public Basic_Mfunc,"<<endl; 
+  header<<"  public Basic_Vfunc,"<<endl; 
+  header<<"  public Basic_Pfunc,"<<endl; 
+  header<<"  public Basic_MassTermfunc {"<<endl; 
 
   header<<"  Complex*  Z;"<<endl; 
   header<<"  int*      f;"<<endl; 

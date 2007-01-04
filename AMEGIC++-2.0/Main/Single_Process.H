@@ -7,9 +7,8 @@
 #include "Helicity.H"
 #include "Amplitude_Handler.H"
 #include "Standard_Selector.H"
-#include "Spin_Correlation_Tensor.H"
+// #include "Spin_Correlation_Tensor.H"
 #include <vector>
-#include "Spin_Correlation_Tensor.H"
 
 namespace AMEGIC {
   class Single_Process : public Process_Base {
@@ -39,13 +38,13 @@ namespace AMEGIC {
     Single_Process(int,int,ATOOLS::Flavour *,
 		   PDF::ISR_Handler * =NULL,BEAM::Beam_Spectra_Handler * =NULL,
 		   ATOOLS::Selector_Data * =NULL,
-		   int=1,int=99,int=99,int=0,int=0,
+		   int=1,int=99,int=99,int=0,PHASIC::scl::scheme=PHASIC::scl::unknown,
 		   double=-1.,Pol_Info* _pl=0,int _nex=0,ATOOLS::Flavour * _ex_fl=0,
 		   int usepi=0,double ycut=-1.,double error=-1.,std::string e_func="1");
     Single_Process(Process_Info*,int,int,ATOOLS::Flavour *,
 		   PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,
 		   ATOOLS::Selector_Data *,
-		   int,int,int,int,int,
+		   int,int,int,int,PHASIC::scl::scheme,
 		   double,Pol_Info* _pl,int _nex,ATOOLS::Flavour * _ex_fl,
 		   int usepi,double ycut,double error,std::string e_func="1");
     ~Single_Process();
@@ -76,6 +75,8 @@ namespace AMEGIC {
     int                 CheckLibraries();
     int                 CheckStrings(Single_Process*);
     void                WriteLibrary();
+    void                WriteAlternativeName(std::string); 
+    bool                CheckAlternatives(std::vector<Process_Base *> &,int);
     std::string         CreateLibName();
     void                CreateMappingFile();
     bool                CreateChannelLibrary();
@@ -133,7 +134,8 @@ namespace AMEGIC {
     double         DSigma2();
     double         operator()(const ATOOLS::Vec4D *);
     //! Return the spin correlations for the current process.
-    virtual ATOOLS::Spin_Correlation_Tensor* GetSpinCorrelations();
+//     virtual ATOOLS::Spin_Correlation_Tensor* GetSpinCorrelations();
+    void           FillAmplitudes(ATOOLS::Amplitude_Tensor*, double =1.);
     ATOOLS::Blob_Data_Base * OneEvent(double = -1.);
     ATOOLS::Blob_Data_Base * SameEvent();
     ATOOLS::Blob_Data_Base * WeightedEvent(const int mode=0);

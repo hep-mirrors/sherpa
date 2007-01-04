@@ -116,12 +116,6 @@ void Standard_Model::ReadInFile() {
 				     p_dataread->GetValue<double>("LAMBDA_GAMMA",0.)));
   p_constants->insert(std::make_pair(std::string("g4_gamma"),
 				     p_dataread->GetValue<double>("G4_GAMMA",0.)));
-  p_constants->insert(std::make_pair(std::string("g5_gamma"),
-				     p_dataread->GetValue<double>("G5_GAMMA",0.)));
-  p_constants->insert(std::make_pair(std::string("kappat_gamma"),
-				     p_dataread->GetValue<double>("KAPPAT_GAMMA",0.)));
-  p_constants->insert(std::make_pair(std::string("lambdat_gamma"),
-				     p_dataread->GetValue<double>("LAMBDAT_GAMMA",0.)));
   p_constants->insert(std::make_pair(std::string("g1_Z"),
 				     p_dataread->GetValue<double>("G1_Z",1.)));
   p_constants->insert(std::make_pair(std::string("kappa_Z"),
@@ -130,17 +124,11 @@ void Standard_Model::ReadInFile() {
 				     p_dataread->GetValue<double>("LAMBDA_Z",0.)));
   p_constants->insert(std::make_pair(std::string("g4_Z"),
 				     p_dataread->GetValue<double>("G4_Z",0.)));
-  p_constants->insert(std::make_pair(std::string("g5_Z"),
-				     p_dataread->GetValue<double>("G5_Z",0.)));
-  p_constants->insert(std::make_pair(std::string("kappat_Z"),
-				     p_dataread->GetValue<double>("KAPPAT_Z",0.)));
-  p_constants->insert(std::make_pair(std::string("lambdat_Z"),
-				     p_dataread->GetValue<double>("LAMBDAT_Z",0.)));
 }
 
 
 void Standard_Model::FixEWParameters() {
-  double MW,MZ,MH,alphaQED,sin2thetaW,cos2thetaW,vev,lambdaH,GF;
+  double MW,MZ,MH,alphaQED,sin2thetaW,cos2thetaW,vev,lambdaH,GF=1.16639e-5;
   m_ewscheme = p_dataread->GetValue<int>("EW_SCHEME",0);
   switch (m_ewscheme) {
   case 1:
@@ -164,6 +152,19 @@ void Standard_Model::FixEWParameters() {
     MZ         = vev/2.*sqrt((4.*M_PI*alphaQED)*(1/sin2thetaW+1/cos2thetaW));
     MH         = p_dataread->GetValue<double>("MH",120.);
     lambdaH    = 2.*sqr(MH/vev);
+    break;
+  case 3:
+    //gmu scheme
+    MW         = Flavour(kf::W).Mass();
+    MZ         = Flavour(kf::Z).Mass();
+    GF         = p_dataread->GetValue<double>("GF",1.16639e-5);
+    sin2thetaW = 1.-sqr(MW/MZ);
+    cos2thetaW = 1.-sin2thetaW;
+    alphaQED   = sqrt(2.)*GF*sqr(MW)*sin2thetaW/M_PI;
+    MH         = Flavour(kf::h).Mass();
+    vev        = 1./(pow(2.,0.25)*sqrt(GF));
+    lambdaH    = 2.*sqr(MH/vev); 
+    break;
   default:
     // all SM parameters given explicitly
     alphaQED   = 1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
@@ -181,9 +182,9 @@ void Standard_Model::FixEWParameters() {
   aqed->SetDefault(alphaQED_default);
 
   p_functions->insert(std::make_pair(std::string("alpha_QED"),aqed));
-
-  GF = sqrt(2.)*(*aqed)(sqr(Flavour(kf::mu).PSMass()))*M_PI/(2.*sin2thetaW*sqr(MW));
-
+  
+  if (m_ewscheme!=3) GF = sqrt(2.)*(*aqed)(sqr(Flavour(kf::mu).PSMass()))*M_PI/(2.*sin2thetaW*sqr(MW));
+  
   p_constants->insert(std::make_pair(std::string("alpha_QED(0)"),alphaQED));
   p_constants->insert(std::make_pair(std::string("sin2_thetaW"), sin2thetaW));
   p_constants->insert(std::make_pair(std::string("cos2_thetaW"), cos2thetaW));
@@ -205,7 +206,7 @@ void Standard_Model::FixCKM() {
     CKM[i][i] = Complex(1.,0.);
   }
   
-  double Cabibbo,A=.8,rho,eta;
+  double Cabibbo=0.0,A=.8,rho,eta;
   m_ckmorder     = p_dataread->GetValue<int>("CKMORDER",0);  
   if (m_ckmorder>0) {
     Cabibbo    = p_dataread->GetValue<double>("CABIBBO",0.22);

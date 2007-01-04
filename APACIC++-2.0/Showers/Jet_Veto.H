@@ -77,10 +77,9 @@ namespace APACIC {
 
     enum mode {
       none    = 0,
-      final   = 1,
-      initial = 2,
-      global  = 4,
-      mlm     = 8
+      initial = 1,
+      final   = 2,
+      global  = 4
     };
 
   };// end of struct jv
@@ -88,17 +87,14 @@ namespace APACIC {
     \struct jv
     \brief Declares abbreviations for jet veto schemes.
     
-    There are essentially three different methods to do the jet veto.
-    The first one is a local jet veto, specified by the final and 
-    initial flag, but without the global flag. It means taking into 
-    account only the distance between two daughter partons, when 
-    testing an emission. The global jet veto, specified by the initial 
-    and final and the global flag means redetermining the distances 
-    between all partons and rejecting an emission, if the jet number 
-    is modified by the current emission. The mlm flag means that the
-    jet configuration is tested only once, after the whole shower 
-    evolution and the event is rejected as a whole, if the jet number 
-    is modified.
+    There are three possible ways to do the jet veto.
+    The first one is the local jet veto, specified by the initial
+    and/or final flag. It means testing and eventually vetoing 
+    the distance between the two daughter partons of a branching. 
+    The global jet veto, specified by the global flag redetermines 
+    the distances between all partons after the complete shower
+    evolution and rejects the evolution, if the jet number of jets 
+    is altered. The two options can be combined.
   */
 
   inline jv::mode operator|(const jv::mode &a,const jv::mode &b)
@@ -127,18 +123,20 @@ namespace APACIC {
 
     Double_Vector m_rates;
 
-    jv::mode m_mode;
+    size_t m_mode, m_cmode;
 
-    size_t m_maxjets, m_cmode, m_jmode, m_ljmode, m_lmode;
+    jv::mode m_jmode, m_ljmode;
 
-    double m_ycut, m_q2hard;
+    double m_q2hard;
 
     Histogram_Vector m_histos;
 
     int CollectISMomenta(Knot *knot,std::vector<ATOOLS::Vec4D> &vecs,
-			 size_t &hard);
+			 std::vector<Knot*> &next,size_t &hard,
+			 size_t &inthard);
     int CollectFSMomenta(Knot *knot,std::vector<ATOOLS::Vec4D> &vecs,
-			 size_t &hard);
+			 std::vector<Knot*> &next,size_t &hard,
+			 size_t &inthard,Knot *const first=NULL);
 
   public:
 
@@ -151,9 +149,9 @@ namespace APACIC {
     //member functions 
     void PrepareTerminate();
 
-    int TestKinematics(const int mode=0,Knot *const mo=NULL, double* vm=NULL);
+    int TestKinematics(Knot *const mo=NULL);
     /*!
-      \fn int TestKinematics(const int mode=0,Knot *const mo=NULL)
+      \fn int TestKinematics(const int mode=0)
       \brief Implements the global jet veto procedure
 
       This procedure is called, to veto parton configurations according 
@@ -169,38 +167,40 @@ namespace APACIC {
       \brief Implements the jet veto for final state splittings.
       
       This method implements the jet veto for final state splittings.
-      According to the settings in m_mode, either a local or a global 
-      jet veto is applied.
+      According to the settings in m_mode, jet and/or lose jet veto 
+      is applied.
+      The corresponding \f$p_T\f$ values are calculated using 
+      the Jet_Finder p_jf.
     */
-    int TestISKinematics(Knot *const mo);
+    
+    int TestISKinematics(Knot *const mo,Knot *const partner);
     /*!
-      \fn int TestISKinematics(Knot *const mo)
+      \fn int TestISKinematics(Knot *const mo,Knot *const partner)
       \brief Implements the jet veto for initial state splittings.
       
       This method implements the jet veto for initial state splittings.
-      According to the settings in m_mode, either a local or a global 
-      jet veto is applied.
+      According to the settings in m_mode, jet and/or lose jet veto
+      is applied.
+      To determine the corresponding \f$p_T\f$, the initial state trees
+      are boosted into the cms of the outermost partons and rotated onto 
+      the corresponding z-axis.
     */
 
     // inline functions
-    inline void SetYCut(const double &ycut) { m_ycut=ycut; }
+    inline void SetMode(const size_t &mode) { m_mode=mode; }
 
-    inline void SetMode(const jv::mode &mode)     { m_mode=mode;       }
-    inline void SetLoseJetMode(const int &mode)   { m_lmode=mode;      }
-    inline void SetMaxJets(const size_t &maxjets) { m_maxjets=maxjets; }
-
-    inline void SetJetVeto(const size_t &mode)     { m_jmode=mode;  }
-    inline void SetLoseJetVeto(const size_t &mode) { m_ljmode=mode; }
+    inline void SetJetVeto(const jv::mode &mode)     { m_jmode=mode;  }
+    inline void SetLoseJetVeto(const jv::mode &mode) { m_ljmode=mode; }
 
     inline void SetISTrees(Tree **const trees) { p_istrees=trees; }
     inline void SetFSTree(Tree *const tree)    { p_fstree=tree;   }
 
     inline void SetJetPT2(const double &pt2) { p_jf->SetShowerPt2(pt2); }
 
-    inline jv::mode Mode() const { return m_mode;   }
+    inline size_t Mode() const { return m_mode;   }
 
-    inline size_t JetVeto() const     { return m_jmode;  }
-    inline size_t LoseJetVeto() const { return m_ljmode; }
+    inline jv::mode JetVeto() const     { return m_jmode;  }
+    inline jv::mode LoseJetVeto() const { return m_ljmode; }
 
     inline ATOOLS::Jet_Finder *const JetFinder() const { return p_jf; }
 
@@ -215,11 +215,9 @@ namespace APACIC {
     Final_State_Shower, any time a new emission is constructed with the 
     full kinematics and tests the jet measure of this emission w.r.t.
     other partons. The emission is rejected, if a new jet has been created. 
-    Likewise, the parton configuration is vetoed, if the number of jets
-    drops below the number of initial jets, i.e. this which has been set by 
-    the hard matrix element. This is a final check, which is performed 
-    only once, after the complete shower evolution. Jet_Veto is then 
-    called by Apacic.
+    Likewise, the parton configuration can be vetoed, if the number of jets
+    drops below the number of initial jets, i.e. the number which has been 
+    defined by the hard matrix element. 
   */
 
 }//end of namespace APACIC

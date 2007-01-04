@@ -6,7 +6,7 @@ using namespace ANALYSIS;
 #include "MyStrStream.H"
 
 template <class Class>
-Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
+Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters)
 {									
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
@@ -43,7 +43,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
   Primitive_Observable_Base *					\
-  NAME::operator()(const String_Matrix &parameters) const		\
+  NAME::operator()(const Argument_Matrix &parameters) const		\
   { return GetObservable<CLASS>(parameters); }
 
 #define DEFINE_PRINT_METHOD(NAME)					\
@@ -51,7 +51,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
   { str<<"kf min max bins Lin|LinErr|Log|LogErr [list]"; }
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,Argument_Matrix);	\
   DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME)
 
@@ -175,23 +175,22 @@ Primitive_Observable_Base * One_Particle_Eta::Copy() const
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DEFINE_OBSERVABLE_GETTER(One_Particle_EtaSymm,One_Particle_EtaSymm_Getter,"EtaSymm")
+DEFINE_OBSERVABLE_GETTER(One_Particle_Y,One_Particle_Y_Getter,"Y")
 
-One_Particle_EtaSymm::One_Particle_EtaSymm(const Flavour & flav, int type,
-					   double xmin, double xmax, int nbins,
-					   const std::string & listname) :
-  One_Particle_Observable_Base(flav,type,xmin,xmax,nbins,listname,"EtaSymm") { }
+One_Particle_Y::One_Particle_Y(const Flavour & flav,
+				   int type,double xmin,double xmax,int nbins,
+				   const std::string & listname) :
+  One_Particle_Observable_Base(flav,type,xmin,xmax,nbins,listname,"Y") { }
 
-void One_Particle_EtaSymm::Evaluate(const Vec4D& mom,double weight,int ncount) 
+
+void One_Particle_Y::Evaluate(const Vec4D & mom,double weight, int ncount) 
 {
-  double value=mom.Eta();
-  if(value<0.0) p_histo->Insert(abs(value),-1.0*weight,ncount);
-  else          p_histo->Insert(abs(value),     weight,ncount);
-}
+  p_histo->Insert(mom.Y(),weight,ncount);
+} 
 
-Primitive_Observable_Base * One_Particle_EtaSymm::Copy() const
+Primitive_Observable_Base * One_Particle_Y::Copy() const
 {
-  return new One_Particle_EtaSymm(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new One_Particle_Y(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -272,67 +271,3 @@ Primitive_Observable_Base * One_Particle_EVis::Copy() const
 {
   return new One_Particle_EVis(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
- 
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-DEFINE_OBSERVABLE_GETTER(One_Particle_Px,One_Particle_Px_Getter,"Px")
-
-One_Particle_Px::One_Particle_Px(const Flavour & flav,
-					       int type,double xmin,double xmax,int nbins,
-					       const std::string & listname) :
-  One_Particle_Observable_Base(flav,type,xmin,xmax,nbins,listname,"Px") { }
-
-
-void One_Particle_Px::Evaluate(const Vec4D & mom,double weight, int ncount) 
-{
-  double px = mom[1];
-  p_histo->Insert(px,weight,ncount); 
-} 
-
-Primitive_Observable_Base * One_Particle_Px::Copy() const
-{
-  return new One_Particle_Px(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
-}
-
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-DEFINE_OBSERVABLE_GETTER(One_Particle_Py,One_Particle_Py_Getter,"Py")
-
-One_Particle_Py::One_Particle_Py(const Flavour & flav,
-					       int type,double xmin,double xmax,int nbins,
-					       const std::string & listname) :
-  One_Particle_Observable_Base(flav,type,xmin,xmax,nbins,listname,"Py") { }
-
-
-void One_Particle_Py::Evaluate(const Vec4D & mom,double weight, int ncount) 
-{
-  double py = mom[2];
-  p_histo->Insert(py,weight,ncount); 
-} 
-
-Primitive_Observable_Base * One_Particle_Py::Copy() const
-{
-  return new One_Particle_Py(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
-}
-
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-DEFINE_OBSERVABLE_GETTER(One_Particle_Pz,One_Particle_Pz_Getter,"Pz")
-
-One_Particle_Pz::One_Particle_Pz(const Flavour & flav,
-					       int type,double xmin,double xmax,int nbins,
-					       const std::string & listname) :
-  One_Particle_Observable_Base(flav,type,xmin,xmax,nbins,listname,"Pz") { }
-
-
-void One_Particle_Pz::Evaluate(const Vec4D & mom,double weight, int ncount) 
-{
-  double pz = mom[3];
-  p_histo->Insert(pz,weight,ncount); 
-} 
-
-Primitive_Observable_Base * One_Particle_Pz::Copy() const
-{
-  return new One_Particle_Pz(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
-}
-

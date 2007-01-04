@@ -3,10 +3,10 @@
 using namespace ANALYSIS;
 
 DECLARE_GETTER(Statistics_Observable_Getter,"Statistics",
-	       Primitive_Observable_Base,String_Matrix);
+	       Primitive_Observable_Base,Argument_Matrix);
 
 Primitive_Observable_Base * 
-Statistics_Observable_Getter::operator()(const String_Matrix &parameters) const
+Statistics_Observable_Getter::operator()(const Argument_Matrix &parameters) const
 {
   std::string listname="Analysed";
   if (parameters.size()>0 && parameters[0].size()>0) listname=parameters[0][0];
@@ -53,12 +53,13 @@ void Statistics_Observable::Evaluate(const Blob_List &  blobs,double value, int 
     cit=m_signal_process_statistics.find(key);
   }
 
-  double xsecweight=(*p_ana)["XS_Weight"]->Get<double>()*rpa.Picobarn();
-  double sudweight=(*p_ana)["Sud_Weight"]->Get<double>();
-  int xsecntrials=(*p_ana)["XS_NumberOfTrials"]->Get<int>();
+  Blob_Data_Base *data((*p_ana)["XS_Weight"]);
+  double xsecweight(data?data->Get<double>():1.0);
+  data=(*p_ana)["Sud_Weight"];
+  double sudweight(data?data->Get<double>():1.0);
   m_nevt+=ncount;
   cit->second.nevt+=ncount;
-  cit->second.xsnevt+=xsecntrials;
+  cit->second.xsnevt+=1;
   cit->second.nblobssum+=blcount;
   cit->second.nplsum+=pl->size();
   cit->second.weightsum+=value;

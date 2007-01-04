@@ -25,6 +25,17 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
 ])
 
 
+AC_DEFUN([AS_AC_EXPAND],
+[
+  full_var="[$2]"
+  numbers="1 2 3 4"
+  for i in $numbers; do
+    full_var="`eval echo $full_var`";
+  done
+  AC_SUBST([$1], "$full_var")
+])
+
+
 dnl setup all variables for substitution in Makefile.am's and some additional DEFINEs
 dnl
 dnl Additionally some variables are defined automatically:
@@ -54,6 +65,14 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(AMISICDIR)
   AC_SUBST(AMISICINCS)
   AC_SUBST(AMISICLIBS)
+
+  AHADICDIR="\${top_builddir}/AHADIC++-1.0"
+  AHADICINCS="-I\${AHADICDIR}/Main -I\${AHADICDIR}/Tools -I\${AHADICDIR}/Formation \
+	      -I\${AHADICDIR}/Decays"
+  AHADICLIBS="-lAhadicMain -lAhadicTools -lAhadicFormation -lAhadicDecays"
+  AC_SUBST(AHADICDIR)
+  AC_SUBST(AHADICINCS)
+  AC_SUBST(AHADICLIBS)
   
   ANALYSISDIR="\${top_builddir}/ANALYSIS-1.0"
   ANALYSISINCS="-I\${ANALYSISDIR}/Main -I\${ANALYSISDIR}/Observables"
@@ -84,16 +103,15 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(BEAMLIBS)
   
   EXTRAXSDIR="\${top_builddir}/EXTRA_XS-1.0"
-  EXTRAXSINCS="-I\${EXTRAXSDIR}/Two2Two -I\${EXTRAXSDIR}/Main -I\${EXTRAXSDIR}/BFKL"
-  EXTRAXSLIBS="-lExtraXS -lExtraXS2_2 -lExtraXSBFKL"
+  EXTRAXSINCS="-I\${EXTRAXSDIR}/Two2Two -I\${EXTRAXSDIR}/Main"
+  EXTRAXSLIBS="-lExtraXS -lExtraXS2_2"
   AC_SUBST(EXTRAXSDIR)
   AC_SUBST(EXTRAXSINCS)
   AC_SUBST(EXTRAXSLIBS)
   
   HADRONSDIR="\${top_builddir}/HADRONS++-0.0"
-  HADRONSINCS="-I\${HADRONSDIR}/Main -I\${HADRONSDIR}/ME_Library -I\${HADRONSDIR}/PS_Library \
-               -I\${HADRONSDIR}/Current_Library"
-  HADRONSLIBS="-lHadronsMain -lHadronsMEs -lHadronsPSs -lHadronsCurrents"
+  HADRONSINCS="-I\${HADRONSDIR}/Main -I\${HADRONSDIR}/ME_Library -I\${HADRONSDIR}/PS_Library"
+  HADRONSLIBS="-lHadronsMain -lHadronsMEs -lHadronsPSs"
   AC_SUBST(HADRONSDIR)
   AC_SUBST(HADRONSINCS)
   AC_SUBST(HADRONSLIBS)
@@ -147,47 +165,26 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(SHERPALIBS)
   AC_SUBST(SHERPAFLAGS)
 
-  ADICICDIR="\${top_builddir}/ADICIC++-0.0"
-  ADICICINCS="-I\${ADICICDIR}/Tool -I\${ADICICDIR}/Input -I\${ADICICDIR}/Main \
-              -I\${ADICICDIR}/Structure -I\${ADICICDIR}/Handler"
-  ADICICLIBS="-lAdicicTool -lAdicicInput -lAdicicStruct -lAdicicHdl -lAdicicMain"
-  AC_SUBST(ADICICDIR)
-  AC_SUBST(ADICICINCS)
-  AC_SUBST(ADICICLIBS)
-
-  AHADICDIR="\${top_builddir}/AHADIC++-0.0"
-  AHADICINCS="-I\${AHADICDIR}/Tools -I\${AHADICDIR}/Formation \
-              -I\${AHADICDIR}/Decays -I\${AHADICDIR}/Main"
-  AHADICLIBS="-lAhadicMain -lAhadicFormation -lAhadicDecays -lAhadicTools"
-  AC_SUBST(AHADICDIR)
-  AC_SUBST(AHADICINCS)
-  AC_SUBST(AHADICLIBS)
-
-  CSSDIR="\${top_builddir}/CS_SHOWER++-0.0"
-  CSSINCS="-I\${CSSDIR}/Tools -I\${CSSDIR}/Showers -I\${CSSDIR}/Main"
-  CSSLIBS="-lCSSTools -lCSShowers -lCSMain"
-  AC_SUBST(CSSDIR)
-  AC_SUBST(CSSINCS)
-  AC_SUBST(CSSLIBS)
-
-  MCATNLOINCS="-I\${SHERPADIR}/HerwigTools"
-  MCATNLOLIBS="-lHerwigTools"
-  AC_SUBST(MCATNLOINCS)
-  AC_SUBST(MCATNLOLIBS)
-
   if test "x$prefix" = "xNONE"; then
     prefix=$ac_default_prefix
   fi
   if test "x$exec_prefix" = "xNONE"; then
     exec_prefix=$ac_default_prefix
   fi
+
+  AS_AC_EXPAND(LIBDIR, ${libdir})
+  AS_AC_EXPAND(INCLUDEDIR, ${includedir})
+  AS_AC_EXPAND(BINDIR, ${bindir})
+  AS_AC_EXPAND(DATADIR, ${datadir})
+
   AC_DEFINE_UNQUOTED([SHERPA_VERSION], ["`echo AC_PACKAGE_VERSION | cut -d. -f1`"], [Sherpa version])
   AC_DEFINE_UNQUOTED([SHERPA_SUBVERSION], ["`echo AC_PACKAGE_VERSION | cut -d. -f2,3`"], [Sherpa subversion])
   AC_DEFINE_UNQUOTED([SHERPA_BUILD_PATH], "$PWD", [Sherpa build path])
-  AC_DEFINE_UNQUOTED([SHERPA_INCLUDE_PATH], ["`eval echo $includedir`/SHERPA-MC"], [Sherpa include directory])
-  AC_DEFINE_UNQUOTED([SHERPA_BINARY_PATH], ["`eval echo $bindir`/SHERPA-MC"], [Sherpa binary directory])
-  AC_DEFINE_UNQUOTED([SHERPA_PDFS_PATH], ["`eval echo $datadir`/SHERPA-MC"], [Sherpa data directory])
-  AC_DEFINE_UNQUOTED([SHERPA_SHARE_PATH], ["`eval echo $datadir`/SHERPA-MC"], [Sherpa data directory])
+  AC_DEFINE_UNQUOTED([SHERPA_INCLUDE_PATH], "$INCLUDEDIR/SHERPA-MC", [Sherpa include directory])
+  AC_DEFINE_UNQUOTED([SHERPA_BINARY_PATH], "$BINDIR/SHERPA-MC", [Sherpa binary directory])
+  AC_DEFINE_UNQUOTED([SHERPA_LIBRARY_PATH], "$LIBDIR/SHERPA-MC", [Sherpa library directory])
+  AC_DEFINE_UNQUOTED([SHERPA_PDFS_PATH], "$DATADIR/SHERPA-MC", [Sherpa data directory])
+  AC_DEFINE_UNQUOTED([SHERPA_SHARE_PATH], "$DATADIR/SHERPA-MC", [Sherpa data directory])
   AC_DEFINE([USING__COLOUR], "1", [Using colour])
 ])
 
@@ -235,24 +232,20 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
       case "${enableval}" in
         no)  AC_MSG_RESULT(CLHEP not enabled); clhep=false ;;
         yes) if test -d "$CLHEPDIR"; then
-                CONDITIONAL_CLHEPDIR=$CLHEPDIR
-                if test -x "$CLHEPDIR/bin/clhep-config" && test -d "`$CLHEPDIR/bin/clhep-config --prefix`"; then
-                  CONDITIONAL_CLHEPLIBS=`$CLHEPDIR/bin/clhep-config --libs`
-                  CONDITIONAL_CLHEPINCS=`$CLHEPDIR/bin/clhep-config --include`
-                else
-                  CONDITIONAL_CLHEPINCS=-I$CLHEPDIR/include
-                  possible_libs="libCLHEP-g++.*.so libCLHEP-g++.*.a libCLHEP.so libCLHEP.a libCLHEP-1*.so libCLHEP-1*.a libCLHEP-2*.so libCLHEP-2*.a"
-                  for J in $possible_libs; do
-                    result=`find $CLHEPDIR/lib -name "$J" | head -n 1`;
-                    if test "$result" != ""; then
-                      break;
-                    fi
-                  done;
+                CONDITIONAL_CLHEPDIR="$CLHEPDIR"
+                CONDITIONAL_CLHEPINCS="-I$CLHEPDIR/include"
+                possible_libs="libCLHEP-g++.*.a libCLHEP-g++.*.so libCLHEP.so libCLHEP-1*.so libCLHEP-2*.so"
+                for J in $possible_libs; do
+                  result=`find $CLHEPDIR/lib -name "$J" | head -n 1`;
                   if test "$result" != ""; then
-                    CONDITIONAL_CLHEPLIBS=$result;
-                  else
-                    AC_MSG_ERROR(Did not find any library of the following type in $CLHEPDIR/lib: $possible_libs and clhep-config was not available in \$PATH.);
+                    result=`basename $result | sed -e 's/lib//' | sed -e 's/\.so//' | sed -e 's/\.a//'`
+                    break;
                   fi
+                done;
+                if test "$result" != ""; then
+                  CONDITIONAL_CLHEPLIBS="-L$CLHEPDIR/lib -R$CLHEPDIR/lib -l$result";
+                else
+                  AC_MSG_ERROR(Did not find any library of the following type in $CLHEPDIR/lib: $possible_libs and clhep-config was not available in \$PATH.);
                 fi
               elif test -x "`which clhep-config`"; then
                 CONDITIONAL_CLHEPDIR=`clhep-config --prefix`;
@@ -261,7 +254,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
                 if ! test -d "$CONDITIONAL_CLHEPDIR"; then
                   AC_MSG_ERROR(clhep-config --prefix returned a path that is not available. Please check your CLHEP installation and set \$CLHEPDIR manually.);
                 fi
-              else 
+              else
                 AC_MSG_ERROR(\$CLHEPDIR is not a valid path and clhep-config was not found.);
               fi;
               AC_MSG_RESULT([${CONDITIONAL_CLHEPDIR}]); clhep=true;;
@@ -418,24 +411,6 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(CONDITIONAL_HDECAYINCS)
   AM_CONDITIONAL(HDECAY_SUPPORT, test "$hdecayinclude" = "true" )
   
-  AC_ARG_ENABLE(adicicinclude,
-    AC_HELP_STRING([--disable-adicicinclude], [Disable inclusion of ADICIC headers]),
-    [ AC_MSG_CHECKING(whether to include ADICIC headers);
-      case "${enableval}" in
-        yes) AC_MSG_RESULT(yes); adicicinclude=true;;
-        no)  AC_MSG_RESULT(no); adicicinclude=false;;
-      esac ],
-    [ AC_MSG_CHECKING(whether to include ADICIC stuff); AC_MSG_RESULT(yes); adicicinclude=true; ]
-  )
-  if test "$adicicinclude" = "true" ; then
-    AC_DEFINE([USING__Adicic], "1", [using ADICIC])
-    CONDITIONAL_ADICICLIBS="\${ADICICLIBS}"
-    CONDITIONAL_ADICICINCS="\${ADICICINCS}"
-  fi
-  AC_SUBST(CONDITIONAL_ADICICLIBS)
-  AC_SUBST(CONDITIONAL_ADICICINCS)
-  AM_CONDITIONAL(ADICIC_SUPPORT, test "$adicicinclude" = "true" )
-  
   AC_ARG_ENABLE(amisicinclude,
     AC_HELP_STRING([--disable-amisicinclude], [Disable inclusion of AMISIC headers]),
     [ AC_MSG_CHECKING(whether to include AMISIC headers);
@@ -453,24 +428,6 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(CONDITIONAL_AMISICLIBS)
   AC_SUBST(CONDITIONAL_AMISICINCS)
   AM_CONDITIONAL(AMISIC_SUPPORT, test "$amisicinclude" = "true" )
-  
-  AC_ARG_ENABLE(cs_showerinclude,
-    AC_HELP_STRING([--disable-cs_showerinclude], [Disable inclusion of CS_SHOWER headers]),
-    [ AC_MSG_CHECKING(whether to include CS_SHOWER headers);
-      case "${enableval}" in
-        yes) AC_MSG_RESULT(yes); cs_showerinclude=true;;
-        no)  AC_MSG_RESULT(no); cs_showerinclude=false;;
-      esac ],
-    [ AC_MSG_CHECKING(whether to include CS_SHOWER stuff); AC_MSG_RESULT(yes); cs_showerinclude=true; ]
-  )
-  if test "$cs_showerinclude" = "true" ; then
-    AC_DEFINE([USING__CSS], "1", [using CS_SHOWER])
-    CONDITIONAL_CSSLIBS="\${CSSLIBS}"
-    CONDITIONAL_CSSINCS="\${CSSINCS}"
-  fi
-  AC_SUBST(CONDITIONAL_CSSLIBS)
-  AC_SUBST(CONDITIONAL_CSSINCS)
-  AM_CONDITIONAL(CSS_SUPPORT, test "$cs_showerinclude" = "true" )
   
   AC_ARG_ENABLE(ahadicinclude,
     AC_HELP_STRING([--disable-ahadicinclude], [Disable inclusion of AHADIC headers]),

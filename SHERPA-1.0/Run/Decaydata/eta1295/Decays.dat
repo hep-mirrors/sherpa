@@ -1,7 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-{9000111,111}	 | 0.334 [FK]	 | eta1295_a0980pi.dat;
-{9000211,-211}	 | 0.333 [FK]	 | eta1295_a0980+pi-.dat;
-{-9000211,211}	 | 0.333 [FK]	 | eta1295_a0980+bpi+.dat;
-
-! NO_FULLDECAY   ! use this option: no decay of daughters
-! NO_ANTI        ! use this option: anti-mother does not decay

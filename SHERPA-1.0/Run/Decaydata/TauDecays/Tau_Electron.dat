@@ -1,0 +1,16 @@
+# Decay: tau- --> nu_tau nu_eb e- 
+#        0    --> 1      2     3  
+Channels {
+  	AlwaysIntegrate = 0;	! 0...read results and skip integration
+	  						! 1...don't read results and integrate
+    Isotropic 1;
+}
+Parameters {
+  v      =  1.		 	! V-A structure of tau-nutau
+  a      =  1.	
+  v2     =  1.			! V-A structure of elec-nuelec
+  a2     =  1.
+}
+Result {
+   3.83605e-13 8.6002e-16 2.1904e-12;
+}

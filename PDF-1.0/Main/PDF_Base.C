@@ -3,14 +3,17 @@
 #include "Message.H"
 #include "Info_Key.H"
 #include "Run_Parameter.H"
+#include "Exception.H"
 
 using namespace PDF;
+using namespace ATOOLS;
 
 
 
 PDF_Base::Box PDF_Base::s_box=PDF_Base::Box();
 
 PDF_Base::Box::~Box() {
+  if (exh->LastSignal()!=0 || exh->LastException()!=NULL) return;
   for(unsigned i=0; i<v_pdfp.size(); ++i) if(v_pdfp[i]) delete v_pdfp[i];
 }
 
@@ -27,12 +30,6 @@ PDF_Base::PDF_Base()
 
   s_box.v_pdfp.push_back(this);
   m_ren_scale_factor = ATOOLS::rpa.gen.RenormalizationScaleFactor();
-  if(m_ren_scale_factor<=0.0) {
-    m_ren_scale_factor=1.0;
-    ATOOLS::msg.Error()<<"{ "<<__PRETTY_FUNCTION__<<": Confused about the "
-		       <<"!Renormalization! scale factor setting: "
-		       <<"Set it to 1.0 and go on.}\n";
-  }
   msg_Tracking()<<s_box.v_pdfp.size()<<"|"<<s_box.TrueEntryNumber()
 		<<"    PDF_Base CONSTRUCT "<<m_copies.size()<<" "<<this
 		<<std::endl;

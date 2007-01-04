@@ -9,11 +9,13 @@
 #include "Hard_Decays.H"
 #include "Multiple_Interactions.H"
 #include "Jet_Evolution.H"
+#include "Beam_Remnants.H"
 #include "Hadronization.H"
 #include "Hadron_Decays.H"
 #include "MC_Interface.H"
 #include "Message.H"
-#include "Scaling.H"
+#include "MyStrStream.H"
+#include "Data_Reader.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Sherpa
@@ -65,6 +67,40 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
 { 
   PROFILE_HERE;
   m_path = std::string("./");
+  int oldc(argc);
+  char **oldargs(NULL);
+  std::string statuspath;
+  for (int i(1);i<argc;++i) {
+    std::string cur(argv[i]);
+    size_t pos(cur.find("STATUS_PATH"));
+    if (pos==0 && cur.length()>11 && cur[11]=='=') {
+      statuspath=cur.substr(12);
+      if (statuspath=="") continue;
+      if (statuspath[statuspath.length()-1]!='/') statuspath+=std::string("/");
+      Data_Reader reader;
+      reader.SetInputFile(statuspath+"cmd");
+      String_Matrix args;
+      reader.MatrixFromFile(args);
+      oldc=argc;
+      oldargs=argv;
+      argc+=args.size();
+      argv = new char*[argc];
+      argv[0] = new char[strlen(oldargs[0])+1];
+      strcpy(argv[0],oldargs[0]);
+      for (int j(0);j<(int)args.size();++j) {
+	std::string cur(args[j].front());
+	for (size_t k(1);k<args[j].size();++k) cur+=args[j][k];
+	argv[j+1] = new char[cur.length()+1];
+	strcpy(argv[j+1],cur.c_str());
+      }
+      for (int j(1);j<oldc;++j) {
+	argv[args.size()+j] = new char[strlen(oldargs[j])+1];
+	strcpy(argv[args.size()+j],oldargs[j]);
+      }
+      break;
+    }
+  }
+
   p_inithandler  = new Initialization_Handler(argc, argv);
   DrawLogo();
 
@@ -74,7 +110,16 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
   }
   else {
     if (p_inithandler->InitializeTheFramework()) {
-      return p_inithandler->CalculateTheHardProcesses();
+      if (!p_inithandler->CalculateTheHardProcesses()) return false;
+      if (statuspath!="") {
+	bool res(exh->ReadInStatus(statuspath));
+	if (oldargs) {
+	  for (int i(0);i<argc;++i) delete [] argv[i];
+	  delete [] argv;
+	}
+	return res;
+      }
+      return true;
     }
   }
   msg.Error()<<"Error in Sherpa::InitializeRun("<<m_path<<")"<<endl
@@ -96,26 +141,18 @@ bool Sherpa::InitializeTheEventHandler()
   case 9000:
     p_eventhandler->AddEventPhase(new MC_Interface(p_inithandler->GetPythiaInterface())); 
     break;
-#ifdef USING__MCatNLO
-  case 9001:
-    p_eventhandler->AddEventPhase(new MC_Interface(p_inithandler->GetHerwigInterface())); 
-    break;
-  case 9002:
-    p_eventhandler->AddEventPhase(new MC_Interface(p_inithandler->GetMCatNLOInterface())); 
-    break;
-#endif
   case 9999: 
     p_eventhandler->AddEventPhase(new EvtReadin_Phase(p_inithandler->GetEventReader())); 
     break;
   default:
     p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler(sme),
-													   p_inithandler->GetHardDecayHandler()));
+						       p_inithandler->GetHardDecayHandler()));
     p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
     p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandlers(),
-													p_inithandler->GetShowerHandler()));
+						    p_inithandler->GetShowerHandler()));
     p_eventhandler->AddEventPhase(new Multiple_Interactions(p_inithandler->GetMIHandler()));
-    p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetBeamRemnantHandler(),
-													p_inithandler->GetFragmentationHandler()));
+    p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
+    p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetFragmentationHandler()));
     p_eventhandler->AddEventPhase(new Hadron_Decays(p_inithandler->GetHadronDecayHandlers()));
     break;
   }
@@ -186,9 +223,10 @@ void Sherpa::DrawLogo()
 	    <<"     SHERPA version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION
 	    <<"                                              "<<std::endl
 	    <<"                                                                             "<<std::endl
-	    <<"     Authors: Timo Fischer, Tanju Gleisberg, Stefan Hoeche,                  "<<std::endl
-	    <<"              Frank Krauss, Thomas Laubrich, Andreas Schaelicke,             "<<std::endl
-	    <<"              Steffen Schumann, Jan Winter                                   "<<std::endl
+	    <<"     Authors:        Tanju Gleisberg, Stefan Hoeche, Frank Krauss,           "<<std::endl
+	    <<"                     Steffen Schumann, Frank Siegert, Jan Winter             "<<std::endl
+	    <<"     Former Authors: Timo Fischer, Ralf Kuhn, Thomas Laubrich,               "<<std::endl
+	    <<"                     Andreas Schaelicke                                      "<<std::endl
 	    <<"                                                                             "<<std::endl
 	    <<"     This program uses a lot of genuine and original research work           "<<std::endl
 	    <<"     by other people. Users are encouraged to refer to                       "<<std::endl

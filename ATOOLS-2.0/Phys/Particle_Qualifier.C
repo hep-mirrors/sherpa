@@ -36,6 +36,14 @@ namespace ATOOLS {
       Particle_Qualifier_Base * qual2 = ATOOLS::Particle_Qualifier_Getter::GetObject(name2,name2);
       if (qual1 && qual2) return new And_Particle_Qualifier(qual1,qual2);
     }
+    pos=name.find('(');
+    if (pos!=std::string::npos) {
+      size_t epos(name.rfind(')'));
+      if (epos>pos) {
+	return ATOOLS::Particle_Qualifier_Getter::
+	  GetObject(name.substr(0,pos),name.substr(pos+1,epos-pos-1));
+      }
+    }
     String_Getter_Map::iterator git=s_getters->find(name);
     if (git!=s_getters->end()) {
       msg.Tracking()<<"found."<<std::endl;
@@ -99,16 +107,6 @@ DEFINE_QUALIFIER_CLASS(Is_BQuark_Decay_Product);
 DEFINE_QUALIFIER_GETTER(Is_BQuark_Decay_Product,Is_BQuark_Decay_Product_Getter,
 			"DecayedBQuark","decayed b quark")
 
-DEFINE_QUALIFIER_CLASS(Is_Zboson);
-DEFINE_QUALIFIER_GETTER(Is_Zboson,Is_Zboson_Getter,
-			"kf24","zboson")
-DEFINE_QUALIFIER_CLASS(Is_Wboson);
-DEFINE_QUALIFIER_GETTER(Is_Wboson,Is_Wboson_Getter,
-			"kf23","wboson")
-DEFINE_QUALIFIER_GETTER(Is_Photon,Is_Photon_Getter,
-			"kf22","photon")
-DEFINE_QUALIFIER_GETTER(Is_Gluon,Is_Gluon_Getter,
-			"kf21","gluon")
 DEFINE_QUALIFIER_GETTER(Is_ME_Particle,Is_ME_Particle_Getter,
 			"ME","ME particle")
 
@@ -132,20 +130,6 @@ DEFINE_QUALIFIER_GETTER(Is_Neutral,Is_Neutral_Getter,
 			"5","neutral")
 DEFINE_QUALIFIER_GETTER(Is_Neutral,Is_Neutral_Getter_,
 			"Neutral","neutral")
-DEFINE_QUALIFIER_GETTER(Is_Parton,Is_Parton_Getter,
-			"21","parton")
-DEFINE_QUALIFIER_GETTER(Is_Parton,Is_Parton_Getter_,
-			"Parton","parton")
-DEFINE_QUALIFIER_GETTER(Is_There,Is_There_Getter,
-			"22","there")
-DEFINE_QUALIFIER_GETTER(Is_There,Is_There_Getter_,
-			"There","there")
-DEFINE_QUALIFIER_GETTER(Is_Not_Lepton,Is_Not_Lepton_Getter_,
-			"NotLepton","not lepton")
-DEFINE_QUALIFIER_GETTER(Is_Strong,Is_Strong_Getter,
-			"Strong","strong")
-
-// pseudoscalars
 DEFINE_QUALIFIER_GETTER(Is_Charged_Pion,Is_Charged_Pion_Getter,
 			"11","charged pion")
 DEFINE_QUALIFIER_GETTER(Is_Charged_Pion,Is_Charged_Pion_Getter_,
@@ -154,6 +138,18 @@ DEFINE_QUALIFIER_GETTER(Is_Charged_Kaon,Is_Charged_Kaon_Getter,
 			"12","charged kaon")
 DEFINE_QUALIFIER_GETTER(Is_Charged_Kaon,Is_Charged_Kaon_Getter_,
 			"ChargedKaon","charged kaon")
+DEFINE_QUALIFIER_GETTER(Is_Proton_Antiproton,Is_Proton_Antiproton_Getter,
+			"13","proton antiproton")
+DEFINE_QUALIFIER_GETTER(Is_Proton_Antiproton,Is_Proton_Antiproton_Getter_,
+			"ProtonAntiproton","proton antiproton")
+DEFINE_QUALIFIER_GETTER(Is_Parton,Is_Parton_Getter,
+			"21","parton")
+DEFINE_QUALIFIER_GETTER(Is_Parton,Is_Parton_Getter_,
+			"Parton","parton")
+DEFINE_QUALIFIER_GETTER(Is_There,Is_There_Getter,
+			"22","there")
+DEFINE_QUALIFIER_GETTER(Is_There,Is_There_Getter_,
+			"There","there")
 DEFINE_QUALIFIER_GETTER(Is_Neutral_Pion,Is_Neutral_Pion_Getter,
 			"101","neutral pion")
 DEFINE_QUALIFIER_GETTER(Is_Neutral_Pion,Is_Neutral_Pion_Getter_,
@@ -162,22 +158,6 @@ DEFINE_QUALIFIER_GETTER(Is_Neutral_Kaon,Is_Neutral_Kaon_Getter,
 			"102","neutral kaon")
 DEFINE_QUALIFIER_GETTER(Is_Neutral_Kaon,Is_Neutral_Kaon_Getter_,
 			"NeutralKaon","neutral kaon")
-DEFINE_QUALIFIER_GETTER(Is_Eta,Is_Eta_Getter,
-			"105","eta")
-DEFINE_QUALIFIER_GETTER(Is_Eta,Is_Eta_Getter_,
-			"Eta","eta")
-DEFINE_QUALIFIER_GETTER(Is_EtaPrime,Is_EtaPrime_Getter,
-			"108","eta prime")
-DEFINE_QUALIFIER_GETTER(Is_EtaPrime,Is_EtaPrime_Getter_,
-			"EtaPrime","eta prime")
-
-// vectors
-DEFINE_QUALIFIER_GETTER(Is_Rho,Is_Rho_Getter_,
-			"Rho","rho")
-DEFINE_QUALIFIER_GETTER(Is_Rho0,Is_Rho0_Getter,
-			"106","rho0")
-DEFINE_QUALIFIER_GETTER(Is_Rho0,Is_Rho0_Getter_,
-			"Rho0","rho0")
 DEFINE_QUALIFIER_GETTER(Is_Charged_KStar,Is_Charged_KStar_Getter,
 			"103","charged kstar")
 DEFINE_QUALIFIER_GETTER(Is_Charged_KStar,Is_Charged_KStar_Getter_,
@@ -186,31 +166,34 @@ DEFINE_QUALIFIER_GETTER(Is_Neutral_KStar,Is_Neutral_KStar_Getter,
 			"104","charged kstar")
 DEFINE_QUALIFIER_GETTER(Is_Neutral_KStar,Is_Neutral_KStar_Getter_,
 			"NeutralKStar","charged kstar")
+DEFINE_QUALIFIER_GETTER(Is_Eta,Is_Eta_Getter,
+			"105","eta")
+DEFINE_QUALIFIER_GETTER(Is_Eta,Is_Eta_Getter_,
+			"Eta","eta")
+DEFINE_QUALIFIER_GETTER(Is_Rho0,Is_Rho0_Getter,
+			"106","rho0")
+DEFINE_QUALIFIER_GETTER(Is_Rho0,Is_Rho0_Getter_,
+			"Rho0","rho0")
 DEFINE_QUALIFIER_GETTER(Is_Omega,Is_Omega_Getter,
 			"107","omega")
 DEFINE_QUALIFIER_GETTER(Is_Omega,Is_Omega_Getter_,
 			"Omega","omega")
+DEFINE_QUALIFIER_GETTER(Is_EtaPrime,Is_EtaPrime_Getter,
+			"108","eta prime")
+DEFINE_QUALIFIER_GETTER(Is_EtaPrime,Is_EtaPrime_Getter_,
+			"EtaPrime","eta prime")
 DEFINE_QUALIFIER_GETTER(Is_Phi,Is_Phi_Getter,
 			"109","phi")
 DEFINE_QUALIFIER_GETTER(Is_Phi,Is_Phi_Getter_,
 			"Phi","phi")
-// octet baryons
-DEFINE_QUALIFIER_GETTER(Is_Proton_Antiproton,Is_Proton_Antiproton_Getter,
-			"13","proton antiproton")
-DEFINE_QUALIFIER_GETTER(Is_Proton_Antiproton,Is_Proton_Antiproton_Getter_,
-			"ProtonAntiproton","proton antiproton")
-DEFINE_QUALIFIER_GETTER(Is_Sigma_Minus,Is_Sigma_Minus_Getter_,
-			"SigmaMinus","sigma minus")
-DEFINE_QUALIFIER_GETTER(Is_Sigma_Plus,Is_Sigma_Plus_Getter_,
-			"SigmaPlus","sigma plus")
-DEFINE_QUALIFIER_GETTER(Is_Sigma_0,Is_Sigma_0_Getter_,
-			"Sigma","neutral sigma")
 DEFINE_QUALIFIER_GETTER(Is_Lambda,Is_Lambda_Getter,
 			"110","lambda")
 DEFINE_QUALIFIER_GETTER(Is_Lambda,Is_Lambda_Getter_,
 			"Lambda","lambda")
-DEFINE_QUALIFIER_GETTER(Is_Xi_Minus,Is_Xi_Minus_Getter_,
-			"XiMinus","xi minus")
+DEFINE_QUALIFIER_GETTER(Is_Charged_Sigma,Is_Charged_Sigma_Getter,
+			"111","charged sigma")
+DEFINE_QUALIFIER_GETTER(Is_Charged_Sigma,Is_Charged_Sigma_Getter_,
+			"ChargedSigma","charged sigma")
 DEFINE_QUALIFIER_GETTER(Is_Charged_Xi,Is_Charged_Xi_Getter,
 			"112","charged xi")
 DEFINE_QUALIFIER_GETTER(Is_Charged_Xi,Is_Charged_Xi_Getter_,
@@ -219,24 +202,8 @@ DEFINE_QUALIFIER_GETTER(Is_Neutral_Xi,Is_Neutral_Xi_Getter,
 			"113","neutral xi")
 DEFINE_QUALIFIER_GETTER(Is_Neutral_Xi,Is_Neutral_Xi_Getter_,
 			"NeutralXi","neutral xi")
-
-// decuplet baryons
-DEFINE_QUALIFIER_GETTER(Is_Delta_Plus,Is_Delta_PlusPlus_Getter_,
-			"DeltaPlusPlus","delta plus plus")
-DEFINE_QUALIFIER_GETTER(Is_Delta_Plus,Is_Delta_Plus_Getter_,
-			"DeltaPlus","delta plus")
-DEFINE_QUALIFIER_GETTER(Is_Delta_Minus,Is_Delta_Minus_Getter_,
-			"DeltaMinus","delta minus")
-DEFINE_QUALIFIER_GETTER(Is_Sigma_1385_Minus,Is_Sigma_1385_Minus_Getter_,
-			"Sigma1385Minus","sigma (1385) minus")
-DEFINE_QUALIFIER_GETTER(Is_Sigma_1385_Plus,Is_Sigma_1385_Plus_Getter_,
-			"Sigma1385Plus","sigma (1385) plus")
-DEFINE_QUALIFIER_GETTER(Is_Sigma_1385_0,Is_Sigma_1385_0_Getter_,
-			"Sigma1385","neutral sigma (1385)")
-DEFINE_QUALIFIER_GETTER(Is_Omega_Minus,Is_Omega_Minus_Getter_,
-			"OmegaMinus","omega minus")
-
-
+DEFINE_QUALIFIER_GETTER(Is_Not_Lepton,Is_Not_Lepton_Getter_,
+			"NotLepton","not lepton")
 
 bool Or_Particle_Qualifier::operator() (const Particle * p) const {
   return ((*p_qual_a)(p) || (*p_qual_b)(p));
@@ -270,23 +237,18 @@ bool Is_BQuark_Decay_Product::operator() (const Particle * p) const {
   return operator()(b->InParticle(0));
 }
 
-bool Is_Photon::operator() (const Particle * p) const {
-  if ( p && p->Flav().IsPhoton() ) return 1;
-  return 0;
-}
+DECLARE_GETTER(Is_KF_Getter,"KF",Particle_Qualifier_Base,std::string);
+Particle_Qualifier_Base *					
+Is_KF_Getter::operator()(const std::string &parameter) const  
+{ return new Is_KF(parameter); }
+void Is_KF_Getter::PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"kf code, usage: KF(<code>)"; }
 
-bool Is_Zboson::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::Z ) return 1;
-  return 0;
-}
+Is_KF::Is_KF(const std::string &kfcode):
+  m_kfcode((kf::code)ToType<int>(kfcode)) {}
 
-bool Is_Wboson::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::W ) return 1;
-  return 0;
-}
-
-bool Is_Gluon::operator() (const Particle * p)const {
-  if ( p && p->Flav().IsGluon() ) return 1;
+bool Is_KF::operator() (const Particle * p) const {
+  if ( p && p->Flav().Kfcode()==m_kfcode ) return 1;
   return 0;
 }
 
@@ -327,29 +289,6 @@ bool Is_Neutral::operator() (const Particle * p)const{
   return 0;
 }
 
-bool Is_Not_Lepton::operator() (const Particle * p) const {
-  if ( p && !p->Flav().IsLepton() ) return 1;
-  return 0;
-}
-
-bool Is_Not_Neutrino::operator() (const Particle * p) const {
-  if ( p && !(p->Flav().IsLepton() && p->Flav().IntCharge()==0) ) return 1;
-  return 0;
-}
-
-bool Is_There::operator() (const Particle * p) const {
-  if ( p ) return 1;
-  return 0;
-}
-
-
-bool Is_Strong::operator() (const Particle * p) const {
-  if ( p && p->Flav().Strong() ) return 1;
-  return 0;
-}
-
-// pseudoscalars
-
 bool Is_Charged_Pion::operator() (const Particle * p) const {
   if ( p && p->Flav().Kfcode()==kf::pi_plus) return 1;
   return 0;
@@ -369,28 +308,6 @@ bool Is_Neutral_Kaon::operator() (const Particle * p) const {
   return 0;
 }
 
-bool Is_Eta::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::eta) return 1;
-  return 0;
-}
-
-bool Is_EtaPrime::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::eta_prime_958) return 1;
-  return 0;
-}
-
-// vectors
-
-bool Is_Rho0::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::rho_770) return 1;
-  return 0;
-}
-
-bool Is_Rho::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::rho_770_plus) return 1;
-  return 0;
-}
-
 bool Is_Charged_KStar::operator() (const Particle * p) const {
   if ( p && p->Flav().Kfcode()==kf::K_star_892_plus) return 1;
   return 0;
@@ -401,8 +318,18 @@ bool Is_Neutral_KStar::operator() (const Particle * p) const {
   return 0;
 }
 
-bool Is_Omega::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::omega_782) return 1;
+bool Is_Rho0::operator() (const Particle * p) const {
+  if ( p && p->Flav().Kfcode()==kf::rho_770) return 1;
+  return 0;
+}
+
+bool Is_Eta::operator() (const Particle * p) const {
+  if ( p && p->Flav().Kfcode()==kf::eta) return 1;
+  return 0;
+}
+
+bool Is_EtaPrime::operator() (const Particle * p) const {
+  if ( p && p->Flav().Kfcode()==kf::eta_prime_958) return 1;
   return 0;
 }
 
@@ -411,10 +338,8 @@ bool Is_Phi::operator() (const Particle * p) const {
   return 0;
 }
 
-// octet baryons
-
-bool Is_Proton_Antiproton::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==2212) return 1;
+bool Is_Omega::operator() (const Particle * p) const {
+  if ( p && p->Flav().Kfcode()==kf::omega_782) return 1;
   return 0;
 }
 
@@ -423,27 +348,12 @@ bool Is_Lambda::operator() (const Particle * p) const {
   return 0;
 }
 
-bool Is_Sigma_Minus::operator() (const Particle * p) const {
+bool Is_Charged_Sigma::operator() (const Particle * p) const {
   if ( p && p->Flav().Kfcode()==kf::Sigma_minus) return 1;
   return 0;
 }
 
-bool Is_Sigma_0::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::Sigma) return 1;
-  return 0;
-}
-
-bool Is_Sigma_Plus::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::Sigma_plus) return 1;
-  return 0;
-}
-
 bool Is_Charged_Xi::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==kf::Xi_minus) return 1;
-  return 0;
-}
-
-bool Is_Xi_Minus::operator() (const Particle * p) const {
   if ( p && p->Flav().Kfcode()==kf::Xi_minus) return 1;
   return 0;
 }
@@ -453,40 +363,36 @@ bool Is_Neutral_Xi::operator() (const Particle * p) const {
   return 0;
 }
 
-// decuplet baryons
-
-bool Is_Delta_PlusPlus::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==2224) return 1;
+bool Is_Proton_Antiproton::operator() (const Particle * p) const {
+  if ( p && p->Flav().Kfcode()==2212) return 1;
   return 0;
 }
 
-bool Is_Delta_Plus::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==2214) return 1;
+bool Is_Not_Lepton::operator() (const Particle * p) const {
+  if ( p && !p->Flav().IsLepton() ) return 1;
   return 0;
 }
 
-bool Is_Delta_Minus::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==1114) return 1;
+bool Is_Not_Neutrino::operator() (const Particle * p) const {
+  if ( p && !(p->Flav().IsLepton() && p->Flav().IntCharge()==0) ) return 1;
   return 0;
 }
 
-bool Is_Sigma_1385_Plus::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==3224) return 1;
+bool Is_There::operator() (const Particle * p) const {
+  if ( p ) return 1;
   return 0;
 }
 
-bool Is_Sigma_1385_0::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==3214) return 1;
+
+class Is_Strong : public Particle_Qualifier_Base {
+public:
+  bool operator()(const Particle *) const;
+};
+
+bool Is_Strong::operator() (const Particle * p) const {
+  if ( p && p->Flav().Strong() ) return 1;
   return 0;
 }
 
-bool Is_Sigma_1385_Minus::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==3114) return 1;
-  return 0;
-}
-
-bool Is_Omega_Minus::operator() (const Particle * p) const {
-  if ( p && p->Flav().Kfcode()==3334) return 1;
-  return 0;
-}
-
+DEFINE_QUALIFIER_GETTER(Is_Strong,Is_Strong_Getter,
+			"Strong","strong")

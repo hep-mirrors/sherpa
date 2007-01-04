@@ -18,68 +18,72 @@ namespace ATOOLS {
     
   private:
 
-    static bool          s_active, s_prepared, s_stacktrace, s_print;
-    static unsigned int  s_signal, s_exitcode;
-    static Exception    *s_exception;
+    bool          m_active, m_prepared, m_stacktrace;
+    bool          m_print, m_noremove;
+    unsigned int  m_signal, m_exitcode;
+    Exception    *m_exception;
     
-    static unsigned int s_nbus, s_nsegv;
+    unsigned int m_nbus, m_nsegv;
 
-    static std::string s_progname;
+    std::string m_progname;
 
-    static std::vector<Tester_Function>     s_testerfunctions;
-    static std::vector<Terminator_Function> s_terminatorfunctions;
+    std::vector<Tester_Function>     m_testerfunctions;
+    std::vector<Terminator_Function> m_terminatorfunctions;
 
-    static std::vector<Tester_Object*>     s_testerobjects;
-    static std::vector<Terminator_Object*> s_terminatorobjects;
+    std::vector<Tester_Object*>     m_testerobjects;
+    std::vector<Terminator_Object*> m_terminatorobjects;
 
-    static void SetExitCode();
+    void SetExitCode();
 
     friend class Exception;
     
+    // constructor
+    Exception_Handler();
+
   public:
 
     // member functions
-    static void SignalHandler(int signal); 
+    void Init();
+    void Reset();
+
+    bool ReadInStatus(const std::string &path);
+    bool ApproveTerminate();
+    void PrepareTerminate();
+    void Exit(int exitcode);
     
-    static bool ApproveTerminate();
-    static void PrepareTerminate();
-    static void Exit(int exitcode);
+    void SignalHandler(int signal); 
+    void Terminate();
 
-    static void Terminate();
+    void GenerateStackTrace(std::ostream &ostr,
+			    const bool endline=true,
+			    const std::string &comment="");
 
-    static void RemoveTesterFunction(bool (*function)(void));
-    static void RemoveTerminatorFunction(void (*function)(void));
-    static void RemoveTesterObject(Tester_Object *const object);
-    static void RemoveTerminatorObject(Terminator_Object *const object);
+    void AddTesterFunction(bool (*function)(void));
+    void AddTerminatorFunction(void (*function)(void));
+    void AddTesterObject(Tester_Object *const object);
+    void AddTerminatorObject(Terminator_Object *const object);
+
+    void RemoveTesterFunction(bool (*function)(void));
+    void RemoveTerminatorFunction(void (*function)(void));
+    void RemoveTesterObject(Tester_Object *const object);
+    void RemoveTerminatorObject(Terminator_Object *const object);
     
-    static void GenerateStackTrace(std::ostream &ostr,
-				   const bool endline=true,
-				   const std::string &comment="");
+    void SetActive(const bool active);    
+    void SetStackTrace(const bool trace); 
+    void SetProgramName(const std::string &name);
 
-    // inline functions
-    inline static void AddTesterFunction(bool (*function)(void))
-    { s_testerfunctions.push_back(function); }
-    inline static void AddTerminatorFunction(void (*function)(void))
-    { s_terminatorfunctions.push_back(function); }
-    inline static void AddTesterObject(Tester_Object *const object)
-    { s_testerobjects.push_back(object); }
-    inline static void AddTerminatorObject(Terminator_Object *const object)
-    { s_terminatorobjects.push_back(object); }
+    bool Active();
+    bool StackTrace();
 
-    inline static void SetActive(const bool active)    
-    { s_active=active; }
-    inline static void SetStackTrace(const bool trace) 
-    { s_stacktrace=trace;  }
-    inline static void SetProgramName(const std::string &name)
-    { s_progname=name; }
-
-    inline static bool Active()     { return s_active;      }
-    inline static bool StackTrace() { return s_stacktrace;  }
-
-    inline static Exception    *LastException() { return s_exception; }
-    inline static unsigned int  LastSignal()    { return s_signal;    }
+    Exception    *LastException();
+    unsigned int  LastSignal();
 
   };// end of class Exception_Handler
+
+  extern Exception_Handler *exh;
+
+  void SignalHandler(int signal); 
+  void Terminate();
   
 }// end of namespace ATOOLS
 

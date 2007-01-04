@@ -93,7 +93,7 @@ bool Poincare::CheckBoost()
 bool Poincare::CheckRotation() 
 {
   if (m_usen) {
-    if (m_ct==NAN || m_st==NAN ||
+    if ((!(m_ct>=0) && !(m_ct<0)) || (!(m_st>=0) && !(m_st<0)) ||
 	m_n.Nan()) return false;
   }
   return true;

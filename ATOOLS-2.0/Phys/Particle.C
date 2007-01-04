@@ -73,12 +73,23 @@ std::ostream& ATOOLS::operator<<(std::ostream& str, const Particle &part) {
   str<<std::setiosflags(std::ios::scientific)
      <<" [("<<std::setw(11)<<p[0]<<','<<std::setw(11)<<p[1]<<','
      <<std::setw(11)<<p[2]<<','<<std::setw(11)<<p[3]<<"), p^2="
-     <<std::setw(11)<<p.Abs2()<<", m^2="<<std::setw(11)<<part.m_finalmass<<"]"
+     <<std::setw(11)<<p.Abs2()<<", m="<<std::setw(11)<<part.m_finalmass<<"]"
      <<" ("<<std::setw(3)<<part.GetFlow(1)<<","<<std::setw(3)<<part.GetFlow(2)<<")"
      <<std::resetiosflags(std::ios::scientific)<<std::resetiosflags(std::ios::left);
   str.precision(io);
   return str;
 }
+
+namespace ATOOLS {
+  std::ostream & operator<<(std::ostream & s, const Part_List & pl) {
+    s<<"Particle List with "<<pl.size()<<" elements"<<std::endl;
+    for (Part_Const_Iterator pit=pl.begin(); pit!=pl.end(); ++pit) {
+      s<<**pit<<std::endl;
+    }
+    return s;
+  }
+}
+
 
 Particle::~Particle() 
 {
@@ -91,7 +102,7 @@ Particle::Particle():
   m_info('X'), 
   m_fl(Flavour(kf::none)), m_momentum(Vec4D(0,0,0,0)), 
   p_flow(new Flow(this)),
-  p_startblob(NULL),p_endblob(NULL), 
+  p_startblob(NULL),p_endblob(NULL), p_originalpart(this),
   m_dec_time(0.), m_finalmass(0.)
 {
   ++s_totalnumber;
@@ -102,7 +113,7 @@ Particle::Particle(const Particle &in):
   m_info(in.m_info), 
   m_fl(in.m_fl), m_momentum(in.m_momentum), 
   p_flow(new Flow(this)),
-  p_startblob(NULL),p_endblob(NULL), 
+  p_startblob(NULL),p_endblob(NULL), p_originalpart(in.p_originalpart),
   m_dec_time(in.m_dec_time), m_finalmass(in.m_finalmass)
 {
   ++s_totalnumber;
@@ -134,7 +145,7 @@ Particle::Particle(int number, Flavour fl, Vec4D p, char a) :
   m_info(a), 
   m_fl(fl), m_momentum(p),
   p_flow(new Flow(this)),
-  p_startblob(NULL),p_endblob(NULL), 
+  p_startblob(NULL),p_endblob(NULL), p_originalpart(this),
   m_dec_time(0.), m_finalmass(fl.Mass())
 {
   ++s_totalnumber;
@@ -151,6 +162,7 @@ void Particle::Copy(Particle * in)  {
   m_finalmass = in->m_finalmass;
   p_startblob = in->p_startblob;
   p_endblob   = in->p_endblob;
+  p_originalpart = in->p_originalpart,
   p_flow->SetCode(1,in->GetFlow(1));
   p_flow->SetCode(2,in->GetFlow(2));
 }
@@ -228,10 +240,13 @@ void         Particle::SetTime(const int t)          { m_dec_time = t; }
 void         Particle::SetTime()                     { m_dec_time = LifeTime(); }
 
 // Production and decay vertices
-const Vec4D& Particle::XProd() const          {return p_startblob->Position();}
+Vec4D Particle::XProd() const
+{ if (p_startblob) return p_startblob->Position(); return Vec4D(); }
 Blob *       Particle::ProductionBlob() const {return p_startblob;}
-const Vec4D& Particle::XDec() const           {return p_endblob->Position();}
+Vec4D Particle::XDec() const
+{ if (p_endblob) return p_endblob->Position(); return Vec4D(); }
 Blob *       Particle::DecayBlob() const      {return p_endblob;}
+Particle *   Particle::OriginalPart() const   {return p_originalpart;}
 
 // Flavour and flow
 Flavour        Particle::Flav() const                   { return m_fl; }
@@ -251,6 +266,11 @@ void           Particle::SetFlow(const int index, const int code) {
 void Particle::SetDecayBlob(Blob *blob)       
 { 
   p_endblob=blob; 
+}
+
+void Particle::SetOriginalPart(Particle *part)
+{ 
+  p_originalpart=part; 
 }
 
 void Particle::SetNumber(const int n)           

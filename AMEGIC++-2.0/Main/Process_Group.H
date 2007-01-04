@@ -22,7 +22,7 @@ namespace AMEGIC {
     Process_Group(Process_Info*,int,int,ATOOLS::Flavour *&,
 		  PDF::ISR_Handler * =NULL,BEAM::Beam_Spectra_Handler * =NULL,
 		  ATOOLS::Selector_Data * =NULL,
-		  int=0,int=99,int=99,int=0,int=0,double=-1.,
+		  int=0,int=99,int=99,int=0,PHASIC::scl::scheme=PHASIC::scl::unknown,double=-1.,
 		  Pol_Info* _pl=0,int _nex=0,ATOOLS::Flavour * _ex_fl=0,int usepi=0, 
 		  double ycut=-1., double error=-1.,
 		  std::string e_func="1", int enable_mhv=0);
@@ -34,7 +34,7 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   private :
-    int            SetPolarisations(char * plindex, Pol_Info * pl, int * beam_is_poled);
+    int            SetPolarisations(char * plindex, Pol_Info * pl, int * beam_is_poled,const int &nout);
     void           ConstructProcesses(ATOOLS::Selector_Data *);
     void           PrepareTerminate();
   public :
@@ -51,13 +51,12 @@ namespace AMEGIC {
     void           ResetEvents(double gmin);
     void           GetGMin(double &g, double &meff);
     void           SetWEventMode(int mode);
+    void           SetPSHandler(PHASIC::Phase_Space_Handler *const pshandler); 
 
     void           Empty();
     size_t         Size()                          { return m_procs.size(); }
     Process_Base * operator[] (int idx)            { return m_procs[idx]; } 
     void           SetResDir(std::string);
-    void           SetScale(const double);
-    void           SetScales(double q2_fac, double q2_ren);
     void           SetISRThreshold(double);
     void           SetTables(bool);
     void           SetTotal(int flag, int depth=0);

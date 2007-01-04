@@ -18,7 +18,7 @@ namespace ATOOLS {
     int    *  p_imap;
     int    m_vectorsize;
     Vec4D  *  p_moms;
-    bool   *  p_bflag;
+    int    *  p_bflag;
 
     Particle_List       * p_jets;
     std::vector<double> * p_kts;
@@ -27,7 +27,7 @@ namespace ATOOLS {
     double DCos12(const Vec4D &,const Vec4D &) const;
 
     void AddToKtlist(double );
-    void AddToJetlist(const Vec4D &, bool);
+    void AddToJetlist(const Vec4D &, int);
   public:
     static double Kt2(const Vec4D & p);    
 
@@ -38,7 +38,7 @@ namespace ATOOLS {
     void   InitMoms(int);
     bool   ConstructJets(const Particle_List * ,Particle_List * ,std::vector<double> * ,double);
 
-    void   Ymin(Vec4D *,bool *,int);
+    void   Ymin(Vec4D *,int *,int);
   };
 
   inline double Durham_Algorithm::Kt2(const Vec4D & p)

@@ -418,7 +418,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
  						 <<" ("<<p_lab[i].Abs2()<<")"<<std::endl;
     return 0.;
   }
-  double KFactor = 1., Q2 = -1.;
+  double Q2 = -1.;
   m_result_1 = m_result_2 = 0.;
   for (int i=0;i<m_nvec;++i) p_cms[i]=p_lab[i];
   if (m_nin>1) {
@@ -454,11 +454,9 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
 	p_beamchannels->GenerateWeight(p_beamhandler->On());
 	m_result_1 *= p_beamchannels->Weight() * p_beamhandler->Weight();
       }
-      KFactor *= process->KFactor(Q2);
     }
     p_fsrchannels->GenerateWeight(p_cms,p_cuts);
     m_psweight = m_result_1 *= p_fsrchannels->Weight();
-    m_result_1 *= KFactor;
     if (m_nin>1) {
       if (p_isrhandler->On()==3) m_result_2 = m_result_1;
       if (p_isrhandler->KMROn()==0) m_result_1 *= process->Differential(p_cms);

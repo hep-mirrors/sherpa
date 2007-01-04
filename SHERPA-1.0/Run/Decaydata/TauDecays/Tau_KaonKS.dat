@@ -1,0 +1,35 @@
+# Decay: tau- --> K- K(S) nu_tau 
+#        0    --> 1  2    3      
+Channels {
+  	AlwaysIntegrate = 0;	! 0...read results and skip integration
+	  						! 1...don't read results and integrate
+    Isotropic 1;
+}
+Parameters {
+  v      =  1.		 	! V-A structure of tau-nutau
+  a      =  1.	
+  RUNNING_WIDTH = 1    	! running width of rho resonance (On/Off)
+  FORM_FACTOR   = 2    	! 1=Kuhn-Santamaria, 2=Res Chiral Theory
+   
+  ! relative weightfactors for resonances
+  delta	= +0.00		! omega 
+  beta 	= -0.147	! rho1450 
+  gamma = 0.127		! rho1700
+   
+  ! parameters for resonances
+  Mass_rho_770 		= 0.775
+  Width_rho_770 	= 0.16
+  Mass_rho_1450 	= 1.363
+  Width_rho_1450 	= 0.31
+  Mass_rho_1700 	= 1.7
+  Width_rho_1700 	= 0.235
+
+  ! off-shell width parameters
+  lambda 			= 1.			! exponent in KS
+  gamma_rho_770		= 1.04			! global factor for RChT rho
+  gamma_rho_1450	= 0.41			! global factor for RChT rho'
+  gamma_rho_1700 	= 0.09			! global factor for RChT rho''
+}
+Result {
+   2.11124e-15 6.69268e-18 2.84125e-14;
+}

@@ -49,6 +49,16 @@ AC_ARG_ENABLE(amisic,
   esac 
   fi ],[ amisic=true ])
 AM_CONDITIONAL(AMISIC_SUPPORT, test $amisic = true)
+AC_ARG_ENABLE(ahadic,
+[  --enable-ahadic        Enable Ahadic support ],
+[ ahadic=true
+  if test -d "../AHADIC++-1.0"; then
+  case "${enableval}" in 
+    yes) ahadic=true && echo "checking for AHADIC support... yes" ;;
+    *) echo "checking for AHADIC support... no" ;;
+  esac 
+  fi ],[ ahadic=true ])
+AM_CONDITIONAL(AHADIC_SUPPORT, test $ahadic = true)
 AC_ARG_ENABLE(hadrons,
 [  --enable-hadrons        Enable Hadrons support ],
 [ hadrons=true

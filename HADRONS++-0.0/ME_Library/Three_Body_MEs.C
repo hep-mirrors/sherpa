@@ -51,6 +51,18 @@ void P_3P_Dalitz::SetModelParameters( GeneralModel _md )
   m_phasequadx = _md("phaselinx",0.);
 }
 
+void   P_3P_Dalitz::operator()( 
+    const ATOOLS::Vec4D  * _p, 
+    std::vector<Complex> * _ampls_tensor, 
+    std::vector<std::pair<int,int> > * _indices,
+    int                    k0_n )
+{
+  _ampls_tensor->clear();
+  Complex ampl = csqrt( (*this)(_p) );        // call uncorrelated
+  _ampls_tensor->push_back( ampl );
+  _indices->clear();
+}
+
 double P_3P_Dalitz::operator()( const Vec4D * _p )
 {
   // kinematic variables
@@ -92,6 +104,19 @@ P_GammaFF::P_GammaFF(int _nout,Flavour * _flavs) :
     } 
   }
 }
+ 
+void   P_GammaFF::operator()( 
+    const ATOOLS::Vec4D  * _p, 
+    std::vector<Complex> * _ampls_tensor, 
+    std::vector<std::pair<int,int> > * _indices,
+    int                    k0_n )
+{
+  _ampls_tensor->clear();
+  Complex ampl = csqrt( (*this)(_p) );        // call uncorrelated
+  _ampls_tensor->push_back( ampl );
+  _indices->clear();
+}
+
 
 double P_GammaFF::operator()(const Vec4D * p)
 {

@@ -2,6 +2,7 @@
 #define Combine_Table_CKKW_H
 
 #include "Combine_Table_Base.H"
+#include <set>
 
 namespace SHERPA {
 
@@ -10,6 +11,8 @@ namespace SHERPA {
 
     ATOOLS::Vec4D *p_save_moms;
     size_t         m_nl;
+
+    std::set<Combine_Key> m_rejected;
 
     void AddPossibility(const int i,const int j,const int ngraph);
     bool InitStep(ATOOLS::Vec4D *moms,const int nl);
@@ -35,6 +38,7 @@ namespace SHERPA {
 
     void   FillTable(Leg **legs,const int nlegs,const int nampl); 
     double GetWinner(int &i, int &j);
+    bool   IdentifyHardProcess();
 
   };// end of class Combine_Table_CKKW
 

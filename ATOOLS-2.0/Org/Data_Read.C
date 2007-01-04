@@ -12,6 +12,7 @@ using namespace ATOOLS;
 Algebra_Interpreter s_interpreter;
 
 Parameter_Map ATOOLS::Data_Read::s_commandlineparameters;
+Parameter_Map ATOOLS::Data_Read::s_tags;
 
 bool s_nowrite(true);
 
@@ -49,6 +50,7 @@ Type  Data_Read::GetValue(std::string name, Type default_value) {
   std::string default_value_str;
   if (typeid(dummy)==typeid(int) || typeid(dummy)==typeid(unsigned int) ||
       typeid(dummy)==typeid(float) ||	typeid(dummy)==typeid(double)) {
+    s_interpreter.SetTagReplacer(this);
     default_value_str=s_interpreter.Interprete(default_value_str);
   }
   MyStrStream str;      
@@ -70,6 +72,7 @@ Type  Data_Read::GetValue(std::string name) {
   if (value.length()==0) return ReturnData(name,NotDefined<Type>());
   if (typeid(invar)==typeid(int) || typeid(invar)==typeid(unsigned int) ||
       typeid(invar)==typeid(float) ||	typeid(invar)==typeid(double)) {
+    s_interpreter.SetTagReplacer(this);
     value=s_interpreter.Interprete(value);
   }
   MyStrStream str;      
@@ -403,6 +406,22 @@ void Data_Read::Shorten(std::string& str) {
   }
   size_t pos=std::string::npos;
   while ((pos=str.find(" "))!=std::string::npos) str[pos]='_'; 
+}
+
+std::string Data_Read::ReplaceTags(std::string &expr) const
+{ 
+  std::string tag=expr;
+  bool success=false;
+  for (std::map<std::string,std::string>::const_iterator 
+	 tit=s_tags.begin();tit!=s_tags.end();++tit) {
+    size_t pos=tag.find(tit->first);
+    if (pos!=std::string::npos) {
+      tag.replace(pos,tit->first.length(),tit->second);
+      success=true;
+    }
+  }
+  if (success && tag!=expr) return ReplaceTags(tag);
+  return tag;
 }
 
 // explicit instanciation for standard types:

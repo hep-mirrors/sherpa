@@ -38,7 +38,7 @@ int fako(int N)
 Single_Process_MHV::Single_Process_MHV(int _nin,int _nout,Flavour * _fl,
 			       ISR_Handler * _isr,Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			       int _gen_str,int _orderQCD, int _orderEW,
-			       int _kfactorscheme, int _scalescheme,double _scale,
+			       int _kfactorscheme, PHASIC::scl::scheme _scalescheme,double _scale,
 			       Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi, double ycut,double error,std::string e_func) :
   Process_Base(NULL,_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
 	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,ycut,error),
@@ -71,6 +71,8 @@ Single_Process_MHV::Single_Process_MHV(int _nin,int _nout,Flavour * _fl,
 	       <<"   No selection cuts specified. Init No_Selector !"<<endl;
     p_selector = new No_Selector();
   }
+  p_selector->SetProcessName(Name());
+  SetScaleScheme(m_scalescheme);
 
   double sum_massin = 0.,sum_massout = 0.;
   for (size_t i=0;i<m_nin;i++)  sum_massin  += p_flin[i].Mass();
@@ -78,30 +80,15 @@ Single_Process_MHV::Single_Process_MHV(int _nin,int _nout,Flavour * _fl,
   m_threshold = ATOOLS::Max(sum_massin,sum_massout);
 
   p_pshandler = new Phase_Space_Handler(this,p_isrhandler,p_beamhandler,m_maxerror);
+  SetPSHandler(p_pshandler);
   p_pshandler->SetUsePI(m_usepi);
-
-  // making directory
-//   if (m_gen_str>1) {
-//     unsigned int  mode_dir = 0755;
-//     ATOOLS::MakeDir((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename).c_str(),mode_dir); 
-//   }
-//   msg_Tracking()<<"Initialized Single_Process_MHV : "<<m_name<<"."<<std::endl;
-
-  if (m_scalescheme==65 && m_updatescales) {
-    double dr   = rpa.gen.DeltaR();
-    double ycut = rpa.gen.Ycut();
-    m_scale[stp::fac] = ycut*sqr(rpa.gen.Ecms());
-    ycut=Min(ycut,ycut*sqr(dr));
-    m_scale[stp::as] = ycut*sqr(rpa.gen.Ecms());
-    SetScales(m_scale[stp::fac],m_scale[stp::as]);
-  }
 }
 
 
 Single_Process_MHV::Single_Process_MHV(Process_Info* pinfo,int _nin,int _nout,Flavour * _fl,
 			       ISR_Handler * _isr,Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			       int _gen_str,int _orderQCD, int _orderEW,
-			       int _kfactorscheme, int _scalescheme,double _scale,
+			       int _kfactorscheme, PHASIC::scl::scheme _scalescheme,double _scale,
 			       Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi, double ycut,double error,std::string e_func) :   
   Process_Base(pinfo,_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
 	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,ycut,error),
@@ -134,6 +121,8 @@ Single_Process_MHV::Single_Process_MHV(Process_Info* pinfo,int _nin,int _nout,Fl
 	       <<"   No selection cuts specified. Init No_Selector !"<<endl;
     p_selector = new No_Selector();
   }
+  p_selector->SetProcessName(Name());
+  SetScaleScheme(m_scalescheme);
 
   double sum_massin = 0.,sum_massout = 0.;
   for (size_t i=0;i<m_nin;i++)  sum_massin  += p_flin[i].Mass();
@@ -141,23 +130,8 @@ Single_Process_MHV::Single_Process_MHV(Process_Info* pinfo,int _nin,int _nout,Fl
   m_threshold = ATOOLS::Max(sum_massin,sum_massout);
 
   p_pshandler = new Phase_Space_Handler(this,p_isrhandler,p_beamhandler,m_maxerror);
+  SetPSHandler(p_pshandler);
   p_pshandler->SetUsePI(m_usepi);
-
-  // making directory
-//   if (m_gen_str>1) {
-//     unsigned int  mode_dir = 0755;
-//     ATOOLS::MakeDir((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename).c_str(),mode_dir); 
-//   }
-//   msg_Tracking()<<"Initialized Single_Process_MHV : "<<m_name<<"."<<std::endl;
-
-  if (m_scalescheme==65 && m_updatescales) {
-    double dr   = rpa.gen.DeltaR();
-    double ycut = rpa.gen.Ycut();
-    m_scale[stp::fac] = ycut*sqr(rpa.gen.Ecms());
-    ycut=Min(ycut,ycut*sqr(dr));
-    m_scale[stp::as] = ycut*sqr(rpa.gen.Ecms());
-    SetScales(m_scale[stp::fac],m_scale[stp::as]);
-  }
 }
 
 
@@ -858,7 +832,7 @@ bool Single_Process_MHV::CalculateTotalXSec(std::string _resdir) {
   m_resultpath=_resdir;
   m_resultfile=filename;
   m_histofile=histofile;
-  ATOOLS::Exception_Handler::AddTerminatorObject(this);
+  ATOOLS::exh->AddTerminatorObject(this);
   long unsigned int points=m_n;
   m_totalxs = p_pshandler->Integrate();
   if (m_nin==2) m_totalxs /= ATOOLS::rpa.Picobarn();
@@ -870,7 +844,7 @@ bool Single_Process_MHV::CalculateTotalXSec(std::string _resdir) {
   SetTotal(0);
   if (m_totalxs>=0.) {
     if (points==m_n) {
-      ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+      ATOOLS::exh->RemoveTerminatorObject(this);
       return 1;
     }
     if (_resdir!=string("")) {
@@ -887,10 +861,10 @@ bool Single_Process_MHV::CalculateTotalXSec(std::string _resdir) {
       p_pshandler->WriteOut(_resdir+string("/MC_")+m_name);
       to.close();
     }
-    ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+    ATOOLS::exh->RemoveTerminatorObject(this);
     return 1;
   }
-  ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+  ATOOLS::exh->RemoveTerminatorObject(this);
   return 0;      
 }
 
@@ -936,7 +910,7 @@ bool Single_Process_MHV::LookUpXSec(double ycut,bool calc,string obs) {
   string filename = (m_resdir+string("/Tab")+m_name+string("/")+obs).c_str();
   if (IsFile(filename)) {
     Histogram * histo = new Histogram(filename);
-    double          * res   = new double[histo->Depth()];
+    double    * res   = new double[histo->Depth()];
     histo->Extrapolate(ycut,res,1);
     m_totalxs = res[0];
     m_max     = res[1];
@@ -1038,7 +1012,10 @@ void Single_Process_MHV::ResetMax(int flag)
   for (size_t i=0;i<m_vsmax.size();i++) m_max=ATOOLS::Max(m_max,m_vsmax[i]);
 }
 
-double Single_Process_MHV::Differential(const ATOOLS::Vec4D* _moms) { return DSigma(_moms,0); }
+double Single_Process_MHV::Differential(const ATOOLS::Vec4D* _moms) 
+{ 
+  return DSigma(_moms,0); 
+}
 
 double Single_Process_MHV::Differential2() { 
   if (p_isrhandler->On()==0) return 0.;
@@ -1081,7 +1058,7 @@ double Single_Process_MHV::DSigma(const ATOOLS::Vec4D* _moms,bool lookup)
   }
   else  m_lastlumi = 1.;
 
-  return m_last = m_Norm * m_lastdxs * m_lastlumi;
+  return m_last = m_Norm * m_lastdxs * m_lastlumi*KFactor();
 }
 
 double Single_Process_MHV::DSigma2() { 
@@ -1090,7 +1067,7 @@ double Single_Process_MHV::DSigma2() {
   }
   double tmp = m_Norm * m_lastdxs * p_isrhandler->Weight2(p_flin); 
   m_last    += tmp;
-  return tmp;
+  return tmp*KFactor();
 }
 
 

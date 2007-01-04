@@ -6,7 +6,7 @@ libCTEQ_la_SOURCES     =	\
 			cteq6_inter.f \
 		    	CTEQ6_Fortran_Interface.C 
 pkginclude_HEADERS        =	\
-			CTEQ6_Fortran_Interface.H
+			CTEQ6_Fortran_Interface.H 
 endif
 
 INCLUDES      =	@APACICINCS@ @PDFINCS@ @MODELINCS@ @ATOOLSINCS@

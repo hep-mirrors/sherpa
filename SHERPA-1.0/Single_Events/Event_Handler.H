@@ -7,6 +7,9 @@
 #include "Event_Phase_Handler.H"
 
 namespace SHERPA {
+
+  class Matrix_Element_Handler;
+
   typedef std::vector<Event_Phase_Handler *> Phase_List;
   typedef Phase_List::iterator Phase_Iterator;
 
@@ -18,7 +21,9 @@ namespace SHERPA {
     Phase_List        * p_phases;
     ATOOLS::Blob_List   m_blobs;
 
-    void CleanUpEvent();
+    Matrix_Element_Handler * p_mehandler;
+
+    void Reset(const bool sameevent=false);
 
   public:
 

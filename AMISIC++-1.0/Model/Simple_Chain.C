@@ -44,8 +44,8 @@ Simple_Chain::Simple_Chain():
   p_differential(NULL), p_total(NULL), m_norm(1.0), m_enhance(1.0), 
   m_maxreduction(1.0), m_xsextension("_xs.dat"), m_mcextension("MC"), 
   p_processes(NULL), p_fsrinterface(NULL), p_environment(NULL), p_model(NULL),
-  p_beam(NULL), p_isr(NULL), p_profile(NULL), m_nflavour(5), 
-  m_maxtrials(1000), m_scalescheme(2), m_kfactorscheme(1), 
+  p_beam(NULL), p_isr(NULL), p_profile(NULL), m_nflavour(5), m_maxtrials(1000), 
+  m_scalescheme(PHASIC::scl::gmeanpt+PHASIC::scl::div_by_2), m_kfactorscheme(1), 
   m_ecms(rpa.gen.Ecms()), m_external(false), m_regulate(false)
 {
   Init();
@@ -57,9 +57,9 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *const model,
   MI_Base("Simple Chain",MI_Base::HardEvent,5,4,1),
   p_differential(NULL), p_total(NULL), m_norm(1.0), m_enhance(1.0),
   m_maxreduction(1.0), m_xsextension("_xs.dat"), m_mcextension("MC"), 
-  p_processes(NULL), p_fsrinterface(NULL), p_environment(NULL), 
-  p_model(model), p_beam(beam), p_isr(isr), p_profile(NULL), m_nflavour(5), 
-  m_maxtrials(1000), m_scalescheme(2), m_kfactorscheme(1), 
+  p_processes(NULL), p_fsrinterface(NULL), p_environment(NULL), p_model(model), 
+  p_beam(beam), p_isr(isr), p_profile(NULL), m_nflavour(5), m_maxtrials(1000), 
+  m_scalescheme(PHASIC::scl::gmeanpt+PHASIC::scl::div_by_2), m_kfactorscheme(1), 
   m_ecms(rpa.gen.Ecms()), m_external(true), m_regulate(false)
 {
   Init();
@@ -83,6 +83,7 @@ void Simple_Chain::Init()
   m_isrspkey.Assign("s' isr mi",3,0,PHASIC::Phase_Space_Handler::GetInfo());
   m_isrykey.Assign("y isr mi",2,0,PHASIC::Phase_Space_Handler::GetInfo());
   p_remnants[1]=p_remnants[0]=NULL;
+  p_gridcreator=NULL;
 }
 
 Simple_Chain::~Simple_Chain()
@@ -92,7 +93,15 @@ Simple_Chain::~Simple_Chain()
 
 void Simple_Chain::CleanUp() 
 {
-  if (p_fsrinterface!=NULL) delete p_fsrinterface;
+  if (p_gridcreator!=NULL) {
+    exh->RemoveTerminatorObject(this);
+    delete p_gridcreator;
+    p_gridcreator=NULL;
+  }
+  if (p_fsrinterface!=NULL) {
+    delete p_fsrinterface;
+    p_fsrinterface=NULL;
+  }
   //if (p_processes!=NULL)    delete p_processes;
   if (!m_external) {
     if (p_environment!=NULL) delete p_environment;
@@ -101,13 +110,22 @@ void Simple_Chain::CleanUp()
     p_beam=NULL;
     p_isr=NULL;
   }
-  if (p_differential!=NULL) delete p_differential;
-  if (p_total!=NULL) delete p_total;
+  if (p_differential!=NULL) {
+    delete p_differential;
+    p_differential=NULL;
+  }
+  if (p_total!=NULL) {
+    delete p_total;
+    p_total=NULL;
+  }
   while (m_differentials.size()>0) {
     delete m_differentials.begin()->second;
     m_differentials.erase(m_differentials.begin());
   }
-  if (p_profile!=NULL) delete p_profile;
+  if (p_profile!=NULL) {
+    delete p_profile;
+    p_profile=NULL;
+  }
 }
 
 bool Simple_Chain::GeneratePathName()
@@ -135,7 +153,8 @@ bool Simple_Chain::GeneratePathName()
 		     (p_model->GetScalarFunction("alpha_S"))->Order())+
     std::string("_")+ToString(m_scalescheme)+
     std::string("_")+ToString(m_kfactorscheme)+std::string("/");
-  SetOutputPath(OutputPath()+outputpath);
+  SetOutputPath(OutputPath()+m_pathextra+outputpath);
+  m_pathextra=outputpath;
   return true;
 }
 
@@ -225,12 +244,11 @@ bool Simple_Chain::AddProcess(EXTRAXS::XS_Group *const group,
 bool Simple_Chain::ReadInData()
 {
   PROFILE_HERE;
-  Data_Reader *reader = new Data_Reader("=",";","!");
+  Data_Reader *reader = new Data_Reader(" ",";","!","=");
+  reader->AddWordSeparator("\t");
   reader->SetInterprete(true);
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
-  reader->SetMatrixType(mtc::transposed);
-  reader->SetVectorType(vtc::horizontal);
   int regulate=0;
   if (reader->ReadFromFile(regulate,"REGULATE_XS")) {
     m_regulate=regulate;
@@ -245,12 +263,16 @@ bool Simple_Chain::ReadInData()
       m_regulation[0]*=pow(m_ecms/scale,exponent);
     }
   }
-  if (!reader->ReadFromFile(m_scalescheme,"MI_SCALE_SCHEME")) 
-    m_scalescheme=21;
+  int helpssc;
+  reader->SetTags(PHASIC::Integrable_Base::ScaleTags());
+  if (reader->ReadFromFile(helpssc,"MI_SCALE_SCHEME")) 
+    m_scalescheme=(PHASIC::scl::scheme)helpssc;
+  else m_scalescheme=PHASIC::scl::gmeanpt;
   if (!reader->ReadFromFile(m_kfactorscheme,"MI_K_FACTOR_SCHEME")) 
     m_kfactorscheme=1;
   if (!reader->ReadFromFile(m_nflavour,"N_FLAVOUR")) m_nflavour=5;
   if (!reader->ReadFromFile(m_error,"PS_ERROR")) m_error=1.e-2;
+  if (!reader->ReadFromFile(m_pathextra,"PATH_EXTRA")) m_pathextra="";
   GeneratePathName();
   delete reader;
   return true;
@@ -264,27 +286,26 @@ bool Simple_Chain::CreateGrid()
   double min=Min(m_stop[0],m_stop[4]);
   p_isr->SetFixedSprimeMin(4.0*min*min);
   p_isr->SetFixedSprimeMax(4.0*m_start[0]*m_start[0]);
-  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
+  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader(" ",";","!","=");
+  reader->AddWordSeparator("\t");
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile(2));
-  std::string selectorfile;
-  if (!reader->ReadFromFile(selectorfile,"MI_SELECTOR_FILE")) 
-    selectorfile="MICuts.dat";
+  if (!reader->ReadFromFile(m_selectorfile,"MI_SELECTOR_FILE")) 
+    m_selectorfile="MICuts.dat";
   p_processes = new EXTRAXS::Simple_XS(InputPath(),InputFile(1),p_model);
   if (p_processes->Size()>0) p_processes->Clear();
   p_processes->InitializeProcesses(p_beam,p_isr,false);  
   delete p_processes->SelectorData();
   p_processes->SetSelectorData
-    (new ATOOLS::Selector_Data(InputPath()+selectorfile));
+    (new ATOOLS::Selector_Data(InputPath()+m_selectorfile));
   p_processes->SetScaleScheme(m_scalescheme);
   p_processes->SetKFactorScheme(m_kfactorscheme);
   p_processes->XSSelector()->SetOffShell(p_isr->KMROn());
   reader->SetInputFile(InputFile());
-  reader->RereadInFile();
-  reader->SetMatrixType(mtc::transposed);
   reader->AddIgnore("->");
   reader->AddIgnore("to");
   reader->AddIgnore("for");
+  reader->RescanInFile();
   std::vector<std::vector<std::string> > temp;
   reader->MatrixFromFile(temp,"CREATE_GRID");
   bool found=false;
@@ -296,7 +317,8 @@ bool Simple_Chain::CreateGrid()
       for (unsigned int j=0;j<4;++j) {
 	flavour[j]=Flavour(kf_table.FromString(temp[i][j]));
 	if (flavour[j].Kfcode()==kf::none) {
-	  reader->ReadFromString(current,"",temp[i][j]);
+	  reader->SetString(temp[i][j]);
+	  reader->ReadFromString(current);
 	  flavour[j]=Flavour((kf::code)abs(current));
 	  if (current<0) flavour[j]=flavour[j].Bar();
 	  if (flavour[j].Kfcode()==kf::none) success=false;
@@ -333,12 +355,11 @@ bool Simple_Chain::CreateGrid()
 		    <<"Created output directory "
 		    <<OutputPath()<<"."<<std::endl;
     }
-    Exception_Handler::AddTerminatorObject(this);
     p_gridcreator->CreateGrid();
-    Exception_Handler::RemoveTerminatorObject(this);
   }
-  delete p_gridcreator;
   PHASIC::Vegas::SetOnExternal(vegas);
+  exh->AddTerminatorObject(this);
+  Reset();
   return true;
 }
 
@@ -358,9 +379,7 @@ bool Simple_Chain::SetUpInterface()
     group->SetFSRMode(2);
     group->CreateFSRChannels();
   }
-  p_mehandler = new SHERPA::Matrix_Element_Handler();
-  p_mehandler->SetXS(p_processes);
-  p_mehandler->SetUseSudakovWeight(m_jetveto);
+  p_xs=p_processes;
   return true;
 }
 
@@ -548,11 +567,11 @@ bool Simple_Chain::Initialize()
   if (!rpa.gen.Beam1().IsHadron() ||
       !rpa.gen.Beam2().IsHadron()) return false;
   CleanUp();
-  Data_Reader *reader = new Data_Reader("=",";","!");
+  Data_Reader *reader = new Data_Reader(" ",";","!","=");
+  reader->AddWordSeparator("\t");
   reader->SetInterprete(true);
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
-  reader->SetVectorType(vtc::horizontal);
   if (!m_external && p_environment==NULL) {
     std::string file;
     if (!reader->ReadFromFile(file,"ENVIRONMENT")) file="Run.dat";
@@ -601,8 +620,10 @@ bool Simple_Chain::Initialize()
       p_profile = Profile_Function_Base::SelectProfile(function,parameters);
     }
   }
-  if (!reader->ReadFromFile(m_jetveto,"JET_VETO")) m_jetveto=1;
+  int jetveto(1);
+  if (!reader->ReadFromFile(jetveto,"JET_VETO")) jetveto=1;
   delete reader;
+  SetJetVeto(jetveto);
   if (!CreateGrid()) {
     CleanUp();
     THROW(critical_error,"Grid creation failed.");
@@ -677,6 +698,13 @@ bool Simple_Chain::CreateMomenta()
 			<<max<<" -> "<<weight<<std::endl;
 	  m_differentials[m_selected]->SetBinMax(m_last[0],weight);
 	}
+	bool take(true);
+	for (size_t j=0;j<selected->NVector();++j) 
+	  if (selected->Momenta()[j][0]<=selected->Flavours()[j].PSMass()) {
+	    take=false;
+	    break;
+	  }
+	if (!take) continue;
 	if (p_fsrinterface->Trigger()) {
 	  double rn=ran.Get();
 	  if (weight*m_maxreduction>=max*rn) {
@@ -840,6 +868,7 @@ bool Simple_Chain::DiceOrderingParameter()
   }
   m_last[0]=(*p_total)[(*p_total)
  		       (m_last[0])-log(ran.Get())/m_enhance]; 
+  msg_Debugging()<<METHOD<<"(): new p_T = "<<m_last[0]<<"\n";
   s_cleaned=false;
   if (m_last[0]<=m_stop[0]) { 
     m_dicedparameter=false;
@@ -854,6 +883,8 @@ bool Simple_Chain::DiceOrderingParameter()
 void Simple_Chain::Reset()
 {
   for (unsigned int i=0;i<4;++i) m_last[i]=m_start[i];
+  for (Amisic_Histogram_Map::const_iterator hit(m_differentials.begin());
+       hit!=m_differentials.end();++hit) hit->second->StoreData();
 }
 
 void Simple_Chain::Update(const MI_Base *mibase)
@@ -861,9 +892,29 @@ void Simple_Chain::Update(const MI_Base *mibase)
   return;
 }
 
+bool Simple_Chain::ReadInStatus(const std::string &path) 
+{
+  msg_Info()<<METHOD<<"(): Reading status from '"
+	    <<path<<m_pathextra<<"'."<<std::endl;
+  p_gridcreator->SetOutputPath(path+m_pathextra);
+  if (!p_gridcreator->ReadInGrid()) {
+    msg.Error()<<METHOD<<"(): No status stored in '"
+	       <<path<<m_pathextra<<"'"<<std::endl;
+    return false;
+  }
+  return true;
+}
+
 void Simple_Chain::PrepareTerminate() 
 {
-  p_gridcreator->WriteOutGrid();
+  std::string path(rpa.gen.Variable("SHERPA_STATUS_PATH"));
+  if (path=="") return;
+  for (Amisic_Histogram_Map::const_iterator hit(m_differentials.begin());
+       hit!=m_differentials.end();++hit) hit->second->RestoreData();
+  CopyFile(InputPath()+m_selectorfile,path+"/"+m_selectorfile);
+  path+="/"+m_pathextra;
+  MakeDir(path,493,true);
+  p_gridcreator->WriteOutGrid(String_Vector(),path);
 }
 
 bool Simple_Chain::VetoProcess(ATOOLS::Blob *blob)

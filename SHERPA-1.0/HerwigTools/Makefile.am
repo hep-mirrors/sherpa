@@ -1,5 +1,4 @@
 pkglib_LTLIBRARIES       =	libHerwigTools.la
-
 libHerwigTools_la_SOURCES       =	\
 				fiherwig.f \
 				fimcatnlo.f \
@@ -8,7 +7,6 @@ libHerwigTools_la_SOURCES       =	\
 				herwig6504mod.f \
 				MCatNLO_Interface.C \
 				Herwig_Interface.C 
-
 noinst_HEADERS        =	\
 			MCatNLO_Wrapper.H \
 			MCatNLO_Interface.H \
@@ -17,5 +15,4 @@ noinst_HEADERS        =	\
 			HERWIG65.INC 
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@
-
 INCLUDES      =	@MODELINCS@ @ATOOLSINCS@ @PDFINCS@ @SHERPAINCS@

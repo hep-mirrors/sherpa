@@ -43,7 +43,6 @@ namespace AMEGIC {
     virtual Kabbala   GetEnumber(Complex)                          = 0;
     virtual Kabbala   GetSnumber(const int,const int,Complex)      = 0;     
     virtual Kabbala   GetScplxnumber(const int,const int,Complex)  = 0;      
-    virtual Kabbala   GetEpsnumber(int*,int,Complex)               = 0;     
     virtual void      Calculate(Values*)                           = 0;
     virtual int       Massless(int)                                = 0;
     virtual Kabbala * GetKabbala(const std::string&)               = 0;
@@ -58,7 +57,6 @@ namespace AMEGIC {
     virtual void      SetOff(const int&)                           = 0;
     virtual int       NumberOfCouplings()                          = 0;
     virtual int       NumberOfzxl()                                = 0;
-    virtual int       UsesFunction(size_t i) {return 0;}
   };
   
 
@@ -70,12 +68,10 @@ namespace AMEGIC {
 			   public Basic_Mfunc,
 			   public Basic_Vfunc,
 			   public Basic_Pfunc,
-			   public Basic_MassTermfunc,
-			   public Basic_Epsilonfunc {
+			   public Basic_MassTermfunc {
     std::vector<ZXlist>  * p_zxl,       * p_zxlsave;
     std::vector<Complex> * p_couplings, * p_couplingssave;
     std::vector<int>     * p_flavours,  * p_flavourssave;
-    std::vector<int>       m_zuse;
     String_Tree            m_stree,m_sthelp;
     bool                   m_copied;
     int  ZXCount(); 
@@ -109,7 +105,6 @@ namespace AMEGIC {
     Kabbala     GetEnumber(Complex); 
     Kabbala     GetSnumber(int,int,Complex); 
     Kabbala     GetScplxnumber(const int,const int,Complex); 
-    Kabbala     GetEpsnumber(int*,int,Complex);
     void        Calculate(Values*); 
     int         Massless(int); 
     Kabbala   * GetKabbala(const std::string&);
@@ -130,7 +125,6 @@ namespace AMEGIC {
     int         NumberOfFlavours()          { return p_flavours->size(); }
     int         GetFlavour(int i)           { return (*p_flavours)[i]; }  
     String_Tree GetStree()                  { return m_stree; }
-    int         UsesFunction(size_t i)      { return m_zuse[i]; }
   };
   
   class No_String_Generator : public Virtual_String_Generator {
@@ -146,7 +140,6 @@ namespace AMEGIC {
     Kabbala   GetEnumber(Complex value)                         { return Kabbala(std::string(""),value);}
     Kabbala   GetSnumber(int,int,Complex value)                 { return Kabbala(std::string(""),value);}
     Kabbala   GetScplxnumber(const int,const int,Complex value) { return Kabbala(std::string(""),value);}
-    Kabbala   GetEpsnumber(int*,int,Complex value)              { return Kabbala(std::string(""),value);}
     int       Massless(int)                                     { return 0; }  
     Kabbala * GetKabbala(const std::string&)                    { return 0;}
     int       NumberOfzxl()                                     { return 0; }

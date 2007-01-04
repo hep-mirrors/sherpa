@@ -57,6 +57,8 @@ void   Selector_Base::SetName(std::string _name)           { m_name = _name; }
 //double Selector_Base::Smin()                               { return m_smin; }
 //double Selector_Base::Smax()                               { return m_smax; }
 std::string Selector_Base::Name()                          { return m_name; }
+void   Selector_Base::SetProcessName(const std::string &name) { m_procname=name; }
+std::string Selector_Base::ProcessName() const { return m_procname; }
 
 
 /*-----------------------------------------------------------------------------------

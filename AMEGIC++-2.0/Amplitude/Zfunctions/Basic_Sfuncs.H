@@ -106,7 +106,6 @@ namespace AMEGIC {
     void   Setk0(int);
     int    Getk0_n();
     ATOOLS::Vec4D Getk0();
-
     void   Initialize();
     int    CalcEtaMu(ATOOLS::Vec4D*);//setS
     void   InitGaugeTest(double);//ResetS_GT
@@ -133,8 +132,8 @@ namespace AMEGIC {
     inline int  MomlistSize() { return Momlist.size(); }
     inline int  Sign(int i)   { return b[ATOOLS::iabs(i)]; }
     inline ATOOLS::Flavour GetFlavour(int i)   { return fl[ATOOLS::iabs(i)]; }
-    inline ATOOLS::Vec4D& Momentum(int i)     { return Momlist[i].mom; }
-    inline ATOOLS::Vec4D& MomentumImg(int i) { return Momlist[i].mom_img; }
+    inline ATOOLS::Vec4D  Momentum(int i)     { return Momlist[i].mom; }
+    inline ATOOLS::Vec4D  MomentumImg(int i) { return Momlist[i].mom_img; }
     inline bool IsComplex(const int i) {
       return ( Momlist[i].type==mt::p_p || Momlist[i].type==mt::p_m || 
 	       Momlist[i].type==mt::p_l || Momlist[i].type==mt::p_s || Momlist[i].type==mt::p_si);
