@@ -169,7 +169,7 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
     prefix=$ac_default_prefix
   fi
   if test "x$exec_prefix" = "xNONE"; then
-    exec_prefix=$ac_default_prefix
+    exec_prefix=$prefix
   fi
 
   AS_AC_EXPAND(LIBDIR, ${libdir})
