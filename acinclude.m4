@@ -49,118 +49,152 @@ dnl @top_builddir@  relative path to the top-level of build tree
 
 AC_DEFUN([SHERPA_SETUP_VARIABLES],
 [
-  AMEGICDIR="\${top_builddir}/AMEGIC++-2.0"
+  AMEGICDIR="\${top_srcdir}/AMEGIC++-2.0"
+  AMEGICBUILDDIR="\${top_builddir}/AMEGIC++-2.0"
   AMEGICINCS="-I\${AMEGICDIR}/Main -I\${AMEGICDIR}/Amplitude -I\${AMEGICDIR}/Phasespace \
-              -I\${AMEGICDIR}/String -I\${AMEGICDIR}/Model \
-              -I\${AMEGICDIR}/Amplitude/Zfunctions -I\${AMEGICDIR}/Amplitude/AmplTools"
-  AMEGICLIBS="-lAmegic -lAmplitude -lAmegicPSGen \
-              -lZfunctions -lModel -lString"
+              -I\${AMEGICDIR}/String -I\${AMEGICDIR}/Model -I\${AMEGICDIR}/Amplitude/Zfunctions"
+  AMEGICLIBS="-L\${AMEGICBUILDDIR}/Main -L\${AMEGICBUILDDIR}/Amplitude -L\${AMEGICBUILDDIR}/Phasespace \
+              -L\${AMEGICBUILDDIR}/String -L\${AMEGICBUILDDIR}/Model -L\${AMEGICBUILDDIR}/Amplitude/Zfunctions \        
+              -lAmegic -lAmplitude -lAmegicPSGen -lZfunctions -lModel -lString"
   AC_SUBST(AMEGICDIR)
+  AC_SUBST(AMEGICBUILDDIR)
   AC_SUBST(AMEGICINCS)
   AC_SUBST(AMEGICLIBS)
 
-  AMISICDIR="\${top_builddir}/AMISIC++-1.0"
+  AMISICDIR="\${top_srcdir}/AMISIC++-1.0"
+  AMISICBUILDDIR="\${top_builddir}/AMISIC++-1.0"
   AMISICINCS="-I\${AMISICDIR}/Main -I\${AMISICDIR}/Tools -I\${AMISICDIR}/Model"
-  AMISICLIBS="-lAmisic -lAmisicModel -lAmisicTools"
+  AMISICLIBS="-L\${AMISICBUILDDIR}/Main -L\${AMISICBUILDDIR}/Tools -L\${AMISICBUILDDIR}/Model \
+              -lAmisic -lAmisicModel -lAmisicTools"
   AC_SUBST(AMISICDIR)
+  AC_SUBST(AMISICBUILDDIR)
   AC_SUBST(AMISICINCS)
   AC_SUBST(AMISICLIBS)
 
-  AHADICDIR="\${top_builddir}/AHADIC++-1.0"
+  AHADICDIR="\${top_srcdir}/AHADIC++-1.0"
+  AHADICBUILDDIR="\${top_builddir}/AHADIC++-1.0"
   AHADICINCS="-I\${AHADICDIR}/Main -I\${AHADICDIR}/Tools -I\${AHADICDIR}/Formation \
 	      -I\${AHADICDIR}/Decays"
-  AHADICLIBS="-lAhadicMain -lAhadicTools -lAhadicFormation -lAhadicDecays"
+  AHADICLIBS="-L\${AHADICBUILDDIR}/Main -L\${AHADICBUILDDIR}/Tools -L\${AHADICBUILDDIR}/Formation -L\${AHADICBUILDDIR}/Decays \
+              -lAhadicMain -lAhadicTools -lAhadicFormation -lAhadicDecays"
   AC_SUBST(AHADICDIR)
+  AC_SUBST(AHADICBUILDDIR)
   AC_SUBST(AHADICINCS)
   AC_SUBST(AHADICLIBS)
   
-  ANALYSISDIR="\${top_builddir}/ANALYSIS-1.0"
+  ANALYSISDIR="\${top_srcdir}/ANALYSIS-1.0"
+  ANALYSISBUILDDIR="\${top_builddir}/ANALYSIS-1.0"
   ANALYSISINCS="-I\${ANALYSISDIR}/Main -I\${ANALYSISDIR}/Observables"
-  ANALYSISLIBS="-lAnalysis -lObservables"
+  ANALYSISLIBS="-L\${ANALYSISBUILDDIR}/Main -L\${ANALYSISBUILDDIR}/Observables -lAnalysis -lObservables"
   AC_SUBST(ANALYSISDIR)
+  AC_SUBST(ANALYSISBUILDDIR)
   AC_SUBST(ANALYSISINCS)
   AC_SUBST(ANALYSISLIBS)
   
-  APACICDIR="\${top_builddir}/APACIC++-2.0"
+  APACICDIR="\${top_srcdir}/APACIC++-2.0"
+  APACICBUILDDIR="\${top_builddir}/APACIC++-2.0"
   APACICINCS="-I\${APACICDIR}/Main -I\${APACICDIR}/Showers"
-  APACICLIBS="-lApacicShowers -lApacicMain"
+  APACICLIBS="-L\${APACICBUILDDIR}/Main -L\${APACICBUILDDIR}/Showers -lApacicShowers -lApacicMain"
   AC_SUBST(APACICDIR)
+  AC_SUBST(APACICBUILDDIR)
   AC_SUBST(APACICINCS)
   AC_SUBST(APACICLIBS)
   
-  ATOOLSDIR="\${top_builddir}/ATOOLS-2.0"
+  ATOOLSDIR="\${top_srcdir}/ATOOLS-2.0"
+  ATOOLSBUILDDIR="\${top_builddir}/ATOOLS-2.0"
   ATOOLSINCS="-I\${ATOOLSDIR}/Phys -I\${ATOOLSDIR}/Math -I\${ATOOLSDIR}/Org"
-  ATOOLSLIBS="-lToolsPhys -lToolsMath -lToolsOrg"
+  ATOOLSLIBS="-L\${ATOOLSBUILDDIR}/Phys -L\${ATOOLSBUILDDIR}/Math -L\${ATOOLSBUILDDIR}/Org -lToolsPhys -lToolsMath -lToolsOrg"
   AC_SUBST(ATOOLSDIR)
+  AC_SUBST(ATOOLSBUILDDIR)
   AC_SUBST(ATOOLSINCS)
   AC_SUBST(ATOOLSLIBS)
   
-  BEAMDIR="\${top_builddir}/BEAM-1.0"
+  BEAMDIR="\${top_srcdir}/BEAM-1.0"
+  BEAMBUILDDIR="\${top_builddir}/BEAM-1.0"
   BEAMINCS="-I\${BEAMDIR}/Main"
-  BEAMLIBS="-lBeam"
+  BEAMLIBS="-L\${BEAMBUILDDIR}/Main -lBeam"
   AC_SUBST(BEAMDIR)
+  AC_SUBST(BEAMBUILDDIR)
   AC_SUBST(BEAMINCS)
   AC_SUBST(BEAMLIBS)
   
-  EXTRAXSDIR="\${top_builddir}/EXTRA_XS-1.0"
+  EXTRAXSDIR="\${top_srcdir}/EXTRA_XS-1.0"
+  EXTRAXSBUILDDIR="\${top_builddir}/EXTRA_XS-1.0"
   EXTRAXSINCS="-I\${EXTRAXSDIR}/Two2Two -I\${EXTRAXSDIR}/Main"
-  EXTRAXSLIBS="-lExtraXS -lExtraXS2_2"
+  EXTRAXSLIBS="-L\${EXTRAXSBUILDDIR}/Two2Two -L\${EXTRAXSBUILDDIR}/Main -lExtraXS -lExtraXS2_2"
   AC_SUBST(EXTRAXSDIR)
+  AC_SUBST(EXTRAXSBUILDDIR)
   AC_SUBST(EXTRAXSINCS)
   AC_SUBST(EXTRAXSLIBS)
   
-  HADRONSDIR="\${top_builddir}/HADRONS++-0.0"
+  HADRONSDIR="\${top_srcdir}/HADRONS++-0.0"
+  HADRONSBUILDDIR="\${top_builddir}/HADRONS++-0.0"
   HADRONSINCS="-I\${HADRONSDIR}/Main -I\${HADRONSDIR}/ME_Library -I\${HADRONSDIR}/PS_Library"
-  HADRONSLIBS="-lHadronsMain -lHadronsMEs -lHadronsPSs"
+  HADRONSLIBS="-L\${HADRONSBUILDDIR}/Main -L\${HADRONSBUILDDIR}/ME_Library -L\${HADRONSBUILDDIR}/PS_Library \
+               -lHadronsMain -lHadronsMEs -lHadronsPSs"
   AC_SUBST(HADRONSDIR)
+  AC_SUBST(HADRONSBUILDDIR)
   AC_SUBST(HADRONSINCS)
   AC_SUBST(HADRONSLIBS)
   
-  MODELDIR="\${top_builddir}/MODEL-1.0"
+  MODELDIR="\${top_srcdir}/MODEL-1.0"
+  MODELBUILDDIR="\${top_builddir}/MODEL-1.0"
   MODELINCS="-I\${MODELDIR}/Main"
-  MODELLIBS="-lModelMain"
+  MODELLIBS="-L\${MODELBUILDDIR}/Main -lModelMain"
   AC_SUBST(MODELDIR)
+  AC_SUBST(MODELBUILDDIR)
   AC_SUBST(MODELINCS)
   AC_SUBST(MODELLIBS)
   
   HDECAYINCS="-I\${MODELDIR}/Hdecay"
-  HDECAYLIBS="-lHdecay"
+  HDECAYLIBS="-L\${MODELBUILDDIR}/Hdecay -lHdecay"
   AC_SUBST(HDECAYINCS)
   AC_SUBST(HDECAYLIBS)
   
   ISAJETINCS="-I\${MODELDIR}/Isajet"
-  ISAJETLIBS="-lIsajet"
+  ISAJETLIBS="-L\${MODELBUILDDIR}/Isajet -lIsajet"
   AC_SUBST(ISAJETINCS)
   AC_SUBST(ISAJETLIBS)
   
-  PDFDIR="\${top_builddir}/PDF-1.0"
+  PDFDIR="\${top_srcdir}/PDF-1.0"
+  PDFBUILDDIR="\${top_builddir}/PDF-1.0"
   PDFINCS="-I\${PDFDIR}/Main -I\${PDFDIR}/Remnant -I\${PDFDIR}/LHAPDF -I\${PDFDIR}/MRST \
            -I\${PDFDIR}/GRV -I\${PDFDIR}/Sudakov -I\${PDFDIR}/KMR -I\${PDFDIR}/Remnant"
-  PDFLIBS="-lPDF -lDUPDF -lSudakov -lMRST -lGRV -lRemnant"
+  PDFLIBS="-L\${PDFBUILDDIR}/Main -L\${PDFBUILDDIR}/Remnant -L\${PDFBUILDDIR}/LHAPDF -L\${PDFBUILDDIR}/MRST \
+           -L\${PDFBUILDDIR}/GRV -L\${PDFBUILDDIR}/Sudakov -L\${PDFBUILDDIR}/KMR -L\${PDFBUILDDIR}/Remnant \
+           -lPDF -lDUPDF -lSudakov -lMRST -lGRV -lRemnant"
   AC_SUBST(PDFDIR)
+  AC_SUBST(PDFBUILDDIR)
   AC_SUBST(PDFINCS)
   AC_SUBST(PDFLIBS)
   
   CTEQINCS="-I\${PDFDIR}/CTEQ"
-  CTEQLIBS="-lCTEQ"
+  CTEQLIBS="-L\${PDFBUILDDIR}/CTEQ -lCTEQ"
   AC_SUBST(CTEQINCS)
   AC_SUBST(CTEQLIBS)
   
-  PHASICDIR="\${top_builddir}/PHASIC++-1.0"
+  PHASICDIR="\${top_srcdir}/PHASIC++-1.0"
+  PHASICBUILDDIR="\${top_builddir}/PHASIC++-1.0"
   PHASICINCS="-I\${PHASICDIR}/Main -I\${PHASICDIR}/Foam"
-  PHASICLIBS="-lPhasespace"
+  PHASICLIBS="-L\${PHASICBUILDDIR}/Main -lPhasespace"
   AC_SUBST(PHASICDIR)
+  AC_SUBST(PHASICBUILDDIR)
   AC_SUBST(PHASICINCS)
   AC_SUBST(PHASICLIBS)
   
-  SHERPADIR="\${top_builddir}/SHERPA-1.0"
+  SHERPADIR="\${top_srcdir}/SHERPA-1.0"
+  SHERPABUILDDIR="\${top_builddir}/SHERPA-1.0"
   SHERPAINCS="-I\${SHERPADIR}/Single_Events -I\${SHERPADIR}/PerturbativePhysics \
               -I\${SHERPADIR}/LundTools -I\${SHERPADIR}/Tools -I\${SHERPADIR}/Main \
               -I\${SHERPADIR}/Initialization -I\${SHERPADIR}/SoftPhysics -I\${SHERPADIR}/HerwigTools"
-  SHERPALIBS="-lSherpaMain -lSherpaInitialization -lSherpaSingleEvents \
+  SHERPALIBS="-L\${SHERPABUILDDIR}/Single_Events -L\${SHERPABUILDDIR}/PerturbativePhysics \
+              -L\${SHERPABUILDDIR}/LundTools -L\${SHERPABUILDDIR}/Tools -L\${SHERPABUILDDIR}/Main \
+              -L\${SHERPABUILDDIR}/Initialization -L\${SHERPABUILDDIR}/SoftPhysics -L\${SHERPABUILDDIR}/HerwigTools \
+              -lSherpaMain -lSherpaInitialization -lSherpaSingleEvents \
               -lSherpaPerturbativePhysics -lSherpaSoftPhysics -lLundTools -lSherpaTools"
   SHERPAFLAGS="-pedantic -Wall"
   AC_SUBST(SHERPADIR)
+  AC_SUBST(SHERPABUILDDIR)
   AC_SUBST(SHERPAINCS)
   AC_SUBST(SHERPALIBS)
   AC_SUBST(SHERPAFLAGS)

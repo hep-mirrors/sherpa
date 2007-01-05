@@ -14,7 +14,9 @@ endif
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@ @CONDITIONAL_ROOTFLAGS@
 
-libSherpaMain_la_LIBADD = -L$(pkglibdir) -lSherpaInitialization -lSherpaSingleEvents \
+libSherpaMain_la_LIBADD = -L$(SHERPABUILDDIR)/Initialization -L$(SHERPABUILDDIR)/Single_Events -L$(SHERPABUILDDIR)/Tools \
+                -L$(SHERPABUILDDIR)/PerturbativePhysics -L$(SHERPABUILDDIR)/SoftPhysics -L$(SHERPABUILDDIR)/LundTools \
+                -lSherpaInitialization -lSherpaSingleEvents \
                 -lSherpaPerturbativePhysics -lSherpaSoftPhysics -lLundTools -lSherpaTools \
 		@APACICLIBS@ @AMEGICLIBS@ @ANALYSISLIBS@ @ATOOLSLIBS@ @AHADICLIBS@ \
 		@BEAMLIBS@ @EXTRAXSLIBS@ @MODELLIBS@ @PDFLIBS@ @PHASICLIBS@  \
