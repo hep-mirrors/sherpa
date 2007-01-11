@@ -126,6 +126,16 @@ namespace ANALYSIS {
     Primitive_Observable_Base * Copy() const ;
   };
 
+  class Jet_IPT2_Distribution : public Jet_Observable_Base {
+
+  public:
+    Jet_IPT2_Distribution(unsigned int type,double xmin,double xmax,int nbins,
+			  unsigned int mode,unsigned int minn,unsigned int maxn, 
+			  const std::string & =std::string("Jets"));
+    double Calc(const ATOOLS::Particle * p);
+    Primitive_Observable_Base * Copy() const ;
+  };
+
   class Jet_ET_Distribution : public Jet_Observable_Base {
 
   public:

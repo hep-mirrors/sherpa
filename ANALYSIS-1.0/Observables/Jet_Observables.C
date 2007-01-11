@@ -230,6 +230,8 @@ void Two_Jet_Observable_Base::Evaluate(const Particle_List & pl,
 	  jet2<=j2max; ++it2, ++i, ++jet2) {
 	double value=Calc(*it1,*it2,jet1-1,jet2-1);
 	m_histos[0]->Insert(value,weight,ncount);
+	msg_Debugging()<<"2-jet obs '"<<m_name<<"': j#1 = "<<jet1<<", j#2 = "<<jet2
+		       <<", idx = "<<i<<"\n";
 	m_histos[i]->Insert(value,weight,ncount);
       }
       for(; jet2<=size_t(m_maxn); ++i, ++jet2) {
@@ -420,6 +422,27 @@ double Jet_PT_Distribution::Calc(const Particle * p)
 Primitive_Observable_Base * Jet_PT_Distribution::Copy() const 
 {
   return new Jet_PT_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+}
+
+DEFINE_OBSERVABLE_GETTER(Jet_IPT2_Distribution,Jet_IPT2_Distribution_Getter,"JetIPT2")
+
+Jet_IPT2_Distribution::Jet_IPT2_Distribution(unsigned int type,double xmin,double xmax,int nbins,
+					 unsigned int mode,unsigned int minn,unsigned int maxn, 
+					 const std::string & listname) :
+  Jet_Observable_Base(type,xmin,xmax,nbins,mode,minn,maxn,listname) 
+{
+  m_name+="ipt2_";
+}
+
+
+double Jet_IPT2_Distribution::Calc(const Particle * p)
+{
+  return 1.0/Max(1.0e-12,p->Momentum().PPerp2());
+}
+
+Primitive_Observable_Base * Jet_IPT2_Distribution::Copy() const 
+{
+  return new Jet_IPT2_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
 }
 
 DEFINE_OBSERVABLE_GETTER(Jet_ET_Distribution,Jet_ET_Distribution_Getter,"JetET")
