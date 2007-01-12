@@ -199,7 +199,6 @@ void Jet_Evolution::AftermathOfNoShower(Blob * blob,Blob_List * bloblist)
   for (int i=0;i<blob->NOutP();i++) {
     myblob = new Blob();
     myblob->SetType(btp::FS_Shower);
-    myblob->SetBeam(i);
     myblob->SetStatus(blob_status::needs_hadronization);
     Particle * p = new Particle(*blob->OutParticle(i));
     myblob->AddToInParticles(blob->OutParticle(i));
