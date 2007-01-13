@@ -19,9 +19,6 @@ libObservables_la_SOURCES     =	\
 				All_Particle_Selector.C \
 				Universal_Selector.C \
 			    	MI_Observables.C \
-			    	ISR_Statistics.C \
-			    	Shower_Statistics.C \
-			    	SV_Statistics.C \
 			    	One_Particle_Observables.C \
 			    	One_Particle_Observables_2.C \
 			    	Two_Particle_Observables.C \
@@ -54,8 +51,6 @@ pkginclude_HEADERS        =	\
 			All_Particle_Selector.H \
 			Universal_Selector.H \
 			MI_Observables.H \
-			ISR_Statistics.H \
-			Shower_Statistics.H \
 			One_Particle_Observables.H \
 			Two_Particle_Observables.H \
 			Three_Particle_Observables.H \
@@ -75,7 +70,6 @@ pkginclude_HEADERS        =	\
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@ @CONDITIONAL_ROOTFLAGS@
 
-INCLUDES      =	@ANALYSISINCS@ @MODELINCS@ @PDFINCS@ \
-		@APACICINCS@ @ATOOLSINCS@ @CONDITIONAL_ROOTINCS@
+INCLUDES      =	@ANALYSISINCS@ @MODELINCS@ @ATOOLSINCS@ @CONDITIONAL_ROOTINCS@
 
 EXTRA_DIST    = @SVNINCLUDE@

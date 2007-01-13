@@ -9,7 +9,7 @@ pkginclude_HEADERS        =	\
 			CTEQ6_Fortran_Interface.H 
 endif
 
-INCLUDES      =	@APACICINCS@ @PDFINCS@ @MODELINCS@ @ATOOLSINCS@
+INCLUDES      =	@PDFINCS@ @MODELINCS@ @ATOOLSINCS@
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@
 
