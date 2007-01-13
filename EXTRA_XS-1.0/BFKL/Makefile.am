@@ -5,7 +5,7 @@ libExtraXSBFKL_la_SOURCES     =	\
 				LO_LEV.C \
 				BFKL_Sudakov.C \
 				Ladder.C
-include_HEADERS       =	\
+pkginclude_HEADERS    =	\
 			LEV_Base.H \
 			LEV_Group.H \
 			LO_LEV.H \
