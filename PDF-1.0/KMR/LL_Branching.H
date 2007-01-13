@@ -3,7 +3,7 @@
 
 #include "NLL_Branching_Probability_Base.H"
 #include "Running_AlphaS.H"
-#include "Splitting_Group.H"
+#include "Splitting_Kernel.H"
 
 namespace PDF {
 
@@ -21,9 +21,9 @@ namespace PDF {
       
     };// end of class Initializer_Function
     
-    typedef std::set<APACIC::Splitting_Function*> SF_Set;
+    typedef std::set<Splitting_Kernel*> SF_Set;
 
-    const static double s_nfmax, s_nc, s_cf, s_ca;
+    const static int s_nfmax;
 
     static SF_Set s_splittings;
     
@@ -31,9 +31,8 @@ namespace PDF {
 
     static Initializer_Function s_initializer;
 
-    static void Insert(APACIC::Splitting_Function *splitting);
-
-    static SF_Set::iterator Find(const ATOOLS::Flavour &a,const ATOOLS::Flavour &b);
+    static SF_Set::iterator Find(const ATOOLS::Flavour &a,
+				 const ATOOLS::Flavour &b);
 
     friend class Initializer_Function;
 
@@ -42,8 +41,8 @@ namespace PDF {
     ATOOLS::Flavour        m_flavour;
     MODEL::Running_AlphaS *p_alphas;
 
-    std::vector<APACIC::Splitting_Group*> m_splittings;
-    std::vector<double>                   m_const;
+    std::vector<Splitting_Kernel*> m_splittings;
+    std::vector<double>            m_const;
 
     void GenerateName();
 
@@ -63,9 +62,6 @@ namespace PDF {
     inline static const SF_Set &AllSplittings() { return s_splittings; }
     
     inline static double NfMax() { return s_nfmax; }
-    inline static double NC()    { return s_nc;    }
-    inline static double CF()    { return s_cf;    }
-    inline static double CA()    { return s_ca;    }
 
   };// end of class LL_Branching_Probabilities
 

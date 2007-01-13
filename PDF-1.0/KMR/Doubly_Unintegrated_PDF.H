@@ -25,8 +25,8 @@ namespace PDF {
 
     MODEL::Running_AlphaS *p_alphas;
 
-    std::map<ATOOLS::Flavour,APACIC::Splitting_Function*> m_splitting;
-    std::map<ATOOLS::Flavour,LL_Branching*>               m_branching;
+    std::map<ATOOLS::Flavour,Splitting_Kernel*> m_splitting;
+    std::map<ATOOLS::Flavour,LL_Branching*>     m_branching;
 
     double m_x, m_z, m_kperp2, m_mu2, m_mu02, m_epsilon;
     double m_integrated, m_unintegrated;
@@ -34,11 +34,7 @@ namespace PDF {
     kps::type m_kperpscheme;
     double    m_fixedktexponent;
     bool      m_calculate;
-    int       m_mode, m_sudmode, m_splitmode;
-
-    ATOOLS::Grid *p_integral;
-
-    bool InitializeGluonPDF();
+    int       m_sudmode, m_splitmode, m_ordermode;
 
     double SmoothIntegrated(const ATOOLS::Flavour flavour);
     double ConstantIntegrated(const ATOOLS::Flavour flavour);
@@ -68,12 +64,14 @@ namespace PDF {
     void    Output();
     double  Cut(const std::string &type);
 
+    void Test();
+
     // inline functions
     inline kps::type KPerpScheme() const     { return m_kperpscheme;     }
     inline double    FixedKtExponent() const { return m_fixedktexponent; }
-    inline int       Mode() const            { return m_mode;            }
     inline int       SudakovMode() const     { return m_sudmode;         }
     inline int       SplitMode() const       { return m_splitmode;       }
+    inline int       OrderingMode() const    { return m_ordermode;       }
 
     inline LL_Sudakov *Sudakov() const { return p_sudakov; }
 
@@ -81,12 +79,12 @@ namespace PDF {
     { m_kperpscheme=scheme; }
     inline void SetFixedKtExponent(const double exponent) 
     { m_fixedktexponent=exponent; }
-    inline void SetMode(const int mode) 
-    { m_mode=mode; }
     inline void SetSudakovMode(const int mode) 
     { m_sudmode=mode; }
     inline void SetSplitMode(const int mode) 
     { m_splitmode=mode; }
+    inline void SetOrderingMode(const int mode) 
+    { m_ordermode=mode; }
 
   };// end of class Doubly_Unintegrated_PDF
 

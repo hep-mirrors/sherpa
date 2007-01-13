@@ -1,17 +1,15 @@
 #include "LL_Branching.H"
 
-#include "QCD_Splitting_Functions.H"
+#include "QCD_Splitting_Kernels.H"
 #include "Running_AlphaS.H"
 #include "MyStrStream.H"
 #include "Exception.H"
 #include "MathTools.H"
 
 using namespace PDF;
+using namespace ATOOLS;
 
-const double PDF::LL_Branching::s_nfmax=5.;
-const double PDF::LL_Branching::s_nc=3.;
-const double PDF::LL_Branching::s_cf=(3.*3.-1.)/(2.*3.);
-const double PDF::LL_Branching::s_ca=3.;
+const int PDF::LL_Branching::s_nfmax(5);
 
 LL_Branching::SF_Set PDF::LL_Branching::s_splittings;
 LL_Branching::Initializer_Function PDF::LL_Branching::s_initializer; 
@@ -21,15 +19,17 @@ void LL_Branching::Initializer_Function::Initialize() const
   static bool initialized=false;
   if (initialized) return;
   for (int i=1;i<=s_nfmax;++i) {
-    ATOOLS::Flavour cur((ATOOLS::kf::code)i);
-    Insert(new APACIC::q_qg(cur));
-    Insert(new APACIC::q_qg(cur.Bar()));
-    Insert(new APACIC::q_gq(cur));
-    Insert(new APACIC::q_gq(cur.Bar()));
-    Insert(new APACIC::g_qq(cur));
-    Insert(new APACIC::g_qq(cur.Bar()));
+    Flavour cur((kf::code)i);
+    s_splittings.insert(new Q_QG(cur));
+    s_splittings.insert(new Q_QG(cur.Bar()));
+    s_splittings.insert(new Q_GQ(cur));
+    s_splittings.insert(new Q_GQ(cur.Bar()));
+    s_splittings.insert(new G_QQ(cur));
+    s_splittings.insert(new G_QQ(cur.Bar()));
   }
-  Insert(new APACIC::g_gg());
+  // account for factor 2 in P_{gg}(z)
+  s_splittings.insert(new G_GG());
+  s_splittings.insert(new G_GG());
   initialized=true;
 }
 
@@ -41,18 +41,16 @@ LL_Branching::Initializer_Function::~Initializer_Function()
   }
 }
 
-LL_Branching::LL_Branching(const ATOOLS::Flavour flavour,
+LL_Branching::LL_Branching(const Flavour flavour,
 			   MODEL::Running_AlphaS *alphas):
   m_flavour(flavour),
   p_alphas(alphas)
 {
   s_initializer.Initialize();
-  m_splittings.push_back(new APACIC::Splitting_Group());
-  m_splittings[0]->Add(*Find(m_flavour,m_flavour));
+  m_splittings.push_back(*Find(m_flavour,m_flavour));
   if (m_flavour.IsGluon()) {
-    m_splittings.push_back(new APACIC::Splitting_Group());
-    for (int i=1;i<=(int)s_nfmax;++i) {
-      m_splittings[1]->Add(*Find(m_flavour,(ATOOLS::kf::code)i));
+    for (int i=1;i<=s_nfmax;++i) {
+      m_splittings.push_back(*Find(m_flavour,(kf::code)i));
     }
   }
   else if (!m_flavour.IsQuark()) {
@@ -69,48 +67,35 @@ void LL_Branching::GenerateName()
   std::string temp;
   m_name=std::string("lls_");
   sstr.clear();
-  sstr<<m_splittings[0]->GetFlA()<<"_as("
-      <<ATOOLS::Flavour((ATOOLS::kf::code)24).PSMass()<<")-"
+  sstr<<m_splittings[0]->GetA()<<"_as("
+      <<Flavour((kf::code)24).PSMass()<<")-"
       <<p_alphas->AsMZ()<<"_o-"<<p_alphas->Order()<<".dat";
   sstr>>temp;
   m_name+=temp;
 }
 
-std::set<APACIC::Splitting_Function*>::iterator 
-LL_Branching::Find(const ATOOLS::Flavour &a,const ATOOLS::Flavour &b)
+std::set<Splitting_Kernel*>::iterator 
+LL_Branching::Find(const Flavour &a,const Flavour &b)
 {
-  std::set<APACIC::Splitting_Function*>::iterator sfit;
-  for (sfit=s_splittings.begin();sfit!=s_splittings.end();++sfit) {
-    if ((*sfit)->GetFlA()==a && (*sfit)->GetFlB()==b) {
-      return sfit;
-    }
-  }
+  std::set<Splitting_Kernel*>::iterator sfit;
+  for (sfit=s_splittings.begin();sfit!=s_splittings.end();++sfit)
+    if ((*sfit)->GetA()==a && (*sfit)->GetB()==b) return sfit;
   return s_splittings.end();
-}
-
-void LL_Branching::Insert(APACIC::Splitting_Function *splitting) 
-{
-  bool found=false;
-  std::set<APACIC::Splitting_Function*>::iterator sfit;
-  for (sfit=s_splittings.begin();sfit!=s_splittings.end();++sfit) {
-    if ((*sfit)->GetFlA()==splitting->GetFlA() &&
-	(*sfit)->GetFlB()==splitting->GetFlB() &&
-	(*sfit)->GetFlC()==splitting->GetFlC()) {
-      found=true;
-    }
-  }
-  if (!found) s_splittings.insert(splitting);
 }
 
 double LL_Branching::Gamma(double q, double Q)
 {
-  double splitting=0.;
+  double splitting(0.0);
   if (m_flavour.IsQuark()) {
-    splitting=m_splittings[0]->Integral(0.,Q/(Q+q));
+    splitting=m_splittings[0]->Integral(0.0,Q/(Q+q));
   }
   else if (m_flavour.IsGluon()) {
-    splitting=MODEL::as->Nf(q*q)/s_nfmax*m_splittings[1]->Integral(0.,1.);
-    splitting+=m_splittings[0]->Integral(q/(Q+q),Q/(Q+q));
+    splitting=m_splittings[0]->Integral(q/(Q+q),Q/(Q+q));
+    size_t nf(Min(s_nfmax,MODEL::as->Nf(q*q)));
+    for (size_t i(1);i<=nf;++i) splitting+=m_splittings[i]->Integral(0.0,1.0);
+  }
+  else {
+    THROW(fatal_error,"Invalid flavour.");
   }
   return (*p_alphas)(q*q)/(M_PI*q)*splitting;
 }

@@ -140,8 +140,6 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 	  dupdf->SetKPerpScheme((kps::type)kpscheme);
 	  double exponent=dataread->GetValue("KMR_FIXED_EXPONENT",(double)0.0);
 	  dupdf->SetFixedKtExponent(exponent);
-	  int mode=dataread->GetValue("KMR_MODE",(int)0);
-	  dupdf->SetMode(mode);
 	  dupdf->Initialize();
 	  return dupdf;
 	}
