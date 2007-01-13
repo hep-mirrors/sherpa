@@ -24,30 +24,33 @@ namespace EXTRAXS {
     Vector_Vector  m_moms;
     Flavour_Vector m_flavs;
 
-    ATOOLS::Vec4D m_pa, m_pb, m_k1, m_k2, m_q, m_oldq;
+    ATOOLS::Vec4D m_pa, m_pb, m_k1, m_kn, m_q, m_oldq, m_p1, m_p2;
 
-    double m_weight, m_ya, m_yb, m_kt2min, m_q2;
-    double m_y1, m_kt21, m_phi1, m_z1;
-    double m_a1, m_a2, m_z2, m_kt22, m_mu21, m_mu22;
+    double m_weight, m_ya, m_yb, m_kt2min, m_q2, m_y1, m_yn;
+    double m_a1, m_an, m_z1, m_zn, m_kt21, m_kt2n, m_mu21, m_mu2n;
+    double m_y, m_kt2, m_phi, m_lasty;
 
-    size_t m_ncols;
+    size_t m_ncols, m_sudmode, m_nfixed, m_multimode, m_splitmode;
 
     bool GeneratePDFJet();
     bool ConstructRung();
+    bool ConstructIncoming();
     bool GenerateLadder();
 
     double Flux() const;
-    double Jacobian() const;
 
-    bool CheckEnergy() const;
+    bool TestEmission();
     bool SetScales();
+    void InitSudakov();
+
+    bool DiceOneEmission();
 
   public:
 
     // constructor
     Ladder(const size_t nin,const size_t nout,
 	   const ATOOLS::Flavour *flavours,
-	   const int scalescheme,const int kfactorscheme,
+	   const PHASIC::scl::scheme scalescheme,const int kfactorscheme,
 	   BEAM::Beam_Spectra_Handler *const beamhandler,
 	   PDF::ISR_Handler *const isrhandler,
 	   ATOOLS::Selector_Data *const selectordata);
@@ -72,6 +75,9 @@ namespace EXTRAXS {
 
     bool SelectOne();
     void DeSelect();
+
+    void AddEvent(const double xs,const double validxs,
+		  const int ncounts);
 
   };// end of class Ladder
 

@@ -25,14 +25,13 @@ namespace EXTRAXS {
     ~LEV_Group();
 
     // member functions
-    double Value(const double &y,const double &kt) const;
-    double MajorValue(const double &y,const double &kt) const;
+    double Value(const ATOOLS::Vec4D &k1,const ATOOLS::Vec4D &q1,
+		 const ATOOLS::Vec4D &k2,const ATOOLS::Vec4D &q2) const;
+    double MajorValue(const ATOOLS::Vec4D &k1,const ATOOLS::Vec4D &q1,
+		      const ATOOLS::Vec4D &k2,const ATOOLS::Vec4D &q2) const;
 
     double MajorIntegral();
 
-    void SetYMin(const double &ymin);
-    void SetYMax(const double &ymax);
-    
     void SetKT2Min(const double &kt2min);
     void SetKT2Max(const double &kt2max);
 

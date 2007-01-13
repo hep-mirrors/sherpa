@@ -6,12 +6,7 @@
 #include "Run_Parameter.H"
 #include "Random.H"
 #include "Flow.H"
-
-#define NC 3.0
-
-// #define USING__Collinear_Factorization
-#define USING__Gluon_Kernel_Only
-#define USING__Two_To_Zero_ME
+#include "Data_Reader.H"
 
 using namespace EXTRAXS;
 using namespace PHASIC;
@@ -20,21 +15,39 @@ using namespace ATOOLS;
 
 Ladder::Ladder(const size_t nin,const size_t nout,
 	       const ATOOLS::Flavour *flavours,
-	       const int scalescheme,const int kfactorscheme,
+	       const PHASIC::scl::scheme scalescheme,const int kfactorscheme,
 	       BEAM::Beam_Spectra_Handler *const beamhandler,
 	       PDF::ISR_Handler *const isrhandler,
 	       ATOOLS::Selector_Data *const selectordata):
   XS_Group(nin,nout,flavours,scalescheme,kfactorscheme,
 	   beamhandler,isrhandler,selectordata),
   p_sudakov(new BFKL_Sudakov()),
-  m_ncols(0)
+  m_ncols(0), m_sudmode(1), m_nfixed(std::numeric_limits<size_t>::max()),
+  m_multimode(1), m_splitmode(1)
 { 
   m_name="BFKL_ME";
+  Data_Reader read(" ",";","!","=");
+  int ktscheme(1);
+  if (!read.ReadFromFile(ktscheme,"BFKL_KT_SCHEME")) ktscheme=1;
+  else msg_Info()<<METHOD<<"(): Set k_T-scheme "<<ktscheme<<".\n";
+  p_sudakov->SetKTScheme(ktscheme);
+  if (!read.ReadFromFile(m_nfixed,"BFKL_FIXED_MULTI"))
+    m_nfixed=std::numeric_limits<size_t>::max();
+  else msg_Info()<<METHOD<<"(): Fixed multiplicity "<<m_nfixed<<".\n";
+  if (!read.ReadFromFile(m_multimode,"BFKL_MULTI_MODE")) m_multimode=1;
+  else msg_Info()<<METHOD<<"(): Multiplicity selection mode "
+		 <<m_multimode<<".\n";
+  if (!read.ReadFromFile(m_sudmode,"BFKL_SUDAKOV_MODE")) m_sudmode=1;
+  else msg_Info()<<METHOD<<"(): Set Sudakov mode "<<m_sudmode<<".\n";
+  if (!read.ReadFromFile(m_splitmode,"BFKL_SPLIT_MODE")) m_splitmode=0;
+  else msg_Info()<<METHOD<<"(): Set splitting mode "<<m_splitmode<<".\n";
 }
 
 Ladder::~Ladder()
 {
   delete p_sudakov;
+  p_momenta=NULL;
+  p_flavours=NULL;
 }
 
 bool Ladder::Initialize()
@@ -48,13 +61,9 @@ bool Ladder::Initialize()
 	p_pdfs[i]->Type().find("DUPDF")==std::string::npos)
       THROW(fatal_error,"BFKL ME needs UPDF.");
     m_kt2min=ATOOLS::Max(m_kt2min,p_pdfs[i]->Cut("kp"));
-#ifdef USING__Gluon_Kernel_Only
-    p_pdfs[i]->SetSplitMode(1);
-#endif
+    p_pdfs[i]->SetSudakovMode(0);
+    if (m_splitmode<1) p_pdfs[i]->SetSplitMode(0);
   }
-  p_pdfs[0]->SetSudakovMode(1);
-  p_pdfs[1]->SetSudakovMode(0);
-  p_sudakov->SetKT2Min(m_kt2min);
   delete [] p_momenta;
   delete [] p_flavours;
   p_momenta=&m_moms.front();
@@ -65,6 +74,11 @@ bool Ladder::Initialize()
   p_addmomenta = new ATOOLS::Vec4D[2];
   m_naddout=2;
   return true;
+}
+
+void Ladder::AddEvent(const double xs,const double validxs,const int ncounts)
+{ 
+  Integrable_Base::AddEvent(xs,validxs,ncounts);
 }
 
 void Ladder::CreateFSRChannels() 
@@ -79,188 +93,206 @@ void Ladder::CreateISRChannels()
   p_pshandler->KMRZIntegrator()->DropAllChannels();
 }
 
-double Ladder::Jacobian() const
-{
-#ifdef USING__Collinear_Factorization
-  // jacobian for ds' dct -> dkt2 dz 
-  return 2.0*sqr(m_kt21)/(m_z1*(1.0-m_z1));
-#else
-  // jacobian for ds' -> dz 
-  return 2.0*sqr(m_kt21)/(m_z1*(1.0-m_z1));
-#endif
-}
-
 double Ladder::Flux() const
 {
-  return 2.0*m_q2*m_a1*m_a2/(m_z1*m_z2);
-}
-
-bool Ladder::CheckEnergy() const
-{
-  return -m_q.PMinus()/(1.0+m_q.PPerp2()/m_q.Abs2())<m_pb.PMinus();
+  return 2.0*m_q2*m_a1*m_an/(m_z1*m_zn);
 }
 
 bool Ladder::GeneratePDFJet()
 {
-  m_weight=1.0;
-  double rn[4], Q(sqrt(m_q2)), kt2max(0.25*m_q2);
-  double kt2min(0.25*m_q2*p_pdfs[0]->XMin()*p_pdfs[1]->XMin());
-  kt2min=ATOOLS::Max(m_kt2min,kt2min);
+  double rn[4];
   for (short unsigned int i(0);i<4;++i) rn[i]=ran.Get();
-  // dice kt2
-  m_kt21=kt2min*pow(kt2max/kt2min,rn[0]);
-  m_weight*=log(kt2max/kt2min)*m_kt21/m_q2;
-  // dice z
-  double zmax(sqrt(0.25-m_kt21/m_q2)), zmin(0.5-zmax);
-  zmax+=0.5;
-  m_z1=zmin+rn[1]*(zmax-zmin);
-  m_weight*=zmax-zmin;
-  // dice phi
-  m_phi1=2.0*M_PI*rn[2];
-  m_weight*=2.0*M_PI;
   // dice y
-  double shat(m_kt21/(m_z1*(1.0-m_z1))), Qhat(sqrt(shat));
-  double ymin(log(Qhat/Q)), ymax(-ymin);
-  if (ymin>=ymax) THROW(fatal_error,"No allowed y range.");
-  double y(ymin+rn[3]*(ymax-ymin));
-  m_weight*=ymax-ymin;
-  // construct emission
-  double kt1(sqrt(m_kt21)), E1(Qhat/2.0);
-  m_k1=Vec4D(E1,kt1*cos(m_phi1),kt1*sin(m_phi1),sqrt(E1*E1-m_kt21));
-  Vec4D cm(cosh(y),0.0,0.0,sinh(y));
-  Poincare cms(cm);
-  cms.BoostBack(m_k1);
-  m_y1=m_k1.Y();
-  // construct propagator
-  Vec4D pi1(Qhat/2.,0.,0.,Qhat/2.);
-  cms.BoostBack(pi1);
-  m_moms[0]=m_q=pi1-m_k1;
-  m_a1=m_q.PPlus()/m_pa.PPlus();
-  m_z1=m_q.PPlus()/pi1.PPlus();
-  // phase space weight
-  m_weight/=32.0*sqr(M_PI);
-  if (m_a1>1.0 || m_z1>1.0 || m_a1/m_z1>1.0) {
-    msg.Error()<<METHOD<<"(): LCM out of range."<<std::endl;
-    return false;
-  }
-  if (!CheckEnergy() || m_k1.Nan() || m_q.Nan()) return false;
+  m_y=m_y1=m_yb+rn[0]*(m_ya-m_yb);
+  m_weight*=m_ya-m_yb;
+  // dice kt2
+  m_kt2=m_kt21=m_kt2min*pow(0.25*m_q2/m_kt2min,rn[1]);
+  m_weight*=log(0.25*m_q2/m_kt2min)*m_kt21;
+  // dice phi
+  double phi1(2.0*M_PI*rn[2]);
+  m_weight*=2.0*M_PI;
+  // construct jet
+  double kt1(sqrt(m_kt21));
+  m_k1=Vec4D(kt1*cosh(m_y1),kt1*cos(phi1),
+	     kt1*sin(phi1),kt1*sinh(m_y1));
+  m_q=m_k1;
+  if (m_k1[0]*m_k1[0]>=0.25*m_q2) return false;
+  // dice y
+  m_yn=m_yb+rn[3]*(m_ya-m_yb);
+  m_weight*=m_ya-m_yb;
+  if (m_yn<m_y1) return false;
+  if (!ConstructIncoming() || 
+      !TestEmission()) return false;
+  return true;
+}
+
+bool Ladder::TestEmission()
+{
+  if (m_p1[0]<0.0 || m_p2[0]<0.0 ||
+      m_p1[0]>m_pa[0] || m_p2[0]>m_pb[0]) return false;
+  return true;
+}
+
+bool Ladder::ConstructIncoming()
+{
+  double knt(sqrt(m_q.PPerp2())), yn(m_yn);
+  m_kn=Vec4D(knt*cosh(yn),-m_q[1],-m_q[2],knt*sinh(yn));
+  Vec4D cms(m_k1+m_kn);
+  for (size_t i(m_nin);i<m_moms.size();++i)
+    cms+=m_moms[i];
+  double Q2(0.5*sqrt(cms.Abs2())), ey(exp(cms.Y()));
+  m_p1=Vec4D(Q2*ey,0.0,0.0,Q2*ey);
+  m_p2=Vec4D(Q2/ey,0.0,0.0,-Q2/ey);
+  if (m_p1.Nan() || m_p2.Nan() || m_kn.Nan()) return false;
   return true;
 }
 
 bool Ladder::ConstructRung()
 {
-  double y(p_sudakov->GetY());
-  double kt(sqrt(p_sudakov->GetKT2())), phi(p_sudakov->GetPhi());
-  Vec4D k(kt*cosh(y),kt*cos(phi),kt*sin(phi),kt*sinh(y));
+  double kt(sqrt(m_kt2));
+  Vec4D k(kt*cosh(m_y),kt*cos(m_phi),kt*sin(m_phi),kt*sinh(m_y));
+  m_q+=m_moms.back()=k;
+  if (k.Nan()) return false;
+  return ConstructIncoming();
+}
+
+bool Ladder::DiceOneEmission()
+{
+  /* store old values */
+  double lasty(m_y);
   m_oldq=m_q;
-  m_q=m_q-k;
-  m_moms.push_back(k);
-  m_flavs.push_back(p_sudakov->Selected()->GetB());
+  /* dice y, ps weight */
+  m_y=ran.Get()*(lasty-m_yn)+m_yn;
+  m_weight*=dabs(lasty-m_yn);
+  /* dice kt2, ps weight */
+  double kt2max((m_pa+m_pb-m_q).Abs2());
+  m_kt2=m_kt2min*pow(kt2max/m_kt2min,ran.Get());
+  m_weight*=log(kt2max/m_kt2min);
+  /* dice phi, ps weight is 1 */
+  m_phi=ran.Get()*2.0*M_PI;
+  /* add new rung */
+  m_moms.push_back(Vec4D());
+  m_flavs.push_back(kf::gluon);
+  if (!ConstructRung() || !TestEmission() ||
+      m_q.PPerp2()<m_kt2min) return false;
+  /* alpha_s & splitting weight */
+  m_weight*=(*MODEL::as)(m_kt2)*3.0/M_PI;
+  /* sudakov weight */
+  if (m_sudmode>0)
+    m_weight*=exp(-(*MODEL::as)(m_oldq.PPerp2())*3.0/M_PI
+		  *log(m_oldq.PPerp2()/m_kt2min)*dabs(lasty-m_y));
+  m_oldq=m_q;
   return true;
 }
 
 bool Ladder::GenerateLadder()
 {
+  m_q=Vec4D();
+  m_weight=1.0;
   m_moms.resize(m_nin);
   m_flavs.resize(m_nin);
-  p_sudakov->Initialize();
   if (!GeneratePDFJet()) return false;
-#ifndef USING__Two_To_Zero_ME
-  p_sudakov->SetKT2Max(m_kt21);
-  p_sudakov->SetYMax(m_y1);
-  while (p_sudakov->Dice()) {
-    if (ConstructRung()) {
-      if (CheckEnergy() && p_sudakov->CalculateWeight(m_moms,m_q)) {
-	m_weight*=p_sudakov->Weight();
+  m_moms[0]=m_p1-m_k1;
+  m_moms[1]=m_p2-m_kn;
+  if (m_multimode>0) {
+    p_sudakov->SetYA(m_y1);
+    p_sudakov->SetYB(m_yn);
+    p_sudakov->SetKT2Min(m_kt2min);
+    p_sudakov->SetKT2Max((m_pa+m_pb-m_q).Abs2());
+    p_sudakov->SetIncoming(m_q);
+    p_sudakov->Initialize();
+    msg_Debugging()<<"init sud at y_a = "<<m_y1<<", y_b = "<<m_yn<<"\n";
+    Vec4D k1(m_k1);
+    Flavour fln(m_flavs[0]);
+    size_t cnt(0);
+    while (p_sudakov->Dice()) {
+      msg_Debugging()<<"test emission at y = "<<p_sudakov->GetY()
+		     <<", qt = "<<sqrt(p_sudakov->GetKT2())<<"\n";
+      m_oldq=m_q;
+      m_y=p_sudakov->GetY();
+      m_kt2=p_sudakov->GetKT2();
+      m_phi=p_sudakov->GetPhi();
+      m_moms.push_back(Vec4D());
+      m_flavs.push_back(p_sudakov->Selected()->GetB());
+      fln=p_sudakov->Selected()->GetC();
+      if (!(ConstructRung() && TestEmission() && ConstructIncoming() && 
+	    p_sudakov->Approve(k1,m_oldq,m_moms.back(),m_q))) {
+	return false;
       }
       else {
-	m_moms.pop_back();
-	m_flavs.pop_back();
-	m_q=m_oldq;
+	msg_Debugging()<<"accept emission at y = "<<p_sudakov->GetY()
+		       <<", qt = "<<sqrt(p_sudakov->GetKT2())<<"\n";
+	m_weight*=p_sudakov->GetWeight();
+	k1=m_moms.back();
+	p_sudakov->SetKT2Max((m_pa+m_pb-m_q).Abs2());
+	p_sudakov->SetIncoming(m_q);
+	++cnt;
       }
     }
+    if (m_nfixed<std::numeric_limits<size_t>::max() &&
+	cnt!=m_nfixed) return false;
+    ConstructIncoming();
+    m_moms[0]=m_p1-m_k1;
+    m_moms[1]=m_p2-m_kn;
   }
-#endif
-  double pp(m_q.PPlus()), pm(m_q.PPerp2()/pp);
-  m_k2=Vec4D(0.5*(pp+pm),m_q[1],m_q[2],0.5*(pp-pm));
-  m_a2=-m_q.PMinus()/m_pb.PMinus();
-  m_kt22=m_k2.PPerp2();
-  m_moms[1]=-1.0*m_q;
-  m_q=m_q-m_k2;
-  m_z2=-m_moms[1].PMinus()/m_q.PMinus();
-  if (m_moms.size()>m_nin && m_moms.back().Y()<=m_k2.Y()) return false;
-  if (m_q.Nan() || m_q[0]>=0.0 || m_q[0]<=-m_pb[0]) return false; 
+  else {
+    for (size_t i(0);i<m_nfixed;++i) 
+      if (!DiceOneEmission()) return false;
+    /* last rung sudakov weight */
+    if (m_sudmode>0)
+      m_weight*=exp(-(*MODEL::as)(m_q.PPerp2())*3.0/M_PI
+		    *log(m_q.PPerp2()/m_kt2min)*dabs(m_y-m_yn));
+    m_moms[0]=m_p1-m_k1;
+    m_moms[1]=m_p2-m_kn;
+  }
   return true;
 }
 
 bool Ladder::SetScales()
 {
-  double fac(ATOOLS::rpa.gen.FactorizationScaleFactor());
-  if (m_moms.size()>m_nin) {
-    m_mu21=fac*m_moms[2].PPerp2()*
-      sqr(m_moms.front().PPlus()/m_moms[2].PPlus());
-    m_mu22=fac*m_moms.back().PPerp2()*
-      sqr(m_moms[1].PMinus()/m_moms.back().PMinus());
-  }
-  else {
-    m_mu21=fac*m_kt22/sqr(1.0-m_z2);
-    m_mu22=fac*m_kt21/sqr(1.0-m_z1);
-  }
+  m_a1=m_moms[0].PPlus()/m_pa.PPlus();
+  m_an=m_moms[1].PMinus()/m_pb.PMinus();
+  m_z1=m_k1.PPlus()/m_moms[0].PPlus();
+  m_z1=1.0/(1.0+m_z1);
+  m_zn=m_kn.PMinus()/m_moms[1].PMinus();
+  m_zn=1.0/(1.0+m_zn);
+  m_kt21=m_k1.PPerp2();
+  m_kt2n=m_kn.PPerp2();
+  m_mu21=m_kt21/sqr(1.0-m_z1);
+  m_mu2n=m_kt2n/sqr(1.0-m_zn);
   return true;
 }
 
 double Ladder::Differential(const ATOOLS::Vec4D *momenta)
 {
-  m_weight=1.0;
+  msg_Debugging()<<"====================\n";
+  // set beam parameters
   m_pa=p_beamhandler->GetBeam(0)->InMomentum();
   m_pb=p_beamhandler->GetBeam(1)->InMomentum();
-  m_q2=2.0*m_pa*m_pb;
-  p_sudakov->SetYMax(m_ya=m_pa.Y());
-  p_sudakov->SetYMin(m_yb=m_pb.Y());
+  m_q2=(m_pa+m_pb).Abs2();
+  m_ya=m_pa.Y();
+  m_yb=m_pb.Y();
+  // construct me
   if (!GenerateLadder()) {
     msg_Debugging()<<METHOD<<"(..): No ME generated. Set weight 0.\n";
     return 0.0;
   }
+  // set scales
   if (!SetScales()) {
     msg.Error()<<METHOD<<"(..): Invalid scales. Set weight 0."<<std::endl;
     return 0.0;
   }
-#ifdef USING__Collinear_Factorization
-  /*
-    double s((m_k1+m_k2).Abs2()), t(m_moms[0].Abs2());
-    double u((m_moms[0]+m_k1-m_k2).Abs2()), Q2(2.0*s*t*u/(s*s+u*u+t*t));
-    p_pdfs[0]->GetBasicPDF()->Calculate(m_a1/m_z1,0.0,0.0,Q2);
-    p_pdfs[1]->GetBasicPDF()->Calculate(m_a2/m_z1,0.0,0.0,Q2);
-    m_weight*=p_pdfs[0]->GetBasicPDF()->GetXPDF(m_flavs[0])/m_a1*m_z1;
-    m_weight*=p_pdfs[1]->GetBasicPDF()->GetXPDF(m_flavs[1])/m_a2*m_z2;
-    double Ms(1.0-t*u/(s*s)), Mt(1.0-s*u/(t*t)), Mu(1.0-s*t/(u*u));
-    m_weight*=sqr(4.0*M_PI*(*MODEL::as)(Q2))*9.0/4.0*(Mt+Mu+Ms)/sqr(m_kt21);
-  */
-  // ll approximation of gg->gg me
-  /*
-    m_weight*=4.0*sqr(M_PI)*sqr(M_PI)/sqr(m_kt21)*
-      sqr((*MODEL::as)(Q2)/(2.0*M_PI*m_kt21)*2.0*3.0/(m_z1*(1.0-m_z1)))*
-        4.0*sqr((m_moms[0]+m_moms[1]+m_k1+m_k2).Abs2())/(NC*NC-1.0)*
-        sqr(m_z1*(1.0-m_z1));
-  */
-  // ll approximation of gg->gg me
-  p_pdfs[0]->GetBasicPDF()->Calculate(m_a1/m_z1,0.0,0.0,m_kt21);
-  p_pdfs[1]->GetBasicPDF()->Calculate(m_a2/m_z1,0.0,0.0,m_kt22);
-  m_weight*=p_pdfs[0]->GetBasicPDF()->GetXPDF(m_flavs[0])/m_a1*m_z1;
-  m_weight*=p_pdfs[1]->GetBasicPDF()->GetXPDF(m_flavs[1])/m_a2*m_z2;
-  m_weight*=4.0*pow(M_PI,4.0)*
-    sqr((*MODEL::as)(m_kt21)/(2.0*M_PI*m_kt21)*
-	2.0*3.0*sqr(1.0-m_z1*(1.0-m_z1))/(m_z1*(1.0-m_z1)));
-#else
-  p_pdfs[0]->Calculate(m_a1,m_z1,m_kt21,m_mu21);
-  p_pdfs[1]->Calculate(m_a2,m_z2,m_kt22,m_mu22);
-  m_weight*=p_pdfs[0]->GetXPDF(m_flavs[0])/m_a1*m_z1;
-  m_weight*=p_pdfs[1]->GetXPDF(m_flavs[1])/m_a2*m_z2;
-  // ll approximation of gg->gg me
-  m_weight*=4.0*pow(M_PI,4.0);
-#endif  
-  m_weight*=Jacobian();
+  // calculate pdfs
+  double fac(ATOOLS::rpa.gen.FactorizationScaleFactor());
+  p_pdfs[0]->Calculate(m_a1,m_z1,m_kt21,fac*m_mu21);
+  p_pdfs[1]->Calculate(m_an,m_zn,m_kt2n,fac*m_mu2n);
+  m_weight*=p_pdfs[0]->GetXPDF(m_flavs[0])/m_a1*m_z1*m_kt21;
+  m_weight*=p_pdfs[1]->GetXPDF(m_flavs[1])/m_an*m_zn*m_kt2n;
+  // add ll approximation of gg->gg me and symmetry factor
+  m_weight*=sqr(M_PI)/(2.0*m_q2);
+  // add flux factor
   m_weight/=Flux();
+  // set colours
   if (m_ncols<m_moms.size()) {
     for (size_t i(0);i<m_ncols;++i) delete [] p_colours[i]; 
     if (m_ncols>0) delete [] p_colours;
@@ -274,13 +306,30 @@ double Ladder::Differential(const ATOOLS::Vec4D *momenta)
   p_colours[m_moms.size()-1][1]=p_colours[0][0];
   std::swap<int>(p_colours[0][0],p_colours[0][1]);
   std::swap<int>(p_colours[1][0],p_colours[1][1]);
+#ifdef ENABLE__Forward_Backward_Symmetrisation
+  // symmetrise ladder
+  if (ran.Get()>0.5) {
+    std::vector<Vec4D> moms(m_moms);
+    for (size_t i(2);i<m_moms.size();++i) {
+      m_moms[i]=moms[m_moms.size()-i+1];
+      m_moms[i][3]=-m_moms[i][3];
+    }
+    std::swap<Vec4D>(m_moms[0],m_moms[1]);
+    m_moms[0][3]=-m_moms[0][3];
+    m_moms[1][3]=-m_moms[1][3];
+    std::swap<Vec4D>(m_k1,m_kn);
+    m_k1[3]=-m_k1[3];
+    m_kn[3]=-m_kn[3];
+  }
+#endif
+  // set momenta
   m_nvector=m_moms.size();
   m_maxjetnumber=m_nout=m_nvector-m_nin;
   p_momenta=&m_moms.front();
   p_flavours=&m_flavs.front();
   m_nstrong=m_nin+m_nout;
   p_addmomenta[0]=m_k1;
-  p_addmomenta[1]=m_k2;
+  p_addmomenta[1]=m_kn;
   return dabs(m_weight);
 }
 

@@ -12,8 +12,10 @@ namespace EXTRAXS {
     G_GG();
 
     // member functions
-    double Value(const double &y,const double &kt) const;
-    double MajorValue(const double &y,const double &kt) const;
+    double Value(const ATOOLS::Vec4D &k1,const ATOOLS::Vec4D &q1,
+		 const ATOOLS::Vec4D &k2,const ATOOLS::Vec4D &q2) const;
+    double MajorValue(const ATOOLS::Vec4D &k1,const ATOOLS::Vec4D &q1,
+		      const ATOOLS::Vec4D &k2,const ATOOLS::Vec4D &q2) const;
 
     double MajorIntegral();
 

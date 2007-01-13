@@ -7,13 +7,15 @@ using namespace ATOOLS;
 
 LEV_Base::~LEV_Base() {}
 
-double LEV_Base::Value(const double &y,const double &kt) const
+double LEV_Base::Value(const Vec4D &k1,const Vec4D &q1,
+		       const Vec4D &k2,const Vec4D &q2) const
 {
   THROW(fatal_error,"Virtual function called.");
   return 0.0;
 }
 
-double LEV_Base::MajorValue(const double &y,const double &kt) const
+double LEV_Base::MajorValue(const Vec4D &k1,const Vec4D &q1,
+			    const Vec4D &k2,const Vec4D &q2) const
 {
   THROW(fatal_error,"Virtual function called.");
   return 0.0;
@@ -29,16 +31,6 @@ bool LEV_Base::SelectSplitting(const double &rn)
 {
   THROW(fatal_error,"Virtual function called.");
   return false;
-}
-
-void LEV_Base::SetYMin(const double &ymin) 
-{
-  m_ymin=ymin; 
-}
-
-void LEV_Base::SetYMax(const double &ymax) 
-{
-  m_ymax=ymax; 
 }
 
 void LEV_Base::SetKT2Min(const double &kt2min) 

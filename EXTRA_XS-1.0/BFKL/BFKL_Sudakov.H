@@ -14,8 +14,13 @@ namespace EXTRAXS {
 
     LEV_Group *p_levs;
 
-    double m_ya, m_yb, m_kt2min, m_kt2max, m_y, m_kt2, m_phi;
-    double m_oldy, m_asmax, m_integral, m_weight;
+    double m_ya, m_yb, m_kt2min, m_kt2max;
+    double m_asmax, m_integral, m_gamma, m_weight;
+    double m_y, m_kt2, m_phi;
+
+    ATOOLS::Vec4D m_q;
+
+    int m_ktscheme;
 
   public:
 
@@ -29,22 +34,29 @@ namespace EXTRAXS {
     bool Initialize();
 
     bool Dice();
-    bool CalculateWeight(const Vector_Vector &k,const ATOOLS::Vec4D &q);
+    bool Approve(const ATOOLS::Vec4D &k1,const ATOOLS::Vec4D &q1,
+		 const ATOOLS::Vec4D &k2,const ATOOLS::Vec4D &q2);
 
     // inline functions
-    inline void SetYMax(const double &ymax) { m_ya=ymax; }
-    inline void SetYMin(const double &ymin) { m_yb=ymin; }
+    inline void SetYA(const double &ya) { m_ya=ya; }
+    inline void SetYB(const double &yb) { m_yb=yb; }
 
     inline void SetKT2Min(const double &kt2min) { m_kt2min=kt2min; }
     inline void SetKT2Max(const double &kt2max) { m_kt2max=kt2max; }
 
-    inline double GetY() const   { return m_y;   }
-    inline double GetKT2() const { return m_kt2; }
-    inline double GetPhi() const { return m_phi; }
+    inline void SetIncoming(const ATOOLS::Vec4D &q) { m_q=q; }
 
-    inline double Weight() const { return m_weight; }
+    inline void SetKTScheme(const int &scheme) { m_ktscheme=scheme; }
+
+    inline double GetY() const     { return m_y;    }
+    inline double GetKT2() const   { return m_kt2;  }
+    inline double GetPhi() const   { return m_phi;  }
+
+    inline double GetWeight() const { return m_weight;  }
 
     inline LEV_Base *Selected() const { return p_levs->Selected(); }
+
+    inline int KTScheme() const { return m_ktscheme; }
 
   };// end of class BFKL_Sudakov
 
