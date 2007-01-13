@@ -197,7 +197,7 @@ bool Event_Handler::GenerateEvent(int mode)
 	    rpa.gen.NumberOfEvents()) return true;
       }
     } while (m_blobs.empty() || 
-	     m_blobs.FindFirst(btp::Signal_Process)->NOutP()==0);
+	     m_blobs.FindFirst(btp::Signal_Process)->NInP()==0);
     if (!m_blobs.FourMomentumConservation()) return false;
     p_mehandler->ResetNumberOfTrials();
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {

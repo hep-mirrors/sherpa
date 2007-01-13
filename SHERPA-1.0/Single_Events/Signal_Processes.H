@@ -13,7 +13,8 @@ namespace SHERPA {
     Hard_Decay_Handler     * p_hdhandler;
     PDF::Remnant_Base      * p_remnants[2];
     bool   m_addedxs;
-    bool FillBlob(ATOOLS::Blob *,const bool=false,const bool=true);
+    bool FillUPDFBlobs(ATOOLS::Blob_List *const bloblist,ATOOLS::Blob *const blob);
+    bool FillBlob(ATOOLS::Blob_List *const,ATOOLS::Blob *const,const bool=false);
   public :
     Signal_Processes(Matrix_Element_Handler *,Hard_Decay_Handler * hdhandler=NULL);
     ~Signal_Processes();
