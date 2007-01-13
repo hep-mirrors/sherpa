@@ -49,7 +49,8 @@ namespace PHASIC {
       mass      = 256,
       div_by_2  = 512,
       mult_by_2 = 1024, 
-      updf      = 2048
+      updf      = 2048,
+      bfkl      = 4096
     };
 
   };// end of struct scl

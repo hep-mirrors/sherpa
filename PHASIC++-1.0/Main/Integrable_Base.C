@@ -439,6 +439,37 @@ double Integrable_Base::CalculateScale(const Vec4D *momenta)
     scheme-=scl::strong;
     scheme-=scl::mass;
   }
+  else if (scheme & scl::updf) {
+    double M2=0.;
+    if (m_resonances.size()>0) {
+      M2=ATOOLS::sqr(m_resonances[0].Mass());
+    }
+    ATOOLS::Vec4D *p=p_momenta;
+    double S2=p[4]*p[5], x1=p[5]*p[0]/S2, x2=p[4]*p[1]/S2;
+    double xi=(p[0]+p[1]).PMinus()/(p[0]+p[1]).PPlus();
+    m_scale[PHASIC::stp::kp21]=x1*x1*2.0*S2*xi;
+    m_scale[PHASIC::stp::kp22]=x2*x2*2.0*S2/xi;
+    // ew scale a la watt
+    double sc=(p[0]+p[1]).PPerp2();
+    pt2=m_scale[PHASIC::stp::ren]=pow(sc,2./3.)*pow(M2,1./3.);
+    scheme-=scl::updf;
+  }
+  else if (scheme & scl::bfkl) {
+    const ATOOLS::Vec4D *p=momenta;
+    ATOOLS::Vec4D p2=p[m_nin], p3=p[m_nin+m_nout-1];
+    if (p2.PMinus()/p2.PPlus()>p3.PMinus()/p3.PPlus())
+      std::swap<ATOOLS::Vec4D>(p2,p3);
+    double S2=p[m_nin+m_nout]*p[m_nin+m_nout+1];
+    double a1=p[m_nin+m_nout+1]*p[0]/S2;
+    double b2=p[m_nin+m_nout]*p[1]/S2;
+    double fac=ATOOLS::rpa.gen.FactorizationScaleFactor();
+    m_scale[stp::kp21]=fac*a1*a1*2.*S2*p2.PMinus()/p2.PPlus();
+    m_scale[stp::kp22]=fac*b2*b2*2.*S2*p3.PPlus()/p3.PMinus();
+    // mean of factorisation scales
+    pt2=m_scale[stp::ren]=
+      sqrt(m_scale[stp::kp21]*m_scale[stp::kp22]);
+    scheme-=scl::bfkl;
+  }
   if (scheme & scl::div_by_2) { 
     pt2/=2.; 
     scheme-=scl::div_by_2; 
@@ -616,6 +647,7 @@ std::map<std::string,std::string> Integrable_Base::ScaleTags()
   tags["HALVE"]=ToString(scl::div_by_2);
   tags["DOUBLE"]=ToString(scl::mult_by_2);
   tags["UPDF"]=ToString(scl::updf);
+  tags["BFKL"]=ToString(scl::bfkl);
   return tags;
 }
  
