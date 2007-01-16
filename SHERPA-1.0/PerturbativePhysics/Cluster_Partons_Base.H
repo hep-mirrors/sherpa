@@ -56,6 +56,7 @@ namespace SHERPA {
 
     int     Set2Colours(const int,const int,ATOOLS::Vec4D *,ATOOLS::Flavour *);
     int     Set3Colours(const int,const int,ATOOLS::Vec4D *,ATOOLS::Flavour *);
+    int     Set4Colours(const int,const int,ATOOLS::Vec4D *,ATOOLS::Flavour *);
 
     void    PrepareTerminate();
     void    WriteOutWeights();

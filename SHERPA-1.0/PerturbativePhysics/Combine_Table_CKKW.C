@@ -353,3 +353,32 @@ bool Combine_Table_CKKW::IdentifyHardProcess()
   return true;
 }
 
+int Combine_Table_CKKW::IdentifyHardPropagator() const
+{
+  msg_Debugging()<<METHOD<<"():\n";
+  msg_Indent();
+  int channel(-1);
+  for (int i(0);i<m_nampl;++i) {
+    if (Combinable(p_legs[i][0],p_legs[i][1]) &&
+	Combinable(p_legs[i][2],p_legs[i][3])) {
+      msg_Debugging()<<"s-channel\n";
+      if (channel<0) channel=1;
+      else if (channel!=1) return -1;
+    }
+    else if (Combinable(p_legs[i][0],p_legs[i][2]) &&
+	     Combinable(p_legs[i][1],p_legs[i][3])) {
+      msg_Debugging()<<"t-channel\n";
+      if (channel<0) channel=2;
+      else if (channel!=2) return -1;
+    }
+    else if (Combinable(p_legs[i][0],p_legs[i][3]) &&
+	     Combinable(p_legs[i][1],p_legs[i][2])) {
+      msg_Debugging()<<"u-channel\n";
+      if (channel<0) channel=3;
+      else if (channel!=3) return -1;
+    }
+    else THROW(fatal_error,"No match for hard process.");
+  }
+  return channel;
+}
+

@@ -456,10 +456,7 @@ int Cluster_Partons_Base::SetColours(Vec4D * p,Flavour * fl)
 
   switch (ncol) {
   case 4:
-    msg.Out()<<"Error in Cluster_Partons_Base::SetColours() : called for 4 coloured objects. \n"
-	     <<"   Don't know how to handle this ! Abort the run."<<std::endl;
-    for (int i=0; i<4; ++i) msg.Out()<<i<<" : "<<fl[i]<<std::endl;
-    abort();
+    return Set4Colours(nquark,ngluon,p,fl);
   case 3:
     return Set3Colours(nquark,ngluon,p,fl);
   case 2:
@@ -477,7 +474,44 @@ int Cluster_Partons_Base::SetColours(Vec4D * p,Flavour * fl)
   }
   return 1;
 }
-  
+
+int Cluster_Partons_Base::Set4Colours(const int nquark,const int ngluon,Vec4D * p,Flavour * fl)
+{
+  int prop(p_ct->IdentifyHardPropagator());
+  if (fl[0].IsGluon() || fl[1].IsGluon() || 
+      fl[2].IsGluon() || fl[3].IsGluon() || prop<0) {
+    msg.Out()<<METHOD<<"(): Cannot set colours for "<<std::endl;
+    Combine_Table_Base *ct(p_ct);
+    while (ct->Up()!=NULL) ct=ct->Up();
+    msg.Error()<<*ct<<std::endl;
+    return false;
+  }
+  switch (prop) {
+  case 1:
+    if (!fl[0].IsAnti()) m_colors[0][0]=m_colors[1][1]=500;
+    else m_colors[0][1]=m_colors[1][0]=500;
+    if (!fl[2].IsAnti()) m_colors[2][0]=m_colors[3][1]=501;
+    else m_colors[2][1]=m_colors[3][0]=501;
+    m_q2_hard=m_q2_fss=m_q2_iss=dabs((p[0]+p[1]).Abs2());
+    break;
+  case 2:
+    if (!fl[0].IsAnti()) m_colors[0][0]=m_colors[2][0]=500;
+    else m_colors[0][1]=m_colors[2][1]=500;
+    if (!fl[1].IsAnti()) m_colors[1][0]=m_colors[3][0]=501;
+    else m_colors[1][1]=m_colors[3][1]=501;
+    m_q2_hard=m_q2_fss=m_q2_iss=dabs((p[0]-p[2]).Abs2());
+    break;
+  case 3:
+    if (!fl[0].IsAnti()) m_colors[0][0]=m_colors[3][0]=500;
+    else m_colors[0][1]=m_colors[3][1]=500;
+    if (!fl[1].IsAnti()) m_colors[1][0]=m_colors[2][0]=501;
+    else m_colors[1][1]=m_colors[2][1]=501;
+    m_q2_hard=m_q2_fss=m_q2_iss=dabs((p[0]-p[3]).Abs2());
+    break;
+  }
+  return true;
+}
+
 int Cluster_Partons_Base::Set2Colours(const int nquark,const int ngluon,Vec4D * p,Flavour * fl)
 {
   m_hard_nqed = 2;
