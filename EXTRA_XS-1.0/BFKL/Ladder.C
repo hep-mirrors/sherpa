@@ -7,6 +7,7 @@
 #include "Random.H"
 #include "Flow.H"
 #include "Data_Reader.H"
+#include "MyStrStream.H"
 
 using namespace EXTRAXS;
 using namespace PHASIC;
@@ -41,6 +42,8 @@ Ladder::Ladder(const size_t nin,const size_t nout,
   else msg_Info()<<METHOD<<"(): Set Sudakov mode "<<m_sudmode<<".\n";
   if (!read.ReadFromFile(m_splitmode,"BFKL_SPLIT_MODE")) m_splitmode=0;
   else msg_Info()<<METHOD<<"(): Set splitting mode "<<m_splitmode<<".\n";
+  p_sudakov->SetSplitMode(m_splitmode);
+  if (m_multimode==0) m_splitmode=0;
 }
 
 Ladder::~Ladder()
@@ -55,7 +58,7 @@ bool Ladder::Initialize()
   m_moms.resize(m_nin);
   m_kt2min=0.0;
   for (short unsigned int i(0);i<m_nin;++i) {
-    m_flavs.push_back(p_flavours[i]);
+    m_flavs.push_back(kf::gluon);
     p_pdfs[i]=dynamic_cast<Doubly_Unintegrated_PDF*>(p_isrhandler->PDF(i));
     if (p_pdfs[i]==NULL || 
 	p_pdfs[i]->Type().find("DUPDF")==std::string::npos)
@@ -68,12 +71,10 @@ bool Ladder::Initialize()
   delete [] p_flavours;
   p_momenta=&m_moms.front();
   p_flavours=&m_flavs.front();
-  p_addflavours = new ATOOLS::Flavour[2];
-  p_addflavours[0]=ATOOLS::kf::gluon;
-  p_addflavours[1]=ATOOLS::kf::gluon;
+  p_addflavours = new ATOOLS::Flavour[4];
   p_addmomenta = new ATOOLS::Vec4D[2];
   m_naddout=2;
-  return true;
+  return p_sudakov->Initialize();
 }
 
 void Ladder::AddEvent(const double xs,const double validxs,const int ncounts)
@@ -121,6 +122,16 @@ bool Ladder::GeneratePDFJet()
   m_yn=m_yb+rn[3]*(m_ya-m_yb);
   m_weight*=m_ya-m_yb;
   if (m_yn<m_y1) return false;
+  // dice first flavour
+  m_props.back()=kf::gluon;
+  if (m_splitmode>0) {
+    // select t-channel quark w/ probability T_R/C_A
+    if (ran.Get()<0.5/3.0)
+      m_props.back()=(kf::code)Min(p_sudakov->Nf(),(size_t)
+				   (p_sudakov->Nf()*ran.Get()+1));
+  }
+  m_flavs[0]=m_props.back();
+  // construct incoming
   if (!ConstructIncoming() || 
       !TestEmission()) return false;
   return true;
@@ -143,7 +154,11 @@ bool Ladder::ConstructIncoming()
   double Q2(0.5*sqrt(cms.Abs2())), ey(exp(cms.Y()));
   m_p1=Vec4D(Q2*ey,0.0,0.0,Q2*ey);
   m_p2=Vec4D(Q2/ey,0.0,0.0,-Q2/ey);
-  if (m_p1.Nan() || m_p2.Nan() || m_kn.Nan()) return false;
+  if (m_p1.Nan() || m_p2.Nan() || m_kn.Nan() ||
+      !TestEmission()) return false;
+  m_moms[0]=m_p1-m_k1;
+  m_moms[1]=m_p2-m_kn;
+  m_flavs[1]=m_props.back().Bar();
   return true;
 }
 
@@ -173,7 +188,8 @@ bool Ladder::DiceOneEmission()
   /* add new rung */
   m_moms.push_back(Vec4D());
   m_flavs.push_back(kf::gluon);
-  if (!ConstructRung() || !TestEmission() ||
+  m_props.push_back(kf::gluon);
+  if (!ConstructRung() ||
       m_q.PPerp2()<m_kt2min) return false;
   /* alpha_s & splitting weight */
   m_weight*=(*MODEL::as)(m_kt2)*3.0/M_PI;
@@ -191,20 +207,19 @@ bool Ladder::GenerateLadder()
   m_weight=1.0;
   m_moms.resize(m_nin);
   m_flavs.resize(m_nin);
+  m_props.resize(1);
   if (!GeneratePDFJet()) return false;
-  m_moms[0]=m_p1-m_k1;
-  m_moms[1]=m_p2-m_kn;
   if (m_multimode>0) {
     p_sudakov->SetYA(m_y1);
     p_sudakov->SetYB(m_yn);
     p_sudakov->SetKT2Min(m_kt2min);
     p_sudakov->SetKT2Max((m_pa+m_pb-m_q).Abs2());
-    p_sudakov->SetIncoming(m_q);
-    p_sudakov->Initialize();
+    p_sudakov->SetInMomentum(m_q);
+    p_sudakov->SetInFlavour(m_props.back());
+    p_sudakov->Init();
     msg_Debugging()<<"init sud at y_a = "<<m_y1<<", y_b = "<<m_yn<<"\n";
-    Vec4D k1(m_k1);
-    Flavour fln(m_flavs[0]);
     size_t cnt(0);
+    Vec4D k1(m_k1);
     while (p_sudakov->Dice()) {
       msg_Debugging()<<"test emission at y = "<<p_sudakov->GetY()
 		     <<", qt = "<<sqrt(p_sudakov->GetKT2())<<"\n";
@@ -213,10 +228,10 @@ bool Ladder::GenerateLadder()
       m_kt2=p_sudakov->GetKT2();
       m_phi=p_sudakov->GetPhi();
       m_moms.push_back(Vec4D());
-      m_flavs.push_back(p_sudakov->Selected()->GetB());
-      fln=p_sudakov->Selected()->GetC();
-      if (!(ConstructRung() && TestEmission() && ConstructIncoming() && 
-	    p_sudakov->Approve(k1,m_oldq,m_moms.back(),m_q))) {
+      m_flavs.push_back(p_sudakov->Selected()->GetC());
+      m_props.push_back(p_sudakov->Selected()->GetB());
+      if (!ConstructRung() ||
+	  !p_sudakov->Approve(k1,m_oldq,m_moms.back(),m_q)) {
 	return false;
       }
       else {
@@ -225,7 +240,8 @@ bool Ladder::GenerateLadder()
 	m_weight*=p_sudakov->GetWeight();
 	k1=m_moms.back();
 	p_sudakov->SetKT2Max((m_pa+m_pb-m_q).Abs2());
-	p_sudakov->SetIncoming(m_q);
+	p_sudakov->SetInMomentum(m_q);
+	p_sudakov->SetInFlavour(m_props.back());
 	++cnt;
       }
     }
@@ -288,6 +304,11 @@ double Ladder::Differential(const ATOOLS::Vec4D *momenta)
   p_pdfs[1]->Calculate(m_an,m_zn,m_kt2n,fac*m_mu2n);
   m_weight*=p_pdfs[0]->GetXPDF(m_flavs[0])/m_a1*m_z1*m_kt21;
   m_weight*=p_pdfs[1]->GetXPDF(m_flavs[1])/m_an*m_zn*m_kt2n;
+  // dice pdf jet flavours
+  if (!p_pdfs[0]->SelectJetFlavour
+      (p_addflavours[2],m_fl1,ran.Get())) return false;
+  if (!p_pdfs[1]->SelectJetFlavour
+      (p_addflavours[3],m_fln,ran.Get())) return false;
   // add ll approximation of gg->gg me and symmetry factor
   m_weight*=sqr(M_PI)/(2.0*m_q2);
   // add flux factor
@@ -300,28 +321,15 @@ double Ladder::Differential(const ATOOLS::Vec4D *momenta)
     p_colours = new int*[m_ncols];
     for (size_t i(0);i<m_ncols;++i) p_colours[i] = new int[2];
   }
-  p_colours[0][0]=p_colours[1][1]=Flow::Counter();
-  for (size_t i(1);i<m_moms.size();++i)
-    p_colours[i][0]=p_colours[i-1][1]=Flow::Counter();
-  p_colours[m_moms.size()-1][1]=p_colours[0][0];
-  std::swap<int>(p_colours[0][0],p_colours[0][1]);
-  std::swap<int>(p_colours[1][0],p_colours[1][1]);
-#ifdef ENABLE__Forward_Backward_Symmetrisation
-  // symmetrise ladder
-  if (ran.Get()>0.5) {
-    std::vector<Vec4D> moms(m_moms);
-    for (size_t i(2);i<m_moms.size();++i) {
-      m_moms[i]=moms[m_moms.size()-i+1];
-      m_moms[i][3]=-m_moms[i][3];
-    }
-    std::swap<Vec4D>(m_moms[0],m_moms[1]);
-    m_moms[0][3]=-m_moms[0][3];
-    m_moms[1][3]=-m_moms[1][3];
-    std::swap<Vec4D>(m_k1,m_kn);
-    m_k1[3]=-m_k1[3];
-    m_kn[3]=-m_kn[3];
+  SetColours();
+  msg_Debugging()<<"c_0 = ("<<p_colours[0][0]
+		 <<","<<p_colours[0][1]<<")\n";
+  for (size_t i(2);i<m_ncols;++i) {
+    msg_Debugging()<<"c_"<<i<<" = ("<<p_colours[i][0]
+		   <<","<<p_colours[i][1]<<")\n";
   }
-#endif
+  msg_Debugging()<<"c_1 = ("<<p_colours[1][0]
+		 <<","<<p_colours[1][1]<<")\n";
   // set momenta
   m_nvector=m_moms.size();
   m_maxjetnumber=m_nout=m_nvector-m_nin;
@@ -330,7 +338,79 @@ double Ladder::Differential(const ATOOLS::Vec4D *momenta)
   m_nstrong=m_nin+m_nout;
   p_addmomenta[0]=m_k1;
   p_addmomenta[1]=m_kn;
+  p_addflavours[0]=m_fl1;
+  p_addflavours[1]=m_fln;
+  std::string name("BFKL__2_"+ToString(m_nout)+"__"+
+		   ToString(m_flavs[0])+"_"+ToString(m_flavs[1]));
+  if (m_nout>0) name+="_";
+  for (size_t i(2);i<2+m_nout;++i) name+="_"+ToString(m_flavs[i]);
+  msg_Debugging()<<METHOD<<"(): Generated '"<<name<<"'\n";
+  m_name=name;
   return dabs(m_weight);
+}
+
+void Ladder::SetColour(const size_t &i,const bool fw,int *const lc)
+{
+  Flavour q(m_props[i-2]), f(m_flavs[i]);
+  msg_Debugging()<<"step "<<i<<" "<<q<<" -> "<<f<<" "<<m_props[i-1]
+		 <<": ("<<lc[0]<<","<<lc[1]<<") -> ";
+  if (q.IsGluon()) {
+    if (f.IsGluon()) {
+      if (ran.Get()>0.5) {
+	p_colours[i][0]=lc[0];
+	lc[0]=p_colours[i][1]=Flow::Counter();
+      }
+      else {
+	p_colours[i][1]=lc[1];
+	lc[1]=p_colours[i][0]=Flow::Counter();
+      }
+    }
+    else if (!f.IsAnti()) {
+      p_colours[i][0]=lc[0];
+      lc[0]=p_colours[i][1]=0;
+    }
+    else {
+      p_colours[i][1]=lc[1];
+      lc[1]=p_colours[i][0]=0;
+    }  
+  }
+  else if (!q.IsAnti()) {
+    if (f.IsGluon()) {
+      p_colours[i][0]=lc[0];
+      lc[0]=p_colours[i][1]=Flow::Counter();
+    }
+    else {
+      lc[1]=p_colours[i][0]=Flow::Counter();
+      p_colours[i][1]=0;
+    }
+  }
+  else {
+    if (f.IsGluon()) {
+      p_colours[i][1]=lc[1];
+      lc[1]=p_colours[i][0]=Flow::Counter();
+    }
+    else {
+      lc[0]=p_colours[i][1]=Flow::Counter();
+      p_colours[i][0]=0;
+    }  
+  }
+  msg_Debugging()<<"("<<p_colours[i][0]<<","<<p_colours[i][1]
+		 <<") ("<<lc[0]<<","<<lc[1]<<")\n";
+}
+
+void Ladder::SetColours()
+{
+  int lc[2]={0,0};
+  if (m_flavs[0].IsGluon()||!m_flavs[0].IsAnti())
+    lc[0]=Flow::Counter();
+  if (m_flavs[0].IsGluon()||m_flavs[0].IsAnti())
+    lc[1]=Flow::Counter();
+  p_colours[0][0]=lc[0];
+  p_colours[0][1]=lc[1];
+  for (size_t i(2);i<m_flavs.size();++i)
+    SetColour(i,true,lc);
+  p_colours[1][0]=lc[1];
+  p_colours[1][1]=lc[0];
 }
 
 double Ladder::Differential2()

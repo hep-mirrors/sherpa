@@ -7,12 +7,11 @@
 using namespace EXTRAXS;
 using namespace ATOOLS;
 
+size_t BFKL_Sudakov::s_nf(5);
+
 BFKL_Sudakov::BFKL_Sudakov():
   p_levs(new LEV_Group()),
-  m_weight(0.0) 
-{
-  p_levs->Add(new G_GG());
-}
+  m_weight(0.0) {}
 
 BFKL_Sudakov::~BFKL_Sudakov()
 {
@@ -20,6 +19,21 @@ BFKL_Sudakov::~BFKL_Sudakov()
 }
 
 bool BFKL_Sudakov::Initialize()
+{
+  p_levs->Add(new G_GG());
+  if (m_splitmode>0) {
+    for (size_t i(1);i<=s_nf;++i) {
+      Flavour fl((kf::code)i);
+      p_levs->Add(new Q_GQ(fl));
+      p_levs->Add(new Q_GQ(fl.Bar()));
+      p_levs->Add(new G_QQ(fl));
+      p_levs->Add(new G_QQ(fl.Bar()));
+    }
+  }
+  return true;
+}
+
+bool BFKL_Sudakov::Init()
 {
   m_asmax=(*MODEL::as)(m_kt2min);
   p_levs->SetKT2Min(m_kt2min);
@@ -35,7 +49,7 @@ bool BFKL_Sudakov::Dice()
   // kt limit
   p_levs->SetKT2Max(m_kt2max);
   // get last integral
-  m_integral=p_levs->MajorIntegral();
+  m_integral=p_levs->MajorIntegral(m_flq);
   // set branching probability
   double qt2(m_kt2min);
   switch (m_ktscheme) {

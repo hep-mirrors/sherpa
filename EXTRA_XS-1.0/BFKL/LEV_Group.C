@@ -39,11 +39,11 @@ double LEV_Group::MajorValue(const Vec4D &k1,const Vec4D &q1,
   return value;
 }
 
-double LEV_Group::MajorIntegral()
+double LEV_Group::MajorIntegral(const ATOOLS::Flavour &fl)
 {
   double value(0.0);
   for (size_t i(0);i<m_levs.size();++i) {
-    m_integrals[i]=value+=m_levs[i]->MajorIntegral();
+    m_integrals[i]=value+=m_levs[i]->MajorIntegral(fl);
   }
   return value;
 }

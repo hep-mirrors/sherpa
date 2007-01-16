@@ -21,7 +21,7 @@ double LEV_Base::MajorValue(const Vec4D &k1,const Vec4D &q1,
   return 0.0;
 }
 
-double LEV_Base::MajorIntegral()
+double LEV_Base::MajorIntegral(const ATOOLS::Flavour &fl)
 {
   THROW(fatal_error,"Virtual function called.");
   return 0.0;

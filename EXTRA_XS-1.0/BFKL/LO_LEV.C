@@ -1,6 +1,9 @@
 #include "LO_LEV.H"
 
 #define N_C 3.0
+#define C_A N_C
+#define C_F (N_C*N_C-1.0)/(2.0*N_C)
+#define T_R 0.5
 
 using namespace EXTRAXS;
 using namespace ATOOLS;
@@ -11,17 +14,62 @@ G_GG::G_GG():
 double G_GG::Value(const Vec4D &k1,const Vec4D &q1,
 		   const Vec4D &k2,const Vec4D &q2) const
 {
-  return 2.0*N_C;
+  return 2.0*C_A;
 }
 
 double G_GG::MajorValue(const Vec4D &k1,const Vec4D &q1,
 			const Vec4D &k2,const Vec4D &q2) const
 {
-  return 2.0*N_C;
+  return 2.0*C_A;
 }
 
-double G_GG::MajorIntegral()
+double G_GG::MajorIntegral(const ATOOLS::Flavour &fl)
 {
-  return 2.0*N_C;
+  if (!fl.IsGluon()) return 0.0;
+  return 2.0*C_A;
+}
+
+Q_GQ::Q_GQ(const ATOOLS::Flavour &q): 
+  LEV_Base(q,ATOOLS::kf::gluon,q) {}
+
+double Q_GQ::Value(const Vec4D &k1,const Vec4D &q1,
+		   const Vec4D &k2,const Vec4D &q2) const
+{
+  return 2.0*C_F;
+}
+
+double Q_GQ::MajorValue(const Vec4D &k1,const Vec4D &q1,
+			const Vec4D &k2,const Vec4D &q2) const
+{
+  return 2.0*C_F;
+}
+
+double Q_GQ::MajorIntegral(const ATOOLS::Flavour &fl)
+{
+  if (fl!=m_fla) return 0.0;
+  return 2.0*C_F;
+}
+
+G_QQ::G_QQ(const ATOOLS::Flavour &q): 
+  LEV_Base(ATOOLS::kf::gluon,q,q.Bar()) {}
+
+double G_QQ::Value(const Vec4D &k1,const Vec4D &q1,
+		   const Vec4D &k2,const Vec4D &q2) const
+{
+  double z(q2.PPlus()/q1.PPlus());
+  if (z>1) z=q1.PPlus()/q2.PPlus();
+  return 2.0*T_R*z*(1.0-z);
+}
+
+double G_QQ::MajorValue(const Vec4D &k1,const Vec4D &q1,
+			const Vec4D &k2,const Vec4D &q2) const
+{
+  return 2.0*T_R;
+}
+
+double G_QQ::MajorIntegral(const ATOOLS::Flavour &fl)
+{
+  if (!fl.IsGluon()) return 0.0;
+  return 2.0*T_R;
 }
 

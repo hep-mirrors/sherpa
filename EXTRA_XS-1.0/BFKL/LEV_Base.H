@@ -44,7 +44,7 @@ namespace EXTRAXS {
 			      const ATOOLS::Vec4D &k2,
 			      const ATOOLS::Vec4D &q2) const;
 
-    virtual double MajorIntegral();
+    virtual double MajorIntegral(const ATOOLS::Flavour &fl);
 
     virtual bool SelectSplitting(const double &rn);
 

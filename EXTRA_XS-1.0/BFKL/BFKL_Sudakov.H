@@ -18,9 +18,12 @@ namespace EXTRAXS {
     double m_asmax, m_integral, m_gamma, m_weight;
     double m_y, m_kt2, m_phi;
 
-    ATOOLS::Vec4D m_q;
+    ATOOLS::Vec4D   m_q;
+    ATOOLS::Flavour m_flq;
 
-    int m_ktscheme;
+    int m_ktscheme, m_splitmode;
+
+    static size_t s_nf;
 
   public:
 
@@ -33,6 +36,7 @@ namespace EXTRAXS {
     // member functions
     bool Initialize();
 
+    bool Init();
     bool Dice();
     bool Approve(const ATOOLS::Vec4D &k1,const ATOOLS::Vec4D &q1,
 		 const ATOOLS::Vec4D &k2,const ATOOLS::Vec4D &q2);
@@ -44,9 +48,11 @@ namespace EXTRAXS {
     inline void SetKT2Min(const double &kt2min) { m_kt2min=kt2min; }
     inline void SetKT2Max(const double &kt2max) { m_kt2max=kt2max; }
 
-    inline void SetIncoming(const ATOOLS::Vec4D &q) { m_q=q; }
+    inline void SetInMomentum(const ATOOLS::Vec4D &q)  { m_q=q;   }
+    inline void SetInFlavour(const ATOOLS::Flavour &f) { m_flq=f; }
 
     inline void SetKTScheme(const int &scheme) { m_ktscheme=scheme; }
+    inline void SetSplitMode(const int &mode)  { m_splitmode=mode;  }
 
     inline double GetY() const     { return m_y;    }
     inline double GetKT2() const   { return m_kt2;  }
@@ -56,7 +62,10 @@ namespace EXTRAXS {
 
     inline LEV_Base *Selected() const { return p_levs->Selected(); }
 
-    inline int KTScheme() const { return m_ktscheme; }
+    inline int KTScheme() const  { return m_ktscheme;  }
+    inline int SplitMode() const { return m_splitmode; }
+
+    inline size_t Nf() const { return s_nf; }
 
   };// end of class BFKL_Sudakov
 

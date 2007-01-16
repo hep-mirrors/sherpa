@@ -22,9 +22,10 @@ namespace EXTRAXS {
     PDF::Doubly_Unintegrated_PDF *p_pdfs[2];
 
     Vector_Vector  m_moms;
-    Flavour_Vector m_flavs;
+    Flavour_Vector m_flavs, m_props;
 
-    ATOOLS::Vec4D m_pa, m_pb, m_k1, m_kn, m_q, m_oldq, m_p1, m_p2;
+    ATOOLS::Vec4D   m_pa, m_pb, m_k1, m_kn, m_q, m_oldq, m_p1, m_p2;
+    ATOOLS::Flavour m_fl1, m_fln;
 
     double m_weight, m_ya, m_yb, m_kt2min, m_q2, m_y1, m_yn;
     double m_a1, m_an, m_z1, m_zn, m_kt21, m_kt2n, m_mu21, m_mu2n;
@@ -44,6 +45,9 @@ namespace EXTRAXS {
     void InitSudakov();
 
     bool DiceOneEmission();
+
+    void SetColours();
+    void SetColour(const size_t &i,const bool fw,int *const lc);
 
   public:
 

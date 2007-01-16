@@ -30,7 +30,7 @@ namespace EXTRAXS {
     double MajorValue(const ATOOLS::Vec4D &k1,const ATOOLS::Vec4D &q1,
 		      const ATOOLS::Vec4D &k2,const ATOOLS::Vec4D &q2) const;
 
-    double MajorIntegral();
+    double MajorIntegral(const ATOOLS::Flavour &fl);
 
     void SetKT2Min(const double &kt2min);
     void SetKT2Max(const double &kt2max);
