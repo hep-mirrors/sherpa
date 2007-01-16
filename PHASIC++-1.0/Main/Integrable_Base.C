@@ -19,6 +19,14 @@ using namespace ATOOLS;
 #define TR 0.5
 #define Nf 5.0
 
+class Order_Y {
+public:
+  bool operator()(const Vec4D &a,const Vec4D &b)
+  {
+    return a.Y()>b.Y();
+  }
+};
+
 Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,
 				 const scl::scheme scalescheme,const int kfactorscheme,
 				 BEAM::Beam_Spectra_Handler *const beamhandler,
@@ -455,20 +463,17 @@ double Integrable_Base::CalculateScale(const Vec4D *momenta)
     scheme-=scl::updf;
   }
   else if (scheme & scl::bfkl) {
-    const ATOOLS::Vec4D *p=momenta;
-    ATOOLS::Vec4D p2=p[m_nin], p3=p[m_nin+m_nout-1];
-    if (p2.PMinus()/p2.PPlus()>p3.PMinus()/p3.PPlus())
-      std::swap<ATOOLS::Vec4D>(p2,p3);
-    double S2=p[m_nin+m_nout]*p[m_nin+m_nout+1];
-    double a1=p[m_nin+m_nout+1]*p[0]/S2;
-    double b2=p[m_nin+m_nout]*p[1]/S2;
-    double fac=ATOOLS::rpa.gen.FactorizationScaleFactor();
-    m_scale[stp::kp21]=fac*a1*a1*2.*S2*p2.PMinus()/p2.PPlus();
-    m_scale[stp::kp22]=fac*b2*b2*2.*S2*p3.PPlus()/p3.PMinus();
-    // mean of factorisation scales
-    pt2=m_scale[stp::ren]=
-      sqrt(m_scale[stp::kp21]*m_scale[stp::kp22]);
+    std::vector<Vec4D> moms(m_nout);
+    for (size_t i(0);i<m_nout;++i) moms[i]=p_momenta[m_nin+i];
+    std::sort(moms.begin(),moms.end(),Order_Y());
+    m_scale[stp::kp21]=
+      rpa.gen.FactorizationScaleFactor()*moms.front().PPerp2();
+    m_scale[stp::kp22]=
+      rpa.gen.FactorizationScaleFactor()*moms.back().PPerp2();
     scheme-=scl::bfkl;
+    if (scheme!=scl::unknown) 
+      THROW(fatal_error,"Unknown scale scheme: "+ToString(m_scalescheme));
+    return m_scale[stp::fac]=-1.0;
   }
   if (scheme & scl::div_by_2) { 
     pt2/=2.; 
@@ -516,6 +521,33 @@ double Integrable_Base::KFactor()
 		   <<"  ps scalefac = "<<m_ps_cpl_factor<<"\n"
 		   <<"  ps k factor = "<<m_ps_kfactor
 		   <<"\n} -> as = "<<asn<<" => K = "<<m_kfkey.Weight()<<"\n";
+    return m_kfkey.Weight();
+  }
+  else if (m_scalescheme&scl::bfkl) {
+    if (m_kfkey.Weight()!=ATOOLS::UNDEFINED_WEIGHT) return m_kfkey.Weight();
+    if (m_orderQCD<0 || m_orderEW<0) {
+      THROW(fatal_error,"Couplings not set for process '"+Name()+"'");
+    }
+    if (m_nstrong<=2) return 1.0;
+    std::vector<Vec4D> moms(m_nout);
+    for (size_t i(0);i<m_nout;++i) moms[i]=p_momenta[m_nin+i];
+    double weight(1.0), asecms((*as)(sqr(rpa.gen.Ecms())));
+    std::sort(moms.begin(),moms.end(),Order_Y());
+    Vec4D q(p_momenta[0][3]>p_momenta[1][3]?p_momenta[0]:p_momenta[1]);
+    q-=moms.front();
+    weight*=(*as)(moms.front().PPerp2())/asecms;
+    for (size_t i(1);i<m_nout;++i) {
+      weight*=(*as)(moms[i].PPerp2())/asecms;
+      weight*=exp(-(*as)(q.PPerp2())*3.0/M_PI*
+ 		  log(q.PPerp2()/sqr(1.3))*(moms[i-1].Y()-moms[i].Y()));
+      q-=moms[i];
+    }
+    m_kfkey<<weight;
+    msg_Debugging()<<METHOD<<"(): "<<Name()<<" ("<<m_nstrong<<","
+		   <<m_orderQCD<<") {\n"
+		   <<"  \\mu_{fac}   = "<<sqrt(m_scale[stp::fac])<<"\n"
+		   <<"  \\mu_{ren}   = "<<sqrt(m_scale[stp::ren])<<"\n"
+		   <<"\n} -> K = "<<m_kfkey.Weight()<<"\n";
     return m_kfkey.Weight();
   }
   if (m_kfactorscheme==1) {

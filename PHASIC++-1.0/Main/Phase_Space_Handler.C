@@ -332,7 +332,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
 					 const psm::code mode) 
 { 
   PROFILE_HERE;
-  if (process->Name()=="BFKL_ME")
+  if (process->Name().find("BFKL")==0)
     return p_process->Differential(p_cms);
   if (!(mode&psm::pi_call) && p_pi!=NULL) {
     p_active=process;
@@ -434,7 +434,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
     m_result_1 = 1.;
     if (m_nin>1) {
       Q2 = process->CalculateScale(p_lab);
-      if (p_isrhandler->KMROn()>0) {
+      if (p_isrhandler->KMROn()>0 || Q2<0.0) {
 	m_mu2key[0][0] = process->Scale(stp::kp21);
 	m_mu2key[1][0] = process->Scale(stp::kp22);
       }
@@ -687,7 +687,7 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
     if (value > 0.) {
       m_sumtrials+=i;
       ++m_events;
-      if (p_process->Selected()->Name()!="BFKL_ME") {
+      if (p_process->Selected()->Name().find("BFKL")!=0) {
 	if (m_result_1 < (m_result_1+m_result_2)*ATOOLS::ran.Get()) {
 	  Rotate(p_lab);
 	  if (p_process->NAddOut()>0) {
@@ -846,7 +846,7 @@ bool Phase_Space_Handler::CreateIntegrators()
     if (m_nout==2&&m_inttype==2) m_inttype=6;
     if ((m_inttype<3||m_inttype>20) && (p_fsrchannels!=0)) p_fsrchannels->DropAllChannels();
   }
-  if (p_process->Name()!="BFKL_ME") {
+  if (p_process->Name().find("BFKL")!=0) {
     switch (m_inttype) {
     case 0:
       {

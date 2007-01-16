@@ -441,7 +441,7 @@ void ISR_Handler::SetLimits()
 
 bool ISR_Handler::CalculateWeight(const double scale) 
 {
-  if (!m_kmrmode) {
+  if (!m_kmrmode && scale>0.0) {
     m_mu2[0]=m_mu2[1]=scale;
   }
   else {
@@ -500,7 +500,7 @@ bool ISR_Handler::CalculateWeight2(const double scale)
   if (m_mode != 3) { 
     THROW(fatal_error,"Called for one ISR only.");
   }
-  if (!m_kmrmode) {
+  if (!m_kmrmode && scale>0.0) {
     m_mu2[0]=m_mu2[1]=scale;
   }
   else {
