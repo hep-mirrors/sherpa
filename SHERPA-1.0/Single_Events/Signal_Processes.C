@@ -255,7 +255,7 @@ bool Signal_Processes::FillUPDFBlobs(Blob_List *const bloblist,Blob *const blob)
     parton1->SetStatus(part_status::decayed);
     isr[i]->AddToOutParticles(parton1);
     ATOOLS::Particle *
-      parton2 = new ATOOLS::Particle(-1,xs->AddFlavours()[i],
+      parton2 = new ATOOLS::Particle(-1,xs->AddFlavours()[stop+i],
 				     xs->AddMomenta()[i]);
     parton2->SetNumber();
     parton2->SetStatus(part_status::active);
@@ -277,7 +277,7 @@ bool Signal_Processes::FillUPDFBlobs(Blob_List *const bloblist,Blob *const blob)
 	parton2->SetFlow(1+anti,xs->Colours()[i][anti]);
       }
       else {
-	parton1->SetFlow(2-anti,xs->Colours()[i][1-anti]);
+	parton1->SetFlow(2-anti,xs->Colours()[i][anti]);
 	parton1->SetFlow(1+anti,newc);
 	parton2->SetFlow(1+anti,newc);
       }
