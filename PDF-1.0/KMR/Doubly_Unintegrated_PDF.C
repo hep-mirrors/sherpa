@@ -148,6 +148,7 @@ bool Doubly_Unintegrated_PDF::Unintegrate(ATOOLS::Flavour flavour)
     }
     return false;     
   }
+  m_partsums.clear();
   LL_Branching::SF_Set::iterator sfit=
     LL_Branching::AllSplittings().begin();
   for (;sfit!=LL_Branching::AllSplittings().end();++sfit) {
@@ -156,6 +157,8 @@ bool Doubly_Unintegrated_PDF::Unintegrate(ATOOLS::Flavour flavour)
  	  m_z*(1.+sqrt(m_kperp2/m_mu2))>1.) continue;
       if (m_splitmode!=1 && !(*sfit)->GetA().IsGluon()) continue;
       m_unintegrated+=(*(*sfit))(m_z)*p_pdf->GetXPDF((*sfit)->GetA());
+      m_partsums.push_back(std::pair<double,Splitting_Kernel*>
+			   (m_unintegrated,*sfit));
     }
   }
   m_unintegrated*=(*p_alphas)(m_kperp2)/(2.0*M_PI);
@@ -167,6 +170,20 @@ bool Doubly_Unintegrated_PDF::Unintegrate(ATOOLS::Flavour flavour)
 		 <<p_sudakov->Delta(flavour)(sqrt(m_mu2),sqrt(m_kperp2))<<"\n";
   m_unintegrated/=m_kperp2;
   return true;
+}
+
+bool Doubly_Unintegrated_PDF::
+SelectJetFlavour(ATOOLS::Flavour &a,ATOOLS::Flavour &c,const double &rn) const
+{
+  for (size_t i(0);i<m_partsums.size();++i)
+    if (m_partsums[i].first/m_partsums.back().first>=rn) {
+      a=m_partsums[i].second->GetA();
+      c=m_partsums[i].second->GetC();
+      return true;
+    }
+  a=ATOOLS::kf::none;
+  c=ATOOLS::kf::none;
+  return false;
 }
 
 void Doubly_Unintegrated_PDF::Calculate(double x,double z,

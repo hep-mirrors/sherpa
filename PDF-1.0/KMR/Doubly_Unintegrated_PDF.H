@@ -31,6 +31,8 @@ namespace PDF {
     double m_x, m_z, m_kperp2, m_mu2, m_mu02, m_epsilon;
     double m_integrated, m_unintegrated;
 
+    std::vector<std::pair<double,Splitting_Kernel*> > m_partsums;
+
     kps::type m_kperpscheme;
     double    m_fixedktexponent;
     bool      m_calculate;
@@ -63,6 +65,9 @@ namespace PDF {
 
     void    Output();
     double  Cut(const std::string &type);
+
+    bool SelectJetFlavour(ATOOLS::Flavour &a,ATOOLS::Flavour &c,
+			  const double &rn) const;
 
     void Test();
 
