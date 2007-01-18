@@ -257,14 +257,14 @@ STwo_Particle_Observable_Base(const ATOOLS::Flavour flav,const size_t item,
     +ToString(m_refflavour)+"-"+ToString(m_refitem)+".dat";
 }
 
-void STwo_Particle_Observable_Base::Evaluate(const ATOOLS::Particle_List &particlelist,
+void STwo_Particle_Observable_Base::Evaluate(const ATOOLS::Particle_List &list,
 					     double weight,int ncount)
 {
   ATOOLS::Particle_List *reflist=p_ana->GetParticleList(m_reflist);
   int no=-1, refno=-1; 
   size_t pos=std::string::npos, refpos=std::string::npos;
-  for (size_t i=0;i<reflist->size();++i) {
-    if ((*reflist)[i]->Flav()==m_flavour || 
+  for (size_t i=0;i<list.size();++i) {
+    if (list[i]->Flav()==m_flavour || 
 	m_flavour.Kfcode()==ATOOLS::kf::none) {
       ++no;
       if (no==(int)m_item) {
@@ -272,6 +272,8 @@ void STwo_Particle_Observable_Base::Evaluate(const ATOOLS::Particle_List &partic
 	if (refpos!=std::string::npos) break;
       }
     }
+  }
+  for (size_t i=0;i<reflist->size();++i) {
     if ((*reflist)[i]->Flav()==m_refflavour || 
 	m_refflavour.Kfcode()==ATOOLS::kf::none) {
       ++refno;
@@ -282,7 +284,7 @@ void STwo_Particle_Observable_Base::Evaluate(const ATOOLS::Particle_List &partic
     }
   }
   if (pos==std::string::npos || refpos==std::string::npos) return;
-  Evaluate((*reflist)[pos],(*reflist)[refpos],weight,ncount);
+  Evaluate(list[pos],(*reflist)[refpos],weight,ncount);
 }
 
 DEFINE_TWO_OBSERVABLE_GETTER(Two_DPhi_Distribution,
