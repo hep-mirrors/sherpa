@@ -5,6 +5,7 @@
 #include "Run_Parameter.H"
 #include "Combined_Selector.H"
 #include "Jet_Finder.H"
+#include "Standard_Selector.H"
 #include "Phase_Space_Handler.H"
 #include "Regulator_Base.H"
 #include "Running_AlphaS.H"
@@ -533,20 +534,26 @@ double Integrable_Base::KFactor()
     for (size_t i(0);i<m_nout;++i) moms[i]=p_momenta[m_nin+i];
     double weight(1.0), asecms((*as)(sqr(rpa.gen.Ecms())));
     std::sort(moms.begin(),moms.end(),Order_Y());
+    BFKL_PT_Selector *ptsel
+      ((BFKL_PT_Selector*)((Combined_Selector*)p_selector)->
+       GetSelector("BFKL_PT_Selector"));
+    double ptmin(0.0);
+    if (ptsel!=NULL) ptmin=ptsel->PTMin();
+    else THROW(critical_error,"'SCALE_SCHEME = BFKL' implies BFKL_PT <min> <max>' in 'Selector.dat'.");
     Vec4D q(p_momenta[0][3]>p_momenta[1][3]?p_momenta[0]:p_momenta[1]);
     q-=moms.front();
     weight*=(*as)(moms.front().PPerp2())/asecms;
     for (size_t i(1);i<m_nout;++i) {
       weight*=(*as)(moms[i].PPerp2())/asecms;
       weight*=exp(-(*as)(q.PPerp2())*3.0/M_PI*
- 		  log(q.PPerp2()/sqr(1.3))*(moms[i-1].Y()-moms[i].Y()));
+ 		  log(q.PPerp2()/sqr(ptmin))*(moms[i-1].Y()-moms[i].Y()));
       q-=moms[i];
     }
     m_kfkey<<weight;
     msg_Debugging()<<METHOD<<"(): "<<Name()<<" ("<<m_nstrong<<","
 		   <<m_orderQCD<<") {\n"
-		   <<"  \\mu_{fac}   = "<<sqrt(m_scale[stp::fac])<<"\n"
-		   <<"  \\mu_{ren}   = "<<sqrt(m_scale[stp::ren])<<"\n"
+		   <<"  \\mu_1   = "<<sqrt(m_scale[stp::kp21])<<"\n"
+		   <<"  \\mu_2   = "<<sqrt(m_scale[stp::kp22])<<"\n"
 		   <<"\n} -> K = "<<m_kfkey.Weight()<<"\n";
     return m_kfkey.Weight();
   }

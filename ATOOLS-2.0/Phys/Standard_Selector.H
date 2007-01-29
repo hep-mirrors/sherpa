@@ -59,6 +59,8 @@ namespace ATOOLS {
     void     BuildCuts(Cut_Data *);
     void     UpdateCuts(double,double,Cut_Data *);
     bool GetValue(const std::string &name,double &value);
+    inline double PTMin() const { return ptmin[m_nin]; }
+    inline double PTMax() const { return ptmax[m_nin]; }
   };
 
   class X_Selector : public Selector_Base {

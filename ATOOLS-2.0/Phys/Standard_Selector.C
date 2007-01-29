@@ -7,6 +7,14 @@
 using namespace ATOOLS;
 using namespace std;
 
+class Order_Y {
+public:
+  bool operator()(const Vec4D &a,const Vec4D &b)
+  {
+    return a.Y()>b.Y();
+  }
+};
+
 /*--------------------------------------------------------------------
 
   Energy Selector
@@ -264,15 +272,19 @@ bool BFKL_PT_Selector::GetValue(const std::string &name,double &value)
 
 bool BFKL_PT_Selector::Trigger(const Vec4D * mom) 
 {
+  std::vector<Vec4D> moms(m_nout);
+  for (size_t i(0);i<m_nout;++i) moms[i]=mom[m_nin+i];
+  std::sort(moms.begin(),moms.end(),Order_Y());
+  double pti(0.0);
   Vec4D qt(mom[0]);
-  double pti(qt.PPerp());
-  if (m_sel_log->Hit( ((pti<ptmin[0]) || (pti>ptmax[0])) )) return 0;
   for (int i=m_nin;i<m_n;i++) {
-    pti = value[i] = mom[i].PPerp();
+    pti = value[i] = moms[i-m_nin].PPerp();
     if (m_sel_log->Hit( ((pti<ptmin[i]) || (pti>ptmax[i])) )) return 0;
-    qt-=mom[i];
-    pti = value[i] = qt.PPerp();
-    if (m_sel_log->Hit( ((pti<ptmin[i]) || (pti>ptmax[i])) )) return 0;
+    if (i<m_n-1) {
+      qt-=moms[i-m_nin];
+      pti = value[i] = qt.PPerp();
+      if (m_sel_log->Hit( ((pti<ptmin[i]) || (pti>ptmax[i])) )) return 0;
+    }
   }
   return 1;
 }
@@ -293,7 +305,7 @@ void BFKL_PT_Selector::SetRange(std::vector<Flavour> crit,double _min,
   }
 
   double MaxPTmin = 0.;
-  for (int i=0;i<m_n;i++) {
+  for (int i=m_nin;i<m_n;i++) {
     if (crit[0].Includes(m_fl[i])) {
       ptmin[i] = _min; 
       ptmax[i] = Min(_max,rpa.gen.Ecms());
