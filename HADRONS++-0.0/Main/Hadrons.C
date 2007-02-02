@@ -286,6 +286,7 @@ Return_Value::code Hadrons::PerformDecay( Blob* blob, const Vec4D& labmom )
     flav = (*dpit);
     if( inpart->Flav().IsAnti() ) flav = flav.Bar();
     particle = new Particle( 0, flav );
+    particle->SetFinalMass();
     particle->SetStatus(part_status::active);
     particle->SetInfo('D');
     blob->AddToOutParticles( particle );
