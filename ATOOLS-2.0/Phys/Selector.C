@@ -214,14 +214,6 @@ bool Selector_Data::ReadInData(std::string filename) {
       (dat.flavs).push_back(flav);
       data.push_back(dat);
     }  
-    if (keyword == string("SummedPT")) {
-      dat.type = 32;
-      from>>crit1>>dat.min>>dat.max;
-      flav = Flavour(kf::code(abs(crit1)));
-      if (crit1<0) flav = flav.Bar();
-      (dat.flavs).push_back(flav);
-      data.push_back(dat);
-    }
   }
   from.close();
   return 1;
@@ -245,7 +237,7 @@ void Selector_Data::ControlOutput() {
     case 16: msg_Debugging()<<"PseudoRaps : "; break;  
     case 21: msg_Debugging()<<"Masses     : "; break;
     case 22: msg_Debugging()<<"Angles     : "; break;
-    case 32: msg_Debugging()<<"SummedPT   : "; break;
+    case 23: msg_Debugging()<<"PT2        : "; break;
     } 
     msg_Debugging()<<data[i].min<<" ... "<<data[i].max<<" : ";
     for (size_t j=0;j<(data[i].flavs).size();j++) msg_Debugging()<<(data[i]).flavs[j]<<" ";
