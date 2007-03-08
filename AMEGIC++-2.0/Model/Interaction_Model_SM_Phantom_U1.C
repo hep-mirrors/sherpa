@@ -16,7 +16,7 @@ Interaction_Model_SM_Phantom_U1::Interaction_Model_SM_Phantom_U1(MODEL::Model_Ba
   p_mosm  = new Interaction_Model_SM(p_model,_cplscheme,_yukscheme); 
   double Ecms2  = sqr(rpa.gen.Ecms());
   double hmass2 = sqr(Flavour(kf::h0).Mass());
-  double Hmass2 = sqr(Flavour(kf::H0).Mass());
+  double Hmass2 = sqr(Flavour(kf::h0).Mass());
 
   g1    = Kabbala(string("g_1"),
 		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),Ecms2)));
@@ -34,12 +34,14 @@ Interaction_Model_SM_Phantom_U1::Interaction_Model_SM_Phantom_U1(MODEL::Model_Ba
   GF    = Kabbala(string("GF"),ScalarConstant(string("GF")));
   tanb  = Kabbala(string("\\tan\\beta"),ScalarConstant(string("Tan(Beta)")));
 
-  geffh = Kabbala(std::string("I_S^{(h)}"),ScalarConstant(std::string("Higgs_GG_eff_h")));
-  geffH = Kabbala(std::string("I_S^{(H)}"),ScalarConstant(std::string("Higgs_GG_eff_H")));
-  ghgg  = Kabbala(std::string("ghgg"),ScalarConstant(std::string("Higgs_gg_fac"))*
-		  ScalarFunction(std::string("alpha_S"),hmass2)/(2.*M_PI)/ScalarConstant(std::string("vev")));
-  gHgg  = Kabbala(std::string("gHgg"),ScalarConstant(std::string("Higgs_gg_fac"))*
-		  ScalarFunction(std::string("alpha_S"),Hmass2)/(2.*M_PI)/ScalarConstant(std::string("vev")));
+  geffh = Kabbala(std::string("I_S^{(h)}"),
+		  ScalarConstant(std::string("Higgs_GG_eff_h"))*
+		  ScalarFunction(std::string("alpha_S"),hmass2)/
+		  (2.*M_PI*ScalarConstant(std::string("vev"))));
+  geffH = Kabbala(std::string("I_S^{(H)}"),
+		  ScalarConstant(std::string("Higgs_GG_eff_H"))*
+		  ScalarFunction(std::string("alpha_S"),Hmass2)/
+		  (2.*M_PI*ScalarConstant(std::string("vev"))));
 }
 
 void Interaction_Model_SM_Phantom_U1::c_FFV(vector<Single_Vertex>& vertex,int& vanz)
@@ -212,7 +214,7 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
   }
 
 
-  flav = kf::photon;
+  flav = Flavour(kf::photon);
   // Photon h Photon
   if (flav.IsOn()) {
     vertex[vanz].in[0] = flav;
@@ -257,7 +259,7 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].in[0] = flg;
     vertex[vanz].in[1] = flh0;
     vertex[vanz].in[2] = flg;
-    kcpl0 = M_I*ghgg*mixh;
+    kcpl0 = M_I*geffh*mixh;
     kcpl1 = kcpl0;
     vertex[vanz].cpl[0]  = kcpl0.Value();
     vertex[vanz].cpl[1]  = kcpl0.Value();
@@ -271,13 +273,13 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].Lorentz = new Lorentz_Function(lf::Triangle);     
     vertex[vanz].Lorentz->SetParticleArg(0,2);     
     vertex[vanz].on      = 1;
-    vertex.push_back(Single_Vertex());vanz++;
-
+    vertex.push_back(Single_Vertex());
+    vanz++;
 
     vertex[vanz].in[0] = flg;
     vertex[vanz].in[1] = flH0;
     vertex[vanz].in[2] = flg;
-    kcpl0 = M_I*gHgg*mixH;
+    kcpl0 = M_I*geffH*mixH;
     kcpl1 = kcpl0;
     vertex[vanz].cpl[0]  = kcpl0.Value();
     vertex[vanz].cpl[1]  = kcpl0.Value();
@@ -291,7 +293,8 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].Lorentz = new Lorentz_Function(lf::Triangle);     
     vertex[vanz].Lorentz->SetParticleArg(0,2);     
     vertex[vanz].on      = 1;
-    vertex.push_back(Single_Vertex());vanz++;
+    vertex.push_back(Single_Vertex());
+    vanz++;
   }
 
 
