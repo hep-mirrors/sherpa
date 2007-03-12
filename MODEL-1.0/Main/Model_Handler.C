@@ -2,9 +2,7 @@
 #include "Model_Handler.H"
 #include "Standard_Model.H"
 #include "MSSM.H"
-#include "MUED.H"
 #include "ADD.H"
-#include "SM_Phantom_U1.H"
 #include "Message.H"
 
 
@@ -12,19 +10,9 @@ using namespace MODEL;
 using namespace ATOOLS;
 
 Model_Base * Model_Handler::GetModel(Data_Read * _dataread,std::string _path,std::string _file) {
-  std::string model = _dataread->GetValue("MODEL",std::string("SM"));
+  std::string model     = _dataread->GetValue("MODEL",std::string("SM"));
   
   Model_Base * modelbase = 0;
-  if (model==std::string("PHANTOM_U1")) {
-    modelbase = new SM_Phantom_U1(_path,_file);
-    rpa.gen.SetModel(modelbase);
-    return modelbase;
-  }
-  if (model==std::string("MUED")) {
-    modelbase = new MUED(_path,_file);
-    rpa.gen.SetModel(modelbase);
-    return modelbase;
-  }
   if (model==std::string("MSSM")) {
     modelbase = new MSSM(_path,_file);
     rpa.gen.SetModel(modelbase);
