@@ -10,6 +10,7 @@
 #include "Interaction_Model_MSSM_EHC.H"
 #include "Interaction_Model_SM_ZPrime.H"
 #include "Interaction_Model_SM_AGC.H"
+#include "Interaction_Model_SM_Phantom_U1.H"
 
 #include "Run_Parameter.H"
 #include "Message.H"
@@ -66,6 +67,10 @@ Interaction_Model_Base * Interaction_Model_Handler::GetModel(std::string modelty
   if (modeltype==std::string("SM+AGC")) {
     rpa.gen.SetModelType(ATOOLS::Model_Type::SM_AGC);
     return new Interaction_Model_SM_AGC(p_model,cplscheme,yukscheme);
+  }
+  if (modeltype==std::string("SM+Phantom_U1"))  {
+    rpa.gen.SetModelType(ATOOLS::Model_Type::SM_Phantom_U1);
+    return new Interaction_Model_SM_Phantom_U1(p_model,cplscheme,yukscheme);
   }
 
 
