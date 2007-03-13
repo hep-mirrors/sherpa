@@ -864,7 +864,8 @@ void Channel_Generator3V::IdentifyProps(Point* _plist)
   _plist->prev = 0;
   BackLinks(_plist,endp);
   Point* p = endp;
-  if (p->prev != _plist) {
+
+  if (p->prev != _plist && p->prev!=NULL) {
     for (;;) {
       p = p->prev;
       p->t = 1;
