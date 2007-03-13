@@ -11,6 +11,7 @@ libToolsPhys_la_SOURCES       =	\
 				Cut_Data.C \
 				Selector.C \
 				Combined_Selector.C \
+				Dipole_Jet_Finder.C \
 				Jet_Finder.C \
 				Cone_Finder.C \
 				Durham_Algorithm.C \
@@ -40,6 +41,7 @@ pkginclude_HEADERS        =	\
 			Decay_Table.H \
 			Cut_Data.H \
 			Selector.H \
+			Dipole_Jet_Finder.H \
 			Jet_Finder.H \
 			Cone_Finder.H \
 			Durham_Algorithm.H \
