@@ -1,6 +1,7 @@
 #include "Combined_Selector.H"
 #include "Standard_Selector.H"
 #include "Jet_Finder.H"
+#include "Dipole_Jet_Finder.H"
 #include "Cone_Finder.H"
 #include "Run_Parameter.H"
 #include "Message.H"
@@ -20,30 +21,30 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
   m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
 
   if (_seldata==NULL) return; 
-  int                               type;
-  std::vector<int>                  activetypes;
-  std::vector<Flavour>   critflavs;
-  double                            rmin,rmax;
-  int                               help;
-  bool                              init;
-  Selector_Base                   * sel;
+  int                   type;
+  std::vector<int>      activetypes;
+  std::vector<Flavour>  critflavs;
+  double                rmin,rmax;
+  int                   help;
+  bool                  init(true);
+  Selector_Base       * sel(NULL);
+  Jet_Finder          * jf(NULL);
+  Dipole_Jet_Finder   * djf(NULL);
 
   for (int i=0;i<_seldata->Size();i++) {
     _seldata->Data(i,type,critflavs,help,rmin,rmax);
-    init = 1;
     for (size_t j=0;j<activetypes.size();j++) {
       if (type==activetypes[j]) {
 	  if (type!=14) m_sels[j]->SetRange(critflavs,rmin,rmax);
 	  else          m_sels[j]->SetRange(critflavs,help,rmin,rmax);
-	init = 0;
+	init = false;
       }
     }
     if (init) {
-      int jettype = 0;
+      int jettype(0),instrong(0);
       switch (type) {
       case 1 : 
 	if (_nin==2) {
-	  int instrong = 0;
 	  for (int j=0;j<_nin;j++) { if (_fl[j].Strong()) instrong++; }
 	  if (instrong==0) jettype = 1;
 	  if (instrong==1) jettype = 2;
@@ -52,18 +53,36 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
 	rmin=Max(rmin,rpa.gen.Ycut());
 	rpa.gen.SetYcut(rmin);
 	rpa.gen.SetDeltaR(rmax);
-	if (ycut>0.) { 
-	  rmin=ycut;
-	}
-	{
-	  Jet_Finder * jf = new Jet_Finder(_nin+_nout,_fl,rmin,jettype);
-	  jf->SetDeltaR(rmax);
-	  sel = jf;
-	}
+	if (ycut>0.) rmin=ycut;
+
+	jf = new Jet_Finder(_nin+_nout,_fl,rmin,jettype);
+	jf->SetDeltaR(rmax);
+	sel = jf;
+
 	activetypes.push_back(type);
 	break;
       case 2 :
 	sel = new Cone_Finder(_nin+_nout,_fl,rmin);
+	activetypes.push_back(type);
+	break;
+      case 3 : 
+	if (_nin==1) jettype = 0;
+	if (_nin==2) {
+	  for (int j=0;j<_nin;j++) { if (_fl[j].Strong()) instrong++; }
+	  if (instrong==0) jettype = 1;
+	  if (instrong==1) jettype = 2;
+	  if (instrong==2) jettype = 4;
+	}
+	rmin=Max(rmin,rpa.gen.Ycut());
+	rpa.gen.SetYcut(rmin);
+	rpa.gen.SetDeltaR(rmax);
+	if (ycut>0.) rmin=ycut;
+
+	djf = new Dipole_Jet_Finder(_nin+_nout,_fl,rmin,
+				    dipjet_type::ariadne,dipjet_mode::code(jettype),
+				    false);
+	sel = djf;
+
 	activetypes.push_back(type);
 	break;
       case 11 :
