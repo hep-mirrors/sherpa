@@ -38,13 +38,17 @@ namespace ATOOLS {
       c                      = 4,
       b                      = 5,
       t                      = 6,
-      
+      b_prime                = 7,
+      t_prime                = 8,
+
       e                      = 11,
       nue                    = 12,
       mu                     = 13,
       numu                   = 14,
       tau                    = 15,
       nutau                  = 16,
+      tau_prime              = 17,
+      nutau_prime            = 18,
       
       gluon                  = 21,
       photon                 = 22,
@@ -52,6 +56,27 @@ namespace ATOOLS {
       Z                      = 24,
       h                      = 25,
       
+      //Z0_2                   = 32,
+      //Z0_3                   = 33,
+      //W_2                    = 34,
+      //H0                     = 35,
+      //A0                     = 36,
+      //Hmin                   = 37,
+
+      //Graviton               = 39,
+      //GScalar                = 40,
+
+      /* ------------------------------------------
+	helpers
+      ------------------------------------------ */
+      isrphoton              = 26,
+      pol                    = 70,
+
+      // dummy for shrinked gluon in 
+      // 4gluon-higgs vertex
+
+      shgluon                = 29,
+
       /* ------------------------------------------
 	LED - has to get other numbers to comply 
 	       with the PDG numbering scheme
@@ -112,15 +137,79 @@ namespace ATOOLS {
       sNu3                   = 83,
       
       /* ------------------------------------------
-	helpers
+	KK modes: numbers 5k000xx, 6k000xx for k-th resonance 
+                  (left-, right-handed)
       ------------------------------------------ */
-      isrphoton              = 26,
-      pol                    = 70,
 
-      // dummy for shrinked gluon in 
-      // 4gluon-higgs vertex
+      KK_dL_1                = 5100001,
+      KK_uL_1                = 5100002,
+      KK_sL_1                = 5100003,
+      KK_cL_1                = 5100004,
+      KK_b2_1                = 5100005,
+      KK_t2_1                = 5100006,
+      
+      KK_eL_1                = 5100011,
+      KK_nueL_1              = 5100012,
+      KK_muL_1               = 5100013,
+      KK_numuL_1             = 5100014,
+      KK_tau2_1              = 5100015,
+      KK_nutauL_1            = 5100016,
+      
+      KK_gluon_1             = 5100021,
+      KK_B1_1                = 5100022,
+      KK_W_1                 = 5100023,
+      KK_W3_1                = 5100024,
 
-      shgluon                = 29,
+      KK_H_1                 = 5100035,
+      KK_A_1                 = 5100036,
+      KK_Hplus_1             = 5100037,
+
+      KK_dR_1                = 6100001,
+      KK_uR_1                = 6100002,
+      KK_sR_1                = 6100003,
+      KK_cR_1                = 6100004,
+      KK_b1_1                = 6100005,
+      KK_t1_1                = 6100006,
+      
+      KK_eR_1                = 6100011,
+      KK_muR_1               = 6100013,
+      KK_tau1_1              = 6100015,
+
+      KK_dL_2                = 5200001,
+      KK_uL_2                = 5200002,
+      KK_sL_2                = 5200003,
+      KK_cL_2                = 5200004,
+      KK_b2_2                = 5200005,
+      KK_t2_2                = 5200006,
+      
+      KK_eL_2                = 5200011,
+      KK_nueL_2              = 5200012,
+      KK_muL_2               = 5200013,
+      KK_numuL_2             = 5200014,
+      KK_tau2_2              = 5200015,
+      KK_nutauL_2            = 5200016,
+      
+      KK_gluon_2             = 5200021,
+      KK_B1_2                = 5200022,
+      KK_W_2                 = 5200023,
+      KK_W3_2                = 5200024,
+
+      KK_H_2                 = 5200035,
+      KK_A_2                 = 5200036,
+      KK_Hplus_2             = 5200037,
+
+      KK_dR_2                = 6200001,
+      KK_uR_2                = 6200002,
+      KK_sR_2                = 6200003,
+      KK_cR_2                = 6200004,
+      KK_b1_2                = 6200005,
+      KK_t1_2                = 6200006,
+      
+      KK_eR_2                = 6200011,
+      KK_muR_2               = 6200013,
+      KK_tau1_2              = 6200015,
+      
+
 
       /* ------------------------------------------
 	containers
@@ -645,6 +734,9 @@ namespace ATOOLS {
     inline double PSMass() const {
       return particles[Index()].m;
     }
+    inline void SetMassOn(bool on) const {
+      particles[ Index() ].msv = on;
+    }
     inline void SetMass(double mass) const {
       particles[Index()].m = mass; 
     }
@@ -720,9 +812,6 @@ namespace ATOOLS {
     inline bool IsIno() {
       return (IsGluino() || IsNeutralino() || IsChargino());
     }                              
-    inline bool IsKK() const {
-      return (kfc==kf::graviton || kfc==kf::gscalar);
-    }
     inline bool IsLepton() const {
       if ((abs(kfc)>10) && (abs(kfc)<20)) return 1;
       return 0;      
@@ -842,11 +931,13 @@ namespace ATOOLS {
     inline const bool IsHadron() const {     
       if (abs(kfc)<100) return 0;
       if (kfc-100*int(kfc/100)<10) return 0;
+      int exc(abs(kfc)/1000000);
+      if (exc==1 || exc==2 || exc==3 || exc==4 || exc==5 || exc==6) return 0;
       return 1;
     }
     inline const bool IsBaryon() const {
-      if (abs(kfc)<1000)    return 0;
-      if (int(kfc/1000)==0) return 0;
+      if (abs(kfc)<1000)             return 0;
+      if (kfc-1000*int(kfc/1000)==0) return 0;
       return !IsDiQuark();
     }
     inline const bool IsB_Hadron() const {
@@ -869,6 +960,17 @@ namespace ATOOLS {
     inline const bool IsSusy() const {     
       if ((35!=kfc)&&(30<kfc)&&(kfc<100)) return 1;
       return 0;
+    }
+
+    inline const bool IsKK() const {  
+      if (kfc==kf::graviton || kfc==kf::gscalar) return 1;
+      if (5000000<kfc && kfc<7000000) return 1;
+      return 0;
+    }
+
+    inline const int KKGeneration() const {
+      if (!IsKK()) return 0;
+      return ((kfc-1000000*(kfc/1000000))/100000);
     }
 
      inline bool Is5VDummy() const {
