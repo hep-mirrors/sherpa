@@ -92,6 +92,8 @@ namespace APACIC {
            APACIC::g_gg and APACIC::g_qq
   */
 
+  //##############################################################################
+
   /*!
     \class q_qg
     \brief represents a quark to quark + gluon  splitting function
@@ -101,42 +103,123 @@ namespace APACIC {
     \f[
        P_{q \to q g} (z) = C_F \frac{1 + z^2}{1-z}
     \f]
+
   */
   /*!
-    \fn q_qg::q_qg(ATOOLS::Flavour quarkflavour);
+
+    \var Sudakov_Tools * p_tools
+
+  */
+  /*!
+
+    \var double m_alpha
+
+  */
+  /*!
+
+    \var double m_kfactor
+
+  */
+  /*!
+
+    \var double m_fmed
+
+  */
+  /*!
+
+    \fn q_qg::q_qg(ATOOLS::Flavour quarkflavour)
     \brief Constructor, taking the quark flavour as argument (obsolete)
+
   */
   /*!
-    \fn q_qg::q_qg(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
+
+    \fn q_qg::q_qg(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools)
     \brief Constructor, takng the quark flavour and a class to
            deliver running alpha_s 
+
   */
+  /*!
+
+    double operator()(double z)
+
+  */
+  /*!
+
+    double GetZ()
+
+  */
+  /*!
+
+    double GetPhi(double z)
+
+  */
+  /*!
+
+    const ATOOLS::Simple_Polarisation_Info GetPolB(double z, double phi)
+
+  */
+  /*!
+
+    const ATOOLS::Simple_Polarisation_Info GetPolC(double z, double phi, double phi_b)
+
+  */
+  /*!
+    
+    double GetCoupling()
+
+  */
+  /*!
+
+    double GetCoupling(double t)
+
+  */
+  /*!
+
+    double GetWeight(double z,double pt2,bool massterm)
+
+  */
+  /*!
+
+    double CrudeInt(double _zmin, double _zmax)
+
+  */
+  /*!
+
+    double Integral(double zmin, double zmax)
+
+  */
+
+
+
+  //##############################################################################
 
   /*!
     \class g_gg
     \brief represents a gluon to gluon + gluon splitting function 
            (needed twice for initial state shower)
 
-    This class represents the splitting function for a \f$g \to g \; g \f$
+    This class represents the splitting function for a \f$g \to g \ g \f$
     splitting:
     \f[
        P_{g \to g g} (z) = C_A \frac{[1 - z (1 - z)]^2}{z(1-z)}
     \f]
   */
   /*!
-    \fn g_gg::g_gg();
+    \fn g_gg::g_gg()
     \brief Standard Constructor
   */
   /*!
-    \fn g_gg::g_gg(Sudakov_Tools * _tools);
+    \fn g_gg::g_gg(Sudakov_Tools * _tools)
     \brief Constructor, taking a class to deliver running alpha_s
   */
+
+  //##############################################################################
 
   /*!
     \class g_qq
     \brief represents gluon to quark + anti-quark splitting function
  
-    This class represents the splitting function for a \f$g \to q \; \bar q \f$
+    This class represents the splitting function for a \f$g \to q \ \bar q \f$
     splitting:
     \f[
        P_{g \to q \bar q} (z) = T_R [z^2 + (1-z)^2]
@@ -144,14 +227,16 @@ namespace APACIC {
 
  */
   /*!
-    \fn g_qq::g_qq(ATOOLS::Flavour quarkflavour);
+    \fn g_qq::g_qq(ATOOLS::Flavour quarkflavour)
     \brief Constructor, taking the quark flavour as argument (obsolete)
   */
   /*!
-    \fn g_qq::g_qq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
+    \fn g_qq::g_qq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools)
     \brief Constructor, takng the quark flavour and a class to
            deliver running alpha_qed 
   */
+
+  //##############################################################################
 
   /*!
     \class q_gq
@@ -159,7 +244,7 @@ namespace APACIC {
            (only used in Initial State Shower)
 
 
-    This class represents the splitting function for a \f$q \to g \; q \f$
+    This class represents the splitting function for a \f$q \to g \ q \f$
     splitting:
     \f[
        P_{q \to g q} (z) = CF \frac{1 + (1-z)^2}{z}
@@ -167,11 +252,11 @@ namespace APACIC {
 
   */
   /*!
-    \fn q_gq::q_gq(ATOOLS::Flavour quarkflavour);
+    \fn q_gq::q_gq(ATOOLS::Flavour quarkflavour)
     \brief Constructor, taking the quark flavour as argument (obsolete)
   */
   /*!
-    \fn q_gq::q_gq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
+    \fn q_gq::q_gq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools)
     \brief Constructor, takng the quark flavour and a class to
            deliver running alpha_qed 
   */
