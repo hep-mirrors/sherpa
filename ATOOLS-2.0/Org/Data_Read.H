@@ -57,18 +57,19 @@ namespace ATOOLS {
   //! The different Model types
   class Model_Type {
   public:
-    enum code { pure_QCD = 0, 
-	        QCD      = 1, 
-	        pure_EW  = 2, 
-	        SM       = 3, 
-	        MSSM     = 4, 
-	        THDM     = 5,
-	        MSSM_EHC = 4, 
-	        ADD      = 7,
-	        SMEHC    = 8,
-		SM_ZPrime= 9,
-		SM_AGC   = 10,
-	        Unknown  = 99
+    enum code { pure_QCD      = 0, 
+	        QCD           = 1, 
+	        pure_EW       = 2, 
+	        SM            = 3, 
+	        MSSM          = 4, 
+	        THDM          = 5,
+	        MSSM_EHC      = 4, 
+	        ADD           = 7,
+	        SMEHC         = 8,
+		SM_ZPrime     = 9,
+		SM_AGC        = 10,
+	        SM_Phantom_U1 = 11, 
+	        Unknown       = 99
     };
   };
 
