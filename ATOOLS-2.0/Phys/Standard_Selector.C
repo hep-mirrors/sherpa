@@ -1,5 +1,6 @@
 #include "Standard_Selector.H"
 #include "Jet_Finder.H"
+#include "Dipole_Jet_Finder.H"
 #include "Run_Parameter.H"
 #include "MathTools.H"
 #include "Flavour.H"

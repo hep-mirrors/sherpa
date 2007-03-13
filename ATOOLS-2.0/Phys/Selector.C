@@ -111,6 +111,15 @@ bool Selector_Data::ReadInData(std::string filename) {
       from>>dat.min;
       data.push_back(dat);
     }
+    if (keyword == string("DipoleFinder")) {
+      dat.type = 3;
+      std::string dmin, dmax;
+      from>>dmin>>dmax;
+      Algebra_Interpreter inter;
+      dat.min=ToType<double>(inter.Interprete(dmin));
+      dat.max=ToType<double>(inter.Interprete(dmax));
+      data.push_back(dat);
+    }
     if (keyword == string("Energy")) {
       dat.type = 11;
       from>>crit1>>dat.min>>dat.max;
