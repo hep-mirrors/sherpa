@@ -26,7 +26,7 @@ Dipole_Jet_Finder::Dipole_Jet_Finder(const int n,Flavour * fl,
   m_type(type), m_mode(mode),
   m_coloursorted(colsorted)
 {
-  m_name = std::string("Jetfinder");
+  m_name = std::string("Dipole_Jetfinder");
   m_fl   = fl;
   m_n    = n;
   if (m_mode==dipjet_mode::dec) { m_nin = 1; m_nout = m_n-1; }
@@ -94,10 +94,11 @@ bool Dipole_Jet_Finder::Trigger(const Vec4D * p)
 
 void Dipole_Jet_Finder::Init(const Vec4D * p) {
   // No boost needed : Everything in Lorentz invariant fashion
+  msg.Out()<<METHOD<<" : "<<p[0]<<"/"<<p[1]<<endl;
   if (m_mode==dipjet_mode::dec) 
-    m_kt2minII = m_kt2minIF = m_kt2minFF = m_shat = (p[0]).Abs2();
+    m_kt2minII = m_kt2minIF = m_kt2minFI = m_kt2minFF = m_shat = (p[0]).Abs2();
   else
-    m_kt2minII = m_kt2minIF = m_kt2minFF = m_shat = (p[0]+p[1]).Abs2();
+    m_kt2minII = m_kt2minIF = m_kt2minFI = m_kt2minFF = m_shat = (p[0]+p[1]).Abs2();
 }
 
 //-----------------------------------------------------------------------------
@@ -137,11 +138,13 @@ void Dipole_Jet_Finder::BuildCuts(Cut_Data * cuts)
       case (dipjet_mode::ee): 
       default:
 	cuts->energymin[i] = Max(sqrt(m_kt2cut),cuts->energymin[i]);
+	msg.Out()<<METHOD<<" : E_min("<<i<<") = "<<cuts->energymin[i]<<endl;
 	break;
       }      
       for (int j=i+1; j<m_nin+m_nout; ++j) {
 	if (m_fl[j].Strong()) {
 	  cuts->scut[j][i] = cuts->scut[i][j] = Max(cuts->scut[i][j],m_kt2cut);	
+	  msg.Out()<<METHOD<<" : s_min("<<i<<","<<j<<") = "<<cuts->scut[i][j]<<endl;
 	}
       }
     }

@@ -5,6 +5,7 @@
 #include "Run_Parameter.H"
 #include "Combined_Selector.H"
 #include "Jet_Finder.H"
+#include "Dipole_Jet_Finder.H"
 #include "Standard_Selector.H"
 #include "Phase_Space_Handler.H"
 #include "Regulator_Base.H"
@@ -361,10 +362,15 @@ double Integrable_Base::CalculateScale(const Vec4D *momenta)
     m_scale[stp::fac]=rpa.gen.Ycut()*S;
     m_scale[stp::ren]=sqr(rpa.gen.DeltaR())*m_ycut*S;
     if (p_jf==NULL && p_selector->Name()=="Combined_Selector") {
-      p_jf=(Jet_Finder *)
-	((Combined_Selector*)p_selector)->GetSelector("Jetfinder");
-      if (p_jf!=NULL) m_me_as_factor=p_jf->Type()>1?1.0:0.25;
-      else THROW(critical_error,"'SCALE_SCHEME = CKKW' implies JetFinder <ycut> <deltar>' in 'Selector.dat'.");
+      p_jf= ((Combined_Selector*)p_selector)->GetSelector("Jetfinder");
+      if (p_jf!=NULL) m_me_as_factor=((Jet_Finder*)p_jf)->Type()>1?1.0:0.25;
+      else {
+	p_jf= ((Combined_Selector*)p_selector)->GetSelector("Dipole_Jetfinder");
+	//if (p_jf!=NULL) m_me_as_factor=((JetFinder*)p_jf)->Type()>1?1.0:0.25;
+      }
+      if (p_jf==NULL) {
+	THROW(critical_error,"'SCALE_SCHEME = CKKW' implies JetFinder <ycut> <deltar>' or DipoleJetFinder <ycut>) in 'Selector.dat'");
+      }
     }
     double pt2(p_jf->ActualValue()*S);
     if ((int)m_nout==m_maxjetnumber) 

@@ -2,7 +2,6 @@
 #define Integrable_Base_H
 
 #include "Selector.H"
-#include "Jet_Finder.H"
 #include "Cut_Data.H"
 #include "Flavour.H"
 #include "Vector.H"
@@ -121,7 +120,7 @@ namespace PHASIC {
     ATOOLS::Cut_Data            *p_cuts;
     ATOOLS::Histogram           *p_whisto;
 
-    ATOOLS::Jet_Finder *p_jf;
+    ATOOLS::Selector_Base       *p_jf;
 
     bool m_ownselector;
 

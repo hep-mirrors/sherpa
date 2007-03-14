@@ -178,6 +178,5 @@ namespace AHADIC {
     \fn ATOOLS::Blob * Cluster_Formation_Handler::GetFragmentationBlob()
     \brief
   */
-  };
 }
 #endif

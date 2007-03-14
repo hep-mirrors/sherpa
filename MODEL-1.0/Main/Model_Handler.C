@@ -3,6 +3,7 @@
 #include "Standard_Model.H"
 #include "MSSM.H"
 //#include "MUED.H"
+#include "SM_Phantom_U1.H"
 #include "ADD.H"
 #include "Message.H"
 
