@@ -438,7 +438,9 @@ Flavour Jet_Finder::GetFlavour(std::string fl)
 {
   bool bar(false);
   if (fl=="j") return Flavour(kf::jet);
+  if (fl=="Q") return Flavour(kf::quark);
   if (fl=="G") return Flavour(kf::gluon);
+  if (fl=="P") return Flavour(kf::photon);
   if (fl.length()>1) {
     if (fl[fl.length()-1]=='b') {
       fl.erase(fl.length()-1,1);
