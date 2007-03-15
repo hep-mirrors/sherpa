@@ -100,10 +100,10 @@ bool Selector_Data::ReadInData(std::string filename) {
       dat.type = 1;
       std::string dmin, dmax;
       from>>dmin>>dmax;
-      Algebra_Interpreter inter;
-      inter.AddTag("E_CMS",ToString(rpa.gen.Ecms()));
-      dat.min=ToType<double>(inter.Interprete(dmin));
-      dat.max=ToType<double>(inter.Interprete(dmax));
+      rpa.gen.SetVariable("Y_CUT",dmin);
+      rpa.gen.SetVariable("DELTA_R",dmax);
+      dat.min=2.0;
+      dat.max=1.0;
       data.push_back(dat);
     }
     if (keyword == string("ConeFinder")) {
