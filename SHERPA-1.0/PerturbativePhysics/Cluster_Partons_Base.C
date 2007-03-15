@@ -364,9 +364,10 @@ bool Cluster_Partons_Base::FillLegs(Leg * alegs, Point * root, int & l, int maxl
     alegs[root->number]=Leg(root);
     alegs[root->number].SetExternal(1);
     alegs[root->number].SetQ2Cut
-      (p_ajf->GlobalYcut(id,id)*sqr(rpa.gen.Ecms()));    
+      (p_ajf->GetGlobalYcut(id,id)*sqr(rpa.gen.Ecms()));    
     alegs[root->number].SetQ2Cut(alegs[root->number].Q2Cut(),2);    
-    alegs[root->number].SetQ2Cut(p_ajf->Ycut(id,id)*sqr(rpa.gen.Ecms()),1);    
+    alegs[root->number].SetQ2Cut
+      (p_ajf->GetYcut(id,id)*sqr(rpa.gen.Ecms()),1);    
     alegs[root->number].SetID(id);    
     l++;
   }
@@ -379,9 +380,10 @@ bool Cluster_Partons_Base::FillLegs(Leg * alegs, Point * root, int & l, int maxl
     alegs[root->number]=Leg(root);
     alegs[root->number].SetExternal(1);
     alegs[root->number].SetQ2Cut
-      (p_ajf->GlobalYcut(id,id)*sqr(rpa.gen.Ecms()));    
+      (p_ajf->GetGlobalYcut(id,id)*sqr(rpa.gen.Ecms()));    
     alegs[root->number].SetQ2Cut(alegs[root->number].Q2Cut(),2);    
-    alegs[root->number].SetQ2Cut(p_ajf->Ycut(id,id)*sqr(rpa.gen.Ecms()),1);    
+    alegs[root->number].SetQ2Cut
+      (p_ajf->GetYcut(id,id)*sqr(rpa.gen.Ecms()),1);    
     alegs[root->number].SetID(id);    
     l++;
     return 1;

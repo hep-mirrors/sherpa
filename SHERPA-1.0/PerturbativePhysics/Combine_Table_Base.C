@@ -406,8 +406,10 @@ void Combine_Table_Base::SetQ2Cut(const size_t &i,const size_t &j,
 				  double &q2in,double &q2out,const size_t &id)
 {
   size_t idi(GetLeg(i).ID()), idj(GetLeg(j).ID());
-  double yci(id==1?p_jf->ScaledYcut(idi,idi):p_jf->ScaledGlobalYcut(idi,idi));
-  double ycj(id==1?p_jf->ScaledYcut(idj,idj):p_jf->ScaledGlobalYcut(idj,idj));
+  double yci(id==1?p_jf->GetScaledYcut(idi,idi):
+	     p_jf->GetScaledGlobalYcut(idi,idi));
+  double ycj(id==1?p_jf->GetScaledYcut(idj,idj):
+	     p_jf->GetScaledGlobalYcut(idj,idj));
   double sq2i(GetLeg(i).Q2Cut(id)/(i<2?1.0:sqr(p_jf->DeltaR())));
   double sq2j(GetLeg(j).Q2Cut(id)/(j<2?1.0:sqr(p_jf->DeltaR())));
   q2in=q2out=-1.0;
@@ -431,7 +433,7 @@ void Combine_Table_Base::SetQ2Cut(const size_t &i,const size_t &j,
     THROW(critical_error,"Inconsistent Q_{cut} values");
   }
   q2in=q2out;
-  double gyc(p_jf->GlobalYcut(idi|idj,idi|idj));
+  double gyc(p_jf->GetGlobalYcut(idi|idj,idi|idj));
   if (gyc>0.0) q2in=gyc*sqr(rpa.gen.Ecms());
 }
 

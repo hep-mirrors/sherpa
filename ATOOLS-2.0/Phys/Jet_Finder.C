@@ -884,16 +884,6 @@ void Jet_Finder::BoostBack(Vec4D & p)
   m_cms_boost.BoostBack(p);
 }
 
-void Jet_Finder::SetDeltaR(double dr) 
-{ 
-  if (dr<=1.e-6) {
-    msg.Error()<<"ERROR in Jet_Finder::SetDeltaR("<<dr<<") : "<<std::endl
-	       <<"   delta_R to small, will ignore it and leave it at delta_R ="<<m_delta_r<<"."<<std::endl;
-    return;
-  }
-  m_delta_r = dr; 
-}
-
 double Jet_Finder::ActualValue() const 
 {
   return m_value; 

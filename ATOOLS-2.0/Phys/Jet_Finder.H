@@ -78,28 +78,18 @@ namespace ATOOLS {
 
     double   ActualValue() const;
 
-    inline void SetType(const int mode) { m_type=mode;   }
-    inline int  Type() const            { return m_type; }
-
     int      IsConditional()                const { return m_type==1; }
     int      NeedUpdate()                   const { return m_type==1; }
     double   Smin()                         const { return m_smin; }
     double   Smax()                         const { return m_smax; }
-    double   DeltaR()                       const { return m_delta_r; }
-    double   Ycut()                         const { return m_ycut; }
-    double   Ycut(const size_t &i,const size_t &j) const 
+    double   GetYcut(const size_t &i,const size_t &j) const 
     { return m_ycuts[i][j]; }
-    double   ScaledYcut(const size_t &i,const size_t &j) const 
+    double   GetScaledYcut(const size_t &i,const size_t &j) const 
     { return i<3||j<3?m_ycuts[i][j]:m_ycuts[i][j]/sqr(m_delta_r); }
-    double   GlobalYcut()                   const { return m_gycut; }
-    double   GlobalYcut(const size_t &i,const size_t &j) const 
+    double   GetGlobalYcut(const size_t &i,const size_t &j) const 
     { return m_gycuts[i][j]; }
-    double   CoreYcut()                     const { return m_cycut; }
-    double   GlobalCoreYcut()               const { return m_gcycut; }
-    double   ScaledGlobalYcut(const size_t &i,const size_t &j) const 
+    double   GetScaledGlobalYcut(const size_t &i,const size_t &j) const 
     { return i<3||j<3?m_gycuts[i][j]:m_gycuts[i][j]/sqr(m_delta_r); }
-    void     SetYcut(const std::string &ycut) { m_cuttag=ycut; }
-    void     SetDeltaR(double dr);
   };
 
   inline bool Jet_Finder::ConstructJets(Particle_List * pl, double y_cut, bool final_only) { 
