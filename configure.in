@@ -53,6 +53,8 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  EXTRA_XS-1.0/Main/Makefile \
 	  EXTRA_XS-1.0/Two2Two/Makefile \
 	  EXTRA_XS-1.0/BFKL/Makefile \
+	  EXTRA_XS-1.0/COBG/Makefile \
+	  EXTRA_XS-1.0/CDBG/Makefile \
 	  EXTRA_XS-1.0/Makefile \
 	  AMEGIC++-2.0/Main/Makefile \
 	  AMEGIC++-2.0/Amplitude/Makefile \
