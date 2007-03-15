@@ -23,6 +23,8 @@ libPhasespace_la_SOURCES      =	\
 				Channel_Interface.C \
 			   	Multi_Channel.C \
 				PI_Interface.C \
+				Color_Integrator.C \
+				Helicity_Integrator.C \
 				Phase_Space_Handler.C \
 				Phase_Space_Integrator.C 
 pkginclude_HEADERS        =	\
@@ -49,6 +51,8 @@ pkginclude_HEADERS        =	\
 			Multi_Channel.H \
 		 	Integrable_Base.H \
 			PI_Interface.H \
+			Color_Integrator.H \
+			Helicity_Integrator.H \
 			Phase_Space_Handler.H \
 			Phase_Space_Integrator.H 
 

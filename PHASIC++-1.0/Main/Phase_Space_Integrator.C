@@ -6,6 +6,7 @@
 #include "PI_Interface.H"
 #include "Algebra_Interpreter.H"
 #include "MyStrStream.H"
+#include "Helicity_Integrator.H"
 
 #include "Random.H"
 #include <unistd.h>
@@ -340,6 +341,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	if ((psh->ISRIntegrator()))  (psh->ISRIntegrator())->Optimize(maxerror);
 	if ((psh->KMRZIntegrator()))  (psh->KMRZIntegrator())->Optimize(maxerror);
 	if ((psh->KMRKPIntegrator()))  (psh->KMRKPIntegrator())->Optimize(maxerror);
+	if ((psh->HelicityIntegrator()))  (psh->HelicityIntegrator())->Optimize();
 	(psh->FSRIntegrator())->Optimize(maxerror);
 	(psh->Process())->ResetMax(2);
 	if (ncontrib%iter1==0) {
@@ -385,7 +387,8 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 		<<(psh->Process())->TotalResult()*rpa.Picobarn()
 		<<" pb"<<om::reset<<" +- ( "<<om::red
 		<<(psh->Process())->TotalVar()*rpa.Picobarn()
-		<<" pb = "<<error*100<<" %"<<om::reset<<" ) "<<ncontrib<<endl;
+		<<" pb = "<<error*100<<" %"<<om::reset<<" ) "
+		<<ncontrib<<" ( "<<(ncontrib*1000/n)/10.0<<" % )"<<endl;
       if (fotime) {
 	msg_Info()<<"full optimization: ";
       }

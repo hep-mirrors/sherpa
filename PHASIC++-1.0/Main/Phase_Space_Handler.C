@@ -16,6 +16,8 @@
 #include "PI_Interface.H"
 #include "Running_AlphaS.H"
 #include "Permutation.H"
+#include "Color_Integrator.H"
+#include "Helicity_Integrator.H"
 
 #include "Run_Parameter.H"
 #include "Blob.H"
@@ -155,7 +157,7 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
   p_isrchannels(NULL), p_beamchannels(NULL), p_flavours(NULL), p_cms(NULL), p_lab(NULL), p_massboost(NULL),
   m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(0), m_use_pi(0), m_initialized(0),
   m_maxtrials(1000000), m_sumtrials(0), m_events(0), m_E(ATOOLS::rpa.gen.Ecms()), m_s(m_E*m_E), 
-  m_weight(1.)
+  m_weight(1.), p_colint(NULL), p_helint(NULL)
 {
   p_pi=NULL;
   Data_Read dr(rpa.GetPath()+"/Integration.dat");
@@ -207,6 +209,8 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
 
 Phase_Space_Handler::~Phase_Space_Handler()
 {
+  if (p_helint!=NULL) delete p_helint;
+  if (p_colint!=NULL) delete p_colint;
   if (p_fsrchannels)  { delete p_fsrchannels;  p_fsrchannels = 0;   }
   if (p_kpchannels)   { delete p_kpchannels;   p_kpchannels = 0;    }
   if (p_zchannels)    { delete p_zchannels;    p_zchannels = 0;     }
@@ -227,6 +231,28 @@ void Phase_Space_Handler::InitCuts()
   p_cuts = new ATOOLS::Cut_Data();
   p_cuts->Init(m_nin+m_nout,p_flavours);
   if (p_process->Selector()) (p_process->Selector())->BuildCuts(p_cuts);
+}
+
+bool Phase_Space_Handler::InitIntegrators()
+{
+  if (p_process->ColorScheme()==cls::sample && p_colint==NULL) {
+    p_colint = new Color_Integrator();
+    std::vector<size_t> ids(m_nin+m_nout,0);
+    std::vector<int> types(m_nin+m_nout,0);
+    for (size_t i(0);i<ids.size();++i) {
+      ids[i]=i;
+      if (p_flavours[i].IsGluon()) types[i]=0;
+      else if (p_flavours[i].IsAnti()) types[i]=-1;
+      else types[i]=1;
+    }
+    if (!p_colint->ConstructRepresentations(ids,types)) return false;
+    if (m_nout<5 && !p_colint->Initialize()) return false;
+  }
+  if (p_process->HelicityScheme()==hls::sample && p_helint==NULL) {
+    p_helint = new Helicity_Integrator();
+    if (!p_helint->Construct(m_nin+m_nout)) return false;
+  }
+  return true;
 }
 
 bool Phase_Space_Handler::InitIncoming(const double _mass) 
@@ -353,6 +379,10 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
     return p_pi->Value()*p_pi->GenerateWeight();
   }
   p_info->ResetAll();
+  if (process->ColorScheme()==cls::sample &&
+      !p_colint->GeneratePoint()) return 0.0;
+  if (process->HelicityScheme()==hls::sample &&
+      !p_helint->GeneratePoint()) return 0.0;
   if (m_nin>1) {
     if (!(mode&psm::no_lim_isr)) p_isrhandler->Reset();
     if (p_beamhandler->On()>0) { 
@@ -456,6 +486,10 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
       }
     }
     p_fsrchannels->GenerateWeight(p_cms,p_cuts);
+    if (process->ColorScheme()==cls::sample)
+      m_result_1 *= p_colint->GlobalWeight();
+    if (process->HelicityScheme()==hls::sample)
+      m_result_1 *= p_helint->Weight();
     m_psweight = m_result_1 *= p_fsrchannels->Weight();
     if (m_nin>1) {
       if (p_isrhandler->On()==3) m_result_2 = m_result_1;
@@ -544,11 +578,15 @@ bool Phase_Space_Handler::Check4Momentum(const ATOOLS::Vec4D *p)
   for (int i=0;i<m_nin;i++) pin += p[i];
   for (int i=m_nin;i<m_nin+m_nout;i++) pout += p[i];
   double sin = pin.Abs2(), sout = pout.Abs2();
-  if (pin!=pout || !ATOOLS::IsEqual(sin,sout)) {
+  static double accu(sqrt(Accu()));
+  Vec4D::SetAccu(accu);
+  if (!(pin==pout) || !ATOOLS::IsEqual(sin,sout,accu)) {
     ATOOLS::msg.Error()<<"Phase_Space_Handler::Check4Momentum(..): "
-		       <<"Difference: "<<pin-pout<<std::endl;
+		       <<"Difference: "<<pin-pout<<" "<<sin-sout<<std::endl;
+    Vec4D::ResetAccu();
     return false;
   }
+  Vec4D::ResetAccu();
   return true;
 }
 
@@ -721,6 +759,7 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
 void Phase_Space_Handler::AddPoint(const double value) 
 { 
   p_process->AddPoint(value); 
+  if (p_helint!=NULL) p_helint->AddPoint(value);
 }
 
 void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p)
@@ -729,6 +768,10 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p)
   Single_Channel * TestCh = new Rambo(m_nin,m_nout,p_flavours);
   MakeIncoming(p);
   TestCh->GeneratePoint(p,p_cuts);
+  if (p_process->ColorScheme()==cls::sample)
+    while (!p_colint->GeneratePoint()); 
+  if (p_process->HelicityScheme()==hls::sample)
+    while (!p_helint->GeneratePoint()); 
   delete TestCh;
 }
 
@@ -751,6 +794,7 @@ void Phase_Space_Handler::WriteOut(const std::string &pID,const bool force)
       p_pi->WriteOut(pID+"/PI/");
     }
   }
+  if (p_helint!=NULL) p_helint->WriteOut(pID);
   ran.WriteOutStatus(help.c_str());
 }
 
@@ -774,6 +818,7 @@ bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude)
 		  <<"/PI/): Read in PI."<<std::endl;
     p_pi->ReadIn(pID+"/PI/");
   }
+  if (p_helint!=NULL) p_helint->ReadIn(pID);
   if (rpa.gen.RandomSeed()==1234 && !(exclude&32)) {
     std::string filename     = (pID+"/Random").c_str();
     ran.ReadInStatus(filename.c_str(),0);

@@ -56,6 +56,8 @@ namespace PHASIC {
 
   class Phase_Space_Integrator;
   class PI_Interface;
+  class Color_Integrator;
+  class Helicity_Integrator;
 
   class Phase_Space_Handler {
   private: 
@@ -95,6 +97,9 @@ namespace PHASIC {
     
     PI_Interface* p_pi;
 
+    Color_Integrator    *p_colint;
+    Helicity_Integrator *p_helint;
+
     bool MakeIncoming(ATOOLS::Vec4D *const p,const double mass=-1.);
 
     void TestIntegration(const double);
@@ -116,6 +121,7 @@ namespace PHASIC {
     bool CreateKMRChannels();
 
     bool LoadChannelLibraries(); 
+
   public:
 
     //constructor
@@ -133,6 +139,7 @@ namespace PHASIC {
     bool InitIncoming(const double mass=-1.);
     bool CreateIntegrators();
     void InitCuts();
+    bool InitIntegrators();
     
     double Integrate();
     double Differential();
@@ -215,6 +222,9 @@ namespace PHASIC {
     { return p_integrator; }
 
     inline PI_Interface *const PI() const { return p_pi; }
+
+    inline Color_Integrator    *ColorIntegrator() const    { return p_colint; }
+    inline Helicity_Integrator *HelicityIntegrator() const { return p_helint; }
 
   };// end of class Phase_Space_Handler
 
