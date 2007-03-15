@@ -9,3 +9,7 @@ Splitting_Kernel::Splitting_Kernel
 
 Splitting_Kernel::~Splitting_Kernel() {}
 
+double Splitting_Kernel::Value(const double &z) const
+{
+  return (*this)(z);
+}

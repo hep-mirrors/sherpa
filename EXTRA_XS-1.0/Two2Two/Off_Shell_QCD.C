@@ -11,28 +11,30 @@
 #include "MathTools.H"
 #include "Combined_Selector.H"
 #include "Standard_Selector.H"
+#include "Doubly_Unintegrated_PDF.H"
 
 #define NC 3.0
 
 using namespace EXTRAXS;
 using namespace ATOOLS;
 using namespace MODEL;
+using namespace PDF;
 
 namespace EXTRAXS {
 
-template <> 
-Single_XS *Single_XS::GetProcess<Off_Shell_gg_qqb>(const size_t nin,const size_t nout,
-						   const ATOOLS::Flavour *flavours,
-						   const size_t nqed, const size_t nqcd)
-{
-  if (flavours[2].IsQuark() && flavours[3]==flavours[2].Bar() && 
-      flavours[0].IsGluon() && flavours[1].IsGluon()){ 
-    if (nqcd==2 && nqed==0) {
-      return new Off_Shell_gg_qqb(nin,nout,flavours); 
+  template <> Single_XS *
+  Single_XS::GetProcess<Off_Shell_gg_qqb>(const size_t nin,const size_t nout,
+					  const ATOOLS::Flavour *flavours,
+					  const size_t nqed, const size_t nqcd)
+  {
+    if (flavours[2].IsQuark() && flavours[3]==flavours[2].Bar() && 
+	flavours[0].IsGluon() && flavours[1].IsGluon()){ 
+      if (nqcd==2 && nqed==0) {
+	return new Off_Shell_gg_qqb(nin,nout,flavours); 
+      }
     }
+    return NULL;
   }
-  return NULL;
-}
 
 }
 
@@ -40,15 +42,16 @@ Off_Shell_gg_qqb::Off_Shell_gg_qqb(const size_t nin,const size_t nout,
 				   const ATOOLS::Flavour *flavours):
   Single_XS(nin,nout,flavours) 
 {
+  msg_Info()<<METHOD<<"(): Init matrix element according to "
+	    <<"Nucl.Phys.B 366(1991)135"<<std::endl;
   m_alphas=(*MODEL::as)(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms()));
   m_nvector=m_nvector+2;
   CreateMomenta(m_nvector);
-  p_addflavours = new ATOOLS::Flavour[2];
-  p_addflavours[0]=ATOOLS::kf::gluon;
-  p_addflavours[1]=ATOOLS::kf::gluon;
+  p_addflavours = new ATOOLS::Flavour[4];
   p_addmomenta = new ATOOLS::Vec4D[2];
   m_naddout=2;
   m_nstrong=4;
+  p_pdfs[1]=p_pdfs[0]=NULL;
 }
 
 double Off_Shell_gg_qqb::operator()(double s,double t,double u) 
@@ -74,6 +77,24 @@ double Off_Shell_gg_qqb::operator()(double s,double t,double u)
     (abelian/(2.*NC)+nonabelian*NC/(2.*(NC*NC-1.)));
 }
 
+bool Off_Shell_gg_qqb::SetPDFFlavours()
+{
+  if (p_pdfs[0]==NULL || p_pdfs[1]==NULL) {
+    for (short unsigned int i(0);i<m_nin;++i) {
+      p_pdfs[i]=dynamic_cast<Doubly_Unintegrated_PDF*>(p_isrhandler->PDF(i));
+      if (p_pdfs[i]==NULL || 
+	  p_pdfs[i]->Type().find("DUPDF")==std::string::npos)
+	THROW(fatal_error,"Low-x ME needs UPDF.");
+    }
+  }
+  // dice pdf jet flavours
+  if (!p_pdfs[0]->SelectJetFlavour
+      (p_addflavours[2],p_addflavours[0],ran.Get())) return false;
+  if (!p_pdfs[1]->SelectJetFlavour
+      (p_addflavours[3],p_addflavours[1],ran.Get())) return false;
+  return true;
+}
+
 bool Off_Shell_gg_qqb::SetColours(double s,double t,double u) 
 { 
   RestoreInOrder();
@@ -96,102 +117,3 @@ bool Off_Shell_gg_qqb::SetColours(double s,double t,double u)
   return true;
 }
 
-namespace EXTRAXS {
-
-template <> 
-Single_XS *Single_XS::GetProcess<Off_Shell_gg_gg>(const size_t nin,const size_t nout,
-						  const ATOOLS::Flavour *flavours,
-					      const size_t nqed, const size_t nqcd)
-{
-  for (size_t i=0;i<nin+nout;++i) if (!flavours[i].IsGluon()) return NULL;
-  if (nqcd==nin+nout-2 && nqed==0) 
-    return new Off_Shell_gg_gg(nin,nout,flavours); 
-  return NULL;
-}
-
-}
-
-Off_Shell_gg_gg::Off_Shell_gg_gg(const size_t nin,const size_t nout,
-				   const ATOOLS::Flavour *flavours):
-  Single_XS(nin,nout,flavours) 
-{
-  m_alphas=(*MODEL::as)(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms()));
-  m_nvector=m_nvector+2;
-  CreateMomenta(m_nvector);
-  p_addflavours = new ATOOLS::Flavour[2];
-  p_addflavours[0]=ATOOLS::kf::gluon;
-  p_addflavours[1]=ATOOLS::kf::gluon;
-  p_addmomenta = new ATOOLS::Vec4D[2];
-  m_naddout=2;
-  m_zkey[0].Assign("z_1",3,0,PHASIC::Phase_Space_Handler::GetInfo());
-  m_zkey[1].Assign("z_2",3,0,PHASIC::Phase_Space_Handler::GetInfo());
-  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader();
-  if (!reader->ReadFromFile(m_jets,"LIPATOV_JETS","")) m_jets=2;
-  delete reader;
-  m_nstrong=m_nin+m_nout;
-}
-
-double Off_Shell_gg_gg::operator()(double s,double t,double u) 
-{
-  ATOOLS::Vec4D *const p=p_momenta;
-  double colfac=NC/(NC*NC-1.0);
-  if (m_nout>0) for (size_t i=0;i<m_nout-1;++i) colfac*=NC;
-  double scale=sqrt((p[m_nin+m_nout]-p[0]).PPerp2()*
-		    (p[m_nin+m_nout+1]-p[1]).PPerp2());
-  double asmean((*MODEL::as)(scale));
-  if (p[0].PPerp()<m_qtcut || p[1].PPerp()<m_qtcut) return 0.0;
-  double lasty((p[m_nin+m_nout]-p[0]).Y());
-  Vec4D prop(p[0]);
-  if (p_selector->Name()=="Combined_Selector") {
-    Selector_Base *ipt = 
-      ((Combined_Selector*)p_selector)->GetSelector("BFKL_PT_Selector");
-    if (ipt==NULL) THROW(fatal_error,"BFKL ME needs BFKL_PT selector");
-    if (!ipt->GetValue("qcut",m_qtcut)) 
-      THROW(fatal_error,"Selector corrupted");
-  }
-  double M=4.0*sqr((p[0]+p[1]).Abs2());
-  for (size_t i=0;i<m_nout;++i) {
-    double y(p[m_nin+i].Y());
-    if (y>=lasty) return 0.0;
-    M*=2/p[m_nin+i].PPerp2();
-    if (i>0) {
-      double sud(exp(-asmean*(lasty-y)*log(prop.PPerp2()/m_qtcut)));
-      if (sud>1.0) 
-	msg.Error()<<"Off_Shell_gg_gg::operator()(..):"
-		   <<"Sudakov "<<i<<" exceeds unity, \\Delta = "
-		   <<sud<<" = exp(-"<<asmean<<"*("<<lasty<<"-"<<y<<")*log("
-		   <<prop.PPerp2()<<"/"<<m_qtcut<<"))"<<std::endl;
-      M*=sud;
-    }
-    prop-=p[m_nin+i];
-    lasty=y;
-  }
-  double y((p[m_nin+m_nout+1]-p[1]).Y());
-  if (y>=lasty) return 0.0;
-  return pow(4.0*M_PI*m_alphas,m_nout)*colfac*M/4.0;
-}
-
-bool Off_Shell_gg_gg::SetColours(double s,double t,double u) 
-{ 
-  return true; 
-}
-
-bool Off_Shell_gg_gg::Trigger(const ATOOLS::Vec4D *const momenta) 
-{
-  bool result=true;
-  if (m_jets<4) result=Integrable_Base::Trigger(momenta);
-  else {
-    ATOOLS::Vec4D temp[6];
-    for (int i=2;i<4;++i) {
-      temp[i-2]=momenta[i+2];
-      temp[i+2]=momenta[i];
-      temp[i]=p_addmomenta[i-2];
-    }
-    p_selector->SetNOut(m_nvector-m_nin);
-    p_selector->SetNTot(m_nvector);
-    result=PHASIC::Integrable_Base::Trigger(temp);
-    p_selector->SetNTot(m_nin+m_nout);
-    p_selector->SetNOut(m_nout);
-  }
-  return result;
-}

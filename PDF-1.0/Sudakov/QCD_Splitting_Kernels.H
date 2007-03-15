@@ -53,6 +53,7 @@ namespace PDF {
 
     // member functions
     double operator()(const double &z) const;
+    double Value(const double &z) const;
     double Integral(const double &zmin,const double &zmax) const;
 
   };// end of class G_GG

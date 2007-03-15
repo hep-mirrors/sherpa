@@ -173,16 +173,18 @@ bool Doubly_Unintegrated_PDF::Unintegrate(ATOOLS::Flavour flavour)
 }
 
 bool Doubly_Unintegrated_PDF::
-SelectJetFlavour(ATOOLS::Flavour &a,ATOOLS::Flavour &c,const double &rn) const
+SelectJetFlavour(ATOOLS::Flavour &a,ATOOLS::Flavour &c,const double &rn)
 {
   for (size_t i(0);i<m_partsums.size();++i)
     if (m_partsums[i].first/m_partsums.back().first>=rn) {
-      a=m_partsums[i].second->GetA();
-      c=m_partsums[i].second->GetC();
+      p_jkernel=m_partsums[i].second;
+      a=p_jkernel->GetA();
+      c=p_jkernel->GetC();
       return true;
     }
   a=ATOOLS::kf::none;
   c=ATOOLS::kf::none;
+  p_jkernel=NULL;
   return false;
 }
 

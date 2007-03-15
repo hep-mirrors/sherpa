@@ -58,6 +58,11 @@ double G_GG::operator()(const double &z) const
   return CA*sqr(1.0-z*(1.0-z))/(z*(1.0-z));
 }
 
+double G_GG::Value(const double &z) const
+{
+  return 2.0*(*this)(z);
+}
+
 double G_GG::Integral(const double &zmin,const double &zmax) const
 {
   return CA*(log(zmax*(1.-zmin)/(zmin*(1.-zmax)))-

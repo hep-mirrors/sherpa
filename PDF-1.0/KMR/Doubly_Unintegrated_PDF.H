@@ -38,6 +38,8 @@ namespace PDF {
     bool      m_calculate;
     int       m_sudmode, m_splitmode, m_ordermode;
 
+    Splitting_Kernel *p_jkernel;
+
     double SmoothIntegrated(const ATOOLS::Flavour flavour);
     double ConstantIntegrated(const ATOOLS::Flavour flavour);
 
@@ -67,7 +69,7 @@ namespace PDF {
     double  Cut(const std::string &type);
 
     bool SelectJetFlavour(ATOOLS::Flavour &a,ATOOLS::Flavour &c,
-			  const double &rn) const;
+			  const double &rn);
 
     void Test();
 
@@ -90,6 +92,8 @@ namespace PDF {
     { m_splitmode=mode; }
     inline void SetOrderingMode(const int mode) 
     { m_ordermode=mode; }
+
+    inline Splitting_Kernel *JetKernel() const { return p_jkernel; }
 
   };// end of class Doubly_Unintegrated_PDF
 

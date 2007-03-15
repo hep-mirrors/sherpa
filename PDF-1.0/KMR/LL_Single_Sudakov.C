@@ -3,6 +3,7 @@
 #include "Run_Parameter.H"
 #include "Message.H"
 #include "Integration_Info.H"
+#include "Exception.H"
 #include <sys/stat.h>
 
 using namespace PDF;
@@ -33,8 +34,9 @@ bool LL_Single_Sudakov::Initialize(double qmin,double qmax)
   m_calcmode=(SHERPA::Sudakov::code)(m_calcmode&896);
   m_cutmode=(SHERPA::Sudakov::code)(m_cutmode&7);
   if (m_qmin==m_qmax) {
-    m_qmin=sqrt(ATOOLS::rpa.gen.Ycut())*ATOOLS::rpa.gen.Ecms();
     m_qmax=2.*ATOOLS::rpa.gen.Ecms();
+    THROW(fatal_error,"q_min cannot be set");
+    // m_qmin=sqrt(ATOOLS::rpa.gen.Ycut())*ATOOLS::rpa.gen.Ecms();
   }
   return true;
 }

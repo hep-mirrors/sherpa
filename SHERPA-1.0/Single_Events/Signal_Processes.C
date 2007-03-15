@@ -148,6 +148,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob,
   bool updf(xs!=NULL && xs->NAddOut()!=0);
   if (!updf) blob->SetStatus(blob_status::needs_showers |
 			     blob_status::needs_harddecays);
+  if (xs!=NULL) xs->SetColours(xs->Momenta());
   for (unsigned int i=0;i<p_mehandler->NIn();i++) {
     particle = new Particle(i,p_mehandler->Flavours()[i],
 			    p_mehandler->Momenta()[i]);
@@ -241,7 +242,6 @@ bool Signal_Processes::FillUPDFBlobs(Blob_List *const bloblist,Blob *const blob)
   bool success(true);
   EXTRAXS::XS_Base *xs(p_mehandler->GetXS(1));
   Blob *isr[2]={NULL,NULL};
-  xs->SetColours(xs->Momenta());
   for (size_t stop=xs->NAddOut(), i=0;i<stop;++i) {
     isr[i] = new ATOOLS::Blob();
     isr[i]->SetType(ATOOLS::btp::IS_Shower);

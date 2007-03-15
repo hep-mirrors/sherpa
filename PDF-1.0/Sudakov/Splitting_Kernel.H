@@ -23,6 +23,7 @@ namespace PDF {
     // member functions
     virtual double operator()(const double &z) const = 0;
 
+    virtual double Value(const double &z) const;
     virtual double Integral(const double &zmin,const double &zmax) const = 0;
 
     // inline functions
