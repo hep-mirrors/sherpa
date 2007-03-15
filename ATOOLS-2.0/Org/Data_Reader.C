@@ -211,6 +211,8 @@ namespace ATOOLS {
   (unsigned int &,std::string);
   template bool Data_Reader::ReadFromFile<long int>
   (long int &,std::string);
+  template bool Data_Reader::ReadFromFile<unsigned long int>
+  (unsigned long int &,std::string);
   template bool Data_Reader::ReadFromFile<float>
   (float &,std::string);
   template bool Data_Reader::ReadFromFile<double>
@@ -224,6 +226,8 @@ namespace ATOOLS {
   (unsigned int &,std::string);
   template bool Data_Reader::ReadFromString<long int>
   (long int &,std::string);
+  template bool Data_Reader::ReadFromString<unsigned long int>
+  (unsigned long int &,std::string);
   template bool Data_Reader::ReadFromString<float>
   (float &,std::string);
   template bool Data_Reader::ReadFromString<double>
@@ -237,6 +241,8 @@ namespace ATOOLS {
   (std::vector<unsigned int> &,std::string);
   template bool Data_Reader::VectorFromFile<long int>
   (std::vector<long int> &,std::string);
+  template bool Data_Reader::VectorFromFile<unsigned long int>
+  (std::vector<unsigned long int> &,std::string);
   template bool Data_Reader::VectorFromFile<float>
   (std::vector<float> &,std::string);
   template bool Data_Reader::VectorFromFile<double>
@@ -250,6 +256,8 @@ namespace ATOOLS {
   (std::vector<unsigned int> &,std::string);
   template bool Data_Reader::VectorFromString<long int>
   (std::vector<long int> &,std::string);
+  template bool Data_Reader::VectorFromString<unsigned long int>
+  (std::vector<unsigned long int> &,std::string);
   template bool Data_Reader::VectorFromString<float>
   (std::vector<float> &,std::string);
   template bool Data_Reader::VectorFromString<double>
@@ -263,6 +271,8 @@ namespace ATOOLS {
   (std::vector<std::vector<unsigned int> > &,std::string);
   template bool Data_Reader::MatrixFromFile<long int>
   (std::vector<std::vector<long int> > &,std::string);
+  template bool Data_Reader::MatrixFromFile<unsigned long int>
+  (std::vector<std::vector<unsigned long int> > &,std::string);
   template bool Data_Reader::MatrixFromFile<float>
   (std::vector<std::vector<float> > &,std::string);
   template bool Data_Reader::MatrixFromFile<double>
@@ -276,6 +286,8 @@ namespace ATOOLS {
   (std::vector<std::vector<unsigned int> > &,std::string);
   template bool Data_Reader::MatrixFromString<long int>
   (std::vector<std::vector<long int> > &,std::string);
+  template bool Data_Reader::MatrixFromString<unsigned long int>
+  (std::vector<std::vector<unsigned long int> > &,std::string);
   template bool Data_Reader::MatrixFromString<float>
   (std::vector<std::vector<float> > &,std::string);
   template bool Data_Reader::MatrixFromString<double>
