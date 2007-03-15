@@ -71,6 +71,7 @@ namespace ATOOLS {
       ------------------------------------------ */
       isrphoton              = 26,
       pol                    = 70,
+      gluonqgc               = 99,
 
       // dummy for shrinked gluon in 
       // 4gluon-higgs vertex

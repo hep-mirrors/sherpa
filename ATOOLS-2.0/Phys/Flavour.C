@@ -150,6 +150,7 @@ Flavour::Flavour(kf::code _kfc, bool _anti):
   case kf::ZPrime:   return;
   case kf::gluon:    return;
   case kf::shgluon:  return;
+  case kf::gluonqgc: return;
   case kf::h:        return;
   case kf::h0:       return;
   case kf::H0:       return;
@@ -175,6 +176,7 @@ const Flavour Flavour::Bar() const
   case kf::ZPrime:   return flbar;
   case kf::gluon:    return flbar;
   case kf::shgluon:  return flbar;
+  case kf::gluonqgc: return flbar;
   case kf::h:        return flbar;
   case kf::h0:       return flbar;
   case kf::H0:       return flbar;
@@ -596,22 +598,25 @@ void ATOOLS::ParticleInit(std::string path)
 		 <<" \t"<<Majorana<<" \t"<<Take<<" \t"<<stable<<" \t"
 		 <<massive<<" \t"<<name<<std::endl;
     if (kfc!=kfcold) { // read last line only once!
-      *(pi)=Part_Info( kf::code(kfc), mass, width, charge, icharge, 
+      *(pi++)=Part_Info( kf::code(kfc), mass, width, charge, icharge, 
 			 strong, spin, Majorana, Take, stable, massive, name, 1);
-      ++pi;
       //isrphoton
       if (kfc==22)
 	*(pi++)=Part_Info( kf::code(26), mass, width, charge, icharge, 
 			   strong, spin, Majorana, Take, stable, massive, "isrphoton",1);
       //dummy for 4gluon-higgs vertex
-      if (kfc==21)
+      if (kfc==21) {
 	*(pi++)=Part_Info( kf::shgluon, mass, width, charge, icharge, 
 			   strong, spin, Majorana, Take, stable, massive, "shgluon",1);
+	*(pi++)=Part_Info( kf::gluonqgc, mass, width, charge, icharge, 
+			   strong, 2*spin, Majorana, Take, stable, massive, "gluonqgc",1);
+      }
       kfcold = kfc;
     }
   }
   msg.LogFile()<<std::endl;
   part.close();
+
   filename=(path+std::string("/Hadron.dat"));
   std::ifstream part2(filename.c_str());
   if (!part2) {
