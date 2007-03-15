@@ -7,6 +7,7 @@
 
 #include "Poincare.H"
 #include "Particle.H"
+#include "STL_Tools.H"
 
 namespace ATOOLS {
 
@@ -226,9 +227,6 @@ namespace ATOOLS {
   {
     return ((Blob_Data<Type>*)this)->Set(data);
   }
-
-  std::ostream &operator<<(std::ostream &str,const std::vector<double> &info);
-  std::ostream &operator<<(std::ostream &str,const std::vector<int> &info);
 
   /*!
     \file 

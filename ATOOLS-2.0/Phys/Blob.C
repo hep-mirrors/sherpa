@@ -30,15 +30,6 @@ std::ostream& ATOOLS::operator<<(std::ostream& ostr, const btp::code btpc) {
   }
 }
 
-std::ostream &ATOOLS::operator<<(std::ostream &str,const std::vector<int> &info)
-{
-  str<<"(";
-  if (info.size()>0) str<<info[0];
-  else str<<"<no entry>";
-  for (size_t i=1;i<info.size();++i) str<<","<<info[i];
-  return str<<")";
-}
-
 namespace ATOOLS {
   int Blob::s_totalnumber=0;
   long unsigned int Blob::s_currentnumber=0;
