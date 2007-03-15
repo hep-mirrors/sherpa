@@ -139,6 +139,7 @@ double Single_XS::Differential(const double s,const double t,const double u)
     else m_lastlumi=1.;
   }
   else m_lastlumi=1.;
+  SetPDFFlavours();
   return m_last=m_lastdxs*m_lastlumi*KFactor();
 }
 
@@ -175,3 +176,12 @@ size_t Single_XS::Size() const
   return 1; 
 }
 
+bool Single_XS::SetPDFFlavours()
+{
+  return true;
+}
+
+bool Single_XS::Tests()
+{
+  return true;
+}

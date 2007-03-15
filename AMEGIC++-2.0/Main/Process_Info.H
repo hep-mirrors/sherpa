@@ -49,6 +49,8 @@ namespace AMEGIC {
 
     void Print();
     void FullPrint();
+
+    std::string PNID() const;
   };
 
   class Check_External_Flavours {

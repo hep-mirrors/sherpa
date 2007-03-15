@@ -168,8 +168,9 @@ int SimpleXS_Apacic_Interface::PerformShowers()
 		   <<"\n}"<<std::endl;
   }
   p_shower->SetFactorisationScale(p_mehandler->FactorisationScale());
-  return p_shower->PerformShowers(jetveto,0,p_mehandler->GetISR_Handler()->X1(),
-				  p_mehandler->GetISR_Handler()->X2(),rpa.gen.Ycut());
+  return p_shower->PerformShowers(jetveto,0,
+				  p_mehandler->GetISR_Handler()->X1(),
+				  p_mehandler->GetISR_Handler()->X2());
 }
 
 int SimpleXS_Apacic_Interface::PerformDecayShowers()

@@ -22,10 +22,11 @@ Dipole_Jet_Finder::Dipole_Jet_Finder(const int n,Flavour * fl,
 				     const dipjet_type::code type,
 				     const dipjet_mode::code mode,
 				     const bool colsorted) :
-  m_ycut(ycut), m_stot(sqr(rpa.gen.Ecms())), m_kt2cut(m_ycut*m_stot), 
-  m_type(type), m_mode(mode),
+  m_stot(sqr(rpa.gen.Ecms())), m_kt2cut(m_ycut*m_stot), 
+  m_diptype(type), m_mode(mode),
   m_coloursorted(colsorted)
 {
+  m_ycut = ycut;
   m_name = std::string("Dipole_Jetfinder");
   m_fl   = fl;
   m_n    = n;
@@ -45,10 +46,12 @@ Dipole_Jet_Finder::Dipole_Jet_Finder(const double ycut,
 				     const dipjet_type::code type,
 				     const dipjet_mode::code mode,
 				     const bool colsorted) :
-  m_ycut(ycut), m_stot(sqr(rpa.gen.Ecms())), m_kt2cut(m_ycut*m_stot), 
-  m_type(type), m_mode(mode),
+  m_stot(sqr(rpa.gen.Ecms())), m_kt2cut(m_ycut*m_stot), 
+  m_diptype(type), m_mode(mode),
   m_coloursorted(colsorted)
-{}
+{
+  m_ycut=ycut;
+}
 
 Dipole_Jet_Finder::~Dipole_Jet_Finder() {}
 

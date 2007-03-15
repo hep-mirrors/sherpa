@@ -124,7 +124,8 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
   // set jet veto scale for each emission
   double q2j(p_cluster->FSJetScale());
   if (p_cluster->OrderStrong()>0) p_cluster->FixJetvetoPt2(q2j);
-  mo->pt2lcm = mo->maxpt2 = m_ckkwon?q2j/m_fss_scale_fac:
+  mo->pt2lcm = p_cluster->FSShowerScale();
+  mo->maxpt2 = m_ckkwon?q2j/m_fss_scale_fac:
     sqr(sqrt(mo->t)-sqrt(knots[2]->tout)-sqrt(knots[3]->tout));
   double scale(p_cluster->ISShowerScale());
   if (p_cluster->OrderStrong()==0) scale=Max(scale,4.*p_cluster->ISJetScale());
@@ -132,11 +133,15 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
   p_cluster->GetCombineTable()->GetX1X2(x1,x2);
   EstablishRelations(mo,knots[0],knots[1],0,x1,x2,scale);
   EstablishRelations(mo,knots[2],knots[3],1,x1,x2);      
-  for (int i(0);i<2;++i) 
-    knots[i]->pt2lcm=knots[i]->maxpt2=m_ckkwon?q2j/m_iss_scale_fac:mo->t;
-  for (int i(2);i<4;++i) 
-    knots[i]->pt2lcm=knots[i]->maxpt2=m_ckkwon?q2j/m_fss_scale_fac:
+  for (int i(0);i<2;++i) {
+    knots[i]->pt2lcm=p_cluster->FactorizationScale(i);
+    knots[i]->maxpt2=m_ckkwon?q2j/m_iss_scale_fac:mo->t;
+  }
+  for (int i(2);i<4;++i) {
+    knots[i]->pt2lcm=mo->pt2lcm;
+    knots[i]->maxpt2=m_ckkwon?q2j/m_fss_scale_fac:
       sqr(sqrt(mo->t)-sqrt(knots[2]->tout)-sqrt(knots[3]->tout));
+  }
   // determine starting conditions for showers
   // note, that starting conditions for subsequent branches have to be 
   // evaluted during the shower evoultion (since the system, esp. for 
@@ -182,9 +187,10 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
       p_cluster->GetCombineTable()->GetX1X2(x1,x2);
       EstablishRelations(d1,knots[k],d2,2+k,x1,x2);      
     }
+    d1->pt2lcm=d2->pt2lcm=knots[k]->pt2lcm;
     // set max kt2 scale for each emission
-    d1->pt2lcm=d1->maxpt2=knots[k]->maxpt2;
-    d2->pt2lcm=d2->maxpt2=knots[k]->maxpt2;
+    d1->maxpt2=knots[k]->maxpt2;
+    d2->maxpt2=knots[k]->maxpt2;
     double asfac(k<2?m_iss_scale_fac:m_fss_scale_fac);
     if (scale*asfac<knots[k]->maxpt2 && 
 	!IsEqual(scale*asfac,knots[k]->maxpt2) &&
@@ -193,9 +199,12 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
       msg.Error()<<METHOD<<"(): scale ordering violated in knot "<<k<<".\n"
 		 <<"   last scale = "<<knots[k]->maxpt2
 		 <<", new scale = "<<scale<<std::endl;
-      d1->pt2lcm=d1->maxpt2=scale*asfac;
-      d2->pt2lcm=d2->maxpt2=scale*asfac;
+      d1->maxpt2=scale*asfac;
+      d2->maxpt2=scale*asfac;
     }
+    msg_Debugging()<<"set st "<<d1->kn_no<<" & "<<d2->kn_no
+		   <<" -> "<<sqrt(scale)<<" * "<<sqrt(asfac)<<" = "
+		   <<sqrt(scale*asfac)<<"\n";
     knots[k] = d1;
     knots[l] = d2;
     if (mepk!=NULL) {
@@ -370,18 +379,18 @@ Knot * Tree_Filler::Point2Knot(Blob * blob,Tree * tree,const Leg & po,const Vec4
     k->shower+=2;
     if (po.QCDJets()<po.Point()->t-10) {
       if (po.Point()->t-10+po.Point()->fl.Strong()>2) 
-	k->qjv=sqrt(m_q2_cut);
+	k->qjv=sqrt(po.Q2Cut(2));
       else k->qjv=sqrt(po.MinKT2QCD());
     }
     else k->qjv=sqrt(po.MinKT2QCD());
-    k->qljv=sqrt(m_q2_cut);
+    k->qljv=sqrt(po.Q2Cut(1));
     k->maxjets=po.Point()->t-10;
     msg_Debugging()<<METHOD<<"(): ("<<k->kn_no<<") -> n_jets = "
 		   <<po.QCDJets()<<"+"<<po.Point()->fl.Strong()
 		   <<" ("<<po.Point()->t-10<<"+"<<po.Point()->fl.Strong()
 		   <<") at m_kt = "<<sqrt(po.MinKT2QCD())
-		   <<" ("<<sqrt(m_q2_cut)<<") -> qjv = "
-		   <<k->qjv<<", qljv = "<<k->qljv
+		   <<" ("<<sqrt(po.Q2Cut(2))<<","<<sqrt(po.Q2Cut(1))
+		   <<") -> qjv = "<<k->qjv<<", qljv = "<<k->qljv
 		   <<", n_max = "<<k->maxjets<<"\n";
   }
   k->stat      = 3*(k->shower!=0);

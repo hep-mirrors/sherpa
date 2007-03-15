@@ -124,8 +124,7 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
   p_moms  = new Vec4D[MaxJets()+2];
   if (m_apply_hhmf) SetupHHMF();
   if (m_mode>0) return;
-  THROW(normal_exit,"Failed to initialize "+m_signalgenerator
-	+" for hard interactions.");
+  THROW(normal_exit,m_signalgenerator+" generated libraries for hard interactions.");
 }
 
 Matrix_Element_Handler::~Matrix_Element_Handler()
@@ -281,7 +280,6 @@ bool Matrix_Element_Handler::PrintTotalXSec()
   if (errsum!=0.) {
     MyStrStream sstr;
     int ecms = int(rpa.gen.Ecms()*10.);
-    double ycut=log(rpa.gen.Ycut())/log(10.);
     sstr<<"xsections_"<<ecms<<".dat"<<endl;
     std::string filename;
     sstr>>filename;
@@ -294,7 +292,7 @@ bool Matrix_Element_Handler::PrintTotalXSec()
     
 
     rfile.precision(6);
-    rfile<<setw(10)<<ycut<<" ";
+    rfile<<setw(30)<<rpa.gen.Variable("Y_CUT")<<" ";
 
     for (size_t i=0; i<procs->Size();++i) {
       double xstot = (*procs)[i]->TotalXS()/((*procs)[i]->EnhanceFactor())*rpa.Picobarn();

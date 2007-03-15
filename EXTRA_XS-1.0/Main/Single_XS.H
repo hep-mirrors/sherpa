@@ -44,6 +44,9 @@ namespace EXTRAXS {
 			    const bool create=false);
     void WriteOutXSecs(std::ofstream &outfile);
 
+    bool SetPDFFlavours();
+    bool Tests();
+
     ATOOLS::Blob_Data_Base *OneEvent();
     ATOOLS::Blob_Data_Base *WeightedEvent(const int mode=0);
 

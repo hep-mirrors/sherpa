@@ -39,9 +39,9 @@ Single_Process_MHV::Single_Process_MHV(int _nin,int _nout,Flavour * _fl,
 			       ISR_Handler * _isr,Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			       int _gen_str,int _orderQCD, int _orderEW,
 			       int _kfactorscheme, PHASIC::scl::scheme _scalescheme,double _scale,
-			       Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi, double ycut,double error,std::string e_func) :
+			       Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi, std::string cuttag,double error,std::string e_func) :
   Process_Base(NULL,_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
-	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,ycut,error),
+	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,cuttag,error),
   m_sfactor(1.), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_MHVcalc(0), p_perm(0), p_partner(this), 
   m_helsample(false), m_inithelsample(false), m_throws(0), m_helresult(0.), m_helresult2(0.)
 {
@@ -64,7 +64,7 @@ Single_Process_MHV::Single_Process_MHV(int _nin,int _nout,Flavour * _fl,
   m_pslibname = m_libname;
 
   PolarizationNorm();
-  if (_seldata) p_selector = new Combined_Selector(m_nin,m_nout,p_flavours,_seldata,ycut);
+  if (_seldata) p_selector = new Combined_Selector(m_nin,m_nout,p_flavours,_seldata,m_cuttag);
   else {
     if (m_nout>2)
       msg.Out()<<"WARNING in Single_Process_MHV "<<m_name<<endl
@@ -89,9 +89,9 @@ Single_Process_MHV::Single_Process_MHV(Process_Info* pinfo,int _nin,int _nout,Fl
 			       ISR_Handler * _isr,Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			       int _gen_str,int _orderQCD, int _orderEW,
 			       int _kfactorscheme, PHASIC::scl::scheme _scalescheme,double _scale,
-			       Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi, double ycut,double error,std::string e_func) :   
+			       Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi, std::string cuttag,double error,std::string e_func) :   
   Process_Base(pinfo,_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
-	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,ycut,error),
+	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,cuttag,error),
   m_sfactor(1.), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_MHVcalc(0), p_perm(0), p_partner(this), 
   m_helsample(false), m_inithelsample(false), m_throws(0), m_helresult(0.), m_helresult2(0.)
 {
@@ -114,7 +114,7 @@ Single_Process_MHV::Single_Process_MHV(Process_Info* pinfo,int _nin,int _nout,Fl
   m_pslibname = m_libname;
 
   PolarizationNorm();
-  if (_seldata) p_selector = new Combined_Selector(m_nin,m_nout,p_flavours,_seldata,ycut);
+  if (_seldata) p_selector = new Combined_Selector(m_nin,m_nout,p_flavours,_seldata,m_cuttag);
   else {
     if (m_nout>2)
       msg.Out()<<"WARNING in Single_Process_MHV "<<m_name<<endl

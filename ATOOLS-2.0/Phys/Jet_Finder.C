@@ -21,16 +21,18 @@ using namespace ATOOLS;
 
   --------------------------------------------------------------------- */
 
-Jet_Finder::Jet_Finder(const double _ycut,const int _type,const bool _pt_def) : 
-  m_ycut(_ycut), m_delta_r(1.), m_type(_type) , m_pt_def(_pt_def),
-  m_value(0.), p_frame(NULL)
+Jet_Finder::Jet_Finder(const std::string &_ycut,
+		       const int _type,const bool _pt_def) : 
+  m_pt_def(_pt_def), m_value(0.), p_frame(NULL)
 {
+  m_ycut       = 2.0;
+  m_delta_r    = 1.;
+  m_type       = _type;
+  m_cuttag     = _ycut;
   m_name       = std::string("Jetfinder");
   m_ene        = rpa.gen.Ecms()/2.;
   m_sprime     = m_s = sqr(2.*m_ene); 
-  m_smin       = m_ycut * m_s;
   m_smax       = m_s;
-  m_shower_pt2 = m_ycut * m_s;
 
   m_sel_log    = new Selector_Log(m_name);
 }
@@ -42,10 +44,16 @@ Jet_Finder::Jet_Finder(const double _ycut,const int _type,const bool _pt_def) :
   --------------------------------------------------------------------- */
 
 
-Jet_Finder::Jet_Finder(const int _n,Flavour * _fl,const double _ycut,const int _type,const bool _pt_def) : 
-  m_ycut(_ycut), m_delta_r(1.), m_type(_type), m_pt_def(_pt_def),
-  m_value(0.), p_frame(NULL)
+Jet_Finder::Jet_Finder(const int _n,Flavour * _fl,
+		       const std::string &_ycut,
+		       const int _type,const bool _pt_def) : 
+  m_pt_def(_pt_def), m_value(0.), p_frame(NULL)
 {
+  m_ycut    = 2.0;
+  m_delta_r = 1.;
+  m_type    = _type;
+  m_cuttag  = _ycut;
+
   m_name = std::string("Jetfinder");
   m_fl   = _fl;
   m_n    = _n;
@@ -74,7 +82,6 @@ Jet_Finder::Jet_Finder(const int _n,Flavour * _fl,const double _ycut,const int _
     }
   }
   
-  m_smin    = m_ycut * m_s;
   m_smax    = m_s;
   m_sel_log = new Selector_Log(m_name);
 }
@@ -414,31 +421,13 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
   return ymin;
 }
 
-std::vector<int> ID(size_t id)
-{
-  std::vector<int> ids;
-  for (size_t n(0);id>0;++n) {
-    if (id&(1<<n)) {
-      ids.push_back(n);
-      id-=1<<n;
-    }
-  }
-  return ids;
-}
-
-size_t ID(const std::vector<int> &ids)
-{
-  size_t id(0);
-  for (size_t i(0);i<ids.size();++i) 
-    if (ids[i]!=0) id+=1<<i;
-  return id;
-}
-
 Flavour Jet_Finder::GetFlavour(std::string fl)
 {
   bool bar(false);
   if (fl=="j") return Flavour(kf::jet);
+  if (fl=="Q") return Flavour(kf::quark);
   if (fl=="G") return Flavour(kf::gluon);
+  if (fl=="P") return Flavour(kf::photon);
   if (fl.length()>1) {
     if (fl[fl.length()-1]=='b') {
       fl.erase(fl.length()-1,1);
@@ -456,12 +445,16 @@ Flavour Jet_Finder::GetFlavour(std::string fl)
   return flav;
 }
 
-size_t Jet_Finder::FillCombinations(const std::string &name,size_t &cp,
-				    const int fl)
+size_t Jet_Finder::FillCombinations(const std::string &name,
+				    const std::string &ycut,
+				    const std::string &gycut,
+				    size_t &cp,const int fl)
 {
   bool ex(false);
   size_t sum(0), sp(0);
   std::vector<int> pos;
+  std::string cut(ycut), ccut(cut), ncut(cut);
+  std::string gcut(gycut), cgcut(gcut), ngcut(gcut);
   for (size_t i(0);i<name.length();++i) {
     if (name[i]=='[') {
       int open(1);
@@ -469,7 +462,36 @@ size_t Jet_Finder::FillCombinations(const std::string &name,size_t &cp,
 	if (name[j]=='[') ++open;
 	if (name[j]==']') --open;
 	if (open==0) {
-	  pos.push_back(FillCombinations(name.substr(i+1,j-i-1),cp,fl-1));
+	  for (size_t ci(0);ci<cut.length();++ci) {
+	    if (cut[ci]=='[') {
+	      int copen(1);
+	      for (size_t cj(ci+1);cj<cut.length();++cj) {
+		if (cut[cj]=='[') ++copen;
+		if (cut[cj]==']') --copen;
+		if (copen==0) {
+		  if (ccut==ycut) ccut=cut.substr(0,ci);
+		  ncut=cut.substr(ci+1,cj-ci-1);
+		  cut=cut.substr(cj+1);
+		}
+	      }
+	    }
+	  }
+	  for (size_t ci(0);ci<gcut.length();++ci) {
+	    if (gcut[ci]=='[') {
+	      int copen(1);
+	      for (size_t cj(ci+1);cj<gcut.length();++cj) {
+		if (gcut[cj]=='[') ++copen;
+		if (gcut[cj]==']') --copen;
+		if (copen==0) {
+		  if (cgcut==gycut) cgcut=gcut.substr(0,ci);
+		  ngcut=gcut.substr(ci+1,cj-ci-1);
+		  gcut=gcut.substr(cj+1);
+		}
+	      }
+	    }
+	  }
+	  pos.push_back(FillCombinations
+			(name.substr(i+1,j-i-1),ncut,ngcut,cp,fl-1));
 	  m_flavs[pos.back()]=GetFlavour(name.substr(sp,i-sp));
 	  sum=sum|pos.back();
 	  sp=i=j+2;
@@ -497,10 +519,20 @@ size_t Jet_Finder::FillCombinations(const std::string &name,size_t &cp,
     m_flavs[pos.back()]=GetFlavour(name.substr(sp,name.length()-sp));
     sum=sum|pos.back();
   }
+  Algebra_Interpreter interpreter;
+  interpreter.AddTag("E_CMS",ToString(rpa.gen.Ecms()));
+  m_cycut=ToType<double>(interpreter.Interprete(ccut));
+  m_gcycut=ToType<double>(interpreter.Interprete(cgcut));
   for (size_t i(0);i<pos.size();++i) {
+    bool isi((pos[i]&(1<<0)) || (pos[i]&(1<<1)));
+    m_ycuts[pos[i]][pos[i]]=isi?m_cycut:m_cycut*sqr(m_delta_r);
+    m_gycuts[pos[i]][pos[i]]=isi?m_gcycut:m_gcycut*sqr(m_delta_r);
     for (size_t j(i+1);j<pos.size();++j) {
       if (pos[i]>2 || pos[j]>2) {
-	m_combs[pos[i]][pos[j]]=1;
+	m_ycuts[pos[i]][pos[j]]=isi?m_cycut:m_cycut*sqr(m_delta_r);
+	m_gycuts[pos[i]][pos[j]]=isi?m_gcycut:m_gcycut*sqr(m_delta_r);
+	m_ycut=Min(m_ycut,m_cycut);
+	m_gycut=Min(m_gycut,m_gcycut);
 	m_fills[fl].push_back(std::pair<size_t,size_t>(pos[i],pos[j]));
       }
     }
@@ -512,34 +544,38 @@ size_t Jet_Finder::FillCombinations(const std::string &name,size_t &cp,
 
 void Jet_Finder::FillCombinations()
 {
-  if (m_combs.empty()) {
+  if (m_ycuts.empty()) {
     if (m_procname=="") THROW(fatal_error,"Process name not set.");
     size_t size(1<<(m_nin+m_nout));
     m_moms.resize(size);
     m_flavs.resize(size);
-    m_combs.resize(size,std::vector<int>(size,0));
+    m_ycuts.resize(size,std::vector<double>(size,-1.0));
+    m_gycuts.resize(size,std::vector<double>(size,-1.0));
     m_fills.resize(m_nin+m_nout+1);
     std::string name(m_procname.substr(m_procname.find('_')+1));
     name=name.substr(name.find('_')+1);
     size_t i(0);
-    FillCombinations(name,i,m_nin+m_nout);
+    FillCombinations(name,m_cuttag,rpa.gen.Variable("Y_CUT"),i,m_nin+m_nout);
     if (msg.LevelIsDebugging()) {
       msg.Out()<<METHOD<<"(): Combinations for '"<<m_procname<<"' {\n";
-      for (size_t i(0);i<m_combs.size();++i) {
-	if (ID(m_combs[i])!=0) {
+      double s(sqr(rpa.gen.Ecms()));
+      for (size_t i(0);i<m_ycuts.size();++i) {
+ 	if (ID(m_ycuts[i])!=0 && ID(m_ycuts[i])!=(size_t)(1<<i)) {
 	  msg.Out()<<"  "<<ID(i)<<"["<<m_flavs[i]<<","
 		   <<m_flavs[i].Strong()<<"] & {";
-	  for (size_t j(0);j<m_combs[i].size();++j)
-	    if (m_combs[i][j]!=0) msg.Out()<<" "<<ID(j)<<"["<<m_flavs[j]<<","
-					   <<m_flavs[j].Strong()<<"]";
+	  for (size_t j(0);j<m_ycuts[i].size();++j)
+	    if (i!=j && m_ycuts[i][j]>0.0) 
+	      msg.Out()<<" "<<ID(j)<<"["<<m_flavs[j]<<","
+		       <<m_flavs[j].Strong()<<",("<<sqrt(m_ycuts[i][j]*s)
+		       <<","<<sqrt(m_gycuts[i][j]*s)<<")]";
 	  msg.Out()<<" }\n";
-	}
+ 	}
       }
       msg.Out()<<"}\n";
       msg.Out()<<METHOD<<"(): Identified clusterings {\n";
       for (size_t i(0);i<m_fills.size();++i)
 	for (size_t j(0);j<m_fills[i].size();++j)
-	  msg.Out()<<" ["<<ID(m_fills[i][j].first)<<","
+	  msg.Out()<<"  ["<<ID(m_fills[i][j].first)<<","
 		   <<ID(m_fills[i][j].second)<<"] ("<<i<<")\n";
       msg.Out()<<"}\n";
       msg.Out()<<METHOD<<"(): Momentum combination {\n";
@@ -598,14 +634,15 @@ bool Jet_Finder::Trigger(const Vec4D * p)
   PrepareMomList();
 
   int    j,k;
-  bool   trigger(true);
   double ymin(2.0);
-  for (short unsigned int cl(0);cl<m_fills.size();++cl)
-    ymin=Min(ymin,YminKt(&m_moms.front(),j,k,cl)); 
-  if (ymin < m_ycut) trigger = false;
-  
+  msg_Debugging()<<METHOD<<"() {\n";
+  for (short unsigned int cl(0);cl<m_fills.size();++cl) {
+    ymin=YminKt(&m_moms.front(),j,k,cl);
+    if (ymin<0.0) return 1-m_sel_log->Hit(true);
+  }
+  msg_Debugging()<<"} -> q_min = "<<sqrt(ymin*m_s)<<"\n";
   m_value = ymin;
-  return (1-m_sel_log->Hit(1-trigger));
+  return 1-m_sel_log->Hit(false);
 }
 
 void Jet_Finder::BuildCuts(Cut_Data * cuts) 
@@ -614,50 +651,41 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
   for (int i=m_nin; i<m_nin+m_nout; ++i) {
     cuts->energymin[i] = m_fl[i].SelMass();
     if (m_fl[i].Strong()) {                
-      /* 
-	 minimal energies : 
-	 either   :  E^2 > kt^2 > y_cut s      
-	             (hadron-hadron collisions)
-	 or       :  4 min{E_i^2,E_j^2} > 2 min{E_i^2,E_j^2} (1-cos(ij)) > 
-	             ycut s' > ycut s_min   
-	             (lepton-lepton collisions)
-      */
       if (m_type==1) {
-	cuts->energymin[i] = Max(sqrt(m_ycut * m_s/4.),cuts->energymin[i]);
+	cuts->energymin[i] = Max(sqrt(m_ycuts[1<<i][1<<i] * m_s/4.),
+				 cuts->energymin[i]);
       }
       else {
-	cuts->energymin[i] = Max(sqrt(m_ycut * m_s),cuts->energymin[i]);
-	if (m_type==4 && (m_combs[1<<0][1<<i] || m_combs[1<<1][1<<i])) {
-	  cuts->cosmax[0][i] = cuts->cosmax[1][i] = cuts->cosmax[i][0] = cuts->cosmax[i][1] =  
-	    Min(cuts->cosmax[0][i],sqrt(1.-4.*m_ycut));
-	  cuts->etmin[i] = Max(sqrt(m_ycut * m_s),cuts->etmin[i]);
+	cuts->energymin[i] = Max(sqrt(m_ycuts[1<<i][1<<i] * m_s),
+				 cuts->energymin[i]);
+	double cut(m_ycuts[1<<0][1<<i]);
+	if (m_ycuts[1<<1][1<<i]>0.0) { 
+	  if (cut>0.0) cut=Min(cut,m_ycuts[1<<1][1<<i]);
+	  else cut=m_ycuts[1<<1][1<<i];
+	}
+	if (m_type==4 && cut>0.0) {
+	  cuts->cosmax[0][i] = cuts->cosmax[1][i] = 
+	    cuts->cosmax[i][0] = cuts->cosmax[i][1] =  
+	    Min(cuts->cosmax[0][i],sqrt(1.-4.*cut));
+	  cuts->etmin[i] = Max(sqrt(cut * m_s),cuts->etmin[i]);
 	}
 	if (m_type==2) {
 	  int hadron=m_fl[0].Strong()?0:1;
-	  if (m_combs[1<<hadron][1<<i]) {
+	  double cut(m_ycuts[1<<hadron][1<<i]);
+	  if (cut>0.0) {
 	    cuts->cosmax[hadron][i] = cuts->cosmax[i][hadron] = 
-	      Min(cuts->cosmax[hadron][i],sqrt(1.-4.*m_ycut));
+	      Min(cuts->cosmax[hadron][i],sqrt(1.-4.*cut));
 	    cuts->cosmin[hadron][i] = cuts->cosmin[i][hadron] = 
-	      Max(cuts->cosmin[hadron][i],-sqrt(1.-4.*m_ycut));
-	    cuts->etmin[i] = Max(sqrt(m_ycut * m_s),cuts->etmin[i]);
+	      Max(cuts->cosmin[hadron][i],-sqrt(1.-4.*cut));
+	    cuts->etmin[i] = Max(sqrt(cut * m_s),cuts->etmin[i]);
 	  }
 	}
       }
       
       for (int j=i+1; j<m_nin+m_nout; ++j) {
-	if (m_fl[j].Strong() && m_combs[1<<i][1<<j]) {
-	  /* 
-	     minimal scut :
-	     either   :  s_ij = 2 E_i E_j (1-cos(ij)) > 2 min{E_i^2,E_j^2} (1-cos(ij)) > 
-	     m_ycut s' > ycut s_min   
-	     (lepton-lepton collisions)
-	     or       :  similarly .... have to think ...
-               	         (hadron-hadron collisions)
- 
-	  */
-	  if (m_type>=2) cuts->scut[j][i] = cuts->scut[i][j] 
-			   = Max(cuts->scut[i][j],sqr(m_delta_r)*m_ycut*m_s);
-	  else cuts->scut[i][j] = cuts->scut[j][i] = Max(cuts->scut[i][j],m_ycut*m_s);
+	if (m_fl[j].Strong() && m_ycuts[1<<i][1<<j]>0.0) {
+	  cuts->scut[i][j] = cuts->scut[j][i] = 
+	    Max(cuts->scut[i][j],m_ycuts[1<<i][1<<j]*m_s);
 	}
       }
     }
@@ -670,15 +698,17 @@ void   Jet_Finder::UpdateCuts(double sprime,double y,Cut_Data * cuts)
   for (int i=m_nin; i<m_nin+m_nout; ++i) {
     if (m_fl[i].Strong()) {                
       if (m_type==1)
-	cuts->energymin[i] = Max(sqrt(m_ycut * m_s/4.),cuts->energymin[i]);
+	cuts->energymin[i] = Max(sqrt(m_ycuts[1<<i][1<<i] * m_s/4.),
+				 cuts->energymin[i]);
       else
-	cuts->energymin[i] = Max(sqrt(m_ycut * m_s),cuts->energymin[i]);
+	cuts->energymin[i] = Max(sqrt(m_ycuts[1<<i][1<<i] * m_s),
+				 cuts->energymin[i]);
       for (int j=i+1; j<m_nin+m_nout; ++j) {
-	if (m_fl[j].Strong() && m_combs[1<<i][1<<j]) {
+	if (m_fl[j].Strong() && m_ycuts[1<<i][1<<j]>0.0) {
 	  if (m_type>=2) cuts->scut[j][i] = cuts->scut[i][j] 
-			   = Max(cuts->scut[i][j],sqr(m_delta_r)*m_ycut*m_s);
+			   = Max(cuts->scut[i][j],m_ycuts[1<<i][1<<j]*m_s);
 	  else cuts->scut[i][j] = cuts->scut[j][i] = 
-		 Max(cuts->scut[i][j],m_ycut*m_s);
+		 Max(cuts->scut[i][j],m_ycuts[1<<i][1<<j]*m_s);
 	}
       }
     }
@@ -693,39 +723,45 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1,int cl)
   for (size_t ps(0);ps<m_fills[cl].size();++ps) {
     int j(m_fills[cl][ps].first), k(m_fills[cl][ps].second);
     Vec4D pj(p[j]), pk(p[k]);
-//     msg_Debugging()<<"test "<<ID(j)<<"["<<m_flavs[j]<<"] & "
-// 		   <<ID(k)<<"["<<m_flavs[k]<<"], core = "
-// 		   <<(cl==m_nin+m_nout)<<"\n";
+    double ycut(m_ycuts[j][k]);
+    msg_Debugging()<<"  "<<ID(j)<<"["<<m_flavs[j]<<"] & "
+   		   <<ID(k)<<"["<<m_flavs[k]<<"], qcut = "<<sqrt(ycut*m_s);
     if (m_flavs[k].Strong()) {
-      if (m_type>=3 && cl==m_nin+m_nout) {
+      if (m_type>=3) {
 	pt2k=pk.PPerp2();
 	if (m_pt_def) pt2k+=pk.Abs2();
 	if (j<3) {
+	  msg_Debugging()<<", is -> ptk = "<<sqrt(pt2k)<<" ("
+			 <<(pt2k>=ycut*m_s)<<(pt2k<ycut*m_s?")\n":")");
+	  if (pt2k<ycut*m_s) return -1.0;
 	  if (pt2k<ymin*m_s) {
 	    ymin=pt2k/m_s;
 	    j1=j;
 	    k1=k;
 	  } 
 	}
-	else {
-	  if (m_flavs[j].Strong()) {
-	    pt2j=pj.PPerp2();
-	    if (m_pt_def) pt2j+=pj.Abs2();
-	    pt2jk=2.*Min(pt2j,pt2k)*
-	      (Coshyp(DEta12(pj,pk))-CosDPhi12(pj,pk))/sqr(m_delta_r);
-	    if (pt2jk<ymin*m_s) {
-	      ymin=pt2jk/m_s;
-	      j1=j;
-	      k1=k;
-	    }
+	else if (m_flavs[j].Strong()) {
+	  pt2j=pj.PPerp2();
+	  if (m_pt_def) pt2j+=pj.Abs2();
+	  // delta r is taken into account in m_ycuts !
+	  pt2jk=2.*Min(pt2j,pt2k)*
+	    (Coshyp(DEta12(pj,pk))-CosDPhi12(pj,pk));
+	  msg_Debugging()<<", fs -> ptjk = "<<sqrt(pt2jk)<<" ("
+			 <<(pt2jk>=ycut*m_s)<<(pt2jk<ycut*m_s?")\n":")");
+	  if (pt2jk<ycut*m_s) return -1.0;
+	  if (pt2jk<ymin*m_s) {
+	    ymin=pt2jk/m_s;
+	    j1=j;
+	    k1=k;
 	  }
 	}
       }
       else {
-	if (m_type==2 && cl==m_nin+m_nout) {
+	if (m_type==2) {
 	  int hadron=m_fl[0].Strong()?0:1;
 	  if (j==1<<hadron) {
 	    pt2k=2.*sqr(pk[0])*(1.-DCos12(pk,p[hadron]));
+	    if (pt2k<ycut*m_sprime) return -1.0;
 	    if (pt2k<ymin*m_sprime) {
 	      ymin=pt2k/m_sprime;
 	      j1=j;
@@ -733,8 +769,9 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1,int cl)
 	    }
 	  }
 	}
-	if (m_flavs[j].Strong()) {
+	if (j>2 && m_flavs[j].Strong()) {
 	  pt2jk=2.*sqr(Min(pj[0],pk[0]))*(1.-DCos12(pj,pk));
+	  if (pt2jk<ycut*m_sprime) return -1.0;
 	  if (pt2jk<ymin*m_sprime) {
 	    ymin=pt2jk/m_sprime;
 	    j1=j;
@@ -743,6 +780,7 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1,int cl)
 	}
       }
     }
+    msg_Debugging()<<"\n";
   }
   return ymin;
 }
@@ -775,77 +813,6 @@ double Jet_Finder::MTij2(Vec4D p1,Vec4D p2)
   return mt12_2;
 }
 
-bool Jet_Finder::TwoJets(const Vec4D & p1,const bool fix) 
-{
-  double crit = fix ? m_smin : m_shower_pt2;
-  if (m_type>=2) {
-    if (m_pt_def) { if(p1.PPerp2() < crit ) return false; }
-             else { if(p1.MPerp2() < crit ) return false; }
-  }
-  else {
-    msg.Out()<<"WARNING in Jet_Finder::TwoJets(Vec4D &) "<<std::endl
-	     <<"    Still not implemented for mode "<<m_type<<std::endl;
-  }
-  return true;
-}
-
-
-/*----------------------------------------------------------------------------------
-
-  Used in showers.
-
-  ----------------------------------------------------------------------------------*/
-
-
-
-bool Jet_Finder::TwoJets(const Vec4D & _p1,const Vec4D & _p2,const bool fix)
-{
-  Vec4D p1=_p1;
-  Vec4D p2=_p2;
-
-  BoostInFrame(p1);
-  BoostInFrame(p2);
-
-  double pt1_2(0.), pt2_2(0.), pt12_2(0.);
-  double crit = fix ? m_smin : m_shower_pt2;
-
-  if (m_type>=2) {
-    if (m_pt_def) { pt1_2  = p1.PPerp2(); pt2_2  = p2.PPerp2(); }
-             else { pt1_2  = p1.MPerp2(); pt2_2  = p2.MPerp2(); }
-    if (pt1_2  < crit || pt2_2  < crit ) return 0;
-    
-    if (m_type==2) pt12_2 = 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2))/sqr(m_delta_r);
-              else pt12_2 = 2.*Min(pt1_2,pt2_2) * (Coshyp(DEta12(p1,p2)) - CosDPhi12(p1,p2))/sqr(m_delta_r);
-  }
-  else {
-    pt12_2 = 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2));
-
-  //   std::cout<<" --- Jetfinder ee mode : "<<pt12_2<<" "<<m_shower_pt2<<" --- ";
-  }
-  if (pt12_2 < crit ) return 0;
-  return 1;
-}
-
-
-bool Jet_Finder::TwoJets(double & E2,double & z,double & costheta,bool mode)
-{
-  double pt12_2(0.);
-  if (mode == 1) {
-    pt12_2 = -1000.;
-    msg.Out()<<"WARNING in Jet_Finder::TwoJets(Vec4D &) "<<std::endl
-	     <<"    Still not implemented for mode "<<m_type<<std::endl;
-  }
-  else pt12_2 = 2.*E2*sqr(Min(z,1.- z))*(1.-costheta)/sqr(m_delta_r);
-
-  if (pt12_2 < m_shower_pt2 ) return 0;
-  return 1;
-}
-
-/*----------------------------------------------------------------------------------
-
-  Utilities
-
-  ----------------------------------------------------------------------------------*/
 double Jet_Finder::DEta12(Vec4D & p1,Vec4D & p2)
 {
   // eta1,2 = -log(tan(theta_1,2)/2)   

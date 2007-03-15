@@ -46,13 +46,13 @@ namespace AMEGIC {
 		   ATOOLS::Selector_Data * =NULL,
 		   int=1,int=99,int=99,int=0,PHASIC::scl::scheme=PHASIC::scl::unknown,
 		   double=-1.,Pol_Info* _pl=0,int _nex=0,ATOOLS::Flavour * _ex_fl=0,
-		   int usepi=0,double ycut=-1.,double error=-1.,std::string e_func="1");
+		   int usepi=0,std::string cuttag="-1.".,double error=-1.,std::string e_func="1");
     Single_Process_MHV(Process_Info*,int,int,ATOOLS::Flavour *,
 		   PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,
 		   ATOOLS::Selector_Data *,
 		   int,int,int,int,PHASIC::scl::scheme,
 		   double,Pol_Info* _pl,int _nex,ATOOLS::Flavour * _ex_fl,
-		   int usepi,double ycut,double error,std::string e_func="1");
+		   int usepi,std::string cuttag,double error,std::string e_func="1");
     ~Single_Process_MHV();
     void Add(Process_Base *) {
       ATOOLS::msg.Error()<<"Error in Single_Process_MHV. Method Add called."<<std::endl;

@@ -117,7 +117,7 @@ Combine_Table_Base *Cluster_Partons_CKKW::
 CreateTable(Jet_Finder *jf,ATOOLS::Vec4D *amoms,Combine_Table_Base *ct,
 	    const int isrmode,const int isrshoweron)
 {
-  return new Combine_Table_CKKW(p_jf,amoms,0,m_isrmode,m_isrshoweron);
+  return new Combine_Table_CKKW(p_ajf,amoms,0,m_isrmode,m_isrshoweron);
 }
 
 EXTRAXS::XS_Base *Cluster_Partons_CKKW::GetXS(EXTRAXS::XS_Group * group, 
@@ -208,10 +208,6 @@ void Cluster_Partons_CKKW::InitWeightCalculation()
 		 <<", me_as_fac = "<<m_me_as_factor
 		 <<", m_kfac = "<<m_kfac<<"\n";
   msg_Debugging()<<"  amegic : "<<std::setw(12)<<sqrt(m_q2_amegic)<<"\n";
-  msg_Debugging()<<"  jet is : "<<std::setw(12)<<m_qmin_i
-		 <<"  ->  as = "<<m_as_jet[1]<<"\n";
-  msg_Debugging()<<"  jet fs : "<<std::setw(12)<<m_qmin_f
-		 <<"  ->  as = "<<m_as_jet[0]<<"\n";
   msg_Debugging()<<"  cut is : "<<std::setw(12)<<sqrt(m_q2_isjet)<<"\n";
   msg_Debugging()<<"  cut fs : "<<std::setw(12)<<sqrt(m_q2_fsjet)<<"\n";
   msg_Debugging()<<"  is ps  : "<<std::setw(12)<<sqrt(m_q2_iss)<<"\n";
@@ -257,9 +253,7 @@ ExternalWeight(const bool is,Leg &leg,
 	       const double actual,double qmin)
 {
   double DeltaNum(1.);
-  if (qmin==0.0) 
-    if (is) qmin=m_qmin_i;
-    else qmin=m_qmin_f;
+  if (qmin==0.0) qmin=sqrt(leg.Q2Cut());
   if (actual<qmin) {
     ++m_fails;
     DeltaNum=1.0;
@@ -290,6 +284,7 @@ void Cluster_Partons_CKKW::StoreOldValues(const int i,const int j,
 double Cluster_Partons_CKKW::CouplingWeight(const bool is,Leg &leg,
 					    const double &kt)
 {
+  if (!(m_as_mode&1)) return 1.0;
   double asref(m_as_jet[is]);
   switch (leg.Type()) {
   case lf::Triangle:
@@ -413,35 +408,48 @@ void Cluster_Partons_CKKW::WeightHardProcess()
     THROW(fatal_error,"No scale in hard process");
   }
   PHASIC::Integrable_Base *proc(p_me->GetAmegic()->GetProcess());
-  double qmin2me(Min(m_is_as_factor,m_fs_as_factor)*
-		 proc->Scale(PHASIC::stp::fac));
-  if (!IsEqual(qmin2me,m_is_as_factor*m_qmin[0]*m_qmin[1])) {
-    double x[2];
-    Combine_Table_Base *ct(p_ct);
-    while (ct->Up()) ct=ct->Up();
-    ct->GetX1X2(x[0],x[1]);
-    msg_Debugging()<<"pdf reweighting: q_{fac,me} = "<<sqrt(qmin2me)
-		   <<" -> q_{fac} = "<<(sqrt(m_is_as_factor)*m_qmin[0])
-		   <<"/"<<(sqrt(m_is_as_factor)*m_qmin[1])
-		   <<", x_1 = "<<x[0]<<", x_2 = "<<x[1]<<"\n";
-    for (short unsigned int i(0);i<2;++i) { 
-      if (p_pdf[i]!=NULL) {
-	if (sqr(m_qmin[i])<p_pdf[i]->Q2Min()) {
-	  msg.Error()<<METHOD<<"(): Scale under-runs minimum PDF scale."
-		     <<std::endl;
-	  continue;
+  if (proc->FactorizationScale()!="") {
+    m_q2_f[1]=m_q2_f[0]=proc->Scale(stp::fac);
+  }
+  else {
+    m_q2_f[0]=sqr(m_qmin[0]);
+    m_q2_f[1]=sqr(m_qmin[1]);
+    double qmin2me(Min(m_is_as_factor,m_fs_as_factor)*
+		   proc->Scale(PHASIC::stp::fac));
+    if (!IsEqual(qmin2me,m_is_as_factor*m_qmin[0]*m_qmin[1])) {
+      double x[2];
+      Combine_Table_Base *ct(p_ct);
+      while (ct->Up()) ct=ct->Up();
+      ct->GetX1X2(x[0],x[1]);
+      msg_Debugging()<<"pdf reweighting: q_{fac,me} = "<<sqrt(qmin2me)
+		     <<" -> q_{fac} = "<<(sqrt(m_is_as_factor)*m_qmin[0])
+		     <<"/"<<(sqrt(m_is_as_factor)*m_qmin[1])
+		     <<", x_1 = "<<x[0]<<", x_2 = "<<x[1]<<"\n";
+      static long unsigned int cnt[2]={0,0}, psur[2]={0,0};
+      for (short unsigned int i(0);i<2;++i) { 
+	if (p_pdf[i]!=NULL) {
+	  ++cnt[i];
+	  if (sqr(m_qmin[i])<p_pdf[i]->Q2Min()) {
+	    if (++psur[i]/(double)cnt[i]>0.001) {
+	      msg.Error()<<METHOD<<"(): Scale under-runs minimum PDF scale in "
+			 <<(psur[i]*1000/cnt[i])/10.0
+			 <<" % of events."<<std::endl;
+	    }
+	    continue;
+	  }
+	  p_pdf[i]->Calculate(x[i],qmin2me);
+	  double w(p_pdf[i]->GetXPDF(ct->GetLeg(i).Flav()));
+	  p_pdf[i]->Calculate(x[i],m_is_as_factor*sqr(m_qmin[i]));
+	  w/=p_pdf[i]->GetXPDF(ct->GetLeg(i).Flav());
+	  msg_Debugging()<<"w_{"<<i<<"} = "<<(1.0/w)
+			 <<" ("<<ct->GetLeg(i).Flav()<<")\n";
+	  if (w>0.0) m_weight/=w;
 	}
-	p_pdf[i]->Calculate(x[i],qmin2me);
-	double w(p_pdf[i]->GetXPDF(ct->GetLeg(i).Flav()));
-	p_pdf[i]->Calculate(x[i],m_is_as_factor*sqr(m_qmin[i]));
-	w/=p_pdf[i]->GetXPDF(ct->GetLeg(i).Flav());
-	msg_Debugging()<<"w_{"<<i<<"} = "<<(1.0/w)
-		       <<" ("<<ct->GetLeg(i).Flav()<<")\n";
-	if (w>0.0) m_weight/=w;
       }
     }
   }
-  msg_Debugging()<<"} -> w = "<<m_weight<<"\n";
+  msg_Debugging()<<"} -> w = "<<m_weight<<"\n\n";
+  msg_Debugging()<<"set q_{fac} = "<<sqrt(m_q2_f[0])<<"/"<<sqrt(m_q2_f[1])<<"\n";
 }
 
 void Cluster_Partons_CKKW::CalculateWeight(const double &meweight)

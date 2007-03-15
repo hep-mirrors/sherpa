@@ -24,7 +24,7 @@ using namespace std;
 Amegic::Amegic(std::string _path,std::string _file,
 	       MODEL::Model_Base * _model) :
   m_path(_path), m_file(_file), m_nmax(0),m_minqcdjet(99), m_maxqcdjet(0), 
-  m_maxjet(0), 
+  m_maxjet(0), m_coremaxjet(0), 
   p_procs(NULL), p_decs(NULL), p_model(NULL), p_top(NULL), p_fifo(NULL),
   p_dataread(NULL), p_seldata(NULL), p_beam(NULL), p_isr(NULL)
 {
@@ -186,6 +186,7 @@ void Amegic::ReadInProcessfile(string file)
   Data_Read::SetTags(PHASIC::Integrable_Base::ScaleTags());
   PHASIC::scl::scheme _sc = (PHASIC::scl::scheme)(p_dataread->GetValue<int>("SCALE_SCHEME",0));
   ATOOLS::Data_Read::ResetTags();
+  std::string _facscale   = p_dataread->GetValue<std::string>("FACTORIZATION_SCALE","");
   int    _kfactor_scheme  = p_dataread->GetValue<int>("KFACTOR_SCHEME",0);
   double _scale           = p_dataread->GetValue<double>("FIXED_SCALE",sqr(rpa.gen.Ecms()));
   int usepi               = p_dataread->GetValue<int>("PI",0);
@@ -213,8 +214,10 @@ void Amegic::ReadInProcessfile(string file)
   int         order_ew,order_strong,kfactor_scheme;
   PHASIC::scl::scheme scale_scheme; 
   double      fixed_scale;
-  vector<double>  venhance_factor,vmaxreduction_factor,vmaxredepsilon,vycut,vmaxerror;
-  std::string enhance_function="1";
+  std::map<std::string,std::pair<int,double> >  
+    venhance_factor,vmaxreduction_factor,vmaxredepsilon,vmaxerror;
+  std::map<std::string,std::pair<int,std::string> > vycut;
+  std::string enhance_function="1", factorization_scale;
   bool        print_graphs=false;
   int         enable_mhv=0; 
   string      selectorfile;
@@ -273,21 +276,24 @@ void Amegic::ReadInProcessfile(string file)
 	    order_ew = order_strong = -1;
 	    selectorfile        = string("");
 	    scale_scheme        = _sc;
+	    factorization_scale = _facscale;
 	    kfactor_scheme      = _kfactor_scheme;
 	    fixed_scale         = _scale;
 	    order_ew            = 99;
 	    order_strong        = 99;
 	    nex                 = 0;
 
-	    vycut.clear();                vycut.push_back(-1.);
-	    venhance_factor.clear();      venhance_factor.push_back(1.);
-	    vmaxreduction_factor.clear(); vmaxreduction_factor.push_back(1.);
-	    vmaxredepsilon.clear();       vmaxredepsilon.push_back(0.);
-	    vmaxerror.clear();            vmaxerror.push_back(-1.);
+	    vycut.clear();
+	    venhance_factor.clear();
+	    vmaxreduction_factor.clear();
+	    vmaxredepsilon.clear();
+	    vmaxerror.clear();
 
 	    enhance_function    = "1";
+	    int pr(0);
 	    do {
 	      getline(from,buf);
+	      ++pr;
 	      position = -1;
 	      if (buf.length()>0 && buf[0] != '%') {
 		msg.LogFile()<<buf<<std::endl;
@@ -378,6 +384,14 @@ void Amegic::ReadInProcessfile(string file)
 		  scale_scheme = (PHASIC::scl::scheme)(helpsc);
 		}
 
+		position       = buf.find(string("Factorization scale :"));
+		if (position > -1) {
+		  MyStrStream str;      
+		  buf          = buf.substr(position+21);
+		  Shorten(buf);
+		  factorization_scale = buf;
+		}
+
 		position       = buf.find(string("KFactor scheme :"));
 		if (position > -1) {
 		  MyStrStream str;      
@@ -401,7 +415,7 @@ void Amegic::ReadInProcessfile(string file)
 		  MyStrStream str;      
 		  buf          = buf.substr(buf.find(":",position)+1);
 		  Shorten(buf);
-		  ExtractMPvalues(buf,venhance_factor);
+		  ExtractMPvalues(buf,venhance_factor,pr);
 		}
 		position       = buf.find(string("Enhance_Function :"));
 		if (position > -1) {
@@ -415,14 +429,14 @@ void Amegic::ReadInProcessfile(string file)
 		  MyStrStream str;      
 		  buf          = buf.substr(buf.find(":",position)+1);
 		  Shorten(buf);
-		  ExtractMPvalues(buf,vmaxreduction_factor);
+		  ExtractMPvalues(buf,vmaxreduction_factor,pr);
 		}
 		position       = buf.find(string("Max_Epsilon :"));
 		if (position > -1) {
 		  MyStrStream str;      
 		  buf          = buf.substr(buf.find(":",position)+1);
 		  Shorten(buf);
-		  ExtractMPvalues(buf,vmaxredepsilon);
+		  ExtractMPvalues(buf,vmaxredepsilon,pr);
 		}
 
 		position       = buf.find(string("Integration_Error :"));
@@ -430,7 +444,7 @@ void Amegic::ReadInProcessfile(string file)
 		  MyStrStream str;      
 		  buf          = buf.substr(buf.find(":",position)+1);
 		  Shorten(buf);
-		  ExtractMPvalues(buf,vmaxerror);
+		  ExtractMPvalues(buf,vmaxerror,pr);
 		}
 
 		position       = buf.find(string("YCUT :"));
@@ -438,7 +452,7 @@ void Amegic::ReadInProcessfile(string file)
 		  MyStrStream str;      
 		  buf          = buf.substr(buf.find(":",position)+1);
 		  Shorten(buf);
-		  ExtractMPvalues(buf,vycut);
+		  ExtractMPvalues(buf,vycut,pr);
 		}
 
 		position       = buf.find(string("Print_Graphs"));
@@ -509,18 +523,41 @@ void Amegic::ReadInProcessfile(string file)
 	      }
 	      
 	      nFS = pcinfo->TotalNout();
-	      double  enhance_factor      = venhance_factor[0];
-	      double  maxreduction_factor = vmaxreduction_factor[0];
-	      double  maxredepsilon       = vmaxredepsilon[0];
-	      double  ycut                = vycut[0];
-	      double  maxerror            = vmaxerror[0];
-	      if ((int)venhance_factor.size()>nFS&&venhance_factor[nFS]!=-1.) enhance_factor=venhance_factor[nFS];
-	      if ((int)vmaxreduction_factor.size()>nFS&&vmaxreduction_factor[nFS]!=-1.) maxreduction_factor=vmaxreduction_factor[nFS];
-	      if ((int)vmaxredepsilon.size()>nFS&&vmaxredepsilon[nFS]!=-1.) maxredepsilon=vmaxredepsilon[nFS];
-	      if ((int)vycut.size()>nFS&&vycut[nFS]!=-1.) ycut=vycut[nFS];
-	      if ((int)vmaxerror.size()>nFS&&vmaxerror[nFS]!=-1.) maxerror=vmaxerror[nFS];
+	      AddMPvalues(venhance_factor,nFS);
+	      AddMPvalues(vmaxreduction_factor,nFS);
+	      AddMPvalues(vmaxredepsilon,nFS);
+	      AddMPvalues(vycut,nFS);
+	      AddMPvalues(vmaxerror,nFS);
+	      double enhance_factor(1.);
+	      double maxreduction_factor(1.);
+	      double maxredepsilon(0.);
+	      double maxerror(-1.);
+	      std::string ycut("-1.");
+	      std::string pnid(ToString(nFS));
+	      if (venhance_factor.find(pnid)!=venhance_factor.end())
+		enhance_factor=venhance_factor[pnid].second;
+	      if (vmaxreduction_factor.find(pnid)!=vmaxreduction_factor.end())
+		maxreduction_factor=vmaxreduction_factor[pnid].second;
+	      if (vmaxredepsilon.find(pnid)!=vmaxredepsilon.end())
+		maxredepsilon=vmaxredepsilon[pnid].second;
+	      if (vycut.find(pnid)!=vycut.end()) ycut=vycut[pnid].second;
+	      if (vmaxerror.find(pnid)!=vmaxerror.end())
+		maxerror=vmaxerror[pnid].second;
+	      pnid=pcinfo->PNID();
+	      msg_Debugging()<<METHOD<<"(): checking '"
+			     <<nFS<<"' '"<<pnid<<"'\n";
+	      if (venhance_factor.find(pnid)!=venhance_factor.end())
+		enhance_factor=venhance_factor[pnid].second;
+	      if (vmaxreduction_factor.find(pnid)!=vmaxreduction_factor.end())
+		maxreduction_factor=vmaxreduction_factor[pnid].second;
+	      if (vmaxredepsilon.find(pnid)!=vmaxredepsilon.end())
+		maxredepsilon=vmaxredepsilon[pnid].second;
+	      if (vycut.find(pnid)!=vycut.end()) ycut=vycut[pnid].second;
+	      if (vmaxerror.find(pnid)!=vmaxerror.end())
+		maxerror=vmaxerror[pnid].second;
 
 	      if (nFS>m_maxjet) m_maxjet = nFS;
+	      if (pcinfo->Nout()>m_coremaxjet) m_coremaxjet = pcinfo->Nout();
 	      m_nmax = Max(m_nmax,pcinfo->Nmax(nIS));
 	      flavs              = new Flavour[nIS+nFS];
 	      plavs              = new Pol_Info[nIS+nFS];
@@ -575,6 +612,7 @@ void Amegic::ReadInProcessfile(string file)
 					      plavs,nex,excluded,usepi,ycut,maxerror,enhance_function,enable_mhv);
 		if (proc) {
 		  proc->SetEnhance(enhance_factor,maxreduction_factor,maxredepsilon);
+		  proc->SetFactorizationScale(factorization_scale);
 		  if (print_graphs) proc->SetPrintGraphs();
 		  p_procs->Add(proc);
 		  print_graphs=false;
@@ -607,39 +645,119 @@ void Amegic::ReadInProcessfile(string file)
     }
   }
   p_procs->SetMaxJetNumber(m_maxjet);
+  p_procs->SetCoreMaxJetNumber(m_coremaxjet);
 }
 
-void Amegic::ExtractMPvalues(string& str,vector<double>& dv)
-{
-  Shorten(str);
-  int position;
-  Algebra_Interpreter inter;
-  position = str.find(string("{"));
-  if (position==-1) {
-    dv[0]=ToType<double>(inter.Interprete(str));
-    return;
+namespace AMEGIC {
+
+  template <> double Amegic::ExtractMPvalue(const std::string& str)
+  {
+    Algebra_Interpreter inter;
+    return ToType<double>(inter.Interprete(str));
   }
-  string hstr = str.substr(0,position);
-  Shorten(hstr);  
-  double value = ToType<double>(inter.Interprete(hstr));
-  str = str.substr(position+1,str.length()-position-2);
-  do {
-    position = str.find(string(","));
-    int pos = -1;
-    if (position>-1) {
-      hstr = str.substr(0,position);
-      Shorten(hstr);
-      str = str.substr(position+1);
+
+  template <> std::string Amegic::ExtractMPvalue(const std::string& str)
+  {
+    return str;
+  }
+
+  template <typename Type>
+  void Amegic::AddMPvalue(std::string lstr,std::string rstr,const Type &val,
+			  std::map<std::string,std::pair<int,Type> >& dv,
+			  const int nfs,const int &priority)
+  {
+    if (rstr.length()==0) {
+      if (nfs==0 && 
+	  (dv.find(lstr)==dv.end() || dv[lstr].first>priority)) {
+	msg_Debugging()<<METHOD<<"(): adding '"<<val
+		       <<"' {"<<lstr<<"}("<<priority<<")\n";
+	dv[lstr]=std::pair<int,Type>(priority,val);
+      }
+      return;
     }
-    else hstr=str;
-    MyStrStream strm;      
-    strm<<hstr;
-    strm>>pos;
-    if (pos>0) {
-      if (pos>=(int)dv.size()) dv.resize(pos+1,-1.);
-      dv[pos]=value;
+    size_t pos(rstr.find('-')), ltp(rstr.find('['));
+    if (pos==std::string::npos || ltp<pos-1) {
+      if (ltp!=std::string::npos) {
+	size_t rtp(rstr.find(']',ltp));
+	AddMPvalue(lstr+rstr.substr(0,rtp+1),rstr.substr(rtp+1),val,dv,
+		   nfs-ToType<int>(rstr.substr(ltp+1,rtp-ltp-1)),priority);
+	return;
+      }
+      AddMPvalue(lstr+rstr,"",val,dv,nfs-ToType<int>(rstr),priority);
+      return;
     }
-  } while (position>-1);
+    std::string rlstr(rstr.substr(0,pos)), rrstr(rstr.substr(pos+1));
+    for (int i(0);i<=nfs;++i)
+      AddMPvalue(lstr+rlstr+ToString(i),rrstr,val,dv,nfs-i,priority);
+  }
+
+  template void Amegic::AddMPvalue
+  (std::string lstr,std::string rstr,const double &val,
+   std::map<std::string,std::pair<int,double> >& dv,
+   const int nfs,const int &priority);
+  template void Amegic::AddMPvalue
+  (std::string lstr,std::string rstr,const std::string &val,
+   std::map<std::string,std::pair<int,std::string> >& dv,
+   const int nfs,const int &priority);
+
+  template <typename Type>
+  void Amegic::AddMPvalues(std::map<std::string,std::pair<int,Type> >& dv,
+			   const int nfs)
+  {
+    std::map<std::string,std::pair<int,Type> > cdv(dv);
+    for (typename std::map<std::string,std::pair<int,Type> >::const_iterator 
+	   dit(dv.begin());dit!=dv.end();++dit) { 
+      AddMPvalue<Type>("",dit->first,dit->second.second,
+		       dv,nfs,dit->second.first);
+    }
+  }
+
+  template void Amegic::AddMPvalues
+  (std::map<std::string,std::pair<int,double> >& dv,const int nfs);
+  template void Amegic::AddMPvalues
+  (std::map<std::string,std::pair<int,std::string> >& dv,const int nfs);
+
+  template <typename Type>
+  void Amegic::ExtractMPvalues(string& str,std::map
+			       <std::string,std::pair<int,Type> >& dv,
+			       const int &priority)
+  {
+    Shorten(str);
+    int position;
+    position = str.find(string("{"));
+    if (position==-1) {
+      msg_Debugging()<<METHOD<<"(): adding '"<<str
+		     <<"' {-}("<<priority<<")\n";
+      dv["-"]=std::pair<int,Type>(priority,ExtractMPvalue<Type>(str));
+      return;
+    }
+    string hstr = str.substr(0,position);
+    Shorten(hstr);  
+    Type value = ExtractMPvalue<Type>(hstr);
+    str = str.substr(position+1,str.length()-position-2);
+    do {
+      position = str.find(string(","));
+      if (position>-1) {
+	hstr = str.substr(0,position);
+	Shorten(hstr);
+	str = str.substr(position+1);
+      }
+      else hstr=str;
+      if (hstr.length()>0) {
+	msg_Debugging()<<METHOD<<"(): adding '"<<value
+		       <<"' {"<<hstr<<"}("<<priority<<")\n";
+	dv[hstr]=std::pair<int,Type>(priority,value);
+      }
+    } while (position>-1);
+  }
+
+  template void Amegic::ExtractMPvalues
+  (string& str,std::map<std::string,std::pair<int,double> >& dv,
+   const int &priority);
+  template void Amegic::ExtractMPvalues
+  (string& str,std::map<std::string,std::pair<int,std::string> >& dv,
+   const int &priority);
+
 }
 
 int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf,std::vector<int>* kf,vector<int>* num)

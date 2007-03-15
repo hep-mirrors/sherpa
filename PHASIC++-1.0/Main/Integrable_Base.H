@@ -2,6 +2,7 @@
 #define Integrable_Base_H
 
 #include "Selector.H"
+#include "Jet_Finder_Base.H"
 #include "Cut_Data.H"
 #include "Flavour.H"
 #include "Vector.H"
@@ -10,6 +11,7 @@
 #include "Spin_Correlation_Tensor.H"
 #include "Amplitude_Tensor.H"
 #include "Info_Key.H"
+#include "Algebra_Interpreter.H"
 
 #include <string>
 
@@ -54,6 +56,30 @@ namespace PHASIC {
 
   };// end of struct scl
 
+  struct cls {
+
+    enum scheme {
+      unknown   = 0,
+      sum       = 1,
+      sample    = 2
+    };
+
+  };// end of struct cls
+
+  std::ostream &operator<<(std::ostream &str,const cls::scheme &s);
+
+  struct hls {
+
+    enum scheme {
+      unknown   = 0,
+      sum       = 1,
+      sample    = 2
+    };
+
+  };// end of struct hls
+
+  std::ostream &operator<<(std::ostream &str,const hls::scheme &s);
+
   inline const scl::scheme operator|(const scl::scheme c1,const scl::scheme c2)
   { return (scl::scheme)((int)c1|(int)c2); }
   inline const scl::scheme operator&(const scl::scheme c1,const scl::scheme c2)
@@ -68,6 +94,29 @@ namespace PHASIC {
   inline scl::scheme & operator-=(scl::scheme &c1,const scl::scheme c2)
   { return c1=c1-c2; }
 
+  class Integrable_Base;
+
+  class Tag_Setter: public ATOOLS::Tag_Replacer {
+  private:
+
+    Integrable_Base *p_ib;
+
+    ATOOLS::Algebra_Interpreter *p_calc;
+
+  public:
+    
+    // constructor
+    inline Tag_Setter(Integrable_Base *const ib): p_ib(ib), p_calc(NULL) {}
+    
+    // member functions
+    std::string   ReplaceTags(std::string &expr) const;    
+    ATOOLS::Term *ReplaceTags(ATOOLS::Term *term) const;    
+    
+    // inline functions
+    void SetCalculator(ATOOLS::Algebra_Interpreter *const calc) { p_calc=calc; }
+
+  };// end of class Tag_Setter
+
   class Regulator_Base;
   class Phase_Space_Handler;
 
@@ -75,13 +124,15 @@ namespace PHASIC {
   protected:
 
     std::string m_name, m_resultpath, m_resultfile, m_histofile;
-    size_t      m_nin, m_nout, m_naddin, m_naddout, m_nvector;
+    size_t      m_nin, m_nout, m_naddin, m_naddout, m_nvector, m_corenout;
 
     ATOOLS::Flavour *p_flavours, *p_addflavours;
     ATOOLS::Vec4D   *p_momenta, *p_addmomenta;
 
     scl::scheme m_scalescheme;
-    int         m_kfactorscheme, m_maxjetnumber;
+    cls::scheme m_colorscheme;
+    hls::scheme m_helicityscheme;
+    int         m_kfactorscheme, m_maxjetnumber, m_coremaxjetnumber;
     int         m_nstrong, m_neweak, m_orderQCD, m_orderEW, m_usepi;
     double      m_threshold, m_overflow, m_enhancefac;
     double      m_rfactor, m_ps_kfactor, m_ps_cpl_factor;
@@ -100,7 +151,9 @@ namespace PHASIC {
     double m_totalxs, m_totalsum, m_totalsumsqr, m_totalerr;
     double m_ssum, m_ssumsqr,m_smax,m_ssigma2,m_wmin;
 
-    double m_procweight, m_me_as_factor, m_ycut;
+    double m_procweight, m_me_as_factor, m_ycut, m_cycut;
+
+    std::string m_cuttag;
 
     std::vector<double> m_vsmax;
     std::vector<long unsigned int> m_vsn;
@@ -120,13 +173,17 @@ namespace PHASIC {
     ATOOLS::Cut_Data            *p_cuts;
     ATOOLS::Histogram           *p_whisto;
 
-    ATOOLS::Selector_Base       *p_jf;
+    ATOOLS::Jet_Finder_Base *p_jf;
 
     bool m_ownselector;
 
-    std::string m_efunc;
+    std::string m_efunc, m_muf2tag;
 
     ATOOLS::Info_Key m_kfkey;
+
+    ATOOLS::Algebra_Interpreter *p_muf2calc;
+
+    Tag_Setter m_muf2tagset;
 
   public:
 
@@ -142,7 +199,9 @@ namespace PHASIC {
 		    const int kfactorscheme=0,
 		    BEAM::Beam_Spectra_Handler *const beamhandler=NULL,
 		    PDF::ISR_Handler *const isrhandler=NULL,
-		    ATOOLS::Selector_Data *const selectordata=NULL);
+		    ATOOLS::Selector_Data *const selectordata=NULL,
+		    const cls::scheme &clsc=cls::sum,
+		    const hls::scheme &hlsc=hls::sum);
   
     // destructor
     virtual ~Integrable_Base();
@@ -210,11 +269,20 @@ namespace PHASIC {
     void CreateMomenta(const size_t n);
 
     static std::map<std::string,std::string> ScaleTags();
+    static std::map<std::string,std::string> ColorSchemeTags();
+    static std::map<std::string,std::string> HelicitySchemeTags();
 
     void SetScaleScheme(const scl::scheme s);
 
+    virtual void SetFactorizationScale(const std::string &muf2);
+
+    void SetFactorizationScale();
+
     // inline functions
     inline void SetName(const std::string &name) { m_name=name; }
+
+    inline void SetColorScheme(const cls::scheme &s)    { m_colorscheme=s;    }
+    inline void SetHelicityScheme(const hls::scheme &s) { m_helicityscheme=s; }
 
     inline void SetKFactorScheme(const int k) { m_kfactorscheme=k; }
     inline void SetUsePI(const int usepi)     { m_usepi=usepi;     }
@@ -285,8 +353,13 @@ namespace PHASIC {
     inline double ISRThreshold() const      { return m_threshold;   }
     inline double EnhanceFactor() const     { return m_enhancefac;  }
 
+    inline cls::scheme ColorScheme() const    { return m_colorscheme;    }
+    inline hls::scheme HelicityScheme() const { return m_helicityscheme; }
+
     inline int         KFactorScheme() const { return m_kfactorscheme; }
     inline scl::scheme ScaleScheme()  const  { return m_scalescheme;   }
+
+    inline std::string FactorizationScale() const { return m_muf2tag; }
 
     inline int NStrong() const { return m_nstrong; }
     inline int NEWeak() const  { return m_neweak;  }
@@ -318,6 +391,8 @@ namespace PHASIC {
 
     inline double GMin() const { return m_gmin; }
     inline double Ycut() const { return m_ycut; }
+
+    inline std::string YcutTag() const { return m_cuttag; }
 
   };// end of class Integrable_Base
 

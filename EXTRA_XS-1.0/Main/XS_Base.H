@@ -80,6 +80,9 @@ namespace EXTRAXS {
 				    const bool create) = 0;
     virtual void WriteOutXSecs(std::ofstream &outfile) = 0;
 
+    virtual bool SetPDFFlavours() = 0;
+    virtual bool Tests() = 0;
+    
     // inline functions
     inline int **const Colours() const { return p_colours; }
 

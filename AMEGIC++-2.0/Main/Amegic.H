@@ -24,7 +24,7 @@ namespace AMEGIC {
     std::string                  m_path,m_file;
     std::string                  m_respath,m_resfile;
 
-    int m_nmax,m_count,m_minqcdjet,m_maxqcdjet,m_maxjet;
+    int m_nmax,m_count,m_minqcdjet,m_maxqcdjet,m_maxjet,m_coremaxjet;
 
     All_Processes              * p_procs;
     All_Decays                 * p_decs;
@@ -40,7 +40,18 @@ namespace AMEGIC {
 
     void InitializeInteractionModel(MODEL::Model_Base *);
     void ReadInProcessfile(std::string); 
-    void ExtractMPvalues(std::string& str,std::vector<double>& dv);
+    template <typename Type> Type ExtractMPvalue(const std::string& str);
+    template <typename Type>
+    void AddMPvalue(std::string lstr,std::string rstr,const Type &val,
+		    std::map<std::string,std::pair<int,Type> >& dv,
+		    const int nfs,const int &priority);
+    template <typename Type>
+    void AddMPvalues(std::map<std::string,std::pair<int,Type> >& dv,
+		     const int nfs);
+    template <typename Type>
+    void ExtractMPvalues(std::string& str,std::map
+			 <std::string,std::pair<int,Type> >& dv,
+			 const int &priority);
     int  ExtractFlavours(ATOOLS::Flavour *&,Pol_Info *&,std::string,std::vector<int>* fl=0,std::vector<int>* num=0);
     void Shorten(std::string&);
   public :
@@ -72,6 +83,7 @@ namespace AMEGIC {
     int               MinQCDJets()       { return m_minqcdjet; }
     int               MaxQCDJets()       { return m_maxqcdjet; }
     int               MaxJets()          { return m_maxjet; }
+    int               CoreMaxJets()      { return m_coremaxjet; }
 
 
     void SingleEvents();

@@ -4,8 +4,6 @@
 
 #include "Run_Parameter.H"
 #include "Combined_Selector.H"
-#include "Jet_Finder.H"
-#include "Dipole_Jet_Finder.H"
 #include "Standard_Selector.H"
 #include "Phase_Space_Handler.H"
 #include "Regulator_Base.H"
@@ -16,6 +14,15 @@
 using namespace PHASIC;
 using namespace MODEL;
 using namespace ATOOLS;
+
+struct TDouble: public Term {
+  double m_value;
+};// end of struct Double
+
+struct TVec4D: public Term {
+  Vec4D m_value;
+  TVec4D(const Vec4D &value): m_value(value) {}
+};// end of struct Vec4D
 
 #define CA 3.0
 #define TR 0.5
@@ -29,15 +36,38 @@ public:
   }
 };
 
+std::ostream &PHASIC::operator<<(std::ostream &str,const cls::scheme &s)
+{
+  switch (s) {
+  case cls::unknown: return str<<"<unknown>";
+  case cls::sum: return str<<"sum";
+  case cls::sample: return str<<"sample";
+  }
+  return str<<"<error>";
+}
+
+std::ostream &PHASIC::operator<<(std::ostream &str,const hls::scheme &s)
+{
+  switch (s) {
+  case hls::unknown: return str<<"<unknown>";
+  case hls::sum: return str<<"sum";
+  case hls::sample: return str<<"sample";
+  }
+  return str<<"<error>";
+}
+
 Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,
 				 const scl::scheme scalescheme,const int kfactorscheme,
 				 BEAM::Beam_Spectra_Handler *const beamhandler,
 				 PDF::ISR_Handler *const isrhandler,
-				 Selector_Data *const selectordata):
+				 Selector_Data *const selectordata,
+				 const cls::scheme &clsc,const hls::scheme &hlsc):
   m_name(""), m_nin(nin), m_nout(nout), m_naddin(0), m_naddout(0), 
-  m_nvector(ATOOLS::Max(nin+nout,(size_t)1)), p_flavours(NULL), p_addflavours(NULL), 
+  m_nvector(ATOOLS::Max(nin+nout,(size_t)1)), m_corenout(nout),
+  p_flavours(NULL), p_addflavours(NULL), 
   p_momenta(new Vec4D[ATOOLS::Max(nin+nout,(size_t)1)]), p_addmomenta(NULL), 
-  m_scalescheme(scalescheme), m_kfactorscheme(kfactorscheme), 
+  m_scalescheme(scalescheme), m_colorscheme(clsc), m_helicityscheme(hlsc), m_kfactorscheme(kfactorscheme), 
+  m_maxjetnumber(99), m_coremaxjetnumber(99),
   m_nstrong(0), m_neweak(0), m_orderQCD(-1), m_orderEW(-1), m_usepi(0),
   m_threshold(0.), m_overflow(0.), m_enhancefac(1.0), m_rfactor(1.0), m_xinfo(std::vector<double>(4)),
   m_n(0), m_expevents(1), m_dicedevents(0), m_accevents(0), m_last(0.), m_lastlumi(0.), m_lastdxs(0.), 
@@ -48,10 +78,10 @@ Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,
   p_regulator(Regulator_Base::GetRegulator(this,"Identity",std::vector<double>())),
   p_beamhandler(beamhandler), p_isrhandler(isrhandler), 
   p_pshandler(NULL), p_activepshandler(NULL), p_selector(NULL), 
-  p_cuts(NULL), p_whisto(NULL), p_jf(NULL), m_ownselector(true), m_efunc("1") 
+  p_cuts(NULL), p_whisto(NULL), p_jf(NULL), m_ownselector(true), m_efunc("1"), m_muf2tag(""),
+  p_muf2calc(NULL), m_muf2tagset(this)
 {
   m_gmin=-1.0;
-  SetScaleScheme(m_scalescheme);
   int kfs(ToType<int>(rpa.gen.Variable("S_KFACTOR_SCHEME","1"))&2);        
   double fssf(ToType<double>(rpa.gen.Variable("FS_CPL_SCALE_FACTOR","1.0")));
   double issf(ToType<double>(rpa.gen.Variable("IS_CPL_SCALE_FACTOR","1.0")));
@@ -61,6 +91,7 @@ Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,
 
 Integrable_Base::~Integrable_Base()
 {
+  if (p_muf2calc!=NULL) delete p_muf2calc;
   if (p_selector!=NULL && m_ownselector) delete p_selector;
   if (p_flavours!=NULL) delete [] p_flavours;
   if (p_momenta!=NULL) delete [] p_momenta;
@@ -359,26 +390,16 @@ double Integrable_Base::CalculateScale(const Vec4D *momenta)
   if (m_nin!=2) THROW(fatal_error,"Too many incoming particles.");
   if (scheme==scl::ckkw) {
     double S(sqr(rpa.gen.Ecms()));
-    m_scale[stp::fac]=rpa.gen.Ycut()*S;
-    m_scale[stp::ren]=sqr(rpa.gen.DeltaR())*m_ycut*S;
-    if (p_jf==NULL && p_selector->Name()=="Combined_Selector") {
-      p_jf= ((Combined_Selector*)p_selector)->GetSelector("Jetfinder");
-      if (p_jf!=NULL) m_me_as_factor=((Jet_Finder*)p_jf)->Type()>1?1.0:0.25;
-      else {
-	p_jf= ((Combined_Selector*)p_selector)->GetSelector("Dipole_Jetfinder");
-	//if (p_jf!=NULL) m_me_as_factor=((JetFinder*)p_jf)->Type()>1?1.0:0.25;
-      }
-      if (p_jf==NULL) {
-	THROW(critical_error,"'SCALE_SCHEME = CKKW' implies JetFinder <ycut> <deltar>' or DipoleJetFinder <ycut>) in 'Selector.dat'");
-      }
-    }
+    m_scale[stp::ren]=m_ycut*S;
+    m_scale[stp::fac]=m_cycut*S/sqr(p_jf->DeltaR());
     double pt2(p_jf->ActualValue()*S);
-    if ((int)m_nout==m_maxjetnumber) 
+    if ((int)m_corenout==m_coremaxjetnumber) 
       // highest multiplicity treatment
       if (m_nstrong>2) m_scale[stp::fac]=pt2;
     else 
       // two scale treatment
       m_scale[stp::fac]=Min(m_scale[stp::fac],pt2);
+    SetFactorizationScale();
     m_kfkey[0]=m_scale[stp::ren]*=rpa.gen.RenormalizationScaleFactor();
     m_kfkey[1]=m_scale[stp::fac]*=rpa.gen.FactorizationScaleFactor();
     return m_scale[stp::fac]*m_ps_cpl_factor;
@@ -464,9 +485,8 @@ double Integrable_Base::CalculateScale(const Vec4D *momenta)
     double xi=(p[0]+p[1]).PMinus()/(p[0]+p[1]).PPlus();
     m_scale[PHASIC::stp::kp21]=x1*x1*2.0*S2*xi;
     m_scale[PHASIC::stp::kp22]=x2*x2*2.0*S2/xi;
-    // ew scale a la watt
-    double sc=(p[0]+p[1]).PPerp2();
-    pt2=m_scale[PHASIC::stp::ren]=pow(sc,2./3.)*pow(M2,1./3.);
+    pt2=m_scale[PHASIC::stp::ren]=
+      sqrt(m_scale[PHASIC::stp::kp21]*m_scale[PHASIC::stp::kp22]);
     scheme-=scl::updf;
   }
   else if (scheme & scl::bfkl) {
@@ -492,6 +512,7 @@ double Integrable_Base::CalculateScale(const Vec4D *momenta)
   }
   if (pt2<0. || scheme!=scl::unknown) 
     THROW(fatal_error,"Unknown scale scheme: "+ToString(m_scalescheme));
+  SetFactorizationScale();
   m_kfkey[0]=m_scale[stp::ren]=rpa.gen.RenormalizationScaleFactor()*pt2;
   m_kfkey[1]=m_scale[stp::fac]=rpa.gen.FactorizationScaleFactor()*pt2;
   if (Selected()==NULL) return m_scale[stp::fac]*m_ps_cpl_factor;
@@ -560,7 +581,7 @@ double Integrable_Base::KFactor()
 		   <<m_orderQCD<<") {\n"
 		   <<"  \\mu_1   = "<<sqrt(m_scale[stp::kp21])<<"\n"
 		   <<"  \\mu_2   = "<<sqrt(m_scale[stp::kp22])<<"\n"
-		   <<"\n} -> K = "<<m_kfkey.Weight()<<"\n";
+		   <<"} -> K = "<<m_kfkey.Weight()<<"\n";
     return m_kfkey.Weight();
   }
   if (m_kfactorscheme==1) {
@@ -696,14 +717,100 @@ std::map<std::string,std::string> Integrable_Base::ScaleTags()
   return tags;
 }
  
+std::map<std::string,std::string> Integrable_Base::ColorSchemeTags()
+{
+  std::map<std::string,std::string> tags;
+  tags["UNKNOWN"]=ToString((int)cls::unknown);
+  tags["SUM"]=ToString((int)cls::sum);
+  tags["SAMPLE"]=ToString((int)cls::sample);
+  return tags;
+}
+ 
+std::map<std::string,std::string> Integrable_Base::HelicitySchemeTags()
+{
+  std::map<std::string,std::string> tags;
+  tags["UNKNOWN"]=ToString((int)cls::unknown);
+  tags["SUM"]=ToString((int)cls::sum);
+  tags["SAMPLE"]=ToString((int)cls::sample);
+  return tags;
+}
+ 
 void Integrable_Base::SetScaleScheme(const scl::scheme s)
 { 
   m_scalescheme=s;   
-  if ((m_scalescheme&scl::ckkw) && m_ycut<=0.0) {
-    m_ycut=rpa.gen.Ycut();
-    m_scale[stp::fac]=m_ycut*sqr(rpa.gen.Ecms())*
-      rpa.gen.FactorizationScaleFactor();
-    m_scale[stp::ren]=m_ycut*sqr(rpa.gen.DeltaR()*rpa.gen.Ecms())*
+  if ((m_scalescheme&scl::ckkw) && m_ycut<=0.0 && p_selector!=NULL) {
+    if (p_jf==NULL) {
+      if (p_selector->Name()!="Combined_Selector")
+	THROW(critical_error,"'SCALE_SCHEME = CKKW' implies JetFinder <ycut> <deltar>' in 'Selector.dat'.");
+      p_jf=(Jet_Finder_Base *)
+	((Combined_Selector*)p_selector)->GetSelector("Jetfinder");
+      if (p_jf==NULL) {
+	p_jf=(Jet_Finder_Base *)
+	  ((Combined_Selector*)p_selector)->GetSelector("Dipole_Jetfinder");
+	if (p_jf==NULL) 
+	  THROW(critical_error,"'SCALE_SCHEME = CKKW' implies JetFinder <ycut> <deltar>' in 'Selector.dat'.");
+      }
+      m_me_as_factor=p_jf->Type()>1?1.0:0.25;
+      p_jf->FillCombinations();
+    }
+    m_ycut=p_jf->Ycut();
+    m_cycut=p_jf->CoreYcut();
+    m_scale[stp::ren]=m_ycut*sqr(rpa.gen.Ecms())*
       rpa.gen.RenormalizationScaleFactor();
+    m_scale[stp::fac]=m_cycut*sqr(rpa.gen.Ecms()/p_jf->DeltaR())*
+      rpa.gen.FactorizationScaleFactor();
   }
+}
+
+void Integrable_Base::SetFactorizationScale(const std::string &muf2)
+{ 
+  m_muf2tag=muf2;   
+  if (m_muf2tag=="") return;
+  msg_Debugging()<<METHOD<<"(): Set scale '"<<muf2<<"' in '"<<Name()<<"' {\n";
+  msg_Indent();
+  if (p_muf2calc==NULL) {
+    p_muf2calc = new Algebra_Interpreter();
+    p_muf2calc->SetTagReplacer(&m_muf2tagset);
+    m_muf2tagset.SetCalculator(p_muf2calc);
+  }
+  p_muf2calc->AddTag("MU_F","1.0");
+  p_muf2calc->AddTag("MU_R","1.0");
+  p_muf2calc->AddTag("H_T","1.0");
+  for (size_t i=0;i<NIn()+NOut();++i) 
+    p_muf2calc->AddTag("p["+ToString(i)+"]",ToString(p_momenta[i]));
+  p_muf2calc->Interprete(m_muf2tag);
+  msg_Debugging()<<"}\n";
+}
+
+void Integrable_Base::SetFactorizationScale()
+{ 
+  if (m_muf2tag!="")
+    m_scale[stp::fac]=((TDouble*)p_muf2calc->Calculate())->m_value;
+  // msg_Debugging()<<METHOD<<"(): Set \\mu_f = "<<sqrt(m_scale[stp::ren])<<"\n";
+}
+
+std::string Tag_Setter::ReplaceTags(std::string &expr) const
+{
+  return p_calc->ReplaceTags(expr);
+}
+
+Term *Tag_Setter::ReplaceTags(Term *term) const
+{
+  if (term->m_tag=="MU_F") {
+    ((TDouble*)term)->m_value=p_ib->Scale(stp::fac);
+    return term;
+  }
+  if (term->m_tag=="MU_R") {
+    ((TDouble*)term)->m_value=p_ib->Scale(stp::ren);
+    return term;
+  }
+  if (term->m_tag=="H_T") {
+    double ht(0.0);
+    for (size_t i(0);i<p_ib->NOut();++i) ht+=p_ib->Momenta()[i+p_ib->NIn()].PPerp();
+    ((TDouble*)term)->m_value=sqr(ht);
+    return term;
+  }
+  int i=ATOOLS::ToType<int>(term->m_tag.substr(2,term->m_tag.length()-3));
+  ((TVec4D*)term)->m_value=p_ib->Momenta()[i];
+  return term;
 }

@@ -7,6 +7,7 @@
 #include "Run_Parameter.H"
 #include "Regulator_Base.H"
 #include "Message.H"
+#include "MyStrStream.H"
 
 #include <stdio.h>
 
@@ -75,31 +76,13 @@ void XS_Base::Init(const ATOOLS::Flavour *flavours)
 std::string XS_Base::GenerateName(const size_t nin,const size_t nout,
 				  const ATOOLS::Flavour *flavours) 
 {
-  char help[20];
-  std::string name;
-  sprintf(help,"%i",nin);
-  name=std::string(help);
-  name+=std::string("_");
-  sprintf(help,"%i",nout);
-  name+=std::string(help);
-  name+=std::string("__");
-  for (size_t i=0;i<nin+nout;) {
-    name+=std::string(flavours[i].Name());
-    if (flavours[i].IsAnti()) {
-      if (flavours[i].Kfcode()==ATOOLS::kf::e ||
-	  flavours[i].Kfcode()==ATOOLS::kf::mu ||
-	  flavours[i].Kfcode()==ATOOLS::kf::tau ||
-	  flavours[i].Kfcode()==ATOOLS::kf::Hmin) {
-	name.replace(name.length()-1,1,"+");
-      }
-      else {
-	name+=std::string("b"); 
-      }
-    }
-    name+=std::string("_");
-    if (++i==nin) name+=std::string("_");
-  }
-  return name.substr(0,name.length()-1);
+  std::string name(ATOOLS::ToString(nin)+"_"+ATOOLS::ToString(nout));
+  for (size_t i(0);i<nin;++i)
+    name+="_"+std::string(flavours[i].IDName());
+  name+="_";
+  for (size_t i(nin);i<nin+nout;++i)
+    name+="_"+std::string(flavours[i].IDName());
+  return name;
 }
 
 double XS_Base::Differential(const ATOOLS::Vec4D *momenta) 
@@ -226,6 +209,7 @@ void XS_Base::AssignRegulator(const std::string &regulator,
 
 void XS_Base::Print()
 {
-  ATOOLS::msg.Out()<<m_name<<" ("<<m_orderEW<<","<<m_orderQCD
+  ATOOLS::msg.Out()<<m_name<<" {"<<m_colorscheme<<","<<m_helicityscheme
+		   <<"} ("<<m_orderEW<<","<<m_orderQCD
 		   <<")  ->  "<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb\n";
 }

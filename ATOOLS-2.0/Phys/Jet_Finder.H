@@ -2,25 +2,26 @@
 #define Jet_Finder_h
 
 #include "Particle_List.H"
-#include "Selector.H"
+#include "Jet_Finder_Base.H"
 #include "Poincare.H"
+#include "Node.H"
 
 namespace ATOOLS {
-  class Jet_Finder : public Selector_Base {
-    double m_ycut,m_delta_r;
-    int    m_type;
+  
+  class Jet_Finder : public Jet_Finder_Base {
     bool   m_pt_def;
-    double m_ene, m_s, m_sprime; //, m_smin, m_smax;
+    double m_ene, m_s, m_sprime;
 
-    double m_shower_pt2,m_value;
+    double m_value;
 
     std::vector<Vec4D>   m_moms;
     std::vector<Flavour> m_flavs;
 
-    std::vector<std::vector<int> > m_combs, m_mcomb;
+    std::vector<std::vector<double> >  m_ycuts, m_gycuts;
+    std::vector<std::vector<int> >     m_mcomb;
 
     std::vector<std::vector<std::pair<size_t,size_t> > > m_fills;
-    
+
     /*
       The vectors related to the frame
     */
@@ -30,8 +31,8 @@ namespace ATOOLS {
 
     Flavour GetFlavour(std::string fl);
 
-    size_t FillCombinations(const std::string &name,size_t &cp,const int fl);
-    void   FillCombinations();
+    size_t FillCombinations(const std::string &name,const std::string &ycut,
+			    const std::string &gycut,size_t &cp,const int fl);
 
     void PrepareMomList();
 
@@ -55,12 +56,14 @@ namespace ATOOLS {
     double Coshyp(double);
     bool   ConstructJets(Particle_List *, double, int, bool );
   public:
-    Jet_Finder(const double,const int=1,const bool=true);
-    Jet_Finder(const int,Flavour *,const double,const int,const bool=true);
+    Jet_Finder(const std::string &,const int=1,const bool=true);
+    Jet_Finder(const int,Flavour *,const std::string &,
+	       const int,const bool=true);
 
     ~Jet_Finder();
 
     void   Init(const Vec4D *);
+    void   FillCombinations();
     bool   ConstructJets(const Particle_List *,
 			 const std::vector<int> &,std::vector<double> & ,bool);
     bool   ConstructJets(Particle_List *, double, bool );
@@ -69,9 +72,6 @@ namespace ATOOLS {
 
     bool   Trigger(const Vec4D *);
 
-    bool   TwoJets(const Vec4D &,const bool=false);
-    bool   TwoJets(const Vec4D &, const Vec4D &,const bool=false);
-    bool   TwoJets(double &,double &,double &,bool);
     double MTij2(Vec4D,Vec4D);
     void   BuildCuts(Cut_Data *);
     void   UpdateCuts(double,double,Cut_Data *);
@@ -83,12 +83,22 @@ namespace ATOOLS {
 
     int      IsConditional()                const { return m_type==1; }
     int      NeedUpdate()                   const { return m_type==1; }
-    double   ShowerPt2()                    const { return m_shower_pt2; }
     double   Smin()                         const { return m_smin; }
     double   Smax()                         const { return m_smax; }
     double   DeltaR()                       const { return m_delta_r; }
     double   Ycut()                         const { return m_ycut; }
-    void     SetShowerPt2(const double pt2)       { m_shower_pt2=pt2; }
+    double   Ycut(const size_t &i,const size_t &j) const 
+    { return m_ycuts[i][j]; }
+    double   ScaledYcut(const size_t &i,const size_t &j) const 
+    { return i<3||j<3?m_ycuts[i][j]:m_ycuts[i][j]/sqr(m_delta_r); }
+    double   GlobalYcut()                   const { return m_gycut; }
+    double   GlobalYcut(const size_t &i,const size_t &j) const 
+    { return m_gycuts[i][j]; }
+    double   CoreYcut()                     const { return m_cycut; }
+    double   GlobalCoreYcut()               const { return m_gcycut; }
+    double   ScaledGlobalYcut(const size_t &i,const size_t &j) const 
+    { return i<3||j<3?m_gycuts[i][j]:m_gycuts[i][j]/sqr(m_delta_r); }
+    void     SetYcut(const std::string &ycut) { m_cuttag=ycut; }
     void     SetDeltaR(double dr);
   };
 

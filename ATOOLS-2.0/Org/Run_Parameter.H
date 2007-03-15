@@ -46,7 +46,7 @@ namespace ATOOLS {
       double              m_wana_scale;
       long int            m_seed;
       long int            m_seed2; 
-      double              m_ecms, m_ycut, m_delta_r;
+      double              m_ecms;
       double              m_accu;
       Flavour  m_beam1, m_beam2, p_bunch[2];
       std::string         m_rpa_id, m_flavour_id;
@@ -74,10 +74,6 @@ namespace ATOOLS {
       void   SetEcms(double _ecms);
       inline Vec4D PBeam(short unsigned int i)            { return m_pbeam[i]; }
       void   SetPBeam(short unsigned int i,Vec4D pbeam);
-      inline double Ycut()                                { return m_ycut; }
-      inline void   SetYcut(double _ycut)                 { m_ycut    = _ycut;}
-      inline double DeltaR()                              { return m_delta_r; }
-      inline void   SetDeltaR(double dr)                  { m_delta_r   = dr;}
       inline bool   SpinCorrelation()                     { return m_spincorrelations; }
       inline void   SetSpinCorrelation(bool sc)           { m_spincorrelations   = sc;}
       inline const  Flavour Beam1()           { return m_beam1; }

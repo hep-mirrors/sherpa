@@ -71,6 +71,20 @@ int Process_Info::Nout()
   return m_sublist[0].size();
 }
 
+std::string Process_Info::PNID() const
+{
+  size_t pn(0);
+  std::string id;
+  for (size_t i=0;i<m_sublist[0].size();i++) 
+    if (m_sublist[0][i]->Nout()>0) {
+      if (pn>0) id+=ToString(pn);
+      id+="["+m_sublist[0][i]->PNID()+"]";
+      pn=0;
+    }
+    else ++pn;
+  return id+ToString(pn);
+}
+
 int Process_Info::TotalNout()
 {
   if (m_sublist[0].size()==0) return 1;
@@ -160,6 +174,7 @@ Process_Info* Process_Info::GetSubProcess(int n)
 Process_Info* Process_Info::GetSubProcess(int n, int& dn)
 {
   Process_Info* pi = new Process_Info(p_fl,p_pl);
+  pi->m_maxqcdjets=m_maxqcdjets;
   if (m_sublist[0].size()==0) return pi;
 
   int cn=n/dn;

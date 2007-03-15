@@ -18,7 +18,7 @@ namespace SHERPA {
  
     ATOOLS::Poincare       m_cms_boost;
 
-    double m_iss_scale_fac, m_fss_scale_fac, m_q2_cut;
+    double m_iss_scale_fac, m_fss_scale_fac;
 
     int m_showermode;
 
@@ -41,8 +41,6 @@ namespace SHERPA {
     inline void   SetCMSBoost(const ATOOLS::Vec4D &cms) 
     { m_cms_boost=ATOOLS::Poincare(cms); }
     inline ATOOLS::Poincare &CMSBoost() { return m_cms_boost; }
-    inline void SetQ2Cut(const double &q2) { m_q2_cut=q2; }
-    inline double Q2Cut() const { return m_q2_cut; }
   };
 }
 

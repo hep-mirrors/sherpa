@@ -712,7 +712,7 @@ void Initialization_Handler::SetParameter(int nr) {
     // make sure UpdateParameters() is called
   }   
   else if (m_scan_variable==string("YCUT")) {
-    rpa.gen.SetYcut(value);
+    rpa.gen.SetVariable("Y_CUT",ToString(value));
   }
   else  {
     msg.Out()<<" Unknown Variable "<< m_scan_variable<<" in scan modus "<<endl;

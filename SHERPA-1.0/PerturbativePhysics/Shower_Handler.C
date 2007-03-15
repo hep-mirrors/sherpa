@@ -3,6 +3,7 @@
 #include "ISR_Handler.H"
 #include "Message.H"
 #include "Data_Read.H"
+#include "MyStrStream.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -33,12 +34,11 @@ Shower_Handler::Shower_Handler(std::string dir,std::string file,
   else if ((!rpa.gen.Beam1().IsLepton() && !rpa.gen.Beam2().IsLepton())) type = 4;
   else type = 4;
 
-  p_jf = new Jet_Finder(rpa.gen.Ycut(),type,false);
-  p_jf->SetDeltaR(rpa.gen.DeltaR());
+  p_jf = new Jet_Finder(rpa.gen.Variable("Y_CUT"),type,false);
+  p_jf->SetDeltaR(ToType<double>(rpa.gen.Variable("DELTA_R")));
 
   if (m_showergenerator==std::string("Apacic")) {
     p_apacic = new APACIC::Apacic(_isr,_model,p_jf,&dataread);
-    if (p_apacic->FinShower()) p_apacic->SetMaxJetNumber(m_maxjetnumber);
   }
   else {
     msg.Error()<<"Error in Shower_Handler::ReadInFile()."<<std::endl
@@ -57,13 +57,13 @@ Shower_Handler::~Shower_Handler()
 }
 
 
-int Shower_Handler::PerformShowers(int jetveto,int losejv,double _x1,double _x2,double ycut) {
-  if (p_apacic) return p_apacic->PerformShowers(jetveto,losejv,_x1,_x2, ycut);
+int Shower_Handler::PerformShowers(int jetveto,int losejv,double _x1,double _x2) {
+  if (p_apacic) return p_apacic->PerformShowers(jetveto,losejv,_x1,_x2);
   return 0;
 }
 
 int Shower_Handler::PerformDecayShowers(bool jetveto) {
-  if (p_apacic) return p_apacic->PerformShowers(jetveto,1,1.,1.,rpa.gen.Ycut());
+  if (p_apacic) return p_apacic->PerformShowers(jetveto,1,1.,1.);
   return 0;
 }
 

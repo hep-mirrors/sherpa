@@ -31,10 +31,15 @@ namespace EXTRAXS {
     void InitializeProcess(ATOOLS::Flavour *flavs,std::string &efunc,
 			   double &inisum,double &finsum,
 			   size_t order_ew,size_t order_strong,
-			   size_t nin,size_t nout,size_t i);
+			   size_t nin,size_t nout,size_t i,
+			   const PHASIC::cls::scheme &clsc,
+			   const PHASIC::hls::scheme &hlsc);
 
     XS_Group *FindGroup(const size_t nin,const size_t nout,
-			const ATOOLS::Flavour *flavours);
+			const ATOOLS::Flavour *flavours,
+			const PHASIC::cls::scheme &clsc,
+			const PHASIC::hls::scheme &hlsc);
+
   public :
 
     // constructor
@@ -77,7 +82,9 @@ namespace EXTRAXS {
 
     XS_Group *FindPDFGroup(const size_t nin,const size_t nout,
 			   const ATOOLS::Flavour *flavours,
-			   XS_Group *const container);
+			   XS_Group *const container,
+			   const PHASIC::cls::scheme &clsc=PHASIC::cls::sum,
+			   const PHASIC::hls::scheme &hlsc=PHASIC::hls::sum);
     
   }; // end of class Simple_XS
 

@@ -69,7 +69,7 @@ namespace AMEGIC {
 		 int gen_str, int orderQCD, int orderEW,
 		 PHASIC::scl::scheme scalescheme,int kfactorscheme,double scale,
 		 Pol_Info * pl = 0,
-		 int nex = 0,ATOOLS::Flavour * ex_fl = 0,double ycut=-1., double error=-1.);
+		 int nex = 0,ATOOLS::Flavour * ex_fl = 0,std::string cuttag="-1.", double error=-1.);
     
     virtual ~Process_Base();
 
@@ -117,6 +117,7 @@ namespace AMEGIC {
     virtual void             SetTotal(int flag, int depth=0)                       =0;
     virtual void             SetMax(const double max, int depth=0);
     virtual void             SetMaxJetNumber(int);
+    virtual void             SetCoreMaxJetNumber(int);
     virtual void             SetWEventMode(int mode);
 
     void SetNStrong(int);

@@ -43,10 +43,10 @@ Process_Group::Process_Group(Process_Info* pinfo,int _nin,int _nout,Flavour *& _
 			     PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			     int _gen_str,int _orderQCD, int _orderEW,
 			     int _kfactorscheme,PHASIC::scl::scheme _scalescheme,double _scale,
-			     Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi,double ycut, double error,
+			     Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi,std::string cuttag, double error,
 			     std::string e_func, int enable_mhv) :
   Process_Base(pinfo,_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
-	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,ycut,error),
+	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,cuttag,error),
   m_resetted(false), m_weventmode(0), m_enable_mhv(enable_mhv)
 {
   p_selected  = NULL;
@@ -75,7 +75,7 @@ Process_Group::Process_Group(Process_Info* pinfo,int _nin,int _nout,Flavour *& _
 
   m_usepi = usepi;
 
-  if (_seldata) p_selector = new Combined_Selector(m_nin,m_nout,p_flavours,_seldata,ycut);
+  if (_seldata) p_selector = new Combined_Selector(m_nin,m_nout,p_flavours,_seldata,m_cuttag);
   else {
     if (m_nout>2) 
       msg.Out()<<"WARNING in Process_Group "<<m_name<<endl
@@ -181,10 +181,10 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
 	if (take) {
 	  if ((m_enable_mhv==1||m_enable_mhv==4) && CF.MHVCalculable(m_nin,_fl,m_nout,&_fl[m_nin]))
 	    Add(new Single_Process_MHV2(pi,m_nin,m_nout,_fl,p_isrhandler,p_beamhandler,_seldata,m_gen_str,m_orderQCD,m_orderEW,
-					m_kfactorscheme,m_scalescheme,m_scale[stp::ren],_pl,m_nex,p_ex_fl,m_usepi,m_ycut,m_maxerror,m_efunc));
+					m_kfactorscheme,m_scalescheme,m_scale[stp::ren],_pl,m_nex,p_ex_fl,m_usepi,m_cuttag,m_maxerror,m_efunc));
 	  else if (m_enable_mhv!=4)
 	    Add(new Single_Process(pi,m_nin,m_nout,_fl,p_isrhandler,p_beamhandler,_seldata,m_gen_str,m_orderQCD,m_orderEW,
-				   m_kfactorscheme,m_scalescheme,m_scale[stp::ren],_pl,m_nex,p_ex_fl,m_usepi,m_ycut,m_maxerror,m_efunc));
+				   m_kfactorscheme,m_scalescheme,m_scale[stp::ren],_pl,m_nex,p_ex_fl,m_usepi,m_cuttag,m_maxerror,m_efunc));
 	}
       }
     }
@@ -705,6 +705,13 @@ void Process_Group::SetMaxJetNumber(int max) {
     m_procs[i]->SetMaxJetNumber(max);
   }  
   m_maxjetnumber = max;
+}
+
+void Process_Group::SetCoreMaxJetNumber(int max) {
+  for (size_t i=0;i<m_procs.size();i++) {
+    m_procs[i]->SetCoreMaxJetNumber(max);
+  }  
+  m_coremaxjetnumber = max;
 }
 
 void Process_Group::SetAtoms(bool _atoms) { m_atoms = _atoms; }
@@ -1351,4 +1358,10 @@ void Process_Group::SetWEventMode(int mode)
 { 
   for (size_t i=0;i<m_procs.size();++i) m_procs[i]->SetWEventMode(mode);
   m_weventmode=mode; 
+}
+
+void Process_Group::SetFactorizationScale(const std::string &muf2)
+{
+  Integrable_Base::SetFactorizationScale(muf2);
+  for (size_t i=0;i<m_procs.size();++i) m_procs[i]->SetFactorizationScale(muf2);
 }

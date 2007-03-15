@@ -2,6 +2,8 @@
 
 #include "Exception.H"
 #include "My_Limits.H"
+#include "Jet_Finder.H"
+#include "Blob.H"
 #include <iomanip>
 
 #define MAXD std::numeric_limits<double>::max()
@@ -11,6 +13,42 @@ using namespace AMEGIC;
 using namespace ATOOLS;
 
 int Combine_Table_Base::s_all(0);
+
+Leg::Leg(AMEGIC::Point *const point,const int anti):  
+  p_point(point), m_anti(anti), 
+  m_nqcd(0), m_nqed(0), m_pqcd(0), m_pqed(0), m_ext(0), 
+  m_qcdjets(point!=NULL?point->fl.Strong():0), m_id(0),
+  m_kt2(std::numeric_limits<double>::max()), 
+  m_kt2qcd(m_kt2), m_kt2qed(m_kt2), 
+  m_minkt2(m_kt2), m_minkt2qcd(m_kt2), m_minkt2qed(m_kt2), 
+  p_qmin(NULL) 
+{
+  m_q2cut[2]=m_q2cut[1]=m_q2cut[0]=ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
+}
+
+Leg::Leg(const Leg &leg): 
+  p_point(leg.p_point), m_anti(leg.m_anti), 
+  m_nqcd(0), m_nqed(0), m_pqcd(0), m_pqed(0), m_ext(leg.m_ext), 
+  m_qcdjets(leg.m_qcdjets), m_id(leg.m_id),
+  m_kt2(std::numeric_limits<double>::max()), 
+  m_kt2qcd(m_kt2), m_kt2qed(m_kt2), m_minkt2(leg.m_minkt2),  
+  m_minkt2qcd(leg.m_minkt2qcd), m_minkt2qed(leg.m_minkt2qed), 
+  p_qmin(leg.p_qmin), m_mapfl(leg.m_mapfl) 
+{
+  m_q2cut[0]=leg.m_q2cut[0];
+  m_q2cut[1]=leg.m_q2cut[1];
+  m_q2cut[2]=leg.m_q2cut[2];
+}
+
+std::ostream &SHERPA::operator<<
+  (std::ostream &str,const std::vector<int> &info)
+{
+  str<<"(";
+  if (info.size()>0) str<<info[0];
+  else str<<"<no entry>";
+  for (size_t i=1;i<info.size();++i) str<<","<<info[i];
+  return str<<")";
+}
 
 std::ostream &SHERPA::operator<<(std::ostream &ostr,const Leg &leg)
 {
@@ -102,19 +140,24 @@ std::ostream& SHERPA::operator<<(std::ostream& s ,const Combine_Table_Base & ct)
      <<sqrt(ct.MinKt2QCD())<<" min{kt_min(QED)}="
      <<sqrt(ct.MinKt2QED())<<std::endl;
     s<<" ==============="<<std::endl;
-    s<<std::setw(2)<<" id"<<std::setw(8)
+    s<<" id"<<std::setw(12)<<"content"<<std::setw(8)
      <<"flav"<<std::setw(5)<<" cut qcd qed"<<std::setw(12)
      <<"q_min"<<std::setw(12)<<"q_{min qcd}"<<std::setw(12)
-     <<"q_{min qed}"<<std::setw(12)<<"\\sqrt{|t|}"<<" mom"<<std::endl;
+     <<"q_{min qed}"<<std::setw(12)<<"Q_{cut,me}"<<std::setw(12)
+     <<"Q_{cut,jv}"<<std::setw(12)<<"Q_{cut,ps}"
+     <<std::setw(12)<<"\\sqrt{|t|}"<<" mom"<<std::endl;
     for (int l=0; l<ct.m_nlegs; ++l) {
       double mc(ct.GetLeg(l).MinKT2QCD()), me(ct.GetLeg(l).MinKT2QED());
-      s<<std::setw(3)<<l<<std::setw(8)
-       <<ct.p_legs[0][l].Flav()<<std::setw(4)
+      s<<std::setw(3)<<l<<std::setw(12)<<ToString(ID(ct.GetLeg(l).ID()))
+       <<std::setw(8)<<ct.p_legs[0][l].Flav()<<std::setw(4)
        <<ct.p_legs[0][l].Point()->t<<" "<<ct.GetLeg(l).OrderQCD()
        <<"/"<<ct.GetLeg(l).NQCD()<<" "<<ct.GetLeg(l).OrderQED()
        <<"/"<<ct.GetLeg(l).NQED()<<std::setw(12)
        <<ct.GetLeg(l).QMin()<<std::setw(12)<<(mc!=MAXD?sqrt(mc):-1)
        <<std::setw(12)<<(me!=MAXD?sqrt(me):-1)<<std::setw(12)
+       <<sqrt(ct.GetLeg(l).Q2Cut())<<std::setw(12)
+       <<sqrt(ct.GetLeg(l).Q2Cut(2))<<std::setw(12)
+       <<sqrt(ct.GetLeg(l).Q2Cut(1))<<std::setw(12)
        <<sqrt(dabs(ct.p_moms[l].Abs2()))<<" "<<ct.p_moms[l]<<std::endl;
     }
     s<<" ---------------"<<std::endl;
@@ -323,53 +366,22 @@ void Combine_Table_Base::SetLegScales
   msg_Debugging()<<"set leg scales "<<legi.Point()->fl<<" & "<<legj.Point()->fl
 		 <<" -> "<<leg.Point()->fl<<" w/ "<<sqrt(pt2ij)<<" "
 		 <<(pi+pj)<<" s = "<<sqrt((pi+pj).Abs2())<<" mt2 = "
-		 <<pi.MPerp(pi+pj)<<" / "<<pj.MPerp(pi+pj)<<" / " 
-		 <<(pi+pj).Mass()<<"\n"; 
+		 <<pi.MPerp()<<" / "<<pj.MPerp()<<" / "<<(pi+pj).Mass()<<"\n"; 
   */
   leg.SetKT2(pt2ij);
   // special case: ggh vertex -> order qcd = 2
   // must therefore check for order qed as well
   if (leg.OrderQCD()>0 && leg.OrderQED()==0) leg.SetKT2QCD(pt2ij);
   else if (leg.NQCD()>0) {
-    double si(dabs(pi.Abs2())), sj(dabs(pj.Abs2())), sij(dabs((pi+pj).Abs2()));
-    Vec4D pni(pi), pnj(pj), pnij(pi+pj);
-    if (!legi.Point()->fl.Strong()) {
-      std::swap<double>(sij,si);
-      std::swap<Vec4D>(pnij,pni);
-    }
-    else if (!legj.Point()->fl.Strong()) {
-      std::swap<double>(sij,sj);
-      std::swap<Vec4D>(pnij,pnj);
-    }
-    if (sij>si) {
-      if (sij>sj) leg.SetKT2QCD(dabs(pnij.MPerp2()));
-      else leg.SetKT2QCD(dabs(pnij.MPerp2(pj)));
-    }
-    else {
-      if (sij>sj) leg.SetKT2QCD(dabs(pnij.MPerp2(pi)));
-      else leg.SetKT2QCD(dabs(pnij.MPerp2(pi+pj)));
-    }
+    double sti(dabs(pi.MPerp2())), stj(dabs(pj.MPerp2()));
+    leg.SetKT2QCD(pt2ij+dabs(sti>stj?pi.Abs2():pj.Abs2()));
+    if (!leg.Point()->fl.Strong()) 
+      leg.SetKT2QCD(Max(dabs((pi+pj).Abs2()),leg.KT2QCD()));
   }
   if (leg.OrderQED()>0) leg.SetKT2QED(pt2ij);
   else if (leg.NQED()>0) {
-    double si(dabs(pi.Abs2())), sj(dabs(pj.Abs2())), sij(dabs((pi+pj).Abs2()));
-    Vec4D pni(pi), pnj(pj), pnij(pi+pj);
-    if (!legi.Point()->fl.Strong()) {
-      std::swap<double>(sij,si);
-      std::swap<Vec4D>(pnij,pni);
-    }
-    else if (!legj.Point()->fl.Strong()) {
-      std::swap<double>(sij,sj);
-      std::swap<Vec4D>(pnij,pnj);
-    }
-    if (sij>si) {
-      if (sij>sj) leg.SetKT2QCD(dabs(pnij.MPerp2()));
-      else leg.SetKT2QCD(dabs(pnij.MPerp2(pj)));
-    }
-    else {
-      if (sij>sj) leg.SetKT2QCD(dabs(pnij.MPerp2(pi)));
-      else leg.SetKT2QCD(dabs(pnij.MPerp2(pi+pj)));
-    }
+    double sti(dabs(pi.MPerp2())), stj(dabs(pj.MPerp2()));
+    leg.SetKT2QED(pt2ij+dabs(sti>stj?pi.Abs2():pj.Abs2()));
   }
   if (legi.Point()->t<10) {
     if (legj.Point()->t<10) {
@@ -390,6 +402,39 @@ void Combine_Table_Base::SetLegScales
   }
 }
   
+void Combine_Table_Base::SetQ2Cut(const size_t &i,const size_t &j,
+				  double &q2in,double &q2out,const size_t &id)
+{
+  size_t idi(GetLeg(i).ID()), idj(GetLeg(j).ID());
+  double yci(id==1?p_jf->ScaledYcut(idi,idi):p_jf->ScaledGlobalYcut(idi,idi));
+  double ycj(id==1?p_jf->ScaledYcut(idj,idj):p_jf->ScaledGlobalYcut(idj,idj));
+  double sq2i(GetLeg(i).Q2Cut(id)/(i<2?1.0:sqr(p_jf->DeltaR())));
+  double sq2j(GetLeg(j).Q2Cut(id)/(j<2?1.0:sqr(p_jf->DeltaR())));
+  q2in=q2out=-1.0;
+  if (yci>0.0) {
+    if (IsEqual(yci,ycj)) q2out=yci*sqr(rpa.gen.Ecms());
+    else if (IsEqual(sq2j,yci*sqr(rpa.gen.Ecms())) && ID(idj).size()>1) q2out=sq2j;
+  }
+  else if (ycj>0.0) {
+    if (IsEqual(sq2i,ycj*sqr(rpa.gen.Ecms())) && ID(idi).size()>1) q2out=sq2i;
+  }
+  else {
+    if (ID(idi).size()>1 && ID(idj).size()>1 &&	IsEqual(sq2i,sq2j)) q2out=sq2i; 
+  }
+  if (i>1) q2out*=sqr(p_jf->DeltaR());
+  if (q2out<0.0) {
+    Combine_Table_Base *ct(this);
+    while (ct->Up()) ct=ct->Up();
+    msg.Error()<<METHOD<<"(): Current table {\n"<<*ct<<"} -> combine "
+	       <<i<<" "<<ID(idi)<<"["<<yci<<"] & "<<j<<" "<<ID(idj)
+	       <<"["<<ycj<<"]"<<std::endl;
+    THROW(critical_error,"Inconsistent Q_{cut} values");
+  }
+  q2in=q2out;
+  double gyc(p_jf->GlobalYcut(idi|idj,idi|idj));
+  if (gyc>0.0) q2in=gyc*sqr(rpa.gen.Ecms());
+}
+
 Leg * Combine_Table_Base::CombineLegs
 (Leg *legs,const int i,const int j,const int nlegs,const double pt2ij) 
 {
@@ -399,6 +444,14 @@ Leg * Combine_Table_Base::CombineLegs
     if (l==i) {
       alegs[i] = CombinedLeg(legs,i,j);
       SetLegScales(alegs[i],legs[i],legs[j],p_moms[i],p_moms[j],pt2ij);
+      size_t idi(GetLeg(i).ID()), idj(GetLeg(j).ID()), id(idi|idj);
+      alegs[i].SetID(id);
+      double q2in, q2out;
+      SetQ2Cut(i,j,q2in,q2out,0);
+      alegs[i].SetQ2Cut(q2in);
+      alegs[i].SetQ2Cut(q2out,2);
+      SetQ2Cut(i,j,q2in,q2out,1);
+      alegs[i].SetQ2Cut(q2out,1);
     }
     else {
       alegs[l] = Leg(legs[l]);

@@ -80,6 +80,15 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   m_scalescheme=(PHASIC::scl::scheme)
     p_dataread->GetValue<int>("SCALE_SCHEME",0);
   ATOOLS::Data_Read::ResetTags();
+  ATOOLS::Data_Read::SetTags(Integrable_Base::ColorSchemeTags());
+  m_colorscheme=(PHASIC::cls::scheme)
+    p_dataread->GetValue<int>("COLOR_SCHEME",1);
+  ATOOLS::Data_Read::ResetTags();
+  ATOOLS::Data_Read::SetTags(Integrable_Base::HelicitySchemeTags());
+  m_helicityscheme=(PHASIC::hls::scheme)
+    p_dataread->GetValue<int>("HELICITY_SCHEME",1);
+  ATOOLS::Data_Read::ResetTags();
+  m_muf2tag=p_dataread->GetValue<std::string>("FACTORIZATION_SCALE","");
   m_kfactorscheme=p_dataread->GetValue<int>("KFACTOR_SCHEME",0);
   double fac_scale_fac=p_dataread->
     GetValue<double>("FACTORIZATION_SCALE_FACTOR",1.);
@@ -115,6 +124,8 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
       order_ew=99;
       order_strong=99;
       efunc="1";
+      PHASIC::cls::scheme colscheme(m_colorscheme);
+      PHASIC::hls::scheme helscheme(m_helicityscheme);
       position   = buf.find(string("Process :")); 
       flag       = 0;
       if (position!=std::string::npos && position<buf.length()) {
@@ -142,11 +153,19 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	      getline(from,buf);
 	      if (buf[0] != '%' && buf.length()>0) {
 		reader.SetString(buf);
-		unsigned int order_ew_t, order_strong_t;
+		unsigned int order_ew_t, order_strong_t, colscheme_t, helscheme_t;
 		std::string efunc_t="1";
 		if (reader.ReadFromString(order_ew_t,"electroweak")) order_ew=order_ew_t;
 		if (reader.ReadFromString(order_strong_t,"strong")) order_strong=order_strong_t;
 		if (reader.ReadFromString(efunc_t,"Enhance_Function")) efunc=efunc_t;
+		ATOOLS::Data_Read::SetTags(Integrable_Base::ColorSchemeTags());
+		if (reader.ReadFromString(colscheme_t,"Color_Scheme")) 
+		  colscheme=(PHASIC::cls::scheme)colscheme_t;
+		ATOOLS::Data_Read::ResetTags();
+		ATOOLS::Data_Read::SetTags(Integrable_Base::HelicitySchemeTags());
+		if (reader.ReadFromString(helscheme_t,"Helicity_Scheme")) 
+		  helscheme=(PHASIC::hls::scheme)helscheme_t;
+		ATOOLS::Data_Read::ResetTags();
 		position = buf.find(string("process"));
 		if (!from) {
 		  msg.Error()<<"Error in Simple_XS::InitializeProcesses("
@@ -181,7 +200,8 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	      }
 	      else {
 		InitializeProcess(flavs,efunc,inisum,finsum,
-				  order_ew,order_strong,nIS,nFS,0);
+				  order_ew,order_strong,nIS,nFS,0,
+				  colscheme,helscheme);
 	      }
 	      if (m_xsecs.size()>0) p_selected=m_xsecs.back();
 	    }
@@ -194,7 +214,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   ResetSelector(p_selectordata);
   if (ATOOLS::msg.LevelIsTracking()) this->Print();
   m_maxjet=m_nmax-m_nin;
-  if (m_xsecs.size()>0) return true;
+  if (m_xsecs.size()>0) return Tests();
   msg.Error()<<"Simple_XS::InitializeProcesses("<<beamhandler<<","<<isrhandler<<"): "
 	     <<"   Did not find any process in '"<<m_path+processfile<<"' !"<<std::endl;
   return false;
@@ -203,7 +223,9 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 void Simple_XS::InitializeProcess(ATOOLS::Flavour *flavs,std::string &efunc,
 				  double &inisum,double &finsum,
 				  size_t order_ew,size_t order_strong,
-				  size_t nin,size_t nout,size_t i)
+				  size_t nin,size_t nout,size_t i,
+				  const PHASIC::cls::scheme &clsc,
+				  const PHASIC::hls::scheme &hlsc)
 {
   Flavour *help = new Flavour[nin+nout];
   for (size_t j=0;j<(size_t)flavs[i].Size();++j) {
@@ -211,7 +233,7 @@ void Simple_XS::InitializeProcess(ATOOLS::Flavour *flavs,std::string &efunc,
     help[i]=flavs[i][j];
     if (i<nin+nout-1) {
       InitializeProcess(help,efunc,inisum,finsum,
-			order_ew,order_strong,nin,nout,i+1);
+			order_ew,order_strong,nin,nout,i+1,clsc,hlsc);
     }
     else {
       if (nin+nout==4) OrderFlavours(help);
@@ -221,10 +243,9 @@ void Simple_XS::InitializeProcess(ATOOLS::Flavour *flavs,std::string &efunc,
       converter>>name;
       if (m_setup.find(name)==m_setup.end()) {
 	XS_Base *newxs = XSSelector()->
-	  GetXS(nin,nout,help,false,order_ew,order_strong);
+	  GetXS(nin,nout,help,false,order_ew,order_strong,clsc,hlsc);
 	if (newxs!=NULL) {
-	  XS_Group *pdfgroup = 
-	    FindPDFGroup(nin,nout,help,this);
+	  XS_Group *pdfgroup = FindGroup(nin,nout,help,clsc,hlsc);
 	  if (m_regulator.length()>0) 
 	    newxs->AssignRegulator(m_regulator,m_regulation);
 	  pdfgroup->Add(newxs);
@@ -242,10 +263,14 @@ void Simple_XS::InitializeProcess(ATOOLS::Flavour *flavs,std::string &efunc,
 }
 
 XS_Group *Simple_XS::FindGroup(const size_t nin,const size_t nout,
-			       const ATOOLS::Flavour *flavours)
+			       const ATOOLS::Flavour *flavours,
+			       const PHASIC::cls::scheme &clsc,
+			       const PHASIC::hls::scheme &hlsc)
 {
   for (size_t i=0;i<m_xsecs.size();++i) {
-    if (nin==m_xsecs[i]->NIn() && nout==m_xsecs[i]->NOut()) {
+    if (nin==m_xsecs[i]->NIn() && nout==m_xsecs[i]->NOut() &&
+	clsc==m_xsecs[i]->ColorScheme() && 
+	hlsc==m_xsecs[i]->HelicityScheme()) {
       const ATOOLS::Flavour *test=m_xsecs[i]->Flavours();
       bool hit=true;
       for (size_t j=0; j<nin+nout;++j) if (test[j]!=flavours[j]) hit=false;
@@ -255,18 +280,25 @@ XS_Group *Simple_XS::FindGroup(const size_t nin,const size_t nout,
   XS_Group *newgroup = 
     new XS_Group(nin,nout,flavours,m_scalescheme,m_kfactorscheme,
 		 p_beamhandler,p_isrhandler,p_selectordata);
+  newgroup->SetFactorizationScale(m_muf2tag);
   newgroup->XSSelector()->SetOffShell(p_isrhandler->KMROn());
+  newgroup->SetColorScheme(clsc);
+  newgroup->SetHelicityScheme(hlsc);
   m_xsecs.push_back(newgroup);
   return newgroup;
 }
 
 XS_Group *Simple_XS::FindPDFGroup(const size_t nin,const size_t nout,
 				  const ATOOLS::Flavour *flavours,
-				  XS_Group *const container)
+				  XS_Group *const container,
+				  const PHASIC::cls::scheme &clsc,
+				  const PHASIC::hls::scheme &hlsc)
 {
   if (p_remnants[0]==NULL || p_remnants[1]==NULL) return container;
   for (size_t i=0;i<container->Size();++i) {
-    if (nin==2 && nout==(*container)[i]->NOut()) {
+    if (nin==2 && nout==(*container)[i]->NOut() &&
+	clsc==(*container)[i]->ColorScheme() && 
+	hlsc==(*container)[i]->HelicityScheme()) {
       ATOOLS::Flavour ref[2], test[2];
       for (size_t j=0;j<2;++j) {
 	ref[j]=p_remnants[j]->ConstituentType((*container)[i]->Flavours()[j]);
@@ -283,7 +315,10 @@ XS_Group *Simple_XS::FindPDFGroup(const size_t nin,const size_t nout,
   XS_Group *newgroup = 
     new XS_Group(nin,nout,copy,m_scalescheme,m_kfactorscheme,
 		 p_beamhandler,p_isrhandler,p_selectordata);
+  newgroup->SetFactorizationScale(m_muf2tag);
   newgroup->XSSelector()->SetOffShell(p_isrhandler->KMROn());
+  newgroup->SetColorScheme(clsc);
+  newgroup->SetHelicityScheme(hlsc);
   container->Add(newgroup);
   newgroup->PSHandler(false)->SetUsePI(m_usepi);
   container->SetAtoms(1);

@@ -6,6 +6,7 @@
 #include "Process_Base.H"
 #include "Splitting_Function.H"
 #include "MyStrStream.H"
+#include "Combined_Selector.H"
 #include <iomanip>
 
 using namespace SHERPA;
@@ -30,7 +31,8 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
   Data_Read dr(rpa.GetPath()+
 	       rpa.gen.Variable("SHOWER_DATA_FILE","Shower.dat"));
   m_bp_mode  = dr.GetValue<int>("SUDAKOV_TYPE",40);
-  m_sud_mode = dr.GetValue<int>("SUDAKOV_MODE",3);
+  m_sud_mode = dr.GetValue<int>("CKKW_SUDAKOV_MODE",3);
+  m_as_mode  = dr.GetValue<int>("CKKW_ALPHAS_MODE",1);
   if (ToType<int>(rpa.gen.Variable("S_KFACTOR_SCHEME","1"))&2) {
     /*
       in principle we need the k factor also in the sudakovs
@@ -74,10 +76,6 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
   m_sweight_sum.resize(m_maxjetnumber,0.0);
   m_sweight_sum_sqr.resize(m_maxjetnumber,0.0); 
 
-  double deltar = rpa.gen.DeltaR();
-  double ycut   = rpa.gen.Ycut();
-  m_qmin_i = sqrt(ycut)*rpa.gen.Ecms();
-  m_qmin_f = sqrt(ycut)*deltar*rpa.gen.Ecms();
   exh->AddTerminatorObject(this);
 }
 
@@ -129,12 +127,9 @@ void Cluster_Partons_Base::WriteOutWeights()
   msg_Info()<<"}"<<std::endl;
   MyStrStream sstr;
   sstr.precision(4);
-  double ycut(log(rpa.gen.Ycut())/log(10.));
-  if (rpa.gen.Beam1().IsHadron() && rpa.gen.Beam2().IsHadron())
-    ycut=sqrt(rpa.gen.Ycut())*rpa.gen.Ecms();
   int mode(m_sud_mode&3+m_bp_mode);
   sstr<<"Weights_"<<rpa.gen.Ecms()<<"_"
-      <<ycut<<"_"<<mode<<".dat"<<std::endl;
+      <<rpa.gen.Variable("Y_CUT")<<"_"<<mode<<".dat"<<std::endl;
   std::string filename;
   sstr>>filename;
   std::ofstream  rfile(filename.c_str(),std::ios::app);
@@ -231,19 +226,22 @@ bool Cluster_Partons_Base::ClusterConfiguration(Blob * blob,double x1,double x2)
 	       <<"   No method provided yet. Return 0."<<std::endl;
     return false;
   }
+  PHASIC::Integrable_Base *proc(p_me->GetAmegic()->GetProcess());
+  if (proc->Selector()->Name()=="Combined_Selector") {
+    p_ajf=(Jet_Finder *)
+      ((Combined_Selector*)proc->Selector())->GetSelector("Jetfinder");
+    if (p_ajf==NULL) THROW(critical_error,"'SUDAKOV_WEIGHT = 1' implies JetFinder <ycut> <deltar>' in 'Selector.dat'.");
+  }
+  m_ycut=p_ajf->Ycut();
+  msg_Debugging()<<METHOD<<"(): process = "<<proc->Name()<<", y_cut = "
+		 <<m_ycut<<" ("<<sqrt(m_ycut)*rpa.gen.Ecms()<<")\n";
   int nampl=p_me->NumberOfDiagrams();
   int nlegs=nin+nout;
   Leg **legs(CreateLegs(nampl,nlegs));
   CreateTables(legs,nampl,x1,x2);
-  PHASIC::Integrable_Base *proc(p_me->GetAmegic()->GetProcess());
-  m_ycut=proc->Ycut();
-  msg_Debugging()<<METHOD<<"(): process = "<<proc->Name()<<", y_cut = "
-		 <<m_ycut<<" ("<<sqrt(m_ycut)*rpa.gen.Ecms()<<")\n";
   m_q2_amegic=proc->Scale(PHASIC::stp::ren);
-  m_qmin_i=sqrt(m_ycut)*rpa.gen.Ecms();
-  m_qmin_f=rpa.gen.DeltaR()*m_qmin_i;
-  m_q2_isjet=rpa.gen.Ycut()*sqr(rpa.gen.Ecms());
-  m_q2_fsjet=sqr(rpa.gen.DeltaR())*m_q2_isjet;
+  m_q2_isjet=m_ycut*sqr(rpa.gen.Ecms());
+  m_q2_fsjet=m_q2_isjet/sqr(p_ajf->DeltaR());
   m_q2_iss=m_q2_fss=std::numeric_limits<double>::max();
   m_q2_hard=m_jv_pt2=std::numeric_limits<double>::max();
   return 1;
@@ -272,58 +270,59 @@ void Cluster_Partons_Base::SetQMin(Combine_Table_Base *const ct,
       hardqmin=sqrt(p_ct->Kt2QCDHard());
       msg_Debugging()<<"reset q_{min,hard} -> "<<hardqmin<<"\n";    
     }
-    if (sqr(m_qmin_i)<m_q2_isjet && !IsEqual(sqr(m_qmin_i),m_q2_isjet)) 
-      // multi scale treatment
-      for (int i(0);i<2;++i) 
-	m_qmin[i]=Min(hardqmin,sqrt(m_q2_isjet));
-    else if (hardjets==(size_t)m_maxqcdjets) 
-      // highest mutiplicity treatment
-      for (int i(0);i<2;++i) m_qmin[i]=hardqmin;
-    else
-      // standard ckkw
-      for (int i(0);i<2;++i) m_qmin[i]=dabs(m_qmin[i]);
-    if (sqr(m_qmin_f)<m_q2_fsjet && !IsEqual(sqr(m_qmin_f),m_q2_fsjet)) 
-      // multi scale treatment
-      for (int i(2);i<p_ct->NLegs();++i) 
-	m_qmin[i]=Min(hardqmin,sqrt(m_q2_fsjet));
-    else if (hardjets==(size_t)m_maxqcdjets) 
-      // highest mutiplicity treatment
-      for (int i(2);i<p_ct->NLegs();++i) m_qmin[i]=hardqmin;
-    else
-      // standard ckkw
-      for (int i(2);i<p_ct->NLegs();++i) m_qmin[i]=dabs(m_qmin[i]);
+    for (int i(0);i<ct->NLegs();++i)
+      if (ct->GetLeg(i).QMin()<0.0)
+	ct->GetLeg(i).SetQMin(hardjets==(size_t)m_maxqcdjets?hardqmin:
+			      Min(hardqmin,dabs(ct->GetLeg(i).QMin())));
     return;
   }
   int i, j;
-  double ptij(ct->Up()->GetWinner(i,j));
-  ptij=sqrt(ct->GetLeg(i).KT2QCD());
+  double ptiji(ct->Up()->GetWinner(i,j)), ptijj(ptiji);
+  ptijj=ptiji=sqrt(ct->GetLeg(i).KT2QCD());
   for (int l(0);l<j;++l)
     ct->Up()->GetLeg(l).SetPQMin(ct->GetLeg(l).PQMin());
   for (int l(j);l<ct->NLegs();++l)
     ct->Up()->GetLeg(l+1).SetPQMin(ct->GetLeg(l).PQMin());
   ct->Up()->GetLeg(j).SetPQMin(ct->GetLeg(i).PQMin());
   if (ct->GetLeg(i).Point()->t<10) {
-    ptij=Min(ptij,ct->GetLeg(i).QMin());
+    ptijj=ptiji=Min(ptiji,ct->GetLeg(i).QMin());
+    if (i<2) {
+      m_qmin.push_back(0.0);
+      if (ptijj<0.0) ptijj=-sqrt(ct->Up()->GetLeg(j).Q2Cut());
+      ct->Up()->GetLeg(j).SetPQMin(&m_qmin.back());
+    }
   }
   else {
     m_qmin.push_back(0.0);
     ct->Up()->GetLeg(i).SetPQMin(&m_qmin.back());
+    if (i<2) m_qmin.push_back(0.0);
     ct->Up()->GetLeg(j).SetPQMin(&m_qmin.back());
     decayjets+=ct->GetLeg(i).QCDJets();
     m_max_decayjets+=ct->GetLeg(i).Point()->t-10;
-    if (ct->GetLeg(i).QCDJets()<ct->GetLeg(i).Point()->t-10) 
-      ptij=i<2?m_qmin_i:m_qmin_f;
+    msg_Debugging()<<"check jet multi: id = "<<ID(ct->GetLeg(i).ID())
+		   <<", t = "<<ct->GetLeg(i).Point()->t<<", qcd = "
+		   <<ct->GetLeg(i).QCDJets()<<"\n";
+    if (ct->GetLeg(i).QCDJets()<ct->GetLeg(i).Point()->t-10) {
+      ptiji=sqrt(ct->Up()->GetLeg(i).Q2Cut());
+      ptijj=sqrt(ct->Up()->GetLeg(j).Q2Cut());
+    }
     ++m_cut;
   }
-  ct->Up()->GetLeg(i).SetQMin(ptij);
+  ct->Up()->GetLeg(i).SetQMin(ptiji);
+  ct->Up()->GetLeg(j).SetQMin(ptijj);
   SetQMin(ct->Up(),ref,decayjets,hardjets,hardqmin);
+  for (int i(0);i<ct->NLegs();++i)
+    if (ct->GetLeg(i).QMin()<0.0)
+      ct->GetLeg(i).SetQMin(hardjets==(size_t)m_maxqcdjets?hardqmin:
+			    Min(hardqmin,dabs(ct->GetLeg(i).QMin())));
   if (msg.LevelIsDebugging()) {
     msg_Debugging()<<"table "<<ct->Up()->Number()
 		   <<" ("<<i<<"&"<<j<<") -> qmin = {";
     for (int l(0);l<ct->Up()->NLegs()-1;++l)
       msg_Debugging()<<ct->Up()->GetLeg(l).QMin()<<",";
     msg_Debugging()<<ct->Up()->GetLeg(ct->Up()->NLegs()-1).QMin()
-		   <<"} <- "<<ptij<<" ("<<ct->Up()->GetWinner(i,j)<<")\n";
+		   <<"} <- ("<<ptiji<<","<<ptijj<<") ["
+		   <<sqrt(ct->GetLeg(i).KT2QCD())<<"]\n";
   }
 }
 
@@ -339,9 +338,10 @@ void Cluster_Partons_Base::SetQMin(Combine_Table_Base *const ref)
   while (ct->Up()) ct=ct->Up();
   m_qmin.clear();
   m_qmin.reserve(ct->NLegs());
-  m_qmin.resize(p_ct->NLegs(),-m_qmin_f);
-  m_qmin[1]=m_qmin[0]=-m_qmin_i;
-  for (int i(0);i<p_ct->NLegs();++i) p_ct->GetLeg(i).SetPQMin(&m_qmin[i]);
+  for (int i(0);i<p_ct->NLegs();++i) {
+    m_qmin.push_back(-sqrt(p_ct->GetLeg(i).Q2Cut()));
+    p_ct->GetLeg(i).SetPQMin(&m_qmin.back());
+  }
   size_t hardjets(0), decayjets(0);
   SetQMin(p_ct,ref,decayjets,hardjets,hardqmin);
   if (msg.LevelIsDebugging()) {
@@ -360,8 +360,14 @@ bool Cluster_Partons_Base::FillLegs(Leg * alegs, Point * root, int & l, int maxl
     return 0;
   }
   if (l==0) {
+    size_t id(1<<root->number);
     alegs[root->number]=Leg(root);
     alegs[root->number].SetExternal(1);
+    alegs[root->number].SetQ2Cut
+      (p_ajf->GlobalYcut(id,id)*sqr(rpa.gen.Ecms()));    
+    alegs[root->number].SetQ2Cut(alegs[root->number].Q2Cut(),2);    
+    alegs[root->number].SetQ2Cut(p_ajf->Ycut(id,id)*sqr(rpa.gen.Ecms()),1);    
+    alegs[root->number].SetID(id);    
     l++;
   }
   if (root->left) {
@@ -369,8 +375,14 @@ bool Cluster_Partons_Base::FillLegs(Leg * alegs, Point * root, int & l, int maxl
     return FillLegs(alegs,root->left,l,maxl)*FillLegs(alegs,root->right,l,maxl);
   } 
   else {
+    size_t id(1<<root->number);
     alegs[root->number]=Leg(root);
     alegs[root->number].SetExternal(1);
+    alegs[root->number].SetQ2Cut
+      (p_ajf->GlobalYcut(id,id)*sqr(rpa.gen.Ecms()));    
+    alegs[root->number].SetQ2Cut(alegs[root->number].Q2Cut(),2);    
+    alegs[root->number].SetQ2Cut(p_ajf->Ycut(id,id)*sqr(rpa.gen.Ecms()),1);    
+    alegs[root->number].SetID(id);    
     l++;
     return 1;
   }
@@ -714,22 +726,22 @@ void   Cluster_Partons_Base::JetvetoPt2(double & q2i, double & q2f,
 { 
   msg_Debugging()<<METHOD<<"(..): {\n";
   msg_Indent();
-  q2lji=sqr(m_qmin_i);
-  q2ljf=sqr(m_qmin_f);
-  double qmin2(m_q2_fsjet);
+  double q2mini(Max(p_ct->GetLeg(0).Q2Cut(),p_ct->GetLeg(1).Q2Cut()));
+  double q2minf(Max(p_ct->GetLeg(0).Q2Cut(),p_ct->GetLeg(1).Q2Cut()));
+  double dr2(sqr(p_ajf->DeltaR()));
+  q2lji=q2mini;
+  q2ljf=q2minf/dr2;
+  double qmin2(m_q2_fsjet/dr2);
   bool maxjets(m_hardjets==m_maxqcdjets && m_cut+m_hardjets>0);
-  bool twoscaleis(sqr(m_qmin_i)<m_q2_isjet && 
-		  !IsEqual(sqr(m_qmin_i),m_q2_isjet));
-  bool twoscalefs(sqr(m_qmin_f)<m_q2_fsjet && 
-		  !IsEqual(sqr(m_qmin_f),m_q2_fsjet));
+  bool twoscaleis(q2mini<m_q2_isjet && !IsEqual(q2mini,m_q2_isjet));
+  bool twoscalefs(q2minf<m_q2_fsjet && !IsEqual(q2minf,m_q2_fsjet));
   bool qcd2jet(m_minqcdjets==m_maxqcdjets && p_ct->OrderStrong()>0);
   if (maxjets || twoscaleis || twoscalefs || qcd2jet) FixJetvetoPt2(qmin2);
   if ((twoscaleis || twoscalefs) && 
       !qcd2jet && !maxjets) qmin2=Min(m_q2_fsjet,qmin2);
   //  if (twoscale || qcd2jet) q2lj=0.0;
-  q2i = Max(qmin2,sqr(m_qmin_i));
-  q2f = Max(qmin2,sqr(m_qmin_f));
-  p_jf->SetShowerPt2(qmin2);
+  q2i = Max(qmin2,q2mini);
+  q2f = Max(qmin2,q2minf/dr2);
   msg_Debugging()<<"hard = "<<m_hardjets<<", cut = "<<m_cut<<", max = "
 		 <<m_maxqcdjets<<", min = "<<m_minqcdjets<<", os = "
 		 <<p_ct->OrderStrong()<<", up = "<<p_ct->Up()<<"\n";

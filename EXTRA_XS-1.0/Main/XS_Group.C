@@ -480,6 +480,7 @@ void XS_Group::SetMax(const double max,const int flag)
 
 void XS_Group::CreateFSRChannels() 
 {
+  if (m_nout>2) return;
   p_pshandler->FSRIntegrator()->DropAllChannels();
   if (p_isrhandler->KMROn()>0) {
     p_pshandler->FSRIntegrator()->
@@ -570,7 +571,8 @@ void XS_Group::ResetSelector(ATOOLS::Selector_Data *const selectordata)
 
 void XS_Group::Print()
 {
-  ATOOLS::msg.Out()<<(m_name!=""?m_name:"<no name>")<<" {\n";
+  ATOOLS::msg.Out()<<(m_name!=""?m_name:"<no name>")<<" ("
+		   <<m_colorscheme<<","<<m_helicityscheme<<") {\n";
   {
     msg_Indent();
     for (size_t i=0;i<m_xsecs.size();++i) m_xsecs[i]->Print();
@@ -621,4 +623,24 @@ void XS_Group::SetISRThreshold(const double threshold)
   m_threshold=threshold;
   for (size_t i=0;i<m_xsecs.size();i++) 
     m_xsecs[i]->SetISRThreshold(threshold);
+}
+
+bool XS_Group::SetPDFFlavours()
+{
+  THROW(fatal_error,"Undefined procedure.");
+  return false;
+}
+
+void XS_Group::SetFactorizationScale(const std::string &muf2)
+{
+  Integrable_Base::SetFactorizationScale(muf2);
+  for (size_t i=0;i<m_xsecs.size();++i) 
+    m_xsecs[i]->SetFactorizationScale(muf2);
+}
+
+bool XS_Group::Tests()
+{
+  for (size_t i=0;i<m_xsecs.size();++i) 
+    if (!m_xsecs[i]->Tests()) return false;
+  return true;
 }

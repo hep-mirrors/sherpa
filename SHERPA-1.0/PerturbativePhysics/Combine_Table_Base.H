@@ -6,38 +6,28 @@
 #include "Point.H" 
 #include "Vector.H"
 #include "My_Limits.H"
+#include "Run_Parameter.H"
 
 namespace ATOOLS { class Jet_Finder; }
 
 namespace SHERPA {
 
+  std::ostream &operator<<(std::ostream &str,const std::vector<int> &info);
+
   class Leg {
   private:
     AMEGIC::Point *p_point;
     int m_anti, m_nqcd, m_nqed, m_pqcd, m_pqed, m_ext, m_qcdjets;
+    size_t m_id;
     double m_kt2, m_kt2qcd, m_kt2qed, m_minkt2, m_minkt2qcd, m_minkt2qed;
-    double *p_qmin;
+    double *p_qmin, m_q2cut[3];
     AMEGIC::lf::code m_type;
     ATOOLS::Flavour m_mapfl;
     friend std::ostream &operator<<(std::ostream &ostr,const Leg &leg);
   public:
     // constructors
-    inline Leg(AMEGIC::Point *const point=NULL,const int anti=1):  
-      p_point(point), m_anti(anti), 
-      m_nqcd(0), m_nqed(0), m_pqcd(0), m_pqed(0), m_ext(0), 
-      m_qcdjets(point!=NULL?point->fl.Strong():0),
-      m_kt2(std::numeric_limits<double>::max()), 
-      m_kt2qcd(m_kt2), m_kt2qed(m_kt2), 
-      m_minkt2(m_kt2), m_minkt2qcd(m_kt2), m_minkt2qed(m_kt2), 
-      p_qmin(NULL) {}
-    inline Leg(const Leg &leg): 
-      p_point(leg.p_point), m_anti(leg.m_anti), 
-      m_nqcd(0), m_nqed(0), m_pqcd(0), m_pqed(0), m_ext(leg.m_ext), 
-      m_qcdjets(leg.m_qcdjets), 
-      m_kt2(std::numeric_limits<double>::max()), 
-      m_kt2qcd(m_kt2), m_kt2qed(m_kt2), m_minkt2(leg.m_minkt2),  
-      m_minkt2qcd(leg.m_minkt2qcd), m_minkt2qed(leg.m_minkt2qed), 
-      p_qmin(leg.p_qmin), m_mapfl(leg.m_mapfl) {}
+    Leg(AMEGIC::Point *const point=NULL,const int anti=1);
+    Leg(const Leg &leg);
     // member functions
     void DetermineCouplings(const int type);
     // inline functions
@@ -49,6 +39,8 @@ namespace SHERPA {
     inline const AMEGIC::Point *Point() const     { return p_point; }
     inline void SetQCDJets(const int qcdjets) { m_qcdjets=qcdjets; }
     inline int  QCDJets() const               { return m_qcdjets;  }
+    inline void   SetID(const size_t &id) { m_id=id;     }
+    inline size_t ID() const              { return m_id; }
     inline void   SetKT2(const double &kt2)    
     { m_kt2=kt2; SetMinKT2(m_kt2); }
     inline void   SetKT2QCD(const double &kt2) 
@@ -71,6 +63,10 @@ namespace SHERPA {
     inline double *PQMin() const                { return p_qmin; }
     inline void   SetQMin(const double qmin) { *p_qmin=qmin; }
     inline double QMin() const { return p_qmin!=NULL?*p_qmin:-1.0; }
+    inline void   SetQ2Cut(const double &q2cut,const size_t &i=0) 
+    { m_q2cut[i]=q2cut;   }
+    inline double Q2Cut(const size_t &i=0) const
+    { return m_q2cut[i]; }
     inline ATOOLS::Flavour Flav() 
     { return m_anti==-1?m_mapfl.Bar():m_mapfl; }
     inline const int OrderQCD() const { return m_nqcd; }
@@ -140,7 +136,9 @@ namespace SHERPA {
 
     Leg **p_hard;
     int **p_hardc;
-
+    
+    void SetQ2Cut(const size_t &i,const size_t &i,
+		  double &q2in,double &q2out,const size_t &id);
     Leg  CombinedLeg(Leg *legs,const int i,const int j);
     Leg *CombineLegs(Leg *legs,const int i,const int j,
 		     const int nlegs,const double pt2ij);
@@ -200,6 +198,7 @@ namespace SHERPA {
     inline int               ** const GetHardInfo()                        const { return p_hardc; }
     inline void                       GetX1X2(double & x1, double & x2)    const { x1=m_x1; x2=m_x2; }
     inline static void                ResetCounter()                             { s_all=0; }
+
   };// end of class Combine_Table_Base
 
 }// end of namespace SHERPA

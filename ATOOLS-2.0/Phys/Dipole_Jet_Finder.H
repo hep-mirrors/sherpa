@@ -2,7 +2,7 @@
 #define Dipole_Jet_Finder_h
 
 #include "Particle_List.H"
-#include "Selector.H"
+#include "Jet_Finder_Base.H"
 #include "Poincare.H"
 
 namespace ATOOLS {
@@ -31,9 +31,9 @@ namespace ATOOLS {
 
   
 
-  class Dipole_Jet_Finder : public Selector_Base {
-    double            m_ycut, m_stot, m_kt2cut;
-    dipjet_type::code m_type;
+  class Dipole_Jet_Finder : public Jet_Finder_Base {
+    double             m_stot, m_kt2cut;
+    dipjet_type::code m_diptype;
     dipjet_mode::code m_mode;
     bool              m_coloursorted;
 

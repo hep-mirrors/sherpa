@@ -25,7 +25,7 @@ namespace SHERPA {
     Shower_Handler(std::string,std::string,MODEL::Model_Base *,
 		   PDF::ISR_Handler *,int);
     ~Shower_Handler();
-    int                       PerformShowers(int,int,double,double,double ycut);
+    int                       PerformShowers(int,int,double,double);
     int                       PerformDecayShowers(bool);
     void                      FillBlobs(ATOOLS::Blob_List *);
     void                      FillDecayBlobs(ATOOLS::Blob_List *);
@@ -38,7 +38,6 @@ namespace SHERPA {
     APACIC::Tree            * GetFinTree(); 
     APACIC::Tree           ** GetIniTrees();
     APACIC::Apacic          * GetApacic() { return p_apacic; }
-    void SetJetvetoPt2(const double q2i,const double q2f) { p_apacic->SetJetvetoPt2(q2i,q2f); }
     void SetFactorisationScale(const double scale)        { p_apacic->SetFactorisationScale(scale); }
     inline bool ShowerMI() const { return m_showermi; }
     inline ATOOLS::Jet_Finder *JetFinder() const          { return p_jf; }
@@ -75,11 +74,6 @@ namespace SHERPA {
   /*!
     \var std::string Shower_Handler::m_showergenerator
     The name of the shower generator. Right now, the only option is APACIC.
-  */
-  /*!
-    \var int Shower_Handler::m_maxjetnumber
-    The maximal number of jets stemming from the Signal_Processes. This is needed
-    for the set-up of the interface between matrix elements and the shower.
   */
   /*!
     \var bool Shower_Handler::m_isrshowerswitch
@@ -145,10 +139,6 @@ namespace SHERPA {
   /*!
     \fn bool Shower_Handler::FSROn()
     Returns .true. is the final state shower is used.
-  */
-  /*!
-    \fn int Shower_Handler::MaxJetNumber()
-    Returns the maximal number of jets stemming from the matrix elements.
   */
 }
 

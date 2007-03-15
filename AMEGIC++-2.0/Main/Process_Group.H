@@ -24,7 +24,7 @@ namespace AMEGIC {
 		  ATOOLS::Selector_Data * =NULL,
 		  int=0,int=99,int=99,int=0,PHASIC::scl::scheme=PHASIC::scl::unknown,double=-1.,
 		  Pol_Info* _pl=0,int _nex=0,ATOOLS::Flavour * _ex_fl=0,int usepi=0, 
-		  double ycut=-1., double error=-1.,
+		  std::string cuttag="-1.", double error=-1.,
 		  std::string e_func="1", int enable_mhv=0);
     Process_Group();
     ~Process_Group();
@@ -63,6 +63,7 @@ namespace AMEGIC {
     void           SetMax(const double max, int depth=0);
     void           ResetMax(int);
     void           SetMaxJetNumber(int max);
+    void           SetCoreMaxJetNumber(int max);
     void           SetAtoms(bool);
     void           SetPartner(Single_Process * _p) { }
     Process_Base * Partner()                       { return 0; }
@@ -92,6 +93,7 @@ namespace AMEGIC {
     bool           LookUpXSec(double,bool,std::string);
     void           RescaleXSec(double);
     void           SetupEnhance();
+    void           SetFactorizationScale(const std::string &muf2);
 
     bool           PrepareXSecTables();
     void           WriteOutXSecs(std::ofstream &);

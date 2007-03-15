@@ -33,8 +33,8 @@ Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
   int showermode(ToType<int>(rpa.gen.Variable("SHOWER_MODE")));
   msg_Debugging()<<METHOD<<"(): Shower mode is "<<showermode<<std::endl;
   p_filler  = new Tree_Filler(p_cluster,p_shower,m_maxjetnumber,showermode);
-  if (p_mehandler->MinQCDJets()==p_mehandler->MaxQCDJets()) 
-    rpa.gen.SetVariable("SUDAKOV_WEIGHT",ToString("0"));
+//   if (p_mehandler->MinQCDJets()==p_mehandler->MaxQCDJets()) 
+//     rpa.gen.SetVariable("SUDAKOV_WEIGHT",ToString("0"));
   m_ckkwon=ToType<int>(rpa.gen.Variable("SUDAKOV_WEIGHT"));
   p_filler->SetCKKWOn(m_ckkwon);
 }  
@@ -137,7 +137,6 @@ Return_Value::code Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob
     if (p_mehandler->Weight()==1. && p_mehandler->UseSudakovWeight()) {
       if (m_weight>ran.Get()) {
 	p_shower->CleanUp();
-	p_filler->SetQ2Cut(p_cluster->YCut()*sqr(rpa.gen.Ecms()));
 	p_filler->FillTrees(blob,p_shower->GetIniTrees(),
 			    p_shower->GetFinTree());
 	blob->AddData("Sud_Weight",new Blob_Data<double>(m_weight));
@@ -162,7 +161,6 @@ Return_Value::code Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob
 	  blob->AddData("Sud_Weight",new Blob_Data<double>(m_weight));
 	}
       }
-      p_filler->SetQ2Cut(p_cluster->YCut()*sqr(rpa.gen.Ecms()));
       p_filler->FillTrees(blob,p_shower->GetIniTrees(),p_shower->GetFinTree());
       return Return_Value::Success;
     }
@@ -252,8 +250,7 @@ int Amegic_Apacic_Interface::PerformShowers()
   m_lastshowerveto = 
     p_shower->PerformShowers(jetveto,losejv,
 			     p_mehandler->GetISR_Handler()->X1(),
-			     p_mehandler->GetISR_Handler()->X2(),
-			     p_cluster->YCut());
+			     p_mehandler->GetISR_Handler()->X2());
   return m_lastshowerveto;
 }
 
