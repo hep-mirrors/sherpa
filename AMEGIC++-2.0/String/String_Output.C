@@ -218,7 +218,7 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
 {  
   string Zname = path+string("/V_Z");
   
-  ofstream zf;
+  ofstream zf,szf;
   zf.open((Zname+string(".C")).c_str());
 
   string Makefile = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pathID+string("/Makefile");
@@ -233,10 +233,8 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
   //Flavours and Couplings
   zf<<"void "<<pID<<"::SetCouplFlav(vector<Complex>& coupl)"<<endl;
   zf<<"{"<<endl;
-  lines ++;
   for (size_t i=0;i<sgen->GetFlavours()->size();i++) {
     zf<<"  f["<<i<<"] = "<<(*sgen->GetFlavours())[i]<<";"<<endl;
-    lines++;
   }
   zf<<endl;
   zf<<"  for (int i=0;i<"<<sgen->NumberOfCouplings()<<";i++) "<<"c[i] = coupl[i];"<<endl;
@@ -367,100 +365,120 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
     }
   }
   zf<<"}"<<endl<<endl;
-  lines +=4 ;
 
   zf<<"void "<<pID<<"::Calculate()"<<endl;
   zf<<"{"<<endl;
   zf<<"  for(int i=0;i<"<<maxhel<<";i++) cl[i] = 0;"<<endl<<endl;
-  lines += 2;
 
+  bool mvz = (sgen->ZXMaxNumber()>maxlines+tolerance);
+
+  ofstream* pz=&zf;
   int divnum = 0;
+  if (mvz) { 
+    divnum = 1;
+    szf.open((Zname+string("_")+ToString(divnum)+string(".C")).c_str());
+    slib.AddToMakefile(Makefile,pathID,string("V_Z_")+ToString(divnum));
+    szf<<"#include "<<'"'<<"V.H"<<'"'<<endl<<endl;  
+    szf<<"using namespace AMEGIC;"<<endl;  
+    szf<<"using namespace ATOOLS;"<<endl<<endl;
+    szf<<"void "<<pID.c_str()<<"::Calculate_"<<divnum
+       <<"()"<<endl;
+    szf<<"{"<<endl;
+
+    header<<"  void Calculate_"<<divnum<<"();"<<endl;
+    zf<<"  Calculate_"<<divnum<<"();"<<endl;
+
+    pz=&szf;
+  }
+
   for (int i=1;i<sgen->ZXMaxNumber();i++) {
     zx = sgen->GetZXl(i);
     if (zx->on && zx->zlist!=2) {
       lines++;
-      zf<<"  Z["<<i<<"] = ";
+      (*pz)<<"  Z["<<i<<"] = ";
       int* arg = zx->arg;
       switch (zx->zlist) {
       case 0: 
 #ifdef use_templates
-	zf<<"XT<"<<arg[1]<<","<<arg[4]<<">";
-	zf<<"("<<arg[0]<<","<<arg[2]<<","<<arg[3];
-	zf<<",c["<<arg[5]<<"],c["<<arg[6]<<"]);"<<endl;
+	(*pz)<<"XT<"<<arg[1]<<","<<arg[4]<<">";
+	(*pz)<<"("<<arg[0]<<","<<arg[2]<<","<<arg[3];
+	(*pz)<<",c["<<arg[5]<<"],c["<<arg[6]<<"]);"<<endl;
 #else
-	zf<<"Xcalc("<<arg[0]<<","<<arg[1]<<","<<arg[2]<<","<<arg[3]<<","<<arg[4];
-	zf<<",c["<<arg[5]<<"],c["<<arg[6]<<"]);"<<endl;
+	(*pz)<<"Xcalc("<<arg[0]<<","<<arg[1]<<","<<arg[2]<<","<<arg[3]<<","<<arg[4];
+	(*pz)<<",c["<<arg[5]<<"],c["<<arg[6]<<"]);"<<endl;
 #endif
 	break;
       case 1:
 #ifdef use_templates
-	zf<<"ZT";
-	if (!sgen->Massless(i)) zf<<"M";
-	zf<<"<"<<arg[1]<<","<<arg[3]<<","<<arg[5]<<","<<arg[7]<<">";
-	zf<<"("<<arg[0]<<","<<arg[2]<<","<<arg[4]<<","<<arg[6];
-	zf<<",c["<<arg[8]<<"],c["<<arg[9]<<"],c["<<arg[10]<<"],c["<<arg[11]<<"]);"<<endl;
+	(*pz)<<"ZT";
+	if (!sgen->Massless(i)) (*pz)<<"M";
+	(*pz)<<"<"<<arg[1]<<","<<arg[3]<<","<<arg[5]<<","<<arg[7]<<">";
+	(*pz)<<"("<<arg[0]<<","<<arg[2]<<","<<arg[4]<<","<<arg[6];
+	(*pz)<<",c["<<arg[8]<<"],c["<<arg[9]<<"],c["<<arg[10]<<"],c["<<arg[11]<<"]);"<<endl;
 #else
-	zf<<"Zcalc("<<arg[0]<<","<<arg[1]<<","<<arg[2]<<","<<arg[3];
-	zf<<","<<arg[4]<<","<<arg[5]<<","<<arg[6]<<","<<arg[7];
-	zf<<",c["<<arg[8]<<"],c["<<arg[9]<<"],c["<<arg[10]<<"],c["<<arg[11]<<"]);"<<endl;
+	(*pz)<<"Zcalc("<<arg[0]<<","<<arg[1]<<","<<arg[2]<<","<<arg[3];
+	(*pz)<<","<<arg[4]<<","<<arg[5]<<","<<arg[6]<<","<<arg[7];
+	(*pz)<<",c["<<arg[8]<<"],c["<<arg[9]<<"],c["<<arg[10]<<"],c["<<arg[11]<<"]);"<<endl;
 #endif
 	break;
       case 3: 
-	zf<<"Vcalc("<<arg[0]<<","<<arg[1]<<");"<<endl;
+	(*pz)<<"Vcalc("<<arg[0]<<","<<arg[1]<<");"<<endl;
 	break;
       case 4: 
 #ifdef use_templates
-	zf<<"YT<"<<arg[1]<<","<<arg[3]<<">";
-	zf<<"("<<arg[0]<<","<<arg[2];
-	zf<<",c["<<arg[4]<<"],c["<<arg[5]<<"]);"<<endl;
+	(*pz)<<"YT<"<<arg[1]<<","<<arg[3]<<">";
+	(*pz)<<"("<<arg[0]<<","<<arg[2];
+	(*pz)<<",c["<<arg[4]<<"],c["<<arg[5]<<"]);"<<endl;
 #else
-	zf<<"Ycalc("<<arg[0]<<","<<arg[1]<<","<<arg[2]<<","<<arg[3];
-	zf<<",c["<<arg[4]<<"],c["<<arg[5]<<"]);"<<endl;
+	(*pz)<<"Ycalc("<<arg[0]<<","<<arg[1]<<","<<arg[2]<<","<<arg[3];
+	(*pz)<<",c["<<arg[4]<<"],c["<<arg[5]<<"]);"<<endl;
 #endif
 	break;
       case 5: 
-	zf<<"Pcalc(f["<<arg[0]<<"],"<<arg[1]<<");"<<endl;
+	(*pz)<<"Pcalc(f["<<arg[0]<<"],"<<arg[1]<<");"<<endl;
 	break;				       
       case 6:
 	if (zx->sk!=0) {
-	  lines += Line_Form(zf,stree->Tree2String(zx->sk,0));
-	  zf<<endl;
+	  lines += Line_Form((*pz),stree->Tree2String(zx->sk,0));
+	  (*pz)<<endl;
 	}
 	else 
-	  zf<<"Complex(0.,0.);"<<endl;
+	  (*pz)<<"Complex(0.,0.);"<<endl;
 	break;
       case 7: 
-	zf<<"MassTermCalc("<<arg[1]<<",f["<<arg[0]<<"]);"<<endl;
+	(*pz)<<"MassTermCalc("<<arg[1]<<",f["<<arg[0]<<"]);"<<endl;
 	break;
       case 9: 
- 	zf<<"Vcplxcalc("<<arg[0]<<","<<arg[1]<<");"<<endl;
+ 	(*pz)<<"Vcplxcalc("<<arg[0]<<","<<arg[1]<<");"<<endl;
  	break;
       }
     }
-    if (((maxlines+tolerance)<lines) && (i!=sgen->ZXMaxNumber()-1)) {
+    if (mvz && ((maxlines+tolerance)<lines) && (i!=sgen->ZXMaxNumber()-1)) {
       lines = 0;
       divnum++;
       //close the old one
-      zf<<"  Calculate_"<<divnum<<"();"<<endl;
-      zf<<"}"<<endl;
-      zf.close();
+      (*pz)<<"}"<<endl;
+      (*pz).close();
       // new file
-      char numb[5];
-      sprintf(numb,"%i",divnum);
-      zf.open((Zname+string("_")+string(numb)+string(".C")).c_str());
-      slib.AddToMakefile(Makefile,pathID,string("V_Z_")+string(numb));
-      zf<<"#include "<<'"'<<"V.H"<<'"'<<endl<<endl;  
-      zf<<"using namespace AMEGIC;"<<endl;  
-      zf<<"using namespace ATOOLS;"<<endl<<endl;
-      zf<<"void "<<pID.c_str()<<"::Calculate_"<<divnum
+      (*pz).open((Zname+string("_")+ToString(divnum)+string(".C")).c_str());
+      slib.AddToMakefile(Makefile,pathID,string("V_Z_")+ToString(divnum));
+      (*pz)<<"#include "<<'"'<<"V.H"<<'"'<<endl<<endl;  
+      (*pz)<<"using namespace AMEGIC;"<<endl;  
+      (*pz)<<"using namespace ATOOLS;"<<endl<<endl;
+      (*pz)<<"void "<<pID.c_str()<<"::Calculate_"<<divnum
 	<<"()"<<endl;
-      zf<<"{"<<endl;
+      (*pz)<<"{"<<endl;
       header<<"  void Calculate_"<<divnum<<"();"<<endl;
+      zf<<"  Calculate_"<<divnum<<"();"<<endl;
       lines += 4;
     }
   }
   zf<<"}"<<endl;
   zf.close();
+  if (mvz) {
+    (*pz)<<"}"<<endl;
+    (*pz).close();
+  }
 }
 
 void String_Output::Make_Header(ofstream &header)
