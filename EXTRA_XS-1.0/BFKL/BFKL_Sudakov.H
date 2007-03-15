@@ -15,7 +15,7 @@ namespace EXTRAXS {
     LEV_Group *p_levs;
 
     double m_ya, m_yb, m_kt2min, m_kt2max;
-    double m_asmax, m_integral, m_gamma, m_weight;
+    double m_asmax, m_integral, m_gamma, m_weight, m_ktexp;
     double m_y, m_kt2, m_phi;
 
     ATOOLS::Vec4D   m_q;
@@ -40,6 +40,11 @@ namespace EXTRAXS {
     bool Dice();
     bool Approve(const ATOOLS::Vec4D &k1,const ATOOLS::Vec4D &q1,
 		 const ATOOLS::Vec4D &k2,const ATOOLS::Vec4D &q2);
+
+    double DicePolynomial(const double &xmin,const double &xmax,
+			  const double &a,const double &rn) const;
+    double WeightPolynomial(const double &xmin,const double &xmax,
+			    const double &a,const double &x) const;
 
     // inline functions
     inline void SetYA(const double &ya) { m_ya=ya; }

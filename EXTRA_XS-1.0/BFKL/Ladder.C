@@ -24,7 +24,7 @@ Ladder::Ladder(const size_t nin,const size_t nout,
 	   beamhandler,isrhandler,selectordata),
   p_sudakov(new BFKL_Sudakov()),
   m_ncols(0), m_sudmode(1), m_nfixed(std::numeric_limits<size_t>::max()),
-  m_multimode(1), m_splitmode(1)
+  m_multimode(1), p_jf(NULL)
 { 
   m_name="BFKL_ME";
   Data_Reader read(" ",";","!","=");
@@ -34,20 +34,26 @@ Ladder::Ladder(const size_t nin,const size_t nout,
   p_sudakov->SetKTScheme(ktscheme);
   if (!read.ReadFromFile(m_nfixed,"BFKL_FIXED_MULTI"))
     m_nfixed=std::numeric_limits<size_t>::max();
-  else msg_Info()<<METHOD<<"(): Fixed multiplicity "<<m_nfixed<<".\n";
+  else msg_Info()<<METHOD<<"(): Set fixed multiplicity "<<m_nfixed<<".\n";
   if (!read.ReadFromFile(m_multimode,"BFKL_MULTI_MODE")) m_multimode=1;
-  else msg_Info()<<METHOD<<"(): Multiplicity selection mode "
+  else msg_Info()<<METHOD<<"(): Set multiplicity selection mode "
 		 <<m_multimode<<".\n";
   if (!read.ReadFromFile(m_sudmode,"BFKL_SUDAKOV_MODE")) m_sudmode=1;
   else msg_Info()<<METHOD<<"(): Set Sudakov mode "<<m_sudmode<<".\n";
-  if (!read.ReadFromFile(m_splitmode,"BFKL_SPLIT_MODE")) m_splitmode=0;
+  if (!read.ReadFromFile(m_splitmode,"BFKL_SPLIT_MODE")) m_splitmode=(1<<6)-1;
   else msg_Info()<<METHOD<<"(): Set splitting mode "<<m_splitmode<<".\n";
   p_sudakov->SetSplitMode(m_splitmode);
-  if (m_multimode==0) m_splitmode=0;
+  if (m_multimode==0) m_splitmode=1;
+  if (!read.ReadFromFile(m_memode,"BFKL_ME_MODE")) m_memode=0;
+  else msg_Info()<<METHOD<<"(): Set me correction mode "<<m_memode<<".\n";
+  m_asecms=(*MODEL::as)(sqr(rpa.gen.Ecms()));
 }
 
 Ladder::~Ladder()
 {
+  if (p_jf!=NULL) delete p_jf;
+  for (std::map<std::string,N_Gluon_BG*>::const_iterator
+	 mit(m_mes.begin());mit!=m_mes.end();++mit) delete mit->second;
   delete p_sudakov;
   p_momenta=NULL;
   p_flavours=NULL;
@@ -65,7 +71,8 @@ bool Ladder::Initialize()
       THROW(fatal_error,"BFKL ME needs UPDF.");
     m_kt2min=ATOOLS::Max(m_kt2min,p_pdfs[i]->Cut("kp"));
     p_pdfs[i]->SetSudakovMode(0);
-    if (m_splitmode<1) p_pdfs[i]->SetSplitMode(0);
+    if (m_memode&4) p_pdfs[i]->SetOrderingMode(0);
+    if (m_splitmode<2) p_pdfs[i]->SetSplitMode(0);
   }
   delete [] p_momenta;
   delete [] p_flavours;
@@ -74,6 +81,9 @@ bool Ladder::Initialize()
   p_addflavours = new ATOOLS::Flavour[4];
   p_addmomenta = new ATOOLS::Vec4D[2];
   m_naddout=2;
+  if (m_memode>0) 
+    p_jf = new Jet_Finder(ToString(m_kt2min/sqr(rpa.gen.Ecms())),4,false);
+  p_sudakov->SetKT2Min(m_kt2min);
   return p_sudakov->Initialize();
 }
 
@@ -99,16 +109,31 @@ double Ladder::Flux() const
   return 2.0*m_q2*m_a1*m_an/(m_z1*m_zn);
 }
 
+double Ladder::KT2Max(const double &y,const double &sab,
+		      const double &s1,const double &sn) const
+{
+  return 0.25*sqr(sab+s1-sn)/(sab*sqr(cosh(y)))-s1;
+}
+
+double Ladder::YMax(const double &kt2,const double &sab,
+		    const double &s1,const double &sn) const
+{
+  double pzr(sqrt(1.0-4.0*(s1+kt2)*sab/sqr(sab+s1-sn)));
+  return 0.5*log((1.0+pzr)/(1.0-pzr));
+}
+
 bool Ladder::GeneratePDFJet()
 {
   double rn[4];
   for (short unsigned int i(0);i<4;++i) rn[i]=ran.Get();
+  double ymax(YMax(m_kt2min,m_q2));
   // dice y
-  m_y=m_y1=m_yb+rn[0]*(m_ya-m_yb);
-  m_weight*=m_ya-m_yb;
+  m_y=m_y1=rn[0]*2.0*ymax-ymax;
+  m_weight*=2.0*ymax;
+  double kt2max(KT2Max(m_y,m_q2));
   // dice kt2
-  m_kt2=m_kt21=m_kt2min*pow(0.25*m_q2/m_kt2min,rn[1]);
-  m_weight*=log(0.25*m_q2/m_kt2min)*m_kt21;
+  m_kt2=m_kt21=p_sudakov->DicePolynomial(m_kt2min,kt2max,-1.0,rn[1]);
+  m_weight*=p_sudakov->WeightPolynomial(m_kt2min,kt2max,-1.0,m_kt21);
   // dice phi
   double phi1(2.0*M_PI*rn[2]);
   m_weight*=2.0*M_PI;
@@ -117,14 +142,12 @@ bool Ladder::GeneratePDFJet()
   m_k1=Vec4D(kt1*cosh(m_y1),kt1*cos(phi1),
 	     kt1*sin(phi1),kt1*sinh(m_y1));
   m_q=m_k1;
-  if (m_k1[0]*m_k1[0]>=0.25*m_q2) return false;
   // dice y
-  m_yn=m_yb+rn[3]*(m_ya-m_yb);
-  m_weight*=m_ya-m_yb;
-  if (m_yn<m_y1) return false;
+  m_yn=rn[3]*2.0*ymax-ymax;
+  m_weight*=2.0*ymax;
   // dice first flavour
   m_props.back()=kf::gluon;
-  if (m_splitmode>0) {
+  if (m_splitmode>1) {
     // select t-channel quark w/ probability T_R/C_A
     if (ran.Get()<0.5/3.0)
       m_props.back()=(kf::code)Min(p_sudakov->Nf(),(size_t)
@@ -162,43 +185,100 @@ bool Ladder::ConstructIncoming()
   return true;
 }
 
-bool Ladder::ConstructRung()
+bool Ladder::BoostToCMS()
+{
+  Vec4D pa(m_pa-m_q);
+  m_cms=Poincare(pa+m_pb);
+  m_cms.Boost(pa);
+  m_zaxis=Poincare(pa,Vec4D::ZVEC);
+  m_sab=(pa+m_pb).Abs2();
+  return m_sab>0.0;
+}
+
+bool Ladder::ConstructRung(const bool in)
 {
   double kt(sqrt(m_kt2));
   Vec4D k(kt*cosh(m_y),kt*cos(m_phi),kt*sin(m_phi),kt*sinh(m_y));
   m_q+=m_moms.back()=k;
   if (k.Nan()) return false;
-  return ConstructIncoming();
+  return in?ConstructIncoming():true;
 }
 
-bool Ladder::DiceOneEmission()
+bool Ladder::BoostToLab()
+{
+  m_zaxis.RotateBack(m_moms.back());
+  m_cms.BoostBack(m_moms.back());
+  m_q=m_oldq+m_moms.back();
+  m_y=m_moms.back().Y();
+  m_kt2=m_moms.back().PPerp2();
+  return true;
+}
+
+bool Ladder::DiceFixedMulti()
 {
   /* store old values */
-  double lasty(m_y);
   m_oldq=m_q;
-  /* dice y, ps weight */
-  m_y=ran.Get()*(lasty-m_yn)+m_yn;
-  m_weight*=dabs(lasty-m_yn);
+  double lasty(m_y);
+  /* boost and rotate into new cm frame */
+  BoostToCMS();
+  double kt2max(KT2Max(0.0,m_sab));
   /* dice kt2, ps weight */
-  double kt2max((m_pa+m_pb-m_q).Abs2());
-  m_kt2=m_kt2min*pow(kt2max/m_kt2min,ran.Get());
-  m_weight*=log(kt2max/m_kt2min);
+  m_kt2=p_sudakov->DicePolynomial(0.0,kt2max,-0.99,ran.Get());
+  m_weight*=p_sudakov->WeightPolynomial(0.0,kt2max,-0.99,m_kt2);
+  double ymax(YMax(m_kt2,m_sab));
+  /* dice y, ps weight */
+  m_y=ran.Get()*2.0*ymax-ymax;
+  m_weight*=2.0*ymax;
   /* dice phi, ps weight is 1 */
   m_phi=ran.Get()*2.0*M_PI;
   /* add new rung */
   m_moms.push_back(Vec4D());
   m_flavs.push_back(kf::gluon);
   m_props.push_back(kf::gluon);
-  if (!ConstructRung() ||
-      m_q.PPerp2()<m_kt2min) return false;
+  if (!ConstructRung() || !BoostToLab() || 
+      !ConstructIncoming()) return false;
+  if (m_kt2<m_kt2min || m_q.PPerp2()<m_kt2min) return false;
+  if (m_y1>m_yn) {
+    if (m_yn>m_y || m_y>lasty) return false;
+  }
+  else {
+    if (m_yn<m_y || m_y<lasty) return false;
+  }
   /* alpha_s & splitting weight */
-  m_weight*=(*MODEL::as)(m_kt2)*3.0/M_PI;
+  m_weight*=(*MODEL::as)(m_kt2)/m_kt2*3.0/M_PI;
   /* sudakov weight */
   if (m_sudmode>0)
     m_weight*=exp(-(*MODEL::as)(m_oldq.PPerp2())*3.0/M_PI
-		  *log(m_oldq.PPerp2()/m_kt2min)*dabs(lasty-m_y));
+  		  *log(m_oldq.PPerp2()/m_kt2min)*dabs(lasty-m_y));
   m_oldq=m_q;
   return true;
+}
+
+int Ladder::DiceVariableMulti()
+{
+  /* store old data */
+  m_oldq=m_q;
+  /* boost and rotate into new cm frame */
+  BoostToCMS();
+  double kt2max(KT2Max(0.0,m_sab));
+  /* set up sudakov for new branching */
+  p_sudakov->SetKT2Max(kt2max);
+  p_sudakov->SetInMomentum(m_q);
+  p_sudakov->SetInFlavour(m_props.back());
+  /* dice y */
+  if (!p_sudakov->Dice()) return 0;
+  m_y=p_sudakov->GetY();
+  m_kt2=p_sudakov->GetKT2();
+  m_phi=p_sudakov->GetPhi();
+  Vec4D k1(m_moms.size()>2?m_moms.back():m_k1);
+  /* add new rung */
+  m_moms.push_back(Vec4D());
+  m_flavs.push_back(p_sudakov->Selected()->GetC());
+  m_props.push_back(p_sudakov->Selected()->GetB());
+  if (!ConstructRung() || !ConstructIncoming()) return -1;
+  if (!p_sudakov->Approve(k1,m_oldq,m_moms.back(),m_q)) return -1;
+  m_weight*=p_sudakov->GetWeight();
+  return 1;
 }
 
 bool Ladder::GenerateLadder()
@@ -210,57 +290,33 @@ bool Ladder::GenerateLadder()
   m_props.resize(1);
   if (!GeneratePDFJet()) return false;
   if (m_multimode>0) {
+    /* initialize sudakov */
     p_sudakov->SetYA(m_y1);
     p_sudakov->SetYB(m_yn);
-    p_sudakov->SetKT2Min(m_kt2min);
-    p_sudakov->SetKT2Max((m_pa+m_pb-m_q).Abs2());
+    p_sudakov->SetKT2Max(KT2Max(0.0,m_sab));
     p_sudakov->SetInMomentum(m_q);
     p_sudakov->SetInFlavour(m_props.back());
     p_sudakov->Init();
-    msg_Debugging()<<"init sud at y_a = "<<m_y1<<", y_b = "<<m_yn<<"\n";
     size_t cnt(0);
-    Vec4D k1(m_k1);
-    while (p_sudakov->Dice()) {
-      msg_Debugging()<<"test emission at y = "<<p_sudakov->GetY()
-		     <<", qt = "<<sqrt(p_sudakov->GetKT2())<<"\n";
-      m_oldq=m_q;
-      m_y=p_sudakov->GetY();
-      m_kt2=p_sudakov->GetKT2();
-      m_phi=p_sudakov->GetPhi();
-      m_moms.push_back(Vec4D());
-      m_flavs.push_back(p_sudakov->Selected()->GetC());
-      m_props.push_back(p_sudakov->Selected()->GetB());
-      if (!ConstructRung() ||
-	  !p_sudakov->Approve(k1,m_oldq,m_moms.back(),m_q)) {
-	return false;
-      }
-      else {
-	msg_Debugging()<<"accept emission at y = "<<p_sudakov->GetY()
-		       <<", qt = "<<sqrt(p_sudakov->GetKT2())<<"\n";
-	m_weight*=p_sudakov->GetWeight();
-	k1=m_moms.back();
-	p_sudakov->SetKT2Max((m_pa+m_pb-m_q).Abs2());
-	p_sudakov->SetInMomentum(m_q);
-	p_sudakov->SetInFlavour(m_props.back());
-	++cnt;
-      }
-    }
+    /* iterate */
+    int stat(1);
+    while ((stat=DiceVariableMulti())>0) ++cnt;
+    if (stat<0) return false;
     if (m_nfixed<std::numeric_limits<size_t>::max() &&
 	cnt!=m_nfixed) return false;
-    ConstructIncoming();
-    m_moms[0]=m_p1-m_k1;
-    m_moms[1]=m_p2-m_kn;
   }
   else {
-    for (size_t i(0);i<m_nfixed;++i) 
-      if (!DiceOneEmission()) return false;
+    for (size_t i(0);i<m_nfixed;++i)
+      if (!DiceFixedMulti()) return false;
     /* last rung sudakov weight */
     if (m_sudmode>0)
       m_weight*=exp(-(*MODEL::as)(m_q.PPerp2())*3.0/M_PI
-		    *log(m_q.PPerp2()/m_kt2min)*dabs(m_y-m_yn));
-    m_moms[0]=m_p1-m_k1;
-    m_moms[1]=m_p2-m_kn;
+ 		    *log(m_q.PPerp2()/m_kt2min)*dabs(m_y-m_yn));
   }
+  if (m_kn.PPerp2()<m_kt2min) return false;
+  /* fix inital state */
+  m_moms[0]=m_p1-m_k1;
+  m_moms[1]=m_p2-m_kn;
   return true;
 }
 
@@ -281,7 +337,6 @@ bool Ladder::SetScales()
 
 double Ladder::Differential(const ATOOLS::Vec4D *momenta)
 {
-  msg_Debugging()<<"====================\n";
   // set beam parameters
   m_pa=p_beamhandler->GetBeam(0)->InMomentum();
   m_pb=p_beamhandler->GetBeam(1)->InMomentum();
@@ -309,8 +364,8 @@ double Ladder::Differential(const ATOOLS::Vec4D *momenta)
       (p_addflavours[2],m_fl1,ran.Get())) return false;
   if (!p_pdfs[1]->SelectJetFlavour
       (p_addflavours[3],m_fln,ran.Get())) return false;
-  // add ll approximation of gg->gg me and symmetry factor
-  m_weight*=sqr(M_PI)/(2.0*m_q2);
+  // add ll approximation of gg->gg me
+  m_weight*=sqr(M_PI)/(2.0*m_q2)/2.0;
   // add flux factor
   m_weight/=Flux();
   // set colours
@@ -340,20 +395,121 @@ double Ladder::Differential(const ATOOLS::Vec4D *momenta)
   p_addmomenta[1]=m_kn;
   p_addflavours[0]=m_fl1;
   p_addflavours[1]=m_fln;
-  std::string name("BFKL__2_"+ToString(m_nout)+"__"+
+  std::string name("BFKL_2_"+ToString(m_nout)+"__"+
 		   ToString(m_flavs[0])+"_"+ToString(m_flavs[1]));
   if (m_nout>0) name+="_";
   for (size_t i(2);i<2+m_nout;++i) name+="_"+ToString(m_flavs[i]);
   msg_Debugging()<<METHOD<<"(): Generated '"<<name<<"'\n";
   m_name=name;
+  if (m_memode>0 && m_nvector<=6) m_weight*=MECorrection();
   return dabs(m_weight);
+}
+
+double Ladder::MECorrection()
+{
+  // check jet measures
+  for (size_t i(2);i<m_moms.size();++i) {
+    if (p_jf->MTij2(m_k1,m_moms[i])<m_kt2min ||
+	p_jf->MTij2(m_kn,m_moms[i])<m_kt2min) return 0.0;
+    for (size_t j(i+1);j<m_moms.size();++j) 
+      if (p_jf->MTij2(m_moms[i],m_moms[j])<m_kt2min) return 0.0;
+  }
+  if (p_jf->MTij2(m_k1,m_kn)<m_kt2min) return 0.0;
+  double sf1(p_pdfs[0]->JetKernel()->Value(m_z1));
+  double sfn(p_pdfs[1]->JetKernel()->Value(m_zn));
+  m_bfkldxs=sqr(4.0*M_PI*m_asecms)/8.0*sf1*sfn;
+  // bfkl me contains no symmetry factor (y-ordered)
+  // symmetry factor is needed for correction weight only
+  // amounts to inverse symmetrisation of phase space
+  double sf(1.0);
+  m_bfkldxs/=++sf;
+  if (m_memode&2) {
+    if (m_nvector>3) 
+      THROW(fatal_error,"Analytic reweighting not implemented");
+    if (m_nvector==2) {
+      double s((m_k1+m_kn).Abs2());
+      double t((m_k1-m_p1).Abs2());
+      double u((m_k1-m_p2).Abs2());
+      m_dxs=sqr(4.0*M_PI*m_asecms)*9.0/2.0*
+	(3.0-s*t/(u*u)-s*u/(t*t)-u*t/(s*s))/2.0;
+    }
+    else {
+      double s12((m_p1+m_p2).Abs2());
+      double s13((m_p1-m_k1).Abs2());
+      double s14((m_p1-m_moms[2]).Abs2());
+      double s15((m_p1-m_kn).Abs2());
+      double s23((m_p2-m_k1).Abs2());
+      double s24((m_p2-m_moms[2]).Abs2());
+      double s25((m_p2-m_kn).Abs2());
+      double s34((m_k1+m_moms[2]).Abs2());
+      double s35((m_k1+m_kn).Abs2());
+      double s45((m_moms[2]+m_kn).Abs2());
+      double osum(2.0*(pow(s12,4.0)+pow(s13,4.0)+pow(s14,4.0)+pow(s15,4.0)+
+		       pow(s23,4.0)+pow(s24,4.0)+pow(s25,4.0)+
+		       pow(s34,4.0)+pow(s35,4.0)+
+		       pow(s45,4.0)));
+      osum*=
+	1.0/(s12*s23*s34*s45*s15)+1.0/(s12*s23*s35*s45*s14)+
+	1.0/(s12*s24*s34*s35*s15)+1.0/(s12*s24*s45*s35*s13)+
+	1.0/(s12*s25*s35*s34*s14)+1.0/(s12*s25*s45*s34*s13)+
+	1.0/(s13*s23*s24*s45*s15)+1.0/(s13*s23*s25*s45*s14)+
+	1.0/(s13*s34*s24*s25*s15)+1.0/(s13*s34*s45*s25*s12)+
+	1.0/(s13*s35*s25*s24*s14)+1.0/(s13*s35*s45*s24*s12)+
+	1.0/(s14*s34*s23*s25*s15)+1.0/(s14*s34*s35*s25*s12)+
+	1.0/(s14*s24*s23*s35*s15)+1.0/(s14*s24*s25*s35*s13)+
+	1.0/(s14*s45*s35*s23*s12)+1.0/(s14*s45*s25*s23*s13)+
+	1.0/(s15*s35*s34*s24*s12)+1.0/(s15*s35*s23*s24*s14)+
+	1.0/(s15*s45*s34*s23*s12)+1.0/(s15*s45*s24*s23*s13)+
+	1.0/(s15*s25*s23*s34*s14)+1.0/(s15*s25*s24*s34*s13);
+      m_dxs=pow(4.0*M_PI*m_asecms,3.0)*27.0/32.0*osum/6.0;
+      if (!(m_memode&1)) {
+ 	m_bfkldxs*=16.0*M_PI*m_asecms*3.0/m_moms[2].PPerp2();
+	m_bfkldxs/=++sf;
+      }
+    }
+    msg_Debugging()<<METHOD<<"(): \\sigma/\\sigma_{BFKL} = "
+		   <<m_dxs<<" / "<<m_bfkldxs<<" = "<<m_dxs/m_bfkldxs<<" \n";
+    if (m_memode&8) m_dxs=1.0;
+    if (!(m_memode&1)) return m_dxs/m_bfkldxs;
+  }
+  N_Gluon_BG *me(NULL);
+  std::vector<ATOOLS::Vec4D> moms(m_moms.size()+2);
+  for (size_t i(2);i<m_moms.size();++i) {
+    moms[i+1]=m_moms[i];
+    m_bfkldxs*=16.0*M_PI*m_asecms*3.0/m_moms[i].PPerp2();
+    m_bfkldxs/=++sf;
+  }
+  if (m_memode&8) return 1.0/m_bfkldxs;
+  moms.front()=m_p1;
+  moms[1]=m_p2;
+  moms[2]=m_k1;
+  moms.back()=m_kn;  
+  std::map<std::string,N_Gluon_BG*>::iterator mit(m_mes.find(m_name));
+  if (mit!=m_mes.end()) {
+    me=mit->second;
+  }
+  else {
+    std::vector<Flavour> fl(m_flavs.size()+2);
+    for (size_t i(2);i<m_flavs.size();++i) fl[i+1]=m_flavs[i];
+    fl.front()=p_addflavours[2];
+    fl[1]=p_addflavours[3];
+    fl[2]=m_fl1;
+    fl.back()=m_fln;
+    msg_Debugging()<<METHOD<<"(): Initialize '"<<m_name<<"'\n";
+    m_mes[m_name] = me = new N_Gluon_BG(m_nin,m_nvector,fl);
+    me->SetMode(1);
+    if (!me->GaugeTest(moms)) 
+      THROW(fatal_error,"Gauge test not satisfied.");
+  }
+  m_dxs=me->Differential(moms);
+  msg_Debugging()<<METHOD<<"(): \\sigma/\\sigma_{BFKL} = "
+		 <<m_dxs<<" / "<<m_bfkldxs<<" = "<<m_dxs/m_bfkldxs<<" \n";
+  return m_dxs/m_bfkldxs;
 }
 
 void Ladder::SetColour(const size_t &i,const bool fw,int *const lc)
 {
   Flavour q(m_props[i-2]), f(m_flavs[i]);
-  msg_Debugging()<<"step "<<i<<" "<<q<<" -> "<<f<<" "<<m_props[i-1]
-		 <<": ("<<lc[0]<<","<<lc[1]<<") -> ";
   if (q.IsGluon()) {
     if (f.IsGluon()) {
       if (ran.Get()>0.5) {
@@ -394,8 +550,6 @@ void Ladder::SetColour(const size_t &i,const bool fw,int *const lc)
       p_colours[i][0]=0;
     }  
   }
-  msg_Debugging()<<"("<<p_colours[i][0]<<","<<p_colours[i][1]
-		 <<") ("<<lc[0]<<","<<lc[1]<<")\n";
 }
 
 void Ladder::SetColours()

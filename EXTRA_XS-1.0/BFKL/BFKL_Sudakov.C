@@ -11,7 +11,7 @@ size_t BFKL_Sudakov::s_nf(5);
 
 BFKL_Sudakov::BFKL_Sudakov():
   p_levs(new LEV_Group()),
-  m_weight(0.0) {}
+  m_weight(0.0), m_ktexp(-1.0) {}
 
 BFKL_Sudakov::~BFKL_Sudakov()
 {
@@ -20,9 +20,9 @@ BFKL_Sudakov::~BFKL_Sudakov()
 
 bool BFKL_Sudakov::Initialize()
 {
-  p_levs->Add(new G_GG());
-  if (m_splitmode>0) {
-    for (size_t i(1);i<=s_nf;++i) {
+  if (m_splitmode&1) p_levs->Add(new G_GG());
+  for (size_t i(1);i<=s_nf;++i) {
+    if (m_splitmode&(1<<i)) {
       Flavour fl((kf::code)i);
       p_levs->Add(new Q_GQ(fl));
       p_levs->Add(new Q_GQ(fl.Bar()));
@@ -31,6 +31,20 @@ bool BFKL_Sudakov::Initialize()
     }
   }
   return true;
+}
+
+double BFKL_Sudakov::DicePolynomial(const double &xmin,const double &xmax,
+				    const double &a,const double &rn) const
+{
+  if (a==-1.0) return xmin*pow(xmax/xmin,rn);
+  return pow(pow(xmax,a+1.0)*rn+(1.0-rn)*pow(xmin,a+1.0),1.0/(a+1.0));
+}
+
+double BFKL_Sudakov::WeightPolynomial(const double &xmin,const double &xmax,
+				      const double &a,const double &x) const
+{
+  if (a==-1.0) return log(xmax/xmin)*x;
+  return (pow(xmax,a+1.0)-pow(xmin,a+1.0))/(a+1.0)*pow(x,-a);
 }
 
 bool BFKL_Sudakov::Init()
@@ -68,7 +82,7 @@ bool BFKL_Sudakov::Dice()
   if (m_ya>m_yb) m_y+=log(rn[0])/m_gamma;
   else m_y-=log(rn[0])/m_gamma;
   // dice new kt2
-  m_kt2=m_kt2min*pow(m_kt2max/m_kt2min,rn[1]);
+  m_kt2=DicePolynomial(m_kt2min,m_kt2max,m_ktexp,rn[1]);
   // dice new phi
   m_phi=2.0*M_PI*rn[2];
   // select splitting
@@ -108,9 +122,9 @@ bool BFKL_Sudakov::Approve(const ATOOLS::Vec4D &k1,
     THROW(fatal_error,"Invalid scale scheme.");
   }
   // coupling & splitting weight
-  m_weight*=(*MODEL::as)(kt2)/(2.0*M_PI)*m_integral;
+  m_weight*=(*MODEL::as)(kt2)/(2.0*M_PI*m_kt2)*m_integral;
   // kt integration domain weight
-  m_weight*=log(m_kt2max/m_kt2min);
+  m_weight*=WeightPolynomial(m_kt2min,m_kt2max,m_ktexp,m_kt2);
   return true;
 }
 

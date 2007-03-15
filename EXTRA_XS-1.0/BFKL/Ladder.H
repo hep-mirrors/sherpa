@@ -4,6 +4,8 @@
 #include "BFKL_Sudakov.H"
 #include "ISR_Handler.H"
 #include "XS_Group.H"
+#include "N_Gluon_BG.H"
+#include "Jet_Finder.H"
 
 namespace PDF { class Doubly_Unintegrated_PDF; }
 
@@ -27,14 +29,27 @@ namespace EXTRAXS {
     ATOOLS::Vec4D   m_pa, m_pb, m_k1, m_kn, m_q, m_oldq, m_p1, m_p2;
     ATOOLS::Flavour m_fl1, m_fln;
 
-    double m_weight, m_ya, m_yb, m_kt2min, m_q2, m_y1, m_yn;
+    double m_weight, m_ya, m_yb, m_kt2min, m_q2, m_y1, m_yn, m_sab;
     double m_a1, m_an, m_z1, m_zn, m_kt21, m_kt2n, m_mu21, m_mu2n;
-    double m_y, m_kt2, m_phi, m_lasty;
+    double m_y, m_kt2, m_phi, m_lasty, m_dxs, m_bfkldxs, m_asecms;
 
-    size_t m_ncols, m_sudmode, m_nfixed, m_multimode, m_splitmode;
+    size_t m_ncols, m_sudmode, m_nfixed, m_multimode, m_splitmode, m_memode;
+
+    std::map<std::string,N_Gluon_BG*> m_mes;
+
+    ATOOLS::Poincare m_cms, m_zaxis;
+
+    ATOOLS::Jet_Finder *p_jf;
+
+    double YMax(const double &kt2,const double &sab,
+		const double &s1=0.0,const double &sn=0.0) const;
+    double KT2Max(const double &y,const double &sab,
+		  const double &s1=0.0,const double &sn=0.0) const;
 
     bool GeneratePDFJet();
-    bool ConstructRung();
+    bool BoostToCMS();
+    bool BoostToLab();
+    bool ConstructRung(const bool in=false);
     bool ConstructIncoming();
     bool GenerateLadder();
 
@@ -42,12 +57,14 @@ namespace EXTRAXS {
 
     bool TestEmission();
     bool SetScales();
-    void InitSudakov();
 
-    bool DiceOneEmission();
+    bool DiceFixedMulti();
+    int  DiceVariableMulti();
 
     void SetColours();
     void SetColour(const size_t &i,const bool fw,int *const lc);
+
+    double MECorrection();
 
   public:
 
