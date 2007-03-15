@@ -109,6 +109,30 @@ Primitive_Analysis * Primitive_Analysis::GetSubAnalysis(const std::string & key,
   return ana;
 }
 
+std::string Primitive_Analysis::JetID(std::string name) const
+{
+  size_t jets(1);
+  std::string subprocs;
+  for (size_t i(0);i<name.length();++i) {
+    if (name[i]=='_' && name[i-1]!='_') ++jets;
+    else if (name[i]=='[') {
+      int open(1);
+      for (size_t j(i+1);j<name.length();++j) {
+	if (name[j]=='[') ++open;
+	if (name[j]==']') --open;
+	if (open==0) {
+	  if (jets>1) subprocs+=ToString(jets-1);
+	  subprocs+="["+JetID(name.substr(i+1,j-i-1))+"]";
+	  jets=0;
+	  i=j;
+	  break;
+	}
+      }
+    }
+  }
+  return subprocs+ToString(jets);
+}
+
 void Primitive_Analysis::CallSubAnalysis(const Blob_List * const bl, double value) 
 {
   int nout=-1;
@@ -158,7 +182,7 @@ void Primitive_Analysis::CallSubAnalysis(const Blob_List * const bl, double valu
     if (mode&ANALYSIS::splitt_extra)
       mode=m_mode^ANALYSIS::splitt_extra;
     mode=mode|ANALYSIS::output_this;
-    key="j"+ToString(nout);
+    key="j"+JetID(name.substr(name.find("__")+3));
   }
   else {
     mode=m_mode^ANALYSIS::splitt_process;

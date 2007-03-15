@@ -78,6 +78,8 @@ namespace ANALYSIS {
 
     ATOOLS::Particle_Qualifier_Base * p_bfinder;
     bool  m_active;
+
+    std::string JetID(std::string name) const;
     
     void Init();
     bool SelectBlob(const ATOOLS::Blob *blob); 
