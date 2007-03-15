@@ -44,7 +44,7 @@ Spacelike_Sudakov::~Spacelike_Sudakov()
 
 bool Spacelike_Sudakov::Initialize()
 {
-  m_facscale = rpa.gen.Ycut()*m_s_hadron;
+  m_facscale = m_s_hadron;
   p_tools->CalculateMaxCouplings
     (m_cpl_scheme,m_pt2min*m_cpl_scale_fac,m_s_hadron*m_cpl_scale_fac);
 

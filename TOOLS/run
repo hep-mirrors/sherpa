@@ -58,7 +58,7 @@ do
   e) EVENTS=$OPTARG ;; 
   n) BASENAME=$OPTARG ;; 
   l) LIBPATH=$OPTARG ;; 
-  o) SOPTIONS=$OPTARG ;; 
+  o) SOPTIONS=$SOPTIONS" "$OPTARG ;; 
   B) BATCH=$OPTARG ;; 
   C) SLOGFILE=$OPTARG ;; 
   O) BOPTIONS=$OPTARG ;; 
@@ -128,16 +128,25 @@ if [ "$SUBMIT" = "TRUE" ] ; then
     echo "#$ -j y" >> $FILE
     echo "#$ -o $SETUPPATH" >> $FILE
     echo "#$ -N $FILE.$BATCH" >> $FILE
+    if [ "$BOPTIONS" != "" ]; then
+      echo "#$ "$BOPTIONS >> $FILE
+    fi
   else
     echo "#"$BATCH" -oe" >> $FILE
     echo "#"$BATCH" -o $FILE.$BATCH" >> $FILE
     echo "#"$BATCH" -m ae" >> $FILE
+    if [ "$BOPTIONS" != "" ]; then
+      echo "#"$BATCH" "$BOPTIONS >> $FILE
+    fi
   fi
   echo "" >> $FILE
   echo "RUNPATH=\"$SETUPPATH\"" >> $FILE
   echo "LOGFILE=\"$LOGFILE\"" >> $FILE
   echo "" >> $FILE
   echo "cd \$RUNPATH" >> $FILE
+  echo "" >> $FILE
+  echo "CNT=0; while test -f \$LOGFILE\"_\"\$CNT; do (( ++CNT )); done" >> $FILE
+  echo "if test -f \$LOGFILE; then mv \$LOGFILE \$LOGFILE\"_\"\$CNT; fi" >> $FILE
   echo "" >> $FILE
   echo "echo \"\" > \$LOGFILE" >> $FILE
   echo "echo \"HOSTNAME    = \$HOSTNAME\" >> \$LOGFILE" >> $FILE
@@ -183,14 +192,15 @@ if [ ! "$RESULTS" = "" ] ; then echo -en "RESULT_DIRECTORY=\"$RESULTS\" " >> $FI
 if [ ! "$ANALYSIS" = "" ] ; then echo -en "ANALYSIS_OUTPUT=\"$ANALYSIS\" " >> $FILE ; fi
 if [ ! "$EVENTS" = "" ] ; then echo -en "EVENTS=$EVENTS " >> $FILE ; fi
 if [ ! "$SOPTIONS" = "" ] ; then echo -en "$SOPTIONS " >> $FILE ; fi
-echo -e ">> \$LOGFILE 2>&1 \n\n" >> $FILE
+echo -e ">> \$LOGFILE 2>&1\n\n" >> $FILE
 
 chmod 777 $FILE
+mv $FILE $SETUPPATH
 if [ "$SUBMIT" = "TRUE" ] ; then
-  qsub $FILE $BOPTIONS
-  mv $FILE $SETUPPATH
+  cd $SETUPPATH
+  qsub $FILE 
+  cd $LOGPATH
 elif [ "$RUN" = "TRUE" ] ; then
-  mv $FILE $SETUPPATH
   sync
   RCOUNTER=0
   ssh -q $RHOST exit 

@@ -10,6 +10,7 @@
 #include "Exception.H"
 #include "Matrix_Element_Handler.H"
 #include "XS_Base.H"
+#include "MyStrStream.H"
 
 #ifdef USING__Amisic
 #include "Amisic.H"
@@ -32,7 +33,7 @@ using namespace AMISIC;
 #endif
 
 Multiple_Interactions::Multiple_Interactions(MI_Handler *mihandler):
-  p_mihandler(mihandler)
+  p_mihandler(mihandler), p_jetfinder(NULL)
 {
   m_name = std::string("Multiple_Interactions:")+p_mihandler->Name();
   m_type = eph::Perturbative;
@@ -48,6 +49,7 @@ Multiple_Interactions::Multiple_Interactions(MI_Handler *mihandler):
 
 Multiple_Interactions::~Multiple_Interactions() 
 {
+  if (p_jetfinder==NULL) delete p_jetfinder;
 }
 
 Return_Value::code Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist) 
@@ -136,8 +138,9 @@ Return_Value::code Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const
       Particle_List jets=shower.ExtractLooseParticles(1);
       Is_Parton isparton;
       jets.Keep(&isparton);
-      Jet_Finder finder(p_mihandler->YCut(),4);
-      finder.ConstructJets(&jets,1,true);
+      if (p_jetfinder==NULL) 
+	p_jetfinder = new Jet_Finder(ToString(p_mihandler->YCut()),4);
+      p_jetfinder->ConstructJets(&jets,1,true);
       if (jets.size()>0) {
 	for (size_t i=0;i<jets.size();++i)
 	  m_ptmax=Min(m_ptmax,jets[i]->Momentum().PPerp());
@@ -162,8 +165,9 @@ Return_Value::code Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const
       }
     }
     Particle_List jets=shower.ExtractLooseParticles(1);
-    Jet_Finder finder(p_mihandler->YCut(),4);
-    finder.ConstructJets(&jets,njets,true);
+    if (p_jetfinder==NULL) 
+      p_jetfinder = new Jet_Finder(ToString(p_mihandler->YCut()),4);
+    p_jetfinder->ConstructJets(&jets,njets,true);
     double ptmax=0.0;
     for (Particle_List::const_iterator pit=jets.begin();
 	 pit!=jets.end();++pit)

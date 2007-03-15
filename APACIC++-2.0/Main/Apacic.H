@@ -46,17 +46,13 @@ namespace APACIC {
 
     // member functions
     int  PerformShowers(const int &jv=0,const int &ljv=0,
-			const double &x1=1.0,const double &x2=1.0,
-			const double &ycut=1.0e-2);
+			const double &x1=1.0,const double &x2=1.0);
     bool ExtractPartons(const bool ini,const bool fin,
 			ATOOLS::Blob_List *const blist,
 			ATOOLS::Particle_List *const plist=NULL);
 
     void PrepareTrees();
     void OutputTrees();
-
-    void SetJetvetoPt2(const double &q2i,const double &q2f);
-    void SetMaxJetNumber(const size_t &maxjets);
 
     // inline functions
     inline void SetFactorisationScale(const double &scale)

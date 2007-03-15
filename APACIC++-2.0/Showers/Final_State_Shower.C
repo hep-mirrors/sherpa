@@ -663,10 +663,10 @@ bool Final_State_Shower::SetColours(Knot *mo,Timelike_Kinematics *kin)
   if (all_colors_known) {
     if (mo->decay && mo->left->decay!=mo->decay) {
       // sync colors
-      SetColors(mo->left,mo->left->part->GetFlow(1),mo->part->GetFlow(1),
-  		mo->left->part->GetFlow(2),mo->part->GetFlow(2));
-      SetColors(mo->right,mo->right->part->GetFlow(1),mo->part->GetFlow(1),
-  		mo->right->part->GetFlow(2),mo->part->GetFlow(2));
+      SetColors(mo->left,mo->decay->part->GetFlow(1),mo->part->GetFlow(1),
+  		mo->decay->part->GetFlow(2),mo->part->GetFlow(2));
+      SetColors(mo->right,mo->decay->part->GetFlow(1),mo->part->GetFlow(1),
+  		mo->decay->part->GetFlow(2),mo->part->GetFlow(2));
     }
   }
   else if (mo->part->Flav().Kfcode()!=kf::none) {
@@ -811,6 +811,14 @@ bool Final_State_Shower::SetColours(Knot *mo,Timelike_Kinematics *kin)
       }
     }
   }
+  msg_Debugging()<<"                                "<<mo->kn_no<<","
+		 <<mo->part->Flav()<<"("<<mo->part->GetFlow(1)
+		 <<","<<mo->part->GetFlow(2)<<") -> "<<mo->left->kn_no<<","
+		 <<mo->left->part->Flav()<<"("<<mo->left->part->GetFlow(1)
+		 <<","<<mo->left->part->GetFlow(2)<<");"<<mo->right->kn_no<<","
+		 <<mo->right->part->Flav()<<"("<<mo->right->part->GetFlow(1)
+		 <<","<<mo->right->part->GetFlow(2)<<") => "
+		 <<all_colors_known<<"\n";
   return ( SetColours(d1,kin) && SetColours(d2,kin) );
 }
 

@@ -195,8 +195,6 @@ namespace APACIC {
     inline void SetISTrees(Tree **const trees) { p_istrees=trees; }
     inline void SetFSTree(Tree *const tree)    { p_fstree=tree;   }
 
-    inline void SetJetPT2(const double &pt2) { p_jf->SetShowerPt2(pt2); }
-
     inline size_t Mode() const { return m_mode;   }
 
     inline jv::mode JetVeto() const     { return m_jmode;  }

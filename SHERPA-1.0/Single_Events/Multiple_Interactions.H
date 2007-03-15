@@ -4,6 +4,7 @@
 #include "Event_Phase_Handler.H"
 #include "MI_Handler.H"
 
+namespace ATOOLS { class Jet_Finder;   }
 namespace PDF    { class Remnant_Base; }
 
 namespace SHERPA {
@@ -14,8 +15,9 @@ namespace SHERPA {
     double m_ecms, m_ptmax, m_lastptmax, m_ecmsmax, m_emax[2];
     double m_weight, m_ntrials;
 
-    MI_Handler        *p_mihandler;
-    PDF::Remnant_Base *p_remnants[2];
+    MI_Handler         *p_mihandler;
+    ATOOLS::Jet_Finder *p_jetfinder;
+    PDF::Remnant_Base  *p_remnants[2];
 
     ATOOLS::Blob_List *p_bloblist;
 

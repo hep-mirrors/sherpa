@@ -78,8 +78,7 @@ Apacic::~Apacic()
 }
 
 int Apacic::PerformShowers(const int &jetveto,const int &losejv,
-			   const double &x1,const double &x2,
-			   const double &ycut) 
+			   const double &x1,const double &x2) 
 {
   PROFILE_HERE;
   if (!m_showers) return 1;
@@ -234,15 +233,6 @@ ATOOLS::Vec4D Apacic::PrepareFSR()
   ATOOLS::Poincare cmsb(cms);
   p_fintree->BoRo(cmsb);
   return cms;
-}
-
-void Apacic::SetMaxJetNumber(const size_t &maxjets) 
-{ 
-}
-
-void Apacic::SetJetvetoPt2(const double &q2i, const double &q2f)
-{ 
-  if (p_jetveto!=NULL) p_jetveto->SetJetPT2(q2f); 
 }
 
 void Apacic::OutputTrees() 

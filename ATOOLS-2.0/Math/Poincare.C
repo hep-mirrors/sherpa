@@ -20,12 +20,15 @@ Poincare::Poincare(Vec4D v1, Vec4D v2):
   m_nabs=sqrt(m_nsq);
   m_usen=m_n.PSpat2()>0.0 && m_ct<1.0;
   if(sqr(m_ct)>1.0) {
-    std::cout.precision(32);
-    msg.Error()<<METHOD<<"(): cos^2\\theta > 1. cos\\theta="<<m_ct
-	       <<". Accordingly, set it to +-1. ";
-    std::cout.precision(6);
-    if(m_ct>0.0) m_ct=1.0; else m_ct=-1.0;
-    msg.Error()<<(m_usen ? "Will" : "Won't")<<" rotate."<<std::endl;
+    if (!IsEqual(sqr(m_ct),1.0)) {
+      int prc(msg.Error().precision());
+      msg.Error().precision(14);
+      msg.Error()<<METHOD<<"(): cos\\theta = "<<m_ct
+		 <<". Set to +-1. "<<(m_usen?"Will":"Won't")
+		 <<" rotate."<<std::endl;
+      msg.Error().precision(prc);
+    }
+    m_ct=m_ct>0.0?1.0:-1.0;
   }
   m_st=-sqrt(1.0-sqr(m_ct));
   if (m_usen) {

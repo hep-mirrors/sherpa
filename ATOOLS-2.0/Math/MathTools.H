@@ -61,6 +61,11 @@ namespace ATOOLS {
     if (a==0. && b==0.) return 1;
     return (dabs(a-b)/(dabs(a)+dabs(b))<Accu()) ? 1 : 0;
   }
+  inline int IsEqual(const double &a,const double &b,const double &crit) 
+  {
+    if (a==0. && b==0.) return 1;
+    return (dabs(a-b)/(dabs(a)+dabs(b))<crit) ? 1 : 0;
+  }
   inline int IsEqual(const Complex &a,const Complex &b) 
   {
     if (a==Complex(0.,0.) && b==Complex(0.,0.)) return 1;
