@@ -3,11 +3,14 @@ pkglib_LTLIBRARIES = libToolsOrg.la
 if GZIP_SUPPORT
 GZIPSTREAMSOURCES = Gzip_Stream.C
 GZIPSTREAMHEADERS = Gzip_Stream.H
+else
+GZIPEXTRADIST = Gzip_Stream.H Gzip_Stream.C
 endif
 
 libToolsOrg_la_SOURCES        = \
 				Return_Value.C \
 				Shell_Tools.C \
+				STL_Tools.C \
 				Getter_Function.C \
 				Exception.C \
 				Exception_Handler.C \
@@ -36,6 +39,7 @@ pkginclude_HEADERS       =	\
 			Return_Value.H \
 			Smart_Pointer.H \
 			Shell_Tools.H \
+			STL_Tools.H \
 			Getter_Function.H \
 			Exception.H \
 			Exception_Handler.H \
@@ -75,4 +79,4 @@ AM_CXXFLAGS   =	@SHERPAFLAGS@ @CONDITIONAL_ROOTFLAGS@
 
 INCLUDES      = @MODELINCS@ @ATOOLSINCS@ @CONDITIONAL_ROOTINCS@
 
-EXTRA_DIST    = @SVNINCLUDE@
+EXTRA_DIST    = @SVNINCLUDE@ $(GZIPEXTRADIST)
