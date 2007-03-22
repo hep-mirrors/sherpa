@@ -68,6 +68,7 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
 	activetypes.push_back(type);
 	break;
       case 3 : 
+      {
 	if (_nin==1) jettype = 0;
 	if (_nin==2) {
 	  int instrong(0);
@@ -87,6 +88,7 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
 	sel = djf;
 	activetypes.push_back(type);
 	break;
+      }
       case 11 :
 	sel = new Energy_Selector(_nin,_nout,_fl);
 	sel->SetRange(critflavs,rmin,rmax);

@@ -274,7 +274,7 @@ bool BFKL_PT_Selector::GetValue(const std::string &name,double &value)
 bool BFKL_PT_Selector::Trigger(const Vec4D * mom) 
 {
   std::vector<Vec4D> moms(m_nout);
-  for (size_t i(0);i<m_nout;++i) moms[i]=mom[m_nin+i];
+  for (int i(0);i<m_nout;++i) moms[i]=mom[m_nin+i];
   std::sort(moms.begin(),moms.end(),Order_Y());
   double pti(0.0);
   Vec4D qt(mom[0]);
