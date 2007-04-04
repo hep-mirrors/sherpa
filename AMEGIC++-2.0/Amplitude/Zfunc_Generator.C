@@ -41,7 +41,8 @@ void Zfunc_Generator::BuildZlist(Virtual_String_Generator* _sgen,Basic_Sfuncs* _
     zcalc.push_back(new SSSS_Calc(_sgen,_BS));
 
     if(rpa.gen.Model()==ATOOLS::Model_Type::SMEHC || 
-       rpa.gen.Model()==ATOOLS::Model_Type::MSSM_EHC){
+       rpa.gen.Model()==ATOOLS::Model_Type::MSSM_EHC ||
+       rpa.gen.Model()==ATOOLS::Model_Type::SM_Phantom_U1) {
       zcalc.push_back(new Triangle_Calc(_sgen,_BS));
       zcalc.push_back(new Box_Calc(_sgen,_BS));
       zcalc.push_back(new Pentagon_Calc(_sgen,_BS));
