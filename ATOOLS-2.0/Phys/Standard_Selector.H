@@ -11,6 +11,7 @@ namespace ATOOLS {
     No_Selector()                       { m_name = std::string ("No_Selector"); m_sel_log = 0; }
     No_Selector(int,int,Flavour *)      { m_name = std::string ("No_Selector"); m_sel_log = 0; }
     bool Trigger(const Vec4D*)                    { return 1; }
+    void SetRange(std::vector<Flavour>,double,double)       { }
     void BuildCuts(Cut_Data * cuts)                         { }
     void UpdateCuts(double sprime,double y,Cut_Data * cuts) { }
     void Output()                                           { }
@@ -58,7 +59,7 @@ namespace ATOOLS {
     bool     Trigger(const Vec4D * );
     void     BuildCuts(Cut_Data *);
     void     UpdateCuts(double,double,Cut_Data *);
-    bool GetValue(const std::string &name,double &value);
+    bool     GetValue(const std::string &name,double &value);
     inline double PTMin() const { return ptmin[m_nin]; }
     inline double PTMax() const { return ptmax[m_nin]; }
   };
@@ -114,6 +115,17 @@ namespace ATOOLS {
   public:
     Mass_Selector(int,int,Flavour *);
     ~Mass_Selector();
+    void     SetRange(std::vector<Flavour>,double,double);
+    bool     Trigger(const Vec4D * );
+    void     BuildCuts(Cut_Data *);
+    void     UpdateCuts(double,double,Cut_Data *);
+  };
+
+  class DeltaR_Selector : public Selector_Base {
+    double ** drmin, ** drmax, * value;
+  public:
+    DeltaR_Selector(int,int,Flavour *);
+    ~DeltaR_Selector();
     void     SetRange(std::vector<Flavour>,double,double);
     bool     Trigger(const Vec4D * );
     void     BuildCuts(Cut_Data *);

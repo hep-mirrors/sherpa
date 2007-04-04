@@ -761,6 +761,89 @@ void Mass_Selector::SetRange(std::vector<Flavour> crit,double _min, double _max)
 
 /*--------------------------------------------------------------------
 
+  Delta R Selector
+
+  --------------------------------------------------------------------*/
+
+DeltaR_Selector::DeltaR_Selector(int _nin,int _nout, Flavour * _fl) {
+  m_name = std::string("DeltaR_Selector"); 
+  m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
+  m_fl   = _fl;
+  m_smin = 0.;
+  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
+  
+  drmin = new double*[m_n];
+  drmax = new double*[m_n];
+  value = new double[m_n*m_n];
+
+  for (int i=0;i<m_n;i++) { 
+    drmin[i] = new double[m_n]; 
+    drmax[i] = new double[m_n];
+  }
+
+  for (int i=m_nin;i<m_n;i++) {
+    for (int j=i+1;j<m_n;j++) {
+      drmin[i][j] = drmin[j][i] = 0.; 
+      drmax[i][j] = drmax[j][i] = 200.;
+    }
+  }
+  m_sel_log = new Selector_Log(m_name);
+}
+
+DeltaR_Selector::~DeltaR_Selector() {
+  for (int i=0;i<m_n;i++) {
+    delete [] drmin[i];
+    delete [] drmax[i];
+  }
+  delete [] drmin;
+  delete [] drmax;
+  delete [] value;
+  delete m_sel_log;
+}
+
+bool DeltaR_Selector::Trigger(const Vec4D * mom) 
+{
+  double drij;
+  for (int i=m_nin;i<m_n;i++) {
+    for (int j=i+1;j<m_n;j++) {
+      drij = value[i*m_n+j] = mom[i].DR(mom[j]);
+//       PRINT_INFO("("<<m_fl[i]<<" "<<m_fl[j]<<") : "<<drij
+// 		 <<" in {"<<drmin[i][j]<<", "<<drmax[i][j]<<"}");
+      if (m_sel_log->Hit( ((drij < drmin[i][j]) || 
+			   (drij > drmax[i][j])) )) return 0;
+    }
+  }
+  return 1;
+}
+
+void DeltaR_Selector::BuildCuts(Cut_Data * cuts) {}
+
+void DeltaR_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
+
+
+void DeltaR_Selector::SetRange(std::vector<Flavour> crit,double _min, double _max)
+{
+  if (crit.size() != 2) {
+    msg.Error()<<"Wrong number of arguments in DeltaR_Selector::SetRange : "
+			  <<crit.size()<<endl;
+    return;
+  }
+
+  for (int i=m_nin;i<m_n;i++) {
+    for (int j=m_nin+1;j<m_n;j++) {
+      if ( ((crit[0].Includes(m_fl[i])) && (crit[1].Includes(m_fl[j])) ) || 
+	   ((crit[0].Includes(m_fl[j])) && (crit[1].Includes(m_fl[i])) ) ) {
+	drmin[i][j] = drmin[j][i] = _min;
+	drmax[i][j] = drmax[j][i] = _max;
+      }
+    }
+  }
+}
+
+
+
+/*--------------------------------------------------------------------
+
   Summed PT Selector
 
   --------------------------------------------------------------------*/
