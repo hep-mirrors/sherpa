@@ -149,8 +149,9 @@ void Tree_Filler::FillTrees(Blob * blob,Tree ** ini_trees,Tree * fin_tree)
   // known.)
   DetermineColourAngles(knots);
 
-  knots[0]->dir=ct_test->Momentum(0)[3]>0?1:-1;
-  knots[1]->dir=ct_test->Momentum(1)[3]>0?1:-1;
+  if (dabs(ct_test->Momentum(0)[3])>dabs(ct_test->Momentum(1)[3]))
+    knots[1]->dir=-(knots[0]->dir=ct_test->Momentum(0)[3]>0?1:-1);
+  else knots[0]->dir=-(knots[1]->dir=ct_test->Momentum(1)[3]>0?1:-1);
 
   for (int i=0;i<4;++i) ini_knots.push_back(mo);
 
