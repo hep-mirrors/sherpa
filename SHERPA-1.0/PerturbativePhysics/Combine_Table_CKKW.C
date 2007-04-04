@@ -112,7 +112,12 @@ CalcJet(int nl,const double x1,const double x2,ATOOLS::Vec4D * moms)
   while (true) {
     bool did_boost(InitStep(moms,nl));
     if (!SelectWinner(did_boost)) {
-      if (nl==4 && (IdentifyHardProcess() || p_up==NULL)) return this;
+      if (nl==4 && (IdentifyHardProcess() || p_up==NULL)) {
+	if (did_boost) for (size_t i=0;i<m_nl;++i) p_moms[i]=p_save_moms[i]; 
+	delete [] p_save_moms;
+	return this;
+      }
+      delete [] p_save_moms;
       delete this;
       return NULL;
     }
@@ -156,14 +161,7 @@ bool Combine_Table_CKKW::InitStep(ATOOLS::Vec4D *moms,const int nl)
 bool Combine_Table_CKKW::SelectWinner(const bool did_boost)
 {
   CD_List & cl(m_combinations);
-  if (cl.size()==0) {
-    // check if boosted  (restore saved moms)
-    if (did_boost) { 
-      for (size_t i=0;i<m_nl;++i) p_moms[i] = p_save_moms[i]; 
-    }
-    delete [] p_save_moms;
-    return false;
-  }
+  if (cl.size()==0) return false;
   // calculate pt2ij and determine "best" combination
   m_cdata_winner = cl.end();
   CD_List::iterator qcd_winner(cl.end());
