@@ -16,7 +16,7 @@ Interaction_Model_SM_Phantom_U1::Interaction_Model_SM_Phantom_U1(MODEL::Model_Ba
   p_mosm  = new Interaction_Model_SM(p_model,_cplscheme,_yukscheme); 
   double Ecms2  = sqr(rpa.gen.Ecms());
   double hmass2 = sqr(Flavour(kf::h0).Mass());
-  double Hmass2 = sqr(Flavour(kf::h0).Mass());
+  double Hmass2 = sqr(Flavour(kf::H0).Mass());
 
   g1    = Kabbala(string("g_1"),
 		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),Ecms2)));
@@ -211,7 +211,6 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
   }
 
 
-  /*!
   flav = Flavour(kf::photon);
   // Photon h Photon
   if (flav.IsOn()) {
@@ -340,7 +339,6 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].t       = -1;
     vertex.push_back(Single_Vertex());vanz++;
   }
-  */
 }
 
 void Interaction_Model_SM_Phantom_U1::c_SSS(vector<Single_Vertex>& vertex,int& vanz)  { 
@@ -462,9 +460,445 @@ void Interaction_Model_SM_Phantom_U1::c_SSS(vector<Single_Vertex>& vertex,int& v
 }
 
 void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& vanz) { 
+  Flavour flh0(Flavour(kf::h0)), flH0(Flavour(kf::H0));
+  Flavour flavW(kf::W);
+  Flavour flavZ(kf::Z);
+
+  Kabbala kcpl0,kcpl1,massh2,massH2,mix11,mix21,mix12,mix22;
+  Kabbala num_2,num_4;
+  mix11   = Kabbala(string("O_{11}"),ComplexMatrixElement("HiggsMix",0,0));
+  mix21   = Kabbala(string("O_{21}"),ComplexMatrixElement("HiggsMix",1,0));
+  mix12   = Kabbala(string("O_{12}"),ComplexMatrixElement("HiggsMix",0,1));
+  mix22   = Kabbala(string("O_{22}"),ComplexMatrixElement("HiggsMix",1,1));
+  massh2  = Kabbala(string("m_h^2"),sqr(flh0.Mass()));
+  massH2  = Kabbala(string("m_H^2"),sqr(flH0.Mass()));
+  num_2   = Kabbala(string("2"),2.); 
+  num_4   = Kabbala(string("4"),4.);
+ 
+  // h0 - Z - Z - h0   
+  if (flavZ.IsOn() && flh0.IsOn()) {
+    vertex[vanz].in[0] = flavZ;
+    vertex[vanz].in[1] = flh0;
+    vertex[vanz].in[2] = flh0;
+    vertex[vanz].in[3] = flavZ;
+    
+    vertex[vanz].nleg     = 4;
+    
+    kcpl0 = (M_I*g2*g2/(costW*costW*num_2))*mix11*mix11;
+    kcpl1 = kcpl0;
+    
+    vertex[vanz].cpl[0]  = kcpl0.Value();
+    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+    
+    vertex[vanz].ncf   = 1;
+    vertex[vanz].Color = new Color_Function(cf::None);     
+    
+    vertex[vanz].nlf     = 1;
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
+    vertex[vanz].Lorentz->SetParticleArg(0,3);     
+    
+    vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
+  }
+
+ // H0 - Z - Z - h0 
+  if (flavZ.IsOn() && flh0.IsOn() && flH0.IsOn()) {
+    vertex[vanz].in[0] = flavZ;
+    vertex[vanz].in[1] = flh0;
+    vertex[vanz].in[2] = flH0;
+    vertex[vanz].in[3] = flavZ;
+    
+    vertex[vanz].nleg     = 4;
+    
+    kcpl0 = (M_I*g2*g2/(costW*costW*num_4))*mix21*mix11;
+    kcpl1 = kcpl0;
+    
+    vertex[vanz].cpl[0]  = kcpl0.Value();
+    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+    
+    vertex[vanz].ncf   = 1;
+    vertex[vanz].Color = new Color_Function(cf::None);     
+    
+    vertex[vanz].nlf     = 1;
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
+    vertex[vanz].Lorentz->SetParticleArg(0,3);     
+    
+    vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
+  }
+
+ // H0 - Z - Z - H0   
+  if (flavZ.IsOn() && flH0.IsOn()) {
+    vertex[vanz].in[0] = flavZ;
+    vertex[vanz].in[1] = flH0;
+    vertex[vanz].in[2] = flH0;
+    vertex[vanz].in[3] = flavZ;
+    
+    vertex[vanz].nleg     = 4;
+    
+    kcpl0 = (M_I*g2*g2/(costW*costW*num_2))*mix21*mix21;
+    kcpl1 = kcpl0;
+    
+    vertex[vanz].cpl[0]  = kcpl0.Value();
+    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+    
+    vertex[vanz].ncf   = 1;
+    vertex[vanz].Color = new Color_Function(cf::None);     
+    
+    vertex[vanz].nlf     = 1;
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
+    vertex[vanz].Lorentz->SetParticleArg(0,3);     
+    
+    vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
+  }
+  // h0 - W - W - h0  
+  if (flavW.IsOn() && flh0.IsOn()) {
+    vertex[vanz].in[0] = flavW;
+    vertex[vanz].in[1] = flh0;
+    vertex[vanz].in[2] = flh0;
+    vertex[vanz].in[3] = flavW;
+    
+    vertex[vanz].nleg     = 4;
+    
+    kcpl0 = (M_I*g2*g2/num_4)*mix11*mix11;
+    kcpl1 = kcpl0;
+    
+    vertex[vanz].cpl[0]  = kcpl0.Value();
+    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+    
+    vertex[vanz].ncf   = 1;
+    vertex[vanz].Color = new Color_Function(cf::None);     
+    
+    vertex[vanz].nlf     = 1;
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);     
+    vertex[vanz].Lorentz->SetParticleArg(0,3);     
+    
+    vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
+  }
+ // H0 - W - W - h0  
+  if (flavW.IsOn() && flh0.IsOn() && flH0.IsOn()) {
+    vertex[vanz].in[0] = flavW;
+    vertex[vanz].in[1] = flH0;
+    vertex[vanz].in[2] = flh0;
+    vertex[vanz].in[3] = flavW;
+    
+    vertex[vanz].nleg     = 4;
+    
+    kcpl0 = (M_I*g2*g2/num_4)*mix21*mix11;
+    kcpl1 = kcpl0;
+    
+    vertex[vanz].cpl[0]  = kcpl0.Value();
+    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+    
+    vertex[vanz].ncf   = 1;
+    vertex[vanz].Color = new Color_Function(cf::None);     
+    
+    vertex[vanz].nlf     = 1;
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);     
+    vertex[vanz].Lorentz->SetParticleArg(0,3);     
+    
+    vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
+  }
+ // H0 - W - W - H0  
+  if (flavW.IsOn() && flH0.IsOn()) {
+    vertex[vanz].in[0] = flavW;
+    vertex[vanz].in[1] = flH0;
+    vertex[vanz].in[2] = flH0;
+    vertex[vanz].in[3] = flavW;
+    
+    vertex[vanz].nleg     = 4;
+    
+    kcpl0 = (M_I*g2*g2/num_2)*mix21*mix21;
+    kcpl1 = kcpl0;
+    
+    vertex[vanz].cpl[0]  = kcpl0.Value();
+    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+    
+    vertex[vanz].ncf   = 1;
+    vertex[vanz].Color = new Color_Function(cf::None);     
+    
+    vertex[vanz].nlf     = 1;
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);     
+    vertex[vanz].Lorentz->SetParticleArg(0,3);     
+    
+    vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
+  }
 }
 
 void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& vanz) { 
+  Flavour flh0(Flavour(kf::h0)), flH0(Flavour(kf::H0)), flA0(Flavour(kf::A0));
+  Kabbala kcpl0,kcpl1,massh2,massH2,mix11,mix21,mix12,mix22;
+  Kabbala num_2,num_4,num_3,num_6,num_8,num_24;
+  Kabbala mix11_3,mix21_3,mix12_3,mix22_3;
+  Kabbala mix11_4,mix21_4,mix12_4,mix22_4; 
+  Kabbala mix11_2,mix21_2,mix12_2,mix22_2;
+  mix11   = Kabbala(string("O_{11}"),ComplexMatrixElement("HiggsMix",0,0));
+  mix21   = Kabbala(string("O_{21}"),ComplexMatrixElement("HiggsMix",1,0));
+  mix12   = Kabbala(string("O_{12}"),ComplexMatrixElement("HiggsMix",0,1));
+  mix22   = Kabbala(string("O_{22}"),ComplexMatrixElement("HiggsMix",1,1));
+  mix11_3 = Kabbala(string("O_{11}^3"),pow(ComplexMatrixElement("HiggsMix",0,0),3));
+  mix21_3 = Kabbala(string("O_{21}^3"),pow(ComplexMatrixElement("HiggsMix",1,0),3));
+  mix12_3 = Kabbala(string("O_{12}^3"),pow(ComplexMatrixElement("HiggsMix",0,1),3));
+  mix22_3 = Kabbala(string("O_{22}^3"),pow(ComplexMatrixElement("HiggsMix",1,1),3));				    
+  mix11_4 = Kabbala(string("O_{11}^4"),pow(ComplexMatrixElement("HiggsMix",0,0),4));
+  mix21_4 = Kabbala(string("O_{21}^4"),pow(ComplexMatrixElement("HiggsMix",1,0),4));
+  mix12_4 = Kabbala(string("O_{12}^4"),pow(ComplexMatrixElement("HiggsMix",0,1),4));
+  mix22_4 = Kabbala(string("O_{22}^4"),pow(ComplexMatrixElement("HiggsMix",1,1),4));	
+  mix11_2 = Kabbala(string("O_{11}^2"),pow(ComplexMatrixElement("HiggsMix",0,0),2));
+  mix21_2 = Kabbala(string("O_{21}^2"),pow(ComplexMatrixElement("HiggsMix",1,0),2));
+  mix12_2 = Kabbala(string("O_{12}^2"),pow(ComplexMatrixElement("HiggsMix",0,1),2));
+  mix22_2 = Kabbala(string("O_{22}^2"),pow(ComplexMatrixElement("HiggsMix",1,1),2));
+  massh2  = Kabbala(string("m_h^2"),sqr(flh0.Mass()));
+  massH2  = Kabbala(string("m_H^2"),sqr(flH0.Mass()));
+  num_2   = Kabbala(string("2"),2.); 
+  num_3   = Kabbala(string("3"),3.);
+  num_4   = Kabbala(string("4"),4.);
+  num_8   = Kabbala(string("8"),8.);							    
+  num_24  = Kabbala(string("24"),24.);
+  num_6  = Kabbala(string("6"),6.);
+  // h0-h0-h0-h0
+  if (flh0.IsOn()) {  
+    vertex[vanz].in[0] = flh0;
+    vertex[vanz].in[1] = flh0;
+    vertex[vanz].in[2] = flh0;
+    vertex[vanz].in[3] = flh0;
+
+    vertex[vanz].nleg  = 4;  
+    
+    kcpl0 = -M_I*num_24/(num_8 * vev * vev)*
+      (tanb*tanb*mix12_4*(mix11_2*massH2+mix12_2*massh2)
+               + mix11_4*(mix11_2*massh2 + mix12_2*massH2) 
+               - num_2*mix11_3*mix12_3*tanb*(massH2-massh2));
+    kcpl1 = kcpl0;
+    
+    vertex[vanz].cpl[0]  = kcpl0.Value();
+    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+
+    vertex[vanz].ncf   = 1;
+    vertex[vanz].Color = new Color_Function(cf::None);     
+    
+    vertex[vanz].nlf     = 1;
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+
+    vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
+  }
+  // H0-H0-H0-H0
+ if (flH0.IsOn()) {  
+    vertex[vanz].in[0] = flH0;
+    vertex[vanz].in[1] = flH0;
+    vertex[vanz].in[2] = flH0;
+    vertex[vanz].in[3] = flH0;
+
+    vertex[vanz].nleg  = 4;  
+    
+    kcpl0 = -M_I*num_24/(num_8 * vev * vev)*
+      (tanb*tanb*mix22_4*(mix11_2*massH2+mix12_2*massh2)
+               + mix21_4*(mix11_2*massh2 + mix12_2*massH2) 
+               - num_2*mix11_3*mix12_3*tanb*(massH2-massh2));
+    kcpl1 = kcpl0;
+    
+    vertex[vanz].cpl[0]  = kcpl0.Value();
+    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+
+    vertex[vanz].ncf   = 1;
+    vertex[vanz].Color = new Color_Function(cf::None);     
+    
+    vertex[vanz].nlf     = 1;
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+
+    vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
+  }
+  // H0-H0-H0-h0
+ if (flH0.IsOn() && flh0.IsOn()) {  
+    vertex[vanz].in[0] = flH0;
+    vertex[vanz].in[1] = flH0;
+    vertex[vanz].in[2] = flH0;
+    vertex[vanz].in[3] = flh0;
+
+    vertex[vanz].nleg  = 4;  
+    
+    kcpl0 = M_I*num_6*mix11*mix21/(num_2 * vev * vev)*(mix12+mix11*tanb)*
+            ((massH2*(mix22_3*tanb+mix21_3)+
+              massh2*(mix21*mix11_2+mix22*mix12_2*tanb)));
+    kcpl1 = kcpl0;
+    
+    vertex[vanz].cpl[0]  = kcpl0.Value();
+    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+
+    vertex[vanz].ncf   = 1;
+    vertex[vanz].Color = new Color_Function(cf::None);     
+    
+    vertex[vanz].nlf     = 1;
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+
+    vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
+  }
+ // h0-h0-h0-H0
+ if (flH0.IsOn() && flh0.IsOn()) {  
+    vertex[vanz].in[0] = flh0;
+    vertex[vanz].in[1] = flh0;
+    vertex[vanz].in[2] = flh0;
+    vertex[vanz].in[3] = flH0;
+
+    vertex[vanz].nleg  = 4;  
+    
+    kcpl0 = M_I*num_6*mix11*mix21/(num_2 * vev * vev)*(mix22+mix21*tanb)*
+      (massh2*(mix12_3*tanb+mix11_3)+
+       massH2*(mix11*mix21_2+mix12*mix22_2*tanb));
+    kcpl1 = kcpl0;
+    
+    vertex[vanz].cpl[0]  = kcpl0.Value();
+    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+
+    vertex[vanz].ncf   = 1;
+    vertex[vanz].Color = new Color_Function(cf::None);     
+    
+    vertex[vanz].nlf     = 1;
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+
+    vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
+  }
+ // h0-h0-H0-H0
+ if (flH0.IsOn() && flh0.IsOn()) {  
+    vertex[vanz].in[0] = flh0;
+    vertex[vanz].in[1] = flh0;
+    vertex[vanz].in[2] = flH0;
+    vertex[vanz].in[3] = flH0;
+
+    vertex[vanz].nleg  = 4;  
+    
+    kcpl0 = M_I*num_4*mix12*mix11/(num_4 * vev * vev)*
+            ( (massH2-massh2)*tanb*(mix11_4-num_4*mix11_2*mix12_2+mix12_4)
+            - num_3*mix11*mix12*(massh2*mix11_2+massH2*mix12_2+
+            (massh2*mix12_2+massH2*mix11_2)*tanb));
+    kcpl1 = kcpl0;
+    
+    vertex[vanz].cpl[0]  = kcpl0.Value();
+    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+
+    vertex[vanz].ncf   = 1;
+    vertex[vanz].Color = new Color_Function(cf::None);     
+    
+    vertex[vanz].nlf     = 1;
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+
+    vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
+  }
+// h0-h0-A0-A0
+ if (flA0.IsOn() && flh0.IsOn()) {  
+    vertex[vanz].in[0] = flh0;
+    vertex[vanz].in[1] = flh0;
+    vertex[vanz].in[2] = flA0;
+    vertex[vanz].in[3] = flA0;
+
+    vertex[vanz].nleg  = 4;  
+    
+    kcpl0 = M_I/(vev * vev)*
+            ( (massH2-massh2)*tanb*mix11*mix12*mix11*mix11-
+              tanb*tanb*(massh2*mix12_2+massH2*mix11_2)*mix12*mix12);
+    kcpl1 = kcpl0;
+    
+    vertex[vanz].cpl[0]  = kcpl0.Value();
+    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+
+    vertex[vanz].ncf   = 1;
+    vertex[vanz].Color = new Color_Function(cf::None);     
+    
+    vertex[vanz].nlf     = 1;
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+
+    vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
+  }
+// H0-H0-A0-A0
+ if (flA0.IsOn() && flH0.IsOn()) {  
+    vertex[vanz].in[0] = flH0;
+    vertex[vanz].in[1] = flH0;
+    vertex[vanz].in[2] = flA0;
+    vertex[vanz].in[3] = flA0;
+
+    vertex[vanz].nleg  = 4;  
+    
+    kcpl0 = M_I/(vev * vev)*
+            ( (massH2-massh2)*tanb*mix11*mix12*mix21*mix21-
+              tanb*tanb*(massh2*mix12_2+massH2*mix11_2)*mix22*mix22);
+    kcpl1 = kcpl0;
+    
+    vertex[vanz].cpl[0]  = kcpl0.Value();
+    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+
+    vertex[vanz].ncf   = 1;
+    vertex[vanz].Color = new Color_Function(cf::None);     
+    
+    vertex[vanz].nlf     = 1;
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+
+    vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
+  }
+// h0-H0-A0-A0
+ if (flA0.IsOn() && flh0.IsOn() && flH0.IsOn()) {  
+    vertex[vanz].in[0] = flh0;
+    vertex[vanz].in[1] = flH0;
+    vertex[vanz].in[2] = flA0;
+    vertex[vanz].in[3] = flA0;
+
+    vertex[vanz].nleg  = 4;  
+    
+    kcpl0 = M_I/(num_2 * vev * vev)*
+            ( (massH2-massh2)*tanb*mix11*mix12*mix11*mix21-
+              tanb*tanb*(massh2*mix12_2+massH2*mix11_2)*mix12*mix22);
+    kcpl1 = kcpl0;
+    
+    vertex[vanz].cpl[0]  = kcpl0.Value();
+    vertex[vanz].cpl[1]  = kcpl1.Value();
+    vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+
+    vertex[vanz].ncf   = 1;
+    vertex[vanz].Color = new Color_Function(cf::None);     
+    
+    vertex[vanz].nlf     = 1;
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
+
+    vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
+  }
 }
 
 Interaction_Model_SM_Phantom_U1::~Interaction_Model_SM_Phantom_U1()
