@@ -19,6 +19,7 @@ libToolsPhys_la_SOURCES       =	\
 				Cambridge_Algorithm.C \
 				Kt_Algorithm.C \
 				Standard_Selector.C \
+				Selector_Bias.C \
 				Blob.C \
 				Blob_List.C \
 				Parton_Finder.C \
@@ -55,6 +56,7 @@ pkginclude_HEADERS        =	\
 			Kt_Algorithm.H \
 			Combined_Selector.H \
 			Standard_Selector.H \
+			Selector_Bias.H \
 			Flow.H \
 			Blob.H \
 			Blob_List.H \

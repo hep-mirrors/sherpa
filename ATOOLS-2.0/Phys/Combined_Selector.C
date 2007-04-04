@@ -4,6 +4,7 @@
 #include "Dipole_Jet_Finder.H"
 #include "Cone_Finder.H"
 #include "Run_Parameter.H"
+#include "Selector_Bias.H"
 #include "Message.H"
 #include "MyStrStream.H"
 
@@ -24,14 +25,16 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
   if (_seldata==NULL) return; 
   int                               type;
   std::vector<int>                  activetypes;
-  std::vector<Flavour>   critflavs;
+  std::vector<Flavour>              critflavs;
   double                            rmin,rmax;
   int                               help;
   bool                              init;
   Selector_Base                   * sel;
-
+  std::vector<std::pair<double,double> > bounds;
   for (int i=0;i<_seldata->Size();i++) {
-    _seldata->Data(i,type,critflavs,help,rmin,rmax);
+    _seldata->FillData(i,type,critflavs,bounds,help);
+    rmin=bounds.front().first;
+    rmax=bounds.front().second;
     init = 1;
     for (size_t j=0;j<activetypes.size();j++) {
       if (type==activetypes[j]) {
@@ -142,6 +145,31 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
       case 25 :
 	sel = new BFKL_PT_Selector(_nin,_nout,_fl);
 	sel->SetRange(critflavs,rmin,rmax);
+	activetypes.push_back(type);
+	break;
+      case 26 : 
+	sel = new Delta_R_Selector(_nin,_nout,_fl);
+	sel->SetRange(critflavs,rmin,rmax);
+	activetypes.push_back(type);
+	break;
+      case 101 :
+	sel = new ET_Bias(_nin,_nout,_fl);
+	sel->SetRange(critflavs,bounds);
+	activetypes.push_back(type);
+	break;
+      case 102 :
+	sel = new PT_Bias(_nin,_nout,_fl);
+	sel->SetRange(critflavs,bounds);
+	activetypes.push_back(type);
+	break;
+      case 103 :
+	sel = new Eta_Bias(_nin,_nout,_fl);
+	sel->SetRange(critflavs,bounds);
+	activetypes.push_back(type);
+	break;
+      case 113 :
+	sel = new Leading_Delta_Eta_Bias(_nin,_nout,_fl,ordering::code(help));
+	sel->SetRange(critflavs,bounds);
 	activetypes.push_back(type);
 	break;
       default :

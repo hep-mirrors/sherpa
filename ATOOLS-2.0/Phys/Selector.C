@@ -2,6 +2,8 @@
 #include "Message.H"
 
 #include "Algebra_Interpreter.H"
+#include "Data_Reader.H"
+#include "Exception.H"
 #include "Run_Parameter.H"
 #include "MyStrStream.H"
 
@@ -36,6 +38,12 @@ void Selector_Base::SetRange(std::vector<Flavour>,double,double) {
 }
 
 void Selector_Base::SetRange(std::vector<Flavour>,int,double,double) { 
+  msg.Error()<<"Selector_Base::SetRange : Virtual method."<<std::endl;
+}
+
+void Selector_Base::SetRange(std::vector<Flavour>,
+			     std::vector<std::pair<double,double> > &)
+{
   msg.Error()<<"Selector_Base::SetRange : Virtual method."<<std::endl;
 }
 
@@ -88,141 +96,242 @@ bool Selector_Data::ReadInData(std::string filename) {
     return 0;
   }
   
-  std::string keyword;
+  std::string keyword, dmin, dmax;
   Mom_Data    dat;
-  int         crit1,crit2;
-  Flavour     flav;
+  int         crit1,crit2,mode;
+  Flavour     flav,flav2;
   for(;from;) {
+    dat.type=-1;
     dat.flavs.clear();
+    dat.bounds.resize(1);
     keyword=string("");
     from>>keyword;
+    Algebra_Interpreter inter;
+    inter.AddTag("E_CMS",ToString(rpa.gen.Ecms()));
     if (keyword == string("JetFinder")) {
       dat.type = 1;
-      std::string dmin, dmax;
       from>>dmin>>dmax;
       rpa.gen.SetVariable("Y_CUT",dmin);
       rpa.gen.SetVariable("DELTA_R",dmax);
-      dat.min=2.0;
-      dat.max=1.0;
+      dat.bounds.front().first=2.0;
+      dat.bounds.front().second=1.0;
       data.push_back(dat);
     }
-    if (keyword == string("ConeFinder")) {
+    else if (keyword == string("ConeFinder")) {
       dat.type = 2;
-      from>>dat.min;
-      data.push_back(dat);
+      from>>dmin;
+      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
     }
-    if (keyword == string("DipoleFinder")) {
+    else if (keyword == string("DipoleFinder")) {
       dat.type = 3;
-      std::string dmin, dmax;
       from>>dmin>>dmax;
       Algebra_Interpreter inter;
-      dat.min=ToType<double>(inter.Interprete(dmin));
-      dat.max=ToType<double>(inter.Interprete(dmax));
-      data.push_back(dat);
+      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
+      dat.bounds.front().second=ToType<double>(inter.Interprete(dmax));
     }
-    if (keyword == string("Energy")) {
+    else if (keyword == string("Energy")) {
       dat.type = 11;
-      from>>crit1>>dat.min>>dat.max;
-      flav = Flavour(kf::code(abs(crit1)));
-      if (crit1<0) flav = flav.Bar();
-      (dat.flavs).push_back(flav);
-      data.push_back(dat);
-    }
-    if (keyword == string("PT")) {
-      dat.type = 12;
-      from>>crit1>>dat.min>>dat.max;
-      flav = Flavour(kf::code(abs(crit1)));
-      if (crit1<0) flav = flav.Bar();
-      (dat.flavs).push_back(flav);
-      data.push_back(dat);
-    }
-    if (keyword == string("BFKL_PT")) {
-      dat.type = 25;
-      std::string dmin, dmax;
       from>>crit1>>dmin>>dmax;
-      Algebra_Interpreter inter;
-      dat.min=ToType<double>(inter.Interprete(dmin));
-      dat.max=ToType<double>(inter.Interprete(dmax));
+      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
+      dat.bounds.front().second=ToType<double>(inter.Interprete(dmax));
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
-      (dat.flavs).push_back(flav);
-      data.push_back(dat);
+      dat.flavs.push_back(flav);
     }
-    if (keyword == string("X")) {
-      dat.type = 24;
-      std::string dmin, dmax;
-      from>>dmin>>dmax;
-      Algebra_Interpreter inter;
-      dat.min=ToType<double>(inter.Interprete(dmin));
-      dat.max=ToType<double>(inter.Interprete(dmax));
-      data.push_back(dat);
+    else if (keyword == string("PT")) {
+      dat.type = 12;
+      from>>crit1>>dmin>>dmax;
+      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
+      dat.bounds.front().second=ToType<double>(inter.Interprete(dmax));
+      flav = Flavour(kf::code(abs(crit1)));
+      if (crit1<0) flav = flav.Bar();
+      dat.flavs.push_back(flav);
     }
-    if (keyword == string("PT2")) {
-      dat.type = 23;
-      from>>crit1>>crit2>>dat.min>>dat.max;
-      Flavour flav1 = Flavour(kf::code(abs(crit1)));
-      Flavour flav2 = Flavour(kf::code(abs(crit2)));
-      if (crit1<0) flav1 = flav1.Bar();
-      if (crit2<0) flav2 = flav2.Bar();
-      (dat.flavs).push_back(flav1);
-      (dat.flavs).push_back(flav2);
-      data.push_back(dat);
-    }
-    if (keyword == string("Rapidity")) {
+    else if (keyword == string("Rapidity")) {
       dat.type = 13;
-      from>>crit1>>dat.min>>dat.max;
+      from>>crit1>>dmin>>dmax;
+      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
+      dat.bounds.front().second=ToType<double>(inter.Interprete(dmax));
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
-      (dat.flavs).push_back(flav);
-      data.push_back(dat);
+      dat.flavs.push_back(flav);
     }
-    if (keyword == string("BeamAngle")) {
+    else if (keyword == string("BeamAngle")) {
       dat.type = 14;
-      from>>crit1>>crit2>>dat.min>>dat.max;
+      from>>crit1>>crit2>>dmin>>dmax;
+      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
+      dat.bounds.front().second=ToType<double>(inter.Interprete(dmax));
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
-      (dat.flavs).push_back(flav);
+      dat.flavs.push_back(flav);
       dat.help = crit2;
-      data.push_back(dat);
     }  
-    if (keyword == string("ET")) {
+    else if (keyword == string("ET")) {
       dat.type = 15;
-      from>>crit1>>dat.min>>dat.max;
+      from>>crit1>>dmin>>dmax;
+      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
+      dat.bounds.front().second=ToType<double>(inter.Interprete(dmax));
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
-      (dat.flavs).push_back(flav);
-      data.push_back(dat);
+      dat.flavs.push_back(flav);
     }
-    if (keyword == string("PseudoRapidity")) {
+    else if (keyword == string("PseudoRapidity")) {
       dat.type = 16;
-      from>>crit1>>dat.min>>dat.max;
+      from>>crit1>>dmin>>dmax;
+      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
+      dat.bounds.front().second=ToType<double>(inter.Interprete(dmax));
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
-      (dat.flavs).push_back(flav);
-      data.push_back(dat);
+      dat.flavs.push_back(flav);
     }
-    if (keyword == string("Mass")) {
+    else if (keyword == string("Mass")) {
       dat.type = 21;
-      from>>crit1>>crit2>>dat.min>>dat.max;
+      from>>crit1>>crit2>>dmin>>dmax;
+      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
+      dat.bounds.front().second=ToType<double>(inter.Interprete(dmax));
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
       (dat.flavs).push_back(flav);
       flav = Flavour(kf::code(abs(crit2)));
       if (crit2<0) flav = flav.Bar();
-      (dat.flavs).push_back(flav);
-      data.push_back(dat);
+      dat.flavs.push_back(flav);
     }
-    if (keyword == string("Angle")) {
+    else if (keyword == string("Angle")) {
       dat.type = 22;
-      from>>crit1>>crit2>>dat.min>>dat.max;
+      from>>crit1>>crit2>>dmin>>dmax;
+      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
+      dat.bounds.front().second=ToType<double>(inter.Interprete(dmax));
       flav = Flavour(kf::code(abs(crit1)));
       if (crit1<0) flav = flav.Bar();
       (dat.flavs).push_back(flav);
       flav = Flavour(kf::code(abs(crit2)));
       if (crit2<0) flav = flav.Bar();
-      (dat.flavs).push_back(flav);
-      data.push_back(dat);
+      dat.flavs.push_back(flav);
     }  
+    else if (keyword == string("PT2")) {
+      dat.type = 23;
+      from>>crit1>>crit2>>dmin>>dmax;
+      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
+      dat.bounds.front().second=ToType<double>(inter.Interprete(dmax));
+      flav  = Flavour(kf::code(abs(crit1)));
+      flav2 = Flavour(kf::code(abs(crit2)));
+      if (crit1<0) flav  = flav.Bar();
+      if (crit2<0) flav2 = flav2.Bar();
+      dat.flavs.push_back(flav);
+      dat.flavs.push_back(flav2);
+    }
+    else if (keyword == string("X")) {
+      dat.type = 24;
+      from>>dmin>>dmax;
+      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
+      dat.bounds.front().second=ToType<double>(inter.Interprete(dmax));
+    }
+    else if (keyword == string("BFKL_PT")) {
+      dat.type = 25;
+      from>>crit1>>dmin>>dmax;
+      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
+      dat.bounds.front().second=ToType<double>(inter.Interprete(dmax));
+      flav = Flavour(kf::code(abs(crit1)));
+      if (crit1<0) flav = flav.Bar();
+      dat.flavs.push_back(flav);
+    }
+    else if (keyword == string("DeltaR")) {
+      dat.type = 26;
+      from>>crit1>>crit2>>dmin>>dmax;
+      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
+      dat.bounds.front().second=ToType<double>(inter.Interprete(dmax));
+      flav = Flavour(kf::code(abs(crit1)));
+      if (crit1<0) flav = flav.Bar();
+      (dat.flavs).push_back(flav);
+      flav = Flavour(kf::code(abs(crit2)));
+      if (crit2<0) flav = flav.Bar();
+      dat.flavs.push_back(flav);
+    }
+    else if (keyword == string("ET_Bias")) {
+      dat.type = 101;
+      std::string values;
+      from>>crit1>>values;
+      flav = Flavour(kf::code(abs(crit1)));
+      if (crit1<0) flav = flav.Bar();
+      Data_Reader reader(",",";","!","=");
+      reader.SetString(values);
+      std::vector<std::vector<double> > crits;
+      if (!reader.MatrixFromString(crits,""))
+	THROW(critical_error,"Invalid Syntax in Selector.dat: '"+values+"'");
+      dat.bounds.clear();
+      for (size_t i(0);i<crits.size();++i) {
+	if (crits[i].size()<1) 
+	  THROW(critical_error,"Invalid Syntax in Selector.dat: '"+values+"'");
+	dat.flavs.push_back(flav);
+	dat.bounds.push_back(std::pair<double,double>
+			     (crits[i].front(),rpa.gen.Ecms()));
+      }
+    }
+    else if (keyword == string("PT_Bias")) {
+      dat.type = 102;
+      std::string values;
+      from>>crit1>>values;
+      flav = Flavour(kf::code(abs(crit1)));
+      if (crit1<0) flav = flav.Bar();
+      Data_Reader reader(",",";","!","=");
+      reader.SetString(values);
+      std::vector<std::vector<double> > crits;
+      if (!reader.MatrixFromString(crits,""))
+	THROW(critical_error,"Invalid Syntax in Selector.dat: '"+values+"'");
+      dat.bounds.clear();
+      for (size_t i(0);i<crits.size();++i) {
+	dat.flavs.push_back(flav);
+	if (crits[i].size()<1) 
+	  THROW(critical_error,"Invalid Syntax in Selector.dat: '"+values+"'");
+	dat.bounds.push_back(std::pair<double,double>
+			     (crits[i].front(),rpa.gen.Ecms()));
+      }
+    }
+    else if (keyword == string("Eta_Bias")) {
+      dat.type = 103;
+      std::string values;
+      from>>crit1>>values;
+      flav = Flavour(kf::code(abs(crit1)));
+      if (crit1<0) flav = flav.Bar();
+      Data_Reader reader(",",";","!","=");
+      reader.SetString(values);
+      std::vector<std::vector<double> > crits;
+      if (!reader.MatrixFromString(crits,""))
+	THROW(critical_error,"Invalid Syntax in Selector.dat: '"+values+"'");
+      dat.bounds.clear();
+      for (size_t i(0);i<crits.size();++i) {
+	if (crits[i].size()<2) 
+	  THROW(critical_error,"Invalid Syntax in Selector.dat: '"+values+"'");
+	dat.flavs.push_back(flav);
+	dat.bounds.push_back(std::pair<double,double>
+			     (crits[i][0],crits[i][1]));
+      }
+    }
+    else if (keyword == string("Leading_Delta_Eta_Bias")) {
+      dat.type = 113;
+      std::string values;
+      from>>crit1>>crit2>>mode>>values;
+      flav = Flavour(kf::code(abs(crit1)));
+      if (crit1<0) flav  = flav.Bar();
+      flav2 = Flavour(kf::code(abs(crit2)));
+      if (crit2<0) flav2 = flav2.Bar();
+      dat.flavs.push_back(flav);
+      dat.flavs.push_back(flav2);
+      dat.help = mode;
+      Data_Reader reader(",",";","!","=");
+      reader.SetString(values);
+      std::vector<std::vector<double> > crits;
+      if (!reader.MatrixFromString(crits,""))
+	THROW(critical_error,"Invalid Syntax in Selector.dat: '"+values+"'");
+      dat.bounds.clear();
+      for (size_t i(0);i<crits.size();++i) {
+	if (crits[i].size()<2) 
+	  THROW(critical_error,"Invalid Syntax in Selector.dat: '"+values+"'");
+	dat.bounds.push_back(std::pair<double,double>
+			     (crits[i][0],crits[i][1]));
+      }
+    }
+    if (dat.type>0) data.push_back(dat);
   }
   from.close();
   return 1;
@@ -236,27 +345,35 @@ void Selector_Data::ControlOutput() {
   msg_Debugging()<<"Selector_Data : "<<endl;
   for (size_t i=0;i<data.size();i++) {
     switch (data[i].type) {
-    case 1:  msg_Debugging()<<"Jet_Finder : "; break;
-    case 2:  msg_Debugging()<<"Cone_Finder: "; break;
-    case 11: msg_Debugging()<<"Energies   : "; break;
-    case 12: msg_Debugging()<<"PTs        : "; break;
-    case 13: msg_Debugging()<<"Rapidities : "; break;
-    case 14: msg_Debugging()<<"BeamAngles : "; break;
-    case 15: msg_Debugging()<<"ETs        : "; break;
-    case 16: msg_Debugging()<<"PseudoRaps : "; break;  
-    case 21: msg_Debugging()<<"Masses     : "; break;
-    case 22: msg_Debugging()<<"Angles     : "; break;
-    case 23: msg_Debugging()<<"PT2        : "; break;
+    case 1:  msg_Debugging()<<"Jet_Finder :      "; break;
+    case 2:  msg_Debugging()<<"Cone_Finder:      "; break;
+    case 3:  msg_Debugging()<<"Dipole_Jetfinder: "; break;
+    case 11: msg_Debugging()<<"Energies   :      "; break;
+    case 12: msg_Debugging()<<"PTs        :      "; break;
+    case 13: msg_Debugging()<<"Rapidities :      "; break;
+    case 14: msg_Debugging()<<"BeamAngles :      "; break;
+    case 15: msg_Debugging()<<"ETs        :      "; break;
+    case 16: msg_Debugging()<<"PseudoRaps :      "; break;  
+    case 21: msg_Debugging()<<"Masses     :      "; break;
+    case 22: msg_Debugging()<<"Angles     :      "; break;
+    case 23: msg_Debugging()<<"PT2        :      "; break;
+    case 26: msg_Debugging()<<"DeltaR     :      "; break;
+    case 101: msg_Debugging()<<"ET_Bias    :      "; break;
+    case 102: msg_Debugging()<<"PT_Bias    :      "; break;
+    case 103: msg_Debugging()<<"Eta_Bias   :      "; break;
+    case 113: msg_Debugging()<<"L_DEta_Bias:      "; break;
     } 
-    msg_Debugging()<<data[i].min<<" ... "<<data[i].max<<" : ";
+    for (size_t j(0);j<data[i].bounds.size();++j) 
+      msg_Debugging()<<"{"<<data[i].bounds[j].first<<","<<data[i].bounds[j].second<<"}";
+    msg_Debugging()<<" : ";
     for (size_t j=0;j<(data[i].flavs).size();j++) msg_Debugging()<<(data[i]).flavs[j]<<" ";
     if (data[i].type == 14) msg_Debugging()<<" with "<<data[i].help;
     msg_Debugging()<<endl;
   }
 }
 
-void Selector_Data::Data(int i,int & type,std::vector<Flavour> & flavs,
-			 int & help,double & min,double & max) {
+void Selector_Data::FillData(int i,int & type,std::vector<Flavour> & flavs,
+			     std::vector<std::pair<double,double> > &bounds,int & help) {
   if ( (i<0) || (i>(int)data.size()) ) {
     msg.Error()<<"Error in Selector_Data::Data("<<i<<"). "
 			  <<"Delimiter out of bounds."<<endl
@@ -265,27 +382,25 @@ void Selector_Data::Data(int i,int & type,std::vector<Flavour> & flavs,
   }
   type  = data[i].type;
   flavs = data[i].flavs;
-  min   = data[i].min;
-  max   = data[i].max;
+  bounds= data[i].bounds;
   help  = data[i].help;
 }
 
 void Selector_Data::SetData(int  _type,const std::vector<Flavour> & _flavs,
-			    int  _help,double  _min,double  _max) 
+			    std::vector<std::pair<double,double> > &_bounds,int  _help) 
 {
   RemoveData(_type);
-  AddData(_type,_flavs,_help,_min,_max);
+  AddData(_type,_flavs,_bounds,_help);
 }
 
 void Selector_Data::AddData(int _type,const std::vector<Flavour> & _flavs,
-			    int _help,double _min,double _max) 
+			    std::vector<std::pair<double,double> > &_bounds,int _help) 
 {
   Mom_Data dat;
   dat.type  = _type;
   dat.flavs = _flavs;
   dat.help  = _help;
-  dat.min   = _min;
-  dat.max   = _max;
+  dat.bounds= _bounds;
   data.push_back(dat);
 }
 

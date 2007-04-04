@@ -11,7 +11,7 @@
 namespace ATOOLS {
   struct Mom_Data {
     std::vector<Flavour> flavs;
-    double min,max;
+    std::vector<std::pair<double, double> >  bounds;
     int    help; 
     int    type;
   };
@@ -23,13 +23,18 @@ namespace ATOOLS {
     bool ReadInData(std::string);
   public :
     Selector_Data(std::string path);
+    inline Selector_Data(Selector_Data & sel) : data(sel.data) {}
     Selector_Data();
     ~Selector_Data()     {};
     int  Size()          { return data.size(); }
     Mom_Data RemoveData(int &);
-    void SetData(int ,const std::vector<Flavour> &,int ,double ,double );
-    void AddData(int ,const std::vector<Flavour> &,int ,double ,double );
-    void Data(int,int &,std::vector<Flavour> &,int &,double &,double &);
+    inline Mom_Data GetData(int i) { return data[i]; }
+    void SetData(int ,const std::vector<Flavour> &,
+		 std::vector<std::pair<double,double> > &,int);
+    void AddData(int ,const std::vector<Flavour> &,
+		 std::vector<std::pair<double,double> > &,int);
+    void FillData(int,int &,std::vector<Flavour> &,
+		  std::vector<std::pair<double,double> > &,int &);
     void ControlOutput();
   };
 
@@ -52,8 +57,10 @@ namespace ATOOLS {
     virtual void Add(Selector_Base *);
     virtual void BuildCuts(Cut_Data *);
     virtual void UpdateCuts(double,double,Cut_Data *);
-    virtual void   SetRange(std::vector<Flavour>,double,double);
-    virtual void   SetRange(std::vector<Flavour>,int,double,double);
+    virtual void SetRange(std::vector<Flavour>,double,double);
+    virtual void SetRange(std::vector<Flavour>,int,double,double);
+    virtual void SetRange(std::vector<Flavour>,
+			  std::vector<std::pair<double,double> > &);
     virtual void   Output();
     
     virtual bool GetValue(const std::string &name,double &value);

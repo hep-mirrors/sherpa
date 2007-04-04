@@ -761,12 +761,178 @@ void Mass_Selector::SetRange(std::vector<Flavour> crit,double _min, double _max)
 
 /*--------------------------------------------------------------------
 
+  Delta Eta Selector
+
+  --------------------------------------------------------------------*/
+
+Delta_Eta_Selector::Delta_Eta_Selector(int _nin,int _nout, Flavour * _fl) {
+  m_name = std::string("Delta_Eta_Selector"); 
+  m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
+  m_fl   = _fl;
+  m_smin = 0.;
+  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
+  
+  detamin = new double*[m_n];
+  detamax = new double*[m_n];
+  value = new double[m_n*m_n];
+
+  for (int i=0;i<m_n;i++) { 
+    detamin[i] = new double[m_n]; 
+    detamax[i] = new double[m_n];
+  }
+
+  for (int i=m_nin;i<m_n;i++) {
+    for (int j=i+1;j<m_n;j++) {
+      detamin[i][j] = detamin[j][i] = 0.; 
+      detamax[i][j] = detamax[j][i] = 200.;
+    }
+  }
+  m_sel_log = new Selector_Log(m_name);
+}
+
+Delta_Eta_Selector::~Delta_Eta_Selector() {
+  for (int i=0;i<m_n;i++) {
+    delete [] detamin[i];
+    delete [] detamax[i];
+  }
+  delete [] detamin;
+  delete [] detamax;
+  delete [] value;
+  delete m_sel_log;
+}
+
+bool Delta_Eta_Selector::Trigger(const Vec4D * mom) 
+{
+  double detaij;
+  for (int i=m_nin;i<m_n;i++) {
+    for (int j=i+1;j<m_n;j++) {
+      detaij = value[i*m_n+j] = mom[i].DEta(mom[j]);
+//       PRINT_INFO("("<<m_fl[i]<<" "<<m_fl[j]<<") : "<<detaij
+// 		 <<" in {"<<detamin[i][j]<<", "<<detamax[i][j]<<"}");
+      if (m_sel_log->Hit( ((detaij < detamin[i][j]) || 
+			   (detaij > detamax[i][j])) )) return 0;
+    }
+  }
+  return 1;
+}
+
+void Delta_Eta_Selector::BuildCuts(Cut_Data * cuts) {}
+
+void Delta_Eta_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
+
+
+void Delta_Eta_Selector::SetRange(std::vector<Flavour> crit,double _min, double _max)
+{
+  if (crit.size() != 2) {
+    msg.Error()<<"Wrong number of arguments in Delta_Eta_Selector::SetRange : "
+			  <<crit.size()<<endl;
+    return;
+  }
+
+  for (int i=m_nin;i<m_n;i++) {
+    for (int j=m_nin+1;j<m_n;j++) {
+      if ( ((crit[0].Includes(m_fl[i])) && (crit[1].Includes(m_fl[j])) ) || 
+	   ((crit[0].Includes(m_fl[j])) && (crit[1].Includes(m_fl[i])) ) ) {
+	detamin[i][j] = detamin[j][i] = _min;
+	detamax[i][j] = detamax[j][i] = _max;
+      }
+    }
+  }
+}
+
+
+
+/*--------------------------------------------------------------------
+
+  Delta Phi Selector
+
+  --------------------------------------------------------------------*/
+
+Delta_Phi_Selector::Delta_Phi_Selector(int _nin,int _nout, Flavour * _fl) {
+  m_name = std::string("Delta_Phi_Selector"); 
+  m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
+  m_fl   = _fl;
+  m_smin = 0.;
+  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
+  
+  dphimin = new double*[m_n];
+  dphimax = new double*[m_n];
+  value = new double[m_n*m_n];
+
+  for (int i=0;i<m_n;i++) { 
+    dphimin[i] = new double[m_n]; 
+    dphimax[i] = new double[m_n];
+  }
+
+  for (int i=m_nin;i<m_n;i++) {
+    for (int j=i+1;j<m_n;j++) {
+      dphimin[i][j] = dphimin[j][i] = 0.; 
+      dphimax[i][j] = dphimax[j][i] = 200.;
+    }
+  }
+  m_sel_log = new Selector_Log(m_name);
+}
+
+Delta_Phi_Selector::~Delta_Phi_Selector() {
+  for (int i=0;i<m_n;i++) {
+    delete [] dphimin[i];
+    delete [] dphimax[i];
+  }
+  delete [] dphimin;
+  delete [] dphimax;
+  delete [] value;
+  delete m_sel_log;
+}
+
+bool Delta_Phi_Selector::Trigger(const Vec4D * mom) 
+{
+  double dphiij;
+  for (int i=m_nin;i<m_n;i++) {
+    for (int j=i+1;j<m_n;j++) {
+      dphiij = value[i*m_n+j] = mom[i].DPhi(mom[j]);
+//       PRINT_INFO("("<<m_fl[i]<<" "<<m_fl[j]<<") : "<<dphiij
+// 		 <<" in {"<<dphimin[i][j]<<", "<<dphimax[i][j]<<"}");
+      if (m_sel_log->Hit( ((dphiij < dphimin[i][j]) || 
+			   (dphiij > dphimax[i][j])) )) return 0;
+    }
+  }
+  return 1;
+}
+
+void Delta_Phi_Selector::BuildCuts(Cut_Data * cuts) {}
+
+void Delta_Phi_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
+
+
+void Delta_Phi_Selector::SetRange(std::vector<Flavour> crit,double _min, double _max)
+{
+  if (crit.size() != 2) {
+    msg.Error()<<"Wrong number of arguments in Delta_Phi_Selector::SetRange : "
+			  <<crit.size()<<endl;
+    return;
+  }
+
+  for (int i=m_nin;i<m_n;i++) {
+    for (int j=m_nin+1;j<m_n;j++) {
+      if ( ((crit[0].Includes(m_fl[i])) && (crit[1].Includes(m_fl[j])) ) || 
+	   ((crit[0].Includes(m_fl[j])) && (crit[1].Includes(m_fl[i])) ) ) {
+	dphimin[i][j] = dphimin[j][i] = _min;
+	dphimax[i][j] = dphimax[j][i] = _max;
+      }
+    }
+  }
+}
+
+
+
+/*--------------------------------------------------------------------
+
   Delta R Selector
 
   --------------------------------------------------------------------*/
 
-DeltaR_Selector::DeltaR_Selector(int _nin,int _nout, Flavour * _fl) {
-  m_name = std::string("DeltaR_Selector"); 
+Delta_R_Selector::Delta_R_Selector(int _nin,int _nout, Flavour * _fl) {
+  m_name = std::string("Delta_R_Selector"); 
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
   m_smin = 0.;
@@ -790,7 +956,7 @@ DeltaR_Selector::DeltaR_Selector(int _nin,int _nout, Flavour * _fl) {
   m_sel_log = new Selector_Log(m_name);
 }
 
-DeltaR_Selector::~DeltaR_Selector() {
+Delta_R_Selector::~Delta_R_Selector() {
   for (int i=0;i<m_n;i++) {
     delete [] drmin[i];
     delete [] drmax[i];
@@ -801,7 +967,7 @@ DeltaR_Selector::~DeltaR_Selector() {
   delete m_sel_log;
 }
 
-bool DeltaR_Selector::Trigger(const Vec4D * mom) 
+bool Delta_R_Selector::Trigger(const Vec4D * mom) 
 {
   double drij;
   for (int i=m_nin;i<m_n;i++) {
@@ -816,15 +982,15 @@ bool DeltaR_Selector::Trigger(const Vec4D * mom)
   return 1;
 }
 
-void DeltaR_Selector::BuildCuts(Cut_Data * cuts) {}
+void Delta_R_Selector::BuildCuts(Cut_Data * cuts) {}
 
-void DeltaR_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
+void Delta_R_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
 
 
-void DeltaR_Selector::SetRange(std::vector<Flavour> crit,double _min, double _max)
+void Delta_R_Selector::SetRange(std::vector<Flavour> crit,double _min, double _max)
 {
   if (crit.size() != 2) {
-    msg.Error()<<"Wrong number of arguments in DeltaR_Selector::SetRange : "
+    msg.Error()<<"Wrong number of arguments in Delta_R_Selector::SetRange : "
 			  <<crit.size()<<endl;
     return;
   }

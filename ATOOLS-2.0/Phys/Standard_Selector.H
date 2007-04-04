@@ -121,11 +121,33 @@ namespace ATOOLS {
     void     UpdateCuts(double,double,Cut_Data *);
   };
 
-  class DeltaR_Selector : public Selector_Base {
+  class Delta_Eta_Selector : public Selector_Base {
+    double ** detamin, ** detamax, * value;
+  public:
+    Delta_Eta_Selector(int,int,Flavour *);
+    ~Delta_Eta_Selector();
+    void     SetRange(std::vector<Flavour>,double,double);
+    bool     Trigger(const Vec4D * );
+    void     BuildCuts(Cut_Data *);
+    void     UpdateCuts(double,double,Cut_Data *);
+  };
+
+  class Delta_Phi_Selector : public Selector_Base {
+    double ** dphimin, ** dphimax, * value;
+  public:
+    Delta_Phi_Selector(int,int,Flavour *);
+    ~Delta_Phi_Selector();
+    void     SetRange(std::vector<Flavour>,double,double);
+    bool     Trigger(const Vec4D * );
+    void     BuildCuts(Cut_Data *);
+    void     UpdateCuts(double,double,Cut_Data *);
+  };
+
+  class Delta_R_Selector : public Selector_Base {
     double ** drmin, ** drmax, * value;
   public:
-    DeltaR_Selector(int,int,Flavour *);
-    ~DeltaR_Selector();
+    Delta_R_Selector(int,int,Flavour *);
+    ~Delta_R_Selector();
     void     SetRange(std::vector<Flavour>,double,double);
     bool     Trigger(const Vec4D * );
     void     BuildCuts(Cut_Data *);

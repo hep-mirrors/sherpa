@@ -73,6 +73,7 @@ namespace ATOOLS {
     bool   Trigger(const Vec4D *);
 
     double MTij2(Vec4D,Vec4D);
+    void   SetRange(std::vector<Flavour>,double,double) {}
     void   BuildCuts(Cut_Data *);
     void   UpdateCuts(double,double,Cut_Data *);
 
