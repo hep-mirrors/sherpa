@@ -104,6 +104,30 @@ void Three_Particle_Observable_Base::Evaluate(const Particle_List & plist,double
   p_histo->Insert(0.0,0.0,ncount);
 }
 
+//=============================================================================
+
+DEFINE_OBSERVABLE_GETTER(Three_Particle_PT,
+			 Three_Particle_PT_Getter,"PT3")
+
+Three_Particle_PT::Three_Particle_PT(const Flavour & flav1,const Flavour & flav2,
+				       const Flavour & flav3,int type,double xmin,
+				       double xmax,int nbins,const std::string & listname) :
+  Three_Particle_Observable_Base(flav1,flav2,flav3,type,xmin,xmax,nbins,listname,"PT") 
+{ }
+
+
+void Three_Particle_PT::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const Vec4D & mom3,
+				 double weight, int ncount) 
+{    
+  double pt = sqrt(sqr(mom1[1]+mom2[1]+mom3[1]) + sqr(mom1[2]+mom2[2]+mom3[2]));
+  p_histo->Insert(pt,weight,ncount);
+} 
+
+Primitive_Observable_Base* Three_Particle_PT::Copy() const
+{
+  return new Three_Particle_PT(m_flav1,m_flav2,m_flav3,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 DEFINE_OBSERVABLE_GETTER(Three_Particle_DEta,Three_Particle_DEta_Getter,"DEta3")
@@ -112,14 +136,13 @@ Three_Particle_DEta::Three_Particle_DEta(const Flavour & flav1,const Flavour & f
 					 const Flavour & flav3,int type,double xmin,
 					 double xmax,int nbins,const std::string & listname) :
   Three_Particle_Observable_Base(flav1,flav2,flav3,type,xmin,xmax,nbins,listname,"deta3") 
-  
 { 
 }
 
 
 void Three_Particle_DEta::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const Vec4D & mom3,double weight, int ncount) 
 {    
-   Vec4D mother = mom1+mom2;
+  Vec4D mother = mom1+mom2;
   double deta = abs((mother.Eta()-mom3.Eta()));
   p_histo->Insert(deta,weight,ncount); 
 } 
