@@ -27,9 +27,9 @@ SM_Phantom_U1::SM_Phantom_U1(std::string _dir,std::string _file) :
 	       <<"   Sanity checks not passed."<<endl
 	       <<"   Continue and hope for the best."<<endl;
   }
+  ConstructTriangleFactors();
   FillMasses();
   FillWidths();
-  ConstructTriangleFactors();
 }
 
 SM_Phantom_U1::~SM_Phantom_U1() 
@@ -211,11 +211,12 @@ double SM_Phantom_U1::H2SDecay(const Flavour & flin,const Flavour & flout) {
     }
   }
   else if (flin==Flavour(kf::h0) && flout==Flavour(kf::H0)) {
-    mix  = sqr(abs(ComplexMatrixElement(string("HiggsMix"),1,1)*
+    mix  = sqr(abs(ComplexMatrixElement(string("HiggsMix"),1,0)*
 		   (ComplexMatrixElement(string("HiggsMix"),0,1)+
 		    ComplexMatrixElement(string("HiggsMix"),1,1)*
 		    ScalarConstant(string("Tan(Beta)")))));
-    pref = sqr((sqr(flin.Mass())+2.*sqr(flout.Mass()))/ScalarConstant(string("vev")))*mix;
+    pref = sqr((sqr(flin.Mass())+2.*sqr(flout.Mass()))/ScalarConstant(string("vev")));
+    pref *= mix*flin.Mass();
   }
   else if (flin==Flavour(kf::H0) && flout==Flavour(kf::h0)) {
     mix  = sqr(abs(ComplexMatrixElement(string("HiggsMix"),0,0)*
@@ -229,9 +230,16 @@ double SM_Phantom_U1::H2SDecay(const Flavour & flin,const Flavour & flout) {
 }
 
 double SM_Phantom_U1::H2GluonDecay(const Flavour & flin) {
-  double pref  = ScalarConstant(string("GF"))/(36.*sqrt(2.)*pow(M_PI,3.));
+  double pref  = sqr(1./ScalarConstant(std::string("vev")))/(16.*2.*pow(M_PI,3.));
+  if (flin==Flavour(kf::h0)) 
+    pref *= sqr(ScalarConstant(std::string("Higgs_GG_eff_h")));
+  else if (flin==Flavour(kf::H0)) 
+    pref *= sqr(ScalarConstant(std::string("Higgs_GG_eff_H")));
+  else
+    pref *= 0.;
   double alp2  = sqr(ScalarFunction(string("alpha_S"),sqr(flin.Mass())));
   double width = pref*alp2*pow(flin.Mass(),3.);
+  std::cout<<METHOD<<":"<<ScalarFunction(string("alpha_S"),sqr(flin.Mass()))<<endl;
   return width;
 }
 
