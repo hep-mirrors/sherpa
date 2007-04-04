@@ -37,7 +37,7 @@ namespace AHADIC {
     \brief Destructor, no task so far.
   */
   /*!
-    \fn void Cluster_Former::ConstructClusters(Part_List * plin,Cluster_List * clout)
+    \fn void Cluster_Former::ConstructClusters(Part_List *,Cluster_List *)
     \brief Constructs a cluster list from a particle list.
 
     It iterates over the particles in the list and puts particles with colour configuration (a,0) into 

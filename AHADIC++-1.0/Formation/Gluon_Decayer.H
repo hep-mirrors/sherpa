@@ -107,7 +107,7 @@ namespace AHADIC {
   /*!
     \fn void Gluon_Decayer::Shift(Proto_Particle_List * pl)
     \brief Iterates over the particle list, extracts the momenta and finds the constituent masses from
-    AHADIC::Constituents::Mass(ATOOLS::Flavour) and put everything in two arrays. These are then passed
+    AHADIC::Constituents::Mass(ATOOLS::Flavour) and puts everything in two arrays. These are then passed
     to the AHADIC::Momenta_Stretcher.
   */
   /*!

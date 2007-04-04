@@ -110,42 +110,55 @@ namespace AHADIC {
     \var Colour_Reconnections * Cluster_Formation_Handler::p_recons
     \brief A pointer to the Clour_Reconnections, employed in the formation of clusters.
 
-    The way the Colour_Reconnections object is used, is steered through m_single_cr (default: true)
-    and m_double_cr (default: false).  If the former is true, then colour reconnections inside a colour 
-    singlet list are allowed, if the latter is true, also colour reconnections between two colour singlet 
-    lists are taken into account.  
+    The way the Colour_Reconnections object is used, is steered through 
+    Cluster_Formation_Handler::m_single_cr (default: true) and 
+    Cluster_Formation_Handler::m_double_cr (default: false).  If the former is true, then colour 
+    reconnections inside a colour singlet list are allowed, if the latter is true, also colour 
+    reconnections between two colour singlet lists are taken into account.  
   */
   /*!
     \var Soft_Cluster_Handler * Cluster_Formation_Handler::p_softclusters
-    \brief
+    \brief A pointer to the Soft_Cluster_Handler.  It is employed to check if transitions of the 
+    primoridal clusters to hadrons are neccessary.
   */
   /*!
     \var ATOOLS::Blob * Cluster_Formation_Handler::p_blob
-    \brief
+    \brief The fragmentation blob, containing all final state partons as incoming particles.  
+    While AHADIC progresses, clusters and/or hadrons are added as outgoing particles.
   */
   /*!
     \var Cluster_List * Cluster_Formation_Handler::p_clulist
-    \brief
+    \brief The final (merged) list of all clusters that need further decays.  
+
+    This list emerges from the colour-sinlget cluster lists, Cluster_Formation_Handler::m_clulists,
+    after the method Cluster_Formation_Handler::MergeClusterListsIntoOne() has been called.
   */
   /*!
     \var VectorOfPPLs Cluster_Formation_Handler::m_partlists
-    \brief
+    \brief This vector contains all colour-singlet lists of proto-particles.
   */
   /*!
     \var std::vector<Cluster_List *> Cluster_Formation_Handler::m_clulists
-    \brief
+    \brief The vector of all cluster lists emerging from the colour-singlet lists of proto-particles.
+
+    Ultimately, these lists are merged into one: Cluster_Formation_Handler::p_clulist.  In the meantime,
+    all operations of cluster formation are applied on these individual lists: As far as possible, momenta 
+    are shuffled inside these lists, if this becomes neccessary in forced transitions from light clusters 
+    to hadrons, colur reconnections are by default applied inisde these lists, etc..
   */
   /*!
     \var bool Cluster_Formation_Handler::m_analyse
-    \brief
+    \brief A switch to switch the monitoring analysis on.
   */
   /*!
     \var std::map<std::string,ATOOLS::Histogram *> Cluster_Formation_Handler::m_histograms
-    \brief
+    \brief A map of all histograms, eventually being filled when cluster formation is monitored.
   */
   /*!
     \fn void Cluster_Formation_Handler::Reset()
-    \brief
+    \brief Resets all lists, in particluar: Cluster_Formation_Handler::m_clulists, 
+    Cluster_Formation_Handler::p_clulist, Cluster_Formation_Handler::m_partlists before a new event
+    is hadronised.
   */
   /*!
     \fn ATOOLS::Return_Value::code Cluster_Formation_Handler::ExtractSinglets()
@@ -156,19 +169,58 @@ namespace AHADIC {
   */
   /*!
     \fn ATOOLS::Return_Value::code Cluster_Formation_Handler::FormOriginalClusters()
-    \brief
+    \brief Forms the original clusters.
+
+    This proceeds in the following steps:
+    - First of all, all singlet lists are checked, whether their actual mass is larger than the sum
+      of their respective constituent masses.  If this is not the case, the respective Proto_Particle 
+      list is merged with another of list.
+    - Then the gluons in each remaining Proto_Particle list are decayed through the method
+      Gluon_Decayer::DecayList(Proto_Particle_List * plin=NULL).  In case, problems are encountered
+      in the gluon decays, the method returns Return_Value::Retry_Method.
+    - If this was successful, the only method of the Cluster_Former,
+      Cluster_Former::ConstructClusters(Proto_Particle_List *,Cluster_List *) is invoked to build the 
+      primoridal clusters by just adding bit-by-bit two colour-adjacent (di-)quarks into a cluster. 
+    - Eventually, the mass and number histograms "Cluster_Mass_Formation" and "Cluster_Number_Formation"
+      are now being filled.
   */
   /*!
     \fn ATOOLS::Return_Value::code Cluster_Formation_Handler::ApplyColourReconnections()
-    \brief
+    \brief Here, the colourb reconnections are steered.
+
+    In Ahadic, non-perturbative colour reconnections are modelled by reshuffling the constituents
+    of clusters, i.e. by exchanging two (anti-)(di-)quarks of two different clusters.  By defautl, i.e.
+    if Cluster_Formation_Handler::m_single_cr is switched on, this happens within clusrte lists emerging
+    from parton colour singlet configurations only; it is realised by invoking the method
+    Colour_Reconnections::Singlet_CR(Cluster_List * clin) for each of the clour singlet lists.
+    In addition, such exchanges can also happen between colour singlets (this case has to be
+    switched on explicitly), then for each possible pair of singlet lists, the method 
+    Colour_Reconnections::Two_Singlet_CR(Cluster_List * cl1,Cluster_List * cl2) is used.
+
+    Eventually, the mass and number histograms "Cluster_Mass_Reconnections" are now being filled.
   */
   /*!
     \fn ATOOLS::Return_Value::code Cluster_Formation_Handler::ClustersToHadrons(ATOOLS::Blob_List *)
-    \brief
+    \brief Manages the forced transition of light clusters into hadrons.
+
+    The procedure here is as follows:
+    - First, all individual colour singlet cluster lists are iterated over.  For each list, forced 
+      cluster-to-hadron transitions are taken care off by 
+      Soft_Cluster_Handler::TreatClusterList(Cluster_List *,ATOOLS::Blob *).
+    - Then all clusters of the list are iterated over.  If no hadron decay was induced for the respective
+      cluster, it is added as outgoing particle to the fragmentation blob.  It should be understood that 
+      this includes the option that a cluster-to-hadron transition was enforced.  If a mixed decay was 
+      enforced, the so far void pointers to its offsprings are added to the cluster list, otherwise,
+      the cluster is added as outgoing particle to the fragmentation blob and a cluster-to-hadron
+      decay blob is added to the events Blob_List.
+    - Eventually, the mass and number histograms "Cluster_Mass_Transformed" and "Cluster_Number_Transformed"
+      are now being filled.
+
+    \todo: Understand the first step better.  
   */
   /*!
     \fn ATOOLS::Return_Value::code Cluster_Formation_Handler::MergeClusterListsIntoOne()
-    \brief
+    \brief Here, all cluster list are merged into the global list.
   */
   /*!
     \fn Cluster_Formation_Handler::Cluster_Formation_Handler(bool=false)
@@ -202,15 +254,15 @@ namespace AHADIC {
   */
   /*!
     \fn Soft_Cluster_Handler * Cluster_Formation_Handler::GetSoftClusterHandler()
-    \brief
+    \brief Returns the pointer to the Soft_Cluster_Handler, used in the decay phase.
   */
   /*!
     \fn Cluster_List * Cluster_Formation_Handler::GetClusters()
-    \brief
+    \brief Returns the pointer to the Cluster_List, used in the decay phase.
   */
   /*!
     \fn ATOOLS::Blob * Cluster_Formation_Handler::GetFragmentationBlob()
-    \brief
+    \brief Not used.
   */
 }
 #endif
