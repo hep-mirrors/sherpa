@@ -88,7 +88,8 @@ Selector_Data::Selector_Data(std::string path) {
   ControlOutput();
 }
 
-bool Selector_Data::ReadInData(std::string filename) {
+bool Selector_Data::ReadInData(std::string filename) 
+{
   ifstream from(filename.c_str());
   if (!from) {
     msg.Error()<<"Error in Selector_Data::ReadInData("<<filename<<"). "
@@ -98,7 +99,7 @@ bool Selector_Data::ReadInData(std::string filename) {
   
   std::string keyword, dmin, dmax;
   Mom_Data    dat;
-  int         crit1,crit2,mode;
+  int         crit1,crit2;
   Flavour     flav,flav2;
   for(;from;) {
     dat.type=-1;
@@ -247,88 +248,58 @@ bool Selector_Data::ReadInData(std::string filename) {
       if (crit2<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
     }
-    else if (keyword == string("ET_Bias")) {
-      dat.type = 101;
-      std::string values;
-      from>>crit1>>values;
-      flav = Flavour(kf::code(abs(crit1)));
-      if (crit1<0) flav = flav.Bar();
-      Data_Reader reader(",",";","!","=");
-      reader.SetString(values);
-      std::vector<std::vector<double> > crits;
-      if (!reader.MatrixFromString(crits,""))
-	THROW(critical_error,"Invalid Syntax in Selector.dat: '"+values+"'");
-      dat.bounds.clear();
-      for (size_t i(0);i<crits.size();++i) {
-	if (crits[i].size()<1) 
-	  THROW(critical_error,"Invalid Syntax in Selector.dat: '"+values+"'");
+    else if (keyword.find("Bias")!=std::string::npos) {
+      dat.type=0;
+      if (keyword=="ET_Bias") dat.type=101;
+      if (keyword=="PT_Bias") dat.type=102;
+      if (keyword=="Eta_Bias") dat.type=105;
+      if (keyword=="Delta_Eta_Bias") dat.type=113;
+      if (keyword=="Delta_Phi_Bias") dat.type=114;
+      if (keyword=="Delta_R_Bias") dat.type=115;
+      if (keyword=="Mass_Bias") dat.type=116;
+      if (dat.type>110) {
+	std::string values;
+	from>>crit1>>crit2>>values>>dat.help;
+	flav = Flavour(kf::code(abs(crit1)));
+	if (crit1<0) flav  = flav.Bar();
+	flav2 = Flavour(kf::code(abs(crit2)));
+	if (crit2<0) flav2 = flav2.Bar();
 	dat.flavs.push_back(flav);
-	dat.bounds.push_back(std::pair<double,double>
-			     (crits[i].front(),rpa.gen.Ecms()));
+	dat.flavs.push_back(flav2);
+	Data_Reader reader(",",";","!","=");
+	reader.SetString(values);
+	std::vector<std::vector<double> > crits;
+	if (!reader.MatrixFromString(crits,""))
+	  THROW(critical_error,"Invalid Syntax in Selector.dat: '"+values+"'");
+	dat.bounds.clear();
+	for (size_t i(0);i<crits.size();++i) {
+	  if (crits[i].size()<2) 
+	    THROW(critical_error,"Invalid Syntax in Selector.dat: '"
+		  +values+"'");
+	  dat.bounds.push_back(std::pair<double,double>
+			       (crits[i][0],crits[i][1]));
+	}
       }
-    }
-    else if (keyword == string("PT_Bias")) {
-      dat.type = 102;
-      std::string values;
-      from>>crit1>>values;
-      flav = Flavour(kf::code(abs(crit1)));
-      if (crit1<0) flav = flav.Bar();
-      Data_Reader reader(",",";","!","=");
-      reader.SetString(values);
-      std::vector<std::vector<double> > crits;
-      if (!reader.MatrixFromString(crits,""))
-	THROW(critical_error,"Invalid Syntax in Selector.dat: '"+values+"'");
-      dat.bounds.clear();
-      for (size_t i(0);i<crits.size();++i) {
+      else if (dat.type>0) {
+	std::string values;
+	from>>crit1>>values>>dat.help;
+	flav = Flavour(kf::code(abs(crit1)));
+	if (crit1<0) flav = flav.Bar();
 	dat.flavs.push_back(flav);
-	if (crits[i].size()<1) 
+	Data_Reader reader(",",";","!","=");
+	reader.SetString(values);
+	std::vector<std::vector<double> > crits;
+	if (!reader.MatrixFromString(crits,""))
 	  THROW(critical_error,"Invalid Syntax in Selector.dat: '"+values+"'");
-	dat.bounds.push_back(std::pair<double,double>
-			     (crits[i].front(),rpa.gen.Ecms()));
-      }
-    }
-    else if (keyword == string("Eta_Bias")) {
-      dat.type = 103;
-      std::string values;
-      from>>crit1>>values;
-      flav = Flavour(kf::code(abs(crit1)));
-      if (crit1<0) flav = flav.Bar();
-      Data_Reader reader(",",";","!","=");
-      reader.SetString(values);
-      std::vector<std::vector<double> > crits;
-      if (!reader.MatrixFromString(crits,""))
-	THROW(critical_error,"Invalid Syntax in Selector.dat: '"+values+"'");
-      dat.bounds.clear();
-      for (size_t i(0);i<crits.size();++i) {
-	if (crits[i].size()<2) 
-	  THROW(critical_error,"Invalid Syntax in Selector.dat: '"+values+"'");
-	dat.flavs.push_back(flav);
-	dat.bounds.push_back(std::pair<double,double>
-			     (crits[i][0],crits[i][1]));
-      }
-    }
-    else if (keyword == string("Leading_Delta_Eta_Bias")) {
-      dat.type = 113;
-      std::string values;
-      from>>crit1>>crit2>>mode>>values;
-      flav = Flavour(kf::code(abs(crit1)));
-      if (crit1<0) flav  = flav.Bar();
-      flav2 = Flavour(kf::code(abs(crit2)));
-      if (crit2<0) flav2 = flav2.Bar();
-      dat.flavs.push_back(flav);
-      dat.flavs.push_back(flav2);
-      dat.help = mode;
-      Data_Reader reader(",",";","!","=");
-      reader.SetString(values);
-      std::vector<std::vector<double> > crits;
-      if (!reader.MatrixFromString(crits,""))
-	THROW(critical_error,"Invalid Syntax in Selector.dat: '"+values+"'");
-      dat.bounds.clear();
-      for (size_t i(0);i<crits.size();++i) {
-	if (crits[i].size()<2) 
-	  THROW(critical_error,"Invalid Syntax in Selector.dat: '"+values+"'");
-	dat.bounds.push_back(std::pair<double,double>
-			     (crits[i][0],crits[i][1]));
+	dat.bounds.clear();
+	for (size_t i(0);i<crits.size();++i) {
+	  if (crits[i].size()<1) 
+	    THROW(critical_error,"Invalid Syntax in Selector.dat: '"
+		  +values+"'");
+	  dat.bounds.push_back(std::pair<double,double>
+			       (crits[i].front(),crits[i].size()>1?
+				crits[i][1]:rpa.gen.Ecms()));
+	}
       }
     }
     if (dat.type>0) data.push_back(dat);
@@ -361,7 +332,10 @@ void Selector_Data::ControlOutput() {
     case 101: msg_Debugging()<<"ET_Bias    :      "; break;
     case 102: msg_Debugging()<<"PT_Bias    :      "; break;
     case 103: msg_Debugging()<<"Eta_Bias   :      "; break;
-    case 113: msg_Debugging()<<"L_DEta_Bias:      "; break;
+    case 113: msg_Debugging()<<"DEta_Bias  :      "; break;
+    case 114: msg_Debugging()<<"DPhi_Bias  :      "; break;
+    case 115: msg_Debugging()<<"DR_Bias    :      "; break;
+    case 116: msg_Debugging()<<"Mass_Bias  :      "; break;
     } 
     for (size_t j(0);j<data[i].bounds.size();++j) 
       msg_Debugging()<<"{"<<data[i].bounds[j].first<<","<<data[i].bounds[j].second<<"}";

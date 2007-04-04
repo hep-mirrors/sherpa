@@ -153,22 +153,37 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
 	activetypes.push_back(type);
 	break;
       case 101 :
-	sel = new ET_Bias(_nin,_nout,_fl);
+	sel = new ET_Bias(_nin,_nout,_fl,ordering::code(help));
 	sel->SetRange(critflavs,bounds);
 	activetypes.push_back(type);
 	break;
       case 102 :
-	sel = new PT_Bias(_nin,_nout,_fl);
+	sel = new PT_Bias(_nin,_nout,_fl,ordering::code(help));
 	sel->SetRange(critflavs,bounds);
 	activetypes.push_back(type);
 	break;
       case 103 :
-	sel = new Eta_Bias(_nin,_nout,_fl);
+	sel = new Eta_Bias(_nin,_nout,_fl,ordering::code(help));
 	sel->SetRange(critflavs,bounds);
 	activetypes.push_back(type);
 	break;
       case 113 :
-	sel = new Leading_Delta_Eta_Bias(_nin,_nout,_fl,ordering::code(help));
+	sel = new Delta_Eta_Bias(_nin,_nout,_fl,ordering::code(help));
+	sel->SetRange(critflavs,bounds);
+	activetypes.push_back(type);
+	break;
+      case 114 :
+	sel = new Delta_Phi_Bias(_nin,_nout,_fl,ordering::code(help));
+	sel->SetRange(critflavs,bounds);
+	activetypes.push_back(type);
+	break;
+      case 115 :
+	sel = new Delta_R_Bias(_nin,_nout,_fl,ordering::code(help));
+	sel->SetRange(critflavs,bounds);
+	activetypes.push_back(type);
+	break;
+      case 116 :
+	sel = new Mass_Bias(_nin,_nout,_fl,ordering::code(help));
 	sel->SetRange(critflavs,bounds);
 	activetypes.push_back(type);
 	break;
