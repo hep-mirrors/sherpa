@@ -140,6 +140,7 @@ namespace ATOOLS {
     const double CosDPhi(const Vec4D &) const; 
     inline const double DPhi(const Vec4D &) const; 
     inline const double DEta(const Vec4D &) const; 
+    inline const double DR(const Vec4D &) const; 
 
     inline const double Y() const; 
     inline const double Eta() const; 
@@ -490,6 +491,11 @@ namespace ATOOLS {
   inline const double Vec4D::DEta(const Vec4D &ref) const 
   { 
     return Eta()-ref.Eta();
+  }
+
+  inline const double Vec4D::DR(const Vec4D &ref) const 
+  { 
+    return sqrt(sqr(DPhi(ref))+sqr(DEta(ref)));
   }
   
   inline const double Vec4D::MPerp2(const Vec4D &ref) const
