@@ -389,7 +389,9 @@ bool Simple_Chain::CheckConsistency(EXTRAXS::XS_Group *const group,
 {  
   int helpi=0, criterion=grid->XAxis()->Variable()->SelectorID();
   std::vector<Flavour> flavours(1,(kf::jet));
-  group->SelectorData()->AddData(criterion,flavours,helpi,min,max);
+  std::vector<std::pair<double,double> > bounds
+    (1,std::pair<double,double>(min,max));
+  group->SelectorData()->AddData(criterion,flavours,bounds,helpi);
   double emin=Min(m_stop[0],m_stop[4]);
   p_isr->SetFixedSprimeMin(4.0*emin*emin);
   p_isr->SetFixedSprimeMax(4.0*m_start[0]*m_start[0]);

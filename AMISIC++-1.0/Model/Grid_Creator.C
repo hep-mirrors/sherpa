@@ -151,8 +151,10 @@ bool Grid_Creator::InitializeCalculation()
   int helpi=0;
   m_criterion=p_xaxis->Variable()->SelectorID();
   std::vector<ATOOLS::Flavour> flavours(1,(ATOOLS::kf::jet));
+  std::vector<std::pair<double,double> > bounds
+    (1,std::pair<double,double>(m_gridxmin,m_gridxmax));
   p_processes->SelectorData()->
-    SetData(m_criterion,flavours,helpi,m_gridxmin,m_gridxmax);
+    SetData(m_criterion,flavours,bounds,helpi);
   p_processes->ResetSelector(p_processes->SelectorData());
   p_processes->Reset();
   p_processes->CalculateTotalXSec(OutputPath()+OutputFile()
