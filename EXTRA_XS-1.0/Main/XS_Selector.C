@@ -102,10 +102,10 @@ Single_XS *XS_Selector::GetSingleXS(const size_t nin,const size_t nout,
   if (git!=s_gettermap.end()) {
     xs=git->second(nin,nout,flavours,nqed,nqcd);
     if (xs==NULL) return xs;
-    xs->SetScaleScheme(p_owner->ScaleScheme());
-    xs->SetKFactorScheme(p_owner->KFactorScheme());
     xs->m_orderEW=nqed;
     xs->m_orderQCD=nqcd;
+    xs->p_isrhandler=p_owner->p_isrhandler;
+    xs->p_beamhandler=p_owner->p_beamhandler;
     return xs;
   }
   Flavour_Container flc(flavours,nqed,nqcd);
@@ -156,9 +156,6 @@ Single_XS *XS_Selector::GetSingleXS(const size_t nin,const size_t nout,
     }
   }
   if (xs!=NULL) {
-    xs->SetScaleScheme(p_owner->ScaleScheme());
-    xs->SetFactorizationScale(p_owner->FactorizationScale());
-    xs->SetKFactorScheme(p_owner->KFactorScheme());
     xs->m_orderEW=nqed;
     xs->m_orderQCD=nqcd;
     xs->p_isrhandler=p_owner->p_isrhandler;

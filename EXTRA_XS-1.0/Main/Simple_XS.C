@@ -248,6 +248,10 @@ void Simple_XS::InitializeProcess(ATOOLS::Flavour *flavs,std::string &efunc,
 	  XS_Group *pdfgroup = FindGroup(nin,nout,help,clsc,hlsc);
 	  if (m_regulator.length()>0) 
 	    newxs->AssignRegulator(m_regulator,m_regulation);
+	  newxs->ResetSelector(p_selectordata);
+	  newxs->SetScaleScheme(pdfgroup->ScaleScheme());
+	  newxs->SetKFactorScheme(pdfgroup->KFactorScheme());
+	  newxs->SetFactorizationScale(pdfgroup->FactorizationScale());
 	  pdfgroup->Add(newxs);
 	  pdfgroup->SetEnhanceFunction(efunc);
 	  newxs->PSHandler(false)->SetUsePI(m_usepi);
