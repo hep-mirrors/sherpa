@@ -94,7 +94,7 @@ namespace AHADIC {
 
     In particular, the \f$p_\perp\f$ distribution and the centre-of-mass energy squared of
     the popped quarks is monitored, as well as the flavour composition of the popped quarks.
-    In addition, \f$y^*\f$, \f$y^*/y^{*, max}\f$, \f$\bar y\f$, \f$\bar y/\bar y^{max}\f$
+    In addition, \f$y^*\f$, \f$y^{*}/y^{*, max}\f$, \f$\bar y\f$, \f$\bar y/\bar y^{max}\f$
     are monitored.  
   */
   /*!
