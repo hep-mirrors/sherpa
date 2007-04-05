@@ -33,7 +33,7 @@ namespace SHERPA {
     int     m_colors[4][2];
 
     int     m_isrmode, m_isrshoweron, m_fsrshoweron;
-    int     m_sud_mode, m_bp_mode, m_as_mode, m_muf_mode;
+    int     m_sud_mode, m_bp_mode, m_as_mode;
     double  m_kfac, m_is_as_factor, m_fs_as_factor, m_me_as_factor;
 
     int     m_hard_nqcd, m_hard_nqed, m_nstrong;
@@ -42,6 +42,7 @@ namespace SHERPA {
     EXTRAXS::XS_Base * p_xs;
 
     // some statistics:
+    std::map<std::string,size_t> m_pidmap;
     std::vector<long>    m_events;
     std::vector<double>  m_meweight_sum, m_weight_sum, m_asweight_sum, m_sweight_sum;
     std::vector<double>  m_weight_sum_sqr, m_asweight_sum_sqr, m_sweight_sum_sqr;
@@ -57,6 +58,8 @@ namespace SHERPA {
     int     Set2Colours(const int,const int,ATOOLS::Vec4D *,ATOOLS::Flavour *);
     int     Set3Colours(const int,const int,ATOOLS::Vec4D *,ATOOLS::Flavour *);
     int     Set4Colours(const int,const int,ATOOLS::Vec4D *,ATOOLS::Flavour *);
+
+    std::string JetID(std::string name) const;
 
     void    PrepareTerminate();
     void    WriteOutWeights();

@@ -448,7 +448,7 @@ void Cluster_Partons_CKKW::WeightHardProcess()
       }
     }
   }
-  msg_Debugging()<<"} -> w = "<<m_weight<<"\n\n";
+  msg_Debugging()<<"} -> w = "<<m_weight<<"\n";
   msg_Debugging()<<"set q_{fac} = "<<sqrt(m_q2_f[0])<<"/"<<sqrt(m_q2_f[1])<<"\n";
 }
 
@@ -519,13 +519,27 @@ void Cluster_Partons_CKKW::CalculateWeight(const double &meweight)
   msg_Debugging()<<"} -> w = "<<m_weight<<"\n";
   msg_Debugging()<<"\n"<<*ct_tmp<<"\n";
   m_hard_nqed = m_nstrong-m_hard_nqcd-2;
-  m_events[m_njet-1]         += 1;
-  m_meweight_sum[m_njet-1]   += meweight;
-  m_weight_sum[m_njet-1]     += m_weight*meweight;
-  m_weight_sum_sqr[m_njet-1] += sqr(m_weight)*meweight;
-  m_asweight_sum[m_njet-1]     += m_asweight*meweight;
-  m_asweight_sum_sqr[m_njet-1] += sqr(m_asweight)*meweight;
-  m_sweight_sum[m_njet-1]     += m_weight/m_asweight*meweight;
-  m_sweight_sum_sqr[m_njet-1] += sqr(m_weight/m_asweight)*meweight;
+  std::string pid(p_me->GetAmegic()->GetProcess()->Name());
+  std::map<std::string,size_t>::iterator iit(m_pidmap.find(pid));
+  if (iit==m_pidmap.end()) {
+    m_events.resize(m_events.size()+1,0);
+    m_meweight_sum.resize(m_events.size(),0.0);
+    m_weight_sum.resize(m_events.size(),0.0);
+    m_weight_sum_sqr.resize(m_events.size(),0.0); 
+    m_asweight_sum.resize(m_events.size(),0.0);
+    m_asweight_sum_sqr.resize(m_events.size(),0.0); 
+    m_sweight_sum.resize(m_events.size(),0.0);
+    m_sweight_sum_sqr.resize(m_events.size(),0.0); 
+    m_pidmap[pid]=m_pidmap.size()-1;
+    iit=m_pidmap.find(pid);
+  }
+  m_events[iit->second]+=1;
+  m_meweight_sum[iit->second]+=meweight;
+  m_weight_sum[iit->second]+=m_weight*meweight;
+  m_weight_sum_sqr[iit->second]+=sqr(m_weight)*meweight;
+  m_asweight_sum[iit->second]+=m_asweight*meweight;
+  m_asweight_sum_sqr[iit->second]+= sqr(m_asweight)*meweight;
+  m_sweight_sum[iit->second]+=m_weight/m_asweight*meweight;
+  m_sweight_sum_sqr[iit->second]+=sqr(m_weight/m_asweight)*meweight;
 }
 

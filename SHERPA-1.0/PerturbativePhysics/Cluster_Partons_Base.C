@@ -67,14 +67,6 @@ Cluster_Partons_Base::Cluster_Partons_Base(Matrix_Element_Handler * me,ATOOLS::J
 			      p_jf->Smax(),p_jf->Smin(),
 			      p_runas,m_is_as_factor*m_me_as_factor);
   }
-  m_events.resize(m_maxjetnumber,0);
-  m_meweight_sum.resize(m_maxjetnumber,0.0);
-  m_weight_sum.resize(m_maxjetnumber,0.0);
-  m_weight_sum_sqr.resize(m_maxjetnumber,0.0); 
-  m_asweight_sum.resize(m_maxjetnumber,0.0);
-  m_asweight_sum_sqr.resize(m_maxjetnumber,0.0); 
-  m_sweight_sum.resize(m_maxjetnumber,0.0);
-  m_sweight_sum_sqr.resize(m_maxjetnumber,0.0); 
 
   exh->AddTerminatorObject(this);
 }
@@ -97,53 +89,79 @@ void Cluster_Partons_Base::WriteOutWeights()
 {
   msg_Info()<<METHOD<<"(): Weight statistics {"<<std::endl;
   msg_Info()<<"  Misclusterings: "<<m_fails/m_counts<<std::endl;
-  for (int i=0;i<m_maxjetnumber;++i) {
-    if (m_events[i]==0) continue;
-    double w_mean(m_weight_sum[i]/m_meweight_sum[i]);
-    double w_sigma(sqrt((m_weight_sum_sqr[i]/m_meweight_sum[i]
-			 -sqr(w_mean))/(m_events[i]-1.0)));
-    double asw_mean(m_asweight_sum[i]/m_meweight_sum[i]);
-    double asw_sigma(sqrt((m_asweight_sum_sqr[i]/m_meweight_sum[i]
-			   -sqr(asw_mean))/(m_events[i]-1.0)));
-    double sw_mean(m_sweight_sum[i]/m_meweight_sum[i]);
-    double sw_sigma(sqrt((m_sweight_sum_sqr[i]/m_meweight_sum[i]
-			  -sqr(sw_mean))/(m_events[i]-1.0)));
-    msg_Info()<<"  <w>_{"<<(i+1)<<"-jet} = "<<std::setw(12)<<w_mean
-	      <<" +- "<<std::setw(12)<<w_sigma<<" ( "<<std::setw(12)
-	      <<(int(w_sigma*10000./w_mean))/100.<<" % )"<<std::endl;
-//     msg_Info()<<"  <w>_{as,"<<(i+1)<<"-jet}     = "<<std::setw(12)<<asw_mean
-// 	      <<" +- "<<std::setw(12)<<asw_sigma<<" ( "<<std::setw(12)
-// 	      <<(int(asw_sigma*10000./asw_mean))/100.<<" % )"<<std::endl;
-//     msg_Info()<<"  <w>_{\\Delta,"<<(i+1)<<"-jet} = "<<std::setw(12)<<sw_mean
-// 	      <<" +- "<<std::setw(12)<<sw_sigma<<" ( "<<std::setw(12)
-// 	      <<(int(sw_sigma*10000./sw_mean))/100.<<" % )"<<std::endl;
-    m_weight_sum[i]=w_mean;
-    m_weight_sum_sqr[i]=w_sigma;
-    m_asweight_sum[i]=asw_mean;
-    m_asweight_sum_sqr[i]=asw_sigma;
-    m_sweight_sum[i]=sw_mean;
-    m_sweight_sum_sqr[i]=sw_sigma;
+  std::map<std::string,size_t> jidmap;
+  std::vector<long>    events;
+  std::vector<double>  meweight_sum, weight_sum, asweight_sum, sweight_sum;
+  std::vector<double>  weight_sum_sqr, asweight_sum_sqr, sweight_sum_sqr;
+  for (std::map<std::string,size_t>::const_iterator pit(m_pidmap.begin());
+       pit!=m_pidmap.end();++pit) {
+    size_t i(pit->second);
+    std::string jid(JetID(pit->first.substr(pit->first.find("__")+3)));
+    std::map<std::string,size_t>::iterator iit(jidmap.find(jid));
+    if (iit==jidmap.end()) {
+      events.resize(events.size()+1,0);
+      meweight_sum.resize(events.size(),0.0);
+      weight_sum.resize(events.size(),0.0);
+      weight_sum_sqr.resize(events.size(),0.0); 
+      asweight_sum.resize(events.size(),0.0);
+      asweight_sum_sqr.resize(events.size(),0.0); 
+      sweight_sum.resize(events.size(),0.0);
+      sweight_sum_sqr.resize(events.size(),0.0); 
+      jidmap[jid]=jidmap.size()-1;
+      iit=jidmap.find(jid);
+    }
+    events[iit->second]+=m_events[i];
+    meweight_sum[iit->second]+=m_meweight_sum[i]/m_events[i];
+    weight_sum[iit->second]+=m_weight_sum[i]/m_events[i];
+    weight_sum_sqr[iit->second]+=m_weight_sum_sqr[i]/m_events[i];
+    asweight_sum[iit->second]+=m_asweight_sum[i]/m_events[i];
+    asweight_sum_sqr[iit->second]+=m_asweight_sum_sqr[i]/m_events[i];
+    sweight_sum[iit->second]+=m_sweight_sum[i]/m_events[i];
+    sweight_sum_sqr[iit->second]+=m_sweight_sum_sqr[i]/m_events[i];
+  }
+  for (std::map<std::string,size_t>::const_iterator jit(jidmap.begin());
+       jit!=jidmap.end();++jit) {
+    size_t i(jit->second);
+    weight_sum[i]/=meweight_sum[i];
+    weight_sum_sqr[i]=sqrt((weight_sum_sqr[i]/meweight_sum[i]
+			    -sqr(weight_sum[i]))/(events[i]-1.0));
+    asweight_sum[i]/=meweight_sum[i];
+    asweight_sum_sqr[i]=sqrt((asweight_sum_sqr[i]/meweight_sum[i]
+			      -sqr(asweight_sum[i]))/(events[i]-1.0));
+    sweight_sum[i]/=meweight_sum[i];
+    sweight_sum_sqr[i]=sqrt((sweight_sum_sqr[i]/meweight_sum[i]
+			     -sqr(sweight_sum[i]))/(events[i]-1.0));
+    msg_Info()<<"  <w>_{"<<jit->first<<"-jet} = "<<std::setw(12)
+	      <<weight_sum[i]<<" +- "<<std::setw(12)<<weight_sum_sqr[i]
+	      <<" ( "<<std::setw(12)<<(int(weight_sum_sqr[i]*10000./
+					   weight_sum[i]))/100.
+	      <<" % )"<<std::endl;
   }
   msg_Info()<<"}"<<std::endl;
   MyStrStream sstr;
   sstr.precision(4);
-  int mode(m_sud_mode&3+m_bp_mode);
-  sstr<<"Weights_"<<rpa.gen.Ecms()<<"_"
-      <<rpa.gen.Variable("Y_CUT")<<"_"<<mode<<".dat"<<std::endl;
-  std::string filename;
+  sstr<<"Weights_"<<rpa.gen.Ecms()<<".dat"<<std::endl;
+  std::string filename, muf(rpa.gen.Variable("FACTORIZATION_SCALE"));
   sstr>>filename;
   std::ofstream  rfile(filename.c_str(),std::ios::app);
   rfile.precision(8);
-  rfile<<"# n"<<std::setw(18)<<"<w>"<<std::setw(18)
+  rfile<<"# Modes: \\Delta "<<m_sud_mode<<", \\Gamma "<<m_bp_mode
+       <<", \\alpha_s "<<m_as_mode<<"\n";
+  rfile<<"# y_{cut} = '"<<rpa.gen.Variable("Y_CUT")<<"', \\mu_F = '"
+       <<(muf!=""?muf:"Q_{cut}")<<"'\n";
+  rfile<<"#      n"<<std::setw(18)<<"<w>"<<std::setw(18)
        <<"\\Delta<w>"<<std::setw(18)<<"<w>_{as}"<<std::setw(18)
        <<"\\Delta<w>_{as}"<<std::setw(18)<<"<w>_{sud}"<<std::setw(18)
        <<"\\Delta<w>_{sud}"<<std::setw(18)<<"N"<<std::endl;
-  for (int i=1;i<m_maxjetnumber;++i) {
-    rfile<<std::setw(3)<<i+1<<std::setw(18)<<m_weight_sum[i]<<std::setw(18)
-	 <<m_weight_sum_sqr[i]<<std::setw(18)<<m_asweight_sum[i]<<std::setw(18)
-	 <<m_asweight_sum_sqr[i]<<std::setw(18)<<m_sweight_sum[i]<<std::setw(18)
-	 <<m_sweight_sum_sqr[i]<<std::setw(18)<<m_events[i]<<std::endl;
-  }  
+  for (std::map<std::string,size_t>::const_iterator jit(jidmap.begin());
+       jit!=jidmap.end();++jit) {
+    size_t i(jit->second);
+    rfile<<std::setw(8)<<jit->first<<std::setw(18)<<weight_sum[i]
+	 <<std::setw(18)<<weight_sum_sqr[i]<<std::setw(18)
+	 <<asweight_sum[i]<<std::setw(18)<<asweight_sum_sqr[i]
+	 <<std::setw(18)<<sweight_sum[i]<<std::setw(18)
+	 <<sweight_sum_sqr[i]<<std::setw(18)<<events[i]<<std::endl;
+  }
 }
 
 Leg **Cluster_Partons_Base::CreateLegs(int &nampl,const int nlegs,const bool reuse)
@@ -755,3 +773,26 @@ void   Cluster_Partons_Base::JetvetoPt2(double & q2i, double & q2f,
 		 <<", q_ljf = "<<sqrt(q2ljf)<<"\n";
 }
 
+std::string Cluster_Partons_Base::JetID(std::string name) const
+{
+  size_t jets(1);
+  std::string subprocs;
+  for (size_t i(0);i<name.length();++i) {
+    if (name[i]=='_' && name[i-1]!='_') ++jets;
+    else if (name[i]=='[') {
+      int open(1);
+      for (size_t j(i+1);j<name.length();++j) {
+	if (name[j]=='[') ++open;
+	if (name[j]==']') --open;
+	if (open==0) {
+	  if (jets>1) subprocs+=ToString(jets-1);
+	  subprocs+="["+JetID(name.substr(i+1,j-i-1))+"]";
+	  jets=0;
+	  i=j;
+	  break;
+	}
+      }
+    }
+  }
+  return subprocs+ToString(jets);
+}
