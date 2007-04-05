@@ -798,7 +798,7 @@ double Jet_Finder::MTij2(Vec4D p1,Vec4D p2)
   if (m_type>=2) {
     double pt1_2(p1.PPerp2()), mt1_2(pt1_2);
     double pt2_2(p2.PPerp2()), mt2_2(pt2_2);
-    if (!m_pt_def) { 
+    if (m_pt_def) { 
       mt1_2 = pt1_2+dabs(p1.Abs2());
       mt2_2 = pt2_2+dabs(p2.Abs2());
     }
