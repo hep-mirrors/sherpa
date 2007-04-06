@@ -7,6 +7,8 @@ pkglib_LTLIBRARIES       =	libObservables.la
 libObservables_la_SOURCES     =	\
 				$(EXTRAOBS) \
 				List_Modifier.C \
+				Primitive_Observable_Base.C \
+				Normalized_Observable.C \
 				Global_Calculator.C \
 				HT.C \
 				PSM_Observables.C \
@@ -42,7 +44,9 @@ libObservables_la_SOURCES     =	\
 				Blob_Selector.C \
 				Particle_Ordering.C \
 				Lorentz.C
-pkginclude_HEADERS        =	\
+pkginclude_HEADERS    =	\
+			Primitive_Observable_Base.H \
+			Normalized_Observable.H \
 			HT.H \
 			PSM_Observables.H \
 			Multiplicity.H \
