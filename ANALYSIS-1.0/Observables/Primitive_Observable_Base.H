@@ -25,7 +25,7 @@ namespace ANALYSIS {
 
     int                     m_type, m_nbins;
     double                  m_xmin, m_xmax;
-    std::string             m_name, m_listname;
+    std::string             m_listname;
     ATOOLS::Histogram     * p_histo;
     int                     m_nout;
     ATOOLS::Flavour       * p_flavs;
@@ -33,7 +33,6 @@ namespace ANALYSIS {
     std::string             m_blobtype;
     bool                    m_blobdisc, m_splitt_flag;
 
-    Primitive_Analysis    * p_ana;
     ATOOLS::Selector_Base * p_sel;
     mutable bool m_copied;
 
@@ -68,13 +67,12 @@ namespace ANALYSIS {
     virtual void SetAnalysis(Primitive_Analysis  * ana);
 
     virtual Primitive_Observable_Base & operator+=(const Primitive_Observable_Base & ob);
+    virtual Analysis_Object & operator+=(const Analysis_Object & ob);
 
     int                     Type()  const;
     int                     Nbins() const;
     double                  Xmin()  const;
     double                  Xmax()  const;
-    std::string             Name()  const;
-    void SetName(const std::string &);
     ATOOLS::Histogram     * Histo() const;
     ATOOLS::Selector_Base * Sel()   const;
     bool                    Splittable() const;
@@ -86,9 +84,6 @@ namespace ANALYSIS {
   inline int                     Primitive_Observable_Base::Nbins()      const { return m_nbins; }
   inline double                  Primitive_Observable_Base::Xmin()       const { return m_xmin; }
   inline double                  Primitive_Observable_Base::Xmax()       const { return m_xmax; }
-  inline std::string             Primitive_Observable_Base::Name()       const { return m_name; }
-
-  inline void Primitive_Observable_Base::SetName(const std::string & name ) { m_name=name; }
 
   inline ATOOLS::Histogram     * Primitive_Observable_Base::Histo()      const { return p_histo; }
   inline ATOOLS::Selector_Base * Primitive_Observable_Base::Sel()        const { return p_sel; }
