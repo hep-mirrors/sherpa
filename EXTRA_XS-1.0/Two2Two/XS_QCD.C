@@ -86,7 +86,7 @@ XS_q1q2_q1q2::XS_q1q2_q1q2(const size_t nin,const size_t nout, const ATOOLS::Fla
 
 double XS_q1q2_q1q2::operator()(double s,double t,double u) {
   if (s<m_threshold) return 0.;
-  return 2*sqr(4.*M_PI*aS)* 4. * (s*s + u*u) / ( 9. * t*t);
+  return sqr(4.*M_PI*aS)* 4. * (s*s + u*u) / ( 9. * t*t);
 }
 
 bool XS_q1q2_q1q2::SetColours(double s,double t,double u) 
