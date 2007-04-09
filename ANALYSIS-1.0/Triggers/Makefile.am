@@ -8,19 +8,14 @@ libAnalysisTriggers_la_SOURCES        =	\
 					Four_Particle_Calculator.C \
 					Final_Selector.C \
 					Midpoint_Cone.C \
-				    	Calorimeter_Cone.C \
 					Field_Stuart_Cone_Finder.C \
-					One_Particle_Extractor.C \
-					Primitive_Detector.C \
-					Primitive_Calorimeter.C
+					One_Particle_Extractor.C 
 
 pkginclude_HEADERS    =	\
 			Trigger_Base.H \
 			Final_Selector.H \
 			Midpoint_Cone.H \
-		    	Calorimeter_Cone.H \
-			Primitive_Detector.H \
-			Primitive_Calorimeter.H
+		    	Calorimeter_Cone.H 
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@
 

@@ -1,5 +1,4 @@
 #include "Final_Selector.H"
-
 using namespace ANALYSIS;
 
 #include "MyStrStream.H"
@@ -138,7 +137,7 @@ Leading_Particle_Getter::operator()(const Argument_Matrix &parameters) const
 #include "Primitive_Analysis.H"
 #include "Message.H"
 #include "Durham_Algorithm.H"
-#include "Calorimeter_Cone.H"
+//#include "Calorimeter_Cone.H"
 
 #include <algorithm>
 
@@ -198,8 +197,8 @@ void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data &
   
   if (fl==kf::jet) {
     switch(m_mode) {
-    case 2: p_jetalg = new 
-	      Calorimeter_Cone(fs.pt_min,fs.eta_min,fs.eta_max);break;
+      //    case 2: p_jetalg = new 
+      //	      Calorimeter_Cone(fs.pt_min,fs.eta_min,fs.eta_max);break;
     case 10: p_jetalg = new Midpoint_Cone(p_qualifier,0,fs.f); break;
     case 11: p_jetalg = new Midpoint_Cone(p_qualifier,1,fs.f); break;
     }
@@ -249,6 +248,7 @@ void Final_Selector::AddSelector(const Flavour & fl, int min, int max)
   }
 }
 
+/*
 void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data & fs,
 				 Calorimeter_Cone * const cone) {
   msg_Tracking()<<" AddSelector : Cone."<<std::endl;
@@ -273,6 +273,7 @@ void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data &
   }
   p_jetalg = cone;
 }
+*/
 
 void Final_Selector::AddKeepFlavour(const Flavour & fl) 
 {
@@ -523,10 +524,10 @@ void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
 void Final_Selector::SetAnalysis(Primitive_Analysis  * ana)
 {
   p_ana=ana;
-  if (p_jetalg!=NULL) {
-    Calorimeter_Cone *cc(dynamic_cast<Calorimeter_Cone*>(p_jetalg));
-    if (cc!=NULL) cc->SetAnalysis(p_ana);
-  }
+  //  if (p_jetalg!=NULL) {
+  // Calorimeter_Cone *cc(dynamic_cast<Calorimeter_Cone*>(p_jetalg));
+  //if (cc!=NULL) cc->SetAnalysis(p_ana);
+  //}
 }
 
 
