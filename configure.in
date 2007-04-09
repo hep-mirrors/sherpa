@@ -81,7 +81,9 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  HADRONS++-0.0/PS_Library/Makefile \
 	  HADRONS++-0.0/Makefile \
 	  ANALYSIS-1.0/Makefile \
+	  ANALYSIS-1.0/Tools/Makefile \
 	  ANALYSIS-1.0/Main/Makefile \
+	  ANALYSIS-1.0/Triggers/Makefile \
 	  ANALYSIS-1.0/Observables/Makefile \
 	  SHERPA-1.0/Tools/Makefile \
 	  SHERPA-1.0/LundTools/Makefile \
