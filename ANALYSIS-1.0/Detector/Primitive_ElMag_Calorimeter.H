@@ -1,7 +1,7 @@
 #ifndef Primitive_ElMag_Calorimeter_H
 #define Primitive_ElMag_Calorimeter_H
 
-#include "Primitive_Detector.H"
+#include "Primitive_Detector_Element.H"
 #include "Particle_List.H"
 
 namespace ATOOLS { class Particle_Qualifier_Base; }
@@ -27,12 +27,12 @@ namespace ANALYSIS {
     emgeom::code  m_geom;
     double        m_thres, m_missprob, m_resolution;
 
-    ATOOLS::Particle_Qualifier * p_electron, * p_photon, * p_muon, * p_charged_hadron;
+    ATOOLS::Particle_Qualifier_Base *p_electron, *p_photon, *p_muon, *p_charged_hadron;
 
     void   FillParticleInDetectorElement(const ATOOLS::Particle *);
     double EnergyDeposit(const ATOOLS::Particle *);
-    void   SmearEnergy(const ATOOLS::Flavour & const,double &);
-    void   GeometryEffects(const ATOOLS::Flavour & const,double &,
+    void   SmearEnergy(const ATOOLS::Flavour &,double &);
+    void   GeometryEffects(const ATOOLS::Flavour &,double &,
 			   const double,const double);
     void   AddNoise();
   public:

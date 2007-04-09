@@ -1,5 +1,5 @@
-#ifndef Primitive_Hadron_Calorimeter_H
-#define Primitive_Hadron_Calorimeter_H
+#ifndef Primitive_Muon_Chambers_H
+#define Primitive_Muon_Chambers_H
 
 #include "Primitive_Detector_Element.H"
 #include "Particle_List.H"
@@ -7,25 +7,17 @@
 namespace ATOOLS { class Particle_Qualifier_Base; }
 
 namespace ANALYSIS {
-  struct hadcalor {
-    enum code {
-      full     = 0,
-      gaussian = 1
-    };
-  };
-
-  struct hadgeom {
+  struct muonprob {
     enum code {
       full     = 0,
       flatmiss = 1
     };
   };
 
-  class Primitive_Hadron_Calorimeter : public Primitive_Detector_Element {
+  class Primitive_Muon_Chambers : public Primitive_Detector_Element {
   private:
-    hadcalor::code m_calor;
-    hadgeom::code  m_geom;
-    double         m_thres, m_missprob, m_resolution;
+    muonprob::code m_muonprob;
+    double         m_threshold,m_missprob,m_resolution;
 
     void   FillParticleInDetectorElement(const ATOOLS::Particle *);
     double EnergyDeposit(const ATOOLS::Particle *);
@@ -34,21 +26,20 @@ namespace ANALYSIS {
 			   const double,const double);
     void   AddNoise();
   public:
-    Primitive_Hadron_Calorimeter(const int,const int,
-				 const double=-5.,const double=5.,
-				 const double=0.,const double=2.*M_PI);
-    ~Primitive_Hadron_Calorimeter();
+    Primitive_Muon_Chambers(const int,const int,
+				const double=-5.,const double=5.,
+				const double=0.,const double=2.*M_PI);
+    ~Primitive_Muon_Chambers();
     void Fill(const ATOOLS::Particle_List *);
     void Extract(ATOOLS::Particle_List *);
     void Reset();
     void Print(std::ostream & =std::cout);
 
-    void SetThreshold(const double thres)      { m_thres      = thres; }
+    void SetThreshold(const double thres)      { m_threshold  = thres; }
     void SetMissProbabiltiy(const double miss) { m_missprob   = miss; }
     void SetEnergyResolution(const double res) { m_resolution = res; }
 
-    void SetCalorimetryMode(const hadcalor::code hc) { m_calor = hc; }
-    void SetGeometryMode(const hadgeom::code hg)     { m_geom  = hg; }
+    void SetCalorimetryMode(const muonprob::code mp) { m_muonprob = mp; }
 
     Primitive_Detector_Element * Copy() const ;
   };
