@@ -49,7 +49,7 @@ Analysis_Object *List_Merger_Getter::operator()
 
 void List_Merger_Getter::PrintInfo
 (std::ostream &str,const size_t width) const
-{ str<<"inlist1 .. inlistn outlist"; }
+{ str<<"inlist1 .. inlistN outlist"; }
 
 #include "Primitive_Analysis.H"
 

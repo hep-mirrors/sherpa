@@ -31,7 +31,7 @@ namespace ANALYSIS {
 
 
 
-  class Final_Selector : public Primitive_Observable_Base {
+  class Final_Selector : public Analysis_Object {
   protected:
     ATOOLS::Particle_Qualifier_Base * p_qualifier;
     std::string                       m_inlistname, m_outlistname;
@@ -69,12 +69,12 @@ namespace ANALYSIS {
     void Output();
     ATOOLS::Jet_Algorithm_Base * GetJetAlgorithm() { return  p_jetalg; }
 
-    Primitive_Observable_Base * Copy() const;    
+    Analysis_Object * GetCopy() const;    
     ~Final_Selector();
     void SetAnalysis(Primitive_Analysis  * ana);
   };
 
-  class Leading_Particle : public Primitive_Observable_Base {
+  class Leading_Particle : public Analysis_Object {
   private:
     ATOOLS::Particle_Qualifier_Base * p_qualifier;
     std::string                       m_inlistname, m_outlistname;
@@ -84,7 +84,7 @@ namespace ANALYSIS {
     Leading_Particle(const std::string &,const std::string &, int mode, 
 		     ATOOLS::Particle_Qualifier_Base * const qualifier=NULL);
     ~Leading_Particle();
-    Primitive_Observable_Base * Copy() const;    
+    Analysis_Object * GetCopy() const;    
     void Evaluate(const ATOOLS::Blob_List &,double, int);
     void Output();
   };

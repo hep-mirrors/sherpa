@@ -1,7 +1,6 @@
 #ifndef Event_Shapes_EE_H
 #define Event_Shapes_EE_H
 
-#include "Primitive_Observable_Base.H"
 #include "Final_Selector.H"
 #include "Vector.H"
 #include "Matrix.H"
@@ -42,7 +41,7 @@ namespace ANALYSIS {
 		    ATOOLS::Particle_Qualifier_Base * const);
     void Evaluate(const ATOOLS::Blob_List &,double=1.,int ncount=1);
     void Evaluate(const ATOOLS::Particle_List &,double=1.,int ncount=1);
-    Primitive_Observable_Base * Copy() const;
+    Analysis_Object * GetCopy() const;
 
     double        Thrust()     { return m_thrust;     }
     double        Major()      { return m_major;      }

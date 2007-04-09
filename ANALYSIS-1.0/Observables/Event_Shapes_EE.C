@@ -9,7 +9,7 @@ using namespace ANALYSIS;
 
 
 DECLARE_GETTER(Event_Shapes_EE_Getter,"EEShapes",
-	       Primitive_Observable_Base,Argument_Matrix);
+	       Analysis_Object,Argument_Matrix);
 
 void Event_Shapes_EE_Getter::PrintInfo(std::ostream &str,const size_t width) const
 { 
@@ -20,7 +20,7 @@ void Event_Shapes_EE_Getter::PrintInfo(std::ostream &str,const size_t width) con
      <<std::setw(width+4)<<" "<<"}";
 }
 
-Primitive_Observable_Base * 
+Analysis_Object * 
 Event_Shapes_EE_Getter::operator()(const Argument_Matrix &parameters) const
 {
   std::string inlist="FinalState", outlist="EEShapes";
@@ -82,7 +82,6 @@ Event_Shapes_EE::Event_Shapes_EE(const std::string & _inlistname,
   m_key(std::string("EvtShapeData"))
 { 
   m_name        = std::string("Event_Shapes_EE");
-  m_splitt_flag = false;
 }
 
 
@@ -230,6 +229,6 @@ unsigned int Event_Shapes_EE::ipow(int base,int exponent) {
   return result;
 }
 
-Primitive_Observable_Base * Event_Shapes_EE::Copy() const {
+Analysis_Object * Event_Shapes_EE::GetCopy() const {
   return new Event_Shapes_EE(m_inlistname,m_outlistname,p_qualifier);
 }
