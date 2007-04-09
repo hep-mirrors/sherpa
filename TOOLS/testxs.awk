@@ -15,18 +15,14 @@ BEGIN { pi=0; i=0; j=0; pb=3.89379656e8; end1=0; warnings=0; errors=0 }
       " cross section comparison</color></h1></center>\n" > htmlname
     printf "  <table width=\"100%\" border=\"1\"" \
       " bordercolor=\"#888888\">\n" > htmlname 
-    printf "    <colgroup>\n" > htmlname
-#    printf "      <col width=\"2*\">\n" > htmlname
-#    printf "      <col width=\"3*\">\n" > htmlname
-#    printf "      <col width=\"3*\">\n" > htmlname
-#    printf "      <col width=\"2*\">\n" > htmlname
-    printf "    </colgroup>\n" > htmlname
     printf "    <tr bgcolor=\"#bbbbbb\"><td><b>Process</b></td>" > htmlname
-    printf "<td><b>XS from "genone"</b></td>" > htmlname
-    printf "<td><b>XS from "gentwo"</b></td>" > htmlname
-    printf "<td>(w<sub>1</sub>-w<sub>2</sub>)/" \
+    printf "<td><b>XS from "genone" [pb]</b></td>" > htmlname
+    printf "<td><b>XS from "gentwo" [pb]</b></td>" > htmlname
+    printf "<td><center><b>w<sub>2</sub>/w<sub>1</sub>-1 [%]" \
+      "</b></center></td>" > htmlname
+    printf "<td><center><b>(w<sub>2</sub>-w<sub>1</sub>)/" \
       "(&sigma;<sub>1</sub>+&sigma;<sub>2</sub>)" \
-      "<sup>1/2</sup></td></tr>\n" > htmlname
+      "<sup>1/2</sup></b></center></td></tr>\n" > htmlname
   } 
   else { 
   if ($1=="end") end1=1; 
@@ -66,7 +62,7 @@ END {
     for (jj=0;jj<j;++jj) { 
       if (proc1[ii]!=proc2[jj]) continue; 
       meanerr=sqrt(err1[ii]*err1[ii]+err2[jj]*err2[jj]); 
-      devvar=(xs1[ii]-xs2[jj])/meanerr; 
+      devvar=(xs2[jj]-xs1[ii])/meanerr; 
       devsum += devvar*devvar; 
       devavg += devvar; 
       reldev=devvar; 
@@ -82,28 +78,29 @@ END {
         "%\033[0m, \033[32m"relerr2[jj]*100"%\033[0m\n"; 
       if (reldev>1.0) { 
 	if (reldev>2.0) { 
-	  printf "    <tr bgcolor=\"#ffbbbb\">" > htmlname
+	  printf "    <tr bgcolor=\"#ffcccc\">" > htmlname
 	}
 	else {
-	  printf "    <tr bgcolor=\"#ffffbb\">" > htmlname
+	  printf "    <tr bgcolor=\"#ffffcc\">" > htmlname
 	}
       }
       else {
-	printf "    <tr bgcolor=\"#bbffbb\">" > htmlname
+	printf "    <tr bgcolor=\"#ccffcc\">" > htmlname
       }
       printf "<td><b>"proc1[ii]"</b></td>" > htmlname
-      printf "<td>"xs1[ii]*pb" pb +- "err1[ii]*pb \
-        " pb ( "relerr1[ii]*100"% )</td>" > htmlname
-      printf "<td>"xs2[jj]*pb" pb +- "err2[jj]*pb \
-        " pb ( "relerr2[jj]*100"% )</td>" > htmlname
+      printf "<td>"xs1[ii]*pb" +- "err1[ii]*pb \
+        " ( "relerr1[ii]*100"% )</td>" > htmlname
+      printf "<td>"xs2[jj]*pb" +- "err2[jj]*pb \
+        " ( "relerr2[jj]*100"% )</td>" > htmlname
+      printf "<td><center>"(xs2[jj]/xs1[ii]-1)*100"</center></td>" > htmlname
       if (reldev>1.0) { 
         if (reldev>2.0) { 
           printf "==================================================\n"; 
           printf "\033[41mERROR\033[0m: rel deviation > 2 sigma in \033[1m" \
             proc1[ii]"\033[0m\n"; 
           printf "==================================================\n"; 
-	  printf "<td><font color=\"#aa0000\"><b>"devvar \
-            "</b></font></td></tr>\n" > htmlname
+	  printf "<td><center><font color=\"#aa0000\"><b>"devvar \
+            "</b></font></center></td></tr>\n" > htmlname
 	  ++errors; 
         } 
         else { 
@@ -111,14 +108,14 @@ END {
           printf "\033[31mWARNING\033[0m: relative deviation " \
             "> 1 sigma in \033[1m"proc1[ii]"\033[0m\n"; 
           printf "--------------------------------------------------\n"; 
-	  printf "<td><font color=\"#dddd00\"><b>"devvar \
-            "</b></font></td></tr>\n" > htmlname
+	  printf "<td><center><font color=\"#dddd00\"><b>"devvar \
+            "</b></font></center></td></tr>\n" > htmlname
 	  ++warnings; 
         }
       }
       else {
-	printf "<td><font color=\"#00aa00\"><b>"devvar	\
-	  "</b></font></td></tr>\n" > htmlname
+	printf "<td><center><font color=\"#00aa00\"><b>"devvar	\
+	  "</b></font></center></td></tr>\n" > htmlname
       }
       break; 
     }
