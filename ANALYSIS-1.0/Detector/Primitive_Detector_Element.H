@@ -1,16 +1,16 @@
-#ifndef Primitive_Detector_H
-#define Primitive_Detector_H
+#ifndef Primitive_Detector_Element_H
+#define Primitive_Detector_Element_H
 
-#include "Primitive_Observable_Base.H"
 #include "Particle_Qualifier.H"
+#include "Particle_List.H"
 #include "Getter_Function.H"
 
 namespace ANALYSIS {
   class Primitive_Detector_Element {
   protected:
-    double      m_etamin,m_etamax,m_phimin,m_phimax;
-    DOUBLE      m_delta_eta, m_delta_phi;
     int         m_neta, m_nphi;
+    double      m_etamin,m_etamax,m_phimin,m_phimax;
+    double      m_delta_eta, m_delta_phi;
     std::string m_name;
     double   ** p_cells;
 
@@ -19,7 +19,7 @@ namespace ANALYSIS {
     virtual void FillParticleInDetectorElement(const ATOOLS::Particle *) =0;
     void         MatchCell(const double,const double,int &,int &) const;
     void         MatchCell(const ATOOLS::Vec4D,int &,int &) const;
-    void         PseudoRapidityNAzimuthalAngle(const ATOOLS::Vec4D & p, 
+    void         PseudoRapidityNAzimuthalAngle(const ATOOLS::Vec4D &,double &,double &); 
   public:
     Primitive_Detector_Element(const int,const int,
 			       const double=-5.,const double=5.,
