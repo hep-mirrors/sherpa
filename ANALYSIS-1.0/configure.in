@@ -68,6 +68,9 @@ AC_CHECK_FUNCS(mkdir)
 
 AC_OUTPUT(Makefile \
 	  Main/Makefile \
+	  Tools/Makefile \
+	  Detector/Makefile \
+	  Triggers/Makefile \
 	  Observables/Makefile )
 
 
