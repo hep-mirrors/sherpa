@@ -1,99 +1,32 @@
 #!/bin/bash
 
+export LANG=en_US
+
+declare -a FNAME1 FNAME2
+
 FILE1=#___xs_comparison___#
 
+CNT=0
 while read LINE; do
+ FNAME1[CNT]=`echo $LINE | awk '{ print $1; }'`
+ FNAME2[CNT]=`echo $LINE | awk '{ print $2; }'`
+ if [ "${FNAME1[CNT]}" != "" ] && [ "${FNAME2[CNT]}" != "" ]; then 
+   if (( CNT == 0 )); then
+     echo "$LINE" > $FILE1
+   fi
+   (( ++CNT ))
+ fi
+done
+for (( i=1; i<$CNT; ++i )); do
+  cat ${FNAME1[i]} >> $FILE1
+done
+echo "end" >> $FILE1
+for (( i=1; i<$CNT; ++i )); do
+  cat ${FNAME2[i]} >> $FILE1
+done
+echo "end" >> $FILE1
 
- FILENAME1=`echo $LINE | awk '{ print $1; }'`
- FILENAME2=`echo $LINE | awk '{ print $2; }'`
-
- TEST=${FILENAME1%"xs_tot"} 
- if [ "$FILENAME1" == "$TEST" ]; then continue; fi
-
- echo $FILENAME1 > $FILE1
- cat $FILENAME1 >> $FILE1
- echo "end" >> $FILE1
- cat $FILENAME2 >> $FILE1
- echo "end" >> $FILE1
-
-awk '\
-BEGIN { pi=0; i=0; j=0; pb=3.89379656e8; end1=0; warnings=0; errors=0 } \
-{\
-  if (pi==0) { \
-    pi=1;
-    filename=$1; \
-  } \
-  else { \
-  if ($1=="end") end1=1; \
-  else { \
-    if (end1==0) { \
-      proc1[i]=$1; \
-      xs1[i]=$2;  \
-      max1[i]=$3;  \
-      err1[i]=$4;  \
-      relerr1[i]=$4/$2;  \
-#      printf "1st file: process: "$1", xs = "xs1[i]*pb" pb, err = "err1[i]*pb" ( "relerr1[i]*100"% ), max = "max1[i]*pb" pb\n"; \
-      ++i; \
-    } \
-    else { \
-      proc2[j]=$1; \
-      xs2[j]=$2;  \
-      max2[j]=$3;  \
-      err2[j]=$4;  \
-      relerr2[j]=$4/$2;  \
-#      printf "2nd file: process: "$1", xs = "xs2[j]*pb" pb, err = "err2[j]*pb" ( "relerr2[j]*100"% ), max = "max2[j]*pb" pb\n"; \
-      ++j; \
-    } \
-  } \
-  } \
-} \
-END { \
-  min=-3.; max=3.; bins=31; binwidth=(max-min)/bins; \
-  for (k=0;k<=bins;++k) { \
-    histox[k]=min+binwidth*k; \
-    histoy[k]=0; \
-  } \
-  devsum = 0.; \
-  devavg = 0.; \
-  for (ii=0;ii<i;++ii) { \
-    meanerr=sqrt(err1[ii]*err1[ii]+err2[ii]*err2[ii]); \
-    devvar=(xs1[ii]-xs2[ii])/meanerr;
-    devsum += devvar*devvar;
-    devavg += devvar;
-    reldev=devvar; \
-    if (reldev<0) reldev=-reldev; \
-    for (k=1;k<bins;++k) { \
-      if (devvar>=histox[k] && devvar<histox[k+1]) ++histoy[k];
-    } \
-    if (devvar<histox[0]) ++histoy[0];
-    if (devvar>=histox[bins]) ++histoy[bins];
-    printf "test process: "proc1[ii]", rel deviation = "reldev" sigma vs. rel errors = "relerr1[ii]*100"%, "relerr2[ii]*100"%\n"; \
-    if (reldev>1.0) { \
-      if (reldev>2.0) { \
-        printf "==================================================\n";
-        printf "ERROR: rel deviation > 2 sigma in "proc1[ii]"\n";
-        printf "==================================================\n";
-	++errors;
-      }\
-      else {\
-        printf "--------------------------------------------------\n";
-        printf "WARNING: relative deviation > 1 sigma in "proc1[ii]"\n";
-        printf "--------------------------------------------------\n";
-	++warnings;
-      }\
-    }\
-  }\
-  printf "finished test with "errors" errors and "warnings" warnings in "i" processes\n"; \
-  if (i>1) printf "Average was "devavg/i", mean sigma² was "(devsum - devavg*devavg/i)/(i-1)"\n"; \
-else printf "Only one process.";
-  filename=filename".xsd.dat"; \
-  printf "write deviation histo to "filename"\n"; \
-  for (k=0;k<=bins;++k) { \
-    printf histox[k]" "histoy[k]"\n" > filename; \
-  } \
-} \
-' < $FILE1
+awk -f testxs.awk < $FILE1
 
 rm $FILE1
 
-done
