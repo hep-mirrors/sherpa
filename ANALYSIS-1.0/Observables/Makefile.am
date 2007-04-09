@@ -6,20 +6,13 @@ pkglib_LTLIBRARIES       =	libObservables.la
 
 libObservables_la_SOURCES     =	\
 				$(EXTRAOBS) \
-				List_Modifier.C \
-				Primitive_Observable_Base.C \
-				Normalized_Observable.C \
 				Global_Calculator.C \
+			 	Primitive_Observable_Base.C \
+			 	Normalized_Observable.C \
 				HT.C \
 				PSM_Observables.C \
 				Multiplicity.C \
 			    	Statistics_Observable.C \
-				One_Particle_Selector.C \
-				Two_Particle_Selector.C \
-				Four_Particle_Calculator.C \
-				One_Particle_Extractor.C \
-				All_Particle_Selector.C \
-				Universal_Selector.C \
 			    	MI_Observables.C \
 			    	One_Particle_Observables.C \
 			    	One_Particle_Observables_2.C \
@@ -28,8 +21,6 @@ libObservables_la_SOURCES     =	\
                                 Three_Particle_Observables.C \
 			    	Four_Particle_Observables.C \
 			    	Four_Particle_Observables_2.C \
-				Midpoint_Cone.C \
-			    	Calorimeter_Cone.C \
 			    	Jet_Cone_Distribution.C \
 			    	Jet_Observables.C \
 				Momentum_Tensor.C \
@@ -40,10 +31,7 @@ libObservables_la_SOURCES     =	\
 				Jet_Mass_and_Broadening.C \
 			    	Scaled_Observables.C \
 				Four_Jet_Angles.C \
-				Field_Stuart_Cone_Finder.C \
-				Blob_Selector.C \
-				Particle_Ordering.C \
-				Lorentz.C
+				General_Observable.C
 pkginclude_HEADERS    =	\
 			Primitive_Observable_Base.H \
 			Normalized_Observable.H \
@@ -51,16 +39,11 @@ pkginclude_HEADERS    =	\
 			PSM_Observables.H \
 			Multiplicity.H \
 			Statistics_Observable.H \
-			One_Particle_Extractor.H \
-			All_Particle_Selector.H \
-			Universal_Selector.H \
 			MI_Observables.H \
 			One_Particle_Observables.H \
 			Two_Particle_Observables.H \
 			Three_Particle_Observables.H \
 			Four_Particle_Observables.H \
-			Midpoint_Cone.H \
-			Calorimeter_Cone.H \
 			Jet_Cone_Distribution.H \
 			Jet_Observables.H \
 			Momentum_Tensor.H \

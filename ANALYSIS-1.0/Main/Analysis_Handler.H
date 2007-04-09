@@ -16,7 +16,9 @@ namespace ANALYSIS {
   public:
 
     typedef ANALYSIS::Primitive_Observable_Base::Getter_Function 
-    Getter_Function;
+    Observable_Getter_Function;
+    typedef ANALYSIS::Analysis_Object::Getter_Function 
+    Object_Getter_Function;
     typedef std::vector<ANALYSIS::Primitive_Analysis*> Analyses_Vector;
     
   private:

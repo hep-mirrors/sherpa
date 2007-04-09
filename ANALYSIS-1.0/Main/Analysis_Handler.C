@@ -92,16 +92,14 @@ void Analysis_Handler::ShowSyntax(const size_t i)
 	   <<"   ..|..  -  mandatory selection\n"
 	   <<"   [..]   -  optional variable\n"
 	   <<"   -> ..  -  depends on\n\n"
-	   <<"   list   -  particle list specifier, \n"
-	   <<"             user defined lists created by selectors\n"
-	   <<"             (e.g. by 'Trigger', 'PTSel', 'OnePTSel')\n"
-	   <<"             default lists created by qualifiers\n"
-	   <<"             (i.e. the 'Charged' qualifier "
-	   <<"creates the 'Charged' list)\n\n"
+	   <<"   list   -  particle list specifier, \n\n"
 	   <<"   BEGIN_ANALYSIS {\n\n"
 	   <<"   LEVEL      [ME]|[Shower]|[Hadron]\n\n"
-	   <<"   PATH_PIECE path\n\n";
-  Getter_Function::PrintGetterInfo(msg.Out(),15);
+	   <<"   PATH_PIECE path\n\n"
+	   <<"   // observable listing\n\n";
+  Observable_Getter_Function::PrintGetterInfo(msg.Out(),15);
+  msg.Out()<<"\n   // detector/trigger & tools listing\n\n";
+  Object_Getter_Function::PrintGetterInfo(msg.Out(),15);
   msg.Out()<<"\n   } END_ANALYSIS\n\n"
 	   <<"}"<<std::endl;
 }
@@ -123,7 +121,7 @@ bool Analysis_Handler::ReadIn()
     reader.SetOccurrence(i);
     reader.RescanInFile();
     if (!reader.VectorFromFile(helpsv,"LEVEL")) break;
-    bool split=false, trigger=false;
+    bool split=false;
     int mode=ANALYSIS::fill_all|ANALYSIS::splitt_jetseeds;
     for (size_t j=0;j<helpsv.size();++j) {
       if (split) mode=mode|ANALYSIS::splitt_phase;
@@ -163,10 +161,10 @@ bool Analysis_Handler::ReadIn()
       size_t col=1;
       Argument_Matrix mat=FindArguments(arguments,k,col);
       ANALYSIS::Primitive_Observable_Base *observable = 
-	Getter_Function::GetObject(arguments[k][0],mat(m_analyses.back()));
+	Observable_Getter_Function::GetObject
+	(arguments[k][0],mat(m_analyses.back()));
       if (observable!=NULL) {
-	m_analyses.back()->AddObservable(observable);
-	if (arguments[k][0]=="Trigger") trigger=true;
+	m_analyses.back()->AddObject(observable);
 	if (msg.LevelIsTracking()) {
 	  msg.Out()<<"      new Primitive_Observable_Base(\""
 		   <<arguments[k][0]<<"\",";
@@ -179,12 +177,23 @@ bool Analysis_Handler::ReadIn()
 	  msg.Out()<<")\n";
 	}
       }
-    }
-    if (!trigger) {
-      ANALYSIS::Primitive_Observable_Base *observable = 
-	Getter_Function::GetObject("Trigger",
-				   Argument_Matrix()(m_analyses.back()));
-      m_analyses.back()->AddObservable(observable);
+      ANALYSIS::Analysis_Object *object = 
+	Object_Getter_Function::GetObject
+	(arguments[k][0],mat(m_analyses.back()));
+      if (object!=NULL) {
+	m_analyses.back()->AddObject(object);
+	if (msg.LevelIsTracking()) {
+	  msg.Out()<<"      new Analysis_Object(\""
+		   <<arguments[k][0]<<"\",";
+	  for (size_t i=0;i<mat.size();++i) {
+	    msg.Out()<<"{"<<(mat[i].size()>0?mat[i][0]:"");
+	    for (size_t j=1;j<mat[i].size();++j) 
+	      msg.Out()<<","<<mat[i][j];
+	    msg.Out()<<"}";
+	  }
+	  msg.Out()<<")\n";
+	}
+      }
     }
     msg_Tracking()<<"   }\n";
   }

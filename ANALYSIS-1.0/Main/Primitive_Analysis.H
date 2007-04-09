@@ -13,7 +13,9 @@ namespace ATOOLS {
 }
 
 namespace ANALYSIS {
+
   enum code {
+
     unweighted      = 0,
     weighted        = 1,
     splitt_jetseeds = 2,
@@ -24,9 +26,6 @@ namespace ANALYSIS {
     fill_all        = 24,
     
     weighted_ns     = 32,
-//     norm_to_xs      = 32,
-//     norm_to_one     = 64,
-//     norm            = 96,
     
     output_this     = 128,
     output_jet      = 256,
@@ -40,11 +39,11 @@ namespace ANALYSIS {
     splitt_extra    = 32768
   };
 
-  class Primitive_Observable_Base;
+  class Analysis_Object;
   class Primitive_Analysis;
 
-  typedef std::vector<Primitive_Observable_Base *>      Observable_List;
-  typedef std::map<std::string,ATOOLS::Particle_List *> PL_Container;
+  typedef std::vector<Analysis_Object*>                 Object_List;
+  typedef std::map<std::string,ATOOLS::Particle_List*>  PL_Container;
   typedef std::map<std::string,Primitive_Analysis *>    Analysis_List;
 
   struct Weight_Statistics {
@@ -59,13 +58,14 @@ namespace ANALYSIS {
 
   class Primitive_Analysis: public ATOOLS::File_IO_Base {
   private:
+
     int                    m_mode;
     long                   m_nevt;
     std::string            m_name;
 
-    Observable_List        m_observables;
-
+    Object_List            m_objects;
     PL_Container           m_pls;
+
     ATOOLS::String_BlobDataBase_Map m_datacontainer;
     Analysis_List          m_subanalyses;
 
@@ -73,59 +73,54 @@ namespace ANALYSIS {
     const ATOOLS::Blob_List    * p_blobs;
 
     Primitive_Analysis   * p_partner;
-
     Weight_Statistics      m_stats;
 
-    ATOOLS::Particle_Qualifier_Base * p_bfinder;
     bool  m_active;
 
     std::string JetID(std::string name) const;
     
     void Init();
     bool SelectBlob(const ATOOLS::Blob *blob); 
-    void CreateFinalStateParticleList(bool markb=false);
-    void CreateChargedParticleList();
-    void CreatePrimordialHadronsList();
-    void CreateIntermediateHadronsList();
-    void CreateUEParticleList();
+    void CreateFinalStateParticleList();
 
     Primitive_Analysis * GetSubAnalysis(const std::string & key, int mode);
     void CallSubAnalysis(const ATOOLS::Blob_List * const bl, double value);
 
     void PrintStatus();
-  public :
-    Primitive_Analysis(const std::string, const int);
-    Primitive_Analysis(const int);
-    ~Primitive_Analysis();
 
-    void AddObservable(Primitive_Observable_Base *);
+  public :
+
+    Primitive_Analysis(const int);
+    Primitive_Analysis(const std::string, const int);
+
+    ~Primitive_Analysis();
+    
     void AddSubAnalysis(const std::string &,Primitive_Analysis *);
-    // most simple analysis, assume the observables a know how to handle a single value
-//     void DoAnalysis(const ATOOLS::Particle_List &, const double);
-    // advanced analysis, working with a bloblist, thus event generation properties can be exploited
     void DoAnalysis(const ATOOLS::Blob_List * const , const double);
-    // finalise and write out results of analysis
     void FinishAnalysis(const std::string &, long=0, double =1.);
     
+    void AddObject(Analysis_Object *obj);
+    Analysis_Object *GetObject(const std::string & key);
 
-
-    Primitive_Observable_Base * GetObservable(const std::string &);
-
-    ATOOLS::Particle_List * GetParticleList(const std::string &);
     void AddParticleList(const std::string &,ATOOLS::Particle_List *);
+    ATOOLS::Particle_List * GetParticleList(const std::string &,
+					    const bool=false);
 
     ATOOLS::Blob_Data_Base * operator[](const std::string name);
     void AddData(const std::string name,ATOOLS::Blob_Data_Base * data); 
+
     void ClearAllData();
 
     void SetPartner(Primitive_Analysis * const);
     void SetBlobType(const std::string &);
-    int  NumberOfObservables() { return m_observables.size(); }
+    int  NumberOfObjects() { return m_objects.size(); }
     
     // inline methods
     inline const std::string &Name() const { return m_name; }
     inline const int          Mode() const { return m_mode; }
-  };
-}
+
+  };// end of class Primitive_Analysis
+
+}// end of namespace ANALYSIS
 
 #endif
