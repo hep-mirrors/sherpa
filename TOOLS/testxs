@@ -26,7 +26,7 @@ for (( i=1; i<$CNT; ++i )); do
 done
 echo "end" >> $FILE1
 
-awk -f testxs.awk < $FILE1
+awk -f $0".awk" < $FILE1
 
 rm $FILE1
 
