@@ -2,29 +2,47 @@
 
 export LANG=en_US
 
-declare -a FNAME1 FNAME2
+declare -a FNAME1 FNAME2 LINES
 
 FILE1=#___xs_comparison___#
 
 CNT=0
+echo -n "" > $FILE1
 while read LINE; do
- FNAME1[CNT]=`echo $LINE | awk '{ print $1; }'`
- FNAME2[CNT]=`echo $LINE | awk '{ print $2; }'`
- if [ "${FNAME1[CNT]}" != "" ] && [ "${FNAME2[CNT]}" != "" ]; then 
-   if (( CNT == 0 )); then
-     echo "$LINE" > $FILE1
-     OFILE=${FNAME1[CNT]}
-   fi
-   (( ++CNT ))
- fi
+  FNAME1[CNT]=`echo $LINE | awk '{ print $1; }'`
+  FNAME2[CNT]=`echo $LINE | awk '{ print $2; }'`
+  if [ "${FNAME1[CNT]}" != "" ]; then 
+    LINES[CNT]="$LINE"
+    if (( CNT < 4 )); then
+      echo "$LINE" >> $FILE1
+      (( ++CNT ))
+    elif [ "${FNAME2[CNT]}" != "" ]; then
+      (( ++CNT ))
+    fi
+  fi
 done
-mkdir $OFILE
-for (( i=1; i<$CNT; ++i )); do
-  cat ${FNAME1[i]} >> $FILE1
+OFILE=${FNAME1[0]}
+if ! test -d $OFILE; then 
+  mkdir $OFILE
+fi
+for (( i=4; i<$CNT; ++i )); do
+  if test -f ${FNAME1[i]}; then
+    cat ${FNAME1[i]} >> $FILE1
+  else
+    if [ "${FNAME1[i]}" = "#" ]; then
+      echo "${LINES[i]}" >> $FILE1
+    fi
+  fi
 done
 echo "end" >> $FILE1
-for (( i=1; i<$CNT; ++i )); do
-  cat ${FNAME2[i]} >> $FILE1
+for (( i=4; i<$CNT; ++i )); do
+  if test -f ${FNAME2[i]}; then
+    cat ${FNAME2[i]} >> $FILE1
+  else
+    if [ "${FNAME1[i]}" = "#" ]; then
+      echo "${LINES[i]}" >> $FILE1
+    fi
+  fi
 done
 echo "end" >> $FILE1
 
