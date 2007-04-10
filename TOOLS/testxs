@@ -13,10 +13,12 @@ while read LINE; do
  if [ "${FNAME1[CNT]}" != "" ] && [ "${FNAME2[CNT]}" != "" ]; then 
    if (( CNT == 0 )); then
      echo "$LINE" > $FILE1
+     OFILE=${FNAME1[CNT]}
    fi
    (( ++CNT ))
  fi
 done
+mkdir $OFILE
 for (( i=1; i<$CNT; ++i )); do
   cat ${FNAME1[i]} >> $FILE1
 done
@@ -30,3 +32,4 @@ awk -f $0".awk" < $FILE1
 
 rm $FILE1
 
+Compare -p/ -f$0".cmp" -okb -W$OFILE -D./ -P./ -T"FNAME $OFILE.xsd.dat"

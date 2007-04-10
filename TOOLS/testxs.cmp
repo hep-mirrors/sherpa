@@ -1,0 +1,16 @@
+(initial){
+  test.cmp (devh){ }(devh);
+}(initial);
+
+(devh){
+  FILE_PIECE FNAME;
+  HISTOGRAM_NAME Dev_Stat;
+  OWNS_CANVAS YES;
+  DRAW_LINES V 0 | COLOUR 12 STYLE 1 PRIORITY -10,;
+  X_AXIS_TITLE (w_{2}-w_{1})/#sqrt{#sigma_{1}^{2}+#sigma_{2}^{2}};
+  Y_AXIS_TITLE # of processes;
+  Y_TITLE_OFFSET 1.4;
+  X_TITLE_OFFSET 1.25;
+  LEFT_MARGIN 0.14;
+  BOTTOM_MARGIN 0.12;
+}(devh);

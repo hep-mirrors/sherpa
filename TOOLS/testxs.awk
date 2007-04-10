@@ -3,26 +3,29 @@ BEGIN { pi=0; i=0; j=0; pb=3.89379656e8; end1=0; warnings=0; errors=0 }
   if (pi==0) { 
     if ($1!="") pi=1;
     filename=$1".xsd.dat"; 
-    htmlname=$1".dat.html";
+    htmlname=$1"/index.html";
     genone=$2;
     gentwo=$3;
     printf "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD " \
       "HTML 4.01 Transitional//EN\">\n" > htmlname
     printf "<html>\n  <head>\n" > htmlname
     printf "    <title>xs comparison</title>\n" > htmlname
-    printf "  <head>\n  <body>\n" > htmlname
-    printf "  <center><h1><font color=\"#0000ff\">"$1 \
-      " cross section comparison</color></h1></center>\n" > htmlname
-    printf "  <table width=\"100%\" border=\"1\"" \
+    printf "  <head>\n  <body>\n    <hr size=\"1\">\n" > htmlname
+    printf "    <center><font color=\"#0000ff\" size=\"+2\"><b>\n      "$1 \
+      " cross section comparison</b></font></center>\n" > htmlname
+    printf "    <hr size=\"1\"><br>\n    <table width=\"100%\" border=\"1\"" \
       " bordercolor=\"#888888\">\n" > htmlname 
-    printf "    <tr bgcolor=\"#bbbbbb\"><td><b>Process</b></td>" > htmlname
-    printf "<td><b>XS from "genone" [pb]</b></td>" > htmlname
-    printf "<td><b>XS from "gentwo" [pb]</b></td>" > htmlname
-    printf "<td><center><b>w<sub>2</sub>/w<sub>1</sub>-1 [%]" \
-      "</b></center></td>" > htmlname
-    printf "<td><center><b>(w<sub>2</sub>-w<sub>1</sub>)/" \
-      "(&sigma;<sub>1</sub>+&sigma;<sub>2</sub>)" \
-      "<sup>1/2</sup></b></center></td></tr>\n" > htmlname
+    printf "      <tr bgcolor=\"#bbbbbb\"><td><b>Process</b></td>\n" > htmlname
+    printf "        <td><center><b>XS from "genone \
+      " [pb]</b></center></td>\n" > htmlname
+    printf "        <td><center><b>XS from "gentwo \
+      " [pb]</b></center></td>\n" > htmlname
+    printf "        <td><center><b>w<sub>2</sub>/w<sub>1</sub>-1 [%]" \
+      "</b></center></td>\n" > htmlname
+    printf "        <td><center><b>(w<sub>2</sub>-w<sub>1</sub>)/\n" \
+      "          (&sigma;<sub>1</sub><sup>2</sup>+" \
+      "&sigma;<sub>2</sub><sup>2</sup>)\n          <sup>1/2</sup>" \
+      "</b></center></td></tr>\n" > htmlname
   } 
   else { 
   if ($1=="end") end1=1; 
@@ -78,21 +81,22 @@ END {
         "%\033[0m, \033[32m"relerr2[jj]*100"%\033[0m\n"; 
       if (reldev>1.0) { 
 	if (reldev>2.0) { 
-	  printf "    <tr bgcolor=\"#ffcccc\">" > htmlname
+	  printf "      <tr bgcolor=\"#ffcccc\">" > htmlname
 	}
 	else {
-	  printf "    <tr bgcolor=\"#ffffcc\">" > htmlname
+	  printf "      <tr bgcolor=\"#ffffcc\">" > htmlname
 	}
       }
       else {
-	printf "    <tr bgcolor=\"#ccffcc\">" > htmlname
+	printf "      <tr bgcolor=\"#ccffcc\">" > htmlname
       }
-      printf "<td><b>"proc1[ii]"</b></td>" > htmlname
-      printf "<td>"xs1[ii]*pb" +- "err1[ii]*pb \
-        " ( "relerr1[ii]*100"% )</td>" > htmlname
-      printf "<td>"xs2[jj]*pb" +- "err2[jj]*pb \
-        " ( "relerr2[jj]*100"% )</td>" > htmlname
-      printf "<td><center>"(xs2[jj]/xs1[ii]-1)*100"</center></td>" > htmlname
+      printf "<td><b>"proc1[ii]"</b></td>\n" > htmlname
+      printf "        <td><center>"xs1[ii]*pb" +- "err1[ii]*pb \
+        " ( "relerr1[ii]*100"% )</center></td>\n" > htmlname
+      printf "        <td><center>"xs2[jj]*pb" +- "err2[jj]*pb \
+        " ( "relerr2[jj]*100"% )</center></td>\n" > htmlname
+      printf "        <td><center>"(xs2[jj]/xs1[ii]-1)*100 \
+        "</center></td>\n        " > htmlname
       if (reldev>1.0) { 
         if (reldev>2.0) { 
           printf "==================================================\n"; 
@@ -122,13 +126,20 @@ END {
   }
   printf "finished test with "errors \
     " errors and "warnings" warnings in "i" processes\n"; 
-  if (k>1) printf "Average was "devavg/k \
-    ", mean sigma^2 was "(devsum - devavg*devavg/i)/(i-1)"\n"; 
+  if (k>1) printf "mean sigma is "devavg/k \
+    ", delta sigma is "sqrt((devsum-devavg*devavg/i)/(i-1))"\n"; 
   else printf "Only one process."; 
   printf "write deviation histo to "filename"\n"; 
   for (k=0;k<=bins;++k) { 
     printf histox[k]" "histoy[k]"\n" > filename; 
   } 
-  printf "    </table>\n  </body>\n</html>\n" > htmlname
+  printf "    </table><br>\n    <hr size=\"1\">\n" > htmlname
+  printf "    Test yields "errors \
+    " errors and "warnings" warnings in "i" processes" > htmlname 
+  if (k>1) printf ",\n    &lt;&sigma;&gt; = "devavg/k \
+    ", &Delta;&sigma; = " sqrt((devsum-devavg*devavg/i)/(i-1)) > htmlname
+  printf "\n    <hr size=\"1\">\n    " > htmlname
+  printf "<img src=\"Dev_Stat_1.gif\"/>\n    " > htmlname
+  printf "<hr size=\"1\">\n    <br><br>\n  </body>\n</html>\n" > htmlname
   printf "wrote data to "htmlname"\n"; 
 }
