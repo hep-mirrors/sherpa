@@ -26,20 +26,19 @@ namespace ANALYSIS {
 			   const double,const double);
     void   AddNoise();
   public:
-    Primitive_Muon_Chambers(const int,const int,
-				const double=-5.,const double=5.,
-				const double=0.,const double=2.*M_PI);
+    Primitive_Muon_Chambers(const long int,const long int,
+			    const double=-5.,const double=5.,
+			    const double=0.,const double=2.*M_PI);
     ~Primitive_Muon_Chambers();
     void Fill(const ATOOLS::Particle_List *);
     void Extract(ATOOLS::Particle_List *);
-    void Reset();
     void Print(std::ostream & =std::cout);
 
     void SetThreshold(const double thres)      { m_threshold  = thres; }
-    void SetMissProbabiltiy(const double miss) { m_missprob   = miss; }
-    void SetEnergyResolution(const double res) { m_resolution = res; }
+    void SetMissProbability(const double miss) { m_missprob   = miss; }
+    void SetResolution(const double res)       { m_resolution = res; }
 
-    void SetCalorimetryMode(const muonprob::code mp) { m_muonprob = mp; }
+    void SetMuonMode(const muonprob::code mp)  { m_muonprob = mp; }
 
     Primitive_Detector_Element * Copy() const ;
   };

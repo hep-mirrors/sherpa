@@ -6,7 +6,7 @@
 
 namespace ANALYSIS {
   class Primitive_Detector: public Primitive_Observable_Base {
-    std::string                m_inlistname,m_outlistname;
+    std::string                m_inlistname;
     String_DetectorElement_Map m_elements;
   public:
     Primitive_Detector(const std::string &inlist,const std::string &outlist);

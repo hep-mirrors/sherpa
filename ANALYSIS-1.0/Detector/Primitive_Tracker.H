@@ -26,19 +26,17 @@ namespace ANALYSIS {
 			    const double,const double);
     void   AddNoise();
   public:
-    Primitive_Tracker(const int,const int,
+    Primitive_Tracker(const long int,const long int,
 		      const double=-5.,const double=5.,
 		      const double=0.,const double=2.*M_PI);
     ~Primitive_Tracker();
     void Fill(const ATOOLS::Particle_List *);
     void Extract(ATOOLS::Particle_List *);
-    void Reset();
     void Print(std::ostream & =std::cout);
 
-    void SetMissProbabilty(const double miss)     { m_missprob   = miss; }
+    void SetMissProbability(const double miss)     { m_missprob   = miss; }
+    void SetThreshold(const double thres)          { m_threshold  = thres; }
     void SetTrackingMode(const trackprob::code tp) { m_trackprob  = tp; }
-
-    Primitive_Detector_Element * Copy() const ;
   };
 }
 

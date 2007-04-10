@@ -81,12 +81,12 @@ Primitive_Observable_Base* Primitive_Detector::Copy() const
   Primitive_Detector *detector = 
     new Primitive_Detector(m_inlistname,m_outlistname);
 
-  for (String_DetectorElement_Map::const_iterator sdeiter=m_elements.begin();
-       sdeiter!=m_elements.end();++sdeiter) {
-    if (sdeiter->second!=NULL) {
-      detector->Add(sdeiter->second->Copy());
-    }
-  }
+//   for (String_DetectorElement_Map::const_iterator sdeiter=m_elements.begin();
+//        sdeiter!=m_elements.end();++sdeiter) {
+//     if (sdeiter->second!=NULL) {
+//       detector->Add(sdeiter->second->Copy());
+//     }
+//   }
 
   return detector;
 }
