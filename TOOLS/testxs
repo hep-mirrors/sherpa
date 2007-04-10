@@ -32,4 +32,4 @@ awk -f $0".awk" < $FILE1
 
 rm $FILE1
 
-Compare -p/ -f$0".cmp" -okb -W$OFILE -D./ -P./ -T"FNAME $OFILE.xsd.dat"
+Compare -p/ -f$0".cmp" -okb -W$OFILE -D./ -P$OFILE/ -T"FNAME $OFILE.xsd.dat"
