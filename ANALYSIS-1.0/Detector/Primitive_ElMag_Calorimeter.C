@@ -58,18 +58,47 @@ Primitive_ElMag_Calorimeter(const long int neta,const long int nphi,
 			    const double minphi,const double maxphi) :
   Primitive_Detector_Element(pde::cells,neta,nphi,mineta,maxeta,minphi,maxphi),
   m_calor(emcalor::full),m_geom(emgeom::full),
-  m_thres(0.), m_missprob(0.), m_resolution(0.),
+  m_threshold(0.), m_missprob(0.), m_resolution(0.),
   p_electron(Particle_Qualifier_Getter::GetObject("91","electron")),
   p_photon(Particle_Qualifier_Getter::GetObject("22","photon")),
   p_muon(Particle_Qualifier_Getter::GetObject("92","muon")),
   p_charged_hadron(Particle_Qualifier_Getter::GetObject("1","charged hadron"))
 {
   p_qualifier = NULL;
-  m_name      = "El-Mag Calorimeter";
+  m_name      = "ECal";
 }
 
 
 Primitive_ElMag_Calorimeter::~Primitive_ElMag_Calorimeter() {}
+
+Analysis_Object * Primitive_ElMag_Calorimeter::GetCopy() const {
+  Primitive_ElMag_Calorimeter * elmag_calorimeter =
+    new Primitive_ElMag_Calorimeter(m_neta,m_nphi,m_etamin,m_etamax,m_phimin,m_phimax);
+  elmag_calorimeter->SetMissProbability(m_missprob);
+  elmag_calorimeter->SetThreshold(m_threshold);
+  elmag_calorimeter->SetResolution(m_resolution);
+  elmag_calorimeter->SetCalorimetryMode(m_calor);
+  elmag_calorimeter->SetGeometryMode(m_geom);
+  return elmag_calorimeter;
+}
+
+void Primitive_ElMag_Calorimeter::Reset()
+{
+  for (m_etastrip=m_cells.begin();m_etastrip!=m_cells.end();m_etastrip++) {
+    for (std::vector<double>::iterator etaphi=(*m_etastrip).begin();
+	 etaphi!=(*m_etastrip).end();etaphi++) 
+      (*etaphi) = 0.;
+  }
+  AddNoise();
+  for (std::vector<std::vector<int> >::iterator etas=m_id.begin();etas!=m_id.end();etas++) {
+    for (std::vector<int>::iterator etaphi=(*etas).begin();etaphi!=(*etas).end();etaphi++)
+      (*etaphi) = 0;
+  }
+}
+
+int Primitive_ElMag_Calorimeter::GetFlav(const long int etapos, const long int phipos) const {
+  return m_id[etapos][phipos];
+}
 
 void Primitive_ElMag_Calorimeter::Fill(const Particle_List * plist) {
   Reset();
@@ -80,27 +109,28 @@ void Primitive_ElMag_Calorimeter::Fill(const Particle_List * plist) {
   }
 }
 
-void Primitive_ElMag_Calorimeter::
-FillParticleInDetectorElement(const Particle * part) {
+bool Primitive_ElMag_Calorimeter::FillParticleInDetectorElement(const Particle * part) {
   long int etapos,phipos;
   MatchCell(part->Momentum(),etapos,phipos);
-  if (etapos<0||phipos<0) return;
-  m_cells[etapos][phipos] += EnergyDeposit(part);
+  if (etapos<0||phipos<0) return false;
+  bool eraseit(false);
+  m_cells[etapos][phipos] += EnergyDeposit(part,eraseit);
+  m_id[etapos][phipos] = part->Flav().IsAnti()?-int(part->Flav().Kfcode()):int(part->Flav().Kfcode());
+  return eraseit;
 }
 
-double Primitive_ElMag_Calorimeter::
-EnergyDeposit(const Particle * part) {
+double Primitive_ElMag_Calorimeter::EnergyDeposit(const Particle * part,bool & eraseit) {
   double E(part->Momentum()[0]);
-  if (E<m_thres) return 0.; 
+  if (E<m_threshold) return 0.; 
   if ((*p_electron)(part)) {
     SmearEnergy(part->Flav(),E);
     GeometryEffects(part->Flav(),E,part->Momentum().Eta(),part->Momentum().Phi());
+    eraseit = true;
   }
   return E;
 }
 
-void Primitive_ElMag_Calorimeter::
-SmearEnergy(const Flavour & flav,double & E) {
+void Primitive_ElMag_Calorimeter::SmearEnergy(const Flavour & flav,double & E) {
   switch (m_calor) {
     case emcalor::full:
     default:
@@ -108,9 +138,8 @@ SmearEnergy(const Flavour & flav,double & E) {
   }
 }
 
-void Primitive_ElMag_Calorimeter::
-GeometryEffects(const Flavour & flav,double & E,
-		const double eta,const double phi) {
+void Primitive_ElMag_Calorimeter::GeometryEffects(const Flavour & flav,double & E,
+						  const double eta,const double phi) {
   switch (m_geom) {
     case emgeom::flatmiss:
       if (ran.Get()<m_missprob) { E=0.; return; }

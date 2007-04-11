@@ -21,7 +21,7 @@ namespace ANALYSIS {
     trackprob::code m_trackprob;
     double          m_threshold, m_missprob;
 
-    void   FillParticleInDetectorElement(const ATOOLS::Particle *);
+    bool   FillParticleInDetectorElement(const ATOOLS::Particle *);
     double TrackProbability(const ATOOLS::Flavour &,const double,
 			    const double,const double);
     void   AddNoise();
@@ -30,6 +30,9 @@ namespace ANALYSIS {
 		      const double=-5.,const double=5.,
 		      const double=0.,const double=2.*M_PI);
     ~Primitive_Tracker();
+
+    Analysis_Object * GetCopy() const;
+
     void Fill(const ATOOLS::Particle_List *);
     void Extract(ATOOLS::Particle_List *);
     void Print(std::ostream & =std::cout);

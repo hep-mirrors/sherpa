@@ -23,14 +23,16 @@ namespace ANALYSIS {
 
   class Primitive_ElMag_Calorimeter : public Primitive_Detector_Element {
   private:
+    std::vector<std::vector<int> > m_id;
+
     emcalor::code m_calor;
     emgeom::code  m_geom;
-    double        m_thres, m_missprob, m_resolution;
+    double        m_threshold, m_missprob, m_resolution;
 
     ATOOLS::Particle_Qualifier_Base *p_electron, *p_photon, *p_muon, *p_charged_hadron;
 
-    void   FillParticleInDetectorElement(const ATOOLS::Particle *);
-    double EnergyDeposit(const ATOOLS::Particle *);
+    bool   FillParticleInDetectorElement(const ATOOLS::Particle *);
+    double EnergyDeposit(const ATOOLS::Particle *,bool &);
     void   SmearEnergy(const ATOOLS::Flavour &,double &);
     void   GeometryEffects(const ATOOLS::Flavour &,double &,
 			   const double,const double);
@@ -40,11 +42,16 @@ namespace ANALYSIS {
 				const double=-5.,const double=5.,
 				const double=0.,const double=2.*M_PI);
     ~Primitive_ElMag_Calorimeter();
+
+    Analysis_Object * GetCopy() const;
+
+    void Reset();
     void Fill(const ATOOLS::Particle_List *);
     void Extract(ATOOLS::Particle_List *);
     void Print(std::ostream & =std::cout);
+    int  GetFlav(const long int, const long int) const;
 
-    void SetThreshold(const double thres)      { m_thres      = thres; }
+    void SetThreshold(const double thres)      { m_threshold  = thres; }
     void SetMissProbability(const double miss) { m_missprob   = miss; }
     void SetResolution(const double res)       { m_resolution = res; }
 

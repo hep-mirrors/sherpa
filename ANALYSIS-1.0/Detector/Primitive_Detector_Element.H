@@ -27,7 +27,7 @@ namespace ANALYSIS {
 
     ATOOLS::Particle_Qualifier_Base * p_qualifier;
 
-    virtual void FillParticleInDetectorElement(const ATOOLS::Particle *) =0;
+    virtual bool FillParticleInDetectorElement(const ATOOLS::Particle *) =0;
     void         MatchCell(const double,const double,long int &,long int &) const;
     void         MatchCell(const ATOOLS::Vec4D,long int &,long int &) const;
     void         PseudoRapidityNAzimuthalAngle(const ATOOLS::Vec4D &,double &,double &); 
@@ -37,12 +37,14 @@ namespace ANALYSIS {
 			       const double=-5.,const double=5.,
 			       const double=0.,const double=2.*M_PI);
     virtual ~Primitive_Detector_Element();
-    virtual Primitive_Detector_Element * GetCopy() const { abort(); return NULL; };
+
     virtual void Evaluate(const ATOOLS::Blob_List &,double,int) {}
-    virtual void Fill(const ATOOLS::Particle_List *) =0;
-    virtual void Extract(ATOOLS::Particle_List *)    =0;
+    virtual Analysis_Object * GetCopy() { return NULL; }
+    virtual void Fill(const ATOOLS::Particle_List *)=0;
+    virtual void Extract(ATOOLS::Particle_List *)   =0;
     virtual void Reset();
  
+    void          GetNumbersOfCells(long int &,long int &);
     void          GetDimensions(long int &,long int &,double &,double &,double &, double &); 
     double        Cell(const long int,const long int) const;
     void          PseudoRapidityNAzimuthalAngle(const long int i,const long int j,

@@ -62,6 +62,15 @@ Primitive_Tracker(const long int neta,const long int nphi,
 
 Primitive_Tracker::~Primitive_Tracker() {}
 
+Analysis_Object * Primitive_Tracker::GetCopy() const {
+  Primitive_Tracker * tracker =
+    new Primitive_Tracker(m_neta,m_nphi,m_etamin,m_etamax,m_phimin,m_phimax);
+  tracker->SetMissProbability(m_missprob);
+  tracker->SetThreshold(m_threshold);
+  tracker->SetTrackingMode(m_trackprob);
+  return tracker;
+}
+
 void Primitive_Tracker::Fill(const Particle_List * plist) {
   Reset();
   for (Particle_List::const_iterator pit=plist->begin();pit!=plist->end();pit++) {
@@ -70,11 +79,10 @@ void Primitive_Tracker::Fill(const Particle_List * plist) {
   }
 }
 
-void Primitive_Tracker::
-FillParticleInDetectorElement(const Particle * part) {
+bool Primitive_Tracker::FillParticleInDetectorElement(const Particle * part) {
   long int etapos,phipos;
   MatchCell(part->Momentum(),etapos,phipos);
-  if (etapos<0||phipos<0) return;
+  if (etapos<0||phipos<0) return false;
   std::pair<long int, long int> pos;
   pos.first=etapos; pos.second=phipos;
   double trackprob =
@@ -82,10 +90,11 @@ FillParticleInDetectorElement(const Particle * part) {
   if (m_tracks.find(pos)!=m_tracks.end()) 
     m_tracks.find(pos)->second += trackprob;
   else m_tracks[pos] = trackprob;
+  return false;
 }
 
-double Primitive_Tracker::
-TrackProbability(const Flavour & flav,const double p,const double eta,const double phi) {
+double Primitive_Tracker::TrackProbability(const Flavour & flav,const double p,
+					   const double eta,const double phi) {
   switch (m_trackprob) {
     case trackprob::threshold_flatmiss:
       if (p>m_threshold && ran.Get()<m_missprob) return 1.;

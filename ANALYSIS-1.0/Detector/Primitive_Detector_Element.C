@@ -51,6 +51,10 @@ void Primitive_Detector_Element::Reset()
   AddNoise();
 }
 
+void Primitive_Detector_Element::GetNumbersOfCells(long int & neta,long int & nphi) {
+  neta     = m_neta;     nphi     = m_nphi;
+}
+
 void Primitive_Detector_Element::GetDimensions(long int & neta,long int & nphi,
 					       double & mineta, double & maxeta,
 					       double & minphi, double & maxphi) { 

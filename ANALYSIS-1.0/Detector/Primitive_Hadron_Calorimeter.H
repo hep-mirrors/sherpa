@@ -25,9 +25,9 @@ namespace ANALYSIS {
   private:
     hadcalor::code m_calor;
     hadgeom::code  m_geom;
-    double         m_thres, m_missprob, m_resolution;
+    double         m_threshold, m_missprob, m_resolution;
 
-    void   FillParticleInDetectorElement(const ATOOLS::Particle *);
+    bool   FillParticleInDetectorElement(const ATOOLS::Particle *);
     double EnergyDeposit(const ATOOLS::Particle *);
     void   SmearEnergy(const ATOOLS::Flavour &,double &);
     void   GeometryEffects(const ATOOLS::Flavour &,double &,
@@ -38,11 +38,14 @@ namespace ANALYSIS {
 				 const double=-5.,const double=5.,
 				 const double=0.,const double=2.*M_PI);
     ~Primitive_Hadron_Calorimeter();
+
+    Analysis_Object * GetCopy() const;
+
     void Fill(const ATOOLS::Particle_List *);
     void Extract(ATOOLS::Particle_List *);
     void Print(std::ostream & =std::cout);
 
-    void SetThreshold(const double thres)      { m_thres      = thres; }
+    void SetThreshold(const double thres)      { m_threshold  = thres; }
     void SetMissProbability(const double miss) { m_missprob   = miss; }
     void SetResolution(const double res)       { m_resolution = res; }
 

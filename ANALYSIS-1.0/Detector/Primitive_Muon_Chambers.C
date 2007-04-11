@@ -60,11 +60,21 @@ Primitive_Muon_Chambers(const long int neta,const long int nphi,
   m_threshold(0.), m_missprob(0.), m_resolution(0.)
 {
   p_qualifier = Particle_Qualifier_Getter::GetObject("92","muon");
-  m_name      = "Muon Chambers";
+  m_name      = "MuonChambers";
 }
 
 
 Primitive_Muon_Chambers::~Primitive_Muon_Chambers() {}
+
+Analysis_Object * Primitive_Muon_Chambers::GetCopy() const {
+  Primitive_Muon_Chambers * muon_chambers =
+    new Primitive_Muon_Chambers(m_neta,m_nphi,m_etamin,m_etamax,m_phimin,m_phimax);
+  muon_chambers->SetMissProbability(m_missprob);
+  muon_chambers->SetThreshold(m_threshold);
+  muon_chambers->SetResolution(m_resolution);
+  muon_chambers->SetMuonMode(m_muonprob);
+  return muon_chambers;
+}
 
 void Primitive_Muon_Chambers::Fill(const Particle_List * plist) {
   Reset();
@@ -74,17 +84,17 @@ void Primitive_Muon_Chambers::Fill(const Particle_List * plist) {
   }
 }
 
-void Primitive_Muon_Chambers::
-FillParticleInDetectorElement(const Particle * part) {
+bool Primitive_Muon_Chambers::FillParticleInDetectorElement(const Particle * part) {
   long int etapos,phipos;
   MatchCell(part->Momentum(),etapos,phipos);
-  if (etapos<0||phipos<0) return;
+  if (etapos<0||phipos<0) return false;
   std::pair<long int, long int> pos;
   pos.first=etapos; pos.second=phipos;
   double energydeposit = EnergyDeposit(part);
   if (m_tracks.find(pos)!=m_tracks.end()) 
     m_tracks.find(pos)->second += energydeposit;
   else m_tracks[pos] = energydeposit;
+  return false;
 }
 
 double Primitive_Muon_Chambers::

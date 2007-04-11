@@ -28,11 +28,17 @@ void Object_Definition_Data::SortPList() {
   std::sort(m_particles.begin(),m_particles.end(),(*p_order));
 }
 
-
+Object_Definition_Base::Object_Definition_Base(const std::string name,
+					       const kf::code code,
+					       const std::string order="ET_UP") :
+  m_name(name), m_code(code), p_data(new Object_Definition_Data(order))
+{ }
 
 Object_Definition_Base::~Object_Definition_Base() {
   if (p_data) { delete p_data; p_data = NULL; }
 }
+
+
 
 template <class Class>
 Object_Definition_Base *const GetObjectDefinition(const std::string &parameter)

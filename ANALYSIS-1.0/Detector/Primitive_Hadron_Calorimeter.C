@@ -58,14 +58,25 @@ Primitive_Hadron_Calorimeter(const long int neta,const long int nphi,
 			     const double minphi,const double maxphi) :
   Primitive_Detector_Element(pde::cells,neta,nphi,mineta,maxeta,minphi,maxphi),
   m_calor(hadcalor::full),m_geom(hadgeom::full),
-  m_thres(0.), m_missprob(0.), m_resolution(0.)
+  m_threshold(0.), m_missprob(0.), m_resolution(0.)
 {
   p_qualifier = ATOOLS::Particle_Qualifier_Getter::GetObject("hadron","Hadron"); 
-  m_name      = "Hadron Calorimeter";
+  m_name      = "HCal";
 }
 
 
 Primitive_Hadron_Calorimeter::~Primitive_Hadron_Calorimeter() {}
+
+Analysis_Object * Primitive_Hadron_Calorimeter::GetCopy() const {
+  Primitive_Hadron_Calorimeter * hadron_calorimeter =
+    new Primitive_Hadron_Calorimeter(m_neta,m_nphi,m_etamin,m_etamax,m_phimin,m_phimax);
+  hadron_calorimeter->SetMissProbability(m_missprob);
+  hadron_calorimeter->SetThreshold(m_threshold);
+  hadron_calorimeter->SetResolution(m_resolution);
+  hadron_calorimeter->SetCalorimetryMode(m_calor);
+  hadron_calorimeter->SetGeometryMode(m_geom);
+  return hadron_calorimeter;
+}
 
 void Primitive_Hadron_Calorimeter::Fill(const Particle_List * plist) {
   Reset();
@@ -75,17 +86,17 @@ void Primitive_Hadron_Calorimeter::Fill(const Particle_List * plist) {
   }
 }
 
-void Primitive_Hadron_Calorimeter::
-FillParticleInDetectorElement(const Particle * part) {
+bool Primitive_Hadron_Calorimeter::FillParticleInDetectorElement(const Particle * part) {
   long int etapos,phipos;
   MatchCell(part->Momentum(),etapos,phipos);
-  if (etapos<0||phipos<0) return;
+  if (etapos<0||phipos<0) return false;
   m_cells[etapos][phipos] += EnergyDeposit(part);
+  return true;
 }
 
 double Primitive_Hadron_Calorimeter::EnergyDeposit(const Particle * part) {
   double E(part->Momentum()[0]);
-  if (E<m_thres) return 0.; 
+  if (E<m_threshold) return 0.; 
   SmearEnergy(part->Flav(),E);
   GeometryEffects(part->Flav(),E,part->Momentum().Eta(),part->Momentum().Phi());
   return E;
