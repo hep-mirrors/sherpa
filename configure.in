@@ -84,6 +84,7 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  ANALYSIS-1.0/Tools/Makefile \
 	  ANALYSIS-1.0/Main/Makefile \
 	  ANALYSIS-1.0/Triggers/Makefile \
+	  ANALYSIS-1.0/Detector/Makefile \
 	  ANALYSIS-1.0/Observables/Makefile \
 	  SHERPA-1.0/Tools/Makefile \
 	  SHERPA-1.0/LundTools/Makefile \
