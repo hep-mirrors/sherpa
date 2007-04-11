@@ -1,6 +1,7 @@
 pkglib_LTLIBRARIES       =	libToolsPhys.la
 
 libToolsPhys_la_SOURCES       =	\
+				Ordering.C \
 				Flavour.C \
 				Particle.C \
 				Particle_Qualifier.C \
@@ -37,7 +38,8 @@ libToolsPhys_la_SOURCES       =	\
 				Mass_Handler.C \
 				Amplitude_Tensor.C
 
-pkginclude_HEADERS        =	\
+pkginclude_HEADERS    =	\
+			Ordering.H \
 			Flavour.H \
 			Particle.H \
 			Particle_Qualifier.H \

@@ -4,36 +4,15 @@
 
 using namespace ATOOLS;
 
-class Order_Up_E {
-public:
-  bool operator()(const Vec4D &a,const Vec4D &b) const 
-  { return dabs(a[0])>dabs(b[0]); }
-};
 
-class Order_Up_ET {
-public:
-  bool operator()(const Vec4D &a,const Vec4D &b) const 
-  { return a.EPerp()>b.EPerp(); }
-};
-
-class Order_Up_PT {
-public:
-  bool operator()(const Vec4D &a,const Vec4D &b) const 
-  { return a.PPerp2()>b.PPerp2(); }
-};
-
-class Order_Up_Eta {
-public:
-  bool operator()(const Vec4D &a,const Vec4D &b) const 
-  { return dabs(a.Eta())>dabs(b.Eta()); }
-};
-
-ET_Bias::ET_Bias(int nin,int nout,Flavour * flavs,ordering::code mode)
+ET_Bias::ET_Bias(int nin,int nout,Flavour * flavs,std::string mode)
 {
   m_name = "ET_Bias";
   m_nin  = nin;
   m_nout = nout;
-  m_mode = mode;
+  p_order = Order_Getter::GetObject(mode,"");
+  if (p_order==NULL) 
+    THROW(fatal_error,"Invalid ordering mode '"+mode+"'");
   m_n    = m_nin+m_nout;
   m_fl   = new Flavour[m_n];
   for (int i(0);i<m_n;++i) m_fl[i] = flavs[i];
@@ -67,18 +46,7 @@ bool ET_Bias::Trigger(const Vec4D * p)
 {
   msg_Debugging()<<METHOD<<"(): {\n";
   for (size_t i(0);i<m_sels.size();++i) m_moms[i]=p[m_sels[i]]; 
-  switch (m_mode) {
-  case ordering::ET:
-    std::sort(m_moms.begin(),m_moms.end(),Order_Up_ET());
-    break;
-  case ordering::PT:
-    std::sort(m_moms.begin(),m_moms.end(),Order_Up_PT());
-    break;
-  case ordering::E:
-  default:
-    std::sort(m_moms.begin(),m_moms.end(),Order_Up_E());
-    break;
-  }
+  std::sort(m_moms.begin(),m_moms.end(),*p_order);
   for (size_t i(0);i<Min(m_bounds.size(),m_moms.size());++i) {
     double et(m_moms[i].EPerp());
     msg_Debugging()<<"  "<<i<<" et="<<et<<" vs. {"
@@ -90,12 +58,14 @@ bool ET_Bias::Trigger(const Vec4D * p)
   return true;
 }
 
-PT_Bias::PT_Bias(int nin,int nout,Flavour * flavs,ordering::code mode)
+PT_Bias::PT_Bias(int nin,int nout,Flavour * flavs,std::string mode)
 {
   m_name = "PT_Bias";
   m_nin  = nin;
   m_nout = nout;
-  m_mode = mode;
+  p_order = Order_Getter::GetObject(mode,"");
+  if (p_order==NULL) 
+    THROW(fatal_error,"Invalid ordering mode '"+mode+"'");
   m_n    = m_nin+m_nout;
   m_fl   = new Flavour[m_n];
   for (int i(0);i<m_n;++i) m_fl[i] = flavs[i];
@@ -130,18 +100,7 @@ bool PT_Bias::Trigger(const Vec4D * p)
 {
   msg_Debugging()<<METHOD<<"(): {\n";
   for (size_t i(0);i<m_sels.size();++i) m_moms[i]=p[m_sels[i]]; 
-  switch (m_mode) {
-  case ordering::ET:
-    std::sort(m_moms.begin(),m_moms.end(),Order_Up_ET());
-    break;
-  case ordering::PT:
-    std::sort(m_moms.begin(),m_moms.end(),Order_Up_PT());
-    break;
-  case ordering::E:
-  default:
-    std::sort(m_moms.begin(),m_moms.end(),Order_Up_E());
-    break;
-  }
+  std::sort(m_moms.begin(),m_moms.end(),*p_order);
   for (size_t i(0);i<Min(m_bounds.size(),m_moms.size());++i) {
     double pt(m_moms[i].PPerp());
     msg_Debugging()<<"  "<<i<<" pt="<<pt<<" vs. {"
@@ -153,12 +112,14 @@ bool PT_Bias::Trigger(const Vec4D * p)
   return true;
 }
 
-Eta_Bias::Eta_Bias(int nin,int nout,Flavour * flavs,ordering::code mode)
+Eta_Bias::Eta_Bias(int nin,int nout,Flavour * flavs,std::string mode)
 {
   m_name = "Eta_Bias";
   m_nin  = nin;
   m_nout = nout;
-  m_mode = mode;
+  p_order = Order_Getter::GetObject(mode,"");
+  if (p_order==NULL) 
+    THROW(fatal_error,"Invalid ordering mode '"+mode+"'");
   m_n    = m_nin+m_nout;
   m_fl   = new Flavour[m_n];
   for (int i(0);i<m_n;++i) m_fl[i] = flavs[i];
@@ -194,18 +155,7 @@ bool Eta_Bias::Trigger(const Vec4D * p)
   for (size_t i(0);i<m_sels.size();++i) {
     m_moms[i]=p[m_sels[i]]; 
   }
-  switch (m_mode) {
-  case ordering::ET:
-    std::sort(m_moms.begin(),m_moms.end(),Order_Up_ET());
-    break;
-  case ordering::PT:
-    std::sort(m_moms.begin(),m_moms.end(),Order_Up_PT());
-    break;
-  case ordering::E:
-  default:
-    std::sort(m_moms.begin(),m_moms.end(),Order_Up_E());
-    break;
-  }
+  std::sort(m_moms.begin(),m_moms.end(),*p_order);
   for (size_t i(0);i<Min(m_bounds.size(),m_moms.size());++i) {
     double eta(m_moms[i].Eta());
     msg_Debugging()<<"  "<<i<<" eta="<<eta<<" vs. {"
@@ -218,7 +168,7 @@ bool Eta_Bias::Trigger(const Vec4D * p)
 }
 
 Mass_Bias::Mass_Bias
-(int nin,int nout,Flavour * flavs,ordering::code mode)
+(int nin,int nout,Flavour * flavs,std::string mode)
 {
   m_name = "Mass_Bias";
   m_nin  = nin;
@@ -226,7 +176,9 @@ Mass_Bias::Mass_Bias
   m_n    = m_nin+m_nout;
   m_fl   = new Flavour[m_n];
   for (int i(0);i<m_n;++i) m_fl[i] = flavs[i];
-  m_mode = mode;
+  p_order = Order_Getter::GetObject(mode,"");
+  if (p_order==NULL) 
+    THROW(fatal_error,"Invalid ordering mode '"+mode+"'");
   m_sel_log=NULL;
 }
 
@@ -264,21 +216,8 @@ bool Mass_Bias::Trigger(const Vec4D * p)
   for (size_t j(0);j<2;++j)
     for (size_t i(0);i<m_sels[j].size();++i)
       m_moms[j][i]=p[m_sels[j][i]];
-  switch (m_mode) {
-  case ordering::ET:
-    std::sort(m_moms[0].begin(),m_moms[0].end(),Order_Up_ET());
-    std::sort(m_moms[1].begin(),m_moms[1].end(),Order_Up_ET());
-    break;
-  case ordering::PT:
-    std::sort(m_moms[0].begin(),m_moms[0].end(),Order_Up_PT());
-    std::sort(m_moms[1].begin(),m_moms[1].end(),Order_Up_PT());
-    break;
-  case ordering::E:
-  default:
-    std::sort(m_moms[0].begin(),m_moms[0].end(),Order_Up_E());
-    std::sort(m_moms[1].begin(),m_moms[1].end(),Order_Up_E());
-    break;
-  }
+  std::sort(m_moms[0].begin(),m_moms[0].end(),*p_order);
+  std::sort(m_moms[1].begin(),m_moms[1].end(),*p_order);
   size_t id(0);
   for (size_t j(0);j<m_moms[0].size();++j) {
     for (size_t i(m_idf?j+1:0);i<m_moms[1].size();++i) {
@@ -297,7 +236,7 @@ bool Mass_Bias::Trigger(const Vec4D * p)
 }
 
 Delta_Eta_Bias::Delta_Eta_Bias
-(int nin,int nout,Flavour * flavs,ordering::code mode)
+(int nin,int nout,Flavour * flavs,std::string mode)
 {
   m_name = "Delta_Eta_Bias";
   m_nin  = nin;
@@ -305,7 +244,9 @@ Delta_Eta_Bias::Delta_Eta_Bias
   m_n    = m_nin+m_nout;
   m_fl   = new Flavour[m_n];
   for (int i(0);i<m_n;++i) m_fl[i] = flavs[i];
-  m_mode = mode;
+  p_order = Order_Getter::GetObject(mode,"");
+  if (p_order==NULL) 
+    THROW(fatal_error,"Invalid ordering mode '"+mode+"'");
   m_sel_log=NULL;
 }
 
@@ -343,21 +284,8 @@ bool Delta_Eta_Bias::Trigger(const Vec4D * p)
   for (size_t j(0);j<2;++j)
     for (size_t i(0);i<m_sels[j].size();++i)
       m_moms[j][i]=p[m_sels[j][i]];
-  switch (m_mode) {
-  case ordering::ET:
-    std::sort(m_moms[0].begin(),m_moms[0].end(),Order_Up_ET());
-    std::sort(m_moms[1].begin(),m_moms[1].end(),Order_Up_ET());
-    break;
-  case ordering::PT:
-    std::sort(m_moms[0].begin(),m_moms[0].end(),Order_Up_PT());
-    std::sort(m_moms[1].begin(),m_moms[1].end(),Order_Up_PT());
-    break;
-  case ordering::E:
-  default:
-    std::sort(m_moms[0].begin(),m_moms[0].end(),Order_Up_E());
-    std::sort(m_moms[1].begin(),m_moms[1].end(),Order_Up_E());
-    break;
-  }
+  std::sort(m_moms[0].begin(),m_moms[0].end(),*p_order);
+  std::sort(m_moms[1].begin(),m_moms[1].end(),*p_order);  
   size_t id(0);
   for (size_t j(0);j<m_moms[0].size();++j) {
     for (size_t i(m_idf?j+1:0);i<m_moms[1].size();++i) {
@@ -376,7 +304,7 @@ bool Delta_Eta_Bias::Trigger(const Vec4D * p)
 }
 
 Delta_Phi_Bias::Delta_Phi_Bias
-(int nin,int nout,Flavour * flavs,ordering::code mode)
+(int nin,int nout,Flavour * flavs,std::string mode)
 {
   m_name = "Delta_Phi_Bias";
   m_nin  = nin;
@@ -384,7 +312,9 @@ Delta_Phi_Bias::Delta_Phi_Bias
   m_n    = m_nin+m_nout;
   m_fl   = new Flavour[m_n];
   for (int i(0);i<m_n;++i) m_fl[i] = flavs[i];
-  m_mode = mode;
+  p_order = Order_Getter::GetObject(mode,"");
+  if (p_order==NULL) 
+    THROW(fatal_error,"Invalid ordering mode '"+mode+"'");
   m_sel_log=NULL;
 }
 
@@ -422,21 +352,8 @@ bool Delta_Phi_Bias::Trigger(const Vec4D * p)
   for (size_t j(0);j<2;++j)
     for (size_t i(0);i<m_sels[j].size();++i)
       m_moms[j][i]=p[m_sels[j][i]];
-  switch (m_mode) {
-  case ordering::ET:
-    std::sort(m_moms[0].begin(),m_moms[0].end(),Order_Up_ET());
-    std::sort(m_moms[1].begin(),m_moms[1].end(),Order_Up_ET());
-    break;
-  case ordering::PT:
-    std::sort(m_moms[0].begin(),m_moms[0].end(),Order_Up_PT());
-    std::sort(m_moms[1].begin(),m_moms[1].end(),Order_Up_PT());
-    break;
-  case ordering::E:
-  default:
-    std::sort(m_moms[0].begin(),m_moms[0].end(),Order_Up_E());
-    std::sort(m_moms[1].begin(),m_moms[1].end(),Order_Up_E());
-    break;
-  }
+  std::sort(m_moms[0].begin(),m_moms[0].end(),*p_order);
+  std::sort(m_moms[1].begin(),m_moms[1].end(),*p_order);  
   size_t id(0);
   for (size_t j(0);j<m_moms[0].size();++j) {
     for (size_t i(m_idf?j+1:0);i<m_moms[1].size();++i) {
@@ -455,7 +372,7 @@ bool Delta_Phi_Bias::Trigger(const Vec4D * p)
 }
 
 Delta_R_Bias::Delta_R_Bias
-(int nin,int nout,Flavour * flavs,ordering::code mode)
+(int nin,int nout,Flavour * flavs,std::string mode)
 {
   m_name = "Delta_R_Bias";
   m_nin  = nin;
@@ -463,7 +380,9 @@ Delta_R_Bias::Delta_R_Bias
   m_n    = m_nin+m_nout;
   m_fl   = new Flavour[m_n];
   for (int i(0);i<m_n;++i) m_fl[i] = flavs[i];
-  m_mode = mode;
+  p_order = Order_Getter::GetObject(mode,"");
+  if (p_order==NULL) 
+    THROW(fatal_error,"Invalid ordering mode '"+mode+"'");
   m_sel_log=NULL;
 }
 
@@ -501,21 +420,8 @@ bool Delta_R_Bias::Trigger(const Vec4D * p)
   for (size_t j(0);j<2;++j)
     for (size_t i(0);i<m_sels[j].size();++i)
       m_moms[j][i]=p[m_sels[j][i]];
-  switch (m_mode) {
-  case ordering::ET:
-    std::sort(m_moms[0].begin(),m_moms[0].end(),Order_Up_ET());
-    std::sort(m_moms[1].begin(),m_moms[1].end(),Order_Up_ET());
-    break;
-  case ordering::PT:
-    std::sort(m_moms[0].begin(),m_moms[0].end(),Order_Up_PT());
-    std::sort(m_moms[1].begin(),m_moms[1].end(),Order_Up_PT());
-    break;
-  case ordering::E:
-  default:
-    std::sort(m_moms[0].begin(),m_moms[0].end(),Order_Up_E());
-    std::sort(m_moms[1].begin(),m_moms[1].end(),Order_Up_E());
-    break;
-  }
+  std::sort(m_moms[0].begin(),m_moms[0].end(),*p_order);
+  std::sort(m_moms[1].begin(),m_moms[1].end(),*p_order);
   size_t id(0);
   for (size_t j(0);j<m_moms[0].size();++j) {
     for (size_t i(m_idf?j+1:0);i<m_moms[1].size();++i) {

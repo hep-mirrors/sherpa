@@ -236,7 +236,7 @@ bool Selector_Data::ReadInData(std::string filename)
       if (crit1<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
     }
-    else if (keyword == string("DeltaR")) {
+    else if (keyword == string("DeltaEta")) {
       dat.type = 26;
       from>>crit1>>crit2>>dmin>>dmax;
       dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
@@ -259,7 +259,7 @@ bool Selector_Data::ReadInData(std::string filename)
       if (keyword=="Mass_Bias") dat.type=116;
       if (dat.type>110) {
 	std::string values;
-	from>>crit1>>crit2>>values>>dat.help;
+	from>>crit1>>crit2>>values>>dat.helps;
 	flav = Flavour(kf::code(abs(crit1)));
 	if (crit1<0) flav  = flav.Bar();
 	flav2 = Flavour(kf::code(abs(crit2)));
@@ -282,7 +282,7 @@ bool Selector_Data::ReadInData(std::string filename)
       }
       else if (dat.type>0) {
 	std::string values;
-	from>>crit1>>values>>dat.help;
+	from>>crit1>>values>>dat.helps;
 	flav = Flavour(kf::code(abs(crit1)));
 	if (crit1<0) flav = flav.Bar();
 	dat.flavs.push_back(flav);

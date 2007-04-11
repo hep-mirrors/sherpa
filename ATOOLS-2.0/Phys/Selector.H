@@ -12,6 +12,7 @@ namespace ATOOLS {
   struct Mom_Data {
     std::vector<Flavour> flavs;
     std::vector<std::pair<double, double> >  bounds;
+    std::string helps;
     int    help; 
     int    type;
   };

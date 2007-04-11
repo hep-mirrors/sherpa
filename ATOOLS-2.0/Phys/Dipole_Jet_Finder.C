@@ -245,16 +245,19 @@ double Dipole_Jet_Finder::KT_min_1I()
 
 double Dipole_Jet_Finder::KT_min_II(const int i,const int j,const int k)
 {
+  return -1.0;
 }
 
 double Dipole_Jet_Finder::KT_min_IF(const int i,const int j,const int k,
 				    int & perm)
 {
+  return -1.0;
 }
 
 double Dipole_Jet_Finder::KT_min_FI(const int i,const int j,const int k,
 				    int & perm)
 {
+  return -1.0;
 }
 
 double Dipole_Jet_Finder::KT_min_FF(const int i,const int j,const int k,

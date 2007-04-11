@@ -28,11 +28,13 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
   std::vector<Flavour>              critflavs;
   double                            rmin,rmax;
   int                               help;
+  std::string                       helps;
   bool                              init;
   Selector_Base                   * sel;
   std::vector<std::pair<double,double> > bounds;
   for (int i=0;i<_seldata->Size();i++) {
     _seldata->FillData(i,type,critflavs,bounds,help);
+    helps=_seldata->GetData(i).helps;
     rmin=bounds.front().first;
     rmax=bounds.front().second;
     init = 1;
@@ -148,42 +150,52 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
 	activetypes.push_back(type);
 	break;
       case 26 : 
+	sel = new Delta_Eta_Selector(_nin,_nout,_fl);
+	sel->SetRange(critflavs,rmin,rmax);
+	activetypes.push_back(type);
+	break;
+      case 27 : 
+	sel = new Delta_Phi_Selector(_nin,_nout,_fl);
+	sel->SetRange(critflavs,rmin,rmax);
+	activetypes.push_back(type);
+	break;
+      case 28 : 
 	sel = new Delta_R_Selector(_nin,_nout,_fl);
 	sel->SetRange(critflavs,rmin,rmax);
 	activetypes.push_back(type);
 	break;
       case 101 :
-	sel = new ET_Bias(_nin,_nout,_fl,ordering::code(help));
+	sel = new ET_Bias(_nin,_nout,_fl,helps);
 	sel->SetRange(critflavs,bounds);
 	activetypes.push_back(type);
 	break;
       case 102 :
-	sel = new PT_Bias(_nin,_nout,_fl,ordering::code(help));
+	sel = new PT_Bias(_nin,_nout,_fl,helps);
 	sel->SetRange(critflavs,bounds);
 	activetypes.push_back(type);
 	break;
       case 103 :
-	sel = new Eta_Bias(_nin,_nout,_fl,ordering::code(help));
+	sel = new Eta_Bias(_nin,_nout,_fl,helps);
 	sel->SetRange(critflavs,bounds);
 	activetypes.push_back(type);
 	break;
       case 113 :
-	sel = new Delta_Eta_Bias(_nin,_nout,_fl,ordering::code(help));
+	sel = new Delta_Eta_Bias(_nin,_nout,_fl,helps);
 	sel->SetRange(critflavs,bounds);
 	activetypes.push_back(type);
 	break;
       case 114 :
-	sel = new Delta_Phi_Bias(_nin,_nout,_fl,ordering::code(help));
+	sel = new Delta_Phi_Bias(_nin,_nout,_fl,helps);
 	sel->SetRange(critflavs,bounds);
 	activetypes.push_back(type);
 	break;
       case 115 :
-	sel = new Delta_R_Bias(_nin,_nout,_fl,ordering::code(help));
+	sel = new Delta_R_Bias(_nin,_nout,_fl,helps);
 	sel->SetRange(critflavs,bounds);
 	activetypes.push_back(type);
 	break;
       case 116 :
-	sel = new Mass_Bias(_nin,_nout,_fl,ordering::code(help));
+	sel = new Mass_Bias(_nin,_nout,_fl,helps);
 	sel->SetRange(critflavs,bounds);
 	activetypes.push_back(type);
 	break;
