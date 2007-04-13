@@ -94,7 +94,13 @@ void CTEQ6_Fortran_Interface::Calculate(double x,double z,double kp2,double _Q2)
 {
   for (size_t i=0;i<11;++i) m_calculated[i]=false;
   m_x=x/m_rescale;
-  m_Q=sqrt(_Q2);
+  m_Q=sqrt(_Q2*m_pdffac);
+  if(m_Q<m_q2min) {
+    msg.Error()<<"Error in CTEQ6_Fortran_Interface.C: Q-range violation ("<<m_Q<<").\n";
+    m_Q=m_q2min;}
+  if(m_Q>m_q2max) {
+    msg.Error()<<"Error in CTEQ6_Fortran_Interface.C: Q-range violation ("<<m_Q<<").\n";
+    m_Q=m_q2max;}
 }
 
 double CTEQ6_Fortran_Interface::GetXPDF(const ATOOLS::Flavour infl) 

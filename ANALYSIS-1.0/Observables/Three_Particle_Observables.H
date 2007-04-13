@@ -79,6 +79,16 @@ namespace ANALYSIS {
                         double xmax, int nbins, const std::string & listname);
     Primitive_Observable_Base * Copy() const;
   };
+
+  class Three_Particle_PT : public Three_Particle_Observable_Base {  
+    void Evaluate(const ATOOLS::Vec4D&, const ATOOLS::Vec4D&, 
+		  const ATOOLS::Vec4D&, double weight, int ncount);
+  public:
+    Three_Particle_PT(const ATOOLS::Flavour&, const ATOOLS::Flavour&,
+		      const ATOOLS::Flavour&, int type, double xmin,
+		      double xmax, int nbins, const std::string & listname);
+    Primitive_Observable_Base* Copy() const;
+  };
    
 }
 #endif

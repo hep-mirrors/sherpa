@@ -34,18 +34,16 @@ void Calorimeter_Cone::SetAnalysis(Primitive_Analysis  * ana)
   }
   p_jetno = new int*[m_neta];
   for (int i=0; i<m_neta;++i) p_jetno[i] = new int[m_nphi];
+  m_delta_eta = (m_maxeta-m_mineta)/double(m_neta);
+  m_delta_phi = 2.*M_PI/double(m_nphi);
 }
 
 Calorimeter_Cone::Calorimeter_Cone(const double Etcut,const double etamin, 
 				   const double etamax,double sep) : 
   Jet_Algorithm_Base(NULL), m_dR(sep), m_dR2(sep*sep), m_Etcut(Etcut), m_Etstop(1.5), m_etamode(1), p_jetno(NULL)
 {
-
   m_minetajet = etamin;
   m_maxetajet = etamax;
-  m_delta_eta = (m_maxeta-m_mineta)/double(m_neta);
-  m_delta_phi = 2.*M_PI/double(m_nphi);
-
 }
 
 Calorimeter_Cone::~Calorimeter_Cone() 

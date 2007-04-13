@@ -38,6 +38,7 @@ namespace PDF {
     std::vector<std::pair<ATOOLS::Flavour,double> > m_extracted;
 
     double m_ren_scale_factor;
+    double m_pdffac;    //operator approach.
 
     void SingleExtract(const ATOOLS::Flavour flavour,const double x);
     void SingleReset();

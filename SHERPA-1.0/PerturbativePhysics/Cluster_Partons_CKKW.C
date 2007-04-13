@@ -420,34 +420,34 @@ void Cluster_Partons_CKKW::WeightHardProcess()
   else {
     m_q2_f[0]=sqr(m_qmin[0]);
     m_q2_f[1]=sqr(m_qmin[1]);
-  double qmin2me(Min(m_is_as_factor,m_fs_as_factor)*
-		 proc->Scale(PHASIC::stp::fac));
-  if (!IsEqual(qmin2me,m_is_as_factor*m_qmin[0]*m_qmin[1])) {
-    double x[2];
-    Combine_Table_Base *ct(p_ct);
-    while (ct->Up()) ct=ct->Up();
-    ct->GetX1X2(x[0],x[1]);
-    msg_Debugging()<<"pdf reweighting: q_{fac,me} = "<<sqrt(qmin2me)
-		   <<" -> q_{fac} = "<<(sqrt(m_is_as_factor)*m_qmin[0])
-		   <<"/"<<(sqrt(m_is_as_factor)*m_qmin[1])
-		   <<", x_1 = "<<x[0]<<", x_2 = "<<x[1]<<"\n";
-    for (short unsigned int i(0);i<2;++i) { 
-      if (p_pdf[i]!=NULL) {
-	if (sqr(m_qmin[i])<p_pdf[i]->Q2Min()) {
-	  msg.Error()<<METHOD<<"(): Scale under-runs minimum PDF scale."
-		     <<std::endl;
-	  continue;
+    double qmin2me(Min(m_is_as_factor,m_fs_as_factor)*
+		   proc->Scale(PHASIC::stp::fac));
+    if (!IsEqual(qmin2me,m_is_as_factor*m_qmin[0]*m_qmin[1])) {
+      double x[2];
+      Combine_Table_Base *ct(p_ct);
+      while (ct->Up()) ct=ct->Up();
+      ct->GetX1X2(x[0],x[1]);
+      msg_Debugging()<<"pdf reweighting: q_{fac,me} = "<<sqrt(qmin2me)
+		     <<" -> q_{fac} = "<<(sqrt(m_is_as_factor)*m_qmin[0])
+		     <<"/"<<(sqrt(m_is_as_factor)*m_qmin[1])
+		     <<", x_1 = "<<x[0]<<", x_2 = "<<x[1]<<"\n";
+      for (short unsigned int i(0);i<2;++i) { 
+	if (p_pdf[i]!=NULL) {
+	  if (sqr(m_qmin[i])<p_pdf[i]->Q2Min()) {
+	    msg.Error()<<METHOD<<"(): Scale under-runs minimum PDF scale."
+		       <<std::endl;
+	    continue;
+	  }
+	  p_pdf[i]->Calculate(x[i],qmin2me);
+	  double w(p_pdf[i]->GetXPDF(ct->GetLeg(i).Flav()));
+	  p_pdf[i]->Calculate(x[i],m_is_as_factor*sqr(m_qmin[i]));
+	  w/=p_pdf[i]->GetXPDF(ct->GetLeg(i).Flav());
+	  msg_Debugging()<<"w_{"<<i<<"} = "<<(1.0/w)
+			 <<" ("<<ct->GetLeg(i).Flav()<<")\n";
+	  if (w>0.0) m_weight/=w;
 	}
-	p_pdf[i]->Calculate(x[i],qmin2me);
-	double w(p_pdf[i]->GetXPDF(ct->GetLeg(i).Flav()));
-	p_pdf[i]->Calculate(x[i],m_is_as_factor*sqr(m_qmin[i]));
-	w/=p_pdf[i]->GetXPDF(ct->GetLeg(i).Flav());
-	msg_Debugging()<<"w_{"<<i<<"} = "<<(1.0/w)
-		       <<" ("<<ct->GetLeg(i).Flav()<<")\n";
-	if (w>0.0) m_weight/=w;
       }
     }
-  }
   }
   msg_Debugging()<<"} -> w = "<<m_weight<<"\n\n";
   msg_Debugging()<<"set q_{fac} = "<<sqrt(m_q2_f[0])<<"/"<<sqrt(m_q2_f[1])<<"\n";

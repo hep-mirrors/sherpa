@@ -61,6 +61,8 @@ namespace ATOOLS {
       std::string m_username;
       double m_fac_scale_fac;
       double m_ren_scale_fac;
+      double m_pdf_scalefac;    //operator approach.
+      double m_as_scalefac;     //operator approach.
       bool m_spincorrelations;
     public:
       inline long   NumberOfEvents()                      { return m_nevents; }
@@ -106,6 +108,8 @@ namespace ATOOLS {
       }
       inline double FactorizationScaleFactor() { return m_fac_scale_fac; }
       inline double RenormalizationScaleFactor() { return m_ren_scale_fac; }
+      inline double PDFScaleFactor() const { return m_pdf_scalefac; }    //for the operator appraoch.
+      inline double AsScaleFactor() const { return m_as_scalefac; }
       inline void SetModel(MODEL::Model_Base * _mo)       { p_model     = _mo; }
       inline void SetModelType(Model_Type::code _code)    { m_modelcode = _code; }
       inline Model_Type::code Model()                     { return m_modelcode; }
