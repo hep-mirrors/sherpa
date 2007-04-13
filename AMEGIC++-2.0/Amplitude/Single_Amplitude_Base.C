@@ -130,19 +130,19 @@ int Single_Amplitude_Base::FillArgs(Zfunc* z, int* args, vector<int>* iz, vector
 
     }
     else{
-      if (z->p_arguments[i]<20) {                                //old external massless Vector Boson treatment
-	args[2*i] = z->p_arguments[i]-10;
+      if (z->p_arguments[i]<massiveskip) {                                //old external massless Vector Boson treatment
+	args[2*i] = z->p_arguments[i]-masslessskip;
 	for(size_t j=0;j<iz->size();j++){
-	  if(iabs((*iz)[j])==z->p_arguments[i]-10){
+	  if(iabs((*iz)[j])==z->p_arguments[i]-masslessskip){
 	    args[2*i+1] = (*iargs)[2*j+1];
 	    break;
 	  }
 	}
       }
       else{
-	if (z->p_arguments[i]>=20 && z->p_arguments[i]<99) {
+	if (z->p_arguments[i]>=massiveskip && z->p_arguments[i]<99) {
 	  //old  massive Vector bosons
-	  args[2*i]   = z->p_arguments[i]-20;
+	  args[2*i]   = z->p_arguments[i]-massiveskip;
 	  args[2*i+1] = -1;
 	}
 	else args[2*i+1] = 0;
