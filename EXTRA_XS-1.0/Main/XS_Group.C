@@ -622,3 +622,9 @@ void XS_Group::SetISRThreshold(const double threshold)
   for (size_t i=0;i<m_xsecs.size();i++) 
     m_xsecs[i]->SetISRThreshold(threshold);
 }
+
+void XS_Group::SetFactorizationScale(const std::string &muf2)
+{
+  Integrable_Base::SetFactorizationScale(muf2);
+  for (size_t i=0;i<m_xsecs.size();++i) m_xsecs[i]->SetFactorizationScale(muf2);
+}

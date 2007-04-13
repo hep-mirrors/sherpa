@@ -28,12 +28,12 @@ namespace SHERPA {
 
     int     m_njet, m_hardjets, m_maxqcdjets, m_minqcdjets;
     int     m_maxjetnumber, m_cut, m_max_decayjets;
-    double  m_weight, m_asweight, m_scale, m_ycut, m_qmin_i, m_qmin_f;
+    double  m_weight, m_asweight, m_scale, m_ycut, m_qmin_i, m_qmin_f, m_q2_f[2];
     double  m_q2_fss, m_q2_iss, m_q2_isjet, m_q2_fsjet, m_q2_amegic, m_jv_pt2;
     int     m_colors[4][2];
 
     int     m_isrmode, m_isrshoweron, m_fsrshoweron;
-    int     m_sud_mode, m_bp_mode;
+    int     m_sud_mode, m_bp_mode, m_as_mode, m_muf_mode;
     double  m_kfac, m_is_as_factor, m_fs_as_factor, m_me_as_factor;
 
     int     m_hard_nqcd, m_hard_nqed, m_nstrong;
@@ -93,6 +93,8 @@ namespace SHERPA {
 
     inline double FSShowerScale() const { return m_q2_fss;   }
     inline double ISShowerScale() const { return m_q2_iss;   }
+
+    inline double FactorisationScale(const size_t &i) const { return m_q2_f[i]; }
     
     inline void SetMaxQCDJets(const int jets) { m_maxqcdjets=jets; }
     inline void SetMinQCDJets(const int jets) { m_minqcdjets=jets; }

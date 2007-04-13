@@ -139,6 +139,7 @@ Single_XS *XS_Selector::GetSingleXS(const size_t nin,const size_t nout,
     s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f2b_f3f4b>;
   if (xs!=NULL) {
     xs->SetScaleScheme(p_owner->ScaleScheme());
+    xs->SetFactorizationScale(p_owner->FactorizationScale());
     xs->SetKFactorScheme(p_owner->KFactorScheme());
     xs->m_orderEW=nqed;
     xs->m_orderQCD=nqcd;

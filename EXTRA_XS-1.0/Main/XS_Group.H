@@ -49,6 +49,8 @@ namespace EXTRAXS {
     virtual void CreateFSRChannels();
     virtual void CreateISRChannels();
 
+    void SetFactorizationScale(const std::string &muf2);
+
     size_t Size() const;
 
     XS_Base *const operator[](const size_t i) const;

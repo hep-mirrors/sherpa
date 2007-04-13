@@ -291,6 +291,8 @@ Term *Vec4D_Part::Evaluate(const std::vector<Term*> &args) const
 DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Abs2,"Abs2",Abs2)
 DEFINE_ONE_VECTOR_OPERATOR(Vec4D_PPerp,"PPerp",PPerp)
 DEFINE_ONE_VECTOR_OPERATOR(Vec4D_PPerp2,"PPerp2",PPerp2)
+DEFINE_ONE_VECTOR_OPERATOR(Vec4D_MPerp,"MPerp",MPerp)
+DEFINE_ONE_VECTOR_OPERATOR(Vec4D_MPerp2,"MPerp2",MPerp2)
 DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Theta,"Theta",Theta)
 DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Eta,"Eta",Eta)
 DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Phi,"Phi",Phi)
@@ -316,6 +318,27 @@ DEFINE_TWO_VECTOR_OPERATOR(Vec4D_PPerpR,"PPerpR",PPerp)
 DEFINE_TWO_VECTOR_OPERATOR(Vec4D_ThetaR,"ThetaR",Theta)
 DEFINE_TWO_VECTOR_OPERATOR(Vec4D_DEta,"DEta",DEta)
 DEFINE_TWO_VECTOR_OPERATOR(Vec4D_DPhi,"DPhi",DPhi)
+
+#define DEFINE_ITERATED_VECTOR_OPERATOR(NAME,TAG,OP)                 \
+  DEFINE_FUNCTION(NAME,TAG)                                          \
+  {                                                                  \
+    if (args.size()<2)                                               \
+      THROW(fatal_error,std::string(TAG)+" requires 2 arguments.");  \
+    Vec4D arg0=ToType<Vec4D>(args[0]);				     \
+    for (size_t i=1;i<args.size();++i)                               \
+      arg0=arg0 OP ToType<Vec4D>(args[i]);			     \
+    return ToString(arg0);                                           \
+  }                                                                  \
+  Term *NAME::Evaluate(const std::vector<Term*> &args) const         \
+  {                                                                  \
+    for (size_t i=1;i<args.size();++i)                               \
+      ((TVec4D*)args[0])->m_value=((TVec4D*)args[0])->m_value OP     \
+	((TVec4D*)args[i])->m_value;				     \
+    return args[0];                                                  \
+  }
+
+DEFINE_ITERATED_VECTOR_OPERATOR(Vec4D_Plus,"Plus",+)
+DEFINE_ITERATED_VECTOR_OPERATOR(Vec4D_Minus,"Minus",-)
 #endif
 
 Interpreter_Function::~Interpreter_Function() 
@@ -333,6 +356,10 @@ DEFINE_INTERPRETER_FUNCTION(Resolve_Bracket)
   size_t l=std::string::npos, r=std::string::npos;
   for (size_t i=0;i<expr.length();++i) {
     if (expr[i]=='(') {
+      if (i>0 && expr[i-1]=='{') {
+	--cnt;
+	return expr;
+      }
       ++open;
       if (l==std::string::npos) {
 	Algebra_Interpreter::Function_Map::const_reverse_iterator fit=
@@ -389,7 +416,7 @@ DEFINE_INTERPRETER_FUNCTION(Extract_Leaf)
     value=p_interpreter->TagReplacer()->ReplaceTags(value);
     return value;
   }
-  size_t pos=expr.find(",");
+  size_t pos=expr.rfind(",");
   Node<Function*> *leaf=p_interpreter->Leaf(), *mother=--*leaf;
   if (mother!=NULL) 
     for (size_t i=0;i<(*mother)->size();++i)
@@ -669,6 +696,8 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   AddFunction(new Vec4D_Abs2());
   AddFunction(new Vec4D_PPerp());
   AddFunction(new Vec4D_PPerp2());
+  AddFunction(new Vec4D_MPerp());
+  AddFunction(new Vec4D_MPerp2());
   AddFunction(new Vec4D_Theta());
   AddFunction(new Vec4D_Eta());
   AddFunction(new Vec4D_Phi());
@@ -676,6 +705,8 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   AddFunction(new Vec4D_ThetaR());
   AddFunction(new Vec4D_DEta());
   AddFunction(new Vec4D_DPhi());
+  AddFunction(new Vec4D_Plus());
+  AddFunction(new Vec4D_Minus());
 #endif
 }
 

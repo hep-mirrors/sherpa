@@ -15,6 +15,15 @@ using namespace PHASIC;
 using namespace MODEL;
 using namespace ATOOLS;
 
+struct TDouble: public Term {
+  double m_value;
+};// end of struct Double
+
+struct TVec4D: public Term {
+  Vec4D m_value;
+  TVec4D(const Vec4D &value): m_value(value) {}
+};// end of struct Vec4D
+
 #define CA 3.0
 #define TR 0.5
 #define Nf 5.0
@@ -38,7 +47,8 @@ Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,
   p_regulator(Regulator_Base::GetRegulator(this,"Identity",std::vector<double>())),
   p_beamhandler(beamhandler), p_isrhandler(isrhandler), 
   p_pshandler(NULL), p_activepshandler(NULL), p_selector(NULL), 
-  p_cuts(NULL), p_whisto(NULL), p_jf(NULL), m_ownselector(true), m_efunc("1") 
+  p_cuts(NULL), p_whisto(NULL), p_jf(NULL), m_ownselector(true), m_efunc("1"), m_muf2tag(""),
+  p_muf2calc(NULL), m_muf2tagset(this)
 {
   m_gmin=-1.0;
   SetScaleScheme(m_scalescheme);
@@ -51,6 +61,7 @@ Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,
 
 Integrable_Base::~Integrable_Base()
 {
+  if (p_muf2calc!=NULL) delete p_muf2calc;
   if (p_selector!=NULL && m_ownselector) delete p_selector;
   if (p_flavours!=NULL) delete [] p_flavours;
   if (p_momenta!=NULL) delete [] p_momenta;
@@ -364,6 +375,7 @@ double Integrable_Base::CalculateScale(const Vec4D *momenta)
     else 
       // two scale treatment
       m_scale[stp::fac]=Min(m_scale[stp::fac],pt2);
+    SetFactorizationScale();
     m_kfkey[0]=m_scale[stp::ren]*=rpa.gen.RenormalizationScaleFactor();
     m_kfkey[1]=m_scale[stp::fac]*=rpa.gen.FactorizationScaleFactor();
     return m_scale[stp::fac]*m_ps_cpl_factor;
@@ -449,6 +461,7 @@ double Integrable_Base::CalculateScale(const Vec4D *momenta)
   }
   if (pt2<0. || scheme!=scl::unknown) 
     THROW(fatal_error,"Unknown scale scheme: "+ToString(m_scalescheme));
+  SetFactorizationScale();
   m_kfkey[0]=m_scale[stp::ren]=rpa.gen.RenormalizationScaleFactor()*pt2;
   m_kfkey[1]=m_scale[stp::fac]=rpa.gen.FactorizationScaleFactor()*pt2;
   if (Selected()==NULL) return m_scale[stp::fac]*m_ps_cpl_factor;
@@ -629,4 +642,57 @@ void Integrable_Base::SetScaleScheme(const scl::scheme s)
     m_scale[stp::ren]=m_ycut*sqr(rpa.gen.DeltaR()*rpa.gen.Ecms())*
       rpa.gen.RenormalizationScaleFactor();
   }
+}
+
+void Integrable_Base::SetFactorizationScale(const std::string &muf2)
+{ 
+  m_muf2tag=muf2;   
+  if (m_muf2tag=="") return;
+  msg_Debugging()<<METHOD<<"(): Set scale '"<<muf2<<"' in '"<<Name()<<"' {\n";
+  msg_Indent();
+  if (p_muf2calc==NULL) {
+    p_muf2calc = new Algebra_Interpreter();
+    p_muf2calc->SetTagReplacer(&m_muf2tagset);
+    m_muf2tagset.SetCalculator(p_muf2calc);
+  }
+  p_muf2calc->AddTag("MU_F","1.0");
+  p_muf2calc->AddTag("MU_R","1.0");
+  p_muf2calc->AddTag("H_T","1.0");
+  for (size_t i=0;i<NIn()+NOut();++i) 
+    p_muf2calc->AddTag("p["+ToString(i)+"]",ToString(p_momenta[i]));
+  p_muf2calc->Interprete(m_muf2tag);
+  msg_Debugging()<<"}\n";
+}
+
+void Integrable_Base::SetFactorizationScale()
+{ 
+  if (m_muf2tag!="")
+    m_scale[stp::fac]=((TDouble*)p_muf2calc->Calculate())->m_value;
+  // msg_Debugging()<<METHOD<<"(): Set \\mu_f = "<<sqrt(m_scale[stp::ren])<<"\n";
+}
+
+std::string Tag_Setter::ReplaceTags(std::string &expr) const
+{
+  return p_calc->ReplaceTags(expr);
+}
+
+Term *Tag_Setter::ReplaceTags(Term *term) const
+{
+  if (term->m_tag=="MU_F") {
+    ((TDouble*)term)->m_value=p_ib->Scale(stp::fac);
+    return term;
+  }
+  if (term->m_tag=="MU_R") {
+    ((TDouble*)term)->m_value=p_ib->Scale(stp::ren);
+    return term;
+  }
+  if (term->m_tag=="H_T") {
+    double ht(0.0);
+    for (size_t i(0);i<p_ib->NOut();++i) ht+=p_ib->Momenta()[i+p_ib->NIn()].PPerp();
+    ((TDouble*)term)->m_value=sqr(ht);
+    return term;
+  }
+  int i=ATOOLS::ToType<int>(term->m_tag.substr(2,term->m_tag.length()-3));
+  ((TVec4D*)term)->m_value=p_ib->Momenta()[i];
+  return term;
 }

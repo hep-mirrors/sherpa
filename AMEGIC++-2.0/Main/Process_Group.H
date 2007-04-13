@@ -92,6 +92,7 @@ namespace AMEGIC {
     bool           LookUpXSec(double,bool,std::string);
     void           RescaleXSec(double);
     void           SetupEnhance();
+    void           SetFactorizationScale(const std::string &muf2);
 
     bool           PrepareXSecTables();
     void           WriteOutXSecs(std::ofstream &);

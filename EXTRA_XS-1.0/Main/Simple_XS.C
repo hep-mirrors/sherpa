@@ -79,6 +79,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   m_scalescheme=(PHASIC::scl::scheme)
     p_dataread->GetValue<int>("SCALE_SCHEME",0);
   ATOOLS::Data_Read::ResetTags();
+  m_muf2tag=p_dataread->GetValue<std::string>("FACTORIZATION_SCALE","");
   m_kfactorscheme=p_dataread->GetValue<int>("KFACTOR_SCHEME",0);
   double fac_scale_fac=p_dataread->
     GetValue<double>("FACTORIZATION_SCALE_FACTOR",1.);
@@ -245,6 +246,7 @@ XS_Group *Simple_XS::FindGroup(const size_t nin,const size_t nout,
   XS_Group *newgroup = 
     new XS_Group(nin,nout,flavours,m_scalescheme,m_kfactorscheme,
 		 p_beamhandler,p_isrhandler,p_selectordata);
+  newgroup->SetFactorizationScale(m_muf2tag);
   newgroup->XSSelector()->SetOffShell(p_isrhandler->KMROn());
   m_xsecs.push_back(newgroup);
   return newgroup;
@@ -273,6 +275,7 @@ XS_Group *Simple_XS::FindPDFGroup(const size_t nin,const size_t nout,
   XS_Group *newgroup = 
     new XS_Group(nin,nout,copy,m_scalescheme,m_kfactorscheme,
 		 p_beamhandler,p_isrhandler,p_selectordata);
+  newgroup->SetFactorizationScale(m_muf2tag);
   newgroup->XSSelector()->SetOffShell(p_isrhandler->KMROn());
   container->Add(newgroup);
   newgroup->PSHandler(false)->SetUsePI(m_usepi);

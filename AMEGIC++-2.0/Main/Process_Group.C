@@ -1352,3 +1352,9 @@ void Process_Group::SetWEventMode(int mode)
   for (size_t i=0;i<m_procs.size();++i) m_procs[i]->SetWEventMode(mode);
   m_weventmode=mode; 
 }
+
+void Process_Group::SetFactorizationScale(const std::string &muf2)
+{
+  Integrable_Base::SetFactorizationScale(muf2);
+  for (size_t i=0;i<m_procs.size();++i) m_procs[i]->SetFactorizationScale(muf2);
+}

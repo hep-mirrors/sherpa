@@ -82,6 +82,8 @@ CD_List::iterator Combine_Table_CKKW::CalcPropagator(CD_List::iterator &cit)
   if (cit->first.m_flav.Kfcode()==kf::none) {
     cit->second.m_sij   = (p_moms[cit->first.m_i]+p_moms[cit->first.m_j]).Abs2();
     cit->second.m_pt2ij = p_jf->MTij2(p_moms[cit->first.m_i],p_moms[cit->first.m_j]);
+    if (cit->first.m_i>1 && cit->first.m_j>1) 
+      cit->second.m_pt2ij*=sqr(rpa.gen.DeltaR());
 //     std::cout<<"Calculate m_perp("<<cit->first.m_i<<cit->first.m_j<<") : "
 //     	     <<p_moms[cit->first.m_i]<<" & "<<p_moms[cit->first.m_j]
 //     	     <<" -> "<<sqrt(cit->second.m_pt2ij)<<std::endl;
@@ -196,7 +198,7 @@ bool Combine_Table_CKKW::SelectWinner(const bool did_boost)
       }
     }
   }
-  if (qcd_winner!=cl.end()) m_cdata_winner=qcd_winner;
+  // if (qcd_winner!=cl.end()) m_cdata_winner=qcd_winner;
   return m_cdata_winner!=cl.end();
 }
 
@@ -287,7 +289,7 @@ bool Combine_Table_CKKW::IdentifyHardProcess()
   for (int i(0);i<m_nampl;++i) {
     if (Combinable(p_legs[i][0],p_legs[i][1]) &&
 	Combinable(p_legs[i][2],p_legs[i][3])) {
-      double pt2ij(p_jf->MTij2(p_moms[2],p_moms[3]));
+      double pt2ij(p_jf->MTij2(p_moms[2],p_moms[3])*sqr(rpa.gen.DeltaR()));
       msg_Debugging()<<"s-channel pt = "<<sqrt(pt2ij)<<", m = "
 		     <<sqrt(dabs((p_moms[0]+p_moms[1]).Abs2()))<<", "
 		     <<p_legs[i][0].Flav()<<" "<<p_legs[i][1].Flav()

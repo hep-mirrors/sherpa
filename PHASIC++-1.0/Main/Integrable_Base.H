@@ -11,6 +11,7 @@
 #include "Spin_Correlation_Tensor.H"
 #include "Amplitude_Tensor.H"
 #include "Info_Key.H"
+#include "Algebra_Interpreter.H"
 
 #include <string>
 
@@ -68,6 +69,29 @@ namespace PHASIC {
   inline scl::scheme & operator-=(scl::scheme &c1,const scl::scheme c2)
   { return c1=c1-c2; }
 
+  class Integrable_Base;
+
+  class Tag_Setter: public ATOOLS::Tag_Replacer {
+  private:
+
+    Integrable_Base *p_ib;
+
+    ATOOLS::Algebra_Interpreter *p_calc;
+
+  public:
+    
+    // constructor
+    inline Tag_Setter(Integrable_Base *const ib): p_ib(ib), p_calc(NULL) {}
+    
+    // member functions
+    std::string   ReplaceTags(std::string &expr) const;    
+    ATOOLS::Term *ReplaceTags(ATOOLS::Term *term) const;    
+    
+    // inline functions
+    void SetCalculator(ATOOLS::Algebra_Interpreter *const calc) { p_calc=calc; }
+
+  };// end of class Tag_Setter
+
   class Regulator_Base;
   class Phase_Space_Handler;
 
@@ -124,9 +148,13 @@ namespace PHASIC {
 
     bool m_ownselector;
 
-    std::string m_efunc;
+    std::string m_efunc, m_muf2tag;
 
     ATOOLS::Info_Key m_kfkey;
+
+    ATOOLS::Algebra_Interpreter *p_muf2calc;
+
+    Tag_Setter m_muf2tagset;
 
   public:
 
@@ -213,6 +241,10 @@ namespace PHASIC {
 
     void SetScaleScheme(const scl::scheme s);
 
+    virtual void SetFactorizationScale(const std::string &muf2);
+
+    void SetFactorizationScale();
+
     // inline functions
     inline void SetName(const std::string &name) { m_name=name; }
 
@@ -287,6 +319,8 @@ namespace PHASIC {
 
     inline int         KFactorScheme() const { return m_kfactorscheme; }
     inline scl::scheme ScaleScheme()  const  { return m_scalescheme;   }
+
+    inline std::string FactorizationScale() const { return m_muf2tag; }
 
     inline int NStrong() const { return m_nstrong; }
     inline int NEWeak() const  { return m_neweak;  }

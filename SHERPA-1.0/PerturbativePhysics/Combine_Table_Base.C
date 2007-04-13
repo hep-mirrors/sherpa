@@ -323,53 +323,22 @@ void Combine_Table_Base::SetLegScales
   msg_Debugging()<<"set leg scales "<<legi.Point()->fl<<" & "<<legj.Point()->fl
 		 <<" -> "<<leg.Point()->fl<<" w/ "<<sqrt(pt2ij)<<" "
 		 <<(pi+pj)<<" s = "<<sqrt((pi+pj).Abs2())<<" mt2 = "
-		 <<pi.MPerp(pi+pj)<<" / "<<pj.MPerp(pi+pj)<<" / " 
-		 <<(pi+pj).Mass()<<"\n"; 
+		 <<pi.MPerp()<<" / "<<pj.MPerp()<<" / "<<(pi+pj).Mass()<<"\n"; 
   */
   leg.SetKT2(pt2ij);
   // special case: ggh vertex -> order qcd = 2
   // must therefore check for order qed as well
   if (leg.OrderQCD()>0 && leg.OrderQED()==0) leg.SetKT2QCD(pt2ij);
   else if (leg.NQCD()>0) {
-    double si(dabs(pi.Abs2())), sj(dabs(pj.Abs2())), sij(dabs((pi+pj).Abs2()));
-    Vec4D pni(pi), pnj(pj), pnij(pi+pj);
-    if (!legi.Point()->fl.Strong()) {
-      std::swap<double>(sij,si);
-      std::swap<Vec4D>(pnij,pni);
-    }
-    else if (!legj.Point()->fl.Strong()) {
-      std::swap<double>(sij,sj);
-      std::swap<Vec4D>(pnij,pnj);
-    }
-    if (sij>si) {
-      if (sij>sj) leg.SetKT2QCD(dabs(pnij.MPerp2()));
-      else leg.SetKT2QCD(dabs(pnij.MPerp2(pj)));
-    }
-    else {
-      if (sij>sj) leg.SetKT2QCD(dabs(pnij.MPerp2(pi)));
-      else leg.SetKT2QCD(dabs(pnij.MPerp2(pi+pj)));
-    }
+    double sti(dabs(pi.MPerp2())), stj(dabs(pj.MPerp2()));
+    leg.SetKT2QCD(pt2ij+dabs(sti>stj?pi.Abs2():pj.Abs2()));
+    if (!leg.Point()->fl.Strong()) 
+      leg.SetKT2QCD(Max(dabs((pi+pj).Abs2()),leg.KT2QCD()));
   }
   if (leg.OrderQED()>0) leg.SetKT2QED(pt2ij);
   else if (leg.NQED()>0) {
-    double si(dabs(pi.Abs2())), sj(dabs(pj.Abs2())), sij(dabs((pi+pj).Abs2()));
-    Vec4D pni(pi), pnj(pj), pnij(pi+pj);
-    if (!legi.Point()->fl.Strong()) {
-      std::swap<double>(sij,si);
-      std::swap<Vec4D>(pnij,pni);
-    }
-    else if (!legj.Point()->fl.Strong()) {
-      std::swap<double>(sij,sj);
-      std::swap<Vec4D>(pnij,pnj);
-    }
-    if (sij>si) {
-      if (sij>sj) leg.SetKT2QCD(dabs(pnij.MPerp2()));
-      else leg.SetKT2QCD(dabs(pnij.MPerp2(pj)));
-    }
-    else {
-      if (sij>sj) leg.SetKT2QCD(dabs(pnij.MPerp2(pi)));
-      else leg.SetKT2QCD(dabs(pnij.MPerp2(pi+pj)));
-    }
+    double sti(dabs(pi.MPerp2())), stj(dabs(pj.MPerp2()));
+    leg.SetKT2QED(pt2ij+dabs(sti>stj?pi.Abs2():pj.Abs2()));
   }
   if (legi.Point()->t<10) {
     if (legj.Point()->t<10) {

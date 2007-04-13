@@ -290,6 +290,7 @@ void Cluster_Partons_CKKW::StoreOldValues(const int i,const int j,
 double Cluster_Partons_CKKW::CouplingWeight(const bool is,Leg &leg,
 					    const double &kt)
 {
+  if (!(m_as_mode&1)) return 1.0;
   double asref(m_as_jet[is]);
   switch (leg.Type()) {
   case lf::Triangle:
@@ -413,6 +414,12 @@ void Cluster_Partons_CKKW::WeightHardProcess()
     THROW(fatal_error,"No scale in hard process");
   }
   PHASIC::Integrable_Base *proc(p_me->GetAmegic()->GetProcess());
+  if (proc->FactorizationScale()!="") {
+    m_q2_f[1]=m_q2_f[0]=proc->Scale(stp::fac);
+  }
+  else {
+    m_q2_f[0]=sqr(m_qmin[0]);
+    m_q2_f[1]=sqr(m_qmin[1]);
   double qmin2me(Min(m_is_as_factor,m_fs_as_factor)*
 		 proc->Scale(PHASIC::stp::fac));
   if (!IsEqual(qmin2me,m_is_as_factor*m_qmin[0]*m_qmin[1])) {
@@ -441,7 +448,9 @@ void Cluster_Partons_CKKW::WeightHardProcess()
       }
     }
   }
-  msg_Debugging()<<"} -> w = "<<m_weight<<"\n";
+  }
+  msg_Debugging()<<"} -> w = "<<m_weight<<"\n\n";
+  msg_Debugging()<<"set q_{fac} = "<<sqrt(m_q2_f[0])<<"/"<<sqrt(m_q2_f[1])<<"\n";
 }
 
 void Cluster_Partons_CKKW::CalculateWeight(const double &meweight)
