@@ -19,7 +19,7 @@ namespace PHASIC {
     double *p_chi,*p_bestchi,**p_bestxi;
     int *p_ia,*p_opt;
     int **p_hit;
-    int m_dim,m_mode,m_on;
+    int m_dim,m_mode,m_on,m_autooptimize;
     static int s_onext;
     void Rebin(double rc, double * xi);
   public:
@@ -32,9 +32,13 @@ namespace PHASIC {
     void Reset();
     void Optimize();
     void EndOptimize();
+    void ConstChannel(int i) { p_opt[i]=0; }
 
     void WriteOut(const std::string &);
     void ReadIn(const std::string &);
+    void WriteHistos(const std::string &);
+
+    void SetAutoOptimize(int ao)    { m_autooptimize=ao*m_nd; }
 
     static inline void SetOnExternal(const bool on) { s_onext=on;     }
     static inline bool OnExternal()                 { return s_onext; }
