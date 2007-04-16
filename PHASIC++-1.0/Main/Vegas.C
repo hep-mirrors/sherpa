@@ -4,6 +4,7 @@
 #include <vector>
 #include <stdlib.h>
 #include "Run_Parameter.H"
+#include "MyStrStream.H"
 
 using namespace ATOOLS;
 using namespace PHASIC;
@@ -27,6 +28,7 @@ Vegas::Vegas(int dim,int ndx,const std::string & name,int opt)
   m_mode=0;
   m_nd = ndx;
   m_alpha = 1.;
+  m_autooptimize = -1;
   p_x   = new double[m_dim];
   if (m_on!=0) {
     p_xi = new double*[m_dim];
@@ -190,6 +192,7 @@ void Vegas::AddPoint(double value,double *xy)
     p_hit[i][p_ia[i]]++;
   }
   m_mode=0;
+  if (m_autooptimize>0&&m_autooptimize<m_nevt-m_snevt) Optimize();
 }
 
 
@@ -284,14 +287,50 @@ void Vegas::EndOptimize()
   msg_Tracking()<<endl;
   for (int j=0;j<m_dim;j++)
     for (int i=0;i<m_nd;i++) p_xi[j][i]=p_bestxi[j][i]; 
+  m_autooptimize=-1;
+}
+
+void Vegas::WriteHistos(const std::string & pid)
+{
+  bool mh=false;
+  double ar=1./m_nd;
+  double x=0.;
+  if (mh)  {
+    for (int i=0;i<m_dim;i++) {
+      std::string fn=pid+std::string("_")+m_name+std::string("_Vegas_")
+	+ToString(i)+std::string(".dat");
+      std::ofstream ofile(fn.c_str());
+      ofile<<x<<" "<<ar/p_xi[i][0]<<endl;
+      for (int j=0;j<m_nd-1;j++) {
+	ofile<<x+p_xi[i][j]<<" "<<ar/(p_xi[i][j+1]-p_xi[i][j])<<endl;
+      }
+      ofile<<x+1.<<" 0."<<endl;
+      ofile.close();
+    }
+  }
+  else {
+    std::string fn=pid+std::string("_")+m_name+std::string("_Vegas_")+std::string(".dat");
+    std::ofstream ofile(fn.c_str());
+    for (int i=0;i<m_dim;i++) {
+      ofile<<x<<" "<<ar/p_xi[i][0]<<endl;
+      for (int j=0;j<m_nd-1;j++) {
+	ofile<<x+p_xi[i][j]<<" "<<ar/(p_xi[i][j+1]-p_xi[i][j])<<endl;
+      }
+      ofile<<x+1.<<" 0."<<endl;
+      x+=1.;
+    }
+    ofile.close();
+  }  
 }
 
 void Vegas::WriteOut(const std::string & pid)
 {
+  if (msg.LevelIsTracking()) 
+    WriteHistos(pid);
   std::string fn=pid+std::string("_")+m_name+std::string("_Vegas");
   std::ofstream ofile(fn.c_str());
 
-  ofile<<m_nopt<<" "<<m_dim<<" "<<m_name<<std::endl;
+  ofile<<m_nopt<<" "<<m_dim<<" "<<m_autooptimize<<" "<<m_name<<std::endl;
   if (m_nopt>0) {
     ofile.precision(12);
     for (int i=0;i<m_dim;i++) {
@@ -324,6 +363,7 @@ void Vegas::ReadIn(const std::string & pid)
   std::string buffer;
   int number;
   ifile>>number;
+  ifile>>m_autooptimize;
   getline(ifile,buffer);
   msg_Tracking()<<"Vegas::ReadIn "<<buffer<<" with "<<number<<" dimensions; nopt="<<m_nopt<<std::endl;
   if (number!=m_dim) {

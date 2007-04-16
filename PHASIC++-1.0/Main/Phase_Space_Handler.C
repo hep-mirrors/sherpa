@@ -913,11 +913,13 @@ bool Phase_Space_Handler::CreateIntegrators()
       break;
     case 2: 
       {
+	VHAAG *firsthaag=NULL,*hlp=NULL;
 	Permutation pp(m_nin+m_nout-1);
 	for (int j=0;j<pp.MaxNumber();j++) {
 	  int* pm = pp.Get(j);
 	  if (pm[1]==0||pm[m_nin+m_nout-3]==0) 
-	    p_fsrchannels->Add(new VHAAG(m_nin,m_nout,j));
+	    p_fsrchannels->Add(hlp=new VHAAG(m_nin,m_nout,j,firsthaag));
+	  if (!firsthaag) firsthaag=hlp;
  	}
       }
       break;

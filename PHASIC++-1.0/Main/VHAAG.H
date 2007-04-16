@@ -6,12 +6,14 @@
 
 namespace PHASIC {
   class VHAAG : public Single_Channel {
-    int      nin,nout,n_p1;
+    int      n_p1,m_type;
     int      *p_perm,*p_mrep;
     double   m_s0;
     ATOOLS::Vec4D* m_q;
     Vegas* p_vegas;
     bool m_ownvegas;
+    
+    Vegas** p_sharedvegaslist;
 
     double PiFunc(double a1,double a2,
 		  double s1b,double s2b,double c);
@@ -57,17 +59,20 @@ namespace PHASIC {
     void CalculateS0(ATOOLS::Cut_Data *);
      
   public:
-    VHAAG(int,int,int);
+    VHAAG(int,int,int,VHAAG* =NULL);
     ~VHAAG();
 
     void AddPoint(double Value);
     void GenerateWeight(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);
     void GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *,double *);
     std::string Name() {return name;}
-    void   Optimize()                { p_vegas->Optimize(); }
+    void   Optimize()                { }// p_vegas->Optimize(); }
     void   EndOptimize()             { p_vegas->EndOptimize(); }
-    void   WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
-    void   ReadIn(std::string pId)   { p_vegas->ReadIn(pId); }
+    void   WriteOut(std::string pId) { if (m_ownvegas) p_vegas->WriteOut(pId); }
+    void   ReadIn(std::string pId)   { if (m_ownvegas) p_vegas->ReadIn(pId); }
+
+    int    OType(); 
+    Vegas** GetSharedVegasList() { return p_sharedvegaslist; }
   };
 }
 #endif

@@ -10,10 +10,11 @@
 using namespace PHASIC;
 using namespace ATOOLS;
 
-const double a1_s  =1.;
-const double s_s   =1.;
+const double a1_s  =1.5;
+const double s_s   =.3;
 const double a1_sp =1.;
-const double s_sp  =1.;
+const double s_sp1 =1.;
+const double s_sp2 =.5;
 const double a1_i  =1.;
 const double a2_i  =1.;
 const double s_i   =1.;
@@ -22,19 +23,15 @@ const double a2_iF =.0;
 const bool ap =false;
 const bool apF=false;
 
-const int maxnout=10;
-static Vegas** s_vegas_p1 = new Vegas*[maxnout];
-static Vegas** s_vegas_p2 = new Vegas*[maxnout];
-
-VHAAG::VHAAG(int _nin,int _nout,int pn) : 
-  nin(_nin), nout(_nout)
+VHAAG::VHAAG(int _nin,int _nout,int pn, VHAAG* ovl) 
 {
+  nin=_nin; nout=_nout;
   Permutation pp(nin+nout-1);
   int* tp=pp.Get(pn);
   p_perm = new int[nin+nout];
   p_mrep = new int[nin+nout];
   p_perm[0] = p_mrep[0] = 0;
-//   std::cout<<"Init VHAAG: 0";
+  msg_Tracking()<<"Init VHAAG: 0";
   name = "VHAAG";
   char hlp[4];
   for (int i=1;i<nin+nout;i++) {
@@ -44,45 +41,66 @@ VHAAG::VHAAG(int _nin,int _nout,int pn) :
     name+= "_";
     sprintf(hlp,"%i",p_perm[i]);
     name+= std::string(hlp);
-//     std::cout<<" "<<p_perm[i];
+    msg_Tracking()<<" "<<p_perm[i];
   }
-// std::cout<<" n_p1="<<n_p1<<std::endl;
 
-//   std::cout<<"Invert:    ";
-//   for (int i=0;i<nin+nout;i++) std::cout<<" "<<p_mrep[i];
-//   std::cout<<" n_p1="<<p_perm[1]<<std::endl;
-  //   n_p1=p_perm[1];
   rannum = 3*nout-4;;
   rans  = new double[rannum];
   m_q = new Vec4D[nin+nout];
-  m_ownvegas = false;
+  m_ownvegas        = false;
+  if (ovl) p_sharedvegaslist = ovl->GetSharedVegasList();
+  else p_sharedvegaslist = NULL;
+  if (p_sharedvegaslist==NULL) {
+    p_sharedvegaslist = new Vegas*[nout];
+    for (int i=0;i<nout;i++) p_sharedvegaslist[i]=NULL;
+  }
 
-  if (n_p1==1 || n_p1==nout+1) {
-    if (s_vegas_p1[nout]==NULL) {
-      s_vegas_p1[nout] = new Vegas(rannum,100,Name());
+  m_type=Min(n_p1-1,nout-(n_p1-1));
+  msg_Tracking()<<" n_p1="<<n_p1<<" type="<<m_type<<std::endl;
+  int vs=m_type;
+
+  if (1) {
+    if (p_sharedvegaslist[vs]==NULL) {
+      p_sharedvegaslist[vs] = new Vegas(rannum,100,Name());
+      p_sharedvegaslist[vs]->SetAutoOptimize(500);
+      if (1) {
+	if (m_type<2) {
+	  for (int i=0;i<=nout-3;i++) p_sharedvegaslist[vs]->ConstChannel(2+3*i);
+	} 
+	else {
+	  for (int i=0;i<=m_type-2;i++) p_sharedvegaslist[vs]->ConstChannel(3+3*i);
+	  p_sharedvegaslist[vs]->ConstChannel(3*(m_type-1)+2);
+	  for (int i=0;i<nout-m_type-2;i++) p_sharedvegaslist[vs]->ConstChannel(2+3*m_type+3*i);
+	} 
+	p_sharedvegaslist[vs]->ConstChannel(rannum-1);
+      } 
       m_ownvegas = true;
     } 
-    p_vegas = s_vegas_p1[nout];
-  }
-  else if (n_p1==2 || n_p1==nout) {
-    if (s_vegas_p2[nout]==NULL) {
-      s_vegas_p2[nout] = new Vegas(rannum,100,Name());
-      m_ownvegas = true;
-    } 
-    p_vegas = s_vegas_p2[nout];
-  }
-  else {
+    p_vegas = p_sharedvegaslist[vs];
+  } 
+  else  {
     m_ownvegas = true;
     p_vegas = new Vegas(rannum,100,Name());
-  }
+    p_vegas->SetAutoOptimize(500);
+  } 
+
   m_s0=-1.;
 }
 
 VHAAG::~VHAAG()
 {
   delete[] p_perm;
+  delete[] rans;
   delete[] m_q;
-  if (m_ownvegas) delete p_vegas;
+  if (m_ownvegas) {
+    delete p_vegas;
+    if (p_sharedvegaslist) p_sharedvegaslist[m_type]=0;
+  }
+  if (p_sharedvegaslist) {
+    int empty=1;
+    for (int i=0;i<nout;i++) if (p_sharedvegaslist[i]!=0) empty=0;
+    if (empty) delete[] p_sharedvegaslist;
+  }
 }
 
 void VHAAG::AddPoint(double Value)
@@ -105,10 +123,10 @@ void VHAAG::Split(ATOOLS::Vec4D q1,ATOOLS::Vec4D q2,
   double s1min = double(n1*(n1-1)/2)*m_s0;
   double s2min = double(n2*(n2-1)/2)*m_s0;
   double s1max = Min(s-double(n2*(n2+2*n1-1)/2)*m_s0,sqr(sqrt(s)-sqrt(s2min)));
-  double s1 = CE.MasslessPropMomenta(s_sp,s1min,s1max,ran[0]);
+  double s1 = CE.MasslessPropMomenta(s_sp1,s1min,s1max,ran[0]);
 
   double s2max = Min(s-s1-double(n1*n2)*m_s0,sqr(sqrt(s)-sqrt(s1)));
-  double s2 = CE.MasslessPropMomenta(s_sp,s2min,s2max,ran[1]);
+  double s2 = CE.MasslessPropMomenta(s_sp2,s2min,s2max,ran[1]);
 
   double pb0 =0.5*(s+s1-s2)/s;
   double pb  =sqrt(pb0*pb0-s1/s);
@@ -345,11 +363,11 @@ double VHAAG::SplitWeight(ATOOLS::Vec4D q1,ATOOLS::Vec4D q2,
   double s2min = double(n2*(n2-1)/2)*m_s0;
   double s1max = Min(s-double(n2*(n2+2*n1-1)/2)*m_s0,sqr(sqrt(s)-sqrt(s2min)));
   double s1 = p1.Abs2(); 
-  wt*= CE.MasslessPropWeight(s_sp,s1min,s1max,s1,ran[0]);
+  wt*= CE.MasslessPropWeight(s_sp1,s1min,s1max,s1,ran[0]);
 
   double s2max = Min(s-s1-double(n1*n2)*m_s0,sqr(sqrt(s)-sqrt(s1)));
   double s2 = p2.Abs2(); 
-  wt*= CE.MasslessPropWeight(s_sp,s2min,s2max,s2,ran[1]);
+  wt*= CE.MasslessPropWeight(s_sp2,s2min,s2max,s2,ran[1]);
 
   double pb0 =0.5*(s+s1-s2)/s;
   double pb  =sqrt(pb0*pb0-s1/s);
@@ -588,9 +606,6 @@ void VHAAG::GenerateWeight(ATOOLS::Vec4D *p,ATOOLS::Cut_Data *cuts)
   }
 
   for (int i=0;i<nin+nout;i++) m_q[i]=p[p_perm[i]];
-//   for (int i=0;i<nin+nout;i++) m_q[i]=p[p_mrep[i]];
- //   for (int i=0;i<nin+nout;i++) m_q[p_perm[i]]=p[i];
- //  std::cout<<"VHAAG "<<i<<" : "<<p[i]<<" "<<p[i].Abs2()<<std::endl;
   
   if (n_p1==1){
     Vec4D Q;
@@ -612,11 +627,17 @@ void VHAAG::GenerateWeight(ATOOLS::Vec4D *p,ATOOLS::Cut_Data *cuts)
     wt*=BranchWeight(m_q[0],m_q[n_p1],Q,&(m_q[1]),nout-1,rans+3);
     wt*=Split1Weight(m_q[n_p1],m_q[0],m_q[nout+1],Q,nout-1,rans);    
   }
-  else {
+  else if (n_p1<=(nout+1)/2) {
     Vec4D Q1,Q2;
     wt*=BranchWeight(m_q[0],m_q[n_p1],Q1,&(m_q[1]),n_p1-1,rans+4);
     wt*=BranchWeight(m_q[n_p1],m_q[0],Q2,&(m_q[n_p1+1]),nout-n_p1+1,rans+3*(n_p1-1));
     wt*=SplitWeight(m_q[0],m_q[n_p1],Q1,Q2,n_p1-1,nout-n_p1+1,rans);
+  }
+  else {
+    Vec4D Q1,Q2;
+    wt*=BranchWeight(m_q[n_p1],m_q[0],Q1,&(m_q[n_p1+1]),nout-n_p1+1,rans+4);
+    wt*=BranchWeight(m_q[0],m_q[n_p1],Q2,&(m_q[1]),n_p1-1,rans+3*(nout-n_p1+1));
+    wt*=SplitWeight(m_q[n_p1],m_q[0],Q1,Q2,nout-n_p1+1,n_p1-1,rans);
   }
   double vw = p_vegas->GenerateWeight(rans);
   weight = vw/wt/pow(2.*M_PI,nout*3.-4.);
@@ -656,15 +677,20 @@ void VHAAG::GeneratePoint(ATOOLS::Vec4D *p,ATOOLS::Cut_Data *cuts,double *ran)
     Split1(m_q[n_p1],m_q[0],m_q[nout+1],Q,nout-1,vran);    
     GenerateBranch(m_q[0],m_q[n_p1],Q,&(m_q[1]),nout-1,vran+3);
   }
-  else {
+  else if (n_p1<=(nout+1)/2) {
     Vec4D Q1,Q2;
     Split(m_q[0],m_q[n_p1],Q1,Q2,n_p1-1,nout-n_p1+1,vran);
     GenerateBranch(m_q[0],m_q[n_p1],Q1,&(m_q[1]),n_p1-1,vran+4);
     GenerateBranch(m_q[n_p1],m_q[0],Q2,&(m_q[n_p1+1]),nout-n_p1+1,vran+3*(n_p1-1));
   }
+  else {
+    Vec4D Q1,Q2;
+    Split(m_q[n_p1],m_q[0],Q1,Q2,nout-n_p1+1,n_p1-1,vran);
+    GenerateBranch(m_q[n_p1],m_q[0],Q1,&(m_q[n_p1+1]),nout-n_p1+1,vran+4);
+    GenerateBranch(m_q[0],m_q[n_p1],Q2,&(m_q[1]),n_p1-1,vran+3*(nout-n_p1+1));
+  }
 
    for (int i=1;i<nin+nout;i++) p[p_perm[i]]=m_q[i];
-//    for (int i=1;i<nin+nout;i++) p[p_mrep[i]]=m_q[i];
 }
 
 void VHAAG::CalculateS0(Cut_Data * cuts) 
@@ -678,3 +704,7 @@ void VHAAG::CalculateS0(Cut_Data * cuts)
   }
 }
 
+int VHAAG::OType()
+{
+  return (1<<m_type);
+}
