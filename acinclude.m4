@@ -270,6 +270,31 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AM_CONDITIONAL(CLHEP_SUPPORT, test "$clhep" = "true")
 
   AC_ARG_ENABLE(
+    hepmc2,
+    AC_HELP_STRING([--enable-hepmc2], [Enable HepMC (version 2.x) support]),
+    [ AC_MSG_CHECKING(for HepMC2 installation directory);
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(HepMC2 not enabled); hepmc2=false ;;
+        yes)  if test -d "$HEPMC2DIR"; then
+                CONDITIONAL_HEPMC2DIR="$HEPMC2DIR"
+                CONDITIONAL_HEPMC2INCS="-I$HEPMC2DIR/include"
+                CONDITIONAL_HEPMC2LIBS="-L$HEPMC2DIR/lib -R$HEPMC2DIR/lib -lHepMC";
+              else
+                AC_MSG_ERROR(\$HEPMC2DIR is not a valid path.);
+              fi;
+              AC_MSG_RESULT([${CONDITIONAL_HEPMC2DIR}]); hepmc2=true;;
+      esac ],
+    [ hepmc2=false ]
+  )
+  if test "$hepmc2" = "true" ; then
+    AC_DEFINE([USING__HEPMC2], "1", [Using HEPMC2])
+  fi
+  AC_SUBST(CONDITIONAL_HEPMC2DIR)
+  AC_SUBST(CONDITIONAL_HEPMC2INCS)
+  AC_SUBST(CONDITIONAL_HEPMC2LIBS)
+  AM_CONDITIONAL(HEPMC2_SUPPORT, test "$hepmc2" = "true")
+
+  AC_ARG_ENABLE(
     root,
     AC_HELP_STRING([--enable-root], [Enable ROOT support]),
     [ AC_MSG_CHECKING(for ROOT installation directory)
