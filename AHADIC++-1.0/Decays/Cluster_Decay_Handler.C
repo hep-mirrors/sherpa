@@ -7,9 +7,7 @@ using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
 
-Cluster_Decay_Handler::Cluster_Decay_Handler(Soft_Cluster_Handler * softclusters,
-					     bool cib,bool ana) :
-  m_cib(cib), 
+Cluster_Decay_Handler::Cluster_Decay_Handler(Soft_Cluster_Handler * softclusters,bool ana) :
   p_softclusters(softclusters),
   p_analysis(NULL)
 { 

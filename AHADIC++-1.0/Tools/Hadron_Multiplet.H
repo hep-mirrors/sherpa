@@ -300,18 +300,20 @@ namespace AHADIC {
     - \f$\Lambda\f$-like baryons: Three different quarks, then the wave function reads
       \f[
       \Psi_{312} =
-      \frac{1}{\sqrt{3}}\left|q_3d^S_{12}\right\rangle+
+      \frac{1}{\sqrt{12}}\left|q_3d^S_{12}\right\rangle+
       \frac{1}{\sqrt{12}}\left|q_1d^S_{23}\right\rangle+
       \frac{1}{\sqrt{12}}\left|q_2d^S_{13}\right\rangle+
+      \frac{1}{\sqrt{4}}\left|q_3d^V_{12}\right\rangle+
       \frac{1}{\sqrt{4}}\left|q_1d^V_{23}\right\rangle+
       \frac{1}{\sqrt{4}}\left|q_2d^V_{13}\right\rangle.
       \f]
     - \f$\Sigma\f$-like baryons: Three different quarks, then the wave function reads
       \f[
       \Psi_{321} =
-      \frac{1}{\sqrt{3}}\left|q_3d^V_{12}\right\rangle+
+      \frac{1}{\sqrt{12}}\left|q_3d^V_{12}\right\rangle+
       \frac{1}{\sqrt{12}}\left|q_1d^V_{23}\right\rangle+
       \frac{1}{\sqrt{12}}\left|q_2d^V_{13}\right\rangle+
+      \frac{1}{\sqrt{4}}\left|q_3d^S_{12}\right\rangle+
       \frac{1}{\sqrt{4}}\left|q_1d^S_{23}\right\rangle+
       \frac{1}{\sqrt{4}}\left|q_2d^S_{13}\right\rangle.
       \f]

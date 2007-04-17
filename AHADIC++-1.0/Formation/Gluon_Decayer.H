@@ -37,8 +37,8 @@ namespace AHADIC {
   /*! 
     \struct DecaySpecs
     \brief This struct carries a flavour, a weight and a z-range for the decay of an individual gluon.
-    
-    \todo Add a constant flavour-dependent weight to it.
+    It should be noted that the \f$z\f$ is an energy splitting variable, taken in the lab frame,
+    and that quarks and diquarks are treated with the same splitting function.
   */
   /*! 
     \class Gluon_Decayer
@@ -107,11 +107,11 @@ namespace AHADIC {
   /*!
     \fn void Gluon_Decayer::Shift(Proto_Particle_List * pl)
     \brief Iterates over the particle list, extracts the momenta and finds the constituent masses from
-    AHADIC::Constituents::Mass(ATOOLS::Flavour) and put everything in two arrays. These are then passed
+    AHADIC::Constituents::Mass(ATOOLS::Flavour) and puts everything in two arrays. These are then passed
     to the AHADIC::Momenta_Stretcher.
   */
   /*!
-    \fn bool Gluon_Decayer::DecayIt(ATOOLS::Particle *,ATOOLS::Particle *&,ATOOLS::Particle *&)
+    \fn bool Gluon_Decayer::DecayIt(Proto_Particle *,Proto_Particle *&,Proto_Particle *&)
     \brief Decays an individual gluon into two quarks and returns "true"
 
     First, the flavour of the quark pair is chosen by SelectDecay(const ATOOLS::Vec4D &), with
@@ -131,11 +131,9 @@ namespace AHADIC {
     The boundaries read
     \f[
     z_{\rm min, max} = \frac12\left(1\mp\frac{|\vec p_g|}{E_g}\,
-                       \frac{\sqrt{(m_g^2-2m_q^2)^2-4m_q^2}}{m_g^2}\right)\,.
+                       \frac{\sqrt{(m_g^2-2m_q^2)^2-4m_q^4}}{m_g^2}\right)\,.
     \f]
     This weight is put into some DecaySpecs as the weight. 
-
-    \todo Improve this and allow constant flavour-dependent extra weights in the selection.
   */
   /*!
     \fn double Gluon_Decayer::ZWeight(const double zmin, const double zmax)
@@ -146,6 +144,14 @@ namespace AHADIC {
     W = (z_{\rm max}-z_{\rm min}) - (z_{\rm max}-z_{\rm min})^2 + 
         \frac23(z_{\rm max}-z_{\rm min})^3\,.
     \f]
+    Ar the moment the same splitting function is being used for both gluons splittings into quarks and 
+    gluons splitting into diquarks, the difference between the flavours is in the boundaries
+    \f[
+    z_{\rm min,max} = 
+    \frac12\left(1\mp \frac{p_g}{E_g}\frac{\sqrt{(m_g^2-2.m_q^2)^2-4.m_q^4}}{m_g^2}\right)
+    \f]
+    only, where \f$p_g\f$ and \f$E_g\f$ denote the absolute value of the gluons three-momentum and its energy,
+    both in the lab frame, and \f$m_g\f$ and \f$m_q\f$ are the gluon's and quarks mass, respectively.
   */
   /*!
     \fn void Gluon_Decayer::SelectZ(const DecaySpecs*)
@@ -154,8 +160,9 @@ namespace AHADIC {
 
     The distribution of the z values follows
     \f[
-    P_{g\to q\bar q}(z)\sim z^2+(1-z)^2\,.
+    P_{g\to q\bar q}(z)\sim z^2+(1-z)^2\,,
     \f]
+    where \f$z\f$ is taken in the lab frame.  
   */
   /*!
     \fn void Gluon_Decayer::SelectPhi()
@@ -175,12 +182,12 @@ namespace AHADIC {
     E_{q,\,\bar q} = \{z,\,(1-z)\} E_g\;,\;\;\;
     p_{q,\,\bar q} = \sqrt{E^2_{q,\,\bar q}-m^2_q}\,.
     \f]
-    Consequently, the two openeing angles w.r.t. the original gluon momentum are given by
+    Consequently, the two opening angles w.r.t. the original gluon momentum are given by
     \f[
     \cos\theta_{q,\,\bar q} = \frac{p_g^2\pm(p_q^2-p_{\bar q}^2)}{2p_gp_{q,\,\bar q}}\,,
     \f]
-    where in all cases the p denote the absolute values of the corresponding three-momentum.
-    With \f$\phi\f$ given by SelectPhi() the decay kinemartics can now be fully
+    where in all cases the \f$p\f$ denote the absolute values of the corresponding three-momentum.
+    With \f$\phi\f$ given by SelectPhi() the decay kinematics can now be fully
     reconstructed. Choosing the orthogonal orientations
     \f[
     \vec n_1 = \vec e_z\times \vec n_g
