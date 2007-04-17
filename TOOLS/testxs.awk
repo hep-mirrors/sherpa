@@ -1,4 +1,4 @@
-BEGIN { pi=0; i=0; j=0; pb=3.89379656e8; end1=0; warnings=0; errors=0 } 
+BEGIN { pi=0; i=0; j=0; pb=3.89379656e8; end1=0; warnings=0; errors=0; cf=0; } 
 {
   if (pi==0) { 
     if ($1!="") ++pi;
@@ -37,14 +37,22 @@ BEGIN { pi=0; i=0; j=0; pb=3.89379656e8; end1=0; warnings=0; errors=0 }
       "</b></center></td></tr>\n" > htmlname
   } 
   else { 
-  if ($1=="end") end1=1; 
-  else { 
+    if ($1=="end") {
+      end1=1; 
+      cf=0;
+    }
+    else {
     if (end1==0) { 
       proc1[i]=$1; 
       if (proc1[i]=="#") {
 	proc1[i]=$0;
       }
+      else if (proc1[i]=="%%") {
+        cf=$2;
+	--i;
+      }
       else {
+        file1[i]=cf;
         xs1[i]=$2;  
         max1[i]=$3;  
         err1[i]=$4;  
@@ -59,7 +67,12 @@ BEGIN { pi=0; i=0; j=0; pb=3.89379656e8; end1=0; warnings=0; errors=0 }
       if (proc2[j]=="#") {
         proc2[j]=$0;
       }
+      else if (proc2[j]=="%%") {
+        cf=$2;
+	--j;
+      }
       else {
+	file2[j]=cf;
 	xs2[j]=$2;  
 	max2[j]=$3;  
 	err2[j]=$4;  
@@ -70,7 +83,7 @@ BEGIN { pi=0; i=0; j=0; pb=3.89379656e8; end1=0; warnings=0; errors=0 }
       ++j; 
     } 
   } 
-  } 
+  }
 } 
 END { 
   min=-3.; max=3.; bins=31; binwidth=(max-min)/bins; 
@@ -83,14 +96,13 @@ END {
   pss=0;
   for (ii=0;ii<i;++ii) { 
     match(proc1[ii],"#");
-    printf proc1[ii]" "RSTART"\n";
     if (RSTART==1) {
       printf "      <tr><td colspan=\"5\"><center>"substr(proc1[ii],2) \
         "</center></td></tr>\n" > htmlname
       continue;
     }
     for (jj=0;jj<j;++jj) { 
-      if (proc1[ii]!=proc2[jj]) continue; 
+      if (file1[ii]!=file2[jj] || proc1[ii]!=proc2[jj]) continue; 
       ++pss;
       meanerr=sqrt(err1[ii]*err1[ii]+err2[jj]*err2[jj]); 
       devvar=(xs2[jj]-xs1[ii])/meanerr; 
@@ -104,19 +116,20 @@ END {
       if (devvar<histox[0]) ++histoy[0]; 
       if (devvar>=histox[bins]) ++histoy[bins]; 
       printf "test process: \033[1m"proc1[ii] \
-        "\033[0m, rel deviation = \033[34m"reldev \
-        "\033[0m sigma vs. rel errors = \033[32m"relerr1[ii]*100 \
-        "%\033[0m, \033[32m"relerr2[jj]*100"%\033[0m\n"; 
+        "\033[0m, rel deviation = "; 
       if (reldev>1.0) { 
 	if (reldev>2.0) { 
 	  printf "      <tr bgcolor=\"#ffcccc\">" > htmlname
+	  printf "\033[41m";
 	}
 	else {
 	  printf "      <tr bgcolor=\"#ffffcc\">" > htmlname
+	  printf "\033[31m";
 	}
       }
       else {
 	printf "      <tr bgcolor=\"#ccffcc\">" > htmlname
+	printf "\033[34m";
       }
       printf "<td><b>"proc1[ii]"</b></td>\n" > htmlname
       printf "        <td><center>"xs1[ii]*pb" +- "err1[ii]*pb \
@@ -125,21 +138,15 @@ END {
         " ( "relerr2[jj]*100"% )</center></td>\n" > htmlname
       printf "        <td><center>"(xs2[jj]/xs1[ii]-1)*100 \
         "</center></td>\n        " > htmlname
+      printf reldev"\033[0m sigma vs. rel errors = \033[32m" \
+	relerr1[ii]*100"%\033[0m, \033[32m"relerr2[jj]*100"%\033[0m\n"; 
       if (reldev>1.0) { 
         if (reldev>2.0) { 
-          printf "==================================================\n"; 
-          printf "\033[41mERROR\033[0m: rel deviation > 2 sigma in \033[1m" \
-            proc1[ii]"\033[0m\n"; 
-          printf "==================================================\n"; 
 	  printf "<td><center><font color=\"#aa0000\"><b>"devvar \
             "</b></font></center></td></tr>\n" > htmlname
 	  ++errors; 
         } 
         else { 
-          printf "--------------------------------------------------\n"; 
-          printf "\033[31mWARNING\033[0m: relative deviation " \
-            "> 1 sigma in \033[1m"proc1[ii]"\033[0m\n"; 
-          printf "--------------------------------------------------\n"; 
 	  printf "<td><center><font color=\"#dddd00\"><b>"devvar \
             "</b></font></center></td></tr>\n" > htmlname
 	  ++warnings; 

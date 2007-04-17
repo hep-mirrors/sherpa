@@ -27,6 +27,7 @@ if ! test -d $OFILE; then
 fi
 for (( i=4; i<$CNT; ++i )); do
   if test -f ${FNAME1[i]}; then
+    echo "%% $i" >> $FILE1
     cat ${FNAME1[i]} >> $FILE1
   else
     if [ "${FNAME1[i]}" = "#" ]; then
@@ -37,6 +38,7 @@ done
 echo "end" >> $FILE1
 for (( i=4; i<$CNT; ++i )); do
   if test -f ${FNAME2[i]}; then
+    echo "%% $i" >> $FILE1
     cat ${FNAME2[i]} >> $FILE1
   else
     if [ "${FNAME1[i]}" = "#" ]; then
