@@ -4,6 +4,8 @@ export LANG=en_US
 
 declare -a FNAME1 FNAME2 LINES
 
+RPATH=`echo $0 | awk '{ match($1,"testxs"); print substr($1,1,RSTART-1); }'`
+
 FILE1=#___xs_comparison___#
 
 CNT=0
@@ -48,8 +50,9 @@ for (( i=4; i<$CNT; ++i )); do
 done
 echo "end" >> $FILE1
 
-awk -f $0".awk" < $FILE1
+awk -f $RPATH"testxs.awk" < $FILE1
 
 rm $FILE1
 
-Compare -p/ -f$0".cmp" -okb -W$OFILE -D./ -P$OFILE/ -T"FNAME $OFILE.xsd.dat"
+Compare -p$RPATH -f"testxs.cmp" -okb -W$OFILE -D./ \
+	-P$OFILE/ -T"FNAME $OFILE.xsd.dat"

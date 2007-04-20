@@ -1,5 +1,5 @@
 (initial){
-  PIECE_SETUP test.cmp (devh){ }(devh);
+  PIECE_SETUP testxs.cmp (devh){ }(devh);
 }(initial);
 
 (devh){
