@@ -599,7 +599,7 @@ namespace ATOOLS {
     Flavour    operator[](const int);
     void       SetGroup();
 
-    ~Part_Info() { delete[] n; };
+    ~Part_Info();
     void operator = (const Part_Info& pi) {
       char* np = new char[strlen(pi.n)+1];
       strcpy(np,pi.n);

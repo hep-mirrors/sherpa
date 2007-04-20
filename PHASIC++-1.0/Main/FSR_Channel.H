@@ -30,15 +30,6 @@ namespace PHASIC {
     std::string ChID();
   };
 
-  class SimpleQCDChannel : public Single_Channel {
-  public :
-    SimpleQCDChannel(int nin,int nout,ATOOLS::Flavour *flavs); 
-    void GeneratePoint(ATOOLS::Vec4D *p,ATOOLS::Cut_Data *cuts,double *ran);
-    void GenerateWeight(ATOOLS::Vec4D *p,ATOOLS::Cut_Data *cuts);
-    void ISRInfo(int &,double &,double &);
-    std::string ChID();
-  };
-
   class T1Channel : public Single_Channel {
     /*!
       This channel is meant to be the default t-channel integrator.

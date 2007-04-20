@@ -41,6 +41,15 @@ void Integration_Info::ResetAll()
 void Integration_Info::AssignKey(Info_Key &key,const size_t doubles,
 				 const size_t vectors)
 {
+  if (key.p_info!=NULL) {
+    if (key.p_info!=this) 
+      msg.Error()<<METHOD<<"(): Key '"<<&key<<"' assigned to '"
+		 <<key.p_info<<"'."<<std::endl;
+    else
+      msg_Debugging()<<METHOD<<"(): Key '"<<&key
+		     <<"' already assigned."<<std::endl;
+    return;
+  }
   if (m_keymap.find(key.m_name)==m_keymap.end()) {
     m_keymap[key.m_name]=SizeT_KeyMap_Pair(m_doubles.size(),
 					   String_KeyPair_Map());
@@ -59,16 +68,27 @@ void Integration_Info::AssignKey(Info_Key &key,const size_t doubles,
     kit=keys.find(key.m_info);
   }
   key.m_weightkey=kit->second.first;
+  for (Key_Vector::iterator kvit(kit->second.second.begin());
+       kvit!=kit->second.second.end();++kvit) if (*kvit==&key) return;
   kit->second.second.push_back(&key);
+  key.p_info=this;
 }
 
 void Integration_Info::ReleaseKey(Info_Key &key)
 {
   String_MapPair_Map::iterator vit(m_keymap.find(key.m_name));
-  if (vit==m_keymap.end()) return;
+  if (vit==m_keymap.end()) {
+    msg.Error()<<METHOD<<"(): Name '"<<key.m_name
+	       <<"' not found. Cannot release key "<<&key<<"."<<std::endl;
+    return;
+  }
   String_KeyPair_Map &keys(vit->second.second);
   String_KeyPair_Map::iterator wit(keys.find(key.m_info));
-  if (wit==keys.end()) return;
+  if (wit==keys.end()) {
+    msg.Error()<<METHOD<<"(): Info '"<<key.m_info
+	       <<"' not found. Cannot release key "<<&key<<"."<<std::endl;
+    return;
+  }
   for (Key_Vector::iterator kit(wit->second.second.begin());
        kit!=wit->second.second.end();++kit) {
     if (*kit==&key) { 
@@ -77,6 +97,8 @@ void Integration_Info::ReleaseKey(Info_Key &key)
       return;
     }
   }
+  msg.Error()<<METHOD<<"(): Pointer '"<<&key
+	     <<"' not found. Cannot release key."<<std::endl;
 }
 
 std::ostream &ATOOLS::operator<<(std::ostream &str,

@@ -6,9 +6,6 @@
 
 namespace ATOOLS {
 
-  inline void Info_Key::SetInfo(const std::string info)
-  { m_info=info; }
-
   inline si::code Info_Key::SetStatus(const si::code status) const
   { return p_info->SetStatus(m_valuekey,status); }
 

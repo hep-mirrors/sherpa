@@ -65,7 +65,7 @@ public:
 
 Number::Number(const std::string &tag,Tag_Replacer *const replacer): 
   Function(tag), p_replacer(replacer), m_replace(false), 
-  m_sign(1.0), m_value(1.0)
+  m_svalue(0.0), m_sign(1.0), m_value(1.0)
 {
   std::string value=tag;
   if (tag[0]=='-') {
@@ -729,6 +729,11 @@ Algebra_Interpreter::~Algebra_Interpreter()
     delete *m_terms.begin();
     m_terms.erase(m_terms.begin());
   }
+  while (m_interpreters.size()>0) {
+    delete m_interpreters.begin()->second;
+    m_interpreters.erase(m_interpreters.begin());
+  }
+  delete p_extractor;
 }
 
 std::string Algebra_Interpreter::Interprete(const std::string &expr)
@@ -755,6 +760,7 @@ std::string Algebra_Interpreter::Interprete(const std::string &expr)
     else 
 #endif
       (*p_leaf)[0] = new Number(result,p_replacer);
+    AddLeaf((*p_leaf)[0]);
     result=p_replacer->ReplaceTags(result);
     msg_Debugging()<<"} -> "<<result<<std::endl;
     return result;

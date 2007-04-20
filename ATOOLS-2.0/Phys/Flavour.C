@@ -91,6 +91,12 @@ Part_Info::Part_Info(kf::code kfc_,
   strcpy(n,name);
 }
 
+Part_Info::~Part_Info() 
+{ 
+  delete[] n; 
+  for (size_t i(0);i<flavs.size();++i) delete flavs[i];
+}
+
 void Part_Info::Add(const Flavour _fl) {
   if (_fl.Size()==1) {
     flavs.push_back(new Flavour(_fl));

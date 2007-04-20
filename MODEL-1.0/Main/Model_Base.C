@@ -15,30 +15,18 @@ Model_Base::Model_Base(std::string _dir,std::string _file) :
 
 Model_Base::~Model_Base() 
 {
-  if (!p_numbers->empty()) {
-    p_numbers->erase(p_numbers->begin(),p_numbers->end());
-    p_numbers = NULL;
+  if (p_numbers!=NULL) delete p_numbers;
+  if (p_functions!=NULL) {
+    while (!p_functions->empty()) {
+      delete p_functions->begin()->second;
+      p_functions->erase(p_functions->begin());
+    }
+    delete p_functions;
   }
-  if (!p_functions->empty()) {
-    p_functions->erase(p_functions->begin(),p_functions->end());
-    p_functions = NULL;
-  }
-  if (!p_constants->empty()) {
-    p_constants->erase(p_constants->begin(),p_constants->end());
-    p_constants = NULL;
-  }
-  if (!p_matrices->empty()) {
-    p_matrices->erase(p_matrices->begin(),p_matrices->end());
-    p_matrices = NULL;
-  }
-  if (p_dataread) {
-    delete p_dataread;
-    p_dataread = NULL;
-  }
-  if (p_spectrumgenerator) {
-    delete p_spectrumgenerator;
-    p_spectrumgenerator = NULL;
-  }
+  if (p_constants!=NULL) delete p_constants;
+  if (p_matrices!=NULL) delete p_matrices;
+  if (p_dataread!=NULL) delete p_dataread;
+  if (p_spectrumgenerator!=NULL) delete p_spectrumgenerator;
 }
 
 int Model_Base::ScalarNumber(const std::string _name) {

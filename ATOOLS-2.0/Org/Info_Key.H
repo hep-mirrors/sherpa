@@ -46,8 +46,10 @@ namespace ATOOLS {
     // destructor
     ~Info_Key();
 
+    // member functions
+    void SetInfo(const std::string info);
+
     // setters
-    inline void     SetInfo(const std::string info);
     inline si::code SetStatus(const si::code sicode) const;
 
     // getters

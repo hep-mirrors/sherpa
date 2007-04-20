@@ -16,17 +16,15 @@ Info_Key::Info_Key():
 void Info_Key::Assign(const std::string name,const size_t doubles,
 		      const size_t vectors,Integration_Info *const info)
 {
-  p_info=info;
   m_name=name;
-  p_info->AssignKey(*this,doubles,vectors); 
+  info->AssignKey(*this,doubles,vectors);
 }
 
 void Info_Key::Assign(const std::string name,const size_t doubles,
 		      const size_t vectors,const SP(Integration_Info) &info)
 {
-  p_info=info.operator->();
   m_name=name;
-  p_info->AssignKey(*this,doubles,vectors); 
+  info->AssignKey(*this,doubles,vectors);
 }
 
 Info_Key::~Info_Key()
@@ -34,12 +32,20 @@ Info_Key::~Info_Key()
   if (p_info!=NULL) p_info->ReleaseKey(*this);
 }
 
+void Info_Key::SetInfo(const std::string info)
+{
+  Integration_Info *cinfo(p_info);
+  if (cinfo!=NULL) cinfo->ReleaseKey(*this);
+  m_info=info;
+  if (cinfo!=NULL) cinfo->AssignKey(*this,0,0);
+}
+
 std::ostream &ATOOLS::operator<<(std::ostream &str,const Info_Key &key)
 {
-  str<<"(\""<<key.m_name<<"\",\""<<key.m_info<<"\") -> "
-     <<key.p_info->m_doubles[key.m_valuekey]<<" "
-     <<key.p_info->m_vectors[key.m_valuekey]<<" => ("
-     <<key.p_info->m_weights[key.m_valuekey][key.m_weightkey]<<")";
-  return str;
+  str<<"(\""<<key.m_name<<"\",\""<<key.m_info<<"\") -> ";
+  if (key.p_info==NULL) return str<<"NULL";
+  return str<<key.p_info->m_doubles[key.m_valuekey]<<" "
+	    <<key.p_info->m_vectors[key.m_valuekey]<<" => ("
+	    <<key.p_info->m_weights[key.m_valuekey][key.m_weightkey]<<")";
 }
 

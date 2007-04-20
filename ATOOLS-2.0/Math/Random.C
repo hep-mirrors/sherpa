@@ -222,8 +222,8 @@ int ATOOLS::Random::WriteOutStatus(const char * filename){
       }
       ++count;
       myinstream->close();
-      delete myinstream;
     }
+    delete myinstream;
 #ifdef _IOS_BAD
     p_outstream = new std::fstream(filename,ios::app | ios::out);
 #else

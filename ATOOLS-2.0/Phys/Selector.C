@@ -11,7 +11,10 @@ using namespace ATOOLS;
 using namespace std;
 
 
-Selector_Base::~Selector_Base() { }
+Selector_Base::~Selector_Base() 
+{ 
+  if (m_sel_log!=NULL) delete m_sel_log;
+}
 
 void Selector_Base::Output() { 
   if (!(msg.LevelIsTracking())) return;
