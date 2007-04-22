@@ -42,7 +42,7 @@ void S1Channel::GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts,double * 
   double ctmax=Min(cuts->cosmax[0][2],cuts->cosmax[1][3]);
   double s=(p[0]+p[1]).Abs2(), E12=sqr(s+ms[2]-ms[3])/4.0/s;
   ctmax=Min(ctmax,sqrt(1.0-sqr(cuts->etmin[2])/E12));
-  CE.Isotropic2Momenta(p[0]+p[1],ms[2],ms[3],p[2],p[3],ran[1],ran[2],-ctmax,ctmax);
+  CE.Isotropic2Momenta(p[0]+p[1],ms[2],ms[3],p[2],p[3],ran[0],ran[1],-ctmax,ctmax);
 }
 
 void S1Channel::GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts) {
@@ -94,7 +94,7 @@ void T1Channel::GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts,double * 
   double s=(p[0]+p[1]).Abs2(), E12=sqr(s+ms[2]-ms[3])/4.0/s;
   ctmax=Min(ctmax,sqrt(1.0-sqr(cuts->etmin[2])/E12));
   CE.TChannelMomenta(p[0],p[1],p[2],p[3],ms[2],ms[3],0.,
-		     .5,ctmax,-ctmax,1.,0,ran[1],ran[2]);
+		     .5,ctmax,-ctmax,1.,0,ran[0],ran[1]);
 }
 
 void T1Channel::GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts) 
@@ -313,7 +313,7 @@ void U1Channel::GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts,double * 
   double s=(p[0]+p[1]).Abs2(), E12=sqr(s+ms[2]-ms[3])/4.0/s;
   ctmax=Min(ctmax,sqrt(1.0-sqr(cuts->etmin[2])/E12));
   CE.TChannelMomenta(p[0],p[1],p[3],p[2],ms[3],ms[2],0.,
-		     0.5,ctmax,-ctmax,1.,0,ran[1],ran[2]);
+		     0.5,ctmax,-ctmax,1.,0,ran[0],ran[1]);
 }
 
 void U1Channel::GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts) 
