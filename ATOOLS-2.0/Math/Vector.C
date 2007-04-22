@@ -152,7 +152,7 @@ const double Vec4D::CosTheta(const Vec4D &ref) const
 const double Vec4D::Eta(const Vec4D &ref) const 
 { 
   double cos=CosTheta(ref);
-  return (2.0*cos>M_PI?-0.5:0.5)*log(sqr(1.0+cos)/(1.0-cos*cos));
+  return 0.5*log(sqr(1.0+cos)/(1.0-cos*cos));
 }
   
 bool ATOOLS::operator==(const Vec3D& v1, const Vec3D& v2) 
