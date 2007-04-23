@@ -342,7 +342,7 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
 }
 
 void Interaction_Model_SM_Phantom_U1::c_SSS(vector<Single_Vertex>& vertex,int& vanz)  { 
-  Flavour flh0(Flavour(kf::h0)), flH0(Flavour(kf::H0)), flA0(Flavour(kf::A0));
+  Flavour flh0(kf::h0), flH0(kf::H0), flA0(kf::A0);
 
   Kabbala kcpl0,kcpl1,massh2,massH2,mix11,mix21,mix12,mix22;
   Kabbala mix11_3,mix21_3,mix12_3,mix22_3,num_2,num_3;
@@ -460,7 +460,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSS(vector<Single_Vertex>& vertex,int& v
 }
 
 void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& vanz) { 
-  Flavour flh0(Flavour(kf::h0)), flH0(Flavour(kf::H0));
+  Flavour flh0(kf::h0), flH0(kf::H0);
   Flavour flavW(kf::W);
   Flavour flavZ(kf::Z);
 
@@ -642,7 +642,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
 }
 
 void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& vanz) { 
-  Flavour flh0(Flavour(kf::h0)), flH0(Flavour(kf::H0)), flA0(Flavour(kf::A0));
+  Flavour flh0(kf::h0), flH0(kf::H0), flA0(kf::A0);
   Kabbala kcpl0,kcpl1,massh2,massH2,mix11,mix21,mix12,mix22;
   Kabbala num_2,num_4,num_3,num_6,num_8,num_24;
   Kabbala mix11_3,mix21_3,mix12_3,mix22_3;

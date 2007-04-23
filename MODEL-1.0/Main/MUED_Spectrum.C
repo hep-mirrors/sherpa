@@ -90,9 +90,9 @@ void MUED_Spectrum::Neutral_KK_Bosons() {
     cout<<" Mix : ("<<Eigenvectors[0][0]<<"  "<<Eigenvectors[0][1]<<endl
 	<<"        "<<Eigenvectors[1][0]<<"  "<<Eigenvectors[1][1]<<")."<<endl;
 
-    Flavour(kf::code(int(kfno+i*100000+21))).SetMass(mGn);
-    Flavour(kf::code(int(kfno+i*100000+22))).SetMass(mAn);
-    Flavour(kf::code(int(kfno+i*100000+24))).SetMass(mZn);
+    Flavour Gn(kf::code(int(kfno+i*100000+21))); Gn.SetMass(mGn);
+    Flavour An(kf::code(int(kfno+i*100000+22))); An.SetMass(mAn);
+    Flavour Zn(kf::code(int(kfno+i*100000+24))); Zn.SetMass(mZn);
 
     if (i==1) {
       std::cout<<"Check "<<Flavour(kf::KK_gluon_1).Mass()
@@ -237,13 +237,13 @@ void MUED_Spectrum::LR_KK_Fermions() {
 	  <<") --> L_n = "<<sqrt(EigenvaluesL[0])<<", e_n = "<<sqrt(EigenvaluesL[1])<<endl;
       
 
-      Flavour(kf::code(int(kfnoL+i*100000+1+(j-1)*2))).SetMass(sqrt(EigenvaluesD[0]));
-      Flavour(kf::code(int(kfnoR+i*100000+1+(j-1)*2))).SetMass(sqrt(EigenvaluesD[1]));
-      Flavour(kf::code(int(kfnoL+i*100000+2+(j-1)*2))).SetMass(sqrt(EigenvaluesU[0]));
-      Flavour(kf::code(int(kfnoR+i*100000+2+(j-1)*2))).SetMass(sqrt(EigenvaluesU[1]));
-      Flavour(kf::code(int(kfnoL+i*100000+11+(j-1)*2))).SetMass(sqrt(EigenvaluesL[0]));
-      Flavour(kf::code(int(kfnoR+i*100000+11+(j-1)*2))).SetMass(sqrt(EigenvaluesL[1]));
-      Flavour(kf::code(int(kfnoL+i*100000+12+(j-1)*2))).SetMass(sqrt(EigenvaluesL[0]));    
+      Flavour F1(kf::code(int(kfnoL+i*100000+1+(j-1)*2))); F1.SetMass(sqrt(EigenvaluesD[0]));
+      Flavour F2(kf::code(int(kfnoR+i*100000+1+(j-1)*2))); F2.SetMass(sqrt(EigenvaluesD[1]));
+      Flavour F3(kf::code(int(kfnoL+i*100000+2+(j-1)*2))); F3.SetMass(sqrt(EigenvaluesU[0]));
+      Flavour F4(kf::code(int(kfnoR+i*100000+2+(j-1)*2))); F4.SetMass(sqrt(EigenvaluesU[1]));
+      Flavour F5(kf::code(int(kfnoL+i*100000+11+(j-1)*2))); F5.SetMass(sqrt(EigenvaluesL[0]));
+      Flavour F6(kf::code(int(kfnoR+i*100000+11+(j-1)*2))); F6.SetMass(sqrt(EigenvaluesL[1]));
+      Flavour F7(kf::code(int(kfnoL+i*100000+12+(j-1)*2))); F7.SetMass(sqrt(EigenvaluesL[0]));    
     }
     cout<<"Check for "<<i<<"th KK resonance"<<endl;
     if (i==1) {

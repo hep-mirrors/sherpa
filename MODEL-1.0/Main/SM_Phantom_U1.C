@@ -96,7 +96,7 @@ void SM_Phantom_U1::FillWidths() {
   set<Flavour>    flouts;
   FillPotentialDecayProducts(flouts);
 
-  Flavour flin(Flavour(kf::h0));
+  Flavour flin(kf::h0);
   dectable = new Decay_Table(flin);
   m_dectables[flin] = dectable;
   dectable->SetWidthGenerator(string("MODEL::SM_Phantom (Sherpa)"));
