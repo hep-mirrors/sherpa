@@ -860,6 +860,7 @@ void Final_State_Shower::ExtractPartons(Knot *kn,Blob *jet,
 	jet->AddData("FS_VS",new Blob_Data<std::vector<int> >(p_sud->Vetos(0)));
 	jet->AddData("IFS_VS",new Blob_Data<std::vector<int> >(p_sud->Vetos(1)));
 #endif
+	p->SetStatus(part_status::decayed);
 	jet->AddToInParticles(p);
       }
       if (bl_meps) {

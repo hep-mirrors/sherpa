@@ -787,6 +787,7 @@ void Initial_State_Shower::SingleExtract(Knot *const kn,const int &beam,
       if (!p) {
 	p = new Particle(*kn->part);
 	p->SetFinalMass(sqrt(kn->tout));
+	p->SetStatus(part_status::decayed);
 	jet->AddToInParticles(p);
       }
       else {
