@@ -113,6 +113,7 @@ bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob * blob,HepMC::GenVertex *& verte
   int count = m_blob2vertex.count(blob->Id());
   if (count>0) {
     vertex = m_blob2vertex[blob->Id()];
+    return true;
   }
   else {
     ATOOLS::Vec4D pos = blob->Position();
@@ -175,7 +176,7 @@ bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,HepMC::GenParticle 
     if (parton->DecayBlob()->Type()==ATOOLS::btp::Signal_Process ||
 	parton->ProductionBlob()->Type()==ATOOLS::btp::Signal_Process) stat = 3;
   }
-  particle = new GenParticle(momentum,parton->Flav(),stat);
+  particle = new GenParticle(momentum,parton->Flav().HepEvt(),stat);
   for (int i=1;i<3;i++) {
     if (parton->GetFlow(i)>0) particle->set_flow(i,parton->GetFlow(i));
   }
