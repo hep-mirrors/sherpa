@@ -4,7 +4,7 @@ if GZIP_SUPPORT
 GZIPSTREAMSOURCES = Gzip_Stream.C
 GZIPSTREAMHEADERS = Gzip_Stream.H
 else
-GZIPEXTRADIST = Gzip_Stream.H Gzip_Stream.C
+GZIPEXTRADIST = Gzip_Stream.C Gzip_Stream.H
 endif
 
 libToolsOrg_la_SOURCES        = \
