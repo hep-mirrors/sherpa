@@ -1,9 +1,19 @@
 #include "Input_Output_Handler.H"
+
+#include "Blob_List.H"
 #include "Message.H"
 #include "Run_Parameter.H"
 #include "Data_Read.H"
 #include "Exception.H"
 #include "MyStrStream.H"
+#include "HepEvt_Interface.H"
+#ifdef USING__CLHEP
+#include "HepMC_Interface.H"
+#endif
+#ifdef USING__HEPMC2
+#include "HepMC2_Interface.H"
+#endif
+
 #include <stdio.h>
 
 using namespace SHERPA;
@@ -34,6 +44,9 @@ Input_Output_Handler::Input_Output_Handler(const std::string mode,
 #ifdef USING__CLHEP
   p_hepmc(NULL), 
 #endif
+#ifdef USING__HEPMC2
+  p_hepmc2(NULL), 
+#endif
   p_hepevt(NULL),
   p_instream(NULL),
   m_path(_path), 
@@ -49,6 +62,9 @@ Input_Output_Handler::~Input_Output_Handler()
 {
 #ifdef USING__CLHEP
   if (p_hepmc)        { delete p_hepmc;  p_hepmc  = NULL; }
+#endif
+#ifdef USING__HEPMC2
+  if (p_hepmc2)       { delete p_hepmc2; p_hepmc2 = NULL; }
 #endif
   if (p_hepevt!=NULL) { delete p_hepevt; p_hepevt=NULL; }
   if (!m_outmap.empty()) {
@@ -162,6 +178,16 @@ bool Input_Output_Handler::InitialiseOutput(const std::string mode,
         m_outmap[iotype::D0HepEvt]   = ns;
         if (p_hepevt==NULL) p_hepevt = new HepEvt_Interface();
         break;
+      case 32:
+#ifdef USING__HEPMC2
+        m_outtype   = m_outtype|test;
+        ns          = new NameStream(m_path+"/"+outfiles[5],".hepmc2",m_precision);
+        m_outmap[iotype::HepMC2] = ns;
+        if (p_hepmc2==NULL) p_hepmc2 = new HepMC2_Interface();
+        break;
+#else
+        THROW(fatal_error,"HepMC2 format can only be created when Sherpa was linked with HepMC2, please read our Howto to fix this.");
+#endif
       default :
         msg.LogFile()<<"ERROR in Input_Output_Handler::Input_Output_Handler("<<test<<")"<<std::endl
                      <<"   No valid output format specified. Continue run."<<std::endl;
@@ -172,13 +198,15 @@ bool Input_Output_Handler::InitialiseOutput(const std::string mode,
 
   if (mode=="Sherpa") m_screenout=iotype::Sherpa;
   else if (mode=="HepMC") {
-#ifdef USING__CLHEP
     m_screenout=iotype::HepMC;
+#ifdef USING__CLHEP
     if (p_hepmc==NULL) p_hepmc   = new HepMC_Interface(); 
 #else
-    msg.Error()<<"Error in "<<METHOD<<": HepMC format can only be created when Sherpa "
-                <<"was linked with CLHEP, please read our Howto to fix this."<<std::endl;
-    abort();
+#ifdef USING__HEPMC2
+    if (p_hepmc2==NULL) p_hepmc2   = new HepMC2_Interface();
+#else
+    THROW(fatal_error,"HepMC format can only be created when Sherpa was linked with CLHEP or HepMC2, please read our Howto to fix this.");
+#endif
 #endif
   }
   else if (mode=="HepEvt") {
@@ -223,9 +251,15 @@ void Input_Output_Handler::PrintEvent(ATOOLS::Blob_List *const blobs) {
     p_hepmc->PrintEvent(1,msg.Out());
     break;
 #else
+#ifdef USING__HEPMC2
+    p_hepmc2->Sherpa2HepMC(blobs);
+    p_hepmc2->PrintEvent(msg.Out());
+    break;
+#else
     msg.Error()<<"Error in "<<METHOD<<": HepMC format can only be created when Sherpa "
                 <<"was linked with CLHEP, please read our Howto to fix this."<<std::endl;
     abort();
+#endif
 #endif
   case iotype::HepEvt: 
     p_hepevt->Sherpa2HepEvt(blobs);
@@ -242,6 +276,9 @@ void Input_Output_Handler::PrintEvent(ATOOLS::Blob_List *const blobs) {
 void Input_Output_Handler::ResetInterfaces() {
 #ifdef USING__CLHEP
   if (p_hepmc) p_hepmc->Reset();
+#endif 
+#ifdef USING__HEPMC2
+  if (p_hepmc2) p_hepmc2->Reset();
 #endif 
   if (p_hepevt) p_hepevt->Reset();
 }
@@ -277,10 +314,6 @@ bool Input_Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const d
           p_hepmc->Sherpa2HepMC(blobs);
           p_hepmc->PrintEvent(2,oit->second->outstream);
           break;
-#else
-          msg.Error()<<"Error in "<<METHOD<<": HepMC format can only be created when Sherpa "
-                      <<"was linked with CLHEP, please read our Howto to fix this."<<std::endl;
-          abort();
 #endif
         case iotype::HepEvt:
           p_hepevt->Sherpa2HepEvt(blobs);
@@ -290,7 +323,16 @@ bool Input_Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const d
           p_hepevt->Sherpa2HepEvt(blobs);
           p_hepevt->PrintEvent(2,oit->second->outstream,p_hepevt->Nhep());
           break;
-       
+        case iotype::HepMC2:
+#ifdef USING__HEPMC2
+          p_hepmc2->Sherpa2HepMC(blobs);
+          p_hepmc2->PrintEvent(oit->second->outstream);
+          break;
+#else
+          msg.Error()<<"Error in "<<METHOD<<": HepMC2 format can only be created when Sherpa "
+                      <<"was linked with HepMC2, please read our Howto to fix this."<<std::endl;
+          abort();
+#endif
         default:
           msg.Error()<<"Error in "<<METHOD<<std::endl
                      <<"   Unknown Output format : "<<oit->first<<std::endl

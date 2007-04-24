@@ -7,10 +7,18 @@ else
 HEPMCEXTRADIST=HepMC_Interface.H HepMC_Interface.C
 endif
 
+if HEPMC2_SUPPORT
+HEPMC2SOURCES=HepMC2_Interface.C
+HEPMC2HEADERS=HepMC2_Interface.H
+else
+HEPMC2EXTRADIST=HepMC2_Interface.H HepMC2_Interface.C
+endif
+
 libSherpaTools_la_SOURCES     =	\
 				Kinematics.C \
 				Input_Output_Handler.C \
 			    	$(HEPMCSOURCES) \
+			    	$(HEPMC2SOURCES) \
 			    	HepEvt_Interface.C \
 				Pythia_HepEvt_Translator.C \
 				Herwig_HepEvt_Translator.C \
@@ -20,6 +28,7 @@ pkginclude_HEADERS    =	\
 			Kinematics.H \
 			Input_Output_Handler.H \
 		 	$(HEPMCHEADERS) \
+		 	$(HEPMC2HEADERS) \
 			HepEvt_Interface.H \
 			Pythia_HepEvt_Translator.H \
 			Herwig_HepEvt_Translator.H \
@@ -28,6 +37,7 @@ pkginclude_HEADERS    =	\
 AM_CXXFLAGS   =	@SHERPAFLAGS@ @CONDITIONAL_ROOTFLAGS@
 
 INCLUDES      =	@SHERPAINCS@ @AMISICINCS@ @APACICINCS@ @MODELINCS@ \
-		@PDFINCS@ @ATOOLSINCS@ @CONDITIONAL_CLHEPINCS@ @CONDITIONAL_ROOTINCS@
+		@PDFINCS@ @ATOOLSINCS@ @CONDITIONAL_CLHEPINCS@ @CONDITIONAL_ROOTINCS@ \
+		@CONDITIONAL_HEPMC2INCS@
 
-EXTRA_DIST    =	@SVNINCLUDE@ $(HEPMCEXTRADIST)
+EXTRA_DIST    =	@SVNINCLUDE@ $(HEPMCEXTRADIST) $(HEPMC2EXTRADIST)

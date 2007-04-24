@@ -2,20 +2,27 @@
 #define Input_Output_Handler_H
 
 #include "CXXFLAGS.H"
-
+#include "Message.H"
 #ifdef USING__GZIP
 #include "Gzip_Stream.H"
 #endif
 
-#ifdef USING__CLHEP
-#include "HepMC_Interface.H"
-#endif
+#include <map>
+#include <vector>
 
-#include "HepEvt_Interface.H"
-#include "Blob_List.H"
-#include "Message.H"
+namespace ATOOLS {
+  class Blob_List;
+}
 
 namespace SHERPA {
+
+  class HepEvt_Interface;
+#ifdef USING__CLHEP
+  class HepMC_Interface;
+#endif
+#ifdef USING__HEPMC2
+  class HepMC2_Interface;
+#endif
 
   struct iotype {
     enum code {
@@ -25,7 +32,8 @@ namespace SHERPA {
       OldHepMC = 4,
       HepEvt   = 8,
       D0HepEvt = 16,
-      size     = 32
+      HepMC2   = 32,
+      size     = 64
     };
   };// end of struct iotype
   
@@ -67,6 +75,9 @@ namespace SHERPA {
 #ifdef USING__CLHEP
     HepMC_Interface          * p_hepmc;
 #endif
+#ifdef USING__HEPMC2
+    HepMC2_Interface         * p_hepmc2;
+#endif
     HepEvt_Interface * p_hepevt;
     std::ifstream            * p_instream;
     std::string                m_path, m_filename, m_file;
@@ -105,6 +116,9 @@ namespace SHERPA {
 
 #ifdef USING__CLHEP
     inline HepMC_Interface *const GetHepMCInterface() const { return p_hepmc; }
+#endif
+#ifdef USING__HEPMC2
+    inline HepMC2_Interface *const GetHepMC2Interface() const { return p_hepmc2; }
 #endif
   };
 
