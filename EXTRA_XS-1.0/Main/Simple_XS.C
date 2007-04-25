@@ -222,7 +222,7 @@ void Simple_XS::InitializeProcess(ATOOLS::Flavour *flavs,std::string &efunc,
 	  pdfgroup->SetEnhanceFunction(efunc);
 	  newxs->PSHandler(false)->SetUsePI(m_usepi);
 	  newxs->
-	    SetISRThreshold(sqr(ATOOLS::Max(inisum,finsum)));
+	    SetISRThreshold(ATOOLS::Max(inisum,finsum));
 	  newxs->SetEnhanceFunction(efunc);
 	}
 	m_setup.insert(name);
