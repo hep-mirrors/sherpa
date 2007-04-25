@@ -43,6 +43,22 @@ namespace ANALYSIS {
     Primitive_Observable_Base * Copy() const;
   };
 
+ class EtaTracks : public Scaled_Observable_Base {  
+    void Evaluate(const ATOOLS::Vec4D & mom, double weight, int ncount); 
+  public:
+    EtaTracks(int type,double xmin,double xmax,int nbins,
+	      const std::string & listname, double ecms);
+    Primitive_Observable_Base * Copy() const;
+  };
+
+ class EtaTracksAsym : public Scaled_Observable_Base {  
+    void Evaluate(const ATOOLS::Vec4D & mom, double weight, int ncount); 
+  public:
+    EtaTracksAsym(int type,double xmin,double xmax,int nbins,
+	      const std::string & listname, double ecms);
+    Primitive_Observable_Base * Copy() const;
+  };
+
 }
 
 #endif

@@ -149,3 +149,58 @@ Primitive_Observable_Base * Scaled_Energy::Copy() const
   return new Scaled_Energy(m_type,m_xmin,m_xmax,m_nbins,m_listname,m_ecms);
 }
 
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DEFINE_OBSERVABLE_GETTER(EtaTracks,EtaTracks_Getter,"EtaTracks");
+
+EtaTracks::EtaTracks(int type,double xmin,double xmax,int nbins,
+			   const std::string & listname, double ecms) :
+  Scaled_Observable_Base(type,xmin,xmax,nbins,listname,"EtaTracks",ecms) { }
+
+
+void EtaTracks::Evaluate(const Vec4D & mom,double weight,int ncount) 
+{
+  
+  double eta = 0.;
+  eta=mom.Eta();
+  
+  if (eta<0.) {
+    p_histo->Insert(eta,weight,ncount); 
+  }
+  else {
+    p_histo->Insert(eta,weight,ncount); 
+  }
+} 
+
+Primitive_Observable_Base * EtaTracks::Copy() const
+{
+  return new EtaTracks(m_type,m_xmin,m_xmax,m_nbins,m_listname,m_ecms);
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DEFINE_OBSERVABLE_GETTER(EtaTracksAsym,EtaTracksAsym_Getter,"EtaTracksAsym");
+
+EtaTracksAsym::EtaTracksAsym(int type,double xmin,double xmax,int nbins,
+			 const std::string & listname, double ecms) :
+  Scaled_Observable_Base(type,xmin,xmax,nbins,listname,"EtaTracksAsym",ecms) { }
+
+
+void EtaTracksAsym::Evaluate(const Vec4D & mom,double weight,int ncount) 
+{
+  
+  double eta = 0.;
+  eta=mom.Eta();
+  
+  if (eta<0.) {
+    p_histo->Insert(-eta,-weight,ncount); 
+  }
+  else {
+    p_histo->Insert(eta,weight,ncount); 
+  }
+} 
+
+Primitive_Observable_Base * EtaTracksAsym::Copy() const
+{
+  return new EtaTracksAsym(m_type,m_xmin,m_xmax,m_nbins,m_listname,m_ecms);
+}
