@@ -151,7 +151,7 @@ Primitive_Observable_Base * Scaled_Energy::Copy() const
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DEFINE_OBSERVABLE_GETTER(EtaTracks,EtaTracks_Getter,"EtaTracks");
+DEFINE_OBSERVABLE_GETTER(EtaTracks,EtaTracks_Getter,"EtaTracks")
 
 EtaTracks::EtaTracks(int type,double xmin,double xmax,int nbins,
 			   const std::string & listname, double ecms) :
@@ -179,7 +179,7 @@ Primitive_Observable_Base * EtaTracks::Copy() const
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DEFINE_OBSERVABLE_GETTER(EtaTracksAsym,EtaTracksAsym_Getter,"EtaTracksAsym");
+DEFINE_OBSERVABLE_GETTER(EtaTracksAsym,EtaTracksAsym_Getter,"EtaTracksAsym")
 
 EtaTracksAsym::EtaTracksAsym(int type,double xmin,double xmax,int nbins,
 			 const std::string & listname, double ecms) :
