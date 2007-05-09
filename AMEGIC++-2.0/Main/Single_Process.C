@@ -895,8 +895,9 @@ void Single_Process::Minimize()
     delete p_selector;      
   }
   p_selector      = p_partner->Selector(); 
+  p_jf            = p_partner->p_jf;
   m_ownselector=false;
-  if (p_pshandler)       { delete p_pshandler;       p_pshandler       = 0; }
+  if (p_pshandler) { delete p_pshandler; p_pshandler = 0; }
 }
 
 void Single_Process::Empty() {
