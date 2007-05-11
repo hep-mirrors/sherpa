@@ -20,8 +20,7 @@ libAnalysisDetector_la_SOURCES	=	\
 					Muon_Maker.C \
 					Photon_Maker.C \
 					Jet_Maker.C \
-					Simple_Cone.C \
-					Primitive_Hadron_Calorimeter.C
+					Simple_Cone.C 
 
 pkginclude_HEADERS        	=	\
 					Cell.H \
@@ -43,8 +42,7 @@ pkginclude_HEADERS        	=	\
 					Muon_Maker.H \
 					Photon_Maker.H \
 					Jet_Maker.H \
-					Simple_Cone.H \
-					Primitive_Hadron_Calorimeter.H
+					Simple_Cone.H 
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@ @CONDITIONAL_ROOTFLAGS@
 
