@@ -75,6 +75,8 @@ Cell * Detector_Element::GetCell(const double eta,const double phi) {
 std::list<Track *> * Detector_Element::GetTracks(const double eta,const double phi,
 						 const double R2,kf::code kfcode) {
   std::list<Track *> * tracks(new std::list<Track *>);
+  //std::cout<<"   ... "<<METHOD<<" : from "<<this<<", tracks =  "
+  //<<tracks<<", local = "<<(&m_tracks)<<std::endl;
   if (eta==0&&phi==0&&R2==0) (*tracks) = m_tracks;
   else {
     //std::cout<<METHOD<<": "<<m_tracks.size()<<std::endl;

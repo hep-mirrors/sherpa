@@ -53,6 +53,9 @@ void Object_Definition_Base::GetElements() {
     abort();
   }
   m_elements = true;
+  //std::cout<<METHOD<<" :"<<std::endl
+  //	   <<" ecal = "<<p_ECal<<" hcal = "<<p_HCal
+  //	   <<" tracker = "<<p_tracker<<" muons = "<<p_chambers<<"."<<std::endl;
 }
 
 void Object_Definition_Base::Reset() {

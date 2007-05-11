@@ -18,6 +18,7 @@ Detector::Detector(Primitive_Analysis * ana) :
   p_ana(ana), m_inlist("FinalState"), m_outlist("Detected_FS")
 {
   m_name = "Detector";
+  std::cout<<METHOD<<std::endl;
 }
 
 Detector::~Detector() {}
@@ -87,7 +88,10 @@ Object_Definition_Base * Detector::GetObjectDefinition(std::string name) {
 
 void Detector::Evaluate(const ATOOLS::Blob_List &bl, double weight, int ncount)
 {
-  std::cout<<METHOD<<" : "<<p_ana<<std::endl;
+  //std::cout<<"============================================================"<<std::endl
+  //	   <<"============================================================"<<std::endl
+  //	   <<METHOD<<" : "<<p_ana<<std::endl;
+	   
   //Print();
   Particle_List *outlist(new Particle_List);
   Particle_List *inlist(p_ana->GetParticleList(m_inlist));
@@ -128,7 +132,7 @@ void Detector::Fill(Particle_List * plist) {
       }
     }
   }
-  std::cout<<METHOD<<" ehits = "<<ehits<<", hhits = "<<hhits<<", total = "<<(ehits+hhits)<<std::endl;
+  //std::cout<<METHOD<<" ehits = "<<ehits<<", hhits = "<<hhits<<", total = "<<(ehits+hhits)<<std::endl;
 }
 
 void Detector::ReconstructObjects(Particle_List *& plist) {

@@ -25,7 +25,7 @@ Reconstructed_Object::Reconstructed_Object(ATOOLS::Flavour flav,
 }
 
 Reconstructed_Object::~Reconstructed_Object() { 
-  std::cout<<METHOD<<" for "<<this<<", cells = "<<p_cells<<", tracks = "<<p_tracks<<std::endl;
+  //std::cout<<METHOD<<" for "<<this<<", cells = "<<p_cells<<", tracks = "<<p_tracks<<std::endl;
   if (p_cells)  { delete p_cells;  p_cells = NULL; }
   if (p_tracks) { delete p_tracks; p_tracks = NULL; }
 }

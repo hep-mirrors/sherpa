@@ -74,6 +74,7 @@ Electron_Maker::Electron_Maker(Primitive_Analysis * ana,const std::string mode) 
   m_trackmode(std::string("exact"))
 { 
   m_kfcode=kf::e;
+  GetElements();
 }
 
 Electron_Maker::~Electron_Maker() {}
@@ -99,9 +100,9 @@ void Electron_Maker::SetECorrection(const double inv) {
 }
 
 void Electron_Maker::ReconstructObjects(Particle_List * plist) {
-  std::cout<<METHOD<<std::endl;
+  //std::cout<<METHOD<<std::endl;
   m_objects.clear();
-  if (!m_elements) GetElements();
+
   BuildMatchedClusters();
   IsolateClusters();
   CorrectEnergies();
@@ -114,9 +115,9 @@ void Electron_Maker::ReconstructObjects(Particle_List * plist) {
     m_objects.pop_front();
     plist->push_back(part);
   }
-  std::cout<<METHOD<<" --> "<<plist->size()<<", therefore "
-	   <<p_ECal->GetHitCells()->size()<<"/"<<p_HCal->GetHitCells()->size()<<" total = "
-	   <<(p_ECal->GetHitCells()->size()+p_HCal->GetHitCells()->size())<<std::endl;
+  //std::cout<<METHOD<<" --> "<<plist->size()<<", therefore "
+  //	   <<p_ECal->GetHitCells()->size()<<"/"<<p_HCal->GetHitCells()->size()<<" total = "
+  //	   <<(p_ECal->GetHitCells()->size()+p_HCal->GetHitCells()->size())<<std::endl;
 }
 
 void Electron_Maker::BuildMatchedClusters() {
@@ -124,7 +125,7 @@ void Electron_Maker::BuildMatchedClusters() {
   //	   <<"---------------------------------------------------"<<std::endl;
   std::list<Cell *> * cells(p_ECal->GetHitCells());
   if (!cells || cells->size()==0) return;
-  std::cout<<METHOD<<" for "<<cells->size()<<" hit cells in ECal."<<std::endl;
+  //std::cout<<METHOD<<" for "<<cells->size()<<" hit cells in ECal."<<std::endl;
   Cell  * cell(NULL);
   std::list<Track *> * tracks(NULL);
   std::list<Track *>::iterator trit;
@@ -142,14 +143,14 @@ void Electron_Maker::BuildMatchedClusters() {
       //std::cout<<"    ====> seed found in ("<<eta<<","<<phi<<"), "
       //	       <<" cluster with size "<<m_dim<<"."<<std::endl;
       p_cluster = p_ECal->BuildCluster(cell,m_dim,E,eta,phi);
-      std::cout<<" built cluster "<<p_cluster<<"("<<p_cluster->size()<<") : "<<E<<std::endl;
+      //std::cout<<"Built cluster "<<p_cluster<<"("<<p_cluster->size()<<") : "<<E<<std::endl;
       tracks    = p_tracker->GetTracks(eta,phi,m_R2track,m_kfcode); 
       //std::cout<<" out of gettracks : "<<matched<<"/"<<tracks<<"/"
       //	       <<cell->ParticleEntries()->begin()->first->Flav()<<std::endl;
       matched = false;
-      std::cout<<tracks<<" "<<tracks->size()<<" "
-	       <<tracks->front()<<" "<<tracks->front()->flav<<" "<<m_trackmode<<std::endl;
-
+ 
+      //std::cout<<"   Tracker "<<p_tracker<<" gives tracks = "<<tracks<<", size = "<<tracks->size()<<", "
+      //	       <<" front = "<<tracks->front()<<" in mode ="<<m_trackmode<<std::endl;
       if (tracks && tracks->size()>0) {
 	if (m_trackmode=="exact") {
 	  if (tracks->size()==1 && (*tracks->begin())->flav.Kfcode()==kf::e) {
@@ -174,12 +175,17 @@ void Electron_Maker::BuildMatchedClusters() {
 	}
 	else matched = true;
       }
-      //std::cout<<"   matched = "<<matched<<std::endl;
-      if (!matched) delete p_cluster;
+      //std::cout<<"   matched = "<<matched<<" / "<<track<<std::endl;
+
+      if (!matched) {
+	//std::cout<<"   ... delete testcluster : "<<p_cluster<<std::endl;
+	delete p_cluster; p_cluster = NULL;
+      } 
       else {
-	Reconstructed_Object * object = new Reconstructed_Object((*trit)->flav,E,eta,phi);
-	std::cout<<"new electron : E = "<<E<<" at ("<<eta<<", "<<phi<<") :"
-		 <<object<<" cluster = "<<p_cluster<<" ("<<p_cluster->size()<<")"<<std::endl;
+	//std::cout<<"   before init a new object for "<<track<<std::endl;
+	Reconstructed_Object * object = new Reconstructed_Object(track->flav,E,eta,phi);
+	//std::cout<<"   new electron : E = "<<E<<" at ("<<eta<<", "<<phi<<") :"
+	//	 <<object<<" cluster = "<<p_cluster<<" ("<<p_cluster->size()<<")"<<std::endl;
 	object->SetCells(p_cluster);
 	object->SetTracks(new std::vector<Track *>);
 	object->AddTrack(track);
@@ -192,6 +198,7 @@ void Electron_Maker::BuildMatchedClusters() {
 	//	 <<object->Flav()<<" "<<object->E()
 	//	 <<" "<<object->Eta()<<" "<<object->Phi()<<std::endl;
       }
+      //std::cout<<"   ... delete testtracks : "<<tracks<<std::endl;      
       delete tracks; tracks = NULL; 
     }
   }
@@ -200,7 +207,7 @@ void Electron_Maker::BuildMatchedClusters() {
 void Electron_Maker::IsolateClusters() {
   //std::cout<<"--------------------------------------------------"<<std::endl
   //	   <<"--------------------------------------------------"<<std::endl;
-  std::cout<<METHOD<<" for "<<m_objects.size()<<std::endl;
+  //std::cout<<METHOD<<" for "<<m_objects.size()<<std::endl;
   if (m_objects.size()==0) return;
   double E_HCal, E_ECal;
   std::list<Cell *> * ECal_cells = p_ECal->GetHitCells();
@@ -247,7 +254,10 @@ void Electron_Maker::IsolateClusters() {
       }
       //std::cout<<std::endl;
     }
-    if (veto) olit = m_objects.erase(olit);
+    if (veto) {
+      delete (*olit);
+      olit = m_objects.erase(olit);
+    }
     else olit++;     
   }
   //std::cout<<"--------------------------------------------------"<<std::endl

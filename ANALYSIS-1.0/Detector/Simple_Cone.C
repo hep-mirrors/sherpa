@@ -70,6 +70,7 @@ void Simple_Cone::CalcJets(ObjectList * jets)
       badseeds.insert(seed);
       //std::cout<<METHOD<<" try "<<maxet<<" at "<<eta<<", "<<phi<<" for "<<seed<<std::endl;
       std::vector<Cell *> * p_cone(new std::vector<Cell *>);
+      //std::cout<<"Build new cluster: "<<p_cone<<std::endl;
       p_cone->push_back(seed);
       for (cit=hcells->begin();cit!=hcells->end();cit++) {
 	if ((*cit)!=seed && !(*cit)->Used() &&  
@@ -86,9 +87,9 @@ void Simple_Cone::CalcJets(ObjectList * jets)
 	}
       }
       jet = new Reconstructed_Object(m_flav,p_cone);
-      std::cout<<METHOD<<" : New jet : "<<jet<<" with "<<p_cone->size()<<" cells."<<std::endl;
+      //std::cout<<"   ... new jet : "<<jet<<" with "<<p_cone<<" ("<<p_cone->size()<<" cells)."<<std::endl;
       if (jet->Mom().EPerp()<m_Etcut) {
-	std::cout<<"        ... delete it."<<std::endl;
+	//std::cout<<"        ... delete it."<<std::endl;
 	for (std::vector<Cell *>::iterator cit=p_cone->begin();
 	     cit!=p_cone->end(); cit++) (*cit)->SetUsed(false);
 	delete jet;

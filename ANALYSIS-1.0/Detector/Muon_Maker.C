@@ -88,25 +88,30 @@ void Muon_Maker::SetECorrection(const double inv) {
 }
 
 void Muon_Maker::ReconstructObjects(Particle_List * plist) {
-  std::cout<<METHOD<<std::endl;
+  //std::cout<<METHOD<<std::endl;
   m_objects.clear();
   if (!m_elements) GetElements();
   GetTracks();
   IsolateTracks();
   CorrectEnergies();
+  DropUsedCells();
+
   Particle * part;
-  for (ObjectListIterator olit=m_objects.begin();olit!=m_objects.end();olit++) {
-    part = (*olit)->CreateParticle();
+  while (!m_objects.empty()) {
+    part = m_objects.front()->CreateParticle();
+    delete m_objects.front();
+    m_objects.pop_front();
     plist->push_back(part);
   }
-  DropUsedCells();
-  std::cout<<METHOD<<" --> "<<plist->size()<<std::endl;
+  //std::cout<<METHOD<<" --> "<<plist->size()<<std::endl;
 }
 
 void Muon_Maker::GetTracks() {
   //std::cout<<"---------------------------------------------------"<<std::endl
   //	   <<"---------------------------------------------------"<<std::endl;
   std::list<Track *> * tracks = p_chambers->GetTracks();
+  //std::cout<<"Muon Chambers "<<p_chambers<<" gives "<<tracks<<" "<<tracks->size()<<" "
+  //   <<tracks->front()<<"."<<std::endl;
   if (!tracks || tracks->size()==0) return;
   std::list<Track *>::iterator trit;
   for (trit=tracks->begin(); trit!=tracks->end(); trit++) {
@@ -115,9 +120,14 @@ void Muon_Maker::GetTracks() {
       Reconstructed_Object * object = 
 	new Reconstructed_Object((*trit)->flav,(*trit)->mom[0],(*trit)->eta,(*trit)->phi);
       object->SetCells(NULL);
+      //std::cout<<"   new muon : E = "
+      //	       <<(*trit)->mom[0]<<" at ("<<(*trit)->eta<<", "<<(*trit)->phi<<") :"
+      //	       <<object<<std::endl;
       m_objects.push_back(object);
     }
   }
+  //std::cout<<"... delete muontracks : "<<tracks<<std::endl;      
+  delete tracks;
 }
 
 void Muon_Maker::IsolateTracks() {

@@ -26,7 +26,6 @@ Jet_Maker_Getter::operator()(const Argument_Matrix &parameters) const
     const std::vector<std::string> &cur=parameters[i];
     if (cur.size()<2) continue;
     else if (cur[0]=="Simple_Cone") {
-      //std::cout<<METHOD<<" found SC "<<std::endl;
       Ecut   = ATOOLS::ToType<double>(cur[1]);
       Estart = ATOOLS::ToType<double>(cur[2]);
       R      = ATOOLS::ToType<double>(cur[3]);
@@ -58,7 +57,6 @@ Jet_Maker::~Jet_Maker() {
 }
 
 void Jet_Maker::SetSimpleCone(const double Ecut,const double Estart,const double R) {
-  std::cout<<METHOD<<std::endl;
   p_simplecone = new Simple_Cone(Ecut,Estart,R);
   p_simplecone->SetCalorimeters(p_HCal,p_ECal);
   m_jetmode = 1;
@@ -66,7 +64,7 @@ void Jet_Maker::SetSimpleCone(const double Ecut,const double Estart,const double
 
 
 void Jet_Maker::ReconstructObjects(ATOOLS::Particle_List * plist) {
-  std::cout<<METHOD<<" : "<<(&m_objects)<<" for "<<m_jetmode<<std::endl;
+  //std::cout<<METHOD<<" : "<<(&m_objects)<<" for "<<m_jetmode<<std::endl;
   switch (m_jetmode) {
   case 0: return;
   case 1: 
@@ -82,9 +80,9 @@ void Jet_Maker::ReconstructObjects(ATOOLS::Particle_List * plist) {
     m_objects.pop_front();
     plist->push_back(part);
   }
-  std::cout<<METHOD<<" --> "<<plist->size()<<", therefore "
-	   <<p_ECal->GetHitCells()->size()<<"/"<<p_HCal->GetHitCells()->size()<<" total = "
-	   <<(p_ECal->GetHitCells()->size()+p_HCal->GetHitCells()->size())<<std::endl;
+  //std::cout<<METHOD<<" --> "<<plist->size()<<", therefore "
+  //	   <<p_ECal->GetHitCells()->size()<<"/"<<p_HCal->GetHitCells()->size()<<" total = "
+  //	   <<(p_ECal->GetHitCells()->size()+p_HCal->GetHitCells()->size())<<std::endl;
 }
 
 
