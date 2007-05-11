@@ -178,8 +178,7 @@ bool Analysis_Handler::ReadIn()
 	}
       }
       ANALYSIS::Analysis_Object *object = 
-	Object_Getter_Function::GetObject
-	(arguments[k][0],mat(m_analyses.back()));
+	Object_Getter_Function::GetObject(arguments[k][0],mat(m_analyses.back()));
       if (object!=NULL) {
 	m_analyses.back()->AddObject(object);
 	if (msg.LevelIsTracking()) {
@@ -199,11 +198,19 @@ bool Analysis_Handler::ReadIn()
   }
   msg_Info()<<"}"<<std::endl;
   if (success) {
-    exh->AddTesterObject(this);
     exh->AddTerminatorObject(this);
   }
   m_initialized=true;
   return success;
+}
+
+void Analysis_Handler::Test(const int mode)
+{
+  if (!m_initialized) {
+    ReadIn();
+  }
+  for (Analyses_Vector::const_iterator ait=m_analyses.begin();
+       ait!=m_analyses.end();++ait) (*ait)->Test(mode); 
 }
 
 void Analysis_Handler::DoAnalysis(const ATOOLS::Blob_List *bloblist,
@@ -267,7 +274,6 @@ void Analysis_Handler::Finish(const std::string &path)
   msg_Info()<<"}"<<std::endl;
   if (m_analyses.size()) {
     exh->RemoveTerminatorObject(this);
-    exh->RemoveTesterObject(this);
   }
 }
 

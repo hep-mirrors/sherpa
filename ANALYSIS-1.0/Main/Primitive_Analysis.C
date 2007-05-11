@@ -555,6 +555,16 @@ Analysis_Object * Primitive_Analysis::GetObject(const std::string & key)
   return 0;
 }
 
+void Primitive_Analysis::Test(const int mode) {
+  std::cout<<"Number of objects: "<<m_objects.size()<<std::endl;
+  for (size_t i=0;i<m_objects.size();i++) {
+    if (!m_objects[i]->IsObservable()) m_objects[i]->Test(mode);
+  }
+  for (size_t i=0;i<m_objects.size();i++) {
+    if (m_objects[i]->IsObservable()) m_objects[i]->Test(mode);
+  }
+}
+
 namespace ATOOLS {
 
 template <>

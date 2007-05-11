@@ -10,8 +10,7 @@ namespace ANALYSIS {
 
   typedef ANALYSIS::Argument_Matrix Argument_Matrix;
   
-  class Analysis_Handler: public ATOOLS::Terminator_Object, 
-			  public ATOOLS::Tester_Object, 
+  class Analysis_Handler: public ATOOLS::Terminator_Object,
 			  public ATOOLS::File_IO_Base {
   public:
 
@@ -22,7 +21,6 @@ namespace ANALYSIS {
     typedef std::vector<ANALYSIS::Primitive_Analysis*> Analyses_Vector;
     
   private:
-
     static size_t s_maxanalyses;
 
     Analyses_Vector m_analyses;
@@ -51,6 +49,8 @@ namespace ANALYSIS {
     void Clear();
     
     static void ShowSyntax(const size_t i);
+
+    void Test(const int mode=0);
 
     static Argument_Matrix FindArguments(const Argument_Matrix &strings,
 					 size_t &starty,size_t &startx);

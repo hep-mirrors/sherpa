@@ -11,23 +11,17 @@ using namespace ANALYSIS;
 using namespace ATOOLS;
 
 Analysis_Object::Analysis_Object():
-  p_ana(NULL), m_obs(false) {}
+  p_ana(NULL), m_obs(false), m_isdet(false) {}
 
-Analysis_Object::~Analysis_Object()
-{
-}
+Analysis_Object::~Analysis_Object() {}
 
-void Analysis_Object::Reset()
-{
-}
+void Analysis_Object::Reset() {}
 
-void Analysis_Object::EndEvaluation(double scale)
-{
-}
+void Analysis_Object::EndEvaluation(double scale) {}
 
-void Analysis_Object::Output(const std::string &pname)
-{
-}
+void Analysis_Object::Test(const int mode) {}
+
+void Analysis_Object::Output(const std::string &pname) {}
 
 Analysis_Object &Analysis_Object::operator+=(const Analysis_Object &obj)
 {

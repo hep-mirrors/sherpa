@@ -114,6 +114,8 @@ namespace ANALYSIS {
     void SetPartner(Primitive_Analysis * const);
     void SetBlobType(const std::string &);
     int  NumberOfObjects() { return m_objects.size(); }
+
+    void Test(const int mode=0);
     
     // inline methods
     inline const std::string &Name() const { return m_name; }
