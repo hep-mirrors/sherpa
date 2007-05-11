@@ -1,0 +1,184 @@
+#include "Muon_Maker.H"
+#include "Primitive_Analysis.H"
+#include "Detector.H"
+#include "Message.H"
+#include "MyStrStream.H"
+#include "Exception.H"
+
+
+using namespace ANALYSIS;
+using namespace ATOOLS;
+
+DECLARE_GETTER(Muon_Maker_Getter,"Muon_Maker",
+	       Analysis_Object,Argument_Matrix);
+
+Analysis_Object *
+Muon_Maker_Getter::operator()(const Argument_Matrix &parameters) const
+{			
+  if (parameters.size()<1) return NULL;
+  //if (parameters.size()==1) abort(); // For read-in of, like 'ATLAS'
+
+
+  std::string mode("ET_UP");
+  Muon_Maker * maker = new Muon_Maker(parameters(),mode);
+  double Estart,cut_Ebyp,RHad,relHad,cutHad,REM,totEM,cutEM;
+
+  for (size_t i=0;i<parameters.size();++i) {
+    const std::vector<std::string> &cur=parameters[i];
+    if (cur.size()<2) continue;
+    else if (cur[0]=="Track") {
+      Estart   = ATOOLS::ToType<double>(cur[1]);
+      cut_Ebyp = ATOOLS::ToType<double>(cur[2]);
+      maker->SetTracking(Estart);
+    }
+    else if (cur[0]=="HadIso") {
+      RHad   = ATOOLS::ToType<double>(cur[1]);
+      relHad = ATOOLS::ToType<double>(cur[2]);
+      cutHad = ATOOLS::ToType<double>(cur[3]);
+      maker->SetHadIso(RHad,relHad,cutHad);
+    }
+    else if (cur[0]=="EMIso") {
+      REM   = ATOOLS::ToType<double>(cur[1]);
+      totEM = ATOOLS::ToType<double>(cur[2]);
+      cutEM = ATOOLS::ToType<double>(cur[3]);
+      maker->SetEMIso(REM,totEM,cutEM);
+    }
+    else if (cur[0]=="Ordering") {
+      mode = cur[1];
+      maker->SetOrdering(mode);
+    }
+    else if (cur[0]=="ECorrection") {
+      maker->SetECorrection(ATOOLS::ToType<double>(cur[1]));
+    }
+  }
+  return maker;
+}									
+
+void Muon_Maker_Getter::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"Keyword=Acceptance   Parameters=etamin, etamax"<<std::endl; 
+}
+
+Muon_Maker::Muon_Maker(Primitive_Analysis * ana,const std::string mode) :
+  Object_Definition_Base(ana,"MuonMaker",mode), 
+  m_dim(3),m_Estart(3.),m_R2track(sqr(0.2)),m_cut_Ebyp(2.),
+  m_R2hadiso(sqr(0.2)),m_relhad(0.01),m_minhad(1.),
+  m_R2EMiso(sqr(0.2)),m_totEM(5.0),m_minEM(1.)
+{ 
+  m_kfcode=kf::e;
+}
+
+Muon_Maker::~Muon_Maker() {}
+
+void Muon_Maker::SetTracking(const double E) {
+  m_Estart = E; 
+}
+
+void Muon_Maker::SetHadIso(const double R,const double rel,const double cut) {
+  m_R2hadiso = R*R; m_relhad = rel; m_minhad = cut;
+}
+
+void Muon_Maker::SetEMIso(const double R,const double tot,const double cut) {
+  m_R2EMiso = R*R; m_totEM = tot; m_minEM = cut;
+}
+
+void Muon_Maker::SetECorrection(const double inv) {
+  m_inv = inv;
+}
+
+void Muon_Maker::ReconstructObjects(Particle_List * plist) {
+  std::cout<<METHOD<<std::endl;
+  m_objects.clear();
+  if (!m_elements) GetElements();
+  GetTracks();
+  IsolateTracks();
+  CorrectEnergies();
+  Particle * part;
+  for (ObjectListIterator olit=m_objects.begin();olit!=m_objects.end();olit++) {
+    part = (*olit)->CreateParticle();
+    plist->push_back(part);
+  }
+  DropUsedCells();
+  std::cout<<METHOD<<" --> "<<plist->size()<<std::endl;
+}
+
+void Muon_Maker::GetTracks() {
+  //std::cout<<"---------------------------------------------------"<<std::endl
+  //	   <<"---------------------------------------------------"<<std::endl;
+  std::list<Track *> * tracks = p_chambers->GetTracks();
+  if (!tracks || tracks->size()==0) return;
+  std::list<Track *>::iterator trit;
+  for (trit=tracks->begin(); trit!=tracks->end(); trit++) {
+    if ((*trit)->flav==Flavour(kf::mu)||(*trit)->flav==Flavour(kf::mu).Bar() &&
+	(*trit)->mom[0]>m_Estart) {
+      Reconstructed_Object * object = 
+	new Reconstructed_Object((*trit)->flav,(*trit)->mom[0],(*trit)->eta,(*trit)->phi);
+      object->SetCells(NULL);
+      m_objects.push_back(object);
+    }
+  }
+}
+
+void Muon_Maker::IsolateTracks() {
+  //std::cout<<"--------------------------------------------------"<<std::endl
+  //	   <<"--------------------------------------------------"<<std::endl;
+  //std::cout<<METHOD<<" for "<<m_objects.size()<<std::endl;
+  if (m_objects.size()==0) return;
+  double E_HCal, E_ECal;
+  std::list<Cell *> * ECal_cells = p_ECal->GetHitCells();
+  std::list<Cell *> * HCal_cells = p_HCal->GetHitCells();
+  std::list<Cell *>::iterator cit;
+  if (!ECal_cells || ECal_cells->size()==0) return;
+
+  double E,eta,phi;
+  bool   veto;
+  for (ObjectListIterator olit=m_objects.begin();olit!=m_objects.end();) {
+    //std::cout<<"--------------------------------------------------"<<std::endl;
+    E      = (*olit)->E();
+    eta    = (*olit)->Eta();
+    phi    = (*olit)->Phi();
+    veto   = false;
+    E_HCal = E_ECal = 0.;    
+    for (cit=HCal_cells->begin();cit!=HCal_cells->end();cit++) {
+      if ((*cit)->R2(eta,phi)<m_R2hadiso && !(*olit)->IsIncluded((*cit))) {
+	E_HCal += (*cit)->TotalDeposit();
+	//std::cout<<"Distance of "<<(*cit)->Direction()
+	//	 <<"("<<(*cit)->Direction().Eta()<<","<<(*cit)->Direction().Phi()<<") = "
+	//	 <<(*cit)->R2(eta,phi)<<"("<<m_R2hadiso<<") from "<<eta<<"/"<<phi
+	//	 <<" -> E = "<<E_HCal;
+      }
+      if (E_HCal>m_minhad && E_HCal/E>m_relhad) {
+	//std::cout<<" ===> Veto !!!"<<std::endl;
+	veto = true;
+	break;
+      }
+      //std::cout<<std::endl;
+    }
+    for (cit=ECal_cells->begin();cit!=ECal_cells->end();cit++) {
+      if ((*cit)->R2(eta,phi)<m_R2EMiso && !(*olit)->IsIncluded((*cit))) {
+	E_ECal += (*cit)->TotalDeposit();
+	//std::cout<<"Distance of "<<(*cit)->Direction()
+	//	 <<"("<<(*cit)->Direction().Eta()<<","<<(*cit)->Direction().Phi()<<") = "
+	//	 <<(*cit)->R2(eta,phi)<<"("<<m_R2EMiso<<") from "<<eta<<"/"<<phi
+	//	 <<" -> E = "<<E_ECal;
+      }
+      if (E_ECal>m_totEM) {
+	//std::cout<<" ===> Veto !!!"<<std::endl;
+	veto = true;
+	break;
+      }
+      //std::cout<<std::endl;
+    }
+    if (veto) olit = m_objects.erase(olit);
+    else olit++;     
+  }
+  //std::cout<<"--------------------------------------------------"<<std::endl
+  //	   <<"--------------------------------------------------"<<std::endl;
+}
+
+void Muon_Maker::CorrectEnergies() {
+  for (ObjectListIterator olit=m_objects.begin();olit!=m_objects.end();olit++) {
+    (*olit)->CorrectE(m_inv);
+  }  
+}

@@ -1,53 +1,53 @@
 #ifndef Object_Definition_Base_h
 #define Object_Definition_Base_h
 
+#include "Tracker.H"
+#include "ElMag_Calorimeter.H"
+#include "Had_Calorimeter.H"
+#include "Muon_Chambers.H"
+#include "Reconstructed_Object.H"
 #include "Analysis_Object.H"
-#include "Ordering.H"
 #include "Particle_List.H"
-#include "Getter_Function.H"
-
-
+#include "Particle.H"
+#include "Ordering.H"
+#include <map>
 
 namespace ANALYSIS {
-  class Primitive_Detector;
-
-  class Object_Definition_Data {
-  private:
-    ATOOLS::Order_Base  * p_order;
-    ATOOLS::Particle_List m_particles;
-  public:
-    Object_Definition_Data(std::string);
-    ~Object_Definition_Data();
-    void ResetPList();
-    void AddPToPList(ATOOLS::Particle * const);
-    void SortPList();
-
-    ATOOLS::Particle_List & GetParticleList() { return m_particles; }
-  };
-
+  class Primitive_Analysis;
   class Object_Definition_Base : public Analysis_Object {
   protected:
-    std::string              m_name;
-    ATOOLS::kf::code         m_code;
-    Object_Definition_Data * p_data;
+    bool   m_elements;
+    std::string m_name;
+
+    ATOOLS::kf::code m_kfcode;
+
+    ATOOLS::Particle_List * p_myparticles;
+    ATOOLS::Order_Base    * p_order;
+
+    Tracker               * p_tracker;
+    ElMag_Calorimeter     * p_ECal;
+    Had_Calorimeter       * p_HCal;
+    Muon_Chambers         * p_chambers;
+
+    ObjectList              m_objects;
+    virtual void GetElements();
+    virtual void DropUsedCells();
   public:
-    Object_Definition_Base() {}
-    Object_Definition_Base(const std::string,const ATOOLS::kf::code,const std::string);
+    Object_Definition_Base(Primitive_Analysis *,
+			   const std::string name,const std::string="ET_UP");
     virtual ~Object_Definition_Base();
-    virtual Analysis_Object * GetCopy() { return NULL; }
 
-    virtual void Evaluate(const ATOOLS::Particle_List &,double, int) {};
-    virtual void Evaluate(const ATOOLS::Blob_List &, double, int) {};
+    virtual void Evaluate(const ATOOLS::Blob_List &,double,int) {}
+    virtual Analysis_Object *GetCopy() const { return NULL; }
 
-    virtual void FillMCTruthList(ATOOLS::Particle_List *,Primitive_Detector *)=0;
-    virtual void FillSimpleDetectorList(ATOOLS::Particle_List *,Primitive_Detector *)=0;
+    virtual void ReconstructObjects(ATOOLS::Particle_List *)=0;
+    virtual void Reset();
 
-    std::string Name() { return m_name; }
+    virtual ATOOLS::Particle_List * GetParticles() const { return p_myparticles; }
+    virtual std::string Name() { return m_name; }
+
+    virtual void SetOrdering(const std::string);
   };
-
-  typedef ATOOLS::Getter_Function<Object_Definition_Base,std::string> Object_Definition_Getter;
-
-  typedef std::map<std::string,Object_Definition_Base *> String_ObjectDefinition_Map;
-  typedef String_ObjectDefinition_Map::iterator          String_ObjectDefinition_Iter;
 }
+
 #endif

@@ -1,62 +1,89 @@
 #include "Object_Definition_Base.H"
+#include "Primitive_Analysis.H"
+#include "Detector.H"
+#include "Message.H"
+#include "MyStrStream.H"
 #include "Exception.H"
+
 
 using namespace ANALYSIS;
 using namespace ATOOLS;
 
-
-Object_Definition_Data::Object_Definition_Data(std::string mode)
+Object_Definition_Base::
+Object_Definition_Base(Primitive_Analysis * ana,const std::string name,const std::string mode) :
+  m_elements(false), m_name(name), p_myparticles(NULL),
+  p_tracker(NULL), p_ECal(NULL), p_HCal(NULL), p_chambers(NULL)
 {
+  p_ana = ana;
+  Analysis_Object * det = p_ana->GetObject("Detector");
+  if (det==NULL) {
+    det = new Detector();
+    p_ana->AddObject(det);
+  }
+  dynamic_cast<Detector *>(det)->AddObjectDefinition(this);
+
+  p_order = Order_Getter::GetObject(mode,"");
+  if (p_order==NULL) THROW(fatal_error,"Invalid ordering mode '"+mode+"'");
+}
+
+Object_Definition_Base::~Object_Definition_Base() {
+  if (p_order)       { delete p_order; p_order = NULL; }
+  if (p_myparticles) { p_myparticles->Clear(); delete p_myparticles; p_myparticles = NULL; }
+}
+
+void Object_Definition_Base::SetOrdering(const std::string mode) {
+  if (p_order) delete p_order;
   p_order = Order_Getter::GetObject(mode,"");
   if (p_order==NULL) 
     THROW(fatal_error,"Invalid ordering mode '"+mode+"'");
 }
 
-Object_Definition_Data::~Object_Definition_Data() { 
-  m_particles.Clear();
+void Object_Definition_Base::GetElements() {
+  if (m_elements) return;
+  if (p_tracker==NULL || p_ECal==NULL || p_HCal==NULL) {
+    Detector * det = (dynamic_cast<Detector *>(p_ana->GetObject("Detector")));
+    p_tracker  = dynamic_cast<Tracker *>(det->GetElement("Tracker"));
+    p_ECal     = dynamic_cast<ElMag_Calorimeter *>(det->GetElement("ECal"));
+    p_HCal     = dynamic_cast<Had_Calorimeter *>(det->GetElement("HCal"));
+    p_chambers = dynamic_cast<Muon_Chambers *>(det->GetElement("Muon_Chambers"));
+  }
+  if (p_tracker==NULL || p_ECal==NULL || p_HCal==NULL) {
+    msg.Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+	       <<"   Not all detector components found.  Will abort."<<std::endl;
+    abort();
+  }
+  m_elements = true;
 }
 
-void Object_Definition_Data::ResetPList() { 
-  m_particles.Clear(); 
+void Object_Definition_Base::Reset() {
+  //p_myparticles->Clear();
 }
 
-void Object_Definition_Data::AddPToPList(Particle * const part) { 
-  m_particles.push_back(part); 
+void Object_Definition_Base::DropUsedCells() {
+  std::vector<Cell *> * cells;
+  std::list<Cell *> * ecalcells(NULL), * hcalcells(NULL);
+  std::list<Cell *>::iterator cit;
+  if (p_ECal) ecalcells = p_ECal->GetHitCells();
+  if (p_HCal) hcalcells = p_HCal->GetHitCells();
+
+  Cell * cell;
+  bool found;
+  for (ObjectListIterator olit=m_objects.begin();olit!=m_objects.end();olit++) {
+    cells = (*olit)->GetCells();
+    if (!cells || cells->size()==0) continue;
+    else {
+      for (size_t c=0;c<cells->size();c++) {
+	found = false;
+	cell  = (*cells)[c];
+	for (cit=ecalcells->begin();cit!=ecalcells->end();cit++) {
+	  if (cell==(*cit)) { ecalcells->erase(cit); found = true; break; }
+	}
+	if (found) continue;
+	for (cit=hcalcells->begin();cit!=hcalcells->end();cit++) {
+	  if (cell==(*cit)) { hcalcells->erase(cit); found = true; break; }
+	}
+	if (found) continue;
+      }
+    }
+  }
 }
-
-void Object_Definition_Data::SortPList() { 
-  std::sort(m_particles.begin(),m_particles.end(),(*p_order));
-}
-
-Object_Definition_Base::Object_Definition_Base(const std::string name,
-					       const kf::code code,
-					       const std::string order="ET_UP") :
-  m_name(name), m_code(code), p_data(new Object_Definition_Data(order))
-{ }
-
-Object_Definition_Base::~Object_Definition_Base() {
-  if (p_data) { delete p_data; p_data = NULL; }
-}
-
-
-
-template <class Class>
-Object_Definition_Base *const GetObjectDefinition(const std::string &parameter)
-{									
-  return new Class();
-}									
-
-#define DEFINE_GETTER_METHOD(CLASS,NAME)				\
-  Object_Definition_Base *						\
-  NAME::operator()(const std::string &parameter) const			\
-  { return GetObjectDefinition<CLASS>(parameter); }
-
-#define DEFINE_PRINT_METHOD(NAME,PRINT)					\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
-  { str<<PRINT; }
-
-#define DEFINE_ORDER_GETTER(CLASS,NAME,TAG,PRINT)			\
-  DECLARE_GETTER(NAME,TAG,Object_Definition_Base,std::string);		\
-  DEFINE_GETTER_METHOD(CLASS,NAME)					\
-  DEFINE_PRINT_METHOD(NAME,PRINT)
-
