@@ -14,8 +14,7 @@ libAnalysisTriggers_la_SOURCES        =	\
 pkginclude_HEADERS    =	\
 			Trigger_Base.H \
 			Final_Selector.H \
-			Midpoint_Cone.H \
-		    	Calorimeter_Cone.H 
+			Midpoint_Cone.H 
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@
 
