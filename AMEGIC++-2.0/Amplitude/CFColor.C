@@ -427,9 +427,9 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 
 CFColor::~CFColor()
 {
-  if (CFC) delete CFC;
-  if (id)  delete id;
-  if (map) delete map;
+  if (CFC) delete [] CFC;
+  if (id)  delete [] id;
+  if (map) delete [] map;
 }
 
 string CFColor::BuildTChain(vector<string>  string_list) 
