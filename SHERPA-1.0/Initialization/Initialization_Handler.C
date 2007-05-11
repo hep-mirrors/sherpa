@@ -592,14 +592,20 @@ bool Initialization_Handler::InitializeTheAnalyses()
     ATOOLS::Variable_Base<double>::ShowVariables(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
+  int test = p_dataread->GetValue<int>("TEST_DETECTOR",0);
+
   helpi=p_dataread->GetValue<int>("ANALYSIS",0);
-  if (!helpi) return true;
+  if (!helpi&&test==0) return true;
   std::string outpath=p_dataread->GetValue<std::string>("ANALYSIS_OUTPUT","./");
   if (outpath==NotDefined<std::string>()) outpath="";
   p_analysis = new ANALYSIS::Analysis_Handler();
   p_analysis->SetInputPath(m_path);
   p_analysis->SetInputFile(m_analysisdat);
   p_analysis->SetOutputPath(outpath);
+  if (test>0) {
+    p_analysis->Test(test);
+    THROW(normal_exit,"Tested detector.");
+  }
   return true;
 }
 
