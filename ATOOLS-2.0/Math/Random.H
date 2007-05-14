@@ -65,7 +65,9 @@ namespace ATOOLS {
 
     // return uniformly distributed random number in [0,1] using active Generator
     double Get();   
-        
+    // produce two Gaussian distributed random number using active Generator
+    void   Gaussian(double &,double &);
+
     inline double Theta() { return acos(2.*Get()-1.); }  
     double        GetNZ();
 

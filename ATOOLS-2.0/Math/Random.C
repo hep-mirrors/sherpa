@@ -506,3 +506,13 @@ double ATOOLS::Random::Get()
   if (activeGenerator==4) return Ran4();
   else                    return Ran2(&m_id);
 }
+
+void ATOOLS::Random::Gaussian(double & x,double & y)   
+{
+  double phi(2.*M_PI*Get()), random(Get());
+  while (random==0.) random = Get();
+  double r(sqrt(-2.*log(random)));
+
+  x = r*cos(phi);
+  y = r*sin(phi);
+}
