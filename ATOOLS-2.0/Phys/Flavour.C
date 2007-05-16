@@ -712,6 +712,24 @@ void ATOOLS::ParticleInit(std::string path)
       particles[idx].Add(addit.Bar());
     }
   }
+
+  test = Flavour(kf::fermion);
+  idx      = kf_table.ToInt(test.Kfcode());
+  particles[idx].SetGroup();
+  for (int i=1;i<7;i++) {
+    addit = Flavour(kf::code(i));
+    if (addit.Mass()==0.) {
+      particles[idx].Add(addit);
+      particles[idx].Add(addit.Bar());
+    }
+  }
+  for (int i=11;i<17;i++) {
+    addit = Flavour(kf::code(i));
+    if (addit.Mass()==0.) {
+      particles[idx].Add(addit);
+      particles[idx].Add(addit.Bar());
+    }
+  }
 }
   
 // Unique Identifier of Particle.dat
