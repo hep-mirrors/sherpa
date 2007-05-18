@@ -210,6 +210,7 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex.push_back(Single_Vertex());vanz++;
   }
 
+  bool ehc(false);
 
   flav = Flavour(kf::photon);
   // Photon h Photon
@@ -228,7 +229,7 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].nlf     = 1;
     vertex[vanz].Lorentz = new Lorentz_Function(lf::Triangle);     
     vertex[vanz].Lorentz->SetParticleArg(0,2);     
-    vertex[vanz].on      = 1;
+    vertex[vanz].on      = ehc;
     vertex.push_back(Single_Vertex());vanz++;
 
 
@@ -246,7 +247,7 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].nlf     = 1;
     vertex[vanz].Lorentz = new Lorentz_Function(lf::Triangle);     
     vertex[vanz].Lorentz->SetParticleArg(0,2);     
-    vertex[vanz].on      = 1;
+    vertex[vanz].on      = ehc;
     vertex.push_back(Single_Vertex());vanz++;
   }
 
@@ -269,7 +270,7 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].nlf     = 1;
     vertex[vanz].Lorentz = new Lorentz_Function(lf::Triangle);     
     vertex[vanz].Lorentz->SetParticleArg(0,2);     
-    vertex[vanz].on      = 1;
+    vertex[vanz].on      = ehc;
     vertex.push_back(Single_Vertex());
     vanz++;
 
@@ -289,7 +290,7 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].nlf     = 1;
     vertex[vanz].Lorentz = new Lorentz_Function(lf::Triangle);     
     vertex[vanz].Lorentz->SetParticleArg(0,2);     
-    vertex[vanz].on      = 1;
+    vertex[vanz].on      = ehc;
     vertex.push_back(Single_Vertex());
     vanz++;
   }
@@ -314,7 +315,7 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].nlf     = 1;
     vertex[vanz].Lorentz = new Lorentz_Function(lf::C4GS);     
     vertex[vanz].Lorentz->SetParticleArg(0,2);     
-    vertex[vanz].on      = 1;
+    vertex[vanz].on      = ehc;
     vertex[vanz].t       = -1;
     vertex.push_back(Single_Vertex());vanz++;
 
@@ -335,7 +336,7 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].nlf     = 1;
     vertex[vanz].Lorentz = new Lorentz_Function(lf::C4GS);     
     vertex[vanz].Lorentz->SetParticleArg(0,2);     
-    vertex[vanz].on      = 1;
+    vertex[vanz].on      = ehc;
     vertex[vanz].t       = -1;
     vertex.push_back(Single_Vertex());vanz++;
   }
