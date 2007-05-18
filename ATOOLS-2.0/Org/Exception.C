@@ -25,8 +25,9 @@ Tester_Object::~Tester_Object()
 
 bool Tester_Object::ApproveTerminate()
 {
-  msg.Error()<<"Tester_Oject::ApproveTerminate(): "
-	     <<"Virtual function called !"<<std::endl;
+  msg.Error()<<"Tester_Oject::ApproveTerminate() for "<<typeid(this).name()
+	     <<": Virtual function called !"<<std::endl;
+  exh->GenerateStackTrace(std::cout);
   return true;
 }
 
