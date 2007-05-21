@@ -48,7 +48,7 @@ XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavo
 XS_Base::~XS_Base() 
 {
   if (p_colours!=NULL) { 
-    for (size_t i=0;i<m_nin+m_nout;++i) delete p_colours[i];
+    for (size_t i=0;i<m_nin+m_nout;++i) delete [] p_colours[i];
     delete [] p_colours;
   }
 }

@@ -274,10 +274,10 @@ Lund_Interface::~Lund_Interface()
     p_hepevt->SetVhep(NULL);
     delete p_hepevt; p_hepevt = NULL; 
   }
-  if (p_jmohep) { delete p_jmohep; p_jmohep = NULL; }
-  if (p_jdahep) { delete p_jdahep; p_jdahep = NULL; }
-  if (p_phep)   { delete p_phep;   p_phep   = NULL; }
-  if (p_vhep)   { delete p_vhep;   p_vhep   = NULL; }
+  if (p_jmohep) { delete [] p_jmohep; p_jmohep = NULL; }
+  if (p_jdahep) { delete [] p_jdahep; p_jdahep = NULL; }
+  if (p_phep)   { delete [] p_phep;   p_phep   = NULL; }
+  if (p_vhep)   { delete [] p_vhep;   p_vhep   = NULL; }
 }
 
 Return_Value::code Lund_Interface::Hadronize(Blob_List *bloblist) 

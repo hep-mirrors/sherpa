@@ -6,31 +6,33 @@ using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
-Single_Channel::Single_Channel():
-  ms(NULL),
-  rans(NULL) {}
+Single_Channel::Single_Channel() :
+  fl(NULL),name("no_name"),
+  n_points(0),n_contrib(0),weight(0.),result(0.),result2(0.),
+  res1(0.),res2(0.),res3(0.),alpha(0.),alpha_save(0.),
+  nin(0),nout(0),ms(NULL),rannum(0),rans(NULL) 
+{}
 
-Single_Channel::Single_Channel(int _nin,int _nout,const Flavour * fl) 
+Single_Channel::Single_Channel(int _nin,int _nout,const Flavour * fl) :
+  fl(NULL),name("no_name"),
+  n_points(0),n_contrib(0),weight(0.),result(0.),result2(0.),
+  res1(0.),res2(0.),res3(0.),alpha(0.),alpha_save(0.),
+  nin(_nin),nout(_nout),ms(new double[nin+nout+1]),rannum(0),rans(NULL) 
 { 
-  nin  = _nin; nout = _nout;
-  ms   = new double[nin+nout+1];
   for (short int i=0;i<nin+nout;i++) ms[i] = ATOOLS::sqr(fl[i].Mass());
 
-//   if (nin == 1) rannum = 2 + 3*(nout-2);
-//   if (nin == 2) rannum = 1 + 2 + 3*(nout-2);
-//   rans  = new double[rannum];
+  //   if (nin == 1) rannum = 2 + 3*(nout-2);
+  //   if (nin == 2) rannum = 1 + 2 + 3*(nout-2);
+  //   rans  = new double[rannum];
 }
 
-Single_Channel::Single_Channel(Single_Channel * old)
+Single_Channel::Single_Channel(Single_Channel * old) :
+  fl(NULL),name(old->name),
+  n_points(0),n_contrib(0),weight(0.),result(0.),result2(0.),
+  res1(0.),res2(0.),res3(0.),alpha(0.),alpha_save(0.),
+  nin(old->nin),nout(old->nout),ms(new double[nin+nout]),
+  rannum(old->rannum),rans(new double[rannum])
 {
-  nin    = old->nin;
-  nout   = old->nout;
-  rannum = old->rannum;
-  rans   = new double[rannum];
-
-  name   = old->name;
-
-  ms     = new double[nin+nout];
   for (short int i=0;i<nin+nout;i++) ms[i] = old->ms[i];
 }
 

@@ -47,6 +47,9 @@ namespace ATOOLS {
     Vec3D(){
       m_x[0]=m_x[1]=m_x[2]=0.;
     }
+    Vec3D(const Vec3D & vec) {
+      for (short int i=0;i<3;i++) m_x[i]=vec.m_x[i];
+    }
 
     //!  Computational constructor
     inline Vec3D(const Vec3D& v1 ,const Vec3D& v2, const Tag::Tsum);
@@ -76,6 +79,9 @@ namespace ATOOLS {
   public:
     Vec4D() {
       m_x[0]=m_x[1]=m_x[2]=m_x[3]=0.;
+    }
+    Vec4D(const Vec4D & vec) {
+      for (short int i=0;i<4;i++) m_x[i]=vec.m_x[i];
     }
     Vec4D(const double x0, const double x1, const double x2, const double x3) { 
       m_x[0] = x0; 

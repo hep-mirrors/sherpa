@@ -519,8 +519,7 @@ void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode,
   for (size_t n=0;n<channels.size();++n) {
     sum+=channels[n]->Alpha();
     if (sum>disc) {
-      channels[n]->
-	GeneratePoint(spkey,ykey,(double*)(*pi)->Reserved(name)+1,mode);
+      channels[n]->GeneratePoint(spkey,ykey,(double*)(*pi)->Reserved(name)+1,mode);
       m_lastdice = n;
       return;
     }
@@ -605,7 +604,8 @@ bool Multi_Channel::ReadIn(std::string pID) {
     return 0;
   }
   m_readin=true;
-//   ifile>>n_points>>n_contrib>>m_result>>m_result2>>s1xmin>>m_sresult>>m_sresult2>>m_ssigma2>>n_spoints>>m_optcnt;
+  //   ifile>>n_points>>n_contrib>>m_result>>m_result2>>s1xmin>>m_sresult
+  // >>m_sresult2>>m_ssigma2>>n_spoints>>m_optcnt;
   ifile>>n_points>>n_contrib>>s1xmin>>m_optcnt;
 
   double sum=0;
@@ -613,10 +613,15 @@ bool Multi_Channel::ReadIn(std::string pID) {
     ifile>>name>>points>>alpha>>alphasave>>weight>>res1>>res2>>res3;
     sum+= alpha;
     if (name != channels[i]->Name()) {
-      msg.Error()<<"Error in Multi_Channel::ReadIn("<<pID<<")"<<endl 
+      msg.Error()<<"ERROR in "<<METHOD<<" for "<<pID<<")"<<endl 
 		 <<"  name of Single_Channel not consistent ("<<i<<")"<<endl
 		 <<"  "<<name<<" vs. "<<channels[i]->Name()<<endl;
       return 0;
+      if (name.substr(0,name.length()-1)!=
+	  channels[i]->Name().substr(0,name.length()-1)) {
+	msg.Error()<<"   return 0."<<std::endl;
+	return 0;
+      }
     }
     channels[i]->SetN(points);
     channels[i]->SetAlpha(alpha);

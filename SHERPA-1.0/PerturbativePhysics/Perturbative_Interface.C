@@ -18,8 +18,8 @@ Perturbative_Interface::Perturbative_Interface(Matrix_Element_Handler *mehandler
 
 Perturbative_Interface::~Perturbative_Interface() 
 {
-  if (p_fl)   { delete p_fl;   p_fl   = NULL; }
-  if (p_moms) { delete p_moms; p_moms = NULL; }
+  if (p_fl)   { delete [] p_fl;   p_fl   = NULL; }
+  if (p_moms) { delete [] p_moms; p_moms = NULL; }
 }
 
 void Perturbative_Interface::RemoveBackward(ATOOLS::Blob *const blob,

@@ -251,10 +251,8 @@ void ATOOLS::Random::ReadInStatus(const char * filename, long int index){
   ifstream file(filename);
   // Check if the first 20 bytes in file are a known identifier and
   // set the activeGenerator variable accordingly
-  char temp[16];
-  file.read((char*) temp, sizeof(temp));
-  strcpy(status.idTag,temp);
-  if (strcmp(temp,"Rnd4_G_Marsaglia"))
+  file.read(status.idTag, 16);
+  if (strcmp(status.idTag,"Rnd4_G_Marsaglia"))
     { activeGenerator = 2; } else { activeGenerator = 4; }
   file.close();
   

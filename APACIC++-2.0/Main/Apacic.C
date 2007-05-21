@@ -70,7 +70,7 @@ Apacic::~Apacic()
   if (p_fintree) delete p_fintree;
   if (p_initrees) {
     for (short unsigned int i(0);i<2;++i) delete p_initrees[i];
-    delete p_initrees;
+    delete [] p_initrees;
   }
   if (p_inishower) delete p_inishower;
   if (p_finshower) delete p_finshower;

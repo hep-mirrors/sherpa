@@ -70,7 +70,7 @@ Initial_State_Shower::~Initial_State_Shower()
   delete p_tools;
   delete p_kin;
   for (short unsigned int i(0);i<2;i++) delete p_suds[i];
-  delete p_suds;
+  delete [] p_suds;
 }
 
 int Initial_State_Shower::PerformShower(Tree **const trees,Tree *const fintree,
