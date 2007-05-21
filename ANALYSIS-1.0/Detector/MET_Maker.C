@@ -66,12 +66,14 @@ void MET_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D &
   for (std::list<Cell *>::iterator cit(cells->begin());
        cit!=cells->end();) {
     cell = (*cit);
-    if (cell->TotalDeposit()>m_cutEM) {
+    if (!cell->Used() && cell->TotalDeposit()>m_cutEM) {
       METvector -= cell->TotalDeposit()*cell->Direction();
+      cell->Reset();
       cit = cells->erase(cit);
     }
     else {
       checkmom += cell->TotalDeposit()*cell->Direction();
+      cell->Reset();
       cit++;
     }
   }
@@ -79,21 +81,34 @@ void MET_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D &
   for (std::list<Cell *>::iterator cit(cells->begin());
        cit!=cells->end();) {
     cell = (*cit);
-    if (cell->TotalDeposit()>m_cutHad) {
+    if (!cell->Used() && cell->TotalDeposit()>m_cutHad) {
       METvector -= cell->TotalDeposit()*cell->Direction();
+      cell->Reset();
       cit = cells->erase(cit);
     }
     else {
       checkmom += cell->TotalDeposit()*cell->Direction();
+      cell->Reset();
       cit++;
     }
   }
 
-  //std::cout<<METHOD<<" check this : "
-  //   <<p_ECal->GetHitCells()->size()<<" cells in ECal and "
-  //   <<p_HCal->GetHitCells()->size()<<" cells in HCal not used."<<std::endl
-  //   <<"MET = "<<METvector<<" --> "<<METvector.PPerp()<<" vs. "
-  //   <<"check = "<<checkmom<<" --> "<<checkmom.PPerp()<<std::endl;
+  std::list<Track *> * tracks(p_chambers->GetTracks());
+  Track * track(NULL);
+  for (std::list<Track *>::iterator trit=tracks->begin();trit!=tracks->end();) {
+    track = (*trit);
+    if (!track->used && track->mom[0]>m_cutEM) {
+      METvector -= track->mom;
+      trit = tracks->erase(trit);
+    }
+    else {
+      checkmom += track->mom;
+      trit++;
+    }
+  }
+
+
+
   Particle * part = new Particle(0,Flavour(m_kfcode),METvector,'r');
   plist->push_back(part);
 }
