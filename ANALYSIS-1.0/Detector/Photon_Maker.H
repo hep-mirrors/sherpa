@@ -22,9 +22,9 @@ namespace ANALYSIS {
     void CorrectEnergies();
   public:
     Photon_Maker(Primitive_Analysis *,const std::string="ET_UP");
-    virtual ~Photon_Maker();
+    ~Photon_Maker();
 
-    void ReconstructObjects(ATOOLS::Particle_List *);
+    void ReconstructObjects(ATOOLS::Particle_List *,ATOOLS::Vec4D & METvector);
 
     void SetClustering(const double E,const int dim);
     void SetTracking(const double R,const double cut);

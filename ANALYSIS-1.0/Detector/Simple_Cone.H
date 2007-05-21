@@ -3,6 +3,7 @@
 
 #include "ElMag_Calorimeter.H"
 #include "Had_Calorimeter.H"
+#include "Muon_Chambers.H"
 #include "Reconstructed_Object.H"
 #include "Particle_List.H"
 #include "Histogram.H"
@@ -26,6 +27,7 @@ namespace ANALYSIS {
 
     Had_Calorimeter   * p_HCal;
     ElMag_Calorimeter * p_ECal;
+    Muon_Chambers     * p_MC;
 
     void CalcJets(ObjectList *);
   public:
@@ -42,6 +44,7 @@ namespace ANALYSIS {
     void   SetCalorimeters(Had_Calorimeter * hcal,ElMag_Calorimeter * ecal) {
       p_HCal = hcal; p_ECal = ecal;
     }
+    void   SetMuonChambers(Muon_Chambers * mc) { p_MC = mc; }
   };
 }
 

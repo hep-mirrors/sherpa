@@ -507,11 +507,14 @@ void Primitive_Analysis::AddData(const std::string name, Blob_Data_Base * data)
 
 void Primitive_Analysis::ClearAllData() 
 {
+  //  std::cout<<"###########################################################"<<std::endl
+  //	   <<METHOD<<" for "<<this<<" for "<<m_pls.size()<<" PL containers."<<std::endl
+  //	   <<"###########################################################"<<std::endl;
   for (PL_Container::iterator it=m_pls.begin();
        it!=m_pls.end(); ++it) {
-    if (it->second->size()>0) {
+    if (!it->second->empty()) {
       for (Particle_List::iterator pit=it->second->begin(); 
-	   pit!=it->second->end();++pit) delete (*pit);
+      	   pit!=it->second->end();++pit) delete (*pit);
     }
     delete it->second;
   }
@@ -520,6 +523,9 @@ void Primitive_Analysis::ClearAllData()
   for (String_BlobDataBase_Map::iterator it=m_datacontainer.begin();
        it!=m_datacontainer.end(); ++it) delete it->second;
   m_datacontainer.clear();
+  //std::cout<<"###########################################################"<<std::endl
+  //   <<" out of "<<METHOD<<std::endl
+  //   <<"###########################################################"<<std::endl;
 }
 
 void Primitive_Analysis::PrintStatus() 

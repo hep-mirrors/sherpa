@@ -53,37 +53,61 @@ void Object_Definition_Base::GetElements() {
     abort();
   }
   m_elements = true;
-  //std::cout<<METHOD<<" :"<<std::endl
-  //	   <<" ecal = "<<p_ECal<<" hcal = "<<p_HCal
-  //	   <<" tracker = "<<p_tracker<<" muons = "<<p_chambers<<"."<<std::endl;
 }
 
-void Object_Definition_Base::Reset() {
-  //p_myparticles->Clear();
-}
+void Object_Definition_Base::Reset() { }
 
 void Object_Definition_Base::DropUsedCells() {
-  std::vector<Cell *> * cells;
-  std::list<Cell *> * ecalcells(NULL), * hcalcells(NULL);
+  std::vector<Cell *> cells;
+  std::list<Cell *> * ecalcells(p_ECal->GetHitCells()), * hcalcells(p_HCal->GetHitCells());
   std::list<Cell *>::iterator cit;
-  if (p_ECal) ecalcells = p_ECal->GetHitCells();
-  if (p_HCal) hcalcells = p_HCal->GetHitCells();
-
   Cell * cell;
   bool found;
   for (ObjectListIterator olit=m_objects.begin();olit!=m_objects.end();olit++) {
     cells = (*olit)->GetCells();
-    if (!cells || cells->size()==0) continue;
+    if (cells.size()==0) continue;
     else {
-      for (size_t c=0;c<cells->size();c++) {
+      for (size_t c=0;c<cells.size();c++) {
 	found = false;
-	cell  = (*cells)[c];
+	cell  = cells[c];
 	for (cit=ecalcells->begin();cit!=ecalcells->end();cit++) {
-	  if (cell==(*cit)) { ecalcells->erase(cit); found = true; break; }
+	  if (cell==(*cit)) {
+	    (*cit)->Reset();
+	    ecalcells->erase(cit); found = true; break; 
+	  }
 	}
 	if (found) continue;
 	for (cit=hcalcells->begin();cit!=hcalcells->end();cit++) {
-	  if (cell==(*cit)) { hcalcells->erase(cit); found = true; break; }
+	  if (cell==(*cit)) { 
+	    (*cit)->Reset();
+	    hcalcells->erase(cit); found = true; break; 
+	  }
+	}
+	if (found) continue;
+      }
+    }
+  }
+}
+
+void Object_Definition_Base::DropUsedTracks() {
+  std::vector<Track *> tracks;
+  std::list<Track *> * trtracks(p_tracker->GetTracks()), * mctracks(p_chambers->GetTracks());
+  std::list<Track *>::iterator trit;
+  Track * track(NULL);
+  bool found;
+  for (ObjectListIterator olit=m_objects.begin();olit!=m_objects.end();olit++) {
+    tracks = (*olit)->GetTracks();
+    if (tracks.size()==0) continue;
+    else {
+      for (size_t c=0;c<tracks.size();c++) {
+	found = false;
+	track  = tracks[c];
+	for (trit=trtracks->begin();trit!=trtracks->end();trit++) {
+	  if (track==(*trit)) { trtracks->erase(trit); found = true; break; }
+	}
+	if (found) continue;
+	for (trit=mctracks->begin();trit!=mctracks->end();trit++) {
+	  if (track==(*trit)) { mctracks->erase(trit); found = true; break; }
 	}
 	if (found) continue;
       }

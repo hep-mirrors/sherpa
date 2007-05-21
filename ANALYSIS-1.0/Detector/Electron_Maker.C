@@ -16,8 +16,6 @@ Analysis_Object *
 Electron_Maker_Getter::operator()(const Argument_Matrix &parameters) const
 {			
   if (parameters.size()<1) return NULL;
-  //if (parameters.size()==1) abort(); // For read-in of, like 'ATLAS'
-
 
   std::string mode("ET_UP");
   Electron_Maker * maker = new Electron_Maker(parameters(),mode);
@@ -99,8 +97,7 @@ void Electron_Maker::SetECorrection(const double inv) {
   m_inv = inv;
 }
 
-void Electron_Maker::ReconstructObjects(Particle_List * plist) {
-  //std::cout<<METHOD<<std::endl;
+void Electron_Maker::ReconstructObjects(Particle_List * plist,ATOOLS::Vec4D & METvector) {
   m_objects.clear();
 
   BuildMatchedClusters();
@@ -114,20 +111,15 @@ void Electron_Maker::ReconstructObjects(Particle_List * plist) {
     delete m_objects.front();
     m_objects.pop_front();
     plist->push_back(part);
+    METvector -= part->Momentum(); 
   }
-  //std::cout<<METHOD<<" --> "<<plist->size()<<", therefore "
-  //	   <<p_ECal->GetHitCells()->size()<<"/"<<p_HCal->GetHitCells()->size()<<" total = "
-  //	   <<(p_ECal->GetHitCells()->size()+p_HCal->GetHitCells()->size())<<std::endl;
 }
 
 void Electron_Maker::BuildMatchedClusters() {
-  //std::cout<<"---------------------------------------------------"<<std::endl
-  //	   <<"---------------------------------------------------"<<std::endl;
   std::list<Cell *> * cells(p_ECal->GetHitCells());
   if (!cells || cells->size()==0) return;
-  //std::cout<<METHOD<<" for "<<cells->size()<<" hit cells in ECal."<<std::endl;
   Cell  * cell(NULL);
-  std::list<Track *> * tracks(NULL);
+  std::list<Track *> tracks;
   std::list<Track *>::iterator trit;
   Track * track(NULL);
 
@@ -136,36 +128,26 @@ void Electron_Maker::BuildMatchedClusters() {
   for (std::list<Cell *>::iterator cit=cells->begin();cit!=cells->end();cit++) {
     cell = (*cit);
     cell->Centroid(eta,phi);
-    //std::cout<<METHOD<<" : E = "<<cell->TotalDeposit()
-    //	     <<" for "<<cell->ParticleEntries()->begin()->first->Flav()
-    //	     <<" at ("<<eta<<", "<<phi<<")."<<std::endl;
     if (cell->TotalDeposit()>m_Estart) {
-      //std::cout<<"    ====> seed found in ("<<eta<<","<<phi<<"), "
-      //	       <<" cluster with size "<<m_dim<<"."<<std::endl;
       p_cluster = p_ECal->BuildCluster(cell,m_dim,E,eta,phi);
-      //std::cout<<"Built cluster "<<p_cluster<<"("<<p_cluster->size()<<") : "<<E<<std::endl;
-      tracks    = p_tracker->GetTracks(eta,phi,m_R2track,m_kfcode); 
-      //std::cout<<" out of gettracks : "<<matched<<"/"<<tracks<<"/"
-      //	       <<cell->ParticleEntries()->begin()->first->Flav()<<std::endl;
+      tracks    = *p_tracker->GetTracks(eta,phi,m_R2track,m_kfcode); 
       matched = false;
  
-      //std::cout<<"   Tracker "<<p_tracker<<" gives tracks = "<<tracks<<", size = "<<tracks->size()<<", "
-      //	       <<" front = "<<tracks->front()<<" in mode ="<<m_trackmode<<std::endl;
-      if (tracks && tracks->size()>0) {
+      if (tracks.size()>0) {
 	if (m_trackmode=="exact") {
-	  if (tracks->size()==1 && (*tracks->begin())->flav.Kfcode()==kf::e) {
+	  if (tracks.size()==1 && (*tracks.begin())->flav.Kfcode()==kf::e) {
 	    matched = true;
-	    track   = (*tracks->begin());
+	    track   = (*tracks.begin());
 	  }
 	}
 	else if (m_trackmode=="just_one") {
-	  if (tracks->size()==1) {
+	  if (tracks.size()==1) {
 	    matched = true;
-	    track   = tracks->front();
+	    track   = tracks.front();
 	  }
 	}
 	else if (m_trackmode=="any_electron") {
-	  for (trit=tracks->begin(); trit!=tracks->end(); trit++) {
+	  for (trit=tracks.begin(); trit!=tracks.end(); trit++) {
 	    if ((*trit)->flav==Flavour(kf::e)||(*trit)->flav==Flavour(kf::e).Bar()) {
 	      matched = true; 
 	      track   = (*trit);
@@ -175,39 +157,19 @@ void Electron_Maker::BuildMatchedClusters() {
 	}
 	else matched = true;
       }
-      //std::cout<<"   matched = "<<matched<<" / "<<track<<std::endl;
-
-      if (!matched) {
-	//std::cout<<"   ... delete testcluster : "<<p_cluster<<std::endl;
-	delete p_cluster; p_cluster = NULL;
-      } 
+      if (!matched) { delete p_cluster; p_cluster = NULL; } 
       else {
-	//std::cout<<"   before init a new object for "<<track<<std::endl;
-	Reconstructed_Object * object = new Reconstructed_Object(track->flav,E,eta,phi);
-	//std::cout<<"   new electron : E = "<<E<<" at ("<<eta<<", "<<phi<<") :"
-	//	 <<object<<" cluster = "<<p_cluster<<" ("<<p_cluster->size()<<")"<<std::endl;
+	Flavour flav = (track->flav.Charge()>0)?Flavour(m_kfcode).Bar():Flavour(m_kfcode);
+	Reconstructed_Object * object(new Reconstructed_Object(flav,E,eta,phi));
 	object->SetCells(p_cluster);
-	object->SetTracks(new std::vector<Track *>);
 	object->AddTrack(track);
 	m_objects.push_back(object);
-	//std::cout<<"Check this: "
-	//	 <<(*trit)->flav<<" "<<(*trit)->mom[0]
-	//	 <<" "<<(*trit)->mom.Eta()<<" "<<(*trit)->mom.Phi()<<" vs. "
-	//	 <<cell->ParticleEntries()->begin()->first->Flav()
-	//	 <<"("<<cell->ParticleEntries()->size()<<") vs. "
-	//	 <<object->Flav()<<" "<<object->E()
-	//	 <<" "<<object->Eta()<<" "<<object->Phi()<<std::endl;
       }
-      //std::cout<<"   ... delete testtracks : "<<tracks<<std::endl;      
-      delete tracks; tracks = NULL; 
     }
   }
 }
 
 void Electron_Maker::IsolateClusters() {
-  //std::cout<<"--------------------------------------------------"<<std::endl
-  //	   <<"--------------------------------------------------"<<std::endl;
-  //std::cout<<METHOD<<" for "<<m_objects.size()<<std::endl;
   if (m_objects.size()==0) return;
   double E_HCal, E_ECal;
   std::list<Cell *> * ECal_cells = p_ECal->GetHitCells();
@@ -218,7 +180,6 @@ void Electron_Maker::IsolateClusters() {
   double E,eta,phi;
   bool   veto;
   for (ObjectListIterator olit=m_objects.begin();olit!=m_objects.end();) {
-    //std::cout<<"--------------------------------------------------"<<std::endl;
     E      = (*olit)->E();
     eta    = (*olit)->Eta();
     phi    = (*olit)->Phi();
@@ -227,41 +188,18 @@ void Electron_Maker::IsolateClusters() {
     for (cit=HCal_cells->begin();cit!=HCal_cells->end();cit++) {
       if ((*cit)->R2(eta,phi)<m_R2hadiso && !(*olit)->IsIncluded((*cit))) {
 	E_HCal += (*cit)->TotalDeposit();
-	//std::cout<<"Distance of "<<(*cit)->Direction()
-	//	 <<"("<<(*cit)->Direction().Eta()<<","<<(*cit)->Direction().Phi()<<") = "
-	//	 <<(*cit)->R2(eta,phi)<<"("<<m_R2hadiso<<") from "<<eta<<"/"<<phi
-	//	 <<" -> E = "<<E_HCal;
       }
-      if (E_HCal>m_minhad && E_HCal/E>m_relhad) {
-	//std::cout<<" ===> Veto !!!"<<std::endl;
-	veto = true;
-	break;
-      }
-      //std::cout<<std::endl;
+      if (E_HCal>m_minhad && E_HCal/E>m_relhad) { veto = true; break; }
     }
     for (cit=ECal_cells->begin();cit!=ECal_cells->end();cit++) {
       if ((*cit)->R2(eta,phi)<m_R2EMiso && !(*olit)->IsIncluded((*cit))) {
 	E_ECal += (*cit)->TotalDeposit();
-	//std::cout<<"Distance of "<<(*cit)->Direction()
-	//	 <<"("<<(*cit)->Direction().Eta()<<","<<(*cit)->Direction().Phi()<<") = "
-	//	 <<(*cit)->R2(eta,phi)<<"("<<m_R2EMiso<<") from "<<eta<<"/"<<phi
-	//	 <<" -> E = "<<E_ECal;
       }
-      if (E_ECal>m_totEM) {
-	//std::cout<<" ===> Veto !!!"<<std::endl;
-	veto = true;
-	break;
-      }
-      //std::cout<<std::endl;
+      if (E_ECal>m_totEM) { veto = true; break; }
     }
-    if (veto) {
-      delete (*olit);
-      olit = m_objects.erase(olit);
-    }
-    else olit++;     
+    if (veto) { delete (*olit); olit = m_objects.erase(olit); }
+    else olit++;
   }
-  //std::cout<<"--------------------------------------------------"<<std::endl
-  //	   <<"--------------------------------------------------"<<std::endl;
 }
 
 void Electron_Maker::CorrectEnergies() {

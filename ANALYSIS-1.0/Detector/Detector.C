@@ -7,6 +7,7 @@
 
 #ifdef USING__ROOT
 #include "Scaling.H"
+#include "TH1D.h"
 #include "TH2D.h"
 #include "My_Root.H"
 #endif 
@@ -15,10 +16,10 @@ using namespace ANALYSIS;
 using namespace ATOOLS;
 
 Detector::Detector(Primitive_Analysis * ana) : 
-  p_ana(ana), m_inlist("FinalState"), m_outlist("Detected_FS")
+  p_ana(ana), m_inlist("FinalState"), m_outlist("Detected_FS"),
+  m_METvector(Vec4D(0.,0.,0.,0.))
 {
   m_name = "Detector";
-  std::cout<<METHOD<<std::endl;
 }
 
 Detector::~Detector() {}
@@ -66,55 +67,42 @@ Particle_Smearer_Base * Detector::GetParticleSmearer(std::string name) {
 }
 
 void Detector::AddObjectDefinition(Object_Definition_Base * definition) {
-  std::string name = definition->Name();
-  if (m_definitions.find(name)!=m_definitions.end()) {
-    msg.Error()<<"Error in "<<METHOD<<" : "<<std::endl
-	       <<"   Definition of type '"<<name<<"' already in detector."<<std::endl
-	       <<"   Abort the run."<<std::endl;
-    abort();
-  }
-  m_definitions[name] = definition;
+  m_definitions.insert(definition);
 } 
 
 Object_Definition_Base * Detector::GetObjectDefinition(std::string name) {
-  if (m_definitions.find(name)==m_definitions.end()) {
-    msg.Error()<<"Error in "<<METHOD<<" : "<<std::endl
-	       <<"   Element of type '"<<name<<"' does not exist in detector."<<std::endl
-	       <<"   Return 'NULL' and hope for the best."<<std::endl;
-    return NULL;
+  for (std::set<Object_Definition_Base *>::iterator odit=m_definitions.begin();
+       odit!=m_definitions.end();odit++) {
+    if ((*odit)->Name()==name) return (*odit);
   }
-  return m_definitions[name];
+  msg.Error()<<"Error in "<<METHOD<<" : "<<std::endl
+	     <<"   Element of type '"<<name<<"' does not exist in detector."<<std::endl
+	     <<"   Return 'NULL' and hope for the best."<<std::endl;
+  return NULL;
 }
 
 void Detector::Evaluate(const ATOOLS::Blob_List &bl, double weight, int ncount)
 {
-  //std::cout<<"============================================================"<<std::endl
-  //	   <<"============================================================"<<std::endl
-  //	   <<METHOD<<" : "<<p_ana<<std::endl;
-	   
-  //Print();
   Particle_List *outlist(new Particle_List);
   Particle_List *inlist(p_ana->GetParticleList(m_inlist));
-  //std::cout<<METHOD<<": After list definitions."<<std::endl;
   if (inlist==NULL) {
     msg.Error()<<METHOD<<"(): List '"<<m_inlist<<"' not found."<<std::endl;
     p_ana->AddParticleList(m_outlist,outlist);
     return;
   }
   Fill(inlist);
-  ReconstructObjects(outlist);
+  ReconstructObjects(outlist,m_METvector);
   p_ana->AddParticleList(m_outlist,outlist);
-  //std::cout<<METHOD<<" : "<<outlist->size()<<std::endl
-  //	   <<"==========================================================="<<std::endl;
   Reset();
 }
 
 
 void Detector::Fill(Particle_List * plist) {
-  //std::cout<<METHOD<<std::endl<<(*plist)<<std::endl;
   int ehits=0,hhits=0;
   Particle * part(NULL);
   double eta,phi,E(0);
+  //m_elements["ECal"]->PrintHits();
+  //m_elements["HCal"]->PrintHits();
   for (size_t i=0;i<plist->size();i++) {
     part = (*plist)[i];
     for (std::map<std::string,Particle_Smearer_Base *>::iterator smit=m_smearers.begin();
@@ -132,22 +120,23 @@ void Detector::Fill(Particle_List * plist) {
       }
     }
   }
-  //std::cout<<METHOD<<" ehits = "<<ehits<<", hhits = "<<hhits<<", total = "<<(ehits+hhits)<<std::endl;
+  //m_elements["ECal"]->PrintHits();
+  //m_elements["HCal"]->PrintHits();
 }
 
-void Detector::ReconstructObjects(Particle_List *& plist) {
-  for (std::map<std::string,Object_Definition_Base *>::iterator defit=m_definitions.begin();
+void Detector::ReconstructObjects(Particle_List *& plist,ATOOLS::Vec4D & METvector) {
+  for (std::set<Object_Definition_Base *>::iterator defit=m_definitions.begin();
        defit!=m_definitions.end();defit++) {
-    //std::cout<<METHOD<<" for "<<defit->first<<std::endl;
-    defit->second->ReconstructObjects(plist);
+    (*defit)->ReconstructObjects(plist,METvector);
   }
 }
 
 void Detector::Reset() {
   for (std::map<std::string,Detector_Element *>::iterator elit=m_elements.begin();
        elit!=m_elements.end();elit++) elit->second->Reset();
-  for (std::map<std::string,Object_Definition_Base *>::iterator defit=m_definitions.begin();
-       defit!=m_definitions.end();defit++) defit->second->Reset();
+  for (std::set<Object_Definition_Base *>::iterator defit=m_definitions.begin();
+       defit!=m_definitions.end();defit++) (*defit)->Reset();
+  m_METvector = Vec4D(0.,0.,0.,0.);
 }
 
 void Detector::Print() {
@@ -158,9 +147,10 @@ void Detector::Print() {
        elit!=m_elements.end();elit++) {
     msg_Out()<<"  Detector Element  : "<<elit->first<<" "<<elit->second<<std::endl;
   }
-  for (std::map<std::string,Object_Definition_Base *>::iterator defit=m_definitions.begin();
+  for (std::set<Object_Definition_Base *>::iterator defit=m_definitions.begin();
        defit!=m_definitions.end();defit++) {
-    msg_Out()<<"  Object Definition : "<<defit->first<<" "<<defit->second<<std::endl;
+    msg_Out()<<"  Object Definition : "<<(*defit)->Name()<<" "<<(*defit)
+	     <<" ("<<m_definitions.size()<<")"<<std::endl;
   }
 }
 
@@ -240,19 +230,16 @@ void Detector::TestRandomIsotropicEvent(const int number) {
   msg_Out()<<"================================================================"<<std::endl
 	   <<"================================================================"<<std::endl
 	   <<"================================================================"<<std::endl;
-  for (std::map<std::string,Detector_Element *>::iterator elit=m_elements.begin();
-       elit!=m_elements.end();elit++) elit->second->Reset();
   Particle_List * plist = ProduceParticleList("Rambo",number,1000,Flavour(kf::none));
   Fill(plist);
   for (std::map<std::string,Detector_Element *>::iterator elit=m_elements.begin();
        elit!=m_elements.end();elit++) elit->second->PrintHits();
   plist->Clear();
   delete plist;
+  Reset();
 }
 
 void Detector::TestIsotropicEvent(const int number,const int j,const ATOOLS::Flavour flav) {
-  for (std::map<std::string,Detector_Element *>::iterator elit=m_elements.begin();
-       elit!=m_elements.end();elit++) elit->second->Reset();
   double E(Energy(j));
   Particle_List * plist = ProduceParticleList("FixedEnergy",number,E,flav);
   Fill(plist);
@@ -261,6 +248,7 @@ void Detector::TestIsotropicEvent(const int number,const int j,const ATOOLS::Fla
   //    elit!=m_elements.end();elit++) elit->second->PrintHits();
   plist->Clear();
   delete plist;
+  Reset();
 }
 
 void Detector::TestReconstructionCodes(const int number,const int j,Flavour flav,
@@ -268,8 +256,6 @@ void Detector::TestReconstructionCodes(const int number,const int j,Flavour flav
   msg_Out()<<"================================================================"<<std::endl
 	   <<"================================================================"<<std::endl
 	   <<"================================================================"<<std::endl;
-  for (std::map<std::string,Detector_Element *>::iterator elit=m_elements.begin();
-       elit!=m_elements.end();elit++) elit->second->Reset();
   double E(Energy(j));
   Particle_List * plist(NULL),* qlist(NULL);
   if (!background) plist = ProduceParticleList("Radiation",number,E,flav);
@@ -277,11 +263,12 @@ void Detector::TestReconstructionCodes(const int number,const int j,Flavour flav
   Fill(plist);
   //for (std::map<std::string,Detector_Element *>::iterator elit=m_elements.begin();
   //    elit!=m_elements.end();elit++) elit->second->PrintHits();
-  ReconstructObjects(qlist);
+  ReconstructObjects(qlist,m_METvector);
   plist->Clear();
   qlist->Clear();
   delete plist;
   delete qlist;
+  Reset();
 }
 
 double Detector::Energy(const int j) {
@@ -477,19 +464,10 @@ Particle_List * Detector::ProduceParticleList(const std::string mode,
 	moms[count+i] = omega*Vec4D(1.,sinzeta*cos(xi),sinzeta*sin(xi),coszeta);
 	rotate.Rotate(moms[count+i]);
 	flavs[count+i] = Flavour(kf::photon);
-	//double delta_eta = moms[count+i].Eta()-dir.Eta(),
-	//       delta_phi = moms[count+i].Phi()-dir.Phi(),
-	//       R = sqrt(sqr(delta_eta)+sqr(delta_phi));
-	//if (omega>0.005 && (dabs(delta_eta)<0.075 && dabs(delta_phi)<0.075)) 
-	//  std::cout<<"Photon with E = "<<omega<<" in R = "<<R
-	//	   <<" ("<<delta_eta<<","<<delta_phi<<")"<<std::endl;
-	//std::cout<<"   "<<(count+i)<<" : "<<flavs[count+i]<<" "<<moms[count+i]<<std::endl;
       }
       p = sqrt(sqr(e)-sqr(flav.PSMass()));
       moms[count]  = Vec4D(E,p*sintheta*cos(phi),p*sintheta*sin(phi),p*costheta);
       flavs[count] = flav;
-      //std::cout<<"Electron : "<<flavs[count]<<" "<<moms[count]
-      //	       <<" --> "<<moms[count].Eta()<<"/"<<moms[count].Phi()<<std::endl;
       count+=number;
     } while (count<n);
   }

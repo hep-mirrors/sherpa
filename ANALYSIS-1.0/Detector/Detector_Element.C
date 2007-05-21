@@ -75,21 +75,14 @@ Cell * Detector_Element::GetCell(const double eta,const double phi) {
 std::list<Track *> * Detector_Element::GetTracks(const double eta,const double phi,
 						 const double R2,kf::code kfcode) {
   std::list<Track *> * tracks(new std::list<Track *>);
-  //std::cout<<"   ... "<<METHOD<<" : from "<<this<<", tracks =  "
-  //<<tracks<<", local = "<<(&m_tracks)<<std::endl;
-  if (eta==0&&phi==0&&R2==0) (*tracks) = m_tracks;
-  else {
-    //std::cout<<METHOD<<": "<<m_tracks.size()<<std::endl;
-    
-    for (std::list<Track *>::iterator trit=m_tracks.begin();trit!=m_tracks.end();trit++) {
-      //if (kfcode!=kf::none && (*trit)->flav.Kfcode()==kfcode) {
-      // std::cout<<"  "<<(*trit)->flav<<"  "
-      //	       <<(*trit)->eta<<" ("<<eta<<"), "<<(*trit)->phi<<" ("<<phi<<")"
-      //	       <<"  --> "<<(sqr((*trit)->eta-eta)+sqr((*trit)->phi-phi))<<" vs. "<<R2<<std::endl;
-      //}
-      if (sqr((*trit)->eta-eta)+sqr((*trit)->phi-phi)>R2) continue;
-      tracks->push_back(*trit);
-    }
+  for (std::list<Track *>::iterator trit=m_tracks.begin();trit!=m_tracks.end();trit++) {
+    //if (kfcode!=kf::none && (*trit)->flav.Kfcode()==kfcode) {
+    // std::cout<<"  "<<(*trit)->flav<<"  "
+    //	       <<(*trit)->eta<<" ("<<eta<<"), "<<(*trit)->phi<<" ("<<phi<<")"
+    //	       <<"  --> "<<(sqr((*trit)->eta-eta)+sqr((*trit)->phi-phi))<<" vs. "<<R2<<std::endl;
+    //}
+    if ( (eta==0&&phi==0&&R2==0) ||
+	 (sqr((*trit)->eta-eta)+sqr((*trit)->phi-phi)<=R2) ) tracks->push_back(*trit);
   }
   return tracks;
 }

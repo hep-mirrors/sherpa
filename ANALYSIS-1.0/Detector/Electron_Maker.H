@@ -22,9 +22,9 @@ namespace ANALYSIS {
     void CorrectEnergies();
   public:
     Electron_Maker(Primitive_Analysis *,const std::string="ET_UP");
-    virtual ~Electron_Maker();
+    ~Electron_Maker();
 
-    void ReconstructObjects(ATOOLS::Particle_List *);
+    void ReconstructObjects(ATOOLS::Particle_List *,ATOOLS::Vec4D & METvector);
 
     void SetClustering(const double E,const int dim);
     void SetTracking(const std::string mode,const double R,const double cut);

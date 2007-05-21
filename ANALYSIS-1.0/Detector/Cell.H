@@ -4,8 +4,13 @@
 #include "Particle.H"
 
 namespace ANALYSIS {
-  struct Track {
+  class Track {
   public:
+    Track() : 
+      used(false), eta(0.), phi(0.), mom(ATOOLS::Vec4D(0.,0.,0.,0.)), 
+      flav(ATOOLS::Flavour(ATOOLS::kf::none)) {}
+
+    bool   used;
     double eta,phi;
     ATOOLS::Vec4D mom;
     ATOOLS::Flavour flav;
@@ -43,6 +48,7 @@ namespace ANALYSIS {
     double        TotalDeposit()       const { return m_summedE; }
     double        EPerp()              const { return m_summedE*m_sintheta; }
     ATOOLS::Vec4D Direction()          const { return m_direction; }
+    ATOOLS::Vec4D TrueMom()            const;
 
     Etastrip *    GetEtastrip()        const { return p_etastrip; }
     Cell *        GetUp()              const { return p_up; }
@@ -56,7 +62,7 @@ namespace ANALYSIS {
       return (&m_energydeposits);
     }
 
-    void Print();
+    void Print() const;
   };
 
   class Etastrip {

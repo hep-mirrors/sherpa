@@ -16,8 +16,6 @@ Analysis_Object *
 Photon_Maker_Getter::operator()(const Argument_Matrix &parameters) const
 {			
   if (parameters.size()<1) return NULL;
-  //if (parameters.size()==1) abort(); // For read-in of, like 'ATLAS'
-
 
   std::string mode("ET_UP");
   Photon_Maker * maker = new Photon_Maker(parameters(),mode);
@@ -98,8 +96,7 @@ void Photon_Maker::SetECorrection(const double inv) {
   m_inv = inv;
 }
 
-void Photon_Maker::ReconstructObjects(Particle_List * plist) {
-  //std::cout<<METHOD<<std::endl;
+void Photon_Maker::ReconstructObjects(Particle_List * plist,ATOOLS::Vec4D & METvector) {
   m_objects.clear();
   BuildMatchedClusters();
   IsolateClusters();
@@ -107,78 +104,46 @@ void Photon_Maker::ReconstructObjects(Particle_List * plist) {
   DropUsedCells();
 
   Particle * part;
-  //std::cout<<METHOD<<" : "<<m_objects.size()<<std::endl;
   while (!m_objects.empty()) {
     part = m_objects.front()->CreateParticle();
     plist->push_back(part);
     delete m_objects.front();
     m_objects.pop_front();
+    METvector -= part->Momentum(); 
   }
-  //std::cout<<METHOD<<" --> "<<plist->size()<<", therefore "
-  //	   <<p_ECal->GetHitCells()->size()<<"/"<<p_HCal->GetHitCells()->size()<<" total = "
-  //	   <<(p_ECal->GetHitCells()->size()+p_HCal->GetHitCells()->size())<<std::endl;
 }
 
 void Photon_Maker::BuildMatchedClusters() {
-  //std::cout<<"---------------------------------------------------"<<std::endl
-  //	   <<"---------------------------------------------------"<<std::endl
-  //	   <<METHOD<<" : check ecal = "<<p_ECal<<"."<<std::endl;
   std::list<Cell *> * cells = p_ECal->GetHitCells();
   if (!cells || cells->size()==0) return;
-  //std::cout<<METHOD<<" for "<<cells->size()<<" hit cells in ECal."<<std::endl;
   Cell * cell;
-  std::list<Track *> * tracks;
+  std::list<Track *> tracks;
   std::list<Track *>::iterator trit;
   double E,eta,phi;
-  bool vetoit;
+  bool vetoit(false);
   for (std::list<Cell *>::iterator cit=cells->begin();cit!=cells->end();cit++) {
     cell = (*cit);
-    //std::cout<<METHOD<<" : E = "<<cell->TotalDeposit()
-    //	     <<" for "<<cell->ParticleEntries()->begin()->first->Flav()<<":"<<std::endl;
     if (cell->TotalDeposit()>m_Estart) {
       cell->Centroid(eta,phi);
-      //std::cout<<"    ====> seed found in ("<<eta<<","<<phi<<"), "
-      //	       <<" cluster with size "<<m_dim<<"."<<std::endl;
       p_cluster = p_ECal->BuildCluster(cell,m_dim,E,eta,phi);
-      //std::cout<<"Built cluster "<<p_cluster<<"("<<p_cluster->size()<<") : "<<E<<std::endl;
-      tracks    = p_tracker->GetTracks(eta,phi,m_R2track,kf::none);
-      //std::cout<<"   Tracker "<<p_tracker<<" gives "<<tracks<<" "<<tracks->size()<<" "
-      //	       <<tracks->front()<<"."<<std::endl;
-      if (tracks && tracks->size()>0) {
+      tracks    = *p_tracker->GetTracks(eta,phi,m_R2track,kf::none);
+      if (tracks.size()>0) {
 	vetoit = false;
-	for (trit=tracks->begin(); trit!=tracks->end(); trit++) {
-	  if ((*trit)->mom.PPerp()>m_trackcut) {
-	    vetoit=true; break;
-	  }
+	for (trit=tracks.begin(); trit!=tracks.end(); trit++) {
+	  if ((*trit)->mom.PPerp()>m_trackcut) { vetoit=true; break; }
 	} 
       }
-      //std::cout<<"   vetoit = "<<vetoit<<std::endl;
-      if (vetoit) { 
-	//std::cout<<"   ... delete testcluster : "<<p_cluster<<std::endl;
-	delete p_cluster; p_cluster = NULL;
-      } 
+      if (vetoit) { delete p_cluster; p_cluster = NULL; } 
       else {
 	Reconstructed_Object * object = new Reconstructed_Object(m_kfcode,E,eta,phi);
 	object->SetCells(p_cluster);
 	m_objects.push_back(object);
-	//std::cout<<"   new photon ("<<m_objects.size()<<") : "
-	//	 <<"E = "<<E<<" at ("<<eta<<", "<<phi<<") : object = "
-	//	 <<object<<" cluster = "<<p_cluster<<" ("<<p_cluster->size()<<")"<<std::endl;
-	//std::cout<<"Check this: "
-	//	       <<cell->ParticleEntries()->begin()->first->Flav()
-	//	       <<"("<<cell->ParticleEntries()->size()<<") vs. "
-	//	       <<object->Flav()<<" "<<object->E()
-	//	       <<" "<<object->Eta()<<" "<<object->Phi()<<std::endl;
       }
-      //std::cout<<"   ... delete testtracks : "<<tracks<<std::endl;      
-      delete tracks; tracks = NULL; 
     }
   }
-  //std::cout<<" ............ out of "<<METHOD<<std::endl;
 }
 
 void Photon_Maker::IsolateClusters() {
-  //std::cout<<METHOD<<std::endl;
   if (m_objects.size()==0) return;
   double E_HCal, E_ECal;
   std::list<Cell *> * ECal_cells = p_ECal->GetHitCells();
@@ -189,7 +154,6 @@ void Photon_Maker::IsolateClusters() {
   double E,eta,phi;
   bool   veto;
   for (ObjectListIterator olit=m_objects.begin();olit!=m_objects.end();) {
-    //std::cout<<"--------------------------------------------------"<<std::endl;
     E      = (*olit)->E();
     eta    = (*olit)->Eta();
     phi    = (*olit)->Phi();
@@ -199,36 +163,17 @@ void Photon_Maker::IsolateClusters() {
       if ((*cit)->R2(eta,phi)<m_R2hadiso && !(*olit)->IsIncluded((*cit))) {
 	E_HCal += (*cit)->TotalDeposit();
       }
-      if (E_HCal>m_minhad && E_HCal/E>m_relhad) {
-	//std::cout<<"Distance of "<<(*cit)->Direction()
-	//	 <<"("<<(*cit)->Direction().Eta()<<","<<(*cit)->Direction().Phi()<<") = "
-	//	 <<(*cit)->R2(eta,phi)<<"("<<m_R2hadiso<<") from "<<eta<<"/"<<phi
-	//	 <<" -> E = "<<E_HCal<<" ===> Veto !!!"<<std::endl;
-	veto = true;
-	break;
-      }
+      if (E_HCal>m_minhad && E_HCal/E>m_relhad) { veto = true; break; }
     }
     for (cit=ECal_cells->begin();cit!=ECal_cells->end();cit++) {
       if ((*cit)->R2(eta,phi)<m_R2EMiso && !(*olit)->IsIncluded((*cit))) {
 	E_ECal += (*cit)->TotalDeposit();
       }
-      if (E_ECal>m_totEM) {
-	//std::cout<<"Distance of "<<(*cit)->Direction()
-	//	 <<"("<<(*cit)->Direction().Eta()<<","<<(*cit)->Direction().Phi()<<") = "
-	//	 <<(*cit)->R2(eta,phi)<<"("<<m_R2EMiso<<") from "<<eta<<"/"<<phi
-	//	 <<" -> E = "<<E_ECal<<" ===> Veto !!!"<<std::endl;
-	veto = true;
-	break;
-      }
+      if (E_ECal>m_totEM) { veto = true; break; }
     }
-    if (veto) {
-      delete (*olit);
-      olit = m_objects.erase(olit);
-    }
+    if (veto) { delete (*olit); olit = m_objects.erase(olit); }
     else olit++;     
   }
-  //std::cout<<"--------------------------------------------------"<<std::endl
-  //	   <<"--------------------------------------------------"<<std::endl;
 }
 
 void Photon_Maker::CorrectEnergies() {

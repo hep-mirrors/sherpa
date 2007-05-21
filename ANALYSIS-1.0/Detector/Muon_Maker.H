@@ -21,9 +21,9 @@ namespace ANALYSIS {
     void CorrectEnergies();
   public:
     Muon_Maker(Primitive_Analysis *,const std::string="ET_UP");
-    virtual ~Muon_Maker();
+    ~Muon_Maker();
 
-    void ReconstructObjects(ATOOLS::Particle_List *);
+    void ReconstructObjects(ATOOLS::Particle_List *,ATOOLS::Vec4D & METvector);
 
     void SetTracking(const double E);
     void SetHadIso(const double R,const double rel,const double cut);

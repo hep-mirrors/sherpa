@@ -65,7 +65,7 @@ Analysis_Object * Had_Calorimeter::GetCopy() const {
 void Had_Calorimeter::Reset() {
   for (std::set<Detector_Segment *,DS_Order>::iterator ds=m_segments.begin();
        ds!=m_segments.end();ds++) (*ds)->Reset();
-  m_hitcells.clear();
+  if (!m_hitcells.empty()) m_hitcells.clear();
 }
 
 bool Had_Calorimeter::Fill(const double E,const double eta,

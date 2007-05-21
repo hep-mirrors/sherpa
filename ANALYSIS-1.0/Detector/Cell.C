@@ -8,7 +8,8 @@ Cell::Cell(const double* dims,Etastrip * etastrip) :
   m_etamin(dims[0]),m_etamax(dims[1]),m_phimin(dims[2]),m_phimax(dims[3]),
   m_eta((m_etamin+m_etamax)/2.),m_phi((m_phimin+ m_phimax)/2.),
   m_costheta((exp(m_eta)-exp(-m_eta))/(exp(m_eta)+exp(-m_eta))),
-  m_sintheta(sqrt(1.-m_costheta*m_costheta)),
+  m_sintheta(sqrt(1.-m_costheta*m_costheta)),m_summedE(0.),
+  m_used(false),
   p_etastrip(etastrip),p_up(NULL),p_down(NULL),
   m_direction(Vec4D(1.,cos(m_phi)*m_sintheta,sin(m_phi)*m_sintheta,m_costheta))
 {
@@ -17,8 +18,12 @@ Cell::Cell(const double* dims,Etastrip * etastrip) :
 Cell::~Cell() { }
 
 void Cell::Reset() {
-  while (!m_energydeposits.empty()) {
-    m_energydeposits.erase(m_energydeposits.begin());
+  if (!m_energydeposits.empty()) {
+    for (std::map<Particle *,double>::iterator part=m_energydeposits.begin();
+	 part!=m_energydeposits.end();part++) {
+      if (part->first) { delete part->first; }
+    }
+    m_energydeposits.clear();
   }
   m_summedE = 0.;
   m_used    = false;
@@ -36,7 +41,7 @@ void Cell::Centroid(double & eta,double & phi) const {
 
 void Cell::AddParticle(Particle * part,double deposit) {
   if (deposit<0.) deposit = part->Momentum()[0];
-  m_summedE += m_energydeposits[part] = deposit;
+  m_summedE += m_energydeposits[new Particle(*part)/*part*/] = deposit;
 }
 
 Cell * Cell::AddDeposit(const double phi,const double dep) {
@@ -67,14 +72,30 @@ double Cell::R2(const double eta,const double phi) {
   return sqr(eta-m_eta)+sqr(phi-m_phi);
 }
 
-void Cell::Print() {
-  msg_Out()<<"Cell ("<<m_eta<<","<<m_phi<<"), E = "<<m_summedE<< " from :"<<std::endl;
-  for (std::map<ATOOLS::Particle *,double>::iterator part=m_energydeposits.begin();
+Vec4D Cell::TrueMom() const {
+  Vec4D truemom(Vec4D(0.,0.,0.,0.));
+  for (std::map<Particle *,double>::const_iterator part=m_energydeposits.begin();
        part!=m_energydeposits.end();part++) {
-    msg_Out()<<"   "<<part->first->Flav()<<" "<<part->first->Momentum()
-	     <<" ["<<part->first->Momentum().Eta()<<","<<part->first->Momentum().Phi()<<"]"
-	     <<" -> "<<part->second<<std::endl;
+    truemom += part->first->Momentum();
   }
+  return truemom;
+}
+
+void Cell::Print() const {
+  if (m_energydeposits.size()>0) {
+    msg_Out()<<"Cell ("<<this<<" : "<<m_eta<<","<<m_phi<<"), E = "<<m_summedE
+	     << " from ("<<m_energydeposits.size()<<"):"<<std::endl;
+    for (std::map<Particle *,double>::const_iterator part=m_energydeposits.begin();
+	 part!=m_energydeposits.end();part++) {
+      msg_Out()<<"   "<<part->first<<std::endl;
+      msg_Out()<<"   "<<part->first->Flav()<<" "<<part->first->Momentum()
+	       <<" ["<<part->first->Momentum().Eta()<<","<<part->first->Momentum().Phi()<<"]"
+	       <<" -> "<<part->second<<std::endl;
+    }
+  }
+  else
+    msg_Out()<<"Cell ("<<this<<" : "<<m_eta<<","<<m_phi<<"), is emtpy. "
+	     <<"E = "<<m_summedE<<"."<<std::endl;
 }
 
 

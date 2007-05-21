@@ -7,17 +7,17 @@
 #include "Particle_Smearer_Base.H"
 #include "Object_Definition_Base.H"
 #include "Particle_List.H"
-#include "Histogram.H"
 
 namespace ANALYSIS {
   class Detector : public Analysis_Object {
   private:
     Primitive_Analysis * p_ana;
-    std::string m_inlist, m_outlist;
+    std::string          m_inlist, m_outlist;
+    ATOOLS::Vec4D        m_METvector;
 
-    std::map<std::string,Detector_Element *>       m_elements;
-    std::map<std::string,Particle_Smearer_Base *>  m_smearers;
-    std::map<std::string,Object_Definition_Base *> m_definitions;
+    std::map<std::string,Detector_Element *>        m_elements;
+    std::map<std::string,Particle_Smearer_Base *>   m_smearers;
+    std::set<Object_Definition_Base *,odb_sorter>   m_definitions;
 
     bool m_test;
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
@@ -38,7 +38,7 @@ namespace ANALYSIS {
     Analysis_Object * GetCopy() const { return NULL; }
 
     void Fill(ATOOLS::Particle_List *);
-    void ReconstructObjects(ATOOLS::Particle_List *&);
+    void ReconstructObjects(ATOOLS::Particle_List *&,ATOOLS::Vec4D & METvector);
     void Reset();
 
     bool IsActive() const { return (m_elements.size()>0); }

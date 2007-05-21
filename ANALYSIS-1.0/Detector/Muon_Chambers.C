@@ -45,7 +45,7 @@ Muon_Chambers::Muon_Chambers(Primitive_Analysis * ana) :
 Muon_Chambers::~Muon_Chambers() { Reset(); }
 
 void Muon_Chambers::SetAcceptance(const double etamin,const double etamax) {
-  m_etamin = etamin; m_etamax = m_etamax;
+  m_etamin = etamin; m_etamax = etamax;
 }
 
 Analysis_Object * Muon_Chambers::GetCopy() const {

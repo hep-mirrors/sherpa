@@ -66,7 +66,8 @@ Muon_Maker::Muon_Maker(Primitive_Analysis * ana,const std::string mode) :
   m_R2hadiso(sqr(0.2)),m_relhad(0.01),m_minhad(1.),
   m_R2EMiso(sqr(0.2)),m_totEM(5.0),m_minEM(1.)
 { 
-  m_kfcode=kf::e;
+  m_kfcode=kf::mu;
+  GetElements();
 }
 
 Muon_Maker::~Muon_Maker() {}
@@ -87,21 +88,25 @@ void Muon_Maker::SetECorrection(const double inv) {
   m_inv = inv;
 }
 
-void Muon_Maker::ReconstructObjects(Particle_List * plist) {
+void Muon_Maker::ReconstructObjects(Particle_List * plist,ATOOLS::Vec4D & METvector) {
   //std::cout<<METHOD<<std::endl;
+  //std::cout<<METHOD<<" for "<<p_ECal->GetHitCells()->size()<<" hit cells in ECal and "
+  //	   <<p_HCal->GetHitCells()->size()<<" hit cells in HCal."<<std::endl;
+
   m_objects.clear();
-  if (!m_elements) GetElements();
   GetTracks();
   IsolateTracks();
   CorrectEnergies();
-  DropUsedCells();
+  DropUsedTracks();
 
   Particle * part;
   while (!m_objects.empty()) {
+    m_objects.front()->SetIncludeTracks(true);
     part = m_objects.front()->CreateParticle();
     delete m_objects.front();
     m_objects.pop_front();
     plist->push_back(part);
+    METvector -= part->Momentum(); 
   }
   //std::cout<<METHOD<<" --> "<<plist->size()<<std::endl;
 }
@@ -109,25 +114,21 @@ void Muon_Maker::ReconstructObjects(Particle_List * plist) {
 void Muon_Maker::GetTracks() {
   //std::cout<<"---------------------------------------------------"<<std::endl
   //	   <<"---------------------------------------------------"<<std::endl;
-  std::list<Track *> * tracks = p_chambers->GetTracks();
+  std::list<Track *> tracks(*p_chambers->GetTracks());
   //std::cout<<"Muon Chambers "<<p_chambers<<" gives "<<tracks<<" "<<tracks->size()<<" "
   //   <<tracks->front()<<"."<<std::endl;
-  if (!tracks || tracks->size()==0) return;
+  if (tracks.size()==0) return;
   std::list<Track *>::iterator trit;
-  for (trit=tracks->begin(); trit!=tracks->end(); trit++) {
+  for (trit=tracks.begin(); trit!=tracks.end(); trit++) {
     if ((*trit)->flav==Flavour(kf::mu)||(*trit)->flav==Flavour(kf::mu).Bar() &&
 	(*trit)->mom[0]>m_Estart) {
-      Reconstructed_Object * object = 
-	new Reconstructed_Object((*trit)->flav,(*trit)->mom[0],(*trit)->eta,(*trit)->phi);
-      object->SetCells(NULL);
+      Reconstructed_Object * object = new Reconstructed_Object((*trit));
       //std::cout<<"   new muon : E = "
       //	       <<(*trit)->mom[0]<<" at ("<<(*trit)->eta<<", "<<(*trit)->phi<<") :"
       //	       <<object<<std::endl;
       m_objects.push_back(object);
     }
   }
-  //std::cout<<"... delete muontracks : "<<tracks<<std::endl;      
-  delete tracks;
 }
 
 void Muon_Maker::IsolateTracks() {

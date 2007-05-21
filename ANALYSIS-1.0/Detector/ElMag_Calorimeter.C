@@ -64,7 +64,7 @@ Analysis_Object * ElMag_Calorimeter::GetCopy() const {
 void ElMag_Calorimeter::Reset() {
   for (std::set<Detector_Segment *,DS_Order>::iterator ds=m_segments.begin();
        ds!=m_segments.end();ds++) (*ds)->Reset();
-  m_hitcells.clear();
+  if (!m_hitcells.empty()) m_hitcells.clear();
 }
 
 bool ElMag_Calorimeter::Fill(const double E,const double eta,
@@ -84,7 +84,6 @@ bool ElMag_Calorimeter::Fill(const double E,const double eta,
 
 std::vector<Cell *> * ElMag_Calorimeter::BuildCluster(Cell * cell,const int dim,
 						      double & E,double & eta,double & phi) {
-  //std::cout<<"   Now in "<<METHOD<<" : "<<cell<<std::endl;
   double etacell,phicell,Etest,etatest,phitest;
   int wini(-dim+1),winj(-dim+1);
   E = 0.;
@@ -95,12 +94,7 @@ std::vector<Cell *> * ElMag_Calorimeter::BuildCluster(Cell * cell,const int dim,
   case 2:
     for (int i=-dim+1;i<1;i++) {
       for (int j=-dim+1;j<1;j++) {
-	//std::cout<<" test plaquette "<<i<<" "<<j<<" for "<<etacell<<" "<<phicell<<std::endl;
 	Etest = Plaquette(cell,etatest,phitest,i,i+dim-1,j,j+dim-1);
-	//std::cout<<"Etest = "<<Etest<<" in R = "
-	//	 <<sqrt(sqr(etatest-etacell)+sqr(phitest-phicell))
-	//	 <<" from eta = "<<etatest<<"/"<<etacell<<", phi ="<<phitest<<"/"<<phicell
-	//	 <<" vs. R' = "<<sqrt(sqr(eta-etacell)+sqr(phi-phicell))<<std::endl;
 	if (Etest>E) {
 	  E    = Etest;
 	  eta  = etatest; 
@@ -110,7 +104,6 @@ std::vector<Cell *> * ElMag_Calorimeter::BuildCluster(Cell * cell,const int dim,
 	}  
 	else if (E>0. && dabs(Etest/E-1.)<1.e-3 && 
 		 sqr(etatest-etacell)+sqr(phitest-phicell)<sqr(eta-etacell)+sqr(phi-phicell)) {
-	  //std::cout<<"Change from "<<wini<<","<<winj<<"  to  "<<i<<","<<j<<std::endl; 
 	  E    = Etest;
 	  eta  = etatest; 
 	  phi  = phitest;
@@ -119,10 +112,7 @@ std::vector<Cell *> * ElMag_Calorimeter::BuildCluster(Cell * cell,const int dim,
 	}
       }
     }
-    //std::cout<<"Winning plaquette: E = "<<E<<" in {"<<eta<<", "<<phi<<"} "
-    //	     <<"and {"<<wini<<","<<winj<<"}"<<std::endl;
     FillPlaquette(cell,cells,wini,winj,dim);
-    //std::cout<<"filled plaquette."<<std::endl;
     break;
   case 1:
   default:
@@ -151,8 +141,6 @@ double ElMag_Calorimeter::Plaquette(Cell * cell,double & eta,double & phi,
   for (int i=0;i<cell2;i++)  cell_2  = cell_2->GetUp();
   double * dim = new double[4],E(0.),entry,norm(0.),eta_entry,phi_entry;
   cell->Dimensions(dim);
-  //std::cout<<METHOD<<": "<<std::endl
-  //	   <<"   Cell ("<<dim[0]<<","<<dim[1]<<"; "<<dim[2]<<","<<dim[3]<<")"<<std::endl;
   cell_1->Dimensions(dim); 
   double phimin(dim[2]);
   cell_2->Dimensions(dim); 
@@ -162,9 +150,6 @@ double ElMag_Calorimeter::Plaquette(Cell * cell,double & eta,double & phi,
   eta = 0.;
   phi = 0.;
   int ncells(cell2-cell1+1);
-  //std::cout<<"      Build plaquette in "<<strip1<<"-"<<strip2<<" strips,"<<std::endl
-  //	   <<"      in a phi-range of "<<cell1<<"-"<<cell2<<" cells, "<<std::endl
-  //	   <<"      phi-range = {"<<phimin<<", "<<phimax<<"}"<<std::endl;
   for (int i=0;i<strip2-strip1+1;i++) {
     cur  = strip_1->GetZero();
     for (;;) {
@@ -172,26 +157,16 @@ double ElMag_Calorimeter::Plaquette(Cell * cell,double & eta,double & phi,
       if (cell==cur || dim[2]>=phimin) break; 
       cur = cur->GetUp();
     }
-    //std::cout<<" --> "<<phimin<<" vs "<<dim[2]<<" ... "<<phimax<<std::endl;
     for (int j=0;j<ncells;j++) {
       entry = cur->TotalDeposit();
-      //if (cur==cell) std::cout<<"       .......... passed cell."<<std::endl;
       if (entry>0.) {
 	cur->Centroid(eta_entry,phi_entry);
 	E    += entry;
 	eta  += entry*eta_entry;
 	phi  += entry*phi_entry;
 	norm += entry;
-	//std::cout<<"    Found a good cell ("<<dim[2]<<","<<dim[3]<<"), entry = "<<entry
-	//	 <<" at "<<eta_entry<<"/"<<phi_entry<<", now E = "
-	//	 <<E<<" from "<<entry<<"."<<std::endl;
       }
       cur->Dimensions(dim); 
-      //if (dim[3]>phimax) {
-      //	std::cout<<"    ... check this : "<<dim[3]<<" vs. "<<phimax
-      //		 <<" compare j = "<<j<<"("<<ncells<<")"<<std::endl;
-      //break;
-      //}
       cur = cur->GetUp();
     }
     strip_1 = strip_1->GetPlus();
@@ -207,9 +182,6 @@ double ElMag_Calorimeter::Plaquette(Cell * cell,double & eta,double & phi,
 
 void ElMag_Calorimeter::FillPlaquette(Cell * cell,std::vector<Cell *> * cells,
 				      const int etastrip,const int cellno,const int ncells) {
-  // Particle * part = cell->ParticleEntries()->begin()->first;
-  //std::cout<<METHOD<<" with "<<etastrip<<"/"<<cellno<<"/"<<ncells<<" of "
-  //	   <<part->Flav()<<" "<<part->Momentum().Eta()<<"/"<<part->Momentum().Phi()<<std::endl;
   Etastrip * strip_1(cell->GetEtastrip());
   for (int i=0;i>etastrip;i--) strip_1 = strip_1->GetMinus();
   double * dims = new double[4];
