@@ -388,8 +388,8 @@ template class MPerp<double>;
 DEFINE_VARIABLE_GETTER(MPerp<double>,MPerp_Getter,"m_\\perp","m_\\perp",0)
 DEFINE_VARIABLE_GETTER(MPerp<double>,MPerp_Getter_2,"mT","m_\\perp",1)
 template class HT<double>;
-DEFINE_VARIABLE_GETTER(HT<double>,HT_Getter,"H_T","H_T",0)
-DEFINE_VARIABLE_GETTER(HT<double>,HT_Getter_2,"HT","H_T",1)
+DEFINE_VARIABLE_GETTER(HT<double>,HT_Getter_2,"H_T","H_T",0)
+DEFINE_VARIABLE_GETTER(HT<double>,HT_Getter_3,"HT","H_T",1)
 template class Count<double>;
 DEFINE_VARIABLE_GETTER(Count<double>,Count_Getter,"Count","Count",0)
 DEFINE_VARIABLE_GETTER(Count<double>,Count_Getter_2,"N","number",1)

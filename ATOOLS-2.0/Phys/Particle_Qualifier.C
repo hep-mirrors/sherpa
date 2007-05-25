@@ -177,27 +177,27 @@ DEFINE_QUALIFIER_GETTER(Is_Neutral_KStar,Is_Neutral_KStar_Getter_,
 DEFINE_QUALIFIER_GETTER(Is_Eta,Is_Eta_Getter,
 			"105","eta",0)
 DEFINE_QUALIFIER_GETTER(Is_Eta,Is_Eta_Getter_,
-			"Eta","eta",1)
+			"Eta","eta",0)
 DEFINE_QUALIFIER_GETTER(Is_Rho0,Is_Rho0_Getter,
 			"106","rho0",0)
 DEFINE_QUALIFIER_GETTER(Is_Rho0,Is_Rho0_Getter_,
-			"Rho0","rho0",1)
+			"Rho0","rho0",0)
 DEFINE_QUALIFIER_GETTER(Is_Omega,Is_Omega_Getter,
 			"107","omega",0)
 DEFINE_QUALIFIER_GETTER(Is_Omega,Is_Omega_Getter_,
-			"Omega","omega",1)
+			"Omega","omega",0)
 DEFINE_QUALIFIER_GETTER(Is_EtaPrime,Is_EtaPrime_Getter,
 			"108","eta prime",0)
 DEFINE_QUALIFIER_GETTER(Is_EtaPrime,Is_EtaPrime_Getter_,
-			"EtaPrime","eta prime",1)
+			"EtaPrime","eta prime",0)
 DEFINE_QUALIFIER_GETTER(Is_Phi,Is_Phi_Getter,
 			"109","phi",0)
 DEFINE_QUALIFIER_GETTER(Is_Phi,Is_Phi_Getter_,
-			"Phi","phi",1)
+			"Phi","phi",0)
 DEFINE_QUALIFIER_GETTER(Is_Lambda,Is_Lambda_Getter,
 			"110","lambda",0)
 DEFINE_QUALIFIER_GETTER(Is_Lambda,Is_Lambda_Getter_,
-			"Lambda","lambda",1)
+			"Lambda","lambda",0)
 DEFINE_QUALIFIER_GETTER(Is_Charged_Sigma,Is_Charged_Sigma_Getter,
 			"111","charged sigma",0)
 DEFINE_QUALIFIER_GETTER(Is_Charged_Sigma,Is_Charged_Sigma_Getter_,
