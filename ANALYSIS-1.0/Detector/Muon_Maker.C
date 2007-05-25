@@ -97,7 +97,6 @@ void Muon_Maker::ReconstructObjects(Particle_List * plist,ATOOLS::Vec4D & METvec
   GetTracks();
   IsolateTracks();
   CorrectEnergies();
-  DropUsedTracks();
 
   Particle * part;
   while (!m_objects.empty()) {
@@ -108,6 +107,7 @@ void Muon_Maker::ReconstructObjects(Particle_List * plist,ATOOLS::Vec4D & METvec
     plist->push_back(part);
     METvector -= part->Momentum(); 
   }
+  DropUsedTracks();
   //std::cout<<METHOD<<" --> "<<plist->size()<<std::endl;
 }
 

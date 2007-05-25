@@ -32,7 +32,9 @@ Jet_Maker_Getter::operator()(const Argument_Matrix &parameters) const
       maker->SetSimpleCone(Ecut,Estart,R);
     }
     else if (cur[0]=="ECorrection") {
-      maker->SetECorrection(ATOOLS::ToType<double>(cur[1]));
+      if (cur[1]=="constant") {
+	maker->SetECorrection(ATOOLS::ToType<double>(cur[2]));
+      }
     }
   }
   return maker;
@@ -63,6 +65,9 @@ void Jet_Maker::SetSimpleCone(const double Ecut,const double Estart,const double
   m_jetmode = 1;
 }
 
+void Jet_Maker::SetECorrection(const double inv) {
+  m_inv = inv;
+}
 
 void Jet_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D & METvector) {
   switch (m_jetmode) {
@@ -72,21 +77,28 @@ void Jet_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D &
     break;
   }
 
-  DropUsedCells();
-
   Particle * part;
-  int iob(0);
   while (!m_objects.empty()) {
+    m_objects.front()->SetIncludeTracks(true);
+    m_objects.front()->Update();
     part = m_objects.front()->CreateParticle();
+    //std::cout<<"    "<<METHOD<<" found jet : "<<m_objects.front()->Mom()
+    //	     <<"/"<<part->Momentum()<<" with "<<m_objects.front()->GetCells().size()
+    //	     <<"/"<<m_objects.front()->GetTracks().size()<<std::endl;
     delete m_objects.front();
     m_objects.pop_front();
     plist->push_back(part);
     METvector -= part->Momentum(); 
-    iob++;
   }
+
+  DropUsedCells();
 }
 
 
 void Jet_Maker::ReconstructSimpleCones() {}
 
-void Jet_Maker::CorrectEnergies() {}
+void Jet_Maker::CorrectEnergies() {
+  for (ObjectListIterator olit=m_objects.begin();olit!=m_objects.end();olit++) {
+    (*olit)->CorrectE(m_inv);
+  }  
+}

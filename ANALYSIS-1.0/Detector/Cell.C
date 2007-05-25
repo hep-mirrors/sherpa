@@ -41,7 +41,9 @@ void Cell::Centroid(double & eta,double & phi) const {
 
 void Cell::AddParticle(Particle * part,double deposit) {
   if (deposit<0.) deposit = part->Momentum()[0];
-  m_summedE += m_energydeposits[new Particle(*part)/*part*/] = deposit;
+  Particle * prt = new Particle(*part);
+  prt->SetOriginalPart(part);
+  m_summedE += m_energydeposits[prt] = deposit;
 }
 
 Cell * Cell::AddDeposit(const double phi,const double dep) {

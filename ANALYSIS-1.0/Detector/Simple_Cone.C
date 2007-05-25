@@ -20,7 +20,7 @@ Simple_Cone::Simple_Cone(const double Etcut,const double Etmin, double sep) :
 { 
 #ifdef USING__ROOT
   std::string name("JES");
-  (*MYROOT::myroot)(new TH1D(name.c_str(),name.c_str(),45,20.,200.),name);
+  (*MYROOT::myroot)(new TH2D(name.c_str(),name.c_str(),45,20.,200.,50,0.2,2.0),name);
 #endif 
 }
 
@@ -111,10 +111,12 @@ void Simple_Cone::CalcJets(ObjectList * jets)
       }
       else {
 	jets->push_back(jet);
+	//std::cout<<"    "<<METHOD<<" found jet : "<<jet->Mom()<<" "<<m_Etcut
+	//	 <<" with "<<jet->GetCells().size()<<"/"<<jet->GetTracks().size()<<std::endl;
 #ifdef USING__ROOT
 	std::string name("JES");
-	((TH1D*)(*MYROOT::myroot)[name])->Fill(jet->Mom().EPerp(),
-					       jet->Mom().EPerp()/jet->TrueMom().EPerp());
+	((TH2D*)(*MYROOT::myroot)[name])->Fill(jet->Mom().EPerp(),
+					       jet->Mom().EPerp()/jet->TrueMom().EPerp(),1.);
 #endif 
       }
     }

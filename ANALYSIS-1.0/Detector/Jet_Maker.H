@@ -10,6 +10,7 @@ namespace ANALYSIS {
 
   class Jet_Maker : public Object_Definition_Base {
     Simple_Cone * p_simplecone;
+    double        m_inv;
     int           m_jetmode;
 
     void ReconstructSimpleCones();
@@ -20,7 +21,7 @@ namespace ANALYSIS {
 
     void ReconstructObjects(ATOOLS::Particle_List *,ATOOLS::Vec4D & METvector);
     void SetSimpleCone(const double Ecut,const double Estart,const double R);
-    void SetECorrection(double) {}
+    void SetECorrection(const double);
   };
 }
 

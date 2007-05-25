@@ -101,7 +101,6 @@ void Photon_Maker::ReconstructObjects(Particle_List * plist,ATOOLS::Vec4D & METv
   BuildMatchedClusters();
   IsolateClusters();
   CorrectEnergies();
-  DropUsedCells();
 
   Particle * part;
   while (!m_objects.empty()) {
@@ -111,6 +110,7 @@ void Photon_Maker::ReconstructObjects(Particle_List * plist,ATOOLS::Vec4D & METv
     m_objects.pop_front();
     METvector -= part->Momentum(); 
   }
+  DropUsedCells();
 }
 
 void Photon_Maker::BuildMatchedClusters() {

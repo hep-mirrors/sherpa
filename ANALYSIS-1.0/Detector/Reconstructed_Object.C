@@ -55,7 +55,20 @@ Vec4D Reconstructed_Object::TrueMom() const {
   if (m_includetracks) {
     for (size_t i=0;i<m_tracks.size();i++) trackmom += m_tracks[i]->mom;
   }
-  for (size_t i=0;i<m_cells.size();i++)    cellmom  += m_cells[i]->TrueMom();
+  std::set<Particle *> usedparts;
+  std::map<ATOOLS::Particle *,double> * parts;
+  Particle * part;
+  for (size_t i=0;i<m_cells.size();i++) {
+    parts = m_cells[i]->ParticleEntries();
+    for (std::map<ATOOLS::Particle *,double>::iterator pit=parts->begin();
+	 pit!=parts->end();pit++) {
+      part = pit->first;
+      if (usedparts.find(part->OriginalPart())==usedparts.end()) {
+	cellmom += part->Momentum();
+	usedparts.insert(part->OriginalPart());
+      }
+    }
+  }
   return trackmom+cellmom;
 }
 
