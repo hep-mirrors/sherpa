@@ -17,28 +17,30 @@ namespace ATOOLS {
 
   protected:
     
-    std::string m_name;
+    std::string m_name, m_idname;
 
     int m_selectorid;
 
   public:
 
     // constructors
-    Variable_Base(const std::string &name);
+    Variable_Base(const std::string &name,
+		  const std::string &idname="");
 
     // destructor
     virtual ~Variable_Base();
 
     // member functions
     const std::string &Name() const;
+    const std::string &IDName() const;
 
     int SelectorID() const;
 
-    Value_Type operator()(const Vec3D *vectors) const;
-    Value_Type operator()(const Vec4D *vectors) const;
+    Value_Type operator()(const Vec3D *vectors,const int &n=1) const;
+    Value_Type operator()(const Vec4D *vectors,const int &n=1) const;
 
-    virtual Value_Type Value(const Vec3D *vectors) const;
-    virtual Value_Type Value(const Vec4D *vectors) const;
+    virtual Value_Type Value(const Vec3D *vectors,const int &n=1) const;
+    virtual Value_Type Value(const Vec4D *vectors,const int &n=1) const;
 
     static void ShowVariables(const int mode=1);
 

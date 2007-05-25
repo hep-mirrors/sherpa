@@ -2,6 +2,7 @@ pkglib_LTLIBRARIES	=	libAnalysisTriggers.la
 
 libAnalysisTriggers_la_SOURCES        =	\
 					Trigger_Base.C \
+					One_Variable_Selector.C \
 					One_Particle_Selector.C \
 					Two_Particle_Selector.C \
 					All_Particle_Selector.C \

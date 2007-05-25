@@ -577,6 +577,7 @@ bool Initialization_Handler::InitializeTheAnalyses()
   int helpi=p_dataread->GetValue<int>("SHOW_ANALYSIS_SYNTAX",0);
   if (helpi>0) {
     ATOOLS::msg.SetLevel(2);
+    ATOOLS::Variable_Base<double>::ShowVariables(helpi);
     ATOOLS::Particle_Qualifier_Base::ShowQualifiers(helpi);
     ANALYSIS::Analysis_Handler::ShowSyntax(helpi);
     THROW(normal_exit,"Syntax shown.");
