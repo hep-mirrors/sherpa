@@ -28,7 +28,8 @@ bool Getter_Function<ObjectType,ParameterType>::s_exactmatch=EXACTMATCH;
 
 template<class ObjectType,class ParameterType>
 Getter_Function<ObjectType,ParameterType>::
-Getter_Function(const std::string &name)
+Getter_Function(const std::string &name):
+  m_display(true)
 {
   static bool initialized=false;
   if (!initialized) {
@@ -88,6 +89,7 @@ PrintGetterInfo(std::ostream &str,const size_t width)
   str.setf(IOS_BASE::left,IOS_BASE::adjustfield);
   for (typename String_Getter_Map::const_iterator git=s_getters->begin();
        git!=s_getters->end();++git) {
+    if (!git->second->m_display) continue;
     str<<"   "<<std::setw(width)<<git->first<<" ";
     git->second->PrintInfo(str,width);
     str<<"\n";

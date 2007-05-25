@@ -34,6 +34,7 @@ namespace ANALYSIS {
     Double_Vector    m_mins, m_maxs;
     Double_Matrix    m_histos;
     Histogram_Vector m_dists;
+    ATOOLS::Histogram *p_flow;
   public:
     One_Variable_Selector
     (const std::string &inlist,const std::string &reflist,
@@ -198,6 +199,7 @@ One_Variable_Selector::One_Variable_Selector
 {
   msg_Debugging()<<METHOD<<"(): {\n";
   m_name="OVT_"+ToString(this);
+  p_flow = new ATOOLS::Histogram(1,0.0,(double)m_flavs.size(),m_flavs.size());
   if (ana->Mode()&weighted) return;
   for (size_t i(0);i<m_dists.size();++i)
     if (m_histos[0][i]>-1) {
@@ -221,6 +223,8 @@ void One_Variable_Selector::EndEvaluation(double scale)
       m_dists[i]->Finalize();
       if (scale!=1.0) m_dists[i]->Scale(scale);
     }
+  p_flow->Finalize();
+  if (scale!=1.0) p_flow->Scale(scale);
 }
 
 void One_Variable_Selector::Output(const std::string & pname) 
@@ -236,6 +240,7 @@ void One_Variable_Selector::Output(const std::string & pname)
       msg_Debugging()<<"  write '"<<name<<".dat'\n";
       m_dists[i]->Output((name+".dat").c_str());
     }
+  p_flow->Output((bname+"_eff.dat").c_str());
   msg_Debugging()<<"}\n";
 }
 
@@ -245,6 +250,7 @@ One_Variable_Selector::~One_Variable_Selector()
     delete m_vars.back();
     m_vars.pop_back();
   }
+  delete p_flow;
 }
 
 bool One_Variable_Selector::Evaluate
@@ -280,8 +286,11 @@ void One_Variable_Selector::Evaluate
  ATOOLS::Particle_List &outlist,double weight, int ncount) 
 {
   msg_Debugging()<<METHOD<<"(): {\n";
-  for (size_t i(0);i<m_flavs.size();++i)
+  p_flow->Insert(0.0,weight,ncount);
+  for (size_t i(0);i<m_flavs.size();++i) {
     if (!Evaluate(reflist,weight,ncount,std::vector<Vec4D>(),i,0,0)) return;
+    p_flow->Insert((double)i+1.5,weight,0);
+  }
   msg_Debugging()<<"} passed\n";
   outlist.resize(inlist.size());
   for (size_t i(0);i<inlist.size();++i) 

@@ -20,6 +20,7 @@ namespace ATOOLS {
     static String_Getter_Map *s_getters;
 
     static bool s_exactmatch;
+    bool m_display;
 
   protected:
 
@@ -45,6 +46,8 @@ namespace ATOOLS {
     // inline functions
     inline static void SetExactMatch(const bool exactmatch)
     { s_exactmatch=exactmatch; }
+    inline void SetDisplay(const bool display)
+    { m_display=display; }
     
     inline static bool ExactMatch() { return s_exactmatch; }
   
@@ -52,25 +55,26 @@ namespace ATOOLS {
 
 }// end of namespace ATOOLS
 
-#define DECLARE_GETTER(NAME,TAG,OBJECT,PARAMETER)			\
+#define DECLARE_GETTER_BASE(NAME,TAG,OBJECT,PARAMETER)			\
   									\
   class NAME: public ATOOLS::Getter_Function<OBJECT,PARAMETER> {	\
   private:								\
-    									\
     static NAME s_initializer;						\
-    									\
   protected:								\
-    									\
     void PrintInfo(std::ostream &str,const size_t width) const;		\
-    									\
     Object_Type *							\
     operator()(const Parameter_Type &parameters) const;	                \
-    									\
   public:								\
-    									\
-    NAME(): ATOOLS::Getter_Function<OBJECT,PARAMETER>(TAG) {}		\
-    									\
-  };									\
+    NAME(const bool &d=true): ATOOLS::Getter_Function			\
+      <OBJECT,PARAMETER>(TAG) { SetDisplay(d); }			\
+  };									
+
+#define DECLARE_GETTER(NAME,TAG,OBJECT,PARAMETER)			\
+  DECLARE_GETTER_BASE(NAME,TAG,OBJECT,PARAMETER)			\
   NAME NAME::s_initializer				 
+
+#define DECLARE_ND_GETTER(NAME,TAG,OBJECT,PARAMETER,DISP)		\
+  DECLARE_GETTER_BASE(NAME,TAG,OBJECT,PARAMETER)			\
+  NAME NAME::s_initializer(DISP)				 
 
 #endif
