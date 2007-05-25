@@ -58,6 +58,14 @@ namespace ATOOLS {
     bool operator()(const Particle *) const;
   };
 
+  class Is_Flav : public Particle_Qualifier_Base {
+  private:
+    Flavour m_flav;
+  public:
+    Is_Flav(const std::string &kfcode);
+    bool operator()(const Particle *) const;
+  };
+
   class Is_Parton : public Particle_Qualifier_Base {
   public:
     bool operator()(const Particle *) const;

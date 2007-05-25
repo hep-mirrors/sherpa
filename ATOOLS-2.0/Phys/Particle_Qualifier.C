@@ -252,13 +252,32 @@ Particle_Qualifier_Base *
 Is_KF_Getter::operator()(const std::string &parameter) const  
 { return new Is_KF(parameter); }
 void Is_KF_Getter::PrintInfo(std::ostream &str,const size_t width) const
-{ str<<"kf code, usage: KF(<code>)"; }
+{ str<<"kf code, usage: KF(<kf code>)"; }
 
 Is_KF::Is_KF(const std::string &kfcode):
-  m_kfcode((kf::code)ToType<int>(kfcode)) {}
+  m_kfcode((kf::code)abs(ToType<int>(kfcode))) {}
 
 bool Is_KF::operator() (const Particle * p) const {
   if ( p && p->Flav().Kfcode()==m_kfcode ) return 1;
+  return 0;
+}
+
+DECLARE_GETTER(Is_Flav_Getter,"Flav",Particle_Qualifier_Base,std::string);
+Particle_Qualifier_Base *					
+Is_Flav_Getter::operator()(const std::string &parameter) const  
+{ return new Is_Flav(parameter); }
+void Is_Flav_Getter::PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"flavour, usage: Flav(<+- kf code>)"; }
+
+Is_Flav::Is_Flav(const std::string &kfcode)
+{
+  int id(ToType<int>(kfcode));
+  m_flav=Flavour((kf::code)abs(id)); 
+  if (id<0) m_flav=m_flav.Bar();
+}
+
+bool Is_Flav::operator() (const Particle * p) const {
+  if ( p && p->Flav()==m_flav ) return 1;
   return 0;
 }
 
