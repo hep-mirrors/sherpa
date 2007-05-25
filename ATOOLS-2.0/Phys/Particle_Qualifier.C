@@ -87,6 +87,8 @@ void Particle_Qualifier_Base::ShowQualifiers(const int mode)
 {
   if (!msg.LevelIsInfo() || mode==0) return;
   msg.Out()<<"Particle_Qualifier_Base::ShowQualifiers(): {\n\n";
+  msg.Out()<<"   new qualifiers can be constructed\n";
+  msg.Out()<<"   using the operators '!', '&' and '|'\n\n";
   Particle_Qualifier_Getter::PrintGetterInfo(msg.Out(),20);
   msg.Out()<<"\n}"<<std::endl;
 }
@@ -133,15 +135,15 @@ DEFINE_QUALIFIER_GETTER(Is_Neutral,Is_Neutral_Getter_,
 DEFINE_QUALIFIER_GETTER(Is_Charged_Pion,Is_Charged_Pion_Getter,
 			"11","charged pion",0)
 DEFINE_QUALIFIER_GETTER(Is_Charged_Pion,Is_Charged_Pion_Getter_,
-			"ChargedPion","charged pion",1)
+			"ChargedPion","charged pion",0)
 DEFINE_QUALIFIER_GETTER(Is_Charged_Kaon,Is_Charged_Kaon_Getter,
 			"12","charged kaon",0)
 DEFINE_QUALIFIER_GETTER(Is_Charged_Kaon,Is_Charged_Kaon_Getter_,
-			"ChargedKaon","charged kaon",1)
+			"ChargedKaon","charged kaon",0)
 DEFINE_QUALIFIER_GETTER(Is_Proton_Antiproton,Is_Proton_Antiproton_Getter,
 			"13","proton antiproton",0)
 DEFINE_QUALIFIER_GETTER(Is_Proton_Antiproton,Is_Proton_Antiproton_Getter_,
-			"ProtonAntiproton","proton antiproton",1)
+			"ProtonAntiproton","proton antiproton",0)
 DEFINE_QUALIFIER_GETTER(Is_Parton,Is_Parton_Getter,
 			"21","parton",0)
 DEFINE_QUALIFIER_GETTER(Is_Parton,Is_Parton_Getter_,
@@ -161,19 +163,19 @@ DEFINE_QUALIFIER_GETTER(Is_There,Is_There_Getter_,
 DEFINE_QUALIFIER_GETTER(Is_Neutral_Pion,Is_Neutral_Pion_Getter,
 			"101","neutral pion",0)
 DEFINE_QUALIFIER_GETTER(Is_Neutral_Pion,Is_Neutral_Pion_Getter_,
-			"NeutralPion","neutral pion",1)
+			"NeutralPion","neutral pion",0)
 DEFINE_QUALIFIER_GETTER(Is_Neutral_Kaon,Is_Neutral_Kaon_Getter,
 			"102","neutral kaon",0)
 DEFINE_QUALIFIER_GETTER(Is_Neutral_Kaon,Is_Neutral_Kaon_Getter_,
-			"NeutralKaon","neutral kaon",1)
+			"NeutralKaon","neutral kaon",0)
 DEFINE_QUALIFIER_GETTER(Is_Charged_KStar,Is_Charged_KStar_Getter,
 			"103","charged kstar",0)
 DEFINE_QUALIFIER_GETTER(Is_Charged_KStar,Is_Charged_KStar_Getter_,
-			"ChargedKStar","charged kstar",1)
+			"ChargedKStar","charged kstar",0)
 DEFINE_QUALIFIER_GETTER(Is_Neutral_KStar,Is_Neutral_KStar_Getter,
 			"104","charged kstar",0)
 DEFINE_QUALIFIER_GETTER(Is_Neutral_KStar,Is_Neutral_KStar_Getter_,
-			"NeutralKStar","charged kstar",1)
+			"NeutralKStar","neutral kstar",0)
 DEFINE_QUALIFIER_GETTER(Is_Eta,Is_Eta_Getter,
 			"105","eta",0)
 DEFINE_QUALIFIER_GETTER(Is_Eta,Is_Eta_Getter_,
@@ -201,15 +203,15 @@ DEFINE_QUALIFIER_GETTER(Is_Lambda,Is_Lambda_Getter_,
 DEFINE_QUALIFIER_GETTER(Is_Charged_Sigma,Is_Charged_Sigma_Getter,
 			"111","charged sigma",0)
 DEFINE_QUALIFIER_GETTER(Is_Charged_Sigma,Is_Charged_Sigma_Getter_,
-			"ChargedSigma","charged sigma",1)
+			"ChargedSigma","charged sigma",0)
 DEFINE_QUALIFIER_GETTER(Is_Charged_Xi,Is_Charged_Xi_Getter,
 			"112","charged xi",0)
 DEFINE_QUALIFIER_GETTER(Is_Charged_Xi,Is_Charged_Xi_Getter_,
-			"ChargedXi","charged xi",1)
+			"ChargedXi","charged xi",0)
 DEFINE_QUALIFIER_GETTER(Is_Neutral_Xi,Is_Neutral_Xi_Getter,
 			"113","neutral xi",0)
 DEFINE_QUALIFIER_GETTER(Is_Neutral_Xi,Is_Neutral_Xi_Getter_,
-			"NeutralXi","neutral xi",1)
+			"NeutralXi","neutral xi",0)
 DEFINE_QUALIFIER_GETTER(Is_Not_Lepton,Is_Not_Lepton_Getter_,
 			"NotLepton","not lepton",1)
 
