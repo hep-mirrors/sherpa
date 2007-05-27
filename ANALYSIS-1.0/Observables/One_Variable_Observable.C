@@ -57,7 +57,7 @@ namespace ANALYSIS {
 using namespace ANALYSIS;
 
 DECLARE_GETTER(One_Variable_Observable_Getter,"VarObs",
- 	       Analysis_Object,Argument_Matrix);
+ 	       Primitive_Observable_Base,Argument_Matrix);
 
 void One_Variable_Observable_Getter::PrintInfo
 (std::ostream &str,const size_t width) const
@@ -74,7 +74,7 @@ void One_Variable_Observable_Getter::PrintInfo
      <<std::setw(width+4)<<" "<<"}";
 }
 
-Analysis_Object *
+Primitive_Observable_Base *
 One_Variable_Observable_Getter::operator()
   (const Argument_Matrix &parameters) const
 {
