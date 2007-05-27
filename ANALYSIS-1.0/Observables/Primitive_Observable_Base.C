@@ -2,6 +2,7 @@
 
 #include "Primitive_Analysis.H"
 #include "Shell_Tools.H"
+#include "MyStrStream.H"
 
 using namespace ANALYSIS;
 
@@ -14,6 +15,8 @@ using namespace ATOOLS;
 
 int ANALYSIS::HistogramType(const std::string &scale)
 {
+  if (scale.length()>0 && scale[0]>47 && scale[0]<58) 
+    return ToType<int>(scale); 
   if (scale=="Log") return 10;
   if (scale=="LogErr") return 11;
   if (scale=="LinErr") return 1;
