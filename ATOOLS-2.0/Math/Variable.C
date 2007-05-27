@@ -2,9 +2,22 @@
 
 #include "Message.H"
 #include "Vector.H"
+#include "Algebra_Interpreter.H"
+#include "MyStrStream.H"
+#include "Exception.H"
 
 using namespace ATOOLS;
   
+struct TDouble: public Term {
+  double m_value;
+  TDouble(const double &value): m_value(value) {}
+};// end of struct Double
+
+struct TVec4D: public Term {
+  Vec4D m_value;
+  TVec4D(const Vec4D &value): m_value(value) {}
+};// end of struct Vec4D
+
 template <class ValueType>
 Variable_Base<ValueType>::Variable_Base(const std::string &name,
 					const std::string &idname):
@@ -83,6 +96,76 @@ public:
 };// end of class No_Variable
 template <class ValueType>
 No_Variable<ValueType>::No_Variable(): Variable_Base<ValueType>("") {}
+  
+template <class ValueType>
+class Calc_Variable: public Variable_Base<ValueType>,
+		     public Tag_Replacer {
+private:
+  std::string m_formula;
+  Algebra_Interpreter *p_interpreter;
+  mutable std::vector<Vec4D> m_p;
+public:
+  Calc_Variable(const std::string &tag);
+  ~Calc_Variable();
+  ValueType Value(const Vec3D *vectors,const int &n) const 
+  { 
+    m_p.resize(n);
+    for (int i(0);i<n;++i) m_p[i]=Vec4D(0.0,vectors[i]);
+    return ((TDouble*)p_interpreter->Calculate())->m_value;
+  }
+  ValueType Value(const Vec4D *vectors,const int &n) const 
+  { 
+    m_p.resize(n);
+    for (int i(0);i<n;++i) m_p[i]=vectors[i];
+    return ((TDouble*)p_interpreter->Calculate())->m_value;
+  }
+  std::string ReplaceTags(std::string &expr) const;
+  ATOOLS::Term *ReplaceTags(ATOOLS::Term *term) const;
+};// end of class Calc_Variable
+template <class ValueType>
+Calc_Variable<ValueType>::Calc_Variable(const std::string &tag): 
+  Variable_Base<ValueType>("Calc"), m_formula(tag)
+{
+  msg_Debugging()<<METHOD<<"(): m_formula = '"<<m_formula<<"'\n";
+  size_t bpos(m_formula.find("("));
+  if (bpos==std::string::npos) return;
+  m_formula=m_formula.substr(bpos);
+  if ((bpos=m_formula.rfind(")"))==std::string::npos) return;
+  m_formula=m_formula.substr(1,bpos-1);
+  if (m_formula.length()>0) {
+    p_interpreter = new Algebra_Interpreter();
+    p_interpreter->SetTagReplacer(this);
+    size_t pos(m_formula.find("p["));
+    while (pos!=std::string::npos) {
+      std::string ex(m_formula.substr(pos+2,m_formula.find("]",pos)-pos-2));
+      p_interpreter->AddTag("p["+ex+"]","(1.0,0.0,0.0,1.0)");
+      pos=m_formula.find("p[",pos+ex.length()+1);
+    }
+    p_interpreter->Interprete(m_formula);
+    if (msg.LevelIsTracking()) p_interpreter->PrintEquation();
+  }
+}
+template <class ValueType>
+Calc_Variable<ValueType>::~Calc_Variable()
+{
+  delete p_interpreter;
+}
+template <class ValueType>
+std::string Calc_Variable<ValueType>::ReplaceTags(std::string &expr) const
+{
+  return p_interpreter->ReplaceTags(expr);
+}
+template <class ValueType>
+ATOOLS::Term *Calc_Variable<ValueType>::ReplaceTags(ATOOLS::Term *term) const
+{
+  if (term->m_tag.find("p[")==0) {
+    size_t i(ToType<int>(term->m_tag.substr(2,term->m_tag.length()-3)));
+    if (i>=m_p.size()) THROW(fatal_error,"Invalid tag.");
+    ((TVec4D*)term)->m_value=m_p[i];
+  }
+  else THROW(fatal_error,"Invalid tag.");
+  return term;
+}
   
 template <class ValueType>
 class Count: public Variable_Base<ValueType> {
@@ -354,6 +437,7 @@ template class Variable_Base<double>;
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE Variable_Base<double>
 #define PARAMETER_TYPE std::string
+#define EXACTMATCH false
 #include "Getter_Function.C"
 
 template <class Class>
@@ -378,6 +462,17 @@ Variable_Base<double> *GetVariable(const std::string &parameter)
 
 template class No_Variable<double>;
 DEFINE_VARIABLE_GETTER(No_Variable<double>,No_Variable_Getter,"","",0)
+
+template class Calc_Variable<double>;
+DECLARE_ND_GETTER(Calc_Variable_Getter,"Calc",
+		  Variable_Base<double>,std::string,1);
+Variable_Base<double> *Calc_Variable_Getter::operator()
+(const std::string &parameter) const			
+{ return new Calc_Variable<double>(parameter); }
+void Calc_Variable_Getter::PrintInfo
+(std::ostream &str,const size_t width) const
+{ str<<"calculator, usage: Calc(<formula>)"; }
+
 template class PPerp<double>;
 DEFINE_VARIABLE_GETTER(PPerp<double>,PPerp_Getter,"p_\\perp","p_\\perp",0)
 DEFINE_VARIABLE_GETTER(PPerp<double>,PPerp_Getter_2,"PT","p_\\perp",1)

@@ -289,6 +289,7 @@ Term *Vec4D_Part::Evaluate(const std::vector<Term*> &args) const
   }									\
 
 DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Abs2,"Abs2",Abs2)
+DEFINE_ONE_VECTOR_OPERATOR(Vec4D_Mass,"Mass",Mass)
 DEFINE_ONE_VECTOR_OPERATOR(Vec4D_PPerp,"PPerp",PPerp)
 DEFINE_ONE_VECTOR_OPERATOR(Vec4D_PPerp2,"PPerp2",PPerp2)
 DEFINE_ONE_VECTOR_OPERATOR(Vec4D_MPerp,"MPerp",MPerp)
@@ -694,6 +695,7 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard):
 #ifndef USING__double_only
   AddFunction(new Vec4D_Part());
   AddFunction(new Vec4D_Abs2());
+  AddFunction(new Vec4D_Mass());
   AddFunction(new Vec4D_PPerp());
   AddFunction(new Vec4D_PPerp2());
   AddFunction(new Vec4D_MPerp());
@@ -870,7 +872,7 @@ Term *Algebra_Interpreter::ReplaceTags(Term *expr) const
 
 void Algebra_Interpreter::PrintNode(Node<Function*> *const node) const
 {
-  msg_Info()<<"("<<node<<") '"
+  msg_Info()<<"("<<node<<") ["<<typeid(*(*node)[0]).name()<<"] '"
 	    <<((*node)[0]!=NULL?(*node)[0]->Tag():"<NULL>")<<"' {\n";
   {
     msg_Indent();

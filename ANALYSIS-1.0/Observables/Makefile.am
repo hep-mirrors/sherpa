@@ -11,6 +11,7 @@ libObservables_la_SOURCES     =	\
 				Global_Calculator.C \
 			 	Primitive_Observable_Base.C \
 			 	Normalized_Observable.C \
+			 	One_Variable_Observable.C \
 				HT.C \
 				PSM_Observables.C \
 				Multiplicity.C \
