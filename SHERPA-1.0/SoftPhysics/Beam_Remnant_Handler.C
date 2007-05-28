@@ -215,3 +215,7 @@ void Beam_Remnant_Handler::SetScale(const double scale)
   for (short unsigned int i=0;i<2;++i) p_beampart[i]->SetScale(scale);
 }
 
+void Beam_Remnant_Handler::CleanUp()
+{
+  for (short unsigned int i=0;i<2;++i) p_beampart[i]->Clear();
+}

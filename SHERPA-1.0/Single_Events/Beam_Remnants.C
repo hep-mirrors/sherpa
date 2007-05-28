@@ -39,7 +39,10 @@ Return_Value::code Beam_Remnants::Treat(ATOOLS::Blob_List *bloblist,double &weig
 }
 
 
-void Beam_Remnants::CleanUp() {}
+void Beam_Remnants::CleanUp() 
+{
+  p_beamremnanthandler->CleanUp();
+}
 
 void Beam_Remnants::Finish(const std::string &) {}
 

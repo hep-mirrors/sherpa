@@ -45,7 +45,9 @@ namespace SHERPA {
     // member functions
     ATOOLS::Return_Value::code FillBeamAndBunchBlobs(ATOOLS::Blob_List *const);
     void SetScale(const double scale);
-
+    
+    void CleanUp();
+    
     // inline functions
     inline PDF::Remnant_Base *const BeamParticle(const size_t i) const 
     { return p_beampart[i]; }
