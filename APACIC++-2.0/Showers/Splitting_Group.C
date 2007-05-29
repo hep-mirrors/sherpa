@@ -13,6 +13,10 @@ Splitting_Group::Splitting_Group(Splitting_Function *const spl):
 
 Splitting_Group::~Splitting_Group() 
 {
+  while (m_splittings.size()) {
+    delete m_splittings.back();
+    m_splittings.pop_back();
+  }
 }
 
 double Splitting_Group::CrudeInt(double zmin, double zmax) 

@@ -98,6 +98,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Info* pinf
   }
   msg.Tracking()<<"Total number of Amplitudes "<<ntotal<<endl;
   ngraph = ntotal;
+  delete [] subgraphlist;
   delete [] b_dec;
 }
 

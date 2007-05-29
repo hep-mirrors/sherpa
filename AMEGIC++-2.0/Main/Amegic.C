@@ -265,14 +265,7 @@ void Amegic::ReadInProcessfile(string file)
 	      flag = 0;
 	    }
 	  }
-	  if (flag==0) {
-	    delete [] IS;
-	    delete [] plIS;
-	    delete [] FS;
-	    delete [] plFS;
-	    if (pinfo) delete pinfo;
-	  }
-	  else {
+	  if (flag!=0) {
 	    order_ew = order_strong = -1;
 	    selectorfile        = string("");
 	    scale_scheme        = _sc;
@@ -637,9 +630,14 @@ void Amegic::ReadInProcessfile(string file)
 		}
 		else break;
 	      }
+	      delete pcinfo;
 	    } while (ii.size()!=0 && ii[ii.size()-1]<AppNum[AppNum.size()-1]);
-	    if (pinfo) delete pinfo;
 	  }
+	  delete [] IS;
+	  delete [] plIS;
+	  delete [] FS;
+	  delete [] plFS;
+	  if (pinfo) delete pinfo;
 	}
       }
     }

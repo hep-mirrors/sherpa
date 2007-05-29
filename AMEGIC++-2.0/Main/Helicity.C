@@ -86,7 +86,10 @@ Helicity::Helicity(int Nin,int Nout,Flavour* fl,Pol_Info* pl) :
 
 Helicity::~Helicity() 
 {
-  if (p_slist) delete [] p_slist;
+  if (p_slist) {
+    for (size_t i=0;i<m_nsign;i++) delete [] p_slist[i].s;
+    delete [] p_slist;
+  }
   delete [] p_pol_types;
   delete [] p_angles;
 }

@@ -15,9 +15,19 @@ using namespace std;
 
 extern int iabs(int&);
 
-Zfunc_Generator::~Zfunc_Generator() {}
+ZF_Vector::~ZF_Vector()
+{
+  while (size()) {
+    delete back();
+    pop_back();
+  }
+}
 
-std::vector<Zfunc_Calc*> Zfunc_Generator::zcalc;
+Zfunc_Generator::~Zfunc_Generator() 
+{
+}
+
+ZF_Vector Zfunc_Generator::zcalc;
 
 void Zfunc_Generator::BuildZlist(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS, int ngraph)
 {

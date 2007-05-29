@@ -74,6 +74,7 @@ Jet_Veto::~Jet_Veto()
 {
   PrepareTerminate();
   exh->RemoveTerminatorObject(this);
+  delete p_cluster;
 }
 
 void Jet_Veto::PrepareTerminate()

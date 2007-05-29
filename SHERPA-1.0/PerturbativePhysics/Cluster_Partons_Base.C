@@ -75,6 +75,7 @@ Cluster_Partons_Base::~Cluster_Partons_Base()
 {
   if (p_combi)               { delete p_combi;      p_combi      = NULL; }
   if (p_fssud)               { delete p_fssud;    p_fssud        = NULL; }
+  if (p_issud)               { delete p_issud;    p_issud        = NULL; }
   
   if (m_counts!=0) WriteOutWeights();
   exh->RemoveTerminatorObject(this);

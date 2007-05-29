@@ -62,6 +62,7 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(Lund_Interface * _lund) :
 
 Hadron_Decay_Handler::~Hadron_Decay_Handler() 
 {
+  delete p_cans;
 }
 
 bool Hadron_Decay_Handler::CanDealWith(kf::code kf) {

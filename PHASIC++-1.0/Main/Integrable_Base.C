@@ -98,6 +98,7 @@ Integrable_Base::~Integrable_Base()
   if (p_addflavours!=NULL) delete [] p_addflavours;
   if (p_addmomenta!=NULL) delete [] p_addmomenta;
   if (p_whisto!=NULL) delete p_whisto;
+  delete p_regulator;
 }
 
 Integrable_Base *const Integrable_Base::Selected()

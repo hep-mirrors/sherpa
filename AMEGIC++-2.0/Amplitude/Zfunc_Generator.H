@@ -11,9 +11,14 @@ namespace AMEGIC {
   class Basic_Sfuncs;
   class Virtual_String_Generator;
 
+  class ZF_Vector: public std::vector<Zfunc_Calc*> {
+  public:
+    ~ZF_Vector();
+  };
+
   class Zfunc_Generator {
     Zfunc_List zlist;
-    static std::vector<Zfunc_Calc*> zcalc;
+    static ZF_Vector zcalc;
     Basic_Sfuncs* BS;
     void  Set_In(Zfunc*,int,Point*,Point*,Point*);
     void  Set_Out(Zfunc*,int,Point*,Point*);

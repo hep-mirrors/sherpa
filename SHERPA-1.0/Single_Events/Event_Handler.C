@@ -31,6 +31,7 @@ Event_Handler::Event_Handler():
 Event_Handler::~Event_Handler() 
 {
   Reset();
+  m_blobs.Clear();
   EmptyEventPhases();
   
   if (p_phases)   { delete p_phases;   p_phases   = NULL; }

@@ -74,6 +74,7 @@ Process_Base::Process_Base(Process_Info* pinfo,int _nin,int _nout,ATOOLS::Flavou
   }
 
   p_flavours = 0;
+  p_b  = 0;
   p_pl = 0;
   p_pshandler = 0;
   p_selector = 0;
@@ -115,6 +116,7 @@ Process_Base::~Process_Base() {
   if (p_plin)     { delete [] p_plin;  p_plin     = 0; }
   if (p_plout)    { delete [] p_plout; p_plout    = 0; }
   if (p_pshandler)       { delete p_pshandler;       p_pshandler       = 0; }
+  if (p_b) delete [] p_b;
 }
 
 

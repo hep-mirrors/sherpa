@@ -412,6 +412,7 @@ void Process_Info::SetQCDjetNums()
   for (int i=0;i<nst;i++) {
     if (stcf[i].Strong()) ++m_maxqcdjets;
   }
+  delete [] stcf;
   for (size_t j=0;j<m_sublist[0].size();j++) m_sublist[0][j]->SetQCDjetNums();  
 }
 

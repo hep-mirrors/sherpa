@@ -303,6 +303,7 @@ void Process_Group::GroupProcesses() {
   }
   delete [] massin;
   delete [] massout;
+  delete [] flout;
 
   std::vector<Process_Base *> singleprocs = m_procs;
   while (m_procs.size()>0) m_procs.pop_back();

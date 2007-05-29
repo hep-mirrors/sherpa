@@ -1454,6 +1454,7 @@ void Amplitude_Generator::CheckFor4Vertices(Single_Amplitude* &first)
     }
     f1 = f1->Next;
   }
+  delete [] pcopy;
 }
 
 void Amplitude_Generator::Kill5VertexArtefacts(Single_Amplitude* first)
