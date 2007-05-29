@@ -630,7 +630,6 @@ void Amegic::ReadInProcessfile(string file)
 		}
 		else break;
 	      }
-	      delete pcinfo;
 	    } while (ii.size()!=0 && ii[ii.size()-1]<AppNum[AppNum.size()-1]);
 	  }
 	  delete [] IS;
