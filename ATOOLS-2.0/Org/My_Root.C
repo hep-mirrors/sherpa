@@ -38,6 +38,7 @@ My_Root::My_Root(const int argc,char **const argv):
     }
     p_file = new TFile((OutputPath()+OutputFile()).c_str(),"recreate");
   }
+  delete [] argvf;
 } 
 
 My_Root::~My_Root() 
