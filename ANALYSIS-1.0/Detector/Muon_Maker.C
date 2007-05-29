@@ -112,20 +112,14 @@ void Muon_Maker::ReconstructObjects(Particle_List * plist,ATOOLS::Vec4D & METvec
 }
 
 void Muon_Maker::GetTracks() {
-  //std::cout<<"---------------------------------------------------"<<std::endl
-  //	   <<"---------------------------------------------------"<<std::endl;
-  std::list<Track *> tracks(*p_chambers->GetTracks());
-  //std::cout<<"Muon Chambers "<<p_chambers<<" gives "<<tracks<<" "<<tracks->size()<<" "
-  //   <<tracks->front()<<"."<<std::endl;
+  std::list<Track *> tracks;
+  p_chambers->GetTracks(tracks);
   if (tracks.size()==0) return;
   std::list<Track *>::iterator trit;
   for (trit=tracks.begin(); trit!=tracks.end(); trit++) {
     if ((*trit)->flav==Flavour(kf::mu)||(*trit)->flav==Flavour(kf::mu).Bar() &&
 	(*trit)->mom[0]>m_Estart) {
       Reconstructed_Object * object = new Reconstructed_Object((*trit));
-      //std::cout<<"   new muon : E = "
-      //	       <<(*trit)->mom[0]<<" at ("<<(*trit)->eta<<", "<<(*trit)->phi<<") :"
-      //	       <<object<<std::endl;
       m_objects.push_back(object);
     }
   }

@@ -24,9 +24,8 @@ namespace ANALYSIS {
     virtual DS_List            * GetDetectorSegments() { return (&m_segments); }
     virtual std::list<Cell *>  * GetHitCells() { return (&m_hitcells); }
     virtual Cell               * GetCell(const double eta,const double phi);
-    virtual std::list<Track *> * GetTracks(const double eta=0,const double phi=0,
-					   const double R2=0,
-					   ATOOLS::kf::code=ATOOLS::kf::none);
+    virtual void GetTracks(std::list<Track *> &,const double eta=0,const double phi=0,
+			   const double R2=0,ATOOLS::kf::code=ATOOLS::kf::none);
 
     virtual void Evaluate(const ATOOLS::Blob_List &,double,int);
 

@@ -119,24 +119,26 @@ void Photon_Maker::BuildMatchedClusters() {
   Cell * cell;
   std::list<Track *> tracks;
   std::list<Track *>::iterator trit;
+  std::vector<Cell *> cluster;
   double E,eta,phi;
   bool vetoit(false);
   for (std::list<Cell *>::iterator cit=cells->begin();cit!=cells->end();cit++) {
     cell = (*cit);
     if (cell->TotalDeposit()>m_Estart) {
       cell->Centroid(eta,phi);
-      p_cluster = p_ECal->BuildCluster(cell,m_dim,E,eta,phi);
-      tracks    = *p_tracker->GetTracks(eta,phi,m_R2track,kf::none);
+      cluster.clear();
+      tracks.clear();
+      p_ECal->BuildCluster(cell,cluster,m_dim,E,eta,phi);
+      p_tracker->GetTracks(tracks,eta,phi,m_R2track,kf::none);
       if (tracks.size()>0) {
 	vetoit = false;
 	for (trit=tracks.begin(); trit!=tracks.end(); trit++) {
 	  if ((*trit)->mom.PPerp()>m_trackcut) { vetoit=true; break; }
 	} 
       }
-      if (vetoit) { delete p_cluster; p_cluster = NULL; } 
-      else {
+      if (!vetoit) {
 	Reconstructed_Object * object = new Reconstructed_Object(m_kfcode,E,eta,phi);
-	object->SetCells(p_cluster);
+	object->SetCells(cluster);
 	m_objects.push_back(object);
       }
     }

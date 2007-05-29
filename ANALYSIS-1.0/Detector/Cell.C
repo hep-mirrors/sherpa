@@ -136,6 +136,7 @@ Etastrip::~Etastrip() {
     cell = cell->GetUp();
     delete cell->GetDown();
   } while (cell!=stop);
+  delete stop;
 }
 
 void Etastrip::Reset() {

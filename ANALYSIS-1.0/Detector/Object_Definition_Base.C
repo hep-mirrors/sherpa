@@ -91,7 +91,9 @@ void Object_Definition_Base::DropUsedCells() {
 
 void Object_Definition_Base::DropUsedTracks() {
   std::vector<Track *> tracks;
-  std::list<Track *> * trtracks(p_tracker->GetTracks()), * mctracks(p_chambers->GetTracks());
+  std::list<Track *> trtracks, mctracks;
+  p_tracker->GetTracks(trtracks);
+  p_chambers->GetTracks(mctracks);
   std::list<Track *>::iterator trit;
   Track * track(NULL);
   bool found;
@@ -102,12 +104,12 @@ void Object_Definition_Base::DropUsedTracks() {
       for (size_t c=0;c<tracks.size();c++) {
 	found = false;
 	track  = tracks[c];
-	for (trit=trtracks->begin();trit!=trtracks->end();trit++) {
-	  if (track==(*trit)) { trtracks->erase(trit); found = true; break; }
+	for (trit=trtracks.begin();trit!=trtracks.end();trit++) {
+	  if (track==(*trit)) { trtracks.erase(trit); found = true; break; }
 	}
 	if (found) continue;
-	for (trit=mctracks->begin();trit!=mctracks->end();trit++) {
-	  if (track==(*trit)) { mctracks->erase(trit); found = true; break; }
+	for (trit=mctracks.begin();trit!=mctracks.end();trit++) {
+	  if (track==(*trit)) { mctracks.erase(trit); found = true; break; }
 	}
 	if (found) continue;
       }

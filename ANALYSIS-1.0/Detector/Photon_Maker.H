@@ -15,8 +15,6 @@ namespace ANALYSIS {
     double m_R2EMiso, m_totEM, m_minEM;
     double m_inv;
 
-    std::vector<Cell *> * p_cluster;
-
     void BuildMatchedClusters();
     void IsolateClusters();
     void CorrectEnergies();

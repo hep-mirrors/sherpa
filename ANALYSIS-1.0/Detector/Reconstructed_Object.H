@@ -19,7 +19,7 @@ namespace ANALYSIS {
     std::vector<Track *> m_tracks;
   public:
     Reconstructed_Object(ATOOLS::Flavour flav,const double E,const double eta,const double phi);
-    Reconstructed_Object(ATOOLS::Flavour flav,std::vector<Cell *> *);
+    Reconstructed_Object(ATOOLS::Flavour flav,std::vector<Cell *> &);
     Reconstructed_Object(Track * track);
     ~Reconstructed_Object();
 
@@ -36,12 +36,12 @@ namespace ANALYSIS {
 
     void   SetIncludeTracks(const bool it) { m_includetracks = it; }
 
-    void SetCells(const std::vector<Cell *> * cells);
+    void SetCells(const std::vector<Cell *> & cells);
     void AddCell(Cell * cell);
     std::vector<Cell *> & GetCells()     { return m_cells; }
     bool IsIncluded(const Cell *) const;
 
-    void SetTracks(const std::vector<Track *> * tracks);
+    void SetTracks(const std::vector<Track *> & tracks);
     void AddTrack(Track * track);
     std::vector<Track *> & GetTracks()   { return m_tracks; }
     bool IsIncluded(const Track *) const;

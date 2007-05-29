@@ -72,17 +72,11 @@ Cell * Detector_Element::GetCell(const double eta,const double phi) {
   return NULL;
 }
 
-std::list<Track *> * Detector_Element::GetTracks(const double eta,const double phi,
-						 const double R2,kf::code kfcode) {
-  std::list<Track *> * tracks(new std::list<Track *>);
+void Detector_Element::GetTracks(std::list<Track *> & tracks,const double eta,const double phi,
+				 const double R2,kf::code kfcode) {
+  tracks.clear();
   for (std::list<Track *>::iterator trit=m_tracks.begin();trit!=m_tracks.end();trit++) {
-    //if (kfcode!=kf::none && (*trit)->flav.Kfcode()==kfcode) {
-    // std::cout<<"  "<<(*trit)->flav<<"  "
-    //	       <<(*trit)->eta<<" ("<<eta<<"), "<<(*trit)->phi<<" ("<<phi<<")"
-    //	       <<"  --> "<<(sqr((*trit)->eta-eta)+sqr((*trit)->phi-phi))<<" vs. "<<R2<<std::endl;
-    //}
     if ( (eta==0&&phi==0&&R2==0) ||
-	 (sqr((*trit)->eta-eta)+sqr((*trit)->phi-phi)<=R2) ) tracks->push_back(*trit);
+	 (sqr((*trit)->eta-eta)+sqr((*trit)->phi-phi)<=R2) ) tracks.push_back(*trit);
   }
-  return tracks;
 }

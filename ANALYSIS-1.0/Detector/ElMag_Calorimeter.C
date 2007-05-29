@@ -82,13 +82,13 @@ bool ElMag_Calorimeter::Fill(const double E,const double eta,
   return false;
 }
 
-std::vector<Cell *> * ElMag_Calorimeter::BuildCluster(Cell * cell,const int dim,
-						      double & E,double & eta,double & phi) {
+bool ElMag_Calorimeter::BuildCluster(Cell * cell,std::vector<Cell *> & cluster,
+				     const int dim,double & E,double & eta,double & phi) {
+  cluster.clear();
   double etacell,phicell,Etest,etatest,phitest;
   int wini(-dim+1),winj(-dim+1);
   E = 0.;
   cell->Centroid(etacell,phicell);
-  std::vector<Cell *> * cells(new std::vector<Cell *>);
   switch (dim) {
   case 3:
   case 2:
@@ -112,15 +112,15 @@ std::vector<Cell *> * ElMag_Calorimeter::BuildCluster(Cell * cell,const int dim,
 	}
       }
     }
-    FillPlaquette(cell,cells,wini,winj,dim);
+    FillPlaquette(cell,cluster,wini,winj,dim);
     break;
   case 1:
   default:
     cell->Centroid(eta,phi);
     E = cell->TotalDeposit();
-    cells->push_back(cell);
+    cluster.push_back(cell);
   }
-  return cells;
+  return (!cluster.empty());
 }
 
 
@@ -180,7 +180,7 @@ double ElMag_Calorimeter::Plaquette(Cell * cell,double & eta,double & phi,
 }
 
 
-void ElMag_Calorimeter::FillPlaquette(Cell * cell,std::vector<Cell *> * cells,
+void ElMag_Calorimeter::FillPlaquette(Cell * cell,std::vector<Cell *> & cells,
 				      const int etastrip,const int cellno,const int ncells) {
   Etastrip * strip_1(cell->GetEtastrip());
   for (int i=0;i>etastrip;i--) strip_1 = strip_1->GetMinus();
@@ -201,7 +201,7 @@ void ElMag_Calorimeter::FillPlaquette(Cell * cell,std::vector<Cell *> * cells,
       cur = cur->GetUp();
     } while (dims[2]<phimin);
     for (int j=0;j<ncells;j++) {
-      if (cur->TotalDeposit()>0.) cells->push_back(cur);
+      if (cur->TotalDeposit()>0.) cells.push_back(cur);
       cur->Dimensions(dims); 
       if (dims[3]>phimax) break;
       cur = cur->GetUp();

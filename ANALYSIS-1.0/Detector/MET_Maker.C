@@ -93,13 +93,14 @@ void MET_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D &
     }
   }
 
-  std::list<Track *> * tracks(p_chambers->GetTracks());
+  std::list<Track *> tracks;
+  p_chambers->GetTracks(tracks);
   Track * track(NULL);
-  for (std::list<Track *>::iterator trit=tracks->begin();trit!=tracks->end();) {
+  for (std::list<Track *>::iterator trit=tracks.begin();trit!=tracks.end();) {
     track = (*trit);
     if (!track->used && track->mom[0]>m_cutEM) {
       METvector -= track->mom;
-      trit = tracks->erase(trit);
+      trit = tracks.erase(trit);
     }
     else {
       checkmom += track->mom;
@@ -108,7 +109,8 @@ void MET_Maker::ReconstructObjects(ATOOLS::Particle_List * plist,ATOOLS::Vec4D &
   }
 
 
-
+  METvector[3] = 0.;
+  METvector[0] = METvector.PPerp();
   Particle * part = new Particle(0,Flavour(m_kfcode),METvector,'r');
   plist->push_back(part);
 }

@@ -39,7 +39,10 @@ void Simple_Cone::CalcJets(ObjectList * jets)
   std::list<Cell *> * ecells(p_ECal->GetHitCells()), * hcells(p_HCal->GetHitCells());
   if ((!ecells || ecells->size()==0) && (!hcells || hcells->size()==0)) return;
   
-  std::list<Track *> mctracks(*p_MC->GetTracks());
+  std::list<Track *> mctracks;
+  p_MC->GetTracks(mctracks);
+
+  std::vector<Cell *> cone;
 
   std::list<Cell *>::iterator cit;
   std::list<Track *>::iterator trit;
@@ -76,22 +79,22 @@ void Simple_Cone::CalcJets(ObjectList * jets)
 
     if (maxet>m_Etmin) {
       newjet = true;
+      cone.clear();
       seed->Centroid(eta,phi);
       badseeds.insert(seed);
-      std::vector<Cell *> * cone(new std::vector<Cell *>);
-      cone->push_back(seed);
+      cone.push_back(seed);
 
       for (cit=hcells->begin();cit!=hcells->end();cit++) {
 	if ((*cit)!=seed && !(*cit)->Used() &&  
 	    (*cit)->R2(eta,phi)<m_dR2) {
-	  cone->push_back((*cit));
+	  cone.push_back((*cit));
 	  (*cit)->SetUsed(true);  
 	}
       }
       for (cit=ecells->begin();cit!=ecells->end();cit++) {
 	if ((*cit)!=seed && !(*cit)->Used() && 
 	    (*cit)->R2(eta,phi)<m_dR2) {
-	  cone->push_back((*cit));
+	  cone.push_back((*cit));
 	  (*cit)->SetUsed(true);	
 	}
       }

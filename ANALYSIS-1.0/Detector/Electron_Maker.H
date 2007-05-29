@@ -15,8 +15,6 @@ namespace ANALYSIS {
     double      m_inv;
     std::string m_trackmode;
 
-    std::vector<Cell *>   * p_cluster;
-
     void BuildMatchedClusters();
     void IsolateClusters();
     void CorrectEnergies();

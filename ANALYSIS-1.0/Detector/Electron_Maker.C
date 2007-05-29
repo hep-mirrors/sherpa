@@ -121,6 +121,7 @@ void Electron_Maker::BuildMatchedClusters() {
   Cell  * cell(NULL);
   std::list<Track *> tracks;
   std::list<Track *>::iterator trit;
+  std::vector<Cell *> cluster;
   Track * track(NULL);
 
   double E,eta,phi;
@@ -129,8 +130,10 @@ void Electron_Maker::BuildMatchedClusters() {
     cell = (*cit);
     cell->Centroid(eta,phi);
     if (cell->TotalDeposit()>m_Estart) {
-      p_cluster = p_ECal->BuildCluster(cell,m_dim,E,eta,phi);
-      tracks    = *p_tracker->GetTracks(eta,phi,m_R2track,m_kfcode); 
+      cluster.clear();
+      tracks.clear();
+      p_ECal->BuildCluster(cell,cluster,m_dim,E,eta,phi);
+      p_tracker->GetTracks(tracks,eta,phi,m_R2track,m_kfcode); 
       matched = false;
  
       if (tracks.size()>0) {
@@ -157,11 +160,10 @@ void Electron_Maker::BuildMatchedClusters() {
 	}
 	else matched = true;
       }
-      if (!matched) { delete p_cluster; p_cluster = NULL; } 
-      else {
+      if (matched) {
 	Flavour flav = (track->flav.Charge()>0)?Flavour(m_kfcode).Bar():Flavour(m_kfcode);
 	Reconstructed_Object * object(new Reconstructed_Object(flav,E,eta,phi));
-	object->SetCells(p_cluster);
+	object->SetCells(cluster);
 	object->AddTrack(track);
 	m_objects.push_back(object);
       }

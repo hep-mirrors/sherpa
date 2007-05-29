@@ -20,7 +20,7 @@ Reconstructed_Object::Reconstructed_Object(Track * track) :
 }
 
 Reconstructed_Object::Reconstructed_Object(ATOOLS::Flavour flav,
-					   std::vector<Cell *> * cells) :
+					   std::vector<Cell *> & cells) :
   m_includetracks(false),
   m_flav(flav), m_E(0.), m_eta(0.), m_phi(0.), m_mom(Vec4D(0.,0.,0.,0.))
 { 
@@ -99,9 +99,9 @@ bool Reconstructed_Object::IsIncluded(const Track * track) const {
   return false;
 }
 
-void Reconstructed_Object::SetCells(const std::vector<Cell *> * cells) { 
-  for (std::vector<Cell *>::const_iterator cit=cells->begin();
-       cit!=cells->end(); cit++) {
+void Reconstructed_Object::SetCells(const std::vector<Cell *> & cells) { 
+  for (std::vector<Cell *>::const_iterator cit=cells.begin();
+       cit!=cells.end(); cit++) {
     m_cells.push_back(*cit);
     m_mom += (*cit)->TotalDeposit()*(*cit)->Direction();
   }
@@ -109,9 +109,9 @@ void Reconstructed_Object::SetCells(const std::vector<Cell *> * cells) {
 
 void Reconstructed_Object::AddCell(Cell * cell) { m_cells.push_back(cell); }
 
-void Reconstructed_Object::SetTracks(const std::vector<Track *> * tracks) { 
-  for (std::vector<Track *>::const_iterator trit=tracks->begin();
-       trit!=tracks->end(); trit++) {
+void Reconstructed_Object::SetTracks(const std::vector<Track *> & tracks) { 
+  for (std::vector<Track *>::const_iterator trit=tracks.begin();
+       trit!=tracks.end(); trit++) {
     m_tracks.push_back(*trit);
     m_mom += (*trit)->mom;
   }

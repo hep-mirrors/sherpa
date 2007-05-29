@@ -22,7 +22,8 @@ Type Get(const std::string & in)
 
 Histogram::Histogram(int _type,double _lower,double _upper,int _nbin) :
   m_type(_type), m_nbin(_nbin), m_lower(_lower), m_upper(_upper), 
-  m_yvalues(0),m_y2values(0), m_psvalues(0), m_fills(0), m_psfills(0), m_finished(false), m_initialized(false)
+  m_yvalues(0),m_y2values(0), m_psvalues(0), m_fills(0), m_psfills(0), 
+  m_finished(false), m_initialized(false)
 {
   m_logarithmic = int(m_type/10);
   m_depth       = m_type-m_logarithmic*10+1;
@@ -68,8 +69,8 @@ Histogram::Histogram(int _type,double _lower,double _upper,int _nbin) :
   }
 }
 
-Histogram::Histogram(const Histogram * histo)
-: m_yvalues(0), m_y2values(0), m_psvalues(0) {
+Histogram::Histogram(const Histogram * histo) : 
+  m_yvalues(0), m_y2values(0), m_psvalues(0) {
   m_lower   = histo->m_lower;
   m_upper   = histo->m_upper;
   m_logbase = histo->m_logbase;
