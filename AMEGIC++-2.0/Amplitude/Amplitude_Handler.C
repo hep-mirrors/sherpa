@@ -138,7 +138,6 @@ void Amplitude_Handler::ConstructSignalAmplitudes(int N,Flavour* fl,int* b,
       n = next;
     }
   }
-  delete [] sglist;
 }
 
 void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation* pol,
