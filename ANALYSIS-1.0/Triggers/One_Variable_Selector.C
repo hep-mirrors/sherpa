@@ -52,7 +52,7 @@ namespace ANALYSIS {
 		  double weight, int ncount);
     bool Evaluate(const ATOOLS::Particle_List &reflist,
 		  double weight,int ncount,std::vector<ATOOLS::Vec4D> moms,
-		  const size_t i,const size_t j,size_t k); 
+		  const size_t i,const size_t j,size_t k,bool &eval); 
     Analysis_Object &operator+=(const Analysis_Object &obj);
     void EndEvaluation(double scale);
     void Output(const std::string & pname);
@@ -285,7 +285,7 @@ One_Variable_Selector::~One_Variable_Selector()
 
 bool One_Variable_Selector::Evaluate
 (const ATOOLS::Particle_List &reflist,double weight,int ncount,
- std::vector<ATOOLS::Vec4D> moms,const size_t i,const size_t j,size_t k) 
+ std::vector<ATOOLS::Vec4D> moms,const size_t i,const size_t j,size_t k,bool &eval) 
 {
   if (j>=m_flavs[i].size()) {
     double val(m_vars[i]->Value(&moms.front(),moms.size()));
@@ -295,6 +295,7 @@ bool One_Variable_Selector::Evaluate
     msg_Debugging()<<") = "<<val<<" "<<(pass?"\\in":"\\nin")
 		   <<" ["<<m_mins[i]<<","<<m_maxs[i]<<"]\n";
     if (m_dists[i]!=NULL) m_dists[i]->Insert(val,weight,ncount);
+    eval=true;
     return pass;
   }
   int o(-1);
@@ -303,7 +304,7 @@ bool One_Variable_Selector::Evaluate
       ++o;
       if (m_items[i][j]<0 || o==m_items[i][j]) {
 	moms.push_back(reflist[k]->Momentum());
-	if (!Evaluate(reflist,weight,ncount,moms,i,j+1,k+1)) return false;
+	if (!Evaluate(reflist,weight,ncount,moms,i,j+1,k+1,eval)) return false;
 	if (o==m_items[i][j]) return true;
       }
     }
@@ -318,7 +319,11 @@ void One_Variable_Selector::Evaluate
   msg_Debugging()<<METHOD<<"(): {\n";
   p_flow->Insert(0.0,weight,ncount);
   for (size_t i(0);i<m_flavs.size();++i) {
-    if (!Evaluate(reflist,weight,ncount,std::vector<Vec4D>(),i,0,0)) return;
+    bool eval(false);
+    std::vector<Vec4D> moms;
+    if (!Evaluate(reflist,weight,ncount,moms,i,0,0,eval)) return;
+    if (m_vars[i]->IDName()=="Count" && !eval)
+      if (!m_vars[i]->Value(&moms.front(),0)) return;
     p_flow->Insert((double)i+1.5,weight,0);
   }
   msg_Debugging()<<"} passed\n";
