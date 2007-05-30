@@ -11,5 +11,20 @@ namespace std {
 
 }
 
+namespace ATOOLS {
+
+  class String_Sort {
+  private:
+
+    std::less<std::string> m_less;
+
+  public:
+
+    bool operator()(const std::string &a,const std::string &b) const;
+    
+  };// end of class String_Sort
+
+}
+
 #endif
 

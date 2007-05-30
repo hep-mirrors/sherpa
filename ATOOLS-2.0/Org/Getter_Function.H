@@ -6,14 +6,16 @@
 
 namespace ATOOLS {
 
+  class String_Sort;
+
   template <class ObjectType,class ParameterType>
   class Getter_Function {
   public:
 
     typedef ObjectType Object_Type;
     typedef ParameterType Parameter_Type;
-    typedef typename std::map<const std::string,
-			      Getter_Function *const> String_Getter_Map;
+    typedef typename std::map<const std::string,Getter_Function *const,
+			      String_Sort> String_Getter_Map;
 
   private:
 

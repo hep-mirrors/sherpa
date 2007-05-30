@@ -12,6 +12,7 @@
 #endif
 
 #include "Getter_Function.H"
+#include "STL_Tools.H"
 #include "Exception.H"
 #include "Message.H"
 #include "MyStrStream.H"
@@ -32,7 +33,7 @@ Getter_Function(const std::string &name):
   m_display(true)
 {
   static bool initialized=false;
-  if (!initialized) {
+  if (!initialized || s_getters==NULL) {
     s_getters = new String_Getter_Map();
     initialized=true;
   }
@@ -62,6 +63,10 @@ Getter_Function<ObjectType,ParameterType>::~Getter_Function()
       s_getters->erase(git);
       break;
     }
+  }
+  if (s_getters->empty()) {
+    delete s_getters;
+    s_getters=NULL;
   }
 }
 
