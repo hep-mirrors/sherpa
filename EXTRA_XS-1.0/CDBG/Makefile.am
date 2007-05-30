@@ -1,22 +1,28 @@
 CDBGINCS      =	-I../Tools
 
 pkglib_LTLIBRARIES    =	libExtraXSCDBG.la
-libExtraXSCDBG_la_SOURCES    = \
-				Vertex.C \
+libExtraXSCDBG_la_SOURCES     =	\
+				Current_Base.C \
 				Current.C \
-				Vector_Current.C \
-				Tensor_Current.C \
+				Vertex.C \
 				CDBG_Amplitude.C \
-				N_Gluon_CDBG.C \
-				XS_QCD_CDBG.C
+				N_Parton_CDBG.C \
+				N_Parton_CDBG_T.C \
+				XS_QCD_CDBG.C \
+				XS_QCD_CDBG_T.C \
+				QCD_Currents.C \
+				QCD_Vertices.C
 pkginclude_HEADERS    =	\
-			Vertex.H \
+			Current_Base.H \
 			Current.H \
-			Vector_Current.H \
-			Tensor_Current.H \
+			Vertex.H \
 			CDBG_Amplitude.H \
-			N_Gluon_CDBG.H \
-			XS_QCD_CDBG.H
+			N_Parton_CDBG.H \
+			N_Parton_CDBG_T.H \
+			XS_QCD_CDBG.H \
+			XS_QCD_CDBG_T.H \
+			QCD_Currents.H \
+			QCD_Vertices.H
 
 EXTRA_DIST    = @SVNINCLUDE@
 AM_CXXFLAGS   =	@SHERPAFLAGS@

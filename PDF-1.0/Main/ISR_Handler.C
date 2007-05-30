@@ -147,6 +147,8 @@ ISR_Handler::~ISR_Handler()
     delete[] p_isrbase; p_isrbase = 0;
   }
   delete p_info;
+  for (size_t i(0);i<2;++i) 
+    if (p_remnants[i]!=NULL) delete p_remnants[i];
 }
 
 void ISR_Handler::Init(double *splimits,double *kplimits) 
@@ -223,10 +225,13 @@ bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *bunches,ATOOLS::Flavour *par
       if (fit == 0) break;
     }
     else {
-      if (partons[i]!=p_isrbase[i]->Flavour()) {
-	fit = 0;
-	break;
-      }
+      bool found(false);
+      for (int j(0);j<p_isrbase[i]->Flavour().Size();++j)
+	if (partons[i]==p_isrbase[i]->Flavour()[j]) {
+	  found=true;
+	  break;
+	}
+      if (!found) return false;
     }
   }
   return fit;
@@ -247,10 +252,13 @@ bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *partons)
       if (fit == 0) break;
     }
     else {
-      if (partons[i]!=p_isrbase[i]->Flavour()) {
-	fit = 0;
-	break;
-      }
+      bool found(false);
+      for (int j(0);j<p_isrbase[i]->Flavour().Size();++j)
+	if (partons[i]==p_isrbase[i]->Flavour()[j]) {
+	  found=true;
+	  break;
+	}
+      if (!found) return false;
     }
   }
   return fit;

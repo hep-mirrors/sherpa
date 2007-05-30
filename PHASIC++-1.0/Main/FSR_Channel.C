@@ -37,6 +37,11 @@ S1Channel::S1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   p_vegas = new Vegas(rannum,100,name,0);
 }
 
+S1Channel::~S1Channel()
+{
+  delete p_vegas;
+}
+
 void S1Channel::GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts,double * _ran=0) {
   double *ran = p_vegas->GeneratePoint(_ran);
   double ctmax=Min(cuts->cosmax[0][2],cuts->cosmax[1][3]);
@@ -85,6 +90,11 @@ T1Channel::T1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
     mass = res.Mass(); width = res.Width(); type = 1;
   }
   p_vegas = new Vegas(rannum,100,name,0);
+}
+
+T1Channel::~T1Channel()
+{
+  delete p_vegas;
 }
 
 void T1Channel::GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts,double * _ran =0) 
@@ -137,6 +147,11 @@ T2Channel::T2Channel(int _nin,int _nout,Flavour * fl,Flavour res)
     mass = res.Mass(); width = res.Width(); type = 1;
   }
   p_vegas = new Vegas(rannum,100,name,0);
+}
+
+T2Channel::~T2Channel()
+{
+  delete p_vegas;
 }
 
 void T2Channel::GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts,double * _ran =0) 
@@ -218,6 +233,11 @@ T3Channel::T3Channel(int _nin,int _nout,Flavour * fl,Flavour res)
     mass = res.Mass(); width = res.Width(); type = 1;
   }
   p_vegas = new Vegas(rannum,100,name,0);
+}
+
+T3Channel::~T3Channel()
+{
+  delete p_vegas;
 }
 
 void T3Channel::GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts,double * _ran =0) 
@@ -304,6 +324,11 @@ U1Channel::U1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
     mass = res.Mass(); width = res.Width(); type = 1;
   }
   p_vegas = new Vegas(rannum,100,name,0);
+}
+
+U1Channel::~U1Channel()
+{
+  delete p_vegas;
 }
 
 void U1Channel::GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts,double * _ran =0) 

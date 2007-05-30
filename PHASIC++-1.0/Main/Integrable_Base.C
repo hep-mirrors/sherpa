@@ -34,6 +34,11 @@ public:
   {
     return a.Y()>b.Y();
   }
+  bool operator()(const std::pair<Vec4D,Flavour> &a,
+		  const std::pair<Vec4D,Flavour> &b)
+  {
+    return a.first.Y()>b.first.Y();
+  }
 };
 
 std::ostream &PHASIC::operator<<(std::ostream &str,const cls::scheme &s)
@@ -98,6 +103,7 @@ Integrable_Base::~Integrable_Base()
   if (p_addflavours!=NULL) delete [] p_addflavours;
   if (p_addmomenta!=NULL) delete [] p_addmomenta;
   if (p_whisto!=NULL) delete p_whisto;
+  if (p_pshandler) delete p_pshandler;
   delete p_regulator;
 }
 
@@ -489,17 +495,19 @@ double Integrable_Base::CalculateScale(const Vec4D *momenta)
     pt2=m_scale[PHASIC::stp::ren]=
       sqrt(m_scale[PHASIC::stp::kp21]*m_scale[PHASIC::stp::kp22]);
     scheme-=scl::updf;
+    scheme-=scl::bfkl;
   }
   else if (scheme & scl::bfkl) {
     std::vector<Vec4D> moms(m_nout);
     for (size_t i(0);i<m_nout;++i) moms[i]=p_momenta[m_nin+i];
     std::sort(moms.begin(),moms.end(),Order_Y());
-    m_scale[stp::kp21]=
+    m_kfkey[0]=m_scale[stp::kp21]=
       rpa.gen.FactorizationScaleFactor()*moms.front().PPerp2();
-    m_scale[stp::kp22]=
+    m_kfkey[1]=m_scale[stp::kp22]=
       rpa.gen.FactorizationScaleFactor()*moms.back().PPerp2();
+    msg_Debugging()<<"set scale "<<m_scale[stp::kp21]<<" "<<m_scale[stp::kp21]<<"\n";
     scheme-=scl::bfkl;
-    if (scheme!=scl::unknown) 
+    if (scheme!=scl::unknown && scheme!=scl::reggeise) 
       THROW(fatal_error,"Unknown scale scheme: "+ToString(m_scalescheme));
     return m_scale[stp::fac]=-1.0;
   }
@@ -553,14 +561,16 @@ double Integrable_Base::KFactor()
     return m_kfkey.Weight();
   }
   else if (m_scalescheme&scl::bfkl) {
-    if (m_kfkey.Weight()!=ATOOLS::UNDEFINED_WEIGHT) return m_kfkey.Weight();
     if (m_orderQCD<0 || m_orderEW<0) {
       THROW(fatal_error,"Couplings not set for process '"+Name()+"'");
     }
     if (m_nstrong<=2) return 1.0;
-    std::vector<Vec4D> moms(m_nout);
-    for (size_t i(0);i<m_nout;++i) moms[i]=p_momenta[m_nin+i];
+    SetMomenta();
     double weight(1.0), asecms((*as)(sqr(rpa.gen.Ecms())));
+    std::vector<std::pair<Vec4D,Flavour> > moms(m_nout);
+    for (size_t i(0);i<m_nout;++i)
+      moms[i]=std::pair<Vec4D,Flavour>
+	(p_momenta[m_nin+i],p_flavours[m_nin+i]);
     std::sort(moms.begin(),moms.end(),Order_Y());
     BFKL_PT_Selector *ptsel
       ((BFKL_PT_Selector*)((Combined_Selector*)p_selector)->
@@ -568,21 +578,29 @@ double Integrable_Base::KFactor()
     double ptmin(0.0);
     if (ptsel!=NULL) ptmin=ptsel->PTMin();
     else THROW(critical_error,"'SCALE_SCHEME = BFKL' implies BFKL_PT <min> <max>' in 'Selector.dat'.");
-    Vec4D q(p_momenta[0][3]>p_momenta[1][3]?p_momenta[0]:p_momenta[1]);
-    q-=moms.front();
-    weight*=(*as)(moms.front().PPerp2())/asecms;
+    Vec4D q(p_momenta[p_momenta[0][3]>p_momenta[1][3]?0:1]);
+    Flavour p(p_flavours[p_momenta[0][3]>p_momenta[1][3]?0:1]);
+    q-=moms.front().first;
+    msg_Debugging()<<METHOD<<"(): "<<Name()<<" ("<<m_nstrong<<","
+		   <<m_orderQCD<<") "<<p<<" {\n";
+    weight*=(*as)(moms.front().first.PPerp2())/asecms;
+    msg_Debugging()<<"  k_{T,0} = "<<moms.front().first.PPerp()<<"\n";
     for (size_t i(1);i<m_nout;++i) {
-      weight*=(*as)(moms[i].PPerp2())/asecms;
-      weight*=exp(-(*as)(q.PPerp2())*3.0/M_PI*
- 		  log(q.PPerp2()/sqr(ptmin))*(moms[i-1].Y()-moms[i].Y()));
-      q-=moms[i];
+      weight*=(*as)(moms[i].first.PPerp2())/asecms;
+      if (moms[i].second.IsQuark()) 
+	p=p.IsGluon()?moms[i].second.Bar():Flavour(kf::gluon);
+      if (m_scalescheme&scl::reggeise) {
+	weight*=exp(-(*as)(q.PPerp2())*(p.IsQuark()?4.0/3.0:3.0)/M_PI
+		    *log(q.PPerp2()/sqr(ptmin))
+		    *(moms[i-1].first.Y()-moms[i].first.Y()));
+	msg_Debugging()<<"  q_{T,"<<i<<"} = "<<q.PPerp()<<" ("<<p
+		       <<"<-"<<moms[i].second<<")\n";
+      }
+      msg_Debugging()<<"  k_{T,"<<i<<"} = "<<moms[i].first.PPerp()<<"\n";
+      q-=moms[i].first;
     }
     m_kfkey<<weight;
-    msg_Debugging()<<METHOD<<"(): "<<Name()<<" ("<<m_nstrong<<","
-		   <<m_orderQCD<<") {\n"
-		   <<"  \\mu_1   = "<<sqrt(m_scale[stp::kp21])<<"\n"
-		   <<"  \\mu_2   = "<<sqrt(m_scale[stp::kp22])<<"\n"
-		   <<"} -> K = "<<m_kfkey.Weight()<<"\n";
+    msg_Debugging()<<"} -> K = "<<m_kfkey.Weight()<<"\n";
     return m_kfkey.Weight();
   }
   if (m_kfactorscheme==1) {
@@ -715,6 +733,7 @@ std::map<std::string,std::string> Integrable_Base::ScaleTags()
   tags["DOUBLE"]=ToString(scl::mult_by_2);
   tags["UPDF"]=ToString(scl::updf);
   tags["BFKL"]=ToString(scl::bfkl);
+  tags["REGGEISATION"]=ToString(scl::reggeise);
   return tags;
 }
  
@@ -790,6 +809,14 @@ void Integrable_Base::SetFactorizationScale()
   // msg_Debugging()<<METHOD<<"(): Set \\mu_f = "<<sqrt(m_scale[stp::ren])<<"\n";
 }
 
+void Integrable_Base::FillSIntegrator(Multi_Channel *&mc)
+{
+}
+
+void Integrable_Base::UpdateIntegrator(Multi_Channel *&mc)
+{
+}
+
 std::string Tag_Setter::ReplaceTags(std::string &expr) const
 {
   return p_calc->ReplaceTags(expr);
@@ -815,3 +842,4 @@ Term *Tag_Setter::ReplaceTags(Term *term) const
   ((TVec4D*)term)->m_value=p_ib->Momenta()[i];
   return term;
 }
+

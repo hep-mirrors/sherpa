@@ -154,16 +154,6 @@ namespace ATOOLS {
     void     UpdateCuts(double,double,Cut_Data *);
   };
 
-  class Summed_PT_Selector : public Selector_Base {
-    double             **ptmin, **ptmax;
-  public:
-    Summed_PT_Selector(int,int,Flavour *);
-    ~Summed_PT_Selector();
-    void     SetRange(std::vector<Flavour>,double,double);
-    bool     Trigger(const Vec4D * );
-    void     BuildCuts(Cut_Data *);
-    void     UpdateCuts(double,double,Cut_Data *);
-  };
 }
 
 

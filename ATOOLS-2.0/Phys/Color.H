@@ -16,8 +16,6 @@ typedef std::complex<double> Complex;
 #endif
 #include "Node.H"
 
-
-
 namespace ATOOLS {
 
   const double NC(3.0);
@@ -39,7 +37,6 @@ namespace ATOOLS {
 
   class Expression;
   
-
   class Color_Term {
   private:
 
@@ -154,6 +151,9 @@ namespace ATOOLS {
     void        Delete();
     static void DeleteAll();
 
+    inline void SetI(const size_t &i) { m_i=i; }
+    inline void SetJ(const size_t &j) { m_j=j; }
+
   };// end of class Delta
   /*!
     \class Delta
@@ -217,6 +217,10 @@ namespace ATOOLS {
     void        Delete();
     static void DeleteAll();
 
+    inline void SetA(const size_t &a) { m_a=a; }
+    inline void SetI(const size_t &i) { m_i=i; }
+    inline void SetJ(const size_t &j) { m_j=j; }
+
   };// end of class Fundamental
   /*!
     \class Fundamental
@@ -271,6 +275,10 @@ namespace ATOOLS {
     void        Delete();
     static void DeleteAll();
 
+    inline void SetA(const size_t &a) { m_a=a; }
+    inline void SetB(const size_t &b) { m_b=b; }
+    inline void SetC(const size_t &c) { m_c=c; }
+
   };// end of class Adjoint
   /*!
     \class Adjoint
@@ -278,7 +286,6 @@ namespace ATOOLS {
 
     This class represents a color matrix in the adjoint representation.
   */
-
 
   class Trace: public Color_Term {
   public:
@@ -329,10 +336,6 @@ namespace ATOOLS {
     This class represents a trace of the product of matrices in the fundamental representation.
   */
 
-
-
-
-
   class Expression: public ATOOLS::Node<Color_Term*> {
   public:
 
@@ -362,11 +365,9 @@ namespace ATOOLS {
 
     Expression(const std::string &expression); 
     
-
     // destructor
     ~Expression();
     
-
     // member functions
     bool Evaluate();
     void Print();

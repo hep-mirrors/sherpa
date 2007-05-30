@@ -39,9 +39,11 @@ namespace ANALYSIS {
     Getter_Function;
 
   protected:
+
     Primitive_Analysis *p_ana;
+
     std::string m_name;
-    bool        m_obs, m_isdet;
+    bool        m_isobs, m_isdet;
 
   public:
 
@@ -65,10 +67,12 @@ namespace ANALYSIS {
     virtual void SetAnalysis(Primitive_Analysis *ana);
     virtual void SetName(const std::string &name);
 
-    inline Primitive_Analysis * Analysis()     const { return p_ana; }
-    inline std::string          Name()         const { return m_name; }
-    inline bool                 IsObservable() const { return m_obs; }
-    inline bool                 IsDetector()   const { return m_isdet; }
+    inline Primitive_Analysis *Analysis() const { return p_ana; }
+
+    inline std::string Name() const { return m_name; }
+
+    inline bool IsObservable() const { return m_isobs; }
+    inline bool IsDetector()   const { return m_isdet; }
 
   };// end of class Analysis_Object
 

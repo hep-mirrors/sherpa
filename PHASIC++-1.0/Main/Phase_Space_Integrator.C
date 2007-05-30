@@ -7,6 +7,8 @@
 #include "Algebra_Interpreter.H"
 #include "MyStrStream.H"
 #include "Helicity_Integrator.H"
+#include "Color_Integrator.H"
+#include "Data_Reader.H"
 
 #include "Random.H"
 #include <unistd.h>
@@ -29,10 +31,14 @@ struct TVec4D: public Term {
   TVec4D(const Vec4D &value): m_value(value) {}
 };// end of struct Vec4D
 
-long int Phase_Space_Integrator::nmax=10000000;                  
-
+long unsigned int Phase_Space_Integrator::nmax=std::numeric_limits<long unsigned int>::max();
 Phase_Space_Integrator::Phase_Space_Integrator():
-  p_interpreter(NULL) {}
+  p_interpreter(NULL) 
+{
+  local.id=local.n=0;
+  local.sum=local.sum2=local.max=0.0;
+  addtime=0.0;
+}
 
 Phase_Space_Integrator::~Phase_Space_Integrator()
 {
@@ -96,13 +102,13 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxer
   (psh->FSRIntegrator())->Reset();
   numberofchannels += psh->NumberOfFSRIntegrators();
   msg.Tracking()<<"   Found "<<psh->NumberOfFSRIntegrators()<<" FSR integrators."<<endl;
-
+  numberofchannels=500;//1<<(psh->Process()->NOut()+4);
   iter = iter0 = Max(20*int(numberofchannels),5000);
   iter1      = Max(100*int(numberofchannels),10000);
   if (iter1>50000) iter1=Max(iter0,50000);
   int hlp = (iter1-1)/iter0+1;
   iter1   = hlp*iter0;
-  nopt      = 25; 
+  nopt      = 25;
 
   maxopt    = (5/hlp+21)*iter1;
   ncontrib = psh->FSRIntegrator()->ValidN();
@@ -112,9 +118,13 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxer
   nlo=0;
   if (ncontrib>maxopt) endopt=2;
 
-  starttime = ATOOLS::rpa.gen.Timer().UserTime();
-  lotime    = ATOOLS::rpa.gen.Timer().UserTime();
+  addtime = 0.0;
+  lotime = starttime = ATOOLS::rpa.gen.Timer().UserTime();
+  if (psh->Stats().size()>0)
+    addtime=psh->Stats().back()[6];
   totalopt  = maxopt+8.*iter1;
+
+  nstep = ncstep = 0;
   
 #ifdef _USE_MPI_
   // ------ total sums for MPI ---
@@ -163,12 +173,6 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxer
   int saveiter = 0;
 #endif
 
-  if (psh->UsePI()>0 && psh->PI()==NULL) {
-    psh->CreatePI();
-    if (psh->PI()==NULL) THROW(fatal_error,"Cannot initialize PI.");
-    psh->PI()->Initialize();
-  }
-
   for (n=ATOOLS::Max(psh->Process()->Points(),(long int)0)+1;n<=nmax;n++) {
     if (!rpa.gen.CheckTime()) {
       ATOOLS::msg.Error()<<ATOOLS::om::bold
@@ -179,12 +183,17 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxer
       kill(getpid(),SIGINT);
     }
 
-    if (psh->PI()!=NULL && psh->PI()->Stop()) break;
     value = psh->Differential();
     if (AddPoint(value)) break;
-
+    
   }
-
+  
+  msg_Info()<<om::blue
+	    <<(psh->Process())->TotalResult()*rpa.Picobarn()
+	    <<" pb"<<om::reset<<" +- ( "<<om::red
+	    <<(psh->Process())->TotalVar()*rpa.Picobarn()
+	    <<" pb = "<<error*100<<" %"<<om::reset<<" ) "
+	    <<ncontrib<<" ( "<<(ncontrib*1000/n)/10.0<<" % )"<<endl;
   result = (psh->Process())->TotalResult() * rpa.Picobarn();
   return result;
   
@@ -192,6 +201,8 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxer
 
 bool Phase_Space_Integrator::AddPoint(const double value)
 {
+  nstep++;
+  if (value>0.) ncstep++;
   Integrable_Base *proc=psh->Process();
   std::string func=proc->EnhanceFunction();
   double enhance=1.0;
@@ -206,11 +217,14 @@ bool Phase_Space_Integrator::AddPoint(const double value)
     enhance=((TDouble*)p_interpreter->Calculate())->m_value;
   }
   
+  if (psh->ColorIntegrator()==NULL || psh->ColorIntegrator()->ValidPoint()) {
     if ((psh->BeamIntegrator())) (psh->BeamIntegrator())->AddPoint(value*enhance);    
     if ((psh->ISRIntegrator()))  (psh->ISRIntegrator())->AddPoint(value*enhance);    
     if ((psh->KMRZIntegrator()))  (psh->KMRZIntegrator())->AddPoint(value*enhance);    
     if ((psh->KMRKPIntegrator()))  (psh->KMRKPIntegrator())->AddPoint(value*enhance);    
+    if (psh->HelicityIntegrator()) psh->HelicityIntegrator()->AddPoint(value*enhance);
     (psh->FSRIntegrator())->AddPoint(value*enhance);    
+  }
     psh->AddPoint(value);
 
     local.sum+=value;
@@ -331,8 +345,9 @@ bool Phase_Space_Integrator::AddPoint(const double value)
     }
 #endif
     ncontrib = psh->FSRIntegrator()->ValidN();
-    if ( ncontrib!=nlo && ((ncontrib%iter)==0 || ncontrib==maxopt)) {
+    if ( ncontrib!=nlo && ncontrib>0 && ((ncontrib%iter)==0 || ncontrib==maxopt)) {
       nlo=ncontrib;
+      bool optimized=false;
 #ifndef _USE_MPI_ // non MPI mode
       bool fotime = false;
       msg_Tracking()<<" n="<<ncontrib<<"  iter="<<iter<<"  maxopt="<<maxopt<<endl;
@@ -349,6 +364,12 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	  if ((psh->Process())->SPoints()==0) lotime = ATOOLS::rpa.gen.Timer().UserTime();
 	}
 	fotime = true;
+	if ((psh->FSRIntegrator())->OptimizationFinished()) { 
+	  if (!(psh->ISRIntegrator()) || ncontrib/iter1>=8) { 
+	    maxopt=ncontrib;
+	  }
+	}
+	optimized=true;
       }
       else {
 	(psh->Process())->ResetMax(0);
@@ -359,11 +380,14 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	if ((psh->KMRZIntegrator()))  (psh->KMRZIntegrator())->EndOptimize(maxerror);
 	if ((psh->KMRKPIntegrator()))  (psh->KMRKPIntegrator())->EndOptimize(maxerror);
 	(psh->FSRIntegrator())->EndOptimize(maxerror);
-	iter   *= 2;
+	psh->UpdateIntegrators();
+	iter   = iter0;
 	maxopt += 4*iter;
 	endopt++;
 	(psh->Process())->ResetMax(1);
 	(psh->Process())->InitWeightHistogram();
+  lotime = ATOOLS::rpa.gen.Timer().UserTime();
+	return false;
       }
 
       if (!((psh->Process())->TotalResult()>0.) && !((psh->Process())->TotalResult()<0.)
@@ -388,7 +412,9 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 		<<" pb"<<om::reset<<" +- ( "<<om::red
 		<<(psh->Process())->TotalVar()*rpa.Picobarn()
 		<<" pb = "<<error*100<<" %"<<om::reset<<" ) "
-		<<ncontrib<<" ( "<<(ncontrib*1000/n)/10.0<<" % )"<<endl;
+		<<ncontrib<<" ( "<<(ncstep*1000/nstep)/10.0
+		<<" % )"<<endl;
+      if (optimized) nstep = ncstep = 0;
       if (fotime) {
 	msg_Info()<<"full optimization: ";
       }
@@ -397,6 +423,15 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 		    <<int(timeest)-int((time-starttime))
 		    <<" s left / "<<int(timeest)
 		    <<" s total )   "<<endl;
+
+      std::vector<double> stats(6);
+      stats[0]=psh->Process()->TotalResult()*rpa.Picobarn();
+      stats[1]=psh->Process()->TotalVar()*rpa.Picobarn();
+      stats[2]=error;
+      stats[3]=ncontrib;
+      stats[4]=ncontrib/(double)n;
+      stats[5]=time-starttime+addtime;
+      psh->AddStats(stats);
 
       if (ncontrib/iter0==5) iter=iter1;
       bool allowbreak = true;
@@ -418,7 +453,7 @@ double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* psh,double ma
   maxopt    = iter*nopt;
 
   // double flux = 1./(2.*mass);
-  long int n;
+  long unsigned int n;
   double value;
   double max = 0.;
   double error;

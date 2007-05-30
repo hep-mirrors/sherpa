@@ -25,9 +25,29 @@ const bool apF=false;
 
 VHAAG::VHAAG(int _nin,int _nout,int pn, VHAAG* ovl) 
 {
+  Permutation pp(_nin+_nout-1);
+  int* tp=pp.Get(pn);
+  std::vector<int> perm(_nin+_nout);
+  perm[0] = 0;
+  for (int i=1;i<_nin+_nout;i++) perm[i] = tp[i-1]+1;
+  Initialize(_nin,_nout,perm,ovl);
+}
+
+VHAAG::VHAAG(int _nin,int _nout,std::vector<size_t> tp, VHAAG* ovl)
+{
+  size_t zero(0);
+  for (;zero<tp.size();++zero)
+    if (tp[zero]==0) break;
+  std::vector<int> perm(tp.size());
+  for (size_t i(0);i<tp.size();++i)
+    perm[i]=i+zero<tp.size()?tp[i+zero]:tp[i+zero-tp.size()];
+  Initialize(_nin,_nout,perm,ovl);
+}
+
+void VHAAG::Initialize(int _nin,int _nout,std::vector<int> perm, VHAAG* ovl) 
+{
   nin=_nin; nout=_nout;
   Permutation pp(nin+nout-1);
-  int* tp=pp.Get(pn);
   p_perm = new int[nin+nout];
   p_mrep = new int[nin+nout];
   p_perm[0] = p_mrep[0] = 0;
@@ -35,9 +55,9 @@ VHAAG::VHAAG(int _nin,int _nout,int pn, VHAAG* ovl)
   name = "VHAAG";
   char hlp[4];
   for (int i=1;i<nin+nout;i++) {
-    p_perm[i] = tp[i-1]+1;
+    p_perm[i] = perm[i];
     p_mrep[p_perm[i]] = i;
-    if (tp[i-1]==0) n_p1=i;
+    if (perm[i]==1) n_p1=i;
     name+= "_";
     sprintf(hlp,"%i",p_perm[i]);
     name+= std::string(hlp);
@@ -47,7 +67,7 @@ VHAAG::VHAAG(int _nin,int _nout,int pn, VHAAG* ovl)
   rannum = 3*nout-4;;
   rans  = new double[rannum];
   m_q = new Vec4D[nin+nout];
-  m_ownvegas        = false;
+  m_ownvegas = false;
   if (ovl) p_sharedvegaslist = ovl->GetSharedVegasList();
   else p_sharedvegaslist = NULL;
   if (p_sharedvegaslist==NULL) {
@@ -90,7 +110,7 @@ VHAAG::VHAAG(int _nin,int _nout,int pn, VHAAG* ovl)
 VHAAG::~VHAAG()
 {
   delete[] p_perm;
-  delete[] rans;
+  delete[] p_mrep;
   delete[] m_q;
   if (m_ownvegas) {
     delete p_vegas;

@@ -18,7 +18,7 @@ bool Intact::CalculateWeight(double x,double z,double kp2,double q2)
 
 double Intact::Weight(ATOOLS::Flavour fl)                
 { 
-  if (fl==m_bunch) return m_weight;
+  if (m_bunch.Includes(fl)) return m_weight;
   return 0.;
 }
 

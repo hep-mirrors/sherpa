@@ -1,50 +1,121 @@
 #include "Current.H"
 
-#include "Vertex.H"
 #include "Message.H"
-#include "Exception.H"
 #include "MyStrStream.H"
-#ifdef PROFILE__all
-#include "prof.hh"
-#else
-#define PROFILE_HERE
-#define PROFILE_LOCAL(NAME)
-#endif
+#include "STL_Tools.H"
 
 using namespace EXTRAXS;
 using namespace ATOOLS;
 
-Current::Current(CDBG_Amplitude *const ampl,const Flavour &fl):
-  p_ampl(ampl), 
-  m_fl(fl) 
+template <typename CType>
+void Current<CType>::ResetJ()
 {
-  if (m_fl.IsFermion()) m_type=ct::spinor;
-  else if (m_fl.IsVector()) m_type=ct::vector;
-  else if (m_fl.IsTensor()) m_type=ct::tensor;
-  else THROW(fatal_error,"Invalid flavour");
+  m_j.resize(0); 
+  for (Vertex_Vector::const_iterator vit=m_out.begin();
+       vit!=m_out.end();++vit) (*vit)->SetZero(false);
 }
 
-Current::~Current()
+template <typename CType>
+void Current<CType>::AddJ(const CType &j)
 {
-  for (Vertex_Vector::const_iterator vit(m_in.begin());
-       vit!=m_in.end();++vit) {
-    delete *vit;
+  for (typename std::vector<CType>::iterator cit(m_j.begin());
+       cit!=m_j.end();++cit)
+    if (j(0)==(*cit)(0) && j(1)==(*cit)(1) && 
+	j.H(0)==cit->H(0) && j.H(1)==cit->H(1)) { 
+      *cit+=j;
+      return; 
+    }
+  m_j.push_back(j);
+}
+
+template <typename CType>
+const std::vector<CType> &Current<CType>::J() const
+{
+  return m_j;
+}
+
+template <typename CType>
+void Current<CType>::Evaluate()
+{
+#ifdef DEBUG__BG
+  msg_Debugging()<<METHOD<<"(): "<<m_id<<" {\n";
+  msg_Indent();
+#endif
+  m_j.clear();
+  Vertex_Vector::const_iterator vit(m_in.begin());
+  // calculate outgoing momentum
+  m_p=(*vit)->JA()->P()+(*vit)->JB()->P();
+  // calculate subcurrents
+  for (;vit!=m_in.end();++vit) 
+    if (!(*vit)->Zero()) (*vit)->Evaluate();
+  if (!m_out.empty() && !m_j.empty()) {
+    AddPropagator();
+    for (vit=m_out.begin();vit!=m_out.end();++vit)
+      (*vit)->SetZero(m_j.empty());
   }
+#ifdef DEBUG__BG
+  msg_Debugging()<<"}\n";
+  Print();
+#endif
 }
 
-std::ostream &EXTRAXS::operator<<(std::ostream &str,const ct::type &type)
+template <typename CType>
+void Current<CType>::Print() const
 {
-  switch (type) {
-  case ct::spinor: return str<<"S";
-  case ct::vector: return str<<"V";
-  case ct::tensor: return str<<"T";
+  if (!msg.LevelIsDebugging()) return;
+  std::string id(m_id.empty()?"<no entry>":ToString(m_id.front()));
+  for (size_t i(1);i<m_id.size();++i) id+=","+ToString(m_id[i]);
+  msg_Debugging()<<'['<<id<<"]"<<m_fid<<"{"<<m_id.size()<<","
+		 <<m_key<<"}("<<Flav()<<"){\n";
+  if (m_p!=Vec4D()) msg_Debugging()<<"m_p  : "<<m_p<<"\n";
+  if (!m_j.empty()) msg_Debugging()<<"m_j  :\n";
+  {
+    msg_Indent();
+    for (size_t i(0);i<m_j.size();++i) 
+      msg_Debugging()<<m_j[i]<<"\n";
   }
-  return str;
+  if (!m_in.empty()) msg_Debugging()<<"m_in : ("<<m_in.size()<<")\n";
+  {
+    msg_Indent();
+    for (size_t i(0);i<m_in.size();++i) 
+      msg_Debugging()<<*m_in[i]<<"\n";
+  }
+  if (!m_out.empty()) msg_Debugging()<<"m_out: ("<<m_out.size()<<")\n";
+  {
+    msg_Indent();
+    for (size_t i(0);i<m_out.size();++i) 
+      msg_Debugging()<<*m_out[i]<<"\n";
+  }
+  msg_Debugging()<<"}\n";
 }
 
-std::ostream &EXTRAXS::operator<<(std::ostream &str,const Current &c)
-{
-  return str<<'('<<c.Type()<<','<<c.Flav()<<','
-	    <<c.Id().size()<<','<<c.Key()<<')';
+template <typename CType> void Current_Base::AddJ(const CType &j)
+{ 
+  return static_cast<Current<CType>*>(this)->AddJ(j); 
 }
 
+template <typename CType> const std::vector<CType> &Current_Base::J() const
+{ 
+  return static_cast<const Current<CType>*>(this)->J(); 
+}
+
+#include "C_Spinor.H"
+
+template void Current_Base::AddJ(const CSpinor &j);
+template const std::vector<CSpinor> &Current_Base::J() const;
+
+template class Current<CSpinor>;
+
+#include "C_Vector.H"
+
+template void Current_Base::AddJ(const CVec4D &j);
+template const std::vector<CVec4D> &Current_Base::J() const;
+
+template class Current<CVec4D>;
+
+#include "C_Tensor.H"
+
+template void Current_Base::AddJ(const CAsT4D &j);
+template const std::vector<CAsT4D> &Current_Base::J() const;
+
+template class Current<CAsT4D>;

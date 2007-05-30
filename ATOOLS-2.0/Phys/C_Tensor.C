@@ -6,7 +6,7 @@ double CAsT4D::s_accu=1.0e-12;
 
 std::ostream &ATOOLS::operator<<(std::ostream &s,const CAsT4D &ten)
 {
-  return s<<'{'<<ten(0)<<","<<ten(1)<<'|'
+  return s<<'{'<<ten.H(0)<<","<<ten.H(1)<<";"<<ten(0)<<","<<ten(1)<<'|'
 	  <<ten[0]<<','<<ten[1]<<','<<ten[2]<<','
 	  <<ten[3]<<','<<ten[4]<<','<<ten[5]<<'}';
 }

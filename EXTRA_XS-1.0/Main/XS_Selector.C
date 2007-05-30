@@ -98,15 +98,16 @@ Single_XS *XS_Selector::GetSingleXS(const size_t nin,const size_t nout,
 { 
   Single_XS *xs=NULL;
   static Getter_Function_Map s_gettermap;
-  Getter_Function_Map::const_iterator git=s_gettermap.find(Flavour_Container(flavours,nqed,nqcd));
-  if (git!=s_gettermap.end()) {
-    xs=git->second(nin,nout,flavours,nqed,nqcd);
-    if (xs==NULL) return xs;
-    xs->m_orderEW=nqed;
-    xs->m_orderQCD=nqcd;
-    xs->p_isrhandler=p_owner->p_isrhandler;
-    xs->p_beamhandler=p_owner->p_beamhandler;
-    return xs;
+  if (nin+nout==4) {
+    Getter_Function_Map::const_iterator git=
+      s_gettermap.find(Flavour_Container(flavours,nqed,nqcd));
+    if (git!=s_gettermap.end()) {
+      xs=git->second(nin,nout,flavours,nqed,nqcd);
+      if (xs==NULL) return xs;
+      xs->m_orderEW=nqed;
+      xs->m_orderQCD=nqcd;
+      return xs;
+    }
   }
   Flavour_Container flc(flavours,nqed,nqcd);
   if (m_offshell) { 
@@ -114,9 +115,10 @@ Single_XS *XS_Selector::GetSingleXS(const size_t nin,const size_t nout,
       s_gettermap[flc]=&Single_XS::GetProcess<Off_Shell_gg_qqb>;
   }
   else {
-    if (clsc==PHASIC::cls::sample && hlsc==PHASIC::hls::sample) {
-      if ((xs=Single_XS::GetProcess<CDXS_gg_ng>(nin,nout,flavours,nqed,nqcd))!=NULL) 
- 	s_gettermap[flc]=&Single_XS::GetProcess<CDXS_gg_ng>;
+    if (clsc==PHASIC::cls::sample) {
+      if ((xs=Single_XS::GetProcess<CDXS_pp_np>(nin,nout,flavours,nqed,nqcd))!=NULL) 
+ 	s_gettermap[flc]=&Single_XS::GetProcess<CDXS_pp_np>;
+      if (xs!=NULL) xs->SetHelicityScheme(hlsc);
     }
     else {
       if ((xs=Single_XS::GetProcess<XS_ee_ffbar>(nin,nout,flavours,nqed,nqcd))!=NULL) 
@@ -124,7 +126,7 @@ Single_XS *XS_Selector::GetSingleXS(const size_t nin,const size_t nout,
       else if ((xs=Single_XS::GetProcess<XS_gg_gg>(nin,nout,flavours,nqed,nqcd))!=NULL) 
 	s_gettermap[flc]=&Single_XS::GetProcess<XS_gg_gg>;
       else if ((xs=Single_XS::GetProcess<XS_gg_ng>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-	s_gettermap[flc]=&Single_XS::GetProcess<XS_gg_ng>;
+ 	s_gettermap[flc]=&Single_XS::GetProcess<XS_gg_ng>;
       else if ((xs=Single_XS::GetProcess<XS_q1g_q1g>(nin,nout,flavours,nqed,nqcd))!=NULL) 
 	s_gettermap[flc]=&Single_XS::GetProcess<XS_q1g_q1g>;
       else if ((xs=Single_XS::GetProcess<XS_gg_q1qbar1>(nin,nout,flavours,nqed,nqcd))!=NULL) 
@@ -158,8 +160,6 @@ Single_XS *XS_Selector::GetSingleXS(const size_t nin,const size_t nout,
   if (xs!=NULL) {
     xs->m_orderEW=nqed;
     xs->m_orderQCD=nqcd;
-    xs->p_isrhandler=p_owner->p_isrhandler;
-    xs->p_beamhandler=p_owner->p_beamhandler;
   }
   else {
     s_gettermap[flc]=Dummy_Getter;

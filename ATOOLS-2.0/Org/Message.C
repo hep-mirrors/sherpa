@@ -109,6 +109,7 @@ Message::Message()
 Message::~Message() 
 {      
   if (p_logfile!=p_no) delete p_logfile;
+  delete p_no;
 }
 
 void Message::Init(const int level,const std::string &logfile) 

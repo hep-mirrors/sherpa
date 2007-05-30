@@ -134,11 +134,6 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
 	sel->SetRange(critflavs,rmin,rmax);
 	activetypes.push_back(type);	
 	break;
-      case 23 :
-	sel = new Summed_PT_Selector(_nin,_nout,_fl);
-	sel->SetRange(critflavs,rmin,rmax);
-	activetypes.push_back(type);
-	break;
       case 24 :
 	sel = new X_Selector(_nin,_nout,_fl);
 	sel->SetRange(critflavs,rmin,rmax);

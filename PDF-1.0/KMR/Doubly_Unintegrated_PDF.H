@@ -34,9 +34,9 @@ namespace PDF {
     std::vector<std::pair<double,Splitting_Kernel*> > m_partsums;
 
     kps::type m_kperpscheme;
-    double    m_fixedktexponent;
+    double    m_fixedktexponent, m_cweight;
     bool      m_calculate;
-    int       m_sudmode, m_splitmode, m_ordermode;
+    int       m_sudmode, m_splitmode, m_ordermode, m_weightmode;
 
     Splitting_Kernel *p_jkernel;
 
@@ -79,6 +79,7 @@ namespace PDF {
     inline int       SudakovMode() const     { return m_sudmode;         }
     inline int       SplitMode() const       { return m_splitmode;       }
     inline int       OrderingMode() const    { return m_ordermode;       }
+    inline int       WeightMode() const      { return m_weightmode;      }
 
     inline LL_Sudakov *Sudakov() const { return p_sudakov; }
 
@@ -92,8 +93,12 @@ namespace PDF {
     { m_splitmode=mode; }
     inline void SetOrderingMode(const int mode) 
     { m_ordermode=mode; }
+    inline void SetWeightMode(const int mode) 
+    { m_weightmode=mode; }
 
     inline Splitting_Kernel *JetKernel() const { return p_jkernel; }
+
+    inline double CorrectionWeight() const { return m_cweight; }
 
   };// end of class Doubly_Unintegrated_PDF
 

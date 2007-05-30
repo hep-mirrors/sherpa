@@ -439,6 +439,7 @@ Flavour Jet_Finder::GetFlavour(std::string fl)
     }
   }
   Flavour flav(kf_table.FromString(fl));
+  if (fl=="Q") return Flavour(kf::quark);
   if (flav.Kfcode()==kf::none) 
     THROW(critical_error,"No flavour for '"+fl+"'.");
   if (bar) flav=flav.Bar();

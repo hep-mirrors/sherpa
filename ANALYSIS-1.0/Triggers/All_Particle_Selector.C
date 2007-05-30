@@ -7,8 +7,6 @@ namespace ANALYSIS {
   class Particle_Selector_Base: public Trigger_Base {  
   protected:
 
-    std::string m_inlist, m_outlist;
-
     double m_xmin, m_xmax;
 
   public:
@@ -63,6 +61,18 @@ namespace ANALYSIS {
     
   };// end of class Eta_Selector
 
+  class Abs_Eta_Selector: public Particle_Selector_Base {  
+  public:
+
+    Abs_Eta_Selector(const double min,const double max,
+		const std::string &inlist,const std::string &outlist);
+    
+    bool Select(const ATOOLS::Particle *p) const;
+    
+    Analysis_Object *GetCopy() const;
+    
+  };// end of class Abs_Eta_Selector
+
   class Y_Selector: public Particle_Selector_Base {  
   public:
 
@@ -74,6 +84,18 @@ namespace ANALYSIS {
     Analysis_Object *GetCopy() const;
     
   };// end of class Y_Selector
+
+  class Abs_Y_Selector: public Particle_Selector_Base {  
+  public:
+
+    Abs_Y_Selector(const double min,const double max,
+		const std::string &inlist,const std::string &outlist);
+    
+    bool Select(const ATOOLS::Particle *p) const;
+    
+    Analysis_Object *GetCopy() const;
+    
+  };// end of class Abs_Y_Selector
 
   class Phi_Selector: public Particle_Selector_Base {  
   public:
@@ -119,6 +141,7 @@ namespace ANALYSIS {
 #include <iomanip>
 
 using namespace ANALYSIS;
+using namespace ATOOLS;
 
 template <class Class>
 Analysis_Object *const 
@@ -281,13 +304,31 @@ Eta_Selector::Eta_Selector
 
 bool Eta_Selector::Select(const ATOOLS::Particle *p) const
 {
-  double pt(p->Momentum().Eta());
-  return pt>=m_xmin && pt<=m_xmax;
+  double eta(p->Momentum().Eta());
+  return eta>=m_xmin && eta<=m_xmax;
 }
 
 Analysis_Object *Eta_Selector::GetCopy() const
 {
   return new Eta_Selector(m_xmin,m_xmax,m_inlist,m_outlist);
+}
+
+DEFINE_SELECTOR_GETTER(Abs_Eta_Selector,Abs_Eta_Selector_Getter,"AbsEtaSel")
+
+Abs_Eta_Selector::Abs_Eta_Selector
+(const double min,const double max,
+ const std::string &inlist,const std::string &outlist):
+  Particle_Selector_Base(min,max,inlist,outlist) {}
+
+bool Abs_Eta_Selector::Select(const ATOOLS::Particle *p) const
+{
+  double eta(p->Momentum().Eta());
+  return dabs(eta)>=m_xmin && dabs(eta)<=m_xmax;
+}
+
+Analysis_Object *Abs_Eta_Selector::GetCopy() const
+{
+  return new Abs_Eta_Selector(m_xmin,m_xmax,m_inlist,m_outlist);
 }
 
 DEFINE_SELECTOR_GETTER(Y_Selector,Y_Selector_Getter,"YSel")
@@ -299,13 +340,31 @@ Y_Selector::Y_Selector
 
 bool Y_Selector::Select(const ATOOLS::Particle *p) const
 {
-  double pt(p->Momentum().Y());
-  return pt>=m_xmin && pt<=m_xmax;
+  double y(p->Momentum().Y());
+  return y>=m_xmin && y<=m_xmax;
 }
 
 Analysis_Object *Y_Selector::GetCopy() const
 {
   return new Y_Selector(m_xmin,m_xmax,m_inlist,m_outlist);
+}
+
+DEFINE_SELECTOR_GETTER(Abs_Y_Selector,Abs_Y_Selector_Getter,"AbsYSel")
+
+Abs_Y_Selector::Abs_Y_Selector
+(const double min,const double max,
+ const std::string &inlist,const std::string &outlist):
+  Particle_Selector_Base(min,max,inlist,outlist) {}
+
+bool Abs_Y_Selector::Select(const ATOOLS::Particle *p) const
+{
+  double y(p->Momentum().Y());
+  return dabs(y)>=m_xmin && dabs(y)<=m_xmax;
+}
+
+Analysis_Object *Abs_Y_Selector::GetCopy() const
+{
+  return new Abs_Y_Selector(m_xmin,m_xmax,m_inlist,m_outlist);
 }
 
 DEFINE_SELECTOR_GETTER(Phi_Selector,Phi_Selector_Getter,"PhiSel")

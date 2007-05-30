@@ -252,7 +252,7 @@ One_Variable_Selector::One_Variable_Selector
   if (ana->Mode()&weighted) return;
   for (size_t i(0);i<m_dists.size();++i)
     if (m_histos[0][i]>-1) {
-      msg_Debugging()<<"  init histo "<<i<<" for ";
+      msg_Debugging()<<"  init histo "<<i<<" "<<m_vars[i]->Name()<<" for ";
       for (size_t j(0);j<m_flavs[i].size();++j) 
 	msg_Debugging()<<m_flavs[i][j].IDName()<<" "<<m_items[i][j]<<" ";
       msg_Debugging()<<"-> type "<<m_histos[0][i]<<", "<<m_histos[1][i]

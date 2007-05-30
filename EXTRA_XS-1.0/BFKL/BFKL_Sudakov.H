@@ -16,7 +16,7 @@ namespace EXTRAXS {
 
     double m_ya, m_yb, m_kt2min, m_kt2max;
     double m_asmax, m_integral, m_gamma, m_weight, m_ktexp;
-    double m_y, m_kt2, m_phi;
+    double m_y, m_kt2, m_phi, m_splitweight;
 
     ATOOLS::Vec4D   m_q;
     ATOOLS::Flavour m_flq;
@@ -63,7 +63,8 @@ namespace EXTRAXS {
     inline double GetKT2() const   { return m_kt2;  }
     inline double GetPhi() const   { return m_phi;  }
 
-    inline double GetWeight() const { return m_weight;  }
+    inline double GetWeight() const      { return m_weight;       }
+    inline double GetSplitWeight() const { return m_splitweight;  }
 
     inline LEV_Base *Selected() const { return p_levs->Selected(); }
 

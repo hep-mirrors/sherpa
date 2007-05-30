@@ -17,11 +17,6 @@ namespace PHASIC {
     
     enum code {
       normal_call = 0,
-      pi_call     = 1,
-      pi_isr      = 2,
-      pi_fsr      = 4,
-      pi_z        = 8,
-      pi_kp       = 16,
       no_lim_isr  = 32,
       no_dice_isr = 64
     };
@@ -55,7 +50,6 @@ namespace PHASIC {
   };// end of struct Weight_Info
 
   class Phase_Space_Integrator;
-  class PI_Interface;
   class Color_Integrator;
   class Helicity_Integrator;
 
@@ -87,7 +81,7 @@ namespace PHASIC {
 
     ATOOLS::Poincare *p_massboost;
 
-    int  m_nin, m_nout, m_nvec, m_inttype, m_fin_opt, m_use_pi;
+    int  m_nin, m_nout, m_nvec, m_inttype, m_fin_opt;
     bool m_initialized;
 
     long int m_trials, m_maxtrials, m_sumtrials, m_events;
@@ -95,10 +89,10 @@ namespace PHASIC {
     double m_E, m_m[2], m_m2[2], m_s, m_smin, m_psweight;
     double m_result_1, m_result_2, m_flux, m_weight, m_error; 
     
-    PI_Interface* p_pi;
-
     Color_Integrator    *p_colint;
     Helicity_Integrator *p_helint;
+
+    std::vector<std::vector<double> > m_stats;
 
     bool MakeIncoming(ATOOLS::Vec4D *const p,const double mass=-1.);
 
@@ -138,6 +132,7 @@ namespace PHASIC {
     bool ReadIn(const std::string &path,const size_t exclude=0);
     bool InitIncoming(const double mass=-1.);
     bool CreateIntegrators();
+    void UpdateIntegrators();
     void InitCuts();
     bool InitIntegrators();
     
@@ -158,11 +153,11 @@ namespace PHASIC {
     void ISRChannels(const int i,Channel_Info &ci) const; 
     void BeamChannels(const int i,Channel_Info &ci) const;
 
-    bool CreatePI();
-
     static ATOOLS::Integration_Info *const GetInfo();
 
     static void DeleteInfo();
+
+    void AddStats(const std::vector<double> &stats);
 
     // inline functions
     inline ATOOLS::Vec4D *const    Point() const { return p_lab;      }
@@ -172,7 +167,6 @@ namespace PHASIC {
     inline double   Weight() const    { return m_weight;    }
     inline double   Error() const     { return m_error;     }
     inline long int MaxTrials() const { return m_maxtrials; }
-    inline int      UsePI() const     { return m_use_pi;    }
  
     inline Multi_Channel *const BeamIntegrator() const  
     { return p_beamchannels; }
@@ -215,16 +209,15 @@ namespace PHASIC {
     { m_error=error; }
     inline void SetMaxTrials(const long int maxtrials)
     { m_maxtrials=maxtrials; }
-    inline void SetUsePI(const int use_pi) 
-    { m_use_pi=use_pi; }
 
     inline Phase_Space_Integrator *const Integrator() const 
     { return p_integrator; }
 
-    inline PI_Interface *const PI() const { return p_pi; }
-
     inline Color_Integrator    *ColorIntegrator() const    { return p_colint; }
     inline Helicity_Integrator *HelicityIntegrator() const { return p_helint; }
+
+    inline const std::vector<std::vector<double> > Stats() const
+    { return m_stats; }
 
   };// end of class Phase_Space_Handler
 

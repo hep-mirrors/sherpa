@@ -23,7 +23,7 @@ namespace AMEGIC {
 		  PDF::ISR_Handler * =NULL,BEAM::Beam_Spectra_Handler * =NULL,
 		  ATOOLS::Selector_Data * =NULL,
 		  int=0,int=99,int=99,int=0,PHASIC::scl::scheme=PHASIC::scl::unknown,double=-1.,
-		  Pol_Info* _pl=0,int _nex=0,ATOOLS::Flavour * _ex_fl=0,int usepi=0, 
+		  Pol_Info* _pl=0,int _nex=0,ATOOLS::Flavour * _ex_fl=0, 
 		  std::string cuttag="-1.", double error=-1.,
 		  std::string e_func="1", int enable_mhv=0);
     Process_Group();

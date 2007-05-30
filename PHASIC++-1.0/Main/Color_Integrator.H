@@ -33,34 +33,46 @@ namespace PHASIC {
 
   std::ostream &operator<<(std::ostream &ostr,const Representation &v);
   
+  typedef std::vector<int>    Int_Vector;
+  typedef std::vector<double> Double_Vector;
+
+  typedef short unsigned int      Idx_Type;
+  typedef std::vector<Idx_Type>   Idx_Vector;
+  typedef std::vector<Idx_Vector> Idx_Matrix;
+
   class Color_Integrator {
   private:
 
     std::vector<Representation*> m_ids;
 
-    std::vector<std::vector<size_t> > m_orders, m_confs;
+    Idx_Matrix m_orders, m_confs;
+    Idx_Vector m_lastids, m_lastperm, m_nexti;
 
-    std::vector<double> m_weights, m_cweights, m_asum;
+    Double_Vector m_weights, m_cweights, m_asum, m_alpha;
 
-    size_t m_pairs;
-    bool   m_check;
+    size_t m_pairs, m_lastconf, m_alphamode;
+    bool   m_check, m_iterate, m_on, m_otfcc, m_fincc, m_valid;
 
-    double m_weight, m_n, m_nv;
+    double m_weight, m_n, m_nv, m_max, m_over, m_cmax, m_mean, m_cweight;
 
     double Factorial(const double &n) const;
-    double NOverM(const double &n,const double &m) const;
 
     size_t GenerateIndex();
 
     bool DiceColours();
+    void DicePoint();
+    int  Dice();
+    bool LookUp();
     
-    int ConstructConfigurations(std::vector<size_t> ids,
-				std::vector<size_t> perm,
-				bool sing,double weight);
-    int ConstructConfigurations();
+    int  ConstructConfigurations(Idx_Vector ids,Idx_Vector perm,
+				 bool sing,double weight,
+				 Idx_Vector &nexti,bool one,size_t depth);
+    void InitConstruction(Idx_Vector &ids,Idx_Vector &perm,
+			  Idx_Vector &nexti);
+    int  ConstructConfigurations();
 
     bool TrivialCheck();
-    bool CheckPermutation(const std::vector<size_t> &perm);
+    bool CheckPermutation(const Idx_Vector &perm);
 
     bool AddConfiguration(const size_t &i);
 
@@ -73,32 +85,51 @@ namespace PHASIC {
     ~Color_Integrator();
 
     // member functions
-    bool ConstructRepresentations(const std::vector<size_t> &ids,
-				  const std::vector<int> &types);
+    bool ConstructRepresentations(const Idx_Vector &ids,
+				  const Int_Vector &types);
 
-    bool GeneratePoint();
+    bool NextOrder();
+    bool GenerateOrders();
+    bool GeneratePoint(const bool orders=false);
+    bool GenerateType(const size_t &type,const bool orders=false);
     bool Initialize();
 
-    std::vector<int> I() const;
-    std::vector<int> J() const;
+    size_t IdentifyType(const Idx_Vector &perm) const;
+
+    void SetI(const Int_Vector &i);
+    void SetJ(const Int_Vector &j);
+
+    Int_Vector I() const;
+    Int_Vector J() const;
+
+    bool SetConfiguration(const size_t &id);
+
+    void SetAlpha(const Double_Vector &alpha);
 
     // inline functions
-    inline void SetCheck(const bool check) { m_check=check; }
+    inline void SetCheck(const bool check)     { m_check=check;     }
+    inline void SetIterate(const bool iterate) { m_iterate=iterate; }
+    inline void SetOTFCC(const bool otf)       { m_otfcc=otf;       }
 
-    inline bool Check() const { return m_check; }
+    inline void SetOn(const bool on)           { m_on=on;           }
+    inline void SetAlphaMode(const size_t am)  { m_alphamode=am;    }
 
-    inline double GlobalWeight() const { return m_weight; }
+    inline bool Check() const   { return m_check;   }
+    inline bool Iterate() const { return m_iterate; }
+    inline bool OTFCC() const   { return m_otfcc;   }
 
-    inline const std::vector<std::vector<size_t> > &Orders() const
-    { return m_orders; }
-    inline const std::vector<double> &Weights() const 
-    { return m_weights; }
+    inline bool ValidPoint() const   { return m_valid; }
+
+    inline void RestartOrders() { m_fincc=true; }
+
+    inline double GlobalWeight() const { return m_cweight; }
+
+    inline const Idx_Matrix    &Orders() const  { return m_orders; }
+    inline const Double_Vector &Weights() const { return m_weights; }
+
+    inline const Idx_Matrix &Configurations() const { return m_confs; }
 
   };// end of class Color_Integrator
-
-  std::ostream &operator<<(std::ostream &ostr,const std::vector<size_t> &v);
-  std::ostream &operator<<(std::ostream &ostr,
-			   const std::vector<std::vector<size_t> > &v);
 
 }// end of namespace PHASIC
 

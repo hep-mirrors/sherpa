@@ -22,7 +22,8 @@ libPhasespace_la_SOURCES      =	\
 				Vegas.C ISR_Vegas.C \
 				Channel_Interface.C \
 			   	Multi_Channel.C \
-				PI_Interface.C \
+			   	PreSample_Multi_Channel.C \
+			   	Sample_Multi_Channel.C \
 				Color_Integrator.C \
 				Helicity_Integrator.C \
 				Phase_Space_Handler.C \
@@ -49,8 +50,9 @@ pkginclude_HEADERS        =	\
 			VHAAG.H \
 			Vegas.H ISR_Vegas.H \
 			Multi_Channel.H \
+		   	PreSample_Multi_Channel.H \
+		   	Sample_Multi_Channel.H \
 		 	Integrable_Base.H \
-			PI_Interface.H \
 			Color_Integrator.H \
 			Helicity_Integrator.H \
 			Phase_Space_Handler.H \

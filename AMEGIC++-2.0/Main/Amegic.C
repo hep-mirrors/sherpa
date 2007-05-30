@@ -189,13 +189,10 @@ void Amegic::ReadInProcessfile(string file)
   std::string _facscale   = p_dataread->GetValue<std::string>("FACTORIZATION_SCALE","");
   int    _kfactor_scheme  = p_dataread->GetValue<int>("KFACTOR_SCHEME",0);
   double _scale           = p_dataread->GetValue<double>("FIXED_SCALE",sqr(rpa.gen.Ecms()));
-  int usepi               = p_dataread->GetValue<int>("PI",0);
   double scale_factor     = p_dataread->GetValue<double>("SCALE_FACTOR",1.);
   double factorization_scale_factor   = scale_factor*p_dataread->GetValue<double>("FACTORIZATION_SCALE_FACTOR",1.);
   double renormalization_scale_factor = scale_factor*p_dataread->GetValue<double>("RENORMALIZATION_SCALE_FACTOR",1.);
   rpa.gen.SetScaleFactors(factorization_scale_factor,renormalization_scale_factor);
-
-  p_procs->SetUsePI(usepi);
 
   ifstream from((m_path+file).c_str());
   if (!from) {
@@ -592,17 +589,17 @@ void Amegic::ReadInProcessfile(string file)
 						   order_strong,order_ew,
 						   kfactor_scheme,scale_scheme,
 						   fixed_scale,
-						   plavs,nex,excluded,usepi,ycut,maxerror,enhance_function);
+						   plavs,nex,excluded,ycut,maxerror,enhance_function);
 		  else if (enable_mhv!=4)
 		    proc = new Single_Process(pcinfo,nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
 					      order_strong,order_ew,
 					      kfactor_scheme,scale_scheme,fixed_scale,
-					      plavs,nex,excluded,usepi,ycut,maxerror,enhance_function);
+					      plavs,nex,excluded,ycut,maxerror,enhance_function);
 		}
 		else proc = new Process_Group(pcinfo,nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
 					      order_strong,order_ew,
 					      kfactor_scheme,scale_scheme,fixed_scale,
-					      plavs,nex,excluded,usepi,ycut,maxerror,enhance_function,enable_mhv);
+					      plavs,nex,excluded,ycut,maxerror,enhance_function,enable_mhv);
 		if (proc) {
 		  proc->SetEnhance(enhance_factor,maxreduction_factor,maxredepsilon);
 		  proc->SetFactorizationScale(factorization_scale);

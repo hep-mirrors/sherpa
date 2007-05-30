@@ -8,11 +8,19 @@
 #include "Flow.H"
 #include "Data_Reader.H"
 #include "MyStrStream.H"
+#include "XS_Selector.H"
+#include "Color_Integrator.H"
 
 using namespace EXTRAXS;
 using namespace PHASIC;
 using namespace PDF;
 using namespace ATOOLS;
+
+double Factorial(const double &n) 
+{
+  if (n<=0.0) return 1.0;
+  return n*Factorial(n-1.0);
+}
 
 Ladder::Ladder(const size_t nin,const size_t nout,
 	       const ATOOLS::Flavour *flavours,
@@ -46,14 +54,29 @@ Ladder::Ladder(const size_t nin,const size_t nout,
   if (m_multimode==0) m_splitmode=1;
   if (!read.ReadFromFile(m_memode,"BFKL_ME_MODE")) m_memode=0;
   else msg_Info()<<METHOD<<"(): Set me correction mode "<<m_memode<<".\n";
+  if (!read.ReadFromFile(m_pnmode,"BFKL_PN_MODE")) m_pnmode=1;
+  else msg_Info()<<METHOD<<"(): Set process name mode "<<m_pnmode<<".\n";
+  if (!read.ReadFromFile(m_nmaxme,"BFKL_NMAX_ME")) m_nmaxme=4;
+  else msg_Info()<<METHOD<<"(): Set nmax me "<<m_nmaxme<<".\n";
+  if (!read.ReadFromFile(m_hfp,"BFKL_HFP_MODE")) m_hfp=0;
+  else msg_Info()<<METHOD<<"(): Set heavy flavour production "<<m_hfp<<".\n";
+  if (m_memode&1) m_nmaxme=2;
   m_asecms=(*MODEL::as)(sqr(rpa.gen.Ecms()));
 }
 
 Ladder::~Ladder()
 {
   if (p_jf!=NULL) delete p_jf;
-  for (std::map<std::string,N_Gluon_BG*>::const_iterator
-	 mit(m_mes.begin());mit!=m_mes.end();++mit) delete mit->second;
+  std::set<N_Parton_CDBG*> delcd;
+  for (std::map<std::string,N_Parton_CDBG*>::const_iterator
+	 mit(m_cdmes.begin());mit!=m_cdmes.end();++mit) {
+    if (delcd.find(mit->second)!=delcd.end()) continue;
+    delcd.insert(mit->second);
+    delete mit->second->ColorIntegrator();
+    delete mit->second;
+  }
+  for (std::map<std::string,XS_Base*>::const_iterator
+	 mit(m_xsmes.begin());mit!=m_xsmes.end();++mit) delete mit->second;
   delete p_sudakov;
   p_momenta=NULL;
   p_flavours=NULL;
@@ -73,6 +96,7 @@ bool Ladder::Initialize()
     p_pdfs[i]->SetSudakovMode(0);
     if (m_memode&4) p_pdfs[i]->SetOrderingMode(0);
     if (m_splitmode<2) p_pdfs[i]->SetSplitMode(0);
+    p_pdfs[i]->SetWeightMode(1);
   }
   delete [] p_momenta;
   delete [] p_flavours;
@@ -148,10 +172,15 @@ bool Ladder::GeneratePDFJet()
   // dice first flavour
   m_props.back()=kf::gluon;
   if (m_splitmode>1) {
-    // select t-channel quark w/ probability T_R/C_A
-    if (ran.Get()<0.5/3.0)
-      m_props.back()=(kf::code)Min(p_sudakov->Nf(),(size_t)
-				   (p_sudakov->Nf()*ran.Get()+1));
+    // select t-channel quark w/ probability T_R/2C_A
+    double nf(p_sudakov->Nf()), enf(nf*0.5/6.0);
+    double rn(ran.Get()), sf(rn*(1.0+enf)), rsf(sf/enf*nf);
+    double pw(1.0+enf);
+    if (sf<enf) {
+      m_props.back()=Flavour(kf::code(1+rsf));
+      pw*=nf/enf;
+    }
+    m_weight*=pw;
   }
   m_flavs[0]=m_props.back();
   // construct incoming
@@ -169,8 +198,9 @@ bool Ladder::TestEmission()
 
 bool Ladder::ConstructIncoming()
 {
-  double knt(sqrt(m_q.PPerp2())), yn(m_yn);
-  m_kn=Vec4D(knt*cosh(yn),-m_q[1],-m_q[2],knt*sinh(yn));
+  double yn(m_yn);
+  double mnt(sqrt(m_q.PPerp2()+sqr(m_props.back().Mass())));
+  m_kn=Vec4D(mnt*cosh(yn),-m_q[1],-m_q[2],mnt*sinh(yn));
   Vec4D cms(m_k1+m_kn);
   for (size_t i(m_nin);i<m_moms.size();++i)
     cms+=m_moms[i];
@@ -197,8 +227,8 @@ bool Ladder::BoostToCMS()
 
 bool Ladder::ConstructRung(const bool in)
 {
-  double kt(sqrt(m_kt2));
-  Vec4D k(kt*cosh(m_y),kt*cos(m_phi),kt*sin(m_phi),kt*sinh(m_y));
+  double kt(sqrt(m_kt2)), mt(sqrt(m_kt2+sqr(m_flavs.back().Mass())));
+  Vec4D k(mt*cosh(m_y),kt*cos(m_phi),kt*sin(m_phi),mt*sinh(m_y));
   m_q+=m_moms.back()=k;
   if (k.Nan()) return false;
   return in?ConstructIncoming():true;
@@ -278,6 +308,8 @@ int Ladder::DiceVariableMulti()
   if (!ConstructRung() || !ConstructIncoming()) return -1;
   if (!p_sudakov->Approve(k1,m_oldq,m_moms.back(),m_q)) return -1;
   m_weight*=p_sudakov->GetWeight();
+  /* add splitting weight for me correction */
+  m_splitweight*=p_sudakov->GetSplitWeight();
   return 1;
 }
 
@@ -337,6 +369,7 @@ bool Ladder::SetScales()
 
 double Ladder::Differential(const ATOOLS::Vec4D *momenta)
 {
+  m_splitweight=1.0;
   // set beam parameters
   m_pa=p_beamhandler->GetBeam(0)->InMomentum();
   m_pb=p_beamhandler->GetBeam(1)->InMomentum();
@@ -355,15 +388,18 @@ double Ladder::Differential(const ATOOLS::Vec4D *momenta)
   }
   // calculate pdfs
   double fac(ATOOLS::rpa.gen.FactorizationScaleFactor());
-  p_pdfs[0]->Calculate(m_a1,m_z1,m_kt21,fac*m_mu21);
-  p_pdfs[1]->Calculate(m_an,m_zn,m_kt2n,fac*m_mu2n);
-  m_weight*=p_pdfs[0]->GetXPDF(m_flavs[0])/m_a1*m_z1*m_kt21;
-  m_weight*=p_pdfs[1]->GetXPDF(m_flavs[1])/m_an*m_zn*m_kt2n;
+  int ids[2]={m_y1>m_yn?0:1,m_y1>m_yn?1:0};
+  p_pdfs[ids[0]]->Calculate(m_a1,m_z1,m_kt21,fac*m_mu21);
+  p_pdfs[ids[1]]->Calculate(m_an,m_zn,m_kt2n,fac*m_mu2n);
+  m_weight*=p_pdfs[ids[0]]->GetXPDF(m_flavs[0])/m_a1*m_z1*m_kt21;
+  m_weight*=p_pdfs[ids[1]]->GetXPDF(m_flavs[1])/m_an*m_zn*m_kt2n;
+  if (m_weight==0.0) return 0.0;
   // dice pdf jet flavours
-  if (!p_pdfs[0]->SelectJetFlavour
+  if (!p_pdfs[ids[0]]->SelectJetFlavour
       (p_addflavours[2],m_fl1,ran.Get())) return false;
-  if (!p_pdfs[1]->SelectJetFlavour
+  if (!p_pdfs[ids[1]]->SelectJetFlavour
       (p_addflavours[3],m_fln,ran.Get())) return false;
+  m_weight*=p_pdfs[0]->CorrectionWeight()*p_pdfs[1]->CorrectionWeight();
   // add ll approximation of gg->gg me
   m_weight*=sqr(M_PI)/(2.0*m_q2)/2.0;
   // add flux factor
@@ -395,13 +431,33 @@ double Ladder::Differential(const ATOOLS::Vec4D *momenta)
   p_addmomenta[1]=m_kn;
   p_addflavours[0]=m_fl1;
   p_addflavours[1]=m_fln;
-  std::string name("BFKL_2_"+ToString(m_nout)+"__"+
-		   ToString(m_flavs[0])+"_"+ToString(m_flavs[1]));
-  if (m_nout>0) name+="_";
-  for (size_t i(2);i<2+m_nout;++i) name+="_"+ToString(m_flavs[i]);
+  if (m_hfp==1 && (m_nout!=2 ||
+		   m_flavs[0]!=Flavour(kf::gluon) || 
+		   m_flavs[1]!=Flavour(kf::gluon) ||
+		   m_flavs[2].Kfcode()!=kf::b || 
+		   m_flavs[3]!=m_flavs[2].Bar())) return 0.0;
+  double mass(m_fl1.PSMass()+m_fln.PSMass());
+  if (m_k1[0]<m_fl1.PSMass() || m_kn[0]<m_fln.PSMass()) return 0.0;
+  for (size_t i(2);i<2+m_nout;++i) {
+    mass+=m_flavs[i].PSMass();
+    if (m_moms[i][0]<m_flavs[i].PSMass()) return 0.0;
+  }
+  if (sqr(mass)>(m_p1+m_p2).Abs2()) return 0.0;
+  mass=p_addflavours[2].PSMass()+p_addflavours[3].PSMass();
+  if (sqr(mass)>(m_p1+m_p2).Abs2()) return 0.0;
+  std::string name(p_addflavours[2].IDName()+"_"+
+		   p_addflavours[3].IDName()+"_");
+  name+="_"+m_fl1.IDName();
+  for (size_t i(2);i<2+m_nout;++i) name+="_"+m_flavs[i].IDName();
+  name+="_"+m_fln.IDName();
   msg_Debugging()<<METHOD<<"(): Generated '"<<name<<"'\n";
   m_name=name;
-  if (m_memode>0 && m_nvector<=6) m_weight*=MECorrection();
+  if (m_memode>0 && m_nvector<=Min(m_nmaxme,(size_t)6)) 
+    m_weight*=MECorrection();
+  name="BFKL_2_0_j_j";
+  if (m_pnmode&1) name+="{2_"+ToString(m_nout+2)+"_"+m_name+"}";
+  msg_Debugging()<<METHOD<<"(): Hand out '"<<name<<"'\n";
+  m_name=name;
   return dabs(m_weight);
 }
 
@@ -415,77 +471,58 @@ double Ladder::MECorrection()
       if (p_jf->MTij2(m_moms[i],m_moms[j])<m_kt2min) return 0.0;
   }
   if (p_jf->MTij2(m_k1,m_kn)<m_kt2min) return 0.0;
-  double sf1(p_pdfs[0]->JetKernel()->Value(m_z1));
-  double sfn(p_pdfs[1]->JetKernel()->Value(m_zn));
+  int ids[2]={m_y1>m_yn?0:1,m_y1>m_yn?1:0};
+  double sf1(p_pdfs[ids[0]]->JetKernel()->Value(m_z1));
+  double sfn(p_pdfs[ids[1]]->JetKernel()->Value(m_zn));
   m_bfkldxs=sqr(4.0*M_PI*m_asecms)/8.0*sf1*sfn;
-  // bfkl me contains no symmetry factor (y-ordered)
-  // symmetry factor is needed for correction weight only
-  // amounts to inverse symmetrisation of phase space
-  double sf(1.0);
-  m_bfkldxs/=++sf;
-  if (m_memode&2) {
-    if (m_nvector>3) 
-      THROW(fatal_error,"Analytic reweighting not implemented");
-    if (m_nvector==2) {
-      double s((m_k1+m_kn).Abs2());
-      double t((m_k1-m_p1).Abs2());
-      double u((m_k1-m_p2).Abs2());
-      m_dxs=sqr(4.0*M_PI*m_asecms)*9.0/2.0*
-	(3.0-s*t/(u*u)-s*u/(t*t)-u*t/(s*s))/2.0;
+  if (m_nvector>2 && (m_memode&1)) 
+    THROW(fatal_error,"Analytic reweighting not implemented");
+  if (m_nvector<=2 && (m_memode&1)) {
+    XS_Base *me(NULL);
+    double s((m_k1+m_kn).Abs2());
+    double t((m_k1-m_p1).Abs2());
+    double u((m_k1-m_p2).Abs2());
+    std::string name(m_name);
+    std::map<std::string,XS_Base*>::iterator mit(m_xsmes.find(name));
+    if (mit!=m_xsmes.end()) {
+      me=mit->second;
     }
     else {
-      double s12((m_p1+m_p2).Abs2());
-      double s13((m_p1-m_k1).Abs2());
-      double s14((m_p1-m_moms[2]).Abs2());
-      double s15((m_p1-m_kn).Abs2());
-      double s23((m_p2-m_k1).Abs2());
-      double s24((m_p2-m_moms[2]).Abs2());
-      double s25((m_p2-m_kn).Abs2());
-      double s34((m_k1+m_moms[2]).Abs2());
-      double s35((m_k1+m_kn).Abs2());
-      double s45((m_moms[2]+m_kn).Abs2());
-      double osum(2.0*(pow(s12,4.0)+pow(s13,4.0)+pow(s14,4.0)+pow(s15,4.0)+
-		       pow(s23,4.0)+pow(s24,4.0)+pow(s25,4.0)+
-		       pow(s34,4.0)+pow(s35,4.0)+
-		       pow(s45,4.0)));
-      osum*=
-	1.0/(s12*s23*s34*s45*s15)+1.0/(s12*s23*s35*s45*s14)+
-	1.0/(s12*s24*s34*s35*s15)+1.0/(s12*s24*s45*s35*s13)+
-	1.0/(s12*s25*s35*s34*s14)+1.0/(s12*s25*s45*s34*s13)+
-	1.0/(s13*s23*s24*s45*s15)+1.0/(s13*s23*s25*s45*s14)+
-	1.0/(s13*s34*s24*s25*s15)+1.0/(s13*s34*s45*s25*s12)+
-	1.0/(s13*s35*s25*s24*s14)+1.0/(s13*s35*s45*s24*s12)+
-	1.0/(s14*s34*s23*s25*s15)+1.0/(s14*s34*s35*s25*s12)+
-	1.0/(s14*s24*s23*s35*s15)+1.0/(s14*s24*s25*s35*s13)+
-	1.0/(s14*s45*s35*s23*s12)+1.0/(s14*s45*s25*s23*s13)+
-	1.0/(s15*s35*s34*s24*s12)+1.0/(s15*s35*s23*s24*s14)+
-	1.0/(s15*s45*s34*s23*s12)+1.0/(s15*s45*s24*s23*s13)+
-	1.0/(s15*s25*s23*s34*s14)+1.0/(s15*s25*s24*s34*s13);
-      m_dxs=pow(4.0*M_PI*m_asecms,3.0)*27.0/32.0*osum/6.0;
-      if (!(m_memode&1)) {
- 	m_bfkldxs*=16.0*M_PI*m_asecms*3.0/m_moms[2].PPerp2();
-	m_bfkldxs/=++sf;
+      std::vector<Flavour> fl(4);
+      fl.front()=p_addflavours[2];
+      fl[1]=p_addflavours[3];
+      fl[2]=m_fl1;
+      fl.back()=m_fln;
+      msg_Debugging()<<METHOD<<"(): Initialize '"<<name<<"'\n";
+      XS_Selector select(NULL);
+      m_xsmes[name] = me = select.GetXS(m_nin,m_naddout,&fl.front());
+      if (me==NULL) {
+	msg.Error()<<METHOD<<"(): Invalid Process '"<<name<<"'."<<std::endl;
+	abort();
       }
     }
+    m_dxs=(*me)(s,t,u);
     msg_Debugging()<<METHOD<<"(): \\sigma/\\sigma_{BFKL} = "
-		   <<m_dxs<<" / "<<m_bfkldxs<<" = "<<m_dxs/m_bfkldxs<<" \n";
+		   <<m_dxs<<" / ( "<<m_bfkldxs<<" * "<<m_splitweight
+		   <<" ) = "<<m_dxs/(m_bfkldxs*m_splitweight)<<" \n";
     if (m_memode&8) m_dxs=1.0;
-    if (!(m_memode&1)) return m_dxs/m_bfkldxs;
+    double sf(2.0);
+    return m_dxs*sf/(m_bfkldxs*m_splitweight);
   }
-  N_Gluon_BG *me(NULL);
   std::vector<ATOOLS::Vec4D> moms(m_moms.size()+2);
   for (size_t i(2);i<m_moms.size();++i) {
     moms[i+1]=m_moms[i];
     m_bfkldxs*=16.0*M_PI*m_asecms*3.0/m_moms[i].PPerp2();
-    m_bfkldxs/=++sf;
   }
   if (m_memode&8) return 1.0/m_bfkldxs;
   moms.front()=m_p1;
   moms[1]=m_p2;
   moms[2]=m_k1;
   moms.back()=m_kn;  
-  std::map<std::string,N_Gluon_BG*>::iterator mit(m_mes.find(m_name));
-  if (mit!=m_mes.end()) {
+  N_Parton_CDBG *me(NULL);
+  std::string name(m_name);
+  std::map<std::string,N_Parton_CDBG*>::iterator mit(m_cdmes.find(name));
+  if (mit!=m_cdmes.end()) {
     me=mit->second;
   }
   else {
@@ -495,16 +532,71 @@ double Ladder::MECorrection()
     fl[1]=p_addflavours[3];
     fl[2]=m_fl1;
     fl.back()=m_fln;
-    msg_Debugging()<<METHOD<<"(): Initialize '"<<m_name<<"'\n";
-    m_mes[m_name] = me = new N_Gluon_BG(m_nin,m_nvector,fl);
-    me->SetMode(1);
-    if (!me->GaugeTest(moms)) 
-      THROW(fatal_error,"Gauge test not satisfied.");
+    std::string mapname(MapProcess(fl));
+    if (m_cdmes.find(mapname)!=m_cdmes.end()) {
+      msg_Tracking()<<METHOD<<"(): Mapped '"<<name<<"' -> '"<<mapname<<"'\n";
+      m_cdmes[name]=me=m_cdmes[mapname];
+    }
+    else {
+      msg_Info()<<METHOD<<"(): Initialize ME correction for '"<<name<<"'.\n";
+      std::vector<std::string> models(1,"QCD");
+      me = new N_Parton_CDBG(m_nin,m_nvector,fl,models);
+      Color_Integrator *cint(new Color_Integrator());
+      Idx_Vector ids(m_nin+m_nout+m_naddout,0);
+      Int_Vector types(m_nin+m_nout+m_naddout,0);
+      for (size_t i(0);i<ids.size();++i) {
+	ids[i]=i;
+	if (fl[i].IsGluon()) types[i]=0;
+	else if (fl[i].IsAnti()) types[i]=i<2?1:-1;
+	else types[i]=i<2?-1:1;
+      }
+      cint->ConstructRepresentations(ids,types);
+      cint->Initialize();
+      me->SetColorIntegrator(cint);
+      cint->GeneratePoint();
+      if (!me->GaugeTest(moms)) {
+	msg.Error()<<METHOD<<"(): Gauge test not satisfied. Retry next."
+		   <<std::endl;
+	delete cint;
+	delete me;
+	return 0.0;
+      }
+      m_cdmes[name]=m_cdmes[mapname] = me;
+    }
   }
-  m_dxs=me->Differential(moms);
+  me->ColorIntegrator()->GeneratePoint();
+  m_dxs=me->ColorIntegrator()->GlobalWeight()*me->Differential(moms);
   msg_Debugging()<<METHOD<<"(): \\sigma/\\sigma_{BFKL} = "
-		 <<m_dxs<<" / "<<m_bfkldxs<<" = "<<m_dxs/m_bfkldxs<<" \n";
-  return m_dxs/m_bfkldxs;
+		 <<m_dxs<<" / ( "<<m_bfkldxs<<" * "<<m_splitweight
+		 <<" ) = "<<m_dxs/(m_bfkldxs*m_splitweight)<<" \n";
+  // bfkl me contains no symmetry factor (y-ordered)
+  // symmetry factor is introduced for correction weight only
+  double sf(Factorial(m_nout+m_naddout));
+  return m_dxs*sf/(m_bfkldxs*m_splitweight);
+}
+
+std::string Ladder::MapProcess(const std::vector<ATOOLS::Flavour> &fl)
+{
+  std::vector<Flavour> mapfl(fl.size());
+  std::map<Flavour,Flavour> flmap;
+  int ckf(1);
+  for (size_t i(0);i<fl.size();++i) {
+    if (flmap.find(fl[i])==flmap.end()) {
+      if (fl[i].IsQuark()) {
+	Flavour qr(fl[i].Kfcode());
+	flmap[qr]=Flavour((kf::code)ckf++);
+	flmap[qr.Bar()]=flmap[qr].Bar();
+      }
+      else {
+	flmap[fl[i]]=fl[i];
+      }
+    }
+    mapfl[i]=flmap[fl[i]];
+  }
+  std::string name(mapfl[0].IDName()+"_"+mapfl[1].IDName()+"__");
+  for (size_t i(2);i<mapfl.size();++i) name+="_"+mapfl[i].IDName();
+  msg_Debugging()<<METHOD<<"(): Map '"<<m_name<<"' -> '"<<name<<"'\n";
+  return name;
 }
 
 void Ladder::SetColour(const size_t &i,const bool fw,int *const lc)

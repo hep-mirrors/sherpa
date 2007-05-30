@@ -13,6 +13,8 @@ EFFLAGS=""
 ECOPT=""
 EMOPT=""
 
+IDUSR=`finger $USER | grep Name | cut -d":" -f3`
+
 rmr () { 
   for file in `ls -a` ; do   
     if [ $file != . ] && [ $file != .. ]; then
@@ -336,7 +338,7 @@ if [ "$RELEASE" = "TRUE" ] ; then
     echo -e "*\e[0m              http://www.sherpa-mc.de                \e[34m*"
     echo -e "*\e[0m                                                     \e[34m*"
     echo -e "*******************************************************\e[0m"
-    echo -e "\nhave a nice day `whoami`\n"
+    echo -e "\nhave a nice day $IDUSR\n"
   fi
 fi
 

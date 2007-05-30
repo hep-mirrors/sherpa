@@ -24,6 +24,7 @@ Vegas::Vegas(int dim,int ndx,const std::string & name,int opt)
   m_nopt = 0;
   m_nevt = 0;
   m_snevt = 0;
+  m_cevt = 0;
   m_name = name;
   m_mode=0;
   m_nd = ndx;
@@ -183,6 +184,7 @@ void Vegas::AddPoint(double value,double *xy)
     p_ia[i] = k;
   }
   ++m_nevt;
+  if (value>0.) ++m_cevt;
   m_sum += value;
   double v2 = value*value;
   m_sum2+= v2;
@@ -192,7 +194,15 @@ void Vegas::AddPoint(double value,double *xy)
     p_hit[i][p_ia[i]]++;
   }
   m_mode=0;
-  if (m_autooptimize>0&&m_autooptimize<m_nevt-m_snevt) Optimize();
+  if (m_autooptimize>0&&m_nevt%m_autooptimize==0) {
+    int v=(m_nevt-m_snevt)/m_autooptimize;
+    if (m_cevt*10*v>m_autooptimize) { 
+      if (m_nopt==0) { 
+	if(m_cevt*2>m_nd) Optimize();
+      }
+      else if(m_cevt>m_nd*m_nopt) Optimize();
+    }
+  }
 }
 
 
@@ -205,13 +215,14 @@ void Vegas::Reset()
     }
   }
   m_snevt=m_nevt;
+  m_cevt=0;
 }
 
 void Vegas::Optimize()
 { 
   if (m_on==0) return;
   if (m_nevt-m_snevt<(unsigned int)m_nd*20) return;
-  msg_Tracking()<<"Vegas optimize "<<m_name<<" "<<m_nopt<<" |"<<m_nevt-m_snevt<<endl;
+  msg_Tracking()<<"Vegas optimize "<<m_name<<" "<<m_nopt<<" |"<<m_nevt-m_snevt<<" ("<<(double)m_cevt/(m_nevt-m_snevt)*100.<<" % )"<<endl;
   for (int j=0;j<m_dim;j++) if(p_opt[j]) {
     for (int i=0;i<m_nd;i++) {if(p_hit[j][i]) p_d[j][i]/=p_hit[j][i];
      if (p_hit[j][i]<2) p_hit[j][i]=2;
@@ -240,7 +251,8 @@ void Vegas::Optimize()
       p_opt[j]=0;
       for (int i=0;i<m_nd;i++) p_bestxi[j][i]=p_xi[j][i];
     }
-    if (chi>2.*p_chi[j] && ts>p_bestchi[j] && m_nopt>=10) {
+    if ((chi>2.*p_chi[j] && ts>p_bestchi[j] && m_nopt>=10) 
+	|| (m_nopt>20&&chi>p_chi[j])) {
       p_opt[j]=0;
       for (int i=0;i<m_nd;i++) p_xi[j][i]=p_bestxi[j][i];
     }
@@ -397,4 +409,10 @@ void Vegas::ReadIn(const std::string & pid)
   }
 }
 
+bool Vegas::Finished()
+{
+  if (m_on==0) return true;
+  for (int j=0;j<m_dim;j++) if(p_opt[j]) return false;  
+  return true;
+}
 

@@ -6,6 +6,7 @@
 #include "Message.H"
 
 using namespace EXTRAXS;
+using namespace ATOOLS;
 
 Single_XS::Single_XS(const size_t nin,const size_t nout,
 		     const ATOOLS::Flavour *flavours,
@@ -17,7 +18,6 @@ Single_XS::Single_XS(const size_t nin,const size_t nout,
 	  beamhandler,isrhandler,selectordata)
 {
   p_selected=this;
-  SetScaleScheme(m_scalescheme);
 }
 
 Single_XS::Single_XS(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours):
@@ -37,23 +37,96 @@ void Single_XS::WriteOutXSecs(std::ofstream &outfile)
 bool Single_XS::CalculateTotalXSec(const std::string &resultpath,
 				   const bool create) 
 { 
-  m_n=0;
-  m_last=m_lastlumi=m_lastdxs=0.0;
-  m_totalxs=m_totalsum=m_totalsumsqr=m_totalerr=0.0;
-  if (p_pshandler) {
-    m_totalxs=p_pshandler->Integrate()/ATOOLS::rpa.Picobarn();
-    if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
-      ATOOLS::msg.Error()<<"Single_XS::CalculateTotalXSec(..): ("<<this<<")"<<std::endl
-			 <<ATOOLS::om::red<<"   Integrator result and internal summation "
-			 <<"do not coincide!"<<ATOOLS::om::reset<<std::endl
-			 <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<std::endl;
+  Reset();
+  if (p_isrhandler) {
+    if (m_nin==2) {
+      if (p_flavours[0].Mass()!=p_isrhandler->Flav(0).Mass() ||
+	  p_flavours[1].Mass()!=p_isrhandler->Flav(1).Mass()) {
+	p_isrhandler->SetPartonMasses(p_flavours);
+      }
     }
-    if (m_totalxs>0.) return true;
-    return false;
   }
-  ATOOLS::msg.Error()<<"Single_XS::CalculateTotalXSec(): ("<<this<<")"<<ATOOLS::om::red
-		     <<"No pointer to Phase_Space_Handler ! Abort."<<ATOOLS::om::reset<<std::endl;
-  return false;
+  p_pshandler->InitCuts();
+  if (p_isrhandler)
+    p_isrhandler->SetSprimeMin(p_pshandler->Cuts()->Smin());
+  if (!m_channels) {
+    p_pshandler->CreateIntegrators();
+    CreateISRChannels();
+    m_channels = true;
+  }
+  std::string filename(resultpath+"/"+m_name+".xstotal"), name;
+  if (resultpath!="") {
+    double totalxs,totalerr,max,sum,sqrsum,ssum,ssqrsum,ss2,wmin;
+    long int n,sn,son;
+    std::ifstream from(filename.c_str());
+    from>>name>>totalxs>>max>>totalerr>>sum>>sqrsum>>n
+	>>ssum>>ssqrsum>>ss2>>sn>>wmin>>son;
+    if (name==m_name) {
+      m_totalxs  = totalxs;
+      m_totalerr = totalerr; 
+      m_max      = max;
+      m_n        = n;
+      m_totalsum = sum;
+      m_totalsumsqr = sqrsum;
+      m_vsmax.clear(); 
+      m_vsmax.push_back(max);
+      m_vsn.clear();   
+      m_vsn.push_back(n);
+      m_sn = sn; m_smax=0.;
+      m_ssum     = ssum;
+      m_ssumsqr  = ssqrsum;
+      m_ssigma2  = ss2;
+      m_wmin     = wmin;
+      m_son      = son;
+      msg_Info()<<"Found result : xs for "<<m_name<<" : "
+		<<m_totalxs*rpa.Picobarn()<<" pb"
+		<<" +/- "<<m_totalerr/m_totalxs*100.
+		<<"%, max : "<<m_max<<std::endl;
+      p_pshandler->ReadIn(resultpath+"/MC_"+m_name);
+    }
+    from.close();
+    if (p_pshandler->BeamIntegrator()) 
+      p_pshandler->BeamIntegrator()->Print();
+    if (p_pshandler->ISRIntegrator()) 
+      p_pshandler->ISRIntegrator()->Print();
+    if (p_pshandler->FSRIntegrator()) 
+      p_pshandler->FSRIntegrator()->Print();
+  }
+  m_resultpath=resultpath;
+  m_resultfile=filename;
+  exh->AddTerminatorObject(this);
+  p_pshandler->InitIncoming();
+  double var=TotalVar();
+  m_totalxs=p_pshandler->Integrate()/rpa.Picobarn(); 
+  if (!(IsZero((m_totalxs-TotalResult())/(m_totalxs+TotalResult())))) {
+    msg.Error()<<"Result of PS-Integrator and internal summation do not coincide!"<<std::endl
+	       <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<TotalResult()<<std::endl;
+  }
+  if (m_totalxs>0.) {
+    SetTotal();
+    if (var==TotalVar()) {
+      ATOOLS::exh->RemoveTerminatorObject(this);
+      return 1;
+    }
+    if (resultpath!=std::string("")) {
+      std::ofstream to;
+      to.open(filename.c_str(),std::ios::out);
+      to.precision(12);
+      msg_Info()<<"Store result : xs for "<<m_name<<" : ";
+      WriteOutXSecs(to);
+      if (m_nin==2) msg_Info()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
+      if (m_nin==1) msg_Info()<<m_totalxs<<" GeV";
+      msg_Info()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<std::endl
+		<<"  max : "<<m_max<<std::endl;
+      p_pshandler->WriteOut(resultpath+std::string("/MC_")
+			    +m_name,create);
+      to.close();
+    }
+    ATOOLS::exh->RemoveTerminatorObject(this);
+    return 1;
+  }
+  ATOOLS::exh->RemoveTerminatorObject(this);
+  return 0;
 }
 
 ATOOLS::Blob_Data_Base *Single_XS::OneEvent() 
@@ -66,16 +139,16 @@ ATOOLS::Blob_Data_Base *Single_XS::WeightedEvent(const int mode)
   return p_activepshandler->WeightedEvent(mode); 
 }
 
-void Single_XS::SetTotal() 
+void Single_XS::SetTotal(const int mode) 
 {
   m_totalxs=TotalResult();//m_totalsum/m_n; 
   m_totalerr=TotalVar();//sqrt((m_n*m_totalsumsqr-ATOOLS::sqr(m_totalsum))/(m_n-1))/m_n;
-  msg_Tracking()<<"      xs for "<<ATOOLS::om::bold<<m_name<<" : "
-		<<ATOOLS::om::blue<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
-		<<ATOOLS::om::reset<<" +/- ( "<<ATOOLS::om::red
-		<<m_totalerr*ATOOLS::rpa.Picobarn()<<" pb = "
-		<<m_totalerr/m_totalxs*100.<<" %"<<ATOOLS::om::reset<<" )\n"
-		<<"       max : "<<m_max<<std::endl;
+  if (mode&1)
+    msg_Info()<<om::bold<<m_name<<om::reset<<" : "<<om::blue<<om::bold
+	      <<m_totalxs*rpa.Picobarn()<<" pb"<<om::reset
+	      <<" +/- "<<om::reset<<om::blue<<m_totalerr/m_totalxs*100.
+	      <<" %,"<<om::reset<<om::bold<<" exp. eff: "
+	      <<om::red<<(100.*m_totalxs/m_max)<<" %"<<om::reset<<std::endl;
 }
 
 void Single_XS::OptimizeResult()

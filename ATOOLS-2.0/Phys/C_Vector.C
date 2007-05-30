@@ -6,7 +6,7 @@ double CVec4D::s_accu=1.0e-12;
 
 std::ostream &ATOOLS::operator<<(std::ostream &s,const CVec4D &vec)
 {
-  return s<<'{'<<vec(0)<<","<<vec(1)<<'|'
+  return s<<'{'<<vec.H(0)<<","<<vec.H(1)<<";"<<vec(0)<<","<<vec(1)<<'|'
 	  <<vec[0]<<','<<vec[1]<<','<<vec[2]<<','<<vec[3]<<'}';
 }
 

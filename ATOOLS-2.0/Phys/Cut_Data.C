@@ -117,7 +117,7 @@ void Cut_Data::Complete()
       cosmax_save[i][j] = cosmax[i][j];
       scut_save[i][j]   = scut[i][j];
     }
-    if (i>=2) strs<<i;
+    if (i>=2) strs<<GetIndexID(i);
   }
   std::string str;
   strs>>str;
@@ -160,6 +160,28 @@ char Cut_Data::GetIndexID(int id)
   return c;
 }
 
+double Cut_Data::Getscut
+(std::vector<char> pl,std::vector<char> pr,int n,int k,int li)
+{
+  if (n==k) {
+    std::string idl, idr;
+    for (size_t i(0);i<pl.size();++i) if (pl[i]!=' ') idl+=pl[i];
+    for (size_t i(0);i<pr.size();++i) if (pr[i]!=' ') idr+=pr[i];
+    double ml(sqrt(Getscut(idl))), mr(sqrt(Getscut(idr)));
+    msg_Debugging()<<"m_{"<<idl<<"} + m_{"<<idr<<"} = "
+		   <<ml<<" + "<<mr<<" = "<<ml+mr<<"\n";
+    return sqr(ml+mr);
+  }
+  msg_Indent();
+  double sc(0.0);
+  for (size_t i(li+1);i<pl.size();++i) {
+    std::swap<char>(pl[i],pr[i]);
+    sc=Max(sc,Getscut(pl,pr,n,k+1,i));
+    std::swap<char>(pl[i],pr[i]);
+  }
+  return sc;
+}
+
 double Cut_Data::Getscut(string str)
 {
   map<string,double>::iterator it = m_smin_map.find(str);
@@ -168,10 +190,11 @@ double Cut_Data::Getscut(string str)
 
   int length = str.length();
   int *legs = new int[length];
+  std::vector<char> pr(length);
   for (int i=0;i<length;i++) {
-    char c = str[i];
-    if (c<58) legs[i]=c-48;
-    else legs[i]=c-55;
+    pr[i] = str[i];
+    if (pr[i]<58) legs[i]=pr[i]-48;
+    else legs[i]=pr[i]-55;
   }
   double sc = 0.;
 
@@ -202,37 +225,8 @@ double Cut_Data::Getscut(string str)
     }
   }
 
-  for (int i=1;i<=length/2;i++) {
-    int *ii = new int[i];
-    help  = string("");
-    help2 = string("");
-    for (int j=0;j<i;j++) {
-      help += '0';
-      ii[j] = j;
-    }
-    for (int j=i;j<length;j++) help2 += '0';
-
-    bool rf = 1;
-    for (;rf;) {
-      int pos = 0;
-      for (int j=0;j<length;j++) {
-	if (ii[pos%i]==j) {
-	  help[pos] = GetIndexID(legs[j]);
-	  pos++;
-	}
-	else help2[j-pos] = GetIndexID(legs[j]);
-      }
-
-      sc = Max(sc,sqr(sqrt(Getscut(help))+sqrt(Getscut(help2))));
-      for (int j=i-1;;j--) {
-	if (++ii[j]<length-i+j+1) break;
-	if (j==0) { rf = 0; break; }
-	ii[j] = ii[j-1]+2;
-      }
-    }
-
-    delete[] ii;
-  }
+  std::vector<char> pl(length,' ');
+  for (int i(1);i<=length/2;++i) sc=Max(sc,Getscut(pl,pr,i,0,-1));
   
   m_smin_map[str] = sc;
   delete[] legs;

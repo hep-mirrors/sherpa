@@ -252,7 +252,7 @@ bool Signal_Processes::FillUPDFBlobs(Blob_List *const bloblist,Blob *const blob)
       new ATOOLS::Particle(-1,xs->AddFlavours()[i],
 			   xs->AddMomenta()[i]);
     parton1->SetNumber();
-    parton1->SetStatus(part_status::decayed);
+    parton1->SetStatus(part_status::active);
     isr[i]->AddToOutParticles(parton1);
     ATOOLS::Particle *
       parton2 = new ATOOLS::Particle(-1,xs->AddFlavours()[stop+i],

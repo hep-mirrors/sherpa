@@ -12,13 +12,12 @@ namespace PHASIC {
 
     double          result, max, error;
     int             iter,iter0,iter1,nopt;
-    long int        maxopt;
-    static long int nmax;
+    long unsigned int        maxopt;
+    static long unsigned int nmax;
 
-    double starttime, lotime, totalopt;
+    double starttime, lotime, totalopt, addtime;
     double value, maxerror;
-    int ncontrib, endopt, nlo, fin_opt;
-    long int  n;
+    long unsigned int n, ncontrib, endopt, nlo, fin_opt, nstep, ncstep;
 
 #ifdef _USE_MPI_
     long int alln;

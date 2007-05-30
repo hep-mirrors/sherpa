@@ -26,6 +26,8 @@ bool BFKL_Sudakov::Initialize()
       Flavour fl((kf::code)i);
       p_levs->Add(new Q_GQ(fl));
       p_levs->Add(new Q_GQ(fl.Bar()));
+      p_levs->Add(new Q_QG(fl));
+      p_levs->Add(new Q_QG(fl.Bar()));
       p_levs->Add(new G_QQ(fl));
       p_levs->Add(new G_QQ(fl.Bar()));
     }
@@ -101,8 +103,8 @@ bool BFKL_Sudakov::Approve(const ATOOLS::Vec4D &k1,
   // rejection weight
   double weight(1.0);
   // splitting weight
-  weight*=p_levs->Selected()->Value(k1,q1,k2,q2)/
-    p_levs->Selected()->MajorValue(k1,q1,k2,q2);
+  weight*=(m_splitweight=p_levs->Selected()->Value(k1,q1,k2,q2)/
+	   p_levs->Selected()->MajorValue(k1,q1,k2,q2));
   // veto emission
   if (weight<ran.Get()) return false;
   // reweighting weight
@@ -125,6 +127,10 @@ bool BFKL_Sudakov::Approve(const ATOOLS::Vec4D &k1,
   m_weight*=(*MODEL::as)(kt2)/(2.0*M_PI*m_kt2)*m_integral;
   // kt integration domain weight
   m_weight*=WeightPolynomial(m_kt2min,m_kt2max,m_ktexp,m_kt2);
+  // mass of t-channel particle
+  double mq12(sqr(p_levs->Selected()->GetA().PSMass()));
+  // propagator weight for massive quarks
+  m_weight*=kt2/(kt2+mq12);
   return true;
 }
 

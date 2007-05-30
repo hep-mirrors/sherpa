@@ -13,14 +13,17 @@ Single_Channel::Single_Channel() :
   nin(0),nout(0),ms(NULL),rannum(0),rans(NULL) 
 {}
 
-Single_Channel::Single_Channel(int _nin,int _nout,const Flavour * fl) :
+Single_Channel::Single_Channel(int _nin,int _nout,const Flavour * _fl) :
   fl(NULL),name("no_name"),
   n_points(0),n_contrib(0),weight(0.),result(0.),result2(0.),
   res1(0.),res2(0.),res3(0.),alpha(0.),alpha_save(0.),
   nin(_nin),nout(_nout),ms(new double[nin+nout+1]),rannum(0),rans(NULL) 
 { 
-  for (short int i=0;i<nin+nout;i++) ms[i] = ATOOLS::sqr(fl[i].Mass());
-
+  for (int i(0);i<nin+nout;i++) ms[i] = ATOOLS::sqr(_fl[i].Mass());
+  rannum = 0;
+  rans   = NULL;
+  alpha=0.0;
+  result=result2=0.0;
   //   if (nin == 1) rannum = 2 + 3*(nout-2);
   //   if (nin == 2) rannum = 1 + 2 + 3*(nout-2);
   //   rans  = new double[rannum];
@@ -33,11 +36,14 @@ Single_Channel::Single_Channel(Single_Channel * old) :
   nin(old->nin),nout(old->nout),ms(new double[nin+nout]),
   rannum(old->rannum),rans(new double[rannum])
 {
-  for (short int i=0;i<nin+nout;i++) ms[i] = old->ms[i];
+  for (int i=0;i<nin+nout;i++) ms[i] = old->ms[i];
+  alpha=0.0;
+  result=result2=0.0;
 }
 
 Single_Channel::~Single_Channel()
 {
+  if (fl) delete[] fl; 
   if (ms) delete[] ms; 
   if (rans) delete[] rans; 
 }
@@ -65,14 +71,14 @@ void Single_Channel::AddPoint(double Value) {
 
 void Single_Channel::GeneratePoint(Vec4D* p,Cut_Data * cuts)
 {
-  for (short int i=0;i<rannum;i++) rans[i] = ran.Get();
+  for (int i=0;i<rannum;i++) rans[i] = ran.Get();
   GeneratePoint(p,cuts,rans);
 }
 
 
 void Single_Channel::GeneratePoint(Vec4D * p)
 {
-  for (short int i=0;i<rannum;i++) rans[i] = ran.Get();
+  for (int i=0;i<rannum;i++) rans[i] = ran.Get();
   GeneratePoint(p,rans);
 }
 
@@ -222,3 +228,5 @@ void Single_Channel::Optimize() {}
 void Single_Channel::EndOptimize() {}
 void Single_Channel::WriteOut(std::string) {}
 void Single_Channel::ReadIn(std::string) {}
+
+int  Single_Channel::OType() { return 0; }

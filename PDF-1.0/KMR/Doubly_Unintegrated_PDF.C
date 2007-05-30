@@ -18,6 +18,7 @@
 #endif
 
 using namespace PDF;
+using namespace ATOOLS;
 
 Doubly_Unintegrated_PDF::
 Doubly_Unintegrated_PDF(PDF_Base *_p_pdf,MODEL::Running_AlphaS *_p_alphas,
@@ -27,7 +28,7 @@ Doubly_Unintegrated_PDF(PDF_Base *_p_pdf,MODEL::Running_AlphaS *_p_alphas,
   m_mu02(mu02), m_epsilon(1.e-2),
   m_kperpscheme(kps::function),
   m_fixedktexponent(0.125),
-  m_sudmode(1), m_splitmode(1), m_ordermode(1)
+  m_sudmode(1), m_splitmode(1), m_ordermode(1), m_weightmode(0)
 {
   m_type=std::string("DUPDF(")+p_pdf->Type()+std::string(")");
   m_xmin=p_pdf->XMin();
@@ -136,7 +137,23 @@ bool Doubly_Unintegrated_PDF::Unintegrate(ATOOLS::Flavour flavour)
 {
   PROFILE_HERE;
   m_unintegrated=m_integrated=0.;
+  m_partsums.clear();
   if (Collinear(m_kperp2)) {
+    double dps(0.0);
+    LL_Branching::SF_Set::iterator sfit=
+      LL_Branching::AllSplittings().begin();
+    for (;sfit!=LL_Branching::AllSplittings().end();++sfit) {
+      if ((*sfit)->GetB()==flavour) {
+	if (m_ordermode==1 && (*sfit)->GetC().IsGluon() && 
+	    m_z*(1.+sqrt(m_kperp2/m_mu2))>1.) continue;
+	if (m_splitmode!=1 && !(*sfit)->GetA().IsGluon()) continue;
+	dps+=(*(*sfit))(m_z);
+	m_partsums.push_back
+	  (std::pair<double,Splitting_Kernel*>(dps,*sfit));
+      }
+    }
+    msg_Debugging()<<"f_{"<<flavour<<"}("<<m_x<<","<<m_z<<","
+		   <<sqrt(m_kperp2)<<","<<sqrt(m_mu2)<<")\n";
     switch (m_kperpscheme) {
     case kps::function: 
     case kps::derivative:
@@ -148,7 +165,6 @@ bool Doubly_Unintegrated_PDF::Unintegrate(ATOOLS::Flavour flavour)
     }
     return false;     
   }
-  m_partsums.clear();
   LL_Branching::SF_Set::iterator sfit=
     LL_Branching::AllSplittings().begin();
   for (;sfit!=LL_Branching::AllSplittings().end();++sfit) {
@@ -156,7 +172,14 @@ bool Doubly_Unintegrated_PDF::Unintegrate(ATOOLS::Flavour flavour)
       if (m_ordermode==1 && (*sfit)->GetC().IsGluon() && 
  	  m_z*(1.+sqrt(m_kperp2/m_mu2))>1.) continue;
       if (m_splitmode!=1 && !(*sfit)->GetA().IsGluon()) continue;
-      m_unintegrated+=(*(*sfit))(m_z)*p_pdf->GetXPDF((*sfit)->GetA());
+      switch (m_weightmode) {
+      case 1:
+	m_unintegrated+=1.0;
+	break;
+      case 0:
+	m_unintegrated+=(*(*sfit))(m_z)*p_pdf->GetXPDF((*sfit)->GetA());
+	break;
+      }
       m_partsums.push_back(std::pair<double,Splitting_Kernel*>
 			   (m_unintegrated,*sfit));
     }
@@ -175,16 +198,27 @@ bool Doubly_Unintegrated_PDF::Unintegrate(ATOOLS::Flavour flavour)
 bool Doubly_Unintegrated_PDF::
 SelectJetFlavour(ATOOLS::Flavour &a,ATOOLS::Flavour &c,const double &rn)
 {
-  for (size_t i(0);i<m_partsums.size();++i)
+  double lastsum(0.0);
+  for (size_t i(0);i<m_partsums.size();++i) {
     if (m_partsums[i].first/m_partsums.back().first>=rn) {
       p_jkernel=m_partsums[i].second;
       a=p_jkernel->GetA();
       c=p_jkernel->GetC();
+      switch (m_weightmode) {
+      case 1:
+	m_cweight=(*p_jkernel)(m_z)*p_pdf->GetXPDF(p_jkernel->GetA());
+	break;
+      case 0:
+	m_cweight=1.0;
+	break;
+      }
       return true;
     }
-  a=ATOOLS::kf::none;
-  c=ATOOLS::kf::none;
+    lastsum=m_partsums[i].first;
+  }
+  c=a=Flavour(kf::none);
   p_jkernel=NULL;
+  m_cweight=0.0;
   return false;
 }
 
@@ -197,6 +231,7 @@ void Doubly_Unintegrated_PDF::Calculate(double x,double z,
   m_kperp2=kperp2;
   m_mu2=mu2;
   m_calculate=true;
+  m_partsums.clear();
   if (m_z<m_x || m_kperp2>p_pdf->Q2Max()) {
     m_calculate=false;
     return; 

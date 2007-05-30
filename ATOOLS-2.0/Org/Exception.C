@@ -25,8 +25,8 @@ Tester_Object::~Tester_Object()
 
 bool Tester_Object::ApproveTerminate()
 {
-  msg.Error()<<"Tester_Oject::ApproveTerminate() for "<<typeid(this).name()
-	     <<": Virtual function called !"<<std::endl;
+  msg.Error()<<METHOD<<"() ["<<typeid(this).name()
+	     <<"]: Virtual function called !"<<std::endl;
   exh->GenerateStackTrace(std::cout);
   return true;
 }
@@ -42,8 +42,8 @@ bool Terminator_Object::ReadInStatus(const std::string &path)
 
 void Terminator_Object::PrepareTerminate()
 {
-  msg.Error()<<"Terminator_Object::PrepareTerminate(): "
-	     <<"Virtual function called !"<<std::endl;
+  msg.Error()<<METHOD<<"() ["<<typeid(this).name()
+	     <<"]: Virtual function called !"<<std::endl;
 }
 
 Exception::Exception(const ex::type type,const std::string info):

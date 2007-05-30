@@ -14,15 +14,23 @@ namespace EXTRAXS {
 
     int **p_colours;
 
+    bool m_channels, m_psmc;
+
     double m_s, m_t, m_u;
+
+    std::string m_gpath;
 
     static std::string GenerateName(const size_t nin,const size_t nout,
 				    const ATOOLS::Flavour *flavours);
+
+    static void SortFlavours(ATOOLS::Flavour *flavs,const size_t &n);
 
     void Init(const ATOOLS::Flavour *flavours);
 
     friend class XS_Selector;
     friend class XS_Group;
+
+    void PrepareTerminate();
 
    public:
 
@@ -39,6 +47,12 @@ namespace EXTRAXS {
     ~XS_Base();
 
     // member functions
+    void Initialize(const PHASIC::scl::scheme scalescheme,
+		    const int kfactorscheme,
+		    BEAM::Beam_Spectra_Handler *const beamhandler,
+		    PDF::ISR_Handler *const isrhandler,
+		    ATOOLS::Selector_Data *const selectordata);
+
     void AssignRegulator(const std::string &regulator,
 			 const std::vector<double> &parameters);
 
@@ -59,18 +73,22 @@ namespace EXTRAXS {
     void DeSelect();
     bool ReSelect(int);
 
+    void FillSIntegrator(PHASIC::Multi_Channel *&mc);
+    void UpdateIntegrator(PHASIC::Multi_Channel *&mc);
+
     virtual void Print();
 
     ATOOLS::Blob_Data_Base *SameWeightedEvent();
 
     virtual void Reset();
     virtual void ResetSelector(ATOOLS::Selector_Data *const selectordata);
+    virtual void CreateISRChannels();
     
     virtual bool SetColours(const ATOOLS::Vec4D *momenta);
     virtual void SetMax(const double max,const int flag);
 
     virtual void SetISR(PDF::ISR_Handler *const isrhandler) = 0;
-    virtual void SetTotal() = 0;
+    virtual void SetTotal(const int mode=1) = 0;
 
     virtual double Differential(const double s,const double t,const double u) = 0;
     virtual bool   SetColours(const double s,const double t,const double u) = 0;
@@ -89,7 +107,12 @@ namespace EXTRAXS {
     inline const std::vector<ATOOLS::Flavour> &Resonances() const 
     { return m_resonances; }
 
-    inline PHASIC::Regulator_Base *const Regulator() const { return p_regulator; }
+    inline PHASIC::Regulator_Base *const Regulator() const 
+    { return p_regulator; }
+
+    inline void SetPSMC(const bool psmc) { m_psmc=psmc; }
+
+    inline void SetGPath(const std::string &gpath) { m_gpath=gpath; }
 
   };// end of class XS_Base
 

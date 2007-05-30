@@ -5,23 +5,26 @@
 
 namespace EXTRAXS {
 
-  class N_Gluon_CDBG;
+  class N_Parton_CDBG;
 
-  class CDXS_gg_ng: public Single_XS {
+  class CDXS_pp_np: public Single_XS {
   private:
 
-    N_Gluon_CDBG *p_bg;
+    N_Parton_CDBG *p_bg;
+    CDXS_pp_np    *p_map;
 
     std::vector<ATOOLS::Vec4D> m_p;
+
+    bool MapProcess();
   
   public:
 
     // constructor
-    CDXS_gg_ng(const size_t &nin,const size_t &nout,
+    CDXS_pp_np(const size_t &nin,const size_t &nout,
 	       const ATOOLS::Flavour *const fl);
     
     // destructor
-    ~CDXS_gg_ng();
+    ~CDXS_pp_np();
 
     double operator()(const double s,const double t,const double u);
     bool   SetColours(const double s,const double t,const double u);

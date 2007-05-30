@@ -16,15 +16,25 @@ Helicity_Integrator::~Helicity_Integrator()
 {
 }
 
+bool Helicity_Integrator::CheckChirs(const Int_Vector &chirs)
+{
+  size_t p(0), m(0);
+  Int_Vector q(94,0);
+  for (size_t i(0);i<chirs.size();++i) {
+    if (m_flavs[i].IsQuark()) q[m_flavs[i].Kfcode()]+=chirs[i];
+    if (chirs[i]>0) ++p;
+    else if (chirs[i]<0) ++m;
+    else THROW(fatal_error,"Invalid helicities");
+  }
+  for (size_t i(0);i<q.size();++i) 
+    if (q[i]!=0) return false;
+  return p>1 && m>1;
+}
+
 void Helicity_Integrator::Construct(Int_Vector chirs,const size_t i)
 {
   if (i==m_chirs.size()) {
-    size_t plus(0), minus(0);
-    for (size_t i(0);i<chirs.size();++i) 
-      if (chirs[i]>0) ++plus;
-      else if (chirs[i]<0) ++minus;
-      else THROW(fatal_error,"Invalid helicity");
-    if (plus>=2 && minus>=2) {
+    if (CheckChirs(chirs)) {
       size_t id(MakeId(chirs));
       msg_Debugging()<<"adding helicity configuration "
 		     <<chirs<<" -> "<<id<<"\n";
@@ -44,11 +54,12 @@ void Helicity_Integrator::Construct(Int_Vector chirs,const size_t i)
   }
 }
 
-bool Helicity_Integrator::Construct(const size_t &n)
+bool Helicity_Integrator::Construct(const Flavour_Vector &flavs)
 {
-  m_chirs.resize(n);
+  m_flavs=flavs;
+  m_chirs.resize(m_flavs.size());
   m_valid=0;
-  m_weights.resize(1<<n,0.0);
+  m_weights.resize(1<<m_flavs.size(),0.0);
   m_asum.resize(m_weights.size(),0.0);
   m_sum.resize(m_weights.size(),0.0);
   m_sum2.resize(m_weights.size(),0.0);
@@ -129,7 +140,7 @@ void Helicity_Integrator::Optimize()
   size_t diced(0);
   double norm(0.0), oldnorm(0.0);
   for (size_t i(0);i<m_weights.size();++i)
-    if (m_weights[i]!=0.0 && m_n[i]<5000*m_iter) return;
+    if (m_weights[i]!=0.0 && m_n[i]<(int)(5000*m_iter)) return;
   ++m_iter;
   for (size_t i(0);i<m_weights.size();++i) {
     if (m_weights[i]==0.0) continue;

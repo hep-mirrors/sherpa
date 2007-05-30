@@ -11,7 +11,7 @@ using namespace ANALYSIS;
 using namespace ATOOLS;
 
 Analysis_Object::Analysis_Object():
-  p_ana(NULL), m_obs(false), m_isdet(false) {}
+  p_ana(NULL), m_isobs(false), m_isdet(false) {}
 
 Analysis_Object::~Analysis_Object() {}
 

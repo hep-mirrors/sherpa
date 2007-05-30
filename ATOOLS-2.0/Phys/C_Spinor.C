@@ -2,16 +2,20 @@
 
 #include "Exception.H"
 
-using namespace ATOOLS;
+#define ZERO Complex(0.0,0.0)
+#define ONE Complex(1.0,0.0)
 
-const double sqrttwo(sqrt(2.0));
+using namespace ATOOLS;
 
 double CSpinor::s_accu(1.0e-12);
 
+unsigned int CSpinor::s_r1(1), CSpinor::s_r2(2), CSpinor::s_r3(3);
+
 std::ostream &ATOOLS::operator<<(std::ostream &ostr,const CSpinor &s)
 {
-  return ostr<<(s.R()>0?"|":"<")<<s()<<","<<s[0]<<","<<s[1]<<","
-	     <<s[2]<<","<<s[3]<<(s.R()>0?">":"|");
+  return ostr<<(s.B()>0?(s.R()>0?"|u,":"|v,"):(s.R()>0?"<u,":"<v,"))
+	     <<s.H(0)<<","<<s.H(1)<<";"<<s()<<";"<<s[0]<<","<<s[1]<<","
+	     <<s[2]<<","<<s[3]<<(s.B()>0?">":"|");
 } 
 
 std::ostream &ATOOLS::operator<<(std::ostream &ostr,
@@ -23,52 +27,65 @@ std::ostream &ATOOLS::operator<<(std::ostream &ostr,
   return ostr<<"}";
 }
 
+void CSpinor::SetGauge(const int gauge)
+{
+  switch (gauge) {
+  case 0: s_r1=1; s_r2=2; s_r3=3; break;
+  case 1: s_r1=2; s_r2=3; s_r3=1; break;
+  case 2: s_r1=3; s_r2=1; s_r3=2; break;
+  case 3: s_r1=1; s_r2=3; s_r3=2; break;
+  case 4: s_r1=3; s_r2=2; s_r3=1; break;
+  case 5: s_r1=2; s_r2=1; s_r3=3; break;
+  default:
+    THROW(fatal_error,"Gauge choice not implemented");
+  }
+}
+
 void CSpinor::Construct(const int h,const Vec4D &p)
 {
-  Complex rpp(csqrt(PPlus(p))), rpm(csqrt(PMinus(p))), pt(PT(p));
-  static double accu(sqrt(Accu()));
-  if (((rpp==Complex(0.0,0.0) || rpm==Complex(0.0,0.0)) &&
-       pt!=Complex(0.0,0.0)) || dabs(std::abs(pt/(rpp*rpm))-1.0)>accu) {
-    msg.Error()<<METHOD<<"(): \\sqrt{p^+p^-} = "<<std::abs(rpp*rpm)
-	       <<" vs. |p_\\perp| = "<<std::abs(pt)<<", rel. diff. "
-	       <<(std::abs(pt/(rpp*rpm))-1.0)<<"."<<std::endl;
-    THROW(fatal_error,"Cannot construct massive two-component spinor.");
-  }
-  Complex u1(rpp/sqrttwo), u2(rpm/sqrttwo);
-  if (pt!=Complex(0.0,0.0)) { 
-    u2*=Complex(pt.real(),h>0?pt.imag():-pt.imag())/std::abs(pt);
-  }
   if (m_r>0) {
-    // v(p,h)
-    if (h>0) {
-      // v_+(p)
-      m_u[2]=-(m_u[0]=u2);
-      m_u[3]=-(m_u[1]=-u1);
+    if (h>0) {// u+(p,m)
+      Complex rpp(csqrt(PPlus(p))), pt(PT(p));
+      m_u[0]=IsZero(rpp)?ZERO:csqrt(p.Abs2())/rpp;
+      m_u[1]=ZERO;
+      m_u[2]=rpp;
+      m_u[3]=IsZero(pt)?csqrt(PMinus(p)):pt/rpp;
     }
-    else {
-      // v_-(p)
-      m_u[2]=m_u[0]=u1;
-      m_u[3]=m_u[1]=u2;
+    else {// u-(p,m)
+      Complex rpm(csqrt(PMinus(p))), pt(PT(p));
+      Complex emp(IsZero(pt)?ONE:PTC(p)/std::abs(pt));
+      m_u[0]=rpm*emp;
+      m_u[1]=IsZero(pt)?-csqrt(PPlus(p)):-pt*emp/rpm;
+      m_u[2]=IsZero(rpm)?ZERO:csqrt(p.Abs2())*emp/rpm;
+      m_u[3]=ZERO;
     }
   }
   else {
-    // \bar u(p,h)
-    if (h>0) {
-      // \bar u_+(p)
-      m_u[2]=-(m_u[0]=u1);
-      m_u[3]=-(m_u[1]=u2);
+    if (h<0) {// v-(p,m)
+      Complex rpm(csqrt(PMinus(p))), pt(PTC(p));
+      Complex epp(IsZero(pt)?ONE:PT(p)/std::abs(pt));
+      m_u[0]=ZERO;
+      m_u[1]=IsZero(rpm)?ZERO:csqrt(p.Abs2())*epp/rpm;
+      m_u[2]=IsZero(pt)?csqrt(PPlus(p)):pt*epp/rpm;
+      m_u[3]=rpm*epp;
     }
-    else {
-      // \bar u_-(p)
-      m_u[2]=m_u[0]=u2;
-      m_u[3]=m_u[1]=-u1;
+    else {// v+(p,m)
+      Complex rpp(csqrt(PPlus(p))), pt(PTC(p));
+      m_u[0]=IsZero(pt)?csqrt(PMinus(p)):pt/rpp;
+      m_u[1]=-rpp;
+      m_u[2]=ZERO;
+      m_u[3]=IsZero(rpp)?ZERO:-csqrt(p.Abs2())/rpp;
     }
+  }
+  if (m_b<0) {
+    m_b=1;
+    *this=Bar();
   }
 }
 
 Complex CSpinor::operator*(const CSpinor &s) const
 { 
-  if (s.m_r==m_r) THROW(fatal_error,"Equal spinor type");
+  if (s.m_b==m_b) THROW(fatal_error,"Equal spinor type");
   return m_u[0]*s.m_u[0]+m_u[1]*s.m_u[1]+m_u[2]*s.m_u[2]+m_u[3]*s.m_u[3];
 }
 
@@ -86,22 +103,26 @@ bool CSpinor::operator==(const CSpinor &s) const
 
 CSpinor CSpinor::operator*(const double &d) const
 { 
-  return CSpinor(m_r,m_u[0]*d,m_u[1]*d,m_u[2]*d,m_u[3]*d,m_c); 
+  return CSpinor(m_r,m_b,m_u[0]*d,m_u[1]*d,m_u[2]*d,m_u[3]*d,
+		 m_c,m_h[0],m_h[1]); 
 }
 
 CSpinor CSpinor::operator*(const Complex &c) const
 { 
-  return CSpinor(m_r,m_u[0]*c,m_u[1]*c,m_u[2]*c,m_u[3]*c,m_c); 
+  return CSpinor(m_r,m_b,m_u[0]*c,m_u[1]*c,m_u[2]*c,m_u[3]*c,
+		 m_c,m_h[0],m_h[1]); 
 }
 
 CSpinor CSpinor::operator/(const double &d) const
 { 
-  return CSpinor(m_r,m_u[0]/d,m_u[1]/d,m_u[2]/d,m_u[3]/d,m_c); 
+  return CSpinor(m_r,m_b,m_u[0]/d,m_u[1]/d,m_u[2]/d,m_u[3]/d,
+		 m_c,m_h[0],m_h[1]); 
 }
 
 CSpinor CSpinor::operator/(const Complex &c) const
 { 
-  return CSpinor(m_r,m_u[0]/c,m_u[1]/c,m_u[2]/c,m_u[3]/c,m_c); 
+  return CSpinor(m_r,m_b,m_u[0]/c,m_u[1]/c,m_u[2]/c,m_u[3]/c,
+		 m_c,m_h[0],m_h[1]); 
 }
 
 CSpinor CSpinor::operator*=(const double &d) 
@@ -142,14 +163,14 @@ CSpinor CSpinor::operator/=(const Complex &c)
 
 CSpinor CSpinor::operator+(const CSpinor &s) const 
 { 
-  return CSpinor(m_r,m_u[0]+s.m_u[0],m_u[1]+s.m_u[1],
-		 m_u[2]+s.m_u[2],m_u[3]+s.m_u[3],m_c); 
+  return CSpinor(m_r,m_b,m_u[0]+s.m_u[0],m_u[1]+s.m_u[1],
+		 m_u[2]+s.m_u[2],m_u[3]+s.m_u[3],m_c,m_h[0],m_h[1]); 
 }
 
 CSpinor CSpinor::operator-(const CSpinor &s) const
 { 
-  return CSpinor(m_r,m_u[0]-s.m_u[0],m_u[1]-s.m_u[1],
-		 m_u[2]-s.m_u[2],m_u[3]-s.m_u[3],m_c); 
+  return CSpinor(m_r,m_b,m_u[0]-s.m_u[0],m_u[1]-s.m_u[1],
+		 m_u[2]-s.m_u[2],m_u[3]-s.m_u[3],m_c,m_h[0],m_h[1]); 
 }
 
 CSpinor CSpinor::operator+=(const CSpinor &s) 

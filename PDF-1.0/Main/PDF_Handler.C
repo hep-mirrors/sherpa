@@ -95,6 +95,12 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 	       set==std::string("MRST2003cnlo.LHgrid") ||
 	       set==std::string("MRST2003cnlo.LHpdf") ||
 	       set==std::string("MRST2003cnnlo.LHgrid") ||
+	       set==std::string("MRST2004nlo.LHgrid") ||
+	       set==std::string("MRST2004nnlo.LHgrid") ||
+	       set==std::string("MRST2004FF3lo.LHgrid") ||
+	       set==std::string("MRST2004FF3nlo.LHgrid") ||
+	       set==std::string("MRST2004FF4lo.LHgrid") ||
+	       set==std::string("MRST2004FF4nlo.LHgrid") ||
 	       set==std::string("cteq6.LHpdf")  ||
 	       set==std::string("cteq6l.LHpdf")  ||
 	       set==std::string("cteq6ll.LHpdf") ||

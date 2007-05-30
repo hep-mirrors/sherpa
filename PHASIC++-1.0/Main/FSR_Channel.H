@@ -22,6 +22,7 @@ namespace PHASIC {
   public :
     S1Channel(int,int,ATOOLS::Flavour *,
 	      ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none)); 
+    ~S1Channel();
     void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *,double * _ran);
     void GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *);
     void ISRInfo(int &,double &,double &);
@@ -47,6 +48,7 @@ namespace PHASIC {
   public :
     T1Channel(int,int,ATOOLS::Flavour *,
 	      ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none)); 
+    ~T1Channel();
     void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *,double * _ran);
     void GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *);
     void ISRInfo(int &,double &,double &);
@@ -73,6 +75,7 @@ namespace PHASIC {
   public :
     T2Channel(int,int,ATOOLS::Flavour *,
 	      ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none)); 
+    ~T2Channel();
     void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *,double * _ran);
     void GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *);
     void ISRInfo(int &,double &,double &);
@@ -98,6 +101,7 @@ namespace PHASIC {
   public :
     T3Channel(int,int,ATOOLS::Flavour *,
 	      ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none)); 
+    ~T3Channel();
     void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *,double * _ran);
     void GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *);
     void ISRInfo(int &,double &,double &);
@@ -125,6 +129,7 @@ namespace PHASIC {
   public :
     U1Channel(int,int,ATOOLS::Flavour *,
 	      ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none)); 
+    ~U1Channel();
     void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *,double * _ran);
     void GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *);
     void ISRInfo(int &,double &,double &);

@@ -1,6 +1,7 @@
 #ifndef Helicity_Integrator_H
 #define Helicity_Integrator_H
 
+#include "Flavour.H"
 #include <vector>
 
 namespace PHASIC {
@@ -8,16 +9,20 @@ namespace PHASIC {
   typedef std::vector<int>    Int_Vector;
   typedef std::vector<double> Double_Vector;
 
+  typedef std::vector<ATOOLS::Flavour> Flavour_Vector;
+
   class Helicity_Integrator {
   private:
 
-    Int_Vector    m_chirs, m_n;
-    Double_Vector m_weights, m_asum, m_sum, m_sum2;
+    Int_Vector     m_chirs, m_n;
+    Double_Vector  m_weights, m_asum, m_sum, m_sum2;
+    Flavour_Vector m_flavs;
 
     size_t m_valid, m_id, m_iter;
     double m_weight;
     bool   m_new;
 
+    bool CheckChirs(const Int_Vector &chirs);
     void Construct(Int_Vector chirs,const size_t i);
 
   public:
@@ -29,7 +34,7 @@ namespace PHASIC {
     ~Helicity_Integrator();
 
     // member functions
-    bool Construct(const size_t &n);
+    bool Construct(const Flavour_Vector &flavs);
 
     bool   GeneratePoint();
     double Weight();

@@ -5,6 +5,7 @@
 #include "ISR_Handler.H"
 #include "XS_Group.H"
 #include "N_Gluon_BG.H"
+#include "N_Parton_CDBG.H"
 #include "Jet_Finder.H"
 
 namespace PDF { class Doubly_Unintegrated_PDF; }
@@ -31,11 +32,14 @@ namespace EXTRAXS {
 
     double m_weight, m_ya, m_yb, m_kt2min, m_q2, m_y1, m_yn, m_sab;
     double m_a1, m_an, m_z1, m_zn, m_kt21, m_kt2n, m_mu21, m_mu2n;
-    double m_y, m_kt2, m_phi, m_lasty, m_dxs, m_bfkldxs, m_asecms;
+    double m_y, m_kt2, m_phi, m_lasty, m_dxs, m_bfkldxs, m_splitweight;
+    double m_asecms;
 
-    size_t m_ncols, m_sudmode, m_nfixed, m_multimode, m_splitmode, m_memode;
+    size_t m_ncols, m_sudmode, m_nfixed, m_multimode, m_splitmode;
+    size_t m_memode, m_pnmode, m_nmaxme, m_hfp;
 
-    std::map<std::string,N_Gluon_BG*> m_mes;
+    std::map<std::string,N_Parton_CDBG*> m_cdmes;
+    std::map<std::string,XS_Base*>       m_xsmes;
 
     ATOOLS::Poincare m_cms, m_zaxis;
 
@@ -63,6 +67,8 @@ namespace EXTRAXS {
 
     void SetColours();
     void SetColour(const size_t &i,const bool fw,int *const lc);
+
+    std::string MapProcess(const std::vector<ATOOLS::Flavour> &fl);
 
     double MECorrection();
 

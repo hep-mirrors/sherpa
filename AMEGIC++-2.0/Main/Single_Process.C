@@ -39,7 +39,7 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
 			       ISR_Handler * _isr,Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			       int _gen_str,int _orderQCD, int _orderEW,
 			       int _kfactorscheme, PHASIC::scl::scheme _scalescheme,double _scale,
-			       Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi, std::string cuttag,
+			       Pol_Info * _pl,int _nex,Flavour * _ex_fl, std::string cuttag,
 			       double error,std::string e_func) :
   Process_Base(NULL,_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
 	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,cuttag,error),
@@ -52,7 +52,6 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
     system((string("cp ")+rpa.gen.Variable("SHERPA_SHARE_PATH")+
 	    string("/makelibs ")+newpath).c_str());
   }
-  m_usepi    = usepi;
   m_newlib   = false;
   m_libnumb  = 0;
   m_save_max = 0.;
@@ -78,7 +77,6 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
 
   p_pshandler = new Phase_Space_Handler(this,p_isrhandler,p_beamhandler,m_maxerror);
   SetPSHandler(p_pshandler);
-  p_pshandler->SetUsePI(m_usepi);
 
   // making directory
   if (m_gen_str>1) {
@@ -93,7 +91,7 @@ Single_Process::Single_Process(Process_Info* pinfo,int _nin,int _nout,Flavour * 
 			       ISR_Handler * _isr,Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			       int _gen_str,int _orderQCD, int _orderEW,
 			       int _kfactorscheme, PHASIC::scl::scheme _scalescheme,double _scale,
-			       Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi, std::string cuttag,double error,std::string e_func) :   
+			       Pol_Info * _pl,int _nex,Flavour * _ex_fl, std::string cuttag,double error,std::string e_func) :   
   Process_Base(pinfo,_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
 	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,cuttag,error),
   m_sfactor(1.), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this), 
@@ -105,7 +103,6 @@ Single_Process::Single_Process(Process_Info* pinfo,int _nin,int _nout,Flavour * 
     system(("cp "+rpa.gen.Variable("SHERPA_SHARE_PATH")+
 	    "/makelibs "+newpath).c_str());
   }
-  m_usepi    = usepi;
   m_newlib   = false;
   m_libnumb  = 0;
   m_save_max = 0.;
@@ -131,7 +128,6 @@ Single_Process::Single_Process(Process_Info* pinfo,int _nin,int _nout,Flavour * 
 
   p_pshandler = new Phase_Space_Handler(this,p_isrhandler,p_beamhandler,m_maxerror);
   SetPSHandler(p_pshandler);
-  p_pshandler->SetUsePI(m_usepi);
 
   // making directory
   if (m_gen_str>1) {
@@ -754,6 +750,8 @@ bool Single_Process::CheckAlternatives(vector<Process_Base *> & links,int curren
       if (links[j]->Name()==name) {
 	p_partner = (Single_Process*)links[j];
 	m_sfactor = factor;
+	m_orderQCD=p_partner->OrderStrong();
+	m_orderEW=p_partner->OrderEWeak();
 	msg_Tracking()<<"Found Alternative process: "<<m_name<<" "<<name<<endl;
 	return true;
       }

@@ -40,7 +40,7 @@ namespace PHASIC {
     virtual ~Single_Channel();
 
     virtual void AddPoint(double);
-    void Reset(double value);
+    virtual void Reset(double value);
     void ResetOpt();
 
     virtual void Reset() {}
@@ -100,8 +100,11 @@ namespace PHASIC {
     virtual void SetAlpha(double alpha);    
     virtual void SetAlphaSave(double alpha);
 
+    virtual int  OType();
+
     virtual void Optimize();
     virtual void EndOptimize();
+    virtual bool OptimizationFinished()  { return false; }
     virtual void WriteOut(std::string);
     virtual void ReadIn(std::string);
   };// end of class Single_Channel

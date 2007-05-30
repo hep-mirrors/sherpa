@@ -105,20 +105,47 @@ Primitive_Analysis * Primitive_Analysis::GetSubAnalysis(const std::string & key,
   return ana;
 }
 
-std::string Primitive_Analysis::JetID(std::string name) const
+std::string Primitive_Analysis::JetID
+(std::string name,std::string max) const
 {
-  size_t jets(1);
+  size_t jets(1), maxjets(100);
   std::string subprocs;
+  if (max.length()>0) {
+    size_t pos(max.find('['));
+    if (pos!=std::string::npos) {
+      maxjets=ToType<int>(max.substr(0,pos));
+      max=max.substr(pos);
+    }
+    else {
+      maxjets=ToType<int>(max);
+      max="";
+    }
+  }
   for (size_t i(0);i<name.length();++i) {
     if (name[i]=='_' && name[i-1]!='_') ++jets;
     else if (name[i]=='[') {
+      std::string cmax;
+      for (size_t j(0);j<max.length();++j) {
+	if (max[j]=='[') {
+	  int open(1);
+	  for (size_t k(j+1);k<max.length();++k) {
+	    if (max[k]=='[') ++open;
+	    if (max[k]==']') --open;
+	    if (open==0) {
+	      cmax=max.substr(j+1,k-j-1);
+	      max=max.substr(k+1);
+	      break;
+	    }
+	  }
+	}
+      }
       int open(1);
       for (size_t j(i+1);j<name.length();++j) {
 	if (name[j]=='[') ++open;
 	if (name[j]==']') --open;
 	if (open==0) {
 	  if (jets>1) subprocs+=ToString(jets-1);
-	  subprocs+="["+JetID(name.substr(i+1,j-i-1))+"]";
+	  subprocs+="["+JetID(name.substr(i+1,j-i-1),cmax)+"]";
 	  jets=0;
 	  i=j;
 	  break;
@@ -126,17 +153,23 @@ std::string Primitive_Analysis::JetID(std::string name) const
       }
     }
   }
+  if (maxjets<jets) return "X";
   return subprocs+ToString(jets);
 }
 
 void Primitive_Analysis::CallSubAnalysis(const Blob_List * const bl, double value) 
 {
   int nout=-1;
-  std::string name;
+  std::string name, pname;
   for (Blob_List::const_iterator bit=bl->begin();bit!=bl->end();++bit) {
     if ((*bit)->Type()==btp::Signal_Process) {
       nout  = (*bit)->NOutP();      
-      name  = (*bit)->TypeSpec();    //orig: (*bit)->Type();
+      pname=name=(*bit)->TypeSpec();
+      size_t bpos(name.find('{'));
+      if (bpos!=std::string::npos) {
+	pname=name.substr(bpos+1,name.find('}')-bpos-1);
+	name=name.substr(0,bpos);
+      }
       break;
     }
   }
@@ -178,7 +211,17 @@ void Primitive_Analysis::CallSubAnalysis(const Blob_List * const bl, double valu
     if (mode&ANALYSIS::splitt_extra)
       mode=m_mode^ANALYSIS::splitt_extra;
     mode=mode|ANALYSIS::output_this;
-    key="j"+JetID(name.substr(name.find("__")+3));
+    key=JetID(pname.substr(pname.find("__")+3),m_maxjettag);
+    if (name!=pname && m_maxjettag!="") {
+      size_t cur(ToType<int>(key)), nmax(ToType<int>(m_maxjettag));
+      for (size_t i(0);i<=nmax;++i) {
+	if (i!=cur) {
+	  Primitive_Analysis * ana=GetSubAnalysis("j"+ToString(i),mode);
+	  ana->DoAnalysis(bl,0.0);
+	}
+      }
+    }
+    key="j"+key;
   }
   else {
     mode=m_mode^ANALYSIS::splitt_process;
@@ -187,7 +230,11 @@ void Primitive_Analysis::CallSubAnalysis(const Blob_List * const bl, double valu
     if (m_mode&ANALYSIS::output_this) mode=mode^ANALYSIS::output_this;
       key=name;
   }
-  
+  if (key.find('X')!=std::string::npos) {
+    msg_Debugging()<<METHOD<<"(): Max jet number reached in '"<<key<<"'\n";
+    return;
+  }
+
   Primitive_Analysis * ana=GetSubAnalysis(key,mode);
   ana->DoAnalysis(bl,value);
 }
@@ -507,9 +554,6 @@ void Primitive_Analysis::AddData(const std::string name, Blob_Data_Base * data)
 
 void Primitive_Analysis::ClearAllData() 
 {
-  //  std::cout<<"###########################################################"<<std::endl
-  //	   <<METHOD<<" for "<<this<<" for "<<m_pls.size()<<" PL containers."<<std::endl
-  //	   <<"###########################################################"<<std::endl;
   for (PL_Container::iterator it=m_pls.begin();
        it!=m_pls.end(); ++it) {
     if (!it->second->empty()) {
@@ -523,9 +567,6 @@ void Primitive_Analysis::ClearAllData()
   for (String_BlobDataBase_Map::iterator it=m_datacontainer.begin();
        it!=m_datacontainer.end(); ++it) delete it->second;
   m_datacontainer.clear();
-  //std::cout<<"###########################################################"<<std::endl
-  //   <<" out of "<<METHOD<<std::endl
-  //   <<"###########################################################"<<std::endl;
 }
 
 void Primitive_Analysis::PrintStatus() 
@@ -561,7 +602,8 @@ Analysis_Object * Primitive_Analysis::GetObject(const std::string & key)
   return 0;
 }
 
-void Primitive_Analysis::Test(const int mode) {
+void Primitive_Analysis::Test(const int mode) 
+{
   std::cout<<"Number of objects: "<<m_objects.size()<<std::endl;
   for (size_t i=0;i<m_objects.size();i++) {
     if (!m_objects[i]->IsObservable()) m_objects[i]->Test(mode);

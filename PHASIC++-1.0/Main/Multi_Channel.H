@@ -30,25 +30,30 @@ namespace PHASIC {
     int                           nin, nout;
     ATOOLS::Flavour             * fl;
     std::string                   name;
-    long int                      n_points,n_contrib;
-    double                        m_weight;
+    int                           m_id;
+    long unsigned int             n_points,n_contrib,m_p;
+    double                        m_weight,m_sum,m_sum2;
     double                        rans[2];
     double                        s1xmin, * s1, * s2;
     std::vector<Single_Channel *> channels, m_best;
     bool m_readin, m_fixalpha;
     int m_lastdice,m_optcnt;
     double m_pol;
+    int m_otype;
   public:
-    Multi_Channel(std::string);
-    ~Multi_Channel();
+    Multi_Channel(std::string,int=0);
+    virtual ~Multi_Channel();
     void             Add(Single_Channel *);  
-    void             DropAllChannels();    
+    virtual void     DropAllChannels();    
     void             DropChannel(int);     
     Single_Channel * Channel(int); 
-    void    Reset();
-    void    ResetOpt();
-    void    Optimize(double);
-    void    MPIOptimize(double);
+    virtual void     Reset();
+    virtual void     ResetOpt();
+    virtual void     Optimize(double);
+    void             MPIOptimize(double);
+    void             ResetCnt();
+
+    inline std::vector<Single_Channel*> &Channels() { return channels; }
 
     /*!
       Endoptimize replaces, after an ordinary optimization step, the set of a-priori weights
@@ -58,13 +63,17 @@ namespace PHASIC {
     */
     std::string SelectChannel();
 
-    void    EndOptimize(double);
-    void    AddPoint(double);
+    virtual void EndOptimize(double);
+    virtual bool OptimizationFinished();
+
+    virtual void AddPoint(double);
     void    GeneratePoint(int,ATOOLS::Vec4D *,ATOOLS::Cut_Data *,double *);
     void    GenerateWeight(int,ATOOLS::Vec4D *,ATOOLS::Cut_Data *);
-    void    GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);
+    virtual void GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);
     void    GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *,PI_Interface*);
-    void    GenerateWeight(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);     
+    virtual void GenerateWeight(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);     
+
+    virtual void GeneratePoint(int& sv,ATOOLS::Vec4D *p,ATOOLS::Cut_Data *cuts);
 
     void    GeneratePoint(int,ATOOLS::Vec4D *,double *);
     void    GenerateWeight(int,ATOOLS::Vec4D *);
@@ -85,27 +94,34 @@ namespace PHASIC {
 
     inline  Single_Channel *operator[](size_t i) { return channels[i]; }
 
-    void    Print();
+    virtual void    Print();
     void    SetRange(double * sprimerange,double * yrange); 
     void    GetRange(); 
-    void    WriteOut(std::string);
-    bool    ReadIn(std::string);
+    virtual void    WriteOut(std::string);
+    virtual bool    ReadIn(std::string);
 
     inline void FixAlpha() { m_fixalpha=true; }
 
-    inline size_t               Number()    { return channels.size(); }
-    inline int                  N()         { return n_points; }
-    inline int                  ValidN()    { return n_contrib; }
+    virtual size_t              Number()    { return channels.size(); }
+    inline long unsigned int    N()         { return n_points; }    
+    inline long unsigned int    ValidN()    { return n_contrib; }
     inline int                  Nin()       { return nin; }
     inline int                  Nout()      { return nout; }
+    inline long unsigned int    NN()        { return m_p; }    
+    inline double               Sum2()      { return m_sum2; }
+    inline double               Sum()       { return m_sum; }
     inline ATOOLS::Flavour     *Flavs()     { return fl; }
     inline double               Weight()    { return m_weight; }
     inline std::string          Name()      { return name; }
+    inline int                  ID()        { return m_id; }
     std::string                 ChID(int);
     Single_Channel*             LastChannel() { if (m_lastdice>=0) return Channel(m_lastdice); return 0;}
     void                        NoDice()    { m_lastdice=-1; }
     inline const std::vector<Single_Channel*> &Best() const { return m_best; }
 
+    int                         OType() const  { return m_otype; }
+
+    virtual int                 HandicapFactor() { return 1; }
   };
 
 

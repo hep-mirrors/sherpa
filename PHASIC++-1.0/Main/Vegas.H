@@ -9,7 +9,7 @@ namespace PHASIC {
   class Vegas {
     std::string m_name;
     int m_nd;
-    unsigned long m_nevt,m_nopt,m_snevt;
+    unsigned long m_nevt,m_nopt,m_snevt,m_cevt;
     double m_alpha;
     double m_weight,m_sum,m_sum2;
     double m_nc;
@@ -42,6 +42,8 @@ namespace PHASIC {
 
     static inline void SetOnExternal(const bool on) { s_onext=on;     }
     static inline bool OnExternal()                 { return s_onext; }
+
+    bool Finished();
   };
 
 }

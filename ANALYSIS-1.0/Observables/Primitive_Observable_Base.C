@@ -33,7 +33,7 @@ Primitive_Observable_Base::Primitive_Observable_Base() :
 { 
   m_name="noname";
   m_blobdisc = false;
-  m_obs=true;
+  m_isobs=true;
 }
 
 Primitive_Observable_Base::Primitive_Observable_Base(int type,double xmin,double xmax,int nbins,
@@ -43,7 +43,7 @@ Primitive_Observable_Base::Primitive_Observable_Base(int type,double xmin,double
   p_sel(sel), m_copied(false)
 { 
   p_histo = new Histogram(m_type,m_xmin,m_xmax,m_nbins);
-  m_obs=true;
+  m_isobs=true;
 }
 
 
@@ -58,7 +58,7 @@ Primitive_Observable_Base::Primitive_Observable_Base(const Primitive_Observable_
     p_histo = new Histogram(old.p_histo);
   }
   p_histo=NULL;
-  m_obs=true;
+  m_isobs=true;
 }
 
 

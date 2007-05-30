@@ -21,6 +21,7 @@ namespace ANALYSIS {
     typedef std::vector<ANALYSIS::Primitive_Analysis*> Analyses_Vector;
     
   private:
+
     static size_t s_maxanalyses;
 
     Analyses_Vector m_analyses;

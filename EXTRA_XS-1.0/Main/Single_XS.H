@@ -14,7 +14,6 @@ namespace EXTRAXS {
 					  const ATOOLS::Flavour *flavours,
 					  const size_t nqed,const size_t nqcd);
 
-
   public:
 
     // constructors
@@ -33,7 +32,7 @@ namespace EXTRAXS {
     double Differential2();
 
     void SetISR(PDF::ISR_Handler *const isrhandler);
-    void SetTotal();
+    void SetTotal(const int mode=1);
 
     double Differential(const double s,const double t,const double u);
     double operator()(const double s,const double t,const double u);

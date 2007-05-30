@@ -1,5 +1,5 @@
-#ifndef N_Gluon_CDBG_H
-#define N_Gluon_CDBG_H
+#ifndef N_Parton_CDBG_H
+#define N_Parton_CDBG_H
 
 #include "CDBG_Amplitude.H"
 
@@ -12,7 +12,7 @@ namespace PHASIC {
 
 namespace EXTRAXS {
 
-  class N_Gluon_CDBG {
+  class N_Parton_CDBG {
   private:
 
     size_t m_nin, m_nout;
@@ -24,7 +24,7 @@ namespace EXTRAXS {
 
     std::vector<ATOOLS::Vec4D> m_moms;
   
-    double m_as, m_sf;
+    double m_sf, m_fsf;
 
     int m_mode, m_tests;
 
@@ -33,16 +33,19 @@ namespace EXTRAXS {
   public:
 
     // constructor
-    N_Gluon_CDBG(const size_t nin,const size_t nout,
-		 const std::vector<ATOOLS::Flavour> &flavs);
+    N_Parton_CDBG(const size_t nin,const size_t nout,
+		  const std::vector<ATOOLS::Flavour> &flavs,
+		  const std::vector<std::string> &models);
 
     // destructor
-    ~N_Gluon_CDBG();
+    ~N_Parton_CDBG();
 
     // member functions
     double Differential(const std::vector<ATOOLS::Vec4D> &momenta);
 
     bool GaugeTest(std::vector<ATOOLS::Vec4D> momenta);
+
+    void PrintGraphs(const std::string &gpath) const;
 
     // inline functions
     inline void SetMode(const int &mode)    { m_mode=mode;   }
@@ -53,7 +56,15 @@ namespace EXTRAXS {
     inline void SetHelicityIntegrator(PHASIC::Helicity_Integrator *const hint)
     { p_helint=hint; }
 
-  };// end of class N_Gluon_CDBG
+    inline PHASIC::Color_Integrator *ColorIntegrator() const
+    { return p_colint; }
+    inline PHASIC::Helicity_Integrator *HelicityIntegrator() const
+    { return p_helint; }
+
+    inline double FSSymmetryFactor() const { return m_fsf;      }
+    inline double ISSymmetryFactor() const { return m_sf/m_fsf; }
+    
+  };// end of class N_Parton_CDBG
 
 }// end of namespace EXTRAXS
 

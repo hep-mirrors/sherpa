@@ -23,17 +23,7 @@ N_Gluon_BG::N_Gluon_BG(const size_t nin,const size_t nout,
 { 
   std::vector<int> types(m_nin+m_nout,0);
   m_ampl.Construct(flavs,types);
-  Int_Vector ic(m_nin+m_nout), jc(m_nin+m_nout);
-  for (size_t j(1);j<m_nin+m_nout;++j) ic[j]=jc[j-1]=j;
-  ic.front()=jc.back()=0;
   m_moms.resize(m_nin+m_nout);
-  std::vector<size_t> ids(m_nin+m_nout,0);
-  for (size_t i(0);i<ids.size();++i) {
-    ids[i]=i;
-    if (flavs[i].IsGluon()) types[i]=0;
-    else if (flavs[i].IsAnti()) types[i]=-1;
-    else types[i]=1;
-  }
   m_as=(*MODEL::as)(sqr(rpa.gen.Ecms()));
   m_sf=Factorial(m_nout);
   Construct();

@@ -58,8 +58,13 @@ namespace PHASIC {
 			  ATOOLS::Vec4D q1,ATOOLS::Vec4D& p1,ATOOLS::Vec4D& p2);
     void CalculateS0(ATOOLS::Cut_Data *);
      
+    void Initialize(int _nin,int _nout,std::vector<int> perm, VHAAG* ovl);
+
   public:
-    VHAAG(int,int,int,VHAAG* =NULL);
+
+    VHAAG(int _nin,int _nout,int pn, VHAAG* ovl);
+    VHAAG(int _nin,int _nout,std::vector<size_t> tp, VHAAG* ovl);
+
     ~VHAAG();
 
     void AddPoint(double Value);
@@ -73,6 +78,8 @@ namespace PHASIC {
 
     int    OType(); 
     Vegas** GetSharedVegasList() { return p_sharedvegaslist; }
+
+    bool   OptimizationFinished()  { return p_vegas->Finished(); }
   };
 }
 #endif

@@ -13,6 +13,7 @@ namespace ATOOLS {
     double *  energymin_save;
     std::map<std::string,double> m_smin_map;
     char GetIndexID(int id);
+    double Getscut(std::vector<char>,std::vector<char>,int,int,int);
   public:
     double ** cosmin;
     double ** cosmax;

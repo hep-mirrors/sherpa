@@ -43,7 +43,7 @@ Process_Group::Process_Group(Process_Info* pinfo,int _nin,int _nout,Flavour *& _
 			     PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			     int _gen_str,int _orderQCD, int _orderEW,
 			     int _kfactorscheme,PHASIC::scl::scheme _scalescheme,double _scale,
-			     Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi,std::string cuttag, double error,
+			     Pol_Info * _pl,int _nex,Flavour * _ex_fl,std::string cuttag, double error,
 			     std::string e_func, int enable_mhv) :
   Process_Base(pinfo,_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
 	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl,cuttag,error),
@@ -72,8 +72,6 @@ Process_Group::Process_Group(Process_Info* pinfo,int _nin,int _nout,Flavour *& _
     p_flavours[i] = Flavour(kf::pol); 
     p_b[i]  = 1; 
   }
-
-  m_usepi = usepi;
 
   if (_seldata) p_selector = new Combined_Selector(m_nin,m_nout,p_flavours,_seldata,m_cuttag);
   else {
@@ -181,10 +179,10 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
 	if (take) {
 	  if ((m_enable_mhv==1||m_enable_mhv==4) && CF.MHVCalculable(m_nin,_fl,m_nout,&_fl[m_nin]))
 	    Add(new Single_Process_MHV2(pi,m_nin,m_nout,_fl,p_isrhandler,p_beamhandler,_seldata,m_gen_str,m_orderQCD,m_orderEW,
-					m_kfactorscheme,m_scalescheme,m_scale[stp::ren],_pl,m_nex,p_ex_fl,m_usepi,m_cuttag,m_maxerror,m_efunc));
+					m_kfactorscheme,m_scalescheme,m_scale[stp::ren],_pl,m_nex,p_ex_fl,m_cuttag,m_maxerror,m_efunc));
 	  else if (m_enable_mhv!=4)
 	    Add(new Single_Process(pi,m_nin,m_nout,_fl,p_isrhandler,p_beamhandler,_seldata,m_gen_str,m_orderQCD,m_orderEW,
-				   m_kfactorscheme,m_scalescheme,m_scale[stp::ren],_pl,m_nex,p_ex_fl,m_usepi,m_cuttag,m_maxerror,m_efunc));
+				   m_kfactorscheme,m_scalescheme,m_scale[stp::ren],_pl,m_nex,p_ex_fl,m_cuttag,m_maxerror,m_efunc));
 	}
       }
     }
@@ -824,7 +822,6 @@ bool Process_Group::SetUpIntegrator()
   }
   p_pshandler  = new Phase_Space_Handler(this,p_isrhandler,p_beamhandler,m_maxerror);
   SetPSHandler(p_pshandler);
-  p_pshandler->SetUsePI(m_usepi);
 
   //  if (m_nin==2 ) 
   AddChannels(this);

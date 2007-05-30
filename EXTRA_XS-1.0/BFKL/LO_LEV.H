@@ -37,6 +37,22 @@ namespace EXTRAXS {
 
   };// end of class Q_GQ
 
+  class Q_QG: public LEV_Base {
+  public:
+    
+    // constructor
+    Q_QG(const ATOOLS::Flavour &q);
+
+    // member functions
+    double Value(const ATOOLS::Vec4D &k1,const ATOOLS::Vec4D &q1,
+		 const ATOOLS::Vec4D &k2,const ATOOLS::Vec4D &q2) const;
+    double MajorValue(const ATOOLS::Vec4D &k1,const ATOOLS::Vec4D &q1,
+		      const ATOOLS::Vec4D &k2,const ATOOLS::Vec4D &q2) const;
+
+    double MajorIntegral(const ATOOLS::Flavour &fl);
+
+  };// end of class Q_QG
+
   class G_QQ: public LEV_Base {
   public:
     

@@ -23,22 +23,16 @@ namespace EXTRAXS {
 
     PDF::Remnant_Base *p_remnants[2];
 
-    std::set<std::string> m_setup;
-
-    int  ExtractFlavours(ATOOLS::Flavour *&flavours,std::string buffer);
-    void OrderFlavours(ATOOLS::Flavour *flavours);
+    int ExtractFlavours(std::vector<ATOOLS::Flavour> &flavours,
+			std::string buffer);
 
     void InitializeProcess(ATOOLS::Flavour *flavs,std::string &efunc,
+			   std::string &printgraphs,bool psmc,
 			   double &inisum,double &finsum,
 			   size_t order_ew,size_t order_strong,
-			   size_t nin,size_t nout,size_t i,
+			   size_t nin,size_t nout,
 			   const PHASIC::cls::scheme &clsc,
 			   const PHASIC::hls::scheme &hlsc);
-
-    XS_Group *FindGroup(const size_t nin,const size_t nout,
-			const ATOOLS::Flavour *flavours,
-			const PHASIC::cls::scheme &clsc,
-			const PHASIC::hls::scheme &hlsc);
 
   public :
 
@@ -80,12 +74,6 @@ namespace EXTRAXS {
 
     void ResetSelector(ATOOLS::Selector_Data *const selectordata);
 
-    XS_Group *FindPDFGroup(const size_t nin,const size_t nout,
-			   const ATOOLS::Flavour *flavours,
-			   XS_Group *const container,
-			   const PHASIC::cls::scheme &clsc=PHASIC::cls::sum,
-			   const PHASIC::hls::scheme &hlsc=PHASIC::hls::sum);
-    
   }; // end of class Simple_XS
 
 } // end of namespace EXTRAXS

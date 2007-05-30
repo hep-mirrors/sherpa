@@ -359,7 +359,6 @@ void Adjoint::DeleteAll()
   }
 }
 
-
 Trace::Trace(size_t *a,const size_t &i,const size_t &j):
       Color_Term(ctt::trace), m_i(i), m_j(j) {
   ma = new size_t[a[0]+1];
@@ -436,10 +435,6 @@ void Trace::DeleteAll()
     s_traces.pop_back();
   }
 }
-
-
-
-
 
 Expression::Expression(const std::string &expression): 
   Node<Color_Term*>(NULL,true),
@@ -544,15 +539,11 @@ Expression::Expression(const std::string &expression):
   }
 }
 
-
-
 Expression::~Expression()
 {
   for (Color_Term_Vector::iterator tit(begin());tit!=end();++tit) 
     (*tit)->Delete(); 
 }
-
-
 
 size_t Expression::Size()
 {
@@ -621,6 +612,14 @@ bool Expression::Evaluate()
   do {
     treat=false;
     std::sort(begin(),end(),Order_Type());
+    for (Color_Term_Vector::iterator 
+	   cit(begin());cit!=end() &&
+	   (*cit)->Type()==ctt::number;++cit) 
+      if ((*(CNumber*)*cit)()==Complex(0.0,0.0)) {
+	m_result=Complex(0.0,0.0);
+	m_evaluated+=1;
+	return true;
+      }
     m_cindex=0;
     for (Color_Term_Vector::iterator tit(begin());tit!=end();++tit) {
       size_t oldsize((*this)().size());

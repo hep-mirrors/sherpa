@@ -61,7 +61,7 @@ namespace ANALYSIS {
 
     int                    m_mode;
     long                   m_nevt;
-    std::string            m_name;
+    std::string            m_name, m_maxjettag;
 
     Object_List            m_objects;
     PL_Container           m_pls;
@@ -77,7 +77,7 @@ namespace ANALYSIS {
 
     bool  m_active;
 
-    std::string JetID(std::string name) const;
+    std::string JetID(std::string name,std::string max) const;
     
     void Init();
     bool SelectBlob(const ATOOLS::Blob *blob); 
@@ -118,6 +118,8 @@ namespace ANALYSIS {
     void Test(const int mode=0);
     
     // inline methods
+    inline void SetMaxJetTag(const std::string &tag) { m_maxjettag=tag; }
+
     inline const std::string &Name() const { return m_name; }
     inline const int          Mode() const { return m_mode; }
 

@@ -50,6 +50,29 @@ double Q_GQ::MajorIntegral(const ATOOLS::Flavour &fl)
   return 2.0*C_F;
 }
 
+Q_QG::Q_QG(const ATOOLS::Flavour &q): 
+  LEV_Base(q,ATOOLS::kf::gluon,q) {}
+
+double Q_QG::Value(const Vec4D &k1,const Vec4D &q1,
+		   const Vec4D &k2,const Vec4D &q2) const
+{
+  double z(q2.PPlus()/q1.PPlus());
+  if (z>1) z=q2.PMinus()/q1.PMinus();
+  return C_F*z;
+}
+
+double Q_QG::MajorValue(const Vec4D &k1,const Vec4D &q1,
+			const Vec4D &k2,const Vec4D &q2) const
+{
+  return C_F;
+}
+
+double Q_QG::MajorIntegral(const ATOOLS::Flavour &fl)
+{
+  if (fl!=m_fla) return 0.0;
+  return C_F;
+}
+
 G_QQ::G_QQ(const ATOOLS::Flavour &q): 
   LEV_Base(ATOOLS::kf::gluon,q,q.Bar()) {}
 
@@ -57,19 +80,19 @@ double G_QQ::Value(const Vec4D &k1,const Vec4D &q1,
 		   const Vec4D &k2,const Vec4D &q2) const
 {
   double z(q2.PPlus()/q1.PPlus());
-  if (z>1) z=q1.PPlus()/q2.PPlus();
-  return 2.0*T_R*z*(1.0-z);
+  if (z>1) z=q2.PMinus()/q1.PMinus();
+  return T_R*z;
 }
 
 double G_QQ::MajorValue(const Vec4D &k1,const Vec4D &q1,
 			const Vec4D &k2,const Vec4D &q2) const
 {
-  return 2.0*T_R;
+  return T_R;
 }
 
 double G_QQ::MajorIntegral(const ATOOLS::Flavour &fl)
 {
   if (!fl.IsGluon()) return 0.0;
-  return 2.0*T_R;
+  return T_R;
 }
 

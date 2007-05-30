@@ -21,6 +21,8 @@ namespace PDF    { class ISR_Handler; }
 
 namespace PHASIC {
 
+  class Multi_Channel;
+
   struct stp {
 
     enum id {
@@ -51,7 +53,8 @@ namespace PHASIC {
       div_by_2  = 512,
       mult_by_2 = 1024, 
       updf      = 2048,
-      bfkl      = 4096
+      bfkl      = 4096,
+      reggeise  = 8192
     };
 
   };// end of struct scl
@@ -277,6 +280,9 @@ namespace PHASIC {
     virtual void SetFactorizationScale(const std::string &muf2);
 
     void SetFactorizationScale();
+
+    virtual void FillSIntegrator(Multi_Channel *&mc);
+    virtual void UpdateIntegrator(Multi_Channel *&mc);
 
     // inline functions
     inline void SetName(const std::string &name) { m_name=name; }

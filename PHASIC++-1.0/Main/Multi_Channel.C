@@ -15,8 +15,8 @@ using namespace std;
 #include <mpi++.h>
 #endif
 
-Multi_Channel::Multi_Channel(string _name) : 
-  fl(NULL), s1(NULL), s2(NULL), m_readin(false), m_fixalpha(false)
+Multi_Channel::Multi_Channel(string _name,int id) : 
+  fl(NULL), m_id(id), s1(NULL), s2(NULL), m_readin(false), m_fixalpha(false)
 {
   string help;
   int    pos;
@@ -31,6 +31,10 @@ Multi_Channel::Multi_Channel(string _name) :
   m_lastdice = -1;
   m_optcnt = 0;
   m_pol = 250.;
+  m_sum2 = 0.;
+  m_sum  = 0.;
+  m_p    = 0;
+  m_otype = 0;
 }
 
 Multi_Channel::~Multi_Channel() 
@@ -41,8 +45,9 @@ Multi_Channel::~Multi_Channel()
 }
 
 void Multi_Channel::Add(Single_Channel * Ch) { 
-  channels.push_back(Ch); 
-}
+  channels.push_back(Ch);
+  m_otype = m_otype|Ch->OType();
+} 
 
 Single_Channel * Multi_Channel::Channel(int i) { 
   if ((i<0) || (i>=(int)channels.size())) {
@@ -75,12 +80,16 @@ void Multi_Channel::DropAllChannels()
 
 void Multi_Channel::Reset() 
 {
+  if (channels.size()==0) return;
   if (s1==0) s1 =  new double[channels.size()];
   if (s2==0) s2 =  new double[channels.size()];
   if (!m_readin) {
     s1xmin     = 1.e32;
     n_points   = 0;  
     n_contrib  = 0;
+    m_sum2     = 0.;
+    m_sum      = 0.;
+    m_p        = 0;
   }
   msg_Tracking()<<"Channels for "<<name<<endl
 		<<"----------------- "<<n_points<<" --------------------"<<endl;
@@ -95,6 +104,16 @@ void Multi_Channel::Reset()
 void Multi_Channel::ResetOpt() 
 {
   n_points = 0;
+  m_sum  = 0.;
+  m_sum2 = 0.;
+  m_p    = 0;
+}        
+
+void Multi_Channel::ResetCnt() 
+{
+  m_sum  = 0.;
+  m_sum2 = 0.;
+  m_p    = 0;
 }        
 
 void Multi_Channel::MPIOptimize(double error)
@@ -271,11 +290,22 @@ void Multi_Channel::EndOptimize(double error)
 #endif
 }
 
+bool Multi_Channel::OptimizationFinished()
+{
+  for (size_t i=0;i<channels.size();i++) if (!channels[i]->OptimizationFinished()) return false;
+  return true;
+}
+
+
 void Multi_Channel::AddPoint(double value)
 {
   //if (!ATOOLS::IsZero(value)) n_contrib++;
   if (value!=0.) n_contrib++;
+//   if (value!=0.) PRINT_INFO(Name()<<" "<<value<<" "<<n_contrib);
   n_points++;
+  m_p++;
+  m_sum+=value;
+  m_sum2+=sqr(value);
   double var;
   for (size_t i=0;i<channels.size();i++) {
     if (value!=0.) {
@@ -649,4 +679,10 @@ void Multi_Channel::SetRange(double *_sprimerange,double *_yrange)
 void Multi_Channel::GetRange() 
 {
   for (unsigned int i=0;i<channels.size();i++) channels[i]->GetRange();
+}
+
+void Multi_Channel::GeneratePoint(int& sv,ATOOLS::Vec4D *p,ATOOLS::Cut_Data *cuts) 
+{ 
+  sv=0;
+  GeneratePoint(p,cuts);
 }

@@ -14,7 +14,7 @@ Q_QG::Q_QG(const Flavour &q):
 
 double Q_QG::operator()(const double &z) const
 {
-  return CF*(1.0-z*z)/(1.0-z);
+  return CF*(1.0+z*z)/(1.0-z);
 }
 
 double Q_QG::Integral(const double &zmin,const double &zmax) const

@@ -152,6 +152,9 @@ bool Analysis_Handler::ReadIn()
     std::string outpath;
     if (!reader.ReadFromFile(outpath,"PATH_PIECE")) outpath="";
     m_analyses.back()->SetOutputPath(outpath);
+    std::string maxjettag;
+    if (!reader.ReadFromFile(maxjettag,"NMAX_JETS")) maxjettag="";
+    m_analyses.back()->SetMaxJetTag(maxjettag);
     reader.MatrixFromFile(helpsvv,"");
     Argument_Matrix arguments(helpsvv);
     for (size_t k=0;k<helpsvv.size();++k) {
@@ -178,7 +181,8 @@ bool Analysis_Handler::ReadIn()
 	}
       }
       ANALYSIS::Analysis_Object *object = 
-	Object_Getter_Function::GetObject(arguments[k][0],mat(m_analyses.back()));
+	Object_Getter_Function::GetObject
+	(arguments[k][0],mat(m_analyses.back()));
       if (object!=NULL) {
 	m_analyses.back()->AddObject(object);
 	if (msg.LevelIsTracking()) {

@@ -34,7 +34,6 @@ Beam_Remnant_Handler(const std::string path,const std::string file,
 
 Beam_Remnant_Handler::~Beam_Remnant_Handler() 
 {  
-  for (size_t i=0;i<2;++i) delete p_beampart[i];
   delete p_kperp;
 }
 

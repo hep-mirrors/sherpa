@@ -3,86 +3,44 @@
 #include "Message.H"
 #include "Exception.H"
 #include "MyStrStream.H"
-#include "Vector_Current.H"
-#include "Tensor_Current.H"
 #include "STL_Tools.H"
-#ifdef PROFILE__all
-#include "prof.hh"
-#else
-#define PROFILE_HERE
-#define PROFILE_LOCAL(NAME)
-#endif
+#include "Shell_Tools.H"
 
 using namespace EXTRAXS;
 using namespace ATOOLS;
 
 // #define DEBUG__BG
 
-#ifdef DEBUG__BG
-static size_t s_nonzero(0), s_nonzeroall(0);
-#endif
-
-static const double sqrttwo(sqrt(2.0));
+static const double invsqrttwo(1.0/sqrt(2.0));
 
 CDBG_Amplitude::CDBG_Amplitude():
-  p_p(NULL), p_ssp(NULL),
-  p_fl(NULL),
-  p_sp(NULL), p_sm(NULL),
-  p_ep(NULL), p_em(NULL), p_ssep(NULL), p_ssem(NULL),
-  p_ch(NULL), p_cl(NULL),
-  m_n(0),
-  m_mode(0), m_nf(3)
-{
-  Vec4D k(1.0,0.0,1.0,0.0);
-  m_kp=Spinor(1,k);
-  m_km=Spinor(-1,k);
-}
+  m_n(0), m_nf(6) {}
 
 CDBG_Amplitude::~CDBG_Amplitude()
 {
-#ifdef DEBUG__BG
-  msg_Info()<<"CDBG:     J!=0 -> "<<s_nonzero<<"\n";
-  msg_Info()<<"CDBG: all J!=0 -> "<<s_nonzeroall<<"\n";
-#endif
   CleanUp();
 }
 
 void CDBG_Amplitude::CleanUp()
 {
-  if (p_p!=NULL) delete p_p;
-  if (p_sp!=NULL) delete p_sp;
-  if (p_fl!=NULL) delete p_fl;
-  if (p_sp!=NULL) delete p_sp;
-  if (p_sm!=NULL) delete p_sm;
-  if (p_ep!=NULL) delete p_ep;
-  if (p_em!=NULL) delete p_em;
-  if (p_ssep!=NULL) delete p_ssep;
-  if (p_ssem!=NULL) delete p_ssem;
-  if (p_ch!=NULL) delete p_ch;
-  if (p_cl!=NULL) {
-    for (size_t i(0);i<m_n;++i) delete p_cl[i];
-    delete p_cl;
-  }
-  m_n=0;
-  p_ssp=p_p=NULL;
-  p_fl=NULL;
-  p_sp=p_sm=NULL;
-  p_ssem=p_ssep=p_ep=p_em=NULL;
-  p_ch=NULL;
-  p_cl=NULL;
+  for (size_t i(0);i<m_cur.size();++i) 
+    for (size_t j(0);j<m_cur[i].size();++j) delete m_cur[i][j]; 
+  m_n=m_maxid=0;
+  m_model=String_Vector();
+  m_fl=Flavour_Vector();
+  m_p=Vec4D_Vector();
+  m_ch=Int_Vector();
+  m_cl=Int_Matrix();
   m_cur=Current_Matrix();
   m_chirs=Int_Matrix();
-  m_ress.clear();
-  m_hmap.clear();
-  m_hamps.clear();
-  m_maxid=0;
+  m_ress=Complex_Vector();
+  m_hmap=Int_Vector();
+  m_hamps=Int_Vector();
 }
 
-typedef std::pair<Current*,Current*> Current_Pair;
-
 bool CDBG_Amplitude::MatchIndices(const Int_Vector &ids,const size_t &n,
-				const size_t &i,const size_t &j,
-				const size_t &k)
+				  const size_t &i,const size_t &j,
+				  const size_t &k)
 {
   for (size_t l(0);l<n;++l) {
     bool found(false), twice(false);
@@ -101,45 +59,64 @@ bool CDBG_Amplitude::MatchIndices(const Int_Vector &ids,const size_t &n,
   return true;
 }
 
-void CDBG_Amplitude::AddCurrent(const std::vector<int> &ids,const size_t &n,
+void CDBG_Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
 				const Flavour &fl)
 {
-  // add new current
-  Current *cur;
-  if (fl.IsFermion()) { THROW(not_implemented,"Flavour not available"); }
-  else if (fl.IsVector()) cur = new Vector_Current(this,fl);
-  else if (fl.IsTensor()) cur = new Tensor_Current(this,fl);
-  else THROW(fatal_error,"Invalid flavour");
-  cur->SetId(ids);
-  cur->SetKey(m_cur[n].size());
-  std::set<Current_Pair> v3;
-  // compose current from all possible subcurrents
-  for (size_t i(1);i<n;++i) {
-    for (size_t j(0);j<m_cur[i].size();++j) {
-      for (size_t k(0);k<m_cur[n-i].size();++k) {
-	if (!MatchIndices(ids,n,i,j,k) || v3.find
-	    (Current_Pair(m_cur[n-i][k],m_cur[i][j]))!=
-	    v3.end()) continue;
-	Vertex *v(cur->GetVertex(m_cur[i][j],m_cur[n-i][k]));
-	if (v!=NULL) 
-	  v3.insert(Current_Pair(m_cur[i][j],m_cur[n-i][k]));
+  // add new currents
+  Current_Vector curs;
+  for (size_t i(0);i<m_model.size();++i) {
+    Current_Key key(fl,m_model[i]);
+    Current_Base *cur(Current_Getter::GetObject(key.Type(),key));
+    if (cur!=NULL) curs.push_back(cur);
+  }
+  if (curs.empty()) THROW(fatal_error,"Invalid flavour");
+  for (Current_Vector::const_iterator cit(curs.begin());
+       cit!=curs.end();++cit) {
+    std::set<Vertex_Key> v3;
+    // compose current from all possible subcurrents
+    for (size_t i(1);i<n;++i) {
+      for (size_t j(0);j<m_cur[i].size();++j) {
+	for (size_t k(0);k<m_cur[n-i].size();++k) {
+	  if (!MatchIndices(ids,n,i,j,k)) continue;
+	  for (size_t m(0);m<m_model.size();++m) {
+	    Vertex_Key key(m_cur[i][j],m_cur[n-i][k],*cit,m_model[m]);
+	    if (v3.find(key.SwapAB())!=v3.end()) continue;
+	    Vertex *v(Vertex_Getter::GetObject(key.Type(),key));
+	    if (v!=NULL) {
+	      v->SetJA(key.p_a);
+	      v->SetJB(key.p_b);
+	      v3.insert(key);
+	    }
+	  }
+	}
       }
     }
+    if (!v3.empty() || n==1) {
+      Int_Vector isfs(ids.size());
+      for (size_t i(0);i<ids.size();++i)
+	isfs[i]=m_fl[ids[i]].IsFermion();
+      (*cit)->SetId(ids);
+      (*cit)->SetFId(isfs);
+      (*cit)->FindPermutations();
+      (*cit)->SetKey(m_cur[n].size());
+      m_cur[n].push_back(*cit);
+      (*cit)->Print();
+    }
+    else delete *cit;
   }
-  if (!v3.empty() || n==1) {
-    m_cur[n].push_back(cur);
-    cur->Print();
-  }
-  else delete cur;
 }
 
-void CDBG_Amplitude::Construct(std::vector<int> ids,const size_t &n)
+void CDBG_Amplitude::Construct(Int_Vector ids,const size_t &n)
 {
   if (ids.size()==n) {
     if (n==1) {
-      AddCurrent(ids,n,p_fl[ids.back()]);
+      AddCurrent(ids,n,m_fl[ids.back()]);
     }
     else {
+      for (size_t i(1);i<=m_nf;++i) {
+	AddCurrent(ids,n,Flavour((kf::code)i));
+	AddCurrent(ids,n,Flavour((kf::code)i).Bar());
+      }
       AddCurrent(ids,n,kf::gluon);
       // add pseudoparticles for 4-gluon vertex
       if (n>1 && n<m_n-1) AddCurrent(ids,n,kf::gluonqgc);
@@ -163,22 +140,20 @@ void CDBG_Amplitude::Construct(std::vector<int> ids,const size_t &n)
   }
 }
 
-bool CDBG_Amplitude::Construct(const std::vector<ATOOLS::Flavour> &flavs)
+bool CDBG_Amplitude::Construct(const Flavour_Vector &flavs)
 {
-  m_n=flavs.size();
-  p_p = new Vec4D[m_n];
-  p_ssp = new Vec4D[m_n];
-  p_fl = new Flavour[m_n];
-  for (size_t i(0);i<m_n;++i) p_fl[i]=flavs[i];
-  p_sm = new CSpinor[m_n];
-  p_sp = new CSpinor[m_n];
-  p_em = new CVec4D[m_n];
-  p_ep = new CVec4D[m_n];
-  p_ssem = new CVec4D[m_n];
-  p_ssep = new CVec4D[m_n];
-  p_ch = new int[m_n];
-  p_cl = new int*[m_n];
-  for (size_t i(0);i<m_n;++i) p_cl[i] = new int[2];
+  if (msg.LevelIsDebugging()) {
+    msg.Out()<<METHOD<<"(): {\n\n   Implemented currents:\n\n";
+    Current_Getter::PrintGetterInfo(msg.Out(),15);
+    msg.Out()<<"\n   Implemented vertices:\n\n";
+    Vertex_Getter::PrintGetterInfo(msg.Out(),15);
+    msg.Out()<<"\n}\n";
+  }
+  m_fl=flavs;
+  m_n=m_fl.size();
+  m_p.resize(m_n);
+  m_ch.resize(m_n);
+  m_cl.resize(m_n,Int_Vector(2));
   m_cur.resize(m_n);
   Int_Vector ids;
   size_t tsum(0);
@@ -191,144 +166,26 @@ bool CDBG_Amplitude::Construct(const std::vector<ATOOLS::Flavour> &flavs)
   return true;
 }
 
-CVec4D CDBG_Amplitude::EM(const Vec4D &p)
-{
-  Spinor pp(1,p);
-  CVec4D e;
-  e[0]=pp.U1()*m_km.U1()+pp.U2()*m_km.U2();
-  e[3]=pp.U1()*m_km.U1()-pp.U2()*m_km.U2();
-  e[1]=pp.U1()*m_km.U2()+pp.U2()*m_km.U1();
-  e[2]=Complex(0.0,1.0)*(pp.U1()*m_km.U2()-pp.U2()*m_km.U1());
-  return e/(sqrttwo*std::conj(m_kp*pp));
-}
-
-CVec4D CDBG_Amplitude::EP(const Vec4D &p)
-{
-  Spinor pm(-1,p);
-  CVec4D e;
-  e[0]=pm.U1()*m_kp.U1()+pm.U2()*m_kp.U2();
-  e[3]=pm.U1()*m_kp.U1()-pm.U2()*m_kp.U2();
-  e[1]=pm.U1()*m_kp.U2()+pm.U2()*m_kp.U1();
-  e[2]=Complex(0.0,-1.0)*(pm.U1()*m_kp.U2()-pm.U2()*m_kp.U1());
-  return e/(sqrttwo*std::conj(m_km*pm));
-}
-
-namespace ATOOLS {
-
-  bool operator<(const Complex &a,const Complex &b)
-  {
-    if (a.real()<b.real()) return true;
-    else if (a.real()==b.real()) {
-      return a.imag()<b.imag();
-    }
-    return false;
-  }
-
-  bool operator<(const CVec4D &a,const CVec4D &b)
-  {
-    if (a[0]<b[0]) return true;
-    else if (a[0]==b[0]) {
-      if (a[1]<b[1]) return true;
-      else if (a[1]==b[1]) {
-	if (a[2]<b[2]) return true;
-	else if (a[2]==b[2]) {
-	  return a[3]<b[3];
-	}
-      }
-    }
-    return false;
-  }
-
-  bool operator<(const CAsT4D &a,const CAsT4D &b)
-  {
-    if (a[0]<b[0]) return true;
-    else if (a[0]==b[0]) {
-      if (a[1]<b[1]) return true;
-      else if (a[1]==b[1]) {
-	if (a[2]<b[2]) return true;
-	else if (a[2]==b[2]) {
-	  if (a[3]<b[3]) return true;
-	  else if (a[3]==b[3]) {
-	    if (a[4]<b[4]) return true;
-	    else if (a[4]==b[4]) {
-	      return a[5]<b[5];
-	    }
-	  }
-	}
-      }
-    }
-    return false;
-  }
-
-}
-
-void CDBG_Amplitude::CalcJL(const size_t &n,const size_t &id)
-{
-  if (n==1) {
-    m_jv=p_ch[id]>0?p_ep[id]:p_em[id];
-    m_jv(0)=p_cl[id][0];
-    m_jv(1)=p_cl[id][1];
-    m_cur[n][id]->SetP(p_p[id]);
-    m_cur[n][id]->SetCurrent();
-    return;
-  }
-  m_cur[n][id]->Evaluate();
-#ifdef DEBUG__BG
-  Vector_Current *vc(dynamic_cast<Vector_Current*>(m_cur[n][id]));
-  if (vc!=NULL) {
-    if (!vc->J().empty()) {
-      ++s_nonzero; 
-      std::set<CVec4D> evs;
-      for (size_t i(0);i<vc->J().size();++i) {
-	CVec4D ev(vc->J()[i]);
-	if (evs.find(ev)==evs.end()) {
-	  evs.insert(ev);
-	  ++s_nonzeroall;
-	}
-      }
-    }
-  }
-  else {
-    Tensor_Current *tc(dynamic_cast<Tensor_Current*>(m_cur[n][id]));
-    if (tc!=NULL) {
-      if (!tc->J().empty()) {
-	++s_nonzero; 
-	std::set<CAsT4D> ets;
-	for (size_t i(0);i<tc->J().size();++i) {
-	  CAsT4D et(tc->J()[i]);
-	  if (ets.find(et)==ets.end()) {
-	    ets.insert(et);
-	    ++s_nonzeroall;
-	  }
-	}
-      }
-    }
-  }
-#endif
-}
-
 void CDBG_Amplitude::CalcJL()
 {
-  PROFILE_HERE;
-  for (size_t n(1);n<m_n;++n) 
+  for (size_t i(0);i<m_cur[1].size();++i) 
+    m_cur[1][i]->ConstructJ(m_p[i],m_ch[i],m_cl[i][0],m_cl[i][1]);
+  for (size_t n(2);n<m_n;++n) 
     for (size_t i(0);i<m_cur[n].size();++i) 
-      CalcJL(n,i);
+      m_cur[n][i]->Evaluate();
 }
 
-void CDBG_Amplitude::SetMomenta(const std::vector<Vec4D> &moms)
+void CDBG_Amplitude::SetMomenta(const Vec4D_Vector &moms)
 {
-  PROFILE_HERE;
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"():\n";
 #endif
   Vec4D sum;
   for (size_t i(0);i<m_n;++i) {
-    p_ssp[i]=p_p[i]=moms[i];
-    p_ssep[i]=p_ep[i]=EP(p_p[i]);
-    p_ssem[i]=p_em[i]=p_ep[i].Conj();
-    sum+=p_p[i];
+    m_p[i]=moms[i];
+    sum+=m_p[i];
 #ifdef DEBUG__BG
-    msg_Debugging()<<"set p["<<i<<"] = "<<p_p[i]<<"\n";
+    msg_Debugging()<<"set p["<<i<<"] = "<<m_p[i]<<"\n";
 #endif
   }
   static double accu(sqrt(Accu()));
@@ -339,132 +196,76 @@ void CDBG_Amplitude::SetMomenta(const std::vector<Vec4D> &moms)
   CVec4D::SetAccu(Accu());
 }
 
-void CDBG_Amplitude::SetColors(const std::vector<int> &rc,
-			     const std::vector<int> &ac)
+void CDBG_Amplitude::SetColors(const Int_Vector &rc,
+			       const Int_Vector &ac)
 {
-  PROFILE_HERE;
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"():\n";
 #endif
   for (size_t i(0);i<m_n;++i) {
-    if (m_mode>0) {
-      p_cl[i][1]=i;
-      p_cl[i][0]=i+1;
+    if (m_fl[i].IsGluon()) {
+      m_cl[i][0]=rc[i];
+      m_cl[i][1]=ac[i];
     }
     else {
-      if (p_fl[i].IsGluon()) {
-	p_cl[i][0]=rc[i];
-	p_cl[i][1]=ac[i];
+      if (m_fl[i].IsAnti()) {
+	m_cl[i][1]=ac[i];
+	m_cl[i][0]=0;
       }
       else {
-	if (p_fl[i].IsAnti()) p_cl[i][1]=ac[i];
-	else p_cl[i][0]=rc[i];
+	m_cl[i][0]=rc[i];
+	m_cl[i][1]=0;
       }
     }
 #ifdef DEBUG__BG
-    msg_Debugging()<<"p_cl["<<i<<"][0] = "<<p_cl[i][0]
-		   <<", p_cl["<<i<<"][1] = "<<p_cl[i][1]<<"\n";
+    msg_Debugging()<<"m_cl["<<i<<"][0] = "<<m_cl[i][0]
+		   <<", m_cl["<<i<<"][1] = "<<m_cl[i][1]<<"\n";
 #endif
   }
-  if (m_mode>0) p_cl[0][1]=m_n;
 }
 
-size_t CDBG_Amplitude::MakeId(const Int_Vector &ids) const
+Complex CDBG_Amplitude::Evaluate(const Int_Vector &chirs)
 {
-  if (ids.size()!=m_n) 
-    THROW(fatal_error,"Invalid particle number");
-  size_t id(0);
-  for (size_t i(0);i<ids.size();++i) 
-    if (ids[i]>0) id+=1<<i;
-#ifdef DEBUG__CDBCF
-  msg_Debugging()<<METHOD<<ids<<" -> "<<id<<"\n";
-#endif
-  return id;
-}
-
-Int_Vector CDBG_Amplitude::MakeId(const size_t &id) const
-{
-  size_t ic(id);
-  Int_Vector ids(m_n,-1);
-  for (size_t i(0);i<ids.size();++i) {
-    size_t c(1<<i);
-    if (ic&c) {
-      ids[i]=1;
-      ic-=c;
-    }
-  }
-  if (ic!=0) THROW(fatal_error,"Invalid particle number");
-  return ids;
-}
-
-Complex CDBG_Amplitude::Evaluate(const std::vector<int> &chirs)
-{
-  PROFILE_HERE;
   size_t id(MakeId(chirs));
   if (id>m_maxid || m_hamps[id]==0) {
-    msg.Error()<<METHOD<<"(): Configuration "
-	       <<chirs<<" does not exist."<<id<<std::endl;
+    msg_Debugging()<<METHOD<<"(): Configuration "
+		   <<chirs<<" does not exist."<<id<<std::endl;
     return 0.0;
   }
-  for (size_t j(0);j<m_n;++j) p_ch[j]=chirs[j];
+  for (size_t j(0);j<m_n;++j) m_ch[j]=chirs[j];
   CalcJL();
-  Complex res(*m_cur[1].back()**m_cur.back()[0]);
-  msg_Debugging()<<"A("<<chirs<<") = "<<res<<" "
-		 <<std::abs(res)<<"\n";
+  size_t ihp(MakeId(m_ch)), ihm((1<<m_n)-1-ihp);
+  Complex res(m_cur[1].back()->Contract(*m_cur.back()[0],ihm,ihp));
+  msg_Debugging()<<"A"<<chirs<<" = "<<res<<" "
+		 <<std::abs(res)<<" {"<<ihm<<","<<ihp<<"}\n";
   return res;
 }
 
 bool CDBG_Amplitude::EvaluateAll()
 {
-  PROFILE_HERE;
-  for (size_t i(0);i<m_ress.size();++i) {
-    if (m_hmap[i]>0) {
-      m_ress[i]=std::conj(m_ress[m_hmap[i]]);
-      continue;
-    }
-    for (size_t j(0);j<m_n;++j) p_ch[j]=m_chirs[i][j];
-    CalcJL();
-    m_ress[i]=*m_cur[1].back()**m_cur.back()[0];
-#ifdef DEBUG__BG
-    msg_Debugging()<<"A("<<m_chirs[i]<<") = "<<m_ress[i]<<" "
-		   <<std::abs(m_ress[i])<<"\n";
-#endif
-  }
-  return true;
-}
-
-bool CDBG_Amplitude::EvaluateAll(const Int_Vector &perm)
-{
-  PROFILE_HERE;
+  for (size_t j(0);j<m_n;++j) m_ch[j]=0;
+  CalcJL();
   for (size_t i(0);i<m_ress.size();++i) {
     if (m_hmap[i]>=0) {
       m_ress[i]=std::conj(m_ress[m_hmap[i]]);
       continue;
     }
-    for (size_t j(0);j<m_n;++j) {
-      p_p[j]=p_ssp[perm[j]];
-      p_ep[j]=p_ssep[perm[j]];
-      p_em[j]=p_ssem[perm[j]];
-      p_ch[j]=m_chirs[i][perm[j]];
-    }
-    CalcJL();
-    m_ress[i]=*m_cur[1].back()**m_cur.back()[0];
+    size_t ihp(MakeId(m_chirs[i])), ihm((1<<m_n)-1-ihp);
+    m_ress[i]=m_cur[1].back()->Contract(*m_cur.back()[0],ihm,ihp);
 #ifdef DEBUG__BG
-    Int_Vector rc(m_chirs[i].size());
-    for (size_t j(0);j<m_chirs[i].size();++j) rc[j]=p_ch[j];
-    msg_Debugging()<<"A["<<i<<"]("<<rc<<") = "<<m_ress[i]<<" "
-		   <<std::abs(m_ress[i])<<"\n";
+    msg_Debugging()<<"A"<<m_chirs[i]<<" = "<<m_ress[i]<<" "
+		   <<std::abs(m_ress[i])<<" {"<<ihm<<","<<ihp<<"}\n";
 #endif
   }
   return true;
 }
 
-bool CDBG_Amplitude::CheckChirs(const std::vector<int> &chirs)
+bool CDBG_Amplitude::CheckChirs(const Int_Vector &chirs)
 {
   size_t p(0), m(0);
-  std::vector<int> q(m_nf,0);
+  Int_Vector q(m_nf+1,0);
   for (size_t i(0);i<chirs.size();++i) {
-    if (p_fl[i].IsQuark()) q[p_fl[i].Kfcode()]+=chirs[i];
+    if (m_fl[i].IsQuark()) q[m_fl[i].Kfcode()]+=chirs[i];
     if (chirs[i]>0) ++p;
     else if (chirs[i]<0) ++m;
     else THROW(fatal_error,"Invalid helicities");
@@ -474,11 +275,13 @@ bool CDBG_Amplitude::CheckChirs(const std::vector<int> &chirs)
   return p>1 && m>1;
 }
 
-bool CDBG_Amplitude::MapChirs(const std::vector<int> &chirs)
+bool CDBG_Amplitude::MapChirs(const Int_Vector &chirs)
 {
-  std::vector<int> rchirs(chirs.size());
+  Int_Vector rchirs(chirs.size());
   for (size_t i(0);i<chirs.size();++i) rchirs[i]=-chirs[i];
   m_hmap.push_back(-1);
+  for (size_t i(0);i<m_fl.size();++i) 
+    if (!m_fl[i].IsGluon()) return false;
   for (size_t i(0);i<m_chirs.size();++i) {
     bool hit(true);
     for (size_t j(0);j<rchirs.size();++j)
@@ -492,11 +295,13 @@ bool CDBG_Amplitude::MapChirs(const std::vector<int> &chirs)
   return false;
 }
 
-bool CDBG_Amplitude::ConstructChirs(std::vector<int> chirs,const size_t &i)
+bool CDBG_Amplitude::ConstructChirs(Int_Vector chirs,const size_t &i)
 {
   if (i==chirs.size()) {
     if (CheckChirs(chirs)) {
-      msg_Debugging()<<"added helicities "<<chirs<<"\n";
+#ifdef DEBUG__BG
+      msg_Debugging()<<METHOD<<"(): Add configuration "<<chirs<<"\n";
+#endif
       m_chirs.push_back(chirs);
       m_maxid=Max(m_maxid,MakeId(chirs));
       MapChirs(chirs);
@@ -516,13 +321,13 @@ bool CDBG_Amplitude::ConstructChirs(std::vector<int> chirs,const size_t &i)
   return true;
 }
 
-bool CDBG_Amplitude::Construct(std::vector<ATOOLS::Flavour> flavs,
-			       std::vector<int> chirs)
+bool CDBG_Amplitude::Construct(const Flavour_Vector &flavs,
+			       const String_Vector &model)
 {
   CleanUp();
-  if (flavs.size()!=chirs.size()) 
-    THROW(fatal_error,"Inconsistent indices");
+  m_model=model;
   if (!Construct(flavs)) return false;
+  Int_Vector chirs(flavs.size(),0);
   if (!ConstructChirs(chirs,0)) return false;
   m_hamps.resize(m_maxid+1,0);
   for (size_t i(0);i<m_chirs.size();++i)
@@ -530,22 +335,36 @@ bool CDBG_Amplitude::Construct(std::vector<ATOOLS::Flavour> flavs,
   return true;
 }
 
-bool CDBG_Amplitude::GaugeTest(const std::vector<Vec4D> &moms)
+void CDBG_Amplitude::SetGauge(const size_t &n)
+{
+  Vec4D k(1.0,0.0,1.0,0.0);
+  switch(n) {
+  case 1: k=Vec4D(1.0,1.0,0.0,0.0); break;
+  case 2: k=Vec4D(1.0,invsqrttwo,invsqrttwo,0.0); break;
+  case 3: k=Vec4D(1.0,invsqrttwo,-invsqrttwo,0.0); break;
+  case 4: k=Vec4D(1.0,invsqrttwo,0.0,invsqrttwo); break;
+  case 5: k=Vec4D(1.0,invsqrttwo,0.0,-invsqrttwo); break;
+  case 6: k=Vec4D(1.0,0.0,invsqrttwo,invsqrttwo); break;
+  case 7: k=Vec4D(1.0,0.0,invsqrttwo,-invsqrttwo); break;
+  }
+  for (size_t i(0);i<m_cur[1].size();++i) m_cur[1][i]->SetGauge(k);
+}
+
+bool CDBG_Amplitude::GaugeTest(const Vec4D_Vector &moms)
 {
   msg_Info()<<METHOD<<"(): Performing gauge test ..."<<std::flush;
   msg_Indent();
-  Vec4D k(1.0,1.0,0.0,0.0);
-  m_kp=Spinor(1,k);
-  m_km=Spinor(-1,k);
+  SetGauge(0);
   SetMomenta(moms);
   if (!EvaluateAll()) return false;
   Complex_Vector ress(m_ress);
-  k=Vec4D(1.0,0.0,1.0,0.0);
-  m_kp=Spinor(1,k);
-  m_km=Spinor(-1,k);
+  SetGauge(1);
   SetMomenta(moms);
   if (!EvaluateAll()) return false;
-  msg_Debugging()<<METHOD<<"():\n";
+  double mean(0.0);
+  for (size_t i(0);i<m_ress.size();++i) mean+=std::abs(ress[i]);
+  mean/=m_ress.size();
+  msg_Debugging()<<METHOD<<"(): {\n";
   for (size_t i(0);i<m_ress.size();++i) {
     msg_Debugging()<<"A("<<m_chirs[i]
 		   <<") = "<<m_ress[i]<<" vs. "<<ress[i]<<" -> dev. "
@@ -554,12 +373,27 @@ bool CDBG_Amplitude::GaugeTest(const std::vector<Vec4D> &moms)
     double accu(sqrt(Accu()));
     if (!IsEqual(m_ress[i].real(),ress[i].real(),accu) ||
 	!IsEqual(m_ress[i].imag(),ress[i].imag(),accu)) {
-      msg.Error().precision(12);
-      msg.Error()<<METHOD<<"(): Gauge test failed. "
-		 <<m_ress[i]<<" vs. "<<ress[i]<<"."<<std::endl;
-      msg.Error().precision(6);
-      msg_Debugging()<<"}\n";
-      return false;
+      double rat(mean/std::abs(m_ress[i])*Accu());
+      if (IsEqual(m_ress[i].real(),ress[i].real(),rat) &&
+	  IsEqual(m_ress[i].imag(),ress[i].imag(),rat)) {
+	msg.Error().precision(12);
+	msg.Error()<<METHOD<<"(): Large deviation: "
+		   <<m_ress[i]<<" vs. "<<ress[i]<<"\n  => ("
+		   <<(m_ress[i].real()/ress[i].real()-1.0)<<","
+		   <<(m_ress[i].imag()/ress[i].imag()-1.0)
+		   <<") {"<<rat<<"}."<<std::endl;
+	msg.Error().precision(6);
+      }
+      else {
+	msg.Error().precision(12);
+	msg.Error()<<METHOD<<"(): Gauge test failed. "
+		   <<m_ress[i]<<" vs. "<<ress[i]<<"\n  => ("
+		   <<(m_ress[i].real()/ress[i].real()-1.0)<<","
+		   <<(m_ress[i].imag()/ress[i].imag()-1.0)
+		   <<") {"<<rat<<"}."<<std::endl;
+	msg.Error().precision(6);
+	return false;
+      }
     }
   }
   msg_Debugging()<<"}\n";
@@ -567,113 +401,73 @@ bool CDBG_Amplitude::GaugeTest(const std::vector<Vec4D> &moms)
   return true;
 }
 
-bool CDBG_Amplitude::CyclicityTest()
+void CDBG_Amplitude::WriteOutGraph
+(std::ostream &str,Graph_Node *graph,size_t &ng) const
 {
-  if (m_mode==0) return true;
-  msg_Debugging()<<"Cyclicity test:\n";
-  std::vector<Vec4D> moms(m_n);
-  std::vector<int> rc(m_n), ac(m_n);
-  for (size_t k(0);k<m_n;++k) moms[k]=p_p[k];
-  for (size_t i(0);i<m_ress.size();++i) {
-    for (size_t k(0);k<m_n;++k) {
-      msg_Debugging()<<"P(";
-      for (size_t j(0);j<m_n;++j) {
-	size_t ni(j+k<m_n?j+k:j+k-m_n);
- 	p_ch[j]=m_chirs[i][ni];
- 	p_p[j]=moms[ni];
- 	p_ep[j]=EP(p_p[j]);
- 	p_em[j]=p_ep[j].Conj();
-	msg_Debugging()<<" "<<ni;
+  if ((*graph)->empty()) {
+    size_t fp(0);
+    for (size_t j(1);j<graph->size();++j)
+      if ((*graph)[j].find("%%")==std::string::npos) {
+	std::string cl((*graph)[j]);
+	size_t bpos(cl.find("F="));
+	if (bpos!=std::string::npos) {
+	  size_t epos(bpos+=2);
+	  for (;cl[epos]>=48 && cl[epos]<=57;++epos);
+	  fp+=ToType<size_t>(cl.substr(bpos,epos-bpos));
+	}
       }
-      CalcJL();
-      Complex res(*m_cur[1].back()**m_cur.back()[0]);
-      msg_Debugging()<<" ): A("<<m_chirs[i]<<") = "<<res<<" vs. "
-		     <<m_ress[i]<<" -> dev. "
-		     <<m_ress[i].real()/res.real()-1.0<<" "
-		     <<m_ress[i].imag()/res.imag()-1.0<<"\n";
-      double accu(sqrt(Accu()));
-      if (!IsEqual(res.real(),m_ress[i].real(),accu) ||
-	  !IsEqual(res.imag(),m_ress[i].imag(),accu)) {
-	msg.Error()<<METHOD<<"(): Cyclicity violated. "
-		   <<res<<" vs. "<<m_ress[i]<<std::endl;
-	return false;
-      }
-    }
+    str<<"  \\parbox{"<<(5*m_n+10)<<"mm}{Graph "<<++ng
+       <<", $\\sum \\rm F$="<<fp<<" ("<<(fp%2==0?'+':'-')
+       <<")\\begin{center}\n";
+    str<<"  \\begin{fmfgraph*}("<<(10*m_n)<<","<<(10*m_n)<<")\n";
+    str<<"    \\fmfsurround{"<<graph->front()<<"}\n";
+    for (size_t j(0);j<m_n;++j) 
+      str<<"    \\fmfv{decor.size=0ex,label=$J_{"
+	 <<j<<"}$}{j_"<<(1<<j)<<"}\n";
+    for (size_t j(1);j<graph->size();++j)
+      if ((*graph)[j].find("%%")==std::string::npos) 
+	str<<(*graph)[j]<<"\n";
+    str<<"  \\end{fmfgraph*}\\end{center}\\vspace*{5mm}}";
+    if (ng>0 && ng%3==0) str<<" \\\\\n\n";
+    else str<<" &\n\n";
   }
-  SetMomenta(moms);
-  return true;
+  else {
+    for (size_t i(0);i<(*graph)->size();++i)
+      WriteOutGraph(str,(*graph)()[i],ng);
+  }
 }
 
-bool CDBG_Amplitude::ReflectionTest()
+void CDBG_Amplitude::WriteOutGraphs(const std::string &file) const
 {
-  if (m_mode==0) return true;
-  msg_Debugging()<<"Reflection test:\n";
-  std::vector<Vec4D> moms(m_n);
-  std::vector<int> rc(m_n), ac(m_n);
-  for (size_t k(0);k<m_n;++k) moms[k]=p_p[k];
-  for (size_t i(0);i<m_ress.size();++i) {
-    msg_Debugging()<<"R(";
-    for (size_t j(0);j<m_n;++j) {
-      p_ch[j]=m_chirs[i][m_n-j-1];
-      p_p[j]=moms[m_n-j-1];
-      p_ep[j]=EP(p_p[j]);
-      p_em[j]=p_ep[j].Conj();
-      msg_Debugging()<<" "<<m_n-j-1;
-    }
-    CalcJL();
-    Complex res(*m_cur[1].back()**m_cur.back()[0]*(m_n%2==0?1.0:-1.0));
-    msg_Debugging()<<" ): (-1)^"<<m_n<<"*A("<<m_chirs[i]<<") = "
-		   <<res<<" vs. "<<m_ress[i]<<" -> dev. "
-		   <<m_ress[i].real()/res.real()-1.0<<" "
-		   <<m_ress[i].imag()/res.imag()-1.0<<"\n";
-    double accu(sqrt(Accu()));
-    if (!IsEqual(res.real(),m_ress[i].real(),accu) ||
-	!IsEqual(res.imag(),m_ress[i].imag(),accu)) {
-      msg.Error()<<METHOD<<"(): Reflection violated. "
-		 <<res<<" vs. "<<m_ress[i]<<std::endl;
-      return false;
-    }
-  }
-  SetMomenta(moms);
-  return true;
-}
-
-bool CDBG_Amplitude::DWITest()
-{
-  if (m_mode==0) return true;
-  msg_Debugging()<<"Dual Ward identity test:\n";
-  std::vector<Vec4D> moms(m_n);
-  std::vector<int> rc(m_n), ac(m_n), id(m_n);
-  for (size_t k(0);k<m_n;++k) moms[k]=p_p[k];
-  for (size_t i(0);i<m_ress.size();++i) {
-    Complex sum(0.0,0.0);
-    for (size_t k(0);k<m_n-1;++k) {
-      id[k]=0;
-      p_ch[k]=m_chirs[i][0];
-      p_p[k]=moms[0];
-      p_ep[k]=EP(p_p[k]);
-      p_em[k]=p_ep[k].Conj();
-      for (size_t j(0);j<m_n;++j) {
-	if (j==k) continue;
-	id[j]=j<k?j+1:j;
-	p_ch[j]=m_chirs[i][j<k?j+1:j];
-	p_p[j]=moms[j<k?j+1:j];
-	p_ep[j]=EP(p_p[j]);
-	p_em[j]=p_ep[j].Conj();
-      }
-      CalcJL();
-      sum+=m_ress[i]=*m_cur[1].back()**m_cur.back()[0];
-      msg_Debugging()<<"O(";
-      for (size_t j(0);j<m_n;++j) msg_Debugging()<<" "<<id[j];
-      msg_Debugging()<<" ): A("<<m_chirs[i]<<") = "<<m_ress[i]<<"\n";
-    }
-    msg_Debugging()<<"sum = "<<sum<<"\n";
-    if (!IsZero(sum)) {
-      msg.Error()<<METHOD<<"(): Dual Ward identity violated. "
-		 <<sum<<std::endl;
-      return false;
-    }
-  }
-  SetMomenta(moms);
-  return true;
+  Graph_Node graphs("j_"+ToString(1<<(m_n-1)),true);
+  graphs.push_back("    %% "+graphs.back());
+  m_cur.back().front()->CollectGraphs(&graphs);
+  MakeDir(file,448);
+  std::ofstream str((file+"/graphs.tex").c_str());
+  str<<"\\documentclass[a4paper]{article}\n\n";
+  str<<"\\usepackage{feynmp}\n";
+  str<<"\\usepackage{amsmath}\n";
+  str<<"\\usepackage{amssymb}\n";
+  str<<"\\usepackage{longtable}\n";
+  str<<"\\usepackage{pst-text}\n\n";
+  str<<"\\setlength{\\headheight}{-1cm}\n";
+  str<<"\\setlength{\\headsep}{0mm}\n";
+  str<<"\\setlength{\\oddsidemargin}{-1in}\n";
+  str<<"\\setlength{\\evensidemargin}{-1in}\n";
+  str<<"\\setlength{\\textheight}{28truecm}\n";
+  str<<"\\setlength{\\textwidth}{21truecm}\n\n";
+  str<<"\\begin{document}\n";
+  str<<"\\begin{fmffile}{graphs_fg}\n\n";
+  str<<"  \\fmfset{thick}{1.25thin}\n";
+  str<<"  \\fmfset{arrow_len}{2mm}\n";
+  str<<"  \\fmfset{curly_len}{1.5mm}\n";
+  str<<"  \\fmfset{wiggly_len}{1.5mm}\n";
+  str<<"  \\unitlength=0.5mm\n\n";
+  str<<"  \\pagestyle{empty}\n\n";
+  str<<"  \\begin{longtable}{ccc}\n\n";
+  size_t ng(0);
+  WriteOutGraph(str,&graphs,ng);
+  str<<"\n  \\end{longtable}\n\n";
+  str<<"\\end{fmffile}\n";
+  str<<"\\end{document}\n";
 }

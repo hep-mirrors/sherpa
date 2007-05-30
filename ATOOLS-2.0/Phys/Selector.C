@@ -212,18 +212,6 @@ bool Selector_Data::ReadInData(std::string filename)
       if (crit2<0) flav = flav.Bar();
       dat.flavs.push_back(flav);
     }  
-    else if (keyword == string("PT2")) {
-      dat.type = 23;
-      from>>crit1>>crit2>>dmin>>dmax;
-      dat.bounds.front().first=ToType<double>(inter.Interprete(dmin));
-      dat.bounds.front().second=ToType<double>(inter.Interprete(dmax));
-      flav  = Flavour(kf::code(abs(crit1)));
-      flav2 = Flavour(kf::code(abs(crit2)));
-      if (crit1<0) flav  = flav.Bar();
-      if (crit2<0) flav2 = flav2.Bar();
-      dat.flavs.push_back(flav);
-      dat.flavs.push_back(flav2);
-    }
     else if (keyword == string("X")) {
       dat.type = 24;
       from>>dmin>>dmax;
@@ -330,7 +318,6 @@ void Selector_Data::ControlOutput() {
     case 16: msg_Debugging()<<"PseudoRaps :      "; break;  
     case 21: msg_Debugging()<<"Masses     :      "; break;
     case 22: msg_Debugging()<<"Angles     :      "; break;
-    case 23: msg_Debugging()<<"PT2        :      "; break;
     case 26: msg_Debugging()<<"DeltaR     :      "; break;
     case 101: msg_Debugging()<<"ET_Bias    :      "; break;
     case 102: msg_Debugging()<<"PT_Bias    :      "; break;

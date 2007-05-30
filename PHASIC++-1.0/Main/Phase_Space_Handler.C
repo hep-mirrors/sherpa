@@ -13,7 +13,6 @@
 #include "LL_KPerp.H"
 #include "FSR_Channel.H"
 #include "ISR_Vegas.H"
-#include "PI_Interface.H"
 #include "Running_AlphaS.H"
 #include "Permutation.H"
 #include "Color_Integrator.H"
@@ -25,6 +24,8 @@
 #include "Random.H"
 #include "Shell_Tools.H"
 #include "MyStrStream.H"
+#include "Data_Reader.H"
+#include "Data_Writer.H"
 
 #include <dlfcn.h>
 
@@ -36,111 +37,6 @@
 #else
 #define PROFILE_HERE 
 #define PROFILE_LOCAL(LOCALNAME)
-#endif
-
-#ifdef USING__ROOT
-// #define ANALYSE__Phase_Space_Handler
-#endif
-#ifdef ANALYSE__Phase_Space_Handler
-#include "My_Root.H"
-#include "TH2D.h"
-#include "TH3D.h"
-static ATOOLS::Info_Key m_isrzkey[2];
-class PS_Histogram_2D: public TH2D {
-private:
-  TH2D *p_ps;
-public:
-  // constructor
-  PS_Histogram_2D(const char *name,const char *title,
-		  const size_t nbinsx,const double xmin,const double xmax,
-		  const size_t nbinsy,const double ymin,const double ymax):
-    TH2D(name,title,nbinsx,xmin,xmax,nbinsy,ymin,ymax),
-    p_ps(new TH2D((std::string(name)+"_ps").c_str(),
-		  (std::string(title)+"_ps").c_str(),
-		  nbinsx,xmin,xmax,nbinsy,ymin,ymax)) {}
-  // destructor
-  ~PS_Histogram_2D() {}
-  // member functions
-  Int_t Fill(const Double_t x,const Double_t y,
-	     const Double_t weight)
-  {
-    p_ps->Fill(x,y,1.0);
-    return TH2D::Fill(x,y,weight);
-  }
-  void Draw(Option_t *option="")
-  {
-    for (Int_t i=0;i<GetNbinsX();++i)
-      for (Int_t j=0;j<GetNbinsY();++j)
-	SetBinContent(i,j,p_ps->GetBinContent(i,j)==0.0?0.0:
-		      GetBinContent(i,j)/
-		      p_ps->GetBinContent(i,j));
-    TVirtualPad *psc=gPad;
-    Int_t logx=psc->GetLogx();
-    Int_t logy=psc->GetLogy();
-    Int_t logz=psc->GetLogz();
-    psc->Divide(2,1);
-    psc->cd(1);
-    gPad->SetLogx(logx);
-    gPad->SetLogy(logy);
-    gPad->SetLogz(logz);
-    TH2D::Draw(option);
-    psc->cd(2);
-    gPad->SetLogx(logx);
-    gPad->SetLogy(logy);
-    gPad->SetLogz(logz);
-    p_ps->Draw(option);
-  }
-};// end of class PS_Histogram_2D
-class PS_Histogram_3D: public TH3D {
-private:
-  TH3D *p_ps;
-public:
-  // constructor
-  PS_Histogram_3D(const char *name,const char *title,
-	       const size_t nbinsx,const double xmin,const double xmax,
-	       const size_t nbinsy,const double ymin,const double ymax,
-	       const size_t nbinsz,const double zmin,const double zmax):
-    TH3D(name,title,nbinsx,xmin,xmax,nbinsy,ymin,ymax,nbinsz,zmin,zmax),
-    p_ps(new TH3D((std::string(name)+"_ps").c_str(),
-		  (std::string(title)+"_ps").c_str(),
-		  nbinsx,xmin,xmax,nbinsy,ymin,ymax,nbinsz,zmin,zmax)) {}
-  // destructor
-  ~PS_Histogram_3D() {}
-  // member functions
-  Int_t Fill(const Double_t x,const Double_t y,const Double_t z,
-	     const Double_t weight)
-  {
-    p_ps->Fill(x,y,z,1.0);
-    return TH3D::Fill(x,y,z,weight);
-  }
-  void Draw(Option_t *option="")
-  {
-    for (Int_t i=0;i<GetNbinsX();++i)
-      for (Int_t j=0;j<GetNbinsY();++j)
-	for (Int_t k=0;k<GetNbinsZ();++k)
-	  SetBinContent(i,j,k,p_ps->GetBinContent(i,j,k)==0.0?0.0:
-			GetBinContent(i,j,k)/
-			p_ps->GetBinContent(i,j,k));
-    TVirtualPad *psc=gPad;
-    Int_t logx=psc->GetLogx();
-    Int_t logy=psc->GetLogy();
-    Int_t logz=psc->GetLogz();
-    psc->Divide(2,1);
-    psc->cd(1);
-    gPad->SetLogx(logx);
-    gPad->SetLogy(logy);
-    gPad->SetLogz(logz);
-    TH3D::Draw(option);
-    psc->cd(2);
-    gPad->SetLogx(logx);
-    gPad->SetLogy(logy);
-    gPad->SetLogz(logz);
-    p_ps->Draw(option);
-  }
-};// end of class PS_Histogram_3D
-typedef std::map<PHASIC::Integrable_Base*,
-		 PS_Histogram_2D*> Analysis_Map;
-static Analysis_Map s_psspy, s_psz, s_pskp;
 #endif
 
 using namespace PHASIC;
@@ -155,11 +51,10 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
   m_name(proc->Name()), p_process(proc), p_active(proc), p_integrator(NULL), p_cuts(NULL),
   p_beamhandler(bh), p_isrhandler(ih), p_fsrchannels(NULL), p_zchannels(NULL), p_kpchannels(NULL), 
   p_isrchannels(NULL), p_beamchannels(NULL), p_flavours(NULL), p_cms(NULL), p_lab(NULL), p_massboost(NULL),
-  m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(0), m_use_pi(0), m_initialized(0),
+  m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(0), m_initialized(0),
   m_maxtrials(1000000), m_sumtrials(0), m_events(0), m_E(ATOOLS::rpa.gen.Ecms()), m_s(m_E*m_E), 
   m_weight(1.), p_colint(NULL), p_helint(NULL)
 {
-  p_pi=NULL;
   Data_Read dr(rpa.GetPath()+"/Integration.dat");
   m_error    = dr.GetValue<double>("ERROR",0.01);
   m_inttype  = dr.GetValue<int>("INTEGRATOR",3);
@@ -196,10 +91,6 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
     m_beamykey.Assign("y beam",3,0,p_info);
     m_mu2key[0].Assign("mu2_1",1,0,p_info);
     m_mu2key[1].Assign("mu2_2",1,0,p_info);
-#ifdef ANALYSE__Phase_Space_Handler
-    m_isrzkey[0].Assign("z_1",3,0,p_info);
-    m_isrzkey[1].Assign("z_2",3,0,p_info);
-#endif
     m_isrkpkey[0].Assign("k_perp_1",4,1,p_info);
     m_isrkpkey[1].Assign("k_perp_2",4,1,p_info);
     p_beamhandler->AssignKeys(p_info);
@@ -217,7 +108,6 @@ Phase_Space_Handler::~Phase_Space_Handler()
   if (p_isrchannels)  { delete p_isrchannels;  p_isrchannels = 0;   }
   if (p_beamchannels) { delete p_beamchannels; p_beamchannels  = 0; }
   if (p_cuts)         { delete p_cuts;         p_cuts = 0;          }
-  if (p_pi) delete p_pi;
   delete [] p_cms;
   delete [] p_lab;
   delete [] p_flavours;
@@ -237,20 +127,9 @@ bool Phase_Space_Handler::InitIntegrators()
 {
   if (p_process->ColorScheme()==cls::sample && p_colint==NULL) {
     p_colint = new Color_Integrator();
-    std::vector<size_t> ids(m_nin+m_nout,0);
-    std::vector<int> types(m_nin+m_nout,0);
-    for (size_t i(0);i<ids.size();++i) {
-      ids[i]=i;
-      if (p_flavours[i].IsGluon()) types[i]=0;
-      else if (p_flavours[i].IsAnti()) types[i]=-1;
-      else types[i]=1;
-    }
-    if (!p_colint->ConstructRepresentations(ids,types)) return false;
-    if (m_nout<5 && !p_colint->Initialize()) return false;
   }
   if (p_process->HelicityScheme()==hls::sample && p_helint==NULL) {
     p_helint = new Helicity_Integrator();
-    if (!p_helint->Construct(m_nin+m_nout)) return false;
   }
   return true;
 }
@@ -360,27 +239,9 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
   PROFILE_HERE;
   if (process->Name().find("BFKL")==0)
     return p_process->Differential(p_cms);
-  if (!(mode&psm::pi_call) && p_pi!=NULL) {
-    p_active=process;
-    p_pi->GeneratePoint(mode);
-#ifdef ANALYSE__Phase_Space_Handler
-    static PS_Histogram_3D *three=NULL;
-    if (three==NULL) {
-      const char *name=(process->Name()+"_sprime_y_pt").c_str();
-      three = new PS_Histogram_3D(name,name,100,0.0,10.0,
-				  100,-10.0,10.0,100,0.0,10.0);
-      MYROOT::myroot->AddObject(three,name);
-    }
-    three->Fill(-log10(m_isrspkey[3]/m_isrspkey[2]),
-		m_isrykey[2],-log10(p_lab[2].PPerp2()/m_isrspkey[2]),
-		m_psweight==0.0?0.0:m_flux*(m_result_1+m_result_2)*
-		p_pi->GenerateWeight());
-#endif
-    return p_pi->Value()*p_pi->GenerateWeight();
-  }
   p_info->ResetAll();
   if (process->ColorScheme()==cls::sample &&
-      !p_colint->GeneratePoint()) return 0.0;
+      !p_colint->GeneratePoint(true)) return 0.0;
   if (process->HelicityScheme()==hls::sample &&
       !p_helint->GeneratePoint()) return 0.0;
   if (m_nin>1) {
@@ -403,24 +264,16 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
       p_isrhandler->SetMasses(p_process->Selected()->Flavours(),m_nout);
       if (p_isrhandler->On()>0) { 
 	if (p_isrhandler->KMROn()) {
-	  if (mode&psm::pi_kp) p_kpchannels->
-	    GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn(),p_pi);
-	  else p_kpchannels->
+	  p_kpchannels->
 	    GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn());
-	  if (mode&psm::pi_z) p_zchannels->
-	    GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn(),p_pi);
-	  else p_zchannels->
+	  p_zchannels->
 	    GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn());
 	  p_isrhandler->
 	    SetSprimeMax(p_isrhandler->SprimeMax()+
 			 (m_isrkpkey[0](0)+m_isrkpkey[1](0)).Abs2());
 	  if (p_isrhandler->SprimeMax()<p_isrhandler->SprimeMin()) return 0.0;
 	}
-	if (mode&psm::pi_isr) 
-	  p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey, 
-				       p_isrhandler->On(),p_pi);
-	else p_isrchannels->
-	  GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
+	p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
       }
     }
     if (!p_isrhandler->MakeISR(p_lab,m_nvec,
@@ -440,8 +293,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
       MakeIncoming(p_lab);
     }
   }
-  if (mode&psm::pi_fsr) p_fsrchannels->GeneratePoint(p_lab,p_cuts,p_pi);
-  else p_fsrchannels->GeneratePoint(p_lab,p_cuts);
+  p_fsrchannels->GeneratePoint(p_lab,p_cuts);
   if (!Check4Momentum(p_lab)) {
     msg.Out()<<"WARNING in Phase_Space_Handler::Differential : Check4Momentum(p) failed"<<std::endl;
     for (int i=0;i<m_nin+m_nout;++i) msg_Events()<<i<<":"<<p_lab[i]
@@ -507,67 +359,6 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
   if (m_nin>1 && (p_isrhandler->On()>0 || p_beamhandler->On()>0)) {
     m_psweight*=m_flux=p_isrhandler->Flux();
   }
-#ifdef ANALYSE__Phase_Space_Handler
-  Analysis_Map::const_iterator ait=s_psspy.find(process);
-  if (ait==s_psspy.end()) {
-    const char *name=(process->Name()+"_sprime_y").c_str();
-    PS_Histogram_2D *psh = 
-      new PS_Histogram_2D(name,name,100,0.0,10.0,100,-10.0,10.0);
-    ait=s_psspy.insert(std::pair<Integrable_Base*,
-		       PS_Histogram_2D*>(process,psh)).first;
-    MYROOT::myroot->AddObject(psh,name);
-    MYROOT::myroot->SetDrawOption("lego2");
-  }
-  if (p_pi==NULL) ait->second->Fill(-log10(m_isrspkey[3]/m_isrspkey[2]),
-				    m_isrykey[2],m_psweight==0.0?0.0:
-				    m_flux*(m_result_1+m_result_2));
-  else ait->second->Fill(-log10(m_isrspkey[3]/m_isrspkey[2]),
-			 m_isrykey[2],m_psweight==0.0?0.0:
-			 m_flux*(m_result_1+m_result_2)*
-			 p_pi->GenerateWeight());
-  if (p_pi==NULL) {
-    static PS_Histogram_3D *three=NULL;
-    if (three==NULL) {
-      const char *name=(process->Name()+"_sprime_y_pt").c_str();
-      three = new PS_Histogram_3D(name,name,100,0.0,10.0,
-				  100,-10.0,10.0,100,0.0,10.0);
-      MYROOT::myroot->AddObject(three,name);
-    }
-    three->Fill(-log10(m_isrspkey[3]/m_isrspkey[2]),m_isrykey[2],
-		-log10(p_lab[2].PPerp2()/m_isrspkey[2]),
-		m_psweight==0.0?0.0:m_flux*(m_result_1+m_result_2));
-  }
-  if (p_isrhandler->KMROn()>0) {
-    Analysis_Map::const_iterator ait=s_psz.find(process);
-    if (ait==s_psz.end()) {
-      const char *name=(process->Name()+"_z1_z2").c_str();
-      PS_Histogram_2D *psh = 
-	new PS_Histogram_2D(name,name,100,0.0,10.0,100,10.0,10.0);
-      ait=s_psz.insert(std::pair<Integrable_Base*,
-		       PS_Histogram_2D*>(process,psh)).first;
-      MYROOT::myroot->AddObject(psh,name);
-      MYROOT::myroot->SetDrawOption("lego2");
-    }
-    ait->second->Fill(-log10(m_isrzkey[0][2]*m_isrzkey[1][2]),
-	  	      log10(m_isrzkey[0][2]/m_isrzkey[1][2]),
-		      m_psweight==0.0?0.0:
-		      m_flux*(m_result_1+m_result_2));
-    ait=s_pskp.find(process);
-    if (ait==s_pskp.end()) {
-      const char *name=(process->Name()+"_kp1_kp2").c_str();
-      PS_Histogram_2D *psh = 
-	new PS_Histogram_2D(name,name,100,0.0,10.0,100,-10.0,10.0);
-      ait=s_pskp.insert(std::pair<Integrable_Base*,
-			PS_Histogram_2D*>(process,psh)).first;
-      MYROOT::myroot->AddObject(psh,name);
-      MYROOT::myroot->SetDrawOption("lego2");
-    }
-    ait->second->Fill(-log10(m_isrkpkey[0][3]/m_isrkpkey[0][2]),
-		      log10(m_isrkpkey[1][3]/m_isrkpkey[1][2]),
-		      m_psweight==0.0?0.0:
-		      m_flux*(m_result_1+m_result_2));
-  }
-#endif
   return m_flux*(m_result_1+m_result_2);
 }
 
@@ -759,7 +550,6 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
 void Phase_Space_Handler::AddPoint(const double value) 
 { 
   p_process->AddPoint(value); 
-  if (p_helint!=NULL) p_helint->AddPoint(value);
 }
 
 void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p)
@@ -786,16 +576,12 @@ void Phase_Space_Handler::WriteOut(const std::string &pID,const bool force)
   if (p_kpchannels!= 0) p_kpchannels->WriteOut(pID+"/MC_KMR_KP");
   if (p_fsrchannels  != 0) p_fsrchannels->WriteOut(pID+"/MC_FSR");
   std::string help     = (pID+"/Random").c_str();
-  if (p_pi!=NULL) {
-    ATOOLS::MakeDir((pID+"/PI/").c_str(),mode_dir,force); 
-    std::ofstream piinfo((pID+"/PI/Integrators").c_str());
-    if (piinfo.good()) {
-      piinfo<<p_pi->Key()<<" "<<p_pi->Point().size()<<"\n";
-      p_pi->WriteOut(pID+"/PI/");
-    }
-  }
   if (p_helint!=NULL) p_helint->WriteOut(pID);
   ran.WriteOutStatus(help.c_str());
+  Data_Writer writer;
+  writer.SetOutputPath(pID+"/");
+  writer.SetOutputFile("Statistics.dat");
+  writer.MatrixToFile(m_stats);
 }
 
 bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude) 
@@ -807,22 +593,17 @@ bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude)
   if (p_zchannels!=NULL && !(exclude&4)) okay = okay && p_zchannels->ReadIn(pID+"/MC_KMR_Z");
   if (p_kpchannels!=NULL && !(exclude&8)) okay = okay && p_kpchannels->ReadIn(pID+"/MC_KMR_KP");
   if (p_fsrchannels!=NULL && !(exclude&16)) okay = okay && p_fsrchannels->ReadIn(pID+"/MC_FSR");
-  std::ifstream piinfo((pID+"/PI/Integrators").c_str());
-  if (piinfo.good()) {
-    size_t dim;
-    std::string key;
-    piinfo>>key>>dim;
-    p_pi = new PI_Interface(this,key,dim);
-    p_pi->SetMode((psm::code)m_use_pi);
-    msg_Tracking()<<"Phase_Space_Handler::ReadIn("<<pID
-		  <<"/PI/): Read in PI."<<std::endl;
-    p_pi->ReadIn(pID+"/PI/");
-  }
   if (p_helint!=NULL) p_helint->ReadIn(pID);
   if (rpa.gen.RandomSeed()==1234 && !(exclude&32)) {
     std::string filename     = (pID+"/Random").c_str();
     ran.ReadInStatus(filename.c_str(),0);
   }
+  Data_Reader reader;
+  reader.SetAddCommandLine(false);
+  reader.SetInputPath(pID+"/");
+  reader.SetInputFile("Statistics.dat");
+  std::vector<std::vector<double> > stats;
+  if (reader.MatrixFromFile(stats,"")) m_stats=stats;
   return okay;
 }
 
@@ -929,6 +710,7 @@ bool Phase_Space_Handler::CreateIntegrators()
       break;
     case 4:case 5:case 6: 
       DropRedundantChannels();
+      p_process->FillSIntegrator(p_fsrchannels);
       break;
     default:
       msg.Error()<<"Wrong phasespace integration switch ! Using RAMBO as default."<<std::endl;
@@ -942,6 +724,19 @@ bool Phase_Space_Handler::CreateIntegrators()
   if (p_kpchannels) msg_Tracking()<<p_kpchannels->Name()<<","<<p_kpchannels->Number()<<";\n\t";
   if (p_fsrchannels) msg_Tracking()<<p_fsrchannels->Name()<<","<<p_fsrchannels->Number()<<")"<<std::endl;
   return 1;
+}
+
+void Phase_Space_Handler::UpdateIntegrators()
+{
+  double error=Process()->TotalVar()/Process()->TotalResult();
+  msg_Info()<<om::blue
+	    <<Process()->TotalResult()*rpa.Picobarn()
+	    <<" pb"<<om::reset<<" +- ( "<<om::red
+	    <<Process()->TotalVar()*rpa.Picobarn()
+	    <<" pb = "<<error*100<<" %"<<om::reset<<" ) "
+	    <<FSRIntegrator()->ValidN()<<" ( "
+	    <<(FSRIntegrator()->ValidN()*1000/FSRIntegrator()->N())/10.0<<" % ) "<<std::endl;
+  p_process->UpdateIntegrator(p_fsrchannels);
 }
 
 void Phase_Space_Handler::DropRedundantChannels()
@@ -1407,29 +1202,11 @@ bool Phase_Space_Handler::CreateISRChannels()
   if (m_isrparams.size() < 1) return 0;
   int isr = p_isrhandler->On();
   Single_Channel * channel;   
-  if (m_use_pi&psm::pi_isr && isr==3) {
-    channel = new Flat_ISR_V(1.0," isr",p_info);
-    p_isrchannels->Add(channel);
-    return true;
-  }
   int length = m_isrparams.size();
   for (int i=0;i<length;i++) {
     switch (m_isrparams[i].type) {
     case 0:
       if (isr==3) {
-#ifdef PDF_Channels
-	// these channels are slower than the usual isr channels
-	// however they perform better for hadron pdf's due to 
-	// a more realistic x1 / x2 - mapping
- 	channel = new Simple_Pole_PDF_Uniform_V(m_isrparams[i].parameters[0]," isr",p_info);
- 	p_isrchannels->Add(channel);
-	channel = new Simple_Pole_PDF_Forward_V(m_isrparams[i].parameters[0],
-						m_isrparams[i].parameters[1]," isr",p_info);
-	p_isrchannels->Add(channel);
-	channel = new Simple_Pole_PDF_Backward_V(m_isrparams[i].parameters[0],
-						 m_isrparams[i].parameters[1]," isr",p_info);
-	p_isrchannels->Add(channel);
-#else
  	channel = new Simple_Pole_Uniform_V(m_isrparams[i].parameters[0]," isr",p_info);
  	p_isrchannels->Add(channel);
 	channel = new Simple_Pole_Forward_V(m_isrparams[i].parameters[0],
@@ -1438,13 +1215,11 @@ bool Phase_Space_Handler::CreateISRChannels()
 	channel = new Simple_Pole_Backward_V(m_isrparams[i].parameters[0],
 					     m_isrparams[i].parameters[1]," isr",p_info);
 	p_isrchannels->Add(channel);
-#endif
       }
       else {
 	//The channels used for DIS
 	channel = new Simple_Pole_Central_V(m_isrparams[i].parameters[0]," isr",p_info,isr);
 	p_isrchannels->Add(channel);
-	m_use_pi=m_use_pi|psm::pi_isr;
       }
       break;
     case 1:
@@ -1575,80 +1350,6 @@ void Phase_Space_Handler::DeleteInfo()
   p_info=NULL;
 }
 
-bool Phase_Space_Handler::CreatePI()
-{
-  size_t dim=0, sdim[4]={0,0,0,0};
-  if ((psm::code)m_use_pi&psm::pi_isr) 
-    if (p_isrchannels!=NULL && p_isrchannels->Number()!=0) 
-      dim+=sdim[0]=(*p_isrchannels)[0]->Dimension()+1;
-  if ((psm::code)m_use_pi&psm::pi_fsr) 
-    if (p_fsrchannels!=NULL && p_fsrchannels->Number()!=0) 
-      dim+=sdim[1]=(*p_fsrchannels)[0]->Dimension()+1;
-  if ((psm::code)m_use_pi&psm::pi_z) 
-    if (p_zchannels!=NULL && p_zchannels->Number()!=0) 
-      dim+=sdim[2]=(*p_zchannels)[0]->Dimension()+1;
-  if ((psm::code)m_use_pi&psm::pi_kp) 
-    if (p_kpchannels!=NULL && p_kpchannels->Number()!=0) 
-      dim+=sdim[3]=(*p_kpchannels)[0]->Dimension()+1;
-  if (dim>25) THROW(critical_error,"Dimension too large for PI.");
-  if (dim==0) {
-    ATOOLS::msg.Error()<<"Phase_Space_Handler::CreatePI(): "
-		       <<"Zero dimensional phase space. Abort.";
-    return false;
-  }
-  msg_Info()<<"Phase_Space_Handler::CreatePI(..): "
-	    <<"Creating "<<dim<<"-dimensional PI\n";
-  msg_Tracking()<<"   '"<<p_process->Name()<<"'\n";
-  p_pi = new PI_Interface(this,p_process->Name(),dim);
-  p_pi->SetMode((psm::code)m_use_pi);
-  (*p_pi)->Initialize();
-  if (sdim[0]>0) {
-    double sum=0.0;
-    std::vector<double> alpha(p_isrchannels->Number()-1);
-    for (size_t j=0, i=0;i<p_isrchannels->Number()-1;++i) 
-      if ((*p_isrchannels)[i]->Alpha()>0.0)
-	alpha[j++]=sum+=(*p_isrchannels)[i]->Alpha();
-      else alpha.pop_back();
-    (*p_pi)->Reserve(p_isrchannels->Name(),sdim[0],1);
-    (*p_pi)->Split(p_isrchannels->Name(),0,alpha);
-    p_isrchannels->FixAlpha();
-  }
-  if (sdim[1]>0) {
-    double sum=0.0;
-    std::vector<double> alpha(p_fsrchannels->Number()-1);
-    for (size_t j=0, i=0;i<p_fsrchannels->Number()-1;++i) 
-      if ((*p_fsrchannels)[i]->Alpha()>0.0)
-	alpha[j++]=sum+=(*p_fsrchannels)[i]->Alpha();
-      else alpha.pop_back();
-    (*p_pi)->Reserve(p_fsrchannels->Name(),sdim[1],1);
-    (*p_pi)->Split(p_fsrchannels->Name(),0,alpha);
-    p_fsrchannels->FixAlpha();
-  }
-  if (sdim[2]>0) {
-    double sum=0.0;
-    std::vector<double> alpha(p_zchannels->Number()-1);
-    for (size_t j=0, i=0;i<p_zchannels->Number()-1;++i)
-      if ((*p_zchannels)[i]->Alpha()>0.0)
-	alpha[j++]=sum+=(*p_zchannels)[i]->Alpha();
-      else alpha.pop_back();
-    (*p_pi)->Reserve(p_zchannels->Name(),sdim[2],1);
-    (*p_pi)->Split(p_zchannels->Name(),0,alpha);
-    p_zchannels->FixAlpha();
-  }
-  if (sdim[3]>0) {
-    double sum=0.0;
-    std::vector<double> alpha(p_kpchannels->Number()-1);
-    for (size_t j=0, i=0;i<p_kpchannels->Number()-1;++i)
-      if ((*p_kpchannels)[i]->Alpha()>0.0)
-	alpha[j++]=sum+=(*p_kpchannels)[i]->Alpha();
-      else alpha.pop_back();
-    (*p_pi)->Reserve(p_kpchannels->Name(),sdim[3],1);
-    (*p_pi)->Split(p_kpchannels->Name(),0,alpha);
-    p_kpchannels->FixAlpha();
-  }
-  return true;
-}
-
 typedef Single_Channel * (*Lib_Getter_Function)(int nin,int nout,ATOOLS::Flavour* fl
 					    , ATOOLS::Integration_Info * const info,Phase_Space_Handler *psh);
 
@@ -1674,6 +1375,13 @@ Single_Channel * Phase_Space_Handler::SetChannel(int nin,int nout,ATOOLS::Flavou
   if (error!=NULL) return 0;
 
   return GetterFunction(nin,nout,fl,info,this);
+}
+
+void Phase_Space_Handler::AddStats(const std::vector<double> &stats)
+{ 
+  std::vector<double> nstats(1,m_stats.size()+1);
+  nstats.insert(nstats.end(),stats.begin(),stats.end());
+  m_stats.push_back(nstats); 
 }
 
 template Weight_Info &ATOOLS::Blob_Data_Base::Get<Weight_Info>();
