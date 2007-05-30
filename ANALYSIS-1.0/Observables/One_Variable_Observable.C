@@ -64,6 +64,8 @@ void One_Variable_Observable_Getter::PrintInfo
 {
   str<<"{\n"
      <<std::setw(width+7)<<" "<<"InList  list\n"
+     <<std::setw(width+7)<<" "
+     <<"Tags    flavi1,.. itemi1,.. vari mini maxi binsi typei\n"
      <<std::setw(width+7)<<" "<<"Flavs   flav11,.. .. flavN1,..\n"
      <<std::setw(width+7)<<" "<<"Items   item11,.. .. itemN1,..\n"
      <<std::setw(width+7)<<" "<<"Vars    var1      .. varN\n"
@@ -87,6 +89,33 @@ One_Variable_Observable_Getter::operator()
   for (size_t i=0;i<parameters.size();++i) {
     const std::vector<std::string> &cur=parameters[i];
     if (cur[0]=="InList" && cur.size()>1) inlist=cur[1];
+    else if (cur[0]=="Tags" && cur.size()>5) {
+      reader.SetString(cur[1]);
+      std::vector<int> cfl;
+      if (!reader.VectorFromString(cfl,"")) {
+	msg_Debugging()<<METHOD<<"(): Invalid flavour syntax '"
+		       <<cur[1]<<"'.\n";
+	continue;
+      }
+      flavs.push_back(Flavour_Vector(cfl.size()));
+      for (size_t k(0);k<cfl.size();++k) {
+	flavs.back()[k]=Flavour((kf::code)abs(cfl[k]));
+	if (cfl[k]<0) flavs.back()[k]=flavs.back()[k].Bar();
+      }
+      reader.SetString(cur[2]);
+      std::vector<int> cit;
+      if (!reader.VectorFromString(cit,"")) {
+	msg_Debugging()<<METHOD<<"(): Invalid item syntax '"
+		       <<cur[2]<<"'.\n";
+	continue;
+      }
+      items.push_back(cit);
+      vtags.push_back(cur[3]);
+      histos[0].push_back(HistogramType(cur[7]));
+      histos[1].push_back(ToType<double>(cur[6]));
+      histos[2].push_back(ToType<double>(cur[4]));
+      histos[3].push_back(ToType<double>(cur[5]));
+    }
     else if (cur[0]=="Flavs" && cur.size()>1) {
       for (size_t j(1);j<cur.size();++j) {
 	reader.SetString(cur[j]);
