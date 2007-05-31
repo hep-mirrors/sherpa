@@ -52,7 +52,7 @@ namespace ANALYSIS {
 		  double weight, int ncount);
     int Evaluate(ATOOLS::Particle_List &reflist,
 		 double weight,int ncount,ATOOLS::Particle_List &moms,
-		 const size_t i,const size_t j,size_t k,bool &eval); 
+		 const size_t i,size_t j,size_t k,size_t &eval); 
     Analysis_Object &operator+=(const Analysis_Object &obj);
     void EndEvaluation(double scale);
     void Output(const std::string & pname);
@@ -318,43 +318,54 @@ One_Variable_Selector::~One_Variable_Selector()
 
 int One_Variable_Selector::Evaluate
 (ATOOLS::Particle_List &reflist,double weight,int ncount,
- ATOOLS::Particle_List &moms,const size_t i,const size_t j,size_t k,bool &eval) 
+ ATOOLS::Particle_List &moms,const size_t i,size_t j,size_t k,size_t &eval) 
 {
+  bool count(m_vars[i]->Name()=="Count");
   if (j>=m_flavs[i].size()) {
+    if (count) {
+      ++eval;
+      return 1;
+    }
     std::vector<ATOOLS::Vec4D> vmoms(moms.size());
     for (size_t l(0);l<vmoms.size();++l) vmoms[l]=moms[l]->Momentum();
     double val(m_vars[i]->Value(&vmoms.front(),vmoms.size()));
     bool pass(val>=m_mins[i] && val<=m_maxs[i]);
-    msg_Debugging()<<"  "<<m_vars[i]->Name()<<"("<<moms.front();
-    for (size_t k(1);k<moms.size();++k) msg_Debugging()<<","<<moms[k];
-    msg_Debugging()<<") = "<<val<<" "<<(pass?"\\in":"\\nin")
-		   <<" ["<<m_mins[i]<<","<<m_maxs[i]<<"]\n";
-    if (m_dists[i]!=NULL) m_dists[i]->Insert(val,weight,ncount);
-    eval=true;
-    if (pass) return 1;
-    if (m_items[i][0]>=0 || m_vars[i]->Name()=="Count") {
-      msg_Debugging()<<"  m_items["<<i<<"][0] = "<<m_items[i][0]
-		     <<" for "<<m_vars[i]->Name()<<std::endl;
-      return 0;
+    if (msg.LevelIsDebugging()) {
+      msg_Debugging()<<"  "<<m_flavs[i][0].IDName();
+      for (size_t k(1);k<m_flavs[i].size();++k) 
+	msg_Debugging()<<","<<m_flavs[i][k].IDName();
+      msg_Debugging()<<" "<<m_items[i][0];
+      for (size_t k(1);k<m_items[i].size();++k) 
+	msg_Debugging()<<","<<m_items[i][k];
+      msg_Debugging()<<" "<<m_vars[i]->Name()<<"("<<moms.front()->Number();
+      for (size_t k(1);k<moms.size();++k) 
+	msg_Debugging()<<","<<moms[k]->Number();
+      msg_Debugging()<<") = "<<val<<" "<<(pass?"\\in":"\\nin")
+		     <<" ["<<m_mins[i]<<","<<m_maxs[i]<<"]\n";
     }
+    if (m_dists[i]!=NULL) m_dists[i]->Insert(val,weight,ncount);
+    ++eval;
+    if (pass) return 1;
+    if (m_items[i][0]>=0 || m_vars[i]->Name()=="Count") return 0;
     for (size_t l(0);l<moms.size();++l)
       for (Particle_List::iterator pit(reflist.begin());
 	   pit!=reflist.end();++pit) 
 	if (*pit==moms[l]) {
-	  msg_Debugging()<<"  kill "<<**pit<<"\n";
+	  msg_Debugging()<<"  erase "<<**pit<<"\n";
 	  reflist.erase(pit);
 	  break;
 	}
     moms.clear();
     return -1;
   }
+  if (j>0 && m_flavs[i][j]==m_flavs[i][j-1]) ++k;
   int o(-1);
   for (;k<reflist.size();++k) {
     if (reflist[k]->Flav()==m_flavs[i][j]) {
       ++o;
       if (m_items[i][j]<0 || o==m_items[i][j]) {
 	moms.push_back(reflist[k]);
-	int stat(Evaluate(reflist,weight,ncount,moms,i,j+1,k+1,eval));
+	int stat(Evaluate(reflist,weight,ncount,moms,i,j+1,k,eval));
 	if (stat<1) return stat;
       	if (o==m_items[i][j]) return 1;
 	moms.pop_back();
@@ -372,24 +383,46 @@ void One_Variable_Selector::Evaluate
   p_flow->Insert(0.0,weight,ncount);
   Particle_List vreflist(reflist);
   for (int i(0);i<(int)m_flavs.size();++i) {
-    bool eval(false);
+    size_t eval(0);
     Particle_List moms;
     int stat(Evaluate(vreflist,weight,ncount,moms,i,0,0,eval));
+    if (m_vars[i]->IDName()=="Count") {
+      std::vector<ATOOLS::Vec4D> vmoms(eval);
+      double val(m_vars[i]->Value(&vmoms.front(),eval));
+      bool pass(val>=m_mins[i] && val<=m_maxs[i]);
+      if (msg.LevelIsDebugging()) {
+	msg_Debugging()<<"  "<<m_flavs[i][0].IDName();
+	for (size_t k(1);k<m_flavs[i].size();++k) 
+	  msg_Debugging()<<","<<m_flavs[i][k].IDName();
+	msg_Debugging()<<" "<<m_items[i][0];
+	for (size_t k(1);k<m_items[i].size();++k) 
+	  msg_Debugging()<<","<<m_items[i][k];
+	msg_Debugging()<<" "<<m_vars[i]->Name()<<"("<<eval<<") "
+		       <<(pass?"\\in":"\\nin")
+		       <<" ["<<m_mins[i]<<","<<m_maxs[i]<<"]\n";
+      }
+      if (!pass) {
+	msg_Debugging()<<"} failed\n";
+	return;
+      }
+    }
+    else if (!eval && msg.LevelIsDebugging()) {
+      msg_Debugging()<<"  "<<m_flavs[i][0].IDName();
+      for (size_t k(1);k<m_flavs[i].size();++k) 
+	msg_Debugging()<<","<<m_flavs[i][k].IDName();
+      msg_Debugging()<<" "<<m_items[i][0];
+      for (size_t k(1);k<m_items[i].size();++k) 
+	msg_Debugging()<<","<<m_items[i][k];
+      msg_Debugging()<<" "<<m_vars[i]->Name()<<", range ["
+		     <<m_mins[i]<<","<<m_maxs[i]<<"] not checked\n";
+    }
     if (stat==0) {
-      msg_Debugging()<<"  killed at "<<i<<" "<<m_vars[i]->Name()<<"\n";
+      msg_Debugging()<<"} failed\n";
       return;
     }
     if (stat<0) {
       --i;
       continue;
-    }
-    if (m_vars[i]->IDName()=="Count" && !eval) {
-      std::vector<ATOOLS::Vec4D> vmoms;
-      double val(m_vars[i]->Value(&vmoms.front(),0));
-      if (val<m_mins[i] || val>m_maxs[i]) {
-	msg_Debugging()<<"  killed at "<<i<<" "<<m_vars[i]->Name()<<"\n";
-	return;
-      }
     }
     p_flow->Insert((double)i+1.5,weight,0);
   }

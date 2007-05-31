@@ -523,6 +523,8 @@ DEFINE_VARIABLE_GETTER(DR<double>,DR_Getter,
 		       "\\Delta R_{ij}","\\Delta R_{ij}",0)
 DEFINE_VARIABLE_GETTER(DR<double>,DR_Getter_2,"DR","\\Delta R_{ij}",1)
 
+template class T<double>;
+DEFINE_VARIABLE_GETTER(T<double>,T_Getter,"t","t",0)
 template class Delta<double>;
 DEFINE_VARIABLE_GETTER(Delta<double>,Delta_Getter,
 		       "\\Delta(t,t_0)","\\Delta(t,t_0)",0)
