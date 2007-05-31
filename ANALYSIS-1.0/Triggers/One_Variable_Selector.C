@@ -401,6 +401,7 @@ void One_Variable_Selector::Evaluate
 		       <<(pass?"\\in":"\\nin")
 		       <<" ["<<m_mins[i]<<","<<m_maxs[i]<<"]\n";
       }
+      if (m_dists[i]!=NULL) m_dists[i]->Insert(val,weight,ncount);
       if (!pass) {
 	msg_Debugging()<<"} failed\n";
 	return;
