@@ -98,17 +98,15 @@ void Muon_Maker::ReconstructObjects(Particle_List * plist,ATOOLS::Vec4D & METvec
   IsolateTracks();
   CorrectEnergies();
 
+  DropUsedTracks();
   Particle * part;
   while (!m_objects.empty()) {
-    m_objects.front()->SetIncludeTracks(true);
     part = m_objects.front()->CreateParticle();
     delete m_objects.front();
     m_objects.pop_front();
     plist->push_back(part);
     METvector -= part->Momentum(); 
   }
-  DropUsedTracks();
-  //std::cout<<METHOD<<" --> "<<plist->size()<<std::endl;
 }
 
 void Muon_Maker::GetTracks() {
@@ -117,18 +115,18 @@ void Muon_Maker::GetTracks() {
   if (tracks.size()==0) return;
   std::list<Track *>::iterator trit;
   for (trit=tracks.begin(); trit!=tracks.end(); trit++) {
-    if ((*trit)->flav==Flavour(kf::mu)||(*trit)->flav==Flavour(kf::mu).Bar() &&
+    if (!(*trit)->used &&
+	((*trit)->flav==Flavour(kf::mu)||(*trit)->flav==Flavour(kf::mu).Bar()) &&
 	(*trit)->mom[0]>m_Estart) {
       Reconstructed_Object * object = new Reconstructed_Object((*trit));
+      object->SetIncludeTracks(true);
       m_objects.push_back(object);
+      (*trit)->used = true;
     }
   }
 }
 
 void Muon_Maker::IsolateTracks() {
-  //std::cout<<"--------------------------------------------------"<<std::endl
-  //	   <<"--------------------------------------------------"<<std::endl;
-  //std::cout<<METHOD<<" for "<<m_objects.size()<<std::endl;
   if (m_objects.size()==0) return;
   double E_HCal, E_ECal;
   std::list<Cell *> * ECal_cells = p_ECal->GetHitCells();
@@ -148,38 +146,27 @@ void Muon_Maker::IsolateTracks() {
     for (cit=HCal_cells->begin();cit!=HCal_cells->end();cit++) {
       if ((*cit)->R2(eta,phi)<m_R2hadiso && !(*olit)->IsIncluded((*cit))) {
 	E_HCal += (*cit)->TotalDeposit();
-	//std::cout<<"Distance of "<<(*cit)->Direction()
-	//	 <<"("<<(*cit)->Direction().Eta()<<","<<(*cit)->Direction().Phi()<<") = "
-	//	 <<(*cit)->R2(eta,phi)<<"("<<m_R2hadiso<<") from "<<eta<<"/"<<phi
-	//	 <<" -> E = "<<E_HCal;
       }
       if (E_HCal>m_minhad && E_HCal/E>m_relhad) {
-	//std::cout<<" ===> Veto !!!"<<std::endl;
 	veto = true;
 	break;
       }
-      //std::cout<<std::endl;
     }
     for (cit=ECal_cells->begin();cit!=ECal_cells->end();cit++) {
       if ((*cit)->R2(eta,phi)<m_R2EMiso && !(*olit)->IsIncluded((*cit))) {
 	E_ECal += (*cit)->TotalDeposit();
-	//std::cout<<"Distance of "<<(*cit)->Direction()
-	//	 <<"("<<(*cit)->Direction().Eta()<<","<<(*cit)->Direction().Phi()<<") = "
-	//	 <<(*cit)->R2(eta,phi)<<"("<<m_R2EMiso<<") from "<<eta<<"/"<<phi
-	//	 <<" -> E = "<<E_ECal;
       }
       if (E_ECal>m_totEM) {
-	//std::cout<<" ===> Veto !!!"<<std::endl;
 	veto = true;
 	break;
       }
-      //std::cout<<std::endl;
     }
-    if (veto) olit = m_objects.erase(olit);
+    if (veto) {
+      (*(*olit)->GetTracks().begin())->used = false;
+      olit = m_objects.erase(olit);
+    }
     else olit++;     
   }
-  //std::cout<<"--------------------------------------------------"<<std::endl
-  //	   <<"--------------------------------------------------"<<std::endl;
 }
 
 void Muon_Maker::CorrectEnergies() {

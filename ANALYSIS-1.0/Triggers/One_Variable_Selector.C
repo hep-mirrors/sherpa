@@ -50,9 +50,9 @@ namespace ANALYSIS {
 		  const ATOOLS::Particle_List &reflist,
 		  ATOOLS::Particle_List &outlist,
 		  double weight, int ncount);
-    bool Evaluate(const ATOOLS::Particle_List &reflist,
-		  double weight,int ncount,std::vector<ATOOLS::Vec4D> moms,
-		  const size_t i,const size_t j,size_t k,bool &eval); 
+    int Evaluate(ATOOLS::Particle_List &reflist,
+		 double weight,int ncount,ATOOLS::Particle_List &moms,
+		 const size_t i,const size_t j,size_t k,bool &eval); 
     Analysis_Object &operator+=(const Analysis_Object &obj);
     void EndEvaluation(double scale);
     void Output(const std::string & pname);
@@ -316,12 +316,14 @@ One_Variable_Selector::~One_Variable_Selector()
   delete p_flow;
 }
 
-bool One_Variable_Selector::Evaluate
-(const ATOOLS::Particle_List &reflist,double weight,int ncount,
- std::vector<ATOOLS::Vec4D> moms,const size_t i,const size_t j,size_t k,bool &eval) 
+int One_Variable_Selector::Evaluate
+(ATOOLS::Particle_List &reflist,double weight,int ncount,
+ ATOOLS::Particle_List &moms,const size_t i,const size_t j,size_t k,bool &eval) 
 {
   if (j>=m_flavs[i].size()) {
-    double val(m_vars[i]->Value(&moms.front(),moms.size()));
+    std::vector<ATOOLS::Vec4D> vmoms(moms.size());
+    for (size_t l(0);l<vmoms.size();++l) vmoms[l]=moms[l]->Momentum();
+    double val(m_vars[i]->Value(&vmoms.front(),vmoms.size()));
     bool pass(val>=m_mins[i] && val<=m_maxs[i]);
     msg_Debugging()<<"  "<<m_vars[i]->Name()<<"("<<moms.front();
     for (size_t k(1);k<moms.size();++k) msg_Debugging()<<","<<moms[k];
@@ -329,20 +331,37 @@ bool One_Variable_Selector::Evaluate
 		   <<" ["<<m_mins[i]<<","<<m_maxs[i]<<"]\n";
     if (m_dists[i]!=NULL) m_dists[i]->Insert(val,weight,ncount);
     eval=true;
-    return pass;
+    if (pass) return 1;
+    if (m_items[i][0]>=0 || m_vars[i]->Name()=="Count") {
+      msg_Debugging()<<"  m_items["<<i<<"][0] = "<<m_items[i][0]
+		     <<" for "<<m_vars[i]->Name()<<std::endl;
+      return 0;
+    }
+    for (size_t l(0);l<moms.size();++l)
+      for (Particle_List::iterator pit(reflist.begin());
+	   pit!=reflist.end();++pit) 
+	if (*pit==moms[l]) {
+	  msg_Debugging()<<"  kill "<<**pit<<"\n";
+	  reflist.erase(pit);
+	  break;
+	}
+    moms.clear();
+    return -1;
   }
   int o(-1);
   for (;k<reflist.size();++k) {
     if (reflist[k]->Flav()==m_flavs[i][j]) {
       ++o;
       if (m_items[i][j]<0 || o==m_items[i][j]) {
-	moms.push_back(reflist[k]->Momentum());
-	if (!Evaluate(reflist,weight,ncount,moms,i,j+1,k+1,eval)) return false;
-	if (o==m_items[i][j]) return true;
+	moms.push_back(reflist[k]);
+	int stat(Evaluate(reflist,weight,ncount,moms,i,j+1,k+1,eval));
+	if (stat<1) return stat;
+      	if (o==m_items[i][j]) return 1;
+	moms.pop_back();
       }
     }
   }
-  return true;
+  return 1;
 }
 
 void One_Variable_Selector::Evaluate
@@ -351,12 +370,27 @@ void One_Variable_Selector::Evaluate
 {
   msg_Debugging()<<METHOD<<"(): {\n";
   p_flow->Insert(0.0,weight,ncount);
-  for (size_t i(0);i<m_flavs.size();++i) {
+  Particle_List vreflist(reflist);
+  for (int i(0);i<(int)m_flavs.size();++i) {
     bool eval(false);
-    std::vector<Vec4D> moms;
-    if (!Evaluate(reflist,weight,ncount,moms,i,0,0,eval)) return;
-    if (m_vars[i]->IDName()=="Count" && !eval)
-      if (!m_vars[i]->Value(&moms.front(),0)) return;
+    Particle_List moms;
+    int stat(Evaluate(vreflist,weight,ncount,moms,i,0,0,eval));
+    if (stat==0) {
+      msg_Debugging()<<"  killed at "<<i<<" "<<m_vars[i]->Name()<<"\n";
+      return;
+    }
+    if (stat<0) {
+      --i;
+      continue;
+    }
+    if (m_vars[i]->IDName()=="Count" && !eval) {
+      std::vector<ATOOLS::Vec4D> vmoms;
+      double val(m_vars[i]->Value(&vmoms.front(),0));
+      if (val<m_mins[i] || val>m_maxs[i]) {
+	msg_Debugging()<<"  killed at "<<i<<" "<<m_vars[i]->Name()<<"\n";
+	return;
+      }
+    }
     p_flow->Insert((double)i+1.5,weight,0);
   }
   msg_Debugging()<<"} passed\n";

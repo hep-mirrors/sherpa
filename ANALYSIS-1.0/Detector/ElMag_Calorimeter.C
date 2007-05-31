@@ -64,7 +64,11 @@ Analysis_Object * ElMag_Calorimeter::GetCopy() const {
 void ElMag_Calorimeter::Reset() {
   for (std::set<Detector_Segment *,DS_Order>::iterator ds=m_segments.begin();
        ds!=m_segments.end();ds++) (*ds)->Reset();
-  if (!m_hitcells.empty()) m_hitcells.clear();
+  if (!m_hitcells.empty()) {
+    for (std::list<Cell *>::iterator cit=m_hitcells.begin();cit!=m_hitcells.end();++cit)
+      (*cit)->Reset();
+    m_hitcells.clear();
+  }
 }
 
 bool ElMag_Calorimeter::Fill(const double E,const double eta,
@@ -201,7 +205,10 @@ void ElMag_Calorimeter::FillPlaquette(Cell * cell,std::vector<Cell *> & cells,
       cur = cur->GetUp();
     } while (dims[2]<phimin);
     for (int j=0;j<ncells;j++) {
-      if (cur->TotalDeposit()>0.) cells.push_back(cur);
+      if (cur->TotalDeposit()>0. && !cur->Used()) {
+	cur->SetUsed(true);
+	cells.push_back(cur);
+      }
       cur->Dimensions(dims); 
       if (dims[3]>phimax) break;
       cur = cur->GetUp();

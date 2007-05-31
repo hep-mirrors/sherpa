@@ -1,5 +1,6 @@
 #include "Cell.H"
 #include "Message.H"
+#include "Exception.H"
 
 using namespace ANALYSIS;
 using namespace ATOOLS;
@@ -15,7 +16,11 @@ Cell::Cell(const double* dims,Etastrip * etastrip) :
 {
 }
 
-Cell::~Cell() { }
+Cell::~Cell() {
+  //exh->GenerateStackTrace(std::cout);
+  //msg_Info();
+  //PRINT_INFO(this);
+}
 
 void Cell::Reset() {
   if (!m_energydeposits.empty()) {

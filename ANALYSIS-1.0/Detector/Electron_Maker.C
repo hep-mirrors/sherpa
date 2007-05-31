@@ -104,6 +104,7 @@ void Electron_Maker::ReconstructObjects(Particle_List * plist,ATOOLS::Vec4D & ME
   IsolateClusters();
   CorrectEnergies();
 
+  DropUsedCells();
   Particle * part;
   while (!m_objects.empty()) {
     part = m_objects.front()->CreateParticle();
@@ -112,7 +113,6 @@ void Electron_Maker::ReconstructObjects(Particle_List * plist,ATOOLS::Vec4D & ME
     plist->push_back(part);
     METvector -= part->Momentum(); 
   }
-  DropUsedCells();
 }
 
 void Electron_Maker::BuildMatchedClusters() {
@@ -129,7 +129,7 @@ void Electron_Maker::BuildMatchedClusters() {
   for (std::list<Cell *>::iterator cit=cells->begin();cit!=cells->end();cit++) {
     cell = (*cit);
     cell->Centroid(eta,phi);
-    if (cell->TotalDeposit()>m_Estart) {
+    if (!cell->Used() && cell->TotalDeposit()>m_Estart) {
       cluster.clear();
       tracks.clear();
       p_ECal->BuildCluster(cell,cluster,m_dim,E,eta,phi);
@@ -138,20 +138,22 @@ void Electron_Maker::BuildMatchedClusters() {
  
       if (tracks.size()>0) {
 	if (m_trackmode=="exact") {
-	  if (tracks.size()==1 && (*tracks.begin())->flav.Kfcode()==kf::e) {
+	  if (tracks.size()==1 && !(*tracks.begin())->used &&
+	      (*tracks.begin())->flav.Kfcode()==kf::e) {
 	    matched = true;
 	    track   = (*tracks.begin());
 	  }
 	}
 	else if (m_trackmode=="just_one") {
-	  if (tracks.size()==1) {
+	  if (tracks.size()==1 && !tracks.front()->used) {
 	    matched = true;
 	    track   = tracks.front();
 	  }
 	}
 	else if (m_trackmode=="any_electron") {
 	  for (trit=tracks.begin(); trit!=tracks.end(); trit++) {
-	    if ((*trit)->flav==Flavour(kf::e)||(*trit)->flav==Flavour(kf::e).Bar()) {
+	    if (!(*trit)->used &&
+		((*trit)->flav==Flavour(kf::e)||(*trit)->flav==Flavour(kf::e).Bar())) {
 	      matched = true; 
 	      track   = (*trit);
 	      break;
@@ -165,7 +167,12 @@ void Electron_Maker::BuildMatchedClusters() {
 	Reconstructed_Object * object(new Reconstructed_Object(flav,E,eta,phi));
 	object->SetCells(cluster);
 	object->AddTrack(track);
+	track->used = true;
 	m_objects.push_back(object);
+      }
+      else {
+	for (std::vector<Cell *>::iterator cur=cluster.begin();cur!=cluster.end();cur++)
+	  (*cur)->SetUsed(false);
       }
     }
   }

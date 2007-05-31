@@ -72,14 +72,12 @@ void Object_Definition_Base::DropUsedCells() {
 	cell  = cells[c];
 	for (cit=ecalcells->begin();cit!=ecalcells->end();cit++) {
 	  if (cell==(*cit)) {
-	    (*cit)->Reset();
 	    ecalcells->erase(cit); found = true; break; 
 	  }
 	}
 	if (found) continue;
 	for (cit=hcalcells->begin();cit!=hcalcells->end();cit++) {
 	  if (cell==(*cit)) { 
-	    (*cit)->Reset();
 	    hcalcells->erase(cit); found = true; break; 
 	  }
 	}

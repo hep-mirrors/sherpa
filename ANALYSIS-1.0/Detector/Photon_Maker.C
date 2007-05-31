@@ -102,6 +102,7 @@ void Photon_Maker::ReconstructObjects(Particle_List * plist,ATOOLS::Vec4D & METv
   IsolateClusters();
   CorrectEnergies();
 
+  DropUsedCells();
   Particle * part;
   while (!m_objects.empty()) {
     part = m_objects.front()->CreateParticle();
@@ -110,7 +111,6 @@ void Photon_Maker::ReconstructObjects(Particle_List * plist,ATOOLS::Vec4D & METv
     m_objects.pop_front();
     METvector -= part->Momentum(); 
   }
-  DropUsedCells();
 }
 
 void Photon_Maker::BuildMatchedClusters() {
@@ -124,7 +124,7 @@ void Photon_Maker::BuildMatchedClusters() {
   bool vetoit(false);
   for (std::list<Cell *>::iterator cit=cells->begin();cit!=cells->end();cit++) {
     cell = (*cit);
-    if (cell->TotalDeposit()>m_Estart) {
+    if (!cell->Used() && cell->TotalDeposit()>m_Estart) {
       cell->Centroid(eta,phi);
       cluster.clear();
       tracks.clear();
@@ -140,6 +140,10 @@ void Photon_Maker::BuildMatchedClusters() {
 	Reconstructed_Object * object = new Reconstructed_Object(m_kfcode,E,eta,phi);
 	object->SetCells(cluster);
 	m_objects.push_back(object);
+      }
+      else {
+	for (std::vector<Cell *>::iterator cur=cluster.begin();cur!=cluster.end();cur++)
+	  (*cur)->SetUsed(false);
       }
     }
   }

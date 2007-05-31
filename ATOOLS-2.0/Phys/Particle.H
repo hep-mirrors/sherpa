@@ -9,8 +9,10 @@
 #include <list>
 
 namespace ATOOLS {
+
   class Blob;
-   
+  class Particle;
+
   struct part_status {
     enum code {
       undefined     = 0,
@@ -36,6 +38,8 @@ namespace ATOOLS {
     double            m_dec_time, m_finalmass;
     static int        s_totalnumber;
   public:
+    static std::set<Particle*> s_created;
+
     Particle();
     Particle(const Particle & );
     Particle& operator=(const Particle &);

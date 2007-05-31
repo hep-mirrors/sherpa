@@ -44,11 +44,11 @@ void Detector_Segment::Dimensions(double & etamin,double & etamax) const {
 
 void Detector_Segment::Reset() {
   Etastrip * etastrip(p_first);
-  for (;;) {
+  do {
     etastrip->Reset();
-    etastrip = etastrip->GetPlus();
     if (etastrip==p_last) break;
-  }
+    etastrip = etastrip->GetPlus();
+  } while (true);
 }
 
 Cell * Detector_Segment::LocateCell(const double eta,const double phi) { 
