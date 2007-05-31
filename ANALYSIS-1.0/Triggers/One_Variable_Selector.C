@@ -73,14 +73,15 @@ void One_Variable_Selector_Getter::PrintInfo
      <<std::setw(width+7)<<" "<<"InList  list\n"
      <<std::setw(width+7)<<" "<<"RefList list\n"
      <<std::setw(width+7)<<" "<<"OutList list\n"
-     <<std::setw(width+7)<<" "
-     <<"Tags    flavi1,.. itemi1,.. vari mini maxi [mini maxi binsi typei]\n"
+     <<std::setw(width+7)<<" "<<"Tags    flavi1,.. itemi1,.. "
+     <<"vari mini maxi [mini maxi binsi typei [itemi]]\n"
      <<std::setw(width+7)<<" "<<"Flavs   flav11,.. .. flavN1,..\n"
      <<std::setw(width+7)<<" "<<"Items   item11,.. .. itemN1,..\n"
      <<std::setw(width+7)<<" "<<"Vars    var1      .. varN\n"
      <<std::setw(width+7)<<" "<<"Mins    min1      .. minN\n"
      <<std::setw(width+7)<<" "<<"Maxs    max1      .. maxN\n"
      <<std::setw(width+7)<<" "<<"HTypes  [type1   [.. typeN]]\n"
+     <<std::setw(width+7)<<" "<<"HItems  [item1   [.. itemN]]\n"
      <<std::setw(width+7)<<" "<<"HBins   [bins1   [.. binsN]]\n"
      <<std::setw(width+7)<<" "<<"HMins   [min1    [.. minN]]\n"
      <<std::setw(width+7)<<" "<<"HMaxs   [max1    [.. maxN]]\n"
@@ -96,7 +97,7 @@ One_Variable_Selector_Getter::operator()
   Int_Matrix items;
   String_Vector vtags;
   Double_Vector mins, maxs;
-  Double_Matrix histos(4);
+  Double_Matrix histos(5);
   Data_Reader reader(",",";","!","=");
   for (size_t i=0;i<parameters.size();++i) {
     const std::vector<std::string> &cur=parameters[i];
@@ -130,11 +131,16 @@ One_Variable_Selector_Getter::operator()
       vtags.push_back(cur[3]);
       mins.push_back(ToType<double>(cur[4]));
       maxs.push_back(ToType<double>(cur[5]));
-      if (cur.size()>9) {
+      if (cur.size()<=9) {
+	for (size_t i(0);i<histos.size();++i) histos[i].push_back(-1);
+      }
+      else {
 	histos[0].push_back(HistogramType(cur[9]));
 	histos[1].push_back(ToType<double>(cur[8]));
 	histos[2].push_back(ToType<double>(cur[6]));
 	histos[3].push_back(ToType<double>(cur[7]));
+	if (cur.size()>10) histos[4].push_back(ToType<double>(cur[10]));
+	else histos[4].push_back(-1);
       }
     }
     else if (cur[0]=="Flavs" && cur.size()>1) {
@@ -180,6 +186,10 @@ One_Variable_Selector_Getter::operator()
     else if (cur[0]=="HTypes" && cur.size()>1) {
       for (size_t j(1);j<cur.size();++j) 
 	histos[0].push_back(HistogramType(cur[j]));
+    }
+    else if (cur[0]=="HItems" && cur.size()>1) {
+      for (size_t j(1);j<cur.size();++j) 
+	histos[4].push_back(ToType<double>(cur[j]));
     }
     else if (cur[0]=="HBins" && cur.size()>1) {
       for (size_t j(1);j<cur.size();++j) 
@@ -257,10 +267,11 @@ One_Variable_Selector::One_Variable_Selector
 	msg_Debugging()<<m_flavs[i][j].IDName()<<" "<<m_items[i][j]<<" ";
       msg_Debugging()<<"-> type "<<m_histos[0][i]<<", "<<m_histos[1][i]
 		     <<" bins, min "<<m_histos[2][i]<<", max "
-		     <<m_histos[3][i]<<"\n";
+		     <<m_histos[3][i]<<", item "<<m_histos[4][i]<<"\n";
       m_dists[i] = new ATOOLS::Histogram
 	((int)m_histos[0][i],m_histos[2][i],
 	 m_histos[3][i],(int)m_histos[1][i]);
+      if (m_histos[4].size()<=i) m_histos[4].push_back(-1);
     }
   msg_Debugging()<<"}\n";
 }
@@ -320,12 +331,10 @@ int One_Variable_Selector::Evaluate
 (ATOOLS::Particle_List &reflist,double weight,int ncount,
  ATOOLS::Particle_List &moms,const size_t i,size_t j,size_t k,size_t &eval) 
 {
-  bool count(m_vars[i]->Name()=="Count");
+  bool count(m_vars[i]->IDName()=="Count");
   if (j>=m_flavs[i].size()) {
-    if (count) {
-      ++eval;
-      return 1;
-    }
+    ++eval;
+    if (count) return 1;
     std::vector<ATOOLS::Vec4D> vmoms(moms.size());
     for (size_t l(0);l<vmoms.size();++l) vmoms[l]=moms[l]->Momentum();
     double val(m_vars[i]->Value(&vmoms.front(),vmoms.size()));
@@ -343,10 +352,10 @@ int One_Variable_Selector::Evaluate
       msg_Debugging()<<") = "<<val<<" "<<(pass?"\\in":"\\nin")
 		     <<" ["<<m_mins[i]<<","<<m_maxs[i]<<"]\n";
     }
-    if (m_dists[i]!=NULL) m_dists[i]->Insert(val,weight,ncount);
-    ++eval;
+    if (m_dists[i]!=NULL && (eval-1==m_histos[4][i] || m_histos[4][i]<0))
+      m_dists[i]->Insert(val,weight,ncount);
     if (pass) return 1;
-    if (m_items[i][0]>=0 || m_vars[i]->Name()=="Count") return 0;
+    if (m_items[i][0]>=0 || m_vars[i]->IDName()=="Count") return 0;
     for (size_t l(0);l<moms.size();++l)
       for (Particle_List::iterator pit(reflist.begin());
 	   pit!=reflist.end();++pit) 
@@ -382,8 +391,10 @@ void One_Variable_Selector::Evaluate
   msg_Debugging()<<METHOD<<"(): {\n";
   p_flow->Insert(0.0,weight,ncount);
   Particle_List vreflist(reflist);
-  for (int i(0);i<(int)m_flavs.size();++i) {
-    size_t eval(0);
+  size_t eval(0);
+  for (int oldi(0), i(0);i<(int)m_flavs.size();++i) {
+    if (i!=oldi) eval=0;
+    oldi=i;
     Particle_List moms;
     int stat(Evaluate(vreflist,weight,ncount,moms,i,0,0,eval));
     if (m_vars[i]->IDName()=="Count") {
