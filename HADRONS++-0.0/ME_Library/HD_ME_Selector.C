@@ -16,6 +16,8 @@ HD_ME_Base * HD_ME_Selector::GetME(int nin,int nout,Flavour * flavs)
 {
   HD_ME_Base * hdme = NULL;							// pointer on ME_Base
   double mass = flavs[0].Mass();					// mass of decaying particle
+  if (flavs[0]==Flavour(kf::tau) || 
+      flavs[0]==Flavour(kf::tau)) mass = flavs[0].PSMass();
 
   // sanity check if sum of outgoing masses > incoming mass
   for (int i=1;i<1+nout;i++) {
