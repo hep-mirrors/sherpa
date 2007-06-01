@@ -126,8 +126,8 @@ void XS_Base::Init(const ATOOLS::Flavour *flavours)
   p_flavours = new ATOOLS::Flavour[m_nin+m_nout];
   if (flavours!=NULL) {
     for (size_t i=0;i<m_nin+m_nout;++i) p_flavours[i]=flavours[i];
-    SortFlavours(p_flavours,m_nin);
-    SortFlavours(&p_flavours[m_nin],m_nout);
+//     SortFlavours(p_flavours,m_nin);
+//     SortFlavours(&p_flavours[m_nin],m_nout);
     m_name=GenerateName(m_nin,m_nout,p_flavours);
   }
   p_colours = new int*[m_nin+m_nout];
