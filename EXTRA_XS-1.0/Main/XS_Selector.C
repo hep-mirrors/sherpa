@@ -19,11 +19,16 @@ XS_Base *XS_Selector::GetXS(const size_t nin, const size_t nout,
 			    const bool seperate_couplings,
 			    size_t nqed, size_t nqcd,
 			    const PHASIC::cls::scheme &clsc,
-			    const PHASIC::hls::scheme &hlsc)
+			    const PHASIC::hls::scheme &hlsc,
+			    const bool &sort)
 { 
-//   std::cout<<"XS_Selector::GetXS nin="<<nin<<" nout="<<nout<<"\n";
-//   std::cout<<flavours[0]<<" "<<flavours[1]<<" -> "<<flavours[2]<<" "<<flavours[3]<<"  
-//   ("<<seperate_couplings<<") : "<<nqed<<","<<nqcd<<std::endl;
+  msg_Debugging()<<METHOD<<"(): '"<<flavours[0].IDName()
+		 <<" "<<flavours[1].IDName()<<" ->";
+  for (size_t i(2);i<nin+nout;++i)
+    msg_Debugging()<<" "<<flavours[i].IDName();
+  msg_Debugging()<<"', sort = "<<sort<<", nqed = "
+		 <<nqed<<", nqcd = "<<nqcd<<" => ";
+  XS_Base::SetSortFlavours(sort);
   XS_Base * xs=NULL;
   if (seperate_couplings) {
     for (size_t i=0;i<=nout;++i) {
@@ -47,11 +52,14 @@ XS_Base *XS_Selector::GetXS(const size_t nin, const size_t nout,
     for (int j=nqcd;j>=0;--j) {
       for (int i=nqed;i>=0;--i) {
 	XS_Base * xst = GetSingleXS(nin,nout,flavours,i,j,clsc,hlsc);
-	if (xst!=NULL) return xst;
+	if (xst!=NULL) {
+	  msg_Debugging()<<"'"<<xst->Name()<<"'\n";
+	  return xst;
+	}
       }
     }
   }
-  //  if (xs!=0) std::cout<<"found"<<std::endl;
+  msg_Debugging()<<"'"<<(xs==NULL?"NULL":xs->Name())<<"'\n";
   return xs;
 }
 

@@ -20,6 +20,8 @@ namespace EXTRAXS {
 
     std::string m_gpath;
 
+    static bool s_sortflavours;
+
     static std::string GenerateName(const size_t nin,const size_t nout,
 				    const ATOOLS::Flavour *flavours);
 
@@ -113,6 +115,9 @@ namespace EXTRAXS {
     inline void SetPSMC(const bool psmc) { m_psmc=psmc; }
 
     inline void SetGPath(const std::string &gpath) { m_gpath=gpath; }
+
+    inline static void SetSortFlavours(const bool &sort)
+    { s_sortflavours=sort; }
 
   };// end of class XS_Base
 
