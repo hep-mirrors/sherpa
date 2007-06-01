@@ -6,7 +6,6 @@
 namespace PHASIC {
 
   class Single_Channel;
-  class PI_Interface;
 
   struct Channel_Info {
     int                  type;
@@ -70,7 +69,6 @@ namespace PHASIC {
     void    GeneratePoint(int,ATOOLS::Vec4D *,ATOOLS::Cut_Data *,double *);
     void    GenerateWeight(int,ATOOLS::Vec4D *,ATOOLS::Cut_Data *);
     virtual void GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);
-    void    GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *,PI_Interface*);
     virtual void GenerateWeight(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);     
 
     virtual void GeneratePoint(int& sv,ATOOLS::Vec4D *p,ATOOLS::Cut_Data *cuts);
@@ -86,8 +84,6 @@ namespace PHASIC {
     void    GenerateWeight(double sprime,double y,int mode);
 
     void    GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,int mode);
-    void    GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,int mode,
-			  PI_Interface *pi);
     void    GenerateWeight(int mode);
 
     void    ISRInfo(int,int &,double &,double &);

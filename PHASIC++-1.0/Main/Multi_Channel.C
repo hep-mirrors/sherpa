@@ -1,7 +1,6 @@
 #include "Single_Channel.H"
 #include "Multi_Channel.H"
 #include "Random.H"
-#include "PI_Interface.H"
 #include "Run_Parameter.H"
 #include "MyStrStream.H"
 #include <algorithm>
@@ -387,32 +386,6 @@ void Multi_Channel::GeneratePoint(Vec4D * p,Cut_Data * cuts)
   }  
 }
 
-void Multi_Channel::GeneratePoint(Vec4D * p,Cut_Data * cuts,
-				  PI_Interface *pi)
-{
-  for(size_t i=0;i<channels.size();i++) channels[i]->SetWeight(0.);
-  if(channels.size()==1) {
-    channels[0]->GeneratePoint(p,cuts,(double*)(*pi)->Reserved(name)+1);
-    m_lastdice = 0;
-    return;
-  }  
-  double rn  = *(*pi)->Reserved(name);
-  double sum = 0;
-  for (size_t i=0;;++i) {
-    if (i==channels.size()) {
-      rn  = ran.Get();
-      i   = 0;
-      sum = 0.;
-    }
-    sum += channels[i]->Alpha();
-    if (sum>rn) {
-      channels[i]->GeneratePoint(p,cuts,(double*)(*pi)->Reserved(name)+1);
-      m_lastdice = i;
-      break;
-    }
-  }  
-}
-
 void Multi_Channel::GenerateWeight(int n,Vec4D* p) 
 {
   if (channels[n]->Alpha() > 0.) {
@@ -535,26 +508,7 @@ void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode)
       return;
     }
   }  
-  msg.Error()<<"Multi_Channel::GeneratePoint(..): ("<<this
-	     <<") No channel selected. \n"
-	     <<"   disc = "<<disc<<", sum = "<<sum<<std::endl;
-}
-
-void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode,
-				  PI_Interface *pi) 
-{
-  for(size_t i=0;i<channels.size();++i) channels[i]->SetWeight(0.);
-  double disc = *(*pi)->Reserved(name);
-  double sum=0.;
-  for (size_t n=0;n<channels.size();++n) {
-    sum+=channels[n]->Alpha();
-    if (sum>disc) {
-      channels[n]->GeneratePoint(spkey,ykey,(double*)(*pi)->Reserved(name)+1,mode);
-      m_lastdice = n;
-      return;
-    }
-  }  
-  msg.Error()<<"Multi_Channel::GeneratePoint(..): ("<<this
+  msg.Error()<<"Multi_Channel::GeneratePoint(..): IS case ("<<this
 	     <<") No channel selected. \n"
 	     <<"   disc = "<<disc<<", sum = "<<sum<<std::endl;
 }
