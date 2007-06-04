@@ -21,7 +21,8 @@ libAnalysisDetector_la_SOURCES	=	\
 					Photon_Maker.C \
 					Jet_Maker.C \
 					MET_Maker.C \
-					Simple_Cone.C 
+					Simple_Cone.C \
+					BTagging.C 
 
 pkginclude_HEADERS        	=	\
 					Cell.H \
@@ -44,7 +45,8 @@ pkginclude_HEADERS        	=	\
 					Photon_Maker.H \
 					Jet_Maker.H \
 					MET_Maker.H \
-					Simple_Cone.H 
+					Simple_Cone.H \
+					BTagging.H 
 
 AM_CXXFLAGS   =	@SHERPAFLAGS@ @CONDITIONAL_ROOTFLAGS@
 
