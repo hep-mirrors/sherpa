@@ -441,7 +441,8 @@ void Process_Base::SetupEnhance() {
   if (m_enhancefac==1. && m_maxfac==1. && m_maxeps==0.) return;
   if (m_enhancefac!=1.) {
     double xs=TotalXS();
-    SetTotalXS(xs*m_enhancefac);
+    if (m_enhancefac>0.0) SetTotalXS(xs*m_enhancefac);
+    else SetTotalXS(-m_enhancefac);
   }
   if (m_maxeps>0.) {
     double max = GetMaxEps(m_maxeps);

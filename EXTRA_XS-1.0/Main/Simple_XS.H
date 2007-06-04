@@ -37,14 +37,16 @@ namespace EXTRAXS {
   public :
 
     // constructor
-    Simple_XS(const std::string &path,const std::string &file,MODEL::Model_Base *const model);
+    Simple_XS(const std::string &path,const std::string &file,
+	      MODEL::Model_Base *const model);
 
     // destructor
     ~Simple_XS();
 
     // member functions
     bool InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandler,
-			     PDF::ISR_Handler *const isrhandler,const bool construct=true);
+			     PDF::ISR_Handler *const isrhandler,
+			     const bool construct=true);
     bool CalculateTotalXSec(const std::string &resultpath);
 
     bool SelectOne();
@@ -55,15 +57,19 @@ namespace EXTRAXS {
     bool LookUpXSec(double dummy1,bool dummy2,std::string dummy3);
 
     // inline functions
-    inline const std::string &ProcessName() const { return p_selected->Selected()->Name(); }
+    inline const std::string &ProcessName() const 
+    { return p_selected->Selected()->Name(); }
 
     inline size_t NIn() const  { return p_selected->Selected()->NIn();  }
     inline size_t NOut() const { return p_selected->Selected()->NOut(); }
 
-    inline const ATOOLS::Flavour *Flavours() const { return p_selected->Selected()->Flavours(); }
-    inline const ATOOLS::Vec4D   *Momenta() const  { return p_selected->Selected()->Momenta();  }
+    inline const ATOOLS::Flavour *Flavours() const 
+    { return p_selected->Selected()->Flavours(); }
+    inline const ATOOLS::Vec4D   *Momenta() const  
+    { return p_selected->Selected()->Momenta();  }
     
-    inline int **const Colours() const { return dynamic_cast<XS_Base*>(p_selected->Selected())->Colours();  }
+    inline int **const Colours() const 
+    { return dynamic_cast<XS_Base*>(p_selected->Selected())->Colours();  }
 
     inline bool InSwaped() const { return p_selected->Selected()->InSwaped(); }
 

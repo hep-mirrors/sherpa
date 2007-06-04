@@ -32,13 +32,14 @@ namespace EXTRAXS {
     XS_Group(); 
     XS_Group(const size_t nin,const size_t nout,const std::string &name);
     XS_Group(const size_t nin,const size_t nout,
-	     const ATOOLS::Flavour *flavours);
+	     const ATOOLS::Flavour *flavours,XS_Model_Base *const model);
     XS_Group(const size_t nin,const size_t nout,
 	     const ATOOLS::Flavour *flavours,
 	     const PHASIC::scl::scheme scalescheme,const int kfactorscheme,
 	     BEAM::Beam_Spectra_Handler *const beamhandler,
 	     PDF::ISR_Handler *const isrhandler,
-	     ATOOLS::Selector_Data *const selectordata);
+	     ATOOLS::Selector_Data *const selectordata,
+	     XS_Model_Base *const model);
 
     // destructor
     ~XS_Group();
@@ -54,6 +55,7 @@ namespace EXTRAXS {
     virtual void SetAtoms(const bool atoms);
 
     void SetFactorizationScale(const std::string &muf2);
+    void SetCoreMaxJetNumber(const int &n);
 
     size_t Size() const;
 

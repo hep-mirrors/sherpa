@@ -27,9 +27,10 @@ Ladder::Ladder(const size_t nin,const size_t nout,
 	       const PHASIC::scl::scheme scalescheme,const int kfactorscheme,
 	       BEAM::Beam_Spectra_Handler *const beamhandler,
 	       PDF::ISR_Handler *const isrhandler,
-	       ATOOLS::Selector_Data *const selectordata):
+	       ATOOLS::Selector_Data *const selectordata,
+	       XS_Model_Base *const model):
   XS_Group(nin,nout,flavours,scalescheme,kfactorscheme,
-	   beamhandler,isrhandler,selectordata),
+	   beamhandler,isrhandler,selectordata,model),
   p_sudakov(new BFKL_Sudakov()),
   m_ncols(0), m_sudmode(1), m_nfixed(std::numeric_limits<size_t>::max()),
   m_multimode(1), p_jf(NULL)
@@ -539,8 +540,7 @@ double Ladder::MECorrection()
     }
     else {
       msg_Info()<<METHOD<<"(): Initialize ME correction for '"<<name<<"'.\n";
-      std::vector<std::string> models(1,"QCD");
-      me = new N_Parton_CDBG(m_nin,m_nvector,fl,models);
+      me = new N_Parton_CDBG(m_nin,m_nvector,fl,p_model);
       Color_Integrator *cint(new Color_Integrator());
       Idx_Vector ids(m_nin+m_nout+m_naddout,0);
       Int_Vector types(m_nin+m_nout+m_naddout,0);

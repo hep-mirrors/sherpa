@@ -4,6 +4,7 @@
 namespace EXTRAXS { class XS_Base; }
 
 #include "Integrable_Base.H"
+#include "XS_Model_Base.H"
 
 namespace PHASIC { class Regulator_Base; }
 
@@ -14,11 +15,13 @@ namespace EXTRAXS {
 
     int **p_colours;
 
-    bool m_channels, m_psmc;
+    bool m_channels, m_psmc, m_ownmodel;
 
     double m_s, m_t, m_u;
 
     std::string m_gpath;
+
+    XS_Model_Base *p_model;
 
     static bool s_sortflavours;
 
@@ -38,12 +41,14 @@ namespace EXTRAXS {
 
     // constructors
     XS_Base(); 
-    XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours);
+    XS_Base(const size_t nin,const size_t nout,
+	    const ATOOLS::Flavour *flavours,XS_Model_Base *const model=NULL);
     XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
 	    const PHASIC::scl::scheme scalescheme,const int kfactorscheme,
 	    BEAM::Beam_Spectra_Handler *const beamhandler,
 	    PDF::ISR_Handler *const isrhandler,
-	    ATOOLS::Selector_Data *const selectordata);
+	    ATOOLS::Selector_Data *const selectordata,
+	    XS_Model_Base *const model=NULL);
 
     // destructor
     ~XS_Base();
@@ -54,9 +59,13 @@ namespace EXTRAXS {
 		    BEAM::Beam_Spectra_Handler *const beamhandler,
 		    PDF::ISR_Handler *const isrhandler,
 		    ATOOLS::Selector_Data *const selectordata);
+    void InitializeModel(MODEL::Model_Base *const model,
+			 const std::string &file);
 
     void AssignRegulator(const std::string &regulator,
 			 const std::vector<double> &parameters);
+
+    virtual void SetCoreMaxJetNumber(const int &n);
 
     virtual size_t Size() const;
 
@@ -111,6 +120,8 @@ namespace EXTRAXS {
 
     inline PHASIC::Regulator_Base *const Regulator() const 
     { return p_regulator; }
+
+    inline XS_Model_Base *GetModel() const { return p_model; }
 
     inline void SetPSMC(const bool psmc) { m_psmc=psmc; }
 

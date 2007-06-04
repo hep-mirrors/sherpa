@@ -13,6 +13,7 @@
 #include "Color_Integrator.H"
 #include "Sample_Multi_Channel.H"
 #include "PreSample_Multi_Channel.H"
+#include "XS_Model_Handler.H"
 #include "VHAAG.H"
 #include "Data_Reader.H"
 
@@ -23,7 +24,9 @@ using namespace ATOOLS;
 bool XS_Base::s_sortflavours(true);
 
 XS_Base::XS_Base():
-  p_colours(NULL), m_channels(false), m_psmc(false)
+  p_colours(NULL), 
+  m_channels(false), m_psmc(false), m_ownmodel(false),
+  p_model(NULL)
 {
   m_name="Empty XS";
   m_scale[PHASIC::stp::sfs]=m_scale[PHASIC::stp::sis]=std::numeric_limits<double>::max();
@@ -33,18 +36,23 @@ XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavo
 		 const PHASIC::scl::scheme scalescheme,const int kfactorscheme,
 		 BEAM::Beam_Spectra_Handler *const beamhandler,
 		 PDF::ISR_Handler *const isrhandler,
-		 ATOOLS::Selector_Data *const selectordata):
+		 ATOOLS::Selector_Data *const selectordata,XS_Model_Base *const model):
   Integrable_Base(nin,nout,scalescheme,kfactorscheme,
 		  beamhandler,isrhandler,selectordata),
-  p_colours(NULL), m_channels(false), m_psmc(false)
+  p_colours(NULL), 
+  m_channels(false), m_psmc(false), m_ownmodel(false),
+  p_model(model)
 {
   Init(flavours);
   Initialize(scalescheme,kfactorscheme,beamhandler,isrhandler,selectordata);
 }
 
-XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours):
+XS_Base::XS_Base(const size_t nin,const size_t nout,
+		 const ATOOLS::Flavour *flavours,XS_Model_Base *const model):
   Integrable_Base(nin,nout),
-  p_colours(NULL), m_channels(false), m_psmc(false)
+  p_colours(NULL), 
+  m_channels(false), m_psmc(false), m_ownmodel(false),
+  p_model(model)
 {
   Init(flavours);
   p_selector = new ATOOLS::No_Selector();
@@ -57,6 +65,7 @@ XS_Base::~XS_Base()
     for (size_t i=0;i<m_nin+m_nout;++i) delete [] p_colours[i];
     delete [] p_colours;
   }
+  if (m_ownmodel && p_model!=NULL) delete p_model;
 }
 
 class Order_KF {
@@ -179,6 +188,18 @@ void XS_Base::Initialize(const PHASIC::scl::scheme scalescheme,
   p_activepshandler=p_pshandler;
   m_scale[PHASIC::stp::sfs]=m_scale[PHASIC::stp::sis]=
     std::numeric_limits<double>::max();
+}
+
+void XS_Base::InitializeModel(MODEL::Model_Base *const model,
+			      const std::string &file)
+{
+  if (m_ownmodel && p_model!=NULL) delete p_model;
+  Data_Read read(file);
+  std::string mt(read.GetValue<std::string>("SIGNAL_MODEL","SM"));
+  p_model = XS_Model_Handler::GetModel(mt);
+  if (p_model==NULL) THROW(fatal_error,"Interaction model not implemented");
+  p_model->Initialize(model,file);
+  m_ownmodel=true;
 }
 
 double XS_Base::Differential(const ATOOLS::Vec4D *momenta) 
@@ -422,5 +443,10 @@ void XS_Base::PrepareTerminate()
 		      <<"       max : "<<m_max<<std::endl;
   p_pshandler->WriteOut(m_resultpath+std::string("/MC_")+m_name);
   to.close();
+}
+
+void XS_Base::SetCoreMaxJetNumber(const int &n)
+{
+  m_coremaxjetnumber=n;
 }
 

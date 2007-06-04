@@ -14,7 +14,7 @@ using namespace ATOOLS;
 static const double invsqrttwo(1.0/sqrt(2.0));
 
 CDBG_Amplitude::CDBG_Amplitude():
-  m_n(0), m_nf(6) {}
+  p_model(NULL), m_n(0), m_nf(6) {}
 
 CDBG_Amplitude::~CDBG_Amplitude()
 {
@@ -26,7 +26,6 @@ void CDBG_Amplitude::CleanUp()
   for (size_t i(0);i<m_cur.size();++i) 
     for (size_t j(0);j<m_cur[i].size();++j) delete m_cur[i][j]; 
   m_n=m_maxid=0;
-  m_model=String_Vector();
   m_fl=Flavour_Vector();
   m_p=Vec4D_Vector();
   m_ch=Int_Vector();
@@ -64,8 +63,9 @@ void CDBG_Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
 {
   // add new currents
   Current_Vector curs;
-  for (size_t i(0);i<m_model.size();++i) {
-    Current_Key key(fl,m_model[i]);
+  String_Vector models(p_model->IncludedModels());
+  for (size_t i(0);i<models.size();++i) {
+    Current_Key key(fl,models[i],p_model);
     Current_Base *cur(Current_Getter::GetObject(key.Type(),key));
     if (cur!=NULL) curs.push_back(cur);
   }
@@ -78,8 +78,8 @@ void CDBG_Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
       for (size_t j(0);j<m_cur[i].size();++j) {
 	for (size_t k(0);k<m_cur[n-i].size();++k) {
 	  if (!MatchIndices(ids,n,i,j,k)) continue;
-	  for (size_t m(0);m<m_model.size();++m) {
-	    Vertex_Key key(m_cur[i][j],m_cur[n-i][k],*cit,m_model[m]);
+	  for (size_t m(0);m<models.size();++m) {
+	    Vertex_Key key(m_cur[i][j],m_cur[n-i][k],*cit,models[m],p_model);
 	    if (v3.find(key.SwapAB())!=v3.end()) continue;
 	    Vertex *v(Vertex_Getter::GetObject(key.Type(),key));
 	    if (v!=NULL) {
@@ -322,10 +322,10 @@ bool CDBG_Amplitude::ConstructChirs(Int_Vector chirs,const size_t &i)
 }
 
 bool CDBG_Amplitude::Construct(const Flavour_Vector &flavs,
-			       const String_Vector &model)
+			       XS_Model_Base *const model)
 {
   CleanUp();
-  m_model=model;
+  p_model=model;
   if (!Construct(flavs)) return false;
   Int_Vector chirs(flavs.size(),0);
   if (!ConstructChirs(chirs,0)) return false;

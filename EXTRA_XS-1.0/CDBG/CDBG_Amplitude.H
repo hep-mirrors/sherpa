@@ -20,7 +20,7 @@ namespace EXTRAXS {
   class CDBG_Amplitude {
   private:
 
-    String_Vector  m_model;
+    XS_Model_Base *p_model;
     Flavour_Vector m_fl;
 
     Vec4D_Vector m_p;
@@ -66,7 +66,7 @@ namespace EXTRAXS {
     bool    EvaluateAll();
 
     bool Construct(const Flavour_Vector &flavs,
-		   const String_Vector &models);
+		   XS_Model_Base *const model);
     bool GaugeTest(const Vec4D_Vector &moms);
 
     void SetMomenta(const Vec4D_Vector &moms);

@@ -46,7 +46,7 @@ void CSpinor::Construct(const int h,const Vec4D &p)
   if (m_r>0) {
     if (h>0) {// u+(p,m)
       Complex rpp(csqrt(PPlus(p))), pt(PT(p));
-      m_u[0]=IsZero(rpp)?ZERO:csqrt(p.Abs2())/rpp;
+      m_u[0]=IsZero(rpp)?csqrt(PMinus(p)):csqrt(p.Abs2())/rpp;
       m_u[1]=ZERO;
       m_u[2]=rpp;
       m_u[3]=IsZero(pt)?csqrt(PMinus(p)):pt/rpp;
@@ -56,7 +56,7 @@ void CSpinor::Construct(const int h,const Vec4D &p)
       Complex emp(IsZero(pt)?ONE:PTC(p)/std::abs(pt));
       m_u[0]=rpm*emp;
       m_u[1]=IsZero(pt)?-csqrt(PPlus(p)):-pt*emp/rpm;
-      m_u[2]=IsZero(rpm)?ZERO:csqrt(p.Abs2())*emp/rpm;
+      m_u[2]=(IsZero(rpm)?csqrt(PPlus(p)):csqrt(p.Abs2())/rpm)*emp;
       m_u[3]=ZERO;
     }
   }
@@ -65,7 +65,7 @@ void CSpinor::Construct(const int h,const Vec4D &p)
       Complex rpm(csqrt(PMinus(p))), pt(PTC(p));
       Complex epp(IsZero(pt)?ONE:PT(p)/std::abs(pt));
       m_u[0]=ZERO;
-      m_u[1]=IsZero(rpm)?ZERO:csqrt(p.Abs2())*epp/rpm;
+      m_u[1]=-(IsZero(rpm)?csqrt(PPlus(p)):csqrt(p.Abs2())/rpm)*epp;
       m_u[2]=IsZero(pt)?csqrt(PPlus(p)):pt*epp/rpm;
       m_u[3]=rpm*epp;
     }
@@ -74,7 +74,7 @@ void CSpinor::Construct(const int h,const Vec4D &p)
       m_u[0]=IsZero(pt)?csqrt(PMinus(p)):pt/rpp;
       m_u[1]=-rpp;
       m_u[2]=ZERO;
-      m_u[3]=IsZero(rpp)?ZERO:-csqrt(p.Abs2())/rpp;
+      m_u[3]=IsZero(rpp)?csqrt(PMinus(p)):csqrt(p.Abs2())/rpp;
     }
   }
   if (m_b<0) {

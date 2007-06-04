@@ -14,7 +14,8 @@ namespace EXTRAXS {
 
   template <> 
   Single_XS *Single_XS::GetProcess<CDXS_pp_np>
-  (const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours, 
+  (const size_t nin,const size_t nout,
+   const ATOOLS::Flavour *flavours,XS_Model_Base *const model, 
    const size_t nqed, const size_t nqcd)
   {
     if (nqcd!=nout || nqed!=0) return NULL;
@@ -27,14 +28,15 @@ namespace EXTRAXS {
       }
     }
     for (size_t i(1);i<=6;++i) if (nquark[i]!=0) return NULL;
-    return new CDXS_pp_np(nin,nout,flavours); 
+    return new CDXS_pp_np(nin,nout,flavours,model); 
   }
   
 }
 
 CDXS_pp_np::CDXS_pp_np(const size_t &nin,const size_t &nout,
-		       const ATOOLS::Flavour *const fl): 
-  Single_XS(nin,nout,fl), p_map(NULL)
+		       const ATOOLS::Flavour *const fl,
+		       XS_Model_Base *const model): 
+  Single_XS(nin,nout,fl,model), p_map(NULL)
 {
   SetColorScheme(cls::sample);
   SetHelicityScheme(hls::sample);
@@ -43,8 +45,7 @@ CDXS_pp_np::CDXS_pp_np(const size_t &nin,const size_t &nout,
   m_nstrong=m_nin+m_nout;
   std::vector<Flavour> flavs(nin+nout);
   for (size_t i(0);i<nin+nout;++i) flavs[i]=p_flavours[i];
-  std::vector<std::string> models(1,"QCD");
-  p_bg = new N_Parton_CDBG(m_nin,m_nout,flavs,models);
+  p_bg = new N_Parton_CDBG(m_nin,m_nout,flavs,model);
   m_p.resize(m_nvector);
 }
 

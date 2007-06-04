@@ -10,18 +10,22 @@ using namespace ATOOLS;
 
 Single_XS::Single_XS(const size_t nin,const size_t nout,
 		     const ATOOLS::Flavour *flavours,
-		     const PHASIC::scl::scheme scalescheme,const int kfactorscheme,
+		     const PHASIC::scl::scheme scalescheme,
+		     const int kfactorscheme,
 		     BEAM::Beam_Spectra_Handler *const beamhandler,
 		     PDF::ISR_Handler *const isrhandler,
-		     ATOOLS::Selector_Data *const selectordata):
+		     ATOOLS::Selector_Data *const selectordata,
+		     XS_Model_Base *const model):
   XS_Base(nin,nout,flavours,scalescheme,kfactorscheme,
-	  beamhandler,isrhandler,selectordata)
+	  beamhandler,isrhandler,selectordata,model)
 {
   p_selected=this;
 }
 
-Single_XS::Single_XS(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours):
-  XS_Base(nin,nout,flavours)
+Single_XS::Single_XS(const size_t nin,const size_t nout,
+		     const ATOOLS::Flavour *flavours,
+		     XS_Model_Base *const model):
+  XS_Base(nin,nout,flavours,model)
 {
   p_selected=this;
 }
@@ -256,5 +260,6 @@ bool Single_XS::SetPDFFlavours()
 
 bool Single_XS::Tests()
 {
+  p_activepshandler->TestPoint(p_momenta);
   return true;
 }

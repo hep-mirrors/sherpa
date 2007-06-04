@@ -12,12 +12,12 @@ using namespace ATOOLS;
 
 N_Parton_CDBG_T::N_Parton_CDBG_T(const size_t nin,const size_t nout,
 				 const std::vector<Flavour> &flavs,
-				 const std::vector<std::string> &models):
+				 XS_Model_Base *const model):
   m_nin(nin), m_nout(nout), m_flavs(flavs), m_mode(0), m_tests(0)
 { 
   OrderFlavours();
   std::vector<int> types(m_nin+m_nout,0);
-  m_ampl.Construct(m_flavs,models);
+  m_ampl.Construct(m_flavs,model);
   m_ng=0;
   Int_Vector ic(m_flavs.size(),0), jc(m_flavs.size(),0);
   for (size_t lc(0), k(0);k<m_flavs.size();++k) {

@@ -156,20 +156,21 @@ namespace ATOOLS {
     The Eigenvalues are \f$\lambda=m\pm\sqrt{p^2}\f$. Eigenspinors
     can be found by observing that \f$\left(p^\mu\gamma_\mu-m\right)\f$ 
     \f$\left(p^\nu\gamma_\nu+m\right)=\f$ \f$p^2-m^2=0\f$. 
-    If \f$u(0,m)\f$ is a solution for \f$p=0\f$, \f$\lambda=0\f$ then 
-    \f$u(p,m)=(p^\mu\gamma_\mu+m)u(0,m)\f$ is a solution for nonzero 
+    If \f$u(0,m)\f$ and \f$v(0,m)\f$ are solutions for \f$p=0\f$, 
+    \f$\lambda=0\f$ then \f$u(p,m)=(p^\mu\gamma_\mu+m)u(0,m)\f$ and 
+    \f$v(p,m)=(p^\mu\gamma_\mu-m)v(0,m)\f$ are solutions for nonzero 
     momentum. Hence, employing \f$\phi_p=\arg{p_\perp}\f$,
     \f[
       u_+(p,m)=\frac{1}{\sqrt{p^+}}
         \left(\begin{array}{c}m\\0\\p^+\\p_\perp\end{array}\right)\;,\quad
       v_-(p,m)=\frac{e^{i\phi_p}}{\sqrt{p^-}}
-        \left(\begin{array}{c}0\\m\\p_\perp^*\\p^-\end{array}\right)\;,
+        \left(\begin{array}{c}0\\-m\\p_\perp^*\\p^-\end{array}\right)\;,
     \f]
     \f[
       u_-(p,m)=\frac{e^{-i\phi_p}}{\sqrt{p^-}}
         \left(\begin{array}{c}p^-\\-p_\perp\\m\\0\end{array}\right)\;,\quad
       v_+(p,m)=\frac{e^{i\pi}}{\sqrt{p^+}}
-        \left(\begin{array}{c}-p_\perp^*\\p^+\\0\\m\end{array}\right)\;.
+        \left(\begin{array}{c}-p_\perp^*\\p^+\\0\\-m\end{array}\right)\;.
     \f]
     These Eigenspinors are normalized to \f$2p^0\f$. 
     For \f$m=0\f$ they are Eigenspinors to the chirality operator 

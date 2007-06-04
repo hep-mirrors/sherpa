@@ -1,8 +1,5 @@
 #include "Simple_XS.H"
 
-#include "QCD_Processes.H"
-#include "QED_Processes.H"
-
 #include "ISR_Handler.H"
 #include "Run_Parameter.H"
 #include "Random.H"
@@ -21,10 +18,9 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-
 Simple_XS::Simple_XS(const std::string &path,const std::string &file,
 		     MODEL::Model_Base *const model):
-  XS_Group(0,0,NULL),
+  XS_Group(0,0,NULL,NULL),
   m_path(path), 
   m_file(file),
   m_minqcdjet(99), m_maxqcdjet(0), m_maxjet(2)
@@ -32,6 +28,7 @@ Simple_XS::Simple_XS(const std::string &path,const std::string &file,
   m_nmax=0;
   m_atoms=1;
   p_dataread = new Data_Read(m_path+m_file);
+  InitializeModel(model,m_path+m_file);
 }
 
 Simple_XS::~Simple_XS() 
@@ -184,7 +181,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	      if (nFS==0) {
 		Ladder *ladder(new Ladder(nIS,nFS,&flavs.front(),m_scalescheme,
 					  m_kfactorscheme,p_beamhandler,
-					  p_isrhandler,p_selectordata));
+					  p_isrhandler,p_selectordata,p_model));
 		m_xsecs.push_back(ladder);
 		ladder->Initialize();
 	      }
@@ -202,6 +199,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   }
   if (ATOOLS::msg.LevelIsTracking()) this->Print();
   m_maxjet=m_nmax-m_nin;
+  SetCoreMaxJetNumber(m_maxjet);
   if (m_xsecs.size()>0) return Tests();
   msg.Error()<<"Simple_XS::InitializeProcesses("<<beamhandler<<","<<isrhandler<<"): "
 	     <<"   Did not find any process in '"<<m_path+processfile<<"' !"<<std::endl;
@@ -221,7 +219,7 @@ void Simple_XS::InitializeProcess(ATOOLS::Flavour *flavs,std::string &efunc,
   XS_Base *newxs(NULL);
   if (nt>nin+nout) {
     newxs = new XS_Group(nin,nout,flavs,m_scalescheme,m_kfactorscheme,
-			 p_beamhandler,p_isrhandler,p_selectordata);
+			 p_beamhandler,p_isrhandler,p_selectordata,p_model);
     newxs->SetColorScheme(clsc);
     newxs->SetHelicityScheme(hlsc);
     newxs->SetGPath(printgraphs);

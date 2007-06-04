@@ -13,7 +13,7 @@ using namespace ATOOLS;
 
 N_Parton_CDBG::N_Parton_CDBG(const size_t nin,const size_t nout,
 			     const std::vector<Flavour> &flavs,
-			     const std::vector<std::string> &models):
+			     XS_Model_Base *const model):
   m_nin(nin), m_nout(nout), 
   p_colint(NULL), p_helint(NULL),
   m_mode(0), m_tests(0)
@@ -21,7 +21,7 @@ N_Parton_CDBG::N_Parton_CDBG(const size_t nin,const size_t nout,
   std::vector<Flavour> nflavs(flavs);
   nflavs[0]=nflavs[0].Bar();
   nflavs[1]=nflavs[1].Bar();
-  m_ampl.Construct(nflavs,models);
+  m_ampl.Construct(nflavs,model);
   m_moms.resize(m_nin+m_nout);
   std::map<Flavour,size_t> fc;
   for (size_t i(2);i<flavs.size();++i) {

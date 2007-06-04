@@ -175,7 +175,8 @@ void QCD_Q::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
     CSpinor j(m_fl.IsAnti()?CSpinor(-1,1,1,p,ca,0,1<<m_key):
 	      CSpinor(1,-1,1,p,cr,0,1<<m_key));
 #ifdef DEBUG__BG
-    msg_Debugging()<<METHOD<<"(): '+' "<<m_id<<" "<<j<<"\n";
+    msg_Debugging()<<METHOD<<"(): '+' "<<m_id<<" "<<j
+		   <<", m = "<<p.Mass()<<"\n";
 #endif
     AddJ(j);
   }
@@ -183,7 +184,8 @@ void QCD_Q::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
     CSpinor j(m_fl.IsAnti()?CSpinor(-1,1,-1,p,ca,1<<m_key,0):
 	      CSpinor(1,-1,-1,p,cr,1<<m_key,0));
 #ifdef DEBUG__BG
-    msg_Debugging()<<METHOD<<"(): '-' "<<m_id<<" "<<j<<"\n";
+    msg_Debugging()<<METHOD<<"(): '-' "<<m_id<<" "<<j
+		   <<", m = "<<p.Mass()<<"\n";
 #endif
     AddJ(j);
   }
@@ -213,7 +215,7 @@ void QCD_Q::AddPropagator()
       j[1]=-pt*(*jit)[2]+pp*(*jit)[3];
       j[2]=pp*(*jit)[0]+ptc*(*jit)[1];
       j[3]=pt*(*jit)[0]+pm*(*jit)[1];
-      *jit=(m==0.0?j:j+*jit*m)*prop;
+      *jit=(m==0.0?j:j-*jit*m)*prop;
     }
   }
   else {

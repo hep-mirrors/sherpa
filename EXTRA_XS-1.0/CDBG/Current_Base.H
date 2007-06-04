@@ -4,6 +4,7 @@
 #include "Vector.H"
 #include "Flavour.H"
 #include "Getter_Function.H"
+#include "XS_Model_Base.H"
 #include "Node.H"
 
 #include <vector>
@@ -99,8 +100,10 @@ namespace EXTRAXS {
   struct Current_Key {
     ATOOLS::Flavour m_fl;
     std::string     m_model;
-    inline Current_Key(const ATOOLS::Flavour &fl,const std::string &model): 
-      m_fl(fl), m_model(model) {}
+    XS_Model_Base  *p_model;
+    inline Current_Key(const ATOOLS::Flavour &fl,const std::string &cmodel,
+		       XS_Model_Base *const model): 
+      m_fl(fl), m_model(cmodel), p_model(model) {}
     std::string Type() const;
   };// end of struct Current_Key
 

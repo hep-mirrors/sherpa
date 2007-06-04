@@ -10,9 +10,9 @@ using namespace ATOOLS;
 const double sqrttwo(sqrt(2.0));
 const double invsqrttwo(1.0/sqrttwo);
 
-QCD_GGG::QCD_GGG(Current_Base *const c):
+QCD_GGG::QCD_GGG(Current_Base *const c,XS_Model_Base *const model):
   Vertex(c),
-  m_cpl(sqrt(4.0*M_PI*(*MODEL::as)(sqr(rpa.gen.Ecms())))) {}
+  m_cpl(std::abs(model->Constant("g_3"))) {}
 
 void QCD_GGG::Evaluate()
 {
@@ -65,7 +65,7 @@ Vertex *QCD_GGG_Getter::operator()(const Vertex_Key &key) const
 { 
   if (!key.p_a->Flav().IsGluon()||!key.p_b->Flav().IsGluon()||
       !key.p_c->Flav().IsGluon()) return NULL;
-  return new QCD_GGG(key.p_c); 
+  return new QCD_GGG(key.p_c,key.p_model); 
 }
 
 void QCD_GGG_Getter::PrintInfo(std::ostream &str,const size_t width) const
@@ -73,9 +73,9 @@ void QCD_GGG_Getter::PrintInfo(std::ostream &str,const size_t width) const
   str<<"qcd triple gluon vertex"; 
 }
 
-QCD_GGT::QCD_GGT(Current_Base *const c):
+QCD_GGT::QCD_GGT(Current_Base *const c,XS_Model_Base *const model):
   Vertex(c),
-  m_cpl(sqrt(4.0*M_PI*(*MODEL::as)(sqr(rpa.gen.Ecms())))) {}
+  m_cpl(std::abs(model->Constant("g_3"))) {}
 
 void QCD_GGT::Evaluate()
 {
@@ -114,7 +114,7 @@ Vertex *QCD_GGT_Getter::operator()(const Vertex_Key &key) const
 { 
   if (!key.p_a->Flav().IsGluon()||!key.p_b->Flav().IsGluon()||
       key.p_c->Flav().Kfcode()!=kf::gluonqgc) return NULL;
-  return new QCD_GGT(key.p_c); 
+  return new QCD_GGT(key.p_c,key.p_model); 
 }
 
 void QCD_GGT_Getter::PrintInfo(std::ostream &str,const size_t width) const
@@ -122,9 +122,9 @@ void QCD_GGT_Getter::PrintInfo(std::ostream &str,const size_t width) const
   str<<"qcd tensor production vertex"; 
 }
 
-QCD_GTG::QCD_GTG(Current_Base *const c):
+QCD_GTG::QCD_GTG(Current_Base *const c,XS_Model_Base *const model):
   Vertex(c),
-  m_cpl(sqrt(4.0*M_PI*(*MODEL::as)(sqr(rpa.gen.Ecms())))) {}
+  m_cpl(std::abs(model->Constant("g_3"))) {}
 
 void QCD_GTG::Evaluate()
 {
@@ -176,7 +176,7 @@ Vertex *QCD_GTG_Getter::operator()(const Vertex_Key &key) const
 { 
   if (!key.p_a->Flav().IsGluon()||!key.p_c->Flav().IsGluon()||
       key.p_b->Flav().Kfcode()!=kf::gluonqgc) return NULL;
-  return new QCD_GTG(key.p_c); 
+  return new QCD_GTG(key.p_c,key.p_model); 
 }
 
 void QCD_GTG_Getter::PrintInfo(std::ostream &str,const size_t width) const
@@ -184,9 +184,9 @@ void QCD_GTG_Getter::PrintInfo(std::ostream &str,const size_t width) const
   str<<"qcd tensor decay vertex"; 
 }
 
-QCD_QQG::QCD_QQG(Current_Base *const c):
+QCD_QQG::QCD_QQG(Current_Base *const c,XS_Model_Base *const model):
   Vertex(c),
-  m_cpl(sqrt(4.0*M_PI*(*MODEL::as)(sqr(rpa.gen.Ecms())))) {}
+  m_cpl(std::abs(model->Constant("g_3"))) {}
 
 void QCD_QQG::Evaluate()
 {
@@ -231,7 +231,7 @@ Vertex *QCD_QQG_Getter::operator()(const Vertex_Key &key) const
   if (!key.p_a->Flav().IsQuark()||!key.p_b->Flav().IsQuark()||
       !key.p_b->Flav().IsAnti()||!key.p_c->Flav().IsGluon()||
       !(key.p_a->Flav()==key.p_b->Flav().Bar())) return NULL;
-  return new QCD_QQG(key.p_c); 
+  return new QCD_QQG(key.p_c,key.p_model); 
 }
 
 void QCD_QQG_Getter::PrintInfo(std::ostream &str,const size_t width) const
@@ -239,9 +239,9 @@ void QCD_QQG_Getter::PrintInfo(std::ostream &str,const size_t width) const
   str<<"qcd gluon production vertex"; 
 }
 
-QCD_QGQ::QCD_QGQ(Current_Base *const c):
+QCD_QGQ::QCD_QGQ(Current_Base *const c,XS_Model_Base *const model):
   Vertex(c),
-  m_cpl(sqrt(4.0*M_PI*(*MODEL::as)(sqr(rpa.gen.Ecms())))) {}
+  m_cpl(std::abs(model->Constant("g_3"))) {}
 
 void QCD_QGQ::Evaluate()
 {
@@ -305,7 +305,7 @@ Vertex *QCD_QGQ_Getter::operator()(const Vertex_Key &key) const
 { 
   if (!key.p_a->Flav().IsQuark()||!key.p_b->Flav().IsGluon()||
       !(key.p_c->Flav()==key.p_a->Flav())) return NULL;
-  return new QCD_QGQ(key.p_c); 
+  return new QCD_QGQ(key.p_c,key.p_model); 
 }
 
 void QCD_QGQ_Getter::PrintInfo(std::ostream &str,const size_t width) const

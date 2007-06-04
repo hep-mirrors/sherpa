@@ -26,9 +26,10 @@ XS_Group::XS_Group(const size_t nin,const size_t nout,
 		   const int kfactorscheme,
 		   BEAM::Beam_Spectra_Handler *const beamhandler,
 		   PDF::ISR_Handler *const isrhandler,
-		   ATOOLS::Selector_Data *const selectordata):
+		   ATOOLS::Selector_Data *const selectordata,
+		   XS_Model_Base *const model):
   XS_Base(nin,nout,flavours,scalescheme,kfactorscheme,
-	  beamhandler,isrhandler,selectordata),
+	  beamhandler,isrhandler,selectordata,model),
   m_atoms(false), p_xsselector(new XS_Selector(this)) 
 {
   p_xsselector->SetOffShell(p_isrhandler->KMROn());
@@ -36,8 +37,10 @@ XS_Group::XS_Group(const size_t nin,const size_t nout,
   p_selectordata=selectordata;
 }
 
-XS_Group::XS_Group(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours):
-  XS_Base(nin,nout,flavours), 
+XS_Group::XS_Group(const size_t nin,const size_t nout,
+		   const ATOOLS::Flavour *flavours,
+		   XS_Model_Base *const model):
+  XS_Base(nin,nout,flavours,model), 
   m_atoms(false), p_xsselector(new XS_Selector(this)) 
 {
   p_selected=NULL;
@@ -87,7 +90,7 @@ bool XS_Group::ConstructProcesses(const size_t &oew,const size_t &os,
     if (nt>m_nin+m_nout) {
       newxs = new XS_Group
 	(m_nin,m_nout,&cfl.front(),m_scalescheme,m_kfactorscheme,
-	 p_beamhandler,p_isrhandler,p_selectordata);
+	 p_beamhandler,p_isrhandler,p_selectordata,p_model);
       newxs->SetColorScheme(m_colorscheme);
       newxs->SetHelicityScheme(m_helicityscheme);
       newxs->SetGPath(m_gpath);
@@ -671,4 +674,11 @@ bool XS_Group::Tests()
   for (size_t i=0;i<m_xsecs.size();++i) 
     if (!m_xsecs[i]->Tests()) return false;
   return true;
+}
+
+void XS_Group::SetCoreMaxJetNumber(const int &n)
+{
+  for (size_t i=0;i<m_xsecs.size();++i) 
+    m_xsecs[i]->SetCoreMaxJetNumber(n);
+  m_coremaxjetnumber=n;
 }

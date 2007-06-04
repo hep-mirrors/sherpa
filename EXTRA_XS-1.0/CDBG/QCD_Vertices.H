@@ -12,7 +12,7 @@ namespace EXTRAXS {
 
   public:
 
-    QCD_GGG(Current_Base *const c);
+    QCD_GGG(Current_Base *const c,XS_Model_Base *const model);
 
     void Evaluate();
 
@@ -25,7 +25,7 @@ namespace EXTRAXS {
 
   public:
 
-    QCD_GGT(Current_Base *const c);
+    QCD_GGT(Current_Base *const c,XS_Model_Base *const model);
 
     void Evaluate();
 
@@ -38,7 +38,7 @@ namespace EXTRAXS {
 
   public:
 
-    QCD_GTG(Current_Base *const c);
+    QCD_GTG(Current_Base *const c,XS_Model_Base *const model);
 
     void Evaluate();
 
@@ -51,7 +51,7 @@ namespace EXTRAXS {
 
   public:
 
-    QCD_QQG(Current_Base *const c);
+    QCD_QQG(Current_Base *const c,XS_Model_Base *const model);
 
     void Evaluate();
 
@@ -64,7 +64,7 @@ namespace EXTRAXS {
 
   public:
 
-    QCD_QGQ(Current_Base *const c);
+    QCD_QGQ(Current_Base *const c,XS_Model_Base *const model);
 
     void Evaluate();
 

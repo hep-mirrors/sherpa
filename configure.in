@@ -50,6 +50,7 @@ AC_OUTPUT(ATOOLS-2.0/Math/Makefile \
 	  MODEL-1.0/Makefile \
 	  PHASIC++-1.0/Main/Makefile \
 	  PHASIC++-1.0/Makefile \
+	  EXTRA_XS-1.0/Model/Makefile \
 	  EXTRA_XS-1.0/Main/Makefile \
 	  EXTRA_XS-1.0/Two2Two/Makefile \
 	  EXTRA_XS-1.0/BFKL/Makefile \

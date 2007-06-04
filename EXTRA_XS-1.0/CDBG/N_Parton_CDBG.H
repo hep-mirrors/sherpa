@@ -35,7 +35,7 @@ namespace EXTRAXS {
     // constructor
     N_Parton_CDBG(const size_t nin,const size_t nout,
 		  const std::vector<ATOOLS::Flavour> &flavs,
-		  const std::vector<std::string> &models);
+		  XS_Model_Base *const model);
 
     // destructor
     ~N_Parton_CDBG();

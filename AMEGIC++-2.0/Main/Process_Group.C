@@ -1002,7 +1002,8 @@ void Process_Group::SetupEnhance() {
     m_procs[i]->SetupEnhance();
   }
   if (m_enhancefac!=1.) {
-    SetTotalXS(xs*m_enhancefac);
+    if (m_enhancefac>0.0) SetTotalXS(xs*m_enhancefac);
+    else SetTotalXS(-m_enhancefac);
   }
 }
 

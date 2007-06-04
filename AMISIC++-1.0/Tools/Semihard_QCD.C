@@ -16,7 +16,7 @@ Semihard_QCD::Semihard_QCD(BEAM::Beam_Spectra_Handler *const beam,
 			   const ATOOLS::Flavour *flavours,
 			   const int scalescheme,
 			   const int kfactorscheme):
-  XS_Group(2,2,flavours,(PHASIC::scl::scheme)(scalescheme),kfactorscheme,beam,isr,seldata)
+  XS_Group(2,2,flavours,(PHASIC::scl::scheme)(scalescheme),kfactorscheme,beam,isr,seldata,NULL)
 {
   SetFSRInterface(NULL);
   SetFSRMode(0);

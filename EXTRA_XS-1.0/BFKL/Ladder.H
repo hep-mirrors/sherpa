@@ -80,7 +80,8 @@ namespace EXTRAXS {
 	   const PHASIC::scl::scheme scalescheme,const int kfactorscheme,
 	   BEAM::Beam_Spectra_Handler *const beamhandler,
 	   PDF::ISR_Handler *const isrhandler,
-	   ATOOLS::Selector_Data *const selectordata);
+	   ATOOLS::Selector_Data *const selectordata,
+	   XS_Model_Base *const model);
 
     // destructor
     ~Ladder();

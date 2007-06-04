@@ -50,13 +50,16 @@ namespace EXTRAXS {
   };// end of class Vertex
 
   struct Vertex_Key {
-    Current_Base *p_a, *p_b, *p_c;
-    std::string   m_model;
+    Current_Base  *p_a, *p_b, *p_c;
+    std::string    m_model;
+    XS_Model_Base *p_model;
     inline Vertex_Key(Current_Base *const a,Current_Base *const b,
-		      Current_Base *const c,const std::string &model): 
-      p_a(a), p_b(b), p_c(c), m_model(model) {}
+		      Current_Base *const c,const std::string &cmodel,
+		      XS_Model_Base *const model): 
+      p_a(a), p_b(b), p_c(c), m_model(cmodel), p_model(model) {}
     std::string Type() const;
-    inline Vertex_Key SwapAB() { return Vertex_Key(p_b,p_a,p_c,m_model); }
+    inline Vertex_Key SwapAB() 
+    { return Vertex_Key(p_b,p_a,p_c,m_model,p_model); }
     bool operator<(const Vertex_Key &k) const;
   };// end of struct Vertex_Key
 

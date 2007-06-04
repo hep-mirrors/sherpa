@@ -18,7 +18,8 @@ namespace EXTRAXS {
 
     // constructor
     CDXS_T_pp_np(const size_t &nin,const size_t &nout,
-	       const ATOOLS::Flavour *const fl);
+		 const ATOOLS::Flavour *const fl,
+		 XS_Model_Base *const model);
     
     // destructor
     ~CDXS_T_pp_np();
