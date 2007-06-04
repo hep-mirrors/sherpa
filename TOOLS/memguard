@@ -1,0 +1,111 @@
+#!/bin/bash
+
+export LANG=en_US
+
+print_help() {
+    echo "memguard version 1.0" && echo && \
+    echo "usage: memguard [options] process" && echo && \
+    echo "options: -a <limit>  set absolute limit in kB" && \
+    echo "         -r <limit>  set limit relative to available memory" && \
+    echo "         -i <time>   check time interval" && \
+    echo "         -o <time>   output time interval" && \
+    echo "         -h          display this help and exit" && echo
+}
+
+LIMIT=0.9
+RELATIVE=TRUE
+INTERVAL=1
+OUTPUT=10
+while getopts a:r:i:o:h OPT
+do
+  case $OPT in
+  a) RELATIVE=FALSE; LIMIT=$OPTARG ;;
+  r) RELATIVE=TRUE; LIMIT=$OPTARG ;;
+  i) INTERVAL=$OPTARG ;;
+  o) OUTPUT=$OPTARG ;;
+  h) print_help && exit 0 ;;
+  \?)
+    shift `expr $OPTIND - 1`
+    if [ "$1" = "--help" ]; then print_help && exit 0
+    else 
+      echo "memguard: error: unrecognized option '$1'."
+      print_help && exit 1
+    fi
+    shift 1
+    OPTIND=1
+  esac
+done
+
+CNT=0
+FCOMMAND=$1
+for I in $*; do
+  if (( ++CNT > 1 )); then
+    FCOMMAND=$FCOMMAND" "$I
+  fi
+done
+COMMAND=`echo $FCOMMAND | awk 'BEGIN{ s=0; }{ 
+  for (i=1;i<=NF;++i) {
+    match($i,"-"); 
+    if (RSTART==0) s=1;
+    if (s>0) {
+      printf $i;
+      if (i<NF) printf " "; 
+    }
+  }
+}'`
+if [ "$COMMAND" = "" ]; then
+  echo "memguard: empty command. stop."
+  exit 1
+fi
+
+echo -n "memguard: check memory information ... "
+if ! test -f /proc/meminfo; then
+  echo "not found. stop."
+  exit 1
+fi
+HARDLIMIT=`cat /proc/meminfo | grep MemFree | awk '{ printf $2; }'`
+echo $HARDLIMIT" kB free"
+
+SOFTLIMIT=HARDLIMIT
+if [ "$RELATIVE" = "TRUE" ]; then
+  SOFTLIMIT=`echo "scale=3; $LIMIT*$HARDLIMIT" | bc -q`
+else
+  SOFTLIMIT=$LIMIT
+  LIMIT=`echo "scale=3; $SOFTLIMIT/$HARDLIMIT" | bc -q`
+fi
+if [ "`echo \"scale=6; $SOFTLIMIT>$HARDLIMIT\" | bc -q`" = "1" ]; then
+  echo "memguard: error: $LIMIT > 100%. stop."
+  exit 1
+fi
+
+PRINTV=`echo "scale=2; $LIMIT*100" | bc -q`
+echo "memguard: setting limit $SOFTLIMIT kB ( $PRINTV % )"
+echo "memguard: check time interval $INTERVAL s"
+echo "memguard: executing '$COMMAND'"
+
+$COMMAND &
+
+PROC=$!
+echo "memguard: process started as pid $PROC"
+
+( declare -i LTIME CTIME
+  LTIME=`echo | awk '{ print systime(); }'`
+  while (( 1 )); do
+    if ! test -f /proc/$PROC/status; then
+      echo "memguard: process $PROC terminated"
+      exit 0
+    fi
+    CMEM=`cat /proc/$PROC/status | grep VmSize | awk '{ printf $2; }'`
+    if [ "`echo \"scale=6; $CMEM>$SOFTLIMIT\" | bc -q`" = "1" ]; then
+      kill -19 $PROC
+      echo "memguard: process $PROC stopped with vmem = $CMEM kB"
+      exit 0
+    fi
+    CTIME=`echo | awk '{ print systime(); }'`
+    if (( CTIME >= LTIME+OUTPUT )); then
+      echo "memguard: process $PROC consumes $CMEM kB, limit is $SOFTLIMIT kB"
+      LTIME=CTIME
+    fi
+    sleep $INTERVAL
+  done ) &
+
