@@ -29,7 +29,9 @@ XS_Base::XS_Base():
   p_model(NULL)
 {
   m_name="Empty XS";
-  m_scale[PHASIC::stp::sfs]=m_scale[PHASIC::stp::sis]=std::numeric_limits<double>::max();
+  m_scale[PHASIC::stp::sfs]=m_scale[PHASIC::stp::sis]=
+    std::numeric_limits<double>::max();
+  m_scale[stp::ren]=m_scale[stp::fac]=sqr(rpa.gen.Ecms());
 } 
 
 XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
@@ -45,6 +47,7 @@ XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavo
 {
   Init(flavours);
   Initialize(scalescheme,kfactorscheme,beamhandler,isrhandler,selectordata);
+  m_scale[stp::ren]=m_scale[stp::fac]=sqr(rpa.gen.Ecms());
 }
 
 XS_Base::XS_Base(const size_t nin,const size_t nout,
@@ -56,7 +59,9 @@ XS_Base::XS_Base(const size_t nin,const size_t nout,
 {
   Init(flavours);
   p_selector = new ATOOLS::No_Selector();
-  m_scale[PHASIC::stp::sfs]=m_scale[PHASIC::stp::sis]=std::numeric_limits<double>::max();
+  m_scale[PHASIC::stp::sfs]=m_scale[PHASIC::stp::sis]=
+    std::numeric_limits<double>::max();
+  m_scale[stp::ren]=m_scale[stp::fac]=sqr(rpa.gen.Ecms());
 }
 
 XS_Base::~XS_Base() 
@@ -450,3 +455,7 @@ void XS_Base::SetCoreMaxJetNumber(const int &n)
   m_coremaxjetnumber=n;
 }
 
+void XS_Base::SetScales(const double &scale)
+{
+  m_scale[stp::ren]=m_scale[stp::fac]=scale;
+}

@@ -23,7 +23,7 @@ namespace EXTRAXS {
     bool CheckFlavours(std::vector<ATOOLS::Flavour> &cfl);
     bool ConstructProcesses(const size_t &oew,const size_t &os,
 			    std::vector<ATOOLS::Flavour> cfl,
-			    const size_t &ci);
+			    const size_t &ci,const double &fixscale);
 
   public :
 
@@ -45,7 +45,8 @@ namespace EXTRAXS {
     ~XS_Group();
 
     // member functions
-    bool ConstructProcesses(const size_t &oew,const size_t &os);
+    bool ConstructProcesses(const size_t &oew,const size_t &os,
+			    const double &fixscale);
     
     void Add(XS_Base *const xsec);
     bool Remove(XS_Base *const xsec);
@@ -99,6 +100,8 @@ namespace EXTRAXS {
 
     bool SetPDFFlavours();
     bool Tests();
+
+    void SetScales(const double &scale);
 
     // inline functions 
     inline void SetSelectorData(ATOOLS::Selector_Data *const data) 

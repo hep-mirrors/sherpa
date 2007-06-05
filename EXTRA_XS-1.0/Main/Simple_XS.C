@@ -79,9 +79,12 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   ATOOLS::Data_Read::ResetTags();
   m_muf2tag=p_dataread->GetValue<std::string>("FACTORIZATION_SCALE","");
   m_kfactorscheme=p_dataread->GetValue<int>("KFACTOR_SCHEME",0);
-  double fac_scale_fac=p_dataread->
+  double fix_scale=p_dataread->
+    GetValue<double>("FIXED_SCALE",sqr(rpa.gen.Ecms()));
+  double scale_fac=p_dataread->GetValue<double>("SCALE_FACTOR",1.);
+  double fac_scale_fac=scale_fac*p_dataread->
     GetValue<double>("FACTORIZATION_SCALE_FACTOR",1.);
-  double ren_scale_fac=p_dataread->
+  double ren_scale_fac=scale_fac*p_dataread->
     GetValue<double>("RENOMALIZATION_SCALE_FACTOR",1.);
   ATOOLS::rpa.gen.SetScaleFactors(fac_scale_fac,ren_scale_fac );
   int regulate=p_dataread->GetValue<int>("REGULATE_XS",0);
@@ -102,12 +105,14 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   int         nIS,   nFS;
   std::vector<Flavour>  IS, FS, flavs;
   std::string efunc="1", printgraphs;
+  double fixed_scale;
   Data_Reader reader(" ",";","!","=");
   reader.AddWordSeparator("\t");
   reader.AddIgnore(":");
   while(from) {
     getline(from,buf);
     if (buf[0] != '%' && buf.length()>0) {
+      fixed_scale=fix_scale;
       order_ew=99;
       order_strong=99;
       psmc=0;
@@ -137,10 +142,12 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	      getline(from,buf);
 	      if (buf[0] != '%' && buf.length()>0) {
 		reader.SetString(buf);
+		double fixed_scale_t;
 		unsigned int order_ew_t, order_strong_t, colscheme_t, helscheme_t, psmc_t;
 		std::string efunc_t="1", printgraphs_t;
 		if (reader.ReadFromString(order_ew_t,"electroweak")) order_ew=order_ew_t;
 		if (reader.ReadFromString(order_strong_t,"strong")) order_strong=order_strong_t;
+		if (reader.ReadFromString(fixed_scale_t,"scale")) fixed_scale=fixed_scale_t;
 		if (reader.ReadFromString(efunc_t,"Enhance_Function")) efunc=efunc_t;
 		reader.SetTags(Integrable_Base::ColorSchemeTags());
 		if (reader.ReadFromString(colscheme_t,"Color_Scheme")) 
@@ -155,10 +162,8 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 		  psmc=psmc_t;
 		position = buf.find(string("process"));
 		if (!from) {
-		  msg.Error()<<"Error in Simple_XS::InitializeProcesses("
-			     <<m_path+processfile<<")."<<endl
-			     <<"   End of file reached without 'End process'-tag."<<endl
-			     <<"   Continue and hope for the best."<<endl;
+		  msg.Error()<<METHOD<<"("<<m_path+processfile<<")."<<endl
+			     <<"   EOF without 'End process' tag."<<endl;
 		  position     = 0;
 		}
 	      }
@@ -188,7 +193,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	      else {
 		InitializeProcess(&flavs.front(),efunc,printgraphs,psmc,
 				  inisum,finsum,order_ew,order_strong,
-				  nIS,nFS,colscheme,helscheme);
+				  nIS,nFS,colscheme,helscheme,fixed_scale);
 	      }
 	      if (m_xsecs.size()>0) p_selected=m_xsecs.back();
 	    }
@@ -201,8 +206,8 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   m_maxjet=m_nmax-m_nin;
   SetCoreMaxJetNumber(m_maxjet);
   if (m_xsecs.size()>0) return Tests();
-  msg.Error()<<"Simple_XS::InitializeProcesses("<<beamhandler<<","<<isrhandler<<"): "
-	     <<"   Did not find any process in '"<<m_path+processfile<<"' !"<<std::endl;
+  msg.Error()<<METHOD<<"(): No valid process in '"
+	     <<m_path+processfile<<"'."<<std::endl;
   return false;
 }
 
@@ -212,7 +217,8 @@ void Simple_XS::InitializeProcess(ATOOLS::Flavour *flavs,std::string &efunc,
 				  size_t order_ew,size_t order_strong,
 				  size_t nin,size_t nout,
 				  const PHASIC::cls::scheme &clsc,
-				  const PHASIC::hls::scheme &hlsc)
+				  const PHASIC::hls::scheme &hlsc,
+				  double &fixscale)
 {
   size_t nt(0);
   for (size_t j=0;j<nin+nout;++j) nt+=flavs[j].Size();
@@ -224,7 +230,8 @@ void Simple_XS::InitializeProcess(ATOOLS::Flavour *flavs,std::string &efunc,
     newxs->SetHelicityScheme(hlsc);
     newxs->SetGPath(printgraphs);
     newxs->SetPSMC(psmc);
-    if (!((XS_Group*)newxs)->ConstructProcesses(order_ew,order_strong)) {
+    if (!((XS_Group*)newxs)->
+	ConstructProcesses(order_ew,order_strong,fixscale)) {
       delete newxs;
       return;
     }
@@ -233,6 +240,7 @@ void Simple_XS::InitializeProcess(ATOOLS::Flavour *flavs,std::string &efunc,
     newxs = XSSelector()->
       GetXS(nin,nout,flavs,false,order_ew,order_strong,clsc,hlsc);
     if (newxs==NULL) return;
+    newxs->SetScales(fixscale);
     newxs->SetGPath(printgraphs);
     newxs->SetPSMC(psmc);
     newxs->Initialize(m_scalescheme,m_kfactorscheme,

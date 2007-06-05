@@ -111,6 +111,8 @@ namespace EXTRAXS {
 
     virtual bool SetPDFFlavours() = 0;
     virtual bool Tests() = 0;
+
+    virtual void SetScales(const double &scale);
     
     // inline functions
     inline int **const Colours() const { return p_colours; }

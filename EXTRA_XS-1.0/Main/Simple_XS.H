@@ -32,7 +32,8 @@ namespace EXTRAXS {
 			   size_t order_ew,size_t order_strong,
 			   size_t nin,size_t nout,
 			   const PHASIC::cls::scheme &clsc,
-			   const PHASIC::hls::scheme &hlsc);
+			   const PHASIC::hls::scheme &hlsc,
+			   double &fixscale);
 
   public :
 

@@ -18,6 +18,7 @@
 #endif
 
 using namespace EXTRAXS;
+using namespace PHASIC;
 using namespace ATOOLS;
 
 XS_Group::XS_Group(const size_t nin,const size_t nout,
@@ -77,7 +78,7 @@ bool XS_Group::CheckFlavours(std::vector<ATOOLS::Flavour> &cfl)
 
 bool XS_Group::ConstructProcesses(const size_t &oew,const size_t &os,
 				  std::vector<ATOOLS::Flavour> cfl,
-				  const size_t &ci)
+				  const size_t &ci,const double &fixscale)
 {
   if (ci==m_nin+m_nout) {
     SortFlavours(&cfl.front(),m_nin);
@@ -95,7 +96,7 @@ bool XS_Group::ConstructProcesses(const size_t &oew,const size_t &os,
       newxs->SetHelicityScheme(m_helicityscheme);
       newxs->SetGPath(m_gpath);
       newxs->SetPSMC(m_psmc);
-      if (!((XS_Group*)newxs)->ConstructProcesses(oew,os)) {
+      if (!((XS_Group*)newxs)->ConstructProcesses(oew,os,fixscale)) {
 	delete newxs;
 	return false;
       }
@@ -105,6 +106,7 @@ bool XS_Group::ConstructProcesses(const size_t &oew,const size_t &os,
       newxs = XSSelector()->GetXS(m_nin,m_nout,&cfl.front(),false,oew,os,
 				  m_colorscheme,m_helicityscheme);
       if (newxs==NULL) return false;
+      newxs->SetScales(fixscale);
       newxs->SetGPath(m_gpath);
       newxs->SetPSMC(m_psmc);
       newxs->Initialize(m_scalescheme,m_kfactorscheme,
@@ -121,27 +123,28 @@ bool XS_Group::ConstructProcesses(const size_t &oew,const size_t &os,
       m_colorscheme==PHASIC::cls::sample) {
     SetAtoms(true);
     cfl[ci]=Flavour(kf::gluon);
-    if (ConstructProcesses(oew,os,cfl,ci+1)) one=true;
+    if (ConstructProcesses(oew,os,cfl,ci+1,fixscale)) one=true;
     cfl[ci]=Flavour(kf::quark);
-    if (ConstructProcesses(oew,os,cfl,ci+1)) one=true;
+    if (ConstructProcesses(oew,os,cfl,ci+1,fixscale)) one=true;
     cfl[ci]=Flavour(kf::quark).Bar();
-    if (ConstructProcesses(oew,os,cfl,ci+1)) one=true;
+    if (ConstructProcesses(oew,os,cfl,ci+1,fixscale)) one=true;
   }
   else {
     for (int j(0);j<p_flavours[ci].Size();++j) {
       cfl[ci]=p_flavours[ci][j];
       if (m_colorscheme==PHASIC::cls::sample &&
 	  p_flavours[ci].IsAnti()!=cfl[ci].IsAnti()) continue;
-      if (ConstructProcesses(oew,os,cfl,ci+1)) one=true;
+      if (ConstructProcesses(oew,os,cfl,ci+1,fixscale)) one=true;
     }
   }
   return one;
 }
 
-bool XS_Group::ConstructProcesses(const size_t &oew,const size_t &os)
+bool XS_Group::ConstructProcesses(const size_t &oew,const size_t &os,
+				  const double &fixscale)
 {
   std::vector<Flavour> cfl(m_nin+m_nout);
-  return ConstructProcesses(oew,os,cfl,0);
+  return ConstructProcesses(oew,os,cfl,0,fixscale);
 }
 
 
@@ -681,4 +684,11 @@ void XS_Group::SetCoreMaxJetNumber(const int &n)
   for (size_t i=0;i<m_xsecs.size();++i) 
     m_xsecs[i]->SetCoreMaxJetNumber(n);
   m_coremaxjetnumber=n;
+}
+
+void XS_Group::SetScales(const double &scale)
+{
+  for (size_t i=0;i<m_xsecs.size();++i)
+    m_xsecs[i]->SetScales(scale);
+  m_scale[stp::ren]=m_scale[stp::fac]=scale;
 }
